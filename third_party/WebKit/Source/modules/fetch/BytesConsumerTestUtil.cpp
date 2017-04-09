@@ -21,178 +21,178 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 
 BytesConsumerTestUtil::MockBytesConsumer::MockBytesConsumer() {
-  ON_CALL(*this, beginRead(_, _))
+  ON_CALL(*this, BeginRead(_, _))
       .WillByDefault(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<1>(0),
-                           Return(Result::Error)));
-  ON_CALL(*this, endRead(_)).WillByDefault(Return(Result::Error));
-  ON_CALL(*this, getPublicState()).WillByDefault(Return(PublicState::Errored));
-  ON_CALL(*this, drainAsBlobDataHandle(_))
+                           Return(Result::kError)));
+  ON_CALL(*this, EndRead(_)).WillByDefault(Return(Result::kError));
+  ON_CALL(*this, GetPublicState()).WillByDefault(Return(PublicState::kErrored));
+  ON_CALL(*this, DrainAsBlobDataHandle(_))
       .WillByDefault(Return(ByMove(nullptr)));
-  ON_CALL(*this, drainAsFormData()).WillByDefault(Return(ByMove(nullptr)));
+  ON_CALL(*this, DrainAsFormData()).WillByDefault(Return(ByMove(nullptr)));
 }
 
 BytesConsumerTestUtil::ReplayingBytesConsumer::ReplayingBytesConsumer(
-    ExecutionContext* executionContext)
-    : m_executionContext(executionContext) {}
+    ExecutionContext* execution_context)
+    : execution_context_(execution_context) {}
 
 BytesConsumerTestUtil::ReplayingBytesConsumer::~ReplayingBytesConsumer() {}
 
-Result BytesConsumerTestUtil::ReplayingBytesConsumer::beginRead(
+Result BytesConsumerTestUtil::ReplayingBytesConsumer::BeginRead(
     const char** buffer,
     size_t* available) {
-  ++m_notificationToken;
-  if (m_commands.isEmpty()) {
-    switch (m_state) {
-      case BytesConsumer::InternalState::Readable:
-      case BytesConsumer::InternalState::Waiting:
-        return Result::ShouldWait;
-      case BytesConsumer::InternalState::Closed:
-        return Result::Done;
-      case BytesConsumer::InternalState::Errored:
-        return Result::Error;
+  ++notification_token_;
+  if (commands_.IsEmpty()) {
+    switch (state_) {
+      case BytesConsumer::InternalState::kReadable:
+      case BytesConsumer::InternalState::kWaiting:
+        return Result::kShouldWait;
+      case BytesConsumer::InternalState::kClosed:
+        return Result::kDone;
+      case BytesConsumer::InternalState::kErrored:
+        return Result::kError;
     }
   }
-  const Command& command = m_commands[0];
-  switch (command.getName()) {
-    case Command::Data:
-      DCHECK_LE(m_offset, command.body().size());
-      *buffer = command.body().data() + m_offset;
-      *available = command.body().size() - m_offset;
-      return Result::Ok;
-    case Command::Done:
-      m_commands.pop_front();
-      close();
-      return Result::Done;
-    case Command::Error: {
-      Error e(String::fromUTF8(command.body().data(), command.body().size()));
-      m_commands.pop_front();
-      error(std::move(e));
-      return Result::Error;
+  const Command& command = commands_[0];
+  switch (command.GetName()) {
+    case Command::kData:
+      DCHECK_LE(offset_, command.Body().size());
+      *buffer = command.Body().Data() + offset_;
+      *available = command.Body().size() - offset_;
+      return Result::kOk;
+    case Command::kDone:
+      commands_.pop_front();
+      Close();
+      return Result::kDone;
+    case Command::kError: {
+      Error e(String::FromUTF8(command.Body().Data(), command.Body().size()));
+      commands_.pop_front();
+      GetError(std::move(e));
+      return Result::kError;
     }
-    case Command::Wait:
-      m_commands.pop_front();
-      m_state = InternalState::Waiting;
-      TaskRunnerHelper::get(TaskType::Networking, m_executionContext)
-          ->postTask(BLINK_FROM_HERE,
-                     WTF::bind(&ReplayingBytesConsumer::notifyAsReadable,
-                               wrapPersistent(this), m_notificationToken));
-      return Result::ShouldWait;
+    case Command::kWait:
+      commands_.pop_front();
+      state_ = InternalState::kWaiting;
+      TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+          ->PostTask(BLINK_FROM_HERE,
+                     WTF::Bind(&ReplayingBytesConsumer::NotifyAsReadable,
+                               WrapPersistent(this), notification_token_));
+      return Result::kShouldWait;
   }
   NOTREACHED();
-  return Result::Error;
+  return Result::kError;
 }
 
-Result BytesConsumerTestUtil::ReplayingBytesConsumer::endRead(size_t read) {
-  DCHECK(!m_commands.isEmpty());
-  const Command& command = m_commands[0];
-  DCHECK_EQ(Command::Data, command.getName());
-  m_offset += read;
-  DCHECK_LE(m_offset, command.body().size());
-  if (m_offset < command.body().size())
-    return Result::Ok;
+Result BytesConsumerTestUtil::ReplayingBytesConsumer::EndRead(size_t read) {
+  DCHECK(!commands_.IsEmpty());
+  const Command& command = commands_[0];
+  DCHECK_EQ(Command::kData, command.GetName());
+  offset_ += read;
+  DCHECK_LE(offset_, command.Body().size());
+  if (offset_ < command.Body().size())
+    return Result::kOk;
 
-  m_offset = 0;
-  m_commands.pop_front();
-  return Result::Ok;
+  offset_ = 0;
+  commands_.pop_front();
+  return Result::kOk;
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::setClient(Client* client) {
-  DCHECK(!m_client);
+void BytesConsumerTestUtil::ReplayingBytesConsumer::SetClient(Client* client) {
+  DCHECK(!client_);
   DCHECK(client);
-  m_client = client;
-  ++m_notificationToken;
+  client_ = client;
+  ++notification_token_;
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::clearClient() {
-  DCHECK(m_client);
-  m_client = nullptr;
-  ++m_notificationToken;
+void BytesConsumerTestUtil::ReplayingBytesConsumer::ClearClient() {
+  DCHECK(client_);
+  client_ = nullptr;
+  ++notification_token_;
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::cancel() {
-  close();
-  m_isCancelled = true;
+void BytesConsumerTestUtil::ReplayingBytesConsumer::Cancel() {
+  Close();
+  is_cancelled_ = true;
 }
 
 BytesConsumer::PublicState
-BytesConsumerTestUtil::ReplayingBytesConsumer::getPublicState() const {
-  return getPublicStateFromInternalState(m_state);
+BytesConsumerTestUtil::ReplayingBytesConsumer::GetPublicState() const {
+  return GetPublicStateFromInternalState(state_);
 }
 
-BytesConsumer::Error BytesConsumerTestUtil::ReplayingBytesConsumer::getError()
+BytesConsumer::Error BytesConsumerTestUtil::ReplayingBytesConsumer::GetError()
     const {
-  return m_error;
+  return error_;
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::notifyAsReadable(
-    int notificationToken) {
-  if (m_notificationToken != notificationToken) {
+void BytesConsumerTestUtil::ReplayingBytesConsumer::NotifyAsReadable(
+    int notification_token) {
+  if (notification_token_ != notification_token) {
     // The notification is cancelled.
     return;
   }
-  DCHECK(m_client);
-  DCHECK_NE(InternalState::Closed, m_state);
-  DCHECK_NE(InternalState::Errored, m_state);
-  m_client->onStateChange();
+  DCHECK(client_);
+  DCHECK_NE(InternalState::kClosed, state_);
+  DCHECK_NE(InternalState::kErrored, state_);
+  client_->OnStateChange();
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::close() {
-  m_commands.clear();
-  m_offset = 0;
-  m_state = InternalState::Closed;
-  ++m_notificationToken;
+void BytesConsumerTestUtil::ReplayingBytesConsumer::Close() {
+  commands_.Clear();
+  offset_ = 0;
+  state_ = InternalState::kClosed;
+  ++notification_token_;
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::error(const Error& e) {
-  m_commands.clear();
-  m_offset = 0;
-  m_error = e;
-  m_state = InternalState::Errored;
-  ++m_notificationToken;
+void BytesConsumerTestUtil::ReplayingBytesConsumer::GetError(const Error& e) {
+  commands_.Clear();
+  offset_ = 0;
+  error_ = e;
+  state_ = InternalState::kErrored;
+  ++notification_token_;
 }
 
 DEFINE_TRACE(BytesConsumerTestUtil::ReplayingBytesConsumer) {
-  visitor->trace(m_executionContext);
-  visitor->trace(m_client);
-  BytesConsumer::trace(visitor);
+  visitor->Trace(execution_context_);
+  visitor->Trace(client_);
+  BytesConsumer::Trace(visitor);
 }
 
 BytesConsumerTestUtil::TwoPhaseReader::TwoPhaseReader(BytesConsumer* consumer)
-    : m_consumer(consumer) {
-  m_consumer->setClient(this);
+    : consumer_(consumer) {
+  consumer_->SetClient(this);
 }
 
-void BytesConsumerTestUtil::TwoPhaseReader::onStateChange() {
+void BytesConsumerTestUtil::TwoPhaseReader::OnStateChange() {
   while (true) {
     const char* buffer = nullptr;
     size_t available = 0;
-    auto result = m_consumer->beginRead(&buffer, &available);
-    if (result == BytesConsumer::Result::ShouldWait)
+    auto result = consumer_->BeginRead(&buffer, &available);
+    if (result == BytesConsumer::Result::kShouldWait)
       return;
-    if (result == BytesConsumer::Result::Ok) {
+    if (result == BytesConsumer::Result::kOk) {
       // We don't use |available| as-is to test cases where endRead
       // is called with a number smaller than |available|. We choose 3
       // because of the same reasons as Reader::onStateChange.
       size_t read = std::min(static_cast<size_t>(3), available);
-      m_data.append(buffer, read);
-      result = m_consumer->endRead(read);
+      data_.Append(buffer, read);
+      result = consumer_->EndRead(read);
     }
-    DCHECK_NE(result, BytesConsumer::Result::ShouldWait);
-    if (result != BytesConsumer::Result::Ok) {
-      m_result = result;
+    DCHECK_NE(result, BytesConsumer::Result::kShouldWait);
+    if (result != BytesConsumer::Result::kOk) {
+      result_ = result;
       return;
     }
   }
 }
 
 std::pair<BytesConsumer::Result, Vector<char>>
-BytesConsumerTestUtil::TwoPhaseReader::run() {
-  onStateChange();
-  while (m_result != BytesConsumer::Result::Done &&
-         m_result != BytesConsumer::Result::Error)
-    testing::runPendingTasks();
-  testing::runPendingTasks();
-  return std::make_pair(m_result, std::move(m_data));
+BytesConsumerTestUtil::TwoPhaseReader::Run() {
+  OnStateChange();
+  while (result_ != BytesConsumer::Result::kDone &&
+         result_ != BytesConsumer::Result::kError)
+    testing::RunPendingTasks();
+  testing::RunPendingTasks();
+  return std::make_pair(result_, std::move(data_));
 }
 
 }  // namespace blink

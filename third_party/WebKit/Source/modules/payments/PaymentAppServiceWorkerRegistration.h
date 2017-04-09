@@ -23,7 +23,7 @@ class PaymentAppServiceWorkerRegistration final
 
  public:
   virtual ~PaymentAppServiceWorkerRegistration();
-  static PaymentAppServiceWorkerRegistration& from(ServiceWorkerRegistration&);
+  static PaymentAppServiceWorkerRegistration& From(ServiceWorkerRegistration&);
 
   static PaymentManager* paymentManager(ScriptState*,
                                         ServiceWorkerRegistration&);
@@ -33,10 +33,10 @@ class PaymentAppServiceWorkerRegistration final
 
  private:
   explicit PaymentAppServiceWorkerRegistration(ServiceWorkerRegistration*);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<ServiceWorkerRegistration> m_registration;
-  Member<PaymentManager> m_paymentManager;
+  Member<ServiceWorkerRegistration> registration_;
+  Member<PaymentManager> payment_manager_;
 };
 
 }  // namespace blink

@@ -59,19 +59,19 @@ std::string URLDescription(const GURL& url) {
 const char* WebNavigationPolicyToString(
     const blink::WebNavigationPolicy& policy) {
   switch (policy) {
-    case blink::WebNavigationPolicyIgnore:
+    case blink::kWebNavigationPolicyIgnore:
       return kPolicyIgnore;
-    case blink::WebNavigationPolicyDownload:
+    case blink::kWebNavigationPolicyDownload:
       return kPolicyDownload;
-    case blink::WebNavigationPolicyCurrentTab:
+    case blink::kWebNavigationPolicyCurrentTab:
       return kPolicyCurrentTab;
-    case blink::WebNavigationPolicyNewBackgroundTab:
+    case blink::kWebNavigationPolicyNewBackgroundTab:
       return kPolicyNewBackgroundTab;
-    case blink::WebNavigationPolicyNewForegroundTab:
+    case blink::kWebNavigationPolicyNewForegroundTab:
       return kPolicyNewForegroundTab;
-    case blink::WebNavigationPolicyNewWindow:
+    case blink::kWebNavigationPolicyNewWindow:
       return kPolicyNewWindow;
-    case blink::WebNavigationPolicyNewPopup:
+    case blink::kWebNavigationPolicyNewPopup:
       return kPolicyNewPopup;
     default:
       return kIllegalString;
@@ -82,7 +82,7 @@ blink::WebString V8StringToWebString(v8::Local<v8::String> v8_str) {
   int length = v8_str->Utf8Length() + 1;
   std::unique_ptr<char[]> chars(new char[length]);
   v8_str->WriteUtf8(chars.get(), length);
-  return blink::WebString::fromUTF8(chars.get());
+  return blink::WebString::FromUTF8(chars.get());
 }
 
 }  // namespace test_runner

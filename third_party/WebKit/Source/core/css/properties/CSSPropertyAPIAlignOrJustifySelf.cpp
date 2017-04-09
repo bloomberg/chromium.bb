@@ -13,7 +13,7 @@ const CSSValue* CSSPropertyAPIAlignOrJustifySelf::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
+  return CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(range);
 }
 
 }  // namespace blink

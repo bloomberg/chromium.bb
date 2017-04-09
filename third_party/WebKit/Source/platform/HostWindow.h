@@ -45,17 +45,17 @@ class PLATFORM_EXPORT HostWindow
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   // Requests the host invalidate the contents.
-  virtual void invalidateRect(const IntRect& updateRect) = 0;
+  virtual void InvalidateRect(const IntRect& update_rect) = 0;
 
   // Converts the rect from the viewport coordinates to screen coordinates.
-  virtual IntRect viewportToScreen(const IntRect&,
+  virtual IntRect ViewportToScreen(const IntRect&,
                                    const FrameViewBase*) const = 0;
 
   // Converts the scalar value from the window coordinates to the viewport
   // scale.
-  virtual float windowToViewportScalar(const float) const = 0;
+  virtual float WindowToViewportScalar(const float) const = 0;
 
-  virtual void scheduleAnimation(FrameViewBase*) = 0;
+  virtual void ScheduleAnimation(FrameViewBase*) = 0;
 };
 
 }  // namespace blink

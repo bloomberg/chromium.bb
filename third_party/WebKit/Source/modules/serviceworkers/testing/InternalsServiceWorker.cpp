@@ -10,7 +10,7 @@ namespace blink {
 
 void InternalsServiceWorker::terminateServiceWorker(Internals& internals,
                                                     ServiceWorker* worker) {
-  worker->internalsTerminate();
+  worker->InternalsTerminate();
 }
 
 }  // namespace blink

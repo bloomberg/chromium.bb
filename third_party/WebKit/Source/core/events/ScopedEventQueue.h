@@ -49,24 +49,24 @@ class CORE_EXPORT ScopedEventQueue {
  public:
   ~ScopedEventQueue();
 
-  void enqueueEventDispatchMediator(EventDispatchMediator*);
-  void dispatchAllEvents();
-  static ScopedEventQueue* instance();
+  void EnqueueEventDispatchMediator(EventDispatchMediator*);
+  void DispatchAllEvents();
+  static ScopedEventQueue* Instance();
 
-  void incrementScopingLevel();
-  void decrementScopingLevel();
-  bool shouldQueueEvents() const { return m_scopingLevel > 0; }
+  void IncrementScopingLevel();
+  void DecrementScopingLevel();
+  bool ShouldQueueEvents() const { return scoping_level_ > 0; }
 
  private:
   ScopedEventQueue();
-  static void initialize();
-  void dispatchEvent(EventDispatchMediator*) const;
+  static void Initialize();
+  void DispatchEvent(EventDispatchMediator*) const;
 
   PersistentHeapVector<Member<EventDispatchMediator>>
-      m_queuedEventDispatchMediators;
-  unsigned m_scopingLevel;
+      queued_event_dispatch_mediators_;
+  unsigned scoping_level_;
 
-  static ScopedEventQueue* s_instance;
+  static ScopedEventQueue* instance_;
 };
 
 class EventQueueScope {
@@ -74,8 +74,8 @@ class EventQueueScope {
   STACK_ALLOCATED();
 
  public:
-  EventQueueScope() { ScopedEventQueue::instance()->incrementScopingLevel(); }
-  ~EventQueueScope() { ScopedEventQueue::instance()->decrementScopingLevel(); }
+  EventQueueScope() { ScopedEventQueue::Instance()->IncrementScopingLevel(); }
+  ~EventQueueScope() { ScopedEventQueue::Instance()->DecrementScopingLevel(); }
 };
 
 }  // namespace blink

@@ -22,14 +22,14 @@ class Transform3DRecorder {
                       const DisplayItemClient&,
                       DisplayItem::Type,
                       const TransformationMatrix&,
-                      const FloatPoint3D& transformOrigin);
+                      const FloatPoint3D& transform_origin);
   ~Transform3DRecorder();
 
  private:
-  GraphicsContext& m_context;
-  const DisplayItemClient& m_client;
-  DisplayItem::Type m_type;
-  bool m_skipRecordingForIdentityTransform;
+  GraphicsContext& context_;
+  const DisplayItemClient& client_;
+  DisplayItem::Type type_;
+  bool skip_recording_for_identity_transform_;
 };
 
 }  // namespace blink

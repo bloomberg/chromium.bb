@@ -23,22 +23,22 @@ enum {
   // single frame are promoted to a direct composited layer so that
   // their contents not be re-rasterized by the compositor when the
   // containing layer is the object of a paint invalidation.
-  ExpensiveOverdrawThreshold = 3,
+  kExpensiveOverdrawThreshold = 3,
 
-  ExpensivePathPointCount = 50,
+  kExpensivePathPointCount = 50,
 
-  SVGImageSourcesAreExpensive = 1,
+  kSVGImageSourcesAreExpensive = 1,
 
-  ConcavePathsAreExpensive = 1,
+  kConcavePathsAreExpensive = 1,
 
-  ComplexClipsAreExpensive = 1,
+  kComplexClipsAreExpensive = 1,
 
-  BlurredShadowsAreExpensive = 1,
+  kBlurredShadowsAreExpensive = 1,
 
   // Heuristic: When drawing a source image that has more pixels than
   // the destination canvas by the following factor or more, the draw
   // is considered expensive.
-  ExpensiveImageSizeRatio = 4,
+  kExpensiveImageSizeRatio = 4,
 
   // Display list fallback heuristic parameters
   //============================================
@@ -51,7 +51,7 @@ enum {
   // enough to almost never kick in other than for cases with unmatched
   // save()/restore() calls are low enough to kick in before state
   // management becomes measurably expensive.
-  ExpensiveRecordingStackDepth = 50,
+  kExpensiveRecordingStackDepth = 50,
 
   // GPU vs. display list heuristic parameters
   //===========================================
@@ -60,7 +60,7 @@ enum {
   // lists. Rationale: The allocation of large textures for canvas
   // tends to starve the compositor, and increase the probability of
   // failure of subsequent allocations required for double buffering.
-  PreferDisplayListOverGpuSizeThreshold = 8096 * 4096,
+  kPreferDisplayListOverGpuSizeThreshold = 8096 * 4096,
 
   // Disable Acceleration heuristic parameters
   //===========================================
@@ -71,25 +71,25 @@ enum {
   // monopolize the texture cache, and when it is being downsized to the
   // point that few of the upload texels are actually sampled. When both
   // of these conditions are met, we disable acceleration.
-  DrawImageTextureUploadSoftSizeLimit = 4096 * 4096,
-  DrawImageTextureUploadSoftSizeLimitScaleThreshold = 4,
-  DrawImageTextureUploadHardSizeLimit = 8192 * 8192,
+  kDrawImageTextureUploadSoftSizeLimit = 4096 * 4096,
+  kDrawImageTextureUploadSoftSizeLimitScaleThreshold = 4,
+  kDrawImageTextureUploadHardSizeLimit = 8192 * 8192,
 
   // GPU readback prevention heuristics
   //====================================
 
-  GPUReadbackForcesNoAcceleration = 1,
+  kGPUReadbackForcesNoAcceleration = 1,
 
   // When gpu readback is successively invoked in following number of frames,
   // we disable gpu acceleration to avoid the high cost of gpu readback.
-  GPUReadbackMinSuccessiveFrames = 3,
+  kGPUReadbackMinSuccessiveFrames = 3,
 
   // When a canvas is used as a source image, if its destination is
   // non-accelerated and the source canvas is accelerated, a readback
   // from the gpu is necessary. This option causes the source canvas to
   // switch to non-accelerated when this situation is encountered to
   // prevent future canvas-to-canvas draws from requiring a readback.
-  DisableAccelerationToAvoidReadbacks = 0,
+  kDisableAccelerationToAvoidReadbacks = 0,
 
   // See description of DisableAccelerationToAvoidReadbacks. This is the
   // opposite strategy : accelerate the destination canvas. If both
@@ -98,7 +98,7 @@ enum {
   // acceleration on the destination first. If that does not succeed,
   // we disable acceleration on the source canvas. Either way, future
   // readbacks are prevented.
-  EnableAccelerationToAvoidReadbacks = 1,
+  kEnableAccelerationToAvoidReadbacks = 1,
 
 };  // enum
 
@@ -115,77 +115,78 @@ enum {
 // FillRectFixedCost[RecordingModeIndex] is the estimated fixed cost for
 // FillRect in recording mode.
 enum RenderingModeCostIndex {
-  RecordingModeIndex = 0,
-  AcceleratedModeIndex = 1,
-  NumRenderingModesCostIndexes = 2
+  kRecordingModeIndex = 0,
+  kAcceleratedModeIndex = 1,
+  kNumRenderingModesCostIndexes = 2
 };
 
-const float FillRectFixedCost[NumRenderingModesCostIndexes] = {6.190e-03f,
-                                                               7.715e-03f};
-const float FillConvexPathFixedCost[NumRenderingModesCostIndexes] = {
+const float kFillRectFixedCost[kNumRenderingModesCostIndexes] = {6.190e-03f,
+                                                                 7.715e-03f};
+const float kFillConvexPathFixedCost[kNumRenderingModesCostIndexes] = {
     1.251e-02f, 1.231e-02f};
-const float FillNonConvexPathFixedCost[NumRenderingModesCostIndexes] = {
+const float kFillNonConvexPathFixedCost[kNumRenderingModesCostIndexes] = {
     1.714e-02f, 4.497e-02f};
-const float FillTextFixedCost[NumRenderingModesCostIndexes] = {1.119e-02f,
-                                                               2.203e-02f};
+const float kFillTextFixedCost[kNumRenderingModesCostIndexes] = {1.119e-02f,
+                                                                 2.203e-02f};
 
-const float StrokeRectFixedCost[NumRenderingModesCostIndexes] = {1.485e-02f,
-                                                                 7.287e-03f};
-const float StrokePathFixedCost[NumRenderingModesCostIndexes] = {2.390e-02f,
-                                                                 5.125e-02f};
-const float StrokeTextFixedCost[NumRenderingModesCostIndexes] = {1.149e-02f,
-                                                                 1.742e-02f};
+const float kStrokeRectFixedCost[kNumRenderingModesCostIndexes] = {1.485e-02f,
+                                                                   7.287e-03f};
+const float kStrokePathFixedCost[kNumRenderingModesCostIndexes] = {2.390e-02f,
+                                                                   5.125e-02f};
+const float kStrokeTextFixedCost[kNumRenderingModesCostIndexes] = {1.149e-02f,
+                                                                   1.742e-02f};
 
-const float FillRectVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kFillRectVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     2.933e-07f, 2.188e-09f};
-const float FillConvexPathVariableCostPerArea[NumRenderingModesCostIndexes] = {
-    7.871e-07f, 1.608e-07f};
-const float FillNonConvexPathVariableCostPerArea[NumRenderingModesCostIndexes] =
-    {8.336e-07f, 1.384e-06f};
-const float FillTextVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kFillConvexPathVariableCostPerArea[kNumRenderingModesCostIndexes] =
+    {7.871e-07f, 1.608e-07f};
+const float
+    kFillNonConvexPathVariableCostPerArea[kNumRenderingModesCostIndexes] = {
+        8.336e-07f, 1.384e-06f};
+const float kFillTextVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     1.411e-06f, 0.0f};
 
-const float StrokeRectVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kStrokeRectVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     9.882e-07f, 0.0f};
-const float StrokePathVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kStrokePathVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     1.583e-06f, 2.401e-06f};
-const float StrokeTextVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kStrokeTextVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     1.530e-06f, 6.699e-07f};
 
-const float PatternFillTypeFixedCost[NumRenderingModesCostIndexes] = {
+const float kPatternFillTypeFixedCost[kNumRenderingModesCostIndexes] = {
     1.377e-02f, 1.035e-02f};
-const float LinearGradientFillTypeFixedCost[NumRenderingModesCostIndexes] = {
+const float kLinearGradientFillTypeFixedCost[kNumRenderingModesCostIndexes] = {
     7.694e-03f, 6.900e-03f};
-const float RadialGradientFillTypeFixedCost[NumRenderingModesCostIndexes] = {
+const float kRadialGradientFillTypeFixedCost[kNumRenderingModesCostIndexes] = {
     2.260e-02f, 7.193e-03f};
 
-const float PatternFillTypeVariableCostPerArea[NumRenderingModesCostIndexes] = {
-    6.080e-07f, 0.0f};
+const float kPatternFillTypeVariableCostPerArea[kNumRenderingModesCostIndexes] =
+    {6.080e-07f, 0.0f};
 const float
-    LinearGradientFillVariableCostPerArea[NumRenderingModesCostIndexes] = {
+    kLinearGradientFillVariableCostPerArea[kNumRenderingModesCostIndexes] = {
         9.635e-07f, 0.0f};
 const float
-    RadialGradientFillVariableCostPerArea[NumRenderingModesCostIndexes] = {
+    kRadialGradientFillVariableCostPerArea[kNumRenderingModesCostIndexes] = {
         6.662e-06f, 0.0f};
 
-const float ShadowFixedCost[NumRenderingModesCostIndexes] = {2.502e-02f,
-                                                             2.274e-02f};
-const float ShadowVariableCostPerAreaTimesShadowBlurSquared
-    [NumRenderingModesCostIndexes] = {6.856e-09f, 0.0f};
+const float kShadowFixedCost[kNumRenderingModesCostIndexes] = {2.502e-02f,
+                                                               2.274e-02f};
+const float kShadowVariableCostPerAreaTimesShadowBlurSquared
+    [kNumRenderingModesCostIndexes] = {6.856e-09f, 0.0f};
 
-const float PutImageDataFixedCost[NumRenderingModesCostIndexes] = {1.209e-03f,
-                                                                   1.885e-02f};
-const float PutImageDataVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kPutImageDataFixedCost[kNumRenderingModesCostIndexes] = {
+    1.209e-03f, 1.885e-02f};
+const float kPutImageDataVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     6.231e-06f, 4.116e-06f};
 
-const float DrawSVGImageFixedCost[NumRenderingModesCostIndexes] = {1.431e-01f,
-                                                                   2.958e-01f};
-const float DrawPNGImageFixedCost[NumRenderingModesCostIndexes] = {1.278e-02f,
-                                                                   1.306e-02f};
+const float kDrawSVGImageFixedCost[kNumRenderingModesCostIndexes] = {
+    1.431e-01f, 2.958e-01f};
+const float kDrawPNGImageFixedCost[kNumRenderingModesCostIndexes] = {
+    1.278e-02f, 1.306e-02f};
 
-const float DrawSVGImageVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kDrawSVGImageVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     1.030e-05f, 4.463e-06f};
-const float DrawPNGImageVariableCostPerArea[NumRenderingModesCostIndexes] = {
+const float kDrawPNGImageVariableCostPerArea[kNumRenderingModesCostIndexes] = {
     1.727e-06f, 0.0f};
 
 // Two conditions must be met before the isAccelerationOptimalForCanvasContent
@@ -199,14 +200,14 @@ const float DrawPNGImageVariableCostPerArea[NumRenderingModesCostIndexes] = {
 //      MinPercentageImprovementToSuggestDisableAcceleration. This ensures that
 //      there is a high level of confidence that the performance would be
 //      improved in recording mode.
-const float MinCostPerFrameImprovementToSuggestDisableAcceleration = 15.0f;
-const float MinPercentageImprovementToSuggestDisableAcceleration = 30.0f;
+const float kMinCostPerFrameImprovementToSuggestDisableAcceleration = 15.0f;
+const float kMinPercentageImprovementToSuggestDisableAcceleration = 30.0f;
 
 // Minimum number of frames that need to be rendered
 // before the rendering pipeline may be switched. Having this set
 // to more than 1 increases the sample size of usage data before a
 // decision is made, improving the accuracy of heuristics.
-const int MinFramesBeforeSwitch = 3;
+const int kMinFramesBeforeSwitch = 3;
 
 }  // namespace ExpensiveCanvasHeuristicParameters
 

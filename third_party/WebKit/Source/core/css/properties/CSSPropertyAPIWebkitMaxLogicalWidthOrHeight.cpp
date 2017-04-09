@@ -11,7 +11,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIWebkitMaxLogicalWidthOrHeight::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyLengthUtils::consumeMaxWidthOrHeight(range, &context);
+  return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(range, &context);
 }
 
 }  // namespace blink

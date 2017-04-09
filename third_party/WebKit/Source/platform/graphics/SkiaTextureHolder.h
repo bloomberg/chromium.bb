@@ -15,18 +15,18 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   ~SkiaTextureHolder() override;
 
   // Methods overriding TextureHolder
-  bool isSkiaTextureHolder() final { return true; }
-  bool isMailboxTextureHolder() final { return false; }
-  unsigned sharedContextId() final;
+  bool IsSkiaTextureHolder() final { return true; }
+  bool IsMailboxTextureHolder() final { return false; }
+  unsigned SharedContextId() final;
   IntSize size() const final {
-    return IntSize(m_image->width(), m_image->height());
+    return IntSize(image_->width(), image_->height());
   }
-  bool currentFrameKnownToBeOpaque(Image::MetadataMode) final {
-    return m_image->isOpaque();
+  bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final {
+    return image_->isOpaque();
   }
-  sk_sp<SkImage> skImage() final { return m_image; }
-  void setSharedContextId(unsigned contextId) final {
-    m_sharedContextId = contextId;
+  sk_sp<SkImage> GetSkImage() final { return image_; }
+  void SetSharedContextId(unsigned context_id) final {
+    shared_context_id_ = context_id;
   }
 
   // When creating a AcceleratedStaticBitmap from a texture-backed SkImage, this
@@ -37,12 +37,12 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   SkiaTextureHolder(std::unique_ptr<TextureHolder>);
 
  private:
-  void releaseImageThreadSafe();
+  void ReleaseImageThreadSafe();
 
   // The m_image should always be texture-backed
-  sk_sp<SkImage> m_image;
+  sk_sp<SkImage> image_;
   // Id of the shared context where m_image was created
-  unsigned m_sharedContextId = 0;
+  unsigned shared_context_id_ = 0;
 };
 
 }  // namespace blink

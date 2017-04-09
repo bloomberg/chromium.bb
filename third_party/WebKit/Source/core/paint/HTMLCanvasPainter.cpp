@@ -14,61 +14,62 @@
 
 namespace blink {
 
-void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo,
-                                      const LayoutPoint& paintOffset) {
-  GraphicsContext& context = paintInfo.context;
+void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
+                                      const LayoutPoint& paint_offset) {
+  GraphicsContext& context = paint_info.context;
 
-  LayoutRect contentRect = m_layoutHTMLCanvas.contentBoxRect();
-  contentRect.moveBy(paintOffset);
-  LayoutRect paintRect = m_layoutHTMLCanvas.replacedContentRect();
-  paintRect.moveBy(paintOffset);
+  LayoutRect content_rect = layout_html_canvas_.ContentBoxRect();
+  content_rect.MoveBy(paint_offset);
+  LayoutRect paint_rect = layout_html_canvas_.ReplacedContentRect();
+  paint_rect.MoveBy(paint_offset);
 
-  HTMLCanvasElement* canvas = toHTMLCanvasElement(m_layoutHTMLCanvas.node());
+  HTMLCanvasElement* canvas =
+      toHTMLCanvasElement(layout_html_canvas_.GetNode());
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-      canvas->renderingContext() &&
-      canvas->renderingContext()->isComposited()) {
-    if (WebLayer* layer = canvas->renderingContext()->platformLayer()) {
-      IntRect pixelSnappedRect = pixelSnappedIntRect(contentRect);
-      recordForeignLayer(context, m_layoutHTMLCanvas,
-                         DisplayItem::kForeignLayerCanvas, layer,
-                         pixelSnappedRect.location(), pixelSnappedRect.size());
+      canvas->RenderingContext() &&
+      canvas->RenderingContext()->IsComposited()) {
+    if (WebLayer* layer = canvas->RenderingContext()->PlatformLayer()) {
+      IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
+      RecordForeignLayer(
+          context, layout_html_canvas_, DisplayItem::kForeignLayerCanvas, layer,
+          pixel_snapped_rect.Location(), pixel_snapped_rect.size());
       return;
     }
   }
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          context, m_layoutHTMLCanvas, paintInfo.phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          context, layout_html_canvas_, paint_info.phase))
     return;
 
-  LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutHTMLCanvas,
-                                              paintInfo.phase, contentRect);
+  LayoutObjectDrawingRecorder drawing_recorder(context, layout_html_canvas_,
+                                               paint_info.phase, content_rect);
 
-  bool clip = !contentRect.contains(paintRect);
+  bool clip = !content_rect.Contains(paint_rect);
   if (clip) {
-    context.save();
+    context.Save();
     // TODO(chrishtr): this should be pixel-snapped.
-    context.clip(FloatRect(contentRect));
+    context.Clip(FloatRect(content_rect));
   }
 
   // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast
   // is set.  See bug for more details: crbug.com/353716.
-  InterpolationQuality interpolationQuality =
-      m_layoutHTMLCanvas.style()->imageRendering() ==
-              ImageRenderingOptimizeContrast
-          ? InterpolationLow
+  InterpolationQuality interpolation_quality =
+      layout_html_canvas_.Style()->ImageRendering() ==
+              kImageRenderingOptimizeContrast
+          ? kInterpolationLow
           : CanvasDefaultInterpolationQuality;
-  if (m_layoutHTMLCanvas.style()->imageRendering() == ImageRenderingPixelated)
-    interpolationQuality = InterpolationNone;
+  if (layout_html_canvas_.Style()->ImageRendering() == kImageRenderingPixelated)
+    interpolation_quality = kInterpolationNone;
 
-  InterpolationQuality previousInterpolationQuality =
-      context.imageInterpolationQuality();
-  context.setImageInterpolationQuality(interpolationQuality);
-  canvas->paint(context, paintRect);
-  context.setImageInterpolationQuality(previousInterpolationQuality);
+  InterpolationQuality previous_interpolation_quality =
+      context.ImageInterpolationQuality();
+  context.SetImageInterpolationQuality(interpolation_quality);
+  canvas->Paint(context, paint_rect);
+  context.SetImageInterpolationQuality(previous_interpolation_quality);
 
   if (clip)
-    context.restore();
+    context.Restore();
 }
 
 }  // namespace blink

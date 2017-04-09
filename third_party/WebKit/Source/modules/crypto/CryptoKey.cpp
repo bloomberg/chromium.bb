@@ -42,13 +42,13 @@ namespace blink {
 
 namespace {
 
-const char* keyTypeToString(WebCryptoKeyType type) {
+const char* KeyTypeToString(WebCryptoKeyType type) {
   switch (type) {
-    case WebCryptoKeyTypeSecret:
+    case kWebCryptoKeyTypeSecret:
       return "secret";
-    case WebCryptoKeyTypePublic:
+    case kWebCryptoKeyTypePublic:
       return "public";
-    case WebCryptoKeyTypePrivate:
+    case kWebCryptoKeyTypePrivate:
       return "private";
   }
   ASSERT_NOT_REACHED();
@@ -63,33 +63,33 @@ struct KeyUsageMapping {
 // The order of this array is the same order that will appear in
 // CryptoKey.usages. It must be kept ordered as described by the Web Crypto
 // spec.
-const KeyUsageMapping keyUsageMappings[] = {
-    {WebCryptoKeyUsageEncrypt, "encrypt"},
-    {WebCryptoKeyUsageDecrypt, "decrypt"},
-    {WebCryptoKeyUsageSign, "sign"},
-    {WebCryptoKeyUsageVerify, "verify"},
-    {WebCryptoKeyUsageDeriveKey, "deriveKey"},
-    {WebCryptoKeyUsageDeriveBits, "deriveBits"},
-    {WebCryptoKeyUsageWrapKey, "wrapKey"},
-    {WebCryptoKeyUsageUnwrapKey, "unwrapKey"},
+const KeyUsageMapping kKeyUsageMappings[] = {
+    {kWebCryptoKeyUsageEncrypt, "encrypt"},
+    {kWebCryptoKeyUsageDecrypt, "decrypt"},
+    {kWebCryptoKeyUsageSign, "sign"},
+    {kWebCryptoKeyUsageVerify, "verify"},
+    {kWebCryptoKeyUsageDeriveKey, "deriveKey"},
+    {kWebCryptoKeyUsageDeriveBits, "deriveBits"},
+    {kWebCryptoKeyUsageWrapKey, "wrapKey"},
+    {kWebCryptoKeyUsageUnwrapKey, "unwrapKey"},
 };
 
-static_assert(EndOfWebCryptoKeyUsage == (1 << 7) + 1,
+static_assert(kEndOfWebCryptoKeyUsage == (1 << 7) + 1,
               "keyUsageMappings needs to be updated");
 
-const char* keyUsageToString(WebCryptoKeyUsage usage) {
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
-    if (keyUsageMappings[i].value == usage)
-      return keyUsageMappings[i].name;
+const char* KeyUsageToString(WebCryptoKeyUsage usage) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kKeyUsageMappings); ++i) {
+    if (kKeyUsageMappings[i].value == usage)
+      return kKeyUsageMappings[i].name;
   }
   ASSERT_NOT_REACHED();
   return 0;
 }
 
-WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString) {
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
-    if (keyUsageMappings[i].name == usageString)
-      return keyUsageMappings[i].value;
+WebCryptoKeyUsageMask KeyUsageStringToMask(const String& usage_string) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kKeyUsageMappings); ++i) {
+    if (kKeyUsageMappings[i].name == usage_string)
+      return kKeyUsageMappings[i].value;
   }
   return 0;
 }
@@ -98,55 +98,55 @@ class DictionaryBuilder : public WebCryptoKeyAlgorithmDictionary {
   STACK_ALLOCATED();
 
  public:
-  explicit DictionaryBuilder(V8ObjectBuilder& builder) : m_builder(builder) {}
+  explicit DictionaryBuilder(V8ObjectBuilder& builder) : builder_(builder) {}
 
-  virtual void setString(const char* propertyName, const char* value) {
-    m_builder.addString(propertyName, value);
+  virtual void SetString(const char* property_name, const char* value) {
+    builder_.AddString(property_name, value);
   }
 
-  virtual void setUint(const char* propertyName, unsigned value) {
-    m_builder.addNumber(propertyName, value);
+  virtual void SetUint(const char* property_name, unsigned value) {
+    builder_.AddNumber(property_name, value);
   }
 
-  virtual void setAlgorithm(const char* propertyName,
+  virtual void SetAlgorithm(const char* property_name,
                             const WebCryptoAlgorithm& algorithm) {
-    ASSERT(algorithm.paramsType() == WebCryptoAlgorithmParamsTypeNone);
+    ASSERT(algorithm.ParamsType() == kWebCryptoAlgorithmParamsTypeNone);
 
-    V8ObjectBuilder algorithmValue(m_builder.getScriptState());
-    algorithmValue.addString(
-        "name", WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
-    m_builder.add(propertyName, algorithmValue);
+    V8ObjectBuilder algorithm_value(builder_.GetScriptState());
+    algorithm_value.AddString(
+        "name", WebCryptoAlgorithm::LookupAlgorithmInfo(algorithm.Id())->name);
+    builder_.Add(property_name, algorithm_value);
   }
 
-  virtual void setUint8Array(const char* propertyName,
+  virtual void SetUint8Array(const char* property_name,
                              const WebVector<unsigned char>& vector) {
-    m_builder.add(propertyName,
-                  DOMUint8Array::create(vector.data(), vector.size()));
+    builder_.Add(property_name,
+                 DOMUint8Array::Create(vector.Data(), vector.size()));
   }
 
  private:
-  V8ObjectBuilder& m_builder;
+  V8ObjectBuilder& builder_;
 };
 
 }  // namespace
 
 CryptoKey::~CryptoKey() {}
 
-CryptoKey::CryptoKey(const WebCryptoKey& key) : m_key(key) {}
+CryptoKey::CryptoKey(const WebCryptoKey& key) : key_(key) {}
 
 String CryptoKey::type() const {
-  return keyTypeToString(m_key.type());
+  return KeyTypeToString(key_.GetType());
 }
 
 bool CryptoKey::extractable() const {
-  return m_key.extractable();
+  return key_.Extractable();
 }
 
-ScriptValue CryptoKey::algorithm(ScriptState* scriptState) {
-  V8ObjectBuilder objectBuilder(scriptState);
-  DictionaryBuilder dictionaryBuilder(objectBuilder);
-  m_key.algorithm().writeToDictionary(&dictionaryBuilder);
-  return objectBuilder.scriptValue();
+ScriptValue CryptoKey::algorithm(ScriptState* script_state) {
+  V8ObjectBuilder object_builder(script_state);
+  DictionaryBuilder dictionary_builder(object_builder);
+  key_.Algorithm().WriteToDictionary(&dictionary_builder);
+  return object_builder.GetScriptValue();
 }
 
 // FIXME: This creates a new javascript array each time. What should happen
@@ -155,15 +155,15 @@ ScriptValue CryptoKey::algorithm(ScriptState* scriptState) {
 //        different).
 Vector<String> CryptoKey::usages() const {
   Vector<String> result;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
-    WebCryptoKeyUsage usage = keyUsageMappings[i].value;
-    if (m_key.usages() & usage)
-      result.push_back(keyUsageToString(usage));
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kKeyUsageMappings); ++i) {
+    WebCryptoKeyUsage usage = kKeyUsageMappings[i].value;
+    if (key_.Usages() & usage)
+      result.push_back(KeyUsageToString(usage));
   }
   return result;
 }
 
-bool CryptoKey::canBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm,
+bool CryptoKey::CanBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm,
                                       WebCryptoKeyUsage usage,
                                       CryptoResult* result) const {
   // This order of tests on keys is done throughout the WebCrypto spec when
@@ -180,14 +180,14 @@ bool CryptoKey::canBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm,
   // (9) If the [[usages]] internal slot of key does not contain an entry
   //     that is "encrypt", then throw an InvalidAccessError.
 
-  if (m_key.algorithm().id() != algorithm.id()) {
-    result->completeWithError(WebCryptoErrorTypeInvalidAccess,
+  if (key_.Algorithm().Id() != algorithm.Id()) {
+    result->CompleteWithError(kWebCryptoErrorTypeInvalidAccess,
                               "key.algorithm does not match that of operation");
     return false;
   }
 
-  if (!(m_key.usages() & usage)) {
-    result->completeWithError(WebCryptoErrorTypeInvalidAccess,
+  if (!(key_.Usages() & usage)) {
+    result->CompleteWithError(kWebCryptoErrorTypeInvalidAccess,
                               "key.usages does not permit this operation");
     return false;
   }
@@ -195,40 +195,40 @@ bool CryptoKey::canBeUsedForAlgorithm(const WebCryptoAlgorithm& algorithm,
   return true;
 }
 
-bool CryptoKey::parseFormat(const String& formatString,
+bool CryptoKey::ParseFormat(const String& format_string,
                             WebCryptoKeyFormat& format,
                             CryptoResult* result) {
   // There are few enough values that testing serially is fast enough.
-  if (formatString == "raw") {
-    format = WebCryptoKeyFormatRaw;
+  if (format_string == "raw") {
+    format = kWebCryptoKeyFormatRaw;
     return true;
   }
-  if (formatString == "pkcs8") {
-    format = WebCryptoKeyFormatPkcs8;
+  if (format_string == "pkcs8") {
+    format = kWebCryptoKeyFormatPkcs8;
     return true;
   }
-  if (formatString == "spki") {
-    format = WebCryptoKeyFormatSpki;
+  if (format_string == "spki") {
+    format = kWebCryptoKeyFormatSpki;
     return true;
   }
-  if (formatString == "jwk") {
-    format = WebCryptoKeyFormatJwk;
+  if (format_string == "jwk") {
+    format = kWebCryptoKeyFormatJwk;
     return true;
   }
 
-  result->completeWithError(WebCryptoErrorTypeType,
+  result->CompleteWithError(kWebCryptoErrorTypeType,
                             "Invalid keyFormat argument");
   return false;
 }
 
-bool CryptoKey::parseUsageMask(const Vector<String>& usages,
+bool CryptoKey::ParseUsageMask(const Vector<String>& usages,
                                WebCryptoKeyUsageMask& mask,
                                CryptoResult* result) {
   mask = 0;
   for (size_t i = 0; i < usages.size(); ++i) {
-    WebCryptoKeyUsageMask usage = keyUsageStringToMask(usages[i]);
+    WebCryptoKeyUsageMask usage = KeyUsageStringToMask(usages[i]);
     if (!usage) {
-      result->completeWithError(WebCryptoErrorTypeType,
+      result->CompleteWithError(kWebCryptoErrorTypeType,
                                 "Invalid keyUsages argument");
       return false;
     }

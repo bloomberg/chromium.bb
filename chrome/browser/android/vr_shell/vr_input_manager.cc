@@ -24,10 +24,10 @@ WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
                                  double time,
                                  float x,
                                  float y) {
-  WebGestureEvent result(type, WebInputEvent::NoModifiers, time);
+  WebGestureEvent result(type, WebInputEvent::kNoModifiers, time);
   result.x = x;
   result.y = y;
-  result.sourceDevice = blink::WebGestureDeviceTouchpad;
+  result.source_device = blink::kWebGestureDeviceTouchpad;
   return result;
 }
 }  // namespace
@@ -39,40 +39,40 @@ VrInputManager::~VrInputManager() = default;
 
 void VrInputManager::ProcessUpdatedGesture(
     std::unique_ptr<blink::WebInputEvent> event) {
-  if (WebInputEvent::isMouseEventType(event->type()))
+  if (WebInputEvent::IsMouseEventType(event->GetType()))
     ForwardMouseEvent(static_cast<const blink::WebMouseEvent&>(*event));
-  else if (WebInputEvent::isGestureEventType(event->type()))
+  else if (WebInputEvent::IsGestureEventType(event->GetType()))
     SendGesture(static_cast<const blink::WebGestureEvent&>(*event));
 }
 
 void VrInputManager::GenerateKeyboardEvent(int char_value, int modifiers) {
   content::NativeWebKeyboardEvent event(
-      blink::WebInputEvent::Type::KeyDown, modifiers,
+      blink::WebInputEvent::Type::kKeyDown, modifiers,
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
-  event.domKey = ui::DomKey::FromCharacter(char_value);
-  event.nativeKeyCode = char_value;
-  event.windowsKeyCode = char_value;
+  event.dom_key = ui::DomKey::FromCharacter(char_value);
+  event.native_key_code = char_value;
+  event.windows_key_code = char_value;
   ForwardKeyboardEvent(event);
 
-  event.setType(blink::WebInputEvent::Type::Char);
+  event.SetType(blink::WebInputEvent::Type::kChar);
   event.text[0] = char_value;
-  event.unmodifiedText[0] = char_value;
-  event.domCode = char_value;
+  event.unmodified_text[0] = char_value;
+  event.dom_code = char_value;
   ForwardKeyboardEvent(event);
 
-  event.setType(blink::WebInputEvent::Type::KeyUp);
+  event.SetType(blink::WebInputEvent::Type::kKeyUp);
   ForwardKeyboardEvent(event);
 }
 
 void VrInputManager::SendGesture(const WebGestureEvent& gesture) {
-  if (gesture.type() == WebGestureEvent::GestureTapDown) {
+  if (gesture.GetType() == WebGestureEvent::kGestureTapDown) {
     ForwardGestureEvent(gesture);
 
     // Generate and forward Tap
     WebGestureEvent tap_event =
-        MakeGestureEvent(WebInputEvent::GestureTap, gesture.timeStampSeconds(),
+        MakeGestureEvent(WebInputEvent::kGestureTap, gesture.TimeStampSeconds(),
                          gesture.x, gesture.y);
-    tap_event.data.tap.tapCount = 1;
+    tap_event.data.tap.tap_count = 1;
     ForwardGestureEvent(tap_event);
   } else {
     ForwardGestureEvent(gesture);

@@ -21,26 +21,26 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
   TestScriptModuleResolver() {}
   virtual ~TestScriptModuleResolver() {}
 
-  size_t resolveCount() const { return m_specifiers.size(); }
-  const Vector<String>& specifiers() const { return m_specifiers; }
-  void pushScriptModule(ScriptModule scriptModule) {
-    m_scriptModules.push_back(scriptModule);
+  size_t ResolveCount() const { return specifiers_.size(); }
+  const Vector<String>& Specifiers() const { return specifiers_; }
+  void PushScriptModule(ScriptModule script_module) {
+    script_modules_.push_back(script_module);
   }
 
  private:
   // Implements ScriptModuleResolver:
 
-  void registerModuleScript(ModuleScript*) override { NOTREACHED(); }
+  void RegisterModuleScript(ModuleScript*) override { NOTREACHED(); }
 
-  ScriptModule resolve(const String& specifier,
+  ScriptModule Resolve(const String& specifier,
                        const ScriptModule&,
                        ExceptionState&) override {
-    m_specifiers.push_back(specifier);
-    return m_scriptModules.takeFirst();
+    specifiers_.push_back(specifier);
+    return script_modules_.TakeFirst();
   }
 
-  Vector<String> m_specifiers;
-  Deque<ScriptModule> m_scriptModules;
+  Vector<String> specifiers_;
+  Deque<ScriptModule> script_modules_;
 };
 
 class ScriptModuleTestModulator final : public DummyModulator {
@@ -50,94 +50,97 @@ class ScriptModuleTestModulator final : public DummyModulator {
 
   DECLARE_TRACE();
 
-  TestScriptModuleResolver* testScriptModuleResolver() {
-    return m_resolver.get();
+  TestScriptModuleResolver* GetTestScriptModuleResolver() {
+    return resolver_.Get();
   }
 
  private:
   // Implements Modulator:
 
-  ScriptModuleResolver* scriptModuleResolver() override {
-    return m_resolver.get();
+  ScriptModuleResolver* GetScriptModuleResolver() override {
+    return resolver_.Get();
   }
 
-  Member<TestScriptModuleResolver> m_resolver;
+  Member<TestScriptModuleResolver> resolver_;
 };
 
 ScriptModuleTestModulator::ScriptModuleTestModulator()
-    : m_resolver(new TestScriptModuleResolver) {}
+    : resolver_(new TestScriptModuleResolver) {}
 
 DEFINE_TRACE(ScriptModuleTestModulator) {
-  visitor->trace(m_resolver);
-  DummyModulator::trace(visitor);
+  visitor->Trace(resolver_);
+  DummyModulator::Trace(visitor);
 }
 
 TEST(ScriptModuleTest, compileSuccess) {
   V8TestingScope scope;
-  ScriptModule module = ScriptModule::compile(
-      scope.isolate(), "export const a = 42;", "foo.js", SharableCrossOrigin);
-  ASSERT_FALSE(module.isNull());
+  ScriptModule module =
+      ScriptModule::Compile(scope.GetIsolate(), "export const a = 42;",
+                            "foo.js", kSharableCrossOrigin);
+  ASSERT_FALSE(module.IsNull());
 }
 
 TEST(ScriptModuleTest, compileFail) {
   V8TestingScope scope;
-  ScriptModule module = ScriptModule::compile(scope.isolate(), "123 = 456",
-                                              "foo.js", SharableCrossOrigin);
-  ASSERT_TRUE(module.isNull());
+  ScriptModule module = ScriptModule::Compile(scope.GetIsolate(), "123 = 456",
+                                              "foo.js", kSharableCrossOrigin);
+  ASSERT_TRUE(module.IsNull());
 }
 
 TEST(ScriptModuleTest, equalAndHash) {
   V8TestingScope scope;
 
-  ScriptModule moduleNull;
-  ScriptModule moduleA = ScriptModule::compile(
-      scope.isolate(), "export const a = 'a';", "a.js", SharableCrossOrigin);
-  ASSERT_FALSE(moduleA.isNull());
-  ScriptModule moduleB = ScriptModule::compile(
-      scope.isolate(), "export const b = 'b';", "b.js", SharableCrossOrigin);
-  ASSERT_FALSE(moduleB.isNull());
-  Vector<char> moduleDeletedBuffer(sizeof(ScriptModule));
-  ScriptModule& moduleDeleted =
-      *reinterpret_cast<ScriptModule*>(moduleDeletedBuffer.data());
-  HashTraits<ScriptModule>::constructDeletedValue(moduleDeleted, true);
+  ScriptModule module_null;
+  ScriptModule module_a =
+      ScriptModule::Compile(scope.GetIsolate(), "export const a = 'a';", "a.js",
+                            kSharableCrossOrigin);
+  ASSERT_FALSE(module_a.IsNull());
+  ScriptModule module_b =
+      ScriptModule::Compile(scope.GetIsolate(), "export const b = 'b';", "b.js",
+                            kSharableCrossOrigin);
+  ASSERT_FALSE(module_b.IsNull());
+  Vector<char> module_deleted_buffer(sizeof(ScriptModule));
+  ScriptModule& module_deleted =
+      *reinterpret_cast<ScriptModule*>(module_deleted_buffer.Data());
+  HashTraits<ScriptModule>::ConstructDeletedValue(module_deleted, true);
 
-  EXPECT_EQ(moduleNull, moduleNull);
-  EXPECT_EQ(moduleA, moduleA);
-  EXPECT_EQ(moduleB, moduleB);
-  EXPECT_EQ(moduleDeleted, moduleDeleted);
+  EXPECT_EQ(module_null, module_null);
+  EXPECT_EQ(module_a, module_a);
+  EXPECT_EQ(module_b, module_b);
+  EXPECT_EQ(module_deleted, module_deleted);
 
-  EXPECT_NE(moduleNull, moduleA);
-  EXPECT_NE(moduleNull, moduleB);
-  EXPECT_NE(moduleNull, moduleDeleted);
+  EXPECT_NE(module_null, module_a);
+  EXPECT_NE(module_null, module_b);
+  EXPECT_NE(module_null, module_deleted);
 
-  EXPECT_NE(moduleA, moduleNull);
-  EXPECT_NE(moduleA, moduleB);
-  EXPECT_NE(moduleA, moduleDeleted);
+  EXPECT_NE(module_a, module_null);
+  EXPECT_NE(module_a, module_b);
+  EXPECT_NE(module_a, module_deleted);
 
-  EXPECT_NE(moduleB, moduleNull);
-  EXPECT_NE(moduleB, moduleA);
-  EXPECT_NE(moduleB, moduleDeleted);
+  EXPECT_NE(module_b, module_null);
+  EXPECT_NE(module_b, module_a);
+  EXPECT_NE(module_b, module_deleted);
 
-  EXPECT_NE(moduleDeleted, moduleNull);
-  EXPECT_NE(moduleDeleted, moduleA);
-  EXPECT_NE(moduleDeleted, moduleB);
+  EXPECT_NE(module_deleted, module_null);
+  EXPECT_NE(module_deleted, module_a);
+  EXPECT_NE(module_deleted, module_b);
 
-  EXPECT_NE(DefaultHash<ScriptModule>::Hash::hash(moduleA),
-            DefaultHash<ScriptModule>::Hash::hash(moduleB));
-  EXPECT_NE(DefaultHash<ScriptModule>::Hash::hash(moduleNull),
-            DefaultHash<ScriptModule>::Hash::hash(moduleA));
-  EXPECT_NE(DefaultHash<ScriptModule>::Hash::hash(moduleNull),
-            DefaultHash<ScriptModule>::Hash::hash(moduleB));
+  EXPECT_NE(DefaultHash<ScriptModule>::Hash::GetHash(module_a),
+            DefaultHash<ScriptModule>::Hash::GetHash(module_b));
+  EXPECT_NE(DefaultHash<ScriptModule>::Hash::GetHash(module_null),
+            DefaultHash<ScriptModule>::Hash::GetHash(module_a));
+  EXPECT_NE(DefaultHash<ScriptModule>::Hash::GetHash(module_null),
+            DefaultHash<ScriptModule>::Hash::GetHash(module_b));
 }
 
 TEST(ScriptModuleTest, moduleRequests) {
   V8TestingScope scope;
-  ScriptModule module = ScriptModule::compile(
-      scope.isolate(), "import 'a'; import 'b'; export const c = 'c';",
-      "foo.js", SharableCrossOrigin);
-  ASSERT_FALSE(module.isNull());
+  ScriptModule module = ScriptModule::Compile(
+      scope.GetIsolate(), "import 'a'; import 'b'; export const c = 'c';",
+      "foo.js", kSharableCrossOrigin);
+  ASSERT_FALSE(module.IsNull());
 
-  auto requests = module.moduleRequests(scope.getScriptState());
+  auto requests = module.ModuleRequests(scope.GetScriptState());
   EXPECT_THAT(requests, ::testing::ContainerEq<Vector<String>>({"a", "b"}));
 }
 
@@ -145,47 +148,50 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
   V8TestingScope scope;
 
   auto modulator = new ScriptModuleTestModulator();
-  auto resolver = modulator->testScriptModuleResolver();
+  auto resolver = modulator->GetTestScriptModuleResolver();
 
-  Modulator::setModulator(scope.getScriptState(), modulator);
+  Modulator::SetModulator(scope.GetScriptState(), modulator);
 
-  ScriptModule module = ScriptModule::compile(
-      scope.isolate(), "export const a = 42;", "foo.js", SharableCrossOrigin);
-  ASSERT_FALSE(module.isNull());
-  ScriptValue exception = module.instantiate(scope.getScriptState());
-  ASSERT_TRUE(exception.isEmpty());
+  ScriptModule module =
+      ScriptModule::Compile(scope.GetIsolate(), "export const a = 42;",
+                            "foo.js", kSharableCrossOrigin);
+  ASSERT_FALSE(module.IsNull());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ASSERT_TRUE(exception.IsEmpty());
 
-  EXPECT_EQ(0u, resolver->resolveCount());
+  EXPECT_EQ(0u, resolver->ResolveCount());
 }
 
 TEST(ScriptModuleTest, instantiateWithDeps) {
   V8TestingScope scope;
 
   auto modulator = new ScriptModuleTestModulator();
-  auto resolver = modulator->testScriptModuleResolver();
+  auto resolver = modulator->GetTestScriptModuleResolver();
 
-  Modulator::setModulator(scope.getScriptState(), modulator);
+  Modulator::SetModulator(scope.GetScriptState(), modulator);
 
-  ScriptModule moduleA = ScriptModule::compile(
-      scope.isolate(), "export const a = 'a';", "foo.js", SharableCrossOrigin);
-  ASSERT_FALSE(moduleA.isNull());
-  resolver->pushScriptModule(moduleA);
+  ScriptModule module_a =
+      ScriptModule::Compile(scope.GetIsolate(), "export const a = 'a';",
+                            "foo.js", kSharableCrossOrigin);
+  ASSERT_FALSE(module_a.IsNull());
+  resolver->PushScriptModule(module_a);
 
-  ScriptModule moduleB = ScriptModule::compile(
-      scope.isolate(), "export const b = 'b';", "foo.js", SharableCrossOrigin);
-  ASSERT_FALSE(moduleB.isNull());
-  resolver->pushScriptModule(moduleB);
+  ScriptModule module_b =
+      ScriptModule::Compile(scope.GetIsolate(), "export const b = 'b';",
+                            "foo.js", kSharableCrossOrigin);
+  ASSERT_FALSE(module_b.IsNull());
+  resolver->PushScriptModule(module_b);
 
-  ScriptModule module = ScriptModule::compile(
-      scope.isolate(), "import 'a'; import 'b'; export const c = 123;", "c.js",
-      SharableCrossOrigin);
-  ASSERT_FALSE(module.isNull());
-  ScriptValue exception = module.instantiate(scope.getScriptState());
-  ASSERT_TRUE(exception.isEmpty());
+  ScriptModule module = ScriptModule::Compile(
+      scope.GetIsolate(), "import 'a'; import 'b'; export const c = 123;",
+      "c.js", kSharableCrossOrigin);
+  ASSERT_FALSE(module.IsNull());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ASSERT_TRUE(exception.IsEmpty());
 
-  ASSERT_EQ(2u, resolver->resolveCount());
-  EXPECT_EQ("a", resolver->specifiers()[0]);
-  EXPECT_EQ("b", resolver->specifiers()[1]);
+  ASSERT_EQ(2u, resolver->ResolveCount());
+  EXPECT_EQ("a", resolver->Specifiers()[0]);
+  EXPECT_EQ("b", resolver->Specifiers()[1]);
 }
 
 }  // namespace

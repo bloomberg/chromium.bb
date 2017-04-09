@@ -18,7 +18,7 @@ class CSSConditionRule : public CSSGroupingRule {
   virtual String conditionText() const;
 
  protected:
-  CSSConditionRule(StyleRuleCondition* conditionRule, CSSStyleSheet* parent);
+  CSSConditionRule(StyleRuleCondition* condition_rule, CSSStyleSheet* parent);
 };
 
 }  // namespace blink

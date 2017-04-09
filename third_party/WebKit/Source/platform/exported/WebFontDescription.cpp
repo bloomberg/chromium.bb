@@ -35,34 +35,34 @@
 namespace blink {
 
 WebFontDescription::WebFontDescription(const FontDescription& desc) {
-  family = desc.family().family();
-  genericFamily = static_cast<GenericFamily>(desc.genericFamily());
-  size = desc.specifiedSize();
-  italic = desc.style() == FontStyleItalic;
-  smallCaps = desc.variantCaps() == FontDescription::SmallCaps;
-  weight = static_cast<Weight>(desc.weight());
-  smoothing = static_cast<Smoothing>(desc.fontSmoothing());
-  letterSpacing = desc.letterSpacing();
-  wordSpacing = desc.wordSpacing();
+  family = desc.Family().Family();
+  generic_family = static_cast<GenericFamily>(desc.GenericFamily());
+  size = desc.SpecifiedSize();
+  italic = desc.Style() == kFontStyleItalic;
+  small_caps = desc.VariantCaps() == FontDescription::kSmallCaps;
+  weight = static_cast<Weight>(desc.Weight());
+  smoothing = static_cast<Smoothing>(desc.FontSmoothing());
+  letter_spacing = desc.LetterSpacing();
+  word_spacing = desc.WordSpacing();
 }
 
 WebFontDescription::operator FontDescription() const {
-  FontFamily fontFamily;
-  fontFamily.setFamily(family);
+  FontFamily font_family;
+  font_family.SetFamily(family);
 
   FontDescription desc;
-  desc.setFamily(fontFamily);
-  desc.setGenericFamily(
-      static_cast<FontDescription::GenericFamilyType>(genericFamily));
-  desc.setSpecifiedSize(size);
-  desc.setComputedSize(size);
-  desc.setStyle(italic ? FontStyleItalic : FontStyleNormal);
-  desc.setVariantCaps(smallCaps ? FontDescription::SmallCaps
-                                : FontDescription::CapsNormal);
-  desc.setWeight(static_cast<FontWeight>(weight));
-  desc.setFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
-  desc.setLetterSpacing(letterSpacing);
-  desc.setWordSpacing(wordSpacing);
+  desc.SetFamily(font_family);
+  desc.SetGenericFamily(
+      static_cast<FontDescription::GenericFamilyType>(generic_family));
+  desc.SetSpecifiedSize(size);
+  desc.SetComputedSize(size);
+  desc.SetStyle(italic ? kFontStyleItalic : kFontStyleNormal);
+  desc.SetVariantCaps(small_caps ? FontDescription::kSmallCaps
+                                 : FontDescription::kCapsNormal);
+  desc.SetWeight(static_cast<FontWeight>(weight));
+  desc.SetFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
+  desc.SetLetterSpacing(letter_spacing);
+  desc.SetWordSpacing(word_spacing);
   return desc;
 }
 

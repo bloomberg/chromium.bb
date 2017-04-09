@@ -9,35 +9,35 @@
 
 namespace blink {
 
-NavigatorUSB& NavigatorUSB::from(Navigator& navigator) {
+NavigatorUSB& NavigatorUSB::From(Navigator& navigator) {
   NavigatorUSB* supplement = static_cast<NavigatorUSB*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorUSB(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 USB* NavigatorUSB::usb(Navigator& navigator) {
-  return NavigatorUSB::from(navigator).usb();
+  return NavigatorUSB::From(navigator).usb();
 }
 
 USB* NavigatorUSB::usb() {
-  return m_usb;
+  return usb_;
 }
 
 DEFINE_TRACE(NavigatorUSB) {
-  visitor->trace(m_usb);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(usb_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorUSB::NavigatorUSB(Navigator& navigator) {
-  if (navigator.frame())
-    m_usb = USB::create(*navigator.frame());
+  if (navigator.GetFrame())
+    usb_ = USB::Create(*navigator.GetFrame());
 }
 
-const char* NavigatorUSB::supplementName() {
+const char* NavigatorUSB::SupplementName() {
   return "NavigatorUSB";
 }
 

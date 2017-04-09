@@ -55,7 +55,7 @@ class PLATFORM_EXPORT ImageDecoderFactory {
  public:
   ImageDecoderFactory() {}
   virtual ~ImageDecoderFactory() {}
-  virtual std::unique_ptr<ImageDecoder> create() = 0;
+  virtual std::unique_ptr<ImageDecoder> Create() = 0;
 };
 
 class PLATFORM_EXPORT ImageFrameGenerator final
@@ -63,12 +63,12 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   WTF_MAKE_NONCOPYABLE(ImageFrameGenerator);
 
  public:
-  static PassRefPtr<ImageFrameGenerator> create(
-      const SkISize& fullSize,
-      bool isMultiFrame,
-      const ColorBehavior& colorBehavior) {
-    return adoptRef(
-        new ImageFrameGenerator(fullSize, isMultiFrame, colorBehavior));
+  static PassRefPtr<ImageFrameGenerator> Create(
+      const SkISize& full_size,
+      bool is_multi_frame,
+      const ColorBehavior& color_behavior) {
+    return AdoptRef(
+        new ImageFrameGenerator(full_size, is_multi_frame, color_behavior));
   }
 
   ~ImageFrameGenerator();
@@ -77,82 +77,82 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   // output format are given in SkImageInfo. Decoded pixels are written into
   // |pixels| with a stride of |rowBytes|. Returns true if decoding was
   // successful.
-  bool decodeAndScale(SegmentReader*,
-                      bool allDataReceived,
+  bool DecodeAndScale(SegmentReader*,
+                      bool all_data_received,
                       size_t index,
                       const SkImageInfo&,
                       void* pixels,
-                      size_t rowBytes);
+                      size_t row_bytes);
 
   // Decodes YUV components directly into the provided memory planes. Must not
   // be called unless getYUVComponentSizes has been called and returned true.
   // YUV decoding does not currently support progressive decoding. In order to
   // support it, ImageDecoder needs something analagous to its ImageFrame cache
   // to hold partial planes, and the GPU code needs to handle them.
-  bool decodeToYUV(SegmentReader*,
+  bool DecodeToYUV(SegmentReader*,
                    size_t index,
-                   const SkISize componentSizes[3],
+                   const SkISize component_sizes[3],
                    void* planes[3],
-                   const size_t rowBytes[3]);
+                   const size_t row_bytes[3]);
 
-  const SkISize& getFullSize() const { return m_fullSize; }
+  const SkISize& GetFullSize() const { return full_size_; }
 
-  bool isMultiFrame() const { return m_isMultiFrame; }
-  bool decodeFailed() const { return m_decodeFailed; }
+  bool IsMultiFrame() const { return is_multi_frame_; }
+  bool DecodeFailed() const { return decode_failed_; }
 
-  bool hasAlpha(size_t index);
+  bool HasAlpha(size_t index);
 
   // Must not be called unless the SkROBuffer has all the data. YUV decoding
   // does not currently support progressive decoding. See comment above on
   // decodeToYUV().
-  bool getYUVComponentSizes(SegmentReader*, SkYUVSizeInfo*);
+  bool GetYUVComponentSizes(SegmentReader*, SkYUVSizeInfo*);
 
  private:
-  ImageFrameGenerator(const SkISize& fullSize,
-                      bool isMultiFrame,
+  ImageFrameGenerator(const SkISize& full_size,
+                      bool is_multi_frame,
                       const ColorBehavior&);
 
   friend class ImageFrameGeneratorTest;
   friend class DeferredImageDecoderTest;
   // For testing. |factory| will overwrite the default ImageDecoder creation
   // logic if |factory->create()| returns non-zero.
-  void setImageDecoderFactory(std::unique_ptr<ImageDecoderFactory> factory) {
-    m_imageDecoderFactory = std::move(factory);
+  void SetImageDecoderFactory(std::unique_ptr<ImageDecoderFactory> factory) {
+    image_decoder_factory_ = std::move(factory);
   }
 
-  void setHasAlpha(size_t index, bool hasAlpha);
+  void SetHasAlpha(size_t index, bool has_alpha);
 
-  SkBitmap tryToResumeDecode(SegmentReader*,
-                             bool allDataReceived,
+  SkBitmap TryToResumeDecode(SegmentReader*,
+                             bool all_data_received,
                              size_t index,
-                             const SkISize& scaledSize,
+                             const SkISize& scaled_size,
                              SkBitmap::Allocator*);
   // This method should only be called while m_decodeMutex is locked.
-  bool decode(SegmentReader*,
-              bool allDataReceived,
+  bool Decode(SegmentReader*,
+              bool all_data_received,
               size_t index,
               ImageDecoder**,
               SkBitmap*,
               SkBitmap::Allocator*);
 
-  const SkISize m_fullSize;
+  const SkISize full_size_;
 
   // Parameters used to create internal ImageDecoder objects.
-  const ColorBehavior m_decoderColorBehavior;
+  const ColorBehavior decoder_color_behavior_;
 
-  const bool m_isMultiFrame;
-  bool m_decodeFailed;
-  bool m_yuvDecodingFailed;
-  size_t m_frameCount;
-  Vector<bool> m_hasAlpha;
+  const bool is_multi_frame_;
+  bool decode_failed_;
+  bool yuv_decoding_failed_;
+  size_t frame_count_;
+  Vector<bool> has_alpha_;
 
-  std::unique_ptr<ImageDecoderFactory> m_imageDecoderFactory;
+  std::unique_ptr<ImageDecoderFactory> image_decoder_factory_;
 
   // Prevents multiple decode operations on the same data.
-  Mutex m_decodeMutex;
+  Mutex decode_mutex_;
 
   // Protect concurrent access to m_hasAlpha.
-  Mutex m_alphaMutex;
+  Mutex alpha_mutex_;
 };
 
 }  // namespace blink

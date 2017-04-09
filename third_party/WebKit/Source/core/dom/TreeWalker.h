@@ -41,13 +41,13 @@ class TreeWalker final : public GarbageCollected<TreeWalker>,
   USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
 
  public:
-  static TreeWalker* create(Node* rootNode,
-                            unsigned whatToShow,
+  static TreeWalker* Create(Node* root_node,
+                            unsigned what_to_show,
                             NodeFilter* filter) {
-    return new TreeWalker(rootNode, whatToShow, filter);
+    return new TreeWalker(root_node, what_to_show, filter);
   }
 
-  Node* currentNode() const { return m_current.get(); }
+  Node* currentNode() const { return current_.Get(); }
   void setCurrentNode(Node*);
 
   Node* parentNode(ExceptionState&);
@@ -63,11 +63,11 @@ class TreeWalker final : public GarbageCollected<TreeWalker>,
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  TreeWalker(Node*, unsigned whatToShow, NodeFilter*);
+  TreeWalker(Node*, unsigned what_to_show, NodeFilter*);
 
-  Node* setCurrent(Node*);
+  Node* SetCurrent(Node*);
 
-  Member<Node> m_current;
+  Member<Node> current_;
 };
 
 }  // namespace blink

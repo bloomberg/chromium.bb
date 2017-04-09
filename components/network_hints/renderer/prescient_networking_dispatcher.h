@@ -19,8 +19,8 @@ class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
   PrescientNetworkingDispatcher();
   ~PrescientNetworkingDispatcher() override;
 
-  void prefetchDNS(const blink::WebString& hostname) override;
-  void preconnect(const blink::WebURL& url,
+  void PrefetchDNS(const blink::WebString& hostname) override;
+  void Preconnect(const blink::WebURL& url,
                   const bool allow_credentials) override;
 
  private:

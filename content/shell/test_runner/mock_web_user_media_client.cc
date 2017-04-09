@@ -42,52 +42,52 @@ MockWebUserMediaClient::MockWebUserMediaClient(WebTestDelegate* delegate)
 
 MockWebUserMediaClient::~MockWebUserMediaClient() {}
 
-void MockWebUserMediaClient::requestUserMedia(
+void MockWebUserMediaClient::RequestUserMedia(
     const WebUserMediaRequest& stream_request) {
-  DCHECK(!stream_request.isNull());
+  DCHECK(!stream_request.IsNull());
   WebUserMediaRequest request = stream_request;
 
-  if (request.ownerDocument().isNull() || !request.ownerDocument().frame()) {
+  if (request.OwnerDocument().IsNull() || !request.OwnerDocument().GetFrame()) {
     delegate_->PostTask(
-        base::Bind(&WebUserMediaRequest::requestFailed,
+        base::Bind(&WebUserMediaRequest::RequestFailed,
                    base::Owned(new WebUserMediaRequest(request)), WebString()));
     return;
   }
 
   WebMediaStream stream;
-  stream.initialize(WebVector<WebMediaStreamTrack>(),
+  stream.Initialize(WebVector<WebMediaStreamTrack>(),
                     WebVector<WebMediaStreamTrack>());
-  stream.setExtraData(new MockExtraData());
+  stream.SetExtraData(new MockExtraData());
 
-  if (request.audio() &&
+  if (request.Audio() &&
       !delegate_->AddMediaStreamAudioSourceAndTrack(&stream)) {
     WebMediaStreamSource source;
-    source.initialize("MockAudioDevice#1", WebMediaStreamSource::TypeAudio,
+    source.Initialize("MockAudioDevice#1", WebMediaStreamSource::kTypeAudio,
                       "Mock audio device", false /* remote */);
     WebMediaStreamTrack web_track;
-    web_track.initialize(source);
-    stream.addTrack(web_track);
+    web_track.Initialize(source);
+    stream.AddTrack(web_track);
   }
 
-  if (request.video() &&
+  if (request.Video() &&
       !delegate_->AddMediaStreamVideoSourceAndTrack(&stream)) {
     WebMediaStreamSource source;
-    source.initialize("MockVideoDevice#1", WebMediaStreamSource::TypeVideo,
+    source.Initialize("MockVideoDevice#1", WebMediaStreamSource::kTypeVideo,
                       "Mock video device", false /* remote */);
     WebMediaStreamTrack web_track;
-    web_track.initialize(source);
-    stream.addTrack(web_track);
+    web_track.Initialize(source);
+    stream.AddTrack(web_track);
   }
 
-  delegate_->PostTask(base::Bind(&WebUserMediaRequest::requestSucceeded,
+  delegate_->PostTask(base::Bind(&WebUserMediaRequest::RequestSucceeded,
                                  base::Owned(new WebUserMediaRequest(request)),
                                  stream));
 }
 
-void MockWebUserMediaClient::cancelUserMediaRequest(
+void MockWebUserMediaClient::CancelUserMediaRequest(
     const WebUserMediaRequest&) {}
 
-void MockWebUserMediaClient::requestMediaDevices(
+void MockWebUserMediaClient::RequestMediaDevices(
     const WebMediaDevicesRequest& request) {
   struct {
     const char* device_id;
@@ -96,19 +96,19 @@ void MockWebUserMediaClient::requestMediaDevices(
     const char* group_id;
   } test_devices[] = {
       {
-          "device1", WebMediaDeviceInfo::MediaDeviceKindAudioInput,
+          "device1", WebMediaDeviceInfo::kMediaDeviceKindAudioInput,
           "Built-in microphone", "group1",
       },
       {
-          "device2", WebMediaDeviceInfo::MediaDeviceKindAudioOutput,
+          "device2", WebMediaDeviceInfo::kMediaDeviceKindAudioOutput,
           "Built-in speakers", "group1",
       },
       {
-          "device3", WebMediaDeviceInfo::MediaDeviceKindVideoInput,
+          "device3", WebMediaDeviceInfo::kMediaDeviceKindVideoInput,
           "Built-in webcam", "group2",
       },
       {
-          "device4", WebMediaDeviceInfo::MediaDeviceKindAudioInput,
+          "device4", WebMediaDeviceInfo::kMediaDeviceKindAudioInput,
           "Extra microphone", "group3",
       },
   };
@@ -118,22 +118,22 @@ void MockWebUserMediaClient::requestMediaDevices(
                            : arraysize(test_devices) - 1;
   WebVector<WebMediaDeviceInfo> devices(num_devices);
   for (size_t i = 0; i < num_devices; ++i) {
-    devices[i].initialize(WebString::fromUTF8(test_devices[i].device_id),
+    devices[i].Initialize(WebString::FromUTF8(test_devices[i].device_id),
                           test_devices[i].kind,
-                          WebString::fromUTF8(test_devices[i].label),
-                          WebString::fromUTF8(test_devices[i].group_id));
+                          WebString::FromUTF8(test_devices[i].label),
+                          WebString::FromUTF8(test_devices[i].group_id));
   }
 
   delegate_->PostTask(
-      base::Bind(&WebMediaDevicesRequest::requestSucceeded,
+      base::Bind(&WebMediaDevicesRequest::RequestSucceeded,
                  base::Owned(new WebMediaDevicesRequest(request)), devices));
 
   should_enumerate_extra_device_ = !should_enumerate_extra_device_;
-  if (!media_device_change_observer_.isNull())
-    media_device_change_observer_.didChangeMediaDevices();
+  if (!media_device_change_observer_.IsNull())
+    media_device_change_observer_.DidChangeMediaDevices();
 }
 
-void MockWebUserMediaClient::setMediaDeviceChangeObserver(
+void MockWebUserMediaClient::SetMediaDeviceChangeObserver(
     const blink::WebMediaDeviceChangeObserver& observer) {
   media_device_change_observer_ = observer;
 }

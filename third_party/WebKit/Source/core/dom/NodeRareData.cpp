@@ -39,59 +39,59 @@
 namespace blink {
 
 struct SameSizeAsNodeRareData {
-  void* m_pointer;
-  Member<void*> m_willbeMember[2];
-  unsigned m_bitfields;
+  void* pointer_;
+  Member<void*> willbe_member_[2];
+  unsigned bitfields_;
 };
 
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
               "NodeRareData should stay small");
 
 DEFINE_TRACE_AFTER_DISPATCH(NodeRareData) {
-  visitor->trace(m_mutationObserverData);
+  visitor->Trace(mutation_observer_data_);
   // Do not keep empty NodeListsNodeData objects around.
-  if (m_nodeLists && m_nodeLists->isEmpty())
-    m_nodeLists.clear();
+  if (node_lists_ && node_lists_->IsEmpty())
+    node_lists_.Clear();
   else
-    visitor->trace(m_nodeLists);
+    visitor->Trace(node_lists_);
 }
 
 DEFINE_TRACE(NodeRareData) {
-  if (m_isElementRareData)
-    static_cast<ElementRareData*>(this)->traceAfterDispatch(visitor);
+  if (is_element_rare_data_)
+    static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
   else
-    traceAfterDispatch(visitor);
+    TraceAfterDispatch(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(NodeRareData) {
-  if (m_isElementRareData)
-    static_cast<const ElementRareData*>(this)->traceWrappersAfterDispatch(
+  if (is_element_rare_data_)
+    static_cast<const ElementRareData*>(this)->TraceWrappersAfterDispatch(
         visitor);
   else
-    traceWrappersAfterDispatch(visitor);
+    TraceWrappersAfterDispatch(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(NodeRareData) {
-  visitor->traceWrappersWithManualWriteBarrier(m_nodeLists);
-  visitor->traceWrappersWithManualWriteBarrier(m_mutationObserverData);
+  visitor->TraceWrappersWithManualWriteBarrier(node_lists_);
+  visitor->TraceWrappersWithManualWriteBarrier(mutation_observer_data_);
 }
 
-void NodeRareData::finalizeGarbageCollectedObject() {
-  CHECK(!layoutObject());
-  if (m_isElementRareData)
+void NodeRareData::FinalizeGarbageCollectedObject() {
+  CHECK(!GetLayoutObject());
+  if (is_element_rare_data_)
     static_cast<ElementRareData*>(this)->~ElementRareData();
   else
     this->~NodeRareData();
 }
 
-void NodeRareData::incrementConnectedSubframeCount() {
-  SECURITY_CHECK((m_connectedFrameCount + 1) <= Page::maxNumberOfFrames);
-  ++m_connectedFrameCount;
+void NodeRareData::IncrementConnectedSubframeCount() {
+  SECURITY_CHECK((connected_frame_count_ + 1) <= Page::kMaxNumberOfFrames);
+  ++connected_frame_count_;
 }
 
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
-static_assert(Page::maxNumberOfFrames <
-                  (1 << NodeRareData::ConnectedFrameCountBits),
+static_assert(Page::kMaxNumberOfFrames <
+                  (1 << NodeRareData::kConnectedFrameCountBits),
               "Frame limit should fit in rare data count");
 
 }  // namespace blink

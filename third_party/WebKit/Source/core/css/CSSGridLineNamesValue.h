@@ -37,19 +37,19 @@ namespace blink {
 
 class CSSGridLineNamesValue : public CSSValueList {
  public:
-  static CSSGridLineNamesValue* create() { return new CSSGridLineNamesValue(); }
+  static CSSGridLineNamesValue* Create() { return new CSSGridLineNamesValue(); }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValueList::traceAfterDispatch(visitor);
+    CSSValueList::TraceAfterDispatch(visitor);
   }
 
  private:
   CSSGridLineNamesValue();
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridLineNamesValue, isGridLineNamesValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridLineNamesValue, IsGridLineNamesValue());
 }  // namespace blink
 
 #endif

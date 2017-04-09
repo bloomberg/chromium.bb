@@ -34,8 +34,8 @@
 namespace blink {
 
 enum WebTextDecorationType {
-  WebTextDecorationTypeSpelling = 1 << 1,
-  WebTextDecorationTypeGrammar = 1 << 2,
+  kWebTextDecorationTypeSpelling = 1 << 1,
+  kWebTextDecorationTypeGrammar = 1 << 2,
 };
 
 }  // namespace blink

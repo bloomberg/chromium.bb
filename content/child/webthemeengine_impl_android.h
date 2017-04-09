@@ -12,10 +12,10 @@ namespace content {
 class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
-  blink::WebSize getSize(blink::WebThemeEngine::Part) override;
-  void getOverlayScrollbarStyle(
+  blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
+  void GetOverlayScrollbarStyle(
       blink::WebThemeEngine::ScrollbarStyle*) override;
-  void paint(blink::WebCanvas* canvas,
+  void Paint(blink::WebCanvas* canvas,
              blink::WebThemeEngine::Part part,
              blink::WebThemeEngine::State state,
              const blink::WebRect& rect,

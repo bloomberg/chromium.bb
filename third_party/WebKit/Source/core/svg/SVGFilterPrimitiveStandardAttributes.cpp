@@ -32,161 +32,161 @@
 namespace blink {
 
 SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(
-    const QualifiedName& tagName,
+    const QualifiedName& tag_name,
     Document& document)
-    : SVGElement(tagName, document),
-      m_x(SVGAnimatedLength::create(this,
-                                    SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
-      m_y(SVGAnimatedLength::create(this,
-                                    SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
+    : SVGElement(tag_name, document),
+      x_(SVGAnimatedLength::Create(this,
+                                   SVGNames::xAttr,
+                                   SVGLength::Create(SVGLengthMode::kWidth))),
+      y_(SVGAnimatedLength::Create(this,
+                                   SVGNames::yAttr,
+                                   SVGLength::Create(SVGLengthMode::kHeight))),
+      width_(
+          SVGAnimatedLength::Create(this,
                                     SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
-      m_height(
-          SVGAnimatedLength::create(this,
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      height_(
+          SVGAnimatedLength::Create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_result(SVGAnimatedString::create(this, SVGNames::resultAttr)) {
+                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      result_(SVGAnimatedString::Create(this, SVGNames::resultAttr)) {
   // Spec: If the x/y attribute is not specified, the effect is as if a value of
   // "0%" were specified.
-  m_x->setDefaultValueAsString("0%");
-  m_y->setDefaultValueAsString("0%");
+  x_->SetDefaultValueAsString("0%");
+  y_->SetDefaultValueAsString("0%");
 
   // Spec: If the width/height attribute is not specified, the effect is as if a
   // value of "100%" were specified.
-  m_width->setDefaultValueAsString("100%");
-  m_height->setDefaultValueAsString("100%");
+  width_->SetDefaultValueAsString("100%");
+  height_->SetDefaultValueAsString("100%");
 
-  addToPropertyMap(m_x);
-  addToPropertyMap(m_y);
-  addToPropertyMap(m_width);
-  addToPropertyMap(m_height);
-  addToPropertyMap(m_result);
+  AddToPropertyMap(x_);
+  AddToPropertyMap(y_);
+  AddToPropertyMap(width_);
+  AddToPropertyMap(height_);
+  AddToPropertyMap(result_);
 }
 
 DEFINE_TRACE(SVGFilterPrimitiveStandardAttributes) {
-  visitor->trace(m_x);
-  visitor->trace(m_y);
-  visitor->trace(m_width);
-  visitor->trace(m_height);
-  visitor->trace(m_result);
-  SVGElement::trace(visitor);
+  visitor->Trace(x_);
+  visitor->Trace(y_);
+  visitor->Trace(width_);
+  visitor->Trace(height_);
+  visitor->Trace(result_);
+  SVGElement::Trace(visitor);
 }
 
-bool SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(
+bool SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
     FilterEffect* effect,
-    const QualifiedName& attrName) {
-  DCHECK(attrName == SVGNames::color_interpolation_filtersAttr);
-  DCHECK(layoutObject());
-  EColorInterpolation colorInterpolation =
-      layoutObject()->styleRef().svgStyle().colorInterpolationFilters();
-  ColorSpace resolvedColorSpace =
-      SVGFilterBuilder::resolveColorSpace(colorInterpolation);
-  if (resolvedColorSpace == effect->operatingColorSpace())
+    const QualifiedName& attr_name) {
+  DCHECK(attr_name == SVGNames::color_interpolation_filtersAttr);
+  DCHECK(GetLayoutObject());
+  EColorInterpolation color_interpolation =
+      GetLayoutObject()->StyleRef().SvgStyle().ColorInterpolationFilters();
+  ColorSpace resolved_color_space =
+      SVGFilterBuilder::ResolveColorSpace(color_interpolation);
+  if (resolved_color_space == effect->OperatingColorSpace())
     return false;
-  effect->setOperatingColorSpace(resolvedColorSpace);
+  effect->SetOperatingColorSpace(resolved_color_space);
   return true;
 }
 
-void SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(
-    const QualifiedName& attrName) {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr ||
-      attrName == SVGNames::resultAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+void SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
+      attr_name == SVGNames::widthAttr || attr_name == SVGNames::heightAttr ||
+      attr_name == SVGNames::resultAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    Invalidate();
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGFilterPrimitiveStandardAttributes::childrenChanged(
+void SVGFilterPrimitiveStandardAttributes::ChildrenChanged(
     const ChildrenChange& change) {
-  SVGElement::childrenChanged(change);
+  SVGElement::ChildrenChanged(change);
 
-  if (!change.byParser)
-    invalidate();
+  if (!change.by_parser)
+    Invalidate();
 }
 
-static FloatRect defaultFilterPrimitiveSubregion(FilterEffect* filterEffect) {
+static FloatRect DefaultFilterPrimitiveSubregion(FilterEffect* filter_effect) {
   // https://drafts.fxtf.org/filters/#FilterPrimitiveSubRegion
-  DCHECK(filterEffect->getFilter());
+  DCHECK(filter_effect->GetFilter());
 
   // <feTurbulence>, <feFlood> and <feImage> don't have input effects, so use
   // the filter region as default subregion. <feTile> does have an input
   // reference, but due to its function (and special-cases) its default
   // resolves to the filter region.
-  if (filterEffect->getFilterEffectType() == FilterEffectTypeTile ||
-      !filterEffect->numberOfEffectInputs())
-    return filterEffect->getFilter()->filterRegion();
+  if (filter_effect->GetFilterEffectType() == kFilterEffectTypeTile ||
+      !filter_effect->NumberOfEffectInputs())
+    return filter_effect->GetFilter()->FilterRegion();
 
   // "x, y, width and height default to the union (i.e., tightest fitting
   // bounding box) of the subregions defined for all referenced nodes."
-  FloatRect subregionUnion;
-  for (const auto& inputEffect : filterEffect->inputEffects()) {
+  FloatRect subregion_union;
+  for (const auto& input_effect : filter_effect->InputEffects()) {
     // "If ... one or more of the referenced nodes is a standard input
     // ... the default subregion is 0%, 0%, 100%, 100%, where as a
     // special-case the percentages are relative to the dimensions of the
     // filter region..."
-    if (inputEffect->getFilterEffectType() == FilterEffectTypeSourceInput)
-      return filterEffect->getFilter()->filterRegion();
-    subregionUnion.unite(inputEffect->filterPrimitiveSubregion());
+    if (input_effect->GetFilterEffectType() == kFilterEffectTypeSourceInput)
+      return filter_effect->GetFilter()->FilterRegion();
+    subregion_union.Unite(input_effect->FilterPrimitiveSubregion());
   }
-  return subregionUnion;
+  return subregion_union;
 }
 
-void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(
-    FilterEffect* filterEffect,
-    SVGUnitTypes::SVGUnitType primitiveUnits,
-    const FloatRect& referenceBox) const {
-  DCHECK(filterEffect);
+void SVGFilterPrimitiveStandardAttributes::SetStandardAttributes(
+    FilterEffect* filter_effect,
+    SVGUnitTypes::SVGUnitType primitive_units,
+    const FloatRect& reference_box) const {
+  DCHECK(filter_effect);
 
-  FloatRect subregion = defaultFilterPrimitiveSubregion(filterEffect);
-  FloatRect primitiveBoundaries =
-      SVGLengthContext::resolveRectangle(this, primitiveUnits, referenceBox);
+  FloatRect subregion = DefaultFilterPrimitiveSubregion(filter_effect);
+  FloatRect primitive_boundaries =
+      SVGLengthContext::ResolveRectangle(this, primitive_units, reference_box);
 
-  if (x()->isSpecified())
-    subregion.setX(primitiveBoundaries.x());
-  if (y()->isSpecified())
-    subregion.setY(primitiveBoundaries.y());
-  if (width()->isSpecified())
-    subregion.setWidth(primitiveBoundaries.width());
-  if (height()->isSpecified())
-    subregion.setHeight(primitiveBoundaries.height());
+  if (x()->IsSpecified())
+    subregion.SetX(primitive_boundaries.X());
+  if (y()->IsSpecified())
+    subregion.SetY(primitive_boundaries.Y());
+  if (width()->IsSpecified())
+    subregion.SetWidth(primitive_boundaries.Width());
+  if (height()->IsSpecified())
+    subregion.SetHeight(primitive_boundaries.Height());
 
-  filterEffect->setFilterPrimitiveSubregion(subregion);
+  filter_effect->SetFilterPrimitiveSubregion(subregion);
 }
 
-LayoutObject* SVGFilterPrimitiveStandardAttributes::createLayoutObject(
+LayoutObject* SVGFilterPrimitiveStandardAttributes::CreateLayoutObject(
     const ComputedStyle&) {
   return new LayoutSVGResourceFilterPrimitive(this);
 }
 
-bool SVGFilterPrimitiveStandardAttributes::layoutObjectIsNeeded(
+bool SVGFilterPrimitiveStandardAttributes::LayoutObjectIsNeeded(
     const ComputedStyle& style) {
   if (isSVGFilterElement(parentNode()))
-    return SVGElement::layoutObjectIsNeeded(style);
+    return SVGElement::LayoutObjectIsNeeded(style);
 
   return false;
 }
 
-void SVGFilterPrimitiveStandardAttributes::invalidate() {
-  if (LayoutObject* primitiveLayoutObject = layoutObject())
-    markForLayoutAndParentResourceInvalidation(primitiveLayoutObject);
+void SVGFilterPrimitiveStandardAttributes::Invalidate() {
+  if (LayoutObject* primitive_layout_object = GetLayoutObject())
+    MarkForLayoutAndParentResourceInvalidation(primitive_layout_object);
 }
 
-void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(
+void SVGFilterPrimitiveStandardAttributes::PrimitiveAttributeChanged(
     const QualifiedName& attribute) {
-  if (LayoutObject* primitiveLayoutObject = layoutObject())
-    static_cast<LayoutSVGResourceFilterPrimitive*>(primitiveLayoutObject)
-        ->primitiveAttributeChanged(attribute);
+  if (LayoutObject* primitive_layout_object = GetLayoutObject())
+    static_cast<LayoutSVGResourceFilterPrimitive*>(primitive_layout_object)
+        ->PrimitiveAttributeChanged(attribute);
 }
 
-void invalidateFilterPrimitiveParent(SVGElement* element) {
+void InvalidateFilterPrimitiveParent(SVGElement* element) {
   if (!element)
     return;
 
@@ -195,12 +195,12 @@ void invalidateFilterPrimitiveParent(SVGElement* element) {
   if (!parent)
     return;
 
-  LayoutObject* layoutObject = parent->layoutObject();
-  if (!layoutObject || !layoutObject->isSVGResourceFilterPrimitive())
+  LayoutObject* layout_object = parent->GetLayoutObject();
+  if (!layout_object || !layout_object->IsSVGResourceFilterPrimitive())
     return;
 
-  LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(
-      layoutObject, false);
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+      layout_object, false);
 }
 
 }  // namespace blink

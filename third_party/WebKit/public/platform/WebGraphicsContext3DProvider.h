@@ -49,19 +49,19 @@ class WebGraphicsContext3DProvider {
  public:
   virtual ~WebGraphicsContext3DProvider() {}
 
-  virtual gpu::gles2::GLES2Interface* contextGL() = 0;
-  virtual bool bindToCurrentThread() = 0;
-  virtual GrContext* grContext() = 0;
-  virtual gpu::Capabilities getCapabilities() = 0;
+  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+  virtual bool BindToCurrentThread() = 0;
+  virtual GrContext* GetGrContext() = 0;
+  virtual gpu::Capabilities GetCapabilities() = 0;
 
   // Returns true if the context is driven by software emulation of GL. In
   // this scenario, the compositor would not be using GPU.
-  virtual bool isSoftwareRendering() const = 0;
+  virtual bool IsSoftwareRendering() const = 0;
 
-  virtual void setLostContextCallback(const base::Closure&) = 0;
-  virtual void setErrorMessageCallback(
+  virtual void SetLostContextCallback(const base::Closure&) = 0;
+  virtual void SetErrorMessageCallback(
       const base::Callback<void(const char* msg, int32_t id)>&) = 0;
-  virtual void signalQuery(uint32_t, const base::Closure&) = 0;
+  virtual void SignalQuery(uint32_t, const base::Closure&) = 0;
 };
 
 }  // namespace blink

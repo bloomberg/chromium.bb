@@ -29,10 +29,10 @@
 
 namespace blink {
 
-TransformSource::TransformSource(xmlDocPtr source) : m_source(source) {}
+TransformSource::TransformSource(xmlDocPtr source) : source_(source) {}
 
 TransformSource::~TransformSource() {
-  xmlFreeDoc(m_source);
+  xmlFreeDoc(source_);
 }
 
 }  // namespace blink

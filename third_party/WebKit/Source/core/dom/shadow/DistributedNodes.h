@@ -43,32 +43,32 @@ class DistributedNodes final {
  public:
   DistributedNodes() {}
 
-  Node* first() const { return m_nodes.front(); }
-  Node* last() const { return m_nodes.back(); }
-  Node* at(size_t index) const { return m_nodes.at(index); }
+  Node* First() const { return nodes_.front(); }
+  Node* Last() const { return nodes_.back(); }
+  Node* at(size_t index) const { return nodes_.at(index); }
 
-  size_t size() const { return m_nodes.size(); }
-  bool isEmpty() const { return m_nodes.isEmpty(); }
+  size_t size() const { return nodes_.size(); }
+  bool IsEmpty() const { return nodes_.IsEmpty(); }
 
-  void append(Node*);
-  void clear() {
-    m_nodes.clear();
-    m_indices.clear();
+  void Append(Node*);
+  void Clear() {
+    nodes_.Clear();
+    indices_.Clear();
   }
-  void shrinkToFit() { m_nodes.shrinkToFit(); }
+  void ShrinkToFit() { nodes_.ShrinkToFit(); }
 
-  bool contains(const Node* node) const { return m_indices.contains(node); }
-  size_t find(const Node*) const;
-  Node* nextTo(const Node*) const;
-  Node* previousTo(const Node*) const;
+  bool Contains(const Node* node) const { return indices_.Contains(node); }
+  size_t Find(const Node*) const;
+  Node* NextTo(const Node*) const;
+  Node* PreviousTo(const Node*) const;
 
-  void swap(DistributedNodes& other);
+  void Swap(DistributedNodes& other);
 
   DECLARE_TRACE();
 
  private:
-  HeapVector<Member<Node>> m_nodes;
-  HeapHashMap<Member<const Node>, size_t> m_indices;
+  HeapVector<Member<Node>> nodes_;
+  HeapHashMap<Member<const Node>, size_t> indices_;
 };
 
 }  // namespace blink

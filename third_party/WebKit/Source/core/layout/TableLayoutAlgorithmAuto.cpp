@@ -31,192 +31,196 @@ namespace blink {
 
 TableLayoutAlgorithmAuto::TableLayoutAlgorithmAuto(LayoutTable* table)
     : TableLayoutAlgorithm(table),
-      m_hasPercent(false),
-      m_effectiveLogicalWidthDirty(true),
-      m_scaledWidthFromPercentColumns() {}
+      has_percent_(false),
+      effective_logical_width_dirty_(true),
+      scaled_width_from_percent_columns_() {}
 
 TableLayoutAlgorithmAuto::~TableLayoutAlgorithmAuto() {}
 
-void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol) {
-  Layout& columnLayout = m_layoutStruct[effCol];
+void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
+  Layout& column_layout = layout_struct_[eff_col];
 
-  LayoutTableCell* fixedContributor = nullptr;
-  LayoutTableCell* maxContributor = nullptr;
+  LayoutTableCell* fixed_contributor = nullptr;
+  LayoutTableCell* max_contributor = nullptr;
 
-  for (LayoutObject* child = m_table->children()->firstChild(); child;
-       child = child->nextSibling()) {
-    if (child->isLayoutTableCol()) {
+  for (LayoutObject* child = table_->Children()->FirstChild(); child;
+       child = child->NextSibling()) {
+    if (child->IsLayoutTableCol()) {
       // LayoutTableCols don't have the concept of preferred logical width, but
       // we need to clear their dirty bits so that if we call
       // setPreferredWidthsDirty(true) on a col or one of its descendants, we'll
       // mark it's ancestors as dirty.
-      toLayoutTableCol(child)->clearPreferredLogicalWidthsDirtyBits();
-    } else if (child->isTableSection()) {
-      LayoutTableSection* section = toLayoutTableSection(child);
-      unsigned numRows = section->numRows();
-      for (unsigned i = 0; i < numRows; i++) {
-        if (effCol >= section->numCols(i))
+      ToLayoutTableCol(child)->ClearPreferredLogicalWidthsDirtyBits();
+    } else if (child->IsTableSection()) {
+      LayoutTableSection* section = ToLayoutTableSection(child);
+      unsigned num_rows = section->NumRows();
+      for (unsigned i = 0; i < num_rows; i++) {
+        if (eff_col >= section->NumCols(i))
           continue;
-        LayoutTableSection::CellStruct current = section->cellAt(i, effCol);
-        LayoutTableCell* cell = current.primaryCell();
+        LayoutTableSection::CellStruct current = section->CellAt(i, eff_col);
+        LayoutTableCell* cell = current.PrimaryCell();
 
-        if (current.inColSpan || !cell)
+        if (current.in_col_span || !cell)
           continue;
-        columnLayout.columnHasNoCells = false;
+        column_layout.column_has_no_cells = false;
 
-        if (cell->maxPreferredLogicalWidth())
-          columnLayout.emptyCellsOnly = false;
+        if (cell->MaxPreferredLogicalWidth())
+          column_layout.empty_cells_only = false;
 
-        if (cell->colSpan() == 1) {
-          columnLayout.minLogicalWidth =
-              std::max<int>(cell->minPreferredLogicalWidth().toInt(),
-                            columnLayout.minLogicalWidth);
-          if (cell->maxPreferredLogicalWidth() > columnLayout.maxLogicalWidth) {
-            columnLayout.maxLogicalWidth =
-                cell->maxPreferredLogicalWidth().toInt();
-            maxContributor = cell;
+        if (cell->ColSpan() == 1) {
+          column_layout.min_logical_width =
+              std::max<int>(cell->MinPreferredLogicalWidth().ToInt(),
+                            column_layout.min_logical_width);
+          if (cell->MaxPreferredLogicalWidth() >
+              column_layout.max_logical_width) {
+            column_layout.max_logical_width =
+                cell->MaxPreferredLogicalWidth().ToInt();
+            max_contributor = cell;
           }
 
           // All browsers implement a size limit on the cell's max width.
           // Our limit is based on KHTML's representation that used 16 bits
           // widths.
           // FIXME: Other browsers have a lower limit for the cell's max width.
-          const int cCellMaxWidth = 32760;
-          Length cellLogicalWidth = cell->styleOrColLogicalWidth();
+          const int kCCellMaxWidth = 32760;
+          Length cell_logical_width = cell->StyleOrColLogicalWidth();
           // FIXME: calc() on tables should be handled consistently with other
           // lengths. See bug: https://crbug.com/382725
-          if (cellLogicalWidth.isCalculated())
-            cellLogicalWidth = Length();  // Make it Auto
-          if (cellLogicalWidth.value() > cCellMaxWidth)
-            cellLogicalWidth.setValue(cCellMaxWidth);
-          if (cellLogicalWidth.isNegative())
-            cellLogicalWidth.setValue(0);
-          switch (cellLogicalWidth.type()) {
-            case Fixed:
+          if (cell_logical_width.IsCalculated())
+            cell_logical_width = Length();  // Make it Auto
+          if (cell_logical_width.Value() > kCCellMaxWidth)
+            cell_logical_width.SetValue(kCCellMaxWidth);
+          if (cell_logical_width.IsNegative())
+            cell_logical_width.SetValue(0);
+          switch (cell_logical_width.GetType()) {
+            case kFixed:
               // ignore width=0
-              if (cellLogicalWidth.isPositive() &&
-                  !columnLayout.logicalWidth.isPercentOrCalc()) {
-                int logicalWidth =
-                    cell->adjustBorderBoxLogicalWidthForBoxSizing(
-                            cellLogicalWidth.value())
-                        .toInt();
-                if (columnLayout.logicalWidth.isFixed()) {
+              if (cell_logical_width.IsPositive() &&
+                  !column_layout.logical_width.IsPercentOrCalc()) {
+                int logical_width =
+                    cell->AdjustBorderBoxLogicalWidthForBoxSizing(
+                            cell_logical_width.Value())
+                        .ToInt();
+                if (column_layout.logical_width.IsFixed()) {
                   // Nav/IE weirdness
-                  if ((logicalWidth > columnLayout.logicalWidth.value()) ||
-                      ((columnLayout.logicalWidth.value() == logicalWidth) &&
-                       (maxContributor == cell))) {
-                    columnLayout.logicalWidth.setValue(Fixed, logicalWidth);
-                    fixedContributor = cell;
+                  if ((logical_width > column_layout.logical_width.Value()) ||
+                      ((column_layout.logical_width.Value() == logical_width) &&
+                       (max_contributor == cell))) {
+                    column_layout.logical_width.SetValue(kFixed, logical_width);
+                    fixed_contributor = cell;
                   }
                 } else {
-                  columnLayout.logicalWidth.setValue(Fixed, logicalWidth);
-                  fixedContributor = cell;
+                  column_layout.logical_width.SetValue(kFixed, logical_width);
+                  fixed_contributor = cell;
                 }
               }
               break;
-            case Percent:
-              m_hasPercent = true;
+            case kPercent:
+              has_percent_ = true;
               // TODO(alancutter): Make this work correctly for calc lengths.
-              if (cellLogicalWidth.isPositive() &&
-                  (!columnLayout.logicalWidth.isPercentOrCalc() ||
-                   cellLogicalWidth.value() >
-                       columnLayout.logicalWidth.value()))
-                columnLayout.logicalWidth = cellLogicalWidth;
+              if (cell_logical_width.IsPositive() &&
+                  (!column_layout.logical_width.IsPercentOrCalc() ||
+                   cell_logical_width.Value() >
+                       column_layout.logical_width.Value()))
+                column_layout.logical_width = cell_logical_width;
               break;
             default:
               break;
           }
-        } else if (!effCol || section->primaryCellAt(i, effCol - 1) != cell) {
+        } else if (!eff_col || section->PrimaryCellAt(i, eff_col - 1) != cell) {
           // If a cell originates in this spanning column ensure we have a
           // min/max width of at least 1px for it.
-          columnLayout.minLogicalWidth =
-              std::max<int>(columnLayout.minLogicalWidth,
-                            cell->maxPreferredLogicalWidth() ? 1 : 0);
+          column_layout.min_logical_width =
+              std::max<int>(column_layout.min_logical_width,
+                            cell->MaxPreferredLogicalWidth() ? 1 : 0);
 
           // This spanning cell originates in this column. Insert the cell into
           // spanning cells list.
-          insertSpanCell(cell);
+          InsertSpanCell(cell);
         }
       }
     }
   }
 
   // Nav/IE weirdness
-  if (columnLayout.logicalWidth.isFixed()) {
-    if (m_table->document().inQuirksMode() &&
-        columnLayout.maxLogicalWidth > columnLayout.logicalWidth.value() &&
-        fixedContributor != maxContributor) {
-      columnLayout.logicalWidth = Length();
-      fixedContributor = nullptr;
+  if (column_layout.logical_width.IsFixed()) {
+    if (table_->GetDocument().InQuirksMode() &&
+        column_layout.max_logical_width > column_layout.logical_width.Value() &&
+        fixed_contributor != max_contributor) {
+      column_layout.logical_width = Length();
+      fixed_contributor = nullptr;
     }
   }
 
-  columnLayout.maxLogicalWidth =
-      std::max(columnLayout.maxLogicalWidth, columnLayout.minLogicalWidth);
+  column_layout.max_logical_width = std::max(column_layout.max_logical_width,
+                                             column_layout.min_logical_width);
 }
 
-void TableLayoutAlgorithmAuto::fullRecalc() {
-  m_hasPercent = false;
-  m_effectiveLogicalWidthDirty = true;
+void TableLayoutAlgorithmAuto::FullRecalc() {
+  has_percent_ = false;
+  effective_logical_width_dirty_ = true;
 
-  unsigned nEffCols = m_table->numEffectiveColumns();
-  m_layoutStruct.resize(nEffCols);
-  m_layoutStruct.fill(Layout());
-  m_spanCells.fill(0);
+  unsigned n_eff_cols = table_->NumEffectiveColumns();
+  layout_struct_.Resize(n_eff_cols);
+  layout_struct_.Fill(Layout());
+  span_cells_.Fill(0);
 
-  Length groupLogicalWidth;
-  unsigned currentColumn = 0;
-  for (LayoutTableCol* column = m_table->firstColumn(); column;
-       column = column->nextColumn()) {
-    if (column->isTableColumnGroupWithColumnChildren()) {
-      groupLogicalWidth = column->style()->logicalWidth();
+  Length group_logical_width;
+  unsigned current_column = 0;
+  for (LayoutTableCol* column = table_->FirstColumn(); column;
+       column = column->NextColumn()) {
+    if (column->IsTableColumnGroupWithColumnChildren()) {
+      group_logical_width = column->Style()->LogicalWidth();
     } else {
-      Length colLogicalWidth = column->style()->logicalWidth();
+      Length col_logical_width = column->Style()->LogicalWidth();
       // FIXME: calc() on tables should be handled consistently with other
       // lengths. See bug: https://crbug.com/382725
-      if (colLogicalWidth.isCalculated() || colLogicalWidth.isAuto())
-        colLogicalWidth = groupLogicalWidth;
+      if (col_logical_width.IsCalculated() || col_logical_width.IsAuto())
+        col_logical_width = group_logical_width;
       // TODO(alancutter): Make this work correctly for calc lengths.
-      if ((colLogicalWidth.isFixed() || colLogicalWidth.isPercentOrCalc()) &&
-          colLogicalWidth.isZero())
-        colLogicalWidth = Length();
-      unsigned effCol = m_table->absoluteColumnToEffectiveColumn(currentColumn);
-      unsigned span = column->span();
-      if (!colLogicalWidth.isAuto() && span == 1 && effCol < nEffCols &&
-          m_table->spanOfEffectiveColumn(effCol) == 1) {
-        m_layoutStruct[effCol].logicalWidth = colLogicalWidth;
-        if (colLogicalWidth.isFixed() &&
-            m_layoutStruct[effCol].maxLogicalWidth < colLogicalWidth.value())
-          m_layoutStruct[effCol].maxLogicalWidth = colLogicalWidth.value();
+      if ((col_logical_width.IsFixed() ||
+           col_logical_width.IsPercentOrCalc()) &&
+          col_logical_width.IsZero())
+        col_logical_width = Length();
+      unsigned eff_col =
+          table_->AbsoluteColumnToEffectiveColumn(current_column);
+      unsigned span = column->Span();
+      if (!col_logical_width.IsAuto() && span == 1 && eff_col < n_eff_cols &&
+          table_->SpanOfEffectiveColumn(eff_col) == 1) {
+        layout_struct_[eff_col].logical_width = col_logical_width;
+        if (col_logical_width.IsFixed() &&
+            layout_struct_[eff_col].max_logical_width <
+                col_logical_width.Value())
+          layout_struct_[eff_col].max_logical_width = col_logical_width.Value();
       }
-      currentColumn += span;
+      current_column += span;
     }
 
     // For the last column in a column-group, we invalidate our group logical
     // width.
-    if (column->isTableColumn() && !column->nextSibling())
-      groupLogicalWidth = Length();
+    if (column->IsTableColumn() && !column->NextSibling())
+      group_logical_width = Length();
   }
 
-  for (unsigned i = 0; i < nEffCols; i++)
-    recalcColumn(i);
+  for (unsigned i = 0; i < n_eff_cols; i++)
+    RecalcColumn(i);
 }
 
-static bool shouldScaleColumnsForParent(LayoutTable* table) {
-  LayoutBlock* cb = table->containingBlock();
-  while (!cb->isLayoutView()) {
+static bool ShouldScaleColumnsForParent(LayoutTable* table) {
+  LayoutBlock* cb = table->ContainingBlock();
+  while (!cb->IsLayoutView()) {
     // It doesn't matter if our table is auto or fixed: auto means we don't
     // scale. Fixed doesn't care if we do or not because it doesn't depend
     // on the cell contents' preferred widths.
-    if (cb->isTableCell())
+    if (cb->IsTableCell())
       return false;
-    cb = cb->containingBlock();
+    cb = cb->ContainingBlock();
   }
   return true;
 }
 
 // FIXME: This needs to be adapted for vertical writing modes.
-static bool shouldScaleColumnsForSelf(LayoutTable* table) {
+static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
   // Normally, scale all columns to satisfy this from CSS2.2:
   // "A percentage value for a column width is relative to the table width.
   // If the table has 'width: auto', a percentage represents a constraint on the
@@ -225,105 +229,107 @@ static bool shouldScaleColumnsForSelf(LayoutTable* table) {
   // A special case.  If this table is not fixed width and contained inside
   // a cell, then don't bloat the maxwidth by examining percentage growth.
   while (true) {
-    Length tw = table->style()->width();
-    if ((!tw.isAuto() && !tw.isPercentOrCalc()) ||
-        table->isOutOfFlowPositioned())
+    Length tw = table->Style()->Width();
+    if ((!tw.IsAuto() && !tw.IsPercentOrCalc()) ||
+        table->IsOutOfFlowPositioned())
       return true;
-    LayoutBlock* cb = table->containingBlock();
+    LayoutBlock* cb = table->ContainingBlock();
 
-    while (!cb->isLayoutView() && !cb->isTableCell() &&
-           cb->style()->width().isAuto() && !cb->isOutOfFlowPositioned())
-      cb = cb->containingBlock();
+    while (!cb->IsLayoutView() && !cb->IsTableCell() &&
+           cb->Style()->Width().IsAuto() && !cb->IsOutOfFlowPositioned())
+      cb = cb->ContainingBlock();
 
     // TODO(dgrogan): Should the second clause check for isFixed() instead?
-    if (!cb->isTableCell() || (!cb->style()->width().isAuto() &&
-                               !cb->style()->width().isPercentOrCalc()))
+    if (!cb->IsTableCell() || (!cb->Style()->Width().IsAuto() &&
+                               !cb->Style()->Width().IsPercentOrCalc()))
       return true;
 
-    LayoutTableCell* cell = toLayoutTableCell(cb);
-    table = cell->table();
-    if (cell->colSpan() > 1 || table->isLogicalWidthAuto())
+    LayoutTableCell* cell = ToLayoutTableCell(cb);
+    table = cell->Table();
+    if (cell->ColSpan() > 1 || table->IsLogicalWidthAuto())
       return false;
   }
   NOTREACHED();
   return true;
 }
 
-void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(
-    LayoutUnit& minWidth,
-    LayoutUnit& maxWidth) {
-  TextAutosizer::TableLayoutScope textAutosizerTableLayoutScope(m_table);
+void TableLayoutAlgorithmAuto::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_width,
+    LayoutUnit& max_width) {
+  TextAutosizer::TableLayoutScope text_autosizer_table_layout_scope(table_);
 
-  fullRecalc();
+  FullRecalc();
 
-  int spanMaxLogicalWidth = calcEffectiveLogicalWidth();
-  minWidth = LayoutUnit();
-  maxWidth = LayoutUnit();
-  float maxPercent = 0;
-  float maxNonPercent = 0;
-  bool scaleColumnsForSelf = shouldScaleColumnsForSelf(m_table);
+  int span_max_logical_width = CalcEffectiveLogicalWidth();
+  min_width = LayoutUnit();
+  max_width = LayoutUnit();
+  float max_percent = 0;
+  float max_non_percent = 0;
+  bool scale_columns_for_self = ShouldScaleColumnsForSelf(table_);
 
   // We substitute 0 percent by (epsilon / percentScaleFactor) percent in two
   // places below to avoid division by zero.
   // FIXME: Handle the 0% cases properly.
-  const float epsilon = 1 / 128.0f;
+  const float kEpsilon = 1 / 128.0f;
 
-  float remainingPercent = 100;
-  for (size_t i = 0; i < m_layoutStruct.size(); ++i) {
-    minWidth += m_layoutStruct[i].effectiveMinLogicalWidth;
-    maxWidth += m_layoutStruct[i].effectiveMaxLogicalWidth;
-    if (scaleColumnsForSelf) {
-      if (m_layoutStruct[i].effectiveLogicalWidth.isPercentOrCalc()) {
+  float remaining_percent = 100;
+  for (size_t i = 0; i < layout_struct_.size(); ++i) {
+    min_width += layout_struct_[i].effective_min_logical_width;
+    max_width += layout_struct_[i].effective_max_logical_width;
+    if (scale_columns_for_self) {
+      if (layout_struct_[i].effective_logical_width.IsPercentOrCalc()) {
         float percent =
             std::min(static_cast<float>(
-                         m_layoutStruct[i].effectiveLogicalWidth.percent()),
-                     remainingPercent);
-        float logicalWidth =
-            static_cast<float>(m_layoutStruct[i].effectiveMaxLogicalWidth) *
-            100 / std::max(percent, epsilon);
-        maxPercent = std::max(logicalWidth, maxPercent);
-        remainingPercent -= percent;
+                         layout_struct_[i].effective_logical_width.Percent()),
+                     remaining_percent);
+        float logical_width =
+            static_cast<float>(layout_struct_[i].effective_max_logical_width) *
+            100 / std::max(percent, kEpsilon);
+        max_percent = std::max(logical_width, max_percent);
+        remaining_percent -= percent;
       } else {
-        maxNonPercent += m_layoutStruct[i].effectiveMaxLogicalWidth;
+        max_non_percent += layout_struct_[i].effective_max_logical_width;
       }
     }
   }
 
-  if (scaleColumnsForSelf) {
-    maxNonPercent = maxNonPercent * 100 / std::max(remainingPercent, epsilon);
-    m_scaledWidthFromPercentColumns =
-        LayoutUnit(std::min(maxNonPercent, static_cast<float>(tableMaxWidth)));
-    m_scaledWidthFromPercentColumns = std::max(
-        m_scaledWidthFromPercentColumns,
-        LayoutUnit(std::min(maxPercent, static_cast<float>(tableMaxWidth))));
-    if (m_scaledWidthFromPercentColumns > maxWidth &&
-        shouldScaleColumnsForParent(m_table))
-      maxWidth = m_scaledWidthFromPercentColumns;
+  if (scale_columns_for_self) {
+    max_non_percent =
+        max_non_percent * 100 / std::max(remaining_percent, kEpsilon);
+    scaled_width_from_percent_columns_ = LayoutUnit(
+        std::min(max_non_percent, static_cast<float>(kTableMaxWidth)));
+    scaled_width_from_percent_columns_ = std::max(
+        scaled_width_from_percent_columns_,
+        LayoutUnit(std::min(max_percent, static_cast<float>(kTableMaxWidth))));
+    if (scaled_width_from_percent_columns_ > max_width &&
+        ShouldScaleColumnsForParent(table_))
+      max_width = scaled_width_from_percent_columns_;
   }
 
-  maxWidth = LayoutUnit(std::max(maxWidth.floor(), spanMaxLogicalWidth));
+  max_width = LayoutUnit(std::max(max_width.Floor(), span_max_logical_width));
 }
 
-void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(
-    LayoutUnit& minWidth,
-    LayoutUnit& maxWidth) const {
-  Length tableLogicalWidth = m_table->style()->logicalWidth();
-  if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
+void TableLayoutAlgorithmAuto::ApplyPreferredLogicalWidthQuirks(
+    LayoutUnit& min_width,
+    LayoutUnit& max_width) const {
+  Length table_logical_width = table_->Style()->LogicalWidth();
+  if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
     // |minWidth| is the result of measuring the intrinsic content's size. Keep
     // it to make sure we are *never* smaller than the actual content.
-    LayoutUnit minContentWidth = minWidth;
+    LayoutUnit min_content_width = min_width;
     // FIXME: This line looks REALLY suspicious as it could allow the minimum
     // preferred logical width to be smaller than the table content. This has
     // to be cross-checked against other browsers.
-    minWidth = maxWidth =
-        LayoutUnit(std::max<int>(minWidth.floor(), tableLogicalWidth.value()));
+    min_width = max_width = LayoutUnit(
+        std::max<int>(min_width.Floor(), table_logical_width.Value()));
 
-    const Length& styleMaxLogicalWidth = m_table->style()->logicalMaxWidth();
-    if (styleMaxLogicalWidth.isFixed() && !styleMaxLogicalWidth.isNegative()) {
-      minWidth = LayoutUnit(
-          std::min<int>(minWidth.floor(), styleMaxLogicalWidth.value()));
-      minWidth = std::max(minWidth, minContentWidth);
-      maxWidth = minWidth;
+    const Length& style_max_logical_width = table_->Style()->LogicalMaxWidth();
+    if (style_max_logical_width.IsFixed() &&
+        !style_max_logical_width.IsNegative()) {
+      min_width = LayoutUnit(
+          std::min<int>(min_width.Floor(), style_max_logical_width.Value()));
+      min_width = std::max(min_width, min_content_width);
+      max_width = min_width;
     }
   }
 }
@@ -333,67 +339,67 @@ void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(
   effWidth is the same as width for cells without colspans. If we have colspans,
   they get modified.
  */
-int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
-  int maxLogicalWidth = 0;
+int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
+  int max_logical_width = 0;
 
-  size_t nEffCols = m_layoutStruct.size();
-  int spacingInRowDirection = m_table->hBorderSpacing();
+  size_t n_eff_cols = layout_struct_.size();
+  int spacing_in_row_direction = table_->HBorderSpacing();
 
-  for (size_t i = 0; i < nEffCols; ++i) {
-    m_layoutStruct[i].effectiveLogicalWidth = m_layoutStruct[i].logicalWidth;
-    m_layoutStruct[i].effectiveMinLogicalWidth =
-        m_layoutStruct[i].minLogicalWidth;
-    m_layoutStruct[i].effectiveMaxLogicalWidth =
-        m_layoutStruct[i].maxLogicalWidth;
+  for (size_t i = 0; i < n_eff_cols; ++i) {
+    layout_struct_[i].effective_logical_width = layout_struct_[i].logical_width;
+    layout_struct_[i].effective_min_logical_width =
+        layout_struct_[i].min_logical_width;
+    layout_struct_[i].effective_max_logical_width =
+        layout_struct_[i].max_logical_width;
   }
 
-  for (size_t i = 0; i < m_spanCells.size(); ++i) {
-    LayoutTableCell* cell = m_spanCells[i];
+  for (size_t i = 0; i < span_cells_.size(); ++i) {
+    LayoutTableCell* cell = span_cells_[i];
     if (!cell)
       break;
 
-    unsigned span = cell->colSpan();
+    unsigned span = cell->ColSpan();
 
-    Length cellLogicalWidth = cell->styleOrColLogicalWidth();
+    Length cell_logical_width = cell->StyleOrColLogicalWidth();
     // FIXME: calc() on tables should be handled consistently with other
     // lengths. See bug: https://crbug.com/382725
-    if (cellLogicalWidth.isZero() || cellLogicalWidth.isCalculated())
-      cellLogicalWidth = Length();  // Make it Auto
+    if (cell_logical_width.IsZero() || cell_logical_width.IsCalculated())
+      cell_logical_width = Length();  // Make it Auto
 
-    unsigned effCol =
-        m_table->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
-    size_t lastCol = effCol;
-    int cellMinLogicalWidth =
-        (cell->minPreferredLogicalWidth() + spacingInRowDirection).toInt();
-    int cellMaxLogicalWidth =
-        (cell->maxPreferredLogicalWidth() + spacingInRowDirection).toInt();
-    float totalPercent = 0;
-    int spanMinLogicalWidth = 0;
-    int spanMaxLogicalWidth = 0;
-    bool allColsArePercent = true;
-    bool allColsAreFixed = true;
-    bool haveAuto = false;
-    bool spanHasEmptyCellsOnly = true;
-    int fixedWidth = 0;
-    while (lastCol < nEffCols && span > 0) {
-      Layout& columnLayout = m_layoutStruct[lastCol];
-      switch (columnLayout.logicalWidth.type()) {
-        case Percent:
-          totalPercent += columnLayout.logicalWidth.percent();
-          allColsAreFixed = false;
+    unsigned eff_col =
+        table_->AbsoluteColumnToEffectiveColumn(cell->AbsoluteColumnIndex());
+    size_t last_col = eff_col;
+    int cell_min_logical_width =
+        (cell->MinPreferredLogicalWidth() + spacing_in_row_direction).ToInt();
+    int cell_max_logical_width =
+        (cell->MaxPreferredLogicalWidth() + spacing_in_row_direction).ToInt();
+    float total_percent = 0;
+    int span_min_logical_width = 0;
+    int span_max_logical_width = 0;
+    bool all_cols_are_percent = true;
+    bool all_cols_are_fixed = true;
+    bool have_auto = false;
+    bool span_has_empty_cells_only = true;
+    int fixed_width = 0;
+    while (last_col < n_eff_cols && span > 0) {
+      Layout& column_layout = layout_struct_[last_col];
+      switch (column_layout.logical_width.GetType()) {
+        case kPercent:
+          total_percent += column_layout.logical_width.Percent();
+          all_cols_are_fixed = false;
           break;
-        case Fixed:
-          if (columnLayout.logicalWidth.value() > 0) {
-            fixedWidth += columnLayout.logicalWidth.value();
-            allColsArePercent = false;
+        case kFixed:
+          if (column_layout.logical_width.Value() > 0) {
+            fixed_width += column_layout.logical_width.Value();
+            all_cols_are_percent = false;
             // IE resets effWidth to Auto here, but this breaks the konqueror
             // about page and seems to be some bad legacy behaviour anyway.
             // mozilla doesn't do this so I decided we don't neither.
             break;
           }
         // fall through
-        case Auto:
-          haveAuto = true;
+        case kAuto:
+          have_auto = true;
         // fall through
         default:
           // If the column is a percentage width, do not let the spanning cell
@@ -404,276 +410,286 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth() {
           //   <tr><td>1</td><td colspan=2 width=100%>2-3</td></tr>
           // </table>
           // TODO(alancutter): Make this work correctly for calc lengths.
-          if (!columnLayout.effectiveLogicalWidth.isPercentOrCalc()) {
-            columnLayout.effectiveLogicalWidth = Length();
-            allColsArePercent = false;
+          if (!column_layout.effective_logical_width.IsPercentOrCalc()) {
+            column_layout.effective_logical_width = Length();
+            all_cols_are_percent = false;
           } else {
-            totalPercent += columnLayout.effectiveLogicalWidth.percent();
+            total_percent += column_layout.effective_logical_width.Percent();
           }
-          allColsAreFixed = false;
+          all_cols_are_fixed = false;
       }
-      if (!columnLayout.emptyCellsOnly)
-        spanHasEmptyCellsOnly = false;
-      span -= m_table->spanOfEffectiveColumn(lastCol);
-      spanMinLogicalWidth += columnLayout.effectiveMinLogicalWidth;
-      spanMaxLogicalWidth += columnLayout.effectiveMaxLogicalWidth;
-      lastCol++;
-      cellMinLogicalWidth -= spacingInRowDirection;
-      cellMaxLogicalWidth -= spacingInRowDirection;
+      if (!column_layout.empty_cells_only)
+        span_has_empty_cells_only = false;
+      span -= table_->SpanOfEffectiveColumn(last_col);
+      span_min_logical_width += column_layout.effective_min_logical_width;
+      span_max_logical_width += column_layout.effective_max_logical_width;
+      last_col++;
+      cell_min_logical_width -= spacing_in_row_direction;
+      cell_max_logical_width -= spacing_in_row_direction;
     }
 
     // adjust table max width if needed
-    if (cellLogicalWidth.isPercentOrCalc()) {
-      if (totalPercent > cellLogicalWidth.percent() || allColsArePercent) {
+    if (cell_logical_width.IsPercentOrCalc()) {
+      if (total_percent > cell_logical_width.Percent() ||
+          all_cols_are_percent) {
         // can't satify this condition, treat as variable
-        cellLogicalWidth = Length();
+        cell_logical_width = Length();
       } else {
-        maxLogicalWidth =
-            std::max(maxLogicalWidth,
-                     static_cast<int>(
-                         std::max(spanMaxLogicalWidth, cellMaxLogicalWidth) *
-                         100 / cellLogicalWidth.percent()));
+        max_logical_width =
+            std::max(max_logical_width,
+                     static_cast<int>(std::max(span_max_logical_width,
+                                               cell_max_logical_width) *
+                                      100 / cell_logical_width.Percent()));
 
         // all non percent columns in the span get percent values to sum up
         // correctly.
-        float percentMissing = cellLogicalWidth.percent() - totalPercent;
-        int totalWidth = 0;
-        for (unsigned pos = effCol; pos < lastCol; ++pos) {
-          if (!m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc())
-            totalWidth += m_layoutStruct[pos].clampedEffectiveMaxLogicalWidth();
+        float percent_missing = cell_logical_width.Percent() - total_percent;
+        int total_width = 0;
+        for (unsigned pos = eff_col; pos < last_col; ++pos) {
+          if (!layout_struct_[pos].effective_logical_width.IsPercentOrCalc())
+            total_width +=
+                layout_struct_[pos].ClampedEffectiveMaxLogicalWidth();
         }
 
-        for (unsigned pos = effCol; pos < lastCol && totalWidth > 0; ++pos) {
-          if (!m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc()) {
-            float percent = percentMissing *
-                            static_cast<float>(
-                                m_layoutStruct[pos].effectiveMaxLogicalWidth) /
-                            totalWidth;
-            totalWidth -= m_layoutStruct[pos].clampedEffectiveMaxLogicalWidth();
-            percentMissing -= percent;
+        for (unsigned pos = eff_col; pos < last_col && total_width > 0; ++pos) {
+          if (!layout_struct_[pos].effective_logical_width.IsPercentOrCalc()) {
+            float percent =
+                percent_missing *
+                static_cast<float>(
+                    layout_struct_[pos].effective_max_logical_width) /
+                total_width;
+            total_width -=
+                layout_struct_[pos].ClampedEffectiveMaxLogicalWidth();
+            percent_missing -= percent;
             if (percent > 0)
-              m_layoutStruct[pos].effectiveLogicalWidth.setValue(Percent,
-                                                                 percent);
+              layout_struct_[pos].effective_logical_width.SetValue(kPercent,
+                                                                   percent);
             else
-              m_layoutStruct[pos].effectiveLogicalWidth = Length();
+              layout_struct_[pos].effective_logical_width = Length();
           }
         }
       }
     }
 
     // make sure minWidth and maxWidth of the spanning cell are honoured
-    if (cellMinLogicalWidth > spanMinLogicalWidth) {
-      if (allColsAreFixed) {
-        for (unsigned pos = effCol; fixedWidth > 0 && pos < lastCol; ++pos) {
-          int cellLogicalWidth = std::max(
-              m_layoutStruct[pos].effectiveMinLogicalWidth,
-              static_cast<int>(cellMinLogicalWidth *
-                               m_layoutStruct[pos].logicalWidth.value() /
-                               fixedWidth));
-          fixedWidth -= m_layoutStruct[pos].logicalWidth.value();
-          cellMinLogicalWidth -= cellLogicalWidth;
-          m_layoutStruct[pos].effectiveMinLogicalWidth = cellLogicalWidth;
+    if (cell_min_logical_width > span_min_logical_width) {
+      if (all_cols_are_fixed) {
+        for (unsigned pos = eff_col; fixed_width > 0 && pos < last_col; ++pos) {
+          int cell_logical_width = std::max(
+              layout_struct_[pos].effective_min_logical_width,
+              static_cast<int>(cell_min_logical_width *
+                               layout_struct_[pos].logical_width.Value() /
+                               fixed_width));
+          fixed_width -= layout_struct_[pos].logical_width.Value();
+          cell_min_logical_width -= cell_logical_width;
+          layout_struct_[pos].effective_min_logical_width = cell_logical_width;
         }
-      } else if (allColsArePercent) {
+      } else if (all_cols_are_percent) {
         // In this case, we just split the colspan's min amd max widths
         // following the percentage.
-        int allocatedMinLogicalWidth = 0;
-        int allocatedMaxLogicalWidth = 0;
-        for (unsigned pos = effCol; pos < lastCol; ++pos) {
+        int allocated_min_logical_width = 0;
+        int allocated_max_logical_width = 0;
+        for (unsigned pos = eff_col; pos < last_col; ++pos) {
           // TODO(alancutter): Make this work correctly for calc lengths.
-          DCHECK(m_layoutStruct[pos].logicalWidth.isPercentOrCalc() ||
-                 m_layoutStruct[pos].effectiveLogicalWidth.isPercentOrCalc());
+          DCHECK(layout_struct_[pos].logical_width.IsPercentOrCalc() ||
+                 layout_struct_[pos].effective_logical_width.IsPercentOrCalc());
           // |allColsArePercent| means that either the logicalWidth *or* the
           // effectiveLogicalWidth are percents, handle both of them here.
           float percent =
-              m_layoutStruct[pos].logicalWidth.isPercentOrCalc()
-                  ? m_layoutStruct[pos].logicalWidth.percent()
-                  : m_layoutStruct[pos].effectiveLogicalWidth.percent();
-          int columnMinLogicalWidth =
-              static_cast<int>(percent * cellMinLogicalWidth / totalPercent);
-          int columnMaxLogicalWidth =
-              static_cast<int>(percent * cellMaxLogicalWidth / totalPercent);
-          m_layoutStruct[pos].effectiveMinLogicalWidth =
-              std::max(m_layoutStruct[pos].effectiveMinLogicalWidth,
-                       columnMinLogicalWidth);
-          m_layoutStruct[pos].effectiveMaxLogicalWidth = columnMaxLogicalWidth;
-          allocatedMinLogicalWidth += columnMinLogicalWidth;
-          allocatedMaxLogicalWidth += columnMaxLogicalWidth;
+              layout_struct_[pos].logical_width.IsPercentOrCalc()
+                  ? layout_struct_[pos].logical_width.Percent()
+                  : layout_struct_[pos].effective_logical_width.Percent();
+          int column_min_logical_width = static_cast<int>(
+              percent * cell_min_logical_width / total_percent);
+          int column_max_logical_width = static_cast<int>(
+              percent * cell_max_logical_width / total_percent);
+          layout_struct_[pos].effective_min_logical_width =
+              std::max(layout_struct_[pos].effective_min_logical_width,
+                       column_min_logical_width);
+          layout_struct_[pos].effective_max_logical_width =
+              column_max_logical_width;
+          allocated_min_logical_width += column_min_logical_width;
+          allocated_max_logical_width += column_max_logical_width;
         }
-        DCHECK_LE(allocatedMinLogicalWidth, cellMinLogicalWidth);
-        DCHECK_LE(allocatedMaxLogicalWidth, cellMaxLogicalWidth);
-        cellMinLogicalWidth -= allocatedMinLogicalWidth;
-        cellMaxLogicalWidth -= allocatedMaxLogicalWidth;
+        DCHECK_LE(allocated_min_logical_width, cell_min_logical_width);
+        DCHECK_LE(allocated_max_logical_width, cell_max_logical_width);
+        cell_min_logical_width -= allocated_min_logical_width;
+        cell_max_logical_width -= allocated_max_logical_width;
       } else {
-        int remainingMaxLogicalWidth = spanMaxLogicalWidth;
-        int remainingMinLogicalWidth = spanMinLogicalWidth;
+        int remaining_max_logical_width = span_max_logical_width;
+        int remaining_min_logical_width = span_min_logical_width;
 
         // Give min to variable first, to fixed second, and to others third.
-        for (unsigned pos = effCol;
-             remainingMaxLogicalWidth >= 0 && pos < lastCol; ++pos) {
-          if (m_layoutStruct[pos].logicalWidth.isFixed() && haveAuto &&
-              fixedWidth <= cellMinLogicalWidth) {
-            int colMinLogicalWidth =
-                std::max<int>(m_layoutStruct[pos].effectiveMinLogicalWidth,
-                              m_layoutStruct[pos].logicalWidth.value());
-            fixedWidth -= m_layoutStruct[pos].logicalWidth.value();
-            remainingMinLogicalWidth -=
-                m_layoutStruct[pos].effectiveMinLogicalWidth;
-            remainingMaxLogicalWidth -=
-                m_layoutStruct[pos].effectiveMaxLogicalWidth;
-            cellMinLogicalWidth -= colMinLogicalWidth;
-            m_layoutStruct[pos].effectiveMinLogicalWidth = colMinLogicalWidth;
+        for (unsigned pos = eff_col;
+             remaining_max_logical_width >= 0 && pos < last_col; ++pos) {
+          if (layout_struct_[pos].logical_width.IsFixed() && have_auto &&
+              fixed_width <= cell_min_logical_width) {
+            int col_min_logical_width =
+                std::max<int>(layout_struct_[pos].effective_min_logical_width,
+                              layout_struct_[pos].logical_width.Value());
+            fixed_width -= layout_struct_[pos].logical_width.Value();
+            remaining_min_logical_width -=
+                layout_struct_[pos].effective_min_logical_width;
+            remaining_max_logical_width -=
+                layout_struct_[pos].effective_max_logical_width;
+            cell_min_logical_width -= col_min_logical_width;
+            layout_struct_[pos].effective_min_logical_width =
+                col_min_logical_width;
           }
         }
 
-        for (unsigned pos = effCol;
-             remainingMaxLogicalWidth >= 0 && pos < lastCol &&
-             remainingMinLogicalWidth < cellMinLogicalWidth;
+        for (unsigned pos = eff_col;
+             remaining_max_logical_width >= 0 && pos < last_col &&
+             remaining_min_logical_width < cell_min_logical_width;
              ++pos) {
-          if (!(m_layoutStruct[pos].logicalWidth.isFixed() && haveAuto &&
-                fixedWidth <= cellMinLogicalWidth)) {
-            int colMinLogicalWidth = std::max<int>(
-                m_layoutStruct[pos].effectiveMinLogicalWidth,
-                static_cast<int>(remainingMaxLogicalWidth
-                                     ? cellMinLogicalWidth *
-                                           static_cast<float>(
-                                               m_layoutStruct[pos]
-                                                   .effectiveMaxLogicalWidth) /
-                                           remainingMaxLogicalWidth
-                                     : cellMinLogicalWidth));
-            colMinLogicalWidth = std::min<int>(
-                m_layoutStruct[pos].effectiveMinLogicalWidth +
-                    (cellMinLogicalWidth - remainingMinLogicalWidth),
-                colMinLogicalWidth);
-            remainingMaxLogicalWidth -=
-                m_layoutStruct[pos].effectiveMaxLogicalWidth;
-            remainingMinLogicalWidth -=
-                m_layoutStruct[pos].effectiveMinLogicalWidth;
-            cellMinLogicalWidth -= colMinLogicalWidth;
-            m_layoutStruct[pos].effectiveMinLogicalWidth = colMinLogicalWidth;
+          if (!(layout_struct_[pos].logical_width.IsFixed() && have_auto &&
+                fixed_width <= cell_min_logical_width)) {
+            int col_min_logical_width = std::max<int>(
+                layout_struct_[pos].effective_min_logical_width,
+                static_cast<int>(
+                    remaining_max_logical_width
+                        ? cell_min_logical_width *
+                              static_cast<float>(
+                                  layout_struct_[pos]
+                                      .effective_max_logical_width) /
+                              remaining_max_logical_width
+                        : cell_min_logical_width));
+            col_min_logical_width = std::min<int>(
+                layout_struct_[pos].effective_min_logical_width +
+                    (cell_min_logical_width - remaining_min_logical_width),
+                col_min_logical_width);
+            remaining_max_logical_width -=
+                layout_struct_[pos].effective_max_logical_width;
+            remaining_min_logical_width -=
+                layout_struct_[pos].effective_min_logical_width;
+            cell_min_logical_width -= col_min_logical_width;
+            layout_struct_[pos].effective_min_logical_width =
+                col_min_logical_width;
           }
         }
       }
     }
-    if (!cellLogicalWidth.isPercentOrCalc()) {
-      if (cellMaxLogicalWidth > spanMaxLogicalWidth) {
-        for (unsigned pos = effCol; spanMaxLogicalWidth >= 0 && pos < lastCol;
-             ++pos) {
-          int colMaxLogicalWidth = std::max(
-              m_layoutStruct[pos].effectiveMaxLogicalWidth,
-              static_cast<int>(
-                  spanMaxLogicalWidth
-                      ? cellMaxLogicalWidth *
-                            static_cast<float>(
-                                m_layoutStruct[pos].effectiveMaxLogicalWidth) /
-                            spanMaxLogicalWidth
-                      : cellMaxLogicalWidth));
-          spanMaxLogicalWidth -= m_layoutStruct[pos].effectiveMaxLogicalWidth;
-          cellMaxLogicalWidth -= colMaxLogicalWidth;
-          m_layoutStruct[pos].effectiveMaxLogicalWidth = colMaxLogicalWidth;
+    if (!cell_logical_width.IsPercentOrCalc()) {
+      if (cell_max_logical_width > span_max_logical_width) {
+        for (unsigned pos = eff_col;
+             span_max_logical_width >= 0 && pos < last_col; ++pos) {
+          int col_max_logical_width = std::max(
+              layout_struct_[pos].effective_max_logical_width,
+              static_cast<int>(span_max_logical_width
+                                   ? cell_max_logical_width *
+                                         static_cast<float>(
+                                             layout_struct_[pos]
+                                                 .effective_max_logical_width) /
+                                         span_max_logical_width
+                                   : cell_max_logical_width));
+          span_max_logical_width -=
+              layout_struct_[pos].effective_max_logical_width;
+          cell_max_logical_width -= col_max_logical_width;
+          layout_struct_[pos].effective_max_logical_width =
+              col_max_logical_width;
         }
       }
     } else {
-      for (unsigned pos = effCol; pos < lastCol; ++pos)
-        m_layoutStruct[pos].maxLogicalWidth =
-            std::max(m_layoutStruct[pos].maxLogicalWidth,
-                     m_layoutStruct[pos].minLogicalWidth);
+      for (unsigned pos = eff_col; pos < last_col; ++pos)
+        layout_struct_[pos].max_logical_width =
+            std::max(layout_struct_[pos].max_logical_width,
+                     layout_struct_[pos].min_logical_width);
     }
     // treat span ranges consisting of empty cells only as if they had content
-    if (spanHasEmptyCellsOnly) {
-      for (unsigned pos = effCol; pos < lastCol; ++pos)
-        m_layoutStruct[pos].emptyCellsOnly = false;
+    if (span_has_empty_cells_only) {
+      for (unsigned pos = eff_col; pos < last_col; ++pos)
+        layout_struct_[pos].empty_cells_only = false;
     }
   }
-  m_effectiveLogicalWidthDirty = false;
+  effective_logical_width_dirty_ = false;
 
-  return std::min(maxLogicalWidth, INT_MAX / 2);
+  return std::min(max_logical_width, INT_MAX / 2);
 }
 
 /* gets all cells that originate in a column and have a cellspan > 1
    Sorts them by increasing cellspan
 */
-void TableLayoutAlgorithmAuto::insertSpanCell(LayoutTableCell* cell) {
+void TableLayoutAlgorithmAuto::InsertSpanCell(LayoutTableCell* cell) {
   DCHECK(cell);
-  DCHECK_NE(cell->colSpan(), 1u);
-  if (!cell || cell->colSpan() == 1)
+  DCHECK_NE(cell->ColSpan(), 1u);
+  if (!cell || cell->ColSpan() == 1)
     return;
 
-  unsigned size = m_spanCells.size();
-  if (!size || m_spanCells[size - 1] != 0) {
-    m_spanCells.grow(size + 10);
+  unsigned size = span_cells_.size();
+  if (!size || span_cells_[size - 1] != 0) {
+    span_cells_.Grow(size + 10);
     for (unsigned i = 0; i < 10; i++)
-      m_spanCells[size + i] = 0;
+      span_cells_[size + i] = 0;
     size += 10;
   }
 
   // Add them in sort. This is a slow algorithm, and a binary search or a fast
   // sorting after collection would be better.
   unsigned pos = 0;
-  unsigned span = cell->colSpan();
-  while (pos < m_spanCells.size() && m_spanCells[pos] &&
-         span > m_spanCells[pos]->colSpan())
+  unsigned span = cell->ColSpan();
+  while (pos < span_cells_.size() && span_cells_[pos] &&
+         span > span_cells_[pos]->ColSpan())
     pos++;
-  memmove(m_spanCells.data() + pos + 1, m_spanCells.data() + pos,
+  memmove(span_cells_.Data() + pos + 1, span_cells_.Data() + pos,
           (size - pos - 1) * sizeof(LayoutTableCell*));
-  m_spanCells[pos] = cell;
+  span_cells_[pos] = cell;
 }
 
-void TableLayoutAlgorithmAuto::layout() {
+void TableLayoutAlgorithmAuto::GetLayout() {
   // table layout based on the values collected in the layout structure.
-  int tableLogicalWidth = (m_table->logicalWidth() -
-                           m_table->bordersPaddingAndSpacingInRowDirection())
-                              .toInt();
-  int available = tableLogicalWidth;
-  size_t nEffCols = m_table->numEffectiveColumns();
+  int table_logical_width = (table_->LogicalWidth() -
+                             table_->BordersPaddingAndSpacingInRowDirection())
+                                .ToInt();
+  int available = table_logical_width;
+  size_t n_eff_cols = table_->NumEffectiveColumns();
 
   // FIXME: It is possible to be called without having properly updated our
   // internal representation.  This means that our preferred logical widths were
   // not recomputed as expected.
-  if (nEffCols != m_layoutStruct.size()) {
-    fullRecalc();
+  if (n_eff_cols != layout_struct_.size()) {
+    FullRecalc();
     // FIXME: Table layout shouldn't modify our table structure (but does due to
     // columns and column-groups).
-    nEffCols = m_table->numEffectiveColumns();
+    n_eff_cols = table_->NumEffectiveColumns();
   }
 
-  if (m_effectiveLogicalWidthDirty)
-    calcEffectiveLogicalWidth();
+  if (effective_logical_width_dirty_)
+    CalcEffectiveLogicalWidth();
 
-  bool havePercent = false;
-  int numAuto = 0;
-  int numFixed = 0;
-  float totalAuto = 0;
-  float totalFixed = 0;
-  float totalPercent = 0;
-  int allocAuto = 0;
-  unsigned numAutoEmptyCellsOnly = 0;
+  bool have_percent = false;
+  int num_auto = 0;
+  int num_fixed = 0;
+  float total_auto = 0;
+  float total_fixed = 0;
+  float total_percent = 0;
+  int alloc_auto = 0;
+  unsigned num_auto_empty_cells_only = 0;
 
   // fill up every cell with its minWidth
-  for (size_t i = 0; i < nEffCols; ++i) {
-    int cellLogicalWidth = m_layoutStruct[i].effectiveMinLogicalWidth;
-    m_layoutStruct[i].computedLogicalWidth = cellLogicalWidth;
-    available -= cellLogicalWidth;
-    Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-    switch (logicalWidth.type()) {
-      case Percent:
-        havePercent = true;
-        totalPercent += logicalWidth.percent();
+  for (size_t i = 0; i < n_eff_cols; ++i) {
+    int cell_logical_width = layout_struct_[i].effective_min_logical_width;
+    layout_struct_[i].computed_logical_width = cell_logical_width;
+    available -= cell_logical_width;
+    Length& logical_width = layout_struct_[i].effective_logical_width;
+    switch (logical_width.GetType()) {
+      case kPercent:
+        have_percent = true;
+        total_percent += logical_width.Percent();
         break;
-      case Fixed:
-        numFixed++;
-        totalFixed += m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
+      case kFixed:
+        num_fixed++;
+        total_fixed += layout_struct_[i].ClampedEffectiveMaxLogicalWidth();
         // fall through
         break;
-      case Auto:
-        if (m_layoutStruct[i].emptyCellsOnly) {
-          numAutoEmptyCellsOnly++;
+      case kAuto:
+        if (layout_struct_[i].empty_cells_only) {
+          num_auto_empty_cells_only++;
         } else {
-          numAuto++;
-          totalAuto += m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
+          num_auto++;
+          total_auto += layout_struct_[i].ClampedEffectiveMaxLogicalWidth();
         }
-        if (!m_layoutStruct[i].columnHasNoCells)
-          allocAuto += cellLogicalWidth;
+        if (!layout_struct_[i].column_has_no_cells)
+          alloc_auto += cell_logical_width;
         break;
       default:
         break;
@@ -681,34 +697,36 @@ void TableLayoutAlgorithmAuto::layout() {
   }
 
   // allocate width to percent cols
-  if (available > 0 && havePercent) {
-    for (size_t i = 0; i < nEffCols; ++i) {
-      Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-      if (logicalWidth.isPercentOrCalc()) {
-        int cellLogicalWidth = std::max<int>(
-            m_layoutStruct[i].effectiveMinLogicalWidth,
-            minimumValueForLength(logicalWidth, LayoutUnit(tableLogicalWidth))
-                .toInt());
-        available += m_layoutStruct[i].computedLogicalWidth - cellLogicalWidth;
-        m_layoutStruct[i].computedLogicalWidth = cellLogicalWidth;
+  if (available > 0 && have_percent) {
+    for (size_t i = 0; i < n_eff_cols; ++i) {
+      Length& logical_width = layout_struct_[i].effective_logical_width;
+      if (logical_width.IsPercentOrCalc()) {
+        int cell_logical_width =
+            std::max<int>(layout_struct_[i].effective_min_logical_width,
+                          MinimumValueForLength(logical_width,
+                                                LayoutUnit(table_logical_width))
+                              .ToInt());
+        available +=
+            layout_struct_[i].computed_logical_width - cell_logical_width;
+        layout_struct_[i].computed_logical_width = cell_logical_width;
       }
     }
-    if (totalPercent > 100) {
+    if (total_percent > 100) {
       // remove overallocated space from the last columns
-      int excess = tableLogicalWidth * (totalPercent - 100) / 100;
-      for (unsigned i = nEffCols; i;) {
+      int excess = table_logical_width * (total_percent - 100) / 100;
+      for (unsigned i = n_eff_cols; i;) {
         --i;
-        if (m_layoutStruct[i].effectiveLogicalWidth.isPercentOrCalc()) {
-          int cellLogicalWidth = m_layoutStruct[i].computedLogicalWidth;
-          int reduction = std::min(cellLogicalWidth, excess);
+        if (layout_struct_[i].effective_logical_width.IsPercentOrCalc()) {
+          int cell_logical_width = layout_struct_[i].computed_logical_width;
+          int reduction = std::min(cell_logical_width, excess);
           // The lines below might look inconsistent, but that's the way it's
           // handled in mozilla.
           excess -= reduction;
-          int newLogicalWidth =
-              std::max<int>(m_layoutStruct[i].effectiveMinLogicalWidth,
-                            cellLogicalWidth - reduction);
-          available += cellLogicalWidth - newLogicalWidth;
-          m_layoutStruct[i].computedLogicalWidth = newLogicalWidth;
+          int new_logical_width =
+              std::max<int>(layout_struct_[i].effective_min_logical_width,
+                            cell_logical_width - reduction);
+          available += cell_logical_width - new_logical_width;
+          layout_struct_[i].computed_logical_width = new_logical_width;
         }
       }
     }
@@ -716,45 +734,46 @@ void TableLayoutAlgorithmAuto::layout() {
 
   // then allocate width to fixed cols
   if (available > 0) {
-    for (size_t i = 0; i < nEffCols; ++i) {
-      Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-      if (logicalWidth.isFixed() &&
-          logicalWidth.value() > m_layoutStruct[i].computedLogicalWidth) {
+    for (size_t i = 0; i < n_eff_cols; ++i) {
+      Length& logical_width = layout_struct_[i].effective_logical_width;
+      if (logical_width.IsFixed() &&
+          logical_width.Value() > layout_struct_[i].computed_logical_width) {
         available +=
-            m_layoutStruct[i].computedLogicalWidth - logicalWidth.value();
-        m_layoutStruct[i].computedLogicalWidth = logicalWidth.value();
+            layout_struct_[i].computed_logical_width - logical_width.Value();
+        layout_struct_[i].computed_logical_width = logical_width.Value();
       }
     }
   }
 
   // Give each auto width column its share of the available width, non-empty
   // columns then empty columns.
-  if (available > 0 && (numAuto || numAutoEmptyCellsOnly)) {
-    available += allocAuto;
-    if (numAuto)
-      distributeWidthToColumns<float, Auto, NonEmptyCells, InitialWidth,
-                               StartToEnd>(available, totalAuto);
-    if (numAutoEmptyCellsOnly)
-      distributeWidthToColumns<unsigned, Auto, EmptyCells, InitialWidth,
-                               StartToEnd>(available, numAutoEmptyCellsOnly);
+  if (available > 0 && (num_auto || num_auto_empty_cells_only)) {
+    available += alloc_auto;
+    if (num_auto)
+      DistributeWidthToColumns<float, kAuto, kNonEmptyCells, kInitialWidth,
+                               kStartToEnd>(available, total_auto);
+    if (num_auto_empty_cells_only)
+      DistributeWidthToColumns<unsigned, kAuto, kEmptyCells, kInitialWidth,
+                               kStartToEnd>(available,
+                                            num_auto_empty_cells_only);
   }
 
   // Any remaining available width expands fixed width, percent width, and
   // non-empty auto width columns, in that order.
-  if (available > 0 && numFixed)
-    distributeWidthToColumns<float, Fixed, AllCells, ExtraWidth, StartToEnd>(
-        available, totalFixed);
+  if (available > 0 && num_fixed)
+    DistributeWidthToColumns<float, kFixed, kAllCells, kExtraWidth,
+                             kStartToEnd>(available, total_fixed);
 
-  if (available > 0 && m_hasPercent && totalPercent < 100)
-    distributeWidthToColumns<float, Percent, AllCells, ExtraWidth, StartToEnd>(
-        available, totalPercent);
+  if (available > 0 && has_percent_ && total_percent < 100)
+    DistributeWidthToColumns<float, kPercent, kAllCells, kExtraWidth,
+                             kStartToEnd>(available, total_percent);
 
-  if (available > 0 && nEffCols > numAutoEmptyCellsOnly) {
-    unsigned total = nEffCols - numAutoEmptyCellsOnly;
+  if (available > 0 && n_eff_cols > num_auto_empty_cells_only) {
+    unsigned total = n_eff_cols - num_auto_empty_cells_only;
     // Starting from the last cell is for compatibility with FF/IE - it isn't
     // specified anywhere.
-    distributeWidthToColumns<unsigned, Auto, NonEmptyCells, LeftoverWidth,
-                             EndToStart>(available, total);
+    DistributeWidthToColumns<unsigned, kAuto, kNonEmptyCells, kLeftoverWidth,
+                             kEndToStart>(available, total);
   }
 
   // If we have overallocated, reduce every cell according to the difference
@@ -762,20 +781,20 @@ void TableLayoutAlgorithmAuto::layout() {
   // exact results with IE. Wonder is some of this also holds for width
   // distributing. This is basically the reverse of how we grew the cells.
   if (available < 0)
-    shrinkColumnWidth(Auto, available);
+    ShrinkColumnWidth(kAuto, available);
   if (available < 0)
-    shrinkColumnWidth(Fixed, available);
+    ShrinkColumnWidth(kFixed, available);
   if (available < 0)
-    shrinkColumnWidth(Percent, available);
+    ShrinkColumnWidth(kPercent, available);
 
-  DCHECK_EQ(m_table->effectiveColumnPositions().size(), nEffCols + 1);
+  DCHECK_EQ(table_->EffectiveColumnPositions().size(), n_eff_cols + 1);
   int pos = 0;
-  for (size_t i = 0; i < nEffCols; ++i) {
-    m_table->setEffectiveColumnPosition(i, pos);
-    pos += m_layoutStruct[i].computedLogicalWidth + m_table->hBorderSpacing();
+  for (size_t i = 0; i < n_eff_cols; ++i) {
+    table_->SetEffectiveColumnPosition(i, pos);
+    pos += layout_struct_[i].computed_logical_width + table_->HBorderSpacing();
   }
   // The extra position is for the imaginary column after the last column.
-  m_table->setEffectiveColumnPosition(nEffCols, pos);
+  table_->SetEffectiveColumnPosition(n_eff_cols, pos);
 }
 
 template <typename Total,
@@ -783,77 +802,78 @@ template <typename Total,
           CellsToProcess cellsToProcess,
           DistributionMode distributionMode,
           DistributionDirection distributionDirection>
-void TableLayoutAlgorithmAuto::distributeWidthToColumns(int& available,
+void TableLayoutAlgorithmAuto::DistributeWidthToColumns(int& available,
                                                         Total total) {
   // TODO(alancutter): Make this work correctly for calc lengths.
-  int nEffCols = static_cast<int>(m_table->numEffectiveColumns());
-  bool startToEnd = distributionDirection == StartToEnd;
-  for (int i = startToEnd ? 0 : nEffCols - 1;
-       startToEnd ? i < nEffCols : i > -1; startToEnd ? ++i : --i) {
-    const Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-    if (cellsToProcess == NonEmptyCells && logicalWidth.isAuto() &&
-        m_layoutStruct[i].emptyCellsOnly)
+  int n_eff_cols = static_cast<int>(table_->NumEffectiveColumns());
+  bool start_to_end = distributionDirection == kStartToEnd;
+  for (int i = start_to_end ? 0 : n_eff_cols - 1;
+       start_to_end ? i < n_eff_cols : i > -1; start_to_end ? ++i : --i) {
+    const Length& logical_width = layout_struct_[i].effective_logical_width;
+    if (cellsToProcess == kNonEmptyCells && logical_width.IsAuto() &&
+        layout_struct_[i].empty_cells_only)
       continue;
     // When allocating width to columns with nothing but empty cells we avoid
     // columns that exist only to flesh out a colspan and have no actual cells.
-    if (cellsToProcess == EmptyCells && logicalWidth.isAuto() &&
-        (!m_layoutStruct[i].emptyCellsOnly ||
-         m_layoutStruct[i].columnHasNoCells))
+    if (cellsToProcess == kEmptyCells && logical_width.IsAuto() &&
+        (!layout_struct_[i].empty_cells_only ||
+         layout_struct_[i].column_has_no_cells))
       continue;
-    if (distributionMode != LeftoverWidth && logicalWidth.type() != lengthType)
+    if (distributionMode != kLeftoverWidth &&
+        logical_width.GetType() != lengthType)
       continue;
 
     float factor = 1;
-    if (distributionMode != LeftoverWidth) {
-      if (lengthType == Percent)
-        factor = logicalWidth.percent();
-      else if (lengthType == Auto || lengthType == Fixed)
-        factor = m_layoutStruct[i].clampedEffectiveMaxLogicalWidth();
+    if (distributionMode != kLeftoverWidth) {
+      if (lengthType == kPercent)
+        factor = logical_width.Percent();
+      else if (lengthType == kAuto || lengthType == kFixed)
+        factor = layout_struct_[i].ClampedEffectiveMaxLogicalWidth();
     }
 
-    int newWidth = available * factor / total;
-    int cellLogicalWidth =
-        (distributionMode == InitialWidth)
-            ? max<int>(m_layoutStruct[i].computedLogicalWidth, newWidth)
-            : newWidth;
-    available -= cellLogicalWidth;
+    int new_width = available * factor / total;
+    int cell_logical_width =
+        (distributionMode == kInitialWidth)
+            ? max<int>(layout_struct_[i].computed_logical_width, new_width)
+            : new_width;
+    available -= cell_logical_width;
     total -= factor;
-    m_layoutStruct[i].computedLogicalWidth =
-        (distributionMode == InitialWidth)
-            ? cellLogicalWidth
-            : m_layoutStruct[i].computedLogicalWidth + cellLogicalWidth;
+    layout_struct_[i].computed_logical_width =
+        (distributionMode == kInitialWidth)
+            ? cell_logical_width
+            : layout_struct_[i].computed_logical_width + cell_logical_width;
 
     // If we have run out of width to allocate we're done.
     // TODO(rhogan): Extend this to Fixed as well.
-    if (lengthType == Percent && (!available || !total))
+    if (lengthType == kPercent && (!available || !total))
       return;
-    if (lengthType == Auto && !total)
+    if (lengthType == kAuto && !total)
       return;
   }
 }
 
-void TableLayoutAlgorithmAuto::shrinkColumnWidth(const LengthType& lengthType,
+void TableLayoutAlgorithmAuto::ShrinkColumnWidth(const LengthType& length_type,
                                                  int& available) {
-  size_t nEffCols = m_table->numEffectiveColumns();
-  int logicalWidthBeyondMin = 0;
-  for (unsigned i = nEffCols; i;) {
+  size_t n_eff_cols = table_->NumEffectiveColumns();
+  int logical_width_beyond_min = 0;
+  for (unsigned i = n_eff_cols; i;) {
     --i;
-    Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-    if (logicalWidth.type() == lengthType)
-      logicalWidthBeyondMin += m_layoutStruct[i].computedLogicalWidth -
-                               m_layoutStruct[i].effectiveMinLogicalWidth;
+    Length& logical_width = layout_struct_[i].effective_logical_width;
+    if (logical_width.GetType() == length_type)
+      logical_width_beyond_min += layout_struct_[i].computed_logical_width -
+                                  layout_struct_[i].effective_min_logical_width;
   }
 
-  for (unsigned i = nEffCols; i && logicalWidthBeyondMin > 0;) {
+  for (unsigned i = n_eff_cols; i && logical_width_beyond_min > 0;) {
     --i;
-    Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
-    if (logicalWidth.type() == lengthType) {
-      int minMaxDiff = m_layoutStruct[i].computedLogicalWidth -
-                       m_layoutStruct[i].effectiveMinLogicalWidth;
-      int reduce = available * minMaxDiff / logicalWidthBeyondMin;
-      m_layoutStruct[i].computedLogicalWidth += reduce;
+    Length& logical_width = layout_struct_[i].effective_logical_width;
+    if (logical_width.GetType() == length_type) {
+      int min_max_diff = layout_struct_[i].computed_logical_width -
+                         layout_struct_[i].effective_min_logical_width;
+      int reduce = available * min_max_diff / logical_width_beyond_min;
+      layout_struct_[i].computed_logical_width += reduce;
       available -= reduce;
-      logicalWidthBeyondMin -= minMaxDiff;
+      logical_width_beyond_min -= min_max_diff;
       if (available >= 0)
         break;
     }

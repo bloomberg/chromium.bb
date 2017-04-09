@@ -28,7 +28,7 @@ class WebGLVertexArrayObject;
 
 class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
  public:
-  void destroyContext() override;
+  void DestroyContext() override;
 
   /* Buffer objects */
   void bufferData(GLenum, DOMArrayBufferView*, GLenum, GLuint, GLuint);
@@ -47,13 +47,13 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   void copyBufferSubData(GLenum, GLenum, long long, long long, long long);
   void getBufferSubData(GLenum, long long, DOMArrayBufferView*, GLuint, GLuint);
 
-  void registerGetBufferSubDataAsyncCallback(
+  void RegisterGetBufferSubDataAsyncCallback(
       WebGLGetBufferSubDataAsyncCallback*);
-  void unregisterGetBufferSubDataAsyncCallback(
+  void UnregisterGetBufferSubDataAsyncCallback(
       WebGLGetBufferSubDataAsyncCallback*);
 
   /* Framebuffer objects */
-  bool validateTexFuncLayer(const char*, GLenum texTarget, GLint layer);
+  bool ValidateTexFuncLayer(const char*, GLenum tex_target, GLint layer);
   void blitFramebuffer(GLint,
                        GLint,
                        GLint,
@@ -493,8 +493,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei height,
                             GLint border,
                             DOMArrayBufferView* data,
-                            GLuint srcOffset,
-                            GLuint srcLengthOverride);
+                            GLuint src_offset,
+                            GLuint src_length_override);
   void compressedTexSubImage2D(GLenum target,
                                GLint level,
                                GLint xoffset,
@@ -503,8 +503,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei height,
                                GLenum format,
                                DOMArrayBufferView* data,
-                               GLuint srcOffset,
-                               GLuint srcLengthOverride);
+                               GLuint src_offset,
+                               GLuint src_length_override);
   void compressedTexImage3D(GLenum,
                             GLint,
                             GLenum,
@@ -533,7 +533,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei width,
                             GLsizei height,
                             GLint border,
-                            GLsizei imageSize,
+                            GLsizei image_size,
                             GLintptr offset);
   void compressedTexSubImage2D(GLenum target,
                                GLint level,
@@ -542,7 +542,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei width,
                                GLsizei height,
                                GLenum format,
-                               GLsizei imageSize,
+                               GLsizei image_size,
                                GLintptr offset);
   void compressedTexImage3D(GLenum target,
                             GLint level,
@@ -551,7 +551,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                             GLsizei height,
                             GLsizei depth,
                             GLint border,
-                            GLsizei imageSize,
+                            GLsizei image_size,
                             GLintptr offset);
   void compressedTexSubImage3D(GLenum target,
                                GLint level,
@@ -562,7 +562,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                GLsizei height,
                                GLsizei depth,
                                GLenum format,
-                               GLsizei imageSize,
+                               GLsizei image_size,
                                GLintptr offset);
 
   // Have to re-declare/re-define the following compressedTex{Sub}Image2D
@@ -875,8 +875,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   WebGLActiveInfo* getTransformFeedbackVarying(WebGLProgram*, GLuint);
   void pauseTransformFeedback();
   void resumeTransformFeedback();
-  bool validateTransformFeedbackPrimitiveMode(const char* functionName,
-                                              GLenum primitiveMode);
+  bool ValidateTransformFeedbackPrimitiveMode(const char* function_name,
+                                              GLenum primitive_mode);
 
   /* Uniform Buffer Objects and Transform Feedback Buffers */
   void bindBufferBase(GLenum, GLuint, WebGLBuffer*);
@@ -919,7 +919,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   long long offset);
 
   /* WebGLRenderingContextBase overrides */
-  void initializeNewContext() override;
+  void InitializeNewContext() override;
   void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
   void deleteFramebuffer(WebGLFramebuffer*) override;
   ScriptValue getParameter(ScriptState*, GLenum pname) override;
@@ -938,7 +938,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLenum format,
                   GLenum type,
                   DOMArrayBufferView* pixels) override;
-  void restoreCurrentFramebuffer() override;
+  void RestoreCurrentFramebuffer() override;
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -950,11 +950,11 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   WebGL2RenderingContextBase(
       HTMLCanvasElement*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      const CanvasContextCreationAttributes& requestedAttributes);
+      const CanvasContextCreationAttributes& requested_attributes);
   WebGL2RenderingContextBase(
       OffscreenCanvas*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      const CanvasContextCreationAttributes& requestedAttributes);
+      const CanvasContextCreationAttributes& requested_attributes);
 
   // DrawingBuffer::Client implementation.
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
@@ -962,19 +962,19 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   // Helper function to validate target and the attachment combination for
   // getFramebufferAttachmentParameters.  Generate GL error and return false if
   // parameters are illegal.
-  bool validateGetFramebufferAttachmentParameterFunc(const char* functionName,
+  bool ValidateGetFramebufferAttachmentParameterFunc(const char* function_name,
                                                      GLenum target,
                                                      GLenum attachment);
 
-  bool validateClearBuffer(const char* functionName,
+  bool ValidateClearBuffer(const char* function_name,
                            GLenum buffer,
                            GLsizei length);
 
   enum TexStorageType {
-    TexStorageType2D,
-    TexStorageType3D,
+    kTexStorageType2D,
+    kTexStorageType3D,
   };
-  bool validateTexStorage(const char*,
+  bool ValidateTexStorage(const char*,
                           GLenum,
                           GLsizei,
                           GLenum,
@@ -983,142 +983,143 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                           GLsizei,
                           TexStorageType);
 
-  bool validateUniformBlockIndex(const char*, WebGLProgram*, GLuint);
+  bool ValidateUniformBlockIndex(const char*, WebGLProgram*, GLuint);
 
-  ScriptValue getInt64Parameter(ScriptState*, GLenum);
+  ScriptValue GetInt64Parameter(ScriptState*, GLenum);
 
-  void samplerParameter(WebGLSampler*, GLenum, GLfloat, GLint, bool);
+  void SamplerParameter(WebGLSampler*, GLenum, GLfloat, GLint, bool);
 
-  bool isBufferBoundToTransformFeedback(WebGLBuffer*);
-  bool isBufferBoundToNonTransformFeedback(WebGLBuffer*);
-  bool validateBufferTargetCompatibility(const char*, GLenum, WebGLBuffer*);
+  bool IsBufferBoundToTransformFeedback(WebGLBuffer*);
+  bool IsBufferBoundToNonTransformFeedback(WebGLBuffer*);
+  bool ValidateBufferTargetCompatibility(const char*, GLenum, WebGLBuffer*);
 
-  bool validateBufferBaseTarget(const char* functionName, GLenum target);
-  bool validateAndUpdateBufferBindBaseTarget(const char* functionName,
+  bool ValidateBufferBaseTarget(const char* function_name, GLenum target);
+  bool ValidateAndUpdateBufferBindBaseTarget(const char* function_name,
                                              GLenum,
                                              GLuint,
                                              WebGLBuffer*);
 
-  WebGLImageConversion::PixelStoreParams getPackPixelStoreParams() override;
-  WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(
+  WebGLImageConversion::PixelStoreParams GetPackPixelStoreParams() override;
+  WebGLImageConversion::PixelStoreParams GetUnpackPixelStoreParams(
       TexImageDimension) override;
 
-  bool checkAndTranslateAttachments(const char* functionName,
+  bool CheckAndTranslateAttachments(const char* function_name,
                                     GLenum,
                                     Vector<GLenum>&);
 
-  IntRect getTextureSourceSubRectangle(GLsizei width, GLsizei height);
+  IntRect GetTextureSourceSubRectangle(GLsizei width, GLsizei height);
 
   /* WebGLRenderingContextBase overrides */
-  unsigned getMaxWebGLLocationLength() const override { return 1024; };
-  bool validateCapability(const char* functionName, GLenum) override;
-  bool validateBufferTarget(const char* functionName, GLenum target) override;
-  bool validateAndUpdateBufferBindTarget(const char* functionName,
+  unsigned GetMaxWebGLLocationLength() const override { return 1024; };
+  bool ValidateCapability(const char* function_name, GLenum) override;
+  bool ValidateBufferTarget(const char* function_name, GLenum target) override;
+  bool ValidateAndUpdateBufferBindTarget(const char* function_name,
                                          GLenum,
                                          WebGLBuffer*) override;
-  bool validateFramebufferTarget(GLenum target) override;
+  bool ValidateFramebufferTarget(GLenum target) override;
 
-  bool validateReadPixelsFormatAndType(GLenum format,
+  bool ValidateReadPixelsFormatAndType(GLenum format,
                                        GLenum type,
                                        DOMArrayBufferView*) override;
-  WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
-  WebGLFramebuffer* getReadFramebufferBinding() override;
-  GLint getMaxTextureLevelForTarget(GLenum target) override;
-  void renderbufferStorageImpl(GLenum target,
+  WebGLFramebuffer* GetFramebufferBinding(GLenum target) override;
+  WebGLFramebuffer* GetReadFramebufferBinding() override;
+  GLint GetMaxTextureLevelForTarget(GLenum target) override;
+  void RenderbufferStorageImpl(GLenum target,
                                GLsizei samples,
                                GLenum internalformat,
                                GLsizei width,
                                GLsizei height,
-                               const char* functionName) override;
+                               const char* function_name) override;
 
-  WebGLTexture* validateTexImageBinding(const char*,
+  WebGLTexture* ValidateTexImageBinding(const char*,
                                         TexImageFunctionID,
                                         GLenum) override;
   // Helper function to check texture 3D target and texture bound to the target.
   // Generate GL errors and return 0 if target is invalid or texture bound is
   // null.  Otherwise, return the texture bound to the target.
-  WebGLTexture* validateTexture3DBinding(const char* functionName,
+  WebGLTexture* ValidateTexture3DBinding(const char* function_name,
                                          GLenum target);
 
-  WebGLBuffer* validateBufferDataTarget(const char* functionName,
+  WebGLBuffer* ValidateBufferDataTarget(const char* function_name,
                                         GLenum target) override;
-  bool validateBufferDataUsage(const char* functionName, GLenum usage) override;
+  bool ValidateBufferDataUsage(const char* function_name,
+                               GLenum usage) override;
 
-  const char* validateGetBufferSubData(const char* functionName,
+  const char* ValidateGetBufferSubData(const char* function_name,
                                        GLenum target,
-                                       GLintptr sourceByteOffset,
+                                       GLintptr source_byte_offset,
                                        DOMArrayBufferView*,
-                                       GLuint destinationOffset,
+                                       GLuint destination_offset,
                                        GLuint length,
                                        WebGLBuffer**,
-                                       void** outDestinationDataPtr,
-                                       long long* outDestinationByteLength);
-  const char* validateGetBufferSubDataBounds(const char* functionName,
+                                       void** out_destination_data_ptr,
+                                       long long* out_destination_byte_length);
+  const char* ValidateGetBufferSubDataBounds(const char* function_name,
                                              WebGLBuffer*,
-                                             GLintptr sourceByteOffset,
-                                             long long destinationByteLength);
+                                             GLintptr source_byte_offset,
+                                             long long destination_byte_length);
 
-  bool canUseTexImageByGPU(TexImageFunctionID,
+  bool CanUseTexImageByGPU(TexImageFunctionID,
                            GLint internalformat,
                            GLenum type) override;
 
-  void removeBoundBuffer(WebGLBuffer*) override;
+  void RemoveBoundBuffer(WebGLBuffer*) override;
 
-  void resetUnpackParameters() override;
-  void restoreUnpackParameters() override;
+  void ResetUnpackParameters() override;
+  void RestoreUnpackParameters() override;
 
-  void renderbufferStorageHelper(GLenum target,
+  void RenderbufferStorageHelper(GLenum target,
                                  GLsizei samples,
                                  GLenum internalformat,
                                  GLsizei width,
                                  GLsizei height,
-                                 const char* functionName);
+                                 const char* function_name);
 
-  TraceWrapperMember<WebGLFramebuffer> m_readFramebufferBinding;
-  TraceWrapperMember<WebGLTransformFeedback> m_transformFeedbackBinding;
+  TraceWrapperMember<WebGLFramebuffer> read_framebuffer_binding_;
+  TraceWrapperMember<WebGLTransformFeedback> transform_feedback_binding_;
 
-  std::set<GLenum> m_supportedInternalFormatsStorage;
-  std::set<GLenum> m_compressedTextureFormatsETC2EAC;
+  std::set<GLenum> supported_internal_formats_storage_;
+  std::set<GLenum> compressed_texture_formats_etc2eac_;
 
-  TraceWrapperMember<WebGLBuffer> m_boundCopyReadBuffer;
-  TraceWrapperMember<WebGLBuffer> m_boundCopyWriteBuffer;
-  TraceWrapperMember<WebGLBuffer> m_boundPixelPackBuffer;
-  TraceWrapperMember<WebGLBuffer> m_boundPixelUnpackBuffer;
-  TraceWrapperMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
-  TraceWrapperMember<WebGLBuffer> m_boundUniformBuffer;
+  TraceWrapperMember<WebGLBuffer> bound_copy_read_buffer_;
+  TraceWrapperMember<WebGLBuffer> bound_copy_write_buffer_;
+  TraceWrapperMember<WebGLBuffer> bound_pixel_pack_buffer_;
+  TraceWrapperMember<WebGLBuffer> bound_pixel_unpack_buffer_;
+  TraceWrapperMember<WebGLBuffer> bound_transform_feedback_buffer_;
+  TraceWrapperMember<WebGLBuffer> bound_uniform_buffer_;
 
   HeapVector<TraceWrapperMember<WebGLBuffer>>
-      m_boundIndexedTransformFeedbackBuffers;
-  HeapVector<TraceWrapperMember<WebGLBuffer>> m_boundIndexedUniformBuffers;
-  GLint m_maxTransformFeedbackSeparateAttribs;
-  size_t m_maxBoundUniformBufferIndex;
+      bound_indexed_transform_feedback_buffers_;
+  HeapVector<TraceWrapperMember<WebGLBuffer>> bound_indexed_uniform_buffers_;
+  GLint max_transform_feedback_separate_attribs_;
+  size_t max_bound_uniform_buffer_index_;
 
-  TraceWrapperMember<WebGLQuery> m_currentBooleanOcclusionQuery;
+  TraceWrapperMember<WebGLQuery> current_boolean_occlusion_query_;
   TraceWrapperMember<WebGLQuery>
-      m_currentTransformFeedbackPrimitivesWrittenQuery;
-  TraceWrapperMember<WebGLQuery> m_currentElapsedQuery;
-  HeapVector<TraceWrapperMember<WebGLSampler>> m_samplerUnits;
+      current_transform_feedback_primitives_written_query_;
+  TraceWrapperMember<WebGLQuery> current_elapsed_query_;
+  HeapVector<TraceWrapperMember<WebGLSampler>> sampler_units_;
 
-  GLint m_packRowLength;
-  GLint m_packSkipPixels;
-  GLint m_packSkipRows;
-  GLint m_unpackRowLength;
-  GLint m_unpackImageHeight;
-  GLint m_unpackSkipPixels;
-  GLint m_unpackSkipRows;
-  GLint m_unpackSkipImages;
+  GLint pack_row_length_;
+  GLint pack_skip_pixels_;
+  GLint pack_skip_rows_;
+  GLint unpack_row_length_;
+  GLint unpack_image_height_;
+  GLint unpack_skip_pixels_;
+  GLint unpack_skip_rows_;
+  GLint unpack_skip_images_;
 
   HeapHashSet<Member<WebGLGetBufferSubDataAsyncCallback>>
-      m_getBufferSubDataAsyncCallbacks;
+      get_buffer_sub_data_async_callbacks_;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase,
                   CanvasRenderingContext,
                   context,
-                  context->is3d() &&
-                      WebGLRenderingContextBase::getWebGLVersion(context) >= 2,
-                  context.is3d() &&
-                      WebGLRenderingContextBase::getWebGLVersion(&context) >=
+                  context->Is3d() &&
+                      WebGLRenderingContextBase::GetWebGLVersion(context) >= 2,
+                  context.Is3d() &&
+                      WebGLRenderingContextBase::GetWebGLVersion(&context) >=
                           2);
 
 }  // namespace blink

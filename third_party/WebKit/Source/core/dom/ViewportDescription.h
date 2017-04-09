@@ -44,96 +44,97 @@ struct CORE_EXPORT ViewportDescription {
 
   enum Type {
     // These are ordered in increasing importance.
-    UserAgentStyleSheet,
-    HandheldFriendlyMeta,
-    MobileOptimizedMeta,
-    ViewportMeta,
-    AuthorStyleSheet
+    kUserAgentStyleSheet,
+    kHandheldFriendlyMeta,
+    kMobileOptimizedMeta,
+    kViewportMeta,
+    kAuthorStyleSheet
   } type;
 
   enum {
-    ValueAuto = -1,
-    ValueDeviceWidth = -2,
-    ValueDeviceHeight = -3,
-    ValuePortrait = -4,
-    ValueLandscape = -5,
-    ValueDeviceDPI = -6,
-    ValueLowDPI = -7,
-    ValueMediumDPI = -8,
-    ValueHighDPI = -9,
-    ValueExtendToZoom = -10
+    kValueAuto = -1,
+    kValueDeviceWidth = -2,
+    kValueDeviceHeight = -3,
+    kValuePortrait = -4,
+    kValueLandscape = -5,
+    kValueDeviceDPI = -6,
+    kValueLowDPI = -7,
+    kValueMediumDPI = -8,
+    kValueHighDPI = -9,
+    kValueExtendToZoom = -10
   };
 
-  ViewportDescription(Type type = UserAgentStyleSheet)
+  ViewportDescription(Type type = kUserAgentStyleSheet)
       : type(type),
-        zoom(ValueAuto),
-        minZoom(ValueAuto),
-        maxZoom(ValueAuto),
-        userZoom(true),
-        orientation(ValueAuto),
-        deprecatedTargetDensityDPI(ValueAuto),
-        zoomIsExplicit(false),
-        minZoomIsExplicit(false),
-        maxZoomIsExplicit(false),
-        userZoomIsExplicit(false) {}
+        zoom(kValueAuto),
+        min_zoom(kValueAuto),
+        max_zoom(kValueAuto),
+        user_zoom(true),
+        orientation(kValueAuto),
+        deprecated_target_density_dpi(kValueAuto),
+        zoom_is_explicit(false),
+        min_zoom_is_explicit(false),
+        max_zoom_is_explicit(false),
+        user_zoom_is_explicit(false) {}
 
   // All arguments are in CSS units.
-  PageScaleConstraints resolve(const FloatSize& initialViewportSize,
-                               Length legacyFallbackWidth) const;
+  PageScaleConstraints Resolve(const FloatSize& initial_viewport_size,
+                               Length legacy_fallback_width) const;
 
-  Length minWidth;
-  Length maxWidth;
-  Length minHeight;
-  Length maxHeight;
+  Length min_width;
+  Length max_width;
+  Length min_height;
+  Length max_height;
   float zoom;
-  float minZoom;
-  float maxZoom;
-  bool userZoom;
+  float min_zoom;
+  float max_zoom;
+  bool user_zoom;
   float orientation;
-  float deprecatedTargetDensityDPI;  // Only used for Android WebView
+  float deprecated_target_density_dpi;  // Only used for Android WebView
 
   // Whether the computed value was explicitly specified rather than being
   // inferred.
-  bool zoomIsExplicit;
-  bool minZoomIsExplicit;
-  bool maxZoomIsExplicit;
-  bool userZoomIsExplicit;
+  bool zoom_is_explicit;
+  bool min_zoom_is_explicit;
+  bool max_zoom_is_explicit;
+  bool user_zoom_is_explicit;
 
   bool operator==(const ViewportDescription& other) const {
     // Used for figuring out whether to reset the viewport or not,
     // thus we are not taking type into account.
-    return minWidth == other.minWidth && maxWidth == other.maxWidth &&
-           minHeight == other.minHeight && maxHeight == other.maxHeight &&
-           zoom == other.zoom && minZoom == other.minZoom &&
-           maxZoom == other.maxZoom && userZoom == other.userZoom &&
+    return min_width == other.min_width && max_width == other.max_width &&
+           min_height == other.min_height && max_height == other.max_height &&
+           zoom == other.zoom && min_zoom == other.min_zoom &&
+           max_zoom == other.max_zoom && user_zoom == other.user_zoom &&
            orientation == other.orientation &&
-           deprecatedTargetDensityDPI == other.deprecatedTargetDensityDPI &&
-           zoomIsExplicit == other.zoomIsExplicit &&
-           minZoomIsExplicit == other.minZoomIsExplicit &&
-           maxZoomIsExplicit == other.maxZoomIsExplicit &&
-           userZoomIsExplicit == other.userZoomIsExplicit;
+           deprecated_target_density_dpi ==
+               other.deprecated_target_density_dpi &&
+           zoom_is_explicit == other.zoom_is_explicit &&
+           min_zoom_is_explicit == other.min_zoom_is_explicit &&
+           max_zoom_is_explicit == other.max_zoom_is_explicit &&
+           user_zoom_is_explicit == other.user_zoom_is_explicit;
   }
 
   bool operator!=(const ViewportDescription& other) const {
     return !(*this == other);
   }
 
-  bool isLegacyViewportType() const {
-    return type >= HandheldFriendlyMeta && type <= ViewportMeta;
+  bool IsLegacyViewportType() const {
+    return type >= kHandheldFriendlyMeta && type <= kViewportMeta;
   }
-  bool isMetaViewportType() const { return type == ViewportMeta; }
-  bool isSpecifiedByAuthor() const { return type != UserAgentStyleSheet; }
-  bool matchesHeuristicsForGpuRasterization() const;
+  bool IsMetaViewportType() const { return type == kViewportMeta; }
+  bool IsSpecifiedByAuthor() const { return type != kUserAgentStyleSheet; }
+  bool MatchesHeuristicsForGpuRasterization() const;
 
   // Reports UMA stat on whether the page is considered mobile or desktop and
   // what kind of mobile it is. Applies only to Android, must only be called
   // once per page load.
-  void reportMobilePageStats(const LocalFrame*) const;
+  void ReportMobilePageStats(const LocalFrame*) const;
 
  private:
-  enum Direction { Horizontal, Vertical };
-  static float resolveViewportLength(const Length&,
-                                     const FloatSize& initialViewportSize,
+  enum Direction { kHorizontal, kVertical };
+  static float ResolveViewportLength(const Length&,
+                                     const FloatSize& initial_viewport_size,
                                      Direction);
 };
 

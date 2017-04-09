@@ -50,84 +50,84 @@ class PLATFORM_EXPORT AudioChannel {
 
   // Reference an external buffer.
   AudioChannel(float* storage, size_t length)
-      : m_length(length), m_rawPointer(storage), m_silent(false) {}
+      : length_(length), raw_pointer_(storage), silent_(false) {}
 
   // Manage storage for us.
   explicit AudioChannel(size_t length)
-      : m_length(length), m_rawPointer(nullptr), m_silent(true) {
-    m_memBuffer = WTF::wrapUnique(new AudioFloatArray(length));
+      : length_(length), raw_pointer_(nullptr), silent_(true) {
+    mem_buffer_ = WTF::WrapUnique(new AudioFloatArray(length));
   }
 
   // A "blank" audio channel -- must call set() before it's useful...
-  AudioChannel() : m_length(0), m_rawPointer(nullptr), m_silent(true) {}
+  AudioChannel() : length_(0), raw_pointer_(nullptr), silent_(true) {}
 
   // Redefine the memory for this channel.
   // storage represents external memory not managed by this object.
-  void set(float* storage, size_t length) {
-    m_memBuffer.reset();  // cleanup managed storage
-    m_rawPointer = storage;
-    m_length = length;
-    m_silent = false;
+  void Set(float* storage, size_t length) {
+    mem_buffer_.reset();  // cleanup managed storage
+    raw_pointer_ = storage;
+    length_ = length;
+    silent_ = false;
   }
 
   // How many sample-frames do we contain?
-  size_t length() const { return m_length; }
+  size_t length() const { return length_; }
 
   // resizeSmaller() can only be called with a new length <= the current length.
   // The data stored in the bus will remain undisturbed.
-  void resizeSmaller(size_t newLength);
+  void ResizeSmaller(size_t new_length);
 
   // Direct access to PCM sample data. Non-const accessor clears silent flag.
-  float* mutableData() {
-    clearSilentFlag();
-    return m_rawPointer ? m_rawPointer : m_memBuffer->data();
+  float* MutableData() {
+    ClearSilentFlag();
+    return raw_pointer_ ? raw_pointer_ : mem_buffer_->Data();
   }
 
-  const float* data() const {
-    return m_rawPointer ? m_rawPointer : m_memBuffer->data();
+  const float* Data() const {
+    return raw_pointer_ ? raw_pointer_ : mem_buffer_->Data();
   }
 
   // Zeroes out all sample values in buffer.
-  void zero() {
-    if (m_silent)
+  void Zero() {
+    if (silent_)
       return;
 
-    m_silent = true;
+    silent_ = true;
 
-    if (m_memBuffer.get())
-      m_memBuffer->zero();
+    if (mem_buffer_.get())
+      mem_buffer_->Zero();
     else
-      memset(m_rawPointer, 0, sizeof(float) * m_length);
+      memset(raw_pointer_, 0, sizeof(float) * length_);
   }
 
   // Clears the silent flag.
-  void clearSilentFlag() { m_silent = false; }
+  void ClearSilentFlag() { silent_ = false; }
 
-  bool isSilent() const { return m_silent; }
+  bool IsSilent() const { return silent_; }
 
   // Scales all samples by the same amount.
-  void scale(float scale);
+  void Scale(float scale);
 
   // A simple memcpy() from the source channel
-  void copyFrom(const AudioChannel* sourceChannel);
+  void CopyFrom(const AudioChannel* source_channel);
 
   // Copies the given range from the source channel.
-  void copyFromRange(const AudioChannel* sourceChannel,
-                     unsigned startFrame,
-                     unsigned endFrame);
+  void CopyFromRange(const AudioChannel* source_channel,
+                     unsigned start_frame,
+                     unsigned end_frame);
 
   // Sums (with unity gain) from the source channel.
-  void sumFrom(const AudioChannel* sourceChannel);
+  void SumFrom(const AudioChannel* source_channel);
 
   // Returns maximum absolute value (useful for normalization).
-  float maxAbsValue() const;
+  float MaxAbsValue() const;
 
  private:
-  size_t m_length;
+  size_t length_;
 
-  float* m_rawPointer;
-  std::unique_ptr<AudioFloatArray> m_memBuffer;
-  bool m_silent;
+  float* raw_pointer_;
+  std::unique_ptr<AudioFloatArray> mem_buffer_;
+  bool silent_;
 };
 
 }  // namespace blink

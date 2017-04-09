@@ -12,45 +12,45 @@ namespace blink {
 TEST(FontCacheAndroid, fallbackFontForCharacter) {
   // A Latin character in the common locale system font, but not in the
   // Chinese locale-preferred font.
-  const UChar32 testChar = 228;
+  const UChar32 kTestChar = 228;
 
-  FontDescription fontDescription;
-  fontDescription.setLocale(LayoutLocale::get("zh"));
-  ASSERT_EQ(USCRIPT_SIMPLIFIED_HAN, fontDescription.script());
-  fontDescription.setGenericFamily(FontDescription::StandardFamily);
+  FontDescription font_description;
+  font_description.SetLocale(LayoutLocale::Get("zh"));
+  ASSERT_EQ(USCRIPT_SIMPLIFIED_HAN, font_description.Script());
+  font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
-  FontCache* fontCache = FontCache::fontCache();
-  ASSERT_TRUE(fontCache);
-  RefPtr<SimpleFontData> fontData =
-      fontCache->fallbackFontForCharacter(fontDescription, testChar, 0);
-  EXPECT_TRUE(fontData);
+  FontCache* font_cache = FontCache::GetFontCache();
+  ASSERT_TRUE(font_cache);
+  RefPtr<SimpleFontData> font_data =
+      font_cache->FallbackFontForCharacter(font_description, kTestChar, 0);
+  EXPECT_TRUE(font_data);
 }
 
 TEST(FontCacheAndroid, genericFamilyNameForScript) {
   FontDescription english;
-  english.setLocale(LayoutLocale::get("en"));
+  english.SetLocale(LayoutLocale::Get("en"));
   FontDescription chinese;
-  chinese.setLocale(LayoutLocale::get("zh"));
+  chinese.SetLocale(LayoutLocale::Get("zh"));
 
-  if (FontFamilyNames::webkit_standard.isEmpty())
+  if (FontFamilyNames::webkit_standard.IsEmpty())
     FontFamilyNames::init();
 
   // For non-CJK, getGenericFamilyNameForScript should return the given
   // familyName.
   EXPECT_EQ(FontFamilyNames::webkit_standard,
-            FontCache::getGenericFamilyNameForScript(
+            FontCache::GetGenericFamilyNameForScript(
                 FontFamilyNames::webkit_standard, english));
   EXPECT_EQ(FontFamilyNames::webkit_monospace,
-            FontCache::getGenericFamilyNameForScript(
+            FontCache::GetGenericFamilyNameForScript(
                 FontFamilyNames::webkit_monospace, english));
 
   // For CJK, getGenericFamilyNameForScript should return CJK fonts except
   // monospace.
   EXPECT_NE(FontFamilyNames::webkit_standard,
-            FontCache::getGenericFamilyNameForScript(
+            FontCache::GetGenericFamilyNameForScript(
                 FontFamilyNames::webkit_standard, chinese));
   EXPECT_EQ(FontFamilyNames::webkit_monospace,
-            FontCache::getGenericFamilyNameForScript(
+            FontCache::GetGenericFamilyNameForScript(
                 FontFamilyNames::webkit_monospace, chinese));
 }
 

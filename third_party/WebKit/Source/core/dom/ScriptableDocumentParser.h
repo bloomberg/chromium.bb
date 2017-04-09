@@ -37,39 +37,41 @@ class CORE_EXPORT ScriptableDocumentParser : public DecodedDataDocumentParser {
  public:
   // Only used by Document::open for deciding if its safe to act on a
   // JavaScript document.open() call right now, or it should be ignored.
-  virtual bool isExecutingScript() const { return false; }
+  virtual bool IsExecutingScript() const { return false; }
 
   // FIXME: Only the HTMLDocumentParser ever blocks script execution on
   // stylesheet load, which is likely a bug in the XMLDocumentParser.
-  virtual void executeScriptsWaitingForResources() {}
+  virtual void ExecuteScriptsWaitingForResources() {}
 
-  virtual bool isWaitingForScripts() const = 0;
-  virtual void didAddPendingStylesheetInBody() {}
-  virtual void didLoadAllBodyStylesheets() {}
+  virtual bool IsWaitingForScripts() const = 0;
+  virtual void DidAddPendingStylesheetInBody() {}
+  virtual void DidLoadAllBodyStylesheets() {}
 
   // These are used to expose the current line/column to the scripting system.
-  virtual bool isParsingAtLineNumber() const;
-  virtual OrdinalNumber lineNumber() const = 0;
-  virtual TextPosition textPosition() const = 0;
+  virtual bool IsParsingAtLineNumber() const;
+  virtual OrdinalNumber LineNumber() const = 0;
+  virtual TextPosition GetTextPosition() const = 0;
 
-  void setWasCreatedByScript(bool wasCreatedByScript) {
-    m_wasCreatedByScript = wasCreatedByScript;
+  void SetWasCreatedByScript(bool was_created_by_script) {
+    was_created_by_script_ = was_created_by_script;
   }
-  bool wasCreatedByScript() const { return m_wasCreatedByScript; }
+  bool WasCreatedByScript() const { return was_created_by_script_; }
 
-  ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
+  ParserContentPolicy GetParserContentPolicy() {
+    return parser_content_policy_;
+  }
 
  protected:
   explicit ScriptableDocumentParser(
       Document&,
-      ParserContentPolicy = AllowScriptingContent);
+      ParserContentPolicy = kAllowScriptingContent);
 
  private:
-  ScriptableDocumentParser* asScriptableDocumentParser() final { return this; }
+  ScriptableDocumentParser* AsScriptableDocumentParser() final { return this; }
 
   // http://www.whatwg.org/specs/web-apps/current-work/#script-created-parser
-  bool m_wasCreatedByScript;
-  ParserContentPolicy m_parserContentPolicy;
+  bool was_created_by_script_;
+  ParserContentPolicy parser_content_policy_;
 };
 
 }  // namespace blink

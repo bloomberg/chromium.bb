@@ -38,22 +38,22 @@ class SQLValue {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum Type { NullValue, NumberValue, StringValue };
+  enum Type { kNullValue, kNumberValue, kStringValue };
 
-  SQLValue() : m_type(NullValue), m_number(0.0) {}
-  SQLValue(double number) : m_type(NumberValue), m_number(number) {}
-  SQLValue(const String& s) : m_type(StringValue), m_number(0.0), m_string(s) {}
+  SQLValue() : type_(kNullValue), number_(0.0) {}
+  SQLValue(double number) : type_(kNumberValue), number_(number) {}
+  SQLValue(const String& s) : type_(kStringValue), number_(0.0), string_(s) {}
   SQLValue(const SQLValue&);
 
-  Type getType() const { return m_type; }
+  Type GetType() const { return type_; }
 
-  String string() const;
-  double number() const;
+  String GetString() const;
+  double Number() const;
 
  private:
-  Type m_type;
-  double m_number;
-  String m_string;
+  Type type_;
+  double number_;
+  String string_;
 };
 
 }  // namespace blink

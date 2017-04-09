@@ -25,7 +25,7 @@ struct MapTraits<WTF::HashMap<K, V>> {
 
   static void SetToNull(WTF::HashMap<K, V>* output) {
     // WTF::HashMap<> doesn't support null state. Set it to empty instead.
-    output->clear();
+    output->Clear();
   }
 
   static size_t GetSize(const WTF::HashMap<K, V>& input) {
@@ -48,7 +48,7 @@ struct MapTraits<WTF::HashMap<K, V>> {
 
   template <typename IK, typename IV>
   static bool Insert(WTF::HashMap<K, V>& input, IK&& key, IV&& value) {
-    if (!WTF::HashMap<K, V>::isValidKey(key)) {
+    if (!WTF::HashMap<K, V>::IsValidKey(key)) {
       LOG(ERROR) << "The key value is disallowed by WTF::HashMap";
       return false;
     }
@@ -56,7 +56,7 @@ struct MapTraits<WTF::HashMap<K, V>> {
     return true;
   }
 
-  static void SetToEmpty(WTF::HashMap<K, V>* output) { output->clear(); }
+  static void SetToEmpty(WTF::HashMap<K, V>* output) { output->Clear(); }
 };
 
 }  // namespace mojo

@@ -20,7 +20,7 @@ class CORE_EXPORT CustomElementConnectedCallbackReaction final
   CustomElementConnectedCallbackReaction(CustomElementDefinition*);
 
  private:
-  void invoke(Element*) override;
+  void Invoke(Element*) override;
 };
 
 }  // namespace blink

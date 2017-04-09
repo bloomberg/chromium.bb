@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyboardEventAck) {
   scoped_refptr<InputMsgWatcher> filter = new InputMsgWatcher(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
-      blink::WebInputEvent::MouseMove);
+      blink::WebInputEvent::kMouseMove);
 
   SendCommand("Runtime.enable", nullptr);
   SendKeyEvent("rawKeyDown", 0, 13, 13, "Enter", false);
@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
   scoped_refptr<InputMsgWatcher> filter = new InputMsgWatcher(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
-      blink::WebInputEvent::MouseMove);
+      blink::WebInputEvent::kMouseMove);
 
   SendCommand("Runtime.enable", nullptr);
   SendMouseEvent("mouseMoved", 15, 15, false);

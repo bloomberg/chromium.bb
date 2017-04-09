@@ -15,10 +15,10 @@ namespace blink {
 
 namespace {
 
-String toString(const Vector<char>& data) {
-  if (data.isEmpty())
+String ToString(const Vector<char>& data) {
+  if (data.IsEmpty())
     return String("");
-  return String(data.data(), data.size());
+  return String(data.Data(), data.size());
 }
 
 class MockClient final : public GarbageCollectedFinalized<MockClient>,
@@ -26,16 +26,16 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 
  public:
-  void onePartInMultipartReceived(const ResourceResponse& response) override {
-    m_responses.push_back(response);
-    m_data.push_back(Vector<char>());
+  void OnePartInMultipartReceived(const ResourceResponse& response) override {
+    responses_.push_back(response);
+    data_.push_back(Vector<char>());
   }
-  void multipartDataReceived(const char* bytes, size_t size) override {
-    m_data.back().append(bytes, size);
+  void MultipartDataReceived(const char* bytes, size_t size) override {
+    data_.back().Append(bytes, size);
   }
 
-  Vector<ResourceResponse> m_responses;
-  Vector<Vector<char>> m_data;
+  Vector<ResourceResponse> responses_;
+  Vector<Vector<char>> data_;
 };
 
 TEST(MultipartResponseTest, SkippableLength) {
@@ -43,18 +43,18 @@ TEST(MultipartResponseTest, SkippableLength) {
     const char* input;
     const size_t position;
     const size_t expected;
-  } lineTests[] = {
+  } line_tests[] = {
       {"Line", 0, 0},         {"Line", 2, 0},         {"Line", 10, 0},
       {"\r\nLine", 0, 2},     {"\nLine", 0, 1},       {"\n\nLine", 0, 1},
       {"\rLine", 0, 0},       {"Line\r\nLine", 4, 2}, {"Line\nLine", 4, 1},
       {"Line\n\nLine", 4, 1}, {"Line\rLine", 4, 0},   {"Line\r\rLine", 4, 0},
   };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(lineTests); ++i) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(line_tests); ++i) {
     Vector<char> input;
-    input.append(lineTests[i].input, strlen(lineTests[i].input));
-    EXPECT_EQ(lineTests[i].expected,
-              MultipartImageResourceParser::skippableLengthForTest(
-                  input, lineTests[i].position));
+    input.Append(line_tests[i].input, strlen(line_tests[i].input));
+    EXPECT_EQ(line_tests[i].expected,
+              MultipartImageResourceParser::SkippableLengthForTest(
+                  input, line_tests[i].position));
   }
 }
 
@@ -63,143 +63,143 @@ TEST(MultipartResponseTest, FindBoundary) {
     const char* boundary;
     const char* data;
     const size_t position;
-  } boundaryTests[] = {
+  } boundary_tests[] = {
       {"bound", "bound", 0},       {"bound", "--bound", 0},
       {"bound", "junkbound", 4},   {"bound", "junk--bound", 4},
       {"foo", "bound", kNotFound}, {"bound", "--boundbound", 0},
   };
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(boundaryTests); ++i) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(boundary_tests); ++i) {
     Vector<char> boundary, data;
-    boundary.append(boundaryTests[i].boundary,
-                    strlen(boundaryTests[i].boundary));
-    data.append(boundaryTests[i].data, strlen(boundaryTests[i].data));
+    boundary.Append(boundary_tests[i].boundary,
+                    strlen(boundary_tests[i].boundary));
+    data.Append(boundary_tests[i].data, strlen(boundary_tests[i].data));
     EXPECT_EQ(
-        boundaryTests[i].position,
-        MultipartImageResourceParser::findBoundaryForTest(data, &boundary));
+        boundary_tests[i].position,
+        MultipartImageResourceParser::FindBoundaryForTest(data, &boundary));
   }
 }
 
 TEST(MultipartResponseTest, NoStartBoundary) {
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
-  response.setHTTPHeaderField("Foo", "Bar");
-  response.setHTTPHeaderField("Content-type", "text/plain");
+  response.SetMimeType("multipart/x-mixed-replace");
+  response.SetHTTPHeaderField("Foo", "Bar");
+  response.SetHTTPHeaderField("Content-type", "text/plain");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
-  const char data[] =
+  const char kData[] =
       "Content-type: text/plain\n\n"
       "This is a sample response\n"
       "--bound--"
       "ignore junk after end token --bound\n\nTest2\n";
-  parser->appendData(data, strlen(data));
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample response", toString(client->m_data[0]));
+  parser->AppendData(kData, strlen(kData));
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample response", ToString(client->data_[0]));
 
-  parser->finish();
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample response", toString(client->m_data[0]));
+  parser->Finish();
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample response", ToString(client->data_[0]));
 }
 
 TEST(MultipartResponseTest, NoEndBoundary) {
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
-  response.setHTTPHeaderField("Foo", "Bar");
-  response.setHTTPHeaderField("Content-type", "text/plain");
+  response.SetMimeType("multipart/x-mixed-replace");
+  response.SetHTTPHeaderField("Foo", "Bar");
+  response.SetHTTPHeaderField("Content-type", "text/plain");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
-  const char data[] =
+  const char kData[] =
       "bound\nContent-type: text/plain\n\n"
       "This is a sample response\n";
-  parser->appendData(data, strlen(data));
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample ", toString(client->m_data[0]));
+  parser->AppendData(kData, strlen(kData));
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample ", ToString(client->data_[0]));
 
-  parser->finish();
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample response\n", toString(client->m_data[0]));
+  parser->Finish();
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample response\n", ToString(client->data_[0]));
 }
 
 TEST(MultipartResponseTest, NoStartAndEndBoundary) {
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
-  response.setHTTPHeaderField("Foo", "Bar");
-  response.setHTTPHeaderField("Content-type", "text/plain");
+  response.SetMimeType("multipart/x-mixed-replace");
+  response.SetHTTPHeaderField("Foo", "Bar");
+  response.SetHTTPHeaderField("Content-type", "text/plain");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
-  const char data[] =
+  const char kData[] =
       "Content-type: text/plain\n\n"
       "This is a sample response\n";
-  parser->appendData(data, strlen(data));
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample ", toString(client->m_data[0]));
+  parser->AppendData(kData, strlen(kData));
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample ", ToString(client->data_[0]));
 
-  parser->finish();
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample response\n", toString(client->m_data[0]));
+  parser->Finish();
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample response\n", ToString(client->data_[0]));
 }
 
 TEST(MultipartResponseTest, MalformedBoundary) {
   // Some servers send a boundary that is prefixed by "--".  See bug 5786.
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
-  response.setHTTPHeaderField("Foo", "Bar");
-  response.setHTTPHeaderField("Content-type", "text/plain");
+  response.SetMimeType("multipart/x-mixed-replace");
+  response.SetHTTPHeaderField("Foo", "Bar");
+  response.SetHTTPHeaderField("Content-type", "text/plain");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("--bound", 7);
+  boundary.Append("--bound", 7);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
-  const char data[] =
+  const char kData[] =
       "--bound\n"
       "Content-type: text/plain\n\n"
       "This is a sample response\n"
       "--bound--"
       "ignore junk after end token --bound\n\nTest2\n";
-  parser->appendData(data, strlen(data));
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample response", toString(client->m_data[0]));
+  parser->AppendData(kData, strlen(kData));
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample response", ToString(client->data_[0]));
 
-  parser->finish();
-  ASSERT_EQ(1u, client->m_responses.size());
-  ASSERT_EQ(1u, client->m_data.size());
-  EXPECT_EQ("This is a sample response", toString(client->m_data[0]));
+  parser->Finish();
+  ASSERT_EQ(1u, client->responses_.size());
+  ASSERT_EQ(1u, client->data_.size());
+  EXPECT_EQ("This is a sample response", ToString(client->data_[0]));
 }
 
 // Used in for tests that break the data in various places.
 struct TestChunk {
-  const int startPosition;  // offset in data
-  const int endPosition;    // end offset in data
-  const size_t expectedResponses;
-  const char* expectedData;
+  const int start_position;  // offset in data
+  const int end_position;    // end offset in data
+  const size_t expected_responses;
+  const char* expected_data;
 };
 
-void variousChunkSizesTest(const TestChunk chunks[],
-                           int chunksSize,
+void VariousChunkSizesTest(const TestChunk chunks[],
+                           int chunks_size,
                            size_t responses,
-                           int receivedData,
-                           const char* completedData) {
-  const char data[] =
+                           int received_data,
+                           const char* completed_data) {
+  const char kData[] =
       "--bound\n"                    // 0-7
       "Content-type: image/png\n\n"  // 8-32
       "datadatadatadatadata"         // 33-52
@@ -209,219 +209,219 @@ void variousChunkSizesTest(const TestChunk chunks[],
       "--bound--";                   // 101-109
 
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
+  response.SetMimeType("multipart/x-mixed-replace");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
 
-  for (int i = 0; i < chunksSize; ++i) {
-    ASSERT_LT(chunks[i].startPosition, chunks[i].endPosition);
-    parser->appendData(data + chunks[i].startPosition,
-                       chunks[i].endPosition - chunks[i].startPosition);
-    EXPECT_EQ(chunks[i].expectedResponses, client->m_responses.size());
-    EXPECT_EQ(String(chunks[i].expectedData),
-              client->m_data.size() > 0 ? toString(client->m_data.back())
-                                        : String(""));
+  for (int i = 0; i < chunks_size; ++i) {
+    ASSERT_LT(chunks[i].start_position, chunks[i].end_position);
+    parser->AppendData(kData + chunks[i].start_position,
+                       chunks[i].end_position - chunks[i].start_position);
+    EXPECT_EQ(chunks[i].expected_responses, client->responses_.size());
+    EXPECT_EQ(
+        String(chunks[i].expected_data),
+        client->data_.size() > 0 ? ToString(client->data_.back()) : String(""));
   }
   // Check final state
-  parser->finish();
-  EXPECT_EQ(responses, client->m_responses.size());
-  EXPECT_EQ(completedData, toString(client->m_data.back()));
+  parser->Finish();
+  EXPECT_EQ(responses, client->responses_.size());
+  EXPECT_EQ(completed_data, ToString(client->data_.back()));
 }
 
 template <size_t N>
-void variousChunkSizesTest(const TestChunk (&chunks)[N],
+void VariousChunkSizesTest(const TestChunk (&chunks)[N],
                            size_t responses,
-                           int receivedData,
-                           const char* completedData) {
-  variousChunkSizesTest(chunks, N, responses, receivedData, completedData);
+                           int received_data,
+                           const char* completed_data) {
+  VariousChunkSizesTest(chunks, N, responses, received_data, completed_data);
 }
 
 TEST(MultipartResponseTest, BreakInBoundary) {
   // Break in the first boundary
-  const TestChunk bound1[] = {
+  const TestChunk kBound1[] = {
       {0, 4, 0, ""}, {4, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(bound1, 2, 2, "foofoofoofoofoo");
+  VariousChunkSizesTest(kBound1, 2, 2, "foofoofoofoofoo");
 
   // Break in first and second
-  const TestChunk bound2[] = {
+  const TestChunk kBound2[] = {
       {0, 4, 0, ""},
       {4, 55, 1, "datadatadatad"},
       {55, 65, 1, "datadatadatadatadata"},
       {65, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(bound2, 2, 3, "foofoofoofoofoo");
+  VariousChunkSizesTest(kBound2, 2, 3, "foofoofoofoofoo");
 
   // Break in second only
-  const TestChunk bound3[] = {
+  const TestChunk kBound3[] = {
       {0, 55, 1, "datadatadatad"}, {55, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(bound3, 2, 3, "foofoofoofoofoo");
+  VariousChunkSizesTest(kBound3, 2, 3, "foofoofoofoofoo");
 }
 
 TEST(MultipartResponseTest, BreakInHeaders) {
   // Break in first header
-  const TestChunk header1[] = {
+  const TestChunk kHeader1[] = {
       {0, 10, 0, ""}, {10, 35, 1, ""}, {35, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(header1, 2, 2, "foofoofoofoofoo");
+  VariousChunkSizesTest(kHeader1, 2, 2, "foofoofoofoofoo");
 
   // Break in both headers
-  const TestChunk header2[] = {
+  const TestChunk kHeader2[] = {
       {0, 10, 0, ""},
       {10, 65, 1, "datadatadatadatadata"},
       {65, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(header2, 2, 2, "foofoofoofoofoo");
+  VariousChunkSizesTest(kHeader2, 2, 2, "foofoofoofoofoo");
 
   // Break at end of a header
-  const TestChunk header3[] = {
+  const TestChunk kHeader3[] = {
       {0, 33, 1, ""},
       {33, 65, 1, "datadatadatadatadata"},
       {65, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(header3, 2, 2, "foofoofoofoofoo");
+  VariousChunkSizesTest(kHeader3, 2, 2, "foofoofoofoofoo");
 }
 
 TEST(MultipartResponseTest, BreakInData) {
   // All data as one chunk
-  const TestChunk data1[] = {
+  const TestChunk kData1[] = {
       {0, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(data1, 2, 2, "foofoofoofoofoo");
+  VariousChunkSizesTest(kData1, 2, 2, "foofoofoofoofoo");
 
   // breaks in data segment
-  const TestChunk data2[] = {
+  const TestChunk kData2[] = {
       {0, 35, 1, ""},
       {35, 65, 1, "datadatadatadatadata"},
       {65, 90, 2, ""},
       {90, 110, 2, "foofoofoofoofoo"},
   };
-  variousChunkSizesTest(data2, 2, 2, "foofoofoofoofoo");
+  VariousChunkSizesTest(kData2, 2, 2, "foofoofoofoofoo");
 
   // Incomplete send
-  const TestChunk data3[] = {
+  const TestChunk kData3[] = {
       {0, 35, 1, ""}, {35, 90, 2, ""},
   };
-  variousChunkSizesTest(data3, 2, 2, "foof");
+  VariousChunkSizesTest(kData3, 2, 2, "foof");
 }
 
 TEST(MultipartResponseTest, SmallChunk) {
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
-  response.setHTTPHeaderField("Content-type", "text/plain");
+  response.SetMimeType("multipart/x-mixed-replace");
+  response.SetHTTPHeaderField("Content-type", "text/plain");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
 
   // Test chunks of size 1, 2, and 0.
-  const char data[] =
+  const char kData[] =
       "--boundContent-type: text/plain\n\n"
       "\n--boundContent-type: text/plain\n\n"
       "\n\n--boundContent-type: text/plain\n\n"
       "--boundContent-type: text/plain\n\n"
       "end--bound--";
-  parser->appendData(data, strlen(data));
-  ASSERT_EQ(4u, client->m_responses.size());
-  ASSERT_EQ(4u, client->m_data.size());
-  EXPECT_EQ("", toString(client->m_data[0]));
-  EXPECT_EQ("\n", toString(client->m_data[1]));
-  EXPECT_EQ("", toString(client->m_data[2]));
-  EXPECT_EQ("end", toString(client->m_data[3]));
+  parser->AppendData(kData, strlen(kData));
+  ASSERT_EQ(4u, client->responses_.size());
+  ASSERT_EQ(4u, client->data_.size());
+  EXPECT_EQ("", ToString(client->data_[0]));
+  EXPECT_EQ("\n", ToString(client->data_[1]));
+  EXPECT_EQ("", ToString(client->data_[2]));
+  EXPECT_EQ("end", ToString(client->data_[3]));
 
-  parser->finish();
-  ASSERT_EQ(4u, client->m_responses.size());
-  ASSERT_EQ(4u, client->m_data.size());
-  EXPECT_EQ("", toString(client->m_data[0]));
-  EXPECT_EQ("\n", toString(client->m_data[1]));
-  EXPECT_EQ("", toString(client->m_data[2]));
-  EXPECT_EQ("end", toString(client->m_data[3]));
+  parser->Finish();
+  ASSERT_EQ(4u, client->responses_.size());
+  ASSERT_EQ(4u, client->data_.size());
+  EXPECT_EQ("", ToString(client->data_[0]));
+  EXPECT_EQ("\n", ToString(client->data_[1]));
+  EXPECT_EQ("", ToString(client->data_[2]));
+  EXPECT_EQ("end", ToString(client->data_[3]));
 }
 
 TEST(MultipartResponseTest, MultipleBoundaries) {
   // Test multiple boundaries back to back
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
+  response.SetMimeType("multipart/x-mixed-replace");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
 
-  const char data[] = "--bound\r\n\r\n--bound\r\n\r\nfoofoo--bound--";
-  parser->appendData(data, strlen(data));
-  ASSERT_EQ(2u, client->m_responses.size());
-  ASSERT_EQ(2u, client->m_data.size());
-  EXPECT_EQ("", toString(client->m_data[0]));
-  EXPECT_EQ("foofoo", toString(client->m_data[1]));
+  const char kData[] = "--bound\r\n\r\n--bound\r\n\r\nfoofoo--bound--";
+  parser->AppendData(kData, strlen(kData));
+  ASSERT_EQ(2u, client->responses_.size());
+  ASSERT_EQ(2u, client->data_.size());
+  EXPECT_EQ("", ToString(client->data_[0]));
+  EXPECT_EQ("foofoo", ToString(client->data_[1]));
 }
 
 TEST(MultipartResponseTest, EatLeadingLF) {
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
+  response.SetMimeType("multipart/x-mixed-replace");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
-  const char data[] =
+  const char kData[] =
       "\n\n\n--bound\n\n\ncontent-type: 1\n\n"
       "\n\n\n--bound\n\ncontent-type: 2\n\n"
       "\n\n\n--bound\ncontent-type: 3\n\n";
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
 
-  for (size_t i = 0; i < strlen(data); ++i)
-    parser->appendData(&data[i], 1);
-  parser->finish();
+  for (size_t i = 0; i < strlen(kData); ++i)
+    parser->AppendData(&kData[i], 1);
+  parser->Finish();
 
-  ASSERT_EQ(4u, client->m_responses.size());
-  ASSERT_EQ(4u, client->m_data.size());
-  EXPECT_EQ(String(), client->m_responses[0].httpHeaderField("content-type"));
-  EXPECT_EQ("", toString(client->m_data[0]));
-  EXPECT_EQ(String(), client->m_responses[1].httpHeaderField("content-type"));
-  EXPECT_EQ("\ncontent-type: 1\n\n\n\n", toString(client->m_data[1]));
-  EXPECT_EQ(String(), client->m_responses[2].httpHeaderField("content-type"));
-  EXPECT_EQ("content-type: 2\n\n\n\n", toString(client->m_data[2]));
-  EXPECT_EQ("3", client->m_responses[3].httpHeaderField("content-type"));
-  EXPECT_EQ("", toString(client->m_data[3]));
+  ASSERT_EQ(4u, client->responses_.size());
+  ASSERT_EQ(4u, client->data_.size());
+  EXPECT_EQ(String(), client->responses_[0].HttpHeaderField("content-type"));
+  EXPECT_EQ("", ToString(client->data_[0]));
+  EXPECT_EQ(String(), client->responses_[1].HttpHeaderField("content-type"));
+  EXPECT_EQ("\ncontent-type: 1\n\n\n\n", ToString(client->data_[1]));
+  EXPECT_EQ(String(), client->responses_[2].HttpHeaderField("content-type"));
+  EXPECT_EQ("content-type: 2\n\n\n\n", ToString(client->data_[2]));
+  EXPECT_EQ("3", client->responses_[3].HttpHeaderField("content-type"));
+  EXPECT_EQ("", ToString(client->data_[3]));
 }
 
 TEST(MultipartResponseTest, EatLeadingCRLF) {
   ResourceResponse response;
-  response.setMimeType("multipart/x-mixed-replace");
+  response.SetMimeType("multipart/x-mixed-replace");
   MockClient* client = new MockClient;
   Vector<char> boundary;
-  boundary.append("bound", 5);
+  boundary.Append("bound", 5);
 
-  const char data[] =
+  const char kData[] =
       "\r\n\r\n\r\n--bound\r\n\r\n\r\ncontent-type: 1\r\n\r\n"
       "\r\n\r\n\r\n--bound\r\n\r\ncontent-type: 2\r\n\r\n"
       "\r\n\r\n\r\n--bound\r\ncontent-type: 3\r\n\r\n";
   MultipartImageResourceParser* parser =
       new MultipartImageResourceParser(response, boundary, client);
 
-  for (size_t i = 0; i < strlen(data); ++i)
-    parser->appendData(&data[i], 1);
-  parser->finish();
+  for (size_t i = 0; i < strlen(kData); ++i)
+    parser->AppendData(&kData[i], 1);
+  parser->Finish();
 
-  ASSERT_EQ(4u, client->m_responses.size());
-  ASSERT_EQ(4u, client->m_data.size());
-  EXPECT_EQ(String(), client->m_responses[0].httpHeaderField("content-type"));
-  EXPECT_EQ("", toString(client->m_data[0]));
-  EXPECT_EQ(String(), client->m_responses[1].httpHeaderField("content-type"));
-  EXPECT_EQ("\r\ncontent-type: 1\r\n\r\n\r\n\r\n", toString(client->m_data[1]));
-  EXPECT_EQ(String(), client->m_responses[2].httpHeaderField("content-type"));
-  EXPECT_EQ("content-type: 2\r\n\r\n\r\n\r\n", toString(client->m_data[2]));
-  EXPECT_EQ("3", client->m_responses[3].httpHeaderField("content-type"));
-  EXPECT_EQ("", toString(client->m_data[3]));
+  ASSERT_EQ(4u, client->responses_.size());
+  ASSERT_EQ(4u, client->data_.size());
+  EXPECT_EQ(String(), client->responses_[0].HttpHeaderField("content-type"));
+  EXPECT_EQ("", ToString(client->data_[0]));
+  EXPECT_EQ(String(), client->responses_[1].HttpHeaderField("content-type"));
+  EXPECT_EQ("\r\ncontent-type: 1\r\n\r\n\r\n\r\n", ToString(client->data_[1]));
+  EXPECT_EQ(String(), client->responses_[2].HttpHeaderField("content-type"));
+  EXPECT_EQ("content-type: 2\r\n\r\n\r\n\r\n", ToString(client->data_[2]));
+  EXPECT_EQ("3", client->responses_[3].HttpHeaderField("content-type"));
+  EXPECT_EQ("", ToString(client->data_[3]));
 }
 
 }  // namespace

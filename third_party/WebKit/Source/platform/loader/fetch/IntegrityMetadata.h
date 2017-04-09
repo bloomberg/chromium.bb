@@ -25,22 +25,22 @@ class PLATFORM_EXPORT IntegrityMetadata {
   IntegrityMetadata(WTF::String digest, HashAlgorithm);
   IntegrityMetadata(std::pair<WTF::String, HashAlgorithm>);
 
-  WTF::String digest() const { return m_digest; }
-  void setDigest(const WTF::String& digest) { m_digest = digest; }
-  HashAlgorithm algorithm() const { return m_algorithm; }
-  void setAlgorithm(HashAlgorithm algorithm) { m_algorithm = algorithm; }
+  WTF::String Digest() const { return digest_; }
+  void SetDigest(const WTF::String& digest) { digest_ = digest; }
+  HashAlgorithm Algorithm() const { return algorithm_; }
+  void SetAlgorithm(HashAlgorithm algorithm) { algorithm_ = algorithm; }
 
-  IntegrityMetadataPair toPair() const;
+  IntegrityMetadataPair ToPair() const;
 
-  static bool setsEqual(const IntegrityMetadataSet& set1,
+  static bool SetsEqual(const IntegrityMetadataSet& set1,
                         const IntegrityMetadataSet& set2);
 
  private:
-  WTF::String m_digest;
-  HashAlgorithm m_algorithm;
+  WTF::String digest_;
+  HashAlgorithm algorithm_;
 };
 
-enum class ResourceIntegrityDisposition { NotChecked = 0, Failed, Passed };
+enum class ResourceIntegrityDisposition { kNotChecked = 0, kFailed, kPassed };
 
 }  // namespace blink
 

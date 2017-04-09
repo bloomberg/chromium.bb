@@ -29,27 +29,27 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
     Factory() {}
     ~Factory() override {}
 
-    CanvasRenderingContext* create(HTMLCanvasElement*,
+    CanvasRenderingContext* Create(HTMLCanvasElement*,
                                    const CanvasContextCreationAttributes&,
                                    Document&) override;
-    CanvasRenderingContext* create(
+    CanvasRenderingContext* Create(
         ScriptState*,
         OffscreenCanvas*,
         const CanvasContextCreationAttributes&) override;
-    CanvasRenderingContext::ContextType getContextType() const override {
-      return CanvasRenderingContext::ContextWebgl2;
+    CanvasRenderingContext::ContextType GetContextType() const override {
+      return CanvasRenderingContext::kContextWebgl2;
     }
-    void onError(HTMLCanvasElement*, const String& error) override;
+    void OnError(HTMLCanvasElement*, const String& error) override;
   };
 
-  CanvasRenderingContext::ContextType getContextType() const override {
-    return CanvasRenderingContext::ContextWebgl2;
+  CanvasRenderingContext::ContextType GetContextType() const override {
+    return CanvasRenderingContext::kContextWebgl2;
   }
-  ImageBitmap* transferToImageBitmap(ScriptState*) final;
-  String contextName() const override { return "WebGL2RenderingContext"; }
-  void registerContextExtensions() override;
-  void setCanvasGetContextResult(RenderingContext&) final;
-  void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
+  ImageBitmap* TransferToImageBitmap(ScriptState*) final;
+  String ContextName() const override { return "WebGL2RenderingContext"; }
+  void RegisterContextExtensions() override;
+  void SetCanvasGetContextResult(RenderingContext&) final;
+  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -57,39 +57,39 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
 
  protected:
   WebGL2RenderingContext(
-      HTMLCanvasElement* passedCanvas,
+      HTMLCanvasElement* passed_canvas,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      const CanvasContextCreationAttributes& requestedAttributes);
+      const CanvasContextCreationAttributes& requested_attributes);
 
   WebGL2RenderingContext(
-      OffscreenCanvas* passedOffscreenCanvas,
+      OffscreenCanvas* passed_offscreen_canvas,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      const CanvasContextCreationAttributes& requestedAttributes);
+      const CanvasContextCreationAttributes& requested_attributes);
 
-  Member<EXTColorBufferFloat> m_extColorBufferFloat;
-  Member<EXTDisjointTimerQueryWebGL2> m_extDisjointTimerQueryWebGL2;
-  Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-  Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
-  Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
-  Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-  Member<WebGLCompressedTextureETC> m_webglCompressedTextureETC;
-  Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
-  Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-  Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-  Member<WebGLCompressedTextureS3TCsRGB> m_webglCompressedTextureS3TCsRGB;
-  Member<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-  Member<WebGLDebugShaders> m_webglDebugShaders;
-  Member<WebGLGetBufferSubDataAsync> m_webglGetBufferSubDataAsync;
-  Member<WebGLLoseContext> m_webglLoseContext;
+  Member<EXTColorBufferFloat> ext_color_buffer_float_;
+  Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;
+  Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
+  Member<OESTextureFloatLinear> oes_texture_float_linear_;
+  Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;
+  Member<WebGLCompressedTextureATC> webgl_compressed_texture_atc_;
+  Member<WebGLCompressedTextureETC> webgl_compressed_texture_etc_;
+  Member<WebGLCompressedTextureETC1> webgl_compressed_texture_etc1_;
+  Member<WebGLCompressedTexturePVRTC> webgl_compressed_texture_pvrtc_;
+  Member<WebGLCompressedTextureS3TC> webgl_compressed_texture_s3tc_;
+  Member<WebGLCompressedTextureS3TCsRGB> webgl_compressed_texture_s3t_cs_rgb_;
+  Member<WebGLDebugRendererInfo> webgl_debug_renderer_info_;
+  Member<WebGLDebugShaders> webgl_debug_shaders_;
+  Member<WebGLGetBufferSubDataAsync> webgl_get_buffer_sub_data_async_;
+  Member<WebGLLoseContext> webgl_lose_context_;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContext,
                   CanvasRenderingContext,
                   context,
-                  context->is3d() &&
-                      WebGLRenderingContextBase::getWebGLVersion(context) == 2,
-                  context.is3d() &&
-                      WebGLRenderingContextBase::getWebGLVersion(&context) ==
+                  context->Is3d() &&
+                      WebGLRenderingContextBase::GetWebGLVersion(context) == 2,
+                  context.Is3d() &&
+                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
                           2);
 
 }  // namespace blink

@@ -33,71 +33,71 @@ inline SVGMPathElement::SVGMPathElement(Document& document)
 }
 
 DEFINE_TRACE(SVGMPathElement) {
-  visitor->trace(m_targetIdObserver);
-  SVGElement::trace(visitor);
-  SVGURIReference::trace(visitor);
+  visitor->Trace(target_id_observer_);
+  SVGElement::Trace(visitor);
+  SVGURIReference::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGMPathElement)
 
 SVGMPathElement::~SVGMPathElement() {}
 
-void SVGMPathElement::buildPendingResource() {
-  clearResourceReferences();
+void SVGMPathElement::BuildPendingResource() {
+  ClearResourceReferences();
   if (!isConnected())
     return;
-  Element* target = observeTarget(m_targetIdObserver, *this);
+  Element* target = ObserveTarget(target_id_observer_, *this);
   if (isSVGPathElement(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
-    addReferenceTo(toSVGElement(target));
+    AddReferenceTo(ToSVGElement(target));
   }
-  targetPathChanged();
+  TargetPathChanged();
 }
 
-void SVGMPathElement::clearResourceReferences() {
-  unobserveTarget(m_targetIdObserver);
-  removeAllOutgoingReferences();
+void SVGMPathElement::ClearResourceReferences() {
+  UnobserveTarget(target_id_observer_);
+  RemoveAllOutgoingReferences();
 }
 
-Node::InsertionNotificationRequest SVGMPathElement::insertedInto(
-    ContainerNode* rootParent) {
-  SVGElement::insertedInto(rootParent);
-  if (rootParent->isConnected())
-    buildPendingResource();
-  return InsertionDone;
+Node::InsertionNotificationRequest SVGMPathElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGElement::InsertedInto(root_parent);
+  if (root_parent->isConnected())
+    BuildPendingResource();
+  return kInsertionDone;
 }
 
-void SVGMPathElement::removedFrom(ContainerNode* rootParent) {
-  SVGElement::removedFrom(rootParent);
-  notifyParentOfPathChange(rootParent);
-  if (rootParent->isConnected())
-    clearResourceReferences();
+void SVGMPathElement::RemovedFrom(ContainerNode* root_parent) {
+  SVGElement::RemovedFrom(root_parent);
+  NotifyParentOfPathChange(root_parent);
+  if (root_parent->isConnected())
+    ClearResourceReferences();
 }
 
-void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (SVGURIReference::isKnownAttribute(attrName)) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    buildPendingResource();
+void SVGMPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    BuildPendingResource();
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
-SVGPathElement* SVGMPathElement::pathElement() {
-  Element* target = targetElementFromIRIString(hrefString(), treeScope());
+SVGPathElement* SVGMPathElement::PathElement() {
+  Element* target = TargetElementFromIRIString(HrefString(), GetTreeScope());
   return isSVGPathElement(target) ? toSVGPathElement(target) : 0;
 }
 
-void SVGMPathElement::targetPathChanged() {
-  notifyParentOfPathChange(parentNode());
+void SVGMPathElement::TargetPathChanged() {
+  NotifyParentOfPathChange(parentNode());
 }
 
-void SVGMPathElement::notifyParentOfPathChange(ContainerNode* parent) {
+void SVGMPathElement::NotifyParentOfPathChange(ContainerNode* parent) {
   if (isSVGAnimateMotionElement(parent))
-    toSVGAnimateMotionElement(parent)->updateAnimationPath();
+    toSVGAnimateMotionElement(parent)->UpdateAnimationPath();
 }
 
 }  // namespace blink

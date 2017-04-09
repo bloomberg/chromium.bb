@@ -18,7 +18,7 @@ const CSSValue* CSSPropertyAPITextUnderlinePosition::parseSingleValue(
   // auto | [ under || [ left | right ] ], but we only support auto | under
   // for now
   DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-  return CSSPropertyParserHelpers::consumeIdent<CSSValueAuto, CSSValueUnder>(
+  return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueUnder>(
       range);
 }
 

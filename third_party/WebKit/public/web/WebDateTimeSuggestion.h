@@ -34,7 +34,7 @@ struct DateTimeSuggestion;
 
 struct WebDateTimeSuggestion {
   double value;
-  WebString localizedValue;
+  WebString localized_value;
   WebString label;
 
   WebDateTimeSuggestion() {}

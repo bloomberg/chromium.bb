@@ -37,11 +37,11 @@ class WebColorChooser {
   virtual ~WebColorChooser() {}
 
   // Set selected color in the color chooser.
-  virtual void setSelectedColor(const WebColor color) {}
+  virtual void SetSelectedColor(const WebColor color) {}
 
   // Calling this ends the color chooser and the client won't be recieving
   // didChooseColor callbacks anymore.
-  virtual void endChooser() {}
+  virtual void EndChooser() {}
 };
 }
 

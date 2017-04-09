@@ -21,29 +21,29 @@ class WorkerReportingProxy;
 
 class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
  public:
-  static std::unique_ptr<AudioWorkletThread> create(
+  static std::unique_ptr<AudioWorkletThread> Create(
       PassRefPtr<WorkerLoaderProxy>,
       WorkerReportingProxy&);
   ~AudioWorkletThread() override;
 
-  WorkerBackingThread& workerBackingThread() override;
+  WorkerBackingThread& GetWorkerBackingThread() override;
 
   // The backing thread is cleared by clearSharedBackingThread().
-  void clearWorkerBackingThread() override {}
+  void ClearWorkerBackingThread() override {}
 
   // This may block the main thread.
-  static void collectAllGarbage();
+  static void CollectAllGarbage();
 
-  static void ensureSharedBackingThread();
-  static void clearSharedBackingThread();
+  static void EnsureSharedBackingThread();
+  static void ClearSharedBackingThread();
 
-  static void createSharedBackingThreadForTest();
+  static void CreateSharedBackingThreadForTest();
 
  protected:
-  WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
+  WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<WorkerThreadStartupData>) final;
 
-  bool isOwningBackingThread() const override { return false; }
+  bool IsOwningBackingThread() const override { return false; }
 
  private:
   AudioWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);

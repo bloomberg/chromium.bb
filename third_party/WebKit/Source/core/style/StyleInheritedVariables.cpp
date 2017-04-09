@@ -15,15 +15,15 @@ bool StyleInheritedVariables::operator==(
   // so it's OK to be occasionally wrong.
   // TODO(shanestephens): Rename this to something that indicates it may not
   // always return equality.
-  if (m_root != other.m_root)
+  if (root_ != other.root_)
     return false;
 
-  if (m_data.size() != other.m_data.size())
+  if (data_.size() != other.data_.size())
     return false;
 
-  for (const auto& iter : m_data) {
-    RefPtr<CSSVariableData> otherData = other.m_data.at(iter.key);
-    if (!dataEquivalent(iter.value, otherData))
+  for (const auto& iter : data_) {
+    RefPtr<CSSVariableData> other_data = other.data_.at(iter.key);
+    if (!DataEquivalent(iter.value, other_data))
       return false;
   }
 
@@ -32,58 +32,58 @@ bool StyleInheritedVariables::operator==(
 
 StyleInheritedVariables::StyleInheritedVariables(
     StyleInheritedVariables& other) {
-  if (!other.m_root) {
-    m_root = &other;
+  if (!other.root_) {
+    root_ = &other;
   } else {
-    m_data = other.m_data;
-    m_registeredData = other.m_registeredData;
-    m_root = other.m_root;
+    data_ = other.data_;
+    registered_data_ = other.registered_data_;
+    root_ = other.root_;
   }
 }
 
-CSSVariableData* StyleInheritedVariables::getVariable(
+CSSVariableData* StyleInheritedVariables::GetVariable(
     const AtomicString& name) const {
-  auto result = m_data.find(name);
-  if (result == m_data.end() && m_root)
-    return m_root->getVariable(name);
-  if (result == m_data.end())
+  auto result = data_.Find(name);
+  if (result == data_.end() && root_)
+    return root_->GetVariable(name);
+  if (result == data_.end())
     return nullptr;
-  return result->value.get();
+  return result->value.Get();
 }
 
-void StyleInheritedVariables::setRegisteredVariable(
+void StyleInheritedVariables::SetRegisteredVariable(
     const AtomicString& name,
-    const CSSValue* parsedValue) {
-  m_registeredData.set(name, const_cast<CSSValue*>(parsedValue));
+    const CSSValue* parsed_value) {
+  registered_data_.Set(name, const_cast<CSSValue*>(parsed_value));
 }
 
-const CSSValue* StyleInheritedVariables::registeredVariable(
+const CSSValue* StyleInheritedVariables::RegisteredVariable(
     const AtomicString& name) const {
-  auto result = m_registeredData.find(name);
-  if (result != m_registeredData.end())
-    return result->value.get();
-  if (m_root)
-    return m_root->registeredVariable(name);
+  auto result = registered_data_.Find(name);
+  if (result != registered_data_.end())
+    return result->value.Get();
+  if (root_)
+    return root_->RegisteredVariable(name);
   return nullptr;
 }
 
-void StyleInheritedVariables::removeVariable(const AtomicString& name) {
-  m_data.set(name, nullptr);
-  auto iterator = m_registeredData.find(name);
-  if (iterator != m_registeredData.end())
+void StyleInheritedVariables::RemoveVariable(const AtomicString& name) {
+  data_.Set(name, nullptr);
+  auto iterator = registered_data_.Find(name);
+  if (iterator != registered_data_.end())
     iterator->value = nullptr;
 }
 
 std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
-StyleInheritedVariables::getVariables() const {
+StyleInheritedVariables::GetVariables() const {
   std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> result;
-  if (m_root) {
+  if (root_) {
     result.reset(
-        new HashMap<AtomicString, RefPtr<CSSVariableData>>(m_root->m_data));
-    for (auto it = m_data.begin(); it != m_data.end(); ++it)
-      result->set(it->key, it->value);
+        new HashMap<AtomicString, RefPtr<CSSVariableData>>(root_->data_));
+    for (auto it = data_.begin(); it != data_.end(); ++it)
+      result->Set(it->key, it->value);
   } else {
-    result.reset(new HashMap<AtomicString, RefPtr<CSSVariableData>>(m_data));
+    result.reset(new HashMap<AtomicString, RefPtr<CSSVariableData>>(data_));
   }
   return result;
 }

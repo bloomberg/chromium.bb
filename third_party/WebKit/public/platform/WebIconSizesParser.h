@@ -18,8 +18,8 @@ struct WebSize;
 // TODO(zqzhang): merge with WebIconURL, and rename it "WebIcon"?
 class WebIconSizesParser {
  public:
-  BLINK_PLATFORM_EXPORT static WebVector<WebSize> parseIconSizes(
-      const WebString& sizesString);
+  BLINK_PLATFORM_EXPORT static WebVector<WebSize> ParseIconSizes(
+      const WebString& sizes_string);
 };
 
 }  // namespace blink

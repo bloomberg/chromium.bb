@@ -43,38 +43,38 @@ class CORE_EXPORT MediaQueryMatcher final
   WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
 
  public:
-  static MediaQueryMatcher* create(Document&);
+  static MediaQueryMatcher* Create(Document&);
   ~MediaQueryMatcher();
 
-  void documentDetached();
+  void DocumentDetached();
 
-  void addMediaQueryList(MediaQueryList*);
-  void removeMediaQueryList(MediaQueryList*);
+  void AddMediaQueryList(MediaQueryList*);
+  void RemoveMediaQueryList(MediaQueryList*);
 
-  void addViewportListener(MediaQueryListListener*);
-  void removeViewportListener(MediaQueryListListener*);
+  void AddViewportListener(MediaQueryListListener*);
+  void RemoveViewportListener(MediaQueryListListener*);
 
-  MediaQueryList* matchMedia(const String&);
+  MediaQueryList* MatchMedia(const String&);
 
-  void mediaFeaturesChanged();
-  void viewportChanged();
-  bool evaluate(const MediaQuerySet*);
+  void MediaFeaturesChanged();
+  void ViewportChanged();
+  bool Evaluate(const MediaQuerySet*);
 
   DECLARE_TRACE();
 
  private:
   explicit MediaQueryMatcher(Document&);
 
-  MediaQueryEvaluator* createEvaluator() const;
+  MediaQueryEvaluator* CreateEvaluator() const;
 
-  Member<Document> m_document;
-  Member<MediaQueryEvaluator> m_evaluator;
+  Member<Document> document_;
+  Member<MediaQueryEvaluator> evaluator_;
 
   using MediaQueryListSet = HeapLinkedHashSet<WeakMember<MediaQueryList>>;
-  MediaQueryListSet m_mediaLists;
+  MediaQueryListSet media_lists_;
 
   using ViewportListenerSet = HeapLinkedHashSet<Member<MediaQueryListListener>>;
-  ViewportListenerSet m_viewportListeners;
+  ViewportListenerSet viewport_listeners_;
 };
 
 }  // namespace blink

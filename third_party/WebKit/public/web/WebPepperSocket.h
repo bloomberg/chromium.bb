@@ -45,27 +45,27 @@ class WebURL;
 class WebPepperSocket {
  public:
   enum CloseEventCode {
-    CloseEventCodeNotSpecified = -1,
-    CloseEventCodeNormalClosure = 1000,
-    CloseEventCodeGoingAway = 1001,
-    CloseEventCodeProtocolError = 1002,
-    CloseEventCodeUnsupportedData = 1003,
-    CloseEventCodeFrameTooLarge = 1004,
-    CloseEventCodeNoStatusRcvd = 1005,
-    CloseEventCodeAbnormalClosure = 1006,
-    CloseEventCodeInvalidFramePayloadData = 1007,
-    CloseEventCodePolicyViolation = 1008,
-    CloseEventCodeMessageTooBig = 1009,
-    CloseEventCodeMandatoryExt = 1010,
-    CloseEventCodeInternalError = 1011,
-    CloseEventCodeTLSHandshake = 1015,
-    CloseEventCodeMinimumUserDefined = 3000,
-    CloseEventCodeMaximumUserDefined = 4999
+    kCloseEventCodeNotSpecified = -1,
+    kCloseEventCodeNormalClosure = 1000,
+    kCloseEventCodeGoingAway = 1001,
+    kCloseEventCodeProtocolError = 1002,
+    kCloseEventCodeUnsupportedData = 1003,
+    kCloseEventCodeFrameTooLarge = 1004,
+    kCloseEventCodeNoStatusRcvd = 1005,
+    kCloseEventCodeAbnormalClosure = 1006,
+    kCloseEventCodeInvalidFramePayloadData = 1007,
+    kCloseEventCodePolicyViolation = 1008,
+    kCloseEventCodeMessageTooBig = 1009,
+    kCloseEventCodeMandatoryExt = 1010,
+    kCloseEventCodeInternalError = 1011,
+    kCloseEventCodeTLSHandshake = 1015,
+    kCloseEventCodeMinimumUserDefined = 3000,
+    kCloseEventCodeMaximumUserDefined = 4999
   };
 
-  enum BinaryType { BinaryTypeBlob = 0, BinaryTypeArrayBuffer = 1 };
+  enum BinaryType { kBinaryTypeBlob = 0, kBinaryTypeArrayBuffer = 1 };
 
-  BLINK_EXPORT static WebPepperSocket* create(const WebDocument&,
+  BLINK_EXPORT static WebPepperSocket* Create(const WebDocument&,
                                               WebPepperSocketClient*);
   virtual ~WebPepperSocket() {}
 
@@ -76,18 +76,18 @@ class WebPepperSocket {
   // Default type is BinaryTypeBlob. But currently it is not supported.
   // Set BinaryTypeArrayBuffer here ahead of using binary communication.
   // See also, The WebSocket API - http://www.w3.org/TR/websockets/ .
-  virtual BinaryType binaryType() const = 0;
-  virtual bool setBinaryType(BinaryType) = 0;
+  virtual BinaryType GetBinaryType() const = 0;
+  virtual bool SetBinaryType(BinaryType) = 0;
 
-  virtual void connect(const WebURL&, const WebString& protocol) = 0;
-  virtual WebString subprotocol() { return WebString(); }
-  virtual WebString extensions() { return WebString(); }
-  virtual bool sendText(const WebString&) = 0;
-  virtual bool sendArrayBuffer(const WebArrayBuffer&) = 0;
-  virtual unsigned long bufferedAmount() const { return 0; }
-  virtual void close(int code, const WebString& reason) = 0;
-  virtual void fail(const WebString& reason) = 0;
-  virtual void disconnect() = 0;
+  virtual void Connect(const WebURL&, const WebString& protocol) = 0;
+  virtual WebString Subprotocol() { return WebString(); }
+  virtual WebString Extensions() { return WebString(); }
+  virtual bool SendText(const WebString&) = 0;
+  virtual bool SendArrayBuffer(const WebArrayBuffer&) = 0;
+  virtual unsigned long BufferedAmount() const { return 0; }
+  virtual void Close(int code, const WebString& reason) = 0;
+  virtual void Fail(const WebString& reason) = 0;
+  virtual void Disconnect() = 0;
 };
 
 }  // namespace blink

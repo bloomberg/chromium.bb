@@ -13,7 +13,7 @@ const CSSValue* CSSPropertyAPIAlignOrJustifyContent::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-  return CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
+  return CSSPropertyAlignmentUtils::ConsumeContentDistributionOverflowPosition(
       range);
 }
 

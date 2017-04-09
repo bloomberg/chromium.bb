@@ -17,16 +17,16 @@ class CORE_EXPORT SVGResourceClient : public DocumentResourceClient {
  public:
   virtual ~SVGResourceClient() {}
 
-  virtual TreeScope* treeScope() = 0;
+  virtual TreeScope* GetTreeScope() = 0;
 
-  virtual void resourceContentChanged() = 0;
-  virtual void resourceElementChanged() = 0;
+  virtual void ResourceContentChanged() = 0;
+  virtual void ResourceElementChanged() = 0;
 
  protected:
   SVGResourceClient() {}
 
-  String debugName() const override { return "SVGResourceClient"; }
-  void notifyFinished(Resource*) override { resourceElementChanged(); }
+  String DebugName() const override { return "SVGResourceClient"; }
+  void NotifyFinished(Resource*) override { ResourceElementChanged(); }
 };
 
 }  // namespace blink

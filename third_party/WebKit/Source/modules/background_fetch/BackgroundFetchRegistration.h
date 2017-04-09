@@ -29,13 +29,13 @@ class BackgroundFetchRegistration final
  public:
   BackgroundFetchRegistration(String tag,
                               HeapVector<IconDefinition> icons,
-                              long long totalDownloadSize,
+                              long long total_download_size,
                               String title);
   ~BackgroundFetchRegistration();
 
   // Sets the ServiceWorkerRegistration that this BackgroundFetchRegistration
   // has been associated with.
-  void setServiceWorkerRegistration(ServiceWorkerRegistration*);
+  void SetServiceWorkerRegistration(ServiceWorkerRegistration*);
 
   String tag() const;
   HeapVector<IconDefinition> icons() const;
@@ -47,14 +47,14 @@ class BackgroundFetchRegistration final
   DECLARE_TRACE();
 
  private:
-  void didAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
+  void DidAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
 
-  Member<ServiceWorkerRegistration> m_registration;
+  Member<ServiceWorkerRegistration> registration_;
 
-  String m_tag;
-  HeapVector<IconDefinition> m_icons;
-  long long m_totalDownloadSize;
-  String m_title;
+  String tag_;
+  HeapVector<IconDefinition> icons_;
+  long long total_download_size_;
+  String title_;
 };
 
 }  // namespace blink

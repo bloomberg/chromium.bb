@@ -31,124 +31,124 @@
 
 namespace blink {
 
-BiquadProcessor::BiquadProcessor(float sampleRate,
-                                 size_t numberOfChannels,
+BiquadProcessor::BiquadProcessor(float sample_rate,
+                                 size_t number_of_channels,
                                  AudioParamHandler& frequency,
                                  AudioParamHandler& q,
                                  AudioParamHandler& gain,
                                  AudioParamHandler& detune)
-    : AudioDSPKernelProcessor(sampleRate, numberOfChannels),
-      m_type(LowPass),
-      m_parameter1(frequency),
-      m_parameter2(q),
-      m_parameter3(gain),
-      m_parameter4(detune),
-      m_filterCoefficientsDirty(true),
-      m_hasSampleAccurateValues(false) {}
+    : AudioDSPKernelProcessor(sample_rate, number_of_channels),
+      type_(kLowPass),
+      parameter1_(frequency),
+      parameter2_(q),
+      parameter3_(gain),
+      parameter4_(detune),
+      filter_coefficients_dirty_(true),
+      has_sample_accurate_values_(false) {}
 
 BiquadProcessor::~BiquadProcessor() {
-  if (isInitialized())
-    uninitialize();
+  if (IsInitialized())
+    Uninitialize();
 }
 
-std::unique_ptr<AudioDSPKernel> BiquadProcessor::createKernel() {
-  return WTF::makeUnique<BiquadDSPKernel>(this);
+std::unique_ptr<AudioDSPKernel> BiquadProcessor::CreateKernel() {
+  return WTF::MakeUnique<BiquadDSPKernel>(this);
 }
 
-void BiquadProcessor::checkForDirtyCoefficients() {
+void BiquadProcessor::CheckForDirtyCoefficients() {
   // Deal with smoothing / de-zippering. Start out assuming filter parameters
   // are not changing.
 
   // The BiquadDSPKernel objects rely on this value to see if they need to
   // re-compute their internal filter coefficients.
-  m_filterCoefficientsDirty = false;
-  m_hasSampleAccurateValues = false;
+  filter_coefficients_dirty_ = false;
+  has_sample_accurate_values_ = false;
 
-  if (m_parameter1->hasSampleAccurateValues() ||
-      m_parameter2->hasSampleAccurateValues() ||
-      m_parameter3->hasSampleAccurateValues() ||
-      m_parameter4->hasSampleAccurateValues()) {
-    m_filterCoefficientsDirty = true;
-    m_hasSampleAccurateValues = true;
+  if (parameter1_->HasSampleAccurateValues() ||
+      parameter2_->HasSampleAccurateValues() ||
+      parameter3_->HasSampleAccurateValues() ||
+      parameter4_->HasSampleAccurateValues()) {
+    filter_coefficients_dirty_ = true;
+    has_sample_accurate_values_ = true;
   } else {
-    if (m_hasJustReset) {
+    if (has_just_reset_) {
       // Snap to exact values first time after reset, then smooth for subsequent
       // changes.
-      m_parameter1->resetSmoothedValue();
-      m_parameter2->resetSmoothedValue();
-      m_parameter3->resetSmoothedValue();
-      m_parameter4->resetSmoothedValue();
-      m_filterCoefficientsDirty = true;
-      m_hasJustReset = false;
+      parameter1_->ResetSmoothedValue();
+      parameter2_->ResetSmoothedValue();
+      parameter3_->ResetSmoothedValue();
+      parameter4_->ResetSmoothedValue();
+      filter_coefficients_dirty_ = true;
+      has_just_reset_ = false;
     } else {
       // Smooth all of the filter parameters. If they haven't yet converged to
       // their target value then mark coefficients as dirty.
-      bool isStable1 = m_parameter1->smooth();
-      bool isStable2 = m_parameter2->smooth();
-      bool isStable3 = m_parameter3->smooth();
-      bool isStable4 = m_parameter4->smooth();
-      if (!(isStable1 && isStable2 && isStable3 && isStable4))
-        m_filterCoefficientsDirty = true;
+      bool is_stable1 = parameter1_->Smooth();
+      bool is_stable2 = parameter2_->Smooth();
+      bool is_stable3 = parameter3_->Smooth();
+      bool is_stable4 = parameter4_->Smooth();
+      if (!(is_stable1 && is_stable2 && is_stable3 && is_stable4))
+        filter_coefficients_dirty_ = true;
     }
   }
 }
 
-void BiquadProcessor::process(const AudioBus* source,
+void BiquadProcessor::Process(const AudioBus* source,
                               AudioBus* destination,
-                              size_t framesToProcess) {
-  if (!isInitialized()) {
-    destination->zero();
+                              size_t frames_to_process) {
+  if (!IsInitialized()) {
+    destination->Zero();
     return;
   }
 
   // Synchronize with possible dynamic changes to the impulse response.
-  MutexTryLocker tryLocker(m_processLock);
-  if (!tryLocker.locked()) {
+  MutexTryLocker try_locker(process_lock_);
+  if (!try_locker.Locked()) {
     // Can't get the lock. We must be in the middle of changing something.
-    destination->zero();
+    destination->Zero();
     return;
   }
 
-  checkForDirtyCoefficients();
+  CheckForDirtyCoefficients();
 
   // For each channel of our input, process using the corresponding
   // BiquadDSPKernel into the output channel.
-  for (unsigned i = 0; i < m_kernels.size(); ++i)
-    m_kernels[i]->process(source->channel(i)->data(),
-                          destination->channel(i)->mutableData(),
-                          framesToProcess);
+  for (unsigned i = 0; i < kernels_.size(); ++i)
+    kernels_[i]->Process(source->Channel(i)->Data(),
+                         destination->Channel(i)->MutableData(),
+                         frames_to_process);
 }
 
-void BiquadProcessor::processOnlyAudioParams(size_t framesToProcess) {
-  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+void BiquadProcessor::ProcessOnlyAudioParams(size_t frames_to_process) {
+  DCHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
 
   float values[AudioUtilities::kRenderQuantumFrames];
 
-  m_parameter1->calculateSampleAccurateValues(values, framesToProcess);
-  m_parameter2->calculateSampleAccurateValues(values, framesToProcess);
-  m_parameter3->calculateSampleAccurateValues(values, framesToProcess);
-  m_parameter4->calculateSampleAccurateValues(values, framesToProcess);
+  parameter1_->CalculateSampleAccurateValues(values, frames_to_process);
+  parameter2_->CalculateSampleAccurateValues(values, frames_to_process);
+  parameter3_->CalculateSampleAccurateValues(values, frames_to_process);
+  parameter4_->CalculateSampleAccurateValues(values, frames_to_process);
 }
 
-void BiquadProcessor::setType(FilterType type) {
-  if (type != m_type) {
-    m_type = type;
-    reset();  // The filter state must be reset only if the type has changed.
+void BiquadProcessor::SetType(FilterType type) {
+  if (type != type_) {
+    type_ = type;
+    Reset();  // The filter state must be reset only if the type has changed.
   }
 }
 
-void BiquadProcessor::getFrequencyResponse(int nFrequencies,
-                                           const float* frequencyHz,
-                                           float* magResponse,
-                                           float* phaseResponse) {
+void BiquadProcessor::GetFrequencyResponse(int n_frequencies,
+                                           const float* frequency_hz,
+                                           float* mag_response,
+                                           float* phase_response) {
   // Compute the frequency response on a separate temporary kernel
   // to avoid interfering with the processing running in the audio
   // thread on the main kernels.
 
-  std::unique_ptr<BiquadDSPKernel> responseKernel =
-      WTF::makeUnique<BiquadDSPKernel>(this);
-  responseKernel->getFrequencyResponse(nFrequencies, frequencyHz, magResponse,
-                                       phaseResponse);
+  std::unique_ptr<BiquadDSPKernel> response_kernel =
+      WTF::MakeUnique<BiquadDSPKernel>(this);
+  response_kernel->GetFrequencyResponse(n_frequencies, frequency_hz,
+                                        mag_response, phase_response);
 }
 
 }  // namespace blink

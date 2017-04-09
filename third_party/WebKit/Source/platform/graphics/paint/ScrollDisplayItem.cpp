@@ -10,36 +10,36 @@
 
 namespace blink {
 
-void BeginScrollDisplayItem::replay(GraphicsContext& context) const {
-  context.save();
-  context.translate(-m_currentOffset.width(), -m_currentOffset.height());
+void BeginScrollDisplayItem::Replay(GraphicsContext& context) const {
+  context.Save();
+  context.Translate(-current_offset_.Width(), -current_offset_.Height());
 }
 
-void BeginScrollDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void BeginScrollDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  WebDisplayItemList::ScrollContainerId scrollContainerId = &client();
-  list->appendScrollItem(m_currentOffset, scrollContainerId);
+  WebDisplayItemList::ScrollContainerId scroll_container_id = &Client();
+  list->AppendScrollItem(current_offset_, scroll_container_id);
 }
 
 #ifndef NDEBUG
-void BeginScrollDisplayItem::dumpPropertiesAsDebugString(
-    WTF::StringBuilder& stringBuilder) const {
-  PairedBeginDisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  stringBuilder.append(WTF::String::format(", currentOffset: [%d,%d]",
-                                           m_currentOffset.width(),
-                                           m_currentOffset.height()));
+void BeginScrollDisplayItem::DumpPropertiesAsDebugString(
+    WTF::StringBuilder& string_builder) const {
+  PairedBeginDisplayItem::DumpPropertiesAsDebugString(string_builder);
+  string_builder.Append(WTF::String::Format(", currentOffset: [%d,%d]",
+                                            current_offset_.Width(),
+                                            current_offset_.Height()));
 }
 #endif
 
-void EndScrollDisplayItem::replay(GraphicsContext& context) const {
-  context.restore();
+void EndScrollDisplayItem::Replay(GraphicsContext& context) const {
+  context.Restore();
 }
 
-void EndScrollDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void EndScrollDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendEndScrollItem();
+  list->AppendEndScrollItem();
 }
 
 }  // namespace blink

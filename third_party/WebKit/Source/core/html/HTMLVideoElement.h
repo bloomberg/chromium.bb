@@ -50,12 +50,12 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLVideoElement* create(Document&);
+  static HTMLVideoElement* Create(Document&);
   DECLARE_VIRTUAL_TRACE();
 
   // Node override.
-  Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
   unsigned videoWidth() const;
   unsigned videoHeight() const;
@@ -65,24 +65,24 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void webkitExitFullscreen();
   bool webkitSupportsFullscreen();
   bool webkitDisplayingFullscreen();
-  bool usesOverlayFullscreenVideo() const override;
+  bool UsesOverlayFullscreenVideo() const override;
 
   // Statistics
   unsigned webkitDecodedFrameCount() const;
   unsigned webkitDroppedFrameCount() const;
 
   // Used by canvas to gain raw pixel access
-  void paintCurrentFrame(PaintCanvas*, const IntRect&, const PaintFlags*) const;
+  void PaintCurrentFrame(PaintCanvas*, const IntRect&, const PaintFlags*) const;
 
   // Used by WebGL to do GPU-GPU textures copy if possible.
   // The caller is responsible for allocating the destination texture.
-  bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
+  bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                          GLuint texture,
-                                         bool premultiplyAlpha,
-                                         bool flipY);
+                                         bool premultiply_alpha,
+                                         bool flip_y);
 
   // Used by WebGL to do CPU-GPU texture upload if possible.
-  bool texImageImpl(WebMediaPlayer::TexImageFunctionID,
+  bool TexImageImpl(WebMediaPlayer::TexImageFunctionID,
                     GLenum target,
                     gpu::gles2::GLES2Interface*,
                     GLint level,
@@ -92,43 +92,43 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                     GLint xoffset,
                     GLint yoffset,
                     GLint zoffset,
-                    bool flipY,
-                    bool premultiplyAlpha);
+                    bool flip_y,
+                    bool premultiply_alpha);
 
-  bool shouldDisplayPosterImage() const { return getDisplayMode() == Poster; }
+  bool ShouldDisplayPosterImage() const { return GetDisplayMode() == kPoster; }
 
-  bool hasAvailableVideoFrame() const;
+  bool HasAvailableVideoFrame() const;
 
-  KURL posterImageURL() const override;
+  KURL PosterImageURL() const override;
 
   // CanvasImageSource implementation
-  PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
+  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
                                             const FloatSize&) const override;
-  bool isVideoElement() const override { return true; }
-  bool wouldTaintOrigin(SecurityOrigin*) const override;
-  FloatSize elementSize(const FloatSize&) const override;
-  const KURL& sourceURL() const override { return currentSrc(); }
-  bool isHTMLVideoElement() const override { return true; }
-  int sourceWidth() override { return videoWidth(); }
-  int sourceHeight() override { return videoHeight(); }
+  bool IsVideoElement() const override { return true; }
+  bool WouldTaintOrigin(SecurityOrigin*) const override;
+  FloatSize ElementSize(const FloatSize&) const override;
+  const KURL& SourceURL() const override { return currentSrc(); }
+  bool IsHTMLVideoElement() const override { return true; }
+  int SourceWidth() override { return videoWidth(); }
+  int SourceHeight() override { return videoHeight(); }
   // Video elements currently always go through RAM when used as a canvas image
   // source.
-  bool isAccelerated() const override { return false; }
+  bool IsAccelerated() const override { return false; }
 
   // ImageBitmapSource implementation
-  IntSize bitmapSourceSize() const override;
-  ScriptPromise createImageBitmap(ScriptState*,
+  IntSize BitmapSourceSize() const override;
+  ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
-                                  Optional<IntRect> cropRect,
+                                  Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions&,
                                   ExceptionState&) override;
 
   // WebMediaPlayerClient implementation.
-  void onBecamePersistentVideo(bool) final;
+  void OnBecamePersistentVideo(bool) final;
 
-  bool isPersistent() const;
+  bool IsPersistent() const;
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
@@ -138,30 +138,30 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   HTMLVideoElement(Document&);
 
   // SuspendableObject functions.
-  void contextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed(ExecutionContext*) final;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  bool isURLAttribute(const Attribute&) const override;
-  const AtomicString imageSourceURL() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  const AtomicString ImageSourceURL() const override;
 
-  void updateDisplayState() override;
-  void didMoveToNewDocument(Document& oldDocument) override;
-  void setDisplayMode(DisplayMode) override;
+  void UpdateDisplayState() override;
+  void DidMoveToNewDocument(Document& old_document) override;
+  void SetDisplayMode(DisplayMode) override;
 
-  Member<HTMLImageLoader> m_imageLoader;
+  Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
-      m_customControlsFullscreenDetector;
+      custom_controls_fullscreen_detector_;
 
-  AtomicString m_defaultPosterURL;
+  AtomicString default_poster_url_;
 
-  bool m_isPersistent = false;
+  bool is_persistent_ = false;
 };
 
 }  // namespace blink

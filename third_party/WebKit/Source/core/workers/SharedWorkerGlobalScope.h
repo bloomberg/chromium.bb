@@ -47,36 +47,36 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SharedWorkerGlobalScope* create(
+  static SharedWorkerGlobalScope* Create(
       const String& name,
       SharedWorkerThread*,
       std::unique_ptr<WorkerThreadStartupData>);
   ~SharedWorkerGlobalScope() override;
 
-  bool isSharedWorkerGlobalScope() const override { return true; }
+  bool IsSharedWorkerGlobalScope() const override { return true; }
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-  String name() const { return m_name; }
+  String name() const { return name_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   SharedWorkerGlobalScope(const String& name,
                           const KURL&,
-                          const String& userAgent,
+                          const String& user_agent,
                           SharedWorkerThread*,
                           std::unique_ptr<SecurityOrigin::PrivilegeData>,
                           WorkerClients*);
-  void exceptionThrown(ErrorEvent*) override;
+  void ExceptionThrown(ErrorEvent*) override;
 
-  String m_name;
+  String name_;
 };
 
-CORE_EXPORT MessageEvent* createConnectEvent(MessagePort*);
+CORE_EXPORT MessageEvent* CreateConnectEvent(MessagePort*);
 
 }  // namespace blink
 

@@ -79,23 +79,23 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
         kAudioTrackSamplesPerBuffer /* frames_per_buffer */);
     audio_source_->Initialize(params, &fake_callback_);
 
-    blink_audio_source_.initialize(blink::WebString::fromUTF8("audio_id"),
-                                   blink::WebMediaStreamSource::TypeAudio,
-                                   blink::WebString::fromUTF8("audio_track"),
+    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_id"),
+                                   blink::WebMediaStreamSource::kTypeAudio,
+                                   blink::WebString::FromUTF8("audio_track"),
                                    false /* remote */);
-    blink_audio_track_.initialize(blink_audio_source_.id(),
+    blink_audio_track_.Initialize(blink_audio_source_.Id(),
                                   blink_audio_source_);
 
     // |blink_audio_source_| takes ownership of HtmlAudioElementCapturerSource.
-    blink_audio_source_.setExtraData(
+    blink_audio_source_.SetExtraData(
         new HtmlAudioElementCapturerSource(audio_source_.get()));
     ASSERT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   }
 
   void TearDown() override {
-    blink_audio_track_.reset();
-    blink_audio_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_audio_track_.Reset();
+    blink_audio_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   HtmlAudioElementCapturerSource* source() const {

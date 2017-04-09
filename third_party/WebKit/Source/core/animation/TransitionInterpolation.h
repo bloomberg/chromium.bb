@@ -16,73 +16,73 @@ class InterpolationType;
 
 class TransitionInterpolation : public Interpolation {
  public:
-  static PassRefPtr<TransitionInterpolation> create(
+  static PassRefPtr<TransitionInterpolation> Create(
       const PropertyHandle& property,
       const InterpolationType& type,
       InterpolationValue&& start,
       InterpolationValue&& end,
-      const RefPtr<AnimatableValue> compositorStart,
-      const RefPtr<AnimatableValue> compositorEnd) {
-    return adoptRef(new TransitionInterpolation(
+      const RefPtr<AnimatableValue> compositor_start,
+      const RefPtr<AnimatableValue> compositor_end) {
+    return AdoptRef(new TransitionInterpolation(
         property, type, std::move(start), std::move(end),
-        std::move(compositorStart), std::move(compositorEnd)));
+        std::move(compositor_start), std::move(compositor_end)));
   }
 
-  void apply(StyleResolverState&) const;
+  void Apply(StyleResolverState&) const;
 
-  bool isTransitionInterpolation() const final { return true; }
+  bool IsTransitionInterpolation() const final { return true; }
 
-  const PropertyHandle& getProperty() const final { return m_property; }
+  const PropertyHandle& GetProperty() const final { return property_; }
 
-  std::unique_ptr<TypedInterpolationValue> getInterpolatedValue() const;
+  std::unique_ptr<TypedInterpolationValue> GetInterpolatedValue() const;
 
-  RefPtr<AnimatableValue> getInterpolatedCompositorValue() const;
+  RefPtr<AnimatableValue> GetInterpolatedCompositorValue() const;
 
-  void interpolate(int iteration, double fraction) final;
+  void Interpolate(int iteration, double fraction) final;
 
  protected:
   TransitionInterpolation(const PropertyHandle& property,
                           const InterpolationType& type,
                           InterpolationValue&& start,
                           InterpolationValue&& end,
-                          const RefPtr<AnimatableValue> compositorStart,
-                          const RefPtr<AnimatableValue> compositorEnd)
-      : m_property(property),
-        m_type(type),
-        m_start(std::move(start)),
-        m_end(std::move(end)),
-        m_merge(type.maybeMergeSingles(m_start.clone(), m_end.clone())),
-        m_compositorStart(std::move(compositorStart)),
-        m_compositorEnd(std::move(compositorEnd)),
-        m_cachedInterpolableValue(m_merge.startInterpolableValue->clone()) {
-    DCHECK(m_merge);
+                          const RefPtr<AnimatableValue> compositor_start,
+                          const RefPtr<AnimatableValue> compositor_end)
+      : property_(property),
+        type_(type),
+        start_(std::move(start)),
+        end_(std::move(end)),
+        merge_(type.MaybeMergeSingles(start_.Clone(), end_.Clone())),
+        compositor_start_(std::move(compositor_start)),
+        compositor_end_(std::move(compositor_end)),
+        cached_interpolable_value_(merge_.start_interpolable_value->Clone()) {
+    DCHECK(merge_);
     DCHECK_EQ(
-        m_compositorStart && m_compositorEnd,
-        CompositorAnimations::isCompositableProperty(m_property.cssProperty()));
+        compositor_start_ && compositor_end_,
+        CompositorAnimations::IsCompositableProperty(property_.CssProperty()));
   }
 
  private:
-  const InterpolableValue& currentInterpolableValue() const;
-  NonInterpolableValue* currentNonInterpolableValue() const;
+  const InterpolableValue& CurrentInterpolableValue() const;
+  NonInterpolableValue* CurrentNonInterpolableValue() const;
 
-  const PropertyHandle m_property;
-  const InterpolationType& m_type;
-  const InterpolationValue m_start;
-  const InterpolationValue m_end;
-  const PairwiseInterpolationValue m_merge;
-  const RefPtr<AnimatableValue> m_compositorStart;
-  const RefPtr<AnimatableValue> m_compositorEnd;
+  const PropertyHandle property_;
+  const InterpolationType& type_;
+  const InterpolationValue start_;
+  const InterpolationValue end_;
+  const PairwiseInterpolationValue merge_;
+  const RefPtr<AnimatableValue> compositor_start_;
+  const RefPtr<AnimatableValue> compositor_end_;
 
-  mutable double m_cachedFraction = 0;
-  mutable int m_cachedIteration = 0;
-  mutable std::unique_ptr<InterpolableValue> m_cachedInterpolableValue;
+  mutable double cached_fraction_ = 0;
+  mutable int cached_iteration_ = 0;
+  mutable std::unique_ptr<InterpolableValue> cached_interpolable_value_;
 };
 
 DEFINE_TYPE_CASTS(TransitionInterpolation,
                   Interpolation,
                   value,
-                  value->isTransitionInterpolation(),
-                  value.isTransitionInterpolation());
+                  value->IsTransitionInterpolation(),
+                  value.IsTransitionInterpolation());
 
 }  // namespace blink
 

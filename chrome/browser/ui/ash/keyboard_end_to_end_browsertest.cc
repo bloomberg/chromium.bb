@@ -40,7 +40,7 @@ void ClickElementWithId(content::WebContents* web_contents,
           "    Math.floor(bounds.top + bounds.height / 2));",
       &y));
   content::SimulateMouseClickAt(
-      web_contents, 0, blink::WebMouseEvent::Button::Left, gfx::Point(x, y));
+      web_contents, 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
 }
 
 }  // namespace

@@ -22,7 +22,7 @@ class NotificationOptions;
 // notification options. An exception will be thrown on the ExceptionState when
 // the given options do not match the constraints imposed by the specification.
 MODULES_EXPORT WebNotificationData
-createWebNotificationData(ExecutionContext*,
+CreateWebNotificationData(ExecutionContext*,
                           const String& title,
                           const NotificationOptions&,
                           ExceptionState&);

@@ -49,87 +49,87 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   void SetContentsOpaqueIsFixed(bool fixed);
 
   // WebLayer implementation.
-  int id() const override;
-  void invalidateRect(const blink::WebRect&) override;
-  void invalidate() override;
-  void addChild(blink::WebLayer* child) override;
-  void insertChild(blink::WebLayer* child, size_t index) override;
-  void replaceChild(blink::WebLayer* reference,
+  int Id() const override;
+  void InvalidateRect(const blink::WebRect&) override;
+  void Invalidate() override;
+  void AddChild(blink::WebLayer* child) override;
+  void InsertChild(blink::WebLayer* child, size_t index) override;
+  void ReplaceChild(blink::WebLayer* reference,
                     blink::WebLayer* new_layer) override;
-  void removeFromParent() override;
-  void removeAllChildren() override;
-  void setBounds(const blink::WebSize& bounds) override;
-  blink::WebSize bounds() const override;
-  void setMasksToBounds(bool masks_to_bounds) override;
-  bool masksToBounds() const override;
-  void setMaskLayer(blink::WebLayer* mask) override;
-  void setOpacity(float opacity) override;
-  float opacity() const override;
-  void setBlendMode(blink::WebBlendMode blend_mode) override;
-  blink::WebBlendMode blendMode() const override;
-  void setIsRootForIsolatedGroup(bool root) override;
-  bool isRootForIsolatedGroup() override;
-  void setOpaque(bool opaque) override;
-  bool opaque() const override;
-  void setPosition(const blink::WebFloatPoint& position) override;
-  blink::WebFloatPoint position() const override;
-  void setTransform(const SkMatrix44& transform) override;
-  void setTransformOrigin(const blink::WebFloatPoint3D& point) override;
-  blink::WebFloatPoint3D transformOrigin() const override;
-  SkMatrix44 transform() const override;
-  void setDrawsContent(bool draws_content) override;
-  bool drawsContent() const override;
-  void setDoubleSided(bool double_sided) override;
-  void setShouldFlattenTransform(bool flatten) override;
-  void setRenderingContext(int context) override;
-  void setUseParentBackfaceVisibility(bool visible) override;
-  void setBackgroundColor(blink::WebColor color) override;
-  blink::WebColor backgroundColor() const override;
-  void setFilters(const cc::FilterOperations& filters) override;
-  void setFiltersOrigin(const blink::WebFloatPoint& origin) override;
-  void setBackgroundFilters(const cc::FilterOperations& filters) override;
-  bool hasTickingAnimationForTesting() override;
-  void setScrollPosition(blink::WebFloatPoint position) override;
-  blink::WebFloatPoint scrollPosition() const override;
-  void setScrollClipLayer(blink::WebLayer* clip_layer) override;
-  bool scrollable() const override;
-  void setUserScrollable(bool horizontal, bool vertical) override;
-  bool userScrollableHorizontal() const override;
-  bool userScrollableVertical() const override;
-  void addMainThreadScrollingReasons(
+  void RemoveFromParent() override;
+  void RemoveAllChildren() override;
+  void SetBounds(const blink::WebSize& bounds) override;
+  blink::WebSize Bounds() const override;
+  void SetMasksToBounds(bool masks_to_bounds) override;
+  bool MasksToBounds() const override;
+  void SetMaskLayer(blink::WebLayer* mask) override;
+  void SetOpacity(float opacity) override;
+  float Opacity() const override;
+  void SetBlendMode(blink::WebBlendMode blend_mode) override;
+  blink::WebBlendMode BlendMode() const override;
+  void SetIsRootForIsolatedGroup(bool root) override;
+  bool IsRootForIsolatedGroup() override;
+  void SetOpaque(bool opaque) override;
+  bool Opaque() const override;
+  void SetPosition(const blink::WebFloatPoint& position) override;
+  blink::WebFloatPoint GetPosition() const override;
+  void SetTransform(const SkMatrix44& transform) override;
+  void SetTransformOrigin(const blink::WebFloatPoint3D& point) override;
+  blink::WebFloatPoint3D TransformOrigin() const override;
+  SkMatrix44 Transform() const override;
+  void SetDrawsContent(bool draws_content) override;
+  bool DrawsContent() const override;
+  void SetDoubleSided(bool double_sided) override;
+  void SetShouldFlattenTransform(bool flatten) override;
+  void SetRenderingContext(int context) override;
+  void SetUseParentBackfaceVisibility(bool visible) override;
+  void SetBackgroundColor(blink::WebColor color) override;
+  blink::WebColor BackgroundColor() const override;
+  void SetFilters(const cc::FilterOperations& filters) override;
+  void SetFiltersOrigin(const blink::WebFloatPoint& origin) override;
+  void SetBackgroundFilters(const cc::FilterOperations& filters) override;
+  bool HasTickingAnimationForTesting() override;
+  void SetScrollPosition(blink::WebFloatPoint position) override;
+  blink::WebFloatPoint ScrollPosition() const override;
+  void SetScrollClipLayer(blink::WebLayer* clip_layer) override;
+  bool Scrollable() const override;
+  void SetUserScrollable(bool horizontal, bool vertical) override;
+  bool UserScrollableHorizontal() const override;
+  bool UserScrollableVertical() const override;
+  void AddMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons) override;
-  void clearMainThreadScrollingReasons(
+  void ClearMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons_to_clear) override;
-  uint32_t mainThreadScrollingReasons() override;
-  bool shouldScrollOnMainThread() const override;
-  void setNonFastScrollableRegion(
+  uint32_t MainThreadScrollingReasons() override;
+  bool ShouldScrollOnMainThread() const override;
+  void SetNonFastScrollableRegion(
       const blink::WebVector<blink::WebRect>& region) override;
-  blink::WebVector<blink::WebRect> nonFastScrollableRegion() const override;
-  void setTouchEventHandlerRegion(
+  blink::WebVector<blink::WebRect> NonFastScrollableRegion() const override;
+  void SetTouchEventHandlerRegion(
       const blink::WebVector<blink::WebRect>& region) override;
-  blink::WebVector<blink::WebRect> touchEventHandlerRegion() const override;
-  void setIsContainerForFixedPositionLayers(bool is_container) override;
-  bool isContainerForFixedPositionLayers() const override;
-  void setPositionConstraint(
+  blink::WebVector<blink::WebRect> TouchEventHandlerRegion() const override;
+  void SetIsContainerForFixedPositionLayers(bool is_container) override;
+  bool IsContainerForFixedPositionLayers() const override;
+  void SetPositionConstraint(
       const blink::WebLayerPositionConstraint& constraint) override;
-  blink::WebLayerPositionConstraint positionConstraint() const override;
-  void setStickyPositionConstraint(
+  blink::WebLayerPositionConstraint PositionConstraint() const override;
+  void SetStickyPositionConstraint(
       const blink::WebLayerStickyPositionConstraint& constraint) override;
-  blink::WebLayerStickyPositionConstraint stickyPositionConstraint()
+  blink::WebLayerStickyPositionConstraint StickyPositionConstraint()
       const override;
-  void setScrollClient(blink::WebLayerScrollClient* client) override;
-  void setLayerClient(cc::LayerClient* client) override;
-  const cc::Layer* ccLayer() const override;
-  cc::Layer* ccLayer() override;
-  void setElementId(const cc::ElementId&) override;
-  cc::ElementId elementId() const override;
-  void setCompositorMutableProperties(uint32_t properties) override;
-  uint32_t compositorMutableProperties() const override;
-  void setHasWillChangeTransformHint(bool has_will_change) override;
-  void showScrollbars() override;
+  void SetScrollClient(blink::WebLayerScrollClient* client) override;
+  void SetLayerClient(cc::LayerClient* client) override;
+  const cc::Layer* CcLayer() const override;
+  cc::Layer* CcLayer() override;
+  void SetElementId(const cc::ElementId&) override;
+  cc::ElementId GetElementId() const override;
+  void SetCompositorMutableProperties(uint32_t properties) override;
+  uint32_t CompositorMutableProperties() const override;
+  void SetHasWillChangeTransformHint(bool has_will_change) override;
+  void ShowScrollbars() override;
 
-  void setScrollParent(blink::WebLayer* parent) override;
-  void setClipParent(blink::WebLayer* parent) override;
+  void SetScrollParent(blink::WebLayer* parent) override;
+  void SetClipParent(blink::WebLayer* parent) override;
 
  protected:
   scoped_refptr<cc::Layer> layer_;

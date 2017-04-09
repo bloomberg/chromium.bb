@@ -9,20 +9,20 @@
 
 namespace blink {
 
-SimPage::SimPage() : m_page(nullptr) {}
+SimPage::SimPage() : page_(nullptr) {}
 
 SimPage::~SimPage() {}
 
-void SimPage::setPage(Page* page) {
-  m_page = page;
+void SimPage::SetPage(Page* page) {
+  page_ = page;
 }
 
-void SimPage::setFocused(bool value) {
-  m_page->focusController().setFocused(value);
+void SimPage::SetFocused(bool value) {
+  page_->GetFocusController().SetFocused(value);
 }
 
-bool SimPage::isFocused() const {
-  return m_page->focusController().isFocused();
+bool SimPage::IsFocused() const {
+  return page_->GetFocusController().IsFocused();
 }
 
 }  // namespace blink

@@ -24,150 +24,159 @@
 
 namespace blink {
 
-MediaValues* MediaValues::createDynamicIfFrameExists(LocalFrame* frame) {
+MediaValues* MediaValues::CreateDynamicIfFrameExists(LocalFrame* frame) {
   if (frame)
-    return MediaValuesDynamic::create(frame);
-  return MediaValuesCached::create();
+    return MediaValuesDynamic::Create(frame);
+  return MediaValuesCached::Create();
 }
 
-double MediaValues::calculateViewportWidth(LocalFrame* frame) {
+double MediaValues::CalculateViewportWidth(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->view());
-  DCHECK(frame->document());
-  return frame->view()->viewportSizeForMediaQueries().width();
+  DCHECK(frame->View());
+  DCHECK(frame->GetDocument());
+  return frame->View()->ViewportSizeForMediaQueries().Width();
 }
 
-double MediaValues::calculateViewportHeight(LocalFrame* frame) {
+double MediaValues::CalculateViewportHeight(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->view());
-  DCHECK(frame->document());
-  return frame->view()->viewportSizeForMediaQueries().height();
+  DCHECK(frame->View());
+  DCHECK(frame->GetDocument());
+  return frame->View()->ViewportSizeForMediaQueries().Height();
 }
 
-int MediaValues::calculateDeviceWidth(LocalFrame* frame) {
-  DCHECK(frame && frame->view() && frame->settings() && frame->page());
-  blink::WebScreenInfo screenInfo = frame->page()->chromeClient().screenInfo();
-  int deviceWidth = screenInfo.rect.width;
-  if (frame->settings()->getReportScreenSizeInPhysicalPixelsQuirk())
-    deviceWidth = lroundf(deviceWidth * screenInfo.deviceScaleFactor);
-  return deviceWidth;
+int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
+  DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
+  blink::WebScreenInfo screen_info =
+      frame->GetPage()->GetChromeClient().GetScreenInfo();
+  int device_width = screen_info.rect.width;
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk())
+    device_width = lroundf(device_width * screen_info.device_scale_factor);
+  return device_width;
 }
 
-int MediaValues::calculateDeviceHeight(LocalFrame* frame) {
-  DCHECK(frame && frame->view() && frame->settings() && frame->page());
-  blink::WebScreenInfo screenInfo = frame->page()->chromeClient().screenInfo();
-  int deviceHeight = screenInfo.rect.height;
-  if (frame->settings()->getReportScreenSizeInPhysicalPixelsQuirk())
-    deviceHeight = lroundf(deviceHeight * screenInfo.deviceScaleFactor);
-  return deviceHeight;
+int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
+  DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
+  blink::WebScreenInfo screen_info =
+      frame->GetPage()->GetChromeClient().GetScreenInfo();
+  int device_height = screen_info.rect.height;
+  if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk())
+    device_height = lroundf(device_height * screen_info.device_scale_factor);
+  return device_height;
 }
 
-bool MediaValues::calculateStrictMode(LocalFrame* frame) {
+bool MediaValues::CalculateStrictMode(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->document());
-  return !frame->document()->inQuirksMode();
+  DCHECK(frame->GetDocument());
+  return !frame->GetDocument()->InQuirksMode();
 }
 
-float MediaValues::calculateDevicePixelRatio(LocalFrame* frame) {
-  return frame->devicePixelRatio();
+float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
+  return frame->DevicePixelRatio();
 }
 
-int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) {
+int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->page());
-  DCHECK(frame->page()->mainFrame());
-  if (!frame->page()->mainFrame()->isLocalFrame() ||
-      frame->page()->chromeClient().screenInfo().isMonochrome)
+  DCHECK(frame->GetPage());
+  DCHECK(frame->GetPage()->MainFrame());
+  if (!frame->GetPage()->MainFrame()->IsLocalFrame() ||
+      frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
     return 0;
-  return frame->page()->chromeClient().screenInfo().depthPerComponent;
+  return frame->GetPage()
+      ->GetChromeClient()
+      .GetScreenInfo()
+      .depth_per_component;
 }
 
-int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) {
+int MediaValues::CalculateMonochromeBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->page());
-  DCHECK(frame->page()->mainFrame());
-  if (!frame->page()->mainFrame()->isLocalFrame() ||
-      !frame->page()->chromeClient().screenInfo().isMonochrome)
+  DCHECK(frame->GetPage());
+  DCHECK(frame->GetPage()->MainFrame());
+  if (!frame->GetPage()->MainFrame()->IsLocalFrame() ||
+      !frame->GetPage()->GetChromeClient().GetScreenInfo().is_monochrome)
     return 0;
-  return frame->page()->chromeClient().screenInfo().depthPerComponent;
+  return frame->GetPage()
+      ->GetChromeClient()
+      .GetScreenInfo()
+      .depth_per_component;
 }
 
-int MediaValues::calculateDefaultFontSize(LocalFrame* frame) {
-  return frame->page()->settings().getDefaultFontSize();
+int MediaValues::CalculateDefaultFontSize(LocalFrame* frame) {
+  return frame->GetPage()->GetSettings().GetDefaultFontSize();
 }
 
-const String MediaValues::calculateMediaType(LocalFrame* frame) {
+const String MediaValues::CalculateMediaType(LocalFrame* frame) {
   DCHECK(frame);
-  if (!frame->view())
-    return emptyAtom;
-  return frame->view()->mediaType();
+  if (!frame->View())
+    return g_empty_atom;
+  return frame->View()->MediaType();
 }
 
-WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) {
+WebDisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
   DCHECK(frame);
-  WebDisplayMode mode = frame->page()->settings().getDisplayModeOverride();
+  WebDisplayMode mode =
+      frame->GetPage()->GetSettings().GetDisplayModeOverride();
 
-  if (mode != WebDisplayModeUndefined)
+  if (mode != kWebDisplayModeUndefined)
     return mode;
 
-  if (!frame->view())
-    return WebDisplayModeBrowser;
+  if (!frame->View())
+    return kWebDisplayModeBrowser;
 
-  return frame->view()->displayMode();
+  return frame->View()->DisplayMode();
 }
 
-bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) {
+bool MediaValues::CalculateThreeDEnabled(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(!frame->contentLayoutItem().isNull());
-  DCHECK(frame->contentLayoutItem().compositor());
-  bool threeDEnabled = false;
-  if (LayoutViewItem view = frame->contentLayoutItem())
-    threeDEnabled = view.compositor()->hasAcceleratedCompositing();
-  return threeDEnabled;
+  DCHECK(!frame->ContentLayoutItem().IsNull());
+  DCHECK(frame->ContentLayoutItem().Compositor());
+  bool three_d_enabled = false;
+  if (LayoutViewItem view = frame->ContentLayoutItem())
+    three_d_enabled = view.Compositor()->HasAcceleratedCompositing();
+  return three_d_enabled;
 }
 
-PointerType MediaValues::calculatePrimaryPointerType(LocalFrame* frame) {
+PointerType MediaValues::CalculatePrimaryPointerType(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->settings());
-  return frame->settings()->getPrimaryPointerType();
+  DCHECK(frame->GetSettings());
+  return frame->GetSettings()->GetPrimaryPointerType();
 }
 
-int MediaValues::calculateAvailablePointerTypes(LocalFrame* frame) {
+int MediaValues::CalculateAvailablePointerTypes(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->settings());
-  return frame->settings()->getAvailablePointerTypes();
+  DCHECK(frame->GetSettings());
+  return frame->GetSettings()->GetAvailablePointerTypes();
 }
 
-HoverType MediaValues::calculatePrimaryHoverType(LocalFrame* frame) {
+HoverType MediaValues::CalculatePrimaryHoverType(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->settings());
-  return frame->settings()->getPrimaryHoverType();
+  DCHECK(frame->GetSettings());
+  return frame->GetSettings()->GetPrimaryHoverType();
 }
 
-int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) {
+int MediaValues::CalculateAvailableHoverTypes(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->settings());
-  return frame->settings()->getAvailableHoverTypes();
+  DCHECK(frame->GetSettings());
+  return frame->GetSettings()->GetAvailableHoverTypes();
 }
 
-DisplayShape MediaValues::calculateDisplayShape(LocalFrame* frame) {
+DisplayShape MediaValues::CalculateDisplayShape(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->page());
-  return frame->page()->chromeClient().screenInfo().displayShape;
+  DCHECK(frame->GetPage());
+  return frame->GetPage()->GetChromeClient().GetScreenInfo().display_shape;
 }
 
-ColorSpaceGamut MediaValues::calculateColorGamut(LocalFrame* frame) {
+ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
   DCHECK(frame);
-  DCHECK(frame->page());
-  return ColorSpaceUtilities::getColorSpaceGamut(
-      frame->page()->chromeClient().screenInfo());
+  DCHECK(frame->GetPage());
+  return ColorSpaceUtilities::GetColorSpaceGamut(
+      frame->GetPage()->GetChromeClient().GetScreenInfo());
 }
 
-bool MediaValues::computeLengthImpl(double value,
+bool MediaValues::ComputeLengthImpl(double value,
                                     CSSPrimitiveValue::UnitType type,
-                                    unsigned defaultFontSize,
-                                    double viewportWidth,
-                                    double viewportHeight,
+                                    unsigned default_font_size,
+                                    double viewport_width,
+                                    double viewport_height,
                                     double& result) {
   // The logic in this function is duplicated from
   // CSSToLengthConversionData::zoomedComputedPixels() because
@@ -177,61 +186,61 @@ bool MediaValues::computeLengthImpl(double value,
   // FIXME - Unite the logic here with CSSToLengthConversionData in a performant
   // way.
   switch (type) {
-    case CSSPrimitiveValue::UnitType::Ems:
-    case CSSPrimitiveValue::UnitType::Rems:
-      result = value * defaultFontSize;
+    case CSSPrimitiveValue::UnitType::kEms:
+    case CSSPrimitiveValue::UnitType::kRems:
+      result = value * default_font_size;
       return true;
-    case CSSPrimitiveValue::UnitType::Pixels:
-    case CSSPrimitiveValue::UnitType::UserUnits:
+    case CSSPrimitiveValue::UnitType::kPixels:
+    case CSSPrimitiveValue::UnitType::kUserUnits:
       result = value;
       return true;
-    case CSSPrimitiveValue::UnitType::Exs:
+    case CSSPrimitiveValue::UnitType::kExs:
     // FIXME: We have a bug right now where the zoom will be applied twice to EX
     // units.
-    case CSSPrimitiveValue::UnitType::Chs:
+    case CSSPrimitiveValue::UnitType::kChs:
       // FIXME: We don't seem to be able to cache fontMetrics related values.
       // Trying to access them is triggering some sort of microtask. Serving the
       // spec's default instead.
-      result = (value * defaultFontSize) / 2.0;
+      result = (value * default_font_size) / 2.0;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportWidth:
-      result = (value * viewportWidth) / 100.0;
+    case CSSPrimitiveValue::UnitType::kViewportWidth:
+      result = (value * viewport_width) / 100.0;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportHeight:
-      result = (value * viewportHeight) / 100.0;
+    case CSSPrimitiveValue::UnitType::kViewportHeight:
+      result = (value * viewport_height) / 100.0;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportMin:
-      result = (value * std::min(viewportWidth, viewportHeight)) / 100.0;
+    case CSSPrimitiveValue::UnitType::kViewportMin:
+      result = (value * std::min(viewport_width, viewport_height)) / 100.0;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportMax:
-      result = (value * std::max(viewportWidth, viewportHeight)) / 100.0;
+    case CSSPrimitiveValue::UnitType::kViewportMax:
+      result = (value * std::max(viewport_width, viewport_height)) / 100.0;
       return true;
-    case CSSPrimitiveValue::UnitType::Centimeters:
-      result = value * cssPixelsPerCentimeter;
+    case CSSPrimitiveValue::UnitType::kCentimeters:
+      result = value * kCssPixelsPerCentimeter;
       return true;
-    case CSSPrimitiveValue::UnitType::Millimeters:
-      result = value * cssPixelsPerMillimeter;
+    case CSSPrimitiveValue::UnitType::kMillimeters:
+      result = value * kCssPixelsPerMillimeter;
       return true;
-    case CSSPrimitiveValue::UnitType::Inches:
-      result = value * cssPixelsPerInch;
+    case CSSPrimitiveValue::UnitType::kInches:
+      result = value * kCssPixelsPerInch;
       return true;
-    case CSSPrimitiveValue::UnitType::Points:
-      result = value * cssPixelsPerPoint;
+    case CSSPrimitiveValue::UnitType::kPoints:
+      result = value * kCssPixelsPerPoint;
       return true;
-    case CSSPrimitiveValue::UnitType::Picas:
-      result = value * cssPixelsPerPica;
+    case CSSPrimitiveValue::UnitType::kPicas:
+      result = value * kCssPixelsPerPica;
       return true;
     default:
       return false;
   }
 }
 
-LocalFrame* MediaValues::frameFrom(Document& document) {
-  Document* executingDocument = document.importsController()
-                                    ? document.importsController()->master()
-                                    : &document;
-  DCHECK(executingDocument);
-  return executingDocument->frame();
+LocalFrame* MediaValues::FrameFrom(Document& document) {
+  Document* executing_document = document.ImportsController()
+                                     ? document.ImportsController()->Master()
+                                     : &document;
+  DCHECK(executing_document);
+  return executing_document->GetFrame();
 }
 
 }  // namespace blink

@@ -47,12 +47,12 @@ struct CORE_EXPORT MatchedProperties {
 
   union {
     struct {
-      unsigned linkMatchType : 2;
-      unsigned whitelistType : 2;
-    } m_types;
+      unsigned link_match_type : 2;
+      unsigned whitelist_type : 2;
+    } types_;
     // Used to make sure all memory is zero-initialized since we compute the
     // hash over the bytes of this object.
-    void* possiblyPaddedMember;
+    void* possibly_padded_member;
   };
 };
 
@@ -74,16 +74,16 @@ class MatchedPropertiesRange {
  public:
   MatchedPropertiesRange(MatchedPropertiesVector::const_iterator begin,
                          MatchedPropertiesVector::const_iterator end)
-      : m_begin(begin), m_end(end) {}
+      : begin_(begin), end_(end) {}
 
-  MatchedPropertiesVector::const_iterator begin() const { return m_begin; }
-  MatchedPropertiesVector::const_iterator end() const { return m_end; }
+  MatchedPropertiesVector::const_iterator begin() const { return begin_; }
+  MatchedPropertiesVector::const_iterator end() const { return end_; }
 
-  bool isEmpty() const { return begin() == end(); }
+  bool IsEmpty() const { return begin() == end(); }
 
  private:
-  MatchedPropertiesVector::const_iterator m_begin;
-  MatchedPropertiesVector::const_iterator m_end;
+  MatchedPropertiesVector::const_iterator begin_;
+  MatchedPropertiesVector::const_iterator end_;
 };
 
 class CORE_EXPORT MatchResult {
@@ -93,100 +93,99 @@ class CORE_EXPORT MatchResult {
  public:
   MatchResult() {}
 
-  void addMatchedProperties(const StylePropertySet* properties,
-                            unsigned linkMatchType = CSSSelector::MatchAll,
-                            PropertyWhitelistType = PropertyWhitelistNone);
-  bool hasMatchedProperties() const { return m_matchedProperties.size(); }
+  void AddMatchedProperties(const StylePropertySet* properties,
+                            unsigned link_match_type = CSSSelector::kMatchAll,
+                            PropertyWhitelistType = kPropertyWhitelistNone);
+  bool HasMatchedProperties() const { return matched_properties_.size(); }
 
-  void finishAddingUARules();
-  void finishAddingAuthorRulesForTreeScope();
+  void FinishAddingUARules();
+  void FinishAddingAuthorRulesForTreeScope();
 
-  void setIsCacheable(bool cacheable) { m_isCacheable = cacheable; }
-  bool isCacheable() const { return m_isCacheable; }
+  void SetIsCacheable(bool cacheable) { is_cacheable_ = cacheable; }
+  bool IsCacheable() const { return is_cacheable_; }
 
-  MatchedPropertiesRange allRules() const {
-    return MatchedPropertiesRange(m_matchedProperties.begin(),
-                                  m_matchedProperties.end());
+  MatchedPropertiesRange AllRules() const {
+    return MatchedPropertiesRange(matched_properties_.begin(),
+                                  matched_properties_.end());
   }
-  MatchedPropertiesRange uaRules() const {
-    return MatchedPropertiesRange(m_matchedProperties.begin(),
-                                  m_matchedProperties.begin() + m_uaRangeEnd);
+  MatchedPropertiesRange UaRules() const {
+    return MatchedPropertiesRange(matched_properties_.begin(),
+                                  matched_properties_.begin() + ua_range_end_);
   }
-  MatchedPropertiesRange authorRules() const {
-    return MatchedPropertiesRange(m_matchedProperties.begin() + m_uaRangeEnd,
-                                  m_matchedProperties.end());
+  MatchedPropertiesRange AuthorRules() const {
+    return MatchedPropertiesRange(matched_properties_.begin() + ua_range_end_,
+                                  matched_properties_.end());
   }
 
-  const MatchedPropertiesVector& matchedProperties() const {
-    return m_matchedProperties;
+  const MatchedPropertiesVector& GetMatchedProperties() const {
+    return matched_properties_;
   }
 
  private:
   friend class ImportantAuthorRanges;
   friend class ImportantAuthorRangeIterator;
 
-  MatchedPropertiesVector m_matchedProperties;
-  Vector<unsigned, 16> m_authorRangeEnds;
-  unsigned m_uaRangeEnd = 0;
-  bool m_isCacheable = true;
+  MatchedPropertiesVector matched_properties_;
+  Vector<unsigned, 16> author_range_ends_;
+  unsigned ua_range_end_ = 0;
+  bool is_cacheable_ = true;
 };
 
 class ImportantAuthorRangeIterator {
   STACK_ALLOCATED();
 
  public:
-  ImportantAuthorRangeIterator(const MatchResult& result, int endIndex)
-      : m_result(result), m_endIndex(endIndex) {}
+  ImportantAuthorRangeIterator(const MatchResult& result, int end_index)
+      : result_(result), end_index_(end_index) {}
 
   MatchedPropertiesRange operator*() const {
-    unsigned rangeEnd = m_result.m_authorRangeEnds[m_endIndex];
-    unsigned rangeBegin = m_endIndex
-                              ? m_result.m_authorRangeEnds[m_endIndex - 1]
-                              : m_result.m_uaRangeEnd;
+    unsigned range_end = result_.author_range_ends_[end_index_];
+    unsigned range_begin = end_index_
+                               ? result_.author_range_ends_[end_index_ - 1]
+                               : result_.ua_range_end_;
     return MatchedPropertiesRange(
-        m_result.matchedProperties().begin() + rangeBegin,
-        m_result.matchedProperties().begin() + rangeEnd);
+        result_.GetMatchedProperties().begin() + range_begin,
+        result_.GetMatchedProperties().begin() + range_end);
   }
 
   ImportantAuthorRangeIterator& operator++() {
-    --m_endIndex;
+    --end_index_;
     return *this;
   }
 
   bool operator==(const ImportantAuthorRangeIterator& other) const {
-    return m_endIndex == other.m_endIndex && &m_result == &other.m_result;
+    return end_index_ == other.end_index_ && &result_ == &other.result_;
   }
   bool operator!=(const ImportantAuthorRangeIterator& other) const {
     return !(*this == other);
   }
 
  private:
-  const MatchResult& m_result;
-  unsigned m_endIndex;
+  const MatchResult& result_;
+  unsigned end_index_;
 };
 
 class ImportantAuthorRanges {
   STACK_ALLOCATED();
 
  public:
-  explicit ImportantAuthorRanges(const MatchResult& result)
-      : m_result(result) {}
+  explicit ImportantAuthorRanges(const MatchResult& result) : result_(result) {}
 
   ImportantAuthorRangeIterator begin() const {
-    return ImportantAuthorRangeIterator(m_result,
-                                        m_result.m_authorRangeEnds.size() - 1);
+    return ImportantAuthorRangeIterator(result_,
+                                        result_.author_range_ends_.size() - 1);
   }
   ImportantAuthorRangeIterator end() const {
-    return ImportantAuthorRangeIterator(m_result, -1);
+    return ImportantAuthorRangeIterator(result_, -1);
   }
 
  private:
-  const MatchResult& m_result;
+  const MatchResult& result_;
 };
 
 inline bool operator==(const MatchedProperties& a, const MatchedProperties& b) {
   return a.properties == b.properties &&
-         a.m_types.linkMatchType == b.m_types.linkMatchType;
+         a.types_.link_match_type == b.types_.link_match_type;
 }
 
 inline bool operator!=(const MatchedProperties& a, const MatchedProperties& b) {

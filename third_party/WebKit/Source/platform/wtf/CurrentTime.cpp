@@ -34,29 +34,29 @@
 
 namespace WTF {
 
-static TimeFunction mockTimeFunctionForTesting = nullptr;
+static TimeFunction g_mock_time_function_for_testing = nullptr;
 
-double currentTime() {
-  if (mockTimeFunctionForTesting)
-    return mockTimeFunctionForTesting();
+double CurrentTime() {
+  if (g_mock_time_function_for_testing)
+    return g_mock_time_function_for_testing();
   return base::Time::Now().ToDoubleT();
 }
 
-double monotonicallyIncreasingTime() {
-  if (mockTimeFunctionForTesting)
-    return mockTimeFunctionForTesting();
+double MonotonicallyIncreasingTime() {
+  if (g_mock_time_function_for_testing)
+    return g_mock_time_function_for_testing();
   return base::TimeTicks::Now().ToInternalValue() /
          static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
-TimeFunction setTimeFunctionsForTesting(TimeFunction newFunction) {
-  TimeFunction oldFunction = mockTimeFunctionForTesting;
-  mockTimeFunctionForTesting = newFunction;
-  return oldFunction;
+TimeFunction SetTimeFunctionsForTesting(TimeFunction new_function) {
+  TimeFunction old_function = g_mock_time_function_for_testing;
+  g_mock_time_function_for_testing = new_function;
+  return old_function;
 }
 
-TimeFunction getTimeFunctionForTesting() {
-  return mockTimeFunctionForTesting;
+TimeFunction GetTimeFunctionForTesting() {
+  return g_mock_time_function_for_testing;
 }
 
 }  // namespace WTF

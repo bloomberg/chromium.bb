@@ -16,12 +16,12 @@ namespace blink {
 
 class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
  public:
-  static PassRefPtr<StyleInheritedVariables> create() {
-    return adoptRef(new StyleInheritedVariables());
+  static PassRefPtr<StyleInheritedVariables> Create() {
+    return AdoptRef(new StyleInheritedVariables());
   }
 
-  PassRefPtr<StyleInheritedVariables> copy() {
-    return adoptRef(new StyleInheritedVariables(*this));
+  PassRefPtr<StyleInheritedVariables> Copy() {
+    return AdoptRef(new StyleInheritedVariables(*this));
   }
 
   bool operator==(const StyleInheritedVariables& other) const;
@@ -29,31 +29,31 @@ class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
     return !(*this == other);
   }
 
-  void setVariable(const AtomicString& name,
+  void SetVariable(const AtomicString& name,
                    PassRefPtr<CSSVariableData> value) {
-    m_data.set(name, std::move(value));
+    data_.Set(name, std::move(value));
   }
-  CSSVariableData* getVariable(const AtomicString& name) const;
-  void removeVariable(const AtomicString&);
+  CSSVariableData* GetVariable(const AtomicString& name) const;
+  void RemoveVariable(const AtomicString&);
 
-  void setRegisteredVariable(const AtomicString&, const CSSValue*);
-  const CSSValue* registeredVariable(const AtomicString&) const;
+  void SetRegisteredVariable(const AtomicString&, const CSSValue*);
+  const CSSValue* RegisteredVariable(const AtomicString&) const;
 
   // This map will contain null pointers if variables are invalid due to
   // cycles or referencing invalid variables without using a fallback.
   // Note that this method is slow as a new map is constructed.
-  std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> getVariables()
+  std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> GetVariables()
       const;
 
  private:
-  StyleInheritedVariables() : m_root(nullptr) {}
+  StyleInheritedVariables() : root_(nullptr) {}
   StyleInheritedVariables(StyleInheritedVariables& other);
 
   friend class CSSVariableResolver;
 
-  HashMap<AtomicString, RefPtr<CSSVariableData>> m_data;
-  HashMap<AtomicString, Persistent<CSSValue>> m_registeredData;
-  RefPtr<StyleInheritedVariables> m_root;
+  HashMap<AtomicString, RefPtr<CSSVariableData>> data_;
+  HashMap<AtomicString, Persistent<CSSValue>> registered_data_;
+  RefPtr<StyleInheritedVariables> root_;
 };
 
 }  // namespace blink

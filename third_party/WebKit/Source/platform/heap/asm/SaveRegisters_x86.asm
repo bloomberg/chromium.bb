@@ -65,13 +65,13 @@
 %endif
 
 ;; typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
-;; extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+;; extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
 
-        global mangle(pushAllRegisters) PRIVATE
+        global mangle(PushAllRegisters) PRIVATE
 
 %if X64POSIX
 
-mangle(pushAllRegisters):
+mangle(PushAllRegisters):
         ;; Push all callee-saves registers to get them
         ;; on the stack for conservative stack scanning.
         ;; We maintain 16-byte alignment at calls (required on Mac).
@@ -98,7 +98,7 @@ mangle(pushAllRegisters):
 
 %elif X64WIN
 
-mangle(pushAllRegisters):
+mangle(PushAllRegisters):
         ;; Push all callee-saves registers to get them
         ;; on the stack for conservative stack scanning.
         ;; There is an 8-byte return address on the stack and we push
@@ -126,7 +126,7 @@ mangle(pushAllRegisters):
 
 %elif IA32
 
-mangle(pushAllRegisters):
+mangle(PushAllRegisters):
         ;; Push all callee-saves registers to get them
         ;; on the stack for conservative stack scanning.
         ;; We maintain 16-byte alignment at calls (required on

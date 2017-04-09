@@ -42,27 +42,27 @@ class CORE_EXPORT DOMStringList final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMStringList* create() { return new DOMStringList(); }
+  static DOMStringList* Create() { return new DOMStringList(); }
 
-  bool isEmpty() const { return m_strings.isEmpty(); }
-  void clear() { m_strings.clear(); }
-  void append(const String& string) { m_strings.push_back(string); }
-  void sort();
+  bool IsEmpty() const { return strings_.IsEmpty(); }
+  void Clear() { strings_.Clear(); }
+  void Append(const String& string) { strings_.push_back(string); }
+  void Sort();
 
   // Implements the IDL.
-  size_t length() const { return m_strings.size(); }
+  size_t length() const { return strings_.size(); }
 
   String item(unsigned index) const;
   bool contains(const String&) const;
 
-  operator const Vector<String>&() const { return m_strings; }
+  operator const Vector<String>&() const { return strings_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   explicit DOMStringList() {}
 
-  Vector<String> m_strings;
+  Vector<String> strings_;
 };
 
 }  // namespace blink

@@ -47,30 +47,30 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ResourceProgressEvent* create(const AtomicString& type,
-                                       bool lengthComputable,
+  static ResourceProgressEvent* Create(const AtomicString& type,
+                                       bool length_computable,
                                        unsigned long long loaded,
                                        unsigned long long total,
                                        const String& url) {
-    return new ResourceProgressEvent(type, lengthComputable, loaded, total,
+    return new ResourceProgressEvent(type, length_computable, loaded, total,
                                      url);
   }
 
   const String& url() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   ResourceProgressEvent(const AtomicString& type,
-                        bool lengthComputable,
+                        bool length_computable,
                         unsigned long long loaded,
                         unsigned long long total,
                         const String& url);
 
  private:
-  String m_url;
+  String url_;
 };
 
 }  // namespace blink

@@ -29,47 +29,49 @@ class LayoutSVGInline : public LayoutInline {
  public:
   explicit LayoutSVGInline(Element*);
 
-  const char* name() const override { return "LayoutSVGInline"; }
-  PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVG || type == LayoutObjectSVGInline ||
-           LayoutInline::isOfType(type);
+  const char* GetName() const override { return "LayoutSVGInline"; }
+  PaintLayerType LayerTypeRequired() const final { return kNoPaintLayer; }
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVG || type == kLayoutObjectSVGInline ||
+           LayoutInline::IsOfType(type);
   }
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
   // Chapter 10.4 of the SVG Specification say that we should use the
   // object bounding box of the parent text element.
   // We search for the root text element and take its bounding box.
   // It is also necessary to take the stroke and visual rect of this element,
   // since we need it for filters.
-  FloatRect objectBoundingBox() const final;
-  FloatRect strokeBoundingBox() const final;
-  FloatRect visualRectInLocalSVGCoordinates() const final;
+  FloatRect ObjectBoundingBox() const final;
+  FloatRect StrokeBoundingBox() const final;
+  FloatRect VisualRectInLocalSVGCoordinates() const final;
 
-  LayoutRect absoluteVisualRect() const final;
-  void mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
-                          TransformState&,
-                          MapCoordinatesFlags = ApplyContainerFlip) const final;
-  const LayoutObject* pushMappingToContainer(
-      const LayoutBoxModelObject* ancestorToStopAt,
+  LayoutRect AbsoluteVisualRect() const final;
+  void MapLocalToAncestor(
+      const LayoutBoxModelObject* ancestor,
+      TransformState&,
+      MapCoordinatesFlags = kApplyContainerFlip) const final;
+  const LayoutObject* PushMappingToContainer(
+      const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const final;
-  void absoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final;
 
  private:
-  InlineFlowBox* createInlineFlowBox() final;
+  InlineFlowBox* CreateInlineFlowBox() final;
 
-  void invalidateTreeIfNeeded(const PaintInvalidationState&) final;
+  void InvalidateTreeIfNeeded(const PaintInvalidationState&) final;
 
-  void willBeDestroyed() final;
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+  void WillBeDestroyed() final;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
 
-  void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) final;
-  void removeChild(LayoutObject*) final;
+  void AddChild(LayoutObject* child,
+                LayoutObject* before_child = nullptr) final;
+  void RemoveChild(LayoutObject*) final;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInline, isSVGInline());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInline, IsSVGInline());
 
 }  // namespace blink
 

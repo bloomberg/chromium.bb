@@ -35,22 +35,22 @@ using namespace HTMLNames;
 HTMLAudioElement::HTMLAudioElement(Document& document)
     : HTMLMediaElement(audioTag, document) {}
 
-HTMLAudioElement* HTMLAudioElement::create(Document& document) {
+HTMLAudioElement* HTMLAudioElement::Create(Document& document) {
   HTMLAudioElement* audio = new HTMLAudioElement(document);
-  audio->ensureUserAgentShadowRoot();
-  audio->suspendIfNeeded();
+  audio->EnsureUserAgentShadowRoot();
+  audio->SuspendIfNeeded();
   return audio;
 }
 
-HTMLAudioElement* HTMLAudioElement::createForJSConstructor(
+HTMLAudioElement* HTMLAudioElement::CreateForJSConstructor(
     Document& document,
     const AtomicString& src) {
   HTMLAudioElement* audio = new HTMLAudioElement(document);
-  audio->ensureUserAgentShadowRoot();
+  audio->EnsureUserAgentShadowRoot();
   audio->setPreload(AtomicString("auto"));
-  if (!src.isNull())
-    audio->setSrc(src);
-  audio->suspendIfNeeded();
+  if (!src.IsNull())
+    audio->SetSrc(src);
+  audio->SuspendIfNeeded();
   return audio;
 }
 

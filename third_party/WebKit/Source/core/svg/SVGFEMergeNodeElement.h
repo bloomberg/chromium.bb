@@ -33,18 +33,18 @@ class SVGFEMergeNodeElement final : public SVGElement {
 
  public:
   DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEMergeNodeElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

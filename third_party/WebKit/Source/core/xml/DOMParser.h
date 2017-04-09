@@ -33,7 +33,7 @@ class DOMParser final : public GarbageCollected<DOMParser>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMParser* create(Document& document) {
+  static DOMParser* Create(Document& document) {
     return new DOMParser(document);
   }
 
@@ -44,7 +44,7 @@ class DOMParser final : public GarbageCollected<DOMParser>,
  private:
   explicit DOMParser(Document&);
 
-  WeakMember<Document> m_contextDocument;
+  WeakMember<Document> context_document_;
 };
 
 }  // namespace blink

@@ -27,96 +27,96 @@ class WEB_EXPORT DevToolsEmulator final
     : public GarbageCollectedFinalized<DevToolsEmulator> {
  public:
   ~DevToolsEmulator();
-  static DevToolsEmulator* create(WebViewImpl*);
+  static DevToolsEmulator* Create(WebViewImpl*);
   DECLARE_TRACE();
 
   // Settings overrides.
-  void setTextAutosizingEnabled(bool);
-  void setDeviceScaleAdjustment(float);
-  void setPreferCompositingToLCDTextEnabled(bool);
-  void setViewportStyle(WebViewportStyle);
-  void setPluginsEnabled(bool);
-  void setScriptEnabled(bool);
-  void setDoubleTapToZoomEnabled(bool);
-  bool doubleTapToZoomEnabled() const;
-  void setAvailablePointerTypes(int);
-  void setPrimaryPointerType(PointerType);
-  void setAvailableHoverTypes(int);
-  void setPrimaryHoverType(HoverType);
-  void setMainFrameResizesAreOrientationChanges(bool);
+  void SetTextAutosizingEnabled(bool);
+  void SetDeviceScaleAdjustment(float);
+  void SetPreferCompositingToLCDTextEnabled(bool);
+  void SetViewportStyle(WebViewportStyle);
+  void SetPluginsEnabled(bool);
+  void SetScriptEnabled(bool);
+  void SetDoubleTapToZoomEnabled(bool);
+  bool DoubleTapToZoomEnabled() const;
+  void SetAvailablePointerTypes(int);
+  void SetPrimaryPointerType(PointerType);
+  void SetAvailableHoverTypes(int);
+  void SetPrimaryHoverType(HoverType);
+  void SetMainFrameResizesAreOrientationChanges(bool);
 
   // Emulation.
-  void enableDeviceEmulation(const WebDeviceEmulationParams&);
-  void disableDeviceEmulation();
+  void EnableDeviceEmulation(const WebDeviceEmulationParams&);
+  void DisableDeviceEmulation();
   // Position is given in CSS pixels, scale relative to a page scale of 1.0.
-  void forceViewport(const WebFloatPoint& position, float scale);
-  void resetViewport();
-  bool resizeIsDeviceSizeChange();
-  void setTouchEventEmulationEnabled(bool);
-  bool handleInputEvent(const WebInputEvent&);
-  void setScriptExecutionDisabled(bool);
+  void ForceViewport(const WebFloatPoint& position, float scale);
+  void ResetViewport();
+  bool ResizeIsDeviceSizeChange();
+  void SetTouchEventEmulationEnabled(bool);
+  bool HandleInputEvent(const WebInputEvent&);
+  void SetScriptExecutionDisabled(bool);
 
   // Notify the DevToolsEmulator about a scroll or scale change of the main
   // frame. Updates the transform for a viewport override.
-  void mainFrameScrollOrScaleChanged();
+  void MainFrameScrollOrScaleChanged();
 
   // Returns a custom visible content rect if a viewport override is active.
   // This ensures that all content inside the forced viewport is painted.
-  WTF::Optional<IntRect> visibleContentRectForPainting() const;
+  WTF::Optional<IntRect> VisibleContentRectForPainting() const;
 
  private:
   explicit DevToolsEmulator(WebViewImpl*);
 
-  void enableMobileEmulation();
-  void disableMobileEmulation();
+  void EnableMobileEmulation();
+  void DisableMobileEmulation();
 
   // Returns the original device scale factor when overridden by DevTools, or
   // deviceScaleFactor() otherwise.
-  float compositorDeviceScaleFactor() const;
+  float CompositorDeviceScaleFactor() const;
 
-  void applyDeviceEmulationTransform(TransformationMatrix*);
-  void applyViewportOverride(TransformationMatrix*);
-  void updateRootLayerTransform();
+  void ApplyDeviceEmulationTransform(TransformationMatrix*);
+  void ApplyViewportOverride(TransformationMatrix*);
+  void UpdateRootLayerTransform();
 
-  WebViewImpl* m_webViewImpl;
+  WebViewImpl* web_view_impl_;
 
-  bool m_deviceMetricsEnabled;
-  bool m_emulateMobileEnabled;
-  WebDeviceEmulationParams m_emulationParams;
+  bool device_metrics_enabled_;
+  bool emulate_mobile_enabled_;
+  WebDeviceEmulationParams emulation_params_;
 
   struct ViewportOverride {
     WebFloatPoint position;
     double scale;
-    bool originalVisualViewportMasking;
+    bool original_visual_viewport_masking;
   };
-  WTF::Optional<ViewportOverride> m_viewportOverride;
+  WTF::Optional<ViewportOverride> viewport_override_;
 
-  bool m_isOverlayScrollbarsEnabled;
-  bool m_isOrientationEventEnabled;
-  bool m_isMobileLayoutThemeEnabled;
-  float m_originalDefaultMinimumPageScaleFactor;
-  float m_originalDefaultMaximumPageScaleFactor;
-  bool m_embedderTextAutosizingEnabled;
-  float m_embedderDeviceScaleAdjustment;
-  bool m_embedderPreferCompositingToLCDTextEnabled;
-  WebViewportStyle m_embedderViewportStyle;
-  bool m_embedderPluginsEnabled;
-  int m_embedderAvailablePointerTypes;
-  PointerType m_embedderPrimaryPointerType;
-  int m_embedderAvailableHoverTypes;
-  HoverType m_embedderPrimaryHoverType;
-  bool m_embedderMainFrameResizesAreOrientationChanges;
+  bool is_overlay_scrollbars_enabled_;
+  bool is_orientation_event_enabled_;
+  bool is_mobile_layout_theme_enabled_;
+  float original_default_minimum_page_scale_factor_;
+  float original_default_maximum_page_scale_factor_;
+  bool embedder_text_autosizing_enabled_;
+  float embedder_device_scale_adjustment_;
+  bool embedder_prefer_compositing_to_lcd_text_enabled_;
+  WebViewportStyle embedder_viewport_style_;
+  bool embedder_plugins_enabled_;
+  int embedder_available_pointer_types_;
+  PointerType embedder_primary_pointer_type_;
+  int embedder_available_hover_types_;
+  HoverType embedder_primary_hover_type_;
+  bool embedder_main_frame_resizes_are_orientation_changes_;
 
-  bool m_touchEventEmulationEnabled;
-  bool m_doubleTapToZoomEnabled;
-  bool m_originalTouchEventFeatureDetectionEnabled;
-  bool m_originalDeviceSupportsTouch;
-  int m_originalMaxTouchPoints;
-  std::unique_ptr<IntPoint> m_lastPinchAnchorCss;
-  std::unique_ptr<IntPoint> m_lastPinchAnchorDip;
+  bool touch_event_emulation_enabled_;
+  bool double_tap_to_zoom_enabled_;
+  bool original_touch_event_feature_detection_enabled_;
+  bool original_device_supports_touch_;
+  int original_max_touch_points_;
+  std::unique_ptr<IntPoint> last_pinch_anchor_css_;
+  std::unique_ptr<IntPoint> last_pinch_anchor_dip_;
 
-  bool m_embedderScriptEnabled;
-  bool m_scriptExecutionDisabled;
+  bool embedder_script_enabled_;
+  bool script_execution_disabled_;
 };
 
 }  // namespace blink

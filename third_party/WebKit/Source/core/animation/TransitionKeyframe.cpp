@@ -11,39 +11,39 @@
 
 namespace blink {
 
-void TransitionKeyframe::setCompositorValue(
-    RefPtr<AnimatableValue> compositorValue) {
+void TransitionKeyframe::SetCompositorValue(
+    RefPtr<AnimatableValue> compositor_value) {
   DCHECK_EQ(
-      CompositorAnimations::isCompositableProperty(m_property.cssProperty()),
-      static_cast<bool>(compositorValue.get()));
-  m_compositorValue = std::move(compositorValue);
+      CompositorAnimations::IsCompositableProperty(property_.CssProperty()),
+      static_cast<bool>(compositor_value.Get()));
+  compositor_value_ = std::move(compositor_value);
 }
 
-PropertyHandleSet TransitionKeyframe::properties() const {
+PropertyHandleSet TransitionKeyframe::Properties() const {
   PropertyHandleSet result;
-  result.insert(m_property);
+  result.insert(property_);
   return result;
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe>
-TransitionKeyframe::createPropertySpecificKeyframe(
+TransitionKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property) const {
-  DCHECK(property == m_property);
-  return PropertySpecificKeyframe::create(offset(), &easing(), composite(),
-                                          m_value->clone(), m_compositorValue);
+  DCHECK(property == property_);
+  return PropertySpecificKeyframe::Create(Offset(), &Easing(), Composite(),
+                                          value_->Clone(), compositor_value_);
 }
 
 PassRefPtr<Interpolation>
-TransitionKeyframe::PropertySpecificKeyframe::createInterpolation(
+TransitionKeyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property,
-    const Keyframe::PropertySpecificKeyframe& otherSuperClass) const {
+    const Keyframe::PropertySpecificKeyframe& other_super_class) const {
   const PropertySpecificKeyframe& other =
-      toTransitionPropertySpecificKeyframe(otherSuperClass);
-  DCHECK(m_value->type() == other.m_value->type());
-  return TransitionInterpolation::create(
-      property, m_value->type(), m_value->value().clone(),
-      other.m_value->value().clone(), m_compositorValue,
-      other.m_compositorValue);
+      ToTransitionPropertySpecificKeyframe(other_super_class);
+  DCHECK(value_->GetType() == other.value_->GetType());
+  return TransitionInterpolation::Create(
+      property, value_->GetType(), value_->Value().Clone(),
+      other.value_->Value().Clone(), compositor_value_,
+      other.compositor_value_);
 }
 
 }  // namespace blink

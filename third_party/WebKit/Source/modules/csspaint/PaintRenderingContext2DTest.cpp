@@ -10,24 +10,24 @@
 namespace blink {
 namespace {
 
-static const int s_width = 50;
-static const int s_height = 75;
-static const float s_zoom = 1.0;
+static const int kWidth = 50;
+static const int kHeight = 75;
+static const float kZoom = 1.0;
 
 class PaintRenderingContext2DTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  Persistent<PaintRenderingContext2D> m_ctx;
+  Persistent<PaintRenderingContext2D> ctx_;
 };
 
 void PaintRenderingContext2DTest::SetUp() {
-  m_ctx = PaintRenderingContext2D::create(
-      ImageBuffer::create(IntSize(s_width, s_height)), false /* hasAlpha */,
-      s_zoom);
+  ctx_ = PaintRenderingContext2D::Create(
+      ImageBuffer::Create(IntSize(kWidth, kHeight)), false /* hasAlpha */,
+      kZoom);
 }
 
-void trySettingStrokeStyle(PaintRenderingContext2D* ctx,
+void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,
                            const String& expected,
                            const String& value) {
   StringOrCanvasGradientOrCanvasPattern result, arg, dummy;
@@ -40,38 +40,38 @@ void trySettingStrokeStyle(PaintRenderingContext2D* ctx,
 }
 
 TEST_F(PaintRenderingContext2DTest, testParseColorOrCurrentColor) {
-  trySettingStrokeStyle(m_ctx.get(), "#0000ff", "blue");
-  trySettingStrokeStyle(m_ctx.get(), "#000000", "currentColor");
+  TrySettingStrokeStyle(ctx_.Get(), "#0000ff", "blue");
+  TrySettingStrokeStyle(ctx_.Get(), "#000000", "currentColor");
 }
 
 TEST_F(PaintRenderingContext2DTest, testWidthAndHeight) {
-  EXPECT_EQ(s_width, m_ctx->width());
-  EXPECT_EQ(s_height, m_ctx->height());
+  EXPECT_EQ(kWidth, ctx_->Width());
+  EXPECT_EQ(kHeight, ctx_->Height());
 }
 
 TEST_F(PaintRenderingContext2DTest, testBasicState) {
-  const double shadowBlurBefore = 2;
-  const double shadowBlurAfter = 3;
+  const double kShadowBlurBefore = 2;
+  const double kShadowBlurAfter = 3;
 
-  const String lineJoinBefore = "bevel";
-  const String lineJoinAfter = "round";
+  const String line_join_before = "bevel";
+  const String line_join_after = "round";
 
-  m_ctx->setShadowBlur(shadowBlurBefore);
-  m_ctx->setLineJoin(lineJoinBefore);
-  EXPECT_EQ(shadowBlurBefore, m_ctx->shadowBlur());
-  EXPECT_EQ(lineJoinBefore, m_ctx->lineJoin());
+  ctx_->setShadowBlur(kShadowBlurBefore);
+  ctx_->setLineJoin(line_join_before);
+  EXPECT_EQ(kShadowBlurBefore, ctx_->shadowBlur());
+  EXPECT_EQ(line_join_before, ctx_->lineJoin());
 
-  m_ctx->save();
+  ctx_->save();
 
-  m_ctx->setShadowBlur(shadowBlurAfter);
-  m_ctx->setLineJoin(lineJoinAfter);
-  EXPECT_EQ(shadowBlurAfter, m_ctx->shadowBlur());
-  EXPECT_EQ(lineJoinAfter, m_ctx->lineJoin());
+  ctx_->setShadowBlur(kShadowBlurAfter);
+  ctx_->setLineJoin(line_join_after);
+  EXPECT_EQ(kShadowBlurAfter, ctx_->shadowBlur());
+  EXPECT_EQ(line_join_after, ctx_->lineJoin());
 
-  m_ctx->restore();
+  ctx_->restore();
 
-  EXPECT_EQ(shadowBlurBefore, m_ctx->shadowBlur());
-  EXPECT_EQ(lineJoinBefore, m_ctx->lineJoin());
+  EXPECT_EQ(kShadowBlurBefore, ctx_->shadowBlur());
+  EXPECT_EQ(line_join_before, ctx_->lineJoin());
 }
 
 }  // namespace

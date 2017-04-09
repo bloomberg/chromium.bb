@@ -445,15 +445,15 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
     bool has_fetch_handler,
     base::Time dispatch_event_time) {
   new_version()->FinishRequest(
-      request_id, result == blink::WebServiceWorkerEventResultCompleted,
+      request_id, result == blink::kWebServiceWorkerEventResultCompleted,
       dispatch_event_time);
 
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   switch (result) {
-    case blink::WebServiceWorkerEventResultCompleted:
+    case blink::kWebServiceWorkerEventResultCompleted:
       status = SERVICE_WORKER_OK;
       break;
-    case blink::WebServiceWorkerEventResultRejected:
+    case blink::kWebServiceWorkerEventResultRejected:
       status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
       break;
     default:

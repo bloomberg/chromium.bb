@@ -31,15 +31,15 @@ class CORE_EXPORT PerformanceObserver final
   friend class PerformanceObserverTest;
 
  public:
-  static PerformanceObserver* create(ExecutionContext*,
+  static PerformanceObserver* Create(ExecutionContext*,
                                      PerformanceBase*,
                                      PerformanceObserverCallback*);
-  static void resumeSuspendedObservers();
+  static void ResumeSuspendedObservers();
 
   void observe(const PerformanceObserverInit&, ExceptionState&);
   void disconnect();
-  void enqueuePerformanceEntry(PerformanceEntry&);
-  PerformanceEntryTypeMask filterOptions() const { return m_filterOptions; }
+  void EnqueuePerformanceEntry(PerformanceEntry&);
+  PerformanceEntryTypeMask FilterOptions() const { return filter_options_; }
 
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
@@ -48,15 +48,15 @@ class CORE_EXPORT PerformanceObserver final
   PerformanceObserver(ExecutionContext*,
                       PerformanceBase*,
                       PerformanceObserverCallback*);
-  void deliver();
-  bool shouldBeSuspended() const;
+  void Deliver();
+  bool ShouldBeSuspended() const;
 
-  Member<ExecutionContext> m_executionContext;
-  TraceWrapperMember<PerformanceObserverCallback> m_callback;
-  WeakMember<PerformanceBase> m_performance;
-  PerformanceEntryVector m_performanceEntries;
-  PerformanceEntryTypeMask m_filterOptions;
-  bool m_isRegistered;
+  Member<ExecutionContext> execution_context_;
+  TraceWrapperMember<PerformanceObserverCallback> callback_;
+  WeakMember<PerformanceBase> performance_;
+  PerformanceEntryVector performance_entries_;
+  PerformanceEntryTypeMask filter_options_;
+  bool is_registered_;
 };
 
 }  // namespace blink

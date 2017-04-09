@@ -23,7 +23,7 @@ class NoopClient final : public GarbageCollectedFinalized<NoopClient>,
   USING_GARBAGE_COLLECTED_MIXIN(NoopClient);
 
  public:
-  void onStateChange() override {}
+  void OnStateChange() override {}
 };
 
 class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
@@ -31,80 +31,80 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
   USING_GARBAGE_COLLECTED_MIXIN(TeeHelper);
 
  public:
-  TeeHelper(ExecutionContext* executionContext, BytesConsumer* consumer)
-      : m_src(consumer),
-        m_destination1(new Destination(executionContext, this)),
-        m_destination2(new Destination(executionContext, this)) {
-    consumer->setClient(this);
+  TeeHelper(ExecutionContext* execution_context, BytesConsumer* consumer)
+      : src_(consumer),
+        destination1_(new Destination(execution_context, this)),
+        destination2_(new Destination(execution_context, this)) {
+    consumer->SetClient(this);
     // As no client is set to either destinations, Destination::notify() is
     // no-op in this function.
-    onStateChange();
+    OnStateChange();
   }
 
-  void onStateChange() override {
-    bool destination1WasEmpty = m_destination1->isEmpty();
-    bool destination2WasEmpty = m_destination2->isEmpty();
-    bool hasEnqueued = false;
+  void OnStateChange() override {
+    bool destination1_was_empty = destination1_->IsEmpty();
+    bool destination2_was_empty = destination2_->IsEmpty();
+    bool has_enqueued = false;
 
     while (true) {
       const char* buffer = nullptr;
       size_t available = 0;
-      auto result = m_src->beginRead(&buffer, &available);
-      if (result == Result::ShouldWait) {
-        if (hasEnqueued && destination1WasEmpty)
-          m_destination1->notify();
-        if (hasEnqueued && destination2WasEmpty)
-          m_destination2->notify();
+      auto result = src_->BeginRead(&buffer, &available);
+      if (result == Result::kShouldWait) {
+        if (has_enqueued && destination1_was_empty)
+          destination1_->Notify();
+        if (has_enqueued && destination2_was_empty)
+          destination2_->Notify();
         return;
       }
       Chunk* chunk = nullptr;
-      if (result == Result::Ok) {
+      if (result == Result::kOk) {
         chunk = new Chunk(buffer, available);
-        result = m_src->endRead(available);
+        result = src_->EndRead(available);
       }
       switch (result) {
-        case Result::Ok:
+        case Result::kOk:
           DCHECK(chunk);
-          m_destination1->enqueue(chunk);
-          m_destination2->enqueue(chunk);
-          hasEnqueued = true;
+          destination1_->Enqueue(chunk);
+          destination2_->Enqueue(chunk);
+          has_enqueued = true;
           break;
-        case Result::ShouldWait:
+        case Result::kShouldWait:
           NOTREACHED();
           return;
-        case Result::Done:
-          if (destination1WasEmpty)
-            m_destination1->notify();
-          if (destination2WasEmpty)
-            m_destination2->notify();
+        case Result::kDone:
+          if (destination1_was_empty)
+            destination1_->Notify();
+          if (destination2_was_empty)
+            destination2_->Notify();
           return;
-        case Result::Error:
-          clearAndNotify();
+        case Result::kError:
+          ClearAndNotify();
           return;
       }
     }
   }
 
-  BytesConsumer::PublicState getPublicState() const {
-    return m_src->getPublicState();
+  BytesConsumer::PublicState GetPublicState() const {
+    return src_->GetPublicState();
   }
 
-  BytesConsumer::Error getError() const { return m_src->getError(); }
+  BytesConsumer::Error GetError() const { return src_->GetError(); }
 
-  void cancel() {
-    if (!m_destination1->isCancelled() || !m_destination2->isCancelled())
+  void Cancel() {
+    if (!destination1_->IsCancelled() || !destination2_->IsCancelled())
       return;
-    m_src->cancel();
+    src_->Cancel();
   }
 
-  BytesConsumer* destination1() const { return m_destination1; }
-  BytesConsumer* destination2() const { return m_destination2; }
+  BytesConsumer* Destination1() const { return destination1_; }
+  BytesConsumer* Destination2() const { return destination2_; }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_src);
-    visitor->trace(m_destination1);
-    visitor->trace(m_destination2);
-    BytesConsumer::Client::trace(visitor);
+    visitor->Trace(src_);
+    visitor->Trace(destination1_);
+    visitor->Trace(destination2_);
+    BytesConsumer::Client::Trace(visitor);
   }
 
  private:
@@ -112,266 +112,264 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
   class Chunk final : public GarbageCollectedFinalized<Chunk> {
    public:
     Chunk(const char* data, size_t size) {
-      m_buffer.reserveInitialCapacity(size);
-      m_buffer.append(data, size);
+      buffer_.ReserveInitialCapacity(size);
+      buffer_.Append(data, size);
     }
-    const char* data() const { return m_buffer.data(); }
-    size_t size() const { return m_buffer.size(); }
+    const char* Data() const { return buffer_.Data(); }
+    size_t size() const { return buffer_.size(); }
 
     DEFINE_INLINE_TRACE() {}
 
    private:
-    Vector<char> m_buffer;
+    Vector<char> buffer_;
   };
 
   class Destination final : public BytesConsumer {
    public:
-    Destination(ExecutionContext* executionContext, TeeHelper* tee)
-        : m_executionContext(executionContext), m_tee(tee) {}
+    Destination(ExecutionContext* execution_context, TeeHelper* tee)
+        : execution_context_(execution_context), tee_(tee) {}
 
-    Result beginRead(const char** buffer, size_t* available) override {
-      DCHECK(!m_chunkInUse);
+    Result BeginRead(const char** buffer, size_t* available) override {
+      DCHECK(!chunk_in_use_);
       *buffer = nullptr;
       *available = 0;
-      if (m_isCancelled || m_isClosed)
-        return Result::Done;
-      if (!m_chunks.isEmpty()) {
-        Chunk* chunk = m_chunks[0];
-        DCHECK_LE(m_offset, chunk->size());
-        *buffer = chunk->data() + m_offset;
-        *available = chunk->size() - m_offset;
-        m_chunkInUse = chunk;
-        return Result::Ok;
+      if (is_cancelled_ || is_closed_)
+        return Result::kDone;
+      if (!chunks_.IsEmpty()) {
+        Chunk* chunk = chunks_[0];
+        DCHECK_LE(offset_, chunk->size());
+        *buffer = chunk->Data() + offset_;
+        *available = chunk->size() - offset_;
+        chunk_in_use_ = chunk;
+        return Result::kOk;
       }
-      switch (m_tee->getPublicState()) {
-        case PublicState::ReadableOrWaiting:
-          return Result::ShouldWait;
-        case PublicState::Closed:
-          m_isClosed = true;
-          clearClient();
-          return Result::Done;
-        case PublicState::Errored:
-          clearClient();
-          return Result::Error;
+      switch (tee_->GetPublicState()) {
+        case PublicState::kReadableOrWaiting:
+          return Result::kShouldWait;
+        case PublicState::kClosed:
+          is_closed_ = true;
+          ClearClient();
+          return Result::kDone;
+        case PublicState::kErrored:
+          ClearClient();
+          return Result::kError;
       }
       NOTREACHED();
-      return Result::Error;
+      return Result::kError;
     }
 
-    Result endRead(size_t read) override {
-      DCHECK(m_chunkInUse);
-      DCHECK(m_chunks.isEmpty() || m_chunkInUse == m_chunks[0]);
-      m_chunkInUse = nullptr;
-      if (m_chunks.isEmpty()) {
+    Result EndRead(size_t read) override {
+      DCHECK(chunk_in_use_);
+      DCHECK(chunks_.IsEmpty() || chunk_in_use_ == chunks_[0]);
+      chunk_in_use_ = nullptr;
+      if (chunks_.IsEmpty()) {
         // This object becomes errored during the two-phase read.
-        DCHECK_EQ(PublicState::Errored, getPublicState());
-        return Result::Ok;
+        DCHECK_EQ(PublicState::kErrored, GetPublicState());
+        return Result::kOk;
       }
-      Chunk* chunk = m_chunks[0];
-      DCHECK_LE(m_offset + read, chunk->size());
-      m_offset += read;
-      if (chunk->size() == m_offset) {
-        m_offset = 0;
-        m_chunks.pop_front();
+      Chunk* chunk = chunks_[0];
+      DCHECK_LE(offset_ + read, chunk->size());
+      offset_ += read;
+      if (chunk->size() == offset_) {
+        offset_ = 0;
+        chunks_.pop_front();
       }
-      if (m_chunks.isEmpty() &&
-          m_tee->getPublicState() == PublicState::Closed) {
+      if (chunks_.IsEmpty() && tee_->GetPublicState() == PublicState::kClosed) {
         // All data has been consumed.
-        TaskRunnerHelper::get(TaskType::Networking, m_executionContext)
-            ->postTask(BLINK_FROM_HERE,
-                       WTF::bind(&Destination::close, wrapPersistent(this)));
+        TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+            ->PostTask(BLINK_FROM_HERE,
+                       WTF::Bind(&Destination::Close, WrapPersistent(this)));
       }
-      return Result::Ok;
+      return Result::kOk;
     }
 
-    void setClient(BytesConsumer::Client* client) override {
-      DCHECK(!m_client);
+    void SetClient(BytesConsumer::Client* client) override {
+      DCHECK(!client_);
       DCHECK(client);
-      auto state = getPublicState();
-      if (state == PublicState::Closed || state == PublicState::Errored)
+      auto state = GetPublicState();
+      if (state == PublicState::kClosed || state == PublicState::kErrored)
         return;
-      m_client = client;
+      client_ = client;
     }
 
-    void clearClient() override { m_client = nullptr; }
+    void ClearClient() override { client_ = nullptr; }
 
-    void cancel() override {
-      DCHECK(!m_chunkInUse);
-      auto state = getPublicState();
-      if (state == PublicState::Closed || state == PublicState::Errored)
+    void Cancel() override {
+      DCHECK(!chunk_in_use_);
+      auto state = GetPublicState();
+      if (state == PublicState::kClosed || state == PublicState::kErrored)
         return;
-      m_isCancelled = true;
-      clearChunks();
-      clearClient();
-      m_tee->cancel();
+      is_cancelled_ = true;
+      ClearChunks();
+      ClearClient();
+      tee_->Cancel();
     }
 
-    PublicState getPublicState() const override {
-      if (m_isCancelled || m_isClosed)
-        return PublicState::Closed;
-      auto state = m_tee->getPublicState();
+    PublicState GetPublicState() const override {
+      if (is_cancelled_ || is_closed_)
+        return PublicState::kClosed;
+      auto state = tee_->GetPublicState();
       // We don't say this object is closed unless m_isCancelled or
       // m_isClosed is set.
-      return state == PublicState::Closed ? PublicState::ReadableOrWaiting
-                                          : state;
+      return state == PublicState::kClosed ? PublicState::kReadableOrWaiting
+                                           : state;
     }
 
-    Error getError() const override { return m_tee->getError(); }
+    Error GetError() const override { return tee_->GetError(); }
 
-    String debugName() const override { return "TeeHelper::Destination"; }
+    String DebugName() const override { return "TeeHelper::Destination"; }
 
-    void enqueue(Chunk* chunk) {
-      if (m_isCancelled)
+    void Enqueue(Chunk* chunk) {
+      if (is_cancelled_)
         return;
-      m_chunks.push_back(chunk);
+      chunks_.push_back(chunk);
     }
 
-    bool isEmpty() const { return m_chunks.isEmpty(); }
+    bool IsEmpty() const { return chunks_.IsEmpty(); }
 
-    void clearChunks() {
-      m_chunks.clear();
-      m_offset = 0;
+    void ClearChunks() {
+      chunks_.Clear();
+      offset_ = 0;
     }
 
-    void notify() {
-      if (m_isCancelled || m_isClosed)
+    void Notify() {
+      if (is_cancelled_ || is_closed_)
         return;
-      if (m_chunks.isEmpty() &&
-          m_tee->getPublicState() == PublicState::Closed) {
-        close();
+      if (chunks_.IsEmpty() && tee_->GetPublicState() == PublicState::kClosed) {
+        Close();
         return;
       }
-      if (m_client) {
-        m_client->onStateChange();
-        if (getPublicState() == PublicState::Errored)
-          clearClient();
+      if (client_) {
+        client_->OnStateChange();
+        if (GetPublicState() == PublicState::kErrored)
+          ClearClient();
       }
     }
 
-    bool isCancelled() const { return m_isCancelled; }
+    bool IsCancelled() const { return is_cancelled_; }
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_executionContext);
-      visitor->trace(m_tee);
-      visitor->trace(m_client);
-      visitor->trace(m_chunks);
-      visitor->trace(m_chunkInUse);
-      BytesConsumer::trace(visitor);
+      visitor->Trace(execution_context_);
+      visitor->Trace(tee_);
+      visitor->Trace(client_);
+      visitor->Trace(chunks_);
+      visitor->Trace(chunk_in_use_);
+      BytesConsumer::Trace(visitor);
     }
 
    private:
-    void close() {
-      DCHECK_EQ(PublicState::Closed, m_tee->getPublicState());
-      DCHECK(m_chunks.isEmpty());
-      if (m_isClosed || m_isCancelled) {
+    void Close() {
+      DCHECK_EQ(PublicState::kClosed, tee_->GetPublicState());
+      DCHECK(chunks_.IsEmpty());
+      if (is_closed_ || is_cancelled_) {
         // It's possible to reach here because this function can be
         // called asynchronously.
         return;
       }
-      DCHECK_EQ(PublicState::ReadableOrWaiting, getPublicState());
-      m_isClosed = true;
-      if (m_client) {
-        m_client->onStateChange();
-        clearClient();
+      DCHECK_EQ(PublicState::kReadableOrWaiting, GetPublicState());
+      is_closed_ = true;
+      if (client_) {
+        client_->OnStateChange();
+        ClearClient();
       }
     }
 
-    Member<ExecutionContext> m_executionContext;
-    Member<TeeHelper> m_tee;
-    Member<BytesConsumer::Client> m_client;
-    HeapDeque<Member<Chunk>> m_chunks;
-    Member<Chunk> m_chunkInUse;
-    size_t m_offset = 0;
-    bool m_isCancelled = false;
-    bool m_isClosed = false;
+    Member<ExecutionContext> execution_context_;
+    Member<TeeHelper> tee_;
+    Member<BytesConsumer::Client> client_;
+    HeapDeque<Member<Chunk>> chunks_;
+    Member<Chunk> chunk_in_use_;
+    size_t offset_ = 0;
+    bool is_cancelled_ = false;
+    bool is_closed_ = false;
   };
 
-  void clearAndNotify() {
-    m_destination1->clearChunks();
-    m_destination2->clearChunks();
-    m_destination1->notify();
-    m_destination2->notify();
+  void ClearAndNotify() {
+    destination1_->ClearChunks();
+    destination2_->ClearChunks();
+    destination1_->Notify();
+    destination2_->Notify();
   }
 
-  Member<BytesConsumer> m_src;
-  Member<Destination> m_destination1;
-  Member<Destination> m_destination2;
+  Member<BytesConsumer> src_;
+  Member<Destination> destination1_;
+  Member<Destination> destination2_;
 };
 
 class ErroredBytesConsumer final : public BytesConsumer {
  public:
-  explicit ErroredBytesConsumer(const Error& error) : m_error(error) {}
+  explicit ErroredBytesConsumer(const Error& error) : error_(error) {}
 
-  Result beginRead(const char** buffer, size_t* available) override {
+  Result BeginRead(const char** buffer, size_t* available) override {
     *buffer = nullptr;
     *available = 0;
-    return Result::Error;
+    return Result::kError;
   }
-  Result endRead(size_t readSize) override {
+  Result EndRead(size_t read_size) override {
     NOTREACHED();
-    return Result::Error;
+    return Result::kError;
   }
-  void setClient(BytesConsumer::Client*) override {}
-  void clearClient() override {}
+  void SetClient(BytesConsumer::Client*) override {}
+  void ClearClient() override {}
 
-  void cancel() override {}
-  PublicState getPublicState() const override { return PublicState::Errored; }
-  Error getError() const override { return m_error; }
-  String debugName() const override { return "ErroredBytesConsumer"; }
+  void Cancel() override {}
+  PublicState GetPublicState() const override { return PublicState::kErrored; }
+  Error GetError() const override { return error_; }
+  String DebugName() const override { return "ErroredBytesConsumer"; }
 
  private:
-  const Error m_error;
+  const Error error_;
 };
 
 class ClosedBytesConsumer final : public BytesConsumer {
  public:
-  Result beginRead(const char** buffer, size_t* available) override {
+  Result BeginRead(const char** buffer, size_t* available) override {
     *buffer = nullptr;
     *available = 0;
-    return Result::Done;
+    return Result::kDone;
   }
-  Result endRead(size_t readSize) override {
+  Result EndRead(size_t read_size) override {
     NOTREACHED();
-    return Result::Error;
+    return Result::kError;
   }
-  void setClient(BytesConsumer::Client*) override {}
-  void clearClient() override {}
+  void SetClient(BytesConsumer::Client*) override {}
+  void ClearClient() override {}
 
-  void cancel() override {}
-  PublicState getPublicState() const override { return PublicState::Closed; }
-  Error getError() const override {
+  void Cancel() override {}
+  PublicState GetPublicState() const override { return PublicState::kClosed; }
+  Error GetError() const override {
     NOTREACHED();
     return Error();
   }
-  String debugName() const override { return "ClosedBytesConsumer"; }
+  String DebugName() const override { return "ClosedBytesConsumer"; }
 };
 
 }  // namespace
 
-void BytesConsumer::tee(ExecutionContext* executionContext,
+void BytesConsumer::Tee(ExecutionContext* execution_context,
                         BytesConsumer* src,
                         BytesConsumer** dest1,
                         BytesConsumer** dest2) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      src->drainAsBlobDataHandle(BlobSizePolicy::AllowBlobWithInvalidSize);
-  if (blobDataHandle) {
+  RefPtr<BlobDataHandle> blob_data_handle =
+      src->DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
+  if (blob_data_handle) {
     // Register a client in order to be consistent.
-    src->setClient(new NoopClient);
-    *dest1 = new BlobBytesConsumer(executionContext, blobDataHandle);
-    *dest2 = new BlobBytesConsumer(executionContext, blobDataHandle);
+    src->SetClient(new NoopClient);
+    *dest1 = new BlobBytesConsumer(execution_context, blob_data_handle);
+    *dest2 = new BlobBytesConsumer(execution_context, blob_data_handle);
     return;
   }
 
-  TeeHelper* tee = new TeeHelper(executionContext, src);
-  *dest1 = tee->destination1();
-  *dest2 = tee->destination2();
+  TeeHelper* tee = new TeeHelper(execution_context, src);
+  *dest1 = tee->Destination1();
+  *dest2 = tee->Destination2();
 }
 
-BytesConsumer* BytesConsumer::createErrored(const BytesConsumer::Error& error) {
+BytesConsumer* BytesConsumer::CreateErrored(const BytesConsumer::Error& error) {
   return new ErroredBytesConsumer(error);
 }
 
-BytesConsumer* BytesConsumer::createClosed() {
+BytesConsumer* BytesConsumer::CreateClosed() {
   return new ClosedBytesConsumer();
 }
 

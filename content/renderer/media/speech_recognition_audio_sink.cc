@@ -62,7 +62,7 @@ SpeechRecognitionAudioSink::~SpeechRecognitionAudioSink() {
 bool SpeechRecognitionAudioSink::IsSupportedTrack(
     const blink::WebMediaStreamTrack& track) {
   MediaStreamAudioSource* native_source =
-      MediaStreamAudioSource::From(track.source());
+      MediaStreamAudioSource::From(track.Source());
   if (!native_source)
     return false;
 
@@ -108,7 +108,7 @@ void SpeechRecognitionAudioSink::OnReadyStateChanged(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_stopped_);
 
-  if (state == blink::WebMediaStreamSource::ReadyStateEnded) {
+  if (state == blink::WebMediaStreamSource::kReadyStateEnded) {
     track_stopped_ = true;
 
     if (!on_stopped_cb_.is_null())

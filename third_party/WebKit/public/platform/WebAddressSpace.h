@@ -10,10 +10,10 @@ namespace blink {
 // The ordering is important, as it's used to determine whether preflights are
 // required, as per https://mikewest.github.io/cors-rfc1918/#framework
 enum WebAddressSpace {
-  WebAddressSpaceLocal = 0,  // loopback, link local
-  WebAddressSpacePrivate,    // Reserved by RFC1918
-  WebAddressSpacePublic,     // Everything else
-  WebAddressSpaceLast = WebAddressSpacePublic
+  kWebAddressSpaceLocal = 0,  // loopback, link local
+  kWebAddressSpacePrivate,    // Reserved by RFC1918
+  kWebAddressSpacePublic,     // Everything else
+  kWebAddressSpaceLast = kWebAddressSpacePublic
 };
 
 }  // namespace blink

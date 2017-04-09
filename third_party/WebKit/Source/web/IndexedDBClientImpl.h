@@ -42,10 +42,10 @@ class ExecutionContext;
 // for the main thread.
 class IndexedDBClientImpl final : public IndexedDBClient {
  public:
-  static IndexedDBClient* create(LocalFrame&);
-  static IndexedDBClient* create(WorkerClients&);
+  static IndexedDBClient* Create(LocalFrame&);
+  static IndexedDBClient* Create(WorkerClients&);
 
-  bool allowIndexedDB(ExecutionContext*, const String& name) override;
+  bool AllowIndexedDB(ExecutionContext*, const String& name) override;
 
  private:
   explicit IndexedDBClientImpl(LocalFrame&);

@@ -12,53 +12,53 @@ namespace blink {
 
 class WebBlobInfo {
  public:
-  WebBlobInfo() : m_isFile(false), m_size(-1), m_lastModified(0) {}
+  WebBlobInfo() : is_file_(false), size_(-1), last_modified_(0) {}
   WebBlobInfo(const WebString& uuid, const WebString& type, long long size)
-      : m_isFile(false),
-        m_uuid(uuid),
-        m_type(type),
-        m_size(size),
-        m_lastModified(0) {}
+      : is_file_(false),
+        uuid_(uuid),
+        type_(type),
+        size_(size),
+        last_modified_(0) {}
   WebBlobInfo(const WebString& uuid,
-              const WebString& filePath,
-              const WebString& fileName,
+              const WebString& file_path,
+              const WebString& file_name,
               const WebString& type)
-      : m_isFile(true),
-        m_uuid(uuid),
-        m_type(type),
-        m_size(-1),
-        m_filePath(filePath),
-        m_fileName(fileName),
-        m_lastModified(0) {}
+      : is_file_(true),
+        uuid_(uuid),
+        type_(type),
+        size_(-1),
+        file_path_(file_path),
+        file_name_(file_name),
+        last_modified_(0) {}
   WebBlobInfo(const WebString& uuid,
-              const WebString& filePath,
-              const WebString& fileName,
+              const WebString& file_path,
+              const WebString& file_name,
               const WebString& type,
-              double lastModified,
+              double last_modified,
               long long size)
-      : m_isFile(true),
-        m_uuid(uuid),
-        m_type(type),
-        m_size(size),
-        m_filePath(filePath),
-        m_fileName(fileName),
-        m_lastModified(lastModified) {}
-  bool isFile() const { return m_isFile; }
-  const WebString& uuid() const { return m_uuid; }
-  const WebString& type() const { return m_type; }
-  long long size() const { return m_size; }
-  const WebString& filePath() const { return m_filePath; }
-  const WebString& fileName() const { return m_fileName; }
-  double lastModified() const { return m_lastModified; }
+      : is_file_(true),
+        uuid_(uuid),
+        type_(type),
+        size_(size),
+        file_path_(file_path),
+        file_name_(file_name),
+        last_modified_(last_modified) {}
+  bool IsFile() const { return is_file_; }
+  const WebString& Uuid() const { return uuid_; }
+  const WebString& GetType() const { return type_; }
+  long long size() const { return size_; }
+  const WebString& FilePath() const { return file_path_; }
+  const WebString& FileName() const { return file_name_; }
+  double LastModified() const { return last_modified_; }
 
  private:
-  bool m_isFile;
-  WebString m_uuid;
-  WebString m_type;  // MIME type
-  long long m_size;
-  WebString m_filePath;   // Only for File
-  WebString m_fileName;   // Only for File
-  double m_lastModified;  // Only for File
+  bool is_file_;
+  WebString uuid_;
+  WebString type_;  // MIME type
+  long long size_;
+  WebString file_path_;   // Only for File
+  WebString file_name_;   // Only for File
+  double last_modified_;  // Only for File
 };
 
 }  // namespace blink

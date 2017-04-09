@@ -49,58 +49,58 @@ class ScopedPersistent {
   ScopedPersistent() {}
 
   ScopedPersistent(v8::Isolate* isolate, v8::Local<T> handle)
-      : m_handle(isolate, handle) {}
+      : handle_(isolate, handle) {}
 
   ScopedPersistent(v8::Isolate* isolate, v8::MaybeLocal<T> maybe) {
     v8::Local<T> local;
     if (maybe.ToLocal(&local))
-      m_handle.Reset(isolate, local);
+      handle_.Reset(isolate, local);
   }
 
-  virtual ~ScopedPersistent() { clear(); }
+  virtual ~ScopedPersistent() { Clear(); }
 
-  ALWAYS_INLINE v8::Local<T> newLocal(v8::Isolate* isolate) const {
-    return v8::Local<T>::New(isolate, m_handle);
+  ALWAYS_INLINE v8::Local<T> NewLocal(v8::Isolate* isolate) const {
+    return v8::Local<T>::New(isolate, handle_);
   }
 
   // If you don't need to get weak callback, use setPhantom instead.
   // setPhantom is faster than setWeak.
   template <typename P>
-  void setWeak(P* parameters,
+  void SetWeak(P* parameters,
                void (*callback)(const v8::WeakCallbackInfo<P>&),
                v8::WeakCallbackType type = v8::WeakCallbackType::kParameter) {
-    m_handle.SetWeak(parameters, callback, type);
+    handle_.SetWeak(parameters, callback, type);
   }
 
   // Turns this handle into a weak phantom handle without
   // finalization callback.
-  void setPhantom() { m_handle.SetWeak(); }
+  void SetPhantom() { handle_.SetWeak(); }
 
-  void clearWeak() { m_handle.template ClearWeak<void>(); }
+  void ClearWeak() { handle_.template ClearWeak<void>(); }
 
-  bool isEmpty() const { return m_handle.IsEmpty(); }
-  bool isWeak() const { return m_handle.IsWeak(); }
+  bool IsEmpty() const { return handle_.IsEmpty(); }
+  bool IsWeak() const { return handle_.IsWeak(); }
 
-  virtual void set(v8::Isolate* isolate, v8::Local<T> handle) {
-    m_handle.Reset(isolate, handle);
+  virtual void Set(v8::Isolate* isolate, v8::Local<T> handle) {
+    handle_.Reset(isolate, handle);
   }
 
   // Note: This is clear in the std::unique_ptr sense, not the v8::Handle sense.
-  void clear() { m_handle.Reset(); }
+  void Clear() { handle_.Reset(); }
 
   bool operator==(const ScopedPersistent<T>& other) {
-    return m_handle == other.m_handle;
+    return handle_ == other.handle_;
   }
 
   template <class S>
   bool operator==(const v8::Local<S> other) const {
-    return m_handle == other;
+    return handle_ == other;
   }
 
-  ALWAYS_INLINE v8::Persistent<T>& get() { return m_handle; }
+  ALWAYS_INLINE v8::Persistent<T>& Get() { return handle_; }
 
  private:
-  v8::Persistent<T> m_handle;
+  v8::Persistent<T> handle_;
 };
 
 }  // namespace blink

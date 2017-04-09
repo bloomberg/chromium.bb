@@ -40,40 +40,40 @@ enum TurbulenceType {
 class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
  public:
   static FETurbulence*
-  create(Filter*, TurbulenceType, float, float, int, float, bool);
+  Create(Filter*, TurbulenceType, float, float, int, float, bool);
 
-  TurbulenceType type() const;
-  bool setType(TurbulenceType);
+  TurbulenceType GetType() const;
+  bool SetType(TurbulenceType);
 
-  float baseFrequencyY() const;
-  bool setBaseFrequencyY(float);
+  float BaseFrequencyY() const;
+  bool SetBaseFrequencyY(float);
 
-  float baseFrequencyX() const;
-  bool setBaseFrequencyX(float);
+  float BaseFrequencyX() const;
+  bool SetBaseFrequencyX(float);
 
-  float seed() const;
-  bool setSeed(float);
+  float Seed() const;
+  bool SetSeed(float);
 
-  int numOctaves() const;
-  bool setNumOctaves(int);
+  int NumOctaves() const;
+  bool SetNumOctaves(int);
 
-  bool stitchTiles() const;
-  bool setStitchTiles(bool);
+  bool StitchTiles() const;
+  bool SetStitchTiles(bool);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
   FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
-  sk_sp<SkImageFilter> createImageFilter() override;
-  sk_sp<SkShader> createShader() const;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<SkShader> CreateShader() const;
 
-  TurbulenceType m_type;
-  float m_baseFrequencyX;
-  float m_baseFrequencyY;
-  int m_numOctaves;
-  float m_seed;
-  bool m_stitchTiles;
+  TurbulenceType type_;
+  float base_frequency_x_;
+  float base_frequency_y_;
+  int num_octaves_;
+  float seed_;
+  bool stitch_tiles_;
 };
 
 }  // namespace blink

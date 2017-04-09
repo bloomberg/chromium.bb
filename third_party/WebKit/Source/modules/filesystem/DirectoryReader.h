@@ -46,17 +46,17 @@ class DirectoryReader : public DirectoryReaderBase, public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DirectoryReader* create(DOMFileSystemBase* fileSystem,
-                                 const String& fullPath) {
-    return new DirectoryReader(fileSystem, fullPath);
+  static DirectoryReader* Create(DOMFileSystemBase* file_system,
+                                 const String& full_path) {
+    return new DirectoryReader(file_system, full_path);
   }
 
   ~DirectoryReader() override;
 
   void readEntries(EntriesCallback*, ErrorCallback* = nullptr);
 
-  DOMFileSystem* filesystem() const {
-    return static_cast<DOMFileSystem*>(m_fileSystem.get());
+  DOMFileSystem* Filesystem() const {
+    return static_cast<DOMFileSystem*>(file_system_.Get());
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -65,17 +65,17 @@ class DirectoryReader : public DirectoryReaderBase, public ScriptWrappable {
   class EntriesCallbackHelper;
   class ErrorCallbackHelper;
 
-  DirectoryReader(DOMFileSystemBase*, const String& fullPath);
+  DirectoryReader(DOMFileSystemBase*, const String& full_path);
 
-  void addEntries(const EntryHeapVector& entries);
+  void AddEntries(const EntryHeapVector& entries);
 
-  void onError(FileError::ErrorCode);
+  void OnError(FileError::ErrorCode);
 
-  bool m_isReading;
-  EntryHeapVector m_entries;
-  FileError::ErrorCode m_error = FileError::ErrorCode::kOK;
-  Member<EntriesCallback> m_entriesCallback;
-  Member<ErrorCallback> m_errorCallback;
+  bool is_reading_;
+  EntryHeapVector entries_;
+  FileError::ErrorCode error_ = FileError::ErrorCode::kOK;
+  Member<EntriesCallback> entries_callback_;
+  Member<ErrorCallback> error_callback_;
 };
 
 }  // namespace blink

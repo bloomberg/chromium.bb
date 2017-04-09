@@ -65,7 +65,7 @@ class CSSPropertySourceData {
                         const String& value,
                         bool important,
                         bool disabled,
-                        bool parsedOk,
+                        bool parsed_ok,
                         const SourceRange& range);
   CSSPropertySourceData(const CSSPropertySourceData& other);
 
@@ -73,7 +73,7 @@ class CSSPropertySourceData {
   String value;
   bool important;
   bool disabled;
-  bool parsedOk;
+  bool parsed_ok;
   SourceRange range;
 };
 
@@ -86,38 +86,38 @@ namespace blink {
 class CSSRuleSourceData : public GarbageCollectedFinalized<CSSRuleSourceData> {
  public:
   explicit CSSRuleSourceData(StyleRule::RuleType type) : type(type) {}
-  DEFINE_INLINE_TRACE() { visitor->trace(childRules); };
+  DEFINE_INLINE_TRACE() { visitor->Trace(child_rules); };
 
-  bool hasProperties() const {
-    return type == StyleRule::Style || type == StyleRule::FontFace ||
-           type == StyleRule::Page || type == StyleRule::Keyframe;
+  bool HasProperties() const {
+    return type == StyleRule::kStyle || type == StyleRule::kFontFace ||
+           type == StyleRule::kPage || type == StyleRule::kKeyframe;
   }
 
-  bool hasMedia() const {
-    return type == StyleRule::Media || type == StyleRule::Import;
+  bool HasMedia() const {
+    return type == StyleRule::kMedia || type == StyleRule::kImport;
   }
 
   StyleRule::RuleType type;
 
   // Range of the selector list in the enclosing source.
-  SourceRange ruleHeaderRange;
+  SourceRange rule_header_range;
 
   // Range of the rule body (e.g. style text for style rules) in the enclosing
   // source.
-  SourceRange ruleBodyRange;
+  SourceRange rule_body_range;
 
   // Only for CSSStyleRules.
-  Vector<SourceRange> selectorRanges;
+  Vector<SourceRange> selector_ranges;
 
   // Only for CSSStyleRules, CSSFontFaceRules, and CSSPageRules.
-  Vector<CSSPropertySourceData> propertyData;
+  Vector<CSSPropertySourceData> property_data;
 
   // Only for CSSMediaRules.
-  HeapVector<Member<CSSRuleSourceData>> childRules;
+  HeapVector<Member<CSSRuleSourceData>> child_rules;
 
   // Only for CSSMediaRules and CSSImportRules.
   // Source ranges for media query -> expression -> value.
-  Vector<Vector<SourceRange>> mediaQueryExpValueRanges;
+  Vector<Vector<SourceRange>> media_query_exp_value_ranges;
 };
 
 using CSSRuleSourceDataList = HeapVector<Member<CSSRuleSourceData>>;

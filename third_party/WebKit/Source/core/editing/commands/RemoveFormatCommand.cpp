@@ -43,7 +43,7 @@ using namespace HTMLNames;
 RemoveFormatCommand::RemoveFormatCommand(Document& document)
     : CompositeEditCommand(document) {}
 
-static bool isElementForRemoveFormatCommand(const Element* element) {
+static bool IsElementForRemoveFormatCommand(const Element* element) {
   DEFINE_STATIC_LOCAL(
       HashSet<QualifiedName>, elements,
       ({
@@ -52,37 +52,37 @@ static bool isElementForRemoveFormatCommand(const Element* element) {
           nobrTag,    qTag,   sTag,    sampTag, smallTag, strikeTag,
           strongTag,  subTag, supTag,  ttTag,   uTag,     varTag,
       }));
-  return elements.contains(element->tagQName());
+  return elements.Contains(element->TagQName());
 }
 
-void RemoveFormatCommand::doApply(EditingState* editingState) {
-  LocalFrame* frame = document().frame();
+void RemoveFormatCommand::DoApply(EditingState* editing_state) {
+  LocalFrame* frame = GetDocument().GetFrame();
 
-  if (!frame->selection()
-           .computeVisibleSelectionInDOMTreeDeprecated()
-           .isNonOrphanedCaretOrRange())
+  if (!frame->Selection()
+           .ComputeVisibleSelectionInDOMTreeDeprecated()
+           .IsNonOrphanedCaretOrRange())
     return;
 
   // Get the default style for this editable root, it's the style that we'll
   // give the content that we're operating on.
-  Element* root = frame->selection()
-                      .computeVisibleSelectionInDOMTreeDeprecated()
-                      .rootEditableElement();
-  EditingStyle* defaultStyle = EditingStyle::create(root);
+  Element* root = frame->Selection()
+                      .ComputeVisibleSelectionInDOMTreeDeprecated()
+                      .RootEditableElement();
+  EditingStyle* default_style = EditingStyle::Create(root);
 
   // We want to remove everything but transparent background.
   // FIXME: We shouldn't access style().
-  defaultStyle->style()->setProperty(CSSPropertyBackgroundColor,
-                                     CSSValueTransparent);
+  default_style->Style()->SetProperty(CSSPropertyBackgroundColor,
+                                      CSSValueTransparent);
 
-  applyCommandToComposite(
-      ApplyStyleCommand::create(document(), defaultStyle,
-                                isElementForRemoveFormatCommand, inputType()),
-      editingState);
+  ApplyCommandToComposite(ApplyStyleCommand::Create(
+                              GetDocument(), default_style,
+                              IsElementForRemoveFormatCommand, GetInputType()),
+                          editing_state);
 }
 
-InputEvent::InputType RemoveFormatCommand::inputType() const {
-  return InputEvent::InputType::FormatRemove;
+InputEvent::InputType RemoveFormatCommand::GetInputType() const {
+  return InputEvent::InputType::kFormatRemove;
 }
 
 }  // namespace blink

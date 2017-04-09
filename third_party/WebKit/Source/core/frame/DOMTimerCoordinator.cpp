@@ -11,57 +11,58 @@
 
 namespace blink {
 
-DOMTimerCoordinator::DOMTimerCoordinator(RefPtr<WebTaskRunner> timerTaskRunner)
-    : m_circularSequentialID(0),
-      m_timerNestingLevel(0),
-      m_timerTaskRunner(std::move(timerTaskRunner)) {}
+DOMTimerCoordinator::DOMTimerCoordinator(
+    RefPtr<WebTaskRunner> timer_task_runner)
+    : circular_sequential_id_(0),
+      timer_nesting_level_(0),
+      timer_task_runner_(std::move(timer_task_runner)) {}
 
-int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context,
+int DOMTimerCoordinator::InstallNewTimeout(ExecutionContext* context,
                                            ScheduledAction* action,
                                            int timeout,
-                                           bool singleShot) {
+                                           bool single_shot) {
   // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
-  ASSERT(context->timers() == this);
-  int timeoutID = nextID();
-  m_timers.insert(timeoutID, DOMTimer::create(context, action, timeout,
-                                              singleShot, timeoutID));
-  return timeoutID;
+  ASSERT(context->Timers() == this);
+  int timeout_id = NextID();
+  timers_.insert(timeout_id, DOMTimer::Create(context, action, timeout,
+                                              single_shot, timeout_id));
+  return timeout_id;
 }
 
-DOMTimer* DOMTimerCoordinator::removeTimeoutByID(int timeoutID) {
-  if (timeoutID <= 0)
+DOMTimer* DOMTimerCoordinator::RemoveTimeoutByID(int timeout_id) {
+  if (timeout_id <= 0)
     return nullptr;
 
-  DOMTimer* removedTimer = m_timers.take(timeoutID);
-  if (removedTimer)
-    removedTimer->stop();
+  DOMTimer* removed_timer = timers_.Take(timeout_id);
+  if (removed_timer)
+    removed_timer->Stop();
 
-  return removedTimer;
+  return removed_timer;
 }
 
-bool DOMTimerCoordinator::hasInstalledTimeout() const {
-  return !m_timers.isEmpty();
+bool DOMTimerCoordinator::HasInstalledTimeout() const {
+  return !timers_.IsEmpty();
 }
 
 DEFINE_TRACE(DOMTimerCoordinator) {
-  visitor->trace(m_timers);
+  visitor->Trace(timers_);
 }
 
-int DOMTimerCoordinator::nextID() {
+int DOMTimerCoordinator::NextID() {
   while (true) {
-    ++m_circularSequentialID;
+    ++circular_sequential_id_;
 
-    if (m_circularSequentialID <= 0)
-      m_circularSequentialID = 1;
+    if (circular_sequential_id_ <= 0)
+      circular_sequential_id_ = 1;
 
-    if (!m_timers.contains(m_circularSequentialID))
-      return m_circularSequentialID;
+    if (!timers_.Contains(circular_sequential_id_))
+      return circular_sequential_id_;
   }
 }
 
-void DOMTimerCoordinator::setTimerTaskRunner(
-    RefPtr<WebTaskRunner> timerTaskRunner) {
-  m_timerTaskRunner = std::move(timerTaskRunner);
+void DOMTimerCoordinator::SetTimerTaskRunner(
+    RefPtr<WebTaskRunner> timer_task_runner) {
+  timer_task_runner_ = std::move(timer_task_runner);
 }
 
 }  // namespace blink

@@ -36,12 +36,12 @@ class WebGLLoseContext final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLLoseContext* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static WebGLLoseContext* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
-  void lose(bool) override;
+  WebGLExtensionName GetName() const override;
+  void Lose(bool) override;
 
   void loseContext();
   void restoreContext();

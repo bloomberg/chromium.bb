@@ -46,252 +46,255 @@ CSSPreloadScanner::CSSPreloadScanner() {}
 
 CSSPreloadScanner::~CSSPreloadScanner() {}
 
-void CSSPreloadScanner::reset() {
-  m_state = Initial;
-  m_rule.clear();
-  m_ruleValue.clear();
+void CSSPreloadScanner::Reset() {
+  state_ = kInitial;
+  rule_.Clear();
+  rule_value_.Clear();
 }
 
 template <typename Char>
-void CSSPreloadScanner::scanCommon(const Char* begin,
+void CSSPreloadScanner::ScanCommon(const Char* begin,
                                    const Char* end,
                                    const SegmentedString& source,
                                    PreloadRequestStream& requests,
-                                   const KURL& predictedBaseElementURL) {
-  m_requests = &requests;
-  m_predictedBaseElementURL = &predictedBaseElementURL;
+                                   const KURL& predicted_base_element_url) {
+  requests_ = &requests;
+  predicted_base_element_url_ = &predicted_base_element_url;
 
-  for (const Char* it = begin; it != end && m_state != DoneParsingImportRules;
+  for (const Char* it = begin; it != end && state_ != kDoneParsingImportRules;
        ++it)
-    tokenize(*it, source);
+    Tokenize(*it, source);
 
-  m_requests = nullptr;
-  m_predictedBaseElementURL = nullptr;
+  requests_ = nullptr;
+  predicted_base_element_url_ = nullptr;
 }
 
-void CSSPreloadScanner::scan(const HTMLToken::DataVector& data,
+void CSSPreloadScanner::Scan(const HTMLToken::DataVector& data,
                              const SegmentedString& source,
                              PreloadRequestStream& requests,
-                             const KURL& predictedBaseElementURL) {
-  scanCommon(data.data(), data.data() + data.size(), source, requests,
-             predictedBaseElementURL);
+                             const KURL& predicted_base_element_url) {
+  ScanCommon(data.Data(), data.Data() + data.size(), source, requests,
+             predicted_base_element_url);
 }
 
-void CSSPreloadScanner::scan(const String& tagName,
+void CSSPreloadScanner::Scan(const String& tag_name,
                              const SegmentedString& source,
                              PreloadRequestStream& requests,
-                             const KURL& predictedBaseElementURL) {
-  if (tagName.is8Bit()) {
-    const LChar* begin = tagName.characters8();
-    scanCommon(begin, begin + tagName.length(), source, requests,
-               predictedBaseElementURL);
+                             const KURL& predicted_base_element_url) {
+  if (tag_name.Is8Bit()) {
+    const LChar* begin = tag_name.Characters8();
+    ScanCommon(begin, begin + tag_name.length(), source, requests,
+               predicted_base_element_url);
     return;
   }
-  const UChar* begin = tagName.characters16();
-  scanCommon(begin, begin + tagName.length(), source, requests,
-             predictedBaseElementURL);
+  const UChar* begin = tag_name.Characters16();
+  ScanCommon(begin, begin + tag_name.length(), source, requests,
+             predicted_base_element_url);
 }
 
-void CSSPreloadScanner::setReferrerPolicy(const ReferrerPolicy policy) {
-  m_referrerPolicy = policy;
+void CSSPreloadScanner::SetReferrerPolicy(const ReferrerPolicy policy) {
+  referrer_policy_ = policy;
 }
 
-inline void CSSPreloadScanner::tokenize(UChar c,
+inline void CSSPreloadScanner::Tokenize(UChar c,
                                         const SegmentedString& source) {
   // We are just interested in @import rules, no need for real tokenization here
   // Searching for other types of resources is probably low payoff.
   // If we ever decide to preload fonts, we also need to change
   // ResourceFetcher::resourceNeedsLoad to immediately load speculative font
   // preloads.
-  switch (m_state) {
-    case Initial:
-      if (isHTMLSpace<UChar>(c))
+  switch (state_) {
+    case kInitial:
+      if (IsHTMLSpace<UChar>(c))
         break;
       if (c == '@')
-        m_state = RuleStart;
+        state_ = kRuleStart;
       else if (c == '/')
-        m_state = MaybeComment;
+        state_ = kMaybeComment;
       else
-        m_state = DoneParsingImportRules;
+        state_ = kDoneParsingImportRules;
       break;
-    case MaybeComment:
+    case kMaybeComment:
       if (c == '*')
-        m_state = Comment;
+        state_ = kComment;
       else
-        m_state = Initial;
+        state_ = kInitial;
       break;
-    case Comment:
+    case kComment:
       if (c == '*')
-        m_state = MaybeCommentEnd;
+        state_ = kMaybeCommentEnd;
       break;
-    case MaybeCommentEnd:
+    case kMaybeCommentEnd:
       if (c == '*')
         break;
       if (c == '/')
-        m_state = Initial;
+        state_ = kInitial;
       else
-        m_state = Comment;
+        state_ = kComment;
       break;
-    case RuleStart:
+    case kRuleStart:
       if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-        m_rule.clear();
-        m_ruleValue.clear();
-        m_rule.append(c);
-        m_state = Rule;
+        rule_.Clear();
+        rule_value_.Clear();
+        rule_.Append(c);
+        state_ = kRule;
       } else
-        m_state = Initial;
+        state_ = kInitial;
       break;
-    case Rule:
-      if (isHTMLSpace<UChar>(c))
-        m_state = AfterRule;
+    case kRule:
+      if (IsHTMLSpace<UChar>(c))
+        state_ = kAfterRule;
       else if (c == ';')
-        m_state = Initial;
+        state_ = kInitial;
       else
-        m_rule.append(c);
+        rule_.Append(c);
       break;
-    case AfterRule:
-      if (isHTMLSpace<UChar>(c))
+    case kAfterRule:
+      if (IsHTMLSpace<UChar>(c))
         break;
       if (c == ';')
-        m_state = Initial;
+        state_ = kInitial;
       else if (c == '{')
-        m_state = DoneParsingImportRules;
+        state_ = kDoneParsingImportRules;
       else {
-        m_state = RuleValue;
-        m_ruleValue.append(c);
+        state_ = kRuleValue;
+        rule_value_.Append(c);
       }
       break;
-    case RuleValue:
-      if (isHTMLSpace<UChar>(c))
-        m_state = AfterRuleValue;
+    case kRuleValue:
+      if (IsHTMLSpace<UChar>(c))
+        state_ = kAfterRuleValue;
       else if (c == ';')
-        emitRule(source);
+        EmitRule(source);
       else
-        m_ruleValue.append(c);
+        rule_value_.Append(c);
       break;
-    case AfterRuleValue:
-      if (isHTMLSpace<UChar>(c))
+    case kAfterRuleValue:
+      if (IsHTMLSpace<UChar>(c))
         break;
       if (c == ';')
-        emitRule(source);
+        EmitRule(source);
       else if (c == '{')
-        m_state = DoneParsingImportRules;
+        state_ = kDoneParsingImportRules;
       else {
         // FIXME: media rules
-        m_state = Initial;
+        state_ = kInitial;
       }
       break;
-    case DoneParsingImportRules:
+    case kDoneParsingImportRules:
       NOTREACHED();
       break;
   }
 }
 
-static String parseCSSStringOrURL(const String& string) {
+static String ParseCSSStringOrURL(const String& string) {
   size_t offset = 0;
-  size_t reducedLength = string.length();
+  size_t reduced_length = string.length();
 
-  while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
+  while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
     ++offset;
-    --reducedLength;
+    --reduced_length;
   }
-  while (reducedLength &&
-         isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
-    --reducedLength;
+  while (reduced_length &&
+         IsHTMLSpace<UChar>(string[offset + reduced_length - 1]))
+    --reduced_length;
 
-  if (reducedLength >= 5 && (string[offset] == 'u' || string[offset] == 'U') &&
+  if (reduced_length >= 5 && (string[offset] == 'u' || string[offset] == 'U') &&
       (string[offset + 1] == 'r' || string[offset + 1] == 'R') &&
       (string[offset + 2] == 'l' || string[offset + 2] == 'L') &&
-      string[offset + 3] == '(' && string[offset + reducedLength - 1] == ')') {
+      string[offset + 3] == '(' && string[offset + reduced_length - 1] == ')') {
     offset += 4;
-    reducedLength -= 5;
+    reduced_length -= 5;
   }
 
-  while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
+  while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
     ++offset;
-    --reducedLength;
+    --reduced_length;
   }
-  while (reducedLength &&
-         isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
-    --reducedLength;
+  while (reduced_length &&
+         IsHTMLSpace<UChar>(string[offset + reduced_length - 1]))
+    --reduced_length;
 
-  if (reducedLength < 2 ||
-      string[offset] != string[offset + reducedLength - 1] ||
+  if (reduced_length < 2 ||
+      string[offset] != string[offset + reduced_length - 1] ||
       !(string[offset] == '\'' || string[offset] == '"'))
     return String();
   offset++;
-  reducedLength -= 2;
+  reduced_length -= 2;
 
-  while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
+  while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
     ++offset;
-    --reducedLength;
+    --reduced_length;
   }
-  while (reducedLength &&
-         isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
-    --reducedLength;
+  while (reduced_length &&
+         IsHTMLSpace<UChar>(string[offset + reduced_length - 1]))
+    --reduced_length;
 
-  return string.substring(offset, reducedLength);
+  return string.Substring(offset, reduced_length);
 }
 
-void CSSPreloadScanner::emitRule(const SegmentedString& source) {
-  if (equalIgnoringCase(m_rule, "import")) {
-    String url = parseCSSStringOrURL(m_ruleValue.toString());
+void CSSPreloadScanner::EmitRule(const SegmentedString& source) {
+  if (EqualIgnoringCase(rule_, "import")) {
+    String url = ParseCSSStringOrURL(rule_value_.ToString());
     TextPosition position =
-        TextPosition(source.currentLine(), source.currentColumn());
-    auto request = PreloadRequest::createIfNeeded(
-        FetchInitiatorTypeNames::css, position, url, *m_predictedBaseElementURL,
-        Resource::CSSStyleSheet, m_referrerPolicy);
+        TextPosition(source.CurrentLine(), source.CurrentColumn());
+    auto request = PreloadRequest::CreateIfNeeded(
+        FetchInitiatorTypeNames::css, position, url,
+        *predicted_base_element_url_, Resource::kCSSStyleSheet,
+        referrer_policy_);
     if (request) {
       // FIXME: Should this be including the charset in the preload request?
-      m_requests->push_back(std::move(request));
+      requests_->push_back(std::move(request));
     }
-    m_state = Initial;
-  } else if (equalIgnoringCase(m_rule, "charset"))
-    m_state = Initial;
+    state_ = kInitial;
+  } else if (EqualIgnoringCase(rule_, "charset"))
+    state_ = kInitial;
   else
-    m_state = DoneParsingImportRules;
-  m_rule.clear();
-  m_ruleValue.clear();
+    state_ = kDoneParsingImportRules;
+  rule_.Clear();
+  rule_value_.Clear();
 }
 
 CSSPreloaderResourceClient::CSSPreloaderResourceClient(
     Resource* resource,
     HTMLResourcePreloader* preloader)
-    : m_policy(preloader->document()->settings()->getCSSExternalScannerPreload()
-                   ? ScanAndPreload
-                   : ScanOnly),
-      m_preloader(preloader),
-      m_resource(toCSSStyleSheetResource(resource)) {
-  m_resource->addClient(this, Resource::DontMarkAsReferenced);
+    : policy_(preloader->GetDocument()
+                      ->GetSettings()
+                      ->GetCSSExternalScannerPreload()
+                  ? kScanAndPreload
+                  : kScanOnly),
+      preloader_(preloader),
+      resource_(ToCSSStyleSheetResource(resource)) {
+  resource_->AddClient(this, Resource::kDontMarkAsReferenced);
 }
 
 CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}
 
-void CSSPreloaderResourceClient::setCSSStyleSheet(
+void CSSPreloaderResourceClient::SetCSSStyleSheet(
     const String& href,
-    const KURL& baseURL,
-    ReferrerPolicy referrerPolicy,
+    const KURL& base_url,
+    ReferrerPolicy referrer_policy,
     const String& charset,
     const CSSStyleSheetResource*) {
-  clearResource();
+  ClearResource();
 }
 
 // Only attach for one appendData call, as that's where most imports will likely
 // be (according to spec).
-void CSSPreloaderResourceClient::didAppendFirstData(
+void CSSPreloaderResourceClient::DidAppendFirstData(
     const CSSStyleSheetResource* resource) {
-  if (m_preloader)
-    scanCSS(resource);
-  clearResource();
+  if (preloader_)
+    ScanCSS(resource);
+  ClearResource();
 }
 
-void CSSPreloaderResourceClient::scanCSS(
+void CSSPreloaderResourceClient::ScanCSS(
     const CSSStyleSheetResource* resource) {
-  DCHECK(m_preloader);
+  DCHECK(preloader_);
 
   // Early abort if there is no document loader. Do this early to ensure that
   // scan histograms and preload histograms do not count different quantities.
-  if (!m_preloader->document()->loader())
+  if (!preloader_->GetDocument()->Loader())
     return;
 
   // Passing an empty SegmentedString here results in PreloadRequest with no
@@ -299,49 +302,49 @@ void CSSPreloaderResourceClient::scanCSS(
   // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
   // augmented to take care of this case without performing an additional
   // copy.
-  double startTime = monotonicallyIncreasingTimeMS();
-  const String& chunk = resource->sheetText();
-  if (chunk.isNull())
+  double start_time = MonotonicallyIncreasingTimeMS();
+  const String& chunk = resource->SheetText();
+  if (chunk.IsNull())
     return;
-  CSSPreloadScanner cssPreloadScanner;
+  CSSPreloadScanner css_preload_scanner;
 
-  ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
-  String referrerPolicyHeader =
-      resource->response().httpHeaderField(HTTPNames::Referrer_Policy);
-  if (!referrerPolicyHeader.isNull()) {
-    SecurityPolicy::referrerPolicyFromHeaderValue(
-        referrerPolicyHeader, DoNotSupportReferrerPolicyLegacyKeywords,
-        &referrerPolicy);
+  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+  String referrer_policy_header =
+      resource->GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
+  if (!referrer_policy_header.IsNull()) {
+    SecurityPolicy::ReferrerPolicyFromHeaderValue(
+        referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
+        &referrer_policy);
   }
-  cssPreloadScanner.setReferrerPolicy(referrerPolicy);
+  css_preload_scanner.SetReferrerPolicy(referrer_policy);
   PreloadRequestStream preloads;
-  cssPreloadScanner.scan(chunk, SegmentedString(), preloads,
-                         resource->response().url());
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, cssScanTimeHistogram,
+  css_preload_scanner.Scan(chunk, SegmentedString(), preloads,
+                           resource->GetResponse().Url());
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, css_scan_time_histogram,
                       ("PreloadScanner.ExternalCSS.ScanTime", 1, 1000000, 50));
-  cssScanTimeHistogram.count((monotonicallyIncreasingTimeMS() - startTime) *
-                             1000);
-  fetchPreloads(preloads);
+  css_scan_time_histogram.Count((MonotonicallyIncreasingTimeMS() - start_time) *
+                                1000);
+  FetchPreloads(preloads);
 }
 
-void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads) {
+void CSSPreloaderResourceClient::FetchPreloads(PreloadRequestStream& preloads) {
   if (preloads.size()) {
-    m_preloader->document()->loader()->didObserveLoadingBehavior(
-        WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
+    preloader_->GetDocument()->Loader()->DidObserveLoadingBehavior(
+        WebLoadingBehaviorFlag::kWebLoadingBehaviorCSSPreloadFound);
   }
 
-  if (m_policy == ScanAndPreload) {
-    int currentPreloadCount = m_preloader->countPreloads();
-    m_preloader->takeAndPreload(preloads);
+  if (policy_ == kScanAndPreload) {
+    int current_preload_count = preloader_->CountPreloads();
+    preloader_->TakeAndPreload(preloads);
     DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, cssImportHistogram,
+        CustomCountHistogram, css_import_histogram,
         ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
-    cssImportHistogram.count(m_preloader->countPreloads() -
-                             currentPreloadCount);
+    css_import_histogram.Count(preloader_->CountPreloads() -
+                               current_preload_count);
   }
 }
 
-void CSSPreloaderResourceClient::clearResource() {
+void CSSPreloaderResourceClient::ClearResource() {
   // Do not remove the client for unused, speculative markup preloads. This will
   // trigger cancellation of the request and potential removal from memory
   // cache. Link preloads are an exception because they support dynamic removal
@@ -349,20 +352,20 @@ void CSSPreloaderResourceClient::clearResource() {
   // Note: Speculative preloads which remain unused for their lifetime will
   // never have this client removed. This should be fine because we only hold
   // weak references to the resource.
-  if (m_resource && m_resource->isUnusedPreload() &&
-      !m_resource->isLinkPreload()) {
+  if (resource_ && resource_->IsUnusedPreload() &&
+      !resource_->IsLinkPreload()) {
     return;
   }
 
-  if (m_resource)
-    m_resource->removeClient(this);
-  m_resource.clear();
+  if (resource_)
+    resource_->RemoveClient(this);
+  resource_.Clear();
 }
 
 DEFINE_TRACE(CSSPreloaderResourceClient) {
-  visitor->trace(m_preloader);
-  visitor->trace(m_resource);
-  StyleSheetResourceClient::trace(visitor);
+  visitor->Trace(preloader_);
+  visitor->Trace(resource_);
+  StyleSheetResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -29,47 +29,47 @@
 
 namespace blink {
 
-static const HTMLEntityTableEntry* halfway(const HTMLEntityTableEntry* left,
+static const HTMLEntityTableEntry* Halfway(const HTMLEntityTableEntry* left,
                                            const HTMLEntityTableEntry* right) {
   return &left[(right - left) / 2];
 }
 
 HTMLEntitySearch::HTMLEntitySearch()
-    : m_currentLength(0),
-      m_mostRecentMatch(0),
-      m_first(HTMLEntityTable::firstEntry()),
-      m_last(HTMLEntityTable::lastEntry()) {}
+    : current_length_(0),
+      most_recent_match_(0),
+      first_(HTMLEntityTable::FirstEntry()),
+      last_(HTMLEntityTable::LastEntry()) {}
 
-HTMLEntitySearch::CompareResult HTMLEntitySearch::compare(
+HTMLEntitySearch::CompareResult HTMLEntitySearch::Compare(
     const HTMLEntityTableEntry* entry,
-    UChar nextCharacter) const {
-  if (entry->length < m_currentLength + 1)
-    return Before;
-  const LChar* entityString = HTMLEntityTable::entityString(*entry);
-  UChar entryNextCharacter = entityString[m_currentLength];
-  if (entryNextCharacter == nextCharacter)
-    return Prefix;
-  return entryNextCharacter < nextCharacter ? Before : After;
+    UChar next_character) const {
+  if (entry->length < current_length_ + 1)
+    return kBefore;
+  const LChar* entity_string = HTMLEntityTable::EntityString(*entry);
+  UChar entry_next_character = entity_string[current_length_];
+  if (entry_next_character == next_character)
+    return kPrefix;
+  return entry_next_character < next_character ? kBefore : kAfter;
 }
 
-const HTMLEntityTableEntry* HTMLEntitySearch::findFirst(
-    UChar nextCharacter) const {
-  const HTMLEntityTableEntry* left = m_first;
-  const HTMLEntityTableEntry* right = m_last;
+const HTMLEntityTableEntry* HTMLEntitySearch::FindFirst(
+    UChar next_character) const {
+  const HTMLEntityTableEntry* left = first_;
+  const HTMLEntityTableEntry* right = last_;
   if (left == right)
     return left;
-  CompareResult result = compare(left, nextCharacter);
-  if (result == Prefix)
+  CompareResult result = Compare(left, next_character);
+  if (result == kPrefix)
     return left;
-  if (result == After)
+  if (result == kAfter)
     return right;
   while (left + 1 < right) {
-    const HTMLEntityTableEntry* probe = halfway(left, right);
-    result = compare(probe, nextCharacter);
-    if (result == Before)
+    const HTMLEntityTableEntry* probe = Halfway(left, right);
+    result = Compare(probe, next_character);
+    if (result == kBefore)
       left = probe;
     else {
-      DCHECK(result == After || result == Prefix);
+      DCHECK(result == kAfter || result == kPrefix);
       right = probe;
     }
   }
@@ -77,24 +77,24 @@ const HTMLEntityTableEntry* HTMLEntitySearch::findFirst(
   return right;
 }
 
-const HTMLEntityTableEntry* HTMLEntitySearch::findLast(
-    UChar nextCharacter) const {
-  const HTMLEntityTableEntry* left = m_first;
-  const HTMLEntityTableEntry* right = m_last;
+const HTMLEntityTableEntry* HTMLEntitySearch::FindLast(
+    UChar next_character) const {
+  const HTMLEntityTableEntry* left = first_;
+  const HTMLEntityTableEntry* right = last_;
   if (left == right)
     return right;
-  CompareResult result = compare(right, nextCharacter);
-  if (result == Prefix)
+  CompareResult result = Compare(right, next_character);
+  if (result == kPrefix)
     return right;
-  if (result == Before)
+  if (result == kBefore)
     return left;
   while (left + 1 < right) {
-    const HTMLEntityTableEntry* probe = halfway(left, right);
-    result = compare(probe, nextCharacter);
-    if (result == After)
+    const HTMLEntityTableEntry* probe = Halfway(left, right);
+    result = Compare(probe, next_character);
+    if (result == kAfter)
       right = probe;
     else {
-      DCHECK(result == Before || result == Prefix);
+      DCHECK(result == kBefore || result == kPrefix);
       left = probe;
     }
   }
@@ -102,24 +102,24 @@ const HTMLEntityTableEntry* HTMLEntitySearch::findLast(
   return left;
 }
 
-void HTMLEntitySearch::advance(UChar nextCharacter) {
-  DCHECK(isEntityPrefix());
-  if (!m_currentLength) {
-    m_first = HTMLEntityTable::firstEntryStartingWith(nextCharacter);
-    m_last = HTMLEntityTable::lastEntryStartingWith(nextCharacter);
-    if (!m_first || !m_last)
-      return fail();
+void HTMLEntitySearch::Advance(UChar next_character) {
+  DCHECK(IsEntityPrefix());
+  if (!current_length_) {
+    first_ = HTMLEntityTable::FirstEntryStartingWith(next_character);
+    last_ = HTMLEntityTable::LastEntryStartingWith(next_character);
+    if (!first_ || !last_)
+      return Fail();
   } else {
-    m_first = findFirst(nextCharacter);
-    m_last = findLast(nextCharacter);
-    if (m_first == m_last && compare(m_first, nextCharacter) != Prefix)
-      return fail();
+    first_ = FindFirst(next_character);
+    last_ = FindLast(next_character);
+    if (first_ == last_ && Compare(first_, next_character) != kPrefix)
+      return Fail();
   }
-  ++m_currentLength;
-  if (m_first->length != m_currentLength) {
+  ++current_length_;
+  if (first_->length != current_length_) {
     return;
   }
-  m_mostRecentMatch = m_first;
+  most_recent_match_ = first_;
 }
 
 }  // namespace blink

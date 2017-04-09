@@ -44,7 +44,7 @@ class CORE_EXPORT ScriptRunner final
   WTF_MAKE_NONCOPYABLE(ScriptRunner);
 
  public:
-  static ScriptRunner* create(Document* document) {
+  static ScriptRunner* Create(Document* document) {
     return new ScriptRunner(document);
   }
 
@@ -52,18 +52,18 @@ class CORE_EXPORT ScriptRunner final
   // completes), or 'in order'. See
   // http://www.html5rocks.com/en/tutorials/speed/script-loading/ for more
   // information.
-  enum AsyncExecutionType { None, Async, InOrder };
-  void queueScriptForExecution(ScriptLoader*, AsyncExecutionType);
-  bool hasPendingScripts() const {
-    return !m_pendingInOrderScripts.isEmpty() ||
-           !m_pendingAsyncScripts.isEmpty();
+  enum AsyncExecutionType { kNone, kAsync, kInOrder };
+  void QueueScriptForExecution(ScriptLoader*, AsyncExecutionType);
+  bool HasPendingScripts() const {
+    return !pending_in_order_scripts_.IsEmpty() ||
+           !pending_async_scripts_.IsEmpty();
   }
-  void suspend();
-  void resume();
-  void notifyScriptReady(ScriptLoader*, AsyncExecutionType);
-  void notifyScriptLoadError(ScriptLoader*, AsyncExecutionType);
+  void Suspend();
+  void Resume();
+  void NotifyScriptReady(ScriptLoader*, AsyncExecutionType);
+  void NotifyScriptLoadError(ScriptLoader*, AsyncExecutionType);
 
-  static void movePendingScript(Document&, Document&, ScriptLoader*);
+  static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
   DECLARE_TRACE();
 
@@ -72,32 +72,32 @@ class CORE_EXPORT ScriptRunner final
 
   explicit ScriptRunner(Document*);
 
-  void movePendingScript(ScriptRunner*, ScriptLoader*);
-  bool removePendingInOrderScript(ScriptLoader*);
-  void scheduleReadyInOrderScripts();
+  void MovePendingScript(ScriptRunner*, ScriptLoader*);
+  bool RemovePendingInOrderScript(ScriptLoader*);
+  void ScheduleReadyInOrderScripts();
 
-  void postTask(const WebTraceLocation&);
+  void PostTask(const WebTraceLocation&);
 
-  bool executeTaskFromQueue(HeapDeque<Member<ScriptLoader>>*);
+  bool ExecuteTaskFromQueue(HeapDeque<Member<ScriptLoader>>*);
 
-  void executeTask();
+  void ExecuteTask();
 
-  Member<Document> m_document;
+  Member<Document> document_;
 
-  HeapDeque<Member<ScriptLoader>> m_pendingInOrderScripts;
-  HeapHashSet<Member<ScriptLoader>> m_pendingAsyncScripts;
+  HeapDeque<Member<ScriptLoader>> pending_in_order_scripts_;
+  HeapHashSet<Member<ScriptLoader>> pending_async_scripts_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-  HeapDeque<Member<ScriptLoader>> m_asyncScriptsToExecuteSoon;
-  HeapDeque<Member<ScriptLoader>> m_inOrderScriptsToExecuteSoon;
+  HeapDeque<Member<ScriptLoader>> async_scripts_to_execute_soon_;
+  HeapDeque<Member<ScriptLoader>> in_order_scripts_to_execute_soon_;
 
-  RefPtr<WebTaskRunner> m_taskRunner;
+  RefPtr<WebTaskRunner> task_runner_;
 
-  int m_numberOfInOrderScriptsWithPendingNotification;
+  int number_of_in_order_scripts_with_pending_notification_;
 
-  bool m_isSuspended;
+  bool is_suspended_;
 #ifndef NDEBUG
-  bool m_hasEverBeenSuspended;
+  bool has_ever_been_suspended_;
 #endif
 };
 

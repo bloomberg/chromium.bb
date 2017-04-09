@@ -19,20 +19,21 @@ NGBaseLayoutAlgorithmTest::~NGBaseLayoutAlgorithmTest() {
 
 void NGBaseLayoutAlgorithmTest::SetUp() {
   RenderingTest::SetUp();
-  enableCompositing();
+  EnableCompositing();
 }
 
 std::pair<RefPtr<NGPhysicalBoxFragment>, RefPtr<NGConstraintSpace>>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
-  LayoutNGBlockFlow* block_flow = toLayoutNGBlockFlow(element->layoutObject());
+  LayoutNGBlockFlow* block_flow =
+      ToLayoutNGBlockFlow(element->GetLayoutObject());
   NGBlockNode* node = new NGBlockNode(block_flow);
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, space.get()).Layout();
+      NGBlockLayoutAlgorithm(node, space.Get()).Layout();
   return std::make_pair(
-      toNGPhysicalBoxFragment(result->PhysicalFragment().get()), space);
+      ToNGPhysicalBoxFragment(result->PhysicalFragment().Get()), space);
 }
 
 }  // namespace blink

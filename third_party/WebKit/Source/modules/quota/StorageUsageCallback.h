@@ -40,8 +40,8 @@ class StorageUsageCallback
  public:
   virtual ~StorageUsageCallback() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-  virtual void handleEvent(uint64_t currentUsageInBytes,
-                           uint64_t currentQuotaInBytes) = 0;
+  virtual void handleEvent(uint64_t current_usage_in_bytes,
+                           uint64_t current_quota_in_bytes) = 0;
 };
 
 }  // namespace

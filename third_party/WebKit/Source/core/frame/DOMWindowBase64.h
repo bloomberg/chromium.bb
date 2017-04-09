@@ -41,8 +41,8 @@ class ExceptionState;
 
 class DOMWindowBase64 {
  public:
-  String btoa(const String& stringToEncode, ExceptionState&);
-  String atob(const String& encodedString, ExceptionState&);
+  String btoa(const String& string_to_encode, ExceptionState&);
+  String atob(const String& encoded_string, ExceptionState&);
 };
 
 }  // namespace blink

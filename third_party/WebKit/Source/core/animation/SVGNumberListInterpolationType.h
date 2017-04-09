@@ -21,18 +21,18 @@ class SVGNumberListInterpolationType : public SVGInterpolationType {
       : SVGInterpolationType(attribute) {}
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertSVGValue(
-      const SVGPropertyBase& svgValue) const final;
-  PairwiseInterpolationValue maybeMergeSingles(
+  InterpolationValue MaybeConvertSVGValue(
+      const SVGPropertyBase& svg_value) const final;
+  PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;
-  void composite(UnderlyingValueOwner&,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner&,
+                 double underlying_fraction,
                  const InterpolationValue&,
-                 double interpolationFraction) const final;
-  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+                 double interpolation_fraction) const final;
+  SVGPropertyBase* AppliedSVGValue(const InterpolableValue&,
                                    const NonInterpolableValue*) const final;
 };
 

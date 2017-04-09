@@ -11,7 +11,7 @@
 namespace blink {
 
 // Callback that is used to count the number of times a V8 feature is used.
-CORE_EXPORT void useCounterCallback(v8::Isolate*,
+CORE_EXPORT void UseCounterCallback(v8::Isolate*,
                                     v8::Isolate::UseCounterFeature);
 
 }  // namespace blink

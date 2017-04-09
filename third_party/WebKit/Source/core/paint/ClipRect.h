@@ -38,56 +38,56 @@ class ClipRect {
   USING_FAST_MALLOC(ClipRect);
 
  public:
-  ClipRect() : m_hasRadius(false) {}
+  ClipRect() : has_radius_(false) {}
 
-  ClipRect(const LayoutRect& rect) : m_rect(rect), m_hasRadius(false) {}
+  ClipRect(const LayoutRect& rect) : rect_(rect), has_radius_(false) {}
 
   ClipRect(const FloatClipRect& rect)
-      : m_rect(rect.rect()), m_hasRadius(rect.hasRadius()) {}
+      : rect_(rect.Rect()), has_radius_(rect.HasRadius()) {}
 
-  void setRect(const FloatClipRect& rect) {
-    m_rect = LayoutRect(rect.rect());
-    m_hasRadius = rect.hasRadius();
+  void SetRect(const FloatClipRect& rect) {
+    rect_ = LayoutRect(rect.Rect());
+    has_radius_ = rect.HasRadius();
   }
 
-  const LayoutRect& rect() const { return m_rect; }
+  const LayoutRect& Rect() const { return rect_; }
 
-  bool hasRadius() const { return m_hasRadius; }
-  void setHasRadius(bool hasRadius) { m_hasRadius = hasRadius; }
+  bool HasRadius() const { return has_radius_; }
+  void SetHasRadius(bool has_radius) { has_radius_ = has_radius; }
 
   bool operator==(const ClipRect& other) const {
-    return rect() == other.rect() && hasRadius() == other.hasRadius();
+    return Rect() == other.Rect() && HasRadius() == other.HasRadius();
   }
   bool operator!=(const ClipRect& other) const {
-    return rect() != other.rect() || hasRadius() != other.hasRadius();
+    return Rect() != other.Rect() || HasRadius() != other.HasRadius();
   }
-  bool operator!=(const LayoutRect& otherRect) const {
-    return rect() != otherRect;
+  bool operator!=(const LayoutRect& other_rect) const {
+    return Rect() != other_rect;
   }
 
-  void intersect(const LayoutRect& other) { m_rect.intersect(other); }
-  void intersect(const ClipRect& other) {
-    m_rect.intersect(other.rect());
-    if (other.hasRadius())
-      m_hasRadius = true;
+  void Intersect(const LayoutRect& other) { rect_.Intersect(other); }
+  void Intersect(const ClipRect& other) {
+    rect_.Intersect(other.Rect());
+    if (other.HasRadius())
+      has_radius_ = true;
   }
-  void move(const LayoutSize& size) { m_rect.move(size); }
-  void move(const IntSize& size) { m_rect.move(size); }
-  void moveBy(const LayoutPoint& point) { m_rect.moveBy(point); }
+  void Move(const LayoutSize& size) { rect_.Move(size); }
+  void Move(const IntSize& size) { rect_.Move(size); }
+  void MoveBy(const LayoutPoint& point) { rect_.MoveBy(point); }
 
-  bool isEmpty() const { return m_rect.isEmpty(); }
-  bool intersects(const HitTestLocation&) const;
+  bool IsEmpty() const { return rect_.IsEmpty(); }
+  bool Intersects(const HitTestLocation&) const;
 
-  String toString() const { return m_rect.toString(); }
+  String ToString() const { return rect_.ToString(); }
 
  private:
-  LayoutRect m_rect;
-  bool m_hasRadius;
+  LayoutRect rect_;
+  bool has_radius_;
 };
 
-inline ClipRect intersection(const ClipRect& a, const ClipRect& b) {
+inline ClipRect Intersection(const ClipRect& a, const ClipRect& b) {
   ClipRect c = a;
-  c.intersect(b);
+  c.Intersect(b);
   return c;
 }
 

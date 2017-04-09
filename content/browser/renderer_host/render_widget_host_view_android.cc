@@ -1611,7 +1611,7 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  gesture_provider_.OnTouchEventAck(touch.event.uniqueTouchEventId,
+  gesture_provider_.OnTouchEventAck(touch.event.unique_touch_event_id,
                                     event_consumed);
 }
 
@@ -1628,24 +1628,24 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (selection_controller_ &&
-      blink::WebInputEvent::isGestureEventType(input_event.type())) {
+      blink::WebInputEvent::IsGestureEventType(input_event.GetType())) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
-    switch (gesture_event.type()) {
-      case blink::WebInputEvent::GestureLongPress:
+    switch (gesture_event.GetType()) {
+      case blink::WebInputEvent::kGestureLongPress:
         selection_controller_->HandleLongPressEvent(
             base::TimeTicks() +
-            base::TimeDelta::FromSecondsD(input_event.timeStampSeconds()),
+                base::TimeDelta::FromSecondsD(input_event.TimeStampSeconds()),
             gfx::PointF(gesture_event.x, gesture_event.y));
         break;
 
-      case blink::WebInputEvent::GestureTap:
+      case blink::WebInputEvent::kGestureTap:
         selection_controller_->HandleTapEvent(
             gfx::PointF(gesture_event.x, gesture_event.y),
-            gesture_event.data.tap.tapCount);
+            gesture_event.data.tap.tap_count);
         break;
 
-      case blink::WebInputEvent::GestureScrollBegin:
+      case blink::WebInputEvent::kGestureScrollBegin:
         selection_controller_->OnScrollBeginEvent();
         break;
 
@@ -1655,7 +1655,7 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   }
 
   if (overscroll_controller_ &&
-      blink::WebInputEvent::isGestureEventType(input_event.type()) &&
+      blink::WebInputEvent::IsGestureEventType(input_event.GetType()) &&
       overscroll_controller_->WillHandleGestureEvent(
           static_cast<const blink::WebGestureEvent&>(input_event))) {
     return INPUT_EVENT_ACK_STATE_CONSUMED;
@@ -1667,8 +1667,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   if (!host_)
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
-  if (input_event.type() == blink::WebInputEvent::GestureTapDown ||
-      input_event.type() == blink::WebInputEvent::TouchStart) {
+  if (input_event.GetType() == blink::WebInputEvent::kGestureTapDown ||
+      input_event.GetType() == blink::WebInputEvent::kTouchStart) {
     GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */, base::Bind(&WakeUpGpu));
   }
@@ -1956,9 +1956,9 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
   // stop providing shift meta values to synthetic MotionEvents. This prevents
   // unintended shift+click interpretation of all accessibility clicks.
   // See crbug.com/443247.
-  if (web_gesture.type() == blink::WebInputEvent::GestureTap &&
-      web_gesture.modifiers() == blink::WebInputEvent::ShiftKey) {
-    web_gesture.setModifiers(blink::WebInputEvent::NoModifiers);
+  if (web_gesture.GetType() == blink::WebInputEvent::kGestureTap &&
+      web_gesture.GetModifiers() == blink::WebInputEvent::kShiftKey) {
+    web_gesture.SetModifiers(blink::WebInputEvent::kNoModifiers);
   }
   SendGestureEvent(web_gesture);
 }
@@ -2113,7 +2113,7 @@ void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
   // Treat the stylus tap as a long press, activating either a word selection or
   // context menu depending on the targetted content.
   blink::WebGestureEvent long_press = WebGestureEventBuilder::Build(
-      blink::WebInputEvent::GestureLongPress,
+      blink::WebInputEvent::kGestureLongPress,
       (time - base::TimeTicks()).InSecondsF(), x, y);
   SendGestureEvent(long_press);
 }

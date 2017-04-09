@@ -27,10 +27,10 @@ class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ForeignFetchEvent* create(ScriptState*,
+  static ForeignFetchEvent* Create(ScriptState*,
                                    const AtomicString& type,
                                    const ForeignFetchEventInit&);
-  static ForeignFetchEvent* create(ScriptState*,
+  static ForeignFetchEvent* Create(ScriptState*,
                                    const AtomicString& type,
                                    const ForeignFetchEventInit&,
                                    ForeignFetchRespondWithObserver*,
@@ -41,7 +41,7 @@ class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -53,9 +53,9 @@ class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
                     WaitUntilObserver*);
 
  private:
-  Member<ForeignFetchRespondWithObserver> m_observer;
-  Member<Request> m_request;
-  String m_origin;
+  Member<ForeignFetchRespondWithObserver> observer_;
+  Member<Request> request_;
+  String origin_;
 };
 
 }  // namespace blink

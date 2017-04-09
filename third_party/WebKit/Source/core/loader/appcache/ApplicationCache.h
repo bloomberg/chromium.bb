@@ -43,7 +43,7 @@ class ApplicationCache final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
  public:
-  static ApplicationCache* create(LocalFrame* frame) {
+  static ApplicationCache* Create(LocalFrame* frame) {
     return new ApplicationCache(frame);
   }
   ~ApplicationCache() override {}
@@ -64,19 +64,19 @@ class ApplicationCache final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cached);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
-  static const AtomicString& toEventType(ApplicationCacheHost::EventID);
+  static const AtomicString& ToEventType(ApplicationCacheHost::EventID);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit ApplicationCache(LocalFrame*);
 
-  void recordAPIUseType() const;
+  void RecordAPIUseType() const;
 
-  ApplicationCacheHost* applicationCacheHost() const;
+  ApplicationCacheHost* GetApplicationCacheHost() const;
 };
 
 }  // namespace blink

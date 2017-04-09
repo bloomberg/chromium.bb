@@ -39,7 +39,7 @@ const double kMozScoreSaturation = 175.954539583;
 const double kMozScoreAllSqrtSaturation = 189.73665961;
 const double kMozScoreAllLinearSaturation = 6 * kTextContentLengthSaturation;
 
-unsigned textContentLengthSaturated(const Element& root) {
+unsigned TextContentLengthSaturated(const Element& root) {
   unsigned length = 0;
   // This skips shadow DOM intentionally, to match the JavaScript
   // implementation.  We would like to use the same statistics extracted by the
@@ -47,11 +47,11 @@ unsigned textContentLengthSaturated(const Element& root) {
   // shadow DOM except on modern Chrome versions.
   // Given shadow DOM rarely appears in <P> elements in long-form articles, the
   // overall accuracy should not be largely affected.
-  for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
-    if (!node.isTextNode()) {
+  for (Node& node : NodeTraversal::InclusiveDescendantsOf(root)) {
+    if (!node.IsTextNode()) {
       continue;
     }
-    length += toText(node).length();
+    length += ToText(node).length();
     if (length > kTextContentLengthSaturation) {
       return kTextContentLengthSaturation;
     }
@@ -59,120 +59,122 @@ unsigned textContentLengthSaturated(const Element& root) {
   return length;
 }
 
-bool isVisible(const Element& element) {
-  const ComputedStyle* style = element.computedStyle();
+bool IsVisible(const Element& element) {
+  const ComputedStyle* style = element.GetComputedStyle();
   if (!style)
     return false;
-  return (style->display() != EDisplay::kNone &&
-          style->visibility() != EVisibility::kHidden && style->opacity() != 0);
+  return (style->Display() != EDisplay::kNone &&
+          style->Visibility() != EVisibility::kHidden && style->Opacity() != 0);
 }
 
-bool matchAttributes(const Element& element, const Vector<String>& words) {
-  const String& classes = element.getClassAttribute();
-  const String& id = element.getIdAttribute();
+bool MatchAttributes(const Element& element, const Vector<String>& words) {
+  const String& classes = element.GetClassAttribute();
+  const String& id = element.GetIdAttribute();
   for (const String& word : words) {
-    if (classes.findIgnoringCase(word) != WTF::kNotFound ||
-        id.findIgnoringCase(word) != WTF::kNotFound) {
+    if (classes.FindIgnoringCase(word) != WTF::kNotFound ||
+        id.FindIgnoringCase(word) != WTF::kNotFound) {
       return true;
     }
   }
   return false;
 }
 
-bool isGoodForScoring(const WebDistillabilityFeatures& features,
+bool IsGoodForScoring(const WebDistillabilityFeatures& features,
                       const Element& element) {
-  DEFINE_STATIC_LOCAL(Vector<String>, unlikelyCandidates, ());
-  if (unlikelyCandidates.isEmpty()) {
+  DEFINE_STATIC_LOCAL(Vector<String>, unlikely_candidates, ());
+  if (unlikely_candidates.IsEmpty()) {
     auto words = {
         "banner",  "combx",      "comment", "community",  "disqus",  "extra",
         "foot",    "header",     "menu",    "related",    "remark",  "rss",
         "share",   "shoutbox",   "sidebar", "skyscraper", "sponsor", "ad-break",
         "agegate", "pagination", "pager",   "popup"};
     for (auto word : words) {
-      unlikelyCandidates.push_back(word);
+      unlikely_candidates.push_back(word);
     }
   }
-  DEFINE_STATIC_LOCAL(Vector<String>, highlyLikelyCandidates, ());
-  if (highlyLikelyCandidates.isEmpty()) {
+  DEFINE_STATIC_LOCAL(Vector<String>, highly_likely_candidates, ());
+  if (highly_likely_candidates.IsEmpty()) {
     auto words = {"and", "article", "body", "column", "main", "shadow"};
     for (auto word : words) {
-      highlyLikelyCandidates.push_back(word);
+      highly_likely_candidates.push_back(word);
     }
   }
 
-  if (!isVisible(element))
+  if (!IsVisible(element))
     return false;
-  if (features.mozScore >= kMozScoreSaturation &&
-      features.mozScoreAllSqrt >= kMozScoreAllSqrtSaturation &&
-      features.mozScoreAllLinear >= kMozScoreAllLinearSaturation)
+  if (features.moz_score >= kMozScoreSaturation &&
+      features.moz_score_all_sqrt >= kMozScoreAllSqrtSaturation &&
+      features.moz_score_all_linear >= kMozScoreAllLinearSaturation)
     return false;
-  if (matchAttributes(element, unlikelyCandidates) &&
-      !matchAttributes(element, highlyLikelyCandidates))
+  if (MatchAttributes(element, unlikely_candidates) &&
+      !MatchAttributes(element, highly_likely_candidates))
     return false;
   return true;
 }
 
 // underListItem denotes that at least one of the ancesters is <li> element.
-void collectFeatures(Element& root,
+void CollectFeatures(Element& root,
                      WebDistillabilityFeatures& features,
-                     bool underListItem = false) {
-  for (Node& node : NodeTraversal::childrenOf(root)) {
-    bool isListItem = false;
-    if (!node.isElementNode()) {
+                     bool under_list_item = false) {
+  for (Node& node : NodeTraversal::ChildrenOf(root)) {
+    bool is_list_item = false;
+    if (!node.IsElementNode()) {
       continue;
     }
 
-    features.elementCount++;
-    Element& element = toElement(node);
-    if (element.hasTagName(aTag)) {
-      features.anchorCount++;
-    } else if (element.hasTagName(formTag)) {
-      features.formCount++;
-    } else if (element.hasTagName(inputTag)) {
+    features.element_count++;
+    Element& element = ToElement(node);
+    if (element.HasTagName(aTag)) {
+      features.anchor_count++;
+    } else if (element.HasTagName(formTag)) {
+      features.form_count++;
+    } else if (element.HasTagName(inputTag)) {
       const HTMLInputElement& input = toHTMLInputElement(element);
       if (input.type() == InputTypeNames::text) {
-        features.textInputCount++;
+        features.text_input_count++;
       } else if (input.type() == InputTypeNames::password) {
-        features.passwordInputCount++;
+        features.password_input_count++;
       }
-    } else if (element.hasTagName(pTag) || element.hasTagName(preTag)) {
-      if (element.hasTagName(pTag)) {
-        features.pCount++;
+    } else if (element.HasTagName(pTag) || element.HasTagName(preTag)) {
+      if (element.HasTagName(pTag)) {
+        features.p_count++;
       } else {
-        features.preCount++;
+        features.pre_count++;
       }
-      if (!underListItem && isGoodForScoring(features, element)) {
-        unsigned length = textContentLengthSaturated(element);
+      if (!under_list_item && IsGoodForScoring(features, element)) {
+        unsigned length = TextContentLengthSaturated(element);
         if (length >= kParagraphLengthThreshold) {
-          features.mozScore += sqrt(length - kParagraphLengthThreshold);
-          features.mozScore = std::min(features.mozScore, kMozScoreSaturation);
+          features.moz_score += sqrt(length - kParagraphLengthThreshold);
+          features.moz_score =
+              std::min(features.moz_score, kMozScoreSaturation);
         }
-        features.mozScoreAllSqrt += sqrt(length);
-        features.mozScoreAllSqrt =
-            std::min(features.mozScoreAllSqrt, kMozScoreAllSqrtSaturation);
+        features.moz_score_all_sqrt += sqrt(length);
+        features.moz_score_all_sqrt =
+            std::min(features.moz_score_all_sqrt, kMozScoreAllSqrtSaturation);
 
-        features.mozScoreAllLinear += length;
-        features.mozScoreAllLinear =
-            std::min(features.mozScoreAllLinear, kMozScoreAllLinearSaturation);
+        features.moz_score_all_linear += length;
+        features.moz_score_all_linear = std::min(features.moz_score_all_linear,
+                                                 kMozScoreAllLinearSaturation);
       }
-    } else if (element.hasTagName(liTag)) {
-      isListItem = true;
+    } else if (element.HasTagName(liTag)) {
+      is_list_item = true;
     }
-    collectFeatures(element, features, underListItem || isListItem);
+    CollectFeatures(element, features, under_list_item || is_list_item);
   }
 }
 
-bool hasOpenGraphArticle(const Element& head) {
-  DEFINE_STATIC_LOCAL(AtomicString, ogType, ("og:type"));
-  DEFINE_STATIC_LOCAL(AtomicString, propertyAttr, ("property"));
-  for (const Element* child = ElementTraversal::firstChild(head); child;
-       child = ElementTraversal::nextSibling(*child)) {
+bool HasOpenGraphArticle(const Element& head) {
+  DEFINE_STATIC_LOCAL(AtomicString, og_type, ("og:type"));
+  DEFINE_STATIC_LOCAL(AtomicString, property_attr, ("property"));
+  for (const Element* child = ElementTraversal::FirstChild(head); child;
+       child = ElementTraversal::NextSibling(*child)) {
     if (!isHTMLMetaElement(*child))
       continue;
     const HTMLMetaElement& meta = toHTMLMetaElement(*child);
 
-    if (meta.name() == ogType || meta.getAttribute(propertyAttr) == ogType) {
-      if (equalIgnoringCase(meta.content(), "article")) {
+    if (meta.GetName() == og_type ||
+        meta.getAttribute(property_attr) == og_type) {
+      if (EqualIgnoringCase(meta.Content(), "article")) {
         return true;
       }
     }
@@ -180,24 +182,24 @@ bool hasOpenGraphArticle(const Element& head) {
   return false;
 }
 
-bool isMobileFriendly(Document& document) {
-  if (Page* page = document.page())
-    return page->visualViewport().shouldDisableDesktopWorkarounds();
+bool IsMobileFriendly(Document& document) {
+  if (Page* page = document.GetPage())
+    return page->GetVisualViewport().ShouldDisableDesktopWorkarounds();
   return false;
 }
 
 }  // namespace
 
-WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(
+WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
     Document& document) {
   TRACE_EVENT0("blink", "DocumentStatisticsCollector::collectStatistics");
 
   WebDistillabilityFeatures features = WebDistillabilityFeatures();
 
-  if (!document.frame() || !document.frame()->isMainFrame())
+  if (!document.GetFrame() || !document.GetFrame()->IsMainFrame())
     return features;
 
-  DCHECK(document.hasFinishedParsing());
+  DCHECK(document.HasFinishedParsing());
 
   HTMLElement* body = document.body();
   HTMLElement* head = document.head();
@@ -205,23 +207,23 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(
   if (!body || !head)
     return features;
 
-  features.isMobileFriendly = isMobileFriendly(document);
+  features.is_mobile_friendly = IsMobileFriendly(document);
 
-  double startTime = monotonicallyIncreasingTime();
+  double start_time = MonotonicallyIncreasingTime();
 
   // This should be cheap since collectStatistics is only called right after
   // layout.
-  document.updateStyleAndLayoutTree();
+  document.UpdateStyleAndLayoutTree();
 
   // Traverse the DOM tree and collect statistics.
-  collectFeatures(*body, features);
-  features.openGraph = hasOpenGraphArticle(*head);
+  CollectFeatures(*body, features);
+  features.open_graph = HasOpenGraphArticle(*head);
 
-  double elapsedTime = monotonicallyIncreasingTime() - startTime;
+  double elapsed_time = MonotonicallyIncreasingTime() - start_time;
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, distillabilityHistogram,
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, distillability_histogram,
                       ("WebCore.DistillabilityUs", 1, 1000000, 50));
-  distillabilityHistogram.count(static_cast<int>(1e6 * elapsedTime));
+  distillability_histogram.Count(static_cast<int>(1e6 * elapsed_time));
 
   return features;
 }

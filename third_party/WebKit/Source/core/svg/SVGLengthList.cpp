@@ -26,149 +26,150 @@
 
 namespace blink {
 
-SVGLengthList::SVGLengthList(SVGLengthMode mode) : m_mode(mode) {}
+SVGLengthList::SVGLengthList(SVGLengthMode mode) : mode_(mode) {}
 
 SVGLengthList::~SVGLengthList() {}
 
-SVGLengthList* SVGLengthList::clone() {
-  SVGLengthList* ret = SVGLengthList::create(m_mode);
-  ret->deepCopy(this);
+SVGLengthList* SVGLengthList::Clone() {
+  SVGLengthList* ret = SVGLengthList::Create(mode_);
+  ret->DeepCopy(this);
   return ret;
 }
 
-SVGPropertyBase* SVGLengthList::cloneForAnimation(const String& value) const {
-  SVGLengthList* ret = SVGLengthList::create(m_mode);
-  ret->setValueAsString(value);
+SVGPropertyBase* SVGLengthList::CloneForAnimation(const String& value) const {
+  SVGLengthList* ret = SVGLengthList::Create(mode_);
+  ret->SetValueAsString(value);
   return ret;
 }
 
-String SVGLengthList::valueAsString() const {
+String SVGLengthList::ValueAsString() const {
   StringBuilder builder;
 
   ConstIterator it = begin();
-  ConstIterator itEnd = end();
-  if (it != itEnd) {
-    builder.append(it->valueAsString());
+  ConstIterator it_end = end();
+  if (it != it_end) {
+    builder.Append(it->ValueAsString());
     ++it;
 
-    for (; it != itEnd; ++it) {
-      builder.append(' ');
-      builder.append(it->valueAsString());
+    for (; it != it_end; ++it) {
+      builder.Append(' ');
+      builder.Append(it->ValueAsString());
     }
   }
 
-  return builder.toString();
+  return builder.ToString();
 }
 
 template <typename CharType>
-SVGParsingError SVGLengthList::parseInternal(const CharType*& ptr,
+SVGParsingError SVGLengthList::ParseInternal(const CharType*& ptr,
                                              const CharType* end) {
-  const CharType* listStart = ptr;
+  const CharType* list_start = ptr;
   while (ptr < end) {
     const CharType* start = ptr;
     // TODO(shanmuga.m): Enable calc for SVGLengthList
-    while (ptr < end && *ptr != ',' && !isHTMLSpace<CharType>(*ptr))
+    while (ptr < end && *ptr != ',' && !IsHTMLSpace<CharType>(*ptr))
       ptr++;
     if (ptr == start)
       break;
-    String valueString(start, ptr - start);
-    if (valueString.isEmpty())
+    String value_string(start, ptr - start);
+    if (value_string.IsEmpty())
       break;
 
-    SVGLength* length = SVGLength::create(m_mode);
-    SVGParsingError lengthParseStatus = length->setValueAsString(valueString);
-    if (lengthParseStatus != SVGParseStatus::NoError)
-      return lengthParseStatus.offsetWith(start - listStart);
-    append(length);
-    skipOptionalSVGSpacesOrDelimiter(ptr, end);
+    SVGLength* length = SVGLength::Create(mode_);
+    SVGParsingError length_parse_status =
+        length->SetValueAsString(value_string);
+    if (length_parse_status != SVGParseStatus::kNoError)
+      return length_parse_status.OffsetWith(start - list_start);
+    Append(length);
+    SkipOptionalSVGSpacesOrDelimiter(ptr, end);
   }
-  return SVGParseStatus::NoError;
+  return SVGParseStatus::kNoError;
 }
 
-SVGParsingError SVGLengthList::setValueAsString(const String& value) {
-  clear();
+SVGParsingError SVGLengthList::SetValueAsString(const String& value) {
+  Clear();
 
-  if (value.isEmpty())
-    return SVGParseStatus::NoError;
+  if (value.IsEmpty())
+    return SVGParseStatus::kNoError;
 
-  if (value.is8Bit()) {
-    const LChar* ptr = value.characters8();
+  if (value.Is8Bit()) {
+    const LChar* ptr = value.Characters8();
     const LChar* end = ptr + value.length();
-    return parseInternal(ptr, end);
+    return ParseInternal(ptr, end);
   }
-  const UChar* ptr = value.characters16();
+  const UChar* ptr = value.Characters16();
   const UChar* end = ptr + value.length();
-  return parseInternal(ptr, end);
+  return ParseInternal(ptr, end);
 }
 
-void SVGLengthList::add(SVGPropertyBase* other, SVGElement* contextElement) {
-  SVGLengthList* otherList = toSVGLengthList(other);
+void SVGLengthList::Add(SVGPropertyBase* other, SVGElement* context_element) {
+  SVGLengthList* other_list = ToSVGLengthList(other);
 
-  if (length() != otherList->length())
+  if (length() != other_list->length())
     return;
 
-  SVGLengthContext lengthContext(contextElement);
+  SVGLengthContext length_context(context_element);
   for (size_t i = 0; i < length(); ++i)
-    at(i)->setValue(
-        at(i)->value(lengthContext) + otherList->at(i)->value(lengthContext),
-        lengthContext);
+    at(i)->SetValue(
+        at(i)->Value(length_context) + other_list->at(i)->Value(length_context),
+        length_context);
 }
 
-SVGLength* SVGLengthList::createPaddingItem() const {
-  return SVGLength::create(m_mode);
+SVGLength* SVGLengthList::CreatePaddingItem() const {
+  return SVGLength::Create(mode_);
 }
 
-void SVGLengthList::calculateAnimatedValue(
-    SVGAnimationElement* animationElement,
+void SVGLengthList::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
     float percentage,
-    unsigned repeatCount,
-    SVGPropertyBase* fromValue,
-    SVGPropertyBase* toValue,
-    SVGPropertyBase* toAtEndOfDurationValue,
-    SVGElement* contextElement) {
-  SVGLengthList* fromList = toSVGLengthList(fromValue);
-  SVGLengthList* toList = toSVGLengthList(toValue);
-  SVGLengthList* toAtEndOfDurationList =
-      toSVGLengthList(toAtEndOfDurationValue);
+    unsigned repeat_count,
+    SVGPropertyBase* from_value,
+    SVGPropertyBase* to_value,
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement* context_element) {
+  SVGLengthList* from_list = ToSVGLengthList(from_value);
+  SVGLengthList* to_list = ToSVGLengthList(to_value);
+  SVGLengthList* to_at_end_of_duration_list =
+      ToSVGLengthList(to_at_end_of_duration_value);
 
-  SVGLengthContext lengthContext(contextElement);
-  DCHECK_EQ(m_mode, SVGLength::lengthModeForAnimatedLengthAttribute(
-                        animationElement->attributeName()));
+  SVGLengthContext length_context(context_element);
+  DCHECK_EQ(mode_, SVGLength::LengthModeForAnimatedLengthAttribute(
+                       animation_element->AttributeName()));
 
-  size_t fromLengthListSize = fromList->length();
-  size_t toLengthListSize = toList->length();
-  size_t toAtEndOfDurationListSize = toAtEndOfDurationList->length();
+  size_t from_length_list_size = from_list->length();
+  size_t to_length_list_size = to_list->length();
+  size_t to_at_end_of_duration_list_size = to_at_end_of_duration_list->length();
 
-  if (!adjustFromToListValues(fromList, toList, percentage,
-                              animationElement->getAnimationMode()))
+  if (!AdjustFromToListValues(from_list, to_list, percentage,
+                              animation_element->GetAnimationMode()))
     return;
 
-  for (size_t i = 0; i < toLengthListSize; ++i) {
+  for (size_t i = 0; i < to_length_list_size; ++i) {
     // TODO(shanmuga.m): Support calc for SVGLengthList animation
-    float animatedNumber = at(i)->value(lengthContext);
-    CSSPrimitiveValue::UnitType unitType =
-        toList->at(i)->typeWithCalcResolved();
-    float effectiveFrom = 0;
-    if (fromLengthListSize) {
+    float animated_number = at(i)->Value(length_context);
+    CSSPrimitiveValue::UnitType unit_type =
+        to_list->at(i)->TypeWithCalcResolved();
+    float effective_from = 0;
+    if (from_length_list_size) {
       if (percentage < 0.5)
-        unitType = fromList->at(i)->typeWithCalcResolved();
-      effectiveFrom = fromList->at(i)->value(lengthContext);
+        unit_type = from_list->at(i)->TypeWithCalcResolved();
+      effective_from = from_list->at(i)->Value(length_context);
     }
-    float effectiveTo = toList->at(i)->value(lengthContext);
-    float effectiveToAtEnd =
-        i < toAtEndOfDurationListSize
-            ? toAtEndOfDurationList->at(i)->value(lengthContext)
+    float effective_to = to_list->at(i)->Value(length_context);
+    float effective_to_at_end =
+        i < to_at_end_of_duration_list_size
+            ? to_at_end_of_duration_list->at(i)->Value(length_context)
             : 0;
 
-    animationElement->animateAdditiveNumber(percentage, repeatCount,
-                                            effectiveFrom, effectiveTo,
-                                            effectiveToAtEnd, animatedNumber);
-    at(i)->setUnitType(unitType);
-    at(i)->setValue(animatedNumber, lengthContext);
+    animation_element->AnimateAdditiveNumber(
+        percentage, repeat_count, effective_from, effective_to,
+        effective_to_at_end, animated_number);
+    at(i)->SetUnitType(unit_type);
+    at(i)->SetValue(animated_number, length_context);
   }
 }
 
-float SVGLengthList::calculateDistance(SVGPropertyBase* to, SVGElement*) {
+float SVGLengthList::CalculateDistance(SVGPropertyBase* to, SVGElement*) {
   // FIXME: Distance calculation is not possible for SVGLengthList right now. We
   // need the distance for every single value.
   return -1;

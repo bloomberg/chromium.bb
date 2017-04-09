@@ -35,46 +35,47 @@
 
 namespace blink {
 
-std::unique_ptr<ContextFeaturesClient> ContextFeaturesClient::empty() {
-  return WTF::makeUnique<ContextFeaturesClient>();
+std::unique_ptr<ContextFeaturesClient> ContextFeaturesClient::Empty() {
+  return WTF::MakeUnique<ContextFeaturesClient>();
 }
 
-const char* ContextFeatures::supplementName() {
+const char* ContextFeatures::SupplementName() {
   return "ContextFeatures";
 }
 
-ContextFeatures& ContextFeatures::defaultSwitch() {
+ContextFeatures& ContextFeatures::DefaultSwitch() {
   DEFINE_STATIC_LOCAL(
       ContextFeatures, instance,
-      (ContextFeatures::create(ContextFeaturesClient::empty())));
+      (ContextFeatures::Create(ContextFeaturesClient::Empty())));
   return instance;
 }
 
-bool ContextFeatures::pagePopupEnabled(Document* document) {
+bool ContextFeatures::PagePopupEnabled(Document* document) {
   if (!document)
     return false;
-  return document->contextFeatures().isEnabled(document, PagePopup, false);
+  return document->GetContextFeatures().IsEnabled(document, kPagePopup, false);
 }
 
-bool ContextFeatures::mutationEventsEnabled(Document* document) {
+bool ContextFeatures::MutationEventsEnabled(Document* document) {
   DCHECK(document);
   if (!document)
     return true;
-  return document->contextFeatures().isEnabled(document, MutationEvents, true);
+  return document->GetContextFeatures().IsEnabled(document, kMutationEvents,
+                                                  true);
 }
 
-void provideContextFeaturesTo(Page& page,
+void ProvideContextFeaturesTo(Page& page,
                               std::unique_ptr<ContextFeaturesClient> client) {
-  Supplement<Page>::provideTo(page, ContextFeatures::supplementName(),
-                              ContextFeatures::create(std::move(client)));
+  Supplement<Page>::ProvideTo(page, ContextFeatures::SupplementName(),
+                              ContextFeatures::Create(std::move(client)));
 }
 
-void provideContextFeaturesToDocumentFrom(Document& document, Page& page) {
+void ProvideContextFeaturesToDocumentFrom(Document& document, Page& page) {
   ContextFeatures* provided = static_cast<ContextFeatures*>(
-      Supplement<Page>::from(page, ContextFeatures::supplementName()));
+      Supplement<Page>::From(page, ContextFeatures::SupplementName()));
   if (!provided)
     return;
-  document.setContextFeatures(*provided);
+  document.SetContextFeatures(*provided);
 }
 
 }  // namespace blink

@@ -34,14 +34,15 @@
 
 namespace blink {
 
-String convertHTMLTextToInterchangeFormat(const String& in, const Text& node) {
+String ConvertHTMLTextToInterchangeFormat(const String& in, const Text& node) {
   // Assume all the text comes from node.
-  if (node.layoutObject() && node.layoutObject()->style()->preserveNewline())
+  if (node.GetLayoutObject() &&
+      node.GetLayoutObject()->Style()->PreserveNewline())
     return in;
 
-  const char convertedSpaceString[] =
+  const char kConvertedSpaceString[] =
       "<span class=\"" AppleConvertedSpace "\">\xA0</span>";
-  static_assert((static_cast<unsigned char>('\xA0') == noBreakSpaceCharacter),
+  static_assert((static_cast<unsigned char>('\xA0') == kNoBreakSpaceCharacter),
                 "\\xA0 should be non-breaking space");
 
   StringBuilder s;
@@ -50,10 +51,10 @@ String convertHTMLTextToInterchangeFormat(const String& in, const Text& node) {
   unsigned consumed = 0;
   while (i < in.length()) {
     consumed = 1;
-    if (isCollapsibleWhitespace(in[i])) {
+    if (IsCollapsibleWhitespace(in[i])) {
       // count number of adjoining spaces
       unsigned j = i + 1;
-      while (j < in.length() && isCollapsibleWhitespace(in[j]))
+      while (j < in.length() && IsCollapsibleWhitespace(in[j]))
         j++;
       unsigned count = j - i;
       consumed = count;
@@ -61,41 +62,41 @@ String convertHTMLTextToInterchangeFormat(const String& in, const Text& node) {
         unsigned add = count % 3;
         switch (add) {
           case 0:
-            s.append(convertedSpaceString);
-            s.append(' ');
-            s.append(convertedSpaceString);
+            s.Append(kConvertedSpaceString);
+            s.Append(' ');
+            s.Append(kConvertedSpaceString);
             add = 3;
             break;
           case 1:
             if (i == 0 || i + 1 == in.length())  // at start or end of string
-              s.append(convertedSpaceString);
+              s.Append(kConvertedSpaceString);
             else
-              s.append(' ');
+              s.Append(' ');
             break;
           case 2:
             if (i == 0) {
               // at start of string
-              s.append(convertedSpaceString);
-              s.append(' ');
+              s.Append(kConvertedSpaceString);
+              s.Append(' ');
             } else if (i + 2 == in.length()) {
               // at end of string
-              s.append(convertedSpaceString);
-              s.append(convertedSpaceString);
+              s.Append(kConvertedSpaceString);
+              s.Append(kConvertedSpaceString);
             } else {
-              s.append(convertedSpaceString);
-              s.append(' ');
+              s.Append(kConvertedSpaceString);
+              s.Append(' ');
             }
             break;
         }
         count -= add;
       }
     } else {
-      s.append(in[i]);
+      s.Append(in[i]);
     }
     i += consumed;
   }
 
-  return s.toString();
+  return s.ToString();
 }
 
 }  // namespace blink

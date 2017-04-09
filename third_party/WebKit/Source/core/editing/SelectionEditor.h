@@ -43,79 +43,79 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
   USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 
  public:
-  static SelectionEditor* create(LocalFrame& frame) {
+  static SelectionEditor* Create(LocalFrame& frame) {
     return new SelectionEditor(frame);
   }
   virtual ~SelectionEditor();
-  void dispose();
+  void Dispose();
 
-  bool hasEditableStyle() const;
-  bool isContentEditable() const;
-  bool isContentRichlyEditable() const;
+  bool HasEditableStyle() const;
+  bool IsContentEditable() const;
+  bool IsContentRichlyEditable() const;
 
-  const SelectionInDOMTree& selectionInDOMTree() const;
+  const SelectionInDOMTree& GetSelectionInDOMTree() const;
 
-  const VisibleSelection& computeVisibleSelectionInDOMTree() const;
-  const VisibleSelectionInFlatTree& computeVisibleSelectionInFlatTree() const;
-  void setSelection(const SelectionInDOMTree&);
+  const VisibleSelection& ComputeVisibleSelectionInDOMTree() const;
+  const VisibleSelectionInFlatTree& ComputeVisibleSelectionInFlatTree() const;
+  void SetSelection(const SelectionInDOMTree&);
 
-  void documentAttached(Document*);
+  void DocumentAttached(Document*);
 
   // There functions are exposed for |FrameSelection|.
-  void cacheRangeOfDocument(Range*);
-  Range* documentCachedRange() const;
-  void clearDocumentCachedRange();
+  void CacheRangeOfDocument(Range*);
+  Range* DocumentCachedRange() const;
+  void ClearDocumentCachedRange();
 
   DECLARE_TRACE();
 
  private:
   explicit SelectionEditor(LocalFrame&);
 
-  Document& document() const;
-  LocalFrame* frame() const { return m_frame.get(); }
+  Document& GetDocument() const;
+  LocalFrame* GetFrame() const { return frame_.Get(); }
 
-  void assertSelectionValid() const;
-  void clearVisibleSelection();
-  void markCacheDirty();
-  bool shouldAlwaysUseDirectionalSelection() const;
+  void AssertSelectionValid() const;
+  void ClearVisibleSelection();
+  void MarkCacheDirty();
+  bool ShouldAlwaysUseDirectionalSelection() const;
 
   // VisibleSelection cache related
-  bool needsUpdateVisibleSelection() const;
-  bool needsUpdateVisibleSelectionInFlatTree() const;
-  void updateCachedVisibleSelectionIfNeeded() const;
-  void updateCachedVisibleSelectionInFlatTreeIfNeeded() const;
+  bool NeedsUpdateVisibleSelection() const;
+  bool NeedsUpdateVisibleSelectionInFlatTree() const;
+  void UpdateCachedVisibleSelectionIfNeeded() const;
+  void UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const;
 
-  void didFinishTextChange(const Position& base, const Position& extent);
-  void didFinishDOMMutation();
+  void DidFinishTextChange(const Position& base, const Position& extent);
+  void DidFinishDOMMutation();
 
   // Implementation of |SynchronousMutationObsderver| member functions.
-  void contextDestroyed(Document*) final;
-  void didChangeChildren(const ContainerNode&) final;
-  void didMergeTextNodes(const Text& mergedNode,
-                         const NodeWithIndex& nodeToBeRemovedWithIndex,
-                         unsigned oldLength) final;
-  void didSplitTextNode(const Text&) final;
-  void didUpdateCharacterData(CharacterData*,
+  void ContextDestroyed(Document*) final;
+  void DidChangeChildren(const ContainerNode&) final;
+  void DidMergeTextNodes(const Text& merged_node,
+                         const NodeWithIndex& node_to_be_removed_with_index,
+                         unsigned old_length) final;
+  void DidSplitTextNode(const Text&) final;
+  void DidUpdateCharacterData(CharacterData*,
                               unsigned offset,
-                              unsigned oldLength,
-                              unsigned newLength) final;
-  void nodeChildrenWillBeRemoved(ContainerNode&) final;
-  void nodeWillBeRemoved(Node&) final;
+                              unsigned old_length,
+                              unsigned new_length) final;
+  void NodeChildrenWillBeRemoved(ContainerNode&) final;
+  void NodeWillBeRemoved(Node&) final;
 
-  Member<LocalFrame> m_frame;
+  Member<LocalFrame> frame_;
 
-  SelectionInDOMTree m_selection;
+  SelectionInDOMTree selection_;
 
   // If document is root, document.getSelection().addRange(range) is cached on
   // this.
-  Member<Range> m_cachedRange;
+  Member<Range> cached_range_;
 
-  mutable VisibleSelection m_cachedVisibleSelectionInDOMTree;
-  mutable VisibleSelectionInFlatTree m_cachedVisibleSelectionInFlatTree;
-  mutable uint64_t m_styleVersionForDOMTree = static_cast<uint64_t>(-1);
-  mutable uint64_t m_styleVersionForFlatTree = static_cast<uint64_t>(-1);
-  mutable bool m_cachedVisibleSelectionInDOMTreeIsDirty = false;
-  mutable bool m_cachedVisibleSelectionInFlatTreeIsDirty = false;
+  mutable VisibleSelection cached_visible_selection_in_dom_tree_;
+  mutable VisibleSelectionInFlatTree cached_visible_selection_in_flat_tree_;
+  mutable uint64_t style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
+  mutable uint64_t style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
+  mutable bool cached_visible_selection_in_dom_tree_is_dirty_ = false;
+  mutable bool cached_visible_selection_in_flat_tree_is_dirty_ = false;
 };
 
 }  // namespace blink

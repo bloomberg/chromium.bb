@@ -19,55 +19,55 @@
 namespace blink {
 
 ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
-    ExecutionContext* executionContext)
-    : ThreadedMessagingProxyBase(executionContext), m_weakPtrFactory(this) {
-  m_workletObjectProxy = ThreadedWorkletObjectProxy::create(
-      m_weakPtrFactory.createWeakPtr(), getParentFrameTaskRunners());
+    ExecutionContext* execution_context)
+    : ThreadedMessagingProxyBase(execution_context), weak_ptr_factory_(this) {
+  worklet_object_proxy_ = ThreadedWorkletObjectProxy::Create(
+      weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
 }
 
-void ThreadedWorkletMessagingProxy::initialize() {
-  DCHECK(isParentContextThread());
-  if (askedToTerminate())
+void ThreadedWorkletMessagingProxy::Initialize() {
+  DCHECK(IsParentContextThread());
+  if (AskedToTerminate())
     return;
 
-  Document* document = toDocument(getExecutionContext());
-  SecurityOrigin* starterOrigin = document->getSecurityOrigin();
-  KURL scriptURL = document->url();
+  Document* document = ToDocument(GetExecutionContext());
+  SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  KURL script_url = document->Url();
 
-  ContentSecurityPolicy* csp = document->contentSecurityPolicy();
+  ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
   DCHECK(csp);
 
-  WorkerThreadStartMode startMode =
-      workerInspectorProxy()->workerStartMode(document);
-  std::unique_ptr<WorkerSettings> workerSettings =
-      WTF::wrapUnique(new WorkerSettings(document->settings()));
+  WorkerThreadStartMode start_mode =
+      GetWorkerInspectorProxy()->WorkerStartMode(document);
+  std::unique_ptr<WorkerSettings> worker_settings =
+      WTF::WrapUnique(new WorkerSettings(document->GetSettings()));
 
   // TODO(ikilpatrick): Decide on sensible a value for referrerPolicy.
-  std::unique_ptr<WorkerThreadStartupData> startupData =
-      WorkerThreadStartupData::create(
-          scriptURL, document->userAgent(), String(), nullptr, startMode,
-          csp->headers().get(), /* referrerPolicy */ String(), starterOrigin,
-          nullptr, document->addressSpace(),
-          OriginTrialContext::getTokens(document).get(),
-          std::move(workerSettings), WorkerV8Settings::Default());
+  std::unique_ptr<WorkerThreadStartupData> startup_data =
+      WorkerThreadStartupData::Create(
+          script_url, document->UserAgent(), String(), nullptr, start_mode,
+          csp->Headers().get(), /* referrerPolicy */ String(), starter_origin,
+          nullptr, document->AddressSpace(),
+          OriginTrialContext::GetTokens(document).get(),
+          std::move(worker_settings), WorkerV8Settings::Default());
 
-  initializeWorkerThread(std::move(startupData));
-  workerInspectorProxy()->workerThreadCreated(document, workerThread(),
-                                              scriptURL);
+  InitializeWorkerThread(std::move(startup_data));
+  GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
+                                                 script_url);
 }
 
-void ThreadedWorkletMessagingProxy::evaluateScript(
-    const ScriptSourceCode& scriptSourceCode) {
-  postTaskToWorkerGlobalScope(
+void ThreadedWorkletMessagingProxy::EvaluateScript(
+    const ScriptSourceCode& script_source_code) {
+  PostTaskToWorkerGlobalScope(
       BLINK_FROM_HERE,
-      crossThreadBind(&ThreadedWorkletObjectProxy::evaluateScript,
-                      crossThreadUnretained(m_workletObjectProxy.get()),
-                      scriptSourceCode.source(), scriptSourceCode.url(),
-                      crossThreadUnretained(workerThread())));
+      CrossThreadBind(&ThreadedWorkletObjectProxy::EvaluateScript,
+                      CrossThreadUnretained(worklet_object_proxy_.get()),
+                      script_source_code.Source(), script_source_code.Url(),
+                      CrossThreadUnretained(GetWorkerThread())));
 }
 
-void ThreadedWorkletMessagingProxy::terminateWorkletGlobalScope() {
-  terminateGlobalScope();
+void ThreadedWorkletMessagingProxy::TerminateWorkletGlobalScope() {
+  TerminateGlobalScope();
 }
 
 }  // namespace blink

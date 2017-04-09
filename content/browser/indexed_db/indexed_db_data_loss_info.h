@@ -12,7 +12,7 @@
 namespace content {
 
 struct IndexedDBDataLossInfo {
-  blink::WebIDBDataLoss status = blink::WebIDBDataLossNone;
+  blink::WebIDBDataLoss status = blink::kWebIDBDataLossNone;
   std::string message;
 };
 

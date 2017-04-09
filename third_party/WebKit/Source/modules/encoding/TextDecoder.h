@@ -52,33 +52,33 @@ class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextDecoder* create(const String& label,
+  static TextDecoder* Create(const String& label,
                              const TextDecoderOptions&,
                              ExceptionState&);
   ~TextDecoder();
 
   // Implement the IDL
   String encoding() const;
-  bool fatal() const { return m_fatal; }
-  bool ignoreBOM() const { return m_ignoreBOM; }
+  bool fatal() const { return fatal_; }
+  bool ignoreBOM() const { return ignore_bom_; }
   String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
   String decode(ExceptionState&);
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignoreBOM);
+  TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignore_bom);
 
   String decode(const char* start,
                 size_t length,
                 const TextDecodeOptions&,
                 ExceptionState&);
 
-  WTF::TextEncoding m_encoding;
-  std::unique_ptr<WTF::TextCodec> m_codec;
-  bool m_fatal;
-  bool m_ignoreBOM;
-  bool m_bomSeen;
+  WTF::TextEncoding encoding_;
+  std::unique_ptr<WTF::TextCodec> codec_;
+  bool fatal_;
+  bool ignore_bom_;
+  bool bom_seen_;
 };
 
 }  // namespace blink

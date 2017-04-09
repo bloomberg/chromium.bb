@@ -42,10 +42,10 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       const url::Origin& security_origin);
 
   // blink::WebAudioDevice implementation.
-  void start() override;
-  void stop() override;
-  double sampleRate() override;
-  int framesPerBuffer() override;
+  void Start() override;
+  void Stop() override;
+  double SampleRate() override;
+  int FramesPerBuffer() override;
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(base::TimeDelta delay,

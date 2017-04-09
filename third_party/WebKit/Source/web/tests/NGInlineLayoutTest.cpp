@@ -20,70 +20,72 @@ namespace blink {
 
 class NGInlineLayoutTest : public SimTest {
  public:
-  RefPtr<NGConstraintSpace> constraintSpaceForElement(
-      LayoutNGBlockFlow* blockFlow) {
+  RefPtr<NGConstraintSpace> ConstraintSpaceForElement(
+      LayoutNGBlockFlow* block_flow) {
     return NGConstraintSpaceBuilder(
-               FromPlatformWritingMode(blockFlow->style()->getWritingMode()))
+               FromPlatformWritingMode(block_flow->Style()->GetWritingMode()))
         .SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
         .SetPercentageResolutionSize(NGLogicalSize(LayoutUnit(), LayoutUnit()))
-        .SetTextDirection(blockFlow->style()->direction())
+        .SetTextDirection(block_flow->Style()->Direction())
         .ToConstraintSpace(
-            FromPlatformWritingMode(blockFlow->style()->getWritingMode()));
+            FromPlatformWritingMode(block_flow->Style()->GetWritingMode()));
   }
 };
 
 TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   RuntimeEnabledFeatures::setLayoutNGEnabled(true);
 
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
-  mainResource.complete(
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
       "<div id=\"target\">Hello <strong>World</strong>!</div>");
 
-  compositor().beginFrame();
-  ASSERT_FALSE(compositor().needsBeginFrame());
+  Compositor().BeginFrame();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
 
-  Element* target = document().getElementById("target");
-  LayoutNGBlockFlow* blockFlow = toLayoutNGBlockFlow(target->layoutObject());
-  RefPtr<NGConstraintSpace> constraintSpace =
-      constraintSpaceForElement(blockFlow);
-  NGBlockNode* node = new NGBlockNode(blockFlow);
+  Element* target = GetDocument().GetElementById("target");
+  LayoutNGBlockFlow* block_flow =
+      ToLayoutNGBlockFlow(target->GetLayoutObject());
+  RefPtr<NGConstraintSpace> constraint_space =
+      ConstraintSpaceForElement(block_flow);
+  NGBlockNode* node = new NGBlockNode(block_flow);
 
   RefPtr<NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, constraintSpace.get()).Layout();
+      NGBlockLayoutAlgorithm(node, constraint_space.Get()).Layout();
   EXPECT_TRUE(result);
 
-  String expectedText("Hello World!");
-  EXPECT_EQ(expectedText, toNGInlineNode(node->FirstChild())->Text(0, 12));
+  String expected_text("Hello World!");
+  EXPECT_EQ(expected_text, ToNGInlineNode(node->FirstChild())->Text(0, 12));
 }
 
 TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   RuntimeEnabledFeatures::setLayoutNGEnabled(true);
 
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
-  mainResource.complete("<div id=\"target\">Hello <img>.</div>");
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete("<div id=\"target\">Hello <img>.</div>");
 
-  compositor().beginFrame();
-  ASSERT_FALSE(compositor().needsBeginFrame());
+  Compositor().BeginFrame();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
 
-  Element* target = document().getElementById("target");
-  LayoutNGBlockFlow* blockFlow = toLayoutNGBlockFlow(target->layoutObject());
-  RefPtr<NGConstraintSpace> constraintSpace =
-      constraintSpaceForElement(blockFlow);
-  NGBlockNode* node = new NGBlockNode(blockFlow);
+  Element* target = GetDocument().GetElementById("target");
+  LayoutNGBlockFlow* block_flow =
+      ToLayoutNGBlockFlow(target->GetLayoutObject());
+  RefPtr<NGConstraintSpace> constraint_space =
+      ConstraintSpaceForElement(block_flow);
+  NGBlockNode* node = new NGBlockNode(block_flow);
 
   RefPtr<NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, constraintSpace.get()).Layout();
+      NGBlockLayoutAlgorithm(node, constraint_space.Get()).Layout();
   EXPECT_TRUE(result);
 
-  String expectedText("Hello ");
-  expectedText.append(objectReplacementCharacter);
-  expectedText.append(".");
-  EXPECT_EQ(expectedText, toNGInlineNode(node->FirstChild())->Text(0, 8));
+  String expected_text("Hello ");
+  expected_text.Append(kObjectReplacementCharacter);
+  expected_text.Append(".");
+  EXPECT_EQ(expected_text, ToNGInlineNode(node->FirstChild())->Text(0, 8));
 
   // Delete the line box tree to avoid leaks in the test.
-  blockFlow->deleteLineBoxTree();
+  block_flow->DeleteLineBoxTree();
 }
 
 }  // namespace blink

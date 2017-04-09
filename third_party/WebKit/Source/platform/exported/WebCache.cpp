@@ -40,41 +40,41 @@ static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
                                WebCache::ResourceTypeStat& to) {
   to.count = from.count;
   to.size = from.size;
-  to.decodedSize = from.decodedSize;
+  to.decoded_size = from.decoded_size;
 }
 
-void WebCache::setCapacity(size_t capacity) {
-  MemoryCache* cache = memoryCache();
+void WebCache::SetCapacity(size_t capacity) {
+  MemoryCache* cache = GetMemoryCache();
   if (cache)
-    cache->setCapacity(static_cast<unsigned>(capacity));
+    cache->SetCapacity(static_cast<unsigned>(capacity));
 }
 
-void WebCache::clear() {
-  MemoryCache* cache = memoryCache();
+void WebCache::Clear() {
+  MemoryCache* cache = GetMemoryCache();
   if (cache)
-    cache->evictResources();
+    cache->EvictResources();
 }
 
-void WebCache::getUsageStats(UsageStats* result) {
+void WebCache::GetUsageStats(UsageStats* result) {
   DCHECK(result);
 
-  MemoryCache* cache = memoryCache();
+  MemoryCache* cache = GetMemoryCache();
   if (cache) {
-    result->capacity = cache->capacity();
+    result->capacity = cache->Capacity();
     result->size = cache->size();
   } else {
     memset(result, 0, sizeof(UsageStats));
   }
 }
 
-void WebCache::getResourceTypeStats(ResourceTypeStats* result) {
-  MemoryCache* cache = memoryCache();
+void WebCache::GetResourceTypeStats(ResourceTypeStats* result) {
+  MemoryCache* cache = GetMemoryCache();
   if (cache) {
-    MemoryCache::Statistics stats = cache->getStatistics();
+    MemoryCache::Statistics stats = cache->GetStatistics();
     ToResourceTypeStat(stats.images, result->images);
-    ToResourceTypeStat(stats.cssStyleSheets, result->cssStyleSheets);
+    ToResourceTypeStat(stats.css_style_sheets, result->css_style_sheets);
     ToResourceTypeStat(stats.scripts, result->scripts);
-    ToResourceTypeStat(stats.xslStyleSheets, result->xslStyleSheets);
+    ToResourceTypeStat(stats.xsl_style_sheets, result->xsl_style_sheets);
     ToResourceTypeStat(stats.fonts, result->fonts);
     ToResourceTypeStat(stats.other, result->other);
   } else {

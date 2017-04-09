@@ -42,7 +42,7 @@ struct TextCheckingResult;
 // A checked entry of text checking.
 struct WebTextCheckingResult {
   WebTextCheckingResult()
-      : decoration(WebTextDecorationTypeSpelling), location(0), length(0) {}
+      : decoration(kWebTextDecorationTypeSpelling), location(0), length(0) {}
 
   WebTextCheckingResult(WebTextDecorationType decoration,
                         int location,

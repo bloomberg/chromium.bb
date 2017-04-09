@@ -41,33 +41,33 @@ class SVGResourcesCache {
   SVGResourcesCache();
   ~SVGResourcesCache();
 
-  static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
+  static SVGResources* CachedResourcesForLayoutObject(const LayoutObject*);
 
   // Called from all SVG layoutObjects addChild() methods.
-  static void clientWasAddedToTree(LayoutObject*,
-                                   const ComputedStyle& newStyle);
+  static void ClientWasAddedToTree(LayoutObject*,
+                                   const ComputedStyle& new_style);
 
   // Called from all SVG layoutObjects removeChild() methods.
-  static void clientWillBeRemovedFromTree(LayoutObject*);
+  static void ClientWillBeRemovedFromTree(LayoutObject*);
 
   // Called from all SVG layoutObjects destroy() methods - except for
   // LayoutSVGResourceContainer.
-  static void clientDestroyed(LayoutObject*);
+  static void ClientDestroyed(LayoutObject*);
 
   // Called from all SVG layoutObjects layout() methods.
-  static void clientLayoutChanged(LayoutObject*);
+  static void ClientLayoutChanged(LayoutObject*);
 
   // Called from all SVG layoutObjects styleDidChange() methods.
-  static void clientStyleChanged(LayoutObject*,
+  static void ClientStyleChanged(LayoutObject*,
                                  StyleDifference,
-                                 const ComputedStyle& newStyle);
+                                 const ComputedStyle& new_style);
 
  private:
-  void addResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
-  void removeResourcesFromLayoutObject(LayoutObject*);
+  void AddResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
+  void RemoveResourcesFromLayoutObject(LayoutObject*);
 
   typedef HashMap<const LayoutObject*, std::unique_ptr<SVGResources>> CacheMap;
-  CacheMap m_cache;
+  CacheMap cache_;
 };
 
 }  // namespace blink

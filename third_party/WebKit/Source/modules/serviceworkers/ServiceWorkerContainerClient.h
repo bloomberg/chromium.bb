@@ -32,21 +32,21 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
                                std::unique_ptr<WebServiceWorkerProvider>);
   virtual ~ServiceWorkerContainerClient();
 
-  WebServiceWorkerProvider* provider() { return m_provider.get(); }
+  WebServiceWorkerProvider* Provider() { return provider_.get(); }
 
-  static const char* supplementName();
-  static ServiceWorkerContainerClient* from(ExecutionContext*);
+  static const char* SupplementName();
+  static ServiceWorkerContainerClient* From(ExecutionContext*);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    Supplement<Document>::trace(visitor);
-    Supplement<WorkerClients>::trace(visitor);
+    Supplement<Document>::Trace(visitor);
+    Supplement<WorkerClients>::Trace(visitor);
   }
 
  private:
-  std::unique_ptr<WebServiceWorkerProvider> m_provider;
+  std::unique_ptr<WebServiceWorkerProvider> provider_;
 };
 
-MODULES_EXPORT void provideServiceWorkerContainerClientToWorker(
+MODULES_EXPORT void ProvideServiceWorkerContainerClientToWorker(
     WorkerClients*,
     std::unique_ptr<WebServiceWorkerProvider>);
 

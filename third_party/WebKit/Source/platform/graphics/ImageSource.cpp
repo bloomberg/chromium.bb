@@ -34,129 +34,129 @@
 namespace blink {
 
 ImageSource::ImageSource()
-    : m_decoderColorBehavior(ColorBehavior::transformToGlobalTarget()) {}
+    : decoder_color_behavior_(ColorBehavior::TransformToGlobalTarget()) {}
 
 ImageSource::~ImageSource() {}
 
-size_t ImageSource::clearCacheExceptFrame(size_t clearExceptFrame) {
-  return m_decoder ? m_decoder->clearCacheExceptFrame(clearExceptFrame) : 0;
+size_t ImageSource::ClearCacheExceptFrame(size_t clear_except_frame) {
+  return decoder_ ? decoder_->ClearCacheExceptFrame(clear_except_frame) : 0;
 }
 
-PassRefPtr<SharedBuffer> ImageSource::data() {
-  return m_decoder ? m_decoder->data() : nullptr;
+PassRefPtr<SharedBuffer> ImageSource::Data() {
+  return decoder_ ? decoder_->Data() : nullptr;
 }
 
-bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
-                          bool allDataReceived) {
-  RefPtr<SharedBuffer> data = passData;
-  m_allDataReceived = allDataReceived;
+bool ImageSource::SetData(PassRefPtr<SharedBuffer> pass_data,
+                          bool all_data_received) {
+  RefPtr<SharedBuffer> data = pass_data;
+  all_data_received_ = all_data_received;
 
-  if (m_decoder) {
-    m_decoder->setData(std::move(data), allDataReceived);
+  if (decoder_) {
+    decoder_->SetData(std::move(data), all_data_received);
     // If the decoder is pre-instantiated, it means we've already validated the
     // data/signature at some point.
     return true;
   }
 
-  m_decoder = DeferredImageDecoder::create(data, allDataReceived,
-                                           ImageDecoder::AlphaPremultiplied,
-                                           m_decoderColorBehavior);
+  decoder_ = DeferredImageDecoder::Create(data, all_data_received,
+                                          ImageDecoder::kAlphaPremultiplied,
+                                          decoder_color_behavior_);
 
   // Insufficient data is not a failure.
-  return m_decoder || !ImageDecoder::hasSufficientDataToSniffImageType(*data);
+  return decoder_ || !ImageDecoder::HasSufficientDataToSniffImageType(*data);
 }
 
-String ImageSource::filenameExtension() const {
-  return m_decoder ? m_decoder->filenameExtension() : String();
+String ImageSource::FilenameExtension() const {
+  return decoder_ ? decoder_->FilenameExtension() : String();
 }
 
-bool ImageSource::isSizeAvailable() {
-  return m_decoder && m_decoder->isSizeAvailable();
+bool ImageSource::IsSizeAvailable() {
+  return decoder_ && decoder_->IsSizeAvailable();
 }
 
-bool ImageSource::hasColorProfile() const {
-  return m_decoder && m_decoder->hasEmbeddedColorSpace();
+bool ImageSource::HasColorProfile() const {
+  return decoder_ && decoder_->HasEmbeddedColorSpace();
 }
 
 IntSize ImageSource::size(
-    RespectImageOrientationEnum shouldRespectOrientation) const {
-  return frameSizeAtIndex(0, shouldRespectOrientation);
+    RespectImageOrientationEnum should_respect_orientation) const {
+  return FrameSizeAtIndex(0, should_respect_orientation);
 }
 
-IntSize ImageSource::frameSizeAtIndex(
+IntSize ImageSource::FrameSizeAtIndex(
     size_t index,
-    RespectImageOrientationEnum shouldRespectOrientation) const {
-  if (!m_decoder)
+    RespectImageOrientationEnum should_respect_orientation) const {
+  if (!decoder_)
     return IntSize();
 
-  IntSize size = m_decoder->frameSizeAtIndex(index);
-  if ((shouldRespectOrientation == RespectImageOrientation) &&
-      m_decoder->orientationAtIndex(index).usesWidthAsHeight())
-    return size.transposedSize();
+  IntSize size = decoder_->FrameSizeAtIndex(index);
+  if ((should_respect_orientation == kRespectImageOrientation) &&
+      decoder_->OrientationAtIndex(index).UsesWidthAsHeight())
+    return size.TransposedSize();
 
   return size;
 }
 
-bool ImageSource::getHotSpot(IntPoint& hotSpot) const {
-  return m_decoder ? m_decoder->hotSpot(hotSpot) : false;
+bool ImageSource::GetHotSpot(IntPoint& hot_spot) const {
+  return decoder_ ? decoder_->HotSpot(hot_spot) : false;
 }
 
-int ImageSource::repetitionCount() {
-  return m_decoder ? m_decoder->repetitionCount() : cAnimationNone;
+int ImageSource::RepetitionCount() {
+  return decoder_ ? decoder_->RepetitionCount() : kCAnimationNone;
 }
 
-size_t ImageSource::frameCount() const {
-  return m_decoder ? m_decoder->frameCount() : 0;
+size_t ImageSource::FrameCount() const {
+  return decoder_ ? decoder_->FrameCount() : 0;
 }
 
-sk_sp<SkImage> ImageSource::createFrameAtIndex(
+sk_sp<SkImage> ImageSource::CreateFrameAtIndex(
     size_t index,
-    const ColorBehavior& colorBehavior) {
-  if (!m_decoder)
+    const ColorBehavior& color_behavior) {
+  if (!decoder_)
     return nullptr;
 
-  if (colorBehavior != m_decoderColorBehavior) {
-    m_decoder = DeferredImageDecoder::create(data(), m_allDataReceived,
-                                             ImageDecoder::AlphaPremultiplied,
-                                             colorBehavior);
-    m_decoderColorBehavior = colorBehavior;
+  if (color_behavior != decoder_color_behavior_) {
+    decoder_ = DeferredImageDecoder::Create(Data(), all_data_received_,
+                                            ImageDecoder::kAlphaPremultiplied,
+                                            color_behavior);
+    decoder_color_behavior_ = color_behavior;
     // The data has already been validated, so changing the color behavior
     // should always result in a valid decoder.
-    DCHECK(m_decoder);
+    DCHECK(decoder_);
   }
 
-  return m_decoder->createFrameAtIndex(index);
+  return decoder_->CreateFrameAtIndex(index);
 }
 
-float ImageSource::frameDurationAtIndex(size_t index) const {
-  if (!m_decoder)
+float ImageSource::FrameDurationAtIndex(size_t index) const {
+  if (!decoder_)
     return 0;
 
   // Many annoying ads specify a 0 duration to make an image flash as quickly as
   // possible. We follow Firefox's behavior and use a duration of 100 ms for any
   // frames that specify a duration of <= 10 ms. See <rdar://problem/7689300>
   // and <http://webkit.org/b/36082> for more information.
-  const float duration = m_decoder->frameDurationAtIndex(index) / 1000.0f;
+  const float duration = decoder_->FrameDurationAtIndex(index) / 1000.0f;
   if (duration < 0.011f)
     return 0.100f;
   return duration;
 }
 
-ImageOrientation ImageSource::orientationAtIndex(size_t index) const {
-  return m_decoder ? m_decoder->orientationAtIndex(index)
-                   : DefaultImageOrientation;
+ImageOrientation ImageSource::OrientationAtIndex(size_t index) const {
+  return decoder_ ? decoder_->OrientationAtIndex(index)
+                  : kDefaultImageOrientation;
 }
 
-bool ImageSource::frameHasAlphaAtIndex(size_t index) const {
-  return !m_decoder || m_decoder->frameHasAlphaAtIndex(index);
+bool ImageSource::FrameHasAlphaAtIndex(size_t index) const {
+  return !decoder_ || decoder_->FrameHasAlphaAtIndex(index);
 }
 
-bool ImageSource::frameIsCompleteAtIndex(size_t index) const {
-  return m_decoder && m_decoder->frameIsCompleteAtIndex(index);
+bool ImageSource::FrameIsCompleteAtIndex(size_t index) const {
+  return decoder_ && decoder_->FrameIsCompleteAtIndex(index);
 }
 
-size_t ImageSource::frameBytesAtIndex(size_t index) const {
-  return m_decoder ? m_decoder->frameBytesAtIndex(index) : 0;
+size_t ImageSource::FrameBytesAtIndex(size_t index) const {
+  return decoder_ ? decoder_->FrameBytesAtIndex(index) : 0;
 }
 
 }  // namespace blink

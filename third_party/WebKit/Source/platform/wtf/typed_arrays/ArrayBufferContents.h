@@ -53,69 +53,67 @@ class WTF_EXPORT ArrayBufferContents {
   using DataDeleter = void (*)(void* data);
   using DataHandle = std::unique_ptr<void, DataDeleter>;
 
-  enum InitializationPolicy { ZeroInitialize, DontInitialize };
+  enum InitializationPolicy { kZeroInitialize, kDontInitialize };
 
   enum SharingType {
-    NotShared,
-    Shared,
+    kNotShared,
+    kShared,
   };
 
   ArrayBufferContents();
-  ArrayBufferContents(unsigned numElements,
-                      unsigned elementByteSize,
-                      SharingType isShared,
+  ArrayBufferContents(unsigned num_elements,
+                      unsigned element_byte_size,
+                      SharingType is_shared,
                       InitializationPolicy);
-  ArrayBufferContents(DataHandle, unsigned sizeInBytes, SharingType isShared);
+  ArrayBufferContents(DataHandle,
+                      unsigned size_in_bytes,
+                      SharingType is_shared);
 
   ~ArrayBufferContents();
 
-  void neuter();
+  void Neuter();
 
-  void* data() const {
-    DCHECK(!isShared());
-    return dataMaybeShared();
+  void* Data() const {
+    DCHECK(!IsShared());
+    return DataMaybeShared();
   }
-  void* dataShared() const {
-    DCHECK(isShared());
-    return dataMaybeShared();
+  void* DataShared() const {
+    DCHECK(IsShared());
+    return DataMaybeShared();
   }
-  void* dataMaybeShared() const {
-    return m_holder ? m_holder->data() : nullptr;
-  }
-  unsigned sizeInBytes() const {
-    return m_holder ? m_holder->sizeInBytes() : 0;
-  }
-  bool isShared() const { return m_holder ? m_holder->isShared() : false; }
+  void* DataMaybeShared() const { return holder_ ? holder_->Data() : nullptr; }
+  unsigned SizeInBytes() const { return holder_ ? holder_->SizeInBytes() : 0; }
+  bool IsShared() const { return holder_ ? holder_->IsShared() : false; }
 
-  void transfer(ArrayBufferContents& other);
-  void shareWith(ArrayBufferContents& other);
-  void copyTo(ArrayBufferContents& other);
+  void Transfer(ArrayBufferContents& other);
+  void ShareWith(ArrayBufferContents& other);
+  void CopyTo(ArrayBufferContents& other);
 
-  static void* allocateMemoryOrNull(size_t, InitializationPolicy);
-  static void freeMemory(void*);
-  static DataHandle createDataHandle(size_t, InitializationPolicy);
-  static void initialize(
+  static void* AllocateMemoryOrNull(size_t, InitializationPolicy);
+  static void FreeMemory(void*);
+  static DataHandle CreateDataHandle(size_t, InitializationPolicy);
+  static void Initialize(
       AdjustAmountOfExternalAllocatedMemoryFunction function) {
-    DCHECK(isMainThread());
-    DCHECK_EQ(s_adjustAmountOfExternalAllocatedMemoryFunction,
-              defaultAdjustAmountOfExternalAllocatedMemoryFunction);
-    s_adjustAmountOfExternalAllocatedMemoryFunction = function;
+    DCHECK(IsMainThread());
+    DCHECK_EQ(adjust_amount_of_external_allocated_memory_function_,
+              DefaultAdjustAmountOfExternalAllocatedMemoryFunction);
+    adjust_amount_of_external_allocated_memory_function_ = function;
   }
 
-  void registerExternalAllocationWithCurrentContext() {
-    if (m_holder)
-      m_holder->registerExternalAllocationWithCurrentContext();
+  void RegisterExternalAllocationWithCurrentContext() {
+    if (holder_)
+      holder_->RegisterExternalAllocationWithCurrentContext();
   }
 
-  void unregisterExternalAllocationWithCurrentContext() {
-    if (m_holder)
-      m_holder->unregisterExternalAllocationWithCurrentContext();
+  void UnregisterExternalAllocationWithCurrentContext() {
+    if (holder_)
+      holder_->UnregisterExternalAllocationWithCurrentContext();
   }
 
  private:
-  static void* allocateMemoryWithFlags(size_t, InitializationPolicy, int);
+  static void* AllocateMemoryWithFlags(size_t, InitializationPolicy, int);
 
-  static void defaultAdjustAmountOfExternalAllocatedMemoryFunction(
+  static void DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
       int64_t diff);
 
   class DataHolder : public ThreadSafeRefCounted<DataHolder> {
@@ -125,59 +123,60 @@ class WTF_EXPORT ArrayBufferContents {
     DataHolder();
     ~DataHolder();
 
-    void allocateNew(unsigned sizeInBytes,
-                     SharingType isShared,
+    void AllocateNew(unsigned size_in_bytes,
+                     SharingType is_shared,
                      InitializationPolicy);
-    void adopt(DataHandle, unsigned sizeInBytes, SharingType isShared);
-    void copyMemoryFrom(const DataHolder& source);
+    void Adopt(DataHandle, unsigned size_in_bytes, SharingType is_shared);
+    void CopyMemoryFrom(const DataHolder& source);
 
-    const void* data() const { return m_data.get(); }
-    void* data() { return m_data.get(); }
-    unsigned sizeInBytes() const { return m_sizeInBytes; }
-    bool isShared() const { return m_isShared == Shared; }
+    const void* Data() const { return data_.get(); }
+    void* Data() { return data_.get(); }
+    unsigned SizeInBytes() const { return size_in_bytes_; }
+    bool IsShared() const { return is_shared_ == kShared; }
 
-    void registerExternalAllocationWithCurrentContext();
-    void unregisterExternalAllocationWithCurrentContext();
+    void RegisterExternalAllocationWithCurrentContext();
+    void UnregisterExternalAllocationWithCurrentContext();
 
    private:
-    void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
-      m_hasRegisteredExternalAllocation = !m_hasRegisteredExternalAllocation;
-      DCHECK(!diff || (m_hasRegisteredExternalAllocation == (diff > 0)));
-      checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent();
-      s_adjustAmountOfExternalAllocatedMemoryFunction(diff);
+    void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
+      has_registered_external_allocation_ =
+          !has_registered_external_allocation_;
+      DCHECK(!diff || (has_registered_external_allocation_ == (diff > 0)));
+      CheckIfAdjustAmountOfExternalAllocatedMemoryIsConsistent();
+      adjust_amount_of_external_allocated_memory_function_(diff);
     }
 
-    void adjustAmountOfExternalAllocatedMemory(unsigned diff) {
-      adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
+    void AdjustAmountOfExternalAllocatedMemory(unsigned diff) {
+      AdjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
     }
 
-    void checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent() {
-      DCHECK(s_adjustAmountOfExternalAllocatedMemoryFunction);
+    void CheckIfAdjustAmountOfExternalAllocatedMemoryIsConsistent() {
+      DCHECK(adjust_amount_of_external_allocated_memory_function_);
 
 #if DCHECK_IS_ON()
       // Make sure that the function actually used is always the same.
       // Shouldn't be updated during its use.
-      if (!s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction) {
-        s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction =
-            s_adjustAmountOfExternalAllocatedMemoryFunction;
+      if (!last_used_adjust_amount_of_external_allocated_memory_function_) {
+        last_used_adjust_amount_of_external_allocated_memory_function_ =
+            adjust_amount_of_external_allocated_memory_function_;
       }
-      DCHECK_EQ(s_adjustAmountOfExternalAllocatedMemoryFunction,
-                s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction);
+      DCHECK_EQ(adjust_amount_of_external_allocated_memory_function_,
+                last_used_adjust_amount_of_external_allocated_memory_function_);
 #endif
     }
 
-    DataHandle m_data;
-    unsigned m_sizeInBytes;
-    SharingType m_isShared;
-    bool m_hasRegisteredExternalAllocation;
+    DataHandle data_;
+    unsigned size_in_bytes_;
+    SharingType is_shared_;
+    bool has_registered_external_allocation_;
   };
 
-  RefPtr<DataHolder> m_holder;
+  RefPtr<DataHolder> holder_;
   static AdjustAmountOfExternalAllocatedMemoryFunction
-      s_adjustAmountOfExternalAllocatedMemoryFunction;
+      adjust_amount_of_external_allocated_memory_function_;
 #if DCHECK_IS_ON()
   static AdjustAmountOfExternalAllocatedMemoryFunction
-      s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction;
+      last_used_adjust_amount_of_external_allocated_memory_function_;
 #endif
 };
 

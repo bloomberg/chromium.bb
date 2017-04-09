@@ -21,12 +21,12 @@ InternalDocumentStateData::InternalDocumentStateData()
       is_overriding_user_agent_(false),
       must_reset_scroll_and_scale_state_(false),
       cache_policy_override_set_(false),
-      cache_policy_override_(blink::WebCachePolicy::UseProtocolCachePolicy) {}
+      cache_policy_override_(blink::WebCachePolicy::kUseProtocolCachePolicy) {}
 
 // static
 InternalDocumentStateData* InternalDocumentStateData::FromDataSource(
     blink::WebDataSource* ds) {
-  return FromDocumentState(static_cast<DocumentState*>(ds->getExtraData()));
+  return FromDocumentState(static_cast<DocumentState*>(ds->GetExtraData()));
 }
 
 // static

@@ -8,15 +8,16 @@
 
 namespace blink {
 
-Color StyleColor::colorFromKeyword(CSSValueID keyword) {
-  if (const char* valueName = getValueName(keyword)) {
-    if (const NamedColor* namedColor = findColor(valueName, strlen(valueName)))
-      return Color(namedColor->ARGBValue);
+Color StyleColor::ColorFromKeyword(CSSValueID keyword) {
+  if (const char* value_name = getValueName(keyword)) {
+    if (const NamedColor* named_color =
+            FindColor(value_name, strlen(value_name)))
+      return Color(named_color->argb_value);
   }
-  return LayoutTheme::theme().systemColor(keyword);
+  return LayoutTheme::GetTheme().SystemColor(keyword);
 }
 
-bool StyleColor::isColorKeyword(CSSValueID id) {
+bool StyleColor::IsColorKeyword(CSSValueID id) {
   // Named colors and color keywords:
   //
   // <named-color>
@@ -44,7 +45,7 @@ bool StyleColor::isColorKeyword(CSSValueID id) {
          id == CSSValueMenu;
 }
 
-bool StyleColor::isSystemColor(CSSValueID id) {
+bool StyleColor::IsSystemColor(CSSValueID id) {
   return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) ||
          id == CSSValueMenu;
 }

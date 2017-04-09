@@ -35,24 +35,24 @@ class ExceptionState;
 
 class DatasetDOMStringMap final : public DOMStringMap {
  public:
-  static DatasetDOMStringMap* create(Element* element) {
+  static DatasetDOMStringMap* Create(Element* element) {
     return new DatasetDOMStringMap(element);
   }
 
-  void getNames(Vector<String>&) override;
+  void GetNames(Vector<String>&) override;
   String item(const String& name) override;
-  bool contains(const String& name) override;
-  void setItem(const String& name,
+  bool Contains(const String& name) override;
+  void SetItem(const String& name,
                const String& value,
                ExceptionState&) override;
-  bool deleteItem(const String& name) override;
+  bool DeleteItem(const String& name) override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit DatasetDOMStringMap(Element* element) : m_element(element) {}
+  explicit DatasetDOMStringMap(Element* element) : element_(element) {}
 
-  Member<Element> m_element;
+  Member<Element> element_;
 };
 
 }  // namespace blink

@@ -12,33 +12,33 @@ namespace blink {
 NavigatorNFC::NavigatorNFC(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-const char* NavigatorNFC::supplementName() {
+const char* NavigatorNFC::SupplementName() {
   return "NavigatorNFC";
 }
 
-NavigatorNFC& NavigatorNFC::from(Navigator& navigator) {
+NavigatorNFC& NavigatorNFC::From(Navigator& navigator) {
   NavigatorNFC* supplement = static_cast<NavigatorNFC*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorNFC(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 NFC* NavigatorNFC::nfc(Navigator& navigator) {
-  NavigatorNFC& self = NavigatorNFC::from(navigator);
-  if (!self.m_nfc) {
-    if (!navigator.frame())
+  NavigatorNFC& self = NavigatorNFC::From(navigator);
+  if (!self.nfc_) {
+    if (!navigator.GetFrame())
       return nullptr;
-    self.m_nfc = NFC::create(navigator.frame());
+    self.nfc_ = NFC::Create(navigator.GetFrame());
   }
-  return self.m_nfc.get();
+  return self.nfc_.Get();
 }
 
 DEFINE_TRACE(NavigatorNFC) {
-  visitor->trace(m_nfc);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(nfc_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

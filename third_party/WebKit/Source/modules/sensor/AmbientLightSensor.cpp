@@ -12,34 +12,34 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 // static
-AmbientLightSensor* AmbientLightSensor::create(
-    ExecutionContext* executionContext,
+AmbientLightSensor* AmbientLightSensor::Create(
+    ExecutionContext* execution_context,
     const SensorOptions& options,
-    ExceptionState& exceptionState) {
-  return new AmbientLightSensor(executionContext, options, exceptionState);
+    ExceptionState& exception_state) {
+  return new AmbientLightSensor(execution_context, options, exception_state);
 }
 
 // static
-AmbientLightSensor* AmbientLightSensor::create(
-    ExecutionContext* executionContext,
-    ExceptionState& exceptionState) {
-  return create(executionContext, SensorOptions(), exceptionState);
+AmbientLightSensor* AmbientLightSensor::Create(
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
+  return Create(execution_context, SensorOptions(), exception_state);
 }
 
-AmbientLightSensor::AmbientLightSensor(ExecutionContext* executionContext,
+AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
                                        const SensorOptions& options,
-                                       ExceptionState& exceptionState)
-    : Sensor(executionContext,
+                                       ExceptionState& exception_state)
+    : Sensor(execution_context,
              options,
-             exceptionState,
+             exception_state,
              SensorType::AMBIENT_LIGHT) {}
 
-double AmbientLightSensor::illuminance(bool& isNull) const {
-  return readingValue(0, isNull);
+double AmbientLightSensor::illuminance(bool& is_null) const {
+  return ReadingValue(0, is_null);
 }
 
 DEFINE_TRACE(AmbientLightSensor) {
-  Sensor::trace(visitor);
+  Sensor::Trace(visitor);
 }
 
 }  // namespace blink

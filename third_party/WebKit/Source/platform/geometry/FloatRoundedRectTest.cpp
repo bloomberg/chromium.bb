@@ -37,66 +37,66 @@ namespace blink {
 #define TEST_INTERCEPTS(roundedRect, yCoordinate, expectedMinXIntercept, \
                         expectedMaxXIntercept)                           \
   {                                                                      \
-    float minXIntercept;                                                 \
-    float maxXIntercept;                                                 \
-    EXPECT_TRUE(roundedRect.xInterceptsAtY(yCoordinate, minXIntercept,   \
-                                           maxXIntercept));              \
-    EXPECT_FLOAT_EQ(expectedMinXIntercept, minXIntercept);               \
-    EXPECT_FLOAT_EQ(expectedMaxXIntercept, maxXIntercept);               \
+    float min_x_intercept;                                               \
+    float max_x_intercept;                                               \
+    EXPECT_TRUE(roundedRect.XInterceptsAtY(yCoordinate, min_x_intercept, \
+                                           max_x_intercept));            \
+    EXPECT_FLOAT_EQ(expectedMinXIntercept, min_x_intercept);             \
+    EXPECT_FLOAT_EQ(expectedMaxXIntercept, max_x_intercept);             \
   }
 
 TEST(FloatRoundedRectTest, zeroRadii) {
   FloatRoundedRect r = FloatRoundedRect(1, 2, 3, 4);
 
-  EXPECT_EQ(FloatRect(1, 2, 3, 4), r.rect());
-  EXPECT_EQ(FloatSize(), r.getRadii().topLeft());
-  EXPECT_EQ(FloatSize(), r.getRadii().topRight());
-  EXPECT_EQ(FloatSize(), r.getRadii().bottomLeft());
-  EXPECT_EQ(FloatSize(), r.getRadii().bottomRight());
-  EXPECT_TRUE(r.getRadii().isZero());
-  EXPECT_FALSE(r.isRounded());
-  EXPECT_FALSE(r.isEmpty());
+  EXPECT_EQ(FloatRect(1, 2, 3, 4), r.Rect());
+  EXPECT_EQ(FloatSize(), r.GetRadii().TopLeft());
+  EXPECT_EQ(FloatSize(), r.GetRadii().TopRight());
+  EXPECT_EQ(FloatSize(), r.GetRadii().BottomLeft());
+  EXPECT_EQ(FloatSize(), r.GetRadii().BottomRight());
+  EXPECT_TRUE(r.GetRadii().IsZero());
+  EXPECT_FALSE(r.IsRounded());
+  EXPECT_FALSE(r.IsEmpty());
 
-  EXPECT_EQ(FloatRect(1, 2, 0, 0), r.topLeftCorner());
-  EXPECT_EQ(FloatRect(4, 2, 0, 0), r.topRightCorner());
-  EXPECT_EQ(FloatRect(4, 6, 0, 0), r.bottomRightCorner());
-  EXPECT_EQ(FloatRect(1, 6, 0, 0), r.bottomLeftCorner());
+  EXPECT_EQ(FloatRect(1, 2, 0, 0), r.TopLeftCorner());
+  EXPECT_EQ(FloatRect(4, 2, 0, 0), r.TopRightCorner());
+  EXPECT_EQ(FloatRect(4, 6, 0, 0), r.BottomRightCorner());
+  EXPECT_EQ(FloatRect(1, 6, 0, 0), r.BottomLeftCorner());
 
-  TEST_INTERCEPTS(r, 2, r.rect().x(), r.rect().maxX());
-  TEST_INTERCEPTS(r, 4, r.rect().x(), r.rect().maxX());
-  TEST_INTERCEPTS(r, 6, r.rect().x(), r.rect().maxX());
+  TEST_INTERCEPTS(r, 2, r.Rect().X(), r.Rect().MaxX());
+  TEST_INTERCEPTS(r, 4, r.Rect().X(), r.Rect().MaxX());
+  TEST_INTERCEPTS(r, 6, r.Rect().X(), r.Rect().MaxX());
 
-  float minXIntercept;
-  float maxXIntercept;
+  float min_x_intercept;
+  float max_x_intercept;
 
-  EXPECT_FALSE(r.xInterceptsAtY(1, minXIntercept, maxXIntercept));
-  EXPECT_FALSE(r.xInterceptsAtY(7, minXIntercept, maxXIntercept));
+  EXPECT_FALSE(r.XInterceptsAtY(1, min_x_intercept, max_x_intercept));
+  EXPECT_FALSE(r.XInterceptsAtY(7, min_x_intercept, max_x_intercept));
 
   // The FloatRoundedRect::expandRadii() function doesn't change radii
   // FloatSizes that are <= zero. Same as RoundedRect::expandRadii().
-  r.expandRadii(20);
-  r.shrinkRadii(10);
-  EXPECT_TRUE(r.getRadii().isZero());
+  r.ExpandRadii(20);
+  r.ShrinkRadii(10);
+  EXPECT_TRUE(r.GetRadii().IsZero());
 }
 
 TEST(FloatRoundedRectTest, circle) {
-  FloatSize cornerRadii(50, 50);
-  FloatRoundedRect r(FloatRect(0, 0, 100, 100), cornerRadii, cornerRadii,
-                     cornerRadii, cornerRadii);
+  FloatSize corner_radii(50, 50);
+  FloatRoundedRect r(FloatRect(0, 0, 100, 100), corner_radii, corner_radii,
+                     corner_radii, corner_radii);
 
-  EXPECT_EQ(FloatRect(0, 0, 100, 100), r.rect());
-  EXPECT_EQ(cornerRadii, r.getRadii().topLeft());
-  EXPECT_EQ(cornerRadii, r.getRadii().topRight());
-  EXPECT_EQ(cornerRadii, r.getRadii().bottomLeft());
-  EXPECT_EQ(cornerRadii, r.getRadii().bottomRight());
-  EXPECT_FALSE(r.getRadii().isZero());
-  EXPECT_TRUE(r.isRounded());
-  EXPECT_FALSE(r.isEmpty());
+  EXPECT_EQ(FloatRect(0, 0, 100, 100), r.Rect());
+  EXPECT_EQ(corner_radii, r.GetRadii().TopLeft());
+  EXPECT_EQ(corner_radii, r.GetRadii().TopRight());
+  EXPECT_EQ(corner_radii, r.GetRadii().BottomLeft());
+  EXPECT_EQ(corner_radii, r.GetRadii().BottomRight());
+  EXPECT_FALSE(r.GetRadii().IsZero());
+  EXPECT_TRUE(r.IsRounded());
+  EXPECT_FALSE(r.IsEmpty());
 
-  EXPECT_EQ(FloatRect(0, 0, 50, 50), r.topLeftCorner());
-  EXPECT_EQ(FloatRect(50, 0, 50, 50), r.topRightCorner());
-  EXPECT_EQ(FloatRect(0, 50, 50, 50), r.bottomLeftCorner());
-  EXPECT_EQ(FloatRect(50, 50, 50, 50), r.bottomRightCorner());
+  EXPECT_EQ(FloatRect(0, 0, 50, 50), r.TopLeftCorner());
+  EXPECT_EQ(FloatRect(50, 0, 50, 50), r.TopRightCorner());
+  EXPECT_EQ(FloatRect(0, 50, 50, 50), r.BottomLeftCorner());
+  EXPECT_EQ(FloatRect(50, 50, 50, 50), r.BottomRightCorner());
 
   TEST_INTERCEPTS(r, 0, 50, 50);
   TEST_INTERCEPTS(r, 25, 6.69873, 93.3013);
@@ -104,11 +104,11 @@ TEST(FloatRoundedRectTest, circle) {
   TEST_INTERCEPTS(r, 75, 6.69873, 93.3013);
   TEST_INTERCEPTS(r, 100, 50, 50);
 
-  float minXIntercept;
-  float maxXIntercept;
+  float min_x_intercept;
+  float max_x_intercept;
 
-  EXPECT_FALSE(r.xInterceptsAtY(-1, minXIntercept, maxXIntercept));
-  EXPECT_FALSE(r.xInterceptsAtY(101, minXIntercept, maxXIntercept));
+  EXPECT_FALSE(r.XInterceptsAtY(-1, min_x_intercept, max_x_intercept));
+  EXPECT_FALSE(r.XInterceptsAtY(101, min_x_intercept, max_x_intercept));
 }
 
 /*
@@ -126,24 +126,24 @@ TEST(FloatRoundedRectTest, circle) {
  *       (25, 15)  x=25      x=80  (20, 30)
  */
 TEST(FloatRoundedRectTest, ellipticalCorners) {
-  FloatSize cornerSize(10, 20);
-  FloatRoundedRect::Radii cornerRadii;
-  cornerRadii.setTopLeft(FloatSize(10, 15));
-  cornerRadii.setTopRight(FloatSize(10, 20));
-  cornerRadii.setBottomLeft(FloatSize(25, 15));
-  cornerRadii.setBottomRight(FloatSize(20, 30));
+  FloatSize corner_size(10, 20);
+  FloatRoundedRect::Radii corner_radii;
+  corner_radii.SetTopLeft(FloatSize(10, 15));
+  corner_radii.SetTopRight(FloatSize(10, 20));
+  corner_radii.SetBottomLeft(FloatSize(25, 15));
+  corner_radii.SetBottomRight(FloatSize(20, 30));
 
-  FloatRoundedRect r(FloatRect(0, 0, 100, 100), cornerRadii);
+  FloatRoundedRect r(FloatRect(0, 0, 100, 100), corner_radii);
 
-  EXPECT_EQ(r.getRadii(),
+  EXPECT_EQ(r.GetRadii(),
             FloatRoundedRect::Radii(FloatSize(10, 15), FloatSize(10, 20),
                                     FloatSize(25, 15), FloatSize(20, 30)));
-  EXPECT_EQ(r, FloatRoundedRect(FloatRect(0, 0, 100, 100), cornerRadii));
+  EXPECT_EQ(r, FloatRoundedRect(FloatRect(0, 0, 100, 100), corner_radii));
 
-  EXPECT_EQ(FloatRect(0, 0, 10, 15), r.topLeftCorner());
-  EXPECT_EQ(FloatRect(90, 0, 10, 20), r.topRightCorner());
-  EXPECT_EQ(FloatRect(0, 85, 25, 15), r.bottomLeftCorner());
-  EXPECT_EQ(FloatRect(80, 70, 20, 30), r.bottomRightCorner());
+  EXPECT_EQ(FloatRect(0, 0, 10, 15), r.TopLeftCorner());
+  EXPECT_EQ(FloatRect(90, 0, 10, 20), r.TopRightCorner());
+  EXPECT_EQ(FloatRect(0, 85, 25, 15), r.BottomLeftCorner());
+  EXPECT_EQ(FloatRect(80, 70, 20, 30), r.BottomRightCorner());
 
   TEST_INTERCEPTS(r, 5, 2.5464401, 96.61438);
   TEST_INTERCEPTS(r, 15, 0, 99.682457);
@@ -153,39 +153,40 @@ TEST(FloatRoundedRectTest, ellipticalCorners) {
   TEST_INTERCEPTS(r, 85, 0, 97.320511);
   TEST_INTERCEPTS(r, 95, 6.3661003, 91.05542);
 
-  float minXIntercept;
-  float maxXIntercept;
+  float min_x_intercept;
+  float max_x_intercept;
 
-  EXPECT_FALSE(r.xInterceptsAtY(-1, minXIntercept, maxXIntercept));
-  EXPECT_FALSE(r.xInterceptsAtY(101, minXIntercept, maxXIntercept));
+  EXPECT_FALSE(r.XInterceptsAtY(-1, min_x_intercept, max_x_intercept));
+  EXPECT_FALSE(r.XInterceptsAtY(101, min_x_intercept, max_x_intercept));
 }
 
 TEST(FloatRoundedRectTest, radiusCenterRect) {
-  FloatSize cornerRect(10, 10);
-  FloatRoundedRect r0(
-      FloatRect(0, 0, 100, 50),
-      FloatRoundedRect::Radii(cornerRect, cornerRect, cornerRect, cornerRect));
-  EXPECT_EQ(FloatRect(10, 10, 80, 30), r0.radiusCenterRect());
+  FloatSize corner_rect(10, 10);
+  FloatRoundedRect r0(FloatRect(0, 0, 100, 50),
+                      FloatRoundedRect::Radii(corner_rect, corner_rect,
+                                              corner_rect, corner_rect));
+  EXPECT_EQ(FloatRect(10, 10, 80, 30), r0.RadiusCenterRect());
 
   // "Degenerate" cases all return an empty rectangle.
-  FloatRect collapsedRect(0, 0, 100, 50);
-  collapsedRect.expand(FloatRectOutsets(-200, -200, -200, -200));
-  FloatRoundedRect r1(collapsedRect);
-  EXPECT_TRUE(r1.radiusCenterRect().isEmpty());
+  FloatRect collapsed_rect(0, 0, 100, 50);
+  collapsed_rect.Expand(FloatRectOutsets(-200, -200, -200, -200));
+  FloatRoundedRect r1(collapsed_rect);
+  EXPECT_TRUE(r1.RadiusCenterRect().IsEmpty());
 
-  FloatRoundedRect::Radii radiiWithTooLargeCorner(
+  FloatRoundedRect::Radii radii_with_too_large_corner(
       FloatSize(55, 55), FloatSize(), FloatSize(), FloatSize());
-  FloatRoundedRect r2(FloatRect(0, 0, 100, 50), radiiWithTooLargeCorner);
-  EXPECT_TRUE(r2.radiusCenterRect().isEmpty());
+  FloatRoundedRect r2(FloatRect(0, 0, 100, 50), radii_with_too_large_corner);
+  EXPECT_TRUE(r2.RadiusCenterRect().IsEmpty());
 }
 
 TEST(FloatRoundedRectTest, ToString) {
-  FloatSize cornerRect(1, 2);
-  FloatRoundedRect roundedRect(
+  FloatSize corner_rect(1, 2);
+  FloatRoundedRect rounded_rect(
       FloatRect(3, 5, 7, 11),
-      FloatRoundedRect::Radii(cornerRect, cornerRect, cornerRect, cornerRect));
+      FloatRoundedRect::Radii(corner_rect, corner_rect, corner_rect,
+                              corner_rect));
   EXPECT_EQ("3,5 7x11 radii:(tl:1x2; tr:1x2; bl:1x2; br:1x2)",
-            roundedRect.toString());
+            rounded_rect.ToString());
 }
 
 }  // namespace blink

@@ -27,27 +27,27 @@ class WTF_EXPORT ArrayPiece {
   // Constructs a "null" ArrayPiece object.
   ArrayPiece();
 
-  ArrayPiece(void* data, unsigned byteLength);
+  ArrayPiece(void* data, unsigned byte_length);
 
   // Constructs an ArrayPiece from the given ArrayBuffer. If the input is a
   // nullptr, then the constructed instance will be isNull().
   ArrayPiece(ArrayBuffer*);
   ArrayPiece(ArrayBufferView*);
 
-  bool isNull() const;
-  void* data() const;
-  unsigned char* bytes() const;
-  unsigned byteLength() const;
+  bool IsNull() const;
+  void* Data() const;
+  unsigned char* Bytes() const;
+  unsigned ByteLength() const;
 
  protected:
-  void initWithData(void* data, unsigned byteLength);
+  void InitWithData(void* data, unsigned byte_length);
 
  private:
-  void initNull();
+  void InitNull();
 
-  void* m_data;
-  unsigned m_byteLength;
-  bool m_isNull;
+  void* data_;
+  unsigned byte_length_;
+  bool is_null_;
 };
 
 }  // namespace WTF

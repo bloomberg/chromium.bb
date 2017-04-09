@@ -19,24 +19,24 @@ namespace blink {
 class ContextMenuControllerTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
   }
 
-  Document& document() const { return m_pageHolder->document(); }
+  Document& GetDocument() const { return page_holder_->GetDocument(); }
 
-  void setBodyInnerHTML(const String& htmlContent) {
-    document().body()->setInnerHTML(htmlContent);
-    document().view()->updateAllLifecyclePhases();
+  void SetBodyInnerHTML(const String& html_content) {
+    GetDocument().body()->setInnerHTML(html_content);
+    GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(ContextMenuControllerTest, TestCustomMenu) {
-  document().settings()->setScriptEnabled(true);
+  GetDocument().GetSettings()->SetScriptEnabled(true);
   // Load the the test page.
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<button id=\"button_id\" contextmenu=\"menu_id\" style=\"height: 100px; "
       "width: 100px;\">"
       "<menu type=\"context\" id=\"menu_id\">"
@@ -76,18 +76,19 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu) {
       "</menu>"
       "</button>");
 
-  MouseEventInit mouseInitializer;
-  mouseInitializer.setView(document().domWindow());
-  mouseInitializer.setScreenX(50);
-  mouseInitializer.setScreenY(50);
-  mouseInitializer.setButton(1);
+  MouseEventInit mouse_initializer;
+  mouse_initializer.setView(GetDocument().domWindow());
+  mouse_initializer.setScreenX(50);
+  mouse_initializer.setScreenY(50);
+  mouse_initializer.setButton(1);
 
   // Create right button click event and pass it to context menu controller.
   Event* event =
-      MouseEvent::create(nullptr, EventTypeNames::click, mouseInitializer);
-  document().getElementById("button_id")->focus();
-  event->setTarget(document().getElementById("button_id"));
-  document().page()->contextMenuController().handleContextMenuEvent(event);
+      MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
+  GetDocument().GetElementById("button_id")->focus();
+  event->SetTarget(GetDocument().GetElementById("button_id"));
+  GetDocument().GetPage()->GetContextMenuController().HandleContextMenuEvent(
+      event);
 
   // Item 1
   // Item 2
@@ -99,31 +100,39 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu) {
   // Item 8
   // *Item 9
   // Item 10
-  const Vector<ContextMenuItem>& items =
-      document().page()->contextMenuController().contextMenu()->items();
+  const Vector<ContextMenuItem>& items = GetDocument()
+                                             .GetPage()
+                                             ->GetContextMenuController()
+                                             .GetContextMenu()
+                                             ->Items();
   EXPECT_EQ(8u, items.size());
-  EXPECT_EQ(ActionType, items[0].type());
-  EXPECT_STREQ("Item1", items[0].title().utf8().data());
-  document().page()->contextMenuController().contextMenuItemSelected(&items[0]);
-  EXPECT_STREQ("Title 1", document().title().utf8().data());
-  EXPECT_EQ(SubmenuType, items[3].type());
-  EXPECT_STREQ("Submenu", items[3].title().utf8().data());
-  const Vector<ContextMenuItem>& subMenuItems = items[3].subMenuItems();
-  EXPECT_EQ(3u, subMenuItems.size());
-  EXPECT_STREQ("Item6", subMenuItems[2].title().utf8().data());
-  document().page()->contextMenuController().contextMenuItemSelected(
-      &subMenuItems[2]);
-  EXPECT_STREQ("Title 6", document().title().utf8().data());
-  document().page()->contextMenuController().contextMenuItemSelected(&items[4]);
-  EXPECT_STREQ("Title 7 checked", document().title().utf8().data());
-  document().page()->contextMenuController().contextMenuItemSelected(&items[4]);
-  EXPECT_STREQ("Title 7 not checked", document().title().utf8().data());
-  document().page()->contextMenuController().contextMenuItemSelected(&items[5]);
+  EXPECT_EQ(kActionType, items[0].GetType());
+  EXPECT_STREQ("Item1", items[0].Title().Utf8().Data());
+  GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
+      &items[0]);
+  EXPECT_STREQ("Title 1", GetDocument().title().Utf8().Data());
+  EXPECT_EQ(kSubmenuType, items[3].GetType());
+  EXPECT_STREQ("Submenu", items[3].Title().Utf8().Data());
+  const Vector<ContextMenuItem>& sub_menu_items = items[3].SubMenuItems();
+  EXPECT_EQ(3u, sub_menu_items.size());
+  EXPECT_STREQ("Item6", sub_menu_items[2].Title().Utf8().Data());
+  GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
+      &sub_menu_items[2]);
+  EXPECT_STREQ("Title 6", GetDocument().title().Utf8().Data());
+  GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
+      &items[4]);
+  EXPECT_STREQ("Title 7 checked", GetDocument().title().Utf8().Data());
+  GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
+      &items[4]);
+  EXPECT_STREQ("Title 7 not checked", GetDocument().title().Utf8().Data());
+  GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
+      &items[5]);
   EXPECT_STREQ("Title 8 not checked and Title 9 checked",
-               document().title().utf8().data());
-  document().page()->contextMenuController().contextMenuItemSelected(&items[7]);
+               GetDocument().title().Utf8().Data());
+  GetDocument().GetPage()->GetContextMenuController().ContextMenuItemSelected(
+      &items[7]);
   EXPECT_STREQ("Title 10 not checked and Title 8 checked",
-               document().title().utf8().data());
+               GetDocument().title().Utf8().Data());
 }
 
 }  // namespace blink

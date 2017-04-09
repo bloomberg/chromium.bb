@@ -40,174 +40,180 @@ class ContainerNode;
 
 class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
  public:
-  enum ItemType { ItemForContextElement, ItemForDocumentFragmentNode };
+  enum ItemType { kItemForContextElement, kItemForDocumentFragmentNode };
 
   // Used by document fragment node and context element.
-  static HTMLStackItem* create(ContainerNode* node, ItemType type) {
+  static HTMLStackItem* Create(ContainerNode* node, ItemType type) {
     return new HTMLStackItem(node, type);
   }
 
   // Used by HTMLElementStack and HTMLFormattingElementList.
-  static HTMLStackItem* create(
+  static HTMLStackItem* Create(
       ContainerNode* node,
       AtomicHTMLToken* token,
-      const AtomicString& namespaceURI = HTMLNames::xhtmlNamespaceURI) {
-    return new HTMLStackItem(node, token, namespaceURI);
+      const AtomicString& namespace_uri = HTMLNames::xhtmlNamespaceURI) {
+    return new HTMLStackItem(node, token, namespace_uri);
   }
 
-  Element* element() const { return toElement(m_node.get()); }
-  ContainerNode* node() const { return m_node.get(); }
+  Element* GetElement() const { return ToElement(node_.Get()); }
+  ContainerNode* GetNode() const { return node_.Get(); }
 
-  bool isDocumentFragmentNode() const { return m_isDocumentFragmentNode; }
-  bool isElementNode() const { return !m_isDocumentFragmentNode; }
+  bool IsDocumentFragmentNode() const { return is_document_fragment_node_; }
+  bool IsElementNode() const { return !is_document_fragment_node_; }
 
-  const AtomicString& namespaceURI() const { return m_namespaceURI; }
-  const AtomicString& localName() const { return m_tokenLocalName; }
+  const AtomicString& NamespaceURI() const { return namespace_uri_; }
+  const AtomicString& LocalName() const { return token_local_name_; }
 
-  const Vector<Attribute>& attributes() const {
-    DCHECK(m_tokenLocalName);
-    return m_tokenAttributes;
+  const Vector<Attribute>& Attributes() const {
+    DCHECK(token_local_name_);
+    return token_attributes_;
   }
-  Attribute* getAttributeItem(const QualifiedName& attributeName) {
-    DCHECK(m_tokenLocalName);
-    return findAttributeInVector(m_tokenAttributes, attributeName);
-  }
-
-  bool hasLocalName(const AtomicString& name) const {
-    return m_tokenLocalName == name;
-  }
-  bool hasTagName(const QualifiedName& name) const {
-    return m_tokenLocalName == name.localName() &&
-           m_namespaceURI == name.namespaceURI();
+  Attribute* GetAttributeItem(const QualifiedName& attribute_name) {
+    DCHECK(token_local_name_);
+    return FindAttributeInVector(token_attributes_, attribute_name);
   }
 
-  bool matchesHTMLTag(const AtomicString& name) const {
-    return m_tokenLocalName == name &&
-           m_namespaceURI == HTMLNames::xhtmlNamespaceURI;
+  bool HasLocalName(const AtomicString& name) const {
+    return token_local_name_ == name;
   }
-  bool matchesHTMLTag(const QualifiedName& name) const {
-    return m_tokenLocalName == name &&
-           m_namespaceURI == HTMLNames::xhtmlNamespaceURI;
-  }
-
-  bool causesFosterParenting() {
-    return hasTagName(HTMLNames::tableTag) || hasTagName(HTMLNames::tbodyTag) ||
-           hasTagName(HTMLNames::tfootTag) || hasTagName(HTMLNames::theadTag) ||
-           hasTagName(HTMLNames::trTag);
+  bool HasTagName(const QualifiedName& name) const {
+    return token_local_name_ == name.LocalName() &&
+           namespace_uri_ == name.NamespaceURI();
   }
 
-  bool isInHTMLNamespace() const {
+  bool MatchesHTMLTag(const AtomicString& name) const {
+    return token_local_name_ == name &&
+           namespace_uri_ == HTMLNames::xhtmlNamespaceURI;
+  }
+  bool MatchesHTMLTag(const QualifiedName& name) const {
+    return token_local_name_ == name &&
+           namespace_uri_ == HTMLNames::xhtmlNamespaceURI;
+  }
+
+  bool CausesFosterParenting() {
+    return HasTagName(HTMLNames::tableTag) || HasTagName(HTMLNames::tbodyTag) ||
+           HasTagName(HTMLNames::tfootTag) || HasTagName(HTMLNames::theadTag) ||
+           HasTagName(HTMLNames::trTag);
+  }
+
+  bool IsInHTMLNamespace() const {
     // A DocumentFragment takes the place of the document element when parsing
     // fragments and should be considered in the HTML namespace.
-    return namespaceURI() == HTMLNames::xhtmlNamespaceURI ||
-           isDocumentFragmentNode();  // FIXME: Does this also apply to
+    return NamespaceURI() == HTMLNames::xhtmlNamespaceURI ||
+           IsDocumentFragmentNode();  // FIXME: Does this also apply to
                                       // ShadowRoot?
   }
 
-  bool isNumberedHeaderElement() const {
-    return hasTagName(HTMLNames::h1Tag) || hasTagName(HTMLNames::h2Tag) ||
-           hasTagName(HTMLNames::h3Tag) || hasTagName(HTMLNames::h4Tag) ||
-           hasTagName(HTMLNames::h5Tag) || hasTagName(HTMLNames::h6Tag);
+  bool IsNumberedHeaderElement() const {
+    return HasTagName(HTMLNames::h1Tag) || HasTagName(HTMLNames::h2Tag) ||
+           HasTagName(HTMLNames::h3Tag) || HasTagName(HTMLNames::h4Tag) ||
+           HasTagName(HTMLNames::h5Tag) || HasTagName(HTMLNames::h6Tag);
   }
 
-  bool isTableBodyContextElement() const {
-    return hasTagName(HTMLNames::tbodyTag) || hasTagName(HTMLNames::tfootTag) ||
-           hasTagName(HTMLNames::theadTag);
+  bool IsTableBodyContextElement() const {
+    return HasTagName(HTMLNames::tbodyTag) || HasTagName(HTMLNames::tfootTag) ||
+           HasTagName(HTMLNames::theadTag);
   }
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#special
-  bool isSpecialNode() const {
-    if (hasTagName(MathMLNames::miTag) || hasTagName(MathMLNames::moTag) ||
-        hasTagName(MathMLNames::mnTag) || hasTagName(MathMLNames::msTag) ||
-        hasTagName(MathMLNames::mtextTag) ||
-        hasTagName(MathMLNames::annotation_xmlTag) ||
-        hasTagName(SVGNames::foreignObjectTag) ||
-        hasTagName(SVGNames::descTag) || hasTagName(SVGNames::titleTag))
+  bool IsSpecialNode() const {
+    if (HasTagName(MathMLNames::miTag) || HasTagName(MathMLNames::moTag) ||
+        HasTagName(MathMLNames::mnTag) || HasTagName(MathMLNames::msTag) ||
+        HasTagName(MathMLNames::mtextTag) ||
+        HasTagName(MathMLNames::annotation_xmlTag) ||
+        HasTagName(SVGNames::foreignObjectTag) ||
+        HasTagName(SVGNames::descTag) || HasTagName(SVGNames::titleTag))
       return true;
-    if (isDocumentFragmentNode())
+    if (IsDocumentFragmentNode())
       return true;
-    if (!isInHTMLNamespace())
+    if (!IsInHTMLNamespace())
       return false;
-    const AtomicString& tagName = localName();
-    return tagName == HTMLNames::addressTag || tagName == HTMLNames::areaTag ||
-           tagName == HTMLNames::appletTag ||
-           tagName == HTMLNames::articleTag || tagName == HTMLNames::asideTag ||
-           tagName == HTMLNames::baseTag || tagName == HTMLNames::basefontTag ||
-           tagName == HTMLNames::bgsoundTag ||
-           tagName == HTMLNames::blockquoteTag ||
-           tagName == HTMLNames::bodyTag || tagName == HTMLNames::brTag ||
-           tagName == HTMLNames::buttonTag ||
-           tagName == HTMLNames::captionTag ||
-           tagName == HTMLNames::centerTag || tagName == HTMLNames::colTag ||
-           tagName == HTMLNames::colgroupTag ||
-           tagName == HTMLNames::commandTag || tagName == HTMLNames::ddTag ||
-           tagName == HTMLNames::detailsTag || tagName == HTMLNames::dirTag ||
-           tagName == HTMLNames::divTag || tagName == HTMLNames::dlTag ||
-           tagName == HTMLNames::dtTag || tagName == HTMLNames::embedTag ||
-           tagName == HTMLNames::fieldsetTag ||
-           tagName == HTMLNames::figcaptionTag ||
-           tagName == HTMLNames::figureTag || tagName == HTMLNames::footerTag ||
-           tagName == HTMLNames::formTag || tagName == HTMLNames::frameTag ||
-           tagName == HTMLNames::framesetTag || isNumberedHeaderElement() ||
-           tagName == HTMLNames::headTag || tagName == HTMLNames::headerTag ||
-           tagName == HTMLNames::hgroupTag || tagName == HTMLNames::hrTag ||
-           tagName == HTMLNames::htmlTag || tagName == HTMLNames::iframeTag ||
-           tagName == HTMLNames::imgTag || tagName == HTMLNames::inputTag ||
-           tagName == HTMLNames::liTag || tagName == HTMLNames::linkTag ||
-           tagName == HTMLNames::listingTag || tagName == HTMLNames::mainTag ||
-           tagName == HTMLNames::marqueeTag || tagName == HTMLNames::menuTag ||
+    const AtomicString& tag_name = LocalName();
+    return tag_name == HTMLNames::addressTag ||
+           tag_name == HTMLNames::areaTag || tag_name == HTMLNames::appletTag ||
+           tag_name == HTMLNames::articleTag ||
+           tag_name == HTMLNames::asideTag || tag_name == HTMLNames::baseTag ||
+           tag_name == HTMLNames::basefontTag ||
+           tag_name == HTMLNames::bgsoundTag ||
+           tag_name == HTMLNames::blockquoteTag ||
+           tag_name == HTMLNames::bodyTag || tag_name == HTMLNames::brTag ||
+           tag_name == HTMLNames::buttonTag ||
+           tag_name == HTMLNames::captionTag ||
+           tag_name == HTMLNames::centerTag || tag_name == HTMLNames::colTag ||
+           tag_name == HTMLNames::colgroupTag ||
+           tag_name == HTMLNames::commandTag || tag_name == HTMLNames::ddTag ||
+           tag_name == HTMLNames::detailsTag || tag_name == HTMLNames::dirTag ||
+           tag_name == HTMLNames::divTag || tag_name == HTMLNames::dlTag ||
+           tag_name == HTMLNames::dtTag || tag_name == HTMLNames::embedTag ||
+           tag_name == HTMLNames::fieldsetTag ||
+           tag_name == HTMLNames::figcaptionTag ||
+           tag_name == HTMLNames::figureTag ||
+           tag_name == HTMLNames::footerTag || tag_name == HTMLNames::formTag ||
+           tag_name == HTMLNames::frameTag ||
+           tag_name == HTMLNames::framesetTag || IsNumberedHeaderElement() ||
+           tag_name == HTMLNames::headTag || tag_name == HTMLNames::headerTag ||
+           tag_name == HTMLNames::hgroupTag || tag_name == HTMLNames::hrTag ||
+           tag_name == HTMLNames::htmlTag || tag_name == HTMLNames::iframeTag ||
+           tag_name == HTMLNames::imgTag || tag_name == HTMLNames::inputTag ||
+           tag_name == HTMLNames::liTag || tag_name == HTMLNames::linkTag ||
+           tag_name == HTMLNames::listingTag ||
+           tag_name == HTMLNames::mainTag ||
+           tag_name == HTMLNames::marqueeTag ||
+           tag_name == HTMLNames::menuTag ||
            (RuntimeEnabledFeatures::contextMenuEnabled() &&
-            tagName == HTMLNames::menuitemTag) ||
-           tagName == HTMLNames::metaTag || tagName == HTMLNames::navTag ||
-           tagName == HTMLNames::noembedTag ||
-           tagName == HTMLNames::noframesTag ||
-           tagName == HTMLNames::noscriptTag ||
-           tagName == HTMLNames::objectTag || tagName == HTMLNames::olTag ||
-           tagName == HTMLNames::pTag || tagName == HTMLNames::paramTag ||
-           tagName == HTMLNames::plaintextTag || tagName == HTMLNames::preTag ||
-           tagName == HTMLNames::scriptTag ||
-           tagName == HTMLNames::sectionTag ||
-           tagName == HTMLNames::selectTag || tagName == HTMLNames::styleTag ||
-           tagName == HTMLNames::summaryTag || tagName == HTMLNames::tableTag ||
-           isTableBodyContextElement() || tagName == HTMLNames::tdTag ||
-           tagName == HTMLNames::templateTag ||
-           tagName == HTMLNames::textareaTag || tagName == HTMLNames::thTag ||
-           tagName == HTMLNames::titleTag || tagName == HTMLNames::trTag ||
-           tagName == HTMLNames::ulTag || tagName == HTMLNames::wbrTag ||
-           tagName == HTMLNames::xmpTag;
+            tag_name == HTMLNames::menuitemTag) ||
+           tag_name == HTMLNames::metaTag || tag_name == HTMLNames::navTag ||
+           tag_name == HTMLNames::noembedTag ||
+           tag_name == HTMLNames::noframesTag ||
+           tag_name == HTMLNames::noscriptTag ||
+           tag_name == HTMLNames::objectTag || tag_name == HTMLNames::olTag ||
+           tag_name == HTMLNames::pTag || tag_name == HTMLNames::paramTag ||
+           tag_name == HTMLNames::plaintextTag ||
+           tag_name == HTMLNames::preTag || tag_name == HTMLNames::scriptTag ||
+           tag_name == HTMLNames::sectionTag ||
+           tag_name == HTMLNames::selectTag ||
+           tag_name == HTMLNames::styleTag ||
+           tag_name == HTMLNames::summaryTag ||
+           tag_name == HTMLNames::tableTag || IsTableBodyContextElement() ||
+           tag_name == HTMLNames::tdTag || tag_name == HTMLNames::templateTag ||
+           tag_name == HTMLNames::textareaTag || tag_name == HTMLNames::thTag ||
+           tag_name == HTMLNames::titleTag || tag_name == HTMLNames::trTag ||
+           tag_name == HTMLNames::ulTag || tag_name == HTMLNames::wbrTag ||
+           tag_name == HTMLNames::xmpTag;
   }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(node_); }
 
  private:
-  HTMLStackItem(ContainerNode* node, ItemType type) : m_node(node) {
+  HTMLStackItem(ContainerNode* node, ItemType type) : node_(node) {
     switch (type) {
-      case ItemForDocumentFragmentNode:
-        m_isDocumentFragmentNode = true;
+      case kItemForDocumentFragmentNode:
+        is_document_fragment_node_ = true;
         break;
-      case ItemForContextElement:
-        m_tokenLocalName = element()->localName();
-        m_namespaceURI = element()->namespaceURI();
-        m_isDocumentFragmentNode = false;
+      case kItemForContextElement:
+        token_local_name_ = GetElement()->localName();
+        namespace_uri_ = GetElement()->namespaceURI();
+        is_document_fragment_node_ = false;
         break;
     }
   }
 
-  HTMLStackItem(ContainerNode* node,
-                AtomicHTMLToken* token,
-                const AtomicString& namespaceURI = HTMLNames::xhtmlNamespaceURI)
-      : m_node(node),
-        m_tokenLocalName(token->name()),
-        m_tokenAttributes(token->attributes()),
-        m_namespaceURI(namespaceURI),
-        m_isDocumentFragmentNode(false) {}
+  HTMLStackItem(
+      ContainerNode* node,
+      AtomicHTMLToken* token,
+      const AtomicString& namespace_uri = HTMLNames::xhtmlNamespaceURI)
+      : node_(node),
+        token_local_name_(token->GetName()),
+        token_attributes_(token->Attributes()),
+        namespace_uri_(namespace_uri),
+        is_document_fragment_node_(false) {}
 
-  Member<ContainerNode> m_node;
+  Member<ContainerNode> node_;
 
-  AtomicString m_tokenLocalName;
-  Vector<Attribute> m_tokenAttributes;
-  AtomicString m_namespaceURI;
-  bool m_isDocumentFragmentNode;
+  AtomicString token_local_name_;
+  Vector<Attribute> token_attributes_;
+  AtomicString namespace_uri_;
+  bool is_document_fragment_node_;
 };
 
 }  // namespace blink

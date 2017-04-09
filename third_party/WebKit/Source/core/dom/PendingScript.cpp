@@ -38,141 +38,142 @@
 
 namespace blink {
 
-PendingScript* PendingScript::create(ScriptElementBase* element,
+PendingScript* PendingScript::Create(ScriptElementBase* element,
                                      ScriptResource* resource) {
   return new PendingScript(element, resource, TextPosition());
 }
 
-PendingScript* PendingScript::create(ScriptElementBase* element,
-                                     const TextPosition& startingPosition) {
-  return new PendingScript(element, nullptr, startingPosition);
+PendingScript* PendingScript::Create(ScriptElementBase* element,
+                                     const TextPosition& starting_position) {
+  return new PendingScript(element, nullptr, starting_position);
 }
 
-PendingScript* PendingScript::createForTesting(ScriptResource* resource) {
+PendingScript* PendingScript::CreateForTesting(ScriptResource* resource) {
   return new PendingScript(nullptr, resource, TextPosition(), true);
 }
 
 PendingScript::PendingScript(ScriptElementBase* element,
                              ScriptResource* resource,
-                             const TextPosition& startingPosition,
-                             bool isForTesting)
-    : m_watchingForLoad(false),
-      m_element(element),
-      m_startingPosition(startingPosition),
-      m_integrityFailure(false),
-      m_parserBlockingLoadStartTime(0),
-      m_client(nullptr),
-      m_isForTesting(isForTesting) {
-  checkState();
-  setResource(resource);
-  MemoryCoordinator::instance().registerClient(this);
+                             const TextPosition& starting_position,
+                             bool is_for_testing)
+    : watching_for_load_(false),
+      element_(element),
+      starting_position_(starting_position),
+      integrity_failure_(false),
+      parser_blocking_load_start_time_(0),
+      client_(nullptr),
+      is_for_testing_(is_for_testing) {
+  CheckState();
+  SetResource(resource);
+  MemoryCoordinator::Instance().RegisterClient(this);
 }
 
 PendingScript::~PendingScript() {}
 
-NOINLINE void PendingScript::checkState() const {
+NOINLINE void PendingScript::CheckState() const {
   // TODO(hiroshige): Turn these CHECK()s into DCHECK() before going to beta.
-  CHECK(m_isForTesting || m_element);
-  CHECK(resource() || !m_streamer);
-  CHECK(!m_streamer || m_streamer->resource() == resource());
+  CHECK(is_for_testing_ || element_);
+  CHECK(GetResource() || !streamer_);
+  CHECK(!streamer_ || streamer_->GetResource() == GetResource());
 }
 
-void PendingScript::dispose() {
-  stopWatchingForLoad();
-  DCHECK(!m_client);
-  DCHECK(!m_watchingForLoad);
+void PendingScript::Dispose() {
+  StopWatchingForLoad();
+  DCHECK(!client_);
+  DCHECK(!watching_for_load_);
 
-  MemoryCoordinator::instance().unregisterClient(this);
-  setResource(nullptr);
-  m_startingPosition = TextPosition::belowRangePosition();
-  m_integrityFailure = false;
-  m_parserBlockingLoadStartTime = 0;
-  if (m_streamer)
-    m_streamer->cancel();
-  m_streamer = nullptr;
-  m_element = nullptr;
+  MemoryCoordinator::Instance().UnregisterClient(this);
+  SetResource(nullptr);
+  starting_position_ = TextPosition::BelowRangePosition();
+  integrity_failure_ = false;
+  parser_blocking_load_start_time_ = 0;
+  if (streamer_)
+    streamer_->Cancel();
+  streamer_ = nullptr;
+  element_ = nullptr;
 }
 
-void PendingScript::watchForLoad(PendingScriptClient* client) {
-  checkState();
+void PendingScript::WatchForLoad(PendingScriptClient* client) {
+  CheckState();
 
-  DCHECK(!m_watchingForLoad);
+  DCHECK(!watching_for_load_);
   // addClient() will call streamingFinished() if the load is complete. Callers
   // who do not expect to be re-entered from this call should not call
   // watchForLoad for a PendingScript which isReady. We also need to set
   // m_watchingForLoad early, since addClient() can result in calling
   // notifyFinished and further stopWatchingForLoad().
-  m_watchingForLoad = true;
-  m_client = client;
-  if (isReady())
-    m_client->pendingScriptFinished(this);
+  watching_for_load_ = true;
+  client_ = client;
+  if (IsReady())
+    client_->PendingScriptFinished(this);
 }
 
-void PendingScript::stopWatchingForLoad() {
-  if (!m_watchingForLoad)
+void PendingScript::StopWatchingForLoad() {
+  if (!watching_for_load_)
     return;
-  checkState();
-  DCHECK(resource());
-  m_client = nullptr;
-  m_watchingForLoad = false;
+  CheckState();
+  DCHECK(GetResource());
+  client_ = nullptr;
+  watching_for_load_ = false;
 }
 
-ScriptElementBase* PendingScript::element() const {
+ScriptElementBase* PendingScript::GetElement() const {
   // As mentioned in the comment at |m_element| declaration,
   // |m_element|  must point to the corresponding ScriptLoader's
   // client.
-  CHECK(m_element);
-  return m_element.get();
+  CHECK(element_);
+  return element_.Get();
 }
 
-void PendingScript::streamingFinished() {
-  checkState();
-  DCHECK(resource());
-  if (m_client)
-    m_client->pendingScriptFinished(this);
+void PendingScript::StreamingFinished() {
+  CheckState();
+  DCHECK(GetResource());
+  if (client_)
+    client_->PendingScriptFinished(this);
 }
 
-void PendingScript::markParserBlockingLoadStartTime() {
-  DCHECK_EQ(m_parserBlockingLoadStartTime, 0.0);
-  m_parserBlockingLoadStartTime = monotonicallyIncreasingTime();
+void PendingScript::MarkParserBlockingLoadStartTime() {
+  DCHECK_EQ(parser_blocking_load_start_time_, 0.0);
+  parser_blocking_load_start_time_ = MonotonicallyIncreasingTime();
 }
 
 // Returns true if SRI check passed.
-static bool checkScriptResourceIntegrity(Resource* resource,
+static bool CheckScriptResourceIntegrity(Resource* resource,
                                          ScriptElementBase* element) {
-  DCHECK_EQ(resource->getType(), Resource::Script);
-  ScriptResource* scriptResource = toScriptResource(resource);
-  String integrityAttr = element->integrityAttributeValue();
+  DCHECK_EQ(resource->GetType(), Resource::kScript);
+  ScriptResource* script_resource = ToScriptResource(resource);
+  String integrity_attr = element->IntegrityAttributeValue();
 
   // It is possible to get back a script resource with integrity metadata
   // for a request with an empty integrity attribute. In that case, the
   // integrity check should be skipped, so this check ensures that the
   // integrity attribute isn't empty in addition to checking if the
   // resource has empty integrity metadata.
-  if (integrityAttr.isEmpty() || scriptResource->integrityMetadata().isEmpty())
+  if (integrity_attr.IsEmpty() ||
+      script_resource->IntegrityMetadata().IsEmpty())
     return true;
 
-  switch (scriptResource->integrityDisposition()) {
-    case ResourceIntegrityDisposition::Passed:
+  switch (script_resource->IntegrityDisposition()) {
+    case ResourceIntegrityDisposition::kPassed:
       return true;
 
-    case ResourceIntegrityDisposition::Failed:
+    case ResourceIntegrityDisposition::kFailed:
       // TODO(jww): This should probably also generate a console
       // message identical to the one produced by
       // CheckSubresourceIntegrity below. See https://crbug.com/585267.
       return false;
 
-    case ResourceIntegrityDisposition::NotChecked: {
-      if (!resource->resourceBuffer())
+    case ResourceIntegrityDisposition::kNotChecked: {
+      if (!resource->ResourceBuffer())
         return true;
 
       bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
-          scriptResource->integrityMetadata(), element->document(),
-          resource->resourceBuffer()->data(),
-          resource->resourceBuffer()->size(), resource->url(), *resource);
-      scriptResource->setIntegrityDisposition(
-          passed ? ResourceIntegrityDisposition::Passed
-                 : ResourceIntegrityDisposition::Failed);
+          script_resource->IntegrityMetadata(), element->GetDocument(),
+          resource->ResourceBuffer()->Data(),
+          resource->ResourceBuffer()->size(), resource->Url(), *resource);
+      script_resource->SetIntegrityDisposition(
+          passed ? ResourceIntegrityDisposition::kPassed
+                 : ResourceIntegrityDisposition::kFailed);
       return passed;
     }
   }
@@ -181,7 +182,7 @@ static bool checkScriptResourceIntegrity(Resource* resource,
   return true;
 }
 
-void PendingScript::notifyFinished(Resource* resource) {
+void PendingScript::NotifyFinished(Resource* resource) {
   // The following SRI checks need to be here because, unfortunately, fetches
   // are not done purely according to the Fetch spec. In particular,
   // different requests for the same resource do not have different
@@ -204,93 +205,93 @@ void PendingScript::notifyFinished(Resource* resource) {
   // objects (perhaps attached to identical Resource objects) per request.
   //
   // See https://crbug.com/500701 for more information.
-  checkState();
-  if (m_element) {
-    m_integrityFailure = !checkScriptResourceIntegrity(resource, m_element);
+  CheckState();
+  if (element_) {
+    integrity_failure_ = !CheckScriptResourceIntegrity(resource, element_);
   }
 
   // If script streaming is in use, the client will be notified in
   // streamingFinished.
-  if (m_streamer)
-    m_streamer->notifyFinished(resource);
-  else if (m_client)
-    m_client->pendingScriptFinished(this);
+  if (streamer_)
+    streamer_->NotifyFinished(resource);
+  else if (client_)
+    client_->PendingScriptFinished(this);
 }
 
-void PendingScript::notifyAppendData(ScriptResource* resource) {
-  if (m_streamer)
-    m_streamer->notifyAppendData(resource);
+void PendingScript::NotifyAppendData(ScriptResource* resource) {
+  if (streamer_)
+    streamer_->NotifyAppendData(resource);
 }
 
 DEFINE_TRACE(PendingScript) {
-  visitor->trace(m_element);
-  visitor->trace(m_streamer);
-  visitor->trace(m_client);
-  ResourceOwner<ScriptResource>::trace(visitor);
-  MemoryCoordinatorClient::trace(visitor);
+  visitor->Trace(element_);
+  visitor->Trace(streamer_);
+  visitor->Trace(client_);
+  ResourceOwner<ScriptResource>::Trace(visitor);
+  MemoryCoordinatorClient::Trace(visitor);
 }
 
-ScriptSourceCode PendingScript::getSource(const KURL& documentURL,
-                                          bool& errorOccurred) const {
-  checkState();
+ScriptSourceCode PendingScript::GetSource(const KURL& document_url,
+                                          bool& error_occurred) const {
+  CheckState();
 
-  errorOccurred = this->errorOccurred();
-  if (resource()) {
-    DCHECK(resource()->isLoaded());
-    if (m_streamer && !m_streamer->streamingSuppressed())
-      return ScriptSourceCode(m_streamer, resource());
-    return ScriptSourceCode(resource());
+  error_occurred = this->ErrorOccurred();
+  if (GetResource()) {
+    DCHECK(GetResource()->IsLoaded());
+    if (streamer_ && !streamer_->StreamingSuppressed())
+      return ScriptSourceCode(streamer_, GetResource());
+    return ScriptSourceCode(GetResource());
   }
 
-  return ScriptSourceCode(m_element->textContent(), documentURL,
-                          startingPosition());
+  return ScriptSourceCode(element_->TextContent(), document_url,
+                          StartingPosition());
 }
 
-void PendingScript::setStreamer(ScriptStreamer* streamer) {
-  DCHECK(!m_streamer);
-  DCHECK(!m_watchingForLoad);
-  m_streamer = streamer;
-  checkState();
+void PendingScript::SetStreamer(ScriptStreamer* streamer) {
+  DCHECK(!streamer_);
+  DCHECK(!watching_for_load_);
+  streamer_ = streamer;
+  CheckState();
 }
 
-bool PendingScript::isReady() const {
-  checkState();
-  if (resource()) {
-    return resource()->isLoaded() && (!m_streamer || m_streamer->isFinished());
+bool PendingScript::IsReady() const {
+  CheckState();
+  if (GetResource()) {
+    return GetResource()->IsLoaded() && (!streamer_ || streamer_->IsFinished());
   }
 
   return true;
 }
 
-bool PendingScript::errorOccurred() const {
-  checkState();
-  if (resource())
-    return resource()->errorOccurred() || m_integrityFailure;
+bool PendingScript::ErrorOccurred() const {
+  CheckState();
+  if (GetResource())
+    return GetResource()->ErrorOccurred() || integrity_failure_;
 
   return false;
 }
 
-void PendingScript::onPurgeMemory() {
-  checkState();
-  if (!m_streamer)
+void PendingScript::OnPurgeMemory() {
+  CheckState();
+  if (!streamer_)
     return;
-  m_streamer->cancel();
-  m_streamer = nullptr;
+  streamer_->Cancel();
+  streamer_ = nullptr;
 }
 
-void PendingScript::startStreamingIfPossible(
+void PendingScript::StartStreamingIfPossible(
     Document* document,
-    ScriptStreamer::Type streamerType) {
-  if (!document->frame())
+    ScriptStreamer::Type streamer_type) {
+  if (!document->GetFrame())
     return;
 
-  ScriptState* scriptState = toScriptStateForMainWorld(document->frame());
-  if (!scriptState)
+  ScriptState* script_state = ToScriptStateForMainWorld(document->GetFrame());
+  if (!script_state)
     return;
 
-  ScriptStreamer::startStreaming(
-      this, streamerType, document->frame()->settings(), scriptState,
-      TaskRunnerHelper::get(TaskType::Networking, document));
+  ScriptStreamer::StartStreaming(
+      this, streamer_type, document->GetFrame()->GetSettings(), script_state,
+      TaskRunnerHelper::Get(TaskType::kNetworking, document));
 }
 
 }  // namespace blink

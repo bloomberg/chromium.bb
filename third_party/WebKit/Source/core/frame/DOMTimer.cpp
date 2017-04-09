@@ -35,161 +35,161 @@
 
 namespace blink {
 
-static const int maxIntervalForUserGestureForwarding =
+static const int kMaxIntervalForUserGestureForwarding =
     1000;  // One second matches Gecko.
-static const int maxTimerNestingLevel = 5;
-static const double oneMillisecond = 0.001;
+static const int kMaxTimerNestingLevel = 5;
+static const double kOneMillisecond = 0.001;
 // Chromium uses a minimum timer interval of 4ms. We'd like to go
 // lower; however, there are poorly coded websites out there which do
 // create CPU-spinning loops.  Using 4ms prevents the CPU from
 // spinning too busily and provides a balance between CPU spinning and
 // the smallest possible interval timer.
-static const double minimumInterval = 0.004;
+static const double kMinimumInterval = 0.004;
 
-static inline bool shouldForwardUserGesture(int interval, int nestingLevel) {
-  return UserGestureIndicator::processingUserGestureThreadSafe() &&
-         interval <= maxIntervalForUserGestureForwarding &&
-         nestingLevel ==
+static inline bool ShouldForwardUserGesture(int interval, int nesting_level) {
+  return UserGestureIndicator::ProcessingUserGestureThreadSafe() &&
+         interval <= kMaxIntervalForUserGestureForwarding &&
+         nesting_level ==
              1;  // Gestures should not be forwarded to nested timers.
 }
 
-int DOMTimer::install(ExecutionContext* context,
+int DOMTimer::Install(ExecutionContext* context,
                       ScheduledAction* action,
                       int timeout,
-                      bool singleShot) {
-  int timeoutID = context->timers()->installNewTimeout(context, action, timeout,
-                                                       singleShot);
-  return timeoutID;
+                      bool single_shot) {
+  int timeout_id = context->Timers()->InstallNewTimeout(context, action,
+                                                        timeout, single_shot);
+  return timeout_id;
 }
 
-void DOMTimer::removeByID(ExecutionContext* context, int timeoutID) {
-  DOMTimer* timer = context->timers()->removeTimeoutByID(timeoutID);
+void DOMTimer::RemoveByID(ExecutionContext* context, int timeout_id) {
+  DOMTimer* timer = context->Timers()->RemoveTimeoutByID(timeout_id);
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerRemove",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorTimerRemoveEvent::data(context, timeoutID));
+                       InspectorTimerRemoveEvent::Data(context, timeout_id));
   // Eagerly unregister as ExecutionContext observer.
   if (timer)
-    timer->clearContext();
+    timer->ClearContext();
 }
 
 DOMTimer::DOMTimer(ExecutionContext* context,
                    ScheduledAction* action,
                    int interval,
-                   bool singleShot,
-                   int timeoutID)
-    : SuspendableTimer(context, TaskType::Timer),
-      m_timeoutID(timeoutID),
-      m_nestingLevel(context->timers()->timerNestingLevel() + 1),
-      m_action(action) {
-  ASSERT(timeoutID > 0);
-  if (shouldForwardUserGesture(interval, m_nestingLevel)) {
+                   bool single_shot,
+                   int timeout_id)
+    : SuspendableTimer(context, TaskType::kTimer),
+      timeout_id_(timeout_id),
+      nesting_level_(context->Timers()->TimerNestingLevel() + 1),
+      action_(action) {
+  ASSERT(timeout_id > 0);
+  if (ShouldForwardUserGesture(interval, nesting_level_)) {
     // Thread safe because shouldForwardUserGesture will only return true if
     // execution is on the the main thread.
-    m_userGestureToken = UserGestureIndicator::currentToken();
+    user_gesture_token_ = UserGestureIndicator::CurrentToken();
   }
 
-  double intervalMilliseconds =
-      std::max(oneMillisecond, interval * oneMillisecond);
-  if (intervalMilliseconds < minimumInterval &&
-      m_nestingLevel >= maxTimerNestingLevel)
-    intervalMilliseconds = minimumInterval;
-  if (singleShot)
-    startOneShot(intervalMilliseconds, BLINK_FROM_HERE);
+  double interval_milliseconds =
+      std::max(kOneMillisecond, interval * kOneMillisecond);
+  if (interval_milliseconds < kMinimumInterval &&
+      nesting_level_ >= kMaxTimerNestingLevel)
+    interval_milliseconds = kMinimumInterval;
+  if (single_shot)
+    StartOneShot(interval_milliseconds, BLINK_FROM_HERE);
   else
-    startRepeating(intervalMilliseconds, BLINK_FROM_HERE);
+    StartRepeating(interval_milliseconds, BLINK_FROM_HERE);
 
-  suspendIfNeeded();
+  SuspendIfNeeded();
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorTimerInstallEvent::data(context, timeoutID,
-                                                        interval, singleShot));
-  probe::asyncTaskScheduledBreakable(
-      context, singleShot ? "setTimeout" : "setInterval", this);
+                       InspectorTimerInstallEvent::Data(context, timeout_id,
+                                                        interval, single_shot));
+  probe::AsyncTaskScheduledBreakable(
+      context, single_shot ? "setTimeout" : "setInterval", this);
 }
 
 DOMTimer::~DOMTimer() {
-  if (m_action)
-    m_action->dispose();
+  if (action_)
+    action_->Dispose();
 }
 
-void DOMTimer::stop() {
-  probe::asyncTaskCanceledBreakable(
-      getExecutionContext(),
-      repeatInterval() ? "clearInterval" : "clearTimeout", this);
+void DOMTimer::Stop() {
+  probe::AsyncTaskCanceledBreakable(
+      GetExecutionContext(),
+      RepeatInterval() ? "clearInterval" : "clearTimeout", this);
 
-  m_userGestureToken = nullptr;
+  user_gesture_token_ = nullptr;
   // Need to release JS objects potentially protected by ScheduledAction
   // because they can form circular references back to the ExecutionContext
   // which will cause a memory leak.
-  if (m_action)
-    m_action->dispose();
-  m_action = nullptr;
-  SuspendableTimer::stop();
+  if (action_)
+    action_->Dispose();
+  action_ = nullptr;
+  SuspendableTimer::Stop();
 }
 
-void DOMTimer::contextDestroyed(ExecutionContext*) {
-  stop();
+void DOMTimer::ContextDestroyed(ExecutionContext*) {
+  Stop();
 }
 
-void DOMTimer::fired() {
-  ExecutionContext* context = getExecutionContext();
+void DOMTimer::Fired() {
+  ExecutionContext* context = GetExecutionContext();
   ASSERT(context);
-  context->timers()->setTimerNestingLevel(m_nestingLevel);
-  DCHECK(!context->isContextSuspended());
+  context->Timers()->SetTimerNestingLevel(nesting_level_);
+  DCHECK(!context->IsContextSuspended());
   // Only the first execution of a multi-shot timer should get an affirmative
   // user gesture indicator.
-  UserGestureIndicator gestureIndicator(std::move(m_userGestureToken));
+  UserGestureIndicator gesture_indicator(std::move(user_gesture_token_));
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
-               InspectorTimerFireEvent::data(context, m_timeoutID));
+               InspectorTimerFireEvent::Data(context, timeout_id_));
   probe::UserCallback probe(context,
-                            repeatInterval() ? "setInterval" : "setTimeout",
+                            RepeatInterval() ? "setInterval" : "setTimeout",
                             AtomicString(), true);
-  probe::AsyncTask asyncTask(context, this,
-                             repeatInterval() ? "fired" : nullptr);
+  probe::AsyncTask async_task(context, this,
+                              RepeatInterval() ? "fired" : nullptr);
 
   // Simple case for non-one-shot timers.
-  if (isActive()) {
-    if (repeatInterval() && repeatInterval() < minimumInterval) {
-      m_nestingLevel++;
-      if (m_nestingLevel >= maxTimerNestingLevel)
-        augmentRepeatInterval(minimumInterval - repeatInterval());
+  if (IsActive()) {
+    if (RepeatInterval() && RepeatInterval() < kMinimumInterval) {
+      nesting_level_++;
+      if (nesting_level_ >= kMaxTimerNestingLevel)
+        AugmentRepeatInterval(kMinimumInterval - RepeatInterval());
     }
 
     // No access to member variables after this point, it can delete the timer.
-    m_action->execute(context);
+    action_->Execute(context);
 
-    context->timers()->setTimerNestingLevel(0);
+    context->Timers()->SetTimerNestingLevel(0);
 
     return;
   }
 
   // Unregister the timer from ExecutionContext before executing the action
   // for one-shot timers.
-  ScheduledAction* action = m_action.release();
-  context->timers()->removeTimeoutByID(m_timeoutID);
+  ScheduledAction* action = action_.Release();
+  context->Timers()->RemoveTimeoutByID(timeout_id_);
 
-  action->execute(context);
+  action->Execute(context);
 
   // ExecutionContext might be already gone when we executed action->execute().
-  ExecutionContext* executionContext = getExecutionContext();
-  if (!executionContext)
+  ExecutionContext* execution_context = GetExecutionContext();
+  if (!execution_context)
     return;
 
-  executionContext->timers()->setTimerNestingLevel(0);
+  execution_context->Timers()->SetTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
-  clearContext();
+  ClearContext();
   // Eagerly clear out |action|'s resources.
-  action->dispose();
+  action->Dispose();
 }
 
-RefPtr<WebTaskRunner> DOMTimer::timerTaskRunner() const {
-  return getExecutionContext()->timers()->timerTaskRunner();
+RefPtr<WebTaskRunner> DOMTimer::TimerTaskRunner() const {
+  return GetExecutionContext()->Timers()->TimerTaskRunner();
 }
 
 DEFINE_TRACE(DOMTimer) {
-  visitor->trace(m_action);
-  SuspendableTimer::trace(visitor);
+  visitor->Trace(action_);
+  SuspendableTimer::Trace(visitor);
 }
 
 }  // namespace blink

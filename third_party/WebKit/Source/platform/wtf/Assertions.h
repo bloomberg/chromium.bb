@@ -80,33 +80,33 @@ class WTF_EXPORT ScopedLogger {
   // output and do not create a scope.
   PRINTF_FORMAT(3, 4) ScopedLogger(bool condition, const char* format, ...);
   ~ScopedLogger();
-  PRINTF_FORMAT(2, 3) void log(const char* format, ...);
+  PRINTF_FORMAT(2, 3) void Log(const char* format, ...);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AssertionsTest, ScopedLogger);
   using PrintFunctionPtr = void (*)(const char* format, va_list args);
 
   // Note: not thread safe.
-  static void setPrintFuncForTests(PrintFunctionPtr);
+  static void SetPrintFuncForTests(PrintFunctionPtr);
 
-  void init(const char* format, va_list args);
-  void writeNewlineIfNeeded();
-  void indent();
-  void print(const char* format, ...);
-  void printIndent();
-  static ScopedLogger*& current();
+  void Init(const char* format, va_list args);
+  void WriteNewlineIfNeeded();
+  void Indent();
+  void Print(const char* format, ...);
+  void PrintIndent();
+  static ScopedLogger*& Current();
 
-  ScopedLogger* const m_parent;
-  bool m_multiline;  // The ')' will go on the same line if there is only one
-                     // entry.
-  static PrintFunctionPtr m_printFunc;
+  ScopedLogger* const parent_;
+  bool multiline_;  // The ')' will go on the same line if there is only one
+                    // entry.
+  static PrintFunctionPtr print_func_;
 };
 
 #define WTF_CREATE_SCOPED_LOGGER(name, ...) \
   WTF::ScopedLogger name(true, __VA_ARGS__)
 #define WTF_CREATE_SCOPED_LOGGER_IF(name, condition, ...) \
   WTF::ScopedLogger name(condition, __VA_ARGS__)
-#define WTF_APPEND_SCOPED_LOGGER(name, ...) (name.log(__VA_ARGS__))
+#define WTF_APPEND_SCOPED_LOGGER(name, ...) (name.Log(__VA_ARGS__))
 
 #endif  // LOG_DISABLED
 
@@ -219,41 +219,41 @@ class WTF_EXPORT ScopedLogger {
 // * cost of runtime type check is acceptable.
 #define DEFINE_TYPE_CASTS(thisType, argumentType, argument, pointerPredicate, \
                           referencePredicate)                                 \
-  inline thisType* to##thisType(argumentType* argument) {                     \
+  inline thisType* To##thisType(argumentType* argument) {                     \
     SECURITY_DCHECK(!argument || (pointerPredicate));                         \
     return static_cast<thisType*>(argument);                                  \
   }                                                                           \
-  inline const thisType* to##thisType(const argumentType* argument) {         \
+  inline const thisType* To##thisType(const argumentType* argument) {         \
     SECURITY_DCHECK(!argument || (pointerPredicate));                         \
     return static_cast<const thisType*>(argument);                            \
   }                                                                           \
-  inline thisType& to##thisType(argumentType& argument) {                     \
+  inline thisType& To##thisType(argumentType& argument) {                     \
     SECURITY_DCHECK(referencePredicate);                                      \
     return static_cast<thisType&>(argument);                                  \
   }                                                                           \
-  inline const thisType& to##thisType(const argumentType& argument) {         \
+  inline const thisType& To##thisType(const argumentType& argument) {         \
     SECURITY_DCHECK(referencePredicate);                                      \
     return static_cast<const thisType&>(argument);                            \
   }                                                                           \
-  void to##thisType(const thisType*);                                         \
-  void to##thisType(const thisType&);                                         \
-  inline thisType* to##thisType##OrDie(argumentType* argument) {              \
+  void To##thisType(const thisType*);                                         \
+  void To##thisType(const thisType&);                                         \
+  inline thisType* To##thisType##OrDie(argumentType* argument) {              \
     CHECK(!argument || (pointerPredicate));                                   \
     return static_cast<thisType*>(argument);                                  \
   }                                                                           \
-  inline const thisType* to##thisType##OrDie(const argumentType* argument) {  \
+  inline const thisType* To##thisType##OrDie(const argumentType* argument) {  \
     CHECK(!argument || (pointerPredicate));                                   \
     return static_cast<const thisType*>(argument);                            \
   }                                                                           \
-  inline thisType& to##thisType##OrDie(argumentType& argument) {              \
+  inline thisType& To##thisType##OrDie(argumentType& argument) {              \
     CHECK(referencePredicate);                                                \
     return static_cast<thisType&>(argument);                                  \
   }                                                                           \
-  inline const thisType& to##thisType##OrDie(const argumentType& argument) {  \
+  inline const thisType& To##thisType##OrDie(const argumentType& argument) {  \
     CHECK(referencePredicate);                                                \
     return static_cast<const thisType&>(argument);                            \
   }                                                                           \
-  void to##thisType##OrDie(const thisType*);                                  \
-  void to##thisType##OrDie(const thisType&)
+  void To##thisType##OrDie(const thisType*);                                  \
+  void To##thisType##OrDie(const thisType&)
 
 #endif  // WTF_Assertions_h

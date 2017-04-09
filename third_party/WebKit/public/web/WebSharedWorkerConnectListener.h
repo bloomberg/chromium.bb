@@ -41,17 +41,17 @@ class WebSharedWorkerConnectListener {
   virtual ~WebSharedWorkerConnectListener() = default;
 
   // Called when a worker is created.
-  virtual void workerCreated(WebWorkerCreationError) = 0;
+  virtual void WorkerCreated(WebWorkerCreationError) = 0;
 
   // Called when worker script load fails.
-  virtual void scriptLoadFailed() = 0;
+  virtual void ScriptLoadFailed() = 0;
 
   // Called when a connection is established.
-  virtual void connected() = 0;
+  virtual void Connected() = 0;
 
   // Called when some API to be recorded in UseCounter is called on the worker
   // global scope.
-  virtual void countFeature(uint32_t) = 0;
+  virtual void CountFeature(uint32_t) = 0;
 };
 
 }  // namespace blink

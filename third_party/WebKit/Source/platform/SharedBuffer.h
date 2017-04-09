@@ -42,55 +42,55 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
   enum : unsigned { kSegmentSize = 0x1000 };
 
-  static PassRefPtr<SharedBuffer> create() {
-    return adoptRef(new SharedBuffer);
+  static PassRefPtr<SharedBuffer> Create() {
+    return AdoptRef(new SharedBuffer);
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static PassRefPtr<SharedBuffer> create(STRICTLY_TYPED_ARG(size)) {
+  static PassRefPtr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
-    return adoptRef(new SharedBuffer(size));
+    return AdoptRef(new SharedBuffer(size));
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static PassRefPtr<SharedBuffer> create(const char* data,
+  static PassRefPtr<SharedBuffer> Create(const char* data,
                                          STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
-    return adoptRef(new SharedBuffer(data, size));
+    return AdoptRef(new SharedBuffer(data, size));
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static PassRefPtr<SharedBuffer> create(const unsigned char* data,
+  static PassRefPtr<SharedBuffer> Create(const unsigned char* data,
                                          STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
-    return adoptRef(new SharedBuffer(data, size));
+    return AdoptRef(new SharedBuffer(data, size));
   }
 
-  static PassRefPtr<SharedBuffer> adoptVector(Vector<char>&);
+  static PassRefPtr<SharedBuffer> AdoptVector(Vector<char>&);
 
   ~SharedBuffer();
 
   // Calling this function will force internal segmented buffers to be merged
   // into a flat buffer. Use getSomeData() whenever possible for better
   // performance.
-  const char* data() const;
+  const char* Data() const;
 
   size_t size() const;
 
-  bool isEmpty() const { return !size(); }
+  bool IsEmpty() const { return !size(); }
 
-  void append(PassRefPtr<SharedBuffer>);
+  void Append(PassRefPtr<SharedBuffer>);
 
   HAS_STRICTLY_TYPED_ARG
-  void append(const char* data, STRICTLY_TYPED_ARG(size)) {
+  void Append(const char* data, STRICTLY_TYPED_ARG(size)) {
     ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
-    appendInternal(data, size);
+    AppendInternal(data, size);
   }
-  void append(const Vector<char>&);
+  void Append(const Vector<char>&);
 
-  void clear();
+  void Clear();
 
-  PassRefPtr<SharedBuffer> copy() const;
+  PassRefPtr<SharedBuffer> Copy() const;
 
   // Return the number of consecutive bytes after "position". "data"
   // points to the first byte.
@@ -105,21 +105,21 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   //          pos += length;
   //      }
   HAS_STRICTLY_TYPED_ARG
-  size_t getSomeData(
+  size_t GetSomeData(
       const char*& data,
       STRICTLY_TYPED_ARG(position) = static_cast<size_t>(0)) const {
     STRICT_ARG_TYPE(size_t);
-    return getSomeDataInternal(data, position);
+    return GetSomeDataInternal(data, position);
   }
 
   // Returns the content data into "dest" as a flat buffer. "byteLength" must
   // exactly match with size(). |dest| must not be null even if |bytesLength|
   // is 0.
   HAS_STRICTLY_TYPED_ARG
-  void getAsBytes(void* dest, STRICTLY_TYPED_ARG(byteLength)) const {
+  void GetAsBytes(void* dest, STRICTLY_TYPED_ARG(byte_length)) const {
     STRICT_ARG_TYPE(size_t);
-    DCHECK_EQ(byteLength, size());
-    auto result = getAsBytesInternal(dest, 0, byteLength);
+    DCHECK_EQ(byte_length, size());
+    auto result = GetAsBytesInternal(dest, 0, byte_length);
     DCHECK(result);
   }
 
@@ -127,18 +127,18 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   // content data into "dest" as a flat buffer, Returns true on success,
   // otherwise the content of "dest" is not guaranteed.
   HAS_STRICTLY_TYPED_ARG
-  bool getPartAsBytes(void* dest,
+  bool GetPartAsBytes(void* dest,
                       STRICTLY_TYPED_ARG(position),
-                      STRICTLY_TYPED_ARG(byteLength)) const {
+                      STRICTLY_TYPED_ARG(byte_length)) const {
     STRICT_ARG_TYPE(size_t);
-    return getAsBytesInternal(dest, position, byteLength);
+    return GetAsBytesInternal(dest, position, byte_length);
   }
 
   // Creates an SkData and copies this SharedBuffer's contents to that
   // SkData without merging segmented buffers into a flat buffer.
-  sk_sp<SkData> getAsSkData() const;
+  sk_sp<SkData> GetAsSkData() const;
 
-  void onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump*) const;
+  void OnMemoryDump(const String& dump_prefix, WebProcessMemoryDump*) const;
 
  private:
   SharedBuffer();
@@ -147,15 +147,15 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   SharedBuffer(const unsigned char*, size_t);
 
   // See SharedBuffer::data().
-  void mergeSegmentsIntoBuffer() const;
+  void MergeSegmentsIntoBuffer() const;
 
-  void appendInternal(const char* data, size_t);
-  bool getAsBytesInternal(void* dest, size_t, size_t) const;
-  size_t getSomeDataInternal(const char*& data, size_t position) const;
+  void AppendInternal(const char* data, size_t);
+  bool GetAsBytesInternal(void* dest, size_t, size_t) const;
+  size_t GetSomeDataInternal(const char*& data, size_t position) const;
 
-  size_t m_size;
-  mutable Vector<char> m_buffer;
-  mutable Vector<char*> m_segments;
+  size_t size_;
+  mutable Vector<char> buffer_;
+  mutable Vector<char*> segments_;
 };
 
 }  // namespace blink

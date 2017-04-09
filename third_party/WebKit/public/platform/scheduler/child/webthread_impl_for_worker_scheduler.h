@@ -38,9 +38,9 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   void Init();
 
   // WebThread implementation.
-  WebScheduler* scheduler() const override;
-  PlatformThreadId threadId() const override;
-  WebTaskRunner* getWebTaskRunner() override;
+  WebScheduler* Scheduler() const override;
+  PlatformThreadId ThreadId() const override;
+  WebTaskRunner* GetWebTaskRunner() override;
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* GetTaskRunner() const override;
@@ -50,7 +50,7 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   void WillDestroyCurrentMessageLoop() override;
 
  protected:
-  base::Thread* thread() const { return thread_.get(); }
+  base::Thread* GetThread() const { return thread_.get(); }
 
  private:
   virtual std::unique_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler();

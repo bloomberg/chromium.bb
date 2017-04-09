@@ -19,106 +19,108 @@ namespace blink {
 template <class DerivedWorkletThread>
 class WorkletThreadHolder {
  public:
-  static WorkletThreadHolder<DerivedWorkletThread>* getInstance() {
-    MutexLocker locker(holderInstanceMutex());
-    return s_threadHolderInstance;
+  static WorkletThreadHolder<DerivedWorkletThread>* GetInstance() {
+    MutexLocker locker(HolderInstanceMutex());
+    return thread_holder_instance_;
   }
 
-  static void ensureInstance(const char* threadName) {
-    DCHECK(isMainThread());
-    MutexLocker locker(holderInstanceMutex());
-    if (s_threadHolderInstance)
+  static void EnsureInstance(const char* thread_name) {
+    DCHECK(IsMainThread());
+    MutexLocker locker(HolderInstanceMutex());
+    if (thread_holder_instance_)
       return;
-    s_threadHolderInstance = new WorkletThreadHolder<DerivedWorkletThread>;
-    s_threadHolderInstance->initialize(WorkerBackingThread::create(threadName));
+    thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
+    thread_holder_instance_->Initialize(
+        WorkerBackingThread::Create(thread_name));
   }
 
-  static void ensureInstance(WebThread* thread) {
-    DCHECK(isMainThread());
-    MutexLocker locker(holderInstanceMutex());
-    if (s_threadHolderInstance)
+  static void EnsureInstance(WebThread* thread) {
+    DCHECK(IsMainThread());
+    MutexLocker locker(HolderInstanceMutex());
+    if (thread_holder_instance_)
       return;
-    s_threadHolderInstance = new WorkletThreadHolder<DerivedWorkletThread>;
-    s_threadHolderInstance->initialize(WorkerBackingThread::create(thread));
+    thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
+    thread_holder_instance_->Initialize(WorkerBackingThread::Create(thread));
   }
 
-  static void createForTest(const char* threadName) {
-    MutexLocker locker(holderInstanceMutex());
-    DCHECK(!s_threadHolderInstance);
-    s_threadHolderInstance = new WorkletThreadHolder<DerivedWorkletThread>;
-    s_threadHolderInstance->initialize(
-        WorkerBackingThread::createForTest(threadName));
+  static void CreateForTest(const char* thread_name) {
+    MutexLocker locker(HolderInstanceMutex());
+    DCHECK(!thread_holder_instance_);
+    thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
+    thread_holder_instance_->Initialize(
+        WorkerBackingThread::CreateForTest(thread_name));
   }
 
-  static void createForTest(WebThread* thread) {
-    MutexLocker locker(holderInstanceMutex());
-    DCHECK(!s_threadHolderInstance);
-    s_threadHolderInstance = new WorkletThreadHolder<DerivedWorkletThread>;
-    s_threadHolderInstance->initialize(
-        WorkerBackingThread::createForTest(thread));
+  static void CreateForTest(WebThread* thread) {
+    MutexLocker locker(HolderInstanceMutex());
+    DCHECK(!thread_holder_instance_);
+    thread_holder_instance_ = new WorkletThreadHolder<DerivedWorkletThread>;
+    thread_holder_instance_->Initialize(
+        WorkerBackingThread::CreateForTest(thread));
   }
 
-  static void clearInstance() {
-    DCHECK(isMainThread());
-    MutexLocker locker(holderInstanceMutex());
-    if (s_threadHolderInstance) {
-      s_threadHolderInstance->shutdownAndWait();
-      delete s_threadHolderInstance;
-      s_threadHolderInstance = nullptr;
+  static void ClearInstance() {
+    DCHECK(IsMainThread());
+    MutexLocker locker(HolderInstanceMutex());
+    if (thread_holder_instance_) {
+      thread_holder_instance_->ShutdownAndWait();
+      delete thread_holder_instance_;
+      thread_holder_instance_ = nullptr;
     }
   }
 
-  WorkerBackingThread* thread() { return m_thread.get(); }
+  WorkerBackingThread* GetThread() { return thread_.get(); }
 
  private:
   WorkletThreadHolder() {}
   ~WorkletThreadHolder() {}
 
-  static Mutex& holderInstanceMutex() {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holderMutex, new Mutex);
-    return holderMutex;
+  static Mutex& HolderInstanceMutex() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holder_mutex, new Mutex);
+    return holder_mutex;
   }
 
-  void initialize(std::unique_ptr<WorkerBackingThread> backingThread) {
-    m_thread = std::move(backingThread);
-    m_thread->backingThread().postTask(
+  void Initialize(std::unique_ptr<WorkerBackingThread> backing_thread) {
+    thread_ = std::move(backing_thread);
+    thread_->BackingThread().PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&WorkletThreadHolder::initializeOnWorkletThread,
-                        crossThreadUnretained(this)));
+        CrossThreadBind(&WorkletThreadHolder::InitializeOnWorkletThread,
+                        CrossThreadUnretained(this)));
   }
 
-  void initializeOnWorkletThread() {
-    MutexLocker locker(holderInstanceMutex());
-    DCHECK(!m_initialized);
-    m_thread->initialize();
-    m_initialized = true;
+  void InitializeOnWorkletThread() {
+    MutexLocker locker(HolderInstanceMutex());
+    DCHECK(!initialized_);
+    thread_->Initialize();
+    initialized_ = true;
   }
 
-  void shutdownAndWait() {
-    DCHECK(isMainThread());
-    WaitableEvent waitableEvent;
-    m_thread->backingThread().postTask(
+  void ShutdownAndWait() {
+    DCHECK(IsMainThread());
+    WaitableEvent waitable_event;
+    thread_->BackingThread().PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&WorkletThreadHolder::shutdownOnWorlketThread,
-                        crossThreadUnretained(this),
-                        crossThreadUnretained(&waitableEvent)));
-    waitableEvent.wait();
+        CrossThreadBind(&WorkletThreadHolder::ShutdownOnWorlketThread,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
   }
 
-  void shutdownOnWorlketThread(WaitableEvent* waitableEvent) {
-    m_thread->shutdown();
-    waitableEvent->signal();
+  void ShutdownOnWorlketThread(WaitableEvent* waitable_event) {
+    thread_->Shutdown();
+    waitable_event->Signal();
   }
 
-  std::unique_ptr<WorkerBackingThread> m_thread;
-  bool m_initialized = false;
+  std::unique_ptr<WorkerBackingThread> thread_;
+  bool initialized_ = false;
 
-  static WorkletThreadHolder<DerivedWorkletThread>* s_threadHolderInstance;
+  static WorkletThreadHolder<DerivedWorkletThread>* thread_holder_instance_;
 };
 
 template <class DerivedWorkletThread>
 WorkletThreadHolder<DerivedWorkletThread>*
-    WorkletThreadHolder<DerivedWorkletThread>::s_threadHolderInstance = nullptr;
+    WorkletThreadHolder<DerivedWorkletThread>::thread_holder_instance_ =
+        nullptr;
 
 }  // namespace blink
 

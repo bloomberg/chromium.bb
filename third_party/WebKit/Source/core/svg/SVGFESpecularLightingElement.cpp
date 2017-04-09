@@ -33,149 +33,149 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feSpecularLightingTag,
                                            document),
-      m_specularConstant(
-          SVGAnimatedNumber::create(this,
+      specular_constant_(
+          SVGAnimatedNumber::Create(this,
                                     SVGNames::specularConstantAttr,
-                                    SVGNumber::create(1))),
-      m_specularExponent(
-          SVGAnimatedNumber::create(this,
+                                    SVGNumber::Create(1))),
+      specular_exponent_(
+          SVGAnimatedNumber::Create(this,
                                     SVGNames::specularExponentAttr,
-                                    SVGNumber::create(1))),
-      m_surfaceScale(SVGAnimatedNumber::create(this,
+                                    SVGNumber::Create(1))),
+      surface_scale_(SVGAnimatedNumber::Create(this,
                                                SVGNames::surfaceScaleAttr,
-                                               SVGNumber::create(1))),
-      m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(
+                                               SVGNumber::Create(1))),
+      kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
           SVGNames::kernelUnitLengthAttr)),
-      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
-  addToPropertyMap(m_specularConstant);
-  addToPropertyMap(m_specularExponent);
-  addToPropertyMap(m_surfaceScale);
-  addToPropertyMap(m_kernelUnitLength);
-  addToPropertyMap(m_in1);
+      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
+  AddToPropertyMap(specular_constant_);
+  AddToPropertyMap(specular_exponent_);
+  AddToPropertyMap(surface_scale_);
+  AddToPropertyMap(kernel_unit_length_);
+  AddToPropertyMap(in1_);
 }
 
 DEFINE_TRACE(SVGFESpecularLightingElement) {
-  visitor->trace(m_specularConstant);
-  visitor->trace(m_specularExponent);
-  visitor->trace(m_surfaceScale);
-  visitor->trace(m_kernelUnitLength);
-  visitor->trace(m_in1);
-  SVGFilterPrimitiveStandardAttributes::trace(visitor);
+  visitor->Trace(specular_constant_);
+  visitor->Trace(specular_exponent_);
+  visitor->Trace(surface_scale_);
+  visitor->Trace(kernel_unit_length_);
+  visitor->Trace(in1_);
+  SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFESpecularLightingElement)
 
-bool SVGFESpecularLightingElement::setFilterEffectAttribute(
+bool SVGFESpecularLightingElement::SetFilterEffectAttribute(
     FilterEffect* effect,
-    const QualifiedName& attrName) {
-  FESpecularLighting* specularLighting =
+    const QualifiedName& attr_name) {
+  FESpecularLighting* specular_lighting =
       static_cast<FESpecularLighting*>(effect);
 
-  if (attrName == SVGNames::lighting_colorAttr) {
-    LayoutObject* layoutObject = this->layoutObject();
-    DCHECK(layoutObject);
-    DCHECK(layoutObject->style());
-    return specularLighting->setLightingColor(
-        layoutObject->style()->svgStyle().lightingColor());
+  if (attr_name == SVGNames::lighting_colorAttr) {
+    LayoutObject* layout_object = this->GetLayoutObject();
+    DCHECK(layout_object);
+    DCHECK(layout_object->Style());
+    return specular_lighting->SetLightingColor(
+        layout_object->Style()->SvgStyle().LightingColor());
   }
-  if (attrName == SVGNames::surfaceScaleAttr)
-    return specularLighting->setSurfaceScale(
-        m_surfaceScale->currentValue()->value());
-  if (attrName == SVGNames::specularConstantAttr)
-    return specularLighting->setSpecularConstant(
-        m_specularConstant->currentValue()->value());
-  if (attrName == SVGNames::specularExponentAttr)
-    return specularLighting->setSpecularExponent(
-        m_specularExponent->currentValue()->value());
+  if (attr_name == SVGNames::surfaceScaleAttr)
+    return specular_lighting->SetSurfaceScale(
+        surface_scale_->CurrentValue()->Value());
+  if (attr_name == SVGNames::specularConstantAttr)
+    return specular_lighting->SetSpecularConstant(
+        specular_constant_->CurrentValue()->Value());
+  if (attr_name == SVGNames::specularExponentAttr)
+    return specular_lighting->SetSpecularExponent(
+        specular_exponent_->CurrentValue()->Value());
 
-  LightSource* lightSource =
-      const_cast<LightSource*>(specularLighting->lightSource());
-  SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
-  DCHECK(lightSource);
-  DCHECK(lightElement);
-  DCHECK(effect->getFilter());
+  LightSource* light_source =
+      const_cast<LightSource*>(specular_lighting->GetLightSource());
+  SVGFELightElement* light_element = SVGFELightElement::FindLightElement(*this);
+  DCHECK(light_source);
+  DCHECK(light_element);
+  DCHECK(effect->GetFilter());
 
-  if (attrName == SVGNames::azimuthAttr)
-    return lightSource->setAzimuth(
-        lightElement->azimuth()->currentValue()->value());
-  if (attrName == SVGNames::elevationAttr)
-    return lightSource->setElevation(
-        lightElement->elevation()->currentValue()->value());
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::zAttr)
-    return lightSource->setPosition(
-        effect->getFilter()->resolve3dPoint(lightElement->position()));
-  if (attrName == SVGNames::pointsAtXAttr ||
-      attrName == SVGNames::pointsAtYAttr ||
-      attrName == SVGNames::pointsAtZAttr)
-    return lightSource->setPointsAt(
-        effect->getFilter()->resolve3dPoint(lightElement->pointsAt()));
-  if (attrName == SVGNames::specularExponentAttr)
-    return lightSource->setSpecularExponent(
-        lightElement->specularExponent()->currentValue()->value());
-  if (attrName == SVGNames::limitingConeAngleAttr)
-    return lightSource->setLimitingConeAngle(
-        lightElement->limitingConeAngle()->currentValue()->value());
+  if (attr_name == SVGNames::azimuthAttr)
+    return light_source->SetAzimuth(
+        light_element->azimuth()->CurrentValue()->Value());
+  if (attr_name == SVGNames::elevationAttr)
+    return light_source->SetElevation(
+        light_element->elevation()->CurrentValue()->Value());
+  if (attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
+      attr_name == SVGNames::zAttr)
+    return light_source->SetPosition(
+        effect->GetFilter()->Resolve3dPoint(light_element->GetPosition()));
+  if (attr_name == SVGNames::pointsAtXAttr ||
+      attr_name == SVGNames::pointsAtYAttr ||
+      attr_name == SVGNames::pointsAtZAttr)
+    return light_source->SetPointsAt(
+        effect->GetFilter()->Resolve3dPoint(light_element->PointsAt()));
+  if (attr_name == SVGNames::specularExponentAttr)
+    return light_source->SetSpecularExponent(
+        light_element->specularExponent()->CurrentValue()->Value());
+  if (attr_name == SVGNames::limitingConeAngleAttr)
+    return light_source->SetLimitingConeAngle(
+        light_element->limitingConeAngle()->CurrentValue()->Value());
 
-  return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(
-      effect, attrName);
+  return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
+      effect, attr_name);
 }
 
-void SVGFESpecularLightingElement::svgAttributeChanged(
-    const QualifiedName& attrName) {
-  if (attrName == SVGNames::surfaceScaleAttr ||
-      attrName == SVGNames::specularConstantAttr ||
-      attrName == SVGNames::specularExponentAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    primitiveAttributeChanged(attrName);
+void SVGFESpecularLightingElement::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::surfaceScaleAttr ||
+      attr_name == SVGNames::specularConstantAttr ||
+      attr_name == SVGNames::specularExponentAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attrName == SVGNames::inAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+  if (attr_name == SVGNames::inAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    Invalidate();
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
 }
 
-void SVGFESpecularLightingElement::lightElementAttributeChanged(
-    const SVGFELightElement* lightElement,
-    const QualifiedName& attrName) {
-  if (SVGFELightElement::findLightElement(*this) != lightElement)
+void SVGFESpecularLightingElement::LightElementAttributeChanged(
+    const SVGFELightElement* light_element,
+    const QualifiedName& attr_name) {
+  if (SVGFELightElement::FindLightElement(*this) != light_element)
     return;
 
   // The light element has different attribute names so attrName can identify
   // the requested attribute.
-  primitiveAttributeChanged(attrName);
+  PrimitiveAttributeChanged(attr_name);
 }
 
-FilterEffect* SVGFESpecularLightingElement::build(
-    SVGFilterBuilder* filterBuilder,
+FilterEffect* SVGFESpecularLightingElement::Build(
+    SVGFilterBuilder* filter_builder,
     Filter* filter) {
-  FilterEffect* input1 = filterBuilder->getEffectById(
-      AtomicString(m_in1->currentValue()->value()));
+  FilterEffect* input1 = filter_builder->GetEffectById(
+      AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  LayoutObject* layoutObject = this->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = this->GetLayoutObject();
+  if (!layout_object)
     return nullptr;
 
-  DCHECK(layoutObject->style());
-  Color color = layoutObject->style()->svgStyle().lightingColor();
+  DCHECK(layout_object->Style());
+  Color color = layout_object->Style()->SvgStyle().LightingColor();
 
-  const SVGFELightElement* lightNode =
-      SVGFELightElement::findLightElement(*this);
-  RefPtr<LightSource> lightSource =
-      lightNode ? lightNode->lightSource(filter) : nullptr;
+  const SVGFELightElement* light_node =
+      SVGFELightElement::FindLightElement(*this);
+  RefPtr<LightSource> light_source =
+      light_node ? light_node->GetLightSource(filter) : nullptr;
 
-  FilterEffect* effect = FESpecularLighting::create(
-      filter, color, m_surfaceScale->currentValue()->value(),
-      m_specularConstant->currentValue()->value(),
-      m_specularExponent->currentValue()->value(), std::move(lightSource));
-  effect->inputEffects().push_back(input1);
+  FilterEffect* effect = FESpecularLighting::Create(
+      filter, color, surface_scale_->CurrentValue()->Value(),
+      specular_constant_->CurrentValue()->Value(),
+      specular_exponent_->CurrentValue()->Value(), std::move(light_source));
+  effect->InputEffects().push_back(input1);
   return effect;
 }
 

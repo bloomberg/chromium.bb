@@ -65,35 +65,38 @@ class TrailingObjects {
   STACK_ALLOCATED();
 
  public:
-  TrailingObjects() : m_whitespace(nullptr) {}
+  TrailingObjects() : whitespace_(nullptr) {}
 
-  void setTrailingWhitespace(LineLayoutText whitespace) {
+  void SetTrailingWhitespace(LineLayoutText whitespace) {
     DCHECK(whitespace);
-    m_whitespace = whitespace;
+    whitespace_ = whitespace;
   }
 
-  void clear() {
-    m_whitespace = LineLayoutText();
+  void Clear() {
+    whitespace_ = LineLayoutText();
     // Using resize(0) rather than clear() here saves 2% on
     // PerformanceTests/Layout/line-layout.html because we avoid freeing and
     // re-allocating the underlying buffer repeatedly.
-    m_objects.resize(0);
+    objects_.Resize(0);
   }
 
-  void appendObjectIfNeeded(LineLayoutItem object) {
-    if (m_whitespace)
-      m_objects.push_back(object);
+  void AppendObjectIfNeeded(LineLayoutItem object) {
+    if (whitespace_)
+      objects_.push_back(object);
   }
 
-  enum CollapseFirstSpaceOrNot { DoNotCollapseFirstSpace, CollapseFirstSpace };
+  enum CollapseFirstSpaceOrNot {
+    kDoNotCollapseFirstSpace,
+    kCollapseFirstSpace
+  };
 
-  void updateMidpointsForTrailingObjects(LineMidpointState&,
-                                         const InlineIterator& lBreak,
+  void UpdateMidpointsForTrailingObjects(LineMidpointState&,
+                                         const InlineIterator& l_break,
                                          CollapseFirstSpaceOrNot);
 
  private:
-  LineLayoutText m_whitespace;
-  Vector<LineLayoutItem, 4> m_objects;
+  LineLayoutText whitespace_;
+  Vector<LineLayoutItem, 4> objects_;
 };
 
 }  // namespace blink

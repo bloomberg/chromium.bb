@@ -43,24 +43,24 @@ class WebMediaDevicesRequest {
  public:
   WebMediaDevicesRequest() {}
   WebMediaDevicesRequest(const WebMediaDevicesRequest& request) {
-    assign(request);
+    Assign(request);
   }
-  ~WebMediaDevicesRequest() { reset(); }
+  ~WebMediaDevicesRequest() { Reset(); }
 
   WebMediaDevicesRequest& operator=(const WebMediaDevicesRequest& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
-  BLINK_EXPORT bool equals(const WebMediaDevicesRequest&) const;
-  BLINK_EXPORT void assign(const WebMediaDevicesRequest&);
+  BLINK_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
+  BLINK_EXPORT bool Equals(const WebMediaDevicesRequest&) const;
+  BLINK_EXPORT void Assign(const WebMediaDevicesRequest&);
 
-  BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
-  BLINK_EXPORT WebDocument ownerDocument() const;
+  BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
+  BLINK_EXPORT WebDocument OwnerDocument() const;
 
-  BLINK_EXPORT void requestSucceeded(WebVector<WebMediaDeviceInfo>);
+  BLINK_EXPORT void RequestSucceeded(WebVector<WebMediaDeviceInfo>);
 
 #if BLINK_IMPLEMENTATION
   WebMediaDevicesRequest(MediaDevicesRequest*);
@@ -68,12 +68,12 @@ class WebMediaDevicesRequest {
 #endif
 
  private:
-  WebPrivatePtr<MediaDevicesRequest> m_private;
+  WebPrivatePtr<MediaDevicesRequest> private_;
 };
 
 inline bool operator==(const WebMediaDevicesRequest& a,
                        const WebMediaDevicesRequest& b) {
-  return a.equals(b);
+  return a.Equals(b);
 }
 
 }  // namespace blink

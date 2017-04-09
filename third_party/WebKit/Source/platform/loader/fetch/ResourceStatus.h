@@ -8,11 +8,11 @@
 namespace blink {
 
 enum class ResourceStatus {
-  NotStarted,
-  Pending,  // load in progress
-  Cached,   // load completed successfully
-  LoadError,
-  DecodeError
+  kNotStarted,
+  kPending,  // load in progress
+  kCached,   // load completed successfully
+  kLoadError,
+  kDecodeError
 };
 
 }  // namespace blink

@@ -10,18 +10,18 @@ namespace blink {
 
 FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
     Frame* frame)
-    : m_frame(frame) {}
+    : frame_(frame) {}
 
-void FrameClientHintsPreferencesContext::countClientHintsDPR() {
-  UseCounter::count(m_frame, UseCounter::ClientHintsDPR);
+void FrameClientHintsPreferencesContext::CountClientHintsDPR() {
+  UseCounter::Count(frame_, UseCounter::kClientHintsDPR);
 }
 
-void FrameClientHintsPreferencesContext::countClientHintsResourceWidth() {
-  UseCounter::count(m_frame, UseCounter::ClientHintsResourceWidth);
+void FrameClientHintsPreferencesContext::CountClientHintsResourceWidth() {
+  UseCounter::Count(frame_, UseCounter::kClientHintsResourceWidth);
 }
 
-void FrameClientHintsPreferencesContext::countClientHintsViewportWidth() {
-  UseCounter::count(m_frame, UseCounter::ClientHintsViewportWidth);
+void FrameClientHintsPreferencesContext::CountClientHintsViewportWidth() {
+  UseCounter::Count(frame_, UseCounter::kClientHintsViewportWidth);
 }
 
 }  // namespace blink

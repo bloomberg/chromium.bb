@@ -29,25 +29,25 @@
 
 namespace blink {
 
-std::unique_ptr<ImageDecoder> createDecoder(
-    ImageDecoder::AlphaOption alphaOption) {
-  return WTF::wrapUnique(new PNGImageDecoder(
-      alphaOption, ColorBehavior::transformToTargetForTesting(),
-      ImageDecoder::noDecodedImageByteLimit));
+std::unique_ptr<ImageDecoder> CreateDecoder(
+    ImageDecoder::AlphaOption alpha_option) {
+  return WTF::WrapUnique(new PNGImageDecoder(
+      alpha_option, ColorBehavior::TransformToTargetForTesting(),
+      ImageDecoder::kNoDecodedImageByteLimit));
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  auto buffer = SharedBuffer::create(data, size);
+  auto buffer = SharedBuffer::Create(data, size);
   // TODO (scroggo): Also test ImageDecoder::AlphaNotPremultiplied?
-  auto decoder = createDecoder(ImageDecoder::AlphaPremultiplied);
-  const bool allDataReceived = true;
-  decoder->setData(buffer.get(), allDataReceived);
-  decoder->frameCount();
-  if (decoder->failed())
+  auto decoder = CreateDecoder(ImageDecoder::kAlphaPremultiplied);
+  const bool kAllDataReceived = true;
+  decoder->SetData(buffer.Get(), kAllDataReceived);
+  decoder->FrameCount();
+  if (decoder->Failed())
     return 0;
-  for (size_t frame = 0; frame < decoder->frameCount(); frame++) {
-    decoder->frameBufferAtIndex(frame);
-    if (decoder->failed())
+  for (size_t frame = 0; frame < decoder->FrameCount(); frame++) {
+    decoder->FrameBufferAtIndex(frame);
+    if (decoder->Failed())
       return 0;
   }
   return 0;

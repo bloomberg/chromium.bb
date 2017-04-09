@@ -45,48 +45,48 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
   virtual ~ListedElement();
 
-  static HTMLFormElement* findAssociatedForm(const HTMLElement*);
-  HTMLFormElement* form() const { return m_form.get(); }
+  static HTMLFormElement* FindAssociatedForm(const HTMLElement*);
+  HTMLFormElement* Form() const { return form_.Get(); }
   ValidityState* validity();
 
-  virtual bool isFormControlElement() const = 0;
-  virtual bool isFormControlElementWithState() const;
-  virtual bool isEnumeratable() const = 0;
+  virtual bool IsFormControlElement() const = 0;
+  virtual bool IsFormControlElementWithState() const;
+  virtual bool IsEnumeratable() const = 0;
 
   // Returns the 'name' attribute value. If this element has no name
   // attribute, it returns an empty string instead of null string.
   // Note that the 'name' IDL attribute doesn't use this function.
-  virtual const AtomicString& name() const;
+  virtual const AtomicString& GetName() const;
 
   // Override in derived classes to get the encoded name=value pair for
   // submitting.
-  virtual void appendToFormData(FormData&) {}
+  virtual void AppendToFormData(FormData&) {}
 
-  void resetFormOwner();
+  void ResetFormOwner();
 
-  void formRemovedFromTree(const Node& formRoot);
+  void FormRemovedFromTree(const Node& form_root);
 
   // ValidityState attribute implementations
-  bool customError() const;
+  bool CustomError() const;
 
   // Override functions for patterMismatch, rangeOverflow, rangerUnderflow,
   // stepMismatch, tooLong, tooShort and valueMissing must call willValidate
   // method.
-  virtual bool hasBadInput() const;
-  virtual bool patternMismatch() const;
-  virtual bool rangeOverflow() const;
-  virtual bool rangeUnderflow() const;
-  virtual bool stepMismatch() const;
-  virtual bool tooLong() const;
-  virtual bool tooShort() const;
-  virtual bool typeMismatch() const;
-  virtual bool valueMissing() const;
+  virtual bool HasBadInput() const;
+  virtual bool PatternMismatch() const;
+  virtual bool RangeOverflow() const;
+  virtual bool RangeUnderflow() const;
+  virtual bool StepMismatch() const;
+  virtual bool TooLong() const;
+  virtual bool TooShort() const;
+  virtual bool TypeMismatch() const;
+  virtual bool ValueMissing() const;
   virtual String validationMessage() const;
-  virtual String validationSubMessage() const;
-  bool valid() const;
+  virtual String ValidationSubMessage() const;
+  bool Valid() const;
   virtual void setCustomValidity(const String&);
 
-  void formAttributeTargetChanged();
+  void FormAttributeTargetChanged();
 
   typedef HeapVector<Member<ListedElement>> List;
 
@@ -95,40 +95,40 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  protected:
   ListedElement();
 
-  void insertedInto(ContainerNode*);
-  void removedFrom(ContainerNode*);
-  void didMoveToNewDocument(Document& oldDocument);
+  void InsertedInto(ContainerNode*);
+  void RemovedFrom(ContainerNode*);
+  void DidMoveToNewDocument(Document& old_document);
 
   // FIXME: Remove usage of setForm. resetFormOwner should be enough, and
   // setForm is confusing.
-  void setForm(HTMLFormElement*);
-  void associateByParser(HTMLFormElement*);
-  void formAttributeChanged();
+  void SetForm(HTMLFormElement*);
+  void AssociateByParser(HTMLFormElement*);
+  void FormAttributeChanged();
 
   // If you add an override of willChangeForm() or didChangeForm() to a class
   // derived from this one, you will need to add a call to setForm(0) to the
   // destructor of that class.
-  virtual void willChangeForm();
-  virtual void didChangeForm();
+  virtual void WillChangeForm();
+  virtual void DidChangeForm();
 
-  String customValidationMessage() const;
+  String CustomValidationMessage() const;
 
  private:
-  void setFormAttributeTargetObserver(FormAttributeTargetObserver*);
-  void resetFormAttributeTargetObserver();
+  void SetFormAttributeTargetObserver(FormAttributeTargetObserver*);
+  void ResetFormAttributeTargetObserver();
 
-  Member<FormAttributeTargetObserver> m_formAttributeTargetObserver;
-  Member<HTMLFormElement> m_form;
-  Member<ValidityState> m_validityState;
-  String m_customValidationMessage;
+  Member<FormAttributeTargetObserver> form_attribute_target_observer_;
+  Member<HTMLFormElement> form_;
+  Member<ValidityState> validity_state_;
+  String custom_validation_message_;
   // If m_formWasSetByParser is true, m_form is always non-null.
-  bool m_formWasSetByParser;
+  bool form_was_set_by_parser_;
 };
 
-CORE_EXPORT HTMLElement* toHTMLElement(ListedElement*);
-CORE_EXPORT HTMLElement& toHTMLElement(ListedElement&);
-CORE_EXPORT const HTMLElement* toHTMLElement(const ListedElement*);
-CORE_EXPORT const HTMLElement& toHTMLElement(const ListedElement&);
+CORE_EXPORT HTMLElement* ToHTMLElement(ListedElement*);
+CORE_EXPORT HTMLElement& ToHTMLElement(ListedElement&);
+CORE_EXPORT const HTMLElement* ToHTMLElement(const ListedElement*);
+CORE_EXPORT const HTMLElement& ToHTMLElement(const ListedElement&);
 
 }  // namespace blink
 

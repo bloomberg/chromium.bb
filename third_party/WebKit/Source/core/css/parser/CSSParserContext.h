@@ -22,103 +22,104 @@ class CORE_EXPORT CSSParserContext
     : public GarbageCollectedFinalized<CSSParserContext> {
  public:
   // https://drafts.csswg.org/selectors/#profiles
-  enum SelectorProfile { DynamicProfile, StaticProfile };
+  enum SelectorProfile { kDynamicProfile, kStaticProfile };
 
   // All three of these factories copy the context and override the current
   // Document handle used for UseCounter.
-  static CSSParserContext* createWithStyleSheet(const CSSParserContext*,
+  static CSSParserContext* CreateWithStyleSheet(const CSSParserContext*,
                                                 const CSSStyleSheet*);
-  static CSSParserContext* createWithStyleSheetContents(
+  static CSSParserContext* CreateWithStyleSheetContents(
       const CSSParserContext*,
       const StyleSheetContents*);
   // FIXME: This constructor shouldn't exist if we properly piped the UseCounter
   // through the CSS subsystem. Currently the UseCounter life time is too crazy
   // and we need a way to override it.
-  static CSSParserContext* create(const CSSParserContext* other,
-                                  const Document* useCounterDocument);
+  static CSSParserContext* Create(const CSSParserContext* other,
+                                  const Document* use_counter_document);
 
-  static CSSParserContext* create(const CSSParserContext* other,
-                                  const KURL& baseURLOverride,
-                                  ReferrerPolicy referrerPolicyOverride,
-                                  const String& charsetOverride,
-                                  const Document* useCounterDocument);
+  static CSSParserContext* Create(const CSSParserContext* other,
+                                  const KURL& base_url_override,
+                                  ReferrerPolicy referrer_policy_override,
+                                  const String& charset_override,
+                                  const Document* use_counter_document);
 
-  static CSSParserContext* create(CSSParserMode,
-                                  SelectorProfile = DynamicProfile,
-                                  const Document* useCounterDocument = nullptr);
-  static CSSParserContext* create(const Document&);
-  static CSSParserContext* create(const Document&,
-                                  const KURL& baseURLOverride,
-                                  ReferrerPolicy referrerPolicyOverride,
-                                  const String& charset = emptyString,
-                                  SelectorProfile = DynamicProfile);
+  static CSSParserContext* Create(
+      CSSParserMode,
+      SelectorProfile = kDynamicProfile,
+      const Document* use_counter_document = nullptr);
+  static CSSParserContext* Create(const Document&);
+  static CSSParserContext* Create(const Document&,
+                                  const KURL& base_url_override,
+                                  ReferrerPolicy referrer_policy_override,
+                                  const String& charset = g_empty_string,
+                                  SelectorProfile = kDynamicProfile);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
     return !(*this == other);
   }
 
-  CSSParserMode mode() const { return m_mode; }
-  CSSParserMode matchMode() const { return m_matchMode; }
-  const KURL& baseURL() const { return m_baseURL; }
-  const String& charset() const { return m_charset; }
-  const Referrer& referrer() const { return m_referrer; }
-  bool isHTMLDocument() const { return m_isHTMLDocument; }
-  bool isDynamicProfile() const { return m_profile == DynamicProfile; }
-  bool isStaticProfile() const { return m_profile == StaticProfile; }
+  CSSParserMode Mode() const { return mode_; }
+  CSSParserMode MatchMode() const { return match_mode_; }
+  const KURL& BaseURL() const { return base_url_; }
+  const String& Charset() const { return charset_; }
+  const Referrer& GetReferrer() const { return referrer_; }
+  bool IsHTMLDocument() const { return is_html_document_; }
+  bool IsDynamicProfile() const { return profile_ == kDynamicProfile; }
+  bool IsStaticProfile() const { return profile_ == kStaticProfile; }
 
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this
   // can be removed any time after 2015. See http://crbug.com/277157.
-  bool useLegacyBackgroundSizeShorthandBehavior() const {
-    return m_useLegacyBackgroundSizeShorthandBehavior;
+  bool UseLegacyBackgroundSizeShorthandBehavior() const {
+    return use_legacy_background_size_shorthand_behavior_;
   }
 
   // FIXME: This setter shouldn't exist, however the current lifetime of
   // CSSParserContext is not well understood and thus we sometimes need to
   // override this field.
-  void setMode(CSSParserMode mode) { m_mode = mode; }
+  void SetMode(CSSParserMode mode) { mode_ = mode; }
 
-  KURL completeURL(const String& url) const;
+  KURL CompleteURL(const String& url) const;
 
-  void count(UseCounter::Feature) const;
-  void count(CSSParserMode, CSSPropertyID) const;
-  void countDeprecation(UseCounter::Feature) const;
-  bool isUseCounterRecordingEnabled() const { return m_document; }
-  bool isDocumentHandleEqual(const Document* other) const;
+  void Count(UseCounter::Feature) const;
+  void Count(CSSParserMode, CSSPropertyID) const;
+  void CountDeprecation(UseCounter::Feature) const;
+  bool IsUseCounterRecordingEnabled() const { return document_; }
+  bool IsDocumentHandleEqual(const Document* other) const;
 
-  ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy() const {
-    return m_shouldCheckContentSecurityPolicy;
+  ContentSecurityPolicyDisposition ShouldCheckContentSecurityPolicy() const {
+    return should_check_content_security_policy_;
   }
 
   DECLARE_TRACE();
 
  private:
-  CSSParserContext(const KURL& baseURL,
+  CSSParserContext(const KURL& base_url,
                    const String& charset,
                    CSSParserMode,
-                   CSSParserMode matchMode,
+                   CSSParserMode match_mode,
                    SelectorProfile,
                    const Referrer&,
-                   bool isHTMLDocument,
-                   bool useLegacyBackgroundSizeShorthandBehavior,
+                   bool is_html_document,
+                   bool use_legacy_background_size_shorthand_behavior,
                    ContentSecurityPolicyDisposition,
-                   const Document* useCounterDocument);
+                   const Document* use_counter_document);
 
-  KURL m_baseURL;
-  String m_charset;
-  CSSParserMode m_mode;
-  CSSParserMode m_matchMode;
-  SelectorProfile m_profile = DynamicProfile;
-  Referrer m_referrer;
-  bool m_isHTMLDocument;
-  bool m_useLegacyBackgroundSizeShorthandBehavior;
-  ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
+  KURL base_url_;
+  String charset_;
+  CSSParserMode mode_;
+  CSSParserMode match_mode_;
+  SelectorProfile profile_ = kDynamicProfile;
+  Referrer referrer_;
+  bool is_html_document_;
+  bool use_legacy_background_size_shorthand_behavior_;
+  ContentSecurityPolicyDisposition should_check_content_security_policy_;
 
-  WeakMember<const Document> m_document;
+  WeakMember<const Document> document_;
 };
 
-CORE_EXPORT const CSSParserContext* strictCSSParserContext();
+CORE_EXPORT const CSSParserContext* StrictCSSParserContext();
 
 }  // namespace blink
 

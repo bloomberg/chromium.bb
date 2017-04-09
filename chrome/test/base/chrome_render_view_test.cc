@@ -81,8 +81,8 @@ class MockAutofillAgent : public AutofillAgent {
   MOCK_CONST_METHOD0(IsUserGesture, bool());
 
  private:
-  void didAssociateFormControlsDynamically() override {
-    AutofillAgent::didAssociateFormControlsDynamically();
+  void DidAssociateFormControlsDynamically() override {
+    AutofillAgent::DidAssociateFormControlsDynamically();
     if (run_loop_)
       run_loop_->Quit();
   }

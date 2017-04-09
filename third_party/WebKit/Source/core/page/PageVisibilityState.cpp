@@ -32,13 +32,13 @@
 
 namespace blink {
 
-String pageVisibilityStateString(PageVisibilityState state) {
+String PageVisibilityStateString(PageVisibilityState state) {
   switch (state) {
-    case PageVisibilityStateVisible:
+    case kPageVisibilityStateVisible:
       return "visible";
-    case PageVisibilityStateHidden:
+    case kPageVisibilityStateHidden:
       return "hidden";
-    case PageVisibilityStatePrerender:
+    case kPageVisibilityStatePrerender:
       return "prerender";
   }
 

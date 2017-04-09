@@ -53,20 +53,20 @@ class WebHelperPluginImpl final : public WebHelperPlugin {
 
  public:
   // WebHelperPlugin methods:
-  WebPlugin* getPlugin() override;
-  void destroy() override;
+  WebPlugin* GetPlugin() override;
+  void Destroy() override;
 
  private:
   friend class WebHelperPlugin;
 
   WebHelperPluginImpl();
 
-  bool initialize(const String& pluginType, WebLocalFrameImpl*);
-  void reallyDestroy(TimerBase*);
+  bool Initialize(const String& plugin_type, WebLocalFrameImpl*);
+  void ReallyDestroy(TimerBase*);
 
-  Timer<WebHelperPluginImpl> m_destructionTimer;
-  Persistent<HTMLObjectElement> m_objectElement;
-  Persistent<WebPluginContainerImpl> m_pluginContainer;
+  Timer<WebHelperPluginImpl> destruction_timer_;
+  Persistent<HTMLObjectElement> object_element_;
+  Persistent<WebPluginContainerImpl> plugin_container_;
 };
 
 }  // namespace blink

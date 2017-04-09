@@ -36,7 +36,7 @@ OBJC_CLASS NSColor;
 namespace blink {
 
 // This function assumes NSColors are in DeviceRGB colorspace
-PLATFORM_EXPORT NSColor* nsColor(const Color&);
+PLATFORM_EXPORT NSColor* NsColor(const Color&);
 }
 
 #endif

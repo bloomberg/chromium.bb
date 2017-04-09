@@ -14,46 +14,46 @@
 
 namespace blink {
 
-void DrawingDisplayItem::replay(GraphicsContext& context) const {
-  if (m_record)
-    context.drawRecord(m_record);
+void DrawingDisplayItem::Replay(GraphicsContext& context) const {
+  if (record_)
+    context.DrawRecord(record_);
 }
 
-void DrawingDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void DrawingDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  if (m_record)
-    list->appendDrawingItem(visualRect, m_record);
+  if (record_)
+    list->AppendDrawingItem(visual_rect, record_);
 }
 
-bool DrawingDisplayItem::drawsContent() const {
-  return m_record.get();
+bool DrawingDisplayItem::DrawsContent() const {
+  return record_.get();
 }
 
-void DrawingDisplayItem::analyzeForGpuRasterization(
+void DrawingDisplayItem::AnalyzeForGpuRasterization(
     SkPictureGpuAnalyzer& analyzer) const {
   // TODO(enne): Need an SkPictureGpuAnalyzer on PictureRecord.
   // This is a bit overkill to ToSkPicture a record just to get
   // numSlowPaths.
-  if (!m_record)
+  if (!record_)
     return;
-  analyzer.analyzePicture(ToSkPicture(m_record).get());
+  analyzer.analyzePicture(ToSkPicture(record_).get());
 }
 
 #ifndef NDEBUG
-void DrawingDisplayItem::dumpPropertiesAsDebugString(
-    StringBuilder& stringBuilder) const {
-  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  if (m_record) {
-    stringBuilder.append(
-        String::format(", rect: [%f,%f %fx%f]", m_record->cullRect().x(),
-                       m_record->cullRect().y(), m_record->cullRect().width(),
-                       m_record->cullRect().height()));
+void DrawingDisplayItem::DumpPropertiesAsDebugString(
+    StringBuilder& string_builder) const {
+  DisplayItem::DumpPropertiesAsDebugString(string_builder);
+  if (record_) {
+    string_builder.Append(
+        String::Format(", rect: [%f,%f %fx%f]", record_->cullRect().x(),
+                       record_->cullRect().y(), record_->cullRect().width(),
+                       record_->cullRect().height()));
   }
 }
 #endif
 
-static bool recordsEqual(sk_sp<const PaintRecord> record1,
+static bool RecordsEqual(sk_sp<const PaintRecord> record1,
                          sk_sp<const PaintRecord> record2) {
   if (record1->approximateOpCount() != record2->approximateOpCount())
     return false;
@@ -64,7 +64,7 @@ static bool recordsEqual(sk_sp<const PaintRecord> record1,
   return data1->equals(data2.get());
 }
 
-static SkBitmap recordToBitmap(sk_sp<const PaintRecord> record) {
+static SkBitmap RecordToBitmap(sk_sp<const PaintRecord> record) {
   SkBitmap bitmap;
   SkRect rect = record->cullRect();
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
@@ -75,53 +75,53 @@ static SkBitmap recordToBitmap(sk_sp<const PaintRecord> record) {
   return bitmap;
 }
 
-static bool bitmapsEqual(sk_sp<const PaintRecord> record1,
+static bool BitmapsEqual(sk_sp<const PaintRecord> record1,
                          sk_sp<const PaintRecord> record2) {
   SkRect rect = record1->cullRect();
   if (rect != record2->cullRect())
     return false;
 
-  SkBitmap bitmap1 = recordToBitmap(record1);
-  SkBitmap bitmap2 = recordToBitmap(record2);
+  SkBitmap bitmap1 = RecordToBitmap(record1);
+  SkBitmap bitmap2 = RecordToBitmap(record2);
   bitmap1.lockPixels();
   bitmap2.lockPixels();
-  int mismatchCount = 0;
-  const int maxMismatches = 10;
-  for (int y = 0; y < rect.height() && mismatchCount < maxMismatches; ++y) {
-    for (int x = 0; x < rect.width() && mismatchCount < maxMismatches; ++x) {
+  int mismatch_count = 0;
+  const int kMaxMismatches = 10;
+  for (int y = 0; y < rect.height() && mismatch_count < kMaxMismatches; ++y) {
+    for (int x = 0; x < rect.width() && mismatch_count < kMaxMismatches; ++x) {
       SkColor pixel1 = bitmap1.getColor(x, y);
       SkColor pixel2 = bitmap2.getColor(x, y);
       if (pixel1 != pixel2) {
         LOG(ERROR) << "x=" << x << " y=" << y << " " << std::hex << pixel1
                    << " vs " << std::hex << pixel2;
-        ++mismatchCount;
+        ++mismatch_count;
       }
     }
   }
   bitmap1.unlockPixels();
   bitmap2.unlockPixels();
-  return !mismatchCount;
+  return !mismatch_count;
 }
 
-bool DrawingDisplayItem::equals(const DisplayItem& other) const {
-  if (!DisplayItem::equals(other))
+bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
+  if (!DisplayItem::Equals(other))
     return false;
 
   const sk_sp<const PaintRecord>& record = this->GetPaintRecord();
-  const sk_sp<const PaintRecord>& otherRecord =
+  const sk_sp<const PaintRecord>& other_record =
       static_cast<const DrawingDisplayItem&>(other).GetPaintRecord();
 
-  if (!record && !otherRecord)
+  if (!record && !other_record)
     return true;
-  if (!record || !otherRecord)
+  if (!record || !other_record)
     return false;
 
-  if (recordsEqual(record, otherRecord))
+  if (RecordsEqual(record, other_record))
     return true;
 
   // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  return bitmapsEqual(std::move(record), std::move(otherRecord));
+  return BitmapsEqual(std::move(record), std::move(other_record));
 }
 
 }  // namespace blink

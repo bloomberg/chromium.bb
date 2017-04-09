@@ -26,52 +26,53 @@
 
 namespace blink {
 
-SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document& document)
-    : SVGGeometryElement(tagName, document),
-      m_points(SVGAnimatedPointList::create(this,
-                                            SVGNames::pointsAttr,
-                                            SVGPointList::create())) {
-  addToPropertyMap(m_points);
+SVGPolyElement::SVGPolyElement(const QualifiedName& tag_name,
+                               Document& document)
+    : SVGGeometryElement(tag_name, document),
+      points_(SVGAnimatedPointList::Create(this,
+                                           SVGNames::pointsAttr,
+                                           SVGPointList::Create())) {
+  AddToPropertyMap(points_);
 }
 
 DEFINE_TRACE(SVGPolyElement) {
-  visitor->trace(m_points);
-  SVGGeometryElement::trace(visitor);
+  visitor->Trace(points_);
+  SVGGeometryElement::Trace(visitor);
 }
 
-Path SVGPolyElement::asPathFromPoints() const {
+Path SVGPolyElement::AsPathFromPoints() const {
   Path path;
 
-  SVGPointList* pointsValue = points()->currentValue();
-  if (pointsValue->isEmpty())
+  SVGPointList* points_value = Points()->CurrentValue();
+  if (points_value->IsEmpty())
     return path;
 
-  SVGPointList::ConstIterator it = pointsValue->begin();
-  SVGPointList::ConstIterator itEnd = pointsValue->end();
-  DCHECK(it != itEnd);
-  path.moveTo(it->value());
+  SVGPointList::ConstIterator it = points_value->begin();
+  SVGPointList::ConstIterator it_end = points_value->end();
+  DCHECK(it != it_end);
+  path.MoveTo(it->Value());
   ++it;
 
-  for (; it != itEnd; ++it)
-    path.addLineTo(it->value());
+  for (; it != it_end; ++it)
+    path.AddLineTo(it->Value());
 
   return path;
 }
 
-void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::pointsAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGPolyElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::pointsAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-    if (!layoutObject)
+    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
+    if (!layout_object)
       return;
 
-    layoutObject->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(layoutObject);
+    layout_object->SetNeedsShapeUpdate();
+    MarkForLayoutAndParentResourceInvalidation(layout_object);
     return;
   }
 
-  SVGGeometryElement::svgAttributeChanged(attrName);
+  SVGGeometryElement::SvgAttributeChanged(attr_name);
 }
 
 }  // namespace blink

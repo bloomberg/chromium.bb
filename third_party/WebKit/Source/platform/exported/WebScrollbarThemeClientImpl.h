@@ -47,43 +47,43 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl
   ~WebScrollbarThemeClientImpl() override;
 
   // Implement ScrollbarThemeClient interface
-  int x() const override;
-  int y() const override;
-  int width() const override;
-  int height() const override;
+  int X() const override;
+  int Y() const override;
+  int Width() const override;
+  int Height() const override;
   IntSize size() const override;
-  IntPoint location() const override;
-  FrameViewBase* parent() const override;
-  FrameViewBase* root() const override;
-  void setFrameRect(const IntRect&) override;
-  IntRect frameRect() const override;
-  void invalidate() override;
-  void invalidateRect(const IntRect&) override;
-  ScrollbarOverlayColorTheme getScrollbarOverlayColorTheme() const override;
-  void getTickmarks(Vector<IntRect>&) const override;
-  bool isScrollableAreaActive() const override;
-  IntPoint convertFromRootFrame(const IntPoint&) const override;
-  bool isCustomScrollbar() const override;
-  ScrollbarOrientation orientation() const override;
-  bool isLeftSideVerticalScrollbar() const override;
-  int value() const override;
-  float currentPos() const override;
-  int visibleSize() const override;
-  int totalSize() const override;
-  int maximum() const override;
-  ScrollbarControlSize controlSize() const override;
-  ScrollbarPart pressedPart() const override;
-  ScrollbarPart hoveredPart() const override;
-  void styleChanged() override;
-  void setScrollbarsHidden(bool) override;
-  bool enabled() const override;
-  void setEnabled(bool) override;
-  bool isOverlayScrollbar() const override;
-  float elasticOverscroll() const override;
-  void setElasticOverscroll(float) override;
+  IntPoint Location() const override;
+  FrameViewBase* Parent() const override;
+  FrameViewBase* Root() const override;
+  void SetFrameRect(const IntRect&) override;
+  IntRect FrameRect() const override;
+  void Invalidate() override;
+  void InvalidateRect(const IntRect&) override;
+  ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const override;
+  void GetTickmarks(Vector<IntRect>&) const override;
+  bool IsScrollableAreaActive() const override;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const override;
+  bool IsCustomScrollbar() const override;
+  ScrollbarOrientation Orientation() const override;
+  bool IsLeftSideVerticalScrollbar() const override;
+  int Value() const override;
+  float CurrentPos() const override;
+  int VisibleSize() const override;
+  int TotalSize() const override;
+  int Maximum() const override;
+  ScrollbarControlSize GetControlSize() const override;
+  ScrollbarPart PressedPart() const override;
+  ScrollbarPart HoveredPart() const override;
+  void StyleChanged() override;
+  void SetScrollbarsHidden(bool) override;
+  bool Enabled() const override;
+  void SetEnabled(bool) override;
+  bool IsOverlayScrollbar() const override;
+  float ElasticOverscroll() const override;
+  void SetElasticOverscroll(float) override;
 
  private:
-  WebScrollbar& m_scrollbar;
+  WebScrollbar& scrollbar_;
 };
 
 }  // namespace blink

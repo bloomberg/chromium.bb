@@ -28,115 +28,116 @@
 
 namespace blink {
 
-SVGRect::SVGRect() : m_isValid(true) {}
+SVGRect::SVGRect() : is_valid_(true) {}
 
-SVGRect::SVGRect(const FloatRect& rect) : m_isValid(true), m_value(rect) {}
+SVGRect::SVGRect(const FloatRect& rect) : is_valid_(true), value_(rect) {}
 
-SVGRect* SVGRect::clone() const {
-  return SVGRect::create(m_value);
+SVGRect* SVGRect::Clone() const {
+  return SVGRect::Create(value_);
 }
 
 template <typename CharType>
-SVGParsingError SVGRect::parse(const CharType*& ptr, const CharType* end) {
+SVGParsingError SVGRect::Parse(const CharType*& ptr, const CharType* end) {
   const CharType* start = ptr;
   float x = 0;
   float y = 0;
   float width = 0;
   float height = 0;
-  if (!parseNumber(ptr, end, x) || !parseNumber(ptr, end, y) ||
-      !parseNumber(ptr, end, width) ||
-      !parseNumber(ptr, end, height, DisallowWhitespace))
-    return SVGParsingError(SVGParseStatus::ExpectedNumber, ptr - start);
+  if (!ParseNumber(ptr, end, x) || !ParseNumber(ptr, end, y) ||
+      !ParseNumber(ptr, end, width) ||
+      !ParseNumber(ptr, end, height, kDisallowWhitespace))
+    return SVGParsingError(SVGParseStatus::kExpectedNumber, ptr - start);
 
-  if (skipOptionalSVGSpaces(ptr, end)) {
+  if (SkipOptionalSVGSpaces(ptr, end)) {
     // Nothing should come after the last, fourth number.
-    return SVGParsingError(SVGParseStatus::TrailingGarbage, ptr - start);
+    return SVGParsingError(SVGParseStatus::kTrailingGarbage, ptr - start);
   }
 
-  m_value = FloatRect(x, y, width, height);
-  m_isValid = true;
-  return SVGParseStatus::NoError;
+  value_ = FloatRect(x, y, width, height);
+  is_valid_ = true;
+  return SVGParseStatus::kNoError;
 }
 
-SVGParsingError SVGRect::setValueAsString(const String& string) {
-  setInvalid();
+SVGParsingError SVGRect::SetValueAsString(const String& string) {
+  SetInvalid();
 
-  if (string.isNull())
-    return SVGParseStatus::NoError;
+  if (string.IsNull())
+    return SVGParseStatus::kNoError;
 
-  if (string.isEmpty())
-    return SVGParsingError(SVGParseStatus::ExpectedNumber, 0);
+  if (string.IsEmpty())
+    return SVGParsingError(SVGParseStatus::kExpectedNumber, 0);
 
-  if (string.is8Bit()) {
-    const LChar* ptr = string.characters8();
+  if (string.Is8Bit()) {
+    const LChar* ptr = string.Characters8();
     const LChar* end = ptr + string.length();
-    return parse(ptr, end);
+    return Parse(ptr, end);
   }
-  const UChar* ptr = string.characters16();
+  const UChar* ptr = string.Characters16();
   const UChar* end = ptr + string.length();
-  return parse(ptr, end);
+  return Parse(ptr, end);
 }
 
-String SVGRect::valueAsString() const {
+String SVGRect::ValueAsString() const {
   StringBuilder builder;
-  builder.appendNumber(x());
-  builder.append(' ');
-  builder.appendNumber(y());
-  builder.append(' ');
-  builder.appendNumber(width());
-  builder.append(' ');
-  builder.appendNumber(height());
-  return builder.toString();
+  builder.AppendNumber(X());
+  builder.Append(' ');
+  builder.AppendNumber(Y());
+  builder.Append(' ');
+  builder.AppendNumber(Width());
+  builder.Append(' ');
+  builder.AppendNumber(Height());
+  return builder.ToString();
 }
 
-void SVGRect::add(SVGPropertyBase* other, SVGElement*) {
-  m_value += toSVGRect(other)->value();
+void SVGRect::Add(SVGPropertyBase* other, SVGElement*) {
+  value_ += ToSVGRect(other)->Value();
 }
 
-void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement,
-                                     float percentage,
-                                     unsigned repeatCount,
-                                     SVGPropertyBase* fromValue,
-                                     SVGPropertyBase* toValue,
-                                     SVGPropertyBase* toAtEndOfDurationValue,
-                                     SVGElement*) {
-  DCHECK(animationElement);
-  SVGRect* fromRect = animationElement->getAnimationMode() == ToAnimation
-                          ? this
-                          : toSVGRect(fromValue);
-  SVGRect* toRect = toSVGRect(toValue);
-  SVGRect* toAtEndOfDurationRect = toSVGRect(toAtEndOfDurationValue);
+void SVGRect::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from_value,
+    SVGPropertyBase* to_value,
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement*) {
+  DCHECK(animation_element);
+  SVGRect* from_rect = animation_element->GetAnimationMode() == kToAnimation
+                           ? this
+                           : ToSVGRect(from_value);
+  SVGRect* to_rect = ToSVGRect(to_value);
+  SVGRect* to_at_end_of_duration_rect = ToSVGRect(to_at_end_of_duration_value);
 
-  float animatedX = x();
-  float animatedY = y();
-  float animatedWidth = width();
-  float animatedHeight = height();
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromRect->x(), toRect->x(),
-      toAtEndOfDurationRect->x(), animatedX);
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromRect->y(), toRect->y(),
-      toAtEndOfDurationRect->y(), animatedY);
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromRect->width(), toRect->width(),
-      toAtEndOfDurationRect->width(), animatedWidth);
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromRect->height(), toRect->height(),
-      toAtEndOfDurationRect->height(), animatedHeight);
+  float animated_x = X();
+  float animated_y = Y();
+  float animated_width = Width();
+  float animated_height = Height();
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_rect->X(), to_rect->X(),
+      to_at_end_of_duration_rect->X(), animated_x);
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_rect->Y(), to_rect->Y(),
+      to_at_end_of_duration_rect->Y(), animated_y);
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_rect->Width(), to_rect->Width(),
+      to_at_end_of_duration_rect->Width(), animated_width);
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_rect->Height(), to_rect->Height(),
+      to_at_end_of_duration_rect->Height(), animated_height);
 
-  m_value = FloatRect(animatedX, animatedY, animatedWidth, animatedHeight);
+  value_ = FloatRect(animated_x, animated_y, animated_width, animated_height);
 }
 
-float SVGRect::calculateDistance(SVGPropertyBase* to,
-                                 SVGElement* contextElement) {
+float SVGRect::CalculateDistance(SVGPropertyBase* to,
+                                 SVGElement* context_element) {
   // FIXME: Distance calculation is not possible for SVGRect right now. We need
   // the distance for every single value.
   return -1;
 }
 
-void SVGRect::setInvalid() {
-  m_value = FloatRect(0.0f, 0.0f, 0.0f, 0.0f);
-  m_isValid = false;
+void SVGRect::SetInvalid() {
+  value_ = FloatRect(0.0f, 0.0f, 0.0f, 0.0f);
+  is_valid_ = false;
 }
 
 }  // namespace blink

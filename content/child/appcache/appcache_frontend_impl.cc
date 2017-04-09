@@ -94,47 +94,52 @@ void AppCacheFrontendImpl::OnContentBlocked(int host_id,
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatched enum: " #a)
 
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Uncached, APPCACHE_STATUS_UNCACHED);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Idle, APPCACHE_STATUS_IDLE);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Checking, APPCACHE_STATUS_CHECKING);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Downloading,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
+                   APPCACHE_STATUS_UNCACHED);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, APPCACHE_STATUS_IDLE);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
+                   APPCACHE_STATUS_CHECKING);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
                    APPCACHE_STATUS_DOWNLOADING);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::UpdateReady,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
                    APPCACHE_STATUS_UPDATE_READY);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Obsolete, APPCACHE_STATUS_OBSOLETE);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
+                   APPCACHE_STATUS_OBSOLETE);
 
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::CheckingEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
                    APPCACHE_CHECKING_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ErrorEvent, APPCACHE_ERROR_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::NoUpdateEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent, APPCACHE_ERROR_EVENT);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
                    APPCACHE_NO_UPDATE_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::DownloadingEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
                    APPCACHE_DOWNLOADING_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ProgressEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
                    APPCACHE_PROGRESS_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::UpdateReadyEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
                    APPCACHE_UPDATE_READY_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::CachedEvent, APPCACHE_CACHED_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ObsoleteEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
+                   APPCACHE_CACHED_EVENT);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
                    APPCACHE_OBSOLETE_EVENT);
 
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ManifestError,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kManifestError,
                    APPCACHE_MANIFEST_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::SignatureError,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kSignatureError,
                    APPCACHE_SIGNATURE_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ResourceError,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kResourceError,
                    APPCACHE_RESOURCE_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ChangedError,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChangedError,
                    APPCACHE_CHANGED_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::AbortError, APPCACHE_ABORT_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::QuotaError, APPCACHE_QUOTA_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::PolicyError, APPCACHE_POLICY_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::UnknownError,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kAbortError, APPCACHE_ABORT_ERROR);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kQuotaError, APPCACHE_QUOTA_ERROR);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kPolicyError,
+                   APPCACHE_POLICY_ERROR);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUnknownError,
                    APPCACHE_UNKNOWN_ERROR);
 
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelVerbose, APPCACHE_LOG_VERBOSE);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelInfo, APPCACHE_LOG_INFO);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelWarning, APPCACHE_LOG_WARNING);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelError, APPCACHE_LOG_ERROR);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, APPCACHE_LOG_VERBOSE);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, APPCACHE_LOG_INFO);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, APPCACHE_LOG_WARNING);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelError, APPCACHE_LOG_ERROR);
 
 }  // namespace content

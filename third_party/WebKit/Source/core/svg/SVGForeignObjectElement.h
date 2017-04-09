@@ -33,30 +33,30 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
  public:
   DECLARE_NODE_FACTORY(SVGForeignObjectElement);
 
-  SVGAnimatedLength* x() const { return m_x.get(); }
-  SVGAnimatedLength* y() const { return m_y.get(); }
-  SVGAnimatedLength* width() const { return m_width.get(); }
-  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedLength* x() const { return x_.Get(); }
+  SVGAnimatedLength* y() const { return y_.Get(); }
+  SVGAnimatedLength* width() const { return width_.Get(); }
+  SVGAnimatedLength* height() const { return height_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGForeignObjectElement(Document&);
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  Member<SVGAnimatedLength> m_x;
-  Member<SVGAnimatedLength> m_y;
-  Member<SVGAnimatedLength> m_width;
-  Member<SVGAnimatedLength> m_height;
+  Member<SVGAnimatedLength> x_;
+  Member<SVGAnimatedLength> y_;
+  Member<SVGAnimatedLength> width_;
+  Member<SVGAnimatedLength> height_;
 };
 
 }  // namespace blink

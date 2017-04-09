@@ -28,66 +28,66 @@
 namespace blink {
 
 SVGTextPositioningElement::SVGTextPositioningElement(
-    const QualifiedName& tagName,
+    const QualifiedName& tag_name,
     Document& document)
-    : SVGTextContentElement(tagName, document),
-      m_x(SVGAnimatedLengthList::create(
+    : SVGTextContentElement(tag_name, document),
+      x_(SVGAnimatedLengthList::Create(
           this,
           SVGNames::xAttr,
-          SVGLengthList::create(SVGLengthMode::Width))),
-      m_y(SVGAnimatedLengthList::create(
+          SVGLengthList::Create(SVGLengthMode::kWidth))),
+      y_(SVGAnimatedLengthList::Create(
           this,
           SVGNames::yAttr,
-          SVGLengthList::create(SVGLengthMode::Height))),
-      m_dx(SVGAnimatedLengthList::create(
+          SVGLengthList::Create(SVGLengthMode::kHeight))),
+      dx_(SVGAnimatedLengthList::Create(
           this,
           SVGNames::dxAttr,
-          SVGLengthList::create(SVGLengthMode::Width))),
-      m_dy(SVGAnimatedLengthList::create(
+          SVGLengthList::Create(SVGLengthMode::kWidth))),
+      dy_(SVGAnimatedLengthList::Create(
           this,
           SVGNames::dyAttr,
-          SVGLengthList::create(SVGLengthMode::Height))),
-      m_rotate(SVGAnimatedNumberList::create(this, SVGNames::rotateAttr)) {
-  addToPropertyMap(m_x);
-  addToPropertyMap(m_y);
-  addToPropertyMap(m_dx);
-  addToPropertyMap(m_dy);
-  addToPropertyMap(m_rotate);
+          SVGLengthList::Create(SVGLengthMode::kHeight))),
+      rotate_(SVGAnimatedNumberList::Create(this, SVGNames::rotateAttr)) {
+  AddToPropertyMap(x_);
+  AddToPropertyMap(y_);
+  AddToPropertyMap(dx_);
+  AddToPropertyMap(dy_);
+  AddToPropertyMap(rotate_);
 }
 
 DEFINE_TRACE(SVGTextPositioningElement) {
-  visitor->trace(m_x);
-  visitor->trace(m_y);
-  visitor->trace(m_dx);
-  visitor->trace(m_dy);
-  visitor->trace(m_rotate);
-  SVGTextContentElement::trace(visitor);
+  visitor->Trace(x_);
+  visitor->Trace(y_);
+  visitor->Trace(dx_);
+  visitor->Trace(dy_);
+  visitor->Trace(rotate_);
+  SVGTextContentElement::Trace(visitor);
 }
 
-void SVGTextPositioningElement::svgAttributeChanged(
-    const QualifiedName& attrName) {
-  bool updateRelativeLengths =
-      attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::dxAttr || attrName == SVGNames::dyAttr;
+void SVGTextPositioningElement::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  bool update_relative_lengths =
+      attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
+      attr_name == SVGNames::dxAttr || attr_name == SVGNames::dyAttr;
 
-  if (updateRelativeLengths)
-    updateRelativeLengthsInformation();
+  if (update_relative_lengths)
+    UpdateRelativeLengthsInformation();
 
-  if (updateRelativeLengths || attrName == SVGNames::rotateAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+  if (update_relative_lengths || attr_name == SVGNames::rotateAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    LayoutObject* layoutObject = this->layoutObject();
-    if (!layoutObject)
+    LayoutObject* layout_object = this->GetLayoutObject();
+    if (!layout_object)
       return;
 
-    if (LayoutSVGText* textLayoutObject =
-            LayoutSVGText::locateLayoutSVGTextAncestor(layoutObject))
-      textLayoutObject->setNeedsPositioningValuesUpdate();
-    markForLayoutAndParentResourceInvalidation(layoutObject);
+    if (LayoutSVGText* text_layout_object =
+            LayoutSVGText::LocateLayoutSVGTextAncestor(layout_object))
+      text_layout_object->SetNeedsPositioningValuesUpdate();
+    MarkForLayoutAndParentResourceInvalidation(layout_object);
     return;
   }
 
-  SVGTextContentElement::svgAttributeChanged(attrName);
+  SVGTextContentElement::SvgAttributeChanged(attr_name);
 }
 
 }  // namespace blink

@@ -23,7 +23,7 @@ namespace blink {
 class MODULES_EXPORT AudioWorkletProcessorDefinition final
     : public GarbageCollectedFinalized<AudioWorkletProcessorDefinition> {
  public:
-  static AudioWorkletProcessorDefinition* create(
+  static AudioWorkletProcessorDefinition* Create(
       v8::Isolate*,
       const String& name,
       v8::Local<v8::Function> constructor,
@@ -31,9 +31,9 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
 
   virtual ~AudioWorkletProcessorDefinition();
 
-  const String& name() const { return m_name; }
-  v8::Local<v8::Function> constructorLocal(v8::Isolate*);
-  v8::Local<v8::Function> processLocal(v8::Isolate*);
+  const String& GetName() const { return name_; }
+  v8::Local<v8::Function> ConstructorLocal(v8::Isolate*);
+  v8::Local<v8::Function> ProcessLocal(v8::Isolate*);
 
   DEFINE_INLINE_TRACE(){};
 
@@ -43,12 +43,12 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
                                   v8::Local<v8::Function> constructor,
                                   v8::Local<v8::Function> process);
 
-  const String m_name;
+  const String name_;
 
   // The definition is per global scope. The active instance of
   // |AudioProcessorWorklet| should be passed into these to perform JS function.
-  ScopedPersistent<v8::Function> m_constructor;
-  ScopedPersistent<v8::Function> m_process;
+  ScopedPersistent<v8::Function> constructor_;
+  ScopedPersistent<v8::Function> process_;
 
   // TODO(hongchan): A container for AudioParamDescriptor objects.
   // ScopedPersistent<v8::Array> m_parameterDescriptors;

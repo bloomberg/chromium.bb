@@ -39,33 +39,33 @@ class ChooserOnlyTemporalInputTypeView final
       public KeyboardClickableInputTypeView,
       public DateTimeChooserClient {
   USING_GARBAGE_COLLECTED_MIXIN(ChooserOnlyTemporalInputTypeView);
-  USING_PRE_FINALIZER(ChooserOnlyTemporalInputTypeView, closeDateTimeChooser);
+  USING_PRE_FINALIZER(ChooserOnlyTemporalInputTypeView, CloseDateTimeChooser);
 
  public:
-  static ChooserOnlyTemporalInputTypeView* create(HTMLInputElement&,
+  static ChooserOnlyTemporalInputTypeView* Create(HTMLInputElement&,
                                                   BaseTemporalInputType&);
   ~ChooserOnlyTemporalInputTypeView() override;
   DECLARE_VIRTUAL_TRACE();
 
  private:
   ChooserOnlyTemporalInputTypeView(HTMLInputElement&, BaseTemporalInputType&);
-  void closeDateTimeChooser();
+  void CloseDateTimeChooser();
 
   // InputTypeView functions:
-  void createShadowSubtree() override;
-  void closePopupView() override;
-  void didSetValue(const String&, bool valueChanged) override;
-  void handleDOMActivateEvent(Event*) override;
-  void updateView() override;
+  void CreateShadowSubtree() override;
+  void ClosePopupView() override;
+  void DidSetValue(const String&, bool value_changed) override;
+  void HandleDOMActivateEvent(Event*) override;
+  void UpdateView() override;
 
   // DateTimeChooserClient functions:
-  Element& ownerElement() const override;
-  void didChooseValue(const String&) override;
-  void didChooseValue(double) override;
-  void didEndChooser() override;
+  Element& OwnerElement() const override;
+  void DidChooseValue(const String&) override;
+  void DidChooseValue(double) override;
+  void DidEndChooser() override;
 
-  Member<BaseTemporalInputType> m_inputType;
-  Member<DateTimeChooser> m_dateTimeChooser;
+  Member<BaseTemporalInputType> input_type_;
+  Member<DateTimeChooser> date_time_chooser_;
 };
 
 }  // namespace blink

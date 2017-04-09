@@ -56,20 +56,20 @@ ContentSerializedNavigationDriver::~ContentSerializedNavigationDriver() {
 }
 
 int ContentSerializedNavigationDriver::GetDefaultReferrerPolicy() const {
-  return blink::WebReferrerPolicyDefault;
+  return blink::kWebReferrerPolicyDefault;
 }
 
 bool ContentSerializedNavigationDriver::MapReferrerPolicyToOldValues(
     int referrer_policy,
     int* mapped_referrer_policy) const {
   switch (referrer_policy) {
-    case blink::WebReferrerPolicyAlways:
-    case blink::WebReferrerPolicyDefault:
+    case blink::kWebReferrerPolicyAlways:
+    case blink::kWebReferrerPolicyDefault:
       // "always" and "default" are the same value in all versions.
       *mapped_referrer_policy = referrer_policy;
       return true;
 
-    case blink::WebReferrerPolicyOrigin:
+    case blink::kWebReferrerPolicyOrigin:
       // "origin" exists in the old encoding.
       *mapped_referrer_policy = kObsoleteReferrerPolicyOrigin;
       return true;
@@ -93,7 +93,7 @@ bool ContentSerializedNavigationDriver::MapReferrerPolicyToNewValues(
 
     default:
       // Since we don't know what encoding was used, we map the rest to "never".
-      *mapped_referrer_policy = blink::WebReferrerPolicyNever;
+      *mapped_referrer_policy = blink::kWebReferrerPolicyNever;
       return false;
   }
 }

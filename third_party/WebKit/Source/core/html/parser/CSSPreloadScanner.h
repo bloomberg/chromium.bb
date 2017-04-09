@@ -48,52 +48,52 @@ class CSSPreloadScanner {
   CSSPreloadScanner();
   ~CSSPreloadScanner();
 
-  void reset();
+  void Reset();
 
-  void scan(const HTMLToken::DataVector&,
+  void Scan(const HTMLToken::DataVector&,
             const SegmentedString&,
             PreloadRequestStream&,
             const KURL&);
-  void scan(const String&,
+  void Scan(const String&,
             const SegmentedString&,
             PreloadRequestStream&,
             const KURL&);
 
-  void setReferrerPolicy(const ReferrerPolicy);
+  void SetReferrerPolicy(const ReferrerPolicy);
 
  private:
   enum State {
-    Initial,
-    MaybeComment,
-    Comment,
-    MaybeCommentEnd,
-    RuleStart,
-    Rule,
-    AfterRule,
-    RuleValue,
-    AfterRuleValue,
-    DoneParsingImportRules,
+    kInitial,
+    kMaybeComment,
+    kComment,
+    kMaybeCommentEnd,
+    kRuleStart,
+    kRule,
+    kAfterRule,
+    kRuleValue,
+    kAfterRuleValue,
+    kDoneParsingImportRules,
   };
 
   template <typename Char>
-  void scanCommon(const Char* begin,
+  void ScanCommon(const Char* begin,
                   const Char* end,
                   const SegmentedString&,
                   PreloadRequestStream&,
                   const KURL&);
 
-  inline void tokenize(UChar, const SegmentedString&);
-  void emitRule(const SegmentedString&);
+  inline void Tokenize(UChar, const SegmentedString&);
+  void EmitRule(const SegmentedString&);
 
-  State m_state = Initial;
-  StringBuilder m_rule;
-  StringBuilder m_ruleValue;
+  State state_ = kInitial;
+  StringBuilder rule_;
+  StringBuilder rule_value_;
 
-  ReferrerPolicy m_referrerPolicy = ReferrerPolicyDefault;
+  ReferrerPolicy referrer_policy_ = kReferrerPolicyDefault;
 
   // Below members only non-null during scan()
-  PreloadRequestStream* m_requests = nullptr;
-  const KURL* m_predictedBaseElementURL = nullptr;
+  PreloadRequestStream* requests_ = nullptr;
+  const KURL* predicted_base_element_url_ = nullptr;
 };
 
 // Each CSSPreloaderResourceClient keeps track of a single CSS resource, and
@@ -107,33 +107,33 @@ class CORE_EXPORT CSSPreloaderResourceClient
  public:
   CSSPreloaderResourceClient(Resource*, HTMLResourcePreloader*);
   ~CSSPreloaderResourceClient();
-  void setCSSStyleSheet(const String& href,
-                        const KURL& baseURL,
+  void SetCSSStyleSheet(const String& href,
+                        const KURL& base_url,
                         ReferrerPolicy,
                         const String& charset,
                         const CSSStyleSheetResource*) override;
-  void didAppendFirstData(const CSSStyleSheetResource*) override;
-  String debugName() const override { return "CSSPreloaderResourceClient"; }
+  void DidAppendFirstData(const CSSStyleSheetResource*) override;
+  String DebugName() const override { return "CSSPreloaderResourceClient"; }
 
   DECLARE_TRACE();
 
  protected:
   // Protected for tests, which don't want to initialize a fully featured
   // DocumentLoader.
-  virtual void fetchPreloads(PreloadRequestStream& preloads);
+  virtual void FetchPreloads(PreloadRequestStream& preloads);
 
  private:
-  void scanCSS(const CSSStyleSheetResource*);
-  void clearResource();
+  void ScanCSS(const CSSStyleSheetResource*);
+  void ClearResource();
 
   enum PreloadPolicy {
-    ScanOnly,
-    ScanAndPreload,
+    kScanOnly,
+    kScanAndPreload,
   };
 
-  const PreloadPolicy m_policy;
-  WeakMember<HTMLResourcePreloader> m_preloader;
-  WeakMember<CSSStyleSheetResource> m_resource;
+  const PreloadPolicy policy_;
+  WeakMember<HTMLResourcePreloader> preloader_;
+  WeakMember<CSSStyleSheetResource> resource_;
 };
 
 }  // namespace blink

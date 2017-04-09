@@ -44,21 +44,21 @@ class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedNumberList* create(SVGElement* contextElement,
-                                       const QualifiedName& attributeName) {
-    return new SVGAnimatedNumberList(contextElement, attributeName);
+  static SVGAnimatedNumberList* Create(SVGElement* context_element,
+                                       const QualifiedName& attribute_name) {
+    return new SVGAnimatedNumberList(context_element, attribute_name);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->traceWrappers(contextElement());
+    visitor->TraceWrappers(contextElement());
   }
 
  protected:
-  SVGAnimatedNumberList(SVGElement* contextElement,
-                        const QualifiedName& attributeName)
-      : SVGAnimatedProperty<SVGNumberList>(contextElement,
-                                           attributeName,
-                                           SVGNumberList::create()) {}
+  SVGAnimatedNumberList(SVGElement* context_element,
+                        const QualifiedName& attribute_name)
+      : SVGAnimatedProperty<SVGNumberList>(context_element,
+                                           attribute_name,
+                                           SVGNumberList::Create()) {}
 };
 
 }  // namespace blink

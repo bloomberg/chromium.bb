@@ -40,43 +40,43 @@ class HTMLImportState {
   DISALLOW_NEW();
 
  public:
-  enum Value { BlockingScriptExecution = 0, Active, Ready, Invalid };
+  enum Value { kBlockingScriptExecution = 0, kActive, kReady, kInvalid };
 
-  explicit HTMLImportState(Value value = BlockingScriptExecution)
-      : m_value(value) {}
+  explicit HTMLImportState(Value value = kBlockingScriptExecution)
+      : value_(value) {}
 
-  bool shouldBlockScriptExecution() const {
-    return checkedValue() <= BlockingScriptExecution;
+  bool ShouldBlockScriptExecution() const {
+    return CheckedValue() <= kBlockingScriptExecution;
   }
-  bool isReady() const { return checkedValue() == Ready; }
-  bool isValid() const { return m_value != Invalid; }
+  bool IsReady() const { return CheckedValue() == kReady; }
+  bool IsValid() const { return value_ != kInvalid; }
   bool operator==(const HTMLImportState& other) const {
-    return m_value == other.m_value;
+    return value_ == other.value_;
   }
   bool operator!=(const HTMLImportState& other) const {
     return !(*this == other);
   }
   bool operator<=(const HTMLImportState& other) const {
-    return m_value <= other.m_value;
+    return value_ <= other.value_;
   }
 
 #if !defined(NDEBUG)
-  Value peekValueForDebug() const { return m_value; }
+  Value PeekValueForDebug() const { return value_; }
 #endif
 
-  static HTMLImportState invalidState() { return HTMLImportState(Invalid); }
-  static HTMLImportState blockedState() {
-    return HTMLImportState(BlockingScriptExecution);
+  static HTMLImportState InvalidState() { return HTMLImportState(kInvalid); }
+  static HTMLImportState BlockedState() {
+    return HTMLImportState(kBlockingScriptExecution);
   }
 
  private:
-  Value checkedValue() const;
-  Value m_value;
+  Value CheckedValue() const;
+  Value value_;
 };
 
-inline HTMLImportState::Value HTMLImportState::checkedValue() const {
-  DCHECK(isValid());
-  return m_value;
+inline HTMLImportState::Value HTMLImportState::CheckedValue() const {
+  DCHECK(IsValid());
+  return value_;
 }
 
 }  // namespace blink

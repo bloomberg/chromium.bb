@@ -15,31 +15,31 @@ class ComputedStyle;
 
 class LayoutTextItem : public LayoutItem {
  public:
-  explicit LayoutTextItem(LayoutText* layoutText) : LayoutItem(layoutText) {}
+  explicit LayoutTextItem(LayoutText* layout_text) : LayoutItem(layout_text) {}
 
   explicit LayoutTextItem(const LayoutItem& item) : LayoutItem(item) {
-    SECURITY_DCHECK(!item || item.isText());
+    SECURITY_DCHECK(!item || item.IsText());
   }
 
   explicit LayoutTextItem(std::nullptr_t) : LayoutItem(nullptr) {}
 
   LayoutTextItem() {}
 
-  void setStyle(PassRefPtr<ComputedStyle> style) {
-    toText()->setStyle(std::move(style));
+  void SetStyle(PassRefPtr<ComputedStyle> style) {
+    ToText()->SetStyle(std::move(style));
   }
 
-  void setText(PassRefPtr<StringImpl> text, bool force = false) {
-    toText()->setText(std::move(text), force);
+  void SetText(PassRefPtr<StringImpl> text, bool force = false) {
+    ToText()->SetText(std::move(text), force);
   }
 
-  bool isTextFragment() const { return toText()->isTextFragment(); }
+  bool IsTextFragment() const { return ToText()->IsTextFragment(); }
 
-  void dirtyLineBoxes() { toText()->dirtyLineBoxes(); }
+  void DirtyLineBoxes() { ToText()->DirtyLineBoxes(); }
 
  private:
-  LayoutText* toText() { return toLayoutText(layoutObject()); }
-  const LayoutText* toText() const { return toLayoutText(layoutObject()); }
+  LayoutText* ToText() { return ToLayoutText(GetLayoutObject()); }
+  const LayoutText* ToText() const { return ToLayoutText(GetLayoutObject()); }
 };
 
 }  // namespace blink

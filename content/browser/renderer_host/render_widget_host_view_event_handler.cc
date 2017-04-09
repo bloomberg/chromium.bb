@@ -97,11 +97,11 @@ bool IsXButtonUpEvent(const ui::MouseEvent* event) {
 // touchcancel.
 void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
                                           int changed_touch_id) {
-  if (event->type() == blink::WebInputEvent::TouchMove ||
-      event->type() == blink::WebInputEvent::TouchCancel) {
-    for (size_t i = 0; i < event->touchesLength; ++i) {
+  if (event->GetType() == blink::WebInputEvent::kTouchMove ||
+      event->GetType() == blink::WebInputEvent::kTouchCancel) {
+    for (size_t i = 0; i < event->touches_length; ++i) {
       if (event->touches[i].id != changed_touch_id)
-        event->touches[i].state = blink::WebTouchPoint::StateStationary;
+        event->touches[i].state = blink::WebTouchPoint::kStateStationary;
     }
   }
 }
@@ -109,7 +109,7 @@ void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
 bool NeedsInputGrab(content::RenderWidgetHostViewBase* view) {
   if (!view)
     return false;
-  return view->GetPopupType() == blink::WebPopupTypePage;
+  return view->GetPopupType() == blink::kWebPopupTypePage;
 }
 
 }  // namespace
@@ -336,7 +336,7 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     blink::WebMouseWheelEvent mouse_wheel_event =
         ui::MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event),
                                    base::Bind(&GetScreenLocationFromEvent));
-    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0) {
+    if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
       if (ShouldRouteEvent(event)) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             host_view_, &mouse_wheel_event, *event->latency());
@@ -507,8 +507,8 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
     // event to stop any in-progress flings.
     blink::WebGestureEvent fling_cancel = gesture;
-    fling_cancel.setType(blink::WebInputEvent::GestureFlingCancel);
-    fling_cancel.sourceDevice = blink::WebGestureDeviceTouchscreen;
+    fling_cancel.SetType(blink::WebInputEvent::kGestureFlingCancel);
+    fling_cancel.source_device = blink::kWebGestureDeviceTouchscreen;
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &fling_cancel,
@@ -518,7 +518,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
-  if (gesture.type() != blink::WebInputEvent::Undefined) {
+  if (gesture.GetType() != blink::WebInputEvent::kUndefined) {
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &gesture, *event->latency());
@@ -693,7 +693,7 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
     blink::WebMouseWheelEvent mouse_wheel_event =
         ui::MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent&>(*event),
                                    base::Bind(&GetScreenLocationFromEvent));
-    if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0) {
+    if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
       if (ShouldRouteEvent(event)) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             host_view_, &mouse_wheel_event, *event->latency());
@@ -722,8 +722,8 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
   bool is_move_to_center_event =
       (event->type() == ui::ET_MOUSE_MOVED ||
        event->type() == ui::ET_MOUSE_DRAGGED) &&
-      mouse_event.positionInWidget().x == center.x() &&
-      mouse_event.positionInWidget().y == center.y();
+      mouse_event.PositionInWidget().x == center.x() &&
+      mouse_event.PositionInWidget().y == center.y();
 
   // For fractional scale factors, the conversion from pixels to dip and
   // vice versa could result in off by 1 or 2 errors which hurts us because
@@ -737,8 +737,8 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
       IsFractionalScaleFactor(host_view_->current_device_scale_factor())) {
     if (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) {
-      if ((std::abs(mouse_event.positionInWidget().x - center.x()) <= 2) &&
-          (std::abs(mouse_event.positionInWidget().y - center.y()) <= 2)) {
+      if ((std::abs(mouse_event.PositionInWidget().x - center.x()) <= 2) &&
+          (std::abs(mouse_event.PositionInWidget().y - center.y()) <= 2)) {
         is_move_to_center_event = true;
       }
     }
@@ -780,8 +780,8 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   // reset any global_mouse_position set previously.
   if (ui_mouse_event.type() == ui::ET_MOUSE_ENTERED ||
       ui_mouse_event.type() == ui::ET_MOUSE_EXITED) {
-    global_mouse_position_.SetPoint(event->positionInScreen().x,
-                                    event->positionInScreen().y);
+    global_mouse_position_.SetPoint(event->PositionInScreen().x,
+                                    event->PositionInScreen().y);
   }
 
   // Movement is computed by taking the difference of the new cursor position
@@ -790,24 +790,24 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   // We do not measure movement as the delta from cursor to center because
   // we may receive more mouse movement events before our warp has taken
   // effect.
-  event->movementX = event->positionInScreen().x - global_mouse_position_.x();
-  event->movementY = event->positionInScreen().y - global_mouse_position_.y();
+  event->movement_x = event->PositionInScreen().x - global_mouse_position_.x();
+  event->movement_y = event->PositionInScreen().y - global_mouse_position_.y();
 
-  global_mouse_position_.SetPoint(event->positionInScreen().x,
-                                  event->positionInScreen().y);
+  global_mouse_position_.SetPoint(event->PositionInScreen().x,
+                                  event->PositionInScreen().y);
 
   // Under mouse lock, coordinates of mouse are locked to what they were when
   // mouse lock was entered.
   if (mouse_locked_) {
-    event->setPositionInWidget(unlocked_mouse_position_.x(),
+    event->SetPositionInWidget(unlocked_mouse_position_.x(),
                                unlocked_mouse_position_.y());
-    event->setPositionInScreen(unlocked_global_mouse_position_.x(),
+    event->SetPositionInScreen(unlocked_global_mouse_position_.x(),
                                unlocked_global_mouse_position_.y());
   } else {
-    unlocked_mouse_position_.SetPoint(event->positionInWidget().x,
-                                      event->positionInWidget().y);
-    unlocked_global_mouse_position_.SetPoint(event->positionInScreen().x,
-                                             event->positionInScreen().y);
+    unlocked_mouse_position_.SetPoint(event->PositionInWidget().x,
+                                      event->PositionInWidget().y);
+    unlocked_global_mouse_position_.SetPoint(event->PositionInScreen().x,
+                                             event->PositionInScreen().y);
   }
 }
 

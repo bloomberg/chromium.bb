@@ -39,10 +39,10 @@ class BoxShapeTest : public ::testing::Test {
  protected:
   BoxShapeTest() {}
 
-  std::unique_ptr<Shape> createBoxShape(const FloatRoundedRect& bounds,
-                                        float shapeMargin) {
-    return Shape::createLayoutBoxShape(bounds, WritingMode::kHorizontalTb,
-                                       shapeMargin);
+  std::unique_ptr<Shape> CreateBoxShape(const FloatRoundedRect& bounds,
+                                        float shape_margin) {
+    return Shape::CreateLayoutBoxShape(bounds, WritingMode::kHorizontalTb,
+                                       shape_margin);
   }
 };
 
@@ -51,18 +51,18 @@ namespace {
 #define TEST_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft,   \
                                expectedRight)                                 \
   {                                                                           \
-    LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight); \
-    EXPECT_TRUE(segment.isValid);                                             \
-    if (segment.isValid) {                                                    \
-      EXPECT_FLOAT_EQ(expectedLeft, segment.logicalLeft);                     \
-      EXPECT_FLOAT_EQ(expectedRight, segment.logicalRight);                   \
+    LineSegment segment = shapePtr->GetExcludedInterval(lineTop, lineHeight); \
+    EXPECT_TRUE(segment.is_valid);                                            \
+    if (segment.is_valid) {                                                   \
+      EXPECT_FLOAT_EQ(expectedLeft, segment.logical_left);                    \
+      EXPECT_FLOAT_EQ(expectedRight, segment.logical_right);                  \
     }                                                                         \
   }
 
 #define TEST_NO_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight)              \
   {                                                                           \
-    LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight); \
-    EXPECT_FALSE(segment.isValid);                                            \
+    LineSegment segment = shapePtr->GetExcludedInterval(lineTop, lineHeight); \
+    EXPECT_FALSE(segment.is_valid);                                           \
   }
 
 /* The BoxShape is based on a 100x50 rectangle at 0,0. The shape-margin value is
@@ -76,33 +76,33 @@ namespace {
  */
 TEST_F(BoxShapeTest, zeroRadii) {
   std::unique_ptr<Shape> shape =
-      createBoxShape(FloatRoundedRect(0, 0, 100, 50), 10);
-  EXPECT_FALSE(shape->isEmpty());
+      CreateBoxShape(FloatRoundedRect(0, 0, 100, 50), 10);
+  EXPECT_FALSE(shape->IsEmpty());
 
   EXPECT_EQ(LayoutRect(-10, -10, 120, 70),
-            shape->shapeMarginLogicalBoundingBox());
+            shape->ShapeMarginLogicalBoundingBox());
 
   // A BoxShape's bounds include the top edge but not the bottom edge.
   // Similarly a "line", specified as top,height to the overlap methods,
   // is defined as top <= y < top + height.
 
   EXPECT_TRUE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-9), LayoutUnit(1)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(-9), LayoutUnit(1)));
   EXPECT_TRUE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit()));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit()));
   EXPECT_TRUE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(200)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(200)));
   EXPECT_TRUE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(5), LayoutUnit(10)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(5), LayoutUnit(10)));
   EXPECT_TRUE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(59), LayoutUnit(1)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(59), LayoutUnit(1)));
 
   EXPECT_FALSE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-12), LayoutUnit(2)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(-12), LayoutUnit(2)));
   EXPECT_FALSE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(60), LayoutUnit(1)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(60), LayoutUnit(1)));
   EXPECT_FALSE(
-      shape->lineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
+      shape->LineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
 
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-9), LayoutUnit(1), -10, 110);
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(), -10, 110);
@@ -129,14 +129,14 @@ TEST_F(BoxShapeTest, zeroRadii) {
  *       (25, 15)  x=25      x=80  (20, 30)
  */
 TEST_F(BoxShapeTest, getIntervals) {
-  const FloatRoundedRect::Radii cornerRadii(
+  const FloatRoundedRect::Radii corner_radii(
       FloatSize(10, 15), FloatSize(10, 20), FloatSize(25, 15),
       FloatSize(20, 30));
-  std::unique_ptr<Shape> shape =
-      createBoxShape(FloatRoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
-  EXPECT_FALSE(shape->isEmpty());
+  std::unique_ptr<Shape> shape = CreateBoxShape(
+      FloatRoundedRect(IntRect(0, 0, 100, 100), corner_radii), 0);
+  EXPECT_FALSE(shape->IsEmpty());
 
-  EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapeMarginLogicalBoundingBox());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->ShapeMarginLogicalBoundingBox());
 
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(10), LayoutUnit(95), 0, 100);
   TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(25), 0, 100);

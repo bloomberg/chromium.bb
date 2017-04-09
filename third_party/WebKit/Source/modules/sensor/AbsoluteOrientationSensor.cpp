@@ -8,32 +8,32 @@ using device::mojom::blink::SensorType;
 
 namespace blink {
 
-AbsoluteOrientationSensor* AbsoluteOrientationSensor::create(
-    ExecutionContext* executionContext,
+AbsoluteOrientationSensor* AbsoluteOrientationSensor::Create(
+    ExecutionContext* execution_context,
     const SensorOptions& options,
-    ExceptionState& exceptionState) {
-  return new AbsoluteOrientationSensor(executionContext, options,
-                                       exceptionState);
+    ExceptionState& exception_state) {
+  return new AbsoluteOrientationSensor(execution_context, options,
+                                       exception_state);
 }
 
 // static
-AbsoluteOrientationSensor* AbsoluteOrientationSensor::create(
-    ExecutionContext* executionContext,
-    ExceptionState& exceptionState) {
-  return create(executionContext, SensorOptions(), exceptionState);
+AbsoluteOrientationSensor* AbsoluteOrientationSensor::Create(
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
+  return Create(execution_context, SensorOptions(), exception_state);
 }
 
 AbsoluteOrientationSensor::AbsoluteOrientationSensor(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     const SensorOptions& options,
-    ExceptionState& exceptionState)
-    : OrientationSensor(executionContext,
+    ExceptionState& exception_state)
+    : OrientationSensor(execution_context,
                         options,
-                        exceptionState,
+                        exception_state,
                         SensorType::ABSOLUTE_ORIENTATION) {}
 
 DEFINE_TRACE(AbsoluteOrientationSensor) {
-  OrientationSensor::trace(visitor);
+  OrientationSensor::Trace(visitor);
 }
 
 }  // namespace blink

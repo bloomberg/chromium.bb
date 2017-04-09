@@ -44,35 +44,35 @@ class HTMLDimension {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum HTMLDimensionType { Relative, Percentage, Absolute };
+  enum HTMLDimensionType { kRelative, kPercentage, kAbsolute };
 
-  HTMLDimension() : m_type(Absolute), m_value(0) {}
+  HTMLDimension() : type_(kAbsolute), value_(0) {}
 
   HTMLDimension(double value, HTMLDimensionType type)
-      : m_type(type), m_value(value) {}
+      : type_(type), value_(value) {}
 
-  HTMLDimensionType type() const { return m_type; }
+  HTMLDimensionType GetType() const { return type_; }
 
-  bool isRelative() const { return m_type == Relative; }
-  bool isPercentage() const { return m_type == Percentage; }
-  bool isAbsolute() const { return m_type == Absolute; }
+  bool IsRelative() const { return type_ == kRelative; }
+  bool IsPercentage() const { return type_ == kPercentage; }
+  bool IsAbsolute() const { return type_ == kAbsolute; }
 
-  double value() const { return m_value; }
+  double Value() const { return value_; }
 
   bool operator==(const HTMLDimension& other) const {
-    return m_type == other.m_type && m_value == other.m_value;
+    return type_ == other.type_ && value_ == other.value_;
   }
   bool operator!=(const HTMLDimension& other) const {
     return !(*this == other);
   }
 
  private:
-  HTMLDimensionType m_type;
-  double m_value;
+  HTMLDimensionType type_;
+  double value_;
 };
 
-CORE_EXPORT Vector<HTMLDimension> parseListOfDimensions(const String&);
-CORE_EXPORT bool parseDimensionValue(const String&, HTMLDimension&);
+CORE_EXPORT Vector<HTMLDimension> ParseListOfDimensions(const String&);
+CORE_EXPORT bool ParseDimensionValue(const String&, HTMLDimension&);
 
 }  // namespace blink
 

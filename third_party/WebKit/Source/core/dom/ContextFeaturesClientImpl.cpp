@@ -44,104 +44,105 @@ class ContextFeaturesCache final
  public:
   class Entry {
    public:
-    enum Value { IsEnabled, IsDisabled, NeedsRefresh };
+    enum Value { kIsEnabled, kIsDisabled, kNeedsRefresh };
 
-    Entry() : m_value(NeedsRefresh), m_defaultValue(false) {}
+    Entry() : value_(kNeedsRefresh), default_value_(false) {}
 
-    bool isEnabled() const {
-      DCHECK_NE(m_value, NeedsRefresh);
-      return m_value == IsEnabled;
+    bool IsEnabled() const {
+      DCHECK_NE(value_, kNeedsRefresh);
+      return value_ == kIsEnabled;
     }
 
-    void set(bool value, bool defaultValue) {
-      m_value = value ? IsEnabled : IsDisabled;
-      m_defaultValue = defaultValue;
+    void Set(bool value, bool default_value) {
+      value_ = value ? kIsEnabled : kIsDisabled;
+      default_value_ = default_value;
     }
 
-    bool needsRefresh(bool defaultValue) const {
-      return m_value == NeedsRefresh || m_defaultValue != defaultValue;
+    bool NeedsRefresh(bool default_value) const {
+      return value_ == kNeedsRefresh || default_value_ != default_value;
     }
 
    private:
-    Value m_value;
-    bool m_defaultValue;  // Needs to be traked as a part of the signature since
+    Value value_;
+    bool default_value_;  // Needs to be traked as a part of the signature since
                           // it can be changed dynamically.
   };
 
-  static const char* supplementName();
-  static ContextFeaturesCache& from(Document&);
+  static const char* SupplementName();
+  static ContextFeaturesCache& From(Document&);
 
-  Entry& entryFor(ContextFeatures::FeatureType type) {
+  Entry& EntryFor(ContextFeatures::FeatureType type) {
     size_t index = static_cast<size_t>(type);
-    SECURITY_DCHECK(index < ContextFeatures::FeatureTypeSize);
-    return m_entries[index];
+    SECURITY_DCHECK(index < ContextFeatures::kFeatureTypeSize);
+    return entries_[index];
   }
 
-  void validateAgainst(Document*);
+  void ValidateAgainst(Document*);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Document>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Document>::Trace(visitor); }
 
  private:
   explicit ContextFeaturesCache(Document& document)
       : Supplement<Document>(document) {}
 
-  String m_domain;
-  Entry m_entries[ContextFeatures::FeatureTypeSize];
+  String domain_;
+  Entry entries_[ContextFeatures::kFeatureTypeSize];
 };
 
-const char* ContextFeaturesCache::supplementName() {
+const char* ContextFeaturesCache::SupplementName() {
   return "ContextFeaturesCache";
 }
 
-ContextFeaturesCache& ContextFeaturesCache::from(Document& document) {
+ContextFeaturesCache& ContextFeaturesCache::From(Document& document) {
   ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(
-      Supplement<Document>::from(document, supplementName()));
+      Supplement<Document>::From(document, SupplementName()));
   if (!cache) {
     cache = new ContextFeaturesCache(document);
-    Supplement<Document>::provideTo(document, supplementName(), cache);
+    Supplement<Document>::ProvideTo(document, SupplementName(), cache);
   }
 
   return *cache;
 }
 
-void ContextFeaturesCache::validateAgainst(Document* document) {
-  String currentDomain = document->getSecurityOrigin()->domain();
-  if (currentDomain == m_domain)
+void ContextFeaturesCache::ValidateAgainst(Document* document) {
+  String current_domain = document->GetSecurityOrigin()->Domain();
+  if (current_domain == domain_)
     return;
-  m_domain = currentDomain;
-  for (size_t i = 0; i < ContextFeatures::FeatureTypeSize; ++i)
-    m_entries[i] = Entry();
+  domain_ = current_domain;
+  for (size_t i = 0; i < ContextFeatures::kFeatureTypeSize; ++i)
+    entries_[i] = Entry();
 }
 
-bool ContextFeaturesClientImpl::isEnabled(Document* document,
+bool ContextFeaturesClientImpl::IsEnabled(Document* document,
                                           ContextFeatures::FeatureType type,
-                                          bool defaultValue) {
+                                          bool default_value) {
   DCHECK(document);
   ContextFeaturesCache::Entry& cache =
-      ContextFeaturesCache::from(*document).entryFor(type);
-  if (cache.needsRefresh(defaultValue))
-    cache.set(askIfIsEnabled(document, type, defaultValue), defaultValue);
-  return cache.isEnabled();
+      ContextFeaturesCache::From(*document).EntryFor(type);
+  if (cache.NeedsRefresh(default_value))
+    cache.Set(AskIfIsEnabled(document, type, default_value), default_value);
+  return cache.IsEnabled();
 }
 
-void ContextFeaturesClientImpl::urlDidChange(Document* document) {
+void ContextFeaturesClientImpl::UrlDidChange(Document* document) {
   DCHECK(document);
-  ContextFeaturesCache::from(*document).validateAgainst(document);
+  ContextFeaturesCache::From(*document).ValidateAgainst(document);
 }
 
-bool ContextFeaturesClientImpl::askIfIsEnabled(
+bool ContextFeaturesClientImpl::AskIfIsEnabled(
     Document* document,
     ContextFeatures::FeatureType type,
-    bool defaultValue) {
-  LocalFrame* frame = document->frame();
-  if (!frame || !frame->contentSettingsClient())
-    return defaultValue;
+    bool default_value) {
+  LocalFrame* frame = document->GetFrame();
+  if (!frame || !frame->GetContentSettingsClient())
+    return default_value;
 
   switch (type) {
-    case ContextFeatures::MutationEvents:
-      return frame->contentSettingsClient()->allowMutationEvents(defaultValue);
+    case ContextFeatures::kMutationEvents:
+      return frame->GetContentSettingsClient()->AllowMutationEvents(
+          default_value);
     default:
-      return defaultValue;
+      return default_value;
   }
 }
 

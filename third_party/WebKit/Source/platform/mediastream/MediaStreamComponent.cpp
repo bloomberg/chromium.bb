@@ -40,11 +40,11 @@
 
 namespace blink {
 
-MediaStreamComponent* MediaStreamComponent::create(MediaStreamSource* source) {
-  return new MediaStreamComponent(createCanonicalUUIDString(), source);
+MediaStreamComponent* MediaStreamComponent::Create(MediaStreamSource* source) {
+  return new MediaStreamComponent(CreateCanonicalUUIDString(), source);
 }
 
-MediaStreamComponent* MediaStreamComponent::create(const String& id,
+MediaStreamComponent* MediaStreamComponent::Create(const String& id,
                                                    MediaStreamSource* source) {
   return new MediaStreamComponent(id, source);
 }
@@ -55,94 +55,94 @@ MediaStreamComponent::MediaStreamComponent(const String& id,
                            source,
                            true,
                            false,
-                           WebMediaStreamTrack::ContentHintType::None) {}
+                           WebMediaStreamTrack::ContentHintType::kNone) {}
 
 MediaStreamComponent::MediaStreamComponent(
     const String& id,
     MediaStreamSource* source,
     bool enabled,
     bool muted,
-    WebMediaStreamTrack::ContentHintType contentHint)
-    : m_source(source),
-      m_id(id),
-      m_enabled(enabled),
-      m_muted(muted),
-      m_contentHint(contentHint) {
-  DCHECK(m_id.length());
+    WebMediaStreamTrack::ContentHintType content_hint)
+    : source_(source),
+      id_(id),
+      enabled_(enabled),
+      muted_(muted),
+      content_hint_(content_hint) {
+  DCHECK(id_.length());
 }
 
-MediaStreamComponent* MediaStreamComponent::clone() const {
-  MediaStreamComponent* clonedComponent = new MediaStreamComponent(
-      createCanonicalUUIDString(), source(), m_enabled, m_muted, m_contentHint);
+MediaStreamComponent* MediaStreamComponent::Clone() const {
+  MediaStreamComponent* cloned_component = new MediaStreamComponent(
+      CreateCanonicalUUIDString(), Source(), enabled_, muted_, content_hint_);
   // TODO(pbos): Clone |m_trackData| as well.
   // TODO(pbos): Move properties from MediaStreamTrack here so that they are
   // also cloned. Part of crbug:669212 since stopped is currently not carried
   // over, nor is ended().
-  return clonedComponent;
+  return cloned_component;
 }
 
-void MediaStreamComponent::dispose() {
-  m_trackData.reset();
+void MediaStreamComponent::Dispose() {
+  track_data_.reset();
 }
 
-void MediaStreamComponent::AudioSourceProviderImpl::wrap(
+void MediaStreamComponent::AudioSourceProviderImpl::Wrap(
     WebAudioSourceProvider* provider) {
-  MutexLocker locker(m_provideInputLock);
-  m_webAudioSourceProvider = provider;
+  MutexLocker locker(provide_input_lock_);
+  web_audio_source_provider_ = provider;
 }
 
-void MediaStreamComponent::getSettings(
+void MediaStreamComponent::GetSettings(
     WebMediaStreamTrack::Settings& settings) {
-  DCHECK(m_trackData);
-  m_source->getSettings(settings);
-  m_trackData->getSettings(settings);
+  DCHECK(track_data_);
+  source_->GetSettings(settings);
+  track_data_->GetSettings(settings);
 }
 
-void MediaStreamComponent::setContentHint(
+void MediaStreamComponent::SetContentHint(
     WebMediaStreamTrack::ContentHintType hint) {
   switch (hint) {
-    case WebMediaStreamTrack::ContentHintType::None:
+    case WebMediaStreamTrack::ContentHintType::kNone:
       break;
-    case WebMediaStreamTrack::ContentHintType::AudioSpeech:
-    case WebMediaStreamTrack::ContentHintType::AudioMusic:
-      DCHECK_EQ(MediaStreamSource::TypeAudio, source()->type());
+    case WebMediaStreamTrack::ContentHintType::kAudioSpeech:
+    case WebMediaStreamTrack::ContentHintType::kAudioMusic:
+      DCHECK_EQ(MediaStreamSource::kTypeAudio, Source()->GetType());
       break;
-    case WebMediaStreamTrack::ContentHintType::VideoMotion:
-    case WebMediaStreamTrack::ContentHintType::VideoDetail:
-      DCHECK_EQ(MediaStreamSource::TypeVideo, source()->type());
+    case WebMediaStreamTrack::ContentHintType::kVideoMotion:
+    case WebMediaStreamTrack::ContentHintType::kVideoDetail:
+      DCHECK_EQ(MediaStreamSource::kTypeVideo, Source()->GetType());
       break;
   }
-  if (hint == m_contentHint)
+  if (hint == content_hint_)
     return;
-  m_contentHint = hint;
+  content_hint_ = hint;
 
-  MediaStreamCenter::instance().didSetContentHint(this);
+  MediaStreamCenter::Instance().DidSetContentHint(this);
 }
 
-void MediaStreamComponent::AudioSourceProviderImpl::provideInput(
+void MediaStreamComponent::AudioSourceProviderImpl::ProvideInput(
     AudioBus* bus,
-    size_t framesToProcess) {
+    size_t frames_to_process) {
   DCHECK(bus);
   if (!bus)
     return;
 
-  MutexTryLocker tryLocker(m_provideInputLock);
-  if (!tryLocker.locked() || !m_webAudioSourceProvider) {
-    bus->zero();
+  MutexTryLocker try_locker(provide_input_lock_);
+  if (!try_locker.Locked() || !web_audio_source_provider_) {
+    bus->Zero();
     return;
   }
 
   // Wrap the AudioBus channel data using WebVector.
-  size_t n = bus->numberOfChannels();
-  WebVector<float*> webAudioData(n);
+  size_t n = bus->NumberOfChannels();
+  WebVector<float*> web_audio_data(n);
   for (size_t i = 0; i < n; ++i)
-    webAudioData[i] = bus->channel(i)->mutableData();
+    web_audio_data[i] = bus->Channel(i)->MutableData();
 
-  m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
+  web_audio_source_provider_->ProvideInput(web_audio_data, frames_to_process);
 }
 
 DEFINE_TRACE(MediaStreamComponent) {
-  visitor->trace(m_source);
+  visitor->Trace(source_);
 }
 
 }  // namespace blink

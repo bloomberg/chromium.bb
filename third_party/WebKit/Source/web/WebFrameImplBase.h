@@ -33,12 +33,12 @@ class WEB_EXPORT WebFrameImplBase
  public:
   virtual ~WebFrameImplBase();
 
-  virtual void initializeCoreFrame(Page&,
+  virtual void InitializeCoreFrame(Page&,
                                    FrameOwner*,
                                    const AtomicString& name) = 0;
   // TODO(dcheng): Rename this to coreFrame()? This probably also shouldn't be
   // const...
-  virtual Frame* frame() const = 0;
+  virtual Frame* GetFrame() const = 0;
 
   DECLARE_VIRTUAL_TRACE();
 };

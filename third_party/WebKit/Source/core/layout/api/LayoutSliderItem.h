@@ -13,24 +13,24 @@ namespace blink {
 
 class LayoutSliderItem : public LayoutBlockItem {
  public:
-  explicit LayoutSliderItem(LayoutSlider* layoutSlider)
-      : LayoutBlockItem(layoutSlider) {}
+  explicit LayoutSliderItem(LayoutSlider* layout_slider)
+      : LayoutBlockItem(layout_slider) {}
 
   explicit LayoutSliderItem(const LayoutBlockItem& item)
       : LayoutBlockItem(item) {
-    SECURITY_DCHECK(!item || item.isSlider());
+    SECURITY_DCHECK(!item || item.IsSlider());
   }
 
   explicit LayoutSliderItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
   LayoutSliderItem() {}
 
-  bool inDragMode() const { return toSlider()->inDragMode(); }
+  bool InDragMode() const { return ToSlider()->InDragMode(); }
 
  private:
-  LayoutSlider* toSlider() { return toLayoutSlider(layoutObject()); }
-  const LayoutSlider* toSlider() const {
-    return toLayoutSlider(layoutObject());
+  LayoutSlider* ToSlider() { return ToLayoutSlider(GetLayoutObject()); }
+  const LayoutSlider* ToSlider() const {
+    return ToLayoutSlider(GetLayoutObject());
   }
 };
 

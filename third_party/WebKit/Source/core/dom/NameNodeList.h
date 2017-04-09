@@ -32,21 +32,21 @@ namespace blink {
 // NodeList which lists all Nodes in a Element with a given "name" attribute
 class NameNodeList final : public LiveNodeList {
  public:
-  static NameNodeList* create(ContainerNode& rootNode,
+  static NameNodeList* Create(ContainerNode& root_node,
                               CollectionType type,
                               const AtomicString& name) {
-    DCHECK_EQ(type, NameNodeListType);
-    return new NameNodeList(rootNode, name);
+    DCHECK_EQ(type, kNameNodeListType);
+    return new NameNodeList(root_node, name);
   }
 
   ~NameNodeList() override;
 
  private:
-  NameNodeList(ContainerNode& rootNode, const AtomicString& name);
+  NameNodeList(ContainerNode& root_node, const AtomicString& name);
 
-  bool elementMatches(const Element&) const override;
+  bool ElementMatches(const Element&) const override;
 
-  AtomicString m_name;
+  AtomicString name_;
 };
 
 }  // namespace blink

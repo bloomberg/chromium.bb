@@ -17,17 +17,17 @@ class SVGImagePainter {
   STACK_ALLOCATED();
 
  public:
-  SVGImagePainter(const LayoutSVGImage& layoutSVGImage)
-      : m_layoutSVGImage(layoutSVGImage) {}
+  SVGImagePainter(const LayoutSVGImage& layout_svg_image)
+      : layout_svg_image_(layout_svg_image) {}
 
-  void paint(const PaintInfo&);
+  void Paint(const PaintInfo&);
 
  private:
   // Assumes the PaintInfo context has had all local transforms applied.
-  void paintForeground(const PaintInfo&);
-  FloatSize computeImageViewportSize() const;
+  void PaintForeground(const PaintInfo&);
+  FloatSize ComputeImageViewportSize() const;
 
-  const LayoutSVGImage& m_layoutSVGImage;
+  const LayoutSVGImage& layout_svg_image_;
 };
 
 }  // namespace blink

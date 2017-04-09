@@ -46,17 +46,18 @@ class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedInteger* create(SVGElement* contextElement,
-                                    const QualifiedName& attributeName,
-                                    SVGInteger* initialValue) {
-    return new SVGAnimatedInteger(contextElement, attributeName, initialValue);
+  static SVGAnimatedInteger* Create(SVGElement* context_element,
+                                    const QualifiedName& attribute_name,
+                                    SVGInteger* initial_value) {
+    return new SVGAnimatedInteger(context_element, attribute_name,
+                                  initial_value);
   }
 
-  void synchronizeAttribute() override;
+  void SynchronizeAttribute() override;
 
-  void setParentOptionalInteger(
-      SVGAnimatedIntegerOptionalInteger* numberOptionalInteger) {
-    m_parentIntegerOptionalInteger = numberOptionalInteger;
+  void SetParentOptionalInteger(
+      SVGAnimatedIntegerOptionalInteger* number_optional_integer) {
+    parent_integer_optional_integer_ = number_optional_integer;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -64,15 +65,15 @@ class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>,
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  SVGAnimatedInteger(SVGElement* contextElement,
-                     const QualifiedName& attributeName,
-                     SVGInteger* initialValue)
-      : SVGAnimatedProperty<SVGInteger>(contextElement,
-                                        attributeName,
-                                        initialValue),
-        m_parentIntegerOptionalInteger(nullptr) {}
+  SVGAnimatedInteger(SVGElement* context_element,
+                     const QualifiedName& attribute_name,
+                     SVGInteger* initial_value)
+      : SVGAnimatedProperty<SVGInteger>(context_element,
+                                        attribute_name,
+                                        initial_value),
+        parent_integer_optional_integer_(nullptr) {}
 
-  Member<SVGAnimatedIntegerOptionalInteger> m_parentIntegerOptionalInteger;
+  Member<SVGAnimatedIntegerOptionalInteger> parent_integer_optional_integer_;
 };
 
 }  // namespace blink

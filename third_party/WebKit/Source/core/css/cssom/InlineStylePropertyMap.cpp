@@ -21,225 +21,228 @@ namespace blink {
 
 namespace {
 
-CSSValueList* cssValueListForPropertyID(CSSPropertyID propertyID) {
-  char separator = CSSPropertyMetadata::repetitionSeparator(propertyID);
+CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
+  char separator = CSSPropertyMetadata::RepetitionSeparator(property_id);
   switch (separator) {
     case ' ':
-      return CSSValueList::createSpaceSeparated();
+      return CSSValueList::CreateSpaceSeparated();
     case ',':
-      return CSSValueList::createCommaSeparated();
+      return CSSValueList::CreateCommaSeparated();
     case '/':
-      return CSSValueList::createSlashSeparated();
+      return CSSValueList::CreateSlashSeparated();
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-const CSSValue* styleValueToCSSValue(CSSPropertyID propertyID,
-                                     const CSSStyleValue& styleValue) {
-  if (!CSSOMTypes::propertyCanTake(propertyID, styleValue))
+const CSSValue* StyleValueToCSSValue(CSSPropertyID property_id,
+                                     const CSSStyleValue& style_value) {
+  if (!CSSOMTypes::PropertyCanTake(property_id, style_value))
     return nullptr;
-  return styleValue.toCSSValueWithProperty(propertyID);
+  return style_value.ToCSSValueWithProperty(property_id);
 }
 
-const CSSValue* singleStyleValueAsCSSValue(CSSPropertyID propertyID,
-                                           const CSSStyleValue& styleValue) {
-  const CSSValue* cssValue = styleValueToCSSValue(propertyID, styleValue);
-  if (!cssValue)
+const CSSValue* SingleStyleValueAsCSSValue(CSSPropertyID property_id,
+                                           const CSSStyleValue& style_value) {
+  const CSSValue* css_value = StyleValueToCSSValue(property_id, style_value);
+  if (!css_value)
     return nullptr;
 
-  if (!CSSPropertyMetadata::propertyIsRepeated(propertyID) ||
-      cssValue->isCSSWideKeyword())
-    return cssValue;
+  if (!CSSPropertyMetadata::PropertyIsRepeated(property_id) ||
+      css_value->IsCSSWideKeyword())
+    return css_value;
 
-  CSSValueList* valueList = cssValueListForPropertyID(propertyID);
-  valueList->append(*cssValue);
-  return valueList;
+  CSSValueList* value_list = CssValueListForPropertyID(property_id);
+  value_list->Append(*css_value);
+  return value_list;
 }
 
-const CSSValueList* asCSSValueList(
-    CSSPropertyID propertyID,
-    const CSSStyleValueVector& styleValueVector) {
-  CSSValueList* valueList = cssValueListForPropertyID(propertyID);
-  for (const CSSStyleValue* value : styleValueVector) {
-    const CSSValue* cssValue = styleValueToCSSValue(propertyID, *value);
-    if (!cssValue) {
+const CSSValueList* AsCSSValueList(
+    CSSPropertyID property_id,
+    const CSSStyleValueVector& style_value_vector) {
+  CSSValueList* value_list = CssValueListForPropertyID(property_id);
+  for (const CSSStyleValue* value : style_value_vector) {
+    const CSSValue* css_value = StyleValueToCSSValue(property_id, *value);
+    if (!css_value) {
       return nullptr;
     }
-    valueList->append(*cssValue);
+    value_list->Append(*css_value);
   }
-  return valueList;
+  return value_list;
 }
 
 }  // namespace
 
-CSSStyleValueVector InlineStylePropertyMap::getAllInternal(
-    CSSPropertyID propertyID) {
-  const CSSValue* cssValue =
-      m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(
-          propertyID);
-  if (!cssValue)
+CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
+    CSSPropertyID property_id) {
+  const CSSValue* css_value =
+      owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
+          property_id);
+  if (!css_value)
     return CSSStyleValueVector();
 
-  return StyleValueFactory::cssValueToStyleValueVector(propertyID, *cssValue);
+  return StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
 }
 
-CSSStyleValueVector InlineStylePropertyMap::getAllInternal(
-    AtomicString customPropertyName) {
-  const CSSValue* cssValue =
-      m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(
-          customPropertyName);
-  if (!cssValue)
+CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
+    AtomicString custom_property_name) {
+  const CSSValue* css_value =
+      owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
+          custom_property_name);
+  if (!css_value)
     return CSSStyleValueVector();
 
-  return StyleValueFactory::cssValueToStyleValueVector(CSSPropertyInvalid,
-                                                       *cssValue);
+  return StyleValueFactory::CssValueToStyleValueVector(CSSPropertyInvalid,
+                                                       *css_value);
 }
 
 Vector<String> InlineStylePropertyMap::getProperties() {
-  DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
+  DEFINE_STATIC_LOCAL(const String, k_at_apply, ("@apply"));
   Vector<String> result;
-  bool containsAtApply = false;
-  StylePropertySet& inlineStyleSet = m_ownerElement->ensureMutableInlineStyle();
-  for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
-    CSSPropertyID propertyID = inlineStyleSet.propertyAt(i).id();
-    if (propertyID == CSSPropertyVariable) {
-      StylePropertySet::PropertyReference propertyReference =
-          inlineStyleSet.propertyAt(i);
-      const CSSCustomPropertyDeclaration& customDeclaration =
-          toCSSCustomPropertyDeclaration(propertyReference.value());
-      result.push_back(customDeclaration.name());
-    } else if (propertyID == CSSPropertyApplyAtRule) {
-      if (!containsAtApply) {
-        result.push_back(kAtApply);
-        containsAtApply = true;
+  bool contains_at_apply = false;
+  StylePropertySet& inline_style_set =
+      owner_element_->EnsureMutableInlineStyle();
+  for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
+    CSSPropertyID property_id = inline_style_set.PropertyAt(i).Id();
+    if (property_id == CSSPropertyVariable) {
+      StylePropertySet::PropertyReference property_reference =
+          inline_style_set.PropertyAt(i);
+      const CSSCustomPropertyDeclaration& custom_declaration =
+          ToCSSCustomPropertyDeclaration(property_reference.Value());
+      result.push_back(custom_declaration.GetName());
+    } else if (property_id == CSSPropertyApplyAtRule) {
+      if (!contains_at_apply) {
+        result.push_back(k_at_apply);
+        contains_at_apply = true;
       }
     } else {
-      result.push_back(getPropertyNameString(propertyID));
+      result.push_back(getPropertyNameString(property_id));
     }
   }
   return result;
 }
 
 void InlineStylePropertyMap::set(
-    CSSPropertyID propertyID,
+    CSSPropertyID property_id,
     CSSStyleValueOrCSSStyleValueSequenceOrString& item,
-    ExceptionState& exceptionState) {
-  const CSSValue* cssValue = nullptr;
+    ExceptionState& exception_state) {
+  const CSSValue* css_value = nullptr;
   if (item.isCSSStyleValue()) {
-    cssValue =
-        singleStyleValueAsCSSValue(propertyID, *item.getAsCSSStyleValue());
+    css_value =
+        SingleStyleValueAsCSSValue(property_id, *item.getAsCSSStyleValue());
   } else if (item.isCSSStyleValueSequence()) {
-    if (!CSSPropertyMetadata::propertyIsRepeated(propertyID)) {
-      exceptionState.throwTypeError(
+    if (!CSSPropertyMetadata::PropertyIsRepeated(property_id)) {
+      exception_state.ThrowTypeError(
           "Property does not support multiple values");
       return;
     }
-    cssValue = asCSSValueList(propertyID, item.getAsCSSStyleValueSequence());
+    css_value = AsCSSValueList(property_id, item.getAsCSSStyleValueSequence());
   } else {
     // Parse it.
     DCHECK(item.isString());
     // TODO(meade): Implement this.
-    exceptionState.throwTypeError("Not implemented yet");
+    exception_state.ThrowTypeError("Not implemented yet");
     return;
   }
-  if (!cssValue) {
-    exceptionState.throwTypeError("Invalid type for property");
+  if (!css_value) {
+    exception_state.ThrowTypeError("Invalid type for property");
     return;
   }
-  m_ownerElement->setInlineStyleProperty(propertyID, cssValue);
+  owner_element_->SetInlineStyleProperty(property_id, css_value);
 }
 
 void InlineStylePropertyMap::append(
-    CSSPropertyID propertyID,
+    CSSPropertyID property_id,
     CSSStyleValueOrCSSStyleValueSequenceOrString& item,
-    ExceptionState& exceptionState) {
-  if (!CSSPropertyMetadata::propertyIsRepeated(propertyID)) {
-    exceptionState.throwTypeError("Property does not support multiple values");
+    ExceptionState& exception_state) {
+  if (!CSSPropertyMetadata::PropertyIsRepeated(property_id)) {
+    exception_state.ThrowTypeError("Property does not support multiple values");
     return;
   }
 
-  const CSSValue* cssValue =
-      m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(
-          propertyID);
-  CSSValueList* cssValueList = nullptr;
-  if (!cssValue) {
-    cssValueList = cssValueListForPropertyID(propertyID);
-  } else if (cssValue->isValueList()) {
-    cssValueList = toCSSValueList(cssValue)->copy();
+  const CSSValue* css_value =
+      owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
+          property_id);
+  CSSValueList* css_value_list = nullptr;
+  if (!css_value) {
+    css_value_list = CssValueListForPropertyID(property_id);
+  } else if (css_value->IsValueList()) {
+    css_value_list = ToCSSValueList(css_value)->Copy();
   } else {
     // TODO(meade): Figure out what the correct behaviour here is.
-    exceptionState.throwTypeError("Property is not already list valued");
+    exception_state.ThrowTypeError("Property is not already list valued");
     return;
   }
 
   if (item.isCSSStyleValue()) {
-    const CSSValue* cssValue =
-        styleValueToCSSValue(propertyID, *item.getAsCSSStyleValue());
-    if (!cssValue) {
-      exceptionState.throwTypeError("Invalid type for property");
+    const CSSValue* css_value =
+        StyleValueToCSSValue(property_id, *item.getAsCSSStyleValue());
+    if (!css_value) {
+      exception_state.ThrowTypeError("Invalid type for property");
       return;
     }
-    cssValueList->append(*cssValue);
+    css_value_list->Append(*css_value);
   } else if (item.isCSSStyleValueSequence()) {
-    for (CSSStyleValue* styleValue : item.getAsCSSStyleValueSequence()) {
-      const CSSValue* cssValue = styleValueToCSSValue(propertyID, *styleValue);
-      if (!cssValue) {
-        exceptionState.throwTypeError("Invalid type for property");
+    for (CSSStyleValue* style_value : item.getAsCSSStyleValueSequence()) {
+      const CSSValue* css_value =
+          StyleValueToCSSValue(property_id, *style_value);
+      if (!css_value) {
+        exception_state.ThrowTypeError("Invalid type for property");
         return;
       }
-      cssValueList->append(*cssValue);
+      css_value_list->Append(*css_value);
     }
   } else {
     // Parse it.
     DCHECK(item.isString());
     // TODO(meade): Implement this.
-    exceptionState.throwTypeError("Not implemented yet");
+    exception_state.ThrowTypeError("Not implemented yet");
     return;
   }
 
-  m_ownerElement->setInlineStyleProperty(propertyID, cssValueList);
+  owner_element_->SetInlineStyleProperty(property_id, css_value_list);
 }
 
-void InlineStylePropertyMap::remove(CSSPropertyID propertyID,
-                                    ExceptionState& exceptionState) {
-  m_ownerElement->removeInlineStyleProperty(propertyID);
+void InlineStylePropertyMap::remove(CSSPropertyID property_id,
+                                    ExceptionState& exception_state) {
+  owner_element_->RemoveInlineStyleProperty(property_id);
 }
 
 HeapVector<StylePropertyMap::StylePropertyMapEntry>
-InlineStylePropertyMap::getIterationEntries() {
-  DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
+InlineStylePropertyMap::GetIterationEntries() {
+  DEFINE_STATIC_LOCAL(const String, k_at_apply, ("@apply"));
   HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
-  StylePropertySet& inlineStyleSet = m_ownerElement->ensureMutableInlineStyle();
-  for (unsigned i = 0; i < inlineStyleSet.propertyCount(); i++) {
-    StylePropertySet::PropertyReference propertyReference =
-        inlineStyleSet.propertyAt(i);
-    CSSPropertyID propertyID = propertyReference.id();
+  StylePropertySet& inline_style_set =
+      owner_element_->EnsureMutableInlineStyle();
+  for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
+    StylePropertySet::PropertyReference property_reference =
+        inline_style_set.PropertyAt(i);
+    CSSPropertyID property_id = property_reference.Id();
     String name;
     CSSStyleValueOrCSSStyleValueSequence value;
-    if (propertyID == CSSPropertyVariable) {
-      const CSSCustomPropertyDeclaration& customDeclaration =
-          toCSSCustomPropertyDeclaration(propertyReference.value());
-      name = customDeclaration.name();
+    if (property_id == CSSPropertyVariable) {
+      const CSSCustomPropertyDeclaration& custom_declaration =
+          ToCSSCustomPropertyDeclaration(property_reference.Value());
+      name = custom_declaration.GetName();
       // TODO(meade): Eventually custom properties will support other types, so
       // actually return them instead of always returning a
       // CSSUnsupportedStyleValue.
       value.setCSSStyleValue(
-          CSSUnsupportedStyleValue::create(customDeclaration.customCSSText()));
-    } else if (propertyID == CSSPropertyApplyAtRule) {
-      name = kAtApply;
-      value.setCSSStyleValue(CSSUnsupportedStyleValue::create(
-          toCSSCustomIdentValue(propertyReference.value()).value()));
+          CSSUnsupportedStyleValue::Create(custom_declaration.CustomCSSText()));
+    } else if (property_id == CSSPropertyApplyAtRule) {
+      name = k_at_apply;
+      value.setCSSStyleValue(CSSUnsupportedStyleValue::Create(
+          ToCSSCustomIdentValue(property_reference.Value()).Value()));
     } else {
-      name = getPropertyNameString(propertyID);
-      CSSStyleValueVector styleValueVector =
-          StyleValueFactory::cssValueToStyleValueVector(
-              propertyID, propertyReference.value());
-      if (styleValueVector.size() == 1)
-        value.setCSSStyleValue(styleValueVector[0]);
+      name = getPropertyNameString(property_id);
+      CSSStyleValueVector style_value_vector =
+          StyleValueFactory::CssValueToStyleValueVector(
+              property_id, property_reference.Value());
+      if (style_value_vector.size() == 1)
+        value.setCSSStyleValue(style_value_vector[0]);
       else
-        value.setCSSStyleValueSequence(styleValueVector);
+        value.setCSSStyleValueSequence(style_value_vector);
     }
     result.push_back(std::make_pair(name, value));
   }

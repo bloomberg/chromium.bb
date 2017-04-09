@@ -37,136 +37,137 @@
 
 namespace blink {
 
-ElementShadow* ElementShadow::create() {
+ElementShadow* ElementShadow::Create() {
   return new ElementShadow();
 }
 
 ElementShadow::ElementShadow()
-    : m_elementShadowV0(this, nullptr),
-      m_shadowRoot(this, nullptr),
-      m_needsDistributionRecalc(false) {}
+    : element_shadow_v0_(this, nullptr),
+      shadow_root_(this, nullptr),
+      needs_distribution_recalc_(false) {}
 
-ShadowRoot& ElementShadow::youngestShadowRoot() const {
-  ShadowRoot* current = m_shadowRoot;
+ShadowRoot& ElementShadow::YoungestShadowRoot() const {
+  ShadowRoot* current = shadow_root_;
   DCHECK(current);
-  while (current->youngerShadowRoot())
-    current = current->youngerShadowRoot();
+  while (current->YoungerShadowRoot())
+    current = current->YoungerShadowRoot();
   return *current;
 }
 
-ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost,
+ShadowRoot& ElementShadow::AddShadowRoot(Element& shadow_host,
                                          ShadowRootType type) {
-  EventDispatchForbiddenScope assertNoEventDispatch;
-  ScriptForbiddenScope forbidScript;
+  EventDispatchForbiddenScope assert_no_event_dispatch;
+  ScriptForbiddenScope forbid_script;
 
-  if (type == ShadowRootType::V0 && m_shadowRoot) {
-    DCHECK_EQ(m_shadowRoot->type(), ShadowRootType::V0);
-    Deprecation::countDeprecation(shadowHost.document(),
-                                  UseCounter::ElementCreateShadowRootMultiple);
+  if (type == ShadowRootType::V0 && shadow_root_) {
+    DCHECK_EQ(shadow_root_->GetType(), ShadowRootType::V0);
+    Deprecation::CountDeprecation(shadow_host.GetDocument(),
+                                  UseCounter::kElementCreateShadowRootMultiple);
   }
 
-  if (m_shadowRoot) {
+  if (shadow_root_) {
     // TODO(hayato): Is the order, from the youngest to the oldest, important?
-    for (ShadowRoot* root = &youngestShadowRoot(); root;
-         root = root->olderShadowRoot())
-      root->lazyReattachIfAttached();
-  } else if (type == ShadowRootType::V0 || type == ShadowRootType::UserAgent) {
-    DCHECK(!m_elementShadowV0);
-    m_elementShadowV0 = ElementShadowV0::create(*this);
+    for (ShadowRoot* root = &YoungestShadowRoot(); root;
+         root = root->OlderShadowRoot())
+      root->LazyReattachIfAttached();
+  } else if (type == ShadowRootType::V0 || type == ShadowRootType::kUserAgent) {
+    DCHECK(!element_shadow_v0_);
+    element_shadow_v0_ = ElementShadowV0::Create(*this);
   }
 
-  ShadowRoot* shadowRoot = ShadowRoot::create(shadowHost.document(), type);
-  shadowRoot->setParentOrShadowHostNode(&shadowHost);
-  shadowRoot->setParentTreeScope(shadowHost.treeScope());
-  appendShadowRoot(*shadowRoot);
-  setNeedsDistributionRecalc();
+  ShadowRoot* shadow_root = ShadowRoot::Create(shadow_host.GetDocument(), type);
+  shadow_root->SetParentOrShadowHostNode(&shadow_host);
+  shadow_root->SetParentTreeScope(shadow_host.GetTreeScope());
+  AppendShadowRoot(*shadow_root);
+  SetNeedsDistributionRecalc();
 
-  shadowRoot->insertedInto(&shadowHost);
-  shadowHost.setChildNeedsStyleRecalc();
-  shadowHost.setNeedsStyleRecalc(
-      SubtreeStyleChange,
-      StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
+  shadow_root->InsertedInto(&shadow_host);
+  shadow_host.SetChildNeedsStyleRecalc();
+  shadow_host.SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(StyleChangeReason::kShadow));
 
-  probe::didPushShadowRoot(&shadowHost, shadowRoot);
+  probe::didPushShadowRoot(&shadow_host, shadow_root);
 
-  return *shadowRoot;
+  return *shadow_root;
 }
 
-void ElementShadow::appendShadowRoot(ShadowRoot& shadowRoot) {
-  if (!m_shadowRoot) {
-    m_shadowRoot = &shadowRoot;
+void ElementShadow::AppendShadowRoot(ShadowRoot& shadow_root) {
+  if (!shadow_root_) {
+    shadow_root_ = &shadow_root;
     return;
   }
-  ShadowRoot& youngest = youngestShadowRoot();
-  DCHECK(shadowRoot.type() == ShadowRootType::V0);
-  DCHECK(youngest.type() == ShadowRootType::V0);
-  youngest.setYoungerShadowRoot(shadowRoot);
-  shadowRoot.setOlderShadowRoot(youngest);
+  ShadowRoot& youngest = YoungestShadowRoot();
+  DCHECK(shadow_root.GetType() == ShadowRootType::V0);
+  DCHECK(youngest.GetType() == ShadowRootType::V0);
+  youngest.SetYoungerShadowRoot(shadow_root);
+  shadow_root.SetOlderShadowRoot(youngest);
 }
 
-void ElementShadow::attach(const Node::AttachContext& context) {
-  Node::AttachContext childrenContext(context);
-  childrenContext.resolvedStyle = 0;
+void ElementShadow::Attach(const Node::AttachContext& context) {
+  Node::AttachContext children_context(context);
+  children_context.resolved_style = 0;
 
-  for (ShadowRoot* root = &youngestShadowRoot(); root;
-       root = root->olderShadowRoot()) {
-    if (root->needsAttach())
-      root->attachLayoutTree(childrenContext);
+  for (ShadowRoot* root = &YoungestShadowRoot(); root;
+       root = root->OlderShadowRoot()) {
+    if (root->NeedsAttach())
+      root->AttachLayoutTree(children_context);
   }
 }
 
-void ElementShadow::detach(const Node::AttachContext& context) {
-  Node::AttachContext childrenContext(context);
-  childrenContext.resolvedStyle = 0;
+void ElementShadow::Detach(const Node::AttachContext& context) {
+  Node::AttachContext children_context(context);
+  children_context.resolved_style = 0;
 
-  for (ShadowRoot* root = &youngestShadowRoot(); root;
-       root = root->olderShadowRoot())
-    root->detachLayoutTree(childrenContext);
+  for (ShadowRoot* root = &YoungestShadowRoot(); root;
+       root = root->OlderShadowRoot())
+    root->DetachLayoutTree(children_context);
 }
 
-void ElementShadow::setNeedsDistributionRecalc() {
-  if (m_needsDistributionRecalc)
+void ElementShadow::SetNeedsDistributionRecalc() {
+  if (needs_distribution_recalc_)
     return;
-  m_needsDistributionRecalc = true;
-  host().markAncestorsWithChildNeedsDistributionRecalc();
-  if (!isV1())
-    v0().clearDistribution();
+  needs_distribution_recalc_ = true;
+  Host().MarkAncestorsWithChildNeedsDistributionRecalc();
+  if (!IsV1())
+    V0().ClearDistribution();
 }
 
-bool ElementShadow::hasSameStyles(const ElementShadow& other) const {
-  ShadowRoot* root = &youngestShadowRoot();
-  ShadowRoot* otherRoot = &other.youngestShadowRoot();
-  while (root || otherRoot) {
-    if (!root || !otherRoot)
+bool ElementShadow::HasSameStyles(const ElementShadow& other) const {
+  ShadowRoot* root = &YoungestShadowRoot();
+  ShadowRoot* other_root = &other.YoungestShadowRoot();
+  while (root || other_root) {
+    if (!root || !other_root)
       return false;
 
-    if (!ScopedStyleResolver::haveSameStyles(
-            root->scopedStyleResolver(), otherRoot->scopedStyleResolver())) {
+    if (!ScopedStyleResolver::HaveSameStyles(
+            root->GetScopedStyleResolver(),
+            other_root->GetScopedStyleResolver())) {
       return false;
     }
 
-    root = root->olderShadowRoot();
-    otherRoot = otherRoot->olderShadowRoot();
+    root = root->OlderShadowRoot();
+    other_root = other_root->OlderShadowRoot();
   }
 
   return true;
 }
 
-void ElementShadow::distribute() {
-  if (isV1())
-    youngestShadowRoot().distributeV1();
+void ElementShadow::Distribute() {
+  if (IsV1())
+    YoungestShadowRoot().DistributeV1();
   else
-    v0().distribute();
+    V0().Distribute();
 }
 
 DEFINE_TRACE(ElementShadow) {
-  visitor->trace(m_elementShadowV0);
-  visitor->trace(m_shadowRoot);
+  visitor->Trace(element_shadow_v0_);
+  visitor->Trace(shadow_root_);
 }
 
 DEFINE_TRACE_WRAPPERS(ElementShadow) {
-  visitor->traceWrappers(m_elementShadowV0);
-  visitor->traceWrappers(m_shadowRoot);
+  visitor->TraceWrappers(element_shadow_v0_);
+  visitor->TraceWrappers(shadow_root_);
 }
 
 }  // namespace blink

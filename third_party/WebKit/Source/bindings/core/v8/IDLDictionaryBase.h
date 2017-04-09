@@ -22,7 +22,7 @@ class CORE_EXPORT IDLDictionaryBase {
   IDLDictionaryBase() {}
   virtual ~IDLDictionaryBase() {}
 
-  virtual v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object> creationContext,
+  virtual v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object> creation_context,
                                         v8::Isolate*) const;
 
   DECLARE_VIRTUAL_TRACE();

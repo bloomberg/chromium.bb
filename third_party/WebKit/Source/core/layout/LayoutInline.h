@@ -115,240 +115,245 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
  public:
   explicit LayoutInline(Element*);
 
-  LayoutObject* firstChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->firstChild();
+  LayoutObject* FirstChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->FirstChild();
   }
-  LayoutObject* lastChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->lastChild();
+  LayoutObject* LastChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->LastChild();
   }
 
   // If you have a LayoutInline, use firstChild or lastChild instead.
-  void slowFirstChild() const = delete;
-  void slowLastChild() const = delete;
+  void SlowFirstChild() const = delete;
+  void SlowLastChild() const = delete;
 
-  void addChild(LayoutObject* newChild,
-                LayoutObject* beforeChild = nullptr) override;
+  void AddChild(LayoutObject* new_child,
+                LayoutObject* before_child = nullptr) override;
 
-  Element* node() const { return toElement(LayoutBoxModelObject::node()); }
-
-  LayoutRectOutsets marginBoxOutsets() const final;
-  LayoutUnit marginLeft() const final;
-  LayoutUnit marginRight() const final;
-  LayoutUnit marginTop() const final;
-  LayoutUnit marginBottom() const final;
-  LayoutUnit marginBefore(
-      const ComputedStyle* otherStyle = nullptr) const final;
-  LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const final;
-  LayoutUnit marginStart(const ComputedStyle* otherStyle = nullptr) const final;
-  LayoutUnit marginEnd(const ComputedStyle* otherStyle = nullptr) const final;
-  LayoutUnit marginOver() const final;
-  LayoutUnit marginUnder() const final;
-
-  void absoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulatedOffset) const final;
-  FloatRect localBoundingBoxRectForAccessibility() const final;
-
-  LayoutSize offsetFromContainer(const LayoutObject*) const final;
-
-  LayoutRect linesBoundingBox() const;
-  LayoutRect visualOverflowRect() const final;
-
-  InlineFlowBox* createAndAppendInlineFlowBox();
-
-  void dirtyLineBoxes(bool fullLayout);
-
-  LineBoxList* lineBoxes() { return &m_lineBoxes; }
-  const LineBoxList* lineBoxes() const { return &m_lineBoxes; }
-
-  InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
-  InlineFlowBox* lastLineBox() const { return m_lineBoxes.lastLineBox(); }
-  InlineBox* firstLineBoxIncludingCulling() const {
-    return alwaysCreateLineBoxes() ? firstLineBox()
-                                   : culledInlineFirstLineBox();
-  }
-  InlineBox* lastLineBoxIncludingCulling() const {
-    return alwaysCreateLineBoxes() ? lastLineBox() : culledInlineLastLineBox();
+  Element* GetNode() const {
+    return ToElement(LayoutBoxModelObject::GetNode());
   }
 
-  LayoutBoxModelObject* virtualContinuation() const final {
-    return continuation();
+  LayoutRectOutsets MarginBoxOutsets() const final;
+  LayoutUnit MarginLeft() const final;
+  LayoutUnit MarginRight() const final;
+  LayoutUnit MarginTop() const final;
+  LayoutUnit MarginBottom() const final;
+  LayoutUnit MarginBefore(
+      const ComputedStyle* other_style = nullptr) const final;
+  LayoutUnit MarginAfter(
+      const ComputedStyle* other_style = nullptr) const final;
+  LayoutUnit MarginStart(
+      const ComputedStyle* other_style = nullptr) const final;
+  LayoutUnit MarginEnd(const ComputedStyle* other_style = nullptr) const final;
+  LayoutUnit MarginOver() const final;
+  LayoutUnit MarginUnder() const final;
+
+  void AbsoluteRects(Vector<IntRect>&,
+                     const LayoutPoint& accumulated_offset) const final;
+  FloatRect LocalBoundingBoxRectForAccessibility() const final;
+
+  LayoutSize OffsetFromContainer(const LayoutObject*) const final;
+
+  LayoutRect LinesBoundingBox() const;
+  LayoutRect VisualOverflowRect() const final;
+
+  InlineFlowBox* CreateAndAppendInlineFlowBox();
+
+  void DirtyLineBoxes(bool full_layout);
+
+  LineBoxList* LineBoxes() { return &line_boxes_; }
+  const LineBoxList* LineBoxes() const { return &line_boxes_; }
+
+  InlineFlowBox* FirstLineBox() const { return line_boxes_.FirstLineBox(); }
+  InlineFlowBox* LastLineBox() const { return line_boxes_.LastLineBox(); }
+  InlineBox* FirstLineBoxIncludingCulling() const {
+    return AlwaysCreateLineBoxes() ? FirstLineBox()
+                                   : CulledInlineFirstLineBox();
   }
-  LayoutInline* inlineElementContinuation() const;
+  InlineBox* LastLineBoxIncludingCulling() const {
+    return AlwaysCreateLineBoxes() ? LastLineBox() : CulledInlineLastLineBox();
+  }
 
-  LayoutSize offsetForInFlowPositionedInline(const LayoutBox& child) const;
+  LayoutBoxModelObject* VirtualContinuation() const final {
+    return Continuation();
+  }
+  LayoutInline* InlineElementContinuation() const;
 
-  void addOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additionalOffset,
+  LayoutSize OffsetForInFlowPositionedInline(const LayoutBox& child) const;
+
+  void AddOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additional_offset,
                        IncludeBlockVisualOverflowOrNot) const final;
   // The following methods are called from the container if it has already added
   // outline rects for line boxes and/or children of this LayoutInline.
-  void addOutlineRectsForChildrenAndContinuations(
+  void AddOutlineRectsForChildrenAndContinuations(
       Vector<LayoutRect>&,
-      const LayoutPoint& additionalOffset,
+      const LayoutPoint& additional_offset,
       IncludeBlockVisualOverflowOrNot) const;
-  void addOutlineRectsForContinuations(Vector<LayoutRect>&,
-                                       const LayoutPoint& additionalOffset,
+  void AddOutlineRectsForContinuations(Vector<LayoutRect>&,
+                                       const LayoutPoint& additional_offset,
                                        IncludeBlockVisualOverflowOrNot) const;
 
-  using LayoutBoxModelObject::continuation;
-  using LayoutBoxModelObject::setContinuation;
+  using LayoutBoxModelObject::Continuation;
+  using LayoutBoxModelObject::SetContinuation;
 
-  bool alwaysCreateLineBoxes() const {
-    return alwaysCreateLineBoxesForLayoutInline();
+  bool AlwaysCreateLineBoxes() const {
+    return AlwaysCreateLineBoxesForLayoutInline();
   }
-  void setAlwaysCreateLineBoxes(bool alwaysCreateLineBoxes = true) {
-    setAlwaysCreateLineBoxesForLayoutInline(alwaysCreateLineBoxes);
+  void SetAlwaysCreateLineBoxes(bool always_create_line_boxes = true) {
+    SetAlwaysCreateLineBoxesForLayoutInline(always_create_line_boxes);
   }
-  void updateAlwaysCreateLineBoxes(bool fullLayout);
+  void UpdateAlwaysCreateLineBoxes(bool full_layout);
 
-  LayoutRect localCaretRect(InlineBox*,
+  LayoutRect LocalCaretRect(InlineBox*,
                             int,
-                            LayoutUnit* extraWidthToEndOfLine) final;
+                            LayoutUnit* extra_width_to_end_of_line) final;
 
-  bool hitTestCulledInline(HitTestResult&,
-                           const HitTestLocation& locationInContainer,
-                           const LayoutPoint& accumulatedOffset);
+  bool HitTestCulledInline(HitTestResult&,
+                           const HitTestLocation& location_in_container,
+                           const LayoutPoint& accumulated_offset);
 
-  LayoutPoint firstLineBoxTopLeft() const;
+  LayoutPoint FirstLineBoxTopLeft() const;
 
-  const char* name() const override { return "LayoutInline"; }
+  const char* GetName() const override { return "LayoutInline"; }
 
-  LayoutRect debugRect() const override;
+  LayoutRect DebugRect() const override;
 
  protected:
-  void willBeDestroyed() override;
+  void WillBeDestroyed() override;
 
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void computeSelfHitTestRects(Vector<LayoutRect>& rects,
-                               const LayoutPoint& layerOffset) const override;
+  void ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
+                               const LayoutPoint& layer_offset) const override;
 
-  void invalidateDisplayItemClients(PaintInvalidationReason) const override;
+  void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
-  void absoluteQuadsForSelf(Vector<FloatQuad>& quads,
+  void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                             MapCoordinatesFlags mode = 0) const override;
 
  private:
-  LayoutObjectChildList* virtualChildren() final { return children(); }
-  const LayoutObjectChildList* virtualChildren() const final {
-    return children();
+  LayoutObjectChildList* VirtualChildren() final { return Children(); }
+  const LayoutObjectChildList* VirtualChildren() const final {
+    return Children();
   }
-  const LayoutObjectChildList* children() const { return &m_children; }
-  LayoutObjectChildList* children() { return &m_children; }
+  const LayoutObjectChildList* Children() const { return &children_; }
+  LayoutObjectChildList* Children() { return &children_; }
 
-  bool isLayoutInline() const final { return true; }
+  bool IsLayoutInline() const final { return true; }
 
-  LayoutRect culledInlineVisualOverflowBoundingBox() const;
-  InlineBox* culledInlineFirstLineBox() const;
-  InlineBox* culledInlineLastLineBox() const;
+  LayoutRect CulledInlineVisualOverflowBoundingBox() const;
+  InlineBox* CulledInlineFirstLineBox() const;
+  InlineBox* CulledInlineLastLineBox() const;
 
   // For visualOverflowRect() only, to get bounding box of visual overflow of
   // line boxes.
-  LayoutRect linesVisualOverflowBoundingBox() const;
+  LayoutRect LinesVisualOverflowBoundingBox() const;
 
   template <typename GeneratorContext>
-  void generateLineBoxRects(GeneratorContext& yield) const;
+  void GenerateLineBoxRects(GeneratorContext& yield) const;
   template <typename GeneratorContext>
-  void generateCulledLineBoxRects(GeneratorContext& yield,
+  void GenerateCulledLineBoxRects(GeneratorContext& yield,
                                   const LayoutInline* container) const;
 
-  void addChildToContinuation(LayoutObject* newChild,
-                              LayoutObject* beforeChild);
-  void addChildIgnoringContinuation(LayoutObject* newChild,
-                                    LayoutObject* beforeChild = nullptr) final;
+  void AddChildToContinuation(LayoutObject* new_child,
+                              LayoutObject* before_child);
+  void AddChildIgnoringContinuation(LayoutObject* new_child,
+                                    LayoutObject* before_child = nullptr) final;
 
-  void moveChildrenToIgnoringContinuation(LayoutInline* to,
-                                          LayoutObject* startChild);
+  void MoveChildrenToIgnoringContinuation(LayoutInline* to,
+                                          LayoutObject* start_child);
 
-  void splitInlines(LayoutBlockFlow* fromBlock,
-                    LayoutBlockFlow* toBlock,
-                    LayoutBlockFlow* middleBlock,
-                    LayoutObject* beforeChild,
-                    LayoutBoxModelObject* oldCont);
-  void splitFlow(LayoutObject* beforeChild,
-                 LayoutBlockFlow* newBlockBox,
-                 LayoutObject* newChild,
-                 LayoutBoxModelObject* oldCont);
+  void SplitInlines(LayoutBlockFlow* from_block,
+                    LayoutBlockFlow* to_block,
+                    LayoutBlockFlow* middle_block,
+                    LayoutObject* before_child,
+                    LayoutBoxModelObject* old_cont);
+  void SplitFlow(LayoutObject* before_child,
+                 LayoutBlockFlow* new_block_box,
+                 LayoutObject* new_child,
+                 LayoutBoxModelObject* old_cont);
 
-  void layout() final { NOTREACHED(); }  // Do nothing for layout()
+  void GetLayout() final { NOTREACHED(); }  // Do nothing for layout()
 
-  void paint(const PaintInfo&, const LayoutPoint&) const final;
+  void Paint(const PaintInfo&, const LayoutPoint&) const final;
 
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
 
-  PaintLayerType layerTypeRequired() const override;
+  PaintLayerType LayerTypeRequired() const override;
 
-  LayoutUnit offsetLeft(const Element*) const final;
-  LayoutUnit offsetTop(const Element*) const final;
-  LayoutUnit offsetWidth() const final { return linesBoundingBox().width(); }
-  LayoutUnit offsetHeight() const final { return linesBoundingBox().height(); }
+  LayoutUnit OffsetLeft(const Element*) const final;
+  LayoutUnit OffsetTop(const Element*) const final;
+  LayoutUnit OffsetWidth() const final { return LinesBoundingBox().Width(); }
+  LayoutUnit OffsetHeight() const final { return LinesBoundingBox().Height(); }
 
-  LayoutRect absoluteVisualRect() const override;
+  LayoutRect AbsoluteVisualRect() const override;
 
   // This method differs from visualOverflowRect in that it doesn't include the
   // rects for culled inline boxes, which aren't necessary for paint
   // invalidation.
-  LayoutRect localVisualRect() const override;
+  LayoutRect LocalVisualRect() const override;
 
-  bool mapToVisualRectInAncestorSpaceInternal(
+  bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
       TransformState&,
-      VisualRectFlags = DefaultVisualRectFlags) const final;
+      VisualRectFlags = kDefaultVisualRectFlags) const final;
 
-  PositionWithAffinity positionForPoint(const LayoutPoint&) final;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) final;
 
-  IntRect borderBoundingBox() const final {
-    IntRect boundingBox = enclosingIntRect(linesBoundingBox());
-    return IntRect(0, 0, boundingBox.width(), boundingBox.height());
+  IntRect BorderBoundingBox() const final {
+    IntRect bounding_box = EnclosingIntRect(LinesBoundingBox());
+    return IntRect(0, 0, bounding_box.Width(), bounding_box.Height());
   }
 
-  virtual InlineFlowBox* createInlineFlowBox();  // Subclassed by SVG and Ruby
+  virtual InlineFlowBox* CreateInlineFlowBox();  // Subclassed by SVG and Ruby
 
-  void dirtyLinesFromChangedChild(
+  void DirtyLinesFromChangedChild(
       LayoutObject* child,
-      MarkingBehavior markingBehaviour = MarkContainerChain) final {
-    m_lineBoxes.dirtyLinesFromChangedChild(
+      MarkingBehavior marking_behaviour = kMarkContainerChain) final {
+    line_boxes_.DirtyLinesFromChangedChild(
         LineLayoutItem(this), LineLayoutItem(child),
-        markingBehaviour == MarkContainerChain);
+        marking_behaviour == kMarkContainerChain);
   }
 
   // TODO(leviw): This should probably be an int. We don't snap equivalent lines
   // to different heights.
-  LayoutUnit lineHeight(
-      bool firstLine,
+  LayoutUnit LineHeight(
+      bool first_line,
       LineDirectionMode,
-      LinePositionMode = PositionOnContainingLine) const final;
-  int baselinePosition(FontBaseline,
-                       bool firstLine,
-                       LineDirectionMode,
-                       LinePositionMode = PositionOnContainingLine) const final;
+      LinePositionMode = kPositionOnContainingLine) const final;
+  int BaselinePosition(
+      FontBaseline,
+      bool first_line,
+      LineDirectionMode,
+      LinePositionMode = kPositionOnContainingLine) const final;
 
-  void childBecameNonInline(LayoutObject* child) final;
+  void ChildBecameNonInline(LayoutObject* child) final;
 
-  void updateHitTestResult(HitTestResult&, const LayoutPoint&) final;
+  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) final;
 
-  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) final;
+  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) final;
 
-  void addAnnotatedRegions(Vector<AnnotatedRegionValue>&) final;
+  void AddAnnotatedRegions(Vector<AnnotatedRegionValue>&) final;
 
-  void updateFromStyle() final;
+  void UpdateFromStyle() final;
 
-  LayoutInline* clone() const;
+  LayoutInline* Clone() const;
 
-  LayoutBoxModelObject* continuationBefore(LayoutObject* beforeChild);
+  LayoutBoxModelObject* ContinuationBefore(LayoutObject* before_child);
 
-  LayoutObjectChildList m_children;
+  LayoutObjectChildList children_;
   // All of the line boxes created for this inline flow. For example,
   // <i>Hello<br>world.</i> will have two <i> line boxes.
-  LineBoxList m_lineBoxes;
+  LineBoxList line_boxes_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutInline, isLayoutInline());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutInline, IsLayoutInline());
 
 }  // namespace blink
 

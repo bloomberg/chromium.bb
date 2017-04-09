@@ -38,55 +38,55 @@ class BaseAudioContext;
 class MediaStreamAudioDestinationHandler final
     : public AudioBasicInspectorHandler {
  public:
-  static PassRefPtr<MediaStreamAudioDestinationHandler> create(
+  static PassRefPtr<MediaStreamAudioDestinationHandler> Create(
       AudioNode&,
-      size_t numberOfChannels);
+      size_t number_of_channels);
   ~MediaStreamAudioDestinationHandler() override;
 
-  MediaStream* stream() { return m_stream.get(); }
+  MediaStream* Stream() { return stream_.Get(); }
 
   // AudioHandler.
-  void process(size_t framesToProcess) override;
-  void setChannelCount(unsigned long, ExceptionState&) override;
+  void Process(size_t frames_to_process) override;
+  void SetChannelCount(unsigned long, ExceptionState&) override;
 
-  unsigned long maxChannelCount() const;
+  unsigned long MaxChannelCount() const;
 
  private:
-  MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
+  MediaStreamAudioDestinationHandler(AudioNode&, size_t number_of_channels);
   // As an audio source, we will never propagate silence.
-  bool propagatesSilence() const override { return false; }
+  bool PropagatesSilence() const override { return false; }
 
   // This Persistent doesn't make a reference cycle.
-  Persistent<MediaStream> m_stream;
+  Persistent<MediaStream> stream_;
   // Accessed by main thread and during audio thread processing.
   //
   // TODO: try to avoid such access during audio thread processing.
-  CrossThreadPersistent<MediaStreamSource> m_source;
+  CrossThreadPersistent<MediaStreamSource> source_;
 
   // This synchronizes dynamic changes to the channel count with
   // process() to manage the mix bus.
-  mutable Mutex m_processLock;
+  mutable Mutex process_lock_;
 
   // This internal mix bus is for up/down mixing the input to the actual
   // number of channels in the destination.
-  RefPtr<AudioBus> m_mixBus;
+  RefPtr<AudioBus> mix_bus_;
 };
 
 class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaStreamAudioDestinationNode* create(BaseAudioContext&,
-                                                 size_t numberOfChannels,
+  static MediaStreamAudioDestinationNode* Create(BaseAudioContext&,
+                                                 size_t number_of_channels,
                                                  ExceptionState&);
-  static MediaStreamAudioDestinationNode* create(BaseAudioContext*,
+  static MediaStreamAudioDestinationNode* Create(BaseAudioContext*,
                                                  const AudioNodeOptions&,
                                                  ExceptionState&);
 
   MediaStream* stream() const;
 
  private:
-  MediaStreamAudioDestinationNode(BaseAudioContext&, size_t numberOfChannels);
+  MediaStreamAudioDestinationNode(BaseAudioContext&, size_t number_of_channels);
 };
 
 }  // namespace blink

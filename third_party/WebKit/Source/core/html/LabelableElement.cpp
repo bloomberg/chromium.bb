@@ -29,21 +29,21 @@
 
 namespace blink {
 
-LabelableElement::LabelableElement(const QualifiedName& tagName,
+LabelableElement::LabelableElement(const QualifiedName& tag_name,
                                    Document& document)
-    : HTMLElement(tagName, document) {}
+    : HTMLElement(tag_name, document) {}
 
 LabelableElement::~LabelableElement() {}
 
 LabelsNodeList* LabelableElement::labels() {
-  if (!supportLabels())
+  if (!SupportLabels())
     return nullptr;
 
-  return ensureCachedCollection<LabelsNodeList>(LabelsNodeListType);
+  return EnsureCachedCollection<LabelsNodeList>(kLabelsNodeListType);
 }
 
 DEFINE_TRACE(LabelableElement) {
-  HTMLElement::trace(visitor);
+  HTMLElement::Trace(visitor);
 }
 
 }  // namespace blink

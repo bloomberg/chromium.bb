@@ -38,100 +38,100 @@
 namespace blink {
 
 // http://dev.w3.org/csswg/cssom/#serialize-a-media-query
-String MediaQuery::serialize() const {
+String MediaQuery::Serialize() const {
   StringBuilder result;
-  switch (m_restrictor) {
-    case MediaQuery::Only:
-      result.append("only ");
+  switch (restrictor_) {
+    case MediaQuery::kOnly:
+      result.Append("only ");
       break;
-    case MediaQuery::Not:
-      result.append("not ");
+    case MediaQuery::kNot:
+      result.Append("not ");
       break;
-    case MediaQuery::None:
+    case MediaQuery::kNone:
       break;
   }
 
-  if (m_expressions.isEmpty()) {
-    result.append(m_mediaType);
-    return result.toString();
+  if (expressions_.IsEmpty()) {
+    result.Append(media_type_);
+    return result.ToString();
   }
 
-  if (m_mediaType != MediaTypeNames::all || m_restrictor != None) {
-    result.append(m_mediaType);
-    result.append(" and ");
+  if (media_type_ != MediaTypeNames::all || restrictor_ != kNone) {
+    result.Append(media_type_);
+    result.Append(" and ");
   }
 
-  result.append(m_expressions.at(0)->serialize());
-  for (size_t i = 1; i < m_expressions.size(); ++i) {
-    result.append(" and ");
-    result.append(m_expressions.at(i)->serialize());
+  result.Append(expressions_.at(0)->Serialize());
+  for (size_t i = 1; i < expressions_.size(); ++i) {
+    result.Append(" and ");
+    result.Append(expressions_.at(i)->Serialize());
   }
-  return result.toString();
+  return result.ToString();
 }
 
-static bool expressionCompare(const Member<MediaQueryExp>& a,
+static bool ExpressionCompare(const Member<MediaQueryExp>& a,
                               const Member<MediaQueryExp>& b) {
-  return codePointCompare(a->serialize(), b->serialize()) < 0;
+  return CodePointCompare(a->Serialize(), b->Serialize()) < 0;
 }
 
-MediaQuery* MediaQuery::createNotAll() {
-  return new MediaQuery(MediaQuery::Not, MediaTypeNames::all,
+MediaQuery* MediaQuery::CreateNotAll() {
+  return new MediaQuery(MediaQuery::kNot, MediaTypeNames::all,
                         ExpressionHeapVector());
 }
 
-MediaQuery* MediaQuery::create(RestrictorType restrictor,
-                               String mediaType,
+MediaQuery* MediaQuery::Create(RestrictorType restrictor,
+                               String media_type,
                                ExpressionHeapVector expressions) {
-  return new MediaQuery(restrictor, std::move(mediaType),
+  return new MediaQuery(restrictor, std::move(media_type),
                         std::move(expressions));
 }
 
 MediaQuery::MediaQuery(RestrictorType restrictor,
-                       String mediaType,
+                       String media_type,
                        ExpressionHeapVector expressions)
-    : m_restrictor(restrictor),
-      m_mediaType(attemptStaticStringCreation(mediaType.lower())),
-      m_expressions(std::move(expressions)) {
-  nonCopyingSort(m_expressions.begin(), m_expressions.end(), expressionCompare);
+    : restrictor_(restrictor),
+      media_type_(AttemptStaticStringCreation(media_type.Lower())),
+      expressions_(std::move(expressions)) {
+  NonCopyingSort(expressions_.begin(), expressions_.end(), ExpressionCompare);
 
   // Remove all duplicated expressions.
   MediaQueryExp* key = 0;
-  for (int i = m_expressions.size() - 1; i >= 0; --i) {
-    MediaQueryExp* exp = m_expressions.at(i).get();
+  for (int i = expressions_.size() - 1; i >= 0; --i) {
+    MediaQueryExp* exp = expressions_.at(i).Get();
 
     if (key && *exp == *key)
-      m_expressions.erase(i);
+      expressions_.erase(i);
     else
       key = exp;
   }
 }
 
 MediaQuery::MediaQuery(const MediaQuery& o)
-    : m_restrictor(o.m_restrictor),
-      m_mediaType(o.m_mediaType),
-      m_serializationCache(o.m_serializationCache) {
-  m_expressions.reserveInitialCapacity(o.m_expressions.size());
-  for (unsigned i = 0; i < o.m_expressions.size(); ++i)
-    m_expressions.push_back(o.m_expressions[i]->copy());
+    : restrictor_(o.restrictor_),
+      media_type_(o.media_type_),
+      serialization_cache_(o.serialization_cache_) {
+  expressions_.ReserveInitialCapacity(o.expressions_.size());
+  for (unsigned i = 0; i < o.expressions_.size(); ++i)
+    expressions_.push_back(o.expressions_[i]->Copy());
 }
 
 MediaQuery::~MediaQuery() {}
 
 // http://dev.w3.org/csswg/cssom/#compare-media-queries
 bool MediaQuery::operator==(const MediaQuery& other) const {
-  return cssText() == other.cssText();
+  return CssText() == other.CssText();
 }
 
 // http://dev.w3.org/csswg/cssom/#serialize-a-list-of-media-queries
-String MediaQuery::cssText() const {
-  if (m_serializationCache.isNull())
-    const_cast<MediaQuery*>(this)->m_serializationCache = serialize();
+String MediaQuery::CssText() const {
+  if (serialization_cache_.IsNull())
+    const_cast<MediaQuery*>(this)->serialization_cache_ = Serialize();
 
-  return m_serializationCache;
+  return serialization_cache_;
 }
 
 DEFINE_TRACE(MediaQuery) {
-  visitor->trace(m_expressions);
+  visitor->Trace(expressions_);
 }
 
 }  // namespace blink

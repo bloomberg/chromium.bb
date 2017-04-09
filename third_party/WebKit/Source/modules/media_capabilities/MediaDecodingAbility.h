@@ -22,7 +22,7 @@ class MediaDecodingAbility final
 
  public:
   using WebType = std::unique_ptr<WebMediaDecodingAbility>;
-  static MediaDecodingAbility* take(ScriptPromiseResolver*,
+  static MediaDecodingAbility* Take(ScriptPromiseResolver*,
                                     std::unique_ptr<WebMediaDecodingAbility>);
 
   bool supported() const;
@@ -35,7 +35,7 @@ class MediaDecodingAbility final
   MediaDecodingAbility() = delete;
   explicit MediaDecodingAbility(std::unique_ptr<WebMediaDecodingAbility>);
 
-  std::unique_ptr<WebMediaDecodingAbility> m_webMediaDecodingAbility;
+  std::unique_ptr<WebMediaDecodingAbility> web_media_decoding_ability_;
 };
 
 }  // namespace blink

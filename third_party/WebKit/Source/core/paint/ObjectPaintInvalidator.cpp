@@ -17,55 +17,55 @@
 
 namespace blink {
 
-static bool gDisablePaintInvalidationStateAsserts = false;
+static bool g_disable_paint_invalidation_state_asserts = false;
 
 typedef HashMap<const LayoutObject*, LayoutRect> SelectionVisualRectMap;
-static SelectionVisualRectMap& selectionVisualRectMap() {
+static SelectionVisualRectMap& GetSelectionVisualRectMap() {
   DEFINE_STATIC_LOCAL(SelectionVisualRectMap, map, ());
   return map;
 }
 
-static void setSelectionVisualRect(const LayoutObject& object,
+static void SetSelectionVisualRect(const LayoutObject& object,
                                    const LayoutRect& rect) {
-  DCHECK(object.hasSelectionVisualRect() ==
-         selectionVisualRectMap().contains(&object));
-  if (rect.isEmpty()) {
-    if (object.hasSelectionVisualRect()) {
-      selectionVisualRectMap().erase(&object);
-      object.getMutableForPainting().setHasPreviousSelectionVisualRect(false);
+  DCHECK(object.HasSelectionVisualRect() ==
+         GetSelectionVisualRectMap().Contains(&object));
+  if (rect.IsEmpty()) {
+    if (object.HasSelectionVisualRect()) {
+      GetSelectionVisualRectMap().erase(&object);
+      object.GetMutableForPainting().SetHasPreviousSelectionVisualRect(false);
     }
   } else {
-    selectionVisualRectMap().set(&object, rect);
-    object.getMutableForPainting().setHasPreviousSelectionVisualRect(true);
+    GetSelectionVisualRectMap().Set(&object, rect);
+    object.GetMutableForPainting().SetHasPreviousSelectionVisualRect(true);
   }
 }
 
 typedef HashMap<const LayoutObject*, LayoutPoint> LocationInBackingMap;
-static LocationInBackingMap& locationInBackingMap() {
+static LocationInBackingMap& GetLocationInBackingMap() {
   DEFINE_STATIC_LOCAL(LocationInBackingMap, map, ());
   return map;
 }
 
-void ObjectPaintInvalidator::objectWillBeDestroyed(const LayoutObject& object) {
-  DCHECK(object.hasSelectionVisualRect() ==
-         selectionVisualRectMap().contains(&object));
-  if (object.hasSelectionVisualRect())
-    selectionVisualRectMap().erase(&object);
+void ObjectPaintInvalidator::ObjectWillBeDestroyed(const LayoutObject& object) {
+  DCHECK(object.HasSelectionVisualRect() ==
+         GetSelectionVisualRectMap().Contains(&object));
+  if (object.HasSelectionVisualRect())
+    GetSelectionVisualRectMap().erase(&object);
 
-  DCHECK(object.hasLocationInBacking() ==
-         locationInBackingMap().contains(&object));
-  if (object.hasLocationInBacking())
-    locationInBackingMap().erase(&object);
+  DCHECK(object.HasLocationInBacking() ==
+         GetLocationInBackingMap().Contains(&object));
+  if (object.HasLocationInBacking())
+    GetLocationInBackingMap().erase(&object);
 }
 
 using LayoutObjectTraversalFunctor = std::function<void(const LayoutObject&)>;
 
-static void traverseNonCompositingDescendantsInPaintOrder(
+static void TraverseNonCompositingDescendantsInPaintOrder(
     const LayoutObject&,
     const LayoutObjectTraversalFunctor&);
 
 static void
-traverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
+TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
     const LayoutObject& object,
     const LayoutObjectTraversalFunctor& functor) {
   // |object| is a paint invalidation container, but is not a stacking context
@@ -73,18 +73,18 @@ traverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
   // descendants may not belong to |object| but belong to an ancestor. This
   // function traverses all such descendants. See Case 1a and Case 2 below for
   // details.
-  DCHECK(object.isPaintInvalidationContainer() &&
-         (!object.styleRef().isStackingContext() || !object.isLayoutBlock()));
+  DCHECK(object.IsPaintInvalidationContainer() &&
+         (!object.StyleRef().IsStackingContext() || !object.IsLayoutBlock()));
 
-  LayoutObject* descendant = object.nextInPreOrder(&object);
+  LayoutObject* descendant = object.NextInPreOrder(&object);
   while (descendant) {
-    if (!descendant->hasLayer() || !descendant->styleRef().isStacked()) {
+    if (!descendant->HasLayer() || !descendant->StyleRef().IsStacked()) {
       // Case 1: The descendant is not stacked (or is stacked but has not been
       // allocated a layer yet during style change), so either it's a paint
       // invalidation container in the same situation as |object|, or its paint
       // invalidation container is in such situation. Keep searching until a
       // stacked layer is found.
-      if (!object.isLayoutBlock() && descendant->isFloating()) {
+      if (!object.IsLayoutBlock() && descendant->IsFloating()) {
         // Case 1a (rare): However, if the descendant is a floating object below
         // a composited non-block object, the subtree may belong to an ancestor
         // in paint order, thus recur into the subtree. Note that for
@@ -94,578 +94,580 @@ traverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
         // <span id="object" class="position: relative; will-change: transform">
         //   <div id="descendant" class="float: left"></div>"
         // </span>
-        traverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
-        descendant = descendant->nextInPreOrderAfterChildren(&object);
+        TraverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
+        descendant = descendant->NextInPreOrderAfterChildren(&object);
       } else {
-        descendant = descendant->nextInPreOrder(&object);
+        descendant = descendant->NextInPreOrder(&object);
       }
-    } else if (!descendant->isPaintInvalidationContainer()) {
+    } else if (!descendant->IsPaintInvalidationContainer()) {
       // Case 2: The descendant is stacked and is not composited.
       // The invalidation container of its subtree is our ancestor,
       // thus recur into the subtree.
-      traverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
-      descendant = descendant->nextInPreOrderAfterChildren(&object);
-    } else if (descendant->styleRef().isStackingContext() &&
-               descendant->isLayoutBlock()) {
+      TraverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
+      descendant = descendant->NextInPreOrderAfterChildren(&object);
+    } else if (descendant->StyleRef().IsStackingContext() &&
+               descendant->IsLayoutBlock()) {
       // Case 3: The descendant is an invalidation container and is a stacking
       // context.  No objects in the subtree can have invalidation container
       // outside of it, thus skip the whole subtree.
       // This excludes non-block because there might be floating objects under
       // the descendant belonging to some ancestor in paint order (Case 1a).
-      descendant = descendant->nextInPreOrderAfterChildren(&object);
+      descendant = descendant->NextInPreOrderAfterChildren(&object);
     } else {
       // Case 4: The descendant is an invalidation container but not a stacking
       // context, or the descendant is a non-block stacking context.
       // This is the same situation as |object|, thus keep searching.
-      descendant = descendant->nextInPreOrder(&object);
+      descendant = descendant->NextInPreOrder(&object);
     }
   }
 }
 
-static void traverseNonCompositingDescendantsInPaintOrder(
+static void TraverseNonCompositingDescendantsInPaintOrder(
     const LayoutObject& object,
     const LayoutObjectTraversalFunctor& functor) {
   functor(object);
-  LayoutObject* descendant = object.nextInPreOrder(&object);
+  LayoutObject* descendant = object.NextInPreOrder(&object);
   while (descendant) {
-    if (!descendant->isPaintInvalidationContainer()) {
+    if (!descendant->IsPaintInvalidationContainer()) {
       functor(*descendant);
-      descendant = descendant->nextInPreOrder(&object);
-    } else if (descendant->styleRef().isStackingContext() &&
-               descendant->isLayoutBlock()) {
+      descendant = descendant->NextInPreOrder(&object);
+    } else if (descendant->StyleRef().IsStackingContext() &&
+               descendant->IsLayoutBlock()) {
       // The descendant is an invalidation container and is a stacking context.
       // No objects in the subtree can have invalidation container outside of
       // it, thus skip the whole subtree.
       // This excludes non-blocks because there might be floating objects under
       // the descendant belonging to some ancestor in paint order (Case 1a).
-      descendant = descendant->nextInPreOrderAfterChildren(&object);
+      descendant = descendant->NextInPreOrderAfterChildren(&object);
     } else {
       // If a paint invalidation container is not a stacking context, or the
       // descendant is a non-block stacking context, some of its descendants may
       // belong to the parent container.
-      traverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
+      TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
           *descendant, functor);
-      descendant = descendant->nextInPreOrderAfterChildren(&object);
+      descendant = descendant->NextInPreOrderAfterChildren(&object);
     }
   }
 }
 
-static void setPaintingLayerNeedsRepaintDuringTraverse(
+static void SetPaintingLayerNeedsRepaintDuringTraverse(
     const LayoutObject& object) {
-  if (object.hasLayer() &&
-      toLayoutBoxModelObject(object).hasSelfPaintingLayer()) {
-    toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
-  } else if (object.isFloating() && object.parent() &&
-             !object.parent()->isLayoutBlock()) {
-    object.paintingLayer()->setNeedsRepaint();
+  if (object.HasLayer() &&
+      ToLayoutBoxModelObject(object).HasSelfPaintingLayer()) {
+    ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
+  } else if (object.IsFloating() && object.Parent() &&
+             !object.Parent()->IsLayoutBlock()) {
+    object.PaintingLayer()->SetNeedsRepaint();
   }
 }
 
 void ObjectPaintInvalidator::
-    invalidateDisplayItemClientsIncludingNonCompositingDescendants(
+    InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
         PaintInvalidationReason reason) {
   // This is valid because we want to invalidate the client in the display item
   // list of the current backing.
   DisableCompositingQueryAsserts disabler;
 
-  slowSetPaintingLayerNeedsRepaint();
-  traverseNonCompositingDescendantsInPaintOrder(
-      m_object, [reason](const LayoutObject& object) {
-        setPaintingLayerNeedsRepaintDuringTraverse(object);
-        object.invalidateDisplayItemClients(reason);
+  SlowSetPaintingLayerNeedsRepaint();
+  TraverseNonCompositingDescendantsInPaintOrder(
+      object_, [reason](const LayoutObject& object) {
+        SetPaintingLayerNeedsRepaintDuringTraverse(object);
+        object.InvalidateDisplayItemClients(reason);
       });
 }
 
 DISABLE_CFI_PERF
-void ObjectPaintInvalidator::invalidatePaintOfPreviousVisualRect(
-    const LayoutBoxModelObject& paintInvalidationContainer,
+void ObjectPaintInvalidator::InvalidatePaintOfPreviousVisualRect(
+    const LayoutBoxModelObject& paint_invalidation_container,
     PaintInvalidationReason reason) {
   // It's caller's responsibility to ensure enclosingSelfPaintingLayer's
   // needsRepaint is set.  Don't set the flag here because getting
   // enclosingSelfPaintLayer has cost and the caller can use various ways (e.g.
   // PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
-  DCHECK(!m_object.paintingLayer() || m_object.paintingLayer()->needsRepaint());
+  DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
 
   // These disablers are valid because we want to use the current
   // compositing/invalidation status.
-  DisablePaintInvalidationStateAsserts invalidationDisabler;
-  DisableCompositingQueryAsserts compositingDisabler;
+  DisablePaintInvalidationStateAsserts invalidation_disabler;
+  DisableCompositingQueryAsserts compositing_disabler;
 
-  LayoutRect invalidationRect = m_object.visualRect();
-  invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect,
+  LayoutRect invalidation_rect = object_.VisualRect();
+  InvalidatePaintUsingContainer(paint_invalidation_container, invalidation_rect,
                                 reason);
-  m_object.invalidateDisplayItemClients(reason);
+  object_.InvalidateDisplayItemClients(reason);
 
   // This method may be used to invalidate paint of an object changing paint
   // invalidation container.  Clear previous visual rect on the original paint
   // invalidation container to avoid under-invalidation if the visual rect on
   // the new paint invalidation container happens to be the same as the old one.
-  m_object.getMutableForPainting().clearPreviousVisualRects();
+  object_.GetMutableForPainting().ClearPreviousVisualRects();
 }
 
 void ObjectPaintInvalidator::
-    invalidatePaintIncludingNonCompositingDescendants() {
+    InvalidatePaintIncludingNonCompositingDescendants() {
   // Since we're only painting non-composited layers, we know that they all
   // share the same paintInvalidationContainer.
-  const LayoutBoxModelObject& paintInvalidationContainer =
-      m_object.containerForPaintInvalidation();
-  slowSetPaintingLayerNeedsRepaint();
-  traverseNonCompositingDescendantsInPaintOrder(
-      m_object, [&paintInvalidationContainer](const LayoutObject& object) {
-        setPaintingLayerNeedsRepaintDuringTraverse(object);
-        ObjectPaintInvalidator(object).invalidatePaintOfPreviousVisualRect(
-            paintInvalidationContainer, PaintInvalidationSubtree);
+  const LayoutBoxModelObject& paint_invalidation_container =
+      object_.ContainerForPaintInvalidation();
+  SlowSetPaintingLayerNeedsRepaint();
+  TraverseNonCompositingDescendantsInPaintOrder(
+      object_, [&paint_invalidation_container](const LayoutObject& object) {
+        SetPaintingLayerNeedsRepaintDuringTraverse(object);
+        ObjectPaintInvalidator(object).InvalidatePaintOfPreviousVisualRect(
+            paint_invalidation_container, kPaintInvalidationSubtree);
       });
 }
 
 void ObjectPaintInvalidator::
-    invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
-        const LayoutBoxModelObject& paintInvalidationContainer) {
-  invalidatePaintOfPreviousVisualRect(paintInvalidationContainer,
-                                      PaintInvalidationSubtree);
-  for (LayoutObject* child = m_object.slowFirstChild(); child;
-       child = child->nextSibling()) {
-    if (!child->hasLayer() ||
-        !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer())
+    InvalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
+        const LayoutBoxModelObject& paint_invalidation_container) {
+  InvalidatePaintOfPreviousVisualRect(paint_invalidation_container,
+                                      kPaintInvalidationSubtree);
+  for (LayoutObject* child = object_.SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (!child->HasLayer() ||
+        !ToLayoutBoxModelObject(child)->Layer()->IsSelfPaintingLayer())
       ObjectPaintInvalidator(*child)
-          .invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
-              paintInvalidationContainer);
+          .InvalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
+              paint_invalidation_container);
   }
 }
 
 void ObjectPaintInvalidator::
-    invalidatePaintIncludingNonSelfPaintingLayerDescendants(
-        const LayoutBoxModelObject& paintInvalidationContainer) {
-  slowSetPaintingLayerNeedsRepaint();
-  invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
-      paintInvalidationContainer);
+    InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
+        const LayoutBoxModelObject& paint_invalidation_container) {
+  SlowSetPaintingLayerNeedsRepaint();
+  InvalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
+      paint_invalidation_container);
 }
 
-void ObjectPaintInvalidator::invalidateDisplayItemClient(
+void ObjectPaintInvalidator::InvalidateDisplayItemClient(
     const DisplayItemClient& client,
     PaintInvalidationReason reason) {
   // It's caller's responsibility to ensure enclosingSelfPaintingLayer's
   // needsRepaint is set.  Don't set the flag here because getting
   // enclosingSelfPaintLayer has cost and the caller can use various ways (e.g.
   // PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
-  DCHECK(!m_object.paintingLayer() || m_object.paintingLayer()->needsRepaint());
+  DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
 
-  client.setDisplayItemsUncached(reason);
+  client.SetDisplayItemsUncached(reason);
 
-  if (FrameView* frameView = m_object.frameView())
-    frameView->trackObjectPaintInvalidation(client, reason);
+  if (FrameView* frame_view = object_.GetFrameView())
+    frame_view->TrackObjectPaintInvalidation(client, reason);
 }
 
 template <typename T>
-void addJsonObjectForRect(TracedValue* value, const char* name, const T& rect) {
-  value->beginDictionary(name);
-  value->setDouble("x", rect.x());
-  value->setDouble("y", rect.y());
-  value->setDouble("width", rect.width());
-  value->setDouble("height", rect.height());
-  value->endDictionary();
+void AddJsonObjectForRect(TracedValue* value, const char* name, const T& rect) {
+  value->BeginDictionary(name);
+  value->SetDouble("x", rect.X());
+  value->SetDouble("y", rect.Y());
+  value->SetDouble("width", rect.Width());
+  value->SetDouble("height", rect.Height());
+  value->EndDictionary();
 }
 
-static std::unique_ptr<TracedValue> jsonObjectForPaintInvalidationInfo(
+static std::unique_ptr<TracedValue> JsonObjectForPaintInvalidationInfo(
     const LayoutRect& rect,
-    const String& invalidationReason) {
-  std::unique_ptr<TracedValue> value = TracedValue::create();
-  addJsonObjectForRect(value.get(), "rect", rect);
-  value->setString("invalidation_reason", invalidationReason);
+    const String& invalidation_reason) {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  AddJsonObjectForRect(value.get(), "rect", rect);
+  value->SetString("invalidation_reason", invalidation_reason);
   return value;
 }
 
-static void invalidatePaintRectangleOnWindow(
-    const LayoutBoxModelObject& paintInvalidationContainer,
-    const IntRect& dirtyRect) {
-  FrameView* frameView = paintInvalidationContainer.frameView();
-  DCHECK(paintInvalidationContainer.isLayoutView() &&
-         paintInvalidationContainer.layer()->compositingState() ==
-             NotComposited);
+static void InvalidatePaintRectangleOnWindow(
+    const LayoutBoxModelObject& paint_invalidation_container,
+    const IntRect& dirty_rect) {
+  FrameView* frame_view = paint_invalidation_container.GetFrameView();
+  DCHECK(paint_invalidation_container.IsLayoutView() &&
+         paint_invalidation_container.Layer()->GetCompositingState() ==
+             kNotComposited);
 
-  if (!frameView)
+  if (!frame_view)
     return;
 
-  if (paintInvalidationContainer.document().printing() &&
+  if (paint_invalidation_container.GetDocument().Printing() &&
       !RuntimeEnabledFeatures::printBrowserEnabled())
     return;
 
-  DCHECK(frameView->frame().ownerLayoutItem().isNull());
+  DCHECK(frame_view->GetFrame().OwnerLayoutItem().IsNull());
 
-  IntRect paintRect = dirtyRect;
-  paintRect.intersect(frameView->visibleContentRect());
-  if (paintRect.isEmpty())
+  IntRect paint_rect = dirty_rect;
+  paint_rect.Intersect(frame_view->VisibleContentRect());
+  if (paint_rect.IsEmpty())
     return;
 
-  if (HostWindow* window = frameView->getHostWindow())
-    window->invalidateRect(frameView->contentsToRootFrame(paintRect));
+  if (HostWindow* window = frame_view->GetHostWindow())
+    window->InvalidateRect(frame_view->ContentsToRootFrame(paint_rect));
 }
 
-void ObjectPaintInvalidator::setBackingNeedsPaintInvalidationInRect(
-    const LayoutBoxModelObject& paintInvalidationContainer,
+void ObjectPaintInvalidator::SetBackingNeedsPaintInvalidationInRect(
+    const LayoutBoxModelObject& paint_invalidation_container,
     const LayoutRect& rect,
     PaintInvalidationReason reason) {
   // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible
   // crash here, so assert but check that the layer is composited.
-  DCHECK(paintInvalidationContainer.compositingState() != NotComposited);
+  DCHECK(paint_invalidation_container.GetCompositingState() != kNotComposited);
 
-  PaintLayer& layer = *paintInvalidationContainer.layer();
-  if (layer.groupedMapping()) {
-    if (GraphicsLayer* squashingLayer =
-            layer.groupedMapping()->squashingLayer()) {
+  PaintLayer& layer = *paint_invalidation_container.Layer();
+  if (layer.GroupedMapping()) {
+    if (GraphicsLayer* squashing_layer =
+            layer.GroupedMapping()->SquashingLayer()) {
       // Note: the subpixel accumulation of layer() does not need to be added
       // here. It is already taken into account.
-      squashingLayer->setNeedsDisplayInRect(enclosingIntRect(rect), reason,
-                                            m_object);
+      squashing_layer->SetNeedsDisplayInRect(EnclosingIntRect(rect), reason,
+                                             object_);
     }
-  } else if (m_object.compositedScrollsWithRespectTo(
-                 paintInvalidationContainer)) {
-    layer.compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(
-        rect, reason, m_object);
-  } else if (paintInvalidationContainer.usesCompositedScrolling()) {
-    DCHECK(m_object == paintInvalidationContainer);
-    if (reason == PaintInvalidationBackgroundOnScrollingContentsLayer ||
-        reason == PaintInvalidationCaret) {
-      layer.compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(
-          rect, reason, m_object);
+  } else if (object_.CompositedScrollsWithRespectTo(
+                 paint_invalidation_container)) {
+    layer.GetCompositedLayerMapping()->SetScrollingContentsNeedDisplayInRect(
+        rect, reason, object_);
+  } else if (paint_invalidation_container.UsesCompositedScrolling()) {
+    DCHECK(object_ == paint_invalidation_container);
+    if (reason == kPaintInvalidationBackgroundOnScrollingContentsLayer ||
+        reason == kPaintInvalidationCaret) {
+      layer.GetCompositedLayerMapping()->SetScrollingContentsNeedDisplayInRect(
+          rect, reason, object_);
     } else {
-      layer.compositedLayerMapping()->setNonScrollingContentsNeedDisplayInRect(
-          rect, reason, m_object);
+      layer.GetCompositedLayerMapping()
+          ->SetNonScrollingContentsNeedDisplayInRect(rect, reason, object_);
     }
   } else {
     // Otherwise invalidate everything.
-    layer.compositedLayerMapping()->setContentsNeedDisplayInRect(rect, reason,
-                                                                 m_object);
+    layer.GetCompositedLayerMapping()->SetContentsNeedDisplayInRect(
+        rect, reason, object_);
   }
 }
 
-void ObjectPaintInvalidator::invalidatePaintUsingContainer(
-    const LayoutBoxModelObject& paintInvalidationContainer,
-    const LayoutRect& dirtyRect,
-    PaintInvalidationReason invalidationReason) {
+void ObjectPaintInvalidator::InvalidatePaintUsingContainer(
+    const LayoutBoxModelObject& paint_invalidation_container,
+    const LayoutRect& dirty_rect,
+    PaintInvalidationReason invalidation_reason) {
   // TODO(wangxianzhu): Enable the following assert after paint invalidation for
   // spv2 is ready.
   // DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-  if (paintInvalidationContainer.frameView()->shouldThrottleRendering())
+  if (paint_invalidation_container.GetFrameView()->ShouldThrottleRendering())
     return;
 
-  DCHECK(gDisablePaintInvalidationStateAsserts ||
-         m_object.document().lifecycle().state() ==
+  DCHECK(g_disable_paint_invalidation_state_asserts ||
+         object_.GetDocument().Lifecycle().GetState() ==
              (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()
-                  ? DocumentLifecycle::InPrePaint
-                  : DocumentLifecycle::InPaintInvalidation));
+                  ? DocumentLifecycle::kInPrePaint
+                  : DocumentLifecycle::kInPaintInvalidation));
 
-  if (dirtyRect.isEmpty())
+  if (dirty_rect.IsEmpty())
     return;
 
-  CHECK(m_object.isRooted());
+  CHECK(object_.IsRooted());
 
   // FIXME: Unify "devtools.timeline.invalidationTracking" and
   // "blink.invalidation". crbug.com/413527.
   TRACE_EVENT_INSTANT1(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
       "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorPaintInvalidationTrackingEvent::data(
-          &m_object, paintInvalidationContainer));
+      InspectorPaintInvalidationTrackingEvent::Data(
+          &object_, paint_invalidation_container));
   TRACE_EVENT2(
       TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
       "LayoutObject::invalidatePaintUsingContainer()", "object",
-      m_object.debugName().ascii(), "info",
-      jsonObjectForPaintInvalidationInfo(
-          dirtyRect, paintInvalidationReasonToString(invalidationReason)));
+      object_.DebugName().Ascii(), "info",
+      JsonObjectForPaintInvalidationInfo(
+          dirty_rect, PaintInvalidationReasonToString(invalidation_reason)));
 
   // This conditional handles situations where non-rooted (and hence
   // non-composited) frames are painted, such as SVG images.
-  if (!paintInvalidationContainer.isPaintInvalidationContainer()) {
-    invalidatePaintRectangleOnWindow(paintInvalidationContainer,
-                                     enclosingIntRect(dirtyRect));
+  if (!paint_invalidation_container.IsPaintInvalidationContainer()) {
+    InvalidatePaintRectangleOnWindow(paint_invalidation_container,
+                                     EnclosingIntRect(dirty_rect));
   }
 
-  if (paintInvalidationContainer.view()->usesCompositing() &&
-      paintInvalidationContainer.isPaintInvalidationContainer()) {
-    setBackingNeedsPaintInvalidationInRect(paintInvalidationContainer,
-                                           dirtyRect, invalidationReason);
+  if (paint_invalidation_container.View()->UsesCompositing() &&
+      paint_invalidation_container.IsPaintInvalidationContainer()) {
+    SetBackingNeedsPaintInvalidationInRect(paint_invalidation_container,
+                                           dirty_rect, invalidation_reason);
   }
 }
 
-LayoutRect ObjectPaintInvalidator::invalidatePaintRectangle(
-    const LayoutRect& dirtyRect,
-    DisplayItemClient* displayItemClient) {
-  CHECK(m_object.isRooted());
+LayoutRect ObjectPaintInvalidator::InvalidatePaintRectangle(
+    const LayoutRect& dirty_rect,
+    DisplayItemClient* display_item_client) {
+  CHECK(object_.IsRooted());
 
-  if (dirtyRect.isEmpty())
+  if (dirty_rect.IsEmpty())
     return LayoutRect();
 
-  if (m_object.view()->document().printing() &&
+  if (object_.View()->GetDocument().Printing() &&
       !RuntimeEnabledFeatures::printBrowserEnabled())
     return LayoutRect();  // Don't invalidate paints if we're printing.
 
-  const LayoutBoxModelObject& paintInvalidationContainer =
-      m_object.containerForPaintInvalidation();
-  LayoutRect dirtyRectOnBacking = dirtyRect;
-  PaintLayer::mapRectToPaintInvalidationBacking(
-      m_object, paintInvalidationContainer, dirtyRectOnBacking);
-  dirtyRectOnBacking.move(m_object.scrollAdjustmentForPaintInvalidation(
-      paintInvalidationContainer));
-  invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRectOnBacking,
-                                PaintInvalidationRectangle);
+  const LayoutBoxModelObject& paint_invalidation_container =
+      object_.ContainerForPaintInvalidation();
+  LayoutRect dirty_rect_on_backing = dirty_rect;
+  PaintLayer::MapRectToPaintInvalidationBacking(
+      object_, paint_invalidation_container, dirty_rect_on_backing);
+  dirty_rect_on_backing.Move(object_.ScrollAdjustmentForPaintInvalidation(
+      paint_invalidation_container));
+  InvalidatePaintUsingContainer(paint_invalidation_container,
+                                dirty_rect_on_backing,
+                                kPaintInvalidationRectangle);
 
-  slowSetPaintingLayerNeedsRepaint();
-  if (displayItemClient)
-    invalidateDisplayItemClient(*displayItemClient, PaintInvalidationRectangle);
+  SlowSetPaintingLayerNeedsRepaint();
+  if (display_item_client)
+    InvalidateDisplayItemClient(*display_item_client,
+                                kPaintInvalidationRectangle);
   else
-    m_object.invalidateDisplayItemClients(PaintInvalidationRectangle);
+    object_.InvalidateDisplayItemClients(kPaintInvalidationRectangle);
 
-  return dirtyRectOnBacking;
+  return dirty_rect_on_backing;
 }
 
-void ObjectPaintInvalidator::slowSetPaintingLayerNeedsRepaint() {
-  if (PaintLayer* paintingLayer = m_object.paintingLayer())
-    paintingLayer->setNeedsRepaint();
+void ObjectPaintInvalidator::SlowSetPaintingLayerNeedsRepaint() {
+  if (PaintLayer* painting_layer = object_.PaintingLayer())
+    painting_layer->SetNeedsRepaint();
 }
 
-LayoutPoint ObjectPaintInvalidator::locationInBacking() const {
-  DCHECK(m_object.hasLocationInBacking() ==
-         locationInBackingMap().contains(&m_object));
-  return m_object.hasLocationInBacking() ? locationInBackingMap().at(&m_object)
-                                         : m_object.visualRect().location();
+LayoutPoint ObjectPaintInvalidator::LocationInBacking() const {
+  DCHECK(object_.HasLocationInBacking() ==
+         GetLocationInBackingMap().Contains(&object_));
+  return object_.HasLocationInBacking() ? GetLocationInBackingMap().at(&object_)
+                                        : object_.VisualRect().Location();
 }
 
-void ObjectPaintInvalidator::setLocationInBacking(const LayoutPoint& location) {
-  DCHECK(m_object.hasLocationInBacking() ==
-         locationInBackingMap().contains(&m_object));
-  if (location == m_object.visualRect().location()) {
-    if (m_object.hasLocationInBacking()) {
-      locationInBackingMap().erase(&m_object);
-      m_object.getMutableForPainting().setHasPreviousLocationInBacking(false);
+void ObjectPaintInvalidator::SetLocationInBacking(const LayoutPoint& location) {
+  DCHECK(object_.HasLocationInBacking() ==
+         GetLocationInBackingMap().Contains(&object_));
+  if (location == object_.VisualRect().Location()) {
+    if (object_.HasLocationInBacking()) {
+      GetLocationInBackingMap().erase(&object_);
+      object_.GetMutableForPainting().SetHasPreviousLocationInBacking(false);
     }
   } else {
-    locationInBackingMap().set(&m_object, location);
-    m_object.getMutableForPainting().setHasPreviousLocationInBacking(true);
+    GetLocationInBackingMap().Set(&object_, location);
+    object_.GetMutableForPainting().SetHasPreviousLocationInBacking(true);
   }
 }
 
-void ObjectPaintInvalidatorWithContext::fullyInvalidatePaint(
+void ObjectPaintInvalidatorWithContext::FullyInvalidatePaint(
     PaintInvalidationReason reason,
-    const LayoutRect& oldVisualRect,
-    const LayoutRect& newVisualRect) {
+    const LayoutRect& old_visual_rect,
+    const LayoutRect& new_visual_rect) {
   // The following logic avoids invalidating twice if one set of bounds contains
   // the other.
-  if (!newVisualRect.contains(oldVisualRect)) {
-    LayoutRect invalidationRect = oldVisualRect;
-    invalidatePaintRectangleWithContext(invalidationRect, reason);
+  if (!new_visual_rect.Contains(old_visual_rect)) {
+    LayoutRect invalidation_rect = old_visual_rect;
+    InvalidatePaintRectangleWithContext(invalidation_rect, reason);
 
-    if (invalidationRect.contains(newVisualRect))
+    if (invalidation_rect.Contains(new_visual_rect))
       return;
   }
 
-  invalidatePaintRectangleWithContext(newVisualRect, reason);
+  InvalidatePaintRectangleWithContext(new_visual_rect, reason);
 }
 
-bool ObjectPaintInvalidatorWithContext::parentFullyInvalidatedOnSameBacking() {
-  if (!m_object.parent() || !m_context.parentContext)
+bool ObjectPaintInvalidatorWithContext::ParentFullyInvalidatedOnSameBacking() {
+  if (!object_.Parent() || !context_.parent_context)
     return false;
 
-  if (!isImmediateFullPaintInvalidationReason(
-          m_object.parent()->fullPaintInvalidationReason()))
+  if (!IsImmediateFullPaintInvalidationReason(
+          object_.Parent()->FullPaintInvalidationReason()))
     return false;
 
   // Parent and child should have the same paint invalidation container.
-  if (m_context.parentContext->paintInvalidationContainer !=
-      m_context.paintInvalidationContainer)
+  if (context_.parent_context->paint_invalidation_container !=
+      context_.paint_invalidation_container)
     return false;
 
   // Both parent and child are contents of the paint invalidation container,
   // so they are on the same backing.
-  if (m_object.parent() != m_context.paintInvalidationContainer)
+  if (object_.Parent() != context_.paint_invalidation_container)
     return true;
 
   // If the paint invalidation container (i.e. parent) uses composited
   // scrolling, parent and child might be on different backing (scrolling
   // container vs scrolling contents).
-  return !m_context.paintInvalidationContainer->usesCompositedScrolling();
+  return !context_.paint_invalidation_container->UsesCompositedScrolling();
 }
 
-void ObjectPaintInvalidatorWithContext::invalidatePaintRectangleWithContext(
+void ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext(
     const LayoutRect& rect,
     PaintInvalidationReason reason) {
-  if (rect.isEmpty())
+  if (rect.IsEmpty())
     return;
 
-  if (m_context.forcedSubtreeInvalidationFlags &
-      PaintInvalidatorContext::ForcedSubtreeNoRasterInvalidation)
+  if (context_.forced_subtree_invalidation_flags &
+      PaintInvalidatorContext::kForcedSubtreeNoRasterInvalidation)
     return;
 
   // If the parent has fully invalidated and its visual rect covers this object
   // on the same backing, skip the invalidation.
-  if (parentFullyInvalidatedOnSameBacking() &&
-      (m_context.parentContext->oldVisualRect.contains(rect) ||
-       m_object.parent()->visualRect().contains(rect)))
+  if (ParentFullyInvalidatedOnSameBacking() &&
+      (context_.parent_context->old_visual_rect.Contains(rect) ||
+       object_.Parent()->VisualRect().Contains(rect)))
     return;
 
-  invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rect,
+  InvalidatePaintUsingContainer(*context_.paint_invalidation_container, rect,
                                 reason);
 }
 
 DISABLE_CFI_PERF
 PaintInvalidationReason
-ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
+ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   // This is before any early return to ensure the background obscuration status
   // is saved.
-  bool backgroundObscurationChanged = false;
-  bool backgroundObscured = m_object.backgroundIsKnownToBeObscured();
-  if (backgroundObscured != m_object.previousBackgroundObscured()) {
-    m_object.getMutableForPainting().setPreviousBackgroundObscured(
-        backgroundObscured);
-    backgroundObscurationChanged = true;
+  bool background_obscuration_changed = false;
+  bool background_obscured = object_.BackgroundIsKnownToBeObscured();
+  if (background_obscured != object_.PreviousBackgroundObscured()) {
+    object_.GetMutableForPainting().SetPreviousBackgroundObscured(
+        background_obscured);
+    background_obscuration_changed = true;
   }
 
-  if (m_context.forcedSubtreeInvalidationFlags &
-      PaintInvalidatorContext::ForcedSubtreeFullInvalidation)
-    return PaintInvalidationSubtree;
+  if (context_.forced_subtree_invalidation_flags &
+      PaintInvalidatorContext::kForcedSubtreeFullInvalidation)
+    return kPaintInvalidationSubtree;
 
-  if (m_object.shouldDoFullPaintInvalidation())
-    return m_object.fullPaintInvalidationReason();
+  if (object_.ShouldDoFullPaintInvalidation())
+    return object_.FullPaintInvalidationReason();
 
-  if (m_context.oldVisualRect.isEmpty() && m_object.visualRect().isEmpty())
-    return PaintInvalidationNone;
+  if (context_.old_visual_rect.IsEmpty() && object_.VisualRect().IsEmpty())
+    return kPaintInvalidationNone;
 
-  if (backgroundObscurationChanged)
-    return PaintInvalidationBackgroundObscurationChange;
+  if (background_obscuration_changed)
+    return kPaintInvalidationBackgroundObscurationChange;
 
-  if (m_object.paintedOutputOfObjectHasNoEffectRegardlessOfSize())
-    return PaintInvalidationNone;
+  if (object_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
+    return kPaintInvalidationNone;
 
   // Force full paint invalidation if the outline may be affected by descendants
   // and this object is marked for checking paint invalidation for any reason.
-  if (m_object.outlineMayBeAffectedByDescendants() ||
-      m_object.previousOutlineMayBeAffectedByDescendants()) {
-    m_object.getMutableForPainting()
-        .updatePreviousOutlineMayBeAffectedByDescendants();
-    return PaintInvalidationOutline;
+  if (object_.OutlineMayBeAffectedByDescendants() ||
+      object_.PreviousOutlineMayBeAffectedByDescendants()) {
+    object_.GetMutableForPainting()
+        .UpdatePreviousOutlineMayBeAffectedByDescendants();
+    return kPaintInvalidationOutline;
   }
 
   // If the size is zero on one of our bounds then we know we're going to have
   // to do a full invalidation of either old bounds or new bounds.
-  if (m_context.oldVisualRect.isEmpty())
-    return PaintInvalidationBecameVisible;
-  if (m_object.visualRect().isEmpty())
-    return PaintInvalidationBecameInvisible;
+  if (context_.old_visual_rect.IsEmpty())
+    return kPaintInvalidationBecameVisible;
+  if (object_.VisualRect().IsEmpty())
+    return kPaintInvalidationBecameInvisible;
 
   // If we shifted, we don't know the exact reason so we are conservative and
   // trigger a full invalidation. Shifting could be caused by some layout
   // property (left / top) or some in-flow layoutObject inserted / removed
   // before us in the tree.
-  if (m_object.visualRect().location() != m_context.oldVisualRect.location())
-    return PaintInvalidationBoundsChange;
+  if (object_.VisualRect().Location() != context_.old_visual_rect.Location())
+    return kPaintInvalidationBoundsChange;
 
-  if (m_context.newLocation != m_context.oldLocation)
-    return PaintInvalidationLocationChange;
+  if (context_.new_location != context_.old_location)
+    return kPaintInvalidationLocationChange;
 
   // Incremental invalidation is only applicable to LayoutBoxes. Return
   // PaintInvalidationIncremental no matter if oldVisualRect and newVisualRect
   // are equal because a LayoutBox may need paint invalidation if its border box
   // changes. BoxPaintInvalidator may also override this reason with a full
   // paint invalidation reason if needed.
-  if (m_object.isBox())
-    return PaintInvalidationIncremental;
+  if (object_.IsBox())
+    return kPaintInvalidationIncremental;
 
-  if (m_context.oldVisualRect != m_object.visualRect())
-    return PaintInvalidationBoundsChange;
+  if (context_.old_visual_rect != object_.VisualRect())
+    return kPaintInvalidationBoundsChange;
 
-  return PaintInvalidationNone;
+  return kPaintInvalidationNone;
 }
 
 DISABLE_CFI_PERF
-void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
+void ObjectPaintInvalidatorWithContext::InvalidateSelectionIfNeeded(
     PaintInvalidationReason reason) {
   // Update selection rect when we are doing full invalidation with geometry
   // change (in case that the object is moved, composite status changed, etc.)
   // or shouldInvalidationSelection is set (in case that the selection itself
   // changed).
-  bool fullInvalidation = isImmediateFullPaintInvalidationReason(reason);
-  if (!fullInvalidation && !m_object.shouldInvalidateSelection())
+  bool full_invalidation = IsImmediateFullPaintInvalidationReason(reason);
+  if (!full_invalidation && !object_.ShouldInvalidateSelection())
     return;
 
-  DCHECK(m_object.hasSelectionVisualRect() ==
-         selectionVisualRectMap().contains(&m_object));
-  LayoutRect oldSelectionRect;
-  if (m_object.hasSelectionVisualRect())
-    oldSelectionRect = selectionVisualRectMap().at(&m_object);
+  DCHECK(object_.HasSelectionVisualRect() ==
+         GetSelectionVisualRectMap().Contains(&object_));
+  LayoutRect old_selection_rect;
+  if (object_.HasSelectionVisualRect())
+    old_selection_rect = GetSelectionVisualRectMap().at(&object_);
 
-  LayoutRect newSelectionRect;
+  LayoutRect new_selection_rect;
 #if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(m_object, m_context, oldSelectionRect,
-                                          newSelectionRect);
+  FindVisualRectNeedingUpdateScope finder(object_, context_, old_selection_rect,
+                                          new_selection_rect);
 #endif
-  if (m_context.needsVisualRectUpdate(m_object)) {
-    newSelectionRect = m_object.localSelectionRect();
-    m_context.mapLocalRectToVisualRectInBacking(m_object, newSelectionRect);
+  if (context_.NeedsVisualRectUpdate(object_)) {
+    new_selection_rect = object_.LocalSelectionRect();
+    context_.MapLocalRectToVisualRectInBacking(object_, new_selection_rect);
   } else {
-    newSelectionRect = oldSelectionRect;
+    new_selection_rect = old_selection_rect;
   }
 
-  setSelectionVisualRect(m_object, newSelectionRect);
+  SetSelectionVisualRect(object_, new_selection_rect);
 
-  if (!fullInvalidation) {
-    fullyInvalidatePaint(PaintInvalidationSelection, oldSelectionRect,
-                         newSelectionRect);
-    m_context.paintingLayer->setNeedsRepaint();
-    m_object.invalidateDisplayItemClients(PaintInvalidationSelection);
+  if (!full_invalidation) {
+    FullyInvalidatePaint(kPaintInvalidationSelection, old_selection_rect,
+                         new_selection_rect);
+    context_.painting_layer->SetNeedsRepaint();
+    object_.InvalidateDisplayItemClients(kPaintInvalidationSelection);
   }
 }
 
 DISABLE_CFI_PERF
 PaintInvalidationReason
-ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
+ObjectPaintInvalidatorWithContext::InvalidatePaintIfNeededWithComputedReason(
     PaintInvalidationReason reason) {
   // We need to invalidate the selection before checking for whether we are
   // doing a full invalidation.  This is because we need to update the previous
   // selection rect regardless.
-  invalidateSelectionIfNeeded(reason);
+  InvalidateSelectionIfNeeded(reason);
 
   switch (reason) {
-    case PaintInvalidationNone:
+    case kPaintInvalidationNone:
       // There are corner cases that the display items need to be invalidated
       // for paint offset mutation, but incurs no pixel difference (i.e. bounds
       // stay the same) so no rect-based invalidation is issued. See
       // crbug.com/508383 and crbug.com/515977.
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          (m_context.forcedSubtreeInvalidationFlags &
-           PaintInvalidatorContext::ForcedSubtreeInvalidationChecking) &&
-          !m_object.isSVGChild()) {
+          (context_.forced_subtree_invalidation_flags &
+           PaintInvalidatorContext::kForcedSubtreeInvalidationChecking) &&
+          !object_.IsSVGChild()) {
         // For SPv1, we conservatively assume the object changed paint offset
         // except for non-root SVG whose paint offset is always zero.
-        reason = PaintInvalidationLocationChange;
+        reason = kPaintInvalidationLocationChange;
         break;
       }
 
-      if (m_object.isSVG() &&
-          (m_context.forcedSubtreeInvalidationFlags &
-           PaintInvalidatorContext::ForcedSubtreeSVGResourceChange)) {
-        reason = PaintInvalidationSVGResourceChange;
+      if (object_.IsSVG() &&
+          (context_.forced_subtree_invalidation_flags &
+           PaintInvalidatorContext::kForcedSubtreeSVGResourceChange)) {
+        reason = kPaintInvalidationSVGResourceChange;
         break;
       }
-      return PaintInvalidationNone;
-    case PaintInvalidationDelayedFull:
-      return PaintInvalidationDelayedFull;
+      return kPaintInvalidationNone;
+    case kPaintInvalidationDelayedFull:
+      return kPaintInvalidationDelayedFull;
     default:
-      DCHECK(isImmediateFullPaintInvalidationReason(reason));
+      DCHECK(IsImmediateFullPaintInvalidationReason(reason));
       // This allows descendants to know the computed reason if it's different
       // from the original reason before paint invalidation.
-      m_object.getMutableForPainting()
-          .setShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
-      fullyInvalidatePaint(reason, m_context.oldVisualRect,
-                           m_object.visualRect());
+      object_.GetMutableForPainting()
+          .SetShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
+      FullyInvalidatePaint(reason, context_.old_visual_rect,
+                           object_.VisualRect());
   }
 
-  m_context.paintingLayer->setNeedsRepaint();
-  m_object.invalidateDisplayItemClients(reason);
+  context_.painting_layer->SetNeedsRepaint();
+  object_.InvalidateDisplayItemClients(reason);
   return reason;
 }
 
 DisablePaintInvalidationStateAsserts::DisablePaintInvalidationStateAsserts()
-    : m_disabler(&gDisablePaintInvalidationStateAsserts, true) {}
+    : disabler_(&g_disable_paint_invalidation_state_asserts, true) {}
 
 }  // namespace blink

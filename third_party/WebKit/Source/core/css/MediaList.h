@@ -40,22 +40,20 @@ class MediaQuery;
 
 class CORE_EXPORT MediaQuerySet : public GarbageCollected<MediaQuerySet> {
  public:
-  static MediaQuerySet* create() { return new MediaQuerySet(); }
-  static MediaQuerySet* create(const String& mediaString);
+  static MediaQuerySet* Create() { return new MediaQuerySet(); }
+  static MediaQuerySet* Create(const String& media_string);
 
-  bool set(const String&);
-  bool add(const String&);
-  bool remove(const String&);
+  bool Set(const String&);
+  bool Add(const String&);
+  bool Remove(const String&);
 
-  void addMediaQuery(MediaQuery*);
+  void AddMediaQuery(MediaQuery*);
 
-  const HeapVector<Member<MediaQuery>>& queryVector() const {
-    return m_queries;
-  }
+  const HeapVector<Member<MediaQuery>>& QueryVector() const { return queries_; }
 
-  String mediaText() const;
+  String MediaText() const;
 
-  MediaQuerySet* copy() const { return new MediaQuerySet(*this); }
+  MediaQuerySet* Copy() const { return new MediaQuerySet(*this); }
 
   DECLARE_TRACE();
 
@@ -63,7 +61,7 @@ class CORE_EXPORT MediaQuerySet : public GarbageCollected<MediaQuerySet> {
   MediaQuerySet();
   MediaQuerySet(const MediaQuerySet&);
 
-  HeapVector<Member<MediaQuery>> m_queries;
+  HeapVector<Member<MediaQuery>> queries_;
 };
 
 class MediaList final : public GarbageCollected<MediaList>,
@@ -71,43 +69,43 @@ class MediaList final : public GarbageCollected<MediaList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaList* create(MediaQuerySet* mediaQueries,
-                           CSSStyleSheet* parentSheet) {
-    return new MediaList(mediaQueries, parentSheet);
+  static MediaList* Create(MediaQuerySet* media_queries,
+                           CSSStyleSheet* parent_sheet) {
+    return new MediaList(media_queries, parent_sheet);
   }
 
-  static MediaList* create(MediaQuerySet* mediaQueries, CSSRule* parentRule) {
-    return new MediaList(mediaQueries, parentRule);
+  static MediaList* Create(MediaQuerySet* media_queries, CSSRule* parent_rule) {
+    return new MediaList(media_queries, parent_rule);
   }
 
-  unsigned length() const { return m_mediaQueries->queryVector().size(); }
+  unsigned length() const { return media_queries_->QueryVector().size(); }
   String item(unsigned index) const;
-  void deleteMedium(const String& oldMedium, ExceptionState&);
-  void appendMedium(const String& newMedium, ExceptionState&);
+  void deleteMedium(const String& old_medium, ExceptionState&);
+  void appendMedium(const String& new_medium, ExceptionState&);
 
-  String mediaText() const { return m_mediaQueries->mediaText(); }
+  String mediaText() const { return media_queries_->MediaText(); }
   void setMediaText(const String&);
 
   // Not part of CSSOM.
-  CSSRule* parentRule() const { return m_parentRule; }
-  CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
+  CSSRule* ParentRule() const { return parent_rule_; }
+  CSSStyleSheet* ParentStyleSheet() const { return parent_style_sheet_; }
 
-  const MediaQuerySet* queries() const { return m_mediaQueries.get(); }
+  const MediaQuerySet* Queries() const { return media_queries_.Get(); }
 
-  void reattach(MediaQuerySet*);
+  void Reattach(MediaQuerySet*);
 
   DECLARE_TRACE();
 
  private:
-  MediaList(MediaQuerySet*, CSSStyleSheet* parentSheet);
-  MediaList(MediaQuerySet*, CSSRule* parentRule);
+  MediaList(MediaQuerySet*, CSSStyleSheet* parent_sheet);
+  MediaList(MediaQuerySet*, CSSRule* parent_rule);
 
-  Member<MediaQuerySet> m_mediaQueries;
+  Member<MediaQuerySet> media_queries_;
   // Cleared in ~CSSStyleSheet destructor when oilpan is not enabled.
-  Member<CSSStyleSheet> m_parentStyleSheet;
+  Member<CSSStyleSheet> parent_style_sheet_;
   // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors when oilpan is
   // not enabled.
-  Member<CSSRule> m_parentRule;
+  Member<CSSRule> parent_rule_;
 };
 
 }  // namespace blink

@@ -44,67 +44,68 @@ class TouchEvent;
 
 class SliderThumbElement final : public HTMLDivElement {
  public:
-  static SliderThumbElement* create(Document&);
+  static SliderThumbElement* Create(Document&);
 
-  void setPositionFromValue();
+  void SetPositionFromValue();
 
-  void dragFrom(const LayoutPoint&);
-  void defaultEventHandler(Event*) override;
-  bool willRespondToMouseMoveEvents() override;
-  bool willRespondToMouseClickEvents() override;
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
-  const AtomicString& shadowPseudoId() const override;
-  HTMLInputElement* hostInput() const;
-  void setPositionFromPoint(const LayoutPoint&);
-  void stopDragging();
+  void DragFrom(const LayoutPoint&);
+  void DefaultEventHandler(Event*) override;
+  bool WillRespondToMouseMoveEvents() override;
+  bool WillRespondToMouseClickEvents() override;
+  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  const AtomicString& ShadowPseudoId() const override;
+  HTMLInputElement* HostInput() const;
+  void SetPositionFromPoint(const LayoutPoint&);
+  void StopDragging();
 
  private:
   SliderThumbElement(Document&);
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  Element* cloneElementWithoutAttributesAndChildren() override;
-  bool isDisabledFormControl() const override;
-  bool matchesReadOnlyPseudoClass() const override;
-  bool matchesReadWritePseudoClass() const override;
-  Node* focusDelegate() override;
-  void startDragging();
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  Element* CloneElementWithoutAttributesAndChildren() override;
+  bool IsDisabledFormControl() const override;
+  bool MatchesReadOnlyPseudoClass() const override;
+  bool MatchesReadWritePseudoClass() const override;
+  Node* FocusDelegate() override;
+  void StartDragging();
 
-  bool m_inDragMode;  // Mouse only. Touch is handled by SliderContainerElement.
+  bool
+      in_drag_mode_;  // Mouse only. Touch is handled by SliderContainerElement.
 };
 
-inline Element* SliderThumbElement::cloneElementWithoutAttributesAndChildren() {
-  return create(document());
+inline Element* SliderThumbElement::CloneElementWithoutAttributesAndChildren() {
+  return Create(GetDocument());
 }
 
 // FIXME: There are no ways to check if a node is a SliderThumbElement.
-DEFINE_ELEMENT_TYPE_CASTS(SliderThumbElement, isHTMLElement());
+DEFINE_ELEMENT_TYPE_CASTS(SliderThumbElement, IsHTMLElement());
 
 class SliderContainerElement final : public HTMLDivElement {
  public:
   enum Direction {
-    Horizontal,
-    Vertical,
-    NoMove,
+    kHorizontal,
+    kVertical,
+    kNoMove,
   };
 
   DECLARE_NODE_FACTORY(SliderContainerElement);
-  HTMLInputElement* hostInput() const;
-  void defaultEventHandler(Event*) override;
-  void handleTouchEvent(TouchEvent*);
-  void updateTouchEventHandlerRegistry();
-  void didMoveToNewDocument(Document&) override;
-  void removeAllEventListeners() override;
+  HTMLInputElement* HostInput() const;
+  void DefaultEventHandler(Event*) override;
+  void HandleTouchEvent(TouchEvent*);
+  void UpdateTouchEventHandlerRegistry();
+  void DidMoveToNewDocument(Document&) override;
+  void RemoveAllEventListeners() override;
 
  private:
   explicit SliderContainerElement(Document&);
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  const AtomicString& shadowPseudoId() const override;
-  Direction getDirection(LayoutPoint&, LayoutPoint&);
-  bool canSlide();
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  const AtomicString& ShadowPseudoId() const override;
+  Direction GetDirection(LayoutPoint&, LayoutPoint&);
+  bool CanSlide();
 
-  bool m_hasTouchEventHandler;
-  bool m_touchStarted;
-  Direction m_slidingDirection;
-  LayoutPoint m_startPoint;
+  bool has_touch_event_handler_;
+  bool touch_started_;
+  Direction sliding_direction_;
+  LayoutPoint start_point_;
 };
 
 }  // namespace blink

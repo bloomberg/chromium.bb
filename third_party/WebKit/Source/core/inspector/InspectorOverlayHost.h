@@ -40,7 +40,7 @@ class CORE_EXPORT InspectorOverlayHost final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static InspectorOverlayHost* create() { return new InspectorOverlayHost(); }
+  static InspectorOverlayHost* Create() { return new InspectorOverlayHost(); }
   DECLARE_TRACE();
 
   void resume();
@@ -49,15 +49,15 @@ class CORE_EXPORT InspectorOverlayHost final
   class Listener : public GarbageCollectedMixin {
    public:
     virtual ~Listener() {}
-    virtual void overlayResumed() = 0;
-    virtual void overlaySteppedOver() = 0;
+    virtual void OverlayResumed() = 0;
+    virtual void OverlaySteppedOver() = 0;
   };
-  void setListener(Listener* listener) { m_listener = listener; }
+  void SetListener(Listener* listener) { listener_ = listener; }
 
  private:
   InspectorOverlayHost();
 
-  Member<Listener> m_listener;
+  Member<Listener> listener_;
 };
 
 }  // namespace blink

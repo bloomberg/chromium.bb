@@ -44,11 +44,11 @@ class BlinkTestEnvironmentScope {
 
 int runHelper(base::TestSuite* testSuite) {
   BlinkTestEnvironmentScope blinkTestEnvironment;
-  blink::ThreadState* currentThreadState = blink::ThreadState::current();
-  currentThreadState->registerTraceDOMWrappers(nullptr, nullptr, nullptr,
+  blink::ThreadState* currentThreadState = blink::ThreadState::Current();
+  currentThreadState->RegisterTraceDOMWrappers(nullptr, nullptr, nullptr,
                                                nullptr);
   int result = testSuite->Run();
-  currentThreadState->collectAllGarbage();
+  currentThreadState->CollectAllGarbage();
   return result;
 }
 

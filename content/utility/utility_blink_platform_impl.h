@@ -24,7 +24,7 @@ class UtilityBlinkPlatformImpl : public BlinkPlatformImpl {
   ~UtilityBlinkPlatformImpl() override;
 
   // BlinkPlatformImpl implementation.
-  blink::WebThread* currentThread() override;
+  blink::WebThread* CurrentThread() override;
 
  private:
   std::unique_ptr<blink::scheduler::WebThreadImplForUtilityThread> main_thread_;

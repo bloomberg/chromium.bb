@@ -34,143 +34,143 @@
 
 namespace blink {
 
-LayoutScrollbarTheme* LayoutScrollbarTheme::layoutScrollbarTheme() {
+LayoutScrollbarTheme* LayoutScrollbarTheme::GetLayoutScrollbarTheme() {
   DEFINE_STATIC_LOCAL(LayoutScrollbarTheme, theme, ());
   return &theme;
 }
 
-void LayoutScrollbarTheme::buttonSizesAlongTrackAxis(
+void LayoutScrollbarTheme::ButtonSizesAlongTrackAxis(
     const ScrollbarThemeClient& scrollbar,
-    int& beforeSize,
-    int& afterSize) {
-  IntRect firstButton = backButtonRect(scrollbar, BackButtonStartPart);
-  IntRect secondButton = forwardButtonRect(scrollbar, ForwardButtonStartPart);
-  IntRect thirdButton = backButtonRect(scrollbar, BackButtonEndPart);
-  IntRect fourthButton = forwardButtonRect(scrollbar, ForwardButtonEndPart);
-  if (scrollbar.orientation() == HorizontalScrollbar) {
-    beforeSize = firstButton.width() + secondButton.width();
-    afterSize = thirdButton.width() + fourthButton.width();
+    int& before_size,
+    int& after_size) {
+  IntRect first_button = BackButtonRect(scrollbar, kBackButtonStartPart);
+  IntRect second_button = ForwardButtonRect(scrollbar, kForwardButtonStartPart);
+  IntRect third_button = BackButtonRect(scrollbar, kBackButtonEndPart);
+  IntRect fourth_button = ForwardButtonRect(scrollbar, kForwardButtonEndPart);
+  if (scrollbar.Orientation() == kHorizontalScrollbar) {
+    before_size = first_button.Width() + second_button.Width();
+    after_size = third_button.Width() + fourth_button.Width();
   } else {
-    beforeSize = firstButton.height() + secondButton.height();
-    afterSize = thirdButton.height() + fourthButton.height();
+    before_size = first_button.Height() + second_button.Height();
+    after_size = third_button.Height() + fourth_button.Height();
   }
 }
 
-bool LayoutScrollbarTheme::hasButtons(const ScrollbarThemeClient& scrollbar) {
-  int startSize;
-  int endSize;
-  buttonSizesAlongTrackAxis(scrollbar, startSize, endSize);
-  return (startSize + endSize) <=
-         (scrollbar.orientation() == HorizontalScrollbar ? scrollbar.width()
-                                                         : scrollbar.height());
+bool LayoutScrollbarTheme::HasButtons(const ScrollbarThemeClient& scrollbar) {
+  int start_size;
+  int end_size;
+  ButtonSizesAlongTrackAxis(scrollbar, start_size, end_size);
+  return (start_size + end_size) <=
+         (scrollbar.Orientation() == kHorizontalScrollbar ? scrollbar.Width()
+                                                          : scrollbar.Height());
 }
 
-bool LayoutScrollbarTheme::hasThumb(const ScrollbarThemeClient& scrollbar) {
-  return trackLength(scrollbar) - thumbLength(scrollbar) >= 0;
+bool LayoutScrollbarTheme::HasThumb(const ScrollbarThemeClient& scrollbar) {
+  return TrackLength(scrollbar) - ThumbLength(scrollbar) >= 0;
 }
 
-int LayoutScrollbarTheme::minimumThumbLength(
+int LayoutScrollbarTheme::MinimumThumbLength(
     const ScrollbarThemeClient& scrollbar) {
-  return toLayoutScrollbar(scrollbar).minimumThumbLength();
+  return ToLayoutScrollbar(scrollbar).MinimumThumbLength();
 }
 
-IntRect LayoutScrollbarTheme::backButtonRect(
+IntRect LayoutScrollbarTheme::BackButtonRect(
     const ScrollbarThemeClient& scrollbar,
-    ScrollbarPart partType,
+    ScrollbarPart part_type,
     bool) {
-  return toLayoutScrollbar(scrollbar).buttonRect(partType);
+  return ToLayoutScrollbar(scrollbar).ButtonRect(part_type);
 }
 
-IntRect LayoutScrollbarTheme::forwardButtonRect(
+IntRect LayoutScrollbarTheme::ForwardButtonRect(
     const ScrollbarThemeClient& scrollbar,
-    ScrollbarPart partType,
+    ScrollbarPart part_type,
     bool) {
-  return toLayoutScrollbar(scrollbar).buttonRect(partType);
+  return ToLayoutScrollbar(scrollbar).ButtonRect(part_type);
 }
 
-IntRect LayoutScrollbarTheme::trackRect(const ScrollbarThemeClient& scrollbar,
+IntRect LayoutScrollbarTheme::TrackRect(const ScrollbarThemeClient& scrollbar,
                                         bool) {
-  if (!hasButtons(scrollbar))
-    return scrollbar.frameRect();
+  if (!HasButtons(scrollbar))
+    return scrollbar.FrameRect();
 
-  int startLength;
-  int endLength;
-  buttonSizesAlongTrackAxis(scrollbar, startLength, endLength);
+  int start_length;
+  int end_length;
+  ButtonSizesAlongTrackAxis(scrollbar, start_length, end_length);
 
-  return toLayoutScrollbar(scrollbar).trackRect(startLength, endLength);
+  return ToLayoutScrollbar(scrollbar).TrackRect(start_length, end_length);
 }
 
-IntRect LayoutScrollbarTheme::constrainTrackRectToTrackPieces(
+IntRect LayoutScrollbarTheme::ConstrainTrackRectToTrackPieces(
     const ScrollbarThemeClient& scrollbar,
     const IntRect& rect) {
-  IntRect backRect = toLayoutScrollbar(scrollbar).trackPieceRectWithMargins(
-      BackTrackPart, rect);
-  IntRect forwardRect = toLayoutScrollbar(scrollbar).trackPieceRectWithMargins(
-      ForwardTrackPart, rect);
+  IntRect back_rect = ToLayoutScrollbar(scrollbar).TrackPieceRectWithMargins(
+      kBackTrackPart, rect);
+  IntRect forward_rect = ToLayoutScrollbar(scrollbar).TrackPieceRectWithMargins(
+      kForwardTrackPart, rect);
   IntRect result = rect;
-  if (scrollbar.orientation() == HorizontalScrollbar) {
-    result.setX(backRect.x());
-    result.setWidth(forwardRect.maxX() - backRect.x());
+  if (scrollbar.Orientation() == kHorizontalScrollbar) {
+    result.SetX(back_rect.X());
+    result.SetWidth(forward_rect.MaxX() - back_rect.X());
   } else {
-    result.setY(backRect.y());
-    result.setHeight(forwardRect.maxY() - backRect.y());
+    result.SetY(back_rect.Y());
+    result.SetHeight(forward_rect.MaxY() - back_rect.Y());
   }
   return result;
 }
 
-void LayoutScrollbarTheme::paintScrollCorner(
+void LayoutScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
-    const DisplayItemClient& displayItemClient,
-    const IntRect& cornerRect) {
-  if (DrawingRecorder::useCachedDrawingIfPossible(
-          context, displayItemClient, DisplayItem::kScrollbarCorner))
+    const DisplayItemClient& display_item_client,
+    const IntRect& corner_rect) {
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context, display_item_client, DisplayItem::kScrollbarCorner))
     return;
 
-  DrawingRecorder recorder(context, displayItemClient,
-                           DisplayItem::kScrollbarCorner, cornerRect);
+  DrawingRecorder recorder(context, display_item_client,
+                           DisplayItem::kScrollbarCorner, corner_rect);
   // FIXME: Implement.
-  context.fillRect(cornerRect, Color::white);
+  context.FillRect(corner_rect, Color::kWhite);
 }
 
-void LayoutScrollbarTheme::paintScrollbarBackground(
+void LayoutScrollbarTheme::PaintScrollbarBackground(
     GraphicsContext& context,
     const Scrollbar& scrollbar) {
-  ScrollbarPainter(toLayoutScrollbar(scrollbar))
-      .paintPart(context, ScrollbarBGPart, scrollbar.frameRect());
+  ScrollbarPainter(ToLayoutScrollbar(scrollbar))
+      .PaintPart(context, kScrollbarBGPart, scrollbar.FrameRect());
 }
 
-void LayoutScrollbarTheme::paintTrackBackground(GraphicsContext& context,
+void LayoutScrollbarTheme::PaintTrackBackground(GraphicsContext& context,
                                                 const Scrollbar& scrollbar,
                                                 const IntRect& rect) {
-  ScrollbarPainter(toLayoutScrollbar(scrollbar))
-      .paintPart(context, TrackBGPart, rect);
+  ScrollbarPainter(ToLayoutScrollbar(scrollbar))
+      .PaintPart(context, kTrackBGPart, rect);
 }
 
-void LayoutScrollbarTheme::paintTrackPiece(GraphicsContext& context,
+void LayoutScrollbarTheme::PaintTrackPiece(GraphicsContext& context,
                                            const Scrollbar& scrollbar,
                                            const IntRect& rect,
                                            ScrollbarPart part) {
-  ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
+  ScrollbarPainter(ToLayoutScrollbar(scrollbar)).PaintPart(context, part, rect);
 }
 
-void LayoutScrollbarTheme::paintButton(GraphicsContext& context,
+void LayoutScrollbarTheme::PaintButton(GraphicsContext& context,
                                        const Scrollbar& scrollbar,
                                        const IntRect& rect,
                                        ScrollbarPart part) {
-  ScrollbarPainter(toLayoutScrollbar(scrollbar)).paintPart(context, part, rect);
+  ScrollbarPainter(ToLayoutScrollbar(scrollbar)).PaintPart(context, part, rect);
 }
 
-void LayoutScrollbarTheme::paintThumb(GraphicsContext& context,
+void LayoutScrollbarTheme::PaintThumb(GraphicsContext& context,
                                       const Scrollbar& scrollbar,
                                       const IntRect& rect) {
-  ScrollbarPainter(toLayoutScrollbar(scrollbar))
-      .paintPart(context, ThumbPart, rect);
+  ScrollbarPainter(ToLayoutScrollbar(scrollbar))
+      .PaintPart(context, kThumbPart, rect);
 }
 
-void LayoutScrollbarTheme::paintTickmarks(GraphicsContext& context,
+void LayoutScrollbarTheme::PaintTickmarks(GraphicsContext& context,
                                           const Scrollbar& scrollbar,
                                           const IntRect& rect) {
-  ScrollbarTheme::theme().paintTickmarks(context, scrollbar, rect);
+  ScrollbarTheme::GetTheme().PaintTickmarks(context, scrollbar, rect);
 }
 
 }  // namespace blink

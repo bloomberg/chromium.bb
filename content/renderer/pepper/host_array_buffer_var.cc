@@ -25,7 +25,7 @@ using blink::WebArrayBuffer;
 namespace content {
 
 HostArrayBufferVar::HostArrayBufferVar(uint32_t size_in_bytes)
-    : buffer_(WebArrayBuffer::create(size_in_bytes, 1 /* element_size */)),
+    : buffer_(WebArrayBuffer::Create(size_in_bytes, 1 /* element_size */)),
       valid_(true) {}
 
 HostArrayBufferVar::HostArrayBufferVar(const WebArrayBuffer& buffer)
@@ -33,11 +33,11 @@ HostArrayBufferVar::HostArrayBufferVar(const WebArrayBuffer& buffer)
 
 HostArrayBufferVar::HostArrayBufferVar(uint32_t size_in_bytes,
                                        base::SharedMemoryHandle handle)
-    : buffer_(WebArrayBuffer::create(size_in_bytes, 1 /* element_size */)) {
+    : buffer_(WebArrayBuffer::Create(size_in_bytes, 1 /* element_size */)) {
   base::SharedMemory s(handle, true);
   valid_ = s.Map(size_in_bytes);
   if (valid_) {
-    memcpy(buffer_.data(), s.memory(), size_in_bytes);
+    memcpy(buffer_.Data(), s.memory(), size_in_bytes);
     s.Unmap();
   }
 }
@@ -47,7 +47,7 @@ HostArrayBufferVar::~HostArrayBufferVar() {}
 void* HostArrayBufferVar::Map() {
   if (!valid_)
     return NULL;
-  return buffer_.data();
+  return buffer_.Data();
 }
 
 void HostArrayBufferVar::Unmap() {
@@ -55,7 +55,7 @@ void HostArrayBufferVar::Unmap() {
 }
 
 uint32_t HostArrayBufferVar::ByteLength() {
-  return buffer_.byteLength();
+  return buffer_.ByteLength();
 }
 
 bool HostArrayBufferVar::CopyToNewShmem(

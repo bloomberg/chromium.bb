@@ -32,8 +32,8 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   NGLayoutOpportunityIterator(
       const NGConstraintSpace* space,
       const NGLogicalSize& available_size,
-      const WTF::Optional<NGLogicalOffset>& opt_offset = WTF::nullopt,
-      const WTF::Optional<NGLogicalOffset>& opt_leader_point = WTF::nullopt);
+      const WTF::Optional<NGLogicalOffset>& opt_offset = WTF::kNullopt,
+      const WTF::Optional<NGLogicalOffset>& opt_leader_point = WTF::kNullopt);
 
   // Gets the next Layout Opportunity or empty one if the search is exhausted.
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.

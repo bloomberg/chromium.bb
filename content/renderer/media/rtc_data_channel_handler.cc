@@ -161,10 +161,10 @@ RtcDataChannelHandler::~RtcDataChannelHandler() {
   // passed to Blink.  So, we call it here explicitly just to make sure the
   // observer gets properly unregistered.
   // See RTCPeerConnectionHandler::OnDataChannel for more.
-  setClient(nullptr);
+  SetClient(nullptr);
 }
 
-void RtcDataChannelHandler::setClient(
+void RtcDataChannelHandler::SetClient(
     blink::WebRTCDataChannelHandlerClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "setClient " << client;
@@ -175,42 +175,42 @@ void RtcDataChannelHandler::setClient(
   }
 }
 
-blink::WebString RtcDataChannelHandler::label() {
+blink::WebString RtcDataChannelHandler::Label() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return blink::WebString::fromUTF8(channel()->label());
+  return blink::WebString::FromUTF8(channel()->label());
 }
 
-bool RtcDataChannelHandler::isReliable() {
+bool RtcDataChannelHandler::IsReliable() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->reliable();
 }
 
-bool RtcDataChannelHandler::ordered() const {
+bool RtcDataChannelHandler::Ordered() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->ordered();
 }
 
-unsigned short RtcDataChannelHandler::maxRetransmitTime() const {
+unsigned short RtcDataChannelHandler::MaxRetransmitTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->maxRetransmitTime();
 }
 
-unsigned short RtcDataChannelHandler::maxRetransmits() const {
+unsigned short RtcDataChannelHandler::MaxRetransmits() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->maxRetransmits();
 }
 
-blink::WebString RtcDataChannelHandler::protocol() const {
+blink::WebString RtcDataChannelHandler::Protocol() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return blink::WebString::fromUTF8(channel()->protocol());
+  return blink::WebString::FromUTF8(channel()->protocol());
 }
 
-bool RtcDataChannelHandler::negotiated() const {
+bool RtcDataChannelHandler::Negotiated() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->negotiated();
 }
 
-unsigned short RtcDataChannelHandler::id() const {
+unsigned short RtcDataChannelHandler::Id() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->id();
 }
@@ -219,48 +219,48 @@ blink::WebRTCDataChannelHandlerClient::ReadyState convertReadyState(
     webrtc::DataChannelInterface::DataState state) {
   switch (state) {
     case webrtc::DataChannelInterface::kConnecting:
-      return blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting;
+      return blink::WebRTCDataChannelHandlerClient::kReadyStateConnecting;
       break;
     case webrtc::DataChannelInterface::kOpen:
-      return blink::WebRTCDataChannelHandlerClient::ReadyStateOpen;
+      return blink::WebRTCDataChannelHandlerClient::kReadyStateOpen;
       break;
     case webrtc::DataChannelInterface::kClosing:
-      return blink::WebRTCDataChannelHandlerClient::ReadyStateClosing;
+      return blink::WebRTCDataChannelHandlerClient::kReadyStateClosing;
       break;
     case webrtc::DataChannelInterface::kClosed:
-      return blink::WebRTCDataChannelHandlerClient::ReadyStateClosed;
+      return blink::WebRTCDataChannelHandlerClient::kReadyStateClosed;
       break;
     default:
       NOTREACHED();
       // MSVC does not respect |NOTREACHED()|, so we need a return value.
-      return blink::WebRTCDataChannelHandlerClient::ReadyStateClosed;
+      return blink::WebRTCDataChannelHandlerClient::kReadyStateClosed;
   }
 }
 
 blink::WebRTCDataChannelHandlerClient::ReadyState
-    RtcDataChannelHandler::state() const {
+RtcDataChannelHandler::GetState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!observer_.get()) {
-    return blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting;
+    return blink::WebRTCDataChannelHandlerClient::kReadyStateConnecting;
   } else {
     return convertReadyState(observer_->channel()->state());
   }
 }
 
-unsigned long RtcDataChannelHandler::bufferedAmount() {
+unsigned long RtcDataChannelHandler::BufferedAmount() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return channel()->buffered_amount();
 }
 
-bool RtcDataChannelHandler::sendStringData(const blink::WebString& data) {
+bool RtcDataChannelHandler::SendStringData(const blink::WebString& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::string utf8_buffer = data.utf8();
+  std::string utf8_buffer = data.Utf8();
   webrtc::DataBuffer data_buffer(utf8_buffer);
   RecordMessageSent(data_buffer.size());
   return channel()->Send(data_buffer);
 }
 
-bool RtcDataChannelHandler::sendRawData(const char* data, size_t length) {
+bool RtcDataChannelHandler::SendRawData(const char* data, size_t length) {
   DCHECK(thread_checker_.CalledOnValidThread());
   rtc::CopyOnWriteBuffer buffer(data, length);
   webrtc::DataBuffer data_buffer(buffer, true);
@@ -268,7 +268,7 @@ bool RtcDataChannelHandler::sendRawData(const char* data, size_t length) {
   return channel()->Send(data_buffer);
 }
 
-void RtcDataChannelHandler::close() {
+void RtcDataChannelHandler::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
   channel()->Close();
   // Note that even though Close() will run synchronously, the readyState has
@@ -299,7 +299,7 @@ void RtcDataChannelHandler::OnStateChange(
   if (state == webrtc::DataChannelInterface::kOpen)
     IncrementCounter(CHANNEL_OPENED);
 
-  webkit_client_->didChangeReadyState(convertReadyState(state));
+  webkit_client_->DidChangeReadyState(convertReadyState(state));
 }
 
 void RtcDataChannelHandler::OnBufferedAmountDecrease(
@@ -313,7 +313,7 @@ void RtcDataChannelHandler::OnBufferedAmountDecrease(
     return;
   }
 
-  webkit_client_->didDecreaseBufferedAmount(previous_amount);
+  webkit_client_->DidDecreaseBufferedAmount(previous_amount);
 }
 
 void RtcDataChannelHandler::OnMessage(
@@ -326,7 +326,7 @@ void RtcDataChannelHandler::OnMessage(
   }
 
   if (buffer->binary) {
-    webkit_client_->didReceiveRawData(buffer->data.data<char>(),
+    webkit_client_->DidReceiveRawData(buffer->data.data<char>(),
                                       buffer->data.size());
   } else {
     base::string16 utf16;
@@ -335,7 +335,7 @@ void RtcDataChannelHandler::OnMessage(
       LOG(ERROR) << "Failed convert received data to UTF16";
       return;
     }
-    webkit_client_->didReceiveStringData(blink::WebString::fromUTF16(utf16));
+    webkit_client_->DidReceiveStringData(blink::WebString::FromUTF16(utf16));
   }
 }
 

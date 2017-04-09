@@ -12,20 +12,20 @@ namespace blink {
 class CORE_EXPORT HitTestCanvasResult final
     : public GarbageCollectedFinalized<HitTestCanvasResult> {
  public:
-  static HitTestCanvasResult* create(String id, Member<Element> control) {
+  static HitTestCanvasResult* Create(String id, Member<Element> control) {
     return new HitTestCanvasResult(id, control);
   }
 
-  String getId() const;
-  Element* getControl() const;
+  String GetId() const;
+  Element* GetControl() const;
 
   DECLARE_TRACE();
 
  private:
   HitTestCanvasResult(String id, Member<Element> control);
 
-  String m_id;
-  Member<Element> m_control;
+  String id_;
+  Member<Element> control_;
 };
 
 }  // namespace blink

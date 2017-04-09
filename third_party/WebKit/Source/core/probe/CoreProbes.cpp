@@ -56,10 +56,10 @@ AsyncTask::AsyncTask(ExecutionContext* context,
                      void* task,
                      const char* step,
                      bool enabled)
-    : m_debugger(enabled ? ThreadDebugger::from(toIsolate(context)) : nullptr),
-      m_task(task),
-      m_recurring(step) {
-  if (m_recurring) {
+    : debugger_(enabled ? ThreadDebugger::From(ToIsolate(context)) : nullptr),
+      task_(task),
+      recurring_(step) {
+  if (recurring_) {
     TRACE_EVENT_FLOW_STEP0("devtools.timeline.async", "AsyncTask",
                            TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
                            step ? step : "");
@@ -67,55 +67,55 @@ AsyncTask::AsyncTask(ExecutionContext* context,
     TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask",
                           TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)));
   }
-  if (m_debugger)
-    m_debugger->asyncTaskStarted(m_task);
+  if (debugger_)
+    debugger_->AsyncTaskStarted(task_);
 }
 
 AsyncTask::~AsyncTask() {
-  if (m_debugger) {
-    m_debugger->asyncTaskFinished(m_task);
-    if (!m_recurring)
-      m_debugger->asyncTaskCanceled(m_task);
+  if (debugger_) {
+    debugger_->AsyncTaskFinished(task_);
+    if (!recurring_)
+      debugger_->AsyncTaskCanceled(task_);
   }
 }
 
-void asyncTaskScheduled(ExecutionContext* context,
+void AsyncTaskScheduled(ExecutionContext* context,
                         const String& name,
                         void* task) {
   TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask",
                           TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
-                          "data", InspectorAsyncTask::data(name));
-  if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
-    debugger->asyncTaskScheduled(name, task, true);
+                          "data", InspectorAsyncTask::Data(name));
+  if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
+    debugger->AsyncTaskScheduled(name, task, true);
 }
 
-void asyncTaskScheduledBreakable(ExecutionContext* context,
+void AsyncTaskScheduledBreakable(ExecutionContext* context,
                                  const char* name,
                                  void* task) {
-  asyncTaskScheduled(context, name, task);
+  AsyncTaskScheduled(context, name, task);
   breakableLocation(context, name);
 }
 
-void asyncTaskCanceled(ExecutionContext* context, void* task) {
-  if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
-    debugger->asyncTaskCanceled(task);
+void AsyncTaskCanceled(ExecutionContext* context, void* task) {
+  if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
+    debugger->AsyncTaskCanceled(task);
   TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask",
                         TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)));
 }
 
-void asyncTaskCanceledBreakable(ExecutionContext* context,
+void AsyncTaskCanceledBreakable(ExecutionContext* context,
                                 const char* name,
                                 void* task) {
-  asyncTaskCanceled(context, task);
+  AsyncTaskCanceled(context, task);
   breakableLocation(context, name);
 }
 
-void allAsyncTasksCanceled(ExecutionContext* context) {
-  if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
-    debugger->allAsyncTasksCanceled();
+void AllAsyncTasksCanceled(ExecutionContext* context) {
+  if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
+    debugger->AllAsyncTasksCanceled();
 }
 
-void didReceiveResourceResponseButCanceled(LocalFrame* frame,
+void DidReceiveResourceResponseButCanceled(LocalFrame* frame,
                                            DocumentLoader* loader,
                                            unsigned long identifier,
                                            const ResourceResponse& r,
@@ -123,36 +123,36 @@ void didReceiveResourceResponseButCanceled(LocalFrame* frame,
   didReceiveResourceResponse(frame, identifier, loader, r, resource);
 }
 
-void canceledAfterReceivedResourceResponse(LocalFrame* frame,
+void CanceledAfterReceivedResourceResponse(LocalFrame* frame,
                                            DocumentLoader* loader,
                                            unsigned long identifier,
                                            const ResourceResponse& r,
                                            Resource* resource) {
-  didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
+  DidReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
-void continueWithPolicyIgnore(LocalFrame* frame,
+void ContinueWithPolicyIgnore(LocalFrame* frame,
                               DocumentLoader* loader,
                               unsigned long identifier,
                               const ResourceResponse& r,
                               Resource* resource) {
-  didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
+  DidReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
-CoreProbeSink* toCoreProbeSink(WorkerGlobalScope* workerGlobalScope) {
-  if (!workerGlobalScope)
+CoreProbeSink* ToCoreProbeSink(WorkerGlobalScope* worker_global_scope) {
+  if (!worker_global_scope)
     return nullptr;
   if (WorkerInspectorController* controller =
-          workerGlobalScope->thread()->workerInspectorController())
-    return controller->instrumentingAgents();
+          worker_global_scope->GetThread()->GetWorkerInspectorController())
+    return controller->InstrumentingAgents();
   return nullptr;
 }
 
-CoreProbeSink* toCoreProbeSinkForNonDocumentContext(ExecutionContext* context) {
-  if (context->isWorkerGlobalScope())
-    return toCoreProbeSink(toWorkerGlobalScope(context));
-  if (context->isMainThreadWorkletGlobalScope())
-    return toCoreProbeSink(toMainThreadWorkletGlobalScope(context)->frame());
+CoreProbeSink* ToCoreProbeSinkForNonDocumentContext(ExecutionContext* context) {
+  if (context->IsWorkerGlobalScope())
+    return ToCoreProbeSink(ToWorkerGlobalScope(context));
+  if (context->IsMainThreadWorkletGlobalScope())
+    return ToCoreProbeSink(ToMainThreadWorkletGlobalScope(context)->GetFrame());
   return nullptr;
 }
 

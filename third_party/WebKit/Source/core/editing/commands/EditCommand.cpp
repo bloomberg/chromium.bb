@@ -35,51 +35,51 @@
 namespace blink {
 
 EditCommand::EditCommand(Document& document)
-    : m_document(&document), m_parent(nullptr) {
-  DCHECK(m_document);
-  DCHECK(m_document->frame());
+    : document_(&document), parent_(nullptr) {
+  DCHECK(document_);
+  DCHECK(document_->GetFrame());
 }
 
 EditCommand::~EditCommand() {}
 
-InputEvent::InputType EditCommand::inputType() const {
-  return InputEvent::InputType::None;
+InputEvent::InputType EditCommand::GetInputType() const {
+  return InputEvent::InputType::kNone;
 }
 
-String EditCommand::textDataForInputEvent() const {
-  return nullAtom;
+String EditCommand::TextDataForInputEvent() const {
+  return g_null_atom;
 }
 
-bool EditCommand::isRenderedCharacter(const Position& position) {
-  if (position.isNull())
+bool EditCommand::IsRenderedCharacter(const Position& position) {
+  if (position.IsNull())
     return false;
-  DCHECK(position.isOffsetInAnchor()) << position;
-  if (!position.anchorNode()->isTextNode())
-    return false;
-
-  LayoutObject* layoutObject = position.anchorNode()->layoutObject();
-  if (!layoutObject)
+  DCHECK(position.IsOffsetInAnchor()) << position;
+  if (!position.AnchorNode()->IsTextNode())
     return false;
 
-  return toLayoutText(layoutObject)
-      ->isRenderedCharacter(position.offsetInContainerNode());
+  LayoutObject* layout_object = position.AnchorNode()->GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  return ToLayoutText(layout_object)
+      ->IsRenderedCharacter(position.OffsetInContainerNode());
 }
 
-void EditCommand::setParent(CompositeEditCommand* parent) {
-  DCHECK((parent && !m_parent) || (!parent && m_parent));
-  DCHECK(!parent || !isCompositeEditCommand() ||
-         !toCompositeEditCommand(this)->undoStep());
-  m_parent = parent;
+void EditCommand::SetParent(CompositeEditCommand* parent) {
+  DCHECK((parent && !parent_) || (!parent && parent_));
+  DCHECK(!parent || !IsCompositeEditCommand() ||
+         !ToCompositeEditCommand(this)->GetUndoStep());
+  parent_ = parent;
 }
 
-void SimpleEditCommand::doReapply() {
-  EditingState editingState;
-  doApply(&editingState);
+void SimpleEditCommand::DoReapply() {
+  EditingState editing_state;
+  DoApply(&editing_state);
 }
 
 DEFINE_TRACE(EditCommand) {
-  visitor->trace(m_document);
-  visitor->trace(m_parent);
+  visitor->Trace(document_);
+  visitor->Trace(parent_);
 }
 
 }  // namespace blink

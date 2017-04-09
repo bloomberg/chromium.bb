@@ -35,19 +35,19 @@ class SpeechSynthesisEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechSynthesisEvent* create();
-  static SpeechSynthesisEvent* create(const AtomicString& type,
+  static SpeechSynthesisEvent* Create();
+  static SpeechSynthesisEvent* Create(const AtomicString& type,
                                       SpeechSynthesisUtterance*,
-                                      unsigned charIndex,
-                                      float elapsedTime,
+                                      unsigned char_index,
+                                      float elapsed_time,
                                       const String& name);
 
-  SpeechSynthesisUtterance* utterance() const { return m_utterance; }
-  unsigned charIndex() const { return m_charIndex; }
-  float elapsedTime() const { return m_elapsedTime; }
-  const String& name() const { return m_name; }
+  SpeechSynthesisUtterance* utterance() const { return utterance_; }
+  unsigned charIndex() const { return char_index_; }
+  float elapsedTime() const { return elapsed_time_; }
+  const String& name() const { return name_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::SpeechSynthesisEvent;
   }
 
@@ -57,14 +57,14 @@ class SpeechSynthesisEvent final : public Event {
   SpeechSynthesisEvent();
   SpeechSynthesisEvent(const AtomicString& type,
                        SpeechSynthesisUtterance*,
-                       unsigned charIndex,
-                       float elapsedTime,
+                       unsigned char_index,
+                       float elapsed_time,
                        const String& name);
 
-  Member<SpeechSynthesisUtterance> m_utterance;
-  unsigned m_charIndex;
-  float m_elapsedTime;
-  String m_name;
+  Member<SpeechSynthesisUtterance> utterance_;
+  unsigned char_index_;
+  float elapsed_time_;
+  String name_;
 };
 
 }  // namespace blink

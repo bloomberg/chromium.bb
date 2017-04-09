@@ -64,33 +64,33 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   static bool IsSupportedMimeType(const blink::WebString& mime_type);
 
   // WebPlugin methods:
-  bool initialize(blink::WebPluginContainer* container) override;
-  void destroy() override;
-  blink::WebPluginContainer* container() const override;
-  bool canProcessDrag() const override;
-  bool supportsKeyboardFocus() const override;
-  void updateAllLifecyclePhases() override {}
-  void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override {}
-  void updateGeometry(const blink::WebRect& window_rect,
+  bool Initialize(blink::WebPluginContainer* container) override;
+  void Destroy() override;
+  blink::WebPluginContainer* Container() const override;
+  bool CanProcessDrag() const override;
+  bool SupportsKeyboardFocus() const override;
+  void UpdateAllLifecyclePhases() override {}
+  void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override {}
+  void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
                       const blink::WebVector<blink::WebRect>& cut_outs_rects,
                       bool is_visible) override;
-  void updateFocus(bool focus, blink::WebFocusType focus_type) override {}
-  void updateVisibility(bool visibility) override {}
-  blink::WebInputEventResult handleInputEvent(
+  void UpdateFocus(bool focus, blink::WebFocusType focus_type) override {}
+  void UpdateVisibility(bool visibility) override {}
+  blink::WebInputEventResult HandleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& info) override;
-  bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
+  bool HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                               const blink::WebDragData& data,
                               blink::WebDragOperationsMask mask,
                               const blink::WebPoint& position,
                               const blink::WebPoint& screen_position) override;
-  void didReceiveResponse(const blink::WebURLResponse& response) override {}
-  void didReceiveData(const char* data, int data_length) override {}
-  void didFinishLoading() override {}
-  void didFailLoading(const blink::WebURLError& error) override {}
-  bool isPlaceholder() override;
+  void DidReceiveResponse(const blink::WebURLResponse& response) override {}
+  void DidReceiveData(const char* data, int data_length) override {}
+  void DidFinishLoading() override {}
+  void DidFailLoading(const blink::WebURLError& error) override {}
+  bool IsPlaceholder() override;
 
   // cc::TextureLayerClient methods:
   bool PrepareTextureMailbox(

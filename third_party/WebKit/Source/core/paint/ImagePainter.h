@@ -19,23 +19,23 @@ class ImagePainter {
   STACK_ALLOCATED();
 
  public:
-  ImagePainter(const LayoutImage& layoutImage) : m_layoutImage(layoutImage) {}
+  ImagePainter(const LayoutImage& layout_image) : layout_image_(layout_image) {}
 
-  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
-  void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintReplaced(const PaintInfo&, const LayoutPoint& paint_offset);
 
   // Paint the image into |destRect|, after clipping by |contentRect|. Both
   // |destRect| and |contentRect| should be in local coordinates plus the paint
   // offset.
-  void paintIntoRect(GraphicsContext&,
-                     const LayoutRect& destRect,
-                     const LayoutRect& contentRect);
+  void PaintIntoRect(GraphicsContext&,
+                     const LayoutRect& dest_rect,
+                     const LayoutRect& content_rect);
 
  private:
-  void paintAreaElementFocusRing(const PaintInfo&,
-                                 const LayoutPoint& paintOffset);
+  void PaintAreaElementFocusRing(const PaintInfo&,
+                                 const LayoutPoint& paint_offset);
 
-  const LayoutImage& m_layoutImage;
+  const LayoutImage& layout_image_;
 };
 
 }  // namespace blink

@@ -37,10 +37,10 @@ class CORE_EXPORT FilterOperationResolver {
   STATIC_ONLY(FilterOperationResolver);
 
  public:
-  static FilterOperation::OperationType filterOperationForType(CSSValueID);
-  static FilterOperations createFilterOperations(StyleResolverState&,
+  static FilterOperation::OperationType FilterOperationForType(CSSValueID);
+  static FilterOperations CreateFilterOperations(StyleResolverState&,
                                                  const CSSValue&);
-  static FilterOperations createOffscreenFilterOperations(const CSSValue&);
+  static FilterOperations CreateOffscreenFilterOperations(const CSSValue&);
 };
 
 }  // namespace blink

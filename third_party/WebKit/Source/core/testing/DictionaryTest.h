@@ -26,7 +26,7 @@ class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DictionaryTest* create() { return new DictionaryTest(); }
+  static DictionaryTest* Create() { return new DictionaryTest(); }
   virtual ~DictionaryTest();
 
   // Stores all members into corresponding fields
@@ -52,46 +52,46 @@ class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>,
  private:
   DictionaryTest();
 
-  void reset();
+  void Reset();
 
   // The reason to use Nullable<T> is convenience; we use Nullable<T> here to
   // record whether the member field is set or not. Some members are not
   // wrapped with Nullable because:
   //  - |longMemberWithDefault| has a non-null default value
   //  - String and PtrTypes can express whether they are null
-  Nullable<int> m_longMember;
-  Nullable<int> m_longMemberWithClamp;
-  Nullable<int> m_longMemberWithEnforceRange;
-  int m_longMemberWithDefault;
-  Nullable<int> m_longOrNullMember;
-  Nullable<int> m_longOrNullMemberWithDefault;
-  Nullable<bool> m_booleanMember;
-  Nullable<double> m_doubleMember;
-  Nullable<double> m_unrestrictedDoubleMember;
-  String m_stringMember;
-  String m_stringMemberWithDefault;
-  String m_byteStringMember;
-  String m_usvStringMember;
-  Nullable<Vector<String>> m_stringSequenceMember;
-  Vector<String> m_stringSequenceMemberWithDefault;
-  Nullable<Vector<String>> m_stringSequenceOrNullMember;
-  String m_enumMember;
-  String m_enumMemberWithDefault;
-  String m_enumOrNullMember;
-  Nullable<Vector<String>> m_enumArrayMember;
-  Member<Element> m_elementMember;
-  Member<Element> m_elementOrNullMember;
-  ScriptValue m_objectMember;
-  ScriptValue m_objectOrNullMemberWithDefault;
-  DoubleOrString m_doubleOrStringMember;
-  Nullable<HeapVector<DoubleOrString>> m_doubleOrStringSequenceMember;
-  Member<EventTarget> m_eventTargetOrNullMember;
-  String m_derivedStringMember;
-  String m_derivedStringMemberWithDefault;
-  String m_derivedDerivedStringMember;
-  bool m_requiredBooleanMember;
-  Nullable<HashMap<String, String>> m_dictionaryMemberProperties;
-  ScriptValue m_prefixGetMember;
+  Nullable<int> long_member_;
+  Nullable<int> long_member_with_clamp_;
+  Nullable<int> long_member_with_enforce_range_;
+  int long_member_with_default_;
+  Nullable<int> long_or_null_member_;
+  Nullable<int> long_or_null_member_with_default_;
+  Nullable<bool> boolean_member_;
+  Nullable<double> double_member_;
+  Nullable<double> unrestricted_double_member_;
+  String string_member_;
+  String string_member_with_default_;
+  String byte_string_member_;
+  String usv_string_member_;
+  Nullable<Vector<String>> string_sequence_member_;
+  Vector<String> string_sequence_member_with_default_;
+  Nullable<Vector<String>> string_sequence_or_null_member_;
+  String enum_member_;
+  String enum_member_with_default_;
+  String enum_or_null_member_;
+  Nullable<Vector<String>> enum_array_member_;
+  Member<Element> element_member_;
+  Member<Element> element_or_null_member_;
+  ScriptValue object_member_;
+  ScriptValue object_or_null_member_with_default_;
+  DoubleOrString double_or_string_member_;
+  Nullable<HeapVector<DoubleOrString>> double_or_string_sequence_member_;
+  Member<EventTarget> event_target_or_null_member_;
+  String derived_string_member_;
+  String derived_string_member_with_default_;
+  String derived_derived_string_member_;
+  bool required_boolean_member_;
+  Nullable<HashMap<String, String>> dictionary_member_properties_;
+  ScriptValue prefix_get_member_;
 };
 
 }  // namespace blink

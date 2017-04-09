@@ -48,197 +48,197 @@ class WebString;
 class WebSettings {
  public:
   enum ImageAnimationPolicy {
-    ImageAnimationPolicyAllowed,
-    ImageAnimationPolicyAnimateOnce,
-    ImageAnimationPolicyNoAnimation
+    kImageAnimationPolicyAllowed,
+    kImageAnimationPolicyAnimateOnce,
+    kImageAnimationPolicyNoAnimation
   };
 
   enum EditingBehavior {
-    EditingBehaviorMac,
-    EditingBehaviorWin,
-    EditingBehaviorUnix,
-    EditingBehaviorAndroid
+    kEditingBehaviorMac,
+    kEditingBehaviorWin,
+    kEditingBehaviorUnix,
+    kEditingBehaviorAndroid
   };
 
   enum V8CacheOptions {
-    V8CacheOptionsDefault,
-    V8CacheOptionsNone,
-    V8CacheOptionsParse,
-    V8CacheOptionsCode,
+    kV8CacheOptionsDefault,
+    kV8CacheOptionsNone,
+    kV8CacheOptionsParse,
+    kV8CacheOptionsCode,
   };
 
   enum class V8CacheStrategiesForCacheStorage {
-    Default,
-    None,
-    Normal,
-    Aggressive,
+    kDefault,
+    kNone,
+    kNormal,
+    kAggressive,
   };
 
   enum class ProgressBarCompletion {
-    LoadEvent,
-    ResourcesBeforeDCL,
-    DOMContentLoaded,
-    ResourcesBeforeDCLAndSameOriginIFrames
+    kLoadEvent,
+    kResourcesBeforeDCL,
+    kDOMContentLoaded,
+    kResourcesBeforeDCLAndSameOriginIFrames
   };
 
   // Selection strategy defines how the selection granularity changes when the
   // selection extent is moved.
   enum class SelectionStrategyType {
     // Always uses character granularity.
-    Character,
+    kCharacter,
     // "Expand by word, shrink by character" selection strategy.
     // Uses character granularity when selection is shrinking. If the
     // selection is expanding, granularity doesn't change until a word
     // boundary is passed, after which the granularity switches to "word".
-    Direction
+    kDirection
   };
 
   // Defines user preference for text track kind.
   enum class TextTrackKindUserPreference {
     // Display only tracks marked as default
-    Default,
+    kDefault,
     // If available, display captions track in preferred language, else display
     // subtitles.
-    Captions,
+    kCaptions,
     // If available, display subtitles track in preferred language, else display
     // captions.
-    Subtitles
+    kSubtitles
   };
 
   // Defines the default for 'passive' field used in the AddEventListenerOptions
   // interface when javascript calls addEventListener.
   enum class PassiveEventListenerDefault {
-    False,        // Default of false.
-    True,         // Default of true.
-    ForceAllTrue  // Force all values to be true even when specified.
+    kFalse,        // Default of false.
+    kTrue,         // Default of true.
+    kForceAllTrue  // Force all values to be true even when specified.
   };
 
   // Sets value of a setting by its string identifier from Settings.in and
   // string representation of value. An enum's string representation is the
   // string representation of the integer value of the enum.
-  virtual void setFromStrings(const WebString& name,
+  virtual void SetFromStrings(const WebString& name,
                               const WebString& value) = 0;
 
-  virtual bool shrinksViewportContentToFit() const = 0;
-  virtual bool viewportEnabled() const = 0;
-  virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;
-  virtual void setAcceleratedCompositingEnabled(bool) = 0;
-  virtual void setPreferCompositingToLCDTextEnabled(bool) = 0;
+  virtual bool ShrinksViewportContentToFit() const = 0;
+  virtual bool ViewportEnabled() const = 0;
+  virtual void SetAccelerated2dCanvasMSAASampleCount(int) = 0;
+  virtual void SetAcceleratedCompositingEnabled(bool) = 0;
+  virtual void SetPreferCompositingToLCDTextEnabled(bool) = 0;
   // Not implemented yet, see http://crbug.com/178119
-  virtual void setAcceleratedCompositingForTransitionEnabled(bool) {}
+  virtual void SetAcceleratedCompositingForTransitionEnabled(bool) {}
   // If set to true, allows frames with an https origin to display passive
   // contents at an insecure URL. Otherwise, disallows it. The
   // LocalFrameClient set to the frame may override the value set by this
   // method.
-  virtual void setAccessibilityEnabled(bool) = 0;
-  virtual void setAccessibilityPasswordValuesEnabled(bool) = 0;
-  virtual void setAllowFileAccessFromFileURLs(bool) = 0;
-  virtual void setAllowCustomScrollbarInMainFrame(bool) = 0;
-  virtual void setAllowGeolocationOnInsecureOrigins(bool) = 0;
+  virtual void SetAccessibilityEnabled(bool) = 0;
+  virtual void SetAccessibilityPasswordValuesEnabled(bool) = 0;
+  virtual void SetAllowFileAccessFromFileURLs(bool) = 0;
+  virtual void SetAllowCustomScrollbarInMainFrame(bool) = 0;
+  virtual void SetAllowGeolocationOnInsecureOrigins(bool) = 0;
   // If set to true, allows frames with an https origin to run active
   // contents at an insecure URL. This includes WebSockets. Otherwise,
   // disallows it. The LocalFrameClient set to the frame may override the
   // value set by this method.
-  virtual void setAllowRunningOfInsecureContent(bool) = 0;
-  virtual void setAllowScriptsToCloseWindows(bool) = 0;
-  virtual void setAllowUniversalAccessFromFileURLs(bool) = 0;
-  virtual void setAlwaysShowContextMenuOnTouch(bool) = 0;
-  virtual void setAntialiased2dCanvasEnabled(bool) = 0;
-  virtual void setAntialiasedClips2dCanvasEnabled(bool) = 0;
-  virtual void setAutoZoomFocusedNodeToLegibleScale(bool) = 0;
-  virtual void setBrowserSideNavigationEnabled(bool) = 0;
-  virtual void setClobberUserAgentInitialScaleQuirk(bool) = 0;
-  virtual void setCookieEnabled(bool) = 0;
-  virtual void setCrossOriginMediaPlaybackRequiresUserGesture(bool) = 0;
-  virtual void setNavigateOnDragDrop(bool) = 0;
-  virtual void setCursiveFontFamily(const WebString&,
+  virtual void SetAllowRunningOfInsecureContent(bool) = 0;
+  virtual void SetAllowScriptsToCloseWindows(bool) = 0;
+  virtual void SetAllowUniversalAccessFromFileURLs(bool) = 0;
+  virtual void SetAlwaysShowContextMenuOnTouch(bool) = 0;
+  virtual void SetAntialiased2dCanvasEnabled(bool) = 0;
+  virtual void SetAntialiasedClips2dCanvasEnabled(bool) = 0;
+  virtual void SetAutoZoomFocusedNodeToLegibleScale(bool) = 0;
+  virtual void SetBrowserSideNavigationEnabled(bool) = 0;
+  virtual void SetClobberUserAgentInitialScaleQuirk(bool) = 0;
+  virtual void SetCookieEnabled(bool) = 0;
+  virtual void SetCrossOriginMediaPlaybackRequiresUserGesture(bool) = 0;
+  virtual void SetNavigateOnDragDrop(bool) = 0;
+  virtual void SetCursiveFontFamily(const WebString&,
                                     UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setDNSPrefetchingEnabled(bool) = 0;
-  virtual void setDataSaverEnabled(bool) = 0;
-  virtual void setDOMPasteAllowed(bool) = 0;
-  virtual void setDefaultFixedFontSize(int) = 0;
-  virtual void setDefaultFontSize(int) = 0;
-  virtual void setDefaultTextEncodingName(const WebString&) = 0;
-  virtual void setDefaultVideoPosterURL(const WebString&) = 0;
-  void setDeferred2dCanvasEnabled(bool) {}  // temporary stub
-  virtual void setDeviceScaleAdjustment(float) = 0;
-  virtual void setDisableReadingFromCanvas(bool) = 0;
-  virtual void setDoubleTapToZoomEnabled(bool) = 0;
-  virtual void setDownloadableBinaryFontsEnabled(bool) = 0;
-  virtual void setEditingBehavior(EditingBehavior) = 0;
-  virtual void setEnableScrollAnimator(bool) = 0;
-  virtual void setEnableTouchAdjustment(bool) = 0;
-  virtual bool multiTargetTapNotificationEnabled() = 0;
-  virtual void setMultiTargetTapNotificationEnabled(bool) = 0;
-  virtual void setExperimentalWebGLEnabled(bool) = 0;
-  virtual void setFantasyFontFamily(const WebString&,
+  virtual void SetDNSPrefetchingEnabled(bool) = 0;
+  virtual void SetDataSaverEnabled(bool) = 0;
+  virtual void SetDOMPasteAllowed(bool) = 0;
+  virtual void SetDefaultFixedFontSize(int) = 0;
+  virtual void SetDefaultFontSize(int) = 0;
+  virtual void SetDefaultTextEncodingName(const WebString&) = 0;
+  virtual void SetDefaultVideoPosterURL(const WebString&) = 0;
+  void SetDeferred2dCanvasEnabled(bool) {}  // temporary stub
+  virtual void SetDeviceScaleAdjustment(float) = 0;
+  virtual void SetDisableReadingFromCanvas(bool) = 0;
+  virtual void SetDoubleTapToZoomEnabled(bool) = 0;
+  virtual void SetDownloadableBinaryFontsEnabled(bool) = 0;
+  virtual void SetEditingBehavior(EditingBehavior) = 0;
+  virtual void SetEnableScrollAnimator(bool) = 0;
+  virtual void SetEnableTouchAdjustment(bool) = 0;
+  virtual bool MultiTargetTapNotificationEnabled() = 0;
+  virtual void SetMultiTargetTapNotificationEnabled(bool) = 0;
+  virtual void SetExperimentalWebGLEnabled(bool) = 0;
+  virtual void SetFantasyFontFamily(const WebString&,
                                     UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setFixedFontFamily(const WebString&,
+  virtual void SetFixedFontFamily(const WebString&,
                                   UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setForcePreloadNoneForMediaElements(bool) = 0;
-  virtual void setForceZeroLayoutHeight(bool) = 0;
-  virtual void setFullscreenSupported(bool) = 0;
-  virtual void setHideDownloadUI(bool) = 0;
-  virtual void setHistoryEntryRequiresUserGesture(bool) = 0;
-  virtual void setHyperlinkAuditingEnabled(bool) = 0;
-  virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;
-  virtual void setImageAnimationPolicy(ImageAnimationPolicy) = 0;
-  virtual void setImagesEnabled(bool) = 0;
-  virtual void setInlineTextBoxAccessibilityEnabled(bool) = 0;
-  virtual void setInertVisualViewport(bool) = 0;
-  virtual void setJavaScriptCanAccessClipboard(bool) = 0;
-  virtual void setJavaScriptCanOpenWindowsAutomatically(bool) = 0;
-  virtual void setJavaScriptEnabled(bool) = 0;
-  virtual void setLoadsImagesAutomatically(bool) = 0;
-  virtual void setLoadWithOverviewMode(bool) = 0;
-  virtual void setShouldReuseGlobalForUnownedMainFrame(bool) = 0;
-  virtual void setProgressBarCompletion(ProgressBarCompletion) = 0;
-  virtual void setLocalStorageEnabled(bool) = 0;
-  virtual void setMainFrameClipsContent(bool) = 0;
-  virtual void setMainFrameResizesAreOrientationChanges(bool) = 0;
-  virtual void setMaxTouchPoints(int) = 0;
-  virtual void setMediaPlaybackRequiresUserGesture(bool) = 0;
-  virtual void setMediaPlaybackGestureWhitelistScope(const WebString&) = 0;
-  virtual void setPresentationRequiresUserGesture(bool) = 0;
-  virtual void setEmbeddedMediaExperienceEnabled(bool) = 0;
-  virtual void setMinimumAccelerated2dCanvasSize(int) = 0;
-  virtual void setMinimumFontSize(int) = 0;
-  virtual void setMinimumLogicalFontSize(int) = 0;
-  virtual void setMockScrollbarsEnabled(bool) = 0;
-  virtual void setHideScrollbars(bool) = 0;
-  virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
-  virtual void setPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;
-  virtual void setPasswordEchoDurationInSeconds(double) = 0;
-  virtual void setPasswordEchoEnabled(bool) = 0;
-  virtual void setPerTilePaintingEnabled(bool) = 0;
-  virtual void setPictographFontFamily(const WebString&,
+  virtual void SetForcePreloadNoneForMediaElements(bool) = 0;
+  virtual void SetForceZeroLayoutHeight(bool) = 0;
+  virtual void SetFullscreenSupported(bool) = 0;
+  virtual void SetHideDownloadUI(bool) = 0;
+  virtual void SetHistoryEntryRequiresUserGesture(bool) = 0;
+  virtual void SetHyperlinkAuditingEnabled(bool) = 0;
+  virtual void SetIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;
+  virtual void SetImageAnimationPolicy(ImageAnimationPolicy) = 0;
+  virtual void SetImagesEnabled(bool) = 0;
+  virtual void SetInlineTextBoxAccessibilityEnabled(bool) = 0;
+  virtual void SetInertVisualViewport(bool) = 0;
+  virtual void SetJavaScriptCanAccessClipboard(bool) = 0;
+  virtual void SetJavaScriptCanOpenWindowsAutomatically(bool) = 0;
+  virtual void SetJavaScriptEnabled(bool) = 0;
+  virtual void SetLoadsImagesAutomatically(bool) = 0;
+  virtual void SetLoadWithOverviewMode(bool) = 0;
+  virtual void SetShouldReuseGlobalForUnownedMainFrame(bool) = 0;
+  virtual void SetProgressBarCompletion(ProgressBarCompletion) = 0;
+  virtual void SetLocalStorageEnabled(bool) = 0;
+  virtual void SetMainFrameClipsContent(bool) = 0;
+  virtual void SetMainFrameResizesAreOrientationChanges(bool) = 0;
+  virtual void SetMaxTouchPoints(int) = 0;
+  virtual void SetMediaPlaybackRequiresUserGesture(bool) = 0;
+  virtual void SetMediaPlaybackGestureWhitelistScope(const WebString&) = 0;
+  virtual void SetPresentationRequiresUserGesture(bool) = 0;
+  virtual void SetEmbeddedMediaExperienceEnabled(bool) = 0;
+  virtual void SetMinimumAccelerated2dCanvasSize(int) = 0;
+  virtual void SetMinimumFontSize(int) = 0;
+  virtual void SetMinimumLogicalFontSize(int) = 0;
+  virtual void SetMockScrollbarsEnabled(bool) = 0;
+  virtual void SetHideScrollbars(bool) = 0;
+  virtual void SetOfflineWebApplicationCacheEnabled(bool) = 0;
+  virtual void SetPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;
+  virtual void SetPasswordEchoDurationInSeconds(double) = 0;
+  virtual void SetPasswordEchoEnabled(bool) = 0;
+  virtual void SetPerTilePaintingEnabled(bool) = 0;
+  virtual void SetPictographFontFamily(const WebString&,
                                        UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setPluginsEnabled(bool) = 0;
-  virtual void setEncryptedMediaEnabled(bool) = 0;
-  virtual void setPresentationReceiver(bool) = 0;
-  virtual void setAvailablePointerTypes(int) = 0;
-  virtual void setPrimaryPointerType(PointerType) = 0;
-  virtual void setAvailableHoverTypes(int) = 0;
-  virtual void setPrimaryHoverType(HoverType) = 0;
-  virtual void setPreferHiddenVolumeControls(bool) = 0;
-  virtual void setRenderVSyncNotificationEnabled(bool) = 0;
-  virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool) = 0;
-  virtual void setRubberBandingOnCompositorThread(bool) = 0;
-  virtual void setSansSerifFontFamily(const WebString&,
+  virtual void SetPluginsEnabled(bool) = 0;
+  virtual void SetEncryptedMediaEnabled(bool) = 0;
+  virtual void SetPresentationReceiver(bool) = 0;
+  virtual void SetAvailablePointerTypes(int) = 0;
+  virtual void SetPrimaryPointerType(PointerType) = 0;
+  virtual void SetAvailableHoverTypes(int) = 0;
+  virtual void SetPrimaryHoverType(HoverType) = 0;
+  virtual void SetPreferHiddenVolumeControls(bool) = 0;
+  virtual void SetRenderVSyncNotificationEnabled(bool) = 0;
+  virtual void SetReportScreenSizeInPhysicalPixelsQuirk(bool) = 0;
+  virtual void SetRubberBandingOnCompositorThread(bool) = 0;
+  virtual void SetSansSerifFontFamily(const WebString&,
                                       UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setSelectTrailingWhitespaceEnabled(bool) = 0;
-  virtual void setSelectionIncludesAltImageText(bool) = 0;
-  virtual void setSelectionStrategy(SelectionStrategyType) = 0;
-  virtual void setSerifFontFamily(const WebString&,
+  virtual void SetSelectTrailingWhitespaceEnabled(bool) = 0;
+  virtual void SetSelectionIncludesAltImageText(bool) = 0;
+  virtual void SetSelectionStrategy(SelectionStrategyType) = 0;
+  virtual void SetSerifFontFamily(const WebString&,
                                   UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setShouldPrintBackgrounds(bool) = 0;
-  virtual void setShouldClearDocumentBackground(bool) = 0;
-  virtual void setShouldRespectImageOrientation(bool) = 0;
-  virtual void setShowContextMenuOnMouseUp(bool) = 0;
-  virtual void setShowFPSCounter(bool) = 0;
-  virtual void setShowPaintRects(bool) = 0;
-  virtual void setShrinksViewportContentToFit(bool) = 0;
-  virtual void setSmartInsertDeleteEnabled(bool) = 0;
+  virtual void SetShouldPrintBackgrounds(bool) = 0;
+  virtual void SetShouldClearDocumentBackground(bool) = 0;
+  virtual void SetShouldRespectImageOrientation(bool) = 0;
+  virtual void SetShowContextMenuOnMouseUp(bool) = 0;
+  virtual void SetShowFPSCounter(bool) = 0;
+  virtual void SetShowPaintRects(bool) = 0;
+  virtual void SetShrinksViewportContentToFit(bool) = 0;
+  virtual void SetSmartInsertDeleteEnabled(bool) = 0;
   // Spatial navigation feature, when enabled, improves the experience
   // of keyboard-controlling the web pages which originally were not designed
   // for keyboard navigation. It allows to use arrow keys to move focus between
@@ -246,56 +246,56 @@ class WebSettings {
   // elements to be focusable to include any element which has click or keyboard
   // event handlers specified. User can also trigger click handlers for such
   // elements using SPACE or ENTER keys.
-  virtual void setSpatialNavigationEnabled(bool) = 0;
-  virtual void setSpellCheckEnabledByDefault(bool) = 0;
-  virtual void setStandardFontFamily(const WebString&,
+  virtual void SetSpatialNavigationEnabled(bool) = 0;
+  virtual void SetSpellCheckEnabledByDefault(bool) = 0;
+  virtual void SetStandardFontFamily(const WebString&,
                                      UScriptCode = USCRIPT_COMMON) = 0;
-  virtual void setStrictMixedContentChecking(bool) = 0;
-  virtual void setStrictMixedContentCheckingForPlugin(bool) = 0;
-  virtual void setStrictPowerfulFeatureRestrictions(bool) = 0;
-  virtual void setStrictlyBlockBlockableMixedContent(bool) = 0;
-  virtual void setSupportDeprecatedTargetDensityDPI(bool) = 0;
-  virtual void setSupportsMultipleWindows(bool) = 0;
-  virtual void setSyncXHRInDocumentsEnabled(bool) = 0;
-  virtual void setTextAreasAreResizable(bool) = 0;
-  virtual void setTextAutosizingEnabled(bool) = 0;
-  virtual void setAccessibilityFontScaleFactor(float) = 0;
-  virtual void setTextTrackKindUserPreference(TextTrackKindUserPreference) = 0;
-  virtual void setTextTrackBackgroundColor(const WebString&) = 0;
-  virtual void setTextTrackFontFamily(const WebString&) = 0;
-  virtual void setTextTrackFontStyle(const WebString&) = 0;
-  virtual void setTextTrackFontVariant(const WebString&) = 0;
-  virtual void setTextTrackMarginPercentage(float) = 0;
-  virtual void setTextTrackTextColor(const WebString&) = 0;
-  virtual void setTextTrackTextShadow(const WebString&) = 0;
-  virtual void setTextTrackTextSize(const WebString&) = 0;
-  virtual void setThreadedScrollingEnabled(bool) = 0;
-  virtual void setTouchDragDropEnabled(bool) = 0;
-  virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
-  virtual void setViewportStyle(WebViewportStyle) = 0;
-  virtual void setUseSolidColorScrollbars(bool) = 0;
-  virtual void setUseWideViewport(bool) = 0;
-  virtual void setV8CacheOptions(V8CacheOptions) = 0;
-  virtual void setV8CacheStrategiesForCacheStorage(
+  virtual void SetStrictMixedContentChecking(bool) = 0;
+  virtual void SetStrictMixedContentCheckingForPlugin(bool) = 0;
+  virtual void SetStrictPowerfulFeatureRestrictions(bool) = 0;
+  virtual void SetStrictlyBlockBlockableMixedContent(bool) = 0;
+  virtual void SetSupportDeprecatedTargetDensityDPI(bool) = 0;
+  virtual void SetSupportsMultipleWindows(bool) = 0;
+  virtual void SetSyncXHRInDocumentsEnabled(bool) = 0;
+  virtual void SetTextAreasAreResizable(bool) = 0;
+  virtual void SetTextAutosizingEnabled(bool) = 0;
+  virtual void SetAccessibilityFontScaleFactor(float) = 0;
+  virtual void SetTextTrackKindUserPreference(TextTrackKindUserPreference) = 0;
+  virtual void SetTextTrackBackgroundColor(const WebString&) = 0;
+  virtual void SetTextTrackFontFamily(const WebString&) = 0;
+  virtual void SetTextTrackFontStyle(const WebString&) = 0;
+  virtual void SetTextTrackFontVariant(const WebString&) = 0;
+  virtual void SetTextTrackMarginPercentage(float) = 0;
+  virtual void SetTextTrackTextColor(const WebString&) = 0;
+  virtual void SetTextTrackTextShadow(const WebString&) = 0;
+  virtual void SetTextTrackTextSize(const WebString&) = 0;
+  virtual void SetThreadedScrollingEnabled(bool) = 0;
+  virtual void SetTouchDragDropEnabled(bool) = 0;
+  virtual void SetUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
+  virtual void SetViewportStyle(WebViewportStyle) = 0;
+  virtual void SetUseSolidColorScrollbars(bool) = 0;
+  virtual void SetUseWideViewport(bool) = 0;
+  virtual void SetV8CacheOptions(V8CacheOptions) = 0;
+  virtual void SetV8CacheStrategiesForCacheStorage(
       V8CacheStrategiesForCacheStorage) = 0;
-  virtual void setValidationMessageTimerMagnification(int) = 0;
-  virtual void setViewportEnabled(bool) = 0;
-  virtual void setViewportMetaEnabled(bool) = 0;
-  virtual void setViewportMetaLayoutSizeQuirk(bool) = 0;
-  virtual void setViewportMetaMergeContentQuirk(bool) = 0;
-  virtual void setViewportMetaNonUserScalableQuirk(bool) = 0;
-  virtual void setViewportMetaZeroValuesQuirk(bool) = 0;
-  virtual void setWebGLErrorsToConsoleEnabled(bool) = 0;
-  virtual void setWebSecurityEnabled(bool) = 0;
-  virtual void setWideViewportQuirkEnabled(bool) = 0;
-  virtual void setXSSAuditorEnabled(bool) = 0;
+  virtual void SetValidationMessageTimerMagnification(int) = 0;
+  virtual void SetViewportEnabled(bool) = 0;
+  virtual void SetViewportMetaEnabled(bool) = 0;
+  virtual void SetViewportMetaLayoutSizeQuirk(bool) = 0;
+  virtual void SetViewportMetaMergeContentQuirk(bool) = 0;
+  virtual void SetViewportMetaNonUserScalableQuirk(bool) = 0;
+  virtual void SetViewportMetaZeroValuesQuirk(bool) = 0;
+  virtual void SetWebGLErrorsToConsoleEnabled(bool) = 0;
+  virtual void SetWebSecurityEnabled(bool) = 0;
+  virtual void SetWideViewportQuirkEnabled(bool) = 0;
+  virtual void SetXSSAuditorEnabled(bool) = 0;
   // Background timer throttling aggressiveness settings.
-  virtual void setExpensiveBackgroundThrottlingCPUBudget(float) = 0;
-  virtual void setExpensiveBackgroundThrottlingInitialBudget(float) = 0;
-  virtual void setExpensiveBackgroundThrottlingMaxBudget(float) = 0;
-  virtual void setExpensiveBackgroundThrottlingMaxDelay(float) = 0;
-  virtual void setMediaControlsEnabled(bool) = 0;
-  virtual void setDoNotUpdateSelectionOnMutatingSelectionRange(bool) = 0;
+  virtual void SetExpensiveBackgroundThrottlingCPUBudget(float) = 0;
+  virtual void SetExpensiveBackgroundThrottlingInitialBudget(float) = 0;
+  virtual void SetExpensiveBackgroundThrottlingMaxBudget(float) = 0;
+  virtual void SetExpensiveBackgroundThrottlingMaxDelay(float) = 0;
+  virtual void SetMediaControlsEnabled(bool) = 0;
+  virtual void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) = 0;
 
  protected:
   ~WebSettings() {}

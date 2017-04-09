@@ -22,40 +22,40 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObserverChanges* create(
+  static IDBObserverChanges* Create(
       IDBDatabase*,
       const WebVector<WebIDBObservation>&,
-      const WebVector<int32_t>& observationIndices,
+      const WebVector<int32_t>& observation_indices,
       v8::Isolate*);
-  static IDBObserverChanges* create(
+  static IDBObserverChanges* Create(
       IDBDatabase*,
       IDBTransaction*,
       const WebVector<WebIDBObservation>&,
-      const WebVector<int32_t>& observationIndices,
+      const WebVector<int32_t>& observation_indices,
       v8::Isolate*);
 
   DECLARE_TRACE();
 
   // Implement IDL
-  IDBTransaction* transaction() const { return m_transaction.get(); }
-  IDBDatabase* database() const { return m_database.get(); }
+  IDBTransaction* transaction() const { return transaction_.Get(); }
+  IDBDatabase* database() const { return database_.Get(); }
   ScriptValue records(ScriptState*);
 
  private:
   IDBObserverChanges(IDBDatabase*,
                      IDBTransaction*,
                      const WebVector<WebIDBObservation>&,
-                     const WebVector<int32_t>& observationIndices,
+                     const WebVector<int32_t>& observation_indices,
                      v8::Isolate*);
 
-  void extractChanges(const WebVector<WebIDBObservation>&,
-                      const WebVector<int32_t>& observationIndices,
+  void ExtractChanges(const WebVector<WebIDBObservation>&,
+                      const WebVector<int32_t>& observation_indices,
                       v8::Isolate*);
 
-  Member<IDBDatabase> m_database;
-  Member<IDBTransaction> m_transaction;
+  Member<IDBDatabase> database_;
+  Member<IDBTransaction> transaction_;
   // Map objectStoreId to IDBObservation list.
-  HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> m_records;
+  HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> records_;
 };
 
 }  // namespace blink

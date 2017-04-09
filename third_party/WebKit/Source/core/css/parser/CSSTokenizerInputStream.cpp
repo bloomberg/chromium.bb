@@ -10,35 +10,35 @@
 namespace blink {
 
 CSSTokenizerInputStream::CSSTokenizerInputStream(const String& input)
-    : m_offset(0), m_stringLength(input.length()), m_string(input.impl()) {}
+    : offset_(0), string_length_(input.length()), string_(input.Impl()) {}
 
-void CSSTokenizerInputStream::advanceUntilNonWhitespace() {
+void CSSTokenizerInputStream::AdvanceUntilNonWhitespace() {
   // Using HTML space here rather than CSS space since we don't do preprocessing
-  if (m_string->is8Bit()) {
-    const LChar* characters = m_string->characters8();
-    while (m_offset < m_stringLength && isHTMLSpace(characters[m_offset]))
-      ++m_offset;
+  if (string_->Is8Bit()) {
+    const LChar* characters = string_->Characters8();
+    while (offset_ < string_length_ && IsHTMLSpace(characters[offset_]))
+      ++offset_;
   } else {
-    const UChar* characters = m_string->characters16();
-    while (m_offset < m_stringLength && isHTMLSpace(characters[m_offset]))
-      ++m_offset;
+    const UChar* characters = string_->Characters16();
+    while (offset_ < string_length_ && IsHTMLSpace(characters[offset_]))
+      ++offset_;
   }
 }
 
-double CSSTokenizerInputStream::getDouble(unsigned start, unsigned end) const {
-  DCHECK(start <= end && ((m_offset + end) <= m_stringLength));
-  bool isResultOK = false;
+double CSSTokenizerInputStream::GetDouble(unsigned start, unsigned end) const {
+  DCHECK(start <= end && ((offset_ + end) <= string_length_));
+  bool is_result_ok = false;
   double result = 0.0;
   if (start < end) {
-    if (m_string->is8Bit())
-      result = charactersToDouble(m_string->characters8() + m_offset + start,
-                                  end - start, &isResultOK);
+    if (string_->Is8Bit())
+      result = CharactersToDouble(string_->Characters8() + offset_ + start,
+                                  end - start, &is_result_ok);
     else
-      result = charactersToDouble(m_string->characters16() + m_offset + start,
-                                  end - start, &isResultOK);
+      result = CharactersToDouble(string_->Characters16() + offset_ + start,
+                                  end - start, &is_result_ok);
   }
   // FIXME: It looks like callers ensure we have a valid number
-  return isResultOK ? result : 0.0;
+  return is_result_ok ? result : 0.0;
 }
 
 }  // namespace blink

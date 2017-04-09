@@ -43,19 +43,19 @@ namespace blink {
 enum class PositionMoveType {
   // Move by a single code unit. |PositionMoveType::CodeUnit| is used for
   // implementing other |PositionMoveType|. You should not use this.
-  CodeUnit,
+  kCodeUnit,
   // Move to the next Unicode code point. At most two code unit when we are
   // at surrogate pair. Please consider using |GraphemeCluster|.
-  BackwardDeletion,
+  kBackwardDeletion,
   // Move by a grapheme cluster for user-perceived character in Unicode
   // Standard Annex #29, Unicode text segmentation[1].
   // [1] http://www.unicode.org/reports/tr29/
-  GraphemeCluster,
+  kGraphemeCluster,
 };
 
 enum class DeleteDirection {
-  Forward,
-  Backward,
+  kForward,
+  kBackward,
 };
 
 class Document;
@@ -66,93 +66,93 @@ class Node;
 
 // This file contains a set of helper functions used by the editing commands
 
-bool needsLayoutTreeUpdate(const Node&);
-CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
-CORE_EXPORT bool needsLayoutTreeUpdate(const PositionInFlatTree&);
+bool NeedsLayoutTreeUpdate(const Node&);
+CORE_EXPORT bool NeedsLayoutTreeUpdate(const Position&);
+CORE_EXPORT bool NeedsLayoutTreeUpdate(const PositionInFlatTree&);
 
 // -------------------------------------------------------------------------
 // Node
 // -------------------------------------------------------------------------
 
 // Returns true if |node| has "user-select:contain".
-bool isUserSelectContain(const Node& /* node */);
+bool IsUserSelectContain(const Node& /* node */);
 
-CORE_EXPORT bool hasEditableStyle(const Node&);
-CORE_EXPORT bool hasRichlyEditableStyle(const Node&);
-CORE_EXPORT bool isRootEditableElement(const Node&);
-CORE_EXPORT Element* rootEditableElement(const Node&);
-Element* rootEditableElementOf(const Position&);
-Element* rootEditableElementOf(const PositionInFlatTree&);
-Element* rootEditableElementOf(const VisiblePosition&);
-ContainerNode* rootEditableElementOrTreeScopeRootNodeOf(const Position&);
+CORE_EXPORT bool HasEditableStyle(const Node&);
+CORE_EXPORT bool HasRichlyEditableStyle(const Node&);
+CORE_EXPORT bool IsRootEditableElement(const Node&);
+CORE_EXPORT Element* RootEditableElement(const Node&);
+Element* RootEditableElementOf(const Position&);
+Element* RootEditableElementOf(const PositionInFlatTree&);
+Element* RootEditableElementOf(const VisiblePosition&);
+ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(const Position&);
 // highestEditableRoot returns the highest editable node. If the
 // rootEditableElement of the speicified Position is <body>, this returns the
 // <body>. Otherwise, this searches ancestors for the highest editable node in
 // defiance of editing boundaries. This returns a Document if designMode="on"
 // and the specified Position is not in the <body>.
-CORE_EXPORT ContainerNode* highestEditableRoot(
+CORE_EXPORT ContainerNode* HighestEditableRoot(
     const Position&,
-    Element* (*)(const Position&) = rootEditableElementOf,
-    bool (*)(const Node&) = hasEditableStyle);
-ContainerNode* highestEditableRoot(const PositionInFlatTree&);
+    Element* (*)(const Position&) = RootEditableElementOf,
+    bool (*)(const Node&) = HasEditableStyle);
+ContainerNode* HighestEditableRoot(const PositionInFlatTree&);
 
-Node* highestEnclosingNodeOfType(
+Node* HighestEnclosingNodeOfType(
     const Position&,
-    bool (*nodeIsOfType)(const Node*),
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary,
-    Node* stayWithin = nullptr);
-Node* highestNodeToRemoveInPruning(Node*, Node* excludeNode = nullptr);
+    bool (*node_is_of_type)(const Node*),
+    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary,
+    Node* stay_within = nullptr);
+Node* HighestNodeToRemoveInPruning(Node*, Node* exclude_node = nullptr);
 
-Element* enclosingBlock(
+Element* EnclosingBlock(
     Node*,
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT Element* enclosingBlock(const Position&,
+    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
+CORE_EXPORT Element* EnclosingBlock(const Position&,
                                     EditingBoundaryCrossingRule);
-CORE_EXPORT Element* enclosingBlock(const PositionInFlatTree&,
+CORE_EXPORT Element* EnclosingBlock(const PositionInFlatTree&,
                                     EditingBoundaryCrossingRule);
-Element* enclosingBlockFlowElement(
+Element* EnclosingBlockFlowElement(
     const Node&);  // Deprecated, use enclosingBlock instead.
-Element* enclosingTableCell(const Position&);
-Element* associatedElementOf(const Position&);
-Node* enclosingEmptyListItem(const VisiblePosition&);
-Element* enclosingAnchorElement(const Position&);
+Element* EnclosingTableCell(const Position&);
+Element* AssociatedElementOf(const Position&);
+Node* EnclosingEmptyListItem(const VisiblePosition&);
+Element* EnclosingAnchorElement(const Position&);
 // Returns the lowest ancestor with the specified QualifiedName. If the
 // specified Position is editable, this function returns an editable
 // Element. Otherwise, editability doesn't matter.
-Element* enclosingElementWithTag(const Position&, const QualifiedName&);
-CORE_EXPORT Node* enclosingNodeOfType(
+Element* EnclosingElementWithTag(const Position&, const QualifiedName&);
+CORE_EXPORT Node* EnclosingNodeOfType(
     const Position&,
-    bool (*nodeIsOfType)(const Node*),
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT Node* enclosingNodeOfType(
+    bool (*node_is_of_type)(const Node*),
+    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
+CORE_EXPORT Node* EnclosingNodeOfType(
     const PositionInFlatTree&,
-    bool (*nodeIsOfType)(const Node*),
-    EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+    bool (*node_is_of_type)(const Node*),
+    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
 
-HTMLSpanElement* tabSpanElement(const Node*);
-Element* tableElementJustAfter(const VisiblePosition&);
-CORE_EXPORT Element* tableElementJustBefore(const VisiblePosition&);
-CORE_EXPORT Element* tableElementJustBefore(const VisiblePositionInFlatTree&);
+HTMLSpanElement* TabSpanElement(const Node*);
+Element* TableElementJustAfter(const VisiblePosition&);
+CORE_EXPORT Element* TableElementJustBefore(const VisiblePosition&);
+CORE_EXPORT Element* TableElementJustBefore(const VisiblePositionInFlatTree&);
 
 // Returns the next leaf node or nullptr if there are no more. Delivers leaf
 // nodes as if the whole DOM tree were a linear chain of its leaf nodes.
-Node* nextAtomicLeafNode(const Node& start);
+Node* NextAtomicLeafNode(const Node& start);
 
 // Returns the previous leaf node or nullptr if there are no more. Delivers leaf
 // nodes as if the whole DOM tree were a linear chain of its leaf nodes.
-Node* previousAtomicLeafNode(const Node& start);
+Node* PreviousAtomicLeafNode(const Node& start);
 
 template <typename Strategy>
-ContainerNode* parentCrossingShadowBoundaries(const Node&);
+ContainerNode* ParentCrossingShadowBoundaries(const Node&);
 template <>
-inline ContainerNode* parentCrossingShadowBoundaries<EditingStrategy>(
+inline ContainerNode* ParentCrossingShadowBoundaries<EditingStrategy>(
     const Node& node) {
-  return NodeTraversal::parentOrShadowHostNode(node);
+  return NodeTraversal::ParentOrShadowHostNode(node);
 }
 template <>
-inline ContainerNode* parentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(
+inline ContainerNode* ParentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(
     const Node& node) {
-  return FlatTreeTraversal::parent(node);
+  return FlatTreeTraversal::Parent(node);
 }
 
 // boolean functions on Node
@@ -163,40 +163,40 @@ inline ContainerNode* parentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(
 // Returns true for nodes that either have no content, or have content that is
 // ignored (skipped over) while editing. There are no VisiblePositions inside
 // these nodes.
-bool editingIgnoresContent(const Node&);
+bool EditingIgnoresContent(const Node&);
 
-inline bool canHaveChildrenForEditing(const Node* node) {
-  return !node->isTextNode() && node->canContainRangeEndPoint();
+inline bool CanHaveChildrenForEditing(const Node* node) {
+  return !node->IsTextNode() && node->CanContainRangeEndPoint();
 }
 
-bool isAtomicNode(const Node*);
-CORE_EXPORT bool isEnclosingBlock(const Node*);
-bool isTabHTMLSpanElement(const Node*);
-bool isTabHTMLSpanElementTextNode(const Node*);
-bool isMailHTMLBlockquoteElement(const Node*);
+bool IsAtomicNode(const Node*);
+CORE_EXPORT bool IsEnclosingBlock(const Node*);
+bool IsTabHTMLSpanElement(const Node*);
+bool IsTabHTMLSpanElementTextNode(const Node*);
+bool IsMailHTMLBlockquoteElement(const Node*);
 // Returns true if the specified node is visible <table>. We don't want to add
 // invalid nodes to <table> elements.
-bool isDisplayInsideTable(const Node*);
-bool isInline(const Node*);
-bool isTableCell(const Node*);
-bool isEmptyTableCell(const Node*);
-bool isTableStructureNode(const Node*);
-bool isHTMLListElement(Node*);
-bool isListItem(const Node*);
-bool isPresentationalHTMLElement(const Node*);
-bool isNodeRendered(const Node&);
-bool isRenderedAsNonInlineTableImageOrHR(const Node*);
+bool IsDisplayInsideTable(const Node*);
+bool IsInline(const Node*);
+bool IsTableCell(const Node*);
+bool IsEmptyTableCell(const Node*);
+bool IsTableStructureNode(const Node*);
+bool IsHTMLListElement(Node*);
+bool IsListItem(const Node*);
+bool IsPresentationalHTMLElement(const Node*);
+bool IsNodeRendered(const Node&);
+bool IsRenderedAsNonInlineTableImageOrHR(const Node*);
 // Returns true if specified nodes are elements, have identical tag names,
 // have identical attributes, and are editable.
-CORE_EXPORT bool areIdenticalElements(const Node&, const Node&);
-bool isNonTableCellHTMLBlockElement(const Node*);
-bool isBlockFlowElement(const Node&);
-EUserSelect usedValueOfUserSelect(const Node&);
-bool isInPasswordField(const Position&);
-bool isTextSecurityNode(const Node*);
-CORE_EXPORT TextDirection directionOfEnclosingBlock(const Position&);
-CORE_EXPORT TextDirection directionOfEnclosingBlock(const PositionInFlatTree&);
-CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
+CORE_EXPORT bool AreIdenticalElements(const Node&, const Node&);
+bool IsNonTableCellHTMLBlockElement(const Node*);
+bool IsBlockFlowElement(const Node&);
+EUserSelect UsedValueOfUserSelect(const Node&);
+bool IsInPasswordField(const Position&);
+bool IsTextSecurityNode(const Node*);
+CORE_EXPORT TextDirection DirectionOfEnclosingBlock(const Position&);
+CORE_EXPORT TextDirection DirectionOfEnclosingBlock(const PositionInFlatTree&);
+CORE_EXPORT TextDirection PrimaryDirectionOf(const Node&);
 
 // -------------------------------------------------------------------------
 // Position
@@ -204,90 +204,90 @@ CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
 
 // Functions returning Position
 
-Position nextCandidate(const Position&);
-PositionInFlatTree nextCandidate(const PositionInFlatTree&);
-Position previousCandidate(const Position&);
-PositionInFlatTree previousCandidate(const PositionInFlatTree&);
+Position NextCandidate(const Position&);
+PositionInFlatTree NextCandidate(const PositionInFlatTree&);
+Position PreviousCandidate(const Position&);
+PositionInFlatTree PreviousCandidate(const PositionInFlatTree&);
 
-CORE_EXPORT Position nextVisuallyDistinctCandidate(const Position&);
+CORE_EXPORT Position NextVisuallyDistinctCandidate(const Position&);
 CORE_EXPORT PositionInFlatTree
-nextVisuallyDistinctCandidate(const PositionInFlatTree&);
-Position previousVisuallyDistinctCandidate(const Position&);
-PositionInFlatTree previousVisuallyDistinctCandidate(const PositionInFlatTree&);
+NextVisuallyDistinctCandidate(const PositionInFlatTree&);
+Position PreviousVisuallyDistinctCandidate(const Position&);
+PositionInFlatTree PreviousVisuallyDistinctCandidate(const PositionInFlatTree&);
 
-Position positionBeforeContainingSpecialElement(
+Position PositionBeforeContainingSpecialElement(
     const Position&,
-    HTMLElement** containingSpecialElement = nullptr);
-Position positionAfterContainingSpecialElement(
+    HTMLElement** containing_special_element = nullptr);
+Position PositionAfterContainingSpecialElement(
     const Position&,
-    HTMLElement** containingSpecialElement = nullptr);
+    HTMLElement** containing_special_element = nullptr);
 
-inline Position firstPositionInOrBeforeNode(Node* node) {
-  return Position::firstPositionInOrBeforeNode(node);
+inline Position FirstPositionInOrBeforeNode(Node* node) {
+  return Position::FirstPositionInOrBeforeNode(node);
 }
 
-inline Position lastPositionInOrAfterNode(Node* node) {
-  return Position::lastPositionInOrAfterNode(node);
+inline Position LastPositionInOrAfterNode(Node* node) {
+  return Position::LastPositionInOrAfterNode(node);
 }
 
-CORE_EXPORT Position firstEditablePositionAfterPositionInRoot(const Position&,
+CORE_EXPORT Position FirstEditablePositionAfterPositionInRoot(const Position&,
                                                               Node&);
-CORE_EXPORT Position lastEditablePositionBeforePositionInRoot(const Position&,
+CORE_EXPORT Position LastEditablePositionBeforePositionInRoot(const Position&,
                                                               Node&);
 CORE_EXPORT PositionInFlatTree
-firstEditablePositionAfterPositionInRoot(const PositionInFlatTree&, Node&);
+FirstEditablePositionAfterPositionInRoot(const PositionInFlatTree&, Node&);
 CORE_EXPORT PositionInFlatTree
-lastEditablePositionBeforePositionInRoot(const PositionInFlatTree&, Node&);
+LastEditablePositionBeforePositionInRoot(const PositionInFlatTree&, Node&);
 
 // Move up or down the DOM by one position.
 // Offsets are computed using layout text for nodes that have layoutObjects -
 // but note that even when using composed characters, the result may be inside
 // a single user-visible character if a ligature is formed.
-CORE_EXPORT Position previousPositionOf(const Position&, PositionMoveType);
-CORE_EXPORT Position nextPositionOf(const Position&, PositionMoveType);
-CORE_EXPORT PositionInFlatTree previousPositionOf(const PositionInFlatTree&,
+CORE_EXPORT Position PreviousPositionOf(const Position&, PositionMoveType);
+CORE_EXPORT Position NextPositionOf(const Position&, PositionMoveType);
+CORE_EXPORT PositionInFlatTree PreviousPositionOf(const PositionInFlatTree&,
                                                   PositionMoveType);
-CORE_EXPORT PositionInFlatTree nextPositionOf(const PositionInFlatTree&,
+CORE_EXPORT PositionInFlatTree NextPositionOf(const PositionInFlatTree&,
                                               PositionMoveType);
 
-CORE_EXPORT int previousGraphemeBoundaryOf(const Node*, int current);
-CORE_EXPORT int nextGraphemeBoundaryOf(const Node*, int current);
+CORE_EXPORT int PreviousGraphemeBoundaryOf(const Node*, int current);
+CORE_EXPORT int NextGraphemeBoundaryOf(const Node*, int current);
 
 // comparision functions on Position
 
 // |disconnected| is optional output parameter having true if specified
 // positions don't have common ancestor.
-int comparePositionsInDOMTree(Node* containerA,
-                              int offsetA,
-                              Node* containerB,
-                              int offsetB,
+int ComparePositionsInDOMTree(Node* container_a,
+                              int offset_a,
+                              Node* container_b,
+                              int offset_b,
                               bool* disconnected = nullptr);
-int comparePositionsInFlatTree(Node* containerA,
-                               int offsetA,
-                               Node* containerB,
-                               int offsetB,
+int ComparePositionsInFlatTree(Node* container_a,
+                               int offset_a,
+                               Node* container_b,
+                               int offset_b,
                                bool* disconnected = nullptr);
 // TODO(yosin): We replace |comparePositions()| by |Position::opeator<()| to
 // utilize |DCHECK_XX()|.
-int comparePositions(const Position&, const Position&);
-int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
-bool isNodeFullyContained(const EphemeralRange&, Node&);
+int ComparePositions(const Position&, const Position&);
+int ComparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
+bool IsNodeFullyContained(const EphemeralRange&, Node&);
 
 // boolean functions on Position
 
 // FIXME: Both isEditablePosition and isRichlyEditablePosition rely on
 // up-to-date style to give proper results. They shouldn't update style by
 // default, but should make it clear that that is the contract.
-CORE_EXPORT bool isEditablePosition(const Position&);
-bool isEditablePosition(const PositionInFlatTree&);
-bool isRichlyEditablePosition(const Position&);
-bool lineBreakExistsAtPosition(const Position&);
+CORE_EXPORT bool IsEditablePosition(const Position&);
+bool IsEditablePosition(const PositionInFlatTree&);
+bool IsRichlyEditablePosition(const Position&);
+bool LineBreakExistsAtPosition(const Position&);
 
 // miscellaneous functions on Position
 
 enum WhitespacePositionOption {
-  NotConsiderNonCollapsibleWhitespace,
-  ConsiderNonCollapsibleWhitespace
+  kNotConsiderNonCollapsibleWhitespace,
+  kConsiderNonCollapsibleWhitespace
 };
 
 // |leadingWhitespacePosition(position)| returns a previous position of
@@ -297,20 +297,20 @@ enum WhitespacePositionOption {
 // or its variant, |leadingWhitespacePosition()| returns null position.
 // TODO(yosin) We should rename |leadingWhitespacePosition()| to
 // |leadingCollapsibleWhitespacePosition()| as this function really returns.
-Position leadingWhitespacePosition(
+Position LeadingWhitespacePosition(
     const Position&,
     TextAffinity,
-    WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
-Position trailingWhitespacePosition(
+    WhitespacePositionOption = kNotConsiderNonCollapsibleWhitespace);
+Position TrailingWhitespacePosition(
     const Position&,
     TextAffinity,
-    WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
-unsigned numEnclosingMailBlockquotes(const Position&);
-PositionWithAffinity positionRespectingEditingBoundary(
+    WhitespacePositionOption = kNotConsiderNonCollapsibleWhitespace);
+unsigned NumEnclosingMailBlockquotes(const Position&);
+PositionWithAffinity PositionRespectingEditingBoundary(
     const Position&,
-    const LayoutPoint& localPoint,
-    Node* targetNode);
-Position computePositionForNodeRemoval(const Position&, Node&);
+    const LayoutPoint& local_point,
+    Node* target_node);
+Position ComputePositionForNodeRemoval(const Position&, Node&);
 
 // -------------------------------------------------------------------------
 // VisiblePosition
@@ -323,34 +323,34 @@ Position computePositionForNodeRemoval(const Position&, Node&);
 // describes what this function returns, since it returns a position before
 // specified position due by canonicalization.
 CORE_EXPORT VisiblePosition
-firstEditableVisiblePositionAfterPositionInRoot(const Position&,
+FirstEditableVisiblePositionAfterPositionInRoot(const Position&,
                                                 ContainerNode&);
 CORE_EXPORT VisiblePositionInFlatTree
-firstEditableVisiblePositionAfterPositionInRoot(const PositionInFlatTree&,
+FirstEditableVisiblePositionAfterPositionInRoot(const PositionInFlatTree&,
                                                 ContainerNode&);
 // TODO(yosin) We should rename
 // |lastEditableVisiblePositionBeforePositionInRoot()| to a better name which
 // describes what this function returns, since it returns a position after
 // specified position due by canonicalization.
 CORE_EXPORT VisiblePosition
-lastEditableVisiblePositionBeforePositionInRoot(const Position&,
+LastEditableVisiblePositionBeforePositionInRoot(const Position&,
                                                 ContainerNode&);
 CORE_EXPORT VisiblePositionInFlatTree
-lastEditableVisiblePositionBeforePositionInRoot(const PositionInFlatTree&,
+LastEditableVisiblePositionBeforePositionInRoot(const PositionInFlatTree&,
                                                 ContainerNode&);
-CORE_EXPORT VisiblePosition visiblePositionBeforeNode(Node&);
-VisiblePosition visiblePositionAfterNode(Node&);
+CORE_EXPORT VisiblePosition VisiblePositionBeforeNode(Node&);
+VisiblePosition VisiblePositionAfterNode(Node&);
 
-bool lineBreakExistsAtVisiblePosition(const VisiblePosition&);
+bool LineBreakExistsAtVisiblePosition(const VisiblePosition&);
 
-int comparePositions(const VisiblePosition&, const VisiblePosition&);
+int ComparePositions(const VisiblePosition&, const VisiblePosition&);
 
-CORE_EXPORT int indexForVisiblePosition(const VisiblePosition&,
+CORE_EXPORT int IndexForVisiblePosition(const VisiblePosition&,
                                         ContainerNode*& scope);
-EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
-EphemeralRange normalizeRange(const EphemeralRange&);
-EphemeralRangeInFlatTree normalizeRange(const EphemeralRangeInFlatTree&);
-CORE_EXPORT VisiblePosition visiblePositionForIndex(int index,
+EphemeralRange MakeRange(const VisiblePosition&, const VisiblePosition&);
+EphemeralRange NormalizeRange(const EphemeralRange&);
+EphemeralRangeInFlatTree NormalizeRange(const EphemeralRangeInFlatTree&);
+CORE_EXPORT VisiblePosition VisiblePositionForIndex(int index,
                                                     ContainerNode* scope);
 
 // -------------------------------------------------------------------------
@@ -359,12 +359,12 @@ CORE_EXPORT VisiblePosition visiblePositionForIndex(int index,
 
 // Functions returning HTMLElement
 
-HTMLElement* createDefaultParagraphElement(Document&);
-HTMLElement* createHTMLElement(Document&, const QualifiedName&);
+HTMLElement* CreateDefaultParagraphElement(Document&);
+HTMLElement* CreateHTMLElement(Document&, const QualifiedName&);
 
-HTMLElement* enclosingList(Node*);
-HTMLElement* outermostEnclosingList(Node*, HTMLElement* rootList = nullptr);
-Node* enclosingListChild(Node*);
+HTMLElement* EnclosingList(Node*);
+HTMLElement* OutermostEnclosingList(Node*, HTMLElement* root_list = nullptr);
+Node* EnclosingListChild(Node*);
 
 // -------------------------------------------------------------------------
 // Element
@@ -372,52 +372,52 @@ Node* enclosingListChild(Node*);
 
 // Functions returning Element
 
-HTMLSpanElement* createTabSpanElement(Document&);
-HTMLSpanElement* createTabSpanElement(Document&, const String& tabText);
+HTMLSpanElement* CreateTabSpanElement(Document&);
+HTMLSpanElement* CreateTabSpanElement(Document&, const String& tab_text);
 
 // Boolean functions on Element
 
-bool canMergeLists(Element* firstList, Element* secondList);
+bool CanMergeLists(Element* first_list, Element* second_list);
 
-bool elementCannotHaveEndTag(const Node&);
+bool ElementCannotHaveEndTag(const Node&);
 
 // -------------------------------------------------------------------------
 // VisibleSelection
 // -------------------------------------------------------------------------
 
 // Functions returning VisibleSelection
-VisibleSelection selectionForParagraphIteration(const VisibleSelection&);
+VisibleSelection SelectionForParagraphIteration(const VisibleSelection&);
 
 // TODO(editing-dev): We should move "adjustedSelectionStartForStyleComputation"
 // to "EditingStyleUtilitie.cpp" as local function since it used only there.
-Position adjustedSelectionStartForStyleComputation(const Position&);
+Position AdjustedSelectionStartForStyleComputation(const Position&);
 
 // Miscellaneous functions on Text
-inline bool isWhitespace(UChar c) {
-  return c == noBreakSpaceCharacter || c == ' ' || c == '\n' || c == '\t';
+inline bool IsWhitespace(UChar c) {
+  return c == kNoBreakSpaceCharacter || c == ' ' || c == '\n' || c == '\t';
 }
 
 // FIXME: Can't really answer this question correctly without knowing the
 // white-space mode.
-inline bool isCollapsibleWhitespace(UChar c) {
+inline bool IsCollapsibleWhitespace(UChar c) {
   return c == ' ' || c == '\n';
 }
 
-inline bool isAmbiguousBoundaryCharacter(UChar character) {
+inline bool IsAmbiguousBoundaryCharacter(UChar character) {
   // These are characters that can behave as word boundaries, but can appear
   // within words. If they are just typed, i.e. if they are immediately followed
   // by a caret, we want to delay text checking until the next character has
   // been typed.
   // FIXME: this is required until 6853027 is fixed and text checking can do
   // this for us.
-  return character == '\'' || character == rightSingleQuotationMarkCharacter ||
-         character == hebrewPunctuationGershayimCharacter;
+  return character == '\'' || character == kRightSingleQuotationMarkCharacter ||
+         character == kHebrewPunctuationGershayimCharacter;
 }
 
-String stringWithRebalancedWhitespace(const String&,
-                                      bool startIsStartOfParagraph,
-                                      bool shouldEmitNBSPbeforeEnd);
-const String& nonBreakingSpaceString();
+String StringWithRebalancedWhitespace(const String&,
+                                      bool start_is_start_of_paragraph,
+                                      bool should_emit_nbs_pbefore_end);
+const String& NonBreakingSpaceString();
 
 // -------------------------------------------------------------------------
 // Distance calculation functions
@@ -425,31 +425,31 @@ const String& nonBreakingSpaceString();
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest left grapheme boundary.
-size_t computeDistanceToLeftGraphemeBoundary(const Position&);
+size_t ComputeDistanceToLeftGraphemeBoundary(const Position&);
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest right grapheme boundary.
-size_t computeDistanceToRightGraphemeBoundary(const Position&);
+size_t ComputeDistanceToRightGraphemeBoundary(const Position&);
 
 // -------------------------------------------------------------------------
 // Events
 // -------------------------------------------------------------------------
 
 // Functions dispatch InputEvent
-const StaticRangeVector* targetRangesForInputEvent(const Node&);
-DispatchEventResult dispatchBeforeInputInsertText(
+const StaticRangeVector* TargetRangesForInputEvent(const Node&);
+DispatchEventResult DispatchBeforeInputInsertText(
     Node*,
     const String& data,
-    InputEvent::InputType = InputEvent::InputType::InsertText,
+    InputEvent::InputType = InputEvent::InputType::kInsertText,
     const StaticRangeVector* = nullptr);
-DispatchEventResult dispatchBeforeInputEditorCommand(Node*,
+DispatchEventResult DispatchBeforeInputEditorCommand(Node*,
                                                      InputEvent::InputType,
                                                      const StaticRangeVector*);
-DispatchEventResult dispatchBeforeInputDataTransfer(Node*,
+DispatchEventResult DispatchBeforeInputDataTransfer(Node*,
                                                     InputEvent::InputType,
                                                     DataTransfer*);
 
-InputEvent::InputType deletionInputTypeFromTextGranularity(DeleteDirection,
+InputEvent::InputType DeletionInputTypeFromTextGranularity(DeleteDirection,
                                                            TextGranularity);
 
 }  // namespace blink

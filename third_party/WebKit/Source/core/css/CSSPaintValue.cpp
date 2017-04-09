@@ -14,106 +14,108 @@
 namespace blink {
 
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
-    : CSSImageGeneratorValue(PaintClass),
-      m_name(name),
-      m_paintImageGeneratorObserver(new Observer(this)) {}
+    : CSSImageGeneratorValue(kPaintClass),
+      name_(name),
+      paint_image_generator_observer_(new Observer(this)) {}
 
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name,
-                             Vector<RefPtr<CSSVariableData>>& variableData)
+                             Vector<RefPtr<CSSVariableData>>& variable_data)
     : CSSPaintValue(name) {
-  m_argumentVariableData.swap(variableData);
+  argument_variable_data_.Swap(variable_data);
 }
 
 CSSPaintValue::~CSSPaintValue() {}
 
-String CSSPaintValue::customCSSText() const {
+String CSSPaintValue::CustomCSSText() const {
   StringBuilder result;
-  result.append("paint(");
-  result.append(m_name->customCSSText());
-  for (const auto& variableData : m_argumentVariableData) {
-    result.append(", ");
-    result.append(variableData.get()->tokenRange().serialize());
+  result.Append("paint(");
+  result.Append(name_->CustomCSSText());
+  for (const auto& variable_data : argument_variable_data_) {
+    result.Append(", ");
+    result.Append(variable_data.Get()->TokenRange().Serialize());
   }
-  result.append(')');
-  return result.toString();
+  result.Append(')');
+  return result.ToString();
 }
 
-String CSSPaintValue::name() const {
-  return m_name->value();
+String CSSPaintValue::GetName() const {
+  return name_->Value();
 }
 
-PassRefPtr<Image> CSSPaintValue::image(const LayoutObject& layoutObject,
-                                       const IntSize& size,
-                                       float zoom) {
-  if (!m_generator)
-    m_generator = CSSPaintImageGenerator::create(
-        name(), layoutObject.document(), m_paintImageGeneratorObserver);
+PassRefPtr<Image> CSSPaintValue::GetImage(const LayoutObject& layout_object,
+                                          const IntSize& size,
+                                          float zoom) {
+  if (!generator_)
+    generator_ =
+        CSSPaintImageGenerator::Create(GetName(), layout_object.GetDocument(),
+                                       paint_image_generator_observer_);
 
-  if (!parseInputArguments())
+  if (!ParseInputArguments())
     return nullptr;
 
-  return m_generator->paint(layoutObject, size, zoom, m_parsedInputArguments);
+  return generator_->Paint(layout_object, size, zoom, parsed_input_arguments_);
 }
 
-bool CSSPaintValue::parseInputArguments() {
-  if (m_inputArgumentsInvalid)
+bool CSSPaintValue::ParseInputArguments() {
+  if (input_arguments_invalid_)
     return false;
 
-  if (m_parsedInputArguments ||
+  if (parsed_input_arguments_ ||
       !RuntimeEnabledFeatures::cssPaintAPIArgumentsEnabled())
     return true;
 
-  if (!m_generator->isImageGeneratorReady())
+  if (!generator_->IsImageGeneratorReady())
     return false;
 
-  const Vector<CSSSyntaxDescriptor>& inputArgumentTypes =
-      m_generator->inputArgumentTypes();
-  if (m_argumentVariableData.size() != inputArgumentTypes.size()) {
-    m_inputArgumentsInvalid = true;
+  const Vector<CSSSyntaxDescriptor>& input_argument_types =
+      generator_->InputArgumentTypes();
+  if (argument_variable_data_.size() != input_argument_types.size()) {
+    input_arguments_invalid_ = true;
     return false;
   }
 
-  m_parsedInputArguments = new CSSStyleValueVector();
+  parsed_input_arguments_ = new CSSStyleValueVector();
 
-  for (size_t i = 0; i < m_argumentVariableData.size(); ++i) {
-    const CSSValue* parsedValue =
-        m_argumentVariableData[i]->parseForSyntax(inputArgumentTypes[i]);
-    if (!parsedValue) {
-      m_inputArgumentsInvalid = true;
-      m_parsedInputArguments = nullptr;
+  for (size_t i = 0; i < argument_variable_data_.size(); ++i) {
+    const CSSValue* parsed_value =
+        argument_variable_data_[i]->ParseForSyntax(input_argument_types[i]);
+    if (!parsed_value) {
+      input_arguments_invalid_ = true;
+      parsed_input_arguments_ = nullptr;
       return false;
     }
-    m_parsedInputArguments->appendVector(
-        StyleValueFactory::cssValueToStyleValueVector(*parsedValue));
+    parsed_input_arguments_->AppendVector(
+        StyleValueFactory::CssValueToStyleValueVector(*parsed_value));
   }
   return true;
 }
 
-void CSSPaintValue::Observer::paintImageGeneratorReady() {
-  m_ownerValue->paintImageGeneratorReady();
+void CSSPaintValue::Observer::PaintImageGeneratorReady() {
+  owner_value_->PaintImageGeneratorReady();
 }
 
-void CSSPaintValue::paintImageGeneratorReady() {
-  for (const LayoutObject* client : clients().keys()) {
-    const_cast<LayoutObject*>(client)->imageChanged(
+void CSSPaintValue::PaintImageGeneratorReady() {
+  for (const LayoutObject* client : Clients().Keys()) {
+    const_cast<LayoutObject*>(client)->ImageChanged(
         static_cast<WrappedImagePtr>(this));
   }
 }
 
-bool CSSPaintValue::knownToBeOpaque(const LayoutObject& layoutObject) const {
-  return m_generator && !m_generator->hasAlpha();
+bool CSSPaintValue::KnownToBeOpaque(const LayoutObject& layout_object) const {
+  return generator_ && !generator_->HasAlpha();
 }
 
-bool CSSPaintValue::equals(const CSSPaintValue& other) const {
-  return name() == other.name() && customCSSText() == other.customCSSText();
+bool CSSPaintValue::Equals(const CSSPaintValue& other) const {
+  return GetName() == other.GetName() &&
+         CustomCSSText() == other.CustomCSSText();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSPaintValue) {
-  visitor->trace(m_name);
-  visitor->trace(m_generator);
-  visitor->trace(m_paintImageGeneratorObserver);
-  visitor->trace(m_parsedInputArguments);
-  CSSImageGeneratorValue::traceAfterDispatch(visitor);
+  visitor->Trace(name_);
+  visitor->Trace(generator_);
+  visitor->Trace(paint_image_generator_observer_);
+  visitor->Trace(parsed_input_arguments_);
+  CSSImageGeneratorValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

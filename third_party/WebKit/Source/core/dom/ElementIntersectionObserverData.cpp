@@ -13,68 +13,68 @@ namespace blink {
 
 ElementIntersectionObserverData::ElementIntersectionObserverData() {}
 
-IntersectionObservation* ElementIntersectionObserverData::getObservationFor(
+IntersectionObservation* ElementIntersectionObserverData::GetObservationFor(
     IntersectionObserver& observer) {
-  auto i = m_intersectionObservations.find(&observer);
-  if (i == m_intersectionObservations.end())
+  auto i = intersection_observations_.Find(&observer);
+  if (i == intersection_observations_.end())
     return nullptr;
   return i->value;
 }
 
-void ElementIntersectionObserverData::addObserver(
+void ElementIntersectionObserverData::AddObserver(
     IntersectionObserver& observer) {
-  m_intersectionObservers.insert(&observer);
+  intersection_observers_.insert(&observer);
 }
 
-void ElementIntersectionObserverData::removeObserver(
+void ElementIntersectionObserverData::RemoveObserver(
     IntersectionObserver& observer) {
-  m_intersectionObservers.erase(&observer);
+  intersection_observers_.erase(&observer);
 }
 
-void ElementIntersectionObserverData::addObservation(
+void ElementIntersectionObserverData::AddObservation(
     IntersectionObservation& observation) {
-  DCHECK(observation.observer());
-  m_intersectionObservations.insert(
-      TraceWrapperMember<IntersectionObserver>(this, observation.observer()),
+  DCHECK(observation.Observer());
+  intersection_observations_.insert(
+      TraceWrapperMember<IntersectionObserver>(this, observation.Observer()),
       &observation);
 }
 
-void ElementIntersectionObserverData::removeObservation(
+void ElementIntersectionObserverData::RemoveObservation(
     IntersectionObserver& observer) {
-  m_intersectionObservations.erase(&observer);
+  intersection_observations_.erase(&observer);
 }
 
-void ElementIntersectionObserverData::activateValidIntersectionObservers(
+void ElementIntersectionObserverData::ActivateValidIntersectionObservers(
     Node& node) {
-  for (auto& observer : m_intersectionObservers) {
-    observer->trackingDocument()
-        .ensureIntersectionObserverController()
-        .addTrackedObserver(*observer);
+  for (auto& observer : intersection_observers_) {
+    observer->TrackingDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedObserver(*observer);
   }
-  for (auto& observation : m_intersectionObservations)
-    observation.value->updateShouldReportRootBoundsAfterDomChange();
+  for (auto& observation : intersection_observations_)
+    observation.value->UpdateShouldReportRootBoundsAfterDomChange();
 }
 
-void ElementIntersectionObserverData::deactivateAllIntersectionObservers(
+void ElementIntersectionObserverData::DeactivateAllIntersectionObservers(
     Node& node) {
-  for (auto& observer : m_intersectionObservers) {
-    observer->trackingDocument()
-        .ensureIntersectionObserverController()
-        .addTrackedObserver(*observer);
+  for (auto& observer : intersection_observers_) {
+    observer->TrackingDocument()
+        .EnsureIntersectionObserverController()
+        .AddTrackedObserver(*observer);
   }
-  node.document()
-      .ensureIntersectionObserverController()
-      .removeTrackedObserversForRoot(node);
+  node.GetDocument()
+      .EnsureIntersectionObserverController()
+      .RemoveTrackedObserversForRoot(node);
 }
 
 DEFINE_TRACE(ElementIntersectionObserverData) {
-  visitor->trace(m_intersectionObservers);
-  visitor->trace(m_intersectionObservations);
+  visitor->Trace(intersection_observers_);
+  visitor->Trace(intersection_observations_);
 }
 
 DEFINE_TRACE_WRAPPERS(ElementIntersectionObserverData) {
-  for (auto& entry : m_intersectionObservations) {
-    visitor->traceWrappers(entry.key);
+  for (auto& entry : intersection_observations_) {
+    visitor->TraceWrappers(entry.key);
   }
 }
 

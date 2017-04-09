@@ -31,130 +31,131 @@
 namespace WTF {
 
 TEST(StringImplTest, Create8Bit) {
-  RefPtr<StringImpl> testStringImpl = StringImpl::create("1224");
-  EXPECT_TRUE(testStringImpl->is8Bit());
+  RefPtr<StringImpl> test_string_impl = StringImpl::Create("1224");
+  EXPECT_TRUE(test_string_impl->Is8Bit());
 }
 
 TEST(StringImplTest, Latin1CaseFoldTable) {
   LChar symbol = 0xff;
   while (symbol--) {
-    EXPECT_EQ(Unicode::foldCase(symbol),
-              StringImpl::latin1CaseFoldTable[symbol]);
+    EXPECT_EQ(Unicode::FoldCase(symbol),
+              StringImpl::kLatin1CaseFoldTable[symbol]);
   }
 }
 
 TEST(StringImplTest, LowerASCII) {
-  RefPtr<StringImpl> testStringImpl = StringImpl::create("link");
-  EXPECT_TRUE(testStringImpl->is8Bit());
-  EXPECT_TRUE(StringImpl::create("a\xE1")->is8Bit());
+  RefPtr<StringImpl> test_string_impl = StringImpl::Create("link");
+  EXPECT_TRUE(test_string_impl->Is8Bit());
+  EXPECT_TRUE(StringImpl::Create("a\xE1")->Is8Bit());
 
-  EXPECT_TRUE(equal(testStringImpl.get(),
-                    StringImpl::create("link")->lowerASCII().get()));
-  EXPECT_TRUE(equal(testStringImpl.get(),
-                    StringImpl::create("LINK")->lowerASCII().get()));
-  EXPECT_TRUE(equal(testStringImpl.get(),
-                    StringImpl::create("lInk")->lowerASCII().get()));
+  EXPECT_TRUE(Equal(test_string_impl.Get(),
+                    StringImpl::Create("link")->LowerASCII().Get()));
+  EXPECT_TRUE(Equal(test_string_impl.Get(),
+                    StringImpl::Create("LINK")->LowerASCII().Get()));
+  EXPECT_TRUE(Equal(test_string_impl.Get(),
+                    StringImpl::Create("lInk")->LowerASCII().Get()));
 
-  EXPECT_TRUE(equal(StringImpl::create("LINK")->lower().get(),
-                    StringImpl::create("LINK")->lowerASCII().get()));
-  EXPECT_TRUE(equal(StringImpl::create("lInk")->lower().get(),
-                    StringImpl::create("lInk")->lowerASCII().get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("LINK")->Lower().Get(),
+                    StringImpl::Create("LINK")->LowerASCII().Get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("lInk")->Lower().Get(),
+                    StringImpl::Create("lInk")->LowerASCII().Get()));
 
-  EXPECT_TRUE(equal(StringImpl::create("a\xE1").get(),
-                    StringImpl::create("A\xE1")->lowerASCII().get()));
-  EXPECT_TRUE(equal(StringImpl::create("a\xC1").get(),
-                    StringImpl::create("A\xC1")->lowerASCII().get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("a\xE1").Get(),
+                    StringImpl::Create("A\xE1")->LowerASCII().Get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("a\xC1").Get(),
+                    StringImpl::Create("A\xC1")->LowerASCII().Get()));
 
-  EXPECT_FALSE(equal(StringImpl::create("a\xE1").get(),
-                     StringImpl::create("a\xC1")->lowerASCII().get()));
-  EXPECT_FALSE(equal(StringImpl::create("A\xE1").get(),
-                     StringImpl::create("A\xC1")->lowerASCII().get()));
+  EXPECT_FALSE(Equal(StringImpl::Create("a\xE1").Get(),
+                     StringImpl::Create("a\xC1")->LowerASCII().Get()));
+  EXPECT_FALSE(Equal(StringImpl::Create("A\xE1").Get(),
+                     StringImpl::Create("A\xC1")->LowerASCII().Get()));
 
-  static const UChar test[5] = {0x006c, 0x0069, 0x006e, 0x006b, 0};  // link
-  static const UChar testCapitalized[5] = {0x004c, 0x0049, 0x004e, 0x004b,
-                                           0};  // LINK
+  static const UChar kTest[5] = {0x006c, 0x0069, 0x006e, 0x006b, 0};  // link
+  static const UChar kTestCapitalized[5] = {0x004c, 0x0049, 0x004e, 0x004b,
+                                            0};  // LINK
 
-  RefPtr<StringImpl> testStringImpl16 = StringImpl::create(test, 4);
-  EXPECT_FALSE(testStringImpl16->is8Bit());
+  RefPtr<StringImpl> test_string_impl16 = StringImpl::Create(kTest, 4);
+  EXPECT_FALSE(test_string_impl16->Is8Bit());
 
-  EXPECT_TRUE(equal(testStringImpl16.get(),
-                    StringImpl::create(test, 4)->lowerASCII().get()));
+  EXPECT_TRUE(Equal(test_string_impl16.Get(),
+                    StringImpl::Create(kTest, 4)->LowerASCII().Get()));
   EXPECT_TRUE(
-      equal(testStringImpl16.get(),
-            StringImpl::create(testCapitalized, 4)->lowerASCII().get()));
+      Equal(test_string_impl16.Get(),
+            StringImpl::Create(kTestCapitalized, 4)->LowerASCII().Get()));
 
-  static const UChar testWithNonASCII[3] = {0x0061, 0x00e1, 0};  // a\xE1
-  static const UChar testWithNonASCIIComparison[3] = {0x0061, 0x00c1,
-                                                      0};  // a\xC1
-  static const UChar testWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
-                                                       0};  // A\xE1
+  static const UChar kTestWithNonASCII[3] = {0x0061, 0x00e1, 0};  // a\xE1
+  static const UChar kTestWithNonASCIIComparison[3] = {0x0061, 0x00c1,
+                                                       0};  // a\xC1
+  static const UChar kTestWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
+                                                        0};  // A\xE1
 
   // Make sure we support RefPtr<const StringImpl>.
-  RefPtr<const StringImpl> constRef = testStringImpl->isolatedCopy();
-  DCHECK(constRef->hasOneRef());
-  EXPECT_TRUE(equal(
-      StringImpl::create(testWithNonASCII, 2).get(),
-      StringImpl::create(testWithNonASCIICapitalized, 2)->lowerASCII().get()));
-  EXPECT_FALSE(equal(
-      StringImpl::create(testWithNonASCII, 2).get(),
-      StringImpl::create(testWithNonASCIIComparison, 2)->lowerASCII().get()));
+  RefPtr<const StringImpl> const_ref = test_string_impl->IsolatedCopy();
+  DCHECK(const_ref->HasOneRef());
+  EXPECT_TRUE(Equal(
+      StringImpl::Create(kTestWithNonASCII, 2).Get(),
+      StringImpl::Create(kTestWithNonASCIICapitalized, 2)->LowerASCII().Get()));
+  EXPECT_FALSE(Equal(
+      StringImpl::Create(kTestWithNonASCII, 2).Get(),
+      StringImpl::Create(kTestWithNonASCIIComparison, 2)->LowerASCII().Get()));
 }
 
 TEST(StringImplTest, UpperASCII) {
-  RefPtr<StringImpl> testStringImpl = StringImpl::create("LINK");
-  EXPECT_TRUE(testStringImpl->is8Bit());
-  EXPECT_TRUE(StringImpl::create("a\xE1")->is8Bit());
+  RefPtr<StringImpl> test_string_impl = StringImpl::Create("LINK");
+  EXPECT_TRUE(test_string_impl->Is8Bit());
+  EXPECT_TRUE(StringImpl::Create("a\xE1")->Is8Bit());
 
-  EXPECT_TRUE(equal(testStringImpl.get(),
-                    StringImpl::create("link")->upperASCII().get()));
-  EXPECT_TRUE(equal(testStringImpl.get(),
-                    StringImpl::create("LINK")->upperASCII().get()));
-  EXPECT_TRUE(equal(testStringImpl.get(),
-                    StringImpl::create("lInk")->upperASCII().get()));
+  EXPECT_TRUE(Equal(test_string_impl.Get(),
+                    StringImpl::Create("link")->UpperASCII().Get()));
+  EXPECT_TRUE(Equal(test_string_impl.Get(),
+                    StringImpl::Create("LINK")->UpperASCII().Get()));
+  EXPECT_TRUE(Equal(test_string_impl.Get(),
+                    StringImpl::Create("lInk")->UpperASCII().Get()));
 
-  EXPECT_TRUE(equal(StringImpl::create("LINK")->upper().get(),
-                    StringImpl::create("LINK")->upperASCII().get()));
-  EXPECT_TRUE(equal(StringImpl::create("lInk")->upper().get(),
-                    StringImpl::create("lInk")->upperASCII().get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("LINK")->Upper().Get(),
+                    StringImpl::Create("LINK")->UpperASCII().Get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("lInk")->Upper().Get(),
+                    StringImpl::Create("lInk")->UpperASCII().Get()));
 
-  EXPECT_TRUE(equal(StringImpl::create("A\xE1").get(),
-                    StringImpl::create("a\xE1")->upperASCII().get()));
-  EXPECT_TRUE(equal(StringImpl::create("A\xC1").get(),
-                    StringImpl::create("a\xC1")->upperASCII().get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("A\xE1").Get(),
+                    StringImpl::Create("a\xE1")->UpperASCII().Get()));
+  EXPECT_TRUE(Equal(StringImpl::Create("A\xC1").Get(),
+                    StringImpl::Create("a\xC1")->UpperASCII().Get()));
 
-  EXPECT_FALSE(equal(StringImpl::create("A\xE1").get(),
-                     StringImpl::create("a\xC1")->upperASCII().get()));
-  EXPECT_FALSE(equal(StringImpl::create("A\xE1").get(),
-                     StringImpl::create("A\xC1")->upperASCII().get()));
+  EXPECT_FALSE(Equal(StringImpl::Create("A\xE1").Get(),
+                     StringImpl::Create("a\xC1")->UpperASCII().Get()));
+  EXPECT_FALSE(Equal(StringImpl::Create("A\xE1").Get(),
+                     StringImpl::Create("A\xC1")->UpperASCII().Get()));
 
-  static const UChar test[5] = {0x006c, 0x0069, 0x006e, 0x006b, 0};  // link
-  static const UChar testCapitalized[5] = {0x004c, 0x0049, 0x004e, 0x004b,
-                                           0};  // LINK
+  static const UChar kTest[5] = {0x006c, 0x0069, 0x006e, 0x006b, 0};  // link
+  static const UChar kTestCapitalized[5] = {0x004c, 0x0049, 0x004e, 0x004b,
+                                            0};  // LINK
 
-  RefPtr<StringImpl> testStringImpl16 = StringImpl::create(testCapitalized, 4);
-  EXPECT_FALSE(testStringImpl16->is8Bit());
+  RefPtr<StringImpl> test_string_impl16 =
+      StringImpl::Create(kTestCapitalized, 4);
+  EXPECT_FALSE(test_string_impl16->Is8Bit());
 
-  EXPECT_TRUE(equal(testStringImpl16.get(),
-                    StringImpl::create(test, 4)->upperASCII().get()));
+  EXPECT_TRUE(Equal(test_string_impl16.Get(),
+                    StringImpl::Create(kTest, 4)->UpperASCII().Get()));
   EXPECT_TRUE(
-      equal(testStringImpl16.get(),
-            StringImpl::create(testCapitalized, 4)->upperASCII().get()));
+      Equal(test_string_impl16.Get(),
+            StringImpl::Create(kTestCapitalized, 4)->UpperASCII().Get()));
 
-  static const UChar testWithNonASCII[3] = {0x0061, 0x00e1, 0};  // a\xE1
-  static const UChar testWithNonASCIIComparison[3] = {0x0061, 0x00c1,
-                                                      0};  // a\xC1
-  static const UChar testWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
-                                                       0};  // A\xE1
+  static const UChar kTestWithNonASCII[3] = {0x0061, 0x00e1, 0};  // a\xE1
+  static const UChar kTestWithNonASCIIComparison[3] = {0x0061, 0x00c1,
+                                                       0};  // a\xC1
+  static const UChar kTestWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
+                                                        0};  // A\xE1
 
   // Make sure we support RefPtr<const StringImpl>.
-  RefPtr<const StringImpl> constRef = testStringImpl->isolatedCopy();
-  DCHECK(constRef->hasOneRef());
+  RefPtr<const StringImpl> const_ref = test_string_impl->IsolatedCopy();
+  DCHECK(const_ref->HasOneRef());
   EXPECT_TRUE(
-      equal(StringImpl::create(testWithNonASCIICapitalized, 2).get(),
-            StringImpl::create(testWithNonASCII, 2)->upperASCII().get()));
-  EXPECT_FALSE(equal(
-      StringImpl::create(testWithNonASCIICapitalized, 2).get(),
-      StringImpl::create(testWithNonASCIIComparison, 2)->upperASCII().get()));
+      Equal(StringImpl::Create(kTestWithNonASCIICapitalized, 2).Get(),
+            StringImpl::Create(kTestWithNonASCII, 2)->UpperASCII().Get()));
+  EXPECT_FALSE(Equal(
+      StringImpl::Create(kTestWithNonASCIICapitalized, 2).Get(),
+      StringImpl::Create(kTestWithNonASCIIComparison, 2)->UpperASCII().Get()));
 }
 
 }  // namespace WTF

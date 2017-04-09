@@ -18,7 +18,7 @@ chrome::mojom::ResourceTypeStatPtr StatToMojo(
       chrome::mojom::ResourceTypeStat::New();
   stat->count = obj.count;
   stat->size = obj.size;
-  stat->decoded_size = obj.decodedSize;
+  stat->decoded_size = obj.decoded_size;
   return stat;
 }
 
@@ -27,7 +27,7 @@ blink::WebCache::ResourceTypeStat StatFromMojo(
   blink::WebCache::ResourceTypeStat stat;
   stat.count = base::saturated_cast<size_t>(obj.count);
   stat.size = base::saturated_cast<size_t>(obj.size);
-  stat.decodedSize = base::saturated_cast<size_t>(obj.decoded_size);
+  stat.decoded_size = base::saturated_cast<size_t>(obj.decoded_size);
   return stat;
 }
 
@@ -41,9 +41,9 @@ TypeConverter<chrome::mojom::ResourceTypeStatsPtr,
   chrome::mojom::ResourceTypeStatsPtr stats =
       chrome::mojom::ResourceTypeStats::New();
   stats->images = StatToMojo(obj.images);
-  stats->css_style_sheets = StatToMojo(obj.cssStyleSheets);
+  stats->css_style_sheets = StatToMojo(obj.css_style_sheets);
   stats->scripts = StatToMojo(obj.scripts);
-  stats->xsl_style_sheets = StatToMojo(obj.xslStyleSheets);
+  stats->xsl_style_sheets = StatToMojo(obj.xsl_style_sheets);
   stats->fonts = StatToMojo(obj.fonts);
   stats->other = StatToMojo(obj.other);
   return stats;
@@ -60,9 +60,9 @@ TypeConverter<blink::WebCache::ResourceTypeStats,
   }
   blink::WebCache::ResourceTypeStats stats;
   stats.images = StatFromMojo(*obj.images);
-  stats.cssStyleSheets = StatFromMojo(*obj.css_style_sheets);
+  stats.css_style_sheets = StatFromMojo(*obj.css_style_sheets);
   stats.scripts = StatFromMojo(*obj.scripts);
-  stats.xslStyleSheets = StatFromMojo(*obj.xsl_style_sheets);
+  stats.xsl_style_sheets = StatFromMojo(*obj.xsl_style_sheets);
   stats.fonts = StatFromMojo(*obj.fonts);
   stats.other = StatFromMojo(*obj.other);
   return stats;

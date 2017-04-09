@@ -6,7 +6,7 @@
 
 namespace blink {
 
-DeathAwareScriptWrappable* DeathAwareScriptWrappable::s_instance;
-bool DeathAwareScriptWrappable::s_hasDied;
+DeathAwareScriptWrappable* DeathAwareScriptWrappable::instance_;
+bool DeathAwareScriptWrappable::has_died_;
 
 }  // namespace blink

@@ -34,22 +34,22 @@
 namespace blink {
 
 AudioDestinationHandler::AudioDestinationHandler(AudioNode& node)
-    : AudioHandler(NodeTypeDestination, node, 0), m_currentSampleFrame(0) {
-  addInput();
+    : AudioHandler(kNodeTypeDestination, node, 0), current_sample_frame_(0) {
+  AddInput();
 }
 
 AudioDestinationHandler::~AudioDestinationHandler() {
-  DCHECK(!isInitialized());
+  DCHECK(!IsInitialized());
 }
 
-void AudioDestinationHandler::render(AudioBus* sourceBus,
-                                     AudioBus* destinationBus,
-                                     size_t numberOfFrames,
-                                     const AudioIOPosition& outputPosition) {
+void AudioDestinationHandler::Render(AudioBus* source_bus,
+                                     AudioBus* destination_bus,
+                                     size_t number_of_frames,
+                                     const AudioIOPosition& output_position) {
   // We don't want denormals slowing down any of the audio processing
   // since they can very seriously hurt performance.  This will take care of all
   // AudioNodes because they all process within this scope.
-  DenormalDisabler denormalDisabler;
+  DenormalDisabler denormal_disabler;
 
   // Need to check if the context actually alive. Otherwise the subsequent
   // steps will fail. If the context is not alive somehow, return immediately
@@ -57,55 +57,56 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
   //
   // TODO(hongchan): because the context can go away while rendering, so this
   // check cannot guarantee the safe execution of the following steps.
-  DCHECK(context());
-  if (!context())
+  DCHECK(Context());
+  if (!Context())
     return;
 
-  context()->deferredTaskHandler().setAudioThreadToCurrentThread();
+  Context()->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
 
   // If the destination node is not initialized, pass the silence to the final
   // audio destination (one step before the FIFO). This check is for the case
   // where the destination is in the middle of tearing down process.
-  if (!isInitialized()) {
-    destinationBus->zero();
+  if (!IsInitialized()) {
+    destination_bus->Zero();
     return;
   }
 
   // Let the context take care of any business at the start of each render
   // quantum.
-  context()->handlePreRenderTasks(outputPosition);
+  Context()->HandlePreRenderTasks(output_position);
 
   // Prepare the local audio input provider for this render quantum.
-  if (sourceBus)
-    m_localAudioInputProvider.set(sourceBus);
+  if (source_bus)
+    local_audio_input_provider_.Set(source_bus);
 
-  DCHECK_GE(numberOfInputs(), 1u);
-  if (numberOfInputs() < 1) {
-    destinationBus->zero();
+  DCHECK_GE(NumberOfInputs(), 1u);
+  if (NumberOfInputs() < 1) {
+    destination_bus->Zero();
     return;
   }
   // This will cause the node(s) connected to us to process, which in turn will
   // pull on their input(s), all the way backwards through the rendering graph.
-  AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
+  AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
 
-  if (!renderedBus) {
-    destinationBus->zero();
-  } else if (renderedBus != destinationBus) {
+  if (!rendered_bus) {
+    destination_bus->Zero();
+  } else if (rendered_bus != destination_bus) {
     // in-place processing was not possible - so copy
-    destinationBus->copyFrom(*renderedBus);
+    destination_bus->CopyFrom(*rendered_bus);
   }
 
   // Process nodes which need a little extra help because they are not connected
   // to anything, but still need to process.
-  context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
+  Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
+      number_of_frames);
 
   // Let the context take care of any business at the end of each render
   // quantum.
-  context()->handlePostRenderTasks();
+  Context()->HandlePostRenderTasks();
 
   // Advance current sample-frame.
-  size_t newSampleFrame = m_currentSampleFrame + numberOfFrames;
-  releaseStore(&m_currentSampleFrame, newSampleFrame);
+  size_t new_sample_frame = current_sample_frame_ + number_of_frames;
+  ReleaseStore(&current_sample_frame_, new_sample_frame);
 }
 
 // ----------------------------------------------------------------
@@ -113,12 +114,13 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
 AudioDestinationNode::AudioDestinationNode(BaseAudioContext& context)
     : AudioNode(context) {}
 
-AudioDestinationHandler& AudioDestinationNode::audioDestinationHandler() const {
-  return static_cast<AudioDestinationHandler&>(handler());
+AudioDestinationHandler& AudioDestinationNode::GetAudioDestinationHandler()
+    const {
+  return static_cast<AudioDestinationHandler&>(Handler());
 }
 
 unsigned long AudioDestinationNode::maxChannelCount() const {
-  return audioDestinationHandler().maxChannelCount();
+  return GetAudioDestinationHandler().MaxChannelCount();
 }
 
 }  // namespace blink

@@ -39,28 +39,28 @@ class CORE_EXPORT StyleSheetList final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static StyleSheetList* create(TreeScope* treeScope) {
-    return new StyleSheetList(treeScope);
+  static StyleSheetList* Create(TreeScope* tree_scope) {
+    return new StyleSheetList(tree_scope);
   }
 
   unsigned length();
   StyleSheet* item(unsigned index);
 
-  HTMLStyleElement* getNamedItem(const AtomicString&) const;
+  HTMLStyleElement* GetNamedItem(const AtomicString&) const;
 
-  Document* document() const {
-    return m_treeScope ? &m_treeScope->document() : nullptr;
+  Document* GetDocument() const {
+    return tree_scope_ ? &tree_scope_->GetDocument() : nullptr;
   }
 
-  CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
+  CSSStyleSheet* AnonymousNamedGetter(const AtomicString&);
 
   DECLARE_TRACE();
 
  private:
   explicit StyleSheetList(TreeScope*);
-  const HeapVector<TraceWrapperMember<StyleSheet>>& styleSheets() const;
+  const HeapVector<TraceWrapperMember<StyleSheet>>& StyleSheets() const;
 
-  Member<TreeScope> m_treeScope;
+  Member<TreeScope> tree_scope_;
 };
 
 }  // namespace blink

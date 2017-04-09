@@ -29,28 +29,28 @@ class PLATFORM_EXPORT Extensions3DUtil final {
  public:
   // Creates a new Extensions3DUtil. If the passed GLES2Interface has been
   // spontaneously lost, returns null.
-  static std::unique_ptr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
+  static std::unique_ptr<Extensions3DUtil> Create(gpu::gles2::GLES2Interface*);
   ~Extensions3DUtil();
 
-  bool isValid() { return m_isValid; }
+  bool IsValid() { return is_valid_; }
 
-  bool supportsExtension(const String& name);
-  bool ensureExtensionEnabled(const String& name);
-  bool isExtensionEnabled(const String& name);
+  bool SupportsExtension(const String& name);
+  bool EnsureExtensionEnabled(const String& name);
+  bool IsExtensionEnabled(const String& name);
 
-  static bool canUseCopyTextureCHROMIUM(GLenum destTarget,
-                                        GLenum destFormat,
-                                        GLenum destType,
+  static bool CanUseCopyTextureCHROMIUM(GLenum dest_target,
+                                        GLenum dest_format,
+                                        GLenum dest_type,
                                         GLint level);
 
  private:
   Extensions3DUtil(gpu::gles2::GLES2Interface*);
-  void initializeExtensions();
+  void InitializeExtensions();
 
-  gpu::gles2::GLES2Interface* m_gl;
-  HashSet<String> m_enabledExtensions;
-  HashSet<String> m_requestableExtensions;
-  bool m_isValid;
+  gpu::gles2::GLES2Interface* gl_;
+  HashSet<String> enabled_extensions_;
+  HashSet<String> requestable_extensions_;
+  bool is_valid_;
 };
 
 }  // namespace blink

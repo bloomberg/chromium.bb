@@ -41,34 +41,34 @@ class WebSpeechRecognitionParams {
   WebSpeechRecognitionParams(const WebVector<WebSpeechGrammar>& grammars,
                              const WebString& language,
                              bool continuous,
-                             bool interimResults,
-                             unsigned long maxAlternatives,
-                             const WebMediaStreamTrack& audioTrack,
+                             bool interim_results,
+                             unsigned long max_alternatives,
+                             const WebMediaStreamTrack& audio_track,
                              const WebSecurityOrigin& origin)
-      : m_grammars(grammars),
-        m_language(language),
-        m_continuous(continuous),
-        m_interimResults(interimResults),
-        m_maxAlternatives(maxAlternatives),
-        m_audioTrack(audioTrack),
-        m_origin(origin) {}
+      : grammars_(grammars),
+        language_(language),
+        continuous_(continuous),
+        interim_results_(interim_results),
+        max_alternatives_(max_alternatives),
+        audio_track_(audio_track),
+        origin_(origin) {}
 
-  const WebVector<WebSpeechGrammar>& grammars() const { return m_grammars; }
-  const WebString& language() const { return m_language; }
-  bool continuous() const { return m_continuous; }
-  bool interimResults() const { return m_interimResults; }
-  unsigned long maxAlternatives() const { return m_maxAlternatives; }
-  const WebMediaStreamTrack& audioTrack() const { return m_audioTrack; }
-  const WebSecurityOrigin& origin() const { return m_origin; }
+  const WebVector<WebSpeechGrammar>& Grammars() const { return grammars_; }
+  const WebString& Language() const { return language_; }
+  bool Continuous() const { return continuous_; }
+  bool InterimResults() const { return interim_results_; }
+  unsigned long MaxAlternatives() const { return max_alternatives_; }
+  const WebMediaStreamTrack& AudioTrack() const { return audio_track_; }
+  const WebSecurityOrigin& Origin() const { return origin_; }
 
  private:
-  WebVector<WebSpeechGrammar> m_grammars;
-  WebString m_language;
-  bool m_continuous;
-  bool m_interimResults;
-  unsigned long m_maxAlternatives;
-  WebMediaStreamTrack m_audioTrack;
-  WebSecurityOrigin m_origin;
+  WebVector<WebSpeechGrammar> grammars_;
+  WebString language_;
+  bool continuous_;
+  bool interim_results_;
+  unsigned long max_alternatives_;
+  WebMediaStreamTrack audio_track_;
+  WebSecurityOrigin origin_;
 };
 
 }  // namespace blink

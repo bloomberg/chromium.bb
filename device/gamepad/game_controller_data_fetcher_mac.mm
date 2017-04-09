@@ -70,8 +70,8 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
       CopyNSStringAsUTF16LittleEndian(@"standard", pad.mapping,
                                       sizeof(pad.mapping));
 
-      pad.axesLength = AXIS_INDEX_COUNT;
-      pad.buttonsLength = BUTTON_INDEX_COUNT - 1;
+      pad.axes_length = AXIS_INDEX_COUNT;
+      pad.buttons_length = BUTTON_INDEX_COUNT - 1;
       pad.connected = true;
     }
 

@@ -24,7 +24,7 @@ class TerminatedArray {
  public:
   // When TerminatedArray::Allocator implementations grow the backing
   // store, old is copied into the new and larger block.
-  static_assert(VectorTraits<T>::canCopyWithMemcpy,
+  static_assert(VectorTraits<T>::kCanCopyWithMemcpy,
                 "Array elements must be memory copyable");
 
   T& at(size_t index) { return reinterpret_cast<T*>(this)[index]; }
@@ -38,27 +38,27 @@ class TerminatedArray {
 
    public:
     iterator_base& operator++() {
-      if (m_val->isLastInArray()) {
-        m_val = 0;
+      if (val_->IsLastInArray()) {
+        val_ = 0;
       } else {
-        ++m_val;
+        ++val_;
       }
       return *this;
     }
 
-    U& operator*() const { return *m_val; }
+    U& operator*() const { return *val_; }
 
     bool operator==(const iterator_base& other) const {
-      return m_val == other.m_val;
+      return val_ == other.val_;
     }
     bool operator!=(const iterator_base& other) const {
       return !(*this == other);
     }
 
    private:
-    iterator_base(U* val) : m_val(val) {}
+    iterator_base(U* val) : val_(val) {}
 
-    U* m_val;
+    U* val_;
 
     friend class TerminatedArray;
   };
@@ -83,7 +83,7 @@ class TerminatedArray {
 
   // Match Allocator semantics to be able to use
   // std::unique_ptr<TerminatedArray>.
-  void operator delete(void* p) { ::WTF::Partitions::fastFree(p); }
+  void operator delete(void* p) { ::WTF::Partitions::FastFree(p); }
 
  private:
   // Allocator describes how TerminatedArrayBuilder should create new instances
@@ -93,17 +93,17 @@ class TerminatedArray {
     using PassPtr = std::unique_ptr<TerminatedArray>;
     using Ptr = std::unique_ptr<TerminatedArray>;
 
-    static PassPtr release(Ptr& ptr) { return ptr.release(); }
+    static PassPtr Release(Ptr& ptr) { return ptr.release(); }
 
-    static PassPtr create(size_t capacity) {
-      return WTF::wrapUnique(
-          static_cast<TerminatedArray*>(WTF::Partitions::fastMalloc(
+    static PassPtr Create(size_t capacity) {
+      return WTF::WrapUnique(
+          static_cast<TerminatedArray*>(WTF::Partitions::FastMalloc(
               capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
     }
 
-    static PassPtr resize(Ptr ptr, size_t capacity) {
-      return WTF::wrapUnique(static_cast<TerminatedArray*>(
-          WTF::Partitions::fastRealloc(ptr.release(), capacity * sizeof(T),
+    static PassPtr Resize(Ptr ptr, size_t capacity) {
+      return WTF::WrapUnique(static_cast<TerminatedArray*>(
+          WTF::Partitions::FastRealloc(ptr.release(), capacity * sizeof(T),
                                        WTF_HEAP_PROFILER_TYPE_NAME(T))));
     }
   };

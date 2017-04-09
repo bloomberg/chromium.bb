@@ -27,13 +27,13 @@ namespace blink {
 class SVGElementProxySet;
 
 enum LayoutSVGResourceType {
-  MaskerResourceType,
-  MarkerResourceType,
-  PatternResourceType,
-  LinearGradientResourceType,
-  RadialGradientResourceType,
-  FilterResourceType,
-  ClipperResourceType
+  kMaskerResourceType,
+  kMarkerResourceType,
+  kPatternResourceType,
+  kLinearGradientResourceType,
+  kRadialGradientResourceType,
+  kFilterResourceType,
+  kClipperResourceType
 };
 
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
@@ -41,87 +41,87 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   explicit LayoutSVGResourceContainer(SVGElement*);
   ~LayoutSVGResourceContainer() override;
 
-  virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
-  virtual void removeClientFromCache(LayoutObject*,
-                                     bool markForInvalidation = true) = 0;
+  virtual void RemoveAllClientsFromCache(bool mark_for_invalidation = true) = 0;
+  virtual void RemoveClientFromCache(LayoutObject*,
+                                     bool mark_for_invalidation = true) = 0;
 
-  void layout() override;
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGResourceContainer ||
-           LayoutSVGHiddenContainer::isOfType(type);
+  void GetLayout() override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGResourceContainer ||
+           LayoutSVGHiddenContainer::IsOfType(type);
   }
 
-  virtual LayoutSVGResourceType resourceType() const = 0;
+  virtual LayoutSVGResourceType ResourceType() const = 0;
 
-  bool isSVGPaintServer() const {
-    LayoutSVGResourceType resourceType = this->resourceType();
-    return resourceType == PatternResourceType ||
-           resourceType == LinearGradientResourceType ||
-           resourceType == RadialGradientResourceType;
+  bool IsSVGPaintServer() const {
+    LayoutSVGResourceType resource_type = this->ResourceType();
+    return resource_type == kPatternResourceType ||
+           resource_type == kLinearGradientResourceType ||
+           resource_type == kRadialGradientResourceType;
   }
 
-  void idChanged(const AtomicString& oldId, const AtomicString& newId);
-  void detachAllClients(const AtomicString& toId);
+  void IdChanged(const AtomicString& old_id, const AtomicString& new_id);
+  void DetachAllClients(const AtomicString& to_id);
 
-  void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
+  void InvalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
-  static void markForLayoutAndParentResourceInvalidation(
+  static void MarkForLayoutAndParentResourceInvalidation(
       LayoutObject*,
-      bool needsLayout = true);
+      bool needs_layout = true);
 
-  void clearInvalidationMask() { m_invalidationMask = 0; }
+  void ClearInvalidationMask() { invalidation_mask_ = 0; }
 
  protected:
   // When adding modes, make sure we don't overflow m_invalidationMask below.
   enum InvalidationMode {
-    LayoutAndBoundariesInvalidation = 1 << 0,
-    BoundariesInvalidation = 1 << 1,
-    PaintInvalidation = 1 << 2,
-    ParentOnlyInvalidation = 1 << 3
+    kLayoutAndBoundariesInvalidation = 1 << 0,
+    kBoundariesInvalidation = 1 << 1,
+    kPaintInvalidation = 1 << 2,
+    kParentOnlyInvalidation = 1 << 3
   };
 
   // Used from the invalidateClient/invalidateClients methods from classes,
   // inheriting from us.
-  void markAllClientsForInvalidation(InvalidationMode);
-  void markClientForInvalidation(LayoutObject*, InvalidationMode);
+  void MarkAllClientsForInvalidation(InvalidationMode);
+  void MarkClientForInvalidation(LayoutObject*, InvalidationMode);
 
-  void notifyContentChanged();
-  SVGElementProxySet* elementProxySet();
+  void NotifyContentChanged();
+  SVGElementProxySet* ElementProxySet();
 
-  void willBeDestroyed() override;
+  void WillBeDestroyed() override;
 
-  bool m_isInLayout;
+  bool is_in_layout_;
 
  private:
   friend class SVGTreeScopeResources;
   // The m_registered flag is updated by SVGTreeScopeResources, and indicates
   // that this resource is the one that is resident in the id->resource map.
-  void setRegistered(bool registered) { m_registered = registered; }
-  bool isRegistered() const { return m_registered; }
+  void SetRegistered(bool registered) { registered_ = registered; }
+  bool IsRegistered() const { return registered_; }
 
   friend class SVGResourcesCache;
-  void addClient(LayoutObject*);
-  void removeClient(LayoutObject*);
+  void AddClient(LayoutObject*);
+  void RemoveClient(LayoutObject*);
 
   // Track global (markAllClientsForInvalidation) invals to avoid redundant
   // crawls.
-  unsigned m_invalidationMask : 8;
+  unsigned invalidation_mask_ : 8;
 
-  unsigned m_registered : 1;
-  unsigned m_isInvalidating : 1;
+  unsigned registered_ : 1;
+  unsigned is_invalidating_ : 1;
   // 22 padding bits available
 
-  HashSet<LayoutObject*> m_clients;
+  HashSet<LayoutObject*> clients_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
-                                isSVGResourceContainer());
+                                IsSVGResourceContainer());
 
 #define DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(thisType, typeName)   \
   DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, \
-                    resource->resourceType() == typeName,           \
-                    resource.resourceType() == typeName)
+                    resource->ResourceType() == typeName,           \
+                    resource.ResourceType() == typeName)
 
 }  // namespace blink
 

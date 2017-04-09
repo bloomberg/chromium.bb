@@ -8,49 +8,49 @@
 
 namespace blink {
 
-ScrollPaintPropertyNode* ScrollPaintPropertyNode::root() {
+ScrollPaintPropertyNode* ScrollPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(
       ScrollPaintPropertyNode, root,
-      (ScrollPaintPropertyNode::create(nullptr, IntSize(), IntSize(), false,
+      (ScrollPaintPropertyNode::Create(nullptr, IntSize(), IntSize(), false,
                                        false, 0, nullptr)));
   return root;
 }
 
-String ScrollPaintPropertyNode::toString() const {
+String ScrollPaintPropertyNode::ToString() const {
   StringBuilder text;
-  text.append("parent=");
-  text.append(String::format("%p", m_parent.get()));
-  text.append(" clip=");
-  text.append(m_clip.toString());
-  text.append(" bounds=");
-  text.append(m_bounds.toString());
+  text.Append("parent=");
+  text.Append(String::Format("%p", parent_.Get()));
+  text.Append(" clip=");
+  text.Append(clip_.ToString());
+  text.Append(" bounds=");
+  text.Append(bounds_.ToString());
 
-  text.append(" userScrollable=");
-  if (m_userScrollableHorizontal && m_userScrollableVertical)
-    text.append("both");
-  else if (!m_userScrollableHorizontal && !m_userScrollableVertical)
-    text.append("none");
+  text.Append(" userScrollable=");
+  if (user_scrollable_horizontal_ && user_scrollable_vertical_)
+    text.Append("both");
+  else if (!user_scrollable_horizontal_ && !user_scrollable_vertical_)
+    text.Append("none");
   else
-    text.append(m_userScrollableHorizontal ? "horizontal" : "vertical");
+    text.Append(user_scrollable_horizontal_ ? "horizontal" : "vertical");
 
-  text.append(" mainThreadReasons=");
-  if (m_mainThreadScrollingReasons) {
-    text.append(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                    m_mainThreadScrollingReasons)
+  text.Append(" mainThreadReasons=");
+  if (main_thread_scrolling_reasons_) {
+    text.Append(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
+                    main_thread_scrolling_reasons_)
                     .c_str());
   } else {
-    text.append("none");
+    text.Append("none");
   }
-  if (m_scrollClient)
-    text.append(String::format(" scrollClient=%p", m_scrollClient));
-  return text.toString();
+  if (scroll_client_)
+    text.Append(String::Format(" scrollClient=%p", scroll_client_));
+  return text.ToString();
 }
 
 #if DCHECK_IS_ON()
 
-String ScrollPaintPropertyNode::toTreeString() const {
+String ScrollPaintPropertyNode::ToTreeString() const {
   return blink::PropertyTreeStatePrinter<blink::ScrollPaintPropertyNode>()
-      .pathAsString(this);
+      .PathAsString(this);
 }
 
 #endif

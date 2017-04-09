@@ -55,52 +55,52 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
   // Animations that are currently active for this element, their effects will
   // be applied during a style recalc. CSS Transitions are included in this
   // stack.
-  EffectStack& effectStack() { return m_effectStack; }
-  const EffectStack& effectStack() const { return m_effectStack; }
+  EffectStack& GetEffectStack() { return effect_stack_; }
+  const EffectStack& GetEffectStack() const { return effect_stack_; }
   // Tracks long running animations that are responsible for applying mutations
   // from compositor worker.
-  CustomCompositorAnimations& customCompositorAnimations() {
-    return m_customCompositorAnimations;
+  CustomCompositorAnimations& GetCustomCompositorAnimations() {
+    return custom_compositor_animations_;
   }
-  const CustomCompositorAnimations& customCompositorAnimations() const {
-    return m_customCompositorAnimations;
+  const CustomCompositorAnimations& GetCustomCompositorAnimations() const {
+    return custom_compositor_animations_;
   }
   // Tracks the state of active CSS Animations and Transitions. The individual
   // animations will also be part of the animation stack, but the mapping
   // between animation name and animation is kept here.
-  CSSAnimations& cssAnimations() { return m_cssAnimations; }
-  const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
+  CSSAnimations& CssAnimations() { return css_animations_; }
+  const CSSAnimations& CssAnimations() const { return css_animations_; }
 
   // Animations which have effects targeting this element.
-  AnimationCountedSet& animations() { return m_animations; }
+  AnimationCountedSet& Animations() { return animations_; }
 
-  bool isEmpty() const {
-    return m_effectStack.isEmpty() && m_cssAnimations.isEmpty() &&
-           m_animations.isEmpty();
+  bool IsEmpty() const {
+    return effect_stack_.IsEmpty() && css_animations_.IsEmpty() &&
+           animations_.IsEmpty();
   }
 
-  void restartAnimationOnCompositor();
+  void RestartAnimationOnCompositor();
 
-  void updateAnimationFlags(ComputedStyle&);
-  void setAnimationStyleChange(bool animationStyleChange) {
-    m_animationStyleChange = animationStyleChange;
+  void UpdateAnimationFlags(ComputedStyle&);
+  void SetAnimationStyleChange(bool animation_style_change) {
+    animation_style_change_ = animation_style_change;
   }
 
-  const ComputedStyle* baseComputedStyle() const;
-  void updateBaseComputedStyle(const ComputedStyle*);
-  void clearBaseComputedStyle();
+  const ComputedStyle* BaseComputedStyle() const;
+  void UpdateBaseComputedStyle(const ComputedStyle*);
+  void ClearBaseComputedStyle();
 
   DECLARE_TRACE();
 
  private:
-  bool isAnimationStyleChange() const;
+  bool IsAnimationStyleChange() const;
 
-  EffectStack m_effectStack;
-  CustomCompositorAnimations m_customCompositorAnimations;
-  CSSAnimations m_cssAnimations;
-  AnimationCountedSet m_animations;
-  bool m_animationStyleChange;
-  RefPtr<ComputedStyle> m_baseComputedStyle;
+  EffectStack effect_stack_;
+  CustomCompositorAnimations custom_compositor_animations_;
+  CSSAnimations css_animations_;
+  AnimationCountedSet animations_;
+  bool animation_style_change_;
+  RefPtr<ComputedStyle> base_computed_style_;
 
   // CSSAnimations checks if a style change is due to animation.
   friend class CSSAnimations;

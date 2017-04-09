@@ -44,68 +44,68 @@ class ResourceLoadTiming;
 
 class WebURLLoadTiming {
  public:
-  ~WebURLLoadTiming() { reset(); }
+  ~WebURLLoadTiming() { Reset(); }
 
   WebURLLoadTiming() {}
-  WebURLLoadTiming(const WebURLLoadTiming& d) { assign(d); }
+  WebURLLoadTiming(const WebURLLoadTiming& d) { Assign(d); }
   WebURLLoadTiming& operator=(const WebURLLoadTiming& d) {
-    assign(d);
+    Assign(d);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void initialize();
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebURLLoadTiming&);
+  BLINK_PLATFORM_EXPORT void Initialize();
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebURLLoadTiming&);
 
-  bool isNull() const { return m_private.isNull(); }
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT double requestTime() const;
-  BLINK_PLATFORM_EXPORT void setRequestTime(double);
+  BLINK_PLATFORM_EXPORT double RequestTime() const;
+  BLINK_PLATFORM_EXPORT void SetRequestTime(double);
 
-  BLINK_PLATFORM_EXPORT double proxyStart() const;
-  BLINK_PLATFORM_EXPORT void setProxyStart(double);
+  BLINK_PLATFORM_EXPORT double ProxyStart() const;
+  BLINK_PLATFORM_EXPORT void SetProxyStart(double);
 
-  BLINK_PLATFORM_EXPORT double proxyEnd() const;
-  BLINK_PLATFORM_EXPORT void setProxyEnd(double);
+  BLINK_PLATFORM_EXPORT double ProxyEnd() const;
+  BLINK_PLATFORM_EXPORT void SetProxyEnd(double);
 
-  BLINK_PLATFORM_EXPORT double dnsStart() const;
-  BLINK_PLATFORM_EXPORT void setDNSStart(double);
+  BLINK_PLATFORM_EXPORT double DnsStart() const;
+  BLINK_PLATFORM_EXPORT void SetDNSStart(double);
 
-  BLINK_PLATFORM_EXPORT double dnsEnd() const;
-  BLINK_PLATFORM_EXPORT void setDNSEnd(double);
+  BLINK_PLATFORM_EXPORT double DnsEnd() const;
+  BLINK_PLATFORM_EXPORT void SetDNSEnd(double);
 
-  BLINK_PLATFORM_EXPORT double connectStart() const;
-  BLINK_PLATFORM_EXPORT void setConnectStart(double);
+  BLINK_PLATFORM_EXPORT double ConnectStart() const;
+  BLINK_PLATFORM_EXPORT void SetConnectStart(double);
 
-  BLINK_PLATFORM_EXPORT double connectEnd() const;
-  BLINK_PLATFORM_EXPORT void setConnectEnd(double);
+  BLINK_PLATFORM_EXPORT double ConnectEnd() const;
+  BLINK_PLATFORM_EXPORT void SetConnectEnd(double);
 
-  BLINK_PLATFORM_EXPORT double workerStart() const;
-  BLINK_PLATFORM_EXPORT void setWorkerStart(double);
+  BLINK_PLATFORM_EXPORT double WorkerStart() const;
+  BLINK_PLATFORM_EXPORT void SetWorkerStart(double);
 
-  BLINK_PLATFORM_EXPORT double workerReady() const;
-  BLINK_PLATFORM_EXPORT void setWorkerReady(double);
+  BLINK_PLATFORM_EXPORT double WorkerReady() const;
+  BLINK_PLATFORM_EXPORT void SetWorkerReady(double);
 
-  BLINK_PLATFORM_EXPORT double sendStart() const;
-  BLINK_PLATFORM_EXPORT void setSendStart(double);
+  BLINK_PLATFORM_EXPORT double SendStart() const;
+  BLINK_PLATFORM_EXPORT void SetSendStart(double);
 
-  BLINK_PLATFORM_EXPORT double sendEnd() const;
-  BLINK_PLATFORM_EXPORT void setSendEnd(double);
+  BLINK_PLATFORM_EXPORT double SendEnd() const;
+  BLINK_PLATFORM_EXPORT void SetSendEnd(double);
 
-  BLINK_PLATFORM_EXPORT double receiveHeadersEnd() const;
-  BLINK_PLATFORM_EXPORT void setReceiveHeadersEnd(double);
+  BLINK_PLATFORM_EXPORT double ReceiveHeadersEnd() const;
+  BLINK_PLATFORM_EXPORT void SetReceiveHeadersEnd(double);
 
-  BLINK_PLATFORM_EXPORT double sslStart() const;
-  BLINK_PLATFORM_EXPORT void setSSLStart(double);
+  BLINK_PLATFORM_EXPORT double SslStart() const;
+  BLINK_PLATFORM_EXPORT void SetSSLStart(double);
 
-  BLINK_PLATFORM_EXPORT double sslEnd() const;
-  BLINK_PLATFORM_EXPORT void setSSLEnd(double);
+  BLINK_PLATFORM_EXPORT double SslEnd() const;
+  BLINK_PLATFORM_EXPORT void SetSSLEnd(double);
 
-  BLINK_PLATFORM_EXPORT double pushStart() const;
-  BLINK_PLATFORM_EXPORT void setPushStart(double);
+  BLINK_PLATFORM_EXPORT double PushStart() const;
+  BLINK_PLATFORM_EXPORT void SetPushStart(double);
 
-  BLINK_PLATFORM_EXPORT double pushEnd() const;
-  BLINK_PLATFORM_EXPORT void setPushEnd(double);
+  BLINK_PLATFORM_EXPORT double PushEnd() const;
+  BLINK_PLATFORM_EXPORT void SetPushEnd(double);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebURLLoadTiming(WTF::PassRefPtr<ResourceLoadTiming>);
@@ -115,7 +115,7 @@ class WebURLLoadTiming {
 #endif
 
  private:
-  WebPrivatePtr<ResourceLoadTiming> m_private;
+  WebPrivatePtr<ResourceLoadTiming> private_;
 };
 
 }  // namespace blink

@@ -25,9 +25,9 @@ namespace content {
 namespace {
 
 bool ShouldTouchTriggerTimeout(const WebTouchEvent& event) {
-  return (event.type() == WebInputEvent::TouchStart ||
-          event.type() == WebInputEvent::TouchMove) &&
-         event.dispatchType == WebInputEvent::Blocking;
+  return (event.GetType() == WebInputEvent::kTouchStart ||
+          event.GetType() == WebInputEvent::kTouchMove) &&
+         event.dispatch_type == WebInputEvent::kBlocking;
 }
 
 }  // namespace
@@ -82,7 +82,7 @@ void TouchTimeoutHandler::StartIfNecessary(
 
 bool TouchTimeoutHandler::ConfirmTouchEvent(uint32_t unique_touch_event_id,
                                             InputEventAckState ack_result) {
-  if (timeout_event_.event.uniqueTouchEventId != unique_touch_event_id)
+  if (timeout_event_.event.unique_touch_event_id != unique_touch_event_id)
     return false;
 
   switch (pending_ack_state_) {

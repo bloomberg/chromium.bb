@@ -18,114 +18,117 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  NiceMock<MockScrollableArea>* mockScrollableArea =
+  NiceMock<MockScrollableArea>* mock_scrollable_area =
       new NiceMock<MockScrollableArea>(ScrollOffset(100, 100));
-  ScrollbarThemeOverlay theme(14, 0, ScrollbarThemeOverlay::AllowHitTest);
+  ScrollbarThemeOverlay theme(14, 0, ScrollbarThemeOverlay::kAllowHitTest);
 
-  Scrollbar* verticalScrollbar = Scrollbar::createForTesting(
-      mockScrollableArea, VerticalScrollbar, RegularScrollbar, &theme);
-  Scrollbar* horizontalScrollbar = Scrollbar::createForTesting(
-      mockScrollableArea, HorizontalScrollbar, RegularScrollbar, &theme);
-  ON_CALL(*mockScrollableArea, verticalScrollbar())
-      .WillByDefault(Return(verticalScrollbar));
-  ON_CALL(*mockScrollableArea, horizontalScrollbar())
-      .WillByDefault(Return(horizontalScrollbar));
+  Scrollbar* vertical_scrollbar = Scrollbar::CreateForTesting(
+      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+  Scrollbar* horizontal_scrollbar = Scrollbar::CreateForTesting(
+      mock_scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+  ON_CALL(*mock_scrollable_area, VerticalScrollbar())
+      .WillByDefault(Return(vertical_scrollbar));
+  ON_CALL(*mock_scrollable_area, HorizontalScrollbar())
+      .WillByDefault(Return(horizontal_scrollbar));
 
-  IntRect verticalRect(1010, 0, 14, 768);
-  IntRect horizontalRect(0, 754, 1024, 14);
-  verticalScrollbar->setFrameRect(verticalRect);
-  horizontalScrollbar->setFrameRect(horizontalRect);
+  IntRect vertical_rect(1010, 0, 14, 768);
+  IntRect horizontal_rect(0, 754, 1024, 14);
+  vertical_scrollbar->SetFrameRect(vertical_rect);
+  horizontal_scrollbar->SetFrameRect(horizontal_rect);
 
-  ASSERT_EQ(verticalScrollbar, mockScrollableArea->verticalScrollbar());
-  ASSERT_EQ(horizontalScrollbar, mockScrollableArea->horizontalScrollbar());
+  ASSERT_EQ(vertical_scrollbar, mock_scrollable_area->VerticalScrollbar());
+  ASSERT_EQ(horizontal_scrollbar, mock_scrollable_area->HorizontalScrollbar());
 
-  verticalScrollbar->clearTrackNeedsRepaint();
-  verticalScrollbar->clearThumbNeedsRepaint();
-  horizontalScrollbar->clearTrackNeedsRepaint();
-  horizontalScrollbar->clearThumbNeedsRepaint();
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  vertical_scrollbar->ClearTrackNeedsRepaint();
+  vertical_scrollbar->ClearThumbNeedsRepaint();
+  horizontal_scrollbar->ClearTrackNeedsRepaint();
+  horizontal_scrollbar->ClearThumbNeedsRepaint();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
-  ASSERT_FALSE(verticalScrollbar->thumbNeedsRepaint());
-  ASSERT_FALSE(verticalScrollbar->trackNeedsRepaint());
-  ASSERT_FALSE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
-  ASSERT_FALSE(horizontalScrollbar->thumbNeedsRepaint());
-  ASSERT_FALSE(horizontalScrollbar->trackNeedsRepaint());
-  ASSERT_FALSE(mockScrollableArea->horizontalScrollbarNeedsPaintInvalidation());
+  ASSERT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
+  ASSERT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
+  ASSERT_FALSE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
+  ASSERT_FALSE(horizontal_scrollbar->ThumbNeedsRepaint());
+  ASSERT_FALSE(horizontal_scrollbar->TrackNeedsRepaint());
+  ASSERT_FALSE(
+      mock_scrollable_area->HorizontalScrollbarNeedsPaintInvalidation());
 
   // Changing the scroll offset shouldn't invalide the thumb nor track, but it
   // should cause a "general" invalidation for non-composited scrollbars.
   // Ensure the horizontal scrollbar is unaffected.
-  mockScrollableArea->updateScrollOffset(ScrollOffset(0, 5), UserScroll);
-  verticalScrollbar->offsetDidChange();
-  horizontalScrollbar->offsetDidChange();
-  EXPECT_FALSE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_FALSE(verticalScrollbar->trackNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
-  EXPECT_FALSE(horizontalScrollbar->thumbNeedsRepaint());
-  EXPECT_FALSE(horizontalScrollbar->trackNeedsRepaint());
-  EXPECT_FALSE(mockScrollableArea->horizontalScrollbarNeedsPaintInvalidation());
+  mock_scrollable_area->UpdateScrollOffset(ScrollOffset(0, 5), kUserScroll);
+  vertical_scrollbar->OffsetDidChange();
+  horizontal_scrollbar->OffsetDidChange();
+  EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
+  EXPECT_FALSE(horizontal_scrollbar->ThumbNeedsRepaint());
+  EXPECT_FALSE(horizontal_scrollbar->TrackNeedsRepaint());
+  EXPECT_FALSE(
+      mock_scrollable_area->HorizontalScrollbarNeedsPaintInvalidation());
 
   // Try the horizontal scrollbar.
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
-  mockScrollableArea->updateScrollOffset(ScrollOffset(5, 5), UserScroll);
-  horizontalScrollbar->offsetDidChange();
-  verticalScrollbar->offsetDidChange();
-  EXPECT_FALSE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_FALSE(verticalScrollbar->trackNeedsRepaint());
-  EXPECT_FALSE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
-  EXPECT_FALSE(horizontalScrollbar->thumbNeedsRepaint());
-  EXPECT_FALSE(horizontalScrollbar->trackNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->horizontalScrollbarNeedsPaintInvalidation());
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
+  mock_scrollable_area->UpdateScrollOffset(ScrollOffset(5, 5), kUserScroll);
+  horizontal_scrollbar->OffsetDidChange();
+  vertical_scrollbar->OffsetDidChange();
+  EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
+  EXPECT_FALSE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
+  EXPECT_FALSE(horizontal_scrollbar->ThumbNeedsRepaint());
+  EXPECT_FALSE(horizontal_scrollbar->TrackNeedsRepaint());
+  EXPECT_TRUE(
+      mock_scrollable_area->HorizontalScrollbarNeedsPaintInvalidation());
 
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Move the mouse over the vertical scrollbar's thumb. Ensure the thumb is
   // invalidated as its state is changed to hover.
-  verticalScrollbar->setHoveredPart(ThumbPart);
-  EXPECT_TRUE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
+  vertical_scrollbar->SetHoveredPart(kThumbPart);
+  EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  verticalScrollbar->clearThumbNeedsRepaint();
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  vertical_scrollbar->ClearThumbNeedsRepaint();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Pressing down should also cause an invalidation.
-  verticalScrollbar->setPressedPart(ThumbPart);
-  EXPECT_TRUE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
+  vertical_scrollbar->SetPressedPart(kThumbPart);
+  EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  verticalScrollbar->clearThumbNeedsRepaint();
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  vertical_scrollbar->ClearThumbNeedsRepaint();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Release should cause invalidation.
-  verticalScrollbar->setPressedPart(NoPart);
-  EXPECT_TRUE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
+  vertical_scrollbar->SetPressedPart(kNoPart);
+  EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  verticalScrollbar->clearThumbNeedsRepaint();
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  vertical_scrollbar->ClearThumbNeedsRepaint();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Move off should cause invalidation
-  verticalScrollbar->setHoveredPart(NoPart);
-  EXPECT_TRUE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
+  vertical_scrollbar->SetHoveredPart(kNoPart);
+  EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  verticalScrollbar->clearThumbNeedsRepaint();
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  vertical_scrollbar->ClearThumbNeedsRepaint();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
   // Disabling the scrollbar is used to hide it so it should cause invalidation
   // but only in the general sense since the compositor will have hidden it
   // without a repaint.
-  verticalScrollbar->setEnabled(false);
-  EXPECT_FALSE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
+  vertical_scrollbar->SetEnabled(false);
+  EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  mockScrollableArea->clearNeedsPaintInvalidationForScrollControls();
+  mock_scrollable_area->ClearNeedsPaintInvalidationForScrollControls();
 
-  verticalScrollbar->setEnabled(true);
-  EXPECT_FALSE(verticalScrollbar->thumbNeedsRepaint());
-  EXPECT_TRUE(mockScrollableArea->verticalScrollbarNeedsPaintInvalidation());
+  vertical_scrollbar->SetEnabled(true);
+  EXPECT_FALSE(vertical_scrollbar->ThumbNeedsRepaint());
+  EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 }  // namespace blink

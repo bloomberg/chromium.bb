@@ -1084,36 +1084,36 @@ bool WebViewGuest::HandleKeyboardShortcuts(
     return false;
   }
 
-  if (event.type() != blink::WebInputEvent::RawKeyDown)
+  if (event.GetType() != blink::WebInputEvent::kRawKeyDown)
     return false;
 
   // If the user hits the escape key without any modifiers then unlock the
   // mouse if necessary.
-  if ((event.windowsKeyCode == ui::VKEY_ESCAPE) &&
-      !(event.modifiers() & blink::WebInputEvent::InputModifiers)) {
+  if ((event.windows_key_code == ui::VKEY_ESCAPE) &&
+      !(event.GetModifiers() & blink::WebInputEvent::kInputModifiers)) {
     return web_contents()->GotResponseToLockMouseRequest(false);
   }
 
 #if defined(OS_MACOSX)
-  if (event.modifiers() != blink::WebInputEvent::MetaKey)
+  if (event.GetModifiers() != blink::WebInputEvent::kMetaKey)
     return false;
 
-  if (event.windowsKeyCode == ui::VKEY_OEM_4) {
+  if (event.windows_key_code == ui::VKEY_OEM_4) {
     Go(-1);
     return true;
   }
 
-  if (event.windowsKeyCode == ui::VKEY_OEM_6) {
+  if (event.windows_key_code == ui::VKEY_OEM_6) {
     Go(1);
     return true;
   }
 #else
-  if (event.windowsKeyCode == ui::VKEY_BROWSER_BACK) {
+  if (event.windows_key_code == ui::VKEY_BROWSER_BACK) {
     Go(-1);
     return true;
   }
 
-  if (event.windowsKeyCode == ui::VKEY_BROWSER_FORWARD) {
+  if (event.windows_key_code == ui::VKEY_BROWSER_FORWARD) {
     Go(1);
     return true;
   }

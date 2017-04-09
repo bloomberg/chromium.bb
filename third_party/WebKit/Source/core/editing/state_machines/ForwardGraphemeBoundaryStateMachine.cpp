@@ -17,19 +17,19 @@ const UChar32 kUnsetCodePoint = WTF::Unicode::kMaxCodepoint + 1;
 
 #define FOR_EACH_FORWARD_GRAPHEME_BOUNDARY_STATE(V)                    \
   /* Counting preceding regional indicators. This is initial state. */ \
-  V(CountRIS)                                                          \
+  V(kCountRIS)                                                         \
   /* Waiting lead surrogate during counting regional indicators. */    \
-  V(CountRISWaitLeadSurrogate)                                         \
+  V(kCountRISWaitLeadSurrogate)                                        \
   /* Waiting first following code unit. */                             \
-  V(StartForward)                                                      \
+  V(kStartForward)                                                     \
   /* Waiting trail surrogate for the first following code point. */    \
-  V(StartForwardWaitTrailSurrgate)                                     \
+  V(kStartForwardWaitTrailSurrgate)                                    \
   /* Searching grapheme boundary. */                                   \
-  V(Search)                                                            \
+  V(kSearch)                                                           \
   /* Waiting trail surrogate during searching grapheme boundary. */    \
-  V(SearchWaitTrailSurrogate)                                          \
+  V(kSearchWaitTrailSurrogate)                                         \
   /* The state machine has stopped. */                                 \
-  V(Finished)
+  V(kFinished)
 
 enum class ForwardGraphemeBoundaryStateMachine::InternalState {
 #define V(name) name,
@@ -40,218 +40,218 @@ enum class ForwardGraphemeBoundaryStateMachine::InternalState {
 std::ostream& operator<<(
     std::ostream& os,
     ForwardGraphemeBoundaryStateMachine::InternalState state) {
-  static const char* const texts[] = {
+  static const char* const kTexts[] = {
 #define V(name) #name,
       FOR_EACH_FORWARD_GRAPHEME_BOUNDARY_STATE(V)
 #undef V
   };
-  const auto& it = std::begin(texts) + static_cast<size_t>(state);
-  DCHECK_GE(it, std::begin(texts)) << "Unknown state value";
-  DCHECK_LT(it, std::end(texts)) << "Unknown state value";
+  const auto& it = std::begin(kTexts) + static_cast<size_t>(state);
+  DCHECK_GE(it, std::begin(kTexts)) << "Unknown state value";
+  DCHECK_LT(it, std::end(kTexts)) << "Unknown state value";
   return os << *it;
 }
 
 ForwardGraphemeBoundaryStateMachine::ForwardGraphemeBoundaryStateMachine()
-    : m_prevCodePoint(kUnsetCodePoint),
-      m_internalState(InternalState::CountRIS) {}
+    : prev_code_point_(kUnsetCodePoint),
+      internal_state_(InternalState::kCountRIS) {}
 
 TextSegmentationMachineState
-ForwardGraphemeBoundaryStateMachine::feedPrecedingCodeUnit(UChar codeUnit) {
-  DCHECK_EQ(m_prevCodePoint, kUnsetCodePoint);
-  DCHECK_EQ(m_boundaryOffset, 0);
-  switch (m_internalState) {
-    case InternalState::CountRIS:
-      DCHECK_EQ(m_pendingCodeUnit, 0);
-      if (U16_IS_TRAIL(codeUnit)) {
-        m_pendingCodeUnit = codeUnit;
-        return moveToNextState(InternalState::CountRISWaitLeadSurrogate);
+ForwardGraphemeBoundaryStateMachine::FeedPrecedingCodeUnit(UChar code_unit) {
+  DCHECK_EQ(prev_code_point_, kUnsetCodePoint);
+  DCHECK_EQ(boundary_offset_, 0);
+  switch (internal_state_) {
+    case InternalState::kCountRIS:
+      DCHECK_EQ(pending_code_unit_, 0);
+      if (U16_IS_TRAIL(code_unit)) {
+        pending_code_unit_ = code_unit;
+        return MoveToNextState(InternalState::kCountRISWaitLeadSurrogate);
       }
-      return moveToNextState(InternalState::StartForward);
-    case InternalState::CountRISWaitLeadSurrogate:
-      DCHECK_NE(m_pendingCodeUnit, 0);
-      if (U16_IS_LEAD(codeUnit)) {
-        const UChar32 codePoint =
-            U16_GET_SUPPLEMENTARY(codeUnit, m_pendingCodeUnit);
-        m_pendingCodeUnit = 0;
-        if (Character::isRegionalIndicator(codePoint)) {
-          ++m_precedingRISCount;
-          return moveToNextState(InternalState::CountRIS);
+      return MoveToNextState(InternalState::kStartForward);
+    case InternalState::kCountRISWaitLeadSurrogate:
+      DCHECK_NE(pending_code_unit_, 0);
+      if (U16_IS_LEAD(code_unit)) {
+        const UChar32 code_point =
+            U16_GET_SUPPLEMENTARY(code_unit, pending_code_unit_);
+        pending_code_unit_ = 0;
+        if (Character::IsRegionalIndicator(code_point)) {
+          ++preceding_ris_count_;
+          return MoveToNextState(InternalState::kCountRIS);
         }
       }
-      m_pendingCodeUnit = 0;
-      return moveToNextState(InternalState::StartForward);
-    case InternalState::StartForward:                   // Fallthrough
-    case InternalState::StartForwardWaitTrailSurrgate:  // Fallthrough
-    case InternalState::Search:                         // Fallthrough
-    case InternalState::SearchWaitTrailSurrogate:       // Fallthrough
+      pending_code_unit_ = 0;
+      return MoveToNextState(InternalState::kStartForward);
+    case InternalState::kStartForward:                   // Fallthrough
+    case InternalState::kStartForwardWaitTrailSurrgate:  // Fallthrough
+    case InternalState::kSearch:                         // Fallthrough
+    case InternalState::kSearchWaitTrailSurrogate:       // Fallthrough
       NOTREACHED() << "Do not call feedPrecedingCodeUnit() once "
-                   << TextSegmentationMachineState::NeedFollowingCodeUnit
-                   << " is returned. InternalState: " << m_internalState;
-      return finish();
-    case InternalState::Finished:
+                   << TextSegmentationMachineState::kNeedFollowingCodeUnit
+                   << " is returned. InternalState: " << internal_state_;
+      return Finish();
+    case InternalState::kFinished:
       NOTREACHED() << "Do not call feedPrecedingCodeUnit() once it finishes.";
-      return finish();
+      return Finish();
   }
-  NOTREACHED() << "Unhandled state: " << m_internalState;
-  return finish();
+  NOTREACHED() << "Unhandled state: " << internal_state_;
+  return Finish();
 }
 
 TextSegmentationMachineState
-ForwardGraphemeBoundaryStateMachine::feedFollowingCodeUnit(UChar codeUnit) {
-  switch (m_internalState) {
-    case InternalState::CountRIS:  // Fallthrough
-    case InternalState::CountRISWaitLeadSurrogate:
+ForwardGraphemeBoundaryStateMachine::FeedFollowingCodeUnit(UChar code_unit) {
+  switch (internal_state_) {
+    case InternalState::kCountRIS:  // Fallthrough
+    case InternalState::kCountRISWaitLeadSurrogate:
       NOTREACHED() << "Do not call feedFollowingCodeUnit() until "
-                   << TextSegmentationMachineState::NeedFollowingCodeUnit
-                   << " is returned. InternalState: " << m_internalState;
-      return finish();
-    case InternalState::StartForward:
-      DCHECK_EQ(m_prevCodePoint, kUnsetCodePoint);
-      DCHECK_EQ(m_boundaryOffset, 0);
-      DCHECK_EQ(m_pendingCodeUnit, 0);
-      if (U16_IS_TRAIL(codeUnit)) {
+                   << TextSegmentationMachineState::kNeedFollowingCodeUnit
+                   << " is returned. InternalState: " << internal_state_;
+      return Finish();
+    case InternalState::kStartForward:
+      DCHECK_EQ(prev_code_point_, kUnsetCodePoint);
+      DCHECK_EQ(boundary_offset_, 0);
+      DCHECK_EQ(pending_code_unit_, 0);
+      if (U16_IS_TRAIL(code_unit)) {
         // Lonely trail surrogate.
-        m_boundaryOffset = 1;
-        return finish();
+        boundary_offset_ = 1;
+        return Finish();
       }
-      if (U16_IS_LEAD(codeUnit)) {
-        m_pendingCodeUnit = codeUnit;
-        return moveToNextState(InternalState::StartForwardWaitTrailSurrgate);
+      if (U16_IS_LEAD(code_unit)) {
+        pending_code_unit_ = code_unit;
+        return MoveToNextState(InternalState::kStartForwardWaitTrailSurrgate);
       }
-      m_prevCodePoint = codeUnit;
-      m_boundaryOffset = 1;
-      return moveToNextState(InternalState::Search);
-    case InternalState::StartForwardWaitTrailSurrgate:
-      DCHECK_EQ(m_prevCodePoint, kUnsetCodePoint);
-      DCHECK_EQ(m_boundaryOffset, 0);
-      DCHECK_NE(m_pendingCodeUnit, 0);
-      if (U16_IS_TRAIL(codeUnit)) {
-        m_prevCodePoint = U16_GET_SUPPLEMENTARY(m_pendingCodeUnit, codeUnit);
-        m_boundaryOffset = 2;
-        m_pendingCodeUnit = 0;
-        return moveToNextState(InternalState::Search);
+      prev_code_point_ = code_unit;
+      boundary_offset_ = 1;
+      return MoveToNextState(InternalState::kSearch);
+    case InternalState::kStartForwardWaitTrailSurrgate:
+      DCHECK_EQ(prev_code_point_, kUnsetCodePoint);
+      DCHECK_EQ(boundary_offset_, 0);
+      DCHECK_NE(pending_code_unit_, 0);
+      if (U16_IS_TRAIL(code_unit)) {
+        prev_code_point_ = U16_GET_SUPPLEMENTARY(pending_code_unit_, code_unit);
+        boundary_offset_ = 2;
+        pending_code_unit_ = 0;
+        return MoveToNextState(InternalState::kSearch);
       }
       // Lonely lead surrogate.
-      m_boundaryOffset = 1;
-      return finish();
-    case InternalState::Search:
-      DCHECK_NE(m_prevCodePoint, kUnsetCodePoint);
-      DCHECK_NE(m_boundaryOffset, 0);
-      DCHECK_EQ(m_pendingCodeUnit, 0);
-      if (U16_IS_LEAD(codeUnit)) {
-        m_pendingCodeUnit = codeUnit;
-        return moveToNextState(InternalState::SearchWaitTrailSurrogate);
+      boundary_offset_ = 1;
+      return Finish();
+    case InternalState::kSearch:
+      DCHECK_NE(prev_code_point_, kUnsetCodePoint);
+      DCHECK_NE(boundary_offset_, 0);
+      DCHECK_EQ(pending_code_unit_, 0);
+      if (U16_IS_LEAD(code_unit)) {
+        pending_code_unit_ = code_unit;
+        return MoveToNextState(InternalState::kSearchWaitTrailSurrogate);
       }
-      if (U16_IS_TRAIL(codeUnit))
-        return finish();  // Lonely trail surrogate.
-      if (isGraphemeBreak(m_prevCodePoint, codeUnit))
-        return finish();
-      m_prevCodePoint = codeUnit;
-      m_boundaryOffset += 1;
-      return staySameState();
-    case InternalState::SearchWaitTrailSurrogate:
-      DCHECK_NE(m_prevCodePoint, kUnsetCodePoint);
-      DCHECK_NE(m_boundaryOffset, 0);
-      DCHECK_NE(m_pendingCodeUnit, 0);
-      if (!U16_IS_TRAIL(codeUnit))
-        return finish();  // Lonely lead surrogate.
+      if (U16_IS_TRAIL(code_unit))
+        return Finish();  // Lonely trail surrogate.
+      if (IsGraphemeBreak(prev_code_point_, code_unit))
+        return Finish();
+      prev_code_point_ = code_unit;
+      boundary_offset_ += 1;
+      return StaySameState();
+    case InternalState::kSearchWaitTrailSurrogate:
+      DCHECK_NE(prev_code_point_, kUnsetCodePoint);
+      DCHECK_NE(boundary_offset_, 0);
+      DCHECK_NE(pending_code_unit_, 0);
+      if (!U16_IS_TRAIL(code_unit))
+        return Finish();  // Lonely lead surrogate.
 
       {
-        const UChar32 codePoint =
-            U16_GET_SUPPLEMENTARY(m_pendingCodeUnit, codeUnit);
-        m_pendingCodeUnit = 0;
-        if (Character::isRegionalIndicator(m_prevCodePoint) &&
-            Character::isRegionalIndicator(codePoint)) {
-          if (m_precedingRISCount % 2 == 0) {
+        const UChar32 code_point =
+            U16_GET_SUPPLEMENTARY(pending_code_unit_, code_unit);
+        pending_code_unit_ = 0;
+        if (Character::IsRegionalIndicator(prev_code_point_) &&
+            Character::IsRegionalIndicator(code_point)) {
+          if (preceding_ris_count_ % 2 == 0) {
             // Odd numbered RI case, note that m_prevCodePoint is also
             // RI.
-            m_boundaryOffset += 2;
+            boundary_offset_ += 2;
           }
-          return finish();
+          return Finish();
         }
-        if (isGraphemeBreak(m_prevCodePoint, codePoint))
-          return finish();
-        m_prevCodePoint = codePoint;
-        m_boundaryOffset += 2;
-        return moveToNextState(InternalState::Search);
+        if (IsGraphemeBreak(prev_code_point_, code_point))
+          return Finish();
+        prev_code_point_ = code_point;
+        boundary_offset_ += 2;
+        return MoveToNextState(InternalState::kSearch);
       }
-    case InternalState::Finished:
+    case InternalState::kFinished:
       NOTREACHED() << "Do not call feedFollowingCodeUnit() once it finishes.";
-      return finish();
+      return Finish();
   }
-  NOTREACHED() << "Unhandled staet: " << m_internalState;
-  return finish();
+  NOTREACHED() << "Unhandled staet: " << internal_state_;
+  return Finish();
 }
 
 TextSegmentationMachineState
-ForwardGraphemeBoundaryStateMachine::tellEndOfPrecedingText() {
-  DCHECK(m_internalState == InternalState::CountRIS ||
-         m_internalState == InternalState::CountRISWaitLeadSurrogate)
+ForwardGraphemeBoundaryStateMachine::TellEndOfPrecedingText() {
+  DCHECK(internal_state_ == InternalState::kCountRIS ||
+         internal_state_ == InternalState::kCountRISWaitLeadSurrogate)
       << "Do not call tellEndOfPrecedingText() once "
-      << TextSegmentationMachineState::NeedFollowingCodeUnit
-      << " is returned. InternalState: " << m_internalState;
+      << TextSegmentationMachineState::kNeedFollowingCodeUnit
+      << " is returned. InternalState: " << internal_state_;
 
   // Clear pending code unit since preceding buffer may end with lonely trail
   // surrogate. We can just ignore it since preceding buffer is only used for
   // counting preceding regional indicators.
-  m_pendingCodeUnit = 0;
-  return moveToNextState(InternalState::StartForward);
+  pending_code_unit_ = 0;
+  return MoveToNextState(InternalState::kStartForward);
 }
 
-int ForwardGraphemeBoundaryStateMachine::finalizeAndGetBoundaryOffset() {
-  if (m_internalState != InternalState::Finished)
-    finishWithEndOfText();
-  DCHECK_GE(m_boundaryOffset, 0);
-  return m_boundaryOffset;
+int ForwardGraphemeBoundaryStateMachine::FinalizeAndGetBoundaryOffset() {
+  if (internal_state_ != InternalState::kFinished)
+    FinishWithEndOfText();
+  DCHECK_GE(boundary_offset_, 0);
+  return boundary_offset_;
 }
 
-void ForwardGraphemeBoundaryStateMachine::reset() {
-  m_pendingCodeUnit = 0;
-  m_boundaryOffset = 0;
-  m_precedingRISCount = 0;
-  m_prevCodePoint = kUnsetCodePoint;
-  m_internalState = InternalState::CountRIS;
+void ForwardGraphemeBoundaryStateMachine::Reset() {
+  pending_code_unit_ = 0;
+  boundary_offset_ = 0;
+  preceding_ris_count_ = 0;
+  prev_code_point_ = kUnsetCodePoint;
+  internal_state_ = InternalState::kCountRIS;
 }
 
-TextSegmentationMachineState ForwardGraphemeBoundaryStateMachine::finish() {
-  DCHECK_NE(m_internalState, InternalState::Finished);
-  m_internalState = InternalState::Finished;
-  return TextSegmentationMachineState::Finished;
-}
-
-TextSegmentationMachineState
-ForwardGraphemeBoundaryStateMachine::moveToNextState(InternalState nextState) {
-  DCHECK_NE(nextState, InternalState::Finished) << "Use finish() instead";
-  DCHECK_NE(nextState, m_internalState) << "Use staySameSatate() instead";
-  m_internalState = nextState;
-  if (nextState == InternalState::StartForward)
-    return TextSegmentationMachineState::NeedFollowingCodeUnit;
-  return TextSegmentationMachineState::NeedMoreCodeUnit;
+TextSegmentationMachineState ForwardGraphemeBoundaryStateMachine::Finish() {
+  DCHECK_NE(internal_state_, InternalState::kFinished);
+  internal_state_ = InternalState::kFinished;
+  return TextSegmentationMachineState::kFinished;
 }
 
 TextSegmentationMachineState
-ForwardGraphemeBoundaryStateMachine::staySameState() {
-  DCHECK_EQ(m_internalState, InternalState::Search)
+ForwardGraphemeBoundaryStateMachine::MoveToNextState(InternalState next_state) {
+  DCHECK_NE(next_state, InternalState::kFinished) << "Use finish() instead";
+  DCHECK_NE(next_state, internal_state_) << "Use staySameSatate() instead";
+  internal_state_ = next_state;
+  if (next_state == InternalState::kStartForward)
+    return TextSegmentationMachineState::kNeedFollowingCodeUnit;
+  return TextSegmentationMachineState::kNeedMoreCodeUnit;
+}
+
+TextSegmentationMachineState
+ForwardGraphemeBoundaryStateMachine::StaySameState() {
+  DCHECK_EQ(internal_state_, InternalState::kSearch)
       << "Only Search can stay the same state.";
-  return TextSegmentationMachineState::NeedMoreCodeUnit;
+  return TextSegmentationMachineState::kNeedMoreCodeUnit;
 }
 
-void ForwardGraphemeBoundaryStateMachine::finishWithEndOfText() {
-  switch (m_internalState) {
-    case InternalState::CountRIS:                   // Fallthrough
-    case InternalState::CountRISWaitLeadSurrogate:  // Fallthrough
-    case InternalState::StartForward:               // Fallthrough
+void ForwardGraphemeBoundaryStateMachine::FinishWithEndOfText() {
+  switch (internal_state_) {
+    case InternalState::kCountRIS:                   // Fallthrough
+    case InternalState::kCountRISWaitLeadSurrogate:  // Fallthrough
+    case InternalState::kStartForward:               // Fallthrough
       return;  // Haven't search anything to forward. Just finish.
-    case InternalState::StartForwardWaitTrailSurrgate:
+    case InternalState::kStartForwardWaitTrailSurrgate:
       // Lonely lead surrogate.
-      m_boundaryOffset = 1;
+      boundary_offset_ = 1;
       return;
-    case InternalState::Search:                    // Fallthrough
-    case InternalState::SearchWaitTrailSurrogate:  // Fallthrough
+    case InternalState::kSearch:                    // Fallthrough
+    case InternalState::kSearchWaitTrailSurrogate:  // Fallthrough
       return;
-    case InternalState::Finished:  // Fallthrough
+    case InternalState::kFinished:  // Fallthrough
       NOTREACHED() << "Do not call finishWithEndOfText() once it finishes.";
   }
-  NOTREACHED() << "Unhandled state: " << m_internalState;
+  NOTREACHED() << "Unhandled state: " << internal_state_;
 }
 }  // namespace blink

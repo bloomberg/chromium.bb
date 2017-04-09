@@ -43,39 +43,40 @@
 
 namespace blink {
 
-std::unique_ptr<FileSystemClient> LocalFileSystemClient::create() {
-  return WTF::wrapUnique(
+std::unique_ptr<FileSystemClient> LocalFileSystemClient::Create() {
+  return WTF::WrapUnique(
       static_cast<FileSystemClient*>(new LocalFileSystemClient()));
 }
 
 LocalFileSystemClient::~LocalFileSystemClient() {}
 
-bool LocalFileSystemClient::requestFileSystemAccessSync(
+bool LocalFileSystemClient::RequestFileSystemAccessSync(
     ExecutionContext* context) {
   DCHECK(context);
-  if (context->isDocument()) {
+  if (context->IsDocument()) {
     NOTREACHED();
     return false;
   }
 
-  DCHECK(context->isWorkerGlobalScope());
-  return WorkerContentSettingsClient::from(*toWorkerGlobalScope(context))
-      ->requestFileSystemAccessSync();
+  DCHECK(context->IsWorkerGlobalScope());
+  return WorkerContentSettingsClient::From(*ToWorkerGlobalScope(context))
+      ->RequestFileSystemAccessSync();
 }
 
-void LocalFileSystemClient::requestFileSystemAccessAsync(
+void LocalFileSystemClient::RequestFileSystemAccessAsync(
     ExecutionContext* context,
     std::unique_ptr<ContentSettingCallbacks> callbacks) {
   DCHECK(context);
-  if (!context->isDocument()) {
+  if (!context->IsDocument()) {
     NOTREACHED();
     return;
   }
 
-  Document* document = toDocument(context);
-  DCHECK(document->frame());
-  document->frame()->contentSettingsClient()->requestFileSystemAccessAsync(
-      std::move(callbacks));
+  Document* document = ToDocument(context);
+  DCHECK(document->GetFrame());
+  document->GetFrame()
+      ->GetContentSettingsClient()
+      ->RequestFileSystemAccessAsync(std::move(callbacks));
 }
 
 LocalFileSystemClient::LocalFileSystemClient() {}

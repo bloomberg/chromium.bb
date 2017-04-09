@@ -9,7 +9,7 @@
 namespace blink {
 
 TEST(FormDataTest, get) {
-  FormData* fd = FormData::create(UTF8Encoding());
+  FormData* fd = FormData::Create(UTF8Encoding());
   fd->append("name1", "value1");
 
   FileOrUSVString result;
@@ -17,13 +17,13 @@ TEST(FormDataTest, get) {
   EXPECT_TRUE(result.isUSVString());
   EXPECT_EQ("value1", result.getAsUSVString());
 
-  const FormData::Entry& entry = *fd->entries()[0];
-  EXPECT_STREQ("name1", entry.name().data());
-  EXPECT_STREQ("value1", entry.value().data());
+  const FormData::Entry& entry = *fd->Entries()[0];
+  EXPECT_STREQ("name1", entry.name().Data());
+  EXPECT_STREQ("value1", entry.Value().Data());
 }
 
 TEST(FormDataTest, getAll) {
-  FormData* fd = FormData::create(UTF8Encoding());
+  FormData* fd = FormData::Create(UTF8Encoding());
   fd->append("name1", "value1");
 
   HeapVector<FormDataEntryValue> results = fd->getAll("name1");
@@ -35,7 +35,7 @@ TEST(FormDataTest, getAll) {
 }
 
 TEST(FormDataTest, has) {
-  FormData* fd = FormData::create(UTF8Encoding());
+  FormData* fd = FormData::Create(UTF8Encoding());
   fd->append("name1", "value1");
 
   EXPECT_TRUE(fd->has("name1"));

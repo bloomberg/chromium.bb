@@ -27,35 +27,35 @@
 
 namespace blink {
 
-double Coordinates::altitude(bool& isNull) const {
-  if (m_canProvideAltitude)
-    return m_altitude;
+double Coordinates::altitude(bool& is_null) const {
+  if (can_provide_altitude_)
+    return altitude_;
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 
-double Coordinates::altitudeAccuracy(bool& isNull) const {
-  if (m_canProvideAltitudeAccuracy)
-    return m_altitudeAccuracy;
+double Coordinates::altitudeAccuracy(bool& is_null) const {
+  if (can_provide_altitude_accuracy_)
+    return altitude_accuracy_;
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 
-double Coordinates::heading(bool& isNull) const {
-  if (m_canProvideHeading)
-    return m_heading;
+double Coordinates::heading(bool& is_null) const {
+  if (can_provide_heading_)
+    return heading_;
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 
-double Coordinates::speed(bool& isNull) const {
-  if (m_canProvideSpeed)
-    return m_speed;
+double Coordinates::speed(bool& is_null) const {
+  if (can_provide_speed_)
+    return speed_;
 
-  isNull = true;
+  is_null = true;
   return 0;
 }
 

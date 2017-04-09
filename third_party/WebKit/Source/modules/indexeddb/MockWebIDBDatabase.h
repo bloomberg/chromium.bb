@@ -18,29 +18,29 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
  public:
   virtual ~MockWebIDBDatabase();
 
-  static std::unique_ptr<MockWebIDBDatabase> create();
+  static std::unique_ptr<MockWebIDBDatabase> Create();
 
-  MOCK_METHOD5(createObjectStore,
+  MOCK_METHOD5(CreateObjectStore,
                void(long long transactionId,
                     long long objectStoreId,
                     const WebString& name,
                     const WebIDBKeyPath&,
                     bool autoIncrement));
-  MOCK_METHOD2(deleteObjectStore,
+  MOCK_METHOD2(DeleteObjectStore,
                void(long long transactionId, long long objectStoreId));
-  MOCK_METHOD3(renameObjectStore,
+  MOCK_METHOD3(RenameObjectStore,
                void(long long transactionId,
                     long long objectStoreId,
                     const WebString& newName));
-  MOCK_METHOD3(createTransaction,
+  MOCK_METHOD3(CreateTransaction,
                void(long long id,
                     const WebVector<long long>& scope,
                     WebIDBTransactionMode));
-  MOCK_METHOD0(close, void());
-  MOCK_METHOD0(versionChangeIgnored, void());
-  MOCK_METHOD1(abort, void(long long transactionId));
-  MOCK_METHOD1(commit, void(long long transactionId));
-  MOCK_METHOD7(createIndex,
+  MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(VersionChangeIgnored, void());
+  MOCK_METHOD1(Abort, void(long long transactionId));
+  MOCK_METHOD1(Commit, void(long long transactionId));
+  MOCK_METHOD7(CreateIndex,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId,
@@ -48,34 +48,34 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     const WebIDBKeyPath&,
                     bool unique,
                     bool multiEntry));
-  MOCK_METHOD3(deleteIndex,
+  MOCK_METHOD3(DeleteIndex,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId));
-  MOCK_METHOD4(renameIndex,
+  MOCK_METHOD4(RenameIndex,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId,
                     const WebString& newName));
   MOCK_METHOD6(
-      addObserver,
+      AddObserver,
       void(long long transactionId,
            int32_t observerId,
            bool includeTransaction,
            bool noRecords,
            bool values,
-           const std::bitset<WebIDBOperationTypeCount>& operationTypes));
-  MOCK_CONST_METHOD1(containsObserverId, bool(int32_t id));
-  MOCK_METHOD1(removeObservers,
+           const std::bitset<kWebIDBOperationTypeCount>& operationTypes));
+  MOCK_CONST_METHOD1(ContainsObserverId, bool(int32_t id));
+  MOCK_METHOD1(RemoveObservers,
                void(const WebVector<int32_t>& observerIdsToRemove));
-  MOCK_METHOD6(get,
+  MOCK_METHOD6(Get,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId,
                     const WebIDBKeyRange&,
                     bool keyOnly,
                     WebIDBCallbacks*));
-  MOCK_METHOD7(getAll,
+  MOCK_METHOD7(GetAll,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId,
@@ -83,7 +83,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long maxCount,
                     bool keyOnly,
                     WebIDBCallbacks*));
-  MOCK_METHOD9(put,
+  MOCK_METHOD9(Put,
                void(long long transactionId,
                     long long objectStoreId,
                     const WebData& value,
@@ -93,17 +93,17 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     WebIDBCallbacks*,
                     const WebVector<long long>& indexIds,
                     const WebVector<WebIndexKeys>&));
-  MOCK_METHOD5(setIndexKeys,
+  MOCK_METHOD5(SetIndexKeys,
                void(long long transactionId,
                     long long objectStoreId,
                     const WebIDBKey&,
                     const WebVector<long long>& indexIds,
                     const WebVector<WebIndexKeys>&));
-  MOCK_METHOD3(setIndexesReady,
+  MOCK_METHOD3(SetIndexesReady,
                void(long long transactionId,
                     long long objectStoreId,
                     const WebVector<long long>& indexIds));
-  MOCK_METHOD8(openCursor,
+  MOCK_METHOD8(OpenCursor,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId,
@@ -112,22 +112,22 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     bool keyOnly,
                     WebIDBTaskType,
                     WebIDBCallbacks*));
-  MOCK_METHOD5(count,
+  MOCK_METHOD5(Count,
                void(long long transactionId,
                     long long objectStoreId,
                     long long indexId,
                     const WebIDBKeyRange&,
                     WebIDBCallbacks*));
-  MOCK_METHOD4(deleteRange,
+  MOCK_METHOD4(DeleteRange,
                void(long long transactionId,
                     long long objectStoreId,
                     const WebIDBKeyRange&,
                     WebIDBCallbacks*));
-  MOCK_METHOD3(clear,
+  MOCK_METHOD3(Clear,
                void(long long transactionId,
                     long long objectStoreId,
                     WebIDBCallbacks*));
-  MOCK_METHOD1(ackReceivedBlobs, void(const WebVector<WebString>& uuids));
+  MOCK_METHOD1(AckReceivedBlobs, void(const WebVector<WebString>& uuids));
 
  private:
   MockWebIDBDatabase();

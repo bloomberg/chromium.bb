@@ -40,62 +40,62 @@ WebBlobData::WebBlobData() {}
 
 WebBlobData::~WebBlobData() {}
 
-size_t WebBlobData::itemCount() const {
-  ASSERT(!isNull());
-  return m_private->items().size();
+size_t WebBlobData::ItemCount() const {
+  ASSERT(!IsNull());
+  return private_->Items().size();
 }
 
-bool WebBlobData::itemAt(size_t index, Item& result) const {
-  ASSERT(!isNull());
+bool WebBlobData::ItemAt(size_t index, Item& result) const {
+  ASSERT(!IsNull());
 
-  if (index >= m_private->items().size())
+  if (index >= private_->Items().size())
     return false;
 
-  const BlobDataItem& item = m_private->items()[index];
-  result.data.reset();
-  result.filePath.reset();
-  result.blobUUID.reset();
+  const BlobDataItem& item = private_->Items()[index];
+  result.data.Reset();
+  result.file_path.Reset();
+  result.blob_uuid.Reset();
   result.offset = item.offset;
   result.length = item.length;
-  result.expectedModificationTime = item.expectedModificationTime;
+  result.expected_modification_time = item.expected_modification_time;
 
   switch (item.type) {
-    case BlobDataItem::Data:
-      result.type = Item::TypeData;
+    case BlobDataItem::kData:
+      result.type = Item::kTypeData;
       result.data = item.data;
       return true;
-    case BlobDataItem::File:
-      result.type = Item::TypeFile;
-      result.filePath = item.path;
+    case BlobDataItem::kFile:
+      result.type = Item::kTypeFile;
+      result.file_path = item.path;
       return true;
-    case BlobDataItem::Blob:
-      result.type = Item::TypeBlob;
-      result.blobUUID = item.blobDataHandle->uuid();
+    case BlobDataItem::kBlob:
+      result.type = Item::kTypeBlob;
+      result.blob_uuid = item.blob_data_handle->Uuid();
       return true;
-    case BlobDataItem::FileSystemURL:
-      result.type = Item::TypeFileSystemURL;
-      result.fileSystemURL = item.fileSystemURL;
+    case BlobDataItem::kFileSystemURL:
+      result.type = Item::kTypeFileSystemURL;
+      result.file_system_url = item.file_system_url;
       return true;
   }
   ASSERT_NOT_REACHED();
   return false;
 }
 
-WebString WebBlobData::contentType() const {
-  ASSERT(!isNull());
-  return m_private->contentType();
+WebString WebBlobData::ContentType() const {
+  ASSERT(!IsNull());
+  return private_->ContentType();
 }
 
 WebBlobData::WebBlobData(std::unique_ptr<BlobData> data)
-    : m_private(std::move(data)) {}
+    : private_(std::move(data)) {}
 
 WebBlobData& WebBlobData::operator=(std::unique_ptr<BlobData> data) {
-  m_private = std::move(data);
+  private_ = std::move(data);
   return *this;
 }
 
 WebBlobData::operator std::unique_ptr<BlobData>() {
-  return std::move(m_private);
+  return std::move(private_);
 }
 
 }  // namespace blink

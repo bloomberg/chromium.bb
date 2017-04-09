@@ -50,11 +50,11 @@ struct WebPoint {
   WebPoint(int x, int y) : x(x), y(y) {}
 
 #if INSIDE_BLINK
-  WebPoint(const IntPoint& p) : x(p.x()), y(p.y()) {}
+  WebPoint(const IntPoint& p) : x(p.X()), y(p.Y()) {}
 
   WebPoint& operator=(const IntPoint& p) {
-    x = p.x();
-    y = p.y();
+    x = p.X();
+    y = p.Y();
     return *this;
   }
 

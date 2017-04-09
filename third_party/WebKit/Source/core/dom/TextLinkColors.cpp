@@ -39,47 +39,47 @@ namespace blink {
 
 using namespace cssvalue;
 
-TextLinkColors::TextLinkColors() : m_textColor(Color::black) {
-  resetLinkColor();
-  resetVisitedLinkColor();
-  resetActiveLinkColor();
+TextLinkColors::TextLinkColors() : text_color_(Color::kBlack) {
+  ResetLinkColor();
+  ResetVisitedLinkColor();
+  ResetActiveLinkColor();
 }
 
-void TextLinkColors::resetLinkColor() {
-  m_linkColor = Color(0, 0, 238);
+void TextLinkColors::ResetLinkColor() {
+  link_color_ = Color(0, 0, 238);
 }
 
-void TextLinkColors::resetVisitedLinkColor() {
-  m_visitedLinkColor = Color(85, 26, 139);
+void TextLinkColors::ResetVisitedLinkColor() {
+  visited_link_color_ = Color(85, 26, 139);
 }
 
-void TextLinkColors::resetActiveLinkColor() {
-  m_activeLinkColor = Color(255, 0, 0);
+void TextLinkColors::ResetActiveLinkColor() {
+  active_link_color_ = Color(255, 0, 0);
 }
 
-Color TextLinkColors::colorFromCSSValue(const CSSValue& value,
-                                        Color currentColor,
-                                        bool forVisitedLink) const {
-  if (value.isColorValue())
-    return toCSSColorValue(value).value();
+Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
+                                        Color current_color,
+                                        bool for_visited_link) const {
+  if (value.IsColorValue())
+    return ToCSSColorValue(value).Value();
 
-  CSSValueID valueID = toCSSIdentifierValue(value).getValueID();
-  switch (valueID) {
+  CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  switch (value_id) {
     case CSSValueInvalid:
       NOTREACHED();
       return Color();
     case CSSValueInternalQuirkInherit:
-      return textColor();
+      return TextColor();
     case CSSValueWebkitLink:
-      return forVisitedLink ? visitedLinkColor() : linkColor();
+      return for_visited_link ? VisitedLinkColor() : LinkColor();
     case CSSValueWebkitActivelink:
-      return activeLinkColor();
+      return ActiveLinkColor();
     case CSSValueWebkitFocusRingColor:
-      return LayoutTheme::theme().focusRingColor();
+      return LayoutTheme::GetTheme().FocusRingColor();
     case CSSValueCurrentcolor:
-      return currentColor;
+      return current_color;
     default:
-      return StyleColor::colorFromKeyword(valueID);
+      return StyleColor::ColorFromKeyword(value_id);
   }
 }
 

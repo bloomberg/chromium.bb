@@ -41,34 +41,34 @@ class CORE_EXPORT UIEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static UIEvent* create() { return new UIEvent; }
-  static UIEvent* create(const AtomicString& type,
+  static UIEvent* Create() { return new UIEvent; }
+  static UIEvent* Create(const AtomicString& type,
                          const UIEventInit& initializer) {
     return new UIEvent(type, initializer);
   }
   ~UIEvent() override;
 
   void initUIEvent(const AtomicString& type,
-                   bool canBubble,
+                   bool can_bubble,
                    bool cancelable,
                    AbstractView*,
                    int detail);
-  void initUIEventInternal(const AtomicString& type,
-                           bool canBubble,
+  void InitUIEventInternal(const AtomicString& type,
+                           bool can_bubble,
                            bool cancelable,
-                           EventTarget* relatedTarget,
+                           EventTarget* related_target,
                            AbstractView*,
                            int detail,
-                           InputDeviceCapabilities* sourceCapabilities);
+                           InputDeviceCapabilities* source_capabilities);
 
-  AbstractView* view() const { return m_view.get(); }
-  int detail() const { return m_detail; }
+  AbstractView* view() const { return view_.Get(); }
+  int detail() const { return detail_; }
   InputDeviceCapabilities* sourceCapabilities() const {
-    return m_sourceCapabilities.get();
+    return source_capabilities_.Get();
   }
 
-  const AtomicString& interfaceName() const override;
-  bool isUIEvent() const final;
+  const AtomicString& InterfaceName() const override;
+  bool IsUIEvent() const final;
 
   virtual int which() const;
 
@@ -77,19 +77,19 @@ class CORE_EXPORT UIEvent : public Event {
  protected:
   UIEvent();
   UIEvent(const AtomicString& type,
-          bool canBubble,
+          bool can_bubble,
           bool cancelable,
           ComposedMode,
-          TimeTicks platformTimeStamp,
+          TimeTicks platform_time_stamp,
           AbstractView*,
           int detail,
-          InputDeviceCapabilities* sourceCapabilities);
+          InputDeviceCapabilities* source_capabilities);
   UIEvent(const AtomicString&, const UIEventInit&);
 
  private:
-  Member<AbstractView> m_view;
-  int m_detail;
-  Member<InputDeviceCapabilities> m_sourceCapabilities;
+  Member<AbstractView> view_;
+  int detail_;
+  Member<InputDeviceCapabilities> source_capabilities_;
 };
 
 }  // namespace blink

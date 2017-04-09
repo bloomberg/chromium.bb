@@ -9,40 +9,40 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 // static
-Magnetometer* Magnetometer::create(ExecutionContext* executionContext,
+Magnetometer* Magnetometer::Create(ExecutionContext* execution_context,
                                    const SensorOptions& options,
-                                   ExceptionState& exceptionState) {
-  return new Magnetometer(executionContext, options, exceptionState);
+                                   ExceptionState& exception_state) {
+  return new Magnetometer(execution_context, options, exception_state);
 }
 
 // static
-Magnetometer* Magnetometer::create(ExecutionContext* executionContext,
-                                   ExceptionState& exceptionState) {
-  return create(executionContext, SensorOptions(), exceptionState);
+Magnetometer* Magnetometer::Create(ExecutionContext* execution_context,
+                                   ExceptionState& exception_state) {
+  return Create(execution_context, SensorOptions(), exception_state);
 }
 
-Magnetometer::Magnetometer(ExecutionContext* executionContext,
+Magnetometer::Magnetometer(ExecutionContext* execution_context,
                            const SensorOptions& options,
-                           ExceptionState& exceptionState)
-    : Sensor(executionContext,
+                           ExceptionState& exception_state)
+    : Sensor(execution_context,
              options,
-             exceptionState,
+             exception_state,
              SensorType::MAGNETOMETER) {}
 
-double Magnetometer::x(bool& isNull) const {
-  return readingValue(0, isNull);
+double Magnetometer::x(bool& is_null) const {
+  return ReadingValue(0, is_null);
 }
 
-double Magnetometer::y(bool& isNull) const {
-  return readingValue(1, isNull);
+double Magnetometer::y(bool& is_null) const {
+  return ReadingValue(1, is_null);
 }
 
-double Magnetometer::z(bool& isNull) const {
-  return readingValue(2, isNull);
+double Magnetometer::z(bool& is_null) const {
+  return ReadingValue(2, is_null);
 }
 
 DEFINE_TRACE(Magnetometer) {
-  Sensor::trace(visitor);
+  Sensor::Trace(visitor);
 }
 
 }  // namespace blink

@@ -22,7 +22,7 @@ class BlinkInterfaceRegistryImpl : public blink::InterfaceRegistry {
   ~BlinkInterfaceRegistryImpl();
 
   // blink::InterfaceRegistry override.
-  void addInterface(const char* name,
+  void AddInterface(const char* name,
                     const blink::InterfaceFactory& factory) override;
 
  private:

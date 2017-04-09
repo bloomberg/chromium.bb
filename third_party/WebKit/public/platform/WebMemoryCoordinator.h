@@ -16,11 +16,11 @@ class WebMemoryCoordinator {
   // Called when a memory pressure notification is received.
   // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
   // gone.
-  BLINK_PLATFORM_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
+  BLINK_PLATFORM_EXPORT static void OnMemoryPressure(WebMemoryPressureLevel);
 
-  BLINK_PLATFORM_EXPORT static void onMemoryStateChange(MemoryState);
+  BLINK_PLATFORM_EXPORT static void OnMemoryStateChange(MemoryState);
 
-  BLINK_PLATFORM_EXPORT static void onPurgeMemory();
+  BLINK_PLATFORM_EXPORT static void OnPurgeMemory();
 };
 
 }  // namespace blink

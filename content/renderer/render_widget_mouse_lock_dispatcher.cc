@@ -24,7 +24,7 @@ RenderWidgetMouseLockDispatcher::~RenderWidgetMouseLockDispatcher() {}
 
 void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
     bool unlocked_by_target) {
-  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
 
   render_widget_->Send(new ViewHostMsg_LockMouse(
       render_widget_->routing_id(), user_gesture, unlocked_by_target, false));
@@ -59,7 +59,7 @@ void RenderWidgetMouseLockDispatcher::OnLockMouseACK(bool succeeded) {
   // sends all mouse events to the initial target of the drag.
   // If Lock is entered it supercedes any in progress Capture.
   if (succeeded && render_widget_->GetWebWidget())
-    render_widget_->GetWebWidget()->mouseCaptureLost();
+    render_widget_->GetWebWidget()->MouseCaptureLost();
 }
 
 }  // namespace content

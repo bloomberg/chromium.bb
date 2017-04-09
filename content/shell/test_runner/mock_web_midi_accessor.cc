@@ -49,7 +49,7 @@ MockWebMIDIAccessor::MockWebMIDIAccessor(blink::WebMIDIAccessorClient* client,
 
 MockWebMIDIAccessor::~MockWebMIDIAccessor() {}
 
-void MockWebMIDIAccessor::startSession() {
+void MockWebMIDIAccessor::StartSession() {
   // Add a mock input and output port.
   addInputPort(PortState::CONNECTED);
   addOutputPort(PortState::CONNECTED);
@@ -58,14 +58,14 @@ void MockWebMIDIAccessor::startSession() {
       interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
-void MockWebMIDIAccessor::sendMIDIData(unsigned port_index,
+void MockWebMIDIAccessor::SendMIDIData(unsigned port_index,
                                        const unsigned char* data,
                                        size_t length,
                                        double timestamp) {
   // Emulate a loopback device for testing. Make sure if an input port that has
   // the same index exists.
   if (port_index < next_input_port_index_)
-    client_->didReceiveMIDIData(port_index, data, length, timestamp);
+    client_->DidReceiveMIDIData(port_index, data, length, timestamp);
 
   // Handle special sysex messages for testing.
   // A special sequence is [0xf0, 0x00, 0x02, 0x0d, 0x7f, <function>, 0xf7].
@@ -100,7 +100,7 @@ void MockWebMIDIAccessor::sendMIDIData(unsigned port_index,
 void MockWebMIDIAccessor::addInputPort(PortState state) {
   std::string id =
       base::StringPrintf("MockInputID-%d", next_input_port_index_++);
-  client_->didAddInputPort(blink::WebString::fromUTF8(id),
+  client_->DidAddInputPort(blink::WebString::FromUTF8(id),
                            "MockInputManufacturer", "MockInputName",
                            "MockInputVersion", state);
 }
@@ -108,13 +108,13 @@ void MockWebMIDIAccessor::addInputPort(PortState state) {
 void MockWebMIDIAccessor::addOutputPort(PortState state) {
   std::string id =
       base::StringPrintf("MockOutputID-%d", next_output_port_index_++);
-  client_->didAddOutputPort(blink::WebString::fromUTF8(id),
+  client_->DidAddOutputPort(blink::WebString::FromUTF8(id),
                             "MockOutputManufacturer", "MockOutputName",
                             "MockOutputVersion", state);
 }
 
 void MockWebMIDIAccessor::reportStartedSession(Result result) {
-  client_->didStartSession(result);
+  client_->DidStartSession(result);
 }
 
 }  // namespace test_runner

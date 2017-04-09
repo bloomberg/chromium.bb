@@ -37,43 +37,45 @@
 namespace blink {
 
 WorkerThreadStartupData::WorkerThreadStartupData(
-    const KURL& scriptURL,
-    const String& userAgent,
-    const String& sourceCode,
-    std::unique_ptr<Vector<char>> cachedMetaData,
-    WorkerThreadStartMode startMode,
-    const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders,
-    const String& referrerPolicy,
-    const SecurityOrigin* starterOrigin,
-    WorkerClients* workerClients,
-    WebAddressSpace addressSpace,
-    const Vector<String>* originTrialTokens,
-    std::unique_ptr<WorkerSettings> workerSettings,
-    WorkerV8Settings workerV8Settings)
-    : m_scriptURL(scriptURL.copy()),
-      m_userAgent(userAgent.isolatedCopy()),
-      m_sourceCode(sourceCode.isolatedCopy()),
-      m_cachedMetaData(std::move(cachedMetaData)),
-      m_startMode(startMode),
-      m_referrerPolicy(referrerPolicy.isolatedCopy()),
-      m_starterOriginPrivilegeData(
-          starterOrigin ? starterOrigin->createPrivilegeData() : nullptr),
-      m_workerClients(workerClients),
-      m_addressSpace(addressSpace),
-      m_workerSettings(std::move(workerSettings)),
-      m_workerV8Settings(workerV8Settings) {
-  m_contentSecurityPolicyHeaders = WTF::makeUnique<Vector<CSPHeaderAndType>>();
-  if (contentSecurityPolicyHeaders) {
-    for (const auto& header : *contentSecurityPolicyHeaders) {
-      CSPHeaderAndType copiedHeader(header.first.isolatedCopy(), header.second);
-      m_contentSecurityPolicyHeaders->push_back(copiedHeader);
+    const KURL& script_url,
+    const String& user_agent,
+    const String& source_code,
+    std::unique_ptr<Vector<char>> cached_meta_data,
+    WorkerThreadStartMode start_mode,
+    const Vector<CSPHeaderAndType>* content_security_policy_headers,
+    const String& referrer_policy,
+    const SecurityOrigin* starter_origin,
+    WorkerClients* worker_clients,
+    WebAddressSpace address_space,
+    const Vector<String>* origin_trial_tokens,
+    std::unique_ptr<WorkerSettings> worker_settings,
+    WorkerV8Settings worker_v8_settings)
+    : script_url_(script_url.Copy()),
+      user_agent_(user_agent.IsolatedCopy()),
+      source_code_(source_code.IsolatedCopy()),
+      cached_meta_data_(std::move(cached_meta_data)),
+      start_mode_(start_mode),
+      referrer_policy_(referrer_policy.IsolatedCopy()),
+      starter_origin_privilege_data_(
+          starter_origin ? starter_origin->CreatePrivilegeData() : nullptr),
+      worker_clients_(worker_clients),
+      address_space_(address_space),
+      worker_settings_(std::move(worker_settings)),
+      worker_v8_settings_(worker_v8_settings) {
+  content_security_policy_headers_ =
+      WTF::MakeUnique<Vector<CSPHeaderAndType>>();
+  if (content_security_policy_headers) {
+    for (const auto& header : *content_security_policy_headers) {
+      CSPHeaderAndType copied_header(header.first.IsolatedCopy(),
+                                     header.second);
+      content_security_policy_headers_->push_back(copied_header);
     }
   }
 
-  m_originTrialTokens = std::unique_ptr<Vector<String>>(new Vector<String>());
-  if (originTrialTokens) {
-    for (const String& token : *originTrialTokens)
-      m_originTrialTokens->push_back(token.isolatedCopy());
+  origin_trial_tokens_ = std::unique_ptr<Vector<String>>(new Vector<String>());
+  if (origin_trial_tokens) {
+    for (const String& token : *origin_trial_tokens)
+      origin_trial_tokens_->push_back(token.IsolatedCopy());
   }
 }
 

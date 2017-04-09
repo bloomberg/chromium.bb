@@ -37,24 +37,24 @@ class SVGClipPathElement final : public SVGGraphicsElement {
  public:
   DECLARE_NODE_FACTORY(SVGClipPathElement);
   SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() {
-    return m_clipPathUnits.get();
+    return clip_path_units_.Get();
   }
 
-  bool supportsFocus() const override { return false; }
+  bool SupportsFocus() const override { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGClipPathElement(Document&);
 
-  bool needsPendingResourceHandling() const override { return false; }
+  bool NeedsPendingResourceHandling() const override { return false; }
 
-  void svgAttributeChanged(const QualifiedName&) override;
-  void childrenChanged(const ChildrenChange&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_clipPathUnits;
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> clip_path_units_;
 };
 
 }  // namespace blink

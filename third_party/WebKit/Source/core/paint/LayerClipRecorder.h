@@ -23,8 +23,8 @@ class CORE_EXPORT LayerClipRecorder {
 
  public:
   enum BorderRadiusClippingRule {
-    IncludeSelfForBorderRadius,
-    DoNotIncludeSelfForBorderRadius
+    kIncludeSelfForBorderRadius,
+    kDoNotIncludeSelfForBorderRadius
   };
 
   // Set rounded clip rectangles defined by border radii all the way from the
@@ -46,25 +46,25 @@ class CORE_EXPORT LayerClipRecorder {
       const LayoutBoxModelObject&,
       DisplayItem::Type,
       const ClipRect&,
-      const PaintLayer* clipRoot,
-      const LayoutPoint& fragmentOffset,
+      const PaintLayer* clip_root,
+      const LayoutPoint& fragment_offset,
       PaintLayerFlags,
-      BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+      BorderRadiusClippingRule = kIncludeSelfForBorderRadius);
 
   ~LayerClipRecorder();
 
  private:
-  void collectRoundedRectClips(PaintLayer&,
-                               const PaintLayer* clipRoot,
+  void CollectRoundedRectClips(PaintLayer&,
+                               const PaintLayer* clip_root,
                                GraphicsContext&,
-                               const LayoutPoint& fragmentOffset,
+                               const LayoutPoint& fragment_offset,
                                PaintLayerFlags,
                                BorderRadiusClippingRule,
-                               Vector<FloatRoundedRect>& roundedRectClips);
+                               Vector<FloatRoundedRect>& rounded_rect_clips);
 
-  GraphicsContext& m_graphicsContext;
-  const LayoutBoxModelObject& m_layoutObject;
-  DisplayItem::Type m_clipType;
+  GraphicsContext& graphics_context_;
+  const LayoutBoxModelObject& layout_object_;
+  DisplayItem::Type clip_type_;
 };
 
 }  // namespace blink

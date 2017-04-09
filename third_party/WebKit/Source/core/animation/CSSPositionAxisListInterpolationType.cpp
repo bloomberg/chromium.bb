@@ -13,53 +13,53 @@
 namespace blink {
 
 InterpolationValue
-CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(
+CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     const CSSValue& value) {
-  if (value.isValuePair()) {
-    const CSSValuePair& pair = toCSSValuePair(value);
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
     InterpolationValue result =
-        LengthInterpolationFunctions::maybeConvertCSSValue(pair.second());
-    CSSValueID side = toCSSIdentifierValue(pair.first()).getValueID();
+        LengthInterpolationFunctions::MaybeConvertCSSValue(pair.Second());
+    CSSValueID side = ToCSSIdentifierValue(pair.First()).GetValueID();
     if (side == CSSValueRight || side == CSSValueBottom)
-      LengthInterpolationFunctions::subtractFromOneHundredPercent(result);
+      LengthInterpolationFunctions::SubtractFromOneHundredPercent(result);
     return result;
   }
 
-  if (value.isPrimitiveValue())
-    return LengthInterpolationFunctions::maybeConvertCSSValue(value);
+  if (value.IsPrimitiveValue())
+    return LengthInterpolationFunctions::MaybeConvertCSSValue(value);
 
-  if (!value.isIdentifierValue())
+  if (!value.IsIdentifierValue())
     return nullptr;
 
-  const CSSIdentifierValue& ident = toCSSIdentifierValue(value);
-  switch (ident.getValueID()) {
+  const CSSIdentifierValue& ident = ToCSSIdentifierValue(value);
+  switch (ident.GetValueID()) {
     case CSSValueLeft:
     case CSSValueTop:
-      return LengthInterpolationFunctions::createInterpolablePercent(0);
+      return LengthInterpolationFunctions::CreateInterpolablePercent(0);
     case CSSValueRight:
     case CSSValueBottom:
-      return LengthInterpolationFunctions::createInterpolablePercent(100);
+      return LengthInterpolationFunctions::CreateInterpolablePercent(100);
     case CSSValueCenter:
-      return LengthInterpolationFunctions::createInterpolablePercent(50);
+      return LengthInterpolationFunctions::CreateInterpolablePercent(50);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-InterpolationValue CSSPositionAxisListInterpolationType::maybeConvertValue(
+InterpolationValue CSSPositionAxisListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.isBaseValueList()) {
-    return ListInterpolationFunctions::createList(
-        1, [&value](size_t) { return convertPositionAxisCSSValue(value); });
+  if (!value.IsBaseValueList()) {
+    return ListInterpolationFunctions::CreateList(
+        1, [&value](size_t) { return ConvertPositionAxisCSSValue(value); });
   }
 
-  const CSSValueList& list = toCSSValueList(value);
-  return ListInterpolationFunctions::createList(
+  const CSSValueList& list = ToCSSValueList(value);
+  return ListInterpolationFunctions::CreateList(
       list.length(), [&list](size_t index) {
-        return convertPositionAxisCSSValue(list.item(index));
+        return ConvertPositionAxisCSSValue(list.Item(index));
       });
 }
 

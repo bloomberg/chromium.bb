@@ -43,17 +43,17 @@ class AXTableHeaderContainer final : public AXMockObject {
   explicit AXTableHeaderContainer(AXObjectCacheImpl&);
 
  public:
-  static AXTableHeaderContainer* create(AXObjectCacheImpl&);
+  static AXTableHeaderContainer* Create(AXObjectCacheImpl&);
   ~AXTableHeaderContainer() override;
 
-  AccessibilityRole roleValue() const override {
-    return TableHeaderContainerRole;
+  AccessibilityRole RoleValue() const override {
+    return kTableHeaderContainerRole;
   }
 
-  void addChildren() override;
+  void AddChildren() override;
 
  private:
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 }  // namespace blink

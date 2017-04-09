@@ -18,33 +18,33 @@ namespace blink {
 // conflicts with CSSOM's CSSKeywordValue class.
 class CORE_EXPORT CSSIdentifierValue : public CSSValue {
  public:
-  static CSSIdentifierValue* create(CSSValueID);
+  static CSSIdentifierValue* Create(CSSValueID);
 
   // TODO(sashab): Rename this to createFromPlatformValue().
   template <typename T>
-  static CSSIdentifierValue* create(T value) {
+  static CSSIdentifierValue* Create(T value) {
     static_assert(!std::is_same<T, CSSValueID>::value,
                   "Do not call create() with a CSSValueID; call "
                   "createIdentifier() instead");
     return new CSSIdentifierValue(value);
   }
 
-  static CSSIdentifierValue* create(const Length& value) {
+  static CSSIdentifierValue* Create(const Length& value) {
     return new CSSIdentifierValue(value);
   }
 
-  CSSValueID getValueID() const { return m_valueID; }
+  CSSValueID GetValueID() const { return value_id_; }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSIdentifierValue& other) const {
-    return m_valueID == other.m_valueID;
+  bool Equals(const CSSIdentifierValue& other) const {
+    return value_id_ == other.value_id_;
   }
 
   template <typename T>
-  inline T convertTo()
+  inline T ConvertTo()
       const {  // Overridden for special cases in CSSPrimitiveValueMappings.h
-    return cssValueIDToPlatformEnum<T>(m_valueID);
+    return CssValueIDToPlatformEnum<T>(value_id_);
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();
@@ -57,15 +57,14 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
   template <typename T>
   CSSIdentifierValue(
       T t)  // Overriden for special cases in CSSPrimitiveValueMappings.h
-      : CSSValue(IdentifierClass),
-        m_valueID(platformEnumToCSSValueID(t)) {}
+      : CSSValue(kIdentifierClass), value_id_(PlatformEnumToCSSValueID(t)) {}
 
   CSSIdentifierValue(const Length&);
 
-  CSSValueID m_valueID;
+  CSSValueID value_id_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSIdentifierValue, isIdentifierValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSIdentifierValue, IsIdentifierValue());
 
 }  // namespace blink
 

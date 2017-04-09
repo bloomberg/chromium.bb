@@ -56,83 +56,83 @@ class PLATFORM_EXPORT PNGImageReader final {
   WTF_MAKE_NONCOPYABLE(PNGImageReader);
 
  public:
-  PNGImageReader(PNGImageDecoder*, size_t initialOffset);
+  PNGImageReader(PNGImageDecoder*, size_t initial_offset);
   ~PNGImageReader();
 
   struct FrameInfo {
     // The offset where the frame data of this frame starts.
-    size_t startOffset;
+    size_t start_offset;
     // The number of bytes that contain frame data, starting at startOffset.
-    size_t byteLength;
+    size_t byte_length;
     size_t duration;
-    IntRect frameRect;
-    ImageFrame::DisposalMethod disposalMethod;
-    ImageFrame::AlphaBlendSource alphaBlend;
+    IntRect frame_rect;
+    ImageFrame::DisposalMethod disposal_method;
+    ImageFrame::AlphaBlendSource alpha_blend;
   };
 
-  enum class ParseQuery { Size, MetaData };
+  enum class ParseQuery { kSize, kMetaData };
 
-  bool parse(SegmentReader&, ParseQuery);
+  bool Parse(SegmentReader&, ParseQuery);
 
   // Returns false on a fatal error.
-  bool decode(SegmentReader&, size_t);
-  const FrameInfo& frameInfo(size_t) const;
+  bool Decode(SegmentReader&, size_t);
+  const FrameInfo& GetFrameInfo(size_t) const;
 
   // Number of complete frames parsed so far; includes frame 0 even if partial.
-  size_t frameCount() const { return m_frameInfo.size(); }
+  size_t FrameCount() const { return frame_info_.size(); }
 
-  bool parseCompleted() const { return m_parseCompleted; };
+  bool ParseCompleted() const { return parse_completed_; };
 
-  bool frameIsReceivedAtIndex(size_t index) const {
+  bool FrameIsReceivedAtIndex(size_t index) const {
     if (!index)
-      return firstFrameFullyReceived();
-    return index < frameCount();
+      return FirstFrameFullyReceived();
+    return index < FrameCount();
   }
 
-  void clearDecodeState(size_t);
+  void ClearDecodeState(size_t);
 
-  png_structp pngPtr() const { return m_png; }
-  png_infop infoPtr() const { return m_info; }
+  png_structp PngPtr() const { return png_; }
+  png_infop InfoPtr() const { return info_; }
 
-  png_bytep interlaceBuffer() const { return m_interlaceBuffer.get(); }
-  void createInterlaceBuffer(int size) {
-    m_interlaceBuffer = wrapArrayUnique(new png_byte[size]);
+  png_bytep InterlaceBuffer() const { return interlace_buffer_.get(); }
+  void CreateInterlaceBuffer(int size) {
+    interlace_buffer_ = WrapArrayUnique(new png_byte[size]);
   }
-  void clearInterlaceBuffer() { m_interlaceBuffer.reset(); }
+  void ClearInterlaceBuffer() { interlace_buffer_.reset(); }
 
  private:
-  png_structp m_png;
-  png_infop m_info;
-  png_uint_32 m_width;
-  png_uint_32 m_height;
+  png_structp png_;
+  png_infop info_;
+  png_uint_32 width_;
+  png_uint_32 height_;
 
-  PNGImageDecoder* m_decoder;
+  PNGImageDecoder* decoder_;
 
   // The offset in the stream where the PNG image starts.
-  const size_t m_initialOffset;
+  const size_t initial_offset_;
   // How many bytes have been read during parsing.
-  size_t m_readOffset;
-  size_t m_progressiveDecodeOffset;
-  size_t m_idatOffset;
+  size_t read_offset_;
+  size_t progressive_decode_offset_;
+  size_t idat_offset_;
 
-  bool m_idatIsPartOfAnimation;
+  bool idat_is_part_of_animation_;
   // All IDAT chunks must precede the first fdAT chunk, and all fdAT chunks
   // should be separated from the IDAT chunks by an fcTL chunk. So this is true
   // until the first fcTL chunk after an IDAT chunk. After that, only fdAT
   // chunks are expected.
-  bool m_expectIdats;
-  bool m_isAnimated;
-  bool m_parsedSignature;
-  bool m_parsedIHDR;
-  bool m_parseCompleted;
-  uint32_t m_reportedFrameCount;
-  uint32_t m_nextSequenceNumber;
+  bool expect_idats_;
+  bool is_animated_;
+  bool parsed_signature_;
+  bool parsed_ihdr_;
+  bool parse_completed_;
+  uint32_t reported_frame_count_;
+  uint32_t next_sequence_number_;
   // True when an fcTL has been parsed but not its corresponding fdAT or IDAT
   // chunk. Consecutive fcTLs is an error.
-  bool m_fctlNeedsDatChunk;
-  bool m_ignoreAnimation;
+  bool fctl_needs_dat_chunk_;
+  bool ignore_animation_;
 
-  std::unique_ptr<png_byte[]> m_interlaceBuffer;
+  std::unique_ptr<png_byte[]> interlace_buffer_;
 
   // Value used for the byteLength of a FrameInfo struct to indicate that it is
   // the first frame and its byteLength is not yet known. 1 is a safe value
@@ -141,27 +141,27 @@ class PLATFORM_EXPORT PNGImageReader final {
 
   // Stores information about a frame until it can be pushed to |m_frameInfo|
   // once all the frame data has been read from the stream.
-  FrameInfo m_newFrame;
-  Vector<FrameInfo, 1> m_frameInfo;
+  FrameInfo new_frame_;
+  Vector<FrameInfo, 1> frame_info_;
 
-  size_t processData(const FastSharedBufferReader&,
+  size_t ProcessData(const FastSharedBufferReader&,
                      size_t offset,
                      size_t length);
   // Returns false on a fatal error.
-  bool parseSize(const FastSharedBufferReader&);
+  bool ParseSize(const FastSharedBufferReader&);
   // Returns false on an error.
-  bool parseFrameInfo(const png_byte* data);
-  bool shouldDecodeWithNewPNG(size_t) const;
-  void startFrameDecoding(const FastSharedBufferReader&, size_t);
+  bool ParseFrameInfo(const png_byte* data);
+  bool ShouldDecodeWithNewPNG(size_t) const;
+  void StartFrameDecoding(const FastSharedBufferReader&, size_t);
   // Returns whether the frame was completely decoded.
-  bool progressivelyDecodeFirstFrame(const FastSharedBufferReader&);
-  void decodeFrame(const FastSharedBufferReader&, size_t);
-  void processFdatChunkAsIdat(png_uint_32 fdatLength);
+  bool ProgressivelyDecodeFirstFrame(const FastSharedBufferReader&);
+  void DecodeFrame(const FastSharedBufferReader&, size_t);
+  void ProcessFdatChunkAsIdat(png_uint_32 fdat_length);
   // Returns false on a fatal error.
-  bool checkSequenceNumber(const png_byte* position);
-  bool firstFrameFullyReceived() const {
-    return !m_frameInfo.isEmpty() &&
-           m_frameInfo[0].byteLength != kFirstFrameIndicator;
+  bool CheckSequenceNumber(const png_byte* position);
+  bool FirstFrameFullyReceived() const {
+    return !frame_info_.IsEmpty() &&
+           frame_info_[0].byte_length != kFirstFrameIndicator;
   }
 };
 

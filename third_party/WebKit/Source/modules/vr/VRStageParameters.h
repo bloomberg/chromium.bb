@@ -21,20 +21,20 @@ class VRStageParameters final : public GarbageCollected<VRStageParameters>,
   VRStageParameters();
 
   DOMFloat32Array* sittingToStandingTransform() const {
-    return m_standingTransform;
+    return standing_transform_;
   }
 
-  float sizeX() const { return m_sizeX; }
-  float sizeZ() const { return m_sizeZ; }
+  float sizeX() const { return size_x_; }
+  float sizeZ() const { return size_z_; }
 
-  void update(const device::mojom::blink::VRStageParametersPtr&);
+  void Update(const device::mojom::blink::VRStageParametersPtr&);
 
   DECLARE_VIRTUAL_TRACE()
 
  private:
-  Member<DOMFloat32Array> m_standingTransform;
-  float m_sizeX;
-  float m_sizeZ;
+  Member<DOMFloat32Array> standing_transform_;
+  float size_x_;
+  float size_z_;
 };
 
 }  // namespace blink

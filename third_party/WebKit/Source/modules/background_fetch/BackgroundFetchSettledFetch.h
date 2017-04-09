@@ -20,7 +20,7 @@ class BackgroundFetchSettledFetch final : public BackgroundFetchFetch {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchSettledFetch* create(Request* request,
+  static BackgroundFetchSettledFetch* Create(Request* request,
                                              Response* response) {
     return new BackgroundFetchSettledFetch(request, response);
   }
@@ -33,7 +33,7 @@ class BackgroundFetchSettledFetch final : public BackgroundFetchFetch {
  private:
   BackgroundFetchSettledFetch(Request*, Response*);
 
-  Member<Response> m_response;
+  Member<Response> response_;
 };
 
 }  // namespace blink

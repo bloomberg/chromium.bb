@@ -6,52 +6,52 @@
 
 namespace blink {
 
-QualifiedName AtomicHTMLToken::nameForAttribute(
+QualifiedName AtomicHTMLToken::NameForAttribute(
     const HTMLToken::Attribute& attribute) const {
-  return QualifiedName(nullAtom, attribute.name(), nullAtom);
+  return QualifiedName(g_null_atom, attribute.GetName(), g_null_atom);
 }
 
-bool AtomicHTMLToken::usesName() const {
-  return m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag ||
-         m_type == HTMLToken::DOCTYPE;
+bool AtomicHTMLToken::UsesName() const {
+  return type_ == HTMLToken::kStartTag || type_ == HTMLToken::kEndTag ||
+         type_ == HTMLToken::DOCTYPE;
 }
 
-bool AtomicHTMLToken::usesAttributes() const {
-  return m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag;
+bool AtomicHTMLToken::UsesAttributes() const {
+  return type_ == HTMLToken::kStartTag || type_ == HTMLToken::kEndTag;
 }
 
 #ifndef NDEBUG
-const char* toString(HTMLToken::TokenType type) {
+const char* ToString(HTMLToken::TokenType type) {
   switch (type) {
 #define DEFINE_STRINGIFY(type) \
   case HTMLToken::type:        \
     return #type;
-    DEFINE_STRINGIFY(Uninitialized);
+    DEFINE_STRINGIFY(kUninitialized);
     DEFINE_STRINGIFY(DOCTYPE);
-    DEFINE_STRINGIFY(StartTag);
-    DEFINE_STRINGIFY(EndTag);
-    DEFINE_STRINGIFY(Comment);
-    DEFINE_STRINGIFY(Character);
-    DEFINE_STRINGIFY(EndOfFile);
+    DEFINE_STRINGIFY(kStartTag);
+    DEFINE_STRINGIFY(kEndTag);
+    DEFINE_STRINGIFY(kComment);
+    DEFINE_STRINGIFY(kCharacter);
+    DEFINE_STRINGIFY(kEndOfFile);
 #undef DEFINE_STRINGIFY
   }
   return "<unknown>";
 }
 
-void AtomicHTMLToken::show() const {
-  printf("AtomicHTMLToken %s", toString(m_type));
-  switch (m_type) {
-    case HTMLToken::StartTag:
-    case HTMLToken::EndTag:
-      if (m_selfClosing)
+void AtomicHTMLToken::Show() const {
+  printf("AtomicHTMLToken %s", ToString(type_));
+  switch (type_) {
+    case HTMLToken::kStartTag:
+    case HTMLToken::kEndTag:
+      if (self_closing_)
         printf(" selfclosing");
     /* FALL THROUGH */
     case HTMLToken::DOCTYPE:
-      printf(" name \"%s\"", m_name.getString().utf8().data());
+      printf(" name \"%s\"", name_.GetString().Utf8().Data());
       break;
-    case HTMLToken::Comment:
-    case HTMLToken::Character:
-      printf(" data \"%s\"", m_data.utf8().data());
+    case HTMLToken::kComment:
+    case HTMLToken::kCharacter:
+      printf(" data \"%s\"", data_.Utf8().Data());
       break;
     default:
       break;

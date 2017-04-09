@@ -85,7 +85,7 @@ class CONTENT_EXPORT PresentationConnectionProxy
   void OnClose() override;
 
   // blink::WebPresentationConnectionProxy implementation.
-  void close() const override;
+  void Close() const override;
 
  protected:
   explicit PresentationConnectionProxy(

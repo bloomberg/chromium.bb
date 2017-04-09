@@ -48,19 +48,19 @@ class TreeScope;
 
 class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
  public:
-  static DocumentOrderedMap* create();
+  static DocumentOrderedMap* Create();
 
-  void add(const AtomicString&, Element*);
-  void remove(const AtomicString&, Element*);
+  void Add(const AtomicString&, Element*);
+  void Remove(const AtomicString&, Element*);
 
-  bool contains(const AtomicString&) const;
-  bool containsMultiple(const AtomicString&) const;
+  bool Contains(const AtomicString&) const;
+  bool ContainsMultiple(const AtomicString&) const;
   // concrete instantiations of the get<>() method template
-  Element* getElementById(const AtomicString&, const TreeScope*) const;
-  const HeapVector<Member<Element>>& getAllElementsById(const AtomicString&,
+  Element* GetElementById(const AtomicString&, const TreeScope*) const;
+  const HeapVector<Member<Element>>& GetAllElementsById(const AtomicString&,
                                                         const TreeScope*) const;
-  Element* getElementByMapName(const AtomicString&, const TreeScope*) const;
-  HTMLSlotElement* getSlotByName(const AtomicString&, const TreeScope*) const;
+  Element* GetElementByMapName(const AtomicString&, const TreeScope*) const;
+  HTMLSlotElement* GetSlotByName(const AtomicString&, const TreeScope*) const;
 
   DECLARE_TRACE();
 
@@ -91,32 +91,32 @@ class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
   DocumentOrderedMap();
 
   template <bool keyMatches(const AtomicString&, const Element&)>
-  Element* get(const AtomicString&, const TreeScope*) const;
+  Element* Get(const AtomicString&, const TreeScope*) const;
 
   class MapEntry : public GarbageCollected<MapEntry> {
    public:
-    explicit MapEntry(Element* firstElement)
-        : element(firstElement), count(1) {}
+    explicit MapEntry(Element* first_element)
+        : element(first_element), count(1) {}
 
     DECLARE_TRACE();
 
     Member<Element> element;
     unsigned count;
-    HeapVector<Member<Element>> orderedList;
+    HeapVector<Member<Element>> ordered_list;
   };
 
   using Map = HeapHashMap<AtomicString, Member<MapEntry>>;
 
-  mutable Map m_map;
+  mutable Map map_;
 };
 
-inline bool DocumentOrderedMap::contains(const AtomicString& id) const {
-  return m_map.contains(id);
+inline bool DocumentOrderedMap::Contains(const AtomicString& id) const {
+  return map_.Contains(id);
 }
 
-inline bool DocumentOrderedMap::containsMultiple(const AtomicString& id) const {
-  Map::const_iterator it = m_map.find(id);
-  return it != m_map.end() && it->value->count > 1;
+inline bool DocumentOrderedMap::ContainsMultiple(const AtomicString& id) const {
+  Map::const_iterator it = map_.Find(id);
+  return it != map_.end() && it->value->count > 1;
 }
 
 }  // namespace blink

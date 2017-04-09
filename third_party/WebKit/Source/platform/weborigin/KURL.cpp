@@ -44,14 +44,14 @@
 
 namespace blink {
 
-static const int maximumValidPortNumber = 0xFFFE;
-static const int invalidPortNumber = 0xFFFF;
+static const int kMaximumValidPortNumber = 0xFFFE;
+static const int kInvalidPortNumber = 0xFFFF;
 
 #if DCHECK_IS_ON()
-static void assertProtocolIsGood(const StringView protocol) {
+static void AssertProtocolIsGood(const StringView protocol) {
   DCHECK(protocol != "");
   for (size_t i = 0; i < protocol.length(); ++i) {
-    LChar c = protocol.characters8()[i];
+    LChar c = protocol.Characters8()[i];
     DCHECK(c > ' ' && c < 0x7F && !(c >= 'A' && c <= 'Z'));
   }
 }
@@ -59,34 +59,34 @@ static void assertProtocolIsGood(const StringView protocol) {
 
 // Note: You must ensure that |spec| is a valid canonicalized URL before calling
 // this function.
-static const char* asURLChar8Subtle(const String& spec) {
-  DCHECK(spec.is8Bit());
+static const char* AsURLChar8Subtle(const String& spec) {
+  DCHECK(spec.Is8Bit());
   // characters8 really return characters in Latin-1, but because we
   // canonicalize URL strings, we know that everything before the fragment
   // identifier will actually be ASCII, which means this cast is safe as long as
   // you don't look at the fragment component.
-  return reinterpret_cast<const char*>(spec.characters8());
+  return reinterpret_cast<const char*>(spec.Characters8());
 }
 
 // Returns the characters for the given string, or a pointer to a static empty
 // string if the input string is null. This will always ensure we have a non-
 // null character pointer since ReplaceComponents has special meaning for null.
-static const char* charactersOrEmpty(const StringUTF8Adaptor& string) {
-  static const char zero = 0;
-  return string.data() ? string.data() : &zero;
+static const char* CharactersOrEmpty(const StringUTF8Adaptor& string) {
+  static const char kZero = 0;
+  return string.Data() ? string.Data() : &kZero;
 }
 
-static bool isSchemeFirstChar(char c) {
+static bool IsSchemeFirstChar(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-static bool isSchemeChar(char c) {
-  return isSchemeFirstChar(c) || (c >= '0' && c <= '9') || c == '.' ||
+static bool IsSchemeChar(char c) {
+  return IsSchemeFirstChar(c) || (c >= '0' && c <= '9') || c == '.' ||
          c == '-' || c == '+';
 }
 
-static bool isUnicodeEncoding(const WTF::TextEncoding* encoding) {
-  return encoding->encodingForFormSubmission() == UTF8Encoding();
+static bool IsUnicodeEncoding(const WTF::TextEncoding* encoding) {
+  return encoding->EncodingForFormSubmission() == UTF8Encoding();
 }
 
 namespace {
@@ -98,105 +98,107 @@ class KURLCharsetConverter final : public url::CharsetConverter {
   // The encoding parameter may be 0, but in this case the object must not be
   // called.
   explicit KURLCharsetConverter(const WTF::TextEncoding* encoding)
-      : m_encoding(encoding) {}
+      : encoding_(encoding) {}
 
   void ConvertFromUTF16(const base::char16* input,
-                        int inputLength,
+                        int input_length,
                         url::CanonOutput* output) override {
-    CString encoded = m_encoding->encode(
-        String(input, inputLength), WTF::URLEncodedEntitiesForUnencodables);
-    output->Append(encoded.data(), static_cast<int>(encoded.length()));
+    CString encoded = encoding_->Encode(
+        String(input, input_length), WTF::kURLEncodedEntitiesForUnencodables);
+    output->Append(encoded.Data(), static_cast<int>(encoded.length()));
   }
 
  private:
-  const WTF::TextEncoding* m_encoding;
+  const WTF::TextEncoding* encoding_;
 };
 
 }  // namespace
 
-bool isValidProtocol(const String& protocol) {
+bool IsValidProtocol(const String& protocol) {
   // RFC3986: ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-  if (protocol.isEmpty())
+  if (protocol.IsEmpty())
     return false;
-  if (!isSchemeFirstChar(protocol[0]))
+  if (!IsSchemeFirstChar(protocol[0]))
     return false;
-  unsigned protocolLength = protocol.length();
-  for (unsigned i = 1; i < protocolLength; i++) {
-    if (!isSchemeChar(protocol[i]))
+  unsigned protocol_length = protocol.length();
+  for (unsigned i = 1; i < protocol_length; i++) {
+    if (!IsSchemeChar(protocol[i]))
       return false;
   }
   return true;
 }
 
-void KURL::initialize() {
+void KURL::Initialize() {
   // This must be called before we create other threads to
   // avoid racy static local initialization.
-  blankURL();
+  BlankURL();
 }
 
-String KURL::strippedForUseAsReferrer() const {
-  if (!protocolIsInHTTPFamily())
+String KURL::StrippedForUseAsReferrer() const {
+  if (!ProtocolIsInHTTPFamily())
     return String();
 
-  if (m_parsed.username.is_nonempty() || m_parsed.password.is_nonempty() ||
-      m_parsed.ref.is_valid()) {
+  if (parsed_.username.is_nonempty() || parsed_.password.is_nonempty() ||
+      parsed_.ref.is_valid()) {
     KURL referrer(*this);
-    referrer.setUser(String());
-    referrer.setPass(String());
-    referrer.removeFragmentIdentifier();
-    return referrer.getString();
+    referrer.SetUser(String());
+    referrer.SetPass(String());
+    referrer.RemoveFragmentIdentifier();
+    return referrer.GetString();
   }
-  return getString();
+  return GetString();
 }
 
-String KURL::strippedForUseAsHref() const {
-  if (m_parsed.username.is_nonempty() || m_parsed.password.is_nonempty()) {
+String KURL::StrippedForUseAsHref() const {
+  if (parsed_.username.is_nonempty() || parsed_.password.is_nonempty()) {
     KURL href(*this);
-    href.setUser(String());
-    href.setPass(String());
-    return href.getString();
+    href.SetUser(String());
+    href.SetPass(String());
+    return href.GetString();
   }
-  return getString();
+  return GetString();
 }
 
-bool KURL::isLocalFile() const {
+bool KURL::IsLocalFile() const {
   // Including feed here might be a bad idea since drag and drop uses this check
   // and including feed would allow feeds to potentially let someone's blog
   // read the contents of the clipboard on a drag, even without a drop.
   // Likewise with using the FrameLoader::shouldTreatURLAsLocal() function.
-  return protocolIs("file");
+  return ProtocolIs("file");
 }
 
-bool protocolIsJavaScript(const String& url) {
-  return protocolIs(url, "javascript");
+bool ProtocolIsJavaScript(const String& url) {
+  return ProtocolIs(url, "javascript");
 }
 
-const KURL& blankURL() {
-  DEFINE_STATIC_LOCAL(KURL, staticBlankURL, (ParsedURLString, "about:blank"));
-  return staticBlankURL;
+const KURL& BlankURL() {
+  DEFINE_STATIC_LOCAL(KURL, static_blank_url,
+                      (kParsedURLString, "about:blank"));
+  return static_blank_url;
 }
 
-bool KURL::isAboutBlankURL() const {
-  return *this == blankURL();
+bool KURL::IsAboutBlankURL() const {
+  return *this == BlankURL();
 }
 
-const KURL& srcdocURL() {
-  DEFINE_STATIC_LOCAL(KURL, staticSrcdocURL, (ParsedURLString, "about:srcdoc"));
-  return staticSrcdocURL;
+const KURL& SrcdocURL() {
+  DEFINE_STATIC_LOCAL(KURL, static_srcdoc_url,
+                      (kParsedURLString, "about:srcdoc"));
+  return static_srcdoc_url;
 }
 
-bool KURL::isAboutSrcdocURL() const {
-  return *this == srcdocURL();
+bool KURL::IsAboutSrcdocURL() const {
+  return *this == SrcdocURL();
 }
 
-String KURL::elidedString() const {
-  if (getString().length() <= 1024)
-    return getString();
+String KURL::ElidedString() const {
+  if (GetString().length() <= 1024)
+    return GetString();
 
-  return getString().left(511) + "..." + getString().right(510);
+  return GetString().Left(511) + "..." + GetString().Right(510);
 }
 
-KURL::KURL() : m_isValid(false), m_protocolIsInHTTPFamily(false) {}
+KURL::KURL() : is_valid_(false), protocol_is_in_http_family_(false) {}
 
 // Initializes with a string representing an absolute URL. No encoding
 // information is specified. This generally happens when a KURL is converted
@@ -204,27 +206,27 @@ KURL::KURL() : m_isValid(false), m_protocolIsInHTTPFamily(false) {}
 // canonical and in proper escaped form so needs no encoding. We treat it as
 // UTF-8 just in case.
 KURL::KURL(ParsedURLStringTag, const String& url) {
-  if (!url.isNull())
-    init(KURL(), url, 0);
+  if (!url.IsNull())
+    Init(KURL(), url, 0);
   else {
     // WebCore expects us to preserve the nullness of strings when this
     // constructor is used. In all other cases, it expects a non-null
     // empty string, which is what init() will create.
-    m_isValid = false;
-    m_protocolIsInHTTPFamily = false;
+    is_valid_ = false;
+    protocol_is_in_http_family_ = false;
   }
 }
 
-KURL KURL::createIsolated(ParsedURLStringTag, const String& url) {
+KURL KURL::CreateIsolated(ParsedURLStringTag, const String& url) {
   // FIXME: We should be able to skip this extra copy and created an
   // isolated KURL more efficiently.
-  return KURL(ParsedURLString, url).copy();
+  return KURL(kParsedURLString, url).Copy();
 }
 
 // Constructs a new URL given a base URL and a possibly relative input URL.
 // This assumes UTF-8 encoding.
 KURL::KURL(const KURL& base, const String& relative) {
-  init(base, relative, 0);
+  Init(base, relative, 0);
 }
 
 // Constructs a new URL given a base URL and a possibly relative input URL.
@@ -232,124 +234,124 @@ KURL::KURL(const KURL& base, const String& relative) {
 KURL::KURL(const KURL& base,
            const String& relative,
            const WTF::TextEncoding& encoding) {
-  init(base, relative, &encoding.encodingForFormSubmission());
+  Init(base, relative, &encoding.EncodingForFormSubmission());
 }
 
-KURL::KURL(const AtomicString& canonicalString,
+KURL::KURL(const AtomicString& canonical_string,
            const url::Parsed& parsed,
-           bool isValid)
-    : m_isValid(isValid),
-      m_protocolIsInHTTPFamily(false),
-      m_parsed(parsed),
-      m_string(canonicalString) {
-  initProtocolMetadata();
-  initInnerURL();
+           bool is_valid)
+    : is_valid_(is_valid),
+      protocol_is_in_http_family_(false),
+      parsed_(parsed),
+      string_(canonical_string) {
+  InitProtocolMetadata();
+  InitInnerURL();
 }
 
 KURL::KURL(WTF::HashTableDeletedValueType)
-    : m_isValid(false),
-      m_protocolIsInHTTPFamily(false),
-      m_string(WTF::HashTableDeletedValue) {}
+    : is_valid_(false),
+      protocol_is_in_http_family_(false),
+      string_(WTF::kHashTableDeletedValue) {}
 
 KURL::KURL(const KURL& other)
-    : m_isValid(other.m_isValid),
-      m_protocolIsInHTTPFamily(other.m_protocolIsInHTTPFamily),
-      m_protocol(other.m_protocol),
-      m_parsed(other.m_parsed),
-      m_string(other.m_string) {
-  if (other.m_innerURL.get())
-    m_innerURL = WTF::wrapUnique(new KURL(other.m_innerURL->copy()));
+    : is_valid_(other.is_valid_),
+      protocol_is_in_http_family_(other.protocol_is_in_http_family_),
+      protocol_(other.protocol_),
+      parsed_(other.parsed_),
+      string_(other.string_) {
+  if (other.inner_url_.get())
+    inner_url_ = WTF::WrapUnique(new KURL(other.inner_url_->Copy()));
 }
 
 KURL::~KURL() {}
 
 KURL& KURL::operator=(const KURL& other) {
-  m_isValid = other.m_isValid;
-  m_protocolIsInHTTPFamily = other.m_protocolIsInHTTPFamily;
-  m_protocol = other.m_protocol;
-  m_parsed = other.m_parsed;
-  m_string = other.m_string;
-  if (other.m_innerURL)
-    m_innerURL = WTF::wrapUnique(new KURL(other.m_innerURL->copy()));
+  is_valid_ = other.is_valid_;
+  protocol_is_in_http_family_ = other.protocol_is_in_http_family_;
+  protocol_ = other.protocol_;
+  parsed_ = other.parsed_;
+  string_ = other.string_;
+  if (other.inner_url_)
+    inner_url_ = WTF::WrapUnique(new KURL(other.inner_url_->Copy()));
   else
-    m_innerURL.reset();
+    inner_url_.reset();
   return *this;
 }
 
-KURL KURL::copy() const {
+KURL KURL::Copy() const {
   KURL result;
-  result.m_isValid = m_isValid;
-  result.m_protocolIsInHTTPFamily = m_protocolIsInHTTPFamily;
-  result.m_protocol = m_protocol.isolatedCopy();
-  result.m_parsed = m_parsed;
-  result.m_string = m_string.isolatedCopy();
-  if (m_innerURL)
-    result.m_innerURL = WTF::wrapUnique(new KURL(m_innerURL->copy()));
+  result.is_valid_ = is_valid_;
+  result.protocol_is_in_http_family_ = protocol_is_in_http_family_;
+  result.protocol_ = protocol_.IsolatedCopy();
+  result.parsed_ = parsed_;
+  result.string_ = string_.IsolatedCopy();
+  if (inner_url_)
+    result.inner_url_ = WTF::WrapUnique(new KURL(inner_url_->Copy()));
   return result;
 }
 
-bool KURL::isNull() const {
-  return m_string.isNull();
+bool KURL::IsNull() const {
+  return string_.IsNull();
 }
 
-bool KURL::isEmpty() const {
-  return m_string.isEmpty();
+bool KURL::IsEmpty() const {
+  return string_.IsEmpty();
 }
 
-bool KURL::isValid() const {
-  return m_isValid;
+bool KURL::IsValid() const {
+  return is_valid_;
 }
 
-bool KURL::hasPort() const {
-  return hostEnd() < pathStart();
+bool KURL::HasPort() const {
+  return HostEnd() < PathStart();
 }
 
-bool KURL::protocolIsJavaScript() const {
-  return componentStringView(m_parsed.scheme) == "javascript";
+bool KURL::ProtocolIsJavaScript() const {
+  return ComponentStringView(parsed_.scheme) == "javascript";
 }
 
-bool KURL::protocolIsInHTTPFamily() const {
-  return m_protocolIsInHTTPFamily;
+bool KURL::ProtocolIsInHTTPFamily() const {
+  return protocol_is_in_http_family_;
 }
 
-bool KURL::hasPath() const {
+bool KURL::HasPath() const {
   // Note that http://www.google.com/" has a path, the path is "/". This can
   // return false only for invalid or nonstandard URLs.
-  return m_parsed.path.len >= 0;
+  return parsed_.path.len >= 0;
 }
 
-String KURL::lastPathComponent() const {
-  if (!m_isValid)
-    return stringViewForInvalidComponent().toString();
-  DCHECK(!m_string.isNull());
+String KURL::LastPathComponent() const {
+  if (!is_valid_)
+    return StringViewForInvalidComponent().ToString();
+  DCHECK(!string_.IsNull());
 
   // When the output ends in a slash, WebCore has different expectations than
   // the GoogleURL library. For "/foo/bar/" the library will return the empty
   // string, but WebCore wants "bar".
-  url::Component path = m_parsed.path;
-  if (path.len > 0 && m_string[path.end() - 1] == '/')
+  url::Component path = parsed_.path;
+  if (path.len > 0 && string_[path.end() - 1] == '/')
     path.len--;
 
   url::Component file;
-  if (m_string.is8Bit())
-    url::ExtractFileName(asURLChar8Subtle(m_string), path, &file);
+  if (string_.Is8Bit())
+    url::ExtractFileName(AsURLChar8Subtle(string_), path, &file);
   else
-    url::ExtractFileName(m_string.characters16(), path, &file);
+    url::ExtractFileName(string_.Characters16(), path, &file);
 
   // Bug: https://bugs.webkit.org/show_bug.cgi?id=21015 this function returns
   // a null string when the path is empty, which we duplicate here.
   if (!file.is_nonempty())
     return String();
-  return componentString(file);
+  return ComponentString(file);
 }
 
-String KURL::protocol() const {
-  DCHECK_EQ(componentString(m_parsed.scheme), m_protocol);
-  return m_protocol;
+String KURL::Protocol() const {
+  DCHECK_EQ(ComponentString(parsed_.scheme), protocol_);
+  return protocol_;
 }
 
-String KURL::host() const {
-  return componentString(m_parsed.host);
+String KURL::Host() const {
+  return ComponentString(parsed_.host);
 }
 
 // Returns 0 when there is no port.
@@ -358,18 +360,18 @@ String KURL::host() const {
 // be rejected by the canonicalizer. KURL.cpp will allow them in parsing, but
 // return invalidPortNumber from this port() function, so we mirror that
 // behavior here.
-unsigned short KURL::port() const {
-  if (!m_isValid || m_parsed.port.len <= 0)
+unsigned short KURL::Port() const {
+  if (!is_valid_ || parsed_.port.len <= 0)
     return 0;
-  DCHECK(!m_string.isNull());
-  int port = m_string.is8Bit()
-                 ? url::ParsePort(asURLChar8Subtle(m_string), m_parsed.port)
-                 : url::ParsePort(m_string.characters16(), m_parsed.port);
+  DCHECK(!string_.IsNull());
+  int port = string_.Is8Bit()
+                 ? url::ParsePort(AsURLChar8Subtle(string_), parsed_.port)
+                 : url::ParsePort(string_.Characters16(), parsed_.port);
   DCHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 before.
 
   if (port == url::PORT_INVALID ||
-      port > maximumValidPortNumber)  // Mimic KURL::port()
-    port = invalidPortNumber;
+      port > kMaximumValidPortNumber)  // Mimic KURL::port()
+    port = kInvalidPortNumber;
 
   return static_cast<unsigned short>(port);
 }
@@ -377,74 +379,74 @@ unsigned short KURL::port() const {
 // TODO(csharrison): Migrate pass() and user() to return a StringView. Most
 // consumers just need to know if the string is empty.
 
-String KURL::pass() const {
+String KURL::Pass() const {
   // Bug: https://bugs.webkit.org/show_bug.cgi?id=21015 this function returns
   // a null string when the password is empty, which we duplicate here.
-  if (!m_parsed.password.is_nonempty())
+  if (!parsed_.password.is_nonempty())
     return String();
-  return componentString(m_parsed.password);
+  return ComponentString(parsed_.password);
 }
 
-String KURL::user() const {
-  return componentString(m_parsed.username);
+String KURL::User() const {
+  return ComponentString(parsed_.username);
 }
 
-String KURL::fragmentIdentifier() const {
+String KURL::FragmentIdentifier() const {
   // Empty but present refs ("foo.com/bar#") should result in the empty
   // string, which componentString will produce. Nonexistent refs
   // should be the null string.
-  if (!m_parsed.ref.is_valid())
+  if (!parsed_.ref.is_valid())
     return String();
-  return componentString(m_parsed.ref);
+  return ComponentString(parsed_.ref);
 }
 
-bool KURL::hasFragmentIdentifier() const {
-  return m_parsed.ref.len >= 0;
+bool KURL::HasFragmentIdentifier() const {
+  return parsed_.ref.len >= 0;
 }
 
-String KURL::baseAsString() const {
+String KURL::BaseAsString() const {
   // FIXME: There is probably a more efficient way to do this?
-  return m_string.left(pathAfterLastSlash());
+  return string_.Left(PathAfterLastSlash());
 }
 
-String KURL::query() const {
-  if (m_parsed.query.len >= 0)
-    return componentString(m_parsed.query);
+String KURL::Query() const {
+  if (parsed_.query.len >= 0)
+    return ComponentString(parsed_.query);
 
   // Bug: https://bugs.webkit.org/show_bug.cgi?id=21015 this function returns
   // an empty string when the query is empty rather than a null (not sure
   // which is right).
   // Returns a null if the query is not specified, instead of empty.
-  if (m_parsed.query.is_valid())
-    return emptyString;
+  if (parsed_.query.is_valid())
+    return g_empty_string;
   return String();
 }
 
-String KURL::path() const {
-  return componentString(m_parsed.path);
+String KURL::GetPath() const {
+  return ComponentString(parsed_.path);
 }
 
-bool KURL::setProtocol(const String& protocol) {
+bool KURL::SetProtocol(const String& protocol) {
   // Firefox and IE remove everything after the first ':'.
-  int separatorPosition = protocol.find(':');
-  String newProtocol = protocol.substring(0, separatorPosition);
-  StringUTF8Adaptor newProtocolUTF8(newProtocol);
+  int separator_position = protocol.Find(':');
+  String new_protocol = protocol.Substring(0, separator_position);
+  StringUTF8Adaptor new_protocol_utf8(new_protocol);
 
   // If KURL is given an invalid scheme, it returns failure without modifying
   // the URL at all. This is in contrast to most other setters which modify
   // the URL and set "m_isValid."
-  url::RawCanonOutputT<char> canonProtocol;
-  url::Component protocolComponent;
-  if (!url::CanonicalizeScheme(newProtocolUTF8.data(),
-                               url::Component(0, newProtocolUTF8.length()),
-                               &canonProtocol, &protocolComponent) ||
-      !protocolComponent.is_nonempty())
+  url::RawCanonOutputT<char> canon_protocol;
+  url::Component protocol_component;
+  if (!url::CanonicalizeScheme(new_protocol_utf8.Data(),
+                               url::Component(0, new_protocol_utf8.length()),
+                               &canon_protocol, &protocol_component) ||
+      !protocol_component.is_nonempty())
     return false;
 
   url::Replacements<char> replacements;
-  replacements.SetScheme(charactersOrEmpty(newProtocolUTF8),
-                         url::Component(0, newProtocolUTF8.length()));
-  replaceComponents(replacements);
+  replacements.SetScheme(CharactersOrEmpty(new_protocol_utf8),
+                         url::Component(0, new_protocol_utf8.length()));
+  ReplaceComponents(replacements);
 
   // isValid could be false but we still return true here. This is because
   // WebCore or JS scripts can build up a URL by setting individual
@@ -455,152 +457,152 @@ bool KURL::setProtocol(const String& protocol) {
   return true;
 }
 
-void KURL::setHost(const String& host) {
-  StringUTF8Adaptor hostUTF8(host);
+void KURL::SetHost(const String& host) {
+  StringUTF8Adaptor host_utf8(host);
   url::Replacements<char> replacements;
-  replacements.SetHost(charactersOrEmpty(hostUTF8),
-                       url::Component(0, hostUTF8.length()));
-  replaceComponents(replacements);
+  replacements.SetHost(CharactersOrEmpty(host_utf8),
+                       url::Component(0, host_utf8.length()));
+  ReplaceComponents(replacements);
 }
 
-static String parsePortFromStringPosition(const String& value,
-                                          unsigned portStart) {
+static String ParsePortFromStringPosition(const String& value,
+                                          unsigned port_start) {
   // "008080junk" needs to be treated as port "8080" and "000" as "0".
   size_t length = value.length();
-  unsigned portEnd = portStart;
-  while (isASCIIDigit(value[portEnd]) && portEnd < length)
-    ++portEnd;
-  while (value[portStart] == '0' && portStart < portEnd - 1)
-    ++portStart;
+  unsigned port_end = port_start;
+  while (IsASCIIDigit(value[port_end]) && port_end < length)
+    ++port_end;
+  while (value[port_start] == '0' && port_start < port_end - 1)
+    ++port_start;
 
   // Required for backwards compat.
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=23463
-  if (portStart == portEnd)
+  if (port_start == port_end)
     return "0";
 
-  return value.substring(portStart, portEnd - portStart);
+  return value.Substring(port_start, port_end - port_start);
 }
 
-void KURL::setHostAndPort(const String& hostAndPort) {
-  size_t separator = hostAndPort.find(':');
+void KURL::SetHostAndPort(const String& host_and_port) {
+  size_t separator = host_and_port.Find(':');
   if (!separator)
     return;
 
   if (separator == kNotFound) {
     url::Replacements<char> replacements;
-    StringUTF8Adaptor hostUTF8(hostAndPort);
-    replacements.SetHost(charactersOrEmpty(hostUTF8),
-                         url::Component(0, hostUTF8.length()));
-    replaceComponents(replacements);
+    StringUTF8Adaptor host_utf8(host_and_port);
+    replacements.SetHost(CharactersOrEmpty(host_utf8),
+                         url::Component(0, host_utf8.length()));
+    ReplaceComponents(replacements);
     return;
   }
 
-  String host = hostAndPort.substring(0, separator);
-  String port = parsePortFromStringPosition(hostAndPort, separator + 1);
+  String host = host_and_port.Substring(0, separator);
+  String port = ParsePortFromStringPosition(host_and_port, separator + 1);
 
-  StringUTF8Adaptor hostUTF8(host);
-  StringUTF8Adaptor portUTF8(port);
+  StringUTF8Adaptor host_utf8(host);
+  StringUTF8Adaptor port_utf8(port);
 
   url::Replacements<char> replacements;
-  replacements.SetHost(charactersOrEmpty(hostUTF8),
-                       url::Component(0, hostUTF8.length()));
-  replacements.SetPort(charactersOrEmpty(portUTF8),
-                       url::Component(0, portUTF8.length()));
-  replaceComponents(replacements);
+  replacements.SetHost(CharactersOrEmpty(host_utf8),
+                       url::Component(0, host_utf8.length()));
+  replacements.SetPort(CharactersOrEmpty(port_utf8),
+                       url::Component(0, port_utf8.length()));
+  ReplaceComponents(replacements);
 }
 
-void KURL::removePort() {
-  if (!hasPort())
+void KURL::RemovePort() {
+  if (!HasPort())
     return;
   url::Replacements<char> replacements;
   replacements.ClearPort();
-  replaceComponents(replacements);
+  ReplaceComponents(replacements);
 }
 
-void KURL::setPort(const String& port) {
-  String parsedPort = parsePortFromStringPosition(port, 0);
-  setPort(parsedPort.toUInt());
+void KURL::SetPort(const String& port) {
+  String parsed_port = ParsePortFromStringPosition(port, 0);
+  SetPort(parsed_port.ToUInt());
 }
 
-void KURL::setPort(unsigned short port) {
-  if (isDefaultPortForProtocol(port, protocol())) {
-    removePort();
+void KURL::SetPort(unsigned short port) {
+  if (IsDefaultPortForProtocol(port, Protocol())) {
+    RemovePort();
     return;
   }
 
-  String portString = String::number(port);
-  DCHECK(portString.is8Bit());
+  String port_string = String::Number(port);
+  DCHECK(port_string.Is8Bit());
 
   url::Replacements<char> replacements;
-  replacements.SetPort(reinterpret_cast<const char*>(portString.characters8()),
-                       url::Component(0, portString.length()));
-  replaceComponents(replacements);
+  replacements.SetPort(reinterpret_cast<const char*>(port_string.Characters8()),
+                       url::Component(0, port_string.length()));
+  ReplaceComponents(replacements);
 }
 
-void KURL::setUser(const String& user) {
+void KURL::SetUser(const String& user) {
   // This function is commonly called to clear the username, which we
   // normally don't have, so we optimize this case.
-  if (user.isEmpty() && !m_parsed.username.is_valid())
+  if (user.IsEmpty() && !parsed_.username.is_valid())
     return;
 
   // The canonicalizer will clear any usernames that are empty, so we
   // don't have to explicitly call ClearUsername() here.
-  StringUTF8Adaptor userUTF8(user);
+  StringUTF8Adaptor user_utf8(user);
   url::Replacements<char> replacements;
-  replacements.SetUsername(charactersOrEmpty(userUTF8),
-                           url::Component(0, userUTF8.length()));
-  replaceComponents(replacements);
+  replacements.SetUsername(CharactersOrEmpty(user_utf8),
+                           url::Component(0, user_utf8.length()));
+  ReplaceComponents(replacements);
 }
 
-void KURL::setPass(const String& pass) {
+void KURL::SetPass(const String& pass) {
   // This function is commonly called to clear the password, which we
   // normally don't have, so we optimize this case.
-  if (pass.isEmpty() && !m_parsed.password.is_valid())
+  if (pass.IsEmpty() && !parsed_.password.is_valid())
     return;
 
   // The canonicalizer will clear any passwords that are empty, so we
   // don't have to explicitly call ClearUsername() here.
-  StringUTF8Adaptor passUTF8(pass);
+  StringUTF8Adaptor pass_utf8(pass);
   url::Replacements<char> replacements;
-  replacements.SetPassword(charactersOrEmpty(passUTF8),
-                           url::Component(0, passUTF8.length()));
-  replaceComponents(replacements);
+  replacements.SetPassword(CharactersOrEmpty(pass_utf8),
+                           url::Component(0, pass_utf8.length()));
+  ReplaceComponents(replacements);
 }
 
-void KURL::setFragmentIdentifier(const String& fragment) {
+void KURL::SetFragmentIdentifier(const String& fragment) {
   // This function is commonly called to clear the ref, which we
   // normally don't have, so we optimize this case.
-  if (fragment.isNull() && !m_parsed.ref.is_valid())
+  if (fragment.IsNull() && !parsed_.ref.is_valid())
     return;
 
-  StringUTF8Adaptor fragmentUTF8(fragment);
+  StringUTF8Adaptor fragment_utf8(fragment);
 
   url::Replacements<char> replacements;
-  if (fragment.isNull())
+  if (fragment.IsNull())
     replacements.ClearRef();
   else
-    replacements.SetRef(charactersOrEmpty(fragmentUTF8),
-                        url::Component(0, fragmentUTF8.length()));
-  replaceComponents(replacements);
+    replacements.SetRef(CharactersOrEmpty(fragment_utf8),
+                        url::Component(0, fragment_utf8.length()));
+  ReplaceComponents(replacements);
 }
 
-void KURL::removeFragmentIdentifier() {
+void KURL::RemoveFragmentIdentifier() {
   url::Replacements<char> replacements;
   replacements.ClearRef();
-  replaceComponents(replacements);
+  ReplaceComponents(replacements);
 }
 
-void KURL::setQuery(const String& query) {
-  StringUTF8Adaptor queryUTF8(query);
+void KURL::SetQuery(const String& query) {
+  StringUTF8Adaptor query_utf8(query);
   url::Replacements<char> replacements;
-  if (query.isNull()) {
+  if (query.IsNull()) {
     // KURL.cpp sets to null to clear any query.
     replacements.ClearQuery();
   } else if (query.length() > 0 && query[0] == '?') {
     // WebCore expects the query string to begin with a question mark, but
     // GoogleURL doesn't. So we trim off the question mark when setting.
-    replacements.SetQuery(charactersOrEmpty(queryUTF8),
-                          url::Component(1, queryUTF8.length() - 1));
+    replacements.SetQuery(CharactersOrEmpty(query_utf8),
+                          url::Component(1, query_utf8.length() - 1));
   } else {
     // When set with the empty string or something that doesn't begin with
     // a question mark, KURL.cpp will add a question mark for you. The only
@@ -608,159 +610,159 @@ void KURL::setQuery(const String& query) {
     // string. KURL.cpp will leave a '?' with nothing following it in the
     // URL, whereas we'll clear it.
     // FIXME We should eliminate this difference.
-    replacements.SetQuery(charactersOrEmpty(queryUTF8),
-                          url::Component(0, queryUTF8.length()));
+    replacements.SetQuery(CharactersOrEmpty(query_utf8),
+                          url::Component(0, query_utf8.length()));
   }
-  replaceComponents(replacements);
+  ReplaceComponents(replacements);
 }
 
-void KURL::setPath(const String& path) {
+void KURL::SetPath(const String& path) {
   // Empty paths will be canonicalized to "/", so we don't have to worry
   // about calling ClearPath().
-  StringUTF8Adaptor pathUTF8(path);
+  StringUTF8Adaptor path_utf8(path);
   url::Replacements<char> replacements;
-  replacements.SetPath(charactersOrEmpty(pathUTF8),
-                       url::Component(0, pathUTF8.length()));
-  replaceComponents(replacements);
+  replacements.SetPath(CharactersOrEmpty(path_utf8),
+                       url::Component(0, path_utf8.length()));
+  ReplaceComponents(replacements);
 }
 
-String decodeURLEscapeSequences(const String& string) {
-  return decodeURLEscapeSequences(string, UTF8Encoding());
+String DecodeURLEscapeSequences(const String& string) {
+  return DecodeURLEscapeSequences(string, UTF8Encoding());
 }
 
-String decodeURLEscapeSequences(const String& string,
+String DecodeURLEscapeSequences(const String& string,
                                 const WTF::TextEncoding& encoding) {
-  StringUTF8Adaptor stringUTF8(string);
+  StringUTF8Adaptor string_utf8(string);
   url::RawCanonOutputT<base::char16> unescaped;
-  url::DecodeURLEscapeSequences(stringUTF8.data(), stringUTF8.length(),
+  url::DecodeURLEscapeSequences(string_utf8.Data(), string_utf8.length(),
                                 &unescaped);
-  return StringImpl::create8BitIfPossible(
+  return StringImpl::Create8BitIfPossible(
       reinterpret_cast<UChar*>(unescaped.data()), unescaped.length());
 }
 
-String encodeWithURLEscapeSequences(const String& notEncodedString) {
-  CString utf8 = UTF8Encoding().encode(notEncodedString,
-                                       WTF::URLEncodedEntitiesForUnencodables);
+String EncodeWithURLEscapeSequences(const String& not_encoded_string) {
+  CString utf8 = UTF8Encoding().Encode(not_encoded_string,
+                                       WTF::kURLEncodedEntitiesForUnencodables);
 
   url::RawCanonOutputT<char> buffer;
-  int inputLength = utf8.length();
-  if (buffer.capacity() < inputLength * 3)
-    buffer.Resize(inputLength * 3);
+  int input_length = utf8.length();
+  if (buffer.capacity() < input_length * 3)
+    buffer.Resize(input_length * 3);
 
-  url::EncodeURIComponent(utf8.data(), inputLength, &buffer);
+  url::EncodeURIComponent(utf8.Data(), input_length, &buffer);
   String escaped(buffer.data(), buffer.length());
   // Unescape '/'; it's safe and much prettier.
-  escaped.replace("%2F", "/");
+  escaped.Replace("%2F", "/");
   return escaped;
 }
 
-bool KURL::isHierarchical() const {
-  if (m_string.isNull() || !m_parsed.scheme.is_nonempty())
+bool KURL::IsHierarchical() const {
+  if (string_.IsNull() || !parsed_.scheme.is_nonempty())
     return false;
-  return m_string.is8Bit()
-             ? url::IsStandard(asURLChar8Subtle(m_string), m_parsed.scheme)
-             : url::IsStandard(m_string.characters16(), m_parsed.scheme);
+  return string_.Is8Bit()
+             ? url::IsStandard(AsURLChar8Subtle(string_), parsed_.scheme)
+             : url::IsStandard(string_.Characters16(), parsed_.scheme);
 }
 
-bool equalIgnoringFragmentIdentifier(const KURL& a, const KURL& b) {
+bool EqualIgnoringFragmentIdentifier(const KURL& a, const KURL& b) {
   // Compute the length of each URL without its ref. Note that the reference
   // begin (if it exists) points to the character *after* the '#', so we need
   // to subtract one.
-  int aLength = a.m_string.length();
-  if (a.m_parsed.ref.len >= 0)
-    aLength = a.m_parsed.ref.begin - 1;
+  int a_length = a.string_.length();
+  if (a.parsed_.ref.len >= 0)
+    a_length = a.parsed_.ref.begin - 1;
 
-  int bLength = b.m_string.length();
-  if (b.m_parsed.ref.len >= 0)
-    bLength = b.m_parsed.ref.begin - 1;
+  int b_length = b.string_.length();
+  if (b.parsed_.ref.len >= 0)
+    b_length = b.parsed_.ref.begin - 1;
 
-  if (aLength != bLength)
+  if (a_length != b_length)
     return false;
 
-  const String& aString = a.m_string;
-  const String& bString = b.m_string;
+  const String& a_string = a.string_;
+  const String& b_string = b.string_;
   // FIXME: Abstraction this into a function in WTFString.h.
-  for (int i = 0; i < aLength; ++i) {
-    if (aString[i] != bString[i])
+  for (int i = 0; i < a_length; ++i) {
+    if (a_string[i] != b_string[i])
       return false;
   }
   return true;
 }
 
-unsigned KURL::hostStart() const {
-  return m_parsed.CountCharactersBefore(url::Parsed::HOST, false);
+unsigned KURL::HostStart() const {
+  return parsed_.CountCharactersBefore(url::Parsed::HOST, false);
 }
 
-unsigned KURL::hostEnd() const {
-  return m_parsed.CountCharactersBefore(url::Parsed::PORT, true);
+unsigned KURL::HostEnd() const {
+  return parsed_.CountCharactersBefore(url::Parsed::PORT, true);
 }
 
-unsigned KURL::pathStart() const {
-  return m_parsed.CountCharactersBefore(url::Parsed::PATH, false);
+unsigned KURL::PathStart() const {
+  return parsed_.CountCharactersBefore(url::Parsed::PATH, false);
 }
 
-unsigned KURL::pathEnd() const {
-  return m_parsed.CountCharactersBefore(url::Parsed::QUERY, true);
+unsigned KURL::PathEnd() const {
+  return parsed_.CountCharactersBefore(url::Parsed::QUERY, true);
 }
 
-unsigned KURL::pathAfterLastSlash() const {
-  if (m_string.isNull())
+unsigned KURL::PathAfterLastSlash() const {
+  if (string_.IsNull())
     return 0;
-  if (!m_isValid || !m_parsed.path.is_valid())
-    return m_parsed.CountCharactersBefore(url::Parsed::PATH, false);
+  if (!is_valid_ || !parsed_.path.is_valid())
+    return parsed_.CountCharactersBefore(url::Parsed::PATH, false);
   url::Component filename;
-  if (m_string.is8Bit())
-    url::ExtractFileName(asURLChar8Subtle(m_string), m_parsed.path, &filename);
+  if (string_.Is8Bit())
+    url::ExtractFileName(AsURLChar8Subtle(string_), parsed_.path, &filename);
   else
-    url::ExtractFileName(m_string.characters16(), m_parsed.path, &filename);
+    url::ExtractFileName(string_.Characters16(), parsed_.path, &filename);
   return filename.begin;
 }
 
-bool protocolIs(const String& url, const char* protocol) {
+bool ProtocolIs(const String& url, const char* protocol) {
 #if DCHECK_IS_ON()
-  assertProtocolIsGood(protocol);
+  AssertProtocolIsGood(protocol);
 #endif
-  if (url.isNull())
+  if (url.IsNull())
     return false;
-  if (url.is8Bit())
-    return url::FindAndCompareScheme(asURLChar8Subtle(url), url.length(),
+  if (url.Is8Bit())
+    return url::FindAndCompareScheme(AsURLChar8Subtle(url), url.length(),
                                      protocol, 0);
-  return url::FindAndCompareScheme(url.characters16(), url.length(), protocol,
+  return url::FindAndCompareScheme(url.Characters16(), url.length(), protocol,
                                    0);
 }
 
-void KURL::init(const KURL& base,
+void KURL::Init(const KURL& base,
                 const String& relative,
-                const WTF::TextEncoding* queryEncoding) {
+                const WTF::TextEncoding* query_encoding) {
   // As a performance optimization, we do not use the charset converter
   // if encoding is UTF-8 or other Unicode encodings. Note that this is
   // per HTML5 2.5.3 (resolving URL). The URL canonicalizer will be more
   // efficient with no charset converter object because it can do UTF-8
   // internally with no extra copies.
 
-  StringUTF8Adaptor baseUTF8(base.getString());
+  StringUTF8Adaptor base_utf8(base.GetString());
 
   // We feel free to make the charset converter object every time since it's
   // just a wrapper around a reference.
-  KURLCharsetConverter charsetConverterObject(queryEncoding);
-  KURLCharsetConverter* charsetConverter =
-      (!queryEncoding || isUnicodeEncoding(queryEncoding))
+  KURLCharsetConverter charset_converter_object(query_encoding);
+  KURLCharsetConverter* charset_converter =
+      (!query_encoding || IsUnicodeEncoding(query_encoding))
           ? 0
-          : &charsetConverterObject;
+          : &charset_converter_object;
 
   // Clamp to int max to avoid overflow.
   url::RawCanonOutputT<char> output;
-  if (!relative.isNull() && relative.is8Bit()) {
-    StringUTF8Adaptor relativeUTF8(relative);
-    m_isValid = url::ResolveRelative(baseUTF8.data(), baseUTF8.length(),
-                                     base.m_parsed, relativeUTF8.data(),
-                                     clampTo<int>(relativeUTF8.length()),
-                                     charsetConverter, &output, &m_parsed);
+  if (!relative.IsNull() && relative.Is8Bit()) {
+    StringUTF8Adaptor relative_utf8(relative);
+    is_valid_ = url::ResolveRelative(base_utf8.Data(), base_utf8.length(),
+                                     base.parsed_, relative_utf8.Data(),
+                                     clampTo<int>(relative_utf8.length()),
+                                     charset_converter, &output, &parsed_);
   } else {
-    m_isValid = url::ResolveRelative(baseUTF8.data(), baseUTF8.length(),
-                                     base.m_parsed, relative.characters16(),
+    is_valid_ = url::ResolveRelative(base_utf8.Data(), base_utf8.length(),
+                                     base.parsed_, relative.Characters16(),
                                      clampTo<int>(relative.length()),
-                                     charsetConverter, &output, &m_parsed);
+                                     charset_converter, &output, &parsed_);
   }
 
   // AtomicString::fromUTF8 will re-hash the raw output and check the
@@ -773,58 +775,58 @@ void KURL::init(const KURL& base,
   // check that the input is Atomic before moving forward with it. If we mark
   // non-Atomic input as Atomic here, we will render the (const) input string
   // thread unsafe.
-  if (!relative.isNull() && relative.impl()->isAtomic() &&
+  if (!relative.IsNull() && relative.Impl()->IsAtomic() &&
       StringView(output.data(), static_cast<unsigned>(output.length())) ==
           relative) {
-    m_string = relative;
+    string_ = relative;
   } else {
-    m_string = AtomicString::fromUTF8(output.data(), output.length());
+    string_ = AtomicString::FromUTF8(output.data(), output.length());
   }
 
-  initProtocolMetadata();
-  initInnerURL();
-  DCHECK(!::blink::protocolIsJavaScript(m_string) || protocolIsJavaScript());
+  InitProtocolMetadata();
+  InitInnerURL();
+  DCHECK(!::blink::ProtocolIsJavaScript(string_) || ProtocolIsJavaScript());
 }
 
-void KURL::initInnerURL() {
-  if (!m_isValid) {
-    m_innerURL.reset();
+void KURL::InitInnerURL() {
+  if (!is_valid_) {
+    inner_url_.reset();
     return;
   }
-  if (url::Parsed* innerParsed = m_parsed.inner_parsed())
-    m_innerURL = WTF::wrapUnique(new KURL(
-        ParsedURLString,
-        m_string.substring(innerParsed->scheme.begin,
-                           innerParsed->Length() - innerParsed->scheme.begin)));
+  if (url::Parsed* inner_parsed = parsed_.inner_parsed())
+    inner_url_ = WTF::WrapUnique(new KURL(
+        kParsedURLString, string_.Substring(inner_parsed->scheme.begin,
+                                            inner_parsed->Length() -
+                                                inner_parsed->scheme.begin)));
   else
-    m_innerURL.reset();
+    inner_url_.reset();
 }
 
-void KURL::initProtocolMetadata() {
-  if (!m_isValid) {
-    m_protocolIsInHTTPFamily = false;
-    m_protocol = componentString(m_parsed.scheme);
+void KURL::InitProtocolMetadata() {
+  if (!is_valid_) {
+    protocol_is_in_http_family_ = false;
+    protocol_ = ComponentString(parsed_.scheme);
     return;
   }
 
-  DCHECK(!m_string.isNull());
-  StringView protocol = componentStringView(m_parsed.scheme);
-  m_protocolIsInHTTPFamily = true;
-  if (protocol == WTF::httpsAtom) {
-    m_protocol = WTF::httpsAtom;
-  } else if (protocol == WTF::httpAtom) {
-    m_protocol = WTF::httpAtom;
+  DCHECK(!string_.IsNull());
+  StringView protocol = ComponentStringView(parsed_.scheme);
+  protocol_is_in_http_family_ = true;
+  if (protocol == WTF::g_https_atom) {
+    protocol_ = WTF::g_https_atom;
+  } else if (protocol == WTF::g_http_atom) {
+    protocol_ = WTF::g_http_atom;
   } else {
-    m_protocol = protocol.toAtomicString();
-    m_protocolIsInHTTPFamily =
-        m_protocol == "http-so" || m_protocol == "https-so";
+    protocol_ = protocol.ToAtomicString();
+    protocol_is_in_http_family_ =
+        protocol_ == "http-so" || protocol_ == "https-so";
   }
-  DCHECK_EQ(m_protocol, m_protocol.lower());
+  DCHECK_EQ(protocol_, protocol_.Lower());
 }
 
-bool KURL::protocolIs(const StringView protocol) const {
+bool KURL::ProtocolIs(const StringView protocol) const {
 #if DCHECK_IS_ON()
-  assertProtocolIsGood(protocol);
+  AssertProtocolIsGood(protocol);
 #endif
 
   // JavaScript URLs are "valid" and should be executed even if KURL decides
@@ -832,16 +834,16 @@ bool KURL::protocolIs(const StringView protocol) const {
   // instead.
   // FIXME: Chromium code needs to be fixed for this assert to be enabled.
   // ASSERT(strcmp(protocol, "javascript"));
-  return m_protocol == protocol;
+  return protocol_ == protocol;
 }
 
-StringView KURL::stringViewForInvalidComponent() const {
-  return m_string.isNull() ? StringView() : StringView(StringImpl::empty);
+StringView KURL::StringViewForInvalidComponent() const {
+  return string_.IsNull() ? StringView() : StringView(StringImpl::empty_);
 }
 
-StringView KURL::componentStringView(const url::Component& component) const {
-  if (!m_isValid || component.len <= 0)
-    return stringViewForInvalidComponent();
+StringView KURL::ComponentStringView(const url::Component& component) const {
+  if (!is_valid_ || component.len <= 0)
+    return StringViewForInvalidComponent();
   // begin and len are in terms of bytes which do not match
   // if string() is UTF-16 and input contains non-ASCII characters.
   // However, the only part in urlString that can contain non-ASCII
@@ -851,32 +853,32 @@ StringView KURL::componentStringView(const url::Component& component) const {
   // truncates len to avoid go past the end of a string so that we can
   // get away without doing anything here.
 
-  int maxLength = getString().length() - component.begin;
-  return StringView(getString(), component.begin,
-                    component.len > maxLength ? maxLength : component.len);
+  int max_length = GetString().length() - component.begin;
+  return StringView(GetString(), component.begin,
+                    component.len > max_length ? max_length : component.len);
 }
 
-String KURL::componentString(const url::Component& component) const {
-  return componentStringView(component).toString();
+String KURL::ComponentString(const url::Component& component) const {
+  return ComponentStringView(component).ToString();
 }
 
 template <typename CHAR>
-void KURL::replaceComponents(const url::Replacements<CHAR>& replacements) {
+void KURL::ReplaceComponents(const url::Replacements<CHAR>& replacements) {
   url::RawCanonOutputT<char> output;
-  url::Parsed newParsed;
+  url::Parsed new_parsed;
 
-  StringUTF8Adaptor utf8(m_string);
-  m_isValid = url::ReplaceComponents(utf8.data(), utf8.length(), m_parsed,
-                                     replacements, 0, &output, &newParsed);
+  StringUTF8Adaptor utf8(string_);
+  is_valid_ = url::ReplaceComponents(utf8.Data(), utf8.length(), parsed_,
+                                     replacements, 0, &output, &new_parsed);
 
-  m_parsed = newParsed;
-  m_string = AtomicString::fromUTF8(output.data(), output.length());
-  initProtocolMetadata();
+  parsed_ = new_parsed;
+  string_ = AtomicString::FromUTF8(output.data(), output.length());
+  InitProtocolMetadata();
 }
 
-bool KURL::isSafeToSendToAnotherThread() const {
-  return m_string.isSafeToSendToAnotherThread() &&
-         (!m_innerURL || m_innerURL->isSafeToSendToAnotherThread());
+bool KURL::IsSafeToSendToAnotherThread() const {
+  return string_.IsSafeToSendToAnotherThread() &&
+         (!inner_url_ || inner_url_->IsSafeToSendToAnotherThread());
 }
 
 }  // namespace blink

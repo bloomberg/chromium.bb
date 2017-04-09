@@ -38,60 +38,59 @@ class CORE_EXPORT CSSSelectorList {
   USING_FAST_MALLOC(CSSSelectorList);
 
  public:
-  CSSSelectorList() : m_selectorArray(nullptr) {}
+  CSSSelectorList() : selector_array_(nullptr) {}
 
-  CSSSelectorList(CSSSelectorList&& o) : m_selectorArray(o.m_selectorArray) {
-    o.m_selectorArray = nullptr;
+  CSSSelectorList(CSSSelectorList&& o) : selector_array_(o.selector_array_) {
+    o.selector_array_ = nullptr;
   }
 
   CSSSelectorList& operator=(CSSSelectorList&& o) {
-    deleteSelectorsIfNeeded();
-    m_selectorArray = o.m_selectorArray;
-    o.m_selectorArray = nullptr;
+    DeleteSelectorsIfNeeded();
+    selector_array_ = o.selector_array_;
+    o.selector_array_ = nullptr;
     return *this;
   }
 
-  ~CSSSelectorList() { deleteSelectorsIfNeeded(); }
+  ~CSSSelectorList() { DeleteSelectorsIfNeeded(); }
 
-  static CSSSelectorList adoptSelectorVector(
-      Vector<std::unique_ptr<CSSParserSelector>>& selectorVector);
-  CSSSelectorList copy() const;
+  static CSSSelectorList AdoptSelectorVector(
+      Vector<std::unique_ptr<CSSParserSelector>>& selector_vector);
+  CSSSelectorList Copy() const;
 
-  bool isValid() const { return !!m_selectorArray; }
-  const CSSSelector* first() const { return m_selectorArray; }
-  static const CSSSelector* next(const CSSSelector&);
-  bool hasOneSelector() const {
-    return m_selectorArray && !next(*m_selectorArray);
+  bool IsValid() const { return !!selector_array_; }
+  const CSSSelector* First() const { return selector_array_; }
+  static const CSSSelector* Next(const CSSSelector&);
+  bool HasOneSelector() const {
+    return selector_array_ && !Next(*selector_array_);
   }
-  const CSSSelector& selectorAt(size_t index) const {
-    return m_selectorArray[index];
-  }
-
-  size_t selectorIndex(const CSSSelector& selector) const {
-    return &selector - m_selectorArray;
+  const CSSSelector& SelectorAt(size_t index) const {
+    return selector_array_[index];
   }
 
-  size_t indexOfNextSelectorAfter(size_t index) const {
-    const CSSSelector& current = selectorAt(index);
-    const CSSSelector* next = this->next(current);
+  size_t SelectorIndex(const CSSSelector& selector) const {
+    return &selector - selector_array_;
+  }
+
+  size_t IndexOfNextSelectorAfter(size_t index) const {
+    const CSSSelector& current = SelectorAt(index);
+    const CSSSelector* next = this->Next(current);
     if (!next)
       return kNotFound;
-    return selectorIndex(*next);
+    return SelectorIndex(*next);
   }
 
-  String selectorsText() const;
+  String SelectorsText() const;
 
   // Selector lists don't know their length, computing it is O(n) and should be
   // avoided when possible. Instead iterate from first() and using next().
-  unsigned computeLength() const;
+  unsigned ComputeLength() const;
 
  private:
-
-  void deleteSelectorsIfNeeded() {
-    if (m_selectorArray)
-      deleteSelectors();
+  void DeleteSelectorsIfNeeded() {
+    if (selector_array_)
+      DeleteSelectors();
   }
-  void deleteSelectors();
+  void DeleteSelectors();
 
   CSSSelectorList(const CSSSelectorList&) = delete;
   CSSSelectorList& operator=(const CSSSelectorList&) = delete;
@@ -99,15 +98,15 @@ class CORE_EXPORT CSSSelectorList {
   // End of a multipart selector is indicated by m_isLastInTagHistory bit in the
   // last item. End of the array is indicated by m_isLastInSelectorList bit in
   // the last item.
-  CSSSelector* m_selectorArray;
+  CSSSelector* selector_array_;
 };
 
-inline const CSSSelector* CSSSelectorList::next(const CSSSelector& current) {
+inline const CSSSelector* CSSSelectorList::Next(const CSSSelector& current) {
   // Skip subparts of compound selectors.
   const CSSSelector* last = &current;
-  while (!last->isLastInTagHistory())
+  while (!last->IsLastInTagHistory())
     last++;
-  return last->isLastInSelectorList() ? 0 : last + 1;
+  return last->IsLastInSelectorList() ? 0 : last + 1;
 }
 
 }  // namespace blink

@@ -20,408 +20,413 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static bool styleSheetTypeIsSupported(const String& type) {
-  String trimmedType = ContentType(type).type();
-  return trimmedType.isEmpty() ||
-         MIMETypeRegistry::isSupportedStyleSheetMIMEType(trimmedType);
+static bool StyleSheetTypeIsSupported(const String& type) {
+  String trimmed_type = ContentType(type).GetType();
+  return trimmed_type.IsEmpty() ||
+         MIMETypeRegistry::IsSupportedStyleSheetMIMEType(trimmed_type);
 }
 
-LinkStyle* LinkStyle::create(HTMLLinkElement* owner) {
+LinkStyle* LinkStyle::Create(HTMLLinkElement* owner) {
   return new LinkStyle(owner);
 }
 
 LinkStyle::LinkStyle(HTMLLinkElement* owner)
     : LinkResource(owner),
-      m_disabledState(Unset),
-      m_pendingSheetType(None),
-      m_loading(false),
-      m_firedLoad(false),
-      m_loadedSheet(false),
-      m_fetchFollowingCORS(false) {}
+      disabled_state_(kUnset),
+      pending_sheet_type_(kNone),
+      loading_(false),
+      fired_load_(false),
+      loaded_sheet_(false),
+      fetch_following_cors_(false) {}
 
 LinkStyle::~LinkStyle() {}
 
-Document& LinkStyle::document() {
-  return m_owner->document();
+Document& LinkStyle::GetDocument() {
+  return owner_->GetDocument();
 }
 
 enum StyleSheetCacheStatus {
-  StyleSheetNewEntry,
-  StyleSheetInDiskCache,
-  StyleSheetInMemoryCache,
-  StyleSheetCacheStatusCount,
+  kStyleSheetNewEntry,
+  kStyleSheetInDiskCache,
+  kStyleSheetInMemoryCache,
+  kStyleSheetCacheStatusCount,
 };
 
-void LinkStyle::setCSSStyleSheet(
+void LinkStyle::SetCSSStyleSheet(
     const String& href,
-    const KURL& baseURL,
-    ReferrerPolicy referrerPolicy,
+    const KURL& base_url,
+    ReferrerPolicy referrer_policy,
     const String& charset,
-    const CSSStyleSheetResource* cachedStyleSheet) {
-  if (!m_owner->isConnected()) {
+    const CSSStyleSheetResource* cached_style_sheet) {
+  if (!owner_->isConnected()) {
     // While the stylesheet is asynchronously loading, the owner can be
     // disconnected from a document.
     // In that case, cancel any processing on the loaded content.
-    m_loading = false;
-    removePendingSheet();
-    if (m_sheet)
-      clearSheet();
+    loading_ = false;
+    RemovePendingSheet();
+    if (sheet_)
+      ClearSheet();
     return;
   }
 
   // See the comment in PendingScript.cpp about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
-  if (!cachedStyleSheet->errorOccurred() &&
-      !m_owner->fastGetAttribute(HTMLNames::integrityAttr).isEmpty() &&
-      !cachedStyleSheet->integrityMetadata().isEmpty()) {
+  if (!cached_style_sheet->ErrorOccurred() &&
+      !owner_->FastGetAttribute(HTMLNames::integrityAttr).IsEmpty() &&
+      !cached_style_sheet->IntegrityMetadata().IsEmpty()) {
     ResourceIntegrityDisposition disposition =
-        cachedStyleSheet->integrityDisposition();
+        cached_style_sheet->IntegrityDisposition();
 
-    if (disposition == ResourceIntegrityDisposition::NotChecked &&
-        !cachedStyleSheet->loadFailedOrCanceled()) {
-      bool checkResult;
+    if (disposition == ResourceIntegrityDisposition::kNotChecked &&
+        !cached_style_sheet->LoadFailedOrCanceled()) {
+      bool check_result;
 
       // cachedStyleSheet->resourceBuffer() can be nullptr on load success.
       // If response size == 0.
       const char* data = nullptr;
       size_t size = 0;
-      if (cachedStyleSheet->resourceBuffer()) {
-        data = cachedStyleSheet->resourceBuffer()->data();
-        size = cachedStyleSheet->resourceBuffer()->size();
+      if (cached_style_sheet->ResourceBuffer()) {
+        data = cached_style_sheet->ResourceBuffer()->Data();
+        size = cached_style_sheet->ResourceBuffer()->size();
       }
-      checkResult = SubresourceIntegrity::CheckSubresourceIntegrity(
-          m_owner->fastGetAttribute(HTMLNames::integrityAttr),
-          m_owner->document(), data, size, KURL(baseURL, href),
-          *cachedStyleSheet);
-      disposition = checkResult ? ResourceIntegrityDisposition::Passed
-                                : ResourceIntegrityDisposition::Failed;
+      check_result = SubresourceIntegrity::CheckSubresourceIntegrity(
+          owner_->FastGetAttribute(HTMLNames::integrityAttr),
+          owner_->GetDocument(), data, size, KURL(base_url, href),
+          *cached_style_sheet);
+      disposition = check_result ? ResourceIntegrityDisposition::kPassed
+                                 : ResourceIntegrityDisposition::kFailed;
 
       // TODO(kouhei): Remove this const_cast crbug.com/653502
-      const_cast<CSSStyleSheetResource*>(cachedStyleSheet)
-          ->setIntegrityDisposition(disposition);
+      const_cast<CSSStyleSheetResource*>(cached_style_sheet)
+          ->SetIntegrityDisposition(disposition);
     }
 
-    if (disposition == ResourceIntegrityDisposition::Failed) {
-      m_loading = false;
-      removePendingSheet();
-      notifyLoadedSheetAndAllCriticalSubresources(
-          Node::ErrorOccurredLoadingSubresource);
+    if (disposition == ResourceIntegrityDisposition::kFailed) {
+      loading_ = false;
+      RemovePendingSheet();
+      NotifyLoadedSheetAndAllCriticalSubresources(
+          Node::kErrorOccurredLoadingSubresource);
       return;
     }
   }
 
-  CSSParserContext* parserContext = CSSParserContext::create(
-      m_owner->document(), baseURL, referrerPolicy, charset);
+  CSSParserContext* parser_context = CSSParserContext::Create(
+      owner_->GetDocument(), base_url, referrer_policy, charset);
 
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheetHistogram,
+  DEFINE_STATIC_LOCAL(EnumerationHistogram,
+                      restored_cached_style_sheet_histogram,
                       ("Blink.RestoredCachedStyleSheet", 2));
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, restoredCachedStyleSheet2Histogram,
-      ("Blink.RestoredCachedStyleSheet2", StyleSheetCacheStatusCount));
+      EnumerationHistogram, restored_cached_style_sheet2_histogram,
+      ("Blink.RestoredCachedStyleSheet2", kStyleSheetCacheStatusCount));
 
-  if (StyleSheetContents* restoredSheet =
-          const_cast<CSSStyleSheetResource*>(cachedStyleSheet)
-              ->restoreParsedStyleSheet(parserContext)) {
-    DCHECK(restoredSheet->isCacheableForResource());
-    DCHECK(!restoredSheet->isLoading());
+  if (StyleSheetContents* restored_sheet =
+          const_cast<CSSStyleSheetResource*>(cached_style_sheet)
+              ->RestoreParsedStyleSheet(parser_context)) {
+    DCHECK(restored_sheet->IsCacheableForResource());
+    DCHECK(!restored_sheet->IsLoading());
 
-    if (m_sheet)
-      clearSheet();
-    m_sheet = CSSStyleSheet::create(restoredSheet, *m_owner);
-    m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
-    if (m_owner->isInDocumentTree())
-      setSheetTitle(m_owner->title());
-    setCrossOriginStylesheetStatus(m_sheet.get());
+    if (sheet_)
+      ClearSheet();
+    sheet_ = CSSStyleSheet::Create(restored_sheet, *owner_);
+    sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
+    if (owner_->IsInDocumentTree())
+      SetSheetTitle(owner_->title());
+    SetCrossOriginStylesheetStatus(sheet_.Get());
 
-    m_loading = false;
-    restoredSheet->checkLoaded();
+    loading_ = false;
+    restored_sheet->CheckLoaded();
 
-    restoredCachedStyleSheetHistogram.count(true);
-    restoredCachedStyleSheet2Histogram.count(StyleSheetInMemoryCache);
+    restored_cached_style_sheet_histogram.Count(true);
+    restored_cached_style_sheet2_histogram.Count(kStyleSheetInMemoryCache);
     return;
   }
-  restoredCachedStyleSheetHistogram.count(false);
-  StyleSheetCacheStatus cacheStatus = cachedStyleSheet->response().wasCached()
-                                          ? StyleSheetInDiskCache
-                                          : StyleSheetNewEntry;
-  restoredCachedStyleSheet2Histogram.count(cacheStatus);
+  restored_cached_style_sheet_histogram.Count(false);
+  StyleSheetCacheStatus cache_status =
+      cached_style_sheet->GetResponse().WasCached() ? kStyleSheetInDiskCache
+                                                    : kStyleSheetNewEntry;
+  restored_cached_style_sheet2_histogram.Count(cache_status);
 
-  StyleSheetContents* styleSheet =
-      StyleSheetContents::create(href, parserContext);
+  StyleSheetContents* style_sheet =
+      StyleSheetContents::Create(href, parser_context);
 
-  if (m_sheet)
-    clearSheet();
+  if (sheet_)
+    ClearSheet();
 
-  m_sheet = CSSStyleSheet::create(styleSheet, *m_owner);
-  m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
-  if (m_owner->isInDocumentTree())
-    setSheetTitle(m_owner->title());
-  setCrossOriginStylesheetStatus(m_sheet.get());
+  sheet_ = CSSStyleSheet::Create(style_sheet, *owner_);
+  sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
+  if (owner_->IsInDocumentTree())
+    SetSheetTitle(owner_->title());
+  SetCrossOriginStylesheetStatus(sheet_.Get());
 
-  styleSheet->parseAuthorStyleSheet(cachedStyleSheet,
-                                    m_owner->document().getSecurityOrigin());
+  style_sheet->ParseAuthorStyleSheet(cached_style_sheet,
+                                     owner_->GetDocument().GetSecurityOrigin());
 
-  m_loading = false;
-  styleSheet->notifyLoadedSheet(cachedStyleSheet);
-  styleSheet->checkLoaded();
+  loading_ = false;
+  style_sheet->NotifyLoadedSheet(cached_style_sheet);
+  style_sheet->CheckLoaded();
 
-  if (styleSheet->isCacheableForResource()) {
-    const_cast<CSSStyleSheetResource*>(cachedStyleSheet)
-        ->saveParsedStyleSheet(styleSheet);
+  if (style_sheet->IsCacheableForResource()) {
+    const_cast<CSSStyleSheetResource*>(cached_style_sheet)
+        ->SaveParsedStyleSheet(style_sheet);
   }
-  clearResource();
+  ClearResource();
 }
 
-bool LinkStyle::sheetLoaded() {
-  if (!styleSheetIsLoading()) {
-    removePendingSheet();
+bool LinkStyle::SheetLoaded() {
+  if (!StyleSheetIsLoading()) {
+    RemovePendingSheet();
     return true;
   }
   return false;
 }
 
-void LinkStyle::notifyLoadedSheetAndAllCriticalSubresources(
-    Node::LoadedSheetErrorStatus errorStatus) {
-  if (m_firedLoad)
+void LinkStyle::NotifyLoadedSheetAndAllCriticalSubresources(
+    Node::LoadedSheetErrorStatus error_status) {
+  if (fired_load_)
     return;
-  m_loadedSheet = (errorStatus == Node::NoErrorLoadingSubresource);
-  if (m_owner)
-    m_owner->scheduleEvent();
-  m_firedLoad = true;
+  loaded_sheet_ = (error_status == Node::kNoErrorLoadingSubresource);
+  if (owner_)
+    owner_->ScheduleEvent();
+  fired_load_ = true;
 }
 
-void LinkStyle::startLoadingDynamicSheet() {
-  DCHECK_LT(m_pendingSheetType, Blocking);
-  addPendingSheet(Blocking);
+void LinkStyle::StartLoadingDynamicSheet() {
+  DCHECK_LT(pending_sheet_type_, kBlocking);
+  AddPendingSheet(kBlocking);
 }
 
-void LinkStyle::clearSheet() {
-  DCHECK(m_sheet);
-  DCHECK_EQ(m_sheet->ownerNode(), m_owner);
-  m_sheet.release()->clearOwnerNode();
+void LinkStyle::ClearSheet() {
+  DCHECK(sheet_);
+  DCHECK_EQ(sheet_->ownerNode(), owner_);
+  sheet_.Release()->ClearOwnerNode();
 }
 
-bool LinkStyle::styleSheetIsLoading() const {
-  if (m_loading)
+bool LinkStyle::StyleSheetIsLoading() const {
+  if (loading_)
     return true;
-  if (!m_sheet)
+  if (!sheet_)
     return false;
-  return m_sheet->contents()->isLoading();
+  return sheet_->Contents()->IsLoading();
 }
 
-void LinkStyle::addPendingSheet(PendingSheetType type) {
-  if (type <= m_pendingSheetType)
+void LinkStyle::AddPendingSheet(PendingSheetType type) {
+  if (type <= pending_sheet_type_)
     return;
-  m_pendingSheetType = type;
+  pending_sheet_type_ = type;
 
-  if (m_pendingSheetType == NonBlocking)
+  if (pending_sheet_type_ == kNonBlocking)
     return;
-  m_owner->document().styleEngine().addPendingSheet(m_styleEngineContext);
+  owner_->GetDocument().GetStyleEngine().AddPendingSheet(style_engine_context_);
 }
 
-void LinkStyle::removePendingSheet() {
-  DCHECK(m_owner);
-  PendingSheetType type = m_pendingSheetType;
-  m_pendingSheetType = None;
+void LinkStyle::RemovePendingSheet() {
+  DCHECK(owner_);
+  PendingSheetType type = pending_sheet_type_;
+  pending_sheet_type_ = kNone;
 
-  if (type == None)
+  if (type == kNone)
     return;
-  if (type == NonBlocking) {
+  if (type == kNonBlocking) {
     // Tell StyleEngine to re-compute styleSheets of this m_owner's treescope.
-    m_owner->document().styleEngine().modifiedStyleSheetCandidateNode(*m_owner);
+    owner_->GetDocument().GetStyleEngine().ModifiedStyleSheetCandidateNode(
+        *owner_);
     return;
   }
 
-  m_owner->document().styleEngine().removePendingSheet(*m_owner,
-                                                       m_styleEngineContext);
+  owner_->GetDocument().GetStyleEngine().RemovePendingSheet(
+      *owner_, style_engine_context_);
 }
 
-void LinkStyle::setDisabledState(bool disabled) {
-  LinkStyle::DisabledState oldDisabledState = m_disabledState;
-  m_disabledState = disabled ? Disabled : EnabledViaScript;
-  if (oldDisabledState == m_disabledState)
+void LinkStyle::SetDisabledState(bool disabled) {
+  LinkStyle::DisabledState old_disabled_state = disabled_state_;
+  disabled_state_ = disabled ? kDisabled : kEnabledViaScript;
+  if (old_disabled_state == disabled_state_)
     return;
 
   // If we change the disabled state while the sheet is still loading, then we
   // have to perform three checks:
-  if (styleSheetIsLoading()) {
+  if (StyleSheetIsLoading()) {
     // Check #1: The sheet becomes disabled while loading.
-    if (m_disabledState == Disabled)
-      removePendingSheet();
+    if (disabled_state_ == kDisabled)
+      RemovePendingSheet();
 
     // Check #2: An alternate sheet becomes enabled while it is still loading.
-    if (m_owner->relAttribute().isAlternate() &&
-        m_disabledState == EnabledViaScript)
-      addPendingSheet(Blocking);
+    if (owner_->RelAttribute().IsAlternate() &&
+        disabled_state_ == kEnabledViaScript)
+      AddPendingSheet(kBlocking);
 
     // Check #3: A main sheet becomes enabled while it was still loading and
     // after it was disabled via script. It takes really terrible code to make
     // this happen (a double toggle for no reason essentially). This happens
     // on virtualplastic.net, which manages to do about 12 enable/disables on
     // only 3 sheets. :)
-    if (!m_owner->relAttribute().isAlternate() &&
-        m_disabledState == EnabledViaScript && oldDisabledState == Disabled)
-      addPendingSheet(Blocking);
+    if (!owner_->RelAttribute().IsAlternate() &&
+        disabled_state_ == kEnabledViaScript && old_disabled_state == kDisabled)
+      AddPendingSheet(kBlocking);
 
     // If the sheet is already loading just bail.
     return;
   }
 
-  if (m_sheet) {
-    m_sheet->setDisabled(disabled);
+  if (sheet_) {
+    sheet_->setDisabled(disabled);
     return;
   }
 
-  if (m_disabledState == EnabledViaScript && m_owner->shouldProcessStyle())
-    process();
+  if (disabled_state_ == kEnabledViaScript && owner_->ShouldProcessStyle())
+    Process();
 }
 
-void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
-  if (m_fetchFollowingCORS && resource() && !resource()->errorOccurred()) {
+void LinkStyle::SetCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
+  if (fetch_following_cors_ && GetResource() &&
+      !GetResource()->ErrorOccurred()) {
     // Record the security origin the CORS access check succeeded at, if cross
     // origin.  Only origins that are script accessible to it may access the
     // stylesheet's rules.
-    sheet->setAllowRuleAccessFromOrigin(
-        m_owner->document().getSecurityOrigin());
+    sheet->SetAllowRuleAccessFromOrigin(
+        owner_->GetDocument().GetSecurityOrigin());
   }
-  m_fetchFollowingCORS = false;
+  fetch_following_cors_ = false;
 }
 
 // TODO(yoav): move that logic to LinkLoader
-LinkStyle::LoadReturnValue LinkStyle::loadStylesheetIfNeeded(
+LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
     const LinkRequestBuilder& builder,
     const String& type) {
-  if (m_disabledState == Disabled || !m_owner->relAttribute().isStyleSheet() ||
-      !styleSheetTypeIsSupported(type) || !shouldLoadResource() ||
-      !builder.url().isValid())
-    return NotNeeded;
+  if (disabled_state_ == kDisabled || !owner_->RelAttribute().IsStyleSheet() ||
+      !StyleSheetTypeIsSupported(type) || !ShouldLoadResource() ||
+      !builder.Url().IsValid())
+    return kNotNeeded;
 
-  if (resource()) {
-    removePendingSheet();
-    clearResource();
-    clearFetchFollowingCORS();
+  if (GetResource()) {
+    RemovePendingSheet();
+    ClearResource();
+    ClearFetchFollowingCORS();
   }
 
-  if (!m_owner->shouldLoadLink())
-    return Bail;
+  if (!owner_->ShouldLoadLink())
+    return kBail;
 
-  m_loading = true;
+  loading_ = true;
 
-  String title = m_owner->title();
-  if (!title.isEmpty() && !m_owner->isAlternate() &&
-      m_disabledState != EnabledViaScript && m_owner->isInDocumentTree()) {
-    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(title);
+  String title = owner_->title();
+  if (!title.IsEmpty() && !owner_->IsAlternate() &&
+      disabled_state_ != kEnabledViaScript && owner_->IsInDocumentTree()) {
+    GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(title);
   }
 
-  bool mediaQueryMatches = true;
-  LocalFrame* frame = loadingFrame();
-  if (!m_owner->media().isEmpty() && frame) {
-    MediaQuerySet* media = MediaQuerySet::create(m_owner->media());
+  bool media_query_matches = true;
+  LocalFrame* frame = LoadingFrame();
+  if (!owner_->Media().IsEmpty() && frame) {
+    MediaQuerySet* media = MediaQuerySet::Create(owner_->Media());
     MediaQueryEvaluator evaluator(frame);
-    mediaQueryMatches = evaluator.eval(media);
+    media_query_matches = evaluator.Eval(media);
   }
 
   // Don't hold up layout tree construction and script execution on
   // stylesheets that are not needed for the layout at the moment.
-  bool blocking = mediaQueryMatches && !m_owner->isAlternate() &&
-                  m_owner->isCreatedByParser();
-  addPendingSheet(blocking ? Blocking : NonBlocking);
+  bool blocking = media_query_matches && !owner_->IsAlternate() &&
+                  owner_->IsCreatedByParser();
+  AddPendingSheet(blocking ? kBlocking : kNonBlocking);
 
   // Load stylesheets that are not needed for the layout immediately with low
   // priority.  When the link element is created by scripts, load the
   // stylesheets asynchronously but in high priority.
-  bool lowPriority = !mediaQueryMatches || m_owner->isAlternate();
-  FetchRequest request = builder.build(lowPriority);
-  CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
-      m_owner->fastGetAttribute(HTMLNames::crossoriginAttr));
-  if (crossOrigin != CrossOriginAttributeNotSet) {
-    request.setCrossOriginAccessControl(document().getSecurityOrigin(),
-                                        crossOrigin);
-    setFetchFollowingCORS();
+  bool low_priority = !media_query_matches || owner_->IsAlternate();
+  FetchRequest request = builder.Build(low_priority);
+  CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
+      owner_->FastGetAttribute(HTMLNames::crossoriginAttr));
+  if (cross_origin != kCrossOriginAttributeNotSet) {
+    request.SetCrossOriginAccessControl(GetDocument().GetSecurityOrigin(),
+                                        cross_origin);
+    SetFetchFollowingCORS();
   }
 
-  String integrityAttr = m_owner->fastGetAttribute(HTMLNames::integrityAttr);
-  if (!integrityAttr.isEmpty()) {
-    IntegrityMetadataSet metadataSet;
-    SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet);
-    request.setIntegrityMetadata(metadataSet);
+  String integrity_attr = owner_->FastGetAttribute(HTMLNames::integrityAttr);
+  if (!integrity_attr.IsEmpty()) {
+    IntegrityMetadataSet metadata_set;
+    SubresourceIntegrity::ParseIntegrityAttribute(integrity_attr, metadata_set);
+    request.SetIntegrityMetadata(metadata_set);
   }
-  setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
+  SetResource(CSSStyleSheetResource::Fetch(request, GetDocument().Fetcher()));
 
-  if (m_loading && !resource()) {
+  if (loading_ && !GetResource()) {
     // The request may have been denied if (for example) the stylesheet is
     // local and the document is remote, or if there was a Content Security
     // Policy Failure.  setCSSStyleSheet() can be called synchronuosly in
     // setResource() and thus resource() is null and |m_loading| is false in
     // such cases even if the request succeeds.
-    m_loading = false;
-    removePendingSheet();
-    notifyLoadedSheetAndAllCriticalSubresources(
-        Node::ErrorOccurredLoadingSubresource);
+    loading_ = false;
+    RemovePendingSheet();
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        Node::kErrorOccurredLoadingSubresource);
   }
-  return Loaded;
+  return kLoaded;
 }
 
-void LinkStyle::process() {
-  DCHECK(m_owner->shouldProcessStyle());
-  String type = m_owner->typeValue().lower();
-  String as = m_owner->asValue().lower();
-  String media = m_owner->media().lower();
-  LinkRequestBuilder builder(m_owner);
+void LinkStyle::Process() {
+  DCHECK(owner_->ShouldProcessStyle());
+  String type = owner_->TypeValue().Lower();
+  String as = owner_->AsValue().Lower();
+  String media = owner_->Media().Lower();
+  LinkRequestBuilder builder(owner_);
 
-  if (m_owner->relAttribute().getIconType() != InvalidIcon &&
-      builder.url().isValid() && !builder.url().isEmpty()) {
-    if (!m_owner->shouldLoadLink())
+  if (owner_->RelAttribute().GetIconType() != kInvalidIcon &&
+      builder.Url().IsValid() && !builder.Url().IsEmpty()) {
+    if (!owner_->ShouldLoadLink())
       return;
-    if (!document().getSecurityOrigin()->canDisplay(builder.url()))
+    if (!GetDocument().GetSecurityOrigin()->CanDisplay(builder.Url()))
       return;
-    if (!document().contentSecurityPolicy()->allowImageFromSource(
-            builder.url()))
+    if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(
+            builder.Url()))
       return;
-    if (document().frame() && document().frame()->loader().client()) {
-      document().frame()->loader().client()->dispatchDidChangeIcons(
-          m_owner->relAttribute().getIconType());
+    if (GetDocument().GetFrame() &&
+        GetDocument().GetFrame()->Loader().Client()) {
+      GetDocument().GetFrame()->Loader().Client()->DispatchDidChangeIcons(
+          owner_->RelAttribute().GetIconType());
     }
   }
 
-  if (!m_owner->loadLink(type, as, media, m_owner->referrerPolicy(),
-                         builder.url()))
+  if (!owner_->LoadLink(type, as, media, owner_->GetReferrerPolicy(),
+                        builder.Url()))
     return;
 
-  if (loadStylesheetIfNeeded(builder, type) == NotNeeded && m_sheet) {
+  if (LoadStylesheetIfNeeded(builder, type) == kNotNeeded && sheet_) {
     // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
-    clearSheet();
-    document().styleEngine().setNeedsActiveStyleUpdate(m_owner->treeScope());
+    ClearSheet();
+    GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(
+        owner_->GetTreeScope());
   }
 }
 
-void LinkStyle::setSheetTitle(const String& title) {
-  if (!m_owner->isInDocumentTree() || !m_owner->relAttribute().isStyleSheet())
+void LinkStyle::SetSheetTitle(const String& title) {
+  if (!owner_->IsInDocumentTree() || !owner_->RelAttribute().IsStyleSheet())
     return;
 
-  if (m_sheet)
-    m_sheet->setTitle(title);
+  if (sheet_)
+    sheet_->SetTitle(title);
 
-  if (title.isEmpty() || !isUnset() || m_owner->isAlternate())
+  if (title.IsEmpty() || !IsUnset() || owner_->IsAlternate())
     return;
 
-  const KURL& href = m_owner->getNonEmptyURLAttribute(hrefAttr);
-  if (href.isValid() && !href.isEmpty())
-    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(title);
+  const KURL& href = owner_->GetNonEmptyURLAttribute(hrefAttr);
+  if (href.IsValid() && !href.IsEmpty())
+    GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(title);
 }
 
-void LinkStyle::ownerRemoved() {
-  if (m_sheet)
-    clearSheet();
+void LinkStyle::OwnerRemoved() {
+  if (sheet_)
+    ClearSheet();
 
-  if (styleSheetIsLoading())
-    removePendingSheet();
+  if (StyleSheetIsLoading())
+    RemovePendingSheet();
 }
 
 DEFINE_TRACE(LinkStyle) {
-  visitor->trace(m_sheet);
-  LinkResource::trace(visitor);
-  ResourceOwner<StyleSheetResource>::trace(visitor);
+  visitor->Trace(sheet_);
+  LinkResource::Trace(visitor);
+  ResourceOwner<StyleSheetResource>::Trace(visitor);
 }
 
 }  // namespace blink

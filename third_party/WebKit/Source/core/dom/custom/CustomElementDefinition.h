@@ -34,7 +34,7 @@ class CORE_EXPORT CustomElementDefinition
 
   DECLARE_VIRTUAL_TRACE();
 
-  const CustomElementDescriptor& descriptor() { return m_descriptor; }
+  const CustomElementDescriptor& Descriptor() { return descriptor_; }
 
   // TODO(yosin): To support Web Modules, introduce an abstract
   // class |CustomElementConstructor| to allow us to have JavaScript
@@ -42,41 +42,43 @@ class CORE_EXPORT CustomElementDefinition
   // |CustomElementConstructor| to |ScriptValue|. Replace
   // |getConstructorForScript()| by |getConstructor() ->
   // CustomElementConstructor|.
-  virtual ScriptValue getConstructorForScript() = 0;
+  virtual ScriptValue GetConstructorForScript() = 0;
 
   using ConstructionStack = HeapVector<Member<Element>, 1>;
-  ConstructionStack& constructionStack() { return m_constructionStack; }
+  ConstructionStack& GetConstructionStack() { return construction_stack_; }
 
-  HTMLElement* createElementForConstructor(Document&);
-  virtual HTMLElement* createElementSync(Document&, const QualifiedName&) = 0;
-  HTMLElement* createElementAsync(Document&, const QualifiedName&);
+  HTMLElement* CreateElementForConstructor(Document&);
+  virtual HTMLElement* CreateElementSync(Document&, const QualifiedName&) = 0;
+  HTMLElement* CreateElementAsync(Document&, const QualifiedName&);
 
-  void upgrade(Element*);
+  void Upgrade(Element*);
 
-  virtual bool hasConnectedCallback() const = 0;
-  virtual bool hasDisconnectedCallback() const = 0;
-  virtual bool hasAdoptedCallback() const = 0;
-  bool hasAttributeChangedCallback(const QualifiedName&) const;
-  bool hasStyleAttributeChangedCallback() const;
+  virtual bool HasConnectedCallback() const = 0;
+  virtual bool HasDisconnectedCallback() const = 0;
+  virtual bool HasAdoptedCallback() const = 0;
+  bool HasAttributeChangedCallback(const QualifiedName&) const;
+  bool HasStyleAttributeChangedCallback() const;
 
-  virtual void runConnectedCallback(Element*) = 0;
-  virtual void runDisconnectedCallback(Element*) = 0;
-  virtual void runAdoptedCallback(Element*,
-                                  Document* oldOwner,
-                                  Document* newOwner) = 0;
-  virtual void runAttributeChangedCallback(Element*,
+  virtual void RunConnectedCallback(Element*) = 0;
+  virtual void RunDisconnectedCallback(Element*) = 0;
+  virtual void RunAdoptedCallback(Element*,
+                                  Document* old_owner,
+                                  Document* new_owner) = 0;
+  virtual void RunAttributeChangedCallback(Element*,
                                            const QualifiedName&,
-                                           const AtomicString& oldValue,
-                                           const AtomicString& newValue) = 0;
+                                           const AtomicString& old_value,
+                                           const AtomicString& new_value) = 0;
 
-  void enqueueUpgradeReaction(Element*);
-  void enqueueConnectedCallback(Element*);
-  void enqueueDisconnectedCallback(Element*);
-  void enqueueAdoptedCallback(Element*, Document* oldOwner, Document* newOwner);
-  void enqueueAttributeChangedCallback(Element*,
+  void EnqueueUpgradeReaction(Element*);
+  void EnqueueConnectedCallback(Element*);
+  void EnqueueDisconnectedCallback(Element*);
+  void EnqueueAdoptedCallback(Element*,
+                              Document* old_owner,
+                              Document* new_owner);
+  void EnqueueAttributeChangedCallback(Element*,
                                        const QualifiedName&,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& newValue);
+                                       const AtomicString& old_value,
+                                       const AtomicString& new_value);
 
   class CORE_EXPORT ConstructionStackScope final {
     STACK_ALLOCATED();
@@ -87,26 +89,26 @@ class CORE_EXPORT CustomElementDefinition
     ~ConstructionStackScope();
 
    private:
-    ConstructionStack& m_constructionStack;
-    Member<Element> m_element;
-    size_t m_depth;
+    ConstructionStack& construction_stack_;
+    Member<Element> element_;
+    size_t depth_;
   };
 
  protected:
-  virtual bool runConstructor(Element*) = 0;
+  virtual bool RunConstructor(Element*) = 0;
 
-  static void checkConstructorResult(Element*,
+  static void CheckConstructorResult(Element*,
                                      Document&,
                                      const QualifiedName&,
                                      ExceptionState&);
 
  private:
-  const CustomElementDescriptor m_descriptor;
-  ConstructionStack m_constructionStack;
-  HashSet<AtomicString> m_observedAttributes;
-  bool m_hasStyleAttributeChangedCallback;
+  const CustomElementDescriptor descriptor_;
+  ConstructionStack construction_stack_;
+  HashSet<AtomicString> observed_attributes_;
+  bool has_style_attribute_changed_callback_;
 
-  void enqueueAttributeChangedCallbackForAllAttributes(Element*);
+  void EnqueueAttributeChangedCallbackForAllAttributes(Element*);
 };
 
 }  // namespace blink

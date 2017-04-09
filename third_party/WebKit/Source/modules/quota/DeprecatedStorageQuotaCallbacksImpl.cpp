@@ -35,42 +35,42 @@
 namespace blink {
 
 DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(
-    StorageUsageCallback* usageCallback,
-    StorageErrorCallback* errorCallback)
-    : m_usageCallback(usageCallback), m_errorCallback(errorCallback) {}
+    StorageUsageCallback* usage_callback,
+    StorageErrorCallback* error_callback)
+    : usage_callback_(usage_callback), error_callback_(error_callback) {}
 
 DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(
-    StorageQuotaCallback* quotaCallback,
-    StorageErrorCallback* errorCallback)
-    : m_quotaCallback(quotaCallback), m_errorCallback(errorCallback) {}
+    StorageQuotaCallback* quota_callback,
+    StorageErrorCallback* error_callback)
+    : quota_callback_(quota_callback), error_callback_(error_callback) {}
 
 DeprecatedStorageQuotaCallbacksImpl::~DeprecatedStorageQuotaCallbacksImpl() {}
 
 DEFINE_TRACE(DeprecatedStorageQuotaCallbacksImpl) {
-  visitor->trace(m_usageCallback);
-  visitor->trace(m_quotaCallback);
-  visitor->trace(m_errorCallback);
-  StorageQuotaCallbacks::trace(visitor);
+  visitor->Trace(usage_callback_);
+  visitor->Trace(quota_callback_);
+  visitor->Trace(error_callback_);
+  StorageQuotaCallbacks::Trace(visitor);
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(
-    unsigned long long usageInBytes,
-    unsigned long long quotaInBytes) {
-  if (m_usageCallback)
-    m_usageCallback->handleEvent(usageInBytes, quotaInBytes);
+void DeprecatedStorageQuotaCallbacksImpl::DidQueryStorageUsageAndQuota(
+    unsigned long long usage_in_bytes,
+    unsigned long long quota_in_bytes) {
+  if (usage_callback_)
+    usage_callback_->handleEvent(usage_in_bytes, quota_in_bytes);
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::didGrantStorageQuota(
-    unsigned long long usageInBytes,
-    unsigned long long grantedQuotaInBytes) {
-  if (m_quotaCallback)
-    m_quotaCallback->handleEvent(grantedQuotaInBytes);
+void DeprecatedStorageQuotaCallbacksImpl::DidGrantStorageQuota(
+    unsigned long long usage_in_bytes,
+    unsigned long long granted_quota_in_bytes) {
+  if (quota_callback_)
+    quota_callback_->handleEvent(granted_quota_in_bytes);
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error) {
-  if (m_errorCallback)
-    m_errorCallback->handleEvent(
-        DOMError::create(static_cast<ExceptionCode>(error)));
+void DeprecatedStorageQuotaCallbacksImpl::DidFail(WebStorageQuotaError error) {
+  if (error_callback_)
+    error_callback_->handleEvent(
+        DOMError::Create(static_cast<ExceptionCode>(error)));
 }
 
 }  // namespace blink

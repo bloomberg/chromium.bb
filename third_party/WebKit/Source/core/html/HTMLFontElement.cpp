@@ -45,7 +45,7 @@ DEFINE_NODE_FACTORY(HTMLFontElement)
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/rendering.html#fonts-and-colors
 template <typename CharacterType>
-static bool parseFontSize(const CharacterType* characters,
+static bool ParseFontSize(const CharacterType* characters,
                           unsigned length,
                           int& size) {
   // Step 1
@@ -55,7 +55,7 @@ static bool parseFontSize(const CharacterType* characters,
 
   // Step 3
   while (position < end) {
-    if (!isHTMLSpace<CharacterType>(*position))
+    if (!IsHTMLSpace<CharacterType>(*position))
       break;
     ++position;
   }
@@ -66,47 +66,47 @@ static bool parseFontSize(const CharacterType* characters,
   DCHECK_LT(position, end);
 
   // Step 5
-  enum { RelativePlus, RelativeMinus, Absolute } mode;
+  enum { kRelativePlus, kRelativeMinus, kAbsolute } mode;
 
   switch (*position) {
     case '+':
-      mode = RelativePlus;
+      mode = kRelativePlus;
       ++position;
       break;
     case '-':
-      mode = RelativeMinus;
+      mode = kRelativeMinus;
       ++position;
       break;
     default:
-      mode = Absolute;
+      mode = kAbsolute;
       break;
   }
 
   // Step 6
   StringBuilder digits;
-  digits.reserveCapacity(16);
+  digits.ReserveCapacity(16);
   while (position < end) {
-    if (!isASCIIDigit(*position))
+    if (!IsASCIIDigit(*position))
       break;
-    digits.append(*position++);
+    digits.Append(*position++);
   }
 
   // Step 7
-  if (digits.isEmpty())
+  if (digits.IsEmpty())
     return false;
 
   // Step 8
   int value;
 
-  if (digits.is8Bit())
-    value = charactersToIntStrict(digits.characters8(), digits.length());
+  if (digits.Is8Bit())
+    value = CharactersToIntStrict(digits.Characters8(), digits.length());
   else
-    value = charactersToIntStrict(digits.characters16(), digits.length());
+    value = CharactersToIntStrict(digits.Characters16(), digits.length());
 
   // Step 9
-  if (mode == RelativePlus)
+  if (mode == kRelativePlus)
     value += 3;
-  else if (mode == RelativeMinus)
+  else if (mode == kRelativeMinus)
     value = 3 - value;
 
   // Step 10
@@ -121,33 +121,33 @@ static bool parseFontSize(const CharacterType* characters,
   return true;
 }
 
-static bool parseFontSize(const String& input, int& size) {
-  if (input.isEmpty())
+static bool ParseFontSize(const String& input, int& size) {
+  if (input.IsEmpty())
     return false;
 
-  if (input.is8Bit())
-    return parseFontSize(input.characters8(), input.length(), size);
+  if (input.Is8Bit())
+    return ParseFontSize(input.Characters8(), input.length(), size);
 
-  return parseFontSize(input.characters16(), input.length(), size);
+  return ParseFontSize(input.Characters16(), input.length(), size);
 }
 
-static const CSSValueList* createFontFaceValueWithPool(
+static const CSSValueList* CreateFontFaceValueWithPool(
     const AtomicString& string) {
   CSSValuePool::FontFaceValueCache::AddResult entry =
-      cssValuePool().getFontFaceCacheEntry(string);
-  if (!entry.storedValue->value) {
-    const CSSValue* parsedValue =
-        CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
-    if (parsedValue && parsedValue->isValueList())
-      entry.storedValue->value = toCSSValueList(parsedValue);
+      CssValuePool().GetFontFaceCacheEntry(string);
+  if (!entry.stored_value->value) {
+    const CSSValue* parsed_value =
+        CSSParser::ParseSingleValue(CSSPropertyFontFamily, string);
+    if (parsed_value && parsed_value->IsValueList())
+      entry.stored_value->value = ToCSSValueList(parsed_value);
   }
-  return entry.storedValue->value;
+  return entry.stored_value->value;
 }
 
-bool HTMLFontElement::cssValueFromFontSizeNumber(const String& s,
+bool HTMLFontElement::CssValueFromFontSizeNumber(const String& s,
                                                  CSSValueID& size) {
   int num = 0;
-  if (!parseFontSize(s, num))
+  if (!ParseFontSize(s, num))
     return false;
 
   switch (num) {
@@ -179,27 +179,28 @@ bool HTMLFontElement::cssValueFromFontSizeNumber(const String& s,
   return true;
 }
 
-bool HTMLFontElement::isPresentationAttribute(const QualifiedName& name) const {
+bool HTMLFontElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == sizeAttr || name == colorAttr || name == faceAttr)
     return true;
-  return HTMLElement::isPresentationAttribute(name);
+  return HTMLElement::IsPresentationAttribute(name);
 }
 
-void HTMLFontElement::collectStyleForPresentationAttribute(
+void HTMLFontElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == sizeAttr) {
     CSSValueID size = CSSValueInvalid;
-    if (cssValueFromFontSizeNumber(value, size))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyFontSize, size);
+    if (CssValueFromFontSizeNumber(value, size))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyFontSize, size);
   } else if (name == colorAttr) {
-    addHTMLColorToStyle(style, CSSPropertyColor, value);
-  } else if (name == faceAttr && !value.isEmpty()) {
-    if (const CSSValueList* fontFaceValue = createFontFaceValueWithPool(value))
-      style->setProperty(CSSProperty(CSSPropertyFontFamily, *fontFaceValue));
+    AddHTMLColorToStyle(style, CSSPropertyColor, value);
+  } else if (name == faceAttr && !value.IsEmpty()) {
+    if (const CSSValueList* font_face_value =
+            CreateFontFaceValueWithPool(value))
+      style->SetProperty(CSSProperty(CSSPropertyFontFamily, *font_face_value));
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 

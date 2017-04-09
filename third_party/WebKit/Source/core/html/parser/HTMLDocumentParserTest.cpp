@@ -21,66 +21,68 @@ class TestPrerendererClient : public GarbageCollected<TestPrerendererClient>,
   USING_GARBAGE_COLLECTED_MIXIN(TestPrerendererClient);
 
  public:
-  TestPrerendererClient(Page& page, bool isPrefetchOnly)
-      : PrerendererClient(page), m_isPrefetchOnly(isPrefetchOnly) {}
+  TestPrerendererClient(Page& page, bool is_prefetch_only)
+      : PrerendererClient(page), is_prefetch_only_(is_prefetch_only) {}
 
  private:
-  void willAddPrerender(Prerender*) override{};
-  bool isPrefetchOnly() override { return m_isPrefetchOnly; }
+  void WillAddPrerender(Prerender*) override{};
+  bool IsPrefetchOnly() override { return is_prefetch_only_; }
 
-  bool m_isPrefetchOnly;
+  bool is_prefetch_only_;
 };
 
 class HTMLDocumentParserTest : public testing::Test {
  protected:
-  HTMLDocumentParserTest() : m_dummyPageHolder(DummyPageHolder::create()) {
-    m_dummyPageHolder->document().setURL(KURL(KURL(), "https://example.test"));
+  HTMLDocumentParserTest() : dummy_page_holder_(DummyPageHolder::Create()) {
+    dummy_page_holder_->GetDocument().SetURL(
+        KURL(KURL(), "https://example.test"));
   }
 
-  HTMLDocumentParser* createParser(HTMLDocument& document) {
+  HTMLDocumentParser* CreateParser(HTMLDocument& document) {
     HTMLDocumentParser* parser =
-        HTMLDocumentParser::create(document, ForceSynchronousParsing);
-    TextResourceDecoderBuilder decoderBuilder("text/html", nullAtom);
+        HTMLDocumentParser::Create(document, kForceSynchronousParsing);
+    TextResourceDecoderBuilder decoder_builder("text/html", g_null_atom);
     std::unique_ptr<TextResourceDecoder> decoder(
-        decoderBuilder.buildFor(&document));
-    parser->setDecoder(std::move(decoder));
+        decoder_builder.BuildFor(&document));
+    parser->SetDecoder(std::move(decoder));
     return parser;
   }
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 }  // namespace
 
 TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
-  HTMLDocument& document = toHTMLDocument(m_dummyPageHolder->document());
-  providePrerendererClientTo(*document.page(),
-                             new TestPrerendererClient(*document.page(), true));
-  EXPECT_TRUE(document.isPrefetchOnly());
-  HTMLDocumentParser* parser = createParser(document);
+  HTMLDocument& document = ToHTMLDocument(dummy_page_holder_->GetDocument());
+  ProvidePrerendererClientTo(
+      *document.GetPage(),
+      new TestPrerendererClient(*document.GetPage(), true));
+  EXPECT_TRUE(document.IsPrefetchOnly());
+  HTMLDocumentParser* parser = CreateParser(document);
 
-  const char bytes[] = "<ht";
-  parser->appendBytes(bytes, sizeof(bytes));
+  const char kBytes[] = "<ht";
+  parser->AppendBytes(kBytes, sizeof(kBytes));
   // The bytes are forwarded to the preload scanner, not to the tokenizer.
-  HTMLParserScriptRunnerHost* scriptRunnerHost =
-      parser->asHTMLParserScriptRunnerHostForTesting();
-  EXPECT_TRUE(scriptRunnerHost->hasPreloadScanner());
-  EXPECT_EQ(HTMLTokenizer::DataState, parser->tokenizer()->getState());
+  HTMLParserScriptRunnerHost* script_runner_host =
+      parser->AsHTMLParserScriptRunnerHostForTesting();
+  EXPECT_TRUE(script_runner_host->HasPreloadScanner());
+  EXPECT_EQ(HTMLTokenizer::kDataState, parser->Tokenizer()->GetState());
 }
 
 TEST_F(HTMLDocumentParserTest, AppendNoPrefetch) {
-  HTMLDocument& document = toHTMLDocument(m_dummyPageHolder->document());
-  EXPECT_FALSE(document.isPrefetchOnly());
+  HTMLDocument& document = ToHTMLDocument(dummy_page_holder_->GetDocument());
+  EXPECT_FALSE(document.IsPrefetchOnly());
   // Use ForceSynchronousParsing to allow calling append().
-  HTMLDocumentParser* parser = createParser(document);
+  HTMLDocumentParser* parser = CreateParser(document);
 
-  const char bytes[] = "<ht";
-  parser->appendBytes(bytes, sizeof(bytes));
+  const char kBytes[] = "<ht";
+  parser->AppendBytes(kBytes, sizeof(kBytes));
   // The bytes are forwarded to the tokenizer.
-  HTMLParserScriptRunnerHost* scriptRunnerHost =
-      parser->asHTMLParserScriptRunnerHostForTesting();
-  EXPECT_FALSE(scriptRunnerHost->hasPreloadScanner());
-  EXPECT_EQ(HTMLTokenizer::TagNameState, parser->tokenizer()->getState());
+  HTMLParserScriptRunnerHost* script_runner_host =
+      parser->AsHTMLParserScriptRunnerHostForTesting();
+  EXPECT_FALSE(script_runner_host->HasPreloadScanner());
+  EXPECT_EQ(HTMLTokenizer::kTagNameState, parser->Tokenizer()->GetState());
 }
 
 }  // namespace blink

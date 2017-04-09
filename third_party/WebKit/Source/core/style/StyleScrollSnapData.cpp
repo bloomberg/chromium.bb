@@ -30,29 +30,28 @@
 namespace blink {
 
 ScrollSnapPoints::ScrollSnapPoints()
-    : repeatOffset(100, Percent), hasRepeat(false), usesElements(false) {}
+    : repeat_offset(100, kPercent), has_repeat(false), uses_elements(false) {}
 
 bool operator==(const ScrollSnapPoints& a, const ScrollSnapPoints& b) {
-  return a.repeatOffset == b.repeatOffset && a.hasRepeat == b.hasRepeat &&
-         a.usesElements == b.usesElements;
+  return a.repeat_offset == b.repeat_offset && a.has_repeat == b.has_repeat &&
+         a.uses_elements == b.uses_elements;
 }
 
 StyleScrollSnapData::StyleScrollSnapData()
-    : m_xPoints(ComputedStyle::initialScrollSnapPointsX()),
-      m_yPoints(ComputedStyle::initialScrollSnapPointsY()),
-      m_destination(ComputedStyle::initialScrollSnapDestination()),
-      m_coordinates(ComputedStyle::initialScrollSnapCoordinate()) {}
+    : x_points_(ComputedStyle::InitialScrollSnapPointsX()),
+      y_points_(ComputedStyle::InitialScrollSnapPointsY()),
+      destination_(ComputedStyle::InitialScrollSnapDestination()),
+      coordinates_(ComputedStyle::InitialScrollSnapCoordinate()) {}
 
 StyleScrollSnapData::StyleScrollSnapData(const StyleScrollSnapData& other)
-    : m_xPoints(other.m_xPoints),
-      m_yPoints(other.m_yPoints),
-      m_destination(other.m_destination),
-      m_coordinates(other.m_coordinates) {}
+    : x_points_(other.x_points_),
+      y_points_(other.y_points_),
+      destination_(other.destination_),
+      coordinates_(other.coordinates_) {}
 
 bool operator==(const StyleScrollSnapData& a, const StyleScrollSnapData& b) {
-  return a.m_xPoints == b.m_xPoints && a.m_yPoints == b.m_yPoints &&
-         a.m_destination == b.m_destination &&
-         a.m_coordinates == b.m_coordinates;
+  return a.x_points_ == b.x_points_ && a.y_points_ == b.y_points_ &&
+         a.destination_ == b.destination_ && a.coordinates_ == b.coordinates_;
 }
 
 }  // namespace blink

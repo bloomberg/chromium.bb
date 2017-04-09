@@ -14,45 +14,45 @@ namespace blink {
 
 class LineLayoutRubyRun : public LineLayoutBlockFlow {
  public:
-  explicit LineLayoutRubyRun(LayoutRubyRun* layoutRubyRun)
-      : LineLayoutBlockFlow(layoutRubyRun) {}
+  explicit LineLayoutRubyRun(LayoutRubyRun* layout_ruby_run)
+      : LineLayoutBlockFlow(layout_ruby_run) {}
 
   explicit LineLayoutRubyRun(const LineLayoutItem& item)
       : LineLayoutBlockFlow(item) {
-    SECURITY_DCHECK(!item || item.isRubyRun());
+    SECURITY_DCHECK(!item || item.IsRubyRun());
   }
 
   explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}
 
   LineLayoutRubyRun() {}
 
-  void getOverhang(bool firstLine,
-                   LineLayoutItem startLayoutItem,
-                   LineLayoutItem endLayoutItem,
-                   int& startOverhang,
-                   int& endOverhang) const {
-    toRubyRun()->getOverhang(firstLine, startLayoutItem.layoutObject(),
-                             endLayoutItem.layoutObject(), startOverhang,
-                             endOverhang);
+  void GetOverhang(bool first_line,
+                   LineLayoutItem start_layout_item,
+                   LineLayoutItem end_layout_item,
+                   int& start_overhang,
+                   int& end_overhang) const {
+    ToRubyRun()->GetOverhang(first_line, start_layout_item.GetLayoutObject(),
+                             end_layout_item.GetLayoutObject(), start_overhang,
+                             end_overhang);
   }
 
-  LineLayoutRubyText rubyText() const {
-    return LineLayoutRubyText(toRubyRun()->rubyText());
+  LineLayoutRubyText RubyText() const {
+    return LineLayoutRubyText(ToRubyRun()->RubyText());
   }
 
-  LineLayoutRubyBase rubyBase() const {
-    return LineLayoutRubyBase(toRubyRun()->rubyBase());
+  LineLayoutRubyBase RubyBase() const {
+    return LineLayoutRubyBase(ToRubyRun()->RubyBase());
   }
 
-  bool canBreakBefore(const LazyLineBreakIterator& iterator) const {
-    return toRubyRun()->canBreakBefore(iterator);
+  bool CanBreakBefore(const LazyLineBreakIterator& iterator) const {
+    return ToRubyRun()->CanBreakBefore(iterator);
   }
 
  private:
-  LayoutRubyRun* toRubyRun() { return toLayoutRubyRun(layoutObject()); }
+  LayoutRubyRun* ToRubyRun() { return ToLayoutRubyRun(GetLayoutObject()); }
 
-  const LayoutRubyRun* toRubyRun() const {
-    return toLayoutRubyRun(layoutObject());
+  const LayoutRubyRun* ToRubyRun() const {
+    return ToLayoutRubyRun(GetLayoutObject());
   }
 };
 

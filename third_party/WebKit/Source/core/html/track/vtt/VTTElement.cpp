@@ -30,106 +30,108 @@
 
 namespace blink {
 
-static const QualifiedName& nodeTypeToTagName(VTTNodeType nodeType) {
-  DEFINE_STATIC_LOCAL(QualifiedName, cTag, (nullAtom, "c", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, vTag, (nullAtom, "v", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, langTag, (nullAtom, "lang", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, bTag, (nullAtom, "b", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, uTag, (nullAtom, "u", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, iTag, (nullAtom, "i", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, rubyTag, (nullAtom, "ruby", nullAtom));
-  DEFINE_STATIC_LOCAL(QualifiedName, rtTag, (nullAtom, "rt", nullAtom));
-  switch (nodeType) {
-    case VTTNodeTypeClass:
-      return cTag;
-    case VTTNodeTypeItalic:
-      return iTag;
-    case VTTNodeTypeLanguage:
-      return langTag;
-    case VTTNodeTypeBold:
-      return bTag;
-    case VTTNodeTypeUnderline:
-      return uTag;
-    case VTTNodeTypeRuby:
-      return rubyTag;
-    case VTTNodeTypeRubyText:
-      return rtTag;
-    case VTTNodeTypeVoice:
-      return vTag;
-    case VTTNodeTypeNone:
+static const QualifiedName& NodeTypeToTagName(VTTNodeType node_type) {
+  DEFINE_STATIC_LOCAL(QualifiedName, c_tag, (g_null_atom, "c", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, v_tag, (g_null_atom, "v", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, lang_tag,
+                      (g_null_atom, "lang", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, b_tag, (g_null_atom, "b", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, u_tag, (g_null_atom, "u", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, i_tag, (g_null_atom, "i", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, ruby_tag,
+                      (g_null_atom, "ruby", g_null_atom));
+  DEFINE_STATIC_LOCAL(QualifiedName, rt_tag, (g_null_atom, "rt", g_null_atom));
+  switch (node_type) {
+    case kVTTNodeTypeClass:
+      return c_tag;
+    case kVTTNodeTypeItalic:
+      return i_tag;
+    case kVTTNodeTypeLanguage:
+      return lang_tag;
+    case kVTTNodeTypeBold:
+      return b_tag;
+    case kVTTNodeTypeUnderline:
+      return u_tag;
+    case kVTTNodeTypeRuby:
+      return ruby_tag;
+    case kVTTNodeTypeRubyText:
+      return rt_tag;
+    case kVTTNodeTypeVoice:
+      return v_tag;
+    case kVTTNodeTypeNone:
     default:
       NOTREACHED();
-      return cTag;  // Make the compiler happy.
+      return c_tag;  // Make the compiler happy.
   }
 }
 
-VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
-    : Element(nodeTypeToTagName(nodeType), document, CreateElement),
-      m_isPastNode(0),
-      m_webVTTNodeType(nodeType) {}
+VTTElement::VTTElement(VTTNodeType node_type, Document* document)
+    : Element(NodeTypeToTagName(node_type), document, kCreateElement),
+      is_past_node_(0),
+      web_vtt_node_type_(node_type) {}
 
-VTTElement* VTTElement::create(VTTNodeType nodeType, Document* document) {
-  return new VTTElement(nodeType, document);
+VTTElement* VTTElement::Create(VTTNodeType node_type, Document* document) {
+  return new VTTElement(node_type, document);
 }
 
-Element* VTTElement::cloneElementWithoutAttributesAndChildren() {
+Element* VTTElement::CloneElementWithoutAttributesAndChildren() {
   VTTElement* clone =
-      create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
-  clone->setLanguage(m_language);
+      Create(static_cast<VTTNodeType>(web_vtt_node_type_), &GetDocument());
+  clone->SetLanguage(language_);
   return clone;
 }
 
-HTMLElement* VTTElement::createEquivalentHTMLElement(Document& document) {
-  HTMLElement* htmlElement = nullptr;
-  switch (m_webVTTNodeType) {
-    case VTTNodeTypeClass:
-    case VTTNodeTypeLanguage:
-    case VTTNodeTypeVoice:
-      htmlElement = HTMLElementFactory::createHTMLElement(
-          HTMLNames::spanTag.localName(), document);
-      htmlElement->setAttribute(HTMLNames::titleAttr,
-                                getAttribute(voiceAttributeName()));
-      htmlElement->setAttribute(HTMLNames::langAttr,
-                                getAttribute(langAttributeName()));
+HTMLElement* VTTElement::CreateEquivalentHTMLElement(Document& document) {
+  HTMLElement* html_element = nullptr;
+  switch (web_vtt_node_type_) {
+    case kVTTNodeTypeClass:
+    case kVTTNodeTypeLanguage:
+    case kVTTNodeTypeVoice:
+      html_element = HTMLElementFactory::createHTMLElement(
+          HTMLNames::spanTag.LocalName(), document);
+      html_element->setAttribute(HTMLNames::titleAttr,
+                                 getAttribute(VoiceAttributeName()));
+      html_element->setAttribute(HTMLNames::langAttr,
+                                 getAttribute(LangAttributeName()));
       break;
-    case VTTNodeTypeItalic:
-      htmlElement = HTMLElementFactory::createHTMLElement(
-          HTMLNames::iTag.localName(), document);
+    case kVTTNodeTypeItalic:
+      html_element = HTMLElementFactory::createHTMLElement(
+          HTMLNames::iTag.LocalName(), document);
       break;
-    case VTTNodeTypeBold:
-      htmlElement = HTMLElementFactory::createHTMLElement(
-          HTMLNames::bTag.localName(), document);
+    case kVTTNodeTypeBold:
+      html_element = HTMLElementFactory::createHTMLElement(
+          HTMLNames::bTag.LocalName(), document);
       break;
-    case VTTNodeTypeUnderline:
-      htmlElement = HTMLElementFactory::createHTMLElement(
-          HTMLNames::uTag.localName(), document);
+    case kVTTNodeTypeUnderline:
+      html_element = HTMLElementFactory::createHTMLElement(
+          HTMLNames::uTag.LocalName(), document);
       break;
-    case VTTNodeTypeRuby:
-      htmlElement = HTMLElementFactory::createHTMLElement(
-          HTMLNames::rubyTag.localName(), document);
+    case kVTTNodeTypeRuby:
+      html_element = HTMLElementFactory::createHTMLElement(
+          HTMLNames::rubyTag.LocalName(), document);
       break;
-    case VTTNodeTypeRubyText:
-      htmlElement = HTMLElementFactory::createHTMLElement(
-          HTMLNames::rtTag.localName(), document);
+    case kVTTNodeTypeRubyText:
+      html_element = HTMLElementFactory::createHTMLElement(
+          HTMLNames::rtTag.LocalName(), document);
       break;
     default:
       NOTREACHED();
   }
 
-  htmlElement->setAttribute(HTMLNames::classAttr,
-                            getAttribute(HTMLNames::classAttr));
-  return htmlElement;
+  html_element->setAttribute(HTMLNames::classAttr,
+                             getAttribute(HTMLNames::classAttr));
+  return html_element;
 }
 
-void VTTElement::setIsPastNode(bool isPastNode) {
-  if (!!m_isPastNode == isPastNode)
+void VTTElement::SetIsPastNode(bool is_past_node) {
+  if (!!is_past_node_ == is_past_node)
     return;
 
-  m_isPastNode = isPastNode;
-  setNeedsStyleRecalc(
-      LocalStyleChange,
-      StyleChangeReasonForTracing::createWithExtraData(
-          StyleChangeReason::PseudoClass, StyleChangeExtraData::Past));
+  is_past_node_ = is_past_node;
+  SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::CreateWithExtraData(
+          StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_past));
 }
 
 }  // namespace blink

@@ -12,21 +12,21 @@ namespace blink {
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_LineBreak) {
   // U+000AD (SOFT HYPHEN) has Control grapheme property.
-  const UChar32 kControl = WTF::Unicode::softHyphenCharacter;
+  const UChar32 kControl = WTF::Unicode::kSoftHyphenCharacter;
 
   // Grapheme Cluster Boundary Rule GB3: CR x LF
-  EXPECT_FALSE(isGraphemeBreak('\r', '\n'));
-  EXPECT_TRUE(isGraphemeBreak('\n', '\r'));
+  EXPECT_FALSE(IsGraphemeBreak('\r', '\n'));
+  EXPECT_TRUE(IsGraphemeBreak('\n', '\r'));
 
   // Grapheme Cluster Boundary Rule GB4: (Control | CR | LF) ÷
-  EXPECT_TRUE(isGraphemeBreak('\r', 'a'));
-  EXPECT_TRUE(isGraphemeBreak('\n', 'a'));
-  EXPECT_TRUE(isGraphemeBreak(kControl, 'a'));
+  EXPECT_TRUE(IsGraphemeBreak('\r', 'a'));
+  EXPECT_TRUE(IsGraphemeBreak('\n', 'a'));
+  EXPECT_TRUE(IsGraphemeBreak(kControl, 'a'));
 
   // Grapheme Cluster Boundary Rule GB5: ÷ (Control | CR | LF)
-  EXPECT_TRUE(isGraphemeBreak('a', '\r'));
-  EXPECT_TRUE(isGraphemeBreak('a', '\n'));
-  EXPECT_TRUE(isGraphemeBreak('a', kControl));
+  EXPECT_TRUE(IsGraphemeBreak('a', '\r'));
+  EXPECT_TRUE(IsGraphemeBreak('a', '\n'));
+  EXPECT_TRUE(IsGraphemeBreak('a', kControl));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_Hangul) {
@@ -42,54 +42,54 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_Hangul) {
   const UChar32 kT = 0x11A8;
 
   // Grapheme Cluster Boundary Rule GB6: L x (L | V | LV | LVT)
-  EXPECT_FALSE(isGraphemeBreak(kL, kL));
-  EXPECT_FALSE(isGraphemeBreak(kL, kV));
-  EXPECT_FALSE(isGraphemeBreak(kL, kLV));
-  EXPECT_FALSE(isGraphemeBreak(kL, kLVT));
-  EXPECT_TRUE(isGraphemeBreak(kL, kT));
+  EXPECT_FALSE(IsGraphemeBreak(kL, kL));
+  EXPECT_FALSE(IsGraphemeBreak(kL, kV));
+  EXPECT_FALSE(IsGraphemeBreak(kL, kLV));
+  EXPECT_FALSE(IsGraphemeBreak(kL, kLVT));
+  EXPECT_TRUE(IsGraphemeBreak(kL, kT));
 
   // Grapheme Cluster Boundary Rule GB7: (LV | V) x (V | T)
-  EXPECT_TRUE(isGraphemeBreak(kV, kL));
-  EXPECT_FALSE(isGraphemeBreak(kV, kV));
-  EXPECT_TRUE(isGraphemeBreak(kV, kLV));
-  EXPECT_TRUE(isGraphemeBreak(kV, kLVT));
-  EXPECT_FALSE(isGraphemeBreak(kV, kT));
+  EXPECT_TRUE(IsGraphemeBreak(kV, kL));
+  EXPECT_FALSE(IsGraphemeBreak(kV, kV));
+  EXPECT_TRUE(IsGraphemeBreak(kV, kLV));
+  EXPECT_TRUE(IsGraphemeBreak(kV, kLVT));
+  EXPECT_FALSE(IsGraphemeBreak(kV, kT));
 
   // Grapheme Cluster Boundary Rule GB7: (LV | V) x (V | T)
-  EXPECT_TRUE(isGraphemeBreak(kLV, kL));
-  EXPECT_FALSE(isGraphemeBreak(kLV, kV));
-  EXPECT_TRUE(isGraphemeBreak(kLV, kLV));
-  EXPECT_TRUE(isGraphemeBreak(kLV, kLVT));
-  EXPECT_FALSE(isGraphemeBreak(kLV, kT));
+  EXPECT_TRUE(IsGraphemeBreak(kLV, kL));
+  EXPECT_FALSE(IsGraphemeBreak(kLV, kV));
+  EXPECT_TRUE(IsGraphemeBreak(kLV, kLV));
+  EXPECT_TRUE(IsGraphemeBreak(kLV, kLVT));
+  EXPECT_FALSE(IsGraphemeBreak(kLV, kT));
 
   // Grapheme Cluster Boundary Rule GB8: (LVT | T) x T
-  EXPECT_TRUE(isGraphemeBreak(kLVT, kL));
-  EXPECT_TRUE(isGraphemeBreak(kLVT, kV));
-  EXPECT_TRUE(isGraphemeBreak(kLVT, kLV));
-  EXPECT_TRUE(isGraphemeBreak(kLVT, kLVT));
-  EXPECT_FALSE(isGraphemeBreak(kLVT, kT));
+  EXPECT_TRUE(IsGraphemeBreak(kLVT, kL));
+  EXPECT_TRUE(IsGraphemeBreak(kLVT, kV));
+  EXPECT_TRUE(IsGraphemeBreak(kLVT, kLV));
+  EXPECT_TRUE(IsGraphemeBreak(kLVT, kLVT));
+  EXPECT_FALSE(IsGraphemeBreak(kLVT, kT));
 
   // Grapheme Cluster Boundary Rule GB8: (LVT | T) x T
-  EXPECT_TRUE(isGraphemeBreak(kT, kL));
-  EXPECT_TRUE(isGraphemeBreak(kT, kV));
-  EXPECT_TRUE(isGraphemeBreak(kT, kLV));
-  EXPECT_TRUE(isGraphemeBreak(kT, kLVT));
-  EXPECT_FALSE(isGraphemeBreak(kT, kT));
+  EXPECT_TRUE(IsGraphemeBreak(kT, kL));
+  EXPECT_TRUE(IsGraphemeBreak(kT, kV));
+  EXPECT_TRUE(IsGraphemeBreak(kT, kLV));
+  EXPECT_TRUE(IsGraphemeBreak(kT, kLVT));
+  EXPECT_FALSE(IsGraphemeBreak(kT, kT));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_Extend_or_ZWJ) {
   // U+0300 (COMBINING GRAVE ACCENT) has Extend grapheme property.
   const UChar32 kExtend = 0x0300;
   // Grapheme Cluster Boundary Rule GB9: x (Extend | ZWJ)
-  EXPECT_FALSE(isGraphemeBreak('a', kExtend));
-  EXPECT_FALSE(isGraphemeBreak('a', WTF::Unicode::zeroWidthJoinerCharacter));
-  EXPECT_FALSE(isGraphemeBreak(kExtend, kExtend));
-  EXPECT_FALSE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter,
-                               WTF::Unicode::zeroWidthJoinerCharacter));
+  EXPECT_FALSE(IsGraphemeBreak('a', kExtend));
+  EXPECT_FALSE(IsGraphemeBreak('a', WTF::Unicode::kZeroWidthJoinerCharacter));
+  EXPECT_FALSE(IsGraphemeBreak(kExtend, kExtend));
+  EXPECT_FALSE(IsGraphemeBreak(WTF::Unicode::kZeroWidthJoinerCharacter,
+                               WTF::Unicode::kZeroWidthJoinerCharacter));
   EXPECT_FALSE(
-      isGraphemeBreak(kExtend, WTF::Unicode::zeroWidthJoinerCharacter));
+      IsGraphemeBreak(kExtend, WTF::Unicode::kZeroWidthJoinerCharacter));
   EXPECT_FALSE(
-      isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter, kExtend));
+      IsGraphemeBreak(WTF::Unicode::kZeroWidthJoinerCharacter, kExtend));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_SpacingMark) {
@@ -97,7 +97,7 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_SpacingMark) {
   const UChar32 kSpacingMark = 0x0903;
 
   // Grapheme Cluster Boundary Rule GB9a: x SpacingMark.
-  EXPECT_FALSE(isGraphemeBreak('a', kSpacingMark));
+  EXPECT_FALSE(IsGraphemeBreak('a', kSpacingMark));
 }
 
 // TODO(nona): Introduce tests for GB9b rule once ICU grabs Unicod 9.0.
@@ -113,15 +113,15 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_EmojiModifier) {
   const UChar32 kEModifier = 0x1F3FB;
 
   // Grapheme Cluster Boundary Rule GB10: (E_Base, E_Base_GAZ) x E_Modifier
-  EXPECT_FALSE(isGraphemeBreak(kEBase, kEModifier));
-  EXPECT_FALSE(isGraphemeBreak(kEBaseGAZ, kEModifier));
-  EXPECT_FALSE(isGraphemeBreak(kEBase, kEModifier));
+  EXPECT_FALSE(IsGraphemeBreak(kEBase, kEModifier));
+  EXPECT_FALSE(IsGraphemeBreak(kEBaseGAZ, kEModifier));
+  EXPECT_FALSE(IsGraphemeBreak(kEBase, kEModifier));
 
-  EXPECT_TRUE(isGraphemeBreak(kEBase, kEBase));
-  EXPECT_TRUE(isGraphemeBreak(kEBaseGAZ, kEBase));
-  EXPECT_TRUE(isGraphemeBreak(kEBase, kEBaseGAZ));
-  EXPECT_TRUE(isGraphemeBreak(kEBaseGAZ, kEBaseGAZ));
-  EXPECT_TRUE(isGraphemeBreak(kEModifier, kEModifier));
+  EXPECT_TRUE(IsGraphemeBreak(kEBase, kEBase));
+  EXPECT_TRUE(IsGraphemeBreak(kEBaseGAZ, kEBase));
+  EXPECT_TRUE(IsGraphemeBreak(kEBase, kEBaseGAZ));
+  EXPECT_TRUE(IsGraphemeBreak(kEBaseGAZ, kEBaseGAZ));
+  EXPECT_TRUE(IsGraphemeBreak(kEModifier, kEModifier));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_ZWJSequecne) {
@@ -135,16 +135,17 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_ZWJSequecne) {
 
   // Grapheme Cluster Boundary Rule GB11: ZWJ x (Glue_After_Zwj | EBG)
   EXPECT_FALSE(
-      isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter, kGlueAfterZwj));
+      IsGraphemeBreak(WTF::Unicode::kZeroWidthJoinerCharacter, kGlueAfterZwj));
   EXPECT_FALSE(
-      isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter, kEBaseGAZ));
-  EXPECT_FALSE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter, kEmoji));
+      IsGraphemeBreak(WTF::Unicode::kZeroWidthJoinerCharacter, kEBaseGAZ));
+  EXPECT_FALSE(
+      IsGraphemeBreak(WTF::Unicode::kZeroWidthJoinerCharacter, kEmoji));
 
-  EXPECT_TRUE(isGraphemeBreak(kGlueAfterZwj, kEBaseGAZ));
-  EXPECT_TRUE(isGraphemeBreak(kGlueAfterZwj, kGlueAfterZwj));
-  EXPECT_TRUE(isGraphemeBreak(kEBaseGAZ, kGlueAfterZwj));
+  EXPECT_TRUE(IsGraphemeBreak(kGlueAfterZwj, kEBaseGAZ));
+  EXPECT_TRUE(IsGraphemeBreak(kGlueAfterZwj, kGlueAfterZwj));
+  EXPECT_TRUE(IsGraphemeBreak(kEBaseGAZ, kGlueAfterZwj));
 
-  EXPECT_TRUE(isGraphemeBreak(WTF::Unicode::zeroWidthJoinerCharacter, 'a'));
+  EXPECT_TRUE(IsGraphemeBreak(WTF::Unicode::kZeroWidthJoinerCharacter, 'a'));
 }
 
 TEST(StateMachineUtilTest, IsGraphmeBreak_IndicSyllabicCategoryVirama) {
@@ -158,7 +159,7 @@ TEST(StateMachineUtilTest, IsGraphmeBreak_IndicSyllabicCategoryVirama) {
 
   // Do not break after character having Indic_Syllabic_Category=Virama
   // property if following character has General_Category=C(Other) property.
-  EXPECT_FALSE(isGraphemeBreak(kVirama, kDevangariKa));
+  EXPECT_FALSE(IsGraphemeBreak(kVirama, kDevangariKa));
 }
 
 }  // namespace blink

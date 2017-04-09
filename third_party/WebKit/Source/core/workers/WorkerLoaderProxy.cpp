@@ -9,49 +9,50 @@
 namespace blink {
 
 WorkerLoaderProxy::WorkerLoaderProxy(
-    WorkerLoaderProxyProvider* loaderProxyProvider)
-    : m_loaderProxyProvider(loaderProxyProvider) {}
+    WorkerLoaderProxyProvider* loader_proxy_provider)
+    : loader_proxy_provider_(loader_proxy_provider) {}
 
 WorkerLoaderProxy::~WorkerLoaderProxy() {
-  DCHECK(!m_loaderProxyProvider);
+  DCHECK(!loader_proxy_provider_);
 }
 
-void WorkerLoaderProxy::detachProvider(
-    WorkerLoaderProxyProvider* proxyProvider) {
-  MutexLocker locker(m_lock);
-  DCHECK(isMainThread());
-  DCHECK_EQ(proxyProvider, m_loaderProxyProvider);
-  m_loaderProxyProvider = nullptr;
+void WorkerLoaderProxy::DetachProvider(
+    WorkerLoaderProxyProvider* proxy_provider) {
+  MutexLocker locker(lock_);
+  DCHECK(IsMainThread());
+  DCHECK_EQ(proxy_provider, loader_proxy_provider_);
+  loader_proxy_provider_ = nullptr;
 }
 
-void WorkerLoaderProxy::postTaskToLoader(
+void WorkerLoaderProxy::PostTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::CrossThreadClosure> task) {
-  MutexLocker locker(m_lock);
-  DCHECK(!isMainThread());
-  if (!m_loaderProxyProvider)
+  MutexLocker locker(lock_);
+  DCHECK(!IsMainThread());
+  if (!loader_proxy_provider_)
     return;
-  m_loaderProxyProvider->postTaskToLoader(location, std::move(task));
+  loader_proxy_provider_->PostTaskToLoader(location, std::move(task));
 }
 
-void WorkerLoaderProxy::postTaskToWorkerGlobalScope(
+void WorkerLoaderProxy::PostTaskToWorkerGlobalScope(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::CrossThreadClosure> task) {
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
   // Note: No locking needed for the access from the main thread.
-  if (!m_loaderProxyProvider)
+  if (!loader_proxy_provider_)
     return;
-  m_loaderProxyProvider->postTaskToWorkerGlobalScope(location, std::move(task));
+  loader_proxy_provider_->PostTaskToWorkerGlobalScope(location,
+                                                      std::move(task));
 }
 
-ThreadableLoadingContext* WorkerLoaderProxy::getThreadableLoadingContext() {
-  DCHECK(isMainThread());
+ThreadableLoadingContext* WorkerLoaderProxy::GetThreadableLoadingContext() {
+  DCHECK(IsMainThread());
   // Note: No locking needed for the access from the main thread.
-  if (!m_loaderProxyProvider)
+  if (!loader_proxy_provider_)
     return nullptr;
   DCHECK(
-      m_loaderProxyProvider->getThreadableLoadingContext()->isContextThread());
-  return m_loaderProxyProvider->getThreadableLoadingContext();
+      loader_proxy_provider_->GetThreadableLoadingContext()->IsContextThread());
+  return loader_proxy_provider_->GetThreadableLoadingContext();
 }
 
 }  // namespace blink

@@ -26,7 +26,7 @@ class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
       int window_y,
       int modifiers,
       blink::WebPointerProperties::PointerType pointer_type =
-          blink::WebPointerProperties::PointerType::Mouse);
+          blink::WebPointerProperties::PointerType::kMouse);
 };
 
 class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {

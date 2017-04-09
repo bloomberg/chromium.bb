@@ -36,84 +36,84 @@ namespace blink {
 // Base structure for callback user data
 struct QueryData {
   QueryData()
-      : isVerticalText(false),
-        currentOffset(0),
-        textLineLayout(nullptr),
-        textBox(nullptr) {}
+      : is_vertical_text(false),
+        current_offset(0),
+        text_line_layout(nullptr),
+        text_box(nullptr) {}
 
-  bool isVerticalText;
-  unsigned currentOffset;
-  LineLayoutSVGInlineText textLineLayout;
-  const SVGInlineTextBox* textBox;
+  bool is_vertical_text;
+  unsigned current_offset;
+  LineLayoutSVGInlineText text_line_layout;
+  const SVGInlineTextBox* text_box;
 };
 
-static inline InlineFlowBox* flowBoxForLayoutObject(
-    LayoutObject* layoutObject) {
-  if (!layoutObject)
+static inline InlineFlowBox* FlowBoxForLayoutObject(
+    LayoutObject* layout_object) {
+  if (!layout_object)
     return nullptr;
 
-  if (layoutObject->isLayoutBlock()) {
+  if (layout_object->IsLayoutBlock()) {
     // If we're given a block element, it has to be a LayoutSVGText.
-    DCHECK(layoutObject->isSVGText());
-    LayoutBlockFlow* layoutBlockFlow = toLayoutBlockFlow(layoutObject);
+    DCHECK(layout_object->IsSVGText());
+    LayoutBlockFlow* layout_block_flow = ToLayoutBlockFlow(layout_object);
 
     // LayoutSVGText only ever contains a single line box.
-    InlineFlowBox* flowBox = layoutBlockFlow->firstLineBox();
-    DCHECK_EQ(flowBox, layoutBlockFlow->lastLineBox());
-    return flowBox;
+    InlineFlowBox* flow_box = layout_block_flow->FirstLineBox();
+    DCHECK_EQ(flow_box, layout_block_flow->LastLineBox());
+    return flow_box;
   }
 
-  if (layoutObject->isLayoutInline()) {
+  if (layout_object->IsLayoutInline()) {
     // We're given a LayoutSVGInline or objects that derive from it
     // (LayoutSVGTSpan / LayoutSVGTextPath)
-    LayoutInline* layoutInline = toLayoutInline(layoutObject);
+    LayoutInline* layout_inline = ToLayoutInline(layout_object);
 
     // LayoutSVGInline only ever contains a single line box.
-    InlineFlowBox* flowBox = layoutInline->firstLineBox();
-    DCHECK_EQ(flowBox, layoutInline->lastLineBox());
-    return flowBox;
+    InlineFlowBox* flow_box = layout_inline->FirstLineBox();
+    DCHECK_EQ(flow_box, layout_inline->LastLineBox());
+    return flow_box;
   }
 
   NOTREACHED();
   return nullptr;
 }
 
-static void collectTextBoxesInFlowBox(InlineFlowBox* flowBox,
-                                      Vector<SVGInlineTextBox*>& textBoxes) {
-  if (!flowBox)
+static void CollectTextBoxesInFlowBox(InlineFlowBox* flow_box,
+                                      Vector<SVGInlineTextBox*>& text_boxes) {
+  if (!flow_box)
     return;
 
-  for (InlineBox* child = flowBox->firstChild(); child;
-       child = child->nextOnLine()) {
-    if (child->isInlineFlowBox()) {
+  for (InlineBox* child = flow_box->FirstChild(); child;
+       child = child->NextOnLine()) {
+    if (child->IsInlineFlowBox()) {
       // Skip generated content.
-      if (!child->getLineLayoutItem().node())
+      if (!child->GetLineLayoutItem().GetNode())
         continue;
 
-      collectTextBoxesInFlowBox(toInlineFlowBox(child), textBoxes);
+      CollectTextBoxesInFlowBox(ToInlineFlowBox(child), text_boxes);
       continue;
     }
 
-    if (child->isSVGInlineTextBox())
-      textBoxes.push_back(toSVGInlineTextBox(child));
+    if (child->IsSVGInlineTextBox())
+      text_boxes.push_back(ToSVGInlineTextBox(child));
   }
 }
 
 typedef bool ProcessTextFragmentCallback(QueryData*, const SVGTextFragment&);
 
-static bool queryTextBox(QueryData* queryData,
-                         const SVGInlineTextBox* textBox,
-                         ProcessTextFragmentCallback fragmentCallback) {
-  queryData->textBox = textBox;
-  queryData->textLineLayout =
-      LineLayoutSVGInlineText(textBox->getLineLayoutItem());
+static bool QueryTextBox(QueryData* query_data,
+                         const SVGInlineTextBox* text_box,
+                         ProcessTextFragmentCallback fragment_callback) {
+  query_data->text_box = text_box;
+  query_data->text_line_layout =
+      LineLayoutSVGInlineText(text_box->GetLineLayoutItem());
 
-  queryData->isVerticalText =
-      !queryData->textLineLayout.style()->isHorizontalWritingMode();
+  query_data->is_vertical_text =
+      !query_data->text_line_layout.Style()->IsHorizontalWritingMode();
 
   // Loop over all text fragments in this text box, firing a callback for each.
-  for (const SVGTextFragment& fragment : textBox->textFragments()) {
-    if (fragmentCallback(queryData, fragment))
+  for (const SVGTextFragment& fragment : text_box->TextFragments()) {
+    if (fragment_callback(query_data, fragment))
       return true;
   }
   return false;
@@ -121,506 +121,518 @@ static bool queryTextBox(QueryData* queryData,
 
 // Execute a query in "spatial" order starting at |queryRoot|. This means
 // walking the lines boxes in the order they would get painted.
-static void spatialQuery(LayoutObject* queryRoot,
-                         QueryData* queryData,
-                         ProcessTextFragmentCallback fragmentCallback) {
-  Vector<SVGInlineTextBox*> textBoxes;
-  collectTextBoxesInFlowBox(flowBoxForLayoutObject(queryRoot), textBoxes);
+static void SpatialQuery(LayoutObject* query_root,
+                         QueryData* query_data,
+                         ProcessTextFragmentCallback fragment_callback) {
+  Vector<SVGInlineTextBox*> text_boxes;
+  CollectTextBoxesInFlowBox(FlowBoxForLayoutObject(query_root), text_boxes);
 
   // Loop over all text boxes
-  for (const SVGInlineTextBox* textBox : textBoxes) {
-    if (queryTextBox(queryData, textBox, fragmentCallback))
+  for (const SVGInlineTextBox* text_box : text_boxes) {
+    if (QueryTextBox(query_data, text_box, fragment_callback))
       return;
   }
 }
 
-static void collectTextBoxesInLogicalOrder(
-    LineLayoutSVGInlineText textLineLayout,
-    Vector<SVGInlineTextBox*>& textBoxes) {
-  textBoxes.shrink(0);
-  for (InlineTextBox* textBox = textLineLayout.firstTextBox(); textBox;
-       textBox = textBox->nextTextBox())
-    textBoxes.push_back(toSVGInlineTextBox(textBox));
-  std::sort(textBoxes.begin(), textBoxes.end(), InlineTextBox::compareByStart);
+static void CollectTextBoxesInLogicalOrder(
+    LineLayoutSVGInlineText text_line_layout,
+    Vector<SVGInlineTextBox*>& text_boxes) {
+  text_boxes.Shrink(0);
+  for (InlineTextBox* text_box = text_line_layout.FirstTextBox(); text_box;
+       text_box = text_box->NextTextBox())
+    text_boxes.push_back(ToSVGInlineTextBox(text_box));
+  std::sort(text_boxes.begin(), text_boxes.end(),
+            InlineTextBox::CompareByStart);
 }
 
 // Execute a query in "logical" order starting at |queryRoot|. This means
 // walking the lines boxes for each layout object in layout tree (pre)order.
-static void logicalQuery(LayoutObject* queryRoot,
-                         QueryData* queryData,
-                         ProcessTextFragmentCallback fragmentCallback) {
-  if (!queryRoot)
+static void LogicalQuery(LayoutObject* query_root,
+                         QueryData* query_data,
+                         ProcessTextFragmentCallback fragment_callback) {
+  if (!query_root)
     return;
 
   // Walk the layout tree in pre-order, starting at the specified root, and
   // run the query for each text node.
-  Vector<SVGInlineTextBox*> textBoxes;
-  for (LayoutObject* layoutObject = queryRoot->slowFirstChild(); layoutObject;
-       layoutObject = layoutObject->nextInPreOrder(queryRoot)) {
-    if (!layoutObject->isSVGInlineText())
+  Vector<SVGInlineTextBox*> text_boxes;
+  for (LayoutObject* layout_object = query_root->SlowFirstChild();
+       layout_object;
+       layout_object = layout_object->NextInPreOrder(query_root)) {
+    if (!layout_object->IsSVGInlineText())
       continue;
 
-    LineLayoutSVGInlineText textLineLayout =
-        LineLayoutSVGInlineText(toLayoutSVGInlineText(layoutObject));
-    DCHECK(textLineLayout.style());
+    LineLayoutSVGInlineText text_line_layout =
+        LineLayoutSVGInlineText(ToLayoutSVGInlineText(layout_object));
+    DCHECK(text_line_layout.Style());
 
     // TODO(fs): Allow filtering the search earlier, since we should be
     // able to trivially reject (prune) at least some of the queries.
-    collectTextBoxesInLogicalOrder(textLineLayout, textBoxes);
+    CollectTextBoxesInLogicalOrder(text_line_layout, text_boxes);
 
-    for (const SVGInlineTextBox* textBox : textBoxes) {
-      if (queryTextBox(queryData, textBox, fragmentCallback))
+    for (const SVGInlineTextBox* text_box : text_boxes) {
+      if (QueryTextBox(query_data, text_box, fragment_callback))
         return;
-      queryData->currentOffset += textBox->len();
+      query_data->current_offset += text_box->Len();
     }
   }
 }
 
-static bool mapStartEndPositionsIntoFragmentCoordinates(
-    const QueryData* queryData,
+static bool MapStartEndPositionsIntoFragmentCoordinates(
+    const QueryData* query_data,
     const SVGTextFragment& fragment,
-    int& startPosition,
-    int& endPosition) {
-  unsigned boxStart = queryData->currentOffset;
+    int& start_position,
+    int& end_position) {
+  unsigned box_start = query_data->current_offset;
 
   // Make <startPosition, endPosition> offsets relative to the current text box.
-  startPosition -= boxStart;
-  endPosition -= boxStart;
+  start_position -= box_start;
+  end_position -= box_start;
 
   // Reuse the same logic used for text selection & painting, to map our
   // query start/length into start/endPositions of the current text fragment.
-  return queryData->textBox->mapStartEndPositionsIntoFragmentCoordinates(
-      fragment, startPosition, endPosition);
+  return query_data->text_box->MapStartEndPositionsIntoFragmentCoordinates(
+      fragment, start_position, end_position);
 }
 
 // numberOfCharacters() implementation
-static bool numberOfCharactersCallback(QueryData*, const SVGTextFragment&) {
+static bool NumberOfCharactersCallback(QueryData*, const SVGTextFragment&) {
   // no-op
   return false;
 }
 
-unsigned SVGTextQuery::numberOfCharacters() const {
+unsigned SVGTextQuery::NumberOfCharacters() const {
   QueryData data;
-  logicalQuery(m_queryRootLayoutObject, &data, numberOfCharactersCallback);
-  return data.currentOffset;
+  LogicalQuery(query_root_layout_object_, &data, NumberOfCharactersCallback);
+  return data.current_offset;
 }
 
 // textLength() implementation
 struct TextLengthData : QueryData {
-  TextLengthData() : textLength(0) {}
+  TextLengthData() : text_length(0) {}
 
-  float textLength;
+  float text_length;
 };
 
-static bool textLengthCallback(QueryData* queryData,
+static bool TextLengthCallback(QueryData* query_data,
                                const SVGTextFragment& fragment) {
-  TextLengthData* data = static_cast<TextLengthData*>(queryData);
-  data->textLength +=
-      queryData->isVerticalText ? fragment.height : fragment.width;
+  TextLengthData* data = static_cast<TextLengthData*>(query_data);
+  data->text_length +=
+      query_data->is_vertical_text ? fragment.height : fragment.width;
   return false;
 }
 
-float SVGTextQuery::textLength() const {
+float SVGTextQuery::TextLength() const {
   TextLengthData data;
-  logicalQuery(m_queryRootLayoutObject, &data, textLengthCallback);
-  return data.textLength;
+  LogicalQuery(query_root_layout_object_, &data, TextLengthCallback);
+  return data.text_length;
 }
 
 using MetricsList = Vector<SVGTextMetrics>;
 
-MetricsList::const_iterator findMetricsForCharacter(
-    const MetricsList& metricsList,
+MetricsList::const_iterator FindMetricsForCharacter(
+    const MetricsList& metrics_list,
     const SVGTextFragment& fragment,
-    unsigned startInFragment) {
+    unsigned start_in_fragment) {
   // Find the text metrics cell that starts at or contains the character at
   // |startInFragment|.
   MetricsList::const_iterator metrics =
-      metricsList.begin() + fragment.metricsListOffset;
-  unsigned fragmentOffset = 0;
-  while (fragmentOffset < fragment.length) {
-    fragmentOffset += metrics->length();
-    if (startInFragment < fragmentOffset)
+      metrics_list.begin() + fragment.metrics_list_offset;
+  unsigned fragment_offset = 0;
+  while (fragment_offset < fragment.length) {
+    fragment_offset += metrics->length();
+    if (start_in_fragment < fragment_offset)
       break;
     ++metrics;
   }
-  DCHECK_LE(metrics, metricsList.end());
+  DCHECK_LE(metrics, metrics_list.end());
   return metrics;
 }
 
-static float calculateGlyphRange(const QueryData* queryData,
+static float CalculateGlyphRange(const QueryData* query_data,
                                  const SVGTextFragment& fragment,
                                  unsigned start,
                                  unsigned end) {
-  const MetricsList& metricsList = queryData->textLineLayout.metricsList();
-  auto metrics = findMetricsForCharacter(metricsList, fragment, start);
-  auto endMetrics = findMetricsForCharacter(metricsList, fragment, end);
-  float glyphRange = 0;
-  for (; metrics != endMetrics; ++metrics)
-    glyphRange +=
-        queryData->isVerticalText ? metrics->height() : metrics->width();
-  return glyphRange;
+  const MetricsList& metrics_list = query_data->text_line_layout.MetricsList();
+  auto metrics = FindMetricsForCharacter(metrics_list, fragment, start);
+  auto end_metrics = FindMetricsForCharacter(metrics_list, fragment, end);
+  float glyph_range = 0;
+  for (; metrics != end_metrics; ++metrics)
+    glyph_range +=
+        query_data->is_vertical_text ? metrics->Height() : metrics->Width();
+  return glyph_range;
 }
 
 // subStringLength() implementation
 struct SubStringLengthData : QueryData {
-  SubStringLengthData(unsigned queryStartPosition, unsigned queryLength)
-      : startPosition(queryStartPosition),
-        length(queryLength),
-        subStringLength(0) {}
+  SubStringLengthData(unsigned query_start_position, unsigned query_length)
+      : start_position(query_start_position),
+        length(query_length),
+        sub_string_length(0) {}
 
-  unsigned startPosition;
+  unsigned start_position;
   unsigned length;
 
-  float subStringLength;
+  float sub_string_length;
 };
 
-static bool subStringLengthCallback(QueryData* queryData,
+static bool SubStringLengthCallback(QueryData* query_data,
                                     const SVGTextFragment& fragment) {
-  SubStringLengthData* data = static_cast<SubStringLengthData*>(queryData);
+  SubStringLengthData* data = static_cast<SubStringLengthData*>(query_data);
 
-  int startPosition = data->startPosition;
-  int endPosition = startPosition + data->length;
-  if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment,
-                                                   startPosition, endPosition))
+  int start_position = data->start_position;
+  int end_position = start_position + data->length;
+  if (!MapStartEndPositionsIntoFragmentCoordinates(
+          query_data, fragment, start_position, end_position))
     return false;
 
-  data->subStringLength +=
-      calculateGlyphRange(queryData, fragment, startPosition, endPosition);
+  data->sub_string_length +=
+      CalculateGlyphRange(query_data, fragment, start_position, end_position);
   return false;
 }
 
-float SVGTextQuery::subStringLength(unsigned startPosition,
+float SVGTextQuery::SubStringLength(unsigned start_position,
                                     unsigned length) const {
-  SubStringLengthData data(startPosition, length);
-  logicalQuery(m_queryRootLayoutObject, &data, subStringLengthCallback);
-  return data.subStringLength;
+  SubStringLengthData data(start_position, length);
+  LogicalQuery(query_root_layout_object_, &data, SubStringLengthCallback);
+  return data.sub_string_length;
 }
 
 // startPositionOfCharacter() implementation
 struct StartPositionOfCharacterData : QueryData {
-  StartPositionOfCharacterData(unsigned queryPosition)
-      : position(queryPosition) {}
+  StartPositionOfCharacterData(unsigned query_position)
+      : position(query_position) {}
 
   unsigned position;
-  FloatPoint startPosition;
+  FloatPoint start_position;
 };
 
-static FloatPoint logicalGlyphPositionToPhysical(
-    const QueryData* queryData,
+static FloatPoint LogicalGlyphPositionToPhysical(
+    const QueryData* query_data,
     const SVGTextFragment& fragment,
-    float logicalGlyphOffset) {
-  float physicalGlyphOffset = logicalGlyphOffset;
-  if (!queryData->textBox->isLeftToRightDirection()) {
-    float fragmentExtent =
-        queryData->isVerticalText ? fragment.height : fragment.width;
-    physicalGlyphOffset = fragmentExtent - logicalGlyphOffset;
+    float logical_glyph_offset) {
+  float physical_glyph_offset = logical_glyph_offset;
+  if (!query_data->text_box->IsLeftToRightDirection()) {
+    float fragment_extent =
+        query_data->is_vertical_text ? fragment.height : fragment.width;
+    physical_glyph_offset = fragment_extent - logical_glyph_offset;
   }
 
-  FloatPoint glyphPosition(fragment.x, fragment.y);
-  if (queryData->isVerticalText)
-    glyphPosition.move(0, physicalGlyphOffset);
+  FloatPoint glyph_position(fragment.x, fragment.y);
+  if (query_data->is_vertical_text)
+    glyph_position.Move(0, physical_glyph_offset);
   else
-    glyphPosition.move(physicalGlyphOffset, 0);
+    glyph_position.Move(physical_glyph_offset, 0);
 
-  return glyphPosition;
+  return glyph_position;
 }
 
-static FloatPoint calculateGlyphPosition(const QueryData* queryData,
+static FloatPoint CalculateGlyphPosition(const QueryData* query_data,
                                          const SVGTextFragment& fragment,
-                                         unsigned offsetInFragment) {
-  float glyphOffsetInDirection =
-      calculateGlyphRange(queryData, fragment, 0, offsetInFragment);
-  FloatPoint glyphPosition = logicalGlyphPositionToPhysical(
-      queryData, fragment, glyphOffsetInDirection);
-  if (fragment.isTransformed()) {
-    AffineTransform fragmentTransform = fragment.buildFragmentTransform(
-        SVGTextFragment::TransformIgnoringTextLength);
-    glyphPosition = fragmentTransform.mapPoint(glyphPosition);
+                                         unsigned offset_in_fragment) {
+  float glyph_offset_in_direction =
+      CalculateGlyphRange(query_data, fragment, 0, offset_in_fragment);
+  FloatPoint glyph_position = LogicalGlyphPositionToPhysical(
+      query_data, fragment, glyph_offset_in_direction);
+  if (fragment.IsTransformed()) {
+    AffineTransform fragment_transform = fragment.BuildFragmentTransform(
+        SVGTextFragment::kTransformIgnoringTextLength);
+    glyph_position = fragment_transform.MapPoint(glyph_position);
   }
-  return glyphPosition;
+  return glyph_position;
 }
 
-static bool startPositionOfCharacterCallback(QueryData* queryData,
+static bool StartPositionOfCharacterCallback(QueryData* query_data,
                                              const SVGTextFragment& fragment) {
   StartPositionOfCharacterData* data =
-      static_cast<StartPositionOfCharacterData*>(queryData);
+      static_cast<StartPositionOfCharacterData*>(query_data);
 
-  int startPosition = data->position;
-  int endPosition = startPosition + 1;
-  if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment,
-                                                   startPosition, endPosition))
+  int start_position = data->position;
+  int end_position = start_position + 1;
+  if (!MapStartEndPositionsIntoFragmentCoordinates(
+          query_data, fragment, start_position, end_position))
     return false;
 
-  data->startPosition =
-      calculateGlyphPosition(queryData, fragment, startPosition);
+  data->start_position =
+      CalculateGlyphPosition(query_data, fragment, start_position);
   return true;
 }
 
-FloatPoint SVGTextQuery::startPositionOfCharacter(unsigned position) const {
+FloatPoint SVGTextQuery::StartPositionOfCharacter(unsigned position) const {
   StartPositionOfCharacterData data(position);
-  logicalQuery(m_queryRootLayoutObject, &data,
-               startPositionOfCharacterCallback);
-  return data.startPosition;
+  LogicalQuery(query_root_layout_object_, &data,
+               StartPositionOfCharacterCallback);
+  return data.start_position;
 }
 
 // endPositionOfCharacter() implementation
 struct EndPositionOfCharacterData : QueryData {
-  EndPositionOfCharacterData(unsigned queryPosition)
-      : position(queryPosition) {}
+  EndPositionOfCharacterData(unsigned query_position)
+      : position(query_position) {}
 
   unsigned position;
-  FloatPoint endPosition;
+  FloatPoint end_position;
 };
 
-static bool endPositionOfCharacterCallback(QueryData* queryData,
+static bool EndPositionOfCharacterCallback(QueryData* query_data,
                                            const SVGTextFragment& fragment) {
   EndPositionOfCharacterData* data =
-      static_cast<EndPositionOfCharacterData*>(queryData);
+      static_cast<EndPositionOfCharacterData*>(query_data);
 
-  int startPosition = data->position;
-  int endPosition = startPosition + 1;
-  if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment,
-                                                   startPosition, endPosition))
+  int start_position = data->position;
+  int end_position = start_position + 1;
+  if (!MapStartEndPositionsIntoFragmentCoordinates(
+          query_data, fragment, start_position, end_position))
     return false;
 
-  data->endPosition = calculateGlyphPosition(queryData, fragment, endPosition);
+  data->end_position =
+      CalculateGlyphPosition(query_data, fragment, end_position);
   return true;
 }
 
-FloatPoint SVGTextQuery::endPositionOfCharacter(unsigned position) const {
+FloatPoint SVGTextQuery::EndPositionOfCharacter(unsigned position) const {
   EndPositionOfCharacterData data(position);
-  logicalQuery(m_queryRootLayoutObject, &data, endPositionOfCharacterCallback);
-  return data.endPosition;
+  LogicalQuery(query_root_layout_object_, &data,
+               EndPositionOfCharacterCallback);
+  return data.end_position;
 }
 
 // rotationOfCharacter() implementation
 struct RotationOfCharacterData : QueryData {
-  RotationOfCharacterData(unsigned queryPosition)
-      : position(queryPosition), rotation(0) {}
+  RotationOfCharacterData(unsigned query_position)
+      : position(query_position), rotation(0) {}
 
   unsigned position;
   float rotation;
 };
 
-static bool rotationOfCharacterCallback(QueryData* queryData,
+static bool RotationOfCharacterCallback(QueryData* query_data,
                                         const SVGTextFragment& fragment) {
   RotationOfCharacterData* data =
-      static_cast<RotationOfCharacterData*>(queryData);
+      static_cast<RotationOfCharacterData*>(query_data);
 
-  int startPosition = data->position;
-  int endPosition = startPosition + 1;
-  if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment,
-                                                   startPosition, endPosition))
+  int start_position = data->position;
+  int end_position = start_position + 1;
+  if (!MapStartEndPositionsIntoFragmentCoordinates(
+          query_data, fragment, start_position, end_position))
     return false;
 
-  if (!fragment.isTransformed()) {
+  if (!fragment.IsTransformed()) {
     data->rotation = 0;
   } else {
-    AffineTransform fragmentTransform = fragment.buildFragmentTransform(
-        SVGTextFragment::TransformIgnoringTextLength);
-    fragmentTransform.scale(1 / fragmentTransform.xScale(),
-                            1 / fragmentTransform.yScale());
+    AffineTransform fragment_transform = fragment.BuildFragmentTransform(
+        SVGTextFragment::kTransformIgnoringTextLength);
+    fragment_transform.Scale(1 / fragment_transform.XScale(),
+                             1 / fragment_transform.YScale());
     data->rotation = clampTo<float>(
-        rad2deg(atan2(fragmentTransform.b(), fragmentTransform.a())));
+        rad2deg(atan2(fragment_transform.B(), fragment_transform.A())));
   }
   return true;
 }
 
-float SVGTextQuery::rotationOfCharacter(unsigned position) const {
+float SVGTextQuery::RotationOfCharacter(unsigned position) const {
   RotationOfCharacterData data(position);
-  logicalQuery(m_queryRootLayoutObject, &data, rotationOfCharacterCallback);
+  LogicalQuery(query_root_layout_object_, &data, RotationOfCharacterCallback);
   return data.rotation;
 }
 
 // extentOfCharacter() implementation
 struct ExtentOfCharacterData : QueryData {
-  ExtentOfCharacterData(unsigned queryPosition) : position(queryPosition) {}
+  ExtentOfCharacterData(unsigned query_position) : position(query_position) {}
 
   unsigned position;
   FloatRect extent;
 };
 
-static FloatRect physicalGlyphExtents(const QueryData* queryData,
+static FloatRect PhysicalGlyphExtents(const QueryData* query_data,
                                       const SVGTextMetrics& metrics,
-                                      const FloatPoint& glyphPosition) {
+                                      const FloatPoint& glyph_position) {
   // TODO(fs): Negative glyph extents seems kind of weird to have, but
   // presently it can occur in some cases (like Arabic.)
-  FloatRect glyphExtents(glyphPosition,
-                         FloatSize(std::max<float>(metrics.width(), 0),
-                                   std::max<float>(metrics.height(), 0)));
+  FloatRect glyph_extents(glyph_position,
+                          FloatSize(std::max<float>(metrics.Width(), 0),
+                                    std::max<float>(metrics.Height(), 0)));
 
   // If RTL, adjust the starting point to align with the LHS of the glyph
   // bounding box.
-  if (!queryData->textBox->isLeftToRightDirection()) {
-    if (queryData->isVerticalText)
-      glyphExtents.move(0, -glyphExtents.height());
+  if (!query_data->text_box->IsLeftToRightDirection()) {
+    if (query_data->is_vertical_text)
+      glyph_extents.Move(0, -glyph_extents.Height());
     else
-      glyphExtents.move(-glyphExtents.width(), 0);
+      glyph_extents.Move(-glyph_extents.Width(), 0);
   }
-  return glyphExtents;
+  return glyph_extents;
 }
 
-static inline FloatRect calculateGlyphBoundaries(
-    const QueryData* queryData,
+static inline FloatRect CalculateGlyphBoundaries(
+    const QueryData* query_data,
     const SVGTextFragment& fragment,
-    int startPosition) {
-  const float scalingFactor = queryData->textLineLayout.scalingFactor();
-  DCHECK(scalingFactor);
-  const SimpleFontData* fontData =
-      queryData->textLineLayout.scaledFont().primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+    int start_position) {
+  const float scaling_factor = query_data->text_line_layout.ScalingFactor();
+  DCHECK(scaling_factor);
+  const SimpleFontData* font_data =
+      query_data->text_line_layout.ScaledFont().PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return FloatRect();
 
   const float baseline =
-      fontData->getFontMetrics().floatAscent() / scalingFactor;
-  float glyphOffsetInDirection =
-      calculateGlyphRange(queryData, fragment, 0, startPosition);
-  FloatPoint glyphPosition = logicalGlyphPositionToPhysical(
-      queryData, fragment, glyphOffsetInDirection);
-  glyphPosition.move(0, -baseline);
+      font_data->GetFontMetrics().FloatAscent() / scaling_factor;
+  float glyph_offset_in_direction =
+      CalculateGlyphRange(query_data, fragment, 0, start_position);
+  FloatPoint glyph_position = LogicalGlyphPositionToPhysical(
+      query_data, fragment, glyph_offset_in_direction);
+  glyph_position.Move(0, -baseline);
 
   // Use the SVGTextMetrics computed by SVGTextMetricsBuilder.
-  const MetricsList& metricsList = queryData->textLineLayout.metricsList();
-  auto metrics = findMetricsForCharacter(metricsList, fragment, startPosition);
+  const MetricsList& metrics_list = query_data->text_line_layout.MetricsList();
+  auto metrics =
+      FindMetricsForCharacter(metrics_list, fragment, start_position);
 
-  FloatRect extent = physicalGlyphExtents(queryData, *metrics, glyphPosition);
-  if (fragment.isTransformed()) {
-    AffineTransform fragmentTransform = fragment.buildFragmentTransform(
-        SVGTextFragment::TransformIgnoringTextLength);
-    extent = fragmentTransform.mapRect(extent);
+  FloatRect extent = PhysicalGlyphExtents(query_data, *metrics, glyph_position);
+  if (fragment.IsTransformed()) {
+    AffineTransform fragment_transform = fragment.BuildFragmentTransform(
+        SVGTextFragment::kTransformIgnoringTextLength);
+    extent = fragment_transform.MapRect(extent);
   }
   return extent;
 }
 
-static bool extentOfCharacterCallback(QueryData* queryData,
+static bool ExtentOfCharacterCallback(QueryData* query_data,
                                       const SVGTextFragment& fragment) {
-  ExtentOfCharacterData* data = static_cast<ExtentOfCharacterData*>(queryData);
+  ExtentOfCharacterData* data = static_cast<ExtentOfCharacterData*>(query_data);
 
-  int startPosition = data->position;
-  int endPosition = startPosition + 1;
-  if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment,
-                                                   startPosition, endPosition))
+  int start_position = data->position;
+  int end_position = start_position + 1;
+  if (!MapStartEndPositionsIntoFragmentCoordinates(
+          query_data, fragment, start_position, end_position))
     return false;
 
-  data->extent = calculateGlyphBoundaries(queryData, fragment, startPosition);
+  data->extent = CalculateGlyphBoundaries(query_data, fragment, start_position);
   return true;
 }
 
-FloatRect SVGTextQuery::extentOfCharacter(unsigned position) const {
+FloatRect SVGTextQuery::ExtentOfCharacter(unsigned position) const {
   ExtentOfCharacterData data(position);
-  logicalQuery(m_queryRootLayoutObject, &data, extentOfCharacterCallback);
+  LogicalQuery(query_root_layout_object_, &data, ExtentOfCharacterCallback);
   return data.extent;
 }
 
 // characterNumberAtPosition() implementation
 struct CharacterNumberAtPositionData : QueryData {
-  CharacterNumberAtPositionData(const FloatPoint& queryPosition)
-      : position(queryPosition), hitLayoutItem(nullptr), offsetInTextNode(0) {}
+  CharacterNumberAtPositionData(const FloatPoint& query_position)
+      : position(query_position),
+        hit_layout_item(nullptr),
+        offset_in_text_node(0) {}
 
-  int characterNumberWithin(const LayoutObject* queryRoot) const;
+  int CharacterNumberWithin(const LayoutObject* query_root) const;
 
   FloatPoint position;
-  LineLayoutItem hitLayoutItem;
-  int offsetInTextNode;
+  LineLayoutItem hit_layout_item;
+  int offset_in_text_node;
 };
 
-int CharacterNumberAtPositionData::characterNumberWithin(
-    const LayoutObject* queryRoot) const {
+int CharacterNumberAtPositionData::CharacterNumberWithin(
+    const LayoutObject* query_root) const {
   // http://www.w3.org/TR/SVG/single-page.html#text-__svg__SVGTextContentElement__getCharNumAtPosition
   // "If no such character exists, a value of -1 is returned."
-  if (!hitLayoutItem)
+  if (!hit_layout_item)
     return -1;
-  DCHECK(queryRoot);
-  int characterNumber = offsetInTextNode;
+  DCHECK(query_root);
+  int character_number = offset_in_text_node;
 
   // Accumulate the lengths of all the text nodes preceding the target layout
   // object within the queried root, to get the complete character number.
-  for (LineLayoutItem layoutItem = hitLayoutItem.previousInPreOrder(queryRoot);
-       layoutItem; layoutItem = layoutItem.previousInPreOrder(queryRoot)) {
-    if (!layoutItem.isSVGInlineText())
+  for (LineLayoutItem layout_item =
+           hit_layout_item.PreviousInPreOrder(query_root);
+       layout_item; layout_item = layout_item.PreviousInPreOrder(query_root)) {
+    if (!layout_item.IsSVGInlineText())
       continue;
-    characterNumber += LineLayoutSVGInlineText(layoutItem).resolvedTextLength();
+    character_number +=
+        LineLayoutSVGInlineText(layout_item).ResolvedTextLength();
   }
-  return characterNumber;
+  return character_number;
 }
 
-static unsigned logicalOffsetInTextNode(LineLayoutSVGInlineText textLineLayout,
-                                        const SVGInlineTextBox* startTextBox,
-                                        unsigned fragmentOffset) {
-  Vector<SVGInlineTextBox*> textBoxes;
-  collectTextBoxesInLogicalOrder(textLineLayout, textBoxes);
+static unsigned LogicalOffsetInTextNode(
+    LineLayoutSVGInlineText text_line_layout,
+    const SVGInlineTextBox* start_text_box,
+    unsigned fragment_offset) {
+  Vector<SVGInlineTextBox*> text_boxes;
+  CollectTextBoxesInLogicalOrder(text_line_layout, text_boxes);
 
-  DCHECK(startTextBox);
-  size_t index = textBoxes.find(startTextBox);
+  DCHECK(start_text_box);
+  size_t index = text_boxes.Find(start_text_box);
   DCHECK_NE(index, kNotFound);
 
-  unsigned offset = fragmentOffset;
+  unsigned offset = fragment_offset;
   while (index) {
     --index;
-    offset += textBoxes[index]->len();
+    offset += text_boxes[index]->Len();
   }
   return offset;
 }
 
-static bool characterNumberAtPositionCallback(QueryData* queryData,
+static bool CharacterNumberAtPositionCallback(QueryData* query_data,
                                               const SVGTextFragment& fragment) {
   CharacterNumberAtPositionData* data =
-      static_cast<CharacterNumberAtPositionData*>(queryData);
+      static_cast<CharacterNumberAtPositionData*>(query_data);
 
-  const float scalingFactor = data->textLineLayout.scalingFactor();
-  DCHECK(scalingFactor);
+  const float scaling_factor = data->text_line_layout.ScalingFactor();
+  DCHECK(scaling_factor);
 
-  const SimpleFontData* fontData =
-      data->textLineLayout.scaledFont().primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+  const SimpleFontData* font_data =
+      data->text_line_layout.ScaledFont().PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return false;
 
   const float baseline =
-      fontData->getFontMetrics().floatAscent() / scalingFactor;
+      font_data->GetFontMetrics().FloatAscent() / scaling_factor;
 
   // Test the query point against the bounds of the entire fragment first.
-  if (!fragment.boundingBox(baseline).contains(data->position))
+  if (!fragment.BoundingBox(baseline).Contains(data->position))
     return false;
 
-  AffineTransform fragmentTransform = fragment.buildFragmentTransform(
-      SVGTextFragment::TransformIgnoringTextLength);
+  AffineTransform fragment_transform = fragment.BuildFragmentTransform(
+      SVGTextFragment::kTransformIgnoringTextLength);
 
   // Iterate through the glyphs in this fragment, and check if their extents
   // contain the query point.
   MetricsList::const_iterator metrics =
-      data->textLineLayout.metricsList().begin() + fragment.metricsListOffset;
-  unsigned fragmentOffset = 0;
-  float glyphOffset = 0;
-  while (fragmentOffset < fragment.length) {
-    FloatPoint glyphPosition =
-        logicalGlyphPositionToPhysical(data, fragment, glyphOffset);
-    glyphPosition.move(0, -baseline);
+      data->text_line_layout.MetricsList().begin() +
+      fragment.metrics_list_offset;
+  unsigned fragment_offset = 0;
+  float glyph_offset = 0;
+  while (fragment_offset < fragment.length) {
+    FloatPoint glyph_position =
+        LogicalGlyphPositionToPhysical(data, fragment, glyph_offset);
+    glyph_position.Move(0, -baseline);
 
-    FloatRect extent = fragmentTransform.mapRect(
-        physicalGlyphExtents(data, *metrics, glyphPosition));
-    if (extent.contains(data->position)) {
+    FloatRect extent = fragment_transform.MapRect(
+        PhysicalGlyphExtents(data, *metrics, glyph_position));
+    if (extent.Contains(data->position)) {
       // Compute the character offset of the glyph within the text node.
-      unsigned offsetInBox = fragment.characterOffset -
-                             queryData->textBox->start() + fragmentOffset;
-      data->offsetInTextNode = logicalOffsetInTextNode(
-          queryData->textLineLayout, queryData->textBox, offsetInBox);
-      data->hitLayoutItem = LineLayoutItem(data->textLineLayout);
+      unsigned offset_in_box = fragment.character_offset -
+                               query_data->text_box->Start() + fragment_offset;
+      data->offset_in_text_node = LogicalOffsetInTextNode(
+          query_data->text_line_layout, query_data->text_box, offset_in_box);
+      data->hit_layout_item = LineLayoutItem(data->text_line_layout);
       return true;
     }
-    fragmentOffset += metrics->length();
-    glyphOffset += data->isVerticalText ? metrics->height() : metrics->width();
+    fragment_offset += metrics->length();
+    glyph_offset +=
+        data->is_vertical_text ? metrics->Height() : metrics->Width();
     ++metrics;
   }
   return false;
 }
 
-int SVGTextQuery::characterNumberAtPosition(const FloatPoint& position) const {
+int SVGTextQuery::CharacterNumberAtPosition(const FloatPoint& position) const {
   CharacterNumberAtPositionData data(position);
-  spatialQuery(m_queryRootLayoutObject, &data,
-               characterNumberAtPositionCallback);
-  return data.characterNumberWithin(m_queryRootLayoutObject);
+  SpatialQuery(query_root_layout_object_, &data,
+               CharacterNumberAtPositionCallback);
+  return data.CharacterNumberWithin(query_root_layout_object_);
 }
 
 }  // namespace blink

@@ -356,28 +356,28 @@ blink::WebFileError FileErrorToWebFileError(
     base::File::Error error_code) {
   switch (error_code) {
     case base::File::FILE_ERROR_NOT_FOUND:
-      return blink::WebFileErrorNotFound;
+      return blink::kWebFileErrorNotFound;
     case base::File::FILE_ERROR_INVALID_OPERATION:
     case base::File::FILE_ERROR_EXISTS:
     case base::File::FILE_ERROR_NOT_EMPTY:
-      return blink::WebFileErrorInvalidModification;
+      return blink::kWebFileErrorInvalidModification;
     case base::File::FILE_ERROR_NOT_A_DIRECTORY:
     case base::File::FILE_ERROR_NOT_A_FILE:
-      return blink::WebFileErrorTypeMismatch;
+      return blink::kWebFileErrorTypeMismatch;
     case base::File::FILE_ERROR_ACCESS_DENIED:
-      return blink::WebFileErrorNoModificationAllowed;
+      return blink::kWebFileErrorNoModificationAllowed;
     case base::File::FILE_ERROR_FAILED:
-      return blink::WebFileErrorInvalidState;
+      return blink::kWebFileErrorInvalidState;
     case base::File::FILE_ERROR_ABORT:
-      return blink::WebFileErrorAbort;
+      return blink::kWebFileErrorAbort;
     case base::File::FILE_ERROR_SECURITY:
-      return blink::WebFileErrorSecurity;
+      return blink::kWebFileErrorSecurity;
     case base::File::FILE_ERROR_NO_SPACE:
-      return blink::WebFileErrorQuotaExceeded;
+      return blink::kWebFileErrorQuotaExceeded;
     case base::File::FILE_ERROR_INVALID_URL:
-      return blink::WebFileErrorEncoding;
+      return blink::kWebFileErrorEncoding;
     default:
-      return blink::WebFileErrorInvalidModification;
+      return blink::kWebFileErrorInvalidModification;
   }
 }
 
@@ -386,19 +386,19 @@ bool GetFileSystemPublicType(
     blink::WebFileSystemType* type) {
   DCHECK(type);
   if (type_string == "Temporary") {
-    *type = blink::WebFileSystemTypeTemporary;
+    *type = blink::kWebFileSystemTypeTemporary;
     return true;
   }
   if (type_string == "Persistent") {
-    *type = blink::WebFileSystemTypePersistent;
+    *type = blink::kWebFileSystemTypePersistent;
     return true;
   }
   if (type_string == "Isolated") {
-    *type = blink::WebFileSystemTypeIsolated;
+    *type = blink::kWebFileSystemTypeIsolated;
     return true;
   }
   if (type_string == "External") {
-    *type = blink::WebFileSystemTypeExternal;
+    *type = blink::kWebFileSystemTypeExternal;
     return true;
   }
   NOTREACHED();

@@ -33,42 +33,42 @@ class CORE_EXPORT FrameTree final {
   DISALLOW_NEW();
 
  public:
-  explicit FrameTree(Frame* thisFrame);
+  explicit FrameTree(Frame* this_frame);
   ~FrameTree();
 
-  const AtomicString& name() const;
-  void setName(const AtomicString&);
+  const AtomicString& GetName() const;
+  void SetName(const AtomicString&);
 
   // TODO(andypaicu): remove this once we have gathered the data
-  void experimentalSetNulledName();
+  void ExperimentalSetNulledName();
 
-  Frame* parent() const;
-  Frame* top() const;
-  Frame* nextSibling() const;
-  Frame* firstChild() const;
+  Frame* Parent() const;
+  Frame* Top() const;
+  Frame* NextSibling() const;
+  Frame* FirstChild() const;
 
-  bool isDescendantOf(const Frame* ancestor) const;
-  Frame* traverseNext(const Frame* stayWithin = nullptr) const;
+  bool IsDescendantOf(const Frame* ancestor) const;
+  Frame* TraverseNext(const Frame* stay_within = nullptr) const;
 
-  Frame* find(const AtomicString& name) const;
-  unsigned childCount() const;
+  Frame* Find(const AtomicString& name) const;
+  unsigned ChildCount() const;
 
-  Frame* scopedChild(unsigned index) const;
-  Frame* scopedChild(const AtomicString& name) const;
-  unsigned scopedChildCount() const;
-  void invalidateScopedChildCount();
+  Frame* ScopedChild(unsigned index) const;
+  Frame* ScopedChild(const AtomicString& name) const;
+  unsigned ScopedChildCount() const;
+  void InvalidateScopedChildCount();
 
   DECLARE_TRACE();
 
  private:
-  Member<Frame> m_thisFrame;
+  Member<Frame> this_frame_;
 
-  AtomicString m_name;  // The actual frame name (may be empty).
+  AtomicString name_;  // The actual frame name (may be empty).
 
-  mutable unsigned m_scopedChildCount;
+  mutable unsigned scoped_child_count_;
 
   // TODO(andypaicu): remove this once we have gathered the data
-  bool m_experimentalSetNulledName;
+  bool experimental_set_nulled_name_;
 };
 
 }  // namespace blink

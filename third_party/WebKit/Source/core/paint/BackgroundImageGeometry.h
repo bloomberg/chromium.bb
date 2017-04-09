@@ -24,18 +24,18 @@ class BackgroundImageGeometry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  BackgroundImageGeometry() : m_hasNonLocalGeometry(false) {}
+  BackgroundImageGeometry() : has_non_local_geometry_(false) {}
 
-  void calculate(const LayoutBoxModelObject&,
-                 const LayoutObject* backgroundObject,
-                 const LayoutBoxModelObject* paintContainer,
+  void Calculate(const LayoutBoxModelObject&,
+                 const LayoutObject* background_object,
+                 const LayoutBoxModelObject* paint_container,
                  const GlobalPaintFlags,
                  const FillLayer&,
-                 const LayoutRect& paintRect);
+                 const LayoutRect& paint_rect);
 
   // destRect() is the rect in the space of the containing box into which to
   // draw the image.
-  const LayoutRect& destRect() const { return m_destRect; }
+  const LayoutRect& DestRect() const { return dest_rect_; }
   // If the image is repeated via tiling, tileSize() is the size
   // in pixels of the area into which to draw the entire image once.
   //
@@ -43,56 +43,56 @@ class BackgroundImageGeometry {
   // it means the image will be resized (via an image filter) when painted into
   // that tile region. This may happen because of CSS background-size and
   // background-repeat requirements.
-  const LayoutSize& tileSize() const { return m_tileSize; }
+  const LayoutSize& TileSize() const { return tile_size_; }
   // phase() represents the point in the image that will appear at (0,0) in the
   // destination space. The point is defined in tileSize() coordinates.
-  const LayoutPoint& phase() const { return m_phase; }
+  const LayoutPoint& Phase() const { return phase_; }
   // Space-size represents extra width and height that may be added to
   // the image if used as a pattern with background-repeat: space.
-  const LayoutSize& spaceSize() const { return m_repeatSpacing; }
+  const LayoutSize& SpaceSize() const { return repeat_spacing_; }
   // Has background-attachment: fixed. Implies that we can't always cheaply
   // compute destRect.
-  bool hasNonLocalGeometry() const { return m_hasNonLocalGeometry; }
+  bool HasNonLocalGeometry() const { return has_non_local_geometry_; }
 
  private:
-  void setDestRect(const LayoutRect& destRect) { m_destRect = destRect; }
-  void setPhase(const LayoutPoint& phase) { m_phase = phase; }
-  void setTileSize(const LayoutSize& tileSize) { m_tileSize = tileSize; }
-  void setSpaceSize(const LayoutSize& repeatSpacing) {
-    m_repeatSpacing = repeatSpacing;
+  void SetDestRect(const LayoutRect& dest_rect) { dest_rect_ = dest_rect; }
+  void SetPhase(const LayoutPoint& phase) { phase_ = phase; }
+  void SetTileSize(const LayoutSize& tile_size) { tile_size_ = tile_size; }
+  void SetSpaceSize(const LayoutSize& repeat_spacing) {
+    repeat_spacing_ = repeat_spacing;
   }
-  void setPhaseX(LayoutUnit x) { m_phase.setX(x); }
-  void setPhaseY(LayoutUnit y) { m_phase.setY(y); }
+  void SetPhaseX(LayoutUnit x) { phase_.SetX(x); }
+  void SetPhaseY(LayoutUnit y) { phase_.SetY(y); }
 
-  void setNoRepeatX(LayoutUnit xOffset);
-  void setNoRepeatY(LayoutUnit yOffset);
-  void setRepeatX(const FillLayer&,
+  void SetNoRepeatX(LayoutUnit x_offset);
+  void SetNoRepeatY(LayoutUnit y_offset);
+  void SetRepeatX(const FillLayer&,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit);
-  void setRepeatY(const FillLayer&,
+  void SetRepeatY(const FillLayer&,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit);
-  void setSpaceX(LayoutUnit, LayoutUnit, LayoutUnit);
-  void setSpaceY(LayoutUnit, LayoutUnit, LayoutUnit);
+  void SetSpaceX(LayoutUnit, LayoutUnit, LayoutUnit);
+  void SetSpaceY(LayoutUnit, LayoutUnit, LayoutUnit);
 
-  void useFixedAttachment(const LayoutPoint& attachmentPoint);
-  void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
-  LayoutPoint getOffsetForCell(const LayoutTableCell&, const LayoutBox&);
-  LayoutSize getBackgroundObjectDimensions(const LayoutTableCell&,
+  void UseFixedAttachment(const LayoutPoint& attachment_point);
+  void SetHasNonLocalGeometry() { has_non_local_geometry_ = true; }
+  LayoutPoint GetOffsetForCell(const LayoutTableCell&, const LayoutBox&);
+  LayoutSize GetBackgroundObjectDimensions(const LayoutTableCell&,
                                            const LayoutBox&);
 
   // TODO(schenney): Convert these to IntPoints for values that we snap
-  LayoutRect m_destRect;
-  LayoutPoint m_phase;
-  LayoutSize m_tileSize;
-  LayoutSize m_repeatSpacing;
-  bool m_hasNonLocalGeometry;
+  LayoutRect dest_rect_;
+  LayoutPoint phase_;
+  LayoutSize tile_size_;
+  LayoutSize repeat_spacing_;
+  bool has_non_local_geometry_;
 };
 
 }  // namespace blink

@@ -22,39 +22,39 @@ class PresentationConnectionAvailableEvent final : public Event {
  public:
   ~PresentationConnectionAvailableEvent() override;
 
-  static PresentationConnectionAvailableEvent* create(
-      const AtomicString& eventType,
+  static PresentationConnectionAvailableEvent* Create(
+      const AtomicString& event_type,
       PresentationConnection* connection) {
-    return new PresentationConnectionAvailableEvent(eventType, connection);
+    return new PresentationConnectionAvailableEvent(event_type, connection);
   }
-  static PresentationConnectionAvailableEvent* create(
-      const AtomicString& eventType,
+  static PresentationConnectionAvailableEvent* Create(
+      const AtomicString& event_type,
       const PresentationConnectionAvailableEventInit& initializer) {
-    return new PresentationConnectionAvailableEvent(eventType, initializer);
+    return new PresentationConnectionAvailableEvent(event_type, initializer);
   }
 
-  PresentationConnection* connection() { return m_connection.get(); }
+  PresentationConnection* connection() { return connection_.Get(); }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PresentationConnectionAvailableEvent(const AtomicString& eventType,
+  PresentationConnectionAvailableEvent(const AtomicString& event_type,
                                        PresentationConnection*);
   PresentationConnectionAvailableEvent(
-      const AtomicString& eventType,
+      const AtomicString& event_type,
       const PresentationConnectionAvailableEventInit& initializer);
 
-  Member<PresentationConnection> m_connection;
+  Member<PresentationConnection> connection_;
 };
 
 DEFINE_TYPE_CASTS(PresentationConnectionAvailableEvent,
                   Event,
                   event,
-                  event->interfaceName() ==
+                  event->InterfaceName() ==
                       EventNames::PresentationConnectionAvailableEvent,
-                  event.interfaceName() ==
+                  event.InterfaceName() ==
                       EventNames::PresentationConnectionAvailableEvent);
 
 }  // namespace blink

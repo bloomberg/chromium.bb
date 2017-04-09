@@ -28,367 +28,368 @@ class BodyStreamBuffer::LoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
 
  public:
-  LoaderClient(ExecutionContext* executionContext,
+  LoaderClient(ExecutionContext* execution_context,
                BodyStreamBuffer* buffer,
                FetchDataLoader::Client* client)
-      : ContextLifecycleObserver(executionContext),
-        m_buffer(buffer),
-        m_client(client) {}
+      : ContextLifecycleObserver(execution_context),
+        buffer_(buffer),
+        client_(client) {}
 
-  void didFetchDataLoadedBlobHandle(
-      PassRefPtr<BlobDataHandle> blobDataHandle) override {
-    m_buffer->endLoading();
-    m_client->didFetchDataLoadedBlobHandle(std::move(blobDataHandle));
+  void DidFetchDataLoadedBlobHandle(
+      PassRefPtr<BlobDataHandle> blob_data_handle) override {
+    buffer_->EndLoading();
+    client_->DidFetchDataLoadedBlobHandle(std::move(blob_data_handle));
   }
 
-  void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override {
-    m_buffer->endLoading();
-    m_client->didFetchDataLoadedArrayBuffer(arrayBuffer);
+  void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer* array_buffer) override {
+    buffer_->EndLoading();
+    client_->DidFetchDataLoadedArrayBuffer(array_buffer);
   }
 
-  void didFetchDataLoadedString(const String& string) override {
-    m_buffer->endLoading();
-    m_client->didFetchDataLoadedString(string);
+  void DidFetchDataLoadedString(const String& string) override {
+    buffer_->EndLoading();
+    client_->DidFetchDataLoadedString(string);
   }
 
-  void didFetchDataLoadedStream() override {
-    m_buffer->endLoading();
-    m_client->didFetchDataLoadedStream();
+  void DidFetchDataLoadedStream() override {
+    buffer_->EndLoading();
+    client_->DidFetchDataLoadedStream();
   }
 
-  void didFetchDataLoadedCustomFormat() override {
-    m_buffer->endLoading();
-    m_client->didFetchDataLoadedCustomFormat();
+  void DidFetchDataLoadedCustomFormat() override {
+    buffer_->EndLoading();
+    client_->DidFetchDataLoadedCustomFormat();
   }
 
-  void didFetchDataLoadFailed() override {
-    m_buffer->endLoading();
-    m_client->didFetchDataLoadFailed();
+  void DidFetchDataLoadFailed() override {
+    buffer_->EndLoading();
+    client_->DidFetchDataLoadFailed();
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_buffer);
-    visitor->trace(m_client);
-    ContextLifecycleObserver::trace(visitor);
-    FetchDataLoader::Client::trace(visitor);
+    visitor->Trace(buffer_);
+    visitor->Trace(client_);
+    ContextLifecycleObserver::Trace(visitor);
+    FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
-  void contextDestroyed(ExecutionContext*) override { m_buffer->stopLoading(); }
+  void ContextDestroyed(ExecutionContext*) override { buffer_->StopLoading(); }
 
-  Member<BodyStreamBuffer> m_buffer;
-  Member<FetchDataLoader::Client> m_client;
+  Member<BodyStreamBuffer> buffer_;
+  Member<FetchDataLoader::Client> client_;
 };
 
-BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState,
+BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
                                    BytesConsumer* consumer)
-    : UnderlyingSourceBase(scriptState),
-      m_scriptState(scriptState),
-      m_consumer(consumer),
-      m_madeFromReadableStream(false) {
-  v8::Local<v8::Value> bodyValue = ToV8(this, scriptState);
-  DCHECK(!bodyValue.IsEmpty());
-  DCHECK(bodyValue->IsObject());
-  v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
+    : UnderlyingSourceBase(script_state),
+      script_state_(script_state),
+      consumer_(consumer),
+      made_from_readable_stream_(false) {
+  v8::Local<v8::Value> body_value = ToV8(this, script_state);
+  DCHECK(!body_value.IsEmpty());
+  DCHECK(body_value->IsObject());
+  v8::Local<v8::Object> body = body_value.As<v8::Object>();
 
-  ScriptValue readableStream = ReadableStreamOperations::createReadableStream(
-      scriptState, this,
-      ReadableStreamOperations::createCountQueuingStrategy(scriptState, 0));
-  DCHECK(!readableStream.isEmpty());
-  V8PrivateProperty::getInternalBodyStream(scriptState->isolate())
-      .set(body, readableStream.v8Value());
-  m_consumer->setClient(this);
-  onStateChange();
+  ScriptValue readable_stream = ReadableStreamOperations::CreateReadableStream(
+      script_state, this,
+      ReadableStreamOperations::CreateCountQueuingStrategy(script_state, 0));
+  DCHECK(!readable_stream.IsEmpty());
+  V8PrivateProperty::GetInternalBodyStream(script_state->GetIsolate())
+      .Set(body, readable_stream.V8Value());
+  consumer_->SetClient(this);
+  OnStateChange();
 }
 
-BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
-    : UnderlyingSourceBase(scriptState),
-      m_scriptState(scriptState),
-      m_madeFromReadableStream(true) {
-  DCHECK(ReadableStreamOperations::isReadableStream(scriptState, stream));
-  v8::Local<v8::Value> bodyValue = ToV8(this, scriptState);
-  DCHECK(!bodyValue.IsEmpty());
-  DCHECK(bodyValue->IsObject());
-  v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
+BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
+                                   ScriptValue stream)
+    : UnderlyingSourceBase(script_state),
+      script_state_(script_state),
+      made_from_readable_stream_(true) {
+  DCHECK(ReadableStreamOperations::IsReadableStream(script_state, stream));
+  v8::Local<v8::Value> body_value = ToV8(this, script_state);
+  DCHECK(!body_value.IsEmpty());
+  DCHECK(body_value->IsObject());
+  v8::Local<v8::Object> body = body_value.As<v8::Object>();
 
-  V8PrivateProperty::getInternalBodyStream(scriptState->isolate())
-      .set(body, stream.v8Value());
+  V8PrivateProperty::GetInternalBodyStream(script_state->GetIsolate())
+      .Set(body, stream.V8Value());
 }
 
-ScriptValue BodyStreamBuffer::stream() {
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Value> bodyValue = ToV8(this, m_scriptState.get());
-  DCHECK(!bodyValue.IsEmpty());
-  DCHECK(bodyValue->IsObject());
-  v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
+ScriptValue BodyStreamBuffer::Stream() {
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Local<v8::Value> body_value = ToV8(this, script_state_.Get());
+  DCHECK(!body_value.IsEmpty());
+  DCHECK(body_value->IsObject());
+  v8::Local<v8::Object> body = body_value.As<v8::Object>();
   return ScriptValue(
-      m_scriptState.get(),
-      V8PrivateProperty::getInternalBodyStream(m_scriptState->isolate())
-          .getOrEmpty(body));
+      script_state_.Get(),
+      V8PrivateProperty::GetInternalBodyStream(script_state_->GetIsolate())
+          .GetOrEmpty(body));
 }
 
-PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(
+PassRefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     BytesConsumer::BlobSizePolicy policy) {
-  ASSERT(!isStreamLocked());
-  ASSERT(!isStreamDisturbed());
-  if (isStreamClosed() || isStreamErrored())
+  ASSERT(!IsStreamLocked());
+  ASSERT(!IsStreamDisturbed());
+  if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
 
-  if (m_madeFromReadableStream)
+  if (made_from_readable_stream_)
     return nullptr;
 
-  RefPtr<BlobDataHandle> blobDataHandle =
-      m_consumer->drainAsBlobDataHandle(policy);
-  if (blobDataHandle) {
-    closeAndLockAndDisturb();
-    return blobDataHandle.release();
+  RefPtr<BlobDataHandle> blob_data_handle =
+      consumer_->DrainAsBlobDataHandle(policy);
+  if (blob_data_handle) {
+    CloseAndLockAndDisturb();
+    return blob_data_handle.Release();
   }
   return nullptr;
 }
 
-PassRefPtr<EncodedFormData> BodyStreamBuffer::drainAsFormData() {
-  ASSERT(!isStreamLocked());
-  ASSERT(!isStreamDisturbed());
-  if (isStreamClosed() || isStreamErrored())
+PassRefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
+  ASSERT(!IsStreamLocked());
+  ASSERT(!IsStreamDisturbed());
+  if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
 
-  if (m_madeFromReadableStream)
+  if (made_from_readable_stream_)
     return nullptr;
 
-  RefPtr<EncodedFormData> formData = m_consumer->drainAsFormData();
-  if (formData) {
-    closeAndLockAndDisturb();
-    return formData.release();
+  RefPtr<EncodedFormData> form_data = consumer_->DrainAsFormData();
+  if (form_data) {
+    CloseAndLockAndDisturb();
+    return form_data.Release();
   }
   return nullptr;
 }
 
-void BodyStreamBuffer::startLoading(FetchDataLoader* loader,
+void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
                                     FetchDataLoader::Client* client) {
-  ASSERT(!m_loader);
-  ASSERT(m_scriptState->contextIsValid());
-  m_loader = loader;
-  loader->start(
-      releaseHandle(),
-      new LoaderClient(m_scriptState->getExecutionContext(), this, client));
+  ASSERT(!loader_);
+  ASSERT(script_state_->ContextIsValid());
+  loader_ = loader;
+  loader->Start(
+      ReleaseHandle(),
+      new LoaderClient(script_state_->GetExecutionContext(), this, client));
 }
 
-void BodyStreamBuffer::tee(BodyStreamBuffer** branch1,
+void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
                            BodyStreamBuffer** branch2) {
-  DCHECK(!isStreamLocked());
-  DCHECK(!isStreamDisturbed());
+  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamDisturbed());
   *branch1 = nullptr;
   *branch2 = nullptr;
 
-  if (m_madeFromReadableStream) {
+  if (made_from_readable_stream_) {
     ScriptValue stream1, stream2;
-    ReadableStreamOperations::tee(m_scriptState.get(), stream(), &stream1,
+    ReadableStreamOperations::Tee(script_state_.Get(), Stream(), &stream1,
                                   &stream2);
-    *branch1 = new BodyStreamBuffer(m_scriptState.get(), stream1);
-    *branch2 = new BodyStreamBuffer(m_scriptState.get(), stream2);
+    *branch1 = new BodyStreamBuffer(script_state_.Get(), stream1);
+    *branch2 = new BodyStreamBuffer(script_state_.Get(), stream2);
     return;
   }
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(m_scriptState->getExecutionContext(), releaseHandle(),
+  BytesConsumer::Tee(script_state_->GetExecutionContext(), ReleaseHandle(),
                      &dest1, &dest2);
-  *branch1 = new BodyStreamBuffer(m_scriptState.get(), dest1);
-  *branch2 = new BodyStreamBuffer(m_scriptState.get(), dest2);
+  *branch1 = new BodyStreamBuffer(script_state_.Get(), dest1);
+  *branch2 = new BodyStreamBuffer(script_state_.Get(), dest2);
 }
 
-ScriptPromise BodyStreamBuffer::pull(ScriptState* scriptState) {
-  ASSERT(scriptState == m_scriptState.get());
-  if (m_streamNeedsMore)
-    return ScriptPromise::castUndefined(scriptState);
-  m_streamNeedsMore = true;
-  processData();
-  return ScriptPromise::castUndefined(scriptState);
+ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
+  ASSERT(script_state == script_state_.Get());
+  if (stream_needs_more_)
+    return ScriptPromise::CastUndefined(script_state);
+  stream_needs_more_ = true;
+  ProcessData();
+  return ScriptPromise::CastUndefined(script_state);
 }
 
-ScriptPromise BodyStreamBuffer::cancel(ScriptState* scriptState,
+ScriptPromise BodyStreamBuffer::Cancel(ScriptState* script_state,
                                        ScriptValue reason) {
-  ASSERT(scriptState == m_scriptState.get());
-  close();
-  return ScriptPromise::castUndefined(scriptState);
+  ASSERT(script_state == script_state_.Get());
+  Close();
+  return ScriptPromise::CastUndefined(script_state);
 }
 
-void BodyStreamBuffer::onStateChange() {
-  if (!m_consumer || !getExecutionContext() ||
-      getExecutionContext()->isContextDestroyed())
+void BodyStreamBuffer::OnStateChange() {
+  if (!consumer_ || !GetExecutionContext() ||
+      GetExecutionContext()->IsContextDestroyed())
     return;
 
-  switch (m_consumer->getPublicState()) {
-    case BytesConsumer::PublicState::ReadableOrWaiting:
+  switch (consumer_->GetPublicState()) {
+    case BytesConsumer::PublicState::kReadableOrWaiting:
       break;
-    case BytesConsumer::PublicState::Closed:
-      close();
+    case BytesConsumer::PublicState::kClosed:
+      Close();
       return;
-    case BytesConsumer::PublicState::Errored:
-      error();
+    case BytesConsumer::PublicState::kErrored:
+      GetError();
       return;
   }
-  processData();
+  ProcessData();
 }
 
-bool BodyStreamBuffer::hasPendingActivity() const {
-  if (m_loader)
+bool BodyStreamBuffer::HasPendingActivity() const {
+  if (loader_)
     return true;
-  return UnderlyingSourceBase::hasPendingActivity();
+  return UnderlyingSourceBase::HasPendingActivity();
 }
 
-void BodyStreamBuffer::contextDestroyed(ExecutionContext* destroyedContext) {
-  cancelConsumer();
-  UnderlyingSourceBase::contextDestroyed(destroyedContext);
+void BodyStreamBuffer::ContextDestroyed(ExecutionContext* destroyed_context) {
+  CancelConsumer();
+  UnderlyingSourceBase::ContextDestroyed(destroyed_context);
 }
 
-bool BodyStreamBuffer::isStreamReadable() {
-  ScriptState::Scope scope(m_scriptState.get());
-  return ReadableStreamOperations::isReadable(m_scriptState.get(), stream());
+bool BodyStreamBuffer::IsStreamReadable() {
+  ScriptState::Scope scope(script_state_.Get());
+  return ReadableStreamOperations::IsReadable(script_state_.Get(), Stream());
 }
 
-bool BodyStreamBuffer::isStreamClosed() {
-  ScriptState::Scope scope(m_scriptState.get());
-  return ReadableStreamOperations::isClosed(m_scriptState.get(), stream());
+bool BodyStreamBuffer::IsStreamClosed() {
+  ScriptState::Scope scope(script_state_.Get());
+  return ReadableStreamOperations::IsClosed(script_state_.Get(), Stream());
 }
 
-bool BodyStreamBuffer::isStreamErrored() {
-  ScriptState::Scope scope(m_scriptState.get());
-  return ReadableStreamOperations::isErrored(m_scriptState.get(), stream());
+bool BodyStreamBuffer::IsStreamErrored() {
+  ScriptState::Scope scope(script_state_.Get());
+  return ReadableStreamOperations::IsErrored(script_state_.Get(), Stream());
 }
 
-bool BodyStreamBuffer::isStreamLocked() {
-  ScriptState::Scope scope(m_scriptState.get());
-  return ReadableStreamOperations::isLocked(m_scriptState.get(), stream());
+bool BodyStreamBuffer::IsStreamLocked() {
+  ScriptState::Scope scope(script_state_.Get());
+  return ReadableStreamOperations::IsLocked(script_state_.Get(), Stream());
 }
 
-bool BodyStreamBuffer::isStreamDisturbed() {
-  ScriptState::Scope scope(m_scriptState.get());
-  return ReadableStreamOperations::isDisturbed(m_scriptState.get(), stream());
+bool BodyStreamBuffer::IsStreamDisturbed() {
+  ScriptState::Scope scope(script_state_.Get());
+  return ReadableStreamOperations::IsDisturbed(script_state_.Get(), Stream());
 }
 
-void BodyStreamBuffer::closeAndLockAndDisturb() {
-  if (isStreamReadable()) {
+void BodyStreamBuffer::CloseAndLockAndDisturb() {
+  if (IsStreamReadable()) {
     // Note that the stream cannot be "draining", because it doesn't have
     // the internal buffer.
-    close();
+    Close();
   }
 
-  ScriptState::Scope scope(m_scriptState.get());
-  NonThrowableExceptionState exceptionState;
-  ScriptValue reader = ReadableStreamOperations::getReader(
-      m_scriptState.get(), stream(), exceptionState);
-  ReadableStreamOperations::defaultReaderRead(m_scriptState.get(), reader);
+  ScriptState::Scope scope(script_state_.Get());
+  NonThrowableExceptionState exception_state;
+  ScriptValue reader = ReadableStreamOperations::GetReader(
+      script_state_.Get(), Stream(), exception_state);
+  ReadableStreamOperations::DefaultReaderRead(script_state_.Get(), reader);
 }
 
-void BodyStreamBuffer::close() {
-  controller()->close();
-  cancelConsumer();
+void BodyStreamBuffer::Close() {
+  Controller()->Close();
+  CancelConsumer();
 }
 
-void BodyStreamBuffer::error() {
+void BodyStreamBuffer::GetError() {
   {
-    ScriptState::Scope scope(m_scriptState.get());
-    controller()->error(V8ThrowException::createTypeError(
-        m_scriptState->isolate(), "network error"));
+    ScriptState::Scope scope(script_state_.Get());
+    Controller()->GetError(V8ThrowException::CreateTypeError(
+        script_state_->GetIsolate(), "network error"));
   }
-  cancelConsumer();
+  CancelConsumer();
 }
 
-void BodyStreamBuffer::cancelConsumer() {
-  if (m_consumer) {
-    m_consumer->cancel();
-    m_consumer = nullptr;
+void BodyStreamBuffer::CancelConsumer() {
+  if (consumer_) {
+    consumer_->Cancel();
+    consumer_ = nullptr;
   }
 }
 
-void BodyStreamBuffer::processData() {
-  DCHECK(m_consumer);
-  while (m_streamNeedsMore) {
+void BodyStreamBuffer::ProcessData() {
+  DCHECK(consumer_);
+  while (stream_needs_more_) {
     const char* buffer = nullptr;
     size_t available = 0;
-    auto result = m_consumer->beginRead(&buffer, &available);
-    if (result == BytesConsumer::Result::ShouldWait)
+    auto result = consumer_->BeginRead(&buffer, &available);
+    if (result == BytesConsumer::Result::kShouldWait)
       return;
     DOMUint8Array* array = nullptr;
-    if (result == BytesConsumer::Result::Ok) {
-      array = DOMUint8Array::create(
+    if (result == BytesConsumer::Result::kOk) {
+      array = DOMUint8Array::Create(
           reinterpret_cast<const unsigned char*>(buffer), available);
-      result = m_consumer->endRead(available);
+      result = consumer_->EndRead(available);
     }
     switch (result) {
-      case BytesConsumer::Result::Ok:
-      case BytesConsumer::Result::Done:
+      case BytesConsumer::Result::kOk:
+      case BytesConsumer::Result::kDone:
         if (array) {
           // Clear m_streamNeedsMore in order to detect a pull call.
-          m_streamNeedsMore = false;
-          controller()->enqueue(array);
+          stream_needs_more_ = false;
+          Controller()->Enqueue(array);
         }
-        if (result == BytesConsumer::Result::Done) {
-          close();
+        if (result == BytesConsumer::Result::kDone) {
+          Close();
           return;
         }
         // If m_streamNeedsMore is true, it means that pull is called and
         // the stream needs more data even if the desired size is not
         // positive.
-        if (!m_streamNeedsMore)
-          m_streamNeedsMore = controller()->desiredSize() > 0;
+        if (!stream_needs_more_)
+          stream_needs_more_ = Controller()->DesiredSize() > 0;
         break;
-      case BytesConsumer::Result::ShouldWait:
+      case BytesConsumer::Result::kShouldWait:
         NOTREACHED();
         return;
-      case BytesConsumer::Result::Error:
-        error();
+      case BytesConsumer::Result::kError:
+        GetError();
         return;
     }
   }
 }
 
-void BodyStreamBuffer::endLoading() {
-  ASSERT(m_loader);
-  m_loader = nullptr;
+void BodyStreamBuffer::EndLoading() {
+  ASSERT(loader_);
+  loader_ = nullptr;
 }
 
-void BodyStreamBuffer::stopLoading() {
-  if (!m_loader)
+void BodyStreamBuffer::StopLoading() {
+  if (!loader_)
     return;
-  m_loader->cancel();
-  m_loader = nullptr;
+  loader_->Cancel();
+  loader_ = nullptr;
 }
 
-BytesConsumer* BodyStreamBuffer::releaseHandle() {
-  DCHECK(!isStreamLocked());
-  DCHECK(!isStreamDisturbed());
+BytesConsumer* BodyStreamBuffer::ReleaseHandle() {
+  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamDisturbed());
 
-  if (m_madeFromReadableStream) {
-    ScriptState::Scope scope(m_scriptState.get());
+  if (made_from_readable_stream_) {
+    ScriptState::Scope scope(script_state_.Get());
     // We need to have |reader| alive by some means (as written in
     // ReadableStreamDataConsumerHandle). Based on the following facts
     //  - This function is used only from tee and startLoading.
     //  - This branch cannot be taken when called from tee.
     //  - startLoading makes hasPendingActivity return true while loading.
     // , we don't need to keep the reader explicitly.
-    NonThrowableExceptionState exceptionState;
-    ScriptValue reader = ReadableStreamOperations::getReader(
-        m_scriptState.get(), stream(), exceptionState);
-    return new ReadableStreamBytesConsumer(m_scriptState.get(), reader);
+    NonThrowableExceptionState exception_state;
+    ScriptValue reader = ReadableStreamOperations::GetReader(
+        script_state_.Get(), Stream(), exception_state);
+    return new ReadableStreamBytesConsumer(script_state_.Get(), reader);
   }
   // We need to call these before calling closeAndLockAndDisturb.
-  const bool isClosed = isStreamClosed();
-  const bool isErrored = isStreamErrored();
-  BytesConsumer* consumer = m_consumer.release();
+  const bool is_closed = IsStreamClosed();
+  const bool is_errored = IsStreamErrored();
+  BytesConsumer* consumer = consumer_.Release();
 
-  closeAndLockAndDisturb();
+  CloseAndLockAndDisturb();
 
-  if (isClosed) {
+  if (is_closed) {
     // Note that the stream cannot be "draining", because it doesn't have
     // the internal buffer.
-    return BytesConsumer::createClosed();
+    return BytesConsumer::CreateClosed();
   }
-  if (isErrored)
-    return BytesConsumer::createErrored(BytesConsumer::Error("error"));
+  if (is_errored)
+    return BytesConsumer::CreateErrored(BytesConsumer::Error("error"));
 
   DCHECK(consumer);
-  consumer->clearClient();
+  consumer->ClearClient();
   return consumer;
 }
 

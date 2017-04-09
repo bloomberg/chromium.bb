@@ -45,7 +45,7 @@ TEST_F(UserModelTest, TimeLeftInUserGesture_NoInput) {
 
 TEST_F(UserModelTest, TimeLeftInUserGesture_ImmediatelyAfterInput) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::TouchStart, clock_->NowTicks());
+      blink::WebInputEvent::Type::kTouchStart, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
   EXPECT_EQ(priority_escalation_after_input_duration(),
             user_model_->TimeLeftInUserGesture(clock_->NowTicks()));
@@ -53,7 +53,7 @@ TEST_F(UserModelTest, TimeLeftInUserGesture_ImmediatelyAfterInput) {
 
 TEST_F(UserModelTest, TimeLeftInUserGesture_ShortlyAfterInput) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::TouchStart, clock_->NowTicks());
+      blink::WebInputEvent::Type::kTouchStart, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
   clock_->Advance(delta);
@@ -63,7 +63,7 @@ TEST_F(UserModelTest, TimeLeftInUserGesture_ShortlyAfterInput) {
 
 TEST_F(UserModelTest, TimeLeftInUserGesture_LongAfterInput) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::TouchStart, clock_->NowTicks());
+      blink::WebInputEvent::Type::kTouchStart, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
   clock_->Advance(priority_escalation_after_input_duration() * 2);
   EXPECT_EQ(base::TimeDelta(),
@@ -72,7 +72,7 @@ TEST_F(UserModelTest, TimeLeftInUserGesture_LongAfterInput) {
 
 TEST_F(UserModelTest, DidFinishProcessingInputEvent_Delayed) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::TouchStart, clock_->NowTicks());
+      blink::WebInputEvent::Type::kTouchStart, clock_->NowTicks());
   clock_->Advance(priority_escalation_after_input_duration() * 10);
 
   EXPECT_EQ(priority_escalation_after_input_duration(),
@@ -95,7 +95,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_NoRecentInput) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GestureScrollBegin) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollBegin, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
@@ -112,7 +112,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GestureScrollBegin) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_LongAfter_GestureScrollBegin) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollBegin, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(
@@ -129,7 +129,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_LongAfter_GestureScrollBegin) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_ImmediatelyAfter_GestureScrollEnd) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollEnd, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollEnd, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
 
   base::TimeDelta prediction_valid_duration;
@@ -141,7 +141,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_ImmediatelyAfter_GestureScrollEnd) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GestureScrollEnd) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollEnd, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollEnd, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
@@ -156,7 +156,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GestureScrollEnd) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_LongAfter_GestureScrollEnd) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollEnd, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollEnd, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
   clock_->Advance(subsequent_input_expected_after_input_duration() * 2);
 
@@ -168,7 +168,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_LongAfter_GestureScrollEnd) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GesturePinchEnd) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GesturePinchEnd, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGesturePinchEnd, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
@@ -183,7 +183,7 @@ TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfter_GesturePinchEnd) {
 
 TEST_F(UserModelTest, GestureExpectedSoon_ShortlyAfterInput_GestureTap) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureTap, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureTap, clock_->NowTicks());
   user_model_->DidFinishProcessingInputEvent(clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
@@ -204,7 +204,7 @@ TEST_F(UserModelTest, IsGestureExpectedToContinue_NoGesture) {
 
 TEST_F(UserModelTest, IsGestureExpectedToContinue_GestureJustStarted) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollBegin, clock_->NowTicks());
   base::TimeDelta prediction_valid_duration;
   EXPECT_TRUE(user_model_->IsGestureExpectedToContinue(
       clock_->NowTicks(), &prediction_valid_duration));
@@ -215,7 +215,7 @@ TEST_F(UserModelTest, IsGestureExpectedToContinue_GestureJustStarted) {
 
 TEST_F(UserModelTest, IsGestureExpectedToContinue_GestureJustEnded) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollEnd, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollEnd, clock_->NowTicks());
   base::TimeDelta prediction_valid_duration;
   EXPECT_FALSE(user_model_->IsGestureExpectedToContinue(
       clock_->NowTicks(), &prediction_valid_duration));
@@ -224,7 +224,7 @@ TEST_F(UserModelTest, IsGestureExpectedToContinue_GestureJustEnded) {
 
 TEST_F(UserModelTest, IsGestureExpectedToContinue_ShortlyAfterGestureStarted) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollBegin, clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(10));
   clock_->Advance(delta);
@@ -240,7 +240,7 @@ TEST_F(UserModelTest, IsGestureExpectedToContinue_ShortlyAfterGestureStarted) {
 
 TEST_F(UserModelTest, IsGestureExpectedToContinue_LongAfterGestureStarted) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollBegin, clock_->NowTicks());
 
   base::TimeDelta delta(base::TimeDelta::FromMilliseconds(
       UserModel::kMedianGestureDurationMillis * 2));
@@ -254,7 +254,7 @@ TEST_F(UserModelTest, IsGestureExpectedToContinue_LongAfterGestureStarted) {
 
 TEST_F(UserModelTest, ResetPendingInputCount) {
   user_model_->DidStartProcessingInputEvent(
-      blink::WebInputEvent::Type::GestureScrollBegin, clock_->NowTicks());
+      blink::WebInputEvent::Type::kGestureScrollBegin, clock_->NowTicks());
   EXPECT_EQ(priority_escalation_after_input_duration(),
             user_model_->TimeLeftInUserGesture(clock_->NowTicks()));
   user_model_->Reset(clock_->NowTicks());

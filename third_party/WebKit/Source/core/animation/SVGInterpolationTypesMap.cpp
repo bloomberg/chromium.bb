@@ -24,30 +24,30 @@
 
 namespace blink {
 
-const InterpolationTypes& SVGInterpolationTypesMap::get(
+const InterpolationTypes& SVGInterpolationTypesMap::Get(
     const PropertyHandle& property) const {
   using ApplicableTypesMap =
       HashMap<PropertyHandle, std::unique_ptr<const InterpolationTypes>>;
-  DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicableTypesMap, ());
-  auto entry = applicableTypesMap.find(property);
-  if (entry != applicableTypesMap.end())
+  DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicable_types_map, ());
+  auto entry = applicable_types_map.Find(property);
+  if (entry != applicable_types_map.end())
     return *entry->value.get();
 
-  std::unique_ptr<InterpolationTypes> applicableTypes =
-      WTF::makeUnique<InterpolationTypes>();
+  std::unique_ptr<InterpolationTypes> applicable_types =
+      WTF::MakeUnique<InterpolationTypes>();
 
-  const QualifiedName& attribute = property.svgAttribute();
+  const QualifiedName& attribute = property.SvgAttribute();
   if (attribute == SVGNames::orientAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGAngleInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGAngleInterpolationType>(attribute));
   } else if (attribute == SVGNames::numOctavesAttr ||
              attribute == SVGNames::targetXAttr ||
              attribute == SVGNames::targetYAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGIntegerInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGIntegerInterpolationType>(attribute));
   } else if (attribute == SVGNames::orderAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGIntegerOptionalIntegerInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGIntegerOptionalIntegerInterpolationType>(attribute));
   } else if (attribute == SVGNames::cxAttr || attribute == SVGNames::cyAttr ||
              attribute == SVGNames::fxAttr || attribute == SVGNames::fyAttr ||
              attribute == SVGNames::heightAttr ||
@@ -61,18 +61,18 @@ const InterpolationTypes& SVGInterpolationTypesMap::get(
              attribute == SVGNames::widthAttr ||
              attribute == SVGNames::x1Attr || attribute == SVGNames::x2Attr ||
              attribute == SVGNames::y1Attr || attribute == SVGNames::y2Attr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGLengthInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGLengthInterpolationType>(attribute));
   } else if (attribute == SVGNames::dxAttr || attribute == SVGNames::dyAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGNumberInterpolationType>(attribute));
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGLengthListInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGNumberInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGLengthListInterpolationType>(attribute));
   } else if (attribute == SVGNames::xAttr || attribute == SVGNames::yAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGLengthInterpolationType>(attribute));
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGLengthListInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGLengthInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGLengthListInterpolationType>(attribute));
   } else if (attribute == SVGNames::amplitudeAttr ||
              attribute == SVGNames::azimuthAttr ||
              attribute == SVGNames::biasAttr ||
@@ -96,34 +96,34 @@ const InterpolationTypes& SVGInterpolationTypesMap::get(
              attribute == SVGNames::specularExponentAttr ||
              attribute == SVGNames::surfaceScaleAttr ||
              attribute == SVGNames::zAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGNumberInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGNumberInterpolationType>(attribute));
   } else if (attribute == SVGNames::kernelMatrixAttr ||
              attribute == SVGNames::rotateAttr ||
              attribute == SVGNames::tableValuesAttr ||
              attribute == SVGNames::valuesAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGNumberListInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGNumberListInterpolationType>(attribute));
   } else if (attribute == SVGNames::baseFrequencyAttr ||
              attribute == SVGNames::kernelUnitLengthAttr ||
              attribute == SVGNames::radiusAttr ||
              attribute == SVGNames::stdDeviationAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGNumberOptionalNumberInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGNumberOptionalNumberInterpolationType>(attribute));
   } else if (attribute == SVGNames::dAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGPathInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGPathInterpolationType>(attribute));
   } else if (attribute == SVGNames::pointsAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGPointListInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGPointListInterpolationType>(attribute));
   } else if (attribute == SVGNames::viewBoxAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGRectInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGRectInterpolationType>(attribute));
   } else if (attribute == SVGNames::gradientTransformAttr ||
              attribute == SVGNames::patternTransformAttr ||
              attribute == SVGNames::transformAttr) {
-    applicableTypes->push_back(
-        WTF::makeUnique<SVGTransformListInterpolationType>(attribute));
+    applicable_types->push_back(
+        WTF::MakeUnique<SVGTransformListInterpolationType>(attribute));
   } else if (attribute == HTMLNames::classAttr ||
              attribute == SVGNames::clipPathUnitsAttr ||
              attribute == SVGNames::edgeModeAttr ||
@@ -156,12 +156,12 @@ const InterpolationTypes& SVGInterpolationTypesMap::get(
     NOTREACHED();
   }
 
-  applicableTypes->push_back(
-      WTF::makeUnique<SVGValueInterpolationType>(attribute));
+  applicable_types->push_back(
+      WTF::MakeUnique<SVGValueInterpolationType>(attribute));
 
-  auto addResult =
-      applicableTypesMap.insert(property, std::move(applicableTypes));
-  return *addResult.storedValue->value.get();
+  auto add_result =
+      applicable_types_map.insert(property, std::move(applicable_types));
+  return *add_result.stored_value->value.get();
 }
 
 }  // namespace blink

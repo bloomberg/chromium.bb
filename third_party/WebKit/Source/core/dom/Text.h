@@ -36,56 +36,56 @@ class CORE_EXPORT Text : public CharacterData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static const unsigned defaultLengthLimit = 1 << 16;
+  static const unsigned kDefaultLengthLimit = 1 << 16;
 
-  static Text* create(Document&, const String&);
-  static Text* createEditingText(Document&, const String&);
+  static Text* Create(Document&, const String&);
+  static Text* CreateEditingText(Document&, const String&);
 
-  LayoutText* layoutObject() const;
+  LayoutText* GetLayoutObject() const;
 
   // mergeNextSiblingNodesIfPossible() merges next sibling nodes if possible
   // then returns a node not merged.
-  Node* mergeNextSiblingNodesIfPossible();
+  Node* MergeNextSiblingNodesIfPossible();
   Text* splitText(unsigned offset, ExceptionState&);
 
   // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 
   String wholeText() const;
-  Text* replaceWholeText(const String&);
+  Text* ReplaceWholeText(const String&);
 
-  void recalcTextStyle(StyleRecalcChange);
-  void rebuildTextLayoutTree(Text* nextTextSibling);
-  bool textLayoutObjectIsNeeded(const ComputedStyle&,
+  void RecalcTextStyle(StyleRecalcChange);
+  void RebuildTextLayoutTree(Text* next_text_sibling);
+  bool TextLayoutObjectIsNeeded(const ComputedStyle&,
                                 const LayoutObject& parent) const;
-  LayoutText* createTextLayoutObject(const ComputedStyle&);
-  void updateTextLayoutObject(unsigned offsetOfReplacedData,
-                              unsigned lengthOfReplacedData);
+  LayoutText* CreateTextLayoutObject(const ComputedStyle&);
+  void UpdateTextLayoutObject(unsigned offset_of_replaced_data,
+                              unsigned length_of_replaced_data);
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) final;
-  void reattachLayoutTreeIfNeeded(const AttachContext& = AttachContext());
+  void AttachLayoutTree(const AttachContext& = AttachContext()) final;
+  void ReattachLayoutTreeIfNeeded(const AttachContext& = AttachContext());
 
-  bool canContainRangeEndPoint() const final { return true; }
+  bool CanContainRangeEndPoint() const final { return true; }
   NodeType getNodeType() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  Text(TreeScope& treeScope, const String& data, ConstructionType type)
-      : CharacterData(treeScope, data, type) {}
+  Text(TreeScope& tree_scope, const String& data, ConstructionType type)
+      : CharacterData(tree_scope, data, type) {}
 
  private:
   String nodeName() const override;
   Node* cloneNode(bool deep, ExceptionState&) final;
 
-  bool isTextNode() const =
+  bool IsTextNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  bool needsWhitespaceLayoutObject();
+  bool NeedsWhitespaceLayoutObject();
 
-  virtual Text* cloneWithData(const String&);
+  virtual Text* CloneWithData(const String&);
 };
 
-DEFINE_NODE_TYPE_CASTS(Text, isTextNode());
+DEFINE_NODE_TYPE_CASTS(Text, IsTextNode());
 
 }  // namespace blink
 

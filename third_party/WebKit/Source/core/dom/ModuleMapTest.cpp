@@ -30,34 +30,34 @@ class TestSingleModuleClient final
   TestSingleModuleClient() = default;
   virtual ~TestSingleModuleClient() {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_moduleScript); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(module_script_); }
 
-  void notifyModuleLoadFinished(ModuleScript* moduleScript) override {
-    m_wasNotifyFinished = true;
-    m_moduleScript = moduleScript;
+  void NotifyModuleLoadFinished(ModuleScript* module_script) override {
+    was_notify_finished_ = true;
+    module_script_ = module_script;
   }
 
-  bool wasNotifyFinished() const { return m_wasNotifyFinished; }
-  ModuleScript* moduleScript() { return m_moduleScript; }
+  bool WasNotifyFinished() const { return was_notify_finished_; }
+  ModuleScript* GetModuleScript() { return module_script_; }
 
  private:
-  bool m_wasNotifyFinished = false;
-  Member<ModuleScript> m_moduleScript;
+  bool was_notify_finished_ = false;
+  Member<ModuleScript> module_script_;
 };
 
 class TestScriptModuleResolver final : public ScriptModuleResolver {
  public:
   TestScriptModuleResolver() {}
 
-  int registerModuleScriptCallCount() const {
-    return m_registerModuleScriptCallCount;
+  int RegisterModuleScriptCallCount() const {
+    return register_module_script_call_count_;
   }
 
-  void registerModuleScript(ModuleScript*) override {
-    m_registerModuleScriptCallCount++;
+  void RegisterModuleScript(ModuleScript*) override {
+    register_module_script_call_count_++;
   }
 
-  ScriptModule resolve(const String& specifier,
+  ScriptModule Resolve(const String& specifier,
                        const ScriptModule& referrer,
                        ExceptionState&) override {
     NOTREACHED();
@@ -65,7 +65,7 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
   }
 
  private:
-  int m_registerModuleScriptCallCount = 0;
+  int register_module_script_call_count_ = 0;
 };
 
 }  // namespace
@@ -77,23 +77,23 @@ class ModuleMapTestModulator final : public DummyModulator {
 
   DECLARE_TRACE();
 
-  TestScriptModuleResolver* testScriptModuleResolver() {
-    return m_resolver.get();
+  TestScriptModuleResolver* GetTestScriptModuleResolver() {
+    return resolver_.Get();
   }
-  void resolveFetches();
+  void ResolveFetches();
 
  private:
   // Implements Modulator:
 
-  ScriptModuleResolver* scriptModuleResolver() override {
-    return m_resolver.get();
+  ScriptModuleResolver* GetScriptModuleResolver() override {
+    return resolver_.Get();
   }
 
-  WebTaskRunner* taskRunner() override {
-    return Platform::current()->currentThread()->getWebTaskRunner();
+  WebTaskRunner* TaskRunner() override {
+    return Platform::Current()->CurrentThread()->GetWebTaskRunner();
   };
 
-  void fetchNewSingleModule(const ModuleScriptFetchRequest&,
+  void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
 
@@ -102,147 +102,150 @@ class ModuleMapTestModulator final : public DummyModulator {
     String nonce;
     Member<ModuleScriptLoaderClient> client;
 
-    DEFINE_INLINE_TRACE() { visitor->trace(client); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(client); }
   };
-  HeapVector<Member<TestRequest>> m_testRequests;
+  HeapVector<Member<TestRequest>> test_requests_;
 
-  Member<TestScriptModuleResolver> m_resolver;
+  Member<TestScriptModuleResolver> resolver_;
 };
 
 ModuleMapTestModulator::ModuleMapTestModulator()
-    : m_resolver(new TestScriptModuleResolver) {}
+    : resolver_(new TestScriptModuleResolver) {}
 
 DEFINE_TRACE(ModuleMapTestModulator) {
-  visitor->trace(m_testRequests);
-  visitor->trace(m_resolver);
-  DummyModulator::trace(visitor);
+  visitor->Trace(test_requests_);
+  visitor->Trace(resolver_);
+  DummyModulator::Trace(visitor);
 }
 
-void ModuleMapTestModulator::fetchNewSingleModule(
+void ModuleMapTestModulator::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
     ModuleGraphLevel,
     ModuleScriptLoaderClient* client) {
-  TestRequest* testRequest = new TestRequest;
-  testRequest->url = request.url();
-  testRequest->nonce = request.nonce();
-  testRequest->client = client;
-  m_testRequests.push_back(testRequest);
+  TestRequest* test_request = new TestRequest;
+  test_request->url = request.Url();
+  test_request->nonce = request.Nonce();
+  test_request->client = client;
+  test_requests_.push_back(test_request);
 }
 
-void ModuleMapTestModulator::resolveFetches() {
-  for (const auto& testRequest : m_testRequests) {
-    ModuleScript* moduleScript = ModuleScript::create(
-        ScriptModule(), testRequest->url, testRequest->nonce, ParserInserted,
-        WebURLRequest::FetchCredentialsModeOmit);
-    taskRunner()->postTask(
+void ModuleMapTestModulator::ResolveFetches() {
+  for (const auto& test_request : test_requests_) {
+    ModuleScript* module_script = ModuleScript::Create(
+        ScriptModule(), test_request->url, test_request->nonce, kParserInserted,
+        WebURLRequest::kFetchCredentialsModeOmit);
+    TaskRunner()->PostTask(
         BLINK_FROM_HERE,
-        WTF::bind(&ModuleScriptLoaderClient::notifyNewSingleModuleFinished,
-                  wrapPersistent(testRequest->client.get()),
-                  wrapPersistent(moduleScript)));
+        WTF::Bind(&ModuleScriptLoaderClient::NotifyNewSingleModuleFinished,
+                  WrapPersistent(test_request->client.Get()),
+                  WrapPersistent(module_script)));
   }
-  m_testRequests.clear();
+  test_requests_.Clear();
 }
 
 class ModuleMapTest : public testing::Test {
  public:
   void SetUp() override;
 
-  ModuleMapTestModulator* modulator() { return m_modulator.get(); }
-  ModuleMap* map() { return m_map; }
+  ModuleMapTestModulator* Modulator() { return modulator_.Get(); }
+  ModuleMap* Map() { return map_; }
 
  protected:
-  Persistent<ModuleMapTestModulator> m_modulator;
-  Persistent<ModuleMap> m_map;
+  Persistent<ModuleMapTestModulator> modulator_;
+  Persistent<ModuleMap> map_;
 };
 
 void ModuleMapTest::SetUp() {
-  m_modulator = new ModuleMapTestModulator();
-  m_map = ModuleMap::create(m_modulator.get());
+  modulator_ = new ModuleMapTestModulator();
+  map_ = ModuleMap::Create(modulator_.Get());
 }
 
 TEST_F(ModuleMapTest, sequentialRequests) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
-  platform->advanceClockSeconds(1.);  // For non-zero DocumentParserTimings
+  platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(KURL(), "https://example.com/foo.js");
-  ModuleScriptFetchRequest moduleRequest(
-      url, String(), ParserInserted, WebURLRequest::FetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  map()->fetchSingleModuleScript(moduleRequest,
-                                 ModuleGraphLevel::TopLevelModuleFetch, client);
-  modulator()->resolveFetches();
-  EXPECT_FALSE(client->wasNotifyFinished())
+  Map()->FetchSingleModuleScript(
+      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client);
+  Modulator()->ResolveFetches();
+  EXPECT_FALSE(client->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
-  platform->runUntilIdle();
+  platform->RunUntilIdle();
 
-  EXPECT_EQ(
-      modulator()->testScriptModuleResolver()->registerModuleScriptCallCount(),
-      1);
-  EXPECT_TRUE(client->wasNotifyFinished());
-  EXPECT_TRUE(client->moduleScript());
-  EXPECT_EQ(client->moduleScript()->instantiationState(),
-            ModuleInstantiationState::Uninstantiated);
+  EXPECT_EQ(Modulator()
+                ->GetTestScriptModuleResolver()
+                ->RegisterModuleScriptCallCount(),
+            1);
+  EXPECT_TRUE(client->WasNotifyFinished());
+  EXPECT_TRUE(client->GetModuleScript());
+  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+            ModuleInstantiationState::kUninstantiated);
 
   // Secondary request
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  map()->fetchSingleModuleScript(
-      moduleRequest, ModuleGraphLevel::TopLevelModuleFetch, client2);
-  modulator()->resolveFetches();
-  EXPECT_FALSE(client2->wasNotifyFinished())
+  Map()->FetchSingleModuleScript(
+      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client2);
+  Modulator()->ResolveFetches();
+  EXPECT_FALSE(client2->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
-  platform->runUntilIdle();
+  platform->RunUntilIdle();
 
-  EXPECT_EQ(
-      modulator()->testScriptModuleResolver()->registerModuleScriptCallCount(),
-      1)
+  EXPECT_EQ(Modulator()
+                ->GetTestScriptModuleResolver()
+                ->RegisterModuleScriptCallCount(),
+            1)
       << "registerModuleScript sholudn't be called in secondary request.";
-  EXPECT_TRUE(client2->wasNotifyFinished());
-  EXPECT_TRUE(client2->moduleScript());
-  EXPECT_EQ(client2->moduleScript()->instantiationState(),
-            ModuleInstantiationState::Uninstantiated);
+  EXPECT_TRUE(client2->WasNotifyFinished());
+  EXPECT_TRUE(client2->GetModuleScript());
+  EXPECT_EQ(client2->GetModuleScript()->InstantiationState(),
+            ModuleInstantiationState::kUninstantiated);
 }
 
 TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
-  platform->advanceClockSeconds(1.);  // For non-zero DocumentParserTimings
+  platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(KURL(), "https://example.com/foo.js");
-  ModuleScriptFetchRequest moduleRequest(
-      url, String(), ParserInserted, WebURLRequest::FetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
-  map()->fetchSingleModuleScript(moduleRequest,
-                                 ModuleGraphLevel::TopLevelModuleFetch, client);
+  Map()->FetchSingleModuleScript(
+      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client);
 
   // Secondary request (which should join the first request)
   TestSingleModuleClient* client2 = new TestSingleModuleClient;
-  map()->fetchSingleModuleScript(
-      moduleRequest, ModuleGraphLevel::TopLevelModuleFetch, client2);
+  Map()->FetchSingleModuleScript(
+      module_request, ModuleGraphLevel::kTopLevelModuleFetch, client2);
 
-  modulator()->resolveFetches();
-  EXPECT_FALSE(client->wasNotifyFinished())
+  Modulator()->ResolveFetches();
+  EXPECT_FALSE(client->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
-  EXPECT_FALSE(client2->wasNotifyFinished())
+  EXPECT_FALSE(client2->WasNotifyFinished())
       << "fetchSingleModuleScript shouldn't complete synchronously";
-  platform->runUntilIdle();
+  platform->RunUntilIdle();
 
-  EXPECT_EQ(
-      modulator()->testScriptModuleResolver()->registerModuleScriptCallCount(),
-      1);
+  EXPECT_EQ(Modulator()
+                ->GetTestScriptModuleResolver()
+                ->RegisterModuleScriptCallCount(),
+            1);
 
-  EXPECT_TRUE(client->wasNotifyFinished());
-  EXPECT_TRUE(client->moduleScript());
-  EXPECT_EQ(client->moduleScript()->instantiationState(),
-            ModuleInstantiationState::Uninstantiated);
-  EXPECT_TRUE(client2->wasNotifyFinished());
-  EXPECT_TRUE(client2->moduleScript());
-  EXPECT_EQ(client2->moduleScript()->instantiationState(),
-            ModuleInstantiationState::Uninstantiated);
+  EXPECT_TRUE(client->WasNotifyFinished());
+  EXPECT_TRUE(client->GetModuleScript());
+  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+            ModuleInstantiationState::kUninstantiated);
+  EXPECT_TRUE(client2->WasNotifyFinished());
+  EXPECT_TRUE(client2->GetModuleScript());
+  EXPECT_EQ(client2->GetModuleScript()->InstantiationState(),
+            ModuleInstantiationState::kUninstantiated);
 }
 
 }  // namespace blink

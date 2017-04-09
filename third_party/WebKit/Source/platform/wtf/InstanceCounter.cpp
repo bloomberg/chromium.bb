@@ -146,7 +146,7 @@ String InstanceCounter::dump() {
 
 #else
 
-String dumpRefCountedInstanceCounts() {
+String DumpRefCountedInstanceCounts() {
   return String("{}");
 }
 

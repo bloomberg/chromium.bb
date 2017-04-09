@@ -25,40 +25,40 @@ class PLATFORM_EXPORT BoxReflection {
  public:
   enum ReflectionDirection {
     // Vertically flipped (to appear above or below).
-    VerticalReflection,
+    kVerticalReflection,
     // Horizontally flipped (to appear to the left or right).
-    HorizontalReflection,
+    kHorizontalReflection,
   };
 
   BoxReflection(ReflectionDirection direction,
                 float offset,
                 sk_sp<PaintRecord> mask = nullptr)
-      : m_direction(direction), m_offset(offset), m_mask(std::move(mask)) {}
+      : direction_(direction), offset_(offset), mask_(std::move(mask)) {}
 
-  ReflectionDirection direction() const { return m_direction; }
-  float offset() const { return m_offset; }
-  const sk_sp<PaintRecord>& mask() const { return m_mask; }
+  ReflectionDirection Direction() const { return direction_; }
+  float Offset() const { return offset_; }
+  const sk_sp<PaintRecord>& Mask() const { return mask_; }
 
   // Returns a matrix which maps points between the original content and its
   // reflection. Reflections are self-inverse, so this matrix can be used to
   // map in either direction.
-  SkMatrix reflectionMatrix() const;
+  SkMatrix ReflectionMatrix() const;
 
   // Maps a source rectangle to the destination rectangle it can affect,
   // including this reflection. Due to the symmetry of reflections, this can
   // also be used to map from a destination rectangle to the source rectangle
   // which contributes to it.
-  FloatRect mapRect(const FloatRect&) const;
+  FloatRect MapRect(const FloatRect&) const;
 
  private:
-  ReflectionDirection m_direction;
-  float m_offset;
-  sk_sp<PaintRecord> m_mask;
+  ReflectionDirection direction_;
+  float offset_;
+  sk_sp<PaintRecord> mask_;
 };
 
 inline bool operator==(const BoxReflection& a, const BoxReflection& b) {
-  return a.direction() == b.direction() && a.offset() == b.offset() &&
-         a.mask() == b.mask();
+  return a.Direction() == b.Direction() && a.Offset() == b.Offset() &&
+         a.Mask() == b.Mask();
 }
 
 inline bool operator!=(const BoxReflection& a, const BoxReflection& b) {

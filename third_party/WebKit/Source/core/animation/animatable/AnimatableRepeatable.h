@@ -45,30 +45,30 @@ class AnimatableRepeatable : public AnimatableValue {
   ~AnimatableRepeatable() override {}
 
   // This will consume the vector passed into it.
-  static PassRefPtr<AnimatableRepeatable> create(
+  static PassRefPtr<AnimatableRepeatable> Create(
       Vector<RefPtr<AnimatableValue>>& values) {
-    return adoptRef(new AnimatableRepeatable(values));
+    return AdoptRef(new AnimatableRepeatable(values));
   }
 
  protected:
   AnimatableRepeatable() {}
   AnimatableRepeatable(Vector<RefPtr<AnimatableValue>>& values) {
-    DCHECK(!values.isEmpty());
-    m_values.swap(values);
+    DCHECK(!values.IsEmpty());
+    values_.Swap(values);
   }
 
-  Vector<RefPtr<AnimatableValue>> m_values;
+  Vector<RefPtr<AnimatableValue>> values_;
 
  private:
-  AnimatableType type() const override { return TypeRepeatable; }
-  bool equalTo(const AnimatableValue*) const final;
+  AnimatableType GetType() const override { return kTypeRepeatable; }
+  bool EqualTo(const AnimatableValue*) const final;
 };
 
 DEFINE_TYPE_CASTS(AnimatableRepeatable,
                   AnimatableValue,
                   value,
-                  (value->isRepeatable() || value->isStrokeDasharrayList()),
-                  (value.isRepeatable() || value.isStrokeDasharrayList()));
+                  (value->IsRepeatable() || value->IsStrokeDasharrayList()),
+                  (value.IsRepeatable() || value.IsStrokeDasharrayList()));
 
 }  // namespace blink
 

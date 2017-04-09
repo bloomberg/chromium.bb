@@ -11,20 +11,20 @@ namespace blink {
 
 CanvasDrawListener::~CanvasDrawListener() {}
 
-void CanvasDrawListener::sendNewFrame(sk_sp<SkImage> image) {
-  m_handler->sendNewFrame(image.get());
+void CanvasDrawListener::SendNewFrame(sk_sp<SkImage> image) {
+  handler_->SendNewFrame(image.get());
 }
 
-bool CanvasDrawListener::needsNewFrame() const {
-  return m_frameCaptureRequested && m_handler->needsNewFrame();
+bool CanvasDrawListener::NeedsNewFrame() const {
+  return frame_capture_requested_ && handler_->NeedsNewFrame();
 }
 
-void CanvasDrawListener::requestFrame() {
-  m_frameCaptureRequested = true;
+void CanvasDrawListener::RequestFrame() {
+  frame_capture_requested_ = true;
 }
 
 CanvasDrawListener::CanvasDrawListener(
     std::unique_ptr<WebCanvasCaptureHandler> handler)
-    : m_frameCaptureRequested(true), m_handler(std::move(handler)) {}
+    : frame_capture_requested_(true), handler_(std::move(handler)) {}
 
 }  // namespace blink

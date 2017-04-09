@@ -36,15 +36,15 @@ class RawDataDocumentParser : public DocumentParser {
   explicit RawDataDocumentParser(Document* document)
       : DocumentParser(document) {}
 
-  void finish() override {
-    if (!isStopped())
-      document()->finishedParsing();
+  void Finish() override {
+    if (!IsStopped())
+      GetDocument()->FinishedParsing();
   }
 
  private:
   void insert(const SegmentedString&) final {}
 
-  void append(const String&) final { NOTREACHED(); }
+  void Append(const String&) final { NOTREACHED(); }
 };
 
 }  // namespace blink

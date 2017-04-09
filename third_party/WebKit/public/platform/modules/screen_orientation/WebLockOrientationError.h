@@ -9,13 +9,13 @@ namespace blink {
 
 enum WebLockOrientationError {
   // If locking isn't available on the platform.
-  WebLockOrientationErrorNotAvailable,
+  kWebLockOrientationErrorNotAvailable,
 
   // If fullscreen is required to lock.
-  WebLockOrientationErrorFullscreenRequired,
+  kWebLockOrientationErrorFullscreenRequired,
 
   // If another lock/unlock got called before that one ended.
-  WebLockOrientationErrorCanceled,
+  kWebLockOrientationErrorCanceled,
 };
 
 }  // namespace blink

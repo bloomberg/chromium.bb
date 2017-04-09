@@ -38,10 +38,10 @@ class DOMPlugin final : public GarbageCollectedFinalized<DOMPlugin>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMPlugin* create(PluginData* pluginData,
+  static DOMPlugin* Create(PluginData* plugin_data,
                            LocalFrame* frame,
                            unsigned index) {
-    return new DOMPlugin(pluginData, frame, index);
+    return new DOMPlugin(plugin_data, frame, index);
   }
   virtual ~DOMPlugin();
 
@@ -52,19 +52,19 @@ class DOMPlugin final : public GarbageCollectedFinalized<DOMPlugin>,
   unsigned length() const;
 
   DOMMimeType* item(unsigned index);
-  DOMMimeType* namedItem(const AtomicString& propertyName);
+  DOMMimeType* namedItem(const AtomicString& property_name);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   DOMPlugin(PluginData*, LocalFrame*, unsigned index);
 
-  const PluginInfo& pluginInfo() const {
-    return m_pluginData->plugins()[m_index];
+  const PluginInfo& GetPluginInfo() const {
+    return plugin_data_->Plugins()[index_];
   }
 
-  RefPtr<PluginData> m_pluginData;
-  unsigned m_index;
+  RefPtr<PluginData> plugin_data_;
+  unsigned index_;
 };
 
 }  // namespace blink

@@ -30,7 +30,7 @@ namespace blink {
 class CORE_EXPORT MediaQueryListListener
     : public GarbageCollected<MediaQueryListListener> {
  public:
-  virtual void notifyMediaQueryChanged() = 0;
+  virtual void NotifyMediaQueryChanged() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

@@ -26,7 +26,7 @@ WebFileUtilitiesImpl::WebFileUtilitiesImpl()
 WebFileUtilitiesImpl::~WebFileUtilitiesImpl() {
 }
 
-bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
+bool WebFileUtilitiesImpl::GetFileInfo(const WebString& path,
                                        blink::WebFileInfo& web_file_info) {
   if (sandbox_enabled_) {
     NOTREACHED();
@@ -38,20 +38,20 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
     return false;
 
   FileInfoToWebFileInfo(file_info, &web_file_info);
-  web_file_info.platformPath = path;
+  web_file_info.platform_path = path;
   return true;
 }
 
-WebString WebFileUtilitiesImpl::directoryName(const WebString& path) {
+WebString WebFileUtilitiesImpl::DirectoryName(const WebString& path) {
   return blink::FilePathToWebString(blink::WebStringToFilePath(path).DirName());
 }
 
-WebString WebFileUtilitiesImpl::baseName(const WebString& path) {
+WebString WebFileUtilitiesImpl::BaseName(const WebString& path) {
   return blink::FilePathToWebString(
       blink::WebStringToFilePath(path).BaseName());
 }
 
-blink::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {
+blink::WebURL WebFileUtilitiesImpl::FilePathToURL(const WebString& path) {
   return net::FilePathToFileURL(blink::WebStringToFilePath(path));
 }
 

@@ -11,74 +11,74 @@
 namespace blink {
 
 ShapeResultBloberizer::ShapeResultBloberizer(const Font& font,
-                                             float deviceScaleFactor,
+                                             float device_scale_factor,
                                              Type type)
-    : m_font(font), m_deviceScaleFactor(deviceScaleFactor), m_type(type) {}
+    : font_(font), device_scale_factor_(device_scale_factor), type_(type) {}
 
-bool ShapeResultBloberizer::hasPendingVerticalOffsets() const {
+bool ShapeResultBloberizer::HasPendingVerticalOffsets() const {
   // We exclusively store either horizontal/x-only ofssets -- in which case
   // m_offsets.size == size, or vertical/xy offsets -- in which case
   // m_offsets.size == size * 2.
-  DCHECK(m_pendingGlyphs.size() == m_pendingOffsets.size() ||
-         m_pendingGlyphs.size() * 2 == m_pendingOffsets.size());
-  return m_pendingGlyphs.size() != m_pendingOffsets.size();
+  DCHECK(pending_glyphs_.size() == pending_offsets_.size() ||
+         pending_glyphs_.size() * 2 == pending_offsets_.size());
+  return pending_glyphs_.size() != pending_offsets_.size();
 }
 
-void ShapeResultBloberizer::commitPendingRun() {
-  if (m_pendingGlyphs.isEmpty())
+void ShapeResultBloberizer::CommitPendingRun() {
+  if (pending_glyphs_.IsEmpty())
     return;
 
-  const auto pendingRotation = blobRotation(m_pendingFontData);
-  if (pendingRotation != m_builderRotation) {
+  const auto pending_rotation = GetBlobRotation(pending_font_data_);
+  if (pending_rotation != builder_rotation_) {
     // The pending run rotation doesn't match the current blob; start a new
     // blob.
-    commitPendingBlob();
-    m_builderRotation = pendingRotation;
+    CommitPendingBlob();
+    builder_rotation_ = pending_rotation;
   }
 
-  SkPaint runPaint;
-  runPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  m_pendingFontData->platformData().setupPaint(&runPaint, m_deviceScaleFactor,
-                                               &m_font);
+  SkPaint run_paint;
+  run_paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  pending_font_data_->PlatformData().SetupPaint(&run_paint,
+                                                device_scale_factor_, &font_);
 
-  const auto runSize = m_pendingGlyphs.size();
-  const auto& buffer = hasPendingVerticalOffsets()
-                           ? m_builder.allocRunPos(runPaint, runSize)
-                           : m_builder.allocRunPosH(runPaint, runSize, 0);
+  const auto run_size = pending_glyphs_.size();
+  const auto& buffer = HasPendingVerticalOffsets()
+                           ? builder_.allocRunPos(run_paint, run_size)
+                           : builder_.allocRunPosH(run_paint, run_size, 0);
 
-  std::copy(m_pendingGlyphs.begin(), m_pendingGlyphs.end(), buffer.glyphs);
-  std::copy(m_pendingOffsets.begin(), m_pendingOffsets.end(), buffer.pos);
+  std::copy(pending_glyphs_.begin(), pending_glyphs_.end(), buffer.glyphs);
+  std::copy(pending_offsets_.begin(), pending_offsets_.end(), buffer.pos);
 
-  m_builderRunCount += 1;
-  m_pendingGlyphs.shrink(0);
-  m_pendingOffsets.shrink(0);
+  builder_run_count_ += 1;
+  pending_glyphs_.Shrink(0);
+  pending_offsets_.Shrink(0);
 }
 
-void ShapeResultBloberizer::commitPendingBlob() {
-  if (!m_builderRunCount)
+void ShapeResultBloberizer::CommitPendingBlob() {
+  if (!builder_run_count_)
     return;
 
-  m_blobs.emplace_back(m_builder.make(), m_builderRotation);
-  m_builderRunCount = 0;
+  blobs_.emplace_back(builder_.make(), builder_rotation_);
+  builder_run_count_ = 0;
 }
 
-const ShapeResultBloberizer::BlobBuffer& ShapeResultBloberizer::blobs() {
-  commitPendingRun();
-  commitPendingBlob();
-  DCHECK(m_pendingGlyphs.isEmpty());
-  DCHECK_EQ(m_builderRunCount, 0u);
+const ShapeResultBloberizer::BlobBuffer& ShapeResultBloberizer::Blobs() {
+  CommitPendingRun();
+  CommitPendingBlob();
+  DCHECK(pending_glyphs_.IsEmpty());
+  DCHECK_EQ(builder_run_count_, 0u);
 
-  return m_blobs;
+  return blobs_;
 }
 
-ShapeResultBloberizer::BlobRotation ShapeResultBloberizer::blobRotation(
-    const SimpleFontData* fontData) {
+ShapeResultBloberizer::BlobRotation ShapeResultBloberizer::GetBlobRotation(
+    const SimpleFontData* font_data) {
   // For vertical upright text we need to compensate the inherited 90deg CW
   // rotation (using a 90deg CCW rotation).
-  return (fontData->platformData().isVerticalAnyUpright() &&
-          fontData->verticalData())
-             ? BlobRotation::CCWRotation
-             : BlobRotation::NoRotation;
+  return (font_data->PlatformData().IsVerticalAnyUpright() &&
+          font_data->VerticalData())
+             ? BlobRotation::kCCWRotation
+             : BlobRotation::kNoRotation;
 }
 
 }  // namespace blink

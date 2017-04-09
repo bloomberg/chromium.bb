@@ -20,16 +20,16 @@ class CORE_EXPORT CustomElementAdoptedCallbackReaction final
 
  public:
   CustomElementAdoptedCallbackReaction(CustomElementDefinition*,
-                                       Document* oldOwner,
-                                       Document* newOwner);
+                                       Document* old_owner,
+                                       Document* new_owner);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void invoke(Element*) override;
+  void Invoke(Element*) override;
 
-  Member<Document> m_oldOwner;
-  Member<Document> m_newOwner;
+  Member<Document> old_owner_;
+  Member<Document> new_owner_;
 };
 
 }  // namespace blink

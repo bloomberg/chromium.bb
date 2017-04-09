@@ -16,27 +16,28 @@ class ScrollStateCallback
     : public GarbageCollectedFinalized<ScrollStateCallback> {
  public:
   ScrollStateCallback()
-      : m_nativeScrollBehavior(WebNativeScrollBehavior::DisableNativeScroll) {}
+      : native_scroll_behavior_(WebNativeScrollBehavior::kDisableNativeScroll) {
+  }
 
   virtual ~ScrollStateCallback() {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void handleEvent(ScrollState*) = 0;
 
-  void setNativeScrollBehavior(WebNativeScrollBehavior nativeScrollBehavior) {
-    ASSERT(static_cast<int>(nativeScrollBehavior) < 3);
-    m_nativeScrollBehavior = nativeScrollBehavior;
+  void SetNativeScrollBehavior(WebNativeScrollBehavior native_scroll_behavior) {
+    ASSERT(static_cast<int>(native_scroll_behavior) < 3);
+    native_scroll_behavior_ = native_scroll_behavior;
   }
 
-  WebNativeScrollBehavior nativeScrollBehavior() {
-    return m_nativeScrollBehavior;
+  WebNativeScrollBehavior NativeScrollBehavior() {
+    return native_scroll_behavior_;
   }
 
-  static WebNativeScrollBehavior toNativeScrollBehavior(
-      String nativeScrollBehavior);
+  static WebNativeScrollBehavior ToNativeScrollBehavior(
+      String native_scroll_behavior);
 
  protected:
-  WebNativeScrollBehavior m_nativeScrollBehavior;
+  WebNativeScrollBehavior native_scroll_behavior_;
 };
 
 }  // namespace blink

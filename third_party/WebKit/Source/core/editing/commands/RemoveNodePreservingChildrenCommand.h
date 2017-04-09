@@ -32,11 +32,12 @@ namespace blink {
 
 class RemoveNodePreservingChildrenCommand final : public CompositeEditCommand {
  public:
-  static RemoveNodePreservingChildrenCommand* create(
+  static RemoveNodePreservingChildrenCommand* Create(
       Node* node,
-      ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable) {
+      ShouldAssumeContentIsAlwaysEditable
+          should_assume_content_is_always_editable) {
     return new RemoveNodePreservingChildrenCommand(
-        node, shouldAssumeContentIsAlwaysEditable);
+        node, should_assume_content_is_always_editable);
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -45,10 +46,10 @@ class RemoveNodePreservingChildrenCommand final : public CompositeEditCommand {
   RemoveNodePreservingChildrenCommand(Node*,
                                       ShouldAssumeContentIsAlwaysEditable);
 
-  void doApply(EditingState*) override;
+  void DoApply(EditingState*) override;
 
-  Member<Node> m_node;
-  ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
+  Member<Node> node_;
+  ShouldAssumeContentIsAlwaysEditable should_assume_content_is_always_editable_;
 };
 
 }  // namespace blink

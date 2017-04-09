@@ -37,28 +37,28 @@ TEST(WebCryptoStatusTest, Basic) {
   status = Status::OperationError();
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("", status.error_details());
-  EXPECT_EQ(blink::WebCryptoErrorTypeOperation, status.error_type());
+  EXPECT_EQ(blink::kWebCryptoErrorTypeOperation, status.error_type());
 
   status = Status::DataError();
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("", status.error_details());
-  EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
+  EXPECT_EQ(blink::kWebCryptoErrorTypeData, status.error_type());
 
   status = Status::ErrorUnsupported();
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("The requested operation is unsupported", status.error_details());
-  EXPECT_EQ(blink::WebCryptoErrorTypeNotSupported, status.error_type());
+  EXPECT_EQ(blink::kWebCryptoErrorTypeNotSupported, status.error_type());
 
   status = Status::ErrorJwkMemberMissing("kty");
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("The required JWK member \"kty\" was missing",
             status.error_details());
-  EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
+  EXPECT_EQ(blink::kWebCryptoErrorTypeData, status.error_type());
 
   status = Status::ErrorJwkMemberWrongType("kty", "string");
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("The JWK member \"kty\" must be a string", status.error_details());
-  EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
+  EXPECT_EQ(blink::kWebCryptoErrorTypeData, status.error_type());
 
   status = Status::ErrorJwkBase64Decode("n");
   EXPECT_TRUE(status.IsError());
@@ -66,7 +66,7 @@ TEST(WebCryptoStatusTest, Basic) {
       "The JWK member \"n\" could not be base64url decoded or contained "
       "padding",
       status.error_details());
-  EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
+  EXPECT_EQ(blink::kWebCryptoErrorTypeData, status.error_type());
 }
 
 }  // namespace

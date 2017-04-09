@@ -39,7 +39,7 @@ class CSSSupportsRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSSupportsRule* create(StyleRuleSupports* rule,
+  static CSSSupportsRule* Create(StyleRuleSupports* rule,
                                  CSSStyleSheet* sheet) {
     return new CSSSupportsRule(rule, sheet);
   }

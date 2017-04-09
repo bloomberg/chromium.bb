@@ -43,7 +43,7 @@ void PushMessagingClient::OnDestruct() {
   delete this;
 }
 
-void PushMessagingClient::subscribe(
+void PushMessagingClient::Subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
@@ -52,7 +52,7 @@ void PushMessagingClient::subscribe(
 
   // If a developer provided an application server key in |options|, skip
   // fetching the manifest.
-  if (options.applicationServerKey.isEmpty()) {
+  if (options.application_server_key.IsEmpty()) {
     RenderFrameImpl::FromRoutingID(routing_id())
         ->manifest_manager()
         ->GetManifest(base::Bind(
@@ -60,10 +60,10 @@ void PushMessagingClient::subscribe(
             service_worker_registration, options, base::Passed(&callbacks)));
   } else {
     PushSubscriptionOptions content_options;
-    content_options.user_visible_only = options.userVisibleOnly;
+    content_options.user_visible_only = options.user_visible_only;
     // Just treat the server key as a string of bytes and pass it to the push
     // service.
-    content_options.sender_info = options.applicationServerKey.latin1();
+    content_options.sender_info = options.application_server_key.Latin1();
     DoSubscribe(service_worker_registration, content_options,
                 std::move(callbacks));
   }
@@ -86,7 +86,7 @@ void PushMessagingClient::DidGetManifest(
   }
 
   PushSubscriptionOptions content_options;
-  content_options.user_visible_only = options.userVisibleOnly;
+  content_options.user_visible_only = options.user_visible_only;
   if (!manifest.gcm_sender_id.is_null()) {
     content_options.sender_info =
         base::UTF16ToUTF8(manifest.gcm_sender_id.string());
@@ -103,7 +103,7 @@ void PushMessagingClient::DoSubscribe(
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)
-          ->registrationId();
+          ->RegistrationId();
 
   if (options.sender_info.empty()) {
     DidSubscribe(std::move(callbacks), PUSH_REGISTRATION_STATUS_NO_SENDER_ID,
@@ -136,12 +136,12 @@ void PushMessagingClient::DidSubscribe(
     DCHECK(p256dh);
     DCHECK(auth);
 
-    callbacks->onSuccess(base::MakeUnique<blink::WebPushSubscription>(
+    callbacks->OnSuccess(base::MakeUnique<blink::WebPushSubscription>(
         endpoint.value(), options.value().user_visible_only,
-        blink::WebString::fromLatin1(options.value().sender_info),
+        blink::WebString::FromLatin1(options.value().sender_info),
         p256dh.value(), auth.value()));
   } else {
-    callbacks->onError(PushRegistrationStatusToWebPushError(status));
+    callbacks->OnError(PushRegistrationStatusToWebPushError(status));
   }
 }
 

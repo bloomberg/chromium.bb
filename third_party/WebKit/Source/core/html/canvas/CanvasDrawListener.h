@@ -18,15 +18,15 @@ namespace blink {
 class CORE_EXPORT CanvasDrawListener : public GarbageCollectedMixin {
  public:
   virtual ~CanvasDrawListener();
-  virtual void sendNewFrame(sk_sp<SkImage>);
-  bool needsNewFrame() const;
-  void requestFrame();
+  virtual void SendNewFrame(sk_sp<SkImage>);
+  bool NeedsNewFrame() const;
+  void RequestFrame();
 
  protected:
   explicit CanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
 
-  bool m_frameCaptureRequested;
-  std::unique_ptr<WebCanvasCaptureHandler> m_handler;
+  bool frame_capture_requested_;
+  std::unique_ptr<WebCanvasCaptureHandler> handler_;
 };
 
 }  // namespace blink

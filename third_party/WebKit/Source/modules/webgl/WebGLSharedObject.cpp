@@ -31,33 +31,34 @@
 namespace blink {
 
 WebGLSharedObject::WebGLSharedObject(WebGLRenderingContextBase* context)
-    : WebGLObject(context), m_contextGroup(this, context->contextGroup()) {}
+    : WebGLObject(context), context_group_(this, context->ContextGroup()) {}
 
-bool WebGLSharedObject::validate(const WebGLContextGroup* contextGroup,
+bool WebGLSharedObject::Validate(const WebGLContextGroup* context_group,
                                  const WebGLRenderingContextBase*) const {
   // The contexts and context groups no longer maintain references to all
   // the objects they ever created, so there's no way to invalidate them
   // eagerly during context loss. The invalidation is discovered lazily.
-  return contextGroup == m_contextGroup &&
-         cachedNumberOfContextLosses() == contextGroup->numberOfContextLosses();
+  return context_group == context_group_ &&
+         CachedNumberOfContextLosses() ==
+             context_group->NumberOfContextLosses();
 }
 
-uint32_t WebGLSharedObject::currentNumberOfContextLosses() const {
-  return m_contextGroup->numberOfContextLosses();
+uint32_t WebGLSharedObject::CurrentNumberOfContextLosses() const {
+  return context_group_->NumberOfContextLosses();
 }
 
-gpu::gles2::GLES2Interface* WebGLSharedObject::getAGLInterface() const {
-  return m_contextGroup->getAGLInterface();
+gpu::gles2::GLES2Interface* WebGLSharedObject::GetAGLInterface() const {
+  return context_group_->GetAGLInterface();
 }
 
 DEFINE_TRACE(WebGLSharedObject) {
-  visitor->trace(m_contextGroup);
-  WebGLObject::trace(visitor);
+  visitor->Trace(context_group_);
+  WebGLObject::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLSharedObject) {
-  visitor->traceWrappers(m_contextGroup);
-  WebGLObject::traceWrappers(visitor);
+  visitor->TraceWrappers(context_group_);
+  WebGLObject::TraceWrappers(visitor);
 }
 
 }  // namespace blink

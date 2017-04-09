@@ -27,17 +27,17 @@
 
 namespace blink {
 
-SpeechSynthesisEvent* SpeechSynthesisEvent::create() {
+SpeechSynthesisEvent* SpeechSynthesisEvent::Create() {
   return new SpeechSynthesisEvent;
 }
 
-SpeechSynthesisEvent* SpeechSynthesisEvent::create(
+SpeechSynthesisEvent* SpeechSynthesisEvent::Create(
     const AtomicString& type,
     SpeechSynthesisUtterance* utterance,
-    unsigned charIndex,
-    float elapsedTime,
+    unsigned char_index,
+    float elapsed_time,
     const String& name) {
-  return new SpeechSynthesisEvent(type, utterance, charIndex, elapsedTime,
+  return new SpeechSynthesisEvent(type, utterance, char_index, elapsed_time,
                                   name);
 }
 
@@ -45,18 +45,18 @@ SpeechSynthesisEvent::SpeechSynthesisEvent() {}
 
 SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type,
                                            SpeechSynthesisUtterance* utterance,
-                                           unsigned charIndex,
-                                           float elapsedTime,
+                                           unsigned char_index,
+                                           float elapsed_time,
                                            const String& name)
     : Event(type, false, false),
-      m_utterance(utterance),
-      m_charIndex(charIndex),
-      m_elapsedTime(elapsedTime),
-      m_name(name) {}
+      utterance_(utterance),
+      char_index_(char_index),
+      elapsed_time_(elapsed_time),
+      name_(name) {}
 
 DEFINE_TRACE(SpeechSynthesisEvent) {
-  visitor->trace(m_utterance);
-  Event::trace(visitor);
+  visitor->Trace(utterance_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

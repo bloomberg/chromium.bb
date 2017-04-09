@@ -45,8 +45,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   ~MediaStreamVideoTrackTest() override {}
 
   void TearDown() override {
-    blink_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void DeliverVideoFrameAndWaitForRenderer(MockMediaStreamVideoSink* sink) {
@@ -68,7 +68,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
   void InitializeSource() {
-    blink_source_.reset();
+    blink_source_.Reset();
     mock_source_ = IsOldVideoConstraints()
                        ? new MockMediaStreamVideoSource(false)
                        : new MockMediaStreamVideoSource(
@@ -76,11 +76,11 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
                                  gfx::Size(kMockSourceWidth, kMockSourceHeight),
                                  30.0, media::PIXEL_FORMAT_I420),
                              false);
-    blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                             blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"),
+    blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                             blink::WebMediaStreamSource::kTypeVideo,
+                             blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.setExtraData(mock_source_);
+    blink_source_.SetExtraData(mock_source_);
   }
 
   // Create a track that's associated with |mock_source_|.
@@ -96,7 +96,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
   void UpdateVideoSourceToRespondToRequestRefreshFrame() {
-    blink_source_.reset();
+    blink_source_.Reset();
     mock_source_ = IsOldVideoConstraints()
                        ? new MockMediaStreamVideoSource(false, true)
                        : new MockMediaStreamVideoSource(
@@ -104,11 +104,11 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
                                  gfx::Size(kMockSourceWidth, kMockSourceHeight),
                                  30.0, media::PIXEL_FORMAT_I420),
                              true);
-    blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                             blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"),
+    blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                             blink::WebMediaStreamSource::kTypeVideo,
+                             blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.setExtraData(mock_source_);
+    blink_source_.SetExtraData(mock_source_);
   }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
@@ -225,10 +225,10 @@ TEST_F(MediaStreamVideoTrackTest, SourceStopped) {
   MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
   sink.ConnectToTrack(track);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink.state());
 
   mock_source()->StopSource();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink.state());
   sink.DisconnectFromTrack();
 }
 
@@ -237,30 +237,30 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   MockMediaStreamVideoSink sink1;
   blink::WebMediaStreamTrack track1 = CreateTrack();
   sink1.ConnectToTrack(track1);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink1.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink1.state());
 
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            blink_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            blink_source().GetReadyState());
 
   MockMediaStreamVideoSink sink2;
   blink::WebMediaStreamTrack track2 = CreateTrack();
   sink2.ConnectToTrack(track2);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink2.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink2.state());
 
   MediaStreamVideoTrack* const native_track1 =
       MediaStreamVideoTrack::GetVideoTrack(track1);
   native_track1->Stop();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink1.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            blink_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink1.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            blink_source().GetReadyState());
   sink1.DisconnectFromTrack();
 
   MediaStreamVideoTrack* const native_track2 =
         MediaStreamVideoTrack::GetVideoTrack(track2);
   native_track2->Stop();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink2.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            blink_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink2.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+            blink_source().GetReadyState());
   sink2.DisconnectFromTrack();
 }
 
@@ -287,12 +287,13 @@ TEST_F(MediaStreamVideoTrackTest, GetSettings) {
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
   blink::WebMediaStreamTrack::Settings settings;
-  native_track->getSettings(settings);
+  native_track->GetSettings(settings);
   // These values come straight from the mock video track implementation.
   EXPECT_EQ(640, settings.width);
   EXPECT_EQ(480, settings.height);
-  EXPECT_EQ(30.0, settings.frameRate);
-  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::None, settings.facingMode);
+  EXPECT_EQ(30.0, settings.frame_rate);
+  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::kNone,
+            settings.facing_mode);
 }
 
 // TODO(guidou): Remove this test. http://crbug.com/706408
@@ -309,8 +310,8 @@ class MediaStreamVideoTrackOldConstraintsTest : public ::testing::Test {
   ~MediaStreamVideoTrackOldConstraintsTest() override {}
 
   void TearDown() override {
-    blink_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void DeliverVideoFrameAndWaitForRenderer(MockMediaStreamVideoSink* sink) {
@@ -332,7 +333,7 @@ class MediaStreamVideoTrackOldConstraintsTest : public ::testing::Test {
   }
 
   void InitializeSource() {
-    blink_source_.reset();
+    blink_source_.Reset();
     mock_source_ = IsOldVideoConstraints()
                        ? new MockMediaStreamVideoSource(false)
                        : new MockMediaStreamVideoSource(
@@ -340,11 +341,11 @@ class MediaStreamVideoTrackOldConstraintsTest : public ::testing::Test {
                                  gfx::Size(kMockSourceWidth, kMockSourceHeight),
                                  30.0, media::PIXEL_FORMAT_I420),
                              false);
-    blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                             blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"),
+    blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                             blink::WebMediaStreamSource::kTypeVideo,
+                             blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.setExtraData(mock_source_);
+    blink_source_.SetExtraData(mock_source_);
   }
 
   // Create a track that's associated with |mock_source_|.
@@ -360,7 +361,7 @@ class MediaStreamVideoTrackOldConstraintsTest : public ::testing::Test {
   }
 
   void UpdateVideoSourceToRespondToRequestRefreshFrame() {
-    blink_source_.reset();
+    blink_source_.Reset();
     mock_source_ = IsOldVideoConstraints()
                        ? new MockMediaStreamVideoSource(false, true)
                        : new MockMediaStreamVideoSource(
@@ -368,11 +369,11 @@ class MediaStreamVideoTrackOldConstraintsTest : public ::testing::Test {
                                  gfx::Size(kMockSourceWidth, kMockSourceHeight),
                                  30.0, media::PIXEL_FORMAT_I420),
                              true);
-    blink_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                             blink::WebMediaStreamSource::TypeVideo,
-                             blink::WebString::fromASCII("dummy_source_name"),
+    blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                             blink::WebMediaStreamSource::kTypeVideo,
+                             blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.setExtraData(mock_source_);
+    blink_source_.SetExtraData(mock_source_);
   }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
@@ -462,10 +463,10 @@ TEST_F(MediaStreamVideoTrackOldConstraintsTest, SourceStopped) {
   MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
   sink.ConnectToTrack(track);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink.state());
 
   mock_source()->StopSource();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink.state());
   sink.DisconnectFromTrack();
 }
 
@@ -474,30 +475,30 @@ TEST_F(MediaStreamVideoTrackOldConstraintsTest, StopLastTrack) {
   MockMediaStreamVideoSink sink1;
   blink::WebMediaStreamTrack track1 = CreateTrack();
   sink1.ConnectToTrack(track1);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink1.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink1.state());
 
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            blink_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            blink_source().GetReadyState());
 
   MockMediaStreamVideoSink sink2;
   blink::WebMediaStreamTrack track2 = CreateTrack();
   sink2.ConnectToTrack(track2);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink2.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink2.state());
 
   MediaStreamVideoTrack* const native_track1 =
       MediaStreamVideoTrack::GetVideoTrack(track1);
   native_track1->Stop();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink1.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            blink_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink1.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            blink_source().GetReadyState());
   sink1.DisconnectFromTrack();
 
   MediaStreamVideoTrack* const native_track2 =
       MediaStreamVideoTrack::GetVideoTrack(track2);
   native_track2->Stop();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink2.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            blink_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink2.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+            blink_source().GetReadyState());
   sink2.DisconnectFromTrack();
 }
 
@@ -524,12 +525,13 @@ TEST_F(MediaStreamVideoTrackOldConstraintsTest, GetSettingsOldConstraints) {
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
   blink::WebMediaStreamTrack::Settings settings;
-  native_track->getSettings(settings);
+  native_track->GetSettings(settings);
   // These values come straight from the mock video track implementation.
   EXPECT_EQ(640, settings.width);
   EXPECT_EQ(480, settings.height);
-  EXPECT_EQ(30.0, settings.frameRate);
-  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::None, settings.facingMode);
+  EXPECT_EQ(30.0, settings.frame_rate);
+  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::kNone,
+            settings.facing_mode);
 }
 
 }  // namespace content

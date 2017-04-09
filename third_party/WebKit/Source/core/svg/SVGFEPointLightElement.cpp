@@ -30,9 +30,9 @@ inline SVGFEPointLightElement::SVGFEPointLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEPointLightElement)
 
-PassRefPtr<LightSource> SVGFEPointLightElement::lightSource(
+PassRefPtr<LightSource> SVGFEPointLightElement::GetLightSource(
     Filter* filter) const {
-  return PointLightSource::create(filter->resolve3dPoint(position()));
+  return PointLightSource::Create(filter->Resolve3dPoint(GetPosition()));
 }
 
 }  // namespace blink

@@ -44,7 +44,7 @@ class CSSPropertyParser {
   STACK_ALLOCATED();
 
  public:
-  static bool parseValue(CSSPropertyID,
+  static bool ParseValue(CSSPropertyID,
                          bool important,
                          const CSSParserTokenRange&,
                          const CSSParserContext*,
@@ -52,7 +52,7 @@ class CSSPropertyParser {
                          StyleRule::RuleType);
 
   // Parses a non-shorthand CSS property
-  static const CSSValue* parseSingleValue(CSSPropertyID,
+  static const CSSValue* ParseSingleValue(CSSPropertyID,
                                           const CSSParserTokenRange&,
                                           const CSSParserContext*);
 
@@ -62,72 +62,74 @@ class CSSPropertyParser {
                     HeapVector<CSSProperty, 256>*);
 
   // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
-  bool parseValueStart(CSSPropertyID unresolvedProperty, bool important);
-  bool consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important);
-  const CSSValue* parseSingleValue(CSSPropertyID,
+  bool ParseValueStart(CSSPropertyID unresolved_property, bool important);
+  bool ConsumeCSSWideKeyword(CSSPropertyID unresolved_property, bool important);
+  const CSSValue* ParseSingleValue(CSSPropertyID,
                                    CSSPropertyID = CSSPropertyInvalid);
 
-  bool inQuirksMode() const { return isQuirksModeBehavior(m_context->mode()); }
+  bool InQuirksMode() const { return IsQuirksModeBehavior(context_->Mode()); }
 
-  bool parseViewportDescriptor(CSSPropertyID propId, bool important);
-  bool parseFontFaceDescriptor(CSSPropertyID);
+  bool ParseViewportDescriptor(CSSPropertyID prop_id, bool important);
+  bool ParseFontFaceDescriptor(CSSPropertyID);
 
-  void addProperty(CSSPropertyID,
+  void AddProperty(CSSPropertyID,
                    CSSPropertyID,
                    const CSSValue&,
                    bool important,
                    bool implicit = false);
-  void addExpandedPropertyForValue(CSSPropertyID propId, const CSSValue&, bool);
+  void AddExpandedPropertyForValue(CSSPropertyID prop_id,
+                                   const CSSValue&,
+                                   bool);
 
-  bool consumeBorder(bool important);
+  bool ConsumeBorder(bool important);
 
-  bool parseShorthand(CSSPropertyID, bool important);
-  bool consumeShorthandGreedily(const StylePropertyShorthand&, bool important);
-  bool consume4Values(const StylePropertyShorthand&, bool important);
+  bool ParseShorthand(CSSPropertyID, bool important);
+  bool ConsumeShorthandGreedily(const StylePropertyShorthand&, bool important);
+  bool Consume4Values(const StylePropertyShorthand&, bool important);
 
   // Legacy parsing allows <string>s for animation-name
-  bool consumeAnimationShorthand(const StylePropertyShorthand&,
-                                 bool useLegacyParsing,
+  bool ConsumeAnimationShorthand(const StylePropertyShorthand&,
+                                 bool use_legacy_parsing,
                                  bool important);
-  bool consumeBackgroundShorthand(const StylePropertyShorthand&,
+  bool ConsumeBackgroundShorthand(const StylePropertyShorthand&,
                                   bool important);
-  bool consumeOffsetShorthand(bool important);
+  bool ConsumeOffsetShorthand(bool important);
 
-  bool consumeColumns(bool important);
+  bool ConsumeColumns(bool important);
 
-  bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
-  bool consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID, bool important);
-  bool consumeGridTemplateShorthand(CSSPropertyID, bool important);
-  bool consumeGridShorthand(bool important);
-  bool consumeGridAreaShorthand(bool important);
+  bool ConsumeGridItemPositionShorthand(CSSPropertyID, bool important);
+  bool ConsumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID, bool important);
+  bool ConsumeGridTemplateShorthand(CSSPropertyID, bool important);
+  bool ConsumeGridShorthand(bool important);
+  bool ConsumeGridAreaShorthand(bool important);
 
-  bool consumePlaceContentShorthand(bool important);
-  bool consumePlaceItemsShorthand(bool important);
-  bool consumePlaceSelfShorthand(bool important);
+  bool ConsumePlaceContentShorthand(bool important);
+  bool ConsumePlaceItemsShorthand(bool important);
+  bool ConsumePlaceSelfShorthand(bool important);
 
-  bool consumeFont(bool important);
-  bool consumeFontVariantShorthand(bool important);
-  bool consumeSystemFont(bool important);
+  bool ConsumeFont(bool important);
+  bool ConsumeFontVariantShorthand(bool important);
+  bool ConsumeSystemFont(bool important);
 
-  bool consumeBorderSpacing(bool important);
+  bool ConsumeBorderSpacing(bool important);
 
   // CSS3 Parsing Routines (for properties specific to CSS3)
-  bool consumeBorderImage(CSSPropertyID, bool important);
+  bool ConsumeBorderImage(CSSPropertyID, bool important);
 
-  bool consumeFlex(bool important);
+  bool ConsumeFlex(bool important);
 
-  bool consumeLegacyBreakProperty(CSSPropertyID, bool important);
+  bool ConsumeLegacyBreakProperty(CSSPropertyID, bool important);
 
  private:
   // Inputs:
-  CSSParserTokenRange m_range;
-  Member<const CSSParserContext> m_context;
+  CSSParserTokenRange range_;
+  Member<const CSSParserContext> context_;
   // Outputs:
-  HeapVector<CSSProperty, 256>* m_parsedProperties;
+  HeapVector<CSSProperty, 256>* parsed_properties_;
 };
 
-CSSPropertyID unresolvedCSSPropertyID(StringView);
-CSSValueID cssValueKeywordID(StringView);
+CSSPropertyID UnresolvedCSSPropertyID(StringView);
+CSSValueID CssValueKeywordID(StringView);
 
 }  // namespace blink
 

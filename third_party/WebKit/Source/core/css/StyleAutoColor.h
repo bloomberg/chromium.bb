@@ -16,45 +16,45 @@ class StyleAutoColor {
 
  public:
   StyleAutoColor(Color color)
-      : m_type(ValueType::SpecifiedColor), m_color(color) {}
-  static StyleAutoColor autoColor() { return StyleAutoColor(ValueType::Auto); }
-  static StyleAutoColor currentColor() {
-    return StyleAutoColor(ValueType::CurrentColor);
+      : type_(ValueType::kSpecifiedColor), color_(color) {}
+  static StyleAutoColor AutoColor() { return StyleAutoColor(ValueType::kAuto); }
+  static StyleAutoColor CurrentColor() {
+    return StyleAutoColor(ValueType::kCurrentColor);
   }
 
-  bool isAutoColor() const { return m_type == ValueType::Auto; }
-  bool isCurrentColor() const { return m_type == ValueType::CurrentColor; }
-  Color color() const {
-    DCHECK(m_type == ValueType::SpecifiedColor);
-    return m_color;
+  bool IsAutoColor() const { return type_ == ValueType::kAuto; }
+  bool IsCurrentColor() const { return type_ == ValueType::kCurrentColor; }
+  Color GetColor() const {
+    DCHECK(type_ == ValueType::kSpecifiedColor);
+    return color_;
   }
 
-  Color resolve(Color currentColor) const {
-    return m_type == ValueType::SpecifiedColor ? m_color : currentColor;
+  Color Resolve(Color current_color) const {
+    return type_ == ValueType::kSpecifiedColor ? color_ : current_color;
   }
 
-  StyleColor toStyleColor() const {
-    DCHECK(m_type != ValueType::Auto);
-    if (m_type == ValueType::SpecifiedColor)
-      return StyleColor(m_color);
-    DCHECK(m_type == ValueType::CurrentColor);
-    return StyleColor::currentColor();
+  StyleColor ToStyleColor() const {
+    DCHECK(type_ != ValueType::kAuto);
+    if (type_ == ValueType::kSpecifiedColor)
+      return StyleColor(color_);
+    DCHECK(type_ == ValueType::kCurrentColor);
+    return StyleColor::CurrentColor();
   }
 
  private:
-  enum class ValueType { Auto, CurrentColor, SpecifiedColor };
-  StyleAutoColor(ValueType type) : m_type(type) {}
+  enum class ValueType { kAuto, kCurrentColor, kSpecifiedColor };
+  StyleAutoColor(ValueType type) : type_(type) {}
 
-  ValueType m_type;
-  Color m_color;
+  ValueType type_;
+  Color color_;
 };
 
 inline bool operator==(const StyleAutoColor& a, const StyleAutoColor& b) {
-  if (a.isAutoColor() || b.isAutoColor())
-    return a.isAutoColor() && b.isAutoColor();
-  if (a.isCurrentColor() || b.isCurrentColor())
-    return a.isCurrentColor() && b.isCurrentColor();
-  return a.color() == b.color();
+  if (a.IsAutoColor() || b.IsAutoColor())
+    return a.IsAutoColor() && b.IsAutoColor();
+  if (a.IsCurrentColor() || b.IsCurrentColor())
+    return a.IsCurrentColor() && b.IsCurrentColor();
+  return a.GetColor() == b.GetColor();
 }
 
 inline bool operator!=(const StyleAutoColor& a, const StyleAutoColor& b) {

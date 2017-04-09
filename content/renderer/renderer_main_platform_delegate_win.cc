@@ -57,7 +57,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   InitializeDWriteFontProxy();
 
   // TODO(robliao): This should use WebScreenInfo. See http://crbug.com/604555.
-  blink::WebFontRendering::setDeviceScaleFactor(display::win::GetDPIScale());
+  blink::WebFontRendering::SetDeviceScaleFactor(display::win::GetDPIScale());
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {

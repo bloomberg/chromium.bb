@@ -37,9 +37,9 @@ class PLATFORM_EXPORT WebMemoryAllocatorDump final {
   //       about the semantics of the attribute.
   //       Currently supported values are "bytes" and "objects".
   //   value: the value of the attribute.
-  void addScalar(const char* name, const char* units, uint64_t value);
-  void addScalarF(const char* name, const char* units, double value);
-  void addString(const char* name, const char* units, const String& value);
+  void AddScalar(const char* name, const char* units, uint64_t value);
+  void AddScalarF(const char* name, const char* units, double value);
+  void AddString(const char* name, const char* units, const String& value);
 
   // |guid| is an optional global dump identifier, unique across all processes
   // within the scope of a global dump. It is only required when using the
@@ -47,7 +47,7 @@ class PLATFORM_EXPORT WebMemoryAllocatorDump final {
   // cross process sharing. See crbug.com/492102 for design docs.
   // Subsequent MemoryAllocatorDump(s) with the same |absolute_name| are
   // expected to have the same guid.
-  blink::WebMemoryAllocatorDumpGuid guid() const;
+  blink::WebMemoryAllocatorDumpGuid Guid() const;
 
  private:
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump_;  // Not owned.

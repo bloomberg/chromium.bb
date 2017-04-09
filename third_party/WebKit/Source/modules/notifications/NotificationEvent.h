@@ -19,11 +19,11 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NotificationEvent* create(const AtomicString& type,
+  static NotificationEvent* Create(const AtomicString& type,
                                    const NotificationEventInit& initializer) {
     return new NotificationEvent(type, initializer);
   }
-  static NotificationEvent* create(const AtomicString& type,
+  static NotificationEvent* Create(const AtomicString& type,
                                    const NotificationEventInit& initializer,
                                    WaitUntilObserver* observer) {
     return new NotificationEvent(type, initializer, observer);
@@ -31,12 +31,12 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
 
   ~NotificationEvent() override;
 
-  Notification* getNotification() const { return m_notification.get(); }
-  String action() const { return m_action; }
-  String reply() const { return m_reply; }
+  Notification* getNotification() const { return notification_.Get(); }
+  String action() const { return action_; }
+  String reply() const { return reply_; }
 
   // ExtendableEvent interface.
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -46,9 +46,9 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
                     const NotificationEventInit&,
                     WaitUntilObserver*);
 
-  Member<Notification> m_notification;
-  String m_action;
-  String m_reply;
+  Member<Notification> notification_;
+  String action_;
+  String reply_;
 };
 
 }  // namespace blink

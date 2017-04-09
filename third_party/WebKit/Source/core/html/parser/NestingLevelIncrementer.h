@@ -36,15 +36,15 @@ class NestingLevelIncrementer {
   WTF_MAKE_NONCOPYABLE(NestingLevelIncrementer);
 
  public:
-  explicit NestingLevelIncrementer(unsigned& nestingLevel)
-      : m_nestingLevel(&nestingLevel) {
-    ++(*m_nestingLevel);
+  explicit NestingLevelIncrementer(unsigned& nesting_level)
+      : nesting_level_(&nesting_level) {
+    ++(*nesting_level_);
   }
 
-  ~NestingLevelIncrementer() { --(*m_nestingLevel); }
+  ~NestingLevelIncrementer() { --(*nesting_level_); }
 
  private:
-  unsigned* m_nestingLevel;
+  unsigned* nesting_level_;
 };
 
 }  // namespace blink

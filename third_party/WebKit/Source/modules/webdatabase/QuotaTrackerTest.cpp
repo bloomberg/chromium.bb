@@ -12,48 +12,48 @@ namespace blink {
 namespace {
 
 TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
-  QuotaTracker& tracker = QuotaTracker::instance();
+  QuotaTracker& tracker = QuotaTracker::Instance();
   RefPtr<SecurityOrigin> origin =
-      SecurityOrigin::createFromString("file:///a/b/c");
+      SecurityOrigin::CreateFromString("file:///a/b/c");
 
-  const unsigned long long spaceAvailable = 12345678ULL;
-  tracker.updateSpaceAvailableToOrigin(origin.get(), spaceAvailable);
+  const unsigned long long kSpaceAvailable = 12345678ULL;
+  tracker.UpdateSpaceAvailableToOrigin(origin.Get(), kSpaceAvailable);
 
-  const String databaseName = "db";
-  const unsigned long long databaseSize = 1234ULL;
-  tracker.updateDatabaseSize(origin.get(), databaseName, databaseSize);
+  const String database_name = "db";
+  const unsigned long long kDatabaseSize = 1234ULL;
+  tracker.UpdateDatabaseSize(origin.Get(), database_name, kDatabaseSize);
 
   unsigned long long used = 0;
   unsigned long long available = 0;
-  tracker.getDatabaseSizeAndSpaceAvailableToOrigin(origin.get(), databaseName,
+  tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.Get(), database_name,
                                                    &used, &available);
 
-  EXPECT_EQ(used, databaseSize);
-  EXPECT_EQ(available, spaceAvailable);
+  EXPECT_EQ(used, kDatabaseSize);
+  EXPECT_EQ(available, kSpaceAvailable);
 }
 
 TEST(QuotaTrackerTest, LocalAccessBlocked) {
-  QuotaTracker& tracker = QuotaTracker::instance();
+  QuotaTracker& tracker = QuotaTracker::Instance();
   RefPtr<SecurityOrigin> origin =
-      SecurityOrigin::createFromString("file:///a/b/c");
+      SecurityOrigin::CreateFromString("file:///a/b/c");
 
-  const unsigned long long spaceAvailable = 12345678ULL;
-  tracker.updateSpaceAvailableToOrigin(origin.get(), spaceAvailable);
+  const unsigned long long kSpaceAvailable = 12345678ULL;
+  tracker.UpdateSpaceAvailableToOrigin(origin.Get(), kSpaceAvailable);
 
-  const String databaseName = "db";
-  const unsigned long long databaseSize = 1234ULL;
-  tracker.updateDatabaseSize(origin.get(), databaseName, databaseSize);
+  const String database_name = "db";
+  const unsigned long long kDatabaseSize = 1234ULL;
+  tracker.UpdateDatabaseSize(origin.Get(), database_name, kDatabaseSize);
 
   // QuotaTracker should not care about policy, just identity.
-  origin->blockLocalAccessFromLocalOrigin();
+  origin->BlockLocalAccessFromLocalOrigin();
 
   unsigned long long used = 0;
   unsigned long long available = 0;
-  tracker.getDatabaseSizeAndSpaceAvailableToOrigin(origin.get(), databaseName,
+  tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.Get(), database_name,
                                                    &used, &available);
 
-  EXPECT_EQ(used, databaseSize);
-  EXPECT_EQ(available, spaceAvailable);
+  EXPECT_EQ(used, kDatabaseSize);
+  EXPECT_EQ(available, kSpaceAvailable);
 }
 
 }  // namespace

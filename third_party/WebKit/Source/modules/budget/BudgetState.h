@@ -21,20 +21,20 @@ class BudgetState final : public GarbageCollected<BudgetState>,
 
  public:
   BudgetState();
-  BudgetState(double budgetAt, DOMTimeStamp);
+  BudgetState(double budget_at, DOMTimeStamp);
   BudgetState(const BudgetState& other);
 
-  double budgetAt() const { return m_budgetAt; }
-  DOMTimeStamp time() const { return m_time; }
+  double budgetAt() const { return budget_at_; }
+  DOMTimeStamp time() const { return time_; }
 
-  void setBudgetAt(const double budgetAt) { m_budgetAt = budgetAt; }
-  void setTime(const DOMTimeStamp& time) { m_time = time; }
+  void SetBudgetAt(const double budget_at) { budget_at_ = budget_at; }
+  void SetTime(const DOMTimeStamp& time) { time_ = time; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  double m_budgetAt;
-  DOMTimeStamp m_time;
+  double budget_at_;
+  DOMTimeStamp time_;
 };
 
 }  // namespace blink

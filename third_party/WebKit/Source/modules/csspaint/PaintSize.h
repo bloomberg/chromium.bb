@@ -17,18 +17,18 @@ class PaintSize : public GarbageCollectedFinalized<PaintSize>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PaintSize* create(IntSize size) { return new PaintSize(size); }
+  static PaintSize* Create(IntSize size) { return new PaintSize(size); }
   virtual ~PaintSize() {}
 
-  int width() const { return m_size.width(); }
-  int height() const { return m_size.height(); }
+  int width() const { return size_.Width(); }
+  int height() const { return size_.Height(); }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit PaintSize(IntSize size) : m_size(size) {}
+  explicit PaintSize(IntSize size) : size_(size) {}
 
-  IntSize m_size;
+  IntSize size_;
 };
 
 }  // namespace blink

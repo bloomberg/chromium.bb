@@ -13,28 +13,28 @@ namespace blink {
 
 IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
                                                  Element& target)
-    : m_observer(observer),
-      m_target(&target),
+    : observer_(observer),
+      target_(&target),
       // Note that the spec says the initial value of m_lastThresholdIndex
       // should be -1, but since m_lastThresholdIndex is unsigned, we use a
       // different sentinel value.
-      m_lastThresholdIndex(kMaxThresholdIndex - 1) {
-  updateShouldReportRootBoundsAfterDomChange();
+      last_threshold_index_(kMaxThresholdIndex - 1) {
+  UpdateShouldReportRootBoundsAfterDomChange();
 }
 
-void IntersectionObservation::computeIntersectionObservations(
+void IntersectionObservation::ComputeIntersectionObservations(
     DOMHighResTimeStamp timestamp) {
-  DCHECK(observer());
-  if (!m_target)
+  DCHECK(Observer());
+  if (!target_)
     return;
-  Vector<Length> rootMargin(4);
-  rootMargin[0] = m_observer->topMargin();
-  rootMargin[1] = m_observer->rightMargin();
-  rootMargin[2] = m_observer->bottomMargin();
-  rootMargin[3] = m_observer->leftMargin();
-  IntersectionGeometry geometry(m_observer->root(), *target(), rootMargin,
-                                m_shouldReportRootBounds);
-  geometry.computeGeometry();
+  Vector<Length> root_margin(4);
+  root_margin[0] = observer_->TopMargin();
+  root_margin[1] = observer_->RightMargin();
+  root_margin[2] = observer_->BottomMargin();
+  root_margin[3] = observer_->LeftMargin();
+  IntersectionGeometry geometry(observer_->root(), *Target(), root_margin,
+                                should_report_root_bounds_);
+  geometry.ComputeGeometry();
 
   // Some corner cases for threshold index:
   //   - If target rect is zero area, because it has zero width and/or zero
@@ -49,70 +49,72 @@ void IntersectionObservation::computeIntersectionObservations(
   //       (i.e., they have a coincident edge or corner), we consider the
   //       intersection to have "crossed" a zero threshold, but not crossed
   //       any non-zero threshold.
-  unsigned newThresholdIndex;
-  float newVisibleRatio;
-  if (geometry.doesIntersect()) {
-    if (geometry.targetRect().isEmpty()) {
-      newVisibleRatio = 1;
+  unsigned new_threshold_index;
+  float new_visible_ratio;
+  if (geometry.DoesIntersect()) {
+    if (geometry.TargetRect().IsEmpty()) {
+      new_visible_ratio = 1;
     } else {
-      float intersectionArea =
-          geometry.intersectionRect().size().width().toFloat() *
-          geometry.intersectionRect().size().height().toFloat();
-      float targetArea = geometry.targetRect().size().width().toFloat() *
-                         geometry.targetRect().size().height().toFloat();
-      newVisibleRatio = intersectionArea / targetArea;
+      float intersection_area =
+          geometry.IntersectionRect().size().Width().ToFloat() *
+          geometry.IntersectionRect().size().Height().ToFloat();
+      float target_area = geometry.TargetRect().size().Width().ToFloat() *
+                          geometry.TargetRect().size().Height().ToFloat();
+      new_visible_ratio = intersection_area / target_area;
     }
-    newThresholdIndex = observer()->firstThresholdGreaterThan(newVisibleRatio);
+    new_threshold_index =
+        Observer()->FirstThresholdGreaterThan(new_visible_ratio);
   } else {
-    newVisibleRatio = 0;
-    newThresholdIndex = 0;
+    new_visible_ratio = 0;
+    new_threshold_index = 0;
   }
 
   // TODO(tkent): We can't use CHECK_LT due to a compile error.
-  CHECK(newThresholdIndex < kMaxThresholdIndex);
+  CHECK(new_threshold_index < kMaxThresholdIndex);
 
-  if (m_lastThresholdIndex != newThresholdIndex) {
-    IntRect snappedRootBounds = geometry.rootIntRect();
-    IntRect* rootBoundsPointer =
-        m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
-    IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
-        timestamp, newVisibleRatio, geometry.targetIntRect(), rootBoundsPointer,
-        geometry.intersectionIntRect(), geometry.doesIntersect(), target());
-    observer()->enqueueIntersectionObserverEntry(*newEntry);
-    setLastThresholdIndex(newThresholdIndex);
+  if (last_threshold_index_ != new_threshold_index) {
+    IntRect snapped_root_bounds = geometry.RootIntRect();
+    IntRect* root_bounds_pointer =
+        should_report_root_bounds_ ? &snapped_root_bounds : nullptr;
+    IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
+        timestamp, new_visible_ratio, geometry.TargetIntRect(),
+        root_bounds_pointer, geometry.IntersectionIntRect(),
+        geometry.DoesIntersect(), Target());
+    Observer()->EnqueueIntersectionObserverEntry(*new_entry);
+    SetLastThresholdIndex(new_threshold_index);
   }
 }
 
-void IntersectionObservation::disconnect() {
-  DCHECK(observer());
-  if (m_target)
-    target()->ensureIntersectionObserverData().removeObservation(*observer());
-  m_observer.clear();
+void IntersectionObservation::Disconnect() {
+  DCHECK(Observer());
+  if (target_)
+    Target()->EnsureIntersectionObserverData().RemoveObservation(*Observer());
+  observer_.Clear();
 }
 
-void IntersectionObservation::updateShouldReportRootBoundsAfterDomChange() {
-  if (!observer()->rootIsImplicit()) {
-    m_shouldReportRootBounds = true;
+void IntersectionObservation::UpdateShouldReportRootBoundsAfterDomChange() {
+  if (!Observer()->RootIsImplicit()) {
+    should_report_root_bounds_ = true;
     return;
   }
-  m_shouldReportRootBounds = false;
-  LocalFrame* targetFrame = target()->document().frame();
-  if (!targetFrame)
+  should_report_root_bounds_ = false;
+  LocalFrame* target_frame = Target()->GetDocument().GetFrame();
+  if (!target_frame)
     return;
-  Frame* rootFrame = targetFrame->tree().top();
-  DCHECK(rootFrame);
-  if (rootFrame == targetFrame) {
-    m_shouldReportRootBounds = true;
+  Frame* root_frame = target_frame->Tree().Top();
+  DCHECK(root_frame);
+  if (root_frame == target_frame) {
+    should_report_root_bounds_ = true;
   } else {
-    m_shouldReportRootBounds =
-        targetFrame->securityContext()->getSecurityOrigin()->canAccess(
-            rootFrame->securityContext()->getSecurityOrigin());
+    should_report_root_bounds_ =
+        target_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+            root_frame->GetSecurityContext()->GetSecurityOrigin());
   }
 }
 
 DEFINE_TRACE(IntersectionObservation) {
-  visitor->trace(m_observer);
-  visitor->trace(m_target);
+  visitor->Trace(observer_);
+  visitor->Trace(target_);
 }
 
 }  // namespace blink

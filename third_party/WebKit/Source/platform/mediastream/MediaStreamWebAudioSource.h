@@ -46,9 +46,9 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
   WTF_MAKE_NONCOPYABLE(MediaStreamWebAudioSource);
 
  public:
-  static std::unique_ptr<MediaStreamWebAudioSource> create(
+  static std::unique_ptr<MediaStreamWebAudioSource> Create(
       std::unique_ptr<WebAudioSourceProvider> provider) {
-    return WTF::wrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
+    return WTF::WrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
   }
 
   ~MediaStreamWebAudioSource() override;
@@ -57,9 +57,9 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
   explicit MediaStreamWebAudioSource(std::unique_ptr<WebAudioSourceProvider>);
 
   // blink::AudioSourceProvider implementation.
-  void provideInput(AudioBus*, size_t framesToProcess) override;
+  void ProvideInput(AudioBus*, size_t frames_to_process) override;
 
-  std::unique_ptr<WebAudioSourceProvider> m_webAudioSourceProvider;
+  std::unique_ptr<WebAudioSourceProvider> web_audio_source_provider_;
 };
 
 }  // namespace blink

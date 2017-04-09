@@ -32,40 +32,40 @@ namespace cssvalue {
 
 class CSSCounterValue : public CSSValue {
  public:
-  static CSSCounterValue* create(CSSCustomIdentValue* identifier,
-                                 CSSIdentifierValue* listStyle,
+  static CSSCounterValue* Create(CSSCustomIdentValue* identifier,
+                                 CSSIdentifierValue* list_style,
                                  CSSStringValue* separator) {
-    return new CSSCounterValue(identifier, listStyle, separator);
+    return new CSSCounterValue(identifier, list_style, separator);
   }
 
-  String identifier() const { return m_identifier->value(); }
-  CSSValueID listStyle() const { return m_listStyle->getValueID(); }
-  String separator() const { return m_separator->value(); }
+  String Identifier() const { return identifier_->Value(); }
+  CSSValueID ListStyle() const { return list_style_->GetValueID(); }
+  String Separator() const { return separator_->Value(); }
 
-  bool equals(const CSSCounterValue& other) const {
-    return identifier() == other.identifier() &&
-           listStyle() == other.listStyle() && separator() == other.separator();
+  bool Equals(const CSSCounterValue& other) const {
+    return Identifier() == other.Identifier() &&
+           ListStyle() == other.ListStyle() && Separator() == other.Separator();
   }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   CSSCounterValue(CSSCustomIdentValue* identifier,
-                  CSSIdentifierValue* listStyle,
+                  CSSIdentifierValue* list_style,
                   CSSStringValue* separator)
-      : CSSValue(CounterClass),
-        m_identifier(identifier),
-        m_listStyle(listStyle),
-        m_separator(separator) {}
+      : CSSValue(kCounterClass),
+        identifier_(identifier),
+        list_style_(list_style),
+        separator_(separator) {}
 
-  Member<CSSCustomIdentValue> m_identifier;  // string
-  Member<CSSIdentifierValue> m_listStyle;    // ident
-  Member<CSSStringValue> m_separator;        // string
+  Member<CSSCustomIdentValue> identifier_;  // string
+  Member<CSSIdentifierValue> list_style_;   // ident
+  Member<CSSStringValue> separator_;        // string
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, isCounterValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, IsCounterValue());
 
 }  // namespace cssvalue
 

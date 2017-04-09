@@ -22,27 +22,27 @@ class CORE_EXPORT CEReactionsScope final {
   WTF_MAKE_NONCOPYABLE(CEReactionsScope);
 
  public:
-  static CEReactionsScope* current() { return s_topOfStack; }
+  static CEReactionsScope* Current() { return top_of_stack_; }
 
-  CEReactionsScope() : m_prev(s_topOfStack), m_workToDo(false) {
-    s_topOfStack = this;
+  CEReactionsScope() : prev_(top_of_stack_), work_to_do_(false) {
+    top_of_stack_ = this;
   }
 
   ~CEReactionsScope() {
-    if (m_workToDo)
-      invokeReactions();
-    s_topOfStack = s_topOfStack->m_prev;
+    if (work_to_do_)
+      InvokeReactions();
+    top_of_stack_ = top_of_stack_->prev_;
   }
 
-  void enqueueToCurrentQueue(Element*, CustomElementReaction*);
+  void EnqueueToCurrentQueue(Element*, CustomElementReaction*);
 
  private:
-  static CEReactionsScope* s_topOfStack;
+  static CEReactionsScope* top_of_stack_;
 
-  void invokeReactions();
+  void InvokeReactions();
 
-  CEReactionsScope* m_prev;
-  bool m_workToDo;
+  CEReactionsScope* prev_;
+  bool work_to_do_;
 };
 
 }  // namespace blink

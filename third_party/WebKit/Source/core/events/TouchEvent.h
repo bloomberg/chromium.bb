@@ -44,46 +44,46 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 
   // We only initialize sourceCapabilities when we create TouchEvent from
   // EventHandler, null if it is from JavaScript.
-  static TouchEvent* create() { return new TouchEvent; }
-  static TouchEvent* create(const WebTouchEvent& event,
+  static TouchEvent* Create() { return new TouchEvent; }
+  static TouchEvent* Create(const WebTouchEvent& event,
                             TouchList* touches,
-                            TouchList* targetTouches,
-                            TouchList* changedTouches,
+                            TouchList* target_touches,
+                            TouchList* changed_touches,
                             const AtomicString& type,
                             AbstractView* view,
-                            TouchAction currentTouchAction) {
-    return new TouchEvent(event, touches, targetTouches, changedTouches, type,
-                          view, currentTouchAction);
+                            TouchAction current_touch_action) {
+    return new TouchEvent(event, touches, target_touches, changed_touches, type,
+                          view, current_touch_action);
   }
 
-  static TouchEvent* create(const AtomicString& type,
+  static TouchEvent* Create(const AtomicString& type,
                             const TouchEventInit& initializer) {
     return new TouchEvent(type, initializer);
   }
 
-  TouchList* touches() const { return m_touches.get(); }
-  TouchList* targetTouches() const { return m_targetTouches.get(); }
-  TouchList* changedTouches() const { return m_changedTouches.get(); }
+  TouchList* touches() const { return touches_.Get(); }
+  TouchList* targetTouches() const { return target_touches_.Get(); }
+  TouchList* changedTouches() const { return changed_touches_.Get(); }
 
-  void setTouches(TouchList* touches) { m_touches = touches; }
-  void setTargetTouches(TouchList* targetTouches) {
-    m_targetTouches = targetTouches;
+  void SetTouches(TouchList* touches) { touches_ = touches; }
+  void SetTargetTouches(TouchList* target_touches) {
+    target_touches_ = target_touches;
   }
-  void setChangedTouches(TouchList* changedTouches) {
-    m_changedTouches = changedTouches;
+  void SetChangedTouches(TouchList* changed_touches) {
+    changed_touches_ = changed_touches;
   }
 
-  bool isTouchEvent() const override;
+  bool IsTouchEvent() const override;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   void preventDefault() override;
 
-  void doneDispatchingEventAtCurrentTarget() override;
+  void DoneDispatchingEventAtCurrentTarget() override;
 
-  EventDispatchMediator* createMediator() override;
+  EventDispatchMediator* CreateMediator() override;
 
-  const WebTouchEvent* nativeEvent() const { return m_nativeEvent.get(); }
+  const WebTouchEvent* NativeEvent() const { return native_event_.get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -91,35 +91,35 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   TouchEvent();
   TouchEvent(const WebTouchEvent&,
              TouchList* touches,
-             TouchList* targetTouches,
-             TouchList* changedTouches,
+             TouchList* target_touches,
+             TouchList* changed_touches,
              const AtomicString& type,
              AbstractView*,
-             TouchAction currentTouchAction);
+             TouchAction current_touch_action);
   TouchEvent(const AtomicString&, const TouchEventInit&);
-  bool isTouchStartOrFirstTouchMove() const;
+  bool IsTouchStartOrFirstTouchMove() const;
 
-  Member<TouchList> m_touches;
-  Member<TouchList> m_targetTouches;
-  Member<TouchList> m_changedTouches;
+  Member<TouchList> touches_;
+  Member<TouchList> target_touches_;
+  Member<TouchList> changed_touches_;
 
-  bool m_defaultPreventedBeforeCurrentTarget;
+  bool default_prevented_before_current_target_;
 
   // The current effective touch action computed before each
   // touchstart event is generated. It is used for UMA histograms.
-  TouchAction m_currentTouchAction;
+  TouchAction current_touch_action_;
 
-  std::unique_ptr<WebTouchEvent> m_nativeEvent;
+  std::unique_ptr<WebTouchEvent> native_event_;
 };
 
 class TouchEventDispatchMediator final : public EventDispatchMediator {
  public:
-  static TouchEventDispatchMediator* create(TouchEvent*);
+  static TouchEventDispatchMediator* Create(TouchEvent*);
 
  private:
   explicit TouchEventDispatchMediator(TouchEvent*);
-  TouchEvent& event() const;
-  DispatchEventResult dispatchEvent(EventDispatcher&) const override;
+  TouchEvent& Event() const;
+  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(TouchEvent);

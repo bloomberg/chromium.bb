@@ -31,13 +31,13 @@
 
 /*
  * typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
- * extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+ * extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
  */
 
-.type pushAllRegisters, %function
-.global pushAllRegisters
-.hidden pushAllRegisters
-pushAllRegisters:
+.type PushAllRegisters, %function
+.global PushAllRegisters
+.hidden PushAllRegisters
+PushAllRegisters:
         /* Save return address. */
         sub sp, sp, #96
         stp x19, x20, [sp, #80]

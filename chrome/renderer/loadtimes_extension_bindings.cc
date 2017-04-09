@@ -74,17 +74,17 @@ class LoadTimesExtensionWrapper : public v8::Extension {
 
   static const char* GetNavigationType(WebNavigationType nav_type) {
     switch (nav_type) {
-      case blink::WebNavigationTypeLinkClicked:
+      case blink::kWebNavigationTypeLinkClicked:
         return "LinkClicked";
-      case blink::WebNavigationTypeFormSubmitted:
+      case blink::kWebNavigationTypeFormSubmitted:
         return "FormSubmitted";
-      case blink::WebNavigationTypeBackForward:
+      case blink::kWebNavigationTypeBackForward:
         return "BackForward";
-      case blink::WebNavigationTypeReload:
+      case blink::kWebNavigationTypeReload:
         return "Reload";
-      case blink::WebNavigationTypeFormResubmitted:
+      case blink::kWebNavigationTypeFormResubmitted:
         return "Resubmitted";
-      case blink::WebNavigationTypeOther:
+      case blink::kWebNavigationTypeOther:
         return "Other";
     }
     return "";
@@ -92,15 +92,15 @@ class LoadTimesExtensionWrapper : public v8::Extension {
 
   static int GetCSITransitionType(WebNavigationType nav_type) {
     switch (nav_type) {
-      case blink::WebNavigationTypeLinkClicked:
-      case blink::WebNavigationTypeFormSubmitted:
-      case blink::WebNavigationTypeFormResubmitted:
+      case blink::kWebNavigationTypeLinkClicked:
+      case blink::kWebNavigationTypeFormSubmitted:
+      case blink::kWebNavigationTypeFormResubmitted:
         return kTransitionLink;
-      case blink::WebNavigationTypeBackForward:
+      case blink::kWebNavigationTypeBackForward:
         return kTransitionForwardBack;
-      case blink::WebNavigationTypeReload:
+      case blink::kWebNavigationTypeReload:
         return kTransitionReload;
-      case blink::WebNavigationTypeOther:
+      case blink::kWebNavigationTypeOther:
         return kTransitionOther;
     }
     return kTransitionOther;
@@ -109,20 +109,20 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   static void LoadtimesGetter(
       v8::Local<v8::Name> name,
       const v8::PropertyCallbackInfo<v8::Value>& info) {
-    if (WebLocalFrame* frame = WebLocalFrame::frameForCurrentContext()) {
-      frame->usageCountChromeLoadTimes(blink::WebString::fromUTF8(
-          *v8::String::Utf8Value(name)));
+    if (WebLocalFrame* frame = WebLocalFrame::FrameForCurrentContext()) {
+      frame->UsageCountChromeLoadTimes(
+          blink::WebString::FromUTF8(*v8::String::Utf8Value(name)));
     }
     info.GetReturnValue().Set(info.Data());
   }
 
   static void GetLoadTimes(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().SetNull();
-    WebLocalFrame* frame = WebLocalFrame::frameForCurrentContext();
+    WebLocalFrame* frame = WebLocalFrame::FrameForCurrentContext();
     if (!frame) {
       return;
     }
-    WebDataSource* data_source = frame->dataSource();
+    WebDataSource* data_source = frame->DataSource();
     if (!data_source) {
       return;
     }
@@ -130,14 +130,14 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (!document_state) {
       return;
     }
-    WebPerformance web_performance = frame->performance();
+    WebPerformance web_performance = frame->Performance();
     // Though request time now tends to be used to describe the time that the
     // request for the main resource was issued, when chrome.loadTimes() was
     // added, it was used to describe 'The time the request to load the page was
     // received', which is the time now known as navigation start. For backward
     // compatibility, we continue to provide request_time, setting its value to
     // navigation start.
-    double request_time = web_performance.navigationStart();
+    double request_time = web_performance.NavigationStart();
     // Developers often use start_load_time as the time the navigation was
     // started, so we return navigationStart for this value as well. See
     // https://gist.github.com/search?utf8=%E2%9C%93&q=startLoadTime.
@@ -152,21 +152,21 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     // provisional load was processed in the render process will no longer make
     // sense. Thus, we now report the time for navigationStart, which is a value
     // more consistent with what developers currently use start_load_time for.
-    double start_load_time = web_performance.navigationStart();
+    double start_load_time = web_performance.NavigationStart();
     // TODO(bmcquade): Remove this. 'commit' time is a concept internal to
     // chrome that shouldn't be exposed to the web platform.
-    double commit_load_time = web_performance.responseStart();
+    double commit_load_time = web_performance.ResponseStart();
     double finish_document_load_time =
-        web_performance.domContentLoadedEventEnd();
-    double finish_load_time = web_performance.loadEventEnd();
-    double first_paint_time = web_performance.firstPaint();
+        web_performance.DomContentLoadedEventEnd();
+    double finish_load_time = web_performance.LoadEventEnd();
+    double first_paint_time = web_performance.FirstPaint();
     // TODO(bmcquade): remove this. It's misleading to track the first paint
     // after the load event, since many pages perform their meaningful paints
     // long before the load event fires. We report a time of zero for the
     // time being.
     double first_paint_after_load_time = 0.0;
     std::string navigation_type =
-        GetNavigationType(data_source->navigationType());
+        GetNavigationType(data_source->GetNavigationType());
     bool was_fetched_via_spdy = document_state->was_fetched_via_spdy();
     bool was_alpn_negotiated = document_state->was_alpn_negotiated();
     std::string alpn_negotiated_protocol =
@@ -338,23 +338,24 @@ class LoadTimesExtensionWrapper : public v8::Extension {
 
   static void GetCSI(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().SetNull();
-    WebLocalFrame* frame = WebLocalFrame::frameForCurrentContext();
+    WebLocalFrame* frame = WebLocalFrame::FrameForCurrentContext();
     if (!frame) {
       return;
     }
-    WebDataSource* data_source = frame->dataSource();
+    WebDataSource* data_source = frame->DataSource();
     if (!data_source) {
       return;
     }
-    WebPerformance web_performance = frame->performance();
+    WebPerformance web_performance = frame->Performance();
     base::Time now = base::Time::Now();
     base::Time start =
-        base::Time::FromDoubleT(web_performance.navigationStart());
+        base::Time::FromDoubleT(web_performance.NavigationStart());
 
     base::Time dom_content_loaded_end =
-        base::Time::FromDoubleT(web_performance.domContentLoadedEventEnd());
+        base::Time::FromDoubleT(web_performance.DomContentLoadedEventEnd());
     base::TimeDelta page = now - start;
-    int navigation_type = GetCSITransitionType(data_source->navigationType());
+    int navigation_type =
+        GetCSITransitionType(data_source->GetNavigationType());
     // Important: |frame| and |data_source| should not be referred to below this
     // line, as JS setters below can invalidate these pointers.
     v8::Isolate* isolate = args.GetIsolate();

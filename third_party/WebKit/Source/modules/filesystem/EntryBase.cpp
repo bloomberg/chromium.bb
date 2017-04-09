@@ -36,27 +36,27 @@
 
 namespace blink {
 
-EntryBase::EntryBase(DOMFileSystemBase* fileSystem, const String& fullPath)
-    : m_fileSystem(fileSystem),
-      m_fullPath(fullPath),
-      m_name(DOMFilePath::getName(fullPath)) {}
+EntryBase::EntryBase(DOMFileSystemBase* file_system, const String& full_path)
+    : file_system_(file_system),
+      full_path_(full_path),
+      name_(DOMFilePath::GetName(full_path)) {}
 
 EntryBase::~EntryBase() {}
 
 String EntryBase::toURL() const {
-  if (!m_cachedURL.isNull())
-    return m_cachedURL;
+  if (!cached_url_.IsNull())
+    return cached_url_;
 
   // Some filesystem type may not support toURL.
-  if (!m_fileSystem->supportsToURL())
-    m_cachedURL = emptyString;
+  if (!file_system_->SupportsToURL())
+    cached_url_ = g_empty_string;
   else
-    m_cachedURL = m_fileSystem->createFileSystemURL(this).getString();
-  return m_cachedURL;
+    cached_url_ = file_system_->CreateFileSystemURL(this).GetString();
+  return cached_url_;
 }
 
 DEFINE_TRACE(EntryBase) {
-  visitor->trace(m_fileSystem);
+  visitor->Trace(file_system_);
 }
 
 }  // namespace blink

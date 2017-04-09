@@ -34,31 +34,33 @@ class CursorData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  CursorData(StyleImage* image, bool hotSpotSpecified, const IntPoint& hotSpot)
-      : m_image(image),
-        m_hotSpotSpecified(hotSpotSpecified),
-        m_hotSpot(hotSpot) {}
+  CursorData(StyleImage* image,
+             bool hot_spot_specified,
+             const IntPoint& hot_spot)
+      : image_(image),
+        hot_spot_specified_(hot_spot_specified),
+        hot_spot_(hot_spot) {}
 
   bool operator==(const CursorData& o) const {
-    return m_hotSpot == o.m_hotSpot && m_image == o.m_image;
+    return hot_spot_ == o.hot_spot_ && image_ == o.image_;
   }
 
   bool operator!=(const CursorData& o) const { return !(*this == o); }
 
-  StyleImage* image() const { return m_image.get(); }
-  void setImage(StyleImage* image) { m_image = image; }
+  StyleImage* GetImage() const { return image_.Get(); }
+  void SetImage(StyleImage* image) { image_ = image; }
 
-  bool hotSpotSpecified() const { return m_hotSpotSpecified; }
+  bool HotSpotSpecified() const { return hot_spot_specified_; }
 
   // Hot spot in the image in logical pixels.
-  const IntPoint& hotSpot() const { return m_hotSpot; }
+  const IntPoint& HotSpot() const { return hot_spot_; }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_image); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(image_); }
 
  private:
-  Member<StyleImage> m_image;
-  bool m_hotSpotSpecified;
-  IntPoint m_hotSpot;  // for CSS3 support
+  Member<StyleImage> image_;
+  bool hot_spot_specified_;
+  IntPoint hot_spot_;  // for CSS3 support
 };
 
 }  // namespace blink

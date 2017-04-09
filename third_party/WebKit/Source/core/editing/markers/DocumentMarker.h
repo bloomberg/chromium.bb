@@ -41,137 +41,138 @@ class DocumentMarkerDetails;
 class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
  public:
   enum MarkerTypeIndex {
-    SpellingMarkerIndex = 0,
-    GrammarMarkerIndex,
-    TextMatchMarkerIndex,
-    CompositionMarkerIndex,
-    MarkerTypeIndexesCount
+    kSpellingMarkerIndex = 0,
+    kGrammarMarkerIndex,
+    kTextMatchMarkerIndex,
+    kCompositionMarkerIndex,
+    kMarkerTypeIndexesCount
   };
 
   enum MarkerType {
-    Spelling = 1 << SpellingMarkerIndex,
-    Grammar = 1 << GrammarMarkerIndex,
-    TextMatch = 1 << TextMatchMarkerIndex,
-    Composition = 1 << CompositionMarkerIndex,
+    kSpelling = 1 << kSpellingMarkerIndex,
+    kGrammar = 1 << kGrammarMarkerIndex,
+    kTextMatch = 1 << kTextMatchMarkerIndex,
+    kComposition = 1 << kCompositionMarkerIndex,
   };
 
   class MarkerTypesIterator
       : public std::iterator<std::forward_iterator_tag, MarkerType> {
    public:
-    explicit MarkerTypesIterator(unsigned markerTypes)
-        : m_remainingTypes(markerTypes) {}
+    explicit MarkerTypesIterator(unsigned marker_types)
+        : remaining_types_(marker_types) {}
     MarkerTypesIterator(const MarkerTypesIterator& other) = default;
 
     bool operator==(const MarkerTypesIterator& other) {
-      return m_remainingTypes == other.m_remainingTypes;
+      return remaining_types_ == other.remaining_types_;
     }
     bool operator!=(const MarkerTypesIterator& other) {
       return !operator==(other);
     }
 
     MarkerTypesIterator& operator++() {
-      DCHECK(m_remainingTypes);
+      DCHECK(remaining_types_);
       // Turn off least significant 1-bit (from Hacker's Delight 2-1)
       // Example:
       // 7: 7 & 6 = 6
       // 6: 6 & 5 = 4
       // 4: 4 & 3 = 0
-      m_remainingTypes &= (m_remainingTypes - 1);
+      remaining_types_ &= (remaining_types_ - 1);
       return *this;
     }
 
     MarkerType operator*() const {
-      DCHECK(m_remainingTypes);
+      DCHECK(remaining_types_);
       // Isolate least significant 1-bit (from Hacker's Delight 2-1)
       // Example:
       // 7: 7 & -7 = 1
       // 6: 6 & -6 = 2
       // 4: 4 & -4 = 4
-      return static_cast<MarkerType>(m_remainingTypes &
-                                     (~m_remainingTypes + 1));
+      return static_cast<MarkerType>(remaining_types_ &
+                                     (~remaining_types_ + 1));
     }
 
    private:
-    unsigned m_remainingTypes;
+    unsigned remaining_types_;
   };
 
   class MarkerTypes {
    public:
     // The constructor is intentionally implicit to allow conversion from the
     // bit-wise sum of above types
-    MarkerTypes(unsigned mask) : m_mask(mask) {}
+    MarkerTypes(unsigned mask) : mask_(mask) {}
 
-    bool contains(MarkerType type) const { return m_mask & type; }
-    bool intersects(const MarkerTypes& types) const {
-      return (m_mask & types.m_mask);
+    bool Contains(MarkerType type) const { return mask_ & type; }
+    bool Intersects(const MarkerTypes& types) const {
+      return (mask_ & types.mask_);
     }
     bool operator==(const MarkerTypes& other) const {
-      return m_mask == other.m_mask;
+      return mask_ == other.mask_;
     }
 
-    void add(const MarkerTypes& types) { m_mask |= types.m_mask; }
-    void remove(const MarkerTypes& types) { m_mask &= ~types.m_mask; }
+    void Add(const MarkerTypes& types) { mask_ |= types.mask_; }
+    void Remove(const MarkerTypes& types) { mask_ &= ~types.mask_; }
 
-    MarkerTypesIterator begin() const { return MarkerTypesIterator(m_mask); }
+    MarkerTypesIterator begin() const { return MarkerTypesIterator(mask_); }
     MarkerTypesIterator end() const { return MarkerTypesIterator(0); }
 
    private:
-    unsigned m_mask;
+    unsigned mask_;
   };
 
   class AllMarkers : public MarkerTypes {
    public:
-    AllMarkers() : MarkerTypes(Spelling | Grammar | TextMatch | Composition) {}
+    AllMarkers()
+        : MarkerTypes(kSpelling | kGrammar | kTextMatch | kComposition) {}
   };
 
   class MisspellingMarkers : public MarkerTypes {
    public:
-    MisspellingMarkers() : MarkerTypes(Spelling | Grammar) {}
+    MisspellingMarkers() : MarkerTypes(kSpelling | kGrammar) {}
   };
 
   class SpellCheckClientMarkers : public MarkerTypes {
    public:
-    SpellCheckClientMarkers() : MarkerTypes(Spelling | Grammar) {}
+    SpellCheckClientMarkers() : MarkerTypes(kSpelling | kGrammar) {}
   };
 
   enum class MatchStatus { kInactive, kActive };
 
   DocumentMarker(MarkerType,
-                 unsigned startOffset,
-                 unsigned endOffset,
+                 unsigned start_offset,
+                 unsigned end_offset,
                  const String& description);
-  DocumentMarker(unsigned startOffset, unsigned endOffset, MatchStatus);
-  DocumentMarker(unsigned startOffset,
-                 unsigned endOffset,
-                 Color underlineColor,
+  DocumentMarker(unsigned start_offset, unsigned end_offset, MatchStatus);
+  DocumentMarker(unsigned start_offset,
+                 unsigned end_offset,
+                 Color underline_color,
                  bool thick,
-                 Color backgroundColor);
+                 Color background_color);
 
   DocumentMarker(const DocumentMarker&);
 
-  MarkerType type() const { return m_type; }
-  unsigned startOffset() const { return m_startOffset; }
-  unsigned endOffset() const { return m_endOffset; }
+  MarkerType GetType() const { return type_; }
+  unsigned StartOffset() const { return start_offset_; }
+  unsigned EndOffset() const { return end_offset_; }
 
-  const String& description() const;
+  const String& Description() const;
   bool IsActiveMatch() const;
-  Color underlineColor() const;
-  bool thick() const;
-  Color backgroundColor() const;
-  DocumentMarkerDetails* details() const;
+  Color UnderlineColor() const;
+  bool Thick() const;
+  Color BackgroundColor() const;
+  DocumentMarkerDetails* Details() const;
 
-  void setIsActiveMatch(bool);
-  void clearDetails() { m_details.clear(); }
+  void SetIsActiveMatch(bool);
+  void ClearDetails() { details_.Clear(); }
 
   // Offset modifications are done by DocumentMarkerController.
   // Other classes should not call following setters.
-  void setStartOffset(unsigned offset) { m_startOffset = offset; }
-  void setEndOffset(unsigned offset) { m_endOffset = offset; }
-  void shiftOffsets(int delta);
+  void SetStartOffset(unsigned offset) { start_offset_ = offset; }
+  void SetEndOffset(unsigned offset) { end_offset_ = offset; }
+  void ShiftOffsets(int delta);
 
   bool operator==(const DocumentMarker& o) const {
-    return type() == o.type() && startOffset() == o.startOffset() &&
-           endOffset() == o.endOffset();
+    return GetType() == o.GetType() && StartOffset() == o.StartOffset() &&
+           EndOffset() == o.EndOffset();
   }
 
   bool operator!=(const DocumentMarker& o) const { return !(*this == o); }
@@ -179,16 +180,16 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   DECLARE_TRACE();
 
  private:
-  MarkerType m_type;
-  unsigned m_startOffset;
-  unsigned m_endOffset;
-  Member<DocumentMarkerDetails> m_details;
+  MarkerType type_;
+  unsigned start_offset_;
+  unsigned end_offset_;
+  Member<DocumentMarkerDetails> details_;
 };
 
 using DocumentMarkerVector = HeapVector<Member<DocumentMarker>>;
 
-inline DocumentMarkerDetails* DocumentMarker::details() const {
-  return m_details.get();
+inline DocumentMarkerDetails* DocumentMarker::Details() const {
+  return details_.Get();
 }
 
 class DocumentMarkerDetails
@@ -196,9 +197,9 @@ class DocumentMarkerDetails
  public:
   DocumentMarkerDetails() {}
   virtual ~DocumentMarkerDetails();
-  virtual bool isDescription() const { return false; }
-  virtual bool isTextMatch() const { return false; }
-  virtual bool isComposition() const { return false; }
+  virtual bool IsDescription() const { return false; }
+  virtual bool IsTextMatch() const { return false; }
+  virtual bool IsComposition() const { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

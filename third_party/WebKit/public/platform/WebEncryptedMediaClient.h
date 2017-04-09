@@ -14,7 +14,7 @@ class WebEncryptedMediaRequest;
 class BLINK_PLATFORM_EXPORT WebEncryptedMediaClient {
  public:
   virtual ~WebEncryptedMediaClient();
-  virtual void requestMediaKeySystemAccess(WebEncryptedMediaRequest) = 0;
+  virtual void RequestMediaKeySystemAccess(WebEncryptedMediaRequest) = 0;
 };
 
 }  // namespace blink

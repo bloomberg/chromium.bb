@@ -7,35 +7,35 @@
 namespace blink {
 
 MockResourceClient::MockResourceClient(Resource* resource)
-    : m_resource(resource),
-      m_notifyFinishedCalled(false),
-      m_encodedSizeOnNotifyFinished(0) {
-  m_resource->addClient(this);
+    : resource_(resource),
+      notify_finished_called_(false),
+      encoded_size_on_notify_finished_(0) {
+  resource_->AddClient(this);
 }
 
 MockResourceClient::~MockResourceClient() {}
 
-void MockResourceClient::notifyFinished(Resource* resource) {
-  CHECK(!m_notifyFinishedCalled);
-  m_notifyFinishedCalled = true;
-  m_encodedSizeOnNotifyFinished = resource->encodedSize();
+void MockResourceClient::NotifyFinished(Resource* resource) {
+  CHECK(!notify_finished_called_);
+  notify_finished_called_ = true;
+  encoded_size_on_notify_finished_ = resource->EncodedSize();
 }
 
-void MockResourceClient::removeAsClient() {
-  m_resource->removeClient(this);
-  m_resource = nullptr;
+void MockResourceClient::RemoveAsClient() {
+  resource_->RemoveClient(this);
+  resource_ = nullptr;
 }
 
-void MockResourceClient::dispose() {
-  if (m_resource) {
-    m_resource->removeClient(this);
-    m_resource = nullptr;
+void MockResourceClient::Dispose() {
+  if (resource_) {
+    resource_->RemoveClient(this);
+    resource_ = nullptr;
   }
 }
 
 DEFINE_TRACE(MockResourceClient) {
-  visitor->trace(m_resource);
-  ResourceClient::trace(visitor);
+  visitor->Trace(resource_);
+  ResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

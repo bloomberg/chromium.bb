@@ -38,7 +38,7 @@ class WebGestureCurve {
   virtual ~WebGestureCurve() {}
 
   // Returns false if curve has finished and can no longer be applied.
-  virtual bool apply(double time, WebGestureCurveTarget*) = 0;
+  virtual bool Apply(double time, WebGestureCurveTarget*) = 0;
 };
 
 }  // namespace blink

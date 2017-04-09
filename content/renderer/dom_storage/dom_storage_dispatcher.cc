@@ -143,7 +143,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   // to more reliably commit changes during shutdown.
   void PushPendingCallback(const CompletionCallback& callback) {
     if (pending_callbacks_.empty())
-      blink::Platform::current()->suddenTerminationChanged(false);
+      blink::Platform::Current()->SuddenTerminationChanged(false);
     pending_callbacks_.push_back(callback);
   }
 
@@ -151,7 +151,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
     CompletionCallback callback = pending_callbacks_.front();
     pending_callbacks_.pop_front();
     if (pending_callbacks_.empty())
-      blink::Platform::current()->suddenTerminationChanged(true);
+      blink::Platform::Current()->SuddenTerminationChanged(true);
     return callback;
   }
 
@@ -311,18 +311,18 @@ void DomStorageDispatcher::OnStorageEvent(
   }
 
   if (params.namespace_id == kLocalStorageNamespaceId) {
-    blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
-        blink::WebString::fromUTF16(params.key),
-        blink::WebString::fromUTF16(params.old_value),
-        blink::WebString::fromUTF16(params.new_value), params.origin,
+    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+        blink::WebString::FromUTF16(params.key),
+        blink::WebString::FromUTF16(params.old_value),
+        blink::WebString::FromUTF16(params.new_value), params.origin,
         params.page_url, originating_area);
   } else {
     WebStorageNamespaceImpl
         session_namespace_for_event_dispatch(params.namespace_id);
-    blink::WebStorageEventDispatcher::dispatchSessionStorageEvent(
-        blink::WebString::fromUTF16(params.key),
-        blink::WebString::fromUTF16(params.old_value),
-        blink::WebString::fromUTF16(params.new_value), params.origin,
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString::FromUTF16(params.key),
+        blink::WebString::FromUTF16(params.old_value),
+        blink::WebString::FromUTF16(params.new_value), params.origin,
         params.page_url, session_namespace_for_event_dispatch,
         originating_area);
   }

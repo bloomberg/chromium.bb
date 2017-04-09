@@ -67,53 +67,53 @@ class CORE_EXPORT WorkerLoaderProxyProvider {
 
   // Posts a task to the thread which runs the loading code (normally, the main
   // thread). This must be called from a worker thread.
-  virtual void postTaskToLoader(const WebTraceLocation&,
+  virtual void PostTaskToLoader(const WebTraceLocation&,
                                 std::unique_ptr<WTF::CrossThreadClosure>) = 0;
 
   // Posts callbacks from loading code to the WorkerGlobalScope. This must be
   // called from the main thread.
-  virtual void postTaskToWorkerGlobalScope(
+  virtual void PostTaskToWorkerGlobalScope(
       const WebTraceLocation&,
       std::unique_ptr<WTF::CrossThreadClosure>) = 0;
 
   // It is guaranteed that this gets accessed only on the thread where
   // the loading context is bound.
-  virtual ThreadableLoadingContext* getThreadableLoadingContext() = 0;
+  virtual ThreadableLoadingContext* GetThreadableLoadingContext() = 0;
 };
 
 class CORE_EXPORT WorkerLoaderProxy final
     : public ThreadSafeRefCounted<WorkerLoaderProxy> {
  public:
-  static PassRefPtr<WorkerLoaderProxy> create(
-      WorkerLoaderProxyProvider* loaderProxyProvider) {
-    return adoptRef(new WorkerLoaderProxy(loaderProxyProvider));
+  static PassRefPtr<WorkerLoaderProxy> Create(
+      WorkerLoaderProxyProvider* loader_proxy_provider) {
+    return AdoptRef(new WorkerLoaderProxy(loader_proxy_provider));
   }
 
   ~WorkerLoaderProxy();
 
   // This must be called from a worker thread.
-  void postTaskToLoader(const WebTraceLocation&,
+  void PostTaskToLoader(const WebTraceLocation&,
                         std::unique_ptr<WTF::CrossThreadClosure>);
 
   // This must be called from the main thread.
-  void postTaskToWorkerGlobalScope(const WebTraceLocation&,
+  void PostTaskToWorkerGlobalScope(const WebTraceLocation&,
                                    std::unique_ptr<WTF::CrossThreadClosure>);
 
   // This may return nullptr.
   // This must be called from the main thread (== the thread of the
   // loading context).
-  ThreadableLoadingContext* getThreadableLoadingContext();
+  ThreadableLoadingContext* GetThreadableLoadingContext();
 
   // Notification from the provider that it can no longer be accessed. An
   // implementation of WorkerLoaderProxyProvider is required to call
   // detachProvider() when finalizing. This must be called from the main thread.
-  void detachProvider(WorkerLoaderProxyProvider*);
+  void DetachProvider(WorkerLoaderProxyProvider*);
 
  private:
   explicit WorkerLoaderProxy(WorkerLoaderProxyProvider*);
 
-  WTF::Mutex m_lock;
-  WorkerLoaderProxyProvider* m_loaderProxyProvider;
+  WTF::Mutex lock_;
+  WorkerLoaderProxyProvider* loader_proxy_provider_;
 };
 
 }  // namespace blink

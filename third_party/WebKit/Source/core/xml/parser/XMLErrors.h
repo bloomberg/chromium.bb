@@ -45,25 +45,25 @@ class XMLErrors {
   DECLARE_TRACE();
 
   // Exposed for callbacks:
-  enum ErrorType { ErrorTypeWarning, ErrorTypeNonFatal, ErrorTypeFatal };
-  void handleError(ErrorType,
+  enum ErrorType { kErrorTypeWarning, kErrorTypeNonFatal, kErrorTypeFatal };
+  void HandleError(ErrorType,
                    const char* message,
-                   int lineNumber,
-                   int columnNumber);
-  void handleError(ErrorType, const char* message, TextPosition);
+                   int line_number,
+                   int column_number);
+  void HandleError(ErrorType, const char* message, TextPosition);
 
-  void insertErrorMessageBlock();
+  void InsertErrorMessageBlock();
 
  private:
-  void appendErrorMessage(const String& typeString,
+  void AppendErrorMessage(const String& type_string,
                           TextPosition,
                           const char* message);
 
-  Member<Document> m_document;
+  Member<Document> document_;
 
-  int m_errorCount;
-  TextPosition m_lastErrorPosition;
-  StringBuilder m_errorMessages;
+  int error_count_;
+  TextPosition last_error_position_;
+  StringBuilder error_messages_;
 };
 
 }  // namespace blink

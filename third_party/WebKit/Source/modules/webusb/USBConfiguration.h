@@ -20,26 +20,26 @@ class USBConfiguration : public GarbageCollected<USBConfiguration>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBConfiguration* create(const USBDevice*, size_t configurationIndex);
-  static USBConfiguration* create(const USBDevice*,
-                                  size_t configurationValue,
+  static USBConfiguration* Create(const USBDevice*, size_t configuration_index);
+  static USBConfiguration* Create(const USBDevice*,
+                                  size_t configuration_value,
                                   ExceptionState&);
 
-  USBConfiguration(const USBDevice*, size_t configurationIndex);
+  USBConfiguration(const USBDevice*, size_t configuration_index);
 
-  const USBDevice* device() const;
-  size_t index() const;
-  const device::usb::blink::ConfigurationInfo& info() const;
+  const USBDevice* Device() const;
+  size_t Index() const;
+  const device::usb::blink::ConfigurationInfo& Info() const;
 
-  uint8_t configurationValue() const { return info().configuration_value; }
-  String configurationName() const { return info().configuration_name; }
+  uint8_t configurationValue() const { return Info().configuration_value; }
+  String configurationName() const { return Info().configuration_name; }
   HeapVector<Member<USBInterface>> interfaces() const;
 
   DECLARE_TRACE();
 
  private:
-  Member<const USBDevice> m_device;
-  const size_t m_configurationIndex;
+  Member<const USBDevice> device_;
+  const size_t configuration_index_;
 };
 
 }  // namespace blink

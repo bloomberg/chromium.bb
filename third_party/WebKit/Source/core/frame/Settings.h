@@ -55,43 +55,43 @@ class CORE_EXPORT Settings {
   USING_FAST_MALLOC(Settings);
 
  public:
-  static std::unique_ptr<Settings> create();
+  static std::unique_ptr<Settings> Create();
 
-  GenericFontFamilySettings& genericFontFamilySettings() {
-    return m_genericFontFamilySettings;
+  GenericFontFamilySettings& GetGenericFontFamilySettings() {
+    return generic_font_family_settings_;
   }
-  void notifyGenericFontFamilyChange() {
-    invalidate(SettingsDelegate::FontFamilyChange);
+  void NotifyGenericFontFamilyChange() {
+    Invalidate(SettingsDelegate::kFontFamilyChange);
   }
 
-  void setTextAutosizingEnabled(bool);
-  bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
+  void SetTextAutosizingEnabled(bool);
+  bool TextAutosizingEnabled() const { return text_autosizing_enabled_; }
 
   // Only set by Layout Tests, and only used if textAutosizingEnabled() returns
   // true.
-  void setTextAutosizingWindowSizeOverride(const IntSize&);
-  const IntSize& textAutosizingWindowSizeOverride() const {
-    return m_textAutosizingWindowSizeOverride;
+  void SetTextAutosizingWindowSizeOverride(const IntSize&);
+  const IntSize& TextAutosizingWindowSizeOverride() const {
+    return text_autosizing_window_size_override_;
   }
 
   SETTINGS_GETTERS_AND_SETTERS
 
   // FIXME: This does not belong here.
-  static void setMockScrollbarsEnabled(bool flag);
-  static bool mockScrollbarsEnabled();
+  static void SetMockScrollbarsEnabled(bool flag);
+  static bool MockScrollbarsEnabled();
 
-  void setDelegate(SettingsDelegate*);
+  void SetDelegate(SettingsDelegate*);
 
  private:
   Settings();
 
-  void invalidate(SettingsDelegate::ChangeType);
+  void Invalidate(SettingsDelegate::ChangeType);
 
-  SettingsDelegate* m_delegate;
+  SettingsDelegate* delegate_;
 
-  GenericFontFamilySettings m_genericFontFamilySettings;
-  IntSize m_textAutosizingWindowSizeOverride;
-  bool m_textAutosizingEnabled : 1;
+  GenericFontFamilySettings generic_font_family_settings_;
+  IntSize text_autosizing_window_size_override_;
+  bool text_autosizing_enabled_ : 1;
 
   SETTINGS_MEMBER_VARIABLES
 };

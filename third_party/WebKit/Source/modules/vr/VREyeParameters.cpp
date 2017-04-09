@@ -7,30 +7,30 @@
 namespace blink {
 
 VREyeParameters::VREyeParameters() {
-  m_offset = DOMFloat32Array::create(3);
-  m_fieldOfView = new VRFieldOfView();
-  m_renderWidth = 0;
-  m_renderHeight = 0;
+  offset_ = DOMFloat32Array::Create(3);
+  field_of_view_ = new VRFieldOfView();
+  render_width_ = 0;
+  render_height_ = 0;
 }
 
-void VREyeParameters::update(
-    const device::mojom::blink::VREyeParametersPtr& eyeParameters) {
-  m_offset->data()[0] = eyeParameters->offset[0];
-  m_offset->data()[1] = eyeParameters->offset[1];
-  m_offset->data()[2] = eyeParameters->offset[2];
+void VREyeParameters::Update(
+    const device::mojom::blink::VREyeParametersPtr& eye_parameters) {
+  offset_->Data()[0] = eye_parameters->offset[0];
+  offset_->Data()[1] = eye_parameters->offset[1];
+  offset_->Data()[2] = eye_parameters->offset[2];
 
-  m_fieldOfView->setUpDegrees(eyeParameters->fieldOfView->upDegrees);
-  m_fieldOfView->setDownDegrees(eyeParameters->fieldOfView->downDegrees);
-  m_fieldOfView->setLeftDegrees(eyeParameters->fieldOfView->leftDegrees);
-  m_fieldOfView->setRightDegrees(eyeParameters->fieldOfView->rightDegrees);
+  field_of_view_->SetUpDegrees(eye_parameters->fieldOfView->upDegrees);
+  field_of_view_->SetDownDegrees(eye_parameters->fieldOfView->downDegrees);
+  field_of_view_->SetLeftDegrees(eye_parameters->fieldOfView->leftDegrees);
+  field_of_view_->SetRightDegrees(eye_parameters->fieldOfView->rightDegrees);
 
-  m_renderWidth = eyeParameters->renderWidth;
-  m_renderHeight = eyeParameters->renderHeight;
+  render_width_ = eye_parameters->renderWidth;
+  render_height_ = eye_parameters->renderHeight;
 }
 
 DEFINE_TRACE(VREyeParameters) {
-  visitor->trace(m_offset);
-  visitor->trace(m_fieldOfView);
+  visitor->Trace(offset_);
+  visitor->Trace(field_of_view_);
 }
 
 }  // namespace blink

@@ -22,7 +22,7 @@ class ServiceWorkerRegistrationSync final
 
  public:
   virtual ~ServiceWorkerRegistrationSync();
-  static ServiceWorkerRegistrationSync& from(ServiceWorkerRegistration&);
+  static ServiceWorkerRegistrationSync& From(ServiceWorkerRegistration&);
 
   static SyncManager* sync(ServiceWorkerRegistration&);
   SyncManager* sync();
@@ -31,10 +31,10 @@ class ServiceWorkerRegistrationSync final
 
  private:
   explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<ServiceWorkerRegistration> m_registration;
-  Member<SyncManager> m_syncManager;
+  Member<ServiceWorkerRegistration> registration_;
+  Member<SyncManager> sync_manager_;
 };
 
 }  // namespace blink

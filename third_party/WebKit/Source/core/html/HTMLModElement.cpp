@@ -28,21 +28,22 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLModElement::HTMLModElement(const QualifiedName& tagName,
+inline HTMLModElement::HTMLModElement(const QualifiedName& tag_name,
                                       Document& document)
-    : HTMLElement(tagName, document) {}
+    : HTMLElement(tag_name, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement)
 
-bool HTMLModElement::isURLAttribute(const Attribute& attribute) const {
-  return attribute.name() == citeAttr || HTMLElement::isURLAttribute(attribute);
+bool HTMLModElement::IsURLAttribute(const Attribute& attribute) const {
+  return attribute.GetName() == citeAttr ||
+         HTMLElement::IsURLAttribute(attribute);
 }
 
-bool HTMLModElement::hasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == citeAttr || HTMLElement::hasLegalLinkAttribute(name);
+bool HTMLModElement::HasLegalLinkAttribute(const QualifiedName& name) const {
+  return name == citeAttr || HTMLElement::HasLegalLinkAttribute(name);
 }
 
-const QualifiedName& HTMLModElement::subResourceAttributeName() const {
+const QualifiedName& HTMLModElement::SubResourceAttributeName() const {
   return citeAttr;
 }
 

@@ -50,8 +50,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/FrameTestHelpers.h"
 
-using blink::URLTestHelpers::toKURL;
-using blink::testing::runPendingTasks;
+using blink::URLTestHelpers::ToKURL;
+using blink::testing::RunPendingTasks;
 
 namespace blink {
 
@@ -59,230 +59,230 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
                                    public WebAssociatedURLLoaderClient {
  public:
   WebAssociatedURLLoaderTest()
-      : m_willFollowRedirect(false),
-        m_didSendData(false),
-        m_didReceiveResponse(false),
-        m_didReceiveData(false),
-        m_didReceiveCachedMetadata(false),
-        m_didFinishLoading(false),
-        m_didFail(false) {
+      : will_follow_redirect_(false),
+        did_send_data_(false),
+        did_receive_response_(false),
+        did_receive_data_(false),
+        did_receive_cached_metadata_(false),
+        did_finish_loading_(false),
+        did_fail_(false) {
     // Reuse one of the test files from WebFrameTest.
-    m_frameFilePath = testing::webTestDataPath("iframes_test.html");
+    frame_file_path_ = testing::WebTestDataPath("iframes_test.html");
   }
 
-  KURL RegisterMockedUrl(const std::string& urlRoot,
+  KURL RegisterMockedUrl(const std::string& url_root,
                          const WTF::String& filename) {
     WebURLResponse response;
-    response.setMIMEType("text/html");
-    KURL url = toKURL(urlRoot + filename.utf8().data());
-    Platform::current()->getURLLoaderMockFactory()->registerURL(
-        url, response, testing::webTestDataPath(filename.utf8().data()));
+    response.SetMIMEType("text/html");
+    KURL url = ToKURL(url_root + filename.Utf8().Data());
+    Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+        url, response, testing::WebTestDataPath(filename.Utf8().Data()));
     return url;
   }
 
   void SetUp() override {
-    m_helper.initialize();
+    helper_.Initialize();
 
-    std::string urlRoot = "http://www.test.com/";
-    KURL url = RegisterMockedUrl(urlRoot, "iframes_test.html");
-    const char* iframeSupportFiles[] = {
+    std::string url_root = "http://www.test.com/";
+    KURL url = RegisterMockedUrl(url_root, "iframes_test.html");
+    const char* iframe_support_files[] = {
         "invisible_iframe.html", "visible_iframe.html",
         "zero_sized_iframe.html",
     };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(iframeSupportFiles); ++i) {
-      RegisterMockedUrl(urlRoot, iframeSupportFiles[i]);
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(iframe_support_files); ++i) {
+      RegisterMockedUrl(url_root, iframe_support_files[i]);
     }
 
-    FrameTestHelpers::loadFrame(mainFrame(), url.getString().utf8().data());
+    FrameTestHelpers::LoadFrame(MainFrame(), url.GetString().Utf8().Data());
 
-    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+    Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
   }
 
   void TearDown() override {
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  void serveRequests() {
-    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  void ServeRequests() {
+    Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   }
 
-  std::unique_ptr<WebAssociatedURLLoader> createAssociatedURLLoader(
+  std::unique_ptr<WebAssociatedURLLoader> CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions options =
           WebAssociatedURLLoaderOptions()) {
-    return WTF::wrapUnique(mainFrame()->createAssociatedURLLoader(options));
+    return WTF::WrapUnique(MainFrame()->CreateAssociatedURLLoader(options));
   }
 
   // WebAssociatedURLLoaderClient implementation.
-  bool willFollowRedirect(const WebURLRequest& newRequest,
-                          const WebURLResponse& redirectResponse) override {
-    m_willFollowRedirect = true;
-    EXPECT_EQ(m_expectedNewRequest.url(), newRequest.url());
+  bool WillFollowRedirect(const WebURLRequest& new_request,
+                          const WebURLResponse& redirect_response) override {
+    will_follow_redirect_ = true;
+    EXPECT_EQ(expected_new_request_.Url(), new_request.Url());
     // Check that CORS simple headers are transferred to the new request.
-    EXPECT_EQ(m_expectedNewRequest.httpHeaderField("accept"),
-              newRequest.httpHeaderField("accept"));
-    EXPECT_EQ(m_expectedRedirectResponse.url(), redirectResponse.url());
-    EXPECT_EQ(m_expectedRedirectResponse.httpStatusCode(),
-              redirectResponse.httpStatusCode());
-    EXPECT_EQ(m_expectedRedirectResponse.mimeType(),
-              redirectResponse.mimeType());
+    EXPECT_EQ(expected_new_request_.HttpHeaderField("accept"),
+              new_request.HttpHeaderField("accept"));
+    EXPECT_EQ(expected_redirect_response_.Url(), redirect_response.Url());
+    EXPECT_EQ(expected_redirect_response_.HttpStatusCode(),
+              redirect_response.HttpStatusCode());
+    EXPECT_EQ(expected_redirect_response_.MimeType(),
+              redirect_response.MimeType());
     return true;
   }
 
-  void didSendData(unsigned long long bytesSent,
-                   unsigned long long totalBytesToBeSent) override {
-    m_didSendData = true;
+  void DidSendData(unsigned long long bytes_sent,
+                   unsigned long long total_bytes_to_be_sent) override {
+    did_send_data_ = true;
   }
 
-  void didReceiveResponse(const WebURLResponse& response) override {
-    m_didReceiveResponse = true;
-    m_actualResponse = WebURLResponse(response);
-    EXPECT_EQ(m_expectedResponse.url(), response.url());
-    EXPECT_EQ(m_expectedResponse.httpStatusCode(), response.httpStatusCode());
+  void DidReceiveResponse(const WebURLResponse& response) override {
+    did_receive_response_ = true;
+    actual_response_ = WebURLResponse(response);
+    EXPECT_EQ(expected_response_.Url(), response.Url());
+    EXPECT_EQ(expected_response_.HttpStatusCode(), response.HttpStatusCode());
   }
 
-  void didDownloadData(int dataLength) override { m_didDownloadData = true; }
+  void DidDownloadData(int data_length) override { did_download_data_ = true; }
 
-  void didReceiveData(const char* data, int dataLength) override {
-    m_didReceiveData = true;
+  void DidReceiveData(const char* data, int data_length) override {
+    did_receive_data_ = true;
     EXPECT_TRUE(data);
-    EXPECT_GT(dataLength, 0);
+    EXPECT_GT(data_length, 0);
   }
 
-  void didReceiveCachedMetadata(const char* data, int dataLength) override {
-    m_didReceiveCachedMetadata = true;
+  void DidReceiveCachedMetadata(const char* data, int data_length) override {
+    did_receive_cached_metadata_ = true;
   }
 
-  void didFinishLoading(double finishTime) override {
-    m_didFinishLoading = true;
+  void DidFinishLoading(double finish_time) override {
+    did_finish_loading_ = true;
   }
 
-  void didFail(const WebURLError& error) override { m_didFail = true; }
+  void DidFail(const WebURLError& error) override { did_fail_ = true; }
 
-  void CheckMethodFails(const char* unsafeMethod) {
-    WebURLRequest request(toKURL("http://www.test.com/success.html"));
-    request.setHTTPMethod(WebString::fromUTF8(unsafeMethod));
+  void CheckMethodFails(const char* unsafe_method) {
+    WebURLRequest request(ToKURL("http://www.test.com/success.html"));
+    request.SetHTTPMethod(WebString::FromUTF8(unsafe_method));
     WebAssociatedURLLoaderOptions options;
-    options.untrustedHTTP = true;
+    options.untrusted_http = true;
     CheckFails(request, options);
   }
 
-  void CheckHeaderFails(const char* headerField) {
-    CheckHeaderFails(headerField, "foo");
+  void CheckHeaderFails(const char* header_field) {
+    CheckHeaderFails(header_field, "foo");
   }
 
-  void CheckHeaderFails(const char* headerField, const char* headerValue) {
-    WebURLRequest request(toKURL("http://www.test.com/success.html"));
-    if (equalIgnoringASCIICase(WebString::fromUTF8(headerField), "referer")) {
-      request.setHTTPReferrer(WebString::fromUTF8(headerValue),
-                              WebReferrerPolicyDefault);
+  void CheckHeaderFails(const char* header_field, const char* header_value) {
+    WebURLRequest request(ToKURL("http://www.test.com/success.html"));
+    if (EqualIgnoringASCIICase(WebString::FromUTF8(header_field), "referer")) {
+      request.SetHTTPReferrer(WebString::FromUTF8(header_value),
+                              kWebReferrerPolicyDefault);
     } else {
-      request.setHTTPHeaderField(WebString::fromUTF8(headerField),
-                                 WebString::fromUTF8(headerValue));
+      request.SetHTTPHeaderField(WebString::FromUTF8(header_field),
+                                 WebString::FromUTF8(header_value));
     }
     WebAssociatedURLLoaderOptions options;
-    options.untrustedHTTP = true;
+    options.untrusted_http = true;
     CheckFails(request, options);
   }
 
   void CheckFails(
       const WebURLRequest& request,
       WebAssociatedURLLoaderOptions options = WebAssociatedURLLoaderOptions()) {
-    m_expectedLoader = createAssociatedURLLoader(options);
-    EXPECT_TRUE(m_expectedLoader);
-    m_didFail = false;
-    m_expectedLoader->loadAsynchronously(request, this);
+    expected_loader_ = CreateAssociatedURLLoader(options);
+    EXPECT_TRUE(expected_loader_);
+    did_fail_ = false;
+    expected_loader_->LoadAsynchronously(request, this);
     // Failure should not be reported synchronously.
-    EXPECT_FALSE(m_didFail);
+    EXPECT_FALSE(did_fail_);
     // Allow the loader to return the error.
-    runPendingTasks();
-    EXPECT_TRUE(m_didFail);
-    EXPECT_FALSE(m_didReceiveResponse);
+    RunPendingTasks();
+    EXPECT_TRUE(did_fail_);
+    EXPECT_FALSE(did_receive_response_);
   }
 
-  bool CheckAccessControlHeaders(const char* headerName, bool exposed) {
+  bool CheckAccessControlHeaders(const char* header_name, bool exposed) {
     std::string id("http://www.other.com/CheckAccessControlExposeHeaders_");
-    id.append(headerName);
+    id.append(header_name);
     if (exposed)
       id.append("-Exposed");
     id.append(".html");
 
-    KURL url = toKURL(id);
+    KURL url = ToKURL(id);
     WebURLRequest request(url);
 
-    WebString headerNameString(WebString::fromUTF8(headerName));
-    m_expectedResponse = WebURLResponse();
-    m_expectedResponse.setMIMEType("text/html");
-    m_expectedResponse.setHTTPStatusCode(200);
-    m_expectedResponse.addHTTPHeaderField("Access-Control-Allow-Origin", "*");
+    WebString header_name_string(WebString::FromUTF8(header_name));
+    expected_response_ = WebURLResponse();
+    expected_response_.SetMIMEType("text/html");
+    expected_response_.SetHTTPStatusCode(200);
+    expected_response_.AddHTTPHeaderField("Access-Control-Allow-Origin", "*");
     if (exposed) {
-      m_expectedResponse.addHTTPHeaderField("access-control-expose-headers",
-                                            headerNameString);
+      expected_response_.AddHTTPHeaderField("access-control-expose-headers",
+                                            header_name_string);
     }
-    m_expectedResponse.addHTTPHeaderField(headerNameString, "foo");
-    Platform::current()->getURLLoaderMockFactory()->registerURL(
-        url, m_expectedResponse, m_frameFilePath);
+    expected_response_.AddHTTPHeaderField(header_name_string, "foo");
+    Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+        url, expected_response_, frame_file_path_);
 
     WebAssociatedURLLoaderOptions options;
-    options.crossOriginRequestPolicy =
-        WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-    m_expectedLoader = createAssociatedURLLoader(options);
-    EXPECT_TRUE(m_expectedLoader);
-    m_expectedLoader->loadAsynchronously(request, this);
-    serveRequests();
-    EXPECT_TRUE(m_didReceiveResponse);
-    EXPECT_TRUE(m_didReceiveData);
-    EXPECT_TRUE(m_didFinishLoading);
+    options.cross_origin_request_policy = WebAssociatedURLLoaderOptions::
+        kCrossOriginRequestPolicyUseAccessControl;
+    expected_loader_ = CreateAssociatedURLLoader(options);
+    EXPECT_TRUE(expected_loader_);
+    expected_loader_->LoadAsynchronously(request, this);
+    ServeRequests();
+    EXPECT_TRUE(did_receive_response_);
+    EXPECT_TRUE(did_receive_data_);
+    EXPECT_TRUE(did_finish_loading_);
 
-    return !m_actualResponse.httpHeaderField(headerNameString).isEmpty();
+    return !actual_response_.HttpHeaderField(header_name_string).IsEmpty();
   }
 
-  WebFrame* mainFrame() const { return m_helper.webView()->mainFrame(); }
+  WebFrame* MainFrame() const { return helper_.WebView()->MainFrame(); }
 
  protected:
-  String m_frameFilePath;
-  FrameTestHelpers::WebViewHelper m_helper;
+  String frame_file_path_;
+  FrameTestHelpers::WebViewHelper helper_;
 
-  std::unique_ptr<WebAssociatedURLLoader> m_expectedLoader;
-  WebURLResponse m_actualResponse;
-  WebURLResponse m_expectedResponse;
-  WebURLRequest m_expectedNewRequest;
-  WebURLResponse m_expectedRedirectResponse;
-  bool m_willFollowRedirect;
-  bool m_didSendData;
-  bool m_didReceiveResponse;
-  bool m_didDownloadData;
-  bool m_didReceiveData;
-  bool m_didReceiveCachedMetadata;
-  bool m_didFinishLoading;
-  bool m_didFail;
+  std::unique_ptr<WebAssociatedURLLoader> expected_loader_;
+  WebURLResponse actual_response_;
+  WebURLResponse expected_response_;
+  WebURLRequest expected_new_request_;
+  WebURLResponse expected_redirect_response_;
+  bool will_follow_redirect_;
+  bool did_send_data_;
+  bool did_receive_response_;
+  bool did_download_data_;
+  bool did_receive_data_;
+  bool did_receive_cached_metadata_;
+  bool did_finish_loading_;
+  bool did_fail_;
 };
 
 // Test a successful same-origin URL load.
 TEST_F(WebAssociatedURLLoaderTest, SameOriginSuccess) {
-  KURL url = toKURL("http://www.test.com/SameOriginSuccess.html");
+  KURL url = ToKURL("http://www.test.com/SameOriginSuccess.html");
   WebURLRequest request(url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_response_, frame_file_path_);
 
-  m_expectedLoader = createAssociatedURLLoader();
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
-  serveRequests();
-  EXPECT_TRUE(m_didReceiveResponse);
-  EXPECT_TRUE(m_didReceiveData);
-  EXPECT_TRUE(m_didFinishLoading);
+  expected_loader_ = CreateAssociatedURLLoader();
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
+  ServeRequests();
+  EXPECT_TRUE(did_receive_response_);
+  EXPECT_TRUE(did_receive_data_);
+  EXPECT_TRUE(did_finish_loading_);
 }
 
 // Test that the same-origin restriction is the default.
 TEST_F(WebAssociatedURLLoaderTest, SameOriginRestriction) {
   // This is cross-origin since the frame was loaded from www.test.com.
-  KURL url = toKURL("http://www.other.com/SameOriginRestriction.html");
+  KURL url = ToKURL("http://www.other.com/SameOriginRestriction.html");
   WebURLRequest request(url);
   CheckFails(request);
 }
@@ -290,87 +290,87 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginRestriction) {
 // Test a successful cross-origin load.
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   // This is cross-origin since the frame was loaded from www.test.com.
-  KURL url = toKURL("http://www.other.com/CrossOriginSuccess");
+  KURL url = ToKURL("http://www.other.com/CrossOriginSuccess");
   WebURLRequest request(url);
   // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
   // default context. So we set the context as Script here.
-  request.setRequestContext(WebURLRequest::RequestContextScript);
+  request.SetRequestContext(WebURLRequest::kRequestContextScript);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyAllow;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
-  serveRequests();
-  EXPECT_TRUE(m_didReceiveResponse);
-  EXPECT_TRUE(m_didReceiveData);
-  EXPECT_TRUE(m_didFinishLoading);
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
+  ServeRequests();
+  EXPECT_TRUE(did_receive_response_);
+  EXPECT_TRUE(did_receive_data_);
+  EXPECT_TRUE(did_finish_loading_);
 }
 
 // Test a successful cross-origin load using CORS.
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
-      toKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
+      ToKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
   WebURLRequest request(url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
-  serveRequests();
-  EXPECT_TRUE(m_didReceiveResponse);
-  EXPECT_TRUE(m_didReceiveData);
-  EXPECT_TRUE(m_didFinishLoading);
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
+  ServeRequests();
+  EXPECT_TRUE(did_receive_response_);
+  EXPECT_TRUE(did_receive_data_);
+  EXPECT_TRUE(did_finish_loading_);
 }
 
 // Test an unsuccessful cross-origin load using CORS.
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
-      toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
+      ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
   WebURLRequest request(url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
   // Send credentials. This will cause the CORS checks to fail, because
   // credentials can't be sent to a server which returns the header
   // "access-control-allow-origin" with "*" as its value.
-  options.allowCredentials = true;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
+  options.allow_credentials = true;
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
 
   // Failure should not be reported synchronously.
-  EXPECT_FALSE(m_didFail);
+  EXPECT_FALSE(did_fail_);
   // The loader needs to receive the response, before doing the CORS check.
-  serveRequests();
-  EXPECT_TRUE(m_didFail);
-  EXPECT_FALSE(m_didReceiveResponse);
+  ServeRequests();
+  EXPECT_TRUE(did_fail_);
+  EXPECT_FALSE(did_receive_response_);
 }
 
 // Test an unsuccessful cross-origin load using CORS.
@@ -378,189 +378,189 @@ TEST_F(WebAssociatedURLLoaderTest,
        CrossOriginWithAccessControlFailureBadStatusCode) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
-      toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
+      ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
   WebURLRequest request(url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(0);
-  m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(0);
+  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
 
   // Failure should not be reported synchronously.
-  EXPECT_FALSE(m_didFail);
+  EXPECT_FALSE(did_fail_);
   // The loader needs to receive the response, before doing the CORS check.
-  serveRequests();
-  EXPECT_TRUE(m_didFail);
-  EXPECT_FALSE(m_didReceiveResponse);
+  ServeRequests();
+  EXPECT_TRUE(did_fail_);
+  EXPECT_FALSE(did_receive_response_);
 }
 
 // Test a same-origin URL redirect and load.
 TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
-  KURL url = toKURL("http://www.test.com/RedirectSuccess.html");
+  KURL url = ToKURL("http://www.test.com/RedirectSuccess.html");
   char redirect[] = "http://www.test.com/RedirectSuccess2.html";  // Same-origin
-  KURL redirectURL = toKURL(redirect);
+  KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
 
-  m_expectedRedirectResponse = WebURLResponse();
-  m_expectedRedirectResponse.setMIMEType("text/html");
-  m_expectedRedirectResponse.setHTTPStatusCode(301);
-  m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedRedirectResponse, m_frameFilePath);
+  expected_redirect_response_ = WebURLResponse();
+  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetHTTPStatusCode(301);
+  expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_redirect_response_, frame_file_path_);
 
-  m_expectedNewRequest = WebURLRequest(redirectURL);
+  expected_new_request_ = WebURLRequest(redirect_url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      redirectURL, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      redirect_url, expected_response_, frame_file_path_);
 
-  m_expectedLoader = createAssociatedURLLoader();
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
-  serveRequests();
-  EXPECT_TRUE(m_willFollowRedirect);
-  EXPECT_TRUE(m_didReceiveResponse);
-  EXPECT_TRUE(m_didReceiveData);
-  EXPECT_TRUE(m_didFinishLoading);
+  expected_loader_ = CreateAssociatedURLLoader();
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
+  ServeRequests();
+  EXPECT_TRUE(will_follow_redirect_);
+  EXPECT_TRUE(did_receive_response_);
+  EXPECT_TRUE(did_receive_data_);
+  EXPECT_TRUE(did_finish_loading_);
 }
 
 // Test a cross-origin URL redirect without Access Control set.
 TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
-  KURL url = toKURL("http://www.test.com/RedirectCrossOriginFailure.html");
+  KURL url = ToKURL("http://www.test.com/RedirectCrossOriginFailure.html");
   char redirect[] =
       "http://www.other.com/RedirectCrossOriginFailure.html";  // Cross-origin
-  KURL redirectURL = toKURL(redirect);
+  KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
 
-  m_expectedRedirectResponse = WebURLResponse();
-  m_expectedRedirectResponse.setMIMEType("text/html");
-  m_expectedRedirectResponse.setHTTPStatusCode(301);
-  m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedRedirectResponse, m_frameFilePath);
+  expected_redirect_response_ = WebURLResponse();
+  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetHTTPStatusCode(301);
+  expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_redirect_response_, frame_file_path_);
 
-  m_expectedNewRequest = WebURLRequest(redirectURL);
+  expected_new_request_ = WebURLRequest(redirect_url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      redirectURL, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      redirect_url, expected_response_, frame_file_path_);
 
-  m_expectedLoader = createAssociatedURLLoader();
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
+  expected_loader_ = CreateAssociatedURLLoader();
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
 
-  serveRequests();
-  EXPECT_FALSE(m_willFollowRedirect);
-  EXPECT_FALSE(m_didReceiveResponse);
-  EXPECT_FALSE(m_didReceiveData);
-  EXPECT_FALSE(m_didFinishLoading);
+  ServeRequests();
+  EXPECT_FALSE(will_follow_redirect_);
+  EXPECT_FALSE(did_receive_response_);
+  EXPECT_FALSE(did_receive_data_);
+  EXPECT_FALSE(did_finish_loading_);
 }
 
 // Test that a cross origin redirect response without CORS headers fails.
 TEST_F(WebAssociatedURLLoaderTest,
        RedirectCrossOriginWithAccessControlFailure) {
-  KURL url = toKURL(
+  KURL url = ToKURL(
       "http://www.test.com/RedirectCrossOriginWithAccessControlFailure.html");
   char redirect[] =
       "http://www.other.com/"
       "RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
-  KURL redirectURL = toKURL(redirect);
+  KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
 
-  m_expectedRedirectResponse = WebURLResponse();
-  m_expectedRedirectResponse.setMIMEType("text/html");
-  m_expectedRedirectResponse.setHTTPStatusCode(301);
-  m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedRedirectResponse, m_frameFilePath);
+  expected_redirect_response_ = WebURLResponse();
+  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetHTTPStatusCode(301);
+  expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_redirect_response_, frame_file_path_);
 
-  m_expectedNewRequest = WebURLRequest(redirectURL);
+  expected_new_request_ = WebURLRequest(redirect_url);
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      redirectURL, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      redirect_url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
 
-  serveRequests();
+  ServeRequests();
   // We should get a notification about access control check failure.
-  EXPECT_FALSE(m_willFollowRedirect);
-  EXPECT_FALSE(m_didReceiveResponse);
-  EXPECT_FALSE(m_didReceiveData);
-  EXPECT_TRUE(m_didFail);
+  EXPECT_FALSE(will_follow_redirect_);
+  EXPECT_FALSE(did_receive_response_);
+  EXPECT_FALSE(did_receive_data_);
+  EXPECT_TRUE(did_fail_);
 }
 
 // Test that a cross origin redirect response with CORS headers that allow the
 // requesting origin succeeds.
 TEST_F(WebAssociatedURLLoaderTest,
        RedirectCrossOriginWithAccessControlSuccess) {
-  KURL url = toKURL(
+  KURL url = ToKURL(
       "http://www.test.com/RedirectCrossOriginWithAccessControlSuccess.html");
   char redirect[] =
       "http://www.other.com/"
       "RedirectCrossOriginWithAccessControlSuccess.html";  // Cross-origin
-  KURL redirectURL = toKURL(redirect);
+  KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
   // Add a CORS simple header.
-  request.setHTTPHeaderField("accept", "application/json");
+  request.SetHTTPHeaderField("accept", "application/json");
 
   // Create a redirect response that allows the redirect to pass the access
   // control checks.
-  m_expectedRedirectResponse = WebURLResponse();
-  m_expectedRedirectResponse.setMIMEType("text/html");
-  m_expectedRedirectResponse.setHTTPStatusCode(301);
-  m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
-  m_expectedRedirectResponse.addHTTPHeaderField("access-control-allow-origin",
-                                                "*");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedRedirectResponse, m_frameFilePath);
+  expected_redirect_response_ = WebURLResponse();
+  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetHTTPStatusCode(301);
+  expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
+  expected_redirect_response_.AddHTTPHeaderField("access-control-allow-origin",
+                                                 "*");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_redirect_response_, frame_file_path_);
 
-  m_expectedNewRequest = WebURLRequest(redirectURL);
-  m_expectedNewRequest.setHTTPHeaderField("accept", "application/json");
+  expected_new_request_ = WebURLRequest(redirect_url);
+  expected_new_request_.SetHTTPHeaderField("accept", "application/json");
 
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      redirectURL, m_expectedResponse, m_frameFilePath);
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      redirect_url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
-  serveRequests();
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
+  ServeRequests();
   // We should not receive a notification for the redirect.
-  EXPECT_FALSE(m_willFollowRedirect);
-  EXPECT_TRUE(m_didReceiveResponse);
-  EXPECT_TRUE(m_didReceiveData);
-  EXPECT_TRUE(m_didFinishLoading);
+  EXPECT_FALSE(will_follow_redirect_);
+  EXPECT_TRUE(did_receive_response_);
+  EXPECT_TRUE(did_receive_data_);
+  EXPECT_TRUE(did_finish_loading_);
 }
 
 // Test that untrusted loads can't use a forbidden method.
@@ -649,32 +649,32 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderWhitelisting) {
 // CORS loads.
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   KURL url =
-      toKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
+      ToKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
   WebURLRequest request(url);
 
-  WebString headerNameString(WebString::fromUTF8("non-whitelisted"));
-  m_expectedResponse = WebURLResponse();
-  m_expectedResponse.setMIMEType("text/html");
-  m_expectedResponse.setHTTPStatusCode(200);
-  m_expectedResponse.addHTTPHeaderField("Access-Control-Allow-Origin", "*");
-  m_expectedResponse.addHTTPHeaderField(headerNameString, "foo");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      url, m_expectedResponse, m_frameFilePath);
+  WebString header_name_string(WebString::FromUTF8("non-whitelisted"));
+  expected_response_ = WebURLResponse();
+  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetHTTPStatusCode(200);
+  expected_response_.AddHTTPHeaderField("Access-Control-Allow-Origin", "*");
+  expected_response_.AddHTTPHeaderField(header_name_string, "foo");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.exposeAllResponseHeaders =
+  options.expose_all_response_headers =
       true;  // This turns off response whitelisting.
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  m_expectedLoader = createAssociatedURLLoader(options);
-  EXPECT_TRUE(m_expectedLoader);
-  m_expectedLoader->loadAsynchronously(request, this);
-  serveRequests();
-  EXPECT_TRUE(m_didReceiveResponse);
-  EXPECT_TRUE(m_didReceiveData);
-  EXPECT_TRUE(m_didFinishLoading);
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl;
+  expected_loader_ = CreateAssociatedURLLoader(options);
+  EXPECT_TRUE(expected_loader_);
+  expected_loader_->LoadAsynchronously(request, this);
+  ServeRequests();
+  EXPECT_TRUE(did_receive_response_);
+  EXPECT_TRUE(did_receive_data_);
+  EXPECT_TRUE(did_finish_loading_);
 
-  EXPECT_FALSE(m_actualResponse.httpHeaderField(headerNameString).isEmpty());
+  EXPECT_FALSE(actual_response_.HttpHeaderField(header_name_string).IsEmpty());
 }
 
 }  // namespace blink

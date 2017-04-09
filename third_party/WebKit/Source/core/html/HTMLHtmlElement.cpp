@@ -40,41 +40,41 @@ inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)
 
-bool HTMLHtmlElement::isURLAttribute(const Attribute& attribute) const {
-  return attribute.name() == manifestAttr ||
-         HTMLElement::isURLAttribute(attribute);
+bool HTMLHtmlElement::IsURLAttribute(const Attribute& attribute) const {
+  return attribute.GetName() == manifestAttr ||
+         HTMLElement::IsURLAttribute(attribute);
 }
 
-void HTMLHtmlElement::insertedByParser() {
+void HTMLHtmlElement::InsertedByParser() {
   // When parsing a fragment, its dummy document has a null parser.
-  if (!document().parser())
+  if (!GetDocument().Parser())
     return;
 
-  maybeSetupApplicationCache();
+  MaybeSetupApplicationCache();
 
-  document().parser()->documentElementAvailable();
-  if (document().frame()) {
-    document().frame()->loader().dispatchDocumentElementAvailable();
-    document().frame()->loader().runScriptsAtDocumentElementAvailable();
+  GetDocument().Parser()->DocumentElementAvailable();
+  if (GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->Loader().DispatchDocumentElementAvailable();
+    GetDocument().GetFrame()->Loader().RunScriptsAtDocumentElementAvailable();
     // runScriptsAtDocumentElementAvailable might have invalidated m_document.
   }
 }
 
-void HTMLHtmlElement::maybeSetupApplicationCache() {
-  if (!document().frame())
+void HTMLHtmlElement::MaybeSetupApplicationCache() {
+  if (!GetDocument().GetFrame())
     return;
 
-  DocumentLoader* documentLoader =
-      document().frame()->loader().documentLoader();
-  if (!documentLoader ||
-      !document().parser()->documentWasLoadedAsPartOfNavigation())
+  DocumentLoader* document_loader =
+      GetDocument().GetFrame()->Loader().GetDocumentLoader();
+  if (!document_loader ||
+      !GetDocument().Parser()->DocumentWasLoadedAsPartOfNavigation())
     return;
-  const AtomicString& manifest = fastGetAttribute(manifestAttr);
-  if (manifest.isEmpty())
-    documentLoader->applicationCacheHost()->selectCacheWithoutManifest();
+  const AtomicString& manifest = FastGetAttribute(manifestAttr);
+  if (manifest.IsEmpty())
+    document_loader->GetApplicationCacheHost()->SelectCacheWithoutManifest();
   else
-    documentLoader->applicationCacheHost()->selectCacheWithManifest(
-        document().completeURL(manifest));
+    document_loader->GetApplicationCacheHost()->SelectCacheWithManifest(
+        GetDocument().CompleteURL(manifest));
 }
 
 }  // namespace blink

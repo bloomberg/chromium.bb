@@ -46,28 +46,28 @@ class PLATFORM_EXPORT WebActiveGestureAnimation {
   WTF_MAKE_NONCOPYABLE(WebActiveGestureAnimation);
 
  public:
-  static std::unique_ptr<WebActiveGestureAnimation> createAtAnimationStart(
+  static std::unique_ptr<WebActiveGestureAnimation> CreateAtAnimationStart(
       std::unique_ptr<WebGestureCurve>,
       WebGestureCurveTarget*);
-  static std::unique_ptr<WebActiveGestureAnimation> createWithTimeOffset(
+  static std::unique_ptr<WebActiveGestureAnimation> CreateWithTimeOffset(
       std::unique_ptr<WebGestureCurve>,
       WebGestureCurveTarget*,
-      double startTime);
+      double start_time);
   ~WebActiveGestureAnimation();
 
-  bool animate(double time);
+  bool Animate(double time);
 
  private:
   // Assumes a valid WebGestureCurveTarget that outlives the animation.
   WebActiveGestureAnimation(std::unique_ptr<WebGestureCurve>,
                             WebGestureCurveTarget*,
-                            double startTime,
-                            bool waitingForFirstTick);
+                            double start_time,
+                            bool waiting_for_first_tick);
 
-  double m_startTime;
-  bool m_waitingForFirstTick;
-  std::unique_ptr<WebGestureCurve> m_curve;
-  WebGestureCurveTarget* m_target;
+  double start_time_;
+  bool waiting_for_first_tick_;
+  std::unique_ptr<WebGestureCurve> curve_;
+  WebGestureCurveTarget* target_;
 };
 
 }  // namespace blink

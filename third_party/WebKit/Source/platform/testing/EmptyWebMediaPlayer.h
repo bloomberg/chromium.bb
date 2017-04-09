@@ -16,39 +16,39 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
  public:
   ~EmptyWebMediaPlayer() override {}
 
-  void load(LoadType, const WebMediaPlayerSource&, CORSMode) override {}
-  void play() override {}
-  void pause() override {}
-  bool supportsSave() const override { return false; }
-  void seek(double seconds) override {}
-  void setRate(double) override {}
-  void setVolume(double) override {}
-  WebTimeRanges buffered() const override;
-  WebTimeRanges seekable() const override;
-  void setSinkId(const WebString& sinkId,
+  void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {}
+  void Play() override {}
+  void Pause() override {}
+  bool SupportsSave() const override { return false; }
+  void Seek(double seconds) override {}
+  void SetRate(double) override {}
+  void SetVolume(double) override {}
+  WebTimeRanges Buffered() const override;
+  WebTimeRanges Seekable() const override;
+  void SetSinkId(const WebString& sink_id,
                  const WebSecurityOrigin&,
                  WebSetSinkIdCallbacks*) override {}
-  bool hasVideo() const override { return false; }
-  bool hasAudio() const override { return false; }
-  WebSize naturalSize() const override;
-  bool paused() const override { return false; }
-  bool seeking() const override { return false; }
-  double duration() const override { return 0.0; }
-  double currentTime() const override { return 0.0; }
-  NetworkState getNetworkState() const override { return NetworkStateEmpty; }
-  ReadyState getReadyState() const override { return ReadyStateHaveNothing; }
-  WebString getErrorMessage() override { return WebString(); }
-  bool didLoadingProgress() override { return false; }
-  bool hasSingleSecurityOrigin() const override { return true; }
-  bool didPassCORSAccessCheck() const override { return true; }
-  double mediaTimeForTimeValue(double timeValue) const override {
-    return timeValue;
+  bool HasVideo() const override { return false; }
+  bool HasAudio() const override { return false; }
+  WebSize NaturalSize() const override;
+  bool Paused() const override { return false; }
+  bool Seeking() const override { return false; }
+  double Duration() const override { return 0.0; }
+  double CurrentTime() const override { return 0.0; }
+  NetworkState GetNetworkState() const override { return kNetworkStateEmpty; }
+  ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
+  WebString GetErrorMessage() override { return WebString(); }
+  bool DidLoadingProgress() override { return false; }
+  bool HasSingleSecurityOrigin() const override { return true; }
+  bool DidPassCORSAccessCheck() const override { return true; }
+  double MediaTimeForTimeValue(double time_value) const override {
+    return time_value;
   };
-  unsigned decodedFrameCount() const override { return 0; }
-  unsigned droppedFrameCount() const override { return 0; }
-  size_t audioDecodedByteCount() const override { return 0; }
-  size_t videoDecodedByteCount() const override { return 0; }
-  void paint(WebCanvas*, const WebRect&, cc::PaintFlags&) override {}
+  unsigned DecodedFrameCount() const override { return 0; }
+  unsigned DroppedFrameCount() const override { return 0; }
+  size_t AudioDecodedByteCount() const override { return 0; }
+  size_t VideoDecodedByteCount() const override { return 0; }
+  void Paint(WebCanvas*, const WebRect&, cc::PaintFlags&) override {}
 };
 
 }  // namespace blink

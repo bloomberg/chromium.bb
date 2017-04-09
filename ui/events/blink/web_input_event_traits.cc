@@ -28,76 +28,62 @@ void ApppendEventDetails(const WebKeyboardEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n WinCode: %d\n NativeCode: %d\n IsSystem: %d\n"
                 " Text: %s\n UnmodifiedText: %s\n}",
-                event.windowsKeyCode,
-                event.nativeKeyCode,
-                event.isSystemKey,
-                reinterpret_cast<const char*>(event.text),
-                reinterpret_cast<const char*>(event.unmodifiedText));
+                event.windows_key_code, event.native_key_code,
+                event.is_system_key, reinterpret_cast<const char*>(event.text),
+                reinterpret_cast<const char*>(event.unmodified_text));
 }
 
 void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Button: %d\n Pos: (%f, %f)\n"
                 " GlobalPos: (%f, %f)\n Movement: (%d, %d)\n Clicks: %d\n}",
-                static_cast<int>(event.button), event.positionInWidget().x,
-                event.positionInWidget().y, event.positionInScreen().x,
-                event.positionInScreen().y, event.movementX, event.movementY,
-                event.clickCount);
+                static_cast<int>(event.button), event.PositionInWidget().x,
+                event.PositionInWidget().y, event.PositionInScreen().x,
+                event.PositionInScreen().y, event.movement_x, event.movement_y,
+                event.click_count);
 }
 
 void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
-  StringAppendF(
-      result,
-      "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
-      " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
-      " Phase: (%d, %d)",
-      event.deltaX, event.deltaY, event.wheelTicksX, event.wheelTicksY,
-      event.accelerationRatioX, event.accelerationRatioY, event.scrollByPage,
-      event.hasPreciseScrollingDeltas, event.phase, event.momentumPhase);
+  StringAppendF(result,
+                "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
+                " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
+                " Phase: (%d, %d)",
+                event.delta_x, event.delta_y, event.wheel_ticks_x,
+                event.wheel_ticks_y, event.acceleration_ratio_x,
+                event.acceleration_ratio_y, event.scroll_by_page,
+                event.has_precise_scrolling_deltas, event.phase,
+                event.momentum_phase);
 }
 
 void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
-  StringAppendF(result,
-                "{\n Pos: (%d, %d)\n GlobalPos: (%d, %d)\n SourceDevice: %d\n"
-                " RawData: (%f, %f, %f, %f, %d)\n}",
-                event.x,
-                event.y,
-                event.globalX,
-                event.globalY,
-                event.sourceDevice,
-                event.data.scrollUpdate.deltaX,
-                event.data.scrollUpdate.deltaY,
-                event.data.scrollUpdate.velocityX,
-                event.data.scrollUpdate.velocityY,
-                event.data.scrollUpdate.previousUpdateInSequencePrevented);
+  StringAppendF(
+      result,
+      "{\n Pos: (%d, %d)\n GlobalPos: (%d, %d)\n SourceDevice: %d\n"
+      " RawData: (%f, %f, %f, %f, %d)\n}",
+      event.x, event.y, event.global_x, event.global_y, event.source_device,
+      event.data.scroll_update.delta_x, event.data.scroll_update.delta_y,
+      event.data.scroll_update.velocity_x, event.data.scroll_update.velocity_y,
+      event.data.scroll_update.previous_update_in_sequence_prevented);
 }
 
 void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
   StringAppendF(result,
-                 "  (ID: %d, State: %d, ScreenPos: (%f, %f), Pos: (%f, %f),"
-                     " Radius: (%f, %f), Rot: %f, Force: %f,"
-                     " Tilt: (%d, %d)),\n",
-  point.id,
-  point.state,
-  point.screenPosition.x,
-  point.screenPosition.y,
-  point.position.x,
-  point.position.y,
-  point.radiusX,
-  point.radiusY,
-  point.rotationAngle,
-  point.force,
-  point.tiltX,
-  point.tiltY);
+                "  (ID: %d, State: %d, ScreenPos: (%f, %f), Pos: (%f, %f),"
+                " Radius: (%f, %f), Rot: %f, Force: %f,"
+                " Tilt: (%d, %d)),\n",
+                point.id, point.state, point.screen_position.x,
+                point.screen_position.y, point.position.x, point.position.y,
+                point.radius_x, point.radius_y, point.rotation_angle,
+                point.force, point.tilt_x, point.tilt_y);
 }
 
 void ApppendEventDetails(const WebTouchEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Touches: %u, DispatchType: %d, CausesScrolling: %d,"
                 " uniqueTouchEventId: %u\n[\n",
-                event.touchesLength, event.dispatchType,
-                event.movedBeyondSlopRegion, event.uniqueTouchEventId);
-  for (unsigned i = 0; i < event.touchesLength; ++i)
+                event.touches_length, event.dispatch_type,
+                event.moved_beyond_slop_region, event.unique_touch_event_id);
+  for (unsigned i = 0; i < event.touches_length; ++i)
     ApppendTouchPointDetails(event.touches[i], result);
   result->append(" ]\n}");
 }
@@ -117,8 +103,8 @@ struct WebInputEventToString {
   template <class EventType>
   bool Execute(const WebInputEvent& event, std::string* result) const {
     SStringPrintf(result, "%s (Time: %lf, Modifiers: %d)\n",
-                  WebInputEvent::GetName(event.type()),
-                  event.timeStampSeconds(), event.modifiers());
+                  WebInputEvent::GetName(event.GetType()),
+                  event.TimeStampSeconds(), event.GetModifiers());
     const EventType& typed_event = static_cast<const EventType&>(event);
     ApppendEventDetails(typed_event, result);
     return true;
@@ -149,15 +135,15 @@ bool Apply(Operator op,
            WebInputEvent::Type type,
            const ArgIn& arg_in,
            ArgOut* arg_out) {
-  if (WebInputEvent::isMouseEventType(type))
+  if (WebInputEvent::IsMouseEventType(type))
     return op.template Execute<WebMouseEvent>(arg_in, arg_out);
-  else if (type == WebInputEvent::MouseWheel)
+  else if (type == WebInputEvent::kMouseWheel)
     return op.template Execute<WebMouseWheelEvent>(arg_in, arg_out);
-  else if (WebInputEvent::isKeyboardEventType(type))
+  else if (WebInputEvent::IsKeyboardEventType(type))
     return op.template Execute<WebKeyboardEvent>(arg_in, arg_out);
-  else if (WebInputEvent::isTouchEventType(type))
+  else if (WebInputEvent::IsTouchEventType(type))
     return op.template Execute<WebTouchEvent>(arg_in, arg_out);
-  else if (WebInputEvent::isGestureEventType(type))
+  else if (WebInputEvent::IsGestureEventType(type))
     return op.template Execute<WebGestureEvent>(arg_in, arg_out);
 
   NOTREACHED() << "Unknown webkit event type " << type;
@@ -170,12 +156,12 @@ void WebInputEventDeleter::operator()(WebInputEvent* event) const {
   if (!event)
     return;
   void* temp = nullptr;
-  Apply(WebInputEventDelete(), event->type(), event, temp);
+  Apply(WebInputEventDelete(), event->GetType(), event, temp);
 }
 
 std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
   std::string result;
-  Apply(WebInputEventToString(), event.type(), event, &result);
+  Apply(WebInputEventToString(), event.GetType(), event, &result);
   return result;
 }
 
@@ -187,49 +173,49 @@ size_t WebInputEventTraits::GetSize(WebInputEvent::Type type) {
 
 WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
   WebScopedInputEvent scoped_event;
-  Apply(WebInputEventClone(), event.type(), event, &scoped_event);
+  Apply(WebInputEventClone(), event.GetType(), event, &scoped_event);
   return scoped_event;
 }
 
 bool WebInputEventTraits::ShouldBlockEventStream(
     const WebInputEvent& event,
     bool raf_aligned_touch_enabled) {
-  switch (event.type()) {
-    case WebInputEvent::MouseDown:
-    case WebInputEvent::MouseUp:
-    case WebInputEvent::MouseEnter:
-    case WebInputEvent::MouseLeave:
-    case WebInputEvent::ContextMenu:
-    case WebInputEvent::GestureScrollBegin:
-    case WebInputEvent::GestureScrollEnd:
-    case WebInputEvent::GestureShowPress:
-    case WebInputEvent::GestureTapUnconfirmed:
-    case WebInputEvent::GestureTapDown:
-    case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GesturePinchBegin:
-    case WebInputEvent::GesturePinchEnd:
+  switch (event.GetType()) {
+    case WebInputEvent::kMouseDown:
+    case WebInputEvent::kMouseUp:
+    case WebInputEvent::kMouseEnter:
+    case WebInputEvent::kMouseLeave:
+    case WebInputEvent::kContextMenu:
+    case WebInputEvent::kGestureScrollBegin:
+    case WebInputEvent::kGestureScrollEnd:
+    case WebInputEvent::kGestureShowPress:
+    case WebInputEvent::kGestureTapUnconfirmed:
+    case WebInputEvent::kGestureTapDown:
+    case WebInputEvent::kGestureTapCancel:
+    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::kGesturePinchEnd:
       return false;
 
     // TouchCancel and TouchScrollStarted should always be non-blocking.
-    case WebInputEvent::TouchCancel:
-    case WebInputEvent::TouchScrollStarted:
-      DCHECK_NE(WebInputEvent::Blocking,
-                static_cast<const WebTouchEvent&>(event).dispatchType);
+    case WebInputEvent::kTouchCancel:
+    case WebInputEvent::kTouchScrollStarted:
+      DCHECK_NE(WebInputEvent::kBlocking,
+                static_cast<const WebTouchEvent&>(event).dispatch_type);
       return false;
 
     // Touch start and touch end indicate whether they are non-blocking
     // (aka uncancelable) on the event.
-    case WebInputEvent::TouchStart:
-    case WebInputEvent::TouchEnd:
-      return static_cast<const WebTouchEvent&>(event).dispatchType ==
-             WebInputEvent::Blocking;
+    case WebInputEvent::kTouchStart:
+    case WebInputEvent::kTouchEnd:
+      return static_cast<const WebTouchEvent&>(event).dispatch_type ==
+             WebInputEvent::kBlocking;
 
-    case WebInputEvent::TouchMove:
+    case WebInputEvent::kTouchMove:
       // Non-blocking touch moves can be ack'd right away if raf_aligned
       // touch is enabled.
       if (raf_aligned_touch_enabled) {
-        return static_cast<const WebTouchEvent&>(event).dispatchType ==
-               WebInputEvent::Blocking;
+        return static_cast<const WebTouchEvent&>(event).dispatch_type ==
+               WebInputEvent::kBlocking;
       }
       // Touch move events may be non-blocking but are always explicitly
       // acknowledge by the renderer so they block the event stream.
@@ -244,8 +230,8 @@ bool WebInputEventTraits::CanCauseScroll(
 #if defined(USE_AURA)
   // Scroll events generated from the mouse wheel when the control key is held
   // don't trigger scrolling. Instead, they may cause zooming.
-  return event.hasPreciseScrollingDeltas ||
-         (event.modifiers() & blink::WebInputEvent::ControlKey) == 0;
+  return event.has_precise_scrolling_deltas ||
+         (event.GetModifiers() & blink::WebInputEvent::kControlKey) == 0;
 #else
   return true;
 #endif
@@ -253,8 +239,8 @@ bool WebInputEventTraits::CanCauseScroll(
 
 uint32_t WebInputEventTraits::GetUniqueTouchEventId(
     const WebInputEvent& event) {
-  if (WebInputEvent::isTouchEventType(event.type())) {
-    return static_cast<const WebTouchEvent&>(event).uniqueTouchEventId;
+  if (WebInputEvent::IsTouchEventType(event.GetType())) {
+    return static_cast<const WebTouchEvent&>(event).unique_touch_event_id;
   }
   return 0U;
 }
@@ -263,10 +249,11 @@ uint32_t WebInputEventTraits::GetUniqueTouchEventId(
 LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
     const WebGestureEvent& event) {
   SourceEventType source_event_type = SourceEventType::UNKNOWN;
-  if (event.sourceDevice == blink::WebGestureDevice::WebGestureDeviceTouchpad) {
+  if (event.source_device ==
+      blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
     source_event_type = SourceEventType::WHEEL;
-  } else if (event.sourceDevice ==
-             blink::WebGestureDevice::WebGestureDeviceTouchscreen) {
+  } else if (event.source_device ==
+             blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
     source_event_type = SourceEventType::TOUCH;
   }
   LatencyInfo latency_info(source_event_type);

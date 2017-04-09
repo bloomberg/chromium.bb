@@ -23,38 +23,38 @@ class CORE_EXPORT PaintInvalidationCapableScrollableArea
     : public ScrollableArea {
  public:
   PaintInvalidationCapableScrollableArea()
-      : m_horizontalScrollbarPreviouslyWasOverlay(false),
-        m_verticalScrollbarPreviouslyWasOverlay(false) {}
+      : horizontal_scrollbar_previously_was_overlay_(false),
+        vertical_scrollbar_previously_was_overlay_(false) {}
 
-  void willRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
+  void WillRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
-  void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&);
-  void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
+  void InvalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&);
+  void InvalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
 
   // Should be called when the previous visual rects are no longer valid.
-  void clearPreviousVisualRects();
+  void ClearPreviousVisualRects();
 
-  virtual IntRect scrollCornerAndResizerRect() const {
-    return scrollCornerRect();
+  virtual IntRect ScrollCornerAndResizerRect() const {
+    return ScrollCornerRect();
   }
 
-  void didScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) override;
+  void DidScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) override;
 
  private:
-  virtual LayoutScrollbarPart* scrollCorner() const = 0;
-  virtual LayoutScrollbarPart* resizer() const = 0;
+  virtual LayoutScrollbarPart* ScrollCorner() const = 0;
+  virtual LayoutScrollbarPart* Resizer() const = 0;
 
-  void scrollControlWasSetNeedsPaintInvalidation() override;
+  void ScrollControlWasSetNeedsPaintInvalidation() override;
 
-  void setHorizontalScrollbarVisualRect(const LayoutRect&);
-  void setVerticalScrollbarVisualRect(const LayoutRect&);
-  void setScrollCornerAndResizerVisualRect(const LayoutRect&);
+  void SetHorizontalScrollbarVisualRect(const LayoutRect&);
+  void SetVerticalScrollbarVisualRect(const LayoutRect&);
+  void SetScrollCornerAndResizerVisualRect(const LayoutRect&);
 
-  bool m_horizontalScrollbarPreviouslyWasOverlay;
-  bool m_verticalScrollbarPreviouslyWasOverlay;
-  LayoutRect m_horizontalScrollbarVisualRect;
-  LayoutRect m_verticalScrollbarVisualRect;
-  LayoutRect m_scrollCornerAndResizerVisualRect;
+  bool horizontal_scrollbar_previously_was_overlay_;
+  bool vertical_scrollbar_previously_was_overlay_;
+  LayoutRect horizontal_scrollbar_visual_rect_;
+  LayoutRect vertical_scrollbar_visual_rect_;
+  LayoutRect scroll_corner_and_resizer_visual_rect_;
 };
 
 }  // namespace blink

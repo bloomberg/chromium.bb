@@ -16,33 +16,33 @@ class StaticBitmapImage;
 
 class OffscreenCanvasFrameDispatcherClient {
  public:
-  virtual void beginFrame() = 0;
+  virtual void BeginFrame() = 0;
 };
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
   virtual ~OffscreenCanvasFrameDispatcher() {}
-  virtual void dispatchFrame(RefPtr<StaticBitmapImage>,
-                             double commitStartTime,
-                             bool isWebGLSoftwareRendering) = 0;
-  virtual void setNeedsBeginFrame(bool) = 0;
-  virtual void reclaimResource(unsigned resourceId) = 0;
+  virtual void DispatchFrame(RefPtr<StaticBitmapImage>,
+                             double commit_start_time,
+                             bool is_web_gl_software_rendering) = 0;
+  virtual void SetNeedsBeginFrame(bool) = 0;
+  virtual void ReclaimResource(unsigned resource_id) = 0;
 
-  virtual void reshape(int width, int height) = 0;
+  virtual void Reshape(int width, int height) = 0;
 
-  WeakPtr<OffscreenCanvasFrameDispatcher> createWeakPtr() {
-    return m_weakPtrFactory.createWeakPtr();
+  WeakPtr<OffscreenCanvasFrameDispatcher> CreateWeakPtr() {
+    return weak_ptr_factory_.CreateWeakPtr();
   }
 
-  OffscreenCanvasFrameDispatcherClient* client() { return m_client; }
+  OffscreenCanvasFrameDispatcherClient* Client() { return client_; }
 
  protected:
   OffscreenCanvasFrameDispatcher(OffscreenCanvasFrameDispatcherClient* client)
-      : m_weakPtrFactory(this), m_client(client) {}
+      : weak_ptr_factory_(this), client_(client) {}
 
  private:
-  WeakPtrFactory<OffscreenCanvasFrameDispatcher> m_weakPtrFactory;
-  OffscreenCanvasFrameDispatcherClient* m_client;
+  WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
+  OffscreenCanvasFrameDispatcherClient* client_;
 };
 
 }  // namespace blink

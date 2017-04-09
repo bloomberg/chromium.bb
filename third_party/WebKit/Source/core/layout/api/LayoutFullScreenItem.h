@@ -13,26 +13,26 @@ namespace blink {
 
 class LayoutFullScreenItem : public LayoutBlockItem {
  public:
-  explicit LayoutFullScreenItem(LayoutBlock* layoutBlock)
-      : LayoutBlockItem(layoutBlock) {}
+  explicit LayoutFullScreenItem(LayoutBlock* layout_block)
+      : LayoutBlockItem(layout_block) {}
 
   explicit LayoutFullScreenItem(const LayoutBlockItem& item)
       : LayoutBlockItem(item) {
-    SECURITY_DCHECK(!item || item.isLayoutFullScreen());
+    SECURITY_DCHECK(!item || item.IsLayoutFullScreen());
   }
 
   explicit LayoutFullScreenItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
   LayoutFullScreenItem() {}
 
-  void unwrapLayoutObject() { return toFullScreen()->unwrapLayoutObject(); }
+  void UnwrapLayoutObject() { return ToFullScreen()->UnwrapLayoutObject(); }
 
  private:
-  LayoutFullScreen* toFullScreen() {
-    return toLayoutFullScreen(layoutObject());
+  LayoutFullScreen* ToFullScreen() {
+    return ToLayoutFullScreen(GetLayoutObject());
   }
-  const LayoutFullScreen* toFullScreen() const {
-    return toLayoutFullScreen(layoutObject());
+  const LayoutFullScreen* ToFullScreen() const {
+    return ToLayoutFullScreen(GetLayoutObject());
   }
 };
 

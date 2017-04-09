@@ -28,12 +28,12 @@ class MODULES_EXPORT MediaSession final
       blink::mojom::blink::MediaSessionClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(MediaSession, dispose);
+  USING_PRE_FINALIZER(MediaSession, Dispose);
 
  public:
-  static MediaSession* create(ExecutionContext*);
+  static MediaSession* Create(ExecutionContext*);
 
-  void dispose();
+  void Dispose();
 
   void setPlaybackState(const String&);
   String playbackState();
@@ -45,7 +45,7 @@ class MODULES_EXPORT MediaSession final
 
   // Called by the MediaMetadata owned by |this| when it has updates. Also used
   // internally when a new MediaMetadata object is set.
-  void onMetadataChanged();
+  void OnMetadataChanged();
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -55,26 +55,26 @@ class MODULES_EXPORT MediaSession final
   friend class MediaSessionTest;
 
   enum class ActionChangeType {
-    ActionEnabled,
-    ActionDisabled,
+    kActionEnabled,
+    kActionDisabled,
   };
 
   explicit MediaSession(ExecutionContext*);
 
-  void notifyActionChange(const String& action, ActionChangeType);
+  void NotifyActionChange(const String& action, ActionChangeType);
 
   // blink::mojom::blink::MediaSessionClient implementation.
   void DidReceiveAction(blink::mojom::blink::MediaSessionAction) override;
 
   // Returns null when the ExecutionContext is not document.
-  mojom::blink::MediaSessionService* getService();
+  mojom::blink::MediaSessionService* GetService();
 
-  mojom::blink::MediaSessionPlaybackState m_playbackState;
-  Member<MediaMetadata> m_metadata;
+  mojom::blink::MediaSessionPlaybackState playback_state_;
+  Member<MediaMetadata> metadata_;
   HeapHashMap<String, TraceWrapperMember<MediaSessionActionHandler>>
-      m_actionHandlers;
-  mojom::blink::MediaSessionServicePtr m_service;
-  mojo::Binding<blink::mojom::blink::MediaSessionClient> m_clientBinding;
+      action_handlers_;
+  mojom::blink::MediaSessionServicePtr service_;
+  mojo::Binding<blink::mojom::blink::MediaSessionClient> client_binding_;
 };
 
 }  // namespace blink

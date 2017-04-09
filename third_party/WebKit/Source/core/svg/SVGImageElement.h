@@ -42,54 +42,56 @@ class CORE_EXPORT SVGImageElement final : public SVGGraphicsElement,
   DECLARE_NODE_FACTORY(SVGImageElement);
   DECLARE_VIRTUAL_TRACE();
 
-  bool currentFrameHasSingleSecurityOrigin() const;
+  bool CurrentFrameHasSingleSecurityOrigin() const;
 
-  SVGAnimatedLength* x() const { return m_x.get(); }
-  SVGAnimatedLength* y() const { return m_y.get(); }
-  SVGAnimatedLength* width() const { return m_width.get(); }
-  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedLength* x() const { return x_.Get(); }
+  SVGAnimatedLength* y() const { return y_.Get(); }
+  SVGAnimatedLength* width() const { return width_.Get(); }
+  SVGAnimatedLength* height() const { return height_.Get(); }
   SVGAnimatedPreserveAspectRatio* preserveAspectRatio() {
-    return m_preserveAspectRatio.get();
+    return preserve_aspect_ratio_.Get();
   }
 
   // Exposed for testing.
-  ImageResourceContent* cachedImage() const { return imageLoader().image(); }
+  ImageResourceContent* CachedImage() const {
+    return GetImageLoader().GetImage();
+  }
 
  private:
   explicit SVGImageElement(Document&);
 
-  bool isStructurallyExternal() const override {
-    return !hrefString().isNull();
+  bool IsStructurallyExternal() const override {
+    return !HrefString().IsNull();
   }
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  const AtomicString imageSourceURL() const override;
+  const AtomicString ImageSourceURL() const override;
 
-  bool haveLoadedRequiredResources() override;
+  bool HaveLoadedRequiredResources() override;
 
-  bool selfHasRelativeLengths() const override;
-  void didMoveToNewDocument(Document& oldDocument) override;
-  SVGImageLoader& imageLoader() const override { return *m_imageLoader; }
-  FloatSize sourceDefaultObjectSize() override;
+  bool SelfHasRelativeLengths() const override;
+  void DidMoveToNewDocument(Document& old_document) override;
+  SVGImageLoader& GetImageLoader() const override { return *image_loader_; }
+  FloatSize SourceDefaultObjectSize() override;
 
-  Member<SVGAnimatedLength> m_x;
-  Member<SVGAnimatedLength> m_y;
-  Member<SVGAnimatedLength> m_width;
-  Member<SVGAnimatedLength> m_height;
-  Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+  Member<SVGAnimatedLength> x_;
+  Member<SVGAnimatedLength> y_;
+  Member<SVGAnimatedLength> width_;
+  Member<SVGAnimatedLength> height_;
+  Member<SVGAnimatedPreserveAspectRatio> preserve_aspect_ratio_;
 
-  Member<SVGImageLoader> m_imageLoader;
-  bool m_needsLoaderURIUpdate : 1;
+  Member<SVGImageLoader> image_loader_;
+  bool needs_loader_uri_update_ : 1;
 };
 
 }  // namespace blink

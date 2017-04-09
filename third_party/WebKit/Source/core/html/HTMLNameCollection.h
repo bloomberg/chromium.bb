@@ -35,7 +35,7 @@ class HTMLNameCollection : public HTMLCollection {
  protected:
   HTMLNameCollection(ContainerNode&, CollectionType, const AtomicString& name);
 
-  AtomicString m_name;
+  AtomicString name_;
 };
 
 }  // namespace blink

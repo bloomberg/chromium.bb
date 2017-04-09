@@ -31,9 +31,9 @@
 namespace blink {
 
 LayoutWordBreak::LayoutWordBreak(HTMLElement* element)
-    : LayoutText(element, StringImpl::empty) {}
+    : LayoutText(element, StringImpl::empty_) {}
 
-bool LayoutWordBreak::isWordBreak() const {
+bool LayoutWordBreak::IsWordBreak() const {
   return true;
 }
 

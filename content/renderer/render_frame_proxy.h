@@ -128,21 +128,21 @@ class CONTENT_EXPORT RenderFrameProxy
   RenderWidget* render_widget() { return render_widget_; }
 
   // blink::WebRemoteFrameClient implementation:
-  void frameDetached(DetachType type) override;
-  void forwardPostMessage(blink::WebLocalFrame* sourceFrame,
+  void FrameDetached(DetachType type) override;
+  void ForwardPostMessage(blink::WebLocalFrame* sourceFrame,
                           blink::WebRemoteFrame* targetFrame,
                           blink::WebSecurityOrigin target,
                           blink::WebDOMMessageEvent event) override;
-  void navigate(const blink::WebURLRequest& request,
+  void Navigate(const blink::WebURLRequest& request,
                 bool should_replace_current_entry) override;
-  void frameRectsChanged(const blink::WebRect& frame_rect) override;
-  void updateRemoteViewportIntersection(
+  void FrameRectsChanged(const blink::WebRect& frame_rect) override;
+  void UpdateRemoteViewportIntersection(
       const blink::WebRect& viewportIntersection) override;
-  void visibilityChanged(bool visible) override;
-  void didChangeOpener(blink::WebFrame* opener) override;
-  void advanceFocus(blink::WebFocusType type,
+  void VisibilityChanged(bool visible) override;
+  void DidChangeOpener(blink::WebFrame* opener) override;
+  void AdvanceFocus(blink::WebFocusType type,
                     blink::WebLocalFrame* source) override;
-  void frameFocused() override;
+  void FrameFocused() override;
 
   // IPC handlers
   void OnDidStartLoading();

@@ -11,13 +11,13 @@ namespace blink {
 DEFINE_WEAK_IDENTIFIER_MAP(Node);
 
 // static
-int DOMNodeIds::idForNode(Node* node) {
-  return WeakIdentifierMap<Node>::identifier(node);
+int DOMNodeIds::IdForNode(Node* node) {
+  return WeakIdentifierMap<Node>::Identifier(node);
 }
 
 // static
-Node* DOMNodeIds::nodeForId(int id) {
-  return WeakIdentifierMap<Node>::lookup(id);
+Node* DOMNodeIds::NodeForId(int id) {
+  return WeakIdentifierMap<Node>::Lookup(id);
 }
 
 }  // namespace blink

@@ -11,13 +11,13 @@ namespace content {
 WebPublicSuffixListImpl::~WebPublicSuffixListImpl() {
 }
 
-size_t WebPublicSuffixListImpl::getPublicSuffixLength(
+size_t WebPublicSuffixListImpl::GetPublicSuffixLength(
     const blink::WebString& host) {
   // Blink passes some things that aren't technically hosts like "*.foo", so
   // use the permissive variant.
   size_t result =
       net::registry_controlled_domains::PermissiveGetHostRegistryLength(
-          host.utf8(),
+          host.Utf8(),
           net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   return result ? result : host.length();

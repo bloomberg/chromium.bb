@@ -34,95 +34,95 @@
 
 namespace blink {
 
-TypeAhead::TypeAhead(TypeAheadDataSource* dataSource)
-    : m_dataSource(dataSource), m_repeatingChar(0) {}
+TypeAhead::TypeAhead(TypeAheadDataSource* data_source)
+    : data_source_(data_source), repeating_char_(0) {}
 
-static const TimeDelta typeAheadTimeout = TimeDelta::FromSecondsD(1);
+static const TimeDelta kTypeAheadTimeout = TimeDelta::FromSecondsD(1);
 
-static String stripLeadingWhiteSpace(const String& string) {
+static String StripLeadingWhiteSpace(const String& string) {
   unsigned length = string.length();
 
   unsigned i;
   for (i = 0; i < length; ++i) {
-    if (string[i] != noBreakSpaceCharacter && !isSpaceOrNewline(string[i]))
+    if (string[i] != kNoBreakSpaceCharacter && !IsSpaceOrNewline(string[i]))
       break;
   }
 
-  return string.substring(i, length - i);
+  return string.Substring(i, length - i);
 }
 
-int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode) {
-  if (event->platformTimeStamp() < m_lastTypeTime)
+int TypeAhead::HandleEvent(KeyboardEvent* event, MatchModeFlags match_mode) {
+  if (event->PlatformTimeStamp() < last_type_time_)
     return -1;
 
-  int optionCount = m_dataSource->optionCount();
-  TimeDelta delta = event->platformTimeStamp() - m_lastTypeTime;
-  m_lastTypeTime = event->platformTimeStamp();
+  int option_count = data_source_->OptionCount();
+  TimeDelta delta = event->PlatformTimeStamp() - last_type_time_;
+  last_type_time_ = event->PlatformTimeStamp();
 
   UChar c = event->charCode();
 
-  if (delta > typeAheadTimeout)
-    m_buffer.clear();
+  if (delta > kTypeAheadTimeout)
+    buffer_.Clear();
 
-  m_buffer.append(c);
+  buffer_.Append(c);
 
-  if (optionCount < 1)
+  if (option_count < 1)
     return -1;
 
-  int searchStartOffset = 1;
+  int search_start_offset = 1;
   String prefix;
-  if (matchMode & CycleFirstChar && c == m_repeatingChar) {
+  if (match_mode & kCycleFirstChar && c == repeating_char_) {
     // The user is likely trying to cycle through all the items starting
     // with this character, so just search on the character.
     prefix = String(&c, 1);
-    m_repeatingChar = c;
-  } else if (matchMode & MatchPrefix) {
-    prefix = m_buffer.toString();
-    if (m_buffer.length() > 1) {
-      m_repeatingChar = 0;
-      searchStartOffset = 0;
+    repeating_char_ = c;
+  } else if (match_mode & kMatchPrefix) {
+    prefix = buffer_.ToString();
+    if (buffer_.length() > 1) {
+      repeating_char_ = 0;
+      search_start_offset = 0;
     } else {
-      m_repeatingChar = c;
+      repeating_char_ = c;
     }
   }
 
-  if (!prefix.isEmpty()) {
-    int selected = m_dataSource->indexOfSelectedOption();
-    int index = (selected < 0 ? 0 : selected) + searchStartOffset;
-    index %= optionCount;
+  if (!prefix.IsEmpty()) {
+    int selected = data_source_->IndexOfSelectedOption();
+    int index = (selected < 0 ? 0 : selected) + search_start_offset;
+    index %= option_count;
 
     // Compute a case-folded copy of the prefix string before beginning the
     // search for a matching element. This code uses foldCase to work around the
     // fact that String::startWith does not fold non-ASCII characters. This code
     // can be changed to use startWith once that is fixed.
-    String prefixWithCaseFolded(prefix.foldCase());
-    for (int i = 0; i < optionCount; ++i, index = (index + 1) % optionCount) {
+    String prefix_with_case_folded(prefix.FoldCase());
+    for (int i = 0; i < option_count; ++i, index = (index + 1) % option_count) {
       // Fold the option string and check if its prefix is equal to the folded
       // prefix.
-      String text = m_dataSource->optionAtIndex(index);
-      if (stripLeadingWhiteSpace(text).foldCase().startsWith(
-              prefixWithCaseFolded))
+      String text = data_source_->OptionAtIndex(index);
+      if (StripLeadingWhiteSpace(text).FoldCase().StartsWith(
+              prefix_with_case_folded))
         return index;
     }
   }
 
-  if (matchMode & MatchIndex) {
+  if (match_mode & kMatchIndex) {
     bool ok = false;
-    int index = m_buffer.toString().toInt(&ok);
-    if (index > 0 && index <= optionCount)
+    int index = buffer_.ToString().ToInt(&ok);
+    if (index > 0 && index <= option_count)
       return index - 1;
   }
   return -1;
 }
 
-bool TypeAhead::hasActiveSession(KeyboardEvent* event) {
-  TimeDelta delta = event->platformTimeStamp() - m_lastTypeTime;
-  return delta <= typeAheadTimeout;
+bool TypeAhead::HasActiveSession(KeyboardEvent* event) {
+  TimeDelta delta = event->PlatformTimeStamp() - last_type_time_;
+  return delta <= kTypeAheadTimeout;
 }
 
-void TypeAhead::resetSession() {
-  m_lastTypeTime = TimeTicks();
-  m_buffer.clear();
+void TypeAhead::ResetSession() {
+  last_type_time_ = TimeTicks();
+  buffer_.Clear();
 }
 
 }  // namespace blink

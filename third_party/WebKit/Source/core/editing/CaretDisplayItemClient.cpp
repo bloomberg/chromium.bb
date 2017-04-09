@@ -47,258 +47,264 @@ namespace blink {
 CaretDisplayItemClient::CaretDisplayItemClient() = default;
 CaretDisplayItemClient::~CaretDisplayItemClient() = default;
 
-static inline bool caretRendersInsideNode(const Node* node) {
-  return node && !isDisplayInsideTable(node) && !editingIgnoresContent(*node);
+static inline bool CaretRendersInsideNode(const Node* node) {
+  return node && !IsDisplayInsideTable(node) && !EditingIgnoresContent(*node);
 }
 
-LayoutBlock* CaretDisplayItemClient::caretLayoutBlock(const Node* node) {
+LayoutBlock* CaretDisplayItemClient::CaretLayoutBlock(const Node* node) {
   if (!node)
     return nullptr;
 
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
     return nullptr;
 
   // if caretNode is a block and caret is inside it then caret should be painted
   // by that block
-  bool paintedByBlock =
-      layoutObject->isLayoutBlock() && caretRendersInsideNode(node);
+  bool painted_by_block =
+      layout_object->IsLayoutBlock() && CaretRendersInsideNode(node);
   // TODO(yoichio): This function is called at least
   // DocumentLifeCycle::LayoutClean but caretRendersInsideNode above can
   // layout. Thus |node->layoutObject()| can be changed then this is bad
   // design. We should make caret painting algorithm clean.
-  CHECK_EQ(layoutObject, node->layoutObject())
+  CHECK_EQ(layout_object, node->GetLayoutObject())
       << "Layout tree should not changed";
-  return paintedByBlock ? toLayoutBlock(layoutObject)
-                        : layoutObject->containingBlock();
+  return painted_by_block ? ToLayoutBlock(layout_object)
+                          : layout_object->ContainingBlock();
 }
 
-static LayoutRect mapCaretRectToCaretPainter(
-    LayoutItem caretLayoutItem,
-    LayoutBlockItem caretPainterItem,
-    const LayoutRect& passedCaretRect) {
+static LayoutRect MapCaretRectToCaretPainter(
+    LayoutItem caret_layout_item,
+    LayoutBlockItem caret_painter_item,
+    const LayoutRect& passed_caret_rect) {
   // FIXME: This shouldn't be called on un-rooted subtrees.
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
 
-  DCHECK(caretLayoutItem.isDescendantOf(caretPainterItem));
+  DCHECK(caret_layout_item.IsDescendantOf(caret_painter_item));
 
-  LayoutRect caretRect = passedCaretRect;
-  while (caretLayoutItem != caretPainterItem) {
-    LayoutItem containerItem = caretLayoutItem.container();
-    if (containerItem.isNull())
+  LayoutRect caret_rect = passed_caret_rect;
+  while (caret_layout_item != caret_painter_item) {
+    LayoutItem container_item = caret_layout_item.Container();
+    if (container_item.IsNull())
       return LayoutRect();
-    caretRect.move(caretLayoutItem.offsetFromContainer(containerItem));
-    caretLayoutItem = containerItem;
+    caret_rect.Move(caret_layout_item.OffsetFromContainer(container_item));
+    caret_layout_item = container_item;
   }
-  return caretRect;
+  return caret_rect;
 }
 
-LayoutRect CaretDisplayItemClient::computeCaretRect(
-    const PositionWithAffinity& caretPosition) {
-  if (caretPosition.isNull())
+LayoutRect CaretDisplayItemClient::ComputeCaretRect(
+    const PositionWithAffinity& caret_position) {
+  if (caret_position.IsNull())
     return LayoutRect();
 
-  DCHECK(caretPosition.anchorNode()->layoutObject());
+  DCHECK(caret_position.AnchorNode()->GetLayoutObject());
 
   // First compute a rect local to the layoutObject at the selection start.
-  LayoutObject* layoutObject;
-  const LayoutRect& caretLocalRect =
-      localCaretRectOfPosition(caretPosition, layoutObject);
+  LayoutObject* layout_object;
+  const LayoutRect& caret_local_rect =
+      LocalCaretRectOfPosition(caret_position, layout_object);
 
   // Get the layoutObject that will be responsible for painting the caret
   // (which is either the layoutObject we just found, or one of its containers).
-  LayoutBlockItem caretPainterItem =
-      LayoutBlockItem(caretLayoutBlock(caretPosition.anchorNode()));
-  LayoutRect caretLocalRectWithWritingMode = caretLocalRect;
-  caretPainterItem.flipForWritingMode(caretLocalRectWithWritingMode);
-  return mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem,
-                                    caretLocalRectWithWritingMode);
+  LayoutBlockItem caret_painter_item =
+      LayoutBlockItem(CaretLayoutBlock(caret_position.AnchorNode()));
+  LayoutRect caret_local_rect_with_writing_mode = caret_local_rect;
+  caret_painter_item.FlipForWritingMode(caret_local_rect_with_writing_mode);
+  return MapCaretRectToCaretPainter(LayoutItem(layout_object),
+                                    caret_painter_item,
+                                    caret_local_rect_with_writing_mode);
 }
 
-void CaretDisplayItemClient::clearPreviousVisualRect(const LayoutBlock& block) {
-  if (block == m_layoutBlock)
-    m_visualRect = LayoutRect();
-  if (block == m_previousLayoutBlock)
-    m_visualRectInPreviousLayoutBlock = LayoutRect();
+void CaretDisplayItemClient::ClearPreviousVisualRect(const LayoutBlock& block) {
+  if (block == layout_block_)
+    visual_rect_ = LayoutRect();
+  if (block == previous_layout_block_)
+    visual_rect_in_previous_layout_block_ = LayoutRect();
 }
 
-void CaretDisplayItemClient::layoutBlockWillBeDestroyed(
+void CaretDisplayItemClient::LayoutBlockWillBeDestroyed(
     const LayoutBlock& block) {
-  if (block == m_layoutBlock)
-    m_layoutBlock = nullptr;
-  if (block == m_previousLayoutBlock)
-    m_previousLayoutBlock = nullptr;
+  if (block == layout_block_)
+    layout_block_ = nullptr;
+  if (block == previous_layout_block_)
+    previous_layout_block_ = nullptr;
 }
 
-void CaretDisplayItemClient::updateStyleAndLayoutIfNeeded(
-    const PositionWithAffinity& caretPosition) {
+void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
+    const PositionWithAffinity& caret_position) {
   // This method may be called multiple times (e.g. in partial lifecycle
   // updates) before a paint invalidation. We should save m_previousLayoutBlock
   // and m_visualRectInPreviousLayoutBlock only if they have not been saved
   // since the last paint invalidation to ensure the caret painted in the
   // previous paint invalidated block will be invalidated. We don't care about
   // intermediate changes of layoutBlock because they are not painted.
-  if (!m_previousLayoutBlock) {
-    m_previousLayoutBlock = m_layoutBlock;
-    m_visualRectInPreviousLayoutBlock = m_visualRect;
+  if (!previous_layout_block_) {
+    previous_layout_block_ = layout_block_;
+    visual_rect_in_previous_layout_block_ = visual_rect_;
   }
 
-  LayoutBlock* newLayoutBlock = caretLayoutBlock(caretPosition.anchorNode());
-  if (newLayoutBlock != m_layoutBlock) {
-    if (m_layoutBlock)
-      m_layoutBlock->setMayNeedPaintInvalidation();
-    m_layoutBlock = newLayoutBlock;
-    m_visualRect = LayoutRect();
-    if (newLayoutBlock) {
-      m_needsPaintInvalidation = true;
-      if (newLayoutBlock == m_previousLayoutBlock) {
+  LayoutBlock* new_layout_block = CaretLayoutBlock(caret_position.AnchorNode());
+  if (new_layout_block != layout_block_) {
+    if (layout_block_)
+      layout_block_->SetMayNeedPaintInvalidation();
+    layout_block_ = new_layout_block;
+    visual_rect_ = LayoutRect();
+    if (new_layout_block) {
+      needs_paint_invalidation_ = true;
+      if (new_layout_block == previous_layout_block_) {
         // The caret has disappeared and is reappearing in the same block,
         // since the last paint invalidation. Set m_visualRect as if the caret
         // has always been there as paint invalidation doesn't care about the
         // intermediate changes.
-        m_visualRect = m_visualRectInPreviousLayoutBlock;
+        visual_rect_ = visual_rect_in_previous_layout_block_;
       }
     }
   }
 
-  if (!newLayoutBlock) {
-    m_color = Color();
-    m_localRect = LayoutRect();
+  if (!new_layout_block) {
+    color_ = Color();
+    local_rect_ = LayoutRect();
     return;
   }
 
-  Color newColor;
-  if (caretPosition.anchorNode()) {
-    newColor = caretPosition.anchorNode()->layoutObject()->resolveColor(
+  Color new_color;
+  if (caret_position.AnchorNode()) {
+    new_color = caret_position.AnchorNode()->GetLayoutObject()->ResolveColor(
         CSSPropertyCaretColor);
   }
-  if (newColor != m_color) {
-    m_needsPaintInvalidation = true;
-    m_color = newColor;
+  if (new_color != color_) {
+    needs_paint_invalidation_ = true;
+    color_ = new_color;
   }
 
-  LayoutRect newLocalRect = computeCaretRect(caretPosition);
-  if (newLocalRect != m_localRect) {
-    m_needsPaintInvalidation = true;
-    m_localRect = newLocalRect;
+  LayoutRect new_local_rect = ComputeCaretRect(caret_position);
+  if (new_local_rect != local_rect_) {
+    needs_paint_invalidation_ = true;
+    local_rect_ = new_local_rect;
   }
 
-  if (m_needsPaintInvalidation)
-    newLayoutBlock->setMayNeedPaintInvalidation();
+  if (needs_paint_invalidation_)
+    new_layout_block->SetMayNeedPaintInvalidation();
 }
 
-void CaretDisplayItemClient::invalidatePaintIfNeeded(
+void CaretDisplayItemClient::InvalidatePaintIfNeeded(
     const LayoutBlock& block,
     const PaintInvalidatorContext& context) {
-  if (block == m_layoutBlock) {
-    invalidatePaintInCurrentLayoutBlock(context);
+  if (block == layout_block_) {
+    InvalidatePaintInCurrentLayoutBlock(context);
     return;
   }
 
-  if (block == m_previousLayoutBlock)
-    invalidatePaintInPreviousLayoutBlock(context);
+  if (block == previous_layout_block_)
+    InvalidatePaintInPreviousLayoutBlock(context);
 }
 
-void CaretDisplayItemClient::invalidatePaintInPreviousLayoutBlock(
+void CaretDisplayItemClient::InvalidatePaintInPreviousLayoutBlock(
     const PaintInvalidatorContext& context) {
-  DCHECK(m_previousLayoutBlock);
+  DCHECK(previous_layout_block_);
 
-  ObjectPaintInvalidatorWithContext objectInvalidator(*m_previousLayoutBlock,
-                                                      context);
-  if (!isImmediateFullPaintInvalidationReason(
-          m_previousLayoutBlock->fullPaintInvalidationReason())) {
-    objectInvalidator.invalidatePaintRectangleWithContext(
-        m_visualRectInPreviousLayoutBlock, PaintInvalidationCaret);
+  ObjectPaintInvalidatorWithContext object_invalidator(*previous_layout_block_,
+                                                       context);
+  if (!IsImmediateFullPaintInvalidationReason(
+          previous_layout_block_->FullPaintInvalidationReason())) {
+    object_invalidator.InvalidatePaintRectangleWithContext(
+        visual_rect_in_previous_layout_block_, kPaintInvalidationCaret);
   }
 
-  context.paintingLayer->setNeedsRepaint();
-  objectInvalidator.invalidateDisplayItemClient(*this, PaintInvalidationCaret);
-  m_previousLayoutBlock = nullptr;
+  context.painting_layer->SetNeedsRepaint();
+  object_invalidator.InvalidateDisplayItemClient(*this,
+                                                 kPaintInvalidationCaret);
+  previous_layout_block_ = nullptr;
 }
 
-void CaretDisplayItemClient::invalidatePaintInCurrentLayoutBlock(
+void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
     const PaintInvalidatorContext& context) {
-  DCHECK(m_layoutBlock);
+  DCHECK(layout_block_);
 
-  LayoutRect newVisualRect;
+  LayoutRect new_visual_rect;
 #if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(*m_layoutBlock, context, m_visualRect,
-                                          newVisualRect);
+  FindVisualRectNeedingUpdateScope finder(*layout_block_, context, visual_rect_,
+                                          new_visual_rect);
 #endif
-  if (context.needsVisualRectUpdate(*m_layoutBlock)) {
-    if (!m_localRect.isEmpty()) {
-      newVisualRect = m_localRect;
-      context.mapLocalRectToVisualRectInBacking(*m_layoutBlock, newVisualRect);
+  if (context.NeedsVisualRectUpdate(*layout_block_)) {
+    if (!local_rect_.IsEmpty()) {
+      new_visual_rect = local_rect_;
+      context.MapLocalRectToVisualRectInBacking(*layout_block_,
+                                                new_visual_rect);
 
-      if (m_layoutBlock->usesCompositedScrolling()) {
+      if (layout_block_->UsesCompositedScrolling()) {
         // The caret should use scrolling coordinate space.
-        DCHECK(m_layoutBlock == context.paintInvalidationContainer);
-        newVisualRect.move(LayoutSize(m_layoutBlock->scrolledContentOffset()));
+        DCHECK(layout_block_ == context.paint_invalidation_container);
+        new_visual_rect.Move(
+            LayoutSize(layout_block_->ScrolledContentOffset()));
       }
     }
   } else {
-    newVisualRect = m_visualRect;
+    new_visual_rect = visual_rect_;
   }
 
-  if (m_layoutBlock == m_previousLayoutBlock)
-    m_previousLayoutBlock = nullptr;
+  if (layout_block_ == previous_layout_block_)
+    previous_layout_block_ = nullptr;
 
-  ObjectPaintInvalidatorWithContext objectInvalidator(*m_layoutBlock, context);
-  if (!m_needsPaintInvalidation && newVisualRect == m_visualRect) {
+  ObjectPaintInvalidatorWithContext object_invalidator(*layout_block_, context);
+  if (!needs_paint_invalidation_ && new_visual_rect == visual_rect_) {
     // The caret may change paint offset without changing visual rect, and we
     // need to invalidate the display item client if the block is doing full
     // paint invalidation.
-    if (isImmediateFullPaintInvalidationReason(
-            m_layoutBlock->fullPaintInvalidationReason()) ||
+    if (IsImmediateFullPaintInvalidationReason(
+            layout_block_->FullPaintInvalidationReason()) ||
         // For non-SPv2, ForcedSubtreeInvalidationChecking may hint change of
         // paint offset. See ObjectPaintInvalidatorWithContext::
         // invalidatePaintIfNeededWithComputedReason().
         (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-         (context.forcedSubtreeInvalidationFlags &
-          PaintInvalidatorContext::ForcedSubtreeInvalidationChecking))) {
-      objectInvalidator.invalidateDisplayItemClient(*this,
-                                                    PaintInvalidationCaret);
+         (context.forced_subtree_invalidation_flags &
+          PaintInvalidatorContext::kForcedSubtreeInvalidationChecking))) {
+      object_invalidator.InvalidateDisplayItemClient(*this,
+                                                     kPaintInvalidationCaret);
     }
     return;
   }
 
-  m_needsPaintInvalidation = false;
+  needs_paint_invalidation_ = false;
 
-  if (!isImmediateFullPaintInvalidationReason(
-          m_layoutBlock->fullPaintInvalidationReason())) {
-    objectInvalidator.fullyInvalidatePaint(PaintInvalidationCaret, m_visualRect,
-                                           newVisualRect);
+  if (!IsImmediateFullPaintInvalidationReason(
+          layout_block_->FullPaintInvalidationReason())) {
+    object_invalidator.FullyInvalidatePaint(kPaintInvalidationCaret,
+                                            visual_rect_, new_visual_rect);
   }
 
-  context.paintingLayer->setNeedsRepaint();
-  objectInvalidator.invalidateDisplayItemClient(*this, PaintInvalidationCaret);
+  context.painting_layer->SetNeedsRepaint();
+  object_invalidator.InvalidateDisplayItemClient(*this,
+                                                 kPaintInvalidationCaret);
 
-  m_visualRect = newVisualRect;
+  visual_rect_ = new_visual_rect;
 }
 
-void CaretDisplayItemClient::paintCaret(
+void CaretDisplayItemClient::PaintCaret(
     GraphicsContext& context,
-    const LayoutPoint& paintOffset,
-    DisplayItem::Type displayItemType) const {
-  if (DrawingRecorder::useCachedDrawingIfPossible(context, *this,
-                                                  displayItemType))
+    const LayoutPoint& paint_offset,
+    DisplayItem::Type display_item_type) const {
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, *this,
+                                                  display_item_type))
     return;
 
-  LayoutRect drawingRect = m_localRect;
-  drawingRect.moveBy(paintOffset);
+  LayoutRect drawing_rect = local_rect_;
+  drawing_rect.MoveBy(paint_offset);
 
-  IntRect paintRect = pixelSnappedIntRect(drawingRect);
-  DrawingRecorder drawingRecorder(context, *this, displayItemType, paintRect);
-  context.fillRect(paintRect, m_color);
+  IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
+  DrawingRecorder drawing_recorder(context, *this, display_item_type,
+                                   paint_rect);
+  context.FillRect(paint_rect, color_);
 }
 
-String CaretDisplayItemClient::debugName() const {
+String CaretDisplayItemClient::DebugName() const {
   return "Caret";
 }
 
-LayoutRect CaretDisplayItemClient::visualRect() const {
-  return m_visualRect;
+LayoutRect CaretDisplayItemClient::VisualRect() const {
+  return visual_rect_;
 }
 
 }  // namespace blink

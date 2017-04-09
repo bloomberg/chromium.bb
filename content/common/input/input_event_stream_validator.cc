@@ -37,12 +37,12 @@ void InputEventStreamValidator::Validate(const WebInputEvent& event) {
 bool InputEventStreamValidator::ValidateImpl(const blink::WebInputEvent& event,
                                              std::string* error_msg) {
   DCHECK(error_msg);
-  if (WebInputEvent::isGestureEventType(event.type())) {
+  if (WebInputEvent::IsGestureEventType(event.GetType())) {
     const WebGestureEvent& gesture = static_cast<const WebGestureEvent&>(event);
     // TODO(jdduke): Validate touchpad gesture streams.
-    if (gesture.sourceDevice == blink::WebGestureDeviceTouchscreen)
+    if (gesture.source_device == blink::kWebGestureDeviceTouchscreen)
       return gesture_validator_.Validate(gesture, error_msg);
-  } else if (WebInputEvent::isTouchEventType(event.type())) {
+  } else if (WebInputEvent::IsTouchEventType(event.GetType())) {
     const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(event);
     return touch_validator_.Validate(touch, error_msg);
   }

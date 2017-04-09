@@ -38,33 +38,33 @@ namespace {
 // The below code was adapted from the WebKit file webview.cpp
 //
 
-const unsigned CtrlKey = WebInputEvent::ControlKey;
-const unsigned AltKey = WebInputEvent::AltKey;
-const unsigned ShiftKey = WebInputEvent::ShiftKey;
-const unsigned MetaKey = WebInputEvent::MetaKey;
+const unsigned kCtrlKey = WebInputEvent::kControlKey;
+const unsigned kAltKey = WebInputEvent::kAltKey;
+const unsigned kShiftKey = WebInputEvent::kShiftKey;
+const unsigned kMetaKey = WebInputEvent::kMetaKey;
 #if OS(MACOSX)
 // Aliases for the generic key defintions to make kbd shortcuts definitions more
 // readable on OS X.
-const unsigned OptionKey = AltKey;
+const unsigned kOptionKey = kAltKey;
 
 // Do not use this constant for anything but cursor movement commands. Keys
 // with cmd set have their |isSystemKey| bit set, so chances are the shortcut
 // will not be executed. Another, less important, reason is that shortcuts
 // defined in the layoutObject do not blink the menu item that they triggered.
 // See http://crbug.com/25856 and the bugs linked from there for details.
-const unsigned CommandKey = MetaKey;
+const unsigned kCommandKey = kMetaKey;
 #endif
 
 // Keys with special meaning. These will be delegated to the editor using
 // the execCommand() method
 struct KeyboardCodeKeyDownEntry {
-  unsigned virtualKey;
+  unsigned virtual_key;
   unsigned modifiers;
   const char* name;
 };
 
 struct KeyboardCodeKeyPressEntry {
-  unsigned charCode;
+  unsigned char_code;
   unsigned modifiers;
   const char* name;
 };
@@ -84,104 +84,104 @@ struct DomKeyKeyDownEntry {
 // of Command-B and Command-I) so they shouldn't be added here.
 const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {VKEY_LEFT, 0, "MoveLeft"},
-    {VKEY_LEFT, ShiftKey, "MoveLeftAndModifySelection"},
+    {VKEY_LEFT, kShiftKey, "MoveLeftAndModifySelection"},
 #if OS(MACOSX)
-    {VKEY_LEFT, OptionKey, "MoveWordLeft"},
-    {VKEY_LEFT, OptionKey | ShiftKey, "MoveWordLeftAndModifySelection"},
+    {VKEY_LEFT, kOptionKey, "MoveWordLeft"},
+    {VKEY_LEFT, kOptionKey | kShiftKey, "MoveWordLeftAndModifySelection"},
 #else
-    {VKEY_LEFT, CtrlKey, "MoveWordLeft"},
-    {VKEY_LEFT, CtrlKey | ShiftKey, "MoveWordLeftAndModifySelection"},
+    {VKEY_LEFT, kCtrlKey, "MoveWordLeft"},
+    {VKEY_LEFT, kCtrlKey | kShiftKey, "MoveWordLeftAndModifySelection"},
 #endif
     {VKEY_RIGHT, 0, "MoveRight"},
-    {VKEY_RIGHT, ShiftKey, "MoveRightAndModifySelection"},
+    {VKEY_RIGHT, kShiftKey, "MoveRightAndModifySelection"},
 #if OS(MACOSX)
-    {VKEY_RIGHT, OptionKey, "MoveWordRight"},
-    {VKEY_RIGHT, OptionKey | ShiftKey, "MoveWordRightAndModifySelection"},
+    {VKEY_RIGHT, kOptionKey, "MoveWordRight"},
+    {VKEY_RIGHT, kOptionKey | kShiftKey, "MoveWordRightAndModifySelection"},
 #else
-    {VKEY_RIGHT, CtrlKey, "MoveWordRight"},
-    {VKEY_RIGHT, CtrlKey | ShiftKey, "MoveWordRightAndModifySelection"},
+    {VKEY_RIGHT, kCtrlKey, "MoveWordRight"},
+    {VKEY_RIGHT, kCtrlKey | kShiftKey, "MoveWordRightAndModifySelection"},
 #endif
     {VKEY_UP, 0, "MoveUp"},
-    {VKEY_UP, ShiftKey, "MoveUpAndModifySelection"},
-    {VKEY_PRIOR, ShiftKey, "MovePageUpAndModifySelection"},
+    {VKEY_UP, kShiftKey, "MoveUpAndModifySelection"},
+    {VKEY_PRIOR, kShiftKey, "MovePageUpAndModifySelection"},
     {VKEY_DOWN, 0, "MoveDown"},
-    {VKEY_DOWN, ShiftKey, "MoveDownAndModifySelection"},
-    {VKEY_NEXT, ShiftKey, "MovePageDownAndModifySelection"},
+    {VKEY_DOWN, kShiftKey, "MoveDownAndModifySelection"},
+    {VKEY_NEXT, kShiftKey, "MovePageDownAndModifySelection"},
 #if !OS(MACOSX)
-    {VKEY_UP, CtrlKey, "MoveParagraphBackward"},
-    {VKEY_UP, CtrlKey | ShiftKey, "MoveParagraphBackwardAndModifySelection"},
-    {VKEY_DOWN, CtrlKey, "MoveParagraphForward"},
-    {VKEY_DOWN, CtrlKey | ShiftKey, "MoveParagraphForwardAndModifySelection"},
+    {VKEY_UP, kCtrlKey, "MoveParagraphBackward"},
+    {VKEY_UP, kCtrlKey | kShiftKey, "MoveParagraphBackwardAndModifySelection"},
+    {VKEY_DOWN, kCtrlKey, "MoveParagraphForward"},
+    {VKEY_DOWN, kCtrlKey | kShiftKey, "MoveParagraphForwardAndModifySelection"},
     {VKEY_PRIOR, 0, "MovePageUp"},
     {VKEY_NEXT, 0, "MovePageDown"},
 #endif
     {VKEY_HOME, 0, "MoveToBeginningOfLine"},
-    {VKEY_HOME, ShiftKey, "MoveToBeginningOfLineAndModifySelection"},
+    {VKEY_HOME, kShiftKey, "MoveToBeginningOfLineAndModifySelection"},
 #if OS(MACOSX)
-    {VKEY_PRIOR, OptionKey, "MovePageUp"},
-    {VKEY_NEXT, OptionKey, "MovePageDown"},
+    {VKEY_PRIOR, kOptionKey, "MovePageUp"},
+    {VKEY_NEXT, kOptionKey, "MovePageDown"},
 #endif
 #if !OS(MACOSX)
-    {VKEY_HOME, CtrlKey, "MoveToBeginningOfDocument"},
-    {VKEY_HOME, CtrlKey | ShiftKey,
+    {VKEY_HOME, kCtrlKey, "MoveToBeginningOfDocument"},
+    {VKEY_HOME, kCtrlKey | kShiftKey,
      "MoveToBeginningOfDocumentAndModifySelection"},
 #endif
     {VKEY_END, 0, "MoveToEndOfLine"},
-    {VKEY_END, ShiftKey, "MoveToEndOfLineAndModifySelection"},
+    {VKEY_END, kShiftKey, "MoveToEndOfLineAndModifySelection"},
 #if !OS(MACOSX)
-    {VKEY_END, CtrlKey, "MoveToEndOfDocument"},
-    {VKEY_END, CtrlKey | ShiftKey, "MoveToEndOfDocumentAndModifySelection"},
+    {VKEY_END, kCtrlKey, "MoveToEndOfDocument"},
+    {VKEY_END, kCtrlKey | kShiftKey, "MoveToEndOfDocumentAndModifySelection"},
 #endif
     {VKEY_BACK, 0, "DeleteBackward"},
-    {VKEY_BACK, ShiftKey, "DeleteBackward"},
+    {VKEY_BACK, kShiftKey, "DeleteBackward"},
     {VKEY_DELETE, 0, "DeleteForward"},
 #if OS(MACOSX)
-    {VKEY_BACK, OptionKey, "DeleteWordBackward"},
-    {VKEY_DELETE, OptionKey, "DeleteWordForward"},
+    {VKEY_BACK, kOptionKey, "DeleteWordBackward"},
+    {VKEY_DELETE, kOptionKey, "DeleteWordForward"},
 #else
-    {VKEY_BACK, CtrlKey, "DeleteWordBackward"},
-    {VKEY_DELETE, CtrlKey, "DeleteWordForward"},
+    {VKEY_BACK, kCtrlKey, "DeleteWordBackward"},
+    {VKEY_DELETE, kCtrlKey, "DeleteWordForward"},
 #endif
 #if OS(MACOSX)
-    {'B', CommandKey, "ToggleBold"},
-    {'I', CommandKey, "ToggleItalic"},
+    {'B', kCommandKey, "ToggleBold"},
+    {'I', kCommandKey, "ToggleItalic"},
 #else
-    {'B', CtrlKey, "ToggleBold"},
-    {'I', CtrlKey, "ToggleItalic"},
+    {'B', kCtrlKey, "ToggleBold"},
+    {'I', kCtrlKey, "ToggleItalic"},
 #endif
-    {'U', CtrlKey, "ToggleUnderline"},
+    {'U', kCtrlKey, "ToggleUnderline"},
     {VKEY_ESCAPE, 0, "Cancel"},
-    {VKEY_OEM_PERIOD, CtrlKey, "Cancel"},
+    {VKEY_OEM_PERIOD, kCtrlKey, "Cancel"},
     {VKEY_TAB, 0, "InsertTab"},
-    {VKEY_TAB, ShiftKey, "InsertBacktab"},
+    {VKEY_TAB, kShiftKey, "InsertBacktab"},
     {VKEY_RETURN, 0, "InsertNewline"},
-    {VKEY_RETURN, CtrlKey, "InsertNewline"},
-    {VKEY_RETURN, AltKey, "InsertNewline"},
-    {VKEY_RETURN, AltKey | ShiftKey, "InsertNewline"},
-    {VKEY_RETURN, ShiftKey, "InsertLineBreak"},
-    {VKEY_INSERT, CtrlKey, "Copy"},
-    {VKEY_INSERT, ShiftKey, "Paste"},
-    {VKEY_DELETE, ShiftKey, "Cut"},
+    {VKEY_RETURN, kCtrlKey, "InsertNewline"},
+    {VKEY_RETURN, kAltKey, "InsertNewline"},
+    {VKEY_RETURN, kAltKey | kShiftKey, "InsertNewline"},
+    {VKEY_RETURN, kShiftKey, "InsertLineBreak"},
+    {VKEY_INSERT, kCtrlKey, "Copy"},
+    {VKEY_INSERT, kShiftKey, "Paste"},
+    {VKEY_DELETE, kShiftKey, "Cut"},
 #if !OS(MACOSX)
     // On OS X, we pipe these back to the browser, so that it can do menu item
     // blinking.
-    {'C', CtrlKey, "Copy"},
-    {'V', CtrlKey, "Paste"},
-    {'V', CtrlKey | ShiftKey, "PasteAndMatchStyle"},
-    {'X', CtrlKey, "Cut"},
-    {'A', CtrlKey, "SelectAll"},
-    {'Z', CtrlKey, "Undo"},
-    {'Z', CtrlKey | ShiftKey, "Redo"},
-    {'Y', CtrlKey, "Redo"},
+    {'C', kCtrlKey, "Copy"},
+    {'V', kCtrlKey, "Paste"},
+    {'V', kCtrlKey | kShiftKey, "PasteAndMatchStyle"},
+    {'X', kCtrlKey, "Cut"},
+    {'A', kCtrlKey, "SelectAll"},
+    {'Z', kCtrlKey, "Undo"},
+    {'Z', kCtrlKey | kShiftKey, "Redo"},
+    {'Y', kCtrlKey, "Redo"},
 #endif
     {VKEY_INSERT, 0, "OverWrite"},
 };
 
 const KeyboardCodeKeyPressEntry kKeyboardCodeKeyPressEntries[] = {
     {'\t', 0, "InsertTab"},
-    {'\t', ShiftKey, "InsertBacktab"},
+    {'\t', kShiftKey, "InsertBacktab"},
     {'\r', 0, "InsertNewline"},
-    {'\r', ShiftKey, "InsertLineBreak"},
+    {'\r', kShiftKey, "InsertLineBreak"},
 };
 
 const DomKeyKeyDownEntry kDomKeyKeyDownEntries[] = {
@@ -190,7 +190,7 @@ const DomKeyKeyDownEntry kDomKeyKeyDownEntries[] = {
     {"Paste", 0, "Paste"},
 };
 
-const char* lookupCommandNameFromDomKeyKeyDown(const String& key,
+const char* LookupCommandNameFromDomKeyKeyDown(const String& key,
                                                unsigned modifiers) {
   // This table is not likely to grow, so sequential search is fine here.
   for (const auto& entry : kDomKeyKeyDownEntries) {
@@ -202,47 +202,47 @@ const char* lookupCommandNameFromDomKeyKeyDown(const String& key,
 
 }  // anonymous namespace
 
-const char* EditingBehavior::interpretKeyEvent(
+const char* EditingBehavior::InterpretKeyEvent(
     const KeyboardEvent& event) const {
-  const WebKeyboardEvent* keyEvent = event.keyEvent();
-  if (!keyEvent)
+  const WebKeyboardEvent* key_event = event.KeyEvent();
+  if (!key_event)
     return "";
 
-  static HashMap<int, const char*>* keyDownCommandsMap = nullptr;
-  static HashMap<int, const char*>* keyPressCommandsMap = nullptr;
+  static HashMap<int, const char*>* key_down_commands_map = nullptr;
+  static HashMap<int, const char*>* key_press_commands_map = nullptr;
 
-  if (!keyDownCommandsMap) {
-    keyDownCommandsMap = new HashMap<int, const char*>;
-    keyPressCommandsMap = new HashMap<int, const char*>;
+  if (!key_down_commands_map) {
+    key_down_commands_map = new HashMap<int, const char*>;
+    key_press_commands_map = new HashMap<int, const char*>;
 
     for (const auto& entry : kKeyboardCodeKeyDownEntries) {
-      keyDownCommandsMap->set(entry.modifiers << 16 | entry.virtualKey,
-                              entry.name);
+      key_down_commands_map->Set(entry.modifiers << 16 | entry.virtual_key,
+                                 entry.name);
     }
 
     for (const auto& entry : kKeyboardCodeKeyPressEntries) {
-      keyPressCommandsMap->set(entry.modifiers << 16 | entry.charCode,
-                               entry.name);
+      key_press_commands_map->Set(entry.modifiers << 16 | entry.char_code,
+                                  entry.name);
     }
   }
 
   unsigned modifiers =
-      keyEvent->modifiers() & (ShiftKey | AltKey | CtrlKey | MetaKey);
+      key_event->GetModifiers() & (kShiftKey | kAltKey | kCtrlKey | kMetaKey);
 
-  if (keyEvent->type() == WebInputEvent::RawKeyDown) {
-    int mapKey = modifiers << 16 | event.keyCode();
-    const char* name = mapKey ? keyDownCommandsMap->at(mapKey) : nullptr;
+  if (key_event->GetType() == WebInputEvent::kRawKeyDown) {
+    int map_key = modifiers << 16 | event.keyCode();
+    const char* name = map_key ? key_down_commands_map->at(map_key) : nullptr;
     if (!name)
-      name = lookupCommandNameFromDomKeyKeyDown(event.key(), modifiers);
+      name = LookupCommandNameFromDomKeyKeyDown(event.key(), modifiers);
     return name;
   }
 
-  int mapKey = modifiers << 16 | event.charCode();
-  return mapKey ? keyPressCommandsMap->at(mapKey) : 0;
+  int map_key = modifiers << 16 | event.charCode();
+  return map_key ? key_press_commands_map->at(map_key) : 0;
 }
 
-bool EditingBehavior::shouldInsertCharacter(const KeyboardEvent& event) const {
-  if (event.keyEvent()->text[1] != 0)
+bool EditingBehavior::ShouldInsertCharacter(const KeyboardEvent& event) const {
+  if (event.KeyEvent()->text[1] != 0)
     return true;
 
   // On Gtk/Linux, it emits key events with ASCII text and ctrl on for ctrl-<x>.
@@ -261,7 +261,7 @@ bool EditingBehavior::shouldInsertCharacter(const KeyboardEvent& event) const {
   // which may be configured to do it so by user.
   // See also http://en.wikipedia.org/wiki/Keyboard_Layout
   // FIXME(ukai): investigate more detail for various keyboard layout.
-  UChar ch = event.keyEvent()->text[0U];
+  UChar ch = event.KeyEvent()->text[0U];
 
   // Don't insert null or control characters as they can result in
   // unexpected behaviour

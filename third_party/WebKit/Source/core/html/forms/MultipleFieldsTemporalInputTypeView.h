@@ -52,7 +52,7 @@ class MultipleFieldsTemporalInputTypeView final
   USING_GARBAGE_COLLECTED_MIXIN(MultipleFieldsTemporalInputTypeView);
 
  public:
-  static MultipleFieldsTemporalInputTypeView* create(HTMLInputElement&,
+  static MultipleFieldsTemporalInputTypeView* Create(HTMLInputElement&,
                                                      BaseTemporalInputType&);
   ~MultipleFieldsTemporalInputTypeView() override;
   DECLARE_VIRTUAL_TRACE();
@@ -62,76 +62,76 @@ class MultipleFieldsTemporalInputTypeView final
                                       BaseTemporalInputType&);
 
   // DateTimeEditElement::EditControlOwner functions
-  void didBlurFromControl() final;
-  void didFocusOnControl() final;
-  void editControlValueChanged() final;
-  String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
-  bool isEditControlOwnerDisabled() const final;
-  bool isEditControlOwnerReadOnly() const final;
-  AtomicString localeIdentifier() const final;
-  void editControlDidChangeValueByKeyboard() final;
+  void DidBlurFromControl() final;
+  void DidFocusOnControl() final;
+  void EditControlValueChanged() final;
+  String FormatDateTimeFieldsState(const DateTimeFieldsState&) const override;
+  bool IsEditControlOwnerDisabled() const final;
+  bool IsEditControlOwnerReadOnly() const final;
+  AtomicString LocaleIdentifier() const final;
+  void EditControlDidChangeValueByKeyboard() final;
 
   // SpinButtonElement::SpinButtonOwner functions.
-  void focusAndSelectSpinButtonOwner() override;
-  bool shouldSpinButtonRespondToMouseEvents() override;
-  bool shouldSpinButtonRespondToWheelEvents() override;
-  void spinButtonStepDown() override;
-  void spinButtonStepUp() override;
-  void spinButtonDidReleaseMouseCapture(
+  void FocusAndSelectSpinButtonOwner() override;
+  bool ShouldSpinButtonRespondToMouseEvents() override;
+  bool ShouldSpinButtonRespondToWheelEvents() override;
+  void SpinButtonStepDown() override;
+  void SpinButtonStepUp() override;
+  void SpinButtonDidReleaseMouseCapture(
       SpinButtonElement::EventDispatch) override;
 
   // PickerIndicatorElement::PickerIndicatorOwner functions
-  bool isPickerIndicatorOwnerDisabledOrReadOnly() const final;
-  void pickerIndicatorChooseValue(const String&) final;
-  void pickerIndicatorChooseValue(double) final;
-  Element& pickerOwnerElement() const final;
-  bool setupDateTimeChooserParameters(DateTimeChooserParameters&) final;
+  bool IsPickerIndicatorOwnerDisabledOrReadOnly() const final;
+  void PickerIndicatorChooseValue(const String&) final;
+  void PickerIndicatorChooseValue(double) final;
+  Element& PickerOwnerElement() const final;
+  bool SetupDateTimeChooserParameters(DateTimeChooserParameters&) final;
 
   // ClearButtonElement::ClearButtonOwner functions.
-  void focusAndSelectClearButtonOwner() override;
-  bool shouldClearButtonRespondToMouseEvents() override;
-  void clearValue() override;
+  void FocusAndSelectClearButtonOwner() override;
+  bool ShouldClearButtonRespondToMouseEvents() override;
+  void ClearValue() override;
 
   // InputTypeView functions
-  void blur() final;
-  void closePopupView() override;
-  PassRefPtr<ComputedStyle> customStyleForLayoutObject(
+  void Blur() final;
+  void ClosePopupView() override;
+  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject(
       PassRefPtr<ComputedStyle>) override;
-  void createShadowSubtree() final;
-  void destroyShadowSubtree() final;
-  void disabledAttributeChanged() final;
-  void forwardEvent(Event*) final;
-  void handleFocusInEvent(Element* oldFocusedElement, WebFocusType) final;
-  void handleKeydownEvent(KeyboardEvent*) final;
-  bool hasBadInput() const override;
-  bool hasCustomFocusLogic() const final;
-  void minOrMaxAttributeChanged() final;
-  void readonlyAttributeChanged() final;
-  void requiredAttributeChanged() final;
-  void restoreFormControlState(const FormControlState&) final;
-  FormControlState saveFormControlState() const final;
-  void didSetValue(const String&, bool valueChanged) final;
-  void stepAttributeChanged() final;
-  void updateView() final;
-  void valueAttributeChanged() override;
-  void listAttributeTargetChanged() final;
-  void updateClearButtonVisibility() final;
-  TextDirection computedTextDirection() final;
-  AXObject* popupRootAXObject() final;
+  void CreateShadowSubtree() final;
+  void DestroyShadowSubtree() final;
+  void DisabledAttributeChanged() final;
+  void ForwardEvent(Event*) final;
+  void HandleFocusInEvent(Element* old_focused_element, WebFocusType) final;
+  void HandleKeydownEvent(KeyboardEvent*) final;
+  bool HasBadInput() const override;
+  bool HasCustomFocusLogic() const final;
+  void MinOrMaxAttributeChanged() final;
+  void ReadonlyAttributeChanged() final;
+  void RequiredAttributeChanged() final;
+  void RestoreFormControlState(const FormControlState&) final;
+  FormControlState SaveFormControlState() const final;
+  void DidSetValue(const String&, bool value_changed) final;
+  void StepAttributeChanged() final;
+  void UpdateView() final;
+  void ValueAttributeChanged() override;
+  void ListAttributeTargetChanged() final;
+  void UpdateClearButtonVisibility() final;
+  TextDirection ComputedTextDirection() final;
+  AXObject* PopupRootAXObject() final;
 
-  DateTimeEditElement* dateTimeEditElement() const;
-  SpinButtonElement* spinButtonElement() const;
-  ClearButtonElement* clearButtonElement() const;
-  PickerIndicatorElement* pickerIndicatorElement() const;
-  bool containsFocusedShadowElement() const;
-  void showPickerIndicator();
-  void hidePickerIndicator();
-  void updatePickerIndicatorVisibility();
+  DateTimeEditElement* GetDateTimeEditElement() const;
+  SpinButtonElement* GetSpinButtonElement() const;
+  ClearButtonElement* GetClearButtonElement() const;
+  PickerIndicatorElement* GetPickerIndicatorElement() const;
+  bool ContainsFocusedShadowElement() const;
+  void ShowPickerIndicator();
+  void HidePickerIndicator();
+  void UpdatePickerIndicatorVisibility();
 
-  Member<BaseTemporalInputType> m_inputType;
-  bool m_isDestroyingShadowSubtree;
-  bool m_pickerIndicatorIsVisible;
-  bool m_pickerIndicatorIsAlwaysVisible;
+  Member<BaseTemporalInputType> input_type_;
+  bool is_destroying_shadow_subtree_;
+  bool picker_indicator_is_visible_;
+  bool picker_indicator_is_always_visible_;
 };
 
 }  // namespace blink

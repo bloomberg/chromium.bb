@@ -43,7 +43,7 @@ class AnimatedStyleBuilder {
   STATIC_ONLY(AnimatedStyleBuilder);
 
  public:
-  static void applyProperty(CSSPropertyID,
+  static void ApplyProperty(CSSPropertyID,
                             ComputedStyle&,
                             const AnimatableValue*);
 };

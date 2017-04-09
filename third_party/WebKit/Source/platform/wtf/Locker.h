@@ -39,11 +39,11 @@ class Locker final {
   WTF_MAKE_NONCOPYABLE(Locker);
 
  public:
-  Locker(T& lockable) : m_lockable(lockable) { m_lockable.lock(); }
-  ~Locker() { m_lockable.unlock(); }
+  Locker(T& lockable) : lockable_(lockable) { lockable_.lock(); }
+  ~Locker() { lockable_.unlock(); }
 
  private:
-  T& m_lockable;
+  T& lockable_;
 };
 
 }  // namespace WTF

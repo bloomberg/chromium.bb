@@ -23,86 +23,87 @@ DeviceMotionController::DeviceMotionController(Document& document)
 
 DeviceMotionController::~DeviceMotionController() {}
 
-const char* DeviceMotionController::supplementName() {
+const char* DeviceMotionController::SupplementName() {
   return "DeviceMotionController";
 }
 
-DeviceMotionController& DeviceMotionController::from(Document& document) {
+DeviceMotionController& DeviceMotionController::From(Document& document) {
   DeviceMotionController* controller = static_cast<DeviceMotionController*>(
-      Supplement<Document>::from(document, supplementName()));
+      Supplement<Document>::From(document, SupplementName()));
   if (!controller) {
     controller = new DeviceMotionController(document);
-    Supplement<Document>::provideTo(document, supplementName(), controller);
+    Supplement<Document>::ProvideTo(document, SupplementName(), controller);
   }
   return *controller;
 }
 
-void DeviceMotionController::didAddEventListener(
+void DeviceMotionController::DidAddEventListener(
     LocalDOMWindow* window,
-    const AtomicString& eventType) {
-  if (eventType != eventTypeName())
+    const AtomicString& event_type) {
+  if (event_type != EventTypeName())
     return;
 
-  if (document().frame()) {
-    if (document().isSecureContext()) {
-      UseCounter::count(document().frame(),
-                        UseCounter::DeviceMotionSecureOrigin);
+  if (GetDocument().GetFrame()) {
+    if (GetDocument().IsSecureContext()) {
+      UseCounter::Count(GetDocument().GetFrame(),
+                        UseCounter::kDeviceMotionSecureOrigin);
     } else {
-      Deprecation::countDeprecation(document().frame(),
-                                    UseCounter::DeviceMotionInsecureOrigin);
-      HostsUsingFeatures::countAnyWorld(
-          document(), HostsUsingFeatures::Feature::DeviceMotionInsecureHost);
-      if (document()
-              .frame()
-              ->settings()
-              ->getStrictPowerfulFeatureRestrictions())
+      Deprecation::CountDeprecation(GetDocument().GetFrame(),
+                                    UseCounter::kDeviceMotionInsecureOrigin);
+      HostsUsingFeatures::CountAnyWorld(
+          GetDocument(),
+          HostsUsingFeatures::Feature::kDeviceMotionInsecureHost);
+      if (GetDocument()
+              .GetFrame()
+              ->GetSettings()
+              ->GetStrictPowerfulFeatureRestrictions())
         return;
     }
   }
 
-  if (!m_hasEventListener) {
-    Platform::current()->recordRapporURL("DeviceSensors.DeviceMotion",
-                                         WebURL(document().url()));
+  if (!has_event_listener_) {
+    Platform::Current()->RecordRapporURL("DeviceSensors.DeviceMotion",
+                                         WebURL(GetDocument().Url()));
 
-    if (!isSameSecurityOriginAsMainFrame()) {
-      Platform::current()->recordRapporURL(
-          "DeviceSensors.DeviceMotionCrossOrigin", WebURL(document().url()));
+    if (!IsSameSecurityOriginAsMainFrame()) {
+      Platform::Current()->RecordRapporURL(
+          "DeviceSensors.DeviceMotionCrossOrigin", WebURL(GetDocument().Url()));
     }
   }
 
-  DeviceSingleWindowEventController::didAddEventListener(window, eventType);
+  DeviceSingleWindowEventController::DidAddEventListener(window, event_type);
 }
 
-bool DeviceMotionController::hasLastData() {
-  return DeviceMotionDispatcher::instance().latestDeviceMotionData();
+bool DeviceMotionController::HasLastData() {
+  return DeviceMotionDispatcher::Instance().LatestDeviceMotionData();
 }
 
-void DeviceMotionController::registerWithDispatcher() {
-  DeviceMotionDispatcher::instance().addController(this);
+void DeviceMotionController::RegisterWithDispatcher() {
+  DeviceMotionDispatcher::Instance().AddController(this);
 }
 
-void DeviceMotionController::unregisterWithDispatcher() {
-  DeviceMotionDispatcher::instance().removeController(this);
+void DeviceMotionController::UnregisterWithDispatcher() {
+  DeviceMotionDispatcher::Instance().RemoveController(this);
 }
 
-Event* DeviceMotionController::lastEvent() const {
-  return DeviceMotionEvent::create(
+Event* DeviceMotionController::LastEvent() const {
+  return DeviceMotionEvent::Create(
       EventTypeNames::devicemotion,
-      DeviceMotionDispatcher::instance().latestDeviceMotionData());
+      DeviceMotionDispatcher::Instance().LatestDeviceMotionData());
 }
 
-bool DeviceMotionController::isNullEvent(Event* event) const {
-  DeviceMotionEvent* motionEvent = toDeviceMotionEvent(event);
-  return !motionEvent->getDeviceMotionData()->canProvideEventData();
+bool DeviceMotionController::IsNullEvent(Event* event) const {
+  DeviceMotionEvent* motion_event = ToDeviceMotionEvent(event);
+  return !motion_event->GetDeviceMotionData()->CanProvideEventData();
 }
 
-const AtomicString& DeviceMotionController::eventTypeName() const {
+const AtomicString& DeviceMotionController::EventTypeName() const {
   return EventTypeNames::devicemotion;
 }
 
 DEFINE_TRACE(DeviceMotionController) {
-  DeviceSingleWindowEventController::trace(visitor);
-  Supplement<Document>::trace(visitor);
+  DeviceSingleWindowEventController::Trace(visitor);
+  Supplement<Document>::Trace(visitor);
 }
 
 }  // namespace blink

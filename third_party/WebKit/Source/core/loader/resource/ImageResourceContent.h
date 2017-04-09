@@ -46,72 +46,73 @@ class CORE_EXPORT ImageResourceContent final
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceContent);
 
  public:
-  static ImageResourceContent* create(
+  static ImageResourceContent* Create(
       PassRefPtr<blink::Image> image = nullptr) {
     return new ImageResourceContent(std::move(image));
   }
-  static ImageResourceContent* fetch(FetchRequest&, ResourceFetcher*);
+  static ImageResourceContent* Fetch(FetchRequest&, ResourceFetcher*);
 
   // Returns the nullImage() if the image is not available yet.
-  blink::Image* getImage();
-  bool hasImage() const { return m_image.get(); }
+  blink::Image* GetImage();
+  bool HasImage() const { return image_.Get(); }
 
-  static std::pair<blink::Image*, float> brokenImage(
-      float deviceScaleFactor);  // Returns an image and the image's resolution
+  static std::pair<blink::Image*, float> BrokenImage(
+      float
+          device_scale_factor);  // Returns an image and the image's resolution
                                  // scale factor.
 
-  bool usesImageContainerSize() const;
-  bool imageHasRelativeSize() const;
+  bool UsesImageContainerSize() const;
+  bool ImageHasRelativeSize() const;
   // The device pixel ratio we got from the server for this image, or 1.0.
-  float devicePixelRatioHeaderValue() const;
-  bool hasDevicePixelRatioHeaderValue() const;
+  float DevicePixelRatioHeaderValue() const;
+  bool HasDevicePixelRatioHeaderValue() const;
 
   enum SizeType {
     // Report the intrinsic size.
-    IntrinsicSize,
+    kIntrinsicSize,
 
     // Report the intrinsic size corrected to account for image density.
-    IntrinsicCorrectedToDPR,
+    kIntrinsicCorrectedToDPR,
   };
 
   // This method takes a zoom multiplier that can be used to increase the
   // natural size of the image by the zoom.
-  LayoutSize imageSize(
-      RespectImageOrientationEnum shouldRespectImageOrientation,
+  LayoutSize ImageSize(
+      RespectImageOrientationEnum should_respect_image_orientation,
       float multiplier,
-      SizeType = IntrinsicSize);
+      SizeType = kIntrinsicSize);
 
-  void updateImageAnimationPolicy();
+  void UpdateImageAnimationPolicy();
 
-  void addObserver(ImageResourceObserver*);
-  void removeObserver(ImageResourceObserver*);
+  void AddObserver(ImageResourceObserver*);
+  void RemoveObserver(ImageResourceObserver*);
 
-  bool isSizeAvailable() const {
-    return m_sizeAvailable == Image::SizeAvailable;
+  bool IsSizeAvailable() const {
+    return size_available_ == Image::kSizeAvailable;
   }
 
   DECLARE_TRACE();
 
   // Redirecting methods to Resource.
-  const KURL& url() const;
-  bool isAccessAllowed(SecurityOrigin*);
-  const ResourceResponse& response() const;
-  bool isLoaded() const;
-  bool isLoading() const;
-  bool errorOccurred() const;
-  bool loadFailedOrCanceled() const;
-  ResourceStatus getStatus() const;
-  const ResourceError& resourceError() const;
+  const KURL& Url() const;
+  bool IsAccessAllowed(SecurityOrigin*);
+  const ResourceResponse& GetResponse() const;
+  bool IsLoaded() const;
+  bool IsLoading() const;
+  bool ErrorOccurred() const;
+  bool LoadFailedOrCanceled() const;
+  ResourceStatus GetStatus() const;
+  const ResourceError& GetResourceError() const;
 
   // For FrameSerializer.
-  bool hasCacheControlNoStoreHeader() const;
+  bool HasCacheControlNoStoreHeader() const;
 
-  void emulateLoadStartedForInspector(ResourceFetcher*,
+  void EmulateLoadStartedForInspector(ResourceFetcher*,
                                       const KURL&,
-                                      const AtomicString& initiatorName);
+                                      const AtomicString& initiator_name);
 
-  void setNotRefetchableDataFromDiskCache() {
-    m_isRefetchableDataFromDiskCache = false;
+  void SetNotRefetchableDataFromDiskCache() {
+    is_refetchable_data_from_disk_cache_ = false;
   }
 
   // The following public methods should be called from ImageResource only.
@@ -125,81 +126,82 @@ class CORE_EXPORT ImageResourceContent final
   enum UpdateImageOption {
     // Updates the image (including placeholder and decode error handling
     // and notifying observers) if needed.
-    UpdateImage,
+    kUpdateImage,
 
     // Clears the image and then updates the image if needed.
-    ClearAndUpdateImage,
+    kClearAndUpdateImage,
 
     // Clears the image and always notifies observers (without updating).
-    ClearImageAndNotifyObservers,
+    kClearImageAndNotifyObservers,
   };
   enum class UpdateImageResult {
-    NoDecodeError,
+    kNoDecodeError,
 
     // Decode error occurred. Observers are not notified.
     // Only occurs when UpdateImage or ClearAndUpdateImage is specified.
-    ShouldDecodeError,
+    kShouldDecodeError,
   };
-  WARN_UNUSED_RESULT UpdateImageResult updateImage(PassRefPtr<SharedBuffer>,
+  WARN_UNUSED_RESULT UpdateImageResult UpdateImage(PassRefPtr<SharedBuffer>,
                                                    UpdateImageOption,
-                                                   bool allDataReceived);
+                                                   bool all_data_received);
 
-  void destroyDecodedData();
-  void doResetAnimation();
+  void DestroyDecodedData();
+  void DoResetAnimation();
 
-  void setImageResourceInfo(ImageResourceInfo*);
+  void SetImageResourceInfo(ImageResourceInfo*);
 
-  ResourcePriority priorityFromObservers() const;
-  PassRefPtr<const SharedBuffer> resourceBuffer() const;
-  bool shouldUpdateImageImmediately() const;
-  bool hasObservers() const {
-    return !m_observers.isEmpty() || !m_finishedObservers.isEmpty();
+  ResourcePriority PriorityFromObservers() const;
+  PassRefPtr<const SharedBuffer> ResourceBuffer() const;
+  bool ShouldUpdateImageImmediately() const;
+  bool HasObservers() const {
+    return !observers_.IsEmpty() || !finished_observers_.IsEmpty();
   }
-  bool isRefetchableDataFromDiskCache() const {
-    return m_isRefetchableDataFromDiskCache;
+  bool IsRefetchableDataFromDiskCache() const {
+    return is_refetchable_data_from_disk_cache_;
   }
 
  private:
   explicit ImageResourceContent(PassRefPtr<blink::Image> = nullptr);
 
   // ImageObserver
-  void decodedSizeChangedTo(const blink::Image*, size_t newSize) override;
-  bool shouldPauseAnimation(const blink::Image*) override;
-  void animationAdvanced(const blink::Image*) override;
-  void changedInRect(const blink::Image*, const IntRect&) override;
+  void DecodedSizeChangedTo(const blink::Image*, size_t new_size) override;
+  bool ShouldPauseAnimation(const blink::Image*) override;
+  void AnimationAdvanced(const blink::Image*) override;
+  void ChangedInRect(const blink::Image*, const IntRect&) override;
 
-  PassRefPtr<Image> createImage();
-  void clearImage();
+  PassRefPtr<Image> CreateImage();
+  void ClearImage();
 
-  enum NotifyFinishOption { ShouldNotifyFinish, DoNotNotifyFinish };
+  enum NotifyFinishOption { kShouldNotifyFinish, kDoNotNotifyFinish };
 
   // If not null, changeRect is the changed part of the image.
-  void notifyObservers(NotifyFinishOption, const IntRect* changeRect = nullptr);
-  void markObserverFinished(ImageResourceObserver*);
+  void NotifyObservers(NotifyFinishOption,
+                       const IntRect* change_rect = nullptr);
+  void MarkObserverFinished(ImageResourceObserver*);
 
   class ProhibitAddRemoveObserverInScope : public AutoReset<bool> {
    public:
     ProhibitAddRemoveObserverInScope(const ImageResourceContent* content)
-        : AutoReset(&content->m_isAddRemoveObserverProhibited, true) {}
+        : AutoReset(&content->is_add_remove_observer_prohibited_, true) {}
   };
 
-  Member<ImageResourceInfo> m_info;
+  Member<ImageResourceInfo> info_;
 
-  RefPtr<blink::Image> m_image;
+  RefPtr<blink::Image> image_;
 
-  HashCountedSet<ImageResourceObserver*> m_observers;
-  HashCountedSet<ImageResourceObserver*> m_finishedObservers;
+  HashCountedSet<ImageResourceObserver*> observers_;
+  HashCountedSet<ImageResourceObserver*> finished_observers_;
 
-  Image::SizeAvailability m_sizeAvailable = Image::SizeUnavailable;
+  Image::SizeAvailability size_available_ = Image::kSizeUnavailable;
 
   // Indicates if this resource's encoded image data can be purged and refetched
   // from disk cache to save memory usage. See crbug/664437.
-  bool m_isRefetchableDataFromDiskCache;
+  bool is_refetchable_data_from_disk_cache_;
 
-  mutable bool m_isAddRemoveObserverProhibited = false;
+  mutable bool is_add_remove_observer_prohibited_ = false;
 
 #if DCHECK_IS_ON()
-  bool m_isUpdateImageBeingCalled = false;
+  bool is_update_image_being_called_ = false;
 #endif
 };
 

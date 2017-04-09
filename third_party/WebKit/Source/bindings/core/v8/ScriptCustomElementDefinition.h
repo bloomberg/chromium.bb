@@ -23,76 +23,76 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   WTF_MAKE_NONCOPYABLE(ScriptCustomElementDefinition);
 
  public:
-  static ScriptCustomElementDefinition* forConstructor(
+  static ScriptCustomElementDefinition* ForConstructor(
       ScriptState*,
       CustomElementRegistry*,
       const v8::Local<v8::Value>& constructor);
 
-  static ScriptCustomElementDefinition* create(
+  static ScriptCustomElementDefinition* Create(
       ScriptState*,
       CustomElementRegistry*,
       const CustomElementDescriptor&,
       const v8::Local<v8::Object>& constructor,
-      const v8::Local<v8::Function>& connectedCallback,
-      const v8::Local<v8::Function>& disconnectedCallback,
-      const v8::Local<v8::Function>& adoptedCallback,
-      const v8::Local<v8::Function>& attributeChangedCallback,
-      const HashSet<AtomicString>& observedAttributes);
+      const v8::Local<v8::Function>& connected_callback,
+      const v8::Local<v8::Function>& disconnected_callback,
+      const v8::Local<v8::Function>& adopted_callback,
+      const v8::Local<v8::Function>& attribute_changed_callback,
+      const HashSet<AtomicString>& observed_attributes);
 
   virtual ~ScriptCustomElementDefinition() = default;
 
-  v8::Local<v8::Object> constructor() const;
+  v8::Local<v8::Object> Constructor() const;
 
-  HTMLElement* createElementSync(Document&, const QualifiedName&) override;
+  HTMLElement* CreateElementSync(Document&, const QualifiedName&) override;
 
-  bool hasConnectedCallback() const override;
-  bool hasDisconnectedCallback() const override;
-  bool hasAdoptedCallback() const override;
+  bool HasConnectedCallback() const override;
+  bool HasDisconnectedCallback() const override;
+  bool HasAdoptedCallback() const override;
 
-  void runConnectedCallback(Element*) override;
-  void runDisconnectedCallback(Element*) override;
-  void runAdoptedCallback(Element*,
-                          Document* oldOwner,
-                          Document* newOwner) override;
-  void runAttributeChangedCallback(Element*,
+  void RunConnectedCallback(Element*) override;
+  void RunDisconnectedCallback(Element*) override;
+  void RunAdoptedCallback(Element*,
+                          Document* old_owner,
+                          Document* new_owner) override;
+  void RunAttributeChangedCallback(Element*,
                                    const QualifiedName&,
-                                   const AtomicString& oldValue,
-                                   const AtomicString& newValue) override;
+                                   const AtomicString& old_value,
+                                   const AtomicString& new_value) override;
 
  private:
   ScriptCustomElementDefinition(
       ScriptState*,
       const CustomElementDescriptor&,
       const v8::Local<v8::Object>& constructor,
-      const v8::Local<v8::Function>& connectedCallback,
-      const v8::Local<v8::Function>& disconnectedCallback,
-      const v8::Local<v8::Function>& adoptedCallback,
-      const v8::Local<v8::Function>& attributeChangedCallback,
-      const HashSet<AtomicString>& observedAttributes);
+      const v8::Local<v8::Function>& connected_callback,
+      const v8::Local<v8::Function>& disconnected_callback,
+      const v8::Local<v8::Function>& adopted_callback,
+      const v8::Local<v8::Function>& attribute_changed_callback,
+      const HashSet<AtomicString>& observed_attributes);
 
   // Implementations of |CustomElementDefinition|
-  ScriptValue getConstructorForScript() final;
-  bool runConstructor(Element*) override;
+  ScriptValue GetConstructorForScript() final;
+  bool RunConstructor(Element*) override;
 
   // Calls the constructor. The script scope, etc. must already be set up.
-  Element* callConstructor();
+  Element* CallConstructor();
 
-  void runCallback(v8::Local<v8::Function>,
+  void RunCallback(v8::Local<v8::Function>,
                    Element*,
                    int argc = 0,
                    v8::Local<v8::Value> argv[] = nullptr);
 
-  HTMLElement* handleCreateElementSyncException(Document&,
-                                                const QualifiedName& tagName,
+  HTMLElement* HandleCreateElementSyncException(Document&,
+                                                const QualifiedName& tag_name,
                                                 v8::Isolate*,
                                                 ExceptionState&);
 
-  RefPtr<ScriptState> m_scriptState;
-  ScopedPersistent<v8::Object> m_constructor;
-  ScopedPersistent<v8::Function> m_connectedCallback;
-  ScopedPersistent<v8::Function> m_disconnectedCallback;
-  ScopedPersistent<v8::Function> m_adoptedCallback;
-  ScopedPersistent<v8::Function> m_attributeChangedCallback;
+  RefPtr<ScriptState> script_state_;
+  ScopedPersistent<v8::Object> constructor_;
+  ScopedPersistent<v8::Function> connected_callback_;
+  ScopedPersistent<v8::Function> disconnected_callback_;
+  ScopedPersistent<v8::Function> adopted_callback_;
+  ScopedPersistent<v8::Function> attribute_changed_callback_;
 };
 
 }  // namespace blink

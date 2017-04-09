@@ -178,7 +178,7 @@ blink::WebDisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
 
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
-    return blink::WebDisplayModeUndefined;
+    return blink::kWebDisplayModeUndefined;
 
   return static_cast<blink::WebDisplayMode>(
       Java_TabWebContentsDelegateAndroid_getDisplayMode(env, obj));

@@ -45,36 +45,36 @@ class PLATFORM_EXPORT DownSampler {
   WTF_MAKE_NONCOPYABLE(DownSampler);
 
  public:
-  DownSampler(size_t inputBlockSize);
+  DownSampler(size_t input_block_size);
 
   // The destination buffer |destP| is of size sourceFramesToProcess / 2.
-  void process(const float* sourceP,
-               float* destP,
-               size_t sourceFramesToProcess);
+  void Process(const float* source_p,
+               float* dest_p,
+               size_t source_frames_to_process);
 
-  void reset();
+  void Reset();
 
   // Latency based on the destination sample-rate.
-  size_t latencyFrames() const;
+  size_t LatencyFrames() const;
 
  private:
-  enum { DefaultKernelSize = 256 };
+  enum { kDefaultKernelSize = 256 };
 
-  size_t m_inputBlockSize;
+  size_t input_block_size_;
 
   // Computes ideal band-limited half-band filter coefficients.
   // In other words, filter out all frequencies higher than 0.25 * Nyquist.
-  void initializeKernel();
-  AudioFloatArray m_reducedKernel;
+  void InitializeKernel();
+  AudioFloatArray reduced_kernel_;
 
   // Half-band filter.
-  DirectConvolver m_convolver;
+  DirectConvolver convolver_;
 
-  AudioFloatArray m_tempBuffer;
+  AudioFloatArray temp_buffer_;
 
   // Used as delay-line (FIR filter history) for the input samples to account
   // for the 0.5 term right in the middle of the kernel.
-  AudioFloatArray m_inputBuffer;
+  AudioFloatArray input_buffer_;
 };
 
 }  // namespace blink

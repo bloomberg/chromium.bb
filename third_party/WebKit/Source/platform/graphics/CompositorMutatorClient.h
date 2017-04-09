@@ -22,23 +22,23 @@ class PLATFORM_EXPORT CompositorMutatorClient
   CompositorMutatorClient(CompositorMutator*, CompositorMutationsTarget*);
   virtual ~CompositorMutatorClient();
 
-  void setNeedsMutate();
+  void SetNeedsMutate();
 
   // cc::LayerTreeMutator
-  bool Mutate(base::TimeTicks monotonicTime, cc::LayerTreeImpl*) override;
+  bool Mutate(base::TimeTicks monotonic_time, cc::LayerTreeImpl*) override;
   void SetClient(cc::LayerTreeMutatorClient*) override;
   base::Closure TakeMutations() override;
 
-  CompositorMutator* mutator() { return m_mutator.get(); }
+  CompositorMutator* Mutator() { return mutator_.Get(); }
 
-  void setMutationsForTesting(std::unique_ptr<CompositorMutations>);
+  void SetMutationsForTesting(std::unique_ptr<CompositorMutations>);
 
  private:
-  cc::LayerTreeMutatorClient* m_client;
-  CompositorMutationsTarget* m_mutationsTarget;
+  cc::LayerTreeMutatorClient* client_;
+  CompositorMutationsTarget* mutations_target_;
   // Accessed by main and compositor threads.
-  CrossThreadPersistent<CompositorMutator> m_mutator;
-  std::unique_ptr<CompositorMutations> m_mutations;
+  CrossThreadPersistent<CompositorMutator> mutator_;
+  std::unique_ptr<CompositorMutations> mutations_;
 };
 
 }  // namespace blink

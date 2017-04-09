@@ -25,48 +25,50 @@ namespace {
 class DOMTimerTest : public RenderingTest {
  public:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      m_platform;
+      platform_;
 
   // Expected time between each iterator for setInterval(..., 1) or nested
   // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minumum clamp of 4m
   // is applied from the 5th iteration onwards.
-  const std::vector<Matcher<double>> kExpectedTimings = {
+  const std::vector<Matcher<double>> k_expected_timings = {
       DoubleNear(1., 0.000001), DoubleNear(1., 0.000001),
       DoubleNear(1., 0.000001), DoubleNear(1., 0.000001),
       DoubleNear(4., 0.000001), DoubleNear(4., 0.000001),
   };
 
   void SetUp() override {
-    m_platform->setAutoAdvanceNowToPendingTasks(true);
+    platform_->SetAutoAdvanceNowToPendingTasks(true);
     // Advance timer manually as RenderingTest expects the time to be non-zero.
-    m_platform->advanceClockSeconds(1.);
+    platform_->AdvanceClockSeconds(1.);
     RenderingTest::SetUp();
     // Advance timer again as otherwise the time between the first call to
     // setInterval and it running will be off by 5us.
-    m_platform->advanceClockSeconds(1);
-    document().settings()->setScriptEnabled(true);
+    platform_->AdvanceClockSeconds(1);
+    GetDocument().GetSettings()->SetScriptEnabled(true);
   }
 
   v8::Local<v8::Value> EvalExpression(const char* expr) {
-    return document().frame()->script().executeScriptInMainWorldAndReturnValue(
-        ScriptSourceCode(expr));
+    return GetDocument()
+        .GetFrame()
+        ->Script()
+        .ExecuteScriptInMainWorldAndReturnValue(ScriptSourceCode(expr));
   }
 
-  Vector<double> toDoubleArray(v8::Local<v8::Value> value,
+  Vector<double> ToDoubleArray(v8::Local<v8::Value> value,
                                v8::HandleScope& scope) {
-    NonThrowableExceptionState exceptionState;
-    return toImplArray<Vector<double>>(value, 0, scope.GetIsolate(),
-                                       exceptionState);
+    NonThrowableExceptionState exception_state;
+    return ToImplArray<Vector<double>>(value, 0, scope.GetIsolate(),
+                                       exception_state);
   }
 
-  void ExecuteScriptAndWaitUntilIdle(const char* scriptText) {
-    ScriptSourceCode script(scriptText);
-    document().frame()->script().executeScriptInMainWorld(script);
-    m_platform->runUntilIdle();
+  void ExecuteScriptAndWaitUntilIdle(const char* script_text) {
+    ScriptSourceCode script(script_text);
+    GetDocument().GetFrame()->Script().ExecuteScriptInMainWorld(script);
+    platform_->RunUntilIdle();
   }
 };
 
-const char* kSetTimeoutScriptText =
+const char* g_k_set_timeout_script_text =
     "var id;"
     "var last = performance.now();"
     "var times = [];"
@@ -84,14 +86,14 @@ const char* kSetTimeoutScriptText =
 TEST_F(DOMTimerTest, setTimeout_ClampsAfter4Nestings) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ExecuteScriptAndWaitUntilIdle(kSetTimeoutScriptText);
+  ExecuteScriptAndWaitUntilIdle(g_k_set_timeout_script_text);
 
-  auto times(toDoubleArray(EvalExpression("times"), scope));
+  auto times(ToDoubleArray(EvalExpression("times"), scope));
 
-  EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
+  EXPECT_THAT(times, ElementsAreArray(k_expected_timings));
 }
 
-const char* kSetIntervalScriptText =
+const char* g_k_set_interval_script_text =
     "var last = performance.now();"
     "var times = [];"
     "var id = setInterval(function() {"
@@ -107,26 +109,26 @@ const char* kSetIntervalScriptText =
 TEST_F(DOMTimerTest, setInterval_ClampsAfter4Iterations) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ExecuteScriptAndWaitUntilIdle(kSetIntervalScriptText);
+  ExecuteScriptAndWaitUntilIdle(g_k_set_interval_script_text);
 
-  auto times(toDoubleArray(EvalExpression("times"), scope));
+  auto times(ToDoubleArray(EvalExpression("times"), scope));
 
-  EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
+  EXPECT_THAT(times, ElementsAreArray(k_expected_timings));
 }
 
 TEST_F(DOMTimerTest, setInterval_NestingResetsForLaterCalls) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ExecuteScriptAndWaitUntilIdle(kSetIntervalScriptText);
+  ExecuteScriptAndWaitUntilIdle(g_k_set_interval_script_text);
 
   // Run the setIntervalScript again to verify that the clamp imposed for
   // nesting beyond 4 levels is reset when setInterval is called again in the
   // original scope but after the original setInterval has completed.
-  ExecuteScriptAndWaitUntilIdle(kSetIntervalScriptText);
+  ExecuteScriptAndWaitUntilIdle(g_k_set_interval_script_text);
 
-  auto times(toDoubleArray(EvalExpression("times"), scope));
+  auto times(ToDoubleArray(EvalExpression("times"), scope));
 
-  EXPECT_THAT(times, ElementsAreArray(kExpectedTimings));
+  EXPECT_THAT(times, ElementsAreArray(k_expected_timings));
 }
 
 }  // namespace

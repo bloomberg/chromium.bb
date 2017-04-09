@@ -13,34 +13,34 @@
 
 TEST(TextCodecUserDefinedTest, QuestionMarksAndSurrogates) {
   WTF::TextEncoding encoding("x-user-defined");
-  std::unique_ptr<WTF::TextCodec> codec(newTextCodec(encoding));
+  std::unique_ptr<WTF::TextCodec> codec(NewTextCodec(encoding));
 
   {
     const LChar testCase[] = {0xd1, 0x16, 0x86};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("?\x16?", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("?\x16?", result.Data());
   }
   {
     const UChar testCase[] = {0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("?", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("?", result.Data());
   }
   {
     const UChar testCase[] = {0xd9f0, 0xdcd9, 0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("??", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("??", result.Data());
   }
   {
     const UChar testCase[] = {0x0041, 0xd9f0, 0xdcd9, 0xf7c1, 0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("A?\xC1?", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("A?\xC1?", result.Data());
   }
 }

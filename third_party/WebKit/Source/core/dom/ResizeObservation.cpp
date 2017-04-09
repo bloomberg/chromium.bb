@@ -12,60 +12,60 @@
 namespace blink {
 
 ResizeObservation::ResizeObservation(Element* target, ResizeObserver* observer)
-    : m_target(target),
-      m_observer(observer),
-      m_observationSize(0, 0),
-      m_elementSizeChanged(true) {
-  DCHECK(m_target);
-  m_observer->elementSizeChanged();
+    : target_(target),
+      observer_(observer),
+      observation_size_(0, 0),
+      element_size_changed_(true) {
+  DCHECK(target_);
+  observer_->ElementSizeChanged();
 }
 
-bool ResizeObservation::observationSizeOutOfSync() {
-  return m_elementSizeChanged && m_observationSize != computeTargetSize();
+bool ResizeObservation::ObservationSizeOutOfSync() {
+  return element_size_changed_ && observation_size_ != ComputeTargetSize();
 }
 
-void ResizeObservation::setObservationSize(const LayoutSize& observationSize) {
-  m_observationSize = observationSize;
-  m_elementSizeChanged = false;
+void ResizeObservation::SetObservationSize(const LayoutSize& observation_size) {
+  observation_size_ = observation_size;
+  element_size_changed_ = false;
 }
 
-size_t ResizeObservation::targetDepth() {
+size_t ResizeObservation::TargetDepth() {
   unsigned depth = 0;
-  for (Element* parent = m_target; parent; parent = parent->parentElement())
+  for (Element* parent = target_; parent; parent = parent->parentElement())
     ++depth;
   return depth;
 }
 
-LayoutSize ResizeObservation::computeTargetSize() const {
-  if (m_target) {
-    if (m_target->isSVGElement() &&
-        toSVGElement(m_target)->isSVGGraphicsElement()) {
-      SVGGraphicsElement& svg = toSVGGraphicsElement(*m_target);
-      return LayoutSize(svg.getBBox().size());
+LayoutSize ResizeObservation::ComputeTargetSize() const {
+  if (target_) {
+    if (target_->IsSVGElement() &&
+        ToSVGElement(target_)->IsSVGGraphicsElement()) {
+      SVGGraphicsElement& svg = ToSVGGraphicsElement(*target_);
+      return LayoutSize(svg.GetBBox().size());
     }
-    LayoutBox* layout = m_target->layoutBox();
+    LayoutBox* layout = target_->GetLayoutBox();
     if (layout)
-      return layout->contentSize();
+      return layout->ContentSize();
   }
   return LayoutSize();
 }
 
-LayoutPoint ResizeObservation::computeTargetLocation() const {
-  if (m_target && !m_target->isSVGElement()) {
-    if (LayoutBox* layout = m_target->layoutBox())
-      return LayoutPoint(layout->paddingLeft(), layout->paddingTop());
+LayoutPoint ResizeObservation::ComputeTargetLocation() const {
+  if (target_ && !target_->IsSVGElement()) {
+    if (LayoutBox* layout = target_->GetLayoutBox())
+      return LayoutPoint(layout->PaddingLeft(), layout->PaddingTop());
   }
   return LayoutPoint();
 }
 
-void ResizeObservation::elementSizeChanged() {
-  m_elementSizeChanged = true;
-  m_observer->elementSizeChanged();
+void ResizeObservation::ElementSizeChanged() {
+  element_size_changed_ = true;
+  observer_->ElementSizeChanged();
 }
 
 DEFINE_TRACE(ResizeObservation) {
-  visitor->trace(m_target);
-  visitor->trace(m_observer);
+  visitor->Trace(target_);
+  visitor->Trace(observer_);
 }
 
 }  // namespace blink

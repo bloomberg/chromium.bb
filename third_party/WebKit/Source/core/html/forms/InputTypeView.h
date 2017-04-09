@@ -62,7 +62,7 @@ class ClickHandlingState final : public EventDispatchHandlingState {
 
   bool checked;
   bool indeterminate;
-  Member<HTMLInputElement> checkedRadioButton;
+  Member<HTMLInputElement> checked_radio_button;
 };
 
 // An InputTypeView object represents the UI-specific part of an
@@ -75,71 +75,71 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual ~InputTypeView();
   DECLARE_VIRTUAL_TRACE();
 
-  virtual bool sizeShouldIncludeDecoration(int defaultSize,
-                                           int& preferredSize) const;
+  virtual bool SizeShouldIncludeDecoration(int default_size,
+                                           int& preferred_size) const;
 
   // Event handling functions
 
-  virtual void handleClickEvent(MouseEvent*);
-  virtual void handleMouseDownEvent(MouseEvent*);
-  virtual ClickHandlingState* willDispatchClick();
-  virtual void didDispatchClick(Event*, const ClickHandlingState&);
-  virtual void handleKeydownEvent(KeyboardEvent*);
-  virtual void handleKeypressEvent(KeyboardEvent*);
-  virtual void handleKeyupEvent(KeyboardEvent*);
-  virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
-  virtual void forwardEvent(Event*);
-  virtual bool shouldSubmitImplicitly(Event*);
-  virtual HTMLFormElement* formForSubmission() const;
-  virtual bool hasCustomFocusLogic() const;
-  virtual void handleFocusEvent(Element* oldFocusedElement, WebFocusType);
-  virtual void handleFocusInEvent(Element* oldFocusedElement, WebFocusType);
-  virtual void handleBlurEvent();
-  virtual void handleDOMActivateEvent(Event*);
-  virtual void accessKeyAction(bool sendMouseEvents);
-  virtual void blur();
-  void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
+  virtual void HandleClickEvent(MouseEvent*);
+  virtual void HandleMouseDownEvent(MouseEvent*);
+  virtual ClickHandlingState* WillDispatchClick();
+  virtual void DidDispatchClick(Event*, const ClickHandlingState&);
+  virtual void HandleKeydownEvent(KeyboardEvent*);
+  virtual void HandleKeypressEvent(KeyboardEvent*);
+  virtual void HandleKeyupEvent(KeyboardEvent*);
+  virtual void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
+  virtual void ForwardEvent(Event*);
+  virtual bool ShouldSubmitImplicitly(Event*);
+  virtual HTMLFormElement* FormForSubmission() const;
+  virtual bool HasCustomFocusLogic() const;
+  virtual void HandleFocusEvent(Element* old_focused_element, WebFocusType);
+  virtual void HandleFocusInEvent(Element* old_focused_element, WebFocusType);
+  virtual void HandleBlurEvent();
+  virtual void HandleDOMActivateEvent(Event*);
+  virtual void AccessKeyAction(bool send_mouse_events);
+  virtual void Blur();
+  void DispatchSimulatedClickIfActive(KeyboardEvent*) const;
 
-  virtual void subtreeHasChanged();
-  virtual LayoutObject* createLayoutObject(const ComputedStyle&) const;
-  virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject(
+  virtual void SubtreeHasChanged();
+  virtual LayoutObject* CreateLayoutObject(const ComputedStyle&) const;
+  virtual PassRefPtr<ComputedStyle> CustomStyleForLayoutObject(
       PassRefPtr<ComputedStyle>);
-  virtual TextDirection computedTextDirection();
-  virtual void startResourceLoading();
-  virtual void closePopupView();
-  virtual void createShadowSubtree();
-  virtual void destroyShadowSubtree();
-  virtual void minOrMaxAttributeChanged();
-  virtual void stepAttributeChanged();
-  virtual void altAttributeChanged();
-  virtual void srcAttributeChanged();
-  virtual void updateView();
-  virtual void attributeChanged();
-  virtual void multipleAttributeChanged();
-  virtual void disabledAttributeChanged();
-  virtual void readonlyAttributeChanged();
-  virtual void requiredAttributeChanged();
-  virtual void valueAttributeChanged();
-  virtual void didSetValue(const String&, bool valueChanged);
-  virtual void listAttributeTargetChanged();
-  virtual void updateClearButtonVisibility();
-  virtual void updatePlaceholderText();
-  virtual AXObject* popupRootAXObject();
-  virtual void ensureFallbackContent() {}
-  virtual void ensurePrimaryContent() {}
-  virtual bool hasFallbackContent() const { return false; }
-  virtual FormControlState saveFormControlState() const;
-  virtual void restoreFormControlState(const FormControlState&);
+  virtual TextDirection ComputedTextDirection();
+  virtual void StartResourceLoading();
+  virtual void ClosePopupView();
+  virtual void CreateShadowSubtree();
+  virtual void DestroyShadowSubtree();
+  virtual void MinOrMaxAttributeChanged();
+  virtual void StepAttributeChanged();
+  virtual void AltAttributeChanged();
+  virtual void SrcAttributeChanged();
+  virtual void UpdateView();
+  virtual void AttributeChanged();
+  virtual void MultipleAttributeChanged();
+  virtual void DisabledAttributeChanged();
+  virtual void ReadonlyAttributeChanged();
+  virtual void RequiredAttributeChanged();
+  virtual void ValueAttributeChanged();
+  virtual void DidSetValue(const String&, bool value_changed);
+  virtual void ListAttributeTargetChanged();
+  virtual void UpdateClearButtonVisibility();
+  virtual void UpdatePlaceholderText();
+  virtual AXObject* PopupRootAXObject();
+  virtual void EnsureFallbackContent() {}
+  virtual void EnsurePrimaryContent() {}
+  virtual bool HasFallbackContent() const { return false; }
+  virtual FormControlState SaveFormControlState() const;
+  virtual void RestoreFormControlState(const FormControlState&);
 
   // Validation functions
-  virtual bool hasBadInput() const;
+  virtual bool HasBadInput() const;
 
  protected:
-  InputTypeView(HTMLInputElement& element) : m_element(&element) {}
-  HTMLInputElement& element() const { return *m_element; }
+  InputTypeView(HTMLInputElement& element) : element_(&element) {}
+  HTMLInputElement& GetElement() const { return *element_; }
 
  private:
-  Member<HTMLInputElement> m_element;
+  Member<HTMLInputElement> element_;
 };
 
 }  // namespace blink

@@ -50,7 +50,7 @@ static size_t CSSDescriptorIndices[] = {
    {% endfor %}
 };
 
-const CSSPropertyDescriptor& CSSPropertyDescriptor::get(CSSPropertyID id) {
+const CSSPropertyDescriptor& CSSPropertyDescriptor::Get(CSSPropertyID id) {
       return cssPropertyDescriptors[CSSDescriptorIndices[id]];
 }
 

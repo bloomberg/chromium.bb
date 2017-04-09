@@ -33,7 +33,7 @@ class XMLSerializer final : public GarbageCollected<XMLSerializer>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XMLSerializer* create() { return new XMLSerializer; }
+  static XMLSerializer* Create() { return new XMLSerializer; }
 
   String serializeToString(Node*);
 

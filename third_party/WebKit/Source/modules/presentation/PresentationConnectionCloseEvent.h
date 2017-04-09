@@ -21,35 +21,36 @@ class PresentationConnectionCloseEvent final : public Event {
  public:
   ~PresentationConnectionCloseEvent() override = default;
 
-  static PresentationConnectionCloseEvent* create(const AtomicString& eventType,
-                                                  const String& reason,
-                                                  const String& message) {
-    return new PresentationConnectionCloseEvent(eventType, reason, message);
+  static PresentationConnectionCloseEvent* Create(
+      const AtomicString& event_type,
+      const String& reason,
+      const String& message) {
+    return new PresentationConnectionCloseEvent(event_type, reason, message);
   }
 
-  static PresentationConnectionCloseEvent* create(
-      const AtomicString& eventType,
+  static PresentationConnectionCloseEvent* Create(
+      const AtomicString& event_type,
       const PresentationConnectionCloseEventInit& initializer) {
-    return new PresentationConnectionCloseEvent(eventType, initializer);
+    return new PresentationConnectionCloseEvent(event_type, initializer);
   }
 
-  const String& reason() const { return m_reason; }
-  const String& message() const { return m_message; }
+  const String& reason() const { return reason_; }
+  const String& message() const { return message_; }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PresentationConnectionCloseEvent(const AtomicString& eventType,
+  PresentationConnectionCloseEvent(const AtomicString& event_type,
                                    const String& reason,
                                    const String& message);
   PresentationConnectionCloseEvent(
-      const AtomicString& eventType,
+      const AtomicString& event_type,
       const PresentationConnectionCloseEventInit& initializer);
 
-  String m_reason;
-  String m_message;
+  String reason_;
+  String message_;
 };
 
 }  // namespace blink

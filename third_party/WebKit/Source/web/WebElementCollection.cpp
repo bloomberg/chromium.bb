@@ -38,36 +38,36 @@
 
 namespace blink {
 
-void WebElementCollection::reset() {
-  m_private.reset();
+void WebElementCollection::Reset() {
+  private_.Reset();
 }
 
-void WebElementCollection::assign(const WebElementCollection& other) {
-  m_private = other.m_private;
+void WebElementCollection::Assign(const WebElementCollection& other) {
+  private_ = other.private_;
 }
 
 WebElementCollection::WebElementCollection(HTMLCollection* col)
-    : m_private(col) {}
+    : private_(col) {}
 
 WebElementCollection& WebElementCollection::operator=(HTMLCollection* col) {
-  m_private = col;
+  private_ = col;
   return *this;
 }
 
 unsigned WebElementCollection::length() const {
-  return m_private->length();
+  return private_->length();
 }
 
-WebElement WebElementCollection::nextItem() const {
-  Element* element = m_private->item(m_current);
+WebElement WebElementCollection::NextItem() const {
+  Element* element = private_->item(current_);
   if (element)
-    m_current++;
+    current_++;
   return WebElement(element);
 }
 
-WebElement WebElementCollection::firstItem() const {
-  m_current = 0;
-  return nextItem();
+WebElement WebElementCollection::FirstItem() const {
+  current_ = 0;
+  return NextItem();
 }
 
 }  // namespace blink

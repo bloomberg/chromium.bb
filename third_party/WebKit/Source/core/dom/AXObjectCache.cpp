@@ -33,43 +33,43 @@
 
 namespace blink {
 
-AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::m_createFunction =
+AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::create_function_ =
     nullptr;
 
-void AXObjectCache::init(AXObjectCacheCreateFunction function) {
-  DCHECK(!m_createFunction);
-  m_createFunction = function;
+void AXObjectCache::Init(AXObjectCacheCreateFunction function) {
+  DCHECK(!create_function_);
+  create_function_ = function;
 }
 
-AXObjectCache* AXObjectCache::create(Document& document) {
-  DCHECK(m_createFunction);
-  return m_createFunction(document);
+AXObjectCache* AXObjectCache::Create(Document& document) {
+  DCHECK(create_function_);
+  return create_function_(document);
 }
 
 AXObjectCache::AXObjectCache() {}
 
 AXObjectCache::~AXObjectCache() {}
 
-std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::create(
+std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::Create(
     Document& document) {
-  return WTF::wrapUnique(new ScopedAXObjectCache(document));
+  return WTF::WrapUnique(new ScopedAXObjectCache(document));
 }
 
 ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
-    : m_document(&document) {
-  if (!m_document->axObjectCache())
-    m_cache = AXObjectCache::create(*m_document);
+    : document_(&document) {
+  if (!document_->AxObjectCache())
+    cache_ = AXObjectCache::Create(*document_);
 }
 
 ScopedAXObjectCache::~ScopedAXObjectCache() {
-  if (m_cache)
-    m_cache->dispose();
+  if (cache_)
+    cache_->Dispose();
 }
 
-AXObjectCache* ScopedAXObjectCache::get() {
-  if (m_cache)
-    return m_cache.get();
-  AXObjectCache* cache = m_document->axObjectCache();
+AXObjectCache* ScopedAXObjectCache::Get() {
+  if (cache_)
+    return cache_.Get();
+  AXObjectCache* cache = document_->AxObjectCache();
   DCHECK(cache);
   return cache;
 }

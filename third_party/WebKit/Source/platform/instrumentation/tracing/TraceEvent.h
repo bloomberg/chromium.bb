@@ -15,10 +15,10 @@ namespace WTF {
 static inline void SetTraceValue(const CString& arg,
                                  unsigned char* type,
                                  unsigned long long* value) {
-  trace_event_internal::TraceValueUnion typeValue;
-  typeValue.as_string = arg.data();
+  trace_event_internal::TraceValueUnion type_value;
+  type_value.as_string = arg.Data();
   *type = TRACE_VALUE_TYPE_COPY_STRING;
-  *value = typeValue.as_uint;
+  *value = type_value.as_uint;
 }
 
 }  // namespace WTF
@@ -28,12 +28,12 @@ namespace TraceEvent {
 
 using base::trace_event::TraceScopedTrackableObject;
 
-inline base::TimeTicks toTraceTimestamp(double seconds) {
+inline base::TimeTicks ToTraceTimestamp(double seconds) {
   return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
 }
 
 // This is to avoid error of passing a chromium time internal value.
-void toTraceTimestamp(int64_t);
+void ToTraceTimestamp(int64_t);
 
 }  // namespace TraceEvent
 }  // namespace blink

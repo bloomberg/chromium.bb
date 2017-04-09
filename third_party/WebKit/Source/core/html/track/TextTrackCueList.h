@@ -38,34 +38,34 @@ class TextTrackCueList final : public GarbageCollected<TextTrackCueList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextTrackCueList* create() { return new TextTrackCueList; }
+  static TextTrackCueList* Create() { return new TextTrackCueList; }
 
   unsigned long length() const;
 
-  TextTrackCue* anonymousIndexedGetter(unsigned index) const;
+  TextTrackCue* AnonymousIndexedGetter(unsigned index) const;
   TextTrackCue* getCueById(const AtomicString&) const;
 
-  bool add(TextTrackCue*);
-  bool remove(TextTrackCue*);
+  bool Add(TextTrackCue*);
+  bool Remove(TextTrackCue*);
 
-  void collectActiveCues(TextTrackCueList&) const;
-  void updateCueIndex(TextTrackCue*);
-  bool isCueIndexValid(unsigned probeIndex) const {
-    return probeIndex < m_firstInvalidIndex;
+  void CollectActiveCues(TextTrackCueList&) const;
+  void UpdateCueIndex(TextTrackCue*);
+  bool IsCueIndexValid(unsigned probe_index) const {
+    return probe_index < first_invalid_index_;
   }
-  void validateCueIndexes();
+  void ValidateCueIndexes();
 
   DECLARE_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   TextTrackCueList();
-  size_t findInsertionIndex(const TextTrackCue*) const;
-  void invalidateCueIndex(size_t index);
-  void clear();
+  size_t FindInsertionIndex(const TextTrackCue*) const;
+  void InvalidateCueIndex(size_t index);
+  void Clear();
 
-  HeapVector<TraceWrapperMember<TextTrackCue>> m_list;
-  size_t m_firstInvalidIndex;
+  HeapVector<TraceWrapperMember<TextTrackCue>> list_;
+  size_t first_invalid_index_;
 };
 
 }  // namespace blink

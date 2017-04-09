@@ -19,29 +19,29 @@ class WebGLTransformFeedback : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLTransformFeedback() override;
 
-  static WebGLTransformFeedback* create(WebGL2RenderingContextBase*);
+  static WebGLTransformFeedback* Create(WebGL2RenderingContextBase*);
 
-  GLenum getTarget() const { return m_target; }
-  void setTarget(GLenum);
+  GLenum GetTarget() const { return target_; }
+  void SetTarget(GLenum);
 
-  bool hasEverBeenBound() const { return object() && m_target; }
+  bool HasEverBeenBound() const { return Object() && target_; }
 
-  WebGLProgram* getProgram() const { return m_program; }
-  void setProgram(WebGLProgram*);
+  WebGLProgram* GetProgram() const { return program_; }
+  void SetProgram(WebGLProgram*);
 
   DECLARE_TRACE();
 
  protected:
   explicit WebGLTransformFeedback(WebGL2RenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:
-  bool isTransformFeedback() const override { return true; }
+  bool IsTransformFeedback() const override { return true; }
 
-  GLenum m_target;
+  GLenum target_;
 
-  Member<WebGLProgram> m_program;
+  Member<WebGLProgram> program_;
 };
 
 }  // namespace blink

@@ -49,7 +49,7 @@ class MODULES_EXPORT CryptoKey final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CryptoKey* create(const WebCryptoKey& key) {
+  static CryptoKey* Create(const WebCryptoKey& key) {
     return new CryptoKey(key);
   }
 
@@ -60,17 +60,17 @@ class MODULES_EXPORT CryptoKey final
   ScriptValue algorithm(ScriptState*);
   Vector<String> usages() const;
 
-  const WebCryptoKey& key() const { return m_key; }
+  const WebCryptoKey& Key() const { return key_; }
 
   // If the key cannot be used with the indicated algorithm, returns false
   // and completes the CryptoResult with an error.
-  bool canBeUsedForAlgorithm(const WebCryptoAlgorithm&,
+  bool CanBeUsedForAlgorithm(const WebCryptoAlgorithm&,
                              WebCryptoKeyUsage,
                              CryptoResult*) const;
 
   // On failure, these return false and complete the CryptoResult with an error.
-  static bool parseFormat(const String&, WebCryptoKeyFormat&, CryptoResult*);
-  static bool parseUsageMask(const Vector<String>&,
+  static bool ParseFormat(const String&, WebCryptoKeyFormat&, CryptoResult*);
+  static bool ParseUsageMask(const Vector<String>&,
                              WebCryptoKeyUsageMask&,
                              CryptoResult*);
 
@@ -79,7 +79,7 @@ class MODULES_EXPORT CryptoKey final
  protected:
   explicit CryptoKey(const WebCryptoKey&);
 
-  const WebCryptoKey m_key;
+  const WebCryptoKey key_;
 };
 
 }  // namespace blink

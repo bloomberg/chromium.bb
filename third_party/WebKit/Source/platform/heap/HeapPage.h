@@ -47,16 +47,16 @@
 
 namespace blink {
 
-const size_t blinkPageSizeLog2 = 17;
-const size_t blinkPageSize = 1 << blinkPageSizeLog2;
-const size_t blinkPageOffsetMask = blinkPageSize - 1;
-const size_t blinkPageBaseMask = ~blinkPageOffsetMask;
+const size_t kBlinkPageSizeLog2 = 17;
+const size_t kBlinkPageSize = 1 << kBlinkPageSizeLog2;
+const size_t kBlinkPageOffsetMask = kBlinkPageSize - 1;
+const size_t kBlinkPageBaseMask = ~kBlinkPageOffsetMask;
 
 // We allocate pages at random addresses but in groups of
 // blinkPagesPerRegion at a given random address. We group pages to
 // not spread out too much over the address space which would blow
 // away the page tables and lead to bad performance.
-const size_t blinkPagesPerRegion = 10;
+const size_t kBlinkPagesPerRegion = 10;
 
 // TODO(nya): Replace this with something like #if ENABLE_NACL.
 #if 0
@@ -65,28 +65,28 @@ const size_t blinkPagesPerRegion = 10;
 // (whose size is 128 KB). So we don't use guard pages in NaCl.
 const size_t blinkGuardPageSize = 0;
 #else
-const size_t blinkGuardPageSize = base::kSystemPageSize;
+const size_t kBlinkGuardPageSize = base::kSystemPageSize;
 #endif
 
 // Double precision floats are more efficient when 8 byte aligned, so we 8 byte
 // align all allocations even on 32 bit.
-const size_t allocationGranularity = 8;
-const size_t allocationMask = allocationGranularity - 1;
-const size_t objectStartBitMapSize =
-    (blinkPageSize + ((8 * allocationGranularity) - 1)) /
-    (8 * allocationGranularity);
-const size_t reservedForObjectBitMap =
-    ((objectStartBitMapSize + allocationMask) & ~allocationMask);
-const size_t maxHeapObjectSizeLog2 = 27;
-const size_t maxHeapObjectSize = 1 << maxHeapObjectSizeLog2;
-const size_t largeObjectSizeThreshold = blinkPageSize / 2;
+const size_t kAllocationGranularity = 8;
+const size_t kAllocationMask = kAllocationGranularity - 1;
+const size_t kObjectStartBitMapSize =
+    (kBlinkPageSize + ((8 * kAllocationGranularity) - 1)) /
+    (8 * kAllocationGranularity);
+const size_t kReservedForObjectBitMap =
+    ((kObjectStartBitMapSize + kAllocationMask) & ~kAllocationMask);
+const size_t kMaxHeapObjectSizeLog2 = 27;
+const size_t kMaxHeapObjectSize = 1 << kMaxHeapObjectSizeLog2;
+const size_t kLargeObjectSizeThreshold = kBlinkPageSize / 2;
 
 // A zap value used for freed memory that is allowed to be added to the free
 // list in the next addToFreeList().
-const uint8_t reuseAllowedZapValue = 0x2a;
+const uint8_t kReuseAllowedZapValue = 0x2a;
 // A zap value used for freed memory that is forbidden to be added to the free
 // list in the next addToFreeList().
-const uint8_t reuseForbiddenZapValue = 0x2c;
+const uint8_t kReuseForbiddenZapValue = 0x2c;
 
 // In non-production builds, memory is zapped when it's freed. The zapped
 // memory is zeroed out when the memory is reused in
@@ -105,14 +105,14 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
   ASAN_POISON_MEMORY_REGION(address, size)
 #elif DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define SET_MEMORY_INACCESSIBLE(address, size) \
-  FreeList::zapFreedMemory(address, size);     \
+  FreeList::ZapFreedMemory(address, size);     \
   ASAN_POISON_MEMORY_REGION(address, size)
 #define SET_MEMORY_ACCESSIBLE(address, size)  \
   ASAN_UNPOISON_MEMORY_REGION(address, size); \
   memset((address), 0, (size))
 #define CHECK_MEMORY_INACCESSIBLE(address, size)     \
   ASAN_UNPOISON_MEMORY_REGION(address, size);        \
-  FreeList::checkFreedMemoryIsZapped(address, size); \
+  FreeList::CheckFreedMemoryIsZapped(address, size); \
   ASAN_POISON_MEMORY_REGION(address, size)
 #else
 #define SET_MEMORY_INACCESSIBLE(address, size) memset((address), 0, (size))
@@ -145,26 +145,26 @@ class PageMemory;
 // - 1 bit used to mark DOM trees for V8.
 // - 14 bits are enough for |gcInfoIndex| because there are fewer than 2^14
 //   types in Blink.
-const size_t headerWrapperMarkBitMask = 1u << 17;
-const size_t headerGCInfoIndexShift = 18;
-const size_t headerGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1))
-                                     << headerGCInfoIndexShift;
-const size_t headerSizeMask = (static_cast<size_t>((1 << 14) - 1)) << 3;
-const size_t headerMarkBitMask = 1;
-const size_t headerFreedBitMask = 2;
+const size_t kHeaderWrapperMarkBitMask = 1u << 17;
+const size_t kHeaderGCInfoIndexShift = 18;
+const size_t kHeaderGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1))
+                                      << kHeaderGCInfoIndexShift;
+const size_t kHeaderSizeMask = (static_cast<size_t>((1 << 14) - 1)) << 3;
+const size_t kHeaderMarkBitMask = 1;
+const size_t kHeaderFreedBitMask = 2;
 // TODO(haraken): Remove the dead bit. It is used only by a header of
 // a promptly freed object.
-const size_t headerDeadBitMask = 4;
+const size_t kHeaderDeadBitMask = 4;
 // On free-list entries we reuse the dead bit to distinguish a normal free-list
 // entry from one that has been promptly freed.
-const size_t headerPromptlyFreedBitMask =
-    headerFreedBitMask | headerDeadBitMask;
-const size_t largeObjectSizeInHeader = 0;
-const size_t gcInfoIndexForFreeListHeader = 0;
-const size_t nonLargeObjectPageSizeMax = 1 << 17;
+const size_t kHeaderPromptlyFreedBitMask =
+    kHeaderFreedBitMask | kHeaderDeadBitMask;
+const size_t kLargeObjectSizeInHeader = 0;
+const size_t kGcInfoIndexForFreeListHeader = 0;
+const size_t kNonLargeObjectPageSizeMax = 1 << 17;
 
 static_assert(
-    nonLargeObjectPageSizeMax >= blinkPageSize,
+    kNonLargeObjectPageSizeMax >= kBlinkPageSize,
     "max size supported by HeapObjectHeader must at least be blinkPageSize");
 
 class PLATFORM_EXPORT HeapObjectHeader {
@@ -173,84 +173,85 @@ class PLATFORM_EXPORT HeapObjectHeader {
  public:
   // If |gcInfoIndex| is 0, this header is interpreted as a free list header.
   NO_SANITIZE_ADDRESS
-  HeapObjectHeader(size_t size, size_t gcInfoIndex) {
+  HeapObjectHeader(size_t size, size_t gc_info_index) {
     // sizeof(HeapObjectHeader) must be equal to or smaller than
     // |allocationGranularity|, because |HeapObjectHeader| is used as a header
     // for a freed entry. Given that the smallest entry size is
     // |allocationGranurarity|, |HeapObjectHeader| must fit into the size.
     static_assert(
-        sizeof(HeapObjectHeader) <= allocationGranularity,
+        sizeof(HeapObjectHeader) <= kAllocationGranularity,
         "size of HeapObjectHeader must be smaller than allocationGranularity");
 #if CPU(64BIT)
     static_assert(sizeof(HeapObjectHeader) == 8,
                   "sizeof(HeapObjectHeader) must be 8 bytes");
-    m_magic = getMagic();
+    magic_ = GetMagic();
 #endif
 
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
-    ASSERT(size < nonLargeObjectPageSizeMax);
-    ASSERT(!(size & allocationMask));
-    m_encoded = static_cast<uint32_t>(
-        (gcInfoIndex << headerGCInfoIndexShift) | size |
-        (gcInfoIndex == gcInfoIndexForFreeListHeader ? headerFreedBitMask : 0));
+    ASSERT(gc_info_index < GCInfoTable::kMaxIndex);
+    ASSERT(size < kNonLargeObjectPageSizeMax);
+    ASSERT(!(size & kAllocationMask));
+    encoded_ = static_cast<uint32_t>(
+        (gc_info_index << kHeaderGCInfoIndexShift) | size |
+        (gc_info_index == kGcInfoIndexForFreeListHeader ? kHeaderFreedBitMask
+                                                        : 0));
   }
 
-  NO_SANITIZE_ADDRESS bool isFree() const {
-    return m_encoded & headerFreedBitMask;
+  NO_SANITIZE_ADDRESS bool IsFree() const {
+    return encoded_ & kHeaderFreedBitMask;
   }
 
-  NO_SANITIZE_ADDRESS bool isPromptlyFreed() const {
-    return (m_encoded & headerPromptlyFreedBitMask) ==
-           headerPromptlyFreedBitMask;
+  NO_SANITIZE_ADDRESS bool IsPromptlyFreed() const {
+    return (encoded_ & kHeaderPromptlyFreedBitMask) ==
+           kHeaderPromptlyFreedBitMask;
   }
 
-  NO_SANITIZE_ADDRESS void markPromptlyFreed() {
-    m_encoded |= headerPromptlyFreedBitMask;
+  NO_SANITIZE_ADDRESS void MarkPromptlyFreed() {
+    encoded_ |= kHeaderPromptlyFreedBitMask;
   }
 
   size_t size() const;
 
-  NO_SANITIZE_ADDRESS size_t gcInfoIndex() const {
-    return (m_encoded & headerGCInfoIndexMask) >> headerGCInfoIndexShift;
+  NO_SANITIZE_ADDRESS size_t GcInfoIndex() const {
+    return (encoded_ & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
   }
 
-  NO_SANITIZE_ADDRESS void setSize(size_t size) {
-    ASSERT(size < nonLargeObjectPageSizeMax);
-    checkHeader();
-    m_encoded = static_cast<uint32_t>(size) | (m_encoded & ~headerSizeMask);
+  NO_SANITIZE_ADDRESS void SetSize(size_t size) {
+    ASSERT(size < kNonLargeObjectPageSizeMax);
+    CheckHeader();
+    encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
   }
 
-  bool isWrapperHeaderMarked() const;
-  void markWrapperHeader();
-  void unmarkWrapperHeader();
-  bool isMarked() const;
-  void mark();
-  void unmark();
+  bool IsWrapperHeaderMarked() const;
+  void MarkWrapperHeader();
+  void UnmarkWrapperHeader();
+  bool IsMarked() const;
+  void Mark();
+  void Unmark();
 
-  Address payload();
-  size_t payloadSize();
-  Address payloadEnd();
+  Address Payload();
+  size_t PayloadSize();
+  Address PayloadEnd();
 
-  void finalize(Address, size_t);
-  static HeapObjectHeader* fromPayload(const void*);
+  void Finalize(Address, size_t);
+  static HeapObjectHeader* FromPayload(const void*);
 
   // Some callers formerly called |fromPayload| only for its side-effect of
   // calling |checkHeader| (which is now private). This function does that, but
   // its explanatory name makes the intention at the call sites easier to
   // understand, and is public.
-  static void checkFromPayload(const void*);
+  static void CheckFromPayload(const void*);
 
-  static const uint32_t zappedMagic = 0xDEAD4321;
+  static const uint32_t kZappedMagic = 0xDEAD4321;
 
  protected:
 #if DCHECK_IS_ON() && CPU(64BIT)
   // Zap |m_magic| with a new magic number that means there was once an object
   // allocated here, but it was freed because nobody marked it during GC.
-  void zapMagic();
+  void ZapMagic();
 #endif
 
  private:
-  void checkHeader() const;
+  void CheckHeader() const;
 
 #if CPU(64BIT)
   // Returns a random value.
@@ -261,87 +262,87 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // should be fast and small, and should have the benefit of requiring
   // attackers to discover and use 2 independent weak infoleak bugs, or 1
   // arbitrary infoleak bug (used twice).
-  uint32_t getMagic() const;
-  uint32_t m_magic;
+  uint32_t GetMagic() const;
+  uint32_t magic_;
 #endif  // CPU(64BIT)
 
-  uint32_t m_encoded;
+  uint32_t encoded_;
 };
 
 class FreeListEntry final : public HeapObjectHeader {
  public:
   NO_SANITIZE_ADDRESS
   explicit FreeListEntry(size_t size)
-      : HeapObjectHeader(size, gcInfoIndexForFreeListHeader), m_next(nullptr) {
+      : HeapObjectHeader(size, kGcInfoIndexForFreeListHeader), next_(nullptr) {
 #if DCHECK_IS_ON() && CPU(64BIT)
     ASSERT(size >= sizeof(HeapObjectHeader));
-    zapMagic();
+    ZapMagic();
 #endif
   }
 
-  Address getAddress() { return reinterpret_cast<Address>(this); }
+  Address GetAddress() { return reinterpret_cast<Address>(this); }
 
   NO_SANITIZE_ADDRESS
-  void unlink(FreeListEntry** prevNext) {
-    *prevNext = m_next;
-    m_next = nullptr;
+  void Unlink(FreeListEntry** prev_next) {
+    *prev_next = next_;
+    next_ = nullptr;
   }
 
   NO_SANITIZE_ADDRESS
-  void link(FreeListEntry** prevNext) {
-    m_next = *prevNext;
-    *prevNext = this;
+  void Link(FreeListEntry** prev_next) {
+    next_ = *prev_next;
+    *prev_next = this;
   }
 
   NO_SANITIZE_ADDRESS
-  FreeListEntry* next() const { return m_next; }
+  FreeListEntry* Next() const { return next_; }
 
   NO_SANITIZE_ADDRESS
-  void append(FreeListEntry* next) {
-    ASSERT(!m_next);
-    m_next = next;
+  void Append(FreeListEntry* next) {
+    ASSERT(!next_);
+    next_ = next;
   }
 
  private:
-  FreeListEntry* m_next;
+  FreeListEntry* next_;
 };
 
 // Blink heap pages are set up with a guard page before and after the payload.
-inline size_t blinkPagePayloadSize() {
-  return blinkPageSize - 2 * blinkGuardPageSize;
+inline size_t BlinkPagePayloadSize() {
+  return kBlinkPageSize - 2 * kBlinkGuardPageSize;
 }
 
 // Blink heap pages are aligned to the Blink heap page size. Therefore, the
 // start of a Blink page can be obtained by rounding down to the Blink page
 // size.
-inline Address roundToBlinkPageStart(Address address) {
+inline Address RoundToBlinkPageStart(Address address) {
   return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) &
-                                   blinkPageBaseMask);
+                                   kBlinkPageBaseMask);
 }
 
-inline Address roundToBlinkPageEnd(Address address) {
+inline Address RoundToBlinkPageEnd(Address address) {
   return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address - 1) &
-                                   blinkPageBaseMask) +
-         blinkPageSize;
+                                   kBlinkPageBaseMask) +
+         kBlinkPageSize;
 }
 
 // Masks an address down to the enclosing Blink page base address.
-inline Address blinkPageAddress(Address address) {
+inline Address BlinkPageAddress(Address address) {
   return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) &
-                                   blinkPageBaseMask);
+                                   kBlinkPageBaseMask);
 }
 
-inline bool vTableInitialized(void* objectPointer) {
-  return !!(*reinterpret_cast<Address*>(objectPointer));
+inline bool VTableInitialized(void* object_pointer) {
+  return !!(*reinterpret_cast<Address*>(object_pointer));
 }
 
 #if DCHECK_IS_ON()
 
 // Sanity check for a page header address: the address of the page header should
 // be 1 OS page size away from being Blink page size-aligned.
-inline bool isPageHeaderAddress(Address address) {
-  return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) -
-           blinkGuardPageSize);
+inline bool IsPageHeaderAddress(Address address) {
+  return !((reinterpret_cast<uintptr_t>(address) & kBlinkPageOffsetMask) -
+           kBlinkGuardPageSize);
 }
 
 // Callback used for unit testing the marking of conservative pointers
@@ -370,25 +371,25 @@ class BasePage {
   BasePage(PageMemory*, BaseArena*);
   virtual ~BasePage() {}
 
-  void link(BasePage** previousNext) {
-    m_next = *previousNext;
-    *previousNext = this;
+  void Link(BasePage** previous_next) {
+    next_ = *previous_next;
+    *previous_next = this;
   }
-  void unlink(BasePage** previousNext) {
-    *previousNext = m_next;
-    m_next = nullptr;
+  void Unlink(BasePage** previous_next) {
+    *previous_next = next_;
+    next_ = nullptr;
   }
-  BasePage* next() const { return m_next; }
+  BasePage* Next() const { return next_; }
 
   // Virtual methods are slow. So performance-sensitive methods should be
   // defined as non-virtual methods on |NormalPage| and |LargeObjectPage|. The
   // following methods are not performance-sensitive.
-  virtual size_t objectPayloadSizeForTesting() = 0;
-  virtual bool isEmpty() = 0;
-  virtual void removeFromHeap() = 0;
-  virtual void sweep() = 0;
-  virtual void makeConsistentForMutator() = 0;
-  virtual void invalidateObjectStartBitmap() = 0;
+  virtual size_t ObjectPayloadSizeForTesting() = 0;
+  virtual bool IsEmpty() = 0;
+  virtual void RemoveFromHeap() = 0;
+  virtual void Sweep() = 0;
+  virtual void MakeConsistentForMutator() = 0;
+  virtual void InvalidateObjectStartBitmap() = 0;
 
 #if defined(ADDRESS_SANITIZER)
   virtual void poisonUnmarkedObjects() = 0;
@@ -401,9 +402,9 @@ class BasePage {
   //
   // This is used during conservative stack scanning to conservatively mark all
   // objects that could be referenced from the stack.
-  virtual void checkAndMarkPointer(Visitor*, Address) = 0;
+  virtual void CheckAndMarkPointer(Visitor*, Address) = 0;
 #if DCHECK_IS_ON()
-  virtual void checkAndMarkPointer(Visitor*,
+  virtual void CheckAndMarkPointer(Visitor*,
                                    Address,
                                    MarkedPointerCallbackForTesting) = 0;
 #endif
@@ -412,44 +413,44 @@ class BasePage {
     STACK_ALLOCATED();
 
    public:
-    size_t freeCount = 0;
-    size_t freeSize = 0;
+    size_t free_count = 0;
+    size_t free_size = 0;
   };
 
-  virtual void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
+  virtual void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
                             ThreadState::GCSnapshotInfo&,
                             HeapSnapshotInfo&) = 0;
 #if DCHECK_IS_ON()
-  virtual bool contains(Address) = 0;
+  virtual bool Contains(Address) = 0;
 #endif
   virtual size_t size() = 0;
-  virtual bool isLargeObjectPage() { return false; }
+  virtual bool IsLargeObjectPage() { return false; }
 
-  Address getAddress() { return reinterpret_cast<Address>(this); }
-  PageMemory* storage() const { return m_storage; }
-  BaseArena* arena() const { return m_arena; }
+  Address GetAddress() { return reinterpret_cast<Address>(this); }
+  PageMemory* Storage() const { return storage_; }
+  BaseArena* Arena() const { return arena_; }
 
   // Returns true if this page has been swept by the ongoing lazy sweep.
-  bool hasBeenSwept() const { return m_swept; }
+  bool HasBeenSwept() const { return swept_; }
 
-  void markAsSwept() {
-    ASSERT(!m_swept);
-    m_swept = true;
+  void MarkAsSwept() {
+    ASSERT(!swept_);
+    swept_ = true;
   }
 
-  void markAsUnswept() {
-    ASSERT(m_swept);
-    m_swept = false;
+  void MarkAsUnswept() {
+    ASSERT(swept_);
+    swept_ = false;
   }
 
  private:
-  PageMemory* m_storage;
-  BaseArena* m_arena;
-  BasePage* m_next;
+  PageMemory* storage_;
+  BaseArena* arena_;
+  BasePage* next_;
 
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true  upon completion of lazy sweeping.
-  bool m_swept;
+  bool swept_;
   friend class BaseArena;
 };
 
@@ -457,53 +458,54 @@ class NormalPage final : public BasePage {
  public:
   NormalPage(PageMemory*, BaseArena*);
 
-  Address payload() { return getAddress() + pageHeaderSize(); }
-  size_t payloadSize() {
-    return (blinkPagePayloadSize() - pageHeaderSize()) & ~allocationMask;
+  Address Payload() { return GetAddress() + PageHeaderSize(); }
+  size_t PayloadSize() {
+    return (BlinkPagePayloadSize() - PageHeaderSize()) & ~kAllocationMask;
   }
-  Address payloadEnd() { return payload() + payloadSize(); }
-  bool containedInObjectPayload(Address address) {
-    return payload() <= address && address < payloadEnd();
+  Address PayloadEnd() { return Payload() + PayloadSize(); }
+  bool ContainedInObjectPayload(Address address) {
+    return Payload() <= address && address < PayloadEnd();
   }
 
-  size_t objectPayloadSizeForTesting() override;
-  bool isEmpty() override;
-  void removeFromHeap() override;
-  void sweep() override;
-  void makeConsistentForMutator() override;
-  void invalidateObjectStartBitmap() override {
-    m_objectStartBitMapComputed = false;
+  size_t ObjectPayloadSizeForTesting() override;
+  bool IsEmpty() override;
+  void RemoveFromHeap() override;
+  void Sweep() override;
+  void MakeConsistentForMutator() override;
+  void InvalidateObjectStartBitmap() override {
+    object_start_bit_map_computed_ = false;
   }
 #if defined(ADDRESS_SANITIZER)
   void poisonUnmarkedObjects() override;
 #endif
-  void checkAndMarkPointer(Visitor*, Address) override;
+  void CheckAndMarkPointer(Visitor*, Address) override;
 #if DCHECK_IS_ON()
-  void checkAndMarkPointer(Visitor*,
+  void CheckAndMarkPointer(Visitor*,
                            Address,
                            MarkedPointerCallbackForTesting) override;
 #endif
 
-  void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
+  void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
                     HeapSnapshotInfo&) override;
 #if DCHECK_IS_ON()
   // Returns true for the whole |blinkPageSize| page that the page is on, even
   // for the header, and the unmapped guard page at the start. That ensures the
   // result can be used to populate the negative page cache.
-  bool contains(Address) override;
+  bool Contains(Address) override;
 #endif
-  size_t size() override { return blinkPageSize; }
-  static size_t pageHeaderSize() {
+  size_t size() override { return kBlinkPageSize; }
+  static size_t PageHeaderSize() {
     // Compute the amount of padding we have to add to a header to make the size
     // of the header plus the padding a multiple of 8 bytes.
-    size_t paddingSize = (sizeof(NormalPage) + allocationGranularity -
-                          (sizeof(HeapObjectHeader) % allocationGranularity)) %
-                         allocationGranularity;
-    return sizeof(NormalPage) + paddingSize;
+    size_t padding_size =
+        (sizeof(NormalPage) + kAllocationGranularity -
+         (sizeof(HeapObjectHeader) % kAllocationGranularity)) %
+        kAllocationGranularity;
+    return sizeof(NormalPage) + padding_size;
   }
 
-  inline NormalPageArena* arenaForNormalPage() const;
+  inline NormalPageArena* ArenaForNormalPage() const;
 
   // Context object holding the state of the arena page compaction pass, passed
   // in when compacting individual pages.
@@ -512,25 +514,25 @@ class NormalPage final : public BasePage {
 
    public:
     // Page compacting into.
-    NormalPage* m_currentPage = nullptr;
+    NormalPage* current_page_ = nullptr;
     // Offset into |m_currentPage| to the next free address.
-    size_t m_allocationPoint = 0;
+    size_t allocation_point_ = 0;
     // Chain of available pages to use for compaction. Page compaction picks the
     // next one when the current one is exhausted.
-    BasePage* m_availablePages = nullptr;
+    BasePage* available_pages_ = nullptr;
     // Chain of pages that have been compacted. Page compaction will add
     // compacted pages once the current one becomes exhausted.
-    BasePage** m_compactedPages = nullptr;
+    BasePage** compacted_pages_ = nullptr;
   };
 
-  void sweepAndCompact(CompactionContext&);
+  void SweepAndCompact(CompactionContext&);
 
  private:
-  HeapObjectHeader* findHeaderFromAddress(Address);
-  void populateObjectStartBitMap();
+  HeapObjectHeader* FindHeaderFromAddress(Address);
+  void PopulateObjectStartBitMap();
 
-  bool m_objectStartBitMapComputed;
-  uint8_t m_objectStartBitMap[reservedForObjectBitMap];
+  bool object_start_bit_map_computed_;
+  uint8_t object_start_bit_map_[kReservedForObjectBitMap];
 };
 
 // Large allocations are allocated as separate objects and linked in a list.
@@ -542,54 +544,55 @@ class LargeObjectPage final : public BasePage {
  public:
   LargeObjectPage(PageMemory*, BaseArena*, size_t);
 
-  Address payload() { return heapObjectHeader()->payload(); }
-  size_t payloadSize() { return m_payloadSize; }
-  Address payloadEnd() { return payload() + payloadSize(); }
-  bool containedInObjectPayload(Address address) {
-    return payload() <= address && address < payloadEnd();
+  Address Payload() { return GetHeapObjectHeader()->Payload(); }
+  size_t PayloadSize() { return payload_size_; }
+  Address PayloadEnd() { return Payload() + PayloadSize(); }
+  bool ContainedInObjectPayload(Address address) {
+    return Payload() <= address && address < PayloadEnd();
   }
 
-  size_t objectPayloadSizeForTesting() override;
-  bool isEmpty() override;
-  void removeFromHeap() override;
-  void sweep() override;
-  void makeConsistentForMutator() override;
-  void invalidateObjectStartBitmap() override {}
+  size_t ObjectPayloadSizeForTesting() override;
+  bool IsEmpty() override;
+  void RemoveFromHeap() override;
+  void Sweep() override;
+  void MakeConsistentForMutator() override;
+  void InvalidateObjectStartBitmap() override {}
 #if defined(ADDRESS_SANITIZER)
   void poisonUnmarkedObjects() override;
 #endif
-  void checkAndMarkPointer(Visitor*, Address) override;
+  void CheckAndMarkPointer(Visitor*, Address) override;
 #if DCHECK_IS_ON()
-  void checkAndMarkPointer(Visitor*,
+  void CheckAndMarkPointer(Visitor*,
                            Address,
                            MarkedPointerCallbackForTesting) override;
 #endif
 
-  void takeSnapshot(base::trace_event::MemoryAllocatorDump*,
+  void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
                     ThreadState::GCSnapshotInfo&,
                     HeapSnapshotInfo&) override;
 #if DCHECK_IS_ON()
   // Returns true for any address that is on one of the pages that this large
   // object uses. That ensures that we can use a negative result to populate the
   // negative page cache.
-  bool contains(Address) override;
+  bool Contains(Address) override;
 #endif
   virtual size_t size() {
-    return pageHeaderSize() + sizeof(HeapObjectHeader) + m_payloadSize;
+    return PageHeaderSize() + sizeof(HeapObjectHeader) + payload_size_;
   }
-  static size_t pageHeaderSize() {
+  static size_t PageHeaderSize() {
     // Compute the amount of padding we have to add to a header to make the size
     // of the header plus the padding a multiple of 8 bytes.
-    size_t paddingSize = (sizeof(LargeObjectPage) + allocationGranularity -
-                          (sizeof(HeapObjectHeader) % allocationGranularity)) %
-                         allocationGranularity;
-    return sizeof(LargeObjectPage) + paddingSize;
+    size_t padding_size =
+        (sizeof(LargeObjectPage) + kAllocationGranularity -
+         (sizeof(HeapObjectHeader) % kAllocationGranularity)) %
+        kAllocationGranularity;
+    return sizeof(LargeObjectPage) + padding_size;
   }
-  bool isLargeObjectPage() override { return true; }
+  bool IsLargeObjectPage() override { return true; }
 
-  HeapObjectHeader* heapObjectHeader() {
-    Address headerAddress = getAddress() + pageHeaderSize();
-    return reinterpret_cast<HeapObjectHeader*>(headerAddress);
+  HeapObjectHeader* GetHeapObjectHeader() {
+    Address header_address = GetAddress() + PageHeaderSize();
+    return reinterpret_cast<HeapObjectHeader*>(header_address);
   }
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
@@ -598,7 +601,7 @@ class LargeObjectPage final : public BasePage {
 #endif
 
  private:
-  size_t m_payloadSize;
+  size_t payload_size_;
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
   bool m_isVectorBackingPage;
 #endif
@@ -620,15 +623,15 @@ class HeapDoesNotContainCache {
   USING_FAST_MALLOC(HeapDoesNotContainCache);
 
  public:
-  HeapDoesNotContainCache() : m_hasEntries(false) {
+  HeapDoesNotContainCache() : has_entries_(false) {
     // Start by flushing the cache in a non-empty state to initialize all the
     // cache entries.
-    for (int i = 0; i < numberOfEntries; ++i)
-      m_entries[i] = nullptr;
+    for (int i = 0; i < kNumberOfEntries; ++i)
+      entries_[i] = nullptr;
   }
 
-  void flush();
-  bool isEmpty() { return !m_hasEntries; }
+  void Flush();
+  bool IsEmpty() { return !has_entries_; }
 
   // Perform a lookup in the cache.
   //
@@ -637,19 +640,19 @@ class HeapDoesNotContainCache {
   //
   // If lookup returns true, the argument address was found in the cache which
   // means the address is not in the heap.
-  PLATFORM_EXPORT bool lookup(Address);
+  PLATFORM_EXPORT bool Lookup(Address);
 
   // Add an entry to the cache.
-  PLATFORM_EXPORT void addEntry(Address);
+  PLATFORM_EXPORT void AddEntry(Address);
 
  private:
-  static const int numberOfEntriesLog2 = 12;
-  static const int numberOfEntries = 1 << numberOfEntriesLog2;
+  static const int kNumberOfEntriesLog2 = 12;
+  static const int kNumberOfEntries = 1 << kNumberOfEntriesLog2;
 
-  static size_t hash(Address);
+  static size_t GetHash(Address);
 
-  Address m_entries[numberOfEntries];
-  bool m_hasEntries;
+  Address entries_[kNumberOfEntries];
+  bool has_entries_;
 };
 
 class FreeList {
@@ -658,30 +661,30 @@ class FreeList {
  public:
   FreeList();
 
-  void addToFreeList(Address, size_t);
-  void clear();
+  void AddToFreeList(Address, size_t);
+  void Clear();
 
   // Returns a bucket number for inserting a |FreeListEntry| of a given size.
   // All entries in the given bucket, n, have size >= 2^n.
-  static int bucketIndexForSize(size_t);
+  static int BucketIndexForSize(size_t);
 
   // Returns true if the freelist snapshot is captured.
-  bool takeSnapshot(const String& dumpBaseName);
+  bool TakeSnapshot(const String& dump_base_name);
 
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
-  static void getAllowedAndForbiddenCounts(Address, size_t, size_t&, size_t&);
-  static void zapFreedMemory(Address, size_t);
-  static void checkFreedMemoryIsZapped(Address, size_t);
+  static void GetAllowedAndForbiddenCounts(Address, size_t, size_t&, size_t&);
+  static void ZapFreedMemory(Address, size_t);
+  static void CheckFreedMemoryIsZapped(Address, size_t);
 #endif
 
  private:
-  int m_biggestFreeListIndex;
+  int biggest_free_list_index_;
 
   // All |FreeListEntry|s in the nth list have size >= 2^n.
-  FreeListEntry* m_freeLists[blinkPageSizeLog2];
+  FreeListEntry* free_lists_[kBlinkPageSizeLog2];
 
-  size_t freeListSize() const;
+  size_t FreeListSize() const;
 
   friend class NormalPageArena;
 };
@@ -700,129 +703,129 @@ class PLATFORM_EXPORT BaseArena {
  public:
   BaseArena(ThreadState*, int);
   virtual ~BaseArena();
-  void removeAllPages();
+  void RemoveAllPages();
 
-  void takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo&);
+  void TakeSnapshot(const String& dump_base_name, ThreadState::GCSnapshotInfo&);
 #if DCHECK_IS_ON()
-  BasePage* findPageFromAddress(Address);
+  BasePage* FindPageFromAddress(Address);
 #endif
-  virtual void takeFreelistSnapshot(const String& dumpBaseName) {}
-  virtual void clearFreeLists() {}
-  void makeConsistentForGC();
-  void makeConsistentForMutator();
+  virtual void TakeFreelistSnapshot(const String& dump_base_name) {}
+  virtual void ClearFreeLists() {}
+  void MakeConsistentForGC();
+  void MakeConsistentForMutator();
 #if DCHECK_IS_ON()
-  virtual bool isConsistentForGC() = 0;
+  virtual bool IsConsistentForGC() = 0;
 #endif
-  size_t objectPayloadSizeForTesting();
-  void prepareForSweep();
+  size_t ObjectPayloadSizeForTesting();
+  void PrepareForSweep();
 #if defined(ADDRESS_SANITIZER)
   void poisonArena();
 #endif
-  Address lazySweep(size_t, size_t gcInfoIndex);
-  void sweepUnsweptPage();
+  Address LazySweep(size_t, size_t gc_info_index);
+  void SweepUnsweptPage();
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
-  bool lazySweepWithDeadline(double deadlineSeconds);
-  void completeSweep();
+  bool LazySweepWithDeadline(double deadline_seconds);
+  void CompleteSweep();
 
-  ThreadState* getThreadState() { return m_threadState; }
-  int arenaIndex() const { return m_index; }
+  ThreadState* GetThreadState() { return thread_state_; }
+  int ArenaIndex() const { return index_; }
 
-  Address allocateLargeObject(size_t allocationSize, size_t gcInfoIndex);
+  Address AllocateLargeObject(size_t allocation_size, size_t gc_info_index);
 
-  bool willObjectBeLazilySwept(BasePage*, void*) const;
+  bool WillObjectBeLazilySwept(BasePage*, void*) const;
 
  protected:
-  BasePage* m_firstPage;
-  BasePage* m_firstUnsweptPage;
+  BasePage* first_page_;
+  BasePage* first_unswept_page_;
 
  private:
-  virtual Address lazySweepPages(size_t, size_t gcInfoIndex) = 0;
+  virtual Address LazySweepPages(size_t, size_t gc_info_index) = 0;
 
-  ThreadState* m_threadState;
+  ThreadState* thread_state_;
 
   // Index into the page pools. This is used to ensure that the pages of the
   // same type go into the correct page pool and thus avoid type confusion.
-  int m_index;
+  int index_;
 };
 
 class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
  public:
   NormalPageArena(ThreadState*, int);
-  void addToFreeList(Address address, size_t size) {
-    ASSERT(findPageFromAddress(address));
-    ASSERT(findPageFromAddress(address + size - 1));
-    m_freeList.addToFreeList(address, size);
+  void AddToFreeList(Address address, size_t size) {
+    ASSERT(FindPageFromAddress(address));
+    ASSERT(FindPageFromAddress(address + size - 1));
+    free_list_.AddToFreeList(address, size);
   }
-  void clearFreeLists() override;
+  void ClearFreeLists() override;
 #if DCHECK_IS_ON()
-  bool isConsistentForGC() override;
-  bool pagesToBeSweptContains(Address);
+  bool IsConsistentForGC() override;
+  bool PagesToBeSweptContains(Address);
 #endif
-  void takeFreelistSnapshot(const String& dumpBaseName) override;
+  void TakeFreelistSnapshot(const String& dump_base_name) override;
 
-  Address allocateObject(size_t allocationSize, size_t gcInfoIndex);
+  Address AllocateObject(size_t allocation_size, size_t gc_info_index);
 
-  void freePage(NormalPage*);
+  void FreePage(NormalPage*);
 
-  bool coalesce();
-  void promptlyFreeObject(HeapObjectHeader*);
-  bool expandObject(HeapObjectHeader*, size_t);
-  bool shrinkObject(HeapObjectHeader*, size_t);
-  void decreasePromptlyFreedSize(size_t size) { m_promptlyFreedSize -= size; }
+  bool Coalesce();
+  void PromptlyFreeObject(HeapObjectHeader*);
+  bool ExpandObject(HeapObjectHeader*, size_t);
+  bool ShrinkObject(HeapObjectHeader*, size_t);
+  void DecreasePromptlyFreedSize(size_t size) { promptly_freed_size_ -= size; }
 
-  bool isObjectAllocatedAtAllocationPoint(HeapObjectHeader* header) {
-    return header->payloadEnd() == m_currentAllocationPoint;
+  bool IsObjectAllocatedAtAllocationPoint(HeapObjectHeader* header) {
+    return header->PayloadEnd() == current_allocation_point_;
   }
 
-  bool isLazySweeping() const { return m_isLazySweeping; }
-  void setIsLazySweeping(bool flag) { m_isLazySweeping = flag; }
+  bool IsLazySweeping() const { return is_lazy_sweeping_; }
+  void SetIsLazySweeping(bool flag) { is_lazy_sweeping_ = flag; }
 
-  size_t arenaSize();
-  size_t freeListSize();
+  size_t ArenaSize();
+  size_t FreeListSize();
 
-  void sweepAndCompact();
+  void SweepAndCompact();
 
  private:
-  void allocatePage();
+  void AllocatePage();
 
-  Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
-  Address allocateFromFreeList(size_t, size_t gcInfoIndex);
+  Address OutOfLineAllocate(size_t allocation_size, size_t gc_info_index);
+  Address AllocateFromFreeList(size_t, size_t gc_info_index);
 
-  Address lazySweepPages(size_t, size_t gcInfoIndex) override;
+  Address LazySweepPages(size_t, size_t gc_info_index) override;
 
-  Address currentAllocationPoint() const { return m_currentAllocationPoint; }
-  bool hasCurrentAllocationArea() const {
-    return currentAllocationPoint() && remainingAllocationSize();
+  Address CurrentAllocationPoint() const { return current_allocation_point_; }
+  bool HasCurrentAllocationArea() const {
+    return CurrentAllocationPoint() && RemainingAllocationSize();
   }
-  void setAllocationPoint(Address, size_t);
+  void SetAllocationPoint(Address, size_t);
 
-  size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
-  void setRemainingAllocationSize(size_t);
-  void updateRemainingAllocationSize();
+  size_t RemainingAllocationSize() const { return remaining_allocation_size_; }
+  void SetRemainingAllocationSize(size_t);
+  void UpdateRemainingAllocationSize();
 
-  FreeList m_freeList;
-  Address m_currentAllocationPoint;
-  size_t m_remainingAllocationSize;
-  size_t m_lastRemainingAllocationSize;
+  FreeList free_list_;
+  Address current_allocation_point_;
+  size_t remaining_allocation_size_;
+  size_t last_remaining_allocation_size_;
 
   // The size of promptly freed objects in the heap.
-  size_t m_promptlyFreedSize;
+  size_t promptly_freed_size_;
 
-  bool m_isLazySweeping;
+  bool is_lazy_sweeping_;
 };
 
 class LargeObjectArena final : public BaseArena {
  public:
   LargeObjectArena(ThreadState*, int);
-  Address allocateLargeObjectPage(size_t, size_t gcInfoIndex);
-  void freeLargeObjectPage(LargeObjectPage*);
+  Address AllocateLargeObjectPage(size_t, size_t gc_info_index);
+  void FreeLargeObjectPage(LargeObjectPage*);
 #if DCHECK_IS_ON()
-  bool isConsistentForGC() override { return true; }
+  bool IsConsistentForGC() override { return true; }
 #endif
  private:
-  Address doAllocateLargeObjectPage(size_t, size_t gcInfoIndex);
-  Address lazySweepPages(size_t, size_t gcInfoIndex) override;
+  Address DoAllocateLargeObjectPage(size_t, size_t gc_info_index);
+  Address LazySweepPages(size_t, size_t gc_info_index) override;
 };
 
 // Mask an address down to the enclosing oilpan heap base page. All Oilpan heap
@@ -830,59 +833,59 @@ class LargeObjectArena final : public BaseArena {
 //
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
 // typed arenas. This is only exported to enable tests in HeapTest.cpp.
-PLATFORM_EXPORT inline BasePage* pageFromObject(const void* object) {
+PLATFORM_EXPORT inline BasePage* PageFromObject(const void* object) {
   Address address = reinterpret_cast<Address>(const_cast<void*>(object));
-  BasePage* page = reinterpret_cast<BasePage*>(blinkPageAddress(address) +
-                                               blinkGuardPageSize);
-  ASSERT(page->contains(address));
+  BasePage* page = reinterpret_cast<BasePage*>(BlinkPageAddress(address) +
+                                               kBlinkGuardPageSize);
+  ASSERT(page->Contains(address));
   return page;
 }
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
-  size_t result = m_encoded & headerSizeMask;
+  size_t result = encoded_ & kHeaderSizeMask;
   // Large objects should not refer to header->size(). The actual size of a
   // large object is stored in |LargeObjectPage::m_payloadSize|.
-  ASSERT(result != largeObjectSizeInHeader);
-  ASSERT(!pageFromObject(this)->isLargeObjectPage());
+  ASSERT(result != kLargeObjectSizeInHeader);
+  ASSERT(!PageFromObject(this)->IsLargeObjectPage());
   return result;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::checkHeader() const {
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::CheckHeader() const {
 #if CPU(64BIT)
-  const bool goodMagic = getMagic() == m_magic;
-  DCHECK(goodMagic);
+  const bool good_magic = GetMagic() == magic_;
+  DCHECK(good_magic);
 #endif
 }
 
-inline Address HeapObjectHeader::payload() {
+inline Address HeapObjectHeader::Payload() {
   return reinterpret_cast<Address>(this) + sizeof(HeapObjectHeader);
 }
 
-inline Address HeapObjectHeader::payloadEnd() {
+inline Address HeapObjectHeader::PayloadEnd() {
   return reinterpret_cast<Address>(this) + size();
 }
 
-NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::payloadSize() {
-  checkHeader();
-  size_t size = m_encoded & headerSizeMask;
-  if (UNLIKELY(size == largeObjectSizeInHeader)) {
-    ASSERT(pageFromObject(this)->isLargeObjectPage());
-    return static_cast<LargeObjectPage*>(pageFromObject(this))->payloadSize();
+NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
+  CheckHeader();
+  size_t size = encoded_ & kHeaderSizeMask;
+  if (UNLIKELY(size == kLargeObjectSizeInHeader)) {
+    ASSERT(PageFromObject(this)->IsLargeObjectPage());
+    return static_cast<LargeObjectPage*>(PageFromObject(this))->PayloadSize();
   }
-  ASSERT(!pageFromObject(this)->isLargeObjectPage());
+  ASSERT(!PageFromObject(this)->IsLargeObjectPage());
   return size - sizeof(HeapObjectHeader);
 }
 
-inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload) {
+inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
   Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
   HeapObjectHeader* header =
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-  header->checkHeader();
+  header->CheckHeader();
   return header;
 }
 
-inline void HeapObjectHeader::checkFromPayload(const void* payload) {
-  (void)fromPayload(payload);
+inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
+  (void)FromPayload(payload);
 }
 
 #if CPU(64BIT)
@@ -895,7 +898,7 @@ ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
 #endif
 }
 
-inline uint32_t HeapObjectHeader::getMagic() const {
+inline uint32_t HeapObjectHeader::GetMagic() const {
 // Ignore C4319: It is OK to 0-extend into the high-order bits of the uintptr_t
 // on 64-bit, in this case.
 #if COMPILER(MSVC)
@@ -939,61 +942,62 @@ inline uint32_t HeapObjectHeader::getMagic() const {
 }
 #endif  // CPU(64BIT)
 
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isWrapperHeaderMarked()
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsWrapperHeaderMarked()
     const {
-  checkHeader();
-  return m_encoded & headerWrapperMarkBitMask;
+  CheckHeader();
+  return encoded_ & kHeaderWrapperMarkBitMask;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::markWrapperHeader() {
-  checkHeader();
-  ASSERT(!isWrapperHeaderMarked());
-  m_encoded |= headerWrapperMarkBitMask;
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkWrapperHeader() {
+  CheckHeader();
+  ASSERT(!IsWrapperHeaderMarked());
+  encoded_ |= kHeaderWrapperMarkBitMask;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::unmarkWrapperHeader() {
-  checkHeader();
-  ASSERT(isWrapperHeaderMarked());
-  m_encoded &= ~headerWrapperMarkBitMask;
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::UnmarkWrapperHeader() {
+  CheckHeader();
+  ASSERT(IsWrapperHeaderMarked());
+  encoded_ &= ~kHeaderWrapperMarkBitMask;
 }
 
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isMarked() const {
-  checkHeader();
-  return m_encoded & headerMarkBitMask;
+NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {
+  CheckHeader();
+  return encoded_ & kHeaderMarkBitMask;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::mark() {
-  checkHeader();
-  ASSERT(!isMarked());
-  m_encoded = m_encoded | headerMarkBitMask;
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Mark() {
+  CheckHeader();
+  ASSERT(!IsMarked());
+  encoded_ = encoded_ | kHeaderMarkBitMask;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::unmark() {
-  checkHeader();
-  ASSERT(isMarked());
-  m_encoded &= ~headerMarkBitMask;
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
+  CheckHeader();
+  ASSERT(IsMarked());
+  encoded_ &= ~kHeaderMarkBitMask;
 }
 
-inline Address NormalPageArena::allocateObject(size_t allocationSize,
-                                               size_t gcInfoIndex) {
-  if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
-    Address headerAddress = m_currentAllocationPoint;
-    m_currentAllocationPoint += allocationSize;
-    m_remainingAllocationSize -= allocationSize;
-    ASSERT(gcInfoIndex > 0);
-    new (NotNull, headerAddress) HeapObjectHeader(allocationSize, gcInfoIndex);
-    Address result = headerAddress + sizeof(HeapObjectHeader);
-    ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
+inline Address NormalPageArena::AllocateObject(size_t allocation_size,
+                                               size_t gc_info_index) {
+  if (LIKELY(allocation_size <= remaining_allocation_size_)) {
+    Address header_address = current_allocation_point_;
+    current_allocation_point_ += allocation_size;
+    remaining_allocation_size_ -= allocation_size;
+    ASSERT(gc_info_index > 0);
+    new (NotNull, header_address)
+        HeapObjectHeader(allocation_size, gc_info_index);
+    Address result = header_address + sizeof(HeapObjectHeader);
+    ASSERT(!(reinterpret_cast<uintptr_t>(result) & kAllocationMask));
 
-    SET_MEMORY_ACCESSIBLE(result, allocationSize - sizeof(HeapObjectHeader));
-    ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
+    SET_MEMORY_ACCESSIBLE(result, allocation_size - sizeof(HeapObjectHeader));
+    ASSERT(FindPageFromAddress(header_address + allocation_size - 1));
     return result;
   }
-  return outOfLineAllocate(allocationSize, gcInfoIndex);
+  return OutOfLineAllocate(allocation_size, gc_info_index);
 }
 
-inline NormalPageArena* NormalPage::arenaForNormalPage() const {
-  return static_cast<NormalPageArena*>(arena());
+inline NormalPageArena* NormalPage::ArenaForNormalPage() const {
+  return static_cast<NormalPageArena*>(Arena());
 }
 
 }  // namespace blink

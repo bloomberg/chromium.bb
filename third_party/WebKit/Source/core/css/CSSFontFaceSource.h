@@ -45,36 +45,36 @@ class CORE_EXPORT CSSFontFaceSource
  public:
   virtual ~CSSFontFaceSource();
 
-  virtual bool isLocal() const { return false; }
-  virtual bool isLoading() const { return false; }
-  virtual bool isLoaded() const { return true; }
-  virtual bool isValid() const { return true; }
+  virtual bool IsLocal() const { return false; }
+  virtual bool IsLoading() const { return false; }
+  virtual bool IsLoaded() const { return true; }
+  virtual bool IsValid() const { return true; }
 
-  void setFontFace(CSSFontFace* face) { m_face = face; }
+  void SetFontFace(CSSFontFace* face) { face_ = face; }
 
-  PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
+  PassRefPtr<SimpleFontData> GetFontData(const FontDescription&);
 
-  virtual bool isLocalFontAvailable(const FontDescription&) { return false; }
-  virtual void beginLoadIfNeeded() {}
+  virtual bool IsLocalFontAvailable(const FontDescription&) { return false; }
+  virtual void BeginLoadIfNeeded() {}
 
-  virtual bool isBlank() { return false; }
+  virtual bool IsBlank() { return false; }
 
   // For UMA reporting
-  virtual bool hadBlankText() { return false; }
+  virtual bool HadBlankText() { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   CSSFontFaceSource();
-  virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) = 0;
+  virtual PassRefPtr<SimpleFontData> CreateFontData(const FontDescription&) = 0;
 
   using FontDataTable = HashMap<FontCacheKey,
                                 RefPtr<SimpleFontData>,
                                 FontCacheKeyHash,
                                 FontCacheKeyTraits>;
 
-  Member<CSSFontFace> m_face;  // Our owning font face.
-  FontDataTable m_fontDataTable;
+  Member<CSSFontFace> face_;  // Our owning font face.
+  FontDataTable font_data_table_;
 };
 
 }  // namespace blink

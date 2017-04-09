@@ -25,14 +25,14 @@ class ScriptState;
 class CSSPaintDefinition final
     : public GarbageCollectedFinalized<CSSPaintDefinition> {
  public:
-  static CSSPaintDefinition* create(
+  static CSSPaintDefinition* Create(
       ScriptState*,
       v8::Local<v8::Function> constructor,
       v8::Local<v8::Function> paint,
       Vector<CSSPropertyID>&,
-      Vector<AtomicString>& customInvalidationProperties,
-      Vector<CSSSyntaxDescriptor>& inputArgumentTypes,
-      bool hasAlpha);
+      Vector<AtomicString>& custom_invalidation_properties,
+      Vector<CSSSyntaxDescriptor>& input_argument_types,
+      bool has_alpha);
   virtual ~CSSPaintDefinition();
 
   // Invokes the javascript 'paint' callback on an instance of the javascript
@@ -41,25 +41,25 @@ class CSSPaintDefinition final
   //
   // This may return a nullptr (representing an invalid image) if javascript
   // throws an error.
-  PassRefPtr<Image> paint(const LayoutObject&,
+  PassRefPtr<Image> Paint(const LayoutObject&,
                           const IntSize&,
                           float zoom,
                           const CSSStyleValueVector*);
-  const Vector<CSSPropertyID>& nativeInvalidationProperties() const {
-    return m_nativeInvalidationProperties;
+  const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
+    return native_invalidation_properties_;
   }
-  const Vector<AtomicString>& customInvalidationProperties() const {
-    return m_customInvalidationProperties;
+  const Vector<AtomicString>& CustomInvalidationProperties() const {
+    return custom_invalidation_properties_;
   }
-  const Vector<CSSSyntaxDescriptor>& inputArgumentTypes() const {
-    return m_inputArgumentTypes;
+  const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const {
+    return input_argument_types_;
   }
-  bool hasAlpha() const { return m_hasAlpha; }
+  bool HasAlpha() const { return has_alpha_; }
 
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
-  v8::Local<v8::Function> paintFunctionForTesting(v8::Isolate* isolate) {
-    return m_paint.newLocal(isolate);
+  v8::Local<v8::Function> PaintFunctionForTesting(v8::Isolate* isolate) {
+    return paint_.NewLocal(isolate);
   }
 
   DEFINE_INLINE_TRACE(){};
@@ -68,31 +68,31 @@ class CSSPaintDefinition final
   CSSPaintDefinition(ScriptState*,
                      v8::Local<v8::Function> constructor,
                      v8::Local<v8::Function> paint,
-                     Vector<CSSPropertyID>& nativeInvalidationProperties,
-                     Vector<AtomicString>& customInvalidationProperties,
-                     Vector<CSSSyntaxDescriptor>& inputArgumentTypes,
-                     bool hasAlpha);
+                     Vector<CSSPropertyID>& native_invalidation_properties,
+                     Vector<AtomicString>& custom_invalidation_properties,
+                     Vector<CSSSyntaxDescriptor>& input_argument_types,
+                     bool has_alpha);
 
-  void maybeCreatePaintInstance();
+  void MaybeCreatePaintInstance();
 
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<ScriptState> script_state_;
 
   // This object keeps the class instance object, constructor function and
   // paint function alive. This object needs to be destroyed to break a
   // reference cycle between it and the PaintWorkletGlobalScope.
-  ScopedPersistent<v8::Function> m_constructor;
-  ScopedPersistent<v8::Function> m_paint;
+  ScopedPersistent<v8::Function> constructor_;
+  ScopedPersistent<v8::Function> paint_;
 
   // At the moment there is only ever one instance of a paint class per type.
-  ScopedPersistent<v8::Object> m_instance;
+  ScopedPersistent<v8::Object> instance_;
 
-  bool m_didCallConstructor;
+  bool did_call_constructor_;
 
-  Vector<CSSPropertyID> m_nativeInvalidationProperties;
-  Vector<AtomicString> m_customInvalidationProperties;
+  Vector<CSSPropertyID> native_invalidation_properties_;
+  Vector<AtomicString> custom_invalidation_properties_;
   // Input argument types, if applicable.
-  Vector<CSSSyntaxDescriptor> m_inputArgumentTypes;
-  bool m_hasAlpha;
+  Vector<CSSSyntaxDescriptor> input_argument_types_;
+  bool has_alpha_;
 };
 
 }  // namespace blink

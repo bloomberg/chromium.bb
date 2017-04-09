@@ -17,16 +17,16 @@ class CSSValue;
 class CSSPropertyLengthUtils {
   STATIC_ONLY(CSSPropertyLengthUtils);
 
-  static CSSValue* consumeMaxWidthOrHeight(
+  static CSSValue* ConsumeMaxWidthOrHeight(
       CSSParserTokenRange&,
       const CSSParserContext*,
       CSSPropertyParserHelpers::UnitlessQuirk =
-          CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
-  static CSSValue* consumeWidthOrHeight(
+          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+  static CSSValue* ConsumeWidthOrHeight(
       CSSParserTokenRange&,
       const CSSParserContext*,
       CSSPropertyParserHelpers::UnitlessQuirk =
-          CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
+          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 };
 
 }  // namespace blink

@@ -31,9 +31,9 @@ Status GenerateWebCryptoSecretKey(const blink::WebCryptoKeyAlgorithm& algorithm,
     TruncateToBitLength(keylen_bits, &random_bytes);
   }
 
-  result->AssignSecretKey(blink::WebCryptoKey::create(
+  result->AssignSecretKey(blink::WebCryptoKey::Create(
       CreateSymmetricKeyHandle(CryptoData(random_bytes)),
-      blink::WebCryptoKeyTypeSecret, extractable, algorithm, usages));
+      blink::kWebCryptoKeyTypeSecret, extractable, algorithm, usages));
 
   return Status::Success();
 }
@@ -43,9 +43,9 @@ Status CreateWebCryptoSecretKey(const CryptoData& key_data,
                                 bool extractable,
                                 blink::WebCryptoKeyUsageMask usages,
                                 blink::WebCryptoKey* key) {
-  *key = blink::WebCryptoKey::create(CreateSymmetricKeyHandle(key_data),
-                                     blink::WebCryptoKeyTypeSecret, extractable,
-                                     algorithm, usages);
+  *key = blink::WebCryptoKey::Create(CreateSymmetricKeyHandle(key_data),
+                                     blink::kWebCryptoKeyTypeSecret,
+                                     extractable, algorithm, usages);
   return Status::Success();
 }
 

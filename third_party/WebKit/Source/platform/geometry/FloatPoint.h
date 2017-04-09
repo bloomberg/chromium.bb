@@ -56,76 +56,76 @@ class PLATFORM_EXPORT FloatPoint {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  FloatPoint() : m_x(0), m_y(0) {}
-  FloatPoint(float x, float y) : m_x(x), m_y(y) {}
+  FloatPoint() : x_(0), y_(0) {}
+  FloatPoint(float x, float y) : x_(x), y_(y) {}
   FloatPoint(const IntPoint&);
-  explicit FloatPoint(const SkPoint& point) : m_x(point.x()), m_y(point.y()) {}
+  explicit FloatPoint(const SkPoint& point) : x_(point.x()), y_(point.y()) {}
   explicit FloatPoint(const DoublePoint&);
   explicit FloatPoint(const LayoutPoint&);
   explicit FloatPoint(const FloatSize& size)
-      : m_x(size.width()), m_y(size.height()) {}
+      : x_(size.Width()), y_(size.Height()) {}
   explicit FloatPoint(const LayoutSize&);
   explicit FloatPoint(const IntSize& size)
-      : m_x(size.width()), m_y(size.height()) {}
+      : x_(size.Width()), y_(size.Height()) {}
 
-  static FloatPoint zero() { return FloatPoint(); }
+  static FloatPoint Zero() { return FloatPoint(); }
 
-  static FloatPoint narrowPrecision(double x, double y);
+  static FloatPoint NarrowPrecision(double x, double y);
 
-  float x() const { return m_x; }
-  float y() const { return m_y; }
+  float X() const { return x_; }
+  float Y() const { return y_; }
 
-  void setX(float x) { m_x = x; }
-  void setY(float y) { m_y = y; }
-  void set(float x, float y) {
-    m_x = x;
-    m_y = y;
+  void SetX(float x) { x_ = x; }
+  void SetY(float y) { y_ = y; }
+  void Set(float x, float y) {
+    x_ = x;
+    y_ = y;
   }
-  void move(float dx, float dy) {
-    m_x += dx;
-    m_y += dy;
+  void Move(float dx, float dy) {
+    x_ += dx;
+    y_ += dy;
   }
-  void move(const IntSize& a) {
-    m_x += a.width();
-    m_y += a.height();
+  void Move(const IntSize& a) {
+    x_ += a.Width();
+    y_ += a.Height();
   }
-  void move(const LayoutSize&);
-  void move(const FloatSize& a) {
-    m_x += a.width();
-    m_y += a.height();
+  void Move(const LayoutSize&);
+  void Move(const FloatSize& a) {
+    x_ += a.Width();
+    y_ += a.Height();
   }
-  void moveBy(const IntPoint& a) {
-    m_x += a.x();
-    m_y += a.y();
+  void MoveBy(const IntPoint& a) {
+    x_ += a.X();
+    y_ += a.Y();
   }
-  void moveBy(const LayoutPoint&);
-  void moveBy(const FloatPoint& a) {
-    m_x += a.x();
-    m_y += a.y();
+  void MoveBy(const LayoutPoint&);
+  void MoveBy(const FloatPoint& a) {
+    x_ += a.X();
+    y_ += a.Y();
   }
-  void scale(float sx, float sy) {
-    m_x *= sx;
-    m_y *= sy;
+  void Scale(float sx, float sy) {
+    x_ *= sx;
+    y_ *= sy;
   }
 
-  float dot(const FloatPoint& a) const { return m_x * a.x() + m_y * a.y(); }
+  float Dot(const FloatPoint& a) const { return x_ * a.X() + y_ * a.Y(); }
 
-  float slopeAngleRadians() const;
+  float SlopeAngleRadians() const;
   float length() const;
-  float lengthSquared() const { return m_x * m_x + m_y * m_y; }
+  float LengthSquared() const { return x_ * x_ + y_ * y_; }
 
-  FloatPoint expandedTo(const FloatPoint& other) const {
-    return FloatPoint(std::max(m_x, other.m_x), std::max(m_y, other.m_y));
+  FloatPoint ExpandedTo(const FloatPoint& other) const {
+    return FloatPoint(std::max(x_, other.x_), std::max(y_, other.y_));
   }
 
-  FloatPoint shrunkTo(const FloatPoint& other) const {
-    return FloatPoint(std::min(m_x, other.m_x), std::min(m_y, other.m_y));
+  FloatPoint ShrunkTo(const FloatPoint& other) const {
+    return FloatPoint(std::min(x_, other.x_), std::min(y_, other.y_));
   }
 
-  FloatPoint transposedPoint() const { return FloatPoint(m_y, m_x); }
+  FloatPoint TransposedPoint() const { return FloatPoint(y_, x_); }
 
-  FloatPoint scaledBy(float scale) const {
-    return FloatPoint(m_x * scale, m_y * scale);
+  FloatPoint ScaledBy(float scale) const {
+    return FloatPoint(x_ * scale, y_ * scale);
   }
 
 #if OS(MACOSX)
@@ -138,107 +138,107 @@ class PLATFORM_EXPORT FloatPoint {
 #endif
 
   // Can we remove this one?
-  SkPoint data() const;
+  SkPoint Data() const;
 
-  operator SkPoint() const { return SkPoint::Make(m_x, m_y); }
+  operator SkPoint() const { return SkPoint::Make(x_, y_); }
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  float m_x, m_y;
+  float x_, y_;
 };
 
 inline FloatPoint& operator+=(FloatPoint& a, const FloatSize& b) {
-  a.move(b.width(), b.height());
+  a.Move(b.Width(), b.Height());
   return a;
 }
 
 inline FloatPoint& operator+=(FloatPoint& a, const FloatPoint& b) {
-  a.move(b.x(), b.y());
+  a.Move(b.X(), b.Y());
   return a;
 }
 
 inline FloatPoint& operator-=(FloatPoint& a, const FloatSize& b) {
-  a.move(-b.width(), -b.height());
+  a.Move(-b.Width(), -b.Height());
   return a;
 }
 
 inline FloatPoint operator+(const FloatPoint& a, const FloatSize& b) {
-  return FloatPoint(a.x() + b.width(), a.y() + b.height());
+  return FloatPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
 inline FloatPoint operator+(const FloatPoint& a, const IntSize& b) {
-  return FloatPoint(a.x() + b.width(), a.y() + b.height());
+  return FloatPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
 inline FloatPoint operator+(const IntPoint& a, const FloatSize& b) {
-  return FloatPoint(a.x() + b.width(), a.y() + b.height());
+  return FloatPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
 inline FloatPoint operator+(const FloatPoint& a, const FloatPoint& b) {
-  return FloatPoint(a.x() + b.x(), a.y() + b.y());
+  return FloatPoint(a.X() + b.X(), a.Y() + b.Y());
 }
 
 inline FloatPoint operator+(const FloatPoint& a, const IntPoint& b) {
-  return FloatPoint(a.x() + b.x(), a.y() + b.y());
+  return FloatPoint(a.X() + b.X(), a.Y() + b.Y());
 }
 
 inline FloatSize operator-(const FloatPoint& a, const FloatPoint& b) {
-  return FloatSize(a.x() - b.x(), a.y() - b.y());
+  return FloatSize(a.X() - b.X(), a.Y() - b.Y());
 }
 
 inline FloatSize operator-(const FloatPoint& a, const IntPoint& b) {
-  return FloatSize(a.x() - b.x(), a.y() - b.y());
+  return FloatSize(a.X() - b.X(), a.Y() - b.Y());
 }
 
 inline FloatPoint operator-(const FloatPoint& a, const FloatSize& b) {
-  return FloatPoint(a.x() - b.width(), a.y() - b.height());
+  return FloatPoint(a.X() - b.Width(), a.Y() - b.Height());
 }
 
 inline FloatPoint operator-(const FloatPoint& a) {
-  return FloatPoint(-a.x(), -a.y());
+  return FloatPoint(-a.X(), -a.Y());
 }
 
 inline bool operator==(const FloatPoint& a, const FloatPoint& b) {
-  return a.x() == b.x() && a.y() == b.y();
+  return a.X() == b.X() && a.Y() == b.Y();
 }
 
 inline bool operator!=(const FloatPoint& a, const FloatPoint& b) {
-  return a.x() != b.x() || a.y() != b.y();
+  return a.X() != b.X() || a.Y() != b.Y();
 }
 
 inline float operator*(const FloatPoint& a, const FloatPoint& b) {
   // dot product
-  return a.dot(b);
+  return a.Dot(b);
 }
 
-inline IntPoint roundedIntPoint(const FloatPoint& p) {
-  return IntPoint(clampTo<int>(roundf(p.x())), clampTo<int>(roundf(p.y())));
+inline IntPoint RoundedIntPoint(const FloatPoint& p) {
+  return IntPoint(clampTo<int>(roundf(p.X())), clampTo<int>(roundf(p.Y())));
 }
 
-inline IntSize roundedIntSize(const FloatPoint& p) {
-  return IntSize(clampTo<int>(roundf(p.x())), clampTo<int>(roundf(p.y())));
+inline IntSize RoundedIntSize(const FloatPoint& p) {
+  return IntSize(clampTo<int>(roundf(p.X())), clampTo<int>(roundf(p.Y())));
 }
 
-inline IntPoint flooredIntPoint(const FloatPoint& p) {
-  return IntPoint(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));
+inline IntPoint FlooredIntPoint(const FloatPoint& p) {
+  return IntPoint(clampTo<int>(floorf(p.X())), clampTo<int>(floorf(p.Y())));
 }
 
-inline IntPoint ceiledIntPoint(const FloatPoint& p) {
-  return IntPoint(clampTo<int>(ceilf(p.x())), clampTo<int>(ceilf(p.y())));
+inline IntPoint CeiledIntPoint(const FloatPoint& p) {
+  return IntPoint(clampTo<int>(ceilf(p.X())), clampTo<int>(ceilf(p.Y())));
 }
 
-inline IntSize flooredIntSize(const FloatPoint& p) {
-  return IntSize(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));
+inline IntSize FlooredIntSize(const FloatPoint& p) {
+  return IntSize(clampTo<int>(floorf(p.X())), clampTo<int>(floorf(p.Y())));
 }
 
-inline FloatSize toFloatSize(const FloatPoint& a) {
-  return FloatSize(a.x(), a.y());
+inline FloatSize ToFloatSize(const FloatPoint& a) {
+  return FloatSize(a.X(), a.Y());
 }
 
 // Find point where lines through the two pairs of points intersect.
 // Returns false if the lines don't intersect.
-PLATFORM_EXPORT bool findIntersection(const FloatPoint& p1,
+PLATFORM_EXPORT bool FindIntersection(const FloatPoint& p1,
                                       const FloatPoint& p2,
                                       const FloatPoint& d1,
                                       const FloatPoint& d2,

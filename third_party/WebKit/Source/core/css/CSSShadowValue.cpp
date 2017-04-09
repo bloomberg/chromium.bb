@@ -33,7 +33,7 @@ CSSShadowValue::CSSShadowValue(CSSPrimitiveValue* x,
                                CSSPrimitiveValue* spread,
                                CSSIdentifierValue* style,
                                CSSValue* color)
-    : CSSValue(ShadowClass),
+    : CSSValue(kShadowClass),
       x(x),
       y(y),
       blur(blur),
@@ -41,55 +41,55 @@ CSSShadowValue::CSSShadowValue(CSSPrimitiveValue* x,
       style(style),
       color(color) {}
 
-String CSSShadowValue::customCSSText() const {
+String CSSShadowValue::CustomCSSText() const {
   StringBuilder text;
 
   if (color)
-    text.append(color->cssText());
+    text.Append(color->CssText());
   if (x) {
-    if (!text.isEmpty())
-      text.append(' ');
-    text.append(x->cssText());
+    if (!text.IsEmpty())
+      text.Append(' ');
+    text.Append(x->CssText());
   }
   if (y) {
-    if (!text.isEmpty())
-      text.append(' ');
-    text.append(y->cssText());
+    if (!text.IsEmpty())
+      text.Append(' ');
+    text.Append(y->CssText());
   }
   if (blur) {
-    if (!text.isEmpty())
-      text.append(' ');
-    text.append(blur->cssText());
+    if (!text.IsEmpty())
+      text.Append(' ');
+    text.Append(blur->CssText());
   }
   if (spread) {
-    if (!text.isEmpty())
-      text.append(' ');
-    text.append(spread->cssText());
+    if (!text.IsEmpty())
+      text.Append(' ');
+    text.Append(spread->CssText());
   }
   if (style) {
-    if (!text.isEmpty())
-      text.append(' ');
-    text.append(style->cssText());
+    if (!text.IsEmpty())
+      text.Append(' ');
+    text.Append(style->CssText());
   }
 
-  return text.toString();
+  return text.ToString();
 }
 
-bool CSSShadowValue::equals(const CSSShadowValue& other) const {
-  return dataEquivalent(color, other.color) && dataEquivalent(x, other.x) &&
-         dataEquivalent(y, other.y) && dataEquivalent(blur, other.blur) &&
-         dataEquivalent(spread, other.spread) &&
-         dataEquivalent(style, other.style);
+bool CSSShadowValue::Equals(const CSSShadowValue& other) const {
+  return DataEquivalent(color, other.color) && DataEquivalent(x, other.x) &&
+         DataEquivalent(y, other.y) && DataEquivalent(blur, other.blur) &&
+         DataEquivalent(spread, other.spread) &&
+         DataEquivalent(style, other.style);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSShadowValue) {
-  visitor->trace(x);
-  visitor->trace(y);
-  visitor->trace(blur);
-  visitor->trace(spread);
-  visitor->trace(style);
-  visitor->trace(color);
-  CSSValue::traceAfterDispatch(visitor);
+  visitor->Trace(x);
+  visitor->Trace(y);
+  visitor->Trace(blur);
+  visitor->Trace(spread);
+  visitor->Trace(style);
+  visitor->Trace(color);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

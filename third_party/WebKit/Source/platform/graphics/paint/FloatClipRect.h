@@ -16,56 +16,56 @@ class PLATFORM_EXPORT FloatClipRect {
 
  public:
   FloatClipRect()
-      : m_rect(FloatRect(LayoutRect::infiniteIntRect())),
-        m_hasRadius(false),
-        m_isInfinite(true) {}
+      : rect_(FloatRect(LayoutRect::InfiniteIntRect())),
+        has_radius_(false),
+        is_infinite_(true) {}
 
   explicit FloatClipRect(const FloatRect& rect)
-      : m_rect(rect), m_hasRadius(false), m_isInfinite(false) {}
+      : rect_(rect), has_radius_(false), is_infinite_(false) {}
 
-  const FloatRect& rect() const { return m_rect; }
+  const FloatRect& Rect() const { return rect_; }
 
-  FloatRect& rect() { return m_rect; }
+  FloatRect& Rect() { return rect_; }
 
-  void intersect(const FloatRect& other) {
-    if (m_isInfinite) {
-      m_rect = other;
-      m_isInfinite = false;
+  void Intersect(const FloatRect& other) {
+    if (is_infinite_) {
+      rect_ = other;
+      is_infinite_ = false;
     } else {
-      m_rect.intersect(other);
+      rect_.Intersect(other);
     }
   }
 
-  bool hasRadius() const { return m_hasRadius; }
-  void setHasRadius() {
-    m_hasRadius = true;
-    m_isInfinite = false;
+  bool HasRadius() const { return has_radius_; }
+  void SetHasRadius() {
+    has_radius_ = true;
+    is_infinite_ = false;
   }
 
-  void setRect(const FloatRect& rect) {
-    m_rect = rect;
-    m_isInfinite = false;
+  void SetRect(const FloatRect& rect) {
+    rect_ = rect;
+    is_infinite_ = false;
   }
 
-  void moveBy(const FloatPoint& offset) {
-    if (m_isInfinite)
+  void MoveBy(const FloatPoint& offset) {
+    if (is_infinite_)
       return;
-    m_rect.moveBy(offset);
+    rect_.MoveBy(offset);
   }
 
-  bool isInfinite() const { return m_isInfinite; }
+  bool IsInfinite() const { return is_infinite_; }
 
  private:
-  FloatRect m_rect;
-  bool m_hasRadius : 1;
-  bool m_isInfinite : 1;
+  FloatRect rect_;
+  bool has_radius_ : 1;
+  bool is_infinite_ : 1;
 };
 
 inline bool operator==(const FloatClipRect& a, const FloatClipRect& b) {
-  if (a.isInfinite() && b.isInfinite())
+  if (a.IsInfinite() && b.IsInfinite())
     return true;
-  if (!a.isInfinite() && !b.isInfinite())
-    return a.rect() == b.rect() && a.hasRadius() == b.hasRadius();
+  if (!a.IsInfinite() && !b.IsInfinite())
+    return a.Rect() == b.Rect() && a.HasRadius() == b.HasRadius();
   return false;
 }
 

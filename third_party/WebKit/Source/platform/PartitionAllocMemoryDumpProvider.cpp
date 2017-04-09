@@ -19,20 +19,21 @@ namespace {
 
 using namespace WTF;
 
-void reportAllocation(void* address, size_t size, const char* typeName) {
-  PartitionAllocMemoryDumpProvider::instance()->insert(address, size, typeName);
+void ReportAllocation(void* address, size_t size, const char* type_name) {
+  PartitionAllocMemoryDumpProvider::Instance()->insert(address, size,
+                                                       type_name);
 }
 
-void reportFree(void* address) {
-  PartitionAllocMemoryDumpProvider::instance()->remove(address);
+void ReportFree(void* address) {
+  PartitionAllocMemoryDumpProvider::Instance()->Remove(address);
 }
 
 const char kPartitionAllocDumpName[] = "partition_alloc";
 const char kPartitionsDumpName[] = "partitions";
 
-std::string getPartitionDumpName(const char* partitionName) {
+std::string GetPartitionDumpName(const char* partition_name) {
   return base::StringPrintf("%s/%s/%s", kPartitionAllocDumpName,
-                            kPartitionsDumpName, partitionName);
+                            kPartitionsDumpName, partition_name);
 }
 
 // This class is used to invert the dependency of PartitionAlloc on the
@@ -44,132 +45,134 @@ class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
 
  public:
   PartitionStatsDumperImpl(
-      base::trace_event::ProcessMemoryDump* memoryDump,
-      base::trace_event::MemoryDumpLevelOfDetail levelOfDetail)
-      : m_memoryDump(memoryDump), m_uid(0), m_totalActiveBytes(0) {}
+      base::trace_event::ProcessMemoryDump* memory_dump,
+      base::trace_event::MemoryDumpLevelOfDetail level_of_detail)
+      : memory_dump_(memory_dump), uid_(0), total_active_bytes_(0) {}
 
   // PartitionStatsDumper implementation.
-  void PartitionDumpTotals(const char* partitionName,
+  void PartitionDumpTotals(const char* partition_name,
                            const WTF::PartitionMemoryStats*) override;
   void PartitionsDumpBucketStats(
-      const char* partitionName,
+      const char* partition_name,
       const WTF::PartitionBucketMemoryStats*) override;
 
-  size_t TotalActiveBytes() const { return m_totalActiveBytes; }
+  size_t TotalActiveBytes() const { return total_active_bytes_; }
 
  private:
-  base::trace_event::ProcessMemoryDump* m_memoryDump;
-  unsigned long m_uid;
-  size_t m_totalActiveBytes;
+  base::trace_event::ProcessMemoryDump* memory_dump_;
+  unsigned long uid_;
+  size_t total_active_bytes_;
 };
 
 void PartitionStatsDumperImpl::PartitionDumpTotals(
-    const char* partitionName,
-    const WTF::PartitionMemoryStats* memoryStats) {
-  m_totalActiveBytes += memoryStats->total_active_bytes;
-  std::string dumpName = getPartitionDumpName(partitionName);
-  base::trace_event::MemoryAllocatorDump* allocatorDump =
-      m_memoryDump->CreateAllocatorDump(dumpName);
-  allocatorDump->AddScalar("size", "bytes", memoryStats->total_resident_bytes);
-  allocatorDump->AddScalar("allocated_objects_size", "bytes",
-                           memoryStats->total_active_bytes);
-  allocatorDump->AddScalar("virtual_size", "bytes",
-                           memoryStats->total_mmapped_bytes);
-  allocatorDump->AddScalar("virtual_committed_size", "bytes",
-                           memoryStats->total_committed_bytes);
-  allocatorDump->AddScalar("decommittable_size", "bytes",
-                           memoryStats->total_decommittable_bytes);
-  allocatorDump->AddScalar("discardable_size", "bytes",
-                           memoryStats->total_discardable_bytes);
+    const char* partition_name,
+    const WTF::PartitionMemoryStats* memory_stats) {
+  total_active_bytes_ += memory_stats->total_active_bytes;
+  std::string dump_name = GetPartitionDumpName(partition_name);
+  base::trace_event::MemoryAllocatorDump* allocator_dump =
+      memory_dump_->CreateAllocatorDump(dump_name);
+  allocator_dump->AddScalar("size", "bytes",
+                            memory_stats->total_resident_bytes);
+  allocator_dump->AddScalar("allocated_objects_size", "bytes",
+                            memory_stats->total_active_bytes);
+  allocator_dump->AddScalar("virtual_size", "bytes",
+                            memory_stats->total_mmapped_bytes);
+  allocator_dump->AddScalar("virtual_committed_size", "bytes",
+                            memory_stats->total_committed_bytes);
+  allocator_dump->AddScalar("decommittable_size", "bytes",
+                            memory_stats->total_decommittable_bytes);
+  allocator_dump->AddScalar("discardable_size", "bytes",
+                            memory_stats->total_discardable_bytes);
 }
 
 void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
-    const char* partitionName,
-    const WTF::PartitionBucketMemoryStats* memoryStats) {
-  DCHECK(memoryStats->is_valid);
-  std::string dumpName = getPartitionDumpName(partitionName);
-  if (memoryStats->is_direct_map) {
-    dumpName.append(base::StringPrintf("/directMap_%lu", ++m_uid));
+    const char* partition_name,
+    const WTF::PartitionBucketMemoryStats* memory_stats) {
+  DCHECK(memory_stats->is_valid);
+  std::string dump_name = GetPartitionDumpName(partition_name);
+  if (memory_stats->is_direct_map) {
+    dump_name.append(base::StringPrintf("/directMap_%lu", ++uid_));
   } else {
-    dumpName.append(base::StringPrintf(
-        "/bucket_%u", static_cast<unsigned>(memoryStats->bucket_slot_size)));
+    dump_name.append(base::StringPrintf(
+        "/bucket_%u", static_cast<unsigned>(memory_stats->bucket_slot_size)));
   }
 
-  base::trace_event::MemoryAllocatorDump* allocatorDump =
-      m_memoryDump->CreateAllocatorDump(dumpName);
-  allocatorDump->AddScalar("size", "bytes", memoryStats->resident_bytes);
-  allocatorDump->AddScalar("allocated_objects_size", "bytes",
-                           memoryStats->active_bytes);
-  allocatorDump->AddScalar("slot_size", "bytes", memoryStats->bucket_slot_size);
-  allocatorDump->AddScalar("decommittable_size", "bytes",
-                           memoryStats->decommittable_bytes);
-  allocatorDump->AddScalar("discardable_size", "bytes",
-                           memoryStats->discardable_bytes);
-  allocatorDump->AddScalar("total_pages_size", "bytes",
-                           memoryStats->allocated_page_size);
-  allocatorDump->AddScalar("active_pages", "objects",
-                           memoryStats->num_active_pages);
-  allocatorDump->AddScalar("full_pages", "objects",
-                           memoryStats->num_full_pages);
-  allocatorDump->AddScalar("empty_pages", "objects",
-                           memoryStats->num_empty_pages);
-  allocatorDump->AddScalar("decommitted_pages", "objects",
-                           memoryStats->num_decommitted_pages);
+  base::trace_event::MemoryAllocatorDump* allocator_dump =
+      memory_dump_->CreateAllocatorDump(dump_name);
+  allocator_dump->AddScalar("size", "bytes", memory_stats->resident_bytes);
+  allocator_dump->AddScalar("allocated_objects_size", "bytes",
+                            memory_stats->active_bytes);
+  allocator_dump->AddScalar("slot_size", "bytes",
+                            memory_stats->bucket_slot_size);
+  allocator_dump->AddScalar("decommittable_size", "bytes",
+                            memory_stats->decommittable_bytes);
+  allocator_dump->AddScalar("discardable_size", "bytes",
+                            memory_stats->discardable_bytes);
+  allocator_dump->AddScalar("total_pages_size", "bytes",
+                            memory_stats->allocated_page_size);
+  allocator_dump->AddScalar("active_pages", "objects",
+                            memory_stats->num_active_pages);
+  allocator_dump->AddScalar("full_pages", "objects",
+                            memory_stats->num_full_pages);
+  allocator_dump->AddScalar("empty_pages", "objects",
+                            memory_stats->num_empty_pages);
+  allocator_dump->AddScalar("decommitted_pages", "objects",
+                            memory_stats->num_decommitted_pages);
 }
 
 }  // namespace
 
-PartitionAllocMemoryDumpProvider* PartitionAllocMemoryDumpProvider::instance() {
+PartitionAllocMemoryDumpProvider* PartitionAllocMemoryDumpProvider::Instance() {
   DEFINE_STATIC_LOCAL(PartitionAllocMemoryDumpProvider, instance, ());
   return &instance;
 }
 
 bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* memoryDump) {
+    base::trace_event::ProcessMemoryDump* memory_dump) {
   using base::trace_event::MemoryDumpLevelOfDetail;
 
-  MemoryDumpLevelOfDetail levelOfDetail = args.level_of_detail;
-  if (m_isHeapProfilingEnabled) {
+  MemoryDumpLevelOfDetail level_of_detail = args.level_of_detail;
+  if (is_heap_profiling_enabled_) {
     // Overhead should always be reported, regardless of light vs. heavy.
     base::trace_event::TraceEventMemoryOverhead overhead;
     base::hash_map<base::trace_event::AllocationContext,
                    base::trace_event::AllocationMetrics>
-        metricsByContext;
+        metrics_by_context;
     {
-      MutexLocker locker(m_allocationRegisterMutex);
+      MutexLocker locker(allocation_register_mutex_);
       // Dump only the overhead estimation in non-detailed dumps.
-      if (levelOfDetail == MemoryDumpLevelOfDetail::DETAILED) {
-        for (const auto& allocSize : *m_allocationRegister) {
+      if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+        for (const auto& alloc_size : *allocation_register_) {
           base::trace_event::AllocationMetrics& metrics =
-              metricsByContext[allocSize.context];
-          metrics.size += allocSize.size;
+              metrics_by_context[alloc_size.context];
+          metrics.size += alloc_size.size;
           metrics.count++;
         }
       }
-      m_allocationRegister->EstimateTraceMemoryOverhead(&overhead);
+      allocation_register_->EstimateTraceMemoryOverhead(&overhead);
     }
-    memoryDump->DumpHeapUsage(metricsByContext, overhead, "partition_alloc");
+    memory_dump->DumpHeapUsage(metrics_by_context, overhead, "partition_alloc");
   }
 
-  PartitionStatsDumperImpl partitionStatsDumper(memoryDump, levelOfDetail);
+  PartitionStatsDumperImpl partition_stats_dumper(memory_dump, level_of_detail);
 
-  base::trace_event::MemoryAllocatorDump* partitionsDump =
-      memoryDump->CreateAllocatorDump(base::StringPrintf(
+  base::trace_event::MemoryAllocatorDump* partitions_dump =
+      memory_dump->CreateAllocatorDump(base::StringPrintf(
           "%s/%s", kPartitionAllocDumpName, kPartitionsDumpName));
 
   // This method calls memoryStats.partitionsDumpBucketStats with memory
   // statistics.
-  WTF::Partitions::dumpMemoryStats(
-      levelOfDetail != MemoryDumpLevelOfDetail::DETAILED,
-      &partitionStatsDumper);
+  WTF::Partitions::DumpMemoryStats(
+      level_of_detail != MemoryDumpLevelOfDetail::DETAILED,
+      &partition_stats_dumper);
 
-  base::trace_event::MemoryAllocatorDump* allocatedObjectsDump =
-      memoryDump->CreateAllocatorDump(Partitions::kAllocatedObjectPoolName);
-  allocatedObjectsDump->AddScalar("size", "bytes",
-                                  partitionStatsDumper.TotalActiveBytes());
-  memoryDump->AddOwnershipEdge(allocatedObjectsDump->guid(),
-                               partitionsDump->guid());
+  base::trace_event::MemoryAllocatorDump* allocated_objects_dump =
+      memory_dump->CreateAllocatorDump(Partitions::kAllocatedObjectPoolName);
+  allocated_objects_dump->AddScalar("size", "bytes",
+                                    partition_stats_dumper.TotalActiveBytes());
+  memory_dump->AddOwnershipEdge(allocated_objects_dump->guid(),
+                                partitions_dump->guid());
 
   return true;
 }
@@ -177,45 +180,45 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
 // |m_allocationRegister| should be initialized only when necessary to avoid
 // waste of memory.
 PartitionAllocMemoryDumpProvider::PartitionAllocMemoryDumpProvider()
-    : m_allocationRegister(nullptr), m_isHeapProfilingEnabled(false) {}
+    : allocation_register_(nullptr), is_heap_profiling_enabled_(false) {}
 
 PartitionAllocMemoryDumpProvider::~PartitionAllocMemoryDumpProvider() {}
 
 void PartitionAllocMemoryDumpProvider::OnHeapProfilingEnabled(bool enabled) {
   if (enabled) {
     {
-      MutexLocker locker(m_allocationRegisterMutex);
-      if (!m_allocationRegister)
-        m_allocationRegister.reset(new base::trace_event::AllocationRegister());
+      MutexLocker locker(allocation_register_mutex_);
+      if (!allocation_register_)
+        allocation_register_.reset(new base::trace_event::AllocationRegister());
     }
-    WTF::PartitionAllocHooks::SetAllocationHook(reportAllocation);
-    WTF::PartitionAllocHooks::SetFreeHook(reportFree);
+    WTF::PartitionAllocHooks::SetAllocationHook(ReportAllocation);
+    WTF::PartitionAllocHooks::SetFreeHook(ReportFree);
   } else {
     WTF::PartitionAllocHooks::SetAllocationHook(nullptr);
     WTF::PartitionAllocHooks::SetFreeHook(nullptr);
   }
-  m_isHeapProfilingEnabled = enabled;
+  is_heap_profiling_enabled_ = enabled;
 }
 
 void PartitionAllocMemoryDumpProvider::insert(void* address,
                                               size_t size,
-                                              const char* typeName) {
+                                              const char* type_name) {
   base::trace_event::AllocationContext context;
   if (!base::trace_event::AllocationContextTracker::
            GetInstanceForCurrentThread()
                ->GetContextSnapshot(&context))
     return;
 
-  context.type_name = typeName;
-  MutexLocker locker(m_allocationRegisterMutex);
-  if (m_allocationRegister)
-    m_allocationRegister->Insert(address, size, context);
+  context.type_name = type_name;
+  MutexLocker locker(allocation_register_mutex_);
+  if (allocation_register_)
+    allocation_register_->Insert(address, size, context);
 }
 
-void PartitionAllocMemoryDumpProvider::remove(void* address) {
-  MutexLocker locker(m_allocationRegisterMutex);
-  if (m_allocationRegister)
-    m_allocationRegister->Remove(address);
+void PartitionAllocMemoryDumpProvider::Remove(void* address) {
+  MutexLocker locker(allocation_register_mutex_);
+  if (allocation_register_)
+    allocation_register_->Remove(address);
 }
 
 }  // namespace blink

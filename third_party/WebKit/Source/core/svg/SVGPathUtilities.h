@@ -30,14 +30,14 @@ class Path;
 class SVGPathByteStream;
 
 // String/SVGPathByteStream -> Path
-bool CORE_EXPORT buildPathFromString(const String&, Path&);
-bool buildPathFromByteStream(const SVGPathByteStream&, Path&);
+bool CORE_EXPORT BuildPathFromString(const String&, Path&);
+bool BuildPathFromByteStream(const SVGPathByteStream&, Path&);
 
 // String -> SVGPathByteStream
-SVGParsingError buildByteStreamFromString(const String&, SVGPathByteStream&);
+SVGParsingError BuildByteStreamFromString(const String&, SVGPathByteStream&);
 
 // SVGPathByteStream -> String
-String buildStringFromByteStream(const SVGPathByteStream&);
+String BuildStringFromByteStream(const SVGPathByteStream&);
 
 }  // namespace blink
 

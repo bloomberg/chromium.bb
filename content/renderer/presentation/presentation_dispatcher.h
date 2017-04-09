@@ -107,47 +107,47 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebPresentationConnectionProxy* connection_proxy);
 
   // WebPresentationClient implementation.
-  void setController(blink::WebPresentationController* controller) override;
-  void setReceiver(blink::WebPresentationReceiver*) override;
-  void startPresentation(
+  void SetController(blink::WebPresentationController* controller) override;
+  void SetReceiver(blink::WebPresentationReceiver*) override;
+  void StartPresentation(
       const blink::WebVector<blink::WebURL>& presentationUrls,
       std::unique_ptr<blink::WebPresentationConnectionCallbacks> callback)
       override;
-  void reconnectPresentation(
+  void ReconnectPresentation(
       const blink::WebVector<blink::WebURL>& presentationUrls,
       const blink::WebString& presentationId,
       std::unique_ptr<blink::WebPresentationConnectionCallbacks> callback)
       override;
-  void terminatePresentation(const blink::WebURL& presentationUrl,
+  void TerminatePresentation(const blink::WebURL& presentationUrl,
                              const blink::WebString& presentationId) override;
-  void sendString(
+  void SendString(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const blink::WebString& message,
       const blink::WebPresentationConnectionProxy* connection_proxy) override;
-  void sendArrayBuffer(
+  void SendArrayBuffer(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const uint8_t* data,
       size_t length,
       const blink::WebPresentationConnectionProxy* connection_proxy) override;
-  void sendBlobData(
+  void SendBlobData(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const uint8_t* data,
       size_t length,
       const blink::WebPresentationConnectionProxy* connection_proxy) override;
-  void closeConnection(
+  void CloseConnection(
       const blink::WebURL& presentationUrl,
       const blink::WebString& presentationId,
       const blink::WebPresentationConnectionProxy* connection_proxy) override;
-  void getAvailability(
+  void GetAvailability(
       const blink::WebVector<blink::WebURL>& availabilityUrls,
       std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks)
       override;
-  void startListening(blink::WebPresentationAvailabilityObserver*) override;
-  void stopListening(blink::WebPresentationAvailabilityObserver*) override;
-  void setDefaultPresentationUrls(
+  void StartListening(blink::WebPresentationAvailabilityObserver*) override;
+  void StopListening(blink::WebPresentationAvailabilityObserver*) override;
+  void SetDefaultPresentationUrls(
       const blink::WebVector<blink::WebURL>& presentationUrls) override;
 
   // RenderFrameObserver implementation.

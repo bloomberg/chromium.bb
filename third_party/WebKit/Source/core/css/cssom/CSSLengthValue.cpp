@@ -13,22 +13,22 @@
 
 namespace blink {
 
-CSSPrimitiveValue::UnitType CSSLengthValue::unitFromName(const String& name) {
-  if (equalIgnoringASCIICase(name, "percent") || name == "%")
-    return CSSPrimitiveValue::UnitType::Percentage;
-  return CSSPrimitiveValue::stringToUnitType(name);
+CSSPrimitiveValue::UnitType CSSLengthValue::UnitFromName(const String& name) {
+  if (EqualIgnoringASCIICase(name, "percent") || name == "%")
+    return CSSPrimitiveValue::UnitType::kPercentage;
+  return CSSPrimitiveValue::StringToUnitType(name);
 }
 
-CSSLengthValue* CSSLengthValue::fromCSSValue(const CSSPrimitiveValue& value) {
-  if (value.isCalculated()) {
+CSSLengthValue* CSSLengthValue::FromCSSValue(const CSSPrimitiveValue& value) {
+  if (value.IsCalculated()) {
     // TODO(meade): Implement CSSCalcLength::fromCSSValue.
     return nullptr;
   }
-  return CSSSimpleLength::fromCSSValue(value);
+  return CSSSimpleLength::FromCSSValue(value);
 }
 
-CSSLengthValue* CSSLengthValue::from(const String& cssText,
-                                     ExceptionState& exceptionState) {
+CSSLengthValue* CSSLengthValue::from(const String& css_text,
+                                     ExceptionState& exception_state) {
   // TODO: Implement
   return nullptr;
 }
@@ -36,73 +36,73 @@ CSSLengthValue* CSSLengthValue::from(const String& cssText,
 CSSLengthValue* CSSLengthValue::from(double value,
                                      const String& type,
                                      ExceptionState&) {
-  return CSSSimpleLength::create(value, unitFromName(type));
+  return CSSSimpleLength::Create(value, UnitFromName(type));
 }
 
 CSSLengthValue* CSSLengthValue::from(const CSSCalcDictionary& dictionary,
-                                     ExceptionState& exceptionState) {
-  return CSSCalcLength::create(dictionary, exceptionState);
+                                     ExceptionState& exception_state) {
+  return CSSCalcLength::Create(dictionary, exception_state);
 }
 
 CSSLengthValue* CSSLengthValue::add(const CSSLengthValue* other) {
-  if (type() == CalcLengthType)
-    return addInternal(other);
+  if (GetType() == kCalcLengthType)
+    return AddInternal(other);
 
-  DCHECK_EQ(type(), SimpleLengthType);
-  if (other->type() == SimpleLengthType &&
-      toCSSSimpleLength(this)->unit() == toCSSSimpleLength(other)->unit()) {
-    return addInternal(other);
+  DCHECK_EQ(GetType(), kSimpleLengthType);
+  if (other->GetType() == kSimpleLengthType &&
+      ToCSSSimpleLength(this)->unit() == ToCSSSimpleLength(other)->unit()) {
+    return AddInternal(other);
   }
 
   // TODO(meade): This CalcLength is immediately thrown away. We might want
   // to optimize this at some point.
-  CSSCalcLength* result = CSSCalcLength::create(this);
+  CSSCalcLength* result = CSSCalcLength::Create(this);
   return result->add(other);
 }
 
 CSSLengthValue* CSSLengthValue::subtract(const CSSLengthValue* other) {
-  if (type() == CalcLengthType)
-    return subtractInternal(other);
+  if (GetType() == kCalcLengthType)
+    return SubtractInternal(other);
 
-  DCHECK_EQ(type(), SimpleLengthType);
-  if (other->type() == SimpleLengthType &&
-      toCSSSimpleLength(this)->unit() == toCSSSimpleLength(other)->unit()) {
-    return subtractInternal(other);
+  DCHECK_EQ(GetType(), kSimpleLengthType);
+  if (other->GetType() == kSimpleLengthType &&
+      ToCSSSimpleLength(this)->unit() == ToCSSSimpleLength(other)->unit()) {
+    return SubtractInternal(other);
   }
 
-  CSSCalcLength* result = CSSCalcLength::create(this);
+  CSSCalcLength* result = CSSCalcLength::Create(this);
   return result->subtract(other);
 }
 
 CSSLengthValue* CSSLengthValue::multiply(double x) {
-  return multiplyInternal(x);
+  return MultiplyInternal(x);
 }
 
 CSSLengthValue* CSSLengthValue::divide(double x,
-                                       ExceptionState& exceptionState) {
+                                       ExceptionState& exception_state) {
   if (x == 0) {
-    exceptionState.throwRangeError("Cannot divide by zero");
+    exception_state.ThrowRangeError("Cannot divide by zero");
     return nullptr;
   }
-  return divideInternal(x);
+  return DivideInternal(x);
 }
 
-CSSLengthValue* CSSLengthValue::addInternal(const CSSLengthValue*) {
+CSSLengthValue* CSSLengthValue::AddInternal(const CSSLengthValue*) {
   NOTREACHED();
   return nullptr;
 }
 
-CSSLengthValue* CSSLengthValue::subtractInternal(const CSSLengthValue*) {
+CSSLengthValue* CSSLengthValue::SubtractInternal(const CSSLengthValue*) {
   NOTREACHED();
   return nullptr;
 }
 
-CSSLengthValue* CSSLengthValue::multiplyInternal(double) {
+CSSLengthValue* CSSLengthValue::MultiplyInternal(double) {
   NOTREACHED();
   return nullptr;
 }
 
-CSSLengthValue* CSSLengthValue::divideInternal(double) {
+CSSLengthValue* CSSLengthValue::DivideInternal(double) {
   NOTREACHED();
   return nullptr;
 }

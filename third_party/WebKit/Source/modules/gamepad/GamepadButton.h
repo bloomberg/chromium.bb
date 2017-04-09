@@ -16,24 +16,24 @@ class GamepadButton final : public GarbageCollected<GamepadButton>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GamepadButton* create();
+  static GamepadButton* Create();
 
-  double value() const { return m_value; }
-  void setValue(double val) { m_value = val; }
+  double value() const { return value_; }
+  void SetValue(double val) { value_ = val; }
 
-  bool pressed() const { return m_pressed; }
-  void setPressed(bool val) { m_pressed = val; }
+  bool pressed() const { return pressed_; }
+  void SetPressed(bool val) { pressed_ = val; }
 
-  bool touched() const { return m_touched; }
-  void setTouched(bool val) { m_touched = val; }
+  bool touched() const { return touched_; }
+  void SetTouched(bool val) { touched_ = val; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   GamepadButton();
-  double m_value;
-  bool m_pressed;
-  bool m_touched;
+  double value_;
+  bool pressed_;
+  bool touched_;
 };
 
 typedef HeapVector<Member<GamepadButton>> GamepadButtonVector;

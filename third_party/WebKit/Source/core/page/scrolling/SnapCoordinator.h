@@ -34,26 +34,26 @@ class CORE_EXPORT SnapCoordinator final
   WTF_MAKE_NONCOPYABLE(SnapCoordinator);
 
  public:
-  static SnapCoordinator* create();
+  static SnapCoordinator* Create();
   ~SnapCoordinator();
   DEFINE_INLINE_TRACE() {}
 
-  void snapContainerDidChange(LayoutBox&, ScrollSnapType);
-  void snapAreaDidChange(LayoutBox&,
-                         const Vector<LengthPoint>& snapCoordinates);
+  void SnapContainerDidChange(LayoutBox&, ScrollSnapType);
+  void SnapAreaDidChange(LayoutBox&,
+                         const Vector<LengthPoint>& snap_coordinates);
 
 #ifndef NDEBUG
-  void showSnapAreaMap();
-  void showSnapAreasFor(const LayoutBox*);
+  void ShowSnapAreaMap();
+  void ShowSnapAreasFor(const LayoutBox*);
 #endif
 
  private:
   friend class SnapCoordinatorTest;
   explicit SnapCoordinator();
 
-  Vector<double> snapOffsets(const ContainerNode&, ScrollbarOrientation);
+  Vector<double> SnapOffsets(const ContainerNode&, ScrollbarOrientation);
 
-  HashSet<const LayoutBox*> m_snapContainers;
+  HashSet<const LayoutBox*> snap_containers_;
 };
 
 }  // namespace blink

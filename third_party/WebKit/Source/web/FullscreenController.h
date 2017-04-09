@@ -45,37 +45,37 @@ class WebViewImpl;
 
 class FullscreenController {
  public:
-  static std::unique_ptr<FullscreenController> create(WebViewImpl*);
+  static std::unique_ptr<FullscreenController> Create(WebViewImpl*);
 
   // Called by Fullscreen (via ChromeClient) to request entering or exiting
   // fullscreen.
-  void enterFullscreen(LocalFrame&);
-  void exitFullscreen(LocalFrame&);
+  void EnterFullscreen(LocalFrame&);
+  void ExitFullscreen(LocalFrame&);
 
   // Called by content::RenderWidget (via WebWidget) to notify that we've
   // entered or exited fullscreen. This can be because we requested it, or it
   // can be initiated by the browser directly.
-  void didEnterFullscreen();
-  void didExitFullscreen();
+  void DidEnterFullscreen();
+  void DidExitFullscreen();
 
   // Called by Fullscreen (via ChromeClient) to notify that the fullscreen
   // element has changed.
-  void fullscreenElementChanged(Element*, Element*);
+  void FullscreenElementChanged(Element*, Element*);
 
-  bool isFullscreenOrTransitioning() const { return m_state != State::Initial; }
+  bool IsFullscreenOrTransitioning() const { return state_ != State::kInitial; }
 
-  void updateSize();
+  void UpdateSize();
 
-  void didUpdateLayout();
+  void DidUpdateLayout();
 
  protected:
   explicit FullscreenController(WebViewImpl*);
 
  private:
-  void updatePageScaleConstraints(bool removeConstraints);
-  void restoreBackgroundColorOverride();
+  void UpdatePageScaleConstraints(bool remove_constraints);
+  void RestoreBackgroundColorOverride();
 
-  WebViewImpl* m_webViewImpl;
+  WebViewImpl* web_view_impl_;
 
   // State is used to avoid unnecessary enter/exit requests, and to restore the
   // m_initial* after the first layout upon exiting fullscreen. Typically, the
@@ -86,19 +86,19 @@ class FullscreenController {
   //  2. enterFullscreen() can transition from NeedsScrollAndScaleRestore to
   //     EnteringFullscreen, in case of a quick exit+enter.
   enum class State {
-    Initial,
-    EnteringFullscreen,
-    Fullscreen,
-    ExitingFullscreen,
-    NeedsScrollAndScaleRestore
+    kInitial,
+    kEnteringFullscreen,
+    kFullscreen,
+    kExitingFullscreen,
+    kNeedsScrollAndScaleRestore
   };
-  State m_state = State::Initial;
+  State state_ = State::kInitial;
 
-  float m_initialPageScaleFactor = 0.0f;
-  IntSize m_initialScrollOffset;
-  FloatPoint m_initialVisualViewportOffset;
-  bool m_initialBackgroundColorOverrideEnabled = false;
-  RGBA32 m_initialBackgroundColorOverride = Color::transparent;
+  float initial_page_scale_factor_ = 0.0f;
+  IntSize initial_scroll_offset_;
+  FloatPoint initial_visual_viewport_offset_;
+  bool initial_background_color_override_enabled_ = false;
+  RGBA32 initial_background_color_override_ = Color::kTransparent;
 };
 
 }  // namespace blink

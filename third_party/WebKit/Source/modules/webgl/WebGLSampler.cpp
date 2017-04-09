@@ -9,24 +9,24 @@
 
 namespace blink {
 
-WebGLSampler* WebGLSampler::create(WebGL2RenderingContextBase* ctx) {
+WebGLSampler* WebGLSampler::Create(WebGL2RenderingContextBase* ctx) {
   return new WebGLSampler(ctx);
 }
 
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx) {
   GLuint sampler;
-  ctx->contextGL()->GenSamplers(1, &sampler);
-  setObject(sampler);
+  ctx->ContextGL()->GenSamplers(1, &sampler);
+  SetObject(sampler);
 }
 
 WebGLSampler::~WebGLSampler() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLSampler::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteSamplers(1, &m_object);
-  m_object = 0;
+void WebGLSampler::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteSamplers(1, &object_);
+  object_ = 0;
 }
 
 }  // namespace blink

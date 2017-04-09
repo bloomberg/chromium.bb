@@ -37,48 +37,49 @@ LayoutRubyText::LayoutRubyText(Element* element) : LayoutBlockFlow(element) {}
 
 LayoutRubyText::~LayoutRubyText() {}
 
-bool LayoutRubyText::isChildAllowed(LayoutObject* child,
+bool LayoutRubyText::IsChildAllowed(LayoutObject* child,
                                     const ComputedStyle&) const {
-  return child->isInline();
+  return child->IsInline();
 }
 
-ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const {
-  ETextAlign textAlign = style()->textAlign();
+ETextAlign LayoutRubyText::TextAlignmentForLine(
+    bool ends_with_soft_break) const {
+  ETextAlign text_align = Style()->GetTextAlign();
   // FIXME: This check is bogus since user can set the initial value.
-  if (textAlign != ComputedStyle::initialTextAlign())
-    return LayoutBlockFlow::textAlignmentForLine(endsWithSoftBreak);
+  if (text_align != ComputedStyle::InitialTextAlign())
+    return LayoutBlockFlow::TextAlignmentForLine(ends_with_soft_break);
 
   // The default behavior is to allow ruby text to expand if it is shorter than
   // the ruby base.
   return ETextAlign::kJustify;
 }
 
-void LayoutRubyText::adjustInlineDirectionLineBounds(
-    unsigned expansionOpportunityCount,
-    LayoutUnit& logicalLeft,
-    LayoutUnit& logicalWidth) const {
-  ETextAlign textAlign = style()->textAlign();
+void LayoutRubyText::AdjustInlineDirectionLineBounds(
+    unsigned expansion_opportunity_count,
+    LayoutUnit& logical_left,
+    LayoutUnit& logical_width) const {
+  ETextAlign text_align = Style()->GetTextAlign();
   // FIXME: This check is bogus since user can set the initial value.
-  if (textAlign != ComputedStyle::initialTextAlign())
-    return LayoutBlockFlow::adjustInlineDirectionLineBounds(
-        expansionOpportunityCount, logicalLeft, logicalWidth);
+  if (text_align != ComputedStyle::InitialTextAlign())
+    return LayoutBlockFlow::AdjustInlineDirectionLineBounds(
+        expansion_opportunity_count, logical_left, logical_width);
 
-  int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth().toInt();
-  if (maxPreferredLogicalWidth >= logicalWidth)
+  int max_preferred_logical_width = this->MaxPreferredLogicalWidth().ToInt();
+  if (max_preferred_logical_width >= logical_width)
     return;
 
   // Inset the ruby text by half the inter-ideograph expansion amount, but no
   // more than a full-width ruby character on each side.
-  LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) /
-                     (expansionOpportunityCount + 1);
-  if (expansionOpportunityCount)
-    inset = std::min(LayoutUnit(2 * style()->fontSize()), inset);
+  LayoutUnit inset = (logical_width - max_preferred_logical_width) /
+                     (expansion_opportunity_count + 1);
+  if (expansion_opportunity_count)
+    inset = std::min(LayoutUnit(2 * Style()->FontSize()), inset);
 
-  logicalLeft += inset / 2;
-  logicalWidth -= inset;
+  logical_left += inset / 2;
+  logical_width -= inset;
 }
 
-bool LayoutRubyText::avoidsFloats() const {
+bool LayoutRubyText::AvoidsFloats() const {
   return true;
 }
 

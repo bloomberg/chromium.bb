@@ -14,44 +14,44 @@ namespace blink {
 
 class PLATFORM_EXPORT ShapeResultTestInfo : public ShapeResult {
  public:
-  unsigned numberOfRunsForTesting() const;
-  bool runInfoForTesting(unsigned runIndex,
-                         unsigned& startIndex,
-                         unsigned& numGlyphs,
+  unsigned NumberOfRunsForTesting() const;
+  bool RunInfoForTesting(unsigned run_index,
+                         unsigned& start_index,
+                         unsigned& num_glyphs,
                          hb_script_t&) const;
-  uint16_t glyphForTesting(unsigned runIndex, size_t glyphIndex) const;
-  float advanceForTesting(unsigned runIndex, size_t glyphIndex) const;
-  SimpleFontData* fontDataForTesting(unsigned runIndex) const;
+  uint16_t GlyphForTesting(unsigned run_index, size_t glyph_index) const;
+  float AdvanceForTesting(unsigned run_index, size_t glyph_index) const;
+  SimpleFontData* FontDataForTesting(unsigned run_index) const;
 };
 
 class PLATFORM_EXPORT ShapeResultBloberizerTestInfo {
  public:
-  static const SimpleFontData* pendingRunFontData(
+  static const SimpleFontData* PendingRunFontData(
       const ShapeResultBloberizer& bloberizer) {
-    return bloberizer.m_pendingFontData;
+    return bloberizer.pending_font_data_;
   }
 
-  static const Vector<Glyph, 1024>& pendingRunGlyphs(
+  static const Vector<Glyph, 1024>& PendingRunGlyphs(
       const ShapeResultBloberizer& bloberizer) {
-    return bloberizer.m_pendingGlyphs;
+    return bloberizer.pending_glyphs_;
   }
 
-  static const Vector<float, 1024>& pendingRunOffsets(
+  static const Vector<float, 1024>& PendingRunOffsets(
       const ShapeResultBloberizer& bloberizer) {
-    return bloberizer.m_pendingOffsets;
+    return bloberizer.pending_offsets_;
   }
 
-  static bool hasPendingRunVerticalOffsets(
+  static bool HasPendingRunVerticalOffsets(
       const ShapeResultBloberizer& bloberizer) {
-    return bloberizer.hasPendingVerticalOffsets();
+    return bloberizer.HasPendingVerticalOffsets();
   }
 
-  static size_t pendingBlobRunCount(const ShapeResultBloberizer& bloberizer) {
-    return bloberizer.m_builderRunCount;
+  static size_t PendingBlobRunCount(const ShapeResultBloberizer& bloberizer) {
+    return bloberizer.builder_run_count_;
   }
 
-  static size_t committedBlobCount(const ShapeResultBloberizer& bloberizer) {
-    return bloberizer.m_blobs.size();
+  static size_t CommittedBlobCount(const ShapeResultBloberizer& bloberizer) {
+    return bloberizer.blobs_.size();
   }
 };
 

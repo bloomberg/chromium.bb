@@ -16,23 +16,23 @@ struct EnumTraits<::device::mojom::ScreenOrientationLockType,
   static ::device::mojom::ScreenOrientationLockType ToMojom(
       ::blink::WebScreenOrientationLockType lockType) {
     switch (lockType) {
-      case ::blink::WebScreenOrientationLockDefault:
+      case ::blink::kWebScreenOrientationLockDefault:
         return ::device::mojom::ScreenOrientationLockType::DEFAULT;
-      case ::blink::WebScreenOrientationLockPortraitPrimary:
+      case ::blink::kWebScreenOrientationLockPortraitPrimary:
         return ::device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY;
-      case ::blink::WebScreenOrientationLockPortraitSecondary:
+      case ::blink::kWebScreenOrientationLockPortraitSecondary:
         return ::device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY;
-      case ::blink::WebScreenOrientationLockLandscapePrimary:
+      case ::blink::kWebScreenOrientationLockLandscapePrimary:
         return ::device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY;
-      case ::blink::WebScreenOrientationLockLandscapeSecondary:
+      case ::blink::kWebScreenOrientationLockLandscapeSecondary:
         return ::device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY;
-      case ::blink::WebScreenOrientationLockAny:
+      case ::blink::kWebScreenOrientationLockAny:
         return ::device::mojom::ScreenOrientationLockType::ANY;
-      case ::blink::WebScreenOrientationLockLandscape:
+      case ::blink::kWebScreenOrientationLockLandscape:
         return ::device::mojom::ScreenOrientationLockType::LANDSCAPE;
-      case ::blink::WebScreenOrientationLockPortrait:
+      case ::blink::kWebScreenOrientationLockPortrait:
         return ::device::mojom::ScreenOrientationLockType::PORTRAIT;
-      case ::blink::WebScreenOrientationLockNatural:
+      case ::blink::kWebScreenOrientationLockNatural:
         return ::device::mojom::ScreenOrientationLockType::NATURAL;
     }
     NOTREACHED();
@@ -43,31 +43,31 @@ struct EnumTraits<::device::mojom::ScreenOrientationLockType,
                         ::blink::WebScreenOrientationLockType* out) {
     switch (lockType) {
       case ::device::mojom::ScreenOrientationLockType::DEFAULT:
-        *out = ::blink::WebScreenOrientationLockDefault;
+        *out = ::blink::kWebScreenOrientationLockDefault;
         return true;
       case ::device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY:
-        *out = ::blink::WebScreenOrientationLockPortraitPrimary;
+        *out = ::blink::kWebScreenOrientationLockPortraitPrimary;
         return true;
       case ::device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY:
-        *out = ::blink::WebScreenOrientationLockPortraitSecondary;
+        *out = ::blink::kWebScreenOrientationLockPortraitSecondary;
         return true;
       case ::device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY:
-        *out = ::blink::WebScreenOrientationLockLandscapePrimary;
+        *out = ::blink::kWebScreenOrientationLockLandscapePrimary;
         return true;
       case ::device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY:
-        *out = ::blink::WebScreenOrientationLockLandscapeSecondary;
+        *out = ::blink::kWebScreenOrientationLockLandscapeSecondary;
         return true;
       case ::device::mojom::ScreenOrientationLockType::ANY:
-        *out = ::blink::WebScreenOrientationLockAny;
+        *out = ::blink::kWebScreenOrientationLockAny;
         return true;
       case ::device::mojom::ScreenOrientationLockType::LANDSCAPE:
-        *out = ::blink::WebScreenOrientationLockLandscape;
+        *out = ::blink::kWebScreenOrientationLockLandscape;
         return true;
       case ::device::mojom::ScreenOrientationLockType::PORTRAIT:
-        *out = ::blink::WebScreenOrientationLockPortrait;
+        *out = ::blink::kWebScreenOrientationLockPortrait;
         return true;
       case ::device::mojom::ScreenOrientationLockType::NATURAL:
-        *out = ::blink::WebScreenOrientationLockNatural;
+        *out = ::blink::kWebScreenOrientationLockNatural;
         return true;
     }
     NOTREACHED();

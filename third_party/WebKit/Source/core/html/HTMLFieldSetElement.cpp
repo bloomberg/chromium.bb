@@ -40,91 +40,91 @@ using namespace HTMLNames;
 inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
     : HTMLFormControlElement(fieldsetTag, document) {}
 
-HTMLFieldSetElement* HTMLFieldSetElement::create(Document& document) {
+HTMLFieldSetElement* HTMLFieldSetElement::Create(Document& document) {
   return new HTMLFieldSetElement(document);
 }
 
-bool HTMLFieldSetElement::matchesValidityPseudoClasses() const {
+bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {
   return true;
 }
 
-bool HTMLFieldSetElement::isValidElement() {
+bool HTMLFieldSetElement::IsValidElement() {
   for (Element* element : *elements()) {
-    if (element->isFormControlElement()) {
-      if (!toHTMLFormControlElement(element)->checkValidity(
-              nullptr, CheckValidityDispatchNoEvent))
+    if (element->IsFormControlElement()) {
+      if (!ToHTMLFormControlElement(element)->checkValidity(
+              nullptr, kCheckValidityDispatchNoEvent))
         return false;
     }
   }
   return true;
 }
 
-bool HTMLFieldSetElement::isSubmittableElement() {
+bool HTMLFieldSetElement::IsSubmittableElement() {
   return false;
 }
 
 // Returns a disabled focused element if it's in descendants of |base|.
 Element*
-HTMLFieldSetElement::invalidateDescendantDisabledStateAndFindFocusedOne(
+HTMLFieldSetElement::InvalidateDescendantDisabledStateAndFindFocusedOne(
     Element& base) {
-  Element* focusedElement = adjustedFocusedElementInTreeScope();
-  bool shouldBlur = false;
+  Element* focused_element = AdjustedFocusedElementInTreeScope();
+  bool should_blur = false;
   {
-    EventDispatchForbiddenScope eventForbidden;
+    EventDispatchForbiddenScope event_forbidden;
     for (HTMLFormControlElement& element :
-         Traversal<HTMLFormControlElement>::descendantsOf(base)) {
-      element.ancestorDisabledStateWasChanged();
-      if (focusedElement == &element && element.isDisabledFormControl())
-        shouldBlur = true;
+         Traversal<HTMLFormControlElement>::DescendantsOf(base)) {
+      element.AncestorDisabledStateWasChanged();
+      if (focused_element == &element && element.IsDisabledFormControl())
+        should_blur = true;
     }
   }
-  return shouldBlur ? focusedElement : nullptr;
+  return should_blur ? focused_element : nullptr;
 }
 
-void HTMLFieldSetElement::disabledAttributeChanged() {
+void HTMLFieldSetElement::DisabledAttributeChanged() {
   // This element must be updated before the style of nodes in its subtree gets
   // recalculated.
-  HTMLFormControlElement::disabledAttributeChanged();
-  if (Element* focusedElement =
-          invalidateDescendantDisabledStateAndFindFocusedOne(*this))
-    focusedElement->blur();
+  HTMLFormControlElement::DisabledAttributeChanged();
+  if (Element* focused_element =
+          InvalidateDescendantDisabledStateAndFindFocusedOne(*this))
+    focused_element->blur();
 }
 
-void HTMLFieldSetElement::childrenChanged(const ChildrenChange& change) {
-  HTMLFormControlElement::childrenChanged(change);
-  Element* focusedElement = nullptr;
+void HTMLFieldSetElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLFormControlElement::ChildrenChanged(change);
+  Element* focused_element = nullptr;
   {
-    EventDispatchForbiddenScope eventForbidden;
+    EventDispatchForbiddenScope event_forbidden;
     for (HTMLLegendElement& legend :
-         Traversal<HTMLLegendElement>::childrenOf(*this)) {
+         Traversal<HTMLLegendElement>::ChildrenOf(*this)) {
       if (Element* element =
-              invalidateDescendantDisabledStateAndFindFocusedOne(legend))
-        focusedElement = element;
+              InvalidateDescendantDisabledStateAndFindFocusedOne(legend))
+        focused_element = element;
     }
   }
-  if (focusedElement)
-    focusedElement->blur();
+  if (focused_element)
+    focused_element->blur();
 }
 
-bool HTMLFieldSetElement::supportsFocus() const {
-  return HTMLElement::supportsFocus() && !isDisabledFormControl();
+bool HTMLFieldSetElement::SupportsFocus() const {
+  return HTMLElement::SupportsFocus() && !IsDisabledFormControl();
 }
 
-const AtomicString& HTMLFieldSetElement::formControlType() const {
+const AtomicString& HTMLFieldSetElement::FormControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, fieldset, ("fieldset"));
   return fieldset;
 }
 
-LayoutObject* HTMLFieldSetElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLFieldSetElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutFieldset(this);
 }
 
-HTMLLegendElement* HTMLFieldSetElement::legend() const {
-  return Traversal<HTMLLegendElement>::firstChild(*this);
+HTMLLegendElement* HTMLFieldSetElement::Legend() const {
+  return Traversal<HTMLLegendElement>::FirstChild(*this);
 }
 
 HTMLCollection* HTMLFieldSetElement::elements() {
-  return ensureCachedCollection<HTMLCollection>(FormControls);
+  return EnsureCachedCollection<HTMLCollection>(kFormControls);
 }
 
 int HTMLFieldSetElement::tabIndex() const {

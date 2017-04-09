@@ -34,70 +34,72 @@
 
 namespace blink {
 
-void StyleResolverStats::reset() {
-  sharedStyleLookups = 0;
-  sharedStyleCandidates = 0;
-  sharedStyleFound = 0;
-  sharedStyleMissed = 0;
-  sharedStyleRejectedByUncommonAttributeRules = 0;
-  sharedStyleRejectedBySiblingRules = 0;
-  sharedStyleRejectedByParent = 0;
-  matchedPropertyApply = 0;
-  matchedPropertyCacheHit = 0;
-  matchedPropertyCacheInheritedHit = 0;
-  matchedPropertyCacheAdded = 0;
-  rulesFastRejected = 0;
-  rulesRejected = 0;
-  rulesMatched = 0;
-  stylesChanged = 0;
-  stylesUnchanged = 0;
-  stylesAnimated = 0;
-  elementsStyled = 0;
-  pseudoElementsStyled = 0;
-  baseStylesUsed = 0;
-  independentInheritedStylesPropagated = 0;
-  customPropertiesApplied = 0;
+void StyleResolverStats::Reset() {
+  shared_style_lookups = 0;
+  shared_style_candidates = 0;
+  shared_style_found = 0;
+  shared_style_missed = 0;
+  shared_style_rejected_by_uncommon_attribute_rules = 0;
+  shared_style_rejected_by_sibling_rules = 0;
+  shared_style_rejected_by_parent = 0;
+  matched_property_apply = 0;
+  matched_property_cache_hit = 0;
+  matched_property_cache_inherited_hit = 0;
+  matched_property_cache_added = 0;
+  rules_fast_rejected = 0;
+  rules_rejected = 0;
+  rules_matched = 0;
+  styles_changed = 0;
+  styles_unchanged = 0;
+  styles_animated = 0;
+  elements_styled = 0;
+  pseudo_elements_styled = 0;
+  base_styles_used = 0;
+  independent_inherited_styles_propagated = 0;
+  custom_properties_applied = 0;
 }
 
-bool StyleResolverStats::allCountersEnabled() const {
-  bool allCountersEnabled;
+bool StyleResolverStats::AllCountersEnabled() const {
+  bool all_counters_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.style"),
-                                     &allCountersEnabled);
-  return allCountersEnabled;
+                                     &all_counters_enabled);
+  return all_counters_enabled;
 }
 
-std::unique_ptr<TracedValue> StyleResolverStats::toTracedValue() const {
-  std::unique_ptr<TracedValue> tracedValue = TracedValue::create();
-  tracedValue->setInteger("sharedStyleLookups", sharedStyleLookups);
-  tracedValue->setInteger("sharedStyleCandidates", sharedStyleCandidates);
-  tracedValue->setInteger("sharedStyleFound", sharedStyleFound);
-  if (allCountersEnabled())
-    tracedValue->setInteger("sharedStyleMissed", sharedStyleMissed);
-  tracedValue->setInteger("sharedStyleRejectedByUncommonAttributeRules",
-                          sharedStyleRejectedByUncommonAttributeRules);
-  tracedValue->setInteger("sharedStyleRejectedBySiblingRules",
-                          sharedStyleRejectedBySiblingRules);
-  tracedValue->setInteger("sharedStyleRejectedByParent",
-                          sharedStyleRejectedByParent);
-  tracedValue->setInteger("matchedPropertyApply", matchedPropertyApply);
-  tracedValue->setInteger("matchedPropertyCacheHit", matchedPropertyCacheHit);
-  tracedValue->setInteger("matchedPropertyCacheInheritedHit",
-                          matchedPropertyCacheInheritedHit);
-  tracedValue->setInteger("matchedPropertyCacheAdded",
-                          matchedPropertyCacheAdded);
-  tracedValue->setInteger("rulesRejected", rulesRejected);
-  tracedValue->setInteger("rulesFastRejected", rulesFastRejected);
-  tracedValue->setInteger("rulesMatched", rulesMatched);
-  tracedValue->setInteger("stylesChanged", stylesChanged);
-  tracedValue->setInteger("stylesUnchanged", stylesUnchanged);
-  tracedValue->setInteger("stylesAnimated", stylesAnimated);
-  tracedValue->setInteger("elementsStyled", elementsStyled);
-  tracedValue->setInteger("pseudoElementsStyled", pseudoElementsStyled);
-  tracedValue->setInteger("baseStylesUsed", baseStylesUsed);
-  tracedValue->setInteger("independentInheritedStylesPropagated",
-                          independentInheritedStylesPropagated);
-  tracedValue->setInteger("customPropertiesApplied", customPropertiesApplied);
-  return tracedValue;
+std::unique_ptr<TracedValue> StyleResolverStats::ToTracedValue() const {
+  std::unique_ptr<TracedValue> traced_value = TracedValue::Create();
+  traced_value->SetInteger("sharedStyleLookups", shared_style_lookups);
+  traced_value->SetInteger("sharedStyleCandidates", shared_style_candidates);
+  traced_value->SetInteger("sharedStyleFound", shared_style_found);
+  if (AllCountersEnabled())
+    traced_value->SetInteger("sharedStyleMissed", shared_style_missed);
+  traced_value->SetInteger("sharedStyleRejectedByUncommonAttributeRules",
+                           shared_style_rejected_by_uncommon_attribute_rules);
+  traced_value->SetInteger("sharedStyleRejectedBySiblingRules",
+                           shared_style_rejected_by_sibling_rules);
+  traced_value->SetInteger("sharedStyleRejectedByParent",
+                           shared_style_rejected_by_parent);
+  traced_value->SetInteger("matchedPropertyApply", matched_property_apply);
+  traced_value->SetInteger("matchedPropertyCacheHit",
+                           matched_property_cache_hit);
+  traced_value->SetInteger("matchedPropertyCacheInheritedHit",
+                           matched_property_cache_inherited_hit);
+  traced_value->SetInteger("matchedPropertyCacheAdded",
+                           matched_property_cache_added);
+  traced_value->SetInteger("rulesRejected", rules_rejected);
+  traced_value->SetInteger("rulesFastRejected", rules_fast_rejected);
+  traced_value->SetInteger("rulesMatched", rules_matched);
+  traced_value->SetInteger("stylesChanged", styles_changed);
+  traced_value->SetInteger("stylesUnchanged", styles_unchanged);
+  traced_value->SetInteger("stylesAnimated", styles_animated);
+  traced_value->SetInteger("elementsStyled", elements_styled);
+  traced_value->SetInteger("pseudoElementsStyled", pseudo_elements_styled);
+  traced_value->SetInteger("baseStylesUsed", base_styles_used);
+  traced_value->SetInteger("independentInheritedStylesPropagated",
+                           independent_inherited_styles_propagated);
+  traced_value->SetInteger("customPropertiesApplied",
+                           custom_properties_applied);
+  return traced_value;
 }
 
 }  // namespace blink

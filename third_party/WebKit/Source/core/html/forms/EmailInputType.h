@@ -37,32 +37,32 @@ namespace blink {
 
 class EmailInputType final : public BaseTextInputType {
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
 
   // They are public for unit testing.
-  CORE_EXPORT static String convertEmailAddressToASCII(const ScriptRegexp&,
+  CORE_EXPORT static String ConvertEmailAddressToASCII(const ScriptRegexp&,
                                                        const String&);
-  CORE_EXPORT static bool isValidEmailAddress(const ScriptRegexp&,
+  CORE_EXPORT static bool IsValidEmailAddress(const ScriptRegexp&,
                                               const String&);
-  CORE_EXPORT static std::unique_ptr<ScriptRegexp> createEmailRegexp();
+  CORE_EXPORT static std::unique_ptr<ScriptRegexp> CreateEmailRegexp();
 
  private:
   explicit EmailInputType(HTMLInputElement&);
-  void countUsage() override;
-  const AtomicString& formControlType() const override;
-  bool typeMismatchFor(const String&) const override;
-  bool typeMismatch() const override;
-  String typeMismatchText() const override;
-  bool supportsSelectionAPI() const override;
-  String sanitizeValue(const String&) const override;
-  String convertFromVisibleValue(const String&) const override;
-  String visibleValue() const override;
+  void CountUsage() override;
+  const AtomicString& FormControlType() const override;
+  bool TypeMismatchFor(const String&) const override;
+  bool TypeMismatch() const override;
+  String TypeMismatchText() const override;
+  bool SupportsSelectionAPI() const override;
+  String SanitizeValue(const String&) const override;
+  String ConvertFromVisibleValue(const String&) const override;
+  String VisibleValue() const override;
 
-  ScriptRegexp& ensureEmailRegexp() const;
-  String convertEmailAddressToUnicode(const String&) const;
-  String findInvalidAddress(const String&) const;
+  ScriptRegexp& EnsureEmailRegexp() const;
+  String ConvertEmailAddressToUnicode(const String&) const;
+  String FindInvalidAddress(const String&) const;
 
-  mutable std::unique_ptr<ScriptRegexp> m_emailRegexp;
+  mutable std::unique_ptr<ScriptRegexp> email_regexp_;
 };
 
 }  // namespace blink

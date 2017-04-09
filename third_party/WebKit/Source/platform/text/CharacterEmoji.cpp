@@ -218,28 +218,28 @@ bool Character::isEmojiModifierBase(UChar32 ch) {
   return emojieModifierBaseSet.contains(ch);
 }
 #else
-bool Character::isEmoji(UChar32 ch) {
+bool Character::IsEmoji(UChar32 ch) {
   return u_hasBinaryProperty(ch, UCHAR_EMOJI);
 }
-bool Character::isEmojiTextDefault(UChar32 ch) {
+bool Character::IsEmojiTextDefault(UChar32 ch) {
   return u_hasBinaryProperty(ch, UCHAR_EMOJI) &&
          !u_hasBinaryProperty(ch, UCHAR_EMOJI_PRESENTATION);
 }
 
-bool Character::isEmojiEmojiDefault(UChar32 ch) {
+bool Character::IsEmojiEmojiDefault(UChar32 ch) {
   return u_hasBinaryProperty(ch, UCHAR_EMOJI_PRESENTATION);
 }
 
-bool Character::isEmojiModifierBase(UChar32 ch) {
+bool Character::IsEmojiModifierBase(UChar32 ch) {
   return u_hasBinaryProperty(ch, UCHAR_EMOJI_MODIFIER_BASE);
 }
 #endif  // defined(USING_SYSTEM_ICU) && (U_ICU_VERSION_MAJOR_NUM <= 57)
 
-bool Character::isEmojiKeycapBase(UChar32 ch) {
+bool Character::IsEmojiKeycapBase(UChar32 ch) {
   return (ch >= '0' && ch <= '9') || ch == '#' || ch == '*';
 }
 
-bool Character::isRegionalIndicator(UChar32 ch) {
+bool Character::IsRegionalIndicator(UChar32 ch) {
   return (ch >= 0x1F1E6 && ch <= 0x1F1FF);
 }
 

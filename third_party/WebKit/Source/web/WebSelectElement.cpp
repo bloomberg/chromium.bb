@@ -38,12 +38,12 @@
 
 namespace blink {
 
-WebVector<WebElement> WebSelectElement::listItems() const {
-  const HeapVector<Member<HTMLElement>>& sourceItems =
-      constUnwrap<HTMLSelectElement>()->listItems();
-  WebVector<WebElement> items(sourceItems.size());
-  for (size_t i = 0; i < sourceItems.size(); ++i)
-    items[i] = WebElement(sourceItems[i].get());
+WebVector<WebElement> WebSelectElement::GetListItems() const {
+  const HeapVector<Member<HTMLElement>>& source_items =
+      ConstUnwrap<HTMLSelectElement>()->GetListItems();
+  WebVector<WebElement> items(source_items.size());
+  for (size_t i = 0; i < source_items.size(); ++i)
+    items[i] = WebElement(source_items[i].Get());
 
   return items;
 }
@@ -52,15 +52,15 @@ WebSelectElement::WebSelectElement(HTMLSelectElement* element)
     : WebFormControlElement(element) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebSelectElement,
-                           isHTMLSelectElement(constUnwrap<Node>()));
+                           isHTMLSelectElement(ConstUnwrap<Node>()));
 
 WebSelectElement& WebSelectElement::operator=(HTMLSelectElement* element) {
-  m_private = element;
+  private_ = element;
   return *this;
 }
 
 WebSelectElement::operator HTMLSelectElement*() const {
-  return toHTMLSelectElement(m_private.get());
+  return toHTMLSelectElement(private_.Get());
 }
 
 }  // namespace blink

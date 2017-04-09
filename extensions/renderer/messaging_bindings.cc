@@ -209,7 +209,7 @@ void DeliverMessageToScriptContext(const Message& message,
         new blink::WebScopedUserGesture(script_context->web_frame()));
 
     if (script_context->web_frame()) {
-      blink::WebDocument document = script_context->web_frame()->document();
+      blink::WebDocument document = script_context->web_frame()->GetDocument();
       allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator(
           &document));
     }
@@ -384,7 +384,7 @@ void MessagingBindings::PostMessage(
   if (iter != ports_.end()) {
     iter->second->PostExtensionMessage(base::MakeUnique<Message>(
         *v8::String::Utf8Value(args[1]),
-        blink::WebUserGestureIndicator::isProcessingUserGesture()));
+        blink::WebUserGestureIndicator::IsProcessingUserGesture()));
   }
 }
 

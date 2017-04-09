@@ -36,30 +36,30 @@ namespace blink {
 
 WindowEventContext::WindowEventContext(
     Event& event,
-    const NodeEventContext& topNodeEventContext) {
+    const NodeEventContext& top_node_event_context) {
   // We don't dispatch load events to the window. This quirk was originally
   // added because Mozilla doesn't propagate load events to the window object.
   if (event.type() == EventTypeNames::load)
     return;
-  if (!topNodeEventContext.node()->isDocumentNode())
+  if (!top_node_event_context.GetNode()->IsDocumentNode())
     return;
-  m_window = toDocument(topNodeEventContext.node())->domWindow();
-  m_target = topNodeEventContext.target();
+  window_ = ToDocument(top_node_event_context.GetNode())->domWindow();
+  target_ = top_node_event_context.Target();
 }
 
-bool WindowEventContext::handleLocalEvents(Event& event) {
-  if (!m_window)
+bool WindowEventContext::HandleLocalEvents(Event& event) {
+  if (!window_)
     return false;
 
-  event.setTarget(target());
-  event.setCurrentTarget(window());
-  m_window->fireEventListeners(&event);
+  event.SetTarget(Target());
+  event.SetCurrentTarget(Window());
+  window_->FireEventListeners(&event);
   return true;
 }
 
 DEFINE_TRACE(WindowEventContext) {
-  visitor->trace(m_window);
-  visitor->trace(m_target);
+  visitor->Trace(window_);
+  visitor->Trace(target_);
 }
 
 }  // namespace blink

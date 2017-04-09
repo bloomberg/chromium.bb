@@ -18,7 +18,7 @@
 namespace device {
 
 namespace {
-static const int kNumberOfGamepads = blink::WebGamepads::itemsLengthCap;
+static const int kNumberOfGamepads = blink::WebGamepads::kItemsLengthCap;
 }
 
 using blink::WebGamepads;
@@ -80,7 +80,7 @@ GamepadServiceTest::GamepadServiceTest() {
   memset(&test_data_, 0, sizeof(test_data_));
 
   // Set it so that we have user gesture.
-  test_data_.items[0].buttonsLength = 1;
+  test_data_.items[0].buttons_length = 1;
   test_data_.items[0].buttons[0].value = 1.f;
   test_data_.items[0].buttons[0].pressed = true;
 }

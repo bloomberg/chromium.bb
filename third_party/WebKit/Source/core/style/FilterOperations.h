@@ -46,63 +46,63 @@ class CORE_EXPORT FilterOperations {
   bool operator==(const FilterOperations&) const;
   bool operator!=(const FilterOperations& o) const { return !(*this == o); }
 
-  void clear() { m_operations.clear(); }
+  void Clear() { operations_.Clear(); }
 
   typedef HeapVector<Member<FilterOperation>> FilterOperationVector;
 
-  FilterOperationVector& operations() { return m_operations; }
-  const FilterOperationVector& operations() const { return m_operations; }
+  FilterOperationVector& Operations() { return operations_; }
+  const FilterOperationVector& Operations() const { return operations_; }
 
-  bool isEmpty() const { return !m_operations.size(); }
-  size_t size() const { return m_operations.size(); }
+  bool IsEmpty() const { return !operations_.size(); }
+  size_t size() const { return operations_.size(); }
   const FilterOperation* at(size_t index) const {
-    return index < m_operations.size() ? m_operations.at(index).get() : 0;
+    return index < operations_.size() ? operations_.at(index).Get() : 0;
   }
 
-  bool canInterpolateWith(const FilterOperations&) const;
+  bool CanInterpolateWith(const FilterOperations&) const;
 
   // Maps "forward" to determine which pixels in a destination rect are
   // affected by pixels in the source rect.
   // See also FilterEffect::mapRect.
-  FloatRect mapRect(const FloatRect&) const;
+  FloatRect MapRect(const FloatRect&) const;
 
-  bool hasFilterThatAffectsOpacity() const;
-  bool hasFilterThatMovesPixels() const;
+  bool HasFilterThatAffectsOpacity() const;
+  bool HasFilterThatMovesPixels() const;
 
-  bool hasReferenceFilter() const;
+  bool HasReferenceFilter() const;
 
-  void addClient(SVGResourceClient*) const;
-  void removeClient(SVGResourceClient*) const;
+  void AddClient(SVGResourceClient*) const;
+  void RemoveClient(SVGResourceClient*) const;
 
   DECLARE_TRACE();
 
  private:
-  FilterOperationVector m_operations;
+  FilterOperationVector operations_;
 };
 
 // Wrapper object for the FilterOperations part object.
 class FilterOperationsWrapper
     : public GarbageCollected<FilterOperationsWrapper> {
  public:
-  static FilterOperationsWrapper* create() {
+  static FilterOperationsWrapper* Create() {
     return new FilterOperationsWrapper();
   }
 
-  static FilterOperationsWrapper* create(const FilterOperations& operations) {
+  static FilterOperationsWrapper* Create(const FilterOperations& operations) {
     return new FilterOperationsWrapper(operations);
   }
 
-  const FilterOperations& operations() const { return m_operations; }
+  const FilterOperations& Operations() const { return operations_; }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_operations); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(operations_); }
 
  private:
   FilterOperationsWrapper() {}
 
   explicit FilterOperationsWrapper(const FilterOperations& operations)
-      : m_operations(operations) {}
+      : operations_(operations) {}
 
-  FilterOperations m_operations;
+  FilterOperations operations_;
 };
 
 }  // namespace blink

@@ -43,7 +43,7 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
 
  public:
   static SpeechSynthesis* speechSynthesis(ScriptState*, LocalDOMWindow&);
-  static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
+  static DOMWindowSpeechSynthesis& From(LocalDOMWindow&);
 
   DECLARE_TRACE();
 
@@ -51,9 +51,9 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
   explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);
 
   SpeechSynthesis* speechSynthesis(ScriptState*);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<SpeechSynthesis> m_speechSynthesis;
+  Member<SpeechSynthesis> speech_synthesis_;
 };
 
 }  // namespace blink

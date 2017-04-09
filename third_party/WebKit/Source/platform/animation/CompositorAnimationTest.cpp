@@ -11,31 +11,31 @@ namespace blink {
 
 TEST(WebCompositorAnimationTest, DefaultSettings) {
   std::unique_ptr<CompositorAnimationCurve> curve =
-      CompositorFloatAnimationCurve::create();
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
       *curve, CompositorTargetProperty::OPACITY, 1, 0);
 
   // Ensure that the defaults are correct.
-  EXPECT_EQ(1, animation->iterations());
-  EXPECT_EQ(0, animation->startTime());
-  EXPECT_EQ(0, animation->timeOffset());
-  EXPECT_EQ(CompositorAnimation::Direction::NORMAL, animation->getDirection());
+  EXPECT_EQ(1, animation->Iterations());
+  EXPECT_EQ(0, animation->StartTime());
+  EXPECT_EQ(0, animation->TimeOffset());
+  EXPECT_EQ(CompositorAnimation::Direction::NORMAL, animation->GetDirection());
 }
 
 TEST(WebCompositorAnimationTest, ModifiedSettings) {
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
-      CompositorFloatAnimationCurve::create();
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
       *curve, CompositorTargetProperty::OPACITY, 1, 0);
-  animation->setIterations(2);
-  animation->setStartTime(2);
-  animation->setTimeOffset(2);
-  animation->setDirection(CompositorAnimation::Direction::REVERSE);
+  animation->SetIterations(2);
+  animation->SetStartTime(2);
+  animation->SetTimeOffset(2);
+  animation->SetDirection(CompositorAnimation::Direction::REVERSE);
 
-  EXPECT_EQ(2, animation->iterations());
-  EXPECT_EQ(2, animation->startTime());
-  EXPECT_EQ(2, animation->timeOffset());
-  EXPECT_EQ(CompositorAnimation::Direction::REVERSE, animation->getDirection());
+  EXPECT_EQ(2, animation->Iterations());
+  EXPECT_EQ(2, animation->StartTime());
+  EXPECT_EQ(2, animation->TimeOffset());
+  EXPECT_EQ(CompositorAnimation::Direction::REVERSE, animation->GetDirection());
 }
 
 }  // namespace blink

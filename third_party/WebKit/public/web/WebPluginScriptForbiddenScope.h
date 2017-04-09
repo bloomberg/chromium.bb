@@ -12,7 +12,7 @@ namespace blink {
 class BLINK_EXPORT WebPluginScriptForbiddenScope {
  public:
   WebPluginScriptForbiddenScope() = delete;
-  static bool isForbidden();
+  static bool IsForbidden();
 };
 
 }  // namespace blink

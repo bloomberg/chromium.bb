@@ -56,8 +56,8 @@ class SecurityOrigin;
 enum class TaskType : unsigned;
 
 enum ReasonForCallingCanExecuteScripts {
-  AboutToExecuteScript,
-  NotAboutToExecuteScript
+  kAboutToExecuteScript,
+  kNotAboutToExecuteScript
 };
 
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
@@ -71,111 +71,111 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // ancestor tree to decide whether to restrict usage of a powerful
   // feature.
   enum SecureContextCheck {
-    StandardSecureContextCheck,
-    WebCryptoSecureContextCheck
+    kStandardSecureContextCheck,
+    kWebCryptoSecureContextCheck
   };
 
-  virtual bool isDocument() const { return false; }
-  virtual bool isWorkerOrWorkletGlobalScope() const { return false; }
-  virtual bool isWorkerGlobalScope() const { return false; }
-  virtual bool isWorkletGlobalScope() const { return false; }
-  virtual bool isMainThreadWorkletGlobalScope() const { return false; }
-  virtual bool isDedicatedWorkerGlobalScope() const { return false; }
-  virtual bool isSharedWorkerGlobalScope() const { return false; }
-  virtual bool isServiceWorkerGlobalScope() const { return false; }
-  virtual bool isCompositorWorkerGlobalScope() const { return false; }
-  virtual bool isAnimationWorkletGlobalScope() const { return false; }
-  virtual bool isAudioWorkletGlobalScope() const { return false; }
-  virtual bool isPaintWorkletGlobalScope() const { return false; }
-  virtual bool isThreadedWorkletGlobalScope() const { return false; }
-  virtual bool isJSExecutionForbidden() const { return false; }
+  virtual bool IsDocument() const { return false; }
+  virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }
+  virtual bool IsWorkerGlobalScope() const { return false; }
+  virtual bool IsWorkletGlobalScope() const { return false; }
+  virtual bool IsMainThreadWorkletGlobalScope() const { return false; }
+  virtual bool IsDedicatedWorkerGlobalScope() const { return false; }
+  virtual bool IsSharedWorkerGlobalScope() const { return false; }
+  virtual bool IsServiceWorkerGlobalScope() const { return false; }
+  virtual bool IsCompositorWorkerGlobalScope() const { return false; }
+  virtual bool IsAnimationWorkletGlobalScope() const { return false; }
+  virtual bool IsAudioWorkletGlobalScope() const { return false; }
+  virtual bool IsPaintWorkletGlobalScope() const { return false; }
+  virtual bool IsThreadedWorkletGlobalScope() const { return false; }
+  virtual bool IsJSExecutionForbidden() const { return false; }
 
-  virtual bool isContextThread() const { return true; }
+  virtual bool IsContextThread() const { return true; }
 
-  SecurityOrigin* getSecurityOrigin();
-  ContentSecurityPolicy* contentSecurityPolicy();
-  const KURL& url() const;
-  KURL completeURL(const String& url) const;
-  virtual void disableEval(const String& errorMessage) = 0;
-  virtual LocalDOMWindow* executingWindow() const { return 0; }
-  virtual String userAgent() const = 0;
+  SecurityOrigin* GetSecurityOrigin();
+  ContentSecurityPolicy* GetContentSecurityPolicy();
+  const KURL& Url() const;
+  KURL CompleteURL(const String& url) const;
+  virtual void DisableEval(const String& error_message) = 0;
+  virtual LocalDOMWindow* ExecutingWindow() const { return 0; }
+  virtual String UserAgent() const = 0;
   // Executes the task on context's thread asynchronously.
-  virtual void postTask(
+  virtual void PostTask(
       TaskType,
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
-      const String& taskNameForInstrumentation = emptyString) = 0;
+      const String& task_name_for_instrumentation = g_empty_string) = 0;
 
   // Gets the DOMTimerCoordinator which maintains the "active timer
   // list" of tasks created by setTimeout and setInterval. The
   // DOMTimerCoordinator is owned by the ExecutionContext and should
   // not be used after the ExecutionContext is destroyed.
-  virtual DOMTimerCoordinator* timers() = 0;
+  virtual DOMTimerCoordinator* Timers() = 0;
 
-  virtual SecurityContext& securityContext() = 0;
-  KURL contextURL() const { return virtualURL(); }
-  KURL contextCompleteURL(const String& url) const {
-    return virtualCompleteURL(url);
+  virtual SecurityContext& GetSecurityContext() = 0;
+  KURL ContextURL() const { return VirtualURL(); }
+  KURL ContextCompleteURL(const String& url) const {
+    return VirtualCompleteURL(url);
   }
 
-  virtual bool canExecuteScripts(ReasonForCallingCanExecuteScripts) {
+  virtual bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) {
     return false;
   }
 
-  bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-  void dispatchErrorEvent(ErrorEvent*, AccessControlStatus);
+  bool ShouldSanitizeScriptError(const String& source_url, AccessControlStatus);
+  void DispatchErrorEvent(ErrorEvent*, AccessControlStatus);
 
-  virtual void addConsoleMessage(ConsoleMessage*) = 0;
-  virtual void exceptionThrown(ErrorEvent*) = 0;
+  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
+  virtual void ExceptionThrown(ErrorEvent*) = 0;
 
-  PublicURLManager& publicURLManager();
+  PublicURLManager& GetPublicURLManager();
 
-  virtual void removeURLFromMemoryCache(const KURL&);
+  virtual void RemoveURLFromMemoryCache(const KURL&);
 
-  void suspendSuspendableObjects();
-  void resumeSuspendableObjects();
-  void stopSuspendableObjects();
-  void notifyContextDestroyed() override;
+  void SuspendSuspendableObjects();
+  void ResumeSuspendableObjects();
+  void StopSuspendableObjects();
+  void NotifyContextDestroyed() override;
 
-  void suspendScheduledTasks();
-  void resumeScheduledTasks();
+  void SuspendScheduledTasks();
+  void ResumeScheduledTasks();
 
   // TODO(haraken): Remove these methods by making the customers inherit from
   // SuspendableObject. SuspendableObject is a standard way to observe context
   // suspension/resumption.
-  virtual bool tasksNeedSuspension() { return false; }
-  virtual void tasksWereSuspended() {}
-  virtual void tasksWereResumed() {}
+  virtual bool TasksNeedSuspension() { return false; }
+  virtual void TasksWereSuspended() {}
+  virtual void TasksWereResumed() {}
 
-  bool isContextSuspended() const { return m_isContextSuspended; }
-  bool isContextDestroyed() const { return m_isContextDestroyed; }
+  bool IsContextSuspended() const { return is_context_suspended_; }
+  bool IsContextDestroyed() const { return is_context_destroyed_; }
 
   // Called after the construction of an SuspendableObject to synchronize
   // suspend
   // state.
-  void suspendSuspendableObjectIfNeeded(SuspendableObject*);
+  void SuspendSuspendableObjectIfNeeded(SuspendableObject*);
 
   // Gets the next id in a circular sequence from 1 to 2^31-1.
-  int circularSequentialID();
+  int CircularSequentialID();
 
-  virtual EventTarget* errorEventTarget() = 0;
-  virtual EventQueue* getEventQueue() const = 0;
+  virtual EventTarget* ErrorEventTarget() = 0;
+  virtual EventQueue* GetEventQueue() const = 0;
 
   // Methods related to window interaction. It should be used to manage window
   // focusing and window creation permission for an ExecutionContext.
-  void allowWindowInteraction();
-  void consumeWindowInteraction();
-  bool isWindowInteractionAllowed() const;
+  void AllowWindowInteraction();
+  void ConsumeWindowInteraction();
+  bool IsWindowInteractionAllowed() const;
 
   // Decides whether this context is privileged, as described in
   // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
-  virtual bool isSecureContext(
-      String& errorMessage,
-      const SecureContextCheck = StandardSecureContextCheck) const = 0;
-  virtual bool isSecureContext(
-      const SecureContextCheck = StandardSecureContextCheck) const;
+  virtual bool IsSecureContext(
+      String& error_message,
+      const SecureContextCheck = kStandardSecureContextCheck) const = 0;
+  virtual bool IsSecureContext(
+      const SecureContextCheck = kStandardSecureContextCheck) const;
 
-  virtual String outgoingReferrer() const;
+  virtual String OutgoingReferrer() const;
   // Parses a comma-separated list of referrer policy tokens, and sets
   // the context's referrer policy to the last one that is a valid
   // policy. Logs a message to the console if none of the policy
@@ -184,38 +184,38 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // If |supportLegacyKeywords| is true, then the legacy keywords
   // "never", "default", "always", and "origin-when-crossorigin" are
   // parsed as valid policies.
-  void parseAndSetReferrerPolicy(const String& policies,
-                                 bool supportLegacyKeywords = false);
-  void setReferrerPolicy(ReferrerPolicy);
-  virtual ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
+  void ParseAndSetReferrerPolicy(const String& policies,
+                                 bool support_legacy_keywords = false);
+  void SetReferrerPolicy(ReferrerPolicy);
+  virtual ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
 
  protected:
   ExecutionContext();
   virtual ~ExecutionContext();
 
-  virtual const KURL& virtualURL() const = 0;
-  virtual KURL virtualCompleteURL(const String&) const = 0;
+  virtual const KURL& VirtualURL() const = 0;
+  virtual KURL VirtualCompleteURL(const String&) const = 0;
 
  private:
-  bool dispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);
+  bool DispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);
 
-  unsigned m_circularSequentialID;
+  unsigned circular_sequential_id_;
 
-  bool m_inDispatchErrorEvent;
-  HeapVector<Member<ErrorEvent>> m_pendingExceptions;
+  bool in_dispatch_error_event_;
+  HeapVector<Member<ErrorEvent>> pending_exceptions_;
 
-  bool m_isContextSuspended;
-  bool m_isContextDestroyed;
+  bool is_context_suspended_;
+  bool is_context_destroyed_;
 
-  Member<PublicURLManager> m_publicURLManager;
+  Member<PublicURLManager> public_url_manager_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call
   // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
   // increment and decrement the counter.
-  int m_windowInteractionTokens;
+  int window_interaction_tokens_;
 
-  ReferrerPolicy m_referrerPolicy;
+  ReferrerPolicy referrer_policy_;
 };
 
 }  // namespace blink

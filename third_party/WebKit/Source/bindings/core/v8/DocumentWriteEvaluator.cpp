@@ -16,13 +16,13 @@ namespace blink {
 
 namespace {
 
-void documentWriteCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
+void DocumentWriteCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
   void* ptr = v8::Local<v8::External>::Cast(args.Data())->Value();
   DocumentWriteEvaluator* evaluator = static_cast<DocumentWriteEvaluator*>(ptr);
   v8::HandleScope scope(args.GetIsolate());
   for (int i = 0; i < args.Length(); i++) {
-    evaluator->recordDocumentWrite(
-        toCoreStringWithNullCheck(args[i]->ToString()));
+    evaluator->RecordDocumentWrite(
+        ToCoreStringWithNullCheck(args[i]->ToString()));
   }
 }
 
@@ -32,22 +32,22 @@ DocumentWriteEvaluator::DocumentWriteEvaluator(const Document& document) {
   // Note, evaluation will only proceed if |location| is not null.
   Location* location = document.location();
   if (location) {
-    m_pathName = location->pathname();
-    m_hostName = location->hostname();
-    m_protocol = location->protocol();
+    path_name_ = location->pathname();
+    host_name_ = location->hostname();
+    protocol_ = location->protocol();
   }
-  m_userAgent = document.userAgent();
+  user_agent_ = document.UserAgent();
 }
 
 // For unit testing.
-DocumentWriteEvaluator::DocumentWriteEvaluator(const String& pathName,
-                                               const String& hostName,
+DocumentWriteEvaluator::DocumentWriteEvaluator(const String& path_name,
+                                               const String& host_name,
                                                const String& protocol,
-                                               const String& userAgent)
-    : m_pathName(pathName),
-      m_hostName(hostName),
-      m_protocol(protocol),
-      m_userAgent(userAgent) {}
+                                               const String& user_agent)
+    : path_name_(path_name),
+      host_name_(host_name),
+      protocol_(protocol),
+      user_agent_(user_agent) {}
 
 DocumentWriteEvaluator::~DocumentWriteEvaluator() {}
 
@@ -69,101 +69,101 @@ DocumentWriteEvaluator::~DocumentWriteEvaluator() {}
 // var userData = [<secret data>, <more secret data>];
 // document.write("<script src='/postData/'"+String(userData)+"' />");
 // </script>
-bool DocumentWriteEvaluator::ensureEvaluationContext() {
-  if (!m_persistentContext.isEmpty())
+bool DocumentWriteEvaluator::EnsureEvaluationContext() {
+  if (!persistent_context_.IsEmpty())
     return false;
   TRACE_EVENT0("blink", "DocumentWriteEvaluator::initializeEvaluationContext");
-  ASSERT(m_persistentContext.isEmpty());
-  v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-  v8::Isolate::Scope isolateScope(isolate);
-  v8::HandleScope handleScope(isolate);
+  ASSERT(persistent_context_.IsEmpty());
+  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+  v8::Isolate::Scope isolate_scope(isolate);
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = v8::Context::New(isolate);
-  m_persistentContext.set(isolate, context);
-  v8::Context::Scope contextScope(context);
+  persistent_context_.Set(isolate, context);
+  v8::Context::Scope context_scope(context);
 
   // Initialize global objects.
-  m_window.set(isolate, v8::Object::New(isolate));
-  m_location.set(isolate, v8::Object::New(isolate));
-  m_navigator.set(isolate, v8::Object::New(isolate));
-  m_document.set(isolate, v8::Object::New(isolate));
+  window_.Set(isolate, v8::Object::New(isolate));
+  location_.Set(isolate, v8::Object::New(isolate));
+  navigator_.Set(isolate, v8::Object::New(isolate));
+  document_.Set(isolate, v8::Object::New(isolate));
 
   // Initialize strings that are used more than once.
-  v8::Local<v8::String> locationString = v8String(isolate, "location");
-  v8::Local<v8::String> navigatorString = v8String(isolate, "navigator");
-  v8::Local<v8::String> documentString = v8String(isolate, "document");
+  v8::Local<v8::String> location_string = V8String(isolate, "location");
+  v8::Local<v8::String> navigator_string = V8String(isolate, "navigator");
+  v8::Local<v8::String> document_string = V8String(isolate, "document");
 
-  m_window.newLocal(isolate)->Set(locationString, m_location.newLocal(isolate));
-  m_window.newLocal(isolate)->Set(documentString, m_document.newLocal(isolate));
-  m_window.newLocal(isolate)->Set(navigatorString,
-                                  m_navigator.newLocal(isolate));
+  window_.NewLocal(isolate)->Set(location_string, location_.NewLocal(isolate));
+  window_.NewLocal(isolate)->Set(document_string, document_.NewLocal(isolate));
+  window_.NewLocal(isolate)->Set(navigator_string,
+                                 navigator_.NewLocal(isolate));
 
-  v8::Local<v8::FunctionTemplate> writeTemplate = v8::FunctionTemplate::New(
-      isolate, documentWriteCallback, v8::External::New(isolate, this));
-  writeTemplate->RemovePrototype();
-  m_document.newLocal(isolate)->Set(locationString,
-                                    m_location.newLocal(isolate));
-  m_document.newLocal(isolate)->Set(v8String(isolate, "write"),
-                                    writeTemplate->GetFunction());
-  m_document.newLocal(isolate)->Set(v8String(isolate, "writeln"),
-                                    writeTemplate->GetFunction());
+  v8::Local<v8::FunctionTemplate> write_template = v8::FunctionTemplate::New(
+      isolate, DocumentWriteCallback, v8::External::New(isolate, this));
+  write_template->RemovePrototype();
+  document_.NewLocal(isolate)->Set(location_string,
+                                   location_.NewLocal(isolate));
+  document_.NewLocal(isolate)->Set(V8String(isolate, "write"),
+                                   write_template->GetFunction());
+  document_.NewLocal(isolate)->Set(V8String(isolate, "writeln"),
+                                   write_template->GetFunction());
 
-  m_location.newLocal(isolate)->Set(v8String(isolate, "pathname"),
-                                    v8String(isolate, m_pathName));
-  m_location.newLocal(isolate)->Set(v8String(isolate, "hostname"),
-                                    v8String(isolate, m_hostName));
-  m_location.newLocal(isolate)->Set(v8String(isolate, "protocol"),
-                                    v8String(isolate, m_protocol));
-  m_navigator.newLocal(isolate)->Set(v8String(isolate, "userAgent"),
-                                     v8String(isolate, m_userAgent));
+  location_.NewLocal(isolate)->Set(V8String(isolate, "pathname"),
+                                   V8String(isolate, path_name_));
+  location_.NewLocal(isolate)->Set(V8String(isolate, "hostname"),
+                                   V8String(isolate, host_name_));
+  location_.NewLocal(isolate)->Set(V8String(isolate, "protocol"),
+                                   V8String(isolate, protocol_));
+  navigator_.NewLocal(isolate)->Set(V8String(isolate, "userAgent"),
+                                    V8String(isolate, user_agent_));
 
-  v8CallBoolean(context->Global()->Set(context, v8String(isolate, "window"),
-                                       m_window.newLocal(isolate)));
-  v8CallBoolean(context->Global()->Set(context, documentString,
-                                       m_document.newLocal(isolate)));
-  v8CallBoolean(context->Global()->Set(context, locationString,
-                                       m_location.newLocal(isolate)));
-  v8CallBoolean(context->Global()->Set(context, navigatorString,
-                                       m_navigator.newLocal(isolate)));
+  V8CallBoolean(context->Global()->Set(context, V8String(isolate, "window"),
+                                       window_.NewLocal(isolate)));
+  V8CallBoolean(context->Global()->Set(context, document_string,
+                                       document_.NewLocal(isolate)));
+  V8CallBoolean(context->Global()->Set(context, location_string,
+                                       location_.NewLocal(isolate)));
+  V8CallBoolean(context->Global()->Set(context, navigator_string,
+                                       navigator_.NewLocal(isolate)));
   return true;
 }
 
-bool DocumentWriteEvaluator::evaluate(const String& scriptSource) {
+bool DocumentWriteEvaluator::Evaluate(const String& script_source) {
   TRACE_EVENT0("blink", "DocumentWriteEvaluator::evaluate");
-  v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-  v8::Isolate::Scope isolateScope(isolate);
-  v8::HandleScope handleScope(isolate);
-  v8::Context::Scope contextScope(m_persistentContext.newLocal(isolate));
+  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+  v8::Isolate::Scope isolate_scope(isolate);
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(persistent_context_.NewLocal(isolate));
 
   // TODO(csharrison): Consider logging compile / execution error counts.
-  StringUTF8Adaptor sourceUtf8(scriptSource);
+  StringUTF8Adaptor source_utf8(script_source);
   v8::MaybeLocal<v8::String> source =
-      v8::String::NewFromUtf8(isolate, sourceUtf8.data(),
-                              v8::NewStringType::kNormal, sourceUtf8.length());
+      v8::String::NewFromUtf8(isolate, source_utf8.Data(),
+                              v8::NewStringType::kNormal, source_utf8.length());
   if (source.IsEmpty())
     return false;
-  v8::TryCatch tryCatch(isolate);
-  return !V8ScriptRunner::compileAndRunInternalScript(source.ToLocalChecked(),
+  v8::TryCatch try_catch(isolate);
+  return !V8ScriptRunner::CompileAndRunInternalScript(source.ToLocalChecked(),
                                                       isolate)
               .IsEmpty();
 }
 
-bool DocumentWriteEvaluator::shouldEvaluate(const String& source) {
-  return !m_hostName.isEmpty() && !m_userAgent.isEmpty();
+bool DocumentWriteEvaluator::ShouldEvaluate(const String& source) {
+  return !host_name_.IsEmpty() && !user_agent_.IsEmpty();
 }
 
-String DocumentWriteEvaluator::evaluateAndEmitWrittenSource(
-    const String& scriptSource) {
-  if (!shouldEvaluate(scriptSource))
+String DocumentWriteEvaluator::EvaluateAndEmitWrittenSource(
+    const String& script_source) {
+  if (!ShouldEvaluate(script_source))
     return "";
   TRACE_EVENT0("blink", "DocumentWriteEvaluator::evaluateAndEmitStartTokens");
-  m_documentWrittenStrings.clear();
-  evaluate(scriptSource);
-  return m_documentWrittenStrings.toString();
+  document_written_strings_.Clear();
+  Evaluate(script_source);
+  return document_written_strings_.ToString();
 }
 
-void DocumentWriteEvaluator::recordDocumentWrite(
-    const String& documentWrittenString) {
-  m_documentWrittenStrings.append(documentWrittenString);
+void DocumentWriteEvaluator::RecordDocumentWrite(
+    const String& document_written_string) {
+  document_written_strings_.Append(document_written_string);
 }
 
 }  // namespace blink

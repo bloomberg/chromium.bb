@@ -35,18 +35,18 @@ class HTMLHRElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLHRElement);
 
-  bool canContainRangeEndPoint() const override { return hasChildren(); }
+  bool CanContainRangeEndPoint() const override { return HasChildren(); }
 
  private:
   explicit HTMLHRElement(Document&);
-  HTMLSelectElement* ownerSelectElement() const;
+  HTMLSelectElement* OwnerSelectElement() const;
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 };
 
 }  // namespace blink

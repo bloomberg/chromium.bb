@@ -24,9 +24,9 @@ class CORE_EXPORT TransformRecorder {
   ~TransformRecorder();
 
  private:
-  GraphicsContext& m_context;
-  const DisplayItemClient& m_client;
-  bool m_skipRecordingForIdentityTransform;
+  GraphicsContext& context_;
+  const DisplayItemClient& client_;
+  bool skip_recording_for_identity_transform_;
 };
 
 }  // namespace blink

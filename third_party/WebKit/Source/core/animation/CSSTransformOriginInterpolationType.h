@@ -20,18 +20,18 @@ class CSSTransformOriginInterpolationType
       : CSSLengthListInterpolationType(property) {}
 
  private:
-  InterpolationValue maybeConvertValue(const CSSValue& value,
+  InterpolationValue MaybeConvertValue(const CSSValue& value,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final {
-    const CSSValueList& list = toCSSValueList(value);
+    const CSSValueList& list = ToCSSValueList(value);
     DCHECK_EQ(list.length(), 3U);
-    return ListInterpolationFunctions::createList(
+    return ListInterpolationFunctions::CreateList(
         list.length(), [&list](size_t index) {
-          const CSSValue& item = list.item(index);
+          const CSSValue& item = list.Item(index);
           if (index < 2)
             return CSSPositionAxisListInterpolationType::
-                convertPositionAxisCSSValue(item);
-          return LengthInterpolationFunctions::maybeConvertCSSValue(item);
+                ConvertPositionAxisCSSValue(item);
+          return LengthInterpolationFunctions::MaybeConvertCSSValue(item);
         });
   }
 };

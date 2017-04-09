@@ -14,15 +14,15 @@ namespace blink {
 const CSSValue* CSSPropertyAPIOffsetPosition::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  CSSValue* value = CSSPropertyParserHelpers::consumePosition(
-      range, context.mode(), CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValue* value = CSSPropertyParserHelpers::ConsumePosition(
+      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 
   // Count when we receive a valid position other than 'auto'.
-  if (value && value->isValuePair())
-    context.count(UseCounter::CSSOffsetInEffect);
+  if (value && value->IsValuePair())
+    context.Count(UseCounter::kCSSOffsetInEffect);
   return value;
 }
 

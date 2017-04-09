@@ -38,63 +38,63 @@
 
 namespace blink {
 
-InputType* CheckboxInputType::create(HTMLInputElement& element) {
+InputType* CheckboxInputType::Create(HTMLInputElement& element) {
   return new CheckboxInputType(element);
 }
 
-const AtomicString& CheckboxInputType::formControlType() const {
+const AtomicString& CheckboxInputType::FormControlType() const {
   return InputTypeNames::checkbox;
 }
 
-bool CheckboxInputType::valueMissing(const String&) const {
-  return element().isRequired() && !element().checked();
+bool CheckboxInputType::ValueMissing(const String&) const {
+  return GetElement().IsRequired() && !GetElement().checked();
 }
 
-String CheckboxInputType::valueMissingText() const {
-  return locale().queryString(
-      WebLocalizedString::ValidationValueMissingForCheckbox);
+String CheckboxInputType::ValueMissingText() const {
+  return GetLocale().QueryString(
+      WebLocalizedString::kValidationValueMissingForCheckbox);
 }
 
-void CheckboxInputType::handleKeyupEvent(KeyboardEvent* event) {
+void CheckboxInputType::HandleKeyupEvent(KeyboardEvent* event) {
   const String& key = event->key();
   if (key != " ")
     return;
-  dispatchSimulatedClickIfActive(event);
+  DispatchSimulatedClickIfActive(event);
 }
 
-ClickHandlingState* CheckboxInputType::willDispatchClick() {
+ClickHandlingState* CheckboxInputType::WillDispatchClick() {
   // An event handler can use preventDefault or "return false" to reverse the
   // checking we do here.  The ClickHandlingState object contains what we need
   // to undo what we did here in didDispatchClick.
 
   ClickHandlingState* state = new ClickHandlingState;
 
-  state->checked = element().checked();
-  state->indeterminate = element().indeterminate();
+  state->checked = GetElement().checked();
+  state->indeterminate = GetElement().indeterminate();
 
   if (state->indeterminate)
-    element().setIndeterminate(false);
+    GetElement().setIndeterminate(false);
 
-  element().setChecked(!state->checked, DispatchChangeEvent);
-  m_isInClickHandler = true;
+  GetElement().setChecked(!state->checked, kDispatchChangeEvent);
+  is_in_click_handler_ = true;
   return state;
 }
 
-void CheckboxInputType::didDispatchClick(Event* event,
+void CheckboxInputType::DidDispatchClick(Event* event,
                                          const ClickHandlingState& state) {
-  if (event->defaultPrevented() || event->defaultHandled()) {
-    element().setIndeterminate(state.indeterminate);
-    element().setChecked(state.checked);
+  if (event->defaultPrevented() || event->DefaultHandled()) {
+    GetElement().setIndeterminate(state.indeterminate);
+    GetElement().setChecked(state.checked);
   } else {
-    element().dispatchChangeEventIfNeeded();
+    GetElement().DispatchChangeEventIfNeeded();
   }
-  m_isInClickHandler = false;
+  is_in_click_handler_ = false;
   // The work we did in willDispatchClick was default handling.
-  event->setDefaultHandled();
+  event->SetDefaultHandled();
 }
 
-bool CheckboxInputType::shouldAppearIndeterminate() const {
-  return element().indeterminate();
+bool CheckboxInputType::ShouldAppearIndeterminate() const {
+  return GetElement().indeterminate();
 }
 
 }  // namespace blink

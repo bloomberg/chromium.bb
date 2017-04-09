@@ -15,21 +15,21 @@ class SafePointScope final {
   WTF_MAKE_NONCOPYABLE(SafePointScope);
 
  public:
-  explicit SafePointScope(BlinkGC::StackState stackState,
-                          ThreadState* state = ThreadState::current())
-      : m_state(state) {
-    if (m_state) {
-      m_state->enterSafePoint(stackState, this);
+  explicit SafePointScope(BlinkGC::StackState stack_state,
+                          ThreadState* state = ThreadState::Current())
+      : state_(state) {
+    if (state_) {
+      state_->EnterSafePoint(stack_state, this);
     }
   }
 
   ~SafePointScope() {
-    if (m_state)
-      m_state->leaveSafePoint();
+    if (state_)
+      state_->LeaveSafePoint();
   }
 
  private:
-  ThreadState* m_state;
+  ThreadState* state_;
 };
 
 }  // namespace blink

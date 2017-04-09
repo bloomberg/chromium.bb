@@ -43,12 +43,12 @@
 namespace WTF {
 
 #if OS(POSIX)
-static pthread_once_t initializeLogFileOnceKey = PTHREAD_ONCE_INIT;
+static pthread_once_t g_initialize_log_file_once_key = PTHREAD_ONCE_INIT;
 #endif
 
-static FilePrintStream* file;
+static FilePrintStream* g_file;
 
-static void initializeLogFileOnce() {
+static void InitializeLogFileOnce() {
 #if DATA_LOG_TO_FILE
 #ifdef DATA_LOG_FILENAME
   const char* filename = DATA_LOG_FILENAME;
@@ -67,37 +67,37 @@ static void initializeLogFileOnce() {
               actualFilename);
   }
 #endif  // DATA_LOG_TO_FILE
-  if (!file)
-    file = new FilePrintStream(stderr, FilePrintStream::Borrow);
+  if (!g_file)
+    g_file = new FilePrintStream(stderr, FilePrintStream::kBorrow);
 
   // Prefer unbuffered output, so that we get a full log upon crash or
   // deadlock.
-  setvbuf(file->file(), 0, _IONBF, 0);
+  setvbuf(g_file->File(), 0, _IONBF, 0);
 }
 
-static void initializeLogFile() {
+static void InitializeLogFile() {
 #if OS(POSIX)
-  pthread_once(&initializeLogFileOnceKey, initializeLogFileOnce);
+  pthread_once(&g_initialize_log_file_once_key, InitializeLogFileOnce);
 #else
-  if (!file)
-    initializeLogFileOnce();
+  if (!g_file)
+    InitializeLogFileOnce();
 #endif
 }
 
-FilePrintStream& dataFile() {
-  initializeLogFile();
-  return *file;
+FilePrintStream& DataFile() {
+  InitializeLogFile();
+  return *g_file;
 }
 
-void dataLogFV(const char* format, va_list argList) {
-  dataFile().vprintf(format, argList);
+void DataLogFV(const char* format, va_list arg_list) {
+  DataFile().Vprintf(format, arg_list);
 }
 
-void dataLogF(const char* format, ...) {
-  va_list argList;
-  va_start(argList, format);
-  dataLogFV(format, argList);
-  va_end(argList);
+void DataLogF(const char* format, ...) {
+  va_list arg_list;
+  va_start(arg_list, format);
+  DataLogFV(format, arg_list);
+  va_end(arg_list);
 }
 
 }  // namespace WTF

@@ -44,121 +44,121 @@ class CORE_EXPORT FontBuilder {
  public:
   FontBuilder(const Document&);
 
-  void setInitial(float effectiveZoom);
+  void SetInitial(float effective_zoom);
 
-  void didChangeEffectiveZoom();
-  void didChangeTextOrientation();
-  void didChangeWritingMode();
+  void DidChangeEffectiveZoom();
+  void DidChangeTextOrientation();
+  void DidChangeWritingMode();
 
-  FontFamily standardFontFamily() const;
-  AtomicString standardFontFamilyName() const;
-  AtomicString genericFontFamilyName(FontDescription::GenericFamilyType) const;
+  FontFamily StandardFontFamily() const;
+  AtomicString StandardFontFamilyName() const;
+  AtomicString GenericFontFamilyName(FontDescription::GenericFamilyType) const;
 
-  float fontSizeForKeyword(unsigned keyword, bool isMonospace) const;
+  float FontSizeForKeyword(unsigned keyword, bool is_monospace) const;
 
-  void setWeight(FontWeight);
-  void setSize(const FontDescription::Size&);
-  void setSizeAdjust(const float aspectValue);
-  void setStretch(FontStretch);
-  void setFamilyDescription(const FontDescription::FamilyDescription&);
-  void setFeatureSettings(PassRefPtr<FontFeatureSettings>);
-  void setLocale(PassRefPtr<const LayoutLocale>);
-  void setStyle(FontStyle);
-  void setVariantCaps(FontDescription::FontVariantCaps);
-  void setVariantLigatures(const FontDescription::VariantLigatures&);
-  void setVariantNumeric(const FontVariantNumeric&);
-  void setTextRendering(TextRenderingMode);
-  void setKerning(FontDescription::Kerning);
-  void setFontSmoothing(FontSmoothingMode);
-  void setVariationSettings(PassRefPtr<FontVariationSettings>);
+  void SetWeight(FontWeight);
+  void SetSize(const FontDescription::Size&);
+  void SetSizeAdjust(const float aspect_value);
+  void SetStretch(FontStretch);
+  void SetFamilyDescription(const FontDescription::FamilyDescription&);
+  void SetFeatureSettings(PassRefPtr<FontFeatureSettings>);
+  void SetLocale(PassRefPtr<const LayoutLocale>);
+  void SetStyle(FontStyle);
+  void SetVariantCaps(FontDescription::FontVariantCaps);
+  void SetVariantLigatures(const FontDescription::VariantLigatures&);
+  void SetVariantNumeric(const FontVariantNumeric&);
+  void SetTextRendering(TextRenderingMode);
+  void SetKerning(FontDescription::Kerning);
+  void SetFontSmoothing(FontSmoothingMode);
+  void SetVariationSettings(PassRefPtr<FontVariationSettings>);
 
   // FIXME: These need to just vend a Font object eventually.
-  void createFont(FontSelector*, ComputedStyle&);
+  void CreateFont(FontSelector*, ComputedStyle&);
 
-  void createFontForDocument(FontSelector*, ComputedStyle&);
+  void CreateFontForDocument(FontSelector*, ComputedStyle&);
 
-  bool fontDirty() const { return m_flags; }
+  bool FontDirty() const { return flags_; }
 
-  static FontDescription::FamilyDescription initialFamilyDescription() {
-    return FontDescription::FamilyDescription(initialGenericFamily());
+  static FontDescription::FamilyDescription InitialFamilyDescription() {
+    return FontDescription::FamilyDescription(InitialGenericFamily());
   }
-  static FontFeatureSettings* initialFeatureSettings() { return nullptr; }
-  static FontVariationSettings* initialVariationSettings() { return nullptr; }
-  static FontDescription::GenericFamilyType initialGenericFamily() {
-    return FontDescription::StandardFamily;
+  static FontFeatureSettings* InitialFeatureSettings() { return nullptr; }
+  static FontVariationSettings* InitialVariationSettings() { return nullptr; }
+  static FontDescription::GenericFamilyType InitialGenericFamily() {
+    return FontDescription::kStandardFamily;
   }
-  static FontDescription::Size initialSize() {
-    return FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false);
+  static FontDescription::Size InitialSize() {
+    return FontDescription::Size(FontSize::InitialKeywordSize(), 0.0f, false);
   }
-  static float initialSizeAdjust() { return FontSizeAdjustNone; }
-  static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
-  static FontDescription::FontVariantCaps initialVariantCaps() {
-    return FontDescription::CapsNormal;
+  static float InitialSizeAdjust() { return kFontSizeAdjustNone; }
+  static TextRenderingMode InitialTextRendering() { return kAutoTextRendering; }
+  static FontDescription::FontVariantCaps InitialVariantCaps() {
+    return FontDescription::kCapsNormal;
   }
-  static FontDescription::VariantLigatures initialVariantLigatures() {
+  static FontDescription::VariantLigatures InitialVariantLigatures() {
     return FontDescription::VariantLigatures();
   }
-  static FontVariantNumeric initialVariantNumeric() {
+  static FontVariantNumeric InitialVariantNumeric() {
     return FontVariantNumeric();
   };
-  static LayoutLocale* initialLocale() { return nullptr; }
-  static FontStyle initialStyle() { return FontStyleNormal; }
-  static FontDescription::Kerning initialKerning() {
-    return FontDescription::AutoKerning;
+  static LayoutLocale* InitialLocale() { return nullptr; }
+  static FontStyle InitialStyle() { return kFontStyleNormal; }
+  static FontDescription::Kerning InitialKerning() {
+    return FontDescription::kAutoKerning;
   }
-  static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }
-  static FontStretch initialStretch() { return FontStretchNormal; }
-  static FontWeight initialWeight() { return FontWeightNormal; }
+  static FontSmoothingMode InitialFontSmoothing() { return kAutoSmoothing; }
+  static FontStretch InitialStretch() { return kFontStretchNormal; }
+  static FontWeight InitialWeight() { return kFontWeightNormal; }
 
  private:
-  void setFamilyDescription(FontDescription&,
+  void SetFamilyDescription(FontDescription&,
                             const FontDescription::FamilyDescription&);
-  void setSize(FontDescription&, const FontDescription::Size&);
-  void updateOrientation(FontDescription&, const ComputedStyle&);
+  void SetSize(FontDescription&, const FontDescription::Size&);
+  void UpdateOrientation(FontDescription&, const ComputedStyle&);
   // This function fixes up the default font size if it detects that the current
   // generic font family has changed. -dwh
-  void checkForGenericFamilyChange(const FontDescription&, FontDescription&);
-  void updateSpecifiedSize(FontDescription&, const ComputedStyle&);
-  void updateComputedSize(FontDescription&, const ComputedStyle&);
-  void updateAdjustedSize(FontDescription&,
+  void CheckForGenericFamilyChange(const FontDescription&, FontDescription&);
+  void UpdateSpecifiedSize(FontDescription&, const ComputedStyle&);
+  void UpdateComputedSize(FontDescription&, const ComputedStyle&);
+  void UpdateAdjustedSize(FontDescription&,
                           const ComputedStyle&,
                           FontSelector*);
 
-  float getComputedSizeFromSpecifiedSize(FontDescription&,
-                                         float effectiveZoom,
-                                         float specifiedSize);
+  float GetComputedSizeFromSpecifiedSize(FontDescription&,
+                                         float effective_zoom,
+                                         float specified_size);
 
-  Member<const Document> m_document;
-  FontDescription m_fontDescription;
+  Member<const Document> document_;
+  FontDescription font_description_;
 
   enum class PropertySetFlag {
-    Weight,
-    Size,
-    Stretch,
-    Family,
-    FeatureSettings,
-    Locale,
-    Style,
-    SizeAdjust,
-    VariantCaps,
-    VariantLigatures,
-    VariantNumeric,
-    VariationSettings,
-    TextRendering,
-    Kerning,
-    FontSmoothing,
+    kWeight,
+    kSize,
+    kStretch,
+    kFamily,
+    kFeatureSettings,
+    kLocale,
+    kStyle,
+    kSizeAdjust,
+    kVariantCaps,
+    kVariantLigatures,
+    kVariantNumeric,
+    kVariationSettings,
+    kTextRendering,
+    kKerning,
+    kFontSmoothing,
 
-    EffectiveZoom,
-    TextOrientation,
-    WritingMode
+    kEffectiveZoom,
+    kTextOrientation,
+    kWritingMode
   };
 
-  void set(PropertySetFlag flag) { m_flags |= (1 << unsigned(flag)); }
-  bool isSet(PropertySetFlag flag) const {
-    return m_flags & (1 << unsigned(flag));
+  void Set(PropertySetFlag flag) { flags_ |= (1 << unsigned(flag)); }
+  bool IsSet(PropertySetFlag flag) const {
+    return flags_ & (1 << unsigned(flag));
   }
 
-  unsigned m_flags;
+  unsigned flags_;
 };
 
 }  // namespace blink

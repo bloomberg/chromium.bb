@@ -33,10 +33,10 @@ namespace WTF {
 namespace Unicode {
 
 typedef enum {
-  conversionOK,     // conversion successful
-  sourceExhausted,  // partial character in source, but hit end
-  targetExhausted,  // insuff. room in target for conversion
-  sourceIllegal     // source sequence is illegal/malformed
+  kConversionOK,     // conversion successful
+  kSourceExhausted,  // partial character in source, but hit end
+  kTargetExhausted,  // insuff. room in target for conversion
+  kSourceIllegal     // source sequence is illegal/malformed
 } ConversionResult;
 
 // These conversion functions take a "strict" argument. When this flag is set to
@@ -53,38 +53,38 @@ typedef enum {
 // the replacement character; otherwise (when the flag is set to strict) they
 // constitute an error.
 
-WTF_EXPORT ConversionResult convertUTF8ToUTF16(const char** sourceStart,
-                                               const char* sourceEnd,
-                                               UChar** targetStart,
-                                               UChar* targetEnd,
-                                               bool* isSourceAllASCII = 0,
+WTF_EXPORT ConversionResult ConvertUTF8ToUTF16(const char** source_start,
+                                               const char* source_end,
+                                               UChar** target_start,
+                                               UChar* target_end,
+                                               bool* is_source_all_ascii = 0,
                                                bool strict = true);
 
-WTF_EXPORT ConversionResult convertLatin1ToUTF8(const LChar** sourceStart,
-                                                const LChar* sourceEnd,
-                                                char** targetStart,
-                                                char* targetEnd);
+WTF_EXPORT ConversionResult ConvertLatin1ToUTF8(const LChar** source_start,
+                                                const LChar* source_end,
+                                                char** target_start,
+                                                char* target_end);
 
-WTF_EXPORT ConversionResult convertUTF16ToUTF8(const UChar** sourceStart,
-                                               const UChar* sourceEnd,
-                                               char** targetStart,
-                                               char* targetEnd,
+WTF_EXPORT ConversionResult ConvertUTF16ToUTF8(const UChar** source_start,
+                                               const UChar* source_end,
+                                               char** target_start,
+                                               char* target_end,
                                                bool strict = true);
 
-WTF_EXPORT unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(
+WTF_EXPORT unsigned CalculateStringHashAndLengthFromUTF8MaskingTop8Bits(
     const char* data,
-    const char* dataEnd,
-    unsigned& dataLength,
-    unsigned& utf16Length);
+    const char* data_end,
+    unsigned& data_length,
+    unsigned& utf16_length);
 
-WTF_EXPORT bool equalUTF16WithUTF8(const UChar* a,
-                                   const UChar* aEnd,
+WTF_EXPORT bool EqualUTF16WithUTF8(const UChar* a,
+                                   const UChar* a_end,
                                    const char* b,
-                                   const char* bEnd);
-WTF_EXPORT bool equalLatin1WithUTF8(const LChar* a,
-                                    const LChar* aEnd,
+                                   const char* b_end);
+WTF_EXPORT bool EqualLatin1WithUTF8(const LChar* a,
+                                    const LChar* a_end,
                                     const char* b,
-                                    const char* bEnd);
+                                    const char* b_end);
 
 }  // namespace Unicode
 }  // namespace WTF

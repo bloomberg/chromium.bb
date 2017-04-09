@@ -18,23 +18,23 @@ class CORE_EXPORT DOMArrayBufferBase
  public:
   virtual ~DOMArrayBufferBase() {}
 
-  const WTF::ArrayBuffer* buffer() const { return m_buffer.get(); }
-  WTF::ArrayBuffer* buffer() { return m_buffer.get(); }
+  const WTF::ArrayBuffer* Buffer() const { return buffer_.Get(); }
+  WTF::ArrayBuffer* Buffer() { return buffer_.Get(); }
 
-  const void* data() const { return buffer()->data(); }
-  void* data() { return buffer()->data(); }
-  unsigned byteLength() const { return buffer()->byteLength(); }
-  bool transfer(WTF::ArrayBufferContents& result) {
-    return buffer()->transfer(result);
+  const void* Data() const { return Buffer()->Data(); }
+  void* Data() { return Buffer()->Data(); }
+  unsigned ByteLength() const { return Buffer()->ByteLength(); }
+  bool Transfer(WTF::ArrayBufferContents& result) {
+    return Buffer()->Transfer(result);
   }
-  bool shareContentsWith(WTF::ArrayBufferContents& result) {
-    return buffer()->shareContentsWith(result);
+  bool ShareContentsWith(WTF::ArrayBufferContents& result) {
+    return Buffer()->ShareContentsWith(result);
   }
-  bool isNeutered() const { return buffer()->isNeutered(); }
-  bool isShared() const { return buffer()->isShared(); }
+  bool IsNeutered() const { return Buffer()->IsNeutered(); }
+  bool IsShared() const { return Buffer()->IsShared(); }
 
-  v8::Local<v8::Object> wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creationContext) override {
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) override {
     NOTREACHED();
     return v8::Local<v8::Object>();
   }
@@ -43,11 +43,11 @@ class CORE_EXPORT DOMArrayBufferBase
 
  protected:
   explicit DOMArrayBufferBase(PassRefPtr<WTF::ArrayBuffer> buffer)
-      : m_buffer(std::move(buffer)) {
-    DCHECK(m_buffer);
+      : buffer_(std::move(buffer)) {
+    DCHECK(buffer_);
   }
 
-  RefPtr<WTF::ArrayBuffer> m_buffer;
+  RefPtr<WTF::ArrayBuffer> buffer_;
 };
 
 }  // namespace blink

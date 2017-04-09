@@ -16,7 +16,7 @@ namespace blink {
 
 namespace {
 
-String convertDirectionToEnum(const TransferDirection& direction) {
+String ConvertDirectionToEnum(const TransferDirection& direction) {
   switch (direction) {
     case TransferDirection::INBOUND:
       return "in";
@@ -28,7 +28,7 @@ String convertDirectionToEnum(const TransferDirection& direction) {
   }
 }
 
-String convertTypeToEnum(const EndpointType& type) {
+String ConvertTypeToEnum(const EndpointType& type) {
   switch (type) {
     case EndpointType::BULK:
       return "bulk";
@@ -44,54 +44,54 @@ String convertTypeToEnum(const EndpointType& type) {
 
 }  // namespace
 
-USBEndpoint* USBEndpoint::create(const USBAlternateInterface* alternate,
-                                 size_t endpointIndex) {
-  return new USBEndpoint(alternate, endpointIndex);
+USBEndpoint* USBEndpoint::Create(const USBAlternateInterface* alternate,
+                                 size_t endpoint_index) {
+  return new USBEndpoint(alternate, endpoint_index);
 }
 
-USBEndpoint* USBEndpoint::create(const USBAlternateInterface* alternate,
-                                 size_t endpointNumber,
+USBEndpoint* USBEndpoint::Create(const USBAlternateInterface* alternate,
+                                 size_t endpoint_number,
                                  const String& direction,
-                                 ExceptionState& exceptionState) {
-  TransferDirection mojoDirection = direction == "in"
-                                        ? TransferDirection::INBOUND
-                                        : TransferDirection::OUTBOUND;
-  const auto& endpoints = alternate->info().endpoints;
+                                 ExceptionState& exception_state) {
+  TransferDirection mojo_direction = direction == "in"
+                                         ? TransferDirection::INBOUND
+                                         : TransferDirection::OUTBOUND;
+  const auto& endpoints = alternate->Info().endpoints;
   for (size_t i = 0; i < endpoints.size(); ++i) {
     const auto& endpoint = endpoints[i];
-    if (endpoint->endpoint_number == endpointNumber &&
-        endpoint->direction == mojoDirection)
-      return USBEndpoint::create(alternate, i);
+    if (endpoint->endpoint_number == endpoint_number &&
+        endpoint->direction == mojo_direction)
+      return USBEndpoint::Create(alternate, i);
   }
-  exceptionState.throwRangeError(
+  exception_state.ThrowRangeError(
       "No such endpoint exists in the given alternate interface.");
   return nullptr;
 }
 
 USBEndpoint::USBEndpoint(const USBAlternateInterface* alternate,
-                         size_t endpointIndex)
-    : m_alternate(alternate), m_endpointIndex(endpointIndex) {
-  ASSERT(m_alternate);
-  ASSERT(m_endpointIndex < m_alternate->info().endpoints.size());
+                         size_t endpoint_index)
+    : alternate_(alternate), endpoint_index_(endpoint_index) {
+  ASSERT(alternate_);
+  ASSERT(endpoint_index_ < alternate_->Info().endpoints.size());
 }
 
-const device::usb::blink::EndpointInfo& USBEndpoint::info() const {
-  const device::usb::blink::AlternateInterfaceInfo& alternateInfo =
-      m_alternate->info();
-  ASSERT(m_endpointIndex < alternateInfo.endpoints.size());
-  return *alternateInfo.endpoints[m_endpointIndex];
+const device::usb::blink::EndpointInfo& USBEndpoint::Info() const {
+  const device::usb::blink::AlternateInterfaceInfo& alternate_info =
+      alternate_->Info();
+  ASSERT(endpoint_index_ < alternate_info.endpoints.size());
+  return *alternate_info.endpoints[endpoint_index_];
 }
 
 String USBEndpoint::direction() const {
-  return convertDirectionToEnum(info().direction);
+  return ConvertDirectionToEnum(Info().direction);
 }
 
 String USBEndpoint::type() const {
-  return convertTypeToEnum(info().type);
+  return ConvertTypeToEnum(Info().type);
 }
 
 DEFINE_TRACE(USBEndpoint) {
-  visitor->trace(m_alternate);
+  visitor->Trace(alternate_);
 }
 
 }  // namespace blink

@@ -30,20 +30,20 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
  public:
   virtual ~Worklet() = default;
 
-  virtual void initialize() {}
-  virtual bool isInitialized() const { return true; }
+  virtual void Initialize() {}
+  virtual bool IsInitialized() const { return true; }
 
-  virtual WorkletGlobalScopeProxy* workletGlobalScopeProxy() const = 0;
+  virtual WorkletGlobalScopeProxy* GetWorkletGlobalScopeProxy() const = 0;
 
   // Worklet
   ScriptPromise import(ScriptState*, const String& url);
 
   // WorkletScriptLoader::Client
-  void notifyWorkletScriptLoadingFinished(WorkletScriptLoader*,
+  void NotifyWorkletScriptLoadingFinished(WorkletScriptLoader*,
                                           const ScriptSourceCode&) final;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed(ExecutionContext*) final;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -52,9 +52,9 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   explicit Worklet(LocalFrame*);
 
  private:
-  Member<LocalFrame> m_frame;
+  Member<LocalFrame> frame_;
   HeapHashMap<Member<WorkletScriptLoader>, Member<ScriptPromiseResolver>>
-      m_loaderAndResolvers;
+      loader_and_resolvers_;
 };
 
 }  // namespace blink

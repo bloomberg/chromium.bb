@@ -53,15 +53,15 @@ class DeviceMotionDispatcher final
   USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionDispatcher);
 
  public:
-  static DeviceMotionDispatcher& instance();
+  static DeviceMotionDispatcher& Instance();
   ~DeviceMotionDispatcher() override;
 
   // Note that the returned object is owned by this class.
   // FIXME: make the return value const, see crbug.com/233174.
-  DeviceMotionData* latestDeviceMotionData();
+  DeviceMotionData* LatestDeviceMotionData();
 
   // Inherited from WebDeviceMotionListener.
-  void didChangeDeviceMotion(const device::MotionData&) override;
+  void DidChangeDeviceMotion(const device::MotionData&) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -69,10 +69,10 @@ class DeviceMotionDispatcher final
   DeviceMotionDispatcher();
 
   // Inherited from PlatformEventDispatcher.
-  void startListening() override;
-  void stopListening() override;
+  void StartListening() override;
+  void StopListening() override;
 
-  Member<DeviceMotionData> m_lastDeviceMotionData;
+  Member<DeviceMotionData> last_device_motion_data_;
 };
 
 }  // namespace blink

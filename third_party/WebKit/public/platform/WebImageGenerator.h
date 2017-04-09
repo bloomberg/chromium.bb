@@ -41,7 +41,7 @@ namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebImageGenerator {
  public:
-  static std::unique_ptr<SkImageGenerator> create(sk_sp<SkData>);
+  static std::unique_ptr<SkImageGenerator> Create(sk_sp<SkData>);
 };
 
 }  // namespace blink

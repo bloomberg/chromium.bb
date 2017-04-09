@@ -11,9 +11,9 @@
 namespace blink {
 
 AudioWorklet* WindowAudioWorklet::audioWorklet(LocalDOMWindow& window) {
-  if (!window.frame())
+  if (!window.GetFrame())
     return nullptr;
-  return from(window).m_audioWorklet.get();
+  return From(window).audio_worklet_.Get();
 }
 
 // Break the following cycle when the context gets detached.
@@ -25,33 +25,33 @@ AudioWorklet* WindowAudioWorklet::audioWorklet(LocalDOMWindow& window) {
 // => ThreadedWorkletMessagingProxy
 // => Document
 // => ... => window
-void WindowAudioWorklet::contextDestroyed(ExecutionContext*) {
-  m_audioWorklet = nullptr;
+void WindowAudioWorklet::ContextDestroyed(ExecutionContext*) {
+  audio_worklet_ = nullptr;
 }
 
 DEFINE_TRACE(WindowAudioWorklet) {
-  visitor->trace(m_audioWorklet);
-  Supplement<LocalDOMWindow>::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(audio_worklet_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-WindowAudioWorklet& WindowAudioWorklet::from(LocalDOMWindow& window) {
+WindowAudioWorklet& WindowAudioWorklet::From(LocalDOMWindow& window) {
   WindowAudioWorklet* supplement = static_cast<WindowAudioWorklet*>(
-      Supplement<LocalDOMWindow>::from(window, supplementName()));
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
     supplement = new WindowAudioWorklet(window);
-    provideTo(window, supplementName(), supplement);
+    ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 WindowAudioWorklet::WindowAudioWorklet(LocalDOMWindow& window)
-    : ContextLifecycleObserver(window.frame()->document()),
-      m_audioWorklet(AudioWorklet::create(window.frame())) {
-  DCHECK(getExecutionContext());
+    : ContextLifecycleObserver(window.GetFrame()->GetDocument()),
+      audio_worklet_(AudioWorklet::Create(window.GetFrame())) {
+  DCHECK(GetExecutionContext());
 }
 
-const char* WindowAudioWorklet::supplementName() {
+const char* WindowAudioWorklet::SupplementName() {
   return "WindowAudioWorklet";
 }
 

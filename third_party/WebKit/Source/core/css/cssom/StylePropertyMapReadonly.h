@@ -28,10 +28,10 @@ class CORE_EXPORT StylePropertyMapReadonly
 
   virtual ~StylePropertyMapReadonly() {}
 
-  virtual CSSStyleValue* get(const String& propertyName, ExceptionState&);
-  virtual CSSStyleValueVector getAll(const String& propertyName,
+  virtual CSSStyleValue* get(const String& property_name, ExceptionState&);
+  virtual CSSStyleValueVector getAll(const String& property_name,
                                      ExceptionState&);
-  virtual bool has(const String& propertyName, ExceptionState&);
+  virtual bool has(const String& property_name, ExceptionState&);
 
   virtual Vector<String> getProperties() = 0;
 
@@ -40,12 +40,12 @@ class CORE_EXPORT StylePropertyMapReadonly
  protected:
   StylePropertyMapReadonly() = default;
 
-  virtual CSSStyleValueVector getAllInternal(CSSPropertyID) = 0;
-  virtual CSSStyleValueVector getAllInternal(
-      AtomicString customPropertyName) = 0;
+  virtual CSSStyleValueVector GetAllInternal(CSSPropertyID) = 0;
+  virtual CSSStyleValueVector GetAllInternal(
+      AtomicString custom_property_name) = 0;
 
-  virtual HeapVector<StylePropertyMapEntry> getIterationEntries() = 0;
-  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+  virtual HeapVector<StylePropertyMapEntry> GetIterationEntries() = 0;
+  IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 };
 
 }  // namespace blink

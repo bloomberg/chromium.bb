@@ -36,10 +36,10 @@
 
 namespace blink {
 
-DeviceMotionDispatcher& DeviceMotionDispatcher::instance() {
-  DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher,
+DeviceMotionDispatcher& DeviceMotionDispatcher::Instance() {
+  DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, device_motion_dispatcher,
                       (new DeviceMotionDispatcher));
-  return deviceMotionDispatcher;
+  return device_motion_dispatcher;
 }
 
 DeviceMotionDispatcher::DeviceMotionDispatcher() {}
@@ -47,27 +47,27 @@ DeviceMotionDispatcher::DeviceMotionDispatcher() {}
 DeviceMotionDispatcher::~DeviceMotionDispatcher() {}
 
 DEFINE_TRACE(DeviceMotionDispatcher) {
-  visitor->trace(m_lastDeviceMotionData);
-  PlatformEventDispatcher::trace(visitor);
+  visitor->Trace(last_device_motion_data_);
+  PlatformEventDispatcher::Trace(visitor);
 }
 
-void DeviceMotionDispatcher::startListening() {
-  Platform::current()->startListening(WebPlatformEventTypeDeviceMotion, this);
+void DeviceMotionDispatcher::StartListening() {
+  Platform::Current()->StartListening(kWebPlatformEventTypeDeviceMotion, this);
 }
 
-void DeviceMotionDispatcher::stopListening() {
-  Platform::current()->stopListening(WebPlatformEventTypeDeviceMotion);
-  m_lastDeviceMotionData.clear();
+void DeviceMotionDispatcher::StopListening() {
+  Platform::Current()->StopListening(kWebPlatformEventTypeDeviceMotion);
+  last_device_motion_data_.Clear();
 }
 
-void DeviceMotionDispatcher::didChangeDeviceMotion(
+void DeviceMotionDispatcher::DidChangeDeviceMotion(
     const device::MotionData& motion) {
-  m_lastDeviceMotionData = DeviceMotionData::create(motion);
-  notifyControllers();
+  last_device_motion_data_ = DeviceMotionData::Create(motion);
+  NotifyControllers();
 }
 
-DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData() {
-  return m_lastDeviceMotionData.get();
+DeviceMotionData* DeviceMotionDispatcher::LatestDeviceMotionData() {
+  return last_device_motion_data_.Get();
 }
 
 }  // namespace blink

@@ -103,7 +103,7 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
     if (match_document_write_block_reload_ > 0 &&
         metadata.behavior_flags &
             blink::WebLoadingBehaviorFlag::
-                WebLoadingBehaviorDocumentWriteBlockReload) {
+                kWebLoadingBehaviorDocumentWriteBlockReload) {
       --match_document_write_block_reload_;
     }
 

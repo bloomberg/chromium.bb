@@ -10,40 +10,40 @@
 namespace blink {
 
 std::unique_ptr<CompositorProxiedPropertySet>
-CompositorProxiedPropertySet::create() {
-  return WTF::wrapUnique(new CompositorProxiedPropertySet);
+CompositorProxiedPropertySet::Create() {
+  return WTF::WrapUnique(new CompositorProxiedPropertySet);
 }
 
 CompositorProxiedPropertySet::CompositorProxiedPropertySet() {
-  memset(m_counts, 0, sizeof(m_counts));
+  memset(counts_, 0, sizeof(counts_));
 }
 
 CompositorProxiedPropertySet::~CompositorProxiedPropertySet() {}
 
-bool CompositorProxiedPropertySet::isEmpty() const {
-  return !proxiedProperties();
+bool CompositorProxiedPropertySet::IsEmpty() const {
+  return !ProxiedProperties();
 }
 
-void CompositorProxiedPropertySet::increment(uint32_t mutableProperties) {
+void CompositorProxiedPropertySet::Increment(uint32_t mutable_properties) {
   for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
-    if (mutableProperties & (1 << i))
-      ++m_counts[i];
+    if (mutable_properties & (1 << i))
+      ++counts_[i];
   }
 }
 
-void CompositorProxiedPropertySet::decrement(uint32_t mutableProperties) {
+void CompositorProxiedPropertySet::Decrement(uint32_t mutable_properties) {
   for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
-    if (mutableProperties & (1 << i)) {
-      DCHECK(m_counts[i]);
-      --m_counts[i];
+    if (mutable_properties & (1 << i)) {
+      DCHECK(counts_[i]);
+      --counts_[i];
     }
   }
 }
 
-uint32_t CompositorProxiedPropertySet::proxiedProperties() const {
+uint32_t CompositorProxiedPropertySet::ProxiedProperties() const {
   uint32_t properties = CompositorMutableProperty::kNone;
   for (int i = 0; i < CompositorMutableProperty::kNumProperties; ++i) {
-    if (m_counts[i])
+    if (counts_[i])
       properties |= 1 << i;
   }
   return properties;

@@ -37,14 +37,14 @@ namespace blink {
 
 class TextInputType final : public BaseTextInputType {
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
 
  private:
   TextInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
-  void countUsage() override;
-  const AtomicString& formControlType() const override;
-  bool supportsInputModeAttribute() const override;
-  const AtomicString& defaultAutocapitalize() const override;
+  void CountUsage() override;
+  const AtomicString& FormControlType() const override;
+  bool SupportsInputModeAttribute() const override;
+  const AtomicString& DefaultAutocapitalize() const override;
 };
 
 }  // namespace blink

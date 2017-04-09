@@ -35,49 +35,50 @@ namespace blink {
 
 RemoveNodeCommand::RemoveNodeCommand(
     Node* node,
-    ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
-    : SimpleEditCommand(node->document()),
-      m_node(node),
-      m_shouldAssumeContentIsAlwaysEditable(
-          shouldAssumeContentIsAlwaysEditable) {
-  DCHECK(m_node);
-  DCHECK(m_node->parentNode());
+    ShouldAssumeContentIsAlwaysEditable
+        should_assume_content_is_always_editable)
+    : SimpleEditCommand(node->GetDocument()),
+      node_(node),
+      should_assume_content_is_always_editable_(
+          should_assume_content_is_always_editable) {
+  DCHECK(node_);
+  DCHECK(node_->parentNode());
 }
 
-void RemoveNodeCommand::doApply(EditingState* editingState) {
-  ContainerNode* parent = m_node->parentNode();
-  document().updateStyleAndLayoutTree();
-  if (!parent || (m_shouldAssumeContentIsAlwaysEditable ==
-                      DoNotAssumeContentIsAlwaysEditable &&
-                  !hasEditableStyle(*parent) && parent->inActiveDocument()))
+void RemoveNodeCommand::DoApply(EditingState* editing_state) {
+  ContainerNode* parent = node_->parentNode();
+  GetDocument().UpdateStyleAndLayoutTree();
+  if (!parent || (should_assume_content_is_always_editable_ ==
+                      kDoNotAssumeContentIsAlwaysEditable &&
+                  !HasEditableStyle(*parent) && parent->InActiveDocument()))
     return;
-  DCHECK(hasEditableStyle(*parent) || !parent->inActiveDocument()) << parent;
+  DCHECK(HasEditableStyle(*parent) || !parent->InActiveDocument()) << parent;
 
-  m_parent = parent;
-  m_refChild = m_node->nextSibling();
+  parent_ = parent;
+  ref_child_ = node_->nextSibling();
 
-  m_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
+  node_->remove(IGNORE_EXCEPTION_FOR_TESTING);
   // Node::remove dispatch synchronous events such as IFRAME unload events,
   // and event handlers may break the document. We check the document state
   // here in order to prevent further processing in bad situation.
-  ABORT_EDITING_COMMAND_IF(!m_node->document().frame());
-  ABORT_EDITING_COMMAND_IF(!m_node->document().documentElement());
+  ABORT_EDITING_COMMAND_IF(!node_->GetDocument().GetFrame());
+  ABORT_EDITING_COMMAND_IF(!node_->GetDocument().documentElement());
 }
 
-void RemoveNodeCommand::doUnapply() {
-  ContainerNode* parent = m_parent.release();
-  Node* refChild = m_refChild.release();
-  if (!parent || !hasEditableStyle(*parent))
+void RemoveNodeCommand::DoUnapply() {
+  ContainerNode* parent = parent_.Release();
+  Node* ref_child = ref_child_.Release();
+  if (!parent || !HasEditableStyle(*parent))
     return;
 
-  parent->insertBefore(m_node.get(), refChild, IGNORE_EXCEPTION_FOR_TESTING);
+  parent->InsertBefore(node_.Get(), ref_child, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(RemoveNodeCommand) {
-  visitor->trace(m_node);
-  visitor->trace(m_parent);
-  visitor->trace(m_refChild);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(node_);
+  visitor->Trace(parent_);
+  visitor->Trace(ref_child_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

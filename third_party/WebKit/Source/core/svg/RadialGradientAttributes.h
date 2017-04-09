@@ -29,107 +29,107 @@ struct RadialGradientAttributes final : GradientAttributes {
 
  public:
   RadialGradientAttributes()
-      : m_cx(SVGLength::create(SVGLengthMode::Width)),
-        m_cy(SVGLength::create(SVGLengthMode::Height)),
-        m_r(SVGLength::create(SVGLengthMode::Other)),
-        m_fx(SVGLength::create(SVGLengthMode::Width)),
-        m_fy(SVGLength::create(SVGLengthMode::Height)),
-        m_fr(SVGLength::create(SVGLengthMode::Other)),
-        m_cxSet(false),
-        m_cySet(false),
-        m_rSet(false),
-        m_fxSet(false),
-        m_fySet(false),
-        m_frSet(false) {
-    m_cx->setValueAsString("50%");
-    m_cy->setValueAsString("50%");
-    m_r->setValueAsString("50%");
+      : cx_(SVGLength::Create(SVGLengthMode::kWidth)),
+        cy_(SVGLength::Create(SVGLengthMode::kHeight)),
+        r_(SVGLength::Create(SVGLengthMode::kOther)),
+        fx_(SVGLength::Create(SVGLengthMode::kWidth)),
+        fy_(SVGLength::Create(SVGLengthMode::kHeight)),
+        fr_(SVGLength::Create(SVGLengthMode::kOther)),
+        cx_set_(false),
+        cy_set_(false),
+        r_set_(false),
+        fx_set_(false),
+        fy_set_(false),
+        fr_set_(false) {
+    cx_->SetValueAsString("50%");
+    cy_->SetValueAsString("50%");
+    r_->SetValueAsString("50%");
   }
 
-  SVGLength* cx() const { return m_cx.get(); }
-  SVGLength* cy() const { return m_cy.get(); }
-  SVGLength* r() const { return m_r.get(); }
-  SVGLength* fx() const { return m_fx.get(); }
-  SVGLength* fy() const { return m_fy.get(); }
-  SVGLength* fr() const { return m_fr.get(); }
+  SVGLength* Cx() const { return cx_.Get(); }
+  SVGLength* Cy() const { return cy_.Get(); }
+  SVGLength* R() const { return r_.Get(); }
+  SVGLength* Fx() const { return fx_.Get(); }
+  SVGLength* Fy() const { return fy_.Get(); }
+  SVGLength* Fr() const { return fr_.Get(); }
 
-  void setCx(SVGLength* value) {
-    m_cx = value;
-    m_cxSet = true;
+  void SetCx(SVGLength* value) {
+    cx_ = value;
+    cx_set_ = true;
   }
-  void setCy(SVGLength* value) {
-    m_cy = value;
-    m_cySet = true;
+  void SetCy(SVGLength* value) {
+    cy_ = value;
+    cy_set_ = true;
   }
-  void setR(SVGLength* value) {
-    m_r = value;
-    m_rSet = true;
+  void SetR(SVGLength* value) {
+    r_ = value;
+    r_set_ = true;
   }
-  void setFx(SVGLength* value) {
-    m_fx = value;
-    m_fxSet = true;
+  void SetFx(SVGLength* value) {
+    fx_ = value;
+    fx_set_ = true;
   }
-  void setFy(SVGLength* value) {
-    m_fy = value;
-    m_fySet = true;
+  void SetFy(SVGLength* value) {
+    fy_ = value;
+    fy_set_ = true;
   }
-  void setFr(SVGLength* value) {
-    m_fr = value;
-    m_frSet = true;
+  void SetFr(SVGLength* value) {
+    fr_ = value;
+    fr_set_ = true;
   }
 
-  bool hasCx() const { return m_cxSet; }
-  bool hasCy() const { return m_cySet; }
-  bool hasR() const { return m_rSet; }
-  bool hasFx() const { return m_fxSet; }
-  bool hasFy() const { return m_fySet; }
-  bool hasFr() const { return m_frSet; }
+  bool HasCx() const { return cx_set_; }
+  bool HasCy() const { return cy_set_; }
+  bool HasR() const { return r_set_; }
+  bool HasFx() const { return fx_set_; }
+  bool HasFy() const { return fy_set_; }
+  bool HasFr() const { return fr_set_; }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_cx);
-    visitor->trace(m_cy);
-    visitor->trace(m_r);
-    visitor->trace(m_fx);
-    visitor->trace(m_fy);
-    visitor->trace(m_fr);
+    visitor->Trace(cx_);
+    visitor->Trace(cy_);
+    visitor->Trace(r_);
+    visitor->Trace(fx_);
+    visitor->Trace(fy_);
+    visitor->Trace(fr_);
   }
 
  private:
   // Properties
-  Member<SVGLength> m_cx;
-  Member<SVGLength> m_cy;
-  Member<SVGLength> m_r;
-  Member<SVGLength> m_fx;
-  Member<SVGLength> m_fy;
-  Member<SVGLength> m_fr;
+  Member<SVGLength> cx_;
+  Member<SVGLength> cy_;
+  Member<SVGLength> r_;
+  Member<SVGLength> fx_;
+  Member<SVGLength> fy_;
+  Member<SVGLength> fr_;
 
   // Property states
-  bool m_cxSet : 1;
-  bool m_cySet : 1;
-  bool m_rSet : 1;
-  bool m_fxSet : 1;
-  bool m_fySet : 1;
-  bool m_frSet : 1;
+  bool cx_set_ : 1;
+  bool cy_set_ : 1;
+  bool r_set_ : 1;
+  bool fx_set_ : 1;
+  bool fy_set_ : 1;
+  bool fr_set_ : 1;
 };
 
 // Wrapper object for the RadialGradientAttributes part object.
 class RadialGradientAttributesWrapper
     : public GarbageCollectedFinalized<RadialGradientAttributesWrapper> {
  public:
-  static RadialGradientAttributesWrapper* create() {
+  static RadialGradientAttributesWrapper* Create() {
     return new RadialGradientAttributesWrapper;
   }
 
-  RadialGradientAttributes& attributes() { return m_attributes; }
-  void set(const RadialGradientAttributes& attributes) {
-    m_attributes = attributes;
+  RadialGradientAttributes& Attributes() { return attributes_; }
+  void Set(const RadialGradientAttributes& attributes) {
+    attributes_ = attributes;
   }
-  DEFINE_INLINE_TRACE() { visitor->trace(m_attributes); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(attributes_); }
 
  private:
   RadialGradientAttributesWrapper() {}
 
-  RadialGradientAttributes m_attributes;
+  RadialGradientAttributes attributes_;
 };
 
 }  // namespace blink

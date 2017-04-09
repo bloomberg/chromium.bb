@@ -43,9 +43,9 @@ class DocumentWriter final : public GarbageCollectedFinalized<DocumentWriter> {
   WTF_MAKE_NONCOPYABLE(DocumentWriter);
 
  public:
-  static DocumentWriter* create(Document*,
+  static DocumentWriter* Create(Document*,
                                 ParserSynchronizationPolicy,
-                                const AtomicString& mimeType,
+                                const AtomicString& mime_type,
                                 const AtomicString& encoding);
 
   ~DocumentWriter();
@@ -53,26 +53,26 @@ class DocumentWriter final : public GarbageCollectedFinalized<DocumentWriter> {
 
   void end();
 
-  void addData(const char* bytes, size_t length);
+  void AddData(const char* bytes, size_t length);
 
-  const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }
-  const AtomicString& encoding() const { return m_decoderBuilder.encoding(); }
+  const AtomicString& MimeType() const { return decoder_builder_.MimeType(); }
+  const AtomicString& Encoding() const { return decoder_builder_.Encoding(); }
 
   // Exposed for DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL.
-  void appendReplacingData(const String&);
+  void AppendReplacingData(const String&);
 
-  void setDocumentWasLoadedAsPartOfNavigation();
+  void SetDocumentWasLoadedAsPartOfNavigation();
 
  private:
   DocumentWriter(Document*,
                  ParserSynchronizationPolicy,
-                 const AtomicString& mimeType,
+                 const AtomicString& mime_type,
                  const AtomicString& encoding);
 
-  Member<Document> m_document;
-  TextResourceDecoderBuilder m_decoderBuilder;
+  Member<Document> document_;
+  TextResourceDecoderBuilder decoder_builder_;
 
-  Member<DocumentParser> m_parser;
+  Member<DocumentParser> parser_;
 };
 
 }  // namespace blink

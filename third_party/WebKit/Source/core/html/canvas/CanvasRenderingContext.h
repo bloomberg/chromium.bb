@@ -76,7 +76,7 @@ class CORE_EXPORT CanvasRenderingContext
       public ScriptWrappable,
       public WebThread::TaskObserver {
   WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
-  USING_PRE_FINALIZER(CanvasRenderingContext, dispose);
+  USING_PRE_FINALIZER(CanvasRenderingContext, Dispose);
 
  public:
   virtual ~CanvasRenderingContext() {}
@@ -89,133 +89,133 @@ class CORE_EXPORT CanvasRenderingContext
   enum ContextType {
     // Do not change assigned numbers of existing items: add new features to the
     // end of the list.
-    Context2d = 0,
-    ContextExperimentalWebgl = 2,
-    ContextWebgl = 3,
-    ContextWebgl2 = 4,
-    ContextImageBitmap = 5,
-    ContextTypeCount,
+    kContext2d = 0,
+    kContextExperimentalWebgl = 2,
+    kContextWebgl = 3,
+    kContextWebgl2 = 4,
+    kContextImageBitmap = 5,
+    kContextTypeCount,
   };
 
-  static ContextType contextTypeFromId(const String& id);
-  static ContextType resolveContextTypeAliases(ContextType);
+  static ContextType ContextTypeFromId(const String& id);
+  static ContextType ResolveContextTypeAliases(ContextType);
 
-  HTMLCanvasElement* canvas() const { return m_canvas; }
+  HTMLCanvasElement* canvas() const { return canvas_; }
 
-  CanvasColorSpace colorSpace() const { return m_colorSpace; };
-  WTF::String colorSpaceAsString() const;
-  CanvasPixelFormat pixelFormat() const { return m_pixelFormat; };
-  WTF::String pixelFormatAsString() const;
-  bool linearPixelMath() const { return m_linearPixelMath; };
+  CanvasColorSpace ColorSpace() const { return color_space_; };
+  WTF::String ColorSpaceAsString() const;
+  CanvasPixelFormat PixelFormat() const { return pixel_format_; };
+  WTF::String PixelFormatAsString() const;
+  bool LinearPixelMath() const { return linear_pixel_math_; };
 
   // The color space in which the the content should be interpreted by the
   // compositor. This is always defined.
-  gfx::ColorSpace gfxColorSpace() const;
+  gfx::ColorSpace GfxColorSpace() const;
   // The color space that should be used for SkSurface creation. This may
   // be nullptr.
-  sk_sp<SkColorSpace> skSurfaceColorSpace() const;
-  SkColorType colorType() const;
-  ColorBehavior colorBehaviorForMediaDrawnToCanvas() const;
-  bool skSurfacesUseColorSpace() const;
+  sk_sp<SkColorSpace> SkSurfaceColorSpace() const;
+  SkColorType ColorType() const;
+  ColorBehavior ColorBehaviorForMediaDrawnToCanvas() const;
+  bool SkSurfacesUseColorSpace() const;
 
-  virtual PassRefPtr<Image> getImage(AccelerationHint,
+  virtual PassRefPtr<Image> GetImage(AccelerationHint,
                                      SnapshotReason) const = 0;
-  virtual ImageData* toImageData(SnapshotReason reason) { return nullptr; }
-  virtual ContextType getContextType() const = 0;
-  virtual bool isComposited() const = 0;
-  virtual bool isAccelerated() const = 0;
-  virtual bool shouldAntialias() const { return false; }
-  virtual void setIsHidden(bool) = 0;
+  virtual ImageData* ToImageData(SnapshotReason reason) { return nullptr; }
+  virtual ContextType GetContextType() const = 0;
+  virtual bool IsComposited() const = 0;
+  virtual bool IsAccelerated() const = 0;
+  virtual bool ShouldAntialias() const { return false; }
+  virtual void SetIsHidden(bool) = 0;
   virtual bool isContextLost() const { return true; }
-  virtual void setCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
-  virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) {
+  virtual void SetCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
+  virtual void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) {
     NOTREACHED();
   }
-  virtual bool isPaintable() const = 0;
-  virtual void didDraw(const SkIRect& dirtyRect);
-  virtual void didDraw();
+  virtual bool IsPaintable() const = 0;
+  virtual void DidDraw(const SkIRect& dirty_rect);
+  virtual void DidDraw();
 
   // Return true if the content is updated.
-  virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) {
+  virtual bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) {
     return false;
   }
 
-  virtual WebLayer* platformLayer() const { return nullptr; }
+  virtual WebLayer* PlatformLayer() const { return nullptr; }
 
   enum LostContextMode {
-    NotLostContext,
+    kNotLostContext,
 
     // Lost context occurred at the graphics system level.
-    RealLostContext,
+    kRealLostContext,
 
     // Lost context provoked by WEBGL_lose_context.
-    WebGLLoseContextLostContext,
+    kWebGLLoseContextLostContext,
 
     // Lost context occurred due to internal implementation reasons.
-    SyntheticLostContext,
+    kSyntheticLostContext,
   };
-  virtual void loseContext(LostContextMode) {}
+  virtual void LoseContext(LostContextMode) {}
 
   // This method gets called at the end of script tasks that modified
   // the contents of the canvas (called didDraw). It marks the completion
   // of a presentable frame.
-  virtual void finalizeFrame() {}
+  virtual void FinalizeFrame() {}
 
-  void needsFinalizeFrame();
+  void NeedsFinalizeFrame();
 
   // WebThread::TaskObserver implementation
-  void didProcessTask() override;
-  void willProcessTask() final {}
+  void DidProcessTask() override;
+  void WillProcessTask() final {}
 
   // Canvas2D-specific interface
-  virtual bool is2d() const { return false; }
-  virtual void restoreCanvasMatrixClipStack(PaintCanvas*) const {}
-  virtual void reset() {}
+  virtual bool Is2d() const { return false; }
+  virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const {}
+  virtual void Reset() {}
   virtual void clearRect(double x, double y, double width, double height) {}
-  virtual void didSetSurfaceSize() {}
-  virtual void setShouldAntialias(bool) {}
-  virtual unsigned hitRegionsCount() const { return 0; }
+  virtual void DidSetSurfaceSize() {}
+  virtual void SetShouldAntialias(bool) {}
+  virtual unsigned HitRegionsCount() const { return 0; }
   virtual void setFont(const String&) {}
-  virtual void styleDidChange(const ComputedStyle* oldStyle,
-                              const ComputedStyle& newStyle) {}
-  virtual HitTestCanvasResult* getControlAndIdIfHitRegionExists(
+  virtual void StyleDidChange(const ComputedStyle* old_style,
+                              const ComputedStyle& new_style) {}
+  virtual HitTestCanvasResult* GetControlAndIdIfHitRegionExists(
       const LayoutPoint& location) {
     NOTREACHED();
-    return HitTestCanvasResult::create(String(), nullptr);
+    return HitTestCanvasResult::Create(String(), nullptr);
   }
-  virtual String getIdFromControl(const Element* element) { return String(); }
-  virtual bool isAccelerationOptimalForCanvasContent() const { return true; }
-  virtual void resetUsageTracking(){};
+  virtual String GetIdFromControl(const Element* element) { return String(); }
+  virtual bool IsAccelerationOptimalForCanvasContent() const { return true; }
+  virtual void ResetUsageTracking(){};
 
   // WebGL-specific interface
-  virtual bool is3d() const { return false; }
-  virtual void setFilterQuality(SkFilterQuality) { NOTREACHED(); }
-  virtual void reshape(int width, int height) { NOTREACHED(); }
-  virtual void markLayerComposited() { NOTREACHED(); }
-  virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) {
+  virtual bool Is3d() const { return false; }
+  virtual void SetFilterQuality(SkFilterQuality) { NOTREACHED(); }
+  virtual void Reshape(int width, int height) { NOTREACHED(); }
+  virtual void MarkLayerComposited() { NOTREACHED(); }
+  virtual ImageData* PaintRenderingResultsToImageData(SourceDrawingBuffer) {
     NOTREACHED();
     return nullptr;
   }
-  virtual int externallyAllocatedBytesPerPixel() {
+  virtual int ExternallyAllocatedBytesPerPixel() {
     NOTREACHED();
     return 0;
   }
 
   // ImageBitmap-specific interface
-  virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
+  virtual bool Paint(GraphicsContext&, const IntRect&) { return false; }
 
   // OffscreenCanvas-specific methods
-  OffscreenCanvas* offscreenCanvas() const { return m_offscreenCanvas; }
-  virtual ImageBitmap* transferToImageBitmap(ScriptState*) { return nullptr; }
+  OffscreenCanvas* offscreenCanvas() const { return offscreen_canvas_; }
+  virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
-  bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
-  void didMoveToNewDocument(Document*);
+  bool WouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
+  void DidMoveToNewDocument(Document*);
 
-  void detachCanvas() { m_canvas = nullptr; }
-  void detachOffscreenCanvas() { m_offscreenCanvas = nullptr; }
+  void DetachCanvas() { canvas_ = nullptr; }
+  void DetachOffscreenCanvas() { offscreen_canvas_ = nullptr; }
 
-  const CanvasContextCreationAttributes& creationAttributes() const {
-    return m_creationAttributes;
+  const CanvasContextCreationAttributes& CreationAttributes() const {
+    return creation_attributes_;
   }
 
  protected:
@@ -223,20 +223,20 @@ class CORE_EXPORT CanvasRenderingContext
                          OffscreenCanvas*,
                          const CanvasContextCreationAttributes&);
   DECLARE_VIRTUAL_TRACE();
-  virtual void stop() = 0;
+  virtual void Stop() = 0;
 
  private:
-  void dispose();
+  void Dispose();
 
-  Member<HTMLCanvasElement> m_canvas;
-  Member<OffscreenCanvas> m_offscreenCanvas;
-  HashSet<String> m_cleanURLs;
-  HashSet<String> m_dirtyURLs;
-  CanvasColorSpace m_colorSpace;
-  CanvasPixelFormat m_pixelFormat;
-  bool m_linearPixelMath = false;
-  CanvasContextCreationAttributes m_creationAttributes;
-  bool m_finalizeFrameScheduled = false;
+  Member<HTMLCanvasElement> canvas_;
+  Member<OffscreenCanvas> offscreen_canvas_;
+  HashSet<String> clean_ur_ls_;
+  HashSet<String> dirty_ur_ls_;
+  CanvasColorSpace color_space_;
+  CanvasPixelFormat pixel_format_;
+  bool linear_pixel_math_ = false;
+  CanvasContextCreationAttributes creation_attributes_;
+  bool finalize_frame_scheduled_ = false;
 };
 
 }  // namespace blink

@@ -27,33 +27,33 @@
 
 namespace blink {
 
-WebGLContextGroup::WebGLContextGroup() : m_numberOfContextLosses(0) {}
+WebGLContextGroup::WebGLContextGroup() : number_of_context_losses_(0) {}
 
-gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface() {
-  DCHECK(!m_contexts.isEmpty());
-  return (*m_contexts.begin())->contextGL();
+gpu::gles2::GLES2Interface* WebGLContextGroup::GetAGLInterface() {
+  DCHECK(!contexts_.IsEmpty());
+  return (*contexts_.begin())->ContextGL();
 }
 
-void WebGLContextGroup::addContext(WebGLRenderingContextBase* context) {
-  m_contexts.insert(
+void WebGLContextGroup::AddContext(WebGLRenderingContextBase* context) {
+  contexts_.insert(
       TraceWrapperMember<WebGLRenderingContextBase>(this, context));
 }
 
-void WebGLContextGroup::loseContextGroup(
+void WebGLContextGroup::LoseContextGroup(
     WebGLRenderingContextBase::LostContextMode mode,
-    WebGLRenderingContextBase::AutoRecoveryMethod autoRecoveryMethod) {
-  ++m_numberOfContextLosses;
-  for (WebGLRenderingContextBase* const context : m_contexts)
-    context->loseContextImpl(mode, autoRecoveryMethod);
+    WebGLRenderingContextBase::AutoRecoveryMethod auto_recovery_method) {
+  ++number_of_context_losses_;
+  for (WebGLRenderingContextBase* const context : contexts_)
+    context->LoseContextImpl(mode, auto_recovery_method);
 }
 
-uint32_t WebGLContextGroup::numberOfContextLosses() const {
-  return m_numberOfContextLosses;
+uint32_t WebGLContextGroup::NumberOfContextLosses() const {
+  return number_of_context_losses_;
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLContextGroup) {
-  for (auto context : m_contexts) {
-    visitor->traceWrappers(context);
+  for (auto context : contexts_) {
+    visitor->TraceWrappers(context);
   }
 }
 

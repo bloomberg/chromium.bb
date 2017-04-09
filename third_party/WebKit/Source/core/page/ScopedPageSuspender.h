@@ -39,8 +39,8 @@ class CORE_EXPORT ScopedPageSuspender final {
  private:
   friend class Page;
 
-  static void setSuspended(bool);
-  static bool isActive();
+  static void SetSuspended(bool);
+  static bool IsActive();
 };
 
 }  // namespace blink

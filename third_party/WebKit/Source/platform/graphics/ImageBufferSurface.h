@@ -61,65 +61,65 @@ class PLATFORM_EXPORT ImageBufferSurface {
  public:
   virtual ~ImageBufferSurface();
 
-  virtual PaintCanvas* canvas() = 0;
-  virtual void disableDeferral(DisableDeferralReason) {}
-  virtual void willOverwriteCanvas() {}
-  virtual void didDraw(const FloatRect& rect) {}
-  virtual bool isValid() const = 0;
-  virtual bool restore() { return false; }
-  virtual WebLayer* layer() const { return 0; }
-  virtual bool isAccelerated() const { return false; }
-  virtual bool isRecording() const { return false; }
-  virtual bool isExpensiveToPaint() { return false; }
-  virtual void setFilterQuality(SkFilterQuality) {}
-  virtual void setIsHidden(bool) {}
-  virtual void setImageBuffer(ImageBuffer*) {}
-  virtual sk_sp<PaintRecord> getRecord();
-  virtual void finalizeFrame() {}
-  virtual void doPaintInvalidation(const FloatRect& dirtyRect) {}
-  virtual void draw(GraphicsContext&,
-                    const FloatRect& destRect,
-                    const FloatRect& srcRect,
+  virtual PaintCanvas* Canvas() = 0;
+  virtual void DisableDeferral(DisableDeferralReason) {}
+  virtual void WillOverwriteCanvas() {}
+  virtual void DidDraw(const FloatRect& rect) {}
+  virtual bool IsValid() const = 0;
+  virtual bool Restore() { return false; }
+  virtual WebLayer* Layer() const { return 0; }
+  virtual bool IsAccelerated() const { return false; }
+  virtual bool IsRecording() const { return false; }
+  virtual bool IsExpensiveToPaint() { return false; }
+  virtual void SetFilterQuality(SkFilterQuality) {}
+  virtual void SetIsHidden(bool) {}
+  virtual void SetImageBuffer(ImageBuffer*) {}
+  virtual sk_sp<PaintRecord> GetRecord();
+  virtual void FinalizeFrame() {}
+  virtual void DoPaintInvalidation(const FloatRect& dirty_rect) {}
+  virtual void Draw(GraphicsContext&,
+                    const FloatRect& dest_rect,
+                    const FloatRect& src_rect,
                     SkBlendMode);
-  virtual void setHasExpensiveOp() {}
-  virtual GLuint getBackingTextureHandleForOverwrite() { return 0; }
+  virtual void SetHasExpensiveOp() {}
+  virtual GLuint GetBackingTextureHandleForOverwrite() { return 0; }
 
   // Executes all deferred rendering immediately.
-  virtual void flush(FlushReason);
+  virtual void Flush(FlushReason);
 
   // Like flush, but flushes all the way down to the GPU context if the surface
   // uses the GPU.
-  virtual void flushGpu(FlushReason reason) { flush(reason); }
+  virtual void FlushGpu(FlushReason reason) { Flush(reason); }
 
-  virtual void prepareSurfaceForPaintingIfNeeded() {}
-  virtual bool writePixels(const SkImageInfo& origInfo,
+  virtual void PrepareSurfaceForPaintingIfNeeded() {}
+  virtual bool WritePixels(const SkImageInfo& orig_info,
                            const void* pixels,
-                           size_t rowBytes,
+                           size_t row_bytes,
                            int x,
                            int y);
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.
-  virtual sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
+  virtual sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason) = 0;
 
-  OpacityMode getOpacityMode() const { return m_opacityMode; }
-  const IntSize& size() const { return m_size; }
-  const sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
-  SkColorType colorType() const { return m_colorType; }
-  void notifyIsValidChanged(bool isValid) const;
+  OpacityMode GetOpacityMode() const { return opacity_mode_; }
+  const IntSize& size() const { return size_; }
+  const sk_sp<SkColorSpace> ColorSpace() const { return color_space_; }
+  SkColorType ColorType() const { return color_type_; }
+  void NotifyIsValidChanged(bool is_valid) const;
 
  protected:
   ImageBufferSurface(const IntSize&,
                      OpacityMode,
                      sk_sp<SkColorSpace>,
                      SkColorType);
-  void clear();
+  void Clear();
 
  private:
-  OpacityMode m_opacityMode;
-  IntSize m_size;
-  sk_sp<SkColorSpace> m_colorSpace;
-  SkColorType m_colorType;
+  OpacityMode opacity_mode_;
+  IntSize size_;
+  sk_sp<SkColorSpace> color_space_;
+  SkColorType color_type_;
 };
 
 }  // namespace blink

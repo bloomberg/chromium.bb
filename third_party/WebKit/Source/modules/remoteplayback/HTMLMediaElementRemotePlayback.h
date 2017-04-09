@@ -24,20 +24,20 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementRemotePlayback);
 
  public:
-  static bool fastHasAttribute(const QualifiedName&, const HTMLMediaElement&);
-  static void setBooleanAttribute(const QualifiedName&,
+  static bool FastHasAttribute(const QualifiedName&, const HTMLMediaElement&);
+  static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLMediaElement&,
                                   bool);
 
-  static HTMLMediaElementRemotePlayback& from(HTMLMediaElement&);
+  static HTMLMediaElementRemotePlayback& From(HTMLMediaElement&);
   static RemotePlayback* remote(HTMLMediaElement&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<RemotePlayback> m_remote;
+  Member<RemotePlayback> remote_;
 };
 
 }  // namespace blink

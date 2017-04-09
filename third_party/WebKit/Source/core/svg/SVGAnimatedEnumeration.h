@@ -38,49 +38,49 @@ namespace blink {
 template <typename Enum>
 class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
  public:
-  static SVGAnimatedEnumeration<Enum>* create(
-      SVGElement* contextElement,
-      const QualifiedName& attributeName,
-      Enum initialValue) {
+  static SVGAnimatedEnumeration<Enum>* Create(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      Enum initial_value) {
     return new SVGAnimatedEnumeration(
-        contextElement, attributeName,
-        SVGEnumeration<Enum>::create(initialValue));
+        context_element, attribute_name,
+        SVGEnumeration<Enum>::Create(initial_value));
   }
 
-  static SVGAnimatedEnumeration<Enum>* create(
-      SVGElement* contextElement,
-      const QualifiedName& attributeName,
-      SVGEnumeration<Enum>* initialValue) {
-    return new SVGAnimatedEnumeration(contextElement, attributeName,
-                                      initialValue);
+  static SVGAnimatedEnumeration<Enum>* Create(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      SVGEnumeration<Enum>* initial_value) {
+    return new SVGAnimatedEnumeration(context_element, attribute_name,
+                                      initial_value);
   }
 
-  SVGEnumeration<Enum>* baseValue() {
+  SVGEnumeration<Enum>* BaseValue() {
     return static_cast<SVGEnumeration<Enum>*>(
-        SVGAnimatedEnumerationBase::baseValue());
+        SVGAnimatedEnumerationBase::BaseValue());
   }
 
-  SVGEnumeration<Enum>* currentValue() {
+  SVGEnumeration<Enum>* CurrentValue() {
     return static_cast<SVGEnumeration<Enum>*>(
-        SVGAnimatedEnumerationBase::currentValue());
+        SVGAnimatedEnumerationBase::CurrentValue());
   }
 
-  const SVGEnumeration<Enum>* currentValue() const {
+  const SVGEnumeration<Enum>* CurrentValue() const {
     return static_cast<const SVGEnumeration<Enum>*>(
-        SVGAnimatedEnumerationBase::currentValue());
+        SVGAnimatedEnumerationBase::CurrentValue());
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->traceWrappers(contextElement());
+    visitor->TraceWrappers(contextElement());
   }
 
  protected:
-  SVGAnimatedEnumeration(SVGElement* contextElement,
-                         const QualifiedName& attributeName,
-                         SVGEnumeration<Enum>* initialValue)
-      : SVGAnimatedEnumerationBase(contextElement,
-                                   attributeName,
-                                   initialValue) {}
+  SVGAnimatedEnumeration(SVGElement* context_element,
+                         const QualifiedName& attribute_name,
+                         SVGEnumeration<Enum>* initial_value)
+      : SVGAnimatedEnumerationBase(context_element,
+                                   attribute_name,
+                                   initial_value) {}
 };
 
 }  // namespace blink

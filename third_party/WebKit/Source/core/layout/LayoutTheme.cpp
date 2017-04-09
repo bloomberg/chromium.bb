@@ -64,165 +64,166 @@ namespace blink {
 
 using namespace HTMLNames;
 
-LayoutTheme& LayoutTheme::theme() {
+LayoutTheme& LayoutTheme::GetTheme() {
   if (RuntimeEnabledFeatures::mobileLayoutThemeEnabled()) {
-    DEFINE_STATIC_REF(LayoutTheme, layoutThemeMobile,
-                      (LayoutThemeMobile::create()));
-    return *layoutThemeMobile;
+    DEFINE_STATIC_REF(LayoutTheme, layout_theme_mobile,
+                      (LayoutThemeMobile::Create()));
+    return *layout_theme_mobile;
   }
-  return nativeTheme();
+  return NativeTheme();
 }
 
-LayoutTheme::LayoutTheme(Theme* platformTheme)
-    : m_hasCustomFocusRingColor(false), m_platformTheme(platformTheme) {}
+LayoutTheme::LayoutTheme(Theme* platform_theme)
+    : has_custom_focus_ring_color_(false), platform_theme_(platform_theme) {}
 
-void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e) {
-  DCHECK(style.hasAppearance());
+void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
+  DCHECK(style.HasAppearance());
 
   // Force inline and table display styles to be inline-block (except for table-
   // which is block)
-  ControlPart part = style.appearance();
-  if (style.display() == EDisplay::kInline ||
-      style.display() == EDisplay::kInlineTable ||
-      style.display() == EDisplay::kTableRowGroup ||
-      style.display() == EDisplay::kTableHeaderGroup ||
-      style.display() == EDisplay::kTableFooterGroup ||
-      style.display() == EDisplay::kTableRow ||
-      style.display() == EDisplay::kTableColumnGroup ||
-      style.display() == EDisplay::kTableColumn ||
-      style.display() == EDisplay::kTableCell ||
-      style.display() == EDisplay::kTableCaption)
-    style.setDisplay(EDisplay::kInlineBlock);
-  else if (style.display() == EDisplay::kListItem ||
-           style.display() == EDisplay::kTable)
-    style.setDisplay(EDisplay::kBlock);
+  ControlPart part = style.Appearance();
+  if (style.Display() == EDisplay::kInline ||
+      style.Display() == EDisplay::kInlineTable ||
+      style.Display() == EDisplay::kTableRowGroup ||
+      style.Display() == EDisplay::kTableHeaderGroup ||
+      style.Display() == EDisplay::kTableFooterGroup ||
+      style.Display() == EDisplay::kTableRow ||
+      style.Display() == EDisplay::kTableColumnGroup ||
+      style.Display() == EDisplay::kTableColumn ||
+      style.Display() == EDisplay::kTableCell ||
+      style.Display() == EDisplay::kTableCaption)
+    style.SetDisplay(EDisplay::kInlineBlock);
+  else if (style.Display() == EDisplay::kListItem ||
+           style.Display() == EDisplay::kTable)
+    style.SetDisplay(EDisplay::kBlock);
 
-  if (isControlStyled(style)) {
-    if (part == MenulistPart) {
-      style.setAppearance(MenulistButtonPart);
-      part = MenulistButtonPart;
+  if (IsControlStyled(style)) {
+    if (part == kMenulistPart) {
+      style.SetAppearance(kMenulistButtonPart);
+      part = kMenulistButtonPart;
     } else {
-      style.setAppearance(NoControlPart);
+      style.SetAppearance(kNoControlPart);
       return;
     }
   }
 
-  if (shouldUseFallbackTheme(style)) {
-    adjustStyleUsingFallbackTheme(style);
+  if (ShouldUseFallbackTheme(style)) {
+    AdjustStyleUsingFallbackTheme(style);
     return;
   }
 
-  if (m_platformTheme) {
+  if (platform_theme_) {
     switch (part) {
-      case CheckboxPart:
-      case InnerSpinButtonPart:
-      case RadioPart:
-      case PushButtonPart:
-      case SquareButtonPart:
-      case ButtonPart: {
+      case kCheckboxPart:
+      case kInnerSpinButtonPart:
+      case kRadioPart:
+      case kPushButtonPart:
+      case kSquareButtonPart:
+      case kButtonPart: {
         // Border
-        LengthBox borderBox(style.borderTopWidth(), style.borderRightWidth(),
-                            style.borderBottomWidth(), style.borderLeftWidth());
-        borderBox = m_platformTheme->controlBorder(
-            part, style.font().getFontDescription(), borderBox,
-            style.effectiveZoom());
-        if (borderBox.top().value() !=
-            static_cast<int>(style.borderTopWidth())) {
-          if (borderBox.top().value())
-            style.setBorderTopWidth(borderBox.top().value());
+        LengthBox border_box(style.BorderTopWidth(), style.BorderRightWidth(),
+                             style.BorderBottomWidth(),
+                             style.BorderLeftWidth());
+        border_box = platform_theme_->ControlBorder(
+            part, style.GetFont().GetFontDescription(), border_box,
+            style.EffectiveZoom());
+        if (border_box.Top().Value() !=
+            static_cast<int>(style.BorderTopWidth())) {
+          if (border_box.Top().Value())
+            style.SetBorderTopWidth(border_box.Top().Value());
           else
-            style.resetBorderTop();
+            style.ResetBorderTop();
         }
-        if (borderBox.right().value() !=
-            static_cast<int>(style.borderRightWidth())) {
-          if (borderBox.right().value())
-            style.setBorderRightWidth(borderBox.right().value());
+        if (border_box.Right().Value() !=
+            static_cast<int>(style.BorderRightWidth())) {
+          if (border_box.Right().Value())
+            style.SetBorderRightWidth(border_box.Right().Value());
           else
-            style.resetBorderRight();
+            style.ResetBorderRight();
         }
-        if (borderBox.bottom().value() !=
-            static_cast<int>(style.borderBottomWidth())) {
-          style.setBorderBottomWidth(borderBox.bottom().value());
-          if (borderBox.bottom().value())
-            style.setBorderBottomWidth(borderBox.bottom().value());
+        if (border_box.Bottom().Value() !=
+            static_cast<int>(style.BorderBottomWidth())) {
+          style.SetBorderBottomWidth(border_box.Bottom().Value());
+          if (border_box.Bottom().Value())
+            style.SetBorderBottomWidth(border_box.Bottom().Value());
           else
-            style.resetBorderBottom();
+            style.ResetBorderBottom();
         }
-        if (borderBox.left().value() !=
-            static_cast<int>(style.borderLeftWidth())) {
-          style.setBorderLeftWidth(borderBox.left().value());
-          if (borderBox.left().value())
-            style.setBorderLeftWidth(borderBox.left().value());
+        if (border_box.Left().Value() !=
+            static_cast<int>(style.BorderLeftWidth())) {
+          style.SetBorderLeftWidth(border_box.Left().Value());
+          if (border_box.Left().Value())
+            style.SetBorderLeftWidth(border_box.Left().Value());
           else
-            style.resetBorderLeft();
+            style.ResetBorderLeft();
         }
 
         // Padding
-        LengthBox paddingBox = m_platformTheme->controlPadding(
-            part, style.font().getFontDescription(), style.padding(),
-            style.effectiveZoom());
-        if (paddingBox != style.padding())
-          style.setPadding(paddingBox);
+        LengthBox padding_box = platform_theme_->ControlPadding(
+            part, style.GetFont().GetFontDescription(), style.Padding(),
+            style.EffectiveZoom());
+        if (padding_box != style.Padding())
+          style.SetPadding(padding_box);
 
         // Whitespace
-        if (m_platformTheme->controlRequiresPreWhiteSpace(part))
-          style.setWhiteSpace(EWhiteSpace::kPre);
+        if (platform_theme_->ControlRequiresPreWhiteSpace(part))
+          style.SetWhiteSpace(EWhiteSpace::kPre);
 
         // Width / Height
         // The width and height here are affected by the zoom.
         // FIXME: Check is flawed, since it doesn't take min-width/max-width
         // into account.
-        LengthSize controlSize = m_platformTheme->controlSize(
-            part, style.font().getFontDescription(),
-            LengthSize(style.width(), style.height()), style.effectiveZoom());
-        if (controlSize.width() != style.width())
-          style.setWidth(controlSize.width());
-        if (controlSize.height() != style.height())
-          style.setHeight(controlSize.height());
+        LengthSize control_size = platform_theme_->GetControlSize(
+            part, style.GetFont().GetFontDescription(),
+            LengthSize(style.Width(), style.Height()), style.EffectiveZoom());
+        if (control_size.Width() != style.Width())
+          style.SetWidth(control_size.Width());
+        if (control_size.Height() != style.Height())
+          style.SetHeight(control_size.Height());
 
         // Min-Width / Min-Height
-        LengthSize minControlSize = m_platformTheme->minimumControlSize(
-            part, style.font().getFontDescription(), style.effectiveZoom());
-        if (minControlSize.width() != style.minWidth())
-          style.setMinWidth(minControlSize.width());
-        if (minControlSize.height() != style.minHeight())
-          style.setMinHeight(minControlSize.height());
+        LengthSize min_control_size = platform_theme_->MinimumControlSize(
+            part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
+        if (min_control_size.Width() != style.MinWidth())
+          style.SetMinWidth(min_control_size.Width());
+        if (min_control_size.Height() != style.MinHeight())
+          style.SetMinHeight(min_control_size.Height());
 
         // Font
-        FontDescription controlFont = m_platformTheme->controlFont(
-            part, style.font().getFontDescription(), style.effectiveZoom());
-        if (controlFont != style.font().getFontDescription()) {
+        FontDescription control_font = platform_theme_->ControlFont(
+            part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
+        if (control_font != style.GetFont().GetFontDescription()) {
           // Reset our line-height
-          style.setLineHeight(ComputedStyle::initialLineHeight());
+          style.SetLineHeight(ComputedStyle::InitialLineHeight());
 
           // Now update our font.
-          if (style.setFontDescription(controlFont))
-            style.font().update(nullptr);
+          if (style.SetFontDescription(control_font))
+            style.GetFont().Update(nullptr);
         }
         break;
       }
-      case ProgressBarPart:
-        adjustProgressBarBounds(style);
+      case kProgressBarPart:
+        AdjustProgressBarBounds(style);
         break;
       default:
         break;
     }
   }
 
-  if (!m_platformTheme) {
+  if (!platform_theme_) {
     // Call the appropriate style adjustment method based off the appearance
     // value.
-    switch (style.appearance()) {
-      case CheckboxPart:
-        return adjustCheckboxStyle(style);
-      case RadioPart:
-        return adjustRadioStyle(style);
-      case PushButtonPart:
-      case SquareButtonPart:
-      case ButtonPart:
-        return adjustButtonStyle(style);
-      case InnerSpinButtonPart:
-        return adjustInnerSpinButtonStyle(style);
+    switch (style.Appearance()) {
+      case kCheckboxPart:
+        return AdjustCheckboxStyle(style);
+      case kRadioPart:
+        return AdjustRadioStyle(style);
+      case kPushButtonPart:
+      case kSquareButtonPart:
+      case kButtonPart:
+        return AdjustButtonStyle(style);
+      case kInnerSpinButtonPart:
+        return AdjustInnerSpinButtonStyle(style);
       default:
         break;
     }
@@ -230,38 +231,38 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e) {
 
   // Call the appropriate style adjustment method based off the appearance
   // value.
-  switch (style.appearance()) {
-    case MenulistPart:
-      return adjustMenuListStyle(style, e);
-    case MenulistButtonPart:
-      return adjustMenuListButtonStyle(style, e);
-    case SliderHorizontalPart:
-    case SliderVerticalPart:
-    case MediaSliderPart:
-    case MediaVolumeSliderPart:
-      return adjustSliderContainerStyle(style, e);
-    case SliderThumbHorizontalPart:
-    case SliderThumbVerticalPart:
-      return adjustSliderThumbStyle(style);
-    case SearchFieldPart:
-      return adjustSearchFieldStyle(style);
-    case SearchFieldCancelButtonPart:
-      return adjustSearchFieldCancelButtonStyle(style);
+  switch (style.Appearance()) {
+    case kMenulistPart:
+      return AdjustMenuListStyle(style, e);
+    case kMenulistButtonPart:
+      return AdjustMenuListButtonStyle(style, e);
+    case kSliderHorizontalPart:
+    case kSliderVerticalPart:
+    case kMediaSliderPart:
+    case kMediaVolumeSliderPart:
+      return AdjustSliderContainerStyle(style, e);
+    case kSliderThumbHorizontalPart:
+    case kSliderThumbVerticalPart:
+      return AdjustSliderThumbStyle(style);
+    case kSearchFieldPart:
+      return AdjustSearchFieldStyle(style);
+    case kSearchFieldCancelButtonPart:
+      return AdjustSearchFieldCancelButtonStyle(style);
     default:
       break;
   }
 }
 
-String LayoutTheme::extraDefaultStyleSheet() {
-  StringBuilder runtimeCSS;
+String LayoutTheme::ExtraDefaultStyleSheet() {
+  StringBuilder runtime_css;
   if (RuntimeEnabledFeatures::contextMenuEnabled())
-    runtimeCSS.append("menu[type=\"popup\" i] { display: none; }");
-  return runtimeCSS.toString();
+    runtime_css.Append("menu[type=\"popup\" i] { display: none; }");
+  return runtime_css.ToString();
 }
 
-static String formatChromiumMediaControlsTime(float time,
+static String FormatChromiumMediaControlsTime(float time,
                                               float duration,
-                                              bool includeSeparator) {
+                                              bool include_separator) {
   if (!std::isfinite(time))
     time = 0;
   if (!std::isfinite(duration))
@@ -272,404 +273,404 @@ static String formatChromiumMediaControlsTime(float time,
   seconds %= 60;
 
   // duration defines the format of how the time is rendered
-  int durationSecs = static_cast<int>(fabsf(duration));
-  int durationMins = durationSecs / 60;
+  int duration_secs = static_cast<int>(fabsf(duration));
+  int duration_mins = duration_secs / 60;
 
   // New UI includes a leading "/ " before duration.
-  const char* separator = includeSeparator ? "/ " : "";
+  const char* separator = include_separator ? "/ " : "";
 
   // 0-9 minutes duration is 0:00
   // 10-99 minutes duration is 00:00
   // >99 minutes duration is 000:00
-  if (durationMins > 99 || minutes > 99)
-    return String::format("%s%s%03d:%02d", separator, (time < 0 ? "-" : ""),
+  if (duration_mins > 99 || minutes > 99)
+    return String::Format("%s%s%03d:%02d", separator, (time < 0 ? "-" : ""),
                           minutes, seconds);
-  if (durationMins > 10)
-    return String::format("%s%s%02d:%02d", separator, (time < 0 ? "-" : ""),
+  if (duration_mins > 10)
+    return String::Format("%s%s%02d:%02d", separator, (time < 0 ? "-" : ""),
                           minutes, seconds);
 
-  return String::format("%s%s%01d:%02d", separator, (time < 0 ? "-" : ""),
+  return String::Format("%s%s%01d:%02d", separator, (time < 0 ? "-" : ""),
                         minutes, seconds);
 }
 
-String LayoutTheme::formatMediaControlsTime(float time) const {
-  return formatChromiumMediaControlsTime(time, time, true);
+String LayoutTheme::FormatMediaControlsTime(float time) const {
+  return FormatChromiumMediaControlsTime(time, time, true);
 }
 
-String LayoutTheme::formatMediaControlsCurrentTime(float currentTime,
+String LayoutTheme::FormatMediaControlsCurrentTime(float current_time,
                                                    float duration) const {
-  return formatChromiumMediaControlsTime(currentTime, duration, false);
+  return FormatChromiumMediaControlsTime(current_time, duration, false);
 }
 
-Color LayoutTheme::activeSelectionBackgroundColor() const {
-  return platformActiveSelectionBackgroundColor().blendWithWhite();
+Color LayoutTheme::ActiveSelectionBackgroundColor() const {
+  return PlatformActiveSelectionBackgroundColor().BlendWithWhite();
 }
 
-Color LayoutTheme::inactiveSelectionBackgroundColor() const {
-  return platformInactiveSelectionBackgroundColor().blendWithWhite();
+Color LayoutTheme::InactiveSelectionBackgroundColor() const {
+  return PlatformInactiveSelectionBackgroundColor().BlendWithWhite();
 }
 
-Color LayoutTheme::activeSelectionForegroundColor() const {
-  return platformActiveSelectionForegroundColor();
+Color LayoutTheme::ActiveSelectionForegroundColor() const {
+  return PlatformActiveSelectionForegroundColor();
 }
 
-Color LayoutTheme::inactiveSelectionForegroundColor() const {
-  return platformInactiveSelectionForegroundColor();
+Color LayoutTheme::InactiveSelectionForegroundColor() const {
+  return PlatformInactiveSelectionForegroundColor();
 }
 
-Color LayoutTheme::activeListBoxSelectionBackgroundColor() const {
-  return platformActiveListBoxSelectionBackgroundColor();
+Color LayoutTheme::ActiveListBoxSelectionBackgroundColor() const {
+  return PlatformActiveListBoxSelectionBackgroundColor();
 }
 
-Color LayoutTheme::inactiveListBoxSelectionBackgroundColor() const {
-  return platformInactiveListBoxSelectionBackgroundColor();
+Color LayoutTheme::InactiveListBoxSelectionBackgroundColor() const {
+  return PlatformInactiveListBoxSelectionBackgroundColor();
 }
 
-Color LayoutTheme::activeListBoxSelectionForegroundColor() const {
-  return platformActiveListBoxSelectionForegroundColor();
+Color LayoutTheme::ActiveListBoxSelectionForegroundColor() const {
+  return PlatformActiveListBoxSelectionForegroundColor();
 }
 
-Color LayoutTheme::inactiveListBoxSelectionForegroundColor() const {
-  return platformInactiveListBoxSelectionForegroundColor();
+Color LayoutTheme::InactiveListBoxSelectionForegroundColor() const {
+  return PlatformInactiveListBoxSelectionForegroundColor();
 }
 
-Color LayoutTheme::platformActiveSelectionBackgroundColor() const {
+Color LayoutTheme::PlatformActiveSelectionBackgroundColor() const {
   // Use a blue color by default if the platform theme doesn't define anything.
   return Color(0, 0, 255);
 }
 
-Color LayoutTheme::platformActiveSelectionForegroundColor() const {
+Color LayoutTheme::PlatformActiveSelectionForegroundColor() const {
   // Use a white color by default if the platform theme doesn't define anything.
-  return Color::white;
+  return Color::kWhite;
 }
 
-Color LayoutTheme::platformInactiveSelectionBackgroundColor() const {
+Color LayoutTheme::PlatformInactiveSelectionBackgroundColor() const {
   // Use a grey color by default if the platform theme doesn't define anything.
   // This color matches Firefox's inactive color.
   return Color(176, 176, 176);
 }
 
-Color LayoutTheme::platformInactiveSelectionForegroundColor() const {
+Color LayoutTheme::PlatformInactiveSelectionForegroundColor() const {
   // Use a black color by default.
-  return Color::black;
+  return Color::kBlack;
 }
 
-Color LayoutTheme::platformActiveListBoxSelectionBackgroundColor() const {
-  return platformActiveSelectionBackgroundColor();
+Color LayoutTheme::PlatformActiveListBoxSelectionBackgroundColor() const {
+  return PlatformActiveSelectionBackgroundColor();
 }
 
-Color LayoutTheme::platformActiveListBoxSelectionForegroundColor() const {
-  return platformActiveSelectionForegroundColor();
+Color LayoutTheme::PlatformActiveListBoxSelectionForegroundColor() const {
+  return PlatformActiveSelectionForegroundColor();
 }
 
-Color LayoutTheme::platformInactiveListBoxSelectionBackgroundColor() const {
-  return platformInactiveSelectionBackgroundColor();
+Color LayoutTheme::PlatformInactiveListBoxSelectionBackgroundColor() const {
+  return PlatformInactiveSelectionBackgroundColor();
 }
 
-Color LayoutTheme::platformInactiveListBoxSelectionForegroundColor() const {
-  return platformInactiveSelectionForegroundColor();
+Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor() const {
+  return PlatformInactiveSelectionForegroundColor();
 }
 
-int LayoutTheme::baselinePosition(const LayoutObject* o) const {
-  if (!o->isBox())
+int LayoutTheme::BaselinePosition(const LayoutObject* o) const {
+  if (!o->IsBox())
     return 0;
 
-  const LayoutBox* box = toLayoutBox(o);
+  const LayoutBox* box = ToLayoutBox(o);
 
-  if (m_platformTheme)
-    return box->size().height() + box->marginTop() +
-           m_platformTheme->baselinePositionAdjustment(
-               o->style()->appearance()) *
-               o->style()->effectiveZoom();
-  return (box->size().height() + box->marginTop()).toInt();
+  if (platform_theme_)
+    return box->size().Height() + box->MarginTop() +
+           platform_theme_->BaselinePositionAdjustment(
+               o->Style()->Appearance()) *
+               o->Style()->EffectiveZoom();
+  return (box->size().Height() + box->MarginTop()).ToInt();
 }
 
-bool LayoutTheme::isControlContainer(ControlPart appearance) const {
+bool LayoutTheme::IsControlContainer(ControlPart appearance) const {
   // There are more leaves than this, but we'll patch this function as we add
   // support for more controls.
-  return appearance != CheckboxPart && appearance != RadioPart;
+  return appearance != kCheckboxPart && appearance != kRadioPart;
 }
 
-bool LayoutTheme::isControlStyled(const ComputedStyle& style) const {
-  switch (style.appearance()) {
-    case PushButtonPart:
-    case SquareButtonPart:
-    case ButtonPart:
-    case ProgressBarPart:
-      return style.hasAuthorBackground() || style.hasAuthorBorder();
+bool LayoutTheme::IsControlStyled(const ComputedStyle& style) const {
+  switch (style.Appearance()) {
+    case kPushButtonPart:
+    case kSquareButtonPart:
+    case kButtonPart:
+    case kProgressBarPart:
+      return style.HasAuthorBackground() || style.HasAuthorBorder();
 
-    case MenulistPart:
-    case SearchFieldPart:
-    case TextAreaPart:
-    case TextFieldPart:
-      return style.hasAuthorBackground() || style.hasAuthorBorder() ||
-             style.boxShadow();
+    case kMenulistPart:
+    case kSearchFieldPart:
+    case kTextAreaPart:
+    case kTextFieldPart:
+      return style.HasAuthorBackground() || style.HasAuthorBorder() ||
+             style.BoxShadow();
 
     default:
       return false;
   }
 }
 
-void LayoutTheme::addVisualOverflow(const LayoutObject& object,
-                                    IntRect& borderBox) {
-  if (m_platformTheme)
-    m_platformTheme->addVisualOverflow(
-        object.style()->appearance(), controlStatesForLayoutObject(object),
-        object.style()->effectiveZoom(), borderBox);
+void LayoutTheme::AddVisualOverflow(const LayoutObject& object,
+                                    IntRect& border_box) {
+  if (platform_theme_)
+    platform_theme_->AddVisualOverflow(
+        object.Style()->Appearance(), ControlStatesForLayoutObject(object),
+        object.Style()->EffectiveZoom(), border_box);
 }
 
-bool LayoutTheme::shouldDrawDefaultFocusRing(
-    const LayoutObject& layoutObject) const {
-  if (themeDrawsFocusRing(layoutObject.styleRef()))
+bool LayoutTheme::ShouldDrawDefaultFocusRing(
+    const LayoutObject& layout_object) const {
+  if (ThemeDrawsFocusRing(layout_object.StyleRef()))
     return false;
-  Node* node = layoutObject.node();
+  Node* node = layout_object.GetNode();
   if (!node)
     return true;
-  if (!layoutObject.styleRef().hasAppearance() && !node->isLink())
+  if (!layout_object.StyleRef().HasAppearance() && !node->IsLink())
     return true;
   // We can't use LayoutTheme::isFocused because outline:auto might be
   // specified to non-:focus rulesets.
-  if (node->isFocused() && !node->shouldHaveFocusAppearance())
+  if (node->IsFocused() && !node->ShouldHaveFocusAppearance())
     return false;
   return true;
 }
 
-bool LayoutTheme::controlStateChanged(LayoutObject& o,
+bool LayoutTheme::ControlStateChanged(LayoutObject& o,
                                       ControlState state) const {
-  if (!o.styleRef().hasAppearance())
+  if (!o.StyleRef().HasAppearance())
     return false;
 
   // Default implementation assumes the controls don't respond to changes in
   // :hover state
-  if (state == HoverControlState && !supportsHover(o.styleRef()))
+  if (state == kHoverControlState && !SupportsHover(o.StyleRef()))
     return false;
 
   // Assume pressed state is only responded to if the control is enabled.
-  if (state == PressedControlState && !isEnabled(o))
+  if (state == kPressedControlState && !IsEnabled(o))
     return false;
 
-  o.setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+  o.SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
   return true;
 }
 
-ControlStates LayoutTheme::controlStatesForLayoutObject(const LayoutObject& o) {
+ControlStates LayoutTheme::ControlStatesForLayoutObject(const LayoutObject& o) {
   ControlStates result = 0;
-  if (isHovered(o)) {
-    result |= HoverControlState;
-    if (isSpinUpButtonPartHovered(o))
-      result |= SpinUpControlState;
+  if (IsHovered(o)) {
+    result |= kHoverControlState;
+    if (IsSpinUpButtonPartHovered(o))
+      result |= kSpinUpControlState;
   }
-  if (isPressed(o)) {
-    result |= PressedControlState;
-    if (isSpinUpButtonPartPressed(o))
-      result |= SpinUpControlState;
+  if (IsPressed(o)) {
+    result |= kPressedControlState;
+    if (IsSpinUpButtonPartPressed(o))
+      result |= kSpinUpControlState;
   }
-  if (isFocused(o) && o.style()->outlineStyleIsAuto())
-    result |= FocusControlState;
-  if (isEnabled(o))
-    result |= EnabledControlState;
-  if (isChecked(o))
-    result |= CheckedControlState;
-  if (isReadOnlyControl(o))
-    result |= ReadOnlyControlState;
-  if (!isActive(o))
-    result |= WindowInactiveControlState;
-  if (isIndeterminate(o))
-    result |= IndeterminateControlState;
+  if (IsFocused(o) && o.Style()->OutlineStyleIsAuto())
+    result |= kFocusControlState;
+  if (IsEnabled(o))
+    result |= kEnabledControlState;
+  if (IsChecked(o))
+    result |= kCheckedControlState;
+  if (IsReadOnlyControl(o))
+    result |= kReadOnlyControlState;
+  if (!IsActive(o))
+    result |= kWindowInactiveControlState;
+  if (IsIndeterminate(o))
+    result |= kIndeterminateControlState;
   return result;
 }
 
-bool LayoutTheme::isActive(const LayoutObject& o) {
-  Node* node = o.node();
+bool LayoutTheme::IsActive(const LayoutObject& o) {
+  Node* node = o.GetNode();
   if (!node)
     return false;
 
-  Page* page = node->document().page();
+  Page* page = node->GetDocument().GetPage();
   if (!page)
     return false;
 
-  return page->focusController().isActive();
+  return page->GetFocusController().IsActive();
 }
 
-bool LayoutTheme::isChecked(const LayoutObject& o) {
-  if (!isHTMLInputElement(o.node()))
+bool LayoutTheme::IsChecked(const LayoutObject& o) {
+  if (!isHTMLInputElement(o.GetNode()))
     return false;
-  return toHTMLInputElement(o.node())->shouldAppearChecked();
+  return toHTMLInputElement(o.GetNode())->ShouldAppearChecked();
 }
 
-bool LayoutTheme::isIndeterminate(const LayoutObject& o) {
-  if (!isHTMLInputElement(o.node()))
+bool LayoutTheme::IsIndeterminate(const LayoutObject& o) {
+  if (!isHTMLInputElement(o.GetNode()))
     return false;
-  return toHTMLInputElement(o.node())->shouldAppearIndeterminate();
+  return toHTMLInputElement(o.GetNode())->ShouldAppearIndeterminate();
 }
 
-bool LayoutTheme::isEnabled(const LayoutObject& o) {
-  Node* node = o.node();
-  if (!node || !node->isElementNode())
+bool LayoutTheme::IsEnabled(const LayoutObject& o) {
+  Node* node = o.GetNode();
+  if (!node || !node->IsElementNode())
     return true;
-  return !toElement(node)->isDisabledFormControl();
+  return !ToElement(node)->IsDisabledFormControl();
 }
 
-bool LayoutTheme::isFocused(const LayoutObject& o) {
-  Node* node = o.node();
+bool LayoutTheme::IsFocused(const LayoutObject& o) {
+  Node* node = o.GetNode();
   if (!node)
     return false;
 
-  node = node->focusDelegate();
-  Document& document = node->document();
-  LocalFrame* frame = document.frame();
-  return node == document.focusedElement() && node->isFocused() &&
-         node->shouldHaveFocusAppearance() && frame &&
-         frame->selection().isFocusedAndActive();
+  node = node->FocusDelegate();
+  Document& document = node->GetDocument();
+  LocalFrame* frame = document.GetFrame();
+  return node == document.FocusedElement() && node->IsFocused() &&
+         node->ShouldHaveFocusAppearance() && frame &&
+         frame->Selection().IsFocusedAndActive();
 }
 
-bool LayoutTheme::isPressed(const LayoutObject& o) {
-  if (!o.node())
+bool LayoutTheme::IsPressed(const LayoutObject& o) {
+  if (!o.GetNode())
     return false;
-  return o.node()->isActive();
+  return o.GetNode()->IsActive();
 }
 
-bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject& o) {
-  Node* node = o.node();
-  if (!node || !node->isActive() || !node->isElementNode() ||
-      !toElement(node)->isSpinButtonElement())
+bool LayoutTheme::IsSpinUpButtonPartPressed(const LayoutObject& o) {
+  Node* node = o.GetNode();
+  if (!node || !node->IsActive() || !node->IsElementNode() ||
+      !ToElement(node)->IsSpinButtonElement())
     return false;
-  SpinButtonElement* element = toSpinButtonElement(node);
-  return element->getUpDownState() == SpinButtonElement::Up;
+  SpinButtonElement* element = ToSpinButtonElement(node);
+  return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 
-bool LayoutTheme::isReadOnlyControl(const LayoutObject& o) {
-  Node* node = o.node();
-  if (!node || !node->isElementNode() ||
-      !toElement(node)->isFormControlElement())
+bool LayoutTheme::IsReadOnlyControl(const LayoutObject& o) {
+  Node* node = o.GetNode();
+  if (!node || !node->IsElementNode() ||
+      !ToElement(node)->IsFormControlElement())
     return false;
-  HTMLFormControlElement* element = toHTMLFormControlElement(node);
-  return element->isReadOnly();
+  HTMLFormControlElement* element = ToHTMLFormControlElement(node);
+  return element->IsReadOnly();
 }
 
-bool LayoutTheme::isHovered(const LayoutObject& o) {
-  Node* node = o.node();
+bool LayoutTheme::IsHovered(const LayoutObject& o) {
+  Node* node = o.GetNode();
   if (!node)
     return false;
-  if (!node->isElementNode() || !toElement(node)->isSpinButtonElement())
-    return node->isHovered();
-  SpinButtonElement* element = toSpinButtonElement(node);
-  return element->isHovered() &&
-         element->getUpDownState() != SpinButtonElement::Indeterminate;
+  if (!node->IsElementNode() || !ToElement(node)->IsSpinButtonElement())
+    return node->IsHovered();
+  SpinButtonElement* element = ToSpinButtonElement(node);
+  return element->IsHovered() &&
+         element->GetUpDownState() != SpinButtonElement::kIndeterminate;
 }
 
-bool LayoutTheme::isSpinUpButtonPartHovered(const LayoutObject& o) {
-  Node* node = o.node();
-  if (!node || !node->isElementNode() ||
-      !toElement(node)->isSpinButtonElement())
+bool LayoutTheme::IsSpinUpButtonPartHovered(const LayoutObject& o) {
+  Node* node = o.GetNode();
+  if (!node || !node->IsElementNode() ||
+      !ToElement(node)->IsSpinButtonElement())
     return false;
-  SpinButtonElement* element = toSpinButtonElement(node);
-  return element->getUpDownState() == SpinButtonElement::Up;
+  SpinButtonElement* element = ToSpinButtonElement(node);
+  return element->GetUpDownState() == SpinButtonElement::kUp;
 }
 
-void LayoutTheme::adjustCheckboxStyle(ComputedStyle& style) const {
+void LayoutTheme::AdjustCheckboxStyle(ComputedStyle& style) const {
   // A summary of the rules for checkbox designed to match WinIE:
   // width/height - honored (WinIE actually scales its control for small widths,
   // but lets it overflow for small heights.)
   // font-size - not honored (control has no text), but we use it to decide
   // which control size to use.
-  setCheckboxSize(style);
+  SetCheckboxSize(style);
 
   // padding - not honored by WinIE, needs to be removed.
-  style.resetPadding();
+  style.ResetPadding();
 
   // border - honored by WinIE, but looks terrible (just paints in the control
   // box and turns off the Windows XP theme) for now, we will not honor it.
-  style.resetBorder();
+  style.ResetBorder();
 }
 
-void LayoutTheme::adjustRadioStyle(ComputedStyle& style) const {
+void LayoutTheme::AdjustRadioStyle(ComputedStyle& style) const {
   // A summary of the rules for checkbox designed to match WinIE:
   // width/height - honored (WinIE actually scales its control for small widths,
   // but lets it overflow for small heights.)
   // font-size - not honored (control has no text), but we use it to decide
   // which control size to use.
-  setRadioSize(style);
+  SetRadioSize(style);
 
   // padding - not honored by WinIE, needs to be removed.
-  style.resetPadding();
+  style.ResetPadding();
 
   // border - honored by WinIE, but looks terrible (just paints in the control
   // box and turns off the Windows XP theme) for now, we will not honor it.
-  style.resetBorder();
+  style.ResetBorder();
 }
 
-void LayoutTheme::adjustButtonStyle(ComputedStyle& style) const {}
+void LayoutTheme::AdjustButtonStyle(ComputedStyle& style) const {}
 
-void LayoutTheme::adjustInnerSpinButtonStyle(ComputedStyle&) const {}
+void LayoutTheme::AdjustInnerSpinButtonStyle(ComputedStyle&) const {}
 
-void LayoutTheme::adjustMenuListStyle(ComputedStyle&, Element*) const {}
+void LayoutTheme::AdjustMenuListStyle(ComputedStyle&, Element*) const {}
 
-double LayoutTheme::animationRepeatIntervalForProgressBar() const {
+double LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
   return 0;
 }
 
-double LayoutTheme::animationDurationForProgressBar() const {
+double LayoutTheme::AnimationDurationForProgressBar() const {
   return 0;
 }
 
-bool LayoutTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const {
-  return inputElement->isSteppable() &&
-         inputElement->type() != InputTypeNames::range;
+bool LayoutTheme::ShouldHaveSpinButton(HTMLInputElement* input_element) const {
+  return input_element->IsSteppable() &&
+         input_element->type() != InputTypeNames::range;
 }
 
-void LayoutTheme::adjustMenuListButtonStyle(ComputedStyle&, Element*) const {}
+void LayoutTheme::AdjustMenuListButtonStyle(ComputedStyle&, Element*) const {}
 
-void LayoutTheme::adjustSliderContainerStyle(ComputedStyle& style,
+void LayoutTheme::AdjustSliderContainerStyle(ComputedStyle& style,
                                              Element* e) const {
-  if (e && (e->shadowPseudoId() == "-webkit-media-slider-container" ||
-            e->shadowPseudoId() == "-webkit-slider-container")) {
-    if (style.appearance() == SliderVerticalPart) {
-      style.setTouchAction(TouchActionPanX);
-      style.setAppearance(NoControlPart);
+  if (e && (e->ShadowPseudoId() == "-webkit-media-slider-container" ||
+            e->ShadowPseudoId() == "-webkit-slider-container")) {
+    if (style.Appearance() == kSliderVerticalPart) {
+      style.SetTouchAction(kTouchActionPanX);
+      style.SetAppearance(kNoControlPart);
     } else {
-      style.setTouchAction(TouchActionPanY);
-      style.setAppearance(NoControlPart);
+      style.SetTouchAction(kTouchActionPanY);
+      style.SetAppearance(kNoControlPart);
     }
   }
 }
 
-void LayoutTheme::adjustSliderThumbStyle(ComputedStyle& style) const {
-  adjustSliderThumbSize(style);
+void LayoutTheme::AdjustSliderThumbStyle(ComputedStyle& style) const {
+  AdjustSliderThumbSize(style);
 }
 
-void LayoutTheme::adjustSliderThumbSize(ComputedStyle&) const {}
+void LayoutTheme::AdjustSliderThumbSize(ComputedStyle&) const {}
 
-void LayoutTheme::adjustSearchFieldStyle(ComputedStyle&) const {}
+void LayoutTheme::AdjustSearchFieldStyle(ComputedStyle&) const {}
 
-void LayoutTheme::adjustSearchFieldCancelButtonStyle(ComputedStyle&) const {}
+void LayoutTheme::AdjustSearchFieldCancelButtonStyle(ComputedStyle&) const {}
 
-void LayoutTheme::platformColorsDidChange() {
-  Page::platformColorsChanged();
+void LayoutTheme::PlatformColorsDidChange() {
+  Page::PlatformColorsChanged();
 }
 
-void LayoutTheme::setCaretBlinkInterval(double interval) {
-  m_caretBlinkInterval = interval;
+void LayoutTheme::SetCaretBlinkInterval(double interval) {
+  caret_blink_interval_ = interval;
 }
 
-double LayoutTheme::caretBlinkInterval() const {
+double LayoutTheme::CaretBlinkInterval() const {
   // Disable the blinking caret in layout test mode, as it introduces
   // a race condition for the pixel tests. http://b/1198440
-  return LayoutTestSupport::isRunningLayoutTest() ? 0 : m_caretBlinkInterval;
+  return LayoutTestSupport::IsRunningLayoutTest() ? 0 : caret_blink_interval_;
 }
 
-static FontDescription& getCachedFontDescription(CSSValueID systemFontID) {
+static FontDescription& GetCachedFontDescription(CSSValueID system_font_id) {
   DEFINE_STATIC_LOCAL(FontDescription, caption, ());
   DEFINE_STATIC_LOCAL(FontDescription, icon, ());
   DEFINE_STATIC_LOCAL(FontDescription, menu, ());
-  DEFINE_STATIC_LOCAL(FontDescription, messageBox, ());
-  DEFINE_STATIC_LOCAL(FontDescription, smallCaption, ());
-  DEFINE_STATIC_LOCAL(FontDescription, statusBar, ());
-  DEFINE_STATIC_LOCAL(FontDescription, webkitMiniControl, ());
-  DEFINE_STATIC_LOCAL(FontDescription, webkitSmallControl, ());
-  DEFINE_STATIC_LOCAL(FontDescription, webkitControl, ());
-  DEFINE_STATIC_LOCAL(FontDescription, defaultDescription, ());
-  switch (systemFontID) {
+  DEFINE_STATIC_LOCAL(FontDescription, message_box, ());
+  DEFINE_STATIC_LOCAL(FontDescription, small_caption, ());
+  DEFINE_STATIC_LOCAL(FontDescription, status_bar, ());
+  DEFINE_STATIC_LOCAL(FontDescription, webkit_mini_control, ());
+  DEFINE_STATIC_LOCAL(FontDescription, webkit_small_control, ());
+  DEFINE_STATIC_LOCAL(FontDescription, webkit_control, ());
+  DEFINE_STATIC_LOCAL(FontDescription, default_description, ());
+  switch (system_font_id) {
     case CSSValueCaption:
       return caption;
     case CSSValueIcon:
@@ -677,46 +678,46 @@ static FontDescription& getCachedFontDescription(CSSValueID systemFontID) {
     case CSSValueMenu:
       return menu;
     case CSSValueMessageBox:
-      return messageBox;
+      return message_box;
     case CSSValueSmallCaption:
-      return smallCaption;
+      return small_caption;
     case CSSValueStatusBar:
-      return statusBar;
+      return status_bar;
     case CSSValueWebkitMiniControl:
-      return webkitMiniControl;
+      return webkit_mini_control;
     case CSSValueWebkitSmallControl:
-      return webkitSmallControl;
+      return webkit_small_control;
     case CSSValueWebkitControl:
-      return webkitControl;
+      return webkit_control;
     case CSSValueNone:
-      return defaultDescription;
+      return default_description;
     default:
       NOTREACHED();
-      return defaultDescription;
+      return default_description;
   }
 }
 
-void LayoutTheme::systemFont(CSSValueID systemFontID,
-                             FontDescription& fontDescription) {
-  fontDescription = getCachedFontDescription(systemFontID);
-  if (fontDescription.isAbsoluteSize())
+void LayoutTheme::SystemFont(CSSValueID system_font_id,
+                             FontDescription& font_description) {
+  font_description = GetCachedFontDescription(system_font_id);
+  if (font_description.IsAbsoluteSize())
     return;
 
-  FontStyle fontStyle = FontStyleNormal;
-  FontWeight fontWeight = FontWeightNormal;
-  float fontSize = 0;
-  AtomicString fontFamily;
-  systemFont(systemFontID, fontStyle, fontWeight, fontSize, fontFamily);
-  fontDescription.setStyle(fontStyle);
-  fontDescription.setWeight(fontWeight);
-  fontDescription.setSpecifiedSize(fontSize);
-  fontDescription.setIsAbsoluteSize(true);
-  fontDescription.firstFamily().setFamily(fontFamily);
-  fontDescription.setGenericFamily(FontDescription::NoFamily);
+  FontStyle font_style = kFontStyleNormal;
+  FontWeight font_weight = kFontWeightNormal;
+  float font_size = 0;
+  AtomicString font_family;
+  SystemFont(system_font_id, font_style, font_weight, font_size, font_family);
+  font_description.SetStyle(font_style);
+  font_description.SetWeight(font_weight);
+  font_description.SetSpecifiedSize(font_size);
+  font_description.SetIsAbsoluteSize(true);
+  font_description.FirstFamily().SetFamily(font_family);
+  font_description.SetGenericFamily(FontDescription::kNoFamily);
 }
 
-Color LayoutTheme::systemColor(CSSValueID cssValueId) const {
-  switch (cssValueId) {
+Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
+  switch (css_value_id) {
     case CSSValueActiveborder:
       return 0xFFFFFFFF;
     case CSSValueActivecaption:
@@ -776,13 +777,13 @@ Color LayoutTheme::systemColor(CSSValueID cssValueId) const {
     case CSSValueWindowtext:
       return 0xFF000000;
     case CSSValueInternalActiveListBoxSelection:
-      return activeListBoxSelectionBackgroundColor();
+      return ActiveListBoxSelectionBackgroundColor();
     case CSSValueInternalActiveListBoxSelectionText:
-      return activeListBoxSelectionForegroundColor();
+      return ActiveListBoxSelectionForegroundColor();
     case CSSValueInternalInactiveListBoxSelection:
-      return inactiveListBoxSelectionBackgroundColor();
+      return InactiveListBoxSelectionBackgroundColor();
     case CSSValueInternalInactiveListBoxSelectionText:
-      return inactiveListBoxSelectionForegroundColor();
+      return InactiveListBoxSelectionForegroundColor();
     default:
       break;
   }
@@ -790,131 +791,131 @@ Color LayoutTheme::systemColor(CSSValueID cssValueId) const {
   return Color();
 }
 
-Color LayoutTheme::platformTextSearchHighlightColor(bool activeMatch) const {
-  if (activeMatch)
+Color LayoutTheme::PlatformTextSearchHighlightColor(bool active_match) const {
+  if (active_match)
     return Color(255, 150, 50);  // Orange.
   return Color(255, 255, 0);     // Yellow.
 }
 
-Color LayoutTheme::platformTextSearchColor(bool activeMatch) const {
-  return Color::black;
+Color LayoutTheme::PlatformTextSearchColor(bool active_match) const {
+  return Color::kBlack;
 }
 
-Color LayoutTheme::tapHighlightColor() {
-  return theme().platformTapHighlightColor();
+Color LayoutTheme::TapHighlightColor() {
+  return GetTheme().PlatformTapHighlightColor();
 }
 
-void LayoutTheme::setCustomFocusRingColor(const Color& c) {
-  m_customFocusRingColor = c;
-  m_hasCustomFocusRingColor = true;
+void LayoutTheme::SetCustomFocusRingColor(const Color& c) {
+  custom_focus_ring_color_ = c;
+  has_custom_focus_ring_color_ = true;
 }
 
-Color LayoutTheme::focusRingColor() const {
-  return m_hasCustomFocusRingColor ? m_customFocusRingColor
-                                   : theme().platformFocusRingColor();
+Color LayoutTheme::FocusRingColor() const {
+  return has_custom_focus_ring_color_ ? custom_focus_ring_color_
+                                      : GetTheme().PlatformFocusRingColor();
 }
 
-String LayoutTheme::fileListNameForWidth(Locale& locale,
-                                         const FileList* fileList,
+String LayoutTheme::FileListNameForWidth(Locale& locale,
+                                         const FileList* file_list,
                                          const Font& font,
                                          int width) const {
   if (width <= 0)
     return String();
 
   String string;
-  if (fileList->isEmpty()) {
+  if (file_list->IsEmpty()) {
     string =
-        locale.queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
-  } else if (fileList->length() == 1) {
-    string = fileList->item(0)->name();
+        locale.QueryString(WebLocalizedString::kFileButtonNoFileSelectedLabel);
+  } else if (file_list->length() == 1) {
+    string = file_list->item(0)->name();
   } else {
-    return StringTruncator::rightTruncate(
-        locale.queryString(WebLocalizedString::MultipleFileUploadText,
-                           locale.convertToLocalizedNumber(
-                               String::number(fileList->length()))),
+    return StringTruncator::RightTruncate(
+        locale.QueryString(WebLocalizedString::kMultipleFileUploadText,
+                           locale.ConvertToLocalizedNumber(
+                               String::Number(file_list->length()))),
         width, font);
   }
 
-  return StringTruncator::centerTruncate(string, width, font);
+  return StringTruncator::CenterTruncate(string, width, font);
 }
 
-bool LayoutTheme::shouldOpenPickerWithF4Key() const {
+bool LayoutTheme::ShouldOpenPickerWithF4Key() const {
   return false;
 }
 
-bool LayoutTheme::supportsCalendarPicker(const AtomicString& type) const {
+bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
   DCHECK(RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
   return type == InputTypeNames::date || type == InputTypeNames::datetime ||
          type == InputTypeNames::datetime_local ||
          type == InputTypeNames::month || type == InputTypeNames::week;
 }
 
-bool LayoutTheme::shouldUseFallbackTheme(const ComputedStyle&) const {
+bool LayoutTheme::ShouldUseFallbackTheme(const ComputedStyle&) const {
   return false;
 }
 
-void LayoutTheme::adjustStyleUsingFallbackTheme(ComputedStyle& style) {
-  ControlPart part = style.appearance();
+void LayoutTheme::AdjustStyleUsingFallbackTheme(ComputedStyle& style) {
+  ControlPart part = style.Appearance();
   switch (part) {
-    case CheckboxPart:
-      return adjustCheckboxStyleUsingFallbackTheme(style);
-    case RadioPart:
-      return adjustRadioStyleUsingFallbackTheme(style);
+    case kCheckboxPart:
+      return AdjustCheckboxStyleUsingFallbackTheme(style);
+    case kRadioPart:
+      return AdjustRadioStyleUsingFallbackTheme(style);
     default:
       break;
   }
 }
 
 // static
-void LayoutTheme::setSizeIfAuto(ComputedStyle& style, const IntSize& size) {
-  if (style.width().isIntrinsicOrAuto())
-    style.setWidth(Length(size.width(), Fixed));
-  if (style.height().isAuto())
-    style.setHeight(Length(size.height(), Fixed));
+void LayoutTheme::SetSizeIfAuto(ComputedStyle& style, const IntSize& size) {
+  if (style.Width().IsIntrinsicOrAuto())
+    style.SetWidth(Length(size.Width(), kFixed));
+  if (style.Height().IsAuto())
+    style.SetHeight(Length(size.Height(), kFixed));
 }
 
-void LayoutTheme::adjustCheckboxStyleUsingFallbackTheme(
+void LayoutTheme::AdjustCheckboxStyleUsingFallbackTheme(
     ComputedStyle& style) const {
   // If the width and height are both specified, then we have nothing to do.
-  if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
+  if (!style.Width().IsIntrinsicOrAuto() && !style.Height().IsAuto())
     return;
 
-  IntSize size = Platform::current()->fallbackThemeEngine()->getSize(
-      WebFallbackThemeEngine::PartCheckbox);
-  float zoomLevel = style.effectiveZoom();
-  size.setWidth(size.width() * zoomLevel);
-  size.setHeight(size.height() * zoomLevel);
-  setSizeIfAuto(style, size);
+  IntSize size = Platform::Current()->FallbackThemeEngine()->GetSize(
+      WebFallbackThemeEngine::kPartCheckbox);
+  float zoom_level = style.EffectiveZoom();
+  size.SetWidth(size.Width() * zoom_level);
+  size.SetHeight(size.Height() * zoom_level);
+  SetSizeIfAuto(style, size);
 
   // padding - not honored by WinIE, needs to be removed.
-  style.resetPadding();
+  style.ResetPadding();
 
   // border - honored by WinIE, but looks terrible (just paints in the control
   // box and turns off the Windows XP theme)
   // for now, we will not honor it.
-  style.resetBorder();
+  style.ResetBorder();
 }
 
-void LayoutTheme::adjustRadioStyleUsingFallbackTheme(
+void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
     ComputedStyle& style) const {
   // If the width and height are both specified, then we have nothing to do.
-  if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
+  if (!style.Width().IsIntrinsicOrAuto() && !style.Height().IsAuto())
     return;
 
-  IntSize size = Platform::current()->fallbackThemeEngine()->getSize(
-      WebFallbackThemeEngine::PartRadio);
-  float zoomLevel = style.effectiveZoom();
-  size.setWidth(size.width() * zoomLevel);
-  size.setHeight(size.height() * zoomLevel);
-  setSizeIfAuto(style, size);
+  IntSize size = Platform::Current()->FallbackThemeEngine()->GetSize(
+      WebFallbackThemeEngine::kPartRadio);
+  float zoom_level = style.EffectiveZoom();
+  size.SetWidth(size.Width() * zoom_level);
+  size.SetHeight(size.Height() * zoom_level);
+  SetSizeIfAuto(style, size);
 
   // padding - not honored by WinIE, needs to be removed.
-  style.resetPadding();
+  style.ResetPadding();
 
   // border - honored by WinIE, but looks terrible (just paints in the control
   // box and turns off the Windows XP theme)
   // for now, we will not honor it.
-  style.resetBorder();
+  style.ResetBorder();
 }
 
 }  // namespace blink

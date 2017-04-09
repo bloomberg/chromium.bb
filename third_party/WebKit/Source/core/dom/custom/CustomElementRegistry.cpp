@@ -29,22 +29,22 @@
 namespace blink {
 
 // Returns true if |name| is invalid.
-static bool throwIfInvalidName(const AtomicString& name,
-                               ExceptionState& exceptionState) {
-  if (CustomElement::isValidName(name))
+static bool ThrowIfInvalidName(const AtomicString& name,
+                               ExceptionState& exception_state) {
+  if (CustomElement::IsValidName(name))
     return false;
-  exceptionState.throwDOMException(
-      SyntaxError, "\"" + name + "\" is not a valid custom element name");
+  exception_state.ThrowDOMException(
+      kSyntaxError, "\"" + name + "\" is not a valid custom element name");
   return true;
 }
 
 // Returns true if |name| is valid.
-static bool throwIfValidName(const AtomicString& name,
-                             ExceptionState& exceptionState) {
-  if (!CustomElement::isValidName(name))
+static bool ThrowIfValidName(const AtomicString& name,
+                             ExceptionState& exception_state) {
+  if (!CustomElement::IsValidName(name))
     return false;
-  exceptionState.throwDOMException(
-      NotSupportedError, "\"" + name + "\" is a valid custom element name");
+  exception_state.ThrowDOMException(
+      kNotSupportedError, "\"" + name + "\" is a valid custom element name");
   return true;
 }
 
@@ -53,57 +53,57 @@ class CustomElementRegistry::ElementDefinitionIsRunning final {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ElementDefinitionIsRunning);
 
  public:
-  ElementDefinitionIsRunning(bool& flag) : m_flag(flag) {
-    DCHECK(!m_flag);
-    m_flag = true;
+  ElementDefinitionIsRunning(bool& flag) : flag_(flag) {
+    DCHECK(!flag_);
+    flag_ = true;
   }
 
   ~ElementDefinitionIsRunning() {
-    DCHECK(m_flag);
-    m_flag = false;
+    DCHECK(flag_);
+    flag_ = false;
   }
 
  private:
-  bool& m_flag;
+  bool& flag_;
 };
 
-CustomElementRegistry* CustomElementRegistry::create(
+CustomElementRegistry* CustomElementRegistry::Create(
     const LocalDOMWindow* owner) {
   CustomElementRegistry* registry = new CustomElementRegistry(owner);
   Document* document = owner->document();
   if (V0CustomElementRegistrationContext* v0 =
-          document ? document->registrationContext() : nullptr)
-    registry->entangle(v0);
+          document ? document->RegistrationContext() : nullptr)
+    registry->Entangle(v0);
   return registry;
 }
 
 CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
-    : m_elementDefinitionIsRunning(false),
-      m_owner(owner),
-      m_v0(new V0RegistrySet()),
-      m_upgradeCandidates(new UpgradeCandidateMap()) {}
+    : element_definition_is_running_(false),
+      owner_(owner),
+      v0_(new V0RegistrySet()),
+      upgrade_candidates_(new UpgradeCandidateMap()) {}
 
 DEFINE_TRACE(CustomElementRegistry) {
-  visitor->trace(m_definitions);
-  visitor->trace(m_owner);
-  visitor->trace(m_v0);
-  visitor->trace(m_upgradeCandidates);
-  visitor->trace(m_whenDefinedPromiseMap);
+  visitor->Trace(definitions_);
+  visitor->Trace(owner_);
+  visitor->Trace(v0_);
+  visitor->Trace(upgrade_candidates_);
+  visitor->Trace(when_defined_promise_map_);
 }
 
 DEFINE_TRACE_WRAPPERS(CustomElementRegistry) {
-  visitor->traceWrappers(&CustomElementReactionStack::current());
+  visitor->TraceWrappers(&CustomElementReactionStack::Current());
 }
 
 CustomElementDefinition* CustomElementRegistry::define(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const AtomicString& name,
     const ScriptValue& constructor,
     const ElementDefinitionOptions& options,
-    ExceptionState& exceptionState) {
-  ScriptCustomElementDefinitionBuilder builder(scriptState, this, constructor,
-                                               exceptionState);
-  return define(name, builder, options, exceptionState);
+    ExceptionState& exception_state) {
+  ScriptCustomElementDefinitionBuilder builder(script_state, this, constructor,
+                                               exception_state);
+  return define(name, builder, options, exception_state);
 }
 
 // http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
@@ -111,25 +111,25 @@ CustomElementDefinition* CustomElementRegistry::define(
     const AtomicString& name,
     CustomElementDefinitionBuilder& builder,
     const ElementDefinitionOptions& options,
-    ExceptionState& exceptionState) {
-  TRACE_EVENT1("blink", "CustomElementRegistry::define", "name", name.utf8());
-  if (!builder.checkConstructorIntrinsics())
+    ExceptionState& exception_state) {
+  TRACE_EVENT1("blink", "CustomElementRegistry::define", "name", name.Utf8());
+  if (!builder.CheckConstructorIntrinsics())
     return nullptr;
 
-  if (throwIfInvalidName(name, exceptionState))
+  if (ThrowIfInvalidName(name, exception_state))
     return nullptr;
 
-  if (nameIsDefined(name) || v0NameIsDefined(name)) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
+  if (NameIsDefined(name) || V0NameIsDefined(name)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
         "this name has already been used with this registry");
     return nullptr;
   }
 
-  if (!builder.checkConstructorNotRegistered())
+  if (!builder.CheckConstructorNotRegistered())
     return nullptr;
 
-  AtomicString localName = name;
+  AtomicString local_name = name;
 
   // Step 7. customized built-in elements definition
   // element interface extends option checks
@@ -137,17 +137,17 @@ CustomElementDefinition* CustomElementRegistry::define(
       options.hasExtends()) {
     // 7.1. If element interface is valid custom element name, throw exception
     const AtomicString& extends = AtomicString(options.extends());
-    if (throwIfValidName(AtomicString(options.extends()), exceptionState))
+    if (ThrowIfValidName(AtomicString(options.extends()), exception_state))
       return nullptr;
     // 7.2. If element interface is undefined element, throw exception
     if (htmlElementTypeForTag(extends) ==
         HTMLElementType::kHTMLUnknownElement) {
-      exceptionState.throwDOMException(
-          NotSupportedError, "\"" + extends + "\" is an HTMLUnknownElement");
+      exception_state.ThrowDOMException(
+          kNotSupportedError, "\"" + extends + "\" is an HTMLUnknownElement");
       return nullptr;
     }
     // 7.3. Set localName to extends
-    localName = extends;
+    local_name = extends;
   }
 
   // TODO(dominicc): Add a test where the prototype getter destroys
@@ -156,23 +156,23 @@ CustomElementDefinition* CustomElementRegistry::define(
   // 8. If this CustomElementRegistry's element definition is
   // running flag is set, then throw a "NotSupportedError"
   // DOMException and abort these steps.
-  if (m_elementDefinitionIsRunning) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "an element definition is already being processed");
+  if (element_definition_is_running_) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "an element definition is already being processed");
     return nullptr;
   }
 
   {
     // 9. Set this CustomElementRegistry's element definition is
     // running flag.
-    ElementDefinitionIsRunning defining(m_elementDefinitionIsRunning);
+    ElementDefinitionIsRunning defining(element_definition_is_running_);
 
     // 10.1-2
-    if (!builder.checkPrototype())
+    if (!builder.CheckPrototype())
       return nullptr;
 
     // 10.3-6
-    if (!builder.rememberOriginalProperties())
+    if (!builder.RememberOriginalProperties())
       return nullptr;
 
     // "Then, perform the following substep, regardless of whether
@@ -182,133 +182,133 @@ CustomElementDefinition* CustomElementRegistry::define(
     // (ElementDefinitionIsRunning destructor does this.)
   }
 
-  CustomElementDescriptor descriptor(name, localName);
-  CustomElementDefinition* definition = builder.build(descriptor);
-  CHECK(!exceptionState.hadException());
-  CHECK(definition->descriptor() == descriptor);
+  CustomElementDescriptor descriptor(name, local_name);
+  CustomElementDefinition* definition = builder.Build(descriptor);
+  CHECK(!exception_state.HadException());
+  CHECK(definition->Descriptor() == descriptor);
   DefinitionMap::AddResult result =
-      m_definitions.insert(descriptor.name(), definition);
-  CHECK(result.isNewEntry);
+      definitions_.insert(descriptor.GetName(), definition);
+  CHECK(result.is_new_entry);
 
   HeapVector<Member<Element>> candidates;
-  collectCandidates(descriptor, &candidates);
+  CollectCandidates(descriptor, &candidates);
   for (Element* candidate : candidates)
-    definition->enqueueUpgradeReaction(candidate);
+    definition->EnqueueUpgradeReaction(candidate);
 
   // 16: when-defined promise processing
-  const auto& entry = m_whenDefinedPromiseMap.find(name);
-  if (entry != m_whenDefinedPromiseMap.end()) {
-    entry->value->resolve();
-    m_whenDefinedPromiseMap.erase(entry);
+  const auto& entry = when_defined_promise_map_.Find(name);
+  if (entry != when_defined_promise_map_.end()) {
+    entry->value->Resolve();
+    when_defined_promise_map_.erase(entry);
   }
   return definition;
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-get
 ScriptValue CustomElementRegistry::get(const AtomicString& name) {
-  CustomElementDefinition* definition = definitionForName(name);
+  CustomElementDefinition* definition = DefinitionForName(name);
   if (!definition) {
     // Binding layer converts |ScriptValue()| to script specific value,
     // e.g. |undefined| for v8.
     return ScriptValue();
   }
-  return definition->getConstructorForScript();
+  return definition->GetConstructorForScript();
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#look-up-a-custom-element-definition
 // At this point, what the spec calls 'is' is 'name' from desc
-CustomElementDefinition* CustomElementRegistry::definitionFor(
+CustomElementDefinition* CustomElementRegistry::DefinitionFor(
     const CustomElementDescriptor& desc) const {
   // desc.name() is 'is' attribute
   // 4. If definition in registry with name equal to local name...
-  CustomElementDefinition* definition = definitionForName(desc.localName());
+  CustomElementDefinition* definition = DefinitionForName(desc.LocalName());
   // 5. If definition in registry with name equal to name...
   if (!definition)
-    definition = definitionForName(desc.name());
+    definition = DefinitionForName(desc.GetName());
   // 4&5. ...and local name equal to localName, return that definition
-  if (definition and definition->descriptor().localName() == desc.localName()) {
+  if (definition and definition->Descriptor().LocalName() == desc.LocalName()) {
     return definition;
   }
   // 6. Return null
   return nullptr;
 }
 
-bool CustomElementRegistry::nameIsDefined(const AtomicString& name) const {
-  return m_definitions.contains(name);
+bool CustomElementRegistry::NameIsDefined(const AtomicString& name) const {
+  return definitions_.Contains(name);
 }
 
-void CustomElementRegistry::entangle(V0CustomElementRegistrationContext* v0) {
-  m_v0->insert(v0);
-  v0->setV1(this);
+void CustomElementRegistry::Entangle(V0CustomElementRegistrationContext* v0) {
+  v0_->insert(v0);
+  v0->SetV1(this);
 }
 
-bool CustomElementRegistry::v0NameIsDefined(const AtomicString& name) {
-  for (const auto& v0 : *m_v0) {
-    if (v0->nameIsDefined(name))
+bool CustomElementRegistry::V0NameIsDefined(const AtomicString& name) {
+  for (const auto& v0 : *v0_) {
+    if (v0->NameIsDefined(name))
       return true;
   }
   return false;
 }
 
-CustomElementDefinition* CustomElementRegistry::definitionForName(
+CustomElementDefinition* CustomElementRegistry::DefinitionForName(
     const AtomicString& name) const {
-  return m_definitions.at(name);
+  return definitions_.at(name);
 }
 
-void CustomElementRegistry::addCandidate(Element* candidate) {
+void CustomElementRegistry::AddCandidate(Element* candidate) {
   const AtomicString& name = candidate->localName();
-  if (nameIsDefined(name) || v0NameIsDefined(name))
+  if (NameIsDefined(name) || V0NameIsDefined(name))
     return;
-  UpgradeCandidateMap::iterator it = m_upgradeCandidates->find(name);
+  UpgradeCandidateMap::iterator it = upgrade_candidates_->Find(name);
   UpgradeCandidateSet* set;
-  if (it != m_upgradeCandidates->end()) {
+  if (it != upgrade_candidates_->end()) {
     set = it->value;
   } else {
-    set = m_upgradeCandidates->insert(name, new UpgradeCandidateSet())
-              .storedValue->value;
+    set = upgrade_candidates_->insert(name, new UpgradeCandidateSet())
+              .stored_value->value;
   }
   set->insert(candidate);
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
 ScriptPromise CustomElementRegistry::whenDefined(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const AtomicString& name,
-    ExceptionState& exceptionState) {
-  if (throwIfInvalidName(name, exceptionState))
+    ExceptionState& exception_state) {
+  if (ThrowIfInvalidName(name, exception_state))
     return ScriptPromise();
-  CustomElementDefinition* definition = definitionForName(name);
+  CustomElementDefinition* definition = DefinitionForName(name);
   if (definition)
-    return ScriptPromise::castUndefined(scriptState);
-  ScriptPromiseResolver* resolver = m_whenDefinedPromiseMap.at(name);
+    return ScriptPromise::CastUndefined(script_state);
+  ScriptPromiseResolver* resolver = when_defined_promise_map_.at(name);
   if (resolver)
-    return resolver->promise();
-  ScriptPromiseResolver* newResolver =
-      ScriptPromiseResolver::create(scriptState);
-  m_whenDefinedPromiseMap.insert(name, newResolver);
-  return newResolver->promise();
+    return resolver->Promise();
+  ScriptPromiseResolver* new_resolver =
+      ScriptPromiseResolver::Create(script_state);
+  when_defined_promise_map_.insert(name, new_resolver);
+  return new_resolver->Promise();
 }
 
-void CustomElementRegistry::collectCandidates(
+void CustomElementRegistry::CollectCandidates(
     const CustomElementDescriptor& desc,
     HeapVector<Member<Element>>* elements) {
-  UpgradeCandidateMap::iterator it = m_upgradeCandidates->find(desc.name());
-  if (it == m_upgradeCandidates->end())
+  UpgradeCandidateMap::iterator it = upgrade_candidates_->Find(desc.GetName());
+  if (it == upgrade_candidates_->end())
     return;
   CustomElementUpgradeSorter sorter;
-  for (Element* element : *it.get()->value) {
-    if (!element || !desc.matches(*element))
+  for (Element* element : *it.Get()->value) {
+    if (!element || !desc.Matches(*element))
       continue;
-    sorter.add(element);
+    sorter.Add(element);
   }
 
-  m_upgradeCandidates->erase(it);
+  upgrade_candidates_->erase(it);
 
-  Document* document = m_owner->document();
+  Document* document = owner_->document();
   if (!document)
     return;
 
-  sorter.sorted(elements, document);
+  sorter.Sorted(elements, document);
 }
 
 }  // namespace blink

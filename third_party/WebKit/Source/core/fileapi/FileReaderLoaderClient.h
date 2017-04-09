@@ -40,17 +40,17 @@ class CORE_EXPORT FileReaderLoaderClient {
  public:
   virtual ~FileReaderLoaderClient() {}
 
-  virtual void didStartLoading() = 0;
+  virtual void DidStartLoading() = 0;
   // Clients must implement this method if they are using any ReadType except
   // ReadByClient.
-  virtual void didReceiveData() { ASSERT_NOT_REACHED(); }
+  virtual void DidReceiveData() { ASSERT_NOT_REACHED(); }
   // Clients must implement this method if they are using the ReadByClient
   // ReadType.
-  virtual void didReceiveDataForClient(const char* data, unsigned dataLength) {
+  virtual void DidReceiveDataForClient(const char* data, unsigned data_length) {
     ASSERT_NOT_REACHED();
   }
-  virtual void didFinishLoading() = 0;
-  virtual void didFail(FileError::ErrorCode) = 0;
+  virtual void DidFinishLoading() = 0;
+  virtual void DidFail(FileError::ErrorCode) = 0;
 };
 
 }  // namespace blink

@@ -19,7 +19,7 @@ template <typename T>
 using Optional = typename std::enable_if<!IsGarbageCollectedType<T>::value,
                                          base::Optional<T>>::type;
 
-constexpr base::nullopt_t nullopt = base::nullopt;
+constexpr base::nullopt_t kNullopt = base::nullopt;
 constexpr base::in_place_t in_place = base::in_place;
 
 }  // namespace WTF

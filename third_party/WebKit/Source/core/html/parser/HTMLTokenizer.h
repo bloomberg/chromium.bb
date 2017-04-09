@@ -42,106 +42,106 @@ class CORE_EXPORT HTMLTokenizer {
   USING_FAST_MALLOC(HTMLTokenizer);
 
  public:
-  static std::unique_ptr<HTMLTokenizer> create(
+  static std::unique_ptr<HTMLTokenizer> Create(
       const HTMLParserOptions& options) {
-    return WTF::wrapUnique(new HTMLTokenizer(options));
+    return WTF::WrapUnique(new HTMLTokenizer(options));
   }
   ~HTMLTokenizer();
 
-  void reset();
+  void Reset();
 
   enum State {
-    DataState,
-    CharacterReferenceInDataState,
-    RCDATAState,
-    CharacterReferenceInRCDATAState,
-    RAWTEXTState,
-    ScriptDataState,
-    PLAINTEXTState,
-    TagOpenState,
-    EndTagOpenState,
-    TagNameState,
-    RCDATALessThanSignState,
-    RCDATAEndTagOpenState,
-    RCDATAEndTagNameState,
-    RAWTEXTLessThanSignState,
-    RAWTEXTEndTagOpenState,
-    RAWTEXTEndTagNameState,
-    ScriptDataLessThanSignState,
-    ScriptDataEndTagOpenState,
-    ScriptDataEndTagNameState,
-    ScriptDataEscapeStartState,
-    ScriptDataEscapeStartDashState,
-    ScriptDataEscapedState,
-    ScriptDataEscapedDashState,
-    ScriptDataEscapedDashDashState,
-    ScriptDataEscapedLessThanSignState,
-    ScriptDataEscapedEndTagOpenState,
-    ScriptDataEscapedEndTagNameState,
-    ScriptDataDoubleEscapeStartState,
-    ScriptDataDoubleEscapedState,
-    ScriptDataDoubleEscapedDashState,
-    ScriptDataDoubleEscapedDashDashState,
-    ScriptDataDoubleEscapedLessThanSignState,
-    ScriptDataDoubleEscapeEndState,
-    BeforeAttributeNameState,
-    AttributeNameState,
-    AfterAttributeNameState,
-    BeforeAttributeValueState,
-    AttributeValueDoubleQuotedState,
-    AttributeValueSingleQuotedState,
-    AttributeValueUnquotedState,
-    CharacterReferenceInAttributeValueState,
-    AfterAttributeValueQuotedState,
-    SelfClosingStartTagState,
-    BogusCommentState,
+    kDataState,
+    kCharacterReferenceInDataState,
+    kRCDATAState,
+    kCharacterReferenceInRCDATAState,
+    kRAWTEXTState,
+    kScriptDataState,
+    kPLAINTEXTState,
+    kTagOpenState,
+    kEndTagOpenState,
+    kTagNameState,
+    kRCDATALessThanSignState,
+    kRCDATAEndTagOpenState,
+    kRCDATAEndTagNameState,
+    kRAWTEXTLessThanSignState,
+    kRAWTEXTEndTagOpenState,
+    kRAWTEXTEndTagNameState,
+    kScriptDataLessThanSignState,
+    kScriptDataEndTagOpenState,
+    kScriptDataEndTagNameState,
+    kScriptDataEscapeStartState,
+    kScriptDataEscapeStartDashState,
+    kScriptDataEscapedState,
+    kScriptDataEscapedDashState,
+    kScriptDataEscapedDashDashState,
+    kScriptDataEscapedLessThanSignState,
+    kScriptDataEscapedEndTagOpenState,
+    kScriptDataEscapedEndTagNameState,
+    kScriptDataDoubleEscapeStartState,
+    kScriptDataDoubleEscapedState,
+    kScriptDataDoubleEscapedDashState,
+    kScriptDataDoubleEscapedDashDashState,
+    kScriptDataDoubleEscapedLessThanSignState,
+    kScriptDataDoubleEscapeEndState,
+    kBeforeAttributeNameState,
+    kAttributeNameState,
+    kAfterAttributeNameState,
+    kBeforeAttributeValueState,
+    kAttributeValueDoubleQuotedState,
+    kAttributeValueSingleQuotedState,
+    kAttributeValueUnquotedState,
+    kCharacterReferenceInAttributeValueState,
+    kAfterAttributeValueQuotedState,
+    kSelfClosingStartTagState,
+    kBogusCommentState,
     // The ContinueBogusCommentState is not in the HTML5 spec, but we use
     // it internally to keep track of whether we've started the bogus
     // comment token yet.
-    ContinueBogusCommentState,
-    MarkupDeclarationOpenState,
-    CommentStartState,
-    CommentStartDashState,
-    CommentState,
-    CommentEndDashState,
-    CommentEndState,
-    CommentEndBangState,
-    DOCTYPEState,
-    BeforeDOCTYPENameState,
-    DOCTYPENameState,
-    AfterDOCTYPENameState,
-    AfterDOCTYPEPublicKeywordState,
-    BeforeDOCTYPEPublicIdentifierState,
-    DOCTYPEPublicIdentifierDoubleQuotedState,
-    DOCTYPEPublicIdentifierSingleQuotedState,
-    AfterDOCTYPEPublicIdentifierState,
-    BetweenDOCTYPEPublicAndSystemIdentifiersState,
-    AfterDOCTYPESystemKeywordState,
-    BeforeDOCTYPESystemIdentifierState,
-    DOCTYPESystemIdentifierDoubleQuotedState,
-    DOCTYPESystemIdentifierSingleQuotedState,
-    AfterDOCTYPESystemIdentifierState,
-    BogusDOCTYPEState,
-    CDATASectionState,
-    CDATASectionBracketState,
-    CDATASectionEndState,
+    kContinueBogusCommentState,
+    kMarkupDeclarationOpenState,
+    kCommentStartState,
+    kCommentStartDashState,
+    kCommentState,
+    kCommentEndDashState,
+    kCommentEndState,
+    kCommentEndBangState,
+    kDOCTYPEState,
+    kBeforeDOCTYPENameState,
+    kDOCTYPENameState,
+    kAfterDOCTYPENameState,
+    kAfterDOCTYPEPublicKeywordState,
+    kBeforeDOCTYPEPublicIdentifierState,
+    kDOCTYPEPublicIdentifierDoubleQuotedState,
+    kDOCTYPEPublicIdentifierSingleQuotedState,
+    kAfterDOCTYPEPublicIdentifierState,
+    kBetweenDOCTYPEPublicAndSystemIdentifiersState,
+    kAfterDOCTYPESystemKeywordState,
+    kBeforeDOCTYPESystemIdentifierState,
+    kDOCTYPESystemIdentifierDoubleQuotedState,
+    kDOCTYPESystemIdentifierSingleQuotedState,
+    kAfterDOCTYPESystemIdentifierState,
+    kBogusDOCTYPEState,
+    kCDATASectionState,
+    kCDATASectionBracketState,
+    kCDATASectionEndState,
   };
 
   // This function returns true if it emits a token. Otherwise, callers
   // must provide the same (in progress) token on the next call (unless
   // they call reset() first).
-  bool nextToken(SegmentedString&, HTMLToken&);
+  bool NextToken(SegmentedString&, HTMLToken&);
 
   // Returns a copy of any characters buffered internally by the tokenizer.
   // The tokenizer buffers characters when searching for the </script> token
   // that terminates a script element.
-  String bufferedCharacters() const;
+  String BufferedCharacters() const;
 
-  size_t numberOfBufferedCharacters() const {
+  size_t NumberOfBufferedCharacters() const {
     // Notice that we add 2 to the length of the m_temporaryBuffer to
     // account for the "</" characters, which are effecitvely buffered in
     // the tokenizer's state machine.
-    return m_temporaryBuffer.size() ? m_temporaryBuffer.size() + 2 : 0;
+    return temporary_buffer_.size() ? temporary_buffer_.size() + 2 : 0;
   }
 
   // Updates the tokenizer's state according to the given tag name. This is
@@ -158,38 +158,38 @@ class CORE_EXPORT HTMLTokenizer {
   //  * CDATA sections in foreign content will be tokenized as bogus comments
   //    instead of as character tokens.
   //
-  void updateStateFor(const String& tagName);
+  void UpdateStateFor(const String& tag_name);
 
-  bool forceNullCharacterReplacement() const {
-    return m_forceNullCharacterReplacement;
+  bool ForceNullCharacterReplacement() const {
+    return force_null_character_replacement_;
   }
-  void setForceNullCharacterReplacement(bool value) {
-    m_forceNullCharacterReplacement = value;
-  }
-
-  bool shouldAllowCDATA() const { return m_shouldAllowCDATA; }
-  void setShouldAllowCDATA(bool value) { m_shouldAllowCDATA = value; }
-
-  State getState() const { return m_state; }
-  void setState(State state) { m_state = state; }
-
-  inline bool shouldSkipNullCharacters() const {
-    return !m_forceNullCharacterReplacement &&
-           (m_state == HTMLTokenizer::DataState ||
-            m_state == HTMLTokenizer::RCDATAState ||
-            m_state == HTMLTokenizer::RAWTEXTState);
+  void SetForceNullCharacterReplacement(bool value) {
+    force_null_character_replacement_ = value;
   }
 
-  inline static bool isEndTagBufferingState(HTMLTokenizer::State state) {
+  bool ShouldAllowCDATA() const { return should_allow_cdata_; }
+  void SetShouldAllowCDATA(bool value) { should_allow_cdata_ = value; }
+
+  State GetState() const { return state_; }
+  void SetState(State state) { state_ = state; }
+
+  inline bool ShouldSkipNullCharacters() const {
+    return !force_null_character_replacement_ &&
+           (state_ == HTMLTokenizer::kDataState ||
+            state_ == HTMLTokenizer::kRCDATAState ||
+            state_ == HTMLTokenizer::kRAWTEXTState);
+  }
+
+  inline static bool IsEndTagBufferingState(HTMLTokenizer::State state) {
     switch (state) {
-      case HTMLTokenizer::RCDATAEndTagOpenState:
-      case HTMLTokenizer::RCDATAEndTagNameState:
-      case HTMLTokenizer::RAWTEXTEndTagOpenState:
-      case HTMLTokenizer::RAWTEXTEndTagNameState:
-      case HTMLTokenizer::ScriptDataEndTagOpenState:
-      case HTMLTokenizer::ScriptDataEndTagNameState:
-      case HTMLTokenizer::ScriptDataEscapedEndTagOpenState:
-      case HTMLTokenizer::ScriptDataEscapedEndTagNameState:
+      case HTMLTokenizer::kRCDATAEndTagOpenState:
+      case HTMLTokenizer::kRCDATAEndTagNameState:
+      case HTMLTokenizer::kRAWTEXTEndTagOpenState:
+      case HTMLTokenizer::kRAWTEXTEndTagNameState:
+      case HTMLTokenizer::kScriptDataEndTagOpenState:
+      case HTMLTokenizer::kScriptDataEndTagNameState:
+      case HTMLTokenizer::kScriptDataEscapedEndTagOpenState:
+      case HTMLTokenizer::kScriptDataEscapedEndTagNameState:
         return true;
       default:
         return false;
@@ -199,87 +199,87 @@ class CORE_EXPORT HTMLTokenizer {
  private:
   explicit HTMLTokenizer(const HTMLParserOptions&);
 
-  inline bool processEntity(SegmentedString&);
+  inline bool ProcessEntity(SegmentedString&);
 
-  inline void parseError();
+  inline void ParseError();
 
-  inline void bufferCharacter(UChar character) {
+  inline void BufferCharacter(UChar character) {
     DCHECK_NE(character, kEndOfFileMarker);
-    m_token->ensureIsCharacterToken();
-    m_token->appendToCharacter(character);
+    token_->EnsureIsCharacterToken();
+    token_->AppendToCharacter(character);
   }
 
-  inline bool emitAndResumeIn(SegmentedString& source, State state) {
-    saveEndTagNameIfNeeded();
-    m_state = state;
-    source.advanceAndUpdateLineNumber();
+  inline bool EmitAndResumeIn(SegmentedString& source, State state) {
+    SaveEndTagNameIfNeeded();
+    state_ = state;
+    source.AdvanceAndUpdateLineNumber();
     return true;
   }
 
-  inline bool emitAndReconsumeIn(SegmentedString&, State state) {
-    saveEndTagNameIfNeeded();
-    m_state = state;
+  inline bool EmitAndReconsumeIn(SegmentedString&, State state) {
+    SaveEndTagNameIfNeeded();
+    state_ = state;
     return true;
   }
 
-  inline bool emitEndOfFile(SegmentedString& source) {
-    if (haveBufferedCharacterToken())
+  inline bool EmitEndOfFile(SegmentedString& source) {
+    if (HaveBufferedCharacterToken())
       return true;
-    m_state = HTMLTokenizer::DataState;
-    source.advanceAndUpdateLineNumber();
-    m_token->clear();
-    m_token->makeEndOfFile();
+    state_ = HTMLTokenizer::kDataState;
+    source.AdvanceAndUpdateLineNumber();
+    token_->Clear();
+    token_->MakeEndOfFile();
     return true;
   }
 
-  inline bool flushEmitAndResumeIn(SegmentedString&, State);
+  inline bool FlushEmitAndResumeIn(SegmentedString&, State);
 
   // Return whether we need to emit a character token before dealing with
   // the buffered end tag.
-  inline bool flushBufferedEndTag(SegmentedString&);
-  inline bool temporaryBufferIs(const String&);
+  inline bool FlushBufferedEndTag(SegmentedString&);
+  inline bool TemporaryBufferIs(const String&);
 
   // Sometimes we speculatively consume input characters and we don't
   // know whether they represent end tags or RCDATA, etc. These
   // functions help manage these state.
-  inline void addToPossibleEndTag(LChar cc);
+  inline void AddToPossibleEndTag(LChar cc);
 
-  inline void saveEndTagNameIfNeeded() {
-    DCHECK_NE(m_token->type(), HTMLToken::Uninitialized);
-    if (m_token->type() == HTMLToken::StartTag)
-      m_appropriateEndTagName = m_token->name();
+  inline void SaveEndTagNameIfNeeded() {
+    DCHECK_NE(token_->GetType(), HTMLToken::kUninitialized);
+    if (token_->GetType() == HTMLToken::kStartTag)
+      appropriate_end_tag_name_ = token_->GetName();
   }
-  inline bool isAppropriateEndTag();
+  inline bool IsAppropriateEndTag();
 
-  inline bool haveBufferedCharacterToken() {
-    return m_token->type() == HTMLToken::Character;
+  inline bool HaveBufferedCharacterToken() {
+    return token_->GetType() == HTMLToken::kCharacter;
   }
 
-  State m_state;
-  bool m_forceNullCharacterReplacement;
-  bool m_shouldAllowCDATA;
+  State state_;
+  bool force_null_character_replacement_;
+  bool should_allow_cdata_;
 
   // m_token is owned by the caller. If nextToken is not on the stack,
   // this member might be pointing to unallocated memory.
-  HTMLToken* m_token;
+  HTMLToken* token_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#additional-allowed-character
-  UChar m_additionalAllowedCharacter;
+  UChar additional_allowed_character_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
-  InputStreamPreprocessor<HTMLTokenizer> m_inputStreamPreprocessor;
+  InputStreamPreprocessor<HTMLTokenizer> input_stream_preprocessor_;
 
-  Vector<UChar, 32> m_appropriateEndTagName;
+  Vector<UChar, 32> appropriate_end_tag_name_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/#temporary-buffer
-  Vector<LChar, 32> m_temporaryBuffer;
+  Vector<LChar, 32> temporary_buffer_;
 
   // We occationally want to emit both a character token and an end tag
   // token (e.g., when lexing script). We buffer the name of the end tag
   // token here so we remember it next time we re-enter the tokenizer.
-  Vector<LChar, 32> m_bufferedEndTagName;
+  Vector<LChar, 32> buffered_end_tag_name_;
 
-  HTMLParserOptions m_options;
+  HTMLParserOptions options_;
 };
 
 }  // namespace blink

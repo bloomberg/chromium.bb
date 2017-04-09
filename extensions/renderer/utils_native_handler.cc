@@ -24,8 +24,8 @@ void UtilsNativeHandler::DeepCopy(
   v8::Isolate* isolate = args.GetIsolate();
   CHECK_EQ(1, args.Length());
   args.GetReturnValue().Set(
-      blink::WebSerializedScriptValue::serialize(isolate, args[0])
-          .deserialize(isolate));
+      blink::WebSerializedScriptValue::Serialize(isolate, args[0])
+          .Deserialize(isolate));
 }
 
 }  // namespace extensions

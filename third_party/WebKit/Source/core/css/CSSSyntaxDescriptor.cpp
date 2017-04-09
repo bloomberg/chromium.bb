@@ -18,89 +18,89 @@
 
 namespace blink {
 
-void consumeWhitespace(const String& string, size_t& offset) {
-  while (isHTMLSpace(string[offset]))
+void ConsumeWhitespace(const String& string, size_t& offset) {
+  while (IsHTMLSpace(string[offset]))
     offset++;
 }
 
-bool consumeCharacterAndWhitespace(const String& string,
+bool ConsumeCharacterAndWhitespace(const String& string,
                                    char character,
                                    size_t& offset) {
   if (string[offset] != character)
     return false;
   offset++;
-  consumeWhitespace(string, offset);
+  ConsumeWhitespace(string, offset);
   return true;
 }
 
-CSSSyntaxType parseSyntaxType(String type) {
+CSSSyntaxType ParseSyntaxType(String type) {
   // TODO(timloh): Are these supposed to be case sensitive?
   if (type == "length")
-    return CSSSyntaxType::Length;
+    return CSSSyntaxType::kLength;
   if (type == "number")
-    return CSSSyntaxType::Number;
+    return CSSSyntaxType::kNumber;
   if (type == "percentage")
-    return CSSSyntaxType::Percentage;
+    return CSSSyntaxType::kPercentage;
   if (type == "length-percentage")
-    return CSSSyntaxType::LengthPercentage;
+    return CSSSyntaxType::kLengthPercentage;
   if (type == "color")
-    return CSSSyntaxType::Color;
+    return CSSSyntaxType::kColor;
   if (type == "image")
-    return CSSSyntaxType::Image;
+    return CSSSyntaxType::kImage;
   if (type == "url")
-    return CSSSyntaxType::Url;
+    return CSSSyntaxType::kUrl;
   if (type == "integer")
-    return CSSSyntaxType::Integer;
+    return CSSSyntaxType::kInteger;
   if (type == "angle")
-    return CSSSyntaxType::Angle;
+    return CSSSyntaxType::kAngle;
   if (type == "time")
-    return CSSSyntaxType::Time;
+    return CSSSyntaxType::kTime;
   if (type == "resolution")
-    return CSSSyntaxType::Resolution;
+    return CSSSyntaxType::kResolution;
   if (type == "transform-function")
-    return CSSSyntaxType::TransformFunction;
+    return CSSSyntaxType::kTransformFunction;
   if (type == "custom-ident")
-    return CSSSyntaxType::CustomIdent;
+    return CSSSyntaxType::kCustomIdent;
   // Not an Ident, just used to indicate failure
-  return CSSSyntaxType::Ident;
+  return CSSSyntaxType::kIdent;
 }
 
-bool consumeSyntaxType(const String& input,
+bool ConsumeSyntaxType(const String& input,
                        size_t& offset,
                        CSSSyntaxType& type) {
   DCHECK_EQ(input[offset], '<');
   offset++;
-  size_t typeStart = offset;
+  size_t type_start = offset;
   while (offset < input.length() && input[offset] != '>')
     offset++;
   if (offset == input.length())
     return false;
-  type = parseSyntaxType(input.substring(typeStart, offset - typeStart));
-  if (type == CSSSyntaxType::Ident)
+  type = ParseSyntaxType(input.Substring(type_start, offset - type_start));
+  if (type == CSSSyntaxType::kIdent)
     return false;
   offset++;
   return true;
 }
 
-bool consumeSyntaxIdent(const String& input, size_t& offset, String& ident) {
-  size_t identStart = offset;
-  while (isNameCodePoint(input[offset]))
+bool ConsumeSyntaxIdent(const String& input, size_t& offset, String& ident) {
+  size_t ident_start = offset;
+  while (IsNameCodePoint(input[offset]))
     offset++;
-  if (offset == identStart)
+  if (offset == ident_start)
     return false;
-  ident = input.substring(identStart, offset - identStart);
-  return !CSSPropertyParserHelpers::isCSSWideKeyword(ident);
+  ident = input.Substring(ident_start, offset - ident_start);
+  return !CSSPropertyParserHelpers::IsCSSWideKeyword(ident);
 }
 
 CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
   size_t offset = 0;
-  consumeWhitespace(input, offset);
+  ConsumeWhitespace(input, offset);
 
-  if (consumeCharacterAndWhitespace(input, '*', offset)) {
+  if (ConsumeCharacterAndWhitespace(input, '*', offset)) {
     if (offset != input.length())
       return;
-    m_syntaxComponents.push_back(
-        CSSSyntaxComponent(CSSSyntaxType::TokenStream, emptyString, false));
+    syntax_components_.push_back(
+        CSSSyntaxComponent(CSSSyntaxType::kTokenStream, g_empty_string, false));
     return;
   }
 
@@ -110,108 +110,109 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
     bool success;
 
     if (input[offset] == '<') {
-      success = consumeSyntaxType(input, offset, type);
+      success = ConsumeSyntaxType(input, offset, type);
     } else {
-      type = CSSSyntaxType::Ident;
-      success = consumeSyntaxIdent(input, offset, ident);
+      type = CSSSyntaxType::kIdent;
+      success = ConsumeSyntaxIdent(input, offset, ident);
     }
 
     if (!success) {
-      m_syntaxComponents.clear();
+      syntax_components_.Clear();
       return;
     }
 
-    bool repeatable = consumeCharacterAndWhitespace(input, '+', offset);
-    consumeWhitespace(input, offset);
-    m_syntaxComponents.push_back(CSSSyntaxComponent(type, ident, repeatable));
+    bool repeatable = ConsumeCharacterAndWhitespace(input, '+', offset);
+    ConsumeWhitespace(input, offset);
+    syntax_components_.push_back(CSSSyntaxComponent(type, ident, repeatable));
 
-  } while (consumeCharacterAndWhitespace(input, '|', offset));
+  } while (ConsumeCharacterAndWhitespace(input, '|', offset));
 
   if (offset != input.length())
-    m_syntaxComponents.clear();
+    syntax_components_.Clear();
 }
 
-const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
+const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range,
                                   const CSSParserContext* context) {
   using namespace CSSPropertyParserHelpers;
 
-  switch (syntax.m_type) {
-    case CSSSyntaxType::Ident:
-      if (range.peek().type() == IdentToken &&
-          range.peek().value() == syntax.m_string) {
-        range.consumeIncludingWhitespace();
-        return CSSCustomIdentValue::create(AtomicString(syntax.m_string));
+  switch (syntax.type_) {
+    case CSSSyntaxType::kIdent:
+      if (range.Peek().GetType() == kIdentToken &&
+          range.Peek().Value() == syntax.string_) {
+        range.ConsumeIncludingWhitespace();
+        return CSSCustomIdentValue::Create(AtomicString(syntax.string_));
       }
       return nullptr;
-    case CSSSyntaxType::Length:
-      return consumeLength(range, HTMLStandardMode, ValueRange::ValueRangeAll);
-    case CSSSyntaxType::Number:
-      return consumeNumber(range, ValueRange::ValueRangeAll);
-    case CSSSyntaxType::Percentage:
-      return consumePercent(range, ValueRange::ValueRangeAll);
-    case CSSSyntaxType::LengthPercentage:
-      return consumeLengthOrPercent(range, HTMLStandardMode,
-                                    ValueRange::ValueRangeAll);
-    case CSSSyntaxType::Color:
-      return consumeColor(range, HTMLStandardMode);
-    case CSSSyntaxType::Image:
-      return consumeImage(range, context);
-    case CSSSyntaxType::Url:
-      return consumeUrl(range, context);
-    case CSSSyntaxType::Integer:
-      return consumeInteger(range);
-    case CSSSyntaxType::Angle:
-      return consumeAngle(range);
-    case CSSSyntaxType::Time:
-      return consumeTime(range, ValueRange::ValueRangeAll);
-    case CSSSyntaxType::Resolution:
-      return consumeResolution(range);
-    case CSSSyntaxType::TransformFunction:
+    case CSSSyntaxType::kLength:
+      return ConsumeLength(range, kHTMLStandardMode,
+                           ValueRange::kValueRangeAll);
+    case CSSSyntaxType::kNumber:
+      return ConsumeNumber(range, ValueRange::kValueRangeAll);
+    case CSSSyntaxType::kPercentage:
+      return ConsumePercent(range, ValueRange::kValueRangeAll);
+    case CSSSyntaxType::kLengthPercentage:
+      return ConsumeLengthOrPercent(range, kHTMLStandardMode,
+                                    ValueRange::kValueRangeAll);
+    case CSSSyntaxType::kColor:
+      return ConsumeColor(range, kHTMLStandardMode);
+    case CSSSyntaxType::kImage:
+      return ConsumeImage(range, context);
+    case CSSSyntaxType::kUrl:
+      return ConsumeUrl(range, context);
+    case CSSSyntaxType::kInteger:
+      return ConsumeInteger(range);
+    case CSSSyntaxType::kAngle:
+      return ConsumeAngle(range);
+    case CSSSyntaxType::kTime:
+      return ConsumeTime(range, ValueRange::kValueRangeAll);
+    case CSSSyntaxType::kResolution:
+      return ConsumeResolution(range);
+    case CSSSyntaxType::kTransformFunction:
       return nullptr;  // TODO(timloh): Implement this.
-    case CSSSyntaxType::CustomIdent:
-      return consumeCustomIdent(range);
+    case CSSSyntaxType::kCustomIdent:
+      return ConsumeCustomIdent(range);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-const CSSValue* consumeSyntaxComponent(const CSSSyntaxComponent& syntax,
+const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
                                        CSSParserTokenRange range,
                                        const CSSParserContext* context) {
   // CSS-wide keywords are already handled by the CSSPropertyParser
-  if (syntax.m_repeatable) {
-    CSSValueList* list = CSSValueList::createSpaceSeparated();
-    while (!range.atEnd()) {
-      const CSSValue* value = consumeSingleType(syntax, range, context);
+  if (syntax.repeatable_) {
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    while (!range.AtEnd()) {
+      const CSSValue* value = ConsumeSingleType(syntax, range, context);
       if (!value)
         return nullptr;
-      list->append(*value);
+      list->Append(*value);
     }
     return list;
   }
-  const CSSValue* result = consumeSingleType(syntax, range, context);
-  if (!range.atEnd())
+  const CSSValue* result = ConsumeSingleType(syntax, range, context);
+  if (!range.AtEnd())
     return nullptr;
   return result;
 }
 
-const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range,
+const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                            const CSSParserContext* context,
-                                           bool isAnimationTainted) const {
-  if (isTokenStream()) {
-    return CSSVariableParser::parseRegisteredPropertyValue(range, false,
-                                                           isAnimationTainted);
+                                           bool is_animation_tainted) const {
+  if (IsTokenStream()) {
+    return CSSVariableParser::ParseRegisteredPropertyValue(
+        range, false, is_animation_tainted);
   }
-  range.consumeWhitespace();
-  for (const CSSSyntaxComponent& component : m_syntaxComponents) {
+  range.ConsumeWhitespace();
+  for (const CSSSyntaxComponent& component : syntax_components_) {
     if (const CSSValue* result =
-            consumeSyntaxComponent(component, range, context))
+            ConsumeSyntaxComponent(component, range, context))
       return result;
   }
-  return CSSVariableParser::parseRegisteredPropertyValue(range, true,
-                                                         isAnimationTainted);
+  return CSSVariableParser::ParseRegisteredPropertyValue(range, true,
+                                                         is_animation_tainted);
 }
 
 }  // namespace blink

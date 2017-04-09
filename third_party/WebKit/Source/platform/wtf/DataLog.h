@@ -36,19 +36,19 @@
 
 namespace WTF {
 
-FilePrintStream& dataFile();
+FilePrintStream& DataFile();
 
-WTF_EXPORT PRINTF_FORMAT(1, 0) void dataLogFV(const char* format, va_list);
-WTF_EXPORT PRINTF_FORMAT(1, 2) void dataLogF(const char* format, ...);
+WTF_EXPORT PRINTF_FORMAT(1, 0) void DataLogFV(const char* format, va_list);
+WTF_EXPORT PRINTF_FORMAT(1, 2) void DataLogF(const char* format, ...);
 
 template <typename... T>
-void dataLog(const T&... values) {
-  dataFile().print(values...);
+void DataLog(const T&... values) {
+  DataFile().Print(values...);
 }
 
 }  // namespace WTF
 
-using WTF::dataLog;
-using WTF::dataLogF;
+using WTF::DataLog;
+using WTF::DataLogF;
 
 #endif  // DataLog_h

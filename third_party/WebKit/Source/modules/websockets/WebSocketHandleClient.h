@@ -41,20 +41,20 @@ class WebSocketHandshakeResponse;
 class WebSocketHandleClient {
  public:
   // Called when the handle is opened.
-  virtual void didConnect(WebSocketHandle*,
-                          const String& selectedProtocol,
+  virtual void DidConnect(WebSocketHandle*,
+                          const String& selected_protocol,
                           const String& extensions) = 0;
 
   // Called when the browser starts the opening handshake.
   // This notification can be omitted when the inspector is not active.
-  virtual void didStartOpeningHandshake(
+  virtual void DidStartOpeningHandshake(
       WebSocketHandle*,
       PassRefPtr<WebSocketHandshakeRequest>) = 0;
 
   // Called when the browser finishes the opening handshake.
   // This notification precedes didConnect.
   // This notification can be omitted when the inspector is not active.
-  virtual void didFinishOpeningHandshake(WebSocketHandle*,
+  virtual void DidFinishOpeningHandshake(WebSocketHandle*,
                                          const WebSocketHandshakeResponse*) = 0;
 
   // Called when the browser is required to fail the connection.
@@ -63,11 +63,11 @@ class WebSocketHandleClient {
   // This message also implies that channel is closed with
   // (wasClean = false, code = 1006, reason = "") and
   // |handle| becomes unavailable.
-  virtual void didFail(WebSocketHandle* /* handle */,
+  virtual void DidFail(WebSocketHandle* /* handle */,
                        const String& message) = 0;
 
   // Called when data are received.
-  virtual void didReceiveData(WebSocketHandle*,
+  virtual void DidReceiveData(WebSocketHandle*,
                               bool fin,
                               WebSocketHandle::MessageType,
                               const char* data,
@@ -75,16 +75,16 @@ class WebSocketHandleClient {
 
   // Called when the handle is closed.
   // |handle| becomes unavailable once this notification arrives.
-  virtual void didClose(WebSocketHandle* /* handle */,
-                        bool wasClean,
+  virtual void DidClose(WebSocketHandle* /* handle */,
+                        bool was_clean,
                         unsigned short code,
                         const String& reason) = 0;
 
-  virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
+  virtual void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
 
   // Called when the browser receives a Close frame from the remote
   // server. Not called when the renderer initiates the closing handshake.
-  virtual void didStartClosingHandshake(WebSocketHandle*) = 0;
+  virtual void DidStartClosingHandshake(WebSocketHandle*) = 0;
 };
 
 }  // namespace blink

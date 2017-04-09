@@ -21,45 +21,45 @@
 namespace blink {
 
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
-    : Supplement<Navigator>(navigator), m_transmittedBytes(0) {}
+    : Supplement<Navigator>(navigator), transmitted_bytes_(0) {}
 
 NavigatorBeacon::~NavigatorBeacon() {}
 
 DEFINE_TRACE(NavigatorBeacon) {
-  Supplement<Navigator>::trace(visitor);
+  Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorBeacon::supplementName() {
+const char* NavigatorBeacon::SupplementName() {
   return "NavigatorBeacon";
 }
 
-NavigatorBeacon& NavigatorBeacon::from(Navigator& navigator) {
+NavigatorBeacon& NavigatorBeacon::From(Navigator& navigator) {
   NavigatorBeacon* supplement = static_cast<NavigatorBeacon*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorBeacon(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
+bool NavigatorBeacon::CanSendBeacon(ExecutionContext* context,
                                     const KURL& url,
-                                    ExceptionState& exceptionState) {
-  if (!url.isValid()) {
-    exceptionState.throwDOMException(
-        SyntaxError, "The URL argument is ill-formed or unsupported.");
+                                    ExceptionState& exception_state) {
+  if (!url.IsValid()) {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "The URL argument is ill-formed or unsupported.");
     return false;
   }
   // For now, only support HTTP and related.
-  if (!url.protocolIsInHTTPFamily()) {
-    exceptionState.throwDOMException(
-        SyntaxError, "Beacons are only supported over HTTP(S).");
+  if (!url.ProtocolIsInHTTPFamily()) {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "Beacons are only supported over HTTP(S).");
     return false;
   }
 
   // If detached from frame, do not allow sending a Beacon.
-  if (!supplementable()->frame())
+  if (!GetSupplementable()->GetFrame())
     return false;
 
   return true;
@@ -72,87 +72,88 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
 // The loader takes the allowance into account once the Beacon
 // payload size has been determined, deciding if the transmission
 // will be allowed to go ahead or not.
-int NavigatorBeacon::maxAllowance() const {
-  DCHECK(supplementable()->frame());
-  const Settings* settings = supplementable()->frame()->settings();
+int NavigatorBeacon::MaxAllowance() const {
+  DCHECK(GetSupplementable()->GetFrame());
+  const Settings* settings = GetSupplementable()->GetFrame()->GetSettings();
   if (settings) {
-    int maxAllowed = settings->getMaxBeaconTransmission();
+    int max_allowed = settings->GetMaxBeaconTransmission();
     // Any negative value represent no max limit.
-    if (maxAllowed < 0)
+    if (max_allowed < 0)
       return -1;
-    if (static_cast<size_t>(maxAllowed) <= m_transmittedBytes)
+    if (static_cast<size_t>(max_allowed) <= transmitted_bytes_)
       return 0;
-    return maxAllowed - static_cast<int>(m_transmittedBytes);
+    return max_allowed - static_cast<int>(transmitted_bytes_);
   }
   return -1;
 }
 
-void NavigatorBeacon::addTransmittedBytes(size_t sentBytes) {
-  m_transmittedBytes += sentBytes;
+void NavigatorBeacon::AddTransmittedBytes(size_t sent_bytes) {
+  transmitted_bytes_ += sent_bytes;
 }
 
 bool NavigatorBeacon::sendBeacon(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     Navigator& navigator,
     const String& urlstring,
     const ArrayBufferViewOrBlobOrStringOrFormData& data,
-    ExceptionState& exceptionState) {
-  return NavigatorBeacon::from(navigator).sendBeaconImpl(scriptState, urlstring,
-                                                         data, exceptionState);
+    ExceptionState& exception_state) {
+  return NavigatorBeacon::From(navigator).SendBeaconImpl(
+      script_state, urlstring, data, exception_state);
 }
 
-bool NavigatorBeacon::sendBeaconImpl(
-    ScriptState* scriptState,
+bool NavigatorBeacon::SendBeaconImpl(
+    ScriptState* script_state,
     const String& urlstring,
     const ArrayBufferViewOrBlobOrStringOrFormData& data,
-    ExceptionState& exceptionState) {
-  ExecutionContext* context = scriptState->getExecutionContext();
-  KURL url = context->completeURL(urlstring);
-  if (!canSendBeacon(context, url, exceptionState))
+    ExceptionState& exception_state) {
+  ExecutionContext* context = script_state->GetExecutionContext();
+  KURL url = context->CompleteURL(urlstring);
+  if (!CanSendBeacon(context, url, exception_state))
     return false;
 
-  int allowance = maxAllowance();
-  size_t beaconSize = 0;
+  int allowance = MaxAllowance();
+  size_t beacon_size = 0;
   bool allowed;
 
   if (data.isArrayBufferView()) {
-    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     data.getAsArrayBufferView(), beaconSize);
+    allowed =
+        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance, url,
+                               data.getAsArrayBufferView(), beacon_size);
   } else if (data.isBlob()) {
     Blob* blob = data.getAsBlob();
-    if (!FetchUtils::isSimpleContentType(AtomicString(blob->type()))) {
-      UseCounter::count(context,
-                        UseCounter::SendBeaconWithNonSimpleContentType);
+    if (!FetchUtils::IsSimpleContentType(AtomicString(blob->type()))) {
+      UseCounter::Count(context,
+                        UseCounter::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::
               sendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
-        exceptionState.throwSecurityError(
+        exception_state.ThrowSecurityError(
             "sendBeacon() with a Blob whose type is not CORS-safelisted MIME "
             "type is disallowed experimentally. See http://crbug.com/490015 "
             "for details.");
         return false;
       }
     }
-    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     blob, beaconSize);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
+                                     url, blob, beacon_size);
   } else if (data.isString()) {
-    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     data.getAsString(), beaconSize);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
+                                     url, data.getAsString(), beacon_size);
   } else if (data.isFormData()) {
-    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     data.getAsFormData(), beaconSize);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
+                                     url, data.getAsFormData(), beacon_size);
   } else {
-    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
-                                     String(), beaconSize);
+    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
+                                     url, String(), beacon_size);
   }
 
   if (!allowed) {
-    UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
+    UseCounter::Count(context, UseCounter::kSendBeaconQuotaExceeded);
     return false;
   }
 
   // Only accumulate transmission size if a limit is imposed.
   if (allowance >= 0)
-    addTransmittedBytes(beaconSize);
+    AddTransmittedBytes(beacon_size);
   return true;
 }
 

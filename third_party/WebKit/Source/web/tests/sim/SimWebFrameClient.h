@@ -16,13 +16,13 @@ class SimWebFrameClient final : public FrameTestHelpers::TestWebFrameClient {
   explicit SimWebFrameClient(SimTest&);
 
   // WebFrameClient overrides:
-  void didAddMessageToConsole(const WebConsoleMessage&,
-                              const WebString& sourceName,
-                              unsigned sourceLine,
-                              const WebString& stackTrace) override;
+  void DidAddMessageToConsole(const WebConsoleMessage&,
+                              const WebString& source_name,
+                              unsigned source_line,
+                              const WebString& stack_trace) override;
 
  private:
-  SimTest* m_test;
+  SimTest* test_;
 };
 
 }  // namespace blink

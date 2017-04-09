@@ -16,12 +16,12 @@ class MockWebAssociatedURLLoader : public blink::WebAssociatedURLLoader {
   MockWebAssociatedURLLoader();
   virtual ~MockWebAssociatedURLLoader();
 
-  MOCK_METHOD2(loadAsynchronously,
+  MOCK_METHOD2(LoadAsynchronously,
                void(const blink::WebURLRequest& request,
                     blink::WebAssociatedURLLoaderClient* client));
-  MOCK_METHOD0(cancel, void());
-  MOCK_METHOD1(setDefersLoading, void(bool value));
-  MOCK_METHOD1(setLoadingTaskRunner, void(blink::WebTaskRunner* task_runner));
+  MOCK_METHOD0(Cancel, void());
+  MOCK_METHOD1(SetDefersLoading, void(bool value));
+  MOCK_METHOD1(SetLoadingTaskRunner, void(blink::WebTaskRunner* task_runner));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebAssociatedURLLoader);

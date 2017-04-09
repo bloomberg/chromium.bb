@@ -22,17 +22,17 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   ~MockContentSettingsClient() override;
 
   // blink::WebContentSettingsClient:
-  bool allowImage(bool enabled_per_settings,
+  bool AllowImage(bool enabled_per_settings,
                   const blink::WebURL& image_url) override;
-  bool allowScript(bool enabled_per_settings) override;
-  bool allowScriptFromSource(bool enabled_per_settings,
+  bool AllowScript(bool enabled_per_settings) override;
+  bool AllowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;
-  bool allowStorage(bool local) override;
-  bool allowPlugins(bool enabled_per_settings) override;
-  bool allowRunningInsecureContent(bool enabled_per_settings,
+  bool AllowStorage(bool local) override;
+  bool AllowPlugins(bool enabled_per_settings) override;
+  bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
-  bool allowAutoplay(bool default_value) override;
+  bool AllowAutoplay(bool default_value) override;
 
   void SetDelegate(WebTestDelegate* delegate);
 

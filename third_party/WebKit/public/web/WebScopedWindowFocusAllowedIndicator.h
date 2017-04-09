@@ -46,7 +46,7 @@ class WebScopedWindowFocusAllowedIndicator {
   BLINK_EXPORT ~WebScopedWindowFocusAllowedIndicator();
 
  private:
-  std::unique_ptr<ScopedWindowFocusAllowedIndicator> m_private;
+  std::unique_ptr<ScopedWindowFocusAllowedIndicator> private_;
 };
 }
 

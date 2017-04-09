@@ -34,82 +34,82 @@ namespace blink {
 using namespace VectorMath;
 
 ReverbAccumulationBuffer::ReverbAccumulationBuffer(size_t length)
-    : m_buffer(length), m_readIndex(0), m_readTimeFrame(0) {}
+    : buffer_(length), read_index_(0), read_time_frame_(0) {}
 
-void ReverbAccumulationBuffer::readAndClear(float* destination,
-                                            size_t numberOfFrames) {
-  size_t bufferLength = m_buffer.size();
-  bool isCopySafe =
-      m_readIndex <= bufferLength && numberOfFrames <= bufferLength;
+void ReverbAccumulationBuffer::ReadAndClear(float* destination,
+                                            size_t number_of_frames) {
+  size_t buffer_length = buffer_.size();
+  bool is_copy_safe =
+      read_index_ <= buffer_length && number_of_frames <= buffer_length;
 
-  DCHECK(isCopySafe);
-  if (!isCopySafe)
+  DCHECK(is_copy_safe);
+  if (!is_copy_safe)
     return;
 
-  size_t framesAvailable = bufferLength - m_readIndex;
-  size_t numberOfFrames1 = std::min(numberOfFrames, framesAvailable);
-  size_t numberOfFrames2 = numberOfFrames - numberOfFrames1;
+  size_t frames_available = buffer_length - read_index_;
+  size_t number_of_frames1 = std::min(number_of_frames, frames_available);
+  size_t number_of_frames2 = number_of_frames - number_of_frames1;
 
-  float* source = m_buffer.data();
-  memcpy(destination, source + m_readIndex, sizeof(float) * numberOfFrames1);
-  memset(source + m_readIndex, 0, sizeof(float) * numberOfFrames1);
+  float* source = buffer_.Data();
+  memcpy(destination, source + read_index_, sizeof(float) * number_of_frames1);
+  memset(source + read_index_, 0, sizeof(float) * number_of_frames1);
 
   // Handle wrap-around if necessary
-  if (numberOfFrames2 > 0) {
-    memcpy(destination + numberOfFrames1, source,
-           sizeof(float) * numberOfFrames2);
-    memset(source, 0, sizeof(float) * numberOfFrames2);
+  if (number_of_frames2 > 0) {
+    memcpy(destination + number_of_frames1, source,
+           sizeof(float) * number_of_frames2);
+    memset(source, 0, sizeof(float) * number_of_frames2);
   }
 
-  m_readIndex = (m_readIndex + numberOfFrames) % bufferLength;
-  m_readTimeFrame += numberOfFrames;
+  read_index_ = (read_index_ + number_of_frames) % buffer_length;
+  read_time_frame_ += number_of_frames;
 }
 
-void ReverbAccumulationBuffer::updateReadIndex(int* readIndex,
-                                               size_t numberOfFrames) const {
+void ReverbAccumulationBuffer::UpdateReadIndex(int* read_index,
+                                               size_t number_of_frames) const {
   // Update caller's readIndex
-  *readIndex = (*readIndex + numberOfFrames) % m_buffer.size();
+  *read_index = (*read_index + number_of_frames) % buffer_.size();
 }
 
-int ReverbAccumulationBuffer::accumulate(float* source,
-                                         size_t numberOfFrames,
-                                         int* readIndex,
-                                         size_t delayFrames) {
-  size_t bufferLength = m_buffer.size();
+int ReverbAccumulationBuffer::Accumulate(float* source,
+                                         size_t number_of_frames,
+                                         int* read_index,
+                                         size_t delay_frames) {
+  size_t buffer_length = buffer_.size();
 
-  size_t writeIndex = (*readIndex + delayFrames) % bufferLength;
+  size_t write_index = (*read_index + delay_frames) % buffer_length;
 
   // Update caller's readIndex
-  *readIndex = (*readIndex + numberOfFrames) % bufferLength;
+  *read_index = (*read_index + number_of_frames) % buffer_length;
 
-  size_t framesAvailable = bufferLength - writeIndex;
-  size_t numberOfFrames1 = std::min(numberOfFrames, framesAvailable);
-  size_t numberOfFrames2 = numberOfFrames - numberOfFrames1;
+  size_t frames_available = buffer_length - write_index;
+  size_t number_of_frames1 = std::min(number_of_frames, frames_available);
+  size_t number_of_frames2 = number_of_frames - number_of_frames1;
 
-  float* destination = m_buffer.data();
+  float* destination = buffer_.Data();
 
-  bool isSafe = writeIndex <= bufferLength &&
-                numberOfFrames1 + writeIndex <= bufferLength &&
-                numberOfFrames2 <= bufferLength;
-  DCHECK(isSafe);
-  if (!isSafe)
+  bool is_safe = write_index <= buffer_length &&
+                 number_of_frames1 + write_index <= buffer_length &&
+                 number_of_frames2 <= buffer_length;
+  DCHECK(is_safe);
+  if (!is_safe)
     return 0;
 
-  vadd(source, 1, destination + writeIndex, 1, destination + writeIndex, 1,
-       numberOfFrames1);
+  Vadd(source, 1, destination + write_index, 1, destination + write_index, 1,
+       number_of_frames1);
 
   // Handle wrap-around if necessary
-  if (numberOfFrames2 > 0)
-    vadd(source + numberOfFrames1, 1, destination, 1, destination, 1,
-         numberOfFrames2);
+  if (number_of_frames2 > 0)
+    Vadd(source + number_of_frames1, 1, destination, 1, destination, 1,
+         number_of_frames2);
 
-  return writeIndex;
+  return write_index;
 }
 
-void ReverbAccumulationBuffer::reset() {
-  m_buffer.zero();
-  m_readIndex = 0;
-  m_readTimeFrame = 0;
+void ReverbAccumulationBuffer::Reset() {
+  buffer_.Zero();
+  read_index_ = 0;
+  read_time_frame_ = 0;
 }
 
 }  // namespace blink

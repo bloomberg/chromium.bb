@@ -12,11 +12,11 @@ namespace storage {
 
 enum QuotaStatusCode {
   kQuotaStatusOk = 0,
-  kQuotaErrorNotSupported = blink::WebStorageQuotaErrorNotSupported,
+  kQuotaErrorNotSupported = blink::kWebStorageQuotaErrorNotSupported,
   kQuotaErrorInvalidModification =
-      blink::WebStorageQuotaErrorInvalidModification,
-  kQuotaErrorInvalidAccess = blink::WebStorageQuotaErrorInvalidAccess,
-  kQuotaErrorAbort = blink::WebStorageQuotaErrorAbort,
+      blink::kWebStorageQuotaErrorInvalidModification,
+  kQuotaErrorInvalidAccess = blink::kWebStorageQuotaErrorInvalidAccess,
+  kQuotaErrorAbort = blink::kWebStorageQuotaErrorAbort,
   kQuotaStatusUnknown = -1,
 
   kQuotaStatusLast = kQuotaErrorAbort,

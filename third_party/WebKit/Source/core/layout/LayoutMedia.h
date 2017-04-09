@@ -38,55 +38,57 @@ class LayoutMedia : public LayoutImage {
   explicit LayoutMedia(HTMLMediaElement*);
   ~LayoutMedia() override;
 
-  LayoutObject* firstChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->firstChild();
+  LayoutObject* FirstChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->FirstChild();
   }
-  LayoutObject* lastChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->lastChild();
+  LayoutObject* LastChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->LastChild();
   }
 
   // If you have a LayoutMedia, use firstChild or lastChild instead.
-  void slowFirstChild() const = delete;
-  void slowLastChild() const = delete;
+  void SlowFirstChild() const = delete;
+  void SlowLastChild() const = delete;
 
-  const LayoutObjectChildList* children() const { return &m_children; }
-  LayoutObjectChildList* children() { return &m_children; }
+  const LayoutObjectChildList* Children() const { return &children_; }
+  LayoutObjectChildList* Children() { return &children_; }
 
-  HTMLMediaElement* mediaElement() const;
+  HTMLMediaElement* MediaElement() const;
 
-  const char* name() const override { return "LayoutMedia"; }
+  const char* GetName() const override { return "LayoutMedia"; }
 
  protected:
-  void layout() override;
+  void GetLayout() override;
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectMedia || LayoutImage::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectMedia || LayoutImage::IsOfType(type);
   }
 
  private:
-  LayoutObjectChildList* virtualChildren() final { return children(); }
-  const LayoutObjectChildList* virtualChildren() const final {
-    return children();
+  LayoutObjectChildList* VirtualChildren() final { return Children(); }
+  const LayoutObjectChildList* VirtualChildren() const final {
+    return Children();
   }
 
-  PaintLayerType layerTypeRequired() const override { return NormalPaintLayer; }
+  PaintLayerType LayerTypeRequired() const override {
+    return kNormalPaintLayer;
+  }
 
-  bool canHaveChildren() const final { return true; }
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const final;
+  bool CanHaveChildren() const final { return true; }
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const final;
 
-  bool isImage() const final { return false; }
-  void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
+  bool IsImage() const final { return false; }
+  void PaintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
-  bool backgroundShouldAlwaysBeClipped() const final { return false; }
+  bool BackgroundShouldAlwaysBeClipped() const final { return false; }
 
-  LayoutUnit computePanelWidth(const LayoutRect& mediaWidth) const;
+  LayoutUnit ComputePanelWidth(const LayoutRect& media_width) const;
 
-  LayoutObjectChildList m_children;
+  LayoutObjectChildList children_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMedia, isMedia());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMedia, IsMedia());
 
 }  // namespace blink
 

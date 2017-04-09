@@ -32,12 +32,12 @@ class SVGGElement final : public SVGGraphicsElement {
   DECLARE_NODE_FACTORY(SVGGElement);
 
  protected:
-  explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);
+  explicit SVGGElement(Document&, ConstructionType = kCreateSVGElement);
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
  private:
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
 }  // namespace blink

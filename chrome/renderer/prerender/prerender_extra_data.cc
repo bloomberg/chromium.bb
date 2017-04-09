@@ -23,8 +23,8 @@ PrerenderExtraData::~PrerenderExtraData() {
 // static
 const PrerenderExtraData& PrerenderExtraData::FromPrerender(
     const blink::WebPrerender& prerender) {
-  DCHECK(prerender.getExtraData());
-  return static_cast<const PrerenderExtraData&>(*prerender.getExtraData());
+  DCHECK(prerender.GetExtraData());
+  return static_cast<const PrerenderExtraData&>(*prerender.GetExtraData());
 }
 
 }  // namespace prerender

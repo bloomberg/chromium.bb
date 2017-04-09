@@ -35,26 +35,26 @@ inline HTMLParagraphElement::HTMLParagraphElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLParagraphElement)
 
-void HTMLParagraphElement::collectStyleForPresentationAttribute(
+void HTMLParagraphElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == alignAttr) {
-    if (equalIgnoringCase(value, "middle") ||
-        equalIgnoringCase(value, "center"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+    if (EqualIgnoringCase(value, "middle") ||
+        EqualIgnoringCase(value, "center"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitCenter);
-    else if (equalIgnoringCase(value, "left"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+    else if (EqualIgnoringCase(value, "left"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitLeft);
-    else if (equalIgnoringCase(value, "right"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+    else if (EqualIgnoringCase(value, "right"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueWebkitRight);
     else
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 

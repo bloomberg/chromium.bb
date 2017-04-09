@@ -49,8 +49,8 @@ class PODArena final : public RefCounted<PODArena> {
   // for allocating and freeing chunks of memory at a time.
   class Allocator : public RefCounted<Allocator> {
    public:
-    virtual void* allocate(size_t size) = 0;
-    virtual void free(void* ptr) = 0;
+    virtual void* Allocate(size_t size) = 0;
+    virtual void Free(void* ptr) = 0;
 
    protected:
     virtual ~Allocator() {}
@@ -61,84 +61,84 @@ class PODArena final : public RefCounted<PODArena> {
   // fastFree to allocate chunks of storage.
   class FastMallocAllocator : public Allocator {
    public:
-    static PassRefPtr<FastMallocAllocator> create() {
-      return adoptRef(new FastMallocAllocator);
+    static PassRefPtr<FastMallocAllocator> Create() {
+      return AdoptRef(new FastMallocAllocator);
     }
 
-    void* allocate(size_t size) override {
-      return WTF::Partitions::fastMalloc(size,
+    void* Allocate(size_t size) override {
+      return WTF::Partitions::FastMalloc(size,
                                          WTF_HEAP_PROFILER_TYPE_NAME(PODArena));
     }
-    void free(void* ptr) override { WTF::Partitions::fastFree(ptr); }
+    void Free(void* ptr) override { WTF::Partitions::FastFree(ptr); }
 
    protected:
     FastMallocAllocator() {}
   };
 
   // Creates a new PODArena configured with a FastMallocAllocator.
-  static PassRefPtr<PODArena> create() { return adoptRef(new PODArena); }
+  static PassRefPtr<PODArena> Create() { return AdoptRef(new PODArena); }
 
   // Creates a new PODArena configured with the given Allocator.
-  static PassRefPtr<PODArena> create(PassRefPtr<Allocator> allocator) {
-    return adoptRef(new PODArena(std::move(allocator)));
+  static PassRefPtr<PODArena> Create(PassRefPtr<Allocator> allocator) {
+    return AdoptRef(new PODArena(std::move(allocator)));
   }
 
   // Allocates an object from the arena.
   template <class T>
-  T* allocateObject() {
-    return new (allocateBase<T>()) T();
+  T* AllocateObject() {
+    return new (AllocateBase<T>()) T();
   }
 
   // Allocates an object from the arena, calling a single-argument constructor.
   template <class T, class Argument1Type>
-  T* allocateObject(const Argument1Type& argument1) {
-    return new (allocateBase<T>()) T(argument1);
+  T* AllocateObject(const Argument1Type& argument1) {
+    return new (AllocateBase<T>()) T(argument1);
   }
 
   // The initial size of allocated chunks; increases as necessary to
   // satisfy large allocations. Mainly public for unit tests.
-  enum { DefaultChunkSize = 16384 };
+  enum { kDefaultChunkSize = 16384 };
 
  protected:
   friend class WTF::RefCounted<PODArena>;
 
   PODArena()
-      : m_allocator(FastMallocAllocator::create()),
-        m_current(0),
-        m_currentChunkSize(DefaultChunkSize) {}
+      : allocator_(FastMallocAllocator::Create()),
+        current_(0),
+        current_chunk_size_(kDefaultChunkSize) {}
 
   explicit PODArena(PassRefPtr<Allocator> allocator)
-      : m_allocator(std::move(allocator)),
-        m_current(0),
-        m_currentChunkSize(DefaultChunkSize) {}
+      : allocator_(std::move(allocator)),
+        current_(0),
+        current_chunk_size_(kDefaultChunkSize) {}
 
   // Returns the alignment requirement for classes and structs on the
   // current platform.
   template <class T>
-  static size_t minAlignment() {
+  static size_t MinAlignment() {
     return WTF_ALIGN_OF(T);
   }
 
   template <class T>
-  void* allocateBase() {
+  void* AllocateBase() {
     void* ptr = 0;
-    size_t roundedSize = roundUp(sizeof(T), minAlignment<T>());
-    if (m_current)
-      ptr = m_current->allocate(roundedSize);
+    size_t rounded_size = RoundUp(sizeof(T), MinAlignment<T>());
+    if (current_)
+      ptr = current_->Allocate(rounded_size);
 
     if (!ptr) {
-      if (roundedSize > m_currentChunkSize)
-        m_currentChunkSize = roundedSize;
-      m_chunks.push_back(
-          WTF::wrapUnique(new Chunk(m_allocator.get(), m_currentChunkSize)));
-      m_current = m_chunks.back().get();
-      ptr = m_current->allocate(roundedSize);
+      if (rounded_size > current_chunk_size_)
+        current_chunk_size_ = rounded_size;
+      chunks_.push_back(
+          WTF::WrapUnique(new Chunk(allocator_.Get(), current_chunk_size_)));
+      current_ = chunks_.back().get();
+      ptr = current_->Allocate(rounded_size);
     }
     return ptr;
   }
 
   // Rounds up the given allocation size to the specified alignment.
-  size_t roundUp(size_t size, size_t alignment) {
+  size_t RoundUp(size_t size, size_t alignment) {
     ASSERT(!(alignment % 2));
     return (size + alignment - 1) & ~(alignment - 1);
   }
@@ -152,40 +152,40 @@ class PODArena final : public RefCounted<PODArena> {
     // Allocates a block of memory of the given size from the passed
     // Allocator.
     Chunk(Allocator* allocator, size_t size)
-        : m_allocator(allocator), m_size(size), m_currentOffset(0) {
-      m_base = static_cast<uint8_t*>(m_allocator->allocate(size));
+        : allocator_(allocator), size_(size), current_offset_(0) {
+      base_ = static_cast<uint8_t*>(allocator_->Allocate(size));
     }
 
     // Frees the memory allocated from the Allocator in the
     // constructor.
-    ~Chunk() { m_allocator->free(m_base); }
+    ~Chunk() { allocator_->Free(base_); }
 
     // Returns a pointer to "size" bytes of storage, or 0 if this
     // Chunk could not satisfy the allocation.
-    void* allocate(size_t size) {
+    void* Allocate(size_t size) {
       // Check for overflow
-      if (m_currentOffset + size < m_currentOffset)
+      if (current_offset_ + size < current_offset_)
         return 0;
 
-      if (m_currentOffset + size > m_size)
+      if (current_offset_ + size > size_)
         return 0;
 
-      void* result = m_base + m_currentOffset;
-      m_currentOffset += size;
+      void* result = base_ + current_offset_;
+      current_offset_ += size;
       return result;
     }
 
    protected:
-    Allocator* m_allocator;
-    uint8_t* m_base;
-    size_t m_size;
-    size_t m_currentOffset;
+    Allocator* allocator_;
+    uint8_t* base_;
+    size_t size_;
+    size_t current_offset_;
   };
 
-  RefPtr<Allocator> m_allocator;
-  Chunk* m_current;
-  size_t m_currentChunkSize;
-  Vector<std::unique_ptr<Chunk>> m_chunks;
+  RefPtr<Allocator> allocator_;
+  Chunk* current_;
+  size_t current_chunk_size_;
+  Vector<std::unique_ptr<Chunk>> chunks_;
 };
 
 }  // namespace blink

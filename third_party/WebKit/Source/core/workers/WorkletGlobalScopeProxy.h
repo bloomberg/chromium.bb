@@ -19,8 +19,8 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
  public:
   virtual ~WorkletGlobalScopeProxy() {}
 
-  virtual void evaluateScript(const ScriptSourceCode&) = 0;
-  virtual void terminateWorkletGlobalScope() = 0;
+  virtual void EvaluateScript(const ScriptSourceCode&) = 0;
+  virtual void TerminateWorkletGlobalScope() = 0;
 };
 
 }  // namespace blink

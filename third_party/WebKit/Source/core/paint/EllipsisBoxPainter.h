@@ -20,22 +20,22 @@ class EllipsisBoxPainter {
   STACK_ALLOCATED();
 
  public:
-  EllipsisBoxPainter(const EllipsisBox& ellipsisBox)
-      : m_ellipsisBox(ellipsisBox) {}
+  EllipsisBoxPainter(const EllipsisBox& ellipsis_box)
+      : ellipsis_box_(ellipsis_box) {}
 
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom);
+             LayoutUnit line_top,
+             LayoutUnit line_bottom);
 
  private:
-  void paintEllipsis(const PaintInfo&,
-                     const LayoutPoint& paintOffset,
-                     LayoutUnit lineTop,
-                     LayoutUnit lineBottom,
+  void PaintEllipsis(const PaintInfo&,
+                     const LayoutPoint& paint_offset,
+                     LayoutUnit line_top,
+                     LayoutUnit line_bottom,
                      const ComputedStyle&);
 
-  const EllipsisBox& m_ellipsisBox;
+  const EllipsisBox& ellipsis_box_;
 };
 
 }  // namespace blink

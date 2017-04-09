@@ -32,16 +32,17 @@ class SVGTransformDistance {
 
  public:
   SVGTransformDistance();
-  SVGTransformDistance(SVGTransform* fromTransform, SVGTransform* toTransform);
+  SVGTransformDistance(SVGTransform* from_transform,
+                       SVGTransform* to_transform);
 
-  SVGTransformDistance scaledDistance(float scaleFactor) const;
-  SVGTransform* addToSVGTransform(SVGTransform*) const;
+  SVGTransformDistance ScaledDistance(float scale_factor) const;
+  SVGTransform* AddToSVGTransform(SVGTransform*) const;
 
-  static SVGTransform* addSVGTransforms(SVGTransform*,
+  static SVGTransform* AddSVGTransforms(SVGTransform*,
                                         SVGTransform*,
-                                        unsigned repeatCount = 1);
+                                        unsigned repeat_count = 1);
 
-  float distance() const;
+  float Distance() const;
 
  private:
   SVGTransformDistance(SVGTransformType,
@@ -50,12 +51,12 @@ class SVGTransformDistance {
                        float cy,
                        const AffineTransform&);
 
-  SVGTransformType m_transformType;
-  float m_angle;
-  float m_cx;
-  float m_cy;
+  SVGTransformType transform_type_;
+  float angle_;
+  float cx_;
+  float cy_;
   AffineTransform
-      m_transform;  // for storing scale, translation or matrix transforms
+      transform_;  // for storing scale, translation or matrix transforms
 };
 }  // namespace blink
 

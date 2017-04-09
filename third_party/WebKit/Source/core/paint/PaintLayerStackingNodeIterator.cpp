@@ -39,114 +39,116 @@ namespace blink {
 
 PaintLayerStackingNodeIterator::PaintLayerStackingNodeIterator(
     const PaintLayerStackingNode& root,
-    unsigned whichChildren)
-    : m_root(root), m_remainingChildren(whichChildren), m_index(0) {
-  m_currentNormalFlowChild = root.layer()->firstChild();
+    unsigned which_children)
+    : root_(root), remaining_children_(which_children), index_(0) {
+  current_normal_flow_child_ = root.Layer()->FirstChild();
 }
 
-PaintLayerStackingNode* PaintLayerStackingNodeIterator::next() {
-  if (m_remainingChildren & NegativeZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
-    if (negZOrderList && m_index < negZOrderList->size())
-      return negZOrderList->at(m_index++);
+PaintLayerStackingNode* PaintLayerStackingNodeIterator::Next() {
+  if (remaining_children_ & kNegativeZOrderChildren) {
+    Vector<PaintLayerStackingNode*>* neg_z_order_list = root_.NegZOrderList();
+    if (neg_z_order_list && index_ < neg_z_order_list->size())
+      return neg_z_order_list->at(index_++);
 
-    m_index = 0;
-    m_remainingChildren &= ~NegativeZOrderChildren;
+    index_ = 0;
+    remaining_children_ &= ~kNegativeZOrderChildren;
   }
 
-  if (m_remainingChildren & NormalFlowChildren) {
-    for (; m_currentNormalFlowChild;
-         m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling()) {
-      if (!m_currentNormalFlowChild->stackingNode()->isStacked()) {
-        PaintLayer* normalFlowChild = m_currentNormalFlowChild;
-        m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling();
-        return normalFlowChild->stackingNode();
+  if (remaining_children_ & kNormalFlowChildren) {
+    for (; current_normal_flow_child_;
+         current_normal_flow_child_ =
+             current_normal_flow_child_->NextSibling()) {
+      if (!current_normal_flow_child_->StackingNode()->IsStacked()) {
+        PaintLayer* normal_flow_child = current_normal_flow_child_;
+        current_normal_flow_child_ = current_normal_flow_child_->NextSibling();
+        return normal_flow_child->StackingNode();
       }
     }
 
     // We reset the iterator in case we reuse it.
-    m_currentNormalFlowChild = m_root.layer()->firstChild();
-    m_remainingChildren &= ~NormalFlowChildren;
+    current_normal_flow_child_ = root_.Layer()->FirstChild();
+    remaining_children_ &= ~kNormalFlowChildren;
   }
 
-  if (m_remainingChildren & PositiveZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
-    if (posZOrderList && m_index < posZOrderList->size())
-      return posZOrderList->at(m_index++);
+  if (remaining_children_ & kPositiveZOrderChildren) {
+    Vector<PaintLayerStackingNode*>* pos_z_order_list = root_.PosZOrderList();
+    if (pos_z_order_list && index_ < pos_z_order_list->size())
+      return pos_z_order_list->at(index_++);
 
-    m_index = 0;
-    m_remainingChildren &= ~PositiveZOrderChildren;
+    index_ = 0;
+    remaining_children_ &= ~kPositiveZOrderChildren;
   }
 
   return 0;
 }
 
-PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::next() {
-  if (m_remainingChildren & NegativeZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
-    if (negZOrderList && m_index >= 0)
-      return negZOrderList->at(m_index--);
+PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::Next() {
+  if (remaining_children_ & kNegativeZOrderChildren) {
+    Vector<PaintLayerStackingNode*>* neg_z_order_list = root_.NegZOrderList();
+    if (neg_z_order_list && index_ >= 0)
+      return neg_z_order_list->at(index_--);
 
-    m_remainingChildren &= ~NegativeZOrderChildren;
-    setIndexToLastItem();
+    remaining_children_ &= ~kNegativeZOrderChildren;
+    SetIndexToLastItem();
   }
 
-  if (m_remainingChildren & NormalFlowChildren) {
-    for (; m_currentNormalFlowChild;
-         m_currentNormalFlowChild =
-             m_currentNormalFlowChild->previousSibling()) {
-      if (!m_currentNormalFlowChild->stackingNode()->isStacked()) {
-        PaintLayer* normalFlowChild = m_currentNormalFlowChild;
-        m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling();
-        return normalFlowChild->stackingNode();
+  if (remaining_children_ & kNormalFlowChildren) {
+    for (; current_normal_flow_child_;
+         current_normal_flow_child_ =
+             current_normal_flow_child_->PreviousSibling()) {
+      if (!current_normal_flow_child_->StackingNode()->IsStacked()) {
+        PaintLayer* normal_flow_child = current_normal_flow_child_;
+        current_normal_flow_child_ =
+            current_normal_flow_child_->PreviousSibling();
+        return normal_flow_child->StackingNode();
       }
     }
 
-    m_remainingChildren &= ~NormalFlowChildren;
-    setIndexToLastItem();
+    remaining_children_ &= ~kNormalFlowChildren;
+    SetIndexToLastItem();
   }
 
-  if (m_remainingChildren & PositiveZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
-    if (posZOrderList && m_index >= 0)
-      return posZOrderList->at(m_index--);
+  if (remaining_children_ & kPositiveZOrderChildren) {
+    Vector<PaintLayerStackingNode*>* pos_z_order_list = root_.PosZOrderList();
+    if (pos_z_order_list && index_ >= 0)
+      return pos_z_order_list->at(index_--);
 
-    m_remainingChildren &= ~PositiveZOrderChildren;
-    setIndexToLastItem();
+    remaining_children_ &= ~kPositiveZOrderChildren;
+    SetIndexToLastItem();
   }
 
   return 0;
 }
 
-void PaintLayerStackingNodeReverseIterator::setIndexToLastItem() {
-  if (m_remainingChildren & NegativeZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
-    if (negZOrderList) {
-      m_index = negZOrderList->size() - 1;
+void PaintLayerStackingNodeReverseIterator::SetIndexToLastItem() {
+  if (remaining_children_ & kNegativeZOrderChildren) {
+    Vector<PaintLayerStackingNode*>* neg_z_order_list = root_.NegZOrderList();
+    if (neg_z_order_list) {
+      index_ = neg_z_order_list->size() - 1;
       return;
     }
 
-    m_remainingChildren &= ~NegativeZOrderChildren;
+    remaining_children_ &= ~kNegativeZOrderChildren;
   }
 
-  if (m_remainingChildren & NormalFlowChildren) {
-    m_currentNormalFlowChild = m_root.layer()->lastChild();
+  if (remaining_children_ & kNormalFlowChildren) {
+    current_normal_flow_child_ = root_.Layer()->LastChild();
     return;
   }
 
-  if (m_remainingChildren & PositiveZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
-    if (posZOrderList) {
-      m_index = posZOrderList->size() - 1;
+  if (remaining_children_ & kPositiveZOrderChildren) {
+    Vector<PaintLayerStackingNode*>* pos_z_order_list = root_.PosZOrderList();
+    if (pos_z_order_list) {
+      index_ = pos_z_order_list->size() - 1;
       return;
     }
 
-    m_remainingChildren &= ~PositiveZOrderChildren;
+    remaining_children_ &= ~kPositiveZOrderChildren;
   }
 
   // No more list to visit.
-  DCHECK(!m_remainingChildren);
-  m_index = -1;
+  DCHECK(!remaining_children_);
+  index_ = -1;
 }
 
 }  // namespace blink

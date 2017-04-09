@@ -23,11 +23,11 @@ class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
 
  private:
   explicit NavigatorUserMedia(Navigator&);
-  MediaDevices* getMediaDevices();
-  static const char* supplementName();
-  static NavigatorUserMedia& from(Navigator&);
+  MediaDevices* GetMediaDevices();
+  static const char* SupplementName();
+  static NavigatorUserMedia& From(Navigator&);
 
-  Member<MediaDevices> m_mediaDevices;
+  Member<MediaDevices> media_devices_;
 };
 
 }  // namespace blink

@@ -25,35 +25,35 @@ class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
  public:
   MainThreadWorkletGlobalScope(LocalFrame*,
                                const KURL&,
-                               const String& userAgent,
+                               const String& user_agent,
                                PassRefPtr<SecurityOrigin>,
                                v8::Isolate*);
   ~MainThreadWorkletGlobalScope() override;
-  bool isMainThreadWorkletGlobalScope() const final { return true; }
+  bool IsMainThreadWorkletGlobalScope() const final { return true; }
 
   // WorkerOrWorkletGlobalScope
-  void countFeature(UseCounter::Feature) final;
-  void countDeprecation(UseCounter::Feature) final;
-  WorkerThread* thread() const final;
+  void CountFeature(UseCounter::Feature) final;
+  void CountDeprecation(UseCounter::Feature) final;
+  WorkerThread* GetThread() const final;
 
   // WorkletGlobalScopeProxy
-  void evaluateScript(const ScriptSourceCode&) final;
-  void terminateWorkletGlobalScope() final;
+  void EvaluateScript(const ScriptSourceCode&) final;
+  void TerminateWorkletGlobalScope() final;
 
-  void addConsoleMessage(ConsoleMessage*) final;
-  void exceptionThrown(ErrorEvent*) final;
+  void AddConsoleMessage(ConsoleMessage*) final;
+  void ExceptionThrown(ErrorEvent*) final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    WorkletGlobalScope::trace(visitor);
-    ContextClient::trace(visitor);
+    WorkletGlobalScope::Trace(visitor);
+    ContextClient::Trace(visitor);
   }
 };
 
 DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,
                   ExecutionContext,
                   context,
-                  context->isMainThreadWorkletGlobalScope(),
-                  context.isMainThreadWorkletGlobalScope());
+                  context->IsMainThreadWorkletGlobalScope(),
+                  context.IsMainThreadWorkletGlobalScope());
 
 }  // namespace blink
 

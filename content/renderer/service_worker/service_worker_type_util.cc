@@ -24,11 +24,11 @@ class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
   explicit HeaderVisitor(ServiceWorkerHeaderMap* headers) : headers_(headers) {}
   ~HeaderVisitor() override {}
 
-  void visitHeader(const blink::WebString& name,
+  void VisitHeader(const blink::WebString& name,
                    const blink::WebString& value) override {
     // Headers are ISO Latin 1.
-    const std::string& header_name = name.latin1();
-    const std::string& header_value = value.latin1();
+    const std::string& header_name = name.Latin1();
+    const std::string& header_value = value.Latin1();
     CHECK(header_name.find('\0') == std::string::npos);
     CHECK(header_value.find('\0') == std::string::npos);
     headers_->insert(ServiceWorkerHeaderMap::value_type(
@@ -48,7 +48,7 @@ std::unique_ptr<ServiceWorkerHeaderMap> GetHeaderMap(
     const blink::WebServiceWorkerResponse& web_response) {
   std::unique_ptr<ServiceWorkerHeaderMap> result =
       base::MakeUnique<ServiceWorkerHeaderMap>();
-  web_response.visitHTTPHeaderFields(MakeHeaderVisitor(result.get()).get());
+  web_response.VisitHTTPHeaderFields(MakeHeaderVisitor(result.get()).get());
   return result;
 }
 
@@ -57,7 +57,7 @@ std::unique_ptr<ServiceWorkerHeaderList> GetHeaderList(
   std::unique_ptr<ServiceWorkerHeaderList> result =
       base::MakeUnique<ServiceWorkerHeaderList>(web_headers.size());
   std::transform(web_headers.begin(), web_headers.end(), result->begin(),
-                 [](const blink::WebString& s) { return s.latin1(); });
+                 [](const blink::WebString& s) { return s.Latin1(); });
   return result;
 }
 
@@ -77,20 +77,21 @@ void GetServiceWorkerHeaderMapFromWebRequest(
     ServiceWorkerHeaderMap* headers) {
   DCHECK(headers);
   DCHECK(headers->empty());
-  web_request.visitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
+  web_request.VisitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
 }
 
 ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response) {
   return ServiceWorkerResponse(
-      GetURLList(web_response.urlList()), web_response.status(),
-      web_response.statusText().utf8(), web_response.responseType(),
-      GetHeaderMap(web_response), web_response.blobUUID().utf8(),
-      web_response.blobSize(), web_response.streamURL(), web_response.error(),
-      base::Time::FromInternalValue(web_response.responseTime()),
-      !web_response.cacheStorageCacheName().isNull(),
-      web_response.cacheStorageCacheName().utf8(),
-      GetHeaderList(web_response.corsExposedHeaderNames()));
+      GetURLList(web_response.UrlList()), web_response.Status(),
+      web_response.StatusText().Utf8(), web_response.ResponseType(),
+      GetHeaderMap(web_response), web_response.BlobUUID().Utf8(),
+      web_response.BlobSize(), web_response.StreamURL(),
+      web_response.GetError(),
+      base::Time::FromInternalValue(web_response.ResponseTime()),
+      !web_response.CacheStorageCacheName().IsNull(),
+      web_response.CacheStorageCacheName().Utf8(),
+      GetHeaderList(web_response.CorsExposedHeaderNames()));
 }
 
 }  // namespace content

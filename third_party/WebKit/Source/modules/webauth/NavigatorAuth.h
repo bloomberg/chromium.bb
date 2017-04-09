@@ -18,7 +18,7 @@ class NavigatorAuth final : public GarbageCollected<NavigatorAuth>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorAuth);
 
  public:
-  static NavigatorAuth& from(Navigator&);
+  static NavigatorAuth& From(Navigator&);
 
   static WebAuthentication* authentication(Navigator&);
   WebAuthentication* authentication();
@@ -27,9 +27,9 @@ class NavigatorAuth final : public GarbageCollected<NavigatorAuth>,
 
  private:
   explicit NavigatorAuth(Navigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<WebAuthentication> m_webauthentication;
+  Member<WebAuthentication> webauthentication_;
 };
 
 }  // namespace blink

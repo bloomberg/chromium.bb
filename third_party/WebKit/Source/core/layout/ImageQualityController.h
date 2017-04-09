@@ -46,8 +46,8 @@ class LayoutObject;
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
 
 struct ObjectResizeInfo {
-  LayerSizeMap layerSizeMap;
-  bool isResizing;
+  LayerSizeMap layer_size_map;
+  bool is_resizing;
 };
 
 typedef HashMap<const LayoutObject*, ObjectResizeInfo> ObjectLayerSizeMap;
@@ -59,48 +59,48 @@ class CORE_EXPORT ImageQualityController final {
  public:
   ~ImageQualityController();
 
-  static ImageQualityController* imageQualityController();
+  static ImageQualityController* GetImageQualityController();
 
-  static void remove(LayoutObject&);
+  static void Remove(LayoutObject&);
 
-  InterpolationQuality chooseInterpolationQuality(const LayoutObject&,
+  InterpolationQuality ChooseInterpolationQuality(const LayoutObject&,
                                                   Image*,
                                                   const void* layer,
                                                   const LayoutSize&);
 
  private:
-  static const double cLowQualityTimeThreshold;
-  static const double cTimerRestartThreshold;
+  static const double kCLowQualityTimeThreshold;
+  static const double kCTimerRestartThreshold;
 
   ImageQualityController();
 
-  static bool has(const LayoutObject&);
-  void set(const LayoutObject&,
-           LayerSizeMap* innerMap,
+  static bool Has(const LayoutObject&);
+  void Set(const LayoutObject&,
+           LayerSizeMap* inner_map,
            const void* layer,
            const LayoutSize&,
-           bool isResizing);
+           bool is_resizing);
 
-  bool shouldPaintAtLowQuality(const LayoutObject&,
+  bool ShouldPaintAtLowQuality(const LayoutObject&,
                                Image*,
                                const void* layer,
                                const LayoutSize&,
-                               double lastFrameTimeMonotonic);
-  void removeLayer(const LayoutObject&,
-                   LayerSizeMap* innerMap,
+                               double last_frame_time_monotonic);
+  void RemoveLayer(const LayoutObject&,
+                   LayerSizeMap* inner_map,
                    const void* layer);
-  void objectDestroyed(const LayoutObject&);
-  bool isEmpty() { return m_objectLayerSizeMap.isEmpty(); }
+  void ObjectDestroyed(const LayoutObject&);
+  bool IsEmpty() { return object_layer_size_map_.IsEmpty(); }
 
-  void highQualityRepaintTimerFired(TimerBase*);
-  void restartTimer(double lastFrameTimeMonotonic);
+  void HighQualityRepaintTimerFired(TimerBase*);
+  void RestartTimer(double last_frame_time_monotonic);
 
   // Only for use in testing.
-  void setTimer(std::unique_ptr<TimerBase>);
+  void SetTimer(std::unique_ptr<TimerBase>);
 
-  ObjectLayerSizeMap m_objectLayerSizeMap;
-  std::unique_ptr<TimerBase> m_timer;
-  double m_frameTimeWhenTimerStarted;
+  ObjectLayerSizeMap object_layer_size_map_;
+  std::unique_ptr<TimerBase> timer_;
+  double frame_time_when_timer_started_;
 
   // For calling set().
   FRIEND_TEST_ALL_PREFIXES(LayoutPartTest,

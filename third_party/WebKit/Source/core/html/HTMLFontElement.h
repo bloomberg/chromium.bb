@@ -34,13 +34,13 @@ class HTMLFontElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLFontElement);
 
-  static bool cssValueFromFontSizeNumber(const String&, CSSValueID&);
+  static bool CssValueFromFontSizeNumber(const String&, CSSValueID&);
 
  private:
   explicit HTMLFontElement(Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 };

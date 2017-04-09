@@ -57,370 +57,371 @@ namespace blink {
 
 using namespace HTMLNames;
 
-TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
-    : m_rootNode(&rootNode),
-      m_document(&document),
-      m_parentTreeScope(&document),
-      m_idTargetObserverRegistry(IdTargetObserverRegistry::create()) {
-  DCHECK_NE(rootNode, document);
-  m_rootNode->setTreeScope(this);
+TreeScope::TreeScope(ContainerNode& root_node, Document& document)
+    : root_node_(&root_node),
+      document_(&document),
+      parent_tree_scope_(&document),
+      id_target_observer_registry_(IdTargetObserverRegistry::Create()) {
+  DCHECK_NE(root_node, document);
+  root_node_->SetTreeScope(this);
 }
 
 TreeScope::TreeScope(Document& document)
-    : m_rootNode(document),
-      m_document(&document),
-      m_parentTreeScope(nullptr),
-      m_idTargetObserverRegistry(IdTargetObserverRegistry::create()) {
-  m_rootNode->setTreeScope(this);
+    : root_node_(document),
+      document_(&document),
+      parent_tree_scope_(nullptr),
+      id_target_observer_registry_(IdTargetObserverRegistry::Create()) {
+  root_node_->SetTreeScope(this);
 }
 
 TreeScope::~TreeScope() {}
 
-void TreeScope::resetTreeScope() {
-  m_selection = nullptr;
+void TreeScope::ResetTreeScope() {
+  selection_ = nullptr;
 }
 
-TreeScope* TreeScope::olderShadowRootOrParentTreeScope() const {
-  if (rootNode().isShadowRoot()) {
-    if (ShadowRoot* olderShadowRoot =
-            toShadowRoot(rootNode()).olderShadowRoot())
-      return olderShadowRoot;
+TreeScope* TreeScope::OlderShadowRootOrParentTreeScope() const {
+  if (RootNode().IsShadowRoot()) {
+    if (ShadowRoot* older_shadow_root =
+            ToShadowRoot(RootNode()).OlderShadowRoot())
+      return older_shadow_root;
   }
-  return parentTreeScope();
+  return ParentTreeScope();
 }
 
-bool TreeScope::isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
+bool TreeScope::IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
     const TreeScope& scope) const {
   for (const TreeScope* current = &scope; current;
-       current = current->olderShadowRootOrParentTreeScope()) {
+       current = current->OlderShadowRootOrParentTreeScope()) {
     if (current == this)
       return true;
   }
   return false;
 }
 
-void TreeScope::setParentTreeScope(TreeScope& newParentScope) {
+void TreeScope::SetParentTreeScope(TreeScope& new_parent_scope) {
   // A document node cannot be re-parented.
-  DCHECK(!rootNode().isDocumentNode());
+  DCHECK(!RootNode().IsDocumentNode());
 
-  m_parentTreeScope = &newParentScope;
-  setDocument(newParentScope.document());
+  parent_tree_scope_ = &new_parent_scope;
+  SetDocument(new_parent_scope.GetDocument());
 }
 
-ScopedStyleResolver& TreeScope::ensureScopedStyleResolver() {
+ScopedStyleResolver& TreeScope::EnsureScopedStyleResolver() {
   CHECK(this);
-  if (!m_scopedStyleResolver)
-    m_scopedStyleResolver = ScopedStyleResolver::create(*this);
-  return *m_scopedStyleResolver;
+  if (!scoped_style_resolver_)
+    scoped_style_resolver_ = ScopedStyleResolver::Create(*this);
+  return *scoped_style_resolver_;
 }
 
-void TreeScope::clearScopedStyleResolver() {
-  m_scopedStyleResolver.clear();
+void TreeScope::ClearScopedStyleResolver() {
+  scoped_style_resolver_.Clear();
 }
 
-Element* TreeScope::getElementById(const AtomicString& elementId) const {
-  if (elementId.isEmpty())
+Element* TreeScope::GetElementById(const AtomicString& element_id) const {
+  if (element_id.IsEmpty())
     return nullptr;
-  if (!m_elementsById)
+  if (!elements_by_id_)
     return nullptr;
-  return m_elementsById->getElementById(elementId, this);
+  return elements_by_id_->GetElementById(element_id, this);
 }
 
-const HeapVector<Member<Element>>& TreeScope::getAllElementsById(
-    const AtomicString& elementId) const {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, emptyVector,
+const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
+    const AtomicString& element_id) const {
+  DEFINE_STATIC_LOCAL(HeapVector<Member<Element>>, empty_vector,
                       (new HeapVector<Member<Element>>));
-  if (elementId.isEmpty())
-    return emptyVector;
-  if (!m_elementsById)
-    return emptyVector;
-  return m_elementsById->getAllElementsById(elementId, this);
+  if (element_id.IsEmpty())
+    return empty_vector;
+  if (!elements_by_id_)
+    return empty_vector;
+  return elements_by_id_->GetAllElementsById(element_id, this);
 }
 
-void TreeScope::addElementById(const AtomicString& elementId,
+void TreeScope::AddElementById(const AtomicString& element_id,
                                Element* element) {
-  if (!m_elementsById)
-    m_elementsById = DocumentOrderedMap::create();
-  m_elementsById->add(elementId, element);
-  m_idTargetObserverRegistry->notifyObservers(elementId);
+  if (!elements_by_id_)
+    elements_by_id_ = DocumentOrderedMap::Create();
+  elements_by_id_->Add(element_id, element);
+  id_target_observer_registry_->NotifyObservers(element_id);
 }
 
-void TreeScope::removeElementById(const AtomicString& elementId,
+void TreeScope::RemoveElementById(const AtomicString& element_id,
                                   Element* element) {
-  if (!m_elementsById)
+  if (!elements_by_id_)
     return;
-  m_elementsById->remove(elementId, element);
-  m_idTargetObserverRegistry->notifyObservers(elementId);
+  elements_by_id_->Remove(element_id, element);
+  id_target_observer_registry_->NotifyObservers(element_id);
 }
 
-Node* TreeScope::ancestorInThisScope(Node* node) const {
+Node* TreeScope::AncestorInThisScope(Node* node) const {
   while (node) {
-    if (node->treeScope() == this)
+    if (node->GetTreeScope() == this)
       return node;
-    if (!node->isInShadowTree())
+    if (!node->IsInShadowTree())
       return nullptr;
 
-    node = node->ownerShadowHost();
+    node = node->OwnerShadowHost();
   }
 
   return nullptr;
 }
 
-void TreeScope::addImageMap(HTMLMapElement* imageMap) {
-  const AtomicString& name = imageMap->getName();
+void TreeScope::AddImageMap(HTMLMapElement* image_map) {
+  const AtomicString& name = image_map->GetName();
   if (!name)
     return;
-  if (!m_imageMapsByName)
-    m_imageMapsByName = DocumentOrderedMap::create();
-  m_imageMapsByName->add(name, imageMap);
+  if (!image_maps_by_name_)
+    image_maps_by_name_ = DocumentOrderedMap::Create();
+  image_maps_by_name_->Add(name, image_map);
 }
 
-void TreeScope::removeImageMap(HTMLMapElement* imageMap) {
-  if (!m_imageMapsByName)
+void TreeScope::RemoveImageMap(HTMLMapElement* image_map) {
+  if (!image_maps_by_name_)
     return;
-  const AtomicString& name = imageMap->getName();
+  const AtomicString& name = image_map->GetName();
   if (!name)
     return;
-  m_imageMapsByName->remove(name, imageMap);
+  image_maps_by_name_->Remove(name, image_map);
 }
 
-HTMLMapElement* TreeScope::getImageMap(const String& url) const {
-  if (url.isNull())
+HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
+  if (url.IsNull())
     return nullptr;
-  if (!m_imageMapsByName)
+  if (!image_maps_by_name_)
     return nullptr;
-  size_t hashPos = url.find('#');
-  String name = hashPos == kNotFound ? url : url.substring(hashPos + 1);
+  size_t hash_pos = url.Find('#');
+  String name = hash_pos == kNotFound ? url : url.Substring(hash_pos + 1);
   return toHTMLMapElement(
-      m_imageMapsByName->getElementByMapName(AtomicString(name), this));
+      image_maps_by_name_->GetElementByMapName(AtomicString(name), this));
 }
 
-static bool pointWithScrollAndZoomIfPossible(const Document& document,
+static bool PointWithScrollAndZoomIfPossible(const Document& document,
                                              IntPoint& point) {
-  LocalFrame* frame = document.frame();
+  LocalFrame* frame = document.GetFrame();
   if (!frame)
     return false;
-  FrameView* frameView = frame->view();
-  if (!frameView)
+  FrameView* frame_view = frame->View();
+  if (!frame_view)
     return false;
 
-  FloatPoint pointInDocument(point);
-  pointInDocument.scale(frame->pageZoomFactor(), frame->pageZoomFactor());
-  pointInDocument.move(frameView->getScrollOffset());
-  IntPoint roundedPointInDocument = roundedIntPoint(pointInDocument);
+  FloatPoint point_in_document(point);
+  point_in_document.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
+  point_in_document.Move(frame_view->GetScrollOffset());
+  IntPoint rounded_point_in_document = RoundedIntPoint(point_in_document);
 
-  if (!frameView->visibleContentRect().contains(roundedPointInDocument))
+  if (!frame_view->VisibleContentRect().Contains(rounded_point_in_document))
     return false;
 
-  point = roundedPointInDocument;
+  point = rounded_point_in_document;
   return true;
 }
 
-HitTestResult hitTestInDocument(const Document* document,
+HitTestResult HitTestInDocument(const Document* document,
                                 int x,
                                 int y,
                                 const HitTestRequest& request) {
-  IntPoint hitPoint(x, y);
-  if (!pointWithScrollAndZoomIfPossible(*document, hitPoint))
+  IntPoint hit_point(x, y);
+  if (!PointWithScrollAndZoomIfPossible(*document, hit_point))
     return HitTestResult();
 
-  if (!document->isActive())
+  if (!document->IsActive())
     return HitTestResult();
 
-  HitTestResult result(request, hitPoint);
-  document->layoutViewItem().hitTest(result);
+  HitTestResult result(request, hit_point);
+  document->GetLayoutViewItem().HitTest(result);
   return result;
 }
 
-Element* TreeScope::elementFromPoint(int x, int y) const {
-  return hitTestPoint(x, y, HitTestRequest::ReadOnly | HitTestRequest::Active);
+Element* TreeScope::ElementFromPoint(int x, int y) const {
+  return HitTestPoint(x, y,
+                      HitTestRequest::kReadOnly | HitTestRequest::kActive);
 }
 
-Element* TreeScope::hitTestPoint(int x,
+Element* TreeScope::HitTestPoint(int x,
                                  int y,
                                  const HitTestRequest& request) const {
   HitTestResult result =
-      hitTestInDocument(&rootNode().document(), x, y, request);
-  Node* node = result.innerNode();
-  if (!node || node->isDocumentNode())
+      HitTestInDocument(&RootNode().GetDocument(), x, y, request);
+  Node* node = result.InnerNode();
+  if (!node || node->IsDocumentNode())
     return nullptr;
-  if (node->isPseudoElement() || node->isTextNode())
-    node = node->parentOrShadowHostNode();
-  DCHECK(!node || node->isElementNode() || node->isShadowRoot());
-  node = ancestorInThisScope(node);
-  if (!node || !node->isElementNode())
+  if (node->IsPseudoElement() || node->IsTextNode())
+    node = node->ParentOrShadowHostNode();
+  DCHECK(!node || node->IsElementNode() || node->IsShadowRoot());
+  node = AncestorInThisScope(node);
+  if (!node || !node->IsElementNode())
     return nullptr;
-  return toElement(node);
+  return ToElement(node);
 }
 
-HeapVector<Member<Element>> TreeScope::elementsFromHitTestResult(
+HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
     HitTestResult& result) const {
   HeapVector<Member<Element>> elements;
 
-  Node* lastNode = nullptr;
-  for (const auto rectBasedNode : result.listBasedTestResult()) {
-    Node* node = rectBasedNode.get();
-    if (!node || !node->isElementNode() || node->isDocumentNode())
+  Node* last_node = nullptr;
+  for (const auto rect_based_node : result.ListBasedTestResult()) {
+    Node* node = rect_based_node.Get();
+    if (!node || !node->IsElementNode() || node->IsDocumentNode())
       continue;
 
-    if (node->isPseudoElement() || node->isTextNode())
-      node = node->parentOrShadowHostNode();
-    node = ancestorInThisScope(node);
+    if (node->IsPseudoElement() || node->IsTextNode())
+      node = node->ParentOrShadowHostNode();
+    node = AncestorInThisScope(node);
 
     // Prune duplicate entries. A pseduo ::before content above its parent
     // node should only result in a single entry.
-    if (node == lastNode)
+    if (node == last_node)
       continue;
 
-    if (node && node->isElementNode()) {
-      elements.push_back(toElement(node));
-      lastNode = node;
+    if (node && node->IsElementNode()) {
+      elements.push_back(ToElement(node));
+      last_node = node;
     }
   }
 
-  if (rootNode().isDocumentNode()) {
-    if (Element* rootElement = toDocument(rootNode()).documentElement()) {
-      if (elements.isEmpty() || elements.back() != rootElement)
-        elements.push_back(rootElement);
+  if (RootNode().IsDocumentNode()) {
+    if (Element* root_element = ToDocument(RootNode()).documentElement()) {
+      if (elements.IsEmpty() || elements.back() != root_element)
+        elements.push_back(root_element);
     }
   }
 
   return elements;
 }
 
-HeapVector<Member<Element>> TreeScope::elementsFromPoint(int x, int y) const {
-  Document& document = rootNode().document();
-  IntPoint hitPoint(x, y);
-  if (!pointWithScrollAndZoomIfPossible(document, hitPoint))
+HeapVector<Member<Element>> TreeScope::ElementsFromPoint(int x, int y) const {
+  Document& document = RootNode().GetDocument();
+  IntPoint hit_point(x, y);
+  if (!PointWithScrollAndZoomIfPossible(document, hit_point))
     return HeapVector<Member<Element>>();
 
-  HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active |
-                         HitTestRequest::ListBased |
-                         HitTestRequest::PenetratingList);
-  HitTestResult result(request, hitPoint);
-  document.layoutViewItem().hitTest(result);
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                         HitTestRequest::kListBased |
+                         HitTestRequest::kPenetratingList);
+  HitTestResult result(request, hit_point);
+  document.GetLayoutViewItem().HitTest(result);
 
-  return elementsFromHitTestResult(result);
+  return ElementsFromHitTestResult(result);
 }
 
-SVGTreeScopeResources& TreeScope::ensureSVGTreeScopedResources() {
-  if (!m_svgTreeScopedResources)
-    m_svgTreeScopedResources = new SVGTreeScopeResources(this);
-  return *m_svgTreeScopedResources;
+SVGTreeScopeResources& TreeScope::EnsureSVGTreeScopedResources() {
+  if (!svg_tree_scoped_resources_)
+    svg_tree_scoped_resources_ = new SVGTreeScopeResources(this);
+  return *svg_tree_scoped_resources_;
 }
 
-DOMSelection* TreeScope::getSelection() const {
-  if (!rootNode().document().frame())
+DOMSelection* TreeScope::GetSelection() const {
+  if (!RootNode().GetDocument().GetFrame())
     return nullptr;
 
-  if (m_selection)
-    return m_selection.get();
+  if (selection_)
+    return selection_.Get();
 
   // FIXME: The correct selection in Shadow DOM requires that Position can have
   // a ShadowRoot as a container.  See
   // https://bugs.webkit.org/show_bug.cgi?id=82697
-  m_selection = DOMSelection::create(this);
-  return m_selection.get();
+  selection_ = DOMSelection::Create(this);
+  return selection_.Get();
 }
 
-Element* TreeScope::findAnchor(const String& name) {
-  if (name.isEmpty())
+Element* TreeScope::FindAnchor(const String& name) {
+  if (name.IsEmpty())
     return nullptr;
-  if (Element* element = getElementById(AtomicString(name)))
+  if (Element* element = GetElementById(AtomicString(name)))
     return element;
   for (HTMLAnchorElement& anchor :
-       Traversal<HTMLAnchorElement>::startsAfter(rootNode())) {
-    if (rootNode().document().inQuirksMode()) {
+       Traversal<HTMLAnchorElement>::StartsAfter(RootNode())) {
+    if (RootNode().GetDocument().InQuirksMode()) {
       // Quirks mode, case insensitive comparison of names.
-      if (equalIgnoringCase(anchor.name(), name))
+      if (EqualIgnoringCase(anchor.GetName(), name))
         return &anchor;
     } else {
       // Strict mode, names need to match exactly.
-      if (anchor.name() == name)
+      if (anchor.GetName() == name)
         return &anchor;
     }
   }
   return nullptr;
 }
 
-void TreeScope::adoptIfNeeded(Node& node) {
+void TreeScope::AdoptIfNeeded(Node& node) {
   // Script is forbidden to protect against event handlers firing in the middle
   // of rescoping in |didMoveToNewDocument| callbacks. See
   // https://crbug.com/605766 and https://crbug.com/606651.
-  ScriptForbiddenScope forbidScript;
+  ScriptForbiddenScope forbid_script;
   DCHECK(this);
-  DCHECK(!node.isDocumentNode());
+  DCHECK(!node.IsDocumentNode());
   TreeScopeAdopter adopter(node, *this);
-  if (adopter.needsScopeChange())
-    adopter.execute();
+  if (adopter.NeedsScopeChange())
+    adopter.Execute();
 }
 
-Element* TreeScope::retarget(const Element& target) const {
+Element* TreeScope::Retarget(const Element& target) const {
   for (const Element* ancestor = &target; ancestor;
-       ancestor = ancestor->ownerShadowHost()) {
-    if (this == ancestor->treeScope())
+       ancestor = ancestor->OwnerShadowHost()) {
+    if (this == ancestor->GetTreeScope())
       return const_cast<Element*>(ancestor);
   }
   return nullptr;
 }
 
-Element* TreeScope::adjustedFocusedElement() const {
-  Document& document = rootNode().document();
-  Element* element = document.focusedElement();
-  if (!element && document.page())
-    element = document.page()->focusController().focusedFrameOwnerElement(
-        *document.frame());
+Element* TreeScope::AdjustedFocusedElement() const {
+  Document& document = RootNode().GetDocument();
+  Element* element = document.FocusedElement();
+  if (!element && document.GetPage())
+    element = document.GetPage()->GetFocusController().FocusedFrameOwnerElement(
+        *document.GetFrame());
   if (!element)
     return nullptr;
 
-  if (rootNode().isInV1ShadowTree()) {
-    if (Element* retargeted = retarget(*element)) {
-      return (this == &retargeted->treeScope()) ? retargeted : nullptr;
+  if (RootNode().IsInV1ShadowTree()) {
+    if (Element* retargeted = Retarget(*element)) {
+      return (this == &retargeted->GetTreeScope()) ? retargeted : nullptr;
     }
     return nullptr;
   }
 
-  EventPath* eventPath = new EventPath(*element);
-  for (const auto& context : eventPath->nodeEventContexts()) {
-    if (context.node() == rootNode()) {
+  EventPath* event_path = new EventPath(*element);
+  for (const auto& context : event_path->NodeEventContexts()) {
+    if (context.GetNode() == RootNode()) {
       // context.target() is one of the followings:
       // - InsertionPoint
       // - shadow host
       // - Document::focusedElement()
       // So, it's safe to do toElement().
-      return toElement(context.target()->toNode());
+      return ToElement(context.Target()->ToNode());
     }
   }
   return nullptr;
 }
 
-Element* TreeScope::adjustedElement(const Element& target) const {
-  const Element* adjustedTarget = &target;
+Element* TreeScope::AdjustedElement(const Element& target) const {
+  const Element* adjusted_target = &target;
   for (const Element* ancestor = &target; ancestor;
-       ancestor = ancestor->ownerShadowHost()) {
+       ancestor = ancestor->OwnerShadowHost()) {
     // This adjustment is done only for V1 shadows, and is skipped for V0 or UA
     // shadows, because .pointerLockElement and .(webkit)fullscreenElement is
     // not available for non-V1 shadow roots.
     // TODO(kochi): Once V0 code is removed, use the same logic as
     // .activeElement for V1.
-    if (ancestor->shadowRootIfV1())
-      adjustedTarget = ancestor;
-    if (this == ancestor->treeScope())
-      return const_cast<Element*>(adjustedTarget);
+    if (ancestor->ShadowRootIfV1())
+      adjusted_target = ancestor;
+    if (this == ancestor->GetTreeScope())
+      return const_cast<Element*>(adjusted_target);
   }
   return nullptr;
 }
 
-unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const {
-  if (otherScope == this)
+unsigned short TreeScope::ComparePosition(const TreeScope& other_scope) const {
+  if (other_scope == this)
     return Node::kDocumentPositionEquivalent;
 
   HeapVector<Member<const TreeScope>, 16> chain1;
   HeapVector<Member<const TreeScope>, 16> chain2;
   const TreeScope* current;
-  for (current = this; current; current = current->parentTreeScope())
+  for (current = this; current; current = current->ParentTreeScope())
     chain1.push_back(current);
-  for (current = &otherScope; current; current = current->parentTreeScope())
+  for (current = &other_scope; current; current = current->ParentTreeScope())
     chain2.push_back(current);
 
   unsigned index1 = chain1.size();
@@ -433,15 +434,15 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const {
     const TreeScope* child1 = chain1[--index1];
     const TreeScope* child2 = chain2[--index2];
     if (child1 != child2) {
-      Node* shadowHost1 = child1->rootNode().parentOrShadowHostNode();
-      Node* shadowHost2 = child2->rootNode().parentOrShadowHostNode();
-      if (shadowHost1 != shadowHost2)
-        return shadowHost1->compareDocumentPosition(
-            shadowHost2, Node::TreatShadowTreesAsDisconnected);
+      Node* shadow_host1 = child1->RootNode().ParentOrShadowHostNode();
+      Node* shadow_host2 = child2->RootNode().ParentOrShadowHostNode();
+      if (shadow_host1 != shadow_host2)
+        return shadow_host1->compareDocumentPosition(
+            shadow_host2, Node::kTreatShadowTreesAsDisconnected);
 
       for (const ShadowRoot* child =
-               toShadowRoot(child2->rootNode()).olderShadowRoot();
-           child; child = child->olderShadowRoot()) {
+               ToShadowRoot(child2->RootNode()).OlderShadowRoot();
+           child; child = child->OlderShadowRoot()) {
         if (child == child1)
           return Node::kDocumentPositionFollowing;
       }
@@ -459,85 +460,85 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const {
                    Node::kDocumentPositionContains;
 }
 
-const TreeScope* TreeScope::commonAncestorTreeScope(
+const TreeScope* TreeScope::CommonAncestorTreeScope(
     const TreeScope& other) const {
-  HeapVector<Member<const TreeScope>, 16> thisChain;
-  for (const TreeScope* tree = this; tree; tree = tree->parentTreeScope())
-    thisChain.push_back(tree);
+  HeapVector<Member<const TreeScope>, 16> this_chain;
+  for (const TreeScope* tree = this; tree; tree = tree->ParentTreeScope())
+    this_chain.push_back(tree);
 
-  HeapVector<Member<const TreeScope>, 16> otherChain;
-  for (const TreeScope* tree = &other; tree; tree = tree->parentTreeScope())
-    otherChain.push_back(tree);
+  HeapVector<Member<const TreeScope>, 16> other_chain;
+  for (const TreeScope* tree = &other; tree; tree = tree->ParentTreeScope())
+    other_chain.push_back(tree);
 
   // Keep popping out the last elements of these chains until a mismatched pair
   // is found. If |this| and |other| belong to different documents, null will be
   // returned.
-  const TreeScope* lastAncestor = nullptr;
-  while (!thisChain.isEmpty() && !otherChain.isEmpty() &&
-         thisChain.back() == otherChain.back()) {
-    lastAncestor = thisChain.back();
-    thisChain.pop_back();
-    otherChain.pop_back();
+  const TreeScope* last_ancestor = nullptr;
+  while (!this_chain.IsEmpty() && !other_chain.IsEmpty() &&
+         this_chain.back() == other_chain.back()) {
+    last_ancestor = this_chain.back();
+    this_chain.pop_back();
+    other_chain.pop_back();
   }
-  return lastAncestor;
+  return last_ancestor;
 }
 
-TreeScope* TreeScope::commonAncestorTreeScope(TreeScope& other) {
+TreeScope* TreeScope::CommonAncestorTreeScope(TreeScope& other) {
   return const_cast<TreeScope*>(
-      static_cast<const TreeScope&>(*this).commonAncestorTreeScope(other));
+      static_cast<const TreeScope&>(*this).CommonAncestorTreeScope(other));
 }
 
-bool TreeScope::isInclusiveAncestorOf(const TreeScope& scope) const {
+bool TreeScope::IsInclusiveAncestorOf(const TreeScope& scope) const {
   for (const TreeScope* current = &scope; current;
-       current = current->parentTreeScope()) {
+       current = current->ParentTreeScope()) {
     if (current == this)
       return true;
   }
   return false;
 }
 
-Element* TreeScope::getElementByAccessKey(const String& key) const {
-  if (key.isEmpty())
+Element* TreeScope::GetElementByAccessKey(const String& key) const {
+  if (key.IsEmpty())
     return nullptr;
   Element* result = nullptr;
-  Node& root = rootNode();
-  for (Element& element : ElementTraversal::descendantsOf(root)) {
-    if (equalIgnoringCase(element.fastGetAttribute(accesskeyAttr), key))
+  Node& root = RootNode();
+  for (Element& element : ElementTraversal::DescendantsOf(root)) {
+    if (EqualIgnoringCase(element.FastGetAttribute(accesskeyAttr), key))
       result = &element;
-    for (ShadowRoot* shadowRoot = element.youngestShadowRoot(); shadowRoot;
-         shadowRoot = shadowRoot->olderShadowRoot()) {
-      if (Element* shadowResult = shadowRoot->getElementByAccessKey(key))
-        result = shadowResult;
+    for (ShadowRoot* shadow_root = element.YoungestShadowRoot(); shadow_root;
+         shadow_root = shadow_root->OlderShadowRoot()) {
+      if (Element* shadow_result = shadow_root->GetElementByAccessKey(key))
+        result = shadow_result;
     }
   }
   return result;
 }
 
-void TreeScope::setNeedsStyleRecalcForViewportUnits() {
-  for (Element* element = ElementTraversal::firstWithin(rootNode()); element;
-       element = ElementTraversal::nextIncludingPseudo(*element)) {
-    for (ShadowRoot* root = element->youngestShadowRoot(); root;
-         root = root->olderShadowRoot())
-      root->setNeedsStyleRecalcForViewportUnits();
-    const ComputedStyle* style = element->computedStyle();
-    if (style && style->hasViewportUnits())
-      element->setNeedsStyleRecalc(LocalStyleChange,
-                                   StyleChangeReasonForTracing::create(
-                                       StyleChangeReason::ViewportUnits));
+void TreeScope::SetNeedsStyleRecalcForViewportUnits() {
+  for (Element* element = ElementTraversal::FirstWithin(RootNode()); element;
+       element = ElementTraversal::NextIncludingPseudo(*element)) {
+    for (ShadowRoot* root = element->YoungestShadowRoot(); root;
+         root = root->OlderShadowRoot())
+      root->SetNeedsStyleRecalcForViewportUnits();
+    const ComputedStyle* style = element->GetComputedStyle();
+    if (style && style->HasViewportUnits())
+      element->SetNeedsStyleRecalc(kLocalStyleChange,
+                                   StyleChangeReasonForTracing::Create(
+                                       StyleChangeReason::kViewportUnits));
   }
 }
 
 DEFINE_TRACE(TreeScope) {
-  visitor->trace(m_rootNode);
-  visitor->trace(m_document);
-  visitor->trace(m_parentTreeScope);
-  visitor->trace(m_idTargetObserverRegistry);
-  visitor->trace(m_selection);
-  visitor->trace(m_elementsById);
-  visitor->trace(m_imageMapsByName);
-  visitor->trace(m_scopedStyleResolver);
-  visitor->trace(m_radioButtonGroupScope);
-  visitor->trace(m_svgTreeScopedResources);
+  visitor->Trace(root_node_);
+  visitor->Trace(document_);
+  visitor->Trace(parent_tree_scope_);
+  visitor->Trace(id_target_observer_registry_);
+  visitor->Trace(selection_);
+  visitor->Trace(elements_by_id_);
+  visitor->Trace(image_maps_by_name_);
+  visitor->Trace(scoped_style_resolver_);
+  visitor->Trace(radio_button_group_scope_);
+  visitor->Trace(svg_tree_scoped_resources_);
 }
 
 }  // namespace blink

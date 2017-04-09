@@ -18,12 +18,10 @@ MHTMLGenerationParams::MHTMLGenerationParams(const base::FilePath& file_path)
       switches::kMHTMLGeneratorOption);
   if (mhtmlGeneratorOptionFlag == switches::kMHTMLSkipNostoreMain) {
     cache_control_policy =
-        blink::WebFrameSerializerCacheControlPolicy::
-        FailForNoStoreMainFrame;
+        blink::WebFrameSerializerCacheControlPolicy::kFailForNoStoreMainFrame;
   } else if (mhtmlGeneratorOptionFlag == switches::kMHTMLSkipNostoreAll) {
-    cache_control_policy =
-        blink::WebFrameSerializerCacheControlPolicy::
-        SkipAnyFrameOrResourceMarkedNoStore;
+    cache_control_policy = blink::WebFrameSerializerCacheControlPolicy::
+        kSkipAnyFrameOrResourceMarkedNoStore;
   }
 }
 

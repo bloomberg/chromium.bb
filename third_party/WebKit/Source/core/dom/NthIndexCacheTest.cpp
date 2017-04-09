@@ -16,19 +16,19 @@ class NthIndexCacheTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  Document& document() const { return m_dummyPageHolder->document(); }
-  void setHtmlInnerHTML(const char* htmlContent);
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  void SetHtmlInnerHTML(const char* html_content);
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void NthIndexCacheTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(NthIndexCacheTest, NthIndex) {
-  document().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->setInnerHTML(
       "<body>"
       "<span "
       "id=first></span><span></span><span></span><span></span><span></span>"
@@ -41,13 +41,13 @@ TEST_F(NthIndexCacheTest, NthIndex) {
       "id=last></span>"
       "</body>");
 
-  NthIndexCache nthIndexCache(document());
+  NthIndexCache nth_index_cache(GetDocument());
 
   EXPECT_EQ(
-      nthIndexCache.nthChildIndex(*document().getElementById("nth-child")),
+      nth_index_cache.NthChildIndex(*GetDocument().GetElementById("nth-child")),
       12U);
-  EXPECT_EQ(nthIndexCache.nthLastChildIndex(
-                *document().getElementById("nth-last-child")),
+  EXPECT_EQ(nth_index_cache.NthLastChildIndex(
+                *GetDocument().GetElementById("nth-last-child")),
             12U);
 }
 

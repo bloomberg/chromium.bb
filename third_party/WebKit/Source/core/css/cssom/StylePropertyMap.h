@@ -16,13 +16,13 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
   WTF_MAKE_NONCOPYABLE(StylePropertyMap);
 
  public:
-  void set(const String& propertyName,
+  void set(const String& property_name,
            CSSStyleValueOrCSSStyleValueSequenceOrString& item,
            ExceptionState&);
-  void append(const String& propertyName,
+  void append(const String& property_name,
               CSSStyleValueOrCSSStyleValueSequenceOrString& item,
               ExceptionState&);
-  void remove(const String& propertyName, ExceptionState&);
+  void remove(const String& property_name, ExceptionState&);
 
   virtual void set(CSSPropertyID,
                    CSSStyleValueOrCSSStyleValueSequenceOrString& item,

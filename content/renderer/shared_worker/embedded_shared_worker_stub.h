@@ -60,27 +60,27 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   void OnChannelError() override;
 
   // blink::WebSharedWorkerClient implementation.
-  void countFeature(uint32_t feature) override;
-  void workerContextClosed() override;
-  void workerContextDestroyed() override;
-  void workerReadyForInspection() override;
-  void workerScriptLoaded() override;
-  void workerScriptLoadFailed() override;
-  void selectAppCacheID(long long) override;
-  blink::WebNotificationPresenter* notificationPresenter() override;
-  blink::WebApplicationCacheHost* createApplicationCacheHost(
+  void CountFeature(uint32_t feature) override;
+  void WorkerContextClosed() override;
+  void WorkerContextDestroyed() override;
+  void WorkerReadyForInspection() override;
+  void WorkerScriptLoaded() override;
+  void WorkerScriptLoadFailed() override;
+  void SelectAppCacheID(long long) override;
+  blink::WebNotificationPresenter* NotificationPresenter() override;
+  blink::WebApplicationCacheHost* CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
   blink::WebWorkerContentSettingsClientProxy*
-  createWorkerContentSettingsClientProxy(
+  CreateWorkerContentSettingsClientProxy(
       const blink::WebSecurityOrigin& origin) override;
-  blink::WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider()
+  blink::WebServiceWorkerNetworkProvider* CreateServiceWorkerNetworkProvider()
       override;
-  void sendDevToolsMessage(int session_id,
+  void SendDevToolsMessage(int session_id,
                            int call_id,
                            const blink::WebString& message,
                            const blink::WebString& state) override;
   blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-      createDevToolsMessageLoop() override;
+  CreateDevToolsMessageLoop() override;
 
  private:
   ~EmbeddedSharedWorkerStub() override;

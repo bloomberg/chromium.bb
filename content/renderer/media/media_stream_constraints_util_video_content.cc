@@ -43,21 +43,21 @@ constexpr double kMaxScreenCastAspectRatio =
     static_cast<double>(kMinScreenCastDimension);
 
 StringSet StringSetFromConstraint(const blink::StringConstraint& constraint) {
-  if (!constraint.hasExact())
+  if (!constraint.HasExact())
     return StringSet::UniversalSet();
 
   std::vector<std::string> elements;
-  for (const auto& entry : constraint.exact())
-    elements.push_back(entry.ascii());
+  for (const auto& entry : constraint.Exact())
+    elements.push_back(entry.Ascii());
 
   return StringSet(std::move(elements));
 }
 
 BoolSet BoolSetFromConstraint(const blink::BooleanConstraint& constraint) {
-  if (!constraint.hasExact())
+  if (!constraint.HasExact())
     return BoolSet::UniversalSet();
 
-  return BoolSet({constraint.exact()});
+  return BoolSet({constraint.Exact()});
 }
 
 using DoubleRangeSet = NumericRangeSet<double>;
@@ -71,10 +71,10 @@ class VideoContentCaptureCandidates {
       const blink::WebMediaTrackConstraintSet& constraint_set)
       : resolution_set(ResolutionSet::FromConstraintSet(constraint_set)),
         frame_rate_set(
-            DoubleRangeSet::FromConstraint(constraint_set.frameRate)),
-        device_id_set(StringSetFromConstraint(constraint_set.deviceId)),
+            DoubleRangeSet::FromConstraint(constraint_set.frame_rate)),
+        device_id_set(StringSetFromConstraint(constraint_set.device_id)),
         noise_reduction_set(
-            BoolSetFromConstraint(constraint_set.googNoiseReduction)) {}
+            BoolSetFromConstraint(constraint_set.goog_noise_reduction)) {}
 
   VideoContentCaptureCandidates(VideoContentCaptureCandidates&& other) =
       default;
@@ -142,8 +142,8 @@ double SelectFrameRateFromCandidates(
     const DoubleRangeSet& candidate_set,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     double default_frame_rate) {
-  double frame_rate = basic_constraint_set.frameRate.hasIdeal()
-                          ? basic_constraint_set.frameRate.ideal()
+  double frame_rate = basic_constraint_set.frame_rate.HasIdeal()
+                          ? basic_constraint_set.frame_rate.Ideal()
                           : default_frame_rate;
   if (frame_rate > candidate_set.Max())
     frame_rate = candidate_set.Max();
@@ -180,11 +180,11 @@ std::string SelectDeviceIDFromCandidates(
     const StringSet& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
   DCHECK(!candidates.IsEmpty());
-  if (basic_constraint_set.deviceId.hasIdeal()) {
+  if (basic_constraint_set.device_id.HasIdeal()) {
     // If there are multiple elements specified by ideal, break ties by choosing
     // the first one that satisfies the constraints.
-    for (const auto& ideal_entry : basic_constraint_set.deviceId.ideal()) {
-      std::string ideal_value = ideal_entry.ascii();
+    for (const auto& ideal_entry : basic_constraint_set.device_id.Ideal()) {
+      std::string ideal_value = ideal_entry.Ascii();
       if (candidates.Contains(ideal_value)) {
         return ideal_value;
       }
@@ -206,10 +206,10 @@ base::Optional<bool> SelectNoiseReductionFromCandidates(
     const BoolSet& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
   DCHECK(!candidates.IsEmpty());
-  if (basic_constraint_set.googNoiseReduction.hasIdeal() &&
-      candidates.Contains(basic_constraint_set.googNoiseReduction.ideal())) {
+  if (basic_constraint_set.goog_noise_reduction.HasIdeal() &&
+      candidates.Contains(basic_constraint_set.goog_noise_reduction.Ideal())) {
     return base::Optional<bool>(
-        basic_constraint_set.googNoiseReduction.ideal());
+        basic_constraint_set.goog_noise_reduction.Ideal());
   }
 
   if (candidates.is_universal())
@@ -269,18 +269,18 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
     const blink::WebMediaTrackConstraintSet& constraint_set) {
   DCHECK(candidates.IsEmpty());
   if (candidates.resolution_set.IsHeightEmpty()) {
-    return VideoCaptureSettings(constraint_set.height.name());
+    return VideoCaptureSettings(constraint_set.height.GetName());
   } else if (candidates.resolution_set.IsWidthEmpty()) {
-    return VideoCaptureSettings(constraint_set.width.name());
+    return VideoCaptureSettings(constraint_set.width.GetName());
   } else if (candidates.resolution_set.IsAspectRatioEmpty()) {
-    return VideoCaptureSettings(constraint_set.aspectRatio.name());
+    return VideoCaptureSettings(constraint_set.aspect_ratio.GetName());
   } else if (candidates.frame_rate_set.IsEmpty()) {
-    return VideoCaptureSettings(constraint_set.frameRate.name());
+    return VideoCaptureSettings(constraint_set.frame_rate.GetName());
   } else if (candidates.noise_reduction_set.IsEmpty()) {
-    return VideoCaptureSettings(constraint_set.googNoiseReduction.name());
+    return VideoCaptureSettings(constraint_set.goog_noise_reduction.GetName());
   } else {
     DCHECK(candidates.device_id_set.IsEmpty());
-    return VideoCaptureSettings(constraint_set.deviceId.name());
+    return VideoCaptureSettings(constraint_set.device_id.GetName());
   }
 }
 
@@ -296,11 +296,11 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
   // automatically initialized with the universal set.
 
   candidates = candidates.Intersection(
-      VideoContentCaptureCandidates(constraints.basic()));
+      VideoContentCaptureCandidates(constraints.Basic()));
   if (candidates.IsEmpty())
-    return UnsatisfiedConstraintsResult(candidates, constraints.basic());
+    return UnsatisfiedConstraintsResult(candidates, constraints.Basic());
 
-  for (const auto& advanced_set : constraints.advanced()) {
+  for (const auto& advanced_set : constraints.Advanced()) {
     VideoContentCaptureCandidates advanced_candidates(advanced_set);
     VideoContentCaptureCandidates intersection =
         candidates.Intersection(advanced_candidates);
@@ -309,7 +309,7 @@ VideoCaptureSettings SelectSettingsVideoContentCapture(
   }
 
   DCHECK(!candidates.IsEmpty());
-  return SelectResultFromCandidates(candidates, constraints.basic());
+  return SelectResultFromCandidates(candidates, constraints.Basic());
 }
 
 }  // namespace content

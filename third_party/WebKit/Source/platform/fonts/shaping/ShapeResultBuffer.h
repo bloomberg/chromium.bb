@@ -25,74 +25,74 @@ class PLATFORM_EXPORT ShapeResultBuffer {
   STACK_ALLOCATED();
 
  public:
-  ShapeResultBuffer() : m_hasVerticalOffsets(false) {}
+  ShapeResultBuffer() : has_vertical_offsets_(false) {}
 
-  void appendResult(PassRefPtr<const ShapeResult> result) {
-    m_hasVerticalOffsets |= result->hasVerticalOffsets();
-    m_results.push_back(result);
+  void AppendResult(PassRefPtr<const ShapeResult> result) {
+    has_vertical_offsets_ |= result->HasVerticalOffsets();
+    results_.push_back(result);
   }
 
-  bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
+  bool HasVerticalOffsets() const { return has_vertical_offsets_; }
 
-  float fillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&) const;
-  void fillTextEmphasisGlyphs(const TextRunPaintInfo&,
-                              const GlyphData& emphasisData,
+  float FillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&) const;
+  void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
+                              const GlyphData& emphasis_data,
                               ShapeResultBloberizer&) const;
-  int offsetForPosition(const TextRun&,
-                        float targetX,
-                        bool includePartialGlyphs) const;
-  CharacterRange getCharacterRange(TextDirection,
-                                   float totalWidth,
+  int OffsetForPosition(const TextRun&,
+                        float target_x,
+                        bool include_partial_glyphs) const;
+  CharacterRange GetCharacterRange(TextDirection,
+                                   float total_width,
                                    unsigned from,
                                    unsigned to) const;
-  Vector<CharacterRange> individualCharacterRanges(TextDirection,
-                                                   float totalWidth) const;
+  Vector<CharacterRange> IndividualCharacterRanges(TextDirection,
+                                                   float total_width) const;
 
-  static CharacterRange getCharacterRange(RefPtr<const ShapeResult>,
+  static CharacterRange GetCharacterRange(RefPtr<const ShapeResult>,
                                           TextDirection,
-                                          float totalWidth,
+                                          float total_width,
                                           unsigned from,
                                           unsigned to);
 
   struct RunFontData {
-      SimpleFontData* m_fontData;
-      size_t m_glyphCount;
+    SimpleFontData* font_data_;
+    size_t glyph_count_;
   };
 
-  Vector<RunFontData> runFontData() const;
+  Vector<RunFontData> GetRunFontData() const;
 
-  GlyphData emphasisMarkGlyphData(const FontDescription&) const;
+  GlyphData EmphasisMarkGlyphData(const FontDescription&) const;
 
  private:
-  static CharacterRange getCharacterRangeInternal(
+  static CharacterRange GetCharacterRangeInternal(
       const Vector<RefPtr<const ShapeResult>, 64>&,
       TextDirection,
-      float totalWidth,
+      float total_width,
       unsigned from,
       unsigned to);
 
-  float fillFastHorizontalGlyphs(const TextRun&, ShapeResultBloberizer&) const;
+  float FillFastHorizontalGlyphs(const TextRun&, ShapeResultBloberizer&) const;
 
-  static float fillGlyphsForResult(ShapeResultBloberizer&,
+  static float FillGlyphsForResult(ShapeResultBloberizer&,
                                    const ShapeResult&,
                                    const TextRunPaintInfo&,
-                                   float initialAdvance,
-                                   unsigned runOffset);
-  static float fillTextEmphasisGlyphsForRun(ShapeResultBloberizer&,
+                                   float initial_advance,
+                                   unsigned run_offset);
+  static float FillTextEmphasisGlyphsForRun(ShapeResultBloberizer&,
                                             const ShapeResult::RunInfo*,
                                             const TextRunPaintInfo&,
                                             const GlyphData&,
-                                            float initialAdvance,
-                                            unsigned runOffset);
+                                            float initial_advance,
+                                            unsigned run_offset);
 
-  static void addRunInfoRanges(const ShapeResult::RunInfo&,
+  static void AddRunInfoRanges(const ShapeResult::RunInfo&,
                                float offset,
                                Vector<CharacterRange>&);
 
   // Empirically, cases where we get more than 50 ShapeResults are extremely
   // rare.
-  Vector<RefPtr<const ShapeResult>, 64> m_results;
-  bool m_hasVerticalOffsets;
+  Vector<RefPtr<const ShapeResult>, 64> results_;
+  bool has_vertical_offsets_;
 };
 
 }  // namespace blink

@@ -45,151 +45,152 @@ namespace blink {
 
 class ExpansionOpportunities {
  public:
-  ExpansionOpportunities() : m_totalOpportunities(0) {}
+  ExpansionOpportunities() : total_opportunities_(0) {}
 
-  void addRunWithExpansions(BidiRun& run,
-                            bool& isAfterExpansion,
-                            TextJustify textJustify) {
-    LineLayoutText text = LineLayoutText(run.m_lineLayoutItem);
-    unsigned opportunitiesInRun;
-    if (text.is8Bit()) {
-      opportunitiesInRun = Character::expansionOpportunityCount(
-          text.characters8() + run.m_start, run.m_stop - run.m_start,
-          run.m_box->direction(), isAfterExpansion, textJustify);
-    } else if (run.m_lineLayoutItem.isCombineText()) {
+  void AddRunWithExpansions(BidiRun& run,
+                            bool& is_after_expansion,
+                            TextJustify text_justify) {
+    LineLayoutText text = LineLayoutText(run.line_layout_item_);
+    unsigned opportunities_in_run;
+    if (text.Is8Bit()) {
+      opportunities_in_run = Character::ExpansionOpportunityCount(
+          text.Characters8() + run.start_, run.stop_ - run.start_,
+          run.box_->Direction(), is_after_expansion, text_justify);
+    } else if (run.line_layout_item_.IsCombineText()) {
       // Justfication applies to before and after the combined text as if
       // it is an ideographic character, and is prohibited inside the
       // combined text.
-      opportunitiesInRun = isAfterExpansion ? 1 : 2;
-      isAfterExpansion = true;
+      opportunities_in_run = is_after_expansion ? 1 : 2;
+      is_after_expansion = true;
     } else {
-      opportunitiesInRun = Character::expansionOpportunityCount(
-          text.characters16() + run.m_start, run.m_stop - run.m_start,
-          run.m_box->direction(), isAfterExpansion, textJustify);
+      opportunities_in_run = Character::ExpansionOpportunityCount(
+          text.Characters16() + run.start_, run.stop_ - run.start_,
+          run.box_->Direction(), is_after_expansion, text_justify);
     }
-    m_runsWithExpansions.push_back(opportunitiesInRun);
-    m_totalOpportunities += opportunitiesInRun;
+    runs_with_expansions_.push_back(opportunities_in_run);
+    total_opportunities_ += opportunities_in_run;
   }
-  void removeTrailingExpansion() {
-    if (!m_totalOpportunities || !m_runsWithExpansions.back())
+  void RemoveTrailingExpansion() {
+    if (!total_opportunities_ || !runs_with_expansions_.back())
       return;
-    m_runsWithExpansions.back()--;
-    m_totalOpportunities--;
+    runs_with_expansions_.back()--;
+    total_opportunities_--;
   }
 
-  unsigned count() { return m_totalOpportunities; }
+  unsigned Count() { return total_opportunities_; }
 
-  unsigned opportunitiesInRun(size_t run) { return m_runsWithExpansions[run]; }
+  unsigned OpportunitiesInRun(size_t run) { return runs_with_expansions_[run]; }
 
-  void computeExpansionsForJustifiedText(BidiRun* firstRun,
-                                         BidiRun* trailingSpaceRun,
-                                         LayoutUnit& totalLogicalWidth,
-                                         LayoutUnit availableLogicalWidth) {
-    if (!m_totalOpportunities || availableLogicalWidth <= totalLogicalWidth)
+  void ComputeExpansionsForJustifiedText(BidiRun* first_run,
+                                         BidiRun* trailing_space_run,
+                                         LayoutUnit& total_logical_width,
+                                         LayoutUnit available_logical_width) {
+    if (!total_opportunities_ || available_logical_width <= total_logical_width)
       return;
 
     size_t i = 0;
-    for (BidiRun* r = firstRun; r; r = r->next()) {
-      if (!r->m_box || r == trailingSpaceRun)
+    for (BidiRun* r = first_run; r; r = r->Next()) {
+      if (!r->box_ || r == trailing_space_run)
         continue;
 
-      if (r->m_lineLayoutItem.isText()) {
-        unsigned opportunitiesInRun = m_runsWithExpansions[i++];
+      if (r->line_layout_item_.IsText()) {
+        unsigned opportunities_in_run = runs_with_expansions_[i++];
 
-        CHECK_LE(opportunitiesInRun, m_totalOpportunities);
+        CHECK_LE(opportunities_in_run, total_opportunities_);
 
         // Don't justify for white-space: pre.
-        if (r->m_lineLayoutItem.style()->whiteSpace() != EWhiteSpace::kPre) {
-          InlineTextBox* textBox = toInlineTextBox(r->m_box);
-          CHECK(m_totalOpportunities);
-          int expansion = ((availableLogicalWidth - totalLogicalWidth) *
-                           opportunitiesInRun / m_totalOpportunities)
-                              .toInt();
-          textBox->setExpansion(expansion);
-          totalLogicalWidth += expansion;
+        if (r->line_layout_item_.Style()->WhiteSpace() != EWhiteSpace::kPre) {
+          InlineTextBox* text_box = ToInlineTextBox(r->box_);
+          CHECK(total_opportunities_);
+          int expansion = ((available_logical_width - total_logical_width) *
+                           opportunities_in_run / total_opportunities_)
+                              .ToInt();
+          text_box->SetExpansion(expansion);
+          total_logical_width += expansion;
         }
-        m_totalOpportunities -= opportunitiesInRun;
-        if (!m_totalOpportunities)
+        total_opportunities_ -= opportunities_in_run;
+        if (!total_opportunities_)
           break;
       }
     }
   }
 
  private:
-  Vector<unsigned, 16> m_runsWithExpansions;
-  unsigned m_totalOpportunities;
+  Vector<unsigned, 16> runs_with_expansions_;
+  unsigned total_opportunities_;
 };
 
-static inline InlineBox* createInlineBoxForLayoutObject(
-    LineLayoutItem lineLayoutItem,
-    bool isRootLineBox,
-    bool isOnlyRun = false) {
+static inline InlineBox* CreateInlineBoxForLayoutObject(
+    LineLayoutItem line_layout_item,
+    bool is_root_line_box,
+    bool is_only_run = false) {
   // Callers should handle text themselves.
-  DCHECK(!lineLayoutItem.isText());
+  DCHECK(!line_layout_item.IsText());
 
-  if (isRootLineBox)
-    return LineLayoutBlockFlow(lineLayoutItem).createAndAppendRootInlineBox();
+  if (is_root_line_box)
+    return LineLayoutBlockFlow(line_layout_item).CreateAndAppendRootInlineBox();
 
-  if (lineLayoutItem.isBox())
-    return LineLayoutBox(lineLayoutItem).createInlineBox();
+  if (line_layout_item.IsBox())
+    return LineLayoutBox(line_layout_item).CreateInlineBox();
 
-  return LineLayoutInline(lineLayoutItem).createAndAppendInlineFlowBox();
+  return LineLayoutInline(line_layout_item).CreateAndAppendInlineFlowBox();
 }
 
-static inline InlineTextBox* createInlineBoxForText(BidiRun& run,
-                                                    bool isOnlyRun) {
-  DCHECK(run.m_lineLayoutItem.isText());
-  LineLayoutText text = LineLayoutText(run.m_lineLayoutItem);
-  InlineTextBox* textBox =
-      text.createInlineTextBox(run.m_start, run.m_stop - run.m_start);
+static inline InlineTextBox* CreateInlineBoxForText(BidiRun& run,
+                                                    bool is_only_run) {
+  DCHECK(run.line_layout_item_.IsText());
+  LineLayoutText text = LineLayoutText(run.line_layout_item_);
+  InlineTextBox* text_box =
+      text.CreateInlineTextBox(run.start_, run.stop_ - run.start_);
   // We only treat a box as text for a <br> if we are on a line by ourself or in
   // strict mode (Note the use of strict mode.  In "almost strict" mode, we
   // don't treat the box for <br> as text.)
-  if (text.isBR())
-    textBox->setIsText(isOnlyRun || text.document().inNoQuirksMode());
-  textBox->setDirOverride(
-      run.dirOverride(text.style()->rtlOrdering() == EOrder::kVisual));
-  if (run.m_hasHyphen)
-    textBox->setHasHyphen(true);
-  return textBox;
+  if (text.IsBR())
+    text_box->SetIsText(is_only_run || text.GetDocument().InNoQuirksMode());
+  text_box->SetDirOverride(
+      run.DirOverride(text.Style()->RtlOrdering() == EOrder::kVisual));
+  if (run.has_hyphen_)
+    text_box->SetHasHyphen(true);
+  return text_box;
 }
 
-static inline void dirtyLineBoxesForObject(LayoutObject* o, bool fullLayout) {
-  if (o->isText()) {
-    LayoutText* layoutText = toLayoutText(o);
-    layoutText->dirtyOrDeleteLineBoxesIfNeeded(fullLayout);
+static inline void DirtyLineBoxesForObject(LayoutObject* o, bool full_layout) {
+  if (o->IsText()) {
+    LayoutText* layout_text = ToLayoutText(o);
+    layout_text->DirtyOrDeleteLineBoxesIfNeeded(full_layout);
   } else {
-    toLayoutInline(o)->dirtyLineBoxes(fullLayout);
+    ToLayoutInline(o)->DirtyLineBoxes(full_layout);
   }
 }
 
-static bool parentIsConstructedOrHaveNext(InlineFlowBox* parentBox) {
+static bool ParentIsConstructedOrHaveNext(InlineFlowBox* parent_box) {
   do {
-    if (parentBox->isConstructed() || parentBox->nextOnLine())
+    if (parent_box->IsConstructed() || parent_box->NextOnLine())
       return true;
-    parentBox = parentBox->parent();
-  } while (parentBox);
+    parent_box = parent_box->Parent();
+  } while (parent_box);
   return false;
 }
 
-InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
-                                                const LineInfo& lineInfo,
-                                                InlineBox* childBox) {
+InlineFlowBox* LayoutBlockFlow::CreateLineBoxes(LineLayoutItem line_layout_item,
+                                                const LineInfo& line_info,
+                                                InlineBox* child_box) {
   // See if we have an unconstructed line box for this object that is also
   // the last item on the line.
-  unsigned lineDepth = 1;
-  InlineFlowBox* parentBox = nullptr;
+  unsigned line_depth = 1;
+  InlineFlowBox* parent_box = nullptr;
   InlineFlowBox* result = nullptr;
   do {
-    SECURITY_DCHECK(lineLayoutItem.isLayoutInline() ||
-                    lineLayoutItem.isEqual(this));
+    SECURITY_DCHECK(line_layout_item.IsLayoutInline() ||
+                    line_layout_item.IsEqual(this));
 
-    LineLayoutInline inlineFlow(!lineLayoutItem.isEqual(this) ? lineLayoutItem
-                                                              : nullptr);
+    LineLayoutInline inline_flow(
+        !line_layout_item.IsEqual(this) ? line_layout_item : nullptr);
 
     // Get the last box we made for this layout object.
-    parentBox = inlineFlow ? inlineFlow.lastLineBox()
-                           : LineLayoutBlockFlow(lineLayoutItem).lastLineBox();
+    parent_box = inline_flow
+                     ? inline_flow.LastLineBox()
+                     : LineLayoutBlockFlow(line_layout_item).LastLineBox();
 
     // If this box or its ancestor is constructed then it is from a previous
     // line, and we need to make a new box for our line.  If this box or its
@@ -197,43 +198,44 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
     // then we know we have to make a new box as well.  In this situation our
     // inline has actually been split in two on the same line (this can happen
     // with very fancy language mixtures).
-    bool constructedNewBox = false;
-    bool allowedToConstructNewBox =
-        !inlineFlow || inlineFlow.alwaysCreateLineBoxes();
-    bool canUseExistingParentBox =
-        parentBox && !parentIsConstructedOrHaveNext(parentBox);
-    if (allowedToConstructNewBox && !canUseExistingParentBox) {
+    bool constructed_new_box = false;
+    bool allowed_to_construct_new_box =
+        !inline_flow || inline_flow.AlwaysCreateLineBoxes();
+    bool can_use_existing_parent_box =
+        parent_box && !ParentIsConstructedOrHaveNext(parent_box);
+    if (allowed_to_construct_new_box && !can_use_existing_parent_box) {
       // We need to make a new box for this layout object.  Once
       // made, we need to place it at the end of the current line.
-      InlineBox* newBox = createInlineBoxForLayoutObject(
-          LineLayoutItem(lineLayoutItem), lineLayoutItem.isEqual(this));
-      SECURITY_DCHECK(newBox->isInlineFlowBox());
-      parentBox = toInlineFlowBox(newBox);
-      parentBox->setFirstLineStyleBit(lineInfo.isFirstLine());
-      parentBox->setIsHorizontal(isHorizontalWritingMode());
-      constructedNewBox = true;
+      InlineBox* new_box = CreateInlineBoxForLayoutObject(
+          LineLayoutItem(line_layout_item), line_layout_item.IsEqual(this));
+      SECURITY_DCHECK(new_box->IsInlineFlowBox());
+      parent_box = ToInlineFlowBox(new_box);
+      parent_box->SetFirstLineStyleBit(line_info.IsFirstLine());
+      parent_box->SetIsHorizontal(IsHorizontalWritingMode());
+      constructed_new_box = true;
     }
 
-    if (constructedNewBox || canUseExistingParentBox) {
+    if (constructed_new_box || can_use_existing_parent_box) {
       if (!result)
-        result = parentBox;
+        result = parent_box;
 
       // If we have hit the block itself, then |box| represents the root
       // inline box for the line, and it doesn't have to be appended to any
       // parent inline.
-      if (childBox)
-        parentBox->addToLine(childBox);
+      if (child_box)
+        parent_box->AddToLine(child_box);
 
-      if (!constructedNewBox || lineLayoutItem.isEqual(this))
+      if (!constructed_new_box || line_layout_item.IsEqual(this))
         break;
 
-      childBox = parentBox;
+      child_box = parent_box;
     }
 
     // If we've exceeded our line depth, then jump straight to the root and skip
     // all the remaining intermediate inline flows.
-    lineLayoutItem = (++lineDepth >= cMaxLineDepth) ? LineLayoutItem(this)
-                                                    : lineLayoutItem.parent();
+    line_layout_item = (++line_depth >= kCMaxLineDepth)
+                           ? LineLayoutItem(this)
+                           : line_layout_item.Parent();
 
   } while (true);
 
@@ -241,10 +243,10 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LineLayoutItem lineLayoutItem,
 }
 
 template <typename CharacterType>
-static inline bool endsWithASCIISpaces(const CharacterType* characters,
+static inline bool EndsWithASCIISpaces(const CharacterType* characters,
                                        unsigned pos,
                                        unsigned end) {
-  while (isASCIISpace(characters[pos])) {
+  while (IsASCIISpace(characters[pos])) {
     pos++;
     if (pos >= end)
       return true;
@@ -252,130 +254,132 @@ static inline bool endsWithASCIISpaces(const CharacterType* characters,
   return false;
 }
 
-static bool reachedEndOfTextRun(const BidiRunList<BidiRun>& bidiRuns) {
-  BidiRun* run = bidiRuns.logicallyLastRun();
+static bool ReachedEndOfTextRun(const BidiRunList<BidiRun>& bidi_runs) {
+  BidiRun* run = bidi_runs.LogicallyLastRun();
   if (!run)
     return true;
-  unsigned pos = run->stop();
-  LineLayoutItem r = run->m_lineLayoutItem;
-  if (!r.isText() || r.isBR())
+  unsigned pos = run->Stop();
+  LineLayoutItem r = run->line_layout_item_;
+  if (!r.IsText() || r.IsBR())
     return false;
-  LineLayoutText layoutText(r);
-  unsigned length = layoutText.textLength();
+  LineLayoutText layout_text(r);
+  unsigned length = layout_text.TextLength();
   if (pos >= length)
     return true;
 
-  if (layoutText.is8Bit())
-    return endsWithASCIISpaces(layoutText.characters8(), pos, length);
-  return endsWithASCIISpaces(layoutText.characters16(), pos, length);
+  if (layout_text.Is8Bit())
+    return EndsWithASCIISpaces(layout_text.Characters8(), pos, length);
+  return EndsWithASCIISpaces(layout_text.Characters16(), pos, length);
 }
 
-RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns,
-                                              const LineInfo& lineInfo) {
-  DCHECK(bidiRuns.firstRun());
+RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
+                                              const LineInfo& line_info) {
+  DCHECK(bidi_runs.FirstRun());
 
-  bool rootHasSelectedChildren = false;
-  InlineFlowBox* parentBox = nullptr;
-  int runCount = bidiRuns.runCount() - lineInfo.runsFromLeadingWhitespace();
-  for (BidiRun* r = bidiRuns.firstRun(); r; r = r->next()) {
+  bool root_has_selected_children = false;
+  InlineFlowBox* parent_box = nullptr;
+  int run_count = bidi_runs.RunCount() - line_info.RunsFromLeadingWhitespace();
+  for (BidiRun* r = bidi_runs.FirstRun(); r; r = r->Next()) {
     // Create a box for our object.
-    bool isOnlyRun = (runCount == 1);
-    if (runCount == 2 && !r->m_lineLayoutItem.isListMarker())
-      isOnlyRun = (!style()->isLeftToRightDirection() ? bidiRuns.lastRun()
-                                                      : bidiRuns.firstRun())
-                      ->m_lineLayoutItem.isListMarker();
+    bool is_only_run = (run_count == 1);
+    if (run_count == 2 && !r->line_layout_item_.IsListMarker())
+      is_only_run = (!Style()->IsLeftToRightDirection() ? bidi_runs.LastRun()
+                                                        : bidi_runs.FirstRun())
+                        ->line_layout_item_.IsListMarker();
 
-    if (lineInfo.isEmpty())
+    if (line_info.IsEmpty())
       continue;
 
     InlineBox* box;
-    if (r->m_lineLayoutItem.isText())
-      box = createInlineBoxForText(*r, isOnlyRun);
+    if (r->line_layout_item_.IsText())
+      box = CreateInlineBoxForText(*r, is_only_run);
     else
-      box =
-          createInlineBoxForLayoutObject(r->m_lineLayoutItem, false, isOnlyRun);
-    r->m_box = box;
+      box = CreateInlineBoxForLayoutObject(r->line_layout_item_, false,
+                                           is_only_run);
+    r->box_ = box;
 
     DCHECK(box);
     if (!box)
       continue;
 
-    if (!rootHasSelectedChildren &&
-        box->getLineLayoutItem().getSelectionState() != SelectionNone)
-      rootHasSelectedChildren = true;
+    if (!root_has_selected_children &&
+        box->GetLineLayoutItem().GetSelectionState() != SelectionNone)
+      root_has_selected_children = true;
 
     // If we have no parent box yet, or if the run is not simply a sibling,
     // then we need to construct inline boxes as necessary to properly enclose
     // the run's inline box. Segments can only be siblings at the root level, as
     // they are positioned separately.
-    if (!parentBox ||
-        (parentBox->getLineLayoutItem() != r->m_lineLayoutItem.parent())) {
+    if (!parent_box ||
+        (parent_box->GetLineLayoutItem() != r->line_layout_item_.Parent())) {
       // Create new inline boxes all the way back to the appropriate insertion
       // point.
-      parentBox = createLineBoxes(r->m_lineLayoutItem.parent(), lineInfo, box);
+      parent_box =
+          CreateLineBoxes(r->line_layout_item_.Parent(), line_info, box);
     } else {
       // Append the inline box to this line.
-      parentBox->addToLine(box);
+      parent_box->AddToLine(box);
     }
 
-    box->setBidiLevel(r->level());
+    box->SetBidiLevel(r->Level());
 
-    if (box->isInlineTextBox()) {
-      if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->inlineTextBoxesUpdated(r->m_lineLayoutItem);
+    if (box->IsInlineTextBox()) {
+      if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+        cache->InlineTextBoxesUpdated(r->line_layout_item_);
     }
   }
 
   // We should have a root inline box.  It should be unconstructed and
   // be the last continuation of our line list.
-  DCHECK(lastLineBox());
-  DCHECK(!lastLineBox()->isConstructed());
+  DCHECK(LastLineBox());
+  DCHECK(!LastLineBox()->IsConstructed());
 
   // Set the m_selectedChildren flag on the root inline box if one of the leaf
   // inline box from the bidi runs walk above has a selection state.
-  if (rootHasSelectedChildren)
-    lastLineBox()->root().setHasSelectedChildren(true);
+  if (root_has_selected_children)
+    LastLineBox()->Root().SetHasSelectedChildren(true);
 
   // Set bits on our inline flow boxes that indicate which sides should
   // paint borders/margins/padding.  This knowledge will ultimately be used when
   // we determine the horizontal positions and widths of all the inline boxes on
   // the line.
-  bool isLogicallyLastRunWrapped =
-      bidiRuns.logicallyLastRun()->m_lineLayoutItem &&
-              bidiRuns.logicallyLastRun()->m_lineLayoutItem.isText()
-          ? !reachedEndOfTextRun(bidiRuns)
+  bool is_logically_last_run_wrapped =
+      bidi_runs.LogicallyLastRun()->line_layout_item_ &&
+              bidi_runs.LogicallyLastRun()->line_layout_item_.IsText()
+          ? !ReachedEndOfTextRun(bidi_runs)
           : true;
-  lastLineBox()->determineSpacingForFlowBoxes(
-      lineInfo.isLastLine(), isLogicallyLastRunWrapped,
-      bidiRuns.logicallyLastRun()->m_lineLayoutItem);
+  LastLineBox()->DetermineSpacingForFlowBoxes(
+      line_info.IsLastLine(), is_logically_last_run_wrapped,
+      bidi_runs.LogicallyLastRun()->line_layout_item_);
 
   // Now mark the line boxes as being constructed.
-  lastLineBox()->setConstructed();
+  LastLineBox()->SetConstructed();
 
   // Return the last line.
-  return lastRootBox();
+  return LastRootBox();
 }
 
-ETextAlign LayoutBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const {
-  ETextAlign alignment = style()->textAlign();
-  if (endsWithSoftBreak)
+ETextAlign LayoutBlockFlow::TextAlignmentForLine(
+    bool ends_with_soft_break) const {
+  ETextAlign alignment = Style()->GetTextAlign();
+  if (ends_with_soft_break)
     return alignment;
 
-  TextAlignLast alignmentLast = style()->getTextAlignLast();
-  switch (alignmentLast) {
-    case TextAlignLastStart:
+  TextAlignLast alignment_last = Style()->GetTextAlignLast();
+  switch (alignment_last) {
+    case kTextAlignLastStart:
       return ETextAlign::kStart;
-    case TextAlignLastEnd:
+    case kTextAlignLastEnd:
       return ETextAlign::kEnd;
-    case TextAlignLastLeft:
+    case kTextAlignLastLeft:
       return ETextAlign::kLeft;
-    case TextAlignLastRight:
+    case kTextAlignLastRight:
       return ETextAlign::kRight;
-    case TextAlignLastCenter:
+    case kTextAlignLastCenter:
       return ETextAlign::kCenter;
-    case TextAlignLastJustify:
+    case kTextAlignLastJustify:
       return ETextAlign::kJustify;
-    case TextAlignLastAuto:
+    case kTextAlignLastAuto:
       if (alignment == ETextAlign::kJustify)
         return ETextAlign::kStart;
       return alignment;
@@ -384,9 +388,9 @@ ETextAlign LayoutBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const {
   return alignment;
 }
 
-static bool textAlignmentNeedsTrailingSpace(ETextAlign textAlign,
+static bool TextAlignmentNeedsTrailingSpace(ETextAlign text_align,
                                             const ComputedStyle& style) {
-  switch (textAlign) {
+  switch (text_align) {
     case ETextAlign::kLeft:
     case ETextAlign::kWebkitLeft:
       return false;
@@ -395,145 +399,145 @@ static bool textAlignmentNeedsTrailingSpace(ETextAlign textAlign,
     case ETextAlign::kCenter:
     case ETextAlign::kWebkitCenter:
     case ETextAlign::kJustify:
-      return style.collapseWhiteSpace();
+      return style.CollapseWhiteSpace();
     case ETextAlign::kStart:
-      return style.collapseWhiteSpace() && !style.isLeftToRightDirection();
+      return style.CollapseWhiteSpace() && !style.IsLeftToRightDirection();
     case ETextAlign::kEnd:
-      return style.collapseWhiteSpace() && style.isLeftToRightDirection();
+      return style.CollapseWhiteSpace() && style.IsLeftToRightDirection();
   }
   NOTREACHED();
   return false;
 }
 
-static void updateLogicalWidthForLeftAlignedBlock(
-    bool isLeftToRightDirection,
-    BidiRun* trailingSpaceRun,
-    LayoutUnit& logicalLeft,
-    LayoutUnit totalLogicalWidth,
-    LayoutUnit availableLogicalWidth) {
+static void UpdateLogicalWidthForLeftAlignedBlock(
+    bool is_left_to_right_direction,
+    BidiRun* trailing_space_run,
+    LayoutUnit& logical_left,
+    LayoutUnit total_logical_width,
+    LayoutUnit available_logical_width) {
   // The direction of the block should determine what happens with wide lines.
   // In particular with RTL blocks, wide lines should still spill out to the
   // left.
-  if (isLeftToRightDirection) {
-    if (totalLogicalWidth > availableLogicalWidth && trailingSpaceRun)
-      trailingSpaceRun->m_box->setLogicalWidth(std::max(
-          LayoutUnit(), trailingSpaceRun->m_box->logicalWidth() -
-                            totalLogicalWidth + availableLogicalWidth));
+  if (is_left_to_right_direction) {
+    if (total_logical_width > available_logical_width && trailing_space_run)
+      trailing_space_run->box_->SetLogicalWidth(std::max(
+          LayoutUnit(), trailing_space_run->box_->LogicalWidth() -
+                            total_logical_width + available_logical_width));
     return;
   }
 
-  if (trailingSpaceRun &&
-      trailingSpaceRun->m_lineLayoutItem.styleRef().collapseWhiteSpace())
-    trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
-  else if (totalLogicalWidth > availableLogicalWidth)
-    logicalLeft -= (totalLogicalWidth - availableLogicalWidth);
+  if (trailing_space_run &&
+      trailing_space_run->line_layout_item_.StyleRef().CollapseWhiteSpace())
+    trailing_space_run->box_->SetLogicalWidth(LayoutUnit());
+  else if (total_logical_width > available_logical_width)
+    logical_left -= (total_logical_width - available_logical_width);
 }
 
-static void updateLogicalWidthForRightAlignedBlock(
-    bool isLeftToRightDirection,
-    BidiRun* trailingSpaceRun,
-    LayoutUnit& logicalLeft,
-    LayoutUnit& totalLogicalWidth,
-    LayoutUnit availableLogicalWidth) {
+static void UpdateLogicalWidthForRightAlignedBlock(
+    bool is_left_to_right_direction,
+    BidiRun* trailing_space_run,
+    LayoutUnit& logical_left,
+    LayoutUnit& total_logical_width,
+    LayoutUnit available_logical_width) {
   // Wide lines spill out of the block based off direction.
   // So even if text-align is right, if direction is LTR, wide lines should
   // overflow out of the right side of the block.
-  if (isLeftToRightDirection) {
-    if (trailingSpaceRun &&
-        trailingSpaceRun->m_lineLayoutItem.styleRef().collapseWhiteSpace()) {
-      totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
-      trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
+  if (is_left_to_right_direction) {
+    if (trailing_space_run &&
+        trailing_space_run->line_layout_item_.StyleRef().CollapseWhiteSpace()) {
+      total_logical_width -= trailing_space_run->box_->LogicalWidth();
+      trailing_space_run->box_->SetLogicalWidth(LayoutUnit());
     }
-    if (totalLogicalWidth < availableLogicalWidth)
-      logicalLeft += availableLogicalWidth - totalLogicalWidth;
+    if (total_logical_width < available_logical_width)
+      logical_left += available_logical_width - total_logical_width;
     return;
   }
 
-  if (totalLogicalWidth > availableLogicalWidth && trailingSpaceRun) {
-    trailingSpaceRun->m_box->setLogicalWidth(
-        std::max(LayoutUnit(), trailingSpaceRun->m_box->logicalWidth() -
-                                   totalLogicalWidth + availableLogicalWidth));
-    totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
+  if (total_logical_width > available_logical_width && trailing_space_run) {
+    trailing_space_run->box_->SetLogicalWidth(std::max(
+        LayoutUnit(), trailing_space_run->box_->LogicalWidth() -
+                          total_logical_width + available_logical_width));
+    total_logical_width -= trailing_space_run->box_->LogicalWidth();
   } else {
-    logicalLeft += availableLogicalWidth - totalLogicalWidth;
+    logical_left += available_logical_width - total_logical_width;
   }
 }
 
-static void updateLogicalWidthForCenterAlignedBlock(
-    bool isLeftToRightDirection,
-    BidiRun* trailingSpaceRun,
-    LayoutUnit& logicalLeft,
-    LayoutUnit& totalLogicalWidth,
-    LayoutUnit availableLogicalWidth) {
-  LayoutUnit trailingSpaceWidth;
-  if (trailingSpaceRun &&
-      trailingSpaceRun->m_lineLayoutItem.styleRef().collapseWhiteSpace()) {
-    totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
-    trailingSpaceWidth =
-        std::min(trailingSpaceRun->m_box->logicalWidth(),
-                 (availableLogicalWidth - totalLogicalWidth + 1) / 2);
-    trailingSpaceRun->m_box->setLogicalWidth(
-        std::max(LayoutUnit(), trailingSpaceWidth));
+static void UpdateLogicalWidthForCenterAlignedBlock(
+    bool is_left_to_right_direction,
+    BidiRun* trailing_space_run,
+    LayoutUnit& logical_left,
+    LayoutUnit& total_logical_width,
+    LayoutUnit available_logical_width) {
+  LayoutUnit trailing_space_width;
+  if (trailing_space_run &&
+      trailing_space_run->line_layout_item_.StyleRef().CollapseWhiteSpace()) {
+    total_logical_width -= trailing_space_run->box_->LogicalWidth();
+    trailing_space_width =
+        std::min(trailing_space_run->box_->LogicalWidth(),
+                 (available_logical_width - total_logical_width + 1) / 2);
+    trailing_space_run->box_->SetLogicalWidth(
+        std::max(LayoutUnit(), trailing_space_width));
   }
-  if (isLeftToRightDirection)
-    logicalLeft +=
-        std::max((availableLogicalWidth - totalLogicalWidth) / 2, LayoutUnit());
+  if (is_left_to_right_direction)
+    logical_left += std::max(
+        (available_logical_width - total_logical_width) / 2, LayoutUnit());
   else
-    logicalLeft += totalLogicalWidth > availableLogicalWidth
-                       ? (availableLogicalWidth - totalLogicalWidth)
-                       : (availableLogicalWidth - totalLogicalWidth) / 2 -
-                             trailingSpaceWidth;
+    logical_left += total_logical_width > available_logical_width
+                        ? (available_logical_width - total_logical_width)
+                        : (available_logical_width - total_logical_width) / 2 -
+                              trailing_space_width;
 }
 
-void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run,
-                                           LayoutRubyRun* layoutRubyRun,
-                                           LayoutObject* previousObject,
-                                           const LineInfo& lineInfo) {
-  int startOverhang;
-  int endOverhang;
-  LayoutObject* nextObject = nullptr;
-  for (BidiRun* runWithNextObject = run->next(); runWithNextObject;
-       runWithNextObject = runWithNextObject->next()) {
-    if (!runWithNextObject->m_lineLayoutItem.isOutOfFlowPositioned() &&
-        !runWithNextObject->m_box->isLineBreak()) {
-      nextObject = runWithNextObject->m_lineLayoutItem.layoutObject();
+void LayoutBlockFlow::SetMarginsForRubyRun(BidiRun* run,
+                                           LayoutRubyRun* layout_ruby_run,
+                                           LayoutObject* previous_object,
+                                           const LineInfo& line_info) {
+  int start_overhang;
+  int end_overhang;
+  LayoutObject* next_object = nullptr;
+  for (BidiRun* run_with_next_object = run->Next(); run_with_next_object;
+       run_with_next_object = run_with_next_object->Next()) {
+    if (!run_with_next_object->line_layout_item_.IsOutOfFlowPositioned() &&
+        !run_with_next_object->box_->IsLineBreak()) {
+      next_object = run_with_next_object->line_layout_item_.GetLayoutObject();
       break;
     }
   }
-  layoutRubyRun->getOverhang(
-      lineInfo.isFirstLine(),
-      layoutRubyRun->style()->isLeftToRightDirection() ? previousObject
-                                                       : nextObject,
-      layoutRubyRun->style()->isLeftToRightDirection() ? nextObject
-                                                       : previousObject,
-      startOverhang, endOverhang);
-  setMarginStartForChild(*layoutRubyRun, LayoutUnit(-startOverhang));
-  setMarginEndForChild(*layoutRubyRun, LayoutUnit(-endOverhang));
+  layout_ruby_run->GetOverhang(
+      line_info.IsFirstLine(),
+      layout_ruby_run->Style()->IsLeftToRightDirection() ? previous_object
+                                                         : next_object,
+      layout_ruby_run->Style()->IsLeftToRightDirection() ? next_object
+                                                         : previous_object,
+      start_overhang, end_overhang);
+  SetMarginStartForChild(*layout_ruby_run, LayoutUnit(-start_overhang));
+  SetMarginEndForChild(*layout_ruby_run, LayoutUnit(-end_overhang));
 }
 
-static inline size_t findWordMeasurement(
-    LineLayoutText layoutText,
+static inline size_t FindWordMeasurement(
+    LineLayoutText layout_text,
     int offset,
-    const WordMeasurements& wordMeasurements,
-    size_t lastIndex) {
+    const WordMeasurements& word_measurements,
+    size_t last_index) {
   // In LTR, lastIndex should match since the order of BidiRun (visual) and
   // WordMeasurement (logical) are the same.
-  size_t size = wordMeasurements.size();
-  if (lastIndex < size) {
-    const WordMeasurement& wordMeasurement = wordMeasurements[lastIndex];
-    if (wordMeasurement.layoutText == layoutText &&
-        wordMeasurement.startOffset == offset)
-      return lastIndex;
+  size_t size = word_measurements.size();
+  if (last_index < size) {
+    const WordMeasurement& word_measurement = word_measurements[last_index];
+    if (word_measurement.layout_text == layout_text &&
+        word_measurement.start_offset == offset)
+      return last_index;
   }
 
   // In RTL, scan the whole array because they are not the same.
   for (size_t i = 0; i < size; ++i) {
-    const WordMeasurement& wordMeasurement = wordMeasurements[i];
-    if (wordMeasurement.layoutText != layoutText)
+    const WordMeasurement& word_measurement = word_measurements[i];
+    if (word_measurement.layout_text != layout_text)
       continue;
-    if (wordMeasurement.startOffset == offset)
+    if (word_measurement.start_offset == offset)
       return i;
-    if (wordMeasurement.startOffset > offset)
+    if (word_measurement.start_offset > offset)
       break;
   }
 
@@ -544,727 +548,739 @@ static inline size_t findWordMeasurement(
   return size;
 }
 
-static inline void setLogicalWidthForTextRun(
-    RootInlineBox* lineBox,
+static inline void SetLogicalWidthForTextRun(
+    RootInlineBox* line_box,
     BidiRun* run,
-    LineLayoutText layoutText,
-    LayoutUnit xPos,
-    const LineInfo& lineInfo,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
-    VerticalPositionCache& verticalPositionCache,
-    const WordMeasurements& wordMeasurements,
-    size_t& wordMeasurementsIndex) {
-  HashSet<const SimpleFontData*> fallbackFonts;
-  GlyphOverflow glyphOverflow;
+    LineLayoutText layout_text,
+    LayoutUnit x_pos,
+    const LineInfo& line_info,
+    GlyphOverflowAndFallbackFontsMap& text_box_data_map,
+    VerticalPositionCache& vertical_position_cache,
+    const WordMeasurements& word_measurements,
+    size_t& word_measurements_index) {
+  HashSet<const SimpleFontData*> fallback_fonts;
+  GlyphOverflow glyph_overflow;
 
-  const Font& font = layoutText.style(lineInfo.isFirstLine())->font();
+  const Font& font = layout_text.Style(line_info.IsFirstLine())->GetFont();
 
-  LayoutUnit hyphenWidth;
-  if (toInlineTextBox(run->m_box)->hasHyphen())
-    hyphenWidth = LayoutUnit(layoutText.hyphenWidth(font, run->direction()));
+  LayoutUnit hyphen_width;
+  if (ToInlineTextBox(run->box_)->HasHyphen())
+    hyphen_width = LayoutUnit(layout_text.HyphenWidth(font, run->Direction()));
 
-  float measuredWidth = 0;
-  FloatRect glyphBounds;
+  float measured_width = 0;
+  FloatRect glyph_bounds;
 
-  bool kerningIsEnabled =
-      font.getFontDescription().getTypesettingFeatures() & Kerning;
+  bool kerning_is_enabled =
+      font.GetFontDescription().GetTypesettingFeatures() & kKerning;
 
 #if OS(MACOSX)
   // FIXME: Having any font feature settings enabled can lead to selection gaps
   // on Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
-  bool canUseCachedWordMeasurements =
-      font.canShapeWordByWord() &&
-      !font.getFontDescription().featureSettings() && layoutText.is8Bit();
+  bool can_use_cached_word_measurements =
+      font.CanShapeWordByWord() &&
+      !font.GetFontDescription().FeatureSettings() && layout_text.Is8Bit();
 #else
-  bool canUseCachedWordMeasurements =
-      font.canShapeWordByWord() && layoutText.is8Bit();
+  bool can_use_cached_word_measurements =
+      font.CanShapeWordByWord() && layout_text.Is8Bit();
 #endif
 
-  if (canUseCachedWordMeasurements) {
-    int lastEndOffset = run->m_start;
-    size_t i = findWordMeasurement(layoutText, lastEndOffset, wordMeasurements,
-                                   wordMeasurementsIndex);
-    for (size_t size = wordMeasurements.size();
-         i < size && lastEndOffset < run->m_stop; ++i) {
-      const WordMeasurement& wordMeasurement = wordMeasurements[i];
-      if (wordMeasurement.startOffset == wordMeasurement.endOffset)
+  if (can_use_cached_word_measurements) {
+    int last_end_offset = run->start_;
+    size_t i = FindWordMeasurement(layout_text, last_end_offset,
+                                   word_measurements, word_measurements_index);
+    for (size_t size = word_measurements.size();
+         i < size && last_end_offset < run->stop_; ++i) {
+      const WordMeasurement& word_measurement = word_measurements[i];
+      if (word_measurement.start_offset == word_measurement.end_offset)
         continue;
-      if (wordMeasurement.layoutText != layoutText ||
-          wordMeasurement.startOffset != lastEndOffset ||
-          wordMeasurement.endOffset > run->m_stop)
+      if (word_measurement.layout_text != layout_text ||
+          word_measurement.start_offset != last_end_offset ||
+          word_measurement.end_offset > run->stop_)
         break;
 
-      lastEndOffset = wordMeasurement.endOffset;
-      if (kerningIsEnabled && lastEndOffset == run->m_stop) {
-        int wordLength = lastEndOffset - wordMeasurement.startOffset;
-        measuredWidth +=
-            layoutText.width(wordMeasurement.startOffset, wordLength, xPos,
-                             run->direction(), lineInfo.isFirstLine());
-        if (i > 0 && wordLength == 1 &&
-            layoutText.characterAt(wordMeasurement.startOffset) == ' ')
-          measuredWidth += layoutText.style()->wordSpacing();
+      last_end_offset = word_measurement.end_offset;
+      if (kerning_is_enabled && last_end_offset == run->stop_) {
+        int word_length = last_end_offset - word_measurement.start_offset;
+        measured_width +=
+            layout_text.Width(word_measurement.start_offset, word_length, x_pos,
+                              run->Direction(), line_info.IsFirstLine());
+        if (i > 0 && word_length == 1 &&
+            layout_text.CharacterAt(word_measurement.start_offset) == ' ')
+          measured_width += layout_text.Style()->WordSpacing();
       } else {
-        FloatRect wordGlyphBounds = wordMeasurement.glyphBounds;
-        wordGlyphBounds.move(measuredWidth, 0);
-        glyphBounds.unite(wordGlyphBounds);
-        measuredWidth += wordMeasurement.width;
+        FloatRect word_glyph_bounds = word_measurement.glyph_bounds;
+        word_glyph_bounds.Move(measured_width, 0);
+        glyph_bounds.Unite(word_glyph_bounds);
+        measured_width += word_measurement.width;
       }
-      if (!wordMeasurement.fallbackFonts.isEmpty()) {
+      if (!word_measurement.fallback_fonts.IsEmpty()) {
         HashSet<const SimpleFontData*>::const_iterator end =
-            wordMeasurement.fallbackFonts.end();
+            word_measurement.fallback_fonts.end();
         for (HashSet<const SimpleFontData*>::const_iterator it =
-                 wordMeasurement.fallbackFonts.begin();
+                 word_measurement.fallback_fonts.begin();
              it != end; ++it)
-          fallbackFonts.insert(*it);
+          fallback_fonts.insert(*it);
       }
     }
-    wordMeasurementsIndex = i;
-    if (lastEndOffset != run->m_stop) {
+    word_measurements_index = i;
+    if (last_end_offset != run->stop_) {
       // If we don't have enough cached data, we'll measure the run again.
-      canUseCachedWordMeasurements = false;
-      fallbackFonts.clear();
+      can_use_cached_word_measurements = false;
+      fallback_fonts.Clear();
     }
   }
 
   // Don't put this into 'else' part of the above 'if' because
   // canUseCachedWordMeasurements may be modified in the 'if' block.
-  if (!canUseCachedWordMeasurements)
-    measuredWidth = layoutText.width(
-        run->m_start, run->m_stop - run->m_start, xPos, run->direction(),
-        lineInfo.isFirstLine(), &fallbackFonts, &glyphBounds);
+  if (!can_use_cached_word_measurements)
+    measured_width = layout_text.Width(
+        run->start_, run->stop_ - run->start_, x_pos, run->Direction(),
+        line_info.IsFirstLine(), &fallback_fonts, &glyph_bounds);
 
   // Negative word-spacing and/or letter-spacing may cause some glyphs to
   // overflow the left boundary and result negative measured width. Reset
   // measured width to 0 and adjust glyph bounds accordingly to cover the
   // overflow.
-  if (measuredWidth < 0) {
-    if (measuredWidth < glyphBounds.x()) {
-      glyphBounds.expand(glyphBounds.x() - measuredWidth, 0);
-      glyphBounds.setX(measuredWidth);
+  if (measured_width < 0) {
+    if (measured_width < glyph_bounds.X()) {
+      glyph_bounds.Expand(glyph_bounds.X() - measured_width, 0);
+      glyph_bounds.SetX(measured_width);
     }
-    measuredWidth = 0;
+    measured_width = 0;
   }
 
-  const SimpleFontData* fontData = font.primaryFont();
-  DCHECK(fontData);
-  glyphOverflow.setFromBounds(
-      glyphBounds, fontData ? fontData->getFontMetrics().floatAscent() : 0,
-      fontData ? fontData->getFontMetrics().floatDescent() : 0, measuredWidth);
+  const SimpleFontData* font_data = font.PrimaryFont();
+  DCHECK(font_data);
+  glyph_overflow.SetFromBounds(
+      glyph_bounds, font_data ? font_data->GetFontMetrics().FloatAscent() : 0,
+      font_data ? font_data->GetFontMetrics().FloatDescent() : 0,
+      measured_width);
 
-  run->m_box->setLogicalWidth(LayoutUnit(measuredWidth) + hyphenWidth);
-  if (!fallbackFonts.isEmpty()) {
-    DCHECK(run->m_box->isText());
+  run->box_->SetLogicalWidth(LayoutUnit(measured_width) + hyphen_width);
+  if (!fallback_fonts.IsEmpty()) {
+    DCHECK(run->box_->IsText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
-        textBoxDataMap
-            .insert(toInlineTextBox(run->m_box),
+        text_box_data_map
+            .insert(ToInlineTextBox(run->box_),
                     std::make_pair(Vector<const SimpleFontData*>(),
                                    GlyphOverflow()))
-            .storedValue;
-    DCHECK(it->value.first.isEmpty());
-    copyToVector(fallbackFonts, it->value.first);
-    run->m_box->parent()->clearDescendantsHaveSameLineHeightAndBaseline();
+            .stored_value;
+    DCHECK(it->value.first.IsEmpty());
+    CopyToVector(fallback_fonts, it->value.first);
+    run->box_->Parent()->ClearDescendantsHaveSameLineHeightAndBaseline();
   }
-  if (!glyphOverflow.isApproximatelyZero()) {
-    DCHECK(run->m_box->isText());
+  if (!glyph_overflow.IsApproximatelyZero()) {
+    DCHECK(run->box_->IsText());
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
-        textBoxDataMap
-            .insert(toInlineTextBox(run->m_box),
+        text_box_data_map
+            .insert(ToInlineTextBox(run->box_),
                     std::make_pair(Vector<const SimpleFontData*>(),
                                    GlyphOverflow()))
-            .storedValue;
-    it->value.second = glyphOverflow;
-    run->m_box->clearKnownToHaveNoOverflow();
+            .stored_value;
+    it->value.second = glyph_overflow;
+    run->box_->ClearKnownToHaveNoOverflow();
   }
 }
 
-void LayoutBlockFlow::updateLogicalWidthForAlignment(
-    const ETextAlign& textAlign,
-    const RootInlineBox* rootInlineBox,
-    BidiRun* trailingSpaceRun,
-    LayoutUnit& logicalLeft,
-    LayoutUnit& totalLogicalWidth,
-    LayoutUnit& availableLogicalWidth,
-    unsigned expansionOpportunityCount) {
+void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
+    const ETextAlign& text_align,
+    const RootInlineBox* root_inline_box,
+    BidiRun* trailing_space_run,
+    LayoutUnit& logical_left,
+    LayoutUnit& total_logical_width,
+    LayoutUnit& available_logical_width,
+    unsigned expansion_opportunity_count) {
   TextDirection direction;
-  if (rootInlineBox &&
-      rootInlineBox->getLineLayoutItem().style()->getUnicodeBidi() ==
+  if (root_inline_box &&
+      root_inline_box->GetLineLayoutItem().Style()->GetUnicodeBidi() ==
           UnicodeBidi::kPlaintext)
-    direction = rootInlineBox->direction();
+    direction = root_inline_box->Direction();
   else
-    direction = style()->direction();
+    direction = Style()->Direction();
 
   // Armed with the total width of the line (without justification),
   // we now examine our text-align property in order to determine where to
   // position the objects horizontally. The total width of the line can be
   // increased if we end up justifying text.
-  switch (textAlign) {
+  switch (text_align) {
     case ETextAlign::kLeft:
     case ETextAlign::kWebkitLeft:
-      updateLogicalWidthForLeftAlignedBlock(
-          style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-          totalLogicalWidth, availableLogicalWidth);
+      UpdateLogicalWidthForLeftAlignedBlock(
+          Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+          total_logical_width, available_logical_width);
       break;
     case ETextAlign::kRight:
     case ETextAlign::kWebkitRight:
-      updateLogicalWidthForRightAlignedBlock(
-          style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-          totalLogicalWidth, availableLogicalWidth);
+      UpdateLogicalWidthForRightAlignedBlock(
+          Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+          total_logical_width, available_logical_width);
       break;
     case ETextAlign::kCenter:
     case ETextAlign::kWebkitCenter:
-      updateLogicalWidthForCenterAlignedBlock(
-          style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-          totalLogicalWidth, availableLogicalWidth);
+      UpdateLogicalWidthForCenterAlignedBlock(
+          Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+          total_logical_width, available_logical_width);
       break;
     case ETextAlign::kJustify:
-      adjustInlineDirectionLineBounds(expansionOpportunityCount, logicalLeft,
-                                      availableLogicalWidth);
-      if (expansionOpportunityCount) {
-        if (trailingSpaceRun) {
-          totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
-          trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
+      AdjustInlineDirectionLineBounds(expansion_opportunity_count, logical_left,
+                                      available_logical_width);
+      if (expansion_opportunity_count) {
+        if (trailing_space_run) {
+          total_logical_width -= trailing_space_run->box_->LogicalWidth();
+          trailing_space_run->box_->SetLogicalWidth(LayoutUnit());
         }
         break;
       }
     // Fall through
     case ETextAlign::kStart:
       if (direction == TextDirection::kLtr)
-        updateLogicalWidthForLeftAlignedBlock(
-            style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-            totalLogicalWidth, availableLogicalWidth);
+        UpdateLogicalWidthForLeftAlignedBlock(
+            Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+            total_logical_width, available_logical_width);
       else
-        updateLogicalWidthForRightAlignedBlock(
-            style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-            totalLogicalWidth, availableLogicalWidth);
+        UpdateLogicalWidthForRightAlignedBlock(
+            Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+            total_logical_width, available_logical_width);
       break;
     case ETextAlign::kEnd:
       if (direction == TextDirection::kLtr)
-        updateLogicalWidthForRightAlignedBlock(
-            style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-            totalLogicalWidth, availableLogicalWidth);
+        UpdateLogicalWidthForRightAlignedBlock(
+            Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+            total_logical_width, available_logical_width);
       else
-        updateLogicalWidthForLeftAlignedBlock(
-            style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
-            totalLogicalWidth, availableLogicalWidth);
+        UpdateLogicalWidthForLeftAlignedBlock(
+            Style()->IsLeftToRightDirection(), trailing_space_run, logical_left,
+            total_logical_width, available_logical_width);
       break;
   }
-  if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    logicalLeft += verticalScrollbarWidth();
+  if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    logical_left += VerticalScrollbarWidth();
 }
 
-static void updateLogicalInlinePositions(LayoutBlockFlow* block,
-                                         LayoutUnit& lineLogicalLeft,
-                                         LayoutUnit& lineLogicalRight,
-                                         LayoutUnit& availableLogicalWidth,
-                                         bool firstLine,
-                                         IndentTextOrNot indentText,
-                                         LayoutUnit boxLogicalHeight) {
-  LayoutUnit lineLogicalHeight =
-      block->minLineHeightForReplacedObject(firstLine, boxLogicalHeight);
-  lineLogicalLeft = block->logicalLeftOffsetForLine(
-      block->logicalHeight(), indentText, lineLogicalHeight);
-  lineLogicalRight = block->logicalRightOffsetForLine(
-      block->logicalHeight(), indentText, lineLogicalHeight);
-  availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
+static void UpdateLogicalInlinePositions(LayoutBlockFlow* block,
+                                         LayoutUnit& line_logical_left,
+                                         LayoutUnit& line_logical_right,
+                                         LayoutUnit& available_logical_width,
+                                         bool first_line,
+                                         IndentTextOrNot indent_text,
+                                         LayoutUnit box_logical_height) {
+  LayoutUnit line_logical_height =
+      block->MinLineHeightForReplacedObject(first_line, box_logical_height);
+  line_logical_left = block->LogicalLeftOffsetForLine(
+      block->LogicalHeight(), indent_text, line_logical_height);
+  line_logical_right = block->LogicalRightOffsetForLine(
+      block->LogicalHeight(), indent_text, line_logical_height);
+  available_logical_width = line_logical_right - line_logical_left;
 }
 
-void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
-    RootInlineBox* lineBox,
-    const LineInfo& lineInfo,
-    BidiRun* firstRun,
-    BidiRun* trailingSpaceRun,
-    bool reachedEnd,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
-    VerticalPositionCache& verticalPositionCache,
-    const WordMeasurements& wordMeasurements) {
-
+void LayoutBlockFlow::ComputeInlineDirectionPositionsForLine(
+    RootInlineBox* line_box,
+    const LineInfo& line_info,
+    BidiRun* first_run,
+    BidiRun* trailing_space_run,
+    bool reached_end,
+    GlyphOverflowAndFallbackFontsMap& text_box_data_map,
+    VerticalPositionCache& vertical_position_cache,
+    const WordMeasurements& word_measurements) {
   // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted
   // line of an element. For example, the first line of an anonymous block
   // box is only affected if it is the first child of its parent element."
   // CSS3 "text-indent", "each-line" affects the first line of the block
   // container as well as each line after a forced line break, but does not
   // affect lines after a soft wrap break.
-  bool isFirstLine =
-      lineInfo.isFirstLine() &&
-      !(isAnonymousBlock() && parent()->slowFirstChild() != this);
-  bool isAfterHardLineBreak =
-      lineBox->prevRootBox() && lineBox->prevRootBox()->endsWithBreak();
-  IndentTextOrNot indentText =
-      requiresIndent(isFirstLine, isAfterHardLineBreak, styleRef());
-  LayoutUnit lineLogicalLeft;
-  LayoutUnit lineLogicalRight;
-  LayoutUnit availableLogicalWidth;
-  updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight,
-                               availableLogicalWidth, isFirstLine, indentText,
-                               LayoutUnit());
-  bool needsWordSpacing;
+  bool is_first_line =
+      line_info.IsFirstLine() &&
+      !(IsAnonymousBlock() && Parent()->SlowFirstChild() != this);
+  bool is_after_hard_line_break =
+      line_box->PrevRootBox() && line_box->PrevRootBox()->EndsWithBreak();
+  IndentTextOrNot indent_text =
+      RequiresIndent(is_first_line, is_after_hard_line_break, StyleRef());
+  LayoutUnit line_logical_left;
+  LayoutUnit line_logical_right;
+  LayoutUnit available_logical_width;
+  UpdateLogicalInlinePositions(this, line_logical_left, line_logical_right,
+                               available_logical_width, is_first_line,
+                               indent_text, LayoutUnit());
+  bool needs_word_spacing;
 
-  if (firstRun && firstRun->m_lineLayoutItem.isAtomicInlineLevel()) {
-    LineLayoutBox layoutBox(firstRun->m_lineLayoutItem);
-    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight,
-                                 availableLogicalWidth, isFirstLine, indentText,
-                                 layoutBox.logicalHeight());
+  if (first_run && first_run->line_layout_item_.IsAtomicInlineLevel()) {
+    LineLayoutBox layout_box(first_run->line_layout_item_);
+    UpdateLogicalInlinePositions(this, line_logical_left, line_logical_right,
+                                 available_logical_width, is_first_line,
+                                 indent_text, layout_box.LogicalHeight());
   }
 
-  computeInlineDirectionPositionsForSegment(
-      lineBox, lineInfo, lineLogicalLeft, availableLogicalWidth, firstRun,
-      trailingSpaceRun, textBoxDataMap, verticalPositionCache,
-      wordMeasurements);
+  ComputeInlineDirectionPositionsForSegment(
+      line_box, line_info, line_logical_left, available_logical_width,
+      first_run, trailing_space_run, text_box_data_map, vertical_position_cache,
+      word_measurements);
   // The widths of all runs are now known. We can now place every inline box
   // (and compute accurate widths for the inline flow boxes).
-  needsWordSpacing = lineBox->isLeftToRightDirection() ? false : true;
-  lineBox->placeBoxesInInlineDirection(lineLogicalLeft, needsWordSpacing);
+  needs_word_spacing = line_box->IsLeftToRightDirection() ? false : true;
+  line_box->PlaceBoxesInInlineDirection(line_logical_left, needs_word_spacing);
 }
 
-BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(
-    RootInlineBox* lineBox,
-    const LineInfo& lineInfo,
-    LayoutUnit& logicalLeft,
-    LayoutUnit& availableLogicalWidth,
-    BidiRun* firstRun,
-    BidiRun* trailingSpaceRun,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
-    VerticalPositionCache& verticalPositionCache,
-    const WordMeasurements& wordMeasurements) {
-  bool needsWordSpacing = true;
-  LayoutUnit totalLogicalWidth = lineBox->getFlowSpacingLogicalWidth();
-  bool isAfterExpansion = true;
+BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
+    RootInlineBox* line_box,
+    const LineInfo& line_info,
+    LayoutUnit& logical_left,
+    LayoutUnit& available_logical_width,
+    BidiRun* first_run,
+    BidiRun* trailing_space_run,
+    GlyphOverflowAndFallbackFontsMap& text_box_data_map,
+    VerticalPositionCache& vertical_position_cache,
+    const WordMeasurements& word_measurements) {
+  bool needs_word_spacing = true;
+  LayoutUnit total_logical_width = line_box->GetFlowSpacingLogicalWidth();
+  bool is_after_expansion = true;
   ExpansionOpportunities expansions;
-  LayoutObject* previousObject = nullptr;
-  ETextAlign textAlign = lineInfo.textAlign();
-  TextJustify textJustify = style()->getTextJustify();
+  LayoutObject* previous_object = nullptr;
+  ETextAlign text_align = line_info.GetTextAlign();
+  TextJustify text_justify = Style()->GetTextJustify();
 
-  BidiRun* r = firstRun;
-  size_t wordMeasurementsIndex = 0;
-  for (; r; r = r->next()) {
-    if (!r->m_box || r->m_lineLayoutItem.isOutOfFlowPositioned() ||
-        r->m_box->isLineBreak()) {
+  BidiRun* r = first_run;
+  size_t word_measurements_index = 0;
+  for (; r; r = r->Next()) {
+    if (!r->box_ || r->line_layout_item_.IsOutOfFlowPositioned() ||
+        r->box_->IsLineBreak()) {
       continue;  // Positioned objects are only participating to figure out
                  // their correct static x position. They have no effect on the
                  // width. Similarly, line break boxes have no effect on the
                  // width.
     }
-    if (r->m_lineLayoutItem.isText()) {
-      LineLayoutText rt(r->m_lineLayoutItem);
-      if (textAlign == ETextAlign::kJustify && r != trailingSpaceRun &&
-          textJustify != TextJustifyNone) {
-        if (!isAfterExpansion)
-          toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
-        expansions.addRunWithExpansions(*r, isAfterExpansion, textJustify);
+    if (r->line_layout_item_.IsText()) {
+      LineLayoutText rt(r->line_layout_item_);
+      if (text_align == ETextAlign::kJustify && r != trailing_space_run &&
+          text_justify != kTextJustifyNone) {
+        if (!is_after_expansion)
+          ToInlineTextBox(r->box_)->SetCanHaveLeadingExpansion(true);
+        expansions.AddRunWithExpansions(*r, is_after_expansion, text_justify);
       }
 
-      if (rt.textLength()) {
-        if (!r->m_start && needsWordSpacing &&
-            isSpaceOrNewline(rt.characterAt(r->m_start)))
-          totalLogicalWidth += rt.style(lineInfo.isFirstLine())
-                                   ->font()
-                                   .getFontDescription()
-                                   .wordSpacing();
-        needsWordSpacing = !isSpaceOrNewline(rt.characterAt(r->m_stop - 1));
+      if (rt.TextLength()) {
+        if (!r->start_ && needs_word_spacing &&
+            IsSpaceOrNewline(rt.CharacterAt(r->start_)))
+          total_logical_width += rt.Style(line_info.IsFirstLine())
+                                     ->GetFont()
+                                     .GetFontDescription()
+                                     .WordSpacing();
+        needs_word_spacing = !IsSpaceOrNewline(rt.CharacterAt(r->stop_ - 1));
       }
 
-      setLogicalWidthForTextRun(lineBox, r, rt, totalLogicalWidth, lineInfo,
-                                textBoxDataMap, verticalPositionCache,
-                                wordMeasurements, wordMeasurementsIndex);
+      SetLogicalWidthForTextRun(line_box, r, rt, total_logical_width, line_info,
+                                text_box_data_map, vertical_position_cache,
+                                word_measurements, word_measurements_index);
     } else {
-      isAfterExpansion = false;
-      if (!r->m_lineLayoutItem.isLayoutInline()) {
-        LayoutBox* layoutBox = toLayoutBox(r->m_lineLayoutItem.layoutObject());
-        if (layoutBox->isRubyRun())
-          setMarginsForRubyRun(r, toLayoutRubyRun(layoutBox), previousObject,
-                               lineInfo);
-        r->m_box->setLogicalWidth(logicalWidthForChild(*layoutBox));
-        totalLogicalWidth +=
-            marginStartForChild(*layoutBox) + marginEndForChild(*layoutBox);
-        needsWordSpacing = true;
+      is_after_expansion = false;
+      if (!r->line_layout_item_.IsLayoutInline()) {
+        LayoutBox* layout_box =
+            ToLayoutBox(r->line_layout_item_.GetLayoutObject());
+        if (layout_box->IsRubyRun())
+          SetMarginsForRubyRun(r, ToLayoutRubyRun(layout_box), previous_object,
+                               line_info);
+        r->box_->SetLogicalWidth(LogicalWidthForChild(*layout_box));
+        total_logical_width +=
+            MarginStartForChild(*layout_box) + MarginEndForChild(*layout_box);
+        needs_word_spacing = true;
       }
     }
 
-    totalLogicalWidth += r->m_box->logicalWidth();
-    previousObject = r->m_lineLayoutItem.layoutObject();
+    total_logical_width += r->box_->LogicalWidth();
+    previous_object = r->line_layout_item_.GetLayoutObject();
   }
 
-  if (isAfterExpansion)
-    expansions.removeTrailingExpansion();
+  if (is_after_expansion)
+    expansions.RemoveTrailingExpansion();
 
-  updateLogicalWidthForAlignment(textAlign, lineBox, trailingSpaceRun,
-                                 logicalLeft, totalLogicalWidth,
-                                 availableLogicalWidth, expansions.count());
+  UpdateLogicalWidthForAlignment(text_align, line_box, trailing_space_run,
+                                 logical_left, total_logical_width,
+                                 available_logical_width, expansions.Count());
 
-  expansions.computeExpansionsForJustifiedText(
-      firstRun, trailingSpaceRun, totalLogicalWidth, availableLogicalWidth);
+  expansions.ComputeExpansionsForJustifiedText(first_run, trailing_space_run,
+                                               total_logical_width,
+                                               available_logical_width);
 
   return r;
 }
 
-void LayoutBlockFlow::computeBlockDirectionPositionsForLine(
-    RootInlineBox* lineBox,
-    BidiRun* firstRun,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
-    VerticalPositionCache& verticalPositionCache) {
-  setLogicalHeight(lineBox->alignBoxesInBlockDirection(
-      logicalHeight(), textBoxDataMap, verticalPositionCache));
+void LayoutBlockFlow::ComputeBlockDirectionPositionsForLine(
+    RootInlineBox* line_box,
+    BidiRun* first_run,
+    GlyphOverflowAndFallbackFontsMap& text_box_data_map,
+    VerticalPositionCache& vertical_position_cache) {
+  SetLogicalHeight(line_box->AlignBoxesInBlockDirection(
+      LogicalHeight(), text_box_data_map, vertical_position_cache));
 
   // Now make sure we place replaced layout objects correctly.
-  for (BidiRun* r = firstRun; r; r = r->next()) {
-    DCHECK(r->m_box);
-    if (!r->m_box)
+  for (BidiRun* r = first_run; r; r = r->Next()) {
+    DCHECK(r->box_);
+    if (!r->box_)
       continue;  // Skip runs with no line boxes.
 
     // Align positioned boxes with the top of the line box.  This is
     // a reasonable approximation of an appropriate y position.
-    if (r->m_lineLayoutItem.isOutOfFlowPositioned())
-      r->m_box->setLogicalTop(logicalHeight());
+    if (r->line_layout_item_.IsOutOfFlowPositioned())
+      r->box_->SetLogicalTop(LogicalHeight());
 
     // Position is used to properly position both replaced elements and
     // to update the static normal flow x/y of positioned elements.
-    if (r->m_lineLayoutItem.isText())
-      toLayoutText(r->m_lineLayoutItem.layoutObject())
-          ->positionLineBox(r->m_box);
-    else if (r->m_lineLayoutItem.isBox())
-      toLayoutBox(r->m_lineLayoutItem.layoutObject())
-          ->positionLineBox(r->m_box);
+    if (r->line_layout_item_.IsText())
+      ToLayoutText(r->line_layout_item_.GetLayoutObject())
+          ->PositionLineBox(r->box_);
+    else if (r->line_layout_item_.IsBox())
+      ToLayoutBox(r->line_layout_item_.GetLayoutObject())
+          ->PositionLineBox(r->box_);
   }
 }
 
-void LayoutBlockFlow::appendFloatingObjectToLastLine(
-    FloatingObject& floatingObject) {
-  DCHECK(!floatingObject.originatingLine());
-  floatingObject.setOriginatingLine(lastRootBox());
-  lastRootBox()->appendFloat(floatingObject.layoutObject());
+void LayoutBlockFlow::AppendFloatingObjectToLastLine(
+    FloatingObject& floating_object) {
+  DCHECK(!floating_object.OriginatingLine());
+  floating_object.SetOriginatingLine(LastRootBox());
+  LastRootBox()->AppendFloat(floating_object.GetLayoutObject());
 }
 
 // This function constructs line boxes for all of the text runs in the resolver
 // and computes their position.
-RootInlineBox* LayoutBlockFlow::createLineBoxesFromBidiRuns(
-    unsigned bidiLevel,
-    BidiRunList<BidiRun>& bidiRuns,
+RootInlineBox* LayoutBlockFlow::CreateLineBoxesFromBidiRuns(
+    unsigned bidi_level,
+    BidiRunList<BidiRun>& bidi_runs,
     const InlineIterator& end,
-    LineInfo& lineInfo,
-    VerticalPositionCache& verticalPositionCache,
-    BidiRun* trailingSpaceRun,
-    const WordMeasurements& wordMeasurements) {
-  if (!bidiRuns.runCount())
+    LineInfo& line_info,
+    VerticalPositionCache& vertical_position_cache,
+    BidiRun* trailing_space_run,
+    const WordMeasurements& word_measurements) {
+  if (!bidi_runs.RunCount())
     return nullptr;
 
   // FIXME: Why is this only done when we had runs?
-  lineInfo.setLastLine(!end.getLineLayoutItem());
+  line_info.SetLastLine(!end.GetLineLayoutItem());
 
-  RootInlineBox* lineBox = constructLine(bidiRuns, lineInfo);
-  if (!lineBox)
+  RootInlineBox* line_box = ConstructLine(bidi_runs, line_info);
+  if (!line_box)
     return nullptr;
 
-  lineBox->setBidiLevel(bidiLevel);
-  lineBox->setEndsWithBreak(lineInfo.previousLineBrokeCleanly());
+  line_box->SetBidiLevel(bidi_level);
+  line_box->SetEndsWithBreak(line_info.PreviousLineBrokeCleanly());
 
-  bool isSVGRootInlineBox = lineBox->isSVGRootInlineBox();
+  bool is_svg_root_inline_box = line_box->IsSVGRootInlineBox();
 
-  GlyphOverflowAndFallbackFontsMap textBoxDataMap;
+  GlyphOverflowAndFallbackFontsMap text_box_data_map;
 
   // Now we position all of our text runs horizontally.
-  if (!isSVGRootInlineBox)
-    computeInlineDirectionPositionsForLine(
-        lineBox, lineInfo, bidiRuns.firstRun(), trailingSpaceRun, end.atEnd(),
-        textBoxDataMap, verticalPositionCache, wordMeasurements);
+  if (!is_svg_root_inline_box)
+    ComputeInlineDirectionPositionsForLine(
+        line_box, line_info, bidi_runs.FirstRun(), trailing_space_run,
+        end.AtEnd(), text_box_data_map, vertical_position_cache,
+        word_measurements);
 
   // Now position our text runs vertically.
-  computeBlockDirectionPositionsForLine(lineBox, bidiRuns.firstRun(),
-                                        textBoxDataMap, verticalPositionCache);
+  ComputeBlockDirectionPositionsForLine(line_box, bidi_runs.FirstRun(),
+                                        text_box_data_map,
+                                        vertical_position_cache);
 
   // SVG text layout code computes vertical & horizontal positions on its own.
   // Note that we still need to execute computeVerticalPositionsForLine() as
   // it calls InlineTextBox::positionLineBox(), which tracks whether the box
   // contains reversed text or not. If we wouldn't do that editing and thus
   // text selection in RTL boxes would not work as expected.
-  if (isSVGRootInlineBox) {
-    DCHECK(isSVGText());
-    toSVGRootInlineBox(lineBox)->computePerCharacterLayoutInformation();
+  if (is_svg_root_inline_box) {
+    DCHECK(IsSVGText());
+    ToSVGRootInlineBox(line_box)->ComputePerCharacterLayoutInformation();
   }
 
   // Compute our overflow now.
-  lineBox->computeOverflow(lineBox->lineTop(), lineBox->lineBottom(),
-                           textBoxDataMap);
+  line_box->ComputeOverflow(line_box->LineTop(), line_box->LineBottom(),
+                            text_box_data_map);
 
-  return lineBox;
+  return line_box;
 }
 
-static void deleteLineRange(LineLayoutState& layoutState,
-                            RootInlineBox* startLine,
-                            RootInlineBox* stopLine = 0) {
-  RootInlineBox* boxToDelete = startLine;
-  while (boxToDelete && boxToDelete != stopLine) {
+static void DeleteLineRange(LineLayoutState& layout_state,
+                            RootInlineBox* start_line,
+                            RootInlineBox* stop_line = 0) {
+  RootInlineBox* box_to_delete = start_line;
+  while (box_to_delete && box_to_delete != stop_line) {
     // Note: deleteLineRange(firstRootBox()) is not identical to
     // deleteLineBoxTree(). deleteLineBoxTree uses nextLineBox() instead of
     // nextRootBox() when traversing.
-    RootInlineBox* next = boxToDelete->nextRootBox();
-    boxToDelete->deleteLine();
-    boxToDelete = next;
+    RootInlineBox* next = box_to_delete->NextRootBox();
+    box_to_delete->DeleteLine();
+    box_to_delete = next;
   }
 }
 
-void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState) {
+void LayoutBlockFlow::LayoutRunsAndFloats(LineLayoutState& layout_state) {
   // We want to skip ahead to the first dirty line
   InlineBidiResolver resolver;
-  RootInlineBox* startLine = determineStartPosition(layoutState, resolver);
+  RootInlineBox* start_line = DetermineStartPosition(layout_state, resolver);
 
-  if (containsFloats())
-    layoutState.setLastFloat(m_floatingObjects->set().back().get());
+  if (ContainsFloats())
+    layout_state.SetLastFloat(floating_objects_->Set().back().get());
 
   // We also find the first clean line and extract these lines.  We will add
   // them back if we determine that we're able to synchronize after handling all
   // our dirty lines.
-  InlineIterator cleanLineStart;
-  BidiStatus cleanLineBidiStatus;
-  if (!layoutState.isFullLayout() && startLine)
-    determineEndPosition(layoutState, startLine, cleanLineStart,
-                         cleanLineBidiStatus);
+  InlineIterator clean_line_start;
+  BidiStatus clean_line_bidi_status;
+  if (!layout_state.IsFullLayout() && start_line)
+    DetermineEndPosition(layout_state, start_line, clean_line_start,
+                         clean_line_bidi_status);
 
-  if (startLine)
-    deleteLineRange(layoutState, startLine);
+  if (start_line)
+    DeleteLineRange(layout_state, start_line);
 
-  layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart,
-                             cleanLineBidiStatus);
-  linkToEndLineIfNeeded(layoutState);
-  markDirtyFloatsForPaintInvalidation(layoutState.floats());
+  LayoutRunsAndFloatsInRange(layout_state, resolver, clean_line_start,
+                             clean_line_bidi_status);
+  LinkToEndLineIfNeeded(layout_state);
+  MarkDirtyFloatsForPaintInvalidation(layout_state.Floats());
 }
 
 // Before restarting the layout loop with a new logicalHeight, remove all floats
 // that were added and reset the resolver.
-inline const InlineIterator& LayoutBlockFlow::restartLayoutRunsAndFloatsInRange(
-    LayoutUnit oldLogicalHeight,
-    LayoutUnit newLogicalHeight,
-    FloatingObject* lastFloatFromPreviousLine,
+inline const InlineIterator& LayoutBlockFlow::RestartLayoutRunsAndFloatsInRange(
+    LayoutUnit old_logical_height,
+    LayoutUnit new_logical_height,
+    FloatingObject* last_float_from_previous_line,
     InlineBidiResolver& resolver,
-    const InlineIterator& oldEnd) {
-  removeFloatingObjectsBelow(lastFloatFromPreviousLine, oldLogicalHeight);
-  setLogicalHeight(newLogicalHeight);
-  resolver.setPositionIgnoringNestedIsolates(oldEnd);
-  return oldEnd;
+    const InlineIterator& old_end) {
+  RemoveFloatingObjectsBelow(last_float_from_previous_line, old_logical_height);
+  SetLogicalHeight(new_logical_height);
+  resolver.SetPositionIgnoringNestedIsolates(old_end);
+  return old_end;
 }
 
-void LayoutBlockFlow::appendFloatsToLastLine(
-    LineLayoutState& layoutState,
-    const InlineIterator& cleanLineStart,
+void LayoutBlockFlow::AppendFloatsToLastLine(
+    LineLayoutState& layout_state,
+    const InlineIterator& clean_line_start,
     const InlineBidiResolver& resolver,
-    const BidiStatus& cleanLineBidiStatus) {
-  const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-  FloatingObjectSetIterator it = floatingObjectSet.begin();
-  FloatingObjectSetIterator end = floatingObjectSet.end();
-  if (layoutState.lastFloat()) {
-    FloatingObjectSetIterator lastFloatIterator =
-        floatingObjectSet.find(layoutState.lastFloat());
-    DCHECK(lastFloatIterator != end);
-    ++lastFloatIterator;
-    it = lastFloatIterator;
+    const BidiStatus& clean_line_bidi_status) {
+  const FloatingObjectSet& floating_object_set = floating_objects_->Set();
+  FloatingObjectSetIterator it = floating_object_set.begin();
+  FloatingObjectSetIterator end = floating_object_set.end();
+  if (layout_state.LastFloat()) {
+    FloatingObjectSetIterator last_float_iterator =
+        floating_object_set.Find(layout_state.LastFloat());
+    DCHECK(last_float_iterator != end);
+    ++last_float_iterator;
+    it = last_float_iterator;
   }
   for (; it != end; ++it) {
-    FloatingObject& floatingObject = *it->get();
+    FloatingObject& floating_object = *it->get();
     // If we've reached the start of clean lines any remaining floating children
     // belong to them.
-    if (cleanLineStart.getLineLayoutItem().isEqual(
-            floatingObject.layoutObject()) &&
-        layoutState.endLine()) {
-      layoutState.setEndLineMatched(layoutState.endLineMatched() ||
-                                    matchedEndLine(layoutState, resolver,
-                                                   cleanLineStart,
-                                                   cleanLineBidiStatus));
-      if (layoutState.endLineMatched()) {
-        layoutState.setLastFloat(&floatingObject);
+    if (clean_line_start.GetLineLayoutItem().IsEqual(
+            floating_object.GetLayoutObject()) &&
+        layout_state.EndLine()) {
+      layout_state.SetEndLineMatched(layout_state.EndLineMatched() ||
+                                     MatchedEndLine(layout_state, resolver,
+                                                    clean_line_start,
+                                                    clean_line_bidi_status));
+      if (layout_state.EndLineMatched()) {
+        layout_state.SetLastFloat(&floating_object);
         return;
       }
     }
-    appendFloatingObjectToLastLine(floatingObject);
-    DCHECK_EQ(floatingObject.layoutObject(),
-              layoutState.floats()[layoutState.floatIndex()].object);
+    AppendFloatingObjectToLastLine(floating_object);
+    DCHECK_EQ(floating_object.GetLayoutObject(),
+              layout_state.Floats()[layout_state.FloatIndex()].object);
     // If a float's geometry has changed, give up on syncing with clean lines.
-    if (layoutState.floats()[layoutState.floatIndex()].rect !=
-        floatingObject.frameRect()) {
+    if (layout_state.Floats()[layout_state.FloatIndex()].rect !=
+        floating_object.FrameRect()) {
       // Delete all the remaining lines.
-      deleteLineRange(layoutState, layoutState.endLine());
-      layoutState.setEndLine(nullptr);
+      DeleteLineRange(layout_state, layout_state.EndLine());
+      layout_state.SetEndLine(nullptr);
     }
-    layoutState.setFloatIndex(layoutState.floatIndex() + 1);
+    layout_state.SetFloatIndex(layout_state.FloatIndex() + 1);
   }
-  layoutState.setLastFloat(
-      !floatingObjectSet.isEmpty() ? floatingObjectSet.back().get() : 0);
+  layout_state.SetLastFloat(
+      !floating_object_set.IsEmpty() ? floating_object_set.back().get() : 0);
 }
 
-void LayoutBlockFlow::layoutRunsAndFloatsInRange(
-    LineLayoutState& layoutState,
+void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
+    LineLayoutState& layout_state,
     InlineBidiResolver& resolver,
-    const InlineIterator& cleanLineStart,
-    const BidiStatus& cleanLineBidiStatus) {
-  const ComputedStyle& styleToUse = styleRef();
+    const InlineIterator& clean_line_start,
+    const BidiStatus& clean_line_bidi_status) {
+  const ComputedStyle& style_to_use = StyleRef();
   bool paginated =
-      view()->layoutState() && view()->layoutState()->isPaginated();
-  bool recalculateStruts = layoutState.needsPaginationStrutRecalculation();
-  LineMidpointState& lineMidpointState = resolver.midpointState();
-  InlineIterator endOfLine = resolver.position();
-  LayoutTextInfo layoutTextInfo;
-  VerticalPositionCache verticalPositionCache;
+      View()->GetLayoutState() && View()->GetLayoutState()->IsPaginated();
+  bool recalculate_struts = layout_state.NeedsPaginationStrutRecalculation();
+  LineMidpointState& line_midpoint_state = resolver.GetMidpointState();
+  InlineIterator end_of_line = resolver.GetPosition();
+  LayoutTextInfo layout_text_info;
+  VerticalPositionCache vertical_position_cache;
 
   // Pagination may require us to delete and re-create a line due to floats.
   // When this happens,
   // we need to store the pagination strut in the meantime.
-  LayoutUnit paginationStrutFromDeletedLine;
+  LayoutUnit pagination_strut_from_deleted_line;
 
-  LineBreaker lineBreaker(LineLayoutBlockFlow(this));
+  LineBreaker line_breaker(LineLayoutBlockFlow(this));
 
   // We avoid inline capacity to save the stack space.
-  WordMeasurements wordMeasurements;
-  wordMeasurements.reserveInitialCapacity(64);
+  WordMeasurements word_measurements;
+  word_measurements.ReserveInitialCapacity(64);
 
-  while (!endOfLine.atEnd()) {
+  while (!end_of_line.AtEnd()) {
     // The runs from the previous line should have been cleaned up.
-    DCHECK(!resolver.runs().runCount());
+    DCHECK(!resolver.Runs().RunCount());
 
     // FIXME: Is this check necessary before the first iteration or can it be
     // moved to the end?
-    if (layoutState.endLine()) {
-      layoutState.setEndLineMatched(layoutState.endLineMatched() ||
-                                    matchedEndLine(layoutState, resolver,
-                                                   cleanLineStart,
-                                                   cleanLineBidiStatus));
-      if (layoutState.endLineMatched()) {
-        resolver.setPosition(InlineIterator(resolver.position().root(), 0, 0),
-                             0);
+    if (layout_state.EndLine()) {
+      layout_state.SetEndLineMatched(layout_state.EndLineMatched() ||
+                                     MatchedEndLine(layout_state, resolver,
+                                                    clean_line_start,
+                                                    clean_line_bidi_status));
+      if (layout_state.EndLineMatched()) {
+        resolver.SetPosition(
+            InlineIterator(resolver.GetPosition().Root(), 0, 0), 0);
         break;
       }
     }
 
-    lineMidpointState.reset();
+    line_midpoint_state.Reset();
 
-    layoutState.lineInfo().setEmpty(true);
-    layoutState.lineInfo().resetRunsFromLeadingWhitespace();
+    layout_state.GetLineInfo().SetEmpty(true);
+    layout_state.GetLineInfo().ResetRunsFromLeadingWhitespace();
 
-    const InlineIterator previousEndofLine = endOfLine;
-    bool isNewUBAParagraph = layoutState.lineInfo().previousLineBrokeCleanly();
-    FloatingObject* lastFloatFromPreviousLine =
-        (containsFloats()) ? m_floatingObjects->set().back().get() : 0;
+    const InlineIterator previous_endof_line = end_of_line;
+    bool is_new_uba_paragraph =
+        layout_state.GetLineInfo().PreviousLineBrokeCleanly();
+    FloatingObject* last_float_from_previous_line =
+        (ContainsFloats()) ? floating_objects_->Set().back().get() : 0;
 
-    wordMeasurements.clear();
-    endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(),
-                                          layoutTextInfo, wordMeasurements);
-    layoutTextInfo.m_lineBreakIterator.resetPriorContext();
-    if (resolver.position().atEnd()) {
+    word_measurements.Clear();
+    end_of_line =
+        line_breaker.NextLineBreak(resolver, layout_state.GetLineInfo(),
+                                   layout_text_info, word_measurements);
+    layout_text_info.line_break_iterator_.ResetPriorContext();
+    if (resolver.GetPosition().AtEnd()) {
       // FIXME: We shouldn't be creating any runs in nextLineBreak to begin
       // with! Once BidiRunList is separated from BidiResolver this will not be
       // needed.
-      resolver.runs().deleteRuns();
-      resolver.markCurrentRunEmpty();  // FIXME: This can probably be replaced
+      resolver.Runs().DeleteRuns();
+      resolver.MarkCurrentRunEmpty();  // FIXME: This can probably be replaced
                                        // by an ASSERT (or just removed).
-      resolver.setPosition(InlineIterator(resolver.position().root(), 0, 0), 0);
+      resolver.SetPosition(InlineIterator(resolver.GetPosition().Root(), 0, 0),
+                           0);
       break;
     }
 
-    DCHECK(endOfLine != resolver.position());
-    RootInlineBox* lineBox = nullptr;
+    DCHECK(end_of_line != resolver.GetPosition());
+    RootInlineBox* line_box = nullptr;
 
     // This is a short-cut for empty lines.
-    if (layoutState.lineInfo().isEmpty()) {
-      DCHECK(!paginationStrutFromDeletedLine);
-      if (lastRootBox())
-        lastRootBox()->setLineBreakInfo(endOfLine.getLineLayoutItem(),
-                                        endOfLine.offset(), resolver.status());
-      resolver.runs().deleteRuns();
+    if (layout_state.GetLineInfo().IsEmpty()) {
+      DCHECK(!pagination_strut_from_deleted_line);
+      if (LastRootBox())
+        LastRootBox()->SetLineBreakInfo(end_of_line.GetLineLayoutItem(),
+                                        end_of_line.Offset(),
+                                        resolver.Status());
+      resolver.Runs().DeleteRuns();
     } else {
       VisualDirectionOverride override =
-          (styleToUse.rtlOrdering() == EOrder::kVisual
-               ? (styleToUse.direction() == TextDirection::kLtr
-                      ? VisualLeftToRightOverride
-                      : VisualRightToLeftOverride)
-               : NoVisualOverride);
-      if (isNewUBAParagraph &&
-          styleToUse.getUnicodeBidi() == UnicodeBidi::kPlaintext &&
-          !resolver.context()->parent()) {
-        TextDirection direction = determinePlaintextDirectionality(
-            resolver.position().root(), resolver.position().getLineLayoutItem(),
-            resolver.position().offset());
-        resolver.setStatus(
-            BidiStatus(direction, isOverride(styleToUse.getUnicodeBidi())));
+          (style_to_use.RtlOrdering() == EOrder::kVisual
+               ? (style_to_use.Direction() == TextDirection::kLtr
+                      ? kVisualLeftToRightOverride
+                      : kVisualRightToLeftOverride)
+               : kNoVisualOverride);
+      if (is_new_uba_paragraph &&
+          style_to_use.GetUnicodeBidi() == UnicodeBidi::kPlaintext &&
+          !resolver.Context()->Parent()) {
+        TextDirection direction = DeterminePlaintextDirectionality(
+            resolver.GetPosition().Root(),
+            resolver.GetPosition().GetLineLayoutItem(),
+            resolver.GetPosition().Offset());
+        resolver.SetStatus(
+            BidiStatus(direction, IsOverride(style_to_use.GetUnicodeBidi())));
       }
 
-      ETextAlign textAlign = textAlignmentForLine(
-          !endOfLine.atEnd() &&
-          !layoutState.lineInfo().previousLineBrokeCleanly());
-      layoutState.lineInfo().setTextAlign(textAlign);
-      resolver.setNeedsTrailingSpace(
-          textAlignmentNeedsTrailingSpace(textAlign, styleToUse));
+      ETextAlign text_align = TextAlignmentForLine(
+          !end_of_line.AtEnd() &&
+          !layout_state.GetLineInfo().PreviousLineBrokeCleanly());
+      layout_state.GetLineInfo().SetTextAlign(text_align);
+      resolver.SetNeedsTrailingSpace(
+          TextAlignmentNeedsTrailingSpace(text_align, style_to_use));
 
       // FIXME: This ownership is reversed. We should own the BidiRunList and
       // pass it to createBidiRunsForLine.
-      BidiRunList<BidiRun>& bidiRuns = resolver.runs();
-      constructBidiRunsForLine(
-          resolver, bidiRuns, endOfLine, override,
-          layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
-      DCHECK(resolver.position() == endOfLine);
+      BidiRunList<BidiRun>& bidi_runs = resolver.Runs();
+      ConstructBidiRunsForLine(
+          resolver, bidi_runs, end_of_line, override,
+          layout_state.GetLineInfo().PreviousLineBrokeCleanly(),
+          is_new_uba_paragraph);
+      DCHECK(resolver.GetPosition() == end_of_line);
 
-      BidiRun* trailingSpaceRun = resolver.trailingSpaceRun();
+      BidiRun* trailing_space_run = resolver.TrailingSpaceRun();
 
-      if (bidiRuns.runCount() && lineBreaker.lineWasHyphenated())
-        bidiRuns.logicallyLastRun()->m_hasHyphen = true;
+      if (bidi_runs.RunCount() && line_breaker.LineWasHyphenated())
+        bidi_runs.LogicallyLastRun()->has_hyphen_ = true;
 
       // Now that the runs have been ordered, we create the line boxes.
       // At the same time we figure out where border/padding/margin should be
       // applied for
       // inline flow boxes.
 
-      LayoutUnit oldLogicalHeight = logicalHeight();
-      lineBox = createLineBoxesFromBidiRuns(
-          resolver.status().context->level(), bidiRuns, endOfLine,
-          layoutState.lineInfo(), verticalPositionCache, trailingSpaceRun,
-          wordMeasurements);
+      LayoutUnit old_logical_height = LogicalHeight();
+      line_box = CreateLineBoxesFromBidiRuns(
+          resolver.Status().context->Level(), bidi_runs, end_of_line,
+          layout_state.GetLineInfo(), vertical_position_cache,
+          trailing_space_run, word_measurements);
 
-      bidiRuns.deleteRuns();
-      resolver.markCurrentRunEmpty();  // FIXME: This can probably be replaced
+      bidi_runs.DeleteRuns();
+      resolver.MarkCurrentRunEmpty();  // FIXME: This can probably be replaced
                                        // by an ASSERT (or just removed).
 
       // If we decided to re-create the line due to pagination, we better have a
       // new line now.
-      DCHECK(lineBox || !paginationStrutFromDeletedLine);
+      DCHECK(line_box || !pagination_strut_from_deleted_line);
 
-      if (lineBox) {
-        lineBox->setLineBreakInfo(endOfLine.getLineLayoutItem(),
-                                  endOfLine.offset(), resolver.status());
-        if (recalculateStruts) {
-          if (paginationStrutFromDeletedLine) {
+      if (line_box) {
+        line_box->SetLineBreakInfo(end_of_line.GetLineLayoutItem(),
+                                   end_of_line.Offset(), resolver.Status());
+        if (recalculate_struts) {
+          if (pagination_strut_from_deleted_line) {
             // This is a line that got re-created because it got pushed to the
             // next fragmentainer, and there were floats in the vicinity that
             // affected the available width.
             // Restore the pagination info for this line.
-            lineBox->setIsFirstAfterPageBreak(true);
-            lineBox->setPaginationStrut(paginationStrutFromDeletedLine);
-            paginationStrutFromDeletedLine = LayoutUnit();
+            line_box->SetIsFirstAfterPageBreak(true);
+            line_box->SetPaginationStrut(pagination_strut_from_deleted_line);
+            pagination_strut_from_deleted_line = LayoutUnit();
           } else {
             LayoutUnit adjustment;
-            adjustLinePositionForPagination(*lineBox, adjustment);
+            AdjustLinePositionForPagination(*line_box, adjustment);
             if (adjustment) {
-              LayoutUnit oldLineWidth = availableLogicalWidthForLine(
-                  oldLogicalHeight, layoutState.lineInfo().isFirstLine()
-                                        ? IndentText
-                                        : DoNotIndentText);
-              lineBox->moveInBlockDirection(adjustment);
-              if (availableLogicalWidthForLine(
-                      oldLogicalHeight + adjustment,
-                      layoutState.lineInfo().isFirstLine()
-                          ? IndentText
-                          : DoNotIndentText) != oldLineWidth) {
+              LayoutUnit old_line_width = AvailableLogicalWidthForLine(
+                  old_logical_height, layout_state.GetLineInfo().IsFirstLine()
+                                          ? kIndentText
+                                          : kDoNotIndentText);
+              line_box->MoveInBlockDirection(adjustment);
+              if (AvailableLogicalWidthForLine(
+                      old_logical_height + adjustment,
+                      layout_state.GetLineInfo().IsFirstLine()
+                          ? kIndentText
+                          : kDoNotIndentText) != old_line_width) {
                 // We have to delete this line, remove all floats that got
                 // added, and let line layout re-run. We had just calculated the
                 // pagination strut for this line, and we need to stow it away,
                 // so that we can re-apply it when the new line has been
                 // created.
-                paginationStrutFromDeletedLine = lineBox->paginationStrut();
-                DCHECK(paginationStrutFromDeletedLine);
+                pagination_strut_from_deleted_line =
+                    line_box->PaginationStrut();
+                DCHECK(pagination_strut_from_deleted_line);
                 // We're also going to assume that we're right after a page
                 // break when re-creating this line, so it better be so.
-                DCHECK(lineBox->isFirstAfterPageBreak());
-                lineBox->deleteLine();
-                endOfLine = restartLayoutRunsAndFloatsInRange(
-                    oldLogicalHeight, oldLogicalHeight + adjustment,
-                    lastFloatFromPreviousLine, resolver, previousEndofLine);
+                DCHECK(line_box->IsFirstAfterPageBreak());
+                line_box->DeleteLine();
+                end_of_line = RestartLayoutRunsAndFloatsInRange(
+                    old_logical_height, old_logical_height + adjustment,
+                    last_float_from_previous_line, resolver,
+                    previous_endof_line);
               } else {
-                setLogicalHeight(lineBox->lineBottomWithLeading());
+                SetLogicalHeight(line_box->LineBottomWithLeading());
               }
             }
           }
@@ -1272,84 +1288,84 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       }
     }
 
-    if (!paginationStrutFromDeletedLine) {
-      for (const auto& positionedObject : lineBreaker.positionedObjects()) {
-        if (positionedObject.style()->isOriginalDisplayInlineType()) {
+    if (!pagination_strut_from_deleted_line) {
+      for (const auto& positioned_object : line_breaker.PositionedObjects()) {
+        if (positioned_object.Style()->IsOriginalDisplayInlineType()) {
           // Auto-positioned "inline" out-of-flow objects have already been
           // positioned, but if we're paginated, or just ceased to be so, we
           // need to update their position now, since the line they "belong" to
           // may have been pushed by a pagination strut, or pulled back because
           // a pagination strut was removed.
-          if (recalculateStruts && lineBox)
-            positionedObject.layer()->setStaticBlockPosition(
-                lineBox->lineTopWithLeading());
+          if (recalculate_struts && line_box)
+            positioned_object.Layer()->SetStaticBlockPosition(
+                line_box->LineTopWithLeading());
           continue;
         }
-        setStaticPositions(LineLayoutBlockFlow(this), positionedObject,
-                           DoNotIndentText);
+        SetStaticPositions(LineLayoutBlockFlow(this), positioned_object,
+                           kDoNotIndentText);
       }
 
-      if (!layoutState.lineInfo().isEmpty())
-        layoutState.lineInfo().setFirstLine(false);
-      clearFloats(lineBreaker.clear());
+      if (!layout_state.GetLineInfo().IsEmpty())
+        layout_state.GetLineInfo().SetFirstLine(false);
+      ClearFloats(line_breaker.Clear());
 
-      if (m_floatingObjects && lastRootBox()) {
-        InlineBidiResolver endOfLineResolver;
-        endOfLineResolver.setPosition(endOfLine,
-                                      numberOfIsolateAncestors(endOfLine));
-        endOfLineResolver.setStatus(resolver.status());
-        appendFloatsToLastLine(layoutState, cleanLineStart, endOfLineResolver,
-                               cleanLineBidiStatus);
+      if (floating_objects_ && LastRootBox()) {
+        InlineBidiResolver end_of_line_resolver;
+        end_of_line_resolver.SetPosition(end_of_line,
+                                         NumberOfIsolateAncestors(end_of_line));
+        end_of_line_resolver.SetStatus(resolver.Status());
+        AppendFloatsToLastLine(layout_state, clean_line_start,
+                               end_of_line_resolver, clean_line_bidi_status);
       }
     }
 
-    lineMidpointState.reset();
-    resolver.setPosition(endOfLine, numberOfIsolateAncestors(endOfLine));
+    line_midpoint_state.Reset();
+    resolver.SetPosition(end_of_line, NumberOfIsolateAncestors(end_of_line));
   }
 
   // The resolver runs should have been cleared, otherwise they're leaking.
-  DCHECK(!resolver.runs().runCount());
+  DCHECK(!resolver.Runs().RunCount());
 
   // In case we already adjusted the line positions during this layout to avoid
   // widows then we need to ignore the possibility of having a new widows
   // situation. Otherwise, we risk leaving empty containers which is against the
   // block fragmentation principles.
-  if (paginated && style()->widows() > 1 && !didBreakAtLineToAvoidWidow()) {
+  if (paginated && Style()->Widows() > 1 && !DidBreakAtLineToAvoidWidow()) {
     // Check the line boxes to make sure we didn't create unacceptable widows.
     // However, we'll prioritize orphans - so nothing we do here should create
     // a new orphan.
 
-    RootInlineBox* lineBox = lastRootBox();
+    RootInlineBox* line_box = LastRootBox();
 
     // Count from the end of the block backwards, to see how many hanging
     // lines we have.
-    RootInlineBox* firstLineInBlock = firstRootBox();
-    int numLinesHanging = 1;
-    while (lineBox && lineBox != firstLineInBlock &&
-           !lineBox->isFirstAfterPageBreak()) {
-      ++numLinesHanging;
-      lineBox = lineBox->prevRootBox();
+    RootInlineBox* first_line_in_block = FirstRootBox();
+    int num_lines_hanging = 1;
+    while (line_box && line_box != first_line_in_block &&
+           !line_box->IsFirstAfterPageBreak()) {
+      ++num_lines_hanging;
+      line_box = line_box->PrevRootBox();
     }
 
     // If there were no breaks in the block, we didn't create any widows.
-    if (!lineBox || !lineBox->isFirstAfterPageBreak() ||
-        lineBox == firstLineInBlock)
+    if (!line_box || !line_box->IsFirstAfterPageBreak() ||
+        line_box == first_line_in_block)
       return;
 
-    if (numLinesHanging < style()->widows()) {
+    if (num_lines_hanging < Style()->Widows()) {
       // We have detected a widow. Now we need to work out how many
       // lines there are on the previous page, and how many we need
       // to steal.
-      int numLinesNeeded = style()->widows() - numLinesHanging;
-      RootInlineBox* currentFirstLineOfNewPage = lineBox;
+      int num_lines_needed = Style()->Widows() - num_lines_hanging;
+      RootInlineBox* current_first_line_of_new_page = line_box;
 
       // Count the number of lines in the previous page.
-      lineBox = lineBox->prevRootBox();
-      int numLinesInPreviousPage = 1;
-      while (lineBox && lineBox != firstLineInBlock &&
-             !lineBox->isFirstAfterPageBreak()) {
-        ++numLinesInPreviousPage;
-        lineBox = lineBox->prevRootBox();
+      line_box = line_box->PrevRootBox();
+      int num_lines_in_previous_page = 1;
+      while (line_box && line_box != first_line_in_block &&
+             !line_box->IsFirstAfterPageBreak()) {
+        ++num_lines_in_previous_page;
+        line_box = line_box->PrevRootBox();
       }
 
       // If there was an explicit value for orphans, respect that. If not, we
@@ -1358,59 +1374,60 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       // about orphans, but given the specification says the initial orphan
       // value is non-zero, this is ok. The author is always free to set orphans
       // explicitly as well.
-      int orphans = style()->orphans();
-      int numLinesAvailable = numLinesInPreviousPage - orphans;
-      if (numLinesAvailable <= 0)
+      int orphans = Style()->Orphans();
+      int num_lines_available = num_lines_in_previous_page - orphans;
+      if (num_lines_available <= 0)
         return;
 
-      int numLinesToTake = std::min(numLinesAvailable, numLinesNeeded);
+      int num_lines_to_take = std::min(num_lines_available, num_lines_needed);
       // Wind back from our first widowed line.
-      lineBox = currentFirstLineOfNewPage;
-      for (int i = 0; i < numLinesToTake; ++i)
-        lineBox = lineBox->prevRootBox();
+      line_box = current_first_line_of_new_page;
+      for (int i = 0; i < num_lines_to_take; ++i)
+        line_box = line_box->PrevRootBox();
 
       // We now want to break at this line. Remember for next layout and trigger
       // relayout.
-      setBreakAtLineToAvoidWidow(lineCount(lineBox));
-      markLinesDirtyInBlockRange(lastRootBox()->lineBottomWithLeading(),
-                                 lineBox->lineBottomWithLeading(), lineBox);
+      SetBreakAtLineToAvoidWidow(LineCount(line_box));
+      MarkLinesDirtyInBlockRange(LastRootBox()->LineBottomWithLeading(),
+                                 line_box->LineBottomWithLeading(), line_box);
     }
   }
 
-  clearDidBreakAtLineToAvoidWidow();
+  ClearDidBreakAtLineToAvoidWidow();
 }
 
-void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
-  if (layoutState.endLine()) {
-    if (layoutState.endLineMatched()) {
-      bool recalculateStruts = layoutState.needsPaginationStrutRecalculation();
+void LayoutBlockFlow::LinkToEndLineIfNeeded(LineLayoutState& layout_state) {
+  if (layout_state.EndLine()) {
+    if (layout_state.EndLineMatched()) {
+      bool recalculate_struts =
+          layout_state.NeedsPaginationStrutRecalculation();
       // Attach all the remaining lines, and then adjust their y-positions as
       // needed.
-      LayoutUnit delta = logicalHeight() - layoutState.endLineLogicalTop();
-      for (RootInlineBox* line = layoutState.endLine(); line;
-           line = line->nextRootBox()) {
-        line->attachLine();
-        if (recalculateStruts) {
-          delta -= line->paginationStrut();
-          adjustLinePositionForPagination(*line, delta);
+      LayoutUnit delta = LogicalHeight() - layout_state.EndLineLogicalTop();
+      for (RootInlineBox* line = layout_state.EndLine(); line;
+           line = line->NextRootBox()) {
+        line->AttachLine();
+        if (recalculate_struts) {
+          delta -= line->PaginationStrut();
+          AdjustLinePositionForPagination(*line, delta);
         }
         if (delta)
-          line->moveInBlockDirection(delta);
-        if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
-          for (auto* box : *cleanLineFloats) {
-            FloatingObject* floatingObject = insertFloatingObject(*box);
-            DCHECK(!floatingObject->originatingLine());
-            floatingObject->setOriginatingLine(line);
-            LayoutUnit logicalTop =
-                logicalTopForChild(*box) - marginBeforeForChild(*box) + delta;
-            placeNewFloats(logicalTop);
+          line->MoveInBlockDirection(delta);
+        if (Vector<LayoutBox*>* clean_line_floats = line->FloatsPtr()) {
+          for (auto* box : *clean_line_floats) {
+            FloatingObject* floating_object = InsertFloatingObject(*box);
+            DCHECK(!floating_object->OriginatingLine());
+            floating_object->SetOriginatingLine(line);
+            LayoutUnit logical_top =
+                LogicalTopForChild(*box) - MarginBeforeForChild(*box) + delta;
+            PlaceNewFloats(logical_top);
           }
         }
       }
-      setLogicalHeight(lastRootBox()->lineBottomWithLeading());
+      SetLogicalHeight(LastRootBox()->LineBottomWithLeading());
     } else {
       // Delete all the remaining lines.
-      deleteLineRange(layoutState, layoutState.endLine());
+      DeleteLineRange(layout_state, layout_state.EndLine());
     }
   }
 
@@ -1418,26 +1435,26 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState) {
   // now. This has to be done before adding in the bottom border/padding, or the
   // float will
   // include the padding incorrectly. -dwh
-  if (placeNewFloats(logicalHeight()) && lastRootBox())
-    appendFloatsToLastLine(layoutState, InlineIterator(), InlineBidiResolver(),
+  if (PlaceNewFloats(LogicalHeight()) && LastRootBox())
+    AppendFloatsToLastLine(layout_state, InlineIterator(), InlineBidiResolver(),
                            BidiStatus());
 }
 
-void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(
+void LayoutBlockFlow::MarkDirtyFloatsForPaintInvalidation(
     Vector<FloatWithRect>& floats) {
-  size_t floatCount = floats.size();
+  size_t float_count = floats.size();
   // Floats that did not have layout did not paint invalidations when we laid
   // them out. They would have painted by now if they had moved, but if they
   // stayed at (0, 0), they still need to be painted.
-  for (size_t i = 0; i < floatCount; ++i) {
+  for (size_t i = 0; i < float_count; ++i) {
     LayoutBox* f = floats[i].object;
-    if (!floats[i].everHadLayout) {
-      if (!f->location().x() && !f->location().y())
-        f->setShouldDoFullPaintInvalidation();
+    if (!floats[i].ever_had_layout) {
+      if (!f->Location().X() && !f->Location().Y())
+        f->SetShouldDoFullPaintInvalidation();
     }
-    insertFloatingObject(*f);
+    InsertFloatingObject(*f);
   }
-  placeNewFloats(logicalHeight());
+  PlaceNewFloats(LogicalHeight());
 }
 
 // InlineMinMaxIterator is a class that will iterate over all layout objects
@@ -1453,41 +1470,41 @@ void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(
 struct InlineMinMaxIterator {
   LayoutObject* parent;
   LayoutObject* current;
-  bool endOfInline;
+  bool end_of_inline;
 
   InlineMinMaxIterator(LayoutObject* p, bool end = false)
-      : parent(p), current(p), endOfInline(end) {}
+      : parent(p), current(p), end_of_inline(end) {}
 
-  LayoutObject* next();
+  LayoutObject* Next();
 };
 
-LayoutObject* InlineMinMaxIterator::next() {
+LayoutObject* InlineMinMaxIterator::Next() {
   LayoutObject* result = nullptr;
-  bool oldEndOfInline = endOfInline;
-  endOfInline = false;
+  bool old_end_of_inline = end_of_inline;
+  end_of_inline = false;
   while (current || current == parent) {
-    if (!oldEndOfInline &&
+    if (!old_end_of_inline &&
         (current == parent ||
-         (!current->isFloating() && !current->isAtomicInlineLevel() &&
-          !current->isOutOfFlowPositioned())))
-      result = current->slowFirstChild();
+         (!current->IsFloating() && !current->IsAtomicInlineLevel() &&
+          !current->IsOutOfFlowPositioned())))
+      result = current->SlowFirstChild();
 
     if (!result) {
       // We hit the end of our inline. (It was empty, e.g., <span></span>.)
-      if (!oldEndOfInline && current->isLayoutInline()) {
+      if (!old_end_of_inline && current->IsLayoutInline()) {
         result = current;
-        endOfInline = true;
+        end_of_inline = true;
         break;
       }
 
       while (current && current != parent) {
-        result = current->nextSibling();
+        result = current->NextSibling();
         if (result)
           break;
-        current = current->parent();
-        if (current && current != parent && current->isLayoutInline()) {
+        current = current->Parent();
+        if (current && current != parent && current->IsLayoutInline()) {
           result = current;
-          endOfInline = true;
+          end_of_inline = true;
           break;
         }
       }
@@ -1496,9 +1513,9 @@ LayoutObject* InlineMinMaxIterator::next() {
     if (!result)
       break;
 
-    if (!result->isOutOfFlowPositioned() &&
-        (result->isText() || result->isFloating() ||
-         result->isAtomicInlineLevel() || result->isLayoutInline()))
+    if (!result->IsOutOfFlowPositioned() &&
+        (result->IsText() || result->IsFloating() ||
+         result->IsAtomicInlineLevel() || result->IsLayoutInline()))
       break;
 
     current = result;
@@ -1510,53 +1527,53 @@ LayoutObject* InlineMinMaxIterator::next() {
   return current;
 }
 
-static LayoutUnit getBPMWidth(LayoutUnit childValue, Length cssUnit) {
-  if (cssUnit.type() != Auto)
-    return (cssUnit.isFixed() ? static_cast<LayoutUnit>(cssUnit.value())
-                              : childValue);
+static LayoutUnit GetBPMWidth(LayoutUnit child_value, Length css_unit) {
+  if (css_unit.GetType() != kAuto)
+    return (css_unit.IsFixed() ? static_cast<LayoutUnit>(css_unit.Value())
+                               : child_value);
   return LayoutUnit();
 }
 
-static LayoutUnit getBorderPaddingMargin(const LayoutBoxModelObject& child,
-                                         bool endOfInline) {
-  const ComputedStyle& childStyle = child.styleRef();
-  if (endOfInline) {
-    return getBPMWidth(child.marginEnd(), childStyle.marginEnd()) +
-           getBPMWidth(child.paddingEnd(), childStyle.paddingEnd()) +
-           child.borderEnd();
+static LayoutUnit GetBorderPaddingMargin(const LayoutBoxModelObject& child,
+                                         bool end_of_inline) {
+  const ComputedStyle& child_style = child.StyleRef();
+  if (end_of_inline) {
+    return GetBPMWidth(child.MarginEnd(), child_style.MarginEnd()) +
+           GetBPMWidth(child.PaddingEnd(), child_style.PaddingEnd()) +
+           child.BorderEnd();
   }
-  return getBPMWidth(child.marginStart(), childStyle.marginStart()) +
-         getBPMWidth(child.paddingStart(), childStyle.paddingStart()) +
-         child.borderStart();
+  return GetBPMWidth(child.MarginStart(), child_style.MarginStart()) +
+         GetBPMWidth(child.PaddingStart(), child_style.PaddingStart()) +
+         child.BorderStart();
 }
 
-static inline void stripTrailingSpace(LayoutUnit& inlineMax,
-                                      LayoutUnit& inlineMin,
-                                      LayoutObject* trailingSpaceChild) {
-  if (trailingSpaceChild && trailingSpaceChild->isText()) {
+static inline void StripTrailingSpace(LayoutUnit& inline_max,
+                                      LayoutUnit& inline_min,
+                                      LayoutObject* trailing_space_child) {
+  if (trailing_space_child && trailing_space_child->IsText()) {
     // Collapse away the trailing space at the end of a block by finding
     // the first white-space character and subtracting its width. Subsequent
     // white-space characters have been collapsed into the first one (which
     // can be either a space or a tab character).
-    LayoutText* text = toLayoutText(trailingSpaceChild);
-    UChar trailingWhitespaceChar = ' ';
-    for (unsigned i = text->textLength(); i > 0; i--) {
-      UChar c = text->characterAt(i - 1);
-      if (!Character::treatAsSpace(c))
+    LayoutText* text = ToLayoutText(trailing_space_child);
+    UChar trailing_whitespace_char = ' ';
+    for (unsigned i = text->TextLength(); i > 0; i--) {
+      UChar c = text->CharacterAt(i - 1);
+      if (!Character::TreatAsSpace(c))
         break;
-      trailingWhitespaceChar = c;
+      trailing_whitespace_char = c;
     }
 
     // FIXME: This ignores first-line.
-    const Font& font = text->style()->font();
+    const Font& font = text->Style()->GetFont();
     TextRun run =
-        constructTextRun(font, &trailingWhitespaceChar, 1, text->styleRef(),
-                         text->style()->direction());
-    float spaceWidth = font.width(run);
-    inlineMax -= LayoutUnit::fromFloatCeil(
-        spaceWidth + font.getFontDescription().wordSpacing());
-    if (inlineMin > inlineMax)
-      inlineMin = inlineMax;
+        ConstructTextRun(font, &trailing_whitespace_char, 1, text->StyleRef(),
+                         text->Style()->Direction());
+    float space_width = font.Width(run);
+    inline_max -= LayoutUnit::FromFloatCeil(
+        space_width + font.GetFontDescription().WordSpacing());
+    if (inline_min > inline_max)
+      inline_min = inline_max;
   }
 }
 
@@ -1564,84 +1581,86 @@ static inline void stripTrailingSpace(LayoutUnit& inlineMax,
 // precision with each conversion. When this occurs while accumulating our
 // preferred widths, we can wind up with a line width that's larger than our
 // maxPreferredWidth due to pure float accumulation.
-static inline LayoutUnit adjustFloatForSubPixelLayout(float value) {
-  return LayoutUnit::fromFloatCeil(value);
+static inline LayoutUnit AdjustFloatForSubPixelLayout(float value) {
+  return LayoutUnit::FromFloatCeil(value);
 }
 
-static inline void adjustMinMaxForInlineFlow(LayoutObject* child,
-                                             bool endOfInline,
-                                             LayoutUnit& childMin,
-                                             LayoutUnit& childMax) {
+static inline void AdjustMinMaxForInlineFlow(LayoutObject* child,
+                                             bool end_of_inline,
+                                             LayoutUnit& child_min,
+                                             LayoutUnit& child_max) {
   // Add in padding/border/margin from the appropriate side of
   // the element.
-  LayoutUnit bpm = getBorderPaddingMargin(toLayoutInline(*child), endOfInline);
-  childMin += bpm;
-  childMax += bpm;
+  LayoutUnit bpm =
+      GetBorderPaddingMargin(ToLayoutInline(*child), end_of_inline);
+  child_min += bpm;
+  child_max += bpm;
 }
 
-static inline void adjustMarginForInlineReplaced(LayoutObject* child,
-                                                 LayoutUnit& childMin,
-                                                 LayoutUnit& childMax) {
+static inline void AdjustMarginForInlineReplaced(LayoutObject* child,
+                                                 LayoutUnit& child_min,
+                                                 LayoutUnit& child_max) {
   // Inline replaced elts add in their margins to their min/max values.
-  const ComputedStyle& childStyle = child->styleRef();
-  Length startMargin = childStyle.marginStart();
-  Length endMargin = childStyle.marginEnd();
+  const ComputedStyle& child_style = child->StyleRef();
+  Length start_margin = child_style.MarginStart();
+  Length end_margin = child_style.MarginEnd();
   LayoutUnit margins;
-  if (startMargin.isFixed())
-    margins += adjustFloatForSubPixelLayout(startMargin.value());
-  if (endMargin.isFixed())
-    margins += adjustFloatForSubPixelLayout(endMargin.value());
-  childMin += margins;
-  childMax += margins;
+  if (start_margin.IsFixed())
+    margins += AdjustFloatForSubPixelLayout(start_margin.Value());
+  if (end_margin.IsFixed())
+    margins += AdjustFloatForSubPixelLayout(end_margin.Value());
+  child_min += margins;
+  child_max += margins;
 }
 
 // FIXME: This function should be broken into something less monolithic.
 // FIXME: The main loop here is very similar to LineBreaker::nextSegmentBreak.
 // They can probably reuse code.
 DISABLE_CFI_PERF
-void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
-    LayoutUnit& minLogicalWidth,
-    LayoutUnit& maxLogicalWidth) {
-  LayoutUnit inlineMax;
-  LayoutUnit inlineMin;
+void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) {
+  LayoutUnit inline_max;
+  LayoutUnit inline_min;
 
-  const ComputedStyle& styleToUse = styleRef();
-  LayoutBlock* containingBlock = this->containingBlock();
+  const ComputedStyle& style_to_use = StyleRef();
+  LayoutBlock* containing_block = this->ContainingBlock();
   LayoutUnit cw =
-      containingBlock ? containingBlock->contentLogicalWidth() : LayoutUnit();
+      containing_block ? containing_block->ContentLogicalWidth() : LayoutUnit();
 
   // If we are at the start of a line, we want to ignore all white-space.
   // Also strip spaces if we previously had text that ended in a trailing space.
-  bool stripFrontSpaces = true;
-  LayoutObject* trailingSpaceChild = nullptr;
+  bool strip_front_spaces = true;
+  LayoutObject* trailing_space_child = nullptr;
 
   // Firefox and Opera will allow a table cell to grow to fit an image inside it
   // under very specific cirucumstances (in order to match common WinIE
   // layouts). Not supporting the quirk has caused us to mis-layout some real
   // sites. (See Bugzilla 10517.)
-  bool allowImagesToBreak = !document().inQuirksMode() || !isTableCell() ||
-                            !styleToUse.logicalWidth().isIntrinsicOrAuto();
+  bool allow_images_to_break = !GetDocument().InQuirksMode() ||
+                               !IsTableCell() ||
+                               !style_to_use.LogicalWidth().IsIntrinsicOrAuto();
 
-  bool autoWrap, oldAutoWrap;
-  autoWrap = oldAutoWrap = styleToUse.autoWrap();
+  bool auto_wrap, old_auto_wrap;
+  auto_wrap = old_auto_wrap = style_to_use.AutoWrap();
 
-  InlineMinMaxIterator childIterator(this);
+  InlineMinMaxIterator child_iterator(this);
 
   // Only gets added to the max preffered width once.
-  bool addedTextIndent = false;
+  bool added_text_indent = false;
   // Signals the text indent was more negative than the min preferred width
-  bool hasRemainingNegativeTextIndent = false;
+  bool has_remaining_negative_text_indent = false;
 
-  LayoutUnit textIndent = minimumValueForLength(styleToUse.textIndent(), cw);
-  LayoutObject* prevFloat = nullptr;
-  bool isPrevChildInlineFlow = false;
-  bool shouldBreakLineAfterText = false;
-  while (LayoutObject* child = childIterator.next()) {
-    autoWrap = child->isAtomicInlineLevel()
-                   ? child->parent()->style()->autoWrap()
-                   : child->style()->autoWrap();
+  LayoutUnit text_indent = MinimumValueForLength(style_to_use.TextIndent(), cw);
+  LayoutObject* prev_float = nullptr;
+  bool is_prev_child_inline_flow = false;
+  bool should_break_line_after_text = false;
+  while (LayoutObject* child = child_iterator.Next()) {
+    auto_wrap = child->IsAtomicInlineLevel()
+                    ? child->Parent()->Style()->AutoWrap()
+                    : child->Style()->AutoWrap();
 
-    if (!child->isBR()) {
+    if (!child->IsBR()) {
       // Step One: determine whether or not we need to go ahead and
       // terminate our current line. Each discrete chunk can become
       // the new min-width, if it is the widest chunk seen so far, and
@@ -1679,110 +1698,113 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
       // min/max width values (if any of them are larger than our current
       // min/max). We then look at the width of the last non-breakable run and
       // use that to start a new line (unless we end in whitespace).
-      LayoutUnit childMin;
-      LayoutUnit childMax;
+      LayoutUnit child_min;
+      LayoutUnit child_max;
 
-      if (!child->isText()) {
+      if (!child->IsText()) {
         // Case (1) and (2). Inline replaced and inline flow elements.
-        if (child->isLayoutInline()) {
-          adjustMinMaxForInlineFlow(child, childIterator.endOfInline, childMin,
-                                    childMax);
-          inlineMin += childMin;
-          inlineMax += childMax;
-          child->clearPreferredLogicalWidthsDirty();
+        if (child->IsLayoutInline()) {
+          AdjustMinMaxForInlineFlow(child, child_iterator.end_of_inline,
+                                    child_min, child_max);
+          inline_min += child_min;
+          inline_max += child_max;
+          child->ClearPreferredLogicalWidthsDirty();
         } else {
-          adjustMarginForInlineReplaced(child, childMin, childMax);
+          AdjustMarginForInlineReplaced(child, child_min, child_max);
         }
       }
 
-      if (!child->isLayoutInline() && !child->isText()) {
+      if (!child->IsLayoutInline() && !child->IsText()) {
         // Case (2). Inline replaced elements and floats.
         // Go ahead and terminate the current line as far as
         // minwidth is concerned.
-        LayoutUnit childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth;
-        computeChildPreferredLogicalWidths(*child,
-                                           childMinPreferredLogicalWidth,
-                                           childMaxPreferredLogicalWidth);
-        childMin += childMinPreferredLogicalWidth;
-        childMax += childMaxPreferredLogicalWidth;
+        LayoutUnit child_min_preferred_logical_width,
+            child_max_preferred_logical_width;
+        ComputeChildPreferredLogicalWidths(*child,
+                                           child_min_preferred_logical_width,
+                                           child_max_preferred_logical_width);
+        child_min += child_min_preferred_logical_width;
+        child_max += child_max_preferred_logical_width;
 
-        bool clearPreviousFloat;
-        if (child->isFloating()) {
-          const ComputedStyle& childStyle = child->styleRef();
-          clearPreviousFloat =
-              (prevFloat &&
-               ((prevFloat->styleRef().floating() == EFloat::kLeft &&
-                 (childStyle.clear() == EClear::kBoth ||
-                  childStyle.clear() == EClear::kLeft)) ||
-                (prevFloat->styleRef().floating() == EFloat::kRight &&
-                 (childStyle.clear() == EClear::kBoth ||
-                  childStyle.clear() == EClear::kRight))));
-          prevFloat = child;
+        bool clear_previous_float;
+        if (child->IsFloating()) {
+          const ComputedStyle& child_style = child->StyleRef();
+          clear_previous_float =
+              (prev_float &&
+               ((prev_float->StyleRef().Floating() == EFloat::kLeft &&
+                 (child_style.Clear() == EClear::kBoth ||
+                  child_style.Clear() == EClear::kLeft)) ||
+                (prev_float->StyleRef().Floating() == EFloat::kRight &&
+                 (child_style.Clear() == EClear::kBoth ||
+                  child_style.Clear() == EClear::kRight))));
+          prev_float = child;
         } else {
-          clearPreviousFloat = false;
+          clear_previous_float = false;
         }
 
-        bool canBreakReplacedElement = !child->isImage() || allowImagesToBreak;
-        if ((canBreakReplacedElement && (autoWrap || oldAutoWrap) &&
-             (!isPrevChildInlineFlow || shouldBreakLineAfterText)) ||
-            clearPreviousFloat) {
-          minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-          inlineMin = LayoutUnit();
+        bool can_break_replaced_element =
+            !child->IsImage() || allow_images_to_break;
+        if ((can_break_replaced_element && (auto_wrap || old_auto_wrap) &&
+             (!is_prev_child_inline_flow || should_break_line_after_text)) ||
+            clear_previous_float) {
+          min_logical_width = std::max(min_logical_width, inline_min);
+          inline_min = LayoutUnit();
         }
 
         // If we're supposed to clear the previous float, then terminate
         // maxwidth as well.
-        if (clearPreviousFloat) {
-          maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
-          inlineMax = LayoutUnit();
+        if (clear_previous_float) {
+          max_logical_width = std::max(max_logical_width, inline_max);
+          inline_max = LayoutUnit();
         }
 
         // Add in text-indent. This is added in only once.
-        if (!addedTextIndent && !child->isFloating()) {
-          childMin += textIndent;
-          childMax += textIndent;
+        if (!added_text_indent && !child->IsFloating()) {
+          child_min += text_indent;
+          child_max += text_indent;
 
-          if (childMin < LayoutUnit())
-            textIndent = childMin;
+          if (child_min < LayoutUnit())
+            text_indent = child_min;
           else
-            addedTextIndent = true;
+            added_text_indent = true;
         }
 
         // Add our width to the max.
-        inlineMax += std::max(LayoutUnit(), childMax);
+        inline_max += std::max(LayoutUnit(), child_max);
 
-        if (!autoWrap || !canBreakReplacedElement ||
-            (isPrevChildInlineFlow && !shouldBreakLineAfterText)) {
-          if (child->isFloating())
-            minLogicalWidth = std::max(minLogicalWidth, childMin);
+        if (!auto_wrap || !can_break_replaced_element ||
+            (is_prev_child_inline_flow && !should_break_line_after_text)) {
+          if (child->IsFloating())
+            min_logical_width = std::max(min_logical_width, child_min);
           else
-            inlineMin += childMin;
+            inline_min += child_min;
         } else {
           // Now check our line.
-          minLogicalWidth = std::max(minLogicalWidth, childMin);
+          min_logical_width = std::max(min_logical_width, child_min);
 
           // Now start a new line.
-          inlineMin = LayoutUnit();
+          inline_min = LayoutUnit();
         }
 
-        if (autoWrap && canBreakReplacedElement && isPrevChildInlineFlow) {
-          minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-          inlineMin = LayoutUnit();
+        if (auto_wrap && can_break_replaced_element &&
+            is_prev_child_inline_flow) {
+          min_logical_width = std::max(min_logical_width, inline_min);
+          inline_min = LayoutUnit();
         }
 
         // We are no longer stripping whitespace at the start of
         // a line.
-        if (!child->isFloating()) {
-          stripFrontSpaces = false;
-          trailingSpaceChild = nullptr;
+        if (!child->IsFloating()) {
+          strip_front_spaces = false;
+          trailing_space_child = nullptr;
         }
-      } else if (child->isText()) {
+      } else if (child->IsText()) {
         // Case (3). Text.
-        LayoutText* t = toLayoutText(child);
+        LayoutText* t = ToLayoutText(child);
 
-        if (t->isWordBreak()) {
-          minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-          inlineMin = LayoutUnit();
+        if (t->IsWordBreak()) {
+          min_logical_width = std::max(min_logical_width, inline_min);
+          inline_min = LayoutUnit();
           continue;
         }
 
@@ -1791,154 +1813,155 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
         // of the string. If those are going to be stripped out,
         // then they shouldn't be considered in the breakable char
         // check.
-        bool hasBreakableChar, hasBreak;
-        LayoutUnit firstLineMinWidth, lastLineMinWidth;
-        bool hasBreakableStart, hasBreakableEnd;
-        LayoutUnit firstLineMaxWidth, lastLineMaxWidth;
-        t->trimmedPrefWidths(inlineMax, firstLineMinWidth, hasBreakableStart,
-                             lastLineMinWidth, hasBreakableEnd,
-                             hasBreakableChar, hasBreak, firstLineMaxWidth,
-                             lastLineMaxWidth, childMin, childMax,
-                             stripFrontSpaces, styleToUse.direction());
+        bool has_breakable_char, has_break;
+        LayoutUnit first_line_min_width, last_line_min_width;
+        bool has_breakable_start, has_breakable_end;
+        LayoutUnit first_line_max_width, last_line_max_width;
+        t->TrimmedPrefWidths(
+            inline_max, first_line_min_width, has_breakable_start,
+            last_line_min_width, has_breakable_end, has_breakable_char,
+            has_break, first_line_max_width, last_line_max_width, child_min,
+            child_max, strip_front_spaces, style_to_use.Direction());
 
         // This text object will not be laid out, but it may still provide a
         // breaking opportunity.
-        if (!hasBreak && !childMax) {
-          if (autoWrap && (hasBreakableStart || hasBreakableEnd)) {
-            minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-            inlineMin = LayoutUnit();
+        if (!has_break && !child_max) {
+          if (auto_wrap && (has_breakable_start || has_breakable_end)) {
+            min_logical_width = std::max(min_logical_width, inline_min);
+            inline_min = LayoutUnit();
           }
           continue;
         }
 
-        if (stripFrontSpaces)
-          trailingSpaceChild = child;
+        if (strip_front_spaces)
+          trailing_space_child = child;
         else
-          trailingSpaceChild = nullptr;
+          trailing_space_child = nullptr;
 
         // Add in text-indent. This is added in only once.
         LayoutUnit ti;
-        if (!addedTextIndent || hasRemainingNegativeTextIndent) {
-          ti = textIndent;
-          childMin += ti;
-          firstLineMinWidth += ti;
+        if (!added_text_indent || has_remaining_negative_text_indent) {
+          ti = text_indent;
+          child_min += ti;
+          first_line_min_width += ti;
 
           // It the text indent negative and larger than the child minimum, we
           // re-use the remainder in future minimum calculations, but using the
           // negative value again on the maximum will lead to under-counting the
           // max pref width.
-          if (!addedTextIndent) {
-            childMax += ti;
-            firstLineMaxWidth += ti;
-            addedTextIndent = true;
+          if (!added_text_indent) {
+            child_max += ti;
+            first_line_max_width += ti;
+            added_text_indent = true;
           }
 
-          if (childMin < LayoutUnit()) {
-            textIndent = childMin;
-            hasRemainingNegativeTextIndent = true;
+          if (child_min < LayoutUnit()) {
+            text_indent = child_min;
+            has_remaining_negative_text_indent = true;
           }
         }
 
         // If we have no breakable characters at all,
         // then this is the easy case. We add ourselves to the current
         // min and max and continue.
-        if (!hasBreakableChar) {
-          inlineMin += childMin;
+        if (!has_breakable_char) {
+          inline_min += child_min;
         } else {
-          if (hasBreakableStart) {
-            minLogicalWidth = std::max(minLogicalWidth, inlineMin);
+          if (has_breakable_start) {
+            min_logical_width = std::max(min_logical_width, inline_min);
           } else {
-            inlineMin += firstLineMinWidth;
-            minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-            childMin -= ti;
+            inline_min += first_line_min_width;
+            min_logical_width = std::max(min_logical_width, inline_min);
+            child_min -= ti;
           }
 
-          inlineMin = childMin;
+          inline_min = child_min;
 
-          if (hasBreakableEnd) {
-            minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-            inlineMin = LayoutUnit();
-            shouldBreakLineAfterText = false;
+          if (has_breakable_end) {
+            min_logical_width = std::max(min_logical_width, inline_min);
+            inline_min = LayoutUnit();
+            should_break_line_after_text = false;
           } else {
-            minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-            inlineMin = lastLineMinWidth;
-            shouldBreakLineAfterText = true;
+            min_logical_width = std::max(min_logical_width, inline_min);
+            inline_min = last_line_min_width;
+            should_break_line_after_text = true;
           }
         }
 
-        if (hasBreak) {
-          inlineMax += firstLineMaxWidth;
-          maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
-          maxLogicalWidth = std::max(maxLogicalWidth, childMax);
-          inlineMax = lastLineMaxWidth;
-          addedTextIndent = true;
+        if (has_break) {
+          inline_max += first_line_max_width;
+          max_logical_width = std::max(max_logical_width, inline_max);
+          max_logical_width = std::max(max_logical_width, child_max);
+          inline_max = last_line_max_width;
+          added_text_indent = true;
         } else {
-          inlineMax += std::max(LayoutUnit(), childMax);
+          inline_max += std::max(LayoutUnit(), child_max);
         }
       }
 
       // Ignore spaces after a list marker.
-      if (child->isListMarker())
-        stripFrontSpaces = true;
+      if (child->IsListMarker())
+        strip_front_spaces = true;
     } else {
-      minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-      maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
-      inlineMin = inlineMax = LayoutUnit();
-      stripFrontSpaces = true;
-      trailingSpaceChild = nullptr;
-      addedTextIndent = true;
+      min_logical_width = std::max(min_logical_width, inline_min);
+      max_logical_width = std::max(max_logical_width, inline_max);
+      inline_min = inline_max = LayoutUnit();
+      strip_front_spaces = true;
+      trailing_space_child = nullptr;
+      added_text_indent = true;
     }
 
-    if (!child->isText() && child->isLayoutInline())
-      isPrevChildInlineFlow = true;
+    if (!child->IsText() && child->IsLayoutInline())
+      is_prev_child_inline_flow = true;
     else
-      isPrevChildInlineFlow = false;
+      is_prev_child_inline_flow = false;
 
-    oldAutoWrap = autoWrap;
+    old_auto_wrap = auto_wrap;
   }
 
-  if (styleToUse.collapseWhiteSpace())
-    stripTrailingSpace(inlineMax, inlineMin, trailingSpaceChild);
+  if (style_to_use.CollapseWhiteSpace())
+    StripTrailingSpace(inline_max, inline_min, trailing_space_child);
 
-  minLogicalWidth = std::max(minLogicalWidth, inlineMin);
-  maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
+  min_logical_width = std::max(min_logical_width, inline_min);
+  max_logical_width = std::max(max_logical_width, inline_max);
 }
 
-static bool isInlineWithOutlineAndContinuation(const LayoutObject& o) {
-  return o.isLayoutInline() && o.styleRef().hasOutline() &&
-         !o.isElementContinuation() && toLayoutInline(o).continuation();
+static bool IsInlineWithOutlineAndContinuation(const LayoutObject& o) {
+  return o.IsLayoutInline() && o.StyleRef().HasOutline() &&
+         !o.IsElementContinuation() && ToLayoutInline(o).Continuation();
 }
 
-static inline bool shouldTruncateOverflowingText(const LayoutBlockFlow* block) {
-  const LayoutObject* objectToCheck = block;
-  if (block->isAnonymousBlock()) {
-    const LayoutObject* parent = block->parent();
-    if (!parent || !parent->behavesLikeBlockContainer())
+static inline bool ShouldTruncateOverflowingText(const LayoutBlockFlow* block) {
+  const LayoutObject* object_to_check = block;
+  if (block->IsAnonymousBlock()) {
+    const LayoutObject* parent = block->Parent();
+    if (!parent || !parent->BehavesLikeBlockContainer())
       return false;
-    objectToCheck = parent;
+    object_to_check = parent;
   }
-  return objectToCheck->hasOverflowClip() &&
-         objectToCheck->style()->getTextOverflow();
+  return object_to_check->HasOverflowClip() &&
+         object_to_check->Style()->GetTextOverflow();
 }
 
 DISABLE_CFI_PERF
-void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
-                                           LayoutUnit afterEdge) {
+void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
+                                           LayoutUnit after_edge) {
   // Figure out if we should clear out our line boxes.
   // FIXME: Handle resize eventually!
-  bool isFullLayout = !firstLineBox() || selfNeedsLayout() || relayoutChildren;
-  LineLayoutState layoutState(isFullLayout);
+  bool is_full_layout =
+      !FirstLineBox() || SelfNeedsLayout() || relayout_children;
+  LineLayoutState layout_state(is_full_layout);
 
-  if (isFullLayout) {
+  if (is_full_layout) {
     // Ensure the old line boxes will be erased.
-    if (firstLineBox())
-      setShouldDoFullPaintInvalidation();
-    lineBoxes()->deleteLineBoxes();
-  } else if (const LayoutState* boxState = view()->layoutState()) {
+    if (FirstLineBox())
+      SetShouldDoFullPaintInvalidation();
+    LineBoxes()->DeleteLineBoxes();
+  } else if (const LayoutState* box_state = View()->GetLayoutState()) {
     // We'll attempt to keep the line boxes that we have, but we may need to
     // add, change or remove pagination struts in front of them.
-    if (boxState->isPaginated() || boxState->paginationStateChanged())
-      layoutState.setNeedsPaginationStrutRecalculation();
+    if (box_state->IsPaginated() || box_state->PaginationStateChanged())
+      layout_state.SetNeedsPaginationStrutRecalculation();
   }
 
   // Text truncation kicks in if overflow isn't visible and text-overflow isn't
@@ -1947,251 +1970,254 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
   // truncate. This is insanely difficult to figure out in general (especially
   // in the middle of doing layout), so we only handle the simple case of an
   // anonymous block truncating when its parent is clipped.
-  bool hasTextOverflow = shouldTruncateOverflowingText(this);
+  bool has_text_overflow = ShouldTruncateOverflowingText(this);
 
   // Walk all the lines and delete our ellipsis line boxes if they exist.
-  if (hasTextOverflow)
-    deleteEllipsisLineBoxes();
+  if (has_text_overflow)
+    DeleteEllipsisLineBoxes();
 
-  if (firstChild()) {
-    for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.atEnd();
-         walker.advance()) {
-      LayoutObject* o = walker.current().layoutObject();
+  if (FirstChild()) {
+    for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
+         walker.Advance()) {
+      LayoutObject* o = walker.Current().GetLayoutObject();
 
-      if (!layoutState.hasInlineChild() && o->isInline())
-        layoutState.setHasInlineChild(true);
+      if (!layout_state.HasInlineChild() && o->IsInline())
+        layout_state.SetHasInlineChild(true);
 
-      if (o->isAtomicInlineLevel() || o->isFloating() ||
-          o->isOutOfFlowPositioned()) {
-        LayoutBox* box = toLayoutBox(o);
-        box->setMayNeedPaintInvalidation();
+      if (o->IsAtomicInlineLevel() || o->IsFloating() ||
+          o->IsOutOfFlowPositioned()) {
+        LayoutBox* box = ToLayoutBox(o);
+        box->SetMayNeedPaintInvalidation();
 
-        updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, *box);
+        UpdateBlockChildDirtyBitsBeforeLayout(relayout_children, *box);
 
-        if (o->isOutOfFlowPositioned()) {
-          o->containingBlock()->insertPositionedObject(box);
-        } else if (o->isFloating()) {
-          layoutState.floats().push_back(FloatWithRect(box));
-          if (box->needsLayout()) {
+        if (o->IsOutOfFlowPositioned()) {
+          o->ContainingBlock()->InsertPositionedObject(box);
+        } else if (o->IsFloating()) {
+          layout_state.Floats().push_back(FloatWithRect(box));
+          if (box->NeedsLayout()) {
             // Be sure to at least mark the first line affected by the float as
             // dirty, so that the float gets relaid out. Otherwise we'll miss
             // it. After float layout, if it turns out that it changed size,
             // any lines after this line will be deleted and relaid out.
-            dirtyLinesFromChangedChild(box, MarkOnlyThis);
+            DirtyLinesFromChangedChild(box, kMarkOnlyThis);
           }
-        } else if (isFullLayout || o->needsLayout()) {
+        } else if (is_full_layout || o->NeedsLayout()) {
           // Atomic inline.
-          box->dirtyLineBoxes(isFullLayout);
-          o->layoutIfNeeded();
+          box->DirtyLineBoxes(is_full_layout);
+          o->LayoutIfNeeded();
         }
-      } else if (o->isText() ||
-                 (o->isLayoutInline() && !walker.atEndOfInline())) {
-        if (!o->isText())
-          toLayoutInline(o)->updateAlwaysCreateLineBoxes(
-              layoutState.isFullLayout());
-        if (layoutState.isFullLayout() || o->selfNeedsLayout())
-          dirtyLineBoxesForObject(o, layoutState.isFullLayout());
-        o->clearNeedsLayout();
+      } else if (o->IsText() ||
+                 (o->IsLayoutInline() && !walker.AtEndOfInline())) {
+        if (!o->IsText())
+          ToLayoutInline(o)->UpdateAlwaysCreateLineBoxes(
+              layout_state.IsFullLayout());
+        if (layout_state.IsFullLayout() || o->SelfNeedsLayout())
+          DirtyLineBoxesForObject(o, layout_state.IsFullLayout());
+        o->ClearNeedsLayout();
       }
 
-      if (isInlineWithOutlineAndContinuation(*o))
-        setContainsInlineWithOutlineAndContinuation(true);
+      if (IsInlineWithOutlineAndContinuation(*o))
+        SetContainsInlineWithOutlineAndContinuation(true);
     }
 
-    layoutRunsAndFloats(layoutState);
+    LayoutRunsAndFloats(layout_state);
   }
 
   // Expand the last line to accommodate Ruby and emphasis marks.
-  int lastLineAnnotationsAdjustment = 0;
-  if (lastRootBox()) {
-    LayoutUnit lowestAllowedPosition =
-        std::max(lastRootBox()->lineBottom(), logicalHeight() + paddingAfter());
-    if (!style()->isFlippedLinesWritingMode())
-      lastLineAnnotationsAdjustment =
-          lastRootBox()
-              ->computeUnderAnnotationAdjustment(lowestAllowedPosition)
-              .toInt();
+  int last_line_annotations_adjustment = 0;
+  if (LastRootBox()) {
+    LayoutUnit lowest_allowed_position =
+        std::max(LastRootBox()->LineBottom(), LogicalHeight() + PaddingAfter());
+    if (!Style()->IsFlippedLinesWritingMode())
+      last_line_annotations_adjustment =
+          LastRootBox()
+              ->ComputeUnderAnnotationAdjustment(lowest_allowed_position)
+              .ToInt();
     else
-      lastLineAnnotationsAdjustment =
-          lastRootBox()
-              ->computeOverAnnotationAdjustment(lowestAllowedPosition)
-              .toInt();
+      last_line_annotations_adjustment =
+          LastRootBox()
+              ->ComputeOverAnnotationAdjustment(lowest_allowed_position)
+              .ToInt();
   }
 
   // Now add in the bottom border/padding.
-  setLogicalHeight(logicalHeight() + lastLineAnnotationsAdjustment + afterEdge);
+  SetLogicalHeight(LogicalHeight() + last_line_annotations_adjustment +
+                   after_edge);
 
-  if (!firstLineBox() && hasLineIfEmpty())
-    setLogicalHeight(logicalHeight() +
-                     lineHeight(true, isHorizontalWritingMode() ? HorizontalLine
-                                                                : VerticalLine,
-                                PositionOfInteriorLineBoxes));
+  if (!FirstLineBox() && HasLineIfEmpty())
+    SetLogicalHeight(
+        LogicalHeight() +
+        LineHeight(true,
+                   IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
+                   kPositionOfInteriorLineBoxes));
 
   // See if we have any lines that spill out of our block.  If we do, then we
   // will possibly need to truncate text.
-  if (hasTextOverflow)
-    checkLinesForTextOverflow();
+  if (has_text_overflow)
+    CheckLinesForTextOverflow();
 
   // Ensure the new line boxes will be painted.
-  if (isFullLayout && firstLineBox())
-    setShouldDoFullPaintInvalidation();
+  if (is_full_layout && FirstLineBox())
+    SetShouldDoFullPaintInvalidation();
 }
 
-RootInlineBox* LayoutBlockFlow::determineStartPosition(
-    LineLayoutState& layoutState,
+RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
+    LineLayoutState& layout_state,
     InlineBidiResolver& resolver) {
   RootInlineBox* curr = nullptr;
   RootInlineBox* last = nullptr;
-  RootInlineBox* firstLineBoxWithBreakAndClearance = 0;
+  RootInlineBox* first_line_box_with_break_and_clearance = 0;
 
   // FIXME: This entire float-checking block needs to be broken into a new
   // function.
-  if (!layoutState.isFullLayout()) {
+  if (!layout_state.IsFullLayout()) {
     // Paginate all of the clean lines.
-    bool recalculateStruts = layoutState.needsPaginationStrutRecalculation();
-    LayoutUnit paginationDelta;
-    for (curr = firstRootBox(); curr && !curr->isDirty();
-         curr = curr->nextRootBox()) {
-      if (recalculateStruts) {
-        paginationDelta -= curr->paginationStrut();
-        adjustLinePositionForPagination(*curr, paginationDelta);
-        if (paginationDelta) {
-          if (containsFloats() || !layoutState.floats().isEmpty()) {
+    bool recalculate_struts = layout_state.NeedsPaginationStrutRecalculation();
+    LayoutUnit pagination_delta;
+    for (curr = FirstRootBox(); curr && !curr->IsDirty();
+         curr = curr->NextRootBox()) {
+      if (recalculate_struts) {
+        pagination_delta -= curr->PaginationStrut();
+        AdjustLinePositionForPagination(*curr, pagination_delta);
+        if (pagination_delta) {
+          if (ContainsFloats() || !layout_state.Floats().IsEmpty()) {
             // FIXME: Do better eventually.  For now if we ever shift because of
             // pagination and floats are present just go to a full layout.
-            layoutState.markForFullLayout();
+            layout_state.MarkForFullLayout();
             break;
           }
-          curr->moveInBlockDirection(paginationDelta);
+          curr->MoveInBlockDirection(pagination_delta);
         }
       }
 
       // If the linebox breaks cleanly and with clearance then dirty from at
       // least this point onwards so that we can clear the correct floats
       // without difficulty.
-      if (!firstLineBoxWithBreakAndClearance && lineBoxHasBRWithClearance(curr))
-        firstLineBoxWithBreakAndClearance = curr;
+      if (!first_line_box_with_break_and_clearance &&
+          LineBoxHasBRWithClearance(curr))
+        first_line_box_with_break_and_clearance = curr;
 
-      if (layoutState.isFullLayout())
+      if (layout_state.IsFullLayout())
         break;
     }
   }
 
-  if (layoutState.isFullLayout()) {
+  if (layout_state.IsFullLayout()) {
     // If we encountered a new float and have inline children, mark ourself to
     // force us to issue paint invalidations.
-    if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
-      setNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::FloatDescendantChanged, MarkOnlyThis);
-      setShouldDoFullPaintInvalidation();
+    if (layout_state.HasInlineChild() && !SelfNeedsLayout()) {
+      SetNeedsLayoutAndFullPaintInvalidation(
+          LayoutInvalidationReason::kFloatDescendantChanged, kMarkOnlyThis);
+      SetShouldDoFullPaintInvalidation();
     }
 
-    deleteLineBoxTree();
+    DeleteLineBoxTree();
     curr = nullptr;
-    DCHECK(!firstLineBox());
-    DCHECK(!lastLineBox());
+    DCHECK(!FirstLineBox());
+    DCHECK(!LastLineBox());
   } else {
-    if (firstLineBoxWithBreakAndClearance)
-      curr = firstLineBoxWithBreakAndClearance;
+    if (first_line_box_with_break_and_clearance)
+      curr = first_line_box_with_break_and_clearance;
     if (curr) {
       // We have a dirty line.
-      if (RootInlineBox* prevRootBox = curr->prevRootBox()) {
+      if (RootInlineBox* prev_root_box = curr->PrevRootBox()) {
         // We have a previous line.
-        if (!prevRootBox->endsWithBreak() || !prevRootBox->lineBreakObj() ||
-            (prevRootBox->lineBreakObj().isText() &&
-             prevRootBox->lineBreakPos() >=
-                 toLayoutText(prevRootBox->lineBreakObj().layoutObject())
-                     ->textLength())) {
+        if (!prev_root_box->EndsWithBreak() || !prev_root_box->LineBreakObj() ||
+            (prev_root_box->LineBreakObj().IsText() &&
+             prev_root_box->LineBreakPos() >=
+                 ToLayoutText(prev_root_box->LineBreakObj().GetLayoutObject())
+                     ->TextLength())) {
           // The previous line didn't break cleanly or broke at a newline
           // that has been deleted, so treat it as dirty too.
-          curr = prevRootBox;
+          curr = prev_root_box;
         }
       }
     } else {
       // No dirty lines were found.
       // If the last line didn't break cleanly, treat it as dirty.
-      if (lastRootBox() && !lastRootBox()->endsWithBreak())
-        curr = lastRootBox();
+      if (LastRootBox() && !LastRootBox()->EndsWithBreak())
+        curr = LastRootBox();
     }
 
     // If we have no dirty lines, then last is just the last root box.
-    last = curr ? curr->prevRootBox() : lastRootBox();
+    last = curr ? curr->PrevRootBox() : LastRootBox();
   }
 
-  unsigned numCleanFloats = 0;
-  if (!layoutState.floats().isEmpty()) {
+  unsigned num_clean_floats = 0;
+  if (!layout_state.Floats().IsEmpty()) {
     // Restore floats from clean lines.
-    RootInlineBox* line = firstRootBox();
+    RootInlineBox* line = FirstRootBox();
     while (line != curr) {
-      if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
-        for (auto* box : *cleanLineFloats) {
-          FloatingObject* floatingObject = insertFloatingObject(*box);
-          DCHECK(!floatingObject->originatingLine());
-          floatingObject->setOriginatingLine(line);
-          LayoutUnit logicalTop =
-              logicalTopForChild(*box) - marginBeforeForChild(*box);
-          placeNewFloats(logicalTop);
-          DCHECK_EQ(layoutState.floats()[numCleanFloats].object, box);
-          numCleanFloats++;
+      if (Vector<LayoutBox*>* clean_line_floats = line->FloatsPtr()) {
+        for (auto* box : *clean_line_floats) {
+          FloatingObject* floating_object = InsertFloatingObject(*box);
+          DCHECK(!floating_object->OriginatingLine());
+          floating_object->SetOriginatingLine(line);
+          LayoutUnit logical_top =
+              LogicalTopForChild(*box) - MarginBeforeForChild(*box);
+          PlaceNewFloats(logical_top);
+          DCHECK_EQ(layout_state.Floats()[num_clean_floats].object, box);
+          num_clean_floats++;
         }
       }
-      line = line->nextRootBox();
+      line = line->NextRootBox();
     }
   }
-  layoutState.setFloatIndex(numCleanFloats);
+  layout_state.SetFloatIndex(num_clean_floats);
 
-  layoutState.lineInfo().setFirstLine(!last);
-  layoutState.lineInfo().setPreviousLineBrokeCleanly(!last ||
-                                                     last->endsWithBreak());
+  layout_state.GetLineInfo().SetFirstLine(!last);
+  layout_state.GetLineInfo().SetPreviousLineBrokeCleanly(!last ||
+                                                         last->EndsWithBreak());
 
   if (last) {
-    setLogicalHeight(last->lineBottomWithLeading());
+    SetLogicalHeight(last->LineBottomWithLeading());
     InlineIterator iter = InlineIterator(LineLayoutBlockFlow(this),
-                                         LineLayoutItem(last->lineBreakObj()),
-                                         last->lineBreakPos());
-    resolver.setPosition(iter, numberOfIsolateAncestors(iter));
-    resolver.setStatus(last->lineBreakBidiStatus());
+                                         LineLayoutItem(last->LineBreakObj()),
+                                         last->LineBreakPos());
+    resolver.SetPosition(iter, NumberOfIsolateAncestors(iter));
+    resolver.SetStatus(last->LineBreakBidiStatus());
   } else {
-    TextDirection direction = style()->direction();
-    if (style()->getUnicodeBidi() == UnicodeBidi::kPlaintext)
-      direction = determinePlaintextDirectionality(LineLayoutItem(this));
-    resolver.setStatus(
-        BidiStatus(direction, isOverride(style()->getUnicodeBidi())));
+    TextDirection direction = Style()->Direction();
+    if (Style()->GetUnicodeBidi() == UnicodeBidi::kPlaintext)
+      direction = DeterminePlaintextDirectionality(LineLayoutItem(this));
+    resolver.SetStatus(
+        BidiStatus(direction, IsOverride(Style()->GetUnicodeBidi())));
     InlineIterator iter = InlineIterator(
         LineLayoutBlockFlow(this),
-        bidiFirstSkippingEmptyInlines(LineLayoutBlockFlow(this),
-                                      resolver.runs(), &resolver),
+        BidiFirstSkippingEmptyInlines(LineLayoutBlockFlow(this),
+                                      resolver.Runs(), &resolver),
         0);
-    resolver.setPosition(iter, numberOfIsolateAncestors(iter));
+    resolver.SetPosition(iter, NumberOfIsolateAncestors(iter));
   }
   return curr;
 }
 
-bool LayoutBlockFlow::lineBoxHasBRWithClearance(RootInlineBox* curr) {
+bool LayoutBlockFlow::LineBoxHasBRWithClearance(RootInlineBox* curr) {
   // If the linebox breaks cleanly and with clearance then dirty from at least
   // this point onwards so that we can clear the correct floats without
   // difficulty.
-  if (!curr->endsWithBreak())
+  if (!curr->EndsWithBreak())
     return false;
-  InlineBox* lastBox = style()->isLeftToRightDirection()
-                           ? curr->lastLeafChild()
-                           : curr->firstLeafChild();
-  return lastBox && lastBox->getLineLayoutItem().isBR() &&
-         lastBox->getLineLayoutItem().style()->clear() != EClear::kNone;
+  InlineBox* last_box = Style()->IsLeftToRightDirection()
+                            ? curr->LastLeafChild()
+                            : curr->FirstLeafChild();
+  return last_box && last_box->GetLineLayoutItem().IsBR() &&
+         last_box->GetLineLayoutItem().Style()->Clear() != EClear::kNone;
 }
 
-void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState,
-                                           RootInlineBox* startLine,
-                                           InlineIterator& cleanLineStart,
-                                           BidiStatus& cleanLineBidiStatus) {
-  DCHECK(!layoutState.endLine());
+void LayoutBlockFlow::DetermineEndPosition(LineLayoutState& layout_state,
+                                           RootInlineBox* start_line,
+                                           InlineIterator& clean_line_start,
+                                           BidiStatus& clean_line_bidi_status) {
+  DCHECK(!layout_state.EndLine());
   RootInlineBox* last = nullptr;
-  for (RootInlineBox* curr = startLine->nextRootBox(); curr;
-       curr = curr->nextRootBox()) {
-    if (!curr->isDirty() && lineBoxHasBRWithClearance(curr))
+  for (RootInlineBox* curr = start_line->NextRootBox(); curr;
+       curr = curr->NextRootBox()) {
+    if (!curr->IsDirty() && LineBoxHasBRWithClearance(curr))
       return;
 
-    if (curr->isDirty())
+    if (curr->IsDirty())
       last = nullptr;
     else if (!last)
       last = curr;
@@ -2203,102 +2229,102 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState,
   // At this point, |last| is the first line in a run of clean lines that ends
   // with the last line in the block.
 
-  RootInlineBox* prev = last->prevRootBox();
-  cleanLineStart =
-      InlineIterator(LineLayoutItem(this), LineLayoutItem(prev->lineBreakObj()),
-                     prev->lineBreakPos());
-  cleanLineBidiStatus = prev->lineBreakBidiStatus();
-  layoutState.setEndLineLogicalTop(prev->lineBottomWithLeading());
+  RootInlineBox* prev = last->PrevRootBox();
+  clean_line_start =
+      InlineIterator(LineLayoutItem(this), LineLayoutItem(prev->LineBreakObj()),
+                     prev->LineBreakPos());
+  clean_line_bidi_status = prev->LineBreakBidiStatus();
+  layout_state.SetEndLineLogicalTop(prev->LineBottomWithLeading());
 
-  for (RootInlineBox* line = last; line; line = line->nextRootBox())
-    line->extractLine();  // Disconnect all line boxes from their layout objects
+  for (RootInlineBox* line = last; line; line = line->NextRootBox())
+    line->ExtractLine();  // Disconnect all line boxes from their layout objects
                           // while preserving their connections to one another.
 
-  layoutState.setEndLine(last);
+  layout_state.SetEndLine(last);
 }
 
-bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(
-    LineLayoutState& layoutState) {
-  if (!m_floatingObjects || !layoutState.endLine())
+bool LayoutBlockFlow::CheckPaginationAndFloatsAtEndLine(
+    LineLayoutState& layout_state) {
+  if (!floating_objects_ || !layout_state.EndLine())
     return true;
 
-  LayoutUnit lineDelta = logicalHeight() - layoutState.endLineLogicalTop();
+  LayoutUnit line_delta = LogicalHeight() - layout_state.EndLineLogicalTop();
 
-  if (layoutState.needsPaginationStrutRecalculation()) {
+  if (layout_state.NeedsPaginationStrutRecalculation()) {
     // Check all lines from here to the end, and see if the hypothetical new
     // position for the lines will result
     // in a different available line width.
-    for (RootInlineBox* lineBox = layoutState.endLine(); lineBox;
-         lineBox = lineBox->nextRootBox()) {
+    for (RootInlineBox* line_box = layout_state.EndLine(); line_box;
+         line_box = line_box->NextRootBox()) {
       // This isn't the real move we're going to do, so don't update the line
       // box's pagination strut yet.
-      LayoutUnit oldPaginationStrut = lineBox->paginationStrut();
-      lineDelta -= oldPaginationStrut;
-      adjustLinePositionForPagination(*lineBox, lineDelta);
-      lineBox->setPaginationStrut(oldPaginationStrut);
+      LayoutUnit old_pagination_strut = line_box->PaginationStrut();
+      line_delta -= old_pagination_strut;
+      AdjustLinePositionForPagination(*line_box, line_delta);
+      line_box->SetPaginationStrut(old_pagination_strut);
     }
   }
-  if (!lineDelta)
+  if (!line_delta)
     return true;
 
   // See if any floats end in the range along which we want to shift the lines
   // vertically.
-  LayoutUnit logicalTop =
-      std::min(logicalHeight(), layoutState.endLineLogicalTop());
+  LayoutUnit logical_top =
+      std::min(LogicalHeight(), layout_state.EndLineLogicalTop());
 
-  RootInlineBox* lastLine = layoutState.endLine();
-  while (RootInlineBox* nextLine = lastLine->nextRootBox())
-    lastLine = nextLine;
+  RootInlineBox* last_line = layout_state.EndLine();
+  while (RootInlineBox* next_line = last_line->NextRootBox())
+    last_line = next_line;
 
-  LayoutUnit logicalBottom =
-      lastLine->lineBottomWithLeading() + absoluteValue(lineDelta);
+  LayoutUnit logical_bottom =
+      last_line->LineBottomWithLeading() + AbsoluteValue(line_delta);
 
-  const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-  FloatingObjectSetIterator end = floatingObjectSet.end();
-  for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end;
+  const FloatingObjectSet& floating_object_set = floating_objects_->Set();
+  FloatingObjectSetIterator end = floating_object_set.end();
+  for (FloatingObjectSetIterator it = floating_object_set.begin(); it != end;
        ++it) {
-    const FloatingObject& floatingObject = *it->get();
-    if (logicalBottomForFloat(floatingObject) >= logicalTop &&
-        logicalBottomForFloat(floatingObject) < logicalBottom)
+    const FloatingObject& floating_object = *it->get();
+    if (LogicalBottomForFloat(floating_object) >= logical_top &&
+        LogicalBottomForFloat(floating_object) < logical_bottom)
       return false;
   }
 
   return true;
 }
 
-bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState,
+bool LayoutBlockFlow::MatchedEndLine(LineLayoutState& layout_state,
                                      const InlineBidiResolver& resolver,
-                                     const InlineIterator& endLineStart,
-                                     const BidiStatus& endLineStatus) {
-  if (resolver.position() == endLineStart) {
-    if (resolver.status() != endLineStatus)
+                                     const InlineIterator& end_line_start,
+                                     const BidiStatus& end_line_status) {
+  if (resolver.GetPosition() == end_line_start) {
+    if (resolver.Status() != end_line_status)
       return false;
 
-    return checkPaginationAndFloatsAtEndLine(layoutState);
+    return CheckPaginationAndFloatsAtEndLine(layout_state);
   }
 
   // The first clean line doesn't match, but we can check a handful of following
   // lines to try to match back up.
-  static int numLines = 8;  // The # of lines we're willing to match against.
-  RootInlineBox* originalEndLine = layoutState.endLine();
-  RootInlineBox* line = originalEndLine;
-  for (int i = 0; i < numLines && line; i++, line = line->nextRootBox()) {
-    if (line->lineBreakObj() == resolver.position().getLineLayoutItem() &&
-        line->lineBreakPos() == resolver.position().offset()) {
+  static int num_lines = 8;  // The # of lines we're willing to match against.
+  RootInlineBox* original_end_line = layout_state.EndLine();
+  RootInlineBox* line = original_end_line;
+  for (int i = 0; i < num_lines && line; i++, line = line->NextRootBox()) {
+    if (line->LineBreakObj() == resolver.GetPosition().GetLineLayoutItem() &&
+        line->LineBreakPos() == resolver.GetPosition().Offset()) {
       // We have a match.
-      if (line->lineBreakBidiStatus() != resolver.status())
+      if (line->LineBreakBidiStatus() != resolver.Status())
         return false;  // ...but the bidi state doesn't match.
 
       bool matched = false;
-      RootInlineBox* result = line->nextRootBox();
-      layoutState.setEndLine(result);
+      RootInlineBox* result = line->NextRootBox();
+      layout_state.SetEndLine(result);
       if (result) {
-        layoutState.setEndLineLogicalTop(line->lineBottomWithLeading());
-        matched = checkPaginationAndFloatsAtEndLine(layoutState);
+        layout_state.SetEndLineLogicalTop(line->LineBottomWithLeading());
+        matched = CheckPaginationAndFloatsAtEndLine(layout_state);
       }
 
       // Now delete the lines that we failed to sync.
-      deleteLineRange(layoutState, originalEndLine, result);
+      DeleteLineRange(layout_state, original_end_line, result);
       return matched;
     }
   }
@@ -2306,128 +2332,128 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState,
   return false;
 }
 
-bool LayoutBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
+bool LayoutBlockFlow::GeneratesLineBoxesForInlineChild(LayoutObject* inline_obj)
 
 {
-  DCHECK_EQ(inlineObj->parent(), this);
+  DCHECK_EQ(inline_obj->Parent(), this);
 
-  InlineIterator it(LineLayoutBlockFlow(this), LineLayoutItem(inlineObj), 0);
+  InlineIterator it(LineLayoutBlockFlow(this), LineLayoutItem(inline_obj), 0);
   // FIXME: We should pass correct value for WhitespacePosition.
-  while (!it.atEnd() && !requiresLineBox(it))
-    it.increment();
+  while (!it.AtEnd() && !RequiresLineBox(it))
+    it.Increment();
 
-  return !it.atEnd();
+  return !it.AtEnd();
 }
 
-void LayoutBlockFlow::addOverflowFromInlineChildren() {
-  LayoutUnit endPadding = hasOverflowClip() ? paddingEnd() : LayoutUnit();
+void LayoutBlockFlow::AddOverflowFromInlineChildren() {
+  LayoutUnit end_padding = HasOverflowClip() ? PaddingEnd() : LayoutUnit();
   // FIXME: Need to find another way to do this, since scrollbars could show
   // when we don't want them to.
-  if (hasOverflowClip() && !endPadding && node() &&
-      isRootEditableElement(*node()) && style()->isLeftToRightDirection())
-    endPadding = LayoutUnit(1);
-  for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
-    addLayoutOverflow(curr->paddedLayoutOverflowRect(endPadding));
-    LayoutRect visualOverflow =
-        curr->visualOverflowRect(curr->lineTop(), curr->lineBottom());
-    addContentsVisualOverflow(visualOverflow);
+  if (HasOverflowClip() && !end_padding && GetNode() &&
+      IsRootEditableElement(*GetNode()) && Style()->IsLeftToRightDirection())
+    end_padding = LayoutUnit(1);
+  for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
+    AddLayoutOverflow(curr->PaddedLayoutOverflowRect(end_padding));
+    LayoutRect visual_overflow =
+        curr->VisualOverflowRect(curr->LineTop(), curr->LineBottom());
+    AddContentsVisualOverflow(visual_overflow);
   }
 
-  if (!containsInlineWithOutlineAndContinuation())
+  if (!ContainsInlineWithOutlineAndContinuation())
     return;
 
   // Add outline rects of continuations of descendant inlines into visual
   // overflow of this block.
-  LayoutRect outlineBoundsOfAllContinuations;
-  for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.atEnd();
-       walker.advance()) {
-    const LayoutObject& o = *walker.current().layoutObject();
-    if (!isInlineWithOutlineAndContinuation(o))
+  LayoutRect outline_bounds_of_all_continuations;
+  for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
+       walker.Advance()) {
+    const LayoutObject& o = *walker.Current().GetLayoutObject();
+    if (!IsInlineWithOutlineAndContinuation(o))
       continue;
 
-    Vector<LayoutRect> outlineRects;
-    toLayoutInline(o).addOutlineRectsForContinuations(
-        outlineRects, LayoutPoint(),
-        o.outlineRectsShouldIncludeBlockVisualOverflow());
-    if (!outlineRects.isEmpty()) {
-      LayoutRect outlineBounds = unionRectEvenIfEmpty(outlineRects);
-      outlineBounds.inflate(LayoutUnit(o.styleRef().outlineOutsetExtent()));
-      outlineBoundsOfAllContinuations.unite(outlineBounds);
+    Vector<LayoutRect> outline_rects;
+    ToLayoutInline(o).AddOutlineRectsForContinuations(
+        outline_rects, LayoutPoint(),
+        o.OutlineRectsShouldIncludeBlockVisualOverflow());
+    if (!outline_rects.IsEmpty()) {
+      LayoutRect outline_bounds = UnionRectEvenIfEmpty(outline_rects);
+      outline_bounds.Inflate(LayoutUnit(o.StyleRef().OutlineOutsetExtent()));
+      outline_bounds_of_all_continuations.Unite(outline_bounds);
     }
   }
-  addContentsVisualOverflow(outlineBoundsOfAllContinuations);
+  AddContentsVisualOverflow(outline_bounds_of_all_continuations);
 }
 
-void LayoutBlockFlow::deleteEllipsisLineBoxes() {
-  ETextAlign textAlign = style()->textAlign();
-  IndentTextOrNot indentText = IndentText;
-  for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
-    if (curr->hasEllipsisBox()) {
-      curr->clearTruncation();
+void LayoutBlockFlow::DeleteEllipsisLineBoxes() {
+  ETextAlign text_align = Style()->GetTextAlign();
+  IndentTextOrNot indent_text = kIndentText;
+  for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
+    if (curr->HasEllipsisBox()) {
+      curr->ClearTruncation();
 
       // Shift the line back where it belongs if we cannot accommodate an
       // ellipsis.
-      LayoutUnit logicalLeft =
-          logicalLeftOffsetForLine(curr->lineTop(), indentText);
-      LayoutUnit availableLogicalWidth =
-          logicalRightOffsetForLine(curr->lineTop(), DoNotIndentText) -
-          logicalLeft;
-      LayoutUnit totalLogicalWidth = curr->logicalWidth();
-      updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft,
-                                     totalLogicalWidth, availableLogicalWidth,
-                                     0);
+      LayoutUnit logical_left =
+          LogicalLeftOffsetForLine(curr->LineTop(), indent_text);
+      LayoutUnit available_logical_width =
+          LogicalRightOffsetForLine(curr->LineTop(), kDoNotIndentText) -
+          logical_left;
+      LayoutUnit total_logical_width = curr->LogicalWidth();
+      UpdateLogicalWidthForAlignment(text_align, curr, 0, logical_left,
+                                     total_logical_width,
+                                     available_logical_width, 0);
 
-      curr->moveInInlineDirection(logicalLeft - curr->logicalLeft());
+      curr->MoveInInlineDirection(logical_left - curr->LogicalLeft());
     }
-    indentText = DoNotIndentText;
+    indent_text = kDoNotIndentText;
   }
 }
 
-void LayoutBlockFlow::checkLinesForTextOverflow() {
+void LayoutBlockFlow::CheckLinesForTextOverflow() {
   // Determine the width of the ellipsis using the current font.
-  const Font& font = style()->font();
+  const Font& font = Style()->GetFont();
 
-  const size_t fullStopStringLength = 3;
-  const UChar fullStopString[] = {fullstopCharacter, fullstopCharacter,
-                                  fullstopCharacter};
-  DEFINE_STATIC_LOCAL(AtomicString, fullstopCharacterStr,
-                      (fullStopString, fullStopStringLength));
-  AtomicString selectedEllipsisStr(&horizontalEllipsisCharacter, 1);
+  const size_t kFullStopStringLength = 3;
+  const UChar kFullStopString[] = {kFullstopCharacter, kFullstopCharacter,
+                                   kFullstopCharacter};
+  DEFINE_STATIC_LOCAL(AtomicString, fullstop_character_str,
+                      (kFullStopString, kFullStopStringLength));
+  AtomicString selected_ellipsis_str(&kHorizontalEllipsisCharacter, 1);
 
-  const Font& firstLineFont = firstLineStyle()->font();
+  const Font& first_line_font = FirstLineStyle()->GetFont();
   // FIXME: We should probably not hard-code the direction here.
   // https://crbug.com/333004
-  TextDirection ellipsisDirection = TextDirection::kLtr;
-  float firstLineEllipsisWidth = 0;
-  float ellipsisWidth = 0;
+  TextDirection ellipsis_direction = TextDirection::kLtr;
+  float first_line_ellipsis_width = 0;
+  float ellipsis_width = 0;
 
   // As per CSS3 http://www.w3.org/TR/2003/CR-css3-text-20030514/ sequence of
   // three Full Stops (002E) can be used.
-  const SimpleFontData* fontData = firstLineFont.primaryFont();
-  DCHECK(fontData);
-  if (fontData && fontData->glyphForCharacter(horizontalEllipsisCharacter)) {
-    firstLineEllipsisWidth = firstLineFont.width(
-        constructTextRun(firstLineFont, &horizontalEllipsisCharacter, 1,
-                         *firstLineStyle(), ellipsisDirection));
+  const SimpleFontData* font_data = first_line_font.PrimaryFont();
+  DCHECK(font_data);
+  if (font_data && font_data->GlyphForCharacter(kHorizontalEllipsisCharacter)) {
+    first_line_ellipsis_width = first_line_font.Width(
+        ConstructTextRun(first_line_font, &kHorizontalEllipsisCharacter, 1,
+                         *FirstLineStyle(), ellipsis_direction));
   } else {
-    selectedEllipsisStr = fullstopCharacterStr;
-    firstLineEllipsisWidth = firstLineFont.width(
-        constructTextRun(firstLineFont, fullStopString, fullStopStringLength,
-                         *firstLineStyle(), ellipsisDirection));
+    selected_ellipsis_str = fullstop_character_str;
+    first_line_ellipsis_width = first_line_font.Width(ConstructTextRun(
+        first_line_font, kFullStopString, kFullStopStringLength,
+        *FirstLineStyle(), ellipsis_direction));
   }
-  ellipsisWidth = (font == firstLineFont) ? firstLineEllipsisWidth : 0;
+  ellipsis_width = (font == first_line_font) ? first_line_ellipsis_width : 0;
 
-  if (!ellipsisWidth) {
-    DCHECK(font.primaryFont());
-    if (font.primaryFont()->glyphForCharacter(horizontalEllipsisCharacter)) {
-      ellipsisWidth =
-          font.width(constructTextRun(font, &horizontalEllipsisCharacter, 1,
-                                      styleRef(), ellipsisDirection));
+  if (!ellipsis_width) {
+    DCHECK(font.PrimaryFont());
+    if (font.PrimaryFont()->GlyphForCharacter(kHorizontalEllipsisCharacter)) {
+      ellipsis_width =
+          font.Width(ConstructTextRun(font, &kHorizontalEllipsisCharacter, 1,
+                                      StyleRef(), ellipsis_direction));
     } else {
-      selectedEllipsisStr = fullstopCharacterStr;
-      ellipsisWidth = font.width(
-          constructTextRun(font, fullStopString, fullStopStringLength,
-                           styleRef(), ellipsisDirection));
+      selected_ellipsis_str = fullstop_character_str;
+      ellipsis_width = font.Width(
+          ConstructTextRun(font, kFullStopString, kFullStopStringLength,
+                           StyleRef(), ellipsis_direction));
     }
   }
 
@@ -2436,197 +2462,202 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
   // For RTL, we use the left edge of the padding box and check the left edge of
   // the line box to see if it is less Include the scrollbar for overflow
   // blocks, which means we want to use "contentWidth()".
-  bool ltr = style()->isLeftToRightDirection();
-  ETextAlign textAlign = style()->textAlign();
-  IndentTextOrNot indentText = IndentText;
-  for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
-    LayoutUnit currLogicalLeft = curr->logicalLeft();
-    LayoutUnit blockRightEdge =
-        logicalRightOffsetForLine(curr->lineTop(), indentText);
-    LayoutUnit blockLeftEdge =
-        logicalLeftOffsetForLine(curr->lineTop(), indentText);
-    LayoutUnit lineBoxEdge =
-        ltr ? currLogicalLeft + curr->logicalWidth() : currLogicalLeft;
-    if ((ltr && lineBoxEdge > blockRightEdge) ||
-        (!ltr && lineBoxEdge < blockLeftEdge)) {
+  bool ltr = Style()->IsLeftToRightDirection();
+  ETextAlign text_align = Style()->GetTextAlign();
+  IndentTextOrNot indent_text = kIndentText;
+  for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox()) {
+    LayoutUnit curr_logical_left = curr->LogicalLeft();
+    LayoutUnit block_right_edge =
+        LogicalRightOffsetForLine(curr->LineTop(), indent_text);
+    LayoutUnit block_left_edge =
+        LogicalLeftOffsetForLine(curr->LineTop(), indent_text);
+    LayoutUnit line_box_edge =
+        ltr ? curr_logical_left + curr->LogicalWidth() : curr_logical_left;
+    if ((ltr && line_box_edge > block_right_edge) ||
+        (!ltr && line_box_edge < block_left_edge)) {
       // This line spills out of our box in the appropriate direction. Now we
       // need to see if the line can be truncated.  In order for truncation to
       // be possible, the line must have sufficient space to accommodate our
       // truncation string, and no replaced elements (images, tables) can
       // overlap the ellipsis space.
 
-      LayoutUnit width(indentText == IndentText ? firstLineEllipsisWidth
-                                                : ellipsisWidth);
-      LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
-      if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge,
+      LayoutUnit width(indent_text == kIndentText ? first_line_ellipsis_width
+                                                  : ellipsis_width);
+      LayoutUnit block_edge = ltr ? block_right_edge : block_left_edge;
+      if (curr->LineCanAccommodateEllipsis(ltr, block_edge, line_box_edge,
                                            width)) {
-        LayoutUnit totalLogicalWidth =
-            curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge,
-                                blockRightEdge, width, LayoutUnit(), false);
-        LayoutUnit logicalLeft;  // We are only interested in the delta from the
+        LayoutUnit total_logical_width =
+            curr->PlaceEllipsis(selected_ellipsis_str, ltr, block_left_edge,
+                                block_right_edge, width, LayoutUnit(), false);
+        LayoutUnit
+            logical_left;  // We are only interested in the delta from the
         // base position.
-        LayoutUnit availableLogicalWidth = blockRightEdge - blockLeftEdge;
-        updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft,
-                                       totalLogicalWidth, availableLogicalWidth,
-                                       0);
+        LayoutUnit available_logical_width = block_right_edge - block_left_edge;
+        UpdateLogicalWidthForAlignment(text_align, curr, 0, logical_left,
+                                       total_logical_width,
+                                       available_logical_width, 0);
         if (ltr)
-          curr->moveInInlineDirection(logicalLeft);
+          curr->MoveInInlineDirection(logical_left);
         else
-          curr->moveInInlineDirection(
-              logicalLeft - (availableLogicalWidth - totalLogicalWidth));
+          curr->MoveInInlineDirection(
+              logical_left - (available_logical_width - total_logical_width));
       } else {
-        tryPlacingEllipsisOnAtomicInlines(curr, blockRightEdge, blockLeftEdge,
-                                          width, selectedEllipsisStr);
+        TryPlacingEllipsisOnAtomicInlines(curr, block_right_edge,
+                                          block_left_edge, width,
+                                          selected_ellipsis_str);
       }
     }
-    indentText = DoNotIndentText;
+    indent_text = kDoNotIndentText;
   }
 }
 
-void LayoutBlockFlow::tryPlacingEllipsisOnAtomicInlines(
+void LayoutBlockFlow::TryPlacingEllipsisOnAtomicInlines(
     RootInlineBox* root,
-    LayoutUnit blockRightEdge,
-    LayoutUnit blockLeftEdge,
-    LayoutUnit ellipsisWidth,
-    const AtomicString& selectedEllipsisStr) {
-  bool ltr = style()->isLeftToRightDirection();
-  LayoutUnit logicalLeftOffset = blockLeftEdge;
+    LayoutUnit block_right_edge,
+    LayoutUnit block_left_edge,
+    LayoutUnit ellipsis_width,
+    const AtomicString& selected_ellipsis_str) {
+  bool ltr = Style()->IsLeftToRightDirection();
+  LayoutUnit logical_left_offset = block_left_edge;
 
   // Each atomic inline block (e.g. a <span>) inside a blockflow is managed by
   // an
   // InlineBox that allows us to access the lineboxes that live inside the
   // atomic
   // inline block.
-  bool foundBox = false;
-  for (InlineBox* box = ltr ? root->firstChild() : root->lastChild(); box;
-       box = ltr ? box->nextOnLine() : box->prevOnLine()) {
-    if (!box->getLineLayoutItem().isAtomicInlineLevel() ||
-        !box->getLineLayoutItem().isLayoutBlockFlow())
+  bool found_box = false;
+  for (InlineBox* box = ltr ? root->FirstChild() : root->LastChild(); box;
+       box = ltr ? box->NextOnLine() : box->PrevOnLine()) {
+    if (!box->GetLineLayoutItem().IsAtomicInlineLevel() ||
+        !box->GetLineLayoutItem().IsLayoutBlockFlow())
       continue;
 
-    RootInlineBox* firstRootBox =
-        LineLayoutBlockFlow(box->getLineLayoutItem()).firstRootBox();
-    if (!firstRootBox)
+    RootInlineBox* first_root_box =
+        LineLayoutBlockFlow(box->GetLineLayoutItem()).FirstRootBox();
+    if (!first_root_box)
       continue;
 
-    bool placedEllipsis = false;
+    bool placed_ellipsis = false;
     // Move the right edge of the block in so that we can test it against the
     // width of the root line boxes.  We don't resize or move the linebox to
     // respect text-align because it is the final one of a sequence on the line.
     if (ltr) {
-      for (RootInlineBox* curr = firstRootBox; curr;
-           curr = curr->nextRootBox()) {
-        LayoutUnit currLogicalLeft = logicalLeftOffset + curr->logicalLeft();
-        LayoutUnit ellipsisEdge =
-            currLogicalLeft + curr->logicalWidth() + ellipsisWidth;
-        if (ellipsisEdge <= blockRightEdge)
+      for (RootInlineBox* curr = first_root_box; curr;
+           curr = curr->NextRootBox()) {
+        LayoutUnit curr_logical_left =
+            logical_left_offset + curr->LogicalLeft();
+        LayoutUnit ellipsis_edge =
+            curr_logical_left + curr->LogicalWidth() + ellipsis_width;
+        if (ellipsis_edge <= block_right_edge)
           continue;
-        curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge,
-                            blockRightEdge, ellipsisWidth, logicalLeftOffset,
-                            foundBox);
-        placedEllipsis = true;
+        curr->PlaceEllipsis(selected_ellipsis_str, ltr, block_left_edge,
+                            block_right_edge, ellipsis_width,
+                            logical_left_offset, found_box);
+        placed_ellipsis = true;
       }
     } else {
-      LayoutUnit maxRootBoxWidth;
-      for (RootInlineBox* curr = firstRootBox; curr;
-           curr = curr->nextRootBox()) {
-        LayoutUnit ellipsisEdge =
-            box->logicalLeft() + curr->logicalLeft() - ellipsisWidth;
-        if (ellipsisEdge >= blockLeftEdge)
+      LayoutUnit max_root_box_width;
+      for (RootInlineBox* curr = first_root_box; curr;
+           curr = curr->NextRootBox()) {
+        LayoutUnit ellipsis_edge =
+            box->LogicalLeft() + curr->LogicalLeft() - ellipsis_width;
+        if (ellipsis_edge >= block_left_edge)
           continue;
         // Root boxes can vary in width so move our offset out to allow
         // comparison with the right hand edge of the block.
-        LayoutUnit logicalLeftOffset = box->logicalLeft();
-        maxRootBoxWidth =
-            std::max<LayoutUnit>(curr->logicalWidth(), maxRootBoxWidth);
-        if (logicalLeftOffset < 0)
-          logicalLeftOffset += maxRootBoxWidth - curr->logicalWidth();
-        curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge,
-                            blockRightEdge, ellipsisWidth,
-                            LayoutUnit(logicalLeftOffset.ceil()), foundBox);
-        placedEllipsis = true;
+        LayoutUnit logical_left_offset = box->LogicalLeft();
+        max_root_box_width =
+            std::max<LayoutUnit>(curr->LogicalWidth(), max_root_box_width);
+        if (logical_left_offset < 0)
+          logical_left_offset += max_root_box_width - curr->LogicalWidth();
+        curr->PlaceEllipsis(selected_ellipsis_str, ltr, block_left_edge,
+                            block_right_edge, ellipsis_width,
+                            LayoutUnit(logical_left_offset.Ceil()), found_box);
+        placed_ellipsis = true;
       }
     }
-    foundBox |= placedEllipsis;
-    logicalLeftOffset += box->logicalWidth();
+    found_box |= placed_ellipsis;
+    logical_left_offset += box->LogicalWidth();
   }
 }
 
-void LayoutBlockFlow::markLinesDirtyInBlockRange(LayoutUnit logicalTop,
-                                                 LayoutUnit logicalBottom,
+void LayoutBlockFlow::MarkLinesDirtyInBlockRange(LayoutUnit logical_top,
+                                                 LayoutUnit logical_bottom,
                                                  RootInlineBox* highest) {
-  if (logicalTop >= logicalBottom)
+  if (logical_top >= logical_bottom)
     return;
 
-  RootInlineBox* lowestDirtyLine = lastRootBox();
-  RootInlineBox* afterLowest = lowestDirtyLine;
-  while (lowestDirtyLine &&
-         lowestDirtyLine->lineBottomWithLeading() >= logicalBottom &&
-         logicalBottom < LayoutUnit::max()) {
-    afterLowest = lowestDirtyLine;
-    lowestDirtyLine = lowestDirtyLine->prevRootBox();
+  RootInlineBox* lowest_dirty_line = LastRootBox();
+  RootInlineBox* after_lowest = lowest_dirty_line;
+  while (lowest_dirty_line &&
+         lowest_dirty_line->LineBottomWithLeading() >= logical_bottom &&
+         logical_bottom < LayoutUnit::Max()) {
+    after_lowest = lowest_dirty_line;
+    lowest_dirty_line = lowest_dirty_line->PrevRootBox();
   }
 
-  while (afterLowest && afterLowest != highest &&
-         (afterLowest->lineBottomWithLeading() >= logicalTop ||
-          afterLowest->lineBottomWithLeading() < LayoutUnit())) {
-    afterLowest->markDirty();
-    afterLowest = afterLowest->prevRootBox();
+  while (after_lowest && after_lowest != highest &&
+         (after_lowest->LineBottomWithLeading() >= logical_top ||
+          after_lowest->LineBottomWithLeading() < LayoutUnit())) {
+    after_lowest->MarkDirty();
+    after_lowest = after_lowest->PrevRootBox();
   }
 }
 
-LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(
+LayoutUnit LayoutBlockFlow::StartAlignedOffsetForLine(
     LayoutUnit position,
-    IndentTextOrNot indentText) {
-  ETextAlign textAlign = style()->textAlign();
+    IndentTextOrNot indent_text) {
+  ETextAlign text_align = Style()->GetTextAlign();
 
-  bool applyIndentText;
-  switch (textAlign) {  // FIXME: Handle TAEND here
+  bool apply_indent_text;
+  switch (text_align) {  // FIXME: Handle TAEND here
     case ETextAlign::kLeft:
     case ETextAlign::kWebkitLeft:
-      applyIndentText = style()->isLeftToRightDirection();
+      apply_indent_text = Style()->IsLeftToRightDirection();
       break;
     case ETextAlign::kRight:
     case ETextAlign::kWebkitRight:
-      applyIndentText = !style()->isLeftToRightDirection();
+      apply_indent_text = !Style()->IsLeftToRightDirection();
       break;
     case ETextAlign::kStart:
-      applyIndentText = true;
+      apply_indent_text = true;
       break;
     default:
-      applyIndentText = false;
+      apply_indent_text = false;
   }
 
-  if (applyIndentText)
-    return startOffsetForLine(position, indentText);
+  if (apply_indent_text)
+    return StartOffsetForLine(position, indent_text);
 
   // updateLogicalWidthForAlignment() handles the direction of the block so no
   // need to consider it here
-  LayoutUnit totalLogicalWidth;
-  LayoutUnit logicalLeft =
-      logicalLeftOffsetForLine(logicalHeight(), DoNotIndentText);
-  LayoutUnit availableLogicalWidth =
-      logicalRightOffsetForLine(logicalHeight(), DoNotIndentText) - logicalLeft;
-  updateLogicalWidthForAlignment(textAlign, 0, 0, logicalLeft,
-                                 totalLogicalWidth, availableLogicalWidth, 0);
+  LayoutUnit total_logical_width;
+  LayoutUnit logical_left =
+      LogicalLeftOffsetForLine(LogicalHeight(), kDoNotIndentText);
+  LayoutUnit available_logical_width =
+      LogicalRightOffsetForLine(LogicalHeight(), kDoNotIndentText) -
+      logical_left;
+  UpdateLogicalWidthForAlignment(text_align, 0, 0, logical_left,
+                                 total_logical_width, available_logical_width,
+                                 0);
 
-  if (!style()->isLeftToRightDirection())
-    return logicalWidth() - logicalLeft;
-  return logicalLeft;
+  if (!Style()->IsLeftToRightDirection())
+    return LogicalWidth() - logical_left;
+  return logical_left;
 }
 
-void LayoutBlockFlow::setShouldDoFullPaintInvalidationForFirstLine() {
-  DCHECK(childrenInline());
-  if (RootInlineBox* firstRootBox = this->firstRootBox())
-    firstRootBox->setShouldDoFullPaintInvalidationRecursively();
+void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
+  DCHECK(ChildrenInline());
+  if (RootInlineBox* first_root_box = this->FirstRootBox())
+    first_root_box->SetShouldDoFullPaintInvalidationRecursively();
 }
 
-bool LayoutBlockFlow::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
+bool LayoutBlockFlow::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   // LayoutBlockFlow is in charge of paint invalidation of the first line.
-  if (firstLineBox())
+  if (FirstLineBox())
     return false;
 
-  return LayoutBlock::paintedOutputOfObjectHasNoEffectRegardlessOfSize();
+  return LayoutBlock::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
 }  // namespace blink

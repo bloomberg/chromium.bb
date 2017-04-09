@@ -35,7 +35,7 @@ using MovableReference = void*;
 // i.e., when the object residing at |from| is moved to |to| by the compaction
 // pass, invoke the callback to adjust any internal references that now need
 // to be |to|-relative.
-using MovingObjectCallback = void (*)(void* callbackData,
+using MovingObjectCallback = void (*)(void* callback_data,
                                       MovableReference from,
                                       MovableReference to,
                                       size_t);
@@ -48,8 +48,10 @@ using MovingObjectCallback = void (*)(void* callbackData,
 #define FOR_EACH_TYPED_ARENA(H) \
   H(Node)                       \
   H(CSSValue)
+/* DO NOT SUBMIT - Conflict resolution helper:
+ * Important to have CSSValue and Node rather than kCSSValue or kNode above */
 
-#define TypedArenaEnumName(Type) Type##ArenaIndex,
+#define TypedArenaEnumName(Type) k##Type##ArenaIndex,
 
 class PLATFORM_EXPORT BlinkGC final {
   STATIC_ONLY(BlinkGC);
@@ -59,52 +61,52 @@ class PLATFORM_EXPORT BlinkGC final {
   // can be pointers to Blink GC managed objects on the stack for
   // each thread. When threads reach a safe point they record
   // whether or not they have pointers on the stack.
-  enum StackState { NoHeapPointersOnStack, HeapPointersOnStack };
+  enum StackState { kNoHeapPointersOnStack, kHeapPointersOnStack };
 
   enum GCType {
     // Both of the marking task and the sweeping task run in
     // ThreadHeap::collectGarbage().
-    GCWithSweep,
+    kGCWithSweep,
     // Only the marking task runs in ThreadHeap::collectGarbage().
     // The sweeping task is split into chunks and scheduled lazily.
-    GCWithoutSweep,
+    kGCWithoutSweep,
     // Only the marking task runs just to take a heap snapshot.
     // The sweeping task doesn't run. The marks added in the marking task
     // are just cleared.
-    TakeSnapshot,
+    kTakeSnapshot,
   };
 
   enum GCReason {
-    IdleGC,
-    PreciseGC,
-    ConservativeGC,
-    ForcedGC,
-    MemoryPressureGC,
-    PageNavigationGC,
-    ThreadTerminationGC,
-    LastGCReason = ThreadTerminationGC,
+    kIdleGC,
+    kPreciseGC,
+    kConservativeGC,
+    kForcedGC,
+    kMemoryPressureGC,
+    kPageNavigationGC,
+    kThreadTerminationGC,
+    kLastGCReason = kThreadTerminationGC,
   };
 
   enum ArenaIndices {
-    EagerSweepArenaIndex = 0,
-    NormalPage1ArenaIndex,
-    NormalPage2ArenaIndex,
-    NormalPage3ArenaIndex,
-    NormalPage4ArenaIndex,
-    Vector1ArenaIndex,
-    Vector2ArenaIndex,
-    Vector3ArenaIndex,
-    Vector4ArenaIndex,
-    InlineVectorArenaIndex,
-    HashTableArenaIndex,
-    FOR_EACH_TYPED_ARENA(TypedArenaEnumName) LargeObjectArenaIndex,
+    kEagerSweepArenaIndex = 0,
+    kNormalPage1ArenaIndex,
+    kNormalPage2ArenaIndex,
+    kNormalPage3ArenaIndex,
+    kNormalPage4ArenaIndex,
+    kVector1ArenaIndex,
+    kVector2ArenaIndex,
+    kVector3ArenaIndex,
+    kVector4ArenaIndex,
+    kInlineVectorArenaIndex,
+    kHashTableArenaIndex,
+    FOR_EACH_TYPED_ARENA(TypedArenaEnumName) kLargeObjectArenaIndex,
     // Values used for iteration of heap segments.
-    NumberOfArenas,
+    kNumberOfArenas,
   };
 
   enum V8GCType {
-    V8MinorGC,
-    V8MajorGC,
+    kV8MinorGC,
+    kV8MajorGC,
   };
 };
 

@@ -53,91 +53,91 @@ class RenderedPosition {
   explicit RenderedPosition(const VisiblePositionInFlatTree&);
   RenderedPosition(const Position&, TextAffinity);
   RenderedPosition(const PositionInFlatTree&, TextAffinity);
-  bool isEquivalent(const RenderedPosition&) const;
+  bool IsEquivalent(const RenderedPosition&) const;
 
-  bool isNull() const { return !m_layoutObject; }
-  RootInlineBox* rootBox() { return m_inlineBox ? &m_inlineBox->root() : 0; }
+  bool IsNull() const { return !layout_object_; }
+  RootInlineBox* RootBox() { return inline_box_ ? &inline_box_->Root() : 0; }
 
-  unsigned char bidiLevelOnLeft() const;
-  unsigned char bidiLevelOnRight() const;
-  RenderedPosition leftBoundaryOfBidiRun(unsigned char bidiLevelOfRun);
-  RenderedPosition rightBoundaryOfBidiRun(unsigned char bidiLevelOfRun);
+  unsigned char BidiLevelOnLeft() const;
+  unsigned char BidiLevelOnRight() const;
+  RenderedPosition LeftBoundaryOfBidiRun(unsigned char bidi_level_of_run);
+  RenderedPosition RightBoundaryOfBidiRun(unsigned char bidi_level_of_run);
 
-  enum ShouldMatchBidiLevel { MatchBidiLevel, IgnoreBidiLevel };
-  bool atLeftBoundaryOfBidiRun() const {
-    return atLeftBoundaryOfBidiRun(IgnoreBidiLevel, 0);
+  enum ShouldMatchBidiLevel { kMatchBidiLevel, kIgnoreBidiLevel };
+  bool AtLeftBoundaryOfBidiRun() const {
+    return AtLeftBoundaryOfBidiRun(kIgnoreBidiLevel, 0);
   }
-  bool atRightBoundaryOfBidiRun() const {
-    return atRightBoundaryOfBidiRun(IgnoreBidiLevel, 0);
+  bool AtRightBoundaryOfBidiRun() const {
+    return AtRightBoundaryOfBidiRun(kIgnoreBidiLevel, 0);
   }
   // The following two functions return true only if the current position is at
   // the end of the bidi run of the specified bidi embedding level.
-  bool atLeftBoundaryOfBidiRun(unsigned char bidiLevelOfRun) const {
-    return atLeftBoundaryOfBidiRun(MatchBidiLevel, bidiLevelOfRun);
+  bool AtLeftBoundaryOfBidiRun(unsigned char bidi_level_of_run) const {
+    return AtLeftBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
   }
-  bool atRightBoundaryOfBidiRun(unsigned char bidiLevelOfRun) const {
-    return atRightBoundaryOfBidiRun(MatchBidiLevel, bidiLevelOfRun);
+  bool AtRightBoundaryOfBidiRun(unsigned char bidi_level_of_run) const {
+    return AtRightBoundaryOfBidiRun(kMatchBidiLevel, bidi_level_of_run);
   }
 
-  Position positionAtLeftBoundaryOfBiDiRun() const;
-  Position positionAtRightBoundaryOfBiDiRun() const;
+  Position PositionAtLeftBoundaryOfBiDiRun() const;
+  Position PositionAtRightBoundaryOfBiDiRun() const;
 
-  IntRect absoluteRect(LayoutUnit* extraWidthToEndOfLine = 0) const;
+  IntRect AbsoluteRect(LayoutUnit* extra_width_to_end_of_line = 0) const;
 
-  void positionInGraphicsLayerBacking(CompositedSelectionBound&,
-                                      bool selectionStart) const;
+  void PositionInGraphicsLayerBacking(CompositedSelectionBound&,
+                                      bool selection_start) const;
 
  private:
   bool operator==(const RenderedPosition&) const { return false; }
   explicit RenderedPosition(LayoutObject*, InlineBox*, int offset);
 
-  InlineBox* prevLeafChild() const;
-  InlineBox* nextLeafChild() const;
-  bool atLeftmostOffsetInBox() const {
-    return m_inlineBox && m_offset == m_inlineBox->caretLeftmostOffset();
+  InlineBox* PrevLeafChild() const;
+  InlineBox* NextLeafChild() const;
+  bool AtLeftmostOffsetInBox() const {
+    return inline_box_ && offset_ == inline_box_->CaretLeftmostOffset();
   }
-  bool atRightmostOffsetInBox() const {
-    return m_inlineBox && m_offset == m_inlineBox->caretRightmostOffset();
+  bool AtRightmostOffsetInBox() const {
+    return inline_box_ && offset_ == inline_box_->CaretRightmostOffset();
   }
-  bool atLeftBoundaryOfBidiRun(ShouldMatchBidiLevel,
-                               unsigned char bidiLevelOfRun) const;
-  bool atRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
-                                unsigned char bidiLevelOfRun) const;
+  bool AtLeftBoundaryOfBidiRun(ShouldMatchBidiLevel,
+                               unsigned char bidi_level_of_run) const;
+  bool AtRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
+                                unsigned char bidi_level_of_run) const;
 
-  FloatPoint localToInvalidationBackingPoint(
-      const LayoutPoint& localPoint,
-      GraphicsLayer** graphicsLayerBacking) const;
+  FloatPoint LocalToInvalidationBackingPoint(
+      const LayoutPoint& local_point,
+      GraphicsLayer** graphics_layer_backing) const;
 
-  LayoutObject* m_layoutObject;
-  InlineBox* m_inlineBox;
-  int m_offset;
+  LayoutObject* layout_object_;
+  InlineBox* inline_box_;
+  int offset_;
 
-  static InlineBox* uncachedInlineBox() {
+  static InlineBox* UncachedInlineBox() {
     return reinterpret_cast<InlineBox*>(1);
   }
   // Needs to be different form 0 so pick 1 because it's also on the null page.
 
-  mutable InlineBox* m_prevLeafChild;
-  mutable InlineBox* m_nextLeafChild;
+  mutable InlineBox* prev_leaf_child_;
+  mutable InlineBox* next_leaf_child_;
 };
 
 inline RenderedPosition::RenderedPosition()
-    : m_layoutObject(nullptr),
-      m_inlineBox(nullptr),
-      m_offset(0),
-      m_prevLeafChild(uncachedInlineBox()),
-      m_nextLeafChild(uncachedInlineBox()) {}
+    : layout_object_(nullptr),
+      inline_box_(nullptr),
+      offset_(0),
+      prev_leaf_child_(UncachedInlineBox()),
+      next_leaf_child_(UncachedInlineBox()) {}
 
-inline RenderedPosition::RenderedPosition(LayoutObject* layoutObject,
+inline RenderedPosition::RenderedPosition(LayoutObject* layout_object,
                                           InlineBox* box,
                                           int offset)
-    : m_layoutObject(layoutObject),
-      m_inlineBox(box),
-      m_offset(offset),
-      m_prevLeafChild(uncachedInlineBox()),
-      m_nextLeafChild(uncachedInlineBox()) {}
+    : layout_object_(layout_object),
+      inline_box_(box),
+      offset_(offset),
+      prev_leaf_child_(UncachedInlineBox()),
+      next_leaf_child_(UncachedInlineBox()) {}
 
-CORE_EXPORT bool layoutObjectContainsPosition(LayoutObject*, const Position&);
+CORE_EXPORT bool LayoutObjectContainsPosition(LayoutObject*, const Position&);
 
 }  // namespace blink
 

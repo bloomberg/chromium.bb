@@ -27,7 +27,7 @@ class CancelableClosureHolder {
 
   // Returns a callback that will be disabled by calling Cancel(). Callback
   // must have been set using Reset() before calling this function.
-  const base::Closure& callback() const;
+  const base::Closure& GetCallback() const;
 
  private:
   base::Closure callback_;

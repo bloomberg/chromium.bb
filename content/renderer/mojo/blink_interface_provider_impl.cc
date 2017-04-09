@@ -33,12 +33,12 @@ BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
 
 BlinkInterfaceProviderImpl::~BlinkInterfaceProviderImpl() = default;
 
-void BlinkInterfaceProviderImpl::getInterface(
+void BlinkInterfaceProviderImpl::GetInterface(
     const char* name,
     mojo::ScopedMessagePipeHandle handle) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlinkInterfaceProviderImpl::getInterface,
+        FROM_HERE, base::Bind(&BlinkInterfaceProviderImpl::GetInterface,
                               weak_ptr_, name, base::Passed(&handle)));
     return;
   }

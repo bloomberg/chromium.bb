@@ -28,23 +28,23 @@ class CORE_EXPORT ThreadableLoadingContext
   WTF_MAKE_NONCOPYABLE(ThreadableLoadingContext);
 
  public:
-  static ThreadableLoadingContext* create(Document&);
+  static ThreadableLoadingContext* Create(Document&);
 
   ThreadableLoadingContext() = default;
   virtual ~ThreadableLoadingContext() = default;
 
-  virtual bool isContextThread() const = 0;
+  virtual bool IsContextThread() const = 0;
 
-  virtual ResourceFetcher* getResourceFetcher() = 0;
-  virtual SecurityOrigin* getSecurityOrigin() = 0;
-  virtual bool isSecureContext() const = 0;
-  virtual KURL firstPartyForCookies() const = 0;
-  virtual String userAgent() const = 0;
-  virtual RefPtr<WebTaskRunner> getTaskRunner(TaskType) = 0;
-  virtual void recordUseCount(UseCounter::Feature) = 0;
+  virtual ResourceFetcher* GetResourceFetcher() = 0;
+  virtual SecurityOrigin* GetSecurityOrigin() = 0;
+  virtual bool IsSecureContext() const = 0;
+  virtual KURL FirstPartyForCookies() const = 0;
+  virtual String UserAgent() const = 0;
+  virtual RefPtr<WebTaskRunner> GetTaskRunner(TaskType) = 0;
+  virtual void RecordUseCount(UseCounter::Feature) = 0;
 
   // TODO(kinuko): Try getting rid of dependency to Document.
-  virtual Document* getLoadingDocument() { return nullptr; }
+  virtual Document* GetLoadingDocument() { return nullptr; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

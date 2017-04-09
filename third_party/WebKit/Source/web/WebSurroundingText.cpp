@@ -43,68 +43,68 @@ WebSurroundingText::WebSurroundingText() {}
 
 WebSurroundingText::~WebSurroundingText() {}
 
-void WebSurroundingText::initialize(const WebNode& webNode,
-                                    const WebPoint& nodePoint,
-                                    size_t maxLength) {
-  const Node* node = webNode.constUnwrap<Node>();
+void WebSurroundingText::Initialize(const WebNode& web_node,
+                                    const WebPoint& node_point,
+                                    size_t max_length) {
+  const Node* node = web_node.ConstUnwrap<Node>();
   if (!node)
     return;
 
   // VisiblePosition and SurroundingText must be created with clean layout.
-  node->document().updateStyleAndLayoutIgnorePendingStylesheets();
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      node->document().lifecycle());
+  node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      node->GetDocument().Lifecycle());
 
-  if (!node->layoutObject())
+  if (!node->GetLayoutObject())
     return;
 
   // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
   // in which case we should prevent it from being stored in |m_private|.
-  m_private.reset(new SurroundingText(
-      createVisiblePosition(node->layoutObject()->positionForPoint(
-                                static_cast<IntPoint>(nodePoint)))
-          .deepEquivalent()
-          .parentAnchoredEquivalent(),
-      maxLength));
+  private_.reset(new SurroundingText(
+      CreateVisiblePosition(node->GetLayoutObject()->PositionForPoint(
+                                static_cast<IntPoint>(node_point)))
+          .DeepEquivalent()
+          .ParentAnchoredEquivalent(),
+      max_length));
 }
 
-void WebSurroundingText::initializeFromCurrentSelection(WebLocalFrame* frame,
-                                                        size_t maxLength) {
-  LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
+void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
+                                                        size_t max_length) {
+  LocalFrame* web_frame = ToWebLocalFrameImpl(frame)->GetFrame();
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  webFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  web_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (Range* range =
-          createRange(webFrame->selection()
-                          .computeVisibleSelectionInDOMTreeDeprecated()
-                          .toNormalizedEphemeralRange())) {
+          CreateRange(web_frame->Selection()
+                          .ComputeVisibleSelectionInDOMTreeDeprecated()
+                          .ToNormalizedEphemeralRange())) {
     // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
     // in which case we should prevent it from being stored in |m_private|.
-    m_private.reset(new SurroundingText(*range, maxLength));
+    private_.reset(new SurroundingText(*range, max_length));
   }
 }
 
-WebString WebSurroundingText::textContent() const {
-  return m_private->content();
+WebString WebSurroundingText::TextContent() const {
+  return private_->Content();
 }
 
-size_t WebSurroundingText::hitOffsetInTextContent() const {
-  DCHECK_EQ(m_private->startOffsetInContent(), m_private->endOffsetInContent());
-  return m_private->startOffsetInContent();
+size_t WebSurroundingText::HitOffsetInTextContent() const {
+  DCHECK_EQ(private_->StartOffsetInContent(), private_->EndOffsetInContent());
+  return private_->StartOffsetInContent();
 }
 
-size_t WebSurroundingText::startOffsetInTextContent() const {
-  return m_private->startOffsetInContent();
+size_t WebSurroundingText::StartOffsetInTextContent() const {
+  return private_->StartOffsetInContent();
 }
 
-size_t WebSurroundingText::endOffsetInTextContent() const {
-  return m_private->endOffsetInContent();
+size_t WebSurroundingText::EndOffsetInTextContent() const {
+  return private_->EndOffsetInContent();
 }
 
-bool WebSurroundingText::isNull() const {
-  return !m_private.get();
+bool WebSurroundingText::IsNull() const {
+  return !private_.get();
 }
 
 }  // namespace blink

@@ -28,12 +28,12 @@ class WebCredentialManagerClient {
 
   // Ownership of the callback is transferred to the callee for each of
   // the following methods.
-  virtual void dispatchFailedSignIn(const WebCredential&,
+  virtual void DispatchFailedSignIn(const WebCredential&,
                                     NotificationCallbacks*) {}
-  virtual void dispatchStore(const WebCredential&, NotificationCallbacks*) {}
-  virtual void dispatchRequireUserMediation(NotificationCallbacks*) {}
-  virtual void dispatchGet(bool zeroClickOnly,
-                           bool includePasswords,
+  virtual void DispatchStore(const WebCredential&, NotificationCallbacks*) {}
+  virtual void DispatchRequireUserMediation(NotificationCallbacks*) {}
+  virtual void DispatchGet(bool zero_click_only,
+                           bool include_passwords,
                            const WebVector<WebURL>& federations,
                            RequestCallbacks*) {}
 };

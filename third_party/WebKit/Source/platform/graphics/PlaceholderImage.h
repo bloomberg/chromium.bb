@@ -21,40 +21,41 @@ class ImageObserver;
 // A generated placeholder image that shows a translucent gray rectangle.
 class PLATFORM_EXPORT PlaceholderImage final : public Image {
  public:
-  static PassRefPtr<PlaceholderImage> create(ImageObserver* observer,
+  static PassRefPtr<PlaceholderImage> Create(ImageObserver* observer,
                                              const IntSize& size) {
-    return adoptRef(new PlaceholderImage(observer, size));
+    return AdoptRef(new PlaceholderImage(observer, size));
   }
 
   ~PlaceholderImage() override;
 
-  IntSize size() const override { return m_size; }
+  IntSize size() const override { return size_; }
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> ImageForCurrentFrame() override;
 
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
-            const FloatRect& destRect,
-            const FloatRect& srcRect,
+            const FloatRect& dest_rect,
+            const FloatRect& src_rect,
             RespectImageOrientationEnum,
             ImageClampingMode) override;
 
-  void destroyDecodedData() override;
+  void DestroyDecodedData() override;
 
  private:
   PlaceholderImage(ImageObserver* observer, const IntSize& size)
-      : Image(observer), m_size(size) {}
+      : Image(observer), size_(size) {}
 
-  bool currentFrameHasSingleSecurityOrigin() const override { return true; }
+  bool CurrentFrameHasSingleSecurityOrigin() const override { return true; }
 
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+  bool CurrentFrameKnownToBeOpaque(
+      MetadataMode = kUseCurrentMetadata) override {
     // Placeholder images are translucent.
     return false;
   }
 
-  IntSize m_size;
+  IntSize size_;
   // Lazily initialized.
-  sk_sp<SkImage> m_imageForCurrentFrame;
+  sk_sp<SkImage> image_for_current_frame_;
 };
 
 }  // namespace blink

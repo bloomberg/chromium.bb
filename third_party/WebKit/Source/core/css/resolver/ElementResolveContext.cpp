@@ -31,39 +31,40 @@
 namespace blink {
 
 ElementResolveContext::ElementResolveContext(const Document& document)
-    : m_element(nullptr),
-      m_parentNode(nullptr),
-      m_layoutParent(nullptr),
-      m_rootElementStyle(document.documentElement()
-                             ? document.documentElement()->computedStyle()
-                             : document.computedStyle()),
-      m_elementLinkState(EInsideLink::kNotInsideLink),
-      m_distributedToInsertionPoint(false) {}
+    : element_(nullptr),
+      parent_node_(nullptr),
+      layout_parent_(nullptr),
+      root_element_style_(document.documentElement()
+                              ? document.documentElement()->GetComputedStyle()
+                              : document.GetComputedStyle()),
+      element_link_state_(EInsideLink::kNotInsideLink),
+      distributed_to_insertion_point_(false) {}
 
 ElementResolveContext::ElementResolveContext(Element& element)
-    : m_element(&element),
-      m_elementLinkState(
-          element.document().visitedLinkState().determineLinkState(element)),
-      m_distributedToInsertionPoint(false) {
-  LayoutTreeBuilderTraversal::ParentDetails parentDetails;
-  if (element.isActiveSlotOrActiveInsertionPoint()) {
-    m_parentNode = nullptr;
-    m_layoutParent = nullptr;
+    : element_(&element),
+      element_link_state_(
+          element.GetDocument().GetVisitedLinkState().DetermineLinkState(
+              element)),
+      distributed_to_insertion_point_(false) {
+  LayoutTreeBuilderTraversal::ParentDetails parent_details;
+  if (element.IsActiveSlotOrActiveInsertionPoint()) {
+    parent_node_ = nullptr;
+    layout_parent_ = nullptr;
   } else {
-    m_parentNode = LayoutTreeBuilderTraversal::parent(element);
-    m_layoutParent =
-        LayoutTreeBuilderTraversal::layoutParent(element, &parentDetails);
+    parent_node_ = LayoutTreeBuilderTraversal::Parent(element);
+    layout_parent_ =
+        LayoutTreeBuilderTraversal::LayoutParent(element, &parent_details);
   }
-  m_distributedToInsertionPoint = parentDetails.insertionPoint();
+  distributed_to_insertion_point_ = parent_details.GetInsertionPoint();
 
-  const Document& document = element.document();
-  Node* documentElement = document.documentElement();
-  const ComputedStyle* documentStyle = document.computedStyle();
-  m_rootElementStyle = documentElement && element != documentElement
-                           ? documentElement->computedStyle()
-                           : documentStyle;
-  if (!m_rootElementStyle)
-    m_rootElementStyle = documentStyle;
+  const Document& document = element.GetDocument();
+  Node* document_element = document.documentElement();
+  const ComputedStyle* document_style = document.GetComputedStyle();
+  root_element_style_ = document_element && element != document_element
+                            ? document_element->GetComputedStyle()
+                            : document_style;
+  if (!root_element_style_)
+    root_element_style_ = document_style;
 }
 
 }  // namespace blink

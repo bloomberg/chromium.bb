@@ -57,75 +57,75 @@ class SQLTransaction final : public GarbageCollectedFinalized<SQLTransaction>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SQLTransaction* create(Database*,
+  static SQLTransaction* Create(Database*,
                                 SQLTransactionCallback*,
-                                VoidCallback* successCallback,
+                                VoidCallback* success_callback,
                                 SQLTransactionErrorCallback*,
-                                bool readOnly);
+                                bool read_only);
   ~SQLTransaction();
   DECLARE_TRACE();
 
-  void performPendingCallback();
+  void PerformPendingCallback();
 
-  void executeSQL(const String& sqlStatement,
+  void ExecuteSQL(const String& sql_statement,
                   const Vector<SQLValue>& arguments,
                   SQLStatementCallback*,
                   SQLStatementErrorCallback*,
                   ExceptionState&);
-  void executeSql(ScriptState*, const String& sqlStatement, ExceptionState&);
+  void executeSql(ScriptState*, const String& sql_statement, ExceptionState&);
   void executeSql(ScriptState*,
-                  const String& sqlStatement,
+                  const String& sql_statement,
                   const Nullable<Vector<ScriptValue>>& arguments,
                   SQLStatementCallback*,
                   SQLStatementErrorCallback*,
                   ExceptionState&);
 
-  Database* database() { return m_database.get(); }
+  Database* GetDatabase() { return database_.Get(); }
 
-  SQLTransactionErrorCallback* releaseErrorCallback();
+  SQLTransactionErrorCallback* ReleaseErrorCallback();
 
   // APIs called from the backend published:
-  void requestTransitToState(SQLTransactionState);
-  bool hasCallback() const;
-  bool hasSuccessCallback() const;
-  bool hasErrorCallback() const;
-  void setBackend(SQLTransactionBackend*);
+  void RequestTransitToState(SQLTransactionState);
+  bool HasCallback() const;
+  bool HasSuccessCallback() const;
+  bool HasErrorCallback() const;
+  void SetBackend(SQLTransactionBackend*);
 
  private:
   SQLTransaction(Database*,
                  SQLTransactionCallback*,
-                 VoidCallback* successCallback,
+                 VoidCallback* success_callback,
                  SQLTransactionErrorCallback*,
-                 bool readOnly);
+                 bool read_only);
 
-  void clearCallbacks();
+  void ClearCallbacks();
 
   // State Machine functions:
-  StateFunction stateFunctionFor(SQLTransactionState) override;
-  bool computeNextStateAndCleanupIfNeeded();
+  StateFunction StateFunctionFor(SQLTransactionState) override;
+  bool ComputeNextStateAndCleanupIfNeeded();
 
   // State functions:
-  SQLTransactionState deliverTransactionCallback();
-  SQLTransactionState deliverTransactionErrorCallback();
-  SQLTransactionState deliverStatementCallback();
-  SQLTransactionState deliverQuotaIncreaseCallback();
-  SQLTransactionState deliverSuccessCallback();
+  SQLTransactionState DeliverTransactionCallback();
+  SQLTransactionState DeliverTransactionErrorCallback();
+  SQLTransactionState DeliverStatementCallback();
+  SQLTransactionState DeliverQuotaIncreaseCallback();
+  SQLTransactionState DeliverSuccessCallback();
 
-  SQLTransactionState unreachableState();
-  SQLTransactionState sendToBackendState();
+  SQLTransactionState UnreachableState();
+  SQLTransactionState SendToBackendState();
 
-  SQLTransactionState nextStateForTransactionError();
+  SQLTransactionState NextStateForTransactionError();
 
-  Member<Database> m_database;
-  Member<SQLTransactionBackend> m_backend;
-  Member<SQLTransactionCallback> m_callback;
-  Member<VoidCallback> m_successCallback;
-  Member<SQLTransactionErrorCallback> m_errorCallback;
+  Member<Database> database_;
+  Member<SQLTransactionBackend> backend_;
+  Member<SQLTransactionCallback> callback_;
+  Member<VoidCallback> success_callback_;
+  Member<SQLTransactionErrorCallback> error_callback_;
 
-  bool m_executeSqlAllowed;
-  std::unique_ptr<SQLErrorData> m_transactionError;
+  bool execute_sql_allowed_;
+  std::unique_ptr<SQLErrorData> transaction_error_;
 
-  bool m_readOnly;
+  bool read_only_;
 };
 
 }  // namespace blink

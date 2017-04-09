@@ -10,14 +10,14 @@
 namespace blink {
 
 void ElementFullscreen::requestFullscreen(Element& element) {
-  Fullscreen::requestFullscreen(element, Fullscreen::RequestType::Unprefixed);
+  Fullscreen::RequestFullscreen(element, Fullscreen::RequestType::kUnprefixed);
 }
 
 void ElementFullscreen::webkitRequestFullscreen(Element& element) {
-  if (element.isInShadowTree())
-    UseCounter::count(element.document(),
-                      UseCounter::PrefixedElementRequestFullscreenInShadow);
-  Fullscreen::requestFullscreen(element, Fullscreen::RequestType::Prefixed);
+  if (element.IsInShadowTree())
+    UseCounter::Count(element.GetDocument(),
+                      UseCounter::kPrefixedElementRequestFullscreenInShadow);
+  Fullscreen::RequestFullscreen(element, Fullscreen::RequestType::kPrefixed);
 }
 
 }  // namespace blink

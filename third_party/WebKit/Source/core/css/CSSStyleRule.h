@@ -35,14 +35,14 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSStyleRule* create(StyleRule* rule, CSSStyleSheet* sheet) {
+  static CSSStyleRule* Create(StyleRule* rule, CSSStyleSheet* sheet) {
     return new CSSStyleRule(rule, sheet);
   }
 
   ~CSSStyleRule() override;
 
   String cssText() const override;
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
 
   String selectorText() const;
   void setSelectorText(const String&);
@@ -50,7 +50,7 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
   CSSStyleDeclaration* style() const;
 
   // FIXME: Not CSSOM. Remove.
-  StyleRule* styleRule() const { return m_styleRule.get(); }
+  StyleRule* GetStyleRule() const { return style_rule_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -61,10 +61,10 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kStyleRule; }
 
-  String generateSelectorText() const;
+  String GenerateSelectorText() const;
 
-  Member<StyleRule> m_styleRule;
-  mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  Member<StyleRule> style_rule_;
+  mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, kStyleRule);

@@ -76,15 +76,15 @@ const int64_t kLowerBoundRefreshIntervalMicros =
 webrtc::VideoTrackInterface::ContentHint ContentHintTypeToWebRtcContentHint(
     blink::WebMediaStreamTrack::ContentHintType content_hint) {
   switch (content_hint) {
-    case blink::WebMediaStreamTrack::ContentHintType::None:
+    case blink::WebMediaStreamTrack::ContentHintType::kNone:
       return webrtc::VideoTrackInterface::ContentHint::kNone;
-    case blink::WebMediaStreamTrack::ContentHintType::AudioSpeech:
-    case blink::WebMediaStreamTrack::ContentHintType::AudioMusic:
+    case blink::WebMediaStreamTrack::ContentHintType::kAudioSpeech:
+    case blink::WebMediaStreamTrack::ContentHintType::kAudioMusic:
       NOTREACHED();
       break;
-    case blink::WebMediaStreamTrack::ContentHintType::VideoMotion:
+    case blink::WebMediaStreamTrack::ContentHintType::kVideoMotion:
       return webrtc::VideoTrackInterface::ContentHint::kFluid;
-    case blink::WebMediaStreamTrack::ContentHintType::VideoDetail:
+    case blink::WebMediaStreamTrack::ContentHintType::kVideoDetail:
       return webrtc::VideoTrackInterface::ContentHint::kDetailed;
   }
   NOTREACHED();
@@ -277,7 +277,7 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     // Check for presence of mediaStreamSource constraint. The value is ignored.
     std::string value;
     is_screencast = GetConstraintValueAsString(
-        constraints, &blink::WebMediaTrackConstraintSet::mediaStreamSource,
+        constraints, &blink::WebMediaTrackConstraintSet::media_stream_source,
         &value);
 
     // Extract denoising preference, if no value is set this currently falls
@@ -287,15 +287,16 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     // propagated from getUserMedia down to a VideoTrackSource.
     bool denoising_value;
     if (GetConstraintValueAsBoolean(
-            constraints, &blink::WebMediaTrackConstraintSet::googNoiseReduction,
+            constraints,
+            &blink::WebMediaTrackConstraintSet::goog_noise_reduction,
             &denoising_value)) {
       needs_denoising = rtc::Optional<bool>(denoising_value);
     }
     GetConstraintMinAsDouble(constraints,
-                             &blink::WebMediaTrackConstraintSet::frameRate,
+                             &blink::WebMediaTrackConstraintSet::frame_rate,
                              &min_frame_rate);
     GetConstraintMaxAsDouble(constraints,
-                             &blink::WebMediaTrackConstraintSet::frameRate,
+                             &blink::WebMediaTrackConstraintSet::frame_rate,
                              &max_frame_rate);
   } else {
     needs_denoising = ToRtcOptional(video_track->noise_reduction());
@@ -335,7 +336,7 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   // by removing the need for and dependency on a cricket::VideoCapturer.
   video_source_ = scoped_refptr<WebRtcVideoSource>(
       new rtc::RefCountedObject<WebRtcVideoSource>(
-          new WebRtcVideoCapturerAdapter(is_screencast, track.contentHint()),
+          new WebRtcVideoCapturerAdapter(is_screencast, track.ContentHint()),
           is_screencast, needs_denoising));
 
   // TODO(pbos): Consolidate the local video track with the source proxy and
@@ -344,12 +345,12 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   // PeerConnectionFactory::CreateVideoTrack doesn't do reference counting.
   video_source_proxy_ =
       factory->CreateVideoTrackSourceProxy(video_source_.get());
-  video_track_ = factory->CreateLocalVideoTrack(track.id().utf8(),
+  video_track_ = factory->CreateLocalVideoTrack(track.Id().Utf8(),
                                                 video_source_proxy_.get());
 
   video_track_->set_content_hint(
-      ContentHintTypeToWebRtcContentHint(track.contentHint()));
-  video_track_->set_enabled(track.isEnabled());
+      ContentHintTypeToWebRtcContentHint(track.ContentHint()));
+  video_track_->set_enabled(track.IsEnabled());
 
   source_adapter_ = new WebRtcVideoSourceAdapter(
       factory->GetWebRtcWorkerThread(), video_source_.get(), refresh_interval,

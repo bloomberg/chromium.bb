@@ -27,134 +27,144 @@ INSTANTIATE_TEST_CASE_P(All,
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
        FullDocumentPaintingWithCaret) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
-  Element& div = *toElement(document().body()->firstChild());
-  InlineTextBox& textInlineBox =
-      *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+  Element& div = *ToElement(GetDocument().body()->FirstChild());
+  InlineTextBox& text_inline_box =
+      *ToLayoutText(div.FirstChild()->GetLayoutObject())->FirstTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-                        TestDisplayItem(layoutView(), documentBackgroundType),
-                        TestDisplayItem(textInlineBox, foregroundType));
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 2,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(text_inline_box, kForegroundType));
   } else {
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-                        TestDisplayItem(layoutView(), documentBackgroundType),
-                        TestDisplayItem(textInlineBox, foregroundType));
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 2,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(text_inline_box, kForegroundType));
   }
 
   div.focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 3,
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(
-            document().frame()->selection().caretDisplayItemClientForTesting(),
-            DisplayItem::kCaret));  // New!
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(text_inline_box, kForegroundType),
+        TestDisplayItem(GetDocument()
+                            .GetFrame()
+                            ->Selection()
+                            .CaretDisplayItemClientForTesting(),
+                        DisplayItem::kCaret));  // New!
   } else {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 3,
-        TestDisplayItem(layoutView(), documentBackgroundType),
-        TestDisplayItem(textInlineBox, foregroundType),
-        TestDisplayItem(
-            document().frame()->selection().caretDisplayItemClientForTesting(),
-            DisplayItem::kCaret));  // New!
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(text_inline_box, kForegroundType),
+        TestDisplayItem(GetDocument()
+                            .GetFrame()
+                            ->Selection()
+                            .CaretDisplayItemClientForTesting(),
+                        DisplayItem::kCaret));  // New!
   }
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "
       "BBBBBBBBBB</div>");
-  Element& div = *toElement(document().body()->firstChild());
-  LayoutBlock& divBlock =
-      *toLayoutBlock(document().body()->firstChild()->layoutObject());
-  LayoutText& text = *toLayoutText(divBlock.firstChild());
-  InlineTextBox& firstTextBox = *text.firstTextBox();
+  Element& div = *ToElement(GetDocument().body()->FirstChild());
+  LayoutBlock& div_block =
+      *ToLayoutBlock(GetDocument().body()->FirstChild()->GetLayoutObject());
+  LayoutText& text = *ToLayoutText(div_block.FirstChild());
+  InlineTextBox& first_text_box = *text.FirstTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-                        TestDisplayItem(layoutView(), documentBackgroundType),
-                        TestDisplayItem(firstTextBox, foregroundType));
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 2,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(first_text_box, kForegroundType));
   } else {
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-                        TestDisplayItem(layoutView(), documentBackgroundType),
-                        TestDisplayItem(firstTextBox, foregroundType));
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 2,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(first_text_box, kForegroundType));
   }
 
   div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  LayoutText& newText = *toLayoutText(divBlock.firstChild());
-  InlineTextBox& newFirstTextBox = *newText.firstTextBox();
-  InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
+  LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
+  InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
+  InlineTextBox& second_text_box = *new_text.FirstTextBox()->NextTextBox();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
-                        TestDisplayItem(layoutView(), documentBackgroundType),
-                        TestDisplayItem(newFirstTextBox, foregroundType),
-                        TestDisplayItem(secondTextBox, foregroundType));
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(new_first_text_box, kForegroundType),
+        TestDisplayItem(second_text_box, kForegroundType));
   } else {
-    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
-                        TestDisplayItem(layoutView(), documentBackgroundType),
-                        TestDisplayItem(newFirstTextBox, foregroundType),
-                        TestDisplayItem(secondTextBox, foregroundType));
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+        TestDisplayItem(new_first_text_box, kForegroundType),
+        TestDisplayItem(second_text_box, kForegroundType));
   }
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
       "  <div style='width: 100px; height: 100px; background-color: "
       "blue'></div>"
       "  <div style='width: 100px; height: 100px; background-color: "
       "blue'></div>"
       "</div>");
-  LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
-  LayoutObject& subDiv = *div.firstChild();
-  LayoutObject& subDiv2 = *subDiv.nextSibling();
-  EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
-                      TestDisplayItem(layoutView(), documentBackgroundType),
-                      TestDisplayItem(subDiv, backgroundType),
-                      TestDisplayItem(subDiv2, backgroundType));
+  LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
+  LayoutObject& sub_div = *div.FirstChild();
+  LayoutObject& sub_div2 = *sub_div.NextSibling();
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(sub_div, kBackgroundType),
+                      TestDisplayItem(sub_div2, kBackgroundType));
 
   // Verify that the background does not scroll.
-  const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
-  EXPECT_FALSE(backgroundChunk.properties.propertyTreeState.transform()
-                   ->isScrollTranslation());
+  const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
+  EXPECT_FALSE(background_chunk.properties.property_tree_state.Transform()
+                   ->IsScrollTranslation());
 
-  const EffectPaintPropertyNode* effectNode = div.paintProperties()->effect();
-  EXPECT_EQ(0.5f, effectNode->opacity());
+  const EffectPaintPropertyNode* effect_node = div.PaintProperties()->Effect();
+  EXPECT_EQ(0.5f, effect_node->Opacity());
 
-  const PaintChunk& chunk = rootPaintController().paintChunks()[1];
-  EXPECT_EQ(*div.layer(), chunk.id->client);
-  EXPECT_EQ(effectNode, chunk.properties.propertyTreeState.effect());
+  const PaintChunk& chunk = RootPaintController().PaintChunks()[1];
+  EXPECT_EQ(*div.Layer(), chunk.id->client);
+  EXPECT_EQ(effect_node, chunk.properties.property_tree_state.Effect());
 
-  EXPECT_FALSE(div.layer()->isJustCreated());
+  EXPECT_FALSE(div.Layer()->IsJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not
   // by any cacheable display items won't be marked as validly cached.
-  EXPECT_FALSE(rootPaintController().clientCacheIsValid(*div.layer()));
-  EXPECT_FALSE(rootPaintController().clientCacheIsValid(div));
-  EXPECT_TRUE(rootPaintController().clientCacheIsValid(subDiv));
+  EXPECT_FALSE(RootPaintController().ClientCacheIsValid(*div.Layer()));
+  EXPECT_FALSE(RootPaintController().ClientCacheIsValid(div));
+  EXPECT_TRUE(RootPaintController().ClientCacheIsValid(sub_div));
 }
 
 TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
       "  <div style='width: 100px; height: 100px; background-color: "
       "blue'></div>"
       "</div>");
-  LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
-  LayoutObject& subDiv = *div.firstChild();
+  LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
+  LayoutObject& sub_div = *div.FirstChild();
 
-  EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
-                      TestDisplayItem(layoutView(), documentBackgroundType),
-                      TestDisplayItem(subDiv, backgroundType));
+  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
+                      TestDisplayItem(sub_div, kBackgroundType));
 }
 
 }  // namespace blink

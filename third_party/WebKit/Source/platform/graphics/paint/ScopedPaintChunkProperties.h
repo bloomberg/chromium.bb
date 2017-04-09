@@ -19,22 +19,22 @@ class ScopedPaintChunkProperties {
   WTF_MAKE_NONCOPYABLE(ScopedPaintChunkProperties);
 
  public:
-  ScopedPaintChunkProperties(PaintController& paintController,
+  ScopedPaintChunkProperties(PaintController& paint_controller,
                              const DisplayItemClient& client,
                              DisplayItem::Type type,
                              const PaintChunkProperties& properties)
-      : m_paintController(paintController),
-        m_previousProperties(paintController.currentPaintChunkProperties()) {
+      : paint_controller_(paint_controller),
+        previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
     PaintChunk::Id id(client, type);
-    m_paintController.updateCurrentPaintChunkProperties(&id, properties);
+    paint_controller_.UpdateCurrentPaintChunkProperties(&id, properties);
   }
 
   // Omits the type parameter, in case that the client creates only one
   // PaintChunkProperties node during each painting.
-  ScopedPaintChunkProperties(PaintController& paintController,
+  ScopedPaintChunkProperties(PaintController& paint_controller,
                              const DisplayItemClient& client,
                              const PaintChunkProperties& properties)
-      : ScopedPaintChunkProperties(paintController,
+      : ScopedPaintChunkProperties(paint_controller,
                                    client,
                                    DisplayItem::kUninitializedType,
                                    properties) {}
@@ -46,13 +46,13 @@ class ScopedPaintChunkProperties {
     // paint properties with new id, or the new chunk will have no id and will
     // not match any old chunk and will be treated as fully invalidated for
     // rasterization.
-    m_paintController.updateCurrentPaintChunkProperties(nullptr,
-                                                        m_previousProperties);
+    paint_controller_.UpdateCurrentPaintChunkProperties(nullptr,
+                                                        previous_properties_);
   }
 
  private:
-  PaintController& m_paintController;
-  PaintChunkProperties m_previousProperties;
+  PaintController& paint_controller_;
+  PaintChunkProperties previous_properties_;
 };
 
 }  // namespace blink

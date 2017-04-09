@@ -30,19 +30,19 @@
 namespace blink {
 
 bool DocumentFullscreen::fullscreenEnabled(Document& document) {
-  return Fullscreen::fullscreenEnabled(document);
+  return Fullscreen::FullscreenEnabled(document);
 }
 
 Element* DocumentFullscreen::fullscreenElement(Document& document) {
-  return Fullscreen::fullscreenElementForBindingFrom(document);
+  return Fullscreen::FullscreenElementForBindingFrom(document);
 }
 
 void DocumentFullscreen::exitFullscreen(Document& document) {
-  Fullscreen::exitFullscreen(document);
+  Fullscreen::ExitFullscreen(document);
 }
 
 Element* DocumentFullscreen::currentFullScreenElement(Document& document) {
-  return Fullscreen::currentFullScreenElementForBindingFrom(document);
+  return Fullscreen::CurrentFullScreenElementForBindingFrom(document);
 }
 
 }  // namespace blink

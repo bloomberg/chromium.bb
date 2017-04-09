@@ -41,44 +41,44 @@ class DOMFilePath {
   STATIC_ONLY(DOMFilePath);
 
  public:
-  static const char separator;
-  static const char root[];
+  static const char kSeparator;
+  static const char kRoot[];
 
   // Returns the name part from the given path.
-  static String getName(const String& path);
+  static String GetName(const String& path);
 
   // Returns the parent directory path of the given path.
-  static String getDirectory(const String& path);
+  static String GetDirectory(const String& path);
 
   // Checks if a given path is a parent of mayBeChild. This method assumes given
   // paths are absolute and do not have extra references to a parent (i.e.
   // "../").
-  static bool isParentOf(const String& path, const String& mayBeChild);
+  static bool IsParentOf(const String& path, const String& may_be_child);
 
   // Appends the separator at the end of the path if it's not there already.
-  static String ensureDirectoryPath(const String& path);
+  static String EnsureDirectoryPath(const String& path);
 
   // Returns a new path by appending a separator and the supplied path component
   // to the path.
-  static String append(const String& path, const String& component);
+  static String Append(const String& path, const String& component);
 
-  static bool isAbsolute(const String& path) {
-    return path.startsWith(DOMFilePath::root);
+  static bool IsAbsolute(const String& path) {
+    return path.StartsWith(DOMFilePath::kRoot);
   }
 
-  static bool endsWithSeparator(const String& path) {
-    return path[path.length() - 1] == DOMFilePath::separator;
+  static bool EndsWithSeparator(const String& path) {
+    return path[path.length() - 1] == DOMFilePath::kSeparator;
   }
 
   // Evaluates all "../" and "./" segments. Note that "/../" expands to "/", so
   // you can't ever refer to anything above the root directory.
-  static String removeExtraParentReferences(const String& path);
+  static String RemoveExtraParentReferences(const String& path);
 
   // Checks if the given path follows the FileSystem API naming restrictions.
-  static bool isValidPath(const String& path);
+  static bool IsValidPath(const String& path);
 
   // Checks if the given name follows the FileSystem API naming restrictions.
-  static bool isValidName(const String& name);
+  static bool IsValidName(const String& name);
 };
 
 }  // namespace blink

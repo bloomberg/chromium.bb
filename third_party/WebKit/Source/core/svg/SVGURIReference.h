@@ -37,46 +37,46 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
  public:
   virtual ~SVGURIReference() {}
 
-  bool isKnownAttribute(const QualifiedName&);
+  bool IsKnownAttribute(const QualifiedName&);
 
   // Use this for accesses to 'href' or 'xlink:href' (in that order) for
   // elements where both are allowed and don't necessarily inherit from
   // SVGURIReference.
-  static const AtomicString& legacyHrefString(const SVGElement&);
+  static const AtomicString& LegacyHrefString(const SVGElement&);
 
   // Like above, but for elements that inherit from SVGURIReference. Resolves
   // against the base URL of the passed Document.
-  KURL legacyHrefURL(const Document&) const;
+  KURL LegacyHrefURL(const Document&) const;
 
-  static AtomicString fragmentIdentifierFromIRIString(const String&,
+  static AtomicString FragmentIdentifierFromIRIString(const String&,
                                                       const TreeScope&);
-  static Element* targetElementFromIRIString(const String&,
+  static Element* TargetElementFromIRIString(const String&,
                                              const TreeScope&,
                                              AtomicString* = nullptr);
 
-  const String& hrefString() const { return m_href->currentValue()->value(); }
+  const String& HrefString() const { return href_->CurrentValue()->Value(); }
 
   // Create an 'id' observer for the href associated with this SVGURIReference
   // and its corresponding SVGElement (which should be passed as
   // |contextElement|.) Will call buildPendingResource() on |contextElement|
   // when changes to the 'id' are noticed.
-  Element* observeTarget(Member<IdTargetObserver>&, SVGElement&);
+  Element* ObserveTarget(Member<IdTargetObserver>&, SVGElement&);
   // Create an 'id' observer for any id denoted by |hrefString|, calling
   // buildPendingResource() on |contextElement| on changes.
-  static Element* observeTarget(Member<IdTargetObserver>&,
+  static Element* ObserveTarget(Member<IdTargetObserver>&,
                                 SVGElement&,
-                                const String& hrefString);
+                                const String& href_string);
   // Create an 'id' observer for |id| in the specified TreeScope. On changes,
   // the passed Closure will be called.
-  static Element* observeTarget(Member<IdTargetObserver>&,
+  static Element* ObserveTarget(Member<IdTargetObserver>&,
                                 TreeScope&,
                                 const AtomicString& id,
                                 std::unique_ptr<WTF::Closure>);
   // Unregister and destroy the observer.
-  static void unobserveTarget(Member<IdTargetObserver>&);
+  static void UnobserveTarget(Member<IdTargetObserver>&);
 
   // JS API
-  SVGAnimatedHref* href() const { return m_href.get(); }
+  SVGAnimatedHref* href() const { return href_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -84,7 +84,7 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
   explicit SVGURIReference(SVGElement*);
 
  private:
-  Member<SVGAnimatedHref> m_href;
+  Member<SVGAnimatedHref> href_;
 };
 
 // Helper class used to resolve fragment references. Handles the 'local url
@@ -93,17 +93,17 @@ class SVGURLReferenceResolver {
   STACK_ALLOCATED();
 
  public:
-  SVGURLReferenceResolver(const String& urlString, const Document&);
+  SVGURLReferenceResolver(const String& url_string, const Document&);
 
-  bool isLocal() const;
-  KURL absoluteUrl() const;
-  AtomicString fragmentIdentifier() const;
+  bool IsLocal() const;
+  KURL AbsoluteUrl() const;
+  AtomicString FragmentIdentifier() const;
 
  private:
-  const String& m_relativeUrl;
-  Member<const Document> m_document;
-  mutable KURL m_absoluteUrl;
-  bool m_isLocal;
+  const String& relative_url_;
+  Member<const Document> document_;
+  mutable KURL absolute_url_;
+  bool is_local_;
 };
 
 }  // namespace blink

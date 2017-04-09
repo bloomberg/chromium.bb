@@ -17,14 +17,14 @@ class TablePainter {
   STACK_ALLOCATED();
 
  public:
-  TablePainter(const LayoutTable& layoutTable) : m_layoutTable(layoutTable) {}
+  TablePainter(const LayoutTable& layout_table) : layout_table_(layout_table) {}
 
-  void paintObject(const PaintInfo&, const LayoutPoint&);
-  void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-  void paintMask(const PaintInfo&, const LayoutPoint&);
+  void PaintObject(const PaintInfo&, const LayoutPoint&);
+  void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+  void PaintMask(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const LayoutTable& m_layoutTable;
+  const LayoutTable& layout_table_;
 };
 
 }  // namespace blink

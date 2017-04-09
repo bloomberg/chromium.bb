@@ -10,24 +10,24 @@
 namespace blink {
 
 typedef struct {
-  float deviceScaleFactor;
-  float effectiveSize;
-  const char* srcInput;
-  const char* srcsetInput;
-  const char* outputURL;
-  float outputDensity;
-  int outputResourceWidth;
+  float device_scale_factor;
+  float effective_size;
+  const char* src_input;
+  const char* srcset_input;
+  const char* output_url;
+  float output_density;
+  int output_resource_width;
 } TestCase;
 
 TEST(ImageCandidateTest, Basic) {
   ImageCandidate candidate;
-  ASSERT_EQ(candidate.density(), 1);
-  ASSERT_EQ(candidate.getResourceWidth(), -1);
-  ASSERT_EQ(candidate.srcOrigin(), false);
+  ASSERT_EQ(candidate.Density(), 1);
+  ASSERT_EQ(candidate.GetResourceWidth(), -1);
+  ASSERT_EQ(candidate.SrcOrigin(), false);
 }
 
 TEST(HTMLSrcsetParserTest, Basic) {
-  TestCase testCases[] = {
+  TestCase test_cases[] = {
       {2.0, 0.5, "", "data:,a 1w, data:,b 2x", "data:,a", 2.0, 1},
       {2.0, 1, "", "data:,a 2w, data:,b 2x", "data:,a", 2.0, 2},
       {2.0, -1, "", "1x.gif 1x, 2x.gif 2x", "2x.gif", 2.0, -1},
@@ -161,14 +161,14 @@ TEST(HTMLSrcsetParserTest, Basic) {
       {0, 0, 0, 0, 0, 0}  // Do not remove the terminator line.
   };
 
-  for (unsigned i = 0; testCases[i].srcInput; ++i) {
-    TestCase test = testCases[i];
-    ImageCandidate candidate = bestFitSourceForImageAttributes(
-        test.deviceScaleFactor, test.effectiveSize, test.srcInput,
-        test.srcsetInput);
-    ASSERT_EQ(test.outputDensity, candidate.density());
-    ASSERT_EQ(test.outputResourceWidth, candidate.getResourceWidth());
-    ASSERT_STREQ(test.outputURL, candidate.toString().ascii().data());
+  for (unsigned i = 0; test_cases[i].src_input; ++i) {
+    TestCase test = test_cases[i];
+    ImageCandidate candidate = BestFitSourceForImageAttributes(
+        test.device_scale_factor, test.effective_size, test.src_input,
+        test.srcset_input);
+    ASSERT_EQ(test.output_density, candidate.Density());
+    ASSERT_EQ(test.output_resource_width, candidate.GetResourceWidth());
+    ASSERT_STREQ(test.output_url, candidate.ToString().Ascii().Data());
   }
 }
 

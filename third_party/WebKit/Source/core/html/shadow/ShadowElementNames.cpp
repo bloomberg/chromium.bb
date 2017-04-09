@@ -34,82 +34,82 @@ namespace blink {
 
 namespace ShadowElementNames {
 
-const AtomicString& detailsContent() {
+const AtomicString& DetailsContent() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("details-content"));
   return name;
 }
 
-const AtomicString& detailsSummary() {
+const AtomicString& DetailsSummary() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("details-summary"));
   return name;
 }
 
-const AtomicString& detailsMarker() {
+const AtomicString& DetailsMarker() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("details-marker"));
   return name;
 }
 
-const AtomicString& dateTimeEdit() {
+const AtomicString& DateTimeEdit() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("date-time-edit"));
   return name;
 }
 
-const AtomicString& spinButton() {
+const AtomicString& SpinButton() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("spin"));
   return name;
 }
 
-const AtomicString& clearButton() {
+const AtomicString& ClearButton() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("clear"));
   return name;
 }
 
-const AtomicString& editingViewPort() {
+const AtomicString& EditingViewPort() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("editing-view-port"));
   return name;
 }
 
-const AtomicString& innerEditor() {
+const AtomicString& InnerEditor() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("inner-editor"));
   return name;
 }
 
-const AtomicString& pickerIndicator() {
+const AtomicString& PickerIndicator() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("picker"));
   return name;
 }
 
-const AtomicString& placeholder() {
+const AtomicString& Placeholder() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("placeholder"));
   return name;
 }
 
-const AtomicString& searchClearButton() {
+const AtomicString& SearchClearButton() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("search-clear"));
   return name;
 }
 
-const AtomicString& searchDecoration() {
+const AtomicString& SearchDecoration() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("decoration"));
   return name;
 }
 
-const AtomicString& sliderThumb() {
+const AtomicString& SliderThumb() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("thumb"));
   return name;
 }
 
-const AtomicString& sliderTrack() {
+const AtomicString& SliderTrack() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("track"));
   return name;
 }
 
-const AtomicString& textFieldContainer() {
+const AtomicString& TextFieldContainer() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("text-field-container"));
   return name;
 }
 
-const AtomicString& optGroupLabel() {
+const AtomicString& OptGroupLabel() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("optgroup-label"));
   return name;
 }

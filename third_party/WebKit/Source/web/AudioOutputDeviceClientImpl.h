@@ -23,13 +23,13 @@ class AudioOutputDeviceClientImpl
   ~AudioOutputDeviceClientImpl() override;
 
   // AudioOutputDeviceClient implementation.
-  void checkIfAudioSinkExistsAndIsAuthorized(
+  void CheckIfAudioSinkExistsAndIsAuthorized(
       ExecutionContext*,
-      const WebString& sinkId,
+      const WebString& sink_id,
       std::unique_ptr<WebSetSinkIdCallbacks>) override;
 
   // GarbageCollectedFinalized implementation.
-  DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::Trace(visitor); }
 
  private:
   AudioOutputDeviceClientImpl();

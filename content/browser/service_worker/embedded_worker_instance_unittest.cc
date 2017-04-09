@@ -786,7 +786,7 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   // Attempt to start the worker and immediate AddMessageToConsole should not
   // cause a crash.
   std::pair<blink::WebConsoleMessage::Level, std::string> test_message =
-      std::make_pair(blink::WebConsoleMessage::LevelVerbose, "");
+      std::make_pair(blink::WebConsoleMessage::kLevelVerbose, "");
   std::unique_ptr<EmbeddedWorkerStartParams> params =
       CreateStartParams(version_id, pattern, url);
   worker->Start(std::move(params), CreateEventDispatcher(),

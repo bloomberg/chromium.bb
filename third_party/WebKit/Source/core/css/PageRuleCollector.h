@@ -34,30 +34,32 @@ class PageRuleCollector {
   STACK_ALLOCATED();
 
  public:
-  PageRuleCollector(const ComputedStyle* rootElementStyle, int pageIndex);
+  PageRuleCollector(const ComputedStyle* root_element_style, int page_index);
 
-  void matchPageRules(RuleSet* rules);
-  const MatchResult& matchedResult() { return m_result; }
+  void MatchPageRules(RuleSet* rules);
+  const MatchResult& MatchedResult() { return result_; }
 
  private:
-  bool isLeftPage(const ComputedStyle* rootElementStyle, int pageIndex) const;
-  bool isRightPage(const ComputedStyle* rootElementStyle, int pageIndex) const {
-    return !isLeftPage(rootElementStyle, pageIndex);
+  bool IsLeftPage(const ComputedStyle* root_element_style,
+                  int page_index) const;
+  bool IsRightPage(const ComputedStyle* root_element_style,
+                   int page_index) const {
+    return !IsLeftPage(root_element_style, page_index);
   }
-  bool isFirstPage(int pageIndex) const;
-  String pageName(int pageIndex) const;
+  bool IsFirstPage(int page_index) const;
+  String PageName(int page_index) const;
 
-  void matchPageRulesForList(HeapVector<Member<StyleRulePage>>& matchedRules,
+  void MatchPageRulesForList(HeapVector<Member<StyleRulePage>>& matched_rules,
                              const HeapVector<Member<StyleRulePage>>& rules,
-                             bool isLeftPage,
-                             bool isFirstPage,
-                             const String& pageName);
+                             bool is_left_page,
+                             bool is_first_page,
+                             const String& page_name);
 
-  const bool m_isLeftPage;
-  const bool m_isFirstPage;
-  const String m_pageName;
+  const bool is_left_page_;
+  const bool is_first_page_;
+  const String page_name_;
 
-  MatchResult m_result;
+  MatchResult result_;
 };
 
 }  // namespace blink

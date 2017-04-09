@@ -25,9 +25,9 @@ class CONTENT_EXPORT WebFileWriterBase
   ~WebFileWriterBase() override;
 
   // WebFileWriter implementation
-  void truncate(long long length) override;
-  void write(long long position, const blink::WebString& id) override;
-  void cancel() override;
+  void Truncate(long long length) override;
+  void Write(long long position, const blink::WebString& id) override;
+  void Cancel() override;
 
  protected:
   // This calls DidSucceed() or DidFail() based on the value of |error_code|.

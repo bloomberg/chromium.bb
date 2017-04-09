@@ -106,7 +106,7 @@
 
     {
       name: "editingBehaviorType",
-      initial: "editingBehaviorTypeForPlatform()",
+      initial: "EditingBehaviorTypeForPlatform()",
       type: "EditingBehaviorType",
     },
 
@@ -356,7 +356,7 @@
     },
     {
       name: "selectTrailingWhitespaceEnabled",
-      initial: "defaultSelectTrailingWhitespaceEnabled",
+      initial: "kDefaultSelectTrailingWhitespaceEnabled",
     },
 
     {
@@ -366,7 +366,7 @@
 
     {
       name: "selectionStrategy",
-      initial: "SelectionStrategy::Character",
+      initial: "SelectionStrategy::kCharacter",
       type: "SelectionStrategy",
     },
 
@@ -504,7 +504,7 @@
     },
     {
       name: "displayModeOverride",
-      initial: "WebDisplayModeUndefined",
+      initial: "kWebDisplayModeUndefined",
       invalidate: "MediaQuery",
       type: "WebDisplayMode",
     },
@@ -523,7 +523,7 @@
     },
     {
       name: "imageAnimationPolicy",
-      initial: "ImageAnimationPolicyAllowed",
+      initial: "kImageAnimationPolicyAllowed",
       type: "ImageAnimationPolicy",
     },
 
@@ -631,14 +631,14 @@
     // V8 supports different types of caching. Used by V8 bindings.
     {
       name: "v8CacheOptions",
-      initial: "V8CacheOptionsDefault",
+      initial: "kV8CacheOptionsDefault",
       type: "V8CacheOptions",
     },
 
     // V8 code cache for CacheStorage supports three types of strategies (none, normal and aggressive).
     {
       name: "v8CacheStrategiesForCacheStorage",
-      initial: "V8CacheStrategiesForCacheStorage::Default",
+      initial: "V8CacheStrategiesForCacheStorage::kDefault",
       type: "V8CacheStrategiesForCacheStorage",
     },
 
@@ -647,13 +647,13 @@
     // has pointerType coarse *and* fine).
     {
       name: "availablePointerTypes",
-      initial: "PointerTypeNone",
+      initial: "kPointerTypeNone",
       invalidate: "MediaQuery",
       type: "int",
     },
     {
       name: "availableHoverTypes",
-      initial: "HoverTypeNone",
+      initial: "kHoverTypeNone",
       invalidate: "MediaQuery",
       type: "int",
     },
@@ -661,13 +661,13 @@
     // These values specify properties of the user's primary pointing device only.
     {
       name: "primaryPointerType",
-      initial: "PointerTypeNone",
+      initial: "kPointerTypeNone",
       invalidate: "MediaQuery",
       type: "PointerType",
     },
     {
       name: "primaryHoverType",
-      initial: "HoverTypeNone",
+      initial: "kHoverTypeNone",
       invalidate: "MediaQuery",
       type: "HoverType",
     },
@@ -744,7 +744,7 @@
     // used by content embedders to specify custom style on certain platforms.
     {
       name: "viewportStyle",
-      initial: "WebViewportStyle::Default",
+      initial: "WebViewportStyle::kDefault",
       invalidate: "ViewportRule",
       type: "WebViewportStyle",
     },
@@ -753,7 +753,7 @@
     // by this setting.
     {
       name: "textTrackKindUserPreference",
-      initial: "TextTrackKindUserPreference::Default",
+      initial: "TextTrackKindUserPreference::kDefault",
       invalidate: "TextTrackKindUserPreference",
       type: "TextTrackKindUserPreference",
     },
@@ -803,7 +803,7 @@
 
     {
       name: "progressBarCompletion",
-      initial: "ProgressBarCompletion::LoadEvent",
+      initial: "ProgressBarCompletion::kLoadEvent",
       type: "ProgressBarCompletion",
     },
 
@@ -854,7 +854,7 @@
     // to enable it have been shipped.
     {
       name: "passiveListenerDefault",
-      initial: "PassiveListenerDefault::False",
+      initial: "PassiveListenerDefault::kFalse",
       type: "PassiveListenerDefault",
     },
 

@@ -26,7 +26,7 @@ namespace {
 // back end; in that case the tx will already have sent an abort to the request
 // so this would be ignored.
 IndexedDBDatabaseError CreateCursorClosedError() {
-  return IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+  return IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                 "The cursor has been closed.");
 }
 
@@ -126,7 +126,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     }
     Close();
     callbacks->OnError(IndexedDBDatabaseError(
-        blink::WebIDBDatabaseExceptionUnknownError, "Error advancing cursor"));
+        blink::kWebIDBDatabaseExceptionUnknownError, "Error advancing cursor"));
     return s;
   }
 
@@ -153,7 +153,7 @@ leveldb::Status IndexedDBCursor::CursorIterationOperation(
     }
     Close();
     callbacks->OnError(
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                "Error continuing cursor."));
     return s;
   }
@@ -206,7 +206,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
       }
       Close();
       callbacks->OnError(
-          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
                                  "Error continuing cursor."));
       return s;
     }

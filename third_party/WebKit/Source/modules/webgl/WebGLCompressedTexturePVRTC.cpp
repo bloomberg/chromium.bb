@@ -32,28 +32,28 @@ namespace blink {
 WebGLCompressedTexturePVRTC::WebGLCompressedTexturePVRTC(
     WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->addCompressedTextureFormat(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
-  context->addCompressedTextureFormat(GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
-  context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
-  context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
+  context->AddCompressedTextureFormat(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
+  context->AddCompressedTextureFormat(GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
+  context->AddCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
+  context->AddCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
 }
 
-WebGLExtensionName WebGLCompressedTexturePVRTC::name() const {
-  return WebGLCompressedTexturePVRTCName;
+WebGLExtensionName WebGLCompressedTexturePVRTC::GetName() const {
+  return kWebGLCompressedTexturePVRTCName;
 }
 
-WebGLCompressedTexturePVRTC* WebGLCompressedTexturePVRTC::create(
+WebGLCompressedTexturePVRTC* WebGLCompressedTexturePVRTC::Create(
     WebGLRenderingContextBase* context) {
   return new WebGLCompressedTexturePVRTC(context);
 }
 
-bool WebGLCompressedTexturePVRTC::supported(
+bool WebGLCompressedTexturePVRTC::Supported(
     WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_IMG_texture_compression_pvrtc");
 }
 
-const char* WebGLCompressedTexturePVRTC::extensionName() {
+const char* WebGLCompressedTexturePVRTC::ExtensionName() {
   return "WEBGL_compressed_texture_pvrtc";
 }
 

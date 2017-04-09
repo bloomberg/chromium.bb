@@ -266,7 +266,7 @@ void InputEventFilter::ForwardToHandler(int associated_routing_id,
          dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
 
   if (!received_time.is_null())
-    event->setTimeStampSeconds(ui::EventTimeStampToSeconds(received_time));
+    event->SetTimeStampSeconds(ui::EventTimeStampToSeconds(received_time));
 
   input_handler_manager_->HandleInputEvent(
       associated_routing_id, std::move(event), latency_info,
@@ -284,7 +284,7 @@ void InputEventFilter::DidForwardToHandlerAndOverscroll(
   bool send_ack = dispatch_type == DISPATCH_TYPE_BLOCKING;
   uint32_t unique_touch_event_id =
       ui::WebInputEventTraits::GetUniqueTouchEventId(*event);
-  WebInputEvent::Type type = event->type();
+  WebInputEvent::Type type = event->GetType();
 
   if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
       ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
@@ -339,7 +339,7 @@ void InputEventFilter::HandleEventOnMainThread(
   TRACE_EVENT_INSTANT0("input", "InputEventFilter::HandlEventOnMainThread",
                        TRACE_EVENT_SCOPE_THREAD);
   IPC::Message new_msg = InputMsg_HandleInputEvent(
-      routing_id, &event->event(), event->getCoalescedEventsPointers(),
+      routing_id, &event->Event(), event->GetCoalescedEventsPointers(),
       latency_info, dispatch_type);
   main_listener_.Run(new_msg);
 }

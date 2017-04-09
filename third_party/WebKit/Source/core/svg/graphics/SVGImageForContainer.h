@@ -58,26 +58,26 @@ class SVGImageForContainer final : public Image {
   USING_FAST_MALLOC(SVGImageForContainer);
 
  public:
-  static PassRefPtr<SVGImageForContainer> create(SVGImage* image,
-                                                 const IntSize& containerSize,
+  static PassRefPtr<SVGImageForContainer> Create(SVGImage* image,
+                                                 const IntSize& container_size,
                                                  float zoom,
                                                  const KURL& url) {
-    FloatSize containerSizeWithoutZoom(containerSize);
-    containerSizeWithoutZoom.scale(1 / zoom);
-    return adoptRef(
-        new SVGImageForContainer(image, containerSizeWithoutZoom, zoom, url));
+    FloatSize container_size_without_zoom(container_size);
+    container_size_without_zoom.Scale(1 / zoom);
+    return AdoptRef(new SVGImageForContainer(image, container_size_without_zoom,
+                                             zoom, url));
   }
 
   IntSize size() const override;
 
-  bool usesContainerSize() const override {
-    return m_image->usesContainerSize();
+  bool UsesContainerSize() const override {
+    return image_->UsesContainerSize();
   }
-  bool hasRelativeSize() const override { return m_image->hasRelativeSize(); }
+  bool HasRelativeSize() const override { return image_->HasRelativeSize(); }
 
-  bool applyShader(PaintFlags&, const SkMatrix& localMatrix) override;
+  bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix) override;
 
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
@@ -85,37 +85,38 @@ class SVGImageForContainer final : public Image {
             ImageClampingMode) override;
 
   // FIXME: Implement this to be less conservative.
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+  bool CurrentFrameKnownToBeOpaque(
+      MetadataMode = kUseCurrentMetadata) override {
     return false;
   }
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> ImageForCurrentFrame() override;
 
  protected:
-  void drawPattern(GraphicsContext&,
+  void DrawPattern(GraphicsContext&,
                    const FloatRect&,
                    const FloatSize&,
                    const FloatPoint&,
                    SkBlendMode,
                    const FloatRect&,
-                   const FloatSize& repeatSpacing) override;
+                   const FloatSize& repeat_spacing) override;
 
  private:
   SVGImageForContainer(SVGImage* image,
-                       const FloatSize& containerSize,
+                       const FloatSize& container_size,
                        float zoom,
                        const KURL& url)
-      : m_image(image),
-        m_containerSize(containerSize),
-        m_zoom(zoom),
-        m_url(url) {}
+      : image_(image),
+        container_size_(container_size),
+        zoom_(zoom),
+        url_(url) {}
 
-  void destroyDecodedData() override {}
+  void DestroyDecodedData() override {}
 
-  SVGImage* m_image;
-  const FloatSize m_containerSize;
-  const float m_zoom;
-  const KURL m_url;
+  SVGImage* image_;
+  const FloatSize container_size_;
+  const float zoom_;
+  const KURL url_;
 };
 }  // namespace blink
 

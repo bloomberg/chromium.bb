@@ -32,8 +32,8 @@ class V8GlobalValueMapTraits {
   typedef HashMap<KeyType, v8::PersistentContainerValue> Impl;
   typedef typename Impl::iterator Iterator;
   static size_t Size(const Impl* impl) { return impl->size(); }
-  static bool Empty(Impl* impl) { return impl->isEmpty(); }
-  static void Swap(Impl& impl, Impl& other) { impl.swap(other); }
+  static bool Empty(Impl* impl) { return impl->IsEmpty(); }
+  static void Swap(Impl& impl, Impl& other) { impl.Swap(other); }
   static Iterator Begin(Impl* impl) { return impl->begin(); }
   static Iterator End(Impl* impl) { return impl->end(); }
   static v8::PersistentContainerValue Value(Iterator& iter) {
@@ -43,16 +43,16 @@ class V8GlobalValueMapTraits {
   static v8::PersistentContainerValue Set(Impl* impl,
                                           KeyType key,
                                           v8::PersistentContainerValue value) {
-    v8::PersistentContainerValue oldValue = Get(impl, key);
-    impl->set(key, value);
-    return oldValue;
+    v8::PersistentContainerValue old_value = Get(impl, key);
+    impl->Set(key, value);
+    return old_value;
   }
   static v8::PersistentContainerValue Get(const Impl* impl, KeyType key) {
     return impl->at(key);
   }
 
   static v8::PersistentContainerValue Remove(Impl* impl, KeyType key) {
-    return impl->take(key);
+    return impl->Take(key);
   }
 
   // Weak traits:
@@ -71,7 +71,7 @@ class V8GlobalValueMapTraits {
     return 0;
   }
 
-  static void DisposeCallbackData(WeakCallbackDataType* callbackData) {}
+  static void DisposeCallbackData(WeakCallbackDataType* callback_data) {}
 
   static MapType* MapFromWeakCallbackInfo(
       const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {

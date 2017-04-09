@@ -24,10 +24,10 @@ class TraceWrapperMember : public Member<T> {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  TraceWrapperMember(void* parent, T* raw) : Member<T>(raw), m_parent(parent) {
+  TraceWrapperMember(void* parent, T* raw) : Member<T>(raw), parent_(parent) {
 #if DCHECK_IS_ON()
-    if (m_parent) {
-      HeapObjectHeader::checkFromPayload(m_parent);
+    if (parent_) {
+      HeapObjectHeader::CheckFromPayload(parent_);
     }
 #endif
     // We don't require a write barrier here as TraceWrapperMember is used for
@@ -41,7 +41,7 @@ class TraceWrapperMember : public Member<T> {
     // Note that support for black allocation would require a barrier here.
   }
   TraceWrapperMember(WTF::HashTableDeletedValueType x)
-      : Member<T>(x), m_parent(nullptr) {}
+      : Member<T>(x), parent_(nullptr) {}
 
   /**
    * Copying a TraceWrapperMember means that its backpointer will also be
@@ -50,24 +50,24 @@ class TraceWrapperMember : public Member<T> {
   TraceWrapperMember(const TraceWrapperMember& other) { *this = other; }
 
   TraceWrapperMember& operator=(const TraceWrapperMember& other) {
-    DCHECK(!other.m_raw || other.m_parent);
-    m_parent = other.m_parent;
+    DCHECK(!other.raw_ || other.parent_);
+    parent_ = other.parent_;
     Member<T>::operator=(other);
-    ScriptWrappableVisitor::writeBarrier(m_parent, other);
+    ScriptWrappableVisitor::WriteBarrier(parent_, other);
     return *this;
   }
 
   TraceWrapperMember& operator=(const Member<T>& other) {
-    DCHECK(!traceWrapperMemberIsNotInitialized());
+    DCHECK(!TraceWrapperMemberIsNotInitialized());
     Member<T>::operator=(other);
-    ScriptWrappableVisitor::writeBarrier(m_parent, other);
+    ScriptWrappableVisitor::WriteBarrier(parent_, other);
     return *this;
   }
 
   TraceWrapperMember& operator=(T* other) {
-    DCHECK(!traceWrapperMemberIsNotInitialized());
+    DCHECK(!TraceWrapperMemberIsNotInitialized());
     Member<T>::operator=(other);
-    ScriptWrappableVisitor::writeBarrier(m_parent, other);
+    ScriptWrappableVisitor::WriteBarrier(parent_, other);
     return *this;
   }
 
@@ -77,15 +77,15 @@ class TraceWrapperMember : public Member<T> {
     return *this;
   }
 
-  void* parent() { return m_parent; }
+  void* Parent() { return parent_; }
 
  private:
-  bool traceWrapperMemberIsNotInitialized() { return !m_parent; }
+  bool TraceWrapperMemberIsNotInitialized() { return !parent_; }
 
   /**
    * The parent object holding strongly onto the actual Member.
    */
-  void* m_parent;
+  void* parent_;
 };
 
 /**
@@ -96,22 +96,22 @@ class TraceWrapperMember : public Member<T> {
 template <typename T>
 void swap(HeapVector<TraceWrapperMember<T>>& a,
           HeapVector<TraceWrapperMember<T>>& b,
-          void* parentForA,
-          void* parentForB) {
+          void* parent_for_a,
+          void* parent_for_b) {
   HeapVector<TraceWrapperMember<T>> temp;
-  temp.reserveCapacity(a.size());
+  temp.ReserveCapacity(a.size());
   for (auto item : a) {
-    temp.push_back(TraceWrapperMember<T>(parentForB, item.get()));
+    temp.push_back(TraceWrapperMember<T>(parent_for_b, item.Get()));
   }
-  a.clear();
-  a.reserveCapacity(b.size());
+  a.Clear();
+  a.ReserveCapacity(b.size());
   for (auto item : b) {
-    a.push_back(TraceWrapperMember<T>(parentForA, item.get()));
+    a.push_back(TraceWrapperMember<T>(parent_for_a, item.Get()));
   }
-  b.clear();
-  b.reserveCapacity(temp.size());
+  b.Clear();
+  b.ReserveCapacity(temp.size());
   for (auto item : temp) {
-    b.push_back(TraceWrapperMember<T>(parentForB, item.get()));
+    b.push_back(TraceWrapperMember<T>(parent_for_b, item.Get()));
   }
 }
 
@@ -124,21 +124,21 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
 template <typename T>
 void swap(HeapVector<TraceWrapperMember<T>>& a,
           HeapVector<Member<T>>& b,
-          void* parentForA) {
+          void* parent_for_a) {
   HeapVector<TraceWrapperMember<T>> temp;
-  temp.reserveCapacity(a.size());
+  temp.ReserveCapacity(a.size());
   for (auto item : a) {
-    temp.push_back(TraceWrapperMember<T>(item.parent(), item.get()));
+    temp.push_back(TraceWrapperMember<T>(item.Parent(), item.Get()));
   }
-  a.clear();
-  a.reserveCapacity(b.size());
+  a.Clear();
+  a.ReserveCapacity(b.size());
   for (auto item : b) {
-    a.push_back(TraceWrapperMember<T>(parentForA, item.get()));
+    a.push_back(TraceWrapperMember<T>(parent_for_a, item.Get()));
   }
-  b.clear();
-  b.reserveCapacity(temp.size());
+  b.Clear();
+  b.ReserveCapacity(temp.size());
   for (auto item : temp) {
-    b.push_back(item.get());
+    b.push_back(item.Get());
   }
 }
 

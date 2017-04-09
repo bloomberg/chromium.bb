@@ -31,14 +31,14 @@ class CDATASection final : public Text {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CDATASection* create(Document&, const String&);
+  static CDATASection* Create(Document&, const String&);
 
  private:
   CDATASection(Document&, const String&);
 
   String nodeName() const override;
   NodeType getNodeType() const override;
-  Text* cloneWithData(const String&) override;
+  Text* CloneWithData(const String&) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(CDATASection, getNodeType() == Node::kCdataSectionNode);

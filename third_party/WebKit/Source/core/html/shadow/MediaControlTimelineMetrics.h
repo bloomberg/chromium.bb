@@ -17,24 +17,24 @@ class MediaControlTimelineMetrics {
   // Start tracking a pointer gesture. |fromThumb| indicates whether the user
   // started dragging from the thumb, as opposed to pressing down their pointer
   // on some other part of the timeline track (causing time to jump).
-  void startGesture(bool fromThumb);
+  void StartGesture(bool from_thumb);
   // Finish tracking and report a pointer gesture.
-  void recordEndGesture(int timelineWidth, double mediaDurationSeconds);
+  void RecordEndGesture(int timeline_width, double media_duration_seconds);
 
   // Start tracking a keydown. Ok to call multiple times if key repeats.
-  void startKey();
+  void StartKey();
   // Finish tracking and report a keyup. Call only once even if key repeats.
-  void recordEndKey(int timelineWidth, int keyCode);
+  void RecordEndKey(int timeline_width, int key_code);
 
   // Track an incremental input event caused by the current pointer gesture or
   // pressed key. Each sequence of calls to this should usually be sandwiched by
   // startGesture/Key and recordEndGesture/Key.
-  void onInput(double fromSeconds, double toSeconds);
+  void OnInput(double from_seconds, double to_seconds);
 
   // Reports width to UMA the first time the media starts playing.
-  void recordPlaying(WebScreenOrientationType,
-                     bool isFullscreen,
-                     int timelineWidth);
+  void RecordPlaying(WebScreenOrientationType,
+                     bool is_fullscreen,
+                     int timeline_width);
 
  private:
   enum class State {
@@ -59,14 +59,14 @@ class MediaControlTimelineMetrics {
     kKeyDown
   };
 
-  bool m_hasNeverBeenPlaying = true;
+  bool has_never_been_playing_ = true;
 
-  State m_state = State::kInactive;
+  State state_ = State::kInactive;
 
   // The following are only valid during a pointer gesture.
-  TimeTicks m_dragStartTimeTicks;
-  float m_dragDeltaMediaSeconds = 0;
-  float m_dragSumAbsDeltaMediaSeconds = 0;
+  TimeTicks drag_start_time_ticks_;
+  float drag_delta_media_seconds_ = 0;
+  float drag_sum_abs_delta_media_seconds_ = 0;
 };
 
 }  // namespace blink

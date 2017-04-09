@@ -37,23 +37,23 @@ namespace blink {
 CanvasInterceptor<ProfilingCanvas>::CanvasInterceptor(
     InterceptingCanvasBase* canvas)
     : CanvasInterceptorBase(canvas),
-      m_startTime(WTF::monotonicallyIncreasingTime()) {}
+      start_time_(WTF::MonotonicallyIncreasingTime()) {}
 
 CanvasInterceptor<ProfilingCanvas>::~CanvasInterceptor() {
-  if (!topLevelCall())
+  if (!TopLevelCall())
     return;
-  double delta = WTF::monotonicallyIncreasingTime() - m_startTime;
-  if (auto timings = canvas()->m_timings) {
-    ASSERT(timings->size() == canvas()->callCount());
+  double delta = WTF::MonotonicallyIncreasingTime() - start_time_;
+  if (auto timings = Canvas()->timings_) {
+    ASSERT(timings->size() == Canvas()->CallCount());
     timings->push_back(delta);
   }
 }
 
 ProfilingCanvas::ProfilingCanvas(SkBitmap bitmap)
-    : InterceptingCanvas(bitmap), m_timings(nullptr) {}
+    : InterceptingCanvas(bitmap), timings_(nullptr) {}
 
-void ProfilingCanvas::setTimings(Vector<double>* timings) {
-  m_timings = timings;
+void ProfilingCanvas::SetTimings(Vector<double>* timings) {
+  timings_ = timings;
 }
 
 }  // namespace blink

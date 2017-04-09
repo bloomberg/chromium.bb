@@ -15,113 +15,113 @@
 namespace blink {
 
 // static
-MediaMetadata* MediaMetadata::create(ScriptState* scriptState,
+MediaMetadata* MediaMetadata::Create(ScriptState* script_state,
                                      const MediaMetadataInit& metadata,
-                                     ExceptionState& exceptionState) {
-  return new MediaMetadata(scriptState, metadata, exceptionState);
+                                     ExceptionState& exception_state) {
+  return new MediaMetadata(script_state, metadata, exception_state);
 }
 
-MediaMetadata::MediaMetadata(ScriptState* scriptState,
+MediaMetadata::MediaMetadata(ScriptState* script_state,
                              const MediaMetadataInit& metadata,
-                             ExceptionState& exceptionState)
-    : m_notifySessionTimer(
-          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, scriptState),
+                             ExceptionState& exception_state)
+    : notify_session_timer_(
+          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, script_state),
           this,
-          &MediaMetadata::notifySessionTimerFired) {
-  m_title = metadata.title();
-  m_artist = metadata.artist();
-  m_album = metadata.album();
-  setArtworkInternal(scriptState, metadata.artwork(), exceptionState);
+          &MediaMetadata::NotifySessionTimerFired) {
+  title_ = metadata.title();
+  artist_ = metadata.artist();
+  album_ = metadata.album();
+  SetArtworkInternal(script_state, metadata.artwork(), exception_state);
 }
 
 String MediaMetadata::title() const {
-  return m_title;
+  return title_;
 }
 
 String MediaMetadata::artist() const {
-  return m_artist;
+  return artist_;
 }
 
 String MediaMetadata::album() const {
-  return m_album;
+  return album_;
 }
 
 const HeapVector<MediaImage>& MediaMetadata::artwork() const {
-  return m_artwork;
+  return artwork_;
 }
 
 Vector<v8::Local<v8::Value>> MediaMetadata::artwork(
-    ScriptState* scriptState) const {
-  Vector<v8::Local<v8::Value>> result(m_artwork.size());
+    ScriptState* script_state) const {
+  Vector<v8::Local<v8::Value>> result(artwork_.size());
 
-  for (size_t i = 0; i < m_artwork.size(); ++i) {
-    result[i] =
-        freezeV8Object(ToV8(m_artwork[i], scriptState), scriptState->isolate());
+  for (size_t i = 0; i < artwork_.size(); ++i) {
+    result[i] = FreezeV8Object(ToV8(artwork_[i], script_state),
+                               script_state->GetIsolate());
   }
 
   return result;
 }
 
 void MediaMetadata::setTitle(const String& title) {
-  m_title = title;
-  notifySessionAsync();
+  title_ = title;
+  NotifySessionAsync();
 }
 
 void MediaMetadata::setArtist(const String& artist) {
-  m_artist = artist;
-  notifySessionAsync();
+  artist_ = artist;
+  NotifySessionAsync();
 }
 
 void MediaMetadata::setAlbum(const String& album) {
-  m_album = album;
-  notifySessionAsync();
+  album_ = album;
+  NotifySessionAsync();
 }
 
-void MediaMetadata::setArtwork(ScriptState* scriptState,
+void MediaMetadata::setArtwork(ScriptState* script_state,
                                const HeapVector<MediaImage>& artwork,
-                               ExceptionState& exceptionState) {
-  setArtworkInternal(scriptState, artwork, exceptionState);
-  notifySessionAsync();
+                               ExceptionState& exception_state) {
+  SetArtworkInternal(script_state, artwork, exception_state);
+  NotifySessionAsync();
 }
 
-void MediaMetadata::setSession(MediaSession* session) {
-  m_session = session;
+void MediaMetadata::SetSession(MediaSession* session) {
+  session_ = session;
 }
 
-void MediaMetadata::notifySessionAsync() {
-  if (!m_session || m_notifySessionTimer.isActive())
+void MediaMetadata::NotifySessionAsync() {
+  if (!session_ || notify_session_timer_.IsActive())
     return;
-  m_notifySessionTimer.startOneShot(0, BLINK_FROM_HERE);
+  notify_session_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void MediaMetadata::notifySessionTimerFired(TimerBase*) {
-  if (!m_session)
+void MediaMetadata::NotifySessionTimerFired(TimerBase*) {
+  if (!session_)
     return;
-  m_session->onMetadataChanged();
+  session_->OnMetadataChanged();
 }
 
-void MediaMetadata::setArtworkInternal(ScriptState* scriptState,
+void MediaMetadata::SetArtworkInternal(ScriptState* script_state,
                                        const HeapVector<MediaImage>& artwork,
-                                       ExceptionState& exceptionState) {
-  HeapVector<MediaImage> processedArtwork(artwork);
+                                       ExceptionState& exception_state) {
+  HeapVector<MediaImage> processed_artwork(artwork);
 
-  for (MediaImage& image : processedArtwork) {
-    KURL url = scriptState->getExecutionContext()->completeURL(image.src());
-    if (!url.isValid()) {
-      exceptionState.throwTypeError("'" + image.src() +
-                                    "' can't be resolved to a valid URL.");
+  for (MediaImage& image : processed_artwork) {
+    KURL url = script_state->GetExecutionContext()->CompleteURL(image.src());
+    if (!url.IsValid()) {
+      exception_state.ThrowTypeError("'" + image.src() +
+                                     "' can't be resolved to a valid URL.");
       return;
     }
     image.setSrc(url);
   }
 
-  DCHECK(!exceptionState.hadException());
-  m_artwork.swap(processedArtwork);
+  DCHECK(!exception_state.HadException());
+  artwork_.Swap(processed_artwork);
 }
 
 DEFINE_TRACE(MediaMetadata) {
-  visitor->trace(m_artwork);
-  visitor->trace(m_session);
+  visitor->Trace(artwork_);
+  visitor->Trace(session_);
 }
 
 }  // namespace blink

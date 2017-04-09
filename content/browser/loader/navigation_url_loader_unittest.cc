@@ -109,7 +109,7 @@ class NavigationURLLoaderTest : public testing::Test {
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, false, false,
         REQUEST_CONTEXT_TYPE_LOCATION,
-        blink::WebMixedContentContextType::Blockable,
+        blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
         url::Origin(url));
     CommonNavigationParams common_params;
@@ -117,7 +117,7 @@ class NavigationURLLoaderTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, begin_params, url, true, false,
                                   false, -1, false, false,
-                                  blink::WebPageVisibilityStateVisible));
+                                  blink::kWebPageVisibilityStateVisible));
     return NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),

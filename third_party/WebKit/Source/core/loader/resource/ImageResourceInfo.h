@@ -27,37 +27,37 @@ class SecurityOrigin;
 class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
  public:
   ~ImageResourceInfo() {}
-  virtual const KURL& url() const = 0;
-  virtual bool isSchedulingReload() const = 0;
-  virtual bool hasDevicePixelRatioHeaderValue() const = 0;
-  virtual float devicePixelRatioHeaderValue() const = 0;
-  virtual const ResourceResponse& response() const = 0;
-  virtual ResourceStatus getStatus() const = 0;
-  virtual bool shouldShowPlaceholder() const = 0;
-  virtual bool isCacheValidator() const = 0;
-  virtual bool schedulingReloadOrShouldReloadBrokenPlaceholder() const = 0;
+  virtual const KURL& Url() const = 0;
+  virtual bool IsSchedulingReload() const = 0;
+  virtual bool HasDevicePixelRatioHeaderValue() const = 0;
+  virtual float DevicePixelRatioHeaderValue() const = 0;
+  virtual const ResourceResponse& GetResponse() const = 0;
+  virtual ResourceStatus GetStatus() const = 0;
+  virtual bool ShouldShowPlaceholder() const = 0;
+  virtual bool IsCacheValidator() const = 0;
+  virtual bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const = 0;
   enum DoesCurrentFrameHaveSingleSecurityOrigin {
-    HasMultipleSecurityOrigin,
-    HasSingleSecurityOrigin
+    kHasMultipleSecurityOrigin,
+    kHasSingleSecurityOrigin
   };
-  virtual bool isAccessAllowed(
+  virtual bool IsAccessAllowed(
       SecurityOrigin*,
       DoesCurrentFrameHaveSingleSecurityOrigin) const = 0;
-  virtual bool hasCacheControlNoStoreHeader() const = 0;
-  virtual const ResourceError& resourceError() const = 0;
+  virtual bool HasCacheControlNoStoreHeader() const = 0;
+  virtual const ResourceError& GetResourceError() const = 0;
 
   // TODO(hiroshige): Remove this once MemoryCache becomes further weaker.
-  virtual void setDecodedSize(size_t) = 0;
+  virtual void SetDecodedSize(size_t) = 0;
 
   // TODO(hiroshige): Remove these.
-  virtual void willAddClientOrObserver() = 0;
-  virtual void didRemoveClientOrObserver() = 0;
+  virtual void WillAddClientOrObserver() = 0;
+  virtual void DidRemoveClientOrObserver() = 0;
 
   // TODO(hiroshige): Remove this. crbug.com/666214
-  virtual void emulateLoadStartedForInspector(
+  virtual void EmulateLoadStartedForInspector(
       ResourceFetcher*,
       const KURL&,
-      const AtomicString& initiatorName) = 0;
+      const AtomicString& initiator_name) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

@@ -34,128 +34,130 @@
 
 namespace blink {
 
-void SVGRootInlineBox::paint(const PaintInfo& paintInfo,
-                             const LayoutPoint& paintOffset,
+void SVGRootInlineBox::Paint(const PaintInfo& paint_info,
+                             const LayoutPoint& paint_offset,
                              LayoutUnit,
                              LayoutUnit) const {
-  SVGRootInlineBoxPainter(*this).paint(paintInfo, paintOffset);
+  SVGRootInlineBoxPainter(*this).Paint(paint_info, paint_offset);
 }
 
-void SVGRootInlineBox::markDirty() {
-  for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
-    child->markDirty();
-  RootInlineBox::markDirty();
+void SVGRootInlineBox::MarkDirty() {
+  for (InlineBox* child = FirstChild(); child; child = child->NextOnLine())
+    child->MarkDirty();
+  RootInlineBox::MarkDirty();
 }
 
-void SVGRootInlineBox::computePerCharacterLayoutInformation() {
-  LayoutSVGText& textRoot =
-      toLayoutSVGText(*LineLayoutAPIShim::layoutObjectFrom(block()));
+void SVGRootInlineBox::ComputePerCharacterLayoutInformation() {
+  LayoutSVGText& text_root =
+      ToLayoutSVGText(*LineLayoutAPIShim::LayoutObjectFrom(Block()));
 
-  const Vector<LayoutSVGInlineText*>& descendantTextNodes =
-      textRoot.descendantTextNodes();
-  if (descendantTextNodes.isEmpty())
+  const Vector<LayoutSVGInlineText*>& descendant_text_nodes =
+      text_root.DescendantTextNodes();
+  if (descendant_text_nodes.IsEmpty())
     return;
 
-  if (textRoot.needsReordering())
-    reorderValueLists();
+  if (text_root.NeedsReordering())
+    ReorderValueLists();
 
   // Perform SVG text layout phase two (see SVGTextLayoutEngine for details).
-  SVGTextLayoutEngine characterLayout(descendantTextNodes);
-  characterLayout.layoutCharactersInTextBoxes(this);
+  SVGTextLayoutEngine character_layout(descendant_text_nodes);
+  character_layout.LayoutCharactersInTextBoxes(this);
 
   // Perform SVG text layout phase three (see SVGTextChunkBuilder for details).
-  characterLayout.finishLayout();
+  character_layout.FinishLayout();
 
   // Perform SVG text layout phase four
   // Position & resize all SVGInlineText/FlowBoxes in the inline box tree,
   // resize the root box as well as the LayoutSVGText parent block.
-  layoutInlineBoxes(*this);
+  LayoutInlineBoxes(*this);
 
   // Let the HTML block space originate from the local SVG coordinate space.
-  LineLayoutBlockFlow parentBlock = block();
-  parentBlock.setLocation(LayoutPoint());
+  LineLayoutBlockFlow parent_block = Block();
+  parent_block.SetLocation(LayoutPoint());
   // The width could be any value, but set it so that a line box will mirror
   // within the childRect when its coordinates are converted between physical
   // block direction and flipped block direction, for ease of understanding of
   // flipped coordinates. The height doesn't matter.
-  parentBlock.setSize(LayoutSize(x() * 2 + width(), LayoutUnit()));
+  parent_block.SetSize(LayoutSize(X() * 2 + Width(), LayoutUnit()));
 
-  setLineTopBottomPositions(logicalTop(), logicalBottom(), logicalTop(),
-                            logicalBottom());
+  SetLineTopBottomPositions(LogicalTop(), LogicalBottom(), LogicalTop(),
+                            LogicalBottom());
 }
 
-LayoutRect SVGRootInlineBox::layoutInlineBoxes(InlineBox& box) {
+LayoutRect SVGRootInlineBox::LayoutInlineBoxes(InlineBox& box) {
   LayoutRect rect;
-  if (box.isSVGInlineTextBox()) {
-    rect = toSVGInlineTextBox(box).calculateBoundaries();
+  if (box.IsSVGInlineTextBox()) {
+    rect = ToSVGInlineTextBox(box).CalculateBoundaries();
   } else {
-    for (InlineBox* child = toInlineFlowBox(box).firstChild(); child;
-         child = child->nextOnLine())
-      rect.unite(layoutInlineBoxes(*child));
+    for (InlineBox* child = ToInlineFlowBox(box).FirstChild(); child;
+         child = child->NextOnLine())
+      rect.Unite(LayoutInlineBoxes(*child));
   }
 
-  box.setX(rect.x());
-  box.setY(rect.y());
-  box.setLogicalWidth(box.isHorizontal() ? rect.width() : rect.height());
-  LayoutUnit logicalHeight = box.isHorizontal() ? rect.height() : rect.width();
-  if (box.isSVGInlineTextBox())
-    toSVGInlineTextBox(box).setLogicalHeight(logicalHeight);
-  else if (box.isSVGInlineFlowBox())
-    toSVGInlineFlowBox(box).setLogicalHeight(logicalHeight);
+  box.SetX(rect.X());
+  box.SetY(rect.Y());
+  box.SetLogicalWidth(box.IsHorizontal() ? rect.Width() : rect.Height());
+  LayoutUnit logical_height = box.IsHorizontal() ? rect.Height() : rect.Width();
+  if (box.IsSVGInlineTextBox())
+    ToSVGInlineTextBox(box).SetLogicalHeight(logical_height);
+  else if (box.IsSVGInlineFlowBox())
+    ToSVGInlineFlowBox(box).SetLogicalHeight(logical_height);
   else
-    toSVGRootInlineBox(box).setLogicalHeight(logicalHeight);
+    ToSVGRootInlineBox(box).SetLogicalHeight(logical_height);
 
   return rect;
 }
 
-InlineBox* SVGRootInlineBox::closestLeafChildForPosition(
+InlineBox* SVGRootInlineBox::ClosestLeafChildForPosition(
     const LayoutPoint& point) {
-  InlineBox* firstLeaf = firstLeafChild();
-  InlineBox* lastLeaf = lastLeafChild();
-  if (firstLeaf == lastLeaf)
-    return firstLeaf;
+  InlineBox* first_leaf = FirstLeafChild();
+  InlineBox* last_leaf = LastLeafChild();
+  if (first_leaf == last_leaf)
+    return first_leaf;
 
   // FIXME: Check for vertical text!
-  InlineBox* closestLeaf = nullptr;
-  for (InlineBox* leaf = firstLeaf; leaf; leaf = leaf->nextLeafChild()) {
-    if (!leaf->isSVGInlineTextBox())
+  InlineBox* closest_leaf = nullptr;
+  for (InlineBox* leaf = first_leaf; leaf; leaf = leaf->NextLeafChild()) {
+    if (!leaf->IsSVGInlineTextBox())
       continue;
-    if (point.y() < leaf->y())
+    if (point.Y() < leaf->Y())
       continue;
-    if (point.y() > leaf->y() + leaf->virtualLogicalHeight())
+    if (point.Y() > leaf->Y() + leaf->VirtualLogicalHeight())
       continue;
 
-    closestLeaf = leaf;
-    if (point.x() < leaf->x() + leaf->logicalWidth())
+    closest_leaf = leaf;
+    if (point.X() < leaf->X() + leaf->LogicalWidth())
       return leaf;
   }
 
-  return closestLeaf ? closestLeaf : lastLeaf;
+  return closest_leaf ? closest_leaf : last_leaf;
 }
 
-static inline void swapPositioningValuesInTextBoxes(
-    SVGInlineTextBox* firstTextBox,
-    SVGInlineTextBox* lastTextBox) {
-  LineLayoutSVGInlineText firstTextNode =
-      LineLayoutSVGInlineText(firstTextBox->getLineLayoutItem());
-  SVGCharacterDataMap& firstCharacterDataMap = firstTextNode.characterDataMap();
-  SVGCharacterDataMap::iterator itFirst =
-      firstCharacterDataMap.find(firstTextBox->start() + 1);
-  if (itFirst == firstCharacterDataMap.end())
+static inline void SwapPositioningValuesInTextBoxes(
+    SVGInlineTextBox* first_text_box,
+    SVGInlineTextBox* last_text_box) {
+  LineLayoutSVGInlineText first_text_node =
+      LineLayoutSVGInlineText(first_text_box->GetLineLayoutItem());
+  SVGCharacterDataMap& first_character_data_map =
+      first_text_node.CharacterDataMap();
+  SVGCharacterDataMap::iterator it_first =
+      first_character_data_map.Find(first_text_box->Start() + 1);
+  if (it_first == first_character_data_map.end())
     return;
-  LineLayoutSVGInlineText lastTextNode =
-      LineLayoutSVGInlineText(lastTextBox->getLineLayoutItem());
-  SVGCharacterDataMap& lastCharacterDataMap = lastTextNode.characterDataMap();
-  SVGCharacterDataMap::iterator itLast =
-      lastCharacterDataMap.find(lastTextBox->start() + 1);
-  if (itLast == lastCharacterDataMap.end())
+  LineLayoutSVGInlineText last_text_node =
+      LineLayoutSVGInlineText(last_text_box->GetLineLayoutItem());
+  SVGCharacterDataMap& last_character_data_map =
+      last_text_node.CharacterDataMap();
+  SVGCharacterDataMap::iterator it_last =
+      last_character_data_map.Find(last_text_box->Start() + 1);
+  if (it_last == last_character_data_map.end())
     return;
   // We only want to perform the swap if both inline boxes are absolutely
   // positioned.
-  std::swap(itFirst->value, itLast->value);
+  std::swap(it_first->value, it_last->value);
 }
 
-static inline void reverseInlineBoxRangeAndValueListsIfNeeded(
+static inline void ReverseInlineBoxRangeAndValueListsIfNeeded(
     Vector<InlineBox*>::iterator first,
     Vector<InlineBox*>::iterator last) {
   // This is a copy of std::reverse(first, last). It additionally assures
@@ -165,14 +167,15 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(
     if (first == last || first == --last)
       return;
 
-    if ((*last)->isSVGInlineTextBox() && (*first)->isSVGInlineTextBox()) {
-      SVGInlineTextBox* firstTextBox = toSVGInlineTextBox(*first);
-      SVGInlineTextBox* lastTextBox = toSVGInlineTextBox(*last);
+    if ((*last)->IsSVGInlineTextBox() && (*first)->IsSVGInlineTextBox()) {
+      SVGInlineTextBox* first_text_box = ToSVGInlineTextBox(*first);
+      SVGInlineTextBox* last_text_box = ToSVGInlineTextBox(*last);
 
       // Reordering is only necessary for BiDi text that is _absolutely_
       // positioned.
-      if (firstTextBox->len() == 1 && firstTextBox->len() == lastTextBox->len())
-        swapPositioningValuesInTextBoxes(firstTextBox, lastTextBox);
+      if (first_text_box->Len() == 1 &&
+          first_text_box->Len() == last_text_box->Len())
+        SwapPositioningValuesInTextBoxes(first_text_box, last_text_box);
     }
 
     InlineBox* temp = *first;
@@ -182,22 +185,22 @@ static inline void reverseInlineBoxRangeAndValueListsIfNeeded(
   }
 }
 
-void SVGRootInlineBox::reorderValueLists() {
-  Vector<InlineBox*> leafBoxesInLogicalOrder;
-  collectLeafBoxesInLogicalOrder(leafBoxesInLogicalOrder,
-                                 reverseInlineBoxRangeAndValueListsIfNeeded);
+void SVGRootInlineBox::ReorderValueLists() {
+  Vector<InlineBox*> leaf_boxes_in_logical_order;
+  CollectLeafBoxesInLogicalOrder(leaf_boxes_in_logical_order,
+                                 ReverseInlineBoxRangeAndValueListsIfNeeded);
 }
 
-bool SVGRootInlineBox::nodeAtPoint(HitTestResult& result,
-                                   const HitTestLocation& locationInContainer,
-                                   const LayoutPoint& accumulatedOffset,
-                                   LayoutUnit lineTop,
-                                   LayoutUnit lineBottom) {
-  for (InlineBox* leaf = firstLeafChild(); leaf; leaf = leaf->nextLeafChild()) {
-    if (!leaf->isSVGInlineTextBox())
+bool SVGRootInlineBox::NodeAtPoint(HitTestResult& result,
+                                   const HitTestLocation& location_in_container,
+                                   const LayoutPoint& accumulated_offset,
+                                   LayoutUnit line_top,
+                                   LayoutUnit line_bottom) {
+  for (InlineBox* leaf = FirstLeafChild(); leaf; leaf = leaf->NextLeafChild()) {
+    if (!leaf->IsSVGInlineTextBox())
       continue;
-    if (leaf->nodeAtPoint(result, locationInContainer, accumulatedOffset,
-                          lineTop, lineBottom))
+    if (leaf->NodeAtPoint(result, location_in_container, accumulated_offset,
+                          line_top, line_bottom))
       return true;
   }
 

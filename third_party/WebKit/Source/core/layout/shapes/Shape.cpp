@@ -51,154 +51,160 @@
 
 namespace blink {
 
-static std::unique_ptr<Shape> createInsetShape(const FloatRoundedRect& bounds) {
-  DCHECK_GE(bounds.rect().width(), 0);
-  DCHECK_GE(bounds.rect().height(), 0);
-  return WTF::makeUnique<BoxShape>(bounds);
+static std::unique_ptr<Shape> CreateInsetShape(const FloatRoundedRect& bounds) {
+  DCHECK_GE(bounds.Rect().Width(), 0);
+  DCHECK_GE(bounds.Rect().Height(), 0);
+  return WTF::MakeUnique<BoxShape>(bounds);
 }
 
-static std::unique_ptr<Shape> createCircleShape(const FloatPoint& center,
+static std::unique_ptr<Shape> CreateCircleShape(const FloatPoint& center,
                                                 float radius) {
   DCHECK_GE(radius, 0);
-  return WTF::wrapUnique(
-      new RectangleShape(FloatRect(center.x() - radius, center.y() - radius,
+  return WTF::WrapUnique(
+      new RectangleShape(FloatRect(center.X() - radius, center.Y() - radius,
                                    radius * 2, radius * 2),
                          FloatSize(radius, radius)));
 }
 
-static std::unique_ptr<Shape> createEllipseShape(const FloatPoint& center,
+static std::unique_ptr<Shape> CreateEllipseShape(const FloatPoint& center,
                                                  const FloatSize& radii) {
-  DCHECK_GE(radii.width(), 0);
-  DCHECK_GE(radii.height(), 0);
-  return WTF::wrapUnique(new RectangleShape(
-      FloatRect(center.x() - radii.width(), center.y() - radii.height(),
-                radii.width() * 2, radii.height() * 2),
+  DCHECK_GE(radii.Width(), 0);
+  DCHECK_GE(radii.Height(), 0);
+  return WTF::WrapUnique(new RectangleShape(
+      FloatRect(center.X() - radii.Width(), center.Y() - radii.Height(),
+                radii.Width() * 2, radii.Height() * 2),
       radii));
 }
 
-static std::unique_ptr<Shape> createPolygonShape(
+static std::unique_ptr<Shape> CreatePolygonShape(
     std::unique_ptr<Vector<FloatPoint>> vertices,
-    WindRule fillRule) {
-  return WTF::wrapUnique(new PolygonShape(std::move(vertices), fillRule));
+    WindRule fill_rule) {
+  return WTF::WrapUnique(new PolygonShape(std::move(vertices), fill_rule));
 }
 
-static inline FloatRect physicalRectToLogical(const FloatRect& rect,
-                                              float logicalBoxHeight,
-                                              WritingMode writingMode) {
-  if (isHorizontalWritingMode(writingMode))
+static inline FloatRect PhysicalRectToLogical(const FloatRect& rect,
+                                              float logical_box_height,
+                                              WritingMode writing_mode) {
+  if (IsHorizontalWritingMode(writing_mode))
     return rect;
-  if (isFlippedBlocksWritingMode(writingMode))
-    return FloatRect(rect.y(), logicalBoxHeight - rect.maxX(), rect.height(),
-                     rect.width());
-  return rect.transposedRect();
+  if (IsFlippedBlocksWritingMode(writing_mode))
+    return FloatRect(rect.Y(), logical_box_height - rect.MaxX(), rect.Height(),
+                     rect.Width());
+  return rect.TransposedRect();
 }
 
-static inline FloatPoint physicalPointToLogical(const FloatPoint& point,
-                                                float logicalBoxHeight,
-                                                WritingMode writingMode) {
-  if (isHorizontalWritingMode(writingMode))
+static inline FloatPoint PhysicalPointToLogical(const FloatPoint& point,
+                                                float logical_box_height,
+                                                WritingMode writing_mode) {
+  if (IsHorizontalWritingMode(writing_mode))
     return point;
-  if (isFlippedBlocksWritingMode(writingMode))
-    return FloatPoint(point.y(), logicalBoxHeight - point.x());
-  return point.transposedPoint();
+  if (IsFlippedBlocksWritingMode(writing_mode))
+    return FloatPoint(point.Y(), logical_box_height - point.X());
+  return point.TransposedPoint();
 }
 
-static inline FloatSize physicalSizeToLogical(const FloatSize& size,
-                                              WritingMode writingMode) {
-  if (isHorizontalWritingMode(writingMode))
+static inline FloatSize PhysicalSizeToLogical(const FloatSize& size,
+                                              WritingMode writing_mode) {
+  if (IsHorizontalWritingMode(writing_mode))
     return size;
-  return size.transposedSize();
+  return size.TransposedSize();
 }
 
-std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape,
-                                          const LayoutSize& logicalBoxSize,
-                                          WritingMode writingMode,
+std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
+                                          const LayoutSize& logical_box_size,
+                                          WritingMode writing_mode,
                                           float margin) {
-  DCHECK(basicShape);
+  DCHECK(basic_shape);
 
-  bool horizontalWritingMode = isHorizontalWritingMode(writingMode);
-  float boxWidth = horizontalWritingMode ? logicalBoxSize.width().toFloat()
-                                         : logicalBoxSize.height().toFloat();
-  float boxHeight = horizontalWritingMode ? logicalBoxSize.height().toFloat()
-                                          : logicalBoxSize.width().toFloat();
+  bool horizontal_writing_mode = IsHorizontalWritingMode(writing_mode);
+  float box_width = horizontal_writing_mode
+                        ? logical_box_size.Width().ToFloat()
+                        : logical_box_size.Height().ToFloat();
+  float box_height = horizontal_writing_mode
+                         ? logical_box_size.Height().ToFloat()
+                         : logical_box_size.Width().ToFloat();
   std::unique_ptr<Shape> shape;
 
-  switch (basicShape->type()) {
-    case BasicShape::BasicShapeCircleType: {
-      const BasicShapeCircle* circle = toBasicShapeCircle(basicShape);
-      FloatPoint center = floatPointForCenterCoordinate(
-          circle->centerX(), circle->centerY(), FloatSize(boxWidth, boxHeight));
-      float radius =
-          circle->floatValueForRadiusInBox(FloatSize(boxWidth, boxHeight));
-      FloatPoint logicalCenter = physicalPointToLogical(
-          center, logicalBoxSize.height().toFloat(), writingMode);
-
-      shape = createCircleShape(logicalCenter, radius);
-      break;
-    }
-
-    case BasicShape::BasicShapeEllipseType: {
-      const BasicShapeEllipse* ellipse = toBasicShapeEllipse(basicShape);
+  switch (basic_shape->GetType()) {
+    case BasicShape::kBasicShapeCircleType: {
+      const BasicShapeCircle* circle = ToBasicShapeCircle(basic_shape);
       FloatPoint center =
-          floatPointForCenterCoordinate(ellipse->centerX(), ellipse->centerY(),
-                                        FloatSize(boxWidth, boxHeight));
-      float radiusX = ellipse->floatValueForRadiusInBox(ellipse->radiusX(),
-                                                        center.x(), boxWidth);
-      float radiusY = ellipse->floatValueForRadiusInBox(ellipse->radiusY(),
-                                                        center.y(), boxHeight);
-      FloatPoint logicalCenter = physicalPointToLogical(
-          center, logicalBoxSize.height().toFloat(), writingMode);
+          FloatPointForCenterCoordinate(circle->CenterX(), circle->CenterY(),
+                                        FloatSize(box_width, box_height));
+      float radius =
+          circle->FloatValueForRadiusInBox(FloatSize(box_width, box_height));
+      FloatPoint logical_center = PhysicalPointToLogical(
+          center, logical_box_size.Height().ToFloat(), writing_mode);
 
-      shape = createEllipseShape(logicalCenter, FloatSize(radiusX, radiusY));
+      shape = CreateCircleShape(logical_center, radius);
       break;
     }
 
-    case BasicShape::BasicShapePolygonType: {
-      const BasicShapePolygon* polygon = toBasicShapePolygon(basicShape);
-      const Vector<Length>& values = polygon->values();
-      size_t valuesSize = values.size();
-      DCHECK(!(valuesSize % 2));
+    case BasicShape::kBasicShapeEllipseType: {
+      const BasicShapeEllipse* ellipse = ToBasicShapeEllipse(basic_shape);
+      FloatPoint center =
+          FloatPointForCenterCoordinate(ellipse->CenterX(), ellipse->CenterY(),
+                                        FloatSize(box_width, box_height));
+      float radius_x = ellipse->FloatValueForRadiusInBox(ellipse->RadiusX(),
+                                                         center.X(), box_width);
+      float radius_y = ellipse->FloatValueForRadiusInBox(
+          ellipse->RadiusY(), center.Y(), box_height);
+      FloatPoint logical_center = PhysicalPointToLogical(
+          center, logical_box_size.Height().ToFloat(), writing_mode);
+
+      shape = CreateEllipseShape(logical_center, FloatSize(radius_x, radius_y));
+      break;
+    }
+
+    case BasicShape::kBasicShapePolygonType: {
+      const BasicShapePolygon* polygon = ToBasicShapePolygon(basic_shape);
+      const Vector<Length>& values = polygon->Values();
+      size_t values_size = values.size();
+      DCHECK(!(values_size % 2));
       std::unique_ptr<Vector<FloatPoint>> vertices =
-          WTF::wrapUnique(new Vector<FloatPoint>(valuesSize / 2));
-      for (unsigned i = 0; i < valuesSize; i += 2) {
-        FloatPoint vertex(floatValueForLength(values.at(i), boxWidth),
-                          floatValueForLength(values.at(i + 1), boxHeight));
-        (*vertices)[i / 2] = physicalPointToLogical(
-            vertex, logicalBoxSize.height().toFloat(), writingMode);
+          WTF::WrapUnique(new Vector<FloatPoint>(values_size / 2));
+      for (unsigned i = 0; i < values_size; i += 2) {
+        FloatPoint vertex(FloatValueForLength(values.at(i), box_width),
+                          FloatValueForLength(values.at(i + 1), box_height));
+        (*vertices)[i / 2] = PhysicalPointToLogical(
+            vertex, logical_box_size.Height().ToFloat(), writing_mode);
       }
-      shape = createPolygonShape(std::move(vertices), polygon->getWindRule());
+      shape = CreatePolygonShape(std::move(vertices), polygon->GetWindRule());
       break;
     }
 
-    case BasicShape::BasicShapeInsetType: {
-      const BasicShapeInset& inset = *toBasicShapeInset(basicShape);
-      float left = floatValueForLength(inset.left(), boxWidth);
-      float top = floatValueForLength(inset.top(), boxHeight);
-      float right = floatValueForLength(inset.right(), boxWidth);
-      float bottom = floatValueForLength(inset.bottom(), boxHeight);
-      FloatRect rect(left, top, std::max<float>(boxWidth - left - right, 0),
-                     std::max<float>(boxHeight - top - bottom, 0));
-      FloatRect logicalRect = physicalRectToLogical(
-          rect, logicalBoxSize.height().toFloat(), writingMode);
+    case BasicShape::kBasicShapeInsetType: {
+      const BasicShapeInset& inset = *ToBasicShapeInset(basic_shape);
+      float left = FloatValueForLength(inset.Left(), box_width);
+      float top = FloatValueForLength(inset.Top(), box_height);
+      float right = FloatValueForLength(inset.Right(), box_width);
+      float bottom = FloatValueForLength(inset.Bottom(), box_height);
+      FloatRect rect(left, top, std::max<float>(box_width - left - right, 0),
+                     std::max<float>(box_height - top - bottom, 0));
+      FloatRect logical_rect = PhysicalRectToLogical(
+          rect, logical_box_size.Height().ToFloat(), writing_mode);
 
-      FloatSize boxSize(boxWidth, boxHeight);
-      FloatSize topLeftRadius = physicalSizeToLogical(
-          floatSizeForLengthSize(inset.topLeftRadius(), boxSize), writingMode);
-      FloatSize topRightRadius = physicalSizeToLogical(
-          floatSizeForLengthSize(inset.topRightRadius(), boxSize), writingMode);
-      FloatSize bottomLeftRadius = physicalSizeToLogical(
-          floatSizeForLengthSize(inset.bottomLeftRadius(), boxSize),
-          writingMode);
-      FloatSize bottomRightRadius = physicalSizeToLogical(
-          floatSizeForLengthSize(inset.bottomRightRadius(), boxSize),
-          writingMode);
-      FloatRoundedRect::Radii cornerRadii(topLeftRadius, topRightRadius,
-                                          bottomLeftRadius, bottomRightRadius);
+      FloatSize box_size(box_width, box_height);
+      FloatSize top_left_radius = PhysicalSizeToLogical(
+          FloatSizeForLengthSize(inset.TopLeftRadius(), box_size),
+          writing_mode);
+      FloatSize top_right_radius = PhysicalSizeToLogical(
+          FloatSizeForLengthSize(inset.TopRightRadius(), box_size),
+          writing_mode);
+      FloatSize bottom_left_radius = PhysicalSizeToLogical(
+          FloatSizeForLengthSize(inset.BottomLeftRadius(), box_size),
+          writing_mode);
+      FloatSize bottom_right_radius = PhysicalSizeToLogical(
+          FloatSizeForLengthSize(inset.BottomRightRadius(), box_size),
+          writing_mode);
+      FloatRoundedRect::Radii corner_radii(top_left_radius, top_right_radius,
+                                           bottom_left_radius,
+                                           bottom_right_radius);
 
-      FloatRoundedRect finalRect(logicalRect, cornerRadii);
-      finalRect.constrainRadii();
+      FloatRoundedRect final_rect(logical_rect, corner_radii);
+      final_rect.ConstrainRadii();
 
-      shape = createInsetShape(finalRect);
+      shape = CreateInsetShape(final_rect);
       break;
     }
 
@@ -206,101 +212,103 @@ std::unique_ptr<Shape> Shape::createShape(const BasicShape* basicShape,
       NOTREACHED();
   }
 
-  shape->m_writingMode = writingMode;
-  shape->m_margin = margin;
+  shape->writing_mode_ = writing_mode;
+  shape->margin_ = margin;
 
   return shape;
 }
 
-std::unique_ptr<Shape> Shape::createEmptyRasterShape(WritingMode writingMode,
+std::unique_ptr<Shape> Shape::CreateEmptyRasterShape(WritingMode writing_mode,
                                                      float margin) {
   std::unique_ptr<RasterShapeIntervals> intervals =
-      WTF::makeUnique<RasterShapeIntervals>(0, 0);
-  std::unique_ptr<RasterShape> rasterShape =
-      WTF::wrapUnique(new RasterShape(std::move(intervals), IntSize()));
-  rasterShape->m_writingMode = writingMode;
-  rasterShape->m_margin = margin;
-  return std::move(rasterShape);
+      WTF::MakeUnique<RasterShapeIntervals>(0, 0);
+  std::unique_ptr<RasterShape> raster_shape =
+      WTF::WrapUnique(new RasterShape(std::move(intervals), IntSize()));
+  raster_shape->writing_mode_ = writing_mode;
+  raster_shape->margin_ = margin;
+  return std::move(raster_shape);
 }
 
-std::unique_ptr<Shape> Shape::createRasterShape(Image* image,
+std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
                                                 float threshold,
-                                                const LayoutRect& imageR,
-                                                const LayoutRect& marginR,
-                                                WritingMode writingMode,
+                                                const LayoutRect& image_r,
+                                                const LayoutRect& margin_r,
+                                                WritingMode writing_mode,
                                                 float margin) {
-  IntRect imageRect = pixelSnappedIntRect(imageR);
-  IntRect marginRect = pixelSnappedIntRect(marginR);
+  IntRect image_rect = PixelSnappedIntRect(image_r);
+  IntRect margin_rect = PixelSnappedIntRect(margin_r);
 
-  std::unique_ptr<RasterShapeIntervals> intervals = WTF::wrapUnique(
-      new RasterShapeIntervals(marginRect.height(), -marginRect.y()));
-  std::unique_ptr<ImageBuffer> imageBuffer =
-      ImageBuffer::create(imageRect.size());
+  std::unique_ptr<RasterShapeIntervals> intervals = WTF::WrapUnique(
+      new RasterShapeIntervals(margin_rect.Height(), -margin_rect.Y()));
+  std::unique_ptr<ImageBuffer> image_buffer =
+      ImageBuffer::Create(image_rect.size());
 
-  if (image && imageBuffer) {
+  if (image && image_buffer) {
     // FIXME: This is not totally correct but it is needed to prevent shapes
     // that loads SVG Images during paint invalidations to mark layoutObjects
     // for layout, which is not allowed. See https://crbug.com/429346
     ImageObserverDisabler disabler(image);
     PaintFlags flags;
-    IntRect imageSourceRect(IntPoint(), image->size());
-    IntRect imageDestRect(IntPoint(), imageRect.size());
+    IntRect image_source_rect(IntPoint(), image->size());
+    IntRect image_dest_rect(IntPoint(), image_rect.size());
     // TODO(ccameron): No color conversion is required here.
-    image->draw(imageBuffer->canvas(), flags, imageDestRect, imageSourceRect,
-                DoNotRespectImageOrientation,
-                Image::DoNotClampImageToSourceRect);
+    image->Draw(image_buffer->Canvas(), flags, image_dest_rect,
+                image_source_rect, kDoNotRespectImageOrientation,
+                Image::kDoNotClampImageToSourceRect);
 
     WTF::ArrayBufferContents contents;
-    imageBuffer->getImageData(Unmultiplied,
-                              IntRect(IntPoint(), imageRect.size()), contents);
-    DOMArrayBuffer* arrayBuffer = DOMArrayBuffer::create(contents);
-    DOMUint8ClampedArray* pixelArray =
-        DOMUint8ClampedArray::create(arrayBuffer, 0, arrayBuffer->byteLength());
-    unsigned pixelArrayOffset = 3;  // Each pixel is four bytes: RGBA.
-    uint8_t alphaPixelThreshold = threshold * 255;
+    image_buffer->GetImageData(
+        kUnmultiplied, IntRect(IntPoint(), image_rect.size()), contents);
+    DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
+    DOMUint8ClampedArray* pixel_array = DOMUint8ClampedArray::Create(
+        array_buffer, 0, array_buffer->ByteLength());
+    unsigned pixel_array_offset = 3;  // Each pixel is four bytes: RGBA.
+    uint8_t alpha_pixel_threshold = threshold * 255;
 
-    DCHECK_EQ(static_cast<unsigned>(imageRect.width() * imageRect.height() * 4),
-              pixelArray->length());
+    DCHECK_EQ(
+        static_cast<unsigned>(image_rect.Width() * image_rect.Height() * 4),
+        pixel_array->length());
 
-    int minBufferY = std::max(0, marginRect.y() - imageRect.y());
-    int maxBufferY =
-        std::min(imageRect.height(), marginRect.maxY() - imageRect.y());
+    int min_buffer_y = std::max(0, margin_rect.Y() - image_rect.Y());
+    int max_buffer_y =
+        std::min(image_rect.Height(), margin_rect.MaxY() - image_rect.Y());
 
-    for (int y = minBufferY; y < maxBufferY; ++y) {
-      int startX = -1;
-      for (int x = 0; x < imageRect.width(); ++x, pixelArrayOffset += 4) {
-        uint8_t alpha = pixelArray->item(pixelArrayOffset);
-        bool alphaAboveThreshold = alpha > alphaPixelThreshold;
-        if (startX == -1 && alphaAboveThreshold) {
-          startX = x;
-        } else if (startX != -1 &&
-                   (!alphaAboveThreshold || x == imageRect.width() - 1)) {
-          int endX = alphaAboveThreshold ? x + 1 : x;
-          intervals->intervalAt(y + imageRect.y())
-              .unite(IntShapeInterval(startX + imageRect.x(),
-                                      endX + imageRect.x()));
-          startX = -1;
+    for (int y = min_buffer_y; y < max_buffer_y; ++y) {
+      int start_x = -1;
+      for (int x = 0; x < image_rect.Width(); ++x, pixel_array_offset += 4) {
+        uint8_t alpha = pixel_array->Item(pixel_array_offset);
+        bool alpha_above_threshold = alpha > alpha_pixel_threshold;
+        if (start_x == -1 && alpha_above_threshold) {
+          start_x = x;
+        } else if (start_x != -1 &&
+                   (!alpha_above_threshold || x == image_rect.Width() - 1)) {
+          int end_x = alpha_above_threshold ? x + 1 : x;
+          intervals->IntervalAt(y + image_rect.Y())
+              .Unite(IntShapeInterval(start_x + image_rect.X(),
+                                      end_x + image_rect.X()));
+          start_x = -1;
         }
       }
     }
   }
 
-  std::unique_ptr<RasterShape> rasterShape =
-      WTF::wrapUnique(new RasterShape(std::move(intervals), marginRect.size()));
-  rasterShape->m_writingMode = writingMode;
-  rasterShape->m_margin = margin;
-  return std::move(rasterShape);
+  std::unique_ptr<RasterShape> raster_shape = WTF::WrapUnique(
+      new RasterShape(std::move(intervals), margin_rect.size()));
+  raster_shape->writing_mode_ = writing_mode;
+  raster_shape->margin_ = margin;
+  return std::move(raster_shape);
 }
 
-std::unique_ptr<Shape> Shape::createLayoutBoxShape(
-    const FloatRoundedRect& roundedRect,
-    WritingMode writingMode,
+std::unique_ptr<Shape> Shape::CreateLayoutBoxShape(
+    const FloatRoundedRect& rounded_rect,
+    WritingMode writing_mode,
     float margin) {
-  FloatRect rect(0, 0, roundedRect.rect().width(), roundedRect.rect().height());
-  FloatRoundedRect bounds(rect, roundedRect.getRadii());
-  std::unique_ptr<Shape> shape = createInsetShape(bounds);
-  shape->m_writingMode = writingMode;
-  shape->m_margin = margin;
+  FloatRect rect(0, 0, rounded_rect.Rect().Width(),
+                 rounded_rect.Rect().Height());
+  FloatRoundedRect bounds(rect, rounded_rect.GetRadii());
+  std::unique_ptr<Shape> shape = CreateInsetShape(bounds);
+  shape->writing_mode_ = writing_mode;
+  shape->margin_ = margin;
 
   return shape;
 }

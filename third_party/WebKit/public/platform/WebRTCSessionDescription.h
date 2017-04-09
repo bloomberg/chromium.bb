@@ -56,35 +56,35 @@ class WebRTCSessionDescription {
  public:
   WebRTCSessionDescription() {}
   WebRTCSessionDescription(const WebRTCSessionDescription& other) {
-    assign(other);
+    Assign(other);
   }
-  ~WebRTCSessionDescription() { reset(); }
+  ~WebRTCSessionDescription() { Reset(); }
 
   WebRTCSessionDescription& operator=(const WebRTCSessionDescription& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebRTCSessionDescription&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebRTCSessionDescription&);
 
-  BLINK_PLATFORM_EXPORT void initialize(const WebString& type,
+  BLINK_PLATFORM_EXPORT void Initialize(const WebString& type,
                                         const WebString& sdp);
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT WebString type() const;
-  BLINK_PLATFORM_EXPORT void setType(const WebString&);
-  BLINK_PLATFORM_EXPORT WebString sdp() const;
-  BLINK_PLATFORM_EXPORT void setSDP(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString GetType() const;
+  BLINK_PLATFORM_EXPORT void SetType(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString Sdp() const;
+  BLINK_PLATFORM_EXPORT void SetSDP(const WebString&);
 
 #if BLINK_IMPLEMENTATION
   WebRTCSessionDescription(WebString type, WebString sdp) {
-    this->initialize(type, sdp);
+    this->Initialize(type, sdp);
   }
 #endif
 
  private:
-  WebPrivatePtr<WebRTCSessionDescriptionPrivate> m_private;
+  WebPrivatePtr<WebRTCSessionDescriptionPrivate> private_;
 };
 
 }  // namespace blink

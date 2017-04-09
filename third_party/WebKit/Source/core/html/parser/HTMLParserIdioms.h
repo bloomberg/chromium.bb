@@ -38,41 +38,41 @@ class TextEncoding;
 namespace blink {
 
 // Strip leading and trailing whitespace as defined by the HTML specification.
-String stripLeadingAndTrailingHTMLSpaces(const String&);
+String StripLeadingAndTrailingHTMLSpaces(const String&);
 
 // An implementation of the HTML specification's algorithm to convert a number
 // to a string for number and range types.
-String serializeForNumberType(const Decimal&);
-String serializeForNumberType(double);
+String SerializeForNumberType(const Decimal&);
+String SerializeForNumberType(double);
 
 // Convert the specified string to a decimal/double. If the conversion fails,
 // the return value is fallback value or NaN if not specified. Leading or
 // trailing illegal characters cause failure, as does passing an empty string.
 // The double* parameter may be 0 to check if the string can be parsed without
 // getting the result.
-Decimal parseToDecimalForNumberType(
+Decimal ParseToDecimalForNumberType(
     const String&,
-    const Decimal& fallbackValue = Decimal::nan());
-double parseToDoubleForNumberType(
+    const Decimal& fallback_value = Decimal::Nan());
+double ParseToDoubleForNumberType(
     const String&,
-    double fallbackValue = std::numeric_limits<double>::quiet_NaN());
+    double fallback_value = std::numeric_limits<double>::quiet_NaN());
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers
-CORE_EXPORT bool parseHTMLInteger(const String&, int&);
+CORE_EXPORT bool ParseHTMLInteger(const String&, int&);
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
-CORE_EXPORT bool parseHTMLNonNegativeInteger(const String&, unsigned&);
+CORE_EXPORT bool ParseHTMLNonNegativeInteger(const String&, unsigned&);
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-a-list-of-floating-point-numbers
-CORE_EXPORT Vector<double> parseHTMLListOfFloatingPointNumbers(const String&);
+CORE_EXPORT Vector<double> ParseHTMLListOfFloatingPointNumbers(const String&);
 
 typedef Vector<std::pair<String, String>> HTMLAttributeList;
 // The returned encoding might not be valid.
-WTF::TextEncoding encodingFromMetaAttributes(const HTMLAttributeList&);
+WTF::TextEncoding EncodingFromMetaAttributes(const HTMLAttributeList&);
 
 // Space characters as defined by the HTML specification.
 template <typename CharType>
-inline bool isHTMLSpace(CharType character) {
+inline bool IsHTMLSpace(CharType character) {
   // Histogram from Apple's page load test combined with some ad hoc browsing
   // some other test suites.
   //
@@ -91,45 +91,45 @@ inline bool isHTMLSpace(CharType character) {
 }
 
 template <typename CharType>
-inline bool isComma(CharType character) {
+inline bool IsComma(CharType character) {
   return character == ',';
 }
 
 template <typename CharType>
-inline bool isHTMLSpaceOrComma(CharType character) {
-  return isComma(character) || isHTMLSpace(character);
+inline bool IsHTMLSpaceOrComma(CharType character) {
+  return IsComma(character) || IsHTMLSpace(character);
 }
 
-inline bool isHTMLLineBreak(UChar character) {
+inline bool IsHTMLLineBreak(UChar character) {
   return character <= '\r' && (character == '\n' || character == '\r');
 }
 
 template <typename CharType>
-inline bool isNotHTMLSpace(CharType character) {
-  return !isHTMLSpace<CharType>(character);
+inline bool IsNotHTMLSpace(CharType character) {
+  return !IsHTMLSpace<CharType>(character);
 }
 
-bool threadSafeMatch(const QualifiedName&, const QualifiedName&);
-bool threadSafeMatch(const String&, const QualifiedName&);
+bool ThreadSafeMatch(const QualifiedName&, const QualifiedName&);
+bool ThreadSafeMatch(const String&, const QualifiedName&);
 
-enum CharacterWidth { Likely8Bit, Force8Bit, Force16Bit };
+enum CharacterWidth { kLikely8Bit, kForce8Bit, kForce16Bit };
 
-String attemptStaticStringCreation(const LChar*, size_t);
+String AttemptStaticStringCreation(const LChar*, size_t);
 
-String attemptStaticStringCreation(const UChar*, size_t, CharacterWidth);
+String AttemptStaticStringCreation(const UChar*, size_t, CharacterWidth);
 
 template <size_t inlineCapacity>
-inline static String attemptStaticStringCreation(
+inline static String AttemptStaticStringCreation(
     const Vector<UChar, inlineCapacity>& vector,
     CharacterWidth width) {
-  return attemptStaticStringCreation(vector.data(), vector.size(), width);
+  return AttemptStaticStringCreation(vector.Data(), vector.size(), width);
 }
 
-inline static String attemptStaticStringCreation(const String str) {
-  if (!str.is8Bit())
-    return attemptStaticStringCreation(str.characters16(), str.length(),
-                                       Force16Bit);
-  return attemptStaticStringCreation(str.characters8(), str.length());
+inline static String AttemptStaticStringCreation(const String str) {
+  if (!str.Is8Bit())
+    return AttemptStaticStringCreation(str.Characters16(), str.length(),
+                                       kForce16Bit);
+  return AttemptStaticStringCreation(str.Characters8(), str.length());
 }
 
 }  // namespace blink

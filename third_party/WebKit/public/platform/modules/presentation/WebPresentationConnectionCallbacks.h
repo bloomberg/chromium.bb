@@ -23,7 +23,7 @@ class WebPresentationConnectionCallbacks
  public:
   // Returns newly created PresentationConnection object if
   // WebCallbacks::onSuccess() has been called.
-  virtual WebPresentationConnection* getConnection() = 0;
+  virtual WebPresentationConnection* GetConnection() = 0;
 };
 
 }  // namespace blink

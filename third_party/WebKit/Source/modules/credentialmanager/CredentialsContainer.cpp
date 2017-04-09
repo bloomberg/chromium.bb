@@ -32,21 +32,21 @@
 
 namespace blink {
 
-static void rejectDueToCredentialManagerError(
+static void RejectDueToCredentialManagerError(
     ScriptPromiseResolver* resolver,
     WebCredentialManagerError reason) {
   switch (reason) {
-    case WebCredentialManagerDisabledError:
-      resolver->reject(DOMException::create(
-          InvalidStateError, "The credential manager is disabled."));
+    case kWebCredentialManagerDisabledError:
+      resolver->Reject(DOMException::Create(
+          kInvalidStateError, "The credential manager is disabled."));
       break;
-    case WebCredentialManagerPendingRequestError:
-      resolver->reject(DOMException::create(InvalidStateError,
+    case kWebCredentialManagerPendingRequestError:
+      resolver->Reject(DOMException::Create(kInvalidStateError,
                                             "A 'get()' request is pending."));
       break;
-    case WebCredentialManagerUnknownError:
+    case kWebCredentialManagerUnknownError:
     default:
-      resolver->reject(DOMException::create(NotReadableError,
+      resolver->Reject(DOMException::Create(kNotReadableError,
                                             "An unknown error occurred while "
                                             "talking to the credential "
                                             "manager."));
@@ -60,24 +60,24 @@ class NotificationCallbacks
 
  public:
   explicit NotificationCallbacks(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
   ~NotificationCallbacks() override {}
 
-  void onSuccess() override {
+  void OnSuccess() override {
     Frame* frame =
-        toDocument(m_resolver->getScriptState()->getExecutionContext())
-            ->frame();
-    SECURITY_CHECK(!frame || frame == frame->tree().top());
+        ToDocument(resolver_->GetScriptState()->GetExecutionContext())
+            ->GetFrame();
+    SECURITY_CHECK(!frame || frame == frame->Tree().Top());
 
-    m_resolver->resolve();
+    resolver_->Resolve();
   }
 
-  void onError(WebCredentialManagerError reason) override {
-    rejectDueToCredentialManagerError(m_resolver, reason);
+  void OnError(WebCredentialManagerError reason) override {
+    RejectDueToCredentialManagerError(resolver_, reason);
   }
 
  private:
-  const Persistent<ScriptPromiseResolver> m_resolver;
+  const Persistent<ScriptPromiseResolver> resolver_;
 };
 
 class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
@@ -85,71 +85,71 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
 
  public:
   explicit RequestCallbacks(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
   ~RequestCallbacks() override {}
 
-  void onSuccess(std::unique_ptr<WebCredential> webCredential) override {
+  void OnSuccess(std::unique_ptr<WebCredential> web_credential) override {
     Frame* frame =
-        toDocument(m_resolver->getScriptState()->getExecutionContext())
-            ->frame();
-    SECURITY_CHECK(!frame || frame == frame->tree().top());
+        ToDocument(resolver_->GetScriptState()->GetExecutionContext())
+            ->GetFrame();
+    SECURITY_CHECK(!frame || frame == frame->Tree().Top());
 
     std::unique_ptr<WebCredential> credential =
-        WTF::wrapUnique(webCredential.release());
+        WTF::WrapUnique(web_credential.release());
     if (!credential || !frame) {
-      m_resolver->resolve();
+      resolver_->Resolve();
       return;
     }
 
-    ASSERT(credential->isPasswordCredential() ||
-           credential->isFederatedCredential());
-    UseCounter::count(m_resolver->getScriptState()->getExecutionContext(),
-                      UseCounter::CredentialManagerGetReturnedCredential);
-    if (credential->isPasswordCredential())
-      m_resolver->resolve(PasswordCredential::create(
+    ASSERT(credential->IsPasswordCredential() ||
+           credential->IsFederatedCredential());
+    UseCounter::Count(resolver_->GetScriptState()->GetExecutionContext(),
+                      UseCounter::kCredentialManagerGetReturnedCredential);
+    if (credential->IsPasswordCredential())
+      resolver_->Resolve(PasswordCredential::Create(
           static_cast<WebPasswordCredential*>(credential.get())));
     else
-      m_resolver->resolve(FederatedCredential::create(
+      resolver_->Resolve(FederatedCredential::Create(
           static_cast<WebFederatedCredential*>(credential.get())));
   }
 
-  void onError(WebCredentialManagerError reason) override {
-    rejectDueToCredentialManagerError(m_resolver, reason);
+  void OnError(WebCredentialManagerError reason) override {
+    RejectDueToCredentialManagerError(resolver_, reason);
   }
 
  private:
-  const Persistent<ScriptPromiseResolver> m_resolver;
+  const Persistent<ScriptPromiseResolver> resolver_;
 };
 
-CredentialsContainer* CredentialsContainer::create() {
+CredentialsContainer* CredentialsContainer::Create() {
   return new CredentialsContainer();
 }
 
 CredentialsContainer::CredentialsContainer() {}
 
-static bool checkBoilerplate(ScriptPromiseResolver* resolver) {
+static bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
   Frame* frame =
-      toDocument(resolver->getScriptState()->getExecutionContext())->frame();
-  if (!frame || frame != frame->tree().top()) {
-    resolver->reject(DOMException::create(SecurityError,
+      ToDocument(resolver->GetScriptState()->GetExecutionContext())->GetFrame();
+  if (!frame || frame != frame->Tree().Top()) {
+    resolver->Reject(DOMException::Create(kSecurityError,
                                           "CredentialContainer methods may "
                                           "only be executed in a top-level "
                                           "document."));
     return false;
   }
 
-  String errorMessage;
-  if (!resolver->getScriptState()->getExecutionContext()->isSecureContext(
-          errorMessage)) {
-    resolver->reject(DOMException::create(SecurityError, errorMessage));
+  String error_message;
+  if (!resolver->GetScriptState()->GetExecutionContext()->IsSecureContext(
+          error_message)) {
+    resolver->Reject(DOMException::Create(kSecurityError, error_message));
     return false;
   }
 
-  CredentialManagerClient* client = CredentialManagerClient::from(
-      resolver->getScriptState()->getExecutionContext());
+  CredentialManagerClient* client = CredentialManagerClient::From(
+      resolver->GetScriptState()->GetExecutionContext());
   if (!client) {
-    resolver->reject(DOMException::create(
-        InvalidStateError,
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
         "Could not establish connection to the credential manager."));
     return false;
   }
@@ -158,11 +158,11 @@ static bool checkBoilerplate(ScriptPromiseResolver* resolver) {
 }
 
 ScriptPromise CredentialsContainer::get(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const CredentialRequestOptions& options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  if (!checkBoilerplate(resolver))
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  if (!CheckBoilerplate(resolver))
     return promise;
 
   Vector<KURL> providers;
@@ -173,48 +173,48 @@ ScriptPromise CredentialsContainer::get(
     // reference to a value that no longer exists by the time the loop starts
     // looping. In order to avoid this crazyness for the moment, we're making a
     // copy of the vector. https://crbug.com/587088
-    const Vector<String> providerStrings = options.federated().providers();
-    for (const auto& string : providerStrings) {
+    const Vector<String> provider_strings = options.federated().providers();
+    for (const auto& string : provider_strings) {
       KURL url = KURL(KURL(), string);
-      if (url.isValid())
+      if (url.IsValid())
         providers.push_back(url);
     }
   }
 
-  UseCounter::count(scriptState->getExecutionContext(),
+  UseCounter::Count(script_state->GetExecutionContext(),
                     options.unmediated()
-                        ? UseCounter::CredentialManagerGetWithoutUI
-                        : UseCounter::CredentialManagerGetWithUI);
+                        ? UseCounter::kCredentialManagerGetWithoutUI
+                        : UseCounter::kCredentialManagerGetWithUI);
 
-  CredentialManagerClient::from(scriptState->getExecutionContext())
-      ->dispatchGet(options.unmediated(), options.password(), providers,
+  CredentialManagerClient::From(script_state->GetExecutionContext())
+      ->DispatchGet(options.unmediated(), options.password(), providers,
                     new RequestCallbacks(resolver));
   return promise;
 }
 
-ScriptPromise CredentialsContainer::store(ScriptState* scriptState,
+ScriptPromise CredentialsContainer::store(ScriptState* script_state,
                                           Credential* credential) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  if (!checkBoilerplate(resolver))
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  if (!CheckBoilerplate(resolver))
     return promise;
 
-  auto webCredential =
-      WebCredential::create(credential->getPlatformCredential());
-  CredentialManagerClient::from(scriptState->getExecutionContext())
-      ->dispatchStore(*webCredential, new NotificationCallbacks(resolver));
+  auto web_credential =
+      WebCredential::Create(credential->GetPlatformCredential());
+  CredentialManagerClient::From(script_state->GetExecutionContext())
+      ->DispatchStore(*web_credential, new NotificationCallbacks(resolver));
   return promise;
 }
 
 ScriptPromise CredentialsContainer::requireUserMediation(
-    ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  if (!checkBoilerplate(resolver))
+    ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  if (!CheckBoilerplate(resolver))
     return promise;
 
-  CredentialManagerClient::from(scriptState->getExecutionContext())
-      ->dispatchRequireUserMediation(new NotificationCallbacks(resolver));
+  CredentialManagerClient::From(script_state->GetExecutionContext())
+      ->DispatchRequireUserMediation(new NotificationCallbacks(resolver));
   return promise;
 }
 

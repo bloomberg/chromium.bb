@@ -14,75 +14,75 @@ namespace blink {
 
 namespace {
 
-void splitStringHelper(const String& str, HashSet<String>& set) {
+void SplitStringHelper(const String& str, HashSet<String>& set) {
   Vector<String> substrings;
-  str.split(' ', substrings);
+  str.Split(' ', substrings);
   for (size_t i = 0; i < substrings.size(); ++i)
     set.insert(substrings[i]);
 }
 
 }  // anonymous namespace
 
-std::unique_ptr<Extensions3DUtil> Extensions3DUtil::create(
+std::unique_ptr<Extensions3DUtil> Extensions3DUtil::Create(
     gpu::gles2::GLES2Interface* gl) {
   std::unique_ptr<Extensions3DUtil> out =
-      WTF::wrapUnique(new Extensions3DUtil(gl));
-  out->initializeExtensions();
+      WTF::WrapUnique(new Extensions3DUtil(gl));
+  out->InitializeExtensions();
   return out;
 }
 
 Extensions3DUtil::Extensions3DUtil(gpu::gles2::GLES2Interface* gl)
-    : m_gl(gl), m_isValid(true) {}
+    : gl_(gl), is_valid_(true) {}
 
 Extensions3DUtil::~Extensions3DUtil() {}
 
-void Extensions3DUtil::initializeExtensions() {
-  if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+void Extensions3DUtil::InitializeExtensions() {
+  if (gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     // If the context is lost don't initialize the extension strings.
     // This will cause supportsExtension, ensureExtensionEnabled, and
     // isExtensionEnabled to always return false.
-    m_isValid = false;
+    is_valid_ = false;
     return;
   }
 
-  String extensionsString(m_gl->GetString(GL_EXTENSIONS));
-  splitStringHelper(extensionsString, m_enabledExtensions);
+  String extensions_string(gl_->GetString(GL_EXTENSIONS));
+  SplitStringHelper(extensions_string, enabled_extensions_);
 
-  String requestableExtensionsString(m_gl->GetRequestableExtensionsCHROMIUM());
-  splitStringHelper(requestableExtensionsString, m_requestableExtensions);
+  String requestable_extensions_string(gl_->GetRequestableExtensionsCHROMIUM());
+  SplitStringHelper(requestable_extensions_string, requestable_extensions_);
 }
 
-bool Extensions3DUtil::supportsExtension(const String& name) {
-  return m_enabledExtensions.contains(name) ||
-         m_requestableExtensions.contains(name);
+bool Extensions3DUtil::SupportsExtension(const String& name) {
+  return enabled_extensions_.Contains(name) ||
+         requestable_extensions_.Contains(name);
 }
 
-bool Extensions3DUtil::ensureExtensionEnabled(const String& name) {
-  if (m_enabledExtensions.contains(name))
+bool Extensions3DUtil::EnsureExtensionEnabled(const String& name) {
+  if (enabled_extensions_.Contains(name))
     return true;
 
-  if (m_requestableExtensions.contains(name)) {
-    m_gl->RequestExtensionCHROMIUM(name.ascii().data());
-    m_enabledExtensions.clear();
-    m_requestableExtensions.clear();
-    initializeExtensions();
+  if (requestable_extensions_.Contains(name)) {
+    gl_->RequestExtensionCHROMIUM(name.Ascii().Data());
+    enabled_extensions_.Clear();
+    requestable_extensions_.Clear();
+    InitializeExtensions();
   }
-  return m_enabledExtensions.contains(name);
+  return enabled_extensions_.Contains(name);
 }
 
-bool Extensions3DUtil::isExtensionEnabled(const String& name) {
-  return m_enabledExtensions.contains(name);
+bool Extensions3DUtil::IsExtensionEnabled(const String& name) {
+  return enabled_extensions_.Contains(name);
 }
 
-bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destTarget,
-                                                 GLenum destFormat,
-                                                 GLenum destType,
+bool Extensions3DUtil::CanUseCopyTextureCHROMIUM(GLenum dest_target,
+                                                 GLenum dest_format,
+                                                 GLenum dest_type,
                                                  GLint level) {
   // TODO(zmo): restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be
   // lifted when GLES2Interface::CopyTextureCHROMIUM(...) are fully functional.
-  if (destTarget == GL_TEXTURE_2D &&
-      (destFormat == GL_RGB || destFormat == GL_RGBA) &&
-      destType == GL_UNSIGNED_BYTE && !level)
+  if (dest_target == GL_TEXTURE_2D &&
+      (dest_format == GL_RGB || dest_format == GL_RGBA) &&
+      dest_type == GL_UNSIGNED_BYTE && !level)
     return true;
   return false;
 }

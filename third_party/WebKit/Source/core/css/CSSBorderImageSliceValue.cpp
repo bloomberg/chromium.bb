@@ -31,28 +31,28 @@ namespace blink {
 
 CSSBorderImageSliceValue::CSSBorderImageSliceValue(CSSQuadValue* slices,
                                                    bool fill)
-    : CSSValue(BorderImageSliceClass), m_slices(slices), m_fill(fill) {
-  DCHECK(m_slices);
+    : CSSValue(kBorderImageSliceClass), slices_(slices), fill_(fill) {
+  DCHECK(slices_);
 }
 
-String CSSBorderImageSliceValue::customCSSText() const {
+String CSSBorderImageSliceValue::CustomCSSText() const {
   // Dump the slices first.
-  String text = m_slices->cssText();
+  String text = slices_->CssText();
 
   // Now the fill keywords if it is present.
-  if (m_fill)
+  if (fill_)
     return text + " fill";
   return text;
 }
 
-bool CSSBorderImageSliceValue::equals(
+bool CSSBorderImageSliceValue::Equals(
     const CSSBorderImageSliceValue& other) const {
-  return m_fill == other.m_fill && dataEquivalent(m_slices, other.m_slices);
+  return fill_ == other.fill_ && DataEquivalent(slices_, other.slices_);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSBorderImageSliceValue) {
-  visitor->trace(m_slices);
-  CSSValue::traceAfterDispatch(visitor);
+  visitor->Trace(slices_);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

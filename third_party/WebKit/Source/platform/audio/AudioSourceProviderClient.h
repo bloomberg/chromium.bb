@@ -33,14 +33,14 @@ namespace blink {
 
 class AudioSourceProviderClient : public GarbageCollectedMixin {
  public:
-  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+  virtual void SetFormat(size_t number_of_channels, float sample_rate) = 0;
   // Oilpan: Callers should keep this object alive during lock() and unlock().
   virtual void lock() {}
   virtual void unlock() {}
 
   // Called on the main thread when HTMLMediaElement::currentSrc() is
   // changed.
-  virtual void onCurrentSrcChanged(const KURL& currentSrc) {}
+  virtual void OnCurrentSrcChanged(const KURL& current_src) {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

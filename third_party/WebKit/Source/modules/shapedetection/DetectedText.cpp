@@ -8,27 +8,27 @@
 
 namespace blink {
 
-DetectedText* DetectedText::create() {
-  return new DetectedText(emptyString, DOMRect::create());
+DetectedText* DetectedText::Create() {
+  return new DetectedText(g_empty_string, DOMRect::Create());
 }
 
-DetectedText* DetectedText::create(String rawValue, DOMRect* boundingBox) {
-  return new DetectedText(rawValue, boundingBox);
+DetectedText* DetectedText::Create(String raw_value, DOMRect* bounding_box) {
+  return new DetectedText(raw_value, bounding_box);
 }
 
 const String& DetectedText::rawValue() const {
-  return m_rawValue;
+  return raw_value_;
 }
 
 DOMRect* DetectedText::boundingBox() const {
-  return m_boundingBox.get();
+  return bounding_box_.Get();
 }
 
-DetectedText::DetectedText(String rawValue, DOMRect* boundingBox)
-    : m_rawValue(rawValue), m_boundingBox(boundingBox) {}
+DetectedText::DetectedText(String raw_value, DOMRect* bounding_box)
+    : raw_value_(raw_value), bounding_box_(bounding_box) {}
 
 DEFINE_TRACE(DetectedText) {
-  visitor->trace(m_boundingBox);
+  visitor->Trace(bounding_box_);
 }
 
 }  // namespace blink

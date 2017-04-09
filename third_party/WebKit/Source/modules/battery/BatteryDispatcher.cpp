@@ -12,47 +12,47 @@
 
 namespace blink {
 
-BatteryDispatcher& BatteryDispatcher::instance() {
-  DEFINE_STATIC_LOCAL(BatteryDispatcher, batteryDispatcher,
+BatteryDispatcher& BatteryDispatcher::Instance() {
+  DEFINE_STATIC_LOCAL(BatteryDispatcher, battery_dispatcher,
                       (new BatteryDispatcher));
-  return batteryDispatcher;
+  return battery_dispatcher;
 }
 
-BatteryDispatcher::BatteryDispatcher() : m_hasLatestData(false) {}
+BatteryDispatcher::BatteryDispatcher() : has_latest_data_(false) {}
 
-void BatteryDispatcher::queryNextStatus() {
-  m_monitor->QueryNextStatus(convertToBaseCallback(
-      WTF::bind(&BatteryDispatcher::onDidChange, wrapPersistent(this))));
+void BatteryDispatcher::QueryNextStatus() {
+  monitor_->QueryNextStatus(ConvertToBaseCallback(
+      WTF::Bind(&BatteryDispatcher::OnDidChange, WrapPersistent(this))));
 }
 
-void BatteryDispatcher::onDidChange(
-    device::mojom::blink::BatteryStatusPtr batteryStatus) {
-  queryNextStatus();
+void BatteryDispatcher::OnDidChange(
+    device::mojom::blink::BatteryStatusPtr battery_status) {
+  QueryNextStatus();
 
-  DCHECK(batteryStatus);
+  DCHECK(battery_status);
 
-  updateBatteryStatus(
-      BatteryStatus(batteryStatus->charging, batteryStatus->charging_time,
-                    batteryStatus->discharging_time, batteryStatus->level));
+  UpdateBatteryStatus(
+      BatteryStatus(battery_status->charging, battery_status->charging_time,
+                    battery_status->discharging_time, battery_status->level));
 }
 
-void BatteryDispatcher::updateBatteryStatus(
-    const BatteryStatus& batteryStatus) {
-  m_batteryStatus = batteryStatus;
-  m_hasLatestData = true;
-  notifyControllers();
+void BatteryDispatcher::UpdateBatteryStatus(
+    const BatteryStatus& battery_status) {
+  battery_status_ = battery_status;
+  has_latest_data_ = true;
+  NotifyControllers();
 }
 
-void BatteryDispatcher::startListening() {
-  DCHECK(!m_monitor.is_bound());
-  Platform::current()->connector()->BindInterface(
-      device::mojom::blink::kServiceName, mojo::MakeRequest(&m_monitor));
-  queryNextStatus();
+void BatteryDispatcher::StartListening() {
+  DCHECK(!monitor_.is_bound());
+  Platform::Current()->GetConnector()->BindInterface(
+      device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor_));
+  QueryNextStatus();
 }
 
-void BatteryDispatcher::stopListening() {
-  m_monitor.reset();
-  m_hasLatestData = false;
+void BatteryDispatcher::StopListening() {
+  monitor_.reset();
+  has_latest_data_ = false;
 }
 
 }  // namespace blink

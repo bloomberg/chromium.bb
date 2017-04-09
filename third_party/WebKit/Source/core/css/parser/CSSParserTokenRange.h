@@ -12,7 +12,7 @@
 
 namespace blink {
 
-CORE_EXPORT extern const CSSParserToken& staticEOFToken;
+CORE_EXPORT extern const CSSParserToken& g_static_eof_token;
 
 // A CSSParserTokenRange is an iterator over a subrange of a vector of
 // CSSParserTokens. Accessing outside of the range will return an endless stream
@@ -23,55 +23,55 @@ class CORE_EXPORT CSSParserTokenRange {
  public:
   template <size_t inlineBuffer>
   CSSParserTokenRange(const Vector<CSSParserToken, inlineBuffer>& vector)
-      : m_first(vector.begin()), m_last(vector.end()) {}
+      : first_(vector.begin()), last_(vector.end()) {}
 
   // This should be called on a range with tokens returned by that range.
-  CSSParserTokenRange makeSubRange(const CSSParserToken* first,
+  CSSParserTokenRange MakeSubRange(const CSSParserToken* first,
                                    const CSSParserToken* last) const;
 
-  bool atEnd() const { return m_first == m_last; }
-  const CSSParserToken* end() const { return m_last; }
+  bool AtEnd() const { return first_ == last_; }
+  const CSSParserToken* end() const { return last_; }
 
-  const CSSParserToken& peek(unsigned offset = 0) const {
-    if (m_first + offset >= m_last)
-      return staticEOFToken;
-    return *(m_first + offset);
+  const CSSParserToken& Peek(unsigned offset = 0) const {
+    if (first_ + offset >= last_)
+      return g_static_eof_token;
+    return *(first_ + offset);
   }
 
-  const CSSParserToken& consume() {
-    if (m_first == m_last)
-      return staticEOFToken;
-    return *m_first++;
+  const CSSParserToken& Consume() {
+    if (first_ == last_)
+      return g_static_eof_token;
+    return *first_++;
   }
 
-  const CSSParserToken& consumeIncludingWhitespace() {
-    const CSSParserToken& result = consume();
-    consumeWhitespace();
+  const CSSParserToken& ConsumeIncludingWhitespace() {
+    const CSSParserToken& result = Consume();
+    ConsumeWhitespace();
     return result;
   }
 
   // The returned range doesn't include the brackets
-  CSSParserTokenRange consumeBlock();
+  CSSParserTokenRange ConsumeBlock();
 
-  void consumeComponentValue();
+  void ConsumeComponentValue();
 
-  void consumeWhitespace() {
-    while (peek().type() == WhitespaceToken)
-      ++m_first;
+  void ConsumeWhitespace() {
+    while (Peek().GetType() == kWhitespaceToken)
+      ++first_;
   }
 
-  String serialize() const;
+  String Serialize() const;
 
-  const CSSParserToken* begin() const { return m_first; }
+  const CSSParserToken* begin() const { return first_; }
 
-  static void initStaticEOFToken();
+  static void InitStaticEOFToken();
 
  private:
   CSSParserTokenRange(const CSSParserToken* first, const CSSParserToken* last)
-      : m_first(first), m_last(last) {}
+      : first_(first), last_(last) {}
 
-  const CSSParserToken* m_first;
-  const CSSParserToken* m_last;
+  const CSSParserToken* first_;
+  const CSSParserToken* last_;
 };
 
 }  // namespace blink

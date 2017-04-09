@@ -208,7 +208,7 @@ void AutofillPopupControllerImpl::ViewDestroyed() {
 
 bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
-  switch (event.windowsKeyCode) {
+  switch (event.windows_key_code) {
     case ui::VKEY_UP:
       SelectPreviousLine();
       return true;
@@ -228,7 +228,8 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       Hide();
       return true;
     case ui::VKEY_DELETE:
-      return (event.modifiers() & content::NativeWebKeyboardEvent::ShiftKey) &&
+      return (event.GetModifiers() &
+              content::NativeWebKeyboardEvent::kShiftKey) &&
              RemoveSelectedLine();
     case ui::VKEY_TAB:
       // A tab press should cause the selected line to be accepted, but still

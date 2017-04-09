@@ -20,10 +20,10 @@ class CSSTokenizerInputStream {
   // Gets the char in the stream replacing NUL characters with a unicode
   // replacement character. Will return (NUL) kEndOfFileMarker when at the
   // end of the stream.
-  UChar nextInputChar() const {
-    if (m_offset >= m_stringLength)
+  UChar NextInputChar() const {
+    if (offset_ >= string_length_)
       return '\0';
-    UChar result = (*m_string)[m_offset];
+    UChar result = (*string_)[offset_];
     return result ? result : 0xFFFD;
   }
 
@@ -31,50 +31,50 @@ class CSSTokenizerInputStream {
   // return NUL (kEndOfFileMarker) if the stream position is at the end.
   // NOTE: This may *also* return NUL if there's one in the input! Never
   // compare the return value to '\0'.
-  UChar peekWithoutReplacement(unsigned lookaheadOffset) const {
-    if ((m_offset + lookaheadOffset) >= m_stringLength)
+  UChar PeekWithoutReplacement(unsigned lookahead_offset) const {
+    if ((offset_ + lookahead_offset) >= string_length_)
       return '\0';
-    return (*m_string)[m_offset + lookaheadOffset];
+    return (*string_)[offset_ + lookahead_offset];
   }
 
-  void advance(unsigned offset = 1) { m_offset += offset; }
-  void pushBack(UChar cc) {
-    --m_offset;
-    DCHECK(nextInputChar() == cc);
+  void Advance(unsigned offset = 1) { offset_ += offset; }
+  void PushBack(UChar cc) {
+    --offset_;
+    DCHECK(NextInputChar() == cc);
   }
 
-  double getDouble(unsigned start, unsigned end) const;
+  double GetDouble(unsigned start, unsigned end) const;
 
   template <bool characterPredicate(UChar)>
-  unsigned skipWhilePredicate(unsigned offset) {
-    if (m_string->is8Bit()) {
-      const LChar* characters8 = m_string->characters8();
-      while ((m_offset + offset) < m_stringLength &&
-             characterPredicate(characters8[m_offset + offset]))
+  unsigned SkipWhilePredicate(unsigned offset) {
+    if (string_->Is8Bit()) {
+      const LChar* characters8 = string_->Characters8();
+      while ((offset_ + offset) < string_length_ &&
+             characterPredicate(characters8[offset_ + offset]))
         ++offset;
     } else {
-      const UChar* characters16 = m_string->characters16();
-      while ((m_offset + offset) < m_stringLength &&
-             characterPredicate(characters16[m_offset + offset]))
+      const UChar* characters16 = string_->Characters16();
+      while ((offset_ + offset) < string_length_ &&
+             characterPredicate(characters16[offset_ + offset]))
         ++offset;
     }
     return offset;
   }
 
-  void advanceUntilNonWhitespace();
+  void AdvanceUntilNonWhitespace();
 
-  unsigned length() const { return m_stringLength; }
-  unsigned offset() const { return std::min(m_offset, m_stringLength); }
+  unsigned length() const { return string_length_; }
+  unsigned Offset() const { return std::min(offset_, string_length_); }
 
-  StringView rangeAt(unsigned start, unsigned length) const {
-    DCHECK(start + length <= m_stringLength);
-    return StringView(*m_string, start, length);
+  StringView RangeAt(unsigned start, unsigned length) const {
+    DCHECK(start + length <= string_length_);
+    return StringView(*string_, start, length);
   }
 
  private:
-  size_t m_offset;
-  const size_t m_stringLength;
-  const RefPtr<StringImpl> m_string;
+  size_t offset_;
+  const size_t string_length_;
+  const RefPtr<StringImpl> string_;
 };
 
 }  // namespace blink

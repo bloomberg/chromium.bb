@@ -32,15 +32,15 @@
 
 namespace blink {
 
-const char mimeTypeText[] = "text";
-const char mimeTypeTextPlain[] = "text/plain";
-const char mimeTypeTextPlainEtc[] = "text/plain;";
-const char mimeTypeTextHTML[] = "text/html";
-const char mimeTypeTextRTF[] = "text/rtf";
-const char mimeTypeURL[] = "url";
-const char mimeTypeTextURIList[] = "text/uri-list";
-const char mimeTypeDownloadURL[] = "downloadurl";
-const char mimeTypeFiles[] = "Files";
-const char mimeTypeImagePng[] = "image/png";
+const char kMimeTypeText[] = "text";
+const char kMimeTypeTextPlain[] = "text/plain";
+const char kMimeTypeTextPlainEtc[] = "text/plain;";
+const char kMimeTypeTextHTML[] = "text/html";
+const char kMimeTypeTextRTF[] = "text/rtf";
+const char kMimeTypeURL[] = "url";
+const char kMimeTypeTextURIList[] = "text/uri-list";
+const char kMimeTypeDownloadURL[] = "downloadurl";
+const char kMimeTypeFiles[] = "Files";
+const char kMimeTypeImagePng[] = "image/png";
 
 }  // namespace blink

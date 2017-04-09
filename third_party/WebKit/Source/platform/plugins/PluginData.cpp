@@ -30,50 +30,50 @@
 
 namespace blink {
 
-PluginData::PluginData(SecurityOrigin* mainFrameOrigin)
-    : m_mainFrameOrigin(mainFrameOrigin) {
-  PluginListBuilder builder(&m_plugins);
-  Platform::current()->getPluginList(
-      false, WebSecurityOrigin(m_mainFrameOrigin), &builder);
+PluginData::PluginData(SecurityOrigin* main_frame_origin)
+    : main_frame_origin_(main_frame_origin) {
+  PluginListBuilder builder(&plugins_);
+  Platform::Current()->GetPluginList(
+      false, WebSecurityOrigin(main_frame_origin_), &builder);
 
-  for (unsigned i = 0; i < m_plugins.size(); ++i) {
-    const PluginInfo& plugin = m_plugins[i];
+  for (unsigned i = 0; i < plugins_.size(); ++i) {
+    const PluginInfo& plugin = plugins_[i];
     for (unsigned j = 0; j < plugin.mimes.size(); ++j) {
-      m_mimes.push_back(plugin.mimes[j]);
-      m_mimePluginIndices.push_back(i);
+      mimes_.push_back(plugin.mimes[j]);
+      mime_plugin_indices_.push_back(i);
     }
   }
 }
 
-bool PluginData::supportsMimeType(const String& mimeType) const {
-  for (unsigned i = 0; i < m_mimes.size(); ++i)
-    if (m_mimes[i].type == mimeType)
+bool PluginData::SupportsMimeType(const String& mime_type) const {
+  for (unsigned i = 0; i < mimes_.size(); ++i)
+    if (mimes_[i].type == mime_type)
       return true;
   return false;
 }
 
-const PluginInfo* PluginData::pluginInfoForMimeType(
-    const String& mimeType) const {
-  for (unsigned i = 0; i < m_mimes.size(); ++i) {
-    const MimeClassInfo& info = m_mimes[i];
+const PluginInfo* PluginData::PluginInfoForMimeType(
+    const String& mime_type) const {
+  for (unsigned i = 0; i < mimes_.size(); ++i) {
+    const MimeClassInfo& info = mimes_[i];
 
-    if (info.type == mimeType)
-      return &m_plugins[m_mimePluginIndices[i]];
+    if (info.type == mime_type)
+      return &plugins_[mime_plugin_indices_[i]];
   }
 
   return 0;
 }
 
-String PluginData::pluginNameForMimeType(const String& mimeType) const {
-  if (const PluginInfo* info = pluginInfoForMimeType(mimeType))
+String PluginData::PluginNameForMimeType(const String& mime_type) const {
+  if (const PluginInfo* info = PluginInfoForMimeType(mime_type))
     return info->name;
   return String();
 }
 
-void PluginData::refreshBrowserSidePluginCache() {
+void PluginData::RefreshBrowserSidePluginCache() {
   Vector<PluginInfo> plugins;
   PluginListBuilder builder(&plugins);
-  Platform::current()->getPluginList(true, WebSecurityOrigin::createUnique(),
+  Platform::Current()->GetPluginList(true, WebSecurityOrigin::CreateUnique(),
                                      &builder);
 }
 

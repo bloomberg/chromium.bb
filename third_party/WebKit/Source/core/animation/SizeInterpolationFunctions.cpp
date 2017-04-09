@@ -14,194 +14,195 @@ namespace blink {
 
 class CSSSizeNonInterpolableValue : public NonInterpolableValue {
  public:
-  static PassRefPtr<CSSSizeNonInterpolableValue> create(CSSValueID keyword) {
-    return adoptRef(new CSSSizeNonInterpolableValue(keyword));
+  static PassRefPtr<CSSSizeNonInterpolableValue> Create(CSSValueID keyword) {
+    return AdoptRef(new CSSSizeNonInterpolableValue(keyword));
   }
 
-  static PassRefPtr<CSSSizeNonInterpolableValue> create(
-      PassRefPtr<NonInterpolableValue> lengthNonInterpolableValue) {
-    return adoptRef(
-        new CSSSizeNonInterpolableValue(std::move(lengthNonInterpolableValue)));
+  static PassRefPtr<CSSSizeNonInterpolableValue> Create(
+      PassRefPtr<NonInterpolableValue> length_non_interpolable_value) {
+    return AdoptRef(new CSSSizeNonInterpolableValue(
+        std::move(length_non_interpolable_value)));
   }
 
-  bool isKeyword() const { return m_keyword != CSSValueInvalid; }
-  CSSValueID keyword() const {
-    DCHECK(isKeyword());
-    return m_keyword;
+  bool IsKeyword() const { return keyword_ != CSSValueInvalid; }
+  CSSValueID Keyword() const {
+    DCHECK(IsKeyword());
+    return keyword_;
   }
 
-  const NonInterpolableValue* lengthNonInterpolableValue() const {
-    DCHECK(!isKeyword());
-    return m_lengthNonInterpolableValue.get();
+  const NonInterpolableValue* LengthNonInterpolableValue() const {
+    DCHECK(!IsKeyword());
+    return length_non_interpolable_value_.Get();
   }
-  RefPtr<NonInterpolableValue>& lengthNonInterpolableValue() {
-    DCHECK(!isKeyword());
-    return m_lengthNonInterpolableValue;
+  RefPtr<NonInterpolableValue>& LengthNonInterpolableValue() {
+    DCHECK(!IsKeyword());
+    return length_non_interpolable_value_;
   }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
   CSSSizeNonInterpolableValue(CSSValueID keyword)
-      : m_keyword(keyword), m_lengthNonInterpolableValue(nullptr) {
+      : keyword_(keyword), length_non_interpolable_value_(nullptr) {
     DCHECK_NE(keyword, CSSValueInvalid);
   }
 
   CSSSizeNonInterpolableValue(
-      PassRefPtr<NonInterpolableValue> lengthNonInterpolableValue)
-      : m_keyword(CSSValueInvalid),
-        m_lengthNonInterpolableValue(std::move(lengthNonInterpolableValue)) {}
+      PassRefPtr<NonInterpolableValue> length_non_interpolable_value)
+      : keyword_(CSSValueInvalid),
+        length_non_interpolable_value_(
+            std::move(length_non_interpolable_value)) {}
 
-  CSSValueID m_keyword;
-  RefPtr<NonInterpolableValue> m_lengthNonInterpolableValue;
+  CSSValueID keyword_;
+  RefPtr<NonInterpolableValue> length_non_interpolable_value_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSSizeNonInterpolableValue);
 
-static InterpolationValue convertKeyword(CSSValueID keyword) {
-  return InterpolationValue(InterpolableList::create(0),
-                            CSSSizeNonInterpolableValue::create(keyword));
+static InterpolationValue ConvertKeyword(CSSValueID keyword) {
+  return InterpolationValue(InterpolableList::Create(0),
+                            CSSSizeNonInterpolableValue::Create(keyword));
 }
 
-static InterpolationValue wrapConvertedLength(
-    InterpolationValue&& convertedLength) {
-  if (!convertedLength)
+static InterpolationValue WrapConvertedLength(
+    InterpolationValue&& converted_length) {
+  if (!converted_length)
     return nullptr;
-  return InterpolationValue(std::move(convertedLength.interpolableValue),
-                            CSSSizeNonInterpolableValue::create(std::move(
-                                convertedLength.nonInterpolableValue)));
+  return InterpolationValue(std::move(converted_length.interpolable_value),
+                            CSSSizeNonInterpolableValue::Create(std::move(
+                                converted_length.non_interpolable_value)));
 }
 
-InterpolationValue SizeInterpolationFunctions::convertFillSizeSide(
-    const FillSize& fillSize,
+InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
+    const FillSize& fill_size,
     float zoom,
-    bool convertWidth) {
-  switch (fillSize.type) {
-    case SizeLength: {
+    bool convert_width) {
+  switch (fill_size.type) {
+    case kSizeLength: {
       const Length& side =
-          convertWidth ? fillSize.size.width() : fillSize.size.height();
-      if (side.isAuto())
-        return convertKeyword(CSSValueAuto);
-      return wrapConvertedLength(
-          LengthInterpolationFunctions::maybeConvertLength(side, zoom));
+          convert_width ? fill_size.size.Width() : fill_size.size.Height();
+      if (side.IsAuto())
+        return ConvertKeyword(CSSValueAuto);
+      return WrapConvertedLength(
+          LengthInterpolationFunctions::MaybeConvertLength(side, zoom));
     }
-    case Contain:
-      return convertKeyword(CSSValueContain);
-    case Cover:
-      return convertKeyword(CSSValueCover);
-    case SizeNone:
+    case kContain:
+      return ConvertKeyword(CSSValueContain);
+    case kCover:
+      return ConvertKeyword(CSSValueCover);
+    case kSizeNone:
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-InterpolationValue SizeInterpolationFunctions::maybeConvertCSSSizeSide(
+InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
     const CSSValue& value,
-    bool convertWidth) {
-  if (value.isValuePair()) {
-    const CSSValuePair& pair = toCSSValuePair(value);
-    const CSSValue& side = convertWidth ? pair.first() : pair.second();
-    if (side.isIdentifierValue() &&
-        toCSSIdentifierValue(side).getValueID() == CSSValueAuto)
-      return convertKeyword(CSSValueAuto);
-    return wrapConvertedLength(
-        LengthInterpolationFunctions::maybeConvertCSSValue(side));
+    bool convert_width) {
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    const CSSValue& side = convert_width ? pair.First() : pair.Second();
+    if (side.IsIdentifierValue() &&
+        ToCSSIdentifierValue(side).GetValueID() == CSSValueAuto)
+      return ConvertKeyword(CSSValueAuto);
+    return WrapConvertedLength(
+        LengthInterpolationFunctions::MaybeConvertCSSValue(side));
   }
 
-  if (!value.isIdentifierValue() && !value.isPrimitiveValue())
+  if (!value.IsIdentifierValue() && !value.IsPrimitiveValue())
     return nullptr;
-  if (value.isIdentifierValue())
-    return convertKeyword(toCSSIdentifierValue(value).getValueID());
+  if (value.IsIdentifierValue())
+    return ConvertKeyword(ToCSSIdentifierValue(value).GetValueID());
 
   // A single length is equivalent to "<length> auto".
-  if (convertWidth)
-    return wrapConvertedLength(
-        LengthInterpolationFunctions::maybeConvertCSSValue(value));
-  return convertKeyword(CSSValueAuto);
+  if (convert_width)
+    return WrapConvertedLength(
+        LengthInterpolationFunctions::MaybeConvertCSSValue(value));
+  return ConvertKeyword(CSSValueAuto);
 }
 
-PairwiseInterpolationValue SizeInterpolationFunctions::maybeMergeSingles(
+PairwiseInterpolationValue SizeInterpolationFunctions::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) {
-  if (!nonInterpolableValuesAreCompatible(start.nonInterpolableValue.get(),
-                                          end.nonInterpolableValue.get()))
+  if (!NonInterpolableValuesAreCompatible(start.non_interpolable_value.Get(),
+                                          end.non_interpolable_value.Get()))
     return nullptr;
-  return PairwiseInterpolationValue(std::move(start.interpolableValue),
-                                    std::move(end.interpolableValue),
-                                    std::move(start.nonInterpolableValue));
+  return PairwiseInterpolationValue(std::move(start.interpolable_value),
+                                    std::move(end.interpolable_value),
+                                    std::move(start.non_interpolable_value));
 }
 
-InterpolationValue SizeInterpolationFunctions::createNeutralValue(
-    const NonInterpolableValue* nonInterpolableValue) {
-  auto& size = toCSSSizeNonInterpolableValue(*nonInterpolableValue);
-  if (size.isKeyword())
-    return convertKeyword(size.keyword());
-  return wrapConvertedLength(InterpolationValue(
-      LengthInterpolationFunctions::createNeutralInterpolableValue()));
+InterpolationValue SizeInterpolationFunctions::CreateNeutralValue(
+    const NonInterpolableValue* non_interpolable_value) {
+  auto& size = ToCSSSizeNonInterpolableValue(*non_interpolable_value);
+  if (size.IsKeyword())
+    return ConvertKeyword(size.Keyword());
+  return WrapConvertedLength(InterpolationValue(
+      LengthInterpolationFunctions::CreateNeutralInterpolableValue()));
 }
 
-bool SizeInterpolationFunctions::nonInterpolableValuesAreCompatible(
+bool SizeInterpolationFunctions::NonInterpolableValuesAreCompatible(
     const NonInterpolableValue* a,
     const NonInterpolableValue* b) {
-  const auto& sizeA = toCSSSizeNonInterpolableValue(*a);
-  const auto& sizeB = toCSSSizeNonInterpolableValue(*b);
-  if (sizeA.isKeyword() != sizeB.isKeyword())
+  const auto& size_a = ToCSSSizeNonInterpolableValue(*a);
+  const auto& size_b = ToCSSSizeNonInterpolableValue(*b);
+  if (size_a.IsKeyword() != size_b.IsKeyword())
     return false;
-  if (sizeA.isKeyword())
-    return sizeA.keyword() == sizeB.keyword();
+  if (size_a.IsKeyword())
+    return size_a.Keyword() == size_b.Keyword();
   return true;
 }
 
-void SizeInterpolationFunctions::composite(
-    std::unique_ptr<InterpolableValue>& underlyingInterpolableValue,
-    RefPtr<NonInterpolableValue>& underlyingNonInterpolableValue,
-    double underlyingFraction,
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue) {
-  const auto& sizeNonInterpolableValue =
-      toCSSSizeNonInterpolableValue(*nonInterpolableValue);
-  if (sizeNonInterpolableValue.isKeyword())
+void SizeInterpolationFunctions::Composite(
+    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
+    RefPtr<NonInterpolableValue>& underlying_non_interpolable_value,
+    double underlying_fraction,
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value) {
+  const auto& size_non_interpolable_value =
+      ToCSSSizeNonInterpolableValue(*non_interpolable_value);
+  if (size_non_interpolable_value.IsKeyword())
     return;
-  auto& underlyingSizeNonInterpolableValue =
-      toCSSSizeNonInterpolableValue(*underlyingNonInterpolableValue);
-  LengthInterpolationFunctions::composite(
-      underlyingInterpolableValue,
-      underlyingSizeNonInterpolableValue.lengthNonInterpolableValue(),
-      underlyingFraction, interpolableValue,
-      sizeNonInterpolableValue.lengthNonInterpolableValue());
+  auto& underlying_size_non_interpolable_value =
+      ToCSSSizeNonInterpolableValue(*underlying_non_interpolable_value);
+  LengthInterpolationFunctions::Composite(
+      underlying_interpolable_value,
+      underlying_size_non_interpolable_value.LengthNonInterpolableValue(),
+      underlying_fraction, interpolable_value,
+      size_non_interpolable_value.LengthNonInterpolableValue());
 }
 
-static Length createLength(
-    const InterpolableValue& interpolableValue,
-    const CSSSizeNonInterpolableValue& nonInterpolableValue,
-    const CSSToLengthConversionData& conversionData) {
-  if (nonInterpolableValue.isKeyword()) {
-    DCHECK_EQ(nonInterpolableValue.keyword(), CSSValueAuto);
-    return Length(Auto);
+static Length CreateLength(
+    const InterpolableValue& interpolable_value,
+    const CSSSizeNonInterpolableValue& non_interpolable_value,
+    const CSSToLengthConversionData& conversion_data) {
+  if (non_interpolable_value.IsKeyword()) {
+    DCHECK_EQ(non_interpolable_value.Keyword(), CSSValueAuto);
+    return Length(kAuto);
   }
-  return LengthInterpolationFunctions::createLength(
-      interpolableValue, nonInterpolableValue.lengthNonInterpolableValue(),
-      conversionData, ValueRangeNonNegative);
+  return LengthInterpolationFunctions::CreateLength(
+      interpolable_value, non_interpolable_value.LengthNonInterpolableValue(),
+      conversion_data, kValueRangeNonNegative);
 }
 
-FillSize SizeInterpolationFunctions::createFillSize(
-    const InterpolableValue& interpolableValueA,
-    const NonInterpolableValue* nonInterpolableValueA,
-    const InterpolableValue& interpolableValueB,
-    const NonInterpolableValue* nonInterpolableValueB,
-    const CSSToLengthConversionData& conversionData) {
-  const auto& sideA = toCSSSizeNonInterpolableValue(*nonInterpolableValueA);
-  const auto& sideB = toCSSSizeNonInterpolableValue(*nonInterpolableValueB);
-  if (sideA.isKeyword()) {
-    switch (sideA.keyword()) {
+FillSize SizeInterpolationFunctions::CreateFillSize(
+    const InterpolableValue& interpolable_value_a,
+    const NonInterpolableValue* non_interpolable_value_a,
+    const InterpolableValue& interpolable_value_b,
+    const NonInterpolableValue* non_interpolable_value_b,
+    const CSSToLengthConversionData& conversion_data) {
+  const auto& side_a = ToCSSSizeNonInterpolableValue(*non_interpolable_value_a);
+  const auto& side_b = ToCSSSizeNonInterpolableValue(*non_interpolable_value_b);
+  if (side_a.IsKeyword()) {
+    switch (side_a.Keyword()) {
       case CSSValueCover:
-        DCHECK_EQ(sideA.keyword(), sideB.keyword());
-        return FillSize(Cover, LengthSize());
+        DCHECK_EQ(side_a.Keyword(), side_b.Keyword());
+        return FillSize(kCover, LengthSize());
       case CSSValueContain:
-        DCHECK_EQ(sideA.keyword(), sideB.keyword());
-        return FillSize(Contain, LengthSize());
+        DCHECK_EQ(side_a.Keyword(), side_b.Keyword());
+        return FillSize(kContain, LengthSize());
       case CSSValueAuto:
         break;
       default:
@@ -210,9 +211,9 @@ FillSize SizeInterpolationFunctions::createFillSize(
     }
   }
   return FillSize(
-      SizeLength,
-      LengthSize(createLength(interpolableValueA, sideA, conversionData),
-                 createLength(interpolableValueB, sideB, conversionData)));
+      kSizeLength,
+      LengthSize(CreateLength(interpolable_value_a, side_a, conversion_data),
+                 CreateLength(interpolable_value_b, side_b, conversion_data)));
 }
 
 }  // namespace blink

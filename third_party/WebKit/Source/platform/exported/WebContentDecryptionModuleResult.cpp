@@ -8,44 +8,44 @@
 
 namespace blink {
 
-void WebContentDecryptionModuleResult::complete() {
-  m_impl->complete();
-  reset();
+void WebContentDecryptionModuleResult::Complete() {
+  impl_->Complete();
+  Reset();
 }
 
-void WebContentDecryptionModuleResult::completeWithContentDecryptionModule(
+void WebContentDecryptionModuleResult::CompleteWithContentDecryptionModule(
     WebContentDecryptionModule* cdm) {
-  m_impl->completeWithContentDecryptionModule(cdm);
-  reset();
+  impl_->CompleteWithContentDecryptionModule(cdm);
+  Reset();
 }
 
-void WebContentDecryptionModuleResult::completeWithSession(
+void WebContentDecryptionModuleResult::CompleteWithSession(
     SessionStatus status) {
-  m_impl->completeWithSession(status);
-  reset();
+  impl_->CompleteWithSession(status);
+  Reset();
 }
 
-void WebContentDecryptionModuleResult::completeWithError(
+void WebContentDecryptionModuleResult::CompleteWithError(
     WebContentDecryptionModuleException exception,
-    unsigned long systemCode,
-    const WebString& errorMessage) {
-  m_impl->completeWithError(exception, systemCode, errorMessage);
-  reset();
+    unsigned long system_code,
+    const WebString& error_message) {
+  impl_->CompleteWithError(exception, system_code, error_message);
+  Reset();
 }
 
 WebContentDecryptionModuleResult::WebContentDecryptionModuleResult(
     ContentDecryptionModuleResult* impl)
-    : m_impl(impl) {
-  ASSERT(m_impl.get());
+    : impl_(impl) {
+  ASSERT(impl_.Get());
 }
 
-void WebContentDecryptionModuleResult::reset() {
-  m_impl.reset();
+void WebContentDecryptionModuleResult::Reset() {
+  impl_.Reset();
 }
 
-void WebContentDecryptionModuleResult::assign(
+void WebContentDecryptionModuleResult::Assign(
     const WebContentDecryptionModuleResult& o) {
-  m_impl = o.m_impl;
+  impl_ = o.impl_;
 }
 
 }  // namespace blink

@@ -37,38 +37,40 @@
 
 namespace blink {
 
-InputType* URLInputType::create(HTMLInputElement& element) {
+InputType* URLInputType::Create(HTMLInputElement& element) {
   return new URLInputType(element);
 }
 
-void URLInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypeURL);
+void URLInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypeURL);
 }
 
-const AtomicString& URLInputType::formControlType() const {
+const AtomicString& URLInputType::FormControlType() const {
   return InputTypeNames::url;
 }
 
-bool URLInputType::typeMismatchFor(const String& value) const {
-  return !value.isEmpty() && !KURL(KURL(), value).isValid();
+bool URLInputType::TypeMismatchFor(const String& value) const {
+  return !value.IsEmpty() && !KURL(KURL(), value).IsValid();
 }
 
-bool URLInputType::typeMismatch() const {
-  return typeMismatchFor(element().value());
+bool URLInputType::TypeMismatch() const {
+  return TypeMismatchFor(GetElement().value());
 }
 
-String URLInputType::typeMismatchText() const {
-  return locale().queryString(WebLocalizedString::ValidationTypeMismatchForURL);
+String URLInputType::TypeMismatchText() const {
+  return GetLocale().QueryString(
+      WebLocalizedString::kValidationTypeMismatchForURL);
 }
 
-String URLInputType::sanitizeValue(const String& proposedValue) const {
-  return BaseTextInputType::sanitizeValue(
-      stripLeadingAndTrailingHTMLSpaces(proposedValue));
+String URLInputType::SanitizeValue(const String& proposed_value) const {
+  return BaseTextInputType::SanitizeValue(
+      StripLeadingAndTrailingHTMLSpaces(proposed_value));
 }
 
-String URLInputType::sanitizeUserInputValue(const String& proposedValue) const {
+String URLInputType::SanitizeUserInputValue(
+    const String& proposed_value) const {
   // Do not call URLInputType::sanitizeValue.
-  return BaseTextInputType::sanitizeValue(proposedValue);
+  return BaseTextInputType::SanitizeValue(proposed_value);
 }
 
 }  // namespace blink

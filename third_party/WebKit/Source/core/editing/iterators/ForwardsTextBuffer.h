@@ -15,10 +15,10 @@ class CORE_EXPORT ForwardsTextBuffer final : public TextBufferBase {
 
  public:
   ForwardsTextBuffer() {}
-  const UChar* data() const override;
+  const UChar* Data() const override;
 
  private:
-  UChar* calcDestination(size_t length) override;
+  UChar* CalcDestination(size_t length) override;
 };
 
 }  // namespace blink

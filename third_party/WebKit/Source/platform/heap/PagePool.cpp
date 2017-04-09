@@ -11,15 +11,15 @@
 namespace blink {
 
 PagePool::PagePool() {
-  for (int i = 0; i < BlinkGC::NumberOfArenas; ++i) {
-    m_pool[i] = nullptr;
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i) {
+    pool_[i] = nullptr;
   }
 }
 
 PagePool::~PagePool() {
-  for (int index = 0; index < BlinkGC::NumberOfArenas; ++index) {
-    while (PoolEntry* entry = m_pool[index]) {
-      m_pool[index] = entry->next;
+  for (int index = 0; index < BlinkGC::kNumberOfArenas; ++index) {
+    while (PoolEntry* entry = pool_[index]) {
+      pool_[index] = entry->next;
       PageMemory* memory = entry->data;
       ASSERT(memory);
       delete memory;
@@ -28,22 +28,22 @@ PagePool::~PagePool() {
   }
 }
 
-void PagePool::add(int index, PageMemory* memory) {
+void PagePool::Add(int index, PageMemory* memory) {
   // When adding a page to the pool we decommit it to ensure it is unused
   // while in the pool.  This also allows the physical memory, backing the
   // page, to be given back to the OS.
-  memory->decommit();
-  PoolEntry* entry = new PoolEntry(memory, m_pool[index]);
-  m_pool[index] = entry;
+  memory->Decommit();
+  PoolEntry* entry = new PoolEntry(memory, pool_[index]);
+  pool_[index] = entry;
 }
 
-PageMemory* PagePool::take(int index) {
-  while (PoolEntry* entry = m_pool[index]) {
-    m_pool[index] = entry->next;
+PageMemory* PagePool::Take(int index) {
+  while (PoolEntry* entry = pool_[index]) {
+    pool_[index] = entry->next;
     PageMemory* memory = entry->data;
     ASSERT(memory);
     delete entry;
-    if (memory->commit())
+    if (memory->Commit())
       return memory;
 
     // We got some memory, but failed to commit it, try again.

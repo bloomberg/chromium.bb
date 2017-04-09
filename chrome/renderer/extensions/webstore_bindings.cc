@@ -104,45 +104,45 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
     const std::string& preferred_store_link_url,
     std::string* webstore_item_id,
     std::string* error) {
-  if (frame != frame->top()) {
+  if (frame != frame->Top()) {
     *error = kNotInTopFrameError;
     return false;
   }
 
-  if (!WebUserGestureIndicator::isProcessingUserGesture()) {
+  if (!WebUserGestureIndicator::IsProcessingUserGesture()) {
     *error = kNotUserGestureError;
     return false;
   }
 
-  WebDocument document = frame->document();
-  if (document.isNull()) {
+  WebDocument document = frame->GetDocument();
+  if (document.IsNull()) {
     *error = kNoWebstoreItemLinkFoundError;
     return false;
   }
 
-  WebElement head = document.head();
-  if (head.isNull()) {
+  WebElement head = document.Head();
+  if (head.IsNull()) {
     *error = kNoWebstoreItemLinkFoundError;
     return false;
   }
 
   GURL webstore_base_url =
       GURL(extension_urls::GetWebstoreItemDetailURLPrefix());
-  for (WebNode child = head.firstChild(); !child.isNull();
-       child = child.nextSibling()) {
-    if (!child.isElementNode())
+  for (WebNode child = head.FirstChild(); !child.IsNull();
+       child = child.NextSibling()) {
+    if (!child.IsElementNode())
       continue;
-    WebElement elem = child.to<WebElement>();
+    WebElement elem = child.To<WebElement>();
 
-    if (!elem.hasHTMLTagName("link") || !elem.hasAttribute("rel") ||
-        !elem.hasAttribute("href"))
+    if (!elem.HasHTMLTagName("link") || !elem.HasAttribute("rel") ||
+        !elem.HasAttribute("href"))
       continue;
 
-    std::string rel = elem.getAttribute("rel").utf8();
+    std::string rel = elem.GetAttribute("rel").Utf8();
     if (!base::LowerCaseEqualsASCII(rel, kWebstoreLinkRelation))
       continue;
 
-    std::string webstore_url_string(elem.getAttribute("href").utf8());
+    std::string webstore_url_string(elem.GetAttribute("href").Utf8());
 
     if (!preferred_store_link_url.empty() &&
         preferred_store_link_url != webstore_url_string) {

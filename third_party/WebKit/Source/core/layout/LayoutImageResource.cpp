@@ -35,86 +35,86 @@
 namespace blink {
 
 LayoutImageResource::LayoutImageResource()
-    : m_layoutObject(nullptr), m_cachedImage(nullptr) {}
+    : layout_object_(nullptr), cached_image_(nullptr) {}
 
 LayoutImageResource::~LayoutImageResource() {}
 
-void LayoutImageResource::initialize(LayoutObject* layoutObject) {
-  DCHECK(!m_layoutObject);
-  DCHECK(layoutObject);
-  m_layoutObject = layoutObject;
+void LayoutImageResource::Initialize(LayoutObject* layout_object) {
+  DCHECK(!layout_object_);
+  DCHECK(layout_object);
+  layout_object_ = layout_object;
 }
 
-void LayoutImageResource::shutdown() {
-  DCHECK(m_layoutObject);
+void LayoutImageResource::Shutdown() {
+  DCHECK(layout_object_);
 
-  if (!m_cachedImage)
+  if (!cached_image_)
     return;
-  m_cachedImage->removeObserver(m_layoutObject);
+  cached_image_->RemoveObserver(layout_object_);
 }
 
-void LayoutImageResource::setImageResource(ImageResourceContent* newImage) {
-  DCHECK(m_layoutObject);
+void LayoutImageResource::SetImageResource(ImageResourceContent* new_image) {
+  DCHECK(layout_object_);
 
-  if (m_cachedImage == newImage)
+  if (cached_image_ == new_image)
     return;
 
-  if (m_cachedImage) {
-    m_cachedImage->removeObserver(m_layoutObject);
+  if (cached_image_) {
+    cached_image_->RemoveObserver(layout_object_);
   }
-  m_cachedImage = newImage;
-  if (m_cachedImage) {
-    m_cachedImage->addObserver(m_layoutObject);
-    if (m_cachedImage->errorOccurred())
-      m_layoutObject->imageChanged(m_cachedImage.get());
+  cached_image_ = new_image;
+  if (cached_image_) {
+    cached_image_->AddObserver(layout_object_);
+    if (cached_image_->ErrorOccurred())
+      layout_object_->ImageChanged(cached_image_.Get());
   } else {
-    m_layoutObject->imageChanged(m_cachedImage.get());
+    layout_object_->ImageChanged(cached_image_.Get());
   }
 }
 
-void LayoutImageResource::resetAnimation() {
-  DCHECK(m_layoutObject);
+void LayoutImageResource::ResetAnimation() {
+  DCHECK(layout_object_);
 
-  if (!m_cachedImage)
+  if (!cached_image_)
     return;
 
-  m_cachedImage->getImage()->resetAnimation();
+  cached_image_->GetImage()->ResetAnimation();
 
-  m_layoutObject->setShouldDoFullPaintInvalidation();
+  layout_object_->SetShouldDoFullPaintInvalidation();
 }
 
-LayoutSize LayoutImageResource::imageSize(float multiplier) const {
-  if (!m_cachedImage)
+LayoutSize LayoutImageResource::ImageSize(float multiplier) const {
+  if (!cached_image_)
     return LayoutSize();
-  LayoutSize size = m_cachedImage->imageSize(
-      LayoutObject::shouldRespectImageOrientation(m_layoutObject), multiplier);
-  if (m_layoutObject && m_layoutObject->isLayoutImage() && size.width() &&
-      size.height())
-    size.scale(toLayoutImage(m_layoutObject)->imageDevicePixelRatio());
+  LayoutSize size = cached_image_->ImageSize(
+      LayoutObject::ShouldRespectImageOrientation(layout_object_), multiplier);
+  if (layout_object_ && layout_object_->IsLayoutImage() && size.Width() &&
+      size.Height())
+    size.Scale(ToLayoutImage(layout_object_)->ImageDevicePixelRatio());
   return size;
 }
 
-PassRefPtr<Image> LayoutImageResource::image(const IntSize& containerSize,
-                                             float zoom) const {
-  if (!m_cachedImage)
-    return Image::nullImage();
+PassRefPtr<Image> LayoutImageResource::GetImage(const IntSize& container_size,
+                                                float zoom) const {
+  if (!cached_image_)
+    return Image::NullImage();
 
-  if (!m_cachedImage->getImage()->isSVGImage())
-    return m_cachedImage->getImage();
+  if (!cached_image_->GetImage()->IsSVGImage())
+    return cached_image_->GetImage();
 
   KURL url;
-  SVGImage* svgImage = toSVGImage(m_cachedImage->getImage());
-  Node* node = m_layoutObject->node();
-  if (node && node->isElementNode()) {
-    const AtomicString& urlString = toElement(node)->imageSourceURL();
-    url = node->document().completeURL(urlString);
+  SVGImage* svg_image = ToSVGImage(cached_image_->GetImage());
+  Node* node = layout_object_->GetNode();
+  if (node && node->IsElementNode()) {
+    const AtomicString& url_string = ToElement(node)->ImageSourceURL();
+    url = node->GetDocument().CompleteURL(url_string);
   }
-  return SVGImageForContainer::create(svgImage, containerSize, zoom, url);
+  return SVGImageForContainer::Create(svg_image, container_size, zoom, url);
 }
 
-bool LayoutImageResource::maybeAnimated() const {
-  Image* image = m_cachedImage ? m_cachedImage->getImage() : Image::nullImage();
-  return image->maybeAnimated();
+bool LayoutImageResource::MaybeAnimated() const {
+  Image* image = cached_image_ ? cached_image_->GetImage() : Image::NullImage();
+  return image->MaybeAnimated();
 }
 
 }  // namespace blink

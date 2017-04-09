@@ -30,48 +30,48 @@
 
 namespace blink {
 
-ContentType::ContentType(const String& contentType) : m_type(contentType) {}
+ContentType::ContentType(const String& content_type) : type_(content_type) {}
 
-String ContentType::parameter(const String& parameterName) const {
-  String parameterValue;
-  String strippedType = m_type.stripWhiteSpace();
+String ContentType::Parameter(const String& parameter_name) const {
+  String parameter_value;
+  String stripped_type = type_.StripWhiteSpace();
 
   // a MIME type can have one or more "param=value" after a semi-colon, and
   // separated from each other by semi-colons
-  size_t semi = strippedType.find(';');
+  size_t semi = stripped_type.Find(';');
   if (semi != kNotFound) {
     size_t start =
-        strippedType.find(parameterName, semi + 1, TextCaseASCIIInsensitive);
+        stripped_type.Find(parameter_name, semi + 1, kTextCaseASCIIInsensitive);
     if (start != kNotFound) {
-      start = strippedType.find('=', start + parameterName.length());
+      start = stripped_type.Find('=', start + parameter_name.length());
       if (start != kNotFound) {
-        size_t quote = strippedType.find('\"', start + 1);
-        size_t end = strippedType.find('\"', start + 2);
+        size_t quote = stripped_type.Find('\"', start + 1);
+        size_t end = stripped_type.Find('\"', start + 2);
         if (quote != kNotFound && end != kNotFound) {
           start = quote;
         } else {
-          end = strippedType.find(';', start + 1);
+          end = stripped_type.Find(';', start + 1);
           if (end == kNotFound)
-            end = strippedType.length();
+            end = stripped_type.length();
         }
-        parameterValue = strippedType.substring(start + 1, end - (start + 1))
-                             .stripWhiteSpace();
+        parameter_value = stripped_type.Substring(start + 1, end - (start + 1))
+                              .StripWhiteSpace();
       }
     }
   }
 
-  return parameterValue;
+  return parameter_value;
 }
 
-String ContentType::type() const {
-  String strippedType = m_type.stripWhiteSpace();
+String ContentType::GetType() const {
+  String stripped_type = type_.StripWhiteSpace();
 
   // "type" can have parameters after a semi-colon, strip them
-  size_t semi = strippedType.find(';');
+  size_t semi = stripped_type.Find(';');
   if (semi != kNotFound)
-    strippedType = strippedType.left(semi).stripWhiteSpace();
+    stripped_type = stripped_type.Left(semi).StripWhiteSpace();
 
-  return strippedType;
+  return stripped_type;
 }
 
 }  // namespace blink

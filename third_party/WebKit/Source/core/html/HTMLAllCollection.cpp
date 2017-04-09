@@ -31,29 +31,29 @@
 
 namespace blink {
 
-HTMLAllCollection* HTMLAllCollection::create(ContainerNode& node,
+HTMLAllCollection* HTMLAllCollection::Create(ContainerNode& node,
                                              CollectionType type) {
-  DCHECK_EQ(type, DocAll);
+  DCHECK_EQ(type, kDocAll);
   return new HTMLAllCollection(node);
 }
 
 HTMLAllCollection::HTMLAllCollection(ContainerNode& node)
-    : HTMLCollection(node, DocAll, DoesNotOverrideItemAfter) {}
+    : HTMLCollection(node, kDocAll, kDoesNotOverrideItemAfter) {}
 
 HTMLAllCollection::~HTMLAllCollection() {}
 
-Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name,
+Element* HTMLAllCollection::NamedItemWithIndex(const AtomicString& name,
                                                unsigned index) const {
-  updateIdNameCache();
+  UpdateIdNameCache();
 
-  const NamedItemCache& cache = namedItemCache();
-  if (const auto* elements = cache.getElementsById(name)) {
+  const NamedItemCache& cache = GetNamedItemCache();
+  if (const auto* elements = cache.GetElementsById(name)) {
     if (index < elements->size())
       return elements->at(index);
     index -= elements->size();
   }
 
-  if (const auto* elements = cache.getElementsByName(name)) {
+  if (const auto* elements = cache.GetElementsByName(name)) {
     if (index < elements->size())
       return elements->at(index);
   }
@@ -62,21 +62,21 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name,
 }
 
 void HTMLAllCollection::namedGetter(const AtomicString& name,
-                                    NodeListOrElement& returnValue) {
-  HeapVector<Member<Element>> namedItems;
-  this->namedItems(name, namedItems);
+                                    NodeListOrElement& return_value) {
+  HeapVector<Member<Element>> named_items;
+  this->NamedItems(name, named_items);
 
-  if (!namedItems.size())
+  if (!named_items.size())
     return;
 
-  if (namedItems.size() == 1) {
-    returnValue.setElement(namedItems.at(0));
+  if (named_items.size() == 1) {
+    return_value.setElement(named_items.at(0));
     return;
   }
 
   // FIXME: HTML5 specification says this should be a HTMLCollection.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-  returnValue.setNodeList(StaticElementList::adopt(namedItems));
+  return_value.setNodeList(StaticElementList::Adopt(named_items));
 }
 
 }  // namespace blink

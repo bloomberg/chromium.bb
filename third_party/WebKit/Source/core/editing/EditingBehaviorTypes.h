@@ -38,10 +38,10 @@ namespace blink {
 // and paste and selecting the space after a double click) that could be
 // combined with this if if possible in the future.
 enum EditingBehaviorType {
-  EditingMacBehavior,
-  EditingWindowsBehavior,
-  EditingUnixBehavior,
-  EditingAndroidBehavior
+  kEditingMacBehavior,
+  kEditingWindowsBehavior,
+  kEditingUnixBehavior,
+  kEditingAndroidBehavior
 };
 
 }  // namespace blink

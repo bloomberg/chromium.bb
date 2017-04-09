@@ -33,26 +33,26 @@
 namespace blink {
 
 WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url)
-    : m_url(url) {}
+    : url_(url) {}
 
 WebSocketHandshakeRequest::WebSocketHandshakeRequest() {}
 
 WebSocketHandshakeRequest::WebSocketHandshakeRequest(
     const WebSocketHandshakeRequest& request)
-    : m_url(request.m_url),
-      m_headerFields(request.m_headerFields),
-      m_headersText(request.m_headersText) {}
+    : url_(request.url_),
+      header_fields_(request.header_fields_),
+      headers_text_(request.headers_text_) {}
 
 WebSocketHandshakeRequest::~WebSocketHandshakeRequest() {}
 
-void WebSocketHandshakeRequest::addAndMergeHeader(HTTPHeaderMap* map,
+void WebSocketHandshakeRequest::AddAndMergeHeader(HTTPHeaderMap* map,
                                                   const AtomicString& name,
                                                   const AtomicString& value) {
-  HTTPHeaderMap::AddResult result = map->add(name, value);
-  if (!result.isNewEntry) {
+  HTTPHeaderMap::AddResult result = map->Add(name, value);
+  if (!result.is_new_entry) {
     // Inspector expects the "\n" separated format.
-    result.storedValue->value =
-        result.storedValue->value + "\n" + String(value);
+    result.stored_value->value =
+        result.stored_value->value + "\n" + String(value);
   }
 }
 

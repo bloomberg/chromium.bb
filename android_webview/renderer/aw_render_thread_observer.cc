@@ -30,7 +30,7 @@ bool AwRenderThreadObserver::OnControlMessageReceived(
 }
 
 void AwRenderThreadObserver::OnClearCache() {
-  blink::WebCache::clear();
+  blink::WebCache::Clear();
 }
 
 void AwRenderThreadObserver::OnKillProcess() {
@@ -39,7 +39,7 @@ void AwRenderThreadObserver::OnKillProcess() {
 }
 
 void AwRenderThreadObserver::OnSetJsOnlineProperty(bool network_up) {
-  blink::WebNetworkStateNotifier::setOnLine(network_up);
+  blink::WebNetworkStateNotifier::SetOnLine(network_up);
 }
 
 }  // nanemspace android_webview

@@ -32,21 +32,21 @@ void TouchscreenTapSuppressionController::GestureFlingCancelAck(
 
 bool TouchscreenTapSuppressionController::FilterTapEvent(
     const GestureEventWithLatencyInfo& event) {
-  switch (event.event.type()) {
-    case WebInputEvent::GestureTapDown:
+  switch (event.event.GetType()) {
+    case WebInputEvent::kGestureTapDown:
       forward_next_tap_cancel_ = false;
       if (!controller_.ShouldDeferTapDown())
         return false;
       stashed_tap_down_.reset(new GestureEventWithLatencyInfo(event));
       return true;
 
-    case WebInputEvent::GestureShowPress:
+    case WebInputEvent::kGestureShowPress:
       if (!stashed_tap_down_)
         return false;
       stashed_show_press_.reset(new GestureEventWithLatencyInfo(event));
       return true;
 
-    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::kGestureLongPress:
       // It is possible that a GestureLongPress arrives after tapDownTimer
       // expiration, in this case it should still get filtered if the
       // controller suppresses the tap end events.
@@ -56,16 +56,16 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
       stashed_long_press_.reset(new GestureEventWithLatencyInfo(event));
       return true;
 
-    case WebInputEvent::GestureTapUnconfirmed:
+    case WebInputEvent::kGestureTapUnconfirmed:
       return !!stashed_tap_down_;
 
-    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::kGestureTapCancel:
       return !forward_next_tap_cancel_ && controller_.ShouldSuppressTapEnd();
 
-    case WebInputEvent::GestureTap:
-    case WebInputEvent::GestureDoubleTap:
-    case WebInputEvent::GestureLongTap:
-    case WebInputEvent::GestureTwoFingerTap:
+    case WebInputEvent::kGestureTap:
+    case WebInputEvent::kGestureDoubleTap:
+    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::kGestureTwoFingerTap:
       return controller_.ShouldSuppressTapEnd();
 
     default:

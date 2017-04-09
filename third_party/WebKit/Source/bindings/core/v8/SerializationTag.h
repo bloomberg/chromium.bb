@@ -37,30 +37,30 @@ namespace blink {
 // GenerateFreshObjectTag/GenerateFreshArrayTag); these reference IDs are then
 // used with ObjectReferenceTag to tie the recursive knot.
 enum SerializationTag {
-  MessagePortTag = 'M',  // index:int -> MessagePort. Fills the result with
-                         // transferred MessagePort.
-  BlobTag = 'b',  // uuid:WebCoreString, type:WebCoreString, size:uint64_t ->
-                  // Blob (ref)
-  BlobIndexTag = 'i',      // index:int32_t -> Blob (ref)
-  FileTag = 'f',           // file:RawFile -> File (ref)
-  FileIndexTag = 'e',      // index:int32_t -> File (ref)
-  DOMFileSystemTag = 'd',  // type:int32_t, name:WebCoreString,
-                           // uuid:WebCoreString -> FileSystem (ref)
-  FileListTag =
+  kMessagePortTag = 'M',  // index:int -> MessagePort. Fills the result with
+                          // transferred MessagePort.
+  kBlobTag = 'b',  // uuid:WebCoreString, type:WebCoreString, size:uint64_t ->
+                   // Blob (ref)
+  kBlobIndexTag = 'i',      // index:int32_t -> Blob (ref)
+  kFileTag = 'f',           // file:RawFile -> File (ref)
+  kFileIndexTag = 'e',      // index:int32_t -> File (ref)
+  kDOMFileSystemTag = 'd',  // type:int32_t, name:WebCoreString,
+                            // uuid:WebCoreString -> FileSystem (ref)
+  kFileListTag =
       'l',  // length:uint32_t, files:RawFile[length] -> FileList (ref)
-  FileListIndexTag =
+  kFileListIndexTag =
       'L',  // length:uint32_t, files:int32_t[length] -> FileList (ref)
-  ImageDataTag = '#',  // width:uint32_t, height:uint32_t,
-                       // pixelDataLength:uint32_t, data:byte[pixelDataLength]
-                       // -> ImageData (ref)
-  ImageBitmapTag = 'g',  // size:uint32_t, data:byte[size] -> ImageBitmap (ref)
-  ImageBitmapTransferTag =
+  kImageDataTag = '#',  // width:uint32_t, height:uint32_t,
+                        // pixelDataLength:uint32_t, data:byte[pixelDataLength]
+                        // -> ImageData (ref)
+  kImageBitmapTag = 'g',  // size:uint32_t, data:byte[size] -> ImageBitmap (ref)
+  kImageBitmapTransferTag =
       'G',  // index:uint32_t -> ImageBitmap. For ImageBitmap transfer
-  OffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->
-                                     // OffscreenCanvas. For OffscreenCanvas
-                                     // transfer
-  CryptoKeyTag = 'K',  // subtag:byte, props, usages:uint32_t,
-                       // keyDataLength:uint32_t, keyData:byte[keyDataLength]
+  kOffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->
+                                      // OffscreenCanvas. For OffscreenCanvas
+                                      // transfer
+  kCryptoKeyTag = 'K',                // subtag:byte, props, usages:uint32_t,
+                        // keyDataLength:uint32_t, keyData:byte[keyDataLength]
   //                 If subtag=AesKeyTag:
   //                     props = keyLengthBytes:uint32_t, algorithmId:uint32_t
   //                 If subtag=HmacKeyTag:
@@ -74,11 +74,11 @@ enum SerializationTag {
   //                 If subtag=EcKeyTag:
   //                     props = algorithmId:uint32_t, type:uint32_t,
   //                     namedCurve:uint32_t
-  RTCCertificateTag = 'k',   // length:uint32_t, pemPrivateKey:WebCoreString,
+  kRTCCertificateTag = 'k',  // length:uint32_t, pemPrivateKey:WebCoreString,
                              // pemCertificate:WebCoreString
-  CompositorProxyTag =
+  kCompositorProxyTag =
       'C',  // elementId:uint64_t, bitfields:uint32_t -> CompositorProxy (ref)
-  VersionTag = 0xFF  // version:uint32_t -> Uses this as the file version.
+  kVersionTag = 0xFF  // version:uint32_t -> Uses this as the file version.
 };
 
 }  // namespace blink

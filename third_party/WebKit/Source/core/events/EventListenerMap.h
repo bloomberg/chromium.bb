@@ -53,40 +53,40 @@ class CORE_EXPORT EventListenerMap {
  public:
   EventListenerMap();
 
-  bool isEmpty() const { return m_entries.isEmpty(); }
-  bool contains(const AtomicString& eventType) const;
-  bool containsCapturing(const AtomicString& eventType) const;
+  bool IsEmpty() const { return entries_.IsEmpty(); }
+  bool Contains(const AtomicString& event_type) const;
+  bool ContainsCapturing(const AtomicString& event_type) const;
 
-  void clear();
-  bool add(const AtomicString& eventType,
+  void Clear();
+  bool Add(const AtomicString& event_type,
            EventListener*,
            const AddEventListenerOptionsResolved&,
-           RegisteredEventListener* registeredListener);
-  bool remove(const AtomicString& eventType,
+           RegisteredEventListener* registered_listener);
+  bool Remove(const AtomicString& event_type,
               const EventListener*,
               const EventListenerOptions&,
-              size_t* indexOfRemovedListener,
-              RegisteredEventListener* registeredListener);
-  EventListenerVector* find(const AtomicString& eventType);
-  Vector<AtomicString> eventTypes() const;
+              size_t* index_of_removed_listener,
+              RegisteredEventListener* registered_listener);
+  EventListenerVector* Find(const AtomicString& event_type);
+  Vector<AtomicString> EventTypes() const;
 
-  void copyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
+  void CopyEventListenersNotCreatedFromMarkupToTarget(EventTarget*);
 
   DECLARE_TRACE();
 
  private:
   friend class EventListenerIterator;
 
-  void checkNoActiveIterators();
+  void CheckNoActiveIterators();
 
   // We use HeapVector instead of HeapHashMap because
   //  - HeapVector is much more space efficient than HeapHashMap.
   //  - An EventTarget rarely has event listeners for many event types, and
   //    HeapVector is faster in such cases.
-  HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> m_entries;
+  HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> entries_;
 
 #if DCHECK_IS_ON()
-  int m_activeIteratorCount = 0;
+  int active_iterator_count_ = 0;
 #endif
 };
 
@@ -100,18 +100,18 @@ class EventListenerIterator {
   ~EventListenerIterator();
 #endif
 
-  EventListener* nextListener();
+  EventListener* NextListener();
 
  private:
   // This cannot be a Member because it is pointing to a part of object.
   // TODO(haraken): Use Member<EventTarget> instead of EventListenerMap*.
-  EventListenerMap* m_map;
-  unsigned m_entryIndex;
-  unsigned m_index;
+  EventListenerMap* map_;
+  unsigned entry_index_;
+  unsigned index_;
 };
 
 #if !DCHECK_IS_ON()
-inline void EventListenerMap::checkNoActiveIterators() {}
+inline void EventListenerMap::CheckNoActiveIterators() {}
 #endif
 
 }  // namespace blink

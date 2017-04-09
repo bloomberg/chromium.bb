@@ -48,23 +48,23 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DedicatedWorkerGlobalScope* create(
+  static DedicatedWorkerGlobalScope* Create(
       DedicatedWorkerThread*,
       std::unique_ptr<WorkerThreadStartupData>,
-      double timeOrigin);
+      double time_origin);
   ~DedicatedWorkerGlobalScope() override;
 
-  bool isDedicatedWorkerGlobalScope() const override { return true; }
+  bool IsDedicatedWorkerGlobalScope() const override { return true; }
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue>,
                    const MessagePortArray&,
                    ExceptionState&);
 
-  static bool canTransferArrayBuffersAndImageBitmaps() { return true; }
+  static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
@@ -74,13 +74,13 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   friend class DedicatedWorkerThreadForTest;
 
   DedicatedWorkerGlobalScope(const KURL&,
-                             const String& userAgent,
+                             const String& user_agent,
                              DedicatedWorkerThread*,
-                             double timeOrigin,
+                             double time_origin,
                              std::unique_ptr<SecurityOrigin::PrivilegeData>,
                              WorkerClients*);
 
-  InProcessWorkerObjectProxy& workerObjectProxy() const;
+  InProcessWorkerObjectProxy& WorkerObjectProxy() const;
 };
 
 }  // namespace blink

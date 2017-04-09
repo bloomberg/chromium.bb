@@ -33,24 +33,24 @@ const size_t kMaxNumberOfMediaImages = 10;
 // Maximum of sizes in a MediaImage.
 const size_t kMaxNumberOfImageSizes = 10;
 
-bool checkMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
+bool CheckMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
   // Invalid URLs will be rejected early on.
-  DCHECK(src.isValid());
+  DCHECK(src.IsValid());
 
-  if (!src.protocolIs(url::kHttpScheme) && !src.protocolIs(url::kHttpsScheme) &&
-      !src.protocolIs(url::kDataScheme) && !src.protocolIs(url::kBlobScheme)) {
-    context->addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, WarningMessageLevel,
+  if (!src.ProtocolIs(url::kHttpScheme) && !src.ProtocolIs(url::kHttpsScheme) &&
+      !src.ProtocolIs(url::kDataScheme) && !src.ProtocolIs(url::kBlobScheme)) {
+    context->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
         "MediaImage src can only be of http/https/data/blob scheme: " +
-            src.getString()));
+            src.GetString()));
     return false;
   }
 
-  DCHECK(src.getString().is8Bit());
-  if (src.getString().length() > url::kMaxURLChars) {
-    context->addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, WarningMessageLevel,
-        "MediaImage src exceeds maximum URL length: " + src.getString()));
+  DCHECK(src.GetString().Is8Bit());
+  if (src.GetString().length() > url::kMaxURLChars) {
+    context->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
+        "MediaImage src exceeds maximum URL length: " + src.GetString()));
     return false;
   }
   return true;
@@ -58,61 +58,61 @@ bool checkMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
 
 // Sanitize MediaImage and do mojo serialization. Returns null when
 // |image.src()| is bad.
-blink::mojom::blink::MediaImagePtr sanitizeMediaImageAndConvertToMojo(
+blink::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
     const MediaImage& image,
     ExecutionContext* context) {
-  blink::mojom::blink::MediaImagePtr mojoImage;
+  blink::mojom::blink::MediaImagePtr mojo_image;
 
-  KURL url = KURL(ParsedURLString, image.src());
-  if (!checkMediaImageSrcSanity(url, context))
-    return mojoImage;
+  KURL url = KURL(kParsedURLString, image.src());
+  if (!CheckMediaImageSrcSanity(url, context))
+    return mojo_image;
 
-  mojoImage = blink::mojom::blink::MediaImage::New();
-  mojoImage->src = url;
-  mojoImage->type = image.type().left(kMaxImageTypeLength);
-  for (const auto& webSize :
-       WebIconSizesParser::parseIconSizes(image.sizes())) {
-    mojoImage->sizes.push_back(webSize);
-    if (mojoImage->sizes.size() == kMaxNumberOfImageSizes) {
-      context->addConsoleMessage(ConsoleMessage::create(
-          JSMessageSource, WarningMessageLevel,
+  mojo_image = blink::mojom::blink::MediaImage::New();
+  mojo_image->src = url;
+  mojo_image->type = image.type().Left(kMaxImageTypeLength);
+  for (const auto& web_size :
+       WebIconSizesParser::ParseIconSizes(image.sizes())) {
+    mojo_image->sizes.push_back(web_size);
+    if (mojo_image->sizes.size() == kMaxNumberOfImageSizes) {
+      context->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
           "The number of MediaImage sizes exceeds the upper limit. "
           "All remaining MediaImage will be ignored"));
       break;
     }
   }
-  return mojoImage;
+  return mojo_image;
 }
 
 }  // anonymous namespace
 
 blink::mojom::blink::MediaMetadataPtr
-MediaMetadataSanitizer::sanitizeAndConvertToMojo(const MediaMetadata* metadata,
+MediaMetadataSanitizer::SanitizeAndConvertToMojo(const MediaMetadata* metadata,
                                                  ExecutionContext* context) {
-  blink::mojom::blink::MediaMetadataPtr mojoMetadata;
+  blink::mojom::blink::MediaMetadataPtr mojo_metadata;
   if (!metadata)
-    return mojoMetadata;
+    return mojo_metadata;
 
-  mojoMetadata = blink::mojom::blink::MediaMetadata::New();
+  mojo_metadata = blink::mojom::blink::MediaMetadata::New();
 
-  mojoMetadata->title = metadata->title().left(kMaxStringLength);
-  mojoMetadata->artist = metadata->artist().left(kMaxStringLength);
-  mojoMetadata->album = metadata->album().left(kMaxStringLength);
+  mojo_metadata->title = metadata->title().Left(kMaxStringLength);
+  mojo_metadata->artist = metadata->artist().Left(kMaxStringLength);
+  mojo_metadata->album = metadata->album().Left(kMaxStringLength);
 
   for (const MediaImage& image : metadata->artwork()) {
-    blink::mojom::blink::MediaImagePtr mojoImage =
-        sanitizeMediaImageAndConvertToMojo(image, context);
-    if (!mojoImage.is_null())
-      mojoMetadata->artwork.push_back(std::move(mojoImage));
-    if (mojoMetadata->artwork.size() == kMaxNumberOfMediaImages) {
-      context->addConsoleMessage(ConsoleMessage::create(
-          JSMessageSource, WarningMessageLevel,
+    blink::mojom::blink::MediaImagePtr mojo_image =
+        SanitizeMediaImageAndConvertToMojo(image, context);
+    if (!mojo_image.is_null())
+      mojo_metadata->artwork.push_back(std::move(mojo_image));
+    if (mojo_metadata->artwork.size() == kMaxNumberOfMediaImages) {
+      context->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
           "The number of MediaImage sizes exceeds the upper limit. "
           "All remaining MediaImage will be ignored"));
       break;
     }
   }
-  return mojoMetadata;
+  return mojo_metadata;
 }
 
 }  // namespace blink

@@ -42,68 +42,68 @@ namespace blink {
 
 class StylePendingImage final : public StyleImage {
  public:
-  static StylePendingImage* create(const CSSValue& value) {
+  static StylePendingImage* Create(const CSSValue& value) {
     return new StylePendingImage(value);
   }
 
-  WrappedImagePtr data() const override { return m_value.get(); }
+  WrappedImagePtr Data() const override { return value_.Get(); }
 
-  CSSValue* cssValue() const override { return m_value; }
+  CSSValue* CssValue() const override { return value_; }
 
-  CSSValue* computedCSSValue() const override {
+  CSSValue* ComputedCSSValue() const override {
     NOTREACHED();
     return nullptr;
   }
 
-  CSSImageValue* cssImageValue() const {
-    return m_value->isImageValue() ? toCSSImageValue(m_value.get()) : 0;
+  CSSImageValue* CssImageValue() const {
+    return value_->IsImageValue() ? ToCSSImageValue(value_.Get()) : 0;
   }
-  CSSPaintValue* cssPaintValue() const {
-    return m_value->isPaintValue() ? toCSSPaintValue(m_value.get()) : 0;
+  CSSPaintValue* CssPaintValue() const {
+    return value_->IsPaintValue() ? ToCSSPaintValue(value_.Get()) : 0;
   }
-  CSSImageGeneratorValue* cssImageGeneratorValue() const {
-    return m_value->isImageGeneratorValue()
-               ? toCSSImageGeneratorValue(m_value.get())
+  CSSImageGeneratorValue* CssImageGeneratorValue() const {
+    return value_->IsImageGeneratorValue()
+               ? ToCSSImageGeneratorValue(value_.Get())
                : 0;
   }
-  CSSImageSetValue* cssImageSetValue() const {
-    return m_value->isImageSetValue() ? toCSSImageSetValue(m_value.get()) : 0;
+  CSSImageSetValue* CssImageSetValue() const {
+    return value_->IsImageSetValue() ? ToCSSImageSetValue(value_.Get()) : 0;
   }
 
-  LayoutSize imageSize(const LayoutObject&,
+  LayoutSize ImageSize(const LayoutObject&,
                        float /*multiplier*/,
                        const LayoutSize& /*defaultObjectSize*/) const override {
     return LayoutSize();
   }
-  bool imageHasRelativeSize() const override { return false; }
-  bool usesImageContainerSize() const override { return false; }
-  void addClient(LayoutObject*) override {}
-  void removeClient(LayoutObject*) override {}
-  PassRefPtr<Image> image(const LayoutObject&,
-                          const IntSize&,
-                          float) const override {
+  bool ImageHasRelativeSize() const override { return false; }
+  bool UsesImageContainerSize() const override { return false; }
+  void AddClient(LayoutObject*) override {}
+  void RemoveClient(LayoutObject*) override {}
+  PassRefPtr<Image> GetImage(const LayoutObject&,
+                             const IntSize&,
+                             float) const override {
     NOTREACHED();
     return nullptr;
   }
-  bool knownToBeOpaque(const LayoutObject&) const override { return false; }
+  bool KnownToBeOpaque(const LayoutObject&) const override { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_value);
-    StyleImage::trace(visitor);
+    visitor->Trace(value_);
+    StyleImage::Trace(visitor);
   }
 
  private:
   explicit StylePendingImage(const CSSValue& value)
-      : m_value(const_cast<CSSValue*>(&value)) {
-    m_isPendingImage = true;
+      : value_(const_cast<CSSValue*>(&value)) {
+    is_pending_image_ = true;
   }
 
   // TODO(sashab): Replace this with <const CSSValue> once Member<>
   // supports const types.
-  Member<CSSValue> m_value;
+  Member<CSSValue> value_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, isPendingImage());
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, IsPendingImage());
 
 }  // namespace blink
 #endif

@@ -18,11 +18,11 @@ class EXTDisjointTimerQuery final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static EXTDisjointTimerQuery* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static EXTDisjointTimerQuery* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
+  WebGLExtensionName GetName() const override;
 
   WebGLTimerQueryEXT* createQueryEXT();
   void deleteQueryEXT(WebGLTimerQueryEXT*);
@@ -39,7 +39,7 @@ class EXTDisjointTimerQuery final : public WebGLExtension {
   friend class WebGLTimerQueryEXT;
   explicit EXTDisjointTimerQuery(WebGLRenderingContextBase*);
 
-  Member<WebGLTimerQueryEXT> m_currentElapsedQuery;
+  Member<WebGLTimerQueryEXT> current_elapsed_query_;
 };
 
 }  // namespace blink

@@ -15,66 +15,66 @@
 
 namespace blink {
 
-SimTest::SimTest() : m_webViewClient(m_compositor), m_webFrameClient(*this) {
-  Document::setThreadedParsingEnabledForTesting(false);
+SimTest::SimTest() : web_view_client_(compositor_), web_frame_client_(*this) {
+  Document::SetThreadedParsingEnabledForTesting(false);
   // Use the mock theme to get more predictable code paths, this also avoids
   // the OS callbacks in ScrollAnimatorMac which can schedule frames
   // unpredictably since the OS will randomly call into blink for
   // updateScrollerStyleForNewRecommendedScrollerStyle which then does
   // FrameView::scrollbarStyleChanged and will adjust the scrollbar existence
   // in the middle of a test.
-  LayoutTestSupport::setMockThemeEnabledForTest(true);
-  ScrollbarTheme::setMockScrollbarsEnabled(true);
-  m_webViewHelper.initialize(true, &m_webFrameClient, &m_webViewClient);
-  m_compositor.setWebViewImpl(webView());
-  m_page.setPage(webView().page());
+  LayoutTestSupport::SetMockThemeEnabledForTest(true);
+  ScrollbarTheme::SetMockScrollbarsEnabled(true);
+  web_view_helper_.Initialize(true, &web_frame_client_, &web_view_client_);
+  compositor_.SetWebViewImpl(WebView());
+  page_.SetPage(WebView().GetPage());
 }
 
 SimTest::~SimTest() {
   // Pump the message loop to process the load event.
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
-  Document::setThreadedParsingEnabledForTesting(true);
-  LayoutTestSupport::setMockThemeEnabledForTest(false);
-  ScrollbarTheme::setMockScrollbarsEnabled(false);
-  WebCache::clear();
+  Document::SetThreadedParsingEnabledForTesting(true);
+  LayoutTestSupport::SetMockThemeEnabledForTest(false);
+  ScrollbarTheme::SetMockScrollbarsEnabled(false);
+  WebCache::Clear();
 }
 
-void SimTest::loadURL(const String& url) {
-  WebURLRequest request(KURL(ParsedURLString, url));
-  webView().mainFrameImpl()->loadRequest(request);
+void SimTest::LoadURL(const String& url) {
+  WebURLRequest request(KURL(kParsedURLString, url));
+  WebView().MainFrameImpl()->LoadRequest(request);
 }
 
-LocalDOMWindow& SimTest::window() {
-  return *document().domWindow();
+LocalDOMWindow& SimTest::Window() {
+  return *GetDocument().domWindow();
 }
 
-SimPage& SimTest::page() {
-  return m_page;
+SimPage& SimTest::Page() {
+  return page_;
 }
 
-Document& SimTest::document() {
-  return *webView().mainFrameImpl()->frame()->document();
+Document& SimTest::GetDocument() {
+  return *WebView().MainFrameImpl()->GetFrame()->GetDocument();
 }
 
-WebViewImpl& SimTest::webView() {
-  return *m_webViewHelper.webView();
+WebViewImpl& SimTest::WebView() {
+  return *web_view_helper_.WebView();
 }
 
-WebLocalFrameImpl& SimTest::mainFrame() {
-  return *webView().mainFrameImpl();
+WebLocalFrameImpl& SimTest::MainFrame() {
+  return *WebView().MainFrameImpl();
 }
 
-const SimWebViewClient& SimTest::webViewClient() const {
-  return m_webViewClient;
+const SimWebViewClient& SimTest::WebViewClient() const {
+  return web_view_client_;
 }
 
-SimCompositor& SimTest::compositor() {
-  return m_compositor;
+SimCompositor& SimTest::Compositor() {
+  return compositor_;
 }
 
-void SimTest::addConsoleMessage(const String& message) {
-  m_consoleMessages.push_back(message);
+void SimTest::AddConsoleMessage(const String& message) {
+  console_messages_.push_back(message);
 }
 
 }  // namespace blink

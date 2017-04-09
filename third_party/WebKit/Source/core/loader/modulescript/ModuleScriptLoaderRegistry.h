@@ -23,12 +23,12 @@ enum class ModuleGraphLevel;
 class CORE_EXPORT ModuleScriptLoaderRegistry final
     : public GarbageCollected<ModuleScriptLoaderRegistry> {
  public:
-  static ModuleScriptLoaderRegistry* create() {
+  static ModuleScriptLoaderRegistry* Create() {
     return new ModuleScriptLoaderRegistry;
   }
   DECLARE_TRACE();
 
-  ModuleScriptLoader* fetch(const ModuleScriptFetchRequest&,
+  ModuleScriptLoader* Fetch(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             Modulator*,
                             ResourceFetcher*,
@@ -38,9 +38,9 @@ class CORE_EXPORT ModuleScriptLoaderRegistry final
   ModuleScriptLoaderRegistry() = default;
 
   friend class ModuleScriptLoader;
-  void releaseFinishedLoader(ModuleScriptLoader*);
+  void ReleaseFinishedLoader(ModuleScriptLoader*);
 
-  HeapHashSet<Member<ModuleScriptLoader>> m_activeLoaders;
+  HeapHashSet<Member<ModuleScriptLoader>> active_loaders_;
 };
 
 }  // namespace blink

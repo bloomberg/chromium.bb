@@ -13,58 +13,58 @@ namespace {
 TEST(HTMLParserIdiomsTest, ParseHTMLInteger) {
   int value = 0;
 
-  EXPECT_TRUE(parseHTMLInteger("2147483646", value));
+  EXPECT_TRUE(ParseHTMLInteger("2147483646", value));
   EXPECT_EQ(2147483646, value);
-  EXPECT_TRUE(parseHTMLInteger("2147483647", value));
+  EXPECT_TRUE(ParseHTMLInteger("2147483647", value));
   EXPECT_EQ(2147483647, value);
   value = 12345;
-  EXPECT_FALSE(parseHTMLInteger("2147483648", value));
+  EXPECT_FALSE(ParseHTMLInteger("2147483648", value));
   EXPECT_EQ(12345, value);
 
-  EXPECT_TRUE(parseHTMLInteger("-2147483647", value));
+  EXPECT_TRUE(ParseHTMLInteger("-2147483647", value));
   EXPECT_EQ(-2147483647, value);
-  EXPECT_TRUE(parseHTMLInteger("-2147483648", value));
+  EXPECT_TRUE(ParseHTMLInteger("-2147483648", value));
   EXPECT_EQ(0 - 2147483648, value);
   value = 12345;
-  EXPECT_FALSE(parseHTMLInteger("-2147483649", value));
+  EXPECT_FALSE(ParseHTMLInteger("-2147483649", value));
   EXPECT_EQ(12345, value);
 }
 
 TEST(HTMLParserIdiomsTest, ParseHTMLNonNegativeInteger) {
   unsigned value = 0;
 
-  EXPECT_TRUE(parseHTMLNonNegativeInteger("0", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger("0", value));
   EXPECT_EQ(0U, value);
 
-  EXPECT_TRUE(parseHTMLNonNegativeInteger("+0", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger("+0", value));
   EXPECT_EQ(0U, value);
 
-  EXPECT_TRUE(parseHTMLNonNegativeInteger("-0", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger("-0", value));
   EXPECT_EQ(0U, value);
 
-  EXPECT_TRUE(parseHTMLNonNegativeInteger("2147483647", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger("2147483647", value));
   EXPECT_EQ(2147483647U, value);
-  EXPECT_TRUE(parseHTMLNonNegativeInteger("4294967295", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger("4294967295", value));
   EXPECT_EQ(4294967295U, value);
 
-  EXPECT_TRUE(parseHTMLNonNegativeInteger("0abc", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger("0abc", value));
   EXPECT_EQ(0U, value);
-  EXPECT_TRUE(parseHTMLNonNegativeInteger(" 0", value));
+  EXPECT_TRUE(ParseHTMLNonNegativeInteger(" 0", value));
   EXPECT_EQ(0U, value);
 
   value = 12345U;
-  EXPECT_FALSE(parseHTMLNonNegativeInteger("-1", value));
+  EXPECT_FALSE(ParseHTMLNonNegativeInteger("-1", value));
   EXPECT_EQ(12345U, value);
-  EXPECT_FALSE(parseHTMLNonNegativeInteger("abc", value));
+  EXPECT_FALSE(ParseHTMLNonNegativeInteger("abc", value));
   EXPECT_EQ(12345U, value);
-  EXPECT_FALSE(parseHTMLNonNegativeInteger("  ", value));
+  EXPECT_FALSE(ParseHTMLNonNegativeInteger("  ", value));
   EXPECT_EQ(12345U, value);
-  EXPECT_FALSE(parseHTMLNonNegativeInteger("-", value));
+  EXPECT_FALSE(ParseHTMLNonNegativeInteger("-", value));
   EXPECT_EQ(12345U, value);
 }
 
 TEST(HTMLParserIdiomsTest, ParseHTMLListOfFloatingPointNumbers_null) {
-  Vector<double> numbers = parseHTMLListOfFloatingPointNumbers(nullAtom);
+  Vector<double> numbers = ParseHTMLListOfFloatingPointNumbers(g_null_atom);
   EXPECT_EQ(0u, numbers.size());
 }
 

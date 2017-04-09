@@ -53,9 +53,9 @@ class ClipPathOperation : public RefCounted<ClipPathOperation> {
   virtual bool operator==(const ClipPathOperation&) const = 0;
   bool operator!=(const ClipPathOperation& o) const { return !(*this == o); }
 
-  virtual OperationType type() const = 0;
-  bool isSameType(const ClipPathOperation& o) const {
-    return o.type() == type();
+  virtual OperationType GetType() const = 0;
+  bool IsSameType(const ClipPathOperation& o) const {
+    return o.GetType() == GetType();
   }
 
  protected:
@@ -64,79 +64,79 @@ class ClipPathOperation : public RefCounted<ClipPathOperation> {
 
 class ReferenceClipPathOperation final : public ClipPathOperation {
  public:
-  static PassRefPtr<ReferenceClipPathOperation> create(
+  static PassRefPtr<ReferenceClipPathOperation> Create(
       const String& url,
-      SVGElementProxy& elementProxy) {
-    return adoptRef(new ReferenceClipPathOperation(url, elementProxy));
+      SVGElementProxy& element_proxy) {
+    return AdoptRef(new ReferenceClipPathOperation(url, element_proxy));
   }
 
-  void addClient(SVGResourceClient*);
-  void removeClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient*);
+  void RemoveClient(SVGResourceClient*);
 
-  SVGElement* findElement(TreeScope&) const;
+  SVGElement* FindElement(TreeScope&) const;
 
-  const String& url() const { return m_url; }
+  const String& Url() const { return url_; }
 
  private:
   bool operator==(const ClipPathOperation&) const override;
-  OperationType type() const override { return REFERENCE; }
+  OperationType GetType() const override { return REFERENCE; }
 
-  ReferenceClipPathOperation(const String& url, SVGElementProxy& elementProxy)
-      : m_elementProxy(&elementProxy), m_url(url) {}
+  ReferenceClipPathOperation(const String& url, SVGElementProxy& element_proxy)
+      : element_proxy_(&element_proxy), url_(url) {}
 
-  Persistent<SVGElementProxy> m_elementProxy;
-  String m_url;
+  Persistent<SVGElementProxy> element_proxy_;
+  String url_;
 };
 
 DEFINE_TYPE_CASTS(ReferenceClipPathOperation,
                   ClipPathOperation,
                   op,
-                  op->type() == ClipPathOperation::REFERENCE,
-                  op.type() == ClipPathOperation::REFERENCE);
+                  op->GetType() == ClipPathOperation::REFERENCE,
+                  op.GetType() == ClipPathOperation::REFERENCE);
 
 class ShapeClipPathOperation final : public ClipPathOperation {
  public:
-  static PassRefPtr<ShapeClipPathOperation> create(
+  static PassRefPtr<ShapeClipPathOperation> Create(
       PassRefPtr<BasicShape> shape) {
-    return adoptRef(new ShapeClipPathOperation(std::move(shape)));
+    return AdoptRef(new ShapeClipPathOperation(std::move(shape)));
   }
 
-  const BasicShape* basicShape() const { return m_shape.get(); }
-  bool isValid() const { return m_shape.get(); }
-  const Path& path(const FloatRect& boundingRect) {
-    DCHECK(m_shape);
-    m_path.reset();
-    m_path = WTF::wrapUnique(new Path);
-    m_shape->path(*m_path, boundingRect);
-    m_path->setWindRule(m_shape->getWindRule());
-    return *m_path;
+  const BasicShape* GetBasicShape() const { return shape_.Get(); }
+  bool IsValid() const { return shape_.Get(); }
+  const Path& GetPath(const FloatRect& bounding_rect) {
+    DCHECK(shape_);
+    path_.reset();
+    path_ = WTF::WrapUnique(new Path);
+    shape_->GetPath(*path_, bounding_rect);
+    path_->SetWindRule(shape_->GetWindRule());
+    return *path_;
   }
 
  private:
   bool operator==(const ClipPathOperation&) const override;
-  OperationType type() const override { return SHAPE; }
+  OperationType GetType() const override { return SHAPE; }
 
   ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
-      : m_shape(std::move(shape)) {}
+      : shape_(std::move(shape)) {}
 
-  RefPtr<BasicShape> m_shape;
-  std::unique_ptr<Path> m_path;
+  RefPtr<BasicShape> shape_;
+  std::unique_ptr<Path> path_;
 };
 
 DEFINE_TYPE_CASTS(ShapeClipPathOperation,
                   ClipPathOperation,
                   op,
-                  op->type() == ClipPathOperation::SHAPE,
-                  op.type() == ClipPathOperation::SHAPE);
+                  op->GetType() == ClipPathOperation::SHAPE,
+                  op.GetType() == ClipPathOperation::SHAPE);
 
 inline bool ShapeClipPathOperation::operator==(
     const ClipPathOperation& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
-  BasicShape* otherShape = toShapeClipPathOperation(o).m_shape.get();
-  if (!m_shape.get() || !otherShape)
-    return static_cast<bool>(m_shape.get()) == static_cast<bool>(otherShape);
-  return *m_shape == *otherShape;
+  BasicShape* other_shape = ToShapeClipPathOperation(o).shape_.Get();
+  if (!shape_.Get() || !other_shape)
+    return static_cast<bool>(shape_.Get()) == static_cast<bool>(other_shape);
+  return *shape_ == *other_shape;
 }
 
 }  // namespace blink

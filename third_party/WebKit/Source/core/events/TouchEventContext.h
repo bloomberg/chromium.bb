@@ -36,20 +36,20 @@ class TouchList;
 
 class TouchEventContext : public GarbageCollected<TouchEventContext> {
  public:
-  static TouchEventContext* create();
-  void handleLocalEvents(Event&) const;
-  TouchList& touches() { return *m_touches; }
-  TouchList& targetTouches() { return *m_targetTouches; }
-  TouchList& changedTouches() { return *m_changedTouches; }
+  static TouchEventContext* Create();
+  void HandleLocalEvents(Event&) const;
+  TouchList& Touches() { return *touches_; }
+  TouchList& TargetTouches() { return *target_touches_; }
+  TouchList& ChangedTouches() { return *changed_touches_; }
 
   DECLARE_TRACE();
 
  private:
   TouchEventContext();
 
-  Member<TouchList> m_touches;
-  Member<TouchList> m_targetTouches;
-  Member<TouchList> m_changedTouches;
+  Member<TouchList> touches_;
+  Member<TouchList> target_touches_;
+  Member<TouchList> changed_touches_;
 };
 
 }  // namespace blink

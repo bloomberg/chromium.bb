@@ -8,7 +8,7 @@
 
 namespace blink {
 
-DOMRect* DOMRect::create(double x, double y, double width, double height) {
+DOMRect* DOMRect::Create(double x, double y, double width, double height) {
   return new DOMRect(x, y, width, height);
 }
 

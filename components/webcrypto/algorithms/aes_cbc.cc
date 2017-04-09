@@ -42,10 +42,10 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt cipher_operation,
                             std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  const blink::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
+  const blink::WebCryptoAesCbcParams* params = algorithm.AesCbcParams();
   const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(key);
 
-  if (params->iv().size() != 16)
+  if (params->Iv().size() != 16)
     return Status::ErrorIncorrectSizeAesCbcIv();
 
   // According to the openssl docs, the amount of data written may be as large
@@ -69,7 +69,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt cipher_operation,
 
   bssl::ScopedEVP_CIPHER_CTX context;
   if (!EVP_CipherInit_ex(context.get(), cipher, NULL, &raw_key[0],
-                         params->iv().data(), cipher_operation)) {
+                         params->Iv().Data(), cipher_operation)) {
     return Status::OperationError();
   }
 

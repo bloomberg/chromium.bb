@@ -41,25 +41,25 @@ class WebSourceBuffer;
 class WebMediaSource {
  public:
   enum AddStatus {
-    AddStatusOk,
-    AddStatusNotSupported,
-    AddStatusReachedIdLimit
+    kAddStatusOk,
+    kAddStatusNotSupported,
+    kAddStatusReachedIdLimit
   };
 
   enum EndOfStreamStatus {
-    EndOfStreamStatusNoError,
-    EndOfStreamStatusNetworkError,
-    EndOfStreamStatusDecodeError,
+    kEndOfStreamStatusNoError,
+    kEndOfStreamStatusNetworkError,
+    kEndOfStreamStatusDecodeError,
   };
 
   virtual ~WebMediaSource() {}
-  virtual AddStatus addSourceBuffer(const WebString& type,
+  virtual AddStatus AddSourceBuffer(const WebString& type,
                                     const WebString& codecs,
                                     WebSourceBuffer**) = 0;
-  virtual double duration() = 0;
-  virtual void setDuration(double) = 0;
-  virtual void markEndOfStream(EndOfStreamStatus) = 0;
-  virtual void unmarkEndOfStream() = 0;
+  virtual double Duration() = 0;
+  virtual void SetDuration(double) = 0;
+  virtual void MarkEndOfStream(EndOfStreamStatus) = 0;
+  virtual void UnmarkEndOfStream() = 0;
 };
 
 }  // namespace blink

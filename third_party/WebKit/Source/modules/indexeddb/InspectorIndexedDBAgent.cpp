@@ -86,7 +86,7 @@ typedef blink::protocol::IndexedDB::Backend::DeleteDatabaseCallback
 namespace blink {
 
 namespace IndexedDBAgentState {
-static const char indexedDBAgentEnabled[] = "indexedDBAgentEnabled";
+static const char kIndexedDBAgentEnabled[] = "indexedDBAgentEnabled";
 };
 
 namespace {
@@ -98,11 +98,11 @@ class GetDatabaseNamesCallback final : public EventListener {
   WTF_MAKE_NONCOPYABLE(GetDatabaseNamesCallback);
 
  public:
-  static GetDatabaseNamesCallback* create(
-      std::unique_ptr<RequestDatabaseNamesCallback> requestCallback,
-      const String& securityOrigin) {
-    return new GetDatabaseNamesCallback(std::move(requestCallback),
-                                        securityOrigin);
+  static GetDatabaseNamesCallback* Create(
+      std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
+      const String& security_origin) {
+    return new GetDatabaseNamesCallback(std::move(request_callback),
+                                        security_origin);
   }
 
   ~GetDatabaseNamesCallback() override {}
@@ -113,47 +113,47 @@ class GetDatabaseNamesCallback final : public EventListener {
 
   void handleEvent(ExecutionContext*, Event* event) override {
     if (event->type() != EventTypeNames::success) {
-      m_requestCallback->sendFailure(Response::Error("Unexpected event type."));
+      request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
     }
 
-    IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-    IDBAny* requestResult = idbRequest->resultAsAny();
-    if (requestResult->getType() != IDBAny::DOMStringListType) {
-      m_requestCallback->sendFailure(
+    IDBRequest* idb_request = static_cast<IDBRequest*>(event->target());
+    IDBAny* request_result = idb_request->ResultAsAny();
+    if (request_result->GetType() != IDBAny::kDOMStringListType) {
+      request_callback_->sendFailure(
           Response::Error("Unexpected result type."));
       return;
     }
 
-    DOMStringList* databaseNamesList = requestResult->domStringList();
-    std::unique_ptr<protocol::Array<String>> databaseNames =
+    DOMStringList* database_names_list = request_result->DomStringList();
+    std::unique_ptr<protocol::Array<String>> database_names =
         protocol::Array<String>::create();
-    for (size_t i = 0; i < databaseNamesList->length(); ++i)
-      databaseNames->addItem(databaseNamesList->item(i));
-    m_requestCallback->sendSuccess(std::move(databaseNames));
+    for (size_t i = 0; i < database_names_list->length(); ++i)
+      database_names->addItem(database_names_list->item(i));
+    request_callback_->sendSuccess(std::move(database_names));
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
 
  private:
   GetDatabaseNamesCallback(
-      std::unique_ptr<RequestDatabaseNamesCallback> requestCallback,
-      const String& securityOrigin)
-      : EventListener(EventListener::CPPEventListenerType),
-        m_requestCallback(std::move(requestCallback)),
-        m_securityOrigin(securityOrigin) {}
-  std::unique_ptr<RequestDatabaseNamesCallback> m_requestCallback;
-  String m_securityOrigin;
+      std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
+      const String& security_origin)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)),
+        security_origin_(security_origin) {}
+  std::unique_ptr<RequestDatabaseNamesCallback> request_callback_;
+  String security_origin_;
 };
 
 class DeleteCallback final : public EventListener {
   WTF_MAKE_NONCOPYABLE(DeleteCallback);
 
  public:
-  static DeleteCallback* create(
-      std::unique_ptr<DeleteDatabaseCallback> requestCallback,
-      const String& securityOrigin) {
-    return new DeleteCallback(std::move(requestCallback), securityOrigin);
+  static DeleteCallback* Create(
+      std::unique_ptr<DeleteDatabaseCallback> request_callback,
+      const String& security_origin) {
+    return new DeleteCallback(std::move(request_callback), security_origin);
   }
 
   ~DeleteCallback() override {}
@@ -164,23 +164,23 @@ class DeleteCallback final : public EventListener {
 
   void handleEvent(ExecutionContext*, Event* event) override {
     if (event->type() != EventTypeNames::success) {
-      m_requestCallback->sendFailure(
+      request_callback_->sendFailure(
           Response::Error("Failed to delete database."));
       return;
     }
-    m_requestCallback->sendSuccess();
+    request_callback_->sendSuccess();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
 
  private:
-  DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> requestCallback,
-                 const String& securityOrigin)
-      : EventListener(EventListener::CPPEventListenerType),
-        m_requestCallback(std::move(requestCallback)),
-        m_securityOrigin(securityOrigin) {}
-  std::unique_ptr<DeleteDatabaseCallback> m_requestCallback;
-  String m_securityOrigin;
+  DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> request_callback,
+                 const String& security_origin)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)),
+        security_origin_(security_origin) {}
+  std::unique_ptr<DeleteDatabaseCallback> request_callback_;
+  String security_origin_;
 };
 
 template <typename RequestCallback>
@@ -192,46 +192,46 @@ template <typename RequestCallback>
 class ExecutableWithDatabase
     : public RefCounted<ExecutableWithDatabase<RequestCallback>> {
  public:
-  ExecutableWithDatabase(ScriptState* scriptState)
-      : m_scriptState(scriptState) {}
+  ExecutableWithDatabase(ScriptState* script_state)
+      : script_state_(script_state) {}
   virtual ~ExecutableWithDatabase() {}
-  void start(IDBFactory* idbFactory,
+  void Start(IDBFactory* idb_factory,
              SecurityOrigin*,
-             const String& databaseName) {
-    OpenDatabaseCallback<RequestCallback>* openCallback =
-        OpenDatabaseCallback<RequestCallback>::create(this);
-    UpgradeDatabaseCallback<RequestCallback>* upgradeCallback =
-        UpgradeDatabaseCallback<RequestCallback>::create(this);
-    DummyExceptionStateForTesting exceptionState;
-    IDBOpenDBRequest* idbOpenDBRequest =
-        idbFactory->open(getScriptState(), databaseName, exceptionState);
-    if (exceptionState.hadException()) {
-      getRequestCallback()->sendFailure(
+             const String& database_name) {
+    OpenDatabaseCallback<RequestCallback>* open_callback =
+        OpenDatabaseCallback<RequestCallback>::Create(this);
+    UpgradeDatabaseCallback<RequestCallback>* upgrade_callback =
+        UpgradeDatabaseCallback<RequestCallback>::Create(this);
+    DummyExceptionStateForTesting exception_state;
+    IDBOpenDBRequest* idb_open_db_request =
+        idb_factory->open(GetScriptState(), database_name, exception_state);
+    if (exception_state.HadException()) {
+      GetRequestCallback()->sendFailure(
           Response::Error("Could not open database."));
       return;
     }
-    idbOpenDBRequest->addEventListener(EventTypeNames::upgradeneeded,
-                                       upgradeCallback, false);
-    idbOpenDBRequest->addEventListener(EventTypeNames::success, openCallback,
-                                       false);
+    idb_open_db_request->addEventListener(EventTypeNames::upgradeneeded,
+                                          upgrade_callback, false);
+    idb_open_db_request->addEventListener(EventTypeNames::success,
+                                          open_callback, false);
   }
-  virtual void execute(IDBDatabase*) = 0;
-  virtual RequestCallback* getRequestCallback() = 0;
-  ExecutionContext* context() const {
-    return m_scriptState->getExecutionContext();
+  virtual void Execute(IDBDatabase*) = 0;
+  virtual RequestCallback* GetRequestCallback() = 0;
+  ExecutionContext* Context() const {
+    return script_state_->GetExecutionContext();
   }
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
  private:
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<ScriptState> script_state_;
 };
 
 template <typename RequestCallback>
 class OpenDatabaseCallback final : public EventListener {
  public:
-  static OpenDatabaseCallback* create(
-      ExecutableWithDatabase<RequestCallback>* executableWithDatabase) {
-    return new OpenDatabaseCallback(executableWithDatabase);
+  static OpenDatabaseCallback* Create(
+      ExecutableWithDatabase<RequestCallback>* executable_with_database) {
+    return new OpenDatabaseCallback(executable_with_database);
   }
 
   ~OpenDatabaseCallback() override {}
@@ -242,42 +242,42 @@ class OpenDatabaseCallback final : public EventListener {
 
   void handleEvent(ExecutionContext* context, Event* event) override {
     if (event->type() != EventTypeNames::success) {
-      m_executableWithDatabase->getRequestCallback()->sendFailure(
+      executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected event type."));
       return;
     }
 
-    IDBOpenDBRequest* idbOpenDBRequest =
+    IDBOpenDBRequest* idb_open_db_request =
         static_cast<IDBOpenDBRequest*>(event->target());
-    IDBAny* requestResult = idbOpenDBRequest->resultAsAny();
-    if (requestResult->getType() != IDBAny::IDBDatabaseType) {
-      m_executableWithDatabase->getRequestCallback()->sendFailure(
+    IDBAny* request_result = idb_open_db_request->ResultAsAny();
+    if (request_result->GetType() != IDBAny::kIDBDatabaseType) {
+      executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected result type."));
       return;
     }
 
-    IDBDatabase* idbDatabase = requestResult->idbDatabase();
-    m_executableWithDatabase->execute(idbDatabase);
-    V8PerIsolateData::from(
-        m_executableWithDatabase->getScriptState()->isolate())
-        ->runEndOfScopeTasks();
-    idbDatabase->close();
+    IDBDatabase* idb_database = request_result->IdbDatabase();
+    executable_with_database_->Execute(idb_database);
+    V8PerIsolateData::From(
+        executable_with_database_->GetScriptState()->GetIsolate())
+        ->RunEndOfScopeTasks();
+    idb_database->close();
   }
 
  private:
   OpenDatabaseCallback(
-      ExecutableWithDatabase<RequestCallback>* executableWithDatabase)
-      : EventListener(EventListener::CPPEventListenerType),
-        m_executableWithDatabase(executableWithDatabase) {}
-  RefPtr<ExecutableWithDatabase<RequestCallback>> m_executableWithDatabase;
+      ExecutableWithDatabase<RequestCallback>* executable_with_database)
+      : EventListener(EventListener::kCPPEventListenerType),
+        executable_with_database_(executable_with_database) {}
+  RefPtr<ExecutableWithDatabase<RequestCallback>> executable_with_database_;
 };
 
 template <typename RequestCallback>
 class UpgradeDatabaseCallback final : public EventListener {
  public:
-  static UpgradeDatabaseCallback* create(
-      ExecutableWithDatabase<RequestCallback>* executableWithDatabase) {
-    return new UpgradeDatabaseCallback(executableWithDatabase);
+  static UpgradeDatabaseCallback* Create(
+      ExecutableWithDatabase<RequestCallback>* executable_with_database) {
+    return new UpgradeDatabaseCallback(executable_with_database);
   }
 
   ~UpgradeDatabaseCallback() override {}
@@ -288,7 +288,7 @@ class UpgradeDatabaseCallback final : public EventListener {
 
   void handleEvent(ExecutionContext* context, Event* event) override {
     if (event->type() != EventTypeNames::upgradeneeded) {
-      m_executableWithDatabase->getRequestCallback()->sendFailure(
+      executable_with_database_->GetRequestCallback()->sendFailure(
           Response::Error("Unexpected event type."));
       return;
     }
@@ -296,227 +296,228 @@ class UpgradeDatabaseCallback final : public EventListener {
     // If an "upgradeneeded" event comes through then the database that
     // had previously been enumerated was deleted. We don't want to
     // implicitly re-create it here, so abort the transaction.
-    IDBOpenDBRequest* idbOpenDBRequest =
+    IDBOpenDBRequest* idb_open_db_request =
         static_cast<IDBOpenDBRequest*>(event->target());
-    NonThrowableExceptionState exceptionState;
-    idbOpenDBRequest->transaction()->abort(exceptionState);
-    m_executableWithDatabase->getRequestCallback()->sendFailure(
+    NonThrowableExceptionState exception_state;
+    idb_open_db_request->transaction()->abort(exception_state);
+    executable_with_database_->GetRequestCallback()->sendFailure(
         Response::Error("Aborted upgrade."));
   }
 
  private:
   UpgradeDatabaseCallback(
-      ExecutableWithDatabase<RequestCallback>* executableWithDatabase)
-      : EventListener(EventListener::CPPEventListenerType),
-        m_executableWithDatabase(executableWithDatabase) {}
-  RefPtr<ExecutableWithDatabase<RequestCallback>> m_executableWithDatabase;
+      ExecutableWithDatabase<RequestCallback>* executable_with_database)
+      : EventListener(EventListener::kCPPEventListenerType),
+        executable_with_database_(executable_with_database) {}
+  RefPtr<ExecutableWithDatabase<RequestCallback>> executable_with_database_;
 };
 
-static IDBTransaction* transactionForDatabase(
-    ScriptState* scriptState,
-    IDBDatabase* idbDatabase,
-    const String& objectStoreName,
+static IDBTransaction* TransactionForDatabase(
+    ScriptState* script_state,
+    IDBDatabase* idb_database,
+    const String& object_store_name,
     const String& mode = IndexedDBNames::readonly) {
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
   StringOrStringSequenceOrDOMStringList scope;
-  scope.setString(objectStoreName);
-  IDBTransaction* idbTransaction =
-      idbDatabase->transaction(scriptState, scope, mode, exceptionState);
-  if (exceptionState.hadException())
+  scope.setString(object_store_name);
+  IDBTransaction* idb_transaction =
+      idb_database->transaction(script_state, scope, mode, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  return idbTransaction;
+  return idb_transaction;
 }
 
-static IDBObjectStore* objectStoreForTransaction(
-    IDBTransaction* idbTransaction,
-    const String& objectStoreName) {
-  DummyExceptionStateForTesting exceptionState;
-  IDBObjectStore* idbObjectStore =
-      idbTransaction->objectStore(objectStoreName, exceptionState);
-  if (exceptionState.hadException())
+static IDBObjectStore* ObjectStoreForTransaction(
+    IDBTransaction* idb_transaction,
+    const String& object_store_name) {
+  DummyExceptionStateForTesting exception_state;
+  IDBObjectStore* idb_object_store =
+      idb_transaction->objectStore(object_store_name, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  return idbObjectStore;
+  return idb_object_store;
 }
 
-static IDBIndex* indexForObjectStore(IDBObjectStore* idbObjectStore,
-                                     const String& indexName) {
-  DummyExceptionStateForTesting exceptionState;
-  IDBIndex* idbIndex = idbObjectStore->index(indexName, exceptionState);
-  if (exceptionState.hadException())
+static IDBIndex* IndexForObjectStore(IDBObjectStore* idb_object_store,
+                                     const String& index_name) {
+  DummyExceptionStateForTesting exception_state;
+  IDBIndex* idb_index = idb_object_store->index(index_name, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  return idbIndex;
+  return idb_index;
 }
 
-static std::unique_ptr<KeyPath> keyPathFromIDBKeyPath(
-    const IDBKeyPath& idbKeyPath) {
-  std::unique_ptr<KeyPath> keyPath;
-  switch (idbKeyPath.getType()) {
-    case IDBKeyPath::NullType:
-      keyPath = KeyPath::create().setType(KeyPath::TypeEnum::Null).build();
+static std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(
+    const IDBKeyPath& idb_key_path) {
+  std::unique_ptr<KeyPath> key_path;
+  switch (idb_key_path.GetType()) {
+    case IDBKeyPath::kNullType:
+      key_path = KeyPath::create().setType(KeyPath::TypeEnum::Null).build();
       break;
-    case IDBKeyPath::StringType:
-      keyPath = KeyPath::create()
-                    .setType(KeyPath::TypeEnum::String)
-                    .setString(idbKeyPath.string())
-                    .build();
+    case IDBKeyPath::kStringType:
+      key_path = KeyPath::create()
+                     .setType(KeyPath::TypeEnum::String)
+                     .setString(idb_key_path.GetString())
+                     .build();
       break;
-    case IDBKeyPath::ArrayType: {
-      keyPath = KeyPath::create().setType(KeyPath::TypeEnum::Array).build();
+    case IDBKeyPath::kArrayType: {
+      key_path = KeyPath::create().setType(KeyPath::TypeEnum::Array).build();
       std::unique_ptr<protocol::Array<String>> array =
           protocol::Array<String>::create();
-      const Vector<String>& stringArray = idbKeyPath.array();
-      for (size_t i = 0; i < stringArray.size(); ++i)
-        array->addItem(stringArray[i]);
-      keyPath->setArray(std::move(array));
+      const Vector<String>& string_array = idb_key_path.Array();
+      for (size_t i = 0; i < string_array.size(); ++i)
+        array->addItem(string_array[i]);
+      key_path->setArray(std::move(array));
       break;
     }
     default:
       ASSERT_NOT_REACHED();
   }
 
-  return keyPath;
+  return key_path;
 }
 
 class DatabaseLoader final
     : public ExecutableWithDatabase<RequestDatabaseCallback> {
  public:
-  static PassRefPtr<DatabaseLoader> create(
-      ScriptState* scriptState,
-      std::unique_ptr<RequestDatabaseCallback> requestCallback) {
-    return adoptRef(
-        new DatabaseLoader(scriptState, std::move(requestCallback)));
+  static PassRefPtr<DatabaseLoader> Create(
+      ScriptState* script_state,
+      std::unique_ptr<RequestDatabaseCallback> request_callback) {
+    return AdoptRef(
+        new DatabaseLoader(script_state, std::move(request_callback)));
   }
 
   ~DatabaseLoader() override {}
 
-  void execute(IDBDatabase* idbDatabase) override {
-    const IDBDatabaseMetadata databaseMetadata = idbDatabase->metadata();
+  void Execute(IDBDatabase* idb_database) override {
+    const IDBDatabaseMetadata database_metadata = idb_database->Metadata();
 
     std::unique_ptr<protocol::Array<protocol::IndexedDB::ObjectStore>>
-        objectStores =
+        object_stores =
             protocol::Array<protocol::IndexedDB::ObjectStore>::create();
 
-    for (const auto& storeMapEntry : databaseMetadata.objectStores) {
-      const IDBObjectStoreMetadata& objectStoreMetadata = *storeMapEntry.value;
+    for (const auto& store_map_entry : database_metadata.object_stores) {
+      const IDBObjectStoreMetadata& object_store_metadata =
+          *store_map_entry.value;
 
       std::unique_ptr<protocol::Array<protocol::IndexedDB::ObjectStoreIndex>>
           indexes =
               protocol::Array<protocol::IndexedDB::ObjectStoreIndex>::create();
 
-      for (const auto& metadataMapEntry : objectStoreMetadata.indexes) {
-        const IDBIndexMetadata& indexMetadata = *metadataMapEntry.value;
+      for (const auto& metadata_map_entry : object_store_metadata.indexes) {
+        const IDBIndexMetadata& index_metadata = *metadata_map_entry.value;
 
-        std::unique_ptr<ObjectStoreIndex> objectStoreIndex =
+        std::unique_ptr<ObjectStoreIndex> object_store_index =
             ObjectStoreIndex::create()
-                .setName(indexMetadata.name)
-                .setKeyPath(keyPathFromIDBKeyPath(indexMetadata.keyPath))
-                .setUnique(indexMetadata.unique)
-                .setMultiEntry(indexMetadata.multiEntry)
+                .setName(index_metadata.name)
+                .setKeyPath(KeyPathFromIDBKeyPath(index_metadata.key_path))
+                .setUnique(index_metadata.unique)
+                .setMultiEntry(index_metadata.multi_entry)
                 .build();
-        indexes->addItem(std::move(objectStoreIndex));
+        indexes->addItem(std::move(object_store_index));
       }
 
-      std::unique_ptr<ObjectStore> objectStore =
+      std::unique_ptr<ObjectStore> object_store =
           ObjectStore::create()
-              .setName(objectStoreMetadata.name)
-              .setKeyPath(keyPathFromIDBKeyPath(objectStoreMetadata.keyPath))
-              .setAutoIncrement(objectStoreMetadata.autoIncrement)
+              .setName(object_store_metadata.name)
+              .setKeyPath(KeyPathFromIDBKeyPath(object_store_metadata.key_path))
+              .setAutoIncrement(object_store_metadata.auto_increment)
               .setIndexes(std::move(indexes))
               .build();
-      objectStores->addItem(std::move(objectStore));
+      object_stores->addItem(std::move(object_store));
     }
     std::unique_ptr<DatabaseWithObjectStores> result =
         DatabaseWithObjectStores::create()
-            .setName(idbDatabase->name())
-            .setVersion(idbDatabase->version())
-            .setObjectStores(std::move(objectStores))
+            .setName(idb_database->name())
+            .setVersion(idb_database->version())
+            .setObjectStores(std::move(object_stores))
             .build();
 
-    m_requestCallback->sendSuccess(std::move(result));
+    request_callback_->sendSuccess(std::move(result));
   }
 
-  RequestDatabaseCallback* getRequestCallback() override {
-    return m_requestCallback.get();
+  RequestDatabaseCallback* GetRequestCallback() override {
+    return request_callback_.get();
   }
 
  private:
-  DatabaseLoader(ScriptState* scriptState,
-                 std::unique_ptr<RequestDatabaseCallback> requestCallback)
-      : ExecutableWithDatabase(scriptState),
-        m_requestCallback(std::move(requestCallback)) {}
-  std::unique_ptr<RequestDatabaseCallback> m_requestCallback;
+  DatabaseLoader(ScriptState* script_state,
+                 std::unique_ptr<RequestDatabaseCallback> request_callback)
+      : ExecutableWithDatabase(script_state),
+        request_callback_(std::move(request_callback)) {}
+  std::unique_ptr<RequestDatabaseCallback> request_callback_;
 };
 
-static IDBKey* idbKeyFromInspectorObject(protocol::IndexedDB::Key* key) {
-  IDBKey* idbKey;
+static IDBKey* IdbKeyFromInspectorObject(protocol::IndexedDB::Key* key) {
+  IDBKey* idb_key;
 
   if (!key)
     return nullptr;
   String type = key->getType();
 
-  DEFINE_STATIC_LOCAL(String, s_number, ("number"));
-  DEFINE_STATIC_LOCAL(String, s_string, ("string"));
-  DEFINE_STATIC_LOCAL(String, s_date, ("date"));
-  DEFINE_STATIC_LOCAL(String, s_array, ("array"));
+  DEFINE_STATIC_LOCAL(String, number, ("number"));
+  DEFINE_STATIC_LOCAL(String, string, ("string"));
+  DEFINE_STATIC_LOCAL(String, date, ("date"));
+  DEFINE_STATIC_LOCAL(String, array, ("array"));
 
-  if (type == s_number) {
+  if (type == number) {
     if (!key->hasNumber())
       return nullptr;
-    idbKey = IDBKey::createNumber(key->getNumber(0));
-  } else if (type == s_string) {
+    idb_key = IDBKey::CreateNumber(key->getNumber(0));
+  } else if (type == string) {
     if (!key->hasString())
       return nullptr;
-    idbKey = IDBKey::createString(key->getString(String()));
-  } else if (type == s_date) {
+    idb_key = IDBKey::CreateString(key->getString(String()));
+  } else if (type == date) {
     if (!key->hasDate())
       return nullptr;
-    idbKey = IDBKey::createDate(key->getDate(0));
-  } else if (type == s_array) {
-    IDBKey::KeyArray keyArray;
+    idb_key = IDBKey::CreateDate(key->getDate(0));
+  } else if (type == array) {
+    IDBKey::KeyArray key_array;
     auto array = key->getArray(nullptr);
     for (size_t i = 0; array && i < array->length(); ++i)
-      keyArray.push_back(idbKeyFromInspectorObject(array->get(i)));
-    idbKey = IDBKey::createArray(keyArray);
+      key_array.push_back(IdbKeyFromInspectorObject(array->get(i)));
+    idb_key = IDBKey::CreateArray(key_array);
   } else {
     return nullptr;
   }
 
-  return idbKey;
+  return idb_key;
 }
 
-static IDBKeyRange* idbKeyRangeFromKeyRange(
-    protocol::IndexedDB::KeyRange* keyRange) {
-  IDBKey* idbLower = idbKeyFromInspectorObject(keyRange->getLower(nullptr));
-  if (keyRange->hasLower() && !idbLower)
+static IDBKeyRange* IdbKeyRangeFromKeyRange(
+    protocol::IndexedDB::KeyRange* key_range) {
+  IDBKey* idb_lower = IdbKeyFromInspectorObject(key_range->getLower(nullptr));
+  if (key_range->hasLower() && !idb_lower)
     return nullptr;
 
-  IDBKey* idbUpper = idbKeyFromInspectorObject(keyRange->getUpper(nullptr));
-  if (keyRange->hasUpper() && !idbUpper)
+  IDBKey* idb_upper = IdbKeyFromInspectorObject(key_range->getUpper(nullptr));
+  if (key_range->hasUpper() && !idb_upper)
     return nullptr;
 
-  IDBKeyRange::LowerBoundType lowerBoundType =
-      keyRange->getLowerOpen() ? IDBKeyRange::LowerBoundOpen
-                               : IDBKeyRange::LowerBoundClosed;
-  IDBKeyRange::UpperBoundType upperBoundType =
-      keyRange->getUpperOpen() ? IDBKeyRange::UpperBoundOpen
-                               : IDBKeyRange::UpperBoundClosed;
-  return IDBKeyRange::create(idbLower, idbUpper, lowerBoundType,
-                             upperBoundType);
+  IDBKeyRange::LowerBoundType lower_bound_type =
+      key_range->getLowerOpen() ? IDBKeyRange::kLowerBoundOpen
+                                : IDBKeyRange::kLowerBoundClosed;
+  IDBKeyRange::UpperBoundType upper_bound_type =
+      key_range->getUpperOpen() ? IDBKeyRange::kUpperBoundOpen
+                                : IDBKeyRange::kUpperBoundClosed;
+  return IDBKeyRange::Create(idb_lower, idb_upper, lower_bound_type,
+                             upper_bound_type);
 }
 
 class DataLoader;
 
 class OpenCursorCallback final : public EventListener {
  public:
-  static OpenCursorCallback* create(
-      v8_inspector::V8InspectorSession* v8Session,
-      ScriptState* scriptState,
-      std::unique_ptr<RequestDataCallback> requestCallback,
-      int skipCount,
-      unsigned pageSize) {
-    return new OpenCursorCallback(v8Session, scriptState,
-                                  std::move(requestCallback), skipCount,
-                                  pageSize);
+  static OpenCursorCallback* Create(
+      v8_inspector::V8InspectorSession* v8_session,
+      ScriptState* script_state,
+      std::unique_ptr<RequestDataCallback> request_callback,
+      int skip_count,
+      unsigned page_size) {
+    return new OpenCursorCallback(v8_session, script_state,
+                                  std::move(request_callback), skip_count,
+                                  page_size);
   }
 
   ~OpenCursorCallback() override {}
@@ -527,353 +528,354 @@ class OpenCursorCallback final : public EventListener {
 
   void handleEvent(ExecutionContext*, Event* event) override {
     if (event->type() != EventTypeNames::success) {
-      m_requestCallback->sendFailure(Response::Error("Unexpected event type."));
+      request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
     }
 
-    IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-    IDBAny* requestResult = idbRequest->resultAsAny();
-    if (requestResult->getType() == IDBAny::IDBValueType) {
+    IDBRequest* idb_request = static_cast<IDBRequest*>(event->target());
+    IDBAny* request_result = idb_request->ResultAsAny();
+    if (request_result->GetType() == IDBAny::kIDBValueType) {
       end(false);
       return;
     }
-    if (requestResult->getType() != IDBAny::IDBCursorWithValueType) {
-      m_requestCallback->sendFailure(
+    if (request_result->GetType() != IDBAny::kIDBCursorWithValueType) {
+      request_callback_->sendFailure(
           Response::Error("Unexpected result type."));
       return;
     }
 
-    IDBCursorWithValue* idbCursor = requestResult->idbCursorWithValue();
+    IDBCursorWithValue* idb_cursor = request_result->IdbCursorWithValue();
 
-    if (m_skipCount) {
-      DummyExceptionStateForTesting exceptionState;
-      idbCursor->advance(m_skipCount, exceptionState);
-      if (exceptionState.hadException()) {
-        m_requestCallback->sendFailure(
+    if (skip_count_) {
+      DummyExceptionStateForTesting exception_state;
+      idb_cursor->advance(skip_count_, exception_state);
+      if (exception_state.HadException()) {
+        request_callback_->sendFailure(
             Response::Error("Could not advance cursor."));
       }
-      m_skipCount = 0;
+      skip_count_ = 0;
       return;
     }
 
-    if (m_result->length() == m_pageSize) {
+    if (result_->length() == page_size_) {
       end(true);
       return;
     }
 
     // Continue cursor before making injected script calls, otherwise
     // transaction might be finished.
-    DummyExceptionStateForTesting exceptionState;
-    idbCursor->continueFunction(nullptr, nullptr, exceptionState);
-    if (exceptionState.hadException()) {
-      m_requestCallback->sendFailure(
+    DummyExceptionStateForTesting exception_state;
+    idb_cursor->continueFunction(nullptr, nullptr, exception_state);
+    if (exception_state.HadException()) {
+      request_callback_->sendFailure(
           Response::Error("Could not continue cursor."));
       return;
     }
 
-    Document* document = toDocument(m_scriptState->getExecutionContext());
+    Document* document = ToDocument(script_state_->GetExecutionContext());
     if (!document)
       return;
-    ScriptState* scriptState = m_scriptState.get();
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Context> context = scriptState->context();
-    v8_inspector::StringView objectGroup =
-        toV8InspectorStringView(kIndexedDBObjectGroup);
-    std::unique_ptr<DataEntry> dataEntry =
+    ScriptState* script_state = script_state_.Get();
+    ScriptState::Scope scope(script_state);
+    v8::Local<v8::Context> context = script_state->GetContext();
+    v8_inspector::StringView object_group =
+        ToV8InspectorStringView(kIndexedDBObjectGroup);
+    std::unique_ptr<DataEntry> data_entry =
         DataEntry::create()
-            .setKey(m_v8Session->wrapObject(
-                context, idbCursor->key(scriptState).v8Value(), objectGroup))
-            .setPrimaryKey(m_v8Session->wrapObject(
-                context, idbCursor->primaryKey(scriptState).v8Value(),
-                objectGroup))
-            .setValue(m_v8Session->wrapObject(
-                context, idbCursor->value(scriptState).v8Value(), objectGroup))
+            .setKey(v8_session_->wrapObject(
+                context, idb_cursor->key(script_state).V8Value(), object_group))
+            .setPrimaryKey(v8_session_->wrapObject(
+                context, idb_cursor->primaryKey(script_state).V8Value(),
+                object_group))
+            .setValue(v8_session_->wrapObject(
+                context, idb_cursor->value(script_state).V8Value(),
+                object_group))
             .build();
-    m_result->addItem(std::move(dataEntry));
+    result_->addItem(std::move(data_entry));
   }
 
-  void end(bool hasMore) {
-    m_requestCallback->sendSuccess(std::move(m_result), hasMore);
+  void end(bool has_more) {
+    request_callback_->sendSuccess(std::move(result_), has_more);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
 
  private:
-  OpenCursorCallback(v8_inspector::V8InspectorSession* v8Session,
-                     ScriptState* scriptState,
-                     std::unique_ptr<RequestDataCallback> requestCallback,
-                     int skipCount,
-                     unsigned pageSize)
-      : EventListener(EventListener::CPPEventListenerType),
-        m_v8Session(v8Session),
-        m_scriptState(scriptState),
-        m_requestCallback(std::move(requestCallback)),
-        m_skipCount(skipCount),
-        m_pageSize(pageSize) {
-    m_result = Array<DataEntry>::create();
+  OpenCursorCallback(v8_inspector::V8InspectorSession* v8_session,
+                     ScriptState* script_state,
+                     std::unique_ptr<RequestDataCallback> request_callback,
+                     int skip_count,
+                     unsigned page_size)
+      : EventListener(EventListener::kCPPEventListenerType),
+        v8_session_(v8_session),
+        script_state_(script_state),
+        request_callback_(std::move(request_callback)),
+        skip_count_(skip_count),
+        page_size_(page_size) {
+    result_ = Array<DataEntry>::create();
   }
 
-  v8_inspector::V8InspectorSession* m_v8Session;
-  RefPtr<ScriptState> m_scriptState;
-  std::unique_ptr<RequestDataCallback> m_requestCallback;
-  int m_skipCount;
-  unsigned m_pageSize;
-  std::unique_ptr<Array<DataEntry>> m_result;
+  v8_inspector::V8InspectorSession* v8_session_;
+  RefPtr<ScriptState> script_state_;
+  std::unique_ptr<RequestDataCallback> request_callback_;
+  int skip_count_;
+  unsigned page_size_;
+  std::unique_ptr<Array<DataEntry>> result_;
 };
 
 class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
  public:
-  static PassRefPtr<DataLoader> create(
-      v8_inspector::V8InspectorSession* v8Session,
-      ScriptState* scriptState,
-      std::unique_ptr<RequestDataCallback> requestCallback,
-      const String& objectStoreName,
-      const String& indexName,
-      IDBKeyRange* idbKeyRange,
-      int skipCount,
-      unsigned pageSize) {
-    return adoptRef(new DataLoader(
-        v8Session, scriptState, std::move(requestCallback), objectStoreName,
-        indexName, idbKeyRange, skipCount, pageSize));
+  static PassRefPtr<DataLoader> Create(
+      v8_inspector::V8InspectorSession* v8_session,
+      ScriptState* script_state,
+      std::unique_ptr<RequestDataCallback> request_callback,
+      const String& object_store_name,
+      const String& index_name,
+      IDBKeyRange* idb_key_range,
+      int skip_count,
+      unsigned page_size) {
+    return AdoptRef(new DataLoader(
+        v8_session, script_state, std::move(request_callback),
+        object_store_name, index_name, idb_key_range, skip_count, page_size));
   }
 
   ~DataLoader() override {}
 
-  void execute(IDBDatabase* idbDatabase) override {
-    IDBTransaction* idbTransaction = transactionForDatabase(
-        getScriptState(), idbDatabase, m_objectStoreName);
-    if (!idbTransaction) {
-      m_requestCallback->sendFailure(
+  void Execute(IDBDatabase* idb_database) override {
+    IDBTransaction* idb_transaction = TransactionForDatabase(
+        GetScriptState(), idb_database, object_store_name_);
+    if (!idb_transaction) {
+      request_callback_->sendFailure(
           Response::Error("Could not get transaction"));
       return;
     }
-    IDBObjectStore* idbObjectStore =
-        objectStoreForTransaction(idbTransaction, m_objectStoreName);
-    if (!idbObjectStore) {
-      m_requestCallback->sendFailure(
+    IDBObjectStore* idb_object_store =
+        ObjectStoreForTransaction(idb_transaction, object_store_name_);
+    if (!idb_object_store) {
+      request_callback_->sendFailure(
           Response::Error("Could not get object store"));
       return;
     }
 
-    IDBRequest* idbRequest;
-    if (!m_indexName.isEmpty()) {
-      IDBIndex* idbIndex = indexForObjectStore(idbObjectStore, m_indexName);
-      if (!idbIndex) {
-        m_requestCallback->sendFailure(Response::Error("Could not get index"));
+    IDBRequest* idb_request;
+    if (!index_name_.IsEmpty()) {
+      IDBIndex* idb_index = IndexForObjectStore(idb_object_store, index_name_);
+      if (!idb_index) {
+        request_callback_->sendFailure(Response::Error("Could not get index"));
         return;
       }
 
-      idbRequest = idbIndex->openCursor(getScriptState(), m_idbKeyRange.get(),
-                                        WebIDBCursorDirectionNext);
+      idb_request = idb_index->openCursor(
+          GetScriptState(), idb_key_range_.Get(), kWebIDBCursorDirectionNext);
     } else {
-      idbRequest = idbObjectStore->openCursor(
-          getScriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
+      idb_request = idb_object_store->openCursor(
+          GetScriptState(), idb_key_range_.Get(), kWebIDBCursorDirectionNext);
     }
-    OpenCursorCallback* openCursorCallback = OpenCursorCallback::create(
-        m_v8Session, getScriptState(), std::move(m_requestCallback),
-        m_skipCount, m_pageSize);
-    idbRequest->addEventListener(EventTypeNames::success, openCursorCallback,
-                                 false);
+    OpenCursorCallback* open_cursor_callback = OpenCursorCallback::Create(
+        v8_session_, GetScriptState(), std::move(request_callback_),
+        skip_count_, page_size_);
+    idb_request->addEventListener(EventTypeNames::success, open_cursor_callback,
+                                  false);
   }
 
-  RequestDataCallback* getRequestCallback() override {
-    return m_requestCallback.get();
+  RequestDataCallback* GetRequestCallback() override {
+    return request_callback_.get();
   }
-  DataLoader(v8_inspector::V8InspectorSession* v8Session,
-             ScriptState* scriptState,
-             std::unique_ptr<RequestDataCallback> requestCallback,
-             const String& objectStoreName,
-             const String& indexName,
-             IDBKeyRange* idbKeyRange,
-             int skipCount,
-             unsigned pageSize)
-      : ExecutableWithDatabase(scriptState),
-        m_v8Session(v8Session),
-        m_requestCallback(std::move(requestCallback)),
-        m_objectStoreName(objectStoreName),
-        m_indexName(indexName),
-        m_idbKeyRange(idbKeyRange),
-        m_skipCount(skipCount),
-        m_pageSize(pageSize) {}
+  DataLoader(v8_inspector::V8InspectorSession* v8_session,
+             ScriptState* script_state,
+             std::unique_ptr<RequestDataCallback> request_callback,
+             const String& object_store_name,
+             const String& index_name,
+             IDBKeyRange* idb_key_range,
+             int skip_count,
+             unsigned page_size)
+      : ExecutableWithDatabase(script_state),
+        v8_session_(v8_session),
+        request_callback_(std::move(request_callback)),
+        object_store_name_(object_store_name),
+        index_name_(index_name),
+        idb_key_range_(idb_key_range),
+        skip_count_(skip_count),
+        page_size_(page_size) {}
 
-  v8_inspector::V8InspectorSession* m_v8Session;
-  std::unique_ptr<RequestDataCallback> m_requestCallback;
-  String m_objectStoreName;
-  String m_indexName;
-  Persistent<IDBKeyRange> m_idbKeyRange;
-  int m_skipCount;
-  unsigned m_pageSize;
+  v8_inspector::V8InspectorSession* v8_session_;
+  std::unique_ptr<RequestDataCallback> request_callback_;
+  String object_store_name_;
+  String index_name_;
+  Persistent<IDBKeyRange> idb_key_range_;
+  int skip_count_;
+  unsigned page_size_;
 };
 
 }  // namespace
 
 // static
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(
-    InspectedFrames* inspectedFrames,
-    v8_inspector::V8InspectorSession* v8Session)
-    : m_inspectedFrames(inspectedFrames), m_v8Session(v8Session) {}
+    InspectedFrames* inspected_frames,
+    v8_inspector::V8InspectorSession* v8_session)
+    : inspected_frames_(inspected_frames), v8_session_(v8_session) {}
 
 InspectorIndexedDBAgent::~InspectorIndexedDBAgent() {}
 
-void InspectorIndexedDBAgent::restore() {
-  if (m_state->booleanProperty(IndexedDBAgentState::indexedDBAgentEnabled,
-                               false)) {
+void InspectorIndexedDBAgent::Restore() {
+  if (state_->booleanProperty(IndexedDBAgentState::kIndexedDBAgentEnabled,
+                              false)) {
     enable();
   }
 }
 
-void InspectorIndexedDBAgent::didCommitLoadForLocalFrame(LocalFrame* frame) {
-  if (frame == m_inspectedFrames->root()) {
-    m_v8Session->releaseObjectGroup(
-        toV8InspectorStringView(kIndexedDBObjectGroup));
+void InspectorIndexedDBAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
+  if (frame == inspected_frames_->Root()) {
+    v8_session_->releaseObjectGroup(
+        ToV8InspectorStringView(kIndexedDBObjectGroup));
   }
 }
 
 Response InspectorIndexedDBAgent::enable() {
-  m_state->setBoolean(IndexedDBAgentState::indexedDBAgentEnabled, true);
+  state_->setBoolean(IndexedDBAgentState::kIndexedDBAgentEnabled, true);
   return Response::OK();
 }
 
 Response InspectorIndexedDBAgent::disable() {
-  m_state->setBoolean(IndexedDBAgentState::indexedDBAgentEnabled, false);
-  m_v8Session->releaseObjectGroup(
-      toV8InspectorStringView(kIndexedDBObjectGroup));
+  state_->setBoolean(IndexedDBAgentState::kIndexedDBAgentEnabled, false);
+  v8_session_->releaseObjectGroup(
+      ToV8InspectorStringView(kIndexedDBObjectGroup));
   return Response::OK();
 }
 
-static Response assertIDBFactory(Document* document, IDBFactory*& result) {
-  LocalDOMWindow* domWindow = document->domWindow();
-  if (!domWindow)
+static Response AssertIDBFactory(Document* document, IDBFactory*& result) {
+  LocalDOMWindow* dom_window = document->domWindow();
+  if (!dom_window)
     return Response::Error("No IndexedDB factory for given frame found");
-  IDBFactory* idbFactory = GlobalIndexedDB::indexedDB(*domWindow);
+  IDBFactory* idb_factory = GlobalIndexedDB::indexedDB(*dom_window);
 
-  if (!idbFactory)
+  if (!idb_factory)
     return Response::Error("No IndexedDB factory for given frame found");
-  result = idbFactory;
+  result = idb_factory;
   return Response::OK();
 }
 
 void InspectorIndexedDBAgent::requestDatabaseNames(
-    const String& securityOrigin,
-    std::unique_ptr<RequestDatabaseNamesCallback> requestCallback) {
+    const String& security_origin,
+    std::unique_ptr<RequestDatabaseNamesCallback> request_callback) {
   LocalFrame* frame =
-      m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  Document* document = frame ? frame->document() : nullptr;
+      inspected_frames_->FrameWithSecurityOrigin(security_origin);
+  Document* document = frame ? frame->GetDocument() : nullptr;
   if (!document) {
-    requestCallback->sendFailure(Response::Error(kNoDocumentError));
+    request_callback->sendFailure(Response::Error(kNoDocumentError));
     return;
   }
-  IDBFactory* idbFactory = nullptr;
-  Response response = assertIDBFactory(document, idbFactory);
+  IDBFactory* idb_factory = nullptr;
+  Response response = AssertIDBFactory(document, idb_factory);
   if (!response.isSuccess()) {
-    requestCallback->sendFailure(response);
+    request_callback->sendFailure(response);
     return;
   }
 
-  ScriptState* scriptState = toScriptStateForMainWorld(frame);
-  if (!scriptState) {
-    requestCallback->sendFailure(Response::InternalError());
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    request_callback->sendFailure(Response::InternalError());
     return;
   }
-  ScriptState::Scope scope(scriptState);
-  DummyExceptionStateForTesting exceptionState;
-  IDBRequest* idbRequest =
-      idbFactory->getDatabaseNames(scriptState, exceptionState);
-  if (exceptionState.hadException()) {
-    requestCallback->sendFailure(
+  ScriptState::Scope scope(script_state);
+  DummyExceptionStateForTesting exception_state;
+  IDBRequest* idb_request =
+      idb_factory->getDatabaseNames(script_state, exception_state);
+  if (exception_state.HadException()) {
+    request_callback->sendFailure(
         Response::Error("Could not obtain database names."));
     return;
   }
-  idbRequest->addEventListener(
+  idb_request->addEventListener(
       EventTypeNames::success,
-      GetDatabaseNamesCallback::create(
-          std::move(requestCallback),
-          document->getSecurityOrigin()->toRawString()),
+      GetDatabaseNamesCallback::Create(
+          std::move(request_callback),
+          document->GetSecurityOrigin()->ToRawString()),
       false);
 }
 
 void InspectorIndexedDBAgent::requestDatabase(
-    const String& securityOrigin,
-    const String& databaseName,
-    std::unique_ptr<RequestDatabaseCallback> requestCallback) {
+    const String& security_origin,
+    const String& database_name,
+    std::unique_ptr<RequestDatabaseCallback> request_callback) {
   LocalFrame* frame =
-      m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  Document* document = frame ? frame->document() : nullptr;
+      inspected_frames_->FrameWithSecurityOrigin(security_origin);
+  Document* document = frame ? frame->GetDocument() : nullptr;
   if (!document) {
-    requestCallback->sendFailure(Response::Error(kNoDocumentError));
+    request_callback->sendFailure(Response::Error(kNoDocumentError));
     return;
   }
-  IDBFactory* idbFactory = nullptr;
-  Response response = assertIDBFactory(document, idbFactory);
+  IDBFactory* idb_factory = nullptr;
+  Response response = AssertIDBFactory(document, idb_factory);
   if (!response.isSuccess()) {
-    requestCallback->sendFailure(response);
+    request_callback->sendFailure(response);
     return;
   }
 
-  ScriptState* scriptState = toScriptStateForMainWorld(frame);
-  if (!scriptState) {
-    requestCallback->sendFailure(Response::InternalError());
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    request_callback->sendFailure(Response::InternalError());
     return;
   }
 
-  ScriptState::Scope scope(scriptState);
-  RefPtr<DatabaseLoader> databaseLoader =
-      DatabaseLoader::create(scriptState, std::move(requestCallback));
-  databaseLoader->start(idbFactory, document->getSecurityOrigin(),
-                        databaseName);
+  ScriptState::Scope scope(script_state);
+  RefPtr<DatabaseLoader> database_loader =
+      DatabaseLoader::Create(script_state, std::move(request_callback));
+  database_loader->Start(idb_factory, document->GetSecurityOrigin(),
+                         database_name);
 }
 
 void InspectorIndexedDBAgent::requestData(
-    const String& securityOrigin,
-    const String& databaseName,
-    const String& objectStoreName,
-    const String& indexName,
-    int skipCount,
-    int pageSize,
-    Maybe<protocol::IndexedDB::KeyRange> keyRange,
-    std::unique_ptr<RequestDataCallback> requestCallback) {
+    const String& security_origin,
+    const String& database_name,
+    const String& object_store_name,
+    const String& index_name,
+    int skip_count,
+    int page_size,
+    Maybe<protocol::IndexedDB::KeyRange> key_range,
+    std::unique_ptr<RequestDataCallback> request_callback) {
   LocalFrame* frame =
-      m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  Document* document = frame ? frame->document() : nullptr;
+      inspected_frames_->FrameWithSecurityOrigin(security_origin);
+  Document* document = frame ? frame->GetDocument() : nullptr;
   if (!document) {
-    requestCallback->sendFailure(Response::Error(kNoDocumentError));
+    request_callback->sendFailure(Response::Error(kNoDocumentError));
     return;
   }
-  IDBFactory* idbFactory = nullptr;
-  Response response = assertIDBFactory(document, idbFactory);
+  IDBFactory* idb_factory = nullptr;
+  Response response = AssertIDBFactory(document, idb_factory);
   if (!response.isSuccess()) {
-    requestCallback->sendFailure(response);
+    request_callback->sendFailure(response);
     return;
   }
 
-  IDBKeyRange* idbKeyRange = keyRange.isJust()
-                                 ? idbKeyRangeFromKeyRange(keyRange.fromJust())
-                                 : nullptr;
-  if (keyRange.isJust() && !idbKeyRange) {
-    requestCallback->sendFailure(Response::Error("Can not parse key range."));
+  IDBKeyRange* idb_key_range =
+      key_range.isJust() ? IdbKeyRangeFromKeyRange(key_range.fromJust())
+                         : nullptr;
+  if (key_range.isJust() && !idb_key_range) {
+    request_callback->sendFailure(Response::Error("Can not parse key range."));
     return;
   }
 
-  ScriptState* scriptState = toScriptStateForMainWorld(frame);
-  if (!scriptState) {
-    requestCallback->sendFailure(Response::InternalError());
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    request_callback->sendFailure(Response::InternalError());
     return;
   }
 
-  ScriptState::Scope scope(scriptState);
-  RefPtr<DataLoader> dataLoader = DataLoader::create(
-      m_v8Session, scriptState, std::move(requestCallback), objectStoreName,
-      indexName, idbKeyRange, skipCount, pageSize);
-  dataLoader->start(idbFactory, document->getSecurityOrigin(), databaseName);
+  ScriptState::Scope scope(script_state);
+  RefPtr<DataLoader> data_loader = DataLoader::Create(
+      v8_session_, script_state, std::move(request_callback), object_store_name,
+      index_name, idb_key_range, skip_count, page_size);
+  data_loader->Start(idb_factory, document->GetSecurityOrigin(), database_name);
 }
 
 class ClearObjectStoreListener final : public EventListener {
   WTF_MAKE_NONCOPYABLE(ClearObjectStoreListener);
 
  public:
-  static ClearObjectStoreListener* create(
-      std::unique_ptr<ClearObjectStoreCallback> requestCallback) {
-    return new ClearObjectStoreListener(std::move(requestCallback));
+  static ClearObjectStoreListener* Create(
+      std::unique_ptr<ClearObjectStoreCallback> request_callback) {
+    return new ClearObjectStoreListener(std::move(request_callback));
   }
 
   ~ClearObjectStoreListener() override {}
@@ -884,156 +886,157 @@ class ClearObjectStoreListener final : public EventListener {
 
   void handleEvent(ExecutionContext*, Event* event) override {
     if (event->type() != EventTypeNames::complete) {
-      m_requestCallback->sendFailure(Response::Error("Unexpected event type."));
+      request_callback_->sendFailure(Response::Error("Unexpected event type."));
       return;
     }
 
-    m_requestCallback->sendSuccess();
+    request_callback_->sendSuccess();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
 
  private:
   ClearObjectStoreListener(
-      std::unique_ptr<ClearObjectStoreCallback> requestCallback)
-      : EventListener(EventListener::CPPEventListenerType),
-        m_requestCallback(std::move(requestCallback)) {}
+      std::unique_ptr<ClearObjectStoreCallback> request_callback)
+      : EventListener(EventListener::kCPPEventListenerType),
+        request_callback_(std::move(request_callback)) {}
 
-  std::unique_ptr<ClearObjectStoreCallback> m_requestCallback;
+  std::unique_ptr<ClearObjectStoreCallback> request_callback_;
 };
 
 class ClearObjectStore final
     : public ExecutableWithDatabase<ClearObjectStoreCallback> {
  public:
-  static PassRefPtr<ClearObjectStore> create(
-      ScriptState* scriptState,
-      const String& objectStoreName,
-      std::unique_ptr<ClearObjectStoreCallback> requestCallback) {
-    return adoptRef(new ClearObjectStore(scriptState, objectStoreName,
-                                         std::move(requestCallback)));
+  static PassRefPtr<ClearObjectStore> Create(
+      ScriptState* script_state,
+      const String& object_store_name,
+      std::unique_ptr<ClearObjectStoreCallback> request_callback) {
+    return AdoptRef(new ClearObjectStore(script_state, object_store_name,
+                                         std::move(request_callback)));
   }
 
-  ClearObjectStore(ScriptState* scriptState,
-                   const String& objectStoreName,
-                   std::unique_ptr<ClearObjectStoreCallback> requestCallback)
-      : ExecutableWithDatabase(scriptState),
-        m_objectStoreName(objectStoreName),
-        m_requestCallback(std::move(requestCallback)) {}
+  ClearObjectStore(ScriptState* script_state,
+                   const String& object_store_name,
+                   std::unique_ptr<ClearObjectStoreCallback> request_callback)
+      : ExecutableWithDatabase(script_state),
+        object_store_name_(object_store_name),
+        request_callback_(std::move(request_callback)) {}
 
-  void execute(IDBDatabase* idbDatabase) override {
-    IDBTransaction* idbTransaction =
-        transactionForDatabase(getScriptState(), idbDatabase, m_objectStoreName,
-                               IndexedDBNames::readwrite);
-    if (!idbTransaction) {
-      m_requestCallback->sendFailure(
+  void Execute(IDBDatabase* idb_database) override {
+    IDBTransaction* idb_transaction =
+        TransactionForDatabase(GetScriptState(), idb_database,
+                               object_store_name_, IndexedDBNames::readwrite);
+    if (!idb_transaction) {
+      request_callback_->sendFailure(
           Response::Error("Could not get transaction"));
       return;
     }
-    IDBObjectStore* idbObjectStore =
-        objectStoreForTransaction(idbTransaction, m_objectStoreName);
-    if (!idbObjectStore) {
-      m_requestCallback->sendFailure(
+    IDBObjectStore* idb_object_store =
+        ObjectStoreForTransaction(idb_transaction, object_store_name_);
+    if (!idb_object_store) {
+      request_callback_->sendFailure(
           Response::Error("Could not get object store"));
       return;
     }
 
-    DummyExceptionStateForTesting exceptionState;
-    idbObjectStore->clear(getScriptState(), exceptionState);
-    ASSERT(!exceptionState.hadException());
-    if (exceptionState.hadException()) {
-      ExceptionCode ec = exceptionState.code();
-      m_requestCallback->sendFailure(Response::Error(
-          String::format("Could not clear object store '%s': %d",
-                         m_objectStoreName.utf8().data(), ec)));
+    DummyExceptionStateForTesting exception_state;
+    idb_object_store->clear(GetScriptState(), exception_state);
+    ASSERT(!exception_state.HadException());
+    if (exception_state.HadException()) {
+      ExceptionCode ec = exception_state.Code();
+      request_callback_->sendFailure(Response::Error(
+          String::Format("Could not clear object store '%s': %d",
+                         object_store_name_.Utf8().Data(), ec)));
       return;
     }
-    idbTransaction->addEventListener(
+    idb_transaction->addEventListener(
         EventTypeNames::complete,
-        ClearObjectStoreListener::create(std::move(m_requestCallback)), false);
+        ClearObjectStoreListener::Create(std::move(request_callback_)), false);
   }
 
-  ClearObjectStoreCallback* getRequestCallback() override {
-    return m_requestCallback.get();
+  ClearObjectStoreCallback* GetRequestCallback() override {
+    return request_callback_.get();
   }
 
  private:
-  const String m_objectStoreName;
-  std::unique_ptr<ClearObjectStoreCallback> m_requestCallback;
+  const String object_store_name_;
+  std::unique_ptr<ClearObjectStoreCallback> request_callback_;
 };
 
 void InspectorIndexedDBAgent::clearObjectStore(
-    const String& securityOrigin,
-    const String& databaseName,
-    const String& objectStoreName,
-    std::unique_ptr<ClearObjectStoreCallback> requestCallback) {
+    const String& security_origin,
+    const String& database_name,
+    const String& object_store_name,
+    std::unique_ptr<ClearObjectStoreCallback> request_callback) {
   LocalFrame* frame =
-      m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  Document* document = frame ? frame->document() : nullptr;
+      inspected_frames_->FrameWithSecurityOrigin(security_origin);
+  Document* document = frame ? frame->GetDocument() : nullptr;
   if (!document) {
-    requestCallback->sendFailure(Response::Error(kNoDocumentError));
+    request_callback->sendFailure(Response::Error(kNoDocumentError));
     return;
   }
-  IDBFactory* idbFactory = nullptr;
-  Response response = assertIDBFactory(document, idbFactory);
+  IDBFactory* idb_factory = nullptr;
+  Response response = AssertIDBFactory(document, idb_factory);
   if (!response.isSuccess()) {
-    requestCallback->sendFailure(response);
+    request_callback->sendFailure(response);
     return;
   }
 
-  ScriptState* scriptState = toScriptStateForMainWorld(frame);
-  if (!scriptState) {
-    requestCallback->sendFailure(Response::InternalError());
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    request_callback->sendFailure(Response::InternalError());
     return;
   }
 
-  ScriptState::Scope scope(scriptState);
-  RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(
-      scriptState, objectStoreName, std::move(requestCallback));
-  clearObjectStore->start(idbFactory, document->getSecurityOrigin(),
-                          databaseName);
+  ScriptState::Scope scope(script_state);
+  RefPtr<ClearObjectStore> clear_object_store = ClearObjectStore::Create(
+      script_state, object_store_name, std::move(request_callback));
+  clear_object_store->Start(idb_factory, document->GetSecurityOrigin(),
+                            database_name);
 }
 
 void InspectorIndexedDBAgent::deleteDatabase(
-    const String& securityOrigin,
-    const String& databaseName,
-    std::unique_ptr<DeleteDatabaseCallback> requestCallback) {
+    const String& security_origin,
+    const String& database_name,
+    std::unique_ptr<DeleteDatabaseCallback> request_callback) {
   LocalFrame* frame =
-      m_inspectedFrames->frameWithSecurityOrigin(securityOrigin);
-  Document* document = frame ? frame->document() : nullptr;
+      inspected_frames_->FrameWithSecurityOrigin(security_origin);
+  Document* document = frame ? frame->GetDocument() : nullptr;
   if (!document) {
-    requestCallback->sendFailure(Response::Error(kNoDocumentError));
+    request_callback->sendFailure(Response::Error(kNoDocumentError));
     return;
   }
-  IDBFactory* idbFactory = nullptr;
-  Response response = assertIDBFactory(document, idbFactory);
+  IDBFactory* idb_factory = nullptr;
+  Response response = AssertIDBFactory(document, idb_factory);
   if (!response.isSuccess()) {
-    requestCallback->sendFailure(response);
+    request_callback->sendFailure(response);
     return;
   }
 
-  ScriptState* scriptState = toScriptStateForMainWorld(frame);
-  if (!scriptState) {
-    requestCallback->sendFailure(Response::InternalError());
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state) {
+    request_callback->sendFailure(Response::InternalError());
     return;
   }
-  ScriptState::Scope scope(scriptState);
-  DummyExceptionStateForTesting exceptionState;
-  IDBRequest* idbRequest = idbFactory->closeConnectionsAndDeleteDatabase(
-      scriptState, databaseName, exceptionState);
-  if (exceptionState.hadException()) {
-    requestCallback->sendFailure(Response::Error("Could not delete database."));
+  ScriptState::Scope scope(script_state);
+  DummyExceptionStateForTesting exception_state;
+  IDBRequest* idb_request = idb_factory->CloseConnectionsAndDeleteDatabase(
+      script_state, database_name, exception_state);
+  if (exception_state.HadException()) {
+    request_callback->sendFailure(
+        Response::Error("Could not delete database."));
     return;
   }
-  idbRequest->addEventListener(
+  idb_request->addEventListener(
       EventTypeNames::success,
-      DeleteCallback::create(std::move(requestCallback),
-                             document->getSecurityOrigin()->toRawString()),
+      DeleteCallback::Create(std::move(request_callback),
+                             document->GetSecurityOrigin()->ToRawString()),
       false);
 }
 
 DEFINE_TRACE(InspectorIndexedDBAgent) {
-  visitor->trace(m_inspectedFrames);
-  InspectorBaseAgent::trace(visitor);
+  visitor->Trace(inspected_frames_);
+  InspectorBaseAgent::Trace(visitor);
 }
 
 }  // namespace blink

@@ -25,79 +25,79 @@ class WebGraphicsContext3DProviderSoftwareRenderingForTests
  public:
   WebGraphicsContext3DProviderSoftwareRenderingForTests(
       std::unique_ptr<gpu::gles2::GLES2Interface> gl)
-      : m_gl(std::move(gl)) {}
+      : gl_(std::move(gl)) {}
 
-  gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
-  bool isSoftwareRendering() const override { return true; }
+  gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
+  bool IsSoftwareRendering() const override { return true; }
 
   // Not used by WebGL code.
-  GrContext* grContext() override { return nullptr; }
-  bool bindToCurrentThread() override { return false; }
-  gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
-  void setLostContextCallback(const base::Closure&) {}
-  void setErrorMessageCallback(
+  GrContext* GetGrContext() override { return nullptr; }
+  bool BindToCurrentThread() override { return false; }
+  gpu::Capabilities GetCapabilities() override { return gpu::Capabilities(); }
+  void SetLostContextCallback(const base::Closure&) {}
+  void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
-  void signalQuery(uint32_t, const base::Closure&) override {}
+  void SignalQuery(uint32_t, const base::Closure&) override {}
 
  private:
-  std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;
+  std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
 };
 
 class DrawingBufferSoftwareRenderingTest : public Test {
  protected:
   void SetUp() override {
-    IntSize initialSize(InitialWidth, InitialHeight);
+    IntSize initial_size(kInitialWidth, kInitialHeight);
     std::unique_ptr<GLES2InterfaceForTests> gl =
-        WTF::wrapUnique(new GLES2InterfaceForTests);
+        WTF::WrapUnique(new GLES2InterfaceForTests);
     std::unique_ptr<WebGraphicsContext3DProviderSoftwareRenderingForTests>
-        provider = WTF::wrapUnique(
+        provider = WTF::WrapUnique(
             new WebGraphicsContext3DProviderSoftwareRenderingForTests(
                 std::move(gl)));
-    m_drawingBuffer = DrawingBufferForTests::create(
-        std::move(provider), nullptr, initialSize, DrawingBuffer::Preserve);
-    CHECK(m_drawingBuffer);
+    drawing_buffer_ = DrawingBufferForTests::Create(
+        std::move(provider), nullptr, initial_size, DrawingBuffer::kPreserve);
+    CHECK(drawing_buffer_);
   }
 
-  RefPtr<DrawingBufferForTests> m_drawingBuffer;
-  bool m_isSoftwareRendering = false;
+  RefPtr<DrawingBufferForTests> drawing_buffer_;
+  bool is_software_rendering_ = false;
 };
 
 TEST_F(DrawingBufferSoftwareRenderingTest, bitmapRecycling) {
-  cc::TextureMailbox textureMailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> releaseCallback1;
-  std::unique_ptr<cc::SingleReleaseCallback> releaseCallback2;
-  std::unique_ptr<cc::SingleReleaseCallback> releaseCallback3;
-  IntSize initialSize(InitialWidth, InitialHeight);
-  IntSize alternateSize(InitialWidth, AlternateHeight);
+  cc::TextureMailbox texture_mailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback1;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback2;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
+  IntSize initial_size(kInitialWidth, kInitialHeight);
+  IntSize alternate_size(kInitialWidth, kAlternateHeight);
 
-  m_drawingBuffer->resize(initialSize);
-  m_drawingBuffer->markContentsChanged();
-  m_drawingBuffer->PrepareTextureMailbox(
-      &textureMailbox, &releaseCallback1);  // create a bitmap.
-  EXPECT_EQ(0, m_drawingBuffer->recycledBitmapCount());
-  releaseCallback1->Run(
+  drawing_buffer_->Resize(initial_size);
+  drawing_buffer_->MarkContentsChanged();
+  drawing_buffer_->PrepareTextureMailbox(
+      &texture_mailbox, &release_callback1);  // create a bitmap.
+  EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
+  release_callback1->Run(
       gpu::SyncToken(),
       false /* lostResource */);  // release bitmap to the recycling queue
-  EXPECT_EQ(1, m_drawingBuffer->recycledBitmapCount());
-  m_drawingBuffer->markContentsChanged();
-  m_drawingBuffer->PrepareTextureMailbox(
-      &textureMailbox, &releaseCallback2);  // recycle a bitmap.
-  EXPECT_EQ(0, m_drawingBuffer->recycledBitmapCount());
-  releaseCallback2->Run(
+  EXPECT_EQ(1, drawing_buffer_->RecycledBitmapCount());
+  drawing_buffer_->MarkContentsChanged();
+  drawing_buffer_->PrepareTextureMailbox(
+      &texture_mailbox, &release_callback2);  // recycle a bitmap.
+  EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
+  release_callback2->Run(
       gpu::SyncToken(),
       false /* lostResource */);  // release bitmap to the recycling queue
-  EXPECT_EQ(1, m_drawingBuffer->recycledBitmapCount());
-  m_drawingBuffer->resize(alternateSize);
-  m_drawingBuffer->markContentsChanged();
+  EXPECT_EQ(1, drawing_buffer_->RecycledBitmapCount());
+  drawing_buffer_->Resize(alternate_size);
+  drawing_buffer_->MarkContentsChanged();
   // Regression test for crbug.com/647896 - Next line must not crash
-  m_drawingBuffer->PrepareTextureMailbox(
-      &textureMailbox,
-      &releaseCallback3);  // cause recycling queue to be purged due to resize
-  EXPECT_EQ(0, m_drawingBuffer->recycledBitmapCount());
-  releaseCallback3->Run(gpu::SyncToken(), false /* lostResource */);
-  EXPECT_EQ(1, m_drawingBuffer->recycledBitmapCount());
+  drawing_buffer_->PrepareTextureMailbox(
+      &texture_mailbox,
+      &release_callback3);  // cause recycling queue to be purged due to resize
+  EXPECT_EQ(0, drawing_buffer_->RecycledBitmapCount());
+  release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
+  EXPECT_EQ(1, drawing_buffer_->RecycledBitmapCount());
 
-  m_drawingBuffer->beginDestruction();
+  drawing_buffer_->BeginDestruction();
 }
 
 }  // unnamed namespace

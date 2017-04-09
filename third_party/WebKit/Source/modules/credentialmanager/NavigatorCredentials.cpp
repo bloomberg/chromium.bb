@@ -15,33 +15,33 @@ namespace blink {
 NavigatorCredentials::NavigatorCredentials(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-NavigatorCredentials& NavigatorCredentials::from(Navigator& navigator) {
+NavigatorCredentials& NavigatorCredentials::From(Navigator& navigator) {
   NavigatorCredentials* supplement = static_cast<NavigatorCredentials*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorCredentials(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-const char* NavigatorCredentials::supplementName() {
+const char* NavigatorCredentials::SupplementName() {
   return "NavigatorCredentials";
 }
 
 CredentialsContainer* NavigatorCredentials::credentials(Navigator& navigator) {
-  return NavigatorCredentials::from(navigator).credentials();
+  return NavigatorCredentials::From(navigator).credentials();
 }
 
 CredentialsContainer* NavigatorCredentials::credentials() {
-  if (!m_credentialsContainer)
-    m_credentialsContainer = CredentialsContainer::create();
-  return m_credentialsContainer.get();
+  if (!credentials_container_)
+    credentials_container_ = CredentialsContainer::Create();
+  return credentials_container_.Get();
 }
 
 DEFINE_TRACE(NavigatorCredentials) {
-  visitor->trace(m_credentialsContainer);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(credentials_container_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -9,59 +9,62 @@
 
 namespace blink {
 
-void installConditionalFeaturesDefault(
-    const WrapperTypeInfo* wrapperTypeInfo,
-    const ScriptState* scriptState,
-    v8::Local<v8::Object> prototypeObject,
-    v8::Local<v8::Function> interfaceObject) {}
+void InstallConditionalFeaturesDefault(
+    const WrapperTypeInfo* wrapper_type_info,
+    const ScriptState* script_state,
+    v8::Local<v8::Object> prototype_object,
+    v8::Local<v8::Function> interface_object) {}
 
-void installPendingConditionalFeatureDefault(const String& feature,
-                                             const ScriptState* scriptState) {}
+void InstallPendingConditionalFeatureDefault(const String& feature,
+                                             const ScriptState* script_state) {}
 
 namespace {
-InstallConditionalFeaturesFunction s_installConditionalFeaturesFunction =
-    &installConditionalFeaturesDefault;
+InstallConditionalFeaturesFunction g_install_conditional_features_function =
+    &InstallConditionalFeaturesDefault;
 
 InstallPendingConditionalFeatureFunction
-    s_installPendingConditionalFeatureFunction =
-        &installPendingConditionalFeatureDefault;
+    g_install_pending_conditional_feature_function =
+        &InstallPendingConditionalFeatureDefault;
 }  // namespace
 
-InstallConditionalFeaturesFunction setInstallConditionalFeaturesFunction(
-    InstallConditionalFeaturesFunction newInstallConditionalFeaturesFunction) {
-  InstallConditionalFeaturesFunction originalFunction =
-      s_installConditionalFeaturesFunction;
-  s_installConditionalFeaturesFunction = newInstallConditionalFeaturesFunction;
-  return originalFunction;
+InstallConditionalFeaturesFunction SetInstallConditionalFeaturesFunction(
+    InstallConditionalFeaturesFunction
+        new_install_conditional_features_function) {
+  InstallConditionalFeaturesFunction original_function =
+      g_install_conditional_features_function;
+  g_install_conditional_features_function =
+      new_install_conditional_features_function;
+  return original_function;
 }
 
 InstallPendingConditionalFeatureFunction
-setInstallPendingConditionalFeatureFunction(
+SetInstallPendingConditionalFeatureFunction(
     InstallPendingConditionalFeatureFunction
-        newInstallPendingConditionalFeatureFunction) {
-  InstallPendingConditionalFeatureFunction originalFunction =
-      s_installPendingConditionalFeatureFunction;
-  s_installPendingConditionalFeatureFunction =
-      newInstallPendingConditionalFeatureFunction;
-  return originalFunction;
+        new_install_pending_conditional_feature_function) {
+  InstallPendingConditionalFeatureFunction original_function =
+      g_install_pending_conditional_feature_function;
+  g_install_pending_conditional_feature_function =
+      new_install_pending_conditional_feature_function;
+  return original_function;
 }
 
-void installConditionalFeatures(const WrapperTypeInfo* type,
-                                const ScriptState* scriptState,
-                                v8::Local<v8::Object> prototypeObject,
-                                v8::Local<v8::Function> interfaceObject) {
-  (*s_installConditionalFeaturesFunction)(type, scriptState, prototypeObject,
-                                          interfaceObject);
+void InstallConditionalFeatures(const WrapperTypeInfo* type,
+                                const ScriptState* script_state,
+                                v8::Local<v8::Object> prototype_object,
+                                v8::Local<v8::Function> interface_object) {
+  (*g_install_conditional_features_function)(
+      type, script_state, prototype_object, interface_object);
 }
 
-void installPendingConditionalFeature(const String& feature,
-                                      const ScriptState* scriptState) {
-  DCHECK(scriptState);
-  DCHECK(scriptState->context() == scriptState->isolate()->GetCurrentContext());
-  DCHECK(scriptState->perContextData());
-  DCHECK(scriptState->world().isMainWorld());
+void InstallPendingConditionalFeature(const String& feature,
+                                      const ScriptState* script_state) {
+  DCHECK(script_state);
+  DCHECK(script_state->GetContext() ==
+         script_state->GetIsolate()->GetCurrentContext());
+  DCHECK(script_state->PerContextData());
+  DCHECK(script_state->World().IsMainWorld());
 
-  (*s_installPendingConditionalFeatureFunction)(feature, scriptState);
+  (*g_install_pending_conditional_feature_function)(feature, script_state);
 }
 
 }  // namespace blink

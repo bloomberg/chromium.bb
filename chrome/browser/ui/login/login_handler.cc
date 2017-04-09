@@ -626,7 +626,7 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
       (is_cross_origin_request || parent_contents->ShowingInterstitialPage() ||
        auth_info->is_proxy) &&
       parent_contents->GetDelegate()->GetDisplayMode(parent_contents) !=
-          blink::WebDisplayModeStandalone) {
+          blink::kWebDisplayModeStandalone) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
 
     // Show a blank interstitial for main-frame, cross origin requests

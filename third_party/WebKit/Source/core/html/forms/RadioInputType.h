@@ -38,25 +38,25 @@ namespace blink {
 
 class RadioInputType final : public BaseCheckableInputType {
  public:
-  static InputType* create(HTMLInputElement&);
-  CORE_EXPORT static HTMLInputElement* nextRadioButtonInGroup(HTMLInputElement*,
+  static InputType* Create(HTMLInputElement&);
+  CORE_EXPORT static HTMLInputElement* NextRadioButtonInGroup(HTMLInputElement*,
                                                               bool forward);
 
  private:
   RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) {}
-  const AtomicString& formControlType() const override;
-  bool valueMissing(const String&) const override;
-  String valueMissingText() const override;
-  void handleClickEvent(MouseEvent*) override;
-  void handleKeydownEvent(KeyboardEvent*) override;
-  void handleKeyupEvent(KeyboardEvent*) override;
-  bool isKeyboardFocusable() const override;
-  bool shouldSendChangeEventAfterCheckedChanged() override;
-  ClickHandlingState* willDispatchClick() override;
-  void didDispatchClick(Event*, const ClickHandlingState&) override;
-  bool shouldAppearIndeterminate() const override;
+  const AtomicString& FormControlType() const override;
+  bool ValueMissing(const String&) const override;
+  String ValueMissingText() const override;
+  void HandleClickEvent(MouseEvent*) override;
+  void HandleKeydownEvent(KeyboardEvent*) override;
+  void HandleKeyupEvent(KeyboardEvent*) override;
+  bool IsKeyboardFocusable() const override;
+  bool ShouldSendChangeEventAfterCheckedChanged() override;
+  ClickHandlingState* WillDispatchClick() override;
+  void DidDispatchClick(Event*, const ClickHandlingState&) override;
+  bool ShouldAppearIndeterminate() const override;
 
-  HTMLInputElement* findNextFocusableRadioButtonInGroup(HTMLInputElement*,
+  HTMLInputElement* FindNextFocusableRadioButtonInGroup(HTMLInputElement*,
                                                         bool);
 };
 

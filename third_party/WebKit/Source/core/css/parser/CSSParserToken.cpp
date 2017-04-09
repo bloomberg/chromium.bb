@@ -13,271 +13,271 @@
 
 namespace blink {
 
-CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType blockType)
-    : m_type(type), m_blockType(blockType) {}
+CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType block_type)
+    : type_(type), block_type_(block_type) {}
 
 // Just a helper used for Delimiter tokens.
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
-    : m_type(type), m_blockType(NotBlock), m_delimiter(c) {
-  DCHECK_EQ(m_type, static_cast<unsigned>(DelimiterToken));
+    : type_(type), block_type_(kNotBlock), delimiter_(c) {
+  DCHECK_EQ(type_, static_cast<unsigned>(kDelimiterToken));
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type,
                                StringView value,
-                               BlockType blockType)
-    : m_type(type), m_blockType(blockType) {
-  initValueFromStringView(value);
-  m_id = -1;
+                               BlockType block_type)
+    : type_(type), block_type_(block_type) {
+  InitValueFromStringView(value);
+  id_ = -1;
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type,
-                               double numericValue,
-                               NumericValueType numericValueType,
+                               double numeric_value,
+                               NumericValueType numeric_value_type,
                                NumericSign sign)
-    : m_type(type),
-      m_blockType(NotBlock),
-      m_numericValueType(numericValueType),
-      m_numericSign(sign),
-      m_unit(static_cast<unsigned>(CSSPrimitiveValue::UnitType::Number)) {
-  DCHECK_EQ(type, NumberToken);
-  m_numericValue =
-      clampTo<double>(numericValue, -std::numeric_limits<float>::max(),
+    : type_(type),
+      block_type_(kNotBlock),
+      numeric_value_type_(numeric_value_type),
+      numeric_sign_(sign),
+      unit_(static_cast<unsigned>(CSSPrimitiveValue::UnitType::kNumber)) {
+  DCHECK_EQ(type, kNumberToken);
+  numeric_value_ =
+      clampTo<double>(numeric_value, -std::numeric_limits<float>::max(),
                       std::numeric_limits<float>::max());
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type,
                                UChar32 start,
                                UChar32 end)
-    : m_type(UnicodeRangeToken), m_blockType(NotBlock) {
-  DCHECK_EQ(type, UnicodeRangeToken);
-  m_unicodeRange.start = start;
-  m_unicodeRange.end = end;
+    : type_(kUnicodeRangeToken), block_type_(kNotBlock) {
+  DCHECK_EQ(type, kUnicodeRangeToken);
+  unicode_range_.start = start;
+  unicode_range_.end = end;
 }
 
 CSSParserToken::CSSParserToken(HashTokenType type, StringView value)
-    : m_type(HashToken), m_blockType(NotBlock), m_hashTokenType(type) {
-  initValueFromStringView(value);
+    : type_(kHashToken), block_type_(kNotBlock), hash_token_type_(type) {
+  InitValueFromStringView(value);
 }
 
-void CSSParserToken::convertToDimensionWithUnit(StringView unit) {
-  DCHECK_EQ(m_type, static_cast<unsigned>(NumberToken));
-  m_type = DimensionToken;
-  initValueFromStringView(unit);
-  m_unit = static_cast<unsigned>(CSSPrimitiveValue::stringToUnitType(unit));
+void CSSParserToken::ConvertToDimensionWithUnit(StringView unit) {
+  DCHECK_EQ(type_, static_cast<unsigned>(kNumberToken));
+  type_ = kDimensionToken;
+  InitValueFromStringView(unit);
+  unit_ = static_cast<unsigned>(CSSPrimitiveValue::StringToUnitType(unit));
 }
 
-void CSSParserToken::convertToPercentage() {
-  DCHECK_EQ(m_type, static_cast<unsigned>(NumberToken));
-  m_type = PercentageToken;
-  m_unit = static_cast<unsigned>(CSSPrimitiveValue::UnitType::Percentage);
+void CSSParserToken::ConvertToPercentage() {
+  DCHECK_EQ(type_, static_cast<unsigned>(kNumberToken));
+  type_ = kPercentageToken;
+  unit_ = static_cast<unsigned>(CSSPrimitiveValue::UnitType::kPercentage);
 }
 
-UChar CSSParserToken::delimiter() const {
-  DCHECK_EQ(m_type, static_cast<unsigned>(DelimiterToken));
-  return m_delimiter;
+UChar CSSParserToken::Delimiter() const {
+  DCHECK_EQ(type_, static_cast<unsigned>(kDelimiterToken));
+  return delimiter_;
 }
 
-NumericSign CSSParserToken::numericSign() const {
+NumericSign CSSParserToken::GetNumericSign() const {
   // This is valid for DimensionToken and PercentageToken, but only used
   // in <an+b> parsing on NumberTokens.
-  DCHECK_EQ(m_type, static_cast<unsigned>(NumberToken));
-  return static_cast<NumericSign>(m_numericSign);
+  DCHECK_EQ(type_, static_cast<unsigned>(kNumberToken));
+  return static_cast<NumericSign>(numeric_sign_);
 }
 
-NumericValueType CSSParserToken::numericValueType() const {
-  DCHECK(m_type == NumberToken || m_type == PercentageToken ||
-         m_type == DimensionToken);
-  return static_cast<NumericValueType>(m_numericValueType);
+NumericValueType CSSParserToken::GetNumericValueType() const {
+  DCHECK(type_ == kNumberToken || type_ == kPercentageToken ||
+         type_ == kDimensionToken);
+  return static_cast<NumericValueType>(numeric_value_type_);
 }
 
-double CSSParserToken::numericValue() const {
-  DCHECK(m_type == NumberToken || m_type == PercentageToken ||
-         m_type == DimensionToken);
-  return m_numericValue;
+double CSSParserToken::NumericValue() const {
+  DCHECK(type_ == kNumberToken || type_ == kPercentageToken ||
+         type_ == kDimensionToken);
+  return numeric_value_;
 }
 
-CSSPropertyID CSSParserToken::parseAsUnresolvedCSSPropertyID() const {
-  DCHECK_EQ(m_type, static_cast<unsigned>(IdentToken));
-  return unresolvedCSSPropertyID(value());
+CSSPropertyID CSSParserToken::ParseAsUnresolvedCSSPropertyID() const {
+  DCHECK_EQ(type_, static_cast<unsigned>(kIdentToken));
+  return UnresolvedCSSPropertyID(Value());
 }
 
-CSSValueID CSSParserToken::id() const {
-  if (m_type != IdentToken)
+CSSValueID CSSParserToken::Id() const {
+  if (type_ != kIdentToken)
     return CSSValueInvalid;
-  if (m_id < 0)
-    m_id = cssValueKeywordID(value());
-  return static_cast<CSSValueID>(m_id);
+  if (id_ < 0)
+    id_ = CssValueKeywordID(Value());
+  return static_cast<CSSValueID>(id_);
 }
 
-CSSValueID CSSParserToken::functionId() const {
-  if (m_type != FunctionToken)
+CSSValueID CSSParserToken::FunctionId() const {
+  if (type_ != kFunctionToken)
     return CSSValueInvalid;
-  if (m_id < 0)
-    m_id = cssValueKeywordID(value());
-  return static_cast<CSSValueID>(m_id);
+  if (id_ < 0)
+    id_ = CssValueKeywordID(Value());
+  return static_cast<CSSValueID>(id_);
 }
 
-bool CSSParserToken::hasStringBacking() const {
-  CSSParserTokenType tokenType = type();
-  return tokenType == IdentToken || tokenType == FunctionToken ||
-         tokenType == AtKeywordToken || tokenType == HashToken ||
-         tokenType == UrlToken || tokenType == DimensionToken ||
-         tokenType == StringToken;
+bool CSSParserToken::HasStringBacking() const {
+  CSSParserTokenType token_type = GetType();
+  return token_type == kIdentToken || token_type == kFunctionToken ||
+         token_type == kAtKeywordToken || token_type == kHashToken ||
+         token_type == kUrlToken || token_type == kDimensionToken ||
+         token_type == kStringToken;
 }
 
-CSSParserToken CSSParserToken::copyWithUpdatedString(
+CSSParserToken CSSParserToken::CopyWithUpdatedString(
     const StringView& string) const {
   CSSParserToken copy(*this);
-  copy.initValueFromStringView(string);
+  copy.InitValueFromStringView(string);
   return copy;
 }
 
-bool CSSParserToken::valueDataCharRawEqual(const CSSParserToken& other) const {
-  if (m_valueLength != other.m_valueLength)
+bool CSSParserToken::ValueDataCharRawEqual(const CSSParserToken& other) const {
+  if (value_length_ != other.value_length_)
     return false;
 
-  if (m_valueDataCharRaw == other.m_valueDataCharRaw &&
-      m_valueIs8Bit == other.m_valueIs8Bit)
+  if (value_data_char_raw_ == other.value_data_char_raw_ &&
+      value_is8_bit_ == other.value_is8_bit_)
     return true;
 
-  if (m_valueIs8Bit) {
-    return other.m_valueIs8Bit
-               ? equal(static_cast<const LChar*>(m_valueDataCharRaw),
-                       static_cast<const LChar*>(other.m_valueDataCharRaw),
-                       m_valueLength)
-               : equal(static_cast<const LChar*>(m_valueDataCharRaw),
-                       static_cast<const UChar*>(other.m_valueDataCharRaw),
-                       m_valueLength);
+  if (value_is8_bit_) {
+    return other.value_is8_bit_
+               ? Equal(static_cast<const LChar*>(value_data_char_raw_),
+                       static_cast<const LChar*>(other.value_data_char_raw_),
+                       value_length_)
+               : Equal(static_cast<const LChar*>(value_data_char_raw_),
+                       static_cast<const UChar*>(other.value_data_char_raw_),
+                       value_length_);
   } else {
-    return other.m_valueIs8Bit
-               ? equal(static_cast<const UChar*>(m_valueDataCharRaw),
-                       static_cast<const LChar*>(other.m_valueDataCharRaw),
-                       m_valueLength)
-               : equal(static_cast<const UChar*>(m_valueDataCharRaw),
-                       static_cast<const UChar*>(other.m_valueDataCharRaw),
-                       m_valueLength);
+    return other.value_is8_bit_
+               ? Equal(static_cast<const UChar*>(value_data_char_raw_),
+                       static_cast<const LChar*>(other.value_data_char_raw_),
+                       value_length_)
+               : Equal(static_cast<const UChar*>(value_data_char_raw_),
+                       static_cast<const UChar*>(other.value_data_char_raw_),
+                       value_length_);
   }
 }
 
 bool CSSParserToken::operator==(const CSSParserToken& other) const {
-  if (m_type != other.m_type)
+  if (type_ != other.type_)
     return false;
-  switch (m_type) {
-    case DelimiterToken:
-      return delimiter() == other.delimiter();
-    case HashToken:
-      if (m_hashTokenType != other.m_hashTokenType)
+  switch (type_) {
+    case kDelimiterToken:
+      return Delimiter() == other.Delimiter();
+    case kHashToken:
+      if (hash_token_type_ != other.hash_token_type_)
         return false;
     // fallthrough
-    case IdentToken:
-    case FunctionToken:
-    case StringToken:
-    case UrlToken:
-      return valueDataCharRawEqual(other);
-    case DimensionToken:
-      if (!valueDataCharRawEqual(other))
+    case kIdentToken:
+    case kFunctionToken:
+    case kStringToken:
+    case kUrlToken:
+      return ValueDataCharRawEqual(other);
+    case kDimensionToken:
+      if (!ValueDataCharRawEqual(other))
         return false;
     // fallthrough
-    case NumberToken:
-    case PercentageToken:
-      return m_numericSign == other.m_numericSign &&
-             m_numericValue == other.m_numericValue &&
-             m_numericValueType == other.m_numericValueType;
-    case UnicodeRangeToken:
-      return m_unicodeRange.start == other.m_unicodeRange.start &&
-             m_unicodeRange.end == other.m_unicodeRange.end;
+    case kNumberToken:
+    case kPercentageToken:
+      return numeric_sign_ == other.numeric_sign_ &&
+             numeric_value_ == other.numeric_value_ &&
+             numeric_value_type_ == other.numeric_value_type_;
+    case kUnicodeRangeToken:
+      return unicode_range_.start == other.unicode_range_.start &&
+             unicode_range_.end == other.unicode_range_.end;
     default:
       return true;
   }
 }
 
-void CSSParserToken::serialize(StringBuilder& builder) const {
+void CSSParserToken::Serialize(StringBuilder& builder) const {
   // This is currently only used for @supports CSSOM. To keep our implementation
   // simple we handle some of the edge cases incorrectly (see comments below).
-  switch (type()) {
-    case IdentToken:
-      serializeIdentifier(value().toString(), builder);
+  switch (GetType()) {
+    case kIdentToken:
+      SerializeIdentifier(Value().ToString(), builder);
       break;
-    case FunctionToken:
-      serializeIdentifier(value().toString(), builder);
-      return builder.append('(');
-    case AtKeywordToken:
-      builder.append('@');
-      serializeIdentifier(value().toString(), builder);
+    case kFunctionToken:
+      SerializeIdentifier(Value().ToString(), builder);
+      return builder.Append('(');
+    case kAtKeywordToken:
+      builder.Append('@');
+      SerializeIdentifier(Value().ToString(), builder);
       break;
-    case HashToken:
-      builder.append('#');
-      serializeIdentifier(value().toString(), builder,
-                          (getHashTokenType() == HashTokenUnrestricted));
+    case kHashToken:
+      builder.Append('#');
+      SerializeIdentifier(Value().ToString(), builder,
+                          (GetHashTokenType() == kHashTokenUnrestricted));
       break;
-    case UrlToken:
-      builder.append("url(");
-      serializeIdentifier(value().toString(), builder);
-      return builder.append(')');
-    case DelimiterToken:
-      if (delimiter() == '\\')
-        return builder.append("\\\n");
-      return builder.append(delimiter());
-    case NumberToken:
+    case kUrlToken:
+      builder.Append("url(");
+      SerializeIdentifier(Value().ToString(), builder);
+      return builder.Append(')');
+    case kDelimiterToken:
+      if (Delimiter() == '\\')
+        return builder.Append("\\\n");
+      return builder.Append(Delimiter());
+    case kNumberToken:
       // These won't properly preserve the NumericValueType flag
-      return builder.appendNumber(numericValue());
-    case PercentageToken:
-      builder.appendNumber(numericValue());
-      return builder.append('%');
-    case DimensionToken:
+      return builder.AppendNumber(NumericValue());
+    case kPercentageToken:
+      builder.AppendNumber(NumericValue());
+      return builder.Append('%');
+    case kDimensionToken:
       // This will incorrectly serialize e.g. 4e3e2 as 4000e2
-      builder.appendNumber(numericValue());
-      serializeIdentifier(value().toString(), builder);
+      builder.AppendNumber(NumericValue());
+      SerializeIdentifier(Value().ToString(), builder);
       break;
-    case UnicodeRangeToken:
-      return builder.append(
-          String::format("U+%X-%X", unicodeRangeStart(), unicodeRangeEnd()));
-    case StringToken:
-      return serializeString(value().toString(), builder);
+    case kUnicodeRangeToken:
+      return builder.Append(
+          String::Format("U+%X-%X", UnicodeRangeStart(), UnicodeRangeEnd()));
+    case kStringToken:
+      return SerializeString(Value().ToString(), builder);
 
-    case IncludeMatchToken:
-      return builder.append("~=");
-    case DashMatchToken:
-      return builder.append("|=");
-    case PrefixMatchToken:
-      return builder.append("^=");
-    case SuffixMatchToken:
-      return builder.append("$=");
-    case SubstringMatchToken:
-      return builder.append("*=");
-    case ColumnToken:
-      return builder.append("||");
-    case CDOToken:
-      return builder.append("<!--");
-    case CDCToken:
-      return builder.append("-->");
-    case BadStringToken:
-      return builder.append("'\n");
-    case BadUrlToken:
-      return builder.append("url(()");
-    case WhitespaceToken:
-      return builder.append(' ');
-    case ColonToken:
-      return builder.append(':');
-    case SemicolonToken:
-      return builder.append(';');
-    case CommaToken:
-      return builder.append(',');
-    case LeftParenthesisToken:
-      return builder.append('(');
-    case RightParenthesisToken:
-      return builder.append(')');
-    case LeftBracketToken:
-      return builder.append('[');
-    case RightBracketToken:
-      return builder.append(']');
-    case LeftBraceToken:
-      return builder.append('{');
-    case RightBraceToken:
-      return builder.append('}');
+    case kIncludeMatchToken:
+      return builder.Append("~=");
+    case kDashMatchToken:
+      return builder.Append("|=");
+    case kPrefixMatchToken:
+      return builder.Append("^=");
+    case kSuffixMatchToken:
+      return builder.Append("$=");
+    case kSubstringMatchToken:
+      return builder.Append("*=");
+    case kColumnToken:
+      return builder.Append("||");
+    case kCDOToken:
+      return builder.Append("<!--");
+    case kCDCToken:
+      return builder.Append("-->");
+    case kBadStringToken:
+      return builder.Append("'\n");
+    case kBadUrlToken:
+      return builder.Append("url(()");
+    case kWhitespaceToken:
+      return builder.Append(' ');
+    case kColonToken:
+      return builder.Append(':');
+    case kSemicolonToken:
+      return builder.Append(';');
+    case kCommaToken:
+      return builder.Append(',');
+    case kLeftParenthesisToken:
+      return builder.Append('(');
+    case kRightParenthesisToken:
+      return builder.Append(')');
+    case kLeftBracketToken:
+      return builder.Append('[');
+    case kRightBracketToken:
+      return builder.Append(']');
+    case kLeftBraceToken:
+      return builder.Append('{');
+    case kRightBraceToken:
+      return builder.Append('}');
 
-    case EOFToken:
-    case CommentToken:
+    case kEOFToken:
+    case kCommentToken:
       NOTREACHED();
       return;
   }

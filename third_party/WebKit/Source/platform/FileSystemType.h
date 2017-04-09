@@ -39,16 +39,16 @@ namespace blink {
 // If you have to update this list, also modify deserialization logic to handle
 // the previous version of this enum.
 enum FileSystemType {
-  FileSystemTypeTemporary,
-  FileSystemTypePersistent,
+  kFileSystemTypeTemporary,
+  kFileSystemTypePersistent,
 
   // Transient isolated non-sandboxed filesystem.
-  FileSystemTypeIsolated,
+  kFileSystemTypeIsolated,
 
   // Non-sandbox filesystem.
-  FileSystemTypeExternal,
+  kFileSystemTypeExternal,
 
-  FileSystemTypeLast = FileSystemTypeExternal,
+  kFileSystemTypeLast = kFileSystemTypeExternal,
 };
 
 }  // namespace blink

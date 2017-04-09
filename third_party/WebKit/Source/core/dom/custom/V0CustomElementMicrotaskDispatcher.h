@@ -18,27 +18,27 @@ class V0CustomElementMicrotaskDispatcher final
   WTF_MAKE_NONCOPYABLE(V0CustomElementMicrotaskDispatcher);
 
  public:
-  static V0CustomElementMicrotaskDispatcher& instance();
+  static V0CustomElementMicrotaskDispatcher& Instance();
 
-  void enqueue(V0CustomElementCallbackQueue*);
+  void Enqueue(V0CustomElementCallbackQueue*);
 
-  bool elementQueueIsEmpty() { return m_elements.isEmpty(); }
+  bool ElementQueueIsEmpty() { return elements_.IsEmpty(); }
 
   DECLARE_TRACE();
 
  private:
   V0CustomElementMicrotaskDispatcher();
 
-  void ensureMicrotaskScheduledForElementQueue();
-  void ensureMicrotaskScheduled();
+  void EnsureMicrotaskScheduledForElementQueue();
+  void EnsureMicrotaskScheduled();
 
-  static void dispatch();
-  void doDispatch();
+  static void Dispatch();
+  void DoDispatch();
 
-  bool m_hasScheduledMicrotask;
-  enum { Quiescent, Resolving, DispatchingCallbacks } m_phase;
+  bool has_scheduled_microtask_;
+  enum { kQuiescent, kResolving, kDispatchingCallbacks } phase_;
 
-  HeapVector<Member<V0CustomElementCallbackQueue>> m_elements;
+  HeapVector<Member<V0CustomElementCallbackQueue>> elements_;
 };
 
 }  // namespace blink

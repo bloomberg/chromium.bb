@@ -10,17 +10,17 @@ namespace blink {
 
 namespace EventUtil {
 
-bool isPointerEventType(const AtomicString& eventType) {
-  return eventType == EventTypeNames::gotpointercapture ||
-         eventType == EventTypeNames::lostpointercapture ||
-         eventType == EventTypeNames::pointercancel ||
-         eventType == EventTypeNames::pointerdown ||
-         eventType == EventTypeNames::pointerenter ||
-         eventType == EventTypeNames::pointerleave ||
-         eventType == EventTypeNames::pointermove ||
-         eventType == EventTypeNames::pointerout ||
-         eventType == EventTypeNames::pointerover ||
-         eventType == EventTypeNames::pointerup;
+bool IsPointerEventType(const AtomicString& event_type) {
+  return event_type == EventTypeNames::gotpointercapture ||
+         event_type == EventTypeNames::lostpointercapture ||
+         event_type == EventTypeNames::pointercancel ||
+         event_type == EventTypeNames::pointerdown ||
+         event_type == EventTypeNames::pointerenter ||
+         event_type == EventTypeNames::pointerleave ||
+         event_type == EventTypeNames::pointermove ||
+         event_type == EventTypeNames::pointerout ||
+         event_type == EventTypeNames::pointerover ||
+         event_type == EventTypeNames::pointerup;
 }
 
 }  // namespace eventUtil

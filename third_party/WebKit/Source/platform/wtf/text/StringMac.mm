@@ -30,23 +30,23 @@ String::String(NSString* str) {
 
   CFIndex size = CFStringGetLength(reinterpret_cast<CFStringRef>(str));
   if (size == 0)
-    m_impl = StringImpl::empty;
+    impl_ = StringImpl::empty_;
   else {
-    Vector<LChar, 1024> lcharBuffer(size);
-    CFIndex usedBufLen;
+    Vector<LChar, 1024> lchar_buffer(size);
+    CFIndex used_buf_len;
     CFIndex convertedsize =
         CFStringGetBytes(reinterpret_cast<CFStringRef>(str),
                          CFRangeMake(0, size), kCFStringEncodingISOLatin1, 0,
-                         false, lcharBuffer.data(), size, &usedBufLen);
-    if ((convertedsize == size) && (usedBufLen == size)) {
-      m_impl = StringImpl::create(lcharBuffer.data(), size);
+                         false, lchar_buffer.Data(), size, &used_buf_len);
+    if ((convertedsize == size) && (used_buf_len == size)) {
+      impl_ = StringImpl::Create(lchar_buffer.Data(), size);
       return;
     }
 
-    Vector<UChar, 1024> ucharBuffer(size);
+    Vector<UChar, 1024> uchar_buffer(size);
     CFStringGetCharacters(reinterpret_cast<CFStringRef>(str),
-                          CFRangeMake(0, size), ucharBuffer.data());
-    m_impl = StringImpl::create(ucharBuffer.data(), size);
+                          CFRangeMake(0, size), uchar_buffer.Data());
+    impl_ = StringImpl::Create(uchar_buffer.Data(), size);
   }
 }
 

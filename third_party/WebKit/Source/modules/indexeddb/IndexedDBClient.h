@@ -55,15 +55,15 @@ class MODULES_EXPORT IndexedDBClient
 
   DECLARE_VIRTUAL_TRACE();
 
-  virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
+  virtual bool AllowIndexedDB(ExecutionContext*, const String& name) = 0;
 
-  static IndexedDBClient* from(ExecutionContext*);
-  static const char* supplementName();
+  static IndexedDBClient* From(ExecutionContext*);
+  static const char* SupplementName();
 };
 
-MODULES_EXPORT void provideIndexedDBClientTo(LocalFrame&, IndexedDBClient*);
+MODULES_EXPORT void ProvideIndexedDBClientTo(LocalFrame&, IndexedDBClient*);
 
-MODULES_EXPORT void provideIndexedDBClientToWorker(WorkerClients*,
+MODULES_EXPORT void ProvideIndexedDBClientToWorker(WorkerClients*,
                                                    IndexedDBClient*);
 
 }  // namespace blink

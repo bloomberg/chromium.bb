@@ -37,22 +37,22 @@ class AudioDSPKernel;
 
 class DelayProcessor final : public AudioDSPKernelProcessor {
  public:
-  DelayProcessor(float sampleRate,
-                 unsigned numberOfChannels,
-                 AudioParamHandler& delayTime,
-                 double maxDelayTime);
+  DelayProcessor(float sample_rate,
+                 unsigned number_of_channels,
+                 AudioParamHandler& delay_time,
+                 double max_delay_time);
   ~DelayProcessor() override;
 
-  std::unique_ptr<AudioDSPKernel> createKernel() override;
+  std::unique_ptr<AudioDSPKernel> CreateKernel() override;
 
-  void processOnlyAudioParams(size_t framesToProcess) override;
+  void ProcessOnlyAudioParams(size_t frames_to_process) override;
 
-  AudioParamHandler& delayTime() const { return *m_delayTime; }
-  double maxDelayTime() { return m_maxDelayTime; }
+  AudioParamHandler& DelayTime() const { return *delay_time_; }
+  double MaxDelayTime() { return max_delay_time_; }
 
  private:
-  RefPtr<AudioParamHandler> m_delayTime;
-  double m_maxDelayTime;
+  RefPtr<AudioParamHandler> delay_time_;
+  double max_delay_time_;
 };
 
 }  // namespace blink

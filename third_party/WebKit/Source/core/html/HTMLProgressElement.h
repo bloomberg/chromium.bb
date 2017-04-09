@@ -32,10 +32,10 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static const double IndeterminatePosition;
-  static const double InvalidPosition;
+  static const double kIndeterminatePosition;
+  static const double kInvalidPosition;
 
-  static HTMLProgressElement* create(Document&);
+  static HTMLProgressElement* Create(Document&);
 
   double value() const;
   void setValue(double);
@@ -45,7 +45,7 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
 
   double position() const;
 
-  bool canContainRangeEndPoint() const override { return false; }
+  bool CanContainRangeEndPoint() const override { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -53,23 +53,23 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
   explicit HTMLProgressElement(Document&);
   ~HTMLProgressElement() override;
 
-  bool areAuthorShadowsAllowed() const override { return false; }
-  bool shouldAppearIndeterminate() const override;
-  bool supportLabels() const override { return true; }
+  bool AreAuthorShadowsAllowed() const override { return false; }
+  bool ShouldAppearIndeterminate() const override;
+  bool SupportLabels() const override { return true; }
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  LayoutProgress* layoutProgress() const;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutProgress* GetLayoutProgress() const;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  void didElementStateChange();
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
-  bool isDeterminate() const;
-  void setValueWidthPercentage(double) const;
+  void DidElementStateChange();
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  bool IsDeterminate() const;
+  void SetValueWidthPercentage(double) const;
 
-  Member<Element> m_value;
+  Member<Element> value_;
 };
 
 }  // namespace blink

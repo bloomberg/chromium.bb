@@ -19,8 +19,8 @@ class DevToolsHostFileSystem {
 
  public:
   static DOMFileSystem* isolatedFileSystem(DevToolsHost&,
-                                           const String& fileSystemName,
-                                           const String& rootURL);
+                                           const String& file_system_name,
+                                           const String& root_url);
   static void upgradeDraggedFileSystemPermissions(DevToolsHost&,
                                                   DOMFileSystem*);
 };

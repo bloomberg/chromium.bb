@@ -45,16 +45,16 @@ class StorageArea;
 class MODULES_EXPORT InspectorDOMStorageAgent final
     : public InspectorBaseAgent<protocol::DOMStorage::Metainfo> {
  public:
-  static InspectorDOMStorageAgent* create(Page* page) {
+  static InspectorDOMStorageAgent* Create(Page* page) {
     return new InspectorDOMStorageAgent(page);
   }
 
   ~InspectorDOMStorageAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void didDispatchDOMStorageEvent(const String& key,
-                                  const String& oldValue,
-                                  const String& newValue,
+  void DidDispatchDOMStorageEvent(const String& key,
+                                  const String& old_value,
+                                  const String& new_value,
                                   StorageType,
                                   SecurityOrigin*);
 
@@ -62,7 +62,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
   explicit InspectorDOMStorageAgent(Page*);
 
   // InspectorBaseAgent overrides.
-  void restore() override;
+  void Restore() override;
 
   // protocol::Dispatcher::DOMStorageCommandHandler overrides.
   protocol::Response enable() override;
@@ -82,16 +82,16 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
       std::unique_ptr<protocol::DOMStorage::StorageId>,
       const String& key) override;
 
-  protocol::Response findStorageArea(
+  protocol::Response FindStorageArea(
       std::unique_ptr<protocol::DOMStorage::StorageId>,
       LocalFrame*&,
       StorageArea*&);
-  std::unique_ptr<protocol::DOMStorage::StorageId> storageId(
+  std::unique_ptr<protocol::DOMStorage::StorageId> GetStorageId(
       SecurityOrigin*,
-      bool isLocalStorage);
+      bool is_local_storage);
 
-  Member<Page> m_page;
-  bool m_isEnabled;
+  Member<Page> page_;
+  bool is_enabled_;
 };
 
 }  // namespace blink

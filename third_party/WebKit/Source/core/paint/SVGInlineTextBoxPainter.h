@@ -23,71 +23,71 @@ class DocumentMarker;
 
 struct SVGTextFragmentWithRange {
   SVGTextFragmentWithRange(const SVGTextFragment& fragment,
-                           int startPosition,
-                           int endPosition)
+                           int start_position,
+                           int end_position)
       : fragment(fragment),
-        startPosition(startPosition),
-        endPosition(endPosition) {}
+        start_position(start_position),
+        end_position(end_position) {}
   const SVGTextFragment& fragment;
-  int startPosition;
-  int endPosition;
+  int start_position;
+  int end_position;
 };
 
 class SVGInlineTextBoxPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGInlineTextBoxPainter(const SVGInlineTextBox& svgInlineTextBox)
-      : m_svgInlineTextBox(svgInlineTextBox) {}
-  void paint(const PaintInfo&, const LayoutPoint&);
-  void paintSelectionBackground(const PaintInfo&);
-  void paintTextMatchMarkerForeground(const PaintInfo&,
+  SVGInlineTextBoxPainter(const SVGInlineTextBox& svg_inline_text_box)
+      : svg_inline_text_box_(svg_inline_text_box) {}
+  void Paint(const PaintInfo&, const LayoutPoint&);
+  void PaintSelectionBackground(const PaintInfo&);
+  void PaintTextMatchMarkerForeground(const PaintInfo&,
                                       const LayoutPoint&,
                                       const DocumentMarker&,
                                       const ComputedStyle&,
                                       const Font&);
-  void paintTextMatchMarkerBackground(const PaintInfo&,
+  void PaintTextMatchMarkerBackground(const PaintInfo&,
                                       const LayoutPoint&,
                                       const DocumentMarker&,
                                       const ComputedStyle&,
                                       const Font&);
 
  private:
-  bool shouldPaintSelection(const PaintInfo&) const;
-  FloatRect boundsForDrawingRecorder(const PaintInfo&,
+  bool ShouldPaintSelection(const PaintInfo&) const;
+  FloatRect BoundsForDrawingRecorder(const PaintInfo&,
                                      const ComputedStyle&,
                                      const LayoutPoint&,
-                                     bool includeSelectionRect) const;
-  void paintTextFragments(const PaintInfo&, LayoutObject&);
-  void paintDecoration(const PaintInfo&,
+                                     bool include_selection_rect) const;
+  void PaintTextFragments(const PaintInfo&, LayoutObject&);
+  void PaintDecoration(const PaintInfo&,
                        TextDecoration,
                        const SVGTextFragment&);
-  bool setupTextPaint(const PaintInfo&,
+  bool SetupTextPaint(const PaintInfo&,
                       const ComputedStyle&,
                       LayoutSVGResourceMode,
                       PaintFlags&);
-  void paintText(const PaintInfo&,
+  void PaintText(const PaintInfo&,
                  TextRun&,
                  const SVGTextFragment&,
-                 int startPosition,
-                 int endPosition,
+                 int start_position,
+                 int end_position,
                  const PaintFlags&);
-  void paintText(const PaintInfo&,
+  void PaintText(const PaintInfo&,
                  const ComputedStyle&,
-                 const ComputedStyle& selectionStyle,
+                 const ComputedStyle& selection_style,
                  const SVGTextFragment&,
                  LayoutSVGResourceMode,
-                 bool shouldPaintSelection);
-  Vector<SVGTextFragmentWithRange> collectTextMatches(
+                 bool should_paint_selection);
+  Vector<SVGTextFragmentWithRange> CollectTextMatches(
       const DocumentMarker&) const;
-  Vector<SVGTextFragmentWithRange> collectFragmentsInRange(
-      int startPosition,
-      int endPosition) const;
-  LayoutObject& inlineLayoutObject() const;
-  LayoutObject& parentInlineLayoutObject() const;
-  LayoutSVGInlineText& inlineText() const;
+  Vector<SVGTextFragmentWithRange> CollectFragmentsInRange(
+      int start_position,
+      int end_position) const;
+  LayoutObject& InlineLayoutObject() const;
+  LayoutObject& ParentInlineLayoutObject() const;
+  LayoutSVGInlineText& InlineText() const;
 
-  const SVGInlineTextBox& m_svgInlineTextBox;
+  const SVGInlineTextBox& svg_inline_text_box_;
 };
 
 }  // namespace blink

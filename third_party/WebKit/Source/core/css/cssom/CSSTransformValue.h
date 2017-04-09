@@ -18,39 +18,39 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSTransformValue* create() { return new CSSTransformValue(); }
+  static CSSTransformValue* Create() { return new CSSTransformValue(); }
 
-  static CSSTransformValue* create(
-      const HeapVector<Member<CSSTransformComponent>>& transformComponents) {
-    return new CSSTransformValue(transformComponents);
+  static CSSTransformValue* Create(
+      const HeapVector<Member<CSSTransformComponent>>& transform_components) {
+    return new CSSTransformValue(transform_components);
   }
 
-  static CSSTransformValue* fromCSSValue(const CSSValue&);
+  static CSSTransformValue* FromCSSValue(const CSSValue&);
 
   bool is2D() const;
 
-  const CSSValue* toCSSValue() const override;
+  const CSSValue* ToCSSValue() const override;
 
-  StyleValueType type() const override { return TransformType; }
+  StyleValueType GetType() const override { return kTransformType; }
 
   CSSTransformComponent* componentAtIndex(uint32_t index) {
-    return m_transformComponents.at(index);
+    return transform_components_.at(index);
   }
 
-  size_t length() const { return m_transformComponents.size(); }
+  size_t length() const { return transform_components_.size(); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_transformComponents);
-    CSSStyleValue::trace(visitor);
+    visitor->Trace(transform_components_);
+    CSSStyleValue::Trace(visitor);
   }
 
  private:
   CSSTransformValue() {}
   CSSTransformValue(
-      const HeapVector<Member<CSSTransformComponent>>& transformComponents)
-      : CSSStyleValue(), m_transformComponents(transformComponents) {}
+      const HeapVector<Member<CSSTransformComponent>>& transform_components)
+      : CSSStyleValue(), transform_components_(transform_components) {}
 
-  HeapVector<Member<CSSTransformComponent>> m_transformComponents;
+  HeapVector<Member<CSSTransformComponent>> transform_components_;
 };
 
 }  // namespace blink

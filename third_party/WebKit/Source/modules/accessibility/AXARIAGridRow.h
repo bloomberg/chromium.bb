@@ -42,13 +42,13 @@ class AXARIAGridRow final : public AXTableRow {
   AXARIAGridRow(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXARIAGridRow* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXARIAGridRow* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXARIAGridRow() override;
 
-  void headerObjectsForRow(AXObjectVector&) override;
+  void HeaderObjectsForRow(AXObjectVector&) override;
 
  private:
-  bool isARIATreeGridRow() const override;
+  bool IsARIATreeGridRow() const override;
 };
 
 }  // namespace blink

@@ -96,7 +96,7 @@ namespace double_conversion {
                 return buffer.SubVector(i, buffer.length());
             }
         }
-        return Vector<const char>(buffer.start(), 0);
+        return Vector<const char>(buffer.Start(), 0);
     }
 
 
@@ -106,7 +106,7 @@ namespace double_conversion {
                 return buffer.SubVector(0, i + 1);
             }
         }
-        return Vector<const char>(buffer.start(), 0);
+        return Vector<const char>(buffer.Start(), 0);
     }
 
 
@@ -266,9 +266,9 @@ namespace double_conversion {
         exponent += remaining_decimals;
         int64_t error = (remaining_decimals == 0 ? 0 : kDenominator / 2);
 
-        int old_e = input.e();
+        int old_e = input.E();
         input.Normalize();
-        error <<= old_e - input.e();
+        error <<= old_e - input.E();
 
         ASSERT(exponent <= PowersOfTenCache::kMaxDecimalExponent);
         if (exponent < PowersOfTenCache::kMinDecimalExponent) {
@@ -306,12 +306,12 @@ namespace double_conversion {
         int fixed_error = kDenominator / 2;
         error += error_b + error_ab + fixed_error;
 
-        old_e = input.e();
+        old_e = input.E();
         input.Normalize();
-        error <<= old_e - input.e();
+        error <<= old_e - input.E();
 
         // See if the double's significand changes if we add/subtract the error.
-        int order_of_magnitude = DiyFp::kSignificandSize + input.e();
+        int order_of_magnitude = DiyFp::kSignificandSize + input.E();
         int effective_significand_size =
         Double::SignificandSizeForOrderOfMagnitude(order_of_magnitude);
         int precision_digits_count =
@@ -322,8 +322,8 @@ namespace double_conversion {
             // Simply shift everything to the right.
             int shift_amount = (precision_digits_count + kDenominatorLog) -
             DiyFp::kSignificandSize + 1;
-            input.set_f(input.f() >> shift_amount);
-            input.set_e(input.e() + shift_amount);
+            input.set_f(input.F() >> shift_amount);
+            input.set_e(input.E() + shift_amount);
             // We add 1 for the lost precision of error, and kDenominator for
             // the lost precision of input.f().
             error = (error >> shift_amount) + 1 + kDenominator;
@@ -334,20 +334,20 @@ namespace double_conversion {
         ASSERT(precision_digits_count < 64);
         uint64_t one64 = 1;
         uint64_t precision_bits_mask = (one64 << precision_digits_count) - 1;
-        uint64_t precision_bits = input.f() & precision_bits_mask;
+        uint64_t precision_bits = input.F() & precision_bits_mask;
         uint64_t half_way = one64 << (precision_digits_count - 1);
         precision_bits *= kDenominator;
         half_way *= kDenominator;
-        DiyFp rounded_input(input.f() >> precision_digits_count,
-                            input.e() + precision_digits_count);
+        DiyFp rounded_input(input.F() >> precision_digits_count,
+                            input.E() + precision_digits_count);
         if (precision_bits >= half_way + error) {
-            rounded_input.set_f(rounded_input.f() + 1);
+          rounded_input.set_f(rounded_input.F() + 1);
         }
         // If the last_bits are too close to the half-way case than we are too
         // inaccurate and round down. In this case we return false so that we can
         // fall back to a more precise algorithm.
 
-        *result = Double(rounded_input).value();
+        *result = Double(rounded_input).Value();
         if (half_way - error < precision_bits && precision_bits < half_way + error) {
             // Too imprecise. The caller will have to fall back to a slower version.
             // However the returned number is guaranteed to be either the correct
@@ -386,16 +386,16 @@ namespace double_conversion {
         Bignum input;
         Bignum boundary;
         input.AssignDecimalString(buffer);
-        boundary.AssignUInt64(upper_boundary.f());
+        boundary.AssignUInt64(upper_boundary.F());
         if (exponent >= 0) {
             input.MultiplyByPowerOfTen(exponent);
         } else {
             boundary.MultiplyByPowerOfTen(-exponent);
         }
-        if (upper_boundary.e() > 0) {
-            boundary.ShiftLeft(upper_boundary.e());
+        if (upper_boundary.E() > 0) {
+          boundary.ShiftLeft(upper_boundary.E());
         } else {
-            input.ShiftLeft(-upper_boundary.e());
+          input.ShiftLeft(-upper_boundary.E());
         }
         int comparison = Bignum::Compare(input, boundary);
         if (comparison < 0) {

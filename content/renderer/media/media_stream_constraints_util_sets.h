@@ -45,8 +45,8 @@ class NumericRangeSet {
   // |constraint|.
   template <typename ConstraintType>
   static auto FromConstraint(ConstraintType constraint)
-      -> NumericRangeSet<decltype(constraint.min())> {
-    return NumericRangeSet<decltype(constraint.min())>(
+      -> NumericRangeSet<decltype(constraint.Min())> {
+    return NumericRangeSet<decltype(constraint.Min())>(
         ConstraintHasMin(constraint) ? ConstraintMin(constraint) : 0,
         ConstraintHasMax(constraint) ? ConstraintMax(constraint)
                                      : DefaultMax());

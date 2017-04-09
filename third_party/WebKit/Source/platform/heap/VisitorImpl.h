@@ -12,105 +12,106 @@
 
 namespace blink {
 
-inline void Visitor::markHeader(HeapObjectHeader* header,
-                                const void* objectPointer,
+inline void Visitor::MarkHeader(HeapObjectHeader* header,
+                                const void* object_pointer,
                                 TraceCallback callback) {
   DCHECK(header);
-  DCHECK(objectPointer);
+  DCHECK(object_pointer);
 
-  if (header->isMarked())
+  if (header->IsMarked())
     return;
 
-  DCHECK(ThreadState::current()->isInGC());
-  DCHECK(getMarkingMode() != WeakProcessing);
+  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(GetMarkingMode() != kWeakProcessing);
 
   // A GC should only mark the objects that belong in its heap.
-  DCHECK(&pageFromObject(objectPointer)->arena()->getThreadState()->heap() ==
-         &heap());
+  DCHECK(&PageFromObject(object_pointer)->Arena()->GetThreadState()->Heap() ==
+         &Heap());
 
-  header->mark();
+  header->Mark();
 
   if (callback)
-    heap().pushTraceCallback(const_cast<void*>(objectPointer), callback);
+    Heap().PushTraceCallback(const_cast<void*>(object_pointer), callback);
 }
 
-inline void Visitor::markHeader(HeapObjectHeader* header,
+inline void Visitor::MarkHeader(HeapObjectHeader* header,
                                 TraceCallback callback) {
-  markHeader(header, header->payload(), callback);
+  MarkHeader(header, header->Payload(), callback);
 }
 
-inline void Visitor::mark(const void* objectPointer, TraceCallback callback) {
-  if (!objectPointer)
+inline void Visitor::Mark(const void* object_pointer, TraceCallback callback) {
+  if (!object_pointer)
     return;
-  HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);
-  markHeader(header, header->payload(), callback);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object_pointer);
+  MarkHeader(header, header->Payload(), callback);
 }
 
-inline void Visitor::markHeaderNoTracing(HeapObjectHeader* header) {
-  markHeader(header, header->payload(), reinterpret_cast<TraceCallback>(0));
+inline void Visitor::MarkHeaderNoTracing(HeapObjectHeader* header) {
+  MarkHeader(header, header->Payload(), reinterpret_cast<TraceCallback>(0));
 }
 
-inline void Visitor::registerDelayedMarkNoTracing(const void* objectPointer) {
-  DCHECK(getMarkingMode() != WeakProcessing);
-  heap().pushPostMarkingCallback(const_cast<void*>(objectPointer),
-                                 &markNoTracingCallback);
+inline void Visitor::RegisterDelayedMarkNoTracing(const void* object_pointer) {
+  DCHECK(GetMarkingMode() != kWeakProcessing);
+  Heap().PushPostMarkingCallback(const_cast<void*>(object_pointer),
+                                 &MarkNoTracingCallback);
 }
 
-inline void Visitor::registerWeakTable(
+inline void Visitor::RegisterWeakTable(
     const void* closure,
-    EphemeronCallback iterationCallback,
-    EphemeronCallback iterationDoneCallback) {
-  DCHECK(getMarkingMode() != WeakProcessing);
-  heap().registerWeakTable(const_cast<void*>(closure), iterationCallback,
-                           iterationDoneCallback);
+    EphemeronCallback iteration_callback,
+    EphemeronCallback iteration_done_callback) {
+  DCHECK(GetMarkingMode() != kWeakProcessing);
+  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback,
+                           iteration_done_callback);
 }
 
 #if DCHECK_IS_ON()
-inline bool Visitor::weakTableRegistered(const void* closure) {
-  return heap().weakTableRegistered(closure);
+inline bool Visitor::WeakTableRegistered(const void* closure) {
+  return Heap().WeakTableRegistered(closure);
 }
 #endif
 
-inline bool Visitor::ensureMarked(const void* objectPointer) {
-  if (!objectPointer)
+inline bool Visitor::EnsureMarked(const void* object_pointer) {
+  if (!object_pointer)
     return false;
 
-  HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);
-  if (header->isMarked())
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object_pointer);
+  if (header->IsMarked())
     return false;
 #if DCHECK_IS_ON()
-  markNoTracing(objectPointer);
+  MarkNoTracing(object_pointer);
 #else
   // Inline what the above markNoTracing() call expands to,
   // so as to make sure that we do get all the benefits (asserts excepted.)
-  header->mark();
+  header->Mark();
 #endif
   return true;
 }
 
-inline void Visitor::registerWeakCallback(void* closure,
+inline void Visitor::RegisterWeakCallback(void* closure,
                                           WeakCallback callback) {
-  DCHECK(getMarkingMode() != WeakProcessing);
+  DCHECK(GetMarkingMode() != kWeakProcessing);
   // We don't want to run weak processings when taking a snapshot.
-  if (getMarkingMode() == SnapshotMarking)
+  if (GetMarkingMode() == kSnapshotMarking)
     return;
-  heap().pushWeakCallback(closure, callback);
+  Heap().PushWeakCallback(closure, callback);
 }
 
-inline void Visitor::registerBackingStoreReference(void* slot) {
-  if (getMarkingMode() != GlobalMarkingWithCompaction)
+inline void Visitor::RegisterBackingStoreReference(void* slot) {
+  if (GetMarkingMode() != kGlobalMarkingWithCompaction)
     return;
-  heap().registerMovingObjectReference(
+  Heap().RegisterMovingObjectReference(
       reinterpret_cast<MovableReference*>(slot));
 }
 
-inline void Visitor::registerBackingStoreCallback(void* backingStore,
+inline void Visitor::RegisterBackingStoreCallback(void* backing_store,
                                                   MovingObjectCallback callback,
-                                                  void* callbackData) {
-  if (getMarkingMode() != GlobalMarkingWithCompaction)
+                                                  void* callback_data) {
+  if (GetMarkingMode() != kGlobalMarkingWithCompaction)
     return;
-  heap().registerMovingObjectCallback(
-      reinterpret_cast<MovableReference>(backingStore), callback, callbackData);
+  Heap().RegisterMovingObjectCallback(
+      reinterpret_cast<MovableReference>(backing_store), callback,
+      callback_data);
 }
 
 }  // namespace blink

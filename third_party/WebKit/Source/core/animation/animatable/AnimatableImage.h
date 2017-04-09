@@ -39,19 +39,19 @@ namespace blink {
 class AnimatableImage final : public AnimatableValue {
  public:
   ~AnimatableImage() override {}
-  static PassRefPtr<AnimatableImage> create(CSSValue* value) {
-    return adoptRef(new AnimatableImage(value));
+  static PassRefPtr<AnimatableImage> Create(CSSValue* value) {
+    return AdoptRef(new AnimatableImage(value));
   }
 
  private:
-  AnimatableImage(CSSValue* value) : m_value(value) { DCHECK(m_value.get()); }
-  AnimatableType type() const override { return TypeImage; }
-  bool equalTo(const AnimatableValue*) const override;
+  AnimatableImage(CSSValue* value) : value_(value) { DCHECK(value_.Get()); }
+  AnimatableType GetType() const override { return kTypeImage; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  const Persistent<CSSValue> m_value;
+  const Persistent<CSSValue> value_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, IsImage());
 
 }  // namespace blink
 

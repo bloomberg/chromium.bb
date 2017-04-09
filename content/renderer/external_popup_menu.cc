@@ -31,7 +31,7 @@ void ExternalPopupMenu::SetOriginScaleAndOffsetForEmulation(
   origin_offset_for_emulation_ = offset;
 }
 
-void ExternalPopupMenu::show(const blink::WebRect& bounds) {
+void ExternalPopupMenu::Show(const blink::WebRect& bounds) {
   blink::WebRect rect = bounds;
   if (origin_scale_for_emulation_) {
     rect.x *= origin_scale_for_emulation_;
@@ -42,21 +42,21 @@ void ExternalPopupMenu::show(const blink::WebRect& bounds) {
 
   FrameHostMsg_ShowPopup_Params popup_params;
   popup_params.bounds = rect;
-  popup_params.item_height = popup_menu_info_.itemHeight;
-  popup_params.item_font_size = popup_menu_info_.itemFontSize;
-  popup_params.selected_item = popup_menu_info_.selectedIndex;
+  popup_params.item_height = popup_menu_info_.item_height;
+  popup_params.item_font_size = popup_menu_info_.item_font_size;
+  popup_params.selected_item = popup_menu_info_.selected_index;
   for (size_t i = 0; i < popup_menu_info_.items.size(); ++i) {
     popup_params.popup_items.push_back(
         MenuItemBuilder::Build(popup_menu_info_.items[i]));
   }
-  popup_params.right_aligned = popup_menu_info_.rightAligned;
+  popup_params.right_aligned = popup_menu_info_.right_aligned;
   popup_params.allow_multiple_selection =
-      popup_menu_info_.allowMultipleSelection;
+      popup_menu_info_.allow_multiple_selection;
   render_frame_->Send(
       new FrameHostMsg_ShowPopup(render_frame_->GetRoutingID(), popup_params));
 }
 
-void ExternalPopupMenu::close()  {
+void ExternalPopupMenu::Close() {
   render_frame_->Send(
       new FrameHostMsg_HidePopup(render_frame_->GetRoutingID()));
   render_frame_->DidHideExternalPopupMenu();
@@ -69,9 +69,9 @@ void ExternalPopupMenu::DidSelectItem(int index) {
   if (!popup_menu_client_)
     return;
   if (index == -1)
-    popup_menu_client_->didCancel();
+    popup_menu_client_->DidCancel();
   else
-    popup_menu_client_->didAcceptIndex(index);
+    popup_menu_client_->DidAcceptIndex(index);
 }
 #else
 void ExternalPopupMenu::DidSelectItems(bool canceled,
@@ -79,9 +79,9 @@ void ExternalPopupMenu::DidSelectItems(bool canceled,
   if (!popup_menu_client_)
     return;
   if (canceled)
-    popup_menu_client_->didCancel();
+    popup_menu_client_->DidCancel();
   else
-    popup_menu_client_->didAcceptIndices(indices);
+    popup_menu_client_->DidAcceptIndices(indices);
 }
 #endif
 #endif

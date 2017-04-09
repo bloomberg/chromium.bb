@@ -693,7 +693,7 @@ class WebDisplayModeDelegate : public WebContentsDelegate {
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebDisplayModeDelegate delegate(blink::WebDisplayModeMinimalUi);
+  WebDisplayModeDelegate delegate(blink::kWebDisplayModeMinimalUi);
   shell()->web_contents()->SetDelegate(&delegate);
 
   NavigateToURL(shell(), GURL("about://blank"));
@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
                             " minimal-ui)').matches"));
   EXPECT_EQ(base::ASCIIToUTF16("true"), shell()->web_contents()->GetTitle());
 
-  delegate.set_mode(blink::WebDisplayModeFullscreen);
+  delegate.set_mode(blink::kWebDisplayModeFullscreen);
   // Simulate widget is entering fullscreen (changing size is enough).
   shell()->web_contents()->GetRenderViewHost()->GetWidget()->WasResized();
 

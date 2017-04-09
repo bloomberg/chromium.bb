@@ -21,55 +21,55 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
   JNIEnv* env = base::android::AttachCurrentThread();
   blink::WebMouseEvent* mouse;
   blink::WebGestureEvent* gesture;
-  if (blink::WebInputEvent::isMouseEventType(event->type())) {
+  if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
     mouse = static_cast<blink::WebMouseEvent*>(event.get());
   } else {
     gesture = static_cast<blink::WebGestureEvent*>(event.get());
   }
 
-  switch (event->type()) {
-    case blink::WebGestureEvent::GestureScrollBegin:
-      DCHECK(gesture->data.scrollBegin.deltaHintUnits ==
-             blink::WebGestureEvent::ScrollUnits::PrecisePixels);
-      scroll_x_ = (scroll_ratio_ * gesture->data.scrollBegin.deltaXHint);
-      scroll_y_ = (scroll_ratio_ * gesture->data.scrollBegin.deltaYHint);
+  switch (event->GetType()) {
+    case blink::WebGestureEvent::kGestureScrollBegin:
+      DCHECK(gesture->data.scroll_begin.delta_hint_units ==
+             blink::WebGestureEvent::ScrollUnits::kPrecisePixels);
+      scroll_x_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_x_hint);
+      scroll_y_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_y_hint);
       SetPointer(env, 0, 0);
-      Inject(env, Action::Start, gesture->timeStampSeconds());
+      Inject(env, Action::Start, gesture->TimeStampSeconds());
       SetPointer(env, scroll_x_, scroll_y_);
       // Send a move immediately so that we can't accidentally trigger a click.
-      Inject(env, Action::Move, gesture->timeStampSeconds());
+      Inject(env, Action::Move, gesture->TimeStampSeconds());
       break;
-    case blink::WebGestureEvent::GestureScrollEnd:
-      Inject(env, Action::End, gesture->timeStampSeconds());
+    case blink::WebGestureEvent::kGestureScrollEnd:
+      Inject(env, Action::End, gesture->TimeStampSeconds());
       break;
-    case blink::WebGestureEvent::GestureScrollUpdate:
-      scroll_x_ += (scroll_ratio_ * gesture->data.scrollUpdate.deltaX);
-      scroll_y_ += (scroll_ratio_ * gesture->data.scrollUpdate.deltaY);
+    case blink::WebGestureEvent::kGestureScrollUpdate:
+      scroll_x_ += (scroll_ratio_ * gesture->data.scroll_update.delta_x);
+      scroll_y_ += (scroll_ratio_ * gesture->data.scroll_update.delta_y);
       SetPointer(env, scroll_x_, scroll_y_);
-      Inject(env, Action::Move, gesture->timeStampSeconds());
+      Inject(env, Action::Move, gesture->TimeStampSeconds());
       break;
-    case blink::WebGestureEvent::GestureTapDown:
+    case blink::WebGestureEvent::kGestureTapDown:
       SetPointer(env, gesture->x, gesture->y);
-      Inject(env, Action::Start, gesture->timeStampSeconds());
-      Inject(env, Action::End, gesture->timeStampSeconds());
+      Inject(env, Action::Start, gesture->TimeStampSeconds());
+      Inject(env, Action::End, gesture->TimeStampSeconds());
       break;
-    case blink::WebGestureEvent::GestureFlingCancel:
-      Inject(env, Action::Cancel, gesture->timeStampSeconds());
+    case blink::WebGestureEvent::kGestureFlingCancel:
+      Inject(env, Action::Cancel, gesture->TimeStampSeconds());
       break;
-    case blink::WebGestureEvent::GestureFlingStart:
+    case blink::WebGestureEvent::kGestureFlingStart:
       // Flings are automatically generated for android UI. Ignore this input.
       break;
-    case blink::WebMouseEvent::MouseEnter:
-      SetPointer(env, mouse->positionInWidget().x, mouse->positionInWidget().y);
-      Inject(env, Action::HoverEnter, gesture->timeStampSeconds());
+    case blink::WebMouseEvent::kMouseEnter:
+      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(env, Action::HoverEnter, gesture->TimeStampSeconds());
       break;
-    case blink::WebMouseEvent::MouseMove:
-      SetPointer(env, mouse->positionInWidget().x, mouse->positionInWidget().y);
-      Inject(env, Action::HoverMove, gesture->timeStampSeconds());
+    case blink::WebMouseEvent::kMouseMove:
+      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(env, Action::HoverMove, gesture->TimeStampSeconds());
       break;
-    case blink::WebMouseEvent::MouseLeave:
-      SetPointer(env, mouse->positionInWidget().x, mouse->positionInWidget().y);
-      Inject(env, Action::HoverExit, gesture->timeStampSeconds());
+    case blink::WebMouseEvent::kMouseLeave:
+      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(env, Action::HoverExit, gesture->TimeStampSeconds());
       break;
     default:
       NOTREACHED();

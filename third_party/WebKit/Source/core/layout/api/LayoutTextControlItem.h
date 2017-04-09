@@ -13,30 +13,30 @@ namespace blink {
 
 class LayoutTextControlItem : public LayoutBoxModel {
  public:
-  explicit LayoutTextControlItem(LayoutTextControl* layoutTextControl)
-      : LayoutBoxModel(layoutTextControl) {}
+  explicit LayoutTextControlItem(LayoutTextControl* layout_text_control)
+      : LayoutBoxModel(layout_text_control) {}
 
   explicit LayoutTextControlItem(const LayoutItem& item)
       : LayoutBoxModel(item) {
-    SECURITY_DCHECK(!item || item.isTextControl());
+    SECURITY_DCHECK(!item || item.IsTextControl());
   }
 
   explicit LayoutTextControlItem(std::nullptr_t) : LayoutBoxModel(nullptr) {}
 
   LayoutTextControlItem() {}
 
-  PassRefPtr<ComputedStyle> createInnerEditorStyle(
-      const ComputedStyle& startStyle) const {
-    return toTextControl()->createInnerEditorStyle(startStyle);
+  PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+      const ComputedStyle& start_style) const {
+    return ToTextControl()->CreateInnerEditorStyle(start_style);
   }
 
  private:
-  LayoutTextControl* toTextControl() {
-    return toLayoutTextControl(layoutObject());
+  LayoutTextControl* ToTextControl() {
+    return ToLayoutTextControl(GetLayoutObject());
   }
 
-  const LayoutTextControl* toTextControl() const {
-    return toLayoutTextControl(layoutObject());
+  const LayoutTextControl* ToTextControl() const {
+    return ToLayoutTextControl(GetLayoutObject());
   }
 };
 

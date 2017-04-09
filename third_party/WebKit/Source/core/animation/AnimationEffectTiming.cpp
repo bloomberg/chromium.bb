@@ -14,7 +14,7 @@
 
 namespace blink {
 
-AnimationEffectTiming* AnimationEffectTiming::create(
+AnimationEffectTiming* AnimationEffectTiming::Create(
     AnimationEffectReadOnly* parent) {
   return new AnimationEffectTiming(parent);
 }
@@ -23,71 +23,71 @@ AnimationEffectTiming::AnimationEffectTiming(AnimationEffectReadOnly* parent)
     : AnimationEffectTimingReadOnly(parent) {}
 
 void AnimationEffectTiming::setDelay(double delay) {
-  Timing timing = m_parent->specifiedTiming();
-  TimingInput::setStartDelay(timing, delay);
-  m_parent->updateSpecifiedTiming(timing);
+  Timing timing = parent_->SpecifiedTiming();
+  TimingInput::SetStartDelay(timing, delay);
+  parent_->UpdateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setEndDelay(double endDelay) {
-  Timing timing = m_parent->specifiedTiming();
-  TimingInput::setEndDelay(timing, endDelay);
-  m_parent->updateSpecifiedTiming(timing);
+void AnimationEffectTiming::setEndDelay(double end_delay) {
+  Timing timing = parent_->SpecifiedTiming();
+  TimingInput::SetEndDelay(timing, end_delay);
+  parent_->UpdateSpecifiedTiming(timing);
 }
 
 void AnimationEffectTiming::setFill(String fill) {
-  Timing timing = m_parent->specifiedTiming();
-  TimingInput::setFillMode(timing, fill);
-  m_parent->updateSpecifiedTiming(timing);
+  Timing timing = parent_->SpecifiedTiming();
+  TimingInput::SetFillMode(timing, fill);
+  parent_->UpdateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setIterationStart(double iterationStart,
-                                              ExceptionState& exceptionState) {
-  Timing timing = m_parent->specifiedTiming();
-  if (TimingInput::setIterationStart(timing, iterationStart, exceptionState))
-    m_parent->updateSpecifiedTiming(timing);
+void AnimationEffectTiming::setIterationStart(double iteration_start,
+                                              ExceptionState& exception_state) {
+  Timing timing = parent_->SpecifiedTiming();
+  if (TimingInput::SetIterationStart(timing, iteration_start, exception_state))
+    parent_->UpdateSpecifiedTiming(timing);
 }
 
 void AnimationEffectTiming::setIterations(double iterations,
-                                          ExceptionState& exceptionState) {
-  Timing timing = m_parent->specifiedTiming();
-  if (TimingInput::setIterationCount(timing, iterations, exceptionState))
-    m_parent->updateSpecifiedTiming(timing);
+                                          ExceptionState& exception_state) {
+  Timing timing = parent_->SpecifiedTiming();
+  if (TimingInput::SetIterationCount(timing, iterations, exception_state))
+    parent_->UpdateSpecifiedTiming(timing);
 }
 
 void AnimationEffectTiming::setDuration(
     const UnrestrictedDoubleOrString& duration,
-    ExceptionState& exceptionState) {
-  Timing timing = m_parent->specifiedTiming();
-  if (TimingInput::setIterationDuration(timing, duration, exceptionState))
-    m_parent->updateSpecifiedTiming(timing);
+    ExceptionState& exception_state) {
+  Timing timing = parent_->SpecifiedTiming();
+  if (TimingInput::SetIterationDuration(timing, duration, exception_state))
+    parent_->UpdateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setPlaybackRate(double playbackRate) {
-  Timing timing = m_parent->specifiedTiming();
-  TimingInput::setPlaybackRate(timing, playbackRate);
-  m_parent->updateSpecifiedTiming(timing);
+void AnimationEffectTiming::SetPlaybackRate(double playback_rate) {
+  Timing timing = parent_->SpecifiedTiming();
+  TimingInput::SetPlaybackRate(timing, playback_rate);
+  parent_->UpdateSpecifiedTiming(timing);
 }
 
 void AnimationEffectTiming::setDirection(String direction) {
-  Timing timing = m_parent->specifiedTiming();
-  TimingInput::setPlaybackDirection(timing, direction);
-  m_parent->updateSpecifiedTiming(timing);
+  Timing timing = parent_->SpecifiedTiming();
+  TimingInput::SetPlaybackDirection(timing, direction);
+  parent_->UpdateSpecifiedTiming(timing);
 }
 
 void AnimationEffectTiming::setEasing(String easing,
-                                      ExceptionState& exceptionState) {
-  Timing timing = m_parent->specifiedTiming();
+                                      ExceptionState& exception_state) {
+  Timing timing = parent_->SpecifiedTiming();
   // The AnimationEffectTiming might not be attached to a document at this
   // point, so we pass nullptr in to setTimingFunction. This means that these
   // calls are not considered in the WebAnimationsEasingAsFunction*
   // UseCounters, but the bug we are tracking there does not come through
   // this interface.
-  if (TimingInput::setTimingFunction(timing, easing, nullptr, exceptionState))
-    m_parent->updateSpecifiedTiming(timing);
+  if (TimingInput::SetTimingFunction(timing, easing, nullptr, exception_state))
+    parent_->UpdateSpecifiedTiming(timing);
 }
 
 DEFINE_TRACE(AnimationEffectTiming) {
-  AnimationEffectTimingReadOnly::trace(visitor);
+  AnimationEffectTimingReadOnly::Trace(visitor);
 }
 
 }  // namespace blink

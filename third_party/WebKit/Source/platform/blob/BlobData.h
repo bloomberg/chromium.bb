@@ -45,103 +45,103 @@ class BlobDataHandle;
 
 class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
  public:
-  static PassRefPtr<RawData> create() { return adoptRef(new RawData()); }
+  static PassRefPtr<RawData> Create() { return AdoptRef(new RawData()); }
 
-  void detachFromCurrentThread();
+  void DetachFromCurrentThread();
 
-  const char* data() const { return m_data.data(); }
-  size_t length() const { return m_data.size(); }
-  Vector<char>* mutableData() { return &m_data; }
+  const char* Data() const { return data_.Data(); }
+  size_t length() const { return data_.size(); }
+  Vector<char>* MutableData() { return &data_; }
 
  private:
   RawData();
 
-  Vector<char> m_data;
+  Vector<char> data_;
 };
 
 struct PLATFORM_EXPORT BlobDataItem {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  static const long long toEndOfFile;
+  static const long long kToEndOfFile;
 
   // Default constructor.
   BlobDataItem()
-      : type(Data),
+      : type(kData),
         offset(0),
-        length(toEndOfFile),
-        expectedModificationTime(invalidFileTime()) {}
+        length(kToEndOfFile),
+        expected_modification_time(InvalidFileTime()) {}
 
   // Constructor for String type (complete string).
   explicit BlobDataItem(PassRefPtr<RawData> data)
-      : type(Data),
+      : type(kData),
         data(std::move(data)),
         offset(0),
-        length(toEndOfFile),
-        expectedModificationTime(invalidFileTime()) {}
+        length(kToEndOfFile),
+        expected_modification_time(InvalidFileTime()) {}
 
   // Constructor for File type (complete file).
   explicit BlobDataItem(const String& path)
-      : type(File),
+      : type(kFile),
         path(path),
         offset(0),
-        length(toEndOfFile),
-        expectedModificationTime(invalidFileTime()) {}
+        length(kToEndOfFile),
+        expected_modification_time(InvalidFileTime()) {}
 
   // Constructor for File type (partial file).
   BlobDataItem(const String& path,
                long long offset,
                long long length,
-               double expectedModificationTime)
-      : type(File),
+               double expected_modification_time)
+      : type(kFile),
         path(path),
         offset(offset),
         length(length),
-        expectedModificationTime(expectedModificationTime) {}
+        expected_modification_time(expected_modification_time) {}
 
   // Constructor for Blob type.
-  BlobDataItem(PassRefPtr<BlobDataHandle> blobDataHandle,
+  BlobDataItem(PassRefPtr<BlobDataHandle> blob_data_handle,
                long long offset,
                long long length)
-      : type(Blob),
-        blobDataHandle(std::move(blobDataHandle)),
+      : type(kBlob),
+        blob_data_handle(std::move(blob_data_handle)),
         offset(offset),
         length(length),
-        expectedModificationTime(invalidFileTime()) {}
+        expected_modification_time(InvalidFileTime()) {}
 
   // Constructor for FileSystem file type.
-  BlobDataItem(const KURL& fileSystemURL,
+  BlobDataItem(const KURL& file_system_url,
                long long offset,
                long long length,
-               double expectedModificationTime)
-      : type(FileSystemURL),
-        fileSystemURL(fileSystemURL),
+               double expected_modification_time)
+      : type(kFileSystemURL),
+        file_system_url(file_system_url),
         offset(offset),
         length(length),
-        expectedModificationTime(expectedModificationTime) {}
+        expected_modification_time(expected_modification_time) {}
 
   // Detaches from current thread so that it can be passed to another thread.
-  void detachFromCurrentThread();
+  void DetachFromCurrentThread();
 
-  const enum { Data, File, Blob, FileSystemURL } type;
+  const enum { kData, kFile, kBlob, kFileSystemURL } type;
 
   RefPtr<RawData> data;                   // For Data type.
   String path;                            // For File type.
-  KURL fileSystemURL;                     // For FileSystemURL type.
-  RefPtr<BlobDataHandle> blobDataHandle;  // For Blob type.
+  KURL file_system_url;                   // For FileSystemURL type.
+  RefPtr<BlobDataHandle> blob_data_handle;  // For Blob type.
 
   long long offset;
   long long length;
-  double expectedModificationTime;
+  double expected_modification_time;
 
  private:
   friend class BlobData;
 
   // Constructor for String type (partial string).
   BlobDataItem(PassRefPtr<RawData> data, long long offset, long long length)
-      : type(Data),
+      : type(kData),
         data(std::move(data)),
         offset(offset),
         length(length),
-        expectedModificationTime(invalidFileTime()) {}
+        expected_modification_time(InvalidFileTime()) {}
 };
 
 typedef Vector<BlobDataItem> BlobDataItemList;
@@ -151,53 +151,53 @@ class PLATFORM_EXPORT BlobData {
   WTF_MAKE_NONCOPYABLE(BlobData);
 
  public:
-  static std::unique_ptr<BlobData> create();
+  static std::unique_ptr<BlobData> Create();
 
   // Calling append* on objects returned by createFor___WithUnknownSize will
   // check-fail. The caller can only have an unknown-length file if it is the
   // only item in the blob.
-  static std::unique_ptr<BlobData> createForFileWithUnknownSize(
+  static std::unique_ptr<BlobData> CreateForFileWithUnknownSize(
       const String& path);
-  static std::unique_ptr<BlobData> createForFileWithUnknownSize(
+  static std::unique_ptr<BlobData> CreateForFileWithUnknownSize(
       const String& path,
-      double expectedModificationTime);
-  static std::unique_ptr<BlobData> createForFileSystemURLWithUnknownSize(
-      const KURL& fileSystemURL,
-      double expectedModificationTime);
+      double expected_modification_time);
+  static std::unique_ptr<BlobData> CreateForFileSystemURLWithUnknownSize(
+      const KURL& file_system_url,
+      double expected_modification_time);
 
   // Detaches from current thread so that it can be passed to another thread.
-  void detachFromCurrentThread();
+  void DetachFromCurrentThread();
 
-  const String& contentType() const { return m_contentType; }
-  void setContentType(const String&);
+  const String& ContentType() const { return content_type_; }
+  void SetContentType(const String&);
 
-  const BlobDataItemList& items() const { return m_items; }
+  const BlobDataItemList& Items() const { return items_; }
 
-  void appendBytes(const void*, size_t length);
-  void appendData(PassRefPtr<RawData>, long long offset, long long length);
-  void appendFile(const String& path,
+  void AppendBytes(const void*, size_t length);
+  void AppendData(PassRefPtr<RawData>, long long offset, long long length);
+  void AppendFile(const String& path,
                   long long offset,
                   long long length,
-                  double expectedModificationTime);
+                  double expected_modification_time);
 
   // The given blob must not be a file with unknown size. Please use the
   // File::appendTo instead.
-  void appendBlob(PassRefPtr<BlobDataHandle>,
+  void AppendBlob(PassRefPtr<BlobDataHandle>,
                   long long offset,
                   long long length);
-  void appendFileSystemURL(const KURL&,
+  void AppendFileSystemURL(const KURL&,
                            long long offset,
                            long long length,
-                           double expectedModificationTime);
-  void appendText(const String&, bool normalizeLineEndingsToNative);
+                           double expected_modification_time);
+  void AppendText(const String&, bool normalize_line_endings_to_native);
 
   // The value of the size property for a Blob who has this data.
   // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet
   // determined.
   long long length() const;
 
-  bool isSingleUnknownSizeFile() const {
-    return m_fileComposition == FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE;
+  bool IsSingleUnknownSizeFile() const {
+    return file_composition_ == FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE;
   }
 
  private:
@@ -209,41 +209,41 @@ class PLATFORM_EXPORT BlobData {
   };
 
   explicit BlobData(FileCompositionStatus composition)
-      : m_fileComposition(composition) {}
+      : file_composition_(composition) {}
 
-  bool canConsolidateData(size_t length);
+  bool CanConsolidateData(size_t length);
 
-  String m_contentType;
-  FileCompositionStatus m_fileComposition;
-  BlobDataItemList m_items;
+  String content_type_;
+  FileCompositionStatus file_composition_;
+  BlobDataItemList items_;
 };
 
 class PLATFORM_EXPORT BlobDataHandle
     : public ThreadSafeRefCounted<BlobDataHandle> {
  public:
   // For empty blob construction.
-  static PassRefPtr<BlobDataHandle> create() {
-    return adoptRef(new BlobDataHandle());
+  static PassRefPtr<BlobDataHandle> Create() {
+    return AdoptRef(new BlobDataHandle());
   }
 
   // For initial creation.
-  static PassRefPtr<BlobDataHandle> create(std::unique_ptr<BlobData> data,
+  static PassRefPtr<BlobDataHandle> Create(std::unique_ptr<BlobData> data,
                                            long long size) {
-    return adoptRef(new BlobDataHandle(std::move(data), size));
+    return AdoptRef(new BlobDataHandle(std::move(data), size));
   }
 
   // For deserialization of script values and ipc messages.
-  static PassRefPtr<BlobDataHandle> create(const String& uuid,
+  static PassRefPtr<BlobDataHandle> Create(const String& uuid,
                                            const String& type,
                                            long long size) {
-    return adoptRef(new BlobDataHandle(uuid, type, size));
+    return AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
-  String uuid() const { return m_uuid.isolatedCopy(); }
-  String type() const { return m_type.isolatedCopy(); }
-  unsigned long long size() const { return m_size; }
+  String Uuid() const { return uuid_.IsolatedCopy(); }
+  String GetType() const { return type_.IsolatedCopy(); }
+  unsigned long long size() const { return size_; }
 
-  bool isSingleUnknownSizeFile() const { return m_isSingleUnknownSizeFile; }
+  bool IsSingleUnknownSizeFile() const { return is_single_unknown_size_file_; }
 
   ~BlobDataHandle();
 
@@ -252,10 +252,10 @@ class PLATFORM_EXPORT BlobDataHandle
   BlobDataHandle(std::unique_ptr<BlobData>, long long size);
   BlobDataHandle(const String& uuid, const String& type, long long size);
 
-  const String m_uuid;
-  const String m_type;
-  const long long m_size;
-  const bool m_isSingleUnknownSizeFile;
+  const String uuid_;
+  const String type_;
+  const long long size_;
+  const bool is_single_unknown_size_file_;
 };
 
 }  // namespace blink

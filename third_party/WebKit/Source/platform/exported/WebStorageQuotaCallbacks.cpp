@@ -10,36 +10,36 @@ namespace blink {
 
 WebStorageQuotaCallbacks::WebStorageQuotaCallbacks(
     StorageQuotaCallbacks* callbacks)
-    : m_private(callbacks) {}
+    : private_(callbacks) {}
 
-void WebStorageQuotaCallbacks::reset() {
-  m_private.reset();
+void WebStorageQuotaCallbacks::Reset() {
+  private_.Reset();
 }
 
-void WebStorageQuotaCallbacks::assign(const WebStorageQuotaCallbacks& other) {
-  m_private = other.m_private;
+void WebStorageQuotaCallbacks::Assign(const WebStorageQuotaCallbacks& other) {
+  private_ = other.private_;
 }
 
-void WebStorageQuotaCallbacks::didQueryStorageUsageAndQuota(
-    unsigned long long usageInBytes,
-    unsigned long long quotaInBytes) {
-  ASSERT(!m_private.isNull());
-  m_private->didQueryStorageUsageAndQuota(usageInBytes, quotaInBytes);
-  m_private.reset();
+void WebStorageQuotaCallbacks::DidQueryStorageUsageAndQuota(
+    unsigned long long usage_in_bytes,
+    unsigned long long quota_in_bytes) {
+  ASSERT(!private_.IsNull());
+  private_->DidQueryStorageUsageAndQuota(usage_in_bytes, quota_in_bytes);
+  private_.Reset();
 }
 
-void WebStorageQuotaCallbacks::didGrantStorageQuota(
-    unsigned long long usageInBytes,
-    unsigned long long grantedQuotaInBytes) {
-  ASSERT(!m_private.isNull());
-  m_private->didGrantStorageQuota(usageInBytes, grantedQuotaInBytes);
-  m_private.reset();
+void WebStorageQuotaCallbacks::DidGrantStorageQuota(
+    unsigned long long usage_in_bytes,
+    unsigned long long granted_quota_in_bytes) {
+  ASSERT(!private_.IsNull());
+  private_->DidGrantStorageQuota(usage_in_bytes, granted_quota_in_bytes);
+  private_.Reset();
 }
 
-void WebStorageQuotaCallbacks::didFail(WebStorageQuotaError error) {
-  ASSERT(!m_private.isNull());
-  m_private->didFail(error);
-  m_private.reset();
+void WebStorageQuotaCallbacks::DidFail(WebStorageQuotaError error) {
+  ASSERT(!private_.IsNull());
+  private_->DidFail(error);
+  private_.Reset();
 }
 
 }  // namespace blink

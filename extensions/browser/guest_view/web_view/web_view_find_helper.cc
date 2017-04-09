@@ -113,23 +113,23 @@ void WebViewFindHelper::Find(
   if (current_find_session_) {
     const base::string16& current_search_text =
         current_find_session_->search_text();
-    bool current_match_case = current_find_session_->options()->matchCase;
-    full_options->findNext = !current_search_text.empty() &&
-        current_search_text == search_text &&
-        current_match_case == options.matchCase;
+    bool current_match_case = current_find_session_->options()->match_case;
+    full_options->find_next = !current_search_text.empty() &&
+                              current_search_text == search_text &&
+                              current_match_case == options.match_case;
   } else {
-    full_options->findNext = false;
+    full_options->find_next = false;
   }
 
   // Link find requests that are a part of the same find session.
-  if (full_options->findNext && current_find_session_) {
+  if (full_options->find_next && current_find_session_) {
     DCHECK(current_find_request_id_ != current_find_session_->request_id());
     current_find_session_->AddFindNextRequest(
         insert_result.first->second->AsWeakPtr());
   }
 
   // Update the current find session, if necessary.
-  if (!full_options->findNext)
+  if (!full_options->find_next)
     current_find_session_ = insert_result.first->second;
 
   // Handle the empty |search_text| case internally.
@@ -159,7 +159,7 @@ void WebViewFindHelper::FindReply(int request_id,
 
   WebViewFindHelper::FindInfo* find_info = find_iterator->second.get();
   // Handle canceled find requests.
-  if (!find_info->options()->findNext &&
+  if (!find_info->options()->find_next &&
       find_info_map_.begin()->first < request_id) {
     DCHECK_NE(current_find_session_->request_id(),
               find_info_map_.begin()->first);
@@ -169,7 +169,7 @@ void WebViewFindHelper::FindReply(int request_id,
   }
 
   // Clears the results for |findupdate| for a new find session.
-  if (!find_info->replied() && !find_info->options()->findNext)
+  if (!find_info->replied() && !find_info->options()->find_next)
     find_update_event_.reset(new FindUpdateEvent(find_info->search_text()));
 
   // Aggregate the find results.

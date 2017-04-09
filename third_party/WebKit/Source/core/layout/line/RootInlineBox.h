@@ -40,198 +40,198 @@ class RootInlineBox : public InlineFlowBox {
  public:
   explicit RootInlineBox(LineLayoutItem);
 
-  void destroy() final;
+  void Destroy() final;
 
-  bool isRootInlineBox() const final { return true; }
+  bool IsRootInlineBox() const final { return true; }
 
-  void detachEllipsisBox();
+  void DetachEllipsisBox();
 
-  RootInlineBox* nextRootBox() const {
-    return static_cast<RootInlineBox*>(m_nextLineBox);
+  RootInlineBox* NextRootBox() const {
+    return static_cast<RootInlineBox*>(next_line_box_);
   }
-  RootInlineBox* prevRootBox() const {
-    return static_cast<RootInlineBox*>(m_prevLineBox);
-  }
-
-  void move(const LayoutSize&) final;
-
-  LayoutUnit lineTop() const { return m_lineTop; }
-  LayoutUnit lineBottom() const { return m_lineBottom; }
-
-  LayoutUnit lineTopWithLeading() const { return m_lineTopWithLeading; }
-  LayoutUnit lineBottomWithLeading() const { return m_lineBottomWithLeading; }
-
-  LayoutUnit paginationStrut() const { return m_paginationStrut; }
-  void setPaginationStrut(LayoutUnit strut) { m_paginationStrut = strut; }
-
-  LayoutUnit selectionTop() const;
-  LayoutUnit selectionBottom() const;
-  LayoutUnit selectionHeight() const {
-    return (selectionBottom() - selectionTop()).clampNegativeToZero();
+  RootInlineBox* PrevRootBox() const {
+    return static_cast<RootInlineBox*>(prev_line_box_);
   }
 
-  LayoutUnit blockDirectionPointInLine() const;
+  void Move(const LayoutSize&) final;
 
-  LayoutUnit alignBoxesInBlockDirection(LayoutUnit heightOfBlock,
+  LayoutUnit LineTop() const { return line_top_; }
+  LayoutUnit LineBottom() const { return line_bottom_; }
+
+  LayoutUnit LineTopWithLeading() const { return line_top_with_leading_; }
+  LayoutUnit LineBottomWithLeading() const { return line_bottom_with_leading_; }
+
+  LayoutUnit PaginationStrut() const { return pagination_strut_; }
+  void SetPaginationStrut(LayoutUnit strut) { pagination_strut_ = strut; }
+
+  LayoutUnit SelectionTop() const;
+  LayoutUnit SelectionBottom() const;
+  LayoutUnit SelectionHeight() const {
+    return (SelectionBottom() - SelectionTop()).ClampNegativeToZero();
+  }
+
+  LayoutUnit BlockDirectionPointInLine() const;
+
+  LayoutUnit AlignBoxesInBlockDirection(LayoutUnit height_of_block,
                                         GlyphOverflowAndFallbackFontsMap&,
                                         VerticalPositionCache&);
-  void setLineTopBottomPositions(
+  void SetLineTopBottomPositions(
       LayoutUnit top,
       LayoutUnit bottom,
-      LayoutUnit topWithLeading,
-      LayoutUnit bottomWithLeading,
-      LayoutUnit selectionBottom = LayoutUnit::min()) {
-    m_lineTop = top;
-    m_lineBottom = bottom;
-    m_lineTopWithLeading = topWithLeading;
-    m_lineBottomWithLeading = bottomWithLeading;
-    m_selectionBottom =
-        selectionBottom == LayoutUnit::min() ? bottom : selectionBottom;
+      LayoutUnit top_with_leading,
+      LayoutUnit bottom_with_leading,
+      LayoutUnit selection_bottom = LayoutUnit::Min()) {
+    line_top_ = top;
+    line_bottom_ = bottom;
+    line_top_with_leading_ = top_with_leading;
+    line_bottom_with_leading_ = bottom_with_leading;
+    selection_bottom_ =
+        selection_bottom == LayoutUnit::Min() ? bottom : selection_bottom;
   }
 
-  LineBoxList* lineBoxes() const final;
+  LineBoxList* LineBoxes() const final;
 
-  LineLayoutItem lineBreakObj() const { return m_lineBreakObj; }
-  BidiStatus lineBreakBidiStatus() const;
-  void setLineBreakInfo(LineLayoutItem, unsigned breakPos, const BidiStatus&);
+  LineLayoutItem LineBreakObj() const { return line_break_obj_; }
+  BidiStatus LineBreakBidiStatus() const;
+  void SetLineBreakInfo(LineLayoutItem, unsigned break_pos, const BidiStatus&);
 
-  unsigned lineBreakPos() const { return m_lineBreakPos; }
-  void setLineBreakPos(unsigned p) { m_lineBreakPos = p; }
+  unsigned LineBreakPos() const { return line_break_pos_; }
+  void SetLineBreakPos(unsigned p) { line_break_pos_ = p; }
 
-  using InlineBox::endsWithBreak;
-  using InlineBox::setEndsWithBreak;
+  using InlineBox::EndsWithBreak;
+  using InlineBox::SetEndsWithBreak;
 
-  void childRemoved(InlineBox*);
+  void ChildRemoved(InlineBox*);
 
-  bool lineCanAccommodateEllipsis(bool ltr,
-                                  LayoutUnit blockEdge,
-                                  LayoutUnit lineBoxEdge,
-                                  LayoutUnit ellipsisWidth);
+  bool LineCanAccommodateEllipsis(bool ltr,
+                                  LayoutUnit block_edge,
+                                  LayoutUnit line_box_edge,
+                                  LayoutUnit ellipsis_width);
   // Return the truncatedWidth, the width of the truncated text + ellipsis.
-  LayoutUnit placeEllipsis(const AtomicString& ellipsisStr,
+  LayoutUnit PlaceEllipsis(const AtomicString& ellipsis_str,
                            bool ltr,
-                           LayoutUnit blockLeftEdge,
-                           LayoutUnit blockRightEdge,
-                           LayoutUnit ellipsisWidth,
-                           LayoutUnit logicalLeftOffset,
-                           bool foundBox);
+                           LayoutUnit block_left_edge,
+                           LayoutUnit block_right_edge,
+                           LayoutUnit ellipsis_width,
+                           LayoutUnit logical_left_offset,
+                           bool found_box);
   // Return the position of the EllipsisBox or -1.
-  LayoutUnit placeEllipsisBox(bool ltr,
-                              LayoutUnit blockLeftEdge,
-                              LayoutUnit blockRightEdge,
-                              LayoutUnit ellipsisWidth,
-                              LayoutUnit& truncatedWidth,
-                              bool& foundBox,
-                              LayoutUnit logicalLeftOffset) final;
+  LayoutUnit PlaceEllipsisBox(bool ltr,
+                              LayoutUnit block_left_edge,
+                              LayoutUnit block_right_edge,
+                              LayoutUnit ellipsis_width,
+                              LayoutUnit& truncated_width,
+                              bool& found_box,
+                              LayoutUnit logical_left_offset) final;
 
-  using InlineBox::hasEllipsisBox;
-  EllipsisBox* ellipsisBox() const;
+  using InlineBox::HasEllipsisBox;
+  EllipsisBox* GetEllipsisBox() const;
 
-  void clearTruncation() final;
+  void ClearTruncation() final;
 
-  int baselinePosition(FontBaseline baselineType) const final;
-  LayoutUnit lineHeight() const final;
+  int BaselinePosition(FontBaseline baseline_type) const final;
+  LayoutUnit LineHeight() const final;
 
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom) const override;
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
-                   LayoutUnit lineTop,
-                   LayoutUnit lineBottom) override;
+             LayoutUnit line_top,
+             LayoutUnit line_bottom) const override;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
+                   LayoutUnit line_top,
+                   LayoutUnit line_bottom) override;
 
-  using InlineBox::hasSelectedChildren;
-  using InlineBox::setHasSelectedChildren;
+  using InlineBox::HasSelectedChildren;
+  using InlineBox::SetHasSelectedChildren;
 
-  SelectionState getSelectionState() const final;
-  InlineBox* firstSelectedBox() const;
-  InlineBox* lastSelectedBox() const;
+  SelectionState GetSelectionState() const final;
+  InlineBox* FirstSelectedBox() const;
+  InlineBox* LastSelectedBox() const;
 
-  LineLayoutBlockFlow block() const;
+  LineLayoutBlockFlow Block() const;
 
-  InlineBox* closestLeafChildForPoint(const LayoutPoint&,
-                                      bool onlyEditableLeaves);
-  InlineBox* closestLeafChildForLogicalLeftPosition(
+  InlineBox* ClosestLeafChildForPoint(const LayoutPoint&,
+                                      bool only_editable_leaves);
+  InlineBox* ClosestLeafChildForLogicalLeftPosition(
       LayoutUnit,
-      bool onlyEditableLeaves = false);
+      bool only_editable_leaves = false);
 
-  void appendFloat(LayoutBox* floatingBox) {
-    DCHECK(!isDirty());
-    if (m_floats)
-      m_floats->push_back(floatingBox);
+  void AppendFloat(LayoutBox* floating_box) {
+    DCHECK(!IsDirty());
+    if (floats_)
+      floats_->push_back(floating_box);
     else
-      m_floats = WTF::wrapUnique(new Vector<LayoutBox*>(1, floatingBox));
+      floats_ = WTF::WrapUnique(new Vector<LayoutBox*>(1, floating_box));
   }
 
-  Vector<LayoutBox*>* floatsPtr() {
-    DCHECK(!isDirty());
-    return m_floats.get();
+  Vector<LayoutBox*>* FloatsPtr() {
+    DCHECK(!IsDirty());
+    return floats_.get();
   }
 
-  void extractLineBoxFromLayoutObject() final;
-  void attachLineBoxToLayoutObject() final;
-  void removeLineBoxFromLayoutObject() final;
+  void ExtractLineBoxFromLayoutObject() final;
+  void AttachLineBoxToLayoutObject() final;
+  void RemoveLineBoxFromLayoutObject() final;
 
-  FontBaseline baselineType() const {
-    return static_cast<FontBaseline>(m_baselineType);
+  FontBaseline BaselineType() const {
+    return static_cast<FontBaseline>(baseline_type_);
   }
 
-  bool hasAnnotationsBefore() const { return m_hasAnnotationsBefore; }
-  bool hasAnnotationsAfter() const { return m_hasAnnotationsAfter; }
+  bool HasAnnotationsBefore() const { return has_annotations_before_; }
+  bool HasAnnotationsAfter() const { return has_annotations_after_; }
 
-  LayoutRect paddedLayoutOverflowRect(LayoutUnit endPadding) const;
+  LayoutRect PaddedLayoutOverflowRect(LayoutUnit end_padding) const;
 
-  void ascentAndDescentForBox(InlineBox*,
+  void AscentAndDescentForBox(InlineBox*,
                               GlyphOverflowAndFallbackFontsMap&,
                               int& ascent,
                               int& descent,
-                              bool& affectsAscent,
-                              bool& affectsDescent) const;
-  LayoutUnit verticalPositionForBox(InlineBox*, VerticalPositionCache&);
-  bool includeLeadingForBox(InlineBox*) const;
+                              bool& affects_ascent,
+                              bool& affects_descent) const;
+  LayoutUnit VerticalPositionForBox(InlineBox*, VerticalPositionCache&);
+  bool IncludeLeadingForBox(InlineBox*) const;
 
-  LayoutUnit logicalTopVisualOverflow() const {
-    return InlineFlowBox::logicalTopVisualOverflow(lineTop());
+  LayoutUnit LogicalTopVisualOverflow() const {
+    return InlineFlowBox::LogicalTopVisualOverflow(LineTop());
   }
-  LayoutUnit logicalBottomVisualOverflow() const {
-    return InlineFlowBox::logicalBottomVisualOverflow(lineBottom());
+  LayoutUnit LogicalBottomVisualOverflow() const {
+    return InlineFlowBox::LogicalBottomVisualOverflow(LineBottom());
   }
-  LayoutUnit logicalTopLayoutOverflow() const {
-    return InlineFlowBox::logicalTopLayoutOverflow(lineTop());
+  LayoutUnit LogicalTopLayoutOverflow() const {
+    return InlineFlowBox::LogicalTopLayoutOverflow(LineTop());
   }
-  LayoutUnit logicalBottomLayoutOverflow() const {
-    return InlineFlowBox::logicalBottomLayoutOverflow(lineBottom());
+  LayoutUnit LogicalBottomLayoutOverflow() const {
+    return InlineFlowBox::LogicalBottomLayoutOverflow(LineBottom());
   }
 
-  Node* getLogicalStartBoxWithNode(InlineBox*&) const;
-  Node* getLogicalEndBoxWithNode(InlineBox*&) const;
+  Node* GetLogicalStartBoxWithNode(InlineBox*&) const;
+  Node* GetLogicalEndBoxWithNode(InlineBox*&) const;
 
-  const char* boxName() const override;
+  const char* BoxName() const override;
 
  private:
-  LayoutUnit beforeAnnotationsAdjustment() const;
+  LayoutUnit BeforeAnnotationsAdjustment() const;
 
   // This folds into the padding at the end of InlineFlowBox on 64-bit.
-  unsigned m_lineBreakPos;
+  unsigned line_break_pos_;
 
   // Where this line ended.  The exact object and the position within that
   // object are stored so that we can create an InlineIterator beginning just
   // after the end of this line.
-  LineLayoutItem m_lineBreakObj;
-  RefPtr<BidiContext> m_lineBreakContext;
+  LineLayoutItem line_break_obj_;
+  RefPtr<BidiContext> line_break_context_;
 
   // Floats hanging off the line are pushed into this vector during layout. It
   // is only good for as long as the line has not been marked dirty.
-  std::unique_ptr<Vector<LayoutBox*>> m_floats;
+  std::unique_ptr<Vector<LayoutBox*>> floats_;
 
-  LayoutUnit m_lineTop;
-  LayoutUnit m_lineBottom;
-  LayoutUnit m_lineTopWithLeading;
-  LayoutUnit m_lineBottomWithLeading;
-  LayoutUnit m_selectionBottom;
-  LayoutUnit m_paginationStrut;
+  LayoutUnit line_top_;
+  LayoutUnit line_bottom_;
+  LayoutUnit line_top_with_leading_;
+  LayoutUnit line_bottom_with_leading_;
+  LayoutUnit selection_bottom_;
+  LayoutUnit pagination_strut_;
 };
 
 }  // namespace blink

@@ -39,139 +39,140 @@ namespace blink {
 
 TextTrackLoader::TextTrackLoader(TextTrackLoaderClient& client,
                                  Document& document)
-    : m_client(client),
-      m_document(document),
-      m_cueLoadTimer(TaskRunnerHelper::get(TaskType::Networking, &document),
-                     this,
-                     &TextTrackLoader::cueLoadTimerFired),
-      m_state(Idle),
-      m_newCuesAvailable(false) {}
+    : client_(client),
+      document_(document),
+      cue_load_timer_(TaskRunnerHelper::Get(TaskType::kNetworking, &document),
+                      this,
+                      &TextTrackLoader::CueLoadTimerFired),
+      state_(kIdle),
+      new_cues_available_(false) {}
 
 TextTrackLoader::~TextTrackLoader() {}
 
-void TextTrackLoader::cueLoadTimerFired(TimerBase* timer) {
-  DCHECK_EQ(timer, &m_cueLoadTimer);
+void TextTrackLoader::CueLoadTimerFired(TimerBase* timer) {
+  DCHECK_EQ(timer, &cue_load_timer_);
 
-  if (m_newCuesAvailable) {
-    m_newCuesAvailable = false;
-    m_client->newCuesAvailable(this);
+  if (new_cues_available_) {
+    new_cues_available_ = false;
+    client_->NewCuesAvailable(this);
   }
 
-  if (m_state >= Finished)
-    m_client->cueLoadingCompleted(this, m_state == Failed);
+  if (state_ >= kFinished)
+    client_->CueLoadingCompleted(this, state_ == kFailed);
 }
 
-void TextTrackLoader::cancelLoad() {
-  clearResource();
+void TextTrackLoader::CancelLoad() {
+  ClearResource();
 }
 
-bool TextTrackLoader::redirectReceived(Resource* resource,
+bool TextTrackLoader::RedirectReceived(Resource* resource,
                                        const ResourceRequest& request,
                                        const ResourceResponse&) {
-  DCHECK_EQ(this->resource(), resource);
-  if (resource->options().corsEnabled == IsCORSEnabled ||
-      document().getSecurityOrigin()->canRequestNoSuborigin(request.url()))
+  DCHECK_EQ(this->GetResource(), resource);
+  if (resource->Options().cors_enabled == kIsCORSEnabled ||
+      GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(request.Url()))
     return true;
 
-  corsPolicyPreventedLoad(document().getSecurityOrigin(), request.url());
-  if (!m_cueLoadTimer.isActive())
-    m_cueLoadTimer.startOneShot(0, BLINK_FROM_HERE);
-  clearResource();
+  CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(), request.Url());
+  if (!cue_load_timer_.IsActive())
+    cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  ClearResource();
   return false;
 }
 
-void TextTrackLoader::dataReceived(Resource* resource,
+void TextTrackLoader::DataReceived(Resource* resource,
                                    const char* data,
                                    size_t length) {
-  DCHECK_EQ(this->resource(), resource);
+  DCHECK_EQ(this->GetResource(), resource);
 
-  if (m_state == Failed)
+  if (state_ == kFailed)
     return;
 
-  if (!m_cueParser)
-    m_cueParser = VTTParser::create(this, document());
+  if (!cue_parser_)
+    cue_parser_ = VTTParser::Create(this, GetDocument());
 
-  m_cueParser->parseBytes(data, length);
+  cue_parser_->ParseBytes(data, length);
 }
 
-void TextTrackLoader::corsPolicyPreventedLoad(SecurityOrigin* securityOrigin,
+void TextTrackLoader::CorsPolicyPreventedLoad(SecurityOrigin* security_origin,
                                               const KURL& url) {
-  String consoleMessage(
-      "Text track from origin '" + SecurityOrigin::create(url)->toString() +
+  String console_message(
+      "Text track from origin '" + SecurityOrigin::Create(url)->ToString() +
       "' has been blocked from loading: Not at same origin as the document, "
       "and parent of track element does not have a 'crossorigin' attribute. "
       "Origin '" +
-      securityOrigin->toString() + "' is therefore not allowed access.");
-  document().addConsoleMessage(ConsoleMessage::create(
-      SecurityMessageSource, ErrorMessageLevel, consoleMessage));
-  m_state = Failed;
+      security_origin->ToString() + "' is therefore not allowed access.");
+  GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+      kSecurityMessageSource, kErrorMessageLevel, console_message));
+  state_ = kFailed;
 }
 
-void TextTrackLoader::notifyFinished(Resource* resource) {
-  DCHECK_EQ(this->resource(), resource);
-  if (m_state != Failed)
-    m_state = resource->errorOccurred() ? Failed : Finished;
+void TextTrackLoader::NotifyFinished(Resource* resource) {
+  DCHECK_EQ(this->GetResource(), resource);
+  if (state_ != kFailed)
+    state_ = resource->ErrorOccurred() ? kFailed : kFinished;
 
-  if (m_state == Finished && m_cueParser)
-    m_cueParser->flush();
+  if (state_ == kFinished && cue_parser_)
+    cue_parser_->Flush();
 
-  if (!m_cueLoadTimer.isActive())
-    m_cueLoadTimer.startOneShot(0, BLINK_FROM_HERE);
+  if (!cue_load_timer_.IsActive())
+    cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
 
-  cancelLoad();
+  CancelLoad();
 }
 
-bool TextTrackLoader::load(const KURL& url,
-                           CrossOriginAttributeValue crossOrigin) {
-  cancelLoad();
+bool TextTrackLoader::Load(const KURL& url,
+                           CrossOriginAttributeValue cross_origin) {
+  CancelLoad();
 
-  FetchRequest cueRequest(ResourceRequest(url),
-                          FetchInitiatorTypeNames::texttrack);
+  FetchRequest cue_request(ResourceRequest(url),
+                           FetchInitiatorTypeNames::texttrack);
 
-  if (crossOrigin != CrossOriginAttributeNotSet) {
-    cueRequest.setCrossOriginAccessControl(document().getSecurityOrigin(),
-                                           crossOrigin);
-  } else if (!document().getSecurityOrigin()->canRequestNoSuborigin(url)) {
+  if (cross_origin != kCrossOriginAttributeNotSet) {
+    cue_request.SetCrossOriginAccessControl(GetDocument().GetSecurityOrigin(),
+                                            cross_origin);
+  } else if (!GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(url)) {
     // Text track elements without 'crossorigin' set on the parent are "No
     // CORS"; report error if not same-origin.
-    corsPolicyPreventedLoad(document().getSecurityOrigin(), url);
+    CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(), url);
     return false;
   }
 
-  ResourceFetcher* fetcher = document().fetcher();
-  setResource(RawResource::fetchTextTrack(cueRequest, fetcher));
-  return resource();
+  ResourceFetcher* fetcher = GetDocument().Fetcher();
+  SetResource(RawResource::FetchTextTrack(cue_request, fetcher));
+  return GetResource();
 }
 
-void TextTrackLoader::newCuesParsed() {
-  if (m_cueLoadTimer.isActive())
+void TextTrackLoader::NewCuesParsed() {
+  if (cue_load_timer_.IsActive())
     return;
 
-  m_newCuesAvailable = true;
-  m_cueLoadTimer.startOneShot(0, BLINK_FROM_HERE);
+  new_cues_available_ = true;
+  cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void TextTrackLoader::fileFailedToParse() {
-  m_state = Failed;
+void TextTrackLoader::FileFailedToParse() {
+  state_ = kFailed;
 
-  if (!m_cueLoadTimer.isActive())
-    m_cueLoadTimer.startOneShot(0, BLINK_FROM_HERE);
+  if (!cue_load_timer_.IsActive())
+    cue_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
 
-  cancelLoad();
+  CancelLoad();
 }
 
-void TextTrackLoader::getNewCues(HeapVector<Member<TextTrackCue>>& outputCues) {
-  DCHECK(m_cueParser);
-  if (m_cueParser)
-    m_cueParser->getNewCues(outputCues);
+void TextTrackLoader::GetNewCues(
+    HeapVector<Member<TextTrackCue>>& output_cues) {
+  DCHECK(cue_parser_);
+  if (cue_parser_)
+    cue_parser_->GetNewCues(output_cues);
 }
 
 DEFINE_TRACE(TextTrackLoader) {
-  visitor->trace(m_client);
-  visitor->trace(m_cueParser);
-  visitor->trace(m_document);
-  ResourceOwner<RawResource>::trace(visitor);
-  VTTParserClient::trace(visitor);
+  visitor->Trace(client_);
+  visitor->Trace(cue_parser_);
+  visitor->Trace(document_);
+  ResourceOwner<RawResource>::Trace(visitor);
+  VTTParserClient::Trace(visitor);
 }
 
 }  // namespace blink

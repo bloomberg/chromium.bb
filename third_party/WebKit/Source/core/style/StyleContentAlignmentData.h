@@ -20,30 +20,28 @@ class StyleContentAlignmentData {
   StyleContentAlignmentData(
       ContentPosition position,
       ContentDistributionType distribution,
-      OverflowAlignment overflow = OverflowAlignmentDefault)
-      : m_position(position),
-        m_distribution(distribution),
-        m_overflow(overflow) {}
+      OverflowAlignment overflow = kOverflowAlignmentDefault)
+      : position_(position), distribution_(distribution), overflow_(overflow) {}
 
-  void setPosition(ContentPosition position) { m_position = position; }
-  void setDistribution(ContentDistributionType distribution) {
-    m_distribution = distribution;
+  void SetPosition(ContentPosition position) { position_ = position; }
+  void SetDistribution(ContentDistributionType distribution) {
+    distribution_ = distribution;
   }
-  void setOverflow(OverflowAlignment overflow) { m_overflow = overflow; }
+  void SetOverflow(OverflowAlignment overflow) { overflow_ = overflow; }
 
-  ContentPosition position() const {
-    return static_cast<ContentPosition>(m_position);
+  ContentPosition GetPosition() const {
+    return static_cast<ContentPosition>(position_);
   }
-  ContentDistributionType distribution() const {
-    return static_cast<ContentDistributionType>(m_distribution);
+  ContentDistributionType Distribution() const {
+    return static_cast<ContentDistributionType>(distribution_);
   }
-  OverflowAlignment overflow() const {
-    return static_cast<OverflowAlignment>(m_overflow);
+  OverflowAlignment Overflow() const {
+    return static_cast<OverflowAlignment>(overflow_);
   }
 
   bool operator==(const StyleContentAlignmentData& o) const {
-    return m_position == o.m_position && m_distribution == o.m_distribution &&
-           m_overflow == o.m_overflow;
+    return position_ == o.position_ && distribution_ == o.distribution_ &&
+           overflow_ == o.overflow_;
   }
 
   bool operator!=(const StyleContentAlignmentData& o) const {
@@ -51,9 +49,9 @@ class StyleContentAlignmentData {
   }
 
  private:
-  unsigned m_position : 4;      // ContentPosition
-  unsigned m_distribution : 3;  // ContentDistributionType
-  unsigned m_overflow : 2;      // OverflowAlignment
+  unsigned position_ : 4;      // ContentPosition
+  unsigned distribution_ : 3;  // ContentDistributionType
+  unsigned overflow_ : 2;      // OverflowAlignment
 };
 
 }  // namespace blink

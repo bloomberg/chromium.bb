@@ -36,32 +36,32 @@ class SVGFEDiffuseLightingElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGFEDiffuseLightingElement);
-  void lightElementAttributeChanged(const SVGFELightElement*,
+  void LightElementAttributeChanged(const SVGFELightElement*,
                                     const QualifiedName&);
 
-  SVGAnimatedNumber* diffuseConstant() { return m_diffuseConstant.get(); }
-  SVGAnimatedNumber* surfaceScale() { return m_surfaceScale.get(); }
+  SVGAnimatedNumber* diffuseConstant() { return diffuse_constant_.Get(); }
+  SVGAnimatedNumber* surfaceScale() { return surface_scale_.Get(); }
   SVGAnimatedNumber* kernelUnitLengthX() {
-    return m_kernelUnitLength->firstNumber();
+    return kernel_unit_length_->FirstNumber();
   }
   SVGAnimatedNumber* kernelUnitLengthY() {
-    return m_kernelUnitLength->secondNumber();
+    return kernel_unit_length_->SecondNumber();
   }
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEDiffuseLightingElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumber> m_diffuseConstant;
-  Member<SVGAnimatedNumber> m_surfaceScale;
-  Member<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedNumber> diffuse_constant_;
+  Member<SVGAnimatedNumber> surface_scale_;
+  Member<SVGAnimatedNumberOptionalNumber> kernel_unit_length_;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

@@ -39,27 +39,28 @@ namespace blink {
 
 const char BlobURL::kBlobProtocol[] = "blob";
 
-KURL BlobURL::createPublicURL(SecurityOrigin* securityOrigin) {
-  ASSERT(securityOrigin);
-  return createBlobURL(securityOrigin->toString());
+KURL BlobURL::CreatePublicURL(SecurityOrigin* security_origin) {
+  ASSERT(security_origin);
+  return CreateBlobURL(security_origin->ToString());
 }
 
-String BlobURL::getOrigin(const KURL& url) {
-  ASSERT(url.protocolIs(kBlobProtocol));
+String BlobURL::GetOrigin(const KURL& url) {
+  ASSERT(url.ProtocolIs(kBlobProtocol));
 
-  unsigned startIndex = url.pathStart();
-  unsigned endIndex = url.pathAfterLastSlash();
-  return url.getString().substring(startIndex, endIndex - startIndex - 1);
+  unsigned start_index = url.PathStart();
+  unsigned end_index = url.PathAfterLastSlash();
+  return url.GetString().Substring(start_index, end_index - start_index - 1);
 }
 
-KURL BlobURL::createInternalStreamURL() {
-  return createBlobURL("blobinternal://");
+KURL BlobURL::CreateInternalStreamURL() {
+  return CreateBlobURL("blobinternal://");
 }
 
-KURL BlobURL::createBlobURL(const String& originString) {
-  ASSERT(!originString.isEmpty());
-  String urlString = "blob:" + originString + '/' + createCanonicalUUIDString();
-  return KURL::createIsolated(ParsedURLString, urlString);
+KURL BlobURL::CreateBlobURL(const String& origin_string) {
+  ASSERT(!origin_string.IsEmpty());
+  String url_string =
+      "blob:" + origin_string + '/' + CreateCanonicalUUIDString();
+  return KURL::CreateIsolated(kParsedURLString, url_string);
 }
 
 }  // namespace blink

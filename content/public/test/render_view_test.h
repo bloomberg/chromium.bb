@@ -188,7 +188,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   void TearDown() override;
 
   // blink::WebLeakDetectorClient implementation.
-  void onLeakDetectionComplete(const Result& result) override;
+  void OnLeakDetectionComplete(const Result& result) override;
 
   base::MessageLoop msg_loop_;
   std::unique_ptr<FakeCompositorDependencies> compositor_deps_;

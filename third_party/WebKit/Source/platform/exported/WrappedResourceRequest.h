@@ -45,11 +45,12 @@ class WrappedResourceRequest : public WebURLRequest {
  public:
   ~WrappedResourceRequest() {}
 
-  explicit WrappedResourceRequest(ResourceRequest& resourceRequest)
-      : WebURLRequest(resourceRequest) {}
+  explicit WrappedResourceRequest(ResourceRequest& resource_request)
+      : WebURLRequest(resource_request) {}
 
-  explicit WrappedResourceRequest(const ResourceRequest& resourceRequest)
-      : WrappedResourceRequest(const_cast<ResourceRequest&>(resourceRequest)) {}
+  explicit WrappedResourceRequest(const ResourceRequest& resource_request)
+      : WrappedResourceRequest(const_cast<ResourceRequest&>(resource_request)) {
+  }
 };
 
 }  // namespace blink

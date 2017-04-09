@@ -48,7 +48,7 @@ struct WebDoublePoint {
   WebDoublePoint(double x, double y) : x(x), y(y) {}
 
 #if INSIDE_BLINK
-  WebDoublePoint(const DoublePoint& p) : x(p.x()), y(p.y()) {}
+  WebDoublePoint(const DoublePoint& p) : x(p.X()), y(p.Y()) {}
 
   operator DoublePoint() const { return DoublePoint(x, y); }
 #endif

@@ -21,71 +21,71 @@ class FakePlaceholderWebPlugin : public FakeWebPlugin {
       : FakeWebPlugin(frame, params) {}
   ~FakePlaceholderWebPlugin() override {}
 
-  bool isPlaceholder() override { return true; }
+  bool IsPlaceholder() override { return true; }
 };
 
 class WebHelperPluginFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
-  WebHelperPluginFrameClient() : m_createPlaceholder(false) {}
+  WebHelperPluginFrameClient() : create_placeholder_(false) {}
   ~WebHelperPluginFrameClient() override {}
 
-  WebPlugin* createPlugin(WebLocalFrame* frame,
+  WebPlugin* CreatePlugin(WebLocalFrame* frame,
                           const WebPluginParams& params) override {
-    return m_createPlaceholder ? new FakePlaceholderWebPlugin(frame, params)
+    return create_placeholder_ ? new FakePlaceholderWebPlugin(frame, params)
                                : new FakeWebPlugin(frame, params);
   }
 
-  void setCreatePlaceholder(bool createPlaceholder) {
-    m_createPlaceholder = createPlaceholder;
+  void SetCreatePlaceholder(bool create_placeholder) {
+    create_placeholder_ = create_placeholder;
   }
 
  private:
-  bool m_createPlaceholder;
+  bool create_placeholder_;
 };
 
 class WebHelperPluginTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_helper.initializeAndLoad("about:blank", false, &m_frameClient);
+    helper_.InitializeAndLoad("about:blank", false, &frame_client_);
   }
 
-  void destroyHelperPlugin() {
-    m_plugin.reset();
+  void DestroyHelperPlugin() {
+    plugin_.reset();
     // WebHelperPlugin is destroyed by a task posted to the message loop.
-    testing::runPendingTasks();
+    testing::RunPendingTasks();
   }
 
-  FrameTestHelpers::WebViewHelper m_helper;
-  WebHelperPluginFrameClient m_frameClient;
-  WebHelperPluginUniquePtr m_plugin;
+  FrameTestHelpers::WebViewHelper helper_;
+  WebHelperPluginFrameClient frame_client_;
+  WebHelperPluginUniquePtr plugin_;
 };
 
 TEST_F(WebHelperPluginTest, CreateAndDestroyAfterWebViewDestruction) {
-  m_plugin.reset(WebHelperPlugin::create(
-      "hello", m_helper.webView()->mainFrame()->toWebLocalFrame()));
-  EXPECT_TRUE(m_plugin);
-  EXPECT_TRUE(m_plugin->getPlugin());
+  plugin_.reset(WebHelperPlugin::Create(
+      "hello", helper_.WebView()->MainFrame()->ToWebLocalFrame()));
+  EXPECT_TRUE(plugin_);
+  EXPECT_TRUE(plugin_->GetPlugin());
 
-  m_helper.reset();
-  destroyHelperPlugin();
+  helper_.Reset();
+  DestroyHelperPlugin();
 }
 
 TEST_F(WebHelperPluginTest, CreateAndDestroyBeforeWebViewDestruction) {
-  m_plugin.reset(WebHelperPlugin::create(
-      "hello", m_helper.webView()->mainFrame()->toWebLocalFrame()));
-  EXPECT_TRUE(m_plugin);
-  EXPECT_TRUE(m_plugin->getPlugin());
+  plugin_.reset(WebHelperPlugin::Create(
+      "hello", helper_.WebView()->MainFrame()->ToWebLocalFrame()));
+  EXPECT_TRUE(plugin_);
+  EXPECT_TRUE(plugin_->GetPlugin());
 
-  destroyHelperPlugin();
-  m_helper.reset();
+  DestroyHelperPlugin();
+  helper_.Reset();
 }
 
 TEST_F(WebHelperPluginTest, CreateFailsWithPlaceholder) {
-  m_frameClient.setCreatePlaceholder(true);
+  frame_client_.SetCreatePlaceholder(true);
 
-  m_plugin.reset(WebHelperPlugin::create(
-      "hello", m_helper.webView()->mainFrame()->toWebLocalFrame()));
-  EXPECT_EQ(0, m_plugin.get());
+  plugin_.reset(WebHelperPlugin::Create(
+      "hello", helper_.WebView()->MainFrame()->ToWebLocalFrame()));
+  EXPECT_EQ(0, plugin_.get());
 }
 
 }  // namespace

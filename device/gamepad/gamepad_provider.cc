@@ -249,7 +249,7 @@ void GamepadProvider::DoPoll() {
   // Send out disconnect events using the last polled data before we wipe it out
   // in the mapping step.
   if (ever_had_user_gesture_) {
-    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+    for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
 
       if (!state.active_state && state.source != GAMEPAD_SOURCE_NONE) {
@@ -267,7 +267,7 @@ void GamepadProvider::DoPoll() {
     // Acquire the SeqLock. There is only ever one writer to this data.
     // See gamepad_shared_buffer.h.
     gamepad_shared_buffer_->WriteBegin();
-    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+    for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
       // Must run through the map+sanitize here or CheckForUserGesture may fail.
       MapAndSanitizeGamepadData(&state, &buffer->items[i], sanitize_);
@@ -276,7 +276,7 @@ void GamepadProvider::DoPoll() {
   }
 
   if (ever_had_user_gesture_) {
-    for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+    for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
 
       if (state.active_state) {

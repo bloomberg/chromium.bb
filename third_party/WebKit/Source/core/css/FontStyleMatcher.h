@@ -13,14 +13,14 @@ class CSSSegmentedFontFace;
 
 class FontStyleMatcher final {
  public:
-  explicit FontStyleMatcher(const FontTraits& fontTraits)
-      : m_fontTraits(fontTraits){};
-  bool isCandidateBetter(CSSSegmentedFontFace* candidate,
+  explicit FontStyleMatcher(const FontTraits& font_traits)
+      : font_traits_(font_traits){};
+  bool IsCandidateBetter(CSSSegmentedFontFace* candidate,
                          CSSSegmentedFontFace* current);
 
  private:
   FontStyleMatcher();
-  const FontTraits& m_fontTraits;
+  const FontTraits& font_traits_;
 };
 
 }  // namespace blink

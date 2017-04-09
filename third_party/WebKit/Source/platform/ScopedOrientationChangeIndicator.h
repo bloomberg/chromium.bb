@@ -16,20 +16,20 @@ class PLATFORM_EXPORT ScopedOrientationChangeIndicator final {
   WTF_MAKE_NONCOPYABLE(ScopedOrientationChangeIndicator);
 
  public:
-  static bool processingOrientationChange();
+  static bool ProcessingOrientationChange();
 
   explicit ScopedOrientationChangeIndicator();
   ~ScopedOrientationChangeIndicator();
 
  private:
   enum class State {
-    Processing,
-    NotProcessing,
+    kProcessing,
+    kNotProcessing,
   };
 
-  static State s_state;
+  static State state_;
 
-  State m_previousState = State::NotProcessing;
+  State previous_state_ = State::kNotProcessing;
 };
 
 }  // namespace blink

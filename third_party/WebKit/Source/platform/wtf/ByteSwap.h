@@ -42,31 +42,31 @@
 
 namespace WTF {
 
-inline uint32_t wswap32(uint32_t x) {
+inline uint32_t Wswap32(uint32_t x) {
   return ((x & 0xffff0000) >> 16) | ((x & 0x0000ffff) << 16);
 }
 
 #if COMPILER(MSVC)
 
-ALWAYS_INLINE uint64_t bswap64(uint64_t x) {
+ALWAYS_INLINE uint64_t Bswap64(uint64_t x) {
   return _byteswap_uint64(x);
 }
-ALWAYS_INLINE uint32_t bswap32(uint32_t x) {
+ALWAYS_INLINE uint32_t Bswap32(uint32_t x) {
   return _byteswap_ulong(x);
 }
-ALWAYS_INLINE uint16_t bswap16(uint16_t x) {
+ALWAYS_INLINE uint16_t Bswap16(uint16_t x) {
   return _byteswap_ushort(x);
 }
 
 #else
 
-ALWAYS_INLINE uint64_t bswap64(uint64_t x) {
+ALWAYS_INLINE uint64_t Bswap64(uint64_t x) {
   return __builtin_bswap64(x);
 }
-ALWAYS_INLINE uint32_t bswap32(uint32_t x) {
+ALWAYS_INLINE uint32_t Bswap32(uint32_t x) {
   return __builtin_bswap32(x);
 }
-ALWAYS_INLINE uint16_t bswap16(uint16_t x) {
+ALWAYS_INLINE uint16_t Bswap16(uint16_t x) {
   return __builtin_bswap16(x);
 }
 
@@ -74,14 +74,14 @@ ALWAYS_INLINE uint16_t bswap16(uint16_t x) {
 
 #if CPU(64BIT)
 
-ALWAYS_INLINE size_t bswapuintptrt(size_t x) {
-  return bswap64(x);
+ALWAYS_INLINE size_t Bswapuintptrt(size_t x) {
+  return Bswap64(x);
 }
 
 #else
 
-ALWAYS_INLINE size_t bswapuintptrt(size_t x) {
-  return bswap32(x);
+ALWAYS_INLINE size_t Bswapuintptrt(size_t x) {
+  return Bswap32(x);
 }
 
 #endif

@@ -111,7 +111,7 @@ std::string GetModulePrefixForBindingsType(MojoBindingsType bindings_type,
                                            blink::WebFrame* frame) {
   switch (bindings_type) {
     case MojoBindingsType::FOR_WEB_UI:
-      return frame->getSecurityOrigin().toString().utf8() + "/";
+      return frame->GetSecurityOrigin().ToString().Utf8() + "/";
     case MojoBindingsType::FOR_LAYOUT_TESTS:
       return "layout-test-mojom://";
     case MojoBindingsType::FOR_HEADLESS:
@@ -194,8 +194,7 @@ void MojoContextState::FetchModule(const std::string& id) {
   fetched_modules_.insert(id);
   ResourceFetcher* fetcher = ResourceFetcher::Create(url);
   module_fetchers_.push_back(base::WrapUnique(fetcher));
-  fetcher->Start(frame_,
-                 blink::WebURLRequest::RequestContextScript,
+  fetcher->Start(frame_, blink::WebURLRequest::kRequestContextScript,
                  base::Bind(&MojoContextState::OnFetchModuleComplete,
                             base::Unretained(this), fetcher, id));
 }
@@ -205,11 +204,11 @@ void MojoContextState::OnFetchModuleComplete(
     const std::string& id,
     const blink::WebURLResponse& response,
     const std::string& data) {
-  if (response.isNull()) {
+  if (response.IsNull()) {
     LOG(ERROR) << "Failed to fetch source for module \"" << id << "\"";
     return;
   }
-  DCHECK_EQ(module_prefix_ + id, response.url().string().utf8());
+  DCHECK_EQ(module_prefix_ + id, response.Url().GetString().Utf8());
   // We can't delete fetch right now as the arguments to this function come from
   // it and are used below. Instead use a scope_ptr to cleanup.
   auto iter =

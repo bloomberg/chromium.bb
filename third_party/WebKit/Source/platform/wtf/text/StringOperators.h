@@ -39,34 +39,34 @@ class StringAppend final {
   operator AtomicString() const;
 
   unsigned length() const;
-  bool is8Bit() const;
+  bool Is8Bit() const;
 
-  void writeTo(LChar* destination) const;
-  void writeTo(UChar* destination) const;
+  void WriteTo(LChar* destination) const;
+  void WriteTo(UChar* destination) const;
 
  private:
-  const StringType1 m_string1;
-  const StringType2 m_string2;
+  const StringType1 string1_;
+  const StringType2 string2_;
 };
 
 template <typename StringType1, typename StringType2>
 StringAppend<StringType1, StringType2>::StringAppend(StringType1 string1,
                                                      StringType2 string2)
-    : m_string1(string1), m_string2(string2) {}
+    : string1_(string1), string2_(string2) {}
 
 template <typename StringType1, typename StringType2>
 StringAppend<StringType1, StringType2>::operator String() const {
-  if (is8Bit()) {
+  if (Is8Bit()) {
     LChar* buffer;
     RefPtr<StringImpl> result =
-        StringImpl::createUninitialized(length(), buffer);
-    writeTo(buffer);
-    return result.release();
+        StringImpl::CreateUninitialized(length(), buffer);
+    WriteTo(buffer);
+    return result.Release();
   }
   UChar* buffer;
-  RefPtr<StringImpl> result = StringImpl::createUninitialized(length(), buffer);
-  writeTo(buffer);
-  return result.release();
+  RefPtr<StringImpl> result = StringImpl::CreateUninitialized(length(), buffer);
+  WriteTo(buffer);
+  return result.Release();
 }
 
 template <typename StringType1, typename StringType2>
@@ -75,33 +75,33 @@ StringAppend<StringType1, StringType2>::operator AtomicString() const {
 }
 
 template <typename StringType1, typename StringType2>
-bool StringAppend<StringType1, StringType2>::is8Bit() const {
-  StringTypeAdapter<StringType1> adapter1(m_string1);
-  StringTypeAdapter<StringType2> adapter2(m_string2);
-  return adapter1.is8Bit() && adapter2.is8Bit();
+bool StringAppend<StringType1, StringType2>::Is8Bit() const {
+  StringTypeAdapter<StringType1> adapter1(string1_);
+  StringTypeAdapter<StringType2> adapter2(string2_);
+  return adapter1.Is8Bit() && adapter2.Is8Bit();
 }
 
 template <typename StringType1, typename StringType2>
-void StringAppend<StringType1, StringType2>::writeTo(LChar* destination) const {
-  DCHECK(is8Bit());
-  StringTypeAdapter<StringType1> adapter1(m_string1);
-  StringTypeAdapter<StringType2> adapter2(m_string2);
-  adapter1.writeTo(destination);
-  adapter2.writeTo(destination + adapter1.length());
+void StringAppend<StringType1, StringType2>::WriteTo(LChar* destination) const {
+  DCHECK(Is8Bit());
+  StringTypeAdapter<StringType1> adapter1(string1_);
+  StringTypeAdapter<StringType2> adapter2(string2_);
+  adapter1.WriteTo(destination);
+  adapter2.WriteTo(destination + adapter1.length());
 }
 
 template <typename StringType1, typename StringType2>
-void StringAppend<StringType1, StringType2>::writeTo(UChar* destination) const {
-  StringTypeAdapter<StringType1> adapter1(m_string1);
-  StringTypeAdapter<StringType2> adapter2(m_string2);
-  adapter1.writeTo(destination);
-  adapter2.writeTo(destination + adapter1.length());
+void StringAppend<StringType1, StringType2>::WriteTo(UChar* destination) const {
+  StringTypeAdapter<StringType1> adapter1(string1_);
+  StringTypeAdapter<StringType2> adapter2(string2_);
+  adapter1.WriteTo(destination);
+  adapter2.WriteTo(destination + adapter1.length());
 }
 
 template <typename StringType1, typename StringType2>
 unsigned StringAppend<StringType1, StringType2>::length() const {
-  StringTypeAdapter<StringType1> adapter1(m_string1);
-  StringTypeAdapter<StringType2> adapter2(m_string2);
+  StringTypeAdapter<StringType1> adapter1(string1_);
+  StringTypeAdapter<StringType2> adapter2(string2_);
   unsigned total = adapter1.length() + adapter2.length();
   // Guard against overflow.
   RELEASE_ASSERT(total >= adapter1.length() && total >= adapter2.length());
@@ -115,16 +115,16 @@ class StringTypeAdapter<StringAppend<StringType1, StringType2>> {
  public:
   StringTypeAdapter<StringAppend<StringType1, StringType2>>(
       const StringAppend<StringType1, StringType2>& buffer)
-      : m_buffer(buffer) {}
+      : buffer_(buffer) {}
 
-  unsigned length() const { return m_buffer.length(); }
-  bool is8Bit() const { return m_buffer.is8Bit(); }
+  unsigned length() const { return buffer_.length(); }
+  bool Is8Bit() const { return buffer_.Is8Bit(); }
 
-  void writeTo(LChar* destination) const { m_buffer.writeTo(destination); }
-  void writeTo(UChar* destination) const { m_buffer.writeTo(destination); }
+  void WriteTo(LChar* destination) const { buffer_.WriteTo(destination); }
+  void WriteTo(UChar* destination) const { buffer_.WriteTo(destination); }
 
  private:
-  const StringAppend<StringType1, StringType2>& m_buffer;
+  const StringAppend<StringType1, StringType2>& buffer_;
 };
 
 inline StringAppend<const char*, String> operator+(const char* string1,

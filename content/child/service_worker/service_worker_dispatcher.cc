@@ -130,9 +130,9 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
       script_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
     error_message += "The provided scriptURL or scope is too long.";
-    callbacks->onError(
-        WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
-                              blink::WebString::fromASCII(error_message)));
+    callbacks->OnError(
+        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
+                              blink::WebString::FromASCII(error_message)));
     return;
   }
 
@@ -178,9 +178,9 @@ void ServiceWorkerDispatcher::GetRegistration(
   if (document_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);
     error_message += "The provided documentURL is too long.";
-    callbacks->onError(
-        WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
-                              blink::WebString::fromASCII(error_message)));
+    callbacks->OnError(
+        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
+                              blink::WebString::FromASCII(error_message)));
     return;
   }
 
@@ -435,7 +435,7 @@ void ServiceWorkerDispatcher::OnRegistered(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
+  callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
       GetOrAdoptRegistration(info, attrs)));
   pending_registration_callbacks_.Remove(request_id);
 }
@@ -453,7 +453,7 @@ void ServiceWorkerDispatcher::OnUpdated(int thread_id, int request_id) {
   if (!callbacks)
     return;
 
-  callbacks->onSuccess();
+  callbacks->OnSuccess();
   pending_update_callbacks_.Remove(request_id);
 }
 
@@ -473,7 +473,7 @@ void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onSuccess(is_success);
+  callbacks->OnSuccess(is_success);
   pending_unregistration_callbacks_.Remove(request_id);
 }
 
@@ -500,7 +500,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistration(
   if (info.handle_id != kInvalidServiceWorkerRegistrationHandleId)
     registration = GetOrAdoptRegistration(info, attrs);
 
-  callbacks->onSuccess(
+  callbacks->OnSuccess(
       WebServiceWorkerRegistrationImpl::CreateHandle(registration));
   pending_get_registration_callbacks_.Remove(request_id);
 }
@@ -536,7 +536,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrations(
         GetOrAdoptRegistration(infos[i], attrs[i]));
   }
 
-  callbacks->onSuccess(std::move(registrations));
+  callbacks->OnSuccess(std::move(registrations));
   pending_get_registrations_callbacks_.Remove(request_id);
 }
 
@@ -559,7 +559,7 @@ void ServiceWorkerDispatcher::OnDidGetRegistrationForReady(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
+  callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
       GetOrAdoptRegistration(info, attrs)));
   get_for_ready_callbacks_.Remove(request_id);
 }
@@ -571,7 +571,7 @@ void ServiceWorkerDispatcher::OnDidEnableNavigationPreload(int thread_id,
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onSuccess();
+  callbacks->OnSuccess();
   enable_navigation_preload_callbacks_.Remove(request_id);
 }
 
@@ -584,8 +584,8 @@ void ServiceWorkerDispatcher::OnDidGetNavigationPreloadState(
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onSuccess(blink::WebNavigationPreloadState(
-      state.enabled, blink::WebString::fromUTF8(state.header)));
+  callbacks->OnSuccess(blink::WebNavigationPreloadState(
+      state.enabled, blink::WebString::FromUTF8(state.header)));
   get_navigation_preload_state_callbacks_.Remove(request_id);
 }
 
@@ -596,7 +596,7 @@ void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onSuccess();
+  callbacks->OnSuccess();
   set_navigation_preload_header_callbacks_.Remove(request_id);
 }
 
@@ -618,8 +618,8 @@ void ServiceWorkerDispatcher::OnRegistrationError(
   if (!callbacks)
     return;
 
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
   pending_registration_callbacks_.Remove(request_id);
 }
 
@@ -640,8 +640,8 @@ void ServiceWorkerDispatcher::OnUpdateError(
   if (!callbacks)
     return;
 
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
   pending_update_callbacks_.Remove(request_id);
 }
 
@@ -664,8 +664,8 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
   if (!callbacks)
     return;
 
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
   pending_unregistration_callbacks_.Remove(request_id);
 }
 
@@ -688,8 +688,8 @@ void ServiceWorkerDispatcher::OnGetRegistrationError(
   if (!callbacks)
     return;
 
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
   pending_get_registration_callbacks_.Remove(request_id);
 }
 
@@ -712,8 +712,8 @@ void ServiceWorkerDispatcher::OnGetRegistrationsError(
   if (!callbacks)
     return;
 
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
   pending_get_registrations_callbacks_.Remove(request_id);
 }
 
@@ -727,8 +727,8 @@ void ServiceWorkerDispatcher::OnEnableNavigationPreloadError(
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF8(message)));
   enable_navigation_preload_callbacks_.Remove(request_id);
 }
 
@@ -742,8 +742,8 @@ void ServiceWorkerDispatcher::OnGetNavigationPreloadStateError(
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF8(message)));
   get_navigation_preload_state_callbacks_.Remove(request_id);
 }
 
@@ -757,8 +757,8 @@ void ServiceWorkerDispatcher::OnSetNavigationPreloadHeaderError(
   DCHECK(callbacks);
   if (!callbacks)
     return;
-  callbacks->onError(
-      WebServiceWorkerError(error_type, blink::WebString::fromUTF8(message)));
+  callbacks->OnError(
+      WebServiceWorkerError(error_type, blink::WebString::FromUTF8(message)));
   set_navigation_preload_header_callbacks_.Remove(request_id);
 }
 
@@ -841,13 +841,13 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
   if (found != provider_clients_.end()) {
     // Sync the controllee's use counter with the service worker's one.
     for (uint32_t feature : used_features)
-      found->second->countFeature(feature);
+      found->second->CountFeature(feature);
 
     // Get the existing worker object or create a new one with a new reference
     // to populate the .controller field.
     scoped_refptr<WebServiceWorkerImpl> worker = GetOrCreateServiceWorker(
         ServiceWorkerHandleReference::Create(info, thread_safe_sender_.get()));
-    found->second->setController(WebServiceWorkerImpl::CreateHandle(worker),
+    found->second->SetController(WebServiceWorkerImpl::CreateHandle(worker),
                                  should_notify_controllerchange);
     // You must not access |found| after setController() because it may fire the
     // controllerchange event that may remove the provider client, for example,
@@ -879,9 +879,9 @@ void ServiceWorkerDispatcher::OnPostMessage(
   blink::WebMessagePortChannelArray ports =
       WebMessagePortChannelImpl::CreateFromMessagePorts(params.message_ports);
 
-  found->second->dispatchMessageEvent(
+  found->second->DispatchMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker),
-      blink::WebString::fromUTF16(params.message), std::move(ports));
+      blink::WebString::FromUTF16(params.message), std::move(ports));
 }
 
 void ServiceWorkerDispatcher::OnCountFeature(int thread_id,
@@ -889,7 +889,7 @@ void ServiceWorkerDispatcher::OnCountFeature(int thread_id,
                                              uint32_t feature) {
   ProviderClientMap::iterator found = provider_clients_.find(provider_id);
   if (found != provider_clients_.end())
-    found->second->countFeature(feature);
+    found->second->CountFeature(feature);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

@@ -6,20 +6,20 @@
 
 namespace blink {
 
-void V0CustomElementSyncMicrotaskQueue::enqueue(
+void V0CustomElementSyncMicrotaskQueue::Enqueue(
     V0CustomElementMicrotaskStep* step) {
-  m_queue.push_back(step);
+  queue_.push_back(step);
 }
 
-void V0CustomElementSyncMicrotaskQueue::doDispatch() {
+void V0CustomElementSyncMicrotaskQueue::DoDispatch() {
   unsigned i;
 
-  for (i = 0; i < m_queue.size(); ++i) {
-    if (V0CustomElementMicrotaskStep::Processing == m_queue[i]->process())
+  for (i = 0; i < queue_.size(); ++i) {
+    if (V0CustomElementMicrotaskStep::kProcessing == queue_[i]->Process())
       break;
   }
 
-  m_queue.erase(0, i);
+  queue_.erase(0, i);
 }
 
 }  // namespace blink

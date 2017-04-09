@@ -23,18 +23,18 @@ TestResponseGenerator::TestResponseGenerator(const GURL& gurl,
 WebURLError TestResponseGenerator::GenerateError() {
   WebURLError error;
   error.reason = net::ERR_ABORTED;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.domain = WebString::FromUTF8(net::kErrorDomain);
   return error;
 }
 
 WebURLResponse TestResponseGenerator::Generate200() {
   WebURLResponse response(gurl_);
-  response.setHTTPStatusCode(200);
+  response.SetHTTPStatusCode(200);
 
-  response.setHTTPHeaderField(
-      WebString::fromUTF8("Content-Length"),
-      WebString::fromUTF8(base::Int64ToString(content_length_)));
-  response.setExpectedContentLength(content_length_);
+  response.SetHTTPHeaderField(
+      WebString::FromUTF8("Content-Length"),
+      WebString::FromUTF8(base::Int64ToString(content_length_)));
+  response.SetExpectedContentLength(content_length_);
   return response;
 }
 
@@ -60,11 +60,11 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
   int64_t range_content_length = content_length_ - first_byte_offset;
 
   WebURLResponse response(gurl_);
-  response.setHTTPStatusCode(206);
+  response.SetHTTPStatusCode(206);
 
   if ((flags & kNoAcceptRanges) == 0) {
-    response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
-                                WebString::fromUTF8("bytes"));
+    response.SetHTTPHeaderField(WebString::FromUTF8("Accept-Ranges"),
+                                WebString::FromUTF8("bytes"));
   }
 
   if ((flags & kNoContentRange) == 0) {
@@ -75,22 +75,22 @@ WebURLResponse TestResponseGenerator::GeneratePartial206(
       content_range += "*";
     else
       content_range += base::StringPrintf("%" PRId64, content_length_);
-    response.setHTTPHeaderField(WebString::fromUTF8("Content-Range"),
-                                WebString::fromUTF8(content_range));
+    response.SetHTTPHeaderField(WebString::FromUTF8("Content-Range"),
+                                WebString::FromUTF8(content_range));
   }
 
   if ((flags & kNoContentLength) == 0) {
-    response.setHTTPHeaderField(
-        WebString::fromUTF8("Content-Length"),
-        WebString::fromUTF8(base::Int64ToString(range_content_length)));
-    response.setExpectedContentLength(range_content_length);
+    response.SetHTTPHeaderField(
+        WebString::FromUTF8("Content-Length"),
+        WebString::FromUTF8(base::Int64ToString(range_content_length)));
+    response.SetExpectedContentLength(range_content_length);
   }
   return response;
 }
 
 WebURLResponse TestResponseGenerator::GenerateResponse(int code) {
   WebURLResponse response(gurl_);
-  response.setHTTPStatusCode(code);
+  response.SetHTTPStatusCode(code);
   return response;
 }
 
@@ -101,12 +101,12 @@ WebURLResponse TestResponseGenerator::Generate404() {
 WebURLResponse TestResponseGenerator::GenerateFileResponse(
     int64_t first_byte_offset) {
   WebURLResponse response(gurl_);
-  response.setHTTPStatusCode(0);
+  response.SetHTTPStatusCode(0);
 
   if (first_byte_offset >= 0) {
-    response.setExpectedContentLength(content_length_ - first_byte_offset);
+    response.SetExpectedContentLength(content_length_ - first_byte_offset);
   } else {
-    response.setExpectedContentLength(-1);
+    response.SetExpectedContentLength(-1);
   }
   return response;
 }

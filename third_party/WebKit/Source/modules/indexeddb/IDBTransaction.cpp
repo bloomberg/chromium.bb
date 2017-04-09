@@ -47,273 +47,273 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBTransaction* IDBTransaction::createObserver(
-    ExecutionContext* executionContext,
+IDBTransaction* IDBTransaction::CreateObserver(
+    ExecutionContext* execution_context,
     int64_t id,
     const HashSet<String>& scope,
     IDBDatabase* db) {
-  DCHECK(!scope.isEmpty()) << "Observer transactions must operate on a "
+  DCHECK(!scope.IsEmpty()) << "Observer transactions must operate on a "
                               "well-defined set of stores";
   IDBTransaction* transaction =
-      new IDBTransaction(executionContext, id, scope, db);
+      new IDBTransaction(execution_context, id, scope, db);
   return transaction;
 }
 
-IDBTransaction* IDBTransaction::createNonVersionChange(
-    ScriptState* scriptState,
+IDBTransaction* IDBTransaction::CreateNonVersionChange(
+    ScriptState* script_state,
     int64_t id,
     const HashSet<String>& scope,
     WebIDBTransactionMode mode,
     IDBDatabase* db) {
-  DCHECK_NE(mode, WebIDBTransactionModeVersionChange);
-  DCHECK(!scope.isEmpty()) << "Non-version transactions should operate on a "
+  DCHECK_NE(mode, kWebIDBTransactionModeVersionChange);
+  DCHECK(!scope.IsEmpty()) << "Non-version transactions should operate on a "
                               "well-defined set of stores";
-  return new IDBTransaction(scriptState, id, scope, mode, db);
+  return new IDBTransaction(script_state, id, scope, mode, db);
 }
 
-IDBTransaction* IDBTransaction::createVersionChange(
-    ExecutionContext* executionContext,
+IDBTransaction* IDBTransaction::CreateVersionChange(
+    ExecutionContext* execution_context,
     int64_t id,
     IDBDatabase* db,
-    IDBOpenDBRequest* openDBRequest,
-    const IDBDatabaseMetadata& oldMetadata) {
-  return new IDBTransaction(executionContext, id, db, openDBRequest,
-                            oldMetadata);
+    IDBOpenDBRequest* open_db_request,
+    const IDBDatabaseMetadata& old_metadata) {
+  return new IDBTransaction(execution_context, id, db, open_db_request,
+                            old_metadata);
 }
 
 namespace {
 
 class DeactivateTransactionTask : public V8PerIsolateData::EndOfScopeTask {
  public:
-  static std::unique_ptr<DeactivateTransactionTask> create(
+  static std::unique_ptr<DeactivateTransactionTask> Create(
       IDBTransaction* transaction) {
-    return WTF::wrapUnique(new DeactivateTransactionTask(transaction));
+    return WTF::WrapUnique(new DeactivateTransactionTask(transaction));
   }
 
-  void run() override {
-    m_transaction->setActive(false);
-    m_transaction.clear();
+  void Run() override {
+    transaction_->SetActive(false);
+    transaction_.Clear();
   }
 
  private:
   explicit DeactivateTransactionTask(IDBTransaction* transaction)
-      : m_transaction(transaction) {}
+      : transaction_(transaction) {}
 
-  Persistent<IDBTransaction> m_transaction;
+  Persistent<IDBTransaction> transaction_;
 };
 
 }  // namespace
 
-IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
+IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
                                int64_t id,
                                const HashSet<String>& scope,
                                IDBDatabase* db)
-    : ContextLifecycleObserver(executionContext),
-      m_id(id),
-      m_database(db),
-      m_mode(WebIDBTransactionModeReadOnly),
-      m_scope(scope),
-      m_state(Active) {
-  DCHECK(m_database);
-  DCHECK(!m_scope.isEmpty()) << "Observer transactions must operate "
-                                "on a well-defined set of stores";
-  m_database->transactionCreated(this);
+    : ContextLifecycleObserver(execution_context),
+      id_(id),
+      database_(db),
+      mode_(kWebIDBTransactionModeReadOnly),
+      scope_(scope),
+      state_(kActive) {
+  DCHECK(database_);
+  DCHECK(!scope_.IsEmpty()) << "Observer transactions must operate "
+                               "on a well-defined set of stores";
+  database_->TransactionCreated(this);
 }
 
-IDBTransaction::IDBTransaction(ScriptState* scriptState,
+IDBTransaction::IDBTransaction(ScriptState* script_state,
                                int64_t id,
                                const HashSet<String>& scope,
                                WebIDBTransactionMode mode,
                                IDBDatabase* db)
-    : ContextLifecycleObserver(scriptState->getExecutionContext()),
-      m_id(id),
-      m_database(db),
-      m_mode(mode),
-      m_scope(scope) {
-  DCHECK(m_database);
-  DCHECK(!m_scope.isEmpty()) << "Non-versionchange transactions must operate "
-                                "on a well-defined set of stores";
-  DCHECK(m_mode == WebIDBTransactionModeReadOnly ||
-         m_mode == WebIDBTransactionModeReadWrite)
+    : ContextLifecycleObserver(script_state->GetExecutionContext()),
+      id_(id),
+      database_(db),
+      mode_(mode),
+      scope_(scope) {
+  DCHECK(database_);
+  DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
+                               "on a well-defined set of stores";
+  DCHECK(mode_ == kWebIDBTransactionModeReadOnly ||
+         mode_ == kWebIDBTransactionModeReadWrite)
       << "Invalid transaction mode";
 
-  DCHECK_EQ(m_state, Active);
-  V8PerIsolateData::from(scriptState->isolate())
-      ->addEndOfScopeTask(DeactivateTransactionTask::create(this));
+  DCHECK_EQ(state_, kActive);
+  V8PerIsolateData::From(script_state->GetIsolate())
+      ->AddEndOfScopeTask(DeactivateTransactionTask::Create(this));
 
-  m_database->transactionCreated(this);
+  database_->TransactionCreated(this);
 }
 
-IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
+IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
                                int64_t id,
                                IDBDatabase* db,
-                               IDBOpenDBRequest* openDBRequest,
-                               const IDBDatabaseMetadata& oldMetadata)
-    : ContextLifecycleObserver(executionContext),
-      m_id(id),
-      m_database(db),
-      m_openDBRequest(openDBRequest),
-      m_mode(WebIDBTransactionModeVersionChange),
-      m_state(Inactive),
-      m_oldDatabaseMetadata(oldMetadata) {
-  DCHECK(m_database);
-  DCHECK(m_openDBRequest);
-  DCHECK(m_scope.isEmpty());
+                               IDBOpenDBRequest* open_db_request,
+                               const IDBDatabaseMetadata& old_metadata)
+    : ContextLifecycleObserver(execution_context),
+      id_(id),
+      database_(db),
+      open_db_request_(open_db_request),
+      mode_(kWebIDBTransactionModeVersionChange),
+      state_(kInactive),
+      old_database_metadata_(old_metadata) {
+  DCHECK(database_);
+  DCHECK(open_db_request_);
+  DCHECK(scope_.IsEmpty());
 
-  m_database->transactionCreated(this);
+  database_->TransactionCreated(this);
 }
 
 IDBTransaction::~IDBTransaction() {
   // Note: IDBTransaction is a ContextLifecycleObserver (rather than
   // ContextClient) only in order to be able call upon getExecutionContext()
   // during this destructor.
-  DCHECK(m_state == Finished || !getExecutionContext());
-  DCHECK(m_requestList.isEmpty() || !getExecutionContext());
+  DCHECK(state_ == kFinished || !GetExecutionContext());
+  DCHECK(request_list_.IsEmpty() || !GetExecutionContext());
 }
 
 DEFINE_TRACE(IDBTransaction) {
-  visitor->trace(m_database);
-  visitor->trace(m_openDBRequest);
-  visitor->trace(m_error);
-  visitor->trace(m_requestList);
-  visitor->trace(m_objectStoreMap);
-  visitor->trace(m_oldStoreMetadata);
-  visitor->trace(m_deletedIndexes);
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(database_);
+  visitor->Trace(open_db_request_);
+  visitor->Trace(error_);
+  visitor->Trace(request_list_);
+  visitor->Trace(object_store_map_);
+  visitor->Trace(old_store_metadata_);
+  visitor->Trace(deleted_indexes_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-void IDBTransaction::setError(DOMException* error) {
-  DCHECK_NE(m_state, Finished);
+void IDBTransaction::SetError(DOMException* error) {
+  DCHECK_NE(state_, kFinished);
   DCHECK(error);
 
   // The first error to be set is the true cause of the
   // transaction abort.
-  if (!m_error)
-    m_error = error;
+  if (!error_)
+    error_ = error;
 }
 
 IDBObjectStore* IDBTransaction::objectStore(const String& name,
-                                            ExceptionState& exceptionState) {
-  if (isFinished()) {
-    exceptionState.throwDOMException(
-        InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
+                                            ExceptionState& exception_state) {
+  if (IsFinished()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, IDBDatabase::kTransactionFinishedErrorMessage);
     return nullptr;
   }
 
-  IDBObjectStoreMap::iterator it = m_objectStoreMap.find(name);
-  if (it != m_objectStoreMap.end())
+  IDBObjectStoreMap::iterator it = object_store_map_.Find(name);
+  if (it != object_store_map_.end())
     return it->value;
 
-  if (!isVersionChange() && !m_scope.contains(name)) {
-    exceptionState.throwDOMException(
-        NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
+  if (!IsVersionChange() && !scope_.Contains(name)) {
+    exception_state.ThrowDOMException(
+        kNotFoundError, IDBDatabase::kNoSuchObjectStoreErrorMessage);
     return nullptr;
   }
 
-  int64_t objectStoreId = m_database->findObjectStoreId(name);
-  if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
-    DCHECK(isVersionChange());
-    exceptionState.throwDOMException(
-        NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
+  int64_t object_store_id = database_->FindObjectStoreId(name);
+  if (object_store_id == IDBObjectStoreMetadata::kInvalidId) {
+    DCHECK(IsVersionChange());
+    exception_state.ThrowDOMException(
+        kNotFoundError, IDBDatabase::kNoSuchObjectStoreErrorMessage);
     return nullptr;
   }
 
-  DCHECK(m_database->metadata().objectStores.contains(objectStoreId));
-  RefPtr<IDBObjectStoreMetadata> objectStoreMetadata =
-      m_database->metadata().objectStores.at(objectStoreId);
-  DCHECK(objectStoreMetadata.get());
+  DCHECK(database_->Metadata().object_stores.Contains(object_store_id));
+  RefPtr<IDBObjectStoreMetadata> object_store_metadata =
+      database_->Metadata().object_stores.at(object_store_id);
+  DCHECK(object_store_metadata.Get());
 
-  IDBObjectStore* objectStore =
-      IDBObjectStore::create(std::move(objectStoreMetadata), this);
-  DCHECK(!m_objectStoreMap.contains(name));
-  m_objectStoreMap.set(name, objectStore);
+  IDBObjectStore* object_store =
+      IDBObjectStore::Create(std::move(object_store_metadata), this);
+  DCHECK(!object_store_map_.Contains(name));
+  object_store_map_.Set(name, object_store);
 
-  if (isVersionChange()) {
-    DCHECK(!objectStore->isNewlyCreated())
+  if (IsVersionChange()) {
+    DCHECK(!object_store->IsNewlyCreated())
         << "Object store IDs are not assigned sequentially";
-    RefPtr<IDBObjectStoreMetadata> backupMetadata =
-        objectStore->metadata().createCopy();
-    m_oldStoreMetadata.set(objectStore, std::move(backupMetadata));
+    RefPtr<IDBObjectStoreMetadata> backup_metadata =
+        object_store->Metadata().CreateCopy();
+    old_store_metadata_.Set(object_store, std::move(backup_metadata));
   }
-  return objectStore;
+  return object_store;
 }
 
-void IDBTransaction::objectStoreCreated(const String& name,
-                                        IDBObjectStore* objectStore) {
-  DCHECK_NE(m_state, Finished)
+void IDBTransaction::ObjectStoreCreated(const String& name,
+                                        IDBObjectStore* object_store) {
+  DCHECK_NE(state_, kFinished)
       << "A finished transaction created an object store";
-  DCHECK_EQ(m_mode, WebIDBTransactionModeVersionChange)
+  DCHECK_EQ(mode_, kWebIDBTransactionModeVersionChange)
       << "A non-versionchange transaction created an object store";
-  DCHECK(!m_objectStoreMap.contains(name))
+  DCHECK(!object_store_map_.Contains(name))
       << "An object store was created with the name of an existing store";
-  DCHECK(objectStore->isNewlyCreated())
+  DCHECK(object_store->IsNewlyCreated())
       << "Object store IDs are not assigned sequentially";
-  m_objectStoreMap.set(name, objectStore);
+  object_store_map_.Set(name, object_store);
 }
 
-void IDBTransaction::objectStoreDeleted(const int64_t objectStoreId,
+void IDBTransaction::ObjectStoreDeleted(const int64_t object_store_id,
                                         const String& name) {
-  DCHECK_NE(m_state, Finished)
+  DCHECK_NE(state_, kFinished)
       << "A finished transaction deleted an object store";
-  DCHECK_EQ(m_mode, WebIDBTransactionModeVersionChange)
+  DCHECK_EQ(mode_, kWebIDBTransactionModeVersionChange)
       << "A non-versionchange transaction deleted an object store";
-  IDBObjectStoreMap::iterator it = m_objectStoreMap.find(name);
-  if (it == m_objectStoreMap.end()) {
+  IDBObjectStoreMap::iterator it = object_store_map_.Find(name);
+  if (it == object_store_map_.end()) {
     // No IDBObjectStore instance was created for the deleted store in this
     // transaction. This happens if IDBDatabase.deleteObjectStore() is called
     // with the name of a store that wasn't instantated. We need to be able to
     // revert the metadata change if the transaction aborts, in order to return
     // correct values from IDB{Database, Transaction}.objectStoreNames.
-    DCHECK(m_database->metadata().objectStores.contains(objectStoreId));
+    DCHECK(database_->Metadata().object_stores.Contains(object_store_id));
     RefPtr<IDBObjectStoreMetadata> metadata =
-        m_database->metadata().objectStores.at(objectStoreId);
-    DCHECK(metadata.get());
+        database_->Metadata().object_stores.at(object_store_id);
+    DCHECK(metadata.Get());
     DCHECK_EQ(metadata->name, name);
-    m_deletedObjectStores.push_back(std::move(metadata));
+    deleted_object_stores_.push_back(std::move(metadata));
   } else {
-    IDBObjectStore* objectStore = it->value;
-    m_objectStoreMap.erase(name);
-    objectStore->markDeleted();
-    if (objectStore->id() > m_oldDatabaseMetadata.maxObjectStoreId) {
+    IDBObjectStore* object_store = it->value;
+    object_store_map_.erase(name);
+    object_store->MarkDeleted();
+    if (object_store->Id() > old_database_metadata_.max_object_store_id) {
       // The store was created and deleted in this transaction, so it will
       // not be restored even if the transaction aborts. We have just
       // removed our last reference to it.
-      DCHECK(!m_oldStoreMetadata.contains(objectStore));
-      objectStore->clearIndexCache();
+      DCHECK(!old_store_metadata_.Contains(object_store));
+      object_store->ClearIndexCache();
     } else {
       // The store was created before this transaction, and we created an
       // IDBObjectStore instance for it. When that happened, we must have
       // snapshotted the store's metadata as well.
-      DCHECK(m_oldStoreMetadata.contains(objectStore));
+      DCHECK(old_store_metadata_.Contains(object_store));
     }
   }
 }
 
-void IDBTransaction::objectStoreRenamed(const String& oldName,
-                                        const String& newName) {
-  DCHECK_NE(m_state, Finished)
+void IDBTransaction::ObjectStoreRenamed(const String& old_name,
+                                        const String& new_name) {
+  DCHECK_NE(state_, kFinished)
       << "A finished transaction renamed an object store";
-  DCHECK_EQ(m_mode, WebIDBTransactionModeVersionChange)
+  DCHECK_EQ(mode_, kWebIDBTransactionModeVersionChange)
       << "A non-versionchange transaction renamed an object store";
 
-  DCHECK(!m_objectStoreMap.contains(newName));
-  DCHECK(m_objectStoreMap.contains(oldName))
+  DCHECK(!object_store_map_.Contains(new_name));
+  DCHECK(object_store_map_.Contains(old_name))
       << "The object store had to be accessed in order to be renamed.";
-  m_objectStoreMap.set(newName, m_objectStoreMap.take(oldName));
+  object_store_map_.Set(new_name, object_store_map_.Take(old_name));
 }
 
-void IDBTransaction::indexDeleted(IDBIndex* index) {
+void IDBTransaction::IndexDeleted(IDBIndex* index) {
   DCHECK(index);
-  DCHECK(!index->isDeleted()) << "indexDeleted called twice for the same index";
+  DCHECK(!index->IsDeleted()) << "indexDeleted called twice for the same index";
 
-  IDBObjectStore* objectStore = index->objectStore();
-  DCHECK_EQ(objectStore->transaction(), this);
-  DCHECK(m_objectStoreMap.contains(objectStore->name()))
+  IDBObjectStore* object_store = index->objectStore();
+  DCHECK_EQ(object_store->transaction(), this);
+  DCHECK(object_store_map_.Contains(object_store->name()))
       << "An index was deleted without accessing its object store";
 
-  const auto& objectStoreIterator = m_oldStoreMetadata.find(objectStore);
-  if (objectStoreIterator == m_oldStoreMetadata.end()) {
+  const auto& object_store_iterator = old_store_metadata_.Find(object_store);
+  if (object_store_iterator == old_store_metadata_.end()) {
     // The index's object store was created in this transaction, so this
     // index was also created (and deleted) in this transaction, and will
     // not be restored if the transaction aborts.
@@ -327,138 +327,138 @@ void IDBTransaction::indexDeleted(IDBIndex* index) {
     return;
   }
 
-  const IDBObjectStoreMetadata* oldStoreMetadata =
-      objectStoreIterator->value.get();
-  DCHECK(oldStoreMetadata);
-  if (!oldStoreMetadata->indexes.contains(index->id())) {
+  const IDBObjectStoreMetadata* old_store_metadata =
+      object_store_iterator->value.Get();
+  DCHECK(old_store_metadata);
+  if (!old_store_metadata->indexes.Contains(index->Id())) {
     // The index's object store was created before this transaction, but the
     // index was created (and deleted) in this transaction, so it will not
     // be restored if the transaction aborts.
     return;
   }
 
-  m_deletedIndexes.push_back(index);
+  deleted_indexes_.push_back(index);
 }
 
-void IDBTransaction::setActive(bool active) {
-  DCHECK_NE(m_state, Finished) << "A finished transaction tried to setActive("
+void IDBTransaction::SetActive(bool active) {
+  DCHECK_NE(state_, kFinished) << "A finished transaction tried to setActive("
                                << (active ? "true" : "false") << ")";
-  if (m_state == Finishing)
+  if (state_ == kFinishing)
     return;
-  DCHECK_NE(active, (m_state == Active));
-  m_state = active ? Active : Inactive;
+  DCHECK_NE(active, (state_ == kActive));
+  state_ = active ? kActive : kInactive;
 
-  if (!active && m_requestList.isEmpty() && backendDB())
-    backendDB()->commit(m_id);
+  if (!active && request_list_.IsEmpty() && BackendDB())
+    BackendDB()->Commit(id_);
 }
 
-void IDBTransaction::abort(ExceptionState& exceptionState) {
-  if (m_state == Finishing || m_state == Finished) {
-    exceptionState.throwDOMException(
-        InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
+void IDBTransaction::abort(ExceptionState& exception_state) {
+  if (state_ == kFinishing || state_ == kFinished) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, IDBDatabase::kTransactionFinishedErrorMessage);
     return;
   }
 
-  m_state = Finishing;
+  state_ = kFinishing;
 
-  if (!getExecutionContext())
+  if (!GetExecutionContext())
     return;
 
-  abortOutstandingRequests();
-  revertDatabaseMetadata();
+  AbortOutstandingRequests();
+  RevertDatabaseMetadata();
 
-  if (backendDB())
-    backendDB()->abort(m_id);
+  if (BackendDB())
+    BackendDB()->Abort(id_);
 }
 
-void IDBTransaction::registerRequest(IDBRequest* request) {
+void IDBTransaction::RegisterRequest(IDBRequest* request) {
   DCHECK(request);
-  DCHECK_EQ(m_state, Active);
-  m_requestList.insert(request);
+  DCHECK_EQ(state_, kActive);
+  request_list_.insert(request);
 }
 
-void IDBTransaction::unregisterRequest(IDBRequest* request) {
+void IDBTransaction::UnregisterRequest(IDBRequest* request) {
   DCHECK(request);
   // If we aborted the request, it will already have been removed.
-  m_requestList.erase(request);
+  request_list_.erase(request);
 }
 
-void IDBTransaction::onAbort(DOMException* error) {
+void IDBTransaction::OnAbort(DOMException* error) {
   IDB_TRACE("IDBTransaction::onAbort");
-  if (!getExecutionContext()) {
-    finished();
+  if (!GetExecutionContext()) {
+    Finished();
     return;
   }
 
-  DCHECK_NE(m_state, Finished);
-  if (m_state != Finishing) {
+  DCHECK_NE(state_, kFinished);
+  if (state_ != kFinishing) {
     // Abort was not triggered by front-end.
     DCHECK(error);
-    setError(error);
+    SetError(error);
 
-    abortOutstandingRequests();
-    revertDatabaseMetadata();
+    AbortOutstandingRequests();
+    RevertDatabaseMetadata();
 
-    m_state = Finishing;
+    state_ = kFinishing;
   }
 
-  if (isVersionChange())
-    m_database->close();
+  if (IsVersionChange())
+    database_->close();
 
   // Enqueue events before notifying database, as database may close which
   // enqueues more events and order matters.
-  enqueueEvent(Event::createBubble(EventTypeNames::abort));
-  finished();
+  EnqueueEvent(Event::CreateBubble(EventTypeNames::abort));
+  Finished();
 }
 
-void IDBTransaction::onComplete() {
+void IDBTransaction::OnComplete() {
   IDB_TRACE("IDBTransaction::onComplete");
-  if (!getExecutionContext()) {
-    finished();
+  if (!GetExecutionContext()) {
+    Finished();
     return;
   }
 
-  DCHECK_NE(m_state, Finished);
-  m_state = Finishing;
+  DCHECK_NE(state_, kFinished);
+  state_ = kFinishing;
 
   // Enqueue events before notifying database, as database may close which
   // enqueues more events and order matters.
-  enqueueEvent(Event::create(EventTypeNames::complete));
-  finished();
+  EnqueueEvent(Event::Create(EventTypeNames::complete));
+  Finished();
 }
 
-bool IDBTransaction::hasPendingActivity() const {
+bool IDBTransaction::HasPendingActivity() const {
   // FIXME: In an ideal world, we should return true as long as anyone has a or
   // can get a handle to us or any child request object and any of those have
   // event listeners. This is  in order to handle user generated events
   // properly.
-  return m_hasPendingActivity && getExecutionContext();
+  return has_pending_activity_ && GetExecutionContext();
 }
 
-WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString) {
-  if (modeString == IndexedDBNames::readonly)
-    return WebIDBTransactionModeReadOnly;
-  if (modeString == IndexedDBNames::readwrite)
-    return WebIDBTransactionModeReadWrite;
-  if (modeString == IndexedDBNames::versionchange)
-    return WebIDBTransactionModeVersionChange;
+WebIDBTransactionMode IDBTransaction::StringToMode(const String& mode_string) {
+  if (mode_string == IndexedDBNames::readonly)
+    return kWebIDBTransactionModeReadOnly;
+  if (mode_string == IndexedDBNames::readwrite)
+    return kWebIDBTransactionModeReadWrite;
+  if (mode_string == IndexedDBNames::versionchange)
+    return kWebIDBTransactionModeVersionChange;
   NOTREACHED();
-  return WebIDBTransactionModeReadOnly;
+  return kWebIDBTransactionModeReadOnly;
 }
 
-WebIDBDatabase* IDBTransaction::backendDB() const {
-  return m_database->backend();
+WebIDBDatabase* IDBTransaction::BackendDB() const {
+  return database_->Backend();
 }
 
 const String& IDBTransaction::mode() const {
-  switch (m_mode) {
-    case WebIDBTransactionModeReadOnly:
+  switch (mode_) {
+    case kWebIDBTransactionModeReadOnly:
       return IndexedDBNames::readonly;
 
-    case WebIDBTransactionModeReadWrite:
+    case kWebIDBTransactionModeReadWrite:
       return IndexedDBNames::readwrite;
 
-    case WebIDBTransactionModeVersionChange:
+    case kWebIDBTransactionModeVersionChange:
       return IndexedDBNames::versionchange;
   }
 
@@ -467,35 +467,35 @@ const String& IDBTransaction::mode() const {
 }
 
 DOMStringList* IDBTransaction::objectStoreNames() const {
-  if (isVersionChange())
-    return m_database->objectStoreNames();
+  if (IsVersionChange())
+    return database_->objectStoreNames();
 
-  DOMStringList* objectStoreNames = DOMStringList::create();
-  for (const String& objectStoreName : m_scope)
-    objectStoreNames->append(objectStoreName);
-  objectStoreNames->sort();
-  return objectStoreNames;
+  DOMStringList* object_store_names = DOMStringList::Create();
+  for (const String& object_store_name : scope_)
+    object_store_names->Append(object_store_name);
+  object_store_names->Sort();
+  return object_store_names;
 }
 
-const AtomicString& IDBTransaction::interfaceName() const {
+const AtomicString& IDBTransaction::InterfaceName() const {
   return EventTargetNames::IDBTransaction;
 }
 
-ExecutionContext* IDBTransaction::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
+ExecutionContext* IDBTransaction::GetExecutionContext() const {
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
-DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
+DispatchEventResult IDBTransaction::DispatchEventInternal(Event* event) {
   IDB_TRACE("IDBTransaction::dispatchEvent");
-  if (!getExecutionContext()) {
-    m_state = Finished;
-    return DispatchEventResult::CanceledBeforeDispatch;
+  if (!GetExecutionContext()) {
+    state_ = kFinished;
+    return DispatchEventResult::kCanceledBeforeDispatch;
   }
-  DCHECK_NE(m_state, Finished);
-  DCHECK(m_hasPendingActivity);
-  DCHECK(getExecutionContext());
+  DCHECK_NE(state_, kFinished);
+  DCHECK(has_pending_activity_);
+  DCHECK(GetExecutionContext());
   DCHECK_EQ(event->target(), this);
-  m_state = Finished;
+  state_ = kFinished;
 
   HeapVector<Member<EventTarget>> targets;
   targets.push_back(this);
@@ -505,103 +505,103 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
   // change.
   DCHECK(event->type() == EventTypeNames::complete ||
          event->type() == EventTypeNames::abort);
-  DispatchEventResult dispatchResult =
-      IDBEventDispatcher::dispatch(event, targets);
+  DispatchEventResult dispatch_result =
+      IDBEventDispatcher::Dispatch(event, targets);
   // FIXME: Try to construct a test where |this| outlives openDBRequest and we
   // get a crash.
-  if (m_openDBRequest) {
-    DCHECK(isVersionChange());
-    m_openDBRequest->transactionDidFinishAndDispatch();
+  if (open_db_request_) {
+    DCHECK(IsVersionChange());
+    open_db_request_->TransactionDidFinishAndDispatch();
   }
-  m_hasPendingActivity = false;
-  return dispatchResult;
+  has_pending_activity_ = false;
+  return dispatch_result;
 }
 
-void IDBTransaction::enqueueEvent(Event* event) {
-  DCHECK_NE(m_state, Finished)
+void IDBTransaction::EnqueueEvent(Event* event) {
+  DCHECK_NE(state_, kFinished)
       << "A finished transaction tried to enqueue an event of type "
       << event->type() << ".";
-  if (!getExecutionContext())
+  if (!GetExecutionContext())
     return;
 
-  EventQueue* eventQueue = getExecutionContext()->getEventQueue();
-  event->setTarget(this);
-  eventQueue->enqueueEvent(event);
+  EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
+  event->SetTarget(this);
+  event_queue->EnqueueEvent(event);
 }
 
-void IDBTransaction::abortOutstandingRequests() {
-  for (IDBRequest* request : m_requestList)
-    request->abort();
-  m_requestList.clear();
+void IDBTransaction::AbortOutstandingRequests() {
+  for (IDBRequest* request : request_list_)
+    request->Abort();
+  request_list_.Clear();
 }
 
-void IDBTransaction::revertDatabaseMetadata() {
-  DCHECK_NE(m_state, Active);
-  if (!isVersionChange())
+void IDBTransaction::RevertDatabaseMetadata() {
+  DCHECK_NE(state_, kActive);
+  if (!IsVersionChange())
     return;
 
   // Mark stores created by this transaction as deleted.
-  for (auto& objectStore : m_objectStoreMap.values()) {
-    const int64_t objectStoreId = objectStore->id();
-    if (!objectStore->isNewlyCreated()) {
-      DCHECK(m_oldStoreMetadata.contains(objectStore));
+  for (auto& object_store : object_store_map_.Values()) {
+    const int64_t object_store_id = object_store->Id();
+    if (!object_store->IsNewlyCreated()) {
+      DCHECK(old_store_metadata_.Contains(object_store));
       continue;
     }
 
-    DCHECK(!m_oldStoreMetadata.contains(objectStore));
-    m_database->revertObjectStoreCreation(objectStoreId);
-    objectStore->markDeleted();
+    DCHECK(!old_store_metadata_.Contains(object_store));
+    database_->RevertObjectStoreCreation(object_store_id);
+    object_store->MarkDeleted();
   }
 
-  for (auto& it : m_oldStoreMetadata) {
-    IDBObjectStore* objectStore = it.key;
-    RefPtr<IDBObjectStoreMetadata> oldMetadata = it.value;
+  for (auto& it : old_store_metadata_) {
+    IDBObjectStore* object_store = it.key;
+    RefPtr<IDBObjectStoreMetadata> old_metadata = it.value;
 
-    m_database->revertObjectStoreMetadata(oldMetadata);
-    objectStore->revertMetadata(oldMetadata);
+    database_->RevertObjectStoreMetadata(old_metadata);
+    object_store->RevertMetadata(old_metadata);
   }
-  for (auto& index : m_deletedIndexes)
-    index->objectStore()->revertDeletedIndexMetadata(*index);
-  for (auto& oldMedata : m_deletedObjectStores)
-    m_database->revertObjectStoreMetadata(std::move(oldMedata));
+  for (auto& index : deleted_indexes_)
+    index->objectStore()->RevertDeletedIndexMetadata(*index);
+  for (auto& old_medata : deleted_object_stores_)
+    database_->RevertObjectStoreMetadata(std::move(old_medata));
 
   // We only need to revert the database's own metadata because we have reverted
   // the metadata for the database's object stores above.
-  m_database->setDatabaseMetadata(m_oldDatabaseMetadata);
+  database_->SetDatabaseMetadata(old_database_metadata_);
 }
 
-void IDBTransaction::finished() {
+void IDBTransaction::Finished() {
 #if DCHECK_IS_ON()
-  DCHECK(!m_finishCalled);
-  m_finishCalled = true;
+  DCHECK(!finish_called_);
+  finish_called_ = true;
 #endif  // DCHECK_IS_ON()
 
-  m_database->transactionFinished(this);
+  database_->TransactionFinished(this);
 
   // Remove references to the IDBObjectStore and IDBIndex instances held by
   // this transaction, so Oilpan can garbage-collect the instances that aren't
   // used by JavaScript.
 
-  for (auto& it : m_objectStoreMap) {
-    IDBObjectStore* objectStore = it.value;
-    if (!isVersionChange() || objectStore->isNewlyCreated()) {
-      DCHECK(!m_oldStoreMetadata.contains(objectStore));
-      objectStore->clearIndexCache();
+  for (auto& it : object_store_map_) {
+    IDBObjectStore* object_store = it.value;
+    if (!IsVersionChange() || object_store->IsNewlyCreated()) {
+      DCHECK(!old_store_metadata_.Contains(object_store));
+      object_store->ClearIndexCache();
     } else {
       // We'll call clearIndexCache() on this store in the loop below.
-      DCHECK(m_oldStoreMetadata.contains(objectStore));
+      DCHECK(old_store_metadata_.Contains(object_store));
     }
   }
-  m_objectStoreMap.clear();
+  object_store_map_.Clear();
 
-  for (auto& it : m_oldStoreMetadata) {
-    IDBObjectStore* objectStore = it.key;
-    objectStore->clearIndexCache();
+  for (auto& it : old_store_metadata_) {
+    IDBObjectStore* object_store = it.key;
+    object_store->ClearIndexCache();
   }
-  m_oldStoreMetadata.clear();
+  old_store_metadata_.Clear();
 
-  m_deletedIndexes.clear();
-  m_deletedObjectStores.clear();
+  deleted_indexes_.Clear();
+  deleted_object_stores_.Clear();
 }
 
 }  // namespace blink

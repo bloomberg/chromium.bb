@@ -29,23 +29,23 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   class Entry;
 
  public:
-  static ModuleMap* create(Modulator* modulator) {
+  static ModuleMap* Create(Modulator* modulator) {
     return new ModuleMap(modulator);
   }
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
-  void fetchSingleModuleScript(const ModuleScriptFetchRequest&,
+  void FetchSingleModuleScript(const ModuleScriptFetchRequest&,
                                ModuleGraphLevel,
                                SingleModuleClient*);
 
   // Synchronously get the ModuleScript for a given URL.
   // Note: fetchSingleModuleScript of the ModuleScript must be complete before
   // calling this.
-  ModuleScript* getFetchedModuleScript(const KURL&) const;
+  ModuleScript* GetFetchedModuleScript(const KURL&) const;
 
-  Modulator* modulator() { return m_modulator; }
+  Modulator* GetModulator() { return modulator_; }
 
  private:
   explicit ModuleMap(Modulator*);
@@ -53,9 +53,9 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   using MapImpl = HeapHashMap<KURL, TraceWrapperMember<Entry>>;
 
   // A module map is a map of absolute URLs to map entry.
-  MapImpl m_map;
+  MapImpl map_;
 
-  Member<Modulator> m_modulator;
+  Member<Modulator> modulator_;
 };
 
 }  // namespace blink

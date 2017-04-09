@@ -61,7 +61,7 @@ class GCCallbackTest : public testing::Test {
     // We need a context that has been initialized by blink; grab the main world
     // context from the web frame.
     v8::Local<v8::Context> local_v8_context =
-        web_frame_.frame()->mainWorldScriptContext();
+        web_frame_.frame()->MainWorldScriptContext();
     DCHECK(!local_v8_context.IsEmpty());
     v8_context_.Reset(isolate, local_v8_context);
   }

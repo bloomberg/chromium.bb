@@ -50,7 +50,7 @@ class Scrollbar;
 // List-based hit test testing can continue even after a hit has been found.
 // This is used to support fuzzy matching with rect-based hit tests as well as
 // penetrating tests which collect all nodes (see: HitTestRequest::RequestType).
-enum ListBasedHitTestBehavior { ContinueHitTesting, StopHitTesting };
+enum ListBasedHitTestBehavior { kContinueHitTesting, kStopHitTesting };
 
 class CORE_EXPORT HitTestResult {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -62,158 +62,160 @@ class CORE_EXPORT HitTestResult {
   HitTestResult(const HitTestRequest&, const LayoutPoint&);
   // Pass positive padding values to perform a rect-based hit test.
   HitTestResult(const HitTestRequest&,
-                const LayoutPoint& centerPoint,
-                unsigned topPadding,
-                unsigned rightPadding,
-                unsigned bottomPadding,
-                unsigned leftPadding);
+                const LayoutPoint& center_point,
+                unsigned top_padding,
+                unsigned right_padding,
+                unsigned bottom_padding,
+                unsigned left_padding);
   HitTestResult(const HitTestRequest&, const HitTestLocation&);
   HitTestResult(const HitTestResult&);
   ~HitTestResult();
   HitTestResult& operator=(const HitTestResult&);
   DECLARE_TRACE();
 
-  bool equalForCacheability(const HitTestResult&) const;
-  void cacheValues(const HitTestResult&);
+  bool EqualForCacheability(const HitTestResult&) const;
+  void CacheValues(const HitTestResult&);
 
   // Populate this object based on another HitTestResult; similar to assignment
   // operator but don't assign any of the request parameters. ie. This method
   // avoids setting |m_hitTestLocation|, |m_hitTestRequest|.
-  void populateFromCachedResult(const HitTestResult&);
+  void PopulateFromCachedResult(const HitTestResult&);
 
   // For point-based hit tests, these accessors provide information about the
   // node under the point. For rect-based hit tests they are meaningless
   // (reflect the last candidate node observed in the rect).
   // FIXME: Make these less error-prone for rect-based hit tests (center point
   // or fail).
-  Node* innerNode() const { return m_innerNode.get(); }
-  Node* innerPossiblyPseudoNode() const {
-    return m_innerPossiblyPseudoNode.get();
+  Node* InnerNode() const { return inner_node_.Get(); }
+  Node* InnerPossiblyPseudoNode() const {
+    return inner_possibly_pseudo_node_.Get();
   }
-  Element* innerElement() const;
+  Element* InnerElement() const;
 
   // If innerNode is an image map or image map area, return the associated image
   // node.
-  Node* innerNodeOrImageMapImage() const;
+  Node* InnerNodeOrImageMapImage() const;
 
-  Element* URLElement() const { return m_innerURLElement.get(); }
-  Scrollbar* scrollbar() const { return m_scrollbar.get(); }
-  bool isOverFrameViewBase() const { return m_isOverFrameViewBase; }
+  Element* URLElement() const { return inner_url_element_.Get(); }
+  Scrollbar* GetScrollbar() const { return scrollbar_.Get(); }
+  bool IsOverFrameViewBase() const { return is_over_frame_view_base_; }
 
   // Forwarded from HitTestLocation
-  bool isRectBasedTest() const { return m_hitTestLocation.isRectBasedTest(); }
+  bool IsRectBasedTest() const { return hit_test_location_.IsRectBasedTest(); }
 
   // The hit-tested point in the coordinates of the main frame.
-  const LayoutPoint& pointInMainFrame() const {
-    return m_hitTestLocation.point();
+  const LayoutPoint& PointInMainFrame() const {
+    return hit_test_location_.Point();
   }
-  IntPoint roundedPointInMainFrame() const {
-    return roundedIntPoint(pointInMainFrame());
+  IntPoint RoundedPointInMainFrame() const {
+    return RoundedIntPoint(PointInMainFrame());
   }
 
   // The hit-tested point in the coordinates of the innerNode frame, the frame
   // containing innerNode.
-  const LayoutPoint& pointInInnerNodeFrame() const {
-    return m_pointInInnerNodeFrame;
+  const LayoutPoint& PointInInnerNodeFrame() const {
+    return point_in_inner_node_frame_;
   }
-  IntPoint roundedPointInInnerNodeFrame() const {
-    return roundedIntPoint(pointInInnerNodeFrame());
+  IntPoint RoundedPointInInnerNodeFrame() const {
+    return RoundedIntPoint(PointInInnerNodeFrame());
   }
-  LocalFrame* innerNodeFrame() const;
+  LocalFrame* InnerNodeFrame() const;
 
   // The hit-tested point in the coordinates of the inner node.
-  const LayoutPoint& localPoint() const { return m_localPoint; }
-  void setNodeAndPosition(Node* node, const LayoutPoint& p) {
-    m_localPoint = p;
-    setInnerNode(node);
+  const LayoutPoint& LocalPoint() const { return local_point_; }
+  void SetNodeAndPosition(Node* node, const LayoutPoint& p) {
+    local_point_ = p;
+    SetInnerNode(node);
   }
 
-  PositionWithAffinity position() const;
-  LayoutObject* layoutObject() const;
+  PositionWithAffinity GetPosition() const;
+  LayoutObject* GetLayoutObject() const;
 
-  void setToShadowHostIfInRestrictedShadowRoot();
+  void SetToShadowHostIfInRestrictedShadowRoot();
 
-  const HitTestLocation& hitTestLocation() const { return m_hitTestLocation; }
-  const HitTestRequest& hitTestRequest() const { return m_hitTestRequest; }
+  const HitTestLocation& GetHitTestLocation() const {
+    return hit_test_location_;
+  }
+  const HitTestRequest& GetHitTestRequest() const { return hit_test_request_; }
 
-  void setInnerNode(Node*);
-  HTMLAreaElement* imageAreaForImage() const;
-  void setURLElement(Element*);
-  void setScrollbar(Scrollbar*);
-  void setIsOverFrameViewBase(bool b) { m_isOverFrameViewBase = b; }
+  void SetInnerNode(Node*);
+  HTMLAreaElement* ImageAreaForImage() const;
+  void SetURLElement(Element*);
+  void SetScrollbar(Scrollbar*);
+  void SetIsOverFrameViewBase(bool b) { is_over_frame_view_base_ = b; }
 
-  bool isSelected() const;
-  String title(TextDirection&) const;
-  const AtomicString& altDisplayString() const;
-  Image* image() const;
-  IntRect imageRect() const;
-  KURL absoluteImageURL() const;
-  KURL absoluteMediaURL() const;
-  KURL absoluteLinkURL() const;
-  String textContent() const;
-  bool isLiveLink() const;
-  bool isContentEditable() const;
+  bool IsSelected() const;
+  String Title(TextDirection&) const;
+  const AtomicString& AltDisplayString() const;
+  Image* GetImage() const;
+  IntRect ImageRect() const;
+  KURL AbsoluteImageURL() const;
+  KURL AbsoluteMediaURL() const;
+  KURL AbsoluteLinkURL() const;
+  String TextContent() const;
+  bool IsLiveLink() const;
+  bool IsContentEditable() const;
 
-  const String& canvasRegionId() const { return m_canvasRegionId; }
-  void setCanvasRegionId(const String& id) { m_canvasRegionId = id; }
+  const String& CanvasRegionId() const { return canvas_region_id_; }
+  void SetCanvasRegionId(const String& id) { canvas_region_id_ = id; }
 
-  bool isOverLink() const;
+  bool IsOverLink() const;
 
-  bool isCacheable() const { return m_cacheable; }
-  void setCacheable(bool cacheable) { m_cacheable = cacheable; }
+  bool IsCacheable() const { return cacheable_; }
+  void SetCacheable(bool cacheable) { cacheable_ = cacheable; }
 
   // TODO(pdr): When using the default rect argument, this function does not
   // check if the tapped area is entirely contained by the HitTestLocation's
   // bounding box. Callers should pass a LayoutRect as the third parameter so
   // hit testing can early-out when a tapped area is covered.
-  ListBasedHitTestBehavior addNodeToListBasedTestResult(
+  ListBasedHitTestBehavior AddNodeToListBasedTestResult(
       Node*,
       const HitTestLocation&,
       const LayoutRect& = LayoutRect());
-  ListBasedHitTestBehavior addNodeToListBasedTestResult(Node*,
+  ListBasedHitTestBehavior AddNodeToListBasedTestResult(Node*,
                                                         const HitTestLocation&,
                                                         const Region&);
 
-  void append(const HitTestResult&);
+  void Append(const HitTestResult&);
 
   // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return
   // *m_listBasedTestResult. Lazy allocation makes sense because the NodeSet is
   // seldom necessary, and it's somewhat expensive to allocate and initialize.
   // This method does the same thing as mutableListBasedTestResult(), but here
   // the return value is const.
-  const NodeSet& listBasedTestResult() const;
+  const NodeSet& ListBasedTestResult() const;
 
   // Collapse the rect-based test result into a single target at the specified
   // location.
-  void resolveRectBasedTest(Node* resolvedInnerNode,
-                            const LayoutPoint& resolvedPointInMainFrame);
+  void ResolveRectBasedTest(Node* resolved_inner_node,
+                            const LayoutPoint& resolved_point_in_main_frame);
 
  private:
-  NodeSet& mutableListBasedTestResult();  // See above.
-  HTMLMediaElement* mediaElement() const;
+  NodeSet& MutableListBasedTestResult();  // See above.
+  HTMLMediaElement* MediaElement() const;
 
-  HitTestLocation m_hitTestLocation;
-  HitTestRequest m_hitTestRequest;
-  bool m_cacheable;
+  HitTestLocation hit_test_location_;
+  HitTestRequest hit_test_request_;
+  bool cacheable_;
 
-  Member<Node> m_innerNode;
-  Member<Node> m_innerPossiblyPseudoNode;
+  Member<Node> inner_node_;
+  Member<Node> inner_possibly_pseudo_node_;
   // FIXME: Nothing changes this to a value different from m_hitTestLocation!
   // The hit-tested point in innerNode frame coordinates.
-  LayoutPoint m_pointInInnerNodeFrame;
+  LayoutPoint point_in_inner_node_frame_;
   // A point in the local coordinate space of m_innerNode's layoutObject.Allows
   // us to efficiently determine where inside the layoutObject we hit on
   // subsequent operations.
-  LayoutPoint m_localPoint;
+  LayoutPoint local_point_;
   // For non-URL, this is the enclosing that triggers navigation.
-  Member<Element> m_innerURLElement;
-  Member<Scrollbar> m_scrollbar;
+  Member<Element> inner_url_element_;
+  Member<Scrollbar> scrollbar_;
   // Returns true if we are over a FrameViewBase (and not in the border/padding
   // area of a LayoutPart for example).
-  bool m_isOverFrameViewBase;
+  bool is_over_frame_view_base_;
 
-  mutable Member<NodeSet> m_listBasedTestResult;
-  String m_canvasRegionId;
+  mutable Member<NodeSet> list_based_test_result_;
+  String canvas_region_id_;
 };
 
 }  // namespace blink

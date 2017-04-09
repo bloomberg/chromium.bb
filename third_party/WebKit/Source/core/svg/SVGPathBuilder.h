@@ -35,32 +35,32 @@ class Path;
 
 class SVGPathBuilder final : public SVGPathConsumer {
  public:
-  SVGPathBuilder(Path& path) : m_path(path), m_lastCommand(PathSegUnknown) {}
+  SVGPathBuilder(Path& path) : path_(path), last_command_(kPathSegUnknown) {}
 
-  void emitSegment(const PathSegmentData&) override;
+  void EmitSegment(const PathSegmentData&) override;
 
  private:
-  void emitClose();
-  void emitMoveTo(const FloatPoint&);
-  void emitLineTo(const FloatPoint&);
-  void emitQuadTo(const FloatPoint&, const FloatPoint&);
-  void emitSmoothQuadTo(const FloatPoint&);
-  void emitCubicTo(const FloatPoint&, const FloatPoint&, const FloatPoint&);
-  void emitSmoothCubicTo(const FloatPoint&, const FloatPoint&);
-  void emitArcTo(const FloatPoint&,
+  void EmitClose();
+  void EmitMoveTo(const FloatPoint&);
+  void EmitLineTo(const FloatPoint&);
+  void EmitQuadTo(const FloatPoint&, const FloatPoint&);
+  void EmitSmoothQuadTo(const FloatPoint&);
+  void EmitCubicTo(const FloatPoint&, const FloatPoint&, const FloatPoint&);
+  void EmitSmoothCubicTo(const FloatPoint&, const FloatPoint&);
+  void EmitArcTo(const FloatPoint&,
                  const FloatSize&,
                  float,
-                 bool largeArc,
+                 bool large_arc,
                  bool sweep);
 
-  FloatPoint smoothControl(bool isSmooth) const;
+  FloatPoint SmoothControl(bool is_smooth) const;
 
-  Path& m_path;
+  Path& path_;
 
-  SVGPathSegType m_lastCommand;
-  FloatPoint m_subpathPoint;
-  FloatPoint m_currentPoint;
-  FloatPoint m_lastControlPoint;
+  SVGPathSegType last_command_;
+  FloatPoint subpath_point_;
+  FloatPoint current_point_;
+  FloatPoint last_control_point_;
 };
 
 }  // namespace blink

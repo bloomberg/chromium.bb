@@ -8,92 +8,92 @@
 
 namespace blink {
 
-constexpr int64_t IDBIndexMetadata::InvalidId;
+constexpr int64_t IDBIndexMetadata::kInvalidId;
 
-constexpr int64_t IDBObjectStoreMetadata::InvalidId;
+constexpr int64_t IDBObjectStoreMetadata::kInvalidId;
 
 IDBIndexMetadata::IDBIndexMetadata() = default;
 
 IDBIndexMetadata::IDBIndexMetadata(const String& name,
                                    int64_t id,
-                                   const IDBKeyPath& keyPath,
+                                   const IDBKeyPath& key_path,
                                    bool unique,
-                                   bool multiEntry)
+                                   bool multi_entry)
     : name(name),
       id(id),
-      keyPath(keyPath),
+      key_path(key_path),
       unique(unique),
-      multiEntry(multiEntry) {}
+      multi_entry(multi_entry) {}
 
 IDBObjectStoreMetadata::IDBObjectStoreMetadata() = default;
 
 IDBObjectStoreMetadata::IDBObjectStoreMetadata(const String& name,
                                                int64_t id,
-                                               const IDBKeyPath& keyPath,
-                                               bool autoIncrement,
-                                               int64_t maxIndexId)
+                                               const IDBKeyPath& key_path,
+                                               bool auto_increment,
+                                               int64_t max_index_id)
     : name(name),
       id(id),
-      keyPath(keyPath),
-      autoIncrement(autoIncrement),
-      maxIndexId(maxIndexId) {}
+      key_path(key_path),
+      auto_increment(auto_increment),
+      max_index_id(max_index_id) {}
 
-RefPtr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::createCopy() const {
-  RefPtr<IDBObjectStoreMetadata> copy = adoptRef(
-      new IDBObjectStoreMetadata(name, id, keyPath, autoIncrement, maxIndexId));
+RefPtr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy() const {
+  RefPtr<IDBObjectStoreMetadata> copy = AdoptRef(new IDBObjectStoreMetadata(
+      name, id, key_path, auto_increment, max_index_id));
 
   for (const auto& it : indexes) {
-    IDBIndexMetadata* index = it.value.get();
-    RefPtr<IDBIndexMetadata> indexCopy =
-        adoptRef(new IDBIndexMetadata(index->name, index->id, index->keyPath,
-                                      index->unique, index->multiEntry));
-    copy->indexes.insert(it.key, std::move(indexCopy));
+    IDBIndexMetadata* index = it.value.Get();
+    RefPtr<IDBIndexMetadata> index_copy =
+        AdoptRef(new IDBIndexMetadata(index->name, index->id, index->key_path,
+                                      index->unique, index->multi_entry));
+    copy->indexes.insert(it.key, std::move(index_copy));
   }
   return copy;
 }
 
 IDBDatabaseMetadata::IDBDatabaseMetadata()
-    : version(IDBDatabaseMetadata::NoVersion) {}
+    : version(IDBDatabaseMetadata::kNoVersion) {}
 
 IDBDatabaseMetadata::IDBDatabaseMetadata(const String& name,
                                          int64_t id,
                                          int64_t version,
-                                         int64_t maxObjectStoreId)
+                                         int64_t max_object_store_id)
     : name(name),
       id(id),
       version(version),
-      maxObjectStoreId(maxObjectStoreId) {}
+      max_object_store_id(max_object_store_id) {}
 
-IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& webMetadata)
-    : name(webMetadata.name),
-      id(webMetadata.id),
-      version(webMetadata.version),
-      maxObjectStoreId(webMetadata.maxObjectStoreId) {
-  for (size_t i = 0; i < webMetadata.objectStores.size(); ++i) {
-    const WebIDBMetadata::ObjectStore& webObjectStore =
-        webMetadata.objectStores[i];
-    RefPtr<IDBObjectStoreMetadata> objectStore =
-        adoptRef(new IDBObjectStoreMetadata(
-            webObjectStore.name, webObjectStore.id,
-            IDBKeyPath(webObjectStore.keyPath), webObjectStore.autoIncrement,
-            webObjectStore.maxIndexId));
+IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
+    : name(web_metadata.name),
+      id(web_metadata.id),
+      version(web_metadata.version),
+      max_object_store_id(web_metadata.max_object_store_id) {
+  for (size_t i = 0; i < web_metadata.object_stores.size(); ++i) {
+    const WebIDBMetadata::ObjectStore& web_object_store =
+        web_metadata.object_stores[i];
+    RefPtr<IDBObjectStoreMetadata> object_store =
+        AdoptRef(new IDBObjectStoreMetadata(
+            web_object_store.name, web_object_store.id,
+            IDBKeyPath(web_object_store.key_path),
+            web_object_store.auto_increment, web_object_store.max_index_id));
 
-    for (size_t j = 0; j < webObjectStore.indexes.size(); ++j) {
-      const WebIDBMetadata::Index& webIndex = webObjectStore.indexes[j];
-      RefPtr<IDBIndexMetadata> index = adoptRef(new IDBIndexMetadata(
-          webIndex.name, webIndex.id, IDBKeyPath(webIndex.keyPath),
-          webIndex.unique, webIndex.multiEntry));
-      objectStore->indexes.set(webIndex.id, std::move(index));
+    for (size_t j = 0; j < web_object_store.indexes.size(); ++j) {
+      const WebIDBMetadata::Index& web_index = web_object_store.indexes[j];
+      RefPtr<IDBIndexMetadata> index = AdoptRef(new IDBIndexMetadata(
+          web_index.name, web_index.id, IDBKeyPath(web_index.key_path),
+          web_index.unique, web_index.multi_entry));
+      object_store->indexes.Set(web_index.id, std::move(index));
     }
-    objectStores.set(webObjectStore.id, std::move(objectStore));
+    object_stores.Set(web_object_store.id, std::move(object_store));
   }
 }
 
-void IDBDatabaseMetadata::copyFrom(const IDBDatabaseMetadata& metadata) {
+void IDBDatabaseMetadata::CopyFrom(const IDBDatabaseMetadata& metadata) {
   name = metadata.name;
   id = metadata.id;
   version = metadata.version;
-  maxObjectStoreId = metadata.maxObjectStoreId;
+  max_object_store_id = metadata.max_object_store_id;
 }
 
 }  // namespace blink

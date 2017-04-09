@@ -19,37 +19,37 @@ class PositionError;
 
 class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
  public:
-  static GeoNotifier* create(Geolocation* geolocation,
-                             PositionCallback* positionCallback,
-                             PositionErrorCallback* positionErrorCallback,
+  static GeoNotifier* Create(Geolocation* geolocation,
+                             PositionCallback* position_callback,
+                             PositionErrorCallback* position_error_callback,
                              const PositionOptions& options) {
-    return new GeoNotifier(geolocation, positionCallback, positionErrorCallback,
-                           options);
+    return new GeoNotifier(geolocation, position_callback,
+                           position_error_callback, options);
   }
   DECLARE_TRACE();
 
-  const PositionOptions& options() const { return m_options; }
+  const PositionOptions& Options() const { return options_; }
 
   // Sets the given error as the fatal error if there isn't one yet.
   // Starts the timer with an interval of 0.
-  void setFatalError(PositionError*);
+  void SetFatalError(PositionError*);
 
-  bool useCachedPosition() const { return m_useCachedPosition; }
+  bool UseCachedPosition() const { return use_cached_position_; }
 
   // Tells the notifier to use a cached position and starts its timer with
   // an interval of 0.
-  void setUseCachedPosition();
+  void SetUseCachedPosition();
 
-  void runSuccessCallback(Geoposition*);
-  void runErrorCallback(PositionError*);
+  void RunSuccessCallback(Geoposition*);
+  void RunErrorCallback(PositionError*);
 
-  void startTimer();
-  void stopTimer();
+  void StartTimer();
+  void StopTimer();
 
   // Runs the error callback if there is a fatal error. Otherwise, if a
   // cached position must be used, registers itself for receiving one.
   // Otherwise, the notifier has expired, and its error callback is run.
-  void timerFired(TimerBase*);
+  void TimerFired(TimerBase*);
 
  private:
   GeoNotifier(Geolocation*,
@@ -57,13 +57,13 @@ class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
               PositionErrorCallback*,
               const PositionOptions&);
 
-  Member<Geolocation> m_geolocation;
-  Member<PositionCallback> m_successCallback;
-  Member<PositionErrorCallback> m_errorCallback;
-  const PositionOptions m_options;
-  Timer<GeoNotifier> m_timer;
-  Member<PositionError> m_fatalError;
-  bool m_useCachedPosition;
+  Member<Geolocation> geolocation_;
+  Member<PositionCallback> success_callback_;
+  Member<PositionErrorCallback> error_callback_;
+  const PositionOptions options_;
+  Timer<GeoNotifier> timer_;
+  Member<PositionError> fatal_error_;
+  bool use_cached_position_;
 };
 
 }  // namespace blink

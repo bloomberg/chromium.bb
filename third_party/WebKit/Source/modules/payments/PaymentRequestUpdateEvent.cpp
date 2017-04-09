@@ -20,143 +20,143 @@ namespace {
 
 // Reject the payment request if the page does not resolve the promise from
 // updateWith within 60 seconds.
-static const int abortTimeout = 60;
+static const int kAbortTimeout = 60;
 
 class UpdatePaymentDetailsFunction : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> createFunction(ScriptState* scriptState,
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 PaymentUpdater* updater) {
     UpdatePaymentDetailsFunction* self =
-        new UpdatePaymentDetailsFunction(scriptState, updater);
-    return self->bindToV8Function();
+        new UpdatePaymentDetailsFunction(script_state, updater);
+    return self->BindToV8Function();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_updater);
-    ScriptFunction::trace(visitor);
+    visitor->Trace(updater_);
+    ScriptFunction::Trace(visitor);
   }
 
  private:
-  UpdatePaymentDetailsFunction(ScriptState* scriptState,
+  UpdatePaymentDetailsFunction(ScriptState* script_state,
                                PaymentUpdater* updater)
-      : ScriptFunction(scriptState), m_updater(updater) {
-    DCHECK(m_updater);
+      : ScriptFunction(script_state), updater_(updater) {
+    DCHECK(updater_);
   }
 
-  ScriptValue call(ScriptValue value) override {
-    m_updater->onUpdatePaymentDetails(value);
+  ScriptValue Call(ScriptValue value) override {
+    updater_->OnUpdatePaymentDetails(value);
     return ScriptValue();
   }
 
-  Member<PaymentUpdater> m_updater;
+  Member<PaymentUpdater> updater_;
 };
 
 class UpdatePaymentDetailsErrorFunction : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> createFunction(ScriptState* scriptState,
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 PaymentUpdater* updater) {
     UpdatePaymentDetailsErrorFunction* self =
-        new UpdatePaymentDetailsErrorFunction(scriptState, updater);
-    return self->bindToV8Function();
+        new UpdatePaymentDetailsErrorFunction(script_state, updater);
+    return self->BindToV8Function();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_updater);
-    ScriptFunction::trace(visitor);
+    visitor->Trace(updater_);
+    ScriptFunction::Trace(visitor);
   }
 
  private:
-  UpdatePaymentDetailsErrorFunction(ScriptState* scriptState,
+  UpdatePaymentDetailsErrorFunction(ScriptState* script_state,
                                     PaymentUpdater* updater)
-      : ScriptFunction(scriptState), m_updater(updater) {
-    DCHECK(m_updater);
+      : ScriptFunction(script_state), updater_(updater) {
+    DCHECK(updater_);
   }
 
-  ScriptValue call(ScriptValue value) override {
-    m_updater->onUpdatePaymentDetailsFailure(
-        toCoreString(value.v8Value()
-                         ->ToString(getScriptState()->context())
+  ScriptValue Call(ScriptValue value) override {
+    updater_->OnUpdatePaymentDetailsFailure(
+        ToCoreString(value.V8Value()
+                         ->ToString(GetScriptState()->GetContext())
                          .ToLocalChecked()));
     return ScriptValue();
   }
 
-  Member<PaymentUpdater> m_updater;
+  Member<PaymentUpdater> updater_;
 };
 
 }  // namespace
 
 PaymentRequestUpdateEvent::~PaymentRequestUpdateEvent() {}
 
-PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::create(
-    ExecutionContext* executionContext,
+PaymentRequestUpdateEvent* PaymentRequestUpdateEvent::Create(
+    ExecutionContext* execution_context,
     const AtomicString& type,
     const PaymentRequestUpdateEventInit& init) {
-  return new PaymentRequestUpdateEvent(executionContext, type, init);
+  return new PaymentRequestUpdateEvent(execution_context, type, init);
 }
 
-void PaymentRequestUpdateEvent::setPaymentDetailsUpdater(
+void PaymentRequestUpdateEvent::SetPaymentDetailsUpdater(
     PaymentUpdater* updater) {
-  DCHECK(!m_abortTimer.isActive());
-  m_abortTimer.startOneShot(abortTimeout, BLINK_FROM_HERE);
-  m_updater = updater;
+  DCHECK(!abort_timer_.IsActive());
+  abort_timer_.StartOneShot(kAbortTimeout, BLINK_FROM_HERE);
+  updater_ = updater;
 }
 
-void PaymentRequestUpdateEvent::updateWith(ScriptState* scriptState,
+void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
                                            ScriptPromise promise,
-                                           ExceptionState& exceptionState) {
-  if (!m_updater)
+                                           ExceptionState& exception_state) {
+  if (!updater_)
     return;
 
-  if (!isBeingDispatched()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+  if (!IsBeingDispatched()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "Cannot update details when the event is not being dispatched");
     return;
   }
 
-  if (m_waitForUpdate) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Cannot update details twice");
+  if (wait_for_update_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "Cannot update details twice");
     return;
   }
 
   stopPropagation();
   stopImmediatePropagation();
-  m_waitForUpdate = true;
-  m_abortTimer.stop();
+  wait_for_update_ = true;
+  abort_timer_.Stop();
 
-  promise.then(
-      UpdatePaymentDetailsFunction::createFunction(scriptState, m_updater),
-      UpdatePaymentDetailsErrorFunction::createFunction(scriptState,
-                                                        m_updater));
+  promise.Then(
+      UpdatePaymentDetailsFunction::CreateFunction(script_state, updater_),
+      UpdatePaymentDetailsErrorFunction::CreateFunction(script_state,
+                                                        updater_));
 }
 
 DEFINE_TRACE(PaymentRequestUpdateEvent) {
-  visitor->trace(m_updater);
-  Event::trace(visitor);
+  visitor->Trace(updater_);
+  Event::Trace(visitor);
 }
 
-void PaymentRequestUpdateEvent::onUpdateEventTimeoutForTesting() {
-  onUpdateEventTimeout(0);
+void PaymentRequestUpdateEvent::OnUpdateEventTimeoutForTesting() {
+  OnUpdateEventTimeout(0);
 }
 
-void PaymentRequestUpdateEvent::onUpdateEventTimeout(TimerBase*) {
-  if (!m_updater)
+void PaymentRequestUpdateEvent::OnUpdateEventTimeout(TimerBase*) {
+  if (!updater_)
     return;
 
-  m_updater->onUpdatePaymentDetailsFailure(
+  updater_->OnUpdatePaymentDetailsFailure(
       "Timed out as the page didn't resolve the promise from change event");
 }
 
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     const AtomicString& type,
     const PaymentRequestUpdateEventInit& init)
     : Event(type, init),
-      m_waitForUpdate(false),
-      m_abortTimer(
-          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, executionContext),
+      wait_for_update_(false),
+      abort_timer_(
+          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, execution_context),
           this,
-          &PaymentRequestUpdateEvent::onUpdateEventTimeout) {}
+          &PaymentRequestUpdateEvent::OnUpdateEventTimeout) {}
 
 }  // namespace blink

@@ -8,40 +8,40 @@
 
 namespace blink {
 
-DetectedBarcode* DetectedBarcode::create() {
-  HeapVector<Point2D> emptyList;
-  return new DetectedBarcode(emptyString, DOMRect::create(0, 0, 0, 0),
-                             emptyList);
+DetectedBarcode* DetectedBarcode::Create() {
+  HeapVector<Point2D> empty_list;
+  return new DetectedBarcode(g_empty_string, DOMRect::Create(0, 0, 0, 0),
+                             empty_list);
 }
 
-DetectedBarcode* DetectedBarcode::create(String rawValue,
-                                         DOMRect* boundingBox,
-                                         HeapVector<Point2D> cornerPoints) {
-  return new DetectedBarcode(rawValue, boundingBox, cornerPoints);
+DetectedBarcode* DetectedBarcode::Create(String raw_value,
+                                         DOMRect* bounding_box,
+                                         HeapVector<Point2D> corner_points) {
+  return new DetectedBarcode(raw_value, bounding_box, corner_points);
 }
 
 const String& DetectedBarcode::rawValue() const {
-  return m_rawValue;
+  return raw_value_;
 }
 
 DOMRect* DetectedBarcode::boundingBox() const {
-  return m_boundingBox.get();
+  return bounding_box_.Get();
 }
 
 const HeapVector<Point2D>& DetectedBarcode::cornerPoints() const {
-  return m_cornerPoints;
+  return corner_points_;
 }
 
-DetectedBarcode::DetectedBarcode(String rawValue,
-                                 DOMRect* boundingBox,
-                                 HeapVector<Point2D> cornerPoints)
-    : m_rawValue(rawValue),
-      m_boundingBox(boundingBox),
-      m_cornerPoints(cornerPoints) {}
+DetectedBarcode::DetectedBarcode(String raw_value,
+                                 DOMRect* bounding_box,
+                                 HeapVector<Point2D> corner_points)
+    : raw_value_(raw_value),
+      bounding_box_(bounding_box),
+      corner_points_(corner_points) {}
 
 DEFINE_TRACE(DetectedBarcode) {
-  visitor->trace(m_boundingBox);
-  visitor->trace(m_cornerPoints);
+  visitor->Trace(bounding_box_);
+  visitor->Trace(corner_points_);
 }
 
 }  // namespace blink

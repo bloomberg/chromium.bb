@@ -42,40 +42,40 @@ class FormControlState {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  FormControlState() : m_type(TypeSkip) {}
-  explicit FormControlState(const String& value) : m_type(TypeRestore) {
-    m_values.push_back(value);
+  FormControlState() : type_(kTypeSkip) {}
+  explicit FormControlState(const String& value) : type_(kTypeRestore) {
+    values_.push_back(value);
   }
-  static FormControlState deserialize(const Vector<String>& stateVector,
+  static FormControlState Deserialize(const Vector<String>& state_vector,
                                       size_t& index);
   FormControlState(const FormControlState& another)
-      : m_type(another.m_type), m_values(another.m_values) {}
+      : type_(another.type_), values_(another.values_) {}
   FormControlState& operator=(const FormControlState&);
 
-  bool isFailure() const { return m_type == TypeFailure; }
-  size_t valueSize() const { return m_values.size(); }
-  const String& operator[](size_t i) const { return m_values[i]; }
-  void append(const String&);
-  void serializeTo(Vector<String>& stateVector) const;
+  bool IsFailure() const { return type_ == kTypeFailure; }
+  size_t ValueSize() const { return values_.size(); }
+  const String& operator[](size_t i) const { return values_[i]; }
+  void Append(const String&);
+  void SerializeTo(Vector<String>& state_vector) const;
 
  private:
-  enum Type { TypeSkip, TypeRestore, TypeFailure };
-  explicit FormControlState(Type type) : m_type(type) {}
+  enum Type { kTypeSkip, kTypeRestore, kTypeFailure };
+  explicit FormControlState(Type type) : type_(type) {}
 
-  Type m_type;
-  Vector<String> m_values;
+  Type type_;
+  Vector<String> values_;
 };
 
 inline FormControlState& FormControlState::operator=(
     const FormControlState& another) {
-  m_type = another.m_type;
-  m_values = another.m_values;
+  type_ = another.type_;
+  values_ = another.values_;
   return *this;
 }
 
-inline void FormControlState::append(const String& value) {
-  m_type = TypeRestore;
-  m_values.push_back(value);
+inline void FormControlState::Append(const String& value) {
+  type_ = kTypeRestore;
+  values_.push_back(value);
 }
 
 using SavedFormStateMap =
@@ -83,51 +83,51 @@ using SavedFormStateMap =
 
 class DocumentState final : public GarbageCollected<DocumentState> {
  public:
-  static DocumentState* create();
+  static DocumentState* Create();
   DECLARE_TRACE();
 
-  void addControl(HTMLFormControlElementWithState*);
-  void removeControl(HTMLFormControlElementWithState*);
-  Vector<String> toStateVector();
+  void AddControl(HTMLFormControlElementWithState*);
+  void RemoveControl(HTMLFormControlElementWithState*);
+  Vector<String> ToStateVector();
 
  private:
   using FormElementListHashSet =
       HeapListHashSet<Member<HTMLFormControlElementWithState>, 64>;
-  FormElementListHashSet m_formControls;
+  FormElementListHashSet form_controls_;
 };
 
 class FormController final : public GarbageCollectedFinalized<FormController> {
  public:
-  static FormController* create() { return new FormController; }
+  static FormController* Create() { return new FormController; }
   ~FormController();
   DECLARE_TRACE();
 
-  void registerStatefulFormControl(HTMLFormControlElementWithState&);
-  void unregisterStatefulFormControl(HTMLFormControlElementWithState&);
+  void RegisterStatefulFormControl(HTMLFormControlElementWithState&);
+  void UnregisterStatefulFormControl(HTMLFormControlElementWithState&);
   // This should be callled only by Document::formElementsState().
-  DocumentState* formElementsState() const;
+  DocumentState* FormElementsState() const;
   // This should be callled only by Document::setStateForNewFormElements().
-  void setStateForNewFormElements(const Vector<String>&);
+  void SetStateForNewFormElements(const Vector<String>&);
   // Returns true if saved state is set to this object and there are entries
   // which are not consumed yet.
-  bool hasFormStates() const;
-  void willDeleteForm(HTMLFormElement*);
-  void restoreControlStateFor(HTMLFormControlElementWithState&);
-  void restoreControlStateIn(HTMLFormElement&);
+  bool HasFormStates() const;
+  void WillDeleteForm(HTMLFormElement*);
+  void RestoreControlStateFor(HTMLFormControlElementWithState&);
+  void RestoreControlStateIn(HTMLFormElement&);
 
-  static Vector<String> getReferencedFilePaths(
-      const Vector<String>& stateVector);
+  static Vector<String> GetReferencedFilePaths(
+      const Vector<String>& state_vector);
 
  private:
   FormController();
-  FormControlState takeStateForFormElement(
+  FormControlState TakeStateForFormElement(
       const HTMLFormControlElementWithState&);
-  static void formStatesFromStateVector(const Vector<String>&,
+  static void FormStatesFromStateVector(const Vector<String>&,
                                         SavedFormStateMap&);
 
-  Member<DocumentState> m_documentState;
-  SavedFormStateMap m_savedFormStateMap;
-  Member<FormKeyGenerator> m_formKeyGenerator;
+  Member<DocumentState> document_state_;
+  SavedFormStateMap saved_form_state_map_;
+  Member<FormKeyGenerator> form_key_generator_;
 };
 
 }  // namespace blink

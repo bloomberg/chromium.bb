@@ -30,62 +30,62 @@
 
 namespace blink {
 
-const AtomicString& FocusEvent::interfaceName() const {
+const AtomicString& FocusEvent::InterfaceName() const {
   return EventNames::FocusEvent;
 }
 
-bool FocusEvent::isFocusEvent() const {
+bool FocusEvent::IsFocusEvent() const {
   return true;
 }
 
 FocusEvent::FocusEvent() {}
 
 FocusEvent::FocusEvent(const AtomicString& type,
-                       bool canBubble,
+                       bool can_bubble,
                        bool cancelable,
                        AbstractView* view,
                        int detail,
-                       EventTarget* relatedTarget,
-                       InputDeviceCapabilities* sourceCapabilities)
+                       EventTarget* related_target,
+                       InputDeviceCapabilities* source_capabilities)
     : UIEvent(type,
-              canBubble,
+              can_bubble,
               cancelable,
-              ComposedMode::Composed,
+              ComposedMode::kComposed,
               TimeTicks::Now(),
               view,
               detail,
-              sourceCapabilities),
-      m_relatedTarget(relatedTarget) {}
+              source_capabilities),
+      related_target_(related_target) {}
 
 FocusEvent::FocusEvent(const AtomicString& type,
                        const FocusEventInit& initializer)
     : UIEvent(type, initializer) {
   if (initializer.hasRelatedTarget())
-    m_relatedTarget = initializer.relatedTarget();
+    related_target_ = initializer.relatedTarget();
 }
 
-EventDispatchMediator* FocusEvent::createMediator() {
-  return FocusEventDispatchMediator::create(this);
+EventDispatchMediator* FocusEvent::CreateMediator() {
+  return FocusEventDispatchMediator::Create(this);
 }
 
 DEFINE_TRACE(FocusEvent) {
-  visitor->trace(m_relatedTarget);
-  UIEvent::trace(visitor);
+  visitor->Trace(related_target_);
+  UIEvent::Trace(visitor);
 }
 
-FocusEventDispatchMediator* FocusEventDispatchMediator::create(
-    FocusEvent* focusEvent) {
-  return new FocusEventDispatchMediator(focusEvent);
+FocusEventDispatchMediator* FocusEventDispatchMediator::Create(
+    FocusEvent* focus_event) {
+  return new FocusEventDispatchMediator(focus_event);
 }
 
-FocusEventDispatchMediator::FocusEventDispatchMediator(FocusEvent* focusEvent)
-    : EventDispatchMediator(focusEvent) {}
+FocusEventDispatchMediator::FocusEventDispatchMediator(FocusEvent* focus_event)
+    : EventDispatchMediator(focus_event) {}
 
-DispatchEventResult FocusEventDispatchMediator::dispatchEvent(
+DispatchEventResult FocusEventDispatchMediator::DispatchEvent(
     EventDispatcher& dispatcher) const {
-  event().eventPath().adjustForRelatedTarget(dispatcher.node(),
-                                             event().relatedTarget());
-  return EventDispatchMediator::dispatchEvent(dispatcher);
+  Event().GetEventPath().AdjustForRelatedTarget(dispatcher.GetNode(),
+                                                Event().relatedTarget());
+  return EventDispatchMediator::DispatchEvent(dispatcher);
 }
 
 }  // namespace blink

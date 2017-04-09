@@ -39,30 +39,30 @@ namespace blink {
 
 class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
                            public ResourceClient {
-  USING_PRE_FINALIZER(MockResourceClient, dispose);
+  USING_PRE_FINALIZER(MockResourceClient, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(MockResourceClient);
 
  public:
   explicit MockResourceClient(Resource*);
   ~MockResourceClient() override;
 
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "MockResourceClient"; }
-  virtual bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
+  void NotifyFinished(Resource*) override;
+  String DebugName() const override { return "MockResourceClient"; }
+  virtual bool NotifyFinishedCalled() const { return notify_finished_called_; }
 
-  size_t encodedSizeOnNotifyFinished() const {
-    return m_encodedSizeOnNotifyFinished;
+  size_t EncodedSizeOnNotifyFinished() const {
+    return encoded_size_on_notify_finished_;
   }
 
-  virtual void removeAsClient();
-  virtual void dispose();
+  virtual void RemoveAsClient();
+  virtual void Dispose();
 
   DECLARE_TRACE();
 
  protected:
-  Member<Resource> m_resource;
-  bool m_notifyFinishedCalled;
-  size_t m_encodedSizeOnNotifyFinished;
+  Member<Resource> resource_;
+  bool notify_finished_called_;
+  size_t encoded_size_on_notify_finished_;
 };
 
 }  // namespace blink

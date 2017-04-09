@@ -65,36 +65,43 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
 
  public:
-  enum AnimationPlayState { Unset, Idle, Pending, Running, Paused, Finished };
+  enum AnimationPlayState {
+    kUnset,
+    kIdle,
+    kPending,
+    kRunning,
+    kPaused,
+    kFinished
+  };
 
-  static Animation* create(AnimationEffectReadOnly*, AnimationTimeline*);
+  static Animation* Create(AnimationEffectReadOnly*, AnimationTimeline*);
   ~Animation();
-  void dispose();
+  void Dispose();
 
   // Returns whether the animation is finished.
-  bool update(TimingUpdateReason);
+  bool Update(TimingUpdateReason);
 
   // timeToEffectChange returns:
   //  infinity  - if this animation is no longer in effect
   //  0         - if this animation requires an update on the next frame
   //  n         - if this animation requires an update after 'n' units of time
-  double timeToEffectChange();
+  double TimeToEffectChange();
 
   void cancel();
 
-  double currentTime(bool& isNull);
+  double currentTime(bool& is_null);
   double currentTime();
-  void setCurrentTime(double newCurrentTime);
+  void setCurrentTime(double new_current_time);
 
-  double currentTimeInternal() const;
-  double unlimitedCurrentTimeInternal() const;
+  double CurrentTimeInternal() const;
+  double UnlimitedCurrentTimeInternal() const;
 
-  void setCurrentTimeInternal(double newCurrentTime,
-                              TimingUpdateReason = TimingUpdateOnDemand);
-  bool paused() const { return m_paused && !m_isPausedForTesting; }
-  static const char* playStateString(AnimationPlayState);
-  String playState() const { return playStateString(playStateInternal()); }
-  AnimationPlayState playStateInternal() const;
+  void SetCurrentTimeInternal(double new_current_time,
+                              TimingUpdateReason = kTimingUpdateOnDemand);
+  bool Paused() const { return paused_ && !is_paused_for_testing_; }
+  static const char* PlayStateString(AnimationPlayState);
+  String playState() const { return PlayStateString(PlayStateInternal()); }
+  AnimationPlayState PlayStateInternal() const;
 
   void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
   void play(ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -104,168 +111,168 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   ScriptPromise finished(ScriptState*);
   ScriptPromise ready(ScriptState*);
 
-  bool playing() const {
-    return !(playStateInternal() == Idle || limited() || m_paused ||
-             m_isPausedForTesting);
+  bool Playing() const {
+    return !(PlayStateInternal() == kIdle || Limited() || paused_ ||
+             is_paused_for_testing_);
   }
-  bool limited() const { return limited(currentTimeInternal()); }
-  bool finishedInternal() const { return m_finished; }
+  bool Limited() const { return Limited(CurrentTimeInternal()); }
+  bool FinishedInternal() const { return finished_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cancel);
 
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
-  bool hasPendingActivity() const final;
-  void contextDestroyed(ExecutionContext*) override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+  bool HasPendingActivity() const final;
+  void ContextDestroyed(ExecutionContext*) override;
 
   double playbackRate() const;
   void setPlaybackRate(double);
-  const AnimationTimeline* timeline() const { return m_timeline; }
-  AnimationTimeline* timeline() { return m_timeline; }
+  const AnimationTimeline* timeline() const { return timeline_; }
+  AnimationTimeline* timeline() { return timeline_; }
 
-  double calculateStartTime(double currentTime) const;
-  bool hasStartTime() const { return !isNull(m_startTime); }
-  double startTime(bool& isNull) const;
+  double CalculateStartTime(double current_time) const;
+  bool HasStartTime() const { return !IsNull(start_time_); }
+  double startTime(bool& is_null) const;
   double startTime() const;
-  double startTimeInternal() const { return m_startTime; }
+  double StartTimeInternal() const { return start_time_; }
   void setStartTime(double);
-  void setStartTimeInternal(double);
+  void SetStartTimeInternal(double);
 
-  const AnimationEffectReadOnly* effect() const { return m_content.get(); }
-  AnimationEffectReadOnly* effect() { return m_content.get(); }
+  const AnimationEffectReadOnly* effect() const { return content_.Get(); }
+  AnimationEffectReadOnly* effect() { return content_.Get(); }
   void setEffect(AnimationEffectReadOnly*);
 
-  void setId(const String& id) { m_id = id; }
-  const String& id() const { return m_id; }
+  void setId(const String& id) { id_ = id; }
+  const String& id() const { return id_; }
 
   // Pausing via this method is not reflected in the value returned by
   // paused() and must never overlap with pausing via pause().
-  void pauseForTesting(double pauseTime);
-  void disableCompositedAnimationForTesting();
+  void PauseForTesting(double pause_time);
+  void DisableCompositedAnimationForTesting();
 
   // This should only be used for CSS
-  void unpause();
+  void Unpause();
 
-  void setOutdated();
-  bool outdated() { return m_outdated; }
+  void SetOutdated();
+  bool Outdated() { return outdated_; }
 
-  bool canStartAnimationOnCompositor(
-      const Optional<CompositorElementIdSet>& compositedElementIds) const;
-  bool isCandidateForAnimationOnCompositor(
-      const Optional<CompositorElementIdSet>& compositedElementIds) const;
-  bool maybeStartAnimationOnCompositor(
-      const Optional<CompositorElementIdSet>& compositedElementIds);
-  void cancelAnimationOnCompositor();
-  void restartAnimationOnCompositor();
-  void cancelIncompatibleAnimationsOnCompositor();
-  bool hasActiveAnimationsOnCompositor();
-  void setCompositorPending(bool effectChanged = false);
-  void notifyCompositorStartTime(double timelineTime);
-  void notifyStartTime(double timelineTime);
+  bool CanStartAnimationOnCompositor(
+      const Optional<CompositorElementIdSet>& composited_element_ids) const;
+  bool IsCandidateForAnimationOnCompositor(
+      const Optional<CompositorElementIdSet>& composited_element_ids) const;
+  bool MaybeStartAnimationOnCompositor(
+      const Optional<CompositorElementIdSet>& composited_element_ids);
+  void CancelAnimationOnCompositor();
+  void RestartAnimationOnCompositor();
+  void CancelIncompatibleAnimationsOnCompositor();
+  bool HasActiveAnimationsOnCompositor();
+  void SetCompositorPending(bool effect_changed = false);
+  void NotifyCompositorStartTime(double timeline_time);
+  void NotifyStartTime(double timeline_time);
   // CompositorAnimationPlayerClient implementation.
-  CompositorAnimationPlayer* compositorPlayer() const override {
-    return m_compositorPlayer ? m_compositorPlayer->player() : nullptr;
+  CompositorAnimationPlayer* CompositorPlayer() const override {
+    return compositor_player_ ? compositor_player_->Player() : nullptr;
   }
 
-  bool affects(const Element&, CSSPropertyID) const;
+  bool Affects(const Element&, CSSPropertyID) const;
 
   // Returns whether we should continue with the commit for this animation or
   // wait until next commit.
-  bool preCommit(int compositorGroup,
+  bool PreCommit(int compositor_group,
                  const Optional<CompositorElementIdSet>&,
-                 bool startOnCompositor);
-  void postCommit(double timelineTime);
+                 bool start_on_compositor);
+  void PostCommit(double timeline_time);
 
-  unsigned sequenceNumber() const { return m_sequenceNumber; }
-  int compositorGroup() const { return m_compositorGroup; }
+  unsigned SequenceNumber() const { return sequence_number_; }
+  int CompositorGroup() const { return compositor_group_; }
 
-  static bool hasLowerPriority(const Animation* animation1,
+  static bool HasLowerPriority(const Animation* animation1,
                                const Animation* animation2) {
-    return animation1->sequenceNumber() < animation2->sequenceNumber();
+    return animation1->SequenceNumber() < animation2->SequenceNumber();
   }
 
-  bool effectSuppressed() const { return m_effectSuppressed; }
-  void setEffectSuppressed(bool);
+  bool EffectSuppressed() const { return effect_suppressed_; }
+  void SetEffectSuppressed(bool);
 
-  void invalidateKeyframeEffect(const TreeScope&);
+  void InvalidateKeyframeEffect(const TreeScope&);
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  DispatchEventResult dispatchEventInternal(Event*) override;
-  void addedEventListener(const AtomicString& eventType,
+  DispatchEventResult DispatchEventInternal(Event*) override;
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
   Animation(ExecutionContext*, AnimationTimeline&, AnimationEffectReadOnly*);
 
-  void clearOutdated();
-  void forceServiceOnNextFrame();
+  void ClearOutdated();
+  void ForceServiceOnNextFrame();
 
-  double effectEnd() const;
-  bool limited(double currentTime) const;
+  double EffectEnd() const;
+  bool Limited(double current_time) const;
 
-  AnimationPlayState calculatePlayState();
-  double calculateCurrentTime() const;
+  AnimationPlayState CalculatePlayState();
+  double CalculateCurrentTime() const;
 
-  void unpauseInternal();
-  void setPlaybackRateInternal(double);
-  void updateCurrentTimingState(TimingUpdateReason);
+  void UnpauseInternal();
+  void SetPlaybackRateInternal(double);
+  void UpdateCurrentTimingState(TimingUpdateReason);
 
-  void beginUpdatingState();
-  void endUpdatingState();
+  void BeginUpdatingState();
+  void EndUpdatingState();
 
-  void createCompositorPlayer();
-  void destroyCompositorPlayer();
-  void attachCompositorTimeline();
-  void detachCompositorTimeline();
-  void attachCompositedLayers();
-  void detachCompositedLayers();
+  void CreateCompositorPlayer();
+  void DestroyCompositorPlayer();
+  void AttachCompositorTimeline();
+  void DetachCompositorTimeline();
+  void AttachCompositedLayers();
+  void DetachCompositedLayers();
   // CompositorAnimationDelegate implementation.
-  void notifyAnimationStarted(double monotonicTime, int group) override;
-  void notifyAnimationFinished(double monotonicTime, int group) override {}
-  void notifyAnimationAborted(double monotonicTime, int group) override {}
+  void NotifyAnimationStarted(double monotonic_time, int group) override;
+  void NotifyAnimationFinished(double monotonic_time, int group) override {}
+  void NotifyAnimationAborted(double monotonic_time, int group) override {}
 
   using AnimationPromise = ScriptPromiseProperty<Member<Animation>,
                                                  Member<Animation>,
                                                  Member<DOMException>>;
-  void resolvePromiseAsync(AnimationPromise*);
+  void ResolvePromiseAsync(AnimationPromise*);
 
-  String m_id;
+  String id_;
 
-  AnimationPlayState m_playState;
-  double m_playbackRate;
-  double m_startTime;
-  double m_holdTime;
+  AnimationPlayState play_state_;
+  double playback_rate_;
+  double start_time_;
+  double hold_time_;
 
-  unsigned m_sequenceNumber;
+  unsigned sequence_number_;
 
-  Member<AnimationPromise> m_finishedPromise;
-  Member<AnimationPromise> m_readyPromise;
+  Member<AnimationPromise> finished_promise_;
+  Member<AnimationPromise> ready_promise_;
 
-  Member<AnimationEffectReadOnly> m_content;
-  Member<AnimationTimeline> m_timeline;
+  Member<AnimationEffectReadOnly> content_;
+  Member<AnimationTimeline> timeline_;
 
   // Reflects all pausing, including via pauseForTesting().
-  bool m_paused;
-  bool m_held;
-  bool m_isPausedForTesting;
-  bool m_isCompositedAnimationDisabledForTesting;
+  bool paused_;
+  bool held_;
+  bool is_paused_for_testing_;
+  bool is_composited_animation_disabled_for_testing_;
 
   // This indicates timing information relevant to the animation's effect
   // has changed by means other than the ordinary progression of time
-  bool m_outdated;
+  bool outdated_;
 
-  bool m_finished;
+  bool finished_;
   // Holds a 'finished' event queued for asynchronous dispatch via the
   // ScriptedAnimationController. This object remains active until the
   // event is actually dispatched.
-  Member<Event> m_pendingFinishedEvent;
+  Member<Event> pending_finished_event_;
 
-  Member<Event> m_pendingCancelledEvent;
+  Member<Event> pending_cancelled_event_;
 
-  enum CompositorAction { None, Pause, Start, PauseThenStart };
+  enum CompositorAction { kNone, kPause, kStart, kPauseThenStart };
 
   class CompositorState {
     USING_FAST_MALLOC(CompositorState);
@@ -273,22 +280,22 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
    public:
     CompositorState(Animation& animation)
-        : startTime(animation.m_startTime),
-          holdTime(animation.m_holdTime),
-          playbackRate(animation.m_playbackRate),
-          effectChanged(false),
-          pendingAction(Start) {}
-    double startTime;
-    double holdTime;
-    double playbackRate;
-    bool effectChanged;
-    CompositorAction pendingAction;
+        : start_time(animation.start_time_),
+          hold_time(animation.hold_time_),
+          playback_rate(animation.playback_rate_),
+          effect_changed(false),
+          pending_action(kStart) {}
+    double start_time;
+    double hold_time;
+    double playback_rate;
+    bool effect_changed;
+    CompositorAction pending_action;
   };
 
   enum CompositorPendingChange {
-    SetCompositorPending,
-    SetCompositorPendingWithEffectChanged,
-    DoNotSetCompositorPending,
+    kSetCompositorPending,
+    kSetCompositorPendingWithEffectChanged,
+    kDoNotSetCompositorPending,
   };
 
   class PlayStateUpdateScope {
@@ -297,13 +304,13 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
    public:
     PlayStateUpdateScope(Animation&,
                          TimingUpdateReason,
-                         CompositorPendingChange = SetCompositorPending);
+                         CompositorPendingChange = kSetCompositorPending);
     ~PlayStateUpdateScope();
 
    private:
-    Member<Animation> m_animation;
-    AnimationPlayState m_initialPlayState;
-    CompositorPendingChange m_compositorPendingChange;
+    Member<Animation> animation_;
+    AnimationPlayState initial_play_state_;
+    CompositorPendingChange compositor_pending_change_;
   };
 
   // CompositorAnimationPlayer objects need to eagerly sever
@@ -311,41 +318,41 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   // 'holder' on-heap object to accomplish that.
   class CompositorAnimationPlayerHolder
       : public GarbageCollectedFinalized<CompositorAnimationPlayerHolder> {
-    USING_PRE_FINALIZER(CompositorAnimationPlayerHolder, dispose);
+    USING_PRE_FINALIZER(CompositorAnimationPlayerHolder, Dispose);
 
    public:
-    static CompositorAnimationPlayerHolder* create(Animation*);
+    static CompositorAnimationPlayerHolder* Create(Animation*);
 
-    void detach();
+    void Detach();
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_animation); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(animation_); }
 
-    CompositorAnimationPlayer* player() const {
-      return m_compositorPlayer.get();
+    CompositorAnimationPlayer* Player() const {
+      return compositor_player_.get();
     }
 
    private:
     explicit CompositorAnimationPlayerHolder(Animation*);
 
-    void dispose();
+    void Dispose();
 
-    std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
-    Member<Animation> m_animation;
+    std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
+    Member<Animation> animation_;
   };
 
   // This mirrors the known compositor state. It is created when a compositor
   // animation is started. Updated once the start time is known and each time
   // modifications are pushed to the compositor.
-  std::unique_ptr<CompositorState> m_compositorState;
-  bool m_compositorPending;
-  int m_compositorGroup;
+  std::unique_ptr<CompositorState> compositor_state_;
+  bool compositor_pending_;
+  int compositor_group_;
 
-  Member<CompositorAnimationPlayerHolder> m_compositorPlayer;
+  Member<CompositorAnimationPlayerHolder> compositor_player_;
 
-  bool m_currentTimePending;
-  bool m_stateIsBeingUpdated;
+  bool current_time_pending_;
+  bool state_is_being_updated_;
 
-  bool m_effectSuppressed;
+  bool effect_suppressed_;
 };
 
 }  // namespace blink

@@ -29,57 +29,57 @@
 namespace blink {
 
 enum WebIDBKeyType {
-  WebIDBKeyTypeInvalid = 0,
-  WebIDBKeyTypeArray,
-  WebIDBKeyTypeBinary,
-  WebIDBKeyTypeString,
-  WebIDBKeyTypeDate,
-  WebIDBKeyTypeNumber,
-  WebIDBKeyTypeNull,
-  WebIDBKeyTypeMin,
+  kWebIDBKeyTypeInvalid = 0,
+  kWebIDBKeyTypeArray,
+  kWebIDBKeyTypeBinary,
+  kWebIDBKeyTypeString,
+  kWebIDBKeyTypeDate,
+  kWebIDBKeyTypeNumber,
+  kWebIDBKeyTypeNull,
+  kWebIDBKeyTypeMin,
 };
 
 enum WebIDBKeyPathType {
-  WebIDBKeyPathTypeNull = 0,
-  WebIDBKeyPathTypeString,
-  WebIDBKeyPathTypeArray,
+  kWebIDBKeyPathTypeNull = 0,
+  kWebIDBKeyPathTypeString,
+  kWebIDBKeyPathTypeArray,
 };
 
 enum WebIDBDataLoss {
-  WebIDBDataLossNone = 0,
-  WebIDBDataLossTotal,
+  kWebIDBDataLossNone = 0,
+  kWebIDBDataLossTotal,
 };
 
 enum WebIDBCursorDirection {
-  WebIDBCursorDirectionNext = 0,
-  WebIDBCursorDirectionNextNoDuplicate = 1,
-  WebIDBCursorDirectionPrev = 2,
-  WebIDBCursorDirectionPrevNoDuplicate = 3,
+  kWebIDBCursorDirectionNext = 0,
+  kWebIDBCursorDirectionNextNoDuplicate = 1,
+  kWebIDBCursorDirectionPrev = 2,
+  kWebIDBCursorDirectionPrevNoDuplicate = 3,
 };
 
 enum WebIDBTaskType {
-  WebIDBTaskTypeNormal = 0,
-  WebIDBTaskTypePreemptive,
+  kWebIDBTaskTypeNormal = 0,
+  kWebIDBTaskTypePreemptive,
 };
 
 enum WebIDBPutMode {
-  WebIDBPutModeAddOrUpdate,
-  WebIDBPutModeAddOnly,
-  WebIDBPutModeCursorUpdate,
+  kWebIDBPutModeAddOrUpdate,
+  kWebIDBPutModeAddOnly,
+  kWebIDBPutModeCursorUpdate,
 };
 
 enum WebIDBOperationType {
-  WebIDBAdd = 0,
-  WebIDBPut,
-  WebIDBDelete,
-  WebIDBClear,
-  WebIDBOperationTypeCount,
+  kWebIDBAdd = 0,
+  kWebIDBPut,
+  kWebIDBDelete,
+  kWebIDBClear,
+  kWebIDBOperationTypeCount,
 };
 
 enum WebIDBTransactionMode {
-  WebIDBTransactionModeReadOnly = 0,
-  WebIDBTransactionModeReadWrite,
-  WebIDBTransactionModeVersionChange,
+  kWebIDBTransactionModeReadOnly = 0,
+  kWebIDBTransactionModeReadWrite,
+  kWebIDBTransactionModeVersionChange,
 };
 
 }  // namespace blink

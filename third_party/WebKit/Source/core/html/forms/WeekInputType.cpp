@@ -42,89 +42,90 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static const int weekDefaultStepBase =
+static const int kWeekDefaultStepBase =
     -259200000;  // The first day of 1970-W01.
-static const int weekDefaultStep = 1;
-static const int weekStepScaleFactor = 604800000;
+static const int kWeekDefaultStep = 1;
+static const int kWeekStepScaleFactor = 604800000;
 
-InputType* WeekInputType::create(HTMLInputElement& element) {
+InputType* WeekInputType::Create(HTMLInputElement& element) {
   return new WeekInputType(element);
 }
 
-void WeekInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypeWeek);
+void WeekInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypeWeek);
 }
 
-const AtomicString& WeekInputType::formControlType() const {
+const AtomicString& WeekInputType::FormControlType() const {
   return InputTypeNames::week;
 }
 
-StepRange WeekInputType::createStepRange(
-    AnyStepHandling anyStepHandling) const {
+StepRange WeekInputType::CreateStepRange(
+    AnyStepHandling any_step_handling) const {
   DEFINE_STATIC_LOCAL(
-      const StepRange::StepDescription, stepDescription,
-      (weekDefaultStep, weekDefaultStepBase, weekStepScaleFactor,
-       StepRange::ParsedStepValueShouldBeInteger));
+      const StepRange::StepDescription, step_description,
+      (kWeekDefaultStep, kWeekDefaultStepBase, kWeekStepScaleFactor,
+       StepRange::kParsedStepValueShouldBeInteger));
 
-  return InputType::createStepRange(
-      anyStepHandling, weekDefaultStepBase,
-      Decimal::fromDouble(DateComponents::minimumWeek()),
-      Decimal::fromDouble(DateComponents::maximumWeek()), stepDescription);
+  return InputType::CreateStepRange(
+      any_step_handling, kWeekDefaultStepBase,
+      Decimal::FromDouble(DateComponents::MinimumWeek()),
+      Decimal::FromDouble(DateComponents::MaximumWeek()), step_description);
 }
 
-bool WeekInputType::parseToDateComponentsInternal(const String& string,
+bool WeekInputType::ParseToDateComponentsInternal(const String& string,
                                                   DateComponents* out) const {
   DCHECK(out);
   unsigned end;
-  return out->parseWeek(string, 0, end) && end == string.length();
+  return out->ParseWeek(string, 0, end) && end == string.length();
 }
 
-bool WeekInputType::setMillisecondToDateComponents(double value,
+bool WeekInputType::SetMillisecondToDateComponents(double value,
                                                    DateComponents* date) const {
   DCHECK(date);
-  return date->setMillisecondsSinceEpochForWeek(value);
+  return date->SetMillisecondsSinceEpochForWeek(value);
 }
 
-void WeekInputType::warnIfValueIsInvalid(const String& value) const {
-  if (value != element().sanitizeValue(value))
-    addWarningToConsole(
+void WeekInputType::WarnIfValueIsInvalid(const String& value) const {
+  if (value != GetElement().SanitizeValue(value))
+    AddWarningToConsole(
         "The specified value %s does not conform to the required format.  The "
         "format is \"yyyy-Www\" where yyyy is year in four or more digits, and "
         "ww is 01-53.",
         value);
 }
 
-String WeekInputType::formatDateTimeFieldsState(
-    const DateTimeFieldsState& dateTimeFieldsState) const {
-  if (!dateTimeFieldsState.hasYear() || !dateTimeFieldsState.hasWeekOfYear())
-    return emptyString;
-  return String::format("%04u-W%02u", dateTimeFieldsState.year(),
-                        dateTimeFieldsState.weekOfYear());
+String WeekInputType::FormatDateTimeFieldsState(
+    const DateTimeFieldsState& date_time_fields_state) const {
+  if (!date_time_fields_state.HasYear() ||
+      !date_time_fields_state.HasWeekOfYear())
+    return g_empty_string;
+  return String::Format("%04u-W%02u", date_time_fields_state.Year(),
+                        date_time_fields_state.WeekOfYear());
 }
 
-void WeekInputType::setupLayoutParameters(
-    DateTimeEditElement::LayoutParameters& layoutParameters,
+void WeekInputType::SetupLayoutParameters(
+    DateTimeEditElement::LayoutParameters& layout_parameters,
     const DateComponents&) const {
-  layoutParameters.dateTimeFormat = locale().weekFormatInLDML();
-  layoutParameters.fallbackDateTimeFormat = "yyyy-'W'ww";
-  if (!parseToDateComponents(element().fastGetAttribute(minAttr),
-                             &layoutParameters.minimum))
-    layoutParameters.minimum = DateComponents();
-  if (!parseToDateComponents(element().fastGetAttribute(maxAttr),
-                             &layoutParameters.maximum))
-    layoutParameters.maximum = DateComponents();
-  layoutParameters.placeholderForYear = "----";
+  layout_parameters.date_time_format = GetLocale().WeekFormatInLDML();
+  layout_parameters.fallback_date_time_format = "yyyy-'W'ww";
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(minAttr),
+                             &layout_parameters.minimum))
+    layout_parameters.minimum = DateComponents();
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(maxAttr),
+                             &layout_parameters.maximum))
+    layout_parameters.maximum = DateComponents();
+  layout_parameters.placeholder_for_year = "----";
 }
 
-bool WeekInputType::isValidFormat(bool hasYear,
-                                  bool hasMonth,
-                                  bool hasWeek,
-                                  bool hasDay,
-                                  bool hasAMPM,
-                                  bool hasHour,
-                                  bool hasMinute,
-                                  bool hasSecond) const {
-  return hasYear && hasWeek;
+bool WeekInputType::IsValidFormat(bool has_year,
+                                  bool has_month,
+                                  bool has_week,
+                                  bool has_day,
+                                  bool has_ampm,
+                                  bool has_hour,
+                                  bool has_minute,
+                                  bool has_second) const {
+  return has_year && has_week;
 }
 
 }  // namespace blink

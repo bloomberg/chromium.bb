@@ -42,35 +42,35 @@ struct WebTextInputInfo {
 
   // The cursor position of the current selection start, or the caret position
   // if nothing is selected.
-  int selectionStart;
+  int selection_start;
 
   // The cursor position of the current selection end, or the caret position
   // if nothing is selected.
-  int selectionEnd;
+  int selection_end;
 
   // The start position of the current composition, or -1 if there is none.
-  int compositionStart;
+  int composition_start;
 
   // The end position of the current composition, or -1 if there is none.
-  int compositionEnd;
+  int composition_end;
 
   // The inputmode attribute value of the currently focused input field.
-  WebTextInputMode inputMode;
+  WebTextInputMode input_mode;
 
-  BLINK_PLATFORM_EXPORT bool equals(const WebTextInputInfo&) const;
+  BLINK_PLATFORM_EXPORT bool Equals(const WebTextInputInfo&) const;
 
   WebTextInputInfo()
-      : type(WebTextInputTypeNone),
-        flags(WebTextInputFlagNone),
-        selectionStart(0),
-        selectionEnd(0),
-        compositionStart(-1),
-        compositionEnd(-1),
-        inputMode(kWebTextInputModeDefault) {}
+      : type(kWebTextInputTypeNone),
+        flags(kWebTextInputFlagNone),
+        selection_start(0),
+        selection_end(0),
+        composition_start(-1),
+        composition_end(-1),
+        input_mode(kWebTextInputModeDefault) {}
 };
 
 inline bool operator==(const WebTextInputInfo& a, const WebTextInputInfo& b) {
-  return a.equals(b);
+  return a.Equals(b);
 }
 
 inline bool operator!=(const WebTextInputInfo& a, const WebTextInputInfo& b) {

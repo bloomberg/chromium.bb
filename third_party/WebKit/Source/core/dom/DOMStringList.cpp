@@ -30,24 +30,24 @@
 namespace blink {
 
 String DOMStringList::item(unsigned index) const {
-  if (index >= m_strings.size())
+  if (index >= strings_.size())
     return String();
-  return m_strings[index];
+  return strings_[index];
 }
 
 bool DOMStringList::contains(const String& string) const {
   // All producers of DOMStringList have reasonably small lists; an O(n)
   // algorithm is preferred over maintaining an additional structure just for
   // lookups.
-  for (const auto& item : m_strings) {
+  for (const auto& item : strings_) {
     if (item == string)
       return true;
   }
   return false;
 }
 
-void DOMStringList::sort() {
-  std::sort(m_strings.begin(), m_strings.end(), WTF::codePointCompareLessThan);
+void DOMStringList::Sort() {
+  std::sort(strings_.begin(), strings_.end(), WTF::CodePointCompareLessThan);
 }
 
 }  // namespace blink

@@ -8,19 +8,20 @@
 
 namespace blink {
 
-PerformancePaintTiming::PerformancePaintTiming(PaintType type, double startTime)
-    : PerformanceEntry(fromPaintTypeToString(type),
+PerformancePaintTiming::PerformancePaintTiming(PaintType type,
+                                               double start_time)
+    : PerformanceEntry(FromPaintTypeToString(type),
                        "paint",
-                       startTime,
-                       startTime) {}
+                       start_time,
+                       start_time) {}
 
 PerformancePaintTiming::~PerformancePaintTiming() {}
 
-String PerformancePaintTiming::fromPaintTypeToString(PaintType type) {
+String PerformancePaintTiming::FromPaintTypeToString(PaintType type) {
   switch (type) {
-    case PaintType::FirstPaint:
+    case PaintType::kFirstPaint:
       return "first-paint";
-    case PaintType::FirstContentfulPaint:
+    case PaintType::kFirstContentfulPaint:
       return "first-contentful-paint";
   }
   NOTREACHED();

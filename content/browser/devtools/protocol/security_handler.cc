@@ -25,15 +25,15 @@ namespace {
 std::string SecurityStyleToProtocolSecurityState(
     blink::WebSecurityStyle security_style) {
   switch (security_style) {
-    case blink::WebSecurityStyleUnknown:
+    case blink::kWebSecurityStyleUnknown:
       return Security::SecurityStateEnum::Unknown;
-    case blink::WebSecurityStyleNeutral:
+    case blink::kWebSecurityStyleNeutral:
       return Security::SecurityStateEnum::Neutral;
-    case blink::WebSecurityStyleInsecure:
+    case blink::kWebSecurityStyleInsecure:
       return Security::SecurityStateEnum::Insecure;
-    case blink::WebSecurityStyleWarning:
+    case blink::kWebSecurityStyleWarning:
       return Security::SecurityStateEnum::Warning;
-    case blink::WebSecurityStyleSecure:
+    case blink::kWebSecurityStyleSecure:
       return Security::SecurityStateEnum::Secure;
     default:
       NOTREACHED();

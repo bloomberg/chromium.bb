@@ -47,47 +47,47 @@
 namespace WTF {
 
 template <typename CharType>
-inline bool isASCII(CharType c) {
+inline bool IsASCII(CharType c) {
   return !(c & ~0x7F);
 }
 
 template <typename CharType>
-inline bool isASCIIAlpha(CharType c) {
+inline bool IsASCIIAlpha(CharType c) {
   return (c | 0x20) >= 'a' && (c | 0x20) <= 'z';
 }
 
 template <typename CharType>
-inline bool isASCIIDigit(CharType c) {
+inline bool IsASCIIDigit(CharType c) {
   return c >= '0' && c <= '9';
 }
 
 template <typename CharType>
-inline bool isASCIIAlphanumeric(CharType c) {
-  return isASCIIDigit(c) || isASCIIAlpha(c);
+inline bool IsASCIIAlphanumeric(CharType c) {
+  return IsASCIIDigit(c) || IsASCIIAlpha(c);
 }
 
 template <typename CharType>
-inline bool isASCIIHexDigit(CharType c) {
-  return isASCIIDigit(c) || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
+inline bool IsASCIIHexDigit(CharType c) {
+  return IsASCIIDigit(c) || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
 }
 
 template <typename CharType>
-inline bool isASCIILower(CharType c) {
+inline bool IsASCIILower(CharType c) {
   return c >= 'a' && c <= 'z';
 }
 
 template <typename CharType>
-inline bool isASCIIOctalDigit(CharType c) {
+inline bool IsASCIIOctalDigit(CharType c) {
   return (c >= '0') & (c <= '7');
 }
 
 template <typename CharType>
-inline bool isASCIIPrintable(CharType c) {
+inline bool IsASCIIPrintable(CharType c) {
   return c >= ' ' && c <= '~';
 }
 
 /*
- Statistics from a run of Apple's page load test for callers of isASCIISpace:
+ Statistics from a run of Apple's page load test for callers of IsASCIISpace:
 
  character          count
  ---------          -----
@@ -100,85 +100,85 @@ inline bool isASCIIPrintable(CharType c) {
  0B  \v             0
  */
 template <typename CharType>
-inline bool isASCIISpace(CharType c) {
+inline bool IsASCIISpace(CharType c) {
   return c <= ' ' && (c == ' ' || (c <= 0xD && c >= 0x9));
 }
 
 template <typename CharType>
-inline bool isASCIIUpper(CharType c) {
+inline bool IsASCIIUpper(CharType c) {
   return c >= 'A' && c <= 'Z';
 }
 
-WTF_EXPORT extern const LChar ASCIICaseFoldTable[256];
+WTF_EXPORT extern const LChar kASCIICaseFoldTable[256];
 
 template <typename CharType>
-inline CharType toASCIILower(CharType c) {
+inline CharType ToASCIILower(CharType c) {
   return c | ((c >= 'A' && c <= 'Z') << 5);
 }
 
-inline LChar toASCIILower(LChar c) {
-  return ASCIICaseFoldTable[c];
+inline LChar ToASCIILower(LChar c) {
+  return kASCIICaseFoldTable[c];
 }
 
-inline char toASCIILower(char c) {
-  return static_cast<char>(ASCIICaseFoldTable[static_cast<LChar>(c)]);
+inline char ToASCIILower(char c) {
+  return static_cast<char>(kASCIICaseFoldTable[static_cast<LChar>(c)]);
 }
 
 template <typename CharType>
-inline CharType toASCIIUpper(CharType c) {
+inline CharType ToASCIIUpper(CharType c) {
   return c & ~((c >= 'a' && c <= 'z') << 5);
 }
 
 template <typename CharType>
-inline int toASCIIHexValue(CharType c) {
-  DCHECK(isASCIIHexDigit(c));
+inline int ToASCIIHexValue(CharType c) {
+  DCHECK(IsASCIIHexDigit(c));
   return c < 'A' ? c - '0' : (c - 'A' + 10) & 0xF;
 }
 
 template <typename CharType>
-inline int toASCIIHexValue(CharType upperValue, CharType lowerValue) {
-  DCHECK(isASCIIHexDigit(upperValue));
-  DCHECK(isASCIIHexDigit(lowerValue));
-  return ((toASCIIHexValue(upperValue) << 4) & 0xF0) |
-         toASCIIHexValue(lowerValue);
+inline int ToASCIIHexValue(CharType upper_value, CharType lower_value) {
+  DCHECK(IsASCIIHexDigit(upper_value));
+  DCHECK(IsASCIIHexDigit(lower_value));
+  return ((ToASCIIHexValue(upper_value) << 4) & 0xF0) |
+         ToASCIIHexValue(lower_value);
 }
 
-inline char lowerNibbleToASCIIHexDigit(char c) {
+inline char LowerNibbleToASCIIHexDigit(char c) {
   char nibble = c & 0xF;
   return nibble < 10 ? '0' + nibble : 'A' + nibble - 10;
 }
 
-inline char upperNibbleToASCIIHexDigit(char c) {
+inline char UpperNibbleToASCIIHexDigit(char c) {
   char nibble = (c >> 4) & 0xF;
   return nibble < 10 ? '0' + nibble : 'A' + nibble - 10;
 }
 
 template <typename CharType>
-inline bool isASCIIAlphaCaselessEqual(CharType cssCharacter, char character) {
+inline bool IsASCIIAlphaCaselessEqual(CharType css_character, char character) {
   // This function compares a (preferrably) constant ASCII
   // lowercase letter to any input character.
   DCHECK_GE(character, 'a');
   DCHECK_LE(character, 'z');
-  return LIKELY((cssCharacter | 0x20) == character);
+  return LIKELY((css_character | 0x20) == character);
 }
 
 }  // namespace WTF
 
-using WTF::isASCII;
-using WTF::isASCIIAlpha;
-using WTF::isASCIIAlphanumeric;
-using WTF::isASCIIDigit;
-using WTF::isASCIIHexDigit;
-using WTF::isASCIILower;
-using WTF::isASCIIOctalDigit;
-using WTF::isASCIIPrintable;
-using WTF::isASCIISpace;
-using WTF::isASCIIUpper;
-using WTF::toASCIIHexValue;
-using WTF::toASCIILower;
-using WTF::toASCIIUpper;
-using WTF::lowerNibbleToASCIIHexDigit;
-using WTF::upperNibbleToASCIIHexDigit;
-using WTF::isASCIIAlphaCaselessEqual;
+using WTF::IsASCII;
+using WTF::IsASCIIAlpha;
+using WTF::IsASCIIAlphanumeric;
+using WTF::IsASCIIDigit;
+using WTF::IsASCIIHexDigit;
+using WTF::IsASCIILower;
+using WTF::IsASCIIOctalDigit;
+using WTF::IsASCIIPrintable;
+using WTF::IsASCIISpace;
+using WTF::IsASCIIUpper;
+using WTF::ToASCIIHexValue;
+using WTF::ToASCIILower;
+using WTF::ToASCIIUpper;
+using WTF::LowerNibbleToASCIIHexDigit;
+using WTF::UpperNibbleToASCIIHexDigit;
+using WTF::IsASCIIAlphaCaselessEqual;
 
 #endif

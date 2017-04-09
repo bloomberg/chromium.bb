@@ -16,36 +16,36 @@ ShapingLineBreaker::ShapingLineBreaker(const HarfBuzzShaper* shaper,
                                        const Font* font,
                                        const ShapeResult* result,
                                        const AtomicString locale,
-                                       LineBreakType breakType)
-    : m_shaper(shaper),
-      m_font(font),
-      m_result(result),
-      m_locale(locale),
-      m_breakType(breakType) {
-  m_text = String(shaper->text(), shaper->textLength());
+                                       LineBreakType break_type)
+    : shaper_(shaper),
+      font_(font),
+      result_(result),
+      locale_(locale),
+      break_type_(break_type) {
+  text_ = String(shaper->GetText(), shaper->TextLength());
 }
 
 namespace {
 
-unsigned previousSafeToBreakAfter(const UChar* text,
+unsigned PreviousSafeToBreakAfter(const UChar* text,
                                   unsigned start,
                                   unsigned offset) {
   // TODO(eae): This is quite incorrect. It should be changed to use the
   // HarfBuzzHarfBuzz safe to break info when available.
   for (; offset > start; offset--) {
-    if (text[offset - 1] == spaceCharacter)
+    if (text[offset - 1] == kSpaceCharacter)
       break;
   }
   return offset;
 }
 
-unsigned nextSafeToBreakBefore(const UChar* text,
+unsigned NextSafeToBreakBefore(const UChar* text,
                                unsigned end,
                                unsigned offset) {
   // TODO(eae): This is quite incorrect. It should be changed to use the
   // HarfBuzzHarfBuzz safe to break info when available.
   for (; offset < end; offset++) {
-    if (text[offset] == spaceCharacter)
+    if (text[offset] == kSpaceCharacter)
       break;
   }
   return offset;
@@ -55,27 +55,27 @@ unsigned nextSafeToBreakBefore(const UChar* text,
 
 // TODO(eae); Should take a const LazyLineBreakIterator& but that requires the
 // LazyLineBreakIterator::isBreakable method to be updated to be const.
-unsigned ShapingLineBreaker::previousBreakOpportunity(
-    LazyLineBreakIterator* breakIterator,
+unsigned ShapingLineBreaker::PreviousBreakOpportunity(
+    LazyLineBreakIterator* break_iterator,
     unsigned start,
     unsigned offset) {
-  DCHECK(breakIterator);
-  unsigned pos = std::min(start + offset, m_shaper->textLength());
+  DCHECK(break_iterator);
+  unsigned pos = std::min(start + offset, shaper_->TextLength());
   for (; pos > start; pos--) {
-    int nextBreak = 0;
-    if (breakIterator->isBreakable(pos, nextBreak, m_breakType))
+    int next_break = 0;
+    if (break_iterator->IsBreakable(pos, next_break, break_type_))
       return pos;
   }
   return start;
 }
 
-unsigned ShapingLineBreaker::nextBreakOpportunity(
-    LazyLineBreakIterator* breakIterator,
+unsigned ShapingLineBreaker::NextBreakOpportunity(
+    LazyLineBreakIterator* break_iterator,
     unsigned offset) {
-  DCHECK(breakIterator);
-  int nextBreak = 0;
-  breakIterator->isBreakable(offset, nextBreak, m_breakType);
-  return nextBreak;
+  DCHECK(break_iterator);
+  int next_break = 0;
+  break_iterator->IsBreakable(offset, next_break, break_type_);
+  return next_break;
 }
 
 // Shapes a line of text by finding a valid and appropriate break opportunity
@@ -107,85 +107,86 @@ unsigned ShapingLineBreaker::nextBreakOpportunity(
 //   If we further assume that the font kerns with space then even though it's a
 //   valid break opportunity reshaping is required as the combined width of the
 //   two segments "Line " and "breaking" may be different from "Line breaking".
-PassRefPtr<ShapeResult> ShapingLineBreaker::shapeLine(unsigned start,
-                                                      LayoutUnit availableSpace,
-                                                      unsigned* breakOffset) {
+PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
+    unsigned start,
+    LayoutUnit available_space,
+    unsigned* break_offset) {
   // The start position in the original shape results.
-  LayoutUnit startPosition = m_result->snappedStartPositionForOffset(start);
-  TextDirection direction = m_result->direction();
+  LayoutUnit start_position = result_->SnappedStartPositionForOffset(start);
+  TextDirection direction = result_->Direction();
 
   // If the start offset is not at a safe-to-break boundary the content between
   // the start and the next safe-to-break boundary needs to be reshaped and the
   // available space adjusted to take the reshaping into account.
-  RefPtr<ShapeResult> lineStartResult;
-  unsigned firstSafe =
-      nextSafeToBreakBefore(m_shaper->text(), m_shaper->textLength(), start);
-  if (firstSafe != start) {
-    LayoutUnit originalWidth =
-        m_result->snappedEndPositionForOffset(firstSafe) - startPosition;
-    lineStartResult = m_shaper->shape(m_font, direction, start, firstSafe);
-    availableSpace += lineStartResult->snappedWidth() - originalWidth;
+  RefPtr<ShapeResult> line_start_result;
+  unsigned first_safe =
+      NextSafeToBreakBefore(shaper_->GetText(), shaper_->TextLength(), start);
+  if (first_safe != start) {
+    LayoutUnit original_width =
+        result_->SnappedEndPositionForOffset(first_safe) - start_position;
+    line_start_result = shaper_->Shape(font_, direction, start, first_safe);
+    available_space += line_start_result->SnappedWidth() - original_width;
   }
 
   // Find a candidate break opportunity by identifying the last offset before
   // exceeding the available space and the determine the closest valid break
   // preceding the candidate.
-  LazyLineBreakIterator breakIterator(m_text, m_locale);
-  LayoutUnit endPosition = startPosition + availableSpace;
-  unsigned candidateBreak = m_result->offsetForPosition(endPosition, false);
-  unsigned breakOpportunity =
-      previousBreakOpportunity(&breakIterator, start, candidateBreak);
-  if (breakOpportunity <= start) {
-    breakOpportunity = nextBreakOpportunity(&breakIterator, candidateBreak);
+  LazyLineBreakIterator break_iterator(text_, locale_);
+  LayoutUnit end_position = start_position + available_space;
+  unsigned candidate_break = result_->OffsetForPosition(end_position, false);
+  unsigned break_opportunity =
+      PreviousBreakOpportunity(&break_iterator, start, candidate_break);
+  if (break_opportunity <= start) {
+    break_opportunity = NextBreakOpportunity(&break_iterator, candidate_break);
   }
 
-  RefPtr<ShapeResult> lineEndResult;
-  unsigned lastSafe = breakOpportunity;
-  while (breakOpportunity > start) {
+  RefPtr<ShapeResult> line_end_result;
+  unsigned last_safe = break_opportunity;
+  while (break_opportunity > start) {
     // If the previous valid break opportunity is not at a safe-to-break
     // boundary reshape between the safe-to-break offset and the valid break
     // offset. If the resulting width exceeds the available space the
     // preceding boundary is tried until the available space is sufficient.
-    unsigned previousSafe = std::max(
-        previousSafeToBreakAfter(m_shaper->text(), start, breakOpportunity),
+    unsigned previous_safe = std::max(
+        PreviousSafeToBreakAfter(shaper_->GetText(), start, break_opportunity),
         start);
-    if (previousSafe != breakOpportunity) {
-      LayoutUnit safePosition =
-          m_result->snappedStartPositionForOffset(previousSafe);
-      while (breakOpportunity > previousSafe && previousSafe > start) {
-        lineEndResult =
-            m_shaper->shape(m_font, direction, previousSafe, breakOpportunity);
-        if (safePosition + lineEndResult->snappedWidth() <= endPosition)
+    if (previous_safe != break_opportunity) {
+      LayoutUnit safe_position =
+          result_->SnappedStartPositionForOffset(previous_safe);
+      while (break_opportunity > previous_safe && previous_safe > start) {
+        line_end_result =
+            shaper_->Shape(font_, direction, previous_safe, break_opportunity);
+        if (safe_position + line_end_result->SnappedWidth() <= end_position)
           break;
-        lineEndResult = nullptr;
-        breakOpportunity = previousBreakOpportunity(&breakIterator, start,
-                                                    breakOpportunity - 1);
+        line_end_result = nullptr;
+        break_opportunity = PreviousBreakOpportunity(&break_iterator, start,
+                                                     break_opportunity - 1);
       }
     }
 
-    if (breakOpportunity > start) {
-      lastSafe = previousSafe;
+    if (break_opportunity > start) {
+      last_safe = previous_safe;
       break;
     }
 
     // No suitable break opportunity, not exceeding the available space,
     // found. Choose the next valid one even though it will overflow.
-    breakOpportunity = nextBreakOpportunity(&breakIterator, candidateBreak);
+    break_opportunity = NextBreakOpportunity(&break_iterator, candidate_break);
   }
 
   // Create shape results for the line by copying from the re-shaped result (if
   // reshaping was needed) and the original shape results.
-  RefPtr<ShapeResult> lineResult = ShapeResult::create(m_font, 0, direction);
-  unsigned maxLength = std::numeric_limits<unsigned>::max();
-  if (lineStartResult)
-    lineStartResult->copyRange(0, maxLength, lineResult.get());
-  if (lastSafe > firstSafe)
-    m_result->copyRange(firstSafe, lastSafe, lineResult.get());
-  if (lineEndResult)
-    lineEndResult->copyRange(lastSafe, maxLength, lineResult.get());
+  RefPtr<ShapeResult> line_result = ShapeResult::Create(font_, 0, direction);
+  unsigned max_length = std::numeric_limits<unsigned>::max();
+  if (line_start_result)
+    line_start_result->CopyRange(0, max_length, line_result.Get());
+  if (last_safe > first_safe)
+    result_->CopyRange(first_safe, last_safe, line_result.Get());
+  if (line_end_result)
+    line_end_result->CopyRange(last_safe, max_length, line_result.Get());
 
-  *breakOffset = breakOpportunity;
-  return lineResult.release();
+  *break_offset = break_opportunity;
+  return line_result.Release();
 }
 
 }  // namespace blink

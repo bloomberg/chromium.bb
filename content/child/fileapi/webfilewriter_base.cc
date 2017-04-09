@@ -23,20 +23,18 @@ WebFileWriterBase::WebFileWriterBase(const GURL& path,
 
 WebFileWriterBase::~WebFileWriterBase() {}
 
-void WebFileWriterBase::truncate(long long length) {
+void WebFileWriterBase::Truncate(long long length) {
   DCHECK(kOperationNone == operation_);
   DCHECK(kCancelNotInProgress == cancel_state_);
   operation_ = kOperationTruncate;
   DoTruncate(path_, length);
 }
 
-void WebFileWriterBase::write(
-      long long position,
-      const blink::WebString& id) {
+void WebFileWriterBase::Write(long long position, const blink::WebString& id) {
   DCHECK_EQ(kOperationNone, operation_);
   DCHECK_EQ(kCancelNotInProgress, cancel_state_);
   operation_ = kOperationWrite;
-  DoWrite(path_, id.utf8(), position);
+  DoWrite(path_, id.Utf8(), position);
 }
 
 // When we cancel a write/truncate, we always get back the result of the write
@@ -53,7 +51,7 @@ void WebFileWriterBase::write(
 // or the first failure as the last write response, then know that the next
 // thing to come back is the cancel response.  We only notify the
 // AsyncFileWriterClient when it's all over.
-void WebFileWriterBase::cancel() {
+void WebFileWriterBase::Cancel() {
   // Check for the cancel passing the previous operation's return in-flight.
   if (kOperationWrite != operation_ && kOperationTruncate != operation_)
     return;
@@ -76,7 +74,7 @@ void WebFileWriterBase::DidWrite(int64_t bytes, bool complete) {
     case kCancelNotInProgress:
       if (complete)
         operation_ = kOperationNone;
-      client_->didWrite(bytes, complete);
+      client_->DidWrite(bytes, complete);
       break;
     case kCancelSent:
       // This is the success call of the write, which we'll eat, even though
@@ -99,7 +97,7 @@ void WebFileWriterBase::DidSucceed() {
       // A truncate succeeded, with no complications.
       DCHECK(kOperationTruncate == operation_);
       operation_ = kOperationNone;
-      client_->didTruncate();
+      client_->DidTruncate();
       break;
     case kCancelSent:
       DCHECK(kOperationTruncate == operation_);
@@ -123,7 +121,7 @@ void WebFileWriterBase::DidFail(base::File::Error error_code) {
     case kCancelNotInProgress:
       // A write or truncate failed.
       operation_ = kOperationNone;
-      client_->didFail(FileErrorToWebFileError(error_code));
+      client_->DidFail(FileErrorToWebFileError(error_code));
       break;
     case kCancelSent:
       // This is the failure of a write or truncate; the next message should be
@@ -147,7 +145,7 @@ void WebFileWriterBase::FinishCancel() {
   DCHECK(kOperationNone != operation_);
   cancel_state_ = kCancelNotInProgress;
   operation_ = kOperationNone;
-  client_->didFail(blink::WebFileErrorAbort);
+  client_->DidFail(blink::kWebFileErrorAbort);
 }
 
 }  // namespace content

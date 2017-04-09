@@ -73,8 +73,8 @@ TestEnvironment* test_environment;
 }  // namespace
 
 void SetUpBlinkTestEnvironment() {
-  blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
-  blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
+  blink::WebRuntimeFeatures::EnableExperimentalFeatures(true);
+  blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 
 #if defined(OS_MACOSX)
   mock_cr_app::RegisterMockCrApp();
@@ -97,7 +97,7 @@ void TearDownBlinkTestEnvironment() {
   base::RunLoop().RunUntilIdle();
 
   if (RunningOnValgrind())
-    blink::WebCache::clear();
+    blink::WebCache::Clear();
   delete test_environment;
   test_environment = NULL;
 }

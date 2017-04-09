@@ -7,18 +7,18 @@
 namespace blink {
 
 HitTestCanvasResult::HitTestCanvasResult(String id, Member<Element> control)
-    : m_id(id), m_control(control) {}
+    : id_(id), control_(control) {}
 
-String HitTestCanvasResult::getId() const {
-  return m_id;
+String HitTestCanvasResult::GetId() const {
+  return id_;
 }
 
-Element* HitTestCanvasResult::getControl() const {
-  return m_control.get();
+Element* HitTestCanvasResult::GetControl() const {
+  return control_.Get();
 };
 
 DEFINE_TRACE(HitTestCanvasResult) {
-  visitor->trace(m_control);
+  visitor->Trace(control_);
 }
 
 }  // namespace blink

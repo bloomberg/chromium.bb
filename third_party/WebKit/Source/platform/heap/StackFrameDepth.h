@@ -23,26 +23,26 @@ class PLATFORM_EXPORT StackFrameDepth final {
   DISALLOW_NEW();
 
  public:
-  StackFrameDepth() : m_stackFrameLimit(kMinimumStackLimit) {}
-  bool isSafeToRecurse() {
+  StackFrameDepth() : stack_frame_limit_(kMinimumStackLimit) {}
+  bool IsSafeToRecurse() {
     // Asssume that the stack grows towards lower addresses, which
     // all the ABIs currently supported do.
     //
     // A unit test checks that the assumption holds for a target
     // (HeapTest.StackGrowthDirection.)
-    return currentStackFrame() > m_stackFrameLimit;
+    return CurrentStackFrame() > stack_frame_limit_;
   }
 
-  void enableStackLimit();
-  void disableStackLimit() { m_stackFrameLimit = kMinimumStackLimit; }
+  void EnableStackLimit();
+  void DisableStackLimit() { stack_frame_limit_ = kMinimumStackLimit; }
 
-  bool isEnabled() { return m_stackFrameLimit != kMinimumStackLimit; }
-  bool isAcceptableStackUse() {
+  bool IsEnabled() { return stack_frame_limit_ != kMinimumStackLimit; }
+  bool IsAcceptableStackUse() {
 #if defined(ADDRESS_SANITIZER)
     // ASan adds extra stack usage leading to too noisy asserts.
     return true;
 #else
-    return !isEnabled() || isSafeToRecurse();
+    return !IsEnabled() || IsSafeToRecurse();
 #endif
   }
 
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT StackFrameDepth final {
 #pragma warning(push)
 #pragma warning(disable : 4172)
 #endif
-  static uintptr_t currentStackFrame(const char* dummy = nullptr) {
+  static uintptr_t CurrentStackFrame(const char* dummy = nullptr) {
 #if COMPILER(GCC)
     return reinterpret_cast<uintptr_t>(__builtin_frame_address(0));
 #elif COMPILER(MSVC)
@@ -77,10 +77,10 @@ class PLATFORM_EXPORT StackFrameDepth final {
   // pointer will always exceed.
   static const uintptr_t kMinimumStackLimit = ~0ul;
 
-  static uintptr_t getFallbackStackLimit();
+  static uintptr_t GetFallbackStackLimit();
 
   // The (pointer-valued) stack limit.
-  uintptr_t m_stackFrameLimit;
+  uintptr_t stack_frame_limit_;
 };
 
 class StackFrameDepthScope {
@@ -88,16 +88,16 @@ class StackFrameDepthScope {
   WTF_MAKE_NONCOPYABLE(StackFrameDepthScope);
 
  public:
-  explicit StackFrameDepthScope(StackFrameDepth* depth) : m_depth(depth) {
-    m_depth->enableStackLimit();
+  explicit StackFrameDepthScope(StackFrameDepth* depth) : depth_(depth) {
+    depth_->EnableStackLimit();
     // Enabled unless under stack pressure.
-    DCHECK(m_depth->isSafeToRecurse() || !m_depth->isEnabled());
+    DCHECK(depth_->IsSafeToRecurse() || !depth_->IsEnabled());
   }
 
-  ~StackFrameDepthScope() { m_depth->disableStackLimit(); }
+  ~StackFrameDepthScope() { depth_->DisableStackLimit(); }
 
  private:
-  StackFrameDepth* m_depth;
+  StackFrameDepth* depth_;
 };
 
 }  // namespace blink

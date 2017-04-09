@@ -37,16 +37,16 @@ class CORE_EXPORT ModuleScriptLoader final
   USING_GARBAGE_COLLECTED_MIXIN(ModuleScriptLoader);
 
   enum class State {
-    Initial,
+    kInitial,
     // FetchRequest is being processed, and ModuleScriptLoader hasn't
     // notifyFinished().
-    Fetching,
+    kFetching,
     // Finished successfully or w/ error.
-    Finished,
+    kFinished,
   };
 
  public:
-  static ModuleScriptLoader* create(Modulator* modulator,
+  static ModuleScriptLoader* Create(Modulator* modulator,
                                     ModuleScriptLoaderRegistry* registry,
                                     ModuleScriptLoaderClient* client) {
     return new ModuleScriptLoader(modulator, registry, client);
@@ -55,12 +55,12 @@ class CORE_EXPORT ModuleScriptLoader final
   ~ModuleScriptLoader() override;
 
   // Note: fetch may notify |m_client| synchronously or asynchronously.
-  void fetch(const ModuleScriptFetchRequest&,
+  void Fetch(const ModuleScriptFetchRequest&,
              ResourceFetcher*,
              ModuleGraphLevel);
 
-  bool isInitialState() const { return m_state == State::Initial; }
-  bool hasFinished() const { return m_state == State::Finished; }
+  bool IsInitialState() const { return state_ == State::kInitial; }
+  bool HasFinished() const { return state_ == State::kFinished; }
 
   DECLARE_TRACE();
 
@@ -69,7 +69,7 @@ class CORE_EXPORT ModuleScriptLoader final
                      ModuleScriptLoaderRegistry*,
                      ModuleScriptLoaderClient*);
 
-  static ModuleScript* createModuleScript(const String& sourceText,
+  static ModuleScript* CreateModuleScript(const String& source_text,
                                           const KURL&,
                                           Modulator*,
                                           const String& nonce,
@@ -77,26 +77,26 @@ class CORE_EXPORT ModuleScriptLoader final
                                           WebURLRequest::FetchCredentialsMode,
                                           AccessControlStatus);
 
-  void advanceState(State newState);
+  void AdvanceState(State new_state);
 #if DCHECK_IS_ON()
-  static const char* stateToString(State);
+  static const char* StateToString(State);
 #endif
 
   // Implements ScriptResourceClient
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "ModuleScriptLoader"; }
+  void NotifyFinished(Resource*) override;
+  String DebugName() const override { return "ModuleScriptLoader"; }
 
-  static bool wasModuleLoadSuccessful(Resource*);
+  static bool WasModuleLoadSuccessful(Resource*);
 
-  Member<Modulator> m_modulator;
-  State m_state = State::Initial;
-  String m_nonce;
-  ParserDisposition m_parserState;
-  Member<ModuleScript> m_moduleScript;
-  Member<ModuleScriptLoaderRegistry> m_registry;
-  Member<ModuleScriptLoaderClient> m_client;
+  Member<Modulator> modulator_;
+  State state_ = State::kInitial;
+  String nonce_;
+  ParserDisposition parser_state_;
+  Member<ModuleScript> module_script_;
+  Member<ModuleScriptLoaderRegistry> registry_;
+  Member<ModuleScriptLoaderClient> client_;
 #if DCHECK_IS_ON()
-  KURL m_url;
+  KURL url_;
 #endif
 };
 

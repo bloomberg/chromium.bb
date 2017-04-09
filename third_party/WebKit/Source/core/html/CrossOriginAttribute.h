@@ -10,7 +10,7 @@
 
 namespace blink {
 
-CrossOriginAttributeValue crossOriginAttributeValue(const String& value);
+CrossOriginAttributeValue GetCrossOriginAttributeValue(const String& value);
 
 }  // namespace blink
 

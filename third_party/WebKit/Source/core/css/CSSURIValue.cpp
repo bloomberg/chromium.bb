@@ -12,71 +12,71 @@
 
 namespace blink {
 
-CSSURIValue::CSSURIValue(const AtomicString& relativeUrl,
-                         const AtomicString& absoluteUrl)
-    : CSSValue(URIClass),
-      m_relativeUrl(relativeUrl),
-      m_isLocal(relativeUrl.startsWith('#')),
-      m_absoluteUrl(absoluteUrl) {}
+CSSURIValue::CSSURIValue(const AtomicString& relative_url,
+                         const AtomicString& absolute_url)
+    : CSSValue(kURIClass),
+      relative_url_(relative_url),
+      is_local_(relative_url.StartsWith('#')),
+      absolute_url_(absolute_url) {}
 
-CSSURIValue::CSSURIValue(const AtomicString& relativeUrl, const KURL& url)
-    : CSSURIValue(relativeUrl, AtomicString(url.getString())) {}
+CSSURIValue::CSSURIValue(const AtomicString& relative_url, const KURL& url)
+    : CSSURIValue(relative_url, AtomicString(url.GetString())) {}
 
 CSSURIValue::~CSSURIValue() {}
 
-SVGElementProxy& CSSURIValue::ensureElementProxy(
+SVGElementProxy& CSSURIValue::EnsureElementProxy(
     const Document& document) const {
-  if (m_proxy)
-    return *m_proxy;
-  AtomicString fragmentId = fragmentIdentifier();
-  if (isLocal(document))
-    m_proxy = SVGElementProxy::create(fragmentId);
+  if (proxy_)
+    return *proxy_;
+  AtomicString fragment_id = FragmentIdentifier();
+  if (IsLocal(document))
+    proxy_ = SVGElementProxy::Create(fragment_id);
   else
-    m_proxy = SVGElementProxy::create(m_absoluteUrl, fragmentId);
-  return *m_proxy;
+    proxy_ = SVGElementProxy::Create(absolute_url_, fragment_id);
+  return *proxy_;
 }
 
-void CSSURIValue::reResolveUrl(const Document& document) const {
-  if (m_isLocal)
+void CSSURIValue::ReResolveUrl(const Document& document) const {
+  if (is_local_)
     return;
-  KURL url = document.completeURL(m_relativeUrl);
-  AtomicString urlString(url.getString());
-  if (urlString == m_absoluteUrl)
+  KURL url = document.CompleteURL(relative_url_);
+  AtomicString url_string(url.GetString());
+  if (url_string == absolute_url_)
     return;
-  m_absoluteUrl = urlString;
-  m_proxy = nullptr;
+  absolute_url_ = url_string;
+  proxy_ = nullptr;
 }
 
-String CSSURIValue::customCSSText() const {
-  return serializeURI(m_relativeUrl);
+String CSSURIValue::CustomCSSText() const {
+  return SerializeURI(relative_url_);
 }
 
-AtomicString CSSURIValue::fragmentIdentifier() const {
-  if (m_isLocal)
-    return AtomicString(m_relativeUrl.getString().substring(1));
-  return AtomicString(absoluteUrl().fragmentIdentifier());
+AtomicString CSSURIValue::FragmentIdentifier() const {
+  if (is_local_)
+    return AtomicString(relative_url_.GetString().Substring(1));
+  return AtomicString(AbsoluteUrl().FragmentIdentifier());
 }
 
-KURL CSSURIValue::absoluteUrl() const {
-  return KURL(ParsedURLString, m_absoluteUrl);
+KURL CSSURIValue::AbsoluteUrl() const {
+  return KURL(kParsedURLString, absolute_url_);
 }
 
-bool CSSURIValue::isLocal(const Document& document) const {
-  return m_isLocal ||
-         equalIgnoringFragmentIdentifier(absoluteUrl(), document.url());
+bool CSSURIValue::IsLocal(const Document& document) const {
+  return is_local_ ||
+         EqualIgnoringFragmentIdentifier(AbsoluteUrl(), document.Url());
 }
 
-bool CSSURIValue::equals(const CSSURIValue& other) const {
+bool CSSURIValue::Equals(const CSSURIValue& other) const {
   // If only one has the 'local url' flag set, the URLs can't match.
-  if (m_isLocal != other.m_isLocal)
+  if (is_local_ != other.is_local_)
     return false;
-  return (m_isLocal && m_relativeUrl == other.m_relativeUrl) ||
-         m_absoluteUrl == other.m_absoluteUrl;
+  return (is_local_ && relative_url_ == other.relative_url_) ||
+         absolute_url_ == other.absolute_url_;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSURIValue) {
-  visitor->trace(m_proxy);
-  CSSValue::traceAfterDispatch(visitor);
+  visitor->Trace(proxy_);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

@@ -29,17 +29,17 @@
 
 namespace blink {
 
-SQLiteTransaction::SQLiteTransaction(SQLiteDatabase& db, bool readOnly)
-    : m_db(db), m_inProgress(false), m_readOnly(readOnly) {}
+SQLiteTransaction::SQLiteTransaction(SQLiteDatabase& db, bool read_only)
+    : db_(db), in_progress_(false), read_only_(read_only) {}
 
 SQLiteTransaction::~SQLiteTransaction() {
-  if (m_inProgress)
-    rollback();
+  if (in_progress_)
+    Rollback();
 }
 
 void SQLiteTransaction::begin() {
-  if (!m_inProgress) {
-    ASSERT(!m_db.m_transactionInProgress);
+  if (!in_progress_) {
+    ASSERT(!db_.transaction_in_progress_);
     // Call BEGIN IMMEDIATE for a write transaction to acquire
     // a RESERVED lock on the DB file. Otherwise, another write
     // transaction (on another connection) could make changes
@@ -47,47 +47,47 @@ void SQLiteTransaction::begin() {
     // any statements. If that happens, this transaction will fail.
     // http://www.sqlite.org/lang_transaction.html
     // http://www.sqlite.org/lockingv3.html#locking
-    if (m_readOnly)
-      m_inProgress = m_db.executeCommand("BEGIN");
+    if (read_only_)
+      in_progress_ = db_.ExecuteCommand("BEGIN");
     else
-      m_inProgress = m_db.executeCommand("BEGIN IMMEDIATE");
-    m_db.m_transactionInProgress = m_inProgress;
+      in_progress_ = db_.ExecuteCommand("BEGIN IMMEDIATE");
+    db_.transaction_in_progress_ = in_progress_;
   }
 }
 
-void SQLiteTransaction::commit() {
-  if (m_inProgress) {
-    ASSERT(m_db.m_transactionInProgress);
-    m_inProgress = !m_db.executeCommand("COMMIT");
-    m_db.m_transactionInProgress = m_inProgress;
+void SQLiteTransaction::Commit() {
+  if (in_progress_) {
+    ASSERT(db_.transaction_in_progress_);
+    in_progress_ = !db_.ExecuteCommand("COMMIT");
+    db_.transaction_in_progress_ = in_progress_;
   }
 }
 
-void SQLiteTransaction::rollback() {
+void SQLiteTransaction::Rollback() {
   // We do not use the 'm_inProgress = m_db.executeCommand("ROLLBACK")'
   // construct here, because m_inProgress should always be set to false after a
   // ROLLBACK, and m_db.executeCommand("ROLLBACK") can sometimes harmlessly
   // fail, thus returning a non-zero/true result
   // (http://www.sqlite.org/lang_transaction.html).
-  if (m_inProgress) {
-    ASSERT(m_db.m_transactionInProgress);
-    m_db.executeCommand("ROLLBACK");
-    m_inProgress = false;
-    m_db.m_transactionInProgress = false;
+  if (in_progress_) {
+    ASSERT(db_.transaction_in_progress_);
+    db_.ExecuteCommand("ROLLBACK");
+    in_progress_ = false;
+    db_.transaction_in_progress_ = false;
   }
 }
 
-void SQLiteTransaction::stop() {
-  if (m_inProgress) {
-    m_inProgress = false;
-    m_db.m_transactionInProgress = false;
+void SQLiteTransaction::Stop() {
+  if (in_progress_) {
+    in_progress_ = false;
+    db_.transaction_in_progress_ = false;
   }
 }
 
-bool SQLiteTransaction::wasRolledBackBySqlite() const {
+bool SQLiteTransaction::WasRolledBackBySqlite() const {
   // According to http://www.sqlite.org/c3ref/get_autocommit.html,
   // the auto-commit flag should be off in the middle of a transaction
-  return m_inProgress && m_db.isAutoCommitOn();
+  return in_progress_ && db_.IsAutoCommitOn();
 }
 
 }  // namespace blink

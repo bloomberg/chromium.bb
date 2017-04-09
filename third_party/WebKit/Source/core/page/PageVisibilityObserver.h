@@ -36,9 +36,9 @@ namespace blink {
 class CORE_EXPORT PageVisibilityObserver
     : public LifecycleObserver<Page, PageVisibilityObserver> {
  public:
-  virtual void pageVisibilityChanged() {}
+  virtual void PageVisibilityChanged() {}
 
-  Page* page() const { return lifecycleContext(); }
+  Page* GetPage() const { return LifecycleContext(); }
 
  protected:
   explicit PageVisibilityObserver(Page* page) : LifecycleObserver(page) {}

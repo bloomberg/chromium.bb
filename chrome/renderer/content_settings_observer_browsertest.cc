@@ -77,11 +77,11 @@ TEST_F(ChromeRenderViewTest, DISABLED_AllowDOMStorage) {
           OnAllowDOMStorage(_, _, _, _, _)).WillByDefault(DeleteArg<4>());
   EXPECT_CALL(observer,
               OnAllowDOMStorage(_, _, _, _, _));
-  observer.allowStorage(true);
+  observer.AllowStorage(true);
 
   // Accessing localStorage from the same origin again shouldn't result in a
   // new IPC.
-  observer.allowStorage(true);
+  observer.AllowStorage(true);
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
@@ -194,7 +194,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
   observer->SetContentSettingRules(&content_setting_rules);
   EXPECT_CALL(mock_observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()));
-  EXPECT_FALSE(observer->allowImage(true, mock_observer.image_url_));
+  EXPECT_FALSE(observer->AllowImage(true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Create an exception which allows the image.
@@ -209,7 +209,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
 
   EXPECT_CALL(mock_observer, OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                               base::string16())).Times(0);
-  EXPECT_TRUE(observer->allowImage(true, mock_observer.image_url_));
+  EXPECT_TRUE(observer->AllowImage(true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
@@ -235,7 +235,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
   observer->SetContentSettingRules(&content_setting_rules);
   EXPECT_CALL(mock_observer, OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                               base::string16())).Times(0);
-  EXPECT_TRUE(observer->allowImage(true, mock_observer.image_url_));
+  EXPECT_TRUE(observer->AllowImage(true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Create an exception which blocks the image.
@@ -249,7 +249,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
           false));
   EXPECT_CALL(mock_observer,
               OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()));
-  EXPECT_FALSE(observer->allowImage(true, mock_observer.image_url_));
+  EXPECT_FALSE(observer->AllowImage(true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
@@ -353,15 +353,15 @@ TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
   LoadHTML(kHtml);
   EXPECT_NE(
       std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
+      blink::WebFrameContentDumper::DumpLayoutTreeAsText(
+          GetMainFrame(), blink::WebFrameContentDumper::kLayoutAsTextNormal)
+          .Utf8()
           .find("JS_DISABLED"));
   EXPECT_EQ(
       std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
+      blink::WebFrameContentDumper::DumpLayoutTreeAsText(
+          GetMainFrame(), blink::WebFrameContentDumper::kLayoutAsTextNormal)
+          .Utf8()
           .find("JS_ENABLED"));
 
   // 3. Allow JavaScript.
@@ -378,15 +378,15 @@ TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
   Reload(url);
   EXPECT_NE(
       std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
+      blink::WebFrameContentDumper::DumpLayoutTreeAsText(
+          GetMainFrame(), blink::WebFrameContentDumper::kLayoutAsTextNormal)
+          .Utf8()
           .find("JS_ENABLED"));
   EXPECT_EQ(
       std::string::npos,
-      blink::WebFrameContentDumper::dumpLayoutTreeAsText(
-          GetMainFrame(), blink::WebFrameContentDumper::LayoutAsTextNormal)
-          .utf8()
+      blink::WebFrameContentDumper::DumpLayoutTreeAsText(
+          GetMainFrame(), blink::WebFrameContentDumper::kLayoutAsTextNormal)
+          .Utf8()
           .find("JS_DISABLED"));
 }
 
@@ -428,7 +428,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsSamePageNavigation) {
   // The page shouldn't see the change to script blocking setting after a
   // same document navigation.
   OnSameDocumentNavigation(GetMainFrame(), true, true);
-  EXPECT_TRUE(observer->allowScript(true));
+  EXPECT_TRUE(observer->AllowScript(true));
 }
 
 TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
@@ -481,7 +481,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
   // Verify that images are allowed.
   EXPECT_CALL(mock_observer, OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                               base::string16())).Times(0);
-  EXPECT_TRUE(observer->allowImage(true, mock_observer.image_url_));
+  EXPECT_TRUE(observer->AllowImage(true, mock_observer.image_url_));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
@@ -506,7 +506,7 @@ TEST_F(ChromeRenderViewTest, AutoplayContentSettings) {
       ContentSettingsObserver::Get(view_->GetMainRenderFrame());
   observer->SetContentSettingRules(&content_setting_rules);
 
-  EXPECT_TRUE(observer->allowAutoplay(false));
+  EXPECT_TRUE(observer->AllowAutoplay(false));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Add rule to block autoplay.
@@ -519,6 +519,6 @@ TEST_F(ChromeRenderViewTest, AutoplayContentSettings) {
           std::string(),
           false));
 
-  EXPECT_FALSE(observer->allowAutoplay(true));
+  EXPECT_FALSE(observer->AllowAutoplay(true));
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }

@@ -83,7 +83,7 @@ class ASH_EXPORT ScreenOrientationController
   bool rotation_locked() const { return rotation_locked_; }
 
   bool user_rotation_locked() const {
-    return user_locked_orientation_ != blink::WebScreenOrientationLockAny;
+    return user_locked_orientation_ != blink::kWebScreenOrientationLockAny;
   }
 
   // Trun on/off the user rotation lock. When turned on, it will lock
@@ -126,7 +126,7 @@ class ASH_EXPORT ScreenOrientationController
           lock_completion_behavior(lock_completion_behavior) {}
 
     blink::WebScreenOrientationLockType orientation =
-        blink::WebScreenOrientationLockAny;
+        blink::kWebScreenOrientationLockAny;
     LockCompletionBehavior lock_completion_behavior =
         LockCompletionBehavior::None;
   };
@@ -215,7 +215,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // The orientation of the device locked by the user.
   blink::WebScreenOrientationLockType user_locked_orientation_ =
-      blink::WebScreenOrientationLockAny;
+      blink::kWebScreenOrientationLockAny;
 
   // The current rotation set by ScreenOrientationController for the internal
   // display.

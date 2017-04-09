@@ -26,31 +26,34 @@ namespace {
 
 class SVGInlineTextBoxPainterTest : public PaintControllerPaintTest {
  public:
-  const DrawingDisplayItem* getDrawingForSVGTextById(const char* elementName) {
+  const DrawingDisplayItem* GetDrawingForSVGTextById(const char* element_name) {
     // Look up the inline text box that serves as the display item client for
     // the painted text.
-    LayoutSVGText* targetSVGText = toLayoutSVGText(
-        document().getElementById(AtomicString(elementName))->layoutObject());
-    LayoutSVGInlineText* targetInlineText =
-        targetSVGText->descendantTextNodes()[0];
-    const DisplayItemClient* targetClient =
-        static_cast<const DisplayItemClient*>(targetInlineText->firstTextBox());
+    LayoutSVGText* target_svg_text =
+        ToLayoutSVGText(GetDocument()
+                            .GetElementById(AtomicString(element_name))
+                            ->GetLayoutObject());
+    LayoutSVGInlineText* target_inline_text =
+        target_svg_text->DescendantTextNodes()[0];
+    const DisplayItemClient* target_client =
+        static_cast<const DisplayItemClient*>(
+            target_inline_text->FirstTextBox());
 
     // Find the appropriate drawing in the display item list.
-    const DisplayItemList& displayItemList =
-        rootPaintController().getDisplayItemList();
-    for (size_t i = 0; i < displayItemList.size(); i++) {
-      if (displayItemList[i].client() == *targetClient)
-        return static_cast<const DrawingDisplayItem*>(&displayItemList[i]);
+    const DisplayItemList& display_item_list =
+        RootPaintController().GetDisplayItemList();
+    for (size_t i = 0; i < display_item_list.size(); i++) {
+      if (display_item_list[i].Client() == *target_client)
+        return static_cast<const DrawingDisplayItem*>(&display_item_list[i]);
     }
 
     return nullptr;
   }
 
-  void selectAllText() {
-    Range* range = document().createRange();
-    range->selectNode(document().documentElement());
-    LocalDOMWindow* window = document().domWindow();
+  void SelectAllText() {
+    Range* range = GetDocument().createRange();
+    range->selectNode(GetDocument().documentElement());
+    LocalDOMWindow* window = GetDocument().domWindow();
     DOMSelection* selection = window->getSelection();
     selection->removeAllRanges();
     selection->addRange(range);
@@ -59,16 +62,16 @@ class SVGInlineTextBoxPainterTest : public PaintControllerPaintTest {
  private:
   void SetUp() override {
     PaintControllerPaintTest::SetUp();
-    enableCompositing();
+    EnableCompositing();
   }
 };
 
-static void assertTextDrawingEquals(
-    const DrawingDisplayItem* drawingDisplayItem,
+static void AssertTextDrawingEquals(
+    const DrawingDisplayItem* drawing_display_item,
     const char* str) {
-  ASSERT_EQ(
-      str,
-      static_cast<const InlineTextBox*>(&drawingDisplayItem->client())->text());
+  ASSERT_EQ(str,
+            static_cast<const InlineTextBox*>(&drawing_display_item->Client())
+                ->GetText());
 }
 
 bool ApproximatelyEqual(int a, int b, int delta) {
@@ -77,88 +80,90 @@ bool ApproximatelyEqual(int a, int b, int delta) {
 
 const static int kPixelDelta = 4;
 
-#define EXPECT_RECT_EQ(expected, actual)                                       \
-  do {                                                                         \
-    const FloatRect& actualRect = actual;                                      \
-    EXPECT_TRUE(ApproximatelyEqual(expected.x(), actualRect.x(), kPixelDelta)) \
-        << "actual: " << actualRect.x() << ", expected: " << expected.x();     \
-    EXPECT_TRUE(ApproximatelyEqual(expected.y(), actualRect.y(), kPixelDelta)) \
-        << "actual: " << actualRect.y() << ", expected: " << expected.y();     \
-    EXPECT_TRUE(                                                               \
-        ApproximatelyEqual(expected.width(), actualRect.width(), kPixelDelta)) \
-        << "actual: " << actualRect.width()                                    \
-        << ", expected: " << expected.width();                                 \
-    EXPECT_TRUE(ApproximatelyEqual(expected.height(), actualRect.height(),     \
-                                   kPixelDelta))                               \
-        << "actual: " << actualRect.height()                                   \
-        << ", expected: " << expected.height();                                \
+#define EXPECT_RECT_EQ(expected, actual)                                    \
+  do {                                                                      \
+    const FloatRect& actual_rect = actual;                                  \
+    EXPECT_TRUE(                                                            \
+        ApproximatelyEqual(expected.X(), actual_rect.X(), kPixelDelta))     \
+        << "actual: " << actual_rect.X() << ", expected: " << expected.X(); \
+    EXPECT_TRUE(                                                            \
+        ApproximatelyEqual(expected.Y(), actual_rect.Y(), kPixelDelta))     \
+        << "actual: " << actual_rect.Y() << ", expected: " << expected.Y(); \
+    EXPECT_TRUE(ApproximatelyEqual(expected.Width(), actual_rect.Width(),   \
+                                   kPixelDelta))                            \
+        << "actual: " << actual_rect.Width()                                \
+        << ", expected: " << expected.Width();                              \
+    EXPECT_TRUE(ApproximatelyEqual(expected.Height(), actual_rect.Height(), \
+                                   kPixelDelta))                            \
+        << "actual: " << actual_rect.Height()                               \
+        << ", expected: " << expected.Height();                             \
   } while (false)
 
-static IntRect cullRectFromDrawing(
-    const DrawingDisplayItem& drawingDisplayItem) {
-  return IntRect(drawingDisplayItem.GetPaintRecord()->cullRect());
+static IntRect CullRectFromDrawing(
+    const DrawingDisplayItem& drawing_display_item) {
+  return IntRect(drawing_display_item.GetPaintRecord()->cullRect());
 }
 
 TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_DefaultWritingMode) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg width='400px' height='400px' font-family='Arial' font-size='30'>"
       "<text id='target' x='50' y='30'>x</text>"
       "</svg>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  const DrawingDisplayItem* drawingDisplayItem =
-      getDrawingForSVGTextById("target");
-  assertTextDrawingEquals(drawingDisplayItem, "x");
+  const DrawingDisplayItem* drawing_display_item =
+      GetDrawingForSVGTextById("target");
+  AssertTextDrawingEquals(drawing_display_item, "x");
   EXPECT_RECT_EQ(IntRect(50, 3, 15, 33),
-                 cullRectFromDrawing(*drawingDisplayItem));
+                 CullRectFromDrawing(*drawing_display_item));
 
-  selectAllText();
-  document().view()->updateAllLifecyclePhases();
+  SelectAllText();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  drawingDisplayItem = getDrawingForSVGTextById("target");
-  assertTextDrawingEquals(drawingDisplayItem, "x");
+  drawing_display_item = GetDrawingForSVGTextById("target");
+  AssertTextDrawingEquals(drawing_display_item, "x");
   EXPECT_RECT_EQ(IntRect(50, 3, 15, 33),
-                 cullRectFromDrawing(*drawingDisplayItem));
+                 CullRectFromDrawing(*drawing_display_item));
 }
 
 TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_WritingModeTopToBottom) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg width='400px' height='400px' font-family='Arial' font-size='30'>"
       "<text id='target' x='50' y='30' writing-mode='tb'>x</text>"
       "</svg>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  const DrawingDisplayItem* drawingDisplayItem =
-      getDrawingForSVGTextById("target");
-  assertTextDrawingEquals(drawingDisplayItem, "x");
+  const DrawingDisplayItem* drawing_display_item =
+      GetDrawingForSVGTextById("target");
+  AssertTextDrawingEquals(drawing_display_item, "x");
   EXPECT_RECT_EQ(IntRect(33, 30, 34, 15),
-                 cullRectFromDrawing(*drawingDisplayItem));
+                 CullRectFromDrawing(*drawing_display_item));
 
-  selectAllText();
-  document().view()->updateAllLifecyclePhases();
+  SelectAllText();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The selection rect is one pixel taller due to sub-pixel difference
   // between the text bounds and selection bounds in combination with use of
   // enclosingIntRect() in SVGInlineTextBox::localSelectionRect().
-  drawingDisplayItem = getDrawingForSVGTextById("target");
-  assertTextDrawingEquals(drawingDisplayItem, "x");
+  drawing_display_item = GetDrawingForSVGTextById("target");
+  AssertTextDrawingEquals(drawing_display_item, "x");
   EXPECT_RECT_EQ(IntRect(33, 30, 34, 16),
-                 cullRectFromDrawing(*drawingDisplayItem));
+                 CullRectFromDrawing(*drawing_display_item));
 }
 
 TEST_F(SVGInlineTextBoxPainterTest, TextCullRect_TextShadow) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg width='400px' height='400px' font-family='Arial' font-size='30'>"
       "<text id='target' x='50' y='30' style='text-shadow: 200px 200px 5px "
       "red'>x</text>"
       "</svg>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  const DrawingDisplayItem* drawingDisplayItem =
-      getDrawingForSVGTextById("target");
-  assertTextDrawingEquals(drawingDisplayItem, "x");
+  const DrawingDisplayItem* drawing_display_item =
+      GetDrawingForSVGTextById("target");
+  AssertTextDrawingEquals(drawing_display_item, "x");
   EXPECT_RECT_EQ(IntRect(50, 3, 220, 238),
-                 cullRectFromDrawing(*drawingDisplayItem));
+                 CullRectFromDrawing(*drawing_display_item));
 }
 
 }  // namespace

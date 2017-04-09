@@ -28,25 +28,25 @@
 
 namespace blink {
 
-void LiveNodeListBase::invalidateCacheForAttribute(
-    const QualifiedName* attrName) const {
-  if (isLiveNodeListType(type()))
-    toLiveNodeList(this)->invalidateCacheForAttribute(attrName);
+void LiveNodeListBase::InvalidateCacheForAttribute(
+    const QualifiedName* attr_name) const {
+  if (IsLiveNodeListType(GetType()))
+    ToLiveNodeList(this)->InvalidateCacheForAttribute(attr_name);
   else
-    toHTMLCollection(this)->invalidateCacheForAttribute(attrName);
+    ToHTMLCollection(this)->InvalidateCacheForAttribute(attr_name);
 }
 
-ContainerNode& LiveNodeListBase::rootNode() const {
-  if (isRootedAtTreeScope() && m_ownerNode->isInTreeScope())
-    return m_ownerNode->containingTreeScope().rootNode();
-  return *m_ownerNode;
+ContainerNode& LiveNodeListBase::RootNode() const {
+  if (IsRootedAtTreeScope() && owner_node_->IsInTreeScope())
+    return owner_node_->ContainingTreeScope().RootNode();
+  return *owner_node_;
 }
 
-void LiveNodeListBase::didMoveToDocument(Document& oldDocument,
-                                         Document& newDocument) {
-  invalidateCache(&oldDocument);
-  oldDocument.unregisterNodeList(this);
-  newDocument.registerNodeList(this);
+void LiveNodeListBase::DidMoveToDocument(Document& old_document,
+                                         Document& new_document) {
+  InvalidateCache(&old_document);
+  old_document.UnregisterNodeList(this);
+  new_document.RegisterNodeList(this);
 }
 
 }  // namespace blink

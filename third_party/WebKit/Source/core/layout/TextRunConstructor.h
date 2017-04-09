@@ -49,42 +49,42 @@ class LayoutText;
 class LineLayoutText;
 
 enum TextRunFlag {
-  DefaultTextRunFlags = 0,
-  RespectDirection = 1 << 0,
-  RespectDirectionOverride = 1 << 1
+  kDefaultTextRunFlags = 0,
+  kRespectDirection = 1 << 0,
+  kRespectDirectionOverride = 1 << 1
 };
 
 typedef unsigned TextRunFlags;
 
 // Direction resolved from string value.
-TextRun constructTextRun(const Font&,
+TextRun ConstructTextRun(const Font&,
                          const String&,
                          const ComputedStyle&,
-                         TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(const Font&,
+                         TextRunFlags = kDefaultTextRunFlags);
+TextRun ConstructTextRun(const Font&,
                          const LineLayoutText,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle&);
 
 // Explicit direction.
-TextRun constructTextRun(const Font&,
+TextRun ConstructTextRun(const Font&,
                          const String&,
                          const ComputedStyle&,
                          TextDirection,
-                         TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(const Font&,
+                         TextRunFlags = kDefaultTextRunFlags);
+TextRun ConstructTextRun(const Font&,
                          const LayoutText*,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle&,
                          TextDirection);
-TextRun constructTextRun(const Font&,
+TextRun ConstructTextRun(const Font&,
                          const LChar*,
                          int length,
                          const ComputedStyle&,
                          TextDirection);
-TextRun constructTextRun(const Font&,
+TextRun ConstructTextRun(const Font&,
                          const UChar*,
                          int length,
                          const ComputedStyle&,

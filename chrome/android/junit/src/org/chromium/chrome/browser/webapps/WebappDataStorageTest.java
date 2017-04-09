@@ -239,7 +239,7 @@ public class WebappDataStorageTest {
         final String name = "name";
         final String shortName = "shortName";
         final Bitmap icon = createBitmap();
-        final int displayMode = WebDisplayMode.Standalone;
+        final int displayMode = WebDisplayMode.kStandalone;
         final int orientation = 1;
         final long themeColor = 2;
         final long backgroundColor = 3;

@@ -11,18 +11,18 @@
 namespace blink {
 
 TEST(StereoPannerNodeTest, StereoPannerLifetime) {
-  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::create();
-  OfflineAudioContext* context = OfflineAudioContext::create(
-      &page->document(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::Create();
+  OfflineAudioContext* context = OfflineAudioContext::Create(
+      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   StereoPannerNode* node = context->createStereoPanner(ASSERT_NO_EXCEPTION);
   StereoPannerHandler& handler =
-      static_cast<StereoPannerHandler&>(node->handler());
-  EXPECT_TRUE(handler.m_stereoPanner);
+      static_cast<StereoPannerHandler&>(node->Handler());
+  EXPECT_TRUE(handler.stereo_panner_);
   BaseAudioContext::AutoLocker locker(context);
-  handler.dispose();
+  handler.Dispose();
   // m_stereoPanner should live after dispose() because an audio thread is
   // using it.
-  EXPECT_TRUE(handler.m_stereoPanner);
+  EXPECT_TRUE(handler.stereo_panner_);
 }
 
 }  // namespace blink

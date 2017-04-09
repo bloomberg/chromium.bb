@@ -32,20 +32,23 @@
 #include "core/loader/NavigationPolicy.h"
 #include "wtf/text/WTFString.h"
 
+// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+#undef CreateWindow
+
 namespace blink {
 class LocalFrame;
 struct FrameLoadRequest;
 struct WindowFeatures;
 
-DOMWindow* createWindow(const String& urlString,
-                        const AtomicString& frameName,
+DOMWindow* CreateWindow(const String& url_string,
+                        const AtomicString& frame_name,
                         const WindowFeatures&,
-                        LocalDOMWindow& callingWindow,
-                        LocalFrame& firstFrame,
-                        LocalFrame& openerFrame);
+                        LocalDOMWindow& calling_window,
+                        LocalFrame& first_frame,
+                        LocalFrame& opener_frame);
 
-void createWindowForRequest(const FrameLoadRequest&,
-                            LocalFrame& openerFrame,
+void CreateWindowForRequest(const FrameLoadRequest&,
+                            LocalFrame& opener_frame,
                             NavigationPolicy);
 
 }  // namespace blink

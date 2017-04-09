@@ -18,7 +18,8 @@ CompositorThreadEventQueue::~CompositorThreadEventQueue() {}
 void CompositorThreadEventQueue::Queue(
     std::unique_ptr<EventWithCallback> new_event,
     base::TimeTicks timestamp_now) {
-  if (queue_.empty() || !IsContinuousGestureEvent(new_event->event().type()) ||
+  if (queue_.empty() ||
+      !IsContinuousGestureEvent(new_event->event().GetType()) ||
       !IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
                                  ToWebGestureEvent(queue_.back()->event()))) {
     if (new_event->first_original_event()) {
@@ -100,7 +101,7 @@ std::unique_ptr<EventWithCallback> CompositorThreadEventQueue::Pop() {
   if (result->first_original_event()) {
     TRACE_EVENT_NESTABLE_ASYNC_END2(
         "input", "CompositorThreadEventQueue::Queue",
-        result->first_original_event(), "type", result->event().type(),
+        result->first_original_event(), "type", result->event().GetType(),
         "coalesced_count", result->coalesced_count());
   }
   return result;

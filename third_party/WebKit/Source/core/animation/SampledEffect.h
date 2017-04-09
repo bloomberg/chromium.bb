@@ -19,35 +19,35 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   WTF_MAKE_NONCOPYABLE(SampledEffect);
 
  public:
-  static SampledEffect* create(KeyframeEffectReadOnly* animation) {
+  static SampledEffect* Create(KeyframeEffectReadOnly* animation) {
     return new SampledEffect(animation);
   }
 
-  void clear();
+  void Clear();
 
-  const Vector<RefPtr<Interpolation>>& interpolations() const {
-    return m_interpolations;
+  const Vector<RefPtr<Interpolation>>& Interpolations() const {
+    return interpolations_;
   }
-  Vector<RefPtr<Interpolation>>& mutableInterpolations() {
-    return m_interpolations;
+  Vector<RefPtr<Interpolation>>& MutableInterpolations() {
+    return interpolations_;
   }
 
-  KeyframeEffectReadOnly* effect() const { return m_effect; }
-  unsigned sequenceNumber() const { return m_sequenceNumber; }
-  KeyframeEffectReadOnly::Priority priority() const { return m_priority; }
-  bool willNeverChange() const;
-  void removeReplacedInterpolations(const HashSet<PropertyHandle>&);
-  void updateReplacedProperties(HashSet<PropertyHandle>&);
+  KeyframeEffectReadOnly* Effect() const { return effect_; }
+  unsigned SequenceNumber() const { return sequence_number_; }
+  KeyframeEffectReadOnly::Priority GetPriority() const { return priority_; }
+  bool WillNeverChange() const;
+  void RemoveReplacedInterpolations(const HashSet<PropertyHandle>&);
+  void UpdateReplacedProperties(HashSet<PropertyHandle>&);
 
   DECLARE_TRACE();
 
  private:
   SampledEffect(KeyframeEffectReadOnly*);
 
-  WeakMember<KeyframeEffectReadOnly> m_effect;
-  Vector<RefPtr<Interpolation>> m_interpolations;
-  const unsigned m_sequenceNumber;
-  KeyframeEffectReadOnly::Priority m_priority;
+  WeakMember<KeyframeEffectReadOnly> effect_;
+  Vector<RefPtr<Interpolation>> interpolations_;
+  const unsigned sequence_number_;
+  KeyframeEffectReadOnly::Priority priority_;
 };
 
 }  // namespace blink

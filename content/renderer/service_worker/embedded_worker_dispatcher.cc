@@ -70,7 +70,7 @@ void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
   // a delayed task to forcibly abort the worker context if we find it
   // necessary)
   stop_worker_times_[embedded_worker_id] = base::TimeTicks::Now();
-  wrapper->worker()->terminateWorkerContext();
+  wrapper->worker()->TerminateWorkerContext();
 }
 
 std::unique_ptr<EmbeddedWorkerDispatcher::WorkerWrapper>
@@ -78,26 +78,26 @@ EmbeddedWorkerDispatcher::StartWorkerContext(
     const EmbeddedWorkerStartParams& params,
     std::unique_ptr<ServiceWorkerContextClient> context_client) {
   std::unique_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
-      blink::WebEmbeddedWorker::create(context_client.release(), nullptr),
+      blink::WebEmbeddedWorker::Create(context_client.release(), nullptr),
       params.worker_devtools_agent_route_id));
 
   blink::WebEmbeddedWorkerStartData start_data;
-  start_data.scriptURL = params.script_url;
-  start_data.userAgent =
-      blink::WebString::fromUTF8(GetContentClient()->GetUserAgent());
-  start_data.waitForDebuggerMode =
+  start_data.script_url = params.script_url;
+  start_data.user_agent =
+      blink::WebString::FromUTF8(GetContentClient()->GetUserAgent());
+  start_data.wait_for_debugger_mode =
       params.wait_for_debugger
-          ? blink::WebEmbeddedWorkerStartData::WaitForDebugger
-          : blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
-  start_data.v8CacheOptions = static_cast<blink::WebSettings::V8CacheOptions>(
+          ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
+          : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
+  start_data.v8_cache_options = static_cast<blink::WebSettings::V8CacheOptions>(
       params.settings.v8_cache_options);
-  start_data.dataSaverEnabled = params.settings.data_saver_enabled;
-  start_data.pauseAfterDownloadMode =
+  start_data.data_saver_enabled = params.settings.data_saver_enabled;
+  start_data.pause_after_download_mode =
       params.pause_after_download
-          ? blink::WebEmbeddedWorkerStartData::PauseAfterDownload
-          : blink::WebEmbeddedWorkerStartData::DontPauseAfterDownload;
+          ? blink::WebEmbeddedWorkerStartData::kPauseAfterDownload
+          : blink::WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
 
-  wrapper->worker()->startWorkerContext(start_data);
+  wrapper->worker()->StartWorkerContext(start_data);
   return wrapper;
 }
 

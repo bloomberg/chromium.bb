@@ -59,151 +59,150 @@ class ImageResource::ImageResourceInfoImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceInfoImpl);
 
  public:
-  ImageResourceInfoImpl(ImageResource* resource) : m_resource(resource) {
-    DCHECK(m_resource);
+  ImageResourceInfoImpl(ImageResource* resource) : resource_(resource) {
+    DCHECK(resource_);
   }
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_resource);
-    ImageResourceInfo::trace(visitor);
+    visitor->Trace(resource_);
+    ImageResourceInfo::Trace(visitor);
   }
 
  private:
-  const KURL& url() const override { return m_resource->url(); }
-  bool isSchedulingReload() const override {
-    return m_resource->m_isSchedulingReload;
+  const KURL& Url() const override { return resource_->Url(); }
+  bool IsSchedulingReload() const override {
+    return resource_->is_scheduling_reload_;
   }
-  bool hasDevicePixelRatioHeaderValue() const override {
-    return m_resource->m_hasDevicePixelRatioHeaderValue;
+  bool HasDevicePixelRatioHeaderValue() const override {
+    return resource_->has_device_pixel_ratio_header_value_;
   }
-  float devicePixelRatioHeaderValue() const override {
-    return m_resource->m_devicePixelRatioHeaderValue;
+  float DevicePixelRatioHeaderValue() const override {
+    return resource_->device_pixel_ratio_header_value_;
   }
-  const ResourceResponse& response() const override {
-    return m_resource->response();
+  const ResourceResponse& GetResponse() const override {
+    return resource_->GetResponse();
   }
-  ResourceStatus getStatus() const override { return m_resource->getStatus(); }
-  bool shouldShowPlaceholder() const override {
-    return m_resource->shouldShowPlaceholder();
+  ResourceStatus GetStatus() const override { return resource_->GetStatus(); }
+  bool ShouldShowPlaceholder() const override {
+    return resource_->ShouldShowPlaceholder();
   }
-  bool isCacheValidator() const override {
-    return m_resource->isCacheValidator();
+  bool IsCacheValidator() const override {
+    return resource_->IsCacheValidator();
   }
-  bool schedulingReloadOrShouldReloadBrokenPlaceholder() const override {
-    return m_resource->m_isSchedulingReload ||
-           m_resource->shouldReloadBrokenPlaceholder();
+  bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const override {
+    return resource_->is_scheduling_reload_ ||
+           resource_->ShouldReloadBrokenPlaceholder();
   }
-  bool isAccessAllowed(
-      SecurityOrigin* securityOrigin,
+  bool IsAccessAllowed(
+      SecurityOrigin* security_origin,
       DoesCurrentFrameHaveSingleSecurityOrigin
-          doesCurrentFrameHasSingleSecurityOrigin) const override {
-    return m_resource->isAccessAllowed(securityOrigin,
-                                       doesCurrentFrameHasSingleSecurityOrigin);
+          does_current_frame_has_single_security_origin) const override {
+    return resource_->IsAccessAllowed(
+        security_origin, does_current_frame_has_single_security_origin);
   }
-  bool hasCacheControlNoStoreHeader() const override {
-    return m_resource->hasCacheControlNoStoreHeader();
+  bool HasCacheControlNoStoreHeader() const override {
+    return resource_->HasCacheControlNoStoreHeader();
   }
-  const ResourceError& resourceError() const override {
-    return m_resource->resourceError();
+  const ResourceError& GetResourceError() const override {
+    return resource_->GetResourceError();
   }
 
-  void setDecodedSize(size_t size) override {
-    m_resource->setDecodedSize(size);
+  void SetDecodedSize(size_t size) override { resource_->SetDecodedSize(size); }
+  void WillAddClientOrObserver() override {
+    resource_->WillAddClientOrObserver(Resource::kMarkAsReferenced);
   }
-  void willAddClientOrObserver() override {
-    m_resource->willAddClientOrObserver(Resource::MarkAsReferenced);
+  void DidRemoveClientOrObserver() override {
+    resource_->DidRemoveClientOrObserver();
   }
-  void didRemoveClientOrObserver() override {
-    m_resource->didRemoveClientOrObserver();
-  }
-  void emulateLoadStartedForInspector(
+  void EmulateLoadStartedForInspector(
       ResourceFetcher* fetcher,
       const KURL& url,
-      const AtomicString& initiatorName) override {
-    fetcher->emulateLoadStartedForInspector(m_resource.get(), url,
-                                            WebURLRequest::RequestContextImage,
-                                            initiatorName);
+      const AtomicString& initiator_name) override {
+    fetcher->EmulateLoadStartedForInspector(resource_.Get(), url,
+                                            WebURLRequest::kRequestContextImage,
+                                            initiator_name);
   }
 
-  const Member<ImageResource> m_resource;
+  const Member<ImageResource> resource_;
 };
 
 class ImageResource::ImageResourceFactory : public ResourceFactory {
   STACK_ALLOCATED();
 
  public:
-  ImageResourceFactory(const FetchRequest& fetchRequest)
-      : ResourceFactory(Resource::Image), m_fetchRequest(&fetchRequest) {}
+  ImageResourceFactory(const FetchRequest& fetch_request)
+      : ResourceFactory(Resource::kImage), fetch_request_(&fetch_request) {}
 
-  Resource* create(const ResourceRequest& request,
+  Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options,
                    const String&) const override {
-    return new ImageResource(request, options, ImageResourceContent::create(),
-                             m_fetchRequest->placeholderImageRequestType() ==
-                                 FetchRequest::AllowPlaceholder);
+    return new ImageResource(request, options, ImageResourceContent::Create(),
+                             fetch_request_->GetPlaceholderImageRequestType() ==
+                                 FetchRequest::kAllowPlaceholder);
   }
 
  private:
   // Weak, unowned pointer. Must outlive |this|.
-  const FetchRequest* m_fetchRequest;
+  const FetchRequest* fetch_request_;
 };
 
-ImageResource* ImageResource::fetch(FetchRequest& request,
+ImageResource* ImageResource::Fetch(FetchRequest& request,
                                     ResourceFetcher* fetcher) {
-  if (request.resourceRequest().requestContext() ==
-      WebURLRequest::RequestContextUnspecified) {
-    request.setRequestContext(WebURLRequest::RequestContextImage);
+  if (request.GetResourceRequest().GetRequestContext() ==
+      WebURLRequest::kRequestContextUnspecified) {
+    request.SetRequestContext(WebURLRequest::kRequestContextImage);
   }
-  if (fetcher->context().pageDismissalEventBeingDispatched()) {
-    KURL requestURL = request.resourceRequest().url();
-    if (requestURL.isValid()) {
-      ResourceRequestBlockedReason blockReason = fetcher->context().canRequest(
-          Resource::Image, request.resourceRequest(), requestURL,
-          request.options(),
+  if (fetcher->Context().PageDismissalEventBeingDispatched()) {
+    KURL request_url = request.GetResourceRequest().Url();
+    if (request_url.IsValid()) {
+      ResourceRequestBlockedReason block_reason = fetcher->Context().CanRequest(
+          Resource::kImage, request.GetResourceRequest(), request_url,
+          request.Options(),
           /* Don't send security violation reports for speculative preloads */
-          request.isSpeculativePreload()
-              ? SecurityViolationReportingPolicy::SuppressReporting
-              : SecurityViolationReportingPolicy::Report,
-          request.getOriginRestriction());
-      if (blockReason == ResourceRequestBlockedReason::None)
-        fetcher->context().sendImagePing(requestURL);
+          request.IsSpeculativePreload()
+              ? SecurityViolationReportingPolicy::kSuppressReporting
+              : SecurityViolationReportingPolicy::kReport,
+          request.GetOriginRestriction());
+      if (block_reason == ResourceRequestBlockedReason::kNone)
+        fetcher->Context().SendImagePing(request_url);
     }
     return nullptr;
   }
 
-  return toImageResource(
-      fetcher->requestResource(request, ImageResourceFactory(request)));
+  return ToImageResource(
+      fetcher->RequestResource(request, ImageResourceFactory(request)));
 }
 
-bool ImageResource::canReuse(const FetchRequest& request) const {
+bool ImageResource::CanReuse(const FetchRequest& request) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
-  if (request.placeholderImageRequestType() != FetchRequest::AllowPlaceholder &&
-      m_placeholderOption != PlaceholderOption::DoNotReloadPlaceholder)
+  if (request.GetPlaceholderImageRequestType() !=
+          FetchRequest::kAllowPlaceholder &&
+      placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
     return false;
   return true;
 }
 
-ImageResource* ImageResource::create(const ResourceRequest& request) {
+ImageResource* ImageResource::Create(const ResourceRequest& request) {
   return new ImageResource(request, ResourceLoaderOptions(),
-                           ImageResourceContent::create(), false);
+                           ImageResourceContent::Create(), false);
 }
 
-ImageResource::ImageResource(const ResourceRequest& resourceRequest,
+ImageResource::ImageResource(const ResourceRequest& resource_request,
                              const ResourceLoaderOptions& options,
                              ImageResourceContent* content,
-                             bool isPlaceholder)
-    : Resource(resourceRequest, Image, options),
-      m_content(content),
-      m_devicePixelRatioHeaderValue(1.0),
-      m_hasDevicePixelRatioHeaderValue(false),
-      m_isSchedulingReload(false),
-      m_placeholderOption(
-          isPlaceholder ? PlaceholderOption::ShowAndReloadPlaceholderAlways
-                        : PlaceholderOption::DoNotReloadPlaceholder),
-      m_flushTimer(this, &ImageResource::flushImageIfNeeded) {
-  DCHECK(getContent());
+                             bool is_placeholder)
+    : Resource(resource_request, kImage, options),
+      content_(content),
+      device_pixel_ratio_header_value_(1.0),
+      has_device_pixel_ratio_header_value_(false),
+      is_scheduling_reload_(false),
+      placeholder_option_(
+          is_placeholder ? PlaceholderOption::kShowAndReloadPlaceholderAlways
+                         : PlaceholderOption::kDoNotReloadPlaceholder),
+      flush_timer_(this, &ImageResource::FlushImageIfNeeded) {
+  DCHECK(GetContent());
   RESOURCE_LOADING_DVLOG(1) << "new ImageResource(ResourceRequest) " << this;
-  getContent()->setImageResourceInfo(new ImageResourceInfoImpl(this));
+  GetContent()->SetImageResourceInfo(new ImageResourceInfoImpl(this));
 }
 
 ImageResource::~ImageResource() {
@@ -211,86 +210,86 @@ ImageResource::~ImageResource() {
 }
 
 DEFINE_TRACE(ImageResource) {
-  visitor->trace(m_multipartParser);
-  visitor->trace(m_content);
-  Resource::trace(visitor);
-  MultipartImageResourceParser::Client::trace(visitor);
+  visitor->Trace(multipart_parser_);
+  visitor->Trace(content_);
+  Resource::Trace(visitor);
+  MultipartImageResourceParser::Client::Trace(visitor);
 }
 
-void ImageResource::checkNotify() {
+void ImageResource::CheckNotify() {
   // Don't notify clients of completion if this ImageResource is
   // about to be reloaded.
-  if (m_isSchedulingReload || shouldReloadBrokenPlaceholder())
+  if (is_scheduling_reload_ || ShouldReloadBrokenPlaceholder())
     return;
 
-  Resource::checkNotify();
+  Resource::CheckNotify();
 }
 
-bool ImageResource::hasClientsOrObservers() const {
-  return Resource::hasClientsOrObservers() || getContent()->hasObservers();
+bool ImageResource::HasClientsOrObservers() const {
+  return Resource::HasClientsOrObservers() || GetContent()->HasObservers();
 }
 
-void ImageResource::didAddClient(ResourceClient* client) {
-  DCHECK((m_multipartParser && isLoading()) || !data() ||
-         getContent()->hasImage());
+void ImageResource::DidAddClient(ResourceClient* client) {
+  DCHECK((multipart_parser_ && IsLoading()) || !Data() ||
+         GetContent()->HasImage());
 
   // Don't notify observers and clients of completion if this ImageResource is
   // about to be reloaded.
-  if (m_isSchedulingReload || shouldReloadBrokenPlaceholder())
+  if (is_scheduling_reload_ || ShouldReloadBrokenPlaceholder())
     return;
 
-  Resource::didAddClient(client);
+  Resource::DidAddClient(client);
 }
 
-void ImageResource::destroyDecodedDataForFailedRevalidation() {
+void ImageResource::DestroyDecodedDataForFailedRevalidation() {
   // Clears the image, as we must create a new image for the failed
   // revalidation response.
-  updateImage(nullptr, ImageResourceContent::ClearAndUpdateImage, false);
-  setDecodedSize(0);
+  UpdateImage(nullptr, ImageResourceContent::kClearAndUpdateImage, false);
+  SetDecodedSize(0);
 }
 
-void ImageResource::destroyDecodedDataIfPossible() {
-  getContent()->destroyDecodedData();
-  if (getContent()->hasImage() && !isPreloaded() &&
-      getContent()->isRefetchableDataFromDiskCache()) {
+void ImageResource::DestroyDecodedDataIfPossible() {
+  GetContent()->DestroyDecodedData();
+  if (GetContent()->HasImage() && !IsPreloaded() &&
+      GetContent()->IsRefetchableDataFromDiskCache()) {
     UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer.EstimatedDroppableEncodedSize",
-                            encodedSize() / 1024);
+                            EncodedSize() / 1024);
   }
 }
 
-void ImageResource::allClientsAndObserversRemoved() {
-  CHECK(!getContent()->hasImage() || !errorOccurred());
+void ImageResource::AllClientsAndObserversRemoved() {
+  CHECK(!GetContent()->HasImage() || !ErrorOccurred());
   // If possible, delay the resetting until back at the event loop. Doing so
   // after a conservative GC prevents resetAnimation() from upsetting ongoing
   // animation updates (crbug.com/613709)
-  if (!ThreadHeap::willObjectBeLazilySwept(this)) {
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, WTF::bind(&ImageResourceContent::doResetAnimation,
-                                   wrapWeakPersistent(getContent())));
+  if (!ThreadHeap::WillObjectBeLazilySwept(this)) {
+    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, WTF::Bind(&ImageResourceContent::DoResetAnimation,
+                                   WrapWeakPersistent(GetContent())));
   } else {
-    getContent()->doResetAnimation();
+    GetContent()->DoResetAnimation();
   }
-  if (m_multipartParser)
-    m_multipartParser->cancel();
-  Resource::allClientsAndObserversRemoved();
+  if (multipart_parser_)
+    multipart_parser_->Cancel();
+  Resource::AllClientsAndObserversRemoved();
 }
 
-PassRefPtr<const SharedBuffer> ImageResource::resourceBuffer() const {
-  if (data())
-    return data();
-  return getContent()->resourceBuffer();
+PassRefPtr<const SharedBuffer> ImageResource::ResourceBuffer() const {
+  if (Data())
+    return Data();
+  return GetContent()->ResourceBuffer();
 }
 
-void ImageResource::appendData(const char* data, size_t length) {
+void ImageResource::AppendData(const char* data, size_t length) {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(length);
-  if (m_multipartParser) {
-    m_multipartParser->appendData(data, length);
+  if (multipart_parser_) {
+    multipart_parser_->AppendData(data, length);
   } else {
-    Resource::appendData(data, length);
+    Resource::AppendData(data, length);
 
     // Update the image immediately if needed.
-    if (getContent()->shouldUpdateImageImmediately()) {
-      updateImage(this->data(), ImageResourceContent::UpdateImage, false);
+    if (GetContent()->ShouldUpdateImageImmediately()) {
+      UpdateImage(this->Data(), ImageResourceContent::kUpdateImage, false);
       return;
     }
 
@@ -299,82 +298,82 @@ void ImageResource::appendData(const char* data, size_t length) {
     // inform the clients which causes an invalidation of this image. In other
     // words, we only invalidate this image every |kFlushDelaySeconds| seconds
     // while loading.
-    if (!m_flushTimer.isActive()) {
-      double now = WTF::monotonicallyIncreasingTime();
-      if (!m_lastFlushTime)
-        m_lastFlushTime = now;
+    if (!flush_timer_.IsActive()) {
+      double now = WTF::MonotonicallyIncreasingTime();
+      if (!last_flush_time_)
+        last_flush_time_ = now;
 
-      DCHECK_LE(m_lastFlushTime, now);
-      double flushDelay = m_lastFlushTime - now + kFlushDelaySeconds;
-      if (flushDelay < 0.)
-        flushDelay = 0.;
-      m_flushTimer.startOneShot(flushDelay, BLINK_FROM_HERE);
+      DCHECK_LE(last_flush_time_, now);
+      double flush_delay = last_flush_time_ - now + kFlushDelaySeconds;
+      if (flush_delay < 0.)
+        flush_delay = 0.;
+      flush_timer_.StartOneShot(flush_delay, BLINK_FROM_HERE);
     }
   }
 }
 
-void ImageResource::flushImageIfNeeded(TimerBase*) {
+void ImageResource::FlushImageIfNeeded(TimerBase*) {
   // We might have already loaded the image fully, in which case we don't need
   // to call |updateImage()|.
-  if (isLoading()) {
-    m_lastFlushTime = WTF::monotonicallyIncreasingTime();
-    updateImage(this->data(), ImageResourceContent::UpdateImage, false);
+  if (IsLoading()) {
+    last_flush_time_ = WTF::MonotonicallyIncreasingTime();
+    UpdateImage(this->Data(), ImageResourceContent::kUpdateImage, false);
   }
 }
 
-void ImageResource::decodeError(bool allDataReceived) {
-  size_t size = encodedSize();
+void ImageResource::DecodeError(bool all_data_received) {
+  size_t size = EncodedSize();
 
-  clearData();
-  setEncodedSize(0);
-  if (!errorOccurred())
-    setStatus(ResourceStatus::DecodeError);
+  ClearData();
+  SetEncodedSize(0);
+  if (!ErrorOccurred())
+    SetStatus(ResourceStatus::kDecodeError);
 
   // Finishes loading if needed, and notifies observers.
-  if (!allDataReceived && loader()) {
+  if (!all_data_received && Loader()) {
     // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
-    loader()->didFinishLoading(monotonicallyIncreasingTime(), size, size);
+    Loader()->DidFinishLoading(MonotonicallyIncreasingTime(), size, size);
   } else {
-    auto result = getContent()->updateImage(
-        nullptr, ImageResourceContent::ClearImageAndNotifyObservers,
-        allDataReceived);
-    DCHECK_EQ(result, ImageResourceContent::UpdateImageResult::NoDecodeError);
+    auto result = GetContent()->UpdateImage(
+        nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
+        all_data_received);
+    DCHECK_EQ(result, ImageResourceContent::UpdateImageResult::kNoDecodeError);
   }
 
-  memoryCache()->remove(this);
+  GetMemoryCache()->Remove(this);
 }
 
-void ImageResource::updateImageAndClearBuffer() {
-  updateImage(data(), ImageResourceContent::ClearAndUpdateImage, true);
-  clearData();
+void ImageResource::UpdateImageAndClearBuffer() {
+  UpdateImage(Data(), ImageResourceContent::kClearAndUpdateImage, true);
+  ClearData();
 }
 
-void ImageResource::finish(double loadFinishTime) {
-  if (m_multipartParser) {
-    m_multipartParser->finish();
-    if (data())
-      updateImageAndClearBuffer();
+void ImageResource::Finish(double load_finish_time) {
+  if (multipart_parser_) {
+    multipart_parser_->Finish();
+    if (Data())
+      UpdateImageAndClearBuffer();
   } else {
-    updateImage(data(), ImageResourceContent::UpdateImage, true);
+    UpdateImage(Data(), ImageResourceContent::kUpdateImage, true);
     // As encoded image data can be created from m_image  (see
     // ImageResource::resourceBuffer(), we don't have to keep m_data. Let's
     // clear this. As for the lifetimes of m_image and m_data, see this
     // document:
     // https://docs.google.com/document/d/1v0yTAZ6wkqX2U_M6BNIGUJpM1s0TIw1VsqpxoL7aciY/edit?usp=sharing
-    clearData();
+    ClearData();
   }
-  Resource::finish(loadFinishTime);
+  Resource::Finish(load_finish_time);
 }
 
-void ImageResource::error(const ResourceError& error) {
-  if (m_multipartParser)
-    m_multipartParser->cancel();
+void ImageResource::GetError(const ResourceError& error) {
+  if (multipart_parser_)
+    multipart_parser_->Cancel();
   // TODO(hiroshige): Move setEncodedSize() call to Resource::error() if it
   // is really needed, or remove it otherwise.
-  setEncodedSize(0);
-  Resource::error(error);
-  updateImage(nullptr, ImageResourceContent::ClearImageAndNotifyObservers,
+  SetEncodedSize(0);
+  Resource::GetError(error);
+  UpdateImage(nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
               true);
 }
 
@@ -382,203 +381,204 @@ void ImageResource::error(const ResourceError& error) {
 // of determining whether or not to show a placeholder, e.g. if the server
 // responded with a full 200 response or if the full image is smaller than the
 // requested range.
-static bool isEntireResource(const ResourceResponse& response) {
-  if (response.httpStatusCode() != 206)
+static bool IsEntireResource(const ResourceResponse& response) {
+  if (response.HttpStatusCode() != 206)
     return true;
 
-  int64_t firstBytePosition = -1, lastBytePosition = -1, instanceLength = -1;
-  return parseContentRangeHeaderFor206(
-             response.httpHeaderField("Content-Range"), &firstBytePosition,
-             &lastBytePosition, &instanceLength) &&
-         firstBytePosition == 0 && lastBytePosition + 1 == instanceLength;
+  int64_t first_byte_position = -1, last_byte_position = -1,
+          instance_length = -1;
+  return ParseContentRangeHeaderFor206(
+             response.HttpHeaderField("Content-Range"), &first_byte_position,
+             &last_byte_position, &instance_length) &&
+         first_byte_position == 0 && last_byte_position + 1 == instance_length;
 }
 
-void ImageResource::responseReceived(
+void ImageResource::ResponseReceived(
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!handle);
-  DCHECK(!m_multipartParser);
+  DCHECK(!multipart_parser_);
   // If there's no boundary, just handle the request normally.
-  if (response.isMultipart() && !response.multipartBoundary().isEmpty()) {
-    m_multipartParser = new MultipartImageResourceParser(
-        response, response.multipartBoundary(), this);
+  if (response.IsMultipart() && !response.MultipartBoundary().IsEmpty()) {
+    multipart_parser_ = new MultipartImageResourceParser(
+        response, response.MultipartBoundary(), this);
   }
-  Resource::responseReceived(response, std::move(handle));
+  Resource::ResponseReceived(response, std::move(handle));
   if (RuntimeEnabledFeatures::clientHintsEnabled()) {
-    m_devicePixelRatioHeaderValue =
-        this->response()
-            .httpHeaderField(HTTPNames::Content_DPR)
-            .toFloat(&m_hasDevicePixelRatioHeaderValue);
-    if (!m_hasDevicePixelRatioHeaderValue ||
-        m_devicePixelRatioHeaderValue <= 0.0) {
-      m_devicePixelRatioHeaderValue = 1.0;
-      m_hasDevicePixelRatioHeaderValue = false;
+    device_pixel_ratio_header_value_ =
+        this->GetResponse()
+            .HttpHeaderField(HTTPNames::Content_DPR)
+            .ToFloat(&has_device_pixel_ratio_header_value_);
+    if (!has_device_pixel_ratio_header_value_ ||
+        device_pixel_ratio_header_value_ <= 0.0) {
+      device_pixel_ratio_header_value_ = 1.0;
+      has_device_pixel_ratio_header_value_ = false;
     }
   }
 
-  if (m_placeholderOption ==
-          PlaceholderOption::ShowAndReloadPlaceholderAlways &&
-      isEntireResource(this->response())) {
-    if (this->response().httpStatusCode() < 400 ||
-        this->response().httpStatusCode() >= 600) {
+  if (placeholder_option_ ==
+          PlaceholderOption::kShowAndReloadPlaceholderAlways &&
+      IsEntireResource(this->GetResponse())) {
+    if (this->GetResponse().HttpStatusCode() < 400 ||
+        this->GetResponse().HttpStatusCode() >= 600) {
       // Don't treat a complete and broken image as a placeholder if the
       // response code is something other than a 4xx or 5xx error.
       // This is done to prevent reissuing the request in cases like
       // "204 No Content" responses to tracking requests triggered by <img>
       // tags, and <img> tags used to preload non-image resources.
-      m_placeholderOption = PlaceholderOption::DoNotReloadPlaceholder;
+      placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
     } else {
-      m_placeholderOption = PlaceholderOption::ReloadPlaceholderOnDecodeError;
+      placeholder_option_ = PlaceholderOption::kReloadPlaceholderOnDecodeError;
     }
   }
 }
 
-bool ImageResource::shouldShowPlaceholder() const {
-  switch (m_placeholderOption) {
-    case PlaceholderOption::ShowAndReloadPlaceholderAlways:
+bool ImageResource::ShouldShowPlaceholder() const {
+  switch (placeholder_option_) {
+    case PlaceholderOption::kShowAndReloadPlaceholderAlways:
       return true;
-    case PlaceholderOption::ReloadPlaceholderOnDecodeError:
-    case PlaceholderOption::DoNotReloadPlaceholder:
+    case PlaceholderOption::kReloadPlaceholderOnDecodeError:
+    case PlaceholderOption::kDoNotReloadPlaceholder:
       return false;
   }
   NOTREACHED();
   return false;
 }
 
-bool ImageResource::shouldReloadBrokenPlaceholder() const {
-  switch (m_placeholderOption) {
-    case PlaceholderOption::ShowAndReloadPlaceholderAlways:
-      return errorOccurred();
-    case PlaceholderOption::ReloadPlaceholderOnDecodeError:
-      return getStatus() == ResourceStatus::DecodeError;
-    case PlaceholderOption::DoNotReloadPlaceholder:
+bool ImageResource::ShouldReloadBrokenPlaceholder() const {
+  switch (placeholder_option_) {
+    case PlaceholderOption::kShowAndReloadPlaceholderAlways:
+      return ErrorOccurred();
+    case PlaceholderOption::kReloadPlaceholderOnDecodeError:
+      return GetStatus() == ResourceStatus::kDecodeError;
+    case PlaceholderOption::kDoNotReloadPlaceholder:
       return false;
   }
   NOTREACHED();
   return false;
 }
 
-static bool isLoFiImage(const ImageResource& resource) {
-  if (resource.isLoaded()) {
-    return resource.response()
-        .httpHeaderField("chrome-proxy-content-transform")
-        .contains("empty-image");
+static bool IsLoFiImage(const ImageResource& resource) {
+  if (resource.IsLoaded()) {
+    return resource.GetResponse()
+        .HttpHeaderField("chrome-proxy-content-transform")
+        .Contains("empty-image");
   }
-  return resource.resourceRequest().previewsState() &
-         WebURLRequest::ServerLoFiOn;
+  return resource.GetResourceRequest().GetPreviewsState() &
+         WebURLRequest::kServerLoFiOn;
 }
 
-void ImageResource::reloadIfLoFiOrPlaceholderImage(
+void ImageResource::ReloadIfLoFiOrPlaceholderImage(
     ResourceFetcher* fetcher,
     ReloadLoFiOrPlaceholderPolicy policy) {
-  if (policy == kReloadIfNeeded && !shouldReloadBrokenPlaceholder())
+  if (policy == kReloadIfNeeded && !ShouldReloadBrokenPlaceholder())
     return;
 
-  if (m_placeholderOption == PlaceholderOption::DoNotReloadPlaceholder &&
-      !isLoFiImage(*this))
+  if (placeholder_option_ == PlaceholderOption::kDoNotReloadPlaceholder &&
+      !IsLoFiImage(*this))
     return;
 
   // Prevent clients and observers from being notified of completion while the
   // reload is being scheduled, so that e.g. canceling an existing load in
   // progress doesn't cause clients and observers to be notified of completion
   // prematurely.
-  DCHECK(!m_isSchedulingReload);
-  m_isSchedulingReload = true;
+  DCHECK(!is_scheduling_reload_);
+  is_scheduling_reload_ = true;
 
-  setCachePolicyBypassingCache();
+  SetCachePolicyBypassingCache();
 
-  setPreviewsStateNoTransform();
+  SetPreviewsStateNoTransform();
 
-  if (m_placeholderOption != PlaceholderOption::DoNotReloadPlaceholder)
-    clearRangeRequestHeader();
-  m_placeholderOption = PlaceholderOption::DoNotReloadPlaceholder;
+  if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
+    ClearRangeRequestHeader();
+  placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
 
-  if (isLoading()) {
-    loader()->cancel();
+  if (IsLoading()) {
+    Loader()->Cancel();
     // Canceling the loader causes error() to be called, which in turn calls
     // clear() and notifyObservers(), so there's no need to call these again
     // here.
   } else {
-    clearData();
-    setEncodedSize(0);
-    updateImage(nullptr, ImageResourceContent::ClearImageAndNotifyObservers,
+    ClearData();
+    SetEncodedSize(0);
+    UpdateImage(nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
                 false);
   }
 
-  setStatus(ResourceStatus::NotStarted);
+  SetStatus(ResourceStatus::kNotStarted);
 
-  DCHECK(m_isSchedulingReload);
-  m_isSchedulingReload = false;
+  DCHECK(is_scheduling_reload_);
+  is_scheduling_reload_ = false;
 
-  fetcher->startLoad(this);
+  fetcher->StartLoad(this);
 }
 
-void ImageResource::onePartInMultipartReceived(
+void ImageResource::OnePartInMultipartReceived(
     const ResourceResponse& response) {
-  DCHECK(m_multipartParser);
+  DCHECK(multipart_parser_);
 
-  setResponse(response);
-  if (m_multipartParsingState == MultipartParsingState::WaitingForFirstPart) {
+  SetResponse(response);
+  if (multipart_parsing_state_ == MultipartParsingState::kWaitingForFirstPart) {
     // We have nothing to do because we don't have any data.
-    m_multipartParsingState = MultipartParsingState::ParsingFirstPart;
+    multipart_parsing_state_ = MultipartParsingState::kParsingFirstPart;
     return;
   }
-  updateImageAndClearBuffer();
+  UpdateImageAndClearBuffer();
 
-  if (m_multipartParsingState == MultipartParsingState::ParsingFirstPart) {
-    m_multipartParsingState = MultipartParsingState::FinishedParsingFirstPart;
+  if (multipart_parsing_state_ == MultipartParsingState::kParsingFirstPart) {
+    multipart_parsing_state_ = MultipartParsingState::kFinishedParsingFirstPart;
     // Notify finished when the first part ends.
-    if (!errorOccurred())
-      setStatus(ResourceStatus::Cached);
+    if (!ErrorOccurred())
+      SetStatus(ResourceStatus::kCached);
     // We notify clients and observers of finish in checkNotify() and
     // updateImageAndClearBuffer(), respectively, and they will not be
     // notified again in Resource::finish()/error().
-    checkNotify();
-    if (loader())
-      loader()->didFinishLoadingFirstPartInMultipart();
+    CheckNotify();
+    if (Loader())
+      Loader()->DidFinishLoadingFirstPartInMultipart();
   }
 }
 
-void ImageResource::multipartDataReceived(const char* bytes, size_t size) {
-  DCHECK(m_multipartParser);
-  Resource::appendData(bytes, size);
+void ImageResource::MultipartDataReceived(const char* bytes, size_t size) {
+  DCHECK(multipart_parser_);
+  Resource::AppendData(bytes, size);
 }
 
-bool ImageResource::isAccessAllowed(
-    SecurityOrigin* securityOrigin,
+bool ImageResource::IsAccessAllowed(
+    SecurityOrigin* security_origin,
     ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin
-        doesCurrentFrameHasSingleSecurityOrigin) const {
-  if (response().wasFetchedViaServiceWorker()) {
-    return response().serviceWorkerResponseType() !=
-           WebServiceWorkerResponseTypeOpaque;
+        does_current_frame_has_single_security_origin) const {
+  if (GetResponse().WasFetchedViaServiceWorker()) {
+    return GetResponse().ServiceWorkerResponseType() !=
+           kWebServiceWorkerResponseTypeOpaque;
   }
-  if (doesCurrentFrameHasSingleSecurityOrigin !=
-      ImageResourceInfo::HasSingleSecurityOrigin)
+  if (does_current_frame_has_single_security_origin !=
+      ImageResourceInfo::kHasSingleSecurityOrigin)
     return false;
-  if (passesAccessControlCheck(securityOrigin))
+  if (PassesAccessControlCheck(security_origin))
     return true;
-  return !securityOrigin->taintsCanvas(response().url());
+  return !security_origin->TaintsCanvas(GetResponse().Url());
 }
 
-ImageResourceContent* ImageResource::getContent() {
-  return m_content;
+ImageResourceContent* ImageResource::GetContent() {
+  return content_;
 }
 
-const ImageResourceContent* ImageResource::getContent() const {
-  return m_content;
+const ImageResourceContent* ImageResource::GetContent() const {
+  return content_;
 }
 
-ResourcePriority ImageResource::priorityFromObservers() {
-  return getContent()->priorityFromObservers();
+ResourcePriority ImageResource::PriorityFromObservers() {
+  return GetContent()->PriorityFromObservers();
 }
 
-void ImageResource::updateImage(
-    PassRefPtr<SharedBuffer> sharedBuffer,
-    ImageResourceContent::UpdateImageOption updateImageOption,
-    bool allDataReceived) {
-  auto result = getContent()->updateImage(std::move(sharedBuffer),
-                                          updateImageOption, allDataReceived);
-  if (result == ImageResourceContent::UpdateImageResult::ShouldDecodeError) {
+void ImageResource::UpdateImage(
+    PassRefPtr<SharedBuffer> shared_buffer,
+    ImageResourceContent::UpdateImageOption update_image_option,
+    bool all_data_received) {
+  auto result = GetContent()->UpdateImage(
+      std::move(shared_buffer), update_image_option, all_data_received);
+  if (result == ImageResourceContent::UpdateImageResult::kShouldDecodeError) {
     // In case of decode error, we call imageNotifyFinished() iff we don't
     // initiate reloading:
     // [(a): when this is in the middle of loading, or (b): otherwise]
@@ -593,7 +593,7 @@ void ImageResource::updateImage(
     // 3. reloadIfLoFiOrPlaceholderImage() is called via ResourceFetcher
     //    (a) via didFinishLoading() called in decodeError(), or
     //    (b) after returning ImageResource::updateImage().
-    decodeError(allDataReceived);
+    DecodeError(all_data_received);
   }
 }
 

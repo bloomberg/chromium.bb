@@ -38,7 +38,7 @@ namespace blink {
 
 struct FillSize {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  FillSize() : type(SizeLength) {}
+  FillSize() : type(kSizeLength) {}
 
   FillSize(EFillSizeType t, const LengthSize& l) : type(t), size(l) {}
 
@@ -56,153 +56,153 @@ class CORE_EXPORT FillLayer {
   USING_FAST_MALLOC(FillLayer);
 
  public:
-  FillLayer(EFillLayerType, bool useInitialValues = false);
+  FillLayer(EFillLayerType, bool use_initial_values = false);
   ~FillLayer();
 
-  StyleImage* image() const { return m_image.get(); }
-  const Length& xPosition() const { return m_xPosition; }
-  const Length& yPosition() const { return m_yPosition; }
-  BackgroundEdgeOrigin backgroundXOrigin() const {
-    return static_cast<BackgroundEdgeOrigin>(m_backgroundXOrigin);
+  StyleImage* GetImage() const { return image_.Get(); }
+  const Length& XPosition() const { return x_position_; }
+  const Length& YPosition() const { return y_position_; }
+  BackgroundEdgeOrigin BackgroundXOrigin() const {
+    return static_cast<BackgroundEdgeOrigin>(background_x_origin_);
   }
-  BackgroundEdgeOrigin backgroundYOrigin() const {
-    return static_cast<BackgroundEdgeOrigin>(m_backgroundYOrigin);
+  BackgroundEdgeOrigin BackgroundYOrigin() const {
+    return static_cast<BackgroundEdgeOrigin>(background_y_origin_);
   }
-  EFillAttachment attachment() const {
-    return static_cast<EFillAttachment>(m_attachment);
+  EFillAttachment Attachment() const {
+    return static_cast<EFillAttachment>(attachment_);
   }
-  EFillBox clip() const { return static_cast<EFillBox>(m_clip); }
-  EFillBox origin() const { return static_cast<EFillBox>(m_origin); }
-  EFillRepeat repeatX() const { return static_cast<EFillRepeat>(m_repeatX); }
-  EFillRepeat repeatY() const { return static_cast<EFillRepeat>(m_repeatY); }
-  CompositeOperator composite() const {
-    return static_cast<CompositeOperator>(m_composite);
+  EFillBox Clip() const { return static_cast<EFillBox>(clip_); }
+  EFillBox Origin() const { return static_cast<EFillBox>(origin_); }
+  EFillRepeat RepeatX() const { return static_cast<EFillRepeat>(repeat_x_); }
+  EFillRepeat RepeatY() const { return static_cast<EFillRepeat>(repeat_y_); }
+  CompositeOperator Composite() const {
+    return static_cast<CompositeOperator>(composite_);
   }
-  WebBlendMode blendMode() const {
-    return static_cast<WebBlendMode>(m_blendMode);
+  WebBlendMode BlendMode() const {
+    return static_cast<WebBlendMode>(blend_mode_);
   }
-  const LengthSize& sizeLength() const { return m_sizeLength; }
-  EFillSizeType sizeType() const {
-    return static_cast<EFillSizeType>(m_sizeType);
+  const LengthSize& SizeLength() const { return size_length_; }
+  EFillSizeType SizeType() const {
+    return static_cast<EFillSizeType>(size_type_);
   }
   FillSize size() const {
-    return FillSize(static_cast<EFillSizeType>(m_sizeType), m_sizeLength);
+    return FillSize(static_cast<EFillSizeType>(size_type_), size_length_);
   }
-  EMaskSourceType maskSourceType() const {
-    return static_cast<EMaskSourceType>(m_maskSourceType);
-  }
-
-  const FillLayer* next() const { return m_next; }
-  FillLayer* next() { return m_next; }
-  FillLayer* ensureNext() {
-    if (!m_next)
-      m_next = new FillLayer(type());
-    return m_next;
+  EMaskSourceType MaskSourceType() const {
+    return static_cast<EMaskSourceType>(mask_source_type_);
   }
 
-  bool isImageSet() const { return m_imageSet; }
-  bool isXPositionSet() const { return m_xPosSet; }
-  bool isYPositionSet() const { return m_yPosSet; }
-  bool isBackgroundXOriginSet() const { return m_backgroundXOriginSet; }
-  bool isBackgroundYOriginSet() const { return m_backgroundYOriginSet; }
-  bool isAttachmentSet() const { return m_attachmentSet; }
-  bool isClipSet() const { return m_clipSet; }
-  bool isOriginSet() const { return m_originSet; }
-  bool isRepeatXSet() const { return m_repeatXSet; }
-  bool isRepeatYSet() const { return m_repeatYSet; }
-  bool isCompositeSet() const { return m_compositeSet; }
-  bool isBlendModeSet() const { return m_blendModeSet; }
-  bool isSizeSet() const { return m_sizeType != SizeNone; }
-  bool isMaskSourceTypeSet() const { return m_maskSourceTypeSet; }
-
-  void setImage(StyleImage* i) {
-    m_image = i;
-    m_imageSet = true;
-  }
-  void setXPosition(const Length& position) {
-    m_xPosition = position;
-    m_xPosSet = true;
-    m_backgroundXOriginSet = false;
-    m_backgroundXOrigin = LeftEdge;
-  }
-  void setYPosition(const Length& position) {
-    m_yPosition = position;
-    m_yPosSet = true;
-    m_backgroundYOriginSet = false;
-    m_backgroundYOrigin = TopEdge;
-  }
-  void setBackgroundXOrigin(BackgroundEdgeOrigin origin) {
-    m_backgroundXOrigin = origin;
-    m_backgroundXOriginSet = true;
-  }
-  void setBackgroundYOrigin(BackgroundEdgeOrigin origin) {
-    m_backgroundYOrigin = origin;
-    m_backgroundYOriginSet = true;
-  }
-  void setAttachment(EFillAttachment attachment) {
-    DCHECK(!m_cachedPropertiesComputed);
-    m_attachment = attachment;
-    m_attachmentSet = true;
-  }
-  void setClip(EFillBox b) {
-    DCHECK(!m_cachedPropertiesComputed);
-    m_clip = b;
-    m_clipSet = true;
-  }
-  void setOrigin(EFillBox b) {
-    DCHECK(!m_cachedPropertiesComputed);
-    m_origin = b;
-    m_originSet = true;
-  }
-  void setRepeatX(EFillRepeat r) {
-    m_repeatX = r;
-    m_repeatXSet = true;
-  }
-  void setRepeatY(EFillRepeat r) {
-    m_repeatY = r;
-    m_repeatYSet = true;
-  }
-  void setComposite(CompositeOperator c) {
-    m_composite = c;
-    m_compositeSet = true;
-  }
-  void setBlendMode(WebBlendMode b) {
-    m_blendMode = b;
-    m_blendModeSet = true;
-  }
-  void setSizeType(EFillSizeType b) { m_sizeType = b; }
-  void setSizeLength(const LengthSize& length) { m_sizeLength = length; }
-  void setSize(const FillSize& f) {
-    m_sizeType = f.type;
-    m_sizeLength = f.size;
-  }
-  void setMaskSourceType(EMaskSourceType m) {
-    m_maskSourceType = m;
-    m_maskSourceTypeSet = true;
+  const FillLayer* Next() const { return next_; }
+  FillLayer* Next() { return next_; }
+  FillLayer* EnsureNext() {
+    if (!next_)
+      next_ = new FillLayer(GetType());
+    return next_;
   }
 
-  void clearImage() {
-    m_image.clear();
-    m_imageSet = false;
+  bool IsImageSet() const { return image_set_; }
+  bool IsXPositionSet() const { return x_pos_set_; }
+  bool IsYPositionSet() const { return y_pos_set_; }
+  bool IsBackgroundXOriginSet() const { return background_x_origin_set_; }
+  bool IsBackgroundYOriginSet() const { return background_y_origin_set_; }
+  bool IsAttachmentSet() const { return attachment_set_; }
+  bool IsClipSet() const { return clip_set_; }
+  bool IsOriginSet() const { return origin_set_; }
+  bool IsRepeatXSet() const { return repeat_x_set_; }
+  bool IsRepeatYSet() const { return repeat_y_set_; }
+  bool IsCompositeSet() const { return composite_set_; }
+  bool IsBlendModeSet() const { return blend_mode_set_; }
+  bool IsSizeSet() const { return size_type_ != kSizeNone; }
+  bool IsMaskSourceTypeSet() const { return mask_source_type_set_; }
+
+  void SetImage(StyleImage* i) {
+    image_ = i;
+    image_set_ = true;
   }
-  void clearXPosition() {
-    m_xPosSet = false;
-    m_backgroundXOriginSet = false;
+  void SetXPosition(const Length& position) {
+    x_position_ = position;
+    x_pos_set_ = true;
+    background_x_origin_set_ = false;
+    background_x_origin_ = kLeftEdge;
   }
-  void clearYPosition() {
-    m_yPosSet = false;
-    m_backgroundYOriginSet = false;
+  void SetYPosition(const Length& position) {
+    y_position_ = position;
+    y_pos_set_ = true;
+    background_y_origin_set_ = false;
+    background_y_origin_ = kTopEdge;
+  }
+  void SetBackgroundXOrigin(BackgroundEdgeOrigin origin) {
+    background_x_origin_ = origin;
+    background_x_origin_set_ = true;
+  }
+  void SetBackgroundYOrigin(BackgroundEdgeOrigin origin) {
+    background_y_origin_ = origin;
+    background_y_origin_set_ = true;
+  }
+  void SetAttachment(EFillAttachment attachment) {
+    DCHECK(!cached_properties_computed_);
+    attachment_ = attachment;
+    attachment_set_ = true;
+  }
+  void SetClip(EFillBox b) {
+    DCHECK(!cached_properties_computed_);
+    clip_ = b;
+    clip_set_ = true;
+  }
+  void SetOrigin(EFillBox b) {
+    DCHECK(!cached_properties_computed_);
+    origin_ = b;
+    origin_set_ = true;
+  }
+  void SetRepeatX(EFillRepeat r) {
+    repeat_x_ = r;
+    repeat_x_set_ = true;
+  }
+  void SetRepeatY(EFillRepeat r) {
+    repeat_y_ = r;
+    repeat_y_set_ = true;
+  }
+  void SetComposite(CompositeOperator c) {
+    composite_ = c;
+    composite_set_ = true;
+  }
+  void SetBlendMode(WebBlendMode b) {
+    blend_mode_ = b;
+    blend_mode_set_ = true;
+  }
+  void SetSizeType(EFillSizeType b) { size_type_ = b; }
+  void SetSizeLength(const LengthSize& length) { size_length_ = length; }
+  void SetSize(const FillSize& f) {
+    size_type_ = f.type;
+    size_length_ = f.size;
+  }
+  void SetMaskSourceType(EMaskSourceType m) {
+    mask_source_type_ = m;
+    mask_source_type_set_ = true;
   }
 
-  void clearAttachment() { m_attachmentSet = false; }
-  void clearClip() { m_clipSet = false; }
-  void clearOrigin() { m_originSet = false; }
-  void clearRepeatX() { m_repeatXSet = false; }
-  void clearRepeatY() { m_repeatYSet = false; }
-  void clearComposite() { m_compositeSet = false; }
-  void clearBlendMode() { m_blendModeSet = false; }
-  void clearSize() { m_sizeType = SizeNone; }
-  void clearMaskSourceType() { m_maskSourceTypeSet = false; }
+  void ClearImage() {
+    image_.Clear();
+    image_set_ = false;
+  }
+  void ClearXPosition() {
+    x_pos_set_ = false;
+    background_x_origin_set_ = false;
+  }
+  void ClearYPosition() {
+    y_pos_set_ = false;
+    background_y_origin_set_ = false;
+  }
+
+  void ClearAttachment() { attachment_set_ = false; }
+  void ClearClip() { clip_set_ = false; }
+  void ClearOrigin() { origin_set_ = false; }
+  void ClearRepeatX() { repeat_x_set_ = false; }
+  void ClearRepeatY() { repeat_y_set_ = false; }
+  void ClearComposite() { composite_set_ = false; }
+  void ClearBlendMode() { blend_mode_set_ = false; }
+  void ClearSize() { size_type_ = kSizeNone; }
+  void ClearMaskSourceType() { mask_source_type_set_ = false; }
 
   FillLayer& operator=(const FillLayer&);
   FillLayer(const FillLayer&);
@@ -210,79 +210,79 @@ class CORE_EXPORT FillLayer {
   bool operator==(const FillLayer&) const;
   bool operator!=(const FillLayer& o) const { return !(*this == o); }
 
-  bool containsImage(StyleImage*) const;
-  bool imagesAreLoaded() const;
+  bool ContainsImage(StyleImage*) const;
+  bool ImagesAreLoaded() const;
 
-  bool hasImage() const {
-    if (m_image)
+  bool HasImage() const {
+    if (image_)
       return true;
-    return m_next ? m_next->hasImage() : false;
+    return next_ ? next_->HasImage() : false;
   }
 
-  bool hasFixedImage() const {
-    if (m_image && m_attachment == FixedBackgroundAttachment)
+  bool HasFixedImage() const {
+    if (image_ && attachment_ == kFixedBackgroundAttachment)
       return true;
-    return m_next ? m_next->hasFixedImage() : false;
+    return next_ ? next_->HasFixedImage() : false;
   }
 
-  bool imageOccludesNextLayers(const LayoutObject&) const;
-  bool hasRepeatXY() const;
-  bool clipOccludesNextLayers() const;
+  bool ImageOccludesNextLayers(const LayoutObject&) const;
+  bool HasRepeatXY() const;
+  bool ClipOccludesNextLayers() const;
 
-  EFillLayerType type() const { return static_cast<EFillLayerType>(m_type); }
+  EFillLayerType GetType() const { return static_cast<EFillLayerType>(type_); }
 
-  void fillUnsetProperties();
-  void cullEmptyLayers();
+  void FillUnsetProperties();
+  void CullEmptyLayers();
 
-  static bool imagesIdentical(const FillLayer*, const FillLayer*);
+  static bool ImagesIdentical(const FillLayer*, const FillLayer*);
 
-  EFillBox thisOrNextLayersClipMax() const {
-    computeCachedPropertiesIfNeeded();
-    return static_cast<EFillBox>(m_thisOrNextLayersClipMax);
+  EFillBox ThisOrNextLayersClipMax() const {
+    ComputeCachedPropertiesIfNeeded();
+    return static_cast<EFillBox>(this_or_next_layers_clip_max_);
   }
-  bool thisOrNextLayersUseContentBox() const {
-    computeCachedPropertiesIfNeeded();
-    return m_thisOrNextLayersUseContentBox;
+  bool ThisOrNextLayersUseContentBox() const {
+    ComputeCachedPropertiesIfNeeded();
+    return this_or_next_layers_use_content_box_;
   }
-  bool thisOrNextLayersHaveLocalAttachment() const {
-    computeCachedPropertiesIfNeeded();
-    return m_thisOrNextLayersHaveLocalAttachment;
+  bool ThisOrNextLayersHaveLocalAttachment() const {
+    ComputeCachedPropertiesIfNeeded();
+    return this_or_next_layers_have_local_attachment_;
   }
-  void computeCachedPropertiesIfNeeded() const;
+  void ComputeCachedPropertiesIfNeeded() const;
 
-  static EFillAttachment initialFillAttachment(EFillLayerType) {
-    return ScrollBackgroundAttachment;
+  static EFillAttachment InitialFillAttachment(EFillLayerType) {
+    return kScrollBackgroundAttachment;
   }
-  static EFillBox initialFillClip(EFillLayerType) { return BorderFillBox; }
-  static EFillBox initialFillOrigin(EFillLayerType type) {
-    return type == BackgroundFillLayer ? PaddingFillBox : BorderFillBox;
+  static EFillBox InitialFillClip(EFillLayerType) { return kBorderFillBox; }
+  static EFillBox InitialFillOrigin(EFillLayerType type) {
+    return type == kBackgroundFillLayer ? kPaddingFillBox : kBorderFillBox;
   }
-  static EFillRepeat initialFillRepeatX(EFillLayerType) { return RepeatFill; }
-  static EFillRepeat initialFillRepeatY(EFillLayerType) { return RepeatFill; }
-  static CompositeOperator initialFillComposite(EFillLayerType) {
-    return CompositeSourceOver;
+  static EFillRepeat InitialFillRepeatX(EFillLayerType) { return kRepeatFill; }
+  static EFillRepeat InitialFillRepeatY(EFillLayerType) { return kRepeatFill; }
+  static CompositeOperator InitialFillComposite(EFillLayerType) {
+    return kCompositeSourceOver;
   }
-  static WebBlendMode initialFillBlendMode(EFillLayerType) {
-    return WebBlendModeNormal;
+  static WebBlendMode InitialFillBlendMode(EFillLayerType) {
+    return kWebBlendModeNormal;
   }
-  static EFillSizeType initialFillSizeType(EFillLayerType) {
-    return SizeLength;
+  static EFillSizeType InitialFillSizeType(EFillLayerType) {
+    return kSizeLength;
   }
-  static LengthSize initialFillSizeLength(EFillLayerType) {
+  static LengthSize InitialFillSizeLength(EFillLayerType) {
     return LengthSize();
   }
-  static FillSize initialFillSize(EFillLayerType type) {
-    return FillSize(initialFillSizeType(type), initialFillSizeLength(type));
+  static FillSize InitialFillSize(EFillLayerType type) {
+    return FillSize(InitialFillSizeType(type), InitialFillSizeLength(type));
   }
-  static Length initialFillXPosition(EFillLayerType) {
-    return Length(0.0, Percent);
+  static Length InitialFillXPosition(EFillLayerType) {
+    return Length(0.0, kPercent);
   }
-  static Length initialFillYPosition(EFillLayerType) {
-    return Length(0.0, Percent);
+  static Length InitialFillYPosition(EFillLayerType) {
+    return Length(0.0, kPercent);
   }
-  static StyleImage* initialFillImage(EFillLayerType) { return 0; }
-  static EMaskSourceType initialFillMaskSourceType(EFillLayerType) {
-    return MaskAlpha;
+  static StyleImage* InitialFillImage(EFillLayerType) { return 0; }
+  static EMaskSourceType InitialFillMaskSourceType(EFillLayerType) {
+    return kMaskAlpha;
   }
 
  private:
@@ -290,55 +290,55 @@ class CORE_EXPORT FillLayer {
 
   FillLayer() {}
 
-  bool imageIsOpaque(const LayoutObject&) const;
-  bool imageTilesLayer() const;
+  bool ImageIsOpaque(const LayoutObject&) const;
+  bool ImageTilesLayer() const;
 
-  FillLayer* m_next;
+  FillLayer* next_;
 
-  Persistent<StyleImage> m_image;
+  Persistent<StyleImage> image_;
 
-  Length m_xPosition;
-  Length m_yPosition;
+  Length x_position_;
+  Length y_position_;
 
-  LengthSize m_sizeLength;
+  LengthSize size_length_;
 
-  unsigned m_attachment : 2;         // EFillAttachment
-  unsigned m_clip : 2;               // EFillBox
-  unsigned m_origin : 2;             // EFillBox
-  unsigned m_repeatX : 3;            // EFillRepeat
-  unsigned m_repeatY : 3;            // EFillRepeat
-  unsigned m_composite : 4;          // CompositeOperator
-  unsigned m_sizeType : 2;           // EFillSizeType
-  unsigned m_blendMode : 5;          // WebBlendMode
-  unsigned m_maskSourceType : 1;     // EMaskSourceType
-  unsigned m_backgroundXOrigin : 2;  // BackgroundEdgeOrigin
-  unsigned m_backgroundYOrigin : 2;  // BackgroundEdgeOrigin
+  unsigned attachment_ : 2;           // EFillAttachment
+  unsigned clip_ : 2;                 // EFillBox
+  unsigned origin_ : 2;               // EFillBox
+  unsigned repeat_x_ : 3;             // EFillRepeat
+  unsigned repeat_y_ : 3;             // EFillRepeat
+  unsigned composite_ : 4;            // CompositeOperator
+  unsigned size_type_ : 2;            // EFillSizeType
+  unsigned blend_mode_ : 5;           // WebBlendMode
+  unsigned mask_source_type_ : 1;     // EMaskSourceType
+  unsigned background_x_origin_ : 2;  // BackgroundEdgeOrigin
+  unsigned background_y_origin_ : 2;  // BackgroundEdgeOrigin
 
-  unsigned m_imageSet : 1;
-  unsigned m_attachmentSet : 1;
-  unsigned m_clipSet : 1;
-  unsigned m_originSet : 1;
-  unsigned m_repeatXSet : 1;
-  unsigned m_repeatYSet : 1;
-  unsigned m_xPosSet : 1;
-  unsigned m_yPosSet : 1;
-  unsigned m_backgroundXOriginSet : 1;
-  unsigned m_backgroundYOriginSet : 1;
-  unsigned m_compositeSet : 1;
-  unsigned m_blendModeSet : 1;
-  unsigned m_maskSourceTypeSet : 1;
+  unsigned image_set_ : 1;
+  unsigned attachment_set_ : 1;
+  unsigned clip_set_ : 1;
+  unsigned origin_set_ : 1;
+  unsigned repeat_x_set_ : 1;
+  unsigned repeat_y_set_ : 1;
+  unsigned x_pos_set_ : 1;
+  unsigned y_pos_set_ : 1;
+  unsigned background_x_origin_set_ : 1;
+  unsigned background_y_origin_set_ : 1;
+  unsigned composite_set_ : 1;
+  unsigned blend_mode_set_ : 1;
+  unsigned mask_source_type_set_ : 1;
 
-  unsigned m_type : 1;  // EFillLayerType
+  unsigned type_ : 1;  // EFillLayerType
 
   // EFillBox, maximum m_clip value from this to bottom layer
-  mutable unsigned m_thisOrNextLayersClipMax : 2;
+  mutable unsigned this_or_next_layers_clip_max_ : 2;
   // True if any of this or subsequent layers has content-box clip or origin.
-  mutable unsigned m_thisOrNextLayersUseContentBox : 1;
+  mutable unsigned this_or_next_layers_use_content_box_ : 1;
   // True if any of this or subsequent layers has local attachment.
-  mutable unsigned m_thisOrNextLayersHaveLocalAttachment : 1;
+  mutable unsigned this_or_next_layers_have_local_attachment_ : 1;
   // Set once any of the above is accessed. The layers will be frozen
   // thereafter.
-  mutable unsigned m_cachedPropertiesComputed : 1;
+  mutable unsigned cached_properties_computed_ : 1;
 };
 
 }  // namespace blink

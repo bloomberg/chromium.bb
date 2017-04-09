@@ -22,25 +22,25 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
  public:
   virtual ~CSSTiming() {}
 
-  void recordAuthorStyleSheetParseTime(double seconds);
-  void recordUpdateDuration(double seconds);
+  void RecordAuthorStyleSheetParseTime(double seconds);
+  void RecordUpdateDuration(double seconds);
 
-  double authorStyleSheetParseDurationBeforeFCP() const {
-    return m_parseTimeBeforeFCP;
+  double AuthorStyleSheetParseDurationBeforeFCP() const {
+    return parse_time_before_fcp_;
   }
 
-  double updateDurationBeforeFCP() const { return m_updateTimeBeforeFCP; }
+  double UpdateDurationBeforeFCP() const { return update_time_before_fcp_; }
 
-  static CSSTiming& from(Document&);
+  static CSSTiming& From(Document&);
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit CSSTiming(Document&);
 
-  double m_parseTimeBeforeFCP = 0;
-  double m_updateTimeBeforeFCP = 0;
+  double parse_time_before_fcp_ = 0;
+  double update_time_before_fcp_ = 0;
 
-  Member<PaintTiming> m_paintTiming;
+  Member<PaintTiming> paint_timing_;
 };
 
 }  // namespace blink

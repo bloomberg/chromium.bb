@@ -10,59 +10,59 @@
 namespace blink {
 
 DEFINE_TRACE(GeolocationWatchers) {
-  visitor->trace(m_idToNotifierMap);
-  visitor->trace(m_notifierToIdMap);
+  visitor->Trace(id_to_notifier_map_);
+  visitor->Trace(notifier_to_id_map_);
 }
 
-bool GeolocationWatchers::add(int id, GeoNotifier* notifier) {
+bool GeolocationWatchers::Add(int id, GeoNotifier* notifier) {
   DCHECK_GT(id, 0);
-  if (!m_idToNotifierMap.insert(id, notifier).isNewEntry)
+  if (!id_to_notifier_map_.insert(id, notifier).is_new_entry)
     return false;
-  m_notifierToIdMap.set(notifier, id);
+  notifier_to_id_map_.Set(notifier, id);
   return true;
 }
 
-GeoNotifier* GeolocationWatchers::find(int id) {
+GeoNotifier* GeolocationWatchers::Find(int id) {
   DCHECK_GT(id, 0);
-  IdToNotifierMap::iterator iter = m_idToNotifierMap.find(id);
-  if (iter == m_idToNotifierMap.end())
+  IdToNotifierMap::iterator iter = id_to_notifier_map_.Find(id);
+  if (iter == id_to_notifier_map_.end())
     return 0;
   return iter->value;
 }
 
-void GeolocationWatchers::remove(int id) {
+void GeolocationWatchers::Remove(int id) {
   DCHECK_GT(id, 0);
-  IdToNotifierMap::iterator iter = m_idToNotifierMap.find(id);
-  if (iter == m_idToNotifierMap.end())
+  IdToNotifierMap::iterator iter = id_to_notifier_map_.Find(id);
+  if (iter == id_to_notifier_map_.end())
     return;
-  m_notifierToIdMap.erase(iter->value);
-  m_idToNotifierMap.erase(iter);
+  notifier_to_id_map_.erase(iter->value);
+  id_to_notifier_map_.erase(iter);
 }
 
-void GeolocationWatchers::remove(GeoNotifier* notifier) {
-  NotifierToIdMap::iterator iter = m_notifierToIdMap.find(notifier);
-  if (iter == m_notifierToIdMap.end())
+void GeolocationWatchers::Remove(GeoNotifier* notifier) {
+  NotifierToIdMap::iterator iter = notifier_to_id_map_.Find(notifier);
+  if (iter == notifier_to_id_map_.end())
     return;
-  m_idToNotifierMap.erase(iter->value);
-  m_notifierToIdMap.erase(iter);
+  id_to_notifier_map_.erase(iter->value);
+  notifier_to_id_map_.erase(iter);
 }
 
-bool GeolocationWatchers::contains(GeoNotifier* notifier) const {
-  return m_notifierToIdMap.contains(notifier);
+bool GeolocationWatchers::Contains(GeoNotifier* notifier) const {
+  return notifier_to_id_map_.Contains(notifier);
 }
 
-void GeolocationWatchers::clear() {
-  m_idToNotifierMap.clear();
-  m_notifierToIdMap.clear();
+void GeolocationWatchers::Clear() {
+  id_to_notifier_map_.Clear();
+  notifier_to_id_map_.Clear();
 }
 
-bool GeolocationWatchers::isEmpty() const {
-  return m_idToNotifierMap.isEmpty();
+bool GeolocationWatchers::IsEmpty() const {
+  return id_to_notifier_map_.IsEmpty();
 }
 
-void GeolocationWatchers::getNotifiersVector(
+void GeolocationWatchers::GetNotifiersVector(
     HeapVector<Member<GeoNotifier>>& copy) const {
-  copyValuesToVector(m_idToNotifierMap, copy);
+  CopyValuesToVector(id_to_notifier_map_, copy);
 }
 
 }  // namespace blink

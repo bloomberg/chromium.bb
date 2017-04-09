@@ -47,22 +47,22 @@ class LayerRectList final : public GarbageCollected<LayerRectList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static LayerRectList* create() { return new LayerRectList; }
+  static LayerRectList* Create() { return new LayerRectList; }
 
   unsigned length() const;
   LayerRect* item(unsigned index);
-  void append(Node* layerAssociatedNode,
-              const String& layerName,
-              int layerOffsetX,
-              int layerOffsetY,
-              ClientRect* layerRelativeRect);
+  void Append(Node* layer_associated_node,
+              const String& layer_name,
+              int layer_offset_x,
+              int layer_offset_y,
+              ClientRect* layer_relative_rect);
 
   DECLARE_TRACE();
 
  private:
   LayerRectList();
 
-  HeapVector<Member<LayerRect>> m_list;
+  HeapVector<Member<LayerRect>> list_;
 };
 
 }  // namespace blink

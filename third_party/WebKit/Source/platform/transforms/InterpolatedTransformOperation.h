@@ -40,33 +40,33 @@ namespace blink {
 class PLATFORM_EXPORT InterpolatedTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<InterpolatedTransformOperation> create(
+  static PassRefPtr<InterpolatedTransformOperation> Create(
       const TransformOperations& from,
       const TransformOperations& to,
       double progress) {
-    return adoptRef(new InterpolatedTransformOperation(from, to, progress));
+    return AdoptRef(new InterpolatedTransformOperation(from, to, progress));
   }
 
-  virtual bool canBlendWith(const TransformOperation& other) const {
-    return isSameType(other);
+  virtual bool CanBlendWith(const TransformOperation& other) const {
+    return IsSameType(other);
   }
 
  private:
-  OperationType type() const override { return Interpolated; }
+  OperationType GetType() const override { return kInterpolated; }
 
   bool operator==(const TransformOperation&) const override;
-  void apply(TransformationMatrix&,
-             const FloatSize& borderBoxSize) const override;
+  void Apply(TransformationMatrix&,
+             const FloatSize& border_box_size) const override;
 
-  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
                                        double progress,
-                                       bool blendToIdentity = false) override;
-  PassRefPtr<TransformOperation> zoom(double factor) final {
-    return create(from.zoom(factor), to.zoom(factor), progress);
+                                       bool blend_to_identity = false) override;
+  PassRefPtr<TransformOperation> Zoom(double factor) final {
+    return Create(from.Zoom(factor), to.Zoom(factor), progress);
   }
 
-  bool dependsOnBoxSize() const override {
-    return from.dependsOnBoxSize() || to.dependsOnBoxSize();
+  bool DependsOnBoxSize() const override {
+    return from.DependsOnBoxSize() || to.DependsOnBoxSize();
   }
 
   InterpolatedTransformOperation(const TransformOperations& from,

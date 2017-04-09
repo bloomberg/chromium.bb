@@ -25,12 +25,12 @@ struct WebFloatPoint3D {
   WebFloatPoint3D(float x, float y, float z) : x(x), y(y), z(z) {}
 
 #if INSIDE_BLINK
-  WebFloatPoint3D(const FloatPoint3D& p) : x(p.x()), y(p.y()), z(p.z()) {}
+  WebFloatPoint3D(const FloatPoint3D& p) : x(p.X()), y(p.Y()), z(p.Z()) {}
 
   WebFloatPoint3D& operator=(const FloatPoint3D& p) {
-    x = p.x();
-    y = p.y();
-    z = p.z();
+    x = p.X();
+    y = p.Y();
+    z = p.Z();
     return *this;
   }
 

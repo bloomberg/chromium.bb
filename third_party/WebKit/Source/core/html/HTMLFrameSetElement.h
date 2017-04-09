@@ -37,19 +37,19 @@ class HTMLFrameSetElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLFrameSetElement);
 
-  bool hasFrameBorder() const { return m_frameborder; }
-  bool noResize() const { return m_noresize; }
+  bool HasFrameBorder() const { return frameborder_; }
+  bool NoResize() const { return noresize_; }
 
-  size_t totalRows() const { return std::max<size_t>(1, m_rowLengths.size()); }
-  size_t totalCols() const { return std::max<size_t>(1, m_colLengths.size()); }
-  int border() const { return hasFrameBorder() ? m_border : 0; }
+  size_t TotalRows() const { return std::max<size_t>(1, row_lengths_.size()); }
+  size_t TotalCols() const { return std::max<size_t>(1, col_lengths_.size()); }
+  int Border() const { return HasFrameBorder() ? border_ : 0; }
 
-  bool hasBorderColor() const { return m_borderColorSet; }
+  bool HasBorderColor() const { return border_color_set_; }
 
-  const Vector<HTMLDimension>& rowLengths() const { return m_rowLengths; }
-  const Vector<HTMLDimension>& colLengths() const { return m_colLengths; }
+  const Vector<HTMLDimension>& RowLengths() const { return row_lengths_; }
+  const Vector<HTMLDimension>& ColLengths() const { return col_lengths_; }
 
-  LocalDOMWindow* anonymousNamedGetter(const AtomicString&);
+  LocalDOMWindow* AnonymousNamedGetter(const AtomicString&);
 
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
   DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error);
@@ -62,32 +62,32 @@ class HTMLFrameSetElement final : public HTMLElement {
  private:
   explicit HTMLFrameSetElement(Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  void defaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event*) override;
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void willRecalcStyle(StyleRecalcChange) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void WillRecalcStyle(StyleRecalcChange) override;
 
-  Vector<HTMLDimension> m_rowLengths;
-  Vector<HTMLDimension> m_colLengths;
+  Vector<HTMLDimension> row_lengths_;
+  Vector<HTMLDimension> col_lengths_;
 
-  int m_border;
-  bool m_borderSet;
+  int border_;
+  bool border_set_;
 
-  bool m_borderColorSet;
+  bool border_color_set_;
 
-  bool m_frameborder;
-  bool m_frameborderSet;
-  bool m_noresize;
+  bool frameborder_;
+  bool frameborder_set_;
+  bool noresize_;
 };
 
 }  // namespace blink

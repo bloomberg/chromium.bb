@@ -18,34 +18,34 @@ class LengthInterpolationFunctions {
   STATIC_ONLY(LengthInterpolationFunctions);
 
  public:
-  static std::unique_ptr<InterpolableValue> createInterpolablePixels(
+  static std::unique_ptr<InterpolableValue> CreateInterpolablePixels(
       double pixels);
-  static InterpolationValue createInterpolablePercent(double percent);
-  static std::unique_ptr<InterpolableList> createNeutralInterpolableValue();
+  static InterpolationValue CreateInterpolablePercent(double percent);
+  static std::unique_ptr<InterpolableList> CreateNeutralInterpolableValue();
 
-  static InterpolationValue maybeConvertCSSValue(const CSSValue&);
-  static InterpolationValue maybeConvertLength(const Length&, float zoom);
-  static PairwiseInterpolationValue mergeSingles(InterpolationValue&& start,
+  static InterpolationValue MaybeConvertCSSValue(const CSSValue&);
+  static InterpolationValue MaybeConvertLength(const Length&, float zoom);
+  static PairwiseInterpolationValue MergeSingles(InterpolationValue&& start,
                                                  InterpolationValue&& end);
-  static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*,
+  static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
-  static void composite(std::unique_ptr<InterpolableValue>&,
+  static void Composite(std::unique_ptr<InterpolableValue>&,
                         RefPtr<NonInterpolableValue>&,
-                        double underlyingFraction,
+                        double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);
-  static Length createLength(const InterpolableValue&,
+  static Length CreateLength(const InterpolableValue&,
                              const NonInterpolableValue*,
                              const CSSToLengthConversionData&,
                              ValueRange);
 
   // Unlike createLength() this preserves all specificed unit types via calc()
   // expressions.
-  static const CSSValue* createCSSValue(const InterpolableValue&,
+  static const CSSValue* CreateCSSValue(const InterpolableValue&,
                                         const NonInterpolableValue*,
                                         ValueRange);
 
-  static void subtractFromOneHundredPercent(InterpolationValue& result);
+  static void SubtractFromOneHundredPercent(InterpolationValue& result);
 };
 
 }  // namespace blink

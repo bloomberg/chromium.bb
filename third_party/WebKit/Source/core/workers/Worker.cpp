@@ -15,38 +15,38 @@ namespace blink {
 
 Worker::Worker(ExecutionContext* context) : InProcessWorkerBase(context) {}
 
-Worker* Worker::create(ExecutionContext* context,
+Worker* Worker::Create(ExecutionContext* context,
                        const String& url,
-                       ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  Document* document = toDocument(context);
-  UseCounter::count(context, UseCounter::WorkerStart);
-  if (!document->page()) {
-    exceptionState.throwDOMException(InvalidAccessError,
-                                     "The context provided is invalid.");
+                       ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  Document* document = ToDocument(context);
+  UseCounter::Count(context, UseCounter::kWorkerStart);
+  if (!document->GetPage()) {
+    exception_state.ThrowDOMException(kInvalidAccessError,
+                                      "The context provided is invalid.");
     return nullptr;
   }
   Worker* worker = new Worker(context);
-  if (worker->initialize(context, url, exceptionState))
+  if (worker->Initialize(context, url, exception_state))
     return worker;
   return nullptr;
 }
 
 Worker::~Worker() {
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
 }
 
-const AtomicString& Worker::interfaceName() const {
+const AtomicString& Worker::InterfaceName() const {
   return EventTargetNames::Worker;
 }
 
-InProcessWorkerMessagingProxy* Worker::createInProcessWorkerMessagingProxy(
+InProcessWorkerMessagingProxy* Worker::CreateInProcessWorkerMessagingProxy(
     ExecutionContext* context) {
-  Document* document = toDocument(context);
-  DedicatedWorkerMessagingProxyProvider* proxyProvider =
-      DedicatedWorkerMessagingProxyProvider::from(*document->page());
-  DCHECK(proxyProvider);
-  return proxyProvider->createWorkerMessagingProxy(this);
+  Document* document = ToDocument(context);
+  DedicatedWorkerMessagingProxyProvider* proxy_provider =
+      DedicatedWorkerMessagingProxyProvider::From(*document->GetPage());
+  DCHECK(proxy_provider);
+  return proxy_provider->CreateWorkerMessagingProxy(this);
 }
 
 }  // namespace blink

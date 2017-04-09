@@ -32,22 +32,22 @@
 
 namespace blink {
 
-NavigatorUserMediaError* NavigatorUserMediaError::create(
+NavigatorUserMediaError* NavigatorUserMediaError::Create(
     Name name,
     const String& message,
-    const String& constraintName) {
-  String nameString;
+    const String& constraint_name) {
+  String name_string;
   switch (name) {
-    case NamePermissionDenied:
-      nameString = "PermissionDeniedError";
+    case kNamePermissionDenied:
+      name_string = "PermissionDeniedError";
       break;
 
-    case NameConstraintNotSatisfied:
-      nameString = "ConstraintNotSatisfiedError";
+    case kNameConstraintNotSatisfied:
+      name_string = "ConstraintNotSatisfiedError";
       break;
   }
 
-  return new NavigatorUserMediaError(nameString, message, constraintName);
+  return new NavigatorUserMediaError(name_string, message, constraint_name);
 }
 
 }  // namespace blink

@@ -38,87 +38,87 @@
 
 namespace blink {
 
-void toCompositorTransformOperations(
-    const TransformOperations& transformOperations,
-    CompositorTransformOperations* outTransformOperations) {
+void ToCompositorTransformOperations(
+    const TransformOperations& transform_operations,
+    CompositorTransformOperations* out_transform_operations) {
   // We need to do a deep copy the transformOperations may contain ref pointers
   // to TransformOperation objects.
-  for (const auto& operation : transformOperations.operations()) {
-    switch (operation->type()) {
-      case TransformOperation::ScaleX:
-      case TransformOperation::ScaleY:
-      case TransformOperation::ScaleZ:
-      case TransformOperation::Scale3D:
-      case TransformOperation::Scale: {
+  for (const auto& operation : transform_operations.Operations()) {
+    switch (operation->GetType()) {
+      case TransformOperation::kScaleX:
+      case TransformOperation::kScaleY:
+      case TransformOperation::kScaleZ:
+      case TransformOperation::kScale3D:
+      case TransformOperation::kScale: {
         auto transform =
-            static_cast<const ScaleTransformOperation*>(operation.get());
-        outTransformOperations->appendScale(transform->x(), transform->y(),
-                                            transform->z());
+            static_cast<const ScaleTransformOperation*>(operation.Get());
+        out_transform_operations->AppendScale(transform->X(), transform->Y(),
+                                              transform->Z());
         break;
       }
-      case TransformOperation::TranslateX:
-      case TransformOperation::TranslateY:
-      case TransformOperation::TranslateZ:
-      case TransformOperation::Translate3D:
-      case TransformOperation::Translate: {
+      case TransformOperation::kTranslateX:
+      case TransformOperation::kTranslateY:
+      case TransformOperation::kTranslateZ:
+      case TransformOperation::kTranslate3D:
+      case TransformOperation::kTranslate: {
         auto transform =
-            static_cast<const TranslateTransformOperation*>(operation.get());
-        DCHECK(transform->x().isFixed() && transform->y().isFixed());
-        outTransformOperations->appendTranslate(
-            transform->x().value(), transform->y().value(), transform->z());
+            static_cast<const TranslateTransformOperation*>(operation.Get());
+        DCHECK(transform->X().IsFixed() && transform->Y().IsFixed());
+        out_transform_operations->AppendTranslate(
+            transform->X().Value(), transform->Y().Value(), transform->Z());
         break;
       }
-      case TransformOperation::RotateX:
-      case TransformOperation::RotateY:
-      case TransformOperation::Rotate3D:
-      case TransformOperation::Rotate: {
+      case TransformOperation::kRotateX:
+      case TransformOperation::kRotateY:
+      case TransformOperation::kRotate3D:
+      case TransformOperation::kRotate: {
         auto transform =
-            static_cast<const RotateTransformOperation*>(operation.get());
-        outTransformOperations->appendRotate(
-            transform->x(), transform->y(), transform->z(), transform->angle());
+            static_cast<const RotateTransformOperation*>(operation.Get());
+        out_transform_operations->AppendRotate(
+            transform->X(), transform->Y(), transform->Z(), transform->Angle());
         break;
       }
-      case TransformOperation::SkewX:
-      case TransformOperation::SkewY:
-      case TransformOperation::Skew: {
+      case TransformOperation::kSkewX:
+      case TransformOperation::kSkewY:
+      case TransformOperation::kSkew: {
         auto transform =
-            static_cast<const SkewTransformOperation*>(operation.get());
-        outTransformOperations->appendSkew(transform->angleX(),
-                                           transform->angleY());
+            static_cast<const SkewTransformOperation*>(operation.Get());
+        out_transform_operations->AppendSkew(transform->AngleX(),
+                                             transform->AngleY());
         break;
       }
-      case TransformOperation::Matrix: {
+      case TransformOperation::kMatrix: {
         auto transform =
-            static_cast<const MatrixTransformOperation*>(operation.get());
-        TransformationMatrix m = transform->matrix();
-        outTransformOperations->appendMatrix(
-            TransformationMatrix::toSkMatrix44(m));
+            static_cast<const MatrixTransformOperation*>(operation.Get());
+        TransformationMatrix m = transform->Matrix();
+        out_transform_operations->AppendMatrix(
+            TransformationMatrix::ToSkMatrix44(m));
         break;
       }
-      case TransformOperation::Matrix3D: {
+      case TransformOperation::kMatrix3D: {
         auto transform =
-            static_cast<const Matrix3DTransformOperation*>(operation.get());
-        TransformationMatrix m = transform->matrix();
-        outTransformOperations->appendMatrix(
-            TransformationMatrix::toSkMatrix44(m));
+            static_cast<const Matrix3DTransformOperation*>(operation.Get());
+        TransformationMatrix m = transform->Matrix();
+        out_transform_operations->AppendMatrix(
+            TransformationMatrix::ToSkMatrix44(m));
         break;
       }
-      case TransformOperation::Perspective: {
+      case TransformOperation::kPerspective: {
         auto transform =
-            static_cast<const PerspectiveTransformOperation*>(operation.get());
-        outTransformOperations->appendPerspective(transform->perspective());
+            static_cast<const PerspectiveTransformOperation*>(operation.Get());
+        out_transform_operations->AppendPerspective(transform->Perspective());
         break;
       }
-      case TransformOperation::RotateAroundOrigin:
-      case TransformOperation::Interpolated: {
+      case TransformOperation::kRotateAroundOrigin:
+      case TransformOperation::kInterpolated: {
         TransformationMatrix m;
-        operation->apply(m, FloatSize());
-        outTransformOperations->appendMatrix(
-            TransformationMatrix::toSkMatrix44(m));
+        operation->Apply(m, FloatSize());
+        out_transform_operations->AppendMatrix(
+            TransformationMatrix::ToSkMatrix44(m));
         break;
       }
-      case TransformOperation::Identity:
-        outTransformOperations->appendIdentity();
+      case TransformOperation::kIdentity:
+        out_transform_operations->AppendIdentity();
         break;
       default:
         NOTREACHED();

@@ -56,7 +56,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static EDisplay equivalentBlockDisplay(EDisplay display) {
+static EDisplay EquivalentBlockDisplay(EDisplay display) {
   switch (display) {
     case EDisplay::kBlock:
     case EDisplay::kTable:
@@ -95,22 +95,22 @@ static EDisplay equivalentBlockDisplay(EDisplay display) {
   return EDisplay::kBlock;
 }
 
-static bool isOutermostSVGElement(const Element* element) {
-  return element && element->isSVGElement() &&
-         toSVGElement(*element).isOutermostSVGSVGElement();
+static bool IsOutermostSVGElement(const Element* element) {
+  return element && element->IsSVGElement() &&
+         ToSVGElement(*element).IsOutermostSVGSVGElement();
 }
 
 // CSS requires text-decoration to be reset at each DOM element for
 // inline blocks, inline tables, shadow DOM crossings, floating elements,
 // and absolute or relatively positioned elements. Outermost <svg> roots are
 // considered to be atomic inline-level.
-static bool doesNotInheritTextDecoration(const ComputedStyle& style,
+static bool DoesNotInheritTextDecoration(const ComputedStyle& style,
                                          const Element* element) {
-  return style.display() == EDisplay::kInlineTable ||
-         style.display() == EDisplay::kInlineBlock ||
-         style.display() == EDisplay::kWebkitInlineBox ||
-         isAtShadowBoundary(element) || style.isFloating() ||
-         style.hasOutOfFlowPosition() || isOutermostSVGElement(element) ||
+  return style.Display() == EDisplay::kInlineTable ||
+         style.Display() == EDisplay::kInlineBlock ||
+         style.Display() == EDisplay::kWebkitInlineBox ||
+         IsAtShadowBoundary(element) || style.IsFloating() ||
+         style.HasOutOfFlowPosition() || IsOutermostSVGElement(element) ||
          isHTMLRTElement(element);
 }
 
@@ -119,49 +119,49 @@ static bool doesNotInheritTextDecoration(const ComputedStyle& style,
 // the text of the element to the used value of the element's 'color' property."
 // (https://html.spec.whatwg.org/multipage/rendering.html#phrasing-content-3)
 // The <a> behavior is non-standard.
-static bool overridesTextDecorationColors(const Element* element) {
+static bool OverridesTextDecorationColors(const Element* element) {
   return element &&
          (isHTMLFontElement(element) || isHTMLAnchorElement(element));
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null
 // element to adjustComputedStyle, so we can't just use element->isInTopLayer().
-static bool isInTopLayer(const Element* element, const ComputedStyle& style) {
-  return (element && element->isInTopLayer()) ||
-         style.styleType() == PseudoIdBackdrop;
+static bool IsInTopLayer(const Element* element, const ComputedStyle& style) {
+  return (element && element->IsInTopLayer()) ||
+         style.StyleType() == kPseudoIdBackdrop;
 }
 
-static bool layoutParentStyleForcesZIndexToCreateStackingContext(
-    const ComputedStyle& layoutParentStyle) {
-  return layoutParentStyle.isDisplayFlexibleOrGridBox();
+static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
+    const ComputedStyle& layout_parent_style) {
+  return layout_parent_style.IsDisplayFlexibleOrGridBox();
 }
 
-void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style) {
-  if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
+void StyleAdjuster::AdjustStyleForEditing(ComputedStyle& style) {
+  if (style.UserModify() != READ_WRITE_PLAINTEXT_ONLY)
     return;
   // Collapsing whitespace is harmful in plain-text editing.
-  if (style.whiteSpace() == EWhiteSpace::kNormal)
-    style.setWhiteSpace(EWhiteSpace::kPreWrap);
-  else if (style.whiteSpace() == EWhiteSpace::kNowrap)
-    style.setWhiteSpace(EWhiteSpace::kPre);
-  else if (style.whiteSpace() == EWhiteSpace::kPreLine)
-    style.setWhiteSpace(EWhiteSpace::kPreWrap);
+  if (style.WhiteSpace() == EWhiteSpace::kNormal)
+    style.SetWhiteSpace(EWhiteSpace::kPreWrap);
+  else if (style.WhiteSpace() == EWhiteSpace::kNowrap)
+    style.SetWhiteSpace(EWhiteSpace::kPre);
+  else if (style.WhiteSpace() == EWhiteSpace::kPreLine)
+    style.SetWhiteSpace(EWhiteSpace::kPreWrap);
 }
 
-static void adjustStyleForFirstLetter(ComputedStyle& style) {
-  if (style.styleType() != PseudoIdFirstLetter)
+static void AdjustStyleForFirstLetter(ComputedStyle& style) {
+  if (style.StyleType() != kPseudoIdFirstLetter)
     return;
 
   // Force inline display (except for floating first-letters).
-  style.setDisplay(style.isFloating() ? EDisplay::kBlock : EDisplay::kInline);
+  style.SetDisplay(style.IsFloating() ? EDisplay::kBlock : EDisplay::kInline);
 
   // CSS2 says first-letter can't be positioned.
-  style.setPosition(EPosition::kStatic);
+  style.SetPosition(EPosition::kStatic);
 }
 
-void StyleAdjuster::adjustStyleForAlignment(
+void StyleAdjuster::AdjustStyleForAlignment(
     ComputedStyle& style,
-    const ComputedStyle& layoutParentStyle) {
+    const ComputedStyle& layout_parent_style) {
   // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
   // flag to not just mean 'auto' prior to running the StyleAdjuster but also
   // mean 'normal' after running it.
@@ -169,61 +169,61 @@ void StyleAdjuster::adjustStyleForAlignment(
   // If the inherited value of justify-items includes the 'legacy' keyword,
   // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
   // 'normal'.
-  if (style.justifyItemsPosition() == ItemPositionAuto) {
-    if (layoutParentStyle.justifyItemsPositionType() == LegacyPosition)
-      style.setJustifyItems(layoutParentStyle.justifyItems());
+  if (style.JustifyItemsPosition() == kItemPositionAuto) {
+    if (layout_parent_style.JustifyItemsPositionType() == kLegacyPosition)
+      style.SetJustifyItems(layout_parent_style.JustifyItems());
   }
 
   // The 'auto' keyword computes the computed value of justify-items on the
   // parent (minus any legacy keywords), or 'normal' if the box has no parent.
-  if (style.justifySelfPosition() == ItemPositionAuto) {
-    if (layoutParentStyle.justifyItemsPositionType() == LegacyPosition)
-      style.setJustifySelfPosition(layoutParentStyle.justifyItemsPosition());
-    else if (layoutParentStyle.justifyItemsPosition() != ItemPositionAuto)
-      style.setJustifySelf(layoutParentStyle.justifyItems());
+  if (style.JustifySelfPosition() == kItemPositionAuto) {
+    if (layout_parent_style.JustifyItemsPositionType() == kLegacyPosition)
+      style.SetJustifySelfPosition(layout_parent_style.JustifyItemsPosition());
+    else if (layout_parent_style.JustifyItemsPosition() != kItemPositionAuto)
+      style.SetJustifySelf(layout_parent_style.JustifyItems());
   }
 
   // The 'auto' keyword computes the computed value of align-items on the parent
   // or 'normal' if the box has no parent.
-  if (style.alignSelfPosition() == ItemPositionAuto &&
-      layoutParentStyle.alignItemsPosition() !=
-          ComputedStyle::initialDefaultAlignment().position())
-    style.setAlignSelf(layoutParentStyle.alignItems());
+  if (style.AlignSelfPosition() == kItemPositionAuto &&
+      layout_parent_style.AlignItemsPosition() !=
+          ComputedStyle::InitialDefaultAlignment().GetPosition())
+    style.SetAlignSelf(layout_parent_style.AlignItems());
 }
 
-static void adjustStyleForHTMLElement(ComputedStyle& style,
+static void AdjustStyleForHTMLElement(ComputedStyle& style,
                                       HTMLElement& element) {
   // <div> and <span> are the most common elements on the web, we skip all the
   // work for them.
   if (isHTMLDivElement(element) || isHTMLSpanElement(element))
     return;
 
-  if (isHTMLTableCellElement(element)) {
-    if (style.whiteSpace() == EWhiteSpace::kWebkitNowrap) {
+  if (IsHTMLTableCellElement(element)) {
+    if (style.WhiteSpace() == EWhiteSpace::kWebkitNowrap) {
       // Figure out if we are really nowrapping or if we should just
       // use normal instead. If the width of the cell is fixed, then
       // we don't actually use NOWRAP.
-      if (style.width().isFixed())
-        style.setWhiteSpace(EWhiteSpace::kNormal);
+      if (style.Width().IsFixed())
+        style.SetWhiteSpace(EWhiteSpace::kNormal);
       else
-        style.setWhiteSpace(EWhiteSpace::kNowrap);
+        style.SetWhiteSpace(EWhiteSpace::kNowrap);
     }
     return;
   }
 
   if (isHTMLImageElement(element)) {
-    if (toHTMLImageElement(element).isCollapsed())
-      style.setDisplay(EDisplay::kNone);
+    if (toHTMLImageElement(element).IsCollapsed())
+      style.SetDisplay(EDisplay::kNone);
     return;
   }
 
   if (isHTMLTableElement(element)) {
     // Tables never support the -webkit-* values for text-align and will reset
     // back to the default.
-    if (style.textAlign() == ETextAlign::kWebkitLeft ||
-        style.textAlign() == ETextAlign::kWebkitCenter ||
-        style.textAlign() == ETextAlign::kWebkitRight)
-      style.setTextAlign(ETextAlign::kStart);
+    if (style.GetTextAlign() == ETextAlign::kWebkitLeft ||
+        style.GetTextAlign() == ETextAlign::kWebkitCenter ||
+        style.GetTextAlign() == ETextAlign::kWebkitRight)
+      style.SetTextAlign(ETextAlign::kStart);
     return;
   }
 
@@ -231,257 +231,259 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
     // Frames and framesets never honor position:relative or position:absolute.
     // This is necessary to fix a crash where a site tries to position these
     // objects. They also never honor display.
-    style.setPosition(EPosition::kStatic);
-    style.setDisplay(EDisplay::kBlock);
+    style.SetPosition(EPosition::kStatic);
+    style.SetDisplay(EDisplay::kBlock);
     return;
   }
 
-  if (isHTMLFrameElementBase(element)) {
+  if (IsHTMLFrameElementBase(element)) {
     // Frames cannot overflow (they are always the size we ask them to be).
     // Some compositing code paths may try to draw scrollbars anyhow.
-    style.setOverflowX(EOverflow::kVisible);
-    style.setOverflowY(EOverflow::kVisible);
+    style.SetOverflowX(EOverflow::kVisible);
+    style.SetOverflowY(EOverflow::kVisible);
     return;
   }
 
   if (isHTMLRTElement(element)) {
     // Ruby text does not support float or position. This might change with
     // evolution of the specification.
-    style.setPosition(EPosition::kStatic);
-    style.setFloating(EFloat::kNone);
+    style.SetPosition(EPosition::kStatic);
+    style.SetFloating(EFloat::kNone);
     return;
   }
 
   if (isHTMLLegendElement(element)) {
-    style.setDisplay(EDisplay::kBlock);
+    style.SetDisplay(EDisplay::kBlock);
     return;
   }
 
   if (isHTMLMarqueeElement(element)) {
     // For now, <marquee> requires an overflow clip to work properly.
-    style.setOverflowX(EOverflow::kHidden);
-    style.setOverflowY(EOverflow::kHidden);
+    style.SetOverflowX(EOverflow::kHidden);
+    style.SetOverflowY(EOverflow::kHidden);
     return;
   }
 
   if (isHTMLTextAreaElement(element)) {
     // Textarea considers overflow visible as auto.
-    style.setOverflowX(style.overflowX() == EOverflow::kVisible
+    style.SetOverflowX(style.OverflowX() == EOverflow::kVisible
                            ? EOverflow::kAuto
-                           : style.overflowX());
-    style.setOverflowY(style.overflowY() == EOverflow::kVisible
+                           : style.OverflowX());
+    style.SetOverflowY(style.OverflowY() == EOverflow::kVisible
                            ? EOverflow::kAuto
-                           : style.overflowY());
+                           : style.OverflowY());
     return;
   }
 
-  if (isHTMLPlugInElement(element)) {
-    style.setRequiresAcceleratedCompositingForExternalReasons(
-        toHTMLPlugInElement(element).shouldAccelerate());
+  if (IsHTMLPlugInElement(element)) {
+    style.SetRequiresAcceleratedCompositingForExternalReasons(
+        ToHTMLPlugInElement(element).ShouldAccelerate());
     return;
   }
 }
 
-static void adjustOverflow(ComputedStyle& style) {
-  DCHECK(style.overflowX() != EOverflow::kVisible ||
-         style.overflowY() != EOverflow::kVisible);
+static void AdjustOverflow(ComputedStyle& style) {
+  DCHECK(style.OverflowX() != EOverflow::kVisible ||
+         style.OverflowY() != EOverflow::kVisible);
 
-  if (style.display() == EDisplay::kTable ||
-      style.display() == EDisplay::kInlineTable) {
+  if (style.Display() == EDisplay::kTable ||
+      style.Display() == EDisplay::kInlineTable) {
     // Tables only support overflow:hidden and overflow:visible and ignore
     // anything else, see http://dev.w3.org/csswg/css2/visufx.html#overflow. As
     // a table is not a block container box the rules for resolving conflicting
     // x and y values in CSS Overflow Module Level 3 do not apply. Arguably
     // overflow-x and overflow-y aren't allowed on tables but all UAs allow it.
-    if (style.overflowX() != EOverflow::kHidden)
-      style.setOverflowX(EOverflow::kVisible);
-    if (style.overflowY() != EOverflow::kHidden)
-      style.setOverflowY(EOverflow::kVisible);
+    if (style.OverflowX() != EOverflow::kHidden)
+      style.SetOverflowX(EOverflow::kVisible);
+    if (style.OverflowY() != EOverflow::kHidden)
+      style.SetOverflowY(EOverflow::kVisible);
     // If we are left with conflicting overflow values for the x and y axes on a
     // table then resolve both to OverflowVisible. This is interoperable
     // behaviour but is not specced anywhere.
-    if (style.overflowX() == EOverflow::kVisible)
-      style.setOverflowY(EOverflow::kVisible);
-    else if (style.overflowY() == EOverflow::kVisible)
-      style.setOverflowX(EOverflow::kVisible);
-  } else if (style.overflowX() == EOverflow::kVisible &&
-             style.overflowY() != EOverflow::kVisible) {
+    if (style.OverflowX() == EOverflow::kVisible)
+      style.SetOverflowY(EOverflow::kVisible);
+    else if (style.OverflowY() == EOverflow::kVisible)
+      style.SetOverflowX(EOverflow::kVisible);
+  } else if (style.OverflowX() == EOverflow::kVisible &&
+             style.OverflowY() != EOverflow::kVisible) {
     // If either overflow value is not visible, change to auto.
     // FIXME: Once we implement pagination controls, overflow-x should default
     // to hidden if overflow-y is set to -webkit-paged-x or -webkit-page-y. For
     // now, we'll let it default to auto so we can at least scroll through the
     // pages.
-    style.setOverflowX(EOverflow::kAuto);
-  } else if (style.overflowY() == EOverflow::kVisible &&
-             style.overflowX() != EOverflow::kVisible) {
-    style.setOverflowY(EOverflow::kAuto);
+    style.SetOverflowX(EOverflow::kAuto);
+  } else if (style.OverflowY() == EOverflow::kVisible &&
+             style.OverflowX() != EOverflow::kVisible) {
+    style.SetOverflowY(EOverflow::kAuto);
   }
 
   // Menulists should have visible overflow
-  if (style.appearance() == MenulistPart) {
-    style.setOverflowX(EOverflow::kVisible);
-    style.setOverflowY(EOverflow::kVisible);
+  if (style.Appearance() == kMenulistPart) {
+    style.SetOverflowX(EOverflow::kVisible);
+    style.SetOverflowY(EOverflow::kVisible);
   }
 }
 
-static void adjustStyleForDisplay(ComputedStyle& style,
-                                  const ComputedStyle& layoutParentStyle,
+static void AdjustStyleForDisplay(ComputedStyle& style,
+                                  const ComputedStyle& layout_parent_style,
                                   Document* document) {
-  if (style.display() == EDisplay::kBlock && !style.isFloating())
+  if (style.Display() == EDisplay::kBlock && !style.IsFloating())
     return;
 
-  if (style.display() == EDisplay::kContents)
+  if (style.Display() == EDisplay::kContents)
     return;
 
   // FIXME: Don't support this mutation for pseudo styles like first-letter or
   // first-line, since it's not completely clear how that should work.
-  if (style.display() == EDisplay::kInline &&
-      style.styleType() == PseudoIdNone &&
-      style.getWritingMode() != layoutParentStyle.getWritingMode())
-    style.setDisplay(EDisplay::kInlineBlock);
+  if (style.Display() == EDisplay::kInline &&
+      style.StyleType() == kPseudoIdNone &&
+      style.GetWritingMode() != layout_parent_style.GetWritingMode())
+    style.SetDisplay(EDisplay::kInlineBlock);
 
   // We do not honor position: relative or sticky for table rows, headers, and
   // footers. This is correct for position: relative in CSS2.1 (and caused a
   // crash in containingBlock() on some sites) and position: sticky is defined
   // as following position: relative behavior for table elements. It is
   // incorrect for CSS3.
-  if ((style.display() == EDisplay::kTableHeaderGroup ||
-       style.display() == EDisplay::kTableRowGroup ||
-       style.display() == EDisplay::kTableFooterGroup ||
-       style.display() == EDisplay::kTableRow) &&
-      style.hasInFlowPosition())
-    style.setPosition(EPosition::kStatic);
+  if ((style.Display() == EDisplay::kTableHeaderGroup ||
+       style.Display() == EDisplay::kTableRowGroup ||
+       style.Display() == EDisplay::kTableFooterGroup ||
+       style.Display() == EDisplay::kTableRow) &&
+      style.HasInFlowPosition())
+    style.SetPosition(EPosition::kStatic);
 
   // Cannot support position: sticky for table columns and column groups because
   // current code is only doing background painting through columns / column
   // groups.
-  if ((style.display() == EDisplay::kTableColumnGroup ||
-       style.display() == EDisplay::kTableColumn) &&
-      style.position() == EPosition::kSticky)
-    style.setPosition(EPosition::kStatic);
+  if ((style.Display() == EDisplay::kTableColumnGroup ||
+       style.Display() == EDisplay::kTableColumn) &&
+      style.GetPosition() == EPosition::kSticky)
+    style.SetPosition(EPosition::kStatic);
 
   // writing-mode does not apply to table row groups, table column groups, table
   // rows, and table columns.
   // FIXME: Table cells should be allowed to be perpendicular or flipped with
   // respect to the table, though.
-  if (style.display() == EDisplay::kTableColumn ||
-      style.display() == EDisplay::kTableColumnGroup ||
-      style.display() == EDisplay::kTableFooterGroup ||
-      style.display() == EDisplay::kTableHeaderGroup ||
-      style.display() == EDisplay::kTableRow ||
-      style.display() == EDisplay::kTableRowGroup ||
-      style.display() == EDisplay::kTableCell)
-    style.setWritingMode(layoutParentStyle.getWritingMode());
+  if (style.Display() == EDisplay::kTableColumn ||
+      style.Display() == EDisplay::kTableColumnGroup ||
+      style.Display() == EDisplay::kTableFooterGroup ||
+      style.Display() == EDisplay::kTableHeaderGroup ||
+      style.Display() == EDisplay::kTableRow ||
+      style.Display() == EDisplay::kTableRowGroup ||
+      style.Display() == EDisplay::kTableCell)
+    style.SetWritingMode(layout_parent_style.GetWritingMode());
 
   // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-  if (style.getWritingMode() != WritingMode::kHorizontalTb &&
-      (style.display() == EDisplay::kWebkitBox ||
-       style.display() == EDisplay::kWebkitInlineBox))
-    style.setWritingMode(WritingMode::kHorizontalTb);
+  if (style.GetWritingMode() != WritingMode::kHorizontalTb &&
+      (style.Display() == EDisplay::kWebkitBox ||
+       style.Display() == EDisplay::kWebkitInlineBox))
+    style.SetWritingMode(WritingMode::kHorizontalTb);
 
-  if (layoutParentStyle.isDisplayFlexibleOrGridBox()) {
-    style.setFloating(EFloat::kNone);
-    style.setDisplay(equivalentBlockDisplay(style.display()));
+  if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
+    style.SetFloating(EFloat::kNone);
+    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     // We want to count vertical percentage paddings/margins on flex items
     // because our current behavior is different from the spec and we want to
     // gather compatibility data.
-    if (style.paddingBefore().isPercentOrCalc() ||
-        style.paddingAfter().isPercentOrCalc())
-      UseCounter::count(document, UseCounter::FlexboxPercentagePaddingVertical);
-    if (style.marginBefore().isPercentOrCalc() ||
-        style.marginAfter().isPercentOrCalc())
-      UseCounter::count(document, UseCounter::FlexboxPercentageMarginVertical);
+    if (style.PaddingBefore().IsPercentOrCalc() ||
+        style.PaddingAfter().IsPercentOrCalc())
+      UseCounter::Count(document,
+                        UseCounter::kFlexboxPercentagePaddingVertical);
+    if (style.MarginBefore().IsPercentOrCalc() ||
+        style.MarginAfter().IsPercentOrCalc())
+      UseCounter::Count(document, UseCounter::kFlexboxPercentageMarginVertical);
   }
 }
 
-void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
-                                        const ComputedStyle& parentStyle,
-                                        const ComputedStyle& layoutParentStyle,
-                                        Element* element) {
-  if (style.display() != EDisplay::kNone) {
-    if (element && element->isHTMLElement())
-      adjustStyleForHTMLElement(style, toHTMLElement(*element));
+void StyleAdjuster::AdjustComputedStyle(
+    ComputedStyle& style,
+    const ComputedStyle& parent_style,
+    const ComputedStyle& layout_parent_style,
+    Element* element) {
+  if (style.Display() != EDisplay::kNone) {
+    if (element && element->IsHTMLElement())
+      AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
 
     // Per the spec, position 'static' and 'relative' in the top layer compute
     // to 'absolute'.
-    if (isInTopLayer(element, style) &&
-        (style.position() == EPosition::kStatic ||
-         style.position() == EPosition::kRelative))
-      style.setPosition(EPosition::kAbsolute);
+    if (IsInTopLayer(element, style) &&
+        (style.GetPosition() == EPosition::kStatic ||
+         style.GetPosition() == EPosition::kRelative))
+      style.SetPosition(EPosition::kAbsolute);
 
     // Absolute/fixed positioned elements, floating elements and the document
     // element need block-like outside display.
-    if (style.display() != EDisplay::kContents &&
-        (style.hasOutOfFlowPosition() || style.isFloating()))
-      style.setDisplay(equivalentBlockDisplay(style.display()));
+    if (style.Display() != EDisplay::kContents &&
+        (style.HasOutOfFlowPosition() || style.IsFloating()))
+      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
-    if (element && element->document().documentElement() == element)
-      style.setDisplay(equivalentBlockDisplay(style.display()));
+    if (element && element->GetDocument().documentElement() == element)
+      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     // We don't adjust the first letter style earlier because we may change the
     // display setting in adjustStyeForTagName() above.
-    adjustStyleForFirstLetter(style);
+    AdjustStyleForFirstLetter(style);
 
-    adjustStyleForDisplay(style, layoutParentStyle,
-                          element ? &element->document() : 0);
+    AdjustStyleForDisplay(style, layout_parent_style,
+                          element ? &element->GetDocument() : 0);
 
     // Paint containment forces a block formatting context, so we must coerce
     // from inline.  https://drafts.csswg.org/css-containment/#containment-paint
-    if (style.containsPaint() && style.display() == EDisplay::kInline)
-      style.setDisplay(EDisplay::kBlock);
+    if (style.ContainsPaint() && style.Display() == EDisplay::kInline)
+      style.SetDisplay(EDisplay::kBlock);
   } else {
-    adjustStyleForFirstLetter(style);
+    AdjustStyleForFirstLetter(style);
   }
 
-  if (element && element->hasCompositorProxy())
-    style.setHasCompositorProxy(true);
+  if (element && element->HasCompositorProxy())
+    style.SetHasCompositorProxy(true);
 
   // Make sure our z-index value is only applied if the object is positioned.
-  if (style.position() == EPosition::kStatic &&
-      !layoutParentStyleForcesZIndexToCreateStackingContext(
-          layoutParentStyle)) {
-    style.setIsStackingContext(false);
+  if (style.GetPosition() == EPosition::kStatic &&
+      !LayoutParentStyleForcesZIndexToCreateStackingContext(
+          layout_parent_style)) {
+    style.SetIsStackingContext(false);
     // TODO(alancutter): Avoid altering z-index here.
-    if (!style.hasAutoZIndex())
-      style.setZIndex(0);
-  } else if (!style.hasAutoZIndex()) {
-    style.setIsStackingContext(true);
+    if (!style.HasAutoZIndex())
+      style.SetZIndex(0);
+  } else if (!style.HasAutoZIndex()) {
+    style.SetIsStackingContext(true);
   }
 
-  if (style.overflowX() != EOverflow::kVisible ||
-      style.overflowY() != EOverflow::kVisible)
-    adjustOverflow(style);
+  if (style.OverflowX() != EOverflow::kVisible ||
+      style.OverflowY() != EOverflow::kVisible)
+    AdjustOverflow(style);
 
-  if (doesNotInheritTextDecoration(style, element))
-    style.clearAppliedTextDecorations();
+  if (DoesNotInheritTextDecoration(style, element))
+    style.ClearAppliedTextDecorations();
   else
-    style.restoreParentTextDecorations(parentStyle);
-  style.applyTextDecorations(
-      parentStyle.visitedDependentColor(CSSPropertyTextDecorationColor),
-      overridesTextDecorationColors(element));
+    style.RestoreParentTextDecorations(parent_style);
+  style.ApplyTextDecorations(
+      parent_style.VisitedDependentColor(CSSPropertyTextDecorationColor),
+      OverridesTextDecorationColors(element));
 
   // Cull out any useless layers and also repeat patterns into additional
   // layers.
-  style.adjustBackgroundLayers();
-  style.adjustMaskLayers();
+  style.AdjustBackgroundLayers();
+  style.AdjustMaskLayers();
 
   // Let the theme also have a crack at adjusting the style.
-  if (style.hasAppearance())
-    LayoutTheme::theme().adjustStyle(style, element);
+  if (style.HasAppearance())
+    LayoutTheme::GetTheme().AdjustStyle(style, element);
 
   // If we have first-letter pseudo style, transitions, or animations, do not
   // share this style.
-  if (style.hasPseudoStyle(PseudoIdFirstLetter) || style.transitions() ||
-      style.animations())
-    style.setUnique();
+  if (style.HasPseudoStyle(kPseudoIdFirstLetter) || style.Transitions() ||
+      style.Animations())
+    style.SetUnique();
 
-  adjustStyleForEditing(style);
+  AdjustStyleForEditing(style);
 
-  bool isSVGElement = element && element->isSVGElement();
-  if (isSVGElement) {
+  bool is_svg_element = element && element->IsSVGElement();
+  if (is_svg_element) {
     // display: contents computes to inline for replaced elements and form
     // controls, and isn't specified for other kinds of SVG content[1], so let's
     // just do the same here for all other SVG elements.
@@ -491,25 +493,25 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
     // SVGElement::layoutObjectIsNeeded.
     //
     // [1]: https://www.w3.org/TR/SVG/painting.html#DisplayProperty
-    if (style.display() == EDisplay::kContents)
-      style.setDisplay(EDisplay::kInline);
+    if (style.Display() == EDisplay::kContents)
+      style.SetDisplay(EDisplay::kInline);
 
     // Only the root <svg> element in an SVG document fragment tree honors css
     // position.
     if (!(isSVGSVGElement(*element) && element->parentNode() &&
-          !element->parentNode()->isSVGElement()))
-      style.setPosition(ComputedStyle::initialPosition());
+          !element->parentNode()->IsSVGElement()))
+      style.SetPosition(ComputedStyle::InitialPosition());
 
     // SVG text layout code expects us to be a block-level style element.
     if ((isSVGForeignObjectElement(*element) || isSVGTextElement(*element)) &&
-        style.isDisplayInlineType())
-      style.setDisplay(EDisplay::kBlock);
+        style.IsDisplayInlineType())
+      style.SetDisplay(EDisplay::kBlock);
 
     // Columns don't apply to svg text elements.
     if (isSVGTextElement(*element))
-      style.clearMultiCol();
+      style.ClearMultiCol();
   }
-  adjustStyleForAlignment(style, layoutParentStyle);
+  AdjustStyleForAlignment(style, layout_parent_style);
 }
 
 }  // namespace blink

@@ -36,15 +36,15 @@ class LayoutSearchField final : public LayoutTextControlSingleLine {
   ~LayoutSearchField() override;
 
  private:
-  LayoutUnit computeControlLogicalHeight(
-      LayoutUnit lineHeight,
-      LayoutUnit nonContentHeight) const override;
+  LayoutUnit ComputeControlLogicalHeight(
+      LayoutUnit line_height,
+      LayoutUnit non_content_height) const override;
 
-  Element* searchDecorationElement() const;
-  Element* cancelButtonElement() const;
+  Element* SearchDecorationElement() const;
+  Element* CancelButtonElement() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSearchField, isTextField());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSearchField, IsTextField());
 
 }  // namespace blink
 

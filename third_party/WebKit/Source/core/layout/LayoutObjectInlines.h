@@ -15,23 +15,24 @@ namespace blink {
 // to StyleEngine.h for all users of LayoutObject.h that don't use
 // these methods.
 
-inline const ComputedStyle* LayoutObject::firstLineStyle() const {
-  return document().styleEngine().usesFirstLineRules() ? cachedFirstLineStyle()
-                                                       : style();
+inline const ComputedStyle* LayoutObject::FirstLineStyle() const {
+  return GetDocument().GetStyleEngine().UsesFirstLineRules()
+             ? CachedFirstLineStyle()
+             : Style();
 }
 
-inline const ComputedStyle& LayoutObject::firstLineStyleRef() const {
-  const ComputedStyle* style = firstLineStyle();
+inline const ComputedStyle& LayoutObject::FirstLineStyleRef() const {
+  const ComputedStyle* style = FirstLineStyle();
   DCHECK(style);
   return *style;
 }
 
-inline const ComputedStyle* LayoutObject::style(bool firstLine) const {
-  return firstLine ? firstLineStyle() : style();
+inline const ComputedStyle* LayoutObject::Style(bool first_line) const {
+  return first_line ? FirstLineStyle() : Style();
 }
 
-inline const ComputedStyle& LayoutObject::styleRef(bool firstLine) const {
-  const ComputedStyle* style = this->style(firstLine);
+inline const ComputedStyle& LayoutObject::StyleRef(bool first_line) const {
+  const ComputedStyle* style = this->Style(first_line);
   DCHECK(style);
   return *style;
 }

@@ -29,14 +29,14 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
         routing_id_(routing_id) {
   }
   ~MessageImpl() override {}
-  WebDevToolsAgent* agent() override {
+  WebDevToolsAgent* Agent() override {
     DevToolsAgent* agent = DevToolsAgent::FromRoutingId(routing_id_);
     if (!agent)
       return 0;
     return agent->GetWebAgent();
   }
-  WebString message() override { return WebString::fromUTF8(msg_); }
-  WebString method() override { return WebString::fromUTF8(method_); }
+  WebString Message() override { return WebString::FromUTF8(msg_); }
+  WebString Method() override { return WebString::FromUTF8(method_); }
 
  private:
   std::string method_;
@@ -72,9 +72,8 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
     return;
   }
 
-  if (WebDevToolsAgent::shouldInterruptForMethod(
-          WebString::fromUTF8(method))) {
-    WebDevToolsAgent::interruptAndDispatch(
+  if (WebDevToolsAgent::ShouldInterruptForMethod(WebString::FromUTF8(method))) {
+    WebDevToolsAgent::InterruptAndDispatch(
         session_id, new MessageImpl(method, message, current_routing_id_));
   }
 }

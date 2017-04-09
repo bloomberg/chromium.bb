@@ -36,11 +36,11 @@ class CORE_EXPORT V8Initializer {
   STATIC_ONLY(V8Initializer);
 
  public:
-  static void initializeMainThread();
-  static void initializeWorker(v8::Isolate*);
+  static void InitializeMainThread();
+  static void InitializeWorker(v8::Isolate*);
 
-  static void reportRejectedPromisesOnMainThread();
-  static void messageHandlerInMainThread(v8::Local<v8::Message>,
+  static void ReportRejectedPromisesOnMainThread();
+  static void MessageHandlerInMainThread(v8::Local<v8::Message>,
                                          v8::Local<v8::Value>);
 };
 

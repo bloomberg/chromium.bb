@@ -39,58 +39,59 @@
 namespace blink {
 
 HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
-    : m_document(document) {}
+    : document_(document) {}
 
-HTMLResourcePreloader* HTMLResourcePreloader::create(Document& document) {
+HTMLResourcePreloader* HTMLResourcePreloader::Create(Document& document) {
   return new HTMLResourcePreloader(document);
 }
 
 DEFINE_TRACE(HTMLResourcePreloader) {
-  visitor->trace(m_document);
-  visitor->trace(m_cssPreloaders);
+  visitor->Trace(document_);
+  visitor->Trace(css_preloaders_);
 }
 
-int HTMLResourcePreloader::countPreloads() {
-  if (m_document->loader())
-    return m_document->loader()->fetcher()->countPreloads();
+int HTMLResourcePreloader::CountPreloads() {
+  if (document_->Loader())
+    return document_->Loader()->Fetcher()->CountPreloads();
   return 0;
 }
 
-static void preconnectHost(PreloadRequest* request,
-                           const NetworkHintsInterface& networkHintsInterface) {
+static void PreconnectHost(
+    PreloadRequest* request,
+    const NetworkHintsInterface& network_hints_interface) {
   DCHECK(request);
-  DCHECK(request->isPreconnect());
-  KURL host(request->baseURL(), request->resourceURL());
-  if (!host.isValid() || !host.protocolIsInHTTPFamily())
+  DCHECK(request->IsPreconnect());
+  KURL host(request->BaseURL(), request->ResourceURL());
+  if (!host.IsValid() || !host.ProtocolIsInHTTPFamily())
     return;
-  networkHintsInterface.preconnectHost(host, request->crossOrigin());
+  network_hints_interface.PreconnectHost(host, request->CrossOrigin());
 }
 
-void HTMLResourcePreloader::preload(
+void HTMLResourcePreloader::Preload(
     std::unique_ptr<PreloadRequest> preload,
-    const NetworkHintsInterface& networkHintsInterface) {
-  if (preload->isPreconnect()) {
-    preconnectHost(preload.get(), networkHintsInterface);
+    const NetworkHintsInterface& network_hints_interface) {
+  if (preload->IsPreconnect()) {
+    PreconnectHost(preload.get(), network_hints_interface);
     return;
   }
   // TODO(yoichio): Should preload if document is imported.
-  if (!m_document->loader())
+  if (!document_->Loader())
     return;
 
   int duration = static_cast<int>(
-      1000 * (monotonicallyIncreasingTime() - preload->discoveryTime()));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDelayHistogram,
+      1000 * (MonotonicallyIncreasingTime() - preload->DiscoveryTime()));
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, preload_delay_histogram,
                       ("WebCore.PreloadDelayMs", 0, 2000, 20));
-  preloadDelayHistogram.count(duration);
+  preload_delay_histogram.Count(duration);
 
-  Resource* resource = preload->start(m_document);
+  Resource* resource = preload->Start(document_);
 
-  if (resource && !resource->isLoaded() &&
-      preload->resourceType() == Resource::CSSStyleSheet) {
-    Settings* settings = m_document->settings();
-    if (settings && (settings->getCSSExternalScannerNoPreload() ||
-                     settings->getCSSExternalScannerPreload()))
-      m_cssPreloaders.insert(new CSSPreloaderResourceClient(resource, this));
+  if (resource && !resource->IsLoaded() &&
+      preload->ResourceType() == Resource::kCSSStyleSheet) {
+    Settings* settings = document_->GetSettings();
+    if (settings && (settings->GetCSSExternalScannerNoPreload() ||
+                     settings->GetCSSExternalScannerPreload()))
+      css_preloaders_.insert(new CSSPreloaderResourceClient(resource, this));
   }
 }
 

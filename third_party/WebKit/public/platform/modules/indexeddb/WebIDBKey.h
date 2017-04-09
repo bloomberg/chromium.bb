@@ -42,56 +42,56 @@ class WebIDBKey {
   // Please use one of the factory methods. This is public only to allow
   // WebVector.
   WebIDBKey() {}
-  ~WebIDBKey() { reset(); }
+  ~WebIDBKey() { Reset(); }
 
-  BLINK_EXPORT static WebIDBKey createArray(const WebVector<WebIDBKey>&);
-  BLINK_EXPORT static WebIDBKey createBinary(const WebData&);
-  BLINK_EXPORT static WebIDBKey createString(const WebString&);
-  BLINK_EXPORT static WebIDBKey createDate(double);
-  BLINK_EXPORT static WebIDBKey createNumber(double);
-  BLINK_EXPORT static WebIDBKey createInvalid();
-  BLINK_EXPORT static WebIDBKey createNull();
+  BLINK_EXPORT static WebIDBKey CreateArray(const WebVector<WebIDBKey>&);
+  BLINK_EXPORT static WebIDBKey CreateBinary(const WebData&);
+  BLINK_EXPORT static WebIDBKey CreateString(const WebString&);
+  BLINK_EXPORT static WebIDBKey CreateDate(double);
+  BLINK_EXPORT static WebIDBKey CreateNumber(double);
+  BLINK_EXPORT static WebIDBKey CreateInvalid();
+  BLINK_EXPORT static WebIDBKey CreateNull();
 
-  WebIDBKey(const WebIDBKey& e) { assign(e); }
+  WebIDBKey(const WebIDBKey& e) { Assign(e); }
   WebIDBKey& operator=(const WebIDBKey& e) {
-    assign(e);
+    Assign(e);
     return *this;
   }
 
-  BLINK_EXPORT void assign(const WebIDBKey&);
-  BLINK_EXPORT void assignArray(const WebVector<WebIDBKey>&);
-  BLINK_EXPORT void assignBinary(const WebData&);
-  BLINK_EXPORT void assignString(const WebString&);
-  BLINK_EXPORT void assignDate(double);
-  BLINK_EXPORT void assignNumber(double);
-  BLINK_EXPORT void assignInvalid();
-  BLINK_EXPORT void assignNull();
+  BLINK_EXPORT void Assign(const WebIDBKey&);
+  BLINK_EXPORT void AssignArray(const WebVector<WebIDBKey>&);
+  BLINK_EXPORT void AssignBinary(const WebData&);
+  BLINK_EXPORT void AssignString(const WebString&);
+  BLINK_EXPORT void AssignDate(double);
+  BLINK_EXPORT void AssignNumber(double);
+  BLINK_EXPORT void AssignInvalid();
+  BLINK_EXPORT void AssignNull();
 #if !BLINK_WEB_IMPLEMENTATION && BLINK_IMPLEMENTATION && \
     defined(COMPONENT_BUILD)
-  void reset() { m_private.reset(); }
+  void Reset() { private_.Reset(); }
 #else
-  BLINK_EXPORT void reset();
+  BLINK_EXPORT void Reset();
 #endif
 
-  BLINK_EXPORT WebIDBKeyType keyType() const;
-  BLINK_EXPORT bool isValid() const;
-  BLINK_EXPORT WebVector<WebIDBKey> array() const;  // Only valid for ArrayType.
-  BLINK_EXPORT WebData binary() const;    // Only valid for BinaryType.
-  BLINK_EXPORT WebString string() const;  // Only valid for StringType.
-  BLINK_EXPORT double date() const;       // Only valid for DateType.
-  BLINK_EXPORT double number() const;     // Only valid for NumberType.
+  BLINK_EXPORT WebIDBKeyType KeyType() const;
+  BLINK_EXPORT bool IsValid() const;
+  BLINK_EXPORT WebVector<WebIDBKey> Array() const;  // Only valid for ArrayType.
+  BLINK_EXPORT WebData Binary() const;       // Only valid for BinaryType.
+  BLINK_EXPORT WebString GetString() const;  // Only valid for StringType.
+  BLINK_EXPORT double Date() const;          // Only valid for DateType.
+  BLINK_EXPORT double Number() const;        // Only valid for NumberType.
 
 #if BLINK_IMPLEMENTATION
-  WebIDBKey(IDBKey* value) : m_private(value) {}
+  WebIDBKey(IDBKey* value) : private_(value) {}
   WebIDBKey& operator=(IDBKey* value) {
-    m_private = value;
+    private_ = value;
     return *this;
   }
-  operator IDBKey*() const { return m_private.get(); }
+  operator IDBKey*() const { return private_.Get(); }
 #endif
 
  private:
-  WebPrivatePtr<IDBKey> m_private;
+  WebPrivatePtr<IDBKey> private_;
 };
 
 }  // namespace blink

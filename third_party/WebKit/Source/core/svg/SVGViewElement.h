@@ -41,9 +41,9 @@ class SVGViewElement final : public SVGElement,
  private:
   explicit SVGViewElement(Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 };
 
 }  // namespace blink

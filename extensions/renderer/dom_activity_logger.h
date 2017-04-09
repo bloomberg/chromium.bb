@@ -45,10 +45,10 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
   // log.
   // These methods don't have the override keyword due to the complexities it
   // introduces when changes blink apis.
-  void logGetter(const blink::WebString& api_name,
+  void LogGetter(const blink::WebString& api_name,
                  const blink::WebURL& url,
                  const blink::WebString& title) override;
-  void logSetter(const blink::WebString& api_name,
+  void LogSetter(const blink::WebString& api_name,
                  const v8::Local<v8::Value>& new_value,
                  const blink::WebURL& url,
                  const blink::WebString& title) override;
@@ -57,12 +57,12 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
                          const v8::Local<v8::Value>& old_value,
                          const blink::WebURL& url,
                          const blink::WebString& title);
-  void logMethod(const blink::WebString& api_name,
+  void LogMethod(const blink::WebString& api_name,
                  int argc,
                  const v8::Local<v8::Value>* argv,
                  const blink::WebURL& url,
                  const blink::WebString& title) override;
-  void logEvent(const blink::WebString& event_name,
+  void LogEvent(const blink::WebString& event_name,
                 int argc,
                 const blink::WebString* argv,
                 const blink::WebURL& url,

@@ -32,23 +32,24 @@ namespace blink {
 
 class SplitElementCommand final : public SimpleEditCommand {
  public:
-  static SplitElementCommand* create(Element* element, Node* splitPointChild) {
-    return new SplitElementCommand(element, splitPointChild);
+  static SplitElementCommand* Create(Element* element,
+                                     Node* split_point_child) {
+    return new SplitElementCommand(element, split_point_child);
   }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  SplitElementCommand(Element*, Node* splitPointChild);
+  SplitElementCommand(Element*, Node* split_point_child);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
-  void doReapply() override;
-  void executeApply();
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
+  void DoReapply() override;
+  void ExecuteApply();
 
-  Member<Element> m_element1;
-  Member<Element> m_element2;
-  Member<Node> m_atChild;
+  Member<Element> element1_;
+  Member<Element> element2_;
+  Member<Node> at_child_;
 };
 
 }  // namespace blink

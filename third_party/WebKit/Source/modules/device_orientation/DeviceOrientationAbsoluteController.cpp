@@ -16,65 +16,65 @@ DeviceOrientationAbsoluteController::DeviceOrientationAbsoluteController(
 
 DeviceOrientationAbsoluteController::~DeviceOrientationAbsoluteController() {}
 
-const char* DeviceOrientationAbsoluteController::supplementName() {
+const char* DeviceOrientationAbsoluteController::SupplementName() {
   return "DeviceOrientationAbsoluteController";
 }
 
-DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::from(
+DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::From(
     Document& document) {
   DeviceOrientationAbsoluteController* controller =
       static_cast<DeviceOrientationAbsoluteController*>(
-          Supplement<Document>::from(
-              document, DeviceOrientationAbsoluteController::supplementName()));
+          Supplement<Document>::From(
+              document, DeviceOrientationAbsoluteController::SupplementName()));
   if (!controller) {
     controller = new DeviceOrientationAbsoluteController(document);
-    Supplement<Document>::provideTo(
-        document, DeviceOrientationAbsoluteController::supplementName(),
+    Supplement<Document>::ProvideTo(
+        document, DeviceOrientationAbsoluteController::SupplementName(),
         controller);
   }
   return *controller;
 }
 
-void DeviceOrientationAbsoluteController::didAddEventListener(
+void DeviceOrientationAbsoluteController::DidAddEventListener(
     LocalDOMWindow* window,
-    const AtomicString& eventType) {
-  if (eventType != eventTypeName())
+    const AtomicString& event_type) {
+  if (event_type != EventTypeName())
     return;
 
-  if (document().frame()) {
-    if (document().isSecureContext()) {
-      UseCounter::count(document().frame(),
-                        UseCounter::DeviceOrientationAbsoluteSecureOrigin);
+  if (GetDocument().GetFrame()) {
+    if (GetDocument().IsSecureContext()) {
+      UseCounter::Count(GetDocument().GetFrame(),
+                        UseCounter::kDeviceOrientationAbsoluteSecureOrigin);
     } else {
-      Deprecation::countDeprecation(
-          document().frame(),
-          UseCounter::DeviceOrientationAbsoluteInsecureOrigin);
+      Deprecation::CountDeprecation(
+          GetDocument().GetFrame(),
+          UseCounter::kDeviceOrientationAbsoluteInsecureOrigin);
       // TODO: add rappor logging of insecure origins as in
       // DeviceOrientationController.
-      if (document()
-              .frame()
-              ->settings()
-              ->getStrictPowerfulFeatureRestrictions())
+      if (GetDocument()
+              .GetFrame()
+              ->GetSettings()
+              ->GetStrictPowerfulFeatureRestrictions())
         return;
     }
   }
 
   // TODO: add rappor url logging as in DeviceOrientationController.
 
-  DeviceSingleWindowEventController::didAddEventListener(window, eventType);
+  DeviceSingleWindowEventController::DidAddEventListener(window, event_type);
 }
 
 DeviceOrientationDispatcher&
-DeviceOrientationAbsoluteController::dispatcherInstance() const {
-  return DeviceOrientationDispatcher::instance(true);
+DeviceOrientationAbsoluteController::DispatcherInstance() const {
+  return DeviceOrientationDispatcher::Instance(true);
 }
 
-const AtomicString& DeviceOrientationAbsoluteController::eventTypeName() const {
+const AtomicString& DeviceOrientationAbsoluteController::EventTypeName() const {
   return EventTypeNames::deviceorientationabsolute;
 }
 
 DEFINE_TRACE(DeviceOrientationAbsoluteController) {
-  DeviceOrientationController::trace(visitor);
+  DeviceOrientationController::Trace(visitor);
 }
 
 }  // namespace blink

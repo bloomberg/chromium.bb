@@ -18,13 +18,13 @@ class TrackDefaultList final : public GarbageCollected<TrackDefaultList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TrackDefaultList* create();  // Creates an empty TrackDefaultList.
+  static TrackDefaultList* Create();  // Creates an empty TrackDefaultList.
 
   // Implement the IDL
-  static TrackDefaultList* create(const HeapVector<Member<TrackDefault>>&,
+  static TrackDefaultList* Create(const HeapVector<Member<TrackDefault>>&,
                                   ExceptionState&);
 
-  unsigned length() const { return m_trackDefaults.size(); }
+  unsigned length() const { return track_defaults_.size(); }
   TrackDefault* item(unsigned) const;
 
   DECLARE_TRACE();
@@ -34,7 +34,7 @@ class TrackDefaultList final : public GarbageCollected<TrackDefaultList>,
 
   explicit TrackDefaultList(const HeapVector<Member<TrackDefault>>&);
 
-  const HeapVector<Member<TrackDefault>> m_trackDefaults;
+  const HeapVector<Member<TrackDefault>> track_defaults_;
 };
 
 }  // namespace blink

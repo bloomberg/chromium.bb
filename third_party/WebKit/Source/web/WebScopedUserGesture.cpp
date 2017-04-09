@@ -38,14 +38,14 @@
 namespace blink {
 
 WebScopedUserGesture::WebScopedUserGesture(const WebUserGestureToken& token) {
-  if (!token.isNull())
-    m_indicator.reset(new UserGestureIndicator(token));
+  if (!token.IsNull())
+    indicator_.reset(new UserGestureIndicator(token));
 }
 
 WebScopedUserGesture::WebScopedUserGesture(WebLocalFrame* frame) {
-  m_indicator.reset(new UserGestureIndicator(DocumentUserGestureToken::create(
-      frame ? toWebLocalFrameImpl(frame)->frame()->document() : nullptr,
-      UserGestureToken::NewGesture)));
+  indicator_.reset(new UserGestureIndicator(DocumentUserGestureToken::Create(
+      frame ? ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument() : nullptr,
+      UserGestureToken::kNewGesture)));
 }
 
 WebScopedUserGesture::~WebScopedUserGesture() {}

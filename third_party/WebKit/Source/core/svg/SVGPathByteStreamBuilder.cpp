@@ -28,88 +28,88 @@ namespace blink {
 // Helper class that coalesces writes to a SVGPathByteStream to a local buffer.
 class CoalescingBuffer {
  public:
-  CoalescingBuffer(SVGPathByteStream& byteStream)
-      : m_currentOffset(0), m_byteStream(byteStream) {}
-  ~CoalescingBuffer() { m_byteStream.append(m_bytes, m_currentOffset); }
+  CoalescingBuffer(SVGPathByteStream& byte_stream)
+      : current_offset_(0), byte_stream_(byte_stream) {}
+  ~CoalescingBuffer() { byte_stream_.Append(bytes_, current_offset_); }
 
   template <typename DataType>
-  void writeType(DataType value) {
+  void WriteType(DataType value) {
     ByteType<DataType> data;
     data.value = value;
-    size_t typeSize = sizeof(ByteType<DataType>);
-    DCHECK_LE(m_currentOffset + typeSize, sizeof(m_bytes));
-    memcpy(m_bytes + m_currentOffset, data.bytes, typeSize);
-    m_currentOffset += typeSize;
+    size_t type_size = sizeof(ByteType<DataType>);
+    DCHECK_LE(current_offset_ + type_size, sizeof(bytes_));
+    memcpy(bytes_ + current_offset_, data.bytes, type_size);
+    current_offset_ += type_size;
   }
 
-  void writeFlag(bool value) { writeType<bool>(value); }
-  void writeFloat(float value) { writeType<float>(value); }
-  void writeFloatPoint(const FloatPoint& point) {
-    writeType<float>(point.x());
-    writeType<float>(point.y());
+  void WriteFlag(bool value) { WriteType<bool>(value); }
+  void WriteFloat(float value) { WriteType<float>(value); }
+  void WriteFloatPoint(const FloatPoint& point) {
+    WriteType<float>(point.X());
+    WriteType<float>(point.Y());
   }
-  void writeSegmentType(unsigned short value) {
-    writeType<unsigned short>(value);
+  void WriteSegmentType(unsigned short value) {
+    WriteType<unsigned short>(value);
   }
 
  private:
   // Adjust size to fit the largest command (in serialized/byte-stream format).
   // Currently a cubic segment.
-  size_t m_currentOffset;
-  unsigned char m_bytes[sizeof(unsigned short) + sizeof(FloatPoint) * 3];
-  SVGPathByteStream& m_byteStream;
+  size_t current_offset_;
+  unsigned char bytes_[sizeof(unsigned short) + sizeof(FloatPoint) * 3];
+  SVGPathByteStream& byte_stream_;
 };
 
 SVGPathByteStreamBuilder::SVGPathByteStreamBuilder(
-    SVGPathByteStream& byteStream)
-    : m_byteStream(byteStream) {}
+    SVGPathByteStream& byte_stream)
+    : byte_stream_(byte_stream) {}
 
-void SVGPathByteStreamBuilder::emitSegment(const PathSegmentData& segment) {
-  CoalescingBuffer buffer(m_byteStream);
-  buffer.writeSegmentType(segment.command);
+void SVGPathByteStreamBuilder::EmitSegment(const PathSegmentData& segment) {
+  CoalescingBuffer buffer(byte_stream_);
+  buffer.WriteSegmentType(segment.command);
 
   switch (segment.command) {
-    case PathSegMoveToRel:
-    case PathSegMoveToAbs:
-    case PathSegLineToRel:
-    case PathSegLineToAbs:
-    case PathSegCurveToQuadraticSmoothRel:
-    case PathSegCurveToQuadraticSmoothAbs:
-      buffer.writeFloatPoint(segment.targetPoint);
+    case kPathSegMoveToRel:
+    case kPathSegMoveToAbs:
+    case kPathSegLineToRel:
+    case kPathSegLineToAbs:
+    case kPathSegCurveToQuadraticSmoothRel:
+    case kPathSegCurveToQuadraticSmoothAbs:
+      buffer.WriteFloatPoint(segment.target_point);
       break;
-    case PathSegLineToHorizontalRel:
-    case PathSegLineToHorizontalAbs:
-      buffer.writeFloat(segment.targetPoint.x());
+    case kPathSegLineToHorizontalRel:
+    case kPathSegLineToHorizontalAbs:
+      buffer.WriteFloat(segment.target_point.X());
       break;
-    case PathSegLineToVerticalRel:
-    case PathSegLineToVerticalAbs:
-      buffer.writeFloat(segment.targetPoint.y());
+    case kPathSegLineToVerticalRel:
+    case kPathSegLineToVerticalAbs:
+      buffer.WriteFloat(segment.target_point.Y());
       break;
-    case PathSegClosePath:
+    case kPathSegClosePath:
       break;
-    case PathSegCurveToCubicRel:
-    case PathSegCurveToCubicAbs:
-      buffer.writeFloatPoint(segment.point1);
-      buffer.writeFloatPoint(segment.point2);
-      buffer.writeFloatPoint(segment.targetPoint);
+    case kPathSegCurveToCubicRel:
+    case kPathSegCurveToCubicAbs:
+      buffer.WriteFloatPoint(segment.point1);
+      buffer.WriteFloatPoint(segment.point2);
+      buffer.WriteFloatPoint(segment.target_point);
       break;
-    case PathSegCurveToCubicSmoothRel:
-    case PathSegCurveToCubicSmoothAbs:
-      buffer.writeFloatPoint(segment.point2);
-      buffer.writeFloatPoint(segment.targetPoint);
+    case kPathSegCurveToCubicSmoothRel:
+    case kPathSegCurveToCubicSmoothAbs:
+      buffer.WriteFloatPoint(segment.point2);
+      buffer.WriteFloatPoint(segment.target_point);
       break;
-    case PathSegCurveToQuadraticRel:
-    case PathSegCurveToQuadraticAbs:
-      buffer.writeFloatPoint(segment.point1);
-      buffer.writeFloatPoint(segment.targetPoint);
+    case kPathSegCurveToQuadraticRel:
+    case kPathSegCurveToQuadraticAbs:
+      buffer.WriteFloatPoint(segment.point1);
+      buffer.WriteFloatPoint(segment.target_point);
       break;
-    case PathSegArcRel:
-    case PathSegArcAbs:
-      buffer.writeFloatPoint(segment.point1);
-      buffer.writeFloat(segment.point2.x());
-      buffer.writeFlag(segment.arcLarge);
-      buffer.writeFlag(segment.arcSweep);
-      buffer.writeFloatPoint(segment.targetPoint);
+    case kPathSegArcRel:
+    case kPathSegArcAbs:
+      buffer.WriteFloatPoint(segment.point1);
+      buffer.WriteFloat(segment.point2.X());
+      buffer.WriteFlag(segment.arc_large);
+      buffer.WriteFlag(segment.arc_sweep);
+      buffer.WriteFloatPoint(segment.target_point);
       break;
     default:
       NOTREACHED();

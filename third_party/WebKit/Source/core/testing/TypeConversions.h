@@ -36,59 +36,59 @@ class TypeConversions final : public GarbageCollectedFinalized<TypeConversions>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TypeConversions* create() { return new TypeConversions(); }
+  static TypeConversions* Create() { return new TypeConversions(); }
 
-  long testLong() { return m_long; }
-  void setTestLong(long value) { m_long = value; }
-  unsigned long testUnsignedLong() { return m_unsignedLong; }
-  void setTestUnsignedLong(unsigned long value) { m_unsignedLong = value; }
+  long testLong() { return long_; }
+  void setTestLong(long value) { long_ = value; }
+  unsigned long testUnsignedLong() { return unsigned_long_; }
+  void setTestUnsignedLong(unsigned long value) { unsigned_long_ = value; }
 
-  long long testLongLong() { return m_longLong; }
-  void setTestLongLong(long long value) { m_longLong = value; }
-  unsigned long long testUnsignedLongLong() { return m_unsignedLongLong; }
+  long long testLongLong() { return long_long_; }
+  void setTestLongLong(long long value) { long_long_ = value; }
+  unsigned long long testUnsignedLongLong() { return unsigned_long_long_; }
   void setTestUnsignedLongLong(unsigned long long value) {
-    m_unsignedLongLong = value;
+    unsigned_long_long_ = value;
   }
 
-  int8_t testByte() { return m_byte; }
-  void setTestByte(int8_t value) { m_byte = value; }
-  uint8_t testOctet() { return m_octet; }
-  void setTestOctet(uint8_t value) { m_octet = value; }
+  int8_t testByte() { return byte_; }
+  void setTestByte(int8_t value) { byte_ = value; }
+  uint8_t testOctet() { return octet_; }
+  void setTestOctet(uint8_t value) { octet_ = value; }
 
-  int16_t testShort() { return m_short; }
-  void setTestShort(int16_t value) { m_short = value; }
-  uint16_t testUnsignedShort() { return m_unsignedShort; }
-  void setTestUnsignedShort(uint16_t value) { m_unsignedShort = value; }
+  int16_t testShort() { return short_; }
+  void setTestShort(int16_t value) { short_ = value; }
+  uint16_t testUnsignedShort() { return unsigned_short_; }
+  void setTestUnsignedShort(uint16_t value) { unsigned_short_ = value; }
 
-  const String& testByteString() const { return m_byteString; }
-  void setTestByteString(const String& value) { m_byteString = value; }
+  const String& testByteString() const { return byte_string_; }
+  void setTestByteString(const String& value) { byte_string_ = value; }
 
-  const String& testUSVString() const { return m_usvString; }
-  void setTestUSVString(const String& value) { m_usvString = value; }
+  const String& testUSVString() const { return usv_string_; }
+  void setTestUSVString(const String& value) { usv_string_ = value; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   TypeConversions()
-      : m_long(0),
-        m_unsignedLong(0),
-        m_longLong(0),
-        m_unsignedLongLong(0),
-        m_byte(0),
-        m_octet(0),
-        m_short(0),
-        m_unsignedShort(0) {}
+      : long_(0),
+        unsigned_long_(0),
+        long_long_(0),
+        unsigned_long_long_(0),
+        byte_(0),
+        octet_(0),
+        short_(0),
+        unsigned_short_(0) {}
 
-  long m_long;
-  unsigned long m_unsignedLong;
-  long long m_longLong;
-  unsigned long long m_unsignedLongLong;
-  int8_t m_byte;
-  uint8_t m_octet;
-  int16_t m_short;
-  uint16_t m_unsignedShort;
-  String m_byteString;
-  String m_usvString;
+  long long_;
+  unsigned long unsigned_long_;
+  long long long_long_;
+  unsigned long long unsigned_long_long_;
+  int8_t byte_;
+  uint8_t octet_;
+  int16_t short_;
+  uint16_t unsigned_short_;
+  String byte_string_;
+  String usv_string_;
 };
 
 }  // namespace blink

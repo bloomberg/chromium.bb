@@ -18,50 +18,50 @@ DeviceLightController::DeviceLightController(Document& document)
 
 DeviceLightController::~DeviceLightController() {}
 
-const char* DeviceLightController::supplementName() {
+const char* DeviceLightController::SupplementName() {
   return "DeviceLightController";
 }
 
-DeviceLightController& DeviceLightController::from(Document& document) {
+DeviceLightController& DeviceLightController::From(Document& document) {
   DeviceLightController* controller = static_cast<DeviceLightController*>(
-      Supplement<Document>::from(document, supplementName()));
+      Supplement<Document>::From(document, SupplementName()));
   if (!controller) {
     controller = new DeviceLightController(document);
-    Supplement<Document>::provideTo(document, supplementName(), controller);
+    Supplement<Document>::ProvideTo(document, SupplementName(), controller);
   }
   return *controller;
 }
 
-bool DeviceLightController::hasLastData() {
-  return DeviceLightDispatcher::instance().latestDeviceLightData() >= 0;
+bool DeviceLightController::HasLastData() {
+  return DeviceLightDispatcher::Instance().LatestDeviceLightData() >= 0;
 }
 
-void DeviceLightController::registerWithDispatcher() {
-  DeviceLightDispatcher::instance().addController(this);
+void DeviceLightController::RegisterWithDispatcher() {
+  DeviceLightDispatcher::Instance().AddController(this);
 }
 
-void DeviceLightController::unregisterWithDispatcher() {
-  DeviceLightDispatcher::instance().removeController(this);
+void DeviceLightController::UnregisterWithDispatcher() {
+  DeviceLightDispatcher::Instance().RemoveController(this);
 }
 
-Event* DeviceLightController::lastEvent() const {
-  return DeviceLightEvent::create(
+Event* DeviceLightController::LastEvent() const {
+  return DeviceLightEvent::Create(
       EventTypeNames::devicelight,
-      DeviceLightDispatcher::instance().latestDeviceLightData());
+      DeviceLightDispatcher::Instance().LatestDeviceLightData());
 }
 
-bool DeviceLightController::isNullEvent(Event* event) const {
-  DeviceLightEvent* lightEvent = toDeviceLightEvent(event);
-  return lightEvent->value() == std::numeric_limits<double>::infinity();
+bool DeviceLightController::IsNullEvent(Event* event) const {
+  DeviceLightEvent* light_event = ToDeviceLightEvent(event);
+  return light_event->value() == std::numeric_limits<double>::infinity();
 }
 
-const AtomicString& DeviceLightController::eventTypeName() const {
+const AtomicString& DeviceLightController::EventTypeName() const {
   return EventTypeNames::devicelight;
 }
 
 DEFINE_TRACE(DeviceLightController) {
-  DeviceSingleWindowEventController::trace(visitor);
-  Supplement<Document>::trace(visitor);
+  DeviceSingleWindowEventController::Trace(visitor);
+  Supplement<Document>::Trace(visitor);
 }
 
 }  // namespace blink

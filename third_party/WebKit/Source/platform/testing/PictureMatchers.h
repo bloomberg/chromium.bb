@@ -21,18 +21,18 @@ class FloatRect;
 // requested.
 // Note that clips which appear outside of a transform are not currently
 // supported.
-::testing::Matcher<const SkPicture&> drawsRectangle(const FloatRect&, Color);
+::testing::Matcher<const SkPicture&> DrawsRectangle(const FloatRect&, Color);
 
 struct RectWithColor {
-  RectWithColor(const FloatRect& rectArg, const Color& colorArg)
-      : rect(rectArg), color(colorArg) {}
+  RectWithColor(const FloatRect& rect_arg, const Color& color_arg)
+      : rect(rect_arg), color(color_arg) {}
   FloatRect rect;
   Color color;
 };
 
 // Same as above, but matches a number of rectangles equal to the size of the
 // given vector.
-::testing::Matcher<const SkPicture&> drawsRectangles(
+::testing::Matcher<const SkPicture&> DrawsRectangles(
     const Vector<RectWithColor>&);
 
 }  // namespace blink

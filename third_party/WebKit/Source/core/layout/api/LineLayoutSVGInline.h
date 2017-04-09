@@ -12,12 +12,12 @@ namespace blink {
 
 class LineLayoutSVGInline : public LineLayoutInline {
  public:
-  explicit LineLayoutSVGInline(LayoutSVGInline* layoutSVGInline)
-      : LineLayoutInline(layoutSVGInline) {}
+  explicit LineLayoutSVGInline(LayoutSVGInline* layout_svg_inline)
+      : LineLayoutInline(layout_svg_inline) {}
 
   explicit LineLayoutSVGInline(const LineLayoutItem& item)
       : LineLayoutInline(item) {
-    SECURITY_DCHECK(!item || item.isSVGInline());
+    SECURITY_DCHECK(!item || item.IsSVGInline());
   }
 
   explicit LineLayoutSVGInline(std::nullptr_t) : LineLayoutInline(nullptr) {}
@@ -25,10 +25,12 @@ class LineLayoutSVGInline : public LineLayoutInline {
   LineLayoutSVGInline() {}
 
  private:
-  LayoutSVGInline* toSVGInline() { return toLayoutSVGInline(layoutObject()); }
+  LayoutSVGInline* ToSVGInline() {
+    return ToLayoutSVGInline(GetLayoutObject());
+  }
 
-  const LayoutSVGInline* toSVGInline() const {
-    return toLayoutSVGInline(layoutObject());
+  const LayoutSVGInline* ToSVGInline() const {
+    return ToLayoutSVGInline(GetLayoutObject());
   }
 };
 

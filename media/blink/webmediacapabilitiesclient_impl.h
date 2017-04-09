@@ -19,7 +19,7 @@ class MEDIA_BLINK_EXPORT WebMediaCapabilitiesClientImpl
   ~WebMediaCapabilitiesClientImpl() override;
 
   // Implementation of blink::WebMediaCapabilitiesClient.
-  void query(
+  void Query(
       const blink::WebMediaConfiguration&,
       std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks>) override;
 

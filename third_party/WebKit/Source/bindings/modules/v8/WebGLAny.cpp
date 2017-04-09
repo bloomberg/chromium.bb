@@ -9,110 +9,119 @@
 
 namespace blink {
 
-ScriptValue WebGLAny(ScriptState* scriptState, bool value) {
-  return ScriptValue(scriptState, v8Boolean(value, scriptState->isolate()));
+ScriptValue WebGLAny(ScriptState* script_state, bool value) {
+  return ScriptValue(script_state,
+                     V8Boolean(value, script_state->GetIsolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, const bool* value, size_t size) {
-  v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), size);
+ScriptValue WebGLAny(ScriptState* script_state,
+                     const bool* value,
+                     size_t size) {
+  v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
   for (size_t i = 0; i < size; ++i) {
-    if (!v8CallBoolean(array->CreateDataProperty(
-            scriptState->context(), i,
-            v8Boolean(value[i], scriptState->isolate()))))
+    if (!V8CallBoolean(array->CreateDataProperty(
+            script_state->GetContext(), i,
+            V8Boolean(value[i], script_state->GetIsolate()))))
       return ScriptValue();
   }
-  return ScriptValue(scriptState, array);
+  return ScriptValue(script_state, array);
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, const Vector<bool>& value) {
+ScriptValue WebGLAny(ScriptState* script_state, const Vector<bool>& value) {
   size_t size = value.size();
-  v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), size);
+  v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
   for (size_t i = 0; i < size; ++i) {
-    if (!v8CallBoolean(array->CreateDataProperty(
-            scriptState->context(), i,
-            v8Boolean(value[i], scriptState->isolate()))))
+    if (!V8CallBoolean(array->CreateDataProperty(
+            script_state->GetContext(), i,
+            V8Boolean(value[i], script_state->GetIsolate()))))
       return ScriptValue();
   }
-  return ScriptValue(scriptState, array);
+  return ScriptValue(script_state, array);
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, const Vector<unsigned>& value) {
+ScriptValue WebGLAny(ScriptState* script_state, const Vector<unsigned>& value) {
   size_t size = value.size();
-  v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), size);
+  v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
   for (size_t i = 0; i < size; ++i) {
-    if (!v8CallBoolean(array->CreateDataProperty(
-            scriptState->context(), i,
-            v8::Integer::NewFromUnsigned(scriptState->isolate(), value[i]))))
+    if (!V8CallBoolean(array->CreateDataProperty(
+            script_state->GetContext(), i,
+            v8::Integer::NewFromUnsigned(script_state->GetIsolate(),
+                                         value[i]))))
       return ScriptValue();
   }
-  return ScriptValue(scriptState, array);
+  return ScriptValue(script_state, array);
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, const Vector<int>& value) {
+ScriptValue WebGLAny(ScriptState* script_state, const Vector<int>& value) {
   size_t size = value.size();
-  v8::Local<v8::Array> array = v8::Array::New(scriptState->isolate(), size);
+  v8::Local<v8::Array> array = v8::Array::New(script_state->GetIsolate(), size);
   for (size_t i = 0; i < size; ++i) {
-    if (!v8CallBoolean(array->CreateDataProperty(
-            scriptState->context(), i,
-            v8::Integer::New(scriptState->isolate(), value[i]))))
+    if (!V8CallBoolean(array->CreateDataProperty(
+            script_state->GetContext(), i,
+            v8::Integer::New(script_state->GetIsolate(), value[i]))))
       return ScriptValue();
   }
-  return ScriptValue(scriptState, array);
+  return ScriptValue(script_state, array);
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, int value) {
-  return ScriptValue(scriptState,
-                     v8::Integer::New(scriptState->isolate(), value));
+ScriptValue WebGLAny(ScriptState* script_state, int value) {
+  return ScriptValue(script_state,
+                     v8::Integer::New(script_state->GetIsolate(), value));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, unsigned value) {
+ScriptValue WebGLAny(ScriptState* script_state, unsigned value) {
   return ScriptValue(
-      scriptState, v8::Integer::NewFromUnsigned(scriptState->isolate(),
-                                                static_cast<unsigned>(value)));
+      script_state, v8::Integer::NewFromUnsigned(script_state->GetIsolate(),
+                                                 static_cast<unsigned>(value)));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, int64_t value) {
-  return ScriptValue(scriptState, v8::Number::New(scriptState->isolate(),
-                                                  static_cast<double>(value)));
+ScriptValue WebGLAny(ScriptState* script_state, int64_t value) {
+  return ScriptValue(script_state, v8::Number::New(script_state->GetIsolate(),
+                                                   static_cast<double>(value)));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, uint64_t value) {
-  return ScriptValue(scriptState, v8::Number::New(scriptState->isolate(),
-                                                  static_cast<double>(value)));
+ScriptValue WebGLAny(ScriptState* script_state, uint64_t value) {
+  return ScriptValue(script_state, v8::Number::New(script_state->GetIsolate(),
+                                                   static_cast<double>(value)));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, float value) {
-  return ScriptValue(scriptState,
-                     v8::Number::New(scriptState->isolate(), value));
+ScriptValue WebGLAny(ScriptState* script_state, float value) {
+  return ScriptValue(script_state,
+                     v8::Number::New(script_state->GetIsolate(), value));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, String value) {
-  return ScriptValue(scriptState, v8String(scriptState->isolate(), value));
+ScriptValue WebGLAny(ScriptState* script_state, String value) {
+  return ScriptValue(script_state, V8String(script_state->GetIsolate(), value));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, WebGLObject* value) {
-  return ScriptValue(scriptState, ToV8(value, scriptState->context()->Global(),
-                                       scriptState->isolate()));
+ScriptValue WebGLAny(ScriptState* script_state, WebGLObject* value) {
+  return ScriptValue(script_state,
+                     ToV8(value, script_state->GetContext()->Global(),
+                          script_state->GetIsolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, DOMFloat32Array* value) {
-  return ScriptValue(scriptState, ToV8(value, scriptState->context()->Global(),
-                                       scriptState->isolate()));
+ScriptValue WebGLAny(ScriptState* script_state, DOMFloat32Array* value) {
+  return ScriptValue(script_state,
+                     ToV8(value, script_state->GetContext()->Global(),
+                          script_state->GetIsolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, DOMInt32Array* value) {
-  return ScriptValue(scriptState, ToV8(value, scriptState->context()->Global(),
-                                       scriptState->isolate()));
+ScriptValue WebGLAny(ScriptState* script_state, DOMInt32Array* value) {
+  return ScriptValue(script_state,
+                     ToV8(value, script_state->GetContext()->Global(),
+                          script_state->GetIsolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, DOMUint8Array* value) {
-  return ScriptValue(scriptState, ToV8(value, scriptState->context()->Global(),
-                                       scriptState->isolate()));
+ScriptValue WebGLAny(ScriptState* script_state, DOMUint8Array* value) {
+  return ScriptValue(script_state,
+                     ToV8(value, script_state->GetContext()->Global(),
+                          script_state->GetIsolate()));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, DOMUint32Array* value) {
-  return ScriptValue(scriptState, ToV8(value, scriptState->context()->Global(),
-                                       scriptState->isolate()));
+ScriptValue WebGLAny(ScriptState* script_state, DOMUint32Array* value) {
+  return ScriptValue(script_state,
+                     ToV8(value, script_state->GetContext()->Global(),
+                          script_state->GetIsolate()));
 }
 
 }  // namespace blink

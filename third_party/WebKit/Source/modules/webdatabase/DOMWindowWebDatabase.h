@@ -44,9 +44,9 @@ class DOMWindowWebDatabase {
   static Database* openDatabase(LocalDOMWindow&,
                                 const String& name,
                                 const String& version,
-                                const String& displayName,
-                                unsigned estimatedSize,
-                                DatabaseCallback* creationCallback,
+                                const String& display_name,
+                                unsigned estimated_size,
+                                DatabaseCallback* creation_callback,
                                 ExceptionState&);
 };
 

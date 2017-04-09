@@ -62,15 +62,15 @@ class ScriptState;
 // (V8)
 class V8NodeFilterCondition final : public NodeFilterCondition {
  public:
-  static V8NodeFilterCondition* create(v8::Local<v8::Value> filter,
+  static V8NodeFilterCondition* Create(v8::Local<v8::Value> filter,
                                        v8::Local<v8::Object> owner,
-                                       ScriptState* scriptState) {
-    return new V8NodeFilterCondition(filter, owner, scriptState);
+                                       ScriptState* script_state) {
+    return new V8NodeFilterCondition(filter, owner, script_state);
   }
 
   ~V8NodeFilterCondition() override;
 
-  unsigned acceptNode(Node*, ExceptionState&) const override;
+  unsigned AcceptNode(Node*, ExceptionState&) const override;
 
  private:
   // As the value |filter| is maintained by V8GC, the |owner| which references
@@ -80,8 +80,8 @@ class V8NodeFilterCondition final : public NodeFilterCondition {
                         v8::Local<v8::Object> owner,
                         ScriptState*);
 
-  RefPtr<ScriptState> m_scriptState;
-  ScopedPersistent<v8::Value> m_filter;
+  RefPtr<ScriptState> script_state_;
+  ScopedPersistent<v8::Value> filter_;
 };
 
 }  // namespace blink

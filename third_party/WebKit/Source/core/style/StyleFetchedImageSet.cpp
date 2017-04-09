@@ -33,111 +33,111 @@
 namespace blink {
 
 StyleFetchedImageSet::StyleFetchedImageSet(ImageResourceContent* image,
-                                           float imageScaleFactor,
+                                           float image_scale_factor,
                                            CSSImageSetValue* value,
                                            const KURL& url)
-    : m_bestFitImage(image),
-      m_imageScaleFactor(imageScaleFactor),
-      m_imageSetValue(value),
-      m_url(url) {
-  m_isImageResourceSet = true;
-  m_bestFitImage->addObserver(this);
+    : best_fit_image_(image),
+      image_scale_factor_(image_scale_factor),
+      image_set_value_(value),
+      url_(url) {
+  is_image_resource_set_ = true;
+  best_fit_image_->AddObserver(this);
 }
 
 StyleFetchedImageSet::~StyleFetchedImageSet() {}
 
-void StyleFetchedImageSet::dispose() {
-  m_bestFitImage->removeObserver(this);
-  m_bestFitImage = nullptr;
+void StyleFetchedImageSet::Dispose() {
+  best_fit_image_->RemoveObserver(this);
+  best_fit_image_ = nullptr;
 }
 
-WrappedImagePtr StyleFetchedImageSet::data() const {
-  return m_bestFitImage.get();
+WrappedImagePtr StyleFetchedImageSet::Data() const {
+  return best_fit_image_.Get();
 }
 
-ImageResourceContent* StyleFetchedImageSet::cachedImage() const {
-  return m_bestFitImage.get();
+ImageResourceContent* StyleFetchedImageSet::CachedImage() const {
+  return best_fit_image_.Get();
 }
 
-CSSValue* StyleFetchedImageSet::cssValue() const {
-  return m_imageSetValue;
+CSSValue* StyleFetchedImageSet::CssValue() const {
+  return image_set_value_;
 }
 
-CSSValue* StyleFetchedImageSet::computedCSSValue() const {
-  return m_imageSetValue->valueWithURLsMadeAbsolute();
+CSSValue* StyleFetchedImageSet::ComputedCSSValue() const {
+  return image_set_value_->ValueWithURLsMadeAbsolute();
 }
 
-bool StyleFetchedImageSet::canRender() const {
-  return !m_bestFitImage->errorOccurred() &&
-         !m_bestFitImage->getImage()->isNull();
+bool StyleFetchedImageSet::CanRender() const {
+  return !best_fit_image_->ErrorOccurred() &&
+         !best_fit_image_->GetImage()->IsNull();
 }
 
-bool StyleFetchedImageSet::isLoaded() const {
-  return m_bestFitImage->isLoaded();
+bool StyleFetchedImageSet::IsLoaded() const {
+  return best_fit_image_->IsLoaded();
 }
 
-bool StyleFetchedImageSet::errorOccurred() const {
-  return m_bestFitImage->errorOccurred();
+bool StyleFetchedImageSet::ErrorOccurred() const {
+  return best_fit_image_->ErrorOccurred();
 }
 
-LayoutSize StyleFetchedImageSet::imageSize(
+LayoutSize StyleFetchedImageSet::ImageSize(
     const LayoutObject&,
     float multiplier,
-    const LayoutSize& defaultObjectSize) const {
-  if (m_bestFitImage->getImage() && m_bestFitImage->getImage()->isSVGImage())
-    return imageSizeForSVGImage(toSVGImage(m_bestFitImage->getImage()),
-                                multiplier, defaultObjectSize);
+    const LayoutSize& default_object_size) const {
+  if (best_fit_image_->GetImage() && best_fit_image_->GetImage()->IsSVGImage())
+    return ImageSizeForSVGImage(ToSVGImage(best_fit_image_->GetImage()),
+                                multiplier, default_object_size);
 
   // Image orientation should only be respected for content images,
   // not decorative ones such as StyleImage (backgrounds,
   // border-image, etc.)
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  LayoutSize scaledImageSize =
-      m_bestFitImage->imageSize(DoNotRespectImageOrientation, multiplier);
-  scaledImageSize.scale(1 / m_imageScaleFactor);
-  return scaledImageSize;
+  LayoutSize scaled_image_size =
+      best_fit_image_->ImageSize(kDoNotRespectImageOrientation, multiplier);
+  scaled_image_size.Scale(1 / image_scale_factor_);
+  return scaled_image_size;
 }
 
-bool StyleFetchedImageSet::imageHasRelativeSize() const {
-  return m_bestFitImage->imageHasRelativeSize();
+bool StyleFetchedImageSet::ImageHasRelativeSize() const {
+  return best_fit_image_->ImageHasRelativeSize();
 }
 
-bool StyleFetchedImageSet::usesImageContainerSize() const {
-  return m_bestFitImage->usesImageContainerSize();
+bool StyleFetchedImageSet::UsesImageContainerSize() const {
+  return best_fit_image_->UsesImageContainerSize();
 }
 
-void StyleFetchedImageSet::addClient(LayoutObject* layoutObject) {
-  m_bestFitImage->addObserver(layoutObject);
+void StyleFetchedImageSet::AddClient(LayoutObject* layout_object) {
+  best_fit_image_->AddObserver(layout_object);
 }
 
-void StyleFetchedImageSet::removeClient(LayoutObject* layoutObject) {
-  m_bestFitImage->removeObserver(layoutObject);
+void StyleFetchedImageSet::RemoveClient(LayoutObject* layout_object) {
+  best_fit_image_->RemoveObserver(layout_object);
 }
 
-PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject&,
-                                              const IntSize& containerSize,
-                                              float zoom) const {
-  if (!m_bestFitImage->getImage()->isSVGImage())
-    return m_bestFitImage->getImage();
+PassRefPtr<Image> StyleFetchedImageSet::GetImage(const LayoutObject&,
+                                                 const IntSize& container_size,
+                                                 float zoom) const {
+  if (!best_fit_image_->GetImage()->IsSVGImage())
+    return best_fit_image_->GetImage();
 
-  return SVGImageForContainer::create(toSVGImage(m_bestFitImage->getImage()),
-                                      containerSize, zoom, m_url);
+  return SVGImageForContainer::Create(ToSVGImage(best_fit_image_->GetImage()),
+                                      container_size, zoom, url_);
 }
 
-bool StyleFetchedImageSet::knownToBeOpaque(
-    const LayoutObject& layoutObject) const {
+bool StyleFetchedImageSet::KnownToBeOpaque(
+    const LayoutObject& layout_object) const {
   TRACE_EVENT1(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
-      InspectorPaintImageEvent::data(&layoutObject, *m_bestFitImage.get()));
-  return m_bestFitImage->getImage()->currentFrameKnownToBeOpaque(
-      Image::PreCacheMetadata);
+      InspectorPaintImageEvent::Data(&layout_object, *best_fit_image_.Get()));
+  return best_fit_image_->GetImage()->CurrentFrameKnownToBeOpaque(
+      Image::kPreCacheMetadata);
 }
 
 DEFINE_TRACE(StyleFetchedImageSet) {
-  visitor->trace(m_bestFitImage);
-  visitor->trace(m_imageSetValue);
-  StyleImage::trace(visitor);
+  visitor->Trace(best_fit_image_);
+  visitor->Trace(image_set_value_);
+  StyleImage::Trace(visitor);
 }
 
 }  // namespace blink

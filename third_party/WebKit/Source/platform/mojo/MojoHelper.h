@@ -13,7 +13,7 @@ namespace blink {
 // blink::initialize() determining whether can initialize mojo stuff or not.
 // TODO(leonhsl): http://crbug.com/660274 Remove this API by ensuring
 // a message loop before calling blink::initialize().
-inline bool canInitializeMojo() {
+inline bool CanInitializeMojo() {
   return base::MessageLoop::current();
 }
 

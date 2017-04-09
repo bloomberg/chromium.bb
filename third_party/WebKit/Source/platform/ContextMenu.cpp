@@ -27,25 +27,25 @@
 
 namespace blink {
 
-static const ContextMenuItem* findItemWithAction(
+static const ContextMenuItem* FindItemWithAction(
     unsigned action,
     const Vector<ContextMenuItem>& items) {
   for (size_t i = 0; i < items.size(); ++i) {
     const ContextMenuItem& item = items[i];
-    if (item.action() == static_cast<ContextMenuAction>(action))
+    if (item.Action() == static_cast<ContextMenuAction>(action))
       return &item;
-    if (item.type() != SubmenuType)
+    if (item.GetType() != kSubmenuType)
       continue;
-    if (const ContextMenuItem* subMenuItem =
-            findItemWithAction(action, item.subMenuItems()))
-      return subMenuItem;
+    if (const ContextMenuItem* sub_menu_item =
+            FindItemWithAction(action, item.SubMenuItems()))
+      return sub_menu_item;
   }
 
   return 0;
 }
 
-const ContextMenuItem* ContextMenu::itemWithAction(unsigned action) const {
-  return findItemWithAction(action, m_items);
+const ContextMenuItem* ContextMenu::ItemWithAction(unsigned action) const {
+  return FindItemWithAction(action, items_);
 }
 
 }  // namespace blink

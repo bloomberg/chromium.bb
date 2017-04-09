@@ -12,25 +12,25 @@ namespace blink {
 class CSSParserContext;
 
 enum CSSAtRuleID {
-  CSSAtRuleInvalid = 0,
+  kCSSAtRuleInvalid = 0,
 
-  CSSAtRuleCharset = 1,
-  CSSAtRuleFontFace = 2,
-  CSSAtRuleImport = 3,
-  CSSAtRuleKeyframes = 4,
-  CSSAtRuleMedia = 5,
-  CSSAtRuleNamespace = 6,
-  CSSAtRulePage = 7,
-  CSSAtRuleSupports = 8,
-  CSSAtRuleViewport = 9,
+  kCSSAtRuleCharset = 1,
+  kCSSAtRuleFontFace = 2,
+  kCSSAtRuleImport = 3,
+  kCSSAtRuleKeyframes = 4,
+  kCSSAtRuleMedia = 5,
+  kCSSAtRuleNamespace = 6,
+  kCSSAtRulePage = 7,
+  kCSSAtRuleSupports = 8,
+  kCSSAtRuleViewport = 9,
 
-  CSSAtRuleWebkitKeyframes = 10,
-  CSSAtRuleApply = 11,
+  kCSSAtRuleWebkitKeyframes = 10,
+  kCSSAtRuleApply = 11,
 };
 
-CSSAtRuleID cssAtRuleID(StringView name);
+CSSAtRuleID CssAtRuleID(StringView name);
 
-void countAtRule(const CSSParserContext*, CSSAtRuleID);
+void CountAtRule(const CSSParserContext*, CSSAtRuleID);
 
 }  // namespace blink
 

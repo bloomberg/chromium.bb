@@ -43,36 +43,37 @@ class CORE_EXPORT NodeEventContext {
 
  public:
   // FIXME: Use ContainerNode instead of Node.
-  NodeEventContext(Node*, EventTarget* currentTarget);
+  NodeEventContext(Node*, EventTarget* current_target);
   DECLARE_TRACE();
 
-  Node* node() const { return m_node.get(); }
+  Node* GetNode() const { return node_.Get(); }
 
-  void setTreeScopeEventContext(TreeScopeEventContext* treeScopeEventContext) {
-    m_treeScopeEventContext = treeScopeEventContext;
+  void SetTreeScopeEventContext(
+      TreeScopeEventContext* tree_scope_event_context) {
+    tree_scope_event_context_ = tree_scope_event_context;
   }
-  TreeScopeEventContext& treeScopeEventContext() {
-    DCHECK(m_treeScopeEventContext);
-    return *m_treeScopeEventContext;
-  }
-
-  EventTarget* target() const { return m_treeScopeEventContext->target(); }
-  EventTarget* relatedTarget() const {
-    return m_treeScopeEventContext->relatedTarget();
-  }
-  TouchEventContext* touchEventContext() const {
-    return m_treeScopeEventContext->touchEventContext();
+  TreeScopeEventContext& GetTreeScopeEventContext() {
+    DCHECK(tree_scope_event_context_);
+    return *tree_scope_event_context_;
   }
 
-  bool currentTargetSameAsTarget() const {
-    return m_currentTarget.get() == target();
+  EventTarget* Target() const { return tree_scope_event_context_->Target(); }
+  EventTarget* RelatedTarget() const {
+    return tree_scope_event_context_->RelatedTarget();
   }
-  void handleLocalEvents(Event&) const;
+  TouchEventContext* GetTouchEventContext() const {
+    return tree_scope_event_context_->GetTouchEventContext();
+  }
+
+  bool CurrentTargetSameAsTarget() const {
+    return current_target_.Get() == Target();
+  }
+  void HandleLocalEvents(Event&) const;
 
  private:
-  Member<Node> m_node;
-  Member<EventTarget> m_currentTarget;
-  Member<TreeScopeEventContext> m_treeScopeEventContext;
+  Member<Node> node_;
+  Member<EventTarget> current_target_;
+  Member<TreeScopeEventContext> tree_scope_event_context_;
 };
 
 }  // namespace blink

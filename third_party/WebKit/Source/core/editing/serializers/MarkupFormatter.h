@@ -43,84 +43,84 @@ class Node;
 typedef HashMap<AtomicString, AtomicString> Namespaces;
 
 enum EntityMask {
-  EntityAmp = 0x0001,
-  EntityLt = 0x0002,
-  EntityGt = 0x0004,
-  EntityQuot = 0x0008,
-  EntityNbsp = 0x0010,
-  EntityTab = 0x0020,
-  EntityLineFeed = 0x0040,
-  EntityCarriageReturn = 0x0080,
+  kEntityAmp = 0x0001,
+  kEntityLt = 0x0002,
+  kEntityGt = 0x0004,
+  kEntityQuot = 0x0008,
+  kEntityNbsp = 0x0010,
+  kEntityTab = 0x0020,
+  kEntityLineFeed = 0x0040,
+  kEntityCarriageReturn = 0x0080,
 
   // Non-breaking space needs to be escaped in innerHTML for compatibility
   // reasons. See http://trac.webkit.org/changeset/32879. However, we cannot do
   // this in an XML document because it does not have the entity reference
   // defined (see bug 19215).
-  EntityMaskInCDATA = 0,
-  EntityMaskInPCDATA = EntityAmp | EntityLt | EntityGt,
-  EntityMaskInHTMLPCDATA = EntityMaskInPCDATA | EntityNbsp,
-  EntityMaskInAttributeValue = EntityAmp | EntityQuot | EntityLt | EntityGt |
-                               EntityTab |
-                               EntityLineFeed |
-                               EntityCarriageReturn,
-  EntityMaskInHTMLAttributeValue = EntityAmp | EntityQuot | EntityNbsp,
+  kEntityMaskInCDATA = 0,
+  kEntityMaskInPCDATA = kEntityAmp | kEntityLt | kEntityGt,
+  kEntityMaskInHTMLPCDATA = kEntityMaskInPCDATA | kEntityNbsp,
+  kEntityMaskInAttributeValue =
+      kEntityAmp | kEntityQuot | kEntityLt | kEntityGt | kEntityTab |
+      kEntityLineFeed |
+      kEntityCarriageReturn,
+  kEntityMaskInHTMLAttributeValue = kEntityAmp | kEntityQuot | kEntityNbsp,
 };
 
-enum class SerializationType { AsOwnerDocument, ForcedXML };
+enum class SerializationType { kAsOwnerDocument, kForcedXML };
 
 class MarkupFormatter final {
   WTF_MAKE_NONCOPYABLE(MarkupFormatter);
   STACK_ALLOCATED();
 
  public:
-  static void appendAttributeValue(StringBuilder&, const String&, bool);
-  static void appendCDATASection(StringBuilder&, const String&);
-  static void appendCharactersReplacingEntities(StringBuilder&,
+  static void AppendAttributeValue(StringBuilder&, const String&, bool);
+  static void AppendCDATASection(StringBuilder&, const String&);
+  static void AppendCharactersReplacingEntities(StringBuilder&,
                                                 const String&,
                                                 unsigned,
                                                 unsigned,
                                                 EntityMask);
-  static void appendComment(StringBuilder&, const String&);
-  static void appendDocumentType(StringBuilder&, const DocumentType&);
-  static void appendNamespace(StringBuilder&,
+  static void AppendComment(StringBuilder&, const String&);
+  static void AppendDocumentType(StringBuilder&, const DocumentType&);
+  static void AppendNamespace(StringBuilder&,
                               const AtomicString& prefix,
-                              const AtomicString& namespaceURI,
+                              const AtomicString& namespace_uri,
                               Namespaces&);
-  static void appendProcessingInstruction(StringBuilder&,
+  static void AppendProcessingInstruction(StringBuilder&,
                                           const String& target,
                                           const String& data);
-  static void appendXMLDeclaration(StringBuilder&, const Document&);
+  static void AppendXMLDeclaration(StringBuilder&, const Document&);
 
   MarkupFormatter(EAbsoluteURLs,
-                  SerializationType = SerializationType::AsOwnerDocument);
+                  SerializationType = SerializationType::kAsOwnerDocument);
   ~MarkupFormatter();
 
-  void appendStartMarkup(StringBuilder&, const Node&, Namespaces*);
-  void appendEndMarkup(StringBuilder&, const Element&);
+  void AppendStartMarkup(StringBuilder&, const Node&, Namespaces*);
+  void AppendEndMarkup(StringBuilder&, const Element&);
 
-  bool serializeAsHTMLDocument(const Node&) const;
+  bool SerializeAsHTMLDocument(const Node&) const;
 
-  void appendText(StringBuilder&, Text&);
-  void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
-  void appendCloseTag(StringBuilder&, const Element&);
-  void appendAttribute(StringBuilder&,
+  void AppendText(StringBuilder&, Text&);
+  void AppendOpenTag(StringBuilder&, const Element&, Namespaces*);
+  void AppendCloseTag(StringBuilder&, const Element&);
+  void AppendAttribute(StringBuilder&,
                        const Element&,
                        const Attribute&,
                        Namespaces*);
 
-  bool shouldAddNamespaceElement(const Element&, Namespaces&) const;
-  bool shouldAddNamespaceAttribute(const Attribute&, const Element&) const;
-  EntityMask entityMaskForText(const Text&) const;
-  bool shouldSelfClose(const Element&) const;
+  bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
+  bool ShouldAddNamespaceAttribute(const Attribute&, const Element&) const;
+  EntityMask EntityMaskForText(const Text&) const;
+  bool ShouldSelfClose(const Element&) const;
 
  private:
-  String resolveURLIfNeeded(const Element&, const String&) const;
-  void appendQuotedURLAttributeValue(StringBuilder&,
+  String ResolveURLIfNeeded(const Element&, const String&) const;
+  void AppendQuotedURLAttributeValue(StringBuilder&,
                                      const Element&,
                                      const Attribute&);
 
-  const EAbsoluteURLs m_resolveURLsMethod;
-  SerializationType m_serializationType;
+  const EAbsoluteURLs resolve_ur_ls_method_;
+  SerializationType serialization_type_;
 };
 
 }  // namespace blink

@@ -30,12 +30,12 @@ inline SVGFESpotLightElement::SVGFESpotLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFESpotLightElement)
 
-PassRefPtr<LightSource> SVGFESpotLightElement::lightSource(
+PassRefPtr<LightSource> SVGFESpotLightElement::GetLightSource(
     Filter* filter) const {
-  return SpotLightSource::create(filter->resolve3dPoint(position()),
-                                 filter->resolve3dPoint(pointsAt()),
-                                 specularExponent()->currentValue()->value(),
-                                 limitingConeAngle()->currentValue()->value());
+  return SpotLightSource::Create(filter->Resolve3dPoint(GetPosition()),
+                                 filter->Resolve3dPoint(PointsAt()),
+                                 specularExponent()->CurrentValue()->Value(),
+                                 limitingConeAngle()->CurrentValue()->Value());
 }
 
 }  // namespace blink

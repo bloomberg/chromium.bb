@@ -75,95 +75,95 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
    public:
     // You need to make sure that scriptState->context() is not empty before
     // creating a Scope.
-    explicit Scope(ScriptState* scriptState)
-        : m_handleScope(scriptState->isolate()),
-          m_context(scriptState->context()) {
-      ASSERT(scriptState->contextIsValid());
-      m_context->Enter();
+    explicit Scope(ScriptState* script_state)
+        : handle_scope_(script_state->GetIsolate()),
+          context_(script_state->GetContext()) {
+      ASSERT(script_state->ContextIsValid());
+      context_->Enter();
     }
 
-    ~Scope() { m_context->Exit(); }
+    ~Scope() { context_->Exit(); }
 
    private:
-    v8::HandleScope m_handleScope;
-    v8::Local<v8::Context> m_context;
+    v8::HandleScope handle_scope_;
+    v8::Local<v8::Context> context_;
   };
 
-  static PassRefPtr<ScriptState> create(v8::Local<v8::Context>,
+  static PassRefPtr<ScriptState> Create(v8::Local<v8::Context>,
                                         PassRefPtr<DOMWrapperWorld>);
   virtual ~ScriptState();
 
-  static ScriptState* current(v8::Isolate* isolate)  // DEPRECATED
+  static ScriptState* Current(v8::Isolate* isolate)  // DEPRECATED
   {
-    return from(isolate->GetCurrentContext());
+    return From(isolate->GetCurrentContext());
   }
 
-  static ScriptState* forFunctionObject(
+  static ScriptState* ForFunctionObject(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     // We're assuming that the current context is not yet changed since
     // the callback function has got called back.
     // TODO(yukishiino): Once info.GetFunctionContext() gets implemented,
     // we should use it instead.
-    return from(info.GetIsolate()->GetCurrentContext());
+    return From(info.GetIsolate()->GetCurrentContext());
   }
 
-  static ScriptState* forReceiverObject(
+  static ScriptState* ForReceiverObject(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
-    return from(info.Holder()->CreationContext());
+    return From(info.Holder()->CreationContext());
   }
 
-  static ScriptState* forReceiverObject(
+  static ScriptState* ForReceiverObject(
       const v8::PropertyCallbackInfo<v8::Value>& info) {
-    return from(info.Holder()->CreationContext());
+    return From(info.Holder()->CreationContext());
   }
 
-  static ScriptState* forReceiverObject(
+  static ScriptState* ForReceiverObject(
       const v8::PropertyCallbackInfo<void>& info) {
-    return from(info.Holder()->CreationContext());
+    return From(info.Holder()->CreationContext());
   }
 
-  static ScriptState* from(v8::Local<v8::Context> context) {
+  static ScriptState* From(v8::Local<v8::Context> context) {
     ASSERT(!context.IsEmpty());
-    ScriptState* scriptState =
+    ScriptState* script_state =
         static_cast<ScriptState*>(context->GetAlignedPointerFromEmbedderData(
-            v8ContextPerContextDataIndex));
+            kV8ContextPerContextDataIndex));
     // ScriptState::from() must not be called for a context that does not have
     // valid embedder data in the embedder field.
-    SECURITY_CHECK(scriptState);
-    SECURITY_CHECK(scriptState->context() == context);
-    return scriptState;
+    SECURITY_CHECK(script_state);
+    SECURITY_CHECK(script_state->GetContext() == context);
+    return script_state;
   }
 
-  v8::Isolate* isolate() const { return m_isolate; }
-  DOMWrapperWorld& world() const { return *m_world; }
-  virtual ExecutionContext* getExecutionContext() const;
+  v8::Isolate* GetIsolate() const { return isolate_; }
+  DOMWrapperWorld& World() const { return *world_; }
+  virtual ExecutionContext* GetExecutionContext() const;
 
   // This can return an empty handle if the v8::Context is gone.
-  v8::Local<v8::Context> context() const {
-    return m_context.newLocal(m_isolate);
+  v8::Local<v8::Context> GetContext() const {
+    return context_.NewLocal(isolate_);
   }
-  bool contextIsValid() const {
-    return !m_context.isEmpty() && m_perContextData;
+  bool ContextIsValid() const {
+    return !context_.IsEmpty() && per_context_data_;
   }
-  void detachGlobalObject();
-  void clearContext() { return m_context.clear(); }
+  void DetachGlobalObject();
+  void ClearContext() { return context_.Clear(); }
 
-  V8PerContextData* perContextData() const { return m_perContextData.get(); }
-  void disposePerContextData();
+  V8PerContextData* PerContextData() const { return per_context_data_.get(); }
+  void DisposePerContextData();
 
-  ScriptValue getFromExtrasExports(const char* name);
+  ScriptValue GetFromExtrasExports(const char* name);
 
  protected:
   ScriptState(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
  private:
-  v8::Isolate* m_isolate;
+  v8::Isolate* isolate_;
   // This persistent handle is weak.
-  ScopedPersistent<v8::Context> m_context;
+  ScopedPersistent<v8::Context> context_;
 
   // This RefPtr doesn't cause a cycle because all persistent handles that
   // DOMWrapperWorld holds are weak.
-  RefPtr<DOMWrapperWorld> m_world;
+  RefPtr<DOMWrapperWorld> world_;
 
   // This std::unique_ptr causes a cycle:
   // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState
@@ -171,7 +171,7 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
   // So you must explicitly clear the std::unique_ptr by calling
   // disposePerContextData() once you no longer need V8PerContextData.
   // Otherwise, the v8::Context will leak.
-  std::unique_ptr<V8PerContextData> m_perContextData;
+  std::unique_ptr<V8PerContextData> per_context_data_;
 };
 
 // ScriptStateProtectingContext keeps the context associated with the
@@ -182,22 +182,22 @@ class ScriptStateProtectingContext {
   USING_FAST_MALLOC(ScriptStateProtectingContext);
 
  public:
-  ScriptStateProtectingContext(ScriptState* scriptState)
-      : m_scriptState(scriptState) {
-    if (m_scriptState)
-      m_context.set(m_scriptState->isolate(), m_scriptState->context());
+  ScriptStateProtectingContext(ScriptState* script_state)
+      : script_state_(script_state) {
+    if (script_state_)
+      context_.Set(script_state_->GetIsolate(), script_state_->GetContext());
   }
 
-  ScriptState* operator->() const { return m_scriptState.get(); }
-  ScriptState* get() const { return m_scriptState.get(); }
-  void clear() {
-    m_scriptState = nullptr;
-    m_context.clear();
+  ScriptState* operator->() const { return script_state_.Get(); }
+  ScriptState* Get() const { return script_state_.Get(); }
+  void Clear() {
+    script_state_ = nullptr;
+    context_.Clear();
   }
 
  private:
-  RefPtr<ScriptState> m_scriptState;
-  ScopedPersistent<v8::Context> m_context;
+  RefPtr<ScriptState> script_state_;
+  ScopedPersistent<v8::Context> context_;
 };
 
 }  // namespace blink

@@ -35,36 +35,36 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
   ~LayoutTextControlMultiLine() override;
 
  private:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectTextArea || LayoutTextControl::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectTextArea || LayoutTextControl::IsOfType(type);
   }
 
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
-  float getAvgCharWidth(const AtomicString& family) const override;
-  LayoutUnit preferredContentLogicalWidth(float charWidth) const override;
-  LayoutUnit computeControlLogicalHeight(
-      LayoutUnit lineHeight,
-      LayoutUnit nonContentHeight) const override;
+  float GetAvgCharWidth(const AtomicString& family) const override;
+  LayoutUnit PreferredContentLogicalWidth(float char_width) const override;
+  LayoutUnit ComputeControlLogicalHeight(
+      LayoutUnit line_height,
+      LayoutUnit non_content_height) const override;
   // We override the two baseline functions because we want our baseline to be
   // the bottom of our margin box.
-  int baselinePosition(
+  int BaselinePosition(
       FontBaseline,
-      bool firstLine,
+      bool first_line,
       LineDirectionMode,
-      LinePositionMode = PositionOnContainingLine) const override;
-  int inlineBlockBaseline(LineDirectionMode) const override { return -1; }
+      LinePositionMode = kPositionOnContainingLine) const override;
+  int InlineBlockBaseline(LineDirectionMode) const override { return -1; }
 
-  PassRefPtr<ComputedStyle> createInnerEditorStyle(
-      const ComputedStyle& startStyle) const override;
-  LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren,
+  PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+      const ComputedStyle& start_style) const override;
+  LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlMultiLine, isTextArea());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlMultiLine, IsTextArea());
 
 }  // namespace blink
 

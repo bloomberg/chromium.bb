@@ -36,41 +36,41 @@
 namespace blink {
 
 WorkerGlobalScopePerformance::WorkerGlobalScopePerformance(
-    WorkerGlobalScope& workerGlobalScope)
-    : Supplement<WorkerGlobalScope>(workerGlobalScope) {}
+    WorkerGlobalScope& worker_global_scope)
+    : Supplement<WorkerGlobalScope>(worker_global_scope) {}
 
-const char* WorkerGlobalScopePerformance::supplementName() {
+const char* WorkerGlobalScopePerformance::SupplementName() {
   return "WorkerGlobalScopePerformance";
 }
 
-WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(
-    WorkerGlobalScope& workerGlobalScope) {
+WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::From(
+    WorkerGlobalScope& worker_global_scope) {
   WorkerGlobalScopePerformance* supplement =
       static_cast<WorkerGlobalScopePerformance*>(
-          Supplement<WorkerGlobalScope>::from(workerGlobalScope,
-                                              supplementName()));
+          Supplement<WorkerGlobalScope>::From(worker_global_scope,
+                                              SupplementName()));
   if (!supplement) {
-    supplement = new WorkerGlobalScopePerformance(workerGlobalScope);
-    provideTo(workerGlobalScope, supplementName(), supplement);
+    supplement = new WorkerGlobalScopePerformance(worker_global_scope);
+    ProvideTo(worker_global_scope, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 WorkerPerformance* WorkerGlobalScopePerformance::performance(
-    WorkerGlobalScope& workerGlobalScope) {
-  return from(workerGlobalScope).performance(&workerGlobalScope);
+    WorkerGlobalScope& worker_global_scope) {
+  return From(worker_global_scope).performance(&worker_global_scope);
 }
 
 WorkerPerformance* WorkerGlobalScopePerformance::performance(
-    WorkerGlobalScope* workerGlobalScope) {
-  if (!m_performance)
-    m_performance = WorkerPerformance::create(workerGlobalScope);
-  return m_performance.get();
+    WorkerGlobalScope* worker_global_scope) {
+  if (!performance_)
+    performance_ = WorkerPerformance::Create(worker_global_scope);
+  return performance_.Get();
 }
 
 DEFINE_TRACE(WorkerGlobalScopePerformance) {
-  visitor->trace(m_performance);
-  Supplement<WorkerGlobalScope>::trace(visitor);
+  visitor->Trace(performance_);
+  Supplement<WorkerGlobalScope>::Trace(visitor);
 }
 
 }  // namespace blink

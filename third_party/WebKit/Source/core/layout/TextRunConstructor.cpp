@@ -38,120 +38,120 @@
 namespace blink {
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(const Font& font,
+static inline TextRun ConstructTextRunInternal(const Font& font,
                                                const CharacterType* characters,
                                                int length,
                                                const ComputedStyle& style,
                                                TextDirection direction) {
   TextRun::ExpansionBehavior expansion =
-      TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion;
-  bool directionalOverride = style.rtlOrdering() == EOrder::kVisual;
+      TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion;
+  bool directional_override = style.RtlOrdering() == EOrder::kVisual;
   TextRun run(characters, length, 0, 0, expansion, direction,
-              directionalOverride);
+              directional_override);
   return run;
 }
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(const Font& font,
+static inline TextRun ConstructTextRunInternal(const Font& font,
                                                const CharacterType* characters,
                                                int length,
                                                const ComputedStyle& style,
                                                TextDirection direction,
                                                TextRunFlags flags) {
-  TextDirection textDirection = direction;
-  bool directionalOverride = style.rtlOrdering() == EOrder::kVisual;
-  if (flags != DefaultTextRunFlags) {
-    if (flags & RespectDirection)
-      textDirection = style.direction();
-    if (flags & RespectDirectionOverride)
-      directionalOverride |= isOverride(style.getUnicodeBidi());
+  TextDirection text_direction = direction;
+  bool directional_override = style.RtlOrdering() == EOrder::kVisual;
+  if (flags != kDefaultTextRunFlags) {
+    if (flags & kRespectDirection)
+      text_direction = style.Direction();
+    if (flags & kRespectDirectionOverride)
+      directional_override |= IsOverride(style.GetUnicodeBidi());
   }
 
   TextRun::ExpansionBehavior expansion =
-      TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion;
-  TextRun run(characters, length, 0, 0, expansion, textDirection,
-              directionalOverride);
+      TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion;
+  TextRun run(characters, length, 0, 0, expansion, text_direction,
+              directional_override);
   return run;
 }
 
-TextRun constructTextRun(const Font& font,
+TextRun ConstructTextRun(const Font& font,
                          const LChar* characters,
                          int length,
                          const ComputedStyle& style,
                          TextDirection direction) {
-  return constructTextRunInternal(font, characters, length, style, direction);
+  return ConstructTextRunInternal(font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(const Font& font,
+TextRun ConstructTextRun(const Font& font,
                          const UChar* characters,
                          int length,
                          const ComputedStyle& style,
                          TextDirection direction) {
-  return constructTextRunInternal(font, characters, length, style, direction);
+  return ConstructTextRunInternal(font, characters, length, style, direction);
 }
 
-TextRun constructTextRun(const Font& font,
+TextRun ConstructTextRun(const Font& font,
                          const LayoutText* text,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle& style,
                          TextDirection direction) {
-  DCHECK_LE(offset + length, text->textLength());
-  if (text->hasEmptyText())
-    return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
+  DCHECK_LE(offset + length, text->TextLength());
+  if (text->HasEmptyText())
+    return ConstructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
                                     style, direction);
-  if (text->is8Bit())
-    return constructTextRunInternal(font, text->characters8() + offset, length,
+  if (text->Is8Bit())
+    return ConstructTextRunInternal(font, text->Characters8() + offset, length,
                                     style, direction);
-  return constructTextRunInternal(font, text->characters16() + offset, length,
+  return ConstructTextRunInternal(font, text->Characters16() + offset, length,
                                   style, direction);
 }
 
-TextRun constructTextRun(const Font& font,
+TextRun ConstructTextRun(const Font& font,
                          const String& string,
                          const ComputedStyle& style,
                          TextDirection direction,
                          TextRunFlags flags) {
   unsigned length = string.length();
   if (!length)
-    return constructTextRunInternal(font, static_cast<const LChar*>(nullptr),
+    return ConstructTextRunInternal(font, static_cast<const LChar*>(nullptr),
                                     length, style, direction, flags);
-  if (string.is8Bit())
-    return constructTextRunInternal(font, string.characters8(), length, style,
+  if (string.Is8Bit())
+    return ConstructTextRunInternal(font, string.Characters8(), length, style,
                                     direction, flags);
-  return constructTextRunInternal(font, string.characters16(), length, style,
+  return ConstructTextRunInternal(font, string.Characters16(), length, style,
                                   direction, flags);
 }
 
-TextRun constructTextRun(const Font& font,
+TextRun ConstructTextRun(const Font& font,
                          const String& string,
                          const ComputedStyle& style,
                          TextRunFlags flags) {
-  return constructTextRun(font, string, style,
-                          string.isEmpty() || string.is8Bit()
+  return ConstructTextRun(font, string, style,
+                          string.IsEmpty() || string.Is8Bit()
                               ? TextDirection::kLtr
-                              : determineDirectionality(string),
+                              : DetermineDirectionality(string),
                           flags);
 }
 
-TextRun constructTextRun(const Font& font,
+TextRun ConstructTextRun(const Font& font,
                          const LineLayoutText text,
                          unsigned offset,
                          unsigned length,
                          const ComputedStyle& style) {
-  SECURITY_DCHECK(offset + length <= text.textLength());
-  if (text.hasEmptyText()) {
-    return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
+  SECURITY_DCHECK(offset + length <= text.TextLength());
+  if (text.HasEmptyText()) {
+    return ConstructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
                                     style, TextDirection::kLtr);
   }
-  if (text.is8Bit()) {
-    return constructTextRunInternal(font, text.characters8() + offset, length,
+  if (text.Is8Bit()) {
+    return ConstructTextRunInternal(font, text.Characters8() + offset, length,
                                     style, TextDirection::kLtr);
   }
 
-  TextRun run = constructTextRunInternal(font, text.characters16() + offset,
+  TextRun run = ConstructTextRunInternal(font, text.Characters16() + offset,
                                          length, style, TextDirection::kLtr);
-  run.setDirection(directionForRun(run));
+  run.SetDirection(DirectionForRun(run));
   return run;
 }
 

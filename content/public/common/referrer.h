@@ -19,7 +19,7 @@ namespace content {
 struct CONTENT_EXPORT Referrer {
   Referrer(const GURL& url, blink::WebReferrerPolicy policy)
       : url(url), policy(policy) {}
-  Referrer() : policy(blink::WebReferrerPolicyDefault) {}
+  Referrer() : policy(blink::kWebReferrerPolicyDefault) {}
 
   GURL url;
   blink::WebReferrerPolicy policy;

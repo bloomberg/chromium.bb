@@ -7,7 +7,7 @@
 namespace content {
 
 FrameOwnerProperties::FrameOwnerProperties()
-    : scrolling_mode(blink::WebFrameOwnerProperties::ScrollingMode::Auto),
+    : scrolling_mode(blink::WebFrameOwnerProperties::ScrollingMode::kAuto),
       margin_width(-1),
       margin_height(-1),
       allow_fullscreen(false),

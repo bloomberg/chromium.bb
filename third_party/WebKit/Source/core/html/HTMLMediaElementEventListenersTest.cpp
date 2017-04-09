@@ -24,18 +24,18 @@ namespace {
 
 class MockWebMediaPlayer final : public EmptyWebMediaPlayer {
  public:
-  MOCK_METHOD1(setIsEffectivelyFullscreen, void(bool));
+  MOCK_METHOD1(SetIsEffectivelyFullscreen, void(bool));
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* create() { return new StubLocalFrameClient; }
+  static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
 
-  std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
+  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override {
-    return WTF::wrapUnique(new MockWebMediaPlayer());
+    return WTF::WrapUnique(new MockWebMediaPlayer());
   }
 };
 
@@ -47,138 +47,139 @@ using ::testing::Invoke;
 class HTMLMediaElementEventListenersTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), nullptr,
-                                           StubLocalFrameClient::create());
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), nullptr,
+                                           StubLocalFrameClient::Create());
   }
 
-  Document& document() { return m_pageHolder->document(); }
-  void destroyDocument() { m_pageHolder.reset(); }
-  HTMLVideoElement* video() {
-    return toHTMLVideoElement(document().querySelector("video"));
+  Document& GetDocument() { return page_holder_->GetDocument(); }
+  void DestroyDocument() { page_holder_.reset(); }
+  HTMLVideoElement* Video() {
+    return toHTMLVideoElement(GetDocument().QuerySelector("video"));
   }
-  MockWebMediaPlayer* webMediaPlayer() {
-    return static_cast<MockWebMediaPlayer*>(video()->webMediaPlayer());
+  MockWebMediaPlayer* WebMediaPlayer() {
+    return static_cast<MockWebMediaPlayer*>(Video()->GetWebMediaPlayer());
   }
-  MediaControls* controls() { return video()->mediaControls(); }
-  void simulateReadyState(HTMLMediaElement::ReadyState state) {
-    video()->setReadyState(state);
+  MediaControls* Controls() { return Video()->GetMediaControls(); }
+  void SimulateReadyState(HTMLMediaElement::ReadyState state) {
+    Video()->SetReadyState(state);
   }
-  MediaCustomControlsFullscreenDetector* fullscreenDetector() {
-    return video()->m_customControlsFullscreenDetector;
+  MediaCustomControlsFullscreenDetector* FullscreenDetector() {
+    return Video()->custom_controls_fullscreen_detector_;
   }
-  bool isCheckViewportIntersectionTimerActive(
+  bool IsCheckViewportIntersectionTimerActive(
       MediaCustomControlsFullscreenDetector* detector) {
-    return detector->m_checkViewportIntersectionTimer.isActive();
+    return detector->check_viewport_intersection_timer_.IsActive();
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
-  EXPECT_EQ(video(), nullptr);
-  document().body()->setInnerHTML("<body><video controls></video></body>");
-  EXPECT_NE(video(), nullptr);
-  EXPECT_TRUE(video()->hasEventListeners());
-  EXPECT_NE(controls(), nullptr);
-  EXPECT_TRUE(document().hasEventListeners());
+  EXPECT_EQ(Video(), nullptr);
+  GetDocument().body()->setInnerHTML("<body><video controls></video></body>");
+  EXPECT_NE(Video(), nullptr);
+  EXPECT_TRUE(Video()->HasEventListeners());
+  EXPECT_NE(Controls(), nullptr);
+  EXPECT_TRUE(GetDocument().HasEventListeners());
 
-  WeakPersistent<HTMLVideoElement> weakPersistentVideo = video();
-  WeakPersistent<MediaControls> weakPersistentControls = controls();
+  WeakPersistent<HTMLVideoElement> weak_persistent_video = Video();
+  WeakPersistent<MediaControls> weak_persistent_controls = Controls();
   {
-    Persistent<HTMLVideoElement> persistentVideo = video();
-    document().body()->setInnerHTML("");
+    Persistent<HTMLVideoElement> persistent_video = Video();
+    GetDocument().body()->setInnerHTML("");
 
     // When removed from the document, the event listeners should have been
     // dropped.
-    EXPECT_FALSE(document().hasEventListeners());
+    EXPECT_FALSE(GetDocument().HasEventListeners());
     // The video element should still have some event listeners.
-    EXPECT_TRUE(persistentVideo->hasEventListeners());
+    EXPECT_TRUE(persistent_video->HasEventListeners());
   }
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 
   // They have been GC'd.
-  EXPECT_EQ(weakPersistentVideo, nullptr);
-  EXPECT_EQ(weakPersistentControls, nullptr);
+  EXPECT_EQ(weak_persistent_video, nullptr);
+  EXPECT_EQ(weak_persistent_controls, nullptr);
 }
 
 TEST_F(HTMLMediaElementEventListenersTest,
        ReInsertingInDocumentCollectsControls) {
-  EXPECT_EQ(video(), nullptr);
-  document().body()->setInnerHTML("<body><video controls></video></body>");
-  EXPECT_NE(video(), nullptr);
-  EXPECT_TRUE(video()->hasEventListeners());
-  EXPECT_NE(controls(), nullptr);
-  EXPECT_TRUE(document().hasEventListeners());
+  EXPECT_EQ(Video(), nullptr);
+  GetDocument().body()->setInnerHTML("<body><video controls></video></body>");
+  EXPECT_NE(Video(), nullptr);
+  EXPECT_TRUE(Video()->HasEventListeners());
+  EXPECT_NE(Controls(), nullptr);
+  EXPECT_TRUE(GetDocument().HasEventListeners());
 
   // This should be a no-op. We keep a reference on the VideoElement to avoid an
   // unexpected GC.
   {
-    Persistent<HTMLVideoElement> videoHolder = video();
-    document().body()->removeChild(video());
-    document().body()->appendChild(videoHolder.get());
+    Persistent<HTMLVideoElement> video_holder = Video();
+    GetDocument().body()->RemoveChild(Video());
+    GetDocument().body()->AppendChild(video_holder.Get());
   }
 
-  EXPECT_TRUE(document().hasEventListeners());
-  EXPECT_TRUE(video()->hasEventListeners());
+  EXPECT_TRUE(GetDocument().HasEventListeners());
+  EXPECT_TRUE(Video()->HasEventListeners());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 
-  EXPECT_NE(video(), nullptr);
-  EXPECT_NE(controls(), nullptr);
-  EXPECT_EQ(controls(), video()->mediaControls());
+  EXPECT_NE(Video(), nullptr);
+  EXPECT_NE(Controls(), nullptr);
+  EXPECT_EQ(Controls(), Video()->GetMediaControls());
 }
 
 TEST_F(HTMLMediaElementEventListenersTest,
        FullscreenDetectorTimerCancelledOnContextDestroy) {
-  bool originalVideoFullscreenDetectionEnabled =
+  bool original_video_fullscreen_detection_enabled =
       RuntimeEnabledFeatures::videoFullscreenDetectionEnabled();
 
   RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(true);
 
-  EXPECT_EQ(video(), nullptr);
-  document().body()->setInnerHTML("<body><video></video</body>");
-  video()->setSrc("http://example.com");
+  EXPECT_EQ(Video(), nullptr);
+  GetDocument().body()->setInnerHTML("<body><video></video</body>");
+  Video()->SetSrc("http://example.com");
 
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
-  EXPECT_NE(webMediaPlayer(), nullptr);
+  EXPECT_NE(WebMediaPlayer(), nullptr);
 
   // Set ReadyState as HaveMetadata and go fullscreen, so the timer is fired.
-  EXPECT_NE(video(), nullptr);
-  simulateReadyState(HTMLMediaElement::kHaveMetadata);
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*video());
-  Fullscreen::from(document()).didEnterFullscreen();
+  EXPECT_NE(Video(), nullptr);
+  SimulateReadyState(HTMLMediaElement::kHaveMetadata);
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*Video());
+  Fullscreen::From(GetDocument()).DidEnterFullscreen();
 
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
-  Persistent<Document> persistentDocument = &document();
+  Persistent<Document> persistent_document = &GetDocument();
   Persistent<MediaCustomControlsFullscreenDetector> detector =
-      fullscreenDetector();
+      FullscreenDetector();
 
-  std::vector<bool> observedResults;
+  std::vector<bool> observed_results;
 
-  ON_CALL(*webMediaPlayer(), setIsEffectivelyFullscreen(_))
-      .WillByDefault(Invoke(
-          [&](bool isFullscreen) { observedResults.push_back(isFullscreen); }));
+  ON_CALL(*WebMediaPlayer(), SetIsEffectivelyFullscreen(_))
+      .WillByDefault(Invoke([&](bool is_fullscreen) {
+        observed_results.push_back(is_fullscreen);
+      }));
 
-  destroyDocument();
+  DestroyDocument();
 
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
   // Document should not have listeners as the ExecutionContext is destroyed.
-  EXPECT_FALSE(persistentDocument->hasEventListeners());
+  EXPECT_FALSE(persistent_document->HasEventListeners());
   // The timer should be cancelled when the ExecutionContext is destroyed.
-  EXPECT_FALSE(isCheckViewportIntersectionTimerActive(detector));
+  EXPECT_FALSE(IsCheckViewportIntersectionTimerActive(detector));
   // Should only notify the false value when ExecutionContext is destroyed.
-  EXPECT_EQ(1u, observedResults.size());
-  EXPECT_FALSE(observedResults[0]);
+  EXPECT_EQ(1u, observed_results.size());
+  EXPECT_FALSE(observed_results[0]);
 
   RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(
-      originalVideoFullscreenDetectionEnabled);
+      original_video_fullscreen_detection_enabled);
 }
 
 }  // namespace blink

@@ -59,9 +59,9 @@ bool FindTextFeaturesForClass(const blink::WebElement& element,
                               size_t number_of_features) {
   DCHECK(features);
 
-  for (unsigned i = 0; i < element.attributeCount(); ++i) {
+  for (unsigned i = 0; i < element.AttributeCount(); ++i) {
     std::string filtered_value =
-        base::ToLowerASCII(element.attributeValue(i).utf8());
+        base::ToLowerASCII(element.AttributeValue(i).Utf8());
     ClearAttributeValue(&filtered_value);
 
     if (filtered_value.empty())
@@ -88,9 +88,9 @@ bool FindCaptchaInImgElements(const blink::WebElement& form,
   CR_DEFINE_STATIC_LOCAL(WebString, kImageTag, ("img"));
 
   blink::WebElementCollection img_elements =
-      form.getElementsByHTMLTagName(kImageTag);
-  for (blink::WebElement element = img_elements.firstItem(); !element.isNull();
-       element = img_elements.nextItem()) {
+      form.GetElementsByHTMLTagName(kImageTag);
+  for (blink::WebElement element = img_elements.FirstItem(); !element.IsNull();
+       element = img_elements.NextItem()) {
     if (ingnore_invisible && !form_util::IsWebElementVisible(element))
       continue;
     if (FindTextFeaturesForClass(element, kCaptchaFeatures,
@@ -125,22 +125,22 @@ bool IsButtonOrImageElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kButton, ("button"));
   CR_DEFINE_STATIC_LOCAL(WebString, kImage, ("image"));
 
-  return element.formControlType() == kButton ||
-         element.formControlType() == kImage;
+  return element.FormControlType() == kButton ||
+         element.FormControlType() == kImage;
 }
 
 // Returns true if |element| has type "submit".
 bool IsSubmitElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kSubmit, ("submit"));
 
-  return element.formControlType() == kSubmit;
+  return element.FormControlType() == kSubmit;
 }
 
 // Returns true if |element| has type "hidden";
 bool IsHiddenElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));
 
-  return element.formControlType() == kHidden;
+  return element.FormControlType() == kHidden;
 }
 
 // Returns true if |element| has type "select-multiple" or "select-one".
@@ -148,19 +148,19 @@ bool IsSelectElement(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectOne, ("select-one"));
   CR_DEFINE_STATIC_LOCAL(WebString, kSelectMultiple, ("select-multiple"));
 
-  return element.formControlType() == kSelectOne ||
-         element.formControlType() == kSelectMultiple;
+  return element.FormControlType() == kSelectOne ||
+         element.FormControlType() == kSelectMultiple;
 }
 
 // Return true if |form| contains at least one visible password element.
 bool FormContainsVisiblePasswordFields(const blink::WebFormElement& form) {
   WebVector<WebFormControlElement> control_elements;
-  form.getFormControlElements(control_elements);
+  form.GetFormControlElements(control_elements);
   for (auto& control_element : control_elements) {
-    const WebInputElement* input_element = toWebInputElement(&control_element);
+    const WebInputElement* input_element = ToWebInputElement(&control_element);
     if (!input_element)
       continue;
-    if (input_element->isPasswordField() &&
+    if (input_element->IsPasswordField() &&
         form_util::IsWebElementVisible(*input_element)) {
       return true;
     }
@@ -174,7 +174,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
                                         base::string16* generation_field) {
   DCHECK(generation_field);
 
-  if (form.isNull())
+  if (form.IsNull())
     return false;
 
   bool ignore_invisible_elements = FormContainsVisiblePasswordFields(form);
@@ -193,7 +193,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
 
   std::vector<WebInputElement> passwords;
   WebVector<WebFormControlElement> control_elements;
-  form.getFormControlElements(control_elements);
+  form.GetFormControlElements(control_elements);
 
   for (const WebFormControlElement& control_element : control_elements) {
     if (IsHiddenElement(control_element))
@@ -217,12 +217,12 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
       number_of_other_input_fields++;
     } else {
       const WebInputElement* input_element =
-          toWebInputElement(&control_element);
+          ToWebInputElement(&control_element);
       if (!input_element)
         continue;
 
-      if (input_element->isTextField()) {
-        if (input_element->isPasswordField()) {
+      if (input_element->IsTextField()) {
+        if (input_element->IsPasswordField()) {
           ++number_of_password_input_fields;
           passwords.push_back(*input_element);
         } else {
@@ -230,7 +230,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
           found_captcha = found_captcha || IsCaptchaInput(*input_element);
         }
       } else {  // Non-text fields.
-        if (input_element->isCheckbox())
+        if (input_element->IsCheckbox())
           ++number_of_checkbox_input_fields;
         else if (!IsSubmitElement(*input_element))
           ++number_of_other_input_fields;
@@ -257,7 +257,7 @@ bool ClassifyFormAndFindGenerationField(const blink::WebFormElement& form,
     else
       password_creation_field = passwords[0];
 
-    *generation_field = password_creation_field.nameForAutofill().utf16();
+    *generation_field = password_creation_field.NameForAutofill().Utf16();
     return true;
   }
   return false;

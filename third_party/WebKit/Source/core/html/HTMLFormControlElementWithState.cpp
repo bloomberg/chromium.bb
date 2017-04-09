@@ -33,57 +33,57 @@
 namespace blink {
 
 HTMLFormControlElementWithState::HTMLFormControlElementWithState(
-    const QualifiedName& tagName,
+    const QualifiedName& tag_name,
     Document& doc)
-    : HTMLFormControlElement(tagName, doc) {}
+    : HTMLFormControlElement(tag_name, doc) {}
 
 HTMLFormControlElementWithState::~HTMLFormControlElementWithState() {}
 
 Node::InsertionNotificationRequest
-HTMLFormControlElementWithState::insertedInto(ContainerNode* insertionPoint) {
-  if (insertionPoint->isConnected() && !containingShadowRoot())
-    document().formController().registerStatefulFormControl(*this);
-  return HTMLFormControlElement::insertedInto(insertionPoint);
+HTMLFormControlElementWithState::InsertedInto(ContainerNode* insertion_point) {
+  if (insertion_point->isConnected() && !ContainingShadowRoot())
+    GetDocument().GetFormController().RegisterStatefulFormControl(*this);
+  return HTMLFormControlElement::InsertedInto(insertion_point);
 }
 
-void HTMLFormControlElementWithState::removedFrom(
-    ContainerNode* insertionPoint) {
-  if (insertionPoint->isConnected() && !containingShadowRoot() &&
-      !insertionPoint->containingShadowRoot())
-    document().formController().unregisterStatefulFormControl(*this);
-  HTMLFormControlElement::removedFrom(insertionPoint);
+void HTMLFormControlElementWithState::RemovedFrom(
+    ContainerNode* insertion_point) {
+  if (insertion_point->isConnected() && !ContainingShadowRoot() &&
+      !insertion_point->ContainingShadowRoot())
+    GetDocument().GetFormController().UnregisterStatefulFormControl(*this);
+  HTMLFormControlElement::RemovedFrom(insertion_point);
 }
 
-bool HTMLFormControlElementWithState::shouldAutocomplete() const {
-  if (!form())
+bool HTMLFormControlElementWithState::ShouldAutocomplete() const {
+  if (!Form())
     return true;
-  return form()->shouldAutocomplete();
+  return Form()->ShouldAutocomplete();
 }
 
-void HTMLFormControlElementWithState::notifyFormStateChanged() {
+void HTMLFormControlElementWithState::NotifyFormStateChanged() {
   // This can be called during fragment parsing as a result of option
   // selection before the document is active (or even in a frame).
-  if (!document().isActive())
+  if (!GetDocument().IsActive())
     return;
-  document().frame()->loader().client()->didUpdateCurrentHistoryItem();
+  GetDocument().GetFrame()->Loader().Client()->DidUpdateCurrentHistoryItem();
 }
 
-bool HTMLFormControlElementWithState::shouldSaveAndRestoreFormControlState()
+bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
     const {
   // We don't save/restore control state in a form with autocomplete=off.
-  return isConnected() && shouldAutocomplete();
+  return isConnected() && ShouldAutocomplete();
 }
 
-FormControlState HTMLFormControlElementWithState::saveFormControlState() const {
+FormControlState HTMLFormControlElementWithState::SaveFormControlState() const {
   return FormControlState();
 }
 
-void HTMLFormControlElementWithState::finishParsingChildren() {
-  HTMLFormControlElement::finishParsingChildren();
-  document().formController().restoreControlStateFor(*this);
+void HTMLFormControlElementWithState::FinishParsingChildren() {
+  HTMLFormControlElement::FinishParsingChildren();
+  GetDocument().GetFormController().RestoreControlStateFor(*this);
 }
 
-bool HTMLFormControlElementWithState::isFormControlElementWithState() const {
+bool HTMLFormControlElementWithState::IsFormControlElementWithState() const {
   return true;
 }
 

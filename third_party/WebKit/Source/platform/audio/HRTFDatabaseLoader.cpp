@@ -41,99 +41,99 @@ using LoaderMap = HashMap<double, HRTFDatabaseLoader*>;
 
 // getLoaderMap() returns the static hash map that contains the mapping between
 // the sample rate and the corresponding HRTF database.
-static LoaderMap& getLoaderMap() {
+static LoaderMap& GetLoaderMap() {
   DEFINE_STATIC_LOCAL(LoaderMap*, map, (new LoaderMap));
   return *map;
 }
 
 PassRefPtr<HRTFDatabaseLoader>
-HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(float sampleRate) {
-  DCHECK(isMainThread());
+HRTFDatabaseLoader::CreateAndLoadAsynchronouslyIfNecessary(float sample_rate) {
+  DCHECK(IsMainThread());
 
-  RefPtr<HRTFDatabaseLoader> loader = getLoaderMap().at(sampleRate);
+  RefPtr<HRTFDatabaseLoader> loader = GetLoaderMap().at(sample_rate);
   if (loader) {
-    DCHECK_EQ(sampleRate, loader->databaseSampleRate());
-    return loader.release();
+    DCHECK_EQ(sample_rate, loader->DatabaseSampleRate());
+    return loader.Release();
   }
 
-  loader = adoptRef(new HRTFDatabaseLoader(sampleRate));
-  getLoaderMap().insert(sampleRate, loader.get());
-  loader->loadAsynchronously();
-  return loader.release();
+  loader = AdoptRef(new HRTFDatabaseLoader(sample_rate));
+  GetLoaderMap().insert(sample_rate, loader.Get());
+  loader->LoadAsynchronously();
+  return loader.Release();
 }
 
-HRTFDatabaseLoader::HRTFDatabaseLoader(float sampleRate)
-    : m_databaseSampleRate(sampleRate) {
-  DCHECK(isMainThread());
+HRTFDatabaseLoader::HRTFDatabaseLoader(float sample_rate)
+    : database_sample_rate_(sample_rate) {
+  DCHECK(IsMainThread());
 }
 
 HRTFDatabaseLoader::~HRTFDatabaseLoader() {
-  DCHECK(isMainThread());
-  DCHECK(!m_thread);
-  getLoaderMap().erase(m_databaseSampleRate);
+  DCHECK(IsMainThread());
+  DCHECK(!thread_);
+  GetLoaderMap().erase(database_sample_rate_);
 }
 
-void HRTFDatabaseLoader::loadTask() {
-  DCHECK(!isMainThread());
-  DCHECK(!m_hrtfDatabase);
+void HRTFDatabaseLoader::LoadTask() {
+  DCHECK(!IsMainThread());
+  DCHECK(!hrtf_database_);
 
   // Protect access to m_hrtfDatabase, which can be accessed from the audio
   // thread.
-  MutexLocker locker(m_lock);
+  MutexLocker locker(lock_);
   // Load the default HRTF database.
-  m_hrtfDatabase = HRTFDatabase::create(m_databaseSampleRate);
+  hrtf_database_ = HRTFDatabase::Create(database_sample_rate_);
 }
 
-void HRTFDatabaseLoader::loadAsynchronously() {
-  DCHECK(isMainThread());
+void HRTFDatabaseLoader::LoadAsynchronously() {
+  DCHECK(IsMainThread());
 
   // m_hrtfDatabase and m_thread should both be unset because this should be a
   // new HRTFDatabaseLoader object that was just created by
   // createAndLoadAsynchronouslyIfNecessary and because we haven't started
   // loadTask yet for this object.
-  DCHECK(!m_hrtfDatabase);
-  DCHECK(!m_thread);
+  DCHECK(!hrtf_database_);
+  DCHECK(!thread_);
 
   // Start the asynchronous database loading process.
-  m_thread = WTF::wrapUnique(
-      Platform::current()->createThread("HRTF database loader"));
+  thread_ = WTF::WrapUnique(
+      Platform::Current()->CreateThread("HRTF database loader"));
   // TODO(alexclarke): Should this be posted as a loading task?
-  m_thread->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::loadTask,
-                                       crossThreadUnretained(this)));
+  thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, CrossThreadBind(&HRTFDatabaseLoader::LoadTask,
+                                       CrossThreadUnretained(this)));
 }
 
-HRTFDatabase* HRTFDatabaseLoader::database() {
-  DCHECK(!isMainThread());
+HRTFDatabase* HRTFDatabaseLoader::Database() {
+  DCHECK(!IsMainThread());
 
   // Seeing that this is only called from the audio thread, we can't block.
   // It's ok to return nullptr if we can't get the lock.
-  MutexTryLocker tryLocker(m_lock);
+  MutexTryLocker try_locker(lock_);
 
-  if (!tryLocker.locked())
+  if (!try_locker.Locked())
     return nullptr;
 
-  return m_hrtfDatabase.get();
+  return hrtf_database_.get();
 }
 
 // This cleanup task is needed just to make sure that the loader thread finishes
 // the load task and thus the loader thread doesn't touch m_thread any more.
-void HRTFDatabaseLoader::cleanupTask(WaitableEvent* sync) {
-  sync->signal();
+void HRTFDatabaseLoader::CleanupTask(WaitableEvent* sync) {
+  sync->Signal();
 }
 
-void HRTFDatabaseLoader::waitForLoaderThreadCompletion() {
-  if (!m_thread)
+void HRTFDatabaseLoader::WaitForLoaderThreadCompletion() {
+  if (!thread_)
     return;
 
   WaitableEvent sync;
   // TODO(alexclarke): Should this be posted as a loading task?
-  m_thread->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, crossThreadBind(&HRTFDatabaseLoader::cleanupTask,
-                                       crossThreadUnretained(this),
-                                       crossThreadUnretained(&sync)));
-  sync.wait();
-  m_thread.reset();
+  thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, CrossThreadBind(&HRTFDatabaseLoader::CleanupTask,
+                                       CrossThreadUnretained(this),
+                                       CrossThreadUnretained(&sync)));
+  sync.Wait();
+  thread_.reset();
 }
 
 }  // namespace blink

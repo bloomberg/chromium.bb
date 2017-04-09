@@ -18,7 +18,7 @@ class GraphicsContext;
 class LayoutSVGResourceClipper;
 class LayoutObject;
 
-enum class ClipperState { NotApplied, AppliedPath, AppliedMask };
+enum class ClipperState { kNotApplied, kAppliedPath, kAppliedMask };
 
 class ClipPathClipper {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -27,33 +27,35 @@ class ClipPathClipper {
   ClipPathClipper(GraphicsContext&,
                   ClipPathOperation&,
                   const LayoutObject&,
-                  const FloatRect& referenceBox,
+                  const FloatRect& reference_box,
                   const FloatPoint& origin);
   ~ClipPathClipper();
 
-  bool usingMask() const { return m_clipperState == ClipperState::AppliedMask; }
+  bool UsingMask() const {
+    return clipper_state_ == ClipperState::kAppliedMask;
+  }
 
  private:
   // Returns false if there is a problem drawing the mask.
-  bool prepareEffect(const FloatRect& targetBoundingBox,
-                     const FloatRect& visualRect,
-                     const FloatPoint& layerPositionOffset);
-  bool drawClipAsMask(const FloatRect& targetBoundingBox,
-                      const FloatRect& targetVisualRect,
+  bool PrepareEffect(const FloatRect& target_bounding_box,
+                     const FloatRect& visual_rect,
+                     const FloatPoint& layer_position_offset);
+  bool DrawClipAsMask(const FloatRect& target_bounding_box,
+                      const FloatRect& target_visual_rect,
                       const AffineTransform&,
                       const FloatPoint&);
-  void finishEffect();
+  void FinishEffect();
 
-  LayoutSVGResourceClipper* m_resourceClipper;
-  ClipperState m_clipperState;
-  const LayoutObject& m_layoutObject;
-  GraphicsContext& m_context;
+  LayoutSVGResourceClipper* resource_clipper_;
+  ClipperState clipper_state_;
+  const LayoutObject& layout_object_;
+  GraphicsContext& context_;
 
   // TODO(pdr): This pattern should be cleaned up so that the recorders are just
   // on the stack.
-  Optional<ClipPathRecorder> m_clipPathRecorder;
-  Optional<CompositingRecorder> m_maskClipRecorder;
-  Optional<CompositingRecorder> m_maskContentRecorder;
+  Optional<ClipPathRecorder> clip_path_recorder_;
+  Optional<CompositingRecorder> mask_clip_recorder_;
+  Optional<CompositingRecorder> mask_content_recorder_;
 };
 
 }  // namespace blink

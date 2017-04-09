@@ -12,48 +12,48 @@
 namespace blink {
 
 V0CustomElementMicrotaskRunQueue::V0CustomElementMicrotaskRunQueue()
-    : m_syncQueue(V0CustomElementSyncMicrotaskQueue::create()),
-      m_asyncQueue(V0CustomElementAsyncImportMicrotaskQueue::create()),
-      m_dispatchIsPending(false) {}
+    : sync_queue_(V0CustomElementSyncMicrotaskQueue::Create()),
+      async_queue_(V0CustomElementAsyncImportMicrotaskQueue::Create()),
+      dispatch_is_pending_(false) {}
 
-void V0CustomElementMicrotaskRunQueue::enqueue(
-    HTMLImportLoader* parentLoader,
+void V0CustomElementMicrotaskRunQueue::Enqueue(
+    HTMLImportLoader* parent_loader,
     V0CustomElementMicrotaskStep* step,
-    bool importIsSync) {
-  if (importIsSync) {
-    if (parentLoader)
-      parentLoader->microtaskQueue()->enqueue(step);
+    bool import_is_sync) {
+  if (import_is_sync) {
+    if (parent_loader)
+      parent_loader->MicrotaskQueue()->Enqueue(step);
     else
-      m_syncQueue->enqueue(step);
+      sync_queue_->Enqueue(step);
   } else {
-    m_asyncQueue->enqueue(step);
+    async_queue_->Enqueue(step);
   }
 
-  requestDispatchIfNeeded();
+  RequestDispatchIfNeeded();
 }
 
-void V0CustomElementMicrotaskRunQueue::requestDispatchIfNeeded() {
-  if (m_dispatchIsPending || isEmpty())
+void V0CustomElementMicrotaskRunQueue::RequestDispatchIfNeeded() {
+  if (dispatch_is_pending_ || IsEmpty())
     return;
-  Microtask::enqueueMicrotask(WTF::bind(
-      &V0CustomElementMicrotaskRunQueue::dispatch, wrapWeakPersistent(this)));
-  m_dispatchIsPending = true;
+  Microtask::EnqueueMicrotask(WTF::Bind(
+      &V0CustomElementMicrotaskRunQueue::Dispatch, WrapWeakPersistent(this)));
+  dispatch_is_pending_ = true;
 }
 
 DEFINE_TRACE(V0CustomElementMicrotaskRunQueue) {
-  visitor->trace(m_syncQueue);
-  visitor->trace(m_asyncQueue);
+  visitor->Trace(sync_queue_);
+  visitor->Trace(async_queue_);
 }
 
-void V0CustomElementMicrotaskRunQueue::dispatch() {
-  m_dispatchIsPending = false;
-  m_syncQueue->dispatch();
-  if (m_syncQueue->isEmpty())
-    m_asyncQueue->dispatch();
+void V0CustomElementMicrotaskRunQueue::Dispatch() {
+  dispatch_is_pending_ = false;
+  sync_queue_->Dispatch();
+  if (sync_queue_->IsEmpty())
+    async_queue_->Dispatch();
 }
 
-bool V0CustomElementMicrotaskRunQueue::isEmpty() const {
-  return m_syncQueue->isEmpty() && m_asyncQueue->isEmpty();
+bool V0CustomElementMicrotaskRunQueue::IsEmpty() const {
+  return sync_queue_->IsEmpty() && async_queue_->IsEmpty();
 }
 
 }  // namespace blink

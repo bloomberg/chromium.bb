@@ -29,10 +29,10 @@
 namespace blink {
 
 enum CSSReflectionDirection {
-  ReflectionBelow,
-  ReflectionAbove,
-  ReflectionLeft,
-  ReflectionRight
+  kReflectionBelow,
+  kReflectionAbove,
+  kReflectionLeft,
+  kReflectionRight
 };
 
 }  // namespace blink

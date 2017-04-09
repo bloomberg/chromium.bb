@@ -47,7 +47,7 @@ void ExtensionHelper::OnDestruct() {
 
 void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
   blink::WebVector<blink::WebDraggableRegion> webregions =
-      frame->document().draggableRegions();
+      frame->GetDocument().DraggableRegions();
   std::vector<DraggableRegion> regions;
   for (size_t i = 0; i < webregions.size(); ++i) {
     DraggableRegion region;
@@ -62,13 +62,13 @@ void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
 void ExtensionHelper::OnSetFrameName(const std::string& name) {
   blink::WebView* web_view = render_view()->GetWebView();
   if (web_view)
-    web_view->mainFrame()->setName(blink::WebString::fromUTF8(name));
+    web_view->MainFrame()->SetName(blink::WebString::FromUTF8(name));
 }
 
 void ExtensionHelper::OnAppWindowClosed() {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> v8_context =
-      render_view()->GetWebView()->mainFrame()->mainWorldScriptContext();
+      render_view()->GetWebView()->MainFrame()->MainWorldScriptContext();
   ScriptContext* script_context =
       dispatcher_->script_context_set().GetByV8Context(v8_context);
   if (!script_context)

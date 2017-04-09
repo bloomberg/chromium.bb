@@ -46,35 +46,35 @@ class AudioParamTimeline {
  public:
   AudioParamTimeline() {}
 
-  void setValueAtTime(float value, double time, ExceptionState&);
-  void linearRampToValueAtTime(float value,
+  void SetValueAtTime(float value, double time, ExceptionState&);
+  void LinearRampToValueAtTime(float value,
                                double time,
-                               float initialValue,
-                               double callTime,
+                               float initial_value,
+                               double call_time,
                                ExceptionState&);
-  void exponentialRampToValueAtTime(float value,
+  void ExponentialRampToValueAtTime(float value,
                                     double time,
-                                    float initialValue,
-                                    double callTime,
+                                    float initial_value,
+                                    double call_time,
                                     ExceptionState&);
-  void setTargetAtTime(float target,
+  void SetTargetAtTime(float target,
                        double time,
-                       double timeConstant,
+                       double time_constant,
                        ExceptionState&);
-  void setValueCurveAtTime(DOMFloat32Array* curve,
+  void SetValueCurveAtTime(DOMFloat32Array* curve,
                            double time,
                            double duration,
                            ExceptionState&);
-  void cancelScheduledValues(double startTime, ExceptionState&);
-  void cancelAndHoldAtTime(double cancelTime, ExceptionState&);
+  void CancelScheduledValues(double start_time, ExceptionState&);
+  void CancelAndHoldAtTime(double cancel_time, ExceptionState&);
 
   // hasValue is set to true if a valid timeline value is returned.
   // otherwise defaultValue is returned.
-  float valueForContextTime(AudioDestinationHandler&,
-                            float defaultValue,
-                            bool& hasValue,
-                            float minValue,
-                            float maxValue);
+  float ValueForContextTime(AudioDestinationHandler&,
+                            float default_value,
+                            bool& has_value,
+                            float min_value,
+                            float max_value);
 
   // Given the time range in frames, calculates parameter values into the values
   // buffer and returns the last parameter value calculated for "values" or the
@@ -83,111 +83,112 @@ class AudioParamTimeline {
   // sampleRate for sample-accurate parameter changes, and otherwise will
   // usually match the render quantum size such that the parameter value changes
   // once per render quantum.
-  float valuesForFrameRange(size_t startFrame,
-                            size_t endFrame,
-                            float defaultValue,
+  float ValuesForFrameRange(size_t start_frame,
+                            size_t end_frame,
+                            float default_value,
                             float* values,
-                            unsigned numberOfValues,
-                            double sampleRate,
-                            double controlRate,
-                            float minValue,
-                            float maxValue);
+                            unsigned number_of_values,
+                            double sample_rate,
+                            double control_rate,
+                            float min_value,
+                            float max_value);
 
   // Returns true if this AudioParam has any events on it.
-  bool hasValues() const;
+  bool HasValues() const;
 
-  float smoothedValue() { return m_smoothedValue; }
-  void setSmoothedValue(float v) { m_smoothedValue = v; }
+  float SmoothedValue() { return smoothed_value_; }
+  void SetSmoothedValue(float v) { smoothed_value_ = v; }
 
  private:
   class ParamEvent {
    public:
     enum Type {
-      SetValue,
-      LinearRampToValue,
-      ExponentialRampToValue,
-      SetTarget,
-      SetValueCurve,
+      kSetValue,
+      kLinearRampToValue,
+      kExponentialRampToValue,
+      kSetTarget,
+      kSetValueCurve,
       // For cancelValuesAndHold
-      CancelValues,
-      LastType
+      kCancelValues,
+      kLastType
     };
 
-    static std::unique_ptr<ParamEvent> createLinearRampEvent(float value,
-                                                             double time,
-                                                             float initialValue,
-                                                             double callTime);
-    static std::unique_ptr<ParamEvent> createExponentialRampEvent(
+    static std::unique_ptr<ParamEvent> CreateLinearRampEvent(
         float value,
         double time,
-        float initialValue,
-        double callTime);
-    static std::unique_ptr<ParamEvent> createSetValueEvent(float value,
+        float initial_value,
+        double call_time);
+    static std::unique_ptr<ParamEvent> CreateExponentialRampEvent(
+        float value,
+        double time,
+        float initial_value,
+        double call_time);
+    static std::unique_ptr<ParamEvent> CreateSetValueEvent(float value,
                                                            double time);
     static std::unique_ptr<ParamEvent>
-    createSetTargetEvent(float value, double time, double timeConstant);
-    static std::unique_ptr<ParamEvent> createSetValueCurveEvent(
+    CreateSetTargetEvent(float value, double time, double time_constant);
+    static std::unique_ptr<ParamEvent> CreateSetValueCurveEvent(
         const DOMFloat32Array* curve,
         double time,
         double duration);
-    static std::unique_ptr<ParamEvent> createCancelValuesEvent(
+    static std::unique_ptr<ParamEvent> CreateCancelValuesEvent(
         double time,
-        std::unique_ptr<ParamEvent> savedEvent);
+        std::unique_ptr<ParamEvent> saved_event);
     // Needed for creating a saved event where we want to supply all
     // the possible parameters because we're mostly copying an
     // existing event.
-    static std::unique_ptr<ParamEvent> createGeneralEvent(
+    static std::unique_ptr<ParamEvent> CreateGeneralEvent(
         Type,
         float value,
         double time,
-        float initialValue,
-        double callTime,
-        double timeConstant,
+        float initial_value,
+        double call_time,
+        double time_constant,
         double duration,
         Vector<float>& curve,
-        double curvePointsPerSecond,
-        float curveEndValue,
-        std::unique_ptr<ParamEvent> savedEvent);
+        double curve_points_per_second,
+        float curve_end_value,
+        std::unique_ptr<ParamEvent> saved_event);
 
-    static bool eventPreceeds(const std::unique_ptr<ParamEvent>& a,
+    static bool EventPreceeds(const std::unique_ptr<ParamEvent>& a,
                               const std::unique_ptr<ParamEvent>& b) {
-      return a->time() < b->time();
+      return a->Time() < b->Time();
     }
 
-    Type getType() const { return m_type; }
-    float value() const { return m_value; }
-    double time() const { return m_time; }
-    void setTime(double newTime) { m_time = newTime; }
-    double timeConstant() const { return m_timeConstant; }
-    double duration() const { return m_duration; }
-    const Vector<float>& curve() const { return m_curve; }
-    Vector<float>& curve() { return m_curve; }
-    float initialValue() const { return m_initialValue; }
-    double callTime() const { return m_callTime; }
-    bool needsTimeClampCheck() const { return m_needsTimeClampCheck; }
-    void clearTimeClampCheck() { m_needsTimeClampCheck = false; }
+    Type GetType() const { return type_; }
+    float Value() const { return value_; }
+    double Time() const { return time_; }
+    void SetTime(double new_time) { time_ = new_time; }
+    double TimeConstant() const { return time_constant_; }
+    double Duration() const { return duration_; }
+    const Vector<float>& Curve() const { return curve_; }
+    Vector<float>& Curve() { return curve_; }
+    float InitialValue() const { return initial_value_; }
+    double CallTime() const { return call_time_; }
+    bool NeedsTimeClampCheck() const { return needs_time_clamp_check_; }
+    void ClearTimeClampCheck() { needs_time_clamp_check_ = false; }
 
-    double curvePointsPerSecond() const { return m_curvePointsPerSecond; }
-    float curveEndValue() const { return m_curveEndValue; }
+    double CurvePointsPerSecond() const { return curve_points_per_second_; }
+    float CurveEndValue() const { return curve_end_value_; }
 
     // For CancelValues events. Not valid for any other event.
-    ParamEvent* savedEvent() const;
-    bool hasDefaultCancelledValue() const;
-    void setCancelledValue(float);
+    ParamEvent* SavedEvent() const;
+    bool HasDefaultCancelledValue() const;
+    void SetCancelledValue(float);
 
    private:
     // General event
     ParamEvent(Type type,
                float value,
                double time,
-               float initialValue,
-               double callTime,
-               double timeConstant,
+               float initial_value,
+               double call_time,
+               double time_constant,
                double duration,
                Vector<float>& curve,
-               double curvePointsPerSecond,
-               float curveEndValue,
-               std::unique_ptr<ParamEvent> savedEvent);
+               double curve_points_per_second,
+               float curve_end_value,
+               std::unique_ptr<ParamEvent> saved_event);
 
     // Create simplest event needing just a value and time, like
     // setValueAtTime.
@@ -199,87 +200,87 @@ class AudioParamTimeline {
     ParamEvent(Type,
                float value,
                double time,
-               float initialValue,
-               double callTime);
+               float initial_value,
+               double call_time);
 
     // Create an event needing a time constant (setTargetAtTime)
-    ParamEvent(Type, float value, double time, double timeConstant);
+    ParamEvent(Type, float value, double time, double time_constant);
 
     // Create a setValueCurve event
     ParamEvent(Type,
                double time,
                double duration,
                const DOMFloat32Array* curve,
-               double curvePointsPerSecond,
-               float curveEndValue);
+               double curve_points_per_second,
+               float curve_end_value);
 
     // Create CancelValues event
-    ParamEvent(Type, double time, std::unique_ptr<ParamEvent> savedEvent);
+    ParamEvent(Type, double time, std::unique_ptr<ParamEvent> saved_event);
 
-    Type m_type;
+    Type type_;
 
     // The value for the event.  The interpretation of this depends on
     // the event type. Not used for SetValueCurve. For CancelValues,
     // it is the end value to use when cancelling a LinearRampToValue
     // or ExponentialRampToValue event.
-    float m_value;
+    float value_;
 
     // The time for the event. The interpretation of this depends on
     // the event type.
-    double m_time;
+    double time_;
 
     // Initial value and time to use for linear and exponential ramps that don't
     // have a preceding event.
-    float m_initialValue;
-    double m_callTime;
+    float initial_value_;
+    double call_time_;
 
     // Only used for SetTarget events
-    double m_timeConstant;
+    double time_constant_;
 
     // The following items are only used for SetValueCurve events.
     //
     // The duration of the curve.
-    double m_duration;
+    double duration_;
     // The array of curve points.
-    Vector<float> m_curve;
+    Vector<float> curve_;
     // The number of curve points per second. it is used to compute
     // the curve index step when running the automation.
-    double m_curvePointsPerSecond;
+    double curve_points_per_second_;
     // The default value to use at the end of the curve.  Normally
     // it's the last entry in m_curve, but cancelling a SetValueCurve
     // will set this to a new value.
-    float m_curveEndValue;
+    float curve_end_value_;
 
     // For CancelValues. If CancelValues is in the middle of an event, this
     // holds the event that is being cancelled, so that processing can
     // continue as if the event still existed up until we reach the actual
     // scheduled cancel time.
-    std::unique_ptr<ParamEvent> m_savedEvent;
+    std::unique_ptr<ParamEvent> saved_event_;
 
     // True if the start time needs to be checked against current time
     // to implement clamping.
-    bool m_needsTimeClampCheck;
+    bool needs_time_clamp_check_;
 
     // True if a default value has been assigned to the CancelValues event.
-    bool m_hasDefaultCancelledValue;
+    bool has_default_cancelled_value_;
   };
 
   // State of the timeline for the current event.
   struct AutomationState {
     // Parameters for the current automation request.  Number of
     // values to be computed for the automation request
-    const unsigned numberOfValues;
+    const unsigned number_of_values;
     // Start and end frames for this automation request
-    const size_t startFrame;
-    const size_t endFrame;
+    const size_t start_frame;
+    const size_t end_frame;
 
     // Sample rate and control rate for this request
-    const double sampleRate;
-    const double controlRate;
+    const double sample_rate;
+    const double control_rate;
 
     // Parameters needed for processing the current event.
-    const size_t fillToFrame;
-    const size_t fillToEndFrame;
+    const size_t fill_to_frame;
+    const size_t fill_to_end_frame;
 
     // Value and time for the current event
     const float value1;
@@ -291,84 +292,84 @@ class AudioParamTimeline {
 
     // The current event, and it's index in the event vector.
     const ParamEvent* event;
-    const int eventIndex;
+    const int event_index;
   };
 
-  void insertEvent(std::unique_ptr<ParamEvent>, ExceptionState&);
-  float valuesForFrameRangeImpl(size_t startFrame,
-                                size_t endFrame,
-                                float defaultValue,
+  void InsertEvent(std::unique_ptr<ParamEvent>, ExceptionState&);
+  float ValuesForFrameRangeImpl(size_t start_frame,
+                                size_t end_frame,
+                                float default_value,
                                 float* values,
-                                unsigned numberOfValues,
-                                double sampleRate,
-                                double controlRate);
+                                unsigned number_of_values,
+                                double sample_rate,
+                                double control_rate);
 
   // Produce a nice string describing the event in human-readable form.
-  String eventToString(const ParamEvent&);
+  String EventToString(const ParamEvent&);
 
   // Automation functions that compute the vlaue of the specified
   // automation at the specified time.
-  float linearRampAtTime(double t,
+  float LinearRampAtTime(double t,
                          float value1,
                          double time1,
                          float value2,
                          double time2);
-  float exponentialRampAtTime(double t,
+  float ExponentialRampAtTime(double t,
                               float value1,
                               double time1,
                               float value2,
                               double time2);
-  float targetValueAtTime(double t,
+  float TargetValueAtTime(double t,
                           float value1,
                           double time1,
                           float value2,
-                          float timeConstant);
-  float valueCurveAtTime(double t,
+                          float time_constant);
+  float ValueCurveAtTime(double t,
                          double time1,
                          double duration,
-                         const float* curveData,
-                         unsigned curveLength);
+                         const float* curve_data,
+                         unsigned curve_length);
 
   // Handles the special case where the first event in the timeline
   // starts after |startFrame|.  These initial values are filled using
   // |defaultValue|.  The updated |currentFrame| and |writeIndex| is
   // returned.
-  std::tuple<size_t, unsigned> handleFirstEvent(float* values,
-                                                float defaultValue,
-                                                unsigned numberOfValues,
-                                                size_t startFrame,
-                                                size_t endFrame,
-                                                double sampleRate,
-                                                size_t currentFrame,
-                                                unsigned writeIndex);
+  std::tuple<size_t, unsigned> HandleFirstEvent(float* values,
+                                                float default_value,
+                                                unsigned number_of_values,
+                                                size_t start_frame,
+                                                size_t end_frame,
+                                                double sample_rate,
+                                                size_t current_frame,
+                                                unsigned write_index);
 
   // Return true if |currentEvent| starts after |currentFrame|, but
   // also takes into account the |nextEvent| if any.
-  bool isEventCurrent(const ParamEvent* currentEvent,
-                      const ParamEvent* nextEvent,
-                      size_t currentFrame,
-                      double sampleRate);
+  bool IsEventCurrent(const ParamEvent* current_event,
+                      const ParamEvent* next_event,
+                      size_t current_frame,
+                      double sample_rate);
 
   // Clamp event times to current time, if needed.
-  void clampToCurrentTime(int numberOfEvents,
-                          size_t startFrame,
-                          double sampleRate);
+  void ClampToCurrentTime(int number_of_events,
+                          size_t start_frame,
+                          double sample_rate);
 
   // Handle the case where the last event in the timeline is in the
   // past.  Returns false if any event is not in the past. Otherwise,
   // return true and also fill in |values| with |defaultValue|.
-  bool handleAllEventsInThePast(double currentTime,
-                                double sampleRate,
-                                float defaultValue,
-                                unsigned numberOfValues,
+  bool HandleAllEventsInThePast(double current_time,
+                                double sample_rate,
+                                float default_value,
+                                unsigned number_of_values,
                                 float* values);
 
   // Handle processing of CancelValue event. If cancellation happens, value2,
   // time2, and nextEventType will be updated with the new value due to
   // cancellation.  The
-  std::tuple<float, double, ParamEvent::Type> handleCancelValues(
-      const ParamEvent* currentEvent,
-      ParamEvent* nextEvent,
+  std::tuple<float, double, ParamEvent::Type> HandleCancelValues(
+      const ParamEvent* current_event,
+      ParamEvent* next_event,
       float value2,
       double time2);
 
@@ -377,80 +378,80 @@ class AudioParamTimeline {
   // special handling because the ramp should start at whatever value
   // the SetTarget event has reached at this time, instead of using
   // the value of the SetTarget event.
-  void processSetTargetFollowedByRamp(int eventIndex,
-                                      ParamEvent*& currentEvent,
-                                      ParamEvent::Type nextEventType,
-                                      size_t currentFrame,
-                                      double sampleRate,
-                                      double controlRate,
+  void ProcessSetTargetFollowedByRamp(int event_index,
+                                      ParamEvent*& current_event,
+                                      ParamEvent::Type next_event_type,
+                                      size_t current_frame,
+                                      double sample_rate,
+                                      double control_rate,
                                       float& value);
 
   // Handle processing of linearRampEvent, writing the appropriate
   // values to |values|.  Returns the updated |currentFrame|, last
   // computed |value|, and the updated |writeIndex|.
-  std::tuple<size_t, float, unsigned> processLinearRamp(
-      const AutomationState& currentState,
+  std::tuple<size_t, float, unsigned> ProcessLinearRamp(
+      const AutomationState& current_state,
       float* values,
-      size_t currentFrame,
+      size_t current_frame,
       float value,
-      unsigned writeIndex);
+      unsigned write_index);
 
   // Handle processing of exponentialRampEvent, writing the appropriate
   // values to |values|.  Returns the updated |currentFrame|, last
   // computed |value|, and the updated |writeIndex|.
-  std::tuple<size_t, float, unsigned> processExponentialRamp(
-      const AutomationState& currentState,
+  std::tuple<size_t, float, unsigned> ProcessExponentialRamp(
+      const AutomationState& current_state,
       float* values,
-      size_t currentFrame,
+      size_t current_frame,
       float value,
-      unsigned writeIndex);
+      unsigned write_index);
 
   // Handle processing of SetTargetEvent, writing the appropriate
   // values to |values|.  Returns the updated |currentFrame|, last
   // computed |value|, and the updated |writeIndex|.
-  std::tuple<size_t, float, unsigned> processSetTarget(
-      const AutomationState& currentState,
+  std::tuple<size_t, float, unsigned> ProcessSetTarget(
+      const AutomationState& current_state,
       float* values,
-      size_t currentFrame,
+      size_t current_frame,
       float value,
-      unsigned writeIndex);
+      unsigned write_index);
 
   // Handle processing of SetValueCurveEvent, writing the appropriate
   // values to |values|.  Returns the updated |currentFrame|, last
   // computed |value|, and the updated |writeIndex|.
-  std::tuple<size_t, float, unsigned> processSetValueCurve(
-      const AutomationState& currentState,
+  std::tuple<size_t, float, unsigned> ProcessSetValueCurve(
+      const AutomationState& current_state,
       float* values,
-      size_t currentFrame,
+      size_t current_frame,
       float value,
-      unsigned writeIndex);
+      unsigned write_index);
 
   // Handle processing of CancelValuesEvent, writing the appropriate
   // values to |values|.  Returns the updated |currentFrame|, last
   // computed |value|, and the updated |writeIndex|.
-  std::tuple<size_t, float, unsigned> processCancelValues(
-      const AutomationState& currentState,
+  std::tuple<size_t, float, unsigned> ProcessCancelValues(
+      const AutomationState& current_state,
       float* values,
-      size_t currentFrame,
+      size_t current_frame,
       float value,
-      unsigned writeIndex);
+      unsigned write_index);
 
   // Fill the output vector |values| with the value |defaultValue|,
   // starting at |writeIndex| and continuing up to |endFrame|
   // (exclusive).  |writeIndex| is updated with the new index.
-  unsigned fillWithDefault(float* values,
-                           float defaultValue,
-                           size_t endFrame,
-                           unsigned writeIndex);
+  unsigned FillWithDefault(float* values,
+                           float default_value,
+                           size_t end_frame,
+                           unsigned write_index);
 
   // Vector of all automation events for the AudioParam.  Access must
   // be locked via m_eventsLock.
-  Vector<std::unique_ptr<ParamEvent>> m_events;
+  Vector<std::unique_ptr<ParamEvent>> events_;
 
-  mutable Mutex m_eventsLock;
+  mutable Mutex events_lock_;
 
   // Smoothing (de-zippering)
-  float m_smoothedValue;
+  float smoothed_value_;
 };
 
 }  // namespace blink

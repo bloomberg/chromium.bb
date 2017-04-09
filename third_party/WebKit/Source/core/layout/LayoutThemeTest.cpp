@@ -21,72 +21,72 @@ namespace blink {
 class LayoutThemeTest : public ::testing::Test {
  protected:
   void SetUp() override;
-  Document& document() const { return *m_document; }
-  void setHtmlInnerHTML(const char* htmlContent);
+  Document& GetDocument() const { return *document_; }
+  void SetHtmlInnerHTML(const char* html_content);
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<Document> m_document;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<Document> document_;
 };
 
 void LayoutThemeTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-  m_document = &m_dummyPageHolder->document();
-  DCHECK(m_document);
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  document_ = &dummy_page_holder_->GetDocument();
+  DCHECK(document_);
 }
 
-void LayoutThemeTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
-  document().view()->updateAllLifecyclePhases();
+void LayoutThemeTest::SetHtmlInnerHTML(const char* html_content) {
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
-inline Color outlineColor(Element* element) {
-  return element->computedStyle()->visitedDependentColor(
+inline Color OutlineColor(Element* element) {
+  return element->GetComputedStyle()->VisitedDependentColor(
       CSSPropertyOutlineColor);
 }
 
-inline EBorderStyle outlineStyle(Element* element) {
-  return element->computedStyle()->outlineStyle();
+inline EBorderStyle OutlineStyle(Element* element) {
+  return element->GetComputedStyle()->OutlineStyle();
 }
 
 TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
-  setHtmlInnerHTML("<span id=span tabIndex=0>Span</span>");
+  SetHtmlInnerHTML("<span id=span tabIndex=0>Span</span>");
 
-  Element* span = document().getElementById(AtomicString("span"));
+  Element* span = GetDocument().GetElementById(AtomicString("span"));
   EXPECT_NE(nullptr, span);
-  EXPECT_NE(nullptr, span->layoutObject());
+  EXPECT_NE(nullptr, span->GetLayoutObject());
 
-  Color customColor = makeRGB(123, 145, 167);
+  Color custom_color = MakeRGB(123, 145, 167);
 
   // Checking unfocused style.
-  EXPECT_EQ(BorderStyleNone, outlineStyle(span));
-  EXPECT_NE(customColor, outlineColor(span));
+  EXPECT_EQ(kBorderStyleNone, OutlineStyle(span));
+  EXPECT_NE(custom_color, OutlineColor(span));
 
   // Do focus.
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
   span->focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Checking focused style.
-  EXPECT_NE(BorderStyleNone, outlineStyle(span));
-  EXPECT_NE(customColor, outlineColor(span));
+  EXPECT_NE(kBorderStyleNone, OutlineStyle(span));
+  EXPECT_NE(custom_color, OutlineColor(span));
 
   // Change focus ring color.
-  LayoutTheme::theme().setCustomFocusRingColor(customColor);
-  Page::platformColorsChanged();
-  document().view()->updateAllLifecyclePhases();
+  LayoutTheme::GetTheme().SetCustomFocusRingColor(custom_color);
+  Page::PlatformColorsChanged();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Check that the focus ring color is updated.
-  EXPECT_NE(BorderStyleNone, outlineStyle(span));
-  EXPECT_EQ(customColor, outlineColor(span));
+  EXPECT_NE(kBorderStyleNone, OutlineStyle(span));
+  EXPECT_EQ(custom_color, OutlineColor(span));
 }
 
 TEST_F(LayoutThemeTest, FormatMediaTime) {
   struct {
     float time;
     float duration;
-    String expectedResult;
+    String expected_result;
   } tests[] = {
       {1, 1, "0:01"},        {1, 15, "0:01"},        {1, 600, "0:01"},
       {1, 3600, "00:01"},    {1, 7200, "000:01"},    {15, 15, "0:15"},
@@ -96,8 +96,8 @@ TEST_F(LayoutThemeTest, FormatMediaTime) {
   };
 
   for (const auto& testcase : tests) {
-    EXPECT_EQ(testcase.expectedResult,
-              LayoutTheme::theme().formatMediaControlsCurrentTime(
+    EXPECT_EQ(testcase.expected_result,
+              LayoutTheme::GetTheme().FormatMediaControlsCurrentTime(
                   testcase.time, testcase.duration));
   }
 }

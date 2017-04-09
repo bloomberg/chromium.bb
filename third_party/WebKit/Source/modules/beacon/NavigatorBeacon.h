@@ -21,7 +21,7 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
 
  public:
-  static NavigatorBeacon& from(Navigator&);
+  static NavigatorBeacon& From(Navigator&);
   virtual ~NavigatorBeacon();
 
   static bool sendBeacon(ScriptState*,
@@ -35,17 +35,17 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
  private:
   explicit NavigatorBeacon(Navigator&);
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  bool sendBeaconImpl(ScriptState*,
+  bool SendBeaconImpl(ScriptState*,
                       const String&,
                       const ArrayBufferViewOrBlobOrStringOrFormData&,
                       ExceptionState&);
-  bool canSendBeacon(ExecutionContext*, const KURL&, ExceptionState&);
-  int maxAllowance() const;
-  void addTransmittedBytes(size_t sentBytes);
+  bool CanSendBeacon(ExecutionContext*, const KURL&, ExceptionState&);
+  int MaxAllowance() const;
+  void AddTransmittedBytes(size_t sent_bytes);
 
-  size_t m_transmittedBytes;
+  size_t transmitted_bytes_;
 };
 
 }  // namespace blink

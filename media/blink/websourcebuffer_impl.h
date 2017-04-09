@@ -25,21 +25,21 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   ~WebSourceBufferImpl() override;
 
   // blink::WebSourceBuffer implementation.
-  void setClient(blink::WebSourceBufferClient* client) override;
-  bool setMode(AppendMode mode) override;
-  blink::WebTimeRanges buffered() override;
-  double highestPresentationTimestamp() override;
-  bool evictCodedFrames(double currentPlaybackTime,
+  void SetClient(blink::WebSourceBufferClient* client) override;
+  bool SetMode(AppendMode mode) override;
+  blink::WebTimeRanges Buffered() override;
+  double HighestPresentationTimestamp() override;
+  bool EvictCodedFrames(double currentPlaybackTime,
                         size_t newDataSize) override;
-  bool append(const unsigned char* data,
+  bool Append(const unsigned char* data,
               unsigned length,
               double* timestamp_offset) override;
-  void resetParserState() override;
-  void remove(double start, double end) override;
-  bool setTimestampOffset(double offset) override;
-  void setAppendWindowStart(double start) override;
-  void setAppendWindowEnd(double end) override;
-  void removedFromMediaSource() override;
+  void ResetParserState() override;
+  void Remove(double start, double end) override;
+  bool SetTimestampOffset(double offset) override;
+  void SetAppendWindowStart(double start) override;
+  void SetAppendWindowEnd(double end) override;
+  void RemovedFromMediaSource() override;
 
  private:
   // Demuxer callback handler to process an initialization segment received

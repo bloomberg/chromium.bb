@@ -26,20 +26,20 @@
 namespace blink {
 
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData()
-    : flex(ComputedStyle::initialBoxFlex()),
-      flexGroup(ComputedStyle::initialBoxFlexGroup()),
-      ordinalGroup(ComputedStyle::initialBoxOrdinalGroup()),
-      align(ComputedStyle::initialBoxAlign()),
-      pack(ComputedStyle::initialBoxPack()),
-      orient(ComputedStyle::initialBoxOrient()),
-      lines(ComputedStyle::initialBoxLines()) {}
+    : flex(ComputedStyle::InitialBoxFlex()),
+      flex_group(ComputedStyle::InitialBoxFlexGroup()),
+      ordinal_group(ComputedStyle::InitialBoxOrdinalGroup()),
+      align(ComputedStyle::InitialBoxAlign()),
+      pack(ComputedStyle::InitialBoxPack()),
+      orient(ComputedStyle::InitialBoxOrient()),
+      lines(ComputedStyle::InitialBoxLines()) {}
 
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData(
     const StyleDeprecatedFlexibleBoxData& o)
     : RefCounted<StyleDeprecatedFlexibleBoxData>(),
       flex(o.flex),
-      flexGroup(o.flexGroup),
-      ordinalGroup(o.ordinalGroup),
+      flex_group(o.flex_group),
+      ordinal_group(o.ordinal_group),
       align(o.align),
       pack(o.pack),
       orient(o.orient),
@@ -47,9 +47,9 @@ StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData(
 
 bool StyleDeprecatedFlexibleBoxData::operator==(
     const StyleDeprecatedFlexibleBoxData& o) const {
-  return flex == o.flex && flexGroup == o.flexGroup &&
-         ordinalGroup == o.ordinalGroup && align == o.align && pack == o.pack &&
-         orient == o.orient && lines == o.lines;
+  return flex == o.flex && flex_group == o.flex_group &&
+         ordinal_group == o.ordinal_group && align == o.align &&
+         pack == o.pack && orient == o.orient && lines == o.lines;
 }
 
 }  // namespace blink

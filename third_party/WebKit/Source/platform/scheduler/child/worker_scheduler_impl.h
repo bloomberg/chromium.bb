@@ -38,11 +38,11 @@ class BLINK_PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   void Shutdown() override;
 
   // TaskTimeObserver implementation:
-  void willProcessTask(TaskQueue* task_queue, double start_time) override;
-  void didProcessTask(TaskQueue* task_queue,
+  void WillProcessTask(TaskQueue* task_queue, double start_time) override;
+  void DidProcessTask(TaskQueue* task_queue,
                       double start_time,
                       double end_time) override;
-  void onBeginNestedMessageLoop() override;
+  void OnBeginNestedMessageLoop() override;
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;

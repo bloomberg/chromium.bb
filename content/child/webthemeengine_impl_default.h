@@ -15,17 +15,17 @@ namespace content {
 class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
-  blink::WebSize getSize(blink::WebThemeEngine::Part) override;
-  void paint(blink::WebCanvas* canvas,
+  blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
+  void Paint(blink::WebCanvas* canvas,
              blink::WebThemeEngine::Part part,
              blink::WebThemeEngine::State state,
              const blink::WebRect& rect,
              const blink::WebThemeEngine::ExtraParams* extra_params) override;
-  void getOverlayScrollbarStyle(
+  void GetOverlayScrollbarStyle(
       blink::WebThemeEngine::ScrollbarStyle*) override;
-  bool supportsNinePatch(Part part) const override;
-  blink::WebSize ninePatchCanvasSize(Part part) const override;
-  blink::WebRect ninePatchAperture(Part part) const override;
+  bool SupportsNinePatch(Part part) const override;
+  blink::WebSize NinePatchCanvasSize(Part part) const override;
+  blink::WebRect NinePatchAperture(Part part) const override;
 #if defined(OS_WIN)
   // Caches the scrollbar metrics. These are retrieved in the browser and passed
   // to the renderer in RendererPreferences because the required Windows system

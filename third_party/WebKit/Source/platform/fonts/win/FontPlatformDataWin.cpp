@@ -44,19 +44,19 @@ namespace blink {
 // if available.
 const float kMaxSizeForEmbeddedBitmap = 24.0f;
 
-void FontPlatformData::setupPaint(SkPaint* paint, float, const Font*) const {
-  const float ts = m_textSize >= 0 ? m_textSize : 12;
-  paint->setTextSize(SkFloatToScalar(m_textSize));
-  paint->setTypeface(m_typeface);
-  paint->setFakeBoldText(m_syntheticBold);
-  paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
+void FontPlatformData::SetupPaint(SkPaint* paint, float, const Font*) const {
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
+  paint->setTextSize(SkFloatToScalar(text_size_));
+  paint->setTypeface(typeface_);
+  paint->setFakeBoldText(synthetic_bold_);
+  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
-  uint32_t textFlags = paintTextFlags();
+  uint32_t text_flags = PaintTextFlags();
   uint32_t flags = paint->getFlags();
-  static const uint32_t textFlagsMask =
+  static const uint32_t kTextFlagsMask =
       SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag |
       SkPaint::kEmbeddedBitmapText_Flag | SkPaint::kSubpixelText_Flag;
-  flags &= ~textFlagsMask;
+  flags &= ~kTextFlagsMask;
 
   if (ts <= kMaxSizeForEmbeddedBitmap)
     flags |= SkPaint::kEmbeddedBitmapText_Flag;
@@ -67,49 +67,49 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font*) const {
   // only has non-antialiased glyphs to draw, so they necessarily get clamped at
   // pixel positions, which leads to uneven spacing, either too close or too far
   // away from adjacent glyphs. We avoid this by linking the two flags.
-  if (textFlags & SkPaint::kAntiAlias_Flag)
+  if (text_flags & SkPaint::kAntiAlias_Flag)
     flags |= SkPaint::kSubpixelText_Flag;
 
-  SkASSERT(!(textFlags & ~textFlagsMask));
-  flags |= textFlags;
+  SkASSERT(!(text_flags & ~kTextFlagsMask));
+  flags |= text_flags;
 
   paint->setFlags(flags);
 }
 
-static bool isWebFont(const String& familyName) {
+static bool IsWebFont(const String& family_name) {
   // Web-fonts have artifical names constructed to always be:
   // 1. 24 characters, followed by a '\0'
   // 2. the last two characters are '=='
-  return familyName.length() == 24 && '=' == familyName[22] &&
-         '=' == familyName[23];
+  return family_name.length() == 24 && '=' == family_name[22] &&
+         '=' == family_name[23];
 }
 
-static int computePaintTextFlags(String fontFamilyName) {
-  if (LayoutTestSupport::isRunningLayoutTest())
-    return LayoutTestSupport::isFontAntialiasingEnabledForTest()
+static int ComputePaintTextFlags(String font_family_name) {
+  if (LayoutTestSupport::IsRunningLayoutTest())
+    return LayoutTestSupport::IsFontAntialiasingEnabledForTest()
                ? SkPaint::kAntiAlias_Flag
                : 0;
 
-  int textFlags = 0;
-  if (FontCache::fontCache()->antialiasedTextEnabled()) {
-    int lcdFlag = FontCache::fontCache()->lcdTextEnabled()
-                      ? SkPaint::kLCDRenderText_Flag
-                      : 0;
-    textFlags = SkPaint::kAntiAlias_Flag | lcdFlag;
+  int text_flags = 0;
+  if (FontCache::GetFontCache()->AntialiasedTextEnabled()) {
+    int lcd_flag = FontCache::GetFontCache()->LcdTextEnabled()
+                       ? SkPaint::kLCDRenderText_Flag
+                       : 0;
+    text_flags = SkPaint::kAntiAlias_Flag | lcd_flag;
   }
 
   // Many web-fonts are so poorly hinted that they are terrible to read when
   // drawn in BW.  In these cases, we have decided to FORCE these fonts to be
   // drawn with at least grayscale AA, even when the System (getSystemTextFlags)
   // tells us to draw only in BW.
-  if (isWebFont(fontFamilyName))
-    textFlags |= SkPaint::kAntiAlias_Flag;
+  if (IsWebFont(font_family_name))
+    text_flags |= SkPaint::kAntiAlias_Flag;
 
-  return textFlags;
+  return text_flags;
 }
 
-void FontPlatformData::querySystemForRenderStyle() {
-  m_paintTextFlags = computePaintTextFlags(fontFamilyName());
+void FontPlatformData::QuerySystemForRenderStyle() {
+  paint_text_flags_ = ComputePaintTextFlags(FontFamilyName());
 }
 
 }  // namespace blink

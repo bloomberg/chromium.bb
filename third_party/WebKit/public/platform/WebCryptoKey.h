@@ -37,22 +37,22 @@
 namespace blink {
 
 enum WebCryptoKeyType {
-  WebCryptoKeyTypeSecret,
-  WebCryptoKeyTypePublic,
-  WebCryptoKeyTypePrivate,
+  kWebCryptoKeyTypeSecret,
+  kWebCryptoKeyTypePublic,
+  kWebCryptoKeyTypePrivate,
 };
 
 enum WebCryptoKeyUsage {
-  WebCryptoKeyUsageEncrypt = 1 << 0,
-  WebCryptoKeyUsageDecrypt = 1 << 1,
-  WebCryptoKeyUsageSign = 1 << 2,
-  WebCryptoKeyUsageVerify = 1 << 3,
-  WebCryptoKeyUsageDeriveKey = 1 << 4,
-  WebCryptoKeyUsageWrapKey = 1 << 5,
-  WebCryptoKeyUsageUnwrapKey = 1 << 6,
-  WebCryptoKeyUsageDeriveBits = 1 << 7,
+  kWebCryptoKeyUsageEncrypt = 1 << 0,
+  kWebCryptoKeyUsageDecrypt = 1 << 1,
+  kWebCryptoKeyUsageSign = 1 << 2,
+  kWebCryptoKeyUsageVerify = 1 << 3,
+  kWebCryptoKeyUsageDeriveKey = 1 << 4,
+  kWebCryptoKeyUsageWrapKey = 1 << 5,
+  kWebCryptoKeyUsageUnwrapKey = 1 << 6,
+  kWebCryptoKeyUsageDeriveBits = 1 << 7,
 #if INSIDE_BLINK
-  EndOfWebCryptoKeyUsage,
+  kEndOfWebCryptoKeyUsage,
 #endif
 };
 
@@ -60,10 +60,10 @@ enum WebCryptoKeyUsage {
 typedef int WebCryptoKeyUsageMask;
 
 enum WebCryptoKeyFormat {
-  WebCryptoKeyFormatRaw,
-  WebCryptoKeyFormatPkcs8,
-  WebCryptoKeyFormatSpki,
-  WebCryptoKeyFormatJwk,
+  kWebCryptoKeyFormatRaw,
+  kWebCryptoKeyFormatPkcs8,
+  kWebCryptoKeyFormatSpki,
+  kWebCryptoKeyFormatJwk,
 };
 
 class WebCryptoKeyAlgorithm;
@@ -91,11 +91,11 @@ class WebCryptoKey {
  public:
   // Constructs a "null" key (One for which isNull() returns true).
   WebCryptoKey() {}
-  ~WebCryptoKey() { reset(); }
+  ~WebCryptoKey() { Reset(); }
 
-  WebCryptoKey(const WebCryptoKey& other) { assign(other); }
+  WebCryptoKey(const WebCryptoKey& other) { Assign(other); }
   WebCryptoKey& operator=(const WebCryptoKey& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
@@ -103,34 +103,34 @@ class WebCryptoKey {
   // https://dvcs.w3.org/hg/webcrypto-api/raw-file/tip/spec/Overview.html#key-interface-members
   //
   // Note that the caller is passing ownership of the WebCryptoKeyHandle*.
-  BLINK_PLATFORM_EXPORT static WebCryptoKey create(WebCryptoKeyHandle*,
+  BLINK_PLATFORM_EXPORT static WebCryptoKey Create(WebCryptoKeyHandle*,
                                                    WebCryptoKeyType,
                                                    bool extractable,
                                                    const WebCryptoKeyAlgorithm&,
                                                    WebCryptoKeyUsageMask);
 
-  BLINK_PLATFORM_EXPORT static WebCryptoKey createNull();
+  BLINK_PLATFORM_EXPORT static WebCryptoKey CreateNull();
 
   // Returns the opaque key handle that was set by the embedder.
   //   * Safe to downcast to known type (since embedder creates all the keys)
   //   * Returned pointer's lifetime is bound to |this|
-  BLINK_PLATFORM_EXPORT WebCryptoKeyHandle* handle() const;
+  BLINK_PLATFORM_EXPORT WebCryptoKeyHandle* Handle() const;
 
-  BLINK_PLATFORM_EXPORT WebCryptoKeyType type() const;
-  BLINK_PLATFORM_EXPORT bool extractable() const;
-  BLINK_PLATFORM_EXPORT const WebCryptoKeyAlgorithm& algorithm() const;
-  BLINK_PLATFORM_EXPORT WebCryptoKeyUsageMask usages() const;
+  BLINK_PLATFORM_EXPORT WebCryptoKeyType GetType() const;
+  BLINK_PLATFORM_EXPORT bool Extractable() const;
+  BLINK_PLATFORM_EXPORT const WebCryptoKeyAlgorithm& Algorithm() const;
+  BLINK_PLATFORM_EXPORT WebCryptoKeyUsageMask Usages() const;
 
-  BLINK_PLATFORM_EXPORT bool isNull() const;
+  BLINK_PLATFORM_EXPORT bool IsNull() const;
 
-  BLINK_PLATFORM_EXPORT bool keyUsageAllows(
+  BLINK_PLATFORM_EXPORT bool KeyUsageAllows(
       const blink::WebCryptoKeyUsage) const;
 
  private:
-  BLINK_PLATFORM_EXPORT void assign(const WebCryptoKey& other);
-  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebCryptoKey& other);
+  BLINK_PLATFORM_EXPORT void Reset();
 
-  WebPrivatePtr<WebCryptoKeyPrivate> m_private;
+  WebPrivatePtr<WebCryptoKeyPrivate> private_;
 };
 
 // Base class for the embedder to define its own opaque key handle. The lifetime

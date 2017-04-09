@@ -38,8 +38,8 @@ namespace {
 // max/min values to allow for rounding without overflowing.
 // Subtract two (rather than one) to allow for values to be converted to float
 // and back without exceeding the LayoutUnit::max.
-const int maxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
-const int minValueForCssLength = INT_MIN / kFixedPointDenominator + 2;
+const int kMaxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
+const int kMinValueForCssLength = INT_MIN / kFixedPointDenominator + 2;
 
 }  // namespace
 
@@ -48,79 +48,79 @@ struct SameSizeAsCSSPrimitiveValue : CSSValue {
 };
 ASSERT_SIZE(CSSPrimitiveValue, SameSizeAsCSSPrimitiveValue);
 
-float CSSPrimitiveValue::clampToCSSLengthRange(double value) {
-  return clampTo<float>(value, minValueForCssLength, maxValueForCssLength);
+float CSSPrimitiveValue::ClampToCSSLengthRange(double value) {
+  return clampTo<float>(value, kMinValueForCssLength, kMaxValueForCssLength);
 }
 
-CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitTypeToUnitCategory(
+CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::UnitTypeToUnitCategory(
     UnitType type) {
   switch (type) {
-    case UnitType::Number:
-      return CSSPrimitiveValue::UNumber;
-    case UnitType::Percentage:
-      return CSSPrimitiveValue::UPercent;
-    case UnitType::Pixels:
-    case UnitType::Centimeters:
-    case UnitType::Millimeters:
-    case UnitType::Inches:
-    case UnitType::Points:
-    case UnitType::Picas:
-    case UnitType::UserUnits:
-      return CSSPrimitiveValue::ULength;
-    case UnitType::Milliseconds:
-    case UnitType::Seconds:
-      return CSSPrimitiveValue::UTime;
-    case UnitType::Degrees:
-    case UnitType::Radians:
-    case UnitType::Gradians:
-    case UnitType::Turns:
-      return CSSPrimitiveValue::UAngle;
-    case UnitType::Hertz:
-    case UnitType::Kilohertz:
-      return CSSPrimitiveValue::UFrequency;
-    case UnitType::DotsPerPixel:
-    case UnitType::DotsPerInch:
-    case UnitType::DotsPerCentimeter:
-      return CSSPrimitiveValue::UResolution;
+    case UnitType::kNumber:
+      return CSSPrimitiveValue::kUNumber;
+    case UnitType::kPercentage:
+      return CSSPrimitiveValue::kUPercent;
+    case UnitType::kPixels:
+    case UnitType::kCentimeters:
+    case UnitType::kMillimeters:
+    case UnitType::kInches:
+    case UnitType::kPoints:
+    case UnitType::kPicas:
+    case UnitType::kUserUnits:
+      return CSSPrimitiveValue::kULength;
+    case UnitType::kMilliseconds:
+    case UnitType::kSeconds:
+      return CSSPrimitiveValue::kUTime;
+    case UnitType::kDegrees:
+    case UnitType::kRadians:
+    case UnitType::kGradians:
+    case UnitType::kTurns:
+      return CSSPrimitiveValue::kUAngle;
+    case UnitType::kHertz:
+    case UnitType::kKilohertz:
+      return CSSPrimitiveValue::kUFrequency;
+    case UnitType::kDotsPerPixel:
+    case UnitType::kDotsPerInch:
+    case UnitType::kDotsPerCentimeter:
+      return CSSPrimitiveValue::kUResolution;
     default:
-      return CSSPrimitiveValue::UOther;
+      return CSSPrimitiveValue::kUOther;
   }
 }
 
-CSSPrimitiveValue* CSSPrimitiveValue::create(double value, UnitType type) {
+CSSPrimitiveValue* CSSPrimitiveValue::Create(double value, UnitType type) {
   // TODO(timloh): This looks wrong.
   if (std::isinf(value))
     value = 0;
 
-  if (value < 0 || value > CSSValuePool::maximumCacheableIntegerValue)
+  if (value < 0 || value > CSSValuePool::kMaximumCacheableIntegerValue)
     return new CSSPrimitiveValue(value, type);
 
-  int intValue = static_cast<int>(value);
-  if (value != intValue)
+  int int_value = static_cast<int>(value);
+  if (value != int_value)
     return new CSSPrimitiveValue(value, type);
 
-  CSSValuePool& pool = cssValuePool();
+  CSSValuePool& pool = CssValuePool();
   CSSPrimitiveValue* result = nullptr;
   switch (type) {
-    case CSSPrimitiveValue::UnitType::Pixels:
-      result = pool.pixelCacheValue(intValue);
+    case CSSPrimitiveValue::UnitType::kPixels:
+      result = pool.PixelCacheValue(int_value);
       if (!result)
-        result = pool.setPixelCacheValue(intValue,
+        result = pool.SetPixelCacheValue(int_value,
                                          new CSSPrimitiveValue(value, type));
       return result;
-    case CSSPrimitiveValue::UnitType::Percentage:
-      result = pool.percentCacheValue(intValue);
+    case CSSPrimitiveValue::UnitType::kPercentage:
+      result = pool.PercentCacheValue(int_value);
       if (!result)
-        result = pool.setPercentCacheValue(intValue,
+        result = pool.SetPercentCacheValue(int_value,
                                            new CSSPrimitiveValue(value, type));
       return result;
-    case CSSPrimitiveValue::UnitType::Number:
-    case CSSPrimitiveValue::UnitType::Integer:
-      result = pool.numberCacheValue(intValue);
+    case CSSPrimitiveValue::UnitType::kNumber:
+    case CSSPrimitiveValue::UnitType::kInteger:
+      result = pool.NumberCacheValue(int_value);
       if (!result)
-        result = pool.setNumberCacheValue(
-            intValue,
-            new CSSPrimitiveValue(value, CSSPrimitiveValue::UnitType::Integer));
+        result = pool.SetNumberCacheValue(
+            int_value, new CSSPrimitiveValue(
+                           value, CSSPrimitiveValue::UnitType::kInteger));
       return result;
     default:
       return new CSSPrimitiveValue(value, type);
@@ -130,135 +130,135 @@ CSSPrimitiveValue* CSSPrimitiveValue::create(double value, UnitType type) {
 using CSSTextCache =
     PersistentHeapHashMap<WeakMember<const CSSPrimitiveValue>, String>;
 
-static CSSTextCache& cssTextCache() {
+static CSSTextCache& CssTextCache() {
   DEFINE_STATIC_LOCAL(CSSTextCache, cache, ());
   return cache;
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const {
-  if (type() != UnitType::Calc)
-    return type();
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::TypeWithCalcResolved() const {
+  if (GetType() != UnitType::kCalc)
+    return GetType();
 
-  switch (m_value.calc->category()) {
-    case CalcAngle:
-      return UnitType::Degrees;
-    case CalcFrequency:
-      return UnitType::Hertz;
-    case CalcNumber:
-      return UnitType::Number;
-    case CalcPercent:
-      return UnitType::Percentage;
-    case CalcLength:
-      return UnitType::Pixels;
-    case CalcPercentNumber:
-      return UnitType::CalcPercentageWithNumber;
-    case CalcPercentLength:
-      return UnitType::CalcPercentageWithLength;
-    case CalcLengthNumber:
-      return UnitType::CalcLengthWithNumber;
-    case CalcPercentLengthNumber:
-      return UnitType::CalcPercentageWithLengthAndNumber;
-    case CalcTime:
-      return UnitType::Milliseconds;
-    case CalcOther:
-      return UnitType::Unknown;
+  switch (value_.calc->Category()) {
+    case kCalcAngle:
+      return UnitType::kDegrees;
+    case kCalcFrequency:
+      return UnitType::kHertz;
+    case kCalcNumber:
+      return UnitType::kNumber;
+    case kCalcPercent:
+      return UnitType::kPercentage;
+    case kCalcLength:
+      return UnitType::kPixels;
+    case kCalcPercentNumber:
+      return UnitType::kCalcPercentageWithNumber;
+    case kCalcPercentLength:
+      return UnitType::kCalcPercentageWithLength;
+    case kCalcLengthNumber:
+      return UnitType::kCalcLengthWithNumber;
+    case kCalcPercentLengthNumber:
+      return UnitType::kCalcPercentageWithLengthAndNumber;
+    case kCalcTime:
+      return UnitType::kMilliseconds;
+    case kCalcOther:
+      return UnitType::kUnknown;
   }
-  return UnitType::Unknown;
+  return UnitType::kUnknown;
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
-    : CSSValue(PrimitiveClass) {
-  init(type);
+    : CSSValue(kPrimitiveClass) {
+  Init(type);
   DCHECK(std::isfinite(num));
-  m_value.num = num;
+  value_.num = num;
 }
 
 CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
-    : CSSValue(PrimitiveClass) {
-  switch (length.type()) {
-    case Percent:
-      init(UnitType::Percentage);
-      DCHECK(std::isfinite(length.percent()));
-      m_value.num = length.percent();
+    : CSSValue(kPrimitiveClass) {
+  switch (length.GetType()) {
+    case kPercent:
+      Init(UnitType::kPercentage);
+      DCHECK(std::isfinite(length.Percent()));
+      value_.num = length.Percent();
       break;
-    case Fixed:
-      init(UnitType::Pixels);
-      m_value.num = length.value() / zoom;
+    case kFixed:
+      Init(UnitType::kPixels);
+      value_.num = length.Value() / zoom;
       break;
-    case Calculated: {
-      const CalculationValue& calc = length.getCalculationValue();
-      if (calc.pixels() && calc.percent()) {
-        init(CSSCalcValue::create(CSSCalcValue::createExpressionNode(
-                                      calc.pixels() / zoom, calc.percent()),
-                                  calc.getValueRange()));
+    case kCalculated: {
+      const CalculationValue& calc = length.GetCalculationValue();
+      if (calc.Pixels() && calc.Percent()) {
+        Init(CSSCalcValue::Create(CSSCalcValue::CreateExpressionNode(
+                                      calc.Pixels() / zoom, calc.Percent()),
+                                  calc.GetValueRange()));
         break;
       }
-      if (calc.percent()) {
-        init(UnitType::Percentage);
-        m_value.num = calc.percent();
+      if (calc.Percent()) {
+        Init(UnitType::kPercentage);
+        value_.num = calc.Percent();
       } else {
-        init(UnitType::Pixels);
-        m_value.num = calc.pixels() / zoom;
+        Init(UnitType::kPixels);
+        value_.num = calc.Pixels() / zoom;
       }
-      if (m_value.num < 0 && calc.isNonNegative())
-        m_value.num = 0;
+      if (value_.num < 0 && calc.IsNonNegative())
+        value_.num = 0;
       break;
     }
-    case Auto:
-    case MinContent:
-    case MaxContent:
-    case FillAvailable:
-    case FitContent:
-    case ExtendToZoom:
-    case DeviceWidth:
-    case DeviceHeight:
-    case MaxSizeNone:
+    case kAuto:
+    case kMinContent:
+    case kMaxContent:
+    case kFillAvailable:
+    case kFitContent:
+    case kExtendToZoom:
+    case kDeviceWidth:
+    case kDeviceHeight:
+    case kMaxSizeNone:
       NOTREACHED();
       break;
   }
 }
 
-void CSSPrimitiveValue::init(UnitType type) {
-  m_primitiveUnitType = static_cast<unsigned>(type);
+void CSSPrimitiveValue::Init(UnitType type) {
+  primitive_unit_type_ = static_cast<unsigned>(type);
 }
 
-void CSSPrimitiveValue::init(CSSCalcValue* c) {
-  init(UnitType::Calc);
-  m_hasCachedCSSText = false;
-  m_value.calc = c;
+void CSSPrimitiveValue::Init(CSSCalcValue* c) {
+  Init(UnitType::kCalc);
+  has_cached_css_text_ = false;
+  value_.calc = c;
 }
 
 CSSPrimitiveValue::~CSSPrimitiveValue() {}
 
-double CSSPrimitiveValue::computeSeconds() const {
-  DCHECK(isTime() ||
-         (isCalculated() && cssCalcValue()->category() == CalcTime));
-  UnitType currentType =
-      isCalculated() ? cssCalcValue()->expressionNode()->typeWithCalcResolved()
-                     : type();
-  if (currentType == UnitType::Seconds)
-    return getDoubleValue();
-  if (currentType == UnitType::Milliseconds)
-    return getDoubleValue() / 1000;
+double CSSPrimitiveValue::ComputeSeconds() const {
+  DCHECK(IsTime() ||
+         (IsCalculated() && CssCalcValue()->Category() == kCalcTime));
+  UnitType current_type =
+      IsCalculated() ? CssCalcValue()->ExpressionNode()->TypeWithCalcResolved()
+                     : GetType();
+  if (current_type == UnitType::kSeconds)
+    return GetDoubleValue();
+  if (current_type == UnitType::kMilliseconds)
+    return GetDoubleValue() / 1000;
   NOTREACHED();
   return 0;
 }
 
-double CSSPrimitiveValue::computeDegrees() const {
-  DCHECK(isAngle() ||
-         (isCalculated() && cssCalcValue()->category() == CalcAngle));
-  UnitType currentType =
-      isCalculated() ? cssCalcValue()->expressionNode()->typeWithCalcResolved()
-                     : type();
-  switch (currentType) {
-    case UnitType::Degrees:
-      return getDoubleValue();
-    case UnitType::Radians:
-      return rad2deg(getDoubleValue());
-    case UnitType::Gradians:
-      return grad2deg(getDoubleValue());
-    case UnitType::Turns:
-      return turn2deg(getDoubleValue());
+double CSSPrimitiveValue::ComputeDegrees() const {
+  DCHECK(IsAngle() ||
+         (IsCalculated() && CssCalcValue()->Category() == kCalcAngle));
+  UnitType current_type =
+      IsCalculated() ? CssCalcValue()->ExpressionNode()->TypeWithCalcResolved()
+                     : GetType();
+  switch (current_type) {
+    case UnitType::kDegrees:
+      return GetDoubleValue();
+    case UnitType::kRadians:
+      return rad2deg(GetDoubleValue());
+    case UnitType::kGradians:
+      return grad2deg(GetDoubleValue());
+    case UnitType::kTurns:
+      return turn2deg(GetDoubleValue());
     default:
       NOTREACHED();
       return 0;
@@ -266,127 +266,128 @@ double CSSPrimitiveValue::computeDegrees() const {
 }
 
 template <>
-int CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return roundForImpreciseConversion<int>(computeLengthDouble(conversionData));
+int CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<int>(ComputeLengthDouble(conversion_data));
 }
 
 template <>
-unsigned CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return roundForImpreciseConversion<unsigned>(
-      computeLengthDouble(conversionData));
+unsigned CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<unsigned>(
+      ComputeLengthDouble(conversion_data));
 }
 
 template <>
-Length CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return Length(clampToCSSLengthRange(computeLengthDouble(conversionData)),
-                Fixed);
+Length CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return Length(ClampToCSSLengthRange(ComputeLengthDouble(conversion_data)),
+                kFixed);
 }
 
 template <>
-short CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return roundForImpreciseConversion<short>(
-      computeLengthDouble(conversionData));
+short CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<short>(
+      ComputeLengthDouble(conversion_data));
 }
 
 template <>
-unsigned short CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return roundForImpreciseConversion<unsigned short>(
-      computeLengthDouble(conversionData));
+unsigned short CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<unsigned short>(
+      ComputeLengthDouble(conversion_data));
 }
 
 template <>
-uint8_t CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return roundForImpreciseConversion<uint8_t>(
-      computeLengthDouble(conversionData));
+uint8_t CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return RoundForImpreciseConversion<uint8_t>(
+      ComputeLengthDouble(conversion_data));
 }
 
 template <>
-float CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return clampTo<float>(computeLengthDouble(conversionData));
+float CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return clampTo<float>(ComputeLengthDouble(conversion_data));
 }
 
 template <>
-double CSSPrimitiveValue::computeLength(
-    const CSSToLengthConversionData& conversionData) const {
-  return computeLengthDouble(conversionData);
+double CSSPrimitiveValue::ComputeLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  return ComputeLengthDouble(conversion_data);
 }
 
-double CSSPrimitiveValue::computeLengthDouble(
-    const CSSToLengthConversionData& conversionData) const {
-  if (type() == UnitType::Calc)
-    return m_value.calc->computeLengthPx(conversionData);
-  return conversionData.zoomedComputedPixels(getDoubleValue(), type());
+double CSSPrimitiveValue::ComputeLengthDouble(
+    const CSSToLengthConversionData& conversion_data) const {
+  if (GetType() == UnitType::kCalc)
+    return value_.calc->ComputeLengthPx(conversion_data);
+  return conversion_data.ZoomedComputedPixels(GetDoubleValue(), GetType());
 }
 
-void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray,
+void CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                               double multiplier) const {
-  DCHECK_EQ(lengthArray.values.size(),
-            static_cast<unsigned>(LengthUnitTypeCount));
+  DCHECK_EQ(length_array.values.size(),
+            static_cast<unsigned>(kLengthUnitTypeCount));
 
-  if (type() == UnitType::Calc) {
-    cssCalcValue()->accumulateLengthArray(lengthArray, multiplier);
+  if (GetType() == UnitType::kCalc) {
+    CssCalcValue()->AccumulateLengthArray(length_array, multiplier);
     return;
   }
 
-  LengthUnitType lengthType;
-  bool conversionSuccess = unitTypeToLengthUnitType(type(), lengthType);
-  DCHECK(conversionSuccess);
-  lengthArray.values[lengthType] +=
-      m_value.num * conversionToCanonicalUnitsScaleFactor(type()) * multiplier;
-  lengthArray.typeFlags.set(lengthType);
+  LengthUnitType length_type;
+  bool conversion_success = UnitTypeToLengthUnitType(GetType(), length_type);
+  DCHECK(conversion_success);
+  length_array.values[length_type] +=
+      value_.num * ConversionToCanonicalUnitsScaleFactor(GetType()) *
+      multiplier;
+  length_array.type_flags.Set(length_type);
 }
 
-double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(
-    UnitType unitType) {
+double CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
+    UnitType unit_type) {
   double factor = 1.0;
   // FIXME: the switch can be replaced by an array of scale factors.
-  switch (unitType) {
+  switch (unit_type) {
     // These are "canonical" units in their respective categories.
-    case UnitType::Pixels:
-    case UnitType::UserUnits:
-    case UnitType::Degrees:
-    case UnitType::Milliseconds:
-    case UnitType::Hertz:
+    case UnitType::kPixels:
+    case UnitType::kUserUnits:
+    case UnitType::kDegrees:
+    case UnitType::kMilliseconds:
+    case UnitType::kHertz:
       break;
-    case UnitType::Centimeters:
-      factor = cssPixelsPerCentimeter;
+    case UnitType::kCentimeters:
+      factor = kCssPixelsPerCentimeter;
       break;
-    case UnitType::DotsPerCentimeter:
-      factor = 1 / cssPixelsPerCentimeter;
+    case UnitType::kDotsPerCentimeter:
+      factor = 1 / kCssPixelsPerCentimeter;
       break;
-    case UnitType::Millimeters:
-      factor = cssPixelsPerMillimeter;
+    case UnitType::kMillimeters:
+      factor = kCssPixelsPerMillimeter;
       break;
-    case UnitType::Inches:
-      factor = cssPixelsPerInch;
+    case UnitType::kInches:
+      factor = kCssPixelsPerInch;
       break;
-    case UnitType::DotsPerInch:
-      factor = 1 / cssPixelsPerInch;
+    case UnitType::kDotsPerInch:
+      factor = 1 / kCssPixelsPerInch;
       break;
-    case UnitType::Points:
-      factor = cssPixelsPerPoint;
+    case UnitType::kPoints:
+      factor = kCssPixelsPerPoint;
       break;
-    case UnitType::Picas:
-      factor = cssPixelsPerPica;
+    case UnitType::kPicas:
+      factor = kCssPixelsPerPica;
       break;
-    case UnitType::Radians:
+    case UnitType::kRadians:
       factor = 180 / piDouble;
       break;
-    case UnitType::Gradians:
+    case UnitType::kGradians:
       factor = 0.9;
       break;
-    case UnitType::Turns:
+    case UnitType::kTurns:
       factor = 360;
       break;
-    case UnitType::Seconds:
-    case UnitType::Kilohertz:
+    case UnitType::kSeconds:
+    case UnitType::kKilohertz:
       factor = 1000;
       break;
     default:
@@ -396,328 +397,328 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(
   return factor;
 }
 
-Length CSSPrimitiveValue::convertToLength(
-    const CSSToLengthConversionData& conversionData) const {
-  if (isLength())
-    return computeLength<Length>(conversionData);
-  if (isPercentage())
-    return Length(getDoubleValue(), Percent);
-  DCHECK(isCalculated());
-  return Length(cssCalcValue()->toCalcValue(conversionData));
+Length CSSPrimitiveValue::ConvertToLength(
+    const CSSToLengthConversionData& conversion_data) const {
+  if (IsLength())
+    return ComputeLength<Length>(conversion_data);
+  if (IsPercentage())
+    return Length(GetDoubleValue(), kPercent);
+  DCHECK(IsCalculated());
+  return Length(CssCalcValue()->ToCalcValue(conversion_data));
 }
 
-double CSSPrimitiveValue::getDoubleValue() const {
-  return type() != UnitType::Calc ? m_value.num : m_value.calc->doubleValue();
+double CSSPrimitiveValue::GetDoubleValue() const {
+  return GetType() != UnitType::kCalc ? value_.num : value_.calc->DoubleValue();
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::canonicalUnitTypeForCategory(
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::CanonicalUnitTypeForCategory(
     UnitCategory category) {
   // The canonical unit type is chosen according to the way
   // CSSPropertyParser::validUnit() chooses the default unit in each category
   // (based on unitflags).
   switch (category) {
-    case UNumber:
-      return UnitType::Number;
-    case ULength:
-      return UnitType::Pixels;
-    case UPercent:
-      return UnitType::Unknown;  // Cannot convert between numbers and percent.
-    case UTime:
-      return UnitType::Milliseconds;
-    case UAngle:
-      return UnitType::Degrees;
-    case UFrequency:
-      return UnitType::Hertz;
-    case UResolution:
-      return UnitType::DotsPerPixel;
+    case kUNumber:
+      return UnitType::kNumber;
+    case kULength:
+      return UnitType::kPixels;
+    case kUPercent:
+      return UnitType::kUnknown;  // Cannot convert between numbers and percent.
+    case kUTime:
+      return UnitType::kMilliseconds;
+    case kUAngle:
+      return UnitType::kDegrees;
+    case kUFrequency:
+      return UnitType::kHertz;
+    case kUResolution:
+      return UnitType::kDotsPerPixel;
     default:
-      return UnitType::Unknown;
+      return UnitType::kUnknown;
   }
 }
 
-bool CSSPrimitiveValue::unitTypeToLengthUnitType(UnitType unitType,
-                                                 LengthUnitType& lengthType) {
-  switch (unitType) {
-    case CSSPrimitiveValue::UnitType::Pixels:
-    case CSSPrimitiveValue::UnitType::Centimeters:
-    case CSSPrimitiveValue::UnitType::Millimeters:
-    case CSSPrimitiveValue::UnitType::Inches:
-    case CSSPrimitiveValue::UnitType::Points:
-    case CSSPrimitiveValue::UnitType::Picas:
-    case CSSPrimitiveValue::UnitType::UserUnits:
-      lengthType = UnitTypePixels;
+bool CSSPrimitiveValue::UnitTypeToLengthUnitType(UnitType unit_type,
+                                                 LengthUnitType& length_type) {
+  switch (unit_type) {
+    case CSSPrimitiveValue::UnitType::kPixels:
+    case CSSPrimitiveValue::UnitType::kCentimeters:
+    case CSSPrimitiveValue::UnitType::kMillimeters:
+    case CSSPrimitiveValue::UnitType::kInches:
+    case CSSPrimitiveValue::UnitType::kPoints:
+    case CSSPrimitiveValue::UnitType::kPicas:
+    case CSSPrimitiveValue::UnitType::kUserUnits:
+      length_type = kUnitTypePixels;
       return true;
-    case CSSPrimitiveValue::UnitType::Ems:
-    case CSSPrimitiveValue::UnitType::QuirkyEms:
-      lengthType = UnitTypeFontSize;
+    case CSSPrimitiveValue::UnitType::kEms:
+    case CSSPrimitiveValue::UnitType::kQuirkyEms:
+      length_type = kUnitTypeFontSize;
       return true;
-    case CSSPrimitiveValue::UnitType::Exs:
-      lengthType = UnitTypeFontXSize;
+    case CSSPrimitiveValue::UnitType::kExs:
+      length_type = kUnitTypeFontXSize;
       return true;
-    case CSSPrimitiveValue::UnitType::Rems:
-      lengthType = UnitTypeRootFontSize;
+    case CSSPrimitiveValue::UnitType::kRems:
+      length_type = kUnitTypeRootFontSize;
       return true;
-    case CSSPrimitiveValue::UnitType::Chs:
-      lengthType = UnitTypeZeroCharacterWidth;
+    case CSSPrimitiveValue::UnitType::kChs:
+      length_type = kUnitTypeZeroCharacterWidth;
       return true;
-    case CSSPrimitiveValue::UnitType::Percentage:
-      lengthType = UnitTypePercentage;
+    case CSSPrimitiveValue::UnitType::kPercentage:
+      length_type = kUnitTypePercentage;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportWidth:
-      lengthType = UnitTypeViewportWidth;
+    case CSSPrimitiveValue::UnitType::kViewportWidth:
+      length_type = kUnitTypeViewportWidth;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportHeight:
-      lengthType = UnitTypeViewportHeight;
+    case CSSPrimitiveValue::UnitType::kViewportHeight:
+      length_type = kUnitTypeViewportHeight;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportMin:
-      lengthType = UnitTypeViewportMin;
+    case CSSPrimitiveValue::UnitType::kViewportMin:
+      length_type = kUnitTypeViewportMin;
       return true;
-    case CSSPrimitiveValue::UnitType::ViewportMax:
-      lengthType = UnitTypeViewportMax;
+    case CSSPrimitiveValue::UnitType::kViewportMax:
+      length_type = kUnitTypeViewportMax;
       return true;
     default:
       return false;
   }
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::lengthUnitTypeToUnitType(
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::LengthUnitTypeToUnitType(
     LengthUnitType type) {
   switch (type) {
-    case UnitTypePixels:
-      return CSSPrimitiveValue::UnitType::Pixels;
-    case UnitTypeFontSize:
-      return CSSPrimitiveValue::UnitType::Ems;
-    case UnitTypeFontXSize:
-      return CSSPrimitiveValue::UnitType::Exs;
-    case UnitTypeRootFontSize:
-      return CSSPrimitiveValue::UnitType::Rems;
-    case UnitTypeZeroCharacterWidth:
-      return CSSPrimitiveValue::UnitType::Chs;
-    case UnitTypePercentage:
-      return CSSPrimitiveValue::UnitType::Percentage;
-    case UnitTypeViewportWidth:
-      return CSSPrimitiveValue::UnitType::ViewportWidth;
-    case UnitTypeViewportHeight:
-      return CSSPrimitiveValue::UnitType::ViewportHeight;
-    case UnitTypeViewportMin:
-      return CSSPrimitiveValue::UnitType::ViewportMin;
-    case UnitTypeViewportMax:
-      return CSSPrimitiveValue::UnitType::ViewportMax;
-    case LengthUnitTypeCount:
+    case kUnitTypePixels:
+      return CSSPrimitiveValue::UnitType::kPixels;
+    case kUnitTypeFontSize:
+      return CSSPrimitiveValue::UnitType::kEms;
+    case kUnitTypeFontXSize:
+      return CSSPrimitiveValue::UnitType::kExs;
+    case kUnitTypeRootFontSize:
+      return CSSPrimitiveValue::UnitType::kRems;
+    case kUnitTypeZeroCharacterWidth:
+      return CSSPrimitiveValue::UnitType::kChs;
+    case kUnitTypePercentage:
+      return CSSPrimitiveValue::UnitType::kPercentage;
+    case kUnitTypeViewportWidth:
+      return CSSPrimitiveValue::UnitType::kViewportWidth;
+    case kUnitTypeViewportHeight:
+      return CSSPrimitiveValue::UnitType::kViewportHeight;
+    case kUnitTypeViewportMin:
+      return CSSPrimitiveValue::UnitType::kViewportMin;
+    case kUnitTypeViewportMax:
+      return CSSPrimitiveValue::UnitType::kViewportMax;
+    case kLengthUnitTypeCount:
       break;
   }
   NOTREACHED();
-  return CSSPrimitiveValue::UnitType::Unknown;
+  return CSSPrimitiveValue::UnitType::kUnknown;
 }
 
-static String formatNumber(double number, const StringView& suffix) {
+static String FormatNumber(double number, const StringView& suffix) {
 #if OS(WIN) && _MSC_VER < 1900
   unsigned oldFormat = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
-  String result = String::format("%.6g", number);
+  String result = String::Format("%.6g", number);
 #if OS(WIN) && _MSC_VER < 1900
   _set_output_format(oldFormat);
 #endif
-  result.append(suffix);
+  result.Append(suffix);
   return result;
 }
 
-const char* CSSPrimitiveValue::unitTypeToString(UnitType type) {
+const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
   switch (type) {
-    case UnitType::Number:
-    case UnitType::Integer:
-    case UnitType::UserUnits:
+    case UnitType::kNumber:
+    case UnitType::kInteger:
+    case UnitType::kUserUnits:
       return "";
-    case UnitType::Percentage:
+    case UnitType::kPercentage:
       return "%";
-    case UnitType::Ems:
-    case UnitType::QuirkyEms:
+    case UnitType::kEms:
+    case UnitType::kQuirkyEms:
       return "em";
-    case UnitType::Exs:
+    case UnitType::kExs:
       return "ex";
-    case UnitType::Rems:
+    case UnitType::kRems:
       return "rem";
-    case UnitType::Chs:
+    case UnitType::kChs:
       return "ch";
-    case UnitType::Pixels:
+    case UnitType::kPixels:
       return "px";
-    case UnitType::Centimeters:
+    case UnitType::kCentimeters:
       return "cm";
-    case UnitType::DotsPerPixel:
+    case UnitType::kDotsPerPixel:
       return "dppx";
-    case UnitType::DotsPerInch:
+    case UnitType::kDotsPerInch:
       return "dpi";
-    case UnitType::DotsPerCentimeter:
+    case UnitType::kDotsPerCentimeter:
       return "dpcm";
-    case UnitType::Millimeters:
+    case UnitType::kMillimeters:
       return "mm";
-    case UnitType::Inches:
+    case UnitType::kInches:
       return "in";
-    case UnitType::Points:
+    case UnitType::kPoints:
       return "pt";
-    case UnitType::Picas:
+    case UnitType::kPicas:
       return "pc";
-    case UnitType::Degrees:
+    case UnitType::kDegrees:
       return "deg";
-    case UnitType::Radians:
+    case UnitType::kRadians:
       return "rad";
-    case UnitType::Gradians:
+    case UnitType::kGradians:
       return "grad";
-    case UnitType::Milliseconds:
+    case UnitType::kMilliseconds:
       return "ms";
-    case UnitType::Seconds:
+    case UnitType::kSeconds:
       return "s";
-    case UnitType::Hertz:
+    case UnitType::kHertz:
       return "hz";
-    case UnitType::Kilohertz:
+    case UnitType::kKilohertz:
       return "khz";
-    case UnitType::Turns:
+    case UnitType::kTurns:
       return "turn";
-    case UnitType::Fraction:
+    case UnitType::kFraction:
       return "fr";
-    case UnitType::ViewportWidth:
+    case UnitType::kViewportWidth:
       return "vw";
-    case UnitType::ViewportHeight:
+    case UnitType::kViewportHeight:
       return "vh";
-    case UnitType::ViewportMin:
+    case UnitType::kViewportMin:
       return "vmin";
-    case UnitType::ViewportMax:
+    case UnitType::kViewportMax:
       return "vmax";
-    case UnitType::Unknown:
-    case UnitType::Calc:
-    case UnitType::CalcPercentageWithNumber:
-    case UnitType::CalcPercentageWithLength:
-    case UnitType::CalcLengthWithNumber:
-    case UnitType::CalcPercentageWithLengthAndNumber:
+    case UnitType::kUnknown:
+    case UnitType::kCalc:
+    case UnitType::kCalcPercentageWithNumber:
+    case UnitType::kCalcPercentageWithLength:
+    case UnitType::kCalcLengthWithNumber:
+    case UnitType::kCalcPercentageWithLengthAndNumber:
       break;
   };
   NOTREACHED();
   return "";
 }
 
-String CSSPrimitiveValue::customCSSText() const {
-  if (m_hasCachedCSSText) {
-    DCHECK(cssTextCache().contains(this));
-    return cssTextCache().at(this);
+String CSSPrimitiveValue::CustomCSSText() const {
+  if (has_cached_css_text_) {
+    DCHECK(CssTextCache().Contains(this));
+    return CssTextCache().at(this);
   }
 
   String text;
-  switch (type()) {
-    case UnitType::Unknown:
+  switch (GetType()) {
+    case UnitType::kUnknown:
       // FIXME
       break;
-    case UnitType::Integer:
-      text = String::format("%d", getIntValue());
+    case UnitType::kInteger:
+      text = String::Format("%d", GetIntValue());
       break;
-    case UnitType::Number:
-    case UnitType::Percentage:
-    case UnitType::Ems:
-    case UnitType::QuirkyEms:
-    case UnitType::Exs:
-    case UnitType::Rems:
-    case UnitType::Chs:
-    case UnitType::Pixels:
-    case UnitType::Centimeters:
-    case UnitType::DotsPerPixel:
-    case UnitType::DotsPerInch:
-    case UnitType::DotsPerCentimeter:
-    case UnitType::Millimeters:
-    case UnitType::Inches:
-    case UnitType::Points:
-    case UnitType::Picas:
-    case UnitType::UserUnits:
-    case UnitType::Degrees:
-    case UnitType::Radians:
-    case UnitType::Gradians:
-    case UnitType::Milliseconds:
-    case UnitType::Seconds:
-    case UnitType::Hertz:
-    case UnitType::Kilohertz:
-    case UnitType::Turns:
-    case UnitType::Fraction:
-    case UnitType::ViewportWidth:
-    case UnitType::ViewportHeight:
-    case UnitType::ViewportMin:
-    case UnitType::ViewportMax:
-      text = formatNumber(m_value.num, unitTypeToString(type()));
+    case UnitType::kNumber:
+    case UnitType::kPercentage:
+    case UnitType::kEms:
+    case UnitType::kQuirkyEms:
+    case UnitType::kExs:
+    case UnitType::kRems:
+    case UnitType::kChs:
+    case UnitType::kPixels:
+    case UnitType::kCentimeters:
+    case UnitType::kDotsPerPixel:
+    case UnitType::kDotsPerInch:
+    case UnitType::kDotsPerCentimeter:
+    case UnitType::kMillimeters:
+    case UnitType::kInches:
+    case UnitType::kPoints:
+    case UnitType::kPicas:
+    case UnitType::kUserUnits:
+    case UnitType::kDegrees:
+    case UnitType::kRadians:
+    case UnitType::kGradians:
+    case UnitType::kMilliseconds:
+    case UnitType::kSeconds:
+    case UnitType::kHertz:
+    case UnitType::kKilohertz:
+    case UnitType::kTurns:
+    case UnitType::kFraction:
+    case UnitType::kViewportWidth:
+    case UnitType::kViewportHeight:
+    case UnitType::kViewportMin:
+    case UnitType::kViewportMax:
+      text = FormatNumber(value_.num, UnitTypeToString(GetType()));
       break;
-    case UnitType::Calc:
-      text = m_value.calc->customCSSText();
+    case UnitType::kCalc:
+      text = value_.calc->CustomCSSText();
       break;
-    case UnitType::CalcPercentageWithNumber:
-    case UnitType::CalcPercentageWithLength:
-    case UnitType::CalcLengthWithNumber:
-    case UnitType::CalcPercentageWithLengthAndNumber:
+    case UnitType::kCalcPercentageWithNumber:
+    case UnitType::kCalcPercentageWithLength:
+    case UnitType::kCalcLengthWithNumber:
+    case UnitType::kCalcPercentageWithLengthAndNumber:
       NOTREACHED();
       break;
   }
 
-  DCHECK(!cssTextCache().contains(this));
-  cssTextCache().set(this, text);
-  m_hasCachedCSSText = true;
+  DCHECK(!CssTextCache().Contains(this));
+  CssTextCache().Set(this, text);
+  has_cached_css_text_ = true;
   return text;
 }
 
-bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const {
-  if (type() != other.type())
+bool CSSPrimitiveValue::Equals(const CSSPrimitiveValue& other) const {
+  if (GetType() != other.GetType())
     return false;
 
-  switch (type()) {
-    case UnitType::Unknown:
+  switch (GetType()) {
+    case UnitType::kUnknown:
       return false;
-    case UnitType::Number:
-    case UnitType::Integer:
-    case UnitType::Percentage:
-    case UnitType::Ems:
-    case UnitType::Exs:
-    case UnitType::Rems:
-    case UnitType::Pixels:
-    case UnitType::Centimeters:
-    case UnitType::DotsPerPixel:
-    case UnitType::DotsPerInch:
-    case UnitType::DotsPerCentimeter:
-    case UnitType::Millimeters:
-    case UnitType::Inches:
-    case UnitType::Points:
-    case UnitType::Picas:
-    case UnitType::UserUnits:
-    case UnitType::Degrees:
-    case UnitType::Radians:
-    case UnitType::Gradians:
-    case UnitType::Milliseconds:
-    case UnitType::Seconds:
-    case UnitType::Hertz:
-    case UnitType::Kilohertz:
-    case UnitType::Turns:
-    case UnitType::ViewportWidth:
-    case UnitType::ViewportHeight:
-    case UnitType::ViewportMin:
-    case UnitType::ViewportMax:
-    case UnitType::Fraction:
-      return m_value.num == other.m_value.num;
-    case UnitType::Calc:
-      return m_value.calc && other.m_value.calc &&
-             m_value.calc->equals(*other.m_value.calc);
-    case UnitType::Chs:
-    case UnitType::CalcPercentageWithNumber:
-    case UnitType::CalcPercentageWithLength:
-    case UnitType::CalcLengthWithNumber:
-    case UnitType::CalcPercentageWithLengthAndNumber:
-    case UnitType::QuirkyEms:
+    case UnitType::kNumber:
+    case UnitType::kInteger:
+    case UnitType::kPercentage:
+    case UnitType::kEms:
+    case UnitType::kExs:
+    case UnitType::kRems:
+    case UnitType::kPixels:
+    case UnitType::kCentimeters:
+    case UnitType::kDotsPerPixel:
+    case UnitType::kDotsPerInch:
+    case UnitType::kDotsPerCentimeter:
+    case UnitType::kMillimeters:
+    case UnitType::kInches:
+    case UnitType::kPoints:
+    case UnitType::kPicas:
+    case UnitType::kUserUnits:
+    case UnitType::kDegrees:
+    case UnitType::kRadians:
+    case UnitType::kGradians:
+    case UnitType::kMilliseconds:
+    case UnitType::kSeconds:
+    case UnitType::kHertz:
+    case UnitType::kKilohertz:
+    case UnitType::kTurns:
+    case UnitType::kViewportWidth:
+    case UnitType::kViewportHeight:
+    case UnitType::kViewportMin:
+    case UnitType::kViewportMax:
+    case UnitType::kFraction:
+      return value_.num == other.value_.num;
+    case UnitType::kCalc:
+      return value_.calc && other.value_.calc &&
+             value_.calc->Equals(*other.value_.calc);
+    case UnitType::kChs:
+    case UnitType::kCalcPercentageWithNumber:
+    case UnitType::kCalcPercentageWithLength:
+    case UnitType::kCalcLengthWithNumber:
+    case UnitType::kCalcPercentageWithLengthAndNumber:
+    case UnitType::kQuirkyEms:
       return false;
   }
   return false;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue) {
-  switch (type()) {
-    case UnitType::Calc:
-      visitor->trace(m_value.calc);
+  switch (GetType()) {
+    case UnitType::kCalc:
+      visitor->Trace(value_.calc);
       break;
     default:
       break;
   }
-  CSSValue::traceAfterDispatch(visitor);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

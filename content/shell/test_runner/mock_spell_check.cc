@@ -22,7 +22,7 @@ void Append(blink::WebVector<blink::WebString>* data,
   for (size_t i = 0; i < data->size(); ++i)
     result[i] = (*data)[i];
   result[data->size()] = item;
-  data->swap(result);
+  data->Swap(result);
 }
 
 }  // namespace
@@ -46,7 +46,7 @@ bool MockSpellCheck::SpellCheckWord(const blink::WebString& text,
 
   // Convert to a base::string16 because we store base::string16 instances in
   // misspelled_words_ and blink::WebString has no find().
-  base::string16 string_text = text.utf16();
+  base::string16 string_text = text.Utf16();
   int skipped_length = 0;
 
   while (!string_text.empty()) {
@@ -114,10 +114,12 @@ bool MockSpellCheck::IsMultiWordMisspelling(
     const blink::WebString& text,
     std::vector<blink::WebTextCheckingResult>* results) {
   if (text == "Helllo wordl.") {
-    results->push_back(blink::WebTextCheckingResult(
-        blink::WebTextDecorationTypeSpelling, 0, 6, blink::WebString("Hello")));
-    results->push_back(blink::WebTextCheckingResult(
-        blink::WebTextDecorationTypeSpelling, 7, 5, blink::WebString("world")));
+    results->push_back(
+        blink::WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling, 0,
+                                     6, blink::WebString("Hello")));
+    results->push_back(
+        blink::WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling, 7,
+                                     5, blink::WebString("world")));
     return true;
   }
   return false;
@@ -127,13 +129,13 @@ void MockSpellCheck::FillSuggestionList(
     const blink::WebString& word,
     blink::WebVector<blink::WebString>* suggestions) {
   if (word == "wellcome")
-    Append(suggestions, blink::WebString::fromUTF8("welcome"));
+    Append(suggestions, blink::WebString::FromUTF8("welcome"));
   else if (word == "upper case")
-    Append(suggestions, blink::WebString::fromUTF8("uppercase"));
+    Append(suggestions, blink::WebString::FromUTF8("uppercase"));
   else if (word == "Helllo")
-    Append(suggestions, blink::WebString::fromUTF8("Hello"));
+    Append(suggestions, blink::WebString::FromUTF8("Hello"));
   else if (word == "wordl")
-    Append(suggestions, blink::WebString::fromUTF8("world"));
+    Append(suggestions, blink::WebString::FromUTF8("world"));
 }
 
 bool MockSpellCheck::InitializeIfNeeded() {

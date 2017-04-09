@@ -165,11 +165,11 @@ void NavigateNamedFrame(const ToRenderFrameHost& caller_frame,
 // mouse event is forwarded directly to the RenderWidgetHost without any
 // hit-testing.
 void SimulateMouseClick(RenderWidgetHost* rwh, int x, int y) {
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebPointerProperties::Button::Left;
-  mouse_event.setPositionInWidget(x, y);
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event.SetPositionInWidget(x, y);
   rwh->ForwardMouseEvent(mouse_event);
 }
 
@@ -230,7 +230,7 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
   }
 
   void OnInputEvent(const blink::WebInputEvent& event) override {
-    events_received_.push_back(event.type());
+    events_received_.push_back(event.GetType());
   };
 
  private:
@@ -304,18 +304,18 @@ void SurfaceHitTestTestHelper(
   gfx::Rect bounds = rwhv_child->GetViewBounds();
 
   // Target input event to child frame.
-  blink::WebMouseEvent child_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  child_event.button = blink::WebPointerProperties::Button::Left;
-  child_event.setPositionInWidget(
+  blink::WebMouseEvent child_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  child_event.button = blink::WebPointerProperties::Button::kLeft;
+  child_event.SetPositionInWidget(
       gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x()) /
                        scale_factor) +
           3,
       gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y()) /
                        scale_factor) +
           3);
-  child_event.clickCount = 1;
+  child_event.click_count = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
@@ -323,33 +323,33 @@ void SurfaceHitTestTestHelper(
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   // The expected result coordinates are (3, 3), but can get slightly
   // different results due to rounding error with some device scale factors.
-  EXPECT_TRUE(child_frame_monitor.event().positionInWidget().x <= 5 &&
-              child_frame_monitor.event().positionInWidget().x >= 1)
+  EXPECT_TRUE(child_frame_monitor.event().PositionInWidget().x <= 5 &&
+              child_frame_monitor.event().PositionInWidget().x >= 1)
       << " actual event.positionInWidget().x: "
-      << child_frame_monitor.event().positionInWidget().x;
-  EXPECT_TRUE(child_frame_monitor.event().positionInWidget().y <= 5 &&
-              child_frame_monitor.event().positionInWidget().y >= 1)
+      << child_frame_monitor.event().PositionInWidget().x;
+  EXPECT_TRUE(child_frame_monitor.event().PositionInWidget().y <= 5 &&
+              child_frame_monitor.event().PositionInWidget().y >= 1)
       << " actual event.positionInWidget().y: "
-      << child_frame_monitor.event().positionInWidget().y;
+      << child_frame_monitor.event().PositionInWidget().y;
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
 
   child_frame_monitor.ResetEventReceived();
   main_frame_monitor.ResetEventReceived();
 
   // Target input event to main frame.
-  blink::WebMouseEvent main_event(blink::WebInputEvent::MouseDown,
-                                  blink::WebInputEvent::NoModifiers,
-                                  blink::WebInputEvent::TimeStampForTesting);
-  main_event.button = blink::WebPointerProperties::Button::Left;
-  main_event.setPositionInWidget(1, 1);
-  main_event.clickCount = 1;
+  blink::WebMouseEvent main_event(blink::WebInputEvent::kMouseDown,
+                                  blink::WebInputEvent::kNoModifiers,
+                                  blink::WebInputEvent::kTimeStampForTesting);
+  main_event.button = blink::WebPointerProperties::Button::kLeft;
+  main_event.SetPositionInWidget(1, 1);
+  main_event.click_count = 1;
   // Ladies and gentlemen, THIS is the main_event!
   router->RouteMouseEvent(root_view, &main_event, ui::LatencyInfo());
 
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
-  EXPECT_EQ(1, main_frame_monitor.event().positionInWidget().x);
-  EXPECT_EQ(1, main_frame_monitor.event().positionInWidget().y);
+  EXPECT_EQ(1, main_frame_monitor.event().PositionInWidget().x);
+  EXPECT_EQ(1, main_frame_monitor.event().PositionInWidget().y);
 }
 
 class RedirectNotificationObserver : public NotificationObserver {
@@ -1067,16 +1067,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Scroll the parent frame downward to verify that the child rect gets updated
   // correctly.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
 
-  scroll_event.setPositionInWidget(
+  scroll_event.SetPositionInWidget(
       gfx::ToFlooredInt((bounds.x() - rwhv_root->GetViewBounds().x() - 5) /
                         scale_factor),
       gfx::ToFlooredInt((bounds.y() - rwhv_root->GetViewBounds().y() - 5) /
                         scale_factor));
-  scroll_event.deltaX = 0.0f;
-  scroll_event.deltaY = -30.0f;
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = -30.0f;
   rwhv_root->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -1155,11 +1155,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Scroll the parent frame downward.
   blink::WebMouseWheelEvent scroll_event(
-      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  scroll_event.setPositionInWidget(1, 1);
-  scroll_event.deltaX = 0.0f;
-  scroll_event.deltaY = -5.0f;
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  scroll_event.SetPositionInWidget(1, 1);
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = -5.0f;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure that the view position is propagated to the child properly.
@@ -1171,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Now scroll the nested frame upward, which should bubble to the parent.
   // The upscroll exceeds the amount that the frame was initially scrolled
   // down to account for rounding.
-  scroll_event.deltaY = 6.0f;
+  scroll_event.delta_y = 6.0f;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -1194,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Scroll the parent down again in order to test scroll bubbling from
   // gestures.
-  scroll_event.deltaY = -5.0f;
+  scroll_event.delta_y = -5.0f;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   // Ensure ensuing offset change is received, and then reset the filter.
@@ -1204,22 +1204,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Scroll down the nested iframe via gesture. This requires 3 separate input
   // events.
   blink::WebGestureEvent gesture_event(
-      blink::WebGestureEvent::GestureScrollBegin,
-      blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_event.source_device = blink::kWebGestureDeviceTouchpad;
   gesture_event.x = 1;
   gesture_event.y = 1;
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
-  gesture_event.setType(blink::WebGestureEvent::GestureScrollUpdate);
-  gesture_event.data.scrollUpdate.deltaX = 0.0f;
-  gesture_event.data.scrollUpdate.deltaY = 6.0f;
-  gesture_event.data.scrollUpdate.velocityX = 0;
-  gesture_event.data.scrollUpdate.velocityY = 0;
+  gesture_event.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
+  gesture_event.data.scroll_update.delta_x = 0.0f;
+  gesture_event.data.scroll_update.delta_y = 6.0f;
+  gesture_event.data.scroll_update.velocity_x = 0;
+  gesture_event.data.scroll_update.velocity_y = 0;
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
-  gesture_event.setType(blink::WebGestureEvent::GestureScrollEnd);
+  gesture_event.SetType(blink::WebGestureEvent::kGestureScrollEnd);
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
   filter->Wait();
@@ -1237,7 +1237,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Test that when the child frame absorbs all of the scroll delta, it does
   // not propagate to the parent (see https://crbug.com/621624).
   filter->Reset();
-  scroll_event.deltaY = -5.0f;
+  scroll_event.delta_y = -5.0f;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   // It isn't possible to busy loop waiting on the renderer here because we
   // are explicitly testing that something does *not* happen. This creates a
@@ -1298,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollEventToOOPIF) {
 
   // Verify that this a mouse wheel event was sent to the child frame renderer.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::MouseWheel);
+  EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
 }
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
@@ -1392,18 +1392,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   gfx::Rect bounds = rwhv_nested->GetViewBounds();
 
   // Target input event to nested frame.
-  blink::WebMouseEvent nested_event(blink::WebInputEvent::MouseDown,
-                                    blink::WebInputEvent::NoModifiers,
-                                    blink::WebInputEvent::TimeStampForTesting);
-  nested_event.button = blink::WebPointerProperties::Button::Left;
-  nested_event.setPositionInWidget(
+  blink::WebMouseEvent nested_event(blink::WebInputEvent::kMouseDown,
+                                    blink::WebInputEvent::kNoModifiers,
+                                    blink::WebInputEvent::kTimeStampForTesting);
+  nested_event.button = blink::WebPointerProperties::Button::kLeft;
+  nested_event.SetPositionInWidget(
       gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x()) /
                        scale_factor) +
           5,
       gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y()) /
                        scale_factor) +
           5);
-  nested_event.clickCount = 1;
+  nested_event.click_count = 1;
   nested_frame_monitor.ResetEventReceived();
   main_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &nested_event, ui::LatencyInfo());
@@ -1411,14 +1411,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(nested_frame_monitor.EventWasReceived());
   // The expected result coordinates are (5, 5), but can get slightly
   // different results due to rounding error with some device scale factors.
-  EXPECT_TRUE(nested_frame_monitor.event().positionInWidget().x <= 6 &&
-              nested_frame_monitor.event().positionInWidget().x >= 4)
+  EXPECT_TRUE(nested_frame_monitor.event().PositionInWidget().x <= 6 &&
+              nested_frame_monitor.event().PositionInWidget().x >= 4)
       << " actual event.positionInWidget().x: "
-      << nested_frame_monitor.event().positionInWidget().x;
-  EXPECT_TRUE(nested_frame_monitor.event().positionInWidget().y <= 6 &&
-              nested_frame_monitor.event().positionInWidget().y >= 4)
+      << nested_frame_monitor.event().PositionInWidget().x;
+  EXPECT_TRUE(nested_frame_monitor.event().PositionInWidget().y <= 6 &&
+              nested_frame_monitor.event().PositionInWidget().y >= 4)
       << " actual event.positionInWidget().y: "
-      << nested_frame_monitor.event().positionInWidget().y;
+      << nested_frame_monitor.event().PositionInWidget().y;
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
 }
 
@@ -1463,19 +1463,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   // Target input event to child frame.
-  blink::WebMouseEvent child_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  child_event.button = blink::WebPointerProperties::Button::Left;
-  child_event.setPositionInWidget(75, 75);
-  child_event.clickCount = 1;
+  blink::WebMouseEvent child_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  child_event.button = blink::WebPointerProperties::Button::kLeft;
+  child_event.SetPositionInWidget(75, 75);
+  child_event.click_count = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
-  EXPECT_EQ(75, main_frame_monitor.event().positionInWidget().x);
-  EXPECT_EQ(75, main_frame_monitor.event().positionInWidget().y);
+  EXPECT_EQ(75, main_frame_monitor.event().PositionInWidget().x);
+  EXPECT_EQ(75, main_frame_monitor.event().PositionInWidget().y);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
@@ -1558,10 +1558,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       gfx::ToCeiledInt((d_bounds.x() - a_bounds.x()) / scale_factor) + 25,
       gfx::ToCeiledInt((d_bounds.y() - a_bounds.y()) / scale_factor) + 25);
 
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseMove,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.setPositionInWidget(point_in_a_frame.x(), point_in_a_frame.y());
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseMove,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.SetPositionInWidget(point_in_a_frame.x(), point_in_a_frame.y());
 
   // Send an initial MouseMove to the root view, which shouldn't affect the
   // other renderers.
@@ -1575,11 +1575,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Next send a MouseMove to B frame, which shouldn't affect C or D but
   // A should receive a MouseMove event.
-  mouse_event.setPositionInWidget(point_in_b_frame.x(), point_in_b_frame.y());
+  mouse_event.SetPositionInWidget(point_in_b_frame.x(), point_in_b_frame.y());
   web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event,
                                                          ui::LatencyInfo());
   EXPECT_TRUE(a_frame_monitor.EventWasReceived());
-  EXPECT_EQ(a_frame_monitor.event().type(), blink::WebInputEvent::MouseMove);
+  EXPECT_EQ(a_frame_monitor.event().GetType(),
+            blink::WebInputEvent::kMouseMove);
   a_frame_monitor.ResetEventReceived();
   EXPECT_TRUE(b_frame_monitor.EventWasReceived());
   b_frame_monitor.ResetEventReceived();
@@ -1588,15 +1589,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Next send a MouseMove to D frame, which should have side effects in every
   // other RenderWidgetHostView.
-  mouse_event.setPositionInWidget(point_in_d_frame.x(), point_in_d_frame.y());
+  mouse_event.SetPositionInWidget(point_in_d_frame.x(), point_in_d_frame.y());
   web_contents()->GetInputEventRouter()->RouteMouseEvent(rwhv_a, &mouse_event,
                                                          ui::LatencyInfo());
   EXPECT_TRUE(a_frame_monitor.EventWasReceived());
-  EXPECT_EQ(a_frame_monitor.event().type(), blink::WebInputEvent::MouseMove);
+  EXPECT_EQ(a_frame_monitor.event().GetType(),
+            blink::WebInputEvent::kMouseMove);
   EXPECT_TRUE(b_frame_monitor.EventWasReceived());
-  EXPECT_EQ(b_frame_monitor.event().type(), blink::WebInputEvent::MouseLeave);
+  EXPECT_EQ(b_frame_monitor.event().GetType(),
+            blink::WebInputEvent::kMouseLeave);
   EXPECT_TRUE(c_frame_monitor.EventWasReceived());
-  EXPECT_EQ(c_frame_monitor.event().type(), blink::WebInputEvent::MouseMove);
+  EXPECT_EQ(c_frame_monitor.event().GetType(),
+            blink::WebInputEvent::kMouseMove);
   EXPECT_TRUE(d_frame_monitor.EventWasReceived());
 }
 
@@ -1658,12 +1662,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       5;
 
   // Target MouseDown to child frame.
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebPointerProperties::Button::Left;
-  mouse_event.setPositionInWidget(child_frame_target_x, child_frame_target_y);
-  mouse_event.clickCount = 1;
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event.SetPositionInWidget(child_frame_target_x, child_frame_target_y);
+  mouse_event.click_count = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -1673,9 +1677,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Target MouseMove to main frame. This should still be routed to the
   // child frame because it is now capturing mouse input.
-  mouse_event.setType(blink::WebInputEvent::MouseMove);
-  mouse_event.setModifiers(blink::WebInputEvent::LeftButtonDown);
-  mouse_event.setPositionInWidget(1, 1);
+  mouse_event.SetType(blink::WebInputEvent::kMouseMove);
+  mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
+  mouse_event.SetPositionInWidget(1, 1);
   // Note that this event is sent twice, with the monitors cleared after
   // the first time, because the first MouseMove to the child frame
   // causes a MouseMove to be sent to the main frame also, which we
@@ -1683,16 +1687,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  mouse_event.setPositionInWidget(1, 2);
+  mouse_event.SetPositionInWidget(1, 2);
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
 
   // A MouseUp to the child frame should cancel the mouse capture.
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
-  mouse_event.setModifiers(blink::WebInputEvent::NoModifiers);
-  mouse_event.setPositionInWidget(child_frame_target_x, child_frame_target_y);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetModifiers(blink::WebInputEvent::kNoModifiers);
+  mouse_event.SetPositionInWidget(child_frame_target_x, child_frame_target_y);
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -1702,21 +1706,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Subsequent MouseMove events targeted to the main frame should be routed
   // to that frame.
-  mouse_event.setType(blink::WebInputEvent::MouseMove);
-  mouse_event.setPositionInWidget(1, 3);
+  mouse_event.SetType(blink::WebInputEvent::kMouseMove);
+  mouse_event.SetPositionInWidget(1, 3);
   // Sending the MouseMove twice for the same reason as above.
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
-  mouse_event.setPositionInWidget(1, 4);
+  mouse_event.SetPositionInWidget(1, 4);
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 
   // Target MouseDown to the main frame to cause it to capture input.
-  mouse_event.setType(blink::WebInputEvent::MouseDown);
-  mouse_event.setPositionInWidget(1, 1);
+  mouse_event.SetType(blink::WebInputEvent::kMouseDown);
+  mouse_event.SetPositionInWidget(1, 1);
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -1726,9 +1730,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Sending a MouseMove to the child frame should still result in the main
   // frame receiving the event.
-  mouse_event.setType(blink::WebInputEvent::MouseMove);
-  mouse_event.setModifiers(blink::WebInputEvent::LeftButtonDown);
-  mouse_event.setPositionInWidget(child_frame_target_x, child_frame_target_y);
+  mouse_event.SetType(blink::WebInputEvent::kMouseMove);
+  mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
+  mouse_event.SetPositionInWidget(child_frame_target_x, child_frame_target_y);
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -3612,13 +3616,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   EXPECT_EQ(baz_url, observer.last_navigation_url());
 
   // Both frames should not be sandboxed to start with.
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->effective_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(1)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(1)->effective_sandbox_flags());
 
   // Dynamically update sandbox flags for the first frame.
@@ -3633,10 +3637,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   // resets both SandboxFlags::Scripts and SandboxFlags::AutomaticFeatures bits
   // per blink::parseSandboxPolicy().
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->effective_sandbox_flags());
 
   // Navigate the first frame to a page on the same site.  The new sandbox
@@ -3736,10 +3740,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Check that the current sandbox flags are updated but the effective
   // sandbox flags are not.
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags, root->child_at(1)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(1)->effective_sandbox_flags());
 
   // Navigate the second subframe to a page on bar.com.  This will trigger a
@@ -3794,9 +3798,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             root->child_at(0)->current_url());
 
   // The frame should not be sandboxed to start with.
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->effective_sandbox_flags());
 
   // Dynamically update the frame's sandbox flags.
@@ -3810,10 +3814,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // resets both SandboxFlags::Scripts and SandboxFlags::AutomaticFeatures bits
   // per blink::parseSandboxPolicy().
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->effective_sandbox_flags());
 
   // Perform a renderer-initiated same-site navigation in the first frame. The
@@ -3916,9 +3920,9 @@ IN_PROC_BROWSER_TEST_F(
   // "allow-scripts" resets both WebSandboxFlags::Scripts and
   // WebSandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures &
-      ~blink::WebSandboxFlags::Origin;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures &
+      ~blink::WebSandboxFlags::kOrigin;
   EXPECT_EQ(expected_flags, root->child_at(1)->effective_sandbox_flags());
 
   // The child of the sandboxed frame should've inherited sandbox flags, so it
@@ -5404,10 +5408,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Send a MouseMove to the subframe. The frame contains text, and moving the
   // mouse over it should cause the renderer to send a mouse cursor update.
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseMove,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.setPositionInWidget(60, 60);
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseMove,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.SetPositionInWidget(60, 60);
   RenderWidgetHost* rwh_child =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
@@ -6184,17 +6188,17 @@ void CreateContextMenuTestHelper(
       gfx::ToCeiledInt((bounds.y() - root_bounds.y()) / scale_factor) + 10);
 
   // Target right-click event to child frame.
-  blink::WebMouseEvent click_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  click_event.button = blink::WebPointerProperties::Button::Right;
-  click_event.setPositionInWidget(point.x(), point.y());
-  click_event.clickCount = 1;
+  blink::WebMouseEvent click_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  click_event.button = blink::WebPointerProperties::Button::kRight;
+  click_event.SetPositionInWidget(point.x(), point.y());
+  click_event.click_count = 1;
   router->RouteMouseEvent(root_view, &click_event, ui::LatencyInfo());
 
   // We also need a MouseUp event, needed by Windows.
-  click_event.setType(blink::WebInputEvent::MouseUp);
-  click_event.setPositionInWidget(point.x(), point.y());
+  click_event.SetType(blink::WebInputEvent::kMouseUp);
+  click_event.SetPositionInWidget(point.x(), point.y());
   router->RouteMouseEvent(root_view, &click_event, ui::LatencyInfo());
 
   context_menu_delegate.Wait();
@@ -6336,16 +6340,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuTest) {
   child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to child frame.
-  blink::WebMouseEvent click_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  click_event.button = blink::WebPointerProperties::Button::Left;
-  click_event.setPositionInWidget(15, 15);
-  click_event.clickCount = 1;
+  blink::WebMouseEvent click_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  click_event.button = blink::WebPointerProperties::Button::kLeft;
+  click_event.SetPositionInWidget(15, 15);
+  click_event.click_count = 1;
   rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   // Dismiss the popup.
-  click_event.setPositionInWidget(1, 1);
+  click_event.SetPositionInWidget(1, 1);
   rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -6372,8 +6376,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PopupMenuTest) {
       static_cast<WebContentsImpl*>(shell()->web_contents())
           ->GetInputEventRouter();
   // Re-open the select element.
-  click_event.setPositionInWidget(360, 90);
-  click_event.clickCount = 1;
+  click_event.SetPositionInWidget(360, 90);
+  click_event.click_count = 1;
   router->RouteMouseEvent(rwhv_root, &click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -6450,16 +6454,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   c_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to child frame.
-  blink::WebMouseEvent click_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  click_event.button = blink::WebPointerProperties::Button::Left;
-  click_event.setPositionInWidget(15, 15);
-  click_event.clickCount = 1;
+  blink::WebMouseEvent click_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  click_event.button = blink::WebPointerProperties::Button::kLeft;
+  click_event.SetPositionInWidget(15, 15);
+  click_event.click_count = 1;
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   // Prompt the WebContents to dismiss the popup by clicking elsewhere.
-  click_event.setPositionInWidget(1, 1);
+  click_event.SetPositionInWidget(1, 1);
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -6501,12 +6505,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
     run_loop.Run();
   }
 
-  click_event.button = blink::WebPointerProperties::Button::Left;
-  click_event.setPositionInWidget(15, 15);
-  click_event.clickCount = 1;
+  click_event.button = blink::WebPointerProperties::Button::kLeft;
+  click_event.SetPositionInWidget(15, 15);
+  click_event.click_count = 1;
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
-  click_event.setPositionInWidget(1, 1);
+  click_event.SetPositionInWidget(1, 1);
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -6875,10 +6879,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
   // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
   // blink::parseSandboxPolicy().
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             root->child_at(0)->effective_sandbox_flags());
 
   // Navigate child frame so that the sandbox flags take effect.  Use a page
@@ -6926,11 +6930,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // These flags should be pending but not take effect, since there's been no
   // navigation.
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures;
   FrameTreeNode* child = root->child_at(0);
   EXPECT_EQ(expected_flags, child->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None, child->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::kNone, child->effective_sandbox_flags());
 
   // Add a new grandchild frame and navigate it cross-site.
   RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
@@ -6946,8 +6950,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Since the update flags haven't yet taken effect in its parent, this
   // grandchild frame should not be sandboxed.
-  EXPECT_EQ(blink::WebSandboxFlags::None, grandchild->pending_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::None,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone, grandchild->pending_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
             grandchild->effective_sandbox_flags());
 
   // Check that the grandchild frame isn't sandboxed on the renderer side.  If
@@ -6976,9 +6980,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
   // blink::parseSandboxPolicy().
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures &
-      ~blink::WebSandboxFlags::Popups;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures &
+      ~blink::WebSandboxFlags::kPopups;
   EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
 
   // Navigate child frame cross-site.  The sandbox flags should take effect.
@@ -7047,10 +7051,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // both WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits
   // per blink::parseSandboxPolicy().
   blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-      ~blink::WebSandboxFlags::AutomaticFeatures &
-      ~blink::WebSandboxFlags::Popups &
-      ~blink::WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts;
+      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+      ~blink::WebSandboxFlags::kAutomaticFeatures &
+      ~blink::WebSandboxFlags::kPopups &
+      ~blink::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
   EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
 
   // Navigate child frame cross-site.  The sandbox flags should take effect.
@@ -7072,7 +7076,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the sandbox flags for new popup are correct in the browser
   // process.  They should not have been inherited.
-  EXPECT_EQ(blink::WebSandboxFlags::None, foo_root->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::kNone, foo_root->effective_sandbox_flags());
 
   // The popup's origin should match |b_url|, since it's not sandboxed.
   std::string popup_origin;
@@ -7367,7 +7371,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // navigation.
     EXPECT_EQ(c_url.GetOrigin().spec(),
               root->child_at(0)->current_origin().Serialize() + "/");
-    EXPECT_EQ(blink::WebSandboxFlags::None,
+    EXPECT_EQ(blink::WebSandboxFlags::kNone,
               root->child_at(0)->effective_sandbox_flags());
   }
 }
@@ -8122,9 +8126,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // at the focused node. This creates a popup widget in both processes.
   // Wait for and then drop the ViewHostMsg_ShowWidget messages, so that both
   // widgets are left in pending-but-not-shown state.
-  NativeWebKeyboardEvent event(blink::WebKeyboardEvent::Char,
-                               blink::WebInputEvent::NoModifiers,
-                               blink::WebInputEvent::TimeStampForTesting);
+  NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kChar,
+                               blink::WebInputEvent::kNoModifiers,
+                               blink::WebInputEvent::kTimeStampForTesting);
   event.text[0] = ' ';
 
   scoped_refptr<PendingWidgetMessageFilter> filter1 =
@@ -8462,26 +8466,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureBrowserTest,
 
   // Verify root-RWHI gets GSB/GPB/GPE/GSE.
   EXPECT_TRUE(root_frame_monitor.EventWasReceived());
-  EXPECT_EQ(blink::WebInputEvent::GestureScrollBegin,
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
             root_frame_monitor.events_received()[0]);
-  EXPECT_EQ(blink::WebInputEvent::GesturePinchBegin,
+  EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin,
             root_frame_monitor.events_received()[1]);
-  EXPECT_EQ(blink::WebInputEvent::GesturePinchEnd,
+  EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd,
             root_frame_monitor.events_received()[2]);
-  EXPECT_EQ(blink::WebInputEvent::GestureScrollEnd,
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
             root_frame_monitor.events_received()[3]);
 
   // Verify child-RWHI gets TS/TE, GTD/GSB/GSE.
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart,
+  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             child_frame_monitor.events_received()[0]);
-  EXPECT_EQ(blink::WebInputEvent::TouchEnd,
+  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
             child_frame_monitor.events_received()[1]);
-  EXPECT_EQ(blink::WebInputEvent::GestureTapDown,
+  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
             child_frame_monitor.events_received()[2]);
-  EXPECT_EQ(blink::WebInputEvent::GestureScrollBegin,
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
             child_frame_monitor.events_received()[3]);
-  EXPECT_EQ(blink::WebInputEvent::GestureScrollEnd,
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
             child_frame_monitor.events_received()[4]);
 }
 
@@ -8502,19 +8506,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureBrowserTest,
 
   // Verify root-RWHI gets TS/TE/GTD/GSB/GPB/GPE/GSE.
   EXPECT_TRUE(root_frame_monitor.EventWasReceived());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart,
+  EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             root_frame_monitor.events_received()[0]);
-  EXPECT_EQ(blink::WebInputEvent::TouchEnd,
+  EXPECT_EQ(blink::WebInputEvent::kTouchEnd,
             root_frame_monitor.events_received()[1]);
-  EXPECT_EQ(blink::WebInputEvent::GestureTapDown,
+  EXPECT_EQ(blink::WebInputEvent::kGestureTapDown,
             root_frame_monitor.events_received()[2]);
-  EXPECT_EQ(blink::WebInputEvent::GestureScrollBegin,
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollBegin,
             root_frame_monitor.events_received()[3]);
-  EXPECT_EQ(blink::WebInputEvent::GesturePinchBegin,
+  EXPECT_EQ(blink::WebInputEvent::kGesturePinchBegin,
             root_frame_monitor.events_received()[4]);
-  EXPECT_EQ(blink::WebInputEvent::GesturePinchEnd,
+  EXPECT_EQ(blink::WebInputEvent::kGesturePinchEnd,
             root_frame_monitor.events_received()[5]);
-  EXPECT_EQ(blink::WebInputEvent::GestureScrollEnd,
+  EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd,
             root_frame_monitor.events_received()[6]);
 
   // Verify child-RWHI gets no events.
@@ -9182,14 +9186,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::kVibrate,
                            {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
+  EXPECT_EQ(CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::kVibrate),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
@@ -9209,14 +9213,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::kVibrate,
                            {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
+  EXPECT_EQ(CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::kVibrate),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
@@ -9238,19 +9242,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::kVibrate,
                            {main_url.GetOrigin(), GURL("http://example.com/")}),
             root->current_replication_state().feature_policy_header);
   EXPECT_EQ(1UL, root->child_count());
   EXPECT_EQ(
-      CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+      CreateFPHeader(blink::WebFeaturePolicyFeature::kVibrate,
                      {main_url.GetOrigin()}),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe cross-site.
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
-      CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
+      CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::kVibrate),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe to another location, this one with no policy header
@@ -9262,7 +9266,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   // Navigate the iframe back to a page with a policy
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
-      CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
+      CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::kVibrate),
       root->child_at(0)->current_replication_state().feature_policy_header);
 }
 
@@ -9335,29 +9339,29 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessNonIntegerScaleFactorBrowserTest,
   RenderWidgetHostMouseEventMonitor event_monitor(
       root->current_frame_host()->GetRenderWidgetHost());
 
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebPointerProperties::Button::Left;
-  mouse_event.setPositionInWidget(75, 75);
-  mouse_event.clickCount = 1;
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event.SetPositionInWidget(75, 75);
+  mouse_event.click_count = 1;
   event_monitor.ResetEventReceived();
   router->RouteMouseEvent(rwhv, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(event_monitor.EventWasReceived());
   gfx::Point mouse_down_coords =
-      gfx::Point(event_monitor.event().positionInWidget().x,
-                 event_monitor.event().positionInWidget().y);
+      gfx::Point(event_monitor.event().PositionInWidget().x,
+                 event_monitor.event().PositionInWidget().y);
   event_monitor.ResetEventReceived();
 
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
-  mouse_event.setPositionInWidget(75, 75);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  mouse_event.SetPositionInWidget(75, 75);
   router->RouteMouseEvent(rwhv, &mouse_event, ui::LatencyInfo());
 
   EXPECT_TRUE(event_monitor.EventWasReceived());
   EXPECT_EQ(mouse_down_coords,
-            gfx::Point(event_monitor.event().positionInWidget().x,
-                       event_monitor.event().positionInWidget().y));
+            gfx::Point(event_monitor.event().PositionInWidget().x,
+                       event_monitor.event().PositionInWidget().y));
 }
 
 // Verify that a remote-to-local navigation in a crashed subframe works.  See
@@ -9460,17 +9464,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest, AllowedIFrames) {
   EXPECT_EQ(root->child_at(2)->frame_owner_properties().allowed_features.size(),
             2u);
   EXPECT_EQ(root->child_at(2)->frame_owner_properties().allowed_features[0],
-            blink::WebFeaturePolicyFeature::Fullscreen);
+            blink::WebFeaturePolicyFeature::kFullscreen);
   EXPECT_EQ(root->child_at(2)->frame_owner_properties().allowed_features[1],
-            blink::WebFeaturePolicyFeature::Vibrate);
+            blink::WebFeaturePolicyFeature::kVibrate);
 
   // Check allowed features are propagated correctly for same-site iframes.
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features.size(),
             2u);
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[0],
-            blink::WebFeaturePolicyFeature::Fullscreen);
+            blink::WebFeaturePolicyFeature::kFullscreen);
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[1],
-            blink::WebFeaturePolicyFeature::Vibrate);
+            blink::WebFeaturePolicyFeature::kVibrate);
 }
 
 // Test dynamic updates to iframe "allow" attribute are propagated correctly.
@@ -9494,7 +9498,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features.size(),
             1u);
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[0],
-            blink::WebFeaturePolicyFeature::Payment);
+            blink::WebFeaturePolicyFeature::kPayment);
 
   // Test for dynamically setting "allow" attribute by frame.allow="...".
   EXPECT_TRUE(ExecuteScript(
@@ -9502,9 +9506,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features.size(),
             2u);
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[0],
-            blink::WebFeaturePolicyFeature::Fullscreen);
+            blink::WebFeaturePolicyFeature::kFullscreen);
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[1],
-            blink::WebFeaturePolicyFeature::Vibrate);
+            blink::WebFeaturePolicyFeature::kVibrate);
 }
 
 // Test harness that allows for "barrier" style delaying of requests matching

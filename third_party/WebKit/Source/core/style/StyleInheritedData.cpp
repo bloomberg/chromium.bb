@@ -27,12 +27,12 @@ namespace blink {
 
 StyleInheritedData::StyleInheritedData()
     : horizontal_border_spacing(
-          ComputedStyle::initialHorizontalBorderSpacing()),
-      vertical_border_spacing(ComputedStyle::initialVerticalBorderSpacing()),
-      line_height(ComputedStyle::initialLineHeight()),
-      color(ComputedStyle::initialColor()),
-      visitedLinkColor(ComputedStyle::initialColor()),
-      textAutosizingMultiplier(1) {}
+          ComputedStyle::InitialHorizontalBorderSpacing()),
+      vertical_border_spacing(ComputedStyle::InitialVerticalBorderSpacing()),
+      line_height(ComputedStyle::InitialLineHeight()),
+      color(ComputedStyle::InitialColor()),
+      visited_link_color(ComputedStyle::InitialColor()),
+      text_autosizing_multiplier(1) {}
 
 StyleInheritedData::~StyleInheritedData() {}
 
@@ -43,14 +43,14 @@ StyleInheritedData::StyleInheritedData(const StyleInheritedData& o)
       line_height(o.line_height),
       font(o.font),
       color(o.color),
-      visitedLinkColor(o.visitedLinkColor),
-      textAutosizingMultiplier(o.textAutosizingMultiplier) {}
+      visited_link_color(o.visited_link_color),
+      text_autosizing_multiplier(o.text_autosizing_multiplier) {}
 
 bool StyleInheritedData::operator==(const StyleInheritedData& o) const {
   return line_height == o.line_height && font == o.font && color == o.color &&
-         visitedLinkColor == o.visitedLinkColor &&
+         visited_link_color == o.visited_link_color &&
          horizontal_border_spacing == o.horizontal_border_spacing &&
-         textAutosizingMultiplier == o.textAutosizingMultiplier &&
+         text_autosizing_multiplier == o.text_autosizing_multiplier &&
          vertical_border_spacing == o.vertical_border_spacing;
 }
 

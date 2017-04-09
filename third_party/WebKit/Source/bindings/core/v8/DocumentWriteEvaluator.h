@@ -26,44 +26,44 @@ class CORE_EXPORT DocumentWriteEvaluator {
 
  public:
   // For unit testing.
-  DocumentWriteEvaluator(const String& pathName,
-                         const String& hostName,
+  DocumentWriteEvaluator(const String& path_name,
+                         const String& host_name,
                          const String& protocol,
-                         const String& userAgent);
+                         const String& user_agent);
 
-  static std::unique_ptr<DocumentWriteEvaluator> create(
+  static std::unique_ptr<DocumentWriteEvaluator> Create(
       const Document& document) {
-    return WTF::wrapUnique(new DocumentWriteEvaluator(document));
+    return WTF::WrapUnique(new DocumentWriteEvaluator(document));
   }
   virtual ~DocumentWriteEvaluator();
 
   // Initializes the V8 context for this document. Returns whether
   // initialization was needed.
-  bool ensureEvaluationContext();
-  String evaluateAndEmitWrittenSource(const String& scriptSource);
-  bool shouldEvaluate(const String& scriptSource);
+  bool EnsureEvaluationContext();
+  String EvaluateAndEmitWrittenSource(const String& script_source);
+  bool ShouldEvaluate(const String& script_source);
 
-  void recordDocumentWrite(const String& documentWrittenString);
+  void RecordDocumentWrite(const String& document_written_string);
 
  private:
   explicit DocumentWriteEvaluator(const Document&);
   // Returns true if the evaluation succeeded with no errors.
-  bool evaluate(const String& scriptSource);
+  bool Evaluate(const String& script_source);
 
   // All the strings that are document.written in the script tag that is being
   // scanned.
-  StringBuilder m_documentWrittenStrings;
+  StringBuilder document_written_strings_;
 
-  ScopedPersistent<v8::Context> m_persistentContext;
-  ScopedPersistent<v8::Object> m_window;
-  ScopedPersistent<v8::Object> m_document;
-  ScopedPersistent<v8::Object> m_location;
-  ScopedPersistent<v8::Object> m_navigator;
+  ScopedPersistent<v8::Context> persistent_context_;
+  ScopedPersistent<v8::Object> window_;
+  ScopedPersistent<v8::Object> document_;
+  ScopedPersistent<v8::Object> location_;
+  ScopedPersistent<v8::Object> navigator_;
 
-  String m_pathName;
-  String m_hostName;
-  String m_protocol;
-  String m_userAgent;
+  String path_name_;
+  String host_name_;
+  String protocol_;
+  String user_agent_;
 };
 
 }  // namespace blink

@@ -49,8 +49,8 @@ template <typename T>
 class WebVector;
 
 enum WebHistoryLoadType {
-  WebHistorySameDocumentLoad,
-  WebHistoryDifferentDocumentLoad
+  kWebHistorySameDocumentLoad,
+  kWebHistoryDifferentDocumentLoad
 };
 
 // Represents a frame-level navigation entry in session history.  A
@@ -60,65 +60,65 @@ enum WebHistoryLoadType {
 //
 class WebHistoryItem {
  public:
-  ~WebHistoryItem() { reset(); }
+  ~WebHistoryItem() { Reset(); }
 
   WebHistoryItem() {}
-  WebHistoryItem(const WebHistoryItem& h) { assign(h); }
+  WebHistoryItem(const WebHistoryItem& h) { Assign(h); }
   WebHistoryItem& operator=(const WebHistoryItem& h) {
-    assign(h);
+    Assign(h);
     return *this;
   }
 
-  BLINK_EXPORT void initialize();
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebHistoryItem&);
+  BLINK_EXPORT void Initialize();
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebHistoryItem&);
 
-  bool isNull() const { return m_private.isNull(); }
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_EXPORT WebString urlString() const;
-  BLINK_EXPORT void setURLString(const WebString&);
+  BLINK_EXPORT WebString UrlString() const;
+  BLINK_EXPORT void SetURLString(const WebString&);
 
-  BLINK_EXPORT WebString referrer() const;
-  BLINK_EXPORT WebReferrerPolicy getReferrerPolicy() const;
-  BLINK_EXPORT void setReferrer(const WebString&, WebReferrerPolicy);
+  BLINK_EXPORT WebString GetReferrer() const;
+  BLINK_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
+  BLINK_EXPORT void SetReferrer(const WebString&, WebReferrerPolicy);
 
-  BLINK_EXPORT const WebString& target() const;
-  BLINK_EXPORT void setTarget(const WebString&);
+  BLINK_EXPORT const WebString& Target() const;
+  BLINK_EXPORT void SetTarget(const WebString&);
 
-  BLINK_EXPORT WebFloatPoint visualViewportScrollOffset() const;
-  BLINK_EXPORT void setVisualViewportScrollOffset(const WebFloatPoint&);
+  BLINK_EXPORT WebFloatPoint VisualViewportScrollOffset() const;
+  BLINK_EXPORT void SetVisualViewportScrollOffset(const WebFloatPoint&);
 
-  BLINK_EXPORT WebPoint getScrollOffset() const;
-  BLINK_EXPORT void setScrollOffset(const WebPoint&);
+  BLINK_EXPORT WebPoint GetScrollOffset() const;
+  BLINK_EXPORT void SetScrollOffset(const WebPoint&);
 
-  BLINK_EXPORT float pageScaleFactor() const;
-  BLINK_EXPORT void setPageScaleFactor(float);
+  BLINK_EXPORT float PageScaleFactor() const;
+  BLINK_EXPORT void SetPageScaleFactor(float);
 
-  BLINK_EXPORT WebVector<WebString> getDocumentState() const;
-  BLINK_EXPORT void setDocumentState(const WebVector<WebString>&);
+  BLINK_EXPORT WebVector<WebString> GetDocumentState() const;
+  BLINK_EXPORT void SetDocumentState(const WebVector<WebString>&);
 
-  BLINK_EXPORT long long itemSequenceNumber() const;
-  BLINK_EXPORT void setItemSequenceNumber(long long);
+  BLINK_EXPORT long long ItemSequenceNumber() const;
+  BLINK_EXPORT void SetItemSequenceNumber(long long);
 
-  BLINK_EXPORT long long documentSequenceNumber() const;
-  BLINK_EXPORT void setDocumentSequenceNumber(long long);
+  BLINK_EXPORT long long DocumentSequenceNumber() const;
+  BLINK_EXPORT void SetDocumentSequenceNumber(long long);
 
-  BLINK_EXPORT WebHistoryScrollRestorationType scrollRestorationType() const;
-  BLINK_EXPORT void setScrollRestorationType(WebHistoryScrollRestorationType);
+  BLINK_EXPORT WebHistoryScrollRestorationType ScrollRestorationType() const;
+  BLINK_EXPORT void SetScrollRestorationType(WebHistoryScrollRestorationType);
 
-  BLINK_EXPORT WebSerializedScriptValue stateObject() const;
-  BLINK_EXPORT void setStateObject(const WebSerializedScriptValue&);
+  BLINK_EXPORT WebSerializedScriptValue StateObject() const;
+  BLINK_EXPORT void SetStateObject(const WebSerializedScriptValue&);
 
-  BLINK_EXPORT WebString httpContentType() const;
-  BLINK_EXPORT void setHTTPContentType(const WebString&);
+  BLINK_EXPORT WebString HttpContentType() const;
+  BLINK_EXPORT void SetHTTPContentType(const WebString&);
 
-  BLINK_EXPORT WebHTTPBody httpBody() const;
-  BLINK_EXPORT void setHTTPBody(const WebHTTPBody&);
+  BLINK_EXPORT WebHTTPBody HttpBody() const;
+  BLINK_EXPORT void SetHTTPBody(const WebHTTPBody&);
 
-  BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
+  BLINK_EXPORT WebVector<WebString> GetReferencedFilePaths() const;
 
-  BLINK_EXPORT bool didSaveScrollOrScaleState() const;
-  BLINK_EXPORT void setDidSaveScrollOrScaleState(bool);
+  BLINK_EXPORT bool DidSaveScrollOrScaleState() const;
+  BLINK_EXPORT void SetDidSaveScrollOrScaleState(bool);
 
 #if BLINK_IMPLEMENTATION
   BLINK_EXPORT WebHistoryItem(HistoryItem*);
@@ -127,9 +127,9 @@ class WebHistoryItem {
 #endif
 
  private:
-  WebPrivatePtr<HistoryItem> m_private;
+  WebPrivatePtr<HistoryItem> private_;
   // TODO(dcheng): Remove this, since unique name is no longer a Blink concept.
-  WebString m_target;
+  WebString target_;
 };
 
 }  // namespace blink

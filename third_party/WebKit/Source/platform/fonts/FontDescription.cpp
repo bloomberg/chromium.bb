@@ -39,9 +39,9 @@ namespace blink {
 
 struct SameSizeAsFontDescription {
   DISALLOW_NEW();
-  FontFamily familyList;
-  RefPtr<FontFeatureSettings> m_featureSettings;
-  RefPtr<FontVariationSettings> m_variationSettings;
+  FontFamily family_list;
+  RefPtr<FontFeatureSettings> feature_settings_;
+  RefPtr<FontVariationSettings> variation_settings_;
   AtomicString locale;
   float sizes[6];
   FieldsAsUnsignedType bitfields;
@@ -50,41 +50,41 @@ struct SameSizeAsFontDescription {
 static_assert(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription),
               "FontDescription should stay small");
 
-TypesettingFeatures FontDescription::s_defaultTypesettingFeatures = 0;
+TypesettingFeatures FontDescription::default_typesetting_features_ = 0;
 
-bool FontDescription::s_useSubpixelTextPositioning = false;
+bool FontDescription::use_subpixel_text_positioning_ = false;
 
 FontDescription::FontDescription()
-    : m_specifiedSize(0),
-      m_computedSize(0),
-      m_adjustedSize(0),
-      m_sizeAdjust(FontSizeAdjustNone),
-      m_letterSpacing(0),
-      m_wordSpacing(0) {
-  m_fieldsAsUnsigned.parts[0] = 0;
-  m_fieldsAsUnsigned.parts[1] = 0;
-  m_fields.m_orientation = static_cast<unsigned>(FontOrientation::Horizontal);
-  m_fields.m_widthVariant = RegularWidth;
-  m_fields.m_style = FontStyleNormal;
-  m_fields.m_variantCaps = CapsNormal;
-  m_fields.m_isAbsoluteSize = false;
-  m_fields.m_weight = FontWeightNormal;
-  m_fields.m_stretch = FontStretchNormal;
-  m_fields.m_genericFamily = NoFamily;
-  m_fields.m_kerning = AutoKerning;
-  m_fields.m_commonLigaturesState = NormalLigaturesState;
-  m_fields.m_discretionaryLigaturesState = NormalLigaturesState;
-  m_fields.m_historicalLigaturesState = NormalLigaturesState;
-  m_fields.m_contextualLigaturesState = NormalLigaturesState;
-  m_fields.m_keywordSize = 0;
-  m_fields.m_fontSmoothing = AutoSmoothing;
-  m_fields.m_textRendering = AutoTextRendering;
-  m_fields.m_syntheticBold = false;
-  m_fields.m_syntheticItalic = false;
-  m_fields.m_subpixelTextPosition = s_useSubpixelTextPositioning;
-  m_fields.m_typesettingFeatures = s_defaultTypesettingFeatures;
-  m_fields.m_variantNumeric = FontVariantNumeric().m_fieldsAsUnsigned;
-  m_fields.m_subpixelAscentDescent = false;
+    : specified_size_(0),
+      computed_size_(0),
+      adjusted_size_(0),
+      size_adjust_(kFontSizeAdjustNone),
+      letter_spacing_(0),
+      word_spacing_(0) {
+  fields_as_unsigned_.parts[0] = 0;
+  fields_as_unsigned_.parts[1] = 0;
+  fields_.orientation_ = static_cast<unsigned>(FontOrientation::kHorizontal);
+  fields_.width_variant_ = kRegularWidth;
+  fields_.style_ = kFontStyleNormal;
+  fields_.variant_caps_ = kCapsNormal;
+  fields_.is_absolute_size_ = false;
+  fields_.weight_ = kFontWeightNormal;
+  fields_.stretch_ = kFontStretchNormal;
+  fields_.generic_family_ = kNoFamily;
+  fields_.kerning_ = kAutoKerning;
+  fields_.common_ligatures_state_ = kNormalLigaturesState;
+  fields_.discretionary_ligatures_state_ = kNormalLigaturesState;
+  fields_.historical_ligatures_state_ = kNormalLigaturesState;
+  fields_.contextual_ligatures_state_ = kNormalLigaturesState;
+  fields_.keyword_size_ = 0;
+  fields_.font_smoothing_ = kAutoSmoothing;
+  fields_.text_rendering_ = kAutoTextRendering;
+  fields_.synthetic_bold_ = false;
+  fields_.synthetic_italic_ = false;
+  fields_.subpixel_text_position_ = use_subpixel_text_positioning_;
+  fields_.typesetting_features_ = default_typesetting_features_;
+  fields_.variant_numeric_ = FontVariantNumeric().fields_as_unsigned_;
+  fields_.subpixel_ascent_descent_ = false;
 }
 
 FontDescription::FontDescription(const FontDescription&) = default;
@@ -92,174 +92,176 @@ FontDescription::FontDescription(const FontDescription&) = default;
 FontDescription& FontDescription::operator=(const FontDescription&) = default;
 
 bool FontDescription::operator==(const FontDescription& other) const {
-  return m_familyList == other.m_familyList && m_locale == other.m_locale &&
-         m_specifiedSize == other.m_specifiedSize &&
-         m_computedSize == other.m_computedSize &&
-         m_adjustedSize == other.m_adjustedSize &&
-         m_sizeAdjust == other.m_sizeAdjust &&
-         m_letterSpacing == other.m_letterSpacing &&
-         m_wordSpacing == other.m_wordSpacing &&
-         m_fieldsAsUnsigned.parts[0] == other.m_fieldsAsUnsigned.parts[0] &&
-         m_fieldsAsUnsigned.parts[1] == other.m_fieldsAsUnsigned.parts[1] &&
-         (m_featureSettings == other.m_featureSettings ||
-          (m_featureSettings && other.m_featureSettings &&
-           *m_featureSettings == *other.m_featureSettings)) &&
-         (m_variationSettings == other.m_variationSettings ||
-          (m_variationSettings && other.m_variationSettings &&
-           *m_variationSettings == *other.m_variationSettings));
+  return family_list_ == other.family_list_ && locale_ == other.locale_ &&
+         specified_size_ == other.specified_size_ &&
+         computed_size_ == other.computed_size_ &&
+         adjusted_size_ == other.adjusted_size_ &&
+         size_adjust_ == other.size_adjust_ &&
+         letter_spacing_ == other.letter_spacing_ &&
+         word_spacing_ == other.word_spacing_ &&
+         fields_as_unsigned_.parts[0] == other.fields_as_unsigned_.parts[0] &&
+         fields_as_unsigned_.parts[1] == other.fields_as_unsigned_.parts[1] &&
+         (feature_settings_ == other.feature_settings_ ||
+          (feature_settings_ && other.feature_settings_ &&
+           *feature_settings_ == *other.feature_settings_)) &&
+         (variation_settings_ == other.variation_settings_ ||
+          (variation_settings_ && other.variation_settings_ &&
+           *variation_settings_ == *other.variation_settings_));
 }
 
-FontWeight FontDescription::lighterWeight(FontWeight weight) {
+FontWeight FontDescription::LighterWeight(FontWeight weight) {
   switch (weight) {
-    case FontWeight100:
-    case FontWeight200:
-    case FontWeight300:
-    case FontWeight400:
-    case FontWeight500:
-      return FontWeight100;
+    case kFontWeight100:
+    case kFontWeight200:
+    case kFontWeight300:
+    case kFontWeight400:
+    case kFontWeight500:
+      return kFontWeight100;
 
-    case FontWeight600:
-    case FontWeight700:
-      return FontWeight400;
+    case kFontWeight600:
+    case kFontWeight700:
+      return kFontWeight400;
 
-    case FontWeight800:
-    case FontWeight900:
-      return FontWeight700;
+    case kFontWeight800:
+    case kFontWeight900:
+      return kFontWeight700;
   }
   ASSERT_NOT_REACHED();
-  return FontWeightNormal;
+  return kFontWeightNormal;
 }
 
-FontWeight FontDescription::bolderWeight(FontWeight weight) {
+FontWeight FontDescription::BolderWeight(FontWeight weight) {
   switch (weight) {
-    case FontWeight100:
-    case FontWeight200:
-    case FontWeight300:
-      return FontWeight400;
+    case kFontWeight100:
+    case kFontWeight200:
+    case kFontWeight300:
+      return kFontWeight400;
 
-    case FontWeight400:
-    case FontWeight500:
-      return FontWeight700;
+    case kFontWeight400:
+    case kFontWeight500:
+      return kFontWeight700;
 
-    case FontWeight600:
-    case FontWeight700:
-    case FontWeight800:
-    case FontWeight900:
-      return FontWeight900;
+    case kFontWeight600:
+    case kFontWeight700:
+    case kFontWeight800:
+    case kFontWeight900:
+      return kFontWeight900;
   }
   ASSERT_NOT_REACHED();
-  return FontWeightNormal;
+  return kFontWeightNormal;
 }
 
-FontDescription::Size FontDescription::largerSize(const Size& size) {
-  return Size(0, size.value * 1.2, size.isAbsolute);
+FontDescription::Size FontDescription::LargerSize(const Size& size) {
+  return Size(0, size.value * 1.2, size.is_absolute);
 }
 
-FontDescription::Size FontDescription::smallerSize(const Size& size) {
-  return Size(0, size.value / 1.2, size.isAbsolute);
+FontDescription::Size FontDescription::SmallerSize(const Size& size) {
+  return Size(0, size.value / 1.2, size.is_absolute);
 }
 
-FontTraits FontDescription::traits() const {
-  return FontTraits(style(), weight(), stretch());
+FontTraits FontDescription::Traits() const {
+  return FontTraits(Style(), Weight(), Stretch());
 }
 
-FontDescription::VariantLigatures FontDescription::getVariantLigatures() const {
+FontDescription::VariantLigatures FontDescription::GetVariantLigatures() const {
   VariantLigatures ligatures;
 
-  ligatures.common = commonLigaturesState();
-  ligatures.discretionary = discretionaryLigaturesState();
-  ligatures.historical = historicalLigaturesState();
-  ligatures.contextual = contextualLigaturesState();
+  ligatures.common = CommonLigaturesState();
+  ligatures.discretionary = DiscretionaryLigaturesState();
+  ligatures.historical = HistoricalLigaturesState();
+  ligatures.contextual = ContextualLigaturesState();
 
   return ligatures;
 }
 
-void FontDescription::setTraits(FontTraits traits) {
-  setStyle(traits.style());
-  setWeight(traits.weight());
-  setStretch(traits.stretch());
+void FontDescription::SetTraits(FontTraits traits) {
+  SetStyle(traits.Style());
+  SetWeight(traits.Weight());
+  SetStretch(traits.Stretch());
 }
 
-void FontDescription::setVariantCaps(FontVariantCaps variantCaps) {
-  m_fields.m_variantCaps = variantCaps;
+void FontDescription::SetVariantCaps(FontVariantCaps variant_caps) {
+  fields_.variant_caps_ = variant_caps;
 
-  updateTypesettingFeatures();
+  UpdateTypesettingFeatures();
 }
 
-void FontDescription::setVariantLigatures(const VariantLigatures& ligatures) {
-  m_fields.m_commonLigaturesState = ligatures.common;
-  m_fields.m_discretionaryLigaturesState = ligatures.discretionary;
-  m_fields.m_historicalLigaturesState = ligatures.historical;
-  m_fields.m_contextualLigaturesState = ligatures.contextual;
+void FontDescription::SetVariantLigatures(const VariantLigatures& ligatures) {
+  fields_.common_ligatures_state_ = ligatures.common;
+  fields_.discretionary_ligatures_state_ = ligatures.discretionary;
+  fields_.historical_ligatures_state_ = ligatures.historical;
+  fields_.contextual_ligatures_state_ = ligatures.contextual;
 
-  updateTypesettingFeatures();
+  UpdateTypesettingFeatures();
 }
 
-void FontDescription::setVariantNumeric(
-    const FontVariantNumeric& variantNumeric) {
-  m_fields.m_variantNumeric = variantNumeric.m_fieldsAsUnsigned;
+void FontDescription::SetVariantNumeric(
+    const FontVariantNumeric& variant_numeric) {
+  fields_.variant_numeric_ = variant_numeric.fields_as_unsigned_;
 
-  updateTypesettingFeatures();
+  UpdateTypesettingFeatures();
 }
 
-float FontDescription::effectiveFontSize() const {
+float FontDescription::EffectiveFontSize() const {
   // Ensure that the effective precision matches the font-cache precision.
   // This guarantees that the same precision is used regardless of cache status.
-  float computedOrAdjustedSize =
-      hasSizeAdjust() ? adjustedSize() : computedSize();
-  return floorf(computedOrAdjustedSize * FontCacheKey::precisionMultiplier()) /
-         FontCacheKey::precisionMultiplier();
+  float computed_or_adjusted_size =
+      HasSizeAdjust() ? AdjustedSize() : ComputedSize();
+  return floorf(computed_or_adjusted_size *
+                FontCacheKey::PrecisionMultiplier()) /
+         FontCacheKey::PrecisionMultiplier();
 }
 
-FontCacheKey FontDescription::cacheKey(
-    const FontFaceCreationParams& creationParams,
-    FontTraits desiredTraits) const {
-  FontTraits fontTraits = desiredTraits.bitfield() ? desiredTraits : traits();
+FontCacheKey FontDescription::CacheKey(
+    const FontFaceCreationParams& creation_params,
+    FontTraits desired_traits) const {
+  FontTraits font_traits =
+      desired_traits.Bitfield() ? desired_traits : Traits();
 
   unsigned options =
-      static_cast<unsigned>(m_fields.m_syntheticItalic) << 6 |  // bit 7
-      static_cast<unsigned>(m_fields.m_syntheticBold) << 5 |    // bit 6
-      static_cast<unsigned>(m_fields.m_textRendering) << 3 |    // bits 4-5
-      static_cast<unsigned>(m_fields.m_orientation) << 1 |      // bit 2-3
-      static_cast<unsigned>(m_fields.m_subpixelTextPosition);   // bit 1
+      static_cast<unsigned>(fields_.synthetic_italic_) << 6 |  // bit 7
+      static_cast<unsigned>(fields_.synthetic_bold_) << 5 |    // bit 6
+      static_cast<unsigned>(fields_.text_rendering_) << 3 |    // bits 4-5
+      static_cast<unsigned>(fields_.orientation_) << 1 |       // bit 2-3
+      static_cast<unsigned>(fields_.subpixel_text_position_);  // bit 1
 
-  return FontCacheKey(creationParams, effectiveFontSize(),
-                      options | fontTraits.bitfield() << 8,
-                      m_variationSettings);
+  return FontCacheKey(creation_params, EffectiveFontSize(),
+                      options | font_traits.Bitfield() << 8,
+                      variation_settings_);
 }
 
-void FontDescription::setDefaultTypesettingFeatures(
-    TypesettingFeatures typesettingFeatures) {
-  s_defaultTypesettingFeatures = typesettingFeatures;
+void FontDescription::SetDefaultTypesettingFeatures(
+    TypesettingFeatures typesetting_features) {
+  default_typesetting_features_ = typesetting_features;
 }
 
-TypesettingFeatures FontDescription::defaultTypesettingFeatures() {
-  return s_defaultTypesettingFeatures;
+TypesettingFeatures FontDescription::DefaultTypesettingFeatures() {
+  return default_typesetting_features_;
 }
 
-void FontDescription::updateTypesettingFeatures() {
-  m_fields.m_typesettingFeatures = s_defaultTypesettingFeatures;
+void FontDescription::UpdateTypesettingFeatures() {
+  fields_.typesetting_features_ = default_typesetting_features_;
 
-  switch (textRendering()) {
-    case AutoTextRendering:
+  switch (TextRendering()) {
+    case kAutoTextRendering:
       break;
-    case OptimizeSpeed:
-      m_fields.m_typesettingFeatures &= ~(blink::Kerning | Ligatures);
+    case kOptimizeSpeed:
+      fields_.typesetting_features_ &= ~(blink::kKerning | kLigatures);
       break;
-    case GeometricPrecision:
-    case OptimizeLegibility:
-      m_fields.m_typesettingFeatures |= blink::Kerning | Ligatures;
+    case kGeometricPrecision:
+    case kOptimizeLegibility:
+      fields_.typesetting_features_ |= blink::kKerning | kLigatures;
       break;
   }
 
-  switch (getKerning()) {
-    case FontDescription::NoneKerning:
-      m_fields.m_typesettingFeatures &= ~blink::Kerning;
+  switch (GetKerning()) {
+    case FontDescription::kNoneKerning:
+      fields_.typesetting_features_ &= ~blink::kKerning;
       break;
-    case FontDescription::NormalKerning:
-      m_fields.m_typesettingFeatures |= blink::Kerning;
+    case FontDescription::kNormalKerning:
+      fields_.typesetting_features_ |= blink::kKerning;
       break;
-    case FontDescription::AutoKerning:
+    case FontDescription::kAutoKerning:
       break;
   }
 
@@ -267,100 +269,100 @@ void FontDescription::updateTypesettingFeatures() {
   // When the effective letter-spacing between two characters is not zero (due
   // to either justification or non-zero computed letter-spacing), user agents
   // should not apply optional ligatures.
-  if (m_letterSpacing == 0) {
-    switch (commonLigaturesState()) {
-      case FontDescription::DisabledLigaturesState:
-        m_fields.m_typesettingFeatures &= ~blink::Ligatures;
+  if (letter_spacing_ == 0) {
+    switch (CommonLigaturesState()) {
+      case FontDescription::kDisabledLigaturesState:
+        fields_.typesetting_features_ &= ~blink::kLigatures;
         break;
-      case FontDescription::EnabledLigaturesState:
-        m_fields.m_typesettingFeatures |= blink::Ligatures;
+      case FontDescription::kEnabledLigaturesState:
+        fields_.typesetting_features_ |= blink::kLigatures;
         break;
-      case FontDescription::NormalLigaturesState:
+      case FontDescription::kNormalLigaturesState:
         break;
     }
 
-    if (discretionaryLigaturesState() ==
-            FontDescription::EnabledLigaturesState ||
-        historicalLigaturesState() == FontDescription::EnabledLigaturesState ||
-        contextualLigaturesState() == FontDescription::EnabledLigaturesState) {
-      m_fields.m_typesettingFeatures |= blink::Ligatures;
+    if (DiscretionaryLigaturesState() ==
+            FontDescription::kEnabledLigaturesState ||
+        HistoricalLigaturesState() == FontDescription::kEnabledLigaturesState ||
+        ContextualLigaturesState() == FontDescription::kEnabledLigaturesState) {
+      fields_.typesetting_features_ |= blink::kLigatures;
     }
   }
 
-  if (variantCaps() != CapsNormal)
-    m_fields.m_typesettingFeatures |= blink::Caps;
+  if (VariantCaps() != kCapsNormal)
+    fields_.typesetting_features_ |= blink::kCaps;
 }
 
-static inline void addToHash(unsigned& hash, unsigned key) {
+static inline void AddToHash(unsigned& hash, unsigned key) {
   hash = ((hash << 5) + hash) + key;  // Djb2
 }
 
-static inline void addFloatToHash(unsigned& hash, float value) {
-  addToHash(hash, StringHasher::hashMemory(&value, sizeof(value)));
+static inline void AddFloatToHash(unsigned& hash, float value) {
+  AddToHash(hash, StringHasher::HashMemory(&value, sizeof(value)));
 }
 
-unsigned FontDescription::styleHashWithoutFamilyList() const {
+unsigned FontDescription::StyleHashWithoutFamilyList() const {
   unsigned hash = 0;
-  StringHasher stringHasher;
-  const FontFeatureSettings* settings = featureSettings();
+  StringHasher string_hasher;
+  const FontFeatureSettings* settings = FeatureSettings();
   if (settings) {
-    unsigned numFeatures = settings->size();
-    for (unsigned i = 0; i < numFeatures; ++i) {
-      const AtomicString& tag = settings->at(i).tag();
+    unsigned num_features = settings->size();
+    for (unsigned i = 0; i < num_features; ++i) {
+      const AtomicString& tag = settings->at(i).Tag();
       for (unsigned j = 0; j < tag.length(); j++)
-        stringHasher.addCharacter(tag[j]);
-      addToHash(hash, settings->at(i).value());
+        string_hasher.AddCharacter(tag[j]);
+      AddToHash(hash, settings->at(i).Value());
     }
   }
 
-  if (variationSettings())
-    addToHash(hash, variationSettings()->hash());
+  if (VariationSettings())
+    AddToHash(hash, VariationSettings()->GetHash());
 
-  if (m_locale) {
-    const AtomicString& locale = m_locale->localeString();
+  if (locale_) {
+    const AtomicString& locale = locale_->LocaleString();
     for (unsigned i = 0; i < locale.length(); i++)
-      stringHasher.addCharacter(locale[i]);
+      string_hasher.AddCharacter(locale[i]);
   }
-  addToHash(hash, stringHasher.hash());
+  AddToHash(hash, string_hasher.GetHash());
 
-  addFloatToHash(hash, m_specifiedSize);
-  addFloatToHash(hash, m_computedSize);
-  addFloatToHash(hash, m_adjustedSize);
-  addFloatToHash(hash, m_sizeAdjust);
-  addFloatToHash(hash, m_letterSpacing);
-  addFloatToHash(hash, m_wordSpacing);
-  addToHash(hash, m_fieldsAsUnsigned.parts[0]);
-  addToHash(hash, m_fieldsAsUnsigned.parts[1]);
+  AddFloatToHash(hash, specified_size_);
+  AddFloatToHash(hash, computed_size_);
+  AddFloatToHash(hash, adjusted_size_);
+  AddFloatToHash(hash, size_adjust_);
+  AddFloatToHash(hash, letter_spacing_);
+  AddFloatToHash(hash, word_spacing_);
+  AddToHash(hash, fields_as_unsigned_.parts[0]);
+  AddToHash(hash, fields_as_unsigned_.parts[1]);
 
   return hash;
 }
 
-SkFontStyle FontDescription::skiaFontStyle() const {
-  int width = static_cast<int>(stretch());
+SkFontStyle FontDescription::SkiaFontStyle() const {
+  int width = static_cast<int>(Stretch());
   SkFontStyle::Slant slant = SkFontStyle::kUpright_Slant;
-  switch (style()) {
-    case FontStyleNormal:
+  switch (Style()) {
+    case kFontStyleNormal:
       slant = SkFontStyle::kUpright_Slant;
       break;
-    case FontStyleItalic:
+    case kFontStyleItalic:
       slant = SkFontStyle::kItalic_Slant;
       break;
-    case FontStyleOblique:
+    case kFontStyleOblique:
       slant = SkFontStyle::kOblique_Slant;
       break;
     default:
       NOTREACHED();
       break;
   }
-  return SkFontStyle(numericFontWeight(weight()), width, slant);
+  return SkFontStyle(NumericFontWeight(Weight()), width, slant);
   static_assert(
-      static_cast<int>(FontStretchUltraCondensed) ==
+      static_cast<int>(kFontStretchUltraCondensed) ==
           static_cast<int>(SkFontStyle::kUltraCondensed_Width),
       "FontStretchUltraCondensed should map to kUltraCondensed_Width");
-  static_assert(static_cast<int>(FontStretchNormal) ==
+  static_assert(static_cast<int>(kFontStretchNormal) ==
                     static_cast<int>(SkFontStyle::kNormal_Width),
                 "FontStretchNormal should map to kNormal_Width");
-  static_assert(static_cast<int>(FontStretchUltraExpanded) ==
+  static_assert(static_cast<int>(kFontStretchUltraExpanded) ==
                     static_cast<int>(SkFontStyle::kUltraExpanded_Width),
                 "FontStretchUltraExpanded should map to kUltraExpanded_Width");
 }

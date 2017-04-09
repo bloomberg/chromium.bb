@@ -27,24 +27,24 @@
 namespace blink {
 
 bool ShadowData::operator==(const ShadowData& o) const {
-  return m_location == o.m_location && m_blur == o.m_blur &&
-         m_spread == o.m_spread && m_style == o.m_style && m_color == o.m_color;
+  return location_ == o.location_ && blur_ == o.blur_ && spread_ == o.spread_ &&
+         style_ == o.style_ && color_ == o.color_;
 }
 
-ShadowData ShadowData::blend(const ShadowData& from,
+ShadowData ShadowData::Blend(const ShadowData& from,
                              double progress,
-                             const Color& currentColor) const {
-  DCHECK_EQ(style(), from.style());
-  return ShadowData(blink::blend(from.location(), location(), progress),
-                    clampTo(blink::blend(from.blur(), blur(), progress), 0.0f),
-                    blink::blend(from.spread(), spread(), progress), style(),
-                    blink::blend(from.color().resolve(currentColor),
-                                 color().resolve(currentColor), progress));
+                             const Color& current_color) const {
+  DCHECK_EQ(Style(), from.Style());
+  return ShadowData(blink::Blend(from.Location(), Location(), progress),
+                    clampTo(blink::Blend(from.Blur(), Blur(), progress), 0.0f),
+                    blink::Blend(from.Spread(), Spread(), progress), Style(),
+                    blink::Blend(from.GetColor().Resolve(current_color),
+                                 GetColor().Resolve(current_color), progress));
 }
 
-ShadowData ShadowData::neutralValue() {
-  return ShadowData(FloatPoint(0, 0), 0, 0, Normal,
-                    StyleColor(Color::transparent));
+ShadowData ShadowData::NeutralValue() {
+  return ShadowData(FloatPoint(0, 0), 0, 0, kNormal,
+                    StyleColor(Color::kTransparent));
 }
 
 }  // namespace blink

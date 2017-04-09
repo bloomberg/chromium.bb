@@ -11,18 +11,18 @@ namespace blink {
 
 class NetworkHintsInterface {
  public:
-  virtual void dnsPrefetchHost(const String&) const = 0;
-  virtual void preconnectHost(const KURL&,
+  virtual void DnsPrefetchHost(const String&) const = 0;
+  virtual void PreconnectHost(const KURL&,
                               const CrossOriginAttributeValue) const = 0;
 };
 
 class NetworkHintsInterfaceImpl : public NetworkHintsInterface {
-  void dnsPrefetchHost(const String& host) const override { prefetchDNS(host); }
+  void DnsPrefetchHost(const String& host) const override { PrefetchDNS(host); }
 
-  void preconnectHost(
+  void PreconnectHost(
       const KURL& host,
-      const CrossOriginAttributeValue crossOrigin) const override {
-    preconnect(host, crossOrigin);
+      const CrossOriginAttributeValue cross_origin) const override {
+    Preconnect(host, cross_origin);
   }
 };
 

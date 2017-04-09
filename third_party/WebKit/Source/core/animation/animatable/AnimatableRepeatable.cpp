@@ -34,13 +34,13 @@
 
 namespace blink {
 
-bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const {
-  const Vector<RefPtr<AnimatableValue>>& otherValues =
-      toAnimatableRepeatable(value)->m_values;
-  if (m_values.size() != otherValues.size())
+bool AnimatableRepeatable::EqualTo(const AnimatableValue* value) const {
+  const Vector<RefPtr<AnimatableValue>>& other_values =
+      ToAnimatableRepeatable(value)->values_;
+  if (values_.size() != other_values.size())
     return false;
-  for (size_t i = 0; i < m_values.size(); ++i) {
-    if (!m_values[i]->equals(otherValues[i].get()))
+  for (size_t i = 0; i < values_.size(); ++i) {
+    if (!values_[i]->Equals(other_values[i].Get()))
       return false;
   }
   return true;

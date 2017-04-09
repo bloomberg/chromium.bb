@@ -32,53 +32,53 @@ class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
 
  public:
   enum Mode {
-    ModeUnknown = 0,
-    ModeNormal = 1,
-    ModeMultiply = 2,
-    ModeScreen = 3,
-    ModeDarken = 4,
-    ModeLighten = 5,
+    kModeUnknown = 0,
+    kModeNormal = 1,
+    kModeMultiply = 2,
+    kModeScreen = 3,
+    kModeDarken = 4,
+    kModeLighten = 5,
 
     // The following modes do not map to IDL constants on
     // SVGFEBlendElement.
-    ModeOverlay,
-    ModeColorDodge,
-    ModeColorBurn,
-    ModeHardLight,
-    ModeSoftLight,
-    ModeDifference,
-    ModeExclusion,
-    ModeHue,
-    ModeSaturation,
-    ModeColor,
-    ModeLuminosity,
+    kModeOverlay,
+    kModeColorDodge,
+    kModeColorBurn,
+    kModeHardLight,
+    kModeSoftLight,
+    kModeDifference,
+    kModeExclusion,
+    kModeHue,
+    kModeSaturation,
+    kModeColor,
+    kModeLuminosity,
   };
 
   DECLARE_NODE_FACTORY(SVGFEBlendElement);
-  SVGAnimatedString* in1() { return m_in1.get(); }
-  SVGAnimatedString* in2() { return m_in2.get(); }
-  SVGAnimatedEnumeration<Mode>* mode() { return m_mode.get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
+  SVGAnimatedString* in2() { return in2_.Get(); }
+  SVGAnimatedEnumeration<Mode>* mode() { return mode_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEBlendElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*,
-                                const QualifiedName& attrName) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*,
+                                const QualifiedName& attr_name) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedString> m_in1;
-  Member<SVGAnimatedString> m_in2;
-  Member<SVGAnimatedEnumeration<Mode>> m_mode;
+  Member<SVGAnimatedString> in1_;
+  Member<SVGAnimatedString> in2_;
+  Member<SVGAnimatedEnumeration<Mode>> mode_;
 };
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGFEBlendElement::Mode>();
+GetStaticStringEntries<SVGFEBlendElement::Mode>();
 template <>
-unsigned short getMaxExposedEnumValue<SVGFEBlendElement::Mode>();
+unsigned short GetMaxExposedEnumValue<SVGFEBlendElement::Mode>();
 
 }  // namespace blink
 

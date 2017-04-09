@@ -16,13 +16,13 @@ class WorkerReportingProxy;
 class MODULES_EXPORT AnimationWorkletThread final
     : public AbstractAnimationWorkletThread {
  public:
-  static std::unique_ptr<AnimationWorkletThread> create(
+  static std::unique_ptr<AnimationWorkletThread> Create(
       PassRefPtr<WorkerLoaderProxy>,
       WorkerReportingProxy&);
   ~AnimationWorkletThread() override;
 
  protected:
-  WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
+  WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<WorkerThreadStartupData>) final;
 
  private:

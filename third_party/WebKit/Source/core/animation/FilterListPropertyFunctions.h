@@ -15,32 +15,32 @@ class FilterListPropertyFunctions {
   STATIC_ONLY(FilterListPropertyFunctions);
 
  public:
-  static const FilterOperations& getInitialFilterList(CSSPropertyID property) {
-    return getFilterList(property, ComputedStyle::initialStyle());
+  static const FilterOperations& GetInitialFilterList(CSSPropertyID property) {
+    return GetFilterList(property, ComputedStyle::InitialStyle());
   }
 
-  static const FilterOperations& getFilterList(CSSPropertyID property,
+  static const FilterOperations& GetFilterList(CSSPropertyID property,
                                                const ComputedStyle& style) {
     switch (property) {
       default:
         NOTREACHED();
       // Fall through.
       case CSSPropertyBackdropFilter:
-        return style.backdropFilter();
+        return style.BackdropFilter();
       case CSSPropertyFilter:
-        return style.filter();
+        return style.Filter();
     }
   }
 
-  static void setFilterList(CSSPropertyID property,
+  static void SetFilterList(CSSPropertyID property,
                             ComputedStyle& style,
-                            const FilterOperations& filterOperations) {
+                            const FilterOperations& filter_operations) {
     switch (property) {
       case CSSPropertyBackdropFilter:
-        style.setBackdropFilter(filterOperations);
+        style.SetBackdropFilter(filter_operations);
         break;
       case CSSPropertyFilter:
-        style.setFilter(filterOperations);
+        style.SetFilter(filter_operations);
         break;
       default:
         NOTREACHED();

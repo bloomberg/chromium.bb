@@ -14,38 +14,38 @@ class SVGValueNonInterpolableValue : public NonInterpolableValue {
  public:
   virtual ~SVGValueNonInterpolableValue() {}
 
-  static PassRefPtr<SVGValueNonInterpolableValue> create(
-      SVGPropertyBase* svgValue) {
-    return adoptRef(new SVGValueNonInterpolableValue(svgValue));
+  static PassRefPtr<SVGValueNonInterpolableValue> Create(
+      SVGPropertyBase* svg_value) {
+    return AdoptRef(new SVGValueNonInterpolableValue(svg_value));
   }
 
-  SVGPropertyBase* svgValue() const { return m_svgValue; }
+  SVGPropertyBase* SvgValue() const { return svg_value_; }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
-  SVGValueNonInterpolableValue(SVGPropertyBase* svgValue)
-      : m_svgValue(svgValue) {}
+  SVGValueNonInterpolableValue(SVGPropertyBase* svg_value)
+      : svg_value_(svg_value) {}
 
-  Persistent<SVGPropertyBase> m_svgValue;
+  Persistent<SVGPropertyBase> svg_value_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(SVGValueNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(SVGValueNonInterpolableValue);
 
-InterpolationValue SVGValueInterpolationType::maybeConvertSVGValue(
+InterpolationValue SVGValueInterpolationType::MaybeConvertSVGValue(
     const SVGPropertyBase& value) const {
-  SVGPropertyBase* referencedValue =
+  SVGPropertyBase* referenced_value =
       const_cast<SVGPropertyBase*>(&value);  // Take ref.
   return InterpolationValue(
-      InterpolableList::create(0),
-      SVGValueNonInterpolableValue::create(referencedValue));
+      InterpolableList::Create(0),
+      SVGValueNonInterpolableValue::Create(referenced_value));
 }
 
-SVGPropertyBase* SVGValueInterpolationType::appliedSVGValue(
+SVGPropertyBase* SVGValueInterpolationType::AppliedSVGValue(
     const InterpolableValue&,
-    const NonInterpolableValue* nonInterpolableValue) const {
-  return toSVGValueNonInterpolableValue(*nonInterpolableValue).svgValue();
+    const NonInterpolableValue* non_interpolable_value) const {
+  return ToSVGValueNonInterpolableValue(*non_interpolable_value).SvgValue();
 }
 
 }  // namespace blink

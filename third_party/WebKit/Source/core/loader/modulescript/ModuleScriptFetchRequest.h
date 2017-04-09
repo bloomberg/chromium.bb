@@ -25,22 +25,22 @@ class ModuleScriptFetchRequest final {
  public:
   ModuleScriptFetchRequest(const KURL& url,
                            const String& nonce,
-                           ParserDisposition parserState,
-                           WebURLRequest::FetchCredentialsMode credentialsMode)
+                           ParserDisposition parser_state,
+                           WebURLRequest::FetchCredentialsMode credentials_mode)
       : ModuleScriptFetchRequest(url,
                                  nonce,
-                                 parserState,
-                                 credentialsMode,
-                                 Referrer::noReferrer()) {}
+                                 parser_state,
+                                 credentials_mode,
+                                 Referrer::NoReferrer()) {}
   ~ModuleScriptFetchRequest() = default;
 
-  const KURL& url() const { return m_url; }
-  const String& nonce() const { return m_nonce; }
-  const ParserDisposition& parserState() const { return m_parserState; }
-  WebURLRequest::FetchCredentialsMode credentialsMode() const {
-    return m_credentialsMode;
+  const KURL& Url() const { return url_; }
+  const String& Nonce() const { return nonce_; }
+  const ParserDisposition& ParserState() const { return parser_state_; }
+  WebURLRequest::FetchCredentialsMode CredentialsMode() const {
+    return credentials_mode_;
   }
-  const AtomicString& referrer() const { return m_referrer; }
+  const AtomicString& GetReferrer() const { return referrer_; }
 
  private:
   // Referrer is set only for internal module script fetch algorithms triggered
@@ -48,20 +48,20 @@ class ModuleScriptFetchRequest final {
   friend class ModuleTreeLinker;
   ModuleScriptFetchRequest(const KURL& url,
                            const String& nonce,
-                           ParserDisposition parserState,
-                           WebURLRequest::FetchCredentialsMode credentialsMode,
+                           ParserDisposition parser_state,
+                           WebURLRequest::FetchCredentialsMode credentials_mode,
                            const String& referrer)
-      : m_url(url),
-        m_nonce(nonce),
-        m_parserState(parserState),
-        m_credentialsMode(credentialsMode),
-        m_referrer(referrer) {}
+      : url_(url),
+        nonce_(nonce),
+        parser_state_(parser_state),
+        credentials_mode_(credentials_mode),
+        referrer_(referrer) {}
 
-  const KURL m_url;
-  const String m_nonce;
-  const ParserDisposition m_parserState;
-  const WebURLRequest::FetchCredentialsMode m_credentialsMode;
-  const AtomicString m_referrer;
+  const KURL url_;
+  const String nonce_;
+  const ParserDisposition parser_state_;
+  const WebURLRequest::FetchCredentialsMode credentials_mode_;
+  const AtomicString referrer_;
 };
 
 }  // namespace blink

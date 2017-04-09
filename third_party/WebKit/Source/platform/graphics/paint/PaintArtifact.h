@@ -38,58 +38,58 @@ class PLATFORM_EXPORT PaintArtifact final {
   PaintArtifact();
   PaintArtifact(DisplayItemList,
                 Vector<PaintChunk>,
-                bool isSuitableForGpuRasterization);
+                bool is_suitable_for_gpu_rasterization);
   PaintArtifact(PaintArtifact&&);
   ~PaintArtifact();
 
   PaintArtifact& operator=(PaintArtifact&&);
 
-  bool isEmpty() const { return m_displayItemList.isEmpty(); }
+  bool IsEmpty() const { return display_item_list_.IsEmpty(); }
 
-  DisplayItemList& getDisplayItemList() { return m_displayItemList; }
-  const DisplayItemList& getDisplayItemList() const {
-    return m_displayItemList;
+  DisplayItemList& GetDisplayItemList() { return display_item_list_; }
+  const DisplayItemList& GetDisplayItemList() const {
+    return display_item_list_;
   }
 
-  Vector<PaintChunk>& paintChunks() { return m_paintChunks; }
-  const Vector<PaintChunk>& paintChunks() const { return m_paintChunks; }
+  Vector<PaintChunk>& PaintChunks() { return paint_chunks_; }
+  const Vector<PaintChunk>& PaintChunks() const { return paint_chunks_; }
 
-  Vector<PaintChunk>::const_iterator findChunkByDisplayItemIndex(
+  Vector<PaintChunk>::const_iterator FindChunkByDisplayItemIndex(
       size_t index) const {
-    return findChunkInVectorByDisplayItemIndex(m_paintChunks, index);
+    return FindChunkInVectorByDisplayItemIndex(paint_chunks_, index);
   }
 
-  bool isSuitableForGpuRasterization() const {
-    return m_isSuitableForGpuRasterization;
+  bool IsSuitableForGpuRasterization() const {
+    return is_suitable_for_gpu_rasterization_;
   }
 
   // Resets to an empty paint artifact.
-  void reset();
+  void Reset();
 
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to WebDisplayItemList.
-  size_t approximateUnsharedMemoryUsage() const;
+  size_t ApproximateUnsharedMemoryUsage() const;
 
   // Draws the paint artifact to a GraphicsContext.
   // |bounds| is the bounding box of the paint artifact's display list.
-  void replay(const FloatRect& bounds, GraphicsContext&) const;
+  void Replay(const FloatRect& bounds, GraphicsContext&) const;
 
   // Draws the paint artifact to a PaintCanvas.
   // |bounds| is the bounding box of the paint artifact's display list.
   // SPv2 only.
   // In SPv2 mode, replays into the ancestor state given by |replayState|.
-  void replay(
+  void Replay(
       const FloatRect& bounds,
       PaintCanvas&,
-      const PropertyTreeState& replayState = PropertyTreeState::root()) const;
+      const PropertyTreeState& replay_state = PropertyTreeState::Root()) const;
 
   // Writes the paint artifact into a WebDisplayItemList.
-  void appendToWebDisplayItemList(WebDisplayItemList*) const;
+  void AppendToWebDisplayItemList(WebDisplayItemList*) const;
 
  private:
-  DisplayItemList m_displayItemList;
-  Vector<PaintChunk> m_paintChunks;
-  bool m_isSuitableForGpuRasterization;
+  DisplayItemList display_item_list_;
+  Vector<PaintChunk> paint_chunks_;
+  bool is_suitable_for_gpu_rasterization_;
 };
 
 }  // namespace blink

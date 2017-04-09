@@ -13,7 +13,7 @@ namespace mojo {
 
 template <>
 struct StringTraits<WTF::String> {
-  static bool IsNull(const WTF::String& input) { return input.isNull(); }
+  static bool IsNull(const WTF::String& input) { return input.IsNull(); }
   static void SetToNull(WTF::String* output);
 
   static void* SetUpContext(const WTF::String& input);

@@ -39,41 +39,41 @@ int32_t g_horizontal_arrow_bitmap_width;
 static ui::NativeTheme::Part NativeThemePart(
     WebThemeEngine::Part part) {
   switch (part) {
-    case WebThemeEngine::PartScrollbarDownArrow:
+    case WebThemeEngine::kPartScrollbarDownArrow:
       return ui::NativeTheme::kScrollbarDownArrow;
-    case WebThemeEngine::PartScrollbarLeftArrow:
+    case WebThemeEngine::kPartScrollbarLeftArrow:
       return ui::NativeTheme::kScrollbarLeftArrow;
-    case WebThemeEngine::PartScrollbarRightArrow:
+    case WebThemeEngine::kPartScrollbarRightArrow:
       return ui::NativeTheme::kScrollbarRightArrow;
-    case WebThemeEngine::PartScrollbarUpArrow:
+    case WebThemeEngine::kPartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
-    case WebThemeEngine::PartScrollbarHorizontalThumb:
+    case WebThemeEngine::kPartScrollbarHorizontalThumb:
       return ui::NativeTheme::kScrollbarHorizontalThumb;
-    case WebThemeEngine::PartScrollbarVerticalThumb:
+    case WebThemeEngine::kPartScrollbarVerticalThumb:
       return ui::NativeTheme::kScrollbarVerticalThumb;
-    case WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebThemeEngine::kPartScrollbarHorizontalTrack:
       return ui::NativeTheme::kScrollbarHorizontalTrack;
-    case WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebThemeEngine::kPartScrollbarVerticalTrack:
       return ui::NativeTheme::kScrollbarVerticalTrack;
-    case WebThemeEngine::PartScrollbarCorner:
+    case WebThemeEngine::kPartScrollbarCorner:
       return ui::NativeTheme::kScrollbarCorner;
-    case WebThemeEngine::PartCheckbox:
+    case WebThemeEngine::kPartCheckbox:
       return ui::NativeTheme::kCheckbox;
-    case WebThemeEngine::PartRadio:
+    case WebThemeEngine::kPartRadio:
       return ui::NativeTheme::kRadio;
-    case WebThemeEngine::PartButton:
+    case WebThemeEngine::kPartButton:
       return ui::NativeTheme::kPushButton;
-    case WebThemeEngine::PartTextField:
+    case WebThemeEngine::kPartTextField:
       return ui::NativeTheme::kTextField;
-    case WebThemeEngine::PartMenuList:
+    case WebThemeEngine::kPartMenuList:
       return ui::NativeTheme::kMenuList;
-    case WebThemeEngine::PartSliderTrack:
+    case WebThemeEngine::kPartSliderTrack:
       return ui::NativeTheme::kSliderTrack;
-    case WebThemeEngine::PartSliderThumb:
+    case WebThemeEngine::kPartSliderThumb:
       return ui::NativeTheme::kSliderThumb;
-    case WebThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::kPartInnerSpinButton:
       return ui::NativeTheme::kInnerSpinButton;
-    case WebThemeEngine::PartProgressBar:
+    case WebThemeEngine::kPartProgressBar:
       return ui::NativeTheme::kProgressBar;
     default:
       return ui::NativeTheme::kScrollbarDownArrow;
@@ -83,9 +83,9 @@ static ui::NativeTheme::Part NativeThemePart(
 static ui::NativeTheme::ScrollbarOverlayColorTheme
 NativeThemeScrollbarOverlayColorTheme(WebScrollbarOverlayColorTheme theme) {
   switch (theme) {
-    case WebScrollbarOverlayColorTheme::WebScrollbarOverlayColorThemeLight:
+    case WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeLight:
       return ui::NativeTheme::ScrollbarOverlayColorThemeLight;
-    case WebScrollbarOverlayColorTheme::WebScrollbarOverlayColorThemeDark:
+    case WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeDark:
       return ui::NativeTheme::ScrollbarOverlayColorThemeDark;
     default:
       return ui::NativeTheme::ScrollbarOverlayColorThemeDark;
@@ -95,13 +95,13 @@ NativeThemeScrollbarOverlayColorTheme(WebScrollbarOverlayColorTheme theme) {
 static ui::NativeTheme::State NativeThemeState(
     WebThemeEngine::State state) {
   switch (state) {
-    case WebThemeEngine::StateDisabled:
+    case WebThemeEngine::kStateDisabled:
       return ui::NativeTheme::kDisabled;
-    case WebThemeEngine::StateHover:
+    case WebThemeEngine::kStateHover:
       return ui::NativeTheme::kHovered;
-    case WebThemeEngine::StateNormal:
+    case WebThemeEngine::kStateNormal:
       return ui::NativeTheme::kNormal;
-    case WebThemeEngine::StatePressed:
+    case WebThemeEngine::kStatePressed:
       return ui::NativeTheme::kPressed;
     default:
       return ui::NativeTheme::kDisabled;
@@ -117,95 +117,95 @@ static void GetNativeThemeExtraParams(
     return;
 
   switch (part) {
-    case WebThemeEngine::PartScrollbarHorizontalTrack:
-    case WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebThemeEngine::kPartScrollbarHorizontalTrack:
+    case WebThemeEngine::kPartScrollbarVerticalTrack:
       native_theme_extra_params->scrollbar_track.track_x =
-          extra_params->scrollbarTrack.trackX;
+          extra_params->scrollbar_track.track_x;
       native_theme_extra_params->scrollbar_track.track_y =
-          extra_params->scrollbarTrack.trackY;
+          extra_params->scrollbar_track.track_y;
       native_theme_extra_params->scrollbar_track.track_width =
-          extra_params->scrollbarTrack.trackWidth;
+          extra_params->scrollbar_track.track_width;
       native_theme_extra_params->scrollbar_track.track_height =
-          extra_params->scrollbarTrack.trackHeight;
+          extra_params->scrollbar_track.track_height;
       break;
-    case WebThemeEngine::PartCheckbox:
+    case WebThemeEngine::kPartCheckbox:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       native_theme_extra_params->button.indeterminate =
           extra_params->button.indeterminate;
       break;
-    case WebThemeEngine::PartRadio:
+    case WebThemeEngine::kPartRadio:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
-    case WebThemeEngine::PartButton:
+    case WebThemeEngine::kPartButton:
       native_theme_extra_params->button.is_default =
-          extra_params->button.isDefault;
+          extra_params->button.is_default;
       native_theme_extra_params->button.has_border =
-          extra_params->button.hasBorder;
+          extra_params->button.has_border;
       // Native buttons have a different focus style.
       native_theme_extra_params->button.is_focused = false;
       native_theme_extra_params->button.background_color =
-          extra_params->button.backgroundColor;
+          extra_params->button.background_color;
       break;
-    case WebThemeEngine::PartTextField:
+    case WebThemeEngine::kPartTextField:
       native_theme_extra_params->text_field.is_text_area =
-          extra_params->textField.isTextArea;
+          extra_params->text_field.is_text_area;
       native_theme_extra_params->text_field.is_listbox =
-          extra_params->textField.isListbox;
+          extra_params->text_field.is_listbox;
       native_theme_extra_params->text_field.background_color =
-          extra_params->textField.backgroundColor;
+          extra_params->text_field.background_color;
       break;
-    case WebThemeEngine::PartMenuList:
+    case WebThemeEngine::kPartMenuList:
       native_theme_extra_params->menu_list.has_border =
-          extra_params->menuList.hasBorder;
+          extra_params->menu_list.has_border;
       native_theme_extra_params->menu_list.has_border_radius =
-          extra_params->menuList.hasBorderRadius;
+          extra_params->menu_list.has_border_radius;
       native_theme_extra_params->menu_list.arrow_x =
-          extra_params->menuList.arrowX;
+          extra_params->menu_list.arrow_x;
       native_theme_extra_params->menu_list.arrow_y =
-          extra_params->menuList.arrowY;
+          extra_params->menu_list.arrow_y;
       native_theme_extra_params->menu_list.arrow_size =
-          extra_params->menuList.arrowSize;
+          extra_params->menu_list.arrow_size;
       native_theme_extra_params->menu_list.arrow_color =
-          extra_params->menuList.arrowColor;
+          extra_params->menu_list.arrow_color;
       native_theme_extra_params->menu_list.background_color =
-          extra_params->menuList.backgroundColor;
+          extra_params->menu_list.background_color;
       break;
-    case WebThemeEngine::PartSliderTrack:
-    case WebThemeEngine::PartSliderThumb:
+    case WebThemeEngine::kPartSliderTrack:
+    case WebThemeEngine::kPartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;
-      native_theme_extra_params->slider.in_drag = extra_params->slider.inDrag;
+      native_theme_extra_params->slider.in_drag = extra_params->slider.in_drag;
       break;
-    case WebThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::kPartInnerSpinButton:
       native_theme_extra_params->inner_spin.spin_up =
-          extra_params->innerSpin.spinUp;
+          extra_params->inner_spin.spin_up;
       native_theme_extra_params->inner_spin.read_only =
-          extra_params->innerSpin.readOnly;
+          extra_params->inner_spin.read_only;
       break;
-    case WebThemeEngine::PartProgressBar:
+    case WebThemeEngine::kPartProgressBar:
       native_theme_extra_params->progress_bar.determinate =
-          extra_params->progressBar.determinate;
+          extra_params->progress_bar.determinate;
       native_theme_extra_params->progress_bar.value_rect_x =
-          extra_params->progressBar.valueRectX;
+          extra_params->progress_bar.value_rect_x;
       native_theme_extra_params->progress_bar.value_rect_y =
-          extra_params->progressBar.valueRectY;
+          extra_params->progress_bar.value_rect_y;
       native_theme_extra_params->progress_bar.value_rect_width =
-          extra_params->progressBar.valueRectWidth;
+          extra_params->progress_bar.value_rect_width;
       native_theme_extra_params->progress_bar.value_rect_height =
-          extra_params->progressBar.valueRectHeight;
+          extra_params->progress_bar.value_rect_height;
       break;
-    case WebThemeEngine::PartScrollbarHorizontalThumb:
-    case WebThemeEngine::PartScrollbarVerticalThumb:
+    case WebThemeEngine::kPartScrollbarHorizontalThumb:
+    case WebThemeEngine::kPartScrollbarVerticalThumb:
       native_theme_extra_params->scrollbar_thumb.scrollbar_theme =
           NativeThemeScrollbarOverlayColorTheme(
-              extra_params->scrollbarThumb.scrollbarTheme);
+              extra_params->scrollbar_thumb.scrollbar_theme);
       break;
     default:
       break;  // Parts that have no extra params get here.
   }
 }
 
-blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
+blink::WebSize WebThemeEngineImpl::GetSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
   ui::NativeTheme::Part native_theme_part = NativeThemePart(part);
 #if defined(OS_WIN)
@@ -230,7 +230,7 @@ blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
       native_theme_part, ui::NativeTheme::kNormal, extra);
 }
 
-void WebThemeEngineImpl::paint(
+void WebThemeEngineImpl::Paint(
     blink::WebCanvas* canvas,
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
@@ -244,26 +244,27 @@ void WebThemeEngineImpl::paint(
       native_theme_extra_params);
 }
 
-void WebThemeEngineImpl::getOverlayScrollbarStyle(ScrollbarStyle* style) {
-  style->fadeOutDelaySeconds = ui::kOverlayScrollbarFadeOutDelay.InSecondsF();
-  style->fadeOutDurationSeconds =
+void WebThemeEngineImpl::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
+  style->fade_out_delay_seconds =
+      ui::kOverlayScrollbarFadeOutDelay.InSecondsF();
+  style->fade_out_duration_seconds =
       ui::kOverlayScrollbarFadeOutDuration.InSecondsF();
   // The other fields in this struct are used only on Android to draw solid
   // color scrollbars. On other platforms the scrollbars are painted in
   // NativeTheme so these fields are unused.
 }
 
-bool WebThemeEngineImpl::supportsNinePatch(Part part) const {
+bool WebThemeEngineImpl::SupportsNinePatch(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->SupportsNinePatch(
       NativeThemePart(part));
 }
 
-blink::WebSize WebThemeEngineImpl::ninePatchCanvasSize(Part part) const {
+blink::WebSize WebThemeEngineImpl::NinePatchCanvasSize(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchCanvasSize(
       NativeThemePart(part));
 }
 
-blink::WebRect WebThemeEngineImpl::ninePatchAperture(Part part) const {
+blink::WebRect WebThemeEngineImpl::NinePatchAperture(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchAperture(
       NativeThemePart(part));
 }

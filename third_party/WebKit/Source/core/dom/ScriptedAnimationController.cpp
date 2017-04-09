@@ -37,172 +37,172 @@
 
 namespace blink {
 
-std::pair<EventTarget*, StringImpl*> eventTargetKey(const Event* event) {
-  return std::make_pair(event->target(), event->type().impl());
+std::pair<EventTarget*, StringImpl*> EventTargetKey(const Event* event) {
+  return std::make_pair(event->target(), event->type().Impl());
 }
 
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
-    : m_document(document), m_callbackCollection(document), m_suspendCount(0) {}
+    : document_(document), callback_collection_(document), suspend_count_(0) {}
 
 DEFINE_TRACE(ScriptedAnimationController) {
-  visitor->trace(m_document);
-  visitor->trace(m_callbackCollection);
-  visitor->trace(m_eventQueue);
-  visitor->trace(m_mediaQueryListListeners);
-  visitor->trace(m_perFrameEvents);
+  visitor->Trace(document_);
+  visitor->Trace(callback_collection_);
+  visitor->Trace(event_queue_);
+  visitor->Trace(media_query_list_listeners_);
+  visitor->Trace(per_frame_events_);
 }
 
-void ScriptedAnimationController::suspend() {
-  ++m_suspendCount;
+void ScriptedAnimationController::Suspend() {
+  ++suspend_count_;
 }
 
-void ScriptedAnimationController::resume() {
+void ScriptedAnimationController::Resume() {
   // It would be nice to put an DCHECK(m_suspendCount > 0) here, but in WK1
   // resume() can be called even when suspend hasn't (if a tab was created in
   // the background).
-  if (m_suspendCount > 0)
-    --m_suspendCount;
-  scheduleAnimationIfNeeded();
+  if (suspend_count_ > 0)
+    --suspend_count_;
+  ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::dispatchEventsAndCallbacksForPrinting() {
-  dispatchEvents(EventNames::MediaQueryListEvent);
-  callMediaQueryListListeners();
+void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
+  DispatchEvents(EventNames::MediaQueryListEvent);
+  CallMediaQueryListListeners();
 }
 
 ScriptedAnimationController::CallbackId
-ScriptedAnimationController::registerCallback(FrameRequestCallback* callback) {
-  CallbackId id = m_callbackCollection.registerCallback(callback);
-  scheduleAnimationIfNeeded();
+ScriptedAnimationController::RegisterCallback(FrameRequestCallback* callback) {
+  CallbackId id = callback_collection_.RegisterCallback(callback);
+  ScheduleAnimationIfNeeded();
   return id;
 }
 
-void ScriptedAnimationController::cancelCallback(CallbackId id) {
-  m_callbackCollection.cancelCallback(id);
+void ScriptedAnimationController::CancelCallback(CallbackId id) {
+  callback_collection_.CancelCallback(id);
 }
 
-void ScriptedAnimationController::runTasks() {
+void ScriptedAnimationController::RunTasks() {
   Vector<std::unique_ptr<WTF::Closure>> tasks;
-  tasks.swap(m_taskQueue);
+  tasks.Swap(task_queue_);
   for (auto& task : tasks)
     (*task)();
 }
 
-void ScriptedAnimationController::dispatchEvents(
-    const AtomicString& eventInterfaceFilter) {
+void ScriptedAnimationController::DispatchEvents(
+    const AtomicString& event_interface_filter) {
   HeapVector<Member<Event>> events;
-  if (eventInterfaceFilter.isEmpty()) {
-    events.swap(m_eventQueue);
-    m_perFrameEvents.clear();
+  if (event_interface_filter.IsEmpty()) {
+    events.Swap(event_queue_);
+    per_frame_events_.Clear();
   } else {
     HeapVector<Member<Event>> remaining;
-    for (auto& event : m_eventQueue) {
-      if (event && event->interfaceName() == eventInterfaceFilter) {
-        m_perFrameEvents.erase(eventTargetKey(event.get()));
-        events.push_back(event.release());
+    for (auto& event : event_queue_) {
+      if (event && event->InterfaceName() == event_interface_filter) {
+        per_frame_events_.erase(EventTargetKey(event.Get()));
+        events.push_back(event.Release());
       } else {
-        remaining.push_back(event.release());
+        remaining.push_back(event.Release());
       }
     }
-    remaining.swap(m_eventQueue);
+    remaining.Swap(event_queue_);
   }
 
   for (const auto& event : events) {
-    EventTarget* eventTarget = event->target();
+    EventTarget* event_target = event->target();
     // FIXME: we should figure out how to make dispatchEvent properly virtual to
     // avoid special casting window.
     // FIXME: We should not fire events for nodes that are no longer in the
     // tree.
-    probe::AsyncTask asyncTask(eventTarget->getExecutionContext(), event);
-    if (LocalDOMWindow* window = eventTarget->toLocalDOMWindow())
-      window->dispatchEvent(event, nullptr);
+    probe::AsyncTask async_task(event_target->GetExecutionContext(), event);
+    if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
+      window->DispatchEvent(event, nullptr);
     else
-      eventTarget->dispatchEvent(event);
+      event_target->DispatchEvent(event);
   }
 }
 
-void ScriptedAnimationController::executeCallbacks(double monotonicTimeNow) {
+void ScriptedAnimationController::ExecuteCallbacks(double monotonic_time_now) {
   // dispatchEvents() runs script which can cause the document to be destroyed.
-  if (!m_document)
+  if (!document_)
     return;
 
-  double highResNowMs =
+  double high_res_now_ms =
       1000.0 *
-      m_document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(
-          monotonicTimeNow);
-  double legacyHighResNowMs =
-      1000.0 *
-      m_document->loader()->timing().monotonicTimeToPseudoWallTime(
-          monotonicTimeNow);
-  m_callbackCollection.executeCallbacks(highResNowMs, legacyHighResNowMs);
+      document_->Loader()->GetTiming().MonotonicTimeToZeroBasedDocumentTime(
+          monotonic_time_now);
+  double legacy_high_res_now_ms =
+      1000.0 * document_->Loader()->GetTiming().MonotonicTimeToPseudoWallTime(
+                   monotonic_time_now);
+  callback_collection_.ExecuteCallbacks(high_res_now_ms,
+                                        legacy_high_res_now_ms);
 }
 
-void ScriptedAnimationController::callMediaQueryListListeners() {
+void ScriptedAnimationController::CallMediaQueryListListeners() {
   MediaQueryListListeners listeners;
-  listeners.swap(m_mediaQueryListListeners);
+  listeners.Swap(media_query_list_listeners_);
 
   for (const auto& listener : listeners) {
-    listener->notifyMediaQueryChanged();
+    listener->NotifyMediaQueryChanged();
   }
 }
 
-bool ScriptedAnimationController::hasScheduledItems() const {
-  if (m_suspendCount)
+bool ScriptedAnimationController::HasScheduledItems() const {
+  if (suspend_count_)
     return false;
 
-  return !m_callbackCollection.isEmpty() || !m_taskQueue.isEmpty() ||
-         !m_eventQueue.isEmpty() || !m_mediaQueryListListeners.isEmpty();
+  return !callback_collection_.IsEmpty() || !task_queue_.IsEmpty() ||
+         !event_queue_.IsEmpty() || !media_query_list_listeners_.IsEmpty();
 }
 
-void ScriptedAnimationController::serviceScriptedAnimations(
-    double monotonicTimeNow) {
-  if (!hasScheduledItems())
+void ScriptedAnimationController::ServiceScriptedAnimations(
+    double monotonic_time_now) {
+  if (!HasScheduledItems())
     return;
 
-  callMediaQueryListListeners();
-  dispatchEvents();
-  runTasks();
-  executeCallbacks(monotonicTimeNow);
+  CallMediaQueryListListeners();
+  DispatchEvents();
+  RunTasks();
+  ExecuteCallbacks(monotonic_time_now);
 
-  scheduleAnimationIfNeeded();
+  ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueueTask(
+void ScriptedAnimationController::EnqueueTask(
     std::unique_ptr<WTF::Closure> task) {
-  m_taskQueue.push_back(std::move(task));
-  scheduleAnimationIfNeeded();
+  task_queue_.push_back(std::move(task));
+  ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueueEvent(Event* event) {
-  probe::asyncTaskScheduled(event->target()->getExecutionContext(),
+void ScriptedAnimationController::EnqueueEvent(Event* event) {
+  probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
                             event->type(), event);
-  m_eventQueue.push_back(event);
-  scheduleAnimationIfNeeded();
+  event_queue_.push_back(event);
+  ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueuePerFrameEvent(Event* event) {
-  if (!m_perFrameEvents.insert(eventTargetKey(event)).isNewEntry)
+void ScriptedAnimationController::EnqueuePerFrameEvent(Event* event) {
+  if (!per_frame_events_.insert(EventTargetKey(event)).is_new_entry)
     return;
-  enqueueEvent(event);
+  EnqueueEvent(event);
 }
 
-void ScriptedAnimationController::enqueueMediaQueryChangeListeners(
+void ScriptedAnimationController::EnqueueMediaQueryChangeListeners(
     HeapVector<Member<MediaQueryListListener>>& listeners) {
   for (const auto& listener : listeners) {
-    m_mediaQueryListListeners.insert(listener);
+    media_query_list_listeners_.insert(listener);
   }
-  scheduleAnimationIfNeeded();
+  ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::scheduleAnimationIfNeeded() {
-  if (!hasScheduledItems())
+void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
+  if (!HasScheduledItems())
     return;
 
-  if (!m_document)
+  if (!document_)
     return;
 
-  if (FrameView* frameView = m_document->view())
-    frameView->scheduleAnimation();
+  if (FrameView* frame_view = document_->View())
+    frame_view->ScheduleAnimation();
 }
 
 }  // namespace blink

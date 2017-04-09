@@ -13,22 +13,22 @@ namespace blink {
 
 SimDisplayItemList::SimDisplayItemList() {}
 
-void SimDisplayItemList::appendDrawingItem(const WebRect&,
+void SimDisplayItemList::AppendDrawingItem(const WebRect&,
                                            sk_sp<const PaintRecord> record) {
   SkIRect bounds = record->cullRect().roundOut();
   SimCanvas canvas(bounds.width(), bounds.height());
   record->playback(&canvas);
-  m_commands.append(canvas.commands().data(), canvas.commands().size());
+  commands_.Append(canvas.Commands().Data(), canvas.Commands().size());
 }
 
-bool SimDisplayItemList::contains(SimCanvas::CommandType type,
-                                  const String& colorString) const {
+bool SimDisplayItemList::Contains(SimCanvas::CommandType type,
+                                  const String& color_string) const {
   Color color = 0;
-  if (!colorString.isNull())
-    CHECK(CSSParser::parseColor(color, colorString, true));
-  for (auto& command : m_commands) {
+  if (!color_string.IsNull())
+    CHECK(CSSParser::ParseColor(color, color_string, true));
+  for (auto& command : commands_) {
     if (command.type == type &&
-        (colorString.isNull() || command.color == color.rgb()))
+        (color_string.IsNull() || command.color == color.Rgb()))
       return true;
   }
   return false;

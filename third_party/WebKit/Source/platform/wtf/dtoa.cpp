@@ -40,57 +40,57 @@
 
 namespace WTF {
 
-const char* numberToString(double d, NumberToStringBuffer buffer) {
-  double_conversion::StringBuilder builder(buffer, NumberToStringBufferLength);
+const char* NumberToString(double d, NumberToStringBuffer buffer) {
+  double_conversion::StringBuilder builder(buffer, kNumberToStringBufferLength);
   const double_conversion::DoubleToStringConverter& converter =
       double_conversion::DoubleToStringConverter::EcmaScriptConverter();
   converter.ToShortest(d, &builder);
   return builder.Finalize();
 }
 
-static inline const char* formatStringTruncatingTrailingZerosIfNeeded(
+static inline const char* FormatStringTruncatingTrailingZerosIfNeeded(
     NumberToStringBuffer buffer,
     double_conversion::StringBuilder& builder) {
-  size_t length = builder.position();
+  size_t length = builder.GetPosition();
 
   // If there is an exponent, stripping trailing zeros would be incorrect.
   // FIXME: Zeros should be stripped before the 'e'.
   if (memchr(buffer, 'e', length))
     return builder.Finalize();
 
-  size_t decimalPointPosition = 0;
-  for (; decimalPointPosition < length; ++decimalPointPosition) {
-    if (buffer[decimalPointPosition] == '.')
+  size_t decimal_point_position = 0;
+  for (; decimal_point_position < length; ++decimal_point_position) {
+    if (buffer[decimal_point_position] == '.')
       break;
   }
 
   // No decimal seperator found, early exit.
-  if (decimalPointPosition == length)
+  if (decimal_point_position == length)
     return builder.Finalize();
 
-  size_t truncatedLength = length - 1;
-  for (; truncatedLength > decimalPointPosition; --truncatedLength) {
-    if (buffer[truncatedLength] != '0')
+  size_t truncated_length = length - 1;
+  for (; truncated_length > decimal_point_position; --truncated_length) {
+    if (buffer[truncated_length] != '0')
       break;
   }
 
   // No trailing zeros found to strip.
-  if (truncatedLength == length - 1)
+  if (truncated_length == length - 1)
     return builder.Finalize();
 
   // If we removed all trailing zeros, remove the decimal point as well.
-  if (truncatedLength == decimalPointPosition) {
-    DCHECK_GT(truncatedLength, 0u);
-    --truncatedLength;
+  if (truncated_length == decimal_point_position) {
+    DCHECK_GT(truncated_length, 0u);
+    --truncated_length;
   }
 
   // Truncate the StringBuilder, and return the final result.
-  builder.SetPosition(truncatedLength + 1);
+  builder.SetPosition(truncated_length + 1);
   return builder.Finalize();
 }
 
-const char* numberToFixedPrecisionString(double d,
-                                         unsigned significantFigures,
+const char* NumberToFixedPrecisionString(double d,
+                                         unsigned significant_figures,
                                          NumberToStringBuffer buffer) {
   // Mimic String::format("%.[precision]g", ...), but use dtoas rounding
   // facilities.
@@ -102,18 +102,18 @@ const char* numberToFixedPrecisionString(double d,
   // it.
   // "precision": The precision specifies the maximum number of significant
   // digits printed.
-  double_conversion::StringBuilder builder(buffer, NumberToStringBufferLength);
+  double_conversion::StringBuilder builder(buffer, kNumberToStringBufferLength);
   const double_conversion::DoubleToStringConverter& converter =
       double_conversion::DoubleToStringConverter::EcmaScriptConverter();
-  converter.ToPrecision(d, significantFigures, &builder);
+  converter.ToPrecision(d, significant_figures, &builder);
   // FIXME: Trailing zeros should never be added in the first place. The
   // current implementation does not strip when there is an exponent, eg.
   // 1.50000e+10.
-  return formatStringTruncatingTrailingZerosIfNeeded(buffer, builder);
+  return FormatStringTruncatingTrailingZerosIfNeeded(buffer, builder);
 }
 
-const char* numberToFixedWidthString(double d,
-                                     unsigned decimalPlaces,
+const char* NumberToFixedWidthString(double d,
+                                     unsigned decimal_places,
                                      NumberToStringBuffer buffer) {
   // Mimic String::format("%.[precision]f", ...), but use dtoas rounding
   // facilities.
@@ -124,22 +124,22 @@ const char* numberToFixedWidthString(double d,
   // "precision": The precision value specifies the number of digits after the
   // decimal point.  If a decimal point appears, at least one digit appears
   // before it.  The value is rounded to the appropriate number of digits.
-  double_conversion::StringBuilder builder(buffer, NumberToStringBufferLength);
+  double_conversion::StringBuilder builder(buffer, kNumberToStringBufferLength);
   const double_conversion::DoubleToStringConverter& converter =
       double_conversion::DoubleToStringConverter::EcmaScriptConverter();
-  converter.ToFixed(d, decimalPlaces, &builder);
+  converter.ToFixed(d, decimal_places, &builder);
   return builder.Finalize();
 }
 
 namespace Internal {
 
-double parseDoubleFromLongString(const UChar* string,
+double ParseDoubleFromLongString(const UChar* string,
                                  size_t length,
-                                 size_t& parsedLength) {
-  Vector<LChar> conversionBuffer(length);
+                                 size_t& parsed_length) {
+  Vector<LChar> conversion_buffer(length);
   for (size_t i = 0; i < length; ++i)
-    conversionBuffer[i] = isASCII(string[i]) ? string[i] : 0;
-  return parseDouble(conversionBuffer.data(), length, parsedLength);
+    conversion_buffer[i] = IsASCII(string[i]) ? string[i] : 0;
+  return ParseDouble(conversion_buffer.Data(), length, parsed_length);
 }
 
 }  // namespace Internal

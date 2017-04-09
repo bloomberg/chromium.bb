@@ -34,41 +34,43 @@ class EditingStyle;
 
 class InsertParagraphSeparatorCommand final : public CompositeEditCommand {
  public:
-  static InsertParagraphSeparatorCommand* create(
+  static InsertParagraphSeparatorCommand* Create(
       Document& document,
-      bool useDefaultParagraphElement = false,
-      bool pasteBlockquoteIntoUnquotedArea = false) {
+      bool use_default_paragraph_element = false,
+      bool paste_blockquote_into_unquoted_area = false) {
     return new InsertParagraphSeparatorCommand(
-        document, useDefaultParagraphElement, pasteBlockquoteIntoUnquotedArea);
+        document, use_default_paragraph_element,
+        paste_blockquote_into_unquoted_area);
   }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   InsertParagraphSeparatorCommand(Document&,
-                                  bool useDefaultParagraphElement,
-                                  bool pasteBlockquoteIntoUnquotedArea);
+                                  bool use_default_paragraph_element,
+                                  bool paste_blockquote_into_unquoted_area);
 
-  void doApply(EditingState*) override;
+  void DoApply(EditingState*) override;
 
-  void calculateStyleBeforeInsertion(const Position&);
-  void applyStyleAfterInsertion(Element* originalEnclosingBlock, EditingState*);
-  void getAncestorsInsideBlock(const Node* insertionNode,
-                               Element* outerBlock,
+  void CalculateStyleBeforeInsertion(const Position&);
+  void ApplyStyleAfterInsertion(Element* original_enclosing_block,
+                                EditingState*);
+  void GetAncestorsInsideBlock(const Node* insertion_node,
+                               Element* outer_block,
                                HeapVector<Member<Element>>& ancestors);
-  Element* cloneHierarchyUnderNewBlock(
+  Element* CloneHierarchyUnderNewBlock(
       const HeapVector<Member<Element>>& ancestors,
-      Element* blockToInsert,
+      Element* block_to_insert,
       EditingState*);
 
-  bool shouldUseDefaultParagraphElement(Element*) const;
+  bool ShouldUseDefaultParagraphElement(Element*) const;
 
-  bool preservesTypingStyle() const override;
+  bool PreservesTypingStyle() const override;
 
-  Member<EditingStyle> m_style;
+  Member<EditingStyle> style_;
 
-  bool m_mustUseDefaultParagraphElement;
-  bool m_pasteBlockquoteIntoUnquotedArea;
+  bool must_use_default_paragraph_element_;
+  bool paste_blockquote_into_unquoted_area_;
 };
 
 }  // namespace blink

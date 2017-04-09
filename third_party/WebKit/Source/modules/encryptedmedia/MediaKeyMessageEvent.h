@@ -40,18 +40,18 @@ class MediaKeyMessageEvent final : public Event {
  public:
   ~MediaKeyMessageEvent() override;
 
-  static MediaKeyMessageEvent* create() { return new MediaKeyMessageEvent; }
+  static MediaKeyMessageEvent* Create() { return new MediaKeyMessageEvent; }
 
-  static MediaKeyMessageEvent* create(
+  static MediaKeyMessageEvent* Create(
       const AtomicString& type,
       const MediaKeyMessageEventInit& initializer) {
     return new MediaKeyMessageEvent(type, initializer);
   }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  String messageType() const { return m_messageType; }
-  DOMArrayBuffer* message() const { return m_message.get(); }
+  String messageType() const { return message_type_; }
+  DOMArrayBuffer* message() const { return message_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -60,8 +60,8 @@ class MediaKeyMessageEvent final : public Event {
   MediaKeyMessageEvent(const AtomicString& type,
                        const MediaKeyMessageEventInit& initializer);
 
-  String m_messageType;
-  Member<DOMArrayBuffer> m_message;
+  String message_type_;
+  Member<DOMArrayBuffer> message_;
 };
 
 }  // namespace blink

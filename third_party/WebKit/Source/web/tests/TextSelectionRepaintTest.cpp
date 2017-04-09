@@ -17,35 +17,35 @@ namespace blink {
 class TextSelectionRepaintTest : public SimTest {};
 
 TEST_F(TextSelectionRepaintTest, RepaintSelectionOnFocus) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.complete(
+  main_resource.Complete(
       "<!DOCTYPE html>"
       "Text to select.");
 
   // Focus the window.
-  EXPECT_FALSE(page().isFocused());
-  page().setFocused(true);
+  EXPECT_FALSE(Page().IsFocused());
+  Page().SetFocused(true);
 
   // First frame with nothing selected.
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   // Select some text.
-  auto* body = document().body();
-  window().getSelection()->setBaseAndExtent(body, 0, body, 1);
+  auto* body = GetDocument().body();
+  Window().getSelection()->setBaseAndExtent(body, 0, body, 1);
 
   // Unfocus the page and check for a pending frame.
-  page().setFocused(false);
-  EXPECT_TRUE(compositor().needsBeginFrame());
+  Page().SetFocused(false);
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
 
   // Frame with the unfocused selection appearance.
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   // Focus the page and check for a pending frame.
-  page().setFocused(true);
-  EXPECT_TRUE(compositor().needsBeginFrame());
+  Page().SetFocused(true);
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
 }
 
 }  // namespace blink

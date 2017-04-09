@@ -62,9 +62,9 @@ void PluginPlaceholderBase::HidePlugin() {
   hidden_ = true;
   if (!plugin())
     return;
-  blink::WebPluginContainer* container = plugin()->container();
-  blink::WebElement element = container->element();
-  element.setAttribute("style", "display: none;");
+  blink::WebPluginContainer* container = plugin()->Container();
+  blink::WebElement element = container->GetElement();
+  element.SetAttribute("style", "display: none;");
   // If we have a width and height, search for a parent (often <div>) with the
   // same dimensions. If we find such a parent, hide that as well.
   // This makes much more uncovered page content usable (including clickable)
@@ -75,16 +75,16 @@ void PluginPlaceholderBase::HidePlugin() {
   // 2) Foulness is encapsulated within this single function.
   // 3) Confidence in no fasle positives.
   // 4) Seems to have a good / low false negative rate at this time.
-  if (element.hasAttribute("width") && element.hasAttribute("height")) {
+  if (element.HasAttribute("width") && element.HasAttribute("height")) {
     std::string width_str("width:[\\s]*");
-    width_str += element.getAttribute("width").utf8().data();
+    width_str += element.GetAttribute("width").Utf8().data();
     if (base::EndsWith(width_str, "px", base::CompareCase::INSENSITIVE_ASCII)) {
       width_str = width_str.substr(0, width_str.length() - 2);
     }
     base::TrimWhitespaceASCII(width_str, base::TRIM_TRAILING, &width_str);
     width_str += "[\\s]*px";
     std::string height_str("height:[\\s]*");
-    height_str += element.getAttribute("height").utf8().data();
+    height_str += element.GetAttribute("height").Utf8().data();
     if (base::EndsWith(height_str, "px",
                        base::CompareCase::INSENSITIVE_ASCII)) {
       height_str = height_str.substr(0, height_str.length() - 2);
@@ -92,16 +92,16 @@ void PluginPlaceholderBase::HidePlugin() {
     base::TrimWhitespaceASCII(height_str, base::TRIM_TRAILING, &height_str);
     height_str += "[\\s]*px";
     blink::WebNode parent = element;
-    while (!parent.parentNode().isNull()) {
-      parent = parent.parentNode();
-      if (!parent.isElementNode())
+    while (!parent.ParentNode().IsNull()) {
+      parent = parent.ParentNode();
+      if (!parent.IsElementNode())
         continue;
-      element = parent.toConst<blink::WebElement>();
-      if (element.hasAttribute("style")) {
-        std::string style_str = element.getAttribute("style").utf8();
+      element = parent.ToConst<blink::WebElement>();
+      if (element.HasAttribute("style")) {
+        std::string style_str = element.GetAttribute("style").Utf8();
         if (RE2::PartialMatch(style_str, width_str) &&
             RE2::PartialMatch(style_str, height_str))
-          element.setAttribute("style", "display: none;");
+          element.SetAttribute("style", "display: none;");
       }
     }
   }

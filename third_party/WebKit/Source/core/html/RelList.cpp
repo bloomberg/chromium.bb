@@ -13,33 +13,32 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RelList::RelList(Element* element)
-    : DOMTokenList(nullptr), m_element(element) {}
+RelList::RelList(Element* element) : DOMTokenList(nullptr), element_(element) {}
 
 unsigned RelList::length() const {
-  return !m_element->fastGetAttribute(relAttr).isEmpty() ? m_relValues.size()
-                                                         : 0;
+  return !element_->FastGetAttribute(relAttr).IsEmpty() ? rel_values_.size()
+                                                        : 0;
 }
 
 const AtomicString RelList::item(unsigned index) const {
   if (index >= length())
     return AtomicString();
-  return m_relValues[index];
+  return rel_values_[index];
 }
 
-bool RelList::containsInternal(const AtomicString& token) const {
-  return !m_element->fastGetAttribute(relAttr).isEmpty() &&
-         m_relValues.contains(token);
+bool RelList::ContainsInternal(const AtomicString& token) const {
+  return !element_->FastGetAttribute(relAttr).IsEmpty() &&
+         rel_values_.Contains(token);
 }
 
-void RelList::setRelValues(const AtomicString& value) {
-  m_relValues.set(value, SpaceSplitString::ShouldNotFoldCase);
+void RelList::SetRelValues(const AtomicString& value) {
+  rel_values_.Set(value, SpaceSplitString::kShouldNotFoldCase);
 }
 
-static HashSet<AtomicString>& supportedTokens() {
+static HashSet<AtomicString>& SupportedTokens() {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tokens, ());
 
-  if (tokens.isEmpty()) {
+  if (tokens.IsEmpty()) {
     tokens = {
         "preload",
         "preconnect",
@@ -60,18 +59,18 @@ static HashSet<AtomicString>& supportedTokens() {
   return tokens;
 }
 
-bool RelList::validateTokenValue(const AtomicString& tokenValue,
+bool RelList::ValidateTokenValue(const AtomicString& token_value,
                                  ExceptionState&) const {
-  if (supportedTokens().contains(tokenValue))
+  if (SupportedTokens().Contains(token_value))
     return true;
   return OriginTrials::linkServiceWorkerEnabled(
-             m_element->getExecutionContext()) &&
-         tokenValue == "serviceworker";
+             element_->GetExecutionContext()) &&
+         token_value == "serviceworker";
 }
 
 DEFINE_TRACE(RelList) {
-  visitor->trace(m_element);
-  DOMTokenList::trace(visitor);
+  visitor->Trace(element_);
+  DOMTokenList::Trace(visitor);
 }
 
 }  // namespace blink

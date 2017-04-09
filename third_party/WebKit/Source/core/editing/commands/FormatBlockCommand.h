@@ -39,29 +39,29 @@ class Element;
 
 class CORE_EXPORT FormatBlockCommand final : public ApplyBlockElementCommand {
  public:
-  static FormatBlockCommand* create(Document& document,
-                                    const QualifiedName& tagName) {
-    return new FormatBlockCommand(document, tagName);
+  static FormatBlockCommand* Create(Document& document,
+                                    const QualifiedName& tag_name) {
+    return new FormatBlockCommand(document, tag_name);
   }
 
-  bool preservesTypingStyle() const override { return true; }
+  bool PreservesTypingStyle() const override { return true; }
 
-  static Element* elementForFormatBlockCommand(const EphemeralRange&);
-  bool didApply() const { return m_didApply; }
+  static Element* ElementForFormatBlockCommand(const EphemeralRange&);
+  bool DidApply() const { return did_apply_; }
 
  private:
-  FormatBlockCommand(Document&, const QualifiedName& tagName);
+  FormatBlockCommand(Document&, const QualifiedName& tag_name);
 
-  void formatSelection(const VisiblePosition& startOfSelection,
-                       const VisiblePosition& endOfSelection,
+  void FormatSelection(const VisiblePosition& start_of_selection,
+                       const VisiblePosition& end_of_selection,
                        EditingState*) override;
-  void formatRange(const Position& start,
+  void FormatRange(const Position& start,
                    const Position& end,
-                   const Position& endOfSelection,
+                   const Position& end_of_selection,
                    HTMLElement*&,
                    EditingState*) override;
 
-  bool m_didApply;
+  bool did_apply_;
 };
 
 }  // namespace blink

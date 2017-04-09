@@ -12,7 +12,7 @@ namespace blink {
 TEST(CSSSelector, Representations) {
   CSSTestHelper helper;
 
-  const char* cssRules =
+  const char* css_rules =
       "summary::-webkit-details-marker { }"
       "* {}"
       "div {}"
@@ -46,10 +46,11 @@ TEST(CSSSelector, Representations) {
 
       ".a.b .c {}";
 
-  helper.addCSSRules(cssRules);
-  EXPECT_EQ(30u, helper.ruleSet().ruleCount());  // .a, .b counts as two rules.
+  helper.AddCSSRules(css_rules);
+  EXPECT_EQ(30u,
+            helper.GetRuleSet().RuleCount());  // .a, .b counts as two rules.
 #ifndef NDEBUG
-  helper.ruleSet().show();
+  helper.GetRuleSet().Show();
 #endif
 }
 

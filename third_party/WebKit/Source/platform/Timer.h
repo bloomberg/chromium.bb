@@ -49,65 +49,65 @@ class PLATFORM_EXPORT TimerBase {
   explicit TimerBase(RefPtr<WebTaskRunner>);
   virtual ~TimerBase();
 
-  void start(double nextFireInterval,
-             double repeatInterval,
+  void Start(double next_fire_interval,
+             double repeat_interval,
              const WebTraceLocation&);
 
-  void startRepeating(double repeatInterval, const WebTraceLocation& caller) {
-    start(repeatInterval, repeatInterval, caller);
+  void StartRepeating(double repeat_interval, const WebTraceLocation& caller) {
+    Start(repeat_interval, repeat_interval, caller);
   }
-  void startOneShot(double interval, const WebTraceLocation& caller) {
-    start(interval, 0, caller);
+  void StartOneShot(double interval, const WebTraceLocation& caller) {
+    Start(interval, 0, caller);
   }
 
   // Timer cancellation is fast enough that you shouldn't have to worry
   // about it unless you're canceling tens of thousands of tasks.
-  virtual void stop();
-  bool isActive() const;
-  const WebTraceLocation& location() const { return m_location; }
+  virtual void Stop();
+  bool IsActive() const;
+  const WebTraceLocation& GetLocation() const { return location_; }
 
-  double nextFireInterval() const;
-  double repeatInterval() const { return m_repeatInterval; }
+  double NextFireInterval() const;
+  double RepeatInterval() const { return repeat_interval_; }
 
-  void augmentRepeatInterval(double delta) {
-    double now = timerMonotonicallyIncreasingTime();
-    setNextFireTime(now, std::max(m_nextFireTime - now + delta, 0.0));
-    m_repeatInterval += delta;
+  void AugmentRepeatInterval(double delta) {
+    double now = TimerMonotonicallyIncreasingTime();
+    SetNextFireTime(now, std::max(next_fire_time_ - now + delta, 0.0));
+    repeat_interval_ += delta;
   }
 
-  void moveToNewTaskRunner(RefPtr<WebTaskRunner>);
+  void MoveToNewTaskRunner(RefPtr<WebTaskRunner>);
 
   struct PLATFORM_EXPORT Comparator {
     bool operator()(const TimerBase* a, const TimerBase* b) const;
   };
 
  protected:
-  static RefPtr<WebTaskRunner> getTimerTaskRunner();
-  static RefPtr<WebTaskRunner> getUnthrottledTaskRunner();
+  static RefPtr<WebTaskRunner> GetTimerTaskRunner();
+  static RefPtr<WebTaskRunner> GetUnthrottledTaskRunner();
 
  private:
-  virtual void fired() = 0;
+  virtual void Fired() = 0;
 
-  virtual RefPtr<WebTaskRunner> timerTaskRunner() const;
+  virtual RefPtr<WebTaskRunner> TimerTaskRunner() const;
 
   NO_SANITIZE_ADDRESS
-  virtual bool canFire() const { return true; }
+  virtual bool CanFire() const { return true; }
 
-  double timerMonotonicallyIncreasingTime() const;
+  double TimerMonotonicallyIncreasingTime() const;
 
-  void setNextFireTime(double now, double delay);
+  void SetNextFireTime(double now, double delay);
 
-  void runInternal();
+  void RunInternal();
 
-  double m_nextFireTime;    // 0 if inactive
-  double m_repeatInterval;  // 0 if not repeating
-  WebTraceLocation m_location;
-  RefPtr<WebTaskRunner> m_webTaskRunner;
+  double next_fire_time_;   // 0 if inactive
+  double repeat_interval_;  // 0 if not repeating
+  WebTraceLocation location_;
+  RefPtr<WebTaskRunner> web_task_runner_;
 
 #if DCHECK_IS_ON()
-  ThreadIdentifier m_thread;
+  ThreadIdentifier thread_;
 #endif
-  WTF::WeakPtrFactory<TimerBase> m_weakPtrFactory;
+  WTF::WeakPtrFactory<TimerBase> weak_ptr_factory_;
 
   friend class ThreadTimers;
   friend class TimerHeapLessThanFunction;
@@ -117,14 +117,14 @@ class PLATFORM_EXPORT TimerBase {
 template <typename T, bool = IsGarbageCollectedType<T>::value>
 class TimerIsObjectAliveTrait {
  public:
-  static bool isHeapObjectAlive(T*) { return true; }
+  static bool IsHeapObjectAlive(T*) { return true; }
 };
 
 template <typename T>
 class TimerIsObjectAliveTrait<T, true> {
  public:
-  static bool isHeapObjectAlive(T* objectPointer) {
-    return !ThreadHeap::willObjectBeLazilySwept(objectPointer);
+  static bool IsHeapObjectAlive(T* object_pointer) {
+    return !ThreadHeap::WillObjectBeLazilySwept(object_pointer);
   }
 };
 
@@ -133,23 +133,22 @@ class TaskRunnerTimer : public TimerBase {
  public:
   using TimerFiredFunction = void (TimerFiredClass::*)(TimerBase*);
 
-  TaskRunnerTimer(RefPtr<WebTaskRunner> webTaskRunner,
+  TaskRunnerTimer(RefPtr<WebTaskRunner> web_task_runner,
                   TimerFiredClass* o,
                   TimerFiredFunction f)
-      : TimerBase(std::move(webTaskRunner)), m_object(o), m_function(f) {}
+      : TimerBase(std::move(web_task_runner)), object_(o), function_(f) {}
 
   ~TaskRunnerTimer() override {}
 
  protected:
-  void fired() override { (m_object->*m_function)(this); }
+  void Fired() override { (object_->*function_)(this); }
 
   NO_SANITIZE_ADDRESS
-  bool canFire() const override {
+  bool CanFire() const override {
     // Oilpan: if a timer fires while Oilpan heaps are being lazily
     // swept, it is not safe to proceed if the object is about to
     // be swept (and this timer will be stopped while doing so.)
-    return TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(
-        m_object);
+    return TimerIsObjectAliveTrait<TimerFiredClass>::IsHeapObjectAlive(object_);
   }
 
  private:
@@ -158,8 +157,8 @@ class TaskRunnerTimer : public TimerBase {
   // itself (That's the case
   // in the current code base).
   GC_PLUGIN_IGNORE("363031")
-  TimerFiredClass* m_object;
-  TimerFiredFunction m_function;
+  TimerFiredClass* object_;
+  TimerFiredFunction function_;
 };
 
 // TODO(dcheng): Consider removing this overload once all timers are using the
@@ -172,10 +171,11 @@ class Timer : public TaskRunnerTimer<TimerFiredClass> {
 
   ~Timer() override {}
 
-  Timer(TimerFiredClass* timerFiredClass, TimerFiredFunction timerFiredFunction)
-      : TaskRunnerTimer<TimerFiredClass>(TimerBase::getTimerTaskRunner(),
-                                         timerFiredClass,
-                                         timerFiredFunction) {}
+  Timer(TimerFiredClass* timer_fired_class,
+        TimerFiredFunction timer_fired_function)
+      : TaskRunnerTimer<TimerFiredClass>(TimerBase::GetTimerTaskRunner(),
+                                         timer_fired_class,
+                                         timer_fired_function) {}
 };
 
 // This subclass of Timer posts its tasks on the current thread's default task
@@ -191,19 +191,19 @@ class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
 
   ~UnthrottledThreadTimer() override {}
 
-  UnthrottledThreadTimer(TimerFiredClass* timerFiredClass,
-                         TimerFiredFunction timerFiredFunction)
-      : TaskRunnerTimer<TimerFiredClass>(TimerBase::getUnthrottledTaskRunner(),
-                                         timerFiredClass,
-                                         timerFiredFunction) {}
+  UnthrottledThreadTimer(TimerFiredClass* timer_fired_class,
+                         TimerFiredFunction timer_fired_function)
+      : TaskRunnerTimer<TimerFiredClass>(TimerBase::GetUnthrottledTaskRunner(),
+                                         timer_fired_class,
+                                         timer_fired_function) {}
 };
 
 NO_SANITIZE_ADDRESS
-inline bool TimerBase::isActive() const {
+inline bool TimerBase::IsActive() const {
 #if DCHECK_IS_ON()
-  DCHECK_EQ(m_thread, currentThread());
+  DCHECK_EQ(thread_, CurrentThread());
 #endif
-  return m_weakPtrFactory.hasWeakPtrs();
+  return weak_ptr_factory_.HasWeakPtrs();
 }
 
 }  // namespace blink

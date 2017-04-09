@@ -23,8 +23,8 @@ class CompositorTest : public testing::Test {
  protected:
   // Mock task runner is initialized here because tests create
   // WebLayerTreeViewImplForTesting which needs the current task runner handle.
-  scoped_refptr<base::TestMockTimeTaskRunner> m_runner;
-  base::ThreadTaskRunnerHandle m_runnerHandle;
+  scoped_refptr<base::TestMockTimeTaskRunner> runner_;
+  base::ThreadTaskRunnerHandle runner_handle_;
 };
 
 }  // namespace blink

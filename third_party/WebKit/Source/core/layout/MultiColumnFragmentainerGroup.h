@@ -35,55 +35,57 @@ class MultiColumnFragmentainerGroup {
  public:
   MultiColumnFragmentainerGroup(const LayoutMultiColumnSet&);
 
-  const LayoutMultiColumnSet& columnSet() const { return m_columnSet; }
+  const LayoutMultiColumnSet& ColumnSet() const { return column_set_; }
 
-  bool isFirstGroup() const;
-  bool isLastGroup() const;
+  bool IsFirstGroup() const;
+  bool IsLastGroup() const;
 
   // Position within the LayoutMultiColumnSet.
-  LayoutUnit logicalTop() const { return m_logicalTop; }
-  void setLogicalTop(LayoutUnit logicalTop) { m_logicalTop = logicalTop; }
+  LayoutUnit LogicalTop() const { return logical_top_; }
+  void SetLogicalTop(LayoutUnit logical_top) { logical_top_ = logical_top; }
 
-  LayoutUnit logicalHeight() const { return m_columnHeight; }
+  LayoutUnit LogicalHeight() const { return column_height_; }
 
-  LayoutSize offsetFromColumnSet() const;
+  LayoutSize OffsetFromColumnSet() const;
 
   // Return the block offset from the enclosing fragmentation context, if
   // nested. In the coordinate space of the enclosing fragmentation context.
-  LayoutUnit blockOffsetInEnclosingFragmentationContext() const;
+  LayoutUnit BlockOffsetInEnclosingFragmentationContext() const;
 
   // The top of our flow thread portion
-  LayoutUnit logicalTopInFlowThread() const { return m_logicalTopInFlowThread; }
-  void setLogicalTopInFlowThread(LayoutUnit logicalTopInFlowThread) {
-    m_logicalTopInFlowThread = logicalTopInFlowThread;
+  LayoutUnit LogicalTopInFlowThread() const {
+    return logical_top_in_flow_thread_;
+  }
+  void SetLogicalTopInFlowThread(LayoutUnit logical_top_in_flow_thread) {
+    logical_top_in_flow_thread_ = logical_top_in_flow_thread;
   }
 
   // The bottom of our flow thread portion
-  LayoutUnit logicalBottomInFlowThread() const {
-    return m_logicalBottomInFlowThread;
+  LayoutUnit LogicalBottomInFlowThread() const {
+    return logical_bottom_in_flow_thread_;
   }
-  void setLogicalBottomInFlowThread(LayoutUnit logicalBottomInFlowThread) {
-    m_logicalBottomInFlowThread = logicalBottomInFlowThread;
+  void SetLogicalBottomInFlowThread(LayoutUnit logical_bottom_in_flow_thread) {
+    logical_bottom_in_flow_thread_ = logical_bottom_in_flow_thread;
   }
 
   // The height of the flow thread portion for the entire fragmentainer group.
-  LayoutUnit logicalHeightInFlowThread() const {
+  LayoutUnit LogicalHeightInFlowThread() const {
     // Due to negative margins, logical bottom may actually end up above logical
     // top, but we never want to return negative logical heights.
-    return (m_logicalBottomInFlowThread - m_logicalTopInFlowThread)
-        .clampNegativeToZero();
+    return (logical_bottom_in_flow_thread_ - logical_top_in_flow_thread_)
+        .ClampNegativeToZero();
   }
   // The height of the flow thread portion for the specified fragmentainer.
   // The last fragmentainer may not be using all available space.
-  LayoutUnit logicalHeightInFlowThreadAt(unsigned columnIndex) const;
+  LayoutUnit LogicalHeightInFlowThreadAt(unsigned column_index) const;
 
-  void resetColumnHeight();
-  bool recalculateColumnHeight(LayoutMultiColumnSet&);
+  void ResetColumnHeight();
+  bool RecalculateColumnHeight(LayoutMultiColumnSet&);
 
-  LayoutSize flowThreadTranslationAtOffset(LayoutUnit,
+  LayoutSize FlowThreadTranslationAtOffset(LayoutUnit,
                                            LayoutBox::PageBoundaryRule,
                                            CoordinateSpaceConversion) const;
-  LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
+  LayoutUnit ColumnLogicalTopForOffset(LayoutUnit offset_in_flow_thread) const;
 
   // If SnapToColumnPolicy is SnapToColumn, visualPointToFlowThreadPoint() won't
   // return points that lie outside the bounds of the columns: Before converting
@@ -94,15 +96,15 @@ class MultiColumnFragmentainerGroup {
   // beginning of this column, while if the block position is after the column
   // rectangle, we'll get to the beginning of the next column. This is behavior
   // that positionForPoint() depends on.
-  enum SnapToColumnPolicy { DontSnapToColumn, SnapToColumn };
-  LayoutPoint visualPointToFlowThreadPoint(
-      const LayoutPoint& visualPoint,
-      SnapToColumnPolicy = DontSnapToColumn) const;
+  enum SnapToColumnPolicy { kDontSnapToColumn, kSnapToColumn };
+  LayoutPoint VisualPointToFlowThreadPoint(
+      const LayoutPoint& visual_point,
+      SnapToColumnPolicy = kDontSnapToColumn) const;
 
-  LayoutRect fragmentsBoundingBox(
-      const LayoutRect& boundingBoxInFlowThread) const;
+  LayoutRect FragmentsBoundingBox(
+      const LayoutRect& bounding_box_in_flow_thread) const;
 
-  LayoutRect flowThreadPortionRectAt(unsigned columnIndex) const;
+  LayoutRect FlowThreadPortionRectAt(unsigned column_index) const;
 
   enum ClipRectAxesSelector {
     // Only limit the clip rectangle in the block direction. Leave inline
@@ -110,67 +112,67 @@ class MultiColumnFragmentainerGroup {
     // operations would typically ideally want no clipping at all, but in our
     // implementation we have to clip in the block direction, in order to slice
     // the flow thread properly into columns.
-    BlockDirectionAxis,
+    kBlockDirectionAxis,
 
     // Limit the clip rectangle along both axes. This is what to use for
     // painting and hit testing.
-    BothAxes
+    kBothAxes
   };
 
-  LayoutRect flowThreadPortionOverflowRectAt(
-      unsigned columnIndex,
-      ClipRectAxesSelector = BothAxes) const;
+  LayoutRect FlowThreadPortionOverflowRectAt(
+      unsigned column_index,
+      ClipRectAxesSelector = kBothAxes) const;
 
   // Get the first and the last column intersecting the specified block range.
   // Note that |logicalBottomInFlowThread| is an exclusive endpoint.
-  void columnIntervalForBlockRangeInFlowThread(
-      LayoutUnit logicalTopInFlowThread,
-      LayoutUnit logicalBottomInFlowThread,
-      unsigned& firstColumn,
-      unsigned& lastColumn) const;
+  void ColumnIntervalForBlockRangeInFlowThread(
+      LayoutUnit logical_top_in_flow_thread,
+      LayoutUnit logical_bottom_in_flow_thread,
+      unsigned& first_column,
+      unsigned& last_column) const;
 
   // Get the first and the last column intersecting the specified visual
   // rectangle.
-  void columnIntervalForVisualRect(const LayoutRect&,
-                                   unsigned& firstColumn,
-                                   unsigned& lastColumn) const;
+  void ColumnIntervalForVisualRect(const LayoutRect&,
+                                   unsigned& first_column,
+                                   unsigned& last_column) const;
 
-  LayoutRect calculateOverflow() const;
+  LayoutRect CalculateOverflow() const;
 
-  unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread,
+  unsigned ColumnIndexAtOffset(LayoutUnit offset_in_flow_thread,
                                LayoutBox::PageBoundaryRule) const;
 
   // The "CSS actual" value of column-count. This includes overflowing columns,
   // if any.
   // Returns 1 or greater, never 0.
-  unsigned actualColumnCount() const;
+  unsigned ActualColumnCount() const;
 
  private:
-  LayoutUnit heightAdjustedForRowOffset(LayoutUnit height) const;
-  LayoutUnit calculateMaxColumnHeight() const;
-  void setAndConstrainColumnHeight(LayoutUnit);
+  LayoutUnit HeightAdjustedForRowOffset(LayoutUnit height) const;
+  LayoutUnit CalculateMaxColumnHeight() const;
+  void SetAndConstrainColumnHeight(LayoutUnit);
 
-  LayoutUnit rebalanceColumnHeightIfNeeded() const;
+  LayoutUnit RebalanceColumnHeightIfNeeded() const;
 
-  LayoutRect columnRectAt(unsigned columnIndex) const;
-  LayoutUnit logicalTopInFlowThreadAt(unsigned columnIndex) const {
-    return m_logicalTopInFlowThread + columnIndex * m_columnHeight;
+  LayoutRect ColumnRectAt(unsigned column_index) const;
+  LayoutUnit LogicalTopInFlowThreadAt(unsigned column_index) const {
+    return logical_top_in_flow_thread_ + column_index * column_height_;
   }
 
   // Return the column that the specified visual point belongs to. Only the
   // coordinate on the column progression axis is relevant. Every point belongs
   // to a column, even if said point is not inside any of the columns.
-  unsigned columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const;
+  unsigned ColumnIndexAtVisualPoint(const LayoutPoint& visual_point) const;
 
-  const LayoutMultiColumnSet& m_columnSet;
+  const LayoutMultiColumnSet& column_set_;
 
-  LayoutUnit m_logicalTop;
-  LayoutUnit m_logicalTopInFlowThread;
-  LayoutUnit m_logicalBottomInFlowThread;
+  LayoutUnit logical_top_;
+  LayoutUnit logical_top_in_flow_thread_;
+  LayoutUnit logical_bottom_in_flow_thread_;
 
-  LayoutUnit m_columnHeight;
+  LayoutUnit column_height_;
 
-  LayoutUnit m_maxColumnHeight;  // Maximum column height allowed.
+  LayoutUnit max_column_height_;  // Maximum column height allowed.
 };
 
 // List of all fragmentainer groups within a column set. There will always be at
@@ -186,42 +188,40 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
 
   // Add an additional fragmentainer group to the end of the list, and return
   // it.
-  MultiColumnFragmentainerGroup& addExtraGroup();
+  MultiColumnFragmentainerGroup& AddExtraGroup();
 
   // Remove all fragmentainer groups but the first one.
-  void deleteExtraGroups();
+  void DeleteExtraGroups();
 
-  MultiColumnFragmentainerGroup& first() { return m_groups.front(); }
-  const MultiColumnFragmentainerGroup& first() const {
-    return m_groups.front();
-  }
-  MultiColumnFragmentainerGroup& last() { return m_groups.back(); }
-  const MultiColumnFragmentainerGroup& last() const { return m_groups.back(); }
+  MultiColumnFragmentainerGroup& First() { return groups_.front(); }
+  const MultiColumnFragmentainerGroup& First() const { return groups_.front(); }
+  MultiColumnFragmentainerGroup& Last() { return groups_.back(); }
+  const MultiColumnFragmentainerGroup& Last() const { return groups_.back(); }
 
   typedef Vector<MultiColumnFragmentainerGroup, 1>::iterator iterator;
   typedef Vector<MultiColumnFragmentainerGroup, 1>::const_iterator
       const_iterator;
 
-  iterator begin() { return m_groups.begin(); }
-  const_iterator begin() const { return m_groups.begin(); }
-  iterator end() { return m_groups.end(); }
-  const_iterator end() const { return m_groups.end(); }
+  iterator begin() { return groups_.begin(); }
+  const_iterator begin() const { return groups_.begin(); }
+  iterator end() { return groups_.end(); }
+  const_iterator end() const { return groups_.end(); }
 
-  size_t size() const { return m_groups.size(); }
-  MultiColumnFragmentainerGroup& operator[](size_t i) { return m_groups.at(i); }
+  size_t size() const { return groups_.size(); }
+  MultiColumnFragmentainerGroup& operator[](size_t i) { return groups_.at(i); }
   const MultiColumnFragmentainerGroup& operator[](size_t i) const {
-    return m_groups.at(i);
+    return groups_.at(i);
   }
 
-  void append(const MultiColumnFragmentainerGroup& group) {
-    m_groups.push_back(group);
+  void Append(const MultiColumnFragmentainerGroup& group) {
+    groups_.push_back(group);
   }
-  void shrink(size_t size) { m_groups.shrink(size); }
+  void Shrink(size_t size) { groups_.Shrink(size); }
 
  private:
-  LayoutMultiColumnSet& m_columnSet;
+  LayoutMultiColumnSet& column_set_;
 
-  Vector<MultiColumnFragmentainerGroup, 1> m_groups;
+  Vector<MultiColumnFragmentainerGroup, 1> groups_;
 };
 
 }  // namespace blink

@@ -23,8 +23,8 @@ class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebIDBOperationType stringToOperationType(const String&);
-  static IDBObservation* create(const WebIDBObservation&, v8::Isolate*);
+  static WebIDBOperationType StringToOperationType(const String&);
+  static IDBObservation* Create(const WebIDBObservation&, v8::Isolate*);
   ~IDBObservation();
 
   DECLARE_TRACE();
@@ -36,9 +36,9 @@ class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
 
  private:
   IDBObservation(const WebIDBObservation&, v8::Isolate*);
-  Member<IDBKeyRange> m_keyRange;
-  RefPtr<IDBValue> m_value;
-  const WebIDBOperationType m_operationType;
+  Member<IDBKeyRange> key_range_;
+  RefPtr<IDBValue> value_;
+  const WebIDBOperationType operation_type_;
 };
 
 }  // namespace blink

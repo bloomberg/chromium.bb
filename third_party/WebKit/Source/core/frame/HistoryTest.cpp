@@ -15,7 +15,7 @@ class HistoryTest : public ::testing::Test {};
 TEST_F(HistoryTest, CanChangeToURL) {
   struct TestCase {
     const char* url;
-    const char* documentURL;
+    const char* document_url;
     bool expected;
   } cases[] = {
       {"http://example.com/", "http://example.com/", true},
@@ -46,18 +46,19 @@ TEST_F(HistoryTest, CanChangeToURL) {
   };
 
   for (const auto& test : cases) {
-    KURL url(ParsedURLString, test.url);
-    KURL documentURL(ParsedURLString, test.documentURL);
-    RefPtr<SecurityOrigin> documentOrigin = SecurityOrigin::create(documentURL);
-    EXPECT_EQ(test.expected,
-              History::canChangeToUrl(url, documentOrigin.get(), documentURL));
+    KURL url(kParsedURLString, test.url);
+    KURL document_url(kParsedURLString, test.document_url);
+    RefPtr<SecurityOrigin> document_origin =
+        SecurityOrigin::Create(document_url);
+    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.Get(),
+                                                     document_url));
   }
 }
 
 TEST_F(HistoryTest, CanChangeToURLInFileOrigin) {
   struct TestCase {
     const char* url;
-    const char* documentURL;
+    const char* document_url;
     bool expected;
   } cases[] = {
       {"file:///path/to/file/", "file:///path/to/file/", true},
@@ -69,18 +70,19 @@ TEST_F(HistoryTest, CanChangeToURLInFileOrigin) {
   };
 
   for (const auto& test : cases) {
-    KURL url(ParsedURLString, test.url);
-    KURL documentURL(ParsedURLString, test.documentURL);
-    RefPtr<SecurityOrigin> documentOrigin = SecurityOrigin::create(documentURL);
-    EXPECT_EQ(test.expected,
-              History::canChangeToUrl(url, documentOrigin.get(), documentURL));
+    KURL url(kParsedURLString, test.url);
+    KURL document_url(kParsedURLString, test.document_url);
+    RefPtr<SecurityOrigin> document_origin =
+        SecurityOrigin::Create(document_url);
+    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.Get(),
+                                                     document_url));
   }
 }
 
 TEST_F(HistoryTest, CanChangeToURLInUniqueOrigin) {
   struct TestCase {
     const char* url;
-    const char* documentURL;
+    const char* document_url;
     bool expected;
   } cases[] = {
       {"http://example.com/", "http://example.com/", true},
@@ -104,11 +106,11 @@ TEST_F(HistoryTest, CanChangeToURLInUniqueOrigin) {
   };
 
   for (const auto& test : cases) {
-    KURL url(ParsedURLString, test.url);
-    KURL documentURL(ParsedURLString, test.documentURL);
-    RefPtr<SecurityOrigin> documentOrigin = SecurityOrigin::createUnique();
-    EXPECT_EQ(test.expected,
-              History::canChangeToUrl(url, documentOrigin.get(), documentURL));
+    KURL url(kParsedURLString, test.url);
+    KURL document_url(kParsedURLString, test.document_url);
+    RefPtr<SecurityOrigin> document_origin = SecurityOrigin::CreateUnique();
+    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.Get(),
+                                                     document_url));
   }
 }
 

@@ -49,7 +49,7 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
   // |watchForLoad| (if the pending script was already ready), or when the
   // resource loads (if script streaming is not occurring), or when script
   // streaming finishes.
-  virtual void pendingScriptFinished(PendingScript*) = 0;
+  virtual void PendingScriptFinished(PendingScript*) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
@@ -66,81 +66,81 @@ class CORE_EXPORT PendingScript final
       public ResourceOwner<ScriptResource>,
       public MemoryCoordinatorClient {
   USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
-  USING_PRE_FINALIZER(PendingScript, dispose);
+  USING_PRE_FINALIZER(PendingScript, Dispose);
   WTF_MAKE_NONCOPYABLE(PendingScript);
 
  public:
   // For script from an external file.
-  static PendingScript* create(ScriptElementBase*, ScriptResource*);
+  static PendingScript* Create(ScriptElementBase*, ScriptResource*);
   // For inline script.
-  static PendingScript* create(ScriptElementBase*, const TextPosition&);
+  static PendingScript* Create(ScriptElementBase*, const TextPosition&);
 
-  static PendingScript* createForTesting(ScriptResource*);
+  static PendingScript* CreateForTesting(ScriptResource*);
 
   ~PendingScript() override;
 
-  TextPosition startingPosition() const { return m_startingPosition; }
-  void markParserBlockingLoadStartTime();
+  TextPosition StartingPosition() const { return starting_position_; }
+  void MarkParserBlockingLoadStartTime();
   // Returns the time the load of this script started blocking the parser, or
   // zero if this script hasn't yet blocked the parser, in
   // monotonicallyIncreasingTime.
-  double parserBlockingLoadStartTime() const {
-    return m_parserBlockingLoadStartTime;
+  double ParserBlockingLoadStartTime() const {
+    return parser_blocking_load_start_time_;
   }
 
-  void watchForLoad(PendingScriptClient*);
-  void stopWatchingForLoad();
+  void WatchForLoad(PendingScriptClient*);
+  void StopWatchingForLoad();
 
-  ScriptElementBase* element() const;
+  ScriptElementBase* GetElement() const;
 
   DECLARE_TRACE();
 
-  ScriptSourceCode getSource(const KURL& documentURL,
-                             bool& errorOccurred) const;
+  ScriptSourceCode GetSource(const KURL& document_url,
+                             bool& error_occurred) const;
 
-  void setStreamer(ScriptStreamer*);
-  void streamingFinished();
+  void SetStreamer(ScriptStreamer*);
+  void StreamingFinished();
 
-  bool isReady() const;
-  bool errorOccurred() const;
+  bool IsReady() const;
+  bool ErrorOccurred() const;
 
-  void startStreamingIfPossible(Document*, ScriptStreamer::Type);
-  void dispose();
+  void StartStreamingIfPossible(Document*, ScriptStreamer::Type);
+  void Dispose();
 
  private:
   PendingScript(ScriptElementBase*,
                 ScriptResource*,
                 const TextPosition&,
-                bool isForTesting = false);
+                bool is_for_testing = false);
   PendingScript() = delete;
 
-  void checkState() const;
+  void CheckState() const;
 
   // ScriptResourceClient
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "PendingScript"; }
-  void notifyAppendData(ScriptResource*) override;
+  void NotifyFinished(Resource*) override;
+  String DebugName() const override { return "PendingScript"; }
+  void NotifyAppendData(ScriptResource*) override;
 
   // MemoryCoordinatorClient
-  void onPurgeMemory() override;
+  void OnPurgeMemory() override;
 
-  bool m_watchingForLoad;
+  bool watching_for_load_;
 
   // |m_element| must points to the corresponding ScriptLoader's
   // ScriptElementBase and thus must be non-null before dispose() is called
   // (except for unit tests).
-  Member<ScriptElementBase> m_element;
+  Member<ScriptElementBase> element_;
 
-  TextPosition m_startingPosition;  // Only used for inline script tags.
-  bool m_integrityFailure;
-  double m_parserBlockingLoadStartTime;
+  TextPosition starting_position_;  // Only used for inline script tags.
+  bool integrity_failure_;
+  double parser_blocking_load_start_time_;
 
-  Member<ScriptStreamer> m_streamer;
-  Member<PendingScriptClient> m_client;
+  Member<ScriptStreamer> streamer_;
+  Member<PendingScriptClient> client_;
 
   // This flag is used to skip non-null checks of |m_element| in unit
   // tests, because |m_element| can be null in unit tests.
-  const bool m_isForTesting;
+  const bool is_for_testing_;
 };
 
 }  // namespace blink

@@ -35,201 +35,201 @@
 
 namespace blink {
 
-static Persistent<MemoryCache>* gMemoryCache;
+static Persistent<MemoryCache>* g_memory_cache;
 
-static const unsigned cDefaultCacheCapacity = 8192 * 1024;
-static const int cMinDelayBeforeLiveDecodedPrune = 1;  // Seconds.
-static const double cMaxPruneDeferralDelay = 0.5;      // Seconds.
+static const unsigned kCDefaultCacheCapacity = 8192 * 1024;
+static const int kCMinDelayBeforeLiveDecodedPrune = 1;  // Seconds.
+static const double kCMaxPruneDeferralDelay = 0.5;      // Seconds.
 
 // Percentage of capacity toward which we prune, to avoid immediately pruning
 // again.
-static const float cTargetPrunePercentage = .95f;
+static const float kCTargetPrunePercentage = .95f;
 
-MemoryCache* memoryCache() {
-  DCHECK(WTF::isMainThread());
-  if (!gMemoryCache)
-    gMemoryCache = new Persistent<MemoryCache>(MemoryCache::create());
-  return gMemoryCache->get();
+MemoryCache* GetMemoryCache() {
+  DCHECK(WTF::IsMainThread());
+  if (!g_memory_cache)
+    g_memory_cache = new Persistent<MemoryCache>(MemoryCache::Create());
+  return g_memory_cache->Get();
 }
 
-MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache) {
-  memoryCache();
-  MemoryCache* oldCache = gMemoryCache->release();
-  *gMemoryCache = cache;
-  MemoryCacheDumpProvider::instance()->setMemoryCache(cache);
-  return oldCache;
+MemoryCache* ReplaceMemoryCacheForTesting(MemoryCache* cache) {
+  GetMemoryCache();
+  MemoryCache* old_cache = g_memory_cache->Release();
+  *g_memory_cache = cache;
+  MemoryCacheDumpProvider::Instance()->SetMemoryCache(cache);
+  return old_cache;
 }
 
 DEFINE_TRACE(MemoryCacheEntry) {
-  visitor->template registerWeakMembers<MemoryCacheEntry,
-                                        &MemoryCacheEntry::clearResourceWeak>(
+  visitor->template RegisterWeakMembers<MemoryCacheEntry,
+                                        &MemoryCacheEntry::ClearResourceWeak>(
       this);
 }
 
-void MemoryCacheEntry::clearResourceWeak(Visitor* visitor) {
-  if (!m_resource || ThreadHeap::isHeapObjectAlive(m_resource))
+void MemoryCacheEntry::ClearResourceWeak(Visitor* visitor) {
+  if (!resource_ || ThreadHeap::IsHeapObjectAlive(resource_))
     return;
-  memoryCache()->remove(m_resource.get());
-  m_resource.clear();
+  GetMemoryCache()->Remove(resource_.Get());
+  resource_.Clear();
 }
 
 inline MemoryCache::MemoryCache()
-    : m_inPruneResources(false),
-      m_prunePending(false),
-      m_maxPruneDeferralDelay(cMaxPruneDeferralDelay),
-      m_pruneTimeStamp(0.0),
-      m_pruneFrameTimeStamp(0.0),
-      m_lastFramePaintTimeStamp(0.0),
-      m_capacity(cDefaultCacheCapacity),
-      m_delayBeforeLiveDecodedPrune(cMinDelayBeforeLiveDecodedPrune),
-      m_size(0) {
-  MemoryCacheDumpProvider::instance()->setMemoryCache(this);
-  if (MemoryCoordinator::isLowEndDevice())
-    MemoryCoordinator::instance().registerClient(this);
+    : in_prune_resources_(false),
+      prune_pending_(false),
+      max_prune_deferral_delay_(kCMaxPruneDeferralDelay),
+      prune_time_stamp_(0.0),
+      prune_frame_time_stamp_(0.0),
+      last_frame_paint_time_stamp_(0.0),
+      capacity_(kCDefaultCacheCapacity),
+      delay_before_live_decoded_prune_(kCMinDelayBeforeLiveDecodedPrune),
+      size_(0) {
+  MemoryCacheDumpProvider::Instance()->SetMemoryCache(this);
+  if (MemoryCoordinator::IsLowEndDevice())
+    MemoryCoordinator::Instance().RegisterClient(this);
 }
 
-MemoryCache* MemoryCache::create() {
+MemoryCache* MemoryCache::Create() {
   return new MemoryCache;
 }
 
 MemoryCache::~MemoryCache() {
-  if (m_prunePending)
-    Platform::current()->currentThread()->removeTaskObserver(this);
+  if (prune_pending_)
+    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
 }
 
 DEFINE_TRACE(MemoryCache) {
-  visitor->trace(m_resourceMaps);
-  MemoryCacheDumpClient::trace(visitor);
-  MemoryCoordinatorClient::trace(visitor);
+  visitor->Trace(resource_maps_);
+  MemoryCacheDumpClient::Trace(visitor);
+  MemoryCoordinatorClient::Trace(visitor);
 }
 
-KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL) {
-  if (!originalURL.hasFragmentIdentifier())
-    return originalURL;
+KURL MemoryCache::RemoveFragmentIdentifierIfNeeded(const KURL& original_url) {
+  if (!original_url.HasFragmentIdentifier())
+    return original_url;
   // Strip away fragment identifier from HTTP URLs. Data URLs must be
   // unmodified. For file and custom URLs clients may expect resources to be
   // unique even when they differ by the fragment identifier only.
-  if (!originalURL.protocolIsInHTTPFamily())
-    return originalURL;
-  KURL url = originalURL;
-  url.removeFragmentIdentifier();
+  if (!original_url.ProtocolIsInHTTPFamily())
+    return original_url;
+  KURL url = original_url;
+  url.RemoveFragmentIdentifier();
   return url;
 }
 
-String MemoryCache::defaultCacheIdentifier() {
-  return emptyString;
+String MemoryCache::DefaultCacheIdentifier() {
+  return g_empty_string;
 }
 
-MemoryCache::ResourceMap* MemoryCache::ensureResourceMap(
-    const String& cacheIdentifier) {
-  if (!m_resourceMaps.contains(cacheIdentifier)) {
+MemoryCache::ResourceMap* MemoryCache::EnsureResourceMap(
+    const String& cache_identifier) {
+  if (!resource_maps_.Contains(cache_identifier)) {
     ResourceMapIndex::AddResult result =
-        m_resourceMaps.insert(cacheIdentifier, new ResourceMap);
-    CHECK(result.isNewEntry);
+        resource_maps_.insert(cache_identifier, new ResourceMap);
+    CHECK(result.is_new_entry);
   }
-  return m_resourceMaps.at(cacheIdentifier);
+  return resource_maps_.at(cache_identifier);
 }
 
-void MemoryCache::add(Resource* resource) {
+void MemoryCache::Add(Resource* resource) {
   DCHECK(resource);
-  ResourceMap* resources = ensureResourceMap(resource->cacheIdentifier());
-  addInternal(resources, MemoryCacheEntry::create(resource));
-  RESOURCE_LOADING_DVLOG(1) << "MemoryCache::add Added "
-                            << resource->url().getString() << ", resource "
-                            << resource;
+  ResourceMap* resources = EnsureResourceMap(resource->CacheIdentifier());
+  AddInternal(resources, MemoryCacheEntry::Create(resource));
+  RESOURCE_LOADING_DVLOG(1)
+      << "MemoryCache::add Added " << resource->Url().GetString()
+      << ", resource " << resource;
 }
 
-void MemoryCache::addInternal(ResourceMap* resourceMap,
+void MemoryCache::AddInternal(ResourceMap* resource_map,
                               MemoryCacheEntry* entry) {
-  DCHECK(WTF::isMainThread());
-  DCHECK(resourceMap);
+  DCHECK(WTF::IsMainThread());
+  DCHECK(resource_map);
 
-  Resource* resource = entry->resource();
+  Resource* resource = entry->GetResource();
   if (!resource)
     return;
-  DCHECK(resource->url().isValid());
+  DCHECK(resource->Url().IsValid());
 
-  KURL url = removeFragmentIdentifierIfNeeded(resource->url());
-  ResourceMap::iterator it = resourceMap->find(url);
-  if (it != resourceMap->end()) {
-    Resource* oldResource = it->value->resource();
-    CHECK_NE(oldResource, resource);
-    update(oldResource, oldResource->size(), 0);
+  KURL url = RemoveFragmentIdentifierIfNeeded(resource->Url());
+  ResourceMap::iterator it = resource_map->Find(url);
+  if (it != resource_map->end()) {
+    Resource* old_resource = it->value->GetResource();
+    CHECK_NE(old_resource, resource);
+    Update(old_resource, old_resource->size(), 0);
   }
-  resourceMap->set(url, entry);
-  update(resource, 0, resource->size());
+  resource_map->Set(url, entry);
+  Update(resource, 0, resource->size());
 }
 
-void MemoryCache::remove(Resource* resource) {
-  DCHECK(WTF::isMainThread());
+void MemoryCache::Remove(Resource* resource) {
+  DCHECK(WTF::IsMainThread());
   DCHECK(resource);
   RESOURCE_LOADING_DVLOG(1) << "Evicting resource " << resource << " for "
-                            << resource->url().getString() << " from cache";
+                            << resource->Url().GetString() << " from cache";
   TRACE_EVENT1("blink", "MemoryCache::evict", "resource",
-               resource->url().getString().utf8());
+               resource->Url().GetString().Utf8());
 
-  ResourceMap* resources = m_resourceMaps.at(resource->cacheIdentifier());
+  ResourceMap* resources = resource_maps_.at(resource->CacheIdentifier());
   if (!resources)
     return;
 
-  KURL url = removeFragmentIdentifierIfNeeded(resource->url());
-  ResourceMap::iterator it = resources->find(url);
-  if (it == resources->end() || it->value->resource() != resource)
+  KURL url = RemoveFragmentIdentifierIfNeeded(resource->Url());
+  ResourceMap::iterator it = resources->Find(url);
+  if (it == resources->end() || it->value->GetResource() != resource)
     return;
-  removeInternal(resources, it);
+  RemoveInternal(resources, it);
 }
 
-void MemoryCache::removeInternal(ResourceMap* resourceMap,
+void MemoryCache::RemoveInternal(ResourceMap* resource_map,
                                  const ResourceMap::iterator& it) {
-  DCHECK(WTF::isMainThread());
-  DCHECK(resourceMap);
+  DCHECK(WTF::IsMainThread());
+  DCHECK(resource_map);
 
-  Resource* resource = it->value->resource();
+  Resource* resource = it->value->GetResource();
   DCHECK(resource);
 
-  update(resource, resource->size(), 0);
-  resourceMap->erase(it);
+  Update(resource, resource->size(), 0);
+  resource_map->erase(it);
 }
 
-bool MemoryCache::contains(const Resource* resource) const {
-  if (!resource || resource->url().isEmpty())
+bool MemoryCache::Contains(const Resource* resource) const {
+  if (!resource || resource->Url().IsEmpty())
     return false;
-  const ResourceMap* resources = m_resourceMaps.at(resource->cacheIdentifier());
+  const ResourceMap* resources = resource_maps_.at(resource->CacheIdentifier());
   if (!resources)
     return false;
-  KURL url = removeFragmentIdentifierIfNeeded(resource->url());
+  KURL url = RemoveFragmentIdentifierIfNeeded(resource->Url());
   MemoryCacheEntry* entry = resources->at(url);
-  return entry && resource == entry->resource();
+  return entry && resource == entry->GetResource();
 }
 
-Resource* MemoryCache::resourceForURL(const KURL& resourceURL) const {
-  return resourceForURL(resourceURL, defaultCacheIdentifier());
+Resource* MemoryCache::ResourceForURL(const KURL& resource_url) const {
+  return ResourceForURL(resource_url, DefaultCacheIdentifier());
 }
 
-Resource* MemoryCache::resourceForURL(const KURL& resourceURL,
-                                      const String& cacheIdentifier) const {
-  DCHECK(WTF::isMainThread());
-  if (!resourceURL.isValid() || resourceURL.isNull())
+Resource* MemoryCache::ResourceForURL(const KURL& resource_url,
+                                      const String& cache_identifier) const {
+  DCHECK(WTF::IsMainThread());
+  if (!resource_url.IsValid() || resource_url.IsNull())
     return nullptr;
-  DCHECK(!cacheIdentifier.isNull());
-  const ResourceMap* resources = m_resourceMaps.at(cacheIdentifier);
+  DCHECK(!cache_identifier.IsNull());
+  const ResourceMap* resources = resource_maps_.at(cache_identifier);
   if (!resources)
     return nullptr;
   MemoryCacheEntry* entry =
-      resources->at(removeFragmentIdentifierIfNeeded(resourceURL));
+      resources->at(RemoveFragmentIdentifierIfNeeded(resource_url));
   if (!entry)
     return nullptr;
-  return entry->resource();
+  return entry->GetResource();
 }
 
-HeapVector<Member<Resource>> MemoryCache::resourcesForURL(
-    const KURL& resourceURL) const {
-  DCHECK(WTF::isMainThread());
-  KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
+HeapVector<Member<Resource>> MemoryCache::ResourcesForURL(
+    const KURL& resource_url) const {
+  DCHECK(WTF::IsMainThread());
+  KURL url = RemoveFragmentIdentifierIfNeeded(resource_url);
   HeapVector<Member<Resource>> results;
-  for (const auto& resourceMapIter : m_resourceMaps) {
-    if (MemoryCacheEntry* entry = resourceMapIter.value->at(url)) {
-      Resource* resource = entry->resource();
+  for (const auto& resource_map_iter : resource_maps_) {
+    if (MemoryCacheEntry* entry = resource_map_iter.value->at(url)) {
+      Resource* resource = entry->GetResource();
       DCHECK(resource);
       results.push_back(resource);
     }
@@ -237,87 +237,88 @@ HeapVector<Member<Resource>> MemoryCache::resourcesForURL(
   return results;
 }
 
-void MemoryCache::pruneResources(PruneStrategy strategy) {
-  DCHECK(!m_prunePending);
-  const size_t sizeLimit = (strategy == MaximalPrune) ? 0 : capacity();
-  if (m_size <= sizeLimit)
+void MemoryCache::PruneResources(PruneStrategy strategy) {
+  DCHECK(!prune_pending_);
+  const size_t size_limit = (strategy == kMaximalPrune) ? 0 : Capacity();
+  if (size_ <= size_limit)
     return;
 
   // Cut by a percentage to avoid immediately pruning again.
-  size_t targetSize = static_cast<size_t>(sizeLimit * cTargetPrunePercentage);
+  size_t target_size =
+      static_cast<size_t>(size_limit * kCTargetPrunePercentage);
 
-  for (const auto& resourceMapIter : m_resourceMaps) {
-    for (const auto& resourceIter : *resourceMapIter.value) {
-      Resource* resource = resourceIter.value->resource();
+  for (const auto& resource_map_iter : resource_maps_) {
+    for (const auto& resource_iter : *resource_map_iter.value) {
+      Resource* resource = resource_iter.value->GetResource();
       DCHECK(resource);
-      if (resource->isLoaded() && resource->decodedSize()) {
+      if (resource->IsLoaded() && resource->DecodedSize()) {
         // Check to see if the remaining resources are too new to prune.
-        double elapsedTime =
-            m_pruneFrameTimeStamp - resourceIter.value->m_lastDecodedAccessTime;
-        if (strategy == AutomaticPrune &&
-            elapsedTime < m_delayBeforeLiveDecodedPrune)
+        double elapsed_time = prune_frame_time_stamp_ -
+                              resource_iter.value->last_decoded_access_time_;
+        if (strategy == kAutomaticPrune &&
+            elapsed_time < delay_before_live_decoded_prune_)
           continue;
-        resource->prune();
-        if (m_size <= targetSize)
+        resource->Prune();
+        if (size_ <= target_size)
           return;
       }
     }
   }
 }
 
-void MemoryCache::setCapacity(size_t totalBytes) {
-  m_capacity = totalBytes;
-  prune();
+void MemoryCache::SetCapacity(size_t total_bytes) {
+  capacity_ = total_bytes;
+  Prune();
 }
 
-void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize) {
-  if (!contains(resource))
+void MemoryCache::Update(Resource* resource, size_t old_size, size_t new_size) {
+  if (!Contains(resource))
     return;
-  ptrdiff_t delta = newSize - oldSize;
-  DCHECK(delta >= 0 || m_size >= static_cast<size_t>(-delta));
-  m_size += delta;
+  ptrdiff_t delta = new_size - old_size;
+  DCHECK(delta >= 0 || size_ >= static_cast<size_t>(-delta));
+  size_ += delta;
 }
 
-void MemoryCache::removeURLFromCache(const KURL& url) {
-  HeapVector<Member<Resource>> resources = resourcesForURL(url);
+void MemoryCache::RemoveURLFromCache(const KURL& url) {
+  HeapVector<Member<Resource>> resources = ResourcesForURL(url);
   for (Resource* resource : resources)
-    remove(resource);
+    Remove(resource);
 }
 
-void MemoryCache::TypeStatistic::addResource(Resource* o) {
+void MemoryCache::TypeStatistic::AddResource(Resource* o) {
   count++;
   size += o->size();
-  decodedSize += o->decodedSize();
-  encodedSize += o->encodedSize();
-  overheadSize += o->overheadSize();
-  encodedSizeDuplicatedInDataURLs +=
-      o->url().protocolIsData() ? o->encodedSize() : 0;
+  decoded_size += o->DecodedSize();
+  encoded_size += o->EncodedSize();
+  overhead_size += o->OverheadSize();
+  encoded_size_duplicated_in_data_ur_ls +=
+      o->Url().ProtocolIsData() ? o->EncodedSize() : 0;
 }
 
-MemoryCache::Statistics MemoryCache::getStatistics() const {
+MemoryCache::Statistics MemoryCache::GetStatistics() const {
   Statistics stats;
-  for (const auto& resourceMapIter : m_resourceMaps) {
-    for (const auto& resourceIter : *resourceMapIter.value) {
-      Resource* resource = resourceIter.value->resource();
+  for (const auto& resource_map_iter : resource_maps_) {
+    for (const auto& resource_iter : *resource_map_iter.value) {
+      Resource* resource = resource_iter.value->GetResource();
       DCHECK(resource);
-      switch (resource->getType()) {
-        case Resource::Image:
-          stats.images.addResource(resource);
+      switch (resource->GetType()) {
+        case Resource::kImage:
+          stats.images.AddResource(resource);
           break;
-        case Resource::CSSStyleSheet:
-          stats.cssStyleSheets.addResource(resource);
+        case Resource::kCSSStyleSheet:
+          stats.css_style_sheets.AddResource(resource);
           break;
-        case Resource::Script:
-          stats.scripts.addResource(resource);
+        case Resource::kScript:
+          stats.scripts.AddResource(resource);
           break;
-        case Resource::XSLStyleSheet:
-          stats.xslStyleSheets.addResource(resource);
+        case Resource::kXSLStyleSheet:
+          stats.xsl_style_sheets.AddResource(resource);
           break;
-        case Resource::Font:
-          stats.fonts.addResource(resource);
+        case Resource::kFont:
+          stats.fonts.AddResource(resource);
           break;
         default:
-          stats.other.addResource(resource);
+          stats.other.AddResource(resource);
           break;
       }
     }
@@ -325,46 +326,47 @@ MemoryCache::Statistics MemoryCache::getStatistics() const {
   return stats;
 }
 
-void MemoryCache::evictResources(EvictResourcePolicy policy) {
-  for (auto resourceMapIter = m_resourceMaps.begin();
-       resourceMapIter != m_resourceMaps.end();) {
-    ResourceMap* resources = resourceMapIter->value.get();
-    HeapVector<Member<MemoryCacheEntry>> unusedPreloads;
-    for (auto resourceIter = resources->begin();
-         resourceIter != resources->end(); resourceIter = resources->begin()) {
-      DCHECK(resourceIter.get());
-      DCHECK(resourceIter->value.get());
-      DCHECK(resourceIter->value->resource());
-      Resource* resource = resourceIter->value->resource();
+void MemoryCache::EvictResources(EvictResourcePolicy policy) {
+  for (auto resource_map_iter = resource_maps_.begin();
+       resource_map_iter != resource_maps_.end();) {
+    ResourceMap* resources = resource_map_iter->value.Get();
+    HeapVector<Member<MemoryCacheEntry>> unused_preloads;
+    for (auto resource_iter = resources->begin();
+         resource_iter != resources->end();
+         resource_iter = resources->begin()) {
+      DCHECK(resource_iter.Get());
+      DCHECK(resource_iter->value.Get());
+      DCHECK(resource_iter->value->GetResource());
+      Resource* resource = resource_iter->value->GetResource();
       DCHECK(resource);
-      if (policy != EvictAllResources && resource->isUnusedPreload()) {
+      if (policy != kEvictAllResources && resource->IsUnusedPreload()) {
         // Store unused preloads aside, so they could be added back later.
         // That is in order to avoid the performance impact of iterating over
         // the same resource multiple times.
-        unusedPreloads.push_back(resourceIter->value.get());
+        unused_preloads.push_back(resource_iter->value.Get());
       }
-      removeInternal(resources, resourceIter);
+      RemoveInternal(resources, resource_iter);
     }
-    for (const auto& unusedPreload : unusedPreloads) {
-      addInternal(resources, unusedPreload);
+    for (const auto& unused_preload : unused_preloads) {
+      AddInternal(resources, unused_preload);
     }
     // We may iterate multiple times over resourceMaps with unused preloads.
     // That's extremely unlikely to have any real-life performance impact.
     if (!resources->size()) {
-      m_resourceMaps.erase(resourceMapIter);
-      resourceMapIter = m_resourceMaps.begin();
+      resource_maps_.erase(resource_map_iter);
+      resource_map_iter = resource_maps_.begin();
     } else {
-      ++resourceMapIter;
+      ++resource_map_iter;
     }
   }
 }
 
-void MemoryCache::prune() {
+void MemoryCache::Prune() {
   TRACE_EVENT0("renderer", "MemoryCache::prune()");
 
-  if (m_inPruneResources)
+  if (in_prune_resources_)
     return;
-  if (m_size <= m_capacity)  // Fast path.
+  if (size_ <= capacity_)  // Fast path.
     return;
 
   // To avoid burdening the current thread with repetitive pruning jobs, pruning
@@ -373,94 +375,96 @@ void MemoryCache::prune() {
   // the current thread's run loop is not active, then pruning will happen
   // immediately only if it has been over m_maxPruneDeferralDelay since the last
   // prune.
-  double currentTime = WTF::currentTime();
-  if (m_prunePending) {
-    if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
-      pruneNow(currentTime, AutomaticPrune);
+  double current_time = WTF::CurrentTime();
+  if (prune_pending_) {
+    if (current_time - prune_time_stamp_ >= max_prune_deferral_delay_) {
+      PruneNow(current_time, kAutomaticPrune);
     }
   } else {
-    if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
-      pruneNow(currentTime, AutomaticPrune);  // Delay exceeded, prune now.
+    if (current_time - prune_time_stamp_ >= max_prune_deferral_delay_) {
+      PruneNow(current_time, kAutomaticPrune);  // Delay exceeded, prune now.
     } else {
       // Defer.
-      Platform::current()->currentThread()->addTaskObserver(this);
-      m_prunePending = true;
+      Platform::Current()->CurrentThread()->AddTaskObserver(this);
+      prune_pending_ = true;
     }
   }
 }
 
-void MemoryCache::willProcessTask() {}
+void MemoryCache::WillProcessTask() {}
 
-void MemoryCache::didProcessTask() {
+void MemoryCache::DidProcessTask() {
   // Perform deferred pruning
-  DCHECK(m_prunePending);
-  pruneNow(WTF::currentTime(), AutomaticPrune);
+  DCHECK(prune_pending_);
+  PruneNow(WTF::CurrentTime(), kAutomaticPrune);
 }
 
-void MemoryCache::pruneAll() {
-  double currentTime = WTF::currentTime();
-  pruneNow(currentTime, MaximalPrune);
+void MemoryCache::PruneAll() {
+  double current_time = WTF::CurrentTime();
+  PruneNow(current_time, kMaximalPrune);
 }
 
-void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy) {
-  if (m_prunePending) {
-    m_prunePending = false;
-    Platform::current()->currentThread()->removeTaskObserver(this);
+void MemoryCache::PruneNow(double current_time, PruneStrategy strategy) {
+  if (prune_pending_) {
+    prune_pending_ = false;
+    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
   }
 
-  AutoReset<bool> reentrancyProtector(&m_inPruneResources, true);
+  AutoReset<bool> reentrancy_protector(&in_prune_resources_, true);
 
-  pruneResources(strategy);
-  m_pruneFrameTimeStamp = m_lastFramePaintTimeStamp;
-  m_pruneTimeStamp = currentTime;
+  PruneResources(strategy);
+  prune_frame_time_stamp_ = last_frame_paint_time_stamp_;
+  prune_time_stamp_ = current_time;
 }
 
-void MemoryCache::updateFramePaintTimestamp() {
-  m_lastFramePaintTimeStamp = currentTime();
+void MemoryCache::UpdateFramePaintTimestamp() {
+  last_frame_paint_time_stamp_ = CurrentTime();
 }
 
-bool MemoryCache::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail,
-                               WebProcessMemoryDump* memoryDump) {
-  if (levelOfDetail == WebMemoryDumpLevelOfDetail::Background) {
-    Statistics stats = getStatistics();
+bool MemoryCache::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
+                               WebProcessMemoryDump* memory_dump) {
+  if (level_of_detail == WebMemoryDumpLevelOfDetail::kBackground) {
+    Statistics stats = GetStatistics();
     WebMemoryAllocatorDump* dump1 =
-        memoryDump->createMemoryAllocatorDump("web_cache/Image_resources");
-    dump1->addScalar("size", "bytes",
-                     stats.images.encodedSize + stats.images.overheadSize);
-    WebMemoryAllocatorDump* dump2 = memoryDump->createMemoryAllocatorDump(
+        memory_dump->CreateMemoryAllocatorDump("web_cache/Image_resources");
+    dump1->AddScalar("size", "bytes",
+                     stats.images.encoded_size + stats.images.overhead_size);
+    WebMemoryAllocatorDump* dump2 = memory_dump->CreateMemoryAllocatorDump(
         "web_cache/CSS stylesheet_resources");
-    dump2->addScalar("size", "bytes", stats.cssStyleSheets.encodedSize +
-                                          stats.cssStyleSheets.overheadSize);
+    dump2->AddScalar("size", "bytes",
+                     stats.css_style_sheets.encoded_size +
+                         stats.css_style_sheets.overhead_size);
     WebMemoryAllocatorDump* dump3 =
-        memoryDump->createMemoryAllocatorDump("web_cache/Script_resources");
-    dump3->addScalar("size", "bytes",
-                     stats.scripts.encodedSize + stats.scripts.overheadSize);
-    WebMemoryAllocatorDump* dump4 = memoryDump->createMemoryAllocatorDump(
+        memory_dump->CreateMemoryAllocatorDump("web_cache/Script_resources");
+    dump3->AddScalar("size", "bytes",
+                     stats.scripts.encoded_size + stats.scripts.overhead_size);
+    WebMemoryAllocatorDump* dump4 = memory_dump->CreateMemoryAllocatorDump(
         "web_cache/XSL stylesheet_resources");
-    dump4->addScalar("size", "bytes", stats.xslStyleSheets.encodedSize +
-                                          stats.xslStyleSheets.overheadSize);
+    dump4->AddScalar("size", "bytes",
+                     stats.xsl_style_sheets.encoded_size +
+                         stats.xsl_style_sheets.overhead_size);
     WebMemoryAllocatorDump* dump5 =
-        memoryDump->createMemoryAllocatorDump("web_cache/Font_resources");
-    dump5->addScalar("size", "bytes",
-                     stats.fonts.encodedSize + stats.fonts.overheadSize);
+        memory_dump->CreateMemoryAllocatorDump("web_cache/Font_resources");
+    dump5->AddScalar("size", "bytes",
+                     stats.fonts.encoded_size + stats.fonts.overhead_size);
     WebMemoryAllocatorDump* dump6 =
-        memoryDump->createMemoryAllocatorDump("web_cache/Other_resources");
-    dump6->addScalar("size", "bytes",
-                     stats.other.encodedSize + stats.other.overheadSize);
+        memory_dump->CreateMemoryAllocatorDump("web_cache/Other_resources");
+    dump6->AddScalar("size", "bytes",
+                     stats.other.encoded_size + stats.other.overhead_size);
     return true;
   }
 
-  for (const auto& resourceMapIter : m_resourceMaps) {
-    for (const auto& resourceIter : *resourceMapIter.value) {
-      Resource* resource = resourceIter.value->resource();
-      resource->onMemoryDump(levelOfDetail, memoryDump);
+  for (const auto& resource_map_iter : resource_maps_) {
+    for (const auto& resource_iter : *resource_map_iter.value) {
+      Resource* resource = resource_iter.value->GetResource();
+      resource->OnMemoryDump(level_of_detail, memory_dump);
     }
   }
   return true;
 }
 
-void MemoryCache::onMemoryPressure(WebMemoryPressureLevel level) {
-  pruneAll();
+void MemoryCache::OnMemoryPressure(WebMemoryPressureLevel level) {
+  PruneAll();
 }
 
 }  // namespace blink

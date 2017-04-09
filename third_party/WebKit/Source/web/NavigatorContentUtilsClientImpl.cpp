@@ -9,39 +9,39 @@
 
 namespace blink {
 
-NavigatorContentUtilsClientImpl* NavigatorContentUtilsClientImpl::create(
-    WebLocalFrameImpl* webFrame) {
-  return new NavigatorContentUtilsClientImpl(webFrame);
+NavigatorContentUtilsClientImpl* NavigatorContentUtilsClientImpl::Create(
+    WebLocalFrameImpl* web_frame) {
+  return new NavigatorContentUtilsClientImpl(web_frame);
 }
 
 NavigatorContentUtilsClientImpl::NavigatorContentUtilsClientImpl(
-    WebLocalFrameImpl* webFrame)
-    : m_webFrame(webFrame) {}
+    WebLocalFrameImpl* web_frame)
+    : web_frame_(web_frame) {}
 
 DEFINE_TRACE(NavigatorContentUtilsClientImpl) {
-  visitor->trace(m_webFrame);
-  NavigatorContentUtilsClient::trace(visitor);
+  visitor->Trace(web_frame_);
+  NavigatorContentUtilsClient::Trace(visitor);
 }
 
-void NavigatorContentUtilsClientImpl::registerProtocolHandler(
+void NavigatorContentUtilsClientImpl::RegisterProtocolHandler(
     const String& scheme,
     const KURL& url,
     const String& title) {
-  m_webFrame->client()->registerProtocolHandler(scheme, url, title);
+  web_frame_->Client()->RegisterProtocolHandler(scheme, url, title);
 }
 
 NavigatorContentUtilsClient::CustomHandlersState
-NavigatorContentUtilsClientImpl::isProtocolHandlerRegistered(
+NavigatorContentUtilsClientImpl::IsProtocolHandlerRegistered(
     const String& scheme,
     const KURL& url) {
   return static_cast<NavigatorContentUtilsClient::CustomHandlersState>(
-      m_webFrame->client()->isProtocolHandlerRegistered(scheme, url));
+      web_frame_->Client()->IsProtocolHandlerRegistered(scheme, url));
 }
 
-void NavigatorContentUtilsClientImpl::unregisterProtocolHandler(
+void NavigatorContentUtilsClientImpl::UnregisterProtocolHandler(
     const String& scheme,
     const KURL& url) {
-  m_webFrame->client()->unregisterProtocolHandler(scheme, url);
+  web_frame_->Client()->UnregisterProtocolHandler(scheme, url);
 }
 
 }  // namespace blink

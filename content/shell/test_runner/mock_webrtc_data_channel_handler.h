@@ -26,20 +26,20 @@ class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
   ~MockWebRTCDataChannelHandler() override;
 
   // WebRTCDataChannelHandler related methods
-  void setClient(blink::WebRTCDataChannelHandlerClient* client) override;
-  blink::WebString label() override;
-  bool isReliable() override;
-  bool ordered() const override;
-  unsigned short maxRetransmitTime() const override;
-  unsigned short maxRetransmits() const override;
-  blink::WebString protocol() const override;
-  bool negotiated() const override;
-  unsigned short id() const override;
-  blink::WebRTCDataChannelHandlerClient::ReadyState state() const override;
-  unsigned long bufferedAmount() override;
-  bool sendStringData(const blink::WebString& data) override;
-  bool sendRawData(const char* data, size_t size) override;
-  void close() override;
+  void SetClient(blink::WebRTCDataChannelHandlerClient* client) override;
+  blink::WebString Label() override;
+  bool IsReliable() override;
+  bool Ordered() const override;
+  unsigned short MaxRetransmitTime() const override;
+  unsigned short MaxRetransmits() const override;
+  blink::WebString Protocol() const override;
+  bool Negotiated() const override;
+  unsigned short Id() const override;
+  blink::WebRTCDataChannelHandlerClient::ReadyState GetState() const override;
+  unsigned long BufferedAmount() override;
+  bool SendStringData(const blink::WebString& data) override;
+  bool SendRawData(const char* data, size_t size) override;
+  void Close() override;
 
  private:
   MockWebRTCDataChannelHandler();

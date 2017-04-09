@@ -12,44 +12,44 @@ namespace blink {
 
 class BorderImageLengthBoxPropertyFunctions {
  public:
-  static const BorderImageLengthBox& getInitialBorderImageLengthBox(
+  static const BorderImageLengthBox& GetInitialBorderImageLengthBox(
       CSSPropertyID property) {
-    return getBorderImageLengthBox(property, ComputedStyle::initialStyle());
+    return GetBorderImageLengthBox(property, ComputedStyle::InitialStyle());
   }
 
-  static const BorderImageLengthBox& getBorderImageLengthBox(
+  static const BorderImageLengthBox& GetBorderImageLengthBox(
       CSSPropertyID property,
       const ComputedStyle& style) {
     switch (property) {
       case CSSPropertyBorderImageOutset:
-        return style.borderImageOutset();
+        return style.BorderImageOutset();
       case CSSPropertyBorderImageWidth:
-        return style.borderImageWidth();
+        return style.BorderImageWidth();
       case CSSPropertyWebkitMaskBoxImageOutset:
-        return style.maskBoxImageOutset();
+        return style.MaskBoxImageOutset();
       case CSSPropertyWebkitMaskBoxImageWidth:
-        return style.maskBoxImageWidth();
+        return style.MaskBoxImageWidth();
       default:
         NOTREACHED();
-        return getInitialBorderImageLengthBox(CSSPropertyBorderImageOutset);
+        return GetInitialBorderImageLengthBox(CSSPropertyBorderImageOutset);
     }
   }
 
-  static void setBorderImageLengthBox(CSSPropertyID property,
+  static void SetBorderImageLengthBox(CSSPropertyID property,
                                       ComputedStyle& style,
                                       const BorderImageLengthBox& box) {
     switch (property) {
       case CSSPropertyBorderImageOutset:
-        style.setBorderImageOutset(box);
+        style.SetBorderImageOutset(box);
         break;
       case CSSPropertyWebkitMaskBoxImageOutset:
-        style.setMaskBoxImageOutset(box);
+        style.SetMaskBoxImageOutset(box);
         break;
       case CSSPropertyBorderImageWidth:
-        style.setBorderImageWidth(box);
+        style.SetBorderImageWidth(box);
         break;
       case CSSPropertyWebkitMaskBoxImageWidth:
-        style.setMaskBoxImageWidth(box);
+        style.SetMaskBoxImageWidth(box);
         break;
       default:
         NOTREACHED();

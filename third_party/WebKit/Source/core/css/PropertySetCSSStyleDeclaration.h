@@ -41,8 +41,8 @@ class StyleSheetContents;
 
 class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
  public:
-  virtual Element* parentElement() const { return 0; }
-  StyleSheetContents* contextStyleSheet() const;
+  virtual Element* ParentElement() const { return 0; }
+  StyleSheetContents* ContextStyleSheet() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -50,68 +50,68 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
   CSSRule* parentRule() const override { return 0; }
   unsigned length() const final;
   String item(unsigned index) const final;
-  String getPropertyValue(const String& propertyName) final;
-  String getPropertyPriority(const String& propertyName) final;
-  String getPropertyShorthand(const String& propertyName) final;
-  bool isPropertyImplicit(const String& propertyName) final;
-  void setProperty(const String& propertyName,
+  String getPropertyValue(const String& property_name) final;
+  String getPropertyPriority(const String& property_name) final;
+  String GetPropertyShorthand(const String& property_name) final;
+  bool IsPropertyImplicit(const String& property_name) final;
+  void setProperty(const String& property_name,
                    const String& value,
                    const String& priority,
                    ExceptionState&) final;
-  String removeProperty(const String& propertyName, ExceptionState&) final;
-  String cssFloat() const;
-  void setCSSFloat(const String&, ExceptionState&);
+  String removeProperty(const String& property_name, ExceptionState&) final;
+  String CssFloat() const;
+  void SetCSSFloat(const String&, ExceptionState&);
   String cssText() const final;
   void setCSSText(const String&, ExceptionState&) final;
-  const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) final;
-  const CSSValue* getPropertyCSSValueInternal(
-      AtomicString customPropertyName) final;
-  String getPropertyValueInternal(CSSPropertyID) final;
-  void setPropertyInternal(CSSPropertyID,
-                           const String& customPropertyName,
+  const CSSValue* GetPropertyCSSValueInternal(CSSPropertyID) final;
+  const CSSValue* GetPropertyCSSValueInternal(
+      AtomicString custom_property_name) final;
+  String GetPropertyValueInternal(CSSPropertyID) final;
+  void SetPropertyInternal(CSSPropertyID,
+                           const String& custom_property_name,
                            const String& value,
                            bool important,
                            ExceptionState&) final;
 
-  bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const final;
+  bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const final;
 
  protected:
-  enum MutationType { NoChanges, PropertyChanged };
-  virtual void willMutate() {}
-  virtual void didMutate(MutationType) {}
-  virtual MutableStylePropertySet& propertySet() const = 0;
-  virtual PropertyRegistry* propertyRegistry() const = 0;
-  virtual bool isKeyframeStyle() const { return false; }
+  enum MutationType { kNoChanges, kPropertyChanged };
+  virtual void WillMutate() {}
+  virtual void DidMutate(MutationType) {}
+  virtual MutableStylePropertySet& PropertySet() const = 0;
+  virtual PropertyRegistry* GetPropertyRegistry() const = 0;
+  virtual bool IsKeyframeStyle() const { return false; }
 };
 
 class PropertySetCSSStyleDeclaration
     : public AbstractPropertySetCSSStyleDeclaration {
  public:
-  PropertySetCSSStyleDeclaration(MutableStylePropertySet& propertySet)
-      : m_propertySet(&propertySet) {}
+  PropertySetCSSStyleDeclaration(MutableStylePropertySet& property_set)
+      : property_set_(&property_set) {}
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  MutableStylePropertySet& propertySet() const final {
-    DCHECK(m_propertySet);
-    return *m_propertySet;
+  MutableStylePropertySet& PropertySet() const final {
+    DCHECK(property_set_);
+    return *property_set_;
   }
 
-  PropertyRegistry* propertyRegistry() const override { return nullptr; }
+  PropertyRegistry* GetPropertyRegistry() const override { return nullptr; }
 
-  Member<MutableStylePropertySet> m_propertySet;  // Cannot be null
+  Member<MutableStylePropertySet> property_set_;  // Cannot be null
 };
 
 class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
  public:
-  static StyleRuleCSSStyleDeclaration* create(
-      MutableStylePropertySet& propertySet,
-      CSSRule* parentRule) {
-    return new StyleRuleCSSStyleDeclaration(propertySet, parentRule);
+  static StyleRuleCSSStyleDeclaration* Create(
+      MutableStylePropertySet& property_set,
+      CSSRule* parent_rule) {
+    return new StyleRuleCSSStyleDeclaration(property_set, parent_rule);
   }
 
-  void reattach(MutableStylePropertySet&);
+  void Reattach(MutableStylePropertySet&);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -119,34 +119,34 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);
   ~StyleRuleCSSStyleDeclaration() override;
 
-  CSSStyleSheet* parentStyleSheet() const override;
+  CSSStyleSheet* ParentStyleSheet() const override;
 
-  CSSRule* parentRule() const override { return m_parentRule; }
+  CSSRule* parentRule() const override { return parent_rule_; }
 
-  void willMutate() override;
-  void didMutate(MutationType) override;
-  PropertyRegistry* propertyRegistry() const final;
+  void WillMutate() override;
+  void DidMutate(MutationType) override;
+  PropertyRegistry* GetPropertyRegistry() const final;
 
-  Member<CSSRule> m_parentRule;
+  Member<CSSRule> parent_rule_;
 };
 
 class InlineCSSStyleDeclaration final
     : public AbstractPropertySetCSSStyleDeclaration {
  public:
-  explicit InlineCSSStyleDeclaration(Element* parentElement)
-      : m_parentElement(parentElement) {}
+  explicit InlineCSSStyleDeclaration(Element* parent_element)
+      : parent_element_(parent_element) {}
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  MutableStylePropertySet& propertySet() const override;
-  CSSStyleSheet* parentStyleSheet() const override;
-  Element* parentElement() const override { return m_parentElement; }
+  MutableStylePropertySet& PropertySet() const override;
+  CSSStyleSheet* ParentStyleSheet() const override;
+  Element* ParentElement() const override { return parent_element_; }
 
-  void didMutate(MutationType) override;
-  PropertyRegistry* propertyRegistry() const final;
+  void DidMutate(MutationType) override;
+  PropertyRegistry* GetPropertyRegistry() const final;
 
-  Member<Element> m_parentElement;
+  Member<Element> parent_element_;
 };
 
 }  // namespace blink

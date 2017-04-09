@@ -18,21 +18,21 @@ class RootInlineBoxPainter {
   STACK_ALLOCATED();
 
  public:
-  RootInlineBoxPainter(const RootInlineBox& rootInlineBox)
-      : m_rootInlineBox(rootInlineBox) {}
+  RootInlineBoxPainter(const RootInlineBox& root_inline_box)
+      : root_inline_box_(root_inline_box) {}
 
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom);
+             LayoutUnit line_top,
+             LayoutUnit line_bottom);
 
  private:
-  void paintEllipsisBox(const PaintInfo&,
-                        const LayoutPoint& paintOffset,
-                        LayoutUnit lineTop,
-                        LayoutUnit lineBottom) const;
+  void PaintEllipsisBox(const PaintInfo&,
+                        const LayoutPoint& paint_offset,
+                        LayoutUnit line_top,
+                        LayoutUnit line_bottom) const;
 
-  const RootInlineBox& m_rootInlineBox;
+  const RootInlineBox& root_inline_box_;
 };
 
 }  // namespace blink

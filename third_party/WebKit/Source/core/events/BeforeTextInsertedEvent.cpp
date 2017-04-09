@@ -29,17 +29,17 @@ namespace blink {
 
 BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)
     : Event(EventTypeNames::webkitBeforeTextInserted, false, true),
-      m_text(text) {}
+      text_(text) {}
 
 BeforeTextInsertedEvent::~BeforeTextInsertedEvent() {}
 
-const AtomicString& BeforeTextInsertedEvent::interfaceName() const {
+const AtomicString& BeforeTextInsertedEvent::InterfaceName() const {
   // Notice that there is no BeforeTextInsertedEvent.idl.
   return EventNames::Event;
 }
 
 DEFINE_TRACE(BeforeTextInsertedEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

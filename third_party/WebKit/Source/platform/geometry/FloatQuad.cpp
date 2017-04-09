@@ -38,23 +38,23 @@
 
 namespace blink {
 
-static inline float min4(float a, float b, float c, float d) {
+static inline float Min4(float a, float b, float c, float d) {
   return std::min(std::min(a, b), std::min(c, d));
 }
 
-static inline float max4(float a, float b, float c, float d) {
+static inline float Max4(float a, float b, float c, float d) {
   return std::max(std::max(a, b), std::max(c, d));
 }
 
-inline float dot(const FloatSize& a, const FloatSize& b) {
-  return a.width() * b.width() + a.height() * b.height();
+inline float Dot(const FloatSize& a, const FloatSize& b) {
+  return a.Width() * b.Width() + a.Height() * b.Height();
 }
 
-inline float determinant(const FloatSize& a, const FloatSize& b) {
-  return a.width() * b.height() - a.height() * b.width();
+inline float Determinant(const FloatSize& a, const FloatSize& b) {
+  return a.Width() * b.Height() - a.Height() * b.Width();
 }
 
-inline bool isPointInTriangle(const FloatPoint& p,
+inline bool IsPointInTriangle(const FloatPoint& p,
                               const FloatPoint& t1,
                               const FloatPoint& t2,
                               const FloatPoint& t3) {
@@ -64,22 +64,22 @@ inline bool isPointInTriangle(const FloatPoint& p,
   FloatSize v2 = p - t1;
 
   // Compute dot products
-  float dot00 = dot(v0, v0);
-  float dot01 = dot(v0, v1);
-  float dot02 = dot(v0, v2);
-  float dot11 = dot(v1, v1);
-  float dot12 = dot(v1, v2);
+  float dot00 = Dot(v0, v0);
+  float dot01 = Dot(v0, v1);
+  float dot02 = Dot(v0, v2);
+  float dot11 = Dot(v1, v1);
+  float dot12 = Dot(v1, v2);
 
   // Compute barycentric coordinates
-  float invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
-  float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-  float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+  float inv_denom = 1.0f / (dot00 * dot11 - dot01 * dot01);
+  float u = (dot11 * dot02 - dot01 * dot12) * inv_denom;
+  float v = (dot00 * dot12 - dot01 * dot02) * inv_denom;
 
   // Check if point is in triangle
   return (u >= 0) && (v >= 0) && (u + v <= 1);
 }
 
-static inline float saturateInf(float value) {
+static inline float SaturateInf(float value) {
   if (UNLIKELY(std::isinf(value))) {
     return std::signbit(value) ? std::numeric_limits<int>::min()
                                : std::numeric_limits<int>::max();
@@ -87,17 +87,17 @@ static inline float saturateInf(float value) {
   return value;
 }
 
-FloatRect FloatQuad::boundingBox() const {
-  float left = saturateInf(min4(m_p1.x(), m_p2.x(), m_p3.x(), m_p4.x()));
-  float top = saturateInf(min4(m_p1.y(), m_p2.y(), m_p3.y(), m_p4.y()));
+FloatRect FloatQuad::BoundingBox() const {
+  float left = SaturateInf(Min4(p1_.X(), p2_.X(), p3_.X(), p4_.X()));
+  float top = SaturateInf(Min4(p1_.Y(), p2_.Y(), p3_.Y(), p4_.Y()));
 
-  float right = saturateInf(max4(m_p1.x(), m_p2.x(), m_p3.x(), m_p4.x()));
-  float bottom = saturateInf(max4(m_p1.y(), m_p2.y(), m_p3.y(), m_p4.y()));
+  float right = SaturateInf(Max4(p1_.X(), p2_.X(), p3_.X(), p4_.X()));
+  float bottom = SaturateInf(Max4(p1_.Y(), p2_.Y(), p3_.Y(), p4_.Y()));
 
   return FloatRect(left, top, right - left, bottom - top);
 }
 
-static inline bool withinEpsilon(float a, float b) {
+static inline bool WithinEpsilon(float a, float b) {
   return fabs(a - b) < std::numeric_limits<float>::epsilon();
 }
 
@@ -107,29 +107,25 @@ FloatQuad::FloatQuad(const SkPoint (&quad)[4])
                 FloatPoint(quad[2]),
                 FloatPoint(quad[3])) {}
 
-bool FloatQuad::isRectilinear() const {
-  return (withinEpsilon(m_p1.x(), m_p2.x()) &&
-          withinEpsilon(m_p2.y(), m_p3.y()) &&
-          withinEpsilon(m_p3.x(), m_p4.x()) &&
-          withinEpsilon(m_p4.y(), m_p1.y())) ||
-         (withinEpsilon(m_p1.y(), m_p2.y()) &&
-          withinEpsilon(m_p2.x(), m_p3.x()) &&
-          withinEpsilon(m_p3.y(), m_p4.y()) &&
-          withinEpsilon(m_p4.x(), m_p1.x()));
+bool FloatQuad::IsRectilinear() const {
+  return (WithinEpsilon(p1_.X(), p2_.X()) && WithinEpsilon(p2_.Y(), p3_.Y()) &&
+          WithinEpsilon(p3_.X(), p4_.X()) && WithinEpsilon(p4_.Y(), p1_.Y())) ||
+         (WithinEpsilon(p1_.Y(), p2_.Y()) && WithinEpsilon(p2_.X(), p3_.X()) &&
+          WithinEpsilon(p3_.Y(), p4_.Y()) && WithinEpsilon(p4_.X(), p1_.X()));
 }
 
-bool FloatQuad::containsPoint(const FloatPoint& p) const {
-  return isPointInTriangle(p, m_p1, m_p2, m_p3) ||
-         isPointInTriangle(p, m_p1, m_p3, m_p4);
+bool FloatQuad::ContainsPoint(const FloatPoint& p) const {
+  return IsPointInTriangle(p, p1_, p2_, p3_) ||
+         IsPointInTriangle(p, p1_, p3_, p4_);
 }
 
 // Note that we only handle convex quads here.
-bool FloatQuad::containsQuad(const FloatQuad& other) const {
-  return containsPoint(other.p1()) && containsPoint(other.p2()) &&
-         containsPoint(other.p3()) && containsPoint(other.p4());
+bool FloatQuad::ContainsQuad(const FloatQuad& other) const {
+  return ContainsPoint(other.P1()) && ContainsPoint(other.P2()) &&
+         ContainsPoint(other.P3()) && ContainsPoint(other.P4());
 }
 
-static inline FloatPoint rightMostCornerToVector(const FloatRect& rect,
+static inline FloatPoint RightMostCornerToVector(const FloatRect& rect,
                                                  const FloatSize& vector) {
   // Return the corner of the rectangle that if it is to the left of the vector
   // would mean all of the rectangle is to the left of the vector.
@@ -142,50 +138,50 @@ static inline FloatPoint rightMostCornerToVector(const FloatRect& rect,
   //   Q       is left of the vector, and intersection impossible.
   //
   FloatPoint point;
-  if (vector.width() >= 0)
-    point.setY(rect.maxY());
+  if (vector.Width() >= 0)
+    point.SetY(rect.MaxY());
   else
-    point.setY(rect.y());
-  if (vector.height() >= 0)
-    point.setX(rect.x());
+    point.SetY(rect.Y());
+  if (vector.Height() >= 0)
+    point.SetX(rect.X());
   else
-    point.setX(rect.maxX());
+    point.SetX(rect.MaxX());
   return point;
 }
 
-bool FloatQuad::intersectsRect(const FloatRect& rect) const {
+bool FloatQuad::IntersectsRect(const FloatRect& rect) const {
   // For each side of the quad clockwise we check if the rectangle is to the
   // left of it since only content on the right can onlap with the quad.  This
   // only works if the quad is convex.
   FloatSize v1, v2, v3, v4;
 
   // Ensure we use clockwise vectors.
-  if (!isCounterclockwise()) {
-    v1 = m_p2 - m_p1;
-    v2 = m_p3 - m_p2;
-    v3 = m_p4 - m_p3;
-    v4 = m_p1 - m_p4;
+  if (!IsCounterclockwise()) {
+    v1 = p2_ - p1_;
+    v2 = p3_ - p2_;
+    v3 = p4_ - p3_;
+    v4 = p1_ - p4_;
   } else {
-    v1 = m_p4 - m_p1;
-    v2 = m_p1 - m_p2;
-    v3 = m_p2 - m_p3;
-    v4 = m_p3 - m_p4;
+    v1 = p4_ - p1_;
+    v2 = p1_ - p2_;
+    v3 = p2_ - p3_;
+    v4 = p3_ - p4_;
   }
 
-  FloatPoint p = rightMostCornerToVector(rect, v1);
-  if (determinant(v1, p - m_p1) < 0)
+  FloatPoint p = RightMostCornerToVector(rect, v1);
+  if (Determinant(v1, p - p1_) < 0)
     return false;
 
-  p = rightMostCornerToVector(rect, v2);
-  if (determinant(v2, p - m_p2) < 0)
+  p = RightMostCornerToVector(rect, v2);
+  if (Determinant(v2, p - p2_) < 0)
     return false;
 
-  p = rightMostCornerToVector(rect, v3);
-  if (determinant(v3, p - m_p3) < 0)
+  p = RightMostCornerToVector(rect, v3);
+  if (Determinant(v3, p - p3_) < 0)
     return false;
 
-  p = rightMostCornerToVector(rect, v4);
-  if (determinant(v4, p - m_p4) < 0)
+  p = RightMostCornerToVector(rect, v4);
+  if (Determinant(v4, p - p4_) < 0)
     return false;
 
   // If not all of the rectangle is outside one of the quad's four sides, then
@@ -194,12 +190,12 @@ bool FloatQuad::intersectsRect(const FloatRect& rect) const {
 }
 
 // Tests whether the line is contained by or intersected with the circle.
-static inline bool lineIntersectsCircle(const FloatPoint& center,
+static inline bool LineIntersectsCircle(const FloatPoint& center,
                                         float radius,
                                         const FloatPoint& p0,
                                         const FloatPoint& p1) {
-  float x0 = p0.x() - center.x(), y0 = p0.y() - center.y();
-  float x1 = p1.x() - center.x(), y1 = p1.y() - center.y();
+  float x0 = p0.X() - center.X(), y0 = p0.Y() - center.Y();
+  float x1 = p1.X() - center.X(), y1 = p1.Y() - center.Y();
   float radius2 = radius * radius;
   if ((x0 * x0 + y0 * y0) <= radius2 || (x1 * x1 + y1 * y1) <= radius2)
     return true;
@@ -223,40 +219,40 @@ static inline bool lineIntersectsCircle(const FloatPoint& center,
           ((y0 <= y && y <= y1) || (y1 <= y && y <= y0)));
 }
 
-bool FloatQuad::intersectsCircle(const FloatPoint& center, float radius) const {
-  return containsPoint(
+bool FloatQuad::IntersectsCircle(const FloatPoint& center, float radius) const {
+  return ContainsPoint(
              center)  // The circle may be totally contained by the quad.
-         || lineIntersectsCircle(center, radius, m_p1, m_p2) ||
-         lineIntersectsCircle(center, radius, m_p2, m_p3) ||
-         lineIntersectsCircle(center, radius, m_p3, m_p4) ||
-         lineIntersectsCircle(center, radius, m_p4, m_p1);
+         || LineIntersectsCircle(center, radius, p1_, p2_) ||
+         LineIntersectsCircle(center, radius, p2_, p3_) ||
+         LineIntersectsCircle(center, radius, p3_, p4_) ||
+         LineIntersectsCircle(center, radius, p4_, p1_);
 }
 
-bool FloatQuad::intersectsEllipse(const FloatPoint& center,
+bool FloatQuad::IntersectsEllipse(const FloatPoint& center,
                                   const FloatSize& radii) const {
   // Transform the ellipse to an origin-centered circle whose radius is the
   // product of major radius and minor radius.  Here we apply the same
   // transformation to the quad.
-  FloatQuad transformedQuad(*this);
-  transformedQuad.move(-center.x(), -center.y());
-  transformedQuad.scale(radii.height(), radii.width());
+  FloatQuad transformed_quad(*this);
+  transformed_quad.Move(-center.X(), -center.Y());
+  transformed_quad.Scale(radii.Height(), radii.Width());
 
-  FloatPoint originPoint;
-  return transformedQuad.intersectsCircle(originPoint,
-                                          radii.height() * radii.width());
+  FloatPoint origin_point;
+  return transformed_quad.IntersectsCircle(origin_point,
+                                           radii.Height() * radii.Width());
 }
 
-bool FloatQuad::isCounterclockwise() const {
+bool FloatQuad::IsCounterclockwise() const {
   // Return if the two first vectors are turning clockwise. If the quad is
   // convex then all following vectors will turn the same way.
-  return determinant(m_p2 - m_p1, m_p3 - m_p2) < 0;
+  return Determinant(p2_ - p1_, p3_ - p2_) < 0;
 }
 
-String FloatQuad::toString() const {
-  return String::format("%s; %s; %s; %s", m_p1.toString().ascii().data(),
-                        m_p2.toString().ascii().data(),
-                        m_p3.toString().ascii().data(),
-                        m_p4.toString().ascii().data());
+String FloatQuad::ToString() const {
+  return String::Format("%s; %s; %s; %s", p1_.ToString().Ascii().Data(),
+                        p2_.ToString().Ascii().Data(),
+                        p3_.ToString().Ascii().Data(),
+                        p4_.ToString().Ascii().Data());
 }
 
 }  // namespace blink

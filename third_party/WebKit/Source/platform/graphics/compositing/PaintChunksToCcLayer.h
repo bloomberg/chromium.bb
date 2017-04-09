@@ -25,10 +25,10 @@ class PropertyTreeState;
 
 class PLATFORM_EXPORT PaintChunksToCcLayer {
  public:
-  static scoped_refptr<cc::DisplayItemList> convert(
+  static scoped_refptr<cc::DisplayItemList> Convert(
       const Vector<const PaintChunk*>&,
-      const PropertyTreeState& layerState,
-      const gfx::Vector2dF& layerOffset,
+      const PropertyTreeState& layer_state,
+      const gfx::Vector2dF& layer_offset,
       const DisplayItemList&);
 };
 

@@ -32,20 +32,20 @@ namespace blink {
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't when
 // parsing window features.
-static bool isWindowFeaturesSeparator(UChar c) {
+static bool IsWindowFeaturesSeparator(UChar c) {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '=' ||
          c == ',' || c == '\0';
 }
 
 WindowFeatures::WindowFeatures(const String& features)
     : x(0),
-      xSet(false),
+      x_set(false),
       y(0),
-      ySet(false),
+      y_set(false),
       width(0),
-      widthSet(false),
+      width_set(false),
       height(0),
-      heightSet(false),
+      height_set(false),
       resizable(true),
       fullscreen(false),
       dialog(false),
@@ -59,38 +59,38 @@ WindowFeatures::WindowFeatures(const String& features)
      We always allow a window to be resized, which is consistent with Firefox.
      */
 
-  if (features.isEmpty()) {
-    menuBarVisible = true;
-    statusBarVisible = true;
-    toolBarVisible = true;
-    locationBarVisible = true;
-    scrollbarsVisible = true;
+  if (features.IsEmpty()) {
+    menu_bar_visible = true;
+    status_bar_visible = true;
+    tool_bar_visible = true;
+    location_bar_visible = true;
+    scrollbars_visible = true;
     return;
   }
 
-  menuBarVisible = false;
-  statusBarVisible = false;
-  toolBarVisible = false;
-  locationBarVisible = false;
-  scrollbarsVisible = false;
+  menu_bar_visible = false;
+  status_bar_visible = false;
+  tool_bar_visible = false;
+  location_bar_visible = false;
+  scrollbars_visible = false;
 
   // Tread lightly in this code -- it was specifically designed to mimic Win
   // IE's parsing behavior.
-  unsigned keyBegin, keyEnd;
-  unsigned valueBegin, valueEnd;
+  unsigned key_begin, key_end;
+  unsigned value_begin, value_end;
 
-  String buffer = features.lower();
+  String buffer = features.Lower();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length;) {
     // skip to first non-separator, but don't skip past the end of the string
-    while (i < length && isWindowFeaturesSeparator(buffer[i]))
+    while (i < length && IsWindowFeaturesSeparator(buffer[i]))
       i++;
-    keyBegin = i;
+    key_begin = i;
 
     // skip to first separator
-    while (i < length && !isWindowFeaturesSeparator(buffer[i]))
+    while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
       i++;
-    keyEnd = i;
+    key_end = i;
 
     SECURITY_DCHECK(i <= length);
 
@@ -105,88 +105,88 @@ WindowFeatures::WindowFeatures(const String& features)
 
     // Skip to first non-separator, but don't skip past a ',' or the end of the
     // string.
-    while (i < length && isWindowFeaturesSeparator(buffer[i])) {
+    while (i < length && IsWindowFeaturesSeparator(buffer[i])) {
       if (buffer[i] == ',')
         break;
       i++;
     }
-    valueBegin = i;
+    value_begin = i;
 
     SECURITY_DCHECK(i <= length);
 
     // skip to first separator
-    while (i < length && !isWindowFeaturesSeparator(buffer[i]))
+    while (i < length && !IsWindowFeaturesSeparator(buffer[i]))
       i++;
-    valueEnd = i;
+    value_end = i;
 
     SECURITY_DCHECK(i <= length);
 
-    String keyString(buffer.substring(keyBegin, keyEnd - keyBegin));
-    String valueString(buffer.substring(valueBegin, valueEnd - valueBegin));
+    String key_string(buffer.Substring(key_begin, key_end - key_begin));
+    String value_string(buffer.Substring(value_begin, value_end - value_begin));
 
-    setWindowFeature(keyString, valueString);
+    SetWindowFeature(key_string, value_string);
   }
 }
 
-void WindowFeatures::setWindowFeature(const String& keyString,
-                                      const String& valueString) {
+void WindowFeatures::SetWindowFeature(const String& key_string,
+                                      const String& value_string) {
   int value;
 
   // Listing a key with no value is shorthand for key=yes
-  if (valueString.isEmpty() || valueString == "yes")
+  if (value_string.IsEmpty() || value_string == "yes")
     value = 1;
   else
-    value = valueString.toInt();
+    value = value_string.ToInt();
 
   // We treat keyString of "resizable" here as an additional feature rather than
   // setting resizeable to true.  This is consistent with Firefox, but could
   // also be handled at another level.
 
-  if (keyString == "left" || keyString == "screenx") {
-    xSet = true;
+  if (key_string == "left" || key_string == "screenx") {
+    x_set = true;
     x = value;
-  } else if (keyString == "top" || keyString == "screeny") {
-    ySet = true;
+  } else if (key_string == "top" || key_string == "screeny") {
+    y_set = true;
     y = value;
-  } else if (keyString == "width" || keyString == "innerwidth") {
-    widthSet = true;
+  } else if (key_string == "width" || key_string == "innerwidth") {
+    width_set = true;
     width = value;
-  } else if (keyString == "height" || keyString == "innerheight") {
-    heightSet = true;
+  } else if (key_string == "height" || key_string == "innerheight") {
+    height_set = true;
     height = value;
-  } else if (keyString == "menubar") {
-    menuBarVisible = value;
-  } else if (keyString == "toolbar") {
-    toolBarVisible = value;
-  } else if (keyString == "location") {
-    locationBarVisible = value;
-  } else if (keyString == "status") {
-    statusBarVisible = value;
-  } else if (keyString == "fullscreen") {
+  } else if (key_string == "menubar") {
+    menu_bar_visible = value;
+  } else if (key_string == "toolbar") {
+    tool_bar_visible = value;
+  } else if (key_string == "location") {
+    location_bar_visible = value;
+  } else if (key_string == "status") {
+    status_bar_visible = value;
+  } else if (key_string == "fullscreen") {
     fullscreen = value;
-  } else if (keyString == "scrollbars") {
-    scrollbarsVisible = value;
-  } else if (keyString == "noopener") {
+  } else if (key_string == "scrollbars") {
+    scrollbars_visible = value;
+  } else if (key_string == "noopener") {
     noopener = true;
   } else if (value == 1) {
-    additionalFeatures.push_back(keyString);
+    additional_features.push_back(key_string);
   }
 }
 
-WindowFeatures::WindowFeatures(const String& dialogFeaturesString,
-                               const IntRect& screenAvailableRect)
-    : widthSet(true),
-      heightSet(true),
-      menuBarVisible(false),
-      toolBarVisible(false),
-      locationBarVisible(false),
+WindowFeatures::WindowFeatures(const String& dialog_features_string,
+                               const IntRect& screen_available_rect)
+    : width_set(true),
+      height_set(true),
+      menu_bar_visible(false),
+      tool_bar_visible(false),
+      location_bar_visible(false),
       fullscreen(false),
       dialog(true),
       noopener(false) {
   DialogFeaturesMap features;
-  parseDialogFeatures(dialogFeaturesString, features);
+  ParseDialogFeatures(dialog_features_string, features);
 
-  const bool trusted = false;
+  const bool kTrusted = false;
 
   // The following features from Microsoft's documentation are not implemented:
   // - default font settings
@@ -199,92 +199,94 @@ WindowFeatures::WindowFeatures(const String& dialogFeaturesString,
   // - unadorned: trusted && boolFeature(features, "unadorned");
 
   // default here came from frame size of dialog in MacIE
-  width = intFeature(features, "dialogwidth", 100, screenAvailableRect.width(),
-                     620);
+  width = IntFeature(features, "dialogwidth", 100,
+                     screen_available_rect.Width(), 620);
   // default here came from frame size of dialog in MacIE
-  height = intFeature(features, "dialogheight", 100,
-                      screenAvailableRect.height(), 450);
+  height = IntFeature(features, "dialogheight", 100,
+                      screen_available_rect.Height(), 450);
 
-  x = intFeature(features, "dialogleft", screenAvailableRect.x(),
-                 screenAvailableRect.maxX() - width, -1);
-  xSet = x > 0;
-  y = intFeature(features, "dialogtop", screenAvailableRect.y(),
-                 screenAvailableRect.maxY() - height, -1);
-  ySet = y > 0;
+  x = IntFeature(features, "dialogleft", screen_available_rect.X(),
+                 screen_available_rect.MaxX() - width, -1);
+  x_set = x > 0;
+  y = IntFeature(features, "dialogtop", screen_available_rect.Y(),
+                 screen_available_rect.MaxY() - height, -1);
+  y_set = y > 0;
 
-  if (boolFeature(features, "center", true)) {
-    if (!xSet) {
-      x = screenAvailableRect.x() + (screenAvailableRect.width() - width) / 2;
-      xSet = true;
+  if (BoolFeature(features, "center", true)) {
+    if (!x_set) {
+      x = screen_available_rect.X() +
+          (screen_available_rect.Width() - width) / 2;
+      x_set = true;
     }
-    if (!ySet) {
-      y = screenAvailableRect.y() + (screenAvailableRect.height() - height) / 2;
-      ySet = true;
+    if (!y_set) {
+      y = screen_available_rect.Y() +
+          (screen_available_rect.Height() - height) / 2;
+      y_set = true;
     }
   }
 
-  resizable = boolFeature(features, "resizable");
-  scrollbarsVisible = boolFeature(features, "scroll", true);
-  statusBarVisible = boolFeature(features, "status", !trusted);
+  resizable = BoolFeature(features, "resizable");
+  scrollbars_visible = BoolFeature(features, "scroll", true);
+  status_bar_visible = BoolFeature(features, "status", !kTrusted);
 }
 
-bool WindowFeatures::boolFeature(const DialogFeaturesMap& features,
+bool WindowFeatures::BoolFeature(const DialogFeaturesMap& features,
                                  const char* key,
-                                 bool defaultValue) {
-  DialogFeaturesMap::const_iterator it = features.find(key);
+                                 bool default_value) {
+  DialogFeaturesMap::const_iterator it = features.Find(key);
   if (it == features.end())
-    return defaultValue;
+    return default_value;
   const String& value = it->value;
-  return value.isNull() || value == "1" || value == "yes" || value == "on";
+  return value.IsNull() || value == "1" || value == "yes" || value == "on";
 }
 
-int WindowFeatures::intFeature(const DialogFeaturesMap& features,
+int WindowFeatures::IntFeature(const DialogFeaturesMap& features,
                                const char* key,
                                int min,
                                int max,
-                               int defaultValue) {
-  DialogFeaturesMap::const_iterator it = features.find(key);
+                               int default_value) {
+  DialogFeaturesMap::const_iterator it = features.Find(key);
   if (it == features.end())
-    return defaultValue;
+    return default_value;
   bool ok;
-  int parsedNumber = it->value.toInt(&ok);
+  int parsed_number = it->value.ToInt(&ok);
   if (!ok)
-    return defaultValue;
-  if (parsedNumber < min || max <= min)
+    return default_value;
+  if (parsed_number < min || max <= min)
     return min;
-  if (parsedNumber > max)
+  if (parsed_number > max)
     return max;
-  return parsedNumber;
+  return parsed_number;
 }
 
-void WindowFeatures::parseDialogFeatures(const String& string,
+void WindowFeatures::ParseDialogFeatures(const String& string,
                                          DialogFeaturesMap& map) {
   Vector<String> vector;
-  string.split(';', vector);
+  string.Split(';', vector);
   size_t size = vector.size();
   for (size_t i = 0; i < size; ++i) {
-    const String& featureString = vector[i];
+    const String& feature_string = vector[i];
 
-    size_t separatorPosition = featureString.find('=');
-    size_t colonPosition = featureString.find(':');
-    if (separatorPosition != kNotFound && colonPosition != kNotFound)
+    size_t separator_position = feature_string.Find('=');
+    size_t colon_position = feature_string.Find(':');
+    if (separator_position != kNotFound && colon_position != kNotFound)
       continue;  // ignore strings that have both = and :
-    if (separatorPosition == kNotFound)
-      separatorPosition = colonPosition;
+    if (separator_position == kNotFound)
+      separator_position = colon_position;
 
     String key =
-        featureString.left(separatorPosition).stripWhiteSpace().lower();
+        feature_string.Left(separator_position).StripWhiteSpace().Lower();
 
     // Null string for value indicates key without value.
     String value;
-    if (separatorPosition != kNotFound) {
-      value = featureString.substring(separatorPosition + 1)
-                  .stripWhiteSpace()
-                  .lower();
-      value = value.left(value.find(' '));
+    if (separator_position != kNotFound) {
+      value = feature_string.Substring(separator_position + 1)
+                  .StripWhiteSpace()
+                  .Lower();
+      value = value.Left(value.Find(' '));
     }
 
-    map.set(key, value);
+    map.Set(key, value);
   }
 }
 

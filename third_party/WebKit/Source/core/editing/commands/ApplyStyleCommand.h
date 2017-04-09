@@ -36,37 +36,37 @@ class EditingStyle;
 class HTMLSpanElement;
 class StyleChange;
 
-enum ShouldIncludeTypingStyle { IncludeTypingStyle, IgnoreTypingStyle };
+enum ShouldIncludeTypingStyle { kIncludeTypingStyle, kIgnoreTypingStyle };
 
 class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
  public:
-  enum EPropertyLevel { PropertyDefault, ForceBlockProperties };
-  enum InlineStyleRemovalMode { RemoveIfNeeded, RemoveAlways, RemoveNone };
-  enum EAddStyledElement { AddStyledElement, DoNotAddStyledElement };
+  enum EPropertyLevel { kPropertyDefault, kForceBlockProperties };
+  enum InlineStyleRemovalMode { kRemoveIfNeeded, kRemoveAlways, kRemoveNone };
+  enum EAddStyledElement { kAddStyledElement, kDoNotAddStyledElement };
   typedef bool (*IsInlineElementToRemoveFunction)(const Element*);
 
-  static ApplyStyleCommand* create(Document& document,
+  static ApplyStyleCommand* Create(Document& document,
                                    const EditingStyle* style,
-                                   InputEvent::InputType inputType,
-                                   EPropertyLevel level = PropertyDefault) {
-    return new ApplyStyleCommand(document, style, inputType, level);
+                                   InputEvent::InputType input_type,
+                                   EPropertyLevel level = kPropertyDefault) {
+    return new ApplyStyleCommand(document, style, input_type, level);
   }
-  static ApplyStyleCommand* create(Document& document,
+  static ApplyStyleCommand* Create(Document& document,
                                    const EditingStyle* style,
                                    const Position& start,
                                    const Position& end) {
     return new ApplyStyleCommand(document, style, start, end);
   }
-  static ApplyStyleCommand* create(Element* element, bool removeOnly) {
-    return new ApplyStyleCommand(element, removeOnly);
+  static ApplyStyleCommand* Create(Element* element, bool remove_only) {
+    return new ApplyStyleCommand(element, remove_only);
   }
-  static ApplyStyleCommand* create(
+  static ApplyStyleCommand* Create(
       Document& document,
       const EditingStyle* style,
-      IsInlineElementToRemoveFunction isInlineElementToRemoveFunction,
-      InputEvent::InputType inputType) {
-    return new ApplyStyleCommand(document, style,
-                                 isInlineElementToRemoveFunction, inputType);
+      IsInlineElementToRemoveFunction is_inline_element_to_remove_function,
+      InputEvent::InputType input_type) {
+    return new ApplyStyleCommand(
+        document, style, is_inline_element_to_remove_function, input_type);
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -80,137 +80,138 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                     const EditingStyle*,
                     const Position& start,
                     const Position& end);
-  ApplyStyleCommand(Element*, bool removeOnly);
+  ApplyStyleCommand(Element*, bool remove_only);
   ApplyStyleCommand(Document&,
                     const EditingStyle*,
-                    bool (*isInlineElementToRemove)(const Element*),
+                    bool (*is_inline_element_to_remove)(const Element*),
                     InputEvent::InputType);
 
-  void doApply(EditingState*) override;
-  InputEvent::InputType inputType() const override;
+  void DoApply(EditingState*) override;
+  InputEvent::InputType GetInputType() const override;
 
   // style-removal helpers
-  bool isStyledInlineElementToRemove(Element*) const;
-  bool shouldApplyInlineStyleToRun(EditingStyle*,
-                                   Node* runStart,
-                                   Node* pastEndNode);
-  void removeConflictingInlineStyleFromRun(EditingStyle*,
-                                           Member<Node>& runStart,
-                                           Member<Node>& runEnd,
-                                           Node* pastEndNode,
+  bool IsStyledInlineElementToRemove(Element*) const;
+  bool ShouldApplyInlineStyleToRun(EditingStyle*,
+                                   Node* run_start,
+                                   Node* past_end_node);
+  void RemoveConflictingInlineStyleFromRun(EditingStyle*,
+                                           Member<Node>& run_start,
+                                           Member<Node>& run_end,
+                                           Node* past_end_node,
                                            EditingState*);
-  bool removeInlineStyleFromElement(EditingStyle*,
+  bool RemoveInlineStyleFromElement(EditingStyle*,
                                     HTMLElement*,
                                     EditingState*,
-                                    InlineStyleRemovalMode = RemoveIfNeeded,
-                                    EditingStyle* extractedStyle = nullptr);
-  inline bool shouldRemoveInlineStyleFromElement(EditingStyle* style,
+                                    InlineStyleRemovalMode = kRemoveIfNeeded,
+                                    EditingStyle* extracted_style = nullptr);
+  inline bool ShouldRemoveInlineStyleFromElement(EditingStyle* style,
                                                  HTMLElement* element) {
-    return removeInlineStyleFromElement(style, element, ASSERT_NO_EDITING_ABORT,
-                                        RemoveNone);
+    return RemoveInlineStyleFromElement(style, element, ASSERT_NO_EDITING_ABORT,
+                                        kRemoveNone);
   }
-  void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*, EditingState*);
-  bool removeImplicitlyStyledElement(EditingStyle*,
+  void ReplaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*, EditingState*);
+  bool RemoveImplicitlyStyledElement(EditingStyle*,
                                      HTMLElement*,
                                      InlineStyleRemovalMode,
-                                     EditingStyle* extractedStyle,
+                                     EditingStyle* extracted_style,
                                      EditingState*);
-  bool removeCSSStyle(EditingStyle*,
+  bool RemoveCSSStyle(EditingStyle*,
                       HTMLElement*,
                       EditingState*,
-                      InlineStyleRemovalMode = RemoveIfNeeded,
-                      EditingStyle* extractedStyle = nullptr);
-  HTMLElement* highestAncestorWithConflictingInlineStyle(EditingStyle*, Node*);
-  void applyInlineStyleToPushDown(Node*, EditingStyle*, EditingState*);
-  void pushDownInlineStyleAroundNode(EditingStyle*, Node*, EditingState*);
-  void removeInlineStyle(EditingStyle*,
+                      InlineStyleRemovalMode = kRemoveIfNeeded,
+                      EditingStyle* extracted_style = nullptr);
+  HTMLElement* HighestAncestorWithConflictingInlineStyle(EditingStyle*, Node*);
+  void ApplyInlineStyleToPushDown(Node*, EditingStyle*, EditingState*);
+  void PushDownInlineStyleAroundNode(EditingStyle*, Node*, EditingState*);
+  void RemoveInlineStyle(EditingStyle*,
                          const Position& start,
                          const Position& end,
                          EditingState*);
-  bool elementFullySelected(HTMLElement&,
+  bool ElementFullySelected(HTMLElement&,
                             const Position& start,
                             const Position& end) const;
 
   // style-application helpers
-  void applyBlockStyle(EditingStyle*, EditingState*);
-  void applyRelativeFontStyleChange(EditingStyle*, EditingState*);
-  void applyInlineStyle(EditingStyle*, EditingState*);
-  void fixRangeAndApplyInlineStyle(EditingStyle*,
+  void ApplyBlockStyle(EditingStyle*, EditingState*);
+  void ApplyRelativeFontStyleChange(EditingStyle*, EditingState*);
+  void ApplyInlineStyle(EditingStyle*, EditingState*);
+  void FixRangeAndApplyInlineStyle(EditingStyle*,
                                    const Position& start,
                                    const Position& end,
                                    EditingState*);
-  void applyInlineStyleToNodeRange(EditingStyle*,
-                                   Node* startNode,
-                                   Node* pastEndNode,
+  void ApplyInlineStyleToNodeRange(EditingStyle*,
+                                   Node* start_node,
+                                   Node* past_end_node,
                                    EditingState*);
-  void addBlockStyle(const StyleChange&, HTMLElement*);
-  void addInlineStyleIfNeeded(EditingStyle*,
+  void AddBlockStyle(const StyleChange&, HTMLElement*);
+  void AddInlineStyleIfNeeded(EditingStyle*,
                               Node* start,
                               Node* end,
                               EditingState*);
-  Position positionToComputeInlineStyleChange(
+  Position PositionToComputeInlineStyleChange(
       Node*,
-      Member<HTMLSpanElement>& dummyElement,
+      Member<HTMLSpanElement>& dummy_element,
       EditingState*);
-  void applyInlineStyleChange(Node* startNode,
-                              Node* endNode,
+  void ApplyInlineStyleChange(Node* start_node,
+                              Node* end_node,
                               StyleChange&,
                               EAddStyledElement,
                               EditingState*);
-  void splitTextAtStart(const Position& start, const Position& end);
-  void splitTextAtEnd(const Position& start, const Position& end);
-  void splitTextElementAtStart(const Position& start, const Position& end);
-  void splitTextElementAtEnd(const Position& start, const Position& end);
-  bool shouldSplitTextElement(Element*, EditingStyle*);
-  bool isValidCaretPositionInTextNode(const Position&);
-  bool mergeStartWithPreviousIfIdentical(const Position& start,
+  void SplitTextAtStart(const Position& start, const Position& end);
+  void SplitTextAtEnd(const Position& start, const Position& end);
+  void SplitTextElementAtStart(const Position& start, const Position& end);
+  void SplitTextElementAtEnd(const Position& start, const Position& end);
+  bool ShouldSplitTextElement(Element*, EditingStyle*);
+  bool IsValidCaretPositionInTextNode(const Position&);
+  bool MergeStartWithPreviousIfIdentical(const Position& start,
                                          const Position& end,
                                          EditingState*);
-  bool mergeEndWithNextIfIdentical(const Position& start,
+  bool MergeEndWithNextIfIdentical(const Position& start,
                                    const Position& end,
                                    EditingState*);
-  void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor,
+  void CleanupUnstyledAppleStyleSpans(ContainerNode* dummy_span_ancestor,
                                       EditingState*);
 
-  void surroundNodeRangeWithElement(Node* start,
+  void SurroundNodeRangeWithElement(Node* start,
                                     Node* end,
                                     Element*,
                                     EditingState*);
-  float computedFontSize(Node*);
-  void joinChildTextNodes(ContainerNode*,
+  float ComputedFontSize(Node*);
+  void JoinChildTextNodes(ContainerNode*,
                           const Position& start,
                           const Position& end);
 
-  HTMLElement* splitAncestorsWithUnicodeBidi(Node*,
-                                             bool before,
-                                             WritingDirection allowedDirection);
-  void removeEmbeddingUpToEnclosingBlock(Node*,
-                                         HTMLElement* unsplitAncestor,
+  HTMLElement* SplitAncestorsWithUnicodeBidi(
+      Node*,
+      bool before,
+      WritingDirection allowed_direction);
+  void RemoveEmbeddingUpToEnclosingBlock(Node*,
+                                         HTMLElement* unsplit_ancestor,
                                          EditingState*);
 
-  void updateStartEnd(const Position& newStart, const Position& newEnd);
-  Position startPosition();
-  Position endPosition();
+  void UpdateStartEnd(const Position& new_start, const Position& new_end);
+  Position StartPosition();
+  Position EndPosition();
 
-  Member<EditingStyle> m_style;
-  InputEvent::InputType m_inputType;
-  EPropertyLevel m_propertyLevel;
-  Position m_start;
-  Position m_end;
-  bool m_useEndingSelection;
-  Member<Element> m_styledInlineElement;
-  bool m_removeOnly;
-  IsInlineElementToRemoveFunction m_isInlineElementToRemoveFunction;
+  Member<EditingStyle> style_;
+  InputEvent::InputType input_type_;
+  EPropertyLevel property_level_;
+  Position start_;
+  Position end_;
+  bool use_ending_selection_;
+  Member<Element> styled_inline_element_;
+  bool remove_only_;
+  IsInlineElementToRemoveFunction is_inline_element_to_remove_function_;
 };
 
 enum ShouldStyleAttributeBeEmpty {
-  AllowNonEmptyStyleAttribute,
-  StyleAttributeShouldBeEmpty
+  kAllowNonEmptyStyleAttribute,
+  kStyleAttributeShouldBeEmpty
 };
-bool isEmptyFontTag(const Element*,
-                    ShouldStyleAttributeBeEmpty = StyleAttributeShouldBeEmpty);
-bool isLegacyAppleHTMLSpanElement(const Node*);
-bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element*);
+bool IsEmptyFontTag(const Element*,
+                    ShouldStyleAttributeBeEmpty = kStyleAttributeShouldBeEmpty);
+bool IsLegacyAppleHTMLSpanElement(const Node*);
+bool IsStyleSpanOrSpanWithOnlyStyleAttribute(const Element*);
 
 }  // namespace blink
 

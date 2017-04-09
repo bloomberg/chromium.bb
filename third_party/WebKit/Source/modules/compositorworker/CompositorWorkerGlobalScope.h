@@ -22,45 +22,45 @@ class MODULES_EXPORT CompositorWorkerGlobalScope final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CompositorWorkerGlobalScope* create(
+  static CompositorWorkerGlobalScope* Create(
       CompositorWorkerThread*,
       std::unique_ptr<WorkerThreadStartupData>,
-      double timeOrigin);
+      double time_origin);
   ~CompositorWorkerGlobalScope() override;
 
-  void dispose() override;
+  void Dispose() override;
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue>,
                    const MessagePortArray&,
                    ExceptionState&);
-  static bool canTransferArrayBuffersAndImageBitmaps() { return true; }
+  static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   int requestAnimationFrame(FrameRequestCallback*);
   void cancelAnimationFrame(int id);
-  bool executeAnimationFrameCallbacks(double highResTimeMs);
+  bool ExecuteAnimationFrameCallbacks(double high_res_time_ms);
 
   // ExecutionContext:
-  bool isCompositorWorkerGlobalScope() const override { return true; }
+  bool IsCompositorWorkerGlobalScope() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   CompositorWorkerGlobalScope(const KURL&,
-                              const String& userAgent,
+                              const String& user_agent,
                               CompositorWorkerThread*,
-                              double timeOrigin,
+                              double time_origin,
                               std::unique_ptr<SecurityOrigin::PrivilegeData>,
                               WorkerClients*);
 
-  InProcessWorkerObjectProxy& workerObjectProxy() const;
+  InProcessWorkerObjectProxy& WorkerObjectProxy() const;
 
-  bool m_executingAnimationFrameCallbacks;
-  FrameRequestCallbackCollection m_callbackCollection;
+  bool executing_animation_frame_callbacks_;
+  FrameRequestCallbackCollection callback_collection_;
 };
 
 }  // namespace blink

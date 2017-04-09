@@ -37,19 +37,19 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
   switch (security_level) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
-      return blink::WebSecurityStyleNeutral;
+      return blink::kWebSecurityStyleNeutral;
     case security_state::SECURITY_WARNING:
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      return blink::WebSecurityStyleWarning;
+      return blink::kWebSecurityStyleWarning;
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return blink::WebSecurityStyleSecure;
+      return blink::kWebSecurityStyleSecure;
     case security_state::DANGEROUS:
-      return blink::WebSecurityStyleInsecure;
+      return blink::kWebSecurityStyleInsecure;
   }
 
   NOTREACHED();
-  return blink::WebSecurityStyleUnknown;
+  return blink::kWebSecurityStyleUnknown;
 }
 
 void AddConnectionExplanation(

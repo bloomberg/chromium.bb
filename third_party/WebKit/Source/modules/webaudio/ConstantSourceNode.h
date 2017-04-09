@@ -22,32 +22,32 @@ class ExceptionState;
 
 class ConstantSourceHandler final : public AudioScheduledSourceHandler {
  public:
-  static PassRefPtr<ConstantSourceHandler> create(AudioNode&,
-                                                  float sampleRate,
+  static PassRefPtr<ConstantSourceHandler> Create(AudioNode&,
+                                                  float sample_rate,
                                                   AudioParamHandler& offset);
   ~ConstantSourceHandler() override;
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
+  void Process(size_t frames_to_process) override;
 
  private:
   ConstantSourceHandler(AudioNode&,
-                        float sampleRate,
+                        float sample_rate,
                         AudioParamHandler& offset);
 
   // If we are no longer playing, propogate silence ahead to downstream nodes.
-  bool propagatesSilence() const override;
+  bool PropagatesSilence() const override;
 
-  RefPtr<AudioParamHandler> m_offset;
-  AudioFloatArray m_sampleAccurateValues;
+  RefPtr<AudioParamHandler> offset_;
+  AudioFloatArray sample_accurate_values_;
 };
 
 class ConstantSourceNode final : public AudioScheduledSourceNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ConstantSourceNode* create(BaseAudioContext&, ExceptionState&);
-  static ConstantSourceNode* create(BaseAudioContext*,
+  static ConstantSourceNode* Create(BaseAudioContext&, ExceptionState&);
+  static ConstantSourceNode* Create(BaseAudioContext*,
                                     const ConstantSourceOptions&,
                                     ExceptionState&);
   DECLARE_VIRTUAL_TRACE();
@@ -56,9 +56,9 @@ class ConstantSourceNode final : public AudioScheduledSourceNode {
 
  private:
   ConstantSourceNode(BaseAudioContext&);
-  ConstantSourceHandler& constantSourceHandler() const;
+  ConstantSourceHandler& GetConstantSourceHandler() const;
 
-  Member<AudioParam> m_offset;
+  Member<AudioParam> offset_;
 };
 
 }  // namespace blink

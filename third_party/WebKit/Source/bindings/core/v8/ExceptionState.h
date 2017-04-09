@@ -55,41 +55,41 @@ class CORE_EXPORT ExceptionState {
 
  public:
   enum ContextType {
-    ConstructionContext,
-    ExecutionContext,
-    DeletionContext,
-    GetterContext,
-    SetterContext,
-    EnumerationContext,
-    QueryContext,
-    IndexedGetterContext,
-    IndexedSetterContext,
-    IndexedDeletionContext,
-    UnknownContext,  // FIXME: Remove this once we've flipped over to the new
-                     // API.
+    kConstructionContext,
+    kExecutionContext,
+    kDeletionContext,
+    kGetterContext,
+    kSetterContext,
+    kEnumerationContext,
+    kQueryContext,
+    kIndexedGetterContext,
+    kIndexedSetterContext,
+    kIndexedDeletionContext,
+    kUnknownContext,  // FIXME: Remove this once we've flipped over to the new
+                      // API.
   };
 
   ExceptionState(v8::Isolate* isolate,
-                 ContextType contextType,
-                 const char* interfaceName,
-                 const char* propertyName)
-      : m_code(0),
-        m_context(contextType),
-        m_propertyName(propertyName),
-        m_interfaceName(interfaceName),
-        m_isolate(isolate) {}
+                 ContextType context_type,
+                 const char* interface_name,
+                 const char* property_name)
+      : code_(0),
+        context_(context_type),
+        property_name_(property_name),
+        interface_name_(interface_name),
+        isolate_(isolate) {}
 
   ExceptionState(v8::Isolate* isolate,
-                 ContextType contextType,
-                 const char* interfaceName)
-      : ExceptionState(isolate, contextType, interfaceName, nullptr) {
+                 ContextType context_type,
+                 const char* interface_name)
+      : ExceptionState(isolate, context_type, interface_name, nullptr) {
 #if DCHECK_IS_ON()
-    switch (m_context) {
-      case ConstructionContext:
-      case EnumerationContext:
-      case IndexedGetterContext:
-      case IndexedSetterContext:
-      case IndexedDeletionContext:
+    switch (context_) {
+      case kConstructionContext:
+      case kEnumerationContext:
+      case kIndexedGetterContext:
+      case kIndexedSetterContext:
+      case kIndexedDeletionContext:
         break;
       default:
         NOTREACHED();
@@ -98,64 +98,63 @@ class CORE_EXPORT ExceptionState {
   }
 
   ~ExceptionState() {
-    if (!m_exception.isEmpty()) {
-      V8ThrowException::throwException(m_isolate,
-                                       m_exception.newLocal(m_isolate));
+    if (!exception_.IsEmpty()) {
+      V8ThrowException::ThrowException(isolate_, exception_.NewLocal(isolate_));
     }
   }
 
-  void throwDOMException(ExceptionCode, const char* message);
-  void throwRangeError(const char* message);
-  void throwSecurityError(const char* sanitizedMessage,
-                          const char* unsanitizedMessage = nullptr);
-  void throwTypeError(const char* message);
+  void ThrowDOMException(ExceptionCode, const char* message);
+  void ThrowRangeError(const char* message);
+  void ThrowSecurityError(const char* sanitized_message,
+                          const char* unsanitized_message = nullptr);
+  void ThrowTypeError(const char* message);
 
-  virtual void throwDOMException(ExceptionCode, const String& message);
-  virtual void throwRangeError(const String& message);
-  virtual void throwSecurityError(const String& sanitizedMessage,
-                                  const String& unsanitizedMessage = String());
-  virtual void throwTypeError(const String& message);
-  virtual void rethrowV8Exception(v8::Local<v8::Value>);
+  virtual void ThrowDOMException(ExceptionCode, const String& message);
+  virtual void ThrowRangeError(const String& message);
+  virtual void ThrowSecurityError(const String& sanitized_message,
+                                  const String& unsanitized_message = String());
+  virtual void ThrowTypeError(const String& message);
+  virtual void RethrowV8Exception(v8::Local<v8::Value>);
 
-  bool hadException() const { return m_code; }
-  void clearException();
+  bool HadException() const { return code_; }
+  void ClearException();
 
-  ExceptionCode code() const { return m_code; }
-  const String& message() const { return m_message; }
-  v8::Local<v8::Value> getException() {
-    DCHECK(!m_exception.isEmpty());
-    return m_exception.newLocal(m_isolate);
+  ExceptionCode Code() const { return code_; }
+  const String& Message() const { return message_; }
+  v8::Local<v8::Value> GetException() {
+    DCHECK(!exception_.IsEmpty());
+    return exception_.NewLocal(isolate_);
   }
 
   // This method clears out the exception which |this| has.
-  ScriptPromise reject(ScriptState*);
+  ScriptPromise Reject(ScriptState*);
 
   // This method clears out the exception which |this| has.
-  void reject(ScriptPromiseResolver*);
+  void Reject(ScriptPromiseResolver*);
 
-  ContextType context() const { return m_context; }
-  const char* propertyName() const { return m_propertyName; }
-  const char* interfaceName() const { return m_interfaceName; }
+  ContextType Context() const { return context_; }
+  const char* PropertyName() const { return property_name_; }
+  const char* InterfaceName() const { return interface_name_; }
 
-  String addExceptionContext(const String&) const;
+  String AddExceptionContext(const String&) const;
 
  protected:
   // An ExceptionCode for the case that an exception is rethrown.  In that
   // case, we cannot determine an exception code.
-  static const int kRethrownException = UnknownError;
+  static const int kRethrownException = kUnknownError;
 
-  void setException(ExceptionCode, const String&, v8::Local<v8::Value>);
+  void SetException(ExceptionCode, const String&, v8::Local<v8::Value>);
 
  private:
-  ExceptionCode m_code;
-  ContextType m_context;
-  String m_message;
-  const char* m_propertyName;
-  const char* m_interfaceName;
+  ExceptionCode code_;
+  ContextType context_;
+  String message_;
+  const char* property_name_;
+  const char* interface_name_;
   // The exception is empty when it was thrown through
   // DummyExceptionStateForTesting.
-  ScopedPersistent<v8::Value> m_exception;
-  v8::Isolate* m_isolate;
+  ScopedPersistent<v8::Value> exception_;
+  v8::Isolate* isolate_;
 };
 
 // NonThrowableExceptionState never allow call sites to throw an exception.
@@ -165,17 +164,17 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
   NonThrowableExceptionState();
   NonThrowableExceptionState(const char*, int);
 
-  void throwDOMException(ExceptionCode, const String& message) override;
-  void throwTypeError(const String& message) override;
-  void throwSecurityError(const String& sanitizedMessage,
-                          const String& unsanitizedMessage) override;
-  void throwRangeError(const String& message) override;
-  void rethrowV8Exception(v8::Local<v8::Value>) override;
-  ExceptionState& returnThis() { return *this; }
+  void ThrowDOMException(ExceptionCode, const String& message) override;
+  void ThrowTypeError(const String& message) override;
+  void ThrowSecurityError(const String& sanitized_message,
+                          const String& unsanitized_message) override;
+  void ThrowRangeError(const String& message) override;
+  void RethrowV8Exception(v8::Local<v8::Value>) override;
+  ExceptionState& ReturnThis() { return *this; }
 
  private:
-  const char* m_file;
-  const int m_line;
+  const char* file_;
+  const int line_;
 };
 
 // Syntax sugar for NonThrowableExceptionState.
@@ -184,10 +183,10 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
 //     Node* removeChild(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 #if DCHECK_IS_ON()
 #define ASSERT_NO_EXCEPTION \
-  (::blink::NonThrowableExceptionState(__FILE__, __LINE__).returnThis())
+  (::blink::NonThrowableExceptionState(__FILE__, __LINE__).ReturnThis())
 #else
 #define ASSERT_NO_EXCEPTION \
-  (::blink::DummyExceptionStateForTesting().returnThis())
+  (::blink::DummyExceptionStateForTesting().ReturnThis())
 #endif
 
 // DummyExceptionStateForTesting ignores all thrown exceptions. You should not
@@ -198,22 +197,22 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
  public:
   DummyExceptionStateForTesting()
       : ExceptionState(nullptr,
-                       ExceptionState::UnknownContext,
+                       ExceptionState::kUnknownContext,
                        nullptr,
                        nullptr) {}
   ~DummyExceptionStateForTesting() {
     // Prevent the base class throw an exception.
-    if (hadException()) {
-      clearException();
+    if (HadException()) {
+      ClearException();
     }
   }
-  void throwDOMException(ExceptionCode, const String& message) override;
-  void throwTypeError(const String& message) override;
-  void throwSecurityError(const String& sanitizedMessage,
-                          const String& unsanitizedMessage) override;
-  void throwRangeError(const String& message) override;
-  void rethrowV8Exception(v8::Local<v8::Value>) override;
-  ExceptionState& returnThis() { return *this; }
+  void ThrowDOMException(ExceptionCode, const String& message) override;
+  void ThrowTypeError(const String& message) override;
+  void ThrowSecurityError(const String& sanitized_message,
+                          const String& unsanitized_message) override;
+  void ThrowRangeError(const String& message) override;
+  void RethrowV8Exception(v8::Local<v8::Value>) override;
+  ExceptionState& ReturnThis() { return *this; }
 };
 
 // Syntax sugar for DummyExceptionStateForTesting.
@@ -221,7 +220,7 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
 //
 //     Node* removeChild(Node*, ExceptionState& = IGNORE_EXCEPTION_FOR_TESTING);
 #define IGNORE_EXCEPTION_FOR_TESTING \
-  (::blink::DummyExceptionStateForTesting().returnThis())
+  (::blink::DummyExceptionStateForTesting().ReturnThis())
 
 }  // namespace blink
 

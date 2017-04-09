@@ -34,21 +34,21 @@ class SVGStopElement final : public SVGElement {
  public:
   DECLARE_NODE_FACTORY(SVGStopElement);
 
-  Color stopColorIncludingOpacity() const;
+  Color StopColorIncludingOpacity() const;
 
-  SVGAnimatedNumber* offset() const { return m_offset.get(); }
+  SVGAnimatedNumber* offset() const { return offset_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGStopElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 
-  Member<SVGAnimatedNumber> m_offset;
+  Member<SVGAnimatedNumber> offset_;
 };
 
 }  // namespace blink

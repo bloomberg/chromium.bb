@@ -32,9 +32,9 @@
 
 namespace blink {
 
-inline SVGUnknownElement::SVGUnknownElement(const QualifiedName& tagName,
+inline SVGUnknownElement::SVGUnknownElement(const QualifiedName& tag_name,
                                             Document& document)
-    : SVGElement(tagName, document) {}
+    : SVGElement(tag_name, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement)
 

@@ -48,67 +48,67 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
   WTF_MAKE_NONCOPYABLE(AsyncFileSystemCallbacks);
 
  public:
-  AsyncFileSystemCallbacks() : m_blockUntilCompletion(false) {}
+  AsyncFileSystemCallbacks() : block_until_completion_(false) {}
 
   // Called when a requested operation is completed successfully.
-  virtual void didSucceed() { ASSERT_NOT_REACHED(); }
+  virtual void DidSucceed() { ASSERT_NOT_REACHED(); }
 
   // Called when a requested file system is opened.
-  virtual void didOpenFileSystem(const String& name, const KURL& rootURL) {
+  virtual void DidOpenFileSystem(const String& name, const KURL& root_url) {
     ASSERT_NOT_REACHED();
   }
 
   // Called when a filesystem URL is resolved.
-  virtual void didResolveURL(const String& name,
-                             const KURL& rootURL,
+  virtual void DidResolveURL(const String& name,
+                             const KURL& root_url,
                              FileSystemType,
-                             const String& filePath,
-                             bool isDirectory) {
+                             const String& file_path,
+                             bool is_directory) {
     ASSERT_NOT_REACHED();
   }
 
   // Called when a file metadata is read successfully.
-  virtual void didReadMetadata(const FileMetadata&) { ASSERT_NOT_REACHED(); }
+  virtual void DidReadMetadata(const FileMetadata&) { ASSERT_NOT_REACHED(); }
 
   // Called when a snapshot file is created successfully.
-  virtual void didCreateSnapshotFile(const FileMetadata&,
+  virtual void DidCreateSnapshotFile(const FileMetadata&,
                                      PassRefPtr<BlobDataHandle> snapshot) {
     ASSERT_NOT_REACHED();
   }
 
   // Called when a directory entry is read.
-  virtual void didReadDirectoryEntry(const String& name, bool isDirectory) {
+  virtual void DidReadDirectoryEntry(const String& name, bool is_directory) {
     ASSERT_NOT_REACHED();
   }
 
   // Called after a chunk of directory entries have been read (i.e. indicates
   // it's good time to call back to the application). If hasMore is true there
   // can be more chunks.
-  virtual void didReadDirectoryEntries(bool hasMore) { ASSERT_NOT_REACHED(); }
+  virtual void DidReadDirectoryEntries(bool has_more) { ASSERT_NOT_REACHED(); }
 
   // Called when an AsyncFileWrter has been created successfully.
-  virtual void didCreateFileWriter(std::unique_ptr<WebFileWriter>,
+  virtual void DidCreateFileWriter(std::unique_ptr<WebFileWriter>,
                                    long long length) {
     ASSERT_NOT_REACHED();
   }
 
   // Called when there was an error.
-  virtual void didFail(int code) = 0;
+  virtual void DidFail(int code) = 0;
 
   // Returns true if the caller expects that the calling thread blocks
   // until completion.
-  virtual bool shouldBlockUntilCompletion() const {
-    return m_blockUntilCompletion;
+  virtual bool ShouldBlockUntilCompletion() const {
+    return block_until_completion_;
   }
 
-  void setShouldBlockUntilCompletion(bool flag) {
-    m_blockUntilCompletion = flag;
+  void SetShouldBlockUntilCompletion(bool flag) {
+    block_until_completion_ = flag;
   }
 
   virtual ~AsyncFileSystemCallbacks() {}
 
  private:
-  bool m_blockUntilCompletion;
+  bool block_until_completion_;
 };
 
 }  // namespace blink

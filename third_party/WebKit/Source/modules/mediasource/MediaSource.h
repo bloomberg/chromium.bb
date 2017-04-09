@@ -58,22 +58,22 @@ class MediaSource final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 
  public:
-  static const AtomicString& openKeyword();
-  static const AtomicString& closedKeyword();
-  static const AtomicString& endedKeyword();
+  static const AtomicString& OpenKeyword();
+  static const AtomicString& ClosedKeyword();
+  static const AtomicString& EndedKeyword();
 
-  static MediaSource* create(ExecutionContext*);
+  static MediaSource* Create(ExecutionContext*);
   ~MediaSource() override;
 
-  static void logAndThrowDOMException(ExceptionState&,
+  static void LogAndThrowDOMException(ExceptionState&,
                                       ExceptionCode error,
                                       const String& message);
-  static void logAndThrowTypeError(ExceptionState&, const String&);
+  static void LogAndThrowTypeError(ExceptionState&, const String&);
 
   // MediaSource.idl methods
-  SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }
+  SourceBufferList* sourceBuffers() { return source_buffers_.Get(); }
   SourceBufferList* activeSourceBuffers() {
-    return m_activeSourceBuffers.get();
+    return active_source_buffers_.Get();
   }
   SourceBuffer* addSourceBuffer(const String& type, ExceptionState&);
   void removeSourceBuffer(SourceBuffer*, ExceptionState&);
@@ -83,7 +83,7 @@ class MediaSource final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose);
 
-  const AtomicString& readyState() const { return m_readyState; }
+  const AtomicString& readyState() const { return ready_state_; }
   void endOfStream(const AtomicString& error, ExceptionState&);
   void endOfStream(ExceptionState&);
   void setLiveSeekableRange(double start, double end, ExceptionState&);
@@ -92,70 +92,70 @@ class MediaSource final : public EventTargetWithInlineData,
   static bool isTypeSupported(const String& type);
 
   // HTMLMediaSource
-  bool attachToElement(HTMLMediaElement*) override;
-  void setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) override;
-  void close() override;
-  bool isClosed() const override;
+  bool AttachToElement(HTMLMediaElement*) override;
+  void SetWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) override;
+  void Close() override;
+  bool IsClosed() const override;
   double duration() const override;
-  TimeRanges* buffered() const override;
-  TimeRanges* seekable() const override;
-  void onTrackChanged(TrackBase*) override;
+  TimeRanges* Buffered() const override;
+  TimeRanges* Seekable() const override;
+  void OnTrackChanged(TrackBase*) override;
 
   // EventTarget interface
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver interface
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // URLRegistrable interface
-  URLRegistry& registry() const override;
+  URLRegistry& Registry() const override;
 
   // Used by SourceBuffer.
-  void openIfInEndedState();
-  bool isOpen() const;
-  void setSourceBufferActive(SourceBuffer*, bool);
-  HTMLMediaElement* mediaElement() const;
+  void OpenIfInEndedState();
+  bool IsOpen() const;
+  void SetSourceBufferActive(SourceBuffer*, bool);
+  HTMLMediaElement* MediaElement() const;
 
   // Used by MediaSourceRegistry.
-  void addedToRegistry();
-  void removedFromRegistry();
+  void AddedToRegistry();
+  void RemovedFromRegistry();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit MediaSource(ExecutionContext*);
 
-  void setReadyState(const AtomicString&);
-  void onReadyStateChange(const AtomicString&, const AtomicString&);
+  void SetReadyState(const AtomicString&);
+  void OnReadyStateChange(const AtomicString&, const AtomicString&);
 
-  bool isUpdating() const;
+  bool IsUpdating() const;
 
-  std::unique_ptr<WebSourceBuffer> createWebSourceBuffer(const String& type,
+  std::unique_ptr<WebSourceBuffer> CreateWebSourceBuffer(const String& type,
                                                          const String& codecs,
                                                          ExceptionState&);
-  void scheduleEvent(const AtomicString& eventName);
-  void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus,
+  void ScheduleEvent(const AtomicString& event_name);
+  void EndOfStreamInternal(const WebMediaSource::EndOfStreamStatus,
                            ExceptionState&);
 
   // Implements the duration change algorithm.
   // http://w3c.github.io/media-source/#duration-change-algorithm
-  void durationChangeAlgorithm(double newDuration, ExceptionState&);
+  void DurationChangeAlgorithm(double new_duration, ExceptionState&);
 
-  std::unique_ptr<WebMediaSource> m_webMediaSource;
-  AtomicString m_readyState;
-  Member<GenericEventQueue> m_asyncEventQueue;
-  WeakMember<HTMLMediaElement> m_attachedElement;
+  std::unique_ptr<WebMediaSource> web_media_source_;
+  AtomicString ready_state_;
+  Member<GenericEventQueue> async_event_queue_;
+  WeakMember<HTMLMediaElement> attached_element_;
 
-  Member<SourceBufferList> m_sourceBuffers;
-  Member<SourceBufferList> m_activeSourceBuffers;
+  Member<SourceBufferList> source_buffers_;
+  Member<SourceBufferList> active_source_buffers_;
 
-  Member<TimeRanges> m_liveSeekableRange;
+  Member<TimeRanges> live_seekable_range_;
 
-  int m_addedToRegistryCounter;
+  int added_to_registry_counter_;
 };
 
 }  // namespace blink

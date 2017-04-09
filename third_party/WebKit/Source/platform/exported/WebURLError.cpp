@@ -40,17 +40,17 @@ WebURLError::WebURLError(const ResourceError& error) {
 }
 
 WebURLError& WebURLError::operator=(const ResourceError& error) {
-  if (error.isNull()) {
+  if (error.IsNull()) {
     *this = WebURLError();
   } else {
-    domain = error.domain();
-    reason = error.errorCode();
-    unreachableURL = KURL(ParsedURLString, error.failingURL());
-    isCancellation = error.isCancellation();
-    staleCopyInCache = error.staleCopyInCache();
-    localizedDescription = error.localizedDescription();
-    wasIgnoredByHandler = error.wasIgnoredByHandler();
-    isCacheMiss = error.isCacheMiss();
+    domain = error.Domain();
+    reason = error.ErrorCode();
+    unreachable_url = KURL(kParsedURLString, error.FailingURL());
+    is_cancellation = error.IsCancellation();
+    stale_copy_in_cache = error.StaleCopyInCache();
+    localized_description = error.LocalizedDescription();
+    was_ignored_by_handler = error.WasIgnoredByHandler();
+    is_cache_miss = error.IsCacheMiss();
   }
   return *this;
 }
@@ -58,13 +58,13 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
 WebURLError::operator ResourceError() const {
   if (!reason)
     return ResourceError();
-  ResourceError resourceError = ResourceError(
-      domain, reason, unreachableURL.string(), localizedDescription);
-  resourceError.setIsCancellation(isCancellation);
-  resourceError.setStaleCopyInCache(staleCopyInCache);
-  resourceError.setWasIgnoredByHandler(wasIgnoredByHandler);
-  resourceError.setIsCacheMiss(isCacheMiss);
-  return resourceError;
+  ResourceError resource_error = ResourceError(
+      domain, reason, unreachable_url.GetString(), localized_description);
+  resource_error.SetIsCancellation(is_cancellation);
+  resource_error.SetStaleCopyInCache(stale_copy_in_cache);
+  resource_error.SetWasIgnoredByHandler(was_ignored_by_handler);
+  resource_error.SetIsCacheMiss(is_cache_miss);
+  return resource_error;
 }
 
 }  // namespace blink

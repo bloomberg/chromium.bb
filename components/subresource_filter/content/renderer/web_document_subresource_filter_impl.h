@@ -36,11 +36,11 @@ class WebDocumentSubresourceFilterImpl
   const DocumentSubresourceFilter& filter() const { return filter_; }
 
   // blink::WebDocumentSubresourceFilter:
-  LoadPolicy getLoadPolicy(const blink::WebURL& resourceUrl,
+  LoadPolicy GetLoadPolicy(const blink::WebURL& resourceUrl,
                            blink::WebURLRequest::RequestContext) override;
-  LoadPolicy getLoadPolicyForWebSocketConnect(
+  LoadPolicy GetLoadPolicyForWebSocketConnect(
       const blink::WebURL& url) override;
-  void reportDisallowedLoad() override;
+  void ReportDisallowedLoad() override;
 
  private:
   LoadPolicy getLoadPolicyImpl(const blink::WebURL& url,

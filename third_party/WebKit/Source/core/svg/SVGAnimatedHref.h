@@ -19,32 +19,32 @@ namespace blink {
 // or the wrapped object and forwards the operation to it.)
 class SVGAnimatedHref final : public SVGAnimatedString {
  public:
-  static SVGAnimatedHref* create(SVGElement* contextElement);
+  static SVGAnimatedHref* Create(SVGElement* context_element);
 
-  SVGString* currentValue();
-  const SVGString* currentValue() const;
+  SVGString* CurrentValue();
+  const SVGString* CurrentValue() const;
 
   String baseVal() override;
   void setBaseVal(const String&, ExceptionState&) override;
   String animVal() override;
 
-  bool isSpecified() const {
-    return SVGAnimatedString::isSpecified() || m_xlinkHref->isSpecified();
+  bool IsSpecified() const {
+    return SVGAnimatedString::IsSpecified() || xlink_href_->IsSpecified();
   }
 
-  static bool isKnownAttribute(const QualifiedName&);
-  void addToPropertyMap(SVGElement*);
+  static bool IsKnownAttribute(const QualifiedName&);
+  void AddToPropertyMap(SVGElement*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit SVGAnimatedHref(SVGElement* contextElement);
+  explicit SVGAnimatedHref(SVGElement* context_element);
 
-  SVGAnimatedString* backingString();
-  const SVGAnimatedString* backingString() const;
-  bool useXLink() const;
+  SVGAnimatedString* BackingString();
+  const SVGAnimatedString* BackingString() const;
+  bool UseXLink() const;
 
-  Member<SVGAnimatedString> m_xlinkHref;
+  Member<SVGAnimatedString> xlink_href_;
 };
 
 }  // namespace blink

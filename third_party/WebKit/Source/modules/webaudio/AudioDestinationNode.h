@@ -43,35 +43,35 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   ~AudioDestinationHandler() override;
 
   // AudioHandler
-  void process(size_t) final {
+  void Process(size_t) final {
   }  // we're pulled by hardware so this is never called
 
   // The audio hardware calls render() to get the next render quantum of audio
   // into destinationBus.  It will optionally give us local/live audio input in
   // sourceBus (if it's not 0).
-  void render(AudioBus* sourceBus,
-              AudioBus* destinationBus,
-              size_t numberOfFrames,
-              const AudioIOPosition& outputPosition) final;
+  void Render(AudioBus* source_bus,
+              AudioBus* destination_bus,
+              size_t number_of_frames,
+              const AudioIOPosition& output_position) final;
 
-  size_t currentSampleFrame() const {
-    return acquireLoad(&m_currentSampleFrame);
+  size_t CurrentSampleFrame() const {
+    return AcquireLoad(&current_sample_frame_);
   }
-  double currentTime() const {
-    return currentSampleFrame() / static_cast<double>(sampleRate());
+  double CurrentTime() const {
+    return CurrentSampleFrame() / static_cast<double>(SampleRate());
   }
 
-  virtual unsigned long maxChannelCount() const { return 0; }
+  virtual unsigned long MaxChannelCount() const { return 0; }
 
-  virtual void startRendering() = 0;
-  virtual void stopRendering() = 0;
+  virtual void StartRendering() = 0;
+  virtual void StopRendering() = 0;
 
   // Returns the rendering callback buffer size.
-  virtual size_t callbackBufferSize() const = 0;
-  virtual double sampleRate() const = 0;
+  virtual size_t CallbackBufferSize() const = 0;
+  virtual double SampleRate() const = 0;
 
   // Returns the audio buffer size in frames used by the AudioContext.
-  virtual int framesPerBuffer() const = 0;
+  virtual int FramesPerBuffer() const = 0;
 
  protected:
   // LocalAudioInputProvider allows us to expose an AudioSourceProvider for
@@ -80,46 +80,46 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   class LocalAudioInputProvider final : public AudioSourceProvider {
    public:
     LocalAudioInputProvider()
-        : m_sourceBus(AudioBus::create(
+        : source_bus_(AudioBus::Create(
               2,
               AudioUtilities::kRenderQuantumFrames))  // FIXME: handle
                                                       // non-stereo local input.
     {}
 
-    void set(AudioBus* bus) {
+    void Set(AudioBus* bus) {
       if (bus)
-        m_sourceBus->copyFrom(*bus);
+        source_bus_->CopyFrom(*bus);
     }
 
     // AudioSourceProvider.
-    void provideInput(AudioBus* destinationBus,
-                      size_t numberOfFrames) override {
-      bool isGood = destinationBus &&
-                    destinationBus->length() == numberOfFrames &&
-                    m_sourceBus->length() == numberOfFrames;
-      DCHECK(isGood);
-      if (isGood)
-        destinationBus->copyFrom(*m_sourceBus);
+    void ProvideInput(AudioBus* destination_bus,
+                      size_t number_of_frames) override {
+      bool is_good = destination_bus &&
+                     destination_bus->length() == number_of_frames &&
+                     source_bus_->length() == number_of_frames;
+      DCHECK(is_good);
+      if (is_good)
+        destination_bus->CopyFrom(*source_bus_);
     }
 
    private:
-    RefPtr<AudioBus> m_sourceBus;
+    RefPtr<AudioBus> source_bus_;
   };
 
   // Counts the number of sample-frames processed by the destination.
-  size_t m_currentSampleFrame;
+  size_t current_sample_frame_;
 
-  LocalAudioInputProvider m_localAudioInputProvider;
+  LocalAudioInputProvider local_audio_input_provider_;
 };
 
 class AudioDestinationNode : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  AudioDestinationHandler& audioDestinationHandler() const;
+  AudioDestinationHandler& GetAudioDestinationHandler() const;
 
   unsigned long maxChannelCount() const;
-  size_t callbackBufferSize() const { return handler().callbackBufferSize(); }
+  size_t CallbackBufferSize() const { return Handler().CallbackBufferSize(); }
 
  protected:
   AudioDestinationNode(BaseAudioContext&);

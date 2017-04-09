@@ -34,32 +34,32 @@ inline HTMLUListElement::HTMLUListElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLUListElement)
 
-bool HTMLUListElement::isPresentationAttribute(
+bool HTMLUListElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == typeAttr)
     return true;
-  return HTMLElement::isPresentationAttribute(name);
+  return HTMLElement::IsPresentationAttribute(name);
 }
 
-void HTMLUListElement::collectStyleForPresentationAttribute(
+void HTMLUListElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == typeAttr) {
-    if (equalIgnoringCase(value, "disc"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+    if (EqualIgnoringCase(value, "disc"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueDisc);
-    else if (equalIgnoringCase(value, "circle"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+    else if (EqualIgnoringCase(value, "circle"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueCircle);
-    else if (equalIgnoringCase(value, "square"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+    else if (EqualIgnoringCase(value, "square"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueSquare);
-    else if (equalIgnoringCase(value, "none"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+    else if (EqualIgnoringCase(value, "none"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueNone);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 

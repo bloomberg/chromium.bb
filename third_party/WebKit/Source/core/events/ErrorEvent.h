@@ -45,51 +45,51 @@ class ErrorEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ErrorEvent* create() { return new ErrorEvent; }
-  static ErrorEvent* create(const String& message,
+  static ErrorEvent* Create() { return new ErrorEvent; }
+  static ErrorEvent* Create(const String& message,
                             std::unique_ptr<SourceLocation> location,
                             DOMWrapperWorld* world) {
     return new ErrorEvent(message, std::move(location), ScriptValue(), world);
   }
 
-  static ErrorEvent* create(const String& message,
+  static ErrorEvent* Create(const String& message,
                             std::unique_ptr<SourceLocation> location,
                             ScriptValue error,
                             DOMWrapperWorld* world) {
     return new ErrorEvent(message, std::move(location), error, world);
   }
 
-  static ErrorEvent* create(const AtomicString& type,
+  static ErrorEvent* Create(const AtomicString& type,
                             const ErrorEventInit& initializer) {
     return new ErrorEvent(type, initializer);
   }
-  static ErrorEvent* createSanitizedError(DOMWrapperWorld* world) {
+  static ErrorEvent* CreateSanitizedError(DOMWrapperWorld* world) {
     return new ErrorEvent("Script error.",
-                          SourceLocation::create(String(), 0, 0, nullptr),
+                          SourceLocation::Create(String(), 0, 0, nullptr),
                           ScriptValue(), world);
   }
   ~ErrorEvent() override;
 
   // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
-  const String& message() const { return m_sanitizedMessage; }
-  const String& filename() const { return m_location->url(); }
-  unsigned lineno() const { return m_location->lineNumber(); }
-  unsigned colno() const { return m_location->columnNumber(); }
+  const String& message() const { return sanitized_message_; }
+  const String& filename() const { return location_->Url(); }
+  unsigned lineno() const { return location_->LineNumber(); }
+  unsigned colno() const { return location_->ColumnNumber(); }
   ScriptValue error(ScriptState*) const;
 
   // 'messageForConsole' is not exposed to JavaScript, and prefers
   // 'm_unsanitizedMessage'.
-  const String& messageForConsole() const {
-    return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage
-                                           : m_sanitizedMessage;
+  const String& MessageForConsole() const {
+    return !unsanitized_message_.IsEmpty() ? unsanitized_message_
+                                           : sanitized_message_;
   }
-  SourceLocation* location() const { return m_location.get(); }
+  SourceLocation* Location() const { return location_.get(); }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  DOMWrapperWorld* world() const { return m_world.get(); }
+  DOMWrapperWorld* World() const { return world_.Get(); }
 
-  void setUnsanitizedMessage(const String&);
+  void SetUnsanitizedMessage(const String&);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -101,12 +101,12 @@ class ErrorEvent final : public Event {
              DOMWrapperWorld*);
   ErrorEvent(const AtomicString&, const ErrorEventInit&);
 
-  String m_unsanitizedMessage;
-  String m_sanitizedMessage;
-  std::unique_ptr<SourceLocation> m_location;
-  ScriptValue m_error;
+  String unsanitized_message_;
+  String sanitized_message_;
+  std::unique_ptr<SourceLocation> location_;
+  ScriptValue error_;
 
-  RefPtr<DOMWrapperWorld> m_world;
+  RefPtr<DOMWrapperWorld> world_;
 };
 
 }  // namespace blink

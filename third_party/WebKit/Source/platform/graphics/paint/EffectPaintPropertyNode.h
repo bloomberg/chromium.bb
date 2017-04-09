@@ -30,156 +30,157 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     : public RefCounted<EffectPaintPropertyNode> {
  public:
   // This node is really a sentinel, and does not represent a real effect.
-  static EffectPaintPropertyNode* root();
+  static EffectPaintPropertyNode* Root();
 
-  static PassRefPtr<EffectPaintPropertyNode> create(
+  static PassRefPtr<EffectPaintPropertyNode> Create(
       PassRefPtr<const EffectPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
-      PassRefPtr<const ClipPaintPropertyNode> outputClip,
-      ColorFilter colorFilter,
+      PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
+      PassRefPtr<const ClipPaintPropertyNode> output_clip,
+      ColorFilter color_filter,
       CompositorFilterOperations filter,
       float opacity,
-      SkBlendMode blendMode,
-      CompositingReasons directCompositingReasons = CompositingReasonNone,
-      const CompositorElementId& compositorElementId = CompositorElementId(),
-      const FloatPoint& paintOffset = FloatPoint()) {
-    return adoptRef(new EffectPaintPropertyNode(
-        std::move(parent), std::move(localTransformSpace),
-        std::move(outputClip), colorFilter, std::move(filter), opacity,
-        blendMode, directCompositingReasons, compositorElementId, paintOffset));
+      SkBlendMode blend_mode,
+      CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
+      const CompositorElementId& compositor_element_id = CompositorElementId(),
+      const FloatPoint& paint_offset = FloatPoint()) {
+    return AdoptRef(new EffectPaintPropertyNode(
+        std::move(parent), std::move(local_transform_space),
+        std::move(output_clip), color_filter, std::move(filter), opacity,
+        blend_mode, direct_compositing_reasons, compositor_element_id,
+        paint_offset));
   }
 
-  void update(
+  void Update(
       PassRefPtr<const EffectPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
-      PassRefPtr<const ClipPaintPropertyNode> outputClip,
-      ColorFilter colorFilter,
+      PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
+      PassRefPtr<const ClipPaintPropertyNode> output_clip,
+      ColorFilter color_filter,
       CompositorFilterOperations filter,
       float opacity,
-      SkBlendMode blendMode,
-      CompositingReasons directCompositingReasons = CompositingReasonNone,
-      const CompositorElementId& compositorElementId = CompositorElementId(),
-      const FloatPoint& paintOffset = FloatPoint()) {
-    DCHECK(!isRoot());
+      SkBlendMode blend_mode,
+      CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
+      const CompositorElementId& compositor_element_id = CompositorElementId(),
+      const FloatPoint& paint_offset = FloatPoint()) {
+    DCHECK(!IsRoot());
     DCHECK(parent != this);
-    m_parent = std::move(parent);
-    m_localTransformSpace = std::move(localTransformSpace);
-    m_outputClip = std::move(outputClip);
-    m_colorFilter = colorFilter;
-    m_filter = std::move(filter);
-    m_opacity = opacity;
-    m_blendMode = blendMode;
-    m_directCompositingReasons = directCompositingReasons;
-    m_compositorElementId = compositorElementId;
-    m_paintOffset = paintOffset;
+    parent_ = std::move(parent);
+    local_transform_space_ = std::move(local_transform_space);
+    output_clip_ = std::move(output_clip);
+    color_filter_ = color_filter;
+    filter_ = std::move(filter);
+    opacity_ = opacity;
+    blend_mode_ = blend_mode;
+    direct_compositing_reasons_ = direct_compositing_reasons;
+    compositor_element_id_ = compositor_element_id;
+    paint_offset_ = paint_offset;
   }
 
-  const TransformPaintPropertyNode* localTransformSpace() const {
-    return m_localTransformSpace.get();
+  const TransformPaintPropertyNode* LocalTransformSpace() const {
+    return local_transform_space_.Get();
   }
-  const ClipPaintPropertyNode* outputClip() const { return m_outputClip.get(); }
+  const ClipPaintPropertyNode* OutputClip() const { return output_clip_.Get(); }
 
-  SkBlendMode blendMode() const { return m_blendMode; }
-  float opacity() const { return m_opacity; }
-  const CompositorFilterOperations& filter() const { return m_filter; }
-  ColorFilter colorFilter() const { return m_colorFilter; }
+  SkBlendMode BlendMode() const { return blend_mode_; }
+  float Opacity() const { return opacity_; }
+  const CompositorFilterOperations& Filter() const { return filter_; }
+  ColorFilter GetColorFilter() const { return color_filter_; }
 
   // Parent effect or nullptr if this is the root effect.
-  const EffectPaintPropertyNode* parent() const { return m_parent.get(); }
-  bool isRoot() const { return !m_parent; }
+  const EffectPaintPropertyNode* Parent() const { return parent_.Get(); }
+  bool IsRoot() const { return !parent_; }
 
-  bool hasFilterThatMovesPixels() const {
-    return m_filter.hasFilterThatMovesPixels();
+  bool HasFilterThatMovesPixels() const {
+    return filter_.HasFilterThatMovesPixels();
   }
 
   // Returns a rect covering the pixels that can be affected by pixels in
   // |inputRect|. The rects are in the space of localTransformSpace.
-  FloatRect mapRect(const FloatRect& inputRect) const;
+  FloatRect MapRect(const FloatRect& input_rect) const;
 
-  cc::Layer* ensureDummyLayer() const;
+  cc::Layer* EnsureDummyLayer() const;
 
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
-  PassRefPtr<EffectPaintPropertyNode> clone() const {
-    return adoptRef(new EffectPaintPropertyNode(
-        m_parent, m_localTransformSpace, m_outputClip, m_colorFilter, m_filter,
-        m_opacity, m_blendMode, m_directCompositingReasons,
-        m_compositorElementId, m_paintOffset));
+  PassRefPtr<EffectPaintPropertyNode> Clone() const {
+    return AdoptRef(new EffectPaintPropertyNode(
+        parent_, local_transform_space_, output_clip_, color_filter_, filter_,
+        opacity_, blend_mode_, direct_compositing_reasons_,
+        compositor_element_id_, paint_offset_));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if an effect node has changed. It ignores changes of reference filters
   // because SkImageFilter doesn't have an equality operator.
   bool operator==(const EffectPaintPropertyNode& o) const {
-    return m_parent == o.m_parent &&
-           m_localTransformSpace == o.m_localTransformSpace &&
-           m_outputClip == o.m_outputClip && m_colorFilter == o.m_colorFilter &&
-           m_filter.equalsIgnoringReferenceFilters(o.m_filter) &&
-           m_opacity == o.m_opacity && m_blendMode == o.m_blendMode &&
-           m_directCompositingReasons == o.m_directCompositingReasons &&
-           m_compositorElementId == o.m_compositorElementId &&
-           m_paintOffset == o.m_paintOffset;
+    return parent_ == o.parent_ &&
+           local_transform_space_ == o.local_transform_space_ &&
+           output_clip_ == o.output_clip_ && color_filter_ == o.color_filter_ &&
+           filter_.EqualsIgnoringReferenceFilters(o.filter_) &&
+           opacity_ == o.opacity_ && blend_mode_ == o.blend_mode_ &&
+           direct_compositing_reasons_ == o.direct_compositing_reasons_ &&
+           compositor_element_id_ == o.compositor_element_id_ &&
+           paint_offset_ == o.paint_offset_;
   }
 
-  String toTreeString() const;
+  String ToTreeString() const;
 #endif
 
-  String toString() const;
+  String ToString() const;
 
-  bool hasDirectCompositingReasons() const {
-    return m_directCompositingReasons != CompositingReasonNone;
+  bool HasDirectCompositingReasons() const {
+    return direct_compositing_reasons_ != kCompositingReasonNone;
   }
 
-  bool requiresCompositingForAnimation() const {
-    return m_directCompositingReasons & CompositingReasonActiveAnimation;
+  bool RequiresCompositingForAnimation() const {
+    return direct_compositing_reasons_ & kCompositingReasonActiveAnimation;
   }
 
-  const CompositorElementId& compositorElementId() const {
-    return m_compositorElementId;
+  const CompositorElementId& GetCompositorElementId() const {
+    return compositor_element_id_;
   }
 
  private:
   EffectPaintPropertyNode(
       PassRefPtr<const EffectPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
-      PassRefPtr<const ClipPaintPropertyNode> outputClip,
-      ColorFilter colorFilter,
+      PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
+      PassRefPtr<const ClipPaintPropertyNode> output_clip,
+      ColorFilter color_filter,
       CompositorFilterOperations filter,
       float opacity,
-      SkBlendMode blendMode,
-      CompositingReasons directCompositingReasons,
-      CompositorElementId compositorElementId,
-      const FloatPoint& paintOffset)
-      : m_parent(std::move(parent)),
-        m_localTransformSpace(std::move(localTransformSpace)),
-        m_outputClip(std::move(outputClip)),
-        m_colorFilter(colorFilter),
-        m_filter(std::move(filter)),
-        m_opacity(opacity),
-        m_blendMode(blendMode),
-        m_directCompositingReasons(directCompositingReasons),
-        m_compositorElementId(compositorElementId),
-        m_paintOffset(paintOffset) {}
+      SkBlendMode blend_mode,
+      CompositingReasons direct_compositing_reasons,
+      CompositorElementId compositor_element_id,
+      const FloatPoint& paint_offset)
+      : parent_(std::move(parent)),
+        local_transform_space_(std::move(local_transform_space)),
+        output_clip_(std::move(output_clip)),
+        color_filter_(color_filter),
+        filter_(std::move(filter)),
+        opacity_(opacity),
+        blend_mode_(blend_mode),
+        direct_compositing_reasons_(direct_compositing_reasons),
+        compositor_element_id_(compositor_element_id),
+        paint_offset_(paint_offset) {}
 
-  RefPtr<const EffectPaintPropertyNode> m_parent;
+  RefPtr<const EffectPaintPropertyNode> parent_;
   // The local transform space serves two purposes:
   // 1. Assign a depth mapping for 3D depth sorting against other paint chunks
   //    and effects under the same parent.
   // 2. Some effects are spatial (namely blur filter and reflection), the
   //    effect parameters will be specified in the local space.
-  RefPtr<const TransformPaintPropertyNode> m_localTransformSpace;
+  RefPtr<const TransformPaintPropertyNode> local_transform_space_;
   // The output of the effect can be optionally clipped when composited onto
   // the current backdrop.
-  RefPtr<const ClipPaintPropertyNode> m_outputClip;
+  RefPtr<const ClipPaintPropertyNode> output_clip_;
 
   // Optionally a number of effects can be applied to the composited output.
   // The chain of effects will be applied in the following order:
   // === Begin of effects ===
-  ColorFilter m_colorFilter;
-  CompositorFilterOperations m_filter;
-  float m_opacity;
-  SkBlendMode m_blendMode;
+  ColorFilter color_filter_;
+  CompositorFilterOperations filter_;
+  float opacity_;
+  SkBlendMode blend_mode_;
   // === End of effects ===
 
   // TODO(trchen): Remove the dummy layer.
@@ -187,15 +188,15 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // to associate with cc::RenderSurfaceImpl for damage tracking. This shall
   // be removed in favor of a stable ID once cc::LayerImpl no longer owns
   // RenderSurfaceImpl.
-  mutable scoped_refptr<cc::Layer> m_dummyLayer;
+  mutable scoped_refptr<cc::Layer> dummy_layer_;
 
-  CompositingReasons m_directCompositingReasons;
-  CompositorElementId m_compositorElementId;
+  CompositingReasons direct_compositing_reasons_;
+  CompositorElementId compositor_element_id_;
 
   // The offset of the effect's local space in m_localTransformSpace. Some
   // effects e.g. reflection need this to apply geometry effects in the local
   // space.
-  FloatPoint m_paintOffset;
+  FloatPoint paint_offset_;
 };
 
 // Redeclared here to avoid ODR issues.

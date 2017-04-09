@@ -40,21 +40,21 @@ class DoctypeData {
 
  public:
   DoctypeData()
-      : m_hasPublicIdentifier(false),
-        m_hasSystemIdentifier(false),
-        m_forceQuirks(false) {}
+      : has_public_identifier_(false),
+        has_system_identifier_(false),
+        force_quirks_(false) {}
 
-  bool m_hasPublicIdentifier;
-  bool m_hasSystemIdentifier;
-  WTF::Vector<UChar> m_publicIdentifier;
-  WTF::Vector<UChar> m_systemIdentifier;
-  bool m_forceQuirks;
+  bool has_public_identifier_;
+  bool has_system_identifier_;
+  WTF::Vector<UChar> public_identifier_;
+  WTF::Vector<UChar> system_identifier_;
+  bool force_quirks_;
 };
 
-static inline Attribute* findAttributeInVector(Vector<Attribute>& attributes,
+static inline Attribute* FindAttributeInVector(Vector<Attribute>& attributes,
                                                const QualifiedName& name) {
   for (unsigned i = 0; i < attributes.size(); ++i) {
-    if (attributes.at(i).name().matches(name))
+    if (attributes.at(i).GetName().Matches(name))
       return &attributes.at(i);
   }
   return 0;
@@ -66,13 +66,13 @@ class HTMLToken {
 
  public:
   enum TokenType {
-    Uninitialized,
+    kUninitialized,
     DOCTYPE,
-    StartTag,
-    EndTag,
-    Comment,
-    Character,
-    EndOfFile,
+    kStartTag,
+    kEndTag,
+    kComment,
+    kCharacter,
+    kEndOfFile,
   };
 
   class Attribute {
@@ -85,7 +85,7 @@ class HTMLToken {
      public:
       static constexpr int kInvalidOffset = -1;
 
-      inline void clear() {
+      inline void Clear() {
 #if DCHECK_IS_ON()
         start = kInvalidOffset;
         end = kInvalidOffset;
@@ -93,14 +93,14 @@ class HTMLToken {
       }
 
       // Check Range instance that is actively being parsed.
-      inline void checkValidStart() const {
+      inline void CheckValidStart() const {
         DCHECK_NE(start, kInvalidOffset);
         DCHECK_GE(start, 0);
       }
 
       // Check Range instance which finished parse.
-      inline void checkValid() const {
-        checkValidStart();
+      inline void CheckValid() const {
+        CheckValidStart();
         DCHECK_NE(end, kInvalidOffset);
         DCHECK_GE(end, 0);
         DCHECK_LE(start, end);
@@ -110,33 +110,33 @@ class HTMLToken {
       int end;
     };
 
-    AtomicString name() const { return AtomicString(m_name); }
-    String nameAttemptStaticStringCreation() const {
-      return attemptStaticStringCreation(m_name, Likely8Bit);
+    AtomicString GetName() const { return AtomicString(name_); }
+    String NameAttemptStaticStringCreation() const {
+      return AttemptStaticStringCreation(name_, kLikely8Bit);
     }
-    const Vector<UChar, 32>& nameAsVector() const { return m_name; }
+    const Vector<UChar, 32>& NameAsVector() const { return name_; }
 
-    void appendToName(UChar c) { m_name.push_back(c); }
+    void AppendToName(UChar c) { name_.push_back(c); }
 
-    PassRefPtr<StringImpl> value8BitIfNecessary() const {
-      return StringImpl::create8BitIfPossible(m_value);
+    PassRefPtr<StringImpl> Value8BitIfNecessary() const {
+      return StringImpl::Create8BitIfPossible(value_);
     }
-    String value() const { return String(m_value); }
+    String Value() const { return String(value_); }
 
-    void appendToValue(UChar c) { m_value.push_back(c); }
-    void appendToValue(const String& value) { value.appendTo(m_value); }
-    void clearValue() { m_value.clear(); }
+    void AppendToValue(UChar c) { value_.push_back(c); }
+    void AppendToValue(const String& value) { value.AppendTo(value_); }
+    void ClearValue() { value_.Clear(); }
 
-    const Range& nameRange() const { return m_nameRange; }
-    const Range& valueRange() const { return m_valueRange; }
-    Range& mutableNameRange() { return m_nameRange; }
-    Range& mutableValueRange() { return m_valueRange; }
+    const Range& NameRange() const { return name_range_; }
+    const Range& ValueRange() const { return value_range_; }
+    Range& MutableNameRange() { return name_range_; }
+    Range& MutableValueRange() { return value_range_; }
 
    private:
-    Vector<UChar, 32> m_name;
-    Vector<UChar, 32> m_value;
-    Range m_nameRange;
-    Range m_valueRange;
+    Vector<UChar, 32> name_;
+    Vector<UChar, 32> value_;
+    Range name_range_;
+    Range value_range_;
   };
 
   typedef Vector<Attribute, 10> AttributeList;
@@ -146,317 +146,317 @@ class HTMLToken {
   // around a number of popular web sites on 23 May 2013.
   typedef Vector<UChar, 256> DataVector;
 
-  HTMLToken() { clear(); }
+  HTMLToken() { Clear(); }
 
-  void clear() {
-    m_type = Uninitialized;
-    m_range.clear();
-    m_range.start = 0;
-    m_baseOffset = 0;
+  void Clear() {
+    type_ = kUninitialized;
+    range_.Clear();
+    range_.start = 0;
+    base_offset_ = 0;
     // Don't call Vector::clear() as that would destroy the
     // alloced VectorBuffer. If the innerHTML'd content has
     // two 257 character text nodes in a row, we'll needlessly
     // thrash malloc. When we finally finish the parse the
     // HTMLToken will be destroyed and the VectorBuffer released.
-    m_data.shrink(0);
-    m_orAllData = 0;
+    data_.Shrink(0);
+    or_all_data_ = 0;
   }
 
-  bool isUninitialized() { return m_type == Uninitialized; }
-  TokenType type() const { return m_type; }
+  bool IsUninitialized() { return type_ == kUninitialized; }
+  TokenType GetType() const { return type_; }
 
-  void makeEndOfFile() {
-    DCHECK_EQ(m_type, Uninitialized);
-    m_type = EndOfFile;
+  void MakeEndOfFile() {
+    DCHECK_EQ(type_, kUninitialized);
+    type_ = kEndOfFile;
   }
 
   // Range and offset methods exposed for HTMLSourceTracker and
   // HTMLViewSourceParser.
-  int startIndex() const { return m_range.start; }
-  int endIndex() const { return m_range.end; }
+  int StartIndex() const { return range_.start; }
+  int EndIndex() const { return range_.end; }
 
-  void setBaseOffset(int offset) { m_baseOffset = offset; }
+  void SetBaseOffset(int offset) { base_offset_ = offset; }
 
-  void end(int endOffset) { m_range.end = endOffset - m_baseOffset; }
+  void end(int end_offset) { range_.end = end_offset - base_offset_; }
 
-  const DataVector& data() const {
-    DCHECK(m_type == Character || m_type == Comment || m_type == StartTag ||
-           m_type == EndTag);
-    return m_data;
+  const DataVector& Data() const {
+    DCHECK(type_ == kCharacter || type_ == kComment || type_ == kStartTag ||
+           type_ == kEndTag);
+    return data_;
   }
 
-  bool isAll8BitData() const { return (m_orAllData <= 0xff); }
+  bool IsAll8BitData() const { return (or_all_data_ <= 0xff); }
 
-  const DataVector& name() const {
-    DCHECK(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
-    return m_data;
+  const DataVector& GetName() const {
+    DCHECK(type_ == kStartTag || type_ == kEndTag || type_ == DOCTYPE);
+    return data_;
   }
 
-  void appendToName(UChar character) {
-    DCHECK(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
+  void AppendToName(UChar character) {
+    DCHECK(type_ == kStartTag || type_ == kEndTag || type_ == DOCTYPE);
     DCHECK(character);
-    m_data.push_back(character);
-    m_orAllData |= character;
+    data_.push_back(character);
+    or_all_data_ |= character;
   }
 
   /* DOCTYPE Tokens */
 
-  bool forceQuirks() const {
-    DCHECK_EQ(m_type, DOCTYPE);
-    return m_doctypeData->m_forceQuirks;
+  bool ForceQuirks() const {
+    DCHECK_EQ(type_, DOCTYPE);
+    return doctype_data_->force_quirks_;
   }
 
-  void setForceQuirks() {
-    DCHECK_EQ(m_type, DOCTYPE);
-    m_doctypeData->m_forceQuirks = true;
+  void SetForceQuirks() {
+    DCHECK_EQ(type_, DOCTYPE);
+    doctype_data_->force_quirks_ = true;
   }
 
-  void beginDOCTYPE() {
-    DCHECK_EQ(m_type, Uninitialized);
-    m_type = DOCTYPE;
-    m_doctypeData = WTF::wrapUnique(new DoctypeData);
+  void BeginDOCTYPE() {
+    DCHECK_EQ(type_, kUninitialized);
+    type_ = DOCTYPE;
+    doctype_data_ = WTF::WrapUnique(new DoctypeData);
   }
 
-  void beginDOCTYPE(UChar character) {
+  void BeginDOCTYPE(UChar character) {
     DCHECK(character);
-    beginDOCTYPE();
-    m_data.push_back(character);
-    m_orAllData |= character;
+    BeginDOCTYPE();
+    data_.push_back(character);
+    or_all_data_ |= character;
   }
 
   // FIXME: Distinguish between a missing public identifer and an empty one.
-  const WTF::Vector<UChar>& publicIdentifier() const {
-    DCHECK_EQ(m_type, DOCTYPE);
-    return m_doctypeData->m_publicIdentifier;
+  const WTF::Vector<UChar>& PublicIdentifier() const {
+    DCHECK_EQ(type_, DOCTYPE);
+    return doctype_data_->public_identifier_;
   }
 
   // FIXME: Distinguish between a missing system identifer and an empty one.
-  const WTF::Vector<UChar>& systemIdentifier() const {
-    DCHECK_EQ(m_type, DOCTYPE);
-    return m_doctypeData->m_systemIdentifier;
+  const WTF::Vector<UChar>& SystemIdentifier() const {
+    DCHECK_EQ(type_, DOCTYPE);
+    return doctype_data_->system_identifier_;
   }
 
-  void setPublicIdentifierToEmptyString() {
-    DCHECK_EQ(m_type, DOCTYPE);
-    m_doctypeData->m_hasPublicIdentifier = true;
-    m_doctypeData->m_publicIdentifier.clear();
+  void SetPublicIdentifierToEmptyString() {
+    DCHECK_EQ(type_, DOCTYPE);
+    doctype_data_->has_public_identifier_ = true;
+    doctype_data_->public_identifier_.Clear();
   }
 
-  void setSystemIdentifierToEmptyString() {
-    DCHECK_EQ(m_type, DOCTYPE);
-    m_doctypeData->m_hasSystemIdentifier = true;
-    m_doctypeData->m_systemIdentifier.clear();
+  void SetSystemIdentifierToEmptyString() {
+    DCHECK_EQ(type_, DOCTYPE);
+    doctype_data_->has_system_identifier_ = true;
+    doctype_data_->system_identifier_.Clear();
   }
 
-  void appendToPublicIdentifier(UChar character) {
+  void AppendToPublicIdentifier(UChar character) {
     DCHECK(character);
-    DCHECK_EQ(m_type, DOCTYPE);
-    DCHECK(m_doctypeData->m_hasPublicIdentifier);
-    m_doctypeData->m_publicIdentifier.push_back(character);
+    DCHECK_EQ(type_, DOCTYPE);
+    DCHECK(doctype_data_->has_public_identifier_);
+    doctype_data_->public_identifier_.push_back(character);
   }
 
-  void appendToSystemIdentifier(UChar character) {
+  void AppendToSystemIdentifier(UChar character) {
     DCHECK(character);
-    DCHECK_EQ(m_type, DOCTYPE);
-    DCHECK(m_doctypeData->m_hasSystemIdentifier);
-    m_doctypeData->m_systemIdentifier.push_back(character);
+    DCHECK_EQ(type_, DOCTYPE);
+    DCHECK(doctype_data_->has_system_identifier_);
+    doctype_data_->system_identifier_.push_back(character);
   }
 
-  std::unique_ptr<DoctypeData> releaseDoctypeData() {
-    return std::move(m_doctypeData);
+  std::unique_ptr<DoctypeData> ReleaseDoctypeData() {
+    return std::move(doctype_data_);
   }
 
   /* Start/End Tag Tokens */
 
-  bool selfClosing() const {
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    return m_selfClosing;
+  bool SelfClosing() const {
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    return self_closing_;
   }
 
-  void setSelfClosing() {
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    m_selfClosing = true;
+  void SetSelfClosing() {
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    self_closing_ = true;
   }
 
-  void beginStartTag(UChar character) {
+  void BeginStartTag(UChar character) {
     DCHECK(character);
-    DCHECK_EQ(m_type, Uninitialized);
-    m_type = StartTag;
-    m_selfClosing = false;
-    m_currentAttribute = 0;
-    m_attributes.clear();
+    DCHECK_EQ(type_, kUninitialized);
+    type_ = kStartTag;
+    self_closing_ = false;
+    current_attribute_ = 0;
+    attributes_.Clear();
 
-    m_data.push_back(character);
-    m_orAllData |= character;
+    data_.push_back(character);
+    or_all_data_ |= character;
   }
 
-  void beginEndTag(LChar character) {
-    DCHECK_EQ(m_type, Uninitialized);
-    m_type = EndTag;
-    m_selfClosing = false;
-    m_currentAttribute = 0;
-    m_attributes.clear();
+  void BeginEndTag(LChar character) {
+    DCHECK_EQ(type_, kUninitialized);
+    type_ = kEndTag;
+    self_closing_ = false;
+    current_attribute_ = 0;
+    attributes_.Clear();
 
-    m_data.push_back(character);
+    data_.push_back(character);
   }
 
-  void beginEndTag(const Vector<LChar, 32>& characters) {
-    DCHECK_EQ(m_type, Uninitialized);
-    m_type = EndTag;
-    m_selfClosing = false;
-    m_currentAttribute = 0;
-    m_attributes.clear();
+  void BeginEndTag(const Vector<LChar, 32>& characters) {
+    DCHECK_EQ(type_, kUninitialized);
+    type_ = kEndTag;
+    self_closing_ = false;
+    current_attribute_ = 0;
+    attributes_.Clear();
 
-    m_data.appendVector(characters);
+    data_.AppendVector(characters);
   }
 
-  void addNewAttribute() {
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    m_attributes.grow(m_attributes.size() + 1);
-    m_currentAttribute = &m_attributes.back();
-    m_currentAttribute->mutableNameRange().clear();
-    m_currentAttribute->mutableValueRange().clear();
+  void AddNewAttribute() {
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    attributes_.Grow(attributes_.size() + 1);
+    current_attribute_ = &attributes_.back();
+    current_attribute_->MutableNameRange().Clear();
+    current_attribute_->MutableValueRange().Clear();
   }
 
-  void beginAttributeName(int offset) {
-    m_currentAttribute->mutableNameRange().start = offset - m_baseOffset;
-    m_currentAttribute->nameRange().checkValidStart();
+  void BeginAttributeName(int offset) {
+    current_attribute_->MutableNameRange().start = offset - base_offset_;
+    current_attribute_->NameRange().CheckValidStart();
   }
 
-  void endAttributeName(int offset) {
-    int index = offset - m_baseOffset;
-    m_currentAttribute->mutableNameRange().end = index;
-    m_currentAttribute->nameRange().checkValid();
-    m_currentAttribute->mutableValueRange().start = index;
-    m_currentAttribute->mutableValueRange().end = index;
+  void EndAttributeName(int offset) {
+    int index = offset - base_offset_;
+    current_attribute_->MutableNameRange().end = index;
+    current_attribute_->NameRange().CheckValid();
+    current_attribute_->MutableValueRange().start = index;
+    current_attribute_->MutableValueRange().end = index;
   }
 
-  void beginAttributeValue(int offset) {
-    m_currentAttribute->mutableValueRange().clear();
-    m_currentAttribute->mutableValueRange().start = offset - m_baseOffset;
-    m_currentAttribute->valueRange().checkValidStart();
+  void BeginAttributeValue(int offset) {
+    current_attribute_->MutableValueRange().Clear();
+    current_attribute_->MutableValueRange().start = offset - base_offset_;
+    current_attribute_->ValueRange().CheckValidStart();
   }
 
-  void endAttributeValue(int offset) {
-    m_currentAttribute->mutableValueRange().end = offset - m_baseOffset;
-    m_currentAttribute->valueRange().checkValid();
+  void EndAttributeValue(int offset) {
+    current_attribute_->MutableValueRange().end = offset - base_offset_;
+    current_attribute_->ValueRange().CheckValid();
   }
 
-  void appendToAttributeName(UChar character) {
+  void AppendToAttributeName(UChar character) {
     DCHECK(character);
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    m_currentAttribute->nameRange().checkValidStart();
-    m_currentAttribute->appendToName(character);
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    current_attribute_->NameRange().CheckValidStart();
+    current_attribute_->AppendToName(character);
   }
 
-  void appendToAttributeValue(UChar character) {
+  void AppendToAttributeValue(UChar character) {
     DCHECK(character);
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    m_currentAttribute->valueRange().checkValidStart();
-    m_currentAttribute->appendToValue(character);
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    current_attribute_->ValueRange().CheckValidStart();
+    current_attribute_->AppendToValue(character);
   }
 
-  void appendToAttributeValue(size_t i, const String& value) {
-    DCHECK(!value.isEmpty());
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    m_attributes[i].appendToValue(value);
+  void AppendToAttributeValue(size_t i, const String& value) {
+    DCHECK(!value.IsEmpty());
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    attributes_[i].AppendToValue(value);
   }
 
-  const AttributeList& attributes() const {
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    return m_attributes;
+  const AttributeList& Attributes() const {
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    return attributes_;
   }
 
-  const Attribute* getAttributeItem(const QualifiedName& name) const {
-    for (unsigned i = 0; i < m_attributes.size(); ++i) {
-      if (m_attributes.at(i).name() == name.localName())
-        return &m_attributes.at(i);
+  const Attribute* GetAttributeItem(const QualifiedName& name) const {
+    for (unsigned i = 0; i < attributes_.size(); ++i) {
+      if (attributes_.at(i).GetName() == name.LocalName())
+        return &attributes_.at(i);
     }
     return 0;
   }
 
   // Used by the XSSAuditor to nuke XSS-laden attributes.
-  void eraseValueOfAttribute(size_t i) {
-    DCHECK(m_type == StartTag || m_type == EndTag);
-    m_attributes[i].clearValue();
+  void EraseValueOfAttribute(size_t i) {
+    DCHECK(type_ == kStartTag || type_ == kEndTag);
+    attributes_[i].ClearValue();
   }
 
   /* Character Tokens */
 
   // Starting a character token works slightly differently than starting
   // other types of tokens because we want to save a per-character branch.
-  void ensureIsCharacterToken() {
-    DCHECK(m_type == Uninitialized || m_type == Character);
-    m_type = Character;
+  void EnsureIsCharacterToken() {
+    DCHECK(type_ == kUninitialized || type_ == kCharacter);
+    type_ = kCharacter;
   }
 
-  const DataVector& characters() const {
-    DCHECK_EQ(m_type, Character);
-    return m_data;
+  const DataVector& Characters() const {
+    DCHECK_EQ(type_, kCharacter);
+    return data_;
   }
 
-  void appendToCharacter(char character) {
-    DCHECK_EQ(m_type, Character);
-    m_data.push_back(character);
+  void AppendToCharacter(char character) {
+    DCHECK_EQ(type_, kCharacter);
+    data_.push_back(character);
   }
 
-  void appendToCharacter(UChar character) {
-    DCHECK_EQ(m_type, Character);
-    m_data.push_back(character);
-    m_orAllData |= character;
+  void AppendToCharacter(UChar character) {
+    DCHECK_EQ(type_, kCharacter);
+    data_.push_back(character);
+    or_all_data_ |= character;
   }
 
-  void appendToCharacter(const Vector<LChar, 32>& characters) {
-    DCHECK_EQ(m_type, Character);
-    m_data.appendVector(characters);
+  void AppendToCharacter(const Vector<LChar, 32>& characters) {
+    DCHECK_EQ(type_, kCharacter);
+    data_.AppendVector(characters);
   }
 
   /* Comment Tokens */
 
-  const DataVector& comment() const {
-    DCHECK_EQ(m_type, Comment);
-    return m_data;
+  const DataVector& Comment() const {
+    DCHECK_EQ(type_, kComment);
+    return data_;
   }
 
-  void beginComment() {
-    DCHECK_EQ(m_type, Uninitialized);
-    m_type = Comment;
+  void BeginComment() {
+    DCHECK_EQ(type_, kUninitialized);
+    type_ = kComment;
   }
 
-  void appendToComment(UChar character) {
+  void AppendToComment(UChar character) {
     DCHECK(character);
-    DCHECK_EQ(m_type, Comment);
-    m_data.push_back(character);
-    m_orAllData |= character;
+    DCHECK_EQ(type_, kComment);
+    data_.push_back(character);
+    or_all_data_ |= character;
   }
 
   // Only for XSSAuditor
-  void eraseCharacters() {
-    DCHECK_EQ(m_type, Character);
-    m_data.clear();
-    m_orAllData = 0;
+  void EraseCharacters() {
+    DCHECK_EQ(type_, kCharacter);
+    data_.Clear();
+    or_all_data_ = 0;
   }
 
  private:
-  TokenType m_type;
-  Attribute::Range m_range;  // Always starts at zero.
-  int m_baseOffset;
-  DataVector m_data;
-  UChar m_orAllData;
+  TokenType type_;
+  Attribute::Range range_;  // Always starts at zero.
+  int base_offset_;
+  DataVector data_;
+  UChar or_all_data_;
 
   // For StartTag and EndTag
-  bool m_selfClosing;
-  AttributeList m_attributes;
+  bool self_closing_;
+  AttributeList attributes_;
 
   // A pointer into m_attributes used during lexing.
-  Attribute* m_currentAttribute;
+  Attribute* current_attribute_;
 
   // For DOCTYPE
-  std::unique_ptr<DoctypeData> m_doctypeData;
+  std::unique_ptr<DoctypeData> doctype_data_;
 };
 
 #ifndef NDEBUG
-const char* toString(HTMLToken::TokenType);
+const char* ToString(HTMLToken::TokenType);
 #endif
 
 }  // namespace blink

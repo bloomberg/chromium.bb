@@ -15,93 +15,93 @@ namespace content {
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
   switch (type_) {
-    case WebCursorInfo::TypePointer:
+    case WebCursorInfo::kTypePointer:
       return ui::kCursorPointer;
-    case WebCursorInfo::TypeCross:
+    case WebCursorInfo::kTypeCross:
       return ui::kCursorCross;
-    case WebCursorInfo::TypeHand:
+    case WebCursorInfo::kTypeHand:
       return ui::kCursorHand;
-    case WebCursorInfo::TypeIBeam:
+    case WebCursorInfo::kTypeIBeam:
       return ui::kCursorIBeam;
-    case WebCursorInfo::TypeWait:
+    case WebCursorInfo::kTypeWait:
       return ui::kCursorWait;
-    case WebCursorInfo::TypeHelp:
+    case WebCursorInfo::kTypeHelp:
       return ui::kCursorHelp;
-    case WebCursorInfo::TypeEastResize:
+    case WebCursorInfo::kTypeEastResize:
       return ui::kCursorEastResize;
-    case WebCursorInfo::TypeNorthResize:
+    case WebCursorInfo::kTypeNorthResize:
       return ui::kCursorNorthResize;
-    case WebCursorInfo::TypeNorthEastResize:
+    case WebCursorInfo::kTypeNorthEastResize:
       return ui::kCursorNorthEastResize;
-    case WebCursorInfo::TypeNorthWestResize:
+    case WebCursorInfo::kTypeNorthWestResize:
       return ui::kCursorNorthWestResize;
-    case WebCursorInfo::TypeSouthResize:
+    case WebCursorInfo::kTypeSouthResize:
       return ui::kCursorSouthResize;
-    case WebCursorInfo::TypeSouthEastResize:
+    case WebCursorInfo::kTypeSouthEastResize:
       return ui::kCursorSouthEastResize;
-    case WebCursorInfo::TypeSouthWestResize:
+    case WebCursorInfo::kTypeSouthWestResize:
       return ui::kCursorSouthWestResize;
-    case WebCursorInfo::TypeWestResize:
+    case WebCursorInfo::kTypeWestResize:
       return ui::kCursorWestResize;
-    case WebCursorInfo::TypeNorthSouthResize:
+    case WebCursorInfo::kTypeNorthSouthResize:
       return ui::kCursorNorthSouthResize;
-    case WebCursorInfo::TypeEastWestResize:
+    case WebCursorInfo::kTypeEastWestResize:
       return ui::kCursorEastWestResize;
-    case WebCursorInfo::TypeNorthEastSouthWestResize:
+    case WebCursorInfo::kTypeNorthEastSouthWestResize:
       return ui::kCursorNorthEastSouthWestResize;
-    case WebCursorInfo::TypeNorthWestSouthEastResize:
+    case WebCursorInfo::kTypeNorthWestSouthEastResize:
       return ui::kCursorNorthWestSouthEastResize;
-    case WebCursorInfo::TypeColumnResize:
+    case WebCursorInfo::kTypeColumnResize:
       return ui::kCursorColumnResize;
-    case WebCursorInfo::TypeRowResize:
+    case WebCursorInfo::kTypeRowResize:
       return ui::kCursorRowResize;
-    case WebCursorInfo::TypeMiddlePanning:
+    case WebCursorInfo::kTypeMiddlePanning:
       return ui::kCursorMiddlePanning;
-    case WebCursorInfo::TypeEastPanning:
+    case WebCursorInfo::kTypeEastPanning:
       return ui::kCursorEastPanning;
-    case WebCursorInfo::TypeNorthPanning:
+    case WebCursorInfo::kTypeNorthPanning:
       return ui::kCursorNorthPanning;
-    case WebCursorInfo::TypeNorthEastPanning:
+    case WebCursorInfo::kTypeNorthEastPanning:
       return ui::kCursorNorthEastPanning;
-    case WebCursorInfo::TypeNorthWestPanning:
+    case WebCursorInfo::kTypeNorthWestPanning:
       return ui::kCursorNorthWestPanning;
-    case WebCursorInfo::TypeSouthPanning:
+    case WebCursorInfo::kTypeSouthPanning:
       return ui::kCursorSouthPanning;
-    case WebCursorInfo::TypeSouthEastPanning:
+    case WebCursorInfo::kTypeSouthEastPanning:
       return ui::kCursorSouthEastPanning;
-    case WebCursorInfo::TypeSouthWestPanning:
+    case WebCursorInfo::kTypeSouthWestPanning:
       return ui::kCursorSouthWestPanning;
-    case WebCursorInfo::TypeWestPanning:
+    case WebCursorInfo::kTypeWestPanning:
       return ui::kCursorWestPanning;
-    case WebCursorInfo::TypeMove:
+    case WebCursorInfo::kTypeMove:
       return ui::kCursorMove;
-    case WebCursorInfo::TypeVerticalText:
+    case WebCursorInfo::kTypeVerticalText:
       return ui::kCursorVerticalText;
-    case WebCursorInfo::TypeCell:
+    case WebCursorInfo::kTypeCell:
       return ui::kCursorCell;
-    case WebCursorInfo::TypeContextMenu:
+    case WebCursorInfo::kTypeContextMenu:
       return ui::kCursorContextMenu;
-    case WebCursorInfo::TypeAlias:
+    case WebCursorInfo::kTypeAlias:
       return ui::kCursorAlias;
-    case WebCursorInfo::TypeProgress:
+    case WebCursorInfo::kTypeProgress:
       return ui::kCursorProgress;
-    case WebCursorInfo::TypeNoDrop:
+    case WebCursorInfo::kTypeNoDrop:
       return ui::kCursorNoDrop;
-    case WebCursorInfo::TypeCopy:
+    case WebCursorInfo::kTypeCopy:
       return ui::kCursorCopy;
-    case WebCursorInfo::TypeNone:
+    case WebCursorInfo::kTypeNone:
       return ui::kCursorNone;
-    case WebCursorInfo::TypeNotAllowed:
+    case WebCursorInfo::kTypeNotAllowed:
       return ui::kCursorNotAllowed;
-    case WebCursorInfo::TypeZoomIn:
+    case WebCursorInfo::kTypeZoomIn:
       return ui::kCursorZoomIn;
-    case WebCursorInfo::TypeZoomOut:
+    case WebCursorInfo::kTypeZoomOut:
       return ui::kCursorZoomOut;
-    case WebCursorInfo::TypeGrab:
+    case WebCursorInfo::kTypeGrab:
       return ui::kCursorGrab;
-    case WebCursorInfo::TypeGrabbing:
+    case WebCursorInfo::kTypeGrabbing:
       return ui::kCursorGrabbing;
-    case WebCursorInfo::TypeCustom: {
+    case WebCursorInfo::kTypeCustom: {
       ui::Cursor cursor(ui::kCursorCustom);
       cursor.SetPlatformCursor(GetPlatformCursor());
       return cursor;

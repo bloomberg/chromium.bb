@@ -12,28 +12,28 @@ namespace blink {
 
 class CSSFontVariationValue : public CSSValue {
  public:
-  static CSSFontVariationValue* create(const AtomicString& tag, float value) {
+  static CSSFontVariationValue* Create(const AtomicString& tag, float value) {
     return new CSSFontVariationValue(tag, value);
   }
 
-  const AtomicString& tag() const { return m_tag; }
-  float value() const { return m_value; }
-  String customCSSText() const;
+  const AtomicString& Tag() const { return tag_; }
+  float Value() const { return value_; }
+  String CustomCSSText() const;
 
-  bool equals(const CSSFontVariationValue&) const;
+  bool Equals(const CSSFontVariationValue&) const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValue::traceAfterDispatch(visitor);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  private:
   CSSFontVariationValue(const AtomicString& tag, float value);
 
-  AtomicString m_tag;
-  const float m_value;
+  AtomicString tag_;
+  const float value_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontVariationValue, isFontVariationValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontVariationValue, IsFontVariationValue());
 
 }  // namespace blink
 

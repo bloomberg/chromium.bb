@@ -37,37 +37,39 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLTexture() override;
 
-  static WebGLTexture* create(WebGLRenderingContextBase*);
+  static WebGLTexture* Create(WebGLRenderingContextBase*);
 
-  void setTarget(GLenum);
+  void SetTarget(GLenum);
 
-  GLenum getTarget() const { return m_target; }
+  GLenum GetTarget() const { return target_; }
 
-  bool hasEverBeenBound() const { return object() && m_target; }
+  bool HasEverBeenBound() const { return Object() && target_; }
 
-  static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
+  static GLint ComputeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
 
-  void updateLastUploadedVideo(WebMediaPlayer*);
-  unsigned lastUploadedVideoWidth() const { return m_lastUploadedVideoWidth; }
-  unsigned lastUploadedVideoHeight() const { return m_lastUploadedVideoHeight; }
+  void UpdateLastUploadedVideo(WebMediaPlayer*);
+  unsigned lastUploadedVideoWidth() const { return last_uploaded_video_width_; }
+  unsigned lastUploadedVideoHeight() const {
+    return last_uploaded_video_height_;
+  }
   double lastUploadedVideoTimestamp() const {
-    return m_lastUploadedVideoTimestamp;
+    return last_uploaded_video_timestamp_;
   }
 
  private:
   explicit WebGLTexture(WebGLRenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-  bool isTexture() const override { return true; }
+  bool IsTexture() const override { return true; }
 
-  int mapTargetToIndex(GLenum) const;
+  int MapTargetToIndex(GLenum) const;
 
-  GLenum m_target;
+  GLenum target_;
 
-  unsigned m_lastUploadedVideoWidth = 0;
-  unsigned m_lastUploadedVideoHeight = 0;
-  double m_lastUploadedVideoTimestamp = 0.0;
+  unsigned last_uploaded_video_width_ = 0;
+  unsigned last_uploaded_video_height_ = 0;
+  double last_uploaded_video_timestamp_ = 0.0;
 };
 
 }  // namespace blink

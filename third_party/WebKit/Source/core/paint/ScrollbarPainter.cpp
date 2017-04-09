@@ -12,35 +12,36 @@
 
 namespace blink {
 
-void ScrollbarPainter::paintPart(GraphicsContext& graphicsContext,
-                                 ScrollbarPart partType,
+void ScrollbarPainter::PaintPart(GraphicsContext& graphics_context,
+                                 ScrollbarPart part_type,
                                  const IntRect& rect) {
-  const LayoutScrollbarPart* partLayoutObject =
-      m_layoutScrollbar->getPart(partType);
-  if (!partLayoutObject)
+  const LayoutScrollbarPart* part_layout_object =
+      layout_scrollbar_->GetPart(part_type);
+  if (!part_layout_object)
     return;
-  paintIntoRect(*partLayoutObject, graphicsContext,
-                m_layoutScrollbar->location(), LayoutRect(rect));
+  PaintIntoRect(*part_layout_object, graphics_context,
+                layout_scrollbar_->Location(), LayoutRect(rect));
 }
 
-void ScrollbarPainter::paintIntoRect(
-    const LayoutScrollbarPart& layoutScrollbarPart,
-    GraphicsContext& graphicsContext,
-    const LayoutPoint& paintOffset,
+void ScrollbarPainter::PaintIntoRect(
+    const LayoutScrollbarPart& layout_scrollbar_part,
+    GraphicsContext& graphics_context,
+    const LayoutPoint& paint_offset,
     const LayoutRect& rect) {
   // Make sure our dimensions match the rect.
   // FIXME: Setting these is a bad layering violation!
-  const_cast<LayoutScrollbarPart&>(layoutScrollbarPart)
-      .setLocation(rect.location() - toSize(paintOffset));
-  const_cast<LayoutScrollbarPart&>(layoutScrollbarPart).setWidth(rect.width());
-  const_cast<LayoutScrollbarPart&>(layoutScrollbarPart)
-      .setHeight(rect.height());
+  const_cast<LayoutScrollbarPart&>(layout_scrollbar_part)
+      .SetLocation(rect.Location() - ToSize(paint_offset));
+  const_cast<LayoutScrollbarPart&>(layout_scrollbar_part)
+      .SetWidth(rect.Width());
+  const_cast<LayoutScrollbarPart&>(layout_scrollbar_part)
+      .SetHeight(rect.Height());
 
-  PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect),
-                      PaintPhaseForeground, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
-  ObjectPainter(layoutScrollbarPart)
-      .paintAllPhasesAtomically(paintInfo, paintOffset);
+  PaintInfo paint_info(graphics_context, PixelSnappedIntRect(rect),
+                       kPaintPhaseForeground, kGlobalPaintNormalPhase,
+                       kPaintLayerNoFlag);
+  ObjectPainter(layout_scrollbar_part)
+      .PaintAllPhasesAtomically(paint_info, paint_offset);
 }
 
 }  // namespace blink

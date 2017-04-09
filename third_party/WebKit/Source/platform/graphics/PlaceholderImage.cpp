@@ -25,47 +25,47 @@ const RGBA32 kFillColor = 0x66808080;
 
 PlaceholderImage::~PlaceholderImage() {}
 
-sk_sp<SkImage> PlaceholderImage::imageForCurrentFrame() {
-  if (m_imageForCurrentFrame)
-    return m_imageForCurrentFrame;
+sk_sp<SkImage> PlaceholderImage::ImageForCurrentFrame() {
+  if (image_for_current_frame_)
+    return image_for_current_frame_;
 
-  const FloatRect destRect(0.0f, 0.0f, static_cast<float>(m_size.width()),
-                           static_cast<float>(m_size.height()));
-  PaintRecordBuilder builder(destRect);
-  GraphicsContext& context = builder.context();
-  context.beginRecording(destRect);
+  const FloatRect dest_rect(0.0f, 0.0f, static_cast<float>(size_.Width()),
+                            static_cast<float>(size_.Height()));
+  PaintRecordBuilder builder(dest_rect);
+  GraphicsContext& context = builder.Context();
+  context.BeginRecording(dest_rect);
 
-  context.setFillColor(kFillColor);
-  context.fillRect(destRect);
+  context.SetFillColor(kFillColor);
+  context.FillRect(dest_rect);
 
-  m_imageForCurrentFrame = SkImage::MakeFromPicture(
-      ToSkPicture(builder.endRecording()),
-      SkISize::Make(m_size.width(), m_size.height()), nullptr, nullptr,
+  image_for_current_frame_ = SkImage::MakeFromPicture(
+      ToSkPicture(builder.EndRecording()),
+      SkISize::Make(size_.Width(), size_.Height()), nullptr, nullptr,
       SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
 
-  return m_imageForCurrentFrame;
+  return image_for_current_frame_;
 }
 
-void PlaceholderImage::draw(PaintCanvas* canvas,
-                            const PaintFlags& baseFlags,
-                            const FloatRect& destRect,
-                            const FloatRect& srcRect,
+void PlaceholderImage::Draw(PaintCanvas* canvas,
+                            const PaintFlags& base_flags,
+                            const FloatRect& dest_rect,
+                            const FloatRect& src_rect,
                             RespectImageOrientationEnum,
                             ImageClampingMode) {
-  if (!srcRect.intersects(FloatRect(0.0f, 0.0f,
-                                    static_cast<float>(m_size.width()),
-                                    static_cast<float>(m_size.height())))) {
+  if (!src_rect.Intersects(FloatRect(0.0f, 0.0f,
+                                     static_cast<float>(size_.Width()),
+                                     static_cast<float>(size_.Height())))) {
     return;
   }
 
-  PaintFlags flags(baseFlags);
+  PaintFlags flags(base_flags);
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(kFillColor);
-  canvas->drawRect(destRect, flags);
+  canvas->drawRect(dest_rect, flags);
 }
 
-void PlaceholderImage::destroyDecodedData() {
-  m_imageForCurrentFrame.reset();
+void PlaceholderImage::DestroyDecodedData() {
+  image_for_current_frame_.reset();
 }
 
 }  // namespace blink

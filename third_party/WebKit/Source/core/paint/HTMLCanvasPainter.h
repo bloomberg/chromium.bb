@@ -17,12 +17,12 @@ class HTMLCanvasPainter {
   STACK_ALLOCATED();
 
  public:
-  HTMLCanvasPainter(const LayoutHTMLCanvas& layoutHTMLCanvas)
-      : m_layoutHTMLCanvas(layoutHTMLCanvas) {}
-  void paintReplaced(const PaintInfo&, const LayoutPoint&);
+  HTMLCanvasPainter(const LayoutHTMLCanvas& layout_html_canvas)
+      : layout_html_canvas_(layout_html_canvas) {}
+  void PaintReplaced(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const LayoutHTMLCanvas& m_layoutHTMLCanvas;
+  const LayoutHTMLCanvas& layout_html_canvas_;
 };
 
 }  // namespace blink

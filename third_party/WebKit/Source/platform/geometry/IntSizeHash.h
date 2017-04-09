@@ -32,25 +32,25 @@ struct DefaultHash<blink::IntSize> {
   STATIC_ONLY(DefaultHash);
   struct Hash {
     STATIC_ONLY(Hash);
-    static unsigned hash(const blink::IntSize& key) {
-      return hashInts(key.width(), key.height());
+    static unsigned GetHash(const blink::IntSize& key) {
+      return HashInts(key.Width(), key.Height());
     }
-    static bool equal(const blink::IntSize& a, const blink::IntSize& b) {
+    static bool Equal(const blink::IntSize& a, const blink::IntSize& b) {
       return a == b;
     }
-    static const bool safeToCompareToEmptyOrDeleted = true;
+    static const bool safe_to_compare_to_empty_or_deleted = true;
   };
 };
 
 template <>
 struct HashTraits<blink::IntSize> : GenericHashTraits<blink::IntSize> {
   STATIC_ONLY(HashTraits);
-  static const bool emptyValueIsZero = true;
-  static void constructDeletedValue(blink::IntSize& slot, bool) {
+  static const bool kEmptyValueIsZero = true;
+  static void ConstructDeletedValue(blink::IntSize& slot, bool) {
     new (NotNull, &slot) blink::IntSize(-1, -1);
   }
-  static bool isDeletedValue(const blink::IntSize& value) {
-    return value.width() == -1 && value.height() == -1;
+  static bool IsDeletedValue(const blink::IntSize& value) {
+    return value.Width() == -1 && value.Height() == -1;
   }
 };
 

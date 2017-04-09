@@ -12,48 +12,48 @@
 namespace blink {
 
 NavigatorNetworkInformation::NavigatorNetworkInformation(Navigator& navigator)
-    : ContextClient(navigator.frame()) {}
+    : ContextClient(navigator.GetFrame()) {}
 
-NavigatorNetworkInformation& NavigatorNetworkInformation::from(
+NavigatorNetworkInformation& NavigatorNetworkInformation::From(
     Navigator& navigator) {
   NavigatorNetworkInformation* supplement =
-      toNavigatorNetworkInformation(navigator);
+      ToNavigatorNetworkInformation(navigator);
   if (!supplement) {
     supplement = new NavigatorNetworkInformation(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 NavigatorNetworkInformation*
-NavigatorNetworkInformation::toNavigatorNetworkInformation(
+NavigatorNetworkInformation::ToNavigatorNetworkInformation(
     Navigator& navigator) {
   return static_cast<NavigatorNetworkInformation*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
 }
 
-const char* NavigatorNetworkInformation::supplementName() {
+const char* NavigatorNetworkInformation::SupplementName() {
   return "NavigatorNetworkInformation";
 }
 
 NetworkInformation* NavigatorNetworkInformation::connection(
     Navigator& navigator) {
-  return NavigatorNetworkInformation::from(navigator).connection();
+  return NavigatorNetworkInformation::From(navigator).connection();
 }
 
 NetworkInformation* NavigatorNetworkInformation::connection() {
-  if (!m_connection && frame()) {
-    ASSERT(frame()->domWindow());
-    m_connection =
-        NetworkInformation::create(frame()->domWindow()->getExecutionContext());
+  if (!connection_ && GetFrame()) {
+    ASSERT(GetFrame()->DomWindow());
+    connection_ = NetworkInformation::Create(
+        GetFrame()->DomWindow()->GetExecutionContext());
   }
-  return m_connection.get();
+  return connection_.Get();
 }
 
 DEFINE_TRACE(NavigatorNetworkInformation) {
-  visitor->trace(m_connection);
-  Supplement<Navigator>::trace(visitor);
-  ContextClient::trace(visitor);
+  visitor->Trace(connection_);
+  Supplement<Navigator>::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

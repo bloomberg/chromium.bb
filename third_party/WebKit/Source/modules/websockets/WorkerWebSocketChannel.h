@@ -58,32 +58,32 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
   WTF_MAKE_NONCOPYABLE(WorkerWebSocketChannel);
 
  public:
-  static WebSocketChannel* create(WorkerGlobalScope& workerGlobalScope,
+  static WebSocketChannel* Create(WorkerGlobalScope& worker_global_scope,
                                   WebSocketChannelClient* client,
                                   std::unique_ptr<SourceLocation> location) {
-    return new WorkerWebSocketChannel(workerGlobalScope, client,
+    return new WorkerWebSocketChannel(worker_global_scope, client,
                                       std::move(location));
   }
   ~WorkerWebSocketChannel() override;
 
   // WebSocketChannel functions.
-  bool connect(const KURL&, const String& protocol) override;
-  void send(const CString&) override;
-  void send(const DOMArrayBuffer&,
-            unsigned byteOffset,
-            unsigned byteLength) override;
-  void send(PassRefPtr<BlobDataHandle>) override;
-  void sendTextAsCharVector(std::unique_ptr<Vector<char>>) override {
+  bool Connect(const KURL&, const String& protocol) override;
+  void Send(const CString&) override;
+  void Send(const DOMArrayBuffer&,
+            unsigned byte_offset,
+            unsigned byte_length) override;
+  void Send(PassRefPtr<BlobDataHandle>) override;
+  void SendTextAsCharVector(std::unique_ptr<Vector<char>>) override {
     NOTREACHED();
   }
-  void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>) override {
+  void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>) override {
     NOTREACHED();
   }
-  void close(int code, const String& reason) override;
-  void fail(const String& reason,
+  void Close(int code, const String& reason) override;
+  void Fail(const String& reason,
             MessageLevel,
             std::unique_ptr<SourceLocation>) override;
-  void disconnect() override;  // Will suppress didClose().
+  void Disconnect() override;  // Will suppress didClose().
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -100,41 +100,41 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     ~Peer() override;
 
     // SourceLocation parameter may be shown when the connection fails.
-    bool initialize(std::unique_ptr<SourceLocation>, ThreadableLoadingContext*);
+    bool Initialize(std::unique_ptr<SourceLocation>, ThreadableLoadingContext*);
 
-    bool connect(const KURL&, const String& protocol);
-    void sendTextAsCharVector(std::unique_ptr<Vector<char>>);
-    void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
-    void sendBlob(PassRefPtr<BlobDataHandle>);
-    void close(int code, const String& reason);
-    void fail(const String& reason,
+    bool Connect(const KURL&, const String& protocol);
+    void SendTextAsCharVector(std::unique_ptr<Vector<char>>);
+    void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
+    void SendBlob(PassRefPtr<BlobDataHandle>);
+    void Close(int code, const String& reason);
+    void Fail(const String& reason,
               MessageLevel,
               std::unique_ptr<SourceLocation>);
-    void disconnect();
+    void Disconnect();
 
     DECLARE_VIRTUAL_TRACE();
     // Promptly clear connection to bridge + loader proxy.
     EAGERLY_FINALIZE();
 
     // WebSocketChannelClient functions.
-    void didConnect(const String& subprotocol,
+    void DidConnect(const String& subprotocol,
                     const String& extensions) override;
-    void didReceiveTextMessage(const String& payload) override;
-    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) override;
-    void didConsumeBufferedAmount(uint64_t) override;
-    void didStartClosingHandshake() override;
-    void didClose(ClosingHandshakeCompletionStatus,
+    void DidReceiveTextMessage(const String& payload) override;
+    void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>>) override;
+    void DidConsumeBufferedAmount(uint64_t) override;
+    void DidStartClosingHandshake() override;
+    void DidClose(ClosingHandshakeCompletionStatus,
                   unsigned short code,
                   const String& reason) override;
-    void didError() override;
+    void DidError() override;
 
     // WorkerThreadLifecycleObserver function.
-    void contextDestroyed(WorkerThreadLifecycleContext*) override;
+    void ContextDestroyed(WorkerThreadLifecycleContext*) override;
 
    private:
-    CrossThreadWeakPersistent<Bridge> m_bridge;
-    RefPtr<WorkerLoaderProxy> m_loaderProxy;
-    Member<WebSocketChannel> m_mainWebSocketChannel;
+    CrossThreadWeakPersistent<Bridge> bridge_;
+    RefPtr<WorkerLoaderProxy> loader_proxy_;
+    Member<WebSocketChannel> main_web_socket_channel_;
   };
 
   // Bridge for Peer. Running on the worker thread.
@@ -146,20 +146,22 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     ~Bridge();
 
     // SourceLocation parameter may be shown when the connection fails.
-    bool connect(std::unique_ptr<SourceLocation>,
+    bool Connect(std::unique_ptr<SourceLocation>,
                  const KURL&,
                  const String& protocol);
 
-    void send(const CString& message);
-    void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength);
-    void send(PassRefPtr<BlobDataHandle>);
-    void close(int code, const String& reason);
-    void fail(const String& reason,
+    void Send(const CString& message);
+    void Send(const DOMArrayBuffer&,
+              unsigned byte_offset,
+              unsigned byte_length);
+    void Send(PassRefPtr<BlobDataHandle>);
+    void Close(int code, const String& reason);
+    void Fail(const String& reason,
               MessageLevel,
               std::unique_ptr<SourceLocation>);
-    void disconnect();
+    void Disconnect();
 
-    void connectOnMainThread(std::unique_ptr<SourceLocation>,
+    void ConnectOnMainThread(std::unique_ptr<SourceLocation>,
                              RefPtr<WorkerLoaderProxy>,
                              WorkerThreadLifecycleContext*,
                              const KURL&,
@@ -167,17 +169,17 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
                              WebSocketChannelSyncHelper*);
 
     // Returns null when |disconnect| has already been called.
-    WebSocketChannelClient* client() { return m_client; }
+    WebSocketChannelClient* Client() { return client_; }
 
     DECLARE_TRACE();
     // Promptly clear connection to peer + loader proxy.
     EAGERLY_FINALIZE();
 
    private:
-    Member<WebSocketChannelClient> m_client;
-    Member<WorkerGlobalScope> m_workerGlobalScope;
-    RefPtr<WorkerLoaderProxy> m_loaderProxy;
-    CrossThreadPersistent<Peer> m_peer;
+    Member<WebSocketChannelClient> client_;
+    Member<WorkerGlobalScope> worker_global_scope_;
+    RefPtr<WorkerLoaderProxy> loader_proxy_;
+    CrossThreadPersistent<Peer> peer_;
   };
 
  private:
@@ -185,8 +187,8 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
                          WebSocketChannelClient*,
                          std::unique_ptr<SourceLocation>);
 
-  Member<Bridge> m_bridge;
-  std::unique_ptr<SourceLocation> m_locationAtConnection;
+  Member<Bridge> bridge_;
+  std::unique_ptr<SourceLocation> location_at_connection_;
 };
 
 }  // namespace blink

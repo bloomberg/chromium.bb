@@ -47,154 +47,154 @@ namespace blink {
 HTMLImportChild::HTMLImportChild(const KURL& url,
                                  HTMLImportLoader* loader,
                                  SyncMode sync)
-    : HTMLImport(sync), m_url(url), m_loader(loader), m_client(nullptr) {
+    : HTMLImport(sync), url_(url), loader_(loader), client_(nullptr) {
   DCHECK(loader);
 }
 
 HTMLImportChild::~HTMLImportChild() {}
 
-void HTMLImportChild::ownerInserted() {
-  if (!m_loader->isDone())
+void HTMLImportChild::OwnerInserted() {
+  if (!loader_->IsDone())
     return;
 
-  DCHECK(root());
-  DCHECK(root()->document());
-  root()->document()->styleEngine().htmlImportAddedOrRemoved();
+  DCHECK(Root());
+  DCHECK(Root()->GetDocument());
+  Root()->GetDocument()->GetStyleEngine().HtmlImportAddedOrRemoved();
 }
 
-void HTMLImportChild::didShareLoader() {
-  createCustomElementMicrotaskStepIfNeeded();
-  stateWillChange();
+void HTMLImportChild::DidShareLoader() {
+  CreateCustomElementMicrotaskStepIfNeeded();
+  StateWillChange();
 }
 
-void HTMLImportChild::didStartLoading() {
-  createCustomElementMicrotaskStepIfNeeded();
+void HTMLImportChild::DidStartLoading() {
+  CreateCustomElementMicrotaskStepIfNeeded();
 }
 
-void HTMLImportChild::didFinish() {
-  if (m_client)
-    m_client->didFinish();
+void HTMLImportChild::DidFinish() {
+  if (client_)
+    client_->DidFinish();
 }
 
-void HTMLImportChild::didFinishLoading() {
-  stateWillChange();
-  if (document() && document()->styleSheets().length() > 0)
-    UseCounter::count(root()->document(),
-                      UseCounter::HTMLImportsHasStyleSheets);
-  V0CustomElement::didFinishLoadingImport(*(root()->document()));
+void HTMLImportChild::DidFinishLoading() {
+  StateWillChange();
+  if (GetDocument() && GetDocument()->StyleSheets().length() > 0)
+    UseCounter::Count(Root()->GetDocument(),
+                      UseCounter::kHTMLImportsHasStyleSheets);
+  V0CustomElement::DidFinishLoadingImport(*(Root()->GetDocument()));
 }
 
-void HTMLImportChild::didFinishUpgradingCustomElements() {
-  stateWillChange();
-  m_customElementMicrotaskStep.clear();
+void HTMLImportChild::DidFinishUpgradingCustomElements() {
+  StateWillChange();
+  custom_element_microtask_step_.Clear();
 }
 
-void HTMLImportChild::dispose() {
-  invalidateCustomElementMicrotaskStep();
-  if (parent())
-    parent()->removeChild(this);
+void HTMLImportChild::Dispose() {
+  InvalidateCustomElementMicrotaskStep();
+  if (Parent())
+    Parent()->RemoveChild(this);
 
-  DCHECK(m_loader);
-  m_loader->removeImport(this);
-  m_loader = nullptr;
+  DCHECK(loader_);
+  loader_->RemoveImport(this);
+  loader_ = nullptr;
 
-  if (m_client) {
-    m_client->importChildWasDisposed(this);
-    m_client = nullptr;
+  if (client_) {
+    client_->ImportChildWasDisposed(this);
+    client_ = nullptr;
   }
 }
 
-Document* HTMLImportChild::document() const {
-  DCHECK(m_loader);
-  return m_loader->document();
+Document* HTMLImportChild::GetDocument() const {
+  DCHECK(loader_);
+  return loader_->GetDocument();
 }
 
-void HTMLImportChild::stateWillChange() {
-  toHTMLImportTreeRoot(root())->scheduleRecalcState();
+void HTMLImportChild::StateWillChange() {
+  ToHTMLImportTreeRoot(Root())->ScheduleRecalcState();
 }
 
-void HTMLImportChild::stateDidChange() {
-  HTMLImport::stateDidChange();
+void HTMLImportChild::StateDidChange() {
+  HTMLImport::StateDidChange();
 
-  if (state().isReady())
-    didFinish();
+  if (GetState().IsReady())
+    DidFinish();
 }
 
-void HTMLImportChild::invalidateCustomElementMicrotaskStep() {
-  if (!m_customElementMicrotaskStep)
+void HTMLImportChild::InvalidateCustomElementMicrotaskStep() {
+  if (!custom_element_microtask_step_)
     return;
-  m_customElementMicrotaskStep->invalidate();
-  m_customElementMicrotaskStep.clear();
+  custom_element_microtask_step_->Invalidate();
+  custom_element_microtask_step_.Clear();
 }
 
-void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded() {
-  DCHECK(!m_customElementMicrotaskStep);
+void HTMLImportChild::CreateCustomElementMicrotaskStepIfNeeded() {
+  DCHECK(!custom_element_microtask_step_);
 
-  if (!hasFinishedLoading() && !formsCycle()) {
-    m_customElementMicrotaskStep = V0CustomElement::didCreateImport(this);
+  if (!HasFinishedLoading() && !FormsCycle()) {
+    custom_element_microtask_step_ = V0CustomElement::DidCreateImport(this);
   }
 }
 
-bool HTMLImportChild::hasFinishedLoading() const {
-  DCHECK(m_loader);
+bool HTMLImportChild::HasFinishedLoading() const {
+  DCHECK(loader_);
 
-  return m_loader->isDone() && m_loader->microtaskQueue()->isEmpty() &&
-         !m_customElementMicrotaskStep;
+  return loader_->IsDone() && loader_->MicrotaskQueue()->IsEmpty() &&
+         !custom_element_microtask_step_;
 }
 
-HTMLImportLoader* HTMLImportChild::loader() const {
+HTMLImportLoader* HTMLImportChild::Loader() const {
   // This should never be called after dispose().
-  DCHECK(m_loader);
-  return m_loader;
+  DCHECK(loader_);
+  return loader_;
 }
 
-void HTMLImportChild::setClient(HTMLImportChildClient* client) {
+void HTMLImportChild::SetClient(HTMLImportChildClient* client) {
   DCHECK(client);
-  DCHECK(!m_client);
-  m_client = client;
+  DCHECK(!client_);
+  client_ = client;
 }
 
-HTMLLinkElement* HTMLImportChild::link() const {
-  if (!m_client)
+HTMLLinkElement* HTMLImportChild::Link() const {
+  if (!client_)
     return nullptr;
-  return m_client->link();
+  return client_->Link();
 }
 
 // Ensuring following invariants against the import tree:
 // - HTMLImportChild::firstImport() is the "first import" of the DFS order of
 //   the import tree.
 // - The "first import" manages all the children that is loaded by the document.
-void HTMLImportChild::normalize() {
-  if (!loader()->isFirstImport(this) &&
-      this->precedes(loader()->firstImport())) {
-    HTMLImportChild* oldFirst = loader()->firstImport();
-    loader()->moveToFirst(this);
-    takeChildrenFrom(oldFirst);
+void HTMLImportChild::Normalize() {
+  if (!Loader()->IsFirstImport(this) &&
+      this->Precedes(Loader()->FirstImport())) {
+    HTMLImportChild* old_first = Loader()->FirstImport();
+    Loader()->MoveToFirst(this);
+    TakeChildrenFrom(old_first);
   }
 
-  for (HTMLImportChild* child = toHTMLImportChild(firstChild()); child;
-       child = toHTMLImportChild(child->next())) {
-    if (child->formsCycle())
-      child->invalidateCustomElementMicrotaskStep();
-    child->normalize();
+  for (HTMLImportChild* child = ToHTMLImportChild(FirstChild()); child;
+       child = ToHTMLImportChild(child->Next())) {
+    if (child->FormsCycle())
+      child->InvalidateCustomElementMicrotaskStep();
+    child->Normalize();
   }
 }
 
 #if !defined(NDEBUG)
-void HTMLImportChild::showThis() {
-  bool isFirst = loader() ? loader()->isFirstImport(this) : false;
-  HTMLImport::showThis();
-  fprintf(stderr, " loader=%p first=%d, step=%p sync=%s url=%s", m_loader.get(),
-          isFirst, m_customElementMicrotaskStep.get(), isSync() ? "Y" : "N",
-          url().getString().utf8().data());
+void HTMLImportChild::ShowThis() {
+  bool is_first = Loader() ? Loader()->IsFirstImport(this) : false;
+  HTMLImport::ShowThis();
+  fprintf(stderr, " loader=%p first=%d, step=%p sync=%s url=%s", loader_.Get(),
+          is_first, custom_element_microtask_step_.Get(), IsSync() ? "Y" : "N",
+          Url().GetString().Utf8().Data());
 }
 #endif
 
 DEFINE_TRACE(HTMLImportChild) {
-  visitor->trace(m_customElementMicrotaskStep);
-  visitor->trace(m_loader);
-  visitor->trace(m_client);
-  HTMLImport::trace(visitor);
+  visitor->Trace(custom_element_microtask_step_);
+  visitor->Trace(loader_);
+  visitor->Trace(client_);
+  HTMLImport::Trace(visitor);
 }
 
 }  // namespace blink

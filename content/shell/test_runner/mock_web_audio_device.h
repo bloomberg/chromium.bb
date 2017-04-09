@@ -16,10 +16,10 @@ class MockWebAudioDevice : public blink::WebAudioDevice {
   ~MockWebAudioDevice() override;
 
   // blink::WebAudioDevice:
-  void start() override;
-  void stop() override;
-  double sampleRate() override;
-  int framesPerBuffer() override;
+  void Start() override;
+  void Stop() override;
+  double SampleRate() override;
+  int FramesPerBuffer() override;
 
  private:
   double sample_rate_;

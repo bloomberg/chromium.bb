@@ -37,43 +37,43 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
 
  public:
-  JPEGImageDecoder(AlphaOption, const ColorBehavior&, size_t maxDecodedBytes);
+  JPEGImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~JPEGImageDecoder() override;
 
   // ImageDecoder:
-  String filenameExtension() const override { return "jpg"; }
-  void onSetData(SegmentReader* data) override;
-  IntSize decodedSize() const override { return m_decodedSize; }
-  bool setSize(unsigned width, unsigned height) override;
-  IntSize decodedYUVSize(int component) const override;
-  size_t decodedYUVWidthBytes(int component) const override;
-  bool canDecodeToYUV() override;
-  bool decodeToYUV() override;
-  void setImagePlanes(std::unique_ptr<ImagePlanes>) override;
-  bool hasImagePlanes() const { return m_imagePlanes.get(); }
+  String FilenameExtension() const override { return "jpg"; }
+  void OnSetData(SegmentReader* data) override;
+  IntSize DecodedSize() const override { return decoded_size_; }
+  bool SetSize(unsigned width, unsigned height) override;
+  IntSize DecodedYUVSize(int component) const override;
+  size_t DecodedYUVWidthBytes(int component) const override;
+  bool CanDecodeToYUV() override;
+  bool DecodeToYUV() override;
+  void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
+  bool HasImagePlanes() const { return image_planes_.get(); }
 
-  bool outputScanlines();
-  unsigned desiredScaleNumerator() const;
-  void complete();
+  bool OutputScanlines();
+  unsigned DesiredScaleNumerator() const;
+  void Complete();
 
-  void setOrientation(ImageOrientation orientation) {
-    m_orientation = orientation;
+  void SetOrientation(ImageOrientation orientation) {
+    orientation_ = orientation;
   }
-  void setDecodedSize(unsigned width, unsigned height);
+  void SetDecodedSize(unsigned width, unsigned height);
 
  private:
   // ImageDecoder:
-  void decodeSize() override { decode(true); }
-  void decode(size_t) override { decode(false); }
+  void DecodeSize() override { Decode(true); }
+  void Decode(size_t) override { Decode(false); }
 
   // Decodes the image.  If |onlySize| is true, stops decoding after
   // calculating the image size.  If decoding fails but there is no more
   // data coming, sets the "decode failure" flag.
-  void decode(bool onlySize);
+  void Decode(bool only_size);
 
-  std::unique_ptr<JPEGImageReader> m_reader;
-  std::unique_ptr<ImagePlanes> m_imagePlanes;
-  IntSize m_decodedSize;
+  std::unique_ptr<JPEGImageReader> reader_;
+  std::unique_ptr<ImagePlanes> image_planes_;
+  IntSize decoded_size_;
 };
 
 }  // namespace blink

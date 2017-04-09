@@ -37,320 +37,323 @@
 namespace blink {
 
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
-  unsigned unsignedVariable;
+  unsigned unsigned_variable;
   void* pointers[3];
-  LayoutUnit layoutVariables[6];
+  LayoutUnit layout_variables[6];
 };
 
 static_assert(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox),
               "RootInlineBox should stay small");
 
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
-static EllipsisBoxMap* gEllipsisBoxMap = nullptr;
+static EllipsisBoxMap* g_ellipsis_box_map = nullptr;
 
 RootInlineBox::RootInlineBox(LineLayoutItem block)
-    : InlineFlowBox(block), m_lineBreakPos(0), m_lineBreakObj(nullptr) {
-  setIsHorizontal(block.isHorizontalWritingMode());
+    : InlineFlowBox(block), line_break_pos_(0), line_break_obj_(nullptr) {
+  SetIsHorizontal(block.IsHorizontalWritingMode());
 }
 
-void RootInlineBox::destroy() {
-  detachEllipsisBox();
-  InlineFlowBox::destroy();
+void RootInlineBox::Destroy() {
+  DetachEllipsisBox();
+  InlineFlowBox::Destroy();
 }
 
-void RootInlineBox::detachEllipsisBox() {
-  if (hasEllipsisBox()) {
-    EllipsisBox* box = gEllipsisBoxMap->take(this);
-    box->setParent(nullptr);
-    box->destroy();
-    setHasEllipsisBox(false);
+void RootInlineBox::DetachEllipsisBox() {
+  if (HasEllipsisBox()) {
+    EllipsisBox* box = g_ellipsis_box_map->Take(this);
+    box->SetParent(nullptr);
+    box->Destroy();
+    SetHasEllipsisBox(false);
   }
 }
 
-LineBoxList* RootInlineBox::lineBoxes() const {
-  return block().lineBoxes();
+LineBoxList* RootInlineBox::LineBoxes() const {
+  return Block().LineBoxes();
 }
 
-void RootInlineBox::clearTruncation() {
-  if (hasEllipsisBox()) {
-    detachEllipsisBox();
-    InlineFlowBox::clearTruncation();
+void RootInlineBox::ClearTruncation() {
+  if (HasEllipsisBox()) {
+    DetachEllipsisBox();
+    InlineFlowBox::ClearTruncation();
   }
 }
 
-int RootInlineBox::baselinePosition(FontBaseline baselineType) const {
-  return boxModelObject().baselinePosition(
-      baselineType, isFirstLineStyle(),
-      isHorizontal() ? HorizontalLine : VerticalLine,
-      PositionOfInteriorLineBoxes);
+int RootInlineBox::BaselinePosition(FontBaseline baseline_type) const {
+  return BoxModelObject().BaselinePosition(
+      baseline_type, IsFirstLineStyle(),
+      IsHorizontal() ? kHorizontalLine : kVerticalLine,
+      kPositionOfInteriorLineBoxes);
 }
 
-LayoutUnit RootInlineBox::lineHeight() const {
-  return boxModelObject().lineHeight(
-      isFirstLineStyle(), isHorizontal() ? HorizontalLine : VerticalLine,
-      PositionOfInteriorLineBoxes);
+LayoutUnit RootInlineBox::LineHeight() const {
+  return BoxModelObject().LineHeight(
+      IsFirstLineStyle(), IsHorizontal() ? kHorizontalLine : kVerticalLine,
+      kPositionOfInteriorLineBoxes);
 }
 
-bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr,
-                                               LayoutUnit blockEdge,
-                                               LayoutUnit lineBoxEdge,
-                                               LayoutUnit ellipsisWidth) {
+bool RootInlineBox::LineCanAccommodateEllipsis(bool ltr,
+                                               LayoutUnit block_edge,
+                                               LayoutUnit line_box_edge,
+                                               LayoutUnit ellipsis_width) {
   // First sanity-check the unoverflowed width of the whole line to see if there
   // is sufficient room.
-  LayoutUnit delta = ltr ? lineBoxEdge - blockEdge : blockEdge - lineBoxEdge;
-  if (logicalWidth() - delta < ellipsisWidth)
+  LayoutUnit delta =
+      ltr ? line_box_edge - block_edge : block_edge - line_box_edge;
+  if (LogicalWidth() - delta < ellipsis_width)
     return false;
 
   // Next iterate over all the line boxes on the line. If we find a replaced
   // element that intersects then we refuse to accommodate the ellipsis.
   // Otherwise we're ok.
-  return InlineFlowBox::canAccommodateEllipsis(ltr, blockEdge, ellipsisWidth);
+  return InlineFlowBox::CanAccommodateEllipsis(ltr, block_edge, ellipsis_width);
 }
 
-LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,
+LayoutUnit RootInlineBox::PlaceEllipsis(const AtomicString& ellipsis_str,
                                         bool ltr,
-                                        LayoutUnit blockLeftEdge,
-                                        LayoutUnit blockRightEdge,
-                                        LayoutUnit ellipsisWidth,
-                                        LayoutUnit logicalLeftOffset,
-                                        bool foundBox) {
+                                        LayoutUnit block_left_edge,
+                                        LayoutUnit block_right_edge,
+                                        LayoutUnit ellipsis_width,
+                                        LayoutUnit logical_left_offset,
+                                        bool found_box) {
   // Create an ellipsis box if we don't already have one. If we already have one
   // we're just
   // here to blank out (truncate) the text boxes.
-  if (!foundBox) {
-    EllipsisBox* ellipsisBox = new EllipsisBox(
-        getLineLayoutItem(), ellipsisStr, this, ellipsisWidth, logicalHeight(),
-        location(), !prevRootBox(), isHorizontal());
+  if (!found_box) {
+    EllipsisBox* ellipsis_box = new EllipsisBox(
+        GetLineLayoutItem(), ellipsis_str, this, ellipsis_width,
+        LogicalHeight(), Location(), !PrevRootBox(), IsHorizontal());
 
-    if (!gEllipsisBoxMap)
-      gEllipsisBoxMap = new EllipsisBoxMap();
-    gEllipsisBoxMap->insert(this, ellipsisBox);
-    setHasEllipsisBox(true);
+    if (!g_ellipsis_box_map)
+      g_ellipsis_box_map = new EllipsisBoxMap();
+    g_ellipsis_box_map->insert(this, ellipsis_box);
+    SetHasEllipsisBox(true);
   }
 
   // FIXME: Do we need an RTL version of this?
-  LayoutUnit adjustedLogicalLeft = logicalLeftOffset + logicalLeft();
-  if (ltr &&
-      (adjustedLogicalLeft + logicalWidth() + ellipsisWidth) <=
-          blockRightEdge) {
-    if (hasEllipsisBox())
-      ellipsisBox()->setLogicalLeft(logicalLeft() + logicalWidth());
-    return logicalWidth() + ellipsisWidth;
+  LayoutUnit adjusted_logical_left = logical_left_offset + LogicalLeft();
+  if (ltr && (adjusted_logical_left + LogicalWidth() + ellipsis_width) <=
+                 block_right_edge) {
+    if (HasEllipsisBox())
+      GetEllipsisBox()->SetLogicalLeft(LogicalLeft() + LogicalWidth());
+    return LogicalWidth() + ellipsis_width;
   }
 
   // Now attempt to find the nearest glyph horizontally and place just to the
   // right (or left in RTL) of that glyph.  Mark all of the objects that
   // intersect the ellipsis box as not painting (as being truncated).
-  LayoutUnit truncatedWidth;
+  LayoutUnit truncated_width;
   LayoutUnit position =
-      placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth,
-                       truncatedWidth, foundBox, logicalLeftOffset);
-  if (hasEllipsisBox())
-    ellipsisBox()->setLogicalLeft(position);
-  return truncatedWidth;
+      PlaceEllipsisBox(ltr, block_left_edge, block_right_edge, ellipsis_width,
+                       truncated_width, found_box, logical_left_offset);
+  if (HasEllipsisBox())
+    GetEllipsisBox()->SetLogicalLeft(position);
+  return truncated_width;
 }
 
-LayoutUnit RootInlineBox::placeEllipsisBox(bool ltr,
-                                           LayoutUnit blockLeftEdge,
-                                           LayoutUnit blockRightEdge,
-                                           LayoutUnit ellipsisWidth,
-                                           LayoutUnit& truncatedWidth,
-                                           bool& foundBox,
-                                           LayoutUnit logicalLeftOffset) {
-  LayoutUnit result = InlineFlowBox::placeEllipsisBox(
-      ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth,
-      foundBox, logicalLeftOffset);
+LayoutUnit RootInlineBox::PlaceEllipsisBox(bool ltr,
+                                           LayoutUnit block_left_edge,
+                                           LayoutUnit block_right_edge,
+                                           LayoutUnit ellipsis_width,
+                                           LayoutUnit& truncated_width,
+                                           bool& found_box,
+                                           LayoutUnit logical_left_offset) {
+  LayoutUnit result = InlineFlowBox::PlaceEllipsisBox(
+      ltr, block_left_edge, block_right_edge, ellipsis_width, truncated_width,
+      found_box, logical_left_offset);
   if (result == -1) {
     result = ltr ? std::max<LayoutUnit>(
                        LayoutUnit(),
-                       blockRightEdge - ellipsisWidth - logicalLeftOffset)
-                 : blockLeftEdge - logicalLeftOffset;
-    truncatedWidth = blockRightEdge - blockLeftEdge - logicalLeftOffset;
+                       block_right_edge - ellipsis_width - logical_left_offset)
+                 : block_left_edge - logical_left_offset;
+    truncated_width = block_right_edge - block_left_edge - logical_left_offset;
   }
   return result;
 }
 
-void RootInlineBox::paint(const PaintInfo& paintInfo,
-                          const LayoutPoint& paintOffset,
-                          LayoutUnit lineTop,
-                          LayoutUnit lineBottom) const {
-  RootInlineBoxPainter(*this).paint(paintInfo, paintOffset, lineTop,
-                                    lineBottom);
+void RootInlineBox::Paint(const PaintInfo& paint_info,
+                          const LayoutPoint& paint_offset,
+                          LayoutUnit line_top,
+                          LayoutUnit line_bottom) const {
+  RootInlineBoxPainter(*this).Paint(paint_info, paint_offset, line_top,
+                                    line_bottom);
 }
 
-bool RootInlineBox::nodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& locationInContainer,
-                                const LayoutPoint& accumulatedOffset,
-                                LayoutUnit lineTop,
-                                LayoutUnit lineBottom) {
-  if (hasEllipsisBox() && visibleToHitTestRequest(result.hitTestRequest())) {
-    if (ellipsisBox()->nodeAtPoint(result, locationInContainer,
-                                   accumulatedOffset, lineTop, lineBottom)) {
-      getLineLayoutItem().updateHitTestResult(
+bool RootInlineBox::NodeAtPoint(HitTestResult& result,
+                                const HitTestLocation& location_in_container,
+                                const LayoutPoint& accumulated_offset,
+                                LayoutUnit line_top,
+                                LayoutUnit line_bottom) {
+  if (HasEllipsisBox() && VisibleToHitTestRequest(result.GetHitTestRequest())) {
+    if (GetEllipsisBox()->NodeAtPoint(result, location_in_container,
+                                      accumulated_offset, line_top,
+                                      line_bottom)) {
+      GetLineLayoutItem().UpdateHitTestResult(
           result,
-          locationInContainer.point() - toLayoutSize(accumulatedOffset));
+          location_in_container.Point() - ToLayoutSize(accumulated_offset));
       return true;
     }
   }
-  return InlineFlowBox::nodeAtPoint(result, locationInContainer,
-                                    accumulatedOffset, lineTop, lineBottom);
+  return InlineFlowBox::NodeAtPoint(result, location_in_container,
+                                    accumulated_offset, line_top, line_bottom);
 }
 
-void RootInlineBox::move(const LayoutSize& delta) {
-  InlineFlowBox::move(delta);
-  LayoutUnit blockDirectionDelta =
-      isHorizontal() ? delta.height() : delta.width();
-  m_lineTop += blockDirectionDelta;
-  m_lineBottom += blockDirectionDelta;
-  m_lineTopWithLeading += blockDirectionDelta;
-  m_lineBottomWithLeading += blockDirectionDelta;
-  m_selectionBottom += blockDirectionDelta;
-  if (hasEllipsisBox())
-    ellipsisBox()->move(delta);
+void RootInlineBox::Move(const LayoutSize& delta) {
+  InlineFlowBox::Move(delta);
+  LayoutUnit block_direction_delta =
+      IsHorizontal() ? delta.Height() : delta.Width();
+  line_top_ += block_direction_delta;
+  line_bottom_ += block_direction_delta;
+  line_top_with_leading_ += block_direction_delta;
+  line_bottom_with_leading_ += block_direction_delta;
+  selection_bottom_ += block_direction_delta;
+  if (HasEllipsisBox())
+    GetEllipsisBox()->Move(delta);
 }
 
-void RootInlineBox::childRemoved(InlineBox* box) {
-  if (box->getLineLayoutItem() == m_lineBreakObj)
-    setLineBreakInfo(0, 0, BidiStatus());
+void RootInlineBox::ChildRemoved(InlineBox* box) {
+  if (box->GetLineLayoutItem() == line_break_obj_)
+    SetLineBreakInfo(0, 0, BidiStatus());
 
-  for (RootInlineBox* prev = prevRootBox();
-       prev && prev->lineBreakObj() == box->getLineLayoutItem();
-       prev = prev->prevRootBox()) {
-    prev->setLineBreakInfo(0, 0, BidiStatus());
-    prev->markDirty();
+  for (RootInlineBox* prev = PrevRootBox();
+       prev && prev->LineBreakObj() == box->GetLineLayoutItem();
+       prev = prev->PrevRootBox()) {
+    prev->SetLineBreakInfo(0, 0, BidiStatus());
+    prev->MarkDirty();
   }
 }
 
-static inline void applyLineHeightStep(uint8_t lineHeightStep,
-                                       int& maxAscent,
-                                       int& maxDescent) {
+static inline void ApplyLineHeightStep(uint8_t line_height_step,
+                                       int& max_ascent,
+                                       int& max_descent) {
   // Round up to the multiple of units, by adding spaces to over/under equally.
   // https://drafts.csswg.org/css-rhythm/#line-height-step
-  int remainder = (maxAscent + maxDescent) % lineHeightStep;
+  int remainder = (max_ascent + max_descent) % line_height_step;
   if (!remainder)
     return;
   DCHECK_GT(remainder, 0);
-  int space = lineHeightStep - remainder;
-  maxDescent += space / 2;
-  maxAscent += space - space / 2;
+  int space = line_height_step - remainder;
+  max_descent += space / 2;
+  max_ascent += space - space / 2;
 }
 
-LayoutUnit RootInlineBox::alignBoxesInBlockDirection(
-    LayoutUnit heightOfBlock,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
-    VerticalPositionCache& verticalPositionCache) {
+LayoutUnit RootInlineBox::AlignBoxesInBlockDirection(
+    LayoutUnit height_of_block,
+    GlyphOverflowAndFallbackFontsMap& text_box_data_map,
+    VerticalPositionCache& vertical_position_cache) {
   // SVG will handle vertical alignment on its own.
-  if (isSVGRootInlineBox())
+  if (IsSVGRootInlineBox())
     return LayoutUnit();
 
-  LayoutUnit maxPositionTop;
-  LayoutUnit maxPositionBottom;
-  int maxAscent = 0;
-  int maxDescent = 0;
-  bool setMaxAscent = false;
-  bool setMaxDescent = false;
+  LayoutUnit max_position_top;
+  LayoutUnit max_position_bottom;
+  int max_ascent = 0;
+  int max_descent = 0;
+  bool set_max_ascent = false;
+  bool set_max_descent = false;
 
   // Figure out if we're in no-quirks mode.
-  bool noQuirksMode = getLineLayoutItem().document().inNoQuirksMode();
+  bool no_quirks_mode = GetLineLayoutItem().GetDocument().InNoQuirksMode();
 
-  m_baselineType = dominantBaseline();
+  baseline_type_ = DominantBaseline();
 
-  computeLogicalBoxHeights(this, maxPositionTop, maxPositionBottom, maxAscent,
-                           maxDescent, setMaxAscent, setMaxDescent,
-                           noQuirksMode, textBoxDataMap, baselineType(),
-                           verticalPositionCache);
+  ComputeLogicalBoxHeights(this, max_position_top, max_position_bottom,
+                           max_ascent, max_descent, set_max_ascent,
+                           set_max_descent, no_quirks_mode, text_box_data_map,
+                           BaselineType(), vertical_position_cache);
 
-  if (maxAscent + maxDescent < std::max(maxPositionTop, maxPositionBottom))
-    adjustMaxAscentAndDescent(maxAscent, maxDescent, maxPositionTop.toInt(),
-                              maxPositionBottom.toInt());
+  if (max_ascent + max_descent <
+      std::max(max_position_top, max_position_bottom))
+    AdjustMaxAscentAndDescent(max_ascent, max_descent, max_position_top.ToInt(),
+                              max_position_bottom.ToInt());
 
-  if (uint8_t lineHeightStep = getLineLayoutItem().styleRef().lineHeightStep())
-    applyLineHeightStep(lineHeightStep, maxAscent, maxDescent);
+  if (uint8_t line_height_step =
+          GetLineLayoutItem().StyleRef().LineHeightStep())
+    ApplyLineHeightStep(line_height_step, max_ascent, max_descent);
 
-  LayoutUnit maxHeight = LayoutUnit(maxAscent + maxDescent);
-  LayoutUnit lineTop = heightOfBlock;
-  LayoutUnit lineBottom = heightOfBlock;
-  LayoutUnit lineTopIncludingMargins = heightOfBlock;
-  LayoutUnit lineBottomIncludingMargins = heightOfBlock;
-  LayoutUnit selectionBottom = heightOfBlock;
-  bool setLineTop = false;
-  bool hasAnnotationsBefore = false;
-  bool hasAnnotationsAfter = false;
-  placeBoxesInBlockDirection(heightOfBlock, maxHeight, maxAscent, noQuirksMode,
-                             lineTop, lineBottom, selectionBottom, setLineTop,
-                             lineTopIncludingMargins,
-                             lineBottomIncludingMargins, hasAnnotationsBefore,
-                             hasAnnotationsAfter, baselineType());
-  m_hasAnnotationsBefore = hasAnnotationsBefore;
-  m_hasAnnotationsAfter = hasAnnotationsAfter;
+  LayoutUnit max_height = LayoutUnit(max_ascent + max_descent);
+  LayoutUnit line_top = height_of_block;
+  LayoutUnit line_bottom = height_of_block;
+  LayoutUnit line_top_including_margins = height_of_block;
+  LayoutUnit line_bottom_including_margins = height_of_block;
+  LayoutUnit selection_bottom = height_of_block;
+  bool set_line_top = false;
+  bool has_annotations_before = false;
+  bool has_annotations_after = false;
+  PlaceBoxesInBlockDirection(
+      height_of_block, max_height, max_ascent, no_quirks_mode, line_top,
+      line_bottom, selection_bottom, set_line_top, line_top_including_margins,
+      line_bottom_including_margins, has_annotations_before,
+      has_annotations_after, BaselineType());
+  has_annotations_before_ = has_annotations_before;
+  has_annotations_after_ = has_annotations_after;
 
-  maxHeight = maxHeight.clampNegativeToZero();
+  max_height = max_height.ClampNegativeToZero();
 
-  setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock,
-                            heightOfBlock + maxHeight, selectionBottom);
+  SetLineTopBottomPositions(line_top, line_bottom, height_of_block,
+                            height_of_block + max_height, selection_bottom);
 
-  LayoutUnit annotationsAdjustment = beforeAnnotationsAdjustment();
-  if (annotationsAdjustment) {
+  LayoutUnit annotations_adjustment = BeforeAnnotationsAdjustment();
+  if (annotations_adjustment) {
     // FIXME: Need to handle pagination here. We might have to move to the next
     // page/column as a result of the ruby expansion.
-    moveInBlockDirection(annotationsAdjustment);
-    heightOfBlock += annotationsAdjustment;
+    MoveInBlockDirection(annotations_adjustment);
+    height_of_block += annotations_adjustment;
   }
 
-  return heightOfBlock + maxHeight;
+  return height_of_block + max_height;
 }
 
-LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const {
+LayoutUnit RootInlineBox::BeforeAnnotationsAdjustment() const {
   LayoutUnit result;
 
-  if (!getLineLayoutItem().style()->isFlippedLinesWritingMode()) {
+  if (!GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()) {
     // Annotations under the previous line may push us down.
-    if (prevRootBox() && prevRootBox()->hasAnnotationsAfter())
-      result = prevRootBox()->computeUnderAnnotationAdjustment(lineTop());
+    if (PrevRootBox() && PrevRootBox()->HasAnnotationsAfter())
+      result = PrevRootBox()->ComputeUnderAnnotationAdjustment(LineTop());
 
-    if (!hasAnnotationsBefore())
+    if (!HasAnnotationsBefore())
       return result;
 
     // Annotations over this line may push us further down.
-    LayoutUnit highestAllowedPosition =
-        prevRootBox()
-            ? std::min(prevRootBox()->lineBottom(), lineTop()) + result
-            : static_cast<LayoutUnit>(block().borderBefore());
-    result = computeOverAnnotationAdjustment(highestAllowedPosition);
+    LayoutUnit highest_allowed_position =
+        PrevRootBox()
+            ? std::min(PrevRootBox()->LineBottom(), LineTop()) + result
+            : static_cast<LayoutUnit>(Block().BorderBefore());
+    result = ComputeOverAnnotationAdjustment(highest_allowed_position);
   } else {
     // Annotations under this line may push us up.
-    if (hasAnnotationsBefore())
-      result = computeUnderAnnotationAdjustment(
-          prevRootBox() ? prevRootBox()->lineBottom()
-                        : static_cast<LayoutUnit>(block().borderBefore()));
+    if (HasAnnotationsBefore())
+      result = ComputeUnderAnnotationAdjustment(
+          PrevRootBox() ? PrevRootBox()->LineBottom()
+                        : static_cast<LayoutUnit>(Block().BorderBefore()));
 
-    if (!prevRootBox() || !prevRootBox()->hasAnnotationsAfter())
+    if (!PrevRootBox() || !PrevRootBox()->HasAnnotationsAfter())
       return result;
 
     // We have to compute the expansion for annotations over the previous line
     // to see how much we should move.
-    LayoutUnit lowestAllowedPosition =
-        std::max(prevRootBox()->lineBottom(), lineTop()) - result;
+    LayoutUnit lowest_allowed_position =
+        std::max(PrevRootBox()->LineBottom(), LineTop()) - result;
     result =
-        prevRootBox()->computeOverAnnotationAdjustment(lowestAllowedPosition);
+        PrevRootBox()->ComputeOverAnnotationAdjustment(lowest_allowed_position);
   }
 
   return result;
 }
 
-SelectionState RootInlineBox::getSelectionState() const {
+SelectionState RootInlineBox::GetSelectionState() const {
   // Walk over all of the selected boxes.
   SelectionState state = SelectionNone;
-  for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-    SelectionState boxState = box->getSelectionState();
-    if ((boxState == SelectionStart && state == SelectionEnd) ||
-        (boxState == SelectionEnd && state == SelectionStart)) {
+  for (InlineBox* box = FirstLeafChild(); box; box = box->NextLeafChild()) {
+    SelectionState box_state = box->GetSelectionState();
+    if ((box_state == SelectionStart && state == SelectionEnd) ||
+        (box_state == SelectionEnd && state == SelectionStart)) {
       state = SelectionBoth;
     } else if (state == SelectionNone ||
-               ((boxState == SelectionStart || boxState == SelectionEnd) &&
+               ((box_state == SelectionStart || box_state == SelectionEnd) &&
                 (state == SelectionNone || state == SelectionInside))) {
-      state = boxState;
-    } else if (boxState == SelectionNone && state == SelectionStart) {
+      state = box_state;
+    } else if (box_state == SelectionNone && state == SelectionStart) {
       // We are past the end of the selection.
       state = SelectionBoth;
     }
@@ -361,120 +364,121 @@ SelectionState RootInlineBox::getSelectionState() const {
   return state;
 }
 
-InlineBox* RootInlineBox::firstSelectedBox() const {
-  for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-    if (box->getSelectionState() != SelectionNone)
+InlineBox* RootInlineBox::FirstSelectedBox() const {
+  for (InlineBox* box = FirstLeafChild(); box; box = box->NextLeafChild()) {
+    if (box->GetSelectionState() != SelectionNone)
       return box;
   }
 
   return nullptr;
 }
 
-InlineBox* RootInlineBox::lastSelectedBox() const {
-  for (InlineBox* box = lastLeafChild(); box; box = box->prevLeafChild()) {
-    if (box->getSelectionState() != SelectionNone)
+InlineBox* RootInlineBox::LastSelectedBox() const {
+  for (InlineBox* box = LastLeafChild(); box; box = box->PrevLeafChild()) {
+    if (box->GetSelectionState() != SelectionNone)
       return box;
   }
 
   return nullptr;
 }
 
-LayoutUnit RootInlineBox::selectionTop() const {
-  LayoutUnit selectionTop = m_lineTop;
-  if (m_hasAnnotationsBefore)
-    selectionTop -= !getLineLayoutItem().style()->isFlippedLinesWritingMode()
-                        ? computeOverAnnotationAdjustment(m_lineTop)
-                        : computeUnderAnnotationAdjustment(m_lineTop);
+LayoutUnit RootInlineBox::SelectionTop() const {
+  LayoutUnit selection_top = line_top_;
+  if (has_annotations_before_)
+    selection_top -= !GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
+                         ? ComputeOverAnnotationAdjustment(line_top_)
+                         : ComputeUnderAnnotationAdjustment(line_top_);
 
-  if (getLineLayoutItem().style()->isFlippedLinesWritingMode() ||
-      !prevRootBox())
-    return selectionTop;
+  if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ||
+      !PrevRootBox())
+    return selection_top;
 
-  return std::min(selectionTop, prevRootBox()->selectionBottom());
+  return std::min(selection_top, PrevRootBox()->SelectionBottom());
 }
 
-LayoutUnit RootInlineBox::selectionBottom() const {
-  LayoutUnit selectionBottom = getLineLayoutItem().document().inNoQuirksMode()
-                                   ? m_selectionBottom
-                                   : m_lineBottom;
+LayoutUnit RootInlineBox::SelectionBottom() const {
+  LayoutUnit selection_bottom =
+      GetLineLayoutItem().GetDocument().InNoQuirksMode() ? selection_bottom_
+                                                         : line_bottom_;
 
-  if (m_hasAnnotationsAfter)
-    selectionBottom += !getLineLayoutItem().style()->isFlippedLinesWritingMode()
-                           ? computeUnderAnnotationAdjustment(m_lineBottom)
-                           : computeOverAnnotationAdjustment(m_lineBottom);
+  if (has_annotations_after_)
+    selection_bottom +=
+        !GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
+            ? ComputeUnderAnnotationAdjustment(line_bottom_)
+            : ComputeOverAnnotationAdjustment(line_bottom_);
 
-  if (!getLineLayoutItem().style()->isFlippedLinesWritingMode() ||
-      !nextRootBox())
-    return selectionBottom;
+  if (!GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ||
+      !NextRootBox())
+    return selection_bottom;
 
-  return std::max(selectionBottom, nextRootBox()->selectionTop());
+  return std::max(selection_bottom, NextRootBox()->SelectionTop());
 }
 
-LayoutUnit RootInlineBox::blockDirectionPointInLine() const {
-  return !block().style()->isFlippedBlocksWritingMode()
-             ? std::max(lineTop(), selectionTop())
-             : std::min(lineBottom(), selectionBottom());
+LayoutUnit RootInlineBox::BlockDirectionPointInLine() const {
+  return !Block().Style()->IsFlippedBlocksWritingMode()
+             ? std::max(LineTop(), SelectionTop())
+             : std::min(LineBottom(), SelectionBottom());
 }
 
-LineLayoutBlockFlow RootInlineBox::block() const {
-  return LineLayoutBlockFlow(getLineLayoutItem());
+LineLayoutBlockFlow RootInlineBox::Block() const {
+  return LineLayoutBlockFlow(GetLineLayoutItem());
 }
 
-static bool isEditableLeaf(InlineBox* leaf) {
-  return leaf && leaf->getLineLayoutItem().node() &&
-         hasEditableStyle(*leaf->getLineLayoutItem().node());
+static bool IsEditableLeaf(InlineBox* leaf) {
+  return leaf && leaf->GetLineLayoutItem().GetNode() &&
+         HasEditableStyle(*leaf->GetLineLayoutItem().GetNode());
 }
 
-InlineBox* RootInlineBox::closestLeafChildForPoint(
-    const LayoutPoint& pointInContents,
-    bool onlyEditableLeaves) {
-  return closestLeafChildForLogicalLeftPosition(
-      block().isHorizontalWritingMode() ? pointInContents.x()
-                                        : pointInContents.y(),
-      onlyEditableLeaves);
+InlineBox* RootInlineBox::ClosestLeafChildForPoint(
+    const LayoutPoint& point_in_contents,
+    bool only_editable_leaves) {
+  return ClosestLeafChildForLogicalLeftPosition(
+      Block().IsHorizontalWritingMode() ? point_in_contents.X()
+                                        : point_in_contents.Y(),
+      only_editable_leaves);
 }
 
-InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(
-    LayoutUnit leftPosition,
-    bool onlyEditableLeaves) {
-  InlineBox* firstLeaf = firstLeafChild();
-  InlineBox* lastLeaf = lastLeafChild();
+InlineBox* RootInlineBox::ClosestLeafChildForLogicalLeftPosition(
+    LayoutUnit left_position,
+    bool only_editable_leaves) {
+  InlineBox* first_leaf = FirstLeafChild();
+  InlineBox* last_leaf = LastLeafChild();
 
-  if (firstLeaf != lastLeaf) {
-    if (firstLeaf->isLineBreak())
-      firstLeaf = firstLeaf->nextLeafChildIgnoringLineBreak();
-    else if (lastLeaf->isLineBreak())
-      lastLeaf = lastLeaf->prevLeafChildIgnoringLineBreak();
+  if (first_leaf != last_leaf) {
+    if (first_leaf->IsLineBreak())
+      first_leaf = first_leaf->NextLeafChildIgnoringLineBreak();
+    else if (last_leaf->IsLineBreak())
+      last_leaf = last_leaf->PrevLeafChildIgnoringLineBreak();
   }
 
-  if (firstLeaf == lastLeaf &&
-      (!onlyEditableLeaves || isEditableLeaf(firstLeaf)))
-    return firstLeaf;
+  if (first_leaf == last_leaf &&
+      (!only_editable_leaves || IsEditableLeaf(first_leaf)))
+    return first_leaf;
 
   // Avoid returning a list marker when possible.
-  if (leftPosition <= firstLeaf->logicalLeft() &&
-      !firstLeaf->getLineLayoutItem().isListMarker() &&
-      (!onlyEditableLeaves || isEditableLeaf(firstLeaf))) {
+  if (left_position <= first_leaf->LogicalLeft() &&
+      !first_leaf->GetLineLayoutItem().IsListMarker() &&
+      (!only_editable_leaves || IsEditableLeaf(first_leaf))) {
     // The leftPosition coordinate is less or equal to left edge of the
     // firstLeaf. Return it.
-    return firstLeaf;
+    return first_leaf;
   }
 
-  if (leftPosition >= lastLeaf->logicalRight() &&
-      !lastLeaf->getLineLayoutItem().isListMarker() &&
-      (!onlyEditableLeaves || isEditableLeaf(lastLeaf))) {
+  if (left_position >= last_leaf->LogicalRight() &&
+      !last_leaf->GetLineLayoutItem().IsListMarker() &&
+      (!only_editable_leaves || IsEditableLeaf(last_leaf))) {
     // The leftPosition coordinate is greater or equal to right edge of the
     // lastLeaf. Return it.
-    return lastLeaf;
+    return last_leaf;
   }
 
-  InlineBox* closestLeaf = nullptr;
-  for (InlineBox* leaf = firstLeaf; leaf;
-       leaf = leaf->nextLeafChildIgnoringLineBreak()) {
-    if (!leaf->getLineLayoutItem().isListMarker() &&
-        (!onlyEditableLeaves || isEditableLeaf(leaf))) {
-      closestLeaf = leaf;
-      if (leftPosition < leaf->logicalRight()) {
+  InlineBox* closest_leaf = nullptr;
+  for (InlineBox* leaf = first_leaf; leaf;
+       leaf = leaf->NextLeafChildIgnoringLineBreak()) {
+    if (!leaf->GetLineLayoutItem().IsListMarker() &&
+        (!only_editable_leaves || IsEditableLeaf(leaf))) {
+      closest_leaf = leaf;
+      if (left_position < leaf->LogicalRight()) {
         // The x coordinate is less than the right edge of the box.
         // Return it.
         return leaf;
@@ -482,159 +486,163 @@ InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(
     }
   }
 
-  return closestLeaf ? closestLeaf : lastLeaf;
+  return closest_leaf ? closest_leaf : last_leaf;
 }
 
-BidiStatus RootInlineBox::lineBreakBidiStatus() const {
+BidiStatus RootInlineBox::LineBreakBidiStatus() const {
   return BidiStatus(
-      static_cast<WTF::Unicode::CharDirection>(m_lineBreakBidiStatusEor),
-      static_cast<WTF::Unicode::CharDirection>(m_lineBreakBidiStatusLastStrong),
-      static_cast<WTF::Unicode::CharDirection>(m_lineBreakBidiStatusLast),
-      m_lineBreakContext);
+      static_cast<WTF::Unicode::CharDirection>(line_break_bidi_status_eor_),
+      static_cast<WTF::Unicode::CharDirection>(
+          line_break_bidi_status_last_strong_),
+      static_cast<WTF::Unicode::CharDirection>(line_break_bidi_status_last_),
+      line_break_context_);
 }
 
-void RootInlineBox::setLineBreakInfo(LineLayoutItem obj,
-                                     unsigned breakPos,
+void RootInlineBox::SetLineBreakInfo(LineLayoutItem obj,
+                                     unsigned break_pos,
                                      const BidiStatus& status) {
   // When setting lineBreakObj, the LayoutObject must not be a LayoutInline
   // with no line boxes, otherwise all sorts of invariants are broken later.
   // This has security implications because if the LayoutObject does not point
   // to at least one line box, then that LayoutInline can be deleted later
   // without resetting the lineBreakObj, leading to use-after-free.
-  SECURITY_DCHECK(!obj || obj.isText() ||
-                  !(obj.isLayoutInline() && obj.isBox() &&
-                    !LineLayoutBox(obj).inlineBoxWrapper()));
+  SECURITY_DCHECK(!obj || obj.IsText() ||
+                  !(obj.IsLayoutInline() && obj.IsBox() &&
+                    !LineLayoutBox(obj).InlineBoxWrapper()));
 
-  m_lineBreakObj = obj;
-  m_lineBreakPos = breakPos;
-  m_lineBreakBidiStatusEor = status.eor;
-  m_lineBreakBidiStatusLastStrong = status.lastStrong;
-  m_lineBreakBidiStatusLast = status.last;
-  m_lineBreakContext = status.context;
+  line_break_obj_ = obj;
+  line_break_pos_ = break_pos;
+  line_break_bidi_status_eor_ = status.eor;
+  line_break_bidi_status_last_strong_ = status.last_strong;
+  line_break_bidi_status_last_ = status.last;
+  line_break_context_ = status.context;
 }
 
-EllipsisBox* RootInlineBox::ellipsisBox() const {
-  if (!hasEllipsisBox())
+EllipsisBox* RootInlineBox::GetEllipsisBox() const {
+  if (!HasEllipsisBox())
     return nullptr;
-  return gEllipsisBoxMap->at(this);
+  return g_ellipsis_box_map->at(this);
 }
 
-void RootInlineBox::removeLineBoxFromLayoutObject() {
-  block().lineBoxes()->removeLineBox(this);
+void RootInlineBox::RemoveLineBoxFromLayoutObject() {
+  Block().LineBoxes()->RemoveLineBox(this);
 }
 
-void RootInlineBox::extractLineBoxFromLayoutObject() {
-  block().lineBoxes()->extractLineBox(this);
+void RootInlineBox::ExtractLineBoxFromLayoutObject() {
+  Block().LineBoxes()->ExtractLineBox(this);
 }
 
-void RootInlineBox::attachLineBoxToLayoutObject() {
-  block().lineBoxes()->attachLineBox(this);
+void RootInlineBox::AttachLineBoxToLayoutObject() {
+  Block().LineBoxes()->AttachLineBox(this);
 }
 
-LayoutRect RootInlineBox::paddedLayoutOverflowRect(
-    LayoutUnit endPadding) const {
-  LayoutRect lineLayoutOverflow = layoutOverflowRect(lineTop(), lineBottom());
-  if (!endPadding)
-    return lineLayoutOverflow;
+LayoutRect RootInlineBox::PaddedLayoutOverflowRect(
+    LayoutUnit end_padding) const {
+  LayoutRect line_layout_overflow = LayoutOverflowRect(LineTop(), LineBottom());
+  if (!end_padding)
+    return line_layout_overflow;
 
-  if (isHorizontal()) {
-    if (isLeftToRightDirection())
-      lineLayoutOverflow.shiftMaxXEdgeTo(std::max<LayoutUnit>(
-          lineLayoutOverflow.maxX(), logicalRight() + endPadding));
+  if (IsHorizontal()) {
+    if (IsLeftToRightDirection())
+      line_layout_overflow.ShiftMaxXEdgeTo(std::max<LayoutUnit>(
+          line_layout_overflow.MaxX(), LogicalRight() + end_padding));
     else
-      lineLayoutOverflow.shiftXEdgeTo(std::min<LayoutUnit>(
-          lineLayoutOverflow.x(), logicalLeft() - endPadding));
+      line_layout_overflow.ShiftXEdgeTo(std::min<LayoutUnit>(
+          line_layout_overflow.X(), LogicalLeft() - end_padding));
   } else {
-    if (isLeftToRightDirection())
-      lineLayoutOverflow.shiftMaxYEdgeTo(std::max<LayoutUnit>(
-          lineLayoutOverflow.maxY(), logicalRight() + endPadding));
+    if (IsLeftToRightDirection())
+      line_layout_overflow.ShiftMaxYEdgeTo(std::max<LayoutUnit>(
+          line_layout_overflow.MaxY(), LogicalRight() + end_padding));
     else
-      lineLayoutOverflow.shiftYEdgeTo(std::min<LayoutUnit>(
-          lineLayoutOverflow.y(), logicalLeft() - endPadding));
+      line_layout_overflow.ShiftYEdgeTo(std::min<LayoutUnit>(
+          line_layout_overflow.Y(), LogicalLeft() - end_padding));
   }
 
-  return lineLayoutOverflow;
+  return line_layout_overflow;
 }
 
-static void setAscentAndDescent(int& ascent,
+static void SetAscentAndDescent(int& ascent,
                                 int& descent,
-                                int newAscent,
-                                int newDescent,
-                                bool& ascentDescentSet) {
-  if (!ascentDescentSet) {
-    ascentDescentSet = true;
-    ascent = newAscent;
-    descent = newDescent;
+                                int new_ascent,
+                                int new_descent,
+                                bool& ascent_descent_set) {
+  if (!ascent_descent_set) {
+    ascent_descent_set = true;
+    ascent = new_ascent;
+    descent = new_descent;
   } else {
-    ascent = std::max(ascent, newAscent);
-    descent = std::max(descent, newDescent);
+    ascent = std::max(ascent, new_ascent);
+    descent = std::max(descent, new_descent);
   }
 }
 
-void RootInlineBox::ascentAndDescentForBox(
+void RootInlineBox::AscentAndDescentForBox(
     InlineBox* box,
-    GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
+    GlyphOverflowAndFallbackFontsMap& text_box_data_map,
     int& ascent,
     int& descent,
-    bool& affectsAscent,
-    bool& affectsDescent) const {
-  bool ascentDescentSet = false;
+    bool& affects_ascent,
+    bool& affects_descent) const {
+  bool ascent_descent_set = false;
 
-  if (box->getLineLayoutItem().isAtomicInlineLevel()) {
-    ascent = box->baselinePosition(baselineType());
-    descent = roundToInt(box->lineHeight() - ascent);
+  if (box->GetLineLayoutItem().IsAtomicInlineLevel()) {
+    ascent = box->BaselinePosition(BaselineType());
+    descent = RoundToInt(box->LineHeight() - ascent);
 
     // Replaced elements always affect both the ascent and descent.
-    affectsAscent = true;
-    affectsDescent = true;
+    affects_ascent = true;
+    affects_descent = true;
     return;
   }
 
-  Vector<const SimpleFontData*>* usedFonts = nullptr;
-  if (box->isText()) {
+  Vector<const SimpleFontData*>* used_fonts = nullptr;
+  if (box->IsText()) {
     GlyphOverflowAndFallbackFontsMap::iterator it =
-        textBoxDataMap.find(toInlineTextBox(box));
-    usedFonts = it == textBoxDataMap.end() ? 0 : &it->value.first;
+        text_box_data_map.Find(ToInlineTextBox(box));
+    used_fonts = it == text_box_data_map.end() ? 0 : &it->value.first;
   }
 
-  bool includeLeading = includeLeadingForBox(box);
-  bool setUsedFontWithLeading = false;
+  bool include_leading = IncludeLeadingForBox(box);
+  bool set_used_font_with_leading = false;
 
-  if (usedFonts && !usedFonts->isEmpty() && (box->getLineLayoutItem()
-                                                 .style(isFirstLineStyle())
-                                                 ->lineHeight()
-                                                 .isNegative() &&
-                                             includeLeading)) {
-    usedFonts->push_back(box->getLineLayoutItem()
-                             .style(isFirstLineStyle())
-                             ->font()
-                             .primaryFont());
-    for (size_t i = 0; i < usedFonts->size(); ++i) {
-      const FontMetrics& fontMetrics = usedFonts->at(i)->getFontMetrics();
-      int usedFontAscent = fontMetrics.ascent(baselineType());
-      int usedFontDescent = fontMetrics.descent(baselineType());
-      int halfLeading = (fontMetrics.lineSpacing() - fontMetrics.height()) / 2;
-      int usedFontAscentAndLeading = usedFontAscent + halfLeading;
-      int usedFontDescentAndLeading =
-          fontMetrics.lineSpacing() - usedFontAscentAndLeading;
-      if (includeLeading) {
-        setAscentAndDescent(ascent, descent, usedFontAscentAndLeading,
-                            usedFontDescentAndLeading, ascentDescentSet);
-        setUsedFontWithLeading = true;
+  if (used_fonts && !used_fonts->IsEmpty() &&
+      (box->GetLineLayoutItem()
+           .Style(IsFirstLineStyle())
+           ->LineHeight()
+           .IsNegative() &&
+       include_leading)) {
+    used_fonts->push_back(box->GetLineLayoutItem()
+                              .Style(IsFirstLineStyle())
+                              ->GetFont()
+                              .PrimaryFont());
+    for (size_t i = 0; i < used_fonts->size(); ++i) {
+      const FontMetrics& font_metrics = used_fonts->at(i)->GetFontMetrics();
+      int used_font_ascent = font_metrics.Ascent(BaselineType());
+      int used_font_descent = font_metrics.Descent(BaselineType());
+      int half_leading =
+          (font_metrics.LineSpacing() - font_metrics.Height()) / 2;
+      int used_font_ascent_and_leading = used_font_ascent + half_leading;
+      int used_font_descent_and_leading =
+          font_metrics.LineSpacing() - used_font_ascent_and_leading;
+      if (include_leading) {
+        SetAscentAndDescent(ascent, descent, used_font_ascent_and_leading,
+                            used_font_descent_and_leading, ascent_descent_set);
+        set_used_font_with_leading = true;
       }
-      if (!affectsAscent)
-        affectsAscent = usedFontAscent - box->logicalTop() > 0;
-      if (!affectsDescent)
-        affectsDescent = usedFontDescent + box->logicalTop() > 0;
+      if (!affects_ascent)
+        affects_ascent = used_font_ascent - box->LogicalTop() > 0;
+      if (!affects_descent)
+        affects_descent = used_font_descent + box->LogicalTop() > 0;
     }
   }
 
   // If leading is included for the box, then we compute that box.
-  if (includeLeading && !setUsedFontWithLeading) {
-    int ascentWithLeading = box->baselinePosition(baselineType());
-    int descentWithLeading = (box->lineHeight() - ascentWithLeading).toInt();
-    setAscentAndDescent(ascent, descent, ascentWithLeading, descentWithLeading,
-                        ascentDescentSet);
+  if (include_leading && !set_used_font_with_leading) {
+    int ascent_with_leading = box->BaselinePosition(BaselineType());
+    int descent_with_leading =
+        (box->LineHeight() - ascent_with_leading).ToInt();
+    SetAscentAndDescent(ascent, descent, ascent_with_leading,
+                        descent_with_leading, ascent_descent_set);
 
     // Examine the font box for inline flows and text boxes to see if any part
     // of it is above the baseline. If the top of our font box relative to the
@@ -642,141 +650,146 @@ void RootInlineBox::ascentAndDescentForBox(
     // contributing to the maxAscent value. Descent is similar. If any part of
     // our font box is below the root box's baseline, then we contribute to the
     // maxDescent value.
-    affectsAscent = ascentWithLeading - box->logicalTop() > 0;
-    affectsDescent = descentWithLeading + box->logicalTop() > 0;
+    affects_ascent = ascent_with_leading - box->LogicalTop() > 0;
+    affects_descent = descent_with_leading + box->LogicalTop() > 0;
   }
 }
 
-LayoutUnit RootInlineBox::verticalPositionForBox(
+LayoutUnit RootInlineBox::VerticalPositionForBox(
     InlineBox* box,
-    VerticalPositionCache& verticalPositionCache) {
-  if (box->getLineLayoutItem().isText())
-    return box->parent()->logicalTop();
+    VerticalPositionCache& vertical_position_cache) {
+  if (box->GetLineLayoutItem().IsText())
+    return box->Parent()->LogicalTop();
 
-  LineLayoutBoxModel boxModel = box->boxModelObject();
-  DCHECK(boxModel.isInline());
-  if (!boxModel.isInline())
+  LineLayoutBoxModel box_model = box->BoxModelObject();
+  DCHECK(box_model.IsInline());
+  if (!box_model.IsInline())
     return LayoutUnit();
 
   // This method determines the vertical position for inline elements.
-  bool firstLine = isFirstLineStyle();
-  if (firstLine && !boxModel.document().styleEngine().usesFirstLineRules())
-    firstLine = false;
+  bool first_line = IsFirstLineStyle();
+  if (first_line &&
+      !box_model.GetDocument().GetStyleEngine().UsesFirstLineRules())
+    first_line = false;
 
   // Check the cache.
-  bool isLayoutInline = boxModel.isLayoutInline();
-  if (isLayoutInline && !firstLine) {
-    LayoutUnit verticalPosition =
-        LayoutUnit(verticalPositionCache.get(boxModel, baselineType()));
-    if (verticalPosition != PositionUndefined)
-      return verticalPosition;
+  bool is_layout_inline = box_model.IsLayoutInline();
+  if (is_layout_inline && !first_line) {
+    LayoutUnit vertical_position =
+        LayoutUnit(vertical_position_cache.Get(box_model, BaselineType()));
+    if (vertical_position != kPositionUndefined)
+      return vertical_position;
   }
 
-  LayoutUnit verticalPosition;
-  EVerticalAlign verticalAlign = boxModel.style()->verticalAlign();
-  if (verticalAlign == EVerticalAlign::kTop ||
-      verticalAlign == EVerticalAlign::kBottom)
+  LayoutUnit vertical_position;
+  EVerticalAlign vertical_align = box_model.Style()->VerticalAlign();
+  if (vertical_align == EVerticalAlign::kTop ||
+      vertical_align == EVerticalAlign::kBottom)
     return LayoutUnit();
 
-  LineLayoutItem parent = boxModel.parent();
-  if (parent.isLayoutInline() &&
-      parent.style()->verticalAlign() != EVerticalAlign::kTop &&
-      parent.style()->verticalAlign() != EVerticalAlign::kBottom)
-    verticalPosition = box->parent()->logicalTop();
+  LineLayoutItem parent = box_model.Parent();
+  if (parent.IsLayoutInline() &&
+      parent.Style()->VerticalAlign() != EVerticalAlign::kTop &&
+      parent.Style()->VerticalAlign() != EVerticalAlign::kBottom)
+    vertical_position = box->Parent()->LogicalTop();
 
-  if (verticalAlign != EVerticalAlign::kBaseline) {
-    const Font& font = parent.style(firstLine)->font();
-    const SimpleFontData* fontData = font.primaryFont();
-    DCHECK(fontData);
-    if (!fontData)
+  if (vertical_align != EVerticalAlign::kBaseline) {
+    const Font& font = parent.Style(first_line)->GetFont();
+    const SimpleFontData* font_data = font.PrimaryFont();
+    DCHECK(font_data);
+    if (!font_data)
       return LayoutUnit();
 
-    const FontMetrics& fontMetrics = fontData->getFontMetrics();
-    int fontSize = font.getFontDescription().computedPixelSize();
+    const FontMetrics& font_metrics = font_data->GetFontMetrics();
+    int font_size = font.GetFontDescription().ComputedPixelSize();
 
-    LineDirectionMode lineDirection =
-        parent.isHorizontalWritingMode() ? HorizontalLine : VerticalLine;
+    LineDirectionMode line_direction =
+        parent.IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine;
 
-    if (verticalAlign == EVerticalAlign::kSub) {
-      verticalPosition += fontSize / 5 + 1;
-    } else if (verticalAlign == EVerticalAlign::kSuper) {
-      verticalPosition -= fontSize / 3 + 1;
-    } else if (verticalAlign == EVerticalAlign::kTextTop) {
-      verticalPosition +=
-          boxModel.baselinePosition(baselineType(), firstLine, lineDirection) -
-          fontMetrics.ascent(baselineType());
-    } else if (verticalAlign == EVerticalAlign::kMiddle) {
-      verticalPosition = LayoutUnit(
-          (verticalPosition - LayoutUnit(fontMetrics.xHeight() / 2) -
-           boxModel.lineHeight(firstLine, lineDirection) / 2 +
-           boxModel.baselinePosition(baselineType(), firstLine, lineDirection))
-              .round());
-    } else if (verticalAlign == EVerticalAlign::kTextBottom) {
-      verticalPosition += fontMetrics.descent(baselineType());
+    if (vertical_align == EVerticalAlign::kSub) {
+      vertical_position += font_size / 5 + 1;
+    } else if (vertical_align == EVerticalAlign::kSuper) {
+      vertical_position -= font_size / 3 + 1;
+    } else if (vertical_align == EVerticalAlign::kTextTop) {
+      vertical_position += box_model.BaselinePosition(
+                               BaselineType(), first_line, line_direction) -
+                           font_metrics.Ascent(BaselineType());
+    } else if (vertical_align == EVerticalAlign::kMiddle) {
+      vertical_position = LayoutUnit(
+          (vertical_position - LayoutUnit(font_metrics.XHeight() / 2) -
+           box_model.LineHeight(first_line, line_direction) / 2 +
+           box_model.BaselinePosition(BaselineType(), first_line,
+                                      line_direction))
+              .Round());
+    } else if (vertical_align == EVerticalAlign::kTextBottom) {
+      vertical_position += font_metrics.Descent(BaselineType());
       // lineHeight - baselinePosition is always 0 for replaced elements (except
       // inline blocks), so don't bother wasting time in that case.
-      if (!boxModel.isAtomicInlineLevel() ||
-          boxModel.isInlineBlockOrInlineTable())
-        verticalPosition -= (boxModel.lineHeight(firstLine, lineDirection) -
-                             boxModel.baselinePosition(
-                                 baselineType(), firstLine, lineDirection));
-    } else if (verticalAlign == EVerticalAlign::kBaselineMiddle) {
-      verticalPosition +=
-          -boxModel.lineHeight(firstLine, lineDirection) / 2 +
-          boxModel.baselinePosition(baselineType(), firstLine, lineDirection);
-    } else if (verticalAlign == EVerticalAlign::kLength) {
-      LayoutUnit lineHeight;
+      if (!box_model.IsAtomicInlineLevel() ||
+          box_model.IsInlineBlockOrInlineTable())
+        vertical_position -= (box_model.LineHeight(first_line, line_direction) -
+                              box_model.BaselinePosition(
+                                  BaselineType(), first_line, line_direction));
+    } else if (vertical_align == EVerticalAlign::kBaselineMiddle) {
+      vertical_position +=
+          -box_model.LineHeight(first_line, line_direction) / 2 +
+          box_model.BaselinePosition(BaselineType(), first_line,
+                                     line_direction);
+    } else if (vertical_align == EVerticalAlign::kLength) {
+      LayoutUnit line_height;
       // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align:
       // 'Percentages: refer to the 'line-height' of the element itself'.
-      if (boxModel.style()->getVerticalAlignLength().isPercentOrCalc())
-        lineHeight = LayoutUnit(boxModel.style()->computedLineHeight());
+      if (box_model.Style()->GetVerticalAlignLength().IsPercentOrCalc())
+        line_height = LayoutUnit(box_model.Style()->ComputedLineHeight());
       else
-        lineHeight = boxModel.lineHeight(firstLine, lineDirection);
-      verticalPosition -= valueForLength(
-          boxModel.style()->getVerticalAlignLength(), lineHeight);
+        line_height = box_model.LineHeight(first_line, line_direction);
+      vertical_position -= ValueForLength(
+          box_model.Style()->GetVerticalAlignLength(), line_height);
     }
   }
 
   // Store the cached value.
-  if (isLayoutInline && !firstLine)
-    verticalPositionCache.set(boxModel, baselineType(),
-                              verticalPosition.toInt());
+  if (is_layout_inline && !first_line)
+    vertical_position_cache.Set(box_model, BaselineType(),
+                                vertical_position.ToInt());
 
-  return verticalPosition;
+  return vertical_position;
 }
 
-bool RootInlineBox::includeLeadingForBox(InlineBox* box) const {
-  return !(box->getLineLayoutItem().isAtomicInlineLevel() ||
-           (box->getLineLayoutItem().isText() && !box->isText()));
+bool RootInlineBox::IncludeLeadingForBox(InlineBox* box) const {
+  return !(box->GetLineLayoutItem().IsAtomicInlineLevel() ||
+           (box->GetLineLayoutItem().IsText() && !box->IsText()));
 }
 
-Node* RootInlineBox::getLogicalStartBoxWithNode(InlineBox*& startBox) const {
-  Vector<InlineBox*> leafBoxesInLogicalOrder;
-  collectLeafBoxesInLogicalOrder(leafBoxesInLogicalOrder);
-  for (size_t i = 0; i < leafBoxesInLogicalOrder.size(); ++i) {
-    if (leafBoxesInLogicalOrder[i]->getLineLayoutItem().nonPseudoNode()) {
-      startBox = leafBoxesInLogicalOrder[i];
-      return startBox->getLineLayoutItem().nonPseudoNode();
+Node* RootInlineBox::GetLogicalStartBoxWithNode(InlineBox*& start_box) const {
+  Vector<InlineBox*> leaf_boxes_in_logical_order;
+  CollectLeafBoxesInLogicalOrder(leaf_boxes_in_logical_order);
+  for (size_t i = 0; i < leaf_boxes_in_logical_order.size(); ++i) {
+    if (leaf_boxes_in_logical_order[i]->GetLineLayoutItem().NonPseudoNode()) {
+      start_box = leaf_boxes_in_logical_order[i];
+      return start_box->GetLineLayoutItem().NonPseudoNode();
     }
   }
-  startBox = nullptr;
+  start_box = nullptr;
   return nullptr;
 }
 
-Node* RootInlineBox::getLogicalEndBoxWithNode(InlineBox*& endBox) const {
-  Vector<InlineBox*> leafBoxesInLogicalOrder;
-  collectLeafBoxesInLogicalOrder(leafBoxesInLogicalOrder);
-  for (size_t i = leafBoxesInLogicalOrder.size(); i > 0; --i) {
-    if (leafBoxesInLogicalOrder[i - 1]->getLineLayoutItem().nonPseudoNode()) {
-      endBox = leafBoxesInLogicalOrder[i - 1];
-      return endBox->getLineLayoutItem().nonPseudoNode();
+Node* RootInlineBox::GetLogicalEndBoxWithNode(InlineBox*& end_box) const {
+  Vector<InlineBox*> leaf_boxes_in_logical_order;
+  CollectLeafBoxesInLogicalOrder(leaf_boxes_in_logical_order);
+  for (size_t i = leaf_boxes_in_logical_order.size(); i > 0; --i) {
+    if (leaf_boxes_in_logical_order[i - 1]
+            ->GetLineLayoutItem()
+            .NonPseudoNode()) {
+      end_box = leaf_boxes_in_logical_order[i - 1];
+      return end_box->GetLineLayoutItem().NonPseudoNode();
     }
   }
-  endBox = nullptr;
+  end_box = nullptr;
   return nullptr;
 }
 
-const char* RootInlineBox::boxName() const {
+const char* RootInlineBox::BoxName() const {
   return "RootInlineBox";
 }
 

@@ -19,12 +19,12 @@ class IIRFilterNode : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IIRFilterNode* create(BaseAudioContext&,
+  static IIRFilterNode* Create(BaseAudioContext&,
                                const Vector<double> feedforward,
                                const Vector<double> feedback,
                                ExceptionState&);
 
-  static IIRFilterNode* create(BaseAudioContext*,
+  static IIRFilterNode* Create(BaseAudioContext*,
                                const IIRFilterOptions&,
                                ExceptionState&);
 
@@ -32,9 +32,9 @@ class IIRFilterNode : public AudioNode {
 
   // Get the magnitude and phase response of the filter at the given
   // set of frequencies (in Hz). The phase response is in radians.
-  void getFrequencyResponse(const DOMFloat32Array* frequencyHz,
-                            DOMFloat32Array* magResponse,
-                            DOMFloat32Array* phaseResponse,
+  void getFrequencyResponse(const DOMFloat32Array* frequency_hz,
+                            DOMFloat32Array* mag_response,
+                            DOMFloat32Array* phase_response,
                             ExceptionState&);
 
  private:
@@ -42,7 +42,7 @@ class IIRFilterNode : public AudioNode {
                 const Vector<double> denominator,
                 const Vector<double> numerator);
 
-  IIRProcessor* iirProcessor() const;
+  IIRProcessor* IirProcessor() const;
 };
 
 }  // namespace blink

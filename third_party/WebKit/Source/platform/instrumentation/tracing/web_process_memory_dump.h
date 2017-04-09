@@ -38,7 +38,7 @@ namespace blink {
 // generate on dump requests.
 // TODO(hajimehoshi): Remove this and use base::trace_event::
 // MemoryDumpLevelOfDetail instead.
-enum class WebMemoryDumpLevelOfDetail { Background, Light, Detailed };
+enum class WebMemoryDumpLevelOfDetail { kBackground, kLight, kDetailed };
 
 // A container which holds all the dumps for the various allocators for a given
 // process. Embedders of WebMemoryDumpProvider are expected to populate a
@@ -64,26 +64,26 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // |guid| is  an optional identifier, unique among all processes within the
   // scope of a global dump. This is only relevant when using
   // addOwnershipEdge(). If omitted, it will be automatically generated.
-  blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* CreateMemoryAllocatorDump(
       const String& absolute_name);
-  blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* CreateMemoryAllocatorDump(
       const String& absolute_name,
       blink::WebMemoryAllocatorDumpGuid guid);
 
   // Gets a previously created MemoryAllocatorDump given its name.
-  blink::WebMemoryAllocatorDump* getMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* GetMemoryAllocatorDump(
       const String& absolute_name) const;
 
   // Removes all the WebMemoryAllocatorDump(s) contained in this instance.
   // This WebProcessMemoryDump can be safely reused as if it was new once this
   // method returns.
-  void clear();
+  void Clear();
 
   // Merges all WebMemoryAllocatorDump(s) contained in |other| inside this
   // WebProcessMemoryDump, transferring their ownership to this instance.
   // |other| will be an empty WebProcessMemoryDump after this method returns
   // and can be reused as if it was new.
-  void takeAllDumpsFrom(blink::WebProcessMemoryDump* other);
+  void TakeAllDumpsFrom(blink::WebProcessMemoryDump* other);
 
   // Adds an ownership relationship between two MemoryAllocatorDump(s) with
   // the semantics: |source| owns |target|, and has the effect of attributing
@@ -91,10 +91,10 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // relevant only for the cases of co-ownership, where it acts as a z-index:
   // the owner with the highest importance will be attributed |target|'s
   // memory.
-  void addOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
+  void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
                         blink::WebMemoryAllocatorDumpGuid target,
                         int importance);
-  void addOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
+  void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
                         blink::WebMemoryAllocatorDumpGuid target);
 
   // Utility method to add a suballocation relationship with the following
@@ -102,7 +102,7 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // This creates a child node of |target_node_name| and adds an ownership
   // edge between |source| and the new child node. As a result, the UI will
   // not account the memory of |source| in the target node.
-  void addSuballocation(blink::WebMemoryAllocatorDumpGuid source,
+  void AddSuballocation(blink::WebMemoryAllocatorDumpGuid source,
                         const String& target_node_name);
 
   // Returns the SkTraceMemoryDump proxy interface that can be passed to Skia
@@ -112,19 +112,19 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // object owning them. |dumpNamePrefix| is prefix appended to each dump
   // created by the SkTraceMemoryDump implementation, if the dump should be
   // placed under different namespace and not "skia".
-  SkTraceMemoryDump* createDumpAdapterForSkia(const String& dump_name_prefix);
+  SkTraceMemoryDump* CreateDumpAdapterForSkia(const String& dump_name_prefix);
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;
   }
 
-  blink::WebMemoryAllocatorDump* createDiscardableMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* CreateDiscardableMemoryAllocatorDump(
       const std::string& name,
       base::DiscardableMemory* discardable);
 
   // Dumps heap memory usage. |allocatorName| is used as an absolute name for
   // base::trace_event::ProcessMemoryDump::DumpHeapUsage().
-  void dumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext,
+  void DumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext,
                                           base::trace_event::AllocationMetrics>&
                          metrics_by_context,
                      base::trace_event::TraceEventMemoryOverhead& overhead,
@@ -133,7 +133,7 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
  private:
   FRIEND_TEST_ALL_PREFIXES(WebProcessMemoryDumpTest, IntegrationTest);
 
-  blink::WebMemoryAllocatorDump* createWebMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* CreateWebMemoryAllocatorDump(
       base::trace_event::MemoryAllocatorDump* memory_allocator_dump);
 
   // Only for the case of ProcessMemoryDump being owned (i.e. the default ctor).

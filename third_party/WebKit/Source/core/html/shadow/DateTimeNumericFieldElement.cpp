@@ -34,11 +34,11 @@
 
 namespace blink {
 
-int DateTimeNumericFieldElement::Range::clampValue(int value) const {
+int DateTimeNumericFieldElement::Range::ClampValue(int value) const {
   return std::min(std::max(value, minimum), maximum);
 }
 
-bool DateTimeNumericFieldElement::Range::isInRange(int value) const {
+bool DateTimeNumericFieldElement::Range::IsInRange(int value) const {
   return value >= minimum && value <= maximum;
 }
 
@@ -46,194 +46,194 @@ bool DateTimeNumericFieldElement::Range::isInRange(int value) const {
 
 DateTimeNumericFieldElement::DateTimeNumericFieldElement(
     Document& document,
-    FieldOwner& fieldOwner,
+    FieldOwner& field_owner,
     const Range& range,
-    const Range& hardLimits,
+    const Range& hard_limits,
     const String& placeholder,
     const DateTimeNumericFieldElement::Step& step)
-    : DateTimeFieldElement(document, fieldOwner),
-      m_placeholder(placeholder),
-      m_range(range),
-      m_hardLimits(hardLimits),
-      m_step(step),
-      m_value(0),
-      m_hasValue(false) {
-  DCHECK_NE(m_step.step, 0);
-  DCHECK_LE(m_range.minimum, m_range.maximum);
-  DCHECK_LE(m_hardLimits.minimum, m_hardLimits.maximum);
+    : DateTimeFieldElement(document, field_owner),
+      placeholder_(placeholder),
+      range_(range),
+      hard_limits_(hard_limits),
+      step_(step),
+      value_(0),
+      has_value_(false) {
+  DCHECK_NE(step_.step, 0);
+  DCHECK_LE(range_.minimum, range_.maximum);
+  DCHECK_LE(hard_limits_.minimum, hard_limits_.maximum);
 
   // We show a direction-neutral string such as "--" as a placeholder. It
   // should follow the direction of numeric values.
-  if (localeForOwner().isRTL()) {
+  if (LocaleForOwner().IsRTL()) {
     WTF::Unicode::CharDirection dir =
-        WTF::Unicode::direction(formatValue(this->maximum())[0]);
-    if (dir == WTF::Unicode::LeftToRight ||
-        dir == WTF::Unicode::EuropeanNumber ||
-        dir == WTF::Unicode::ArabicNumber) {
-      setInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
-      setInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
+        WTF::Unicode::Direction(FormatValue(this->Maximum())[0]);
+    if (dir == WTF::Unicode::kLeftToRight ||
+        dir == WTF::Unicode::kEuropeanNumber ||
+        dir == WTF::Unicode::kArabicNumber) {
+      SetInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
+      SetInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
     }
   }
 }
 
-float DateTimeNumericFieldElement::maximumWidth(const ComputedStyle& style) {
-  float maximumWidth = computeTextWidth(style, m_placeholder);
-  maximumWidth =
-      std::max(maximumWidth, computeTextWidth(style, formatValue(maximum())));
-  maximumWidth = std::max(maximumWidth, computeTextWidth(style, value()));
-  return maximumWidth + DateTimeFieldElement::maximumWidth(style);
+float DateTimeNumericFieldElement::MaximumWidth(const ComputedStyle& style) {
+  float maximum_width = ComputeTextWidth(style, placeholder_);
+  maximum_width =
+      std::max(maximum_width, ComputeTextWidth(style, FormatValue(Maximum())));
+  maximum_width = std::max(maximum_width, ComputeTextWidth(style, Value()));
+  return maximum_width + DateTimeFieldElement::MaximumWidth(style);
 }
 
-int DateTimeNumericFieldElement::defaultValueForStepDown() const {
-  return m_range.maximum;
+int DateTimeNumericFieldElement::DefaultValueForStepDown() const {
+  return range_.maximum;
 }
 
-int DateTimeNumericFieldElement::defaultValueForStepUp() const {
-  return m_range.minimum;
+int DateTimeNumericFieldElement::DefaultValueForStepUp() const {
+  return range_.minimum;
 }
 
-void DateTimeNumericFieldElement::setFocused(bool value) {
+void DateTimeNumericFieldElement::SetFocused(bool value) {
   if (!value) {
-    int value = typeAheadValue();
-    m_typeAheadBuffer.clear();
+    int value = TypeAheadValue();
+    type_ahead_buffer_.Clear();
     if (value >= 0)
-      setValueAsInteger(value, DispatchEvent);
+      SetValueAsInteger(value, kDispatchEvent);
   }
-  DateTimeFieldElement::setFocused(value);
+  DateTimeFieldElement::SetFocused(value);
 }
 
-String DateTimeNumericFieldElement::formatValue(int value) const {
-  Locale& locale = localeForOwner();
-  if (m_hardLimits.maximum > 999)
-    return locale.convertToLocalizedNumber(String::format("%04d", value));
-  if (m_hardLimits.maximum > 99)
-    return locale.convertToLocalizedNumber(String::format("%03d", value));
-  return locale.convertToLocalizedNumber(String::format("%02d", value));
+String DateTimeNumericFieldElement::FormatValue(int value) const {
+  Locale& locale = LocaleForOwner();
+  if (hard_limits_.maximum > 999)
+    return locale.ConvertToLocalizedNumber(String::Format("%04d", value));
+  if (hard_limits_.maximum > 99)
+    return locale.ConvertToLocalizedNumber(String::Format("%03d", value));
+  return locale.ConvertToLocalizedNumber(String::Format("%02d", value));
 }
 
-void DateTimeNumericFieldElement::handleKeyboardEvent(
-    KeyboardEvent* keyboardEvent) {
-  DCHECK(!isDisabled());
-  if (keyboardEvent->type() != EventTypeNames::keypress)
+void DateTimeNumericFieldElement::HandleKeyboardEvent(
+    KeyboardEvent* keyboard_event) {
+  DCHECK(!IsDisabled());
+  if (keyboard_event->type() != EventTypeNames::keypress)
     return;
 
-  UChar charCode = static_cast<UChar>(keyboardEvent->charCode());
+  UChar char_code = static_cast<UChar>(keyboard_event->charCode());
   String number =
-      localeForOwner().convertFromLocalizedNumber(String(&charCode, 1));
+      LocaleForOwner().ConvertFromLocalizedNumber(String(&char_code, 1));
   const int digit = number[0] - '0';
   if (digit < 0 || digit > 9)
     return;
 
-  unsigned maximumLength =
-      DateTimeNumericFieldElement::formatValue(m_range.maximum).length();
-  if (m_typeAheadBuffer.length() >= maximumLength) {
-    String current = m_typeAheadBuffer.toString();
-    m_typeAheadBuffer.clear();
-    unsigned desiredLength = maximumLength - 1;
-    m_typeAheadBuffer.append(current, current.length() - desiredLength,
-                             desiredLength);
+  unsigned maximum_length =
+      DateTimeNumericFieldElement::FormatValue(range_.maximum).length();
+  if (type_ahead_buffer_.length() >= maximum_length) {
+    String current = type_ahead_buffer_.ToString();
+    type_ahead_buffer_.Clear();
+    unsigned desired_length = maximum_length - 1;
+    type_ahead_buffer_.Append(current, current.length() - desired_length,
+                              desired_length);
   }
-  m_typeAheadBuffer.append(number);
-  int newValue = typeAheadValue();
-  if (newValue >= m_hardLimits.minimum) {
-    setValueAsInteger(newValue, DispatchEvent);
+  type_ahead_buffer_.Append(number);
+  int new_value = TypeAheadValue();
+  if (new_value >= hard_limits_.minimum) {
+    SetValueAsInteger(new_value, kDispatchEvent);
   } else {
-    m_hasValue = false;
-    updateVisibleValue(DispatchEvent);
+    has_value_ = false;
+    UpdateVisibleValue(kDispatchEvent);
   }
 
-  if (m_typeAheadBuffer.length() >= maximumLength ||
-      newValue * 10 > m_range.maximum)
-    focusOnNextField();
+  if (type_ahead_buffer_.length() >= maximum_length ||
+      new_value * 10 > range_.maximum)
+    FocusOnNextField();
 
-  keyboardEvent->setDefaultHandled();
+  keyboard_event->SetDefaultHandled();
 }
 
-bool DateTimeNumericFieldElement::hasValue() const {
-  return m_hasValue;
+bool DateTimeNumericFieldElement::HasValue() const {
+  return has_value_;
 }
 
-void DateTimeNumericFieldElement::initialize(const AtomicString& pseudo,
-                                             const String& axHelpText) {
-  DateTimeFieldElement::initialize(pseudo, axHelpText, m_range.minimum,
-                                   m_range.maximum);
+void DateTimeNumericFieldElement::Initialize(const AtomicString& pseudo,
+                                             const String& ax_help_text) {
+  DateTimeFieldElement::Initialize(pseudo, ax_help_text, range_.minimum,
+                                   range_.maximum);
 }
 
-int DateTimeNumericFieldElement::maximum() const {
-  return m_range.maximum;
+int DateTimeNumericFieldElement::Maximum() const {
+  return range_.maximum;
 }
 
-void DateTimeNumericFieldElement::setEmptyValue(EventBehavior eventBehavior) {
-  if (isDisabled())
+void DateTimeNumericFieldElement::SetEmptyValue(EventBehavior event_behavior) {
+  if (IsDisabled())
     return;
 
-  m_hasValue = false;
-  m_value = 0;
-  m_typeAheadBuffer.clear();
-  updateVisibleValue(eventBehavior);
+  has_value_ = false;
+  value_ = 0;
+  type_ahead_buffer_.Clear();
+  UpdateVisibleValue(event_behavior);
 }
 
-void DateTimeNumericFieldElement::setValueAsInteger(
+void DateTimeNumericFieldElement::SetValueAsInteger(
     int value,
-    EventBehavior eventBehavior) {
-  m_value = m_hardLimits.clampValue(value);
-  m_hasValue = true;
-  updateVisibleValue(eventBehavior);
+    EventBehavior event_behavior) {
+  value_ = hard_limits_.ClampValue(value);
+  has_value_ = true;
+  UpdateVisibleValue(event_behavior);
 }
 
-void DateTimeNumericFieldElement::stepDown() {
-  int newValue =
-      roundDown(m_hasValue ? m_value - 1 : defaultValueForStepDown());
-  if (!m_range.isInRange(newValue))
-    newValue = roundDown(m_range.maximum);
-  m_typeAheadBuffer.clear();
-  setValueAsInteger(newValue, DispatchEvent);
+void DateTimeNumericFieldElement::StepDown() {
+  int new_value =
+      RoundDown(has_value_ ? value_ - 1 : DefaultValueForStepDown());
+  if (!range_.IsInRange(new_value))
+    new_value = RoundDown(range_.maximum);
+  type_ahead_buffer_.Clear();
+  SetValueAsInteger(new_value, kDispatchEvent);
 }
 
-void DateTimeNumericFieldElement::stepUp() {
-  int newValue = roundUp(m_hasValue ? m_value + 1 : defaultValueForStepUp());
-  if (!m_range.isInRange(newValue))
-    newValue = roundUp(m_range.minimum);
-  m_typeAheadBuffer.clear();
-  setValueAsInteger(newValue, DispatchEvent);
+void DateTimeNumericFieldElement::StepUp() {
+  int new_value = RoundUp(has_value_ ? value_ + 1 : DefaultValueForStepUp());
+  if (!range_.IsInRange(new_value))
+    new_value = RoundUp(range_.minimum);
+  type_ahead_buffer_.Clear();
+  SetValueAsInteger(new_value, kDispatchEvent);
 }
 
-String DateTimeNumericFieldElement::value() const {
-  return m_hasValue ? formatValue(m_value) : emptyString;
+String DateTimeNumericFieldElement::Value() const {
+  return has_value_ ? FormatValue(value_) : g_empty_string;
 }
 
-int DateTimeNumericFieldElement::valueAsInteger() const {
-  return m_hasValue ? m_value : -1;
+int DateTimeNumericFieldElement::ValueAsInteger() const {
+  return has_value_ ? value_ : -1;
 }
 
-int DateTimeNumericFieldElement::typeAheadValue() const {
-  if (m_typeAheadBuffer.length())
-    return m_typeAheadBuffer.toString().toInt();
+int DateTimeNumericFieldElement::TypeAheadValue() const {
+  if (type_ahead_buffer_.length())
+    return type_ahead_buffer_.ToString().ToInt();
   return -1;
 }
 
-String DateTimeNumericFieldElement::visibleValue() const {
-  if (m_typeAheadBuffer.length())
-    return formatValue(typeAheadValue());
-  return m_hasValue ? value() : m_placeholder;
+String DateTimeNumericFieldElement::VisibleValue() const {
+  if (type_ahead_buffer_.length())
+    return FormatValue(TypeAheadValue());
+  return has_value_ ? Value() : placeholder_;
 }
 
-int DateTimeNumericFieldElement::roundDown(int n) const {
-  n -= m_step.stepBase;
+int DateTimeNumericFieldElement::RoundDown(int n) const {
+  n -= step_.step_base;
   if (n >= 0)
-    n = n / m_step.step * m_step.step;
+    n = n / step_.step * step_.step;
   else
-    n = -((-n + m_step.step - 1) / m_step.step * m_step.step);
-  return n + m_step.stepBase;
+    n = -((-n + step_.step - 1) / step_.step * step_.step);
+  return n + step_.step_base;
 }
 
-int DateTimeNumericFieldElement::roundUp(int n) const {
-  n -= m_step.stepBase;
+int DateTimeNumericFieldElement::RoundUp(int n) const {
+  n -= step_.step_base;
   if (n >= 0)
-    n = (n + m_step.step - 1) / m_step.step * m_step.step;
+    n = (n + step_.step - 1) / step_.step * step_.step;
   else
-    n = -(-n / m_step.step * m_step.step);
-  return n + m_step.stepBase;
+    n = -(-n / step_.step * step_.step);
+  return n + step_.step_base;
 }
 
 }  // namespace blink

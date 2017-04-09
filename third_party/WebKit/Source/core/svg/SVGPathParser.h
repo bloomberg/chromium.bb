@@ -35,13 +35,13 @@ class SVGPathConsumer;
 namespace SVGPathParser {
 
 template <typename SourceType, typename ConsumerType>
-inline bool parsePath(SourceType& source, ConsumerType& consumer) {
-  while (source.hasMoreData()) {
-    PathSegmentData segment = source.parseSegment();
-    if (segment.command == PathSegUnknown)
+inline bool ParsePath(SourceType& source, ConsumerType& consumer) {
+  while (source.HasMoreData()) {
+    PathSegmentData segment = source.ParseSegment();
+    if (segment.command == kPathSegUnknown)
       return false;
 
-    consumer.emitSegment(segment);
+    consumer.EmitSegment(segment);
   }
   return true;
 }
@@ -53,21 +53,21 @@ class SVGPathNormalizer {
 
  public:
   SVGPathNormalizer(SVGPathConsumer* consumer)
-      : m_consumer(consumer), m_lastCommand(PathSegUnknown) {
-    DCHECK(m_consumer);
+      : consumer_(consumer), last_command_(kPathSegUnknown) {
+    DCHECK(consumer_);
   }
 
-  void emitSegment(const PathSegmentData&);
+  void EmitSegment(const PathSegmentData&);
 
  private:
-  bool decomposeArcToCubic(const FloatPoint& currentPoint,
+  bool DecomposeArcToCubic(const FloatPoint& current_point,
                            const PathSegmentData&);
 
-  SVGPathConsumer* m_consumer;
-  FloatPoint m_controlPoint;
-  FloatPoint m_currentPoint;
-  FloatPoint m_subPathPoint;
-  SVGPathSegType m_lastCommand;
+  SVGPathConsumer* consumer_;
+  FloatPoint control_point_;
+  FloatPoint current_point_;
+  FloatPoint sub_path_point_;
+  SVGPathSegType last_command_;
 };
 
 }  // namespace blink

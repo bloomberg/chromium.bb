@@ -14,7 +14,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIFontFamily::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&) {
-  return CSSPropertyFontUtils::consumeFontFamily(range);
+  return CSSPropertyFontUtils::ConsumeFontFamily(range);
 }
 
 }  // namespace blink

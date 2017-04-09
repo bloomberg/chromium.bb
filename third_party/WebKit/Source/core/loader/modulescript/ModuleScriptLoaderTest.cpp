@@ -36,50 +36,53 @@ class TestModuleScriptLoaderClient final
   TestModuleScriptLoaderClient() = default;
   ~TestModuleScriptLoaderClient() override {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_moduleScript); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(module_script_); }
 
-  void notifyNewSingleModuleFinished(ModuleScript* moduleScript) override {
-    m_wasNotifyFinished = true;
-    m_moduleScript = moduleScript;
+  void NotifyNewSingleModuleFinished(ModuleScript* module_script) override {
+    was_notify_finished_ = true;
+    module_script_ = module_script;
   }
 
-  bool wasNotifyFinished() const { return m_wasNotifyFinished; }
-  ModuleScript* moduleScript() { return m_moduleScript; }
+  bool WasNotifyFinished() const { return was_notify_finished_; }
+  ModuleScript* GetModuleScript() { return module_script_; }
 
  private:
-  bool m_wasNotifyFinished = false;
-  Member<ModuleScript> m_moduleScript;
+  bool was_notify_finished_ = false;
+  Member<ModuleScript> module_script_;
 };
 
 class ModuleScriptLoaderTestModulator final : public DummyModulator {
  public:
-  ModuleScriptLoaderTestModulator(RefPtr<ScriptState> scriptState,
-                                  RefPtr<SecurityOrigin> securityOrigin)
-      : m_scriptState(std::move(scriptState)),
-        m_securityOrigin(std::move(securityOrigin)) {}
+  ModuleScriptLoaderTestModulator(RefPtr<ScriptState> script_state,
+                                  RefPtr<SecurityOrigin> security_origin)
+      : script_state_(std::move(script_state)),
+        security_origin_(std::move(security_origin)) {}
 
   ~ModuleScriptLoaderTestModulator() override {}
 
-  SecurityOrigin* securityOrigin() override { return m_securityOrigin.get(); }
+  SecurityOrigin* GetSecurityOrigin() override {
+    return security_origin_.Get();
+  }
 
-  ScriptModule compileModule(const String& script,
-                             const String& urlStr,
-                             AccessControlStatus accessControlStatus) override {
-    ScriptState::Scope scope(m_scriptState.get());
-    return ScriptModule::compile(m_scriptState->isolate(),
+  ScriptModule CompileModule(
+      const String& script,
+      const String& url_str,
+      AccessControlStatus access_control_status) override {
+    ScriptState::Scope scope(script_state_.Get());
+    return ScriptModule::Compile(script_state_->GetIsolate(),
                                  "export default 'foo';", "",
-                                 accessControlStatus);
+                                 access_control_status);
   }
 
   DECLARE_TRACE();
 
  private:
-  RefPtr<ScriptState> m_scriptState;
-  RefPtr<SecurityOrigin> m_securityOrigin;
+  RefPtr<ScriptState> script_state_;
+  RefPtr<SecurityOrigin> security_origin_;
 };
 
 DEFINE_TRACE(ModuleScriptLoaderTestModulator) {
-  DummyModulator::trace(visitor);
+  DummyModulator::Trace(visitor);
 }
 
 }  // namespace
@@ -91,77 +94,78 @@ class ModuleScriptLoaderTest : public ::testing::Test {
   ModuleScriptLoaderTest() = default;
   void SetUp() override;
 
-  LocalFrame& frame() { return m_dummyPageHolder->frame(); }
-  Document& document() { return m_dummyPageHolder->document(); }
-  ResourceFetcher* fetcher() { return m_fetcher.get(); }
-  Modulator* modulator() { return m_modulator.get(); }
+  LocalFrame& GetFrame() { return dummy_page_holder_->GetFrame(); }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
+  ResourceFetcher* Fetcher() { return fetcher_.Get(); }
+  Modulator* GetModulator() { return modulator_.Get(); }
 
  protected:
-  ScopedTestingPlatformSupport<FetchTestingPlatformSupport> m_platform;
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<ResourceFetcher> m_fetcher;
-  Persistent<Modulator> m_modulator;
+  ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<ResourceFetcher> fetcher_;
+  Persistent<Modulator> modulator_;
 };
 
 void ModuleScriptLoaderTest::SetUp() {
-  m_platform->advanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
-  document().setURL(KURL(KURL(), "https://example.test"));
-  m_fetcher = ResourceFetcher::create(
-      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
-  m_modulator = new ModuleScriptLoaderTestModulator(
-      toScriptStateForMainWorld(&frame()), document().getSecurityOrigin());
+  platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
+  GetDocument().SetURL(KURL(KURL(), "https://example.test"));
+  fetcher_ = ResourceFetcher::Create(
+      MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
+  modulator_ = new ModuleScriptLoaderTestModulator(
+      ToScriptStateForMainWorld(&GetFrame()),
+      GetDocument().GetSecurityOrigin());
 }
 
 TEST_F(ModuleScriptLoaderTest, fetchDataURL) {
-  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::create();
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url(KURL(), "data:text/javascript,export default 'grapes';");
-  ModuleScriptFetchRequest moduleRequest(
-      url, String(), ParserInserted, WebURLRequest::FetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  registry->fetch(moduleRequest, ModuleGraphLevel::TopLevelModuleFetch,
-                  modulator(), fetcher(), client);
+  registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
+                  GetModulator(), Fetcher(), client);
 
-  EXPECT_TRUE(client->wasNotifyFinished())
+  EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
-  ASSERT_TRUE(client->moduleScript());
-  EXPECT_EQ(client->moduleScript()->instantiationState(),
-            ModuleInstantiationState::Uninstantiated);
+  ASSERT_TRUE(client->GetModuleScript());
+  EXPECT_EQ(client->GetModuleScript()->InstantiationState(),
+            ModuleInstantiationState::kUninstantiated);
 }
 
 TEST_F(ModuleScriptLoaderTest, fetchInvalidURL) {
-  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::create();
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url;
-  EXPECT_FALSE(url.isValid());
-  ModuleScriptFetchRequest moduleRequest(
-      url, String(), ParserInserted, WebURLRequest::FetchCredentialsModeOmit);
+  EXPECT_FALSE(url.IsValid());
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  registry->fetch(moduleRequest, ModuleGraphLevel::TopLevelModuleFetch,
-                  modulator(), fetcher(), client);
+  registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
+                  GetModulator(), Fetcher(), client);
 
-  EXPECT_TRUE(client->wasNotifyFinished())
+  EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
-  EXPECT_FALSE(client->moduleScript());
+  EXPECT_FALSE(client->GetModuleScript());
 }
 
 TEST_F(ModuleScriptLoaderTest, fetchURL) {
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/module.js");
-  URLTestHelpers::registerMockedURLLoad(
-      url, testing::webTestDataPath("module.js"), "text/javascript");
+  KURL url(kParsedURLString, "http://127.0.0.1:8000/module.js");
+  URLTestHelpers::RegisterMockedURLLoad(
+      url, testing::WebTestDataPath("module.js"), "text/javascript");
 
-  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::create();
-  ModuleScriptFetchRequest moduleRequest(
-      url, String(), ParserInserted, WebURLRequest::FetchCredentialsModeOmit);
+  ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
-  registry->fetch(moduleRequest, ModuleGraphLevel::TopLevelModuleFetch,
-                  modulator(), fetcher(), client);
+  registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
+                  GetModulator(), Fetcher(), client);
 
-  EXPECT_FALSE(client->wasNotifyFinished())
+  EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader unexpectedly finished synchronously.";
-  m_platform->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  EXPECT_TRUE(client->wasNotifyFinished());
-  EXPECT_FALSE(client->moduleScript());
+  EXPECT_TRUE(client->WasNotifyFinished());
+  EXPECT_FALSE(client->GetModuleScript());
 }
 
 }  // namespace blink

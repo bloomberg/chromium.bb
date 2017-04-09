@@ -37,29 +37,29 @@ class AXMenuList final : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AXMenuList);
 
  public:
-  static AXMenuList* create(LayoutMenuList* layoutObject, AXObjectCacheImpl&);
+  static AXMenuList* Create(LayoutMenuList* layout_object, AXObjectCacheImpl&);
 
-  bool isCollapsed() const override;
-  AccessibilityExpanded isExpanded() const final;
-  bool press() override;
-  void clearChildren() override;
-  bool nameFromContents() const override;
+  bool IsCollapsed() const override;
+  AccessibilityExpanded IsExpanded() const final;
+  bool Press() override;
+  void ClearChildren() override;
+  bool NameFromContents() const override;
 
-  void didUpdateActiveOption(int optionIndex);
-  void didShowPopup();
-  void didHidePopup();
+  void DidUpdateActiveOption(int option_index);
+  void DidShowPopup();
+  void DidHidePopup();
 
  private:
   AXMenuList(LayoutMenuList*, AXObjectCacheImpl&);
 
-  bool isMenuList() const override { return true; }
-  AccessibilityRole determineAccessibilityRole() final;
-  bool canSetFocusAttribute() const override;
+  bool IsMenuList() const override { return true; }
+  AccessibilityRole DetermineAccessibilityRole() final;
+  bool CanSetFocusAttribute() const override;
 
-  void addChildren() override;
+  void AddChildren() override;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, isMenuList());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, IsMenuList());
 
 }  // namespace blink
 

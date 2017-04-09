@@ -68,15 +68,15 @@ class AssociatedResourceFetcherImpl::ClientImpl
   }
 
   // WebAssociatedURLLoaderClient methods:
-  void didReceiveResponse(const blink::WebURLResponse& response) override {
+  void DidReceiveResponse(const blink::WebURLResponse& response) override {
     DCHECK(!completed_);
     response_ = response;
   }
-  void didReceiveCachedMetadata(const char* data, int data_length) override {
+  void DidReceiveCachedMetadata(const char* data, int data_length) override {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
   }
-  void didReceiveData(const char* data, int data_length) override {
+  void DidReceiveData(const char* data, int data_length) override {
     // The WebAssociatedURLLoader will continue after a load failure.
     // For example, for an Access Control error.
     if (completed_)
@@ -85,14 +85,14 @@ class AssociatedResourceFetcherImpl::ClientImpl
 
     data_.append(data, data_length);
   }
-  void didFinishLoading(double finishTime) override {
+  void DidFinishLoading(double finishTime) override {
     // The WebAssociatedURLLoader will continue after a load failure.
     // For example, for an Access Control error.
     if (completed_)
       return;
     OnLoadCompleteInternal(LOAD_SUCCEEDED);
   }
-  void didFail(const blink::WebURLError& error) override {
+  void DidFail(const blink::WebURLError& error) override {
     OnLoadCompleteInternal(LOAD_FAILED);
   }
 
@@ -124,28 +124,28 @@ AssociatedResourceFetcherImpl::~AssociatedResourceFetcherImpl() {
   DCHECK(client_);
 
   if (!client_->completed())
-    loader_->cancel();
+    loader_->Cancel();
 }
 
 void AssociatedResourceFetcherImpl::SetServiceWorkerMode(
     blink::WebURLRequest::ServiceWorkerMode service_worker_mode) {
-  DCHECK(!request_.isNull());
+  DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
-  request_.setServiceWorkerMode(service_worker_mode);
+  request_.SetServiceWorkerMode(service_worker_mode);
 }
 
 void AssociatedResourceFetcherImpl::SetCachePolicy(
     blink::WebCachePolicy policy) {
-  DCHECK(!request_.isNull());
+  DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
-  request_.setCachePolicy(policy);
+  request_.SetCachePolicy(policy);
 }
 
 void AssociatedResourceFetcherImpl::SetLoaderOptions(
     const blink::WebAssociatedURLLoaderOptions& options) {
-  DCHECK(!request_.isNull());
+  DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
   options_ = options;
@@ -158,25 +158,25 @@ void AssociatedResourceFetcherImpl::Start(
     const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
-  DCHECK(!request_.isNull());
-  if (!request_.httpBody().isNull())
-    DCHECK_NE("GET", request_.httpMethod().utf8()) << "GETs can't have bodies.";
+  DCHECK(!request_.IsNull());
+  if (!request_.HttpBody().IsNull())
+    DCHECK_NE("GET", request_.HttpMethod().Utf8()) << "GETs can't have bodies.";
 
-  request_.setRequestContext(request_context);
-  request_.setFrameType(frame_type);
-  request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
+  request_.SetRequestContext(request_context);
+  request_.SetFrameType(frame_type);
+  request_.SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
 
   client_.reset(new ClientImpl(callback));
 
-  loader_.reset(frame->createAssociatedURLLoader(options_));
-  loader_->loadAsynchronously(request_, client_.get());
+  loader_.reset(frame->CreateAssociatedURLLoader(options_));
+  loader_->LoadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.
   request_ = blink::WebURLRequest();
 }
 
 void AssociatedResourceFetcherImpl::Cancel() {
-  loader_->cancel();
+  loader_->Cancel();
   client_->Cancel();
 }
 

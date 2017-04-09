@@ -28,14 +28,14 @@ class PushPermissionStatusCallbacks final
   explicit PushPermissionStatusCallbacks(ScriptPromiseResolver*);
   ~PushPermissionStatusCallbacks() override;
 
-  void onSuccess(WebPushPermissionStatus) override;
+  void OnSuccess(WebPushPermissionStatus) override;
 
   // Called if for some reason the status of the permission cannot be checked.
-  void onError(const WebPushError&) override;
+  void OnError(const WebPushError&) override;
 
  private:
-  static WTF::String permissionString(WebPushPermissionStatus);
-  Persistent<ScriptPromiseResolver> m_resolver;
+  static WTF::String PermissionString(WebPushPermissionStatus);
+  Persistent<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace blink

@@ -35,255 +35,257 @@ namespace blink {
 
 namespace SIMD {
 
-ALWAYS_INLINE void unpackOneRowOfRGBA16LittleToRGBA8(const uint16_t*& source,
+ALWAYS_INLINE void UnpackOneRowOfRGBA16LittleToRGBA8(const uint16_t*& source,
                                                      uint8_t*& destination,
-                                                     unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 4;
-  unsigned tailComponents = componentsPerRow % 16;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+                                                     unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 4;
+  unsigned tail_components = components_per_row % 16;
+  unsigned components_size = components_per_row - tail_components;
   const uint8_t* src = reinterpret_cast<const uint8_t*>(source);
 
-  for (unsigned i = 0; i < componentsSize; i += 16) {
+  for (unsigned i = 0; i < components_size; i += 16) {
     uint8x16x2_t components = vld2q_u8(src + i * 2);
     vst1q_u8(destination + i, components.val[1]);
   }
 
-  source += componentsSize;
-  destination += componentsSize;
-  pixelsPerRow = tailComponents / 4;
+  source += components_size;
+  destination += components_size;
+  pixels_per_row = tail_components / 4;
 }
 
-ALWAYS_INLINE void unpackOneRowOfRGB16LittleToRGBA8(const uint16_t*& source,
+ALWAYS_INLINE void UnpackOneRowOfRGB16LittleToRGBA8(const uint16_t*& source,
                                                     uint8_t*& destination,
-                                                    unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 3;
-  unsigned tailComponents = componentsPerRow % 24;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+                                                    unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 3;
+  unsigned tail_components = components_per_row % 24;
+  unsigned components_size = components_per_row - tail_components;
 
-  uint8x8_t componentA = vdup_n_u8(0xFF);
-  for (unsigned i = 0; i < componentsSize; i += 24) {
-    uint16x8x3_t RGB16 = vld3q_u16(source + i);
-    uint8x8_t componentR = vqmovn_u16(vshrq_n_u16(RGB16.val[0], 8));
-    uint8x8_t componentG = vqmovn_u16(vshrq_n_u16(RGB16.val[1], 8));
-    uint8x8_t componentB = vqmovn_u16(vshrq_n_u16(RGB16.val[2], 8));
-    uint8x8x4_t RGBA8 = {{componentR, componentG, componentB, componentA}};
-    vst4_u8(destination, RGBA8);
+  uint8x8_t component_a = vdup_n_u8(0xFF);
+  for (unsigned i = 0; i < components_size; i += 24) {
+    uint16x8x3_t rgb16 = vld3q_u16(source + i);
+    uint8x8_t component_r = vqmovn_u16(vshrq_n_u16(rgb16.val[0], 8));
+    uint8x8_t component_g = vqmovn_u16(vshrq_n_u16(rgb16.val[1], 8));
+    uint8x8_t component_b = vqmovn_u16(vshrq_n_u16(rgb16.val[2], 8));
+    uint8x8x4_t rgba8 = {{component_r, component_g, component_b, component_a}};
+    vst4_u8(destination, rgba8);
     destination += 32;
   }
 
-  source += componentsSize;
-  pixelsPerRow = tailComponents / 3;
+  source += components_size;
+  pixels_per_row = tail_components / 3;
 }
 
-ALWAYS_INLINE void unpackOneRowOfARGB16LittleToRGBA8(const uint16_t*& source,
+ALWAYS_INLINE void UnpackOneRowOfARGB16LittleToRGBA8(const uint16_t*& source,
                                                      uint8_t*& destination,
-                                                     unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 4;
-  unsigned tailComponents = componentsPerRow % 32;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+                                                     unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 4;
+  unsigned tail_components = components_per_row % 32;
+  unsigned components_size = components_per_row - tail_components;
 
-  for (unsigned i = 0; i < componentsSize; i += 32) {
-    uint16x8x4_t ARGB16 = vld4q_u16(source + i);
-    uint8x8_t componentA = vqmovn_u16(vshrq_n_u16(ARGB16.val[0], 8));
-    uint8x8_t componentR = vqmovn_u16(vshrq_n_u16(ARGB16.val[1], 8));
-    uint8x8_t componentG = vqmovn_u16(vshrq_n_u16(ARGB16.val[2], 8));
-    uint8x8_t componentB = vqmovn_u16(vshrq_n_u16(ARGB16.val[3], 8));
-    uint8x8x4_t RGBA8 = {{componentR, componentG, componentB, componentA}};
-    vst4_u8(destination + i, RGBA8);
+  for (unsigned i = 0; i < components_size; i += 32) {
+    uint16x8x4_t argb16 = vld4q_u16(source + i);
+    uint8x8_t component_a = vqmovn_u16(vshrq_n_u16(argb16.val[0], 8));
+    uint8x8_t component_r = vqmovn_u16(vshrq_n_u16(argb16.val[1], 8));
+    uint8x8_t component_g = vqmovn_u16(vshrq_n_u16(argb16.val[2], 8));
+    uint8x8_t component_b = vqmovn_u16(vshrq_n_u16(argb16.val[3], 8));
+    uint8x8x4_t rgba8 = {{component_r, component_g, component_b, component_a}};
+    vst4_u8(destination + i, rgba8);
   }
 
-  source += componentsSize;
-  destination += componentsSize;
-  pixelsPerRow = tailComponents / 4;
+  source += components_size;
+  destination += components_size;
+  pixels_per_row = tail_components / 4;
 }
 
-ALWAYS_INLINE void unpackOneRowOfBGRA16LittleToRGBA8(const uint16_t*& source,
+ALWAYS_INLINE void UnpackOneRowOfBGRA16LittleToRGBA8(const uint16_t*& source,
                                                      uint8_t*& destination,
-                                                     unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 4;
-  unsigned tailComponents = componentsPerRow % 32;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+                                                     unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 4;
+  unsigned tail_components = components_per_row % 32;
+  unsigned components_size = components_per_row - tail_components;
 
-  for (unsigned i = 0; i < componentsSize; i += 32) {
-    uint16x8x4_t ARGB16 = vld4q_u16(source + i);
-    uint8x8_t componentB = vqmovn_u16(vshrq_n_u16(ARGB16.val[0], 8));
-    uint8x8_t componentG = vqmovn_u16(vshrq_n_u16(ARGB16.val[1], 8));
-    uint8x8_t componentR = vqmovn_u16(vshrq_n_u16(ARGB16.val[2], 8));
-    uint8x8_t componentA = vqmovn_u16(vshrq_n_u16(ARGB16.val[3], 8));
-    uint8x8x4_t RGBA8 = {{componentR, componentG, componentB, componentA}};
-    vst4_u8(destination + i, RGBA8);
+  for (unsigned i = 0; i < components_size; i += 32) {
+    uint16x8x4_t argb16 = vld4q_u16(source + i);
+    uint8x8_t component_b = vqmovn_u16(vshrq_n_u16(argb16.val[0], 8));
+    uint8x8_t component_g = vqmovn_u16(vshrq_n_u16(argb16.val[1], 8));
+    uint8x8_t component_r = vqmovn_u16(vshrq_n_u16(argb16.val[2], 8));
+    uint8x8_t component_a = vqmovn_u16(vshrq_n_u16(argb16.val[3], 8));
+    uint8x8x4_t rgba8 = {{component_r, component_g, component_b, component_a}};
+    vst4_u8(destination + i, rgba8);
   }
 
-  source += componentsSize;
-  destination += componentsSize;
-  pixelsPerRow = tailComponents / 4;
+  source += components_size;
+  destination += components_size;
+  pixels_per_row = tail_components / 4;
 }
 
-ALWAYS_INLINE void unpackOneRowOfRGBA4444ToRGBA8(const uint16_t*& source,
+ALWAYS_INLINE void UnpackOneRowOfRGBA4444ToRGBA8(const uint16_t*& source,
                                                  uint8_t*& destination,
-                                                 unsigned& pixelsPerRow) {
-  unsigned tailPixels = pixelsPerRow % 8;
-  unsigned pixelSize = pixelsPerRow - tailPixels;
+                                                 unsigned& pixels_per_row) {
+  unsigned tail_pixels = pixels_per_row % 8;
+  unsigned pixel_size = pixels_per_row - tail_pixels;
 
   uint16x8_t immediate0x0f = vdupq_n_u16(0x0F);
-  for (unsigned i = 0; i < pixelSize; i += 8) {
-    uint16x8_t eightPixels = vld1q_u16(source + i);
+  for (unsigned i = 0; i < pixel_size; i += 8) {
+    uint16x8_t eight_pixels = vld1q_u16(source + i);
 
-    uint8x8_t componentR = vqmovn_u16(vshrq_n_u16(eightPixels, 12));
-    uint8x8_t componentG =
-        vqmovn_u16(vandq_u16(vshrq_n_u16(eightPixels, 8), immediate0x0f));
-    uint8x8_t componentB =
-        vqmovn_u16(vandq_u16(vshrq_n_u16(eightPixels, 4), immediate0x0f));
-    uint8x8_t componentA = vqmovn_u16(vandq_u16(eightPixels, immediate0x0f));
+    uint8x8_t component_r = vqmovn_u16(vshrq_n_u16(eight_pixels, 12));
+    uint8x8_t component_g =
+        vqmovn_u16(vandq_u16(vshrq_n_u16(eight_pixels, 8), immediate0x0f));
+    uint8x8_t component_b =
+        vqmovn_u16(vandq_u16(vshrq_n_u16(eight_pixels, 4), immediate0x0f));
+    uint8x8_t component_a = vqmovn_u16(vandq_u16(eight_pixels, immediate0x0f));
 
-    componentR = vorr_u8(vshl_n_u8(componentR, 4), componentR);
-    componentG = vorr_u8(vshl_n_u8(componentG, 4), componentG);
-    componentB = vorr_u8(vshl_n_u8(componentB, 4), componentB);
-    componentA = vorr_u8(vshl_n_u8(componentA, 4), componentA);
+    component_r = vorr_u8(vshl_n_u8(component_r, 4), component_r);
+    component_g = vorr_u8(vshl_n_u8(component_g, 4), component_g);
+    component_b = vorr_u8(vshl_n_u8(component_b, 4), component_b);
+    component_a = vorr_u8(vshl_n_u8(component_a, 4), component_a);
 
-    uint8x8x4_t destComponents = {
-        {componentR, componentG, componentB, componentA}};
-    vst4_u8(destination, destComponents);
+    uint8x8x4_t dest_components = {
+        {component_r, component_g, component_b, component_a}};
+    vst4_u8(destination, dest_components);
     destination += 32;
   }
 
-  source += pixelSize;
-  pixelsPerRow = tailPixels;
+  source += pixel_size;
+  pixels_per_row = tail_pixels;
 }
 
-ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort4444(
+ALWAYS_INLINE void PackOneRowOfRGBA8ToUnsignedShort4444(
     const uint8_t*& source,
     uint16_t*& destination,
-    unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 4;
-  unsigned tailComponents = componentsPerRow % 32;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+    unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 4;
+  unsigned tail_components = components_per_row % 32;
+  unsigned components_size = components_per_row - tail_components;
 
   uint8_t* dst = reinterpret_cast<uint8_t*>(destination);
   uint8x8_t immediate0xf0 = vdup_n_u8(0xF0);
-  for (unsigned i = 0; i < componentsSize; i += 32) {
-    uint8x8x4_t RGBA8 = vld4_u8(source + i);
+  for (unsigned i = 0; i < components_size; i += 32) {
+    uint8x8x4_t rgba8 = vld4_u8(source + i);
 
-    uint8x8_t componentR = vand_u8(RGBA8.val[0], immediate0xf0);
-    uint8x8_t componentG = vshr_n_u8(vand_u8(RGBA8.val[1], immediate0xf0), 4);
-    uint8x8_t componentB = vand_u8(RGBA8.val[2], immediate0xf0);
-    uint8x8_t componentA = vshr_n_u8(vand_u8(RGBA8.val[3], immediate0xf0), 4);
+    uint8x8_t component_r = vand_u8(rgba8.val[0], immediate0xf0);
+    uint8x8_t component_g = vshr_n_u8(vand_u8(rgba8.val[1], immediate0xf0), 4);
+    uint8x8_t component_b = vand_u8(rgba8.val[2], immediate0xf0);
+    uint8x8_t component_a = vshr_n_u8(vand_u8(rgba8.val[3], immediate0xf0), 4);
 
-    uint8x8x2_t RGBA4;
-    RGBA4.val[0] = vorr_u8(componentB, componentA);
-    RGBA4.val[1] = vorr_u8(componentR, componentG);
-    vst2_u8(dst, RGBA4);
+    uint8x8x2_t rgba4;
+    rgba4.val[0] = vorr_u8(component_b, component_a);
+    rgba4.val[1] = vorr_u8(component_r, component_g);
+    vst2_u8(dst, rgba4);
     dst += 16;
   }
 
-  source += componentsSize;
-  destination += componentsSize / 4;
-  pixelsPerRow = tailComponents / 4;
+  source += components_size;
+  destination += components_size / 4;
+  pixels_per_row = tail_components / 4;
 }
 
-ALWAYS_INLINE void unpackOneRowOfRGBA5551ToRGBA8(const uint16_t*& source,
+ALWAYS_INLINE void UnpackOneRowOfRGBA5551ToRGBA8(const uint16_t*& source,
                                                  uint8_t*& destination,
-                                                 unsigned& pixelsPerRow) {
-  unsigned tailPixels = pixelsPerRow % 8;
-  unsigned pixelSize = pixelsPerRow - tailPixels;
+                                                 unsigned& pixels_per_row) {
+  unsigned tail_pixels = pixels_per_row % 8;
+  unsigned pixel_size = pixels_per_row - tail_pixels;
 
   uint8x8_t immediate0x7 = vdup_n_u8(0x7);
   uint8x8_t immediate0xff = vdup_n_u8(0xFF);
   uint16x8_t immediate0x1f = vdupq_n_u16(0x1F);
   uint16x8_t immediate0x1 = vdupq_n_u16(0x1);
 
-  for (unsigned i = 0; i < pixelSize; i += 8) {
-    uint16x8_t eightPixels = vld1q_u16(source + i);
+  for (unsigned i = 0; i < pixel_size; i += 8) {
+    uint16x8_t eight_pixels = vld1q_u16(source + i);
 
-    uint8x8_t componentR = vqmovn_u16(vshrq_n_u16(eightPixels, 11));
-    uint8x8_t componentG =
-        vqmovn_u16(vandq_u16(vshrq_n_u16(eightPixels, 6), immediate0x1f));
-    uint8x8_t componentB =
-        vqmovn_u16(vandq_u16(vshrq_n_u16(eightPixels, 1), immediate0x1f));
-    uint8x8_t componentA = vqmovn_u16(vandq_u16(eightPixels, immediate0x1));
+    uint8x8_t component_r = vqmovn_u16(vshrq_n_u16(eight_pixels, 11));
+    uint8x8_t component_g =
+        vqmovn_u16(vandq_u16(vshrq_n_u16(eight_pixels, 6), immediate0x1f));
+    uint8x8_t component_b =
+        vqmovn_u16(vandq_u16(vshrq_n_u16(eight_pixels, 1), immediate0x1f));
+    uint8x8_t component_a = vqmovn_u16(vandq_u16(eight_pixels, immediate0x1));
 
-    componentR =
-        vorr_u8(vshl_n_u8(componentR, 3), vand_u8(componentR, immediate0x7));
-    componentG =
-        vorr_u8(vshl_n_u8(componentG, 3), vand_u8(componentG, immediate0x7));
-    componentB =
-        vorr_u8(vshl_n_u8(componentB, 3), vand_u8(componentB, immediate0x7));
-    componentA = vmul_u8(componentA, immediate0xff);
+    component_r =
+        vorr_u8(vshl_n_u8(component_r, 3), vand_u8(component_r, immediate0x7));
+    component_g =
+        vorr_u8(vshl_n_u8(component_g, 3), vand_u8(component_g, immediate0x7));
+    component_b =
+        vorr_u8(vshl_n_u8(component_b, 3), vand_u8(component_b, immediate0x7));
+    component_a = vmul_u8(component_a, immediate0xff);
 
-    uint8x8x4_t destComponents = {
-        {componentR, componentG, componentB, componentA}};
-    vst4_u8(destination, destComponents);
+    uint8x8x4_t dest_components = {
+        {component_r, component_g, component_b, component_a}};
+    vst4_u8(destination, dest_components);
     destination += 32;
   }
 
-  source += pixelSize;
-  pixelsPerRow = tailPixels;
+  source += pixel_size;
+  pixels_per_row = tail_pixels;
 }
 
-ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort5551(
+ALWAYS_INLINE void PackOneRowOfRGBA8ToUnsignedShort5551(
     const uint8_t*& source,
     uint16_t*& destination,
-    unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 4;
-  unsigned tailComponents = componentsPerRow % 32;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+    unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 4;
+  unsigned tail_components = components_per_row % 32;
+  unsigned components_size = components_per_row - tail_components;
 
   uint8_t* dst = reinterpret_cast<uint8_t*>(destination);
 
   uint8x8_t immediate0xf8 = vdup_n_u8(0xF8);
   uint8x8_t immediate0x18 = vdup_n_u8(0x18);
-  for (unsigned i = 0; i < componentsSize; i += 32) {
-    uint8x8x4_t RGBA8 = vld4_u8(source + i);
+  for (unsigned i = 0; i < components_size; i += 32) {
+    uint8x8x4_t rgba8 = vld4_u8(source + i);
 
-    uint8x8_t componentR = vand_u8(RGBA8.val[0], immediate0xf8);
-    uint8x8_t componentG3bit = vshr_n_u8(RGBA8.val[1], 5);
+    uint8x8_t component_r = vand_u8(rgba8.val[0], immediate0xf8);
+    uint8x8_t component_g3bit = vshr_n_u8(rgba8.val[1], 5);
 
-    uint8x8_t componentG2bit =
-        vshl_n_u8(vand_u8(RGBA8.val[1], immediate0x18), 3);
-    uint8x8_t componentB = vshr_n_u8(vand_u8(RGBA8.val[2], immediate0xf8), 2);
-    uint8x8_t componentA = vshr_n_u8(RGBA8.val[3], 7);
+    uint8x8_t component_g2bit =
+        vshl_n_u8(vand_u8(rgba8.val[1], immediate0x18), 3);
+    uint8x8_t component_b = vshr_n_u8(vand_u8(rgba8.val[2], immediate0xf8), 2);
+    uint8x8_t component_a = vshr_n_u8(rgba8.val[3], 7);
 
-    uint8x8x2_t RGBA5551;
-    RGBA5551.val[0] = vorr_u8(vorr_u8(componentG2bit, componentB), componentA);
-    RGBA5551.val[1] = vorr_u8(componentR, componentG3bit);
-    vst2_u8(dst, RGBA5551);
+    uint8x8x2_t rgba5551;
+    rgba5551.val[0] =
+        vorr_u8(vorr_u8(component_g2bit, component_b), component_a);
+    rgba5551.val[1] = vorr_u8(component_r, component_g3bit);
+    vst2_u8(dst, rgba5551);
     dst += 16;
   }
 
-  source += componentsSize;
-  destination += componentsSize / 4;
-  pixelsPerRow = tailComponents / 4;
+  source += components_size;
+  destination += components_size / 4;
+  pixels_per_row = tail_components / 4;
 }
 
-ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort565(const uint8_t*& source,
-                                                       uint16_t*& destination,
-                                                       unsigned& pixelsPerRow) {
-  unsigned componentsPerRow = pixelsPerRow * 4;
-  unsigned tailComponents = componentsPerRow % 32;
-  unsigned componentsSize = componentsPerRow - tailComponents;
+ALWAYS_INLINE void PackOneRowOfRGBA8ToUnsignedShort565(
+    const uint8_t*& source,
+    uint16_t*& destination,
+    unsigned& pixels_per_row) {
+  unsigned components_per_row = pixels_per_row * 4;
+  unsigned tail_components = components_per_row % 32;
+  unsigned components_size = components_per_row - tail_components;
   uint8_t* dst = reinterpret_cast<uint8_t*>(destination);
 
   uint8x8_t immediate0xf8 = vdup_n_u8(0xF8);
   uint8x8_t immediate0x1c = vdup_n_u8(0x1C);
-  for (unsigned i = 0; i < componentsSize; i += 32) {
-    uint8x8x4_t RGBA8 = vld4_u8(source + i);
+  for (unsigned i = 0; i < components_size; i += 32) {
+    uint8x8x4_t rgba8 = vld4_u8(source + i);
 
-    uint8x8_t componentR = vand_u8(RGBA8.val[0], immediate0xf8);
-    uint8x8_t componentGLeft = vshr_n_u8(RGBA8.val[1], 5);
-    uint8x8_t componentGRight =
-        vshl_n_u8(vand_u8(RGBA8.val[1], immediate0x1c), 3);
-    uint8x8_t componentB = vshr_n_u8(vand_u8(RGBA8.val[2], immediate0xf8), 3);
+    uint8x8_t component_r = vand_u8(rgba8.val[0], immediate0xf8);
+    uint8x8_t component_g_left = vshr_n_u8(rgba8.val[1], 5);
+    uint8x8_t component_g_right =
+        vshl_n_u8(vand_u8(rgba8.val[1], immediate0x1c), 3);
+    uint8x8_t component_b = vshr_n_u8(vand_u8(rgba8.val[2], immediate0xf8), 3);
 
-    uint8x8x2_t RGB565;
-    RGB565.val[0] = vorr_u8(componentGRight, componentB);
-    RGB565.val[1] = vorr_u8(componentR, componentGLeft);
-    vst2_u8(dst, RGB565);
+    uint8x8x2_t rgb565;
+    rgb565.val[0] = vorr_u8(component_g_right, component_b);
+    rgb565.val[1] = vorr_u8(component_r, component_g_left);
+    vst2_u8(dst, rgb565);
     dst += 16;
   }
 
-  source += componentsSize;
-  destination += componentsSize / 4;
-  pixelsPerRow = tailComponents / 4;
+  source += components_size;
+  destination += components_size / 4;
+  pixels_per_row = tail_components / 4;
 }
 
 }  // namespace SIMD

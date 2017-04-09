@@ -209,12 +209,14 @@ def member_impl_context(member, interfaces_info, header_includes,
     def has_method_expression():
         if nullable_indicator_name:
             return nullable_indicator_name
-        elif idl_type.is_enum or idl_type.is_string_type or idl_type.is_union_type:
+        elif idl_type.is_union_type:
             return '!m_%s.isNull()' % cpp_name
+        elif idl_type.is_enum or idl_type.is_string_type:
+            return '!m_%s.IsNull()' % cpp_name
         elif idl_type.name in ['Any', 'Object']:
-            return '!(m_{0}.isEmpty() || m_{0}.isNull() || m_{0}.isUndefined())'.format(cpp_name)
+            return '!(m_{0}.IsEmpty() || m_{0}.IsNull() || m_{0}.IsUndefined())'.format(cpp_name)
         elif idl_type.name == 'Dictionary':
-            return '!m_%s.isUndefinedOrNull()' % cpp_name
+            return '!m_%s.IsUndefinedOrNull()' % cpp_name
         else:
             return 'm_%s' % cpp_name
 

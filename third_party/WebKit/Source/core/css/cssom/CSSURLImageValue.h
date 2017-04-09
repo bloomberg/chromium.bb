@@ -14,22 +14,22 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSURLImageValue* create(const AtomicString& url) {
-    return new CSSURLImageValue(CSSImageValue::create(url));
+  static CSSURLImageValue* Create(const AtomicString& url) {
+    return new CSSURLImageValue(CSSImageValue::Create(url));
   }
-  static CSSURLImageValue* create(const CSSImageValue* imageValue) {
-    return new CSSURLImageValue(imageValue);
+  static CSSURLImageValue* Create(const CSSImageValue* image_value) {
+    return new CSSURLImageValue(image_value);
   }
 
-  StyleValueType type() const override { return URLImageType; }
+  StyleValueType GetType() const override { return kURLImageType; }
 
-  const CSSValue* toCSSValue() const override { return cssImageValue(); }
+  const CSSValue* ToCSSValue() const override { return CssImageValue(); }
 
-  const String& url() const { return cssImageValue()->url(); }
+  const String& url() const { return CssImageValue()->Url(); }
 
  private:
-  explicit CSSURLImageValue(const CSSImageValue* imageValue)
-      : CSSStyleImageValue(imageValue) {}
+  explicit CSSURLImageValue(const CSSImageValue* image_value)
+      : CSSStyleImageValue(image_value) {}
 };
 
 }  // namespace blink

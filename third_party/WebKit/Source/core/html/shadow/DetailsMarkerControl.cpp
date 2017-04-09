@@ -41,17 +41,17 @@ using namespace HTMLNames;
 DetailsMarkerControl::DetailsMarkerControl(Document& document)
     : HTMLDivElement(document) {}
 
-LayoutObject* DetailsMarkerControl::createLayoutObject(const ComputedStyle&) {
+LayoutObject* DetailsMarkerControl::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutDetailsMarker(this);
 }
 
-bool DetailsMarkerControl::layoutObjectIsNeeded(const ComputedStyle& style) {
-  return summaryElement()->isMainSummary() &&
-         HTMLDivElement::layoutObjectIsNeeded(style);
+bool DetailsMarkerControl::LayoutObjectIsNeeded(const ComputedStyle& style) {
+  return SummaryElement()->IsMainSummary() &&
+         HTMLDivElement::LayoutObjectIsNeeded(style);
 }
 
-HTMLSummaryElement* DetailsMarkerControl::summaryElement() {
-  return toHTMLSummaryElement(ownerShadowHost());
+HTMLSummaryElement* DetailsMarkerControl::SummaryElement() {
+  return toHTMLSummaryElement(OwnerShadowHost());
 }
 
 }  // namespace blink

@@ -43,39 +43,39 @@ class PLATFORM_EXPORT ContiguousContainerBase {
   WTF_MAKE_NONCOPYABLE(ContiguousContainerBase);
 
  protected:
-  explicit ContiguousContainerBase(size_t maxObjectSize);
+  explicit ContiguousContainerBase(size_t max_object_size);
   ContiguousContainerBase(ContiguousContainerBase&&);
   ~ContiguousContainerBase();
 
   ContiguousContainerBase& operator=(ContiguousContainerBase&&);
 
-  size_t size() const { return m_elements.size(); }
-  bool isEmpty() const { return !size(); }
-  size_t capacityInBytes() const;
-  size_t usedCapacityInBytes() const;
-  size_t memoryUsageInBytes() const;
+  size_t size() const { return elements_.size(); }
+  bool IsEmpty() const { return !size(); }
+  size_t CapacityInBytes() const;
+  size_t UsedCapacityInBytes() const;
+  size_t MemoryUsageInBytes() const;
 
   // These do not invoke constructors or destructors.
-  void reserveInitialCapacity(size_t, const char* typeName);
-  void* allocate(size_t objectSize, const char* typeName);
-  void removeLast();
-  void clear();
-  void swap(ContiguousContainerBase&);
+  void ReserveInitialCapacity(size_t, const char* type_name);
+  void* Allocate(size_t object_size, const char* type_name);
+  void RemoveLast();
+  void Clear();
+  void Swap(ContiguousContainerBase&);
 
   // Discards excess buffer capacity. Intended for use when no more appending
   // is anticipated.
-  void shrinkToFit();
+  void ShrinkToFit();
 
-  Vector<void*> m_elements;
+  Vector<void*> elements_;
 
  private:
   class Buffer;
 
-  Buffer* allocateNewBufferForNextAllocation(size_t, const char* typeName);
+  Buffer* AllocateNewBufferForNextAllocation(size_t, const char* type_name);
 
-  Vector<std::unique_ptr<Buffer>> m_buffers;
-  unsigned m_endIndex;
-  size_t m_maxObjectSize;
+  Vector<std::unique_ptr<Buffer>> buffers_;
+  unsigned end_index_;
+  size_t max_object_size_;
 };
 
 // For most cases, no alignment stricter than pointer alignment is required. If
@@ -97,32 +97,32 @@ class ContiguousContainer : public ContiguousContainerBase {
    public:
     IteratorWrapper() {}
     bool operator==(const IteratorWrapper& other) const {
-      return m_it == other.m_it;
+      return it_ == other.it_;
     }
     bool operator!=(const IteratorWrapper& other) const {
-      return m_it != other.m_it;
+      return it_ != other.it_;
     }
-    ValueType& operator*() const { return *static_cast<ValueType*>(*m_it); }
+    ValueType& operator*() const { return *static_cast<ValueType*>(*it_); }
     ValueType* operator->() const { return &operator*(); }
     IteratorWrapper operator+(std::ptrdiff_t n) const {
-      return IteratorWrapper(m_it + n);
+      return IteratorWrapper(it_ + n);
     }
     IteratorWrapper operator++(int) {
       IteratorWrapper tmp = *this;
-      ++m_it;
+      ++it_;
       return tmp;
     }
     std::ptrdiff_t operator-(const IteratorWrapper& other) const {
-      return m_it - other.m_it;
+      return it_ - other.it_;
     }
     IteratorWrapper& operator++() {
-      ++m_it;
+      ++it_;
       return *this;
     }
 
    private:
-    explicit IteratorWrapper(const BaseIterator& it) : m_it(it) {}
-    BaseIterator m_it;
+    explicit IteratorWrapper(const BaseIterator& it) : it_(it) {}
+    BaseIterator it_;
     friend class ContiguousContainer;
   };
 
@@ -136,12 +136,12 @@ class ContiguousContainer : public ContiguousContainerBase {
       IteratorWrapper<Vector<void*>::const_reverse_iterator,
                       const BaseElementType>;
 
-  explicit ContiguousContainer(size_t maxObjectSize)
-      : ContiguousContainerBase(align(maxObjectSize)) {}
+  explicit ContiguousContainer(size_t max_object_size)
+      : ContiguousContainerBase(Align(max_object_size)) {}
 
-  ContiguousContainer(size_t maxObjectSize, size_t initialSizeBytes)
-      : ContiguousContainer(maxObjectSize) {
-    reserveInitialCapacity(std::max(maxObjectSize, initialSizeBytes),
+  ContiguousContainer(size_t max_object_size, size_t initial_size_bytes)
+      : ContiguousContainer(max_object_size) {
+    ReserveInitialCapacity(std::max(max_object_size, initial_size_bytes),
                            WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
   }
 
@@ -158,94 +158,94 @@ class ContiguousContainer : public ContiguousContainerBase {
   ContiguousContainer& operator=(ContiguousContainer&& source) {
     // Must clear in the derived class to ensure that element destructors
     // care called.
-    clear();
+    Clear();
 
     ContiguousContainerBase::operator=(std::move(source));
     return *this;
   }
 
   using ContiguousContainerBase::size;
-  using ContiguousContainerBase::isEmpty;
-  using ContiguousContainerBase::capacityInBytes;
-  using ContiguousContainerBase::usedCapacityInBytes;
-  using ContiguousContainerBase::memoryUsageInBytes;
-  using ContiguousContainerBase::shrinkToFit;
+  using ContiguousContainerBase::IsEmpty;
+  using ContiguousContainerBase::CapacityInBytes;
+  using ContiguousContainerBase::UsedCapacityInBytes;
+  using ContiguousContainerBase::MemoryUsageInBytes;
+  using ContiguousContainerBase::ShrinkToFit;
 
-  iterator begin() { return iterator(m_elements.begin()); }
-  iterator end() { return iterator(m_elements.end()); }
-  const_iterator begin() const { return const_iterator(m_elements.begin()); }
-  const_iterator end() const { return const_iterator(m_elements.end()); }
-  reverse_iterator rbegin() { return reverse_iterator(m_elements.rbegin()); }
-  reverse_iterator rend() { return reverse_iterator(m_elements.rend()); }
+  iterator begin() { return iterator(elements_.begin()); }
+  iterator end() { return iterator(elements_.end()); }
+  const_iterator begin() const { return const_iterator(elements_.begin()); }
+  const_iterator end() const { return const_iterator(elements_.end()); }
+  reverse_iterator rbegin() { return reverse_iterator(elements_.rbegin()); }
+  reverse_iterator rend() { return reverse_iterator(elements_.rend()); }
   const_reverse_iterator rbegin() const {
-    return const_reverse_iterator(m_elements.rbegin());
+    return const_reverse_iterator(elements_.rbegin());
   }
   const_reverse_iterator rend() const {
-    return const_reverse_iterator(m_elements.rend());
+    return const_reverse_iterator(elements_.rend());
   }
 
-  BaseElementType& first() { return *begin(); }
-  const BaseElementType& first() const { return *begin(); }
-  BaseElementType& last() { return *rbegin(); }
-  const BaseElementType& last() const { return *rbegin(); }
+  BaseElementType& First() { return *begin(); }
+  const BaseElementType& First() const { return *begin(); }
+  BaseElementType& Last() { return *rbegin(); }
+  const BaseElementType& Last() const { return *rbegin(); }
   BaseElementType& operator[](size_t index) { return *(begin() + index); }
   const BaseElementType& operator[](size_t index) const {
     return *(begin() + index);
   }
 
   template <class DerivedElementType, typename... Args>
-  DerivedElementType& allocateAndConstruct(Args&&... args) {
+  DerivedElementType& AllocateAndConstruct(Args&&... args) {
     static_assert(WTF::IsSubclass<DerivedElementType, BaseElementType>::value,
                   "Must use subclass of BaseElementType.");
     static_assert(alignment % WTF_ALIGN_OF(DerivedElementType) == 0,
                   "Derived type requires stronger alignment.");
-    return *new (alignedAllocate(sizeof(DerivedElementType)))
+    return *new (AlignedAllocate(sizeof(DerivedElementType)))
         DerivedElementType(std::forward<Args>(args)...);
   }
 
-  void removeLast() {
-    ASSERT(!isEmpty());
-    last().~BaseElementType();
-    ContiguousContainerBase::removeLast();
+  void RemoveLast() {
+    ASSERT(!IsEmpty());
+    Last().~BaseElementType();
+    ContiguousContainerBase::RemoveLast();
   }
 
   DISABLE_CFI_PERF
-  void clear() {
+  void Clear() {
     for (auto& element : *this) {
       (void)element;  // MSVC incorrectly reports this variable as unused.
       element.~BaseElementType();
     }
-    ContiguousContainerBase::clear();
+    ContiguousContainerBase::Clear();
   }
 
-  void swap(ContiguousContainer& other) {
-    ContiguousContainerBase::swap(other);
+  void Swap(ContiguousContainer& other) {
+    ContiguousContainerBase::Swap(other);
   }
 
   // Appends a new element using memcpy, then default-constructs a base
   // element in its place. Use with care.
-  BaseElementType& appendByMoving(BaseElementType& item, size_t size) {
+  BaseElementType& AppendByMoving(BaseElementType& item, size_t size) {
     ASSERT(size >= sizeof(BaseElementType));
-    void* newItem = alignedAllocate(size);
-    memcpy(newItem, static_cast<void*>(&item), size);
+    void* new_item = AlignedAllocate(size);
+    memcpy(new_item, static_cast<void*>(&item), size);
     new (&item) BaseElementType;
-    return *static_cast<BaseElementType*>(newItem);
+    return *static_cast<BaseElementType*>(new_item);
   }
 
  private:
-  void* alignedAllocate(size_t size) {
-    void* result = ContiguousContainerBase::allocate(
-        align(size), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
+  void* AlignedAllocate(size_t size) {
+    void* result = ContiguousContainerBase::Allocate(
+        Align(size), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
     DCHECK_EQ(reinterpret_cast<intptr_t>(result) & (alignment - 1), 0u);
     return result;
   }
 
-  static size_t align(size_t size) {
-    size_t alignedSize = alignment * ((size + alignment - 1) / alignment);
-    DCHECK_EQ(alignedSize % alignment, 0u);
-    DCHECK_GE(alignedSize, size);
-    DCHECK_LT(alignedSize, size + alignment);
-    return alignedSize;
+  static size_t Align(size_t size) {
+    size_t aligned_size = alignment * ((size + alignment - 1) / alignment);
+    DCHECK_EQ(aligned_size % alignment, 0u);
+    DCHECK_GE(aligned_size, size);
+    DCHECK_LT(aligned_size, size + alignment);
+    return aligned_size;
   }
 };
 

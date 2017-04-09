@@ -41,17 +41,16 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
                                           const base::string16& selector) {
   ExtensionHostMsg_AutomationQuerySelector_Error error;
   if (!render_view() || !render_view()->GetWebView() ||
-      !render_view()->GetWebView()->mainFrame()) {
+      !render_view()->GetWebView()->MainFrame()) {
     error.value = ExtensionHostMsg_AutomationQuerySelector_Error::kNoMainFrame;
     Send(new ExtensionHostMsg_AutomationQuerySelector_Result(
         routing_id(), request_id, error, 0));
     return;
   }
   blink::WebDocument document =
-      render_view()->GetWebView()->mainFrame()->document();
-  if (document.isNull()) {
-      error.value =
-          ExtensionHostMsg_AutomationQuerySelector_Error::kNoDocument;
+      render_view()->GetWebView()->MainFrame()->GetDocument();
+  if (document.IsNull()) {
+    error.value = ExtensionHostMsg_AutomationQuerySelector_Error::kNoDocument;
     Send(new ExtensionHostMsg_AutomationQuerySelector_Result(
         routing_id(), request_id, error, 0));
     return;
@@ -59,8 +58,8 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
   blink::WebNode start_node = document;
   if (acc_obj_id > 0) {
     blink::WebAXObject start_acc_obj =
-        document.accessibilityObjectFromID(acc_obj_id);
-    if (start_acc_obj.isNull()) {
+        document.AccessibilityObjectFromID(acc_obj_id);
+    if (start_acc_obj.IsNull()) {
       error.value =
           ExtensionHostMsg_AutomationQuerySelector_Error::kNodeDestroyed;
       Send(new ExtensionHostMsg_AutomationQuerySelector_Result(
@@ -68,22 +67,22 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
       return;
     }
 
-    start_node = start_acc_obj.node();
-    while (start_node.isNull()) {
-      start_acc_obj = start_acc_obj.parentObject();
-      start_node = start_acc_obj.node();
+    start_node = start_acc_obj.GetNode();
+    while (start_node.IsNull()) {
+      start_acc_obj = start_acc_obj.ParentObject();
+      start_node = start_acc_obj.GetNode();
     }
   }
-  blink::WebString web_selector = blink::WebString::fromUTF16(selector);
-  blink::WebElement result_element = start_node.querySelector(web_selector);
+  blink::WebString web_selector = blink::WebString::FromUTF16(selector);
+  blink::WebElement result_element = start_node.QuerySelector(web_selector);
   int result_acc_obj_id = 0;
-  if (!result_element.isNull()) {
-    blink::WebAXObject result_acc_obj = result_element.accessibilityObject();
-    if (!result_acc_obj.isDetached()) {
-      while (result_acc_obj.accessibilityIsIgnored())
-        result_acc_obj = result_acc_obj.parentObject();
+  if (!result_element.IsNull()) {
+    blink::WebAXObject result_acc_obj = result_element.AccessibilityObject();
+    if (!result_acc_obj.IsDetached()) {
+      while (result_acc_obj.AccessibilityIsIgnored())
+        result_acc_obj = result_acc_obj.ParentObject();
 
-      result_acc_obj_id = result_acc_obj.axID();
+      result_acc_obj_id = result_acc_obj.AxID();
     }
   }
   Send(new ExtensionHostMsg_AutomationQuerySelector_Result(

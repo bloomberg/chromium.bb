@@ -42,16 +42,16 @@ class MODULES_EXPORT SpeechGrammar final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechGrammar* create();  // FIXME: The spec is not clear on what the
+  static SpeechGrammar* Create();  // FIXME: The spec is not clear on what the
                                    // constructor should look like.
-  static SpeechGrammar* create(const KURL& src, double weight);
+  static SpeechGrammar* Create(const KURL& src, double weight);
 
-  const KURL& src(ScriptState*) const { return m_src; }
-  const KURL& src() const { return m_src; }
+  const KURL& src(ScriptState*) const { return src_; }
+  const KURL& src() const { return src_; }
   void setSrc(ScriptState*, const String& src);
 
-  double weight() const { return m_weight; }
-  void setWeight(double weight) { m_weight = weight; }
+  double weight() const { return weight_; }
+  void setWeight(double weight) { weight_ = weight; }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -59,8 +59,8 @@ class MODULES_EXPORT SpeechGrammar final
   SpeechGrammar();
   SpeechGrammar(const KURL& src, double weight);
 
-  KURL m_src;
-  double m_weight;
+  KURL src_;
+  double weight_;
 };
 
 }  // namespace blink

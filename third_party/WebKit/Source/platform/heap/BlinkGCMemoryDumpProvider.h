@@ -29,7 +29,7 @@ class PLATFORM_EXPORT BlinkGCMemoryDumpProvider final
   USING_FAST_MALLOC(BlinkGCMemoryDumpProvider);
 
  public:
-  static BlinkGCMemoryDumpProvider* instance();
+  static BlinkGCMemoryDumpProvider* Instance();
   ~BlinkGCMemoryDumpProvider() override;
 
   // MemoryDumpProvider implementation.
@@ -40,28 +40,28 @@ class PLATFORM_EXPORT BlinkGCMemoryDumpProvider final
   // The returned WebMemoryAllocatorDump is owned by
   // BlinkGCMemoryDumpProvider, and should not be retained (just used to
   // dump in the current call stack).
-  base::trace_event::MemoryAllocatorDump* createMemoryAllocatorDumpForCurrentGC(
-      const String& absoluteName);
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDumpForCurrentGC(
+      const String& absolute_name);
 
   // This must be called before taking a new process-wide GC snapshot, to
   // clear the previous dumps.
-  void clearProcessDumpForCurrentGC();
+  void ClearProcessDumpForCurrentGC();
 
-  base::trace_event::ProcessMemoryDump* currentProcessMemoryDump() {
-    return m_currentProcessMemoryDump.get();
+  base::trace_event::ProcessMemoryDump* CurrentProcessMemoryDump() {
+    return current_process_memory_dump_.get();
   }
 
   void insert(Address, size_t, const char*);
-  void remove(Address);
+  void Remove(Address);
 
  private:
   BlinkGCMemoryDumpProvider();
 
-  Mutex m_allocationRegisterMutex;
-  std::unique_ptr<base::trace_event::AllocationRegister> m_allocationRegister;
+  Mutex allocation_register_mutex_;
+  std::unique_ptr<base::trace_event::AllocationRegister> allocation_register_;
   std::unique_ptr<base::trace_event::ProcessMemoryDump>
-      m_currentProcessMemoryDump;
-  bool m_isHeapProfilingEnabled;
+      current_process_memory_dump_;
+  bool is_heap_profiling_enabled_;
 };
 
 }  // namespace blink

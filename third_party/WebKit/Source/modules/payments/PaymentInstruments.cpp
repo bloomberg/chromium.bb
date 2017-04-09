@@ -12,12 +12,12 @@ namespace blink {
 PaymentInstruments::PaymentInstruments() {}
 
 ScriptPromise PaymentInstruments::deleteInstrument(
-    const String& instrumentKey) {
+    const String& instrument_key) {
   NOTIMPLEMENTED();
   return ScriptPromise();
 }
 
-ScriptPromise PaymentInstruments::get(const String& instrumentKey) {
+ScriptPromise PaymentInstruments::get(const String& instrument_key) {
   NOTIMPLEMENTED();
   return ScriptPromise();
 }
@@ -27,12 +27,12 @@ ScriptPromise PaymentInstruments::keys() {
   return ScriptPromise();
 }
 
-ScriptPromise PaymentInstruments::has(const String& instrumentKey) {
+ScriptPromise PaymentInstruments::has(const String& instrument_key) {
   NOTIMPLEMENTED();
   return ScriptPromise();
 }
 
-ScriptPromise PaymentInstruments::set(const String& instrumentKey,
+ScriptPromise PaymentInstruments::set(const String& instrument_key,
                                       const PaymentInstrument& details) {
   NOTIMPLEMENTED();
   return ScriptPromise();

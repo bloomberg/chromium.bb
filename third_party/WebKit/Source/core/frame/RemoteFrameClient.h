@@ -22,24 +22,24 @@ class RemoteFrameClient : public FrameClient {
  public:
   ~RemoteFrameClient() override {}
 
-  virtual void navigate(const ResourceRequest&,
-                        bool shouldReplaceCurrentEntry) = 0;
-  virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
-  virtual unsigned backForwardLength() = 0;
+  virtual void Navigate(const ResourceRequest&,
+                        bool should_replace_current_entry) = 0;
+  virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
+  virtual unsigned BackForwardLength() = 0;
 
   // Forwards a postMessage for a remote frame.
-  virtual void forwardPostMessage(MessageEvent*,
+  virtual void ForwardPostMessage(MessageEvent*,
                                   PassRefPtr<SecurityOrigin> target,
-                                  LocalFrame* sourceFrame) const = 0;
+                                  LocalFrame* source_frame) const = 0;
 
-  virtual void frameRectsChanged(const IntRect& frameRect) = 0;
+  virtual void FrameRectsChanged(const IntRect& frame_rect) = 0;
 
-  virtual void updateRemoteViewportIntersection(
-      const IntRect& viewportIntersection) = 0;
+  virtual void UpdateRemoteViewportIntersection(
+      const IntRect& viewport_intersection) = 0;
 
-  virtual void advanceFocus(WebFocusType, LocalFrame* source) = 0;
+  virtual void AdvanceFocus(WebFocusType, LocalFrame* source) = 0;
 
-  virtual void visibilityChanged(bool visible) = 0;
+  virtual void VisibilityChanged(bool visible) = 0;
 };
 
 }  // namespace blink

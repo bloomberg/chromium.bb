@@ -8,26 +8,26 @@
 namespace blink {
 
 enum MessageSource {
-  XMLMessageSource,
-  JSMessageSource,
-  NetworkMessageSource,
-  ConsoleAPIMessageSource,
-  StorageMessageSource,
-  AppCacheMessageSource,
-  RenderingMessageSource,
-  SecurityMessageSource,
-  OtherMessageSource,
-  DeprecationMessageSource,
-  WorkerMessageSource,
-  ViolationMessageSource,
-  InterventionMessageSource
+  kXMLMessageSource,
+  kJSMessageSource,
+  kNetworkMessageSource,
+  kConsoleAPIMessageSource,
+  kStorageMessageSource,
+  kAppCacheMessageSource,
+  kRenderingMessageSource,
+  kSecurityMessageSource,
+  kOtherMessageSource,
+  kDeprecationMessageSource,
+  kWorkerMessageSource,
+  kViolationMessageSource,
+  kInterventionMessageSource
 };
 
 enum MessageLevel {
-  VerboseMessageLevel,
-  InfoMessageLevel,
-  WarningMessageLevel,
-  ErrorMessageLevel
+  kVerboseMessageLevel,
+  kInfoMessageLevel,
+  kWarningMessageLevel,
+  kErrorMessageLevel
 };
 }
 

@@ -57,7 +57,7 @@ def callback_function_context(callback_function):
             'return_value': idl_type.v8_value_to_local_cpp_value(
                 callback_function.extended_attributes,
                 'v8ReturnValue', 'cppValue',
-                isolate='m_scriptState->isolate()',
+                isolate='m_scriptState->GetIsolate()',
                 bailout_return_value='false'),
         })
 
@@ -70,8 +70,8 @@ def arguments_context(arguments, return_cpp_type):
         return {
             'argument_name': '%sArgument' % argument.name,
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='m_scriptState->isolate()',
-                creation_context='m_scriptState->context()->Global()'),
+                argument.name, isolate='m_scriptState->GetIsolate()',
+                creation_context='m_scriptState->GetContext()->Global()'),
         }
 
     argument_declarations = [

@@ -35,22 +35,22 @@ namespace WTF {
 
 class WTF_EXPORT FilePrintStream final : public PrintStream {
  public:
-  enum AdoptionMode { Adopt, Borrow };
+  enum AdoptionMode { kAdopt, kBorrow };
 
-  FilePrintStream(FILE*, AdoptionMode = Adopt);
+  FilePrintStream(FILE*, AdoptionMode = kAdopt);
   ~FilePrintStream() override;
 
-  static std::unique_ptr<FilePrintStream> open(const char* filename,
+  static std::unique_ptr<FilePrintStream> Open(const char* filename,
                                                const char* mode);
 
-  FILE* file() { return m_file; }
+  FILE* File() { return file_; }
 
-  PRINTF_FORMAT(2, 0) void vprintf(const char* format, va_list) override;
-  void flush() override;
+  PRINTF_FORMAT(2, 0) void Vprintf(const char* format, va_list) override;
+  void Flush() override;
 
  private:
-  FILE* m_file;
-  AdoptionMode m_adoptionMode;
+  FILE* file_;
+  AdoptionMode adoption_mode_;
 };
 
 }  // namespace WTF

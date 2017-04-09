@@ -36,290 +36,290 @@ namespace blink {
 
 TEST(VTTScannerTest, Constructor) {
   String data8("foo");
-  EXPECT_TRUE(data8.is8Bit());
+  EXPECT_TRUE(data8.Is8Bit());
   VTTScanner scanner8(data8);
-  EXPECT_FALSE(scanner8.isAtEnd());
+  EXPECT_FALSE(scanner8.IsAtEnd());
 
   String data16(data8);
-  data16.ensure16Bit();
-  EXPECT_FALSE(data16.is8Bit());
+  data16.Ensure16Bit();
+  EXPECT_FALSE(data16.Is8Bit());
   VTTScanner scanner16(data16);
-  EXPECT_FALSE(scanner16.isAtEnd());
+  EXPECT_FALSE(scanner16.IsAtEnd());
 
-  VTTScanner scannerEmpty(emptyString);
-  EXPECT_TRUE(scannerEmpty.isAtEnd());
+  VTTScanner scanner_empty(g_empty_string);
+  EXPECT_TRUE(scanner_empty.IsAtEnd());
 }
 
-void scanSequenceHelper1(const String& input) {
+void ScanSequenceHelper1(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_FALSE(scanner.isAtEnd());
-  EXPECT_TRUE(scanner.match('f'));
-  EXPECT_FALSE(scanner.match('o'));
+  EXPECT_FALSE(scanner.IsAtEnd());
+  EXPECT_TRUE(scanner.Match('f'));
+  EXPECT_FALSE(scanner.Match('o'));
 
-  EXPECT_TRUE(scanner.scan('f'));
-  EXPECT_FALSE(scanner.match('f'));
-  EXPECT_TRUE(scanner.match('o'));
+  EXPECT_TRUE(scanner.Scan('f'));
+  EXPECT_FALSE(scanner.Match('f'));
+  EXPECT_TRUE(scanner.Match('o'));
 
-  EXPECT_FALSE(scanner.scan('e'));
-  EXPECT_TRUE(scanner.scan('o'));
+  EXPECT_FALSE(scanner.Scan('e'));
+  EXPECT_TRUE(scanner.Scan('o'));
 
-  EXPECT_TRUE(scanner.scan('e'));
-  EXPECT_FALSE(scanner.match('e'));
+  EXPECT_TRUE(scanner.Scan('e'));
+  EXPECT_FALSE(scanner.Match('e'));
 
-  EXPECT_TRUE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Run TESTFUNC with DATA in Latin and then UTF-16. (Requires DATA being Latin.)
 #define TEST_WITH(TESTFUNC, DATA)  \
   do {                             \
     String data8(DATA);            \
-    EXPECT_TRUE(data8.is8Bit());   \
+    EXPECT_TRUE(data8.Is8Bit());   \
     TESTFUNC(data8);               \
                                    \
     String data16(data8);          \
-    data16.ensure16Bit();          \
-    EXPECT_FALSE(data16.is8Bit()); \
+    data16.Ensure16Bit();          \
+    EXPECT_FALSE(data16.Is8Bit()); \
     TESTFUNC(data16);              \
   } while (false)
 
 // Exercises match(c) and scan(c).
 TEST(VTTScannerTest, BasicOperations1) {
-  TEST_WITH(scanSequenceHelper1, "foe");
+  TEST_WITH(ScanSequenceHelper1, "foe");
 }
 
-void scanSequenceHelper2(const String& input) {
+void ScanSequenceHelper2(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_FALSE(scanner.isAtEnd());
-  EXPECT_FALSE(scanner.scan("fe"));
+  EXPECT_FALSE(scanner.IsAtEnd());
+  EXPECT_FALSE(scanner.Scan("fe"));
 
-  EXPECT_TRUE(scanner.scan("fo"));
-  EXPECT_FALSE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.Scan("fo"));
+  EXPECT_FALSE(scanner.IsAtEnd());
 
-  EXPECT_FALSE(scanner.scan("ee"));
+  EXPECT_FALSE(scanner.Scan("ee"));
 
-  EXPECT_TRUE(scanner.scan('e'));
-  EXPECT_TRUE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.Scan('e'));
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Exercises scan(<literal>[, length]).
 TEST(VTTScannerTest, BasicOperations2) {
-  TEST_WITH(scanSequenceHelper2, "foe");
+  TEST_WITH(ScanSequenceHelper2, "foe");
 }
 
-bool lowerCaseAlpha(UChar c) {
+bool LowerCaseAlpha(UChar c) {
   return c >= 'a' && c <= 'z';
 }
 
-void scanWithPredicate(const String& input) {
+void ScanWithPredicate(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_FALSE(scanner.isAtEnd());
+  EXPECT_FALSE(scanner.IsAtEnd());
   // Collect "bad".
-  VTTScanner::Run lcRun = scanner.collectWhile<lowerCaseAlpha>();
+  VTTScanner::Run lc_run = scanner.CollectWhile<LowerCaseAlpha>();
   // collectWhile doesn't move the scan position.
-  EXPECT_TRUE(scanner.match('b'));
+  EXPECT_TRUE(scanner.Match('b'));
   // Consume "bad".
-  scanner.skipWhile<lowerCaseAlpha>();
-  EXPECT_TRUE(scanner.match('A'));
-  EXPECT_TRUE(scanner.isAt(lcRun.end()));
+  scanner.SkipWhile<LowerCaseAlpha>();
+  EXPECT_TRUE(scanner.Match('A'));
+  EXPECT_TRUE(scanner.IsAt(lc_run.end()));
 
   // Consume "A".
-  EXPECT_TRUE(scanner.scan('A'));
+  EXPECT_TRUE(scanner.Scan('A'));
 
   // Collect "bing".
-  lcRun = scanner.collectWhile<lowerCaseAlpha>();
+  lc_run = scanner.CollectWhile<LowerCaseAlpha>();
   // collectWhile doesn't move the scan position.
-  EXPECT_FALSE(scanner.isAtEnd());
+  EXPECT_FALSE(scanner.IsAtEnd());
   // Consume "bing".
-  scanner.skipWhile<lowerCaseAlpha>();
-  EXPECT_TRUE(scanner.isAt(lcRun.end()));
-  EXPECT_TRUE(scanner.isAtEnd());
+  scanner.SkipWhile<LowerCaseAlpha>();
+  EXPECT_TRUE(scanner.IsAt(lc_run.end()));
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests skipWhile() and collectWhile().
 TEST(VTTScannerTest, PredicateScanning) {
-  TEST_WITH(scanWithPredicate, "badAbing");
+  TEST_WITH(ScanWithPredicate, "badAbing");
 }
 
-void scanWithInvPredicate(const String& input) {
+void ScanWithInvPredicate(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_FALSE(scanner.isAtEnd());
+  EXPECT_FALSE(scanner.IsAtEnd());
   // Collect "BAD".
-  VTTScanner::Run ucRun = scanner.collectUntil<lowerCaseAlpha>();
+  VTTScanner::Run uc_run = scanner.CollectUntil<LowerCaseAlpha>();
   // collectUntil doesn't move the scan position.
-  EXPECT_TRUE(scanner.match('B'));
+  EXPECT_TRUE(scanner.Match('B'));
   // Consume "BAD".
-  scanner.skipUntil<lowerCaseAlpha>();
-  EXPECT_TRUE(scanner.match('a'));
-  EXPECT_TRUE(scanner.isAt(ucRun.end()));
+  scanner.SkipUntil<LowerCaseAlpha>();
+  EXPECT_TRUE(scanner.Match('a'));
+  EXPECT_TRUE(scanner.IsAt(uc_run.end()));
 
   // Consume "a".
-  EXPECT_TRUE(scanner.scan('a'));
+  EXPECT_TRUE(scanner.Scan('a'));
 
   // Collect "BING".
-  ucRun = scanner.collectUntil<lowerCaseAlpha>();
+  uc_run = scanner.CollectUntil<LowerCaseAlpha>();
   // collectUntil doesn't move the scan position.
-  EXPECT_FALSE(scanner.isAtEnd());
+  EXPECT_FALSE(scanner.IsAtEnd());
   // Consume "BING".
-  scanner.skipUntil<lowerCaseAlpha>();
-  EXPECT_TRUE(scanner.isAt(ucRun.end()));
-  EXPECT_TRUE(scanner.isAtEnd());
+  scanner.SkipUntil<LowerCaseAlpha>();
+  EXPECT_TRUE(scanner.IsAt(uc_run.end()));
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests skipUntil() and collectUntil().
 TEST(VTTScannerTest, InversePredicateScanning) {
-  TEST_WITH(scanWithInvPredicate, "BADaBING");
+  TEST_WITH(ScanWithInvPredicate, "BADaBING");
 }
 
-void scanRuns(const String& input) {
-  String fooString("foo");
-  String barString("bar");
+void ScanRuns(const String& input) {
+  String foo_string("foo");
+  String bar_string("bar");
   VTTScanner scanner(input);
-  EXPECT_FALSE(scanner.isAtEnd());
-  VTTScanner::Run word = scanner.collectWhile<lowerCaseAlpha>();
-  EXPECT_FALSE(scanner.scanRun(word, barString));
-  EXPECT_TRUE(scanner.scanRun(word, fooString));
+  EXPECT_FALSE(scanner.IsAtEnd());
+  VTTScanner::Run word = scanner.CollectWhile<LowerCaseAlpha>();
+  EXPECT_FALSE(scanner.ScanRun(word, bar_string));
+  EXPECT_TRUE(scanner.ScanRun(word, foo_string));
 
-  EXPECT_TRUE(scanner.match(':'));
-  EXPECT_TRUE(scanner.scan(':'));
+  EXPECT_TRUE(scanner.Match(':'));
+  EXPECT_TRUE(scanner.Scan(':'));
 
   // Skip 'baz'.
-  scanner.skipRun(scanner.collectWhile<lowerCaseAlpha>());
+  scanner.SkipRun(scanner.CollectWhile<LowerCaseAlpha>());
 
-  EXPECT_TRUE(scanner.match(':'));
-  EXPECT_TRUE(scanner.scan(':'));
+  EXPECT_TRUE(scanner.Match(':'));
+  EXPECT_TRUE(scanner.Scan(':'));
 
-  word = scanner.collectWhile<lowerCaseAlpha>();
-  EXPECT_FALSE(scanner.scanRun(word, fooString));
-  EXPECT_TRUE(scanner.scanRun(word, barString));
-  EXPECT_TRUE(scanner.isAtEnd());
+  word = scanner.CollectWhile<LowerCaseAlpha>();
+  EXPECT_FALSE(scanner.ScanRun(word, foo_string));
+  EXPECT_TRUE(scanner.ScanRun(word, bar_string));
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests scanRun/skipRun.
 TEST(VTTScannerTest, RunScanning) {
-  TEST_WITH(scanRuns, "foo:baz:bar");
+  TEST_WITH(ScanRuns, "foo:baz:bar");
 }
 
-void scanRunsToStrings(const String& input) {
+void ScanRunsToStrings(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_FALSE(scanner.isAtEnd());
-  VTTScanner::Run word = scanner.collectWhile<lowerCaseAlpha>();
-  String fooString = scanner.extractString(word);
-  EXPECT_EQ(fooString, "foo");
-  EXPECT_TRUE(scanner.isAt(word.end()));
+  EXPECT_FALSE(scanner.IsAtEnd());
+  VTTScanner::Run word = scanner.CollectWhile<LowerCaseAlpha>();
+  String foo_string = scanner.ExtractString(word);
+  EXPECT_EQ(foo_string, "foo");
+  EXPECT_TRUE(scanner.IsAt(word.end()));
 
-  EXPECT_TRUE(scanner.match(':'));
-  EXPECT_TRUE(scanner.scan(':'));
+  EXPECT_TRUE(scanner.Match(':'));
+  EXPECT_TRUE(scanner.Scan(':'));
 
-  word = scanner.collectWhile<lowerCaseAlpha>();
-  String barString = scanner.extractString(word);
-  EXPECT_EQ(barString, "bar");
-  EXPECT_TRUE(scanner.isAt(word.end()));
-  EXPECT_TRUE(scanner.isAtEnd());
+  word = scanner.CollectWhile<LowerCaseAlpha>();
+  String bar_string = scanner.ExtractString(word);
+  EXPECT_EQ(bar_string, "bar");
+  EXPECT_TRUE(scanner.IsAt(word.end()));
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests extractString.
 TEST(VTTScannerTest, ExtractString) {
-  TEST_WITH(scanRunsToStrings, "foo:bar");
+  TEST_WITH(ScanRunsToStrings, "foo:bar");
 }
 
-void tailStringExtract(const String& input) {
+void TailStringExtract(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_TRUE(scanner.scan("foo"));
-  EXPECT_TRUE(scanner.scan(':'));
-  String barSuffix = scanner.restOfInputAsString();
-  EXPECT_EQ(barSuffix, "bar");
+  EXPECT_TRUE(scanner.Scan("foo"));
+  EXPECT_TRUE(scanner.Scan(':'));
+  String bar_suffix = scanner.RestOfInputAsString();
+  EXPECT_EQ(bar_suffix, "bar");
 
-  EXPECT_TRUE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests restOfInputAsString().
 TEST(VTTScannerTest, ExtractRestAsString) {
-  TEST_WITH(tailStringExtract, "foo:bar");
+  TEST_WITH(TailStringExtract, "foo:bar");
 }
 
-void scanDigits1(const String& input) {
+void ScanDigits1(const String& input) {
   VTTScanner scanner(input);
-  EXPECT_TRUE(scanner.scan("foo"));
+  EXPECT_TRUE(scanner.Scan("foo"));
   int number;
-  EXPECT_EQ(scanner.scanDigits(number), 0u);
+  EXPECT_EQ(scanner.ScanDigits(number), 0u);
   EXPECT_EQ(number, 0);
-  EXPECT_TRUE(scanner.scan(' '));
-  EXPECT_EQ(scanner.scanDigits(number), 3u);
-  EXPECT_TRUE(scanner.match(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
+  EXPECT_EQ(scanner.ScanDigits(number), 3u);
+  EXPECT_TRUE(scanner.Match(' '));
   EXPECT_EQ(number, 123);
 
-  EXPECT_TRUE(scanner.scan(' '));
-  EXPECT_TRUE(scanner.scan("bar"));
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
+  EXPECT_TRUE(scanner.Scan("bar"));
+  EXPECT_TRUE(scanner.Scan(' '));
 
-  EXPECT_EQ(scanner.scanDigits(number), 5u);
+  EXPECT_EQ(scanner.ScanDigits(number), 5u);
   EXPECT_EQ(number, 45678);
 
-  EXPECT_TRUE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
-void scanDigits2(const String& input) {
+void ScanDigits2(const String& input) {
   VTTScanner scanner(input);
   int number;
-  EXPECT_EQ(scanner.scanDigits(number), 0u);
+  EXPECT_EQ(scanner.ScanDigits(number), 0u);
   EXPECT_EQ(number, 0);
-  EXPECT_TRUE(scanner.scan('-'));
-  EXPECT_EQ(scanner.scanDigits(number), 3u);
+  EXPECT_TRUE(scanner.Scan('-'));
+  EXPECT_EQ(scanner.ScanDigits(number), 3u);
   EXPECT_EQ(number, 654);
 
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
 
-  EXPECT_EQ(scanner.scanDigits(number), 19u);
+  EXPECT_EQ(scanner.ScanDigits(number), 19u);
   EXPECT_EQ(number, std::numeric_limits<int>::max());
 
-  EXPECT_TRUE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests scanDigits().
 TEST(VTTScannerTest, ScanDigits) {
-  TEST_WITH(scanDigits1, "foo 123 bar 45678");
-  TEST_WITH(scanDigits2, "-654 1000000000000000000");
+  TEST_WITH(ScanDigits1, "foo 123 bar 45678");
+  TEST_WITH(ScanDigits2, "-654 1000000000000000000");
 }
 
-void scanFloatValue(const String& input) {
+void ScanFloatValue(const String& input) {
   VTTScanner scanner(input);
   float value;
   // "1."
-  EXPECT_TRUE(scanner.scanFloat(value));
+  EXPECT_TRUE(scanner.ScanFloat(value));
   EXPECT_EQ(value, 1.0f);
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
 
   // "1.0"
-  EXPECT_TRUE(scanner.scanFloat(value));
+  EXPECT_TRUE(scanner.ScanFloat(value));
   EXPECT_EQ(value, 1.0f);
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
 
   // ".0"
-  EXPECT_TRUE(scanner.scanFloat(value));
+  EXPECT_TRUE(scanner.ScanFloat(value));
   EXPECT_EQ(value, 0.0f);
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
 
   // "." (invalid)
-  EXPECT_FALSE(scanner.scanFloat(value));
-  EXPECT_TRUE(scanner.match('.'));
-  EXPECT_TRUE(scanner.scan('.'));
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_FALSE(scanner.ScanFloat(value));
+  EXPECT_TRUE(scanner.Match('.'));
+  EXPECT_TRUE(scanner.Scan('.'));
+  EXPECT_TRUE(scanner.Scan(' '));
 
   // "1.0000"
-  EXPECT_TRUE(scanner.scanFloat(value));
+  EXPECT_TRUE(scanner.ScanFloat(value));
   EXPECT_EQ(value, 1.0f);
-  EXPECT_TRUE(scanner.scan(' '));
+  EXPECT_TRUE(scanner.Scan(' '));
 
   // "01.000"
-  EXPECT_TRUE(scanner.scanFloat(value));
+  EXPECT_TRUE(scanner.ScanFloat(value));
   EXPECT_EQ(value, 1.0f);
 
-  EXPECT_TRUE(scanner.isAtEnd());
+  EXPECT_TRUE(scanner.IsAtEnd());
 }
 
 // Tests scanFloat().
 TEST(VTTScannerTest, ScanFloat) {
-  TEST_WITH(scanFloatValue, "1. 1.0 .0 . 1.0000 01.000");
+  TEST_WITH(ScanFloatValue, "1. 1.0 .0 . 1.0000 01.000");
 }
 
 #undef TEST_WITH

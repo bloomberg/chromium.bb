@@ -78,54 +78,54 @@ class CONTENT_EXPORT BrowserPlugin :
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
   // blink::WebPlugin implementation.
-  blink::WebPluginContainer* container() const override;
-  bool initialize(blink::WebPluginContainer* container) override;
-  void destroy() override;
-  v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate) override;
-  bool supportsKeyboardFocus() const override;
-  bool supportsEditCommands() const override;
-  bool supportsInputMethod() const override;
-  bool canProcessDrag() const override;
-  void updateAllLifecyclePhases() override {}
-  void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override {}
-  void updateGeometry(const blink::WebRect& window_rect,
+  blink::WebPluginContainer* Container() const override;
+  bool Initialize(blink::WebPluginContainer* container) override;
+  void Destroy() override;
+  v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
+  bool SupportsKeyboardFocus() const override;
+  bool SupportsEditCommands() const override;
+  bool SupportsInputMethod() const override;
+  bool CanProcessDrag() const override;
+  void UpdateAllLifecyclePhases() override {}
+  void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override {}
+  void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
                       const blink::WebVector<blink::WebRect>& cut_outs_rects,
                       bool is_visible) override;
-  void updateFocus(bool focused, blink::WebFocusType focus_type) override;
-  void updateVisibility(bool visible) override;
-  blink::WebInputEventResult handleInputEvent(
+  void UpdateFocus(bool focused, blink::WebFocusType focus_type) override;
+  void UpdateVisibility(bool visible) override;
+  blink::WebInputEventResult HandleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;
-  bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
+  bool HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                               const blink::WebDragData& drag_data,
                               blink::WebDragOperationsMask mask,
                               const blink::WebPoint& position,
                               const blink::WebPoint& screen) override;
-  void didReceiveResponse(const blink::WebURLResponse& response) override;
-  void didReceiveData(const char* data, int data_length) override;
-  void didFinishLoading() override;
-  void didFailLoading(const blink::WebURLError& error) override;
-  bool executeEditCommand(const blink::WebString& name) override;
-  bool executeEditCommand(const blink::WebString& name,
+  void DidReceiveResponse(const blink::WebURLResponse& response) override;
+  void DidReceiveData(const char* data, int data_length) override;
+  void DidFinishLoading() override;
+  void DidFailLoading(const blink::WebURLError& error) override;
+  bool ExecuteEditCommand(const blink::WebString& name) override;
+  bool ExecuteEditCommand(const blink::WebString& name,
                           const blink::WebString& value) override;
-  bool setComposition(
+  bool SetComposition(
       const blink::WebString& text,
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
       const blink::WebRange& replacementRange,
       int selectionStart,
       int selectionEnd) override;
-  bool commitText(
+  bool CommitText(
       const blink::WebString& text,
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
       const blink::WebRange& replacementRange,
       int relative_cursor_pos) override;
-  bool finishComposingText(
+  bool FinishComposingText(
       blink::WebInputMethodController::ConfirmCompositionBehavior
           selection_behavior) override;
 
-  void extendSelectionAndDelete(int before, int after) override;
+  void ExtendSelectionAndDelete(int before, int after) override;
 
   // MouseLockDispatcher::LockTarget implementation.
   void OnLockMouseACK(bool succeeded) override;

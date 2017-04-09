@@ -23,7 +23,7 @@ TextTrackImpl::TextTrackImpl(
     : task_runner_(task_runner),
       client_(client),
       text_track_(std::move(text_track)) {
-  client_->addTextTrack(text_track_.get());
+  client_->AddTextTrack(text_track_.get());
 }
 
 TextTrackImpl::~TextTrackImpl() {
@@ -53,20 +53,19 @@ void TextTrackImpl::OnAddCue(WebInbandTextTrackImpl* text_track,
                              const std::string& id,
                              const std::string& content,
                              const std::string& settings) {
-  if (blink::WebInbandTextTrackClient* client = text_track->client()) {
-    client->addWebVTTCue(start.InSecondsF(),
-                         end.InSecondsF(),
-                         blink::WebString::fromUTF8(id),
-                         blink::WebString::fromUTF8(content),
-                         blink::WebString::fromUTF8(settings));
+  if (blink::WebInbandTextTrackClient* client = text_track->Client()) {
+    client->AddWebVTTCue(start.InSecondsF(), end.InSecondsF(),
+                         blink::WebString::FromUTF8(id),
+                         blink::WebString::FromUTF8(content),
+                         blink::WebString::FromUTF8(settings));
   }
 }
 
 void TextTrackImpl::OnRemoveTrack(
     blink::WebMediaPlayerClient* client,
     std::unique_ptr<WebInbandTextTrackImpl> text_track) {
-  if (text_track->client())
-    client->removeTextTrack(text_track.get());
+  if (text_track->Client())
+    client->RemoveTextTrack(text_track.get());
 }
 
 }  // namespace media

@@ -31,41 +31,41 @@
 namespace blink {
 
 LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
-    : TextTrack(subtitlesKeyword(),
-                emptyAtom,
-                emptyAtom,
-                emptyAtom,
-                TrackElement),
-      m_trackElement(track) {
-  DCHECK(m_trackElement);
+    : TextTrack(SubtitlesKeyword(),
+                g_empty_atom,
+                g_empty_atom,
+                g_empty_atom,
+                kTrackElement),
+      track_element_(track) {
+  DCHECK(track_element_);
 }
 
 LoadableTextTrack::~LoadableTextTrack() {}
 
-bool LoadableTextTrack::isDefault() const {
-  return m_trackElement->fastHasAttribute(HTMLNames::defaultAttr);
+bool LoadableTextTrack::IsDefault() const {
+  return track_element_->FastHasAttribute(HTMLNames::defaultAttr);
 }
 
 void LoadableTextTrack::setMode(const AtomicString& mode) {
   TextTrack::setMode(mode);
-  if (m_trackElement->getReadyState() == HTMLTrackElement::kNone)
-    m_trackElement->scheduleLoad();
+  if (track_element_->getReadyState() == HTMLTrackElement::kNone)
+    track_element_->ScheduleLoad();
 }
 
-size_t LoadableTextTrack::trackElementIndex() const {
+size_t LoadableTextTrack::TrackElementIndex() const {
   // Count the number of preceding <track> elements (== the index.)
   size_t index = 0;
   for (const HTMLTrackElement* track =
-           Traversal<HTMLTrackElement>::previousSibling(*m_trackElement);
-       track; track = Traversal<HTMLTrackElement>::previousSibling(*track))
+           Traversal<HTMLTrackElement>::PreviousSibling(*track_element_);
+       track; track = Traversal<HTMLTrackElement>::PreviousSibling(*track))
     ++index;
 
   return index;
 }
 
 DEFINE_TRACE(LoadableTextTrack) {
-  visitor->trace(m_trackElement);
-  TextTrack::trace(visitor);
+  visitor->Trace(track_element_);
+  TextTrack::Trace(visitor);
 }
 
 }  // namespace blink

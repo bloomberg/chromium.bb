@@ -38,219 +38,221 @@
 
 namespace blink {
 
-static inline double multiplyZeroAlwaysGivesZero(double x, double y) {
-  DCHECK(!isNull(x));
-  DCHECK(!isNull(y));
+static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
+  DCHECK(!IsNull(x));
+  DCHECK(!IsNull(y));
   return x && y ? x * y : 0;
 }
 
-static inline AnimationEffectReadOnly::Phase calculatePhase(
-    double activeDuration,
-    double localTime,
+static inline AnimationEffectReadOnly::Phase CalculatePhase(
+    double active_duration,
+    double local_time,
     const Timing& specified) {
-  DCHECK_GE(activeDuration, 0);
-  if (isNull(localTime))
-    return AnimationEffectReadOnly::PhaseNone;
-  double endTime = specified.startDelay + activeDuration + specified.endDelay;
-  if (localTime < std::min(specified.startDelay, endTime))
-    return AnimationEffectReadOnly::PhaseBefore;
-  if (localTime >= std::min(specified.startDelay + activeDuration, endTime))
-    return AnimationEffectReadOnly::PhaseAfter;
-  return AnimationEffectReadOnly::PhaseActive;
+  DCHECK_GE(active_duration, 0);
+  if (IsNull(local_time))
+    return AnimationEffectReadOnly::kPhaseNone;
+  double end_time =
+      specified.start_delay + active_duration + specified.end_delay;
+  if (local_time < std::min(specified.start_delay, end_time))
+    return AnimationEffectReadOnly::kPhaseBefore;
+  if (local_time >= std::min(specified.start_delay + active_duration, end_time))
+    return AnimationEffectReadOnly::kPhaseAfter;
+  return AnimationEffectReadOnly::kPhaseActive;
 }
 
-static inline bool isActiveInParentPhase(
-    AnimationEffectReadOnly::Phase parentPhase,
-    Timing::FillMode fillMode) {
-  switch (parentPhase) {
-    case AnimationEffectReadOnly::PhaseBefore:
-      return fillMode == Timing::FillMode::BACKWARDS ||
-             fillMode == Timing::FillMode::BOTH;
-    case AnimationEffectReadOnly::PhaseActive:
+static inline bool IsActiveInParentPhase(
+    AnimationEffectReadOnly::Phase parent_phase,
+    Timing::FillMode fill_mode) {
+  switch (parent_phase) {
+    case AnimationEffectReadOnly::kPhaseBefore:
+      return fill_mode == Timing::FillMode::BACKWARDS ||
+             fill_mode == Timing::FillMode::BOTH;
+    case AnimationEffectReadOnly::kPhaseActive:
       return true;
-    case AnimationEffectReadOnly::PhaseAfter:
-      return fillMode == Timing::FillMode::FORWARDS ||
-             fillMode == Timing::FillMode::BOTH;
+    case AnimationEffectReadOnly::kPhaseAfter:
+      return fill_mode == Timing::FillMode::FORWARDS ||
+             fill_mode == Timing::FillMode::BOTH;
     default:
       NOTREACHED();
       return false;
   }
 }
 
-static inline double calculateActiveTime(
-    double activeDuration,
-    Timing::FillMode fillMode,
-    double localTime,
-    AnimationEffectReadOnly::Phase parentPhase,
+static inline double CalculateActiveTime(
+    double active_duration,
+    Timing::FillMode fill_mode,
+    double local_time,
+    AnimationEffectReadOnly::Phase parent_phase,
     AnimationEffectReadOnly::Phase phase,
     const Timing& specified) {
-  DCHECK_GE(activeDuration, 0);
-  DCHECK_EQ(phase, calculatePhase(activeDuration, localTime, specified));
+  DCHECK_GE(active_duration, 0);
+  DCHECK_EQ(phase, CalculatePhase(active_duration, local_time, specified));
 
   switch (phase) {
-    case AnimationEffectReadOnly::PhaseBefore:
-      if (fillMode == Timing::FillMode::BACKWARDS ||
-          fillMode == Timing::FillMode::BOTH)
+    case AnimationEffectReadOnly::kPhaseBefore:
+      if (fill_mode == Timing::FillMode::BACKWARDS ||
+          fill_mode == Timing::FillMode::BOTH)
         return 0;
-      return nullValue();
-    case AnimationEffectReadOnly::PhaseActive:
-      if (isActiveInParentPhase(parentPhase, fillMode))
-        return localTime - specified.startDelay;
-      return nullValue();
-    case AnimationEffectReadOnly::PhaseAfter:
-      if (fillMode == Timing::FillMode::FORWARDS ||
-          fillMode == Timing::FillMode::BOTH)
-        return std::max(
-            0.0, std::min(activeDuration, activeDuration + specified.endDelay));
-      return nullValue();
-    case AnimationEffectReadOnly::PhaseNone:
-      DCHECK(isNull(localTime));
-      return nullValue();
+      return NullValue();
+    case AnimationEffectReadOnly::kPhaseActive:
+      if (IsActiveInParentPhase(parent_phase, fill_mode))
+        return local_time - specified.start_delay;
+      return NullValue();
+    case AnimationEffectReadOnly::kPhaseAfter:
+      if (fill_mode == Timing::FillMode::FORWARDS ||
+          fill_mode == Timing::FillMode::BOTH)
+        return std::max(0.0, std::min(active_duration,
+                                      active_duration + specified.end_delay));
+      return NullValue();
+    case AnimationEffectReadOnly::kPhaseNone:
+      DCHECK(IsNull(local_time));
+      return NullValue();
     default:
       NOTREACHED();
-      return nullValue();
+      return NullValue();
   }
 }
 
-static inline double calculateScaledActiveTime(double activeDuration,
-                                               double activeTime,
-                                               double startOffset,
+static inline double CalculateScaledActiveTime(double active_duration,
+                                               double active_time,
+                                               double start_offset,
                                                const Timing& specified) {
-  DCHECK_GE(activeDuration, 0);
-  DCHECK_GE(startOffset, 0);
+  DCHECK_GE(active_duration, 0);
+  DCHECK_GE(start_offset, 0);
 
-  if (isNull(activeTime))
-    return nullValue();
+  if (IsNull(active_time))
+    return NullValue();
 
-  DCHECK(activeTime >= 0 && activeTime <= activeDuration);
+  DCHECK(active_time >= 0 && active_time <= active_duration);
 
-  if (specified.playbackRate == 0)
-    return startOffset;
+  if (specified.playback_rate == 0)
+    return start_offset;
 
-  if (!std::isfinite(activeTime))
+  if (!std::isfinite(active_time))
     return std::numeric_limits<double>::infinity();
 
-  return multiplyZeroAlwaysGivesZero(specified.playbackRate < 0
-                                         ? activeTime - activeDuration
-                                         : activeTime,
-                                     specified.playbackRate) +
-         startOffset;
+  return MultiplyZeroAlwaysGivesZero(specified.playback_rate < 0
+                                         ? active_time - active_duration
+                                         : active_time,
+                                     specified.playback_rate) +
+         start_offset;
 }
 
-static inline bool endsOnIterationBoundary(double iterationCount,
-                                           double iterationStart) {
-  DCHECK(std::isfinite(iterationCount));
-  return !fmod(iterationCount + iterationStart, 1);
+static inline bool EndsOnIterationBoundary(double iteration_count,
+                                           double iteration_start) {
+  DCHECK(std::isfinite(iteration_count));
+  return !fmod(iteration_count + iteration_start, 1);
 }
 
 // TODO(crbug.com/630915): Align this function with current Web Animations spec
 // text.
-static inline double calculateIterationTime(
-    double iterationDuration,
-    double repeatedDuration,
-    double scaledActiveTime,
-    double startOffset,
+static inline double CalculateIterationTime(
+    double iteration_duration,
+    double repeated_duration,
+    double scaled_active_time,
+    double start_offset,
     AnimationEffectReadOnly::Phase phase,
     const Timing& specified) {
-  DCHECK_GT(iterationDuration, 0);
-  DCHECK_EQ(repeatedDuration, multiplyZeroAlwaysGivesZero(
-                                  iterationDuration, specified.iterationCount));
+  DCHECK_GT(iteration_duration, 0);
+  DCHECK_EQ(repeated_duration,
+            MultiplyZeroAlwaysGivesZero(iteration_duration,
+                                        specified.iteration_count));
 
-  if (isNull(scaledActiveTime))
-    return nullValue();
+  if (IsNull(scaled_active_time))
+    return NullValue();
 
-  DCHECK_GE(scaledActiveTime, 0);
-  DCHECK_LE(scaledActiveTime, repeatedDuration + startOffset);
+  DCHECK_GE(scaled_active_time, 0);
+  DCHECK_LE(scaled_active_time, repeated_duration + start_offset);
 
-  if (!std::isfinite(scaledActiveTime) ||
-      (scaledActiveTime - startOffset == repeatedDuration &&
-       specified.iterationCount &&
-       endsOnIterationBoundary(specified.iterationCount,
-                               specified.iterationStart)))
-    return iterationDuration;
+  if (!std::isfinite(scaled_active_time) ||
+      (scaled_active_time - start_offset == repeated_duration &&
+       specified.iteration_count &&
+       EndsOnIterationBoundary(specified.iteration_count,
+                               specified.iteration_start)))
+    return iteration_duration;
 
-  DCHECK(std::isfinite(scaledActiveTime));
-  double iterationTime = fmod(scaledActiveTime, iterationDuration);
+  DCHECK(std::isfinite(scaled_active_time));
+  double iteration_time = fmod(scaled_active_time, iteration_duration);
 
   // This implements step 3 of
   // http://w3c.github.io/web-animations/#calculating-the-simple-iteration-progress
-  if (iterationTime == 0 && phase == AnimationEffectReadOnly::PhaseAfter &&
-      repeatedDuration != 0 && scaledActiveTime != 0)
-    return iterationDuration;
+  if (iteration_time == 0 && phase == AnimationEffectReadOnly::kPhaseAfter &&
+      repeated_duration != 0 && scaled_active_time != 0)
+    return iteration_duration;
 
-  return iterationTime;
+  return iteration_time;
 }
 
-static inline double calculateCurrentIteration(double iterationDuration,
-                                               double iterationTime,
-                                               double scaledActiveTime,
+static inline double CalculateCurrentIteration(double iteration_duration,
+                                               double iteration_time,
+                                               double scaled_active_time,
                                                const Timing& specified) {
-  DCHECK_GT(iterationDuration, 0);
-  DCHECK(isNull(iterationTime) || iterationTime >= 0);
+  DCHECK_GT(iteration_duration, 0);
+  DCHECK(IsNull(iteration_time) || iteration_time >= 0);
 
-  if (isNull(scaledActiveTime))
-    return nullValue();
+  if (IsNull(scaled_active_time))
+    return NullValue();
 
-  DCHECK_GE(iterationTime, 0);
-  DCHECK_LE(iterationTime, iterationDuration);
-  DCHECK_GE(scaledActiveTime, 0);
+  DCHECK_GE(iteration_time, 0);
+  DCHECK_LE(iteration_time, iteration_duration);
+  DCHECK_GE(scaled_active_time, 0);
 
-  if (!scaledActiveTime)
+  if (!scaled_active_time)
     return 0;
 
-  if (iterationTime == iterationDuration)
-    return specified.iterationStart + specified.iterationCount - 1;
+  if (iteration_time == iteration_duration)
+    return specified.iteration_start + specified.iteration_count - 1;
 
-  return floor(scaledActiveTime / iterationDuration);
+  return floor(scaled_active_time / iteration_duration);
 }
 
-static inline double calculateDirectedTime(double currentIteration,
-                                           double iterationDuration,
-                                           double iterationTime,
+static inline double CalculateDirectedTime(double current_iteration,
+                                           double iteration_duration,
+                                           double iteration_time,
                                            const Timing& specified) {
-  DCHECK(isNull(currentIteration) || currentIteration >= 0);
-  DCHECK_GT(iterationDuration, 0);
+  DCHECK(IsNull(current_iteration) || current_iteration >= 0);
+  DCHECK_GT(iteration_duration, 0);
 
-  if (isNull(iterationTime))
-    return nullValue();
+  if (IsNull(iteration_time))
+    return NullValue();
 
-  DCHECK_GE(currentIteration, 0);
-  DCHECK_GE(iterationTime, 0);
-  DCHECK_LE(iterationTime, iterationDuration);
+  DCHECK_GE(current_iteration, 0);
+  DCHECK_GE(iteration_time, 0);
+  DCHECK_LE(iteration_time, iteration_duration);
 
-  const bool currentIterationIsOdd = fmod(currentIteration, 2) >= 1;
-  const bool currentDirectionIsForwards =
+  const bool current_iteration_is_odd = fmod(current_iteration, 2) >= 1;
+  const bool current_direction_is_forwards =
       specified.direction == Timing::PlaybackDirection::NORMAL ||
       (specified.direction == Timing::PlaybackDirection::ALTERNATE_NORMAL &&
-       !currentIterationIsOdd) ||
+       !current_iteration_is_odd) ||
       (specified.direction == Timing::PlaybackDirection::ALTERNATE_REVERSE &&
-       currentIterationIsOdd);
+       current_iteration_is_odd);
 
-  return currentDirectionIsForwards ? iterationTime
-                                    : iterationDuration - iterationTime;
+  return current_direction_is_forwards ? iteration_time
+                                       : iteration_duration - iteration_time;
 }
 
-static inline double calculateTransformedTime(double currentIteration,
-                                              double iterationDuration,
-                                              double iterationTime,
+static inline double CalculateTransformedTime(double current_iteration,
+                                              double iteration_duration,
+                                              double iteration_time,
                                               const Timing& specified) {
-  DCHECK(isNull(currentIteration) || currentIteration >= 0);
-  DCHECK_GT(iterationDuration, 0);
-  DCHECK(isNull(iterationTime) ||
-         (iterationTime >= 0 && iterationTime <= iterationDuration));
+  DCHECK(IsNull(current_iteration) || current_iteration >= 0);
+  DCHECK_GT(iteration_duration, 0);
+  DCHECK(IsNull(iteration_time) ||
+         (iteration_time >= 0 && iteration_time <= iteration_duration));
 
-  double directedTime = calculateDirectedTime(
-      currentIteration, iterationDuration, iterationTime, specified);
-  if (isNull(directedTime))
-    return nullValue();
-  if (!std::isfinite(iterationDuration))
-    return directedTime;
-  double timeFraction = directedTime / iterationDuration;
-  DCHECK(timeFraction >= 0 && timeFraction <= 1);
-  return multiplyZeroAlwaysGivesZero(
-      iterationDuration,
-      specified.timingFunction->evaluate(
-          timeFraction, accuracyForDuration(iterationDuration)));
+  double directed_time = CalculateDirectedTime(
+      current_iteration, iteration_duration, iteration_time, specified);
+  if (IsNull(directed_time))
+    return NullValue();
+  if (!std::isfinite(iteration_duration))
+    return directed_time;
+  double time_fraction = directed_time / iteration_duration;
+  DCHECK(time_fraction >= 0 && time_fraction <= 1);
+  return MultiplyZeroAlwaysGivesZero(
+      iteration_duration,
+      specified.timing_function->Evaluate(
+          time_fraction, AccuracyForDuration(iteration_duration)));
 }
 
 }  // namespace blink

@@ -36,7 +36,7 @@ class DateTimeAMPMFieldElement final : public DateTimeSymbolicFieldElement {
   WTF_MAKE_NONCOPYABLE(DateTimeAMPMFieldElement);
 
  public:
-  static DateTimeAMPMFieldElement* create(Document&,
+  static DateTimeAMPMFieldElement* Create(Document&,
                                           FieldOwner&,
                                           const Vector<String>&);
 
@@ -44,16 +44,16 @@ class DateTimeAMPMFieldElement final : public DateTimeSymbolicFieldElement {
   DateTimeAMPMFieldElement(Document&, FieldOwner&, const Vector<String>&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeDayFieldElement final : public DateTimeNumericFieldElement {
   WTF_MAKE_NONCOPYABLE(DateTimeDayFieldElement);
 
  public:
-  static DateTimeDayFieldElement* create(Document&,
+  static DateTimeDayFieldElement* Create(Document&,
                                          FieldOwner&,
                                          const String& placeholder,
                                          const Range&);
@@ -65,9 +65,9 @@ class DateTimeDayFieldElement final : public DateTimeNumericFieldElement {
                           const Range&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeHourFieldElementBase : public DateTimeNumericFieldElement {
@@ -77,21 +77,21 @@ class DateTimeHourFieldElementBase : public DateTimeNumericFieldElement {
   DateTimeHourFieldElementBase(Document&,
                                FieldOwner&,
                                const Range&,
-                               const Range& hardLimits,
+                               const Range& hard_limits,
                                const Step&);
-  void initialize();
+  void Initialize();
 
  private:
   // DateTimeFieldElement functions.
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeHour11FieldElement final : public DateTimeHourFieldElementBase {
   WTF_MAKE_NONCOPYABLE(DateTimeHour11FieldElement);
 
  public:
-  static DateTimeHour11FieldElement* create(Document&,
+  static DateTimeHour11FieldElement* Create(Document&,
                                             FieldOwner&,
                                             const Range&,
                                             const Step&);
@@ -99,19 +99,19 @@ class DateTimeHour11FieldElement final : public DateTimeHourFieldElementBase {
  private:
   DateTimeHour11FieldElement(Document&,
                              FieldOwner&,
-                             const Range& hour23Range,
+                             const Range& hour23_range,
                              const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
 };
 
 class DateTimeHour12FieldElement final : public DateTimeHourFieldElementBase {
   WTF_MAKE_NONCOPYABLE(DateTimeHour12FieldElement);
 
  public:
-  static DateTimeHour12FieldElement* create(Document&,
+  static DateTimeHour12FieldElement* Create(Document&,
                                             FieldOwner&,
                                             const Range&,
                                             const Step&);
@@ -119,19 +119,19 @@ class DateTimeHour12FieldElement final : public DateTimeHourFieldElementBase {
  private:
   DateTimeHour12FieldElement(Document&,
                              FieldOwner&,
-                             const Range& hour23Range,
+                             const Range& hour23_range,
                              const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
 };
 
 class DateTimeHour23FieldElement final : public DateTimeHourFieldElementBase {
   WTF_MAKE_NONCOPYABLE(DateTimeHour23FieldElement);
 
  public:
-  static DateTimeHour23FieldElement* create(Document&,
+  static DateTimeHour23FieldElement* Create(Document&,
                                             FieldOwner&,
                                             const Range&,
                                             const Step&);
@@ -139,19 +139,19 @@ class DateTimeHour23FieldElement final : public DateTimeHourFieldElementBase {
  private:
   DateTimeHour23FieldElement(Document&,
                              FieldOwner&,
-                             const Range& hour23Range,
+                             const Range& hour23_range,
                              const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
 };
 
 class DateTimeHour24FieldElement final : public DateTimeHourFieldElementBase {
   WTF_MAKE_NONCOPYABLE(DateTimeHour24FieldElement);
 
  public:
-  static DateTimeHour24FieldElement* create(Document&,
+  static DateTimeHour24FieldElement* Create(Document&,
                                             FieldOwner&,
                                             const Range&,
                                             const Step&);
@@ -159,12 +159,12 @@ class DateTimeHour24FieldElement final : public DateTimeHourFieldElementBase {
  private:
   DateTimeHour24FieldElement(Document&,
                              FieldOwner&,
-                             const Range& hour23Range,
+                             const Range& hour23_range,
                              const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
 };
 
 class DateTimeMillisecondFieldElement final
@@ -172,7 +172,7 @@ class DateTimeMillisecondFieldElement final
   WTF_MAKE_NONCOPYABLE(DateTimeMillisecondFieldElement);
 
  public:
-  static DateTimeMillisecondFieldElement* create(Document&,
+  static DateTimeMillisecondFieldElement* Create(Document&,
                                                  FieldOwner&,
                                                  const Range&,
                                                  const Step&);
@@ -184,16 +184,16 @@ class DateTimeMillisecondFieldElement final
                                   const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeMinuteFieldElement final : public DateTimeNumericFieldElement {
   WTF_MAKE_NONCOPYABLE(DateTimeMinuteFieldElement);
 
  public:
-  static DateTimeMinuteFieldElement* create(Document&,
+  static DateTimeMinuteFieldElement* Create(Document&,
                                             FieldOwner&,
                                             const Range&,
                                             const Step&);
@@ -202,16 +202,16 @@ class DateTimeMinuteFieldElement final : public DateTimeNumericFieldElement {
   DateTimeMinuteFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeMonthFieldElement final : public DateTimeNumericFieldElement {
   WTF_MAKE_NONCOPYABLE(DateTimeMonthFieldElement);
 
  public:
-  static DateTimeMonthFieldElement* create(Document&,
+  static DateTimeMonthFieldElement* Create(Document&,
                                            FieldOwner&,
                                            const String& placeholder,
                                            const Range&);
@@ -223,16 +223,16 @@ class DateTimeMonthFieldElement final : public DateTimeNumericFieldElement {
                             const Range&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeSecondFieldElement final : public DateTimeNumericFieldElement {
   WTF_MAKE_NONCOPYABLE(DateTimeSecondFieldElement);
 
  public:
-  static DateTimeSecondFieldElement* create(Document&,
+  static DateTimeSecondFieldElement* Create(Document&,
                                             FieldOwner&,
                                             const Range&,
                                             const Step&);
@@ -241,9 +241,9 @@ class DateTimeSecondFieldElement final : public DateTimeNumericFieldElement {
   DateTimeSecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeSymbolicMonthFieldElement final
@@ -251,7 +251,7 @@ class DateTimeSymbolicMonthFieldElement final
   WTF_MAKE_NONCOPYABLE(DateTimeSymbolicMonthFieldElement);
 
  public:
-  static DateTimeSymbolicMonthFieldElement* create(Document&,
+  static DateTimeSymbolicMonthFieldElement* Create(Document&,
                                                    FieldOwner&,
                                                    const Vector<String>&,
                                                    int minimum,
@@ -265,24 +265,24 @@ class DateTimeSymbolicMonthFieldElement final
                                     int maximum);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeWeekFieldElement final : public DateTimeNumericFieldElement {
   WTF_MAKE_NONCOPYABLE(DateTimeWeekFieldElement);
 
  public:
-  static DateTimeWeekFieldElement* create(Document&, FieldOwner&, const Range&);
+  static DateTimeWeekFieldElement* Create(Document&, FieldOwner&, const Range&);
 
  private:
   DateTimeWeekFieldElement(Document&, FieldOwner&, const Range&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 };
 
 class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
@@ -291,20 +291,20 @@ class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
  public:
   struct Parameters {
     STACK_ALLOCATED();
-    int minimumYear;
-    int maximumYear;
-    bool minIsSpecified;
-    bool maxIsSpecified;
+    int minimum_year;
+    int maximum_year;
+    bool min_is_specified;
+    bool max_is_specified;
     String placeholder;
 
     Parameters()
-        : minimumYear(-1),
-          maximumYear(-1),
-          minIsSpecified(false),
-          maxIsSpecified(false) {}
+        : minimum_year(-1),
+          maximum_year(-1),
+          min_is_specified(false),
+          max_is_specified(false) {}
   };
 
-  static DateTimeYearFieldElement* create(Document&,
+  static DateTimeYearFieldElement* Create(Document&,
                                           FieldOwner&,
                                           const Parameters&);
 
@@ -312,16 +312,16 @@ class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
   DateTimeYearFieldElement(Document&, FieldOwner&, const Parameters&);
 
   // DateTimeFieldElement functions.
-  void populateDateTimeFieldsState(DateTimeFieldsState&) override;
-  void setValueAsDate(const DateComponents&) override;
-  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
+  void PopulateDateTimeFieldsState(DateTimeFieldsState&) override;
+  void SetValueAsDate(const DateComponents&) override;
+  void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) override;
 
   // DateTimeNumericFieldElement functions.
-  int defaultValueForStepDown() const override;
-  int defaultValueForStepUp() const override;
+  int DefaultValueForStepDown() const override;
+  int DefaultValueForStepUp() const override;
 
-  bool m_minIsSpecified;
-  bool m_maxIsSpecified;
+  bool min_is_specified_;
+  bool max_is_specified_;
 };
 
 }  // namespace blink

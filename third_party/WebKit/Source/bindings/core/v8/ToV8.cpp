@@ -12,7 +12,7 @@
 namespace blink {
 
 v8::Local<v8::Value> ToV8(DOMWindow* window,
-                          v8::Local<v8::Object> creationContext,
+                          v8::Local<v8::Object> creation_context,
                           v8::Isolate* isolate) {
   // Notice that we explicitly ignore creationContext because the DOMWindow
   // has its own creationContext.
@@ -21,23 +21,23 @@ v8::Local<v8::Value> ToV8(DOMWindow* window,
     return v8::Null(isolate);
   // Initializes environment of a frame, and return the global object
   // of the frame.
-  Frame* frame = window->frame();
+  Frame* frame = window->GetFrame();
   if (!frame)
-    return v8Undefined();
+    return V8Undefined();
 
-  return frame->windowProxy(DOMWrapperWorld::current(isolate))
-      ->globalProxyIfNotDetached();
+  return frame->GetWindowProxy(DOMWrapperWorld::Current(isolate))
+      ->GlobalProxyIfNotDetached();
 }
 
 v8::Local<v8::Value> ToV8(EventTarget* impl,
-                          v8::Local<v8::Object> creationContext,
+                          v8::Local<v8::Object> creation_context,
                           v8::Isolate* isolate) {
   if (UNLIKELY(!impl))
     return v8::Null(isolate);
 
-  if (impl->interfaceName() == EventTargetNames::DOMWindow)
-    return ToV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
-  return ToV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
+  if (impl->InterfaceName() == EventTargetNames::DOMWindow)
+    return ToV8(static_cast<DOMWindow*>(impl), creation_context, isolate);
+  return ToV8(static_cast<ScriptWrappable*>(impl), creation_context, isolate);
 }
 
 }  // namespace blink

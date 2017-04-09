@@ -48,29 +48,29 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
 
  public:
-  static LinkImport* create(HTMLLinkElement* owner);
+  static LinkImport* Create(HTMLLinkElement* owner);
 
   explicit LinkImport(HTMLLinkElement* owner);
   ~LinkImport() override;
 
   // LinkResource
-  void process() override;
-  LinkResourceType type() const override { return Import; }
-  bool hasLoaded() const override;
+  void Process() override;
+  LinkResourceType GetType() const override { return kImport; }
+  bool HasLoaded() const override;
   DECLARE_VIRTUAL_TRACE();
-  void ownerInserted() override;
-  void ownerRemoved() override;
+  void OwnerInserted() override;
+  void OwnerRemoved() override;
 
   // HTMLImportChildClient
-  void didFinish() override;
-  void importChildWasDisposed(HTMLImportChild*) override;
-  bool isSync() const override;
-  HTMLLinkElement* link() override;
+  void DidFinish() override;
+  void ImportChildWasDisposed(HTMLImportChild*) override;
+  bool IsSync() const override;
+  HTMLLinkElement* Link() override;
 
-  Document* importedDocument() const;
+  Document* ImportedDocument() const;
 
  private:
-  Member<HTMLImportChild> m_child;
+  Member<HTMLImportChild> child_;
 };
 
 }  // namespace blink

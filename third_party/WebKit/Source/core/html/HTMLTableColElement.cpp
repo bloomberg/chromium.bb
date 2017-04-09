@@ -36,73 +36,74 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tagName,
+inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
                                                 Document& document)
-    : HTMLTablePartElement(tagName, document), m_span(1) {}
+    : HTMLTablePartElement(tag_name, document), span_(1) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)
 
-bool HTMLTableColElement::isPresentationAttribute(
+bool HTMLTableColElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == widthAttr)
     return true;
-  return HTMLTablePartElement::isPresentationAttribute(name);
+  return HTMLTablePartElement::IsPresentationAttribute(name);
 }
 
-void HTMLTableColElement::collectStyleForPresentationAttribute(
+void HTMLTableColElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == widthAttr)
-    addHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   else
-    HTMLTablePartElement::collectStyleForPresentationAttribute(name, value,
+    HTMLTablePartElement::CollectStyleForPresentationAttribute(name, value,
                                                                style);
 }
 
-void HTMLTableColElement::parseAttribute(
+void HTMLTableColElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == spanAttr) {
-    unsigned newSpan = 0;
-    if (params.newValue.isEmpty() ||
-        !parseHTMLNonNegativeInteger(params.newValue, newSpan) || newSpan < 1) {
+    unsigned new_span = 0;
+    if (params.new_value.IsEmpty() ||
+        !ParseHTMLNonNegativeInteger(params.new_value, new_span) ||
+        new_span < 1) {
       // If the value of span is not a valid non-negative integer greater than
       // zero, set it to 1.
-      newSpan = 1;
+      new_span = 1;
     }
-    newSpan = std::min(newSpan, HTMLTableCellElement::maxColSpan());
-    m_span = newSpan;
-    if (layoutObject() && layoutObject()->isLayoutTableCol())
-      layoutObject()->updateFromElement();
+    new_span = std::min(new_span, HTMLTableCellElement::MaxColSpan());
+    span_ = new_span;
+    if (GetLayoutObject() && GetLayoutObject()->IsLayoutTableCol())
+      GetLayoutObject()->UpdateFromElement();
   } else if (params.name == widthAttr) {
-    if (!params.newValue.isEmpty()) {
-      if (layoutObject() && layoutObject()->isLayoutTableCol()) {
-        LayoutTableCol* col = toLayoutTableCol(layoutObject());
-        int newWidth = width().toInt();
-        if (newWidth != col->size().width())
-          col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-              LayoutInvalidationReason::AttributeChanged);
+    if (!params.new_value.IsEmpty()) {
+      if (GetLayoutObject() && GetLayoutObject()->IsLayoutTableCol()) {
+        LayoutTableCol* col = ToLayoutTableCol(GetLayoutObject());
+        int new_width = Width().ToInt();
+        if (new_width != col->size().Width())
+          col->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+              LayoutInvalidationReason::kAttributeChanged);
       }
     }
   } else {
-    HTMLTablePartElement::parseAttribute(params);
+    HTMLTablePartElement::ParseAttribute(params);
   }
 }
 
 const StylePropertySet*
-HTMLTableColElement::additionalPresentationAttributeStyle() {
-  if (!hasTagName(colgroupTag))
+HTMLTableColElement::AdditionalPresentationAttributeStyle() {
+  if (!HasTagName(colgroupTag))
     return nullptr;
-  if (HTMLTableElement* table = findParentTable())
-    return table->additionalGroupStyle(false);
+  if (HTMLTableElement* table = FindParentTable())
+    return table->AdditionalGroupStyle(false);
   return nullptr;
 }
 
 void HTMLTableColElement::setSpan(unsigned n) {
-  setUnsignedIntegralAttribute(spanAttr, n ? n : 1);
+  SetUnsignedIntegralAttribute(spanAttr, n ? n : 1);
 }
 
-const AtomicString& HTMLTableColElement::width() const {
+const AtomicString& HTMLTableColElement::Width() const {
   return getAttribute(widthAttr);
 }
 

@@ -340,9 +340,9 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
   // RenderWidgetHostInputEventRouter.
   if (!frame_connector_)
     return;
-  if ((event.type() == blink::WebInputEvent::GestureScrollUpdate &&
+  if ((event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
        not_consumed) ||
-      event.type() == blink::WebInputEvent::GestureScrollEnd)
+      event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
     frame_connector_->BubbleScrollEvent(event);
 }
 
@@ -479,15 +479,15 @@ void RenderWidgetHostViewChildFrame::ProcessMouseEvent(
 void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event,
     const ui::LatencyInfo& latency) {
-  if (event.deltaX != 0 || event.deltaY != 0)
+  if (event.delta_x != 0 || event.delta_y != 0)
     host_->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
 void RenderWidgetHostViewChildFrame::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
-  if (event.type() == blink::WebInputEvent::TouchStart && frame_connector_ &&
-      !frame_connector_->HasFocus()) {
+  if (event.GetType() == blink::WebInputEvent::kTouchStart &&
+      frame_connector_ && !frame_connector_->HasFocus()) {
     frame_connector_->FocusRootView();
   }
 
@@ -635,14 +635,14 @@ void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
 
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
-  if (input_event.type() == blink::WebInputEvent::GestureFlingStart) {
+  if (input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
     // touchpad scroll has ended, and should not be forwarded to the renderer.
-    if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad &&
-        !gesture_event.data.flingStart.velocityX &&
-        !gesture_event.data.flingStart.velocityY) {
+    if (gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
+        !gesture_event.data.fling_start.velocity_x &&
+        !gesture_event.data.fling_start.velocity_y) {
       // Here we indicate that there was no consumer for this event, as
       // otherwise the fling animation system will try to run an animation
       // and will also expect a notification when the fling ends. Since

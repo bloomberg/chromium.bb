@@ -26,43 +26,43 @@
 
 namespace blink {
 
-RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type,
-                                                 bool canBubble,
+RTCDataChannelEvent* RTCDataChannelEvent::Create(const AtomicString& type,
+                                                 bool can_bubble,
                                                  bool cancelable,
                                                  RTCDataChannel* channel) {
-  return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
+  return new RTCDataChannelEvent(type, can_bubble, cancelable, channel);
 }
 
-RTCDataChannelEvent* RTCDataChannelEvent::create(
+RTCDataChannelEvent* RTCDataChannelEvent::Create(
     const AtomicString& type,
     const RTCDataChannelEventInit& initializer) {
   return new RTCDataChannelEvent(type, initializer);
 }
 
 RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
-                                         bool canBubble,
+                                         bool can_bubble,
                                          bool cancelable,
                                          RTCDataChannel* channel)
-    : Event(type, canBubble, cancelable), m_channel(channel) {}
+    : Event(type, can_bubble, cancelable), channel_(channel) {}
 
 RTCDataChannelEvent::RTCDataChannelEvent(
     const AtomicString& type,
     const RTCDataChannelEventInit& initializer)
-    : Event(type, initializer), m_channel(initializer.channel()) {}
+    : Event(type, initializer), channel_(initializer.channel()) {}
 
 RTCDataChannelEvent::~RTCDataChannelEvent() {}
 
 RTCDataChannel* RTCDataChannelEvent::channel() const {
-  return m_channel.get();
+  return channel_.Get();
 }
 
-const AtomicString& RTCDataChannelEvent::interfaceName() const {
+const AtomicString& RTCDataChannelEvent::InterfaceName() const {
   return EventNames::RTCDataChannelEvent;
 }
 
 DEFINE_TRACE(RTCDataChannelEvent) {
-  visitor->trace(m_channel);
-  Event::trace(visitor);
+  visitor->Trace(channel_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

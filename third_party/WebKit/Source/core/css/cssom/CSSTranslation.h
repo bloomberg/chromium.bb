@@ -17,49 +17,49 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSTranslation* create(CSSLengthValue* x,
+  static CSSTranslation* Create(CSSLengthValue* x,
                                 CSSLengthValue* y,
                                 ExceptionState&) {
     return new CSSTranslation(x, y, nullptr);
   }
-  static CSSTranslation* create(CSSLengthValue* x,
+  static CSSTranslation* Create(CSSLengthValue* x,
                                 CSSLengthValue* y,
                                 CSSLengthValue* z,
                                 ExceptionState&);
 
-  static CSSTranslation* fromCSSValue(const CSSFunctionValue& value) {
+  static CSSTranslation* FromCSSValue(const CSSFunctionValue& value) {
     return nullptr;
   }
 
-  CSSLengthValue* x() const { return m_x; }
-  CSSLengthValue* y() const { return m_y; }
-  CSSLengthValue* z() const { return m_z; }
+  CSSLengthValue* x() const { return x_; }
+  CSSLengthValue* y() const { return y_; }
+  CSSLengthValue* z() const { return z_; }
 
-  TransformComponentType type() const override {
-    return is2D() ? TranslationType : Translation3DType;
+  TransformComponentType GetType() const override {
+    return Is2D() ? kTranslationType : kTranslation3DType;
   }
 
   // TODO: Implement asMatrix for CSSTranslation.
   CSSMatrixComponent* asMatrix() const override { return nullptr; }
 
-  CSSFunctionValue* toCSSValue() const override;
+  CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_x);
-    visitor->trace(m_y);
-    visitor->trace(m_z);
-    CSSTransformComponent::trace(visitor);
+    visitor->Trace(x_);
+    visitor->Trace(y_);
+    visitor->Trace(z_);
+    CSSTransformComponent::Trace(visitor);
   }
 
  private:
   CSSTranslation(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z)
-      : CSSTransformComponent(), m_x(x), m_y(y), m_z(z) {}
+      : CSSTransformComponent(), x_(x), y_(y), z_(z) {}
 
-  bool is2D() const { return !m_z; }
+  bool Is2D() const { return !z_; }
 
-  Member<CSSLengthValue> m_x;
-  Member<CSSLengthValue> m_y;
-  Member<CSSLengthValue> m_z;
+  Member<CSSLengthValue> x_;
+  Member<CSSLengthValue> y_;
+  Member<CSSLengthValue> z_;
 };
 
 }  // namespace blink

@@ -33,18 +33,18 @@ class ViewportScrollCallback : public ScrollStateCallback {
  public:
   // The BrowserControls and OverscrollController are given to the
   // ViewportScrollCallback but are not owned or kept alive by it.
-  static ViewportScrollCallback* create(
-      BrowserControls* browserControls,
-      OverscrollController* overscrollController,
-      RootFrameViewport& rootFrameViewport) {
-    return new ViewportScrollCallback(browserControls, overscrollController,
-                                      rootFrameViewport);
+  static ViewportScrollCallback* Create(
+      BrowserControls* browser_controls,
+      OverscrollController* overscroll_controller,
+      RootFrameViewport& root_frame_viewport) {
+    return new ViewportScrollCallback(browser_controls, overscroll_controller,
+                                      root_frame_viewport);
   }
 
   virtual ~ViewportScrollCallback();
 
   void handleEvent(ScrollState*) override;
-  void setScroller(ScrollableArea*);
+  void SetScroller(ScrollableArea*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -55,15 +55,15 @@ class ViewportScrollCallback : public ScrollStateCallback {
                          OverscrollController*,
                          RootFrameViewport&);
 
-  bool shouldScrollBrowserControls(const ScrollOffset&,
+  bool ShouldScrollBrowserControls(const ScrollOffset&,
                                    ScrollGranularity) const;
-  bool scrollBrowserControls(ScrollState&);
+  bool ScrollBrowserControls(ScrollState&);
 
-  ScrollResult performNativeScroll(ScrollState&);
+  ScrollResult PerformNativeScroll(ScrollState&);
 
-  WeakMember<BrowserControls> m_browserControls;
-  WeakMember<OverscrollController> m_overscrollController;
-  WeakMember<RootFrameViewport> m_rootFrameViewport;
+  WeakMember<BrowserControls> browser_controls_;
+  WeakMember<OverscrollController> overscroll_controller_;
+  WeakMember<RootFrameViewport> root_frame_viewport_;
 };
 
 }  // namespace blink

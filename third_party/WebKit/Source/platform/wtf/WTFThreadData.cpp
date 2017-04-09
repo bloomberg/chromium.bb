@@ -32,32 +32,32 @@
 
 namespace WTF {
 
-ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
+ThreadSpecific<WTFThreadData>* WTFThreadData::static_data_;
 
 WTFThreadData::WTFThreadData()
-    : m_atomicStringTable(new AtomicStringTable),
-      m_cachedConverterICU(new ICUConverterWrapper),
-      m_threadId(internal::currentThreadSyscall()) {}
+    : atomic_string_table_(new AtomicStringTable),
+      cached_converter_icu_(new ICUConverterWrapper),
+      thread_id_(internal::CurrentThreadSyscall()) {}
 
 WTFThreadData::~WTFThreadData() {}
 
-void WTFThreadData::initialize() {
-  DCHECK(!WTFThreadData::staticData);
-  WTFThreadData::staticData = new ThreadSpecific<WTFThreadData>;
-  wtfThreadData();
+void WTFThreadData::Initialize() {
+  DCHECK(!WTFThreadData::static_data_);
+  WTFThreadData::static_data_ = new ThreadSpecific<WTFThreadData>;
+  WtfThreadData();
 }
 
 #if OS(WIN) && COMPILER(MSVC)
-size_t WTFThreadData::threadStackSize() {
+size_t WTFThreadData::ThreadStackSize() {
   // Needed to bootstrap WTFThreadData on Windows, because this value is needed
   // before the main thread data is fully initialized.
-  if (!WTFThreadData::staticData->isSet())
-    return internal::threadStackSize();
+  if (!WTFThreadData::static_data_->IsSet())
+    return internal::ThreadStackSize();
 
-  WTFThreadData& data = wtfThreadData();
-  if (!data.m_threadStackSize)
-    data.m_threadStackSize = internal::threadStackSize();
-  return data.m_threadStackSize;
+  WTFThreadData& data = WtfThreadData();
+  if (!data.thread_stack_size_)
+    data.thread_stack_size_ = internal::ThreadStackSize();
+  return data.thread_stack_size_;
 }
 #endif
 

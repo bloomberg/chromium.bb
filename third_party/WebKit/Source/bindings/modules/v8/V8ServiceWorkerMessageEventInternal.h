@@ -14,97 +14,97 @@ namespace blink {
 class V8ServiceWorkerMessageEventInternal {
  public:
   template <typename EventType, typename DictType>
-  static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 
   template <typename EventType>
-  static void dataAttributeGetterCustom(
+  static void DataAttributeGetterCustom(
       const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 template <typename EventType, typename DictType>
-void V8ServiceWorkerMessageEventInternal::constructorCustom(
+void V8ServiceWorkerMessageEventInternal::ConstructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
-  ExceptionState exceptionState(
-      isolate, ExceptionState::ConstructionContext,
-      V8TypeOf<EventType>::Type::wrapperTypeInfo.interfaceName);
+  ExceptionState exception_state(
+      isolate, ExceptionState::kConstructionContext,
+      V8TypeOf<EventType>::Type::wrapperTypeInfo.interface_name);
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.throwTypeError(
-        ExceptionMessages::notEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   V8StringResource<> type = info[0];
-  if (!type.prepare())
+  if (!type.Prepare())
     return;
 
-  DictType eventInitDict;
-  if (!isUndefinedOrNull(info[1])) {
+  DictType event_init_dict;
+  if (!IsUndefinedOrNull(info[1])) {
     if (!info[1]->IsObject()) {
-      exceptionState.throwTypeError(
+      exception_state.ThrowTypeError(
           "parameter 2 ('eventInitDict') is not an object.");
       return;
     }
-    V8TypeOf<DictType>::Type::toImpl(isolate, info[1], eventInitDict,
-                                     exceptionState);
-    if (exceptionState.hadException())
+    V8TypeOf<DictType>::Type::toImpl(isolate, info[1], event_init_dict,
+                                     exception_state);
+    if (exception_state.HadException())
       return;
   }
 
-  EventType* impl = EventType::create(type, eventInitDict);
+  EventType* impl = EventType::Create(type, event_init_dict);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(
+  wrapper = impl->AssociateWithWrapper(
       isolate, &V8TypeOf<EventType>::Type::wrapperTypeInfo, wrapper);
 
   // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
   // |data| as a private value to avoid cyclic references.
-  if (eventInitDict.hasData()) {
-    v8::Local<v8::Value> v8Data = eventInitDict.data().v8Value();
-    V8PrivateProperty::getMessageEventCachedData(isolate).set(wrapper, v8Data);
-    if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
-      impl->setSerializedData(
-          SerializedScriptValue::serializeAndSwallowExceptions(isolate,
-                                                               v8Data));
+  if (event_init_dict.hasData()) {
+    v8::Local<v8::Value> v8_data = event_init_dict.data().V8Value();
+    V8PrivateProperty::GetMessageEventCachedData(isolate).Set(wrapper, v8_data);
+    if (DOMWrapperWorld::Current(isolate).IsIsolatedWorld()) {
+      impl->SetSerializedData(
+          SerializedScriptValue::SerializeAndSwallowExceptions(isolate,
+                                                               v8_data));
     }
   }
-  v8SetReturnValue(info, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 template <typename EventType>
-void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(
+void V8ServiceWorkerMessageEventInternal::DataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   EventType* event = V8TypeOf<EventType>::Type::toImpl(info.Holder());
   v8::Isolate* isolate = info.GetIsolate();
-  auto privateCachedData =
-      V8PrivateProperty::getMessageEventCachedData(isolate);
-  v8::Local<v8::Value> result = privateCachedData.getOrEmpty(info.Holder());
+  auto private_cached_data =
+      V8PrivateProperty::GetMessageEventCachedData(isolate);
+  v8::Local<v8::Value> result = private_cached_data.GetOrEmpty(info.Holder());
   if (!result.IsEmpty()) {
-    v8SetReturnValue(info, result);
+    V8SetReturnValue(info, result);
     return;
   }
 
   v8::Local<v8::Value> data;
-  if (SerializedScriptValue* serializedValue = event->serializedData()) {
+  if (SerializedScriptValue* serialized_value = event->SerializedData()) {
     MessagePortArray ports = event->ports();
     SerializedScriptValue::DeserializeOptions options;
-    options.messagePorts = &ports;
-    data = serializedValue->deserialize(isolate, options);
-  } else if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
-    v8::Local<v8::Value> mainWorldData =
-        privateCachedData.getFromMainWorld(event);
-    if (!mainWorldData.IsEmpty()) {
+    options.message_ports = &ports;
+    data = serialized_value->Deserialize(isolate, options);
+  } else if (DOMWrapperWorld::Current(isolate).IsIsolatedWorld()) {
+    v8::Local<v8::Value> main_world_data =
+        private_cached_data.GetFromMainWorld(event);
+    if (!main_world_data.IsEmpty()) {
       // TODO(bashi): Enter the main world's ScriptState::Scope while
       // serializing the main world's value.
-      event->setSerializedData(
-          SerializedScriptValue::serializeAndSwallowExceptions(
-              info.GetIsolate(), mainWorldData));
-      data = event->serializedData()->deserialize(isolate);
+      event->SetSerializedData(
+          SerializedScriptValue::SerializeAndSwallowExceptions(
+              info.GetIsolate(), main_world_data));
+      data = event->SerializedData()->Deserialize(isolate);
     }
   }
   if (data.IsEmpty())
     data = v8::Null(isolate);
-  privateCachedData.set(info.Holder(), data);
-  v8SetReturnValue(info, data);
+  private_cached_data.Set(info.Holder(), data);
+  V8SetReturnValue(info, data);
 }
 
 }  // namespace blink

@@ -17,13 +17,13 @@ class EmbeddedObjectPainter {
   STACK_ALLOCATED();
 
  public:
-  EmbeddedObjectPainter(const LayoutEmbeddedObject& layoutEmbeddedObject)
-      : m_layoutEmbeddedObject(layoutEmbeddedObject) {}
+  EmbeddedObjectPainter(const LayoutEmbeddedObject& layout_embedded_object)
+      : layout_embedded_object_(layout_embedded_object) {}
 
-  void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
+  void PaintReplaced(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  const LayoutEmbeddedObject& m_layoutEmbeddedObject;
+  const LayoutEmbeddedObject& layout_embedded_object_;
 };
 
 }  // namespace blink

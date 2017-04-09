@@ -28,25 +28,25 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   // in the frame.
   class LayoutObjectCounter {
    public:
-    void reset() { m_count = 0; }
-    void increment() { m_count++; }
-    unsigned count() const { return m_count; }
+    void Reset() { count_ = 0; }
+    void Increment() { count_++; }
+    unsigned Count() const { return count_; }
 
    private:
-    unsigned m_count = 0;
+    unsigned count_ = 0;
   };
 
-  static FirstMeaningfulPaintDetector& from(Document&);
+  static FirstMeaningfulPaintDetector& From(Document&);
 
   FirstMeaningfulPaintDetector(PaintTiming*, Document&);
   virtual ~FirstMeaningfulPaintDetector() {}
 
-  void markNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
-                                         int contentsHeightBeforeLayout,
-                                         int contentsHeightAfterLayout,
-                                         int visibleHeight);
-  void notifyPaint();
-  void checkNetworkStable();
+  void MarkNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
+                                         int contents_height_before_layout,
+                                         int contents_height_after_layout,
+                                         int visible_height);
+  void NotifyPaint();
+  void CheckNetworkStable();
 
   DECLARE_TRACE();
 
@@ -58,27 +58,27 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   static constexpr double kNetwork2QuietWindowSeconds = 0.5;
   static constexpr double kNetwork0QuietWindowSeconds = 0.5;
 
-  Document* document();
-  int activeConnections();
-  void setNetworkQuietTimers(int activeConnections);
-  void network0QuietTimerFired(TimerBase*);
-  void network2QuietTimerFired(TimerBase*);
-  void reportHistograms();
+  Document* GetDocument();
+  int ActiveConnections();
+  void SetNetworkQuietTimers(int active_connections);
+  void Network0QuietTimerFired(TimerBase*);
+  void Network2QuietTimerFired(TimerBase*);
+  void ReportHistograms();
 
-  bool m_nextPaintIsMeaningful = false;
+  bool next_paint_is_meaningful_ = false;
 
-  Member<PaintTiming> m_paintTiming;
-  double m_provisionalFirstMeaningfulPaint = 0.0;
-  double m_maxSignificanceSoFar = 0.0;
-  double m_accumulatedSignificanceWhileHavingBlankText = 0.0;
-  unsigned m_prevLayoutObjectCount = 0;
-  bool m_seenFirstMeaningfulPaintCandidate = false;
-  bool m_network0QuietReached = false;
-  bool m_network2QuietReached = false;
-  double m_firstMeaningfulPaint0Quiet = 0.0;
-  double m_firstMeaningfulPaint2Quiet = 0.0;
-  TaskRunnerTimer<FirstMeaningfulPaintDetector> m_network0QuietTimer;
-  TaskRunnerTimer<FirstMeaningfulPaintDetector> m_network2QuietTimer;
+  Member<PaintTiming> paint_timing_;
+  double provisional_first_meaningful_paint_ = 0.0;
+  double max_significance_so_far_ = 0.0;
+  double accumulated_significance_while_having_blank_text_ = 0.0;
+  unsigned prev_layout_object_count_ = 0;
+  bool seen_first_meaningful_paint_candidate_ = false;
+  bool network0_quiet_reached_ = false;
+  bool network2_quiet_reached_ = false;
+  double first_meaningful_paint0_quiet_ = 0.0;
+  double first_meaningful_paint2_quiet_ = 0.0;
+  TaskRunnerTimer<FirstMeaningfulPaintDetector> network0_quiet_timer_;
+  TaskRunnerTimer<FirstMeaningfulPaintDetector> network2_quiet_timer_;
 };
 
 }  // namespace blink

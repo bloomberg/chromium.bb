@@ -33,28 +33,28 @@
 
 namespace blink {
 
-AXARIAGridRow::AXARIAGridRow(LayoutObject* layoutObject,
-                             AXObjectCacheImpl& axObjectCache)
-    : AXTableRow(layoutObject, axObjectCache) {}
+AXARIAGridRow::AXARIAGridRow(LayoutObject* layout_object,
+                             AXObjectCacheImpl& ax_object_cache)
+    : AXTableRow(layout_object, ax_object_cache) {}
 
 AXARIAGridRow::~AXARIAGridRow() {}
 
-AXARIAGridRow* AXARIAGridRow::create(LayoutObject* layoutObject,
-                                     AXObjectCacheImpl& axObjectCache) {
-  return new AXARIAGridRow(layoutObject, axObjectCache);
+AXARIAGridRow* AXARIAGridRow::Create(LayoutObject* layout_object,
+                                     AXObjectCacheImpl& ax_object_cache) {
+  return new AXARIAGridRow(layout_object, ax_object_cache);
 }
 
-bool AXARIAGridRow::isARIATreeGridRow() const {
-  AXObject* parent = parentTable();
+bool AXARIAGridRow::IsARIATreeGridRow() const {
+  AXObject* parent = ParentTable();
   if (!parent)
     return false;
 
-  return parent->ariaRoleAttribute() == TreeGridRole;
+  return parent->AriaRoleAttribute() == kTreeGridRole;
 }
 
-void AXARIAGridRow::headerObjectsForRow(AXObjectVector& headers) {
-  for (const auto& cell : children()) {
-    if (cell->roleValue() == RowHeaderRole)
+void AXARIAGridRow::HeaderObjectsForRow(AXObjectVector& headers) {
+  for (const auto& cell : Children()) {
+    if (cell->RoleValue() == kRowHeaderRole)
       headers.push_back(cell);
   }
 }

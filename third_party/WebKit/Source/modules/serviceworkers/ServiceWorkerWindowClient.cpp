@@ -20,13 +20,13 @@
 
 namespace blink {
 
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(
+ServiceWorkerWindowClient* ServiceWorkerWindowClient::Take(
     ScriptPromiseResolver*,
-    std::unique_ptr<WebServiceWorkerClientInfo> webClient) {
-  return webClient ? ServiceWorkerWindowClient::create(*webClient) : nullptr;
+    std::unique_ptr<WebServiceWorkerClientInfo> web_client) {
+  return web_client ? ServiceWorkerWindowClient::Create(*web_client) : nullptr;
 }
 
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::create(
+ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const WebServiceWorkerClientInfo& info) {
   return new ServiceWorkerWindowClient(info);
 }
@@ -34,61 +34,61 @@ ServiceWorkerWindowClient* ServiceWorkerWindowClient::create(
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const WebServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
-      m_pageVisibilityState(info.pageVisibilityState),
-      m_isFocused(info.isFocused) {}
+      page_visibility_state_(info.page_visibility_state),
+      is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::~ServiceWorkerWindowClient() {}
 
 String ServiceWorkerWindowClient::visibilityState() const {
-  return pageVisibilityStateString(
-      static_cast<PageVisibilityState>(m_pageVisibilityState));
+  return PageVisibilityStateString(
+      static_cast<PageVisibilityState>(page_visibility_state_));
 }
 
-ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  if (!scriptState->getExecutionContext()->isWindowInteractionAllowed()) {
-    resolver->reject(DOMException::create(InvalidAccessError,
+  if (!script_state->GetExecutionContext()->IsWindowInteractionAllowed()) {
+    resolver->Reject(DOMException::Create(kInvalidAccessError,
                                           "Not allowed to focus a window."));
     return promise;
   }
-  scriptState->getExecutionContext()->consumeWindowInteraction();
+  script_state->GetExecutionContext()->ConsumeWindowInteraction();
 
-  ServiceWorkerGlobalScopeClient::from(scriptState->getExecutionContext())
-      ->focus(uuid(),
-              WTF::makeUnique<CallbackPromiseAdapter<ServiceWorkerWindowClient,
+  ServiceWorkerGlobalScopeClient::From(script_state->GetExecutionContext())
+      ->Focus(Uuid(),
+              WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerWindowClient,
                                                      ServiceWorkerError>>(
                   resolver));
   return promise;
 }
 
-ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* scriptState,
+ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
                                                   const String& url) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  ExecutionContext* context = scriptState->getExecutionContext();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  ExecutionContext* context = script_state->GetExecutionContext();
 
-  KURL parsedUrl = KURL(toWorkerGlobalScope(context)->location()->url(), url);
-  if (!parsedUrl.isValid() || parsedUrl.protocolIsAbout()) {
-    resolver->reject(V8ThrowException::createTypeError(
-        scriptState->isolate(), "'" + url + "' is not a valid URL."));
+  KURL parsed_url = KURL(ToWorkerGlobalScope(context)->location()->Url(), url);
+  if (!parsed_url.IsValid() || parsed_url.ProtocolIsAbout()) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(), "'" + url + "' is not a valid URL."));
     return promise;
   }
-  if (!context->getSecurityOrigin()->canDisplay(parsedUrl)) {
-    resolver->reject(V8ThrowException::createTypeError(
-        scriptState->isolate(),
-        "'" + parsedUrl.elidedString() + "' cannot navigate."));
+  if (!context->GetSecurityOrigin()->CanDisplay(parsed_url)) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        script_state->GetIsolate(),
+        "'" + parsed_url.ElidedString() + "' cannot navigate."));
     return promise;
   }
 
-  ServiceWorkerGlobalScopeClient::from(context)->navigate(
-      uuid(), parsedUrl, WTF::makeUnique<NavigateClientCallback>(resolver));
+  ServiceWorkerGlobalScopeClient::From(context)->Navigate(
+      Uuid(), parsed_url, WTF::MakeUnique<NavigateClientCallback>(resolver));
   return promise;
 }
 
 DEFINE_TRACE(ServiceWorkerWindowClient) {
-  ServiceWorkerClient::trace(visitor);
+  ServiceWorkerClient::Trace(visitor);
 }
 
 }  // namespace blink

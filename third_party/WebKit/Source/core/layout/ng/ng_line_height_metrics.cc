@@ -10,9 +10,9 @@ namespace blink {
 
 NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
                                          FontBaseline baseline_type) {
-  const SimpleFontData* font_data = style.font().primaryFont();
+  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
-  Initialize(font_data->getFontMetrics(), baseline_type);
+  Initialize(font_data->GetFontMetrics(), baseline_type);
 }
 
 NGLineHeightMetrics::NGLineHeightMetrics(const FontMetrics& font_metrics,
@@ -22,15 +22,15 @@ NGLineHeightMetrics::NGLineHeightMetrics(const FontMetrics& font_metrics,
 
 void NGLineHeightMetrics::Initialize(const FontMetrics& font_metrics,
                                      FontBaseline baseline_type) {
-  ascent = font_metrics.fixedAscent(baseline_type);
-  descent = font_metrics.fixedDescent(baseline_type);
+  ascent = font_metrics.FixedAscent(baseline_type);
+  descent = font_metrics.FixedDescent(baseline_type);
 }
 
 void NGLineHeightMetrics::AddLeading(LayoutUnit line_height) {
   LayoutUnit half_leading = (line_height - (ascent + descent)) / 2;
   // TODO(kojii): floor() is to make text dump compatible with legacy test
   // results. Revisit when we paint.
-  ascent += half_leading.floor();
+  ascent += half_leading.Floor();
   descent = line_height - ascent;
 }
 

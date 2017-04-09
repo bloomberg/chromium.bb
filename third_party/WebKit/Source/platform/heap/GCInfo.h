@@ -31,16 +31,16 @@ struct FinalizerTraitImpl;
 template <typename T>
 struct FinalizerTraitImpl<T, true> {
   STATIC_ONLY(FinalizerTraitImpl);
-  static void finalize(void* obj) {
+  static void Finalize(void* obj) {
     static_assert(sizeof(T), "T must be fully defined");
-    static_cast<T*>(obj)->finalizeGarbageCollectedObject();
+    static_cast<T*>(obj)->FinalizeGarbageCollectedObject();
   };
 };
 
 template <typename T>
 struct FinalizerTraitImpl<T, false> {
   STATIC_ONLY(FinalizerTraitImpl);
-  static void finalize(void* obj) {
+  static void Finalize(void* obj) {
     static_assert(sizeof(T), "T must be fully defined");
   };
 };
@@ -55,11 +55,11 @@ struct FinalizerTraitImpl<T, false> {
 template <typename T>
 struct FinalizerTrait {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer =
+  static const bool kNonTrivialFinalizer =
       WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type,
                                 GarbageCollectedFinalized>::value;
-  static void finalize(void* obj) {
-    FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj);
+  static void Finalize(void* obj) {
+    FinalizerTraitImpl<T, kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
@@ -74,64 +74,64 @@ class HeapHashTableBacking;
 template <typename T, typename U, typename V>
 struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer = true;
-  static void finalize(void* obj) {
+  static const bool kNonTrivialFinalizer = true;
+  static void Finalize(void* obj) {
     FinalizerTraitImpl<LinkedHashSet<T, U, V, HeapAllocator>,
-                       nonTrivialFinalizer>::finalize(obj);
+                       kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
 template <typename T, typename Allocator>
 struct FinalizerTrait<WTF::ListHashSetNode<T, Allocator>> {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer =
+  static const bool kNonTrivialFinalizer =
       !WTF::IsTriviallyDestructible<T>::value;
-  static void finalize(void* obj) {
+  static void Finalize(void* obj) {
     FinalizerTraitImpl<WTF::ListHashSetNode<T, Allocator>,
-                       nonTrivialFinalizer>::finalize(obj);
+                       kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
 template <typename T, size_t inlineCapacity>
 struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer =
-      inlineCapacity && VectorTraits<T>::needsDestruction;
-  static void finalize(void* obj) {
+  static const bool kNonTrivialFinalizer =
+      inlineCapacity && VectorTraits<T>::kNeedsDestruction;
+  static void Finalize(void* obj) {
     FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>,
-                       nonTrivialFinalizer>::finalize(obj);
+                       kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
 template <typename T, size_t inlineCapacity>
 struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer =
-      inlineCapacity && VectorTraits<T>::needsDestruction;
-  static void finalize(void* obj) {
+  static const bool kNonTrivialFinalizer =
+      inlineCapacity && VectorTraits<T>::kNeedsDestruction;
+  static void Finalize(void* obj) {
     FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>,
-                       nonTrivialFinalizer>::finalize(obj);
+                       kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
 template <typename Table>
 struct FinalizerTrait<HeapHashTableBacking<Table>> {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer =
+  static const bool kNonTrivialFinalizer =
       !WTF::IsTriviallyDestructible<typename Table::ValueType>::value;
-  static void finalize(void* obj) {
+  static void Finalize(void* obj) {
     FinalizerTraitImpl<HeapHashTableBacking<Table>,
-                       nonTrivialFinalizer>::finalize(obj);
+                       kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
 template <typename T, typename Traits>
 struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
   STATIC_ONLY(FinalizerTrait);
-  static const bool nonTrivialFinalizer = Traits::needsDestruction;
-  static void finalize(void* obj) {
+  static const bool kNonTrivialFinalizer = Traits::kNeedsDestruction;
+  static void Finalize(void* obj) {
     FinalizerTraitImpl<HeapVectorBacking<T, Traits>,
-                       nonTrivialFinalizer>::finalize(obj);
+                       kNonTrivialFinalizer>::Finalize(obj);
   }
 };
 
@@ -144,31 +144,31 @@ struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
 // reachable. There is a GCInfo struct for each class that directly
 // inherits from GarbageCollected or GarbageCollectedFinalized.
 struct GCInfo {
-  bool hasFinalizer() const { return m_nonTrivialFinalizer; }
-  bool hasVTable() const { return m_hasVTable; }
-  TraceCallback m_trace;
-  FinalizationCallback m_finalize;
-  bool m_nonTrivialFinalizer;
-  bool m_hasVTable;
+  bool HasFinalizer() const { return non_trivial_finalizer_; }
+  bool HasVTable() const { return has_v_table_; }
+  TraceCallback trace_;
+  FinalizationCallback finalize_;
+  bool non_trivial_finalizer_;
+  bool has_v_table_;
 };
 
 // s_gcInfoTable holds the per-class GCInfo descriptors; each heap
 // object header keeps its index into this table.
-extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
+extern PLATFORM_EXPORT GCInfo const** g_gc_info_table;
 
 #if DCHECK_IS_ON()
-PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, size_t gcInfoIndex);
+PLATFORM_EXPORT void AssertObjectHasGCInfo(const void*, size_t gc_info_index);
 #endif
 
 class GCInfoTable {
   STATIC_ONLY(GCInfoTable);
 
  public:
-  PLATFORM_EXPORT static void ensureGCInfoIndex(const GCInfo*, size_t*);
+  PLATFORM_EXPORT static void EnsureGCInfoIndex(const GCInfo*, size_t*);
 
-  static void init();
+  static void Init();
 
-  static size_t gcInfoIndex() { return s_gcInfoIndex; }
+  static size_t GcInfoIndex() { return gc_info_index_; }
 
   // The (max + 1) GCInfo index supported.
   // We assume that 14 bits is enough to represent all possible types: during
@@ -176,13 +176,13 @@ class GCInfoTable {
   // of the oilpan gc clang plugin, there appear to be at most about 6000
   // types, so 14 bits should be more than twice as many bits as we will ever
   // encounter.
-  static const size_t maxIndex = 1 << 14;
+  static const size_t kMaxIndex = 1 << 14;
 
  private:
-  static void resize();
+  static void Resize();
 
-  static int s_gcInfoIndex;
-  static size_t s_gcInfoTableSize;
+  static int gc_info_index_;
+  static size_t gc_info_table_size_;
 };
 
 // GCInfoAtBaseType should be used when returning a unique 14 bit integer
@@ -190,20 +190,20 @@ class GCInfoTable {
 template <typename T>
 struct GCInfoAtBaseType {
   STATIC_ONLY(GCInfoAtBaseType);
-  static size_t index() {
+  static size_t Index() {
     static_assert(sizeof(T), "T must be fully defined");
-    static const GCInfo gcInfo = {
-        TraceTrait<T>::trace, FinalizerTrait<T>::finalize,
-        FinalizerTrait<T>::nonTrivialFinalizer, std::is_polymorphic<T>::value,
+    static const GCInfo kGcInfo = {
+        TraceTrait<T>::Trace, FinalizerTrait<T>::Finalize,
+        FinalizerTrait<T>::kNonTrivialFinalizer, std::is_polymorphic<T>::value,
     };
 
-    static size_t gcInfoIndex = 0;
-    ASSERT(s_gcInfoTable);
-    if (!acquireLoad(&gcInfoIndex))
-      GCInfoTable::ensureGCInfoIndex(&gcInfo, &gcInfoIndex);
-    ASSERT(gcInfoIndex >= 1);
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
-    return gcInfoIndex;
+    static size_t gc_info_index = 0;
+    ASSERT(g_gc_info_table);
+    if (!AcquireLoad(&gc_info_index))
+      GCInfoTable::EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
+    ASSERT(gc_info_index >= 1);
+    ASSERT(gc_info_index < GCInfoTable::kMaxIndex);
+    return gc_info_index;
   }
 };
 
@@ -227,8 +227,8 @@ struct GetGarbageCollectedType<T, false> {
 template <typename T>
 struct GCInfoTrait {
   STATIC_ONLY(GCInfoTrait);
-  static size_t index() {
-    return GCInfoAtBaseType<typename GetGarbageCollectedType<T>::type>::index();
+  static size_t Index() {
+    return GCInfoAtBaseType<typename GetGarbageCollectedType<T>::type>::Index();
   }
 };
 

@@ -29,49 +29,49 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
  public:
   ~ScreenOrientationControllerImpl() override;
 
-  void setOrientation(ScreenOrientation*);
-  void notifyOrientationChanged() override;
+  void SetOrientation(ScreenOrientation*);
+  void NotifyOrientationChanged() override;
 
   // Implementation of ScreenOrientationController.
   void lock(WebScreenOrientationLockType,
             std::unique_ptr<WebLockOrientationCallback>) override;
   void unlock() override;
-  bool maybeHasActiveLock() const override;
+  bool MaybeHasActiveLock() const override;
 
-  static void provideTo(LocalFrame&, WebScreenOrientationClient*);
-  static ScreenOrientationControllerImpl* from(LocalFrame&);
+  static void ProvideTo(LocalFrame&, WebScreenOrientationClient*);
+  static ScreenOrientationControllerImpl* From(LocalFrame&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   ScreenOrientationControllerImpl(LocalFrame&, WebScreenOrientationClient*);
 
-  static WebScreenOrientationType computeOrientation(const IntRect&, uint16_t);
+  static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
 
   // Inherited from PlatformEventController.
-  void didUpdateData() override;
-  void registerWithDispatcher() override;
-  void unregisterWithDispatcher() override;
-  bool hasLastData() override;
+  void DidUpdateData() override;
+  void RegisterWithDispatcher() override;
+  void UnregisterWithDispatcher() override;
+  bool HasLastData() override;
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
-  void contextDestroyed(ExecutionContext*) override;
-  void pageVisibilityChanged() override;
+  void ContextDestroyed(ExecutionContext*) override;
+  void PageVisibilityChanged() override;
 
-  void notifyDispatcher();
+  void NotifyDispatcher();
 
-  void updateOrientation();
+  void UpdateOrientation();
 
-  void dispatchEventTimerFired(TimerBase*);
+  void DispatchEventTimerFired(TimerBase*);
 
-  bool isActive() const;
-  bool isVisible() const;
-  bool isActiveAndVisible() const;
+  bool IsActive() const;
+  bool IsVisible() const;
+  bool IsActiveAndVisible() const;
 
-  Member<ScreenOrientation> m_orientation;
-  WebScreenOrientationClient* m_client;
-  TaskRunnerTimer<ScreenOrientationControllerImpl> m_dispatchEventTimer;
-  bool m_activeLock = false;
+  Member<ScreenOrientation> orientation_;
+  WebScreenOrientationClient* client_;
+  TaskRunnerTimer<ScreenOrientationControllerImpl> dispatch_event_timer_;
+  bool active_lock_ = false;
 };
 
 }  // namespace blink

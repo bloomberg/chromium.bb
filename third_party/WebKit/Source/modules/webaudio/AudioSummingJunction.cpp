@@ -30,35 +30,35 @@
 namespace blink {
 
 AudioSummingJunction::AudioSummingJunction(DeferredTaskHandler& handler)
-    : m_deferredTaskHandler(handler), m_renderingStateNeedUpdating(false) {}
+    : deferred_task_handler_(handler), rendering_state_need_updating_(false) {}
 
 AudioSummingJunction::~AudioSummingJunction() {
-  deferredTaskHandler().removeMarkedSummingJunction(this);
+  GetDeferredTaskHandler().RemoveMarkedSummingJunction(this);
 }
 
-void AudioSummingJunction::changedOutputs() {
-  ASSERT(deferredTaskHandler().isGraphOwner());
-  if (!m_renderingStateNeedUpdating) {
-    deferredTaskHandler().markSummingJunctionDirty(this);
-    m_renderingStateNeedUpdating = true;
+void AudioSummingJunction::ChangedOutputs() {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  if (!rendering_state_need_updating_) {
+    GetDeferredTaskHandler().MarkSummingJunctionDirty(this);
+    rendering_state_need_updating_ = true;
   }
 }
 
-void AudioSummingJunction::updateRenderingState() {
-  DCHECK(deferredTaskHandler().isAudioThread());
-  ASSERT(deferredTaskHandler().isGraphOwner());
-  if (m_renderingStateNeedUpdating) {
+void AudioSummingJunction::UpdateRenderingState() {
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  if (rendering_state_need_updating_) {
     // Copy from m_outputs to m_renderingOutputs.
-    m_renderingOutputs.resize(m_outputs.size());
+    rendering_outputs_.Resize(outputs_.size());
     unsigned j = 0;
-    for (AudioNodeOutput* output : m_outputs) {
-      m_renderingOutputs[j++] = output;
-      output->updateRenderingState();
+    for (AudioNodeOutput* output : outputs_) {
+      rendering_outputs_[j++] = output;
+      output->UpdateRenderingState();
     }
 
-    didUpdate();
+    DidUpdate();
 
-    m_renderingStateNeedUpdating = false;
+    rendering_state_need_updating_ = false;
   }
 }
 

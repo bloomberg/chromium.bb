@@ -38,21 +38,21 @@ class SQLiteTransaction {
   USING_FAST_MALLOC(SQLiteTransaction);
 
  public:
-  SQLiteTransaction(SQLiteDatabase& db, bool readOnly = false);
+  SQLiteTransaction(SQLiteDatabase& db, bool read_only = false);
   ~SQLiteTransaction();
 
   void begin();
-  void commit();
-  void rollback();
-  void stop();
+  void Commit();
+  void Rollback();
+  void Stop();
 
-  bool inProgress() const { return m_inProgress; }
-  bool wasRolledBackBySqlite() const;
+  bool InProgress() const { return in_progress_; }
+  bool WasRolledBackBySqlite() const;
 
  private:
-  SQLiteDatabase& m_db;
-  bool m_inProgress;
-  bool m_readOnly;
+  SQLiteDatabase& db_;
+  bool in_progress_;
+  bool read_only_;
 };
 
 }  // namespace blink

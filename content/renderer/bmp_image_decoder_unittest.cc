@@ -13,7 +13,7 @@ class BMPImageDecoderTest : public ImageDecoderTest {
 
  protected:
   blink::WebImageDecoder* CreateWebKitImageDecoder() const override {
-    return new blink::WebImageDecoder(blink::WebImageDecoder::TypeBMP);
+    return new blink::WebImageDecoder(blink::WebImageDecoder::kTypeBMP);
   }
 
   // The BMPImageDecoderTest tests are really slow under Valgrind.

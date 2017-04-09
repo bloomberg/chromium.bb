@@ -11,80 +11,82 @@ namespace blink {
 
 namespace {
 
-CSSUnparsedValue* unparsedValueFromCSSVariableReferenceValue(
-    CSSStyleVariableReferenceValue* variableReferenceValue) {
+CSSUnparsedValue* UnparsedValueFromCSSVariableReferenceValue(
+    CSSStyleVariableReferenceValue* variable_reference_value) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
   fragments.push_back(
       StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
-          variableReferenceValue));
-  return CSSUnparsedValue::create(fragments);
+          variable_reference_value));
+  return CSSUnparsedValue::Create(fragments);
 }
 
 }  // namespace
 
 TEST(CSSUnparsedValueTest, EmptyList) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
+  CSSUnparsedValue* unparsed_value = CSSUnparsedValue::Create(fragments);
 
-  EXPECT_EQ(unparsedValue->length(), 0UL);
+  EXPECT_EQ(unparsed_value->length(), 0UL);
 }
 
 TEST(CSSUnparsedValueTest, ListOfStrings) {
-  CSSUnparsedValue* unparsedValue = CSSUnparsedValue::fromString("string");
+  CSSUnparsedValue* unparsed_value = CSSUnparsedValue::FromString("string");
 
-  EXPECT_EQ(unparsedValue->length(), 1UL);
+  EXPECT_EQ(unparsed_value->length(), 1UL);
 
-  EXPECT_TRUE(unparsedValue->fragmentAtIndex(0).isString());
-  EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isNull());
-  EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isCSSVariableReferenceValue());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).isString());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).isNull());
+  EXPECT_FALSE(
+      unparsed_value->fragmentAtIndex(0).isCSSVariableReferenceValue());
 
-  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsString(), "string");
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).getAsString(), "string");
 }
 
 TEST(CSSUnparsedValueTest, ListOfCSSVariableReferenceValues) {
-  CSSStyleVariableReferenceValue* variableReferenceValue =
-      CSSStyleVariableReferenceValue::create(
-          "Ref", CSSUnparsedValue::fromString("string"));
+  CSSStyleVariableReferenceValue* variable_reference_value =
+      CSSStyleVariableReferenceValue::Create(
+          "Ref", CSSUnparsedValue::FromString("string"));
 
-  CSSUnparsedValue* unparsedValue =
-      unparsedValueFromCSSVariableReferenceValue(variableReferenceValue);
+  CSSUnparsedValue* unparsed_value =
+      UnparsedValueFromCSSVariableReferenceValue(variable_reference_value);
 
-  EXPECT_EQ(unparsedValue->length(), 1UL);
+  EXPECT_EQ(unparsed_value->length(), 1UL);
 
-  EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isString());
-  EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isNull());
-  EXPECT_TRUE(unparsedValue->fragmentAtIndex(0).isCSSVariableReferenceValue());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).isString());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).isNull());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).isCSSVariableReferenceValue());
 
-  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsCSSVariableReferenceValue(),
-            variableReferenceValue);
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).getAsCSSVariableReferenceValue(),
+            variable_reference_value);
 }
 
 TEST(CSSUnparsedValueTest, MixedList) {
-  CSSStyleVariableReferenceValue* variableReferenceValue =
-      CSSStyleVariableReferenceValue::create(
-          "Ref", CSSUnparsedValue::fromString("string"));
+  CSSStyleVariableReferenceValue* variable_reference_value =
+      CSSStyleVariableReferenceValue::Create(
+          "Ref", CSSUnparsedValue::FromString("string"));
 
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
   fragments.push_back(StringOrCSSVariableReferenceValue::fromString("string"));
   fragments.push_back(
       StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
-          variableReferenceValue));
+          variable_reference_value));
   fragments.push_back(StringOrCSSVariableReferenceValue());
 
-  CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
+  CSSUnparsedValue* unparsed_value = CSSUnparsedValue::Create(fragments);
 
-  EXPECT_EQ(unparsedValue->length(), fragments.size());
+  EXPECT_EQ(unparsed_value->length(), fragments.size());
 
-  EXPECT_TRUE(unparsedValue->fragmentAtIndex(0).isString());
-  EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isCSSVariableReferenceValue());
-  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsString(), "string");
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).isString());
+  EXPECT_FALSE(
+      unparsed_value->fragmentAtIndex(0).isCSSVariableReferenceValue());
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).getAsString(), "string");
 
-  EXPECT_TRUE(unparsedValue->fragmentAtIndex(1).isCSSVariableReferenceValue());
-  EXPECT_FALSE(unparsedValue->fragmentAtIndex(1).isString());
-  EXPECT_EQ(unparsedValue->fragmentAtIndex(1).getAsCSSVariableReferenceValue(),
-            variableReferenceValue);
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(1).isCSSVariableReferenceValue());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(1).isString());
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(1).getAsCSSVariableReferenceValue(),
+            variable_reference_value);
 
-  EXPECT_TRUE(unparsedValue->fragmentAtIndex(2).isNull());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(2).isNull());
 }
 
 }  // namespace blink

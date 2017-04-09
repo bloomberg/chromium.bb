@@ -46,29 +46,29 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   void OnUpdateFound();
 
   // blink::WebServiceWorkerRegistration overrides.
-  void setProxy(blink::WebServiceWorkerRegistrationProxy* proxy) override;
-  blink::WebServiceWorkerRegistrationProxy* proxy() override;
-  blink::WebURL scope() const override;
-  void update(
+  void SetProxy(blink::WebServiceWorkerRegistrationProxy* proxy) override;
+  blink::WebServiceWorkerRegistrationProxy* Proxy() override;
+  blink::WebURL Scope() const override;
+  void Update(
       blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) override;
-  void unregister(blink::WebServiceWorkerProvider* provider,
+  void Unregister(blink::WebServiceWorkerProvider* provider,
                   std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>
                       callbacks) override;
-  void enableNavigationPreload(
+  void EnableNavigationPreload(
       bool enable,
       blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) override;
-  void getNavigationPreloadState(
+  void GetNavigationPreloadState(
       blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks)
       override;
-  void setNavigationPreloadHeader(
+  void SetNavigationPreloadHeader(
       const blink::WebString& value,
       blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks)
       override;
-  int64_t registrationId() const override;
+  int64_t RegistrationId() const override;
 
   using WebServiceWorkerRegistrationHandle =
       blink::WebServiceWorkerRegistration::Handle;

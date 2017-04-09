@@ -65,18 +65,18 @@
 
 namespace blink {
 
-void CoreInitializer::registerEventFactory() {
-  static bool isRegistered = false;
-  if (isRegistered)
+void CoreInitializer::RegisterEventFactory() {
+  static bool is_registered = false;
+  if (is_registered)
     return;
-  isRegistered = true;
+  is_registered = true;
 
-  Document::registerEventFactory(EventFactory::create());
+  Document::RegisterEventFactory(EventFactory::Create());
 }
 
-void CoreInitializer::initialize() {
-  ASSERT(!isInitialized());
-  m_isInitialized = true;
+void CoreInitializer::Initialize() {
+  ASSERT(!IsInitialized());
+  is_initialized_ = true;
   // Note: in order to add core static strings for a new module (1)
   // the value of 'coreStaticStringsCount' must be updated with the
   // added strings count, (2) if the added strings are quialified names
@@ -84,15 +84,15 @@ void CoreInitializer::initialize() {
   // 'init()' function call must be added.
   // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings
   // initialization code.
-  const unsigned qualifiedNamesCount =
+  const unsigned kQualifiedNamesCount =
       HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount +
       MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount +
       SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount +
       XLinkNames::XLinkAttrsCount + XMLNSNames::XMLNSAttrsCount +
       XMLNames::XMLAttrsCount;
 
-  const unsigned coreStaticStringsCount =
-      qualifiedNamesCount + EventNames::EventNamesCount +
+  const unsigned kCoreStaticStringsCount =
+      kQualifiedNamesCount + EventNames::EventNamesCount +
       EventTargetNames::EventTargetNamesCount +
       EventTypeNames::EventTypeNamesCount +
       FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount +
@@ -103,11 +103,11 @@ void CoreInitializer::initialize() {
       MediaFeatureNames::MediaFeatureNamesCount +
       MediaTypeNames::MediaTypeNamesCount;
 
-  StringImpl::reserveStaticStringsCapacityForSize(
-      coreStaticStringsCount + StringImpl::allStaticStrings().size());
-  QualifiedName::initAndReserveCapacityForSize(qualifiedNamesCount);
+  StringImpl::ReserveStaticStringsCapacityForSize(
+      kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
+  QualifiedName::InitAndReserveCapacityForSize(kQualifiedNamesCount);
 
-  AtomicStringTable::instance().reserveCapacity(coreStaticStringsCount);
+  AtomicStringTable::Instance().ReserveCapacity(kCoreStaticStringsCount);
 
   HTMLNames::init();
   SVGNames::init();
@@ -128,20 +128,20 @@ void CoreInitializer::initialize() {
   MediaFeatureNames::init();
   MediaTypeNames::init();
 
-  MediaQueryEvaluator::init();
-  CSSParserTokenRange::initStaticEOFToken();
+  MediaQueryEvaluator::Init();
+  CSSParserTokenRange::InitStaticEOFToken();
 
-  StyleChangeExtraData::init();
+  StyleChangeExtraData::Init();
 
-  KURL::initialize();
-  SchemeRegistry::initialize();
-  SecurityPolicy::init();
+  KURL::Initialize();
+  SchemeRegistry::Initialize();
+  SecurityPolicy::Init();
 
-  registerEventFactory();
+  RegisterEventFactory();
 
-  StringImpl::freezeStaticStrings();
+  StringImpl::FreezeStaticStrings();
 
-  ScriptStreamerThread::init();
+  ScriptStreamerThread::Init();
 }
 
 }  // namespace blink

@@ -41,34 +41,35 @@ using namespace XPath;
 XPathExpression* XPathEvaluator::createExpression(
     const String& expression,
     XPathNSResolver* resolver,
-    ExceptionState& exceptionState) {
-  return XPathExpression::createExpression(expression, resolver,
-                                           exceptionState);
+    ExceptionState& exception_state) {
+  return XPathExpression::CreateExpression(expression, resolver,
+                                           exception_state);
 }
 
-XPathNSResolver* XPathEvaluator::createNSResolver(Node* nodeResolver) {
-  return NativeXPathNSResolver::create(nodeResolver);
+XPathNSResolver* XPathEvaluator::createNSResolver(Node* node_resolver) {
+  return NativeXPathNSResolver::Create(node_resolver);
 }
 
 XPathResult* XPathEvaluator::evaluate(const String& expression,
-                                      Node* contextNode,
+                                      Node* context_node,
                                       XPathNSResolver* resolver,
                                       unsigned short type,
                                       const ScriptValue&,
-                                      ExceptionState& exceptionState) {
-  if (!isValidContextNode(contextNode)) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "The node provided is '" + contextNode->nodeName() +
-                               "', which is not a valid context node type.");
+                                      ExceptionState& exception_state) {
+  if (!IsValidContextNode(context_node)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "The node provided is '" +
+                                context_node->nodeName() +
+                                "', which is not a valid context node type.");
     return nullptr;
   }
 
   XPathExpression* expr =
-      createExpression(expression, resolver, exceptionState);
-  if (exceptionState.hadException())
+      createExpression(expression, resolver, exception_state);
+  if (exception_state.HadException())
     return nullptr;
 
-  return expr->evaluate(contextNode, type, ScriptValue(), exceptionState);
+  return expr->evaluate(context_node, type, ScriptValue(), exception_state);
 }
 
 }  // namespace blink

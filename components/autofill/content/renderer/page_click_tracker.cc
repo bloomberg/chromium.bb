@@ -37,11 +37,11 @@ namespace {
 // Returns an empty (isNull()) wrapper otherwise.
 const WebFormControlElement GetTextFormControlElement(
     const WebElement& element) {
-  if (!element.isFormControlElement())
+  if (!element.IsFormControlElement())
     return WebFormControlElement();
-  if (form_util::IsTextInput(blink::toWebInputElement(&element)) ||
-      element.hasHTMLTagName("textarea"))
-    return element.toConst<WebFormControlElement>();
+  if (form_util::IsTextInput(blink::ToWebInputElement(&element)) ||
+      element.HasHTMLTagName("textarea"))
+    return element.ToConst<WebFormControlElement>();
   return WebFormControlElement();
 }
 
@@ -60,8 +60,8 @@ PageClickTracker::~PageClickTracker() {
 }
 
 void PageClickTracker::OnMouseDown(const WebNode& mouse_down_node) {
-  focused_node_was_last_clicked_ = !mouse_down_node.isNull() &&
-                                   mouse_down_node.focused();
+  focused_node_was_last_clicked_ =
+      !mouse_down_node.IsNull() && mouse_down_node.Focused();
 
   if (IsKeyboardAccessoryEnabled())
     DoFocusChangeComplete();
@@ -71,7 +71,7 @@ void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
   was_focused_before_now_ = false;
 
   if (IsKeyboardAccessoryEnabled() &&
-      WebUserGestureIndicator::isProcessingUserGesture()) {
+      WebUserGestureIndicator::IsProcessingUserGesture()) {
     focused_node_was_last_clicked_ = true;
     DoFocusChangeComplete();
   }
@@ -86,11 +86,11 @@ void PageClickTracker::FocusChangeComplete() {
 
 void PageClickTracker::DoFocusChangeComplete() {
   WebElement focused_element =
-      render_frame()->GetWebFrame()->document().focusedElement();
-  if (focused_node_was_last_clicked_ && !focused_element.isNull()) {
+      render_frame()->GetWebFrame()->GetDocument().FocusedElement();
+  if (focused_node_was_last_clicked_ && !focused_element.IsNull()) {
     const WebFormControlElement control =
         GetTextFormControlElement(focused_element);
-    if (!control.isNull()) {
+    if (!control.IsNull()) {
       listener_->FormControlElementClicked(control,
                                            was_focused_before_now_);
     }

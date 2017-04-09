@@ -53,15 +53,15 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   DummyWebMediaPlayerClient() {}
 
   // blink::WebMediaPlayerClient implementation.
-  void networkStateChanged() override {}
-  void readyStateChanged() override {}
-  void timeChanged() override {}
-  void repaint() override {}
-  void durationChanged() override {}
-  void sizeChanged() override {}
-  void playbackStateChanged() override {}
-  void setWebLayer(blink::WebLayer*) override {}
-  blink::WebMediaPlayer::TrackId addAudioTrack(
+  void NetworkStateChanged() override {}
+  void ReadyStateChanged() override {}
+  void TimeChanged() override {}
+  void Repaint() override {}
+  void DurationChanged() override {}
+  void SizeChanged() override {}
+  void PlaybackStateChanged() override {}
+  void SetWebLayer(blink::WebLayer*) override {}
+  blink::WebMediaPlayer::TrackId AddAudioTrack(
       const blink::WebString& id,
       blink::WebMediaPlayerClient::AudioTrackKind,
       const blink::WebString& label,
@@ -69,8 +69,8 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
       bool enabled) override {
     return blink::WebMediaPlayer::TrackId();
   }
-  void removeAudioTrack(blink::WebMediaPlayer::TrackId) override {}
-  blink::WebMediaPlayer::TrackId addVideoTrack(
+  void RemoveAudioTrack(blink::WebMediaPlayer::TrackId) override {}
+  blink::WebMediaPlayer::TrackId AddVideoTrack(
       const blink::WebString& id,
       blink::WebMediaPlayerClient::VideoTrackKind,
       const blink::WebString& label,
@@ -78,22 +78,22 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
       bool selected) override {
     return blink::WebMediaPlayer::TrackId();
   }
-  void removeVideoTrack(blink::WebMediaPlayer::TrackId) override {}
-  void addTextTrack(blink::WebInbandTextTrack*) override {}
-  void removeTextTrack(blink::WebInbandTextTrack*) override {}
-  void mediaSourceOpened(blink::WebMediaSource*) override {}
-  void requestSeek(double) override {}
-  void remoteRouteAvailabilityChanged(
+  void RemoveVideoTrack(blink::WebMediaPlayer::TrackId) override {}
+  void AddTextTrack(blink::WebInbandTextTrack*) override {}
+  void RemoveTextTrack(blink::WebInbandTextTrack*) override {}
+  void MediaSourceOpened(blink::WebMediaSource*) override {}
+  void RequestSeek(double) override {}
+  void RemoteRouteAvailabilityChanged(
       blink::WebRemotePlaybackAvailability) override {}
-  void connectedToRemoteDevice() override {}
-  void disconnectedFromRemoteDevice() override {}
-  void cancelledRemotePlaybackRequest() override {}
-  void remotePlaybackStarted() override {}
-  void onBecamePersistentVideo(bool) override {}
-  bool isAutoplayingMuted() override { return is_autoplaying_muted_; }
-  void requestReload(const blink::WebURL& newUrl) override {}
-  bool hasSelectedVideoTrack() override { return false; }
-  blink::WebMediaPlayer::TrackId getSelectedVideoTrackId() override {
+  void ConnectedToRemoteDevice() override {}
+  void DisconnectedFromRemoteDevice() override {}
+  void CancelledRemotePlaybackRequest() override {}
+  void RemotePlaybackStarted() override {}
+  void OnBecamePersistentVideo(bool) override {}
+  bool IsAutoplayingMuted() override { return is_autoplaying_muted_; }
+  void RequestReload(const blink::WebURL& newUrl) override {}
+  bool HasSelectedVideoTrack() override { return false; }
+  blink::WebMediaPlayer::TrackId GetSelectedVideoTrackId() override {
     return blink::WebMediaPlayer::TrackId();
   }
 
@@ -189,16 +189,17 @@ class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
       : media_thread_("MediaThreadForTest"),
-        web_view_(blink::WebView::create(nullptr,
-                                         blink::WebPageVisibilityStateVisible)),
+        web_view_(
+            blink::WebView::Create(nullptr,
+                                   blink::kWebPageVisibilityStateVisible)),
         web_local_frame_(
-            blink::WebLocalFrame::create(blink::WebTreeScopeType::Document,
+            blink::WebLocalFrame::Create(blink::WebTreeScopeType::kDocument,
                                          &web_frame_client_,
                                          nullptr,
                                          nullptr)),
         media_log_(new MediaLog()),
         audio_parameters_(TestAudioParameters::Normal()) {
-    web_view_->setMainFrame(web_local_frame_);
+    web_view_->SetMainFrame(web_local_frame_);
     media_thread_.StartAndWaitForTesting();
   }
 
@@ -226,7 +227,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_.reset();
     base::RunLoop().RunUntilIdle();
 
-    web_view_->close();
+    web_view_->Close();
   }
 
  protected:
@@ -244,8 +245,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void SetMetadata(bool has_audio, bool has_video) {
-    wmpi_->SetNetworkState(blink::WebMediaPlayer::NetworkStateLoaded);
-    wmpi_->SetReadyState(blink::WebMediaPlayer::ReadyStateHaveMetadata);
+    wmpi_->SetNetworkState(blink::WebMediaPlayer::kNetworkStateLoaded);
+    wmpi_->SetReadyState(blink::WebMediaPlayer::kReadyStateHaveMetadata);
     wmpi_->pipeline_metadata_.has_audio = has_audio;
     wmpi_->pipeline_metadata_.has_video = has_video;
   }
@@ -316,9 +317,9 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnFrameShown();
   }
 
-  void Play() { wmpi_->play(); }
+  void Play() { wmpi_->Play(); }
 
-  void Pause() { wmpi_->pause(); }
+  void Pause() { wmpi_->Pause(); }
 
   void ScheduleIdlePauseTimer() { wmpi_->ScheduleIdlePauseTimer(); }
 
@@ -380,7 +381,7 @@ TEST_F(WebMediaPlayerImplTest,
   clock->Advance(base::TimeDelta::FromSeconds(1));
   SetTickClock(clock);
   AddBufferedRanges();
-  wmpi_->didLoadingProgress();
+  wmpi_->DidLoadingProgress();
   // Advance less than the loading timeout.
   clock->Advance(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(delegate_.ExpireForTesting());
@@ -394,7 +395,7 @@ TEST_F(WebMediaPlayerImplTest, IdleSuspendIsEnabledIfLoadingHasStalled) {
   clock->Advance(base::TimeDelta::FromSeconds(1));
   SetTickClock(clock);
   AddBufferedRanges();
-  wmpi_->didLoadingProgress();
+  wmpi_->DidLoadingProgress();
   // Advance more than the loading timeout.
   clock->Advance(base::TimeDelta::FromSeconds(4));
   EXPECT_TRUE(delegate_.ExpireForTesting());
@@ -419,7 +420,7 @@ TEST_F(WebMediaPlayerImplTest, DidLoadingProgressTriggersResume) {
   // Like IdleSuspendIsDisabledIfLoadingProgressedRecently, the idle timeout
   // should be rejected if it hasn't been long enough.
   AddBufferedRanges();
-  wmpi_->didLoadingProgress();
+  wmpi_->DidLoadingProgress();
   EXPECT_FALSE(delegate_.ExpireForTesting());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsSuspended());
@@ -447,7 +448,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_HaveMetadata) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_HaveFutureData) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
   EXPECT_TRUE(state.is_idle);
@@ -458,7 +459,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_HaveFutureData) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
@@ -470,7 +471,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingVideoOnly) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(false, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
@@ -482,9 +483,9 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingVideoOnly) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Underflow) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveCurrentData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveCurrentData);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
   EXPECT_FALSE(state.is_idle);
@@ -495,7 +496,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Underflow) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHidden) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
 
   WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
@@ -508,7 +509,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHidden) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenAudioOnly) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
 
   SetMetadata(true, false);
@@ -526,7 +527,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendNoResume) {
 
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
@@ -549,7 +550,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendWithResume) {
 
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
 
   WebMediaPlayerImpl::PlayState state = ComputePlayState_FrameHidden();
@@ -562,7 +563,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameHiddenSuspendWithResume) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameClosed) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   delegate_.SetFrameClosedForTesting(true);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
@@ -575,7 +576,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_FrameClosed) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_PausedSeek) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetSeeking(true);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
@@ -587,7 +588,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_PausedSeek) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Ended) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   SetEnded(true);
 
@@ -611,7 +612,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Ended) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_StaysSuspended) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
 
   // Should stay suspended even though not stale or backgrounded.
   WebMediaPlayerImpl::PlayState state = ComputePlayState_Suspended();
@@ -624,7 +625,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_StaysSuspended) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Remote) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
 
   // Remote media is always suspended.
   // TODO(sandersd): Decide whether this should count as idle or not.
@@ -637,7 +638,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Remote) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Fullscreen) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetFullscreen(true);
   SetPaused(true);
   delegate_.SetStaleForTesting(true);
@@ -653,7 +654,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Fullscreen) {
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Streaming) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(true);
   delegate_.SetStaleForTesting(true);
 
@@ -678,7 +679,7 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Streaming) {
 TEST_F(WebMediaPlayerImplTest, AutoplayMuted_StartsAndStops) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   client_.set_is_autoplaying_muted(true);
 
@@ -693,7 +694,7 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_StartsAndStops) {
 TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
   InitializeWebMediaPlayerImpl(true);
   SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
   client_.set_is_autoplaying_muted(true);
 
@@ -702,7 +703,7 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
 
   client_.set_is_autoplaying_muted(false);
   EXPECT_CALL(delegate_, DidPlay(_, true, true, _));
-  wmpi_->setVolume(1.0);
+  wmpi_->SetVolume(1.0);
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
@@ -712,11 +713,11 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   metadata.natural_size = gfx::Size(320, 240);
 
   OnMetadata(metadata);
-  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->naturalSize());
+  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
   // TODO(sandersd): Verify that the client is notified of the size change?
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
-  ASSERT_EQ(blink::WebSize(1920, 1080), wmpi_->naturalSize());
+  ASSERT_EQ(blink::WebSize(1920, 1080), wmpi_->NaturalSize());
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
@@ -727,11 +728,11 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   metadata.video_rotation = VIDEO_ROTATION_90;
 
   OnMetadata(metadata);
-  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->naturalSize());
+  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
   // For 90/270deg rotations, the natural size should be transposed.
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
-  ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->naturalSize());
+  ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->NaturalSize());
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {

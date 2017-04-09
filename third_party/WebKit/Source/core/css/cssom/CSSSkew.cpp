@@ -10,46 +10,46 @@
 
 namespace blink {
 
-CSSSkew* CSSSkew::fromCSSValue(const CSSFunctionValue& value) {
-  const CSSPrimitiveValue& xValue = toCSSPrimitiveValue(value.item(0));
-  if (xValue.isCalculated()) {
+CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
+  const CSSPrimitiveValue& x_value = ToCSSPrimitiveValue(value.Item(0));
+  if (x_value.IsCalculated()) {
     // TODO(meade): Decide what we want to do with calc angles.
     return nullptr;
   }
-  DCHECK(xValue.isAngle());
-  switch (value.functionType()) {
+  DCHECK(x_value.IsAngle());
+  switch (value.FunctionType()) {
     case CSSValueSkew:
       if (value.length() == 2U) {
-        const CSSPrimitiveValue& yValue = toCSSPrimitiveValue(value.item(1));
-        if (yValue.isCalculated()) {
+        const CSSPrimitiveValue& y_value = ToCSSPrimitiveValue(value.Item(1));
+        if (y_value.IsCalculated()) {
           // TODO(meade): Decide what we want to do with calc angles.
           return nullptr;
         }
-        DCHECK(yValue.isAngle());
-        return CSSSkew::create(CSSAngleValue::fromCSSValue(xValue),
-                               CSSAngleValue::fromCSSValue(yValue));
+        DCHECK(y_value.IsAngle());
+        return CSSSkew::Create(CSSAngleValue::FromCSSValue(x_value),
+                               CSSAngleValue::FromCSSValue(y_value));
       }
     // Else fall through; skew(ax) == skewX(ax).
     case CSSValueSkewX:
       DCHECK_EQ(value.length(), 1U);
-      return CSSSkew::create(
-          CSSAngleValue::fromCSSValue(xValue),
-          CSSAngleValue::create(0, CSSPrimitiveValue::UnitType::Degrees));
+      return CSSSkew::Create(
+          CSSAngleValue::FromCSSValue(x_value),
+          CSSAngleValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees));
     case CSSValueSkewY:
       DCHECK_EQ(value.length(), 1U);
-      return CSSSkew::create(
-          CSSAngleValue::create(0, CSSPrimitiveValue::UnitType::Degrees),
-          CSSAngleValue::fromCSSValue(xValue));
+      return CSSSkew::Create(
+          CSSAngleValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees),
+          CSSAngleValue::FromCSSValue(x_value));
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-CSSFunctionValue* CSSSkew::toCSSValue() const {
-  CSSFunctionValue* result = CSSFunctionValue::create(CSSValueSkew);
-  result->append(*CSSPrimitiveValue::create(m_ax->value(), m_ax->unit()));
-  result->append(*CSSPrimitiveValue::create(m_ay->value(), m_ay->unit()));
+CSSFunctionValue* CSSSkew::ToCSSValue() const {
+  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkew);
+  result->Append(*CSSPrimitiveValue::Create(ax_->Value(), ax_->Unit()));
+  result->Append(*CSSPrimitiveValue::Create(ay_->Value(), ay_->Unit()));
   return result;
 }
 

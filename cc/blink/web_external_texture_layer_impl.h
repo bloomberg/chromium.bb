@@ -24,12 +24,12 @@ class WebExternalTextureLayerImpl : public blink::WebExternalTextureLayer {
   ~WebExternalTextureLayerImpl() override;
 
   // blink::WebExternalTextureLayer implementation.
-  blink::WebLayer* layer() override;
-  void clearTexture() override;
-  void setOpaque(bool opaque) override;
-  void setPremultipliedAlpha(bool premultiplied) override;
-  void setBlendBackgroundColor(bool blend) override;
-  void setNearestNeighbor(bool nearest_neighbor) override;
+  blink::WebLayer* Layer() override;
+  void ClearTexture() override;
+  void SetOpaque(bool opaque) override;
+  void SetPremultipliedAlpha(bool premultiplied) override;
+  void SetBlendBackgroundColor(bool blend) override;
+  void SetNearestNeighbor(bool nearest_neighbor) override;
 
  private:
   std::unique_ptr<WebLayerImpl> layer_;

@@ -38,26 +38,26 @@
 
 namespace blink {
 
-void WebDatabase::updateDatabaseSize(const WebSecurityOrigin& origin,
+void WebDatabase::UpdateDatabaseSize(const WebSecurityOrigin& origin,
                                      const WebString& name,
                                      long long size) {
-  QuotaTracker::instance().updateDatabaseSize(origin.get(), name, size);
+  QuotaTracker::Instance().UpdateDatabaseSize(origin.Get(), name, size);
 }
 
-void WebDatabase::updateSpaceAvailable(const WebSecurityOrigin& origin,
-                                       long long spaceAvailable) {
-  QuotaTracker::instance().updateSpaceAvailableToOrigin(origin.get(),
-                                                        spaceAvailable);
+void WebDatabase::UpdateSpaceAvailable(const WebSecurityOrigin& origin,
+                                       long long space_available) {
+  QuotaTracker::Instance().UpdateSpaceAvailableToOrigin(origin.Get(),
+                                                        space_available);
 }
 
-void WebDatabase::resetSpaceAvailable(const WebSecurityOrigin& origin) {
-  QuotaTracker::instance().resetSpaceAvailableToOrigin(origin.get());
+void WebDatabase::ResetSpaceAvailable(const WebSecurityOrigin& origin) {
+  QuotaTracker::Instance().ResetSpaceAvailableToOrigin(origin.Get());
 }
 
-void WebDatabase::closeDatabaseImmediately(const WebSecurityOrigin& origin,
-                                           const WebString& databaseName) {
-  DatabaseTracker::tracker().closeDatabasesImmediately(origin.get(),
-                                                       databaseName);
+void WebDatabase::CloseDatabaseImmediately(const WebSecurityOrigin& origin,
+                                           const WebString& database_name) {
+  DatabaseTracker::Tracker().CloseDatabasesImmediately(origin.Get(),
+                                                       database_name);
 }
 
 }  // namespace blink

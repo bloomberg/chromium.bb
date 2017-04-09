@@ -38,14 +38,14 @@ class MediaStreamEvent final : public Event {
  public:
   ~MediaStreamEvent() override;
 
-  static MediaStreamEvent* create(const AtomicString& type, MediaStream*);
-  static MediaStreamEvent* create(const AtomicString& type,
+  static MediaStreamEvent* Create(const AtomicString& type, MediaStream*);
+  static MediaStreamEvent* Create(const AtomicString& type,
                                   const MediaStreamEventInit& initializer);
 
   MediaStream* stream() const;
   MediaStream* stream(bool&) const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -53,7 +53,7 @@ class MediaStreamEvent final : public Event {
   MediaStreamEvent(const AtomicString& type, MediaStream*);
   MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit&);
 
-  Member<MediaStream> m_stream;
+  Member<MediaStream> stream_;
 };
 
 }  // namespace blink

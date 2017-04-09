@@ -25,91 +25,92 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutButton::LayoutButton(Element* element)
-    : LayoutFlexibleBox(element), m_inner(nullptr) {}
+    : LayoutFlexibleBox(element), inner_(nullptr) {}
 
 LayoutButton::~LayoutButton() {}
 
-void LayoutButton::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
-  if (!m_inner) {
+void LayoutButton::AddChild(LayoutObject* new_child,
+                            LayoutObject* before_child) {
+  if (!inner_) {
     // Create an anonymous block.
-    DCHECK(!firstChild());
-    m_inner = createAnonymousBlock(style()->display());
-    LayoutFlexibleBox::addChild(m_inner);
+    DCHECK(!FirstChild());
+    inner_ = CreateAnonymousBlock(Style()->Display());
+    LayoutFlexibleBox::AddChild(inner_);
   }
 
-  m_inner->addChild(newChild, beforeChild);
+  inner_->AddChild(new_child, before_child);
 }
 
-void LayoutButton::removeChild(LayoutObject* oldChild) {
-  if (oldChild == m_inner || !m_inner) {
-    LayoutFlexibleBox::removeChild(oldChild);
-    m_inner = 0;
+void LayoutButton::RemoveChild(LayoutObject* old_child) {
+  if (old_child == inner_ || !inner_) {
+    LayoutFlexibleBox::RemoveChild(old_child);
+    inner_ = 0;
 
-  } else if (oldChild->parent() == this) {
+  } else if (old_child->Parent() == this) {
     // We aren't the inner node, but we're getting removed from the button, this
     // can happen with things like scrollable area resizer's.
-    LayoutFlexibleBox::removeChild(oldChild);
+    LayoutFlexibleBox::RemoveChild(old_child);
 
   } else {
-    m_inner->removeChild(oldChild);
+    inner_->RemoveChild(old_child);
   }
 }
 
-void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child,
-                                             ComputedStyle& childStyle) const {
-  DCHECK(!m_inner || &child == m_inner);
+void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject& child,
+                                             ComputedStyle& child_style) const {
+  DCHECK(!inner_ || &child == inner_);
 
-  childStyle.setFlexGrow(1.0f);
+  child_style.SetFlexGrow(1.0f);
   // min-width: 0; is needed for correct shrinking.
-  childStyle.setMinWidth(Length(0, Fixed));
+  child_style.SetMinWidth(Length(0, kFixed));
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
-  childStyle.setMarginTop(Length());
-  childStyle.setMarginBottom(Length());
-  childStyle.setFlexDirection(style()->flexDirection());
-  childStyle.setJustifyContent(style()->justifyContent());
-  childStyle.setFlexWrap(style()->flexWrap());
+  child_style.SetMarginTop(Length());
+  child_style.SetMarginBottom(Length());
+  child_style.SetFlexDirection(Style()->FlexDirection());
+  child_style.SetJustifyContent(Style()->JustifyContent());
+  child_style.SetFlexWrap(Style()->FlexWrap());
   // TODO (lajava): An anonymous box must not be used to resolve children's auto
   // values.
-  childStyle.setAlignItems(style()->alignItems());
-  childStyle.setAlignContent(style()->alignContent());
+  child_style.SetAlignItems(Style()->AlignItems());
+  child_style.SetAlignContent(Style()->AlignContent());
 }
 
-LayoutRect LayoutButton::controlClipRect(
-    const LayoutPoint& additionalOffset) const {
+LayoutRect LayoutButton::ControlClipRect(
+    const LayoutPoint& additional_offset) const {
   // Clip to the padding box to at least give content the extra padding space.
-  LayoutRect rect(additionalOffset, size());
-  rect.expand(borderInsets());
+  LayoutRect rect(additional_offset, size());
+  rect.Expand(BorderInsets());
   return rect;
 }
 
-int LayoutButton::baselinePosition(FontBaseline baseline,
-                                   bool firstLine,
+int LayoutButton::BaselinePosition(FontBaseline baseline,
+                                   bool first_line,
                                    LineDirectionMode direction,
-                                   LinePositionMode linePositionMode) const {
-  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
+                                   LinePositionMode line_position_mode) const {
+  DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   // We want to call the LayoutBlock version of firstLineBoxBaseline to
   // avoid LayoutFlexibleBox synthesizing a baseline that we don't want.
   // We use this check as a proxy for "are there any line boxes in this button"
-  if (!hasLineIfEmpty() && LayoutBlock::firstLineBoxBaseline() == -1) {
+  if (!HasLineIfEmpty() && LayoutBlock::FirstLineBoxBaseline() == -1) {
     // To ensure that we have a consistent baseline when we have no children,
     // even when we have the anonymous LayoutBlock child, we calculate the
     // baseline for the empty case manually here.
-    if (direction == HorizontalLine) {
-      return (marginTop() + size().height() - borderBottom() - paddingBottom() -
-              horizontalScrollbarHeight())
-          .toInt();
+    if (direction == kHorizontalLine) {
+      return (MarginTop() + size().Height() - BorderBottom() - PaddingBottom() -
+              HorizontalScrollbarHeight())
+          .ToInt();
     }
-    return (marginRight() + size().width() - borderLeft() - paddingLeft() -
-            verticalScrollbarWidth())
-        .toInt();
+    return (MarginRight() + size().Width() - BorderLeft() - PaddingLeft() -
+            VerticalScrollbarWidth())
+        .ToInt();
   }
-  return LayoutFlexibleBox::baselinePosition(baseline, firstLine, direction,
-                                             linePositionMode);
+  return LayoutFlexibleBox::BaselinePosition(baseline, first_line, direction,
+                                             line_position_mode);
 }
 
 // For compatibility with IE/FF we only clip overflow on input elements.
-bool LayoutButton::hasControlClip() const {
-  return !isHTMLButtonElement(node());
+bool LayoutButton::HasControlClip() const {
+  return !isHTMLButtonElement(GetNode());
 }
 }  // namespace blink

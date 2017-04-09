@@ -43,26 +43,25 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
  public:
-  static HTMLObjectElement* create(Document&,
-                                   bool createdByParser);
+  static HTMLObjectElement* Create(Document&, bool created_by_parser);
   ~HTMLObjectElement() override;
   DECLARE_VIRTUAL_TRACE();
 
-  const String& classId() const { return m_classId; }
+  const String& ClassId() const { return class_id_; }
 
   HTMLFormElement* formOwner() const override;
 
-  bool containsJavaApplet() const;
+  bool ContainsJavaApplet() const;
 
-  bool hasFallbackContent() const override;
-  bool useFallbackContent() const override;
-  bool canRenderFallbackContent() const override { return true; }
-  void renderFallbackContent() override;
+  bool HasFallbackContent() const override;
+  bool UseFallbackContent() const override;
+  bool CanRenderFallbackContent() const override { return true; }
+  void RenderFallbackContent() override;
 
-  bool isFormControlElement() const override { return false; }
+  bool IsFormControlElement() const override { return false; }
 
-  bool isEnumeratable() const override { return true; }
-  bool isInteractiveContent() const override;
+  bool IsEnumeratable() const override { return true; }
+  bool IsInteractiveContent() const override;
 
   // Implementations of constraint validation API.
   // Note that the object elements are always barred from constraint validation.
@@ -71,93 +70,93 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool reportValidity() { return true; }
   void setCustomValidity(const String&) override {}
 
-  bool canContainRangeEndPoint() const override { return useFallbackContent(); }
+  bool CanContainRangeEndPoint() const override { return UseFallbackContent(); }
 
-  bool isExposed() const;
+  bool IsExposed() const;
 
-  bool willUseFallbackContentAtLayout() const;
+  bool WillUseFallbackContentAtLayout() const;
 
-  FormAssociated* toFormAssociatedOrNull() override { return this; };
-  void associateWith(HTMLFormElement*) override;
+  FormAssociated* ToFormAssociatedOrNull() override { return this; };
+  void AssociateWith(HTMLFormElement*) override;
 
  private:
-  HTMLObjectElement(Document&, bool createdByParser);
+  HTMLObjectElement(Document&, bool created_by_parser);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
-  void didMoveToNewDocument(Document& oldDocument) override;
+  void DidMoveToNewDocument(Document& old_document) override;
 
-  void childrenChanged(const ChildrenChange&) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  bool isURLAttribute(const Attribute&) const override;
-  bool hasLegalLinkAttribute(const QualifiedName&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
-  const AtomicString imageSourceURL() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  bool HasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
+  const AtomicString ImageSourceURL() const override;
 
-  LayoutPart* existingLayoutPart() const override;
+  LayoutPart* ExistingLayoutPart() const override;
 
-  void updatePluginInternal() override;
-  void updateDocNamedItem();
+  void UpdatePluginInternal() override;
+  void UpdateDocNamedItem();
 
-  void reattachFallbackContent();
+  void ReattachFallbackContent();
 
   // FIXME: This function should not deal with url or serviceType
   // so that we can better share code between <object> and <embed>.
-  void parametersForPlugin(Vector<String>& paramNames,
-                           Vector<String>& paramValues,
+  void ParametersForPlugin(Vector<String>& param_names,
+                           Vector<String>& param_values,
                            String& url,
-                           String& serviceType);
+                           String& service_type);
 
-  bool hasValidClassId() const;
+  bool HasValidClassId() const;
 
-  void reloadPluginOnAttributeChange(const QualifiedName&);
+  void ReloadPluginOnAttributeChange(const QualifiedName&);
 
-  bool shouldRegisterAsNamedItem() const override { return true; }
-  bool shouldRegisterAsExtraNamedItem() const override { return true; }
+  bool ShouldRegisterAsNamedItem() const override { return true; }
+  bool ShouldRegisterAsExtraNamedItem() const override { return true; }
 
-  String m_classId;
-  bool m_useFallbackContent : 1;
+  String class_id_;
+  bool use_fallback_content_ : 1;
 };
 
 // Intentionally left unimplemented, template specialization needs to be
 // provided for specific return types.
 template <typename T>
-inline const T& toElement(const ListedElement&);
+inline const T& ToElement(const ListedElement&);
 template <typename T>
-inline const T* toElement(const ListedElement*);
+inline const T* ToElement(const ListedElement*);
 
 // Make toHTMLObjectElement() accept a ListedElement as input instead of
 // a Node.
 template <>
-inline const HTMLObjectElement* toElement<HTMLObjectElement>(
+inline const HTMLObjectElement* ToElement<HTMLObjectElement>(
     const ListedElement* element) {
-  SECURITY_DCHECK(!element || !element->isFormControlElement());
-  const HTMLObjectElement* objectElement =
+  SECURITY_DCHECK(!element || !element->IsFormControlElement());
+  const HTMLObjectElement* object_element =
       static_cast<const HTMLObjectElement*>(element);
   // We need to assert after the cast because ListedElement doesn't
   // have hasTagName.
-  SECURITY_DCHECK(!objectElement ||
-                  objectElement->hasTagName(HTMLNames::objectTag));
-  return objectElement;
+  SECURITY_DCHECK(!object_element ||
+                  object_element->HasTagName(HTMLNames::objectTag));
+  return object_element;
 }
 
 template <>
-inline const HTMLObjectElement& toElement<HTMLObjectElement>(
+inline const HTMLObjectElement& ToElement<HTMLObjectElement>(
     const ListedElement& element) {
-  SECURITY_DCHECK(!element.isFormControlElement());
-  const HTMLObjectElement& objectElement =
+  SECURITY_DCHECK(!element.IsFormControlElement());
+  const HTMLObjectElement& object_element =
       static_cast<const HTMLObjectElement&>(element);
   // We need to assert after the cast because ListedElement doesn't
   // have hasTagName.
-  SECURITY_DCHECK(objectElement.hasTagName(HTMLNames::objectTag));
-  return objectElement;
+  SECURITY_DCHECK(object_element.HasTagName(HTMLNames::objectTag));
+  return object_element;
 }
 
 }  // namespace blink

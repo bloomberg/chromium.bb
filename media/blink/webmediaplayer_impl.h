@@ -103,92 +103,92 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       const WebMediaPlayerParams& params);
   ~WebMediaPlayerImpl() override;
 
-  void load(LoadType load_type,
+  void Load(LoadType load_type,
             const blink::WebMediaPlayerSource& source,
             CORSMode cors_mode) override;
 
   // Playback controls.
-  void play() override;
-  void pause() override;
-  bool supportsSave() const override;
-  void seek(double seconds) override;
-  void setRate(double rate) override;
-  void setVolume(double volume) override;
-  void setSinkId(const blink::WebString& sink_id,
+  void Play() override;
+  void Pause() override;
+  bool SupportsSave() const override;
+  void Seek(double seconds) override;
+  void SetRate(double rate) override;
+  void SetVolume(double volume) override;
+  void SetSinkId(const blink::WebString& sink_id,
                  const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
-  void setPreload(blink::WebMediaPlayer::Preload preload) override;
-  blink::WebTimeRanges buffered() const override;
-  blink::WebTimeRanges seekable() const override;
+  void SetPreload(blink::WebMediaPlayer::Preload preload) override;
+  blink::WebTimeRanges Buffered() const override;
+  blink::WebTimeRanges Seekable() const override;
 
   // paint() the current video frame into |canvas|. This is used to support
   // various APIs and functionalities, including but not limited to: <canvas>,
   // WebGL texImage2D, ImageBitmap, printing and capturing capabilities.
-  void paint(blink::WebCanvas* canvas,
+  void Paint(blink::WebCanvas* canvas,
              const blink::WebRect& rect,
              cc::PaintFlags& flags) override;
 
   // True if the loaded media has a playable video/audio track.
-  bool hasVideo() const override;
-  bool hasAudio() const override;
+  bool HasVideo() const override;
+  bool HasAudio() const override;
 
-  void enabledAudioTracksChanged(
+  void EnabledAudioTracksChanged(
       const blink::WebVector<blink::WebMediaPlayer::TrackId>& enabledTrackIds)
       override;
-  void selectedVideoTrackChanged(
+  void SelectedVideoTrackChanged(
       blink::WebMediaPlayer::TrackId* selectedTrackId) override;
 
-  bool getLastUploadedFrameInfo(unsigned* width,
+  bool GetLastUploadedFrameInfo(unsigned* width,
                                 unsigned* height,
                                 double* timestamp) override;
 
   // Dimensions of the video.
-  blink::WebSize naturalSize() const override;
+  blink::WebSize NaturalSize() const override;
 
   // Getters of playback state.
-  bool paused() const override;
-  bool seeking() const override;
-  double duration() const override;
+  bool Paused() const override;
+  bool Seeking() const override;
+  double Duration() const override;
   virtual double timelineOffset() const;
-  double currentTime() const override;
+  double CurrentTime() const override;
 
   // Internal states of loading and network.
   // TODO(hclam): Ask the pipeline about the state rather than having reading
   // them from members which would cause race conditions.
-  blink::WebMediaPlayer::NetworkState getNetworkState() const override;
-  blink::WebMediaPlayer::ReadyState getReadyState() const override;
+  blink::WebMediaPlayer::NetworkState GetNetworkState() const override;
+  blink::WebMediaPlayer::ReadyState GetReadyState() const override;
 
-  blink::WebString getErrorMessage() override;
-  bool didLoadingProgress() override;
+  blink::WebString GetErrorMessage() override;
+  bool DidLoadingProgress() override;
 
-  bool hasSingleSecurityOrigin() const override;
-  bool didPassCORSAccessCheck() const override;
+  bool HasSingleSecurityOrigin() const override;
+  bool DidPassCORSAccessCheck() const override;
 
-  double mediaTimeForTimeValue(double timeValue) const override;
+  double MediaTimeForTimeValue(double timeValue) const override;
 
-  unsigned decodedFrameCount() const override;
-  unsigned droppedFrameCount() const override;
-  size_t audioDecodedByteCount() const override;
-  size_t videoDecodedByteCount() const override;
+  unsigned DecodedFrameCount() const override;
+  unsigned DroppedFrameCount() const override;
+  size_t AudioDecodedByteCount() const override;
+  size_t VideoDecodedByteCount() const override;
 
-  bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+  bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                          unsigned int texture,
                                          bool premultiply_alpha,
                                          bool flip_y) override;
 
-  blink::WebAudioSourceProvider* getAudioSourceProvider() override;
+  blink::WebAudioSourceProvider* GetAudioSourceProvider() override;
 
-  void setContentDecryptionModule(
+  void SetContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
 
-  bool supportsOverlayFullscreenVideo() override;
-  void enteredFullscreen() override;
-  void exitedFullscreen() override;
-  void becameDominantVisibleContent(bool isDominant) override;
-  void setIsEffectivelyFullscreen(bool isEffectivelyFullscreen) override;
+  bool SupportsOverlayFullscreenVideo() override;
+  void EnteredFullscreen() override;
+  void ExitedFullscreen() override;
+  void BecameDominantVisibleContent(bool isDominant) override;
+  void SetIsEffectivelyFullscreen(bool isEffectivelyFullscreen) override;
 
-  void setPoster(const blink::WebURL& poster) override;
+  void SetPoster(const blink::WebURL& poster) override;
 
   // WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
@@ -200,12 +200,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
 
-  void requestRemotePlaybackDisabled(bool disabled) override;
+  void RequestRemotePlaybackDisabled(bool disabled) override;
 #if defined(OS_ANDROID)  // WMPI_CAST
-  bool isRemote() const override;
-  void requestRemotePlayback() override;
-  void requestRemotePlaybackControl() override;
-  void requestRemotePlaybackStop() override;
+  bool IsRemote() const override;
+  void RequestRemotePlayback() override;
+  void RequestRemotePlaybackControl() override;
+  void RequestRemotePlaybackStop() override;
 
   void SetMediaPlayerManager(
       RendererMediaPlayerManagerInterface* media_player_manager);

@@ -31,7 +31,7 @@
 
 namespace blink {
 
-NativeXPathNSResolver::NativeXPathNSResolver(Node* node) : m_node(node) {}
+NativeXPathNSResolver::NativeXPathNSResolver(Node* node) : node_(node) {}
 
 AtomicString NativeXPathNSResolver::lookupNamespaceURI(const String& prefix) {
   // This is not done by Node::lookupNamespaceURI as per the DOM3 Core spec,
@@ -39,12 +39,12 @@ AtomicString NativeXPathNSResolver::lookupNamespaceURI(const String& prefix) {
   if (prefix == "xml")
     return XMLNames::xmlNamespaceURI;
 
-  return m_node ? m_node->lookupNamespaceURI(prefix) : nullAtom;
+  return node_ ? node_->lookupNamespaceURI(prefix) : g_null_atom;
 }
 
 DEFINE_TRACE(NativeXPathNSResolver) {
-  visitor->trace(m_node);
-  XPathNSResolver::trace(visitor);
+  visitor->Trace(node_);
+  XPathNSResolver::Trace(visitor);
 }
 
 }  // namespace blink

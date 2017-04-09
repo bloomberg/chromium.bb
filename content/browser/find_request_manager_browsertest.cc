@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   EXPECT_EQ(19, results.number_of_matches);
   EXPECT_EQ(1, results.active_match_ordinal);
 
-  options.findNext = true;
+  options.find_next = true;
   for (int i = 2; i <= 10; ++i) {
     Find("result", options);
     delegate()->WaitForFinalReply();
@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_RapidFire) {
   blink::WebFindOptions options;
   Find("result", options);
 
-  options.findNext = true;
+  options.find_next = true;
   for (int i = 2; i <= 1000; ++i)
     Find("result", options);
   delegate()->WaitForFinalReply();
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
   blink::WebFindOptions options;
   Find("result", options);
   delegate()->WaitForFinalReply();
-  options.findNext = true;
+  options.find_next = true;
   options.forward = false;
   Find("result", options);
   Find("result", options);
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {
 
   blink::WebFindOptions options;
   Find("result", options);
-  options.findNext = true;
+  options.find_next = true;
   Find("result", options);
   Find("result", options);
   Find("result", options);
@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(NavigateFrame)) {
 
   blink::WebFindOptions options;
   Find("result", options);
-  options.findNext = true;
+  options.find_next = true;
   options.forward = false;
   Find("result", options);
   Find("result", options);
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
 
   blink::WebFindOptions options;
   Find("result", options);
-  options.findNext = true;
+  options.find_next = true;
   Find("result", options);
   Find("result", options);
   delegate()->WaitForFinalReply();
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue627799)) {
   EXPECT_EQ(1, results.active_match_ordinal);
 
   delegate()->StartReplyRecord();
-  options.findNext = true;
+  options.find_next = true;
   options.forward = false;
   Find("42", options);
   delegate()->WaitForFinalReply();

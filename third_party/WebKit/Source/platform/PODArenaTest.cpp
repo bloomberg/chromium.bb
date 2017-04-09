@@ -56,36 +56,36 @@ class PODArenaTest : public testing::Test {};
 // Make sure the arena can successfully allocate from more than one
 // region.
 TEST_F(PODArenaTest, CanAllocateFromMoreThanOneRegion) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
-  RefPtr<PODArena> arena = PODArena::create(allocator);
-  int numIterations = 10 * PODArena::DefaultChunkSize / sizeof(TestClass1);
-  for (int i = 0; i < numIterations; ++i)
-    arena->allocateObject<TestClass1>();
-  EXPECT_GT(allocator->numRegions(), 1);
+  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
+  RefPtr<PODArena> arena = PODArena::Create(allocator);
+  int num_iterations = 10 * PODArena::kDefaultChunkSize / sizeof(TestClass1);
+  for (int i = 0; i < num_iterations; ++i)
+    arena->AllocateObject<TestClass1>();
+  EXPECT_GT(allocator->NumRegions(), 1);
 }
 
 // Make sure the arena frees all allocated regions during destruction.
 TEST_F(PODArenaTest, FreesAllAllocatedRegions) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
+  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
   {
-    RefPtr<PODArena> arena = PODArena::create(allocator);
+    RefPtr<PODArena> arena = PODArena::Create(allocator);
     for (int i = 0; i < 3; i++)
-      arena->allocateObject<TestClass1>();
-    EXPECT_GT(allocator->numRegions(), 0);
+      arena->AllocateObject<TestClass1>();
+    EXPECT_GT(allocator->NumRegions(), 0);
   }
-  EXPECT_TRUE(allocator->isEmpty());
+  EXPECT_TRUE(allocator->IsEmpty());
 }
 
 // Make sure the arena runs constructors of the objects allocated within.
 TEST_F(PODArenaTest, RunsConstructors) {
-  RefPtr<PODArena> arena = PODArena::create();
+  RefPtr<PODArena> arena = PODArena::Create();
   for (int i = 0; i < 10000; i++) {
-    TestClass1* tc1 = arena->allocateObject<TestClass1>();
+    TestClass1* tc1 = arena->AllocateObject<TestClass1>();
     EXPECT_EQ(0, tc1->x);
     EXPECT_EQ(0, tc1->y);
     EXPECT_EQ(0, tc1->z);
     EXPECT_EQ(1, tc1->w);
-    TestClass2* tc2 = arena->allocateObject<TestClass2>();
+    TestClass2* tc2 = arena->AllocateObject<TestClass2>();
     EXPECT_EQ(1, tc2->a);
     EXPECT_EQ(2, tc2->b);
     EXPECT_EQ(3, tc2->c);

@@ -28,10 +28,10 @@ class CORE_EXPORT Transferables final {
  public:
   Transferables() {}
 
-  ArrayBufferArray arrayBuffers;
-  ImageBitmapArray imageBitmaps;
-  OffscreenCanvasArray offscreenCanvases;
-  MessagePortArray messagePorts;
+  ArrayBufferArray array_buffers;
+  ImageBitmapArray image_bitmaps;
+  OffscreenCanvasArray offscreen_canvases;
+  MessagePortArray message_ports;
 };
 
 // Along with extending |Transferables| to hold a new kind of transferable

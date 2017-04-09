@@ -15,30 +15,30 @@ class StylePropertySet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
  public:
-  static StyleRuleKeyframe* create(std::unique_ptr<Vector<double>> keys,
+  static StyleRuleKeyframe* Create(std::unique_ptr<Vector<double>> keys,
                                    StylePropertySet* properties) {
     return new StyleRuleKeyframe(std::move(keys), properties);
   }
 
   // Exposed to JavaScript.
-  String keyText() const;
-  bool setKeyText(const String&);
+  String KeyText() const;
+  bool SetKeyText(const String&);
 
   // Used by StyleResolver.
-  const Vector<double>& keys() const;
+  const Vector<double>& Keys() const;
 
-  const StylePropertySet& properties() const { return *m_properties; }
-  MutableStylePropertySet& mutableProperties();
+  const StylePropertySet& Properties() const { return *properties_; }
+  MutableStylePropertySet& MutableProperties();
 
-  String cssText() const;
+  String CssText() const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   StyleRuleKeyframe(std::unique_ptr<Vector<double>>, StylePropertySet*);
 
-  Member<StylePropertySet> m_properties;
-  Vector<double> m_keys;
+  Member<StylePropertySet> properties_;
+  Vector<double> keys_;
 };
 
 DEFINE_STYLE_RULE_TYPE_CASTS(Keyframe);

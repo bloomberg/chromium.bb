@@ -16,55 +16,55 @@
 namespace blink {
 
 ViewportScrollCallback::ViewportScrollCallback(
-    BrowserControls* browserControls,
-    OverscrollController* overscrollController,
-    RootFrameViewport& rootFrameViewport)
-    : m_browserControls(browserControls),
-      m_overscrollController(overscrollController),
-      m_rootFrameViewport(&rootFrameViewport) {}
+    BrowserControls* browser_controls,
+    OverscrollController* overscroll_controller,
+    RootFrameViewport& root_frame_viewport)
+    : browser_controls_(browser_controls),
+      overscroll_controller_(overscroll_controller),
+      root_frame_viewport_(&root_frame_viewport) {}
 
 ViewportScrollCallback::~ViewportScrollCallback() {}
 
 DEFINE_TRACE(ViewportScrollCallback) {
-  visitor->trace(m_browserControls);
-  visitor->trace(m_overscrollController);
-  visitor->trace(m_rootFrameViewport);
-  ScrollStateCallback::trace(visitor);
+  visitor->Trace(browser_controls_);
+  visitor->Trace(overscroll_controller_);
+  visitor->Trace(root_frame_viewport_);
+  ScrollStateCallback::Trace(visitor);
 }
 
-bool ViewportScrollCallback::shouldScrollBrowserControls(
+bool ViewportScrollCallback::ShouldScrollBrowserControls(
     const ScrollOffset& delta,
     ScrollGranularity granularity) const {
-  if (granularity != ScrollByPixel && granularity != ScrollByPrecisePixel)
+  if (granularity != kScrollByPixel && granularity != kScrollByPrecisePixel)
     return false;
 
-  if (!m_rootFrameViewport)
+  if (!root_frame_viewport_)
     return false;
 
-  ScrollOffset maxScroll = m_rootFrameViewport->maximumScrollOffset();
-  ScrollOffset scrollOffset = m_rootFrameViewport->getScrollOffset();
+  ScrollOffset max_scroll = root_frame_viewport_->MaximumScrollOffset();
+  ScrollOffset scroll_offset = root_frame_viewport_->GetScrollOffset();
 
   // Always give the delta to the browser controls if the scroll is in
   // the direction to show the browser controls. If it's in the
   // direction to hide the browser controls, only give the delta to the
   // browser controls when the frame can scroll.
-  return delta.height() < 0 || scrollOffset.height() < maxScroll.height();
+  return delta.Height() < 0 || scroll_offset.Height() < max_scroll.Height();
 }
 
-bool ViewportScrollCallback::scrollBrowserControls(ScrollState& state) {
+bool ViewportScrollCallback::ScrollBrowserControls(ScrollState& state) {
   // Scroll browser controls.
-  if (m_browserControls) {
+  if (browser_controls_) {
     if (state.isBeginning())
-      m_browserControls->scrollBegin();
+      browser_controls_->ScrollBegin();
 
     FloatSize delta(state.deltaX(), state.deltaY());
     ScrollGranularity granularity =
         ScrollGranularity(static_cast<int>(state.deltaGranularity()));
-    if (shouldScrollBrowserControls(delta, granularity)) {
-      FloatSize remainingDelta = m_browserControls->scrollBy(delta);
-      FloatSize consumed = delta - remainingDelta;
-      state.consumeDeltaNative(consumed.width(), consumed.height());
-      return !consumed.isZero();
+    if (ShouldScrollBrowserControls(delta, granularity)) {
+      FloatSize remaining_delta = browser_controls_->ScrollBy(delta);
+      FloatSize consumed = delta - remaining_delta;
+      state.ConsumeDeltaNative(consumed.Width(), consumed.Height());
+      return !consumed.IsZero();
     }
   }
 
@@ -73,43 +73,43 @@ bool ViewportScrollCallback::scrollBrowserControls(ScrollState& state) {
 
 void ViewportScrollCallback::handleEvent(ScrollState* state) {
   DCHECK(state);
-  if (!m_rootFrameViewport)
+  if (!root_frame_viewport_)
     return;
 
-  bool browserControlsDidScroll = scrollBrowserControls(*state);
+  bool browser_controls_did_scroll = ScrollBrowserControls(*state);
 
-  ScrollResult result = performNativeScroll(*state);
+  ScrollResult result = PerformNativeScroll(*state);
 
   // We consider browser controls movement to be scrolling.
-  result.didScrollY |= browserControlsDidScroll;
+  result.did_scroll_y |= browser_controls_did_scroll;
 
   // Handle Overscroll.
-  if (m_overscrollController) {
+  if (overscroll_controller_) {
     FloatPoint position(state->positionX(), state->positionY());
     FloatSize velocity(state->velocityX(), state->velocityY());
-    m_overscrollController->handleOverscroll(result, position, velocity);
+    overscroll_controller_->HandleOverscroll(result, position, velocity);
   }
 }
 
-void ViewportScrollCallback::setScroller(ScrollableArea* scroller) {
+void ViewportScrollCallback::SetScroller(ScrollableArea* scroller) {
   DCHECK(scroller);
-  m_rootFrameViewport->setLayoutViewport(*scroller);
+  root_frame_viewport_->SetLayoutViewport(*scroller);
 }
 
-ScrollResult ViewportScrollCallback::performNativeScroll(ScrollState& state) {
-  DCHECK(m_rootFrameViewport);
+ScrollResult ViewportScrollCallback::PerformNativeScroll(ScrollState& state) {
+  DCHECK(root_frame_viewport_);
 
   FloatSize delta(state.deltaX(), state.deltaY());
   ScrollGranularity granularity =
       ScrollGranularity(static_cast<int>(state.deltaGranularity()));
 
-  ScrollResult result = m_rootFrameViewport->userScroll(granularity, delta);
+  ScrollResult result = root_frame_viewport_->UserScroll(granularity, delta);
 
   // The viewport consumes everything.
   // TODO(bokan): This isn't actually consuming everything but doing so breaks
   // the main thread pull-to-refresh action. crbug.com/607210.
-  state.consumeDeltaNative(delta.width() - result.unusedScrollDeltaX,
-                           delta.height() - result.unusedScrollDeltaY);
+  state.ConsumeDeltaNative(delta.Width() - result.unused_scroll_delta_x,
+                           delta.Height() - result.unused_scroll_delta_y);
 
   return result;
 }

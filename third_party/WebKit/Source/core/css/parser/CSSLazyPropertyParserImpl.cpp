@@ -11,17 +11,17 @@ namespace blink {
 
 CSSLazyPropertyParserImpl::CSSLazyPropertyParserImpl(CSSParserTokenRange block,
                                                      CSSLazyParsingState* state)
-    : CSSLazyPropertyParser(), m_lazyState(state) {
+    : CSSLazyPropertyParser(), lazy_state_(state) {
   // Reserve capacity to minimize heap bloat.
   size_t length = block.end() - block.begin();
-  m_tokens.reserveCapacity(length);
-  m_tokens.append(block.begin(), length);
+  tokens_.ReserveCapacity(length);
+  tokens_.Append(block.begin(), length);
 }
 
-StylePropertySet* CSSLazyPropertyParserImpl::parseProperties() {
-  m_lazyState->countRuleParsed();
-  return CSSParserImpl::parseDeclarationListForLazyStyle(
-      m_tokens, m_lazyState->context());
+StylePropertySet* CSSLazyPropertyParserImpl::ParseProperties() {
+  lazy_state_->CountRuleParsed();
+  return CSSParserImpl::ParseDeclarationListForLazyStyle(
+      tokens_, lazy_state_->Context());
 }
 
 }  // namespace blink

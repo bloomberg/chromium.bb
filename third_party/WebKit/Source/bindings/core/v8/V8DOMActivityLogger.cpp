@@ -20,99 +20,99 @@ typedef HashMap<int,
                 WTF::UnsignedWithZeroKeyHashTraits<int>>
     DOMActivityLoggerMapForIsolatedWorld;
 
-static DOMActivityLoggerMapForMainWorld& domActivityLoggersForMainWorld() {
-  ASSERT(isMainThread());
+static DOMActivityLoggerMapForMainWorld& DomActivityLoggersForMainWorld() {
+  ASSERT(IsMainThread());
   DEFINE_STATIC_LOCAL(DOMActivityLoggerMapForMainWorld, map, ());
   return map;
 }
 
 static DOMActivityLoggerMapForIsolatedWorld&
-domActivityLoggersForIsolatedWorld() {
-  ASSERT(isMainThread());
+DomActivityLoggersForIsolatedWorld() {
+  ASSERT(IsMainThread());
   DEFINE_STATIC_LOCAL(DOMActivityLoggerMapForIsolatedWorld, map, ());
   return map;
 }
 
-void V8DOMActivityLogger::setActivityLogger(
-    int worldId,
-    const String& extensionId,
+void V8DOMActivityLogger::SetActivityLogger(
+    int world_id,
+    const String& extension_id,
     std::unique_ptr<V8DOMActivityLogger> logger) {
-  if (worldId)
-    domActivityLoggersForIsolatedWorld().set(worldId, std::move(logger));
+  if (world_id)
+    DomActivityLoggersForIsolatedWorld().Set(world_id, std::move(logger));
   else
-    domActivityLoggersForMainWorld().set(extensionId, std::move(logger));
+    DomActivityLoggersForMainWorld().Set(extension_id, std::move(logger));
 }
 
-V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(
-    int worldId,
-    const String& extensionId) {
-  if (worldId) {
+V8DOMActivityLogger* V8DOMActivityLogger::ActivityLogger(
+    int world_id,
+    const String& extension_id) {
+  if (world_id) {
     DOMActivityLoggerMapForIsolatedWorld& loggers =
-        domActivityLoggersForIsolatedWorld();
-    DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.find(worldId);
+        DomActivityLoggersForIsolatedWorld();
+    DOMActivityLoggerMapForIsolatedWorld::iterator it = loggers.Find(world_id);
     return it == loggers.end() ? 0 : it->value.get();
   }
 
-  if (extensionId.isEmpty())
+  if (extension_id.IsEmpty())
     return 0;
 
-  DOMActivityLoggerMapForMainWorld& loggers = domActivityLoggersForMainWorld();
-  DOMActivityLoggerMapForMainWorld::iterator it = loggers.find(extensionId);
+  DOMActivityLoggerMapForMainWorld& loggers = DomActivityLoggersForMainWorld();
+  DOMActivityLoggerMapForMainWorld::iterator it = loggers.Find(extension_id);
   return it == loggers.end() ? 0 : it->value.get();
 }
 
-V8DOMActivityLogger* V8DOMActivityLogger::activityLogger(int worldId,
+V8DOMActivityLogger* V8DOMActivityLogger::ActivityLogger(int world_id,
                                                          const KURL& url) {
   // extension ID is ignored for worldId != 0.
-  if (worldId)
-    return activityLogger(worldId, String());
+  if (world_id)
+    return ActivityLogger(world_id, String());
 
   // To find an activity logger that corresponds to the main world of an
   // extension, we need to obtain the extension ID. Extension ID is a hostname
   // of a background page's URL.
-  if (!url.protocolIs("chrome-extension"))
+  if (!url.ProtocolIs("chrome-extension"))
     return 0;
 
-  return activityLogger(worldId, url.host());
+  return ActivityLogger(world_id, url.Host());
 }
 
-V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLogger() {
+V8DOMActivityLogger* V8DOMActivityLogger::CurrentActivityLogger() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   if (!isolate->InContext())
     return 0;
 
-  v8::HandleScope handleScope(isolate);
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  if (context.IsEmpty() || !toLocalDOMWindow(context))
+  if (context.IsEmpty() || !ToLocalDOMWindow(context))
     return 0;
 
-  V8PerContextData* contextData = ScriptState::from(context)->perContextData();
-  if (!contextData)
+  V8PerContextData* context_data = ScriptState::From(context)->PerContextData();
+  if (!context_data)
     return 0;
 
-  return contextData->activityLogger();
+  return context_data->ActivityLogger();
 }
 
 V8DOMActivityLogger*
-V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld() {
+V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   if (!isolate->InContext())
     return 0;
 
-  v8::HandleScope handleScope(isolate);
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  if (context.IsEmpty() || !toLocalDOMWindow(context))
+  if (context.IsEmpty() || !ToLocalDOMWindow(context))
     return 0;
 
-  ScriptState* scriptState = ScriptState::from(context);
-  if (!scriptState->world().isIsolatedWorld())
+  ScriptState* script_state = ScriptState::From(context);
+  if (!script_state->World().IsIsolatedWorld())
     return 0;
 
-  V8PerContextData* contextData = scriptState->perContextData();
-  if (!contextData)
+  V8PerContextData* context_data = script_state->PerContextData();
+  if (!context_data)
     return 0;
 
-  return contextData->activityLogger();
+  return context_data->ActivityLogger();
 }
 
 }  // namespace blink

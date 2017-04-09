@@ -18,7 +18,7 @@ template <>
 struct StructTraits<device::mojom::GamepadQuaternionDataView,
                     blink::WebGamepadQuaternion> {
   static bool IsNull(const blink::WebGamepadQuaternion& r) {
-    return !r.notNull;
+    return !r.not_null;
   }
   static void SetToNull(blink::WebGamepadQuaternion* out);
   static float x(const blink::WebGamepadQuaternion& r) { return r.x; }
@@ -32,7 +32,7 @@ struct StructTraits<device::mojom::GamepadQuaternionDataView,
 template <>
 struct StructTraits<device::mojom::GamepadVectorDataView,
                     blink::WebGamepadVector> {
-  static bool IsNull(const blink::WebGamepadVector& r) { return !r.notNull; }
+  static bool IsNull(const blink::WebGamepadVector& r) { return !r.not_null; }
   static void SetToNull(blink::WebGamepadVector* out);
   static float x(const blink::WebGamepadVector& r) { return r.x; }
   static float y(const blink::WebGamepadVector& r) { return r.y; }
@@ -53,7 +53,7 @@ struct StructTraits<device::mojom::GamepadButtonDataView,
 
 template <>
 struct StructTraits<device::mojom::GamepadPoseDataView, blink::WebGamepadPose> {
-  static bool IsNull(const blink::WebGamepadPose& r) { return !r.notNull; }
+  static bool IsNull(const blink::WebGamepadPose& r) { return !r.not_null; }
   static void SetToNull(blink::WebGamepadPose* out);
   static const blink::WebGamepadQuaternion& orientation(
       const blink::WebGamepadPose& r) {
@@ -65,19 +65,19 @@ struct StructTraits<device::mojom::GamepadPoseDataView, blink::WebGamepadPose> {
   }
   static const blink::WebGamepadVector& angular_velocity(
       const blink::WebGamepadPose& r) {
-    return r.angularVelocity;
+    return r.angular_velocity;
   }
   static const blink::WebGamepadVector& linear_velocity(
       const blink::WebGamepadPose& r) {
-    return r.linearVelocity;
+    return r.linear_velocity;
   }
   static const blink::WebGamepadVector& angular_acceleration(
       const blink::WebGamepadPose& r) {
-    return r.angularAcceleration;
+    return r.angular_acceleration;
   }
   static const blink::WebGamepadVector& linear_acceleration(
       const blink::WebGamepadPose& r) {
-    return r.linearAcceleration;
+    return r.linear_acceleration;
   }
   static bool Read(device::mojom::GamepadPoseDataView data,
                    blink::WebGamepadPose* out);
@@ -95,11 +95,11 @@ struct StructTraits<device::mojom::GamepadDataView, blink::WebGamepad> {
   static bool connected(const blink::WebGamepad& r) { return r.connected; }
   static uint64_t timestamp(const blink::WebGamepad& r) { return r.timestamp; }
   static ConstCArray<double> axes(const blink::WebGamepad& r) {
-    return {r.axesLength, &r.axes[0]};
+    return {r.axes_length, &r.axes[0]};
   }
   static ConstCArray<blink::WebGamepadButton> buttons(
       const blink::WebGamepad& r) {
-    return {r.buttonsLength, &r.buttons[0]};
+    return {r.buttons_length, &r.buttons[0]};
   }
   static const blink::WebGamepadPose& pose(const blink::WebGamepad& r) {
     return r.pose;
@@ -107,7 +107,9 @@ struct StructTraits<device::mojom::GamepadDataView, blink::WebGamepad> {
   static const blink::WebGamepadHand& hand(const blink::WebGamepad& r) {
     return r.hand;
   }
-  static uint32_t display_id(const blink::WebGamepad& r) { return r.displayId; }
+  static uint32_t display_id(const blink::WebGamepad& r) {
+    return r.display_id;
+  }
 
   static ConstCArray<uint16_t> id(const blink::WebGamepad& r);
   static ConstCArray<uint16_t> mapping(const blink::WebGamepad& r);

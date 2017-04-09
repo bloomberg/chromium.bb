@@ -47,14 +47,14 @@ class SelectionModifier {
                     LayoutUnit);
   SelectionModifier(const LocalFrame&, const VisibleSelection&);
 
-  LayoutUnit xPosForVerticalArrowNavigation() const {
-    return m_xPosForVerticalArrowNavigation;
+  LayoutUnit XPosForVerticalArrowNavigation() const {
+    return x_pos_for_vertical_arrow_navigation_;
   }
-  const VisibleSelection& selection() const { return m_selection; }
+  const VisibleSelection& Selection() const { return selection_; }
 
-  bool modify(EAlteration, SelectionDirection, TextGranularity);
-  bool modifyWithPageGranularity(EAlteration,
-                                 unsigned verticalDistance,
+  bool Modify(EAlteration, SelectionDirection, TextGranularity);
+  bool ModifyWithPageGranularity(EAlteration,
+                                 unsigned vertical_distance,
                                  VerticalDirection);
 
  private:
@@ -63,28 +63,28 @@ class SelectionModifier {
   // TODO(yosin) We should use capitalized name for |EPositionType|.
   enum EPositionType { START, END, BASE, EXTENT };  // NOLINT
 
-  LocalFrame* frame() const { return m_frame; }
+  LocalFrame* GetFrame() const { return frame_; }
 
-  static bool shouldAlwaysUseDirectionalSelection(LocalFrame*);
-  TextDirection directionOfEnclosingBlock() const;
-  TextDirection directionOfSelection() const;
-  VisiblePosition positionForPlatform(bool isGetStart) const;
-  VisiblePosition startForPlatform() const;
-  VisiblePosition endForPlatform() const;
-  LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
-  VisiblePosition modifyExtendingRight(TextGranularity);
-  VisiblePosition modifyExtendingForward(TextGranularity);
-  VisiblePosition modifyMovingRight(TextGranularity);
-  VisiblePosition modifyMovingForward(TextGranularity);
-  VisiblePosition modifyExtendingLeft(TextGranularity);
-  VisiblePosition modifyExtendingBackward(TextGranularity);
-  VisiblePosition modifyMovingLeft(TextGranularity);
-  VisiblePosition modifyMovingBackward(TextGranularity);
-  VisiblePosition nextWordPositionForPlatform(const VisiblePosition&);
+  static bool ShouldAlwaysUseDirectionalSelection(LocalFrame*);
+  TextDirection DirectionOfEnclosingBlock() const;
+  TextDirection DirectionOfSelection() const;
+  VisiblePosition PositionForPlatform(bool is_get_start) const;
+  VisiblePosition StartForPlatform() const;
+  VisiblePosition EndForPlatform() const;
+  LayoutUnit LineDirectionPointForBlockDirectionNavigation(EPositionType);
+  VisiblePosition ModifyExtendingRight(TextGranularity);
+  VisiblePosition ModifyExtendingForward(TextGranularity);
+  VisiblePosition ModifyMovingRight(TextGranularity);
+  VisiblePosition ModifyMovingForward(TextGranularity);
+  VisiblePosition ModifyExtendingLeft(TextGranularity);
+  VisiblePosition ModifyExtendingBackward(TextGranularity);
+  VisiblePosition ModifyMovingLeft(TextGranularity);
+  VisiblePosition ModifyMovingBackward(TextGranularity);
+  VisiblePosition NextWordPositionForPlatform(const VisiblePosition&);
 
-  Member<LocalFrame> m_frame;
-  VisibleSelection m_selection;
-  LayoutUnit m_xPosForVerticalArrowNavigation;
+  Member<LocalFrame> frame_;
+  VisibleSelection selection_;
+  LayoutUnit x_pos_for_vertical_arrow_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionModifier);
 };

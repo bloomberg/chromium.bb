@@ -13,13 +13,13 @@ namespace blink {
 
 // A configuration data container for PushPullFIFO unit test.
 struct PushPullFIFOStateForTest {
-  const size_t fifoLength;
-  const unsigned numberOfChannels;
-  const size_t framesAvailable;
-  const size_t indexRead;
-  const size_t indexWrite;
-  const unsigned overflowCount;
-  const unsigned underflowCount;
+  const size_t fifo_length;
+  const unsigned number_of_channels;
+  const size_t frames_available;
+  const size_t index_read;
+  const size_t index_write;
+  const unsigned overflow_count;
+  const unsigned underflow_count;
 };
 
 // PushPullFIFO class is an intermediate audio sample storage between
@@ -35,7 +35,7 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
   static const size_t kMaxFIFOLength;
 
   // |fifoLength| cannot exceed |kMaxFIFOLength|. Otherwise it crashes.
-  explicit PushPullFIFO(unsigned numberOfChannels, size_t fifoLength);
+  explicit PushPullFIFO(unsigned number_of_channels, size_t fifo_length);
   ~PushPullFIFO();
 
   // Pushes the rendered frames by WebAudio engine.
@@ -43,7 +43,7 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
   //  - In case of overflow (FIFO full while push), the existing frames in FIFO
   //    will be overwritten and |indexRead| will be forcibly moved to
   //    |indexWrite| to avoid reading overwritten frames.
-  void push(const AudioBus* inputBus);
+  void Push(const AudioBus* input_bus);
 
   // Pulling |framesRequested| by the audio device thread.
   //  - If |framesRequested| is bigger than the length of |outputBus|, it
@@ -53,31 +53,31 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
   //  - In case of underflow (FIFO empty while pull), the remaining space in the
   //    requested output bus will be filled with silence. Thus it will fulfill
   //    the request from the consumer without causing error, but with a glitch.
-  void pull(AudioBus* outputBus, size_t framesRequested);
+  void Pull(AudioBus* output_bus, size_t frames_requested);
 
-  size_t framesAvailable() const { return m_framesAvailable; }
-  size_t length() const { return m_fifoLength; }
-  unsigned numberOfChannels() const { return m_fifoBus->numberOfChannels(); }
-  AudioBus* bus() const { return m_fifoBus.get(); }
+  size_t FramesAvailable() const { return frames_available_; }
+  size_t length() const { return fifo_length_; }
+  unsigned NumberOfChannels() const { return fifo_bus_->NumberOfChannels(); }
+  AudioBus* Bus() const { return fifo_bus_.Get(); }
 
   // For unit test. Get the current configuration that consists of FIFO length,
   // number of channels, read/write index position and under/overflow count.
-  const PushPullFIFOStateForTest getStateForTest() const;
+  const PushPullFIFOStateForTest GetStateForTest() const;
 
  private:
   // The size of the FIFO.
-  const size_t m_fifoLength = 0;
+  const size_t fifo_length_ = 0;
 
-  RefPtr<AudioBus> m_fifoBus;
+  RefPtr<AudioBus> fifo_bus_;
 
   // The number of frames in the FIFO actually available for pulling.
-  size_t m_framesAvailable;
+  size_t frames_available_;
 
-  size_t m_indexRead;
-  size_t m_indexWrite;
+  size_t index_read_;
+  size_t index_write_;
 
-  unsigned m_overflowCount;
-  unsigned m_underflowCount;
+  unsigned overflow_count_;
+  unsigned underflow_count_;
 };
 
 }  // namespace blink

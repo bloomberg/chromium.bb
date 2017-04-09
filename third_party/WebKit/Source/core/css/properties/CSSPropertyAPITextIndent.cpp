@@ -16,41 +16,41 @@ const CSSValue* CSSPropertyAPITextIndent::parseSingleValue(
     const CSSParserContext& context) {
   // [ <length> | <percentage> ] && hanging? && each-line?
   // Keywords only allowed when css3Text is enabled.
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  bool hasLengthOrPercentage = false;
-  bool hasEachLine = false;
-  bool hasHanging = false;
+  bool has_length_or_percentage = false;
+  bool has_each_line = false;
+  bool has_hanging = false;
 
   do {
-    if (!hasLengthOrPercentage) {
-      if (CSSValue* textIndent =
-              CSSPropertyParserHelpers::consumeLengthOrPercent(
-                  range, context.mode(), ValueRangeAll,
-                  CSSPropertyParserHelpers::UnitlessQuirk::Allow)) {
-        list->append(*textIndent);
-        hasLengthOrPercentage = true;
+    if (!has_length_or_percentage) {
+      if (CSSValue* text_indent =
+              CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+                  range, context.Mode(), kValueRangeAll,
+                  CSSPropertyParserHelpers::UnitlessQuirk::kAllow)) {
+        list->Append(*text_indent);
+        has_length_or_percentage = true;
         continue;
       }
     }
 
     if (RuntimeEnabledFeatures::css3TextEnabled()) {
-      CSSValueID id = range.peek().id();
-      if (!hasEachLine && id == CSSValueEachLine) {
-        list->append(*CSSPropertyParserHelpers::consumeIdent(range));
-        hasEachLine = true;
+      CSSValueID id = range.Peek().Id();
+      if (!has_each_line && id == CSSValueEachLine) {
+        list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+        has_each_line = true;
         continue;
       }
-      if (!hasHanging && id == CSSValueHanging) {
-        list->append(*CSSPropertyParserHelpers::consumeIdent(range));
-        hasHanging = true;
+      if (!has_hanging && id == CSSValueHanging) {
+        list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+        has_hanging = true;
         continue;
       }
     }
     return nullptr;
-  } while (!range.atEnd());
+  } while (!range.AtEnd());
 
-  if (!hasLengthOrPercentage)
+  if (!has_length_or_percentage)
     return nullptr;
 
   return list;

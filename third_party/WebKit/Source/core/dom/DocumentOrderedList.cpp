@@ -33,38 +33,38 @@
 
 namespace blink {
 
-void DocumentOrderedList::add(Node* node) {
-  if (m_nodes.isEmpty()) {
-    m_nodes.insert(node);
+void DocumentOrderedList::Add(Node* node) {
+  if (nodes_.IsEmpty()) {
+    nodes_.insert(node);
     return;
   }
 
   // Determine an appropriate insertion point.
-  iterator begin = m_nodes.begin();
-  iterator end = m_nodes.end();
+  iterator begin = nodes_.begin();
+  iterator end = nodes_.end();
   iterator it = end;
-  Node* followingNode = 0;
+  Node* following_node = 0;
   do {
     --it;
     Node* n = *it;
     unsigned short position =
-        n->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed);
+        n->compareDocumentPosition(node, Node::kTreatShadowTreesAsComposed);
     if (position & Node::kDocumentPositionFollowing) {
-      m_nodes.insertBefore(followingNode, node);
+      nodes_.InsertBefore(following_node, node);
       return;
     }
-    followingNode = n;
+    following_node = n;
   } while (it != begin);
 
-  m_nodes.insertBefore(followingNode, node);
+  nodes_.InsertBefore(following_node, node);
 }
 
-void DocumentOrderedList::remove(const Node* node) {
-  m_nodes.erase(const_cast<Node*>(node));
+void DocumentOrderedList::Remove(const Node* node) {
+  nodes_.erase(const_cast<Node*>(node));
 }
 
 DEFINE_TRACE(DocumentOrderedList) {
-  visitor->trace(m_nodes);
+  visitor->Trace(nodes_);
 }
 
 }  // namespace blink

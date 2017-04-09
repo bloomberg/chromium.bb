@@ -9,36 +9,36 @@
 
 namespace blink {
 
-unsigned ShapeResultTestInfo::numberOfRunsForTesting() const {
-  return m_runs.size();
+unsigned ShapeResultTestInfo::NumberOfRunsForTesting() const {
+  return runs_.size();
 }
 
-bool ShapeResultTestInfo::runInfoForTesting(unsigned runIndex,
-                                            unsigned& startIndex,
-                                            unsigned& numGlyphs,
+bool ShapeResultTestInfo::RunInfoForTesting(unsigned run_index,
+                                            unsigned& start_index,
+                                            unsigned& num_glyphs,
                                             hb_script_t& script) const {
-  if (runIndex < m_runs.size() && m_runs[runIndex]) {
-    startIndex = m_runs[runIndex]->m_startIndex;
-    numGlyphs = m_runs[runIndex]->m_glyphData.size();
-    script = m_runs[runIndex]->m_script;
+  if (run_index < runs_.size() && runs_[run_index]) {
+    start_index = runs_[run_index]->start_index_;
+    num_glyphs = runs_[run_index]->glyph_data_.size();
+    script = runs_[run_index]->script_;
     return true;
   }
   return false;
 }
 
-uint16_t ShapeResultTestInfo::glyphForTesting(unsigned runIndex,
-                                              size_t glyphIndex) const {
-  return m_runs[runIndex]->m_glyphData[glyphIndex].glyph;
+uint16_t ShapeResultTestInfo::GlyphForTesting(unsigned run_index,
+                                              size_t glyph_index) const {
+  return runs_[run_index]->glyph_data_[glyph_index].glyph;
 }
 
-float ShapeResultTestInfo::advanceForTesting(unsigned runIndex,
-                                             size_t glyphIndex) const {
-  return m_runs[runIndex]->m_glyphData[glyphIndex].advance;
+float ShapeResultTestInfo::AdvanceForTesting(unsigned run_index,
+                                             size_t glyph_index) const {
+  return runs_[run_index]->glyph_data_[glyph_index].advance;
 }
 
-SimpleFontData* ShapeResultTestInfo::fontDataForTesting(
-    unsigned runIndex) const {
-  return m_runs[runIndex]->m_fontData.get();
+SimpleFontData* ShapeResultTestInfo::FontDataForTesting(
+    unsigned run_index) const {
+  return runs_[run_index]->font_data_.Get();
 }
 
 }  // namespace blink

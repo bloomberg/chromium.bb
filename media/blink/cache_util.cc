@@ -28,16 +28,16 @@ enum { kHttpOK = 200, kHttpPartialContent = 206 };
 
 uint32_t GetReasonsForUncacheability(const WebURLResponse& response) {
   uint32_t reasons = 0;
-  const int code = response.httpStatusCode();
-  const int version = response.httpVersion();
+  const int code = response.HttpStatusCode();
+  const int version = response.HttpVersion();
   const HttpVersion http_version =
-      version == WebURLResponse::HTTPVersion_2_0
+      version == WebURLResponse::kHTTPVersion_2_0
           ? HttpVersion(2, 0)
-          : version == WebURLResponse::HTTPVersion_1_1
+          : version == WebURLResponse::kHTTPVersion_1_1
                 ? HttpVersion(1, 1)
-                : version == WebURLResponse::HTTPVersion_1_0
+                : version == WebURLResponse::kHTTPVersion_1_0
                       ? HttpVersion(1, 0)
-                      : version == WebURLResponse::HTTPVersion_0_9
+                      : version == WebURLResponse::kHTTPVersion_0_9
                             ? HttpVersion(0, 9)
                             : HttpVersion();
   if (code != kHttpOK && code != kHttpPartialContent)
@@ -46,15 +46,14 @@ uint32_t GetReasonsForUncacheability(const WebURLResponse& response) {
     reasons |= kPre11PartialResponse;
   if (code == kHttpPartialContent &&
       !net::HttpUtil::HasStrongValidators(
-          http_version,
-          response.httpHeaderField("etag").utf8(),
-          response.httpHeaderField("Last-Modified").utf8(),
-          response.httpHeaderField("Date").utf8())) {
+          http_version, response.HttpHeaderField("etag").Utf8(),
+          response.HttpHeaderField("Last-Modified").Utf8(),
+          response.HttpHeaderField("Date").Utf8())) {
     reasons |= kNoStrongValidatorOnPartialResponse;
   }
 
   std::string cache_control_header =
-      base::ToLowerASCII(response.httpHeaderField("cache-control").utf8());
+      base::ToLowerASCII(response.HttpHeaderField("cache-control").Utf8());
   if (cache_control_header.find("no-cache") != std::string::npos)
     reasons |= kNoCache;
   if (cache_control_header.find("no-store") != std::string::npos)
@@ -79,8 +78,8 @@ uint32_t GetReasonsForUncacheability(const WebURLResponse& response) {
 
   Time date;
   Time expires;
-  if (Time::FromString(response.httpHeaderField("Date").utf8().data(), &date) &&
-      Time::FromString(response.httpHeaderField("Expires").utf8().data(),
+  if (Time::FromString(response.HttpHeaderField("Date").Utf8().data(), &date) &&
+      Time::FromString(response.HttpHeaderField("Expires").Utf8().data(),
                        &expires) &&
       date > Time() && expires > Time() &&
       (expires - date) < kMinimumAgeForUsefulness) {
@@ -92,7 +91,7 @@ uint32_t GetReasonsForUncacheability(const WebURLResponse& response) {
 
 base::TimeDelta GetCacheValidUntil(const WebURLResponse& response) {
   std::string cache_control_header =
-      base::ToLowerASCII(response.httpHeaderField("cache-control").utf8());
+      base::ToLowerASCII(response.HttpHeaderField("cache-control").Utf8());
   if (cache_control_header.find("no-cache") != std::string::npos)
     return base::TimeDelta();
   if (cache_control_header.find("must-revalidate") != std::string::npos)
@@ -116,9 +115,9 @@ base::TimeDelta GetCacheValidUntil(const WebURLResponse& response) {
     // return a timetick some time in the past.
     Time date;
     Time expires;
-    if (Time::FromString(response.httpHeaderField("Date").utf8().data(),
+    if (Time::FromString(response.HttpHeaderField("Date").Utf8().data(),
                          &date) &&
-        Time::FromString(response.httpHeaderField("Expires").utf8().data(),
+        Time::FromString(response.HttpHeaderField("Expires").Utf8().data(),
                          &expires) &&
         date > Time() && expires > Time()) {
       ret = std::min(ret, expires - date);

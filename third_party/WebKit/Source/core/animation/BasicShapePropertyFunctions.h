@@ -18,43 +18,43 @@ class BasicShapePropertyFunctions {
   STATIC_ONLY(BasicShapePropertyFunctions);
 
  public:
-  static const BasicShape* getInitialBasicShape(CSSPropertyID property) {
-    return getBasicShape(property, ComputedStyle::initialStyle());
+  static const BasicShape* GetInitialBasicShape(CSSPropertyID property) {
+    return GetBasicShape(property, ComputedStyle::InitialStyle());
   }
 
-  static const BasicShape* getBasicShape(CSSPropertyID property,
+  static const BasicShape* GetBasicShape(CSSPropertyID property,
                                          const ComputedStyle& style) {
     switch (property) {
       case CSSPropertyShapeOutside:
-        if (!style.shapeOutside())
+        if (!style.ShapeOutside())
           return nullptr;
-        if (style.shapeOutside()->type() != ShapeValue::Shape)
+        if (style.ShapeOutside()->GetType() != ShapeValue::kShape)
           return nullptr;
-        if (style.shapeOutside()->cssBox() != BoxMissing)
+        if (style.ShapeOutside()->CssBox() != kBoxMissing)
           return nullptr;
-        return style.shapeOutside()->shape();
+        return style.ShapeOutside()->Shape();
       case CSSPropertyClipPath:
-        if (!style.clipPath())
+        if (!style.ClipPath())
           return nullptr;
-        if (style.clipPath()->type() != ClipPathOperation::SHAPE)
+        if (style.ClipPath()->GetType() != ClipPathOperation::SHAPE)
           return nullptr;
-        return toShapeClipPathOperation(style.clipPath())->basicShape();
+        return ToShapeClipPathOperation(style.ClipPath())->GetBasicShape();
       default:
         NOTREACHED();
         return nullptr;
     }
   }
 
-  static void setBasicShape(CSSPropertyID property,
+  static void SetBasicShape(CSSPropertyID property,
                             ComputedStyle& style,
                             PassRefPtr<BasicShape> shape) {
     switch (property) {
       case CSSPropertyShapeOutside:
-        style.setShapeOutside(
-            ShapeValue::createShapeValue(std::move(shape), BoxMissing));
+        style.SetShapeOutside(
+            ShapeValue::CreateShapeValue(std::move(shape), kBoxMissing));
         break;
       case CSSPropertyClipPath:
-        style.setClipPath(ShapeClipPathOperation::create(std::move(shape)));
+        style.SetClipPath(ShapeClipPathOperation::Create(std::move(shape)));
         break;
       default:
         NOTREACHED();

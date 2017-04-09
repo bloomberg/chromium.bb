@@ -36,41 +36,41 @@ class CORE_EXPORT SelectionTemplate final {
     explicit Builder(const SelectionTemplate&);
     Builder();
 
-    SelectionTemplate build() const;
+    SelectionTemplate Build() const;
 
     // Move selection to |base|. |base| can't be null.
-    Builder& collapse(const PositionTemplate<Strategy>& base);
-    Builder& collapse(const PositionWithAffinityTemplate<Strategy>& base);
+    Builder& Collapse(const PositionTemplate<Strategy>& base);
+    Builder& Collapse(const PositionWithAffinityTemplate<Strategy>& base);
 
     // Extend selection to |extent|. It is error if selection is none.
     // |extent| can be in different tree scope of base, but should be in same
     // document.
-    Builder& extend(const PositionTemplate<Strategy>& extent);
+    Builder& Extend(const PositionTemplate<Strategy>& extent);
 
     // Select all children in |node|.
-    Builder& selectAllChildren(const Node& /* node */);
+    Builder& SelectAllChildren(const Node& /* node */);
 
-    Builder& setBaseAndExtent(const EphemeralRangeTemplate<Strategy>&);
+    Builder& SetBaseAndExtent(const EphemeralRangeTemplate<Strategy>&);
 
     // |extent| can not be null if |base| isn't null.
-    Builder& setBaseAndExtent(const PositionTemplate<Strategy>& base,
+    Builder& SetBaseAndExtent(const PositionTemplate<Strategy>& base,
                               const PositionTemplate<Strategy>& extent);
 
     // |extent| can be non-null while |base| is null, which is undesired.
     // Note: This function should be used only in "core/editing/commands".
     // TODO(yosin): Once all we get rid of all call sites, we remove this.
-    Builder& setBaseAndExtentDeprecated(
+    Builder& SetBaseAndExtentDeprecated(
         const PositionTemplate<Strategy>& base,
         const PositionTemplate<Strategy>& extent);
 
-    Builder& setAffinity(TextAffinity);
-    Builder& setGranularity(TextGranularity);
-    Builder& setHasTrailingWhitespace(bool);
-    Builder& setIsDirectional(bool);
-    Builder& setIsHandleVisible(bool);
+    Builder& SetAffinity(TextAffinity);
+    Builder& SetGranularity(TextGranularity);
+    Builder& SetHasTrailingWhitespace(bool);
+    Builder& SetIsDirectional(bool);
+    Builder& SetIsHandleVisible(bool);
 
    private:
-    SelectionTemplate m_selection;
+    SelectionTemplate selection_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -83,53 +83,53 @@ class CORE_EXPORT SelectionTemplate final {
   bool operator==(const SelectionTemplate&) const;
   bool operator!=(const SelectionTemplate&) const;
 
-  const PositionTemplate<Strategy>& base() const;
-  const PositionTemplate<Strategy>& extent() const;
-  TextAffinity affinity() const { return m_affinity; }
-  TextGranularity granularity() const { return m_granularity; }
-  bool hasTrailingWhitespace() const { return m_hasTrailingWhitespace; }
-  bool isCaret() const { return m_base.isNotNull() && m_base == m_extent; }
-  bool isDirectional() const { return m_isDirectional; }
-  bool isHandleVisible() const { return m_isHandleVisible; }
-  bool isNone() const { return m_base.isNull(); }
-  bool isRange() const { return m_base != m_extent; }
+  const PositionTemplate<Strategy>& Base() const;
+  const PositionTemplate<Strategy>& Extent() const;
+  TextAffinity Affinity() const { return affinity_; }
+  TextGranularity Granularity() const { return granularity_; }
+  bool HasTrailingWhitespace() const { return has_trailing_whitespace_; }
+  bool IsCaret() const { return base_.IsNotNull() && base_ == extent_; }
+  bool IsDirectional() const { return is_directional_; }
+  bool IsHandleVisible() const { return is_handle_visible_; }
+  bool IsNone() const { return base_.IsNull(); }
+  bool IsRange() const { return base_ != extent_; }
 
   // Returns true if |this| selection holds valid values otherwise it causes
   // assertion failure.
-  bool assertValid() const;
-  bool assertValidFor(const Document&) const;
+  bool AssertValid() const;
+  bool AssertValidFor(const Document&) const;
 
-  const PositionTemplate<Strategy>& computeEndPosition() const;
-  const PositionTemplate<Strategy>& computeStartPosition() const;
+  const PositionTemplate<Strategy>& ComputeEndPosition() const;
+  const PositionTemplate<Strategy>& ComputeStartPosition() const;
 
   // Returns |SelectionType| for |this| based on |m_base| and |m_extent|
   // If |m_granularity| is |CharacterGranularity|, otherwise this function
   // returns |RangeSelection| event if |m_base| == |m_extent|.
   // Note: |m_granularity| will be removed, using this function is not
   // encouraged.
-  SelectionType selectionTypeWithLegacyGranularity() const;
+  SelectionType SelectionTypeWithLegacyGranularity() const;
 
   DECLARE_TRACE();
 
-  void printTo(std::ostream*, const char* type) const;
+  void PrintTo(std::ostream*, const char* type) const;
 #ifndef NDEBUG
-  void showTreeForThis() const;
+  void ShowTreeForThis() const;
 #endif
 
  private:
   friend class SelectionEditor;
 
-  Document* document() const;
+  Document* GetDocument() const;
 
-  PositionTemplate<Strategy> m_base;
-  PositionTemplate<Strategy> m_extent;
-  TextAffinity m_affinity = TextAffinity::Downstream;
-  TextGranularity m_granularity = CharacterGranularity;
-  bool m_hasTrailingWhitespace = false;
-  bool m_isDirectional = false;
-  bool m_isHandleVisible = false;
+  PositionTemplate<Strategy> base_;
+  PositionTemplate<Strategy> extent_;
+  TextAffinity affinity_ = TextAffinity::kDownstream;
+  TextGranularity granularity_ = kCharacterGranularity;
+  bool has_trailing_whitespace_ = false;
+  bool is_directional_ = false;
+  bool is_handle_visible_ = false;
 #if DCHECK_IS_ON()
-  uint64_t m_domTreeVersion;
+  uint64_t dom_tree_version_;
 #endif
 };
 

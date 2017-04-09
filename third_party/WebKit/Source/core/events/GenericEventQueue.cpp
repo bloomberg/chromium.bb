@@ -31,102 +31,102 @@
 
 namespace blink {
 
-GenericEventQueue* GenericEventQueue::create(EventTarget* owner) {
+GenericEventQueue* GenericEventQueue::Create(EventTarget* owner) {
   return new GenericEventQueue(owner);
 }
 
 GenericEventQueue::GenericEventQueue(EventTarget* owner)
-    : m_owner(owner),
-      m_timer(this, &GenericEventQueue::timerFired),
-      m_isClosed(false) {}
+    : owner_(owner),
+      timer_(this, &GenericEventQueue::TimerFired),
+      is_closed_(false) {}
 
 GenericEventQueue::~GenericEventQueue() {}
 
 DEFINE_TRACE(GenericEventQueue) {
-  visitor->trace(m_owner);
-  visitor->trace(m_pendingEvents);
-  EventQueue::trace(visitor);
+  visitor->Trace(owner_);
+  visitor->Trace(pending_events_);
+  EventQueue::Trace(visitor);
 }
 
-bool GenericEventQueue::enqueueEvent(Event* event) {
-  if (m_isClosed)
+bool GenericEventQueue::EnqueueEvent(Event* event) {
+  if (is_closed_)
     return false;
 
-  if (event->target() == m_owner)
-    event->setTarget(nullptr);
+  if (event->target() == owner_)
+    event->SetTarget(nullptr);
 
   TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", event->type().ascii());
-  EventTarget* target = event->target() ? event->target() : m_owner.get();
-  probe::asyncTaskScheduled(target->getExecutionContext(), event->type(),
+                           "type", event->type().Ascii());
+  EventTarget* target = event->target() ? event->target() : owner_.Get();
+  probe::AsyncTaskScheduled(target->GetExecutionContext(), event->type(),
                             event);
-  m_pendingEvents.push_back(event);
+  pending_events_.push_back(event);
 
-  if (!m_timer.isActive())
-    m_timer.startOneShot(0, BLINK_FROM_HERE);
+  if (!timer_.IsActive())
+    timer_.StartOneShot(0, BLINK_FROM_HERE);
 
   return true;
 }
 
-bool GenericEventQueue::cancelEvent(Event* event) {
-  bool found = m_pendingEvents.contains(event);
+bool GenericEventQueue::CancelEvent(Event* event) {
+  bool found = pending_events_.Contains(event);
 
   if (found) {
-    EventTarget* target = event->target() ? event->target() : m_owner.get();
-    probe::asyncTaskCanceled(target->getExecutionContext(), event);
-    m_pendingEvents.erase(m_pendingEvents.find(event));
+    EventTarget* target = event->target() ? event->target() : owner_.Get();
+    probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
+    pending_events_.erase(pending_events_.Find(event));
     TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", event->type().ascii(), "status",
+                           "type", event->type().Ascii(), "status",
                            "cancelled");
   }
 
-  if (m_pendingEvents.isEmpty())
-    m_timer.stop();
+  if (pending_events_.IsEmpty())
+    timer_.Stop();
 
   return found;
 }
 
-void GenericEventQueue::timerFired(TimerBase*) {
-  DCHECK(!m_timer.isActive());
-  DCHECK(!m_pendingEvents.isEmpty());
+void GenericEventQueue::TimerFired(TimerBase*) {
+  DCHECK(!timer_.IsActive());
+  DCHECK(!pending_events_.IsEmpty());
 
-  HeapVector<Member<Event>> pendingEvents;
-  m_pendingEvents.swap(pendingEvents);
+  HeapVector<Member<Event>> pending_events;
+  pending_events_.Swap(pending_events);
 
-  for (const auto& pendingEvent : pendingEvents) {
-    Event* event = pendingEvent.get();
-    EventTarget* target = event->target() ? event->target() : m_owner.get();
-    CString type(event->type().ascii());
-    probe::AsyncTask asyncTask(target->getExecutionContext(), event);
+  for (const auto& pending_event : pending_events) {
+    Event* event = pending_event.Get();
+    EventTarget* target = event->target() ? event->target() : owner_.Get();
+    CString type(event->type().Ascii());
+    probe::AsyncTask async_task(target->GetExecutionContext(), event);
     TRACE_EVENT_ASYNC_STEP_INTO1("event", "GenericEventQueue:enqueueEvent",
                                  event, "dispatch", "type", type);
-    target->dispatchEvent(pendingEvent);
+    target->DispatchEvent(pending_event);
     TRACE_EVENT_ASYNC_END1("event", "GenericEventQueue:enqueueEvent", event,
                            "type", type);
   }
 }
 
-void GenericEventQueue::close() {
-  m_isClosed = true;
-  cancelAllEvents();
+void GenericEventQueue::Close() {
+  is_closed_ = true;
+  CancelAllEvents();
 }
 
-void GenericEventQueue::cancelAllEvents() {
-  m_timer.stop();
+void GenericEventQueue::CancelAllEvents() {
+  timer_.Stop();
 
-  for (const auto& pendingEvent : m_pendingEvents) {
-    Event* event = pendingEvent.get();
+  for (const auto& pending_event : pending_events_) {
+    Event* event = pending_event.Get();
     TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", event->type().ascii(), "status",
+                           "type", event->type().Ascii(), "status",
                            "cancelled");
-    EventTarget* target = event->target() ? event->target() : m_owner.get();
-    probe::asyncTaskCanceled(target->getExecutionContext(), event);
+    EventTarget* target = event->target() ? event->target() : owner_.Get();
+    probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
   }
-  m_pendingEvents.clear();
+  pending_events_.Clear();
 }
 
-bool GenericEventQueue::hasPendingEvents() const {
-  return m_pendingEvents.size();
+bool GenericEventQueue::HasPendingEvents() const {
+  return pending_events_.size();
 }
 
 }  // namespace blink

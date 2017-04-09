@@ -53,57 +53,57 @@ class HTMLInputStream {
   WTF_MAKE_NONCOPYABLE(HTMLInputStream);
 
  public:
-  HTMLInputStream() : m_last(&m_first) {}
+  HTMLInputStream() : last_(&first_) {}
 
-  void appendToEnd(const SegmentedString& string) { m_last->append(string); }
+  void AppendToEnd(const SegmentedString& string) { last_->Append(string); }
 
-  void insertAtCurrentInsertionPoint(const SegmentedString& string) {
-    m_first.append(string);
+  void InsertAtCurrentInsertionPoint(const SegmentedString& string) {
+    first_.Append(string);
   }
 
-  bool hasInsertionPoint() const { return &m_first != m_last; }
+  bool HasInsertionPoint() const { return &first_ != last_; }
 
-  void markEndOfFile() {
-    m_last->append(SegmentedString(String(&kEndOfFileMarker, 1)));
-    m_last->close();
+  void MarkEndOfFile() {
+    last_->Append(SegmentedString(String(&kEndOfFileMarker, 1)));
+    last_->Close();
   }
 
-  void closeWithoutMarkingEndOfFile() { m_last->close(); }
+  void CloseWithoutMarkingEndOfFile() { last_->Close(); }
 
-  bool haveSeenEndOfFile() const { return m_last->isClosed(); }
+  bool HaveSeenEndOfFile() const { return last_->IsClosed(); }
 
-  SegmentedString& current() { return m_first; }
-  const SegmentedString& current() const { return m_first; }
+  SegmentedString& Current() { return first_; }
+  const SegmentedString& Current() const { return first_; }
 
-  void splitInto(SegmentedString& next) {
-    next = m_first;
-    m_first = SegmentedString();
-    if (m_last == &m_first) {
+  void SplitInto(SegmentedString& next) {
+    next = first_;
+    first_ = SegmentedString();
+    if (last_ == &first_) {
       // We used to only have one SegmentedString in the InputStream but now we
       // have two.  That means m_first is no longer also the m_last string,
       // |next| is now the last one.
-      m_last = &next;
+      last_ = &next;
     }
   }
 
-  void mergeFrom(SegmentedString& next) {
-    m_first.append(next);
-    if (m_last == &next) {
+  void MergeFrom(SegmentedString& next) {
+    first_.Append(next);
+    if (last_ == &next) {
       // The string |next| used to be the last SegmentedString in
       // the InputStream.  Now that it's been merged into m_first,
       // that makes m_first the last one.
-      m_last = &m_first;
+      last_ = &first_;
     }
-    if (next.isClosed()) {
+    if (next.IsClosed()) {
       // We also need to merge the "closed" state from next to m_first.
       // Arguably, this work could be done in append().
-      m_first.close();
+      first_.Close();
     }
   }
 
  private:
-  SegmentedString m_first;
-  SegmentedString* m_last;
+  SegmentedString first_;
+  SegmentedString* last_;
 };
 
 class InsertionPointRecord {
@@ -111,34 +111,34 @@ class InsertionPointRecord {
   WTF_MAKE_NONCOPYABLE(InsertionPointRecord);
 
  public:
-  explicit InsertionPointRecord(HTMLInputStream& inputStream)
-      : m_inputStream(&inputStream) {
-    m_line = m_inputStream->current().currentLine();
-    m_column = m_inputStream->current().currentColumn();
-    m_inputStream->splitInto(m_next);
+  explicit InsertionPointRecord(HTMLInputStream& input_stream)
+      : input_stream_(&input_stream) {
+    line_ = input_stream_->Current().CurrentLine();
+    column_ = input_stream_->Current().CurrentColumn();
+    input_stream_->SplitInto(next_);
     // We 'fork' current position and use it for the generated script part. This
     // is a bit weird, because generated part does not have positions within an
     // HTML document.
-    m_inputStream->current().setCurrentPosition(m_line, m_column, 0);
+    input_stream_->Current().SetCurrentPosition(line_, column_, 0);
   }
 
   ~InsertionPointRecord() {
     // Some inserted text may have remained in input stream. E.g. if script has
     // written "&amp" or "<table", it stays in buffer because it cannot be
     // properly tokenized before we see next part.
-    int unparsedRemainderLength = m_inputStream->current().length();
-    m_inputStream->mergeFrom(m_next);
+    int unparsed_remainder_length = input_stream_->Current().length();
+    input_stream_->MergeFrom(next_);
     // We restore position for the character that goes right after unparsed
     // remainder.
-    m_inputStream->current().setCurrentPosition(m_line, m_column,
-                                                unparsedRemainderLength);
+    input_stream_->Current().SetCurrentPosition(line_, column_,
+                                                unparsed_remainder_length);
   }
 
  private:
-  HTMLInputStream* m_inputStream;
-  SegmentedString m_next;
-  OrdinalNumber m_line;
-  OrdinalNumber m_column;
+  HTMLInputStream* input_stream_;
+  SegmentedString next_;
+  OrdinalNumber line_;
+  OrdinalNumber column_;
 };
 
 }  // namespace blink

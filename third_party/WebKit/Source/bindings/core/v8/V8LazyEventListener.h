@@ -46,57 +46,57 @@ class Node;
 // either a HTML or SVG event handler.
 class V8LazyEventListener final : public V8AbstractEventListener {
  public:
-  static V8LazyEventListener* create(const AtomicString& functionName,
-                                     const AtomicString& eventParameterName,
+  static V8LazyEventListener* Create(const AtomicString& function_name,
+                                     const AtomicString& event_parameter_name,
                                      const String& code,
-                                     const String& sourceURL,
+                                     const String& source_url,
                                      const TextPosition& position,
                                      Node* node,
                                      v8::Isolate* isolate) {
-    return new V8LazyEventListener(isolate, functionName, eventParameterName,
-                                   code, sourceURL, position, node);
+    return new V8LazyEventListener(isolate, function_name, event_parameter_name,
+                                   code, source_url, position, node);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_node);
-    V8AbstractEventListener::trace(visitor);
+    visitor->Trace(node_);
+    V8AbstractEventListener::Trace(visitor);
   }
 
-  const String& code() const { return m_code; }
+  const String& Code() const { return code_; }
 
  protected:
-  v8::Local<v8::Object> getListenerObjectInternal(ExecutionContext*) override;
+  v8::Local<v8::Object> GetListenerObjectInternal(ExecutionContext*) override;
 
  private:
   V8LazyEventListener(v8::Isolate*,
-                      const AtomicString& functionName,
-                      const AtomicString& eventParameterName,
+                      const AtomicString& function_name,
+                      const AtomicString& event_parameter_name,
                       const String& code,
-                      const String sourceURL,
+                      const String source_url,
                       const TextPosition&,
                       Node*);
 
-  v8::Local<v8::Value> callListenerFunction(ScriptState*,
+  v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
                                             Event*) override;
 
   // Return true, so that event handlers from markup are not cloned twice when
   // building the shadow tree for SVGUseElements.
-  bool wasCreatedFromMarkup() const override { return true; }
+  bool WasCreatedFromMarkup() const override { return true; }
 
-  void compileScript(ScriptState*, ExecutionContext*);
+  void CompileScript(ScriptState*, ExecutionContext*);
 
-  void fireErrorEvent(v8::Local<v8::Context>,
+  void FireErrorEvent(v8::Local<v8::Context>,
                       ExecutionContext*,
                       v8::Local<v8::Message>);
 
-  bool m_wasCompilationFailed;
-  AtomicString m_functionName;
-  AtomicString m_eventParameterName;
-  String m_code;
-  String m_sourceURL;
-  Member<Node> m_node;
-  TextPosition m_position;
+  bool was_compilation_failed_;
+  AtomicString function_name_;
+  AtomicString event_parameter_name_;
+  String code_;
+  String source_url_;
+  Member<Node> node_;
+  TextPosition position_;
 };
 
 }  // namespace blink

@@ -48,23 +48,23 @@ class DOMFileSystemSync final : public DOMFileSystemBase,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMFileSystemSync* create(ExecutionContext* context,
+  static DOMFileSystemSync* Create(ExecutionContext* context,
                                    const String& name,
                                    FileSystemType type,
-                                   const KURL& rootURL) {
-    return new DOMFileSystemSync(context, name, type, rootURL);
+                                   const KURL& root_url) {
+    return new DOMFileSystemSync(context, name, type, root_url);
   }
 
-  static DOMFileSystemSync* create(DOMFileSystemBase*);
+  static DOMFileSystemSync* Create(DOMFileSystemBase*);
 
   ~DOMFileSystemSync() override;
 
-  void reportError(ErrorCallbackBase*, FileError::ErrorCode) override;
+  void ReportError(ErrorCallbackBase*, FileError::ErrorCode) override;
 
   DirectoryEntrySync* root();
 
-  File* createFile(const FileEntrySync*, ExceptionState&);
-  FileWriterSync* createWriter(const FileEntrySync*, ExceptionState&);
+  File* CreateFile(const FileEntrySync*, ExceptionState&);
+  FileWriterSync* CreateWriter(const FileEntrySync*, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -72,8 +72,8 @@ class DOMFileSystemSync final : public DOMFileSystemBase,
   DOMFileSystemSync(ExecutionContext*,
                     const String& name,
                     FileSystemType,
-                    const KURL& rootURL);
-  Member<DirectoryEntrySync> m_rootEntry;
+                    const KURL& root_url);
+  Member<DirectoryEntrySync> root_entry_;
 };
 
 }  // namespace blink

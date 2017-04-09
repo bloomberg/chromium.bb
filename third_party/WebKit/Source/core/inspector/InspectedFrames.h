@@ -27,23 +27,23 @@ class CORE_EXPORT InspectedFrames final
     Iterator& operator++();
     bool operator==(const Iterator& other);
     bool operator!=(const Iterator& other);
-    LocalFrame* operator*() { return m_current; }
-    LocalFrame* operator->() { return m_current; }
+    LocalFrame* operator*() { return current_; }
+    LocalFrame* operator->() { return current_; }
 
    private:
     friend class InspectedFrames;
     Iterator(LocalFrame* root, LocalFrame* current);
-    Member<LocalFrame> m_root;
-    Member<LocalFrame> m_current;
+    Member<LocalFrame> root_;
+    Member<LocalFrame> current_;
   };
 
-  static InspectedFrames* create(LocalFrame* root) {
+  static InspectedFrames* Create(LocalFrame* root) {
     return new InspectedFrames(root);
   }
 
-  LocalFrame* root() { return m_root; }
-  bool contains(LocalFrame*) const;
-  LocalFrame* frameWithSecurityOrigin(const String& originRawString);
+  LocalFrame* Root() { return root_; }
+  bool Contains(LocalFrame*) const;
+  LocalFrame* FrameWithSecurityOrigin(const String& origin_raw_string);
   Iterator begin();
   Iterator end();
 
@@ -52,7 +52,7 @@ class CORE_EXPORT InspectedFrames final
  private:
   explicit InspectedFrames(LocalFrame*);
 
-  Member<LocalFrame> m_root;
+  Member<LocalFrame> root_;
 };
 
 }  // namespace blink

@@ -42,21 +42,21 @@ namespace blink {
 class CORE_EXPORT ContextFeaturesClientImpl final
     : public NON_EXPORTED_BASE(ContextFeaturesClient) {
  public:
-  static std::unique_ptr<ContextFeaturesClientImpl> create() {
-    return WTF::wrapUnique(new ContextFeaturesClientImpl());
+  static std::unique_ptr<ContextFeaturesClientImpl> Create() {
+    return WTF::WrapUnique(new ContextFeaturesClientImpl());
   }
 
-  bool isEnabled(Document*,
+  bool IsEnabled(Document*,
                  ContextFeatures::FeatureType,
-                 bool defaultValue) override;
-  void urlDidChange(Document*) override;
+                 bool default_value) override;
+  void UrlDidChange(Document*) override;
 
  private:
   ContextFeaturesClientImpl() {}
 
-  bool askIfIsEnabled(Document*,
+  bool AskIfIsEnabled(Document*,
                       ContextFeatures::FeatureType,
-                      bool defaultValue);
+                      bool default_value);
 };
 
 }  // namespace blink

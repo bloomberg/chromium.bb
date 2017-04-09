@@ -17,12 +17,12 @@ class AppliedTextDecoration {
  public:
   AppliedTextDecoration(TextDecoration, TextDecorationStyle, Color);
 
-  TextDecoration lines() const { return static_cast<TextDecoration>(m_lines); }
-  TextDecorationStyle style() const {
-    return static_cast<TextDecorationStyle>(m_style);
+  TextDecoration Lines() const { return static_cast<TextDecoration>(lines_); }
+  TextDecorationStyle Style() const {
+    return static_cast<TextDecorationStyle>(style_);
   }
-  Color color() const { return m_color; }
-  void setColor(Color color) { m_color = color; }
+  Color GetColor() const { return color_; }
+  void SetColor(Color color) { color_ = color; }
 
   bool operator==(const AppliedTextDecoration&) const;
   bool operator!=(const AppliedTextDecoration& o) const {
@@ -30,9 +30,9 @@ class AppliedTextDecoration {
   }
 
  private:
-  unsigned m_lines : TextDecorationBits;
-  unsigned m_style : 3;  // TextDecorationStyle
-  Color m_color;
+  unsigned lines_ : kTextDecorationBits;
+  unsigned style_ : 3;  // TextDecorationStyle
+  Color color_;
 };
 
 }  // namespace blink

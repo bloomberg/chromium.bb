@@ -113,7 +113,7 @@ void NavigationSimulator::Start() {
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, true /* has_user_gesture */,
         false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
-        blink::WebMixedContentContextType::Blockable,
+        blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
         url::Origin());
     CommonNavigationParams common_params;
@@ -144,7 +144,7 @@ void NavigationSimulator::Start() {
         "GET", scoped_refptr<content::ResourceRequestBodyImpl>(), referrer_,
         true /* user_gesture */, transition_, false /* is_external_protocol */,
         REQUEST_CONTEXT_TYPE_LOCATION,
-        blink::WebMixedContentContextType::NotMixedContent,
+        blink::WebMixedContentContextType::kNotMixedContent,
         base::Callback<void(NavigationThrottle::ThrottleCheckResult)>());
   }
 

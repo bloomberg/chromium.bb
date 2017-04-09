@@ -39,58 +39,58 @@ static const float kTestingSampleRate = 44100;
 class AudioWorkletGlobalScopeTest : public ::testing::Test {
  public:
   void SetUp() override {
-    AudioWorkletThread::createSharedBackingThreadForTest();
-    m_reportingProxy = WTF::makeUnique<WorkerReportingProxy>();
-    m_securityOrigin =
-        SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
+    AudioWorkletThread::CreateSharedBackingThreadForTest();
+    reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
+    security_origin_ =
+        SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
   }
 
-  void TearDown() override { AudioWorkletThread::clearSharedBackingThread(); }
+  void TearDown() override { AudioWorkletThread::ClearSharedBackingThread(); }
 
-  std::unique_ptr<AudioWorkletThread> createAudioWorkletThread() {
+  std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
-        AudioWorkletThread::create(nullptr, *m_reportingProxy);
-    thread->start(
-        WorkerThreadStartupData::create(
-            KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
-            nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",
-            m_securityOrigin.get(), nullptr, WebAddressSpaceLocal, nullptr,
+        AudioWorkletThread::Create(nullptr, *reporting_proxy_);
+    thread->Start(
+        WorkerThreadStartupData::Create(
+            KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
+            nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
+            security_origin_.Get(), nullptr, kWebAddressSpaceLocal, nullptr,
             nullptr, WorkerV8Settings::Default()),
-        ParentFrameTaskRunners::create(nullptr));
+        ParentFrameTaskRunners::Create(nullptr));
     return thread;
   }
 
-  void runBasicTest(WorkerThread* thread) {
-    WaitableEvent waitableEvent;
-    thread->postTask(
+  void RunBasicTest(WorkerThread* thread) {
+    WaitableEvent waitable_event;
+    thread->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(
-            &AudioWorkletGlobalScopeTest::runBasicTestOnWorkletThread,
-            crossThreadUnretained(this), crossThreadUnretained(thread),
-            crossThreadUnretained(&waitableEvent)));
-    waitableEvent.wait();
+        CrossThreadBind(
+            &AudioWorkletGlobalScopeTest::RunBasicTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
   }
 
-  void runSimpleProcessTest(WorkerThread* thread) {
-    WaitableEvent waitableEvent;
-    thread->postTask(
+  void RunSimpleProcessTest(WorkerThread* thread) {
+    WaitableEvent waitable_event;
+    thread->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(
-            &AudioWorkletGlobalScopeTest::runSimpleProcessTestOnWorkletThread,
-            crossThreadUnretained(this), crossThreadUnretained(thread),
-            crossThreadUnretained(&waitableEvent)));
-    waitableEvent.wait();
+        CrossThreadBind(
+            &AudioWorkletGlobalScopeTest::RunSimpleProcessTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
   }
 
-  void runParsingTest(WorkerThread* thread) {
-    WaitableEvent waitableEvent;
-    thread->postTask(
+  void RunParsingTest(WorkerThread* thread) {
+    WaitableEvent waitable_event;
+    thread->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(
-            &AudioWorkletGlobalScopeTest::runParsingTestOnWorkletThread,
-            crossThreadUnretained(this), crossThreadUnretained(thread),
-            crossThreadUnretained(&waitableEvent)));
-    waitableEvent.wait();
+        CrossThreadBind(
+            &AudioWorkletGlobalScopeTest::RunParsingTestOnWorkletThread,
+            CrossThreadUnretained(this), CrossThreadUnretained(thread),
+            CrossThreadUnretained(&waitable_event)));
+    waitable_event.Wait();
   }
 
  private:
@@ -98,25 +98,25 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
   // are properly instantiated. Runs a simple processor registration and check
   // if the class definition is correctly registered, then instantiate an
   // AudioWorkletProcessor instance from the definition.
-  void runBasicTestOnWorkletThread(WorkerThread* thread,
-                                   WaitableEvent* waitEvent) {
-    EXPECT_TRUE(thread->isCurrentThread());
+  void RunBasicTestOnWorkletThread(WorkerThread* thread,
+                                   WaitableEvent* wait_event) {
+    EXPECT_TRUE(thread->IsCurrentThread());
 
-    AudioWorkletGlobalScope* globalScope =
-        static_cast<AudioWorkletGlobalScope*>(thread->globalScope());
-    EXPECT_TRUE(globalScope);
-    EXPECT_TRUE(globalScope->isAudioWorkletGlobalScope());
+    AudioWorkletGlobalScope* global_scope =
+        static_cast<AudioWorkletGlobalScope*>(thread->GlobalScope());
+    EXPECT_TRUE(global_scope);
+    EXPECT_TRUE(global_scope->IsAudioWorkletGlobalScope());
 
-    ScriptState* scriptState =
-        globalScope->scriptController()->getScriptState();
-    EXPECT_TRUE(scriptState);
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    EXPECT_TRUE(script_state);
 
-    v8::Isolate* isolate = scriptState->isolate();
+    v8::Isolate* isolate = script_state->GetIsolate();
     EXPECT_TRUE(isolate);
 
-    ScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(script_state);
 
-    globalScope->scriptController()->evaluate(ScriptSourceCode(
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
         R"JS(
           registerProcessor('testProcessor', class {
               constructor () {}
@@ -125,34 +125,34 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
           )JS"));
 
     AudioWorkletProcessorDefinition* definition =
-        globalScope->findDefinition("testProcessor");
+        global_scope->FindDefinition("testProcessor");
     EXPECT_TRUE(definition);
-    EXPECT_EQ(definition->name(), "testProcessor");
-    EXPECT_TRUE(definition->constructorLocal(isolate)->IsFunction());
-    EXPECT_TRUE(definition->processLocal(isolate)->IsFunction());
+    EXPECT_EQ(definition->GetName(), "testProcessor");
+    EXPECT_TRUE(definition->ConstructorLocal(isolate)->IsFunction());
+    EXPECT_TRUE(definition->ProcessLocal(isolate)->IsFunction());
 
     AudioWorkletProcessor* processor =
-        globalScope->createInstance("testProcessor");
+        global_scope->CreateInstance("testProcessor");
     EXPECT_TRUE(processor);
-    EXPECT_EQ(processor->name(), "testProcessor");
-    EXPECT_TRUE(processor->instanceLocal(isolate)->IsObject());
+    EXPECT_EQ(processor->GetName(), "testProcessor");
+    EXPECT_TRUE(processor->InstanceLocal(isolate)->IsObject());
 
-    waitEvent->signal();
+    wait_event->Signal();
   }
 
   // Test if various class definition patterns are parsed correctly.
-  void runParsingTestOnWorkletThread(WorkerThread* thread,
-                                     WaitableEvent* waitEvent) {
-    EXPECT_TRUE(thread->isCurrentThread());
+  void RunParsingTestOnWorkletThread(WorkerThread* thread,
+                                     WaitableEvent* wait_event) {
+    EXPECT_TRUE(thread->IsCurrentThread());
 
-    AudioWorkletGlobalScope* globalScope =
-        static_cast<AudioWorkletGlobalScope*>(thread->globalScope());
-    ScriptState* scriptState =
-        globalScope->scriptController()->getScriptState();
+    AudioWorkletGlobalScope* global_scope =
+        static_cast<AudioWorkletGlobalScope*>(thread->GlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
 
-    ScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(script_state);
 
-    globalScope->scriptController()->evaluate(ScriptSourceCode(
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
         R"JS(
           var class1 = function () {};
           class1.prototype.process = function () {};
@@ -173,27 +173,27 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
           registerProcessor('class3', class3);
         )JS"));
 
-    EXPECT_TRUE(globalScope->findDefinition("class1"));
-    EXPECT_TRUE(globalScope->findDefinition("class2"));
-    EXPECT_FALSE(globalScope->findDefinition("class3"));
+    EXPECT_TRUE(global_scope->FindDefinition("class1"));
+    EXPECT_TRUE(global_scope->FindDefinition("class2"));
+    EXPECT_FALSE(global_scope->FindDefinition("class3"));
 
-    waitEvent->signal();
+    wait_event->Signal();
   }
 
   // Test if the invocation of process() method in AudioWorkletProcessor and
   // AudioWorkletGlobalScope is performed correctly.
-  void runSimpleProcessTestOnWorkletThread(WorkerThread* thread,
-                                           WaitableEvent* waitEvent) {
-    EXPECT_TRUE(thread->isCurrentThread());
+  void RunSimpleProcessTestOnWorkletThread(WorkerThread* thread,
+                                           WaitableEvent* wait_event) {
+    EXPECT_TRUE(thread->IsCurrentThread());
 
-    AudioWorkletGlobalScope* globalScope =
-        static_cast<AudioWorkletGlobalScope*>(thread->globalScope());
-    ScriptState* scriptState =
-        globalScope->scriptController()->getScriptState();
+    AudioWorkletGlobalScope* global_scope =
+        static_cast<AudioWorkletGlobalScope*>(thread->GlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
 
-    ScriptState::Scope scope(scriptState);
+    ScriptState::Scope scope(script_state);
 
-    globalScope->scriptController()->evaluate(ScriptSourceCode(
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
         R"JS(
           registerProcessor('testProcessor', class {
               constructor () {
@@ -211,54 +211,54 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
         )JS"));
 
     AudioWorkletProcessor* processor =
-        globalScope->createInstance("testProcessor");
+        global_scope->CreateInstance("testProcessor");
     EXPECT_TRUE(processor);
 
-    AudioBuffer* inputBuffer =
-        AudioBuffer::create(1, kRenderQuantumFrames, kTestingSampleRate);
-    AudioBuffer* outputBuffer =
-        AudioBuffer::create(1, kRenderQuantumFrames, kTestingSampleRate);
-    DOMFloat32Array* inputChannelData = inputBuffer->getChannelData(0);
-    float* inputArrayData = inputChannelData->data();
-    EXPECT_TRUE(inputArrayData);
-    DOMFloat32Array* outputChannelData = outputBuffer->getChannelData(0);
-    float* outputArrayData = outputChannelData->data();
-    EXPECT_TRUE(outputArrayData);
+    AudioBuffer* input_buffer =
+        AudioBuffer::Create(1, kRenderQuantumFrames, kTestingSampleRate);
+    AudioBuffer* output_buffer =
+        AudioBuffer::Create(1, kRenderQuantumFrames, kTestingSampleRate);
+    DOMFloat32Array* input_channel_data = input_buffer->getChannelData(0);
+    float* input_array_data = input_channel_data->Data();
+    EXPECT_TRUE(input_array_data);
+    DOMFloat32Array* output_channel_data = output_buffer->getChannelData(0);
+    float* output_array_data = output_channel_data->Data();
+    EXPECT_TRUE(output_array_data);
 
     // Fill |inputBuffer| with 1 and zero out |outputBuffer|.
-    std::fill(inputArrayData, inputArrayData + inputBuffer->length(), 1);
-    outputBuffer->zero();
+    std::fill(input_array_data, input_array_data + input_buffer->length(), 1);
+    output_buffer->Zero();
 
     // Then invoke the process() method to perform JS buffer manipulation. The
     // output buffer should contain a constant value of 2.
-    processor->process(inputBuffer, outputBuffer);
-    for (unsigned i = 0; i < outputBuffer->length(); ++i) {
-      EXPECT_EQ(outputArrayData[i], 2);
+    processor->Process(input_buffer, output_buffer);
+    for (unsigned i = 0; i < output_buffer->length(); ++i) {
+      EXPECT_EQ(output_array_data[i], 2);
     }
 
-    waitEvent->signal();
+    wait_event->Signal();
   }
 
-  RefPtr<SecurityOrigin> m_securityOrigin;
-  std::unique_ptr<WorkerReportingProxy> m_reportingProxy;
+  RefPtr<SecurityOrigin> security_origin_;
+  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
 TEST_F(AudioWorkletGlobalScopeTest, Basic) {
-  std::unique_ptr<AudioWorkletThread> thread = createAudioWorkletThread();
-  runBasicTest(thread.get());
-  thread->terminateAndWait();
+  std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
+  RunBasicTest(thread.get());
+  thread->TerminateAndWait();
 }
 
 TEST_F(AudioWorkletGlobalScopeTest, Parsing) {
-  std::unique_ptr<AudioWorkletThread> thread = createAudioWorkletThread();
-  runParsingTest(thread.get());
-  thread->terminateAndWait();
+  std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
+  RunParsingTest(thread.get());
+  thread->TerminateAndWait();
 }
 
 TEST_F(AudioWorkletGlobalScopeTest, BufferProcessing) {
-  std::unique_ptr<AudioWorkletThread> thread = createAudioWorkletThread();
-  runSimpleProcessTest(thread.get());
-  thread->terminateAndWait();
+  std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
+  RunSimpleProcessTest(thread.get());
+  thread->TerminateAndWait();
 }
 
 }  // namespace blink

@@ -13,20 +13,20 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AccessibleNode::AccessibleNode(Element* element) : m_element(element) {
+AccessibleNode::AccessibleNode(Element* element) : element_(element) {
   DCHECK(RuntimeEnabledFeatures::accessibilityObjectModelEnabled());
 }
 
 AccessibleNode::~AccessibleNode() {}
 
 // static
-const AtomicString& AccessibleNode::getProperty(Element* element,
+const AtomicString& AccessibleNode::GetProperty(Element* element,
                                                 AOMStringProperty property) {
   if (!element)
-    return nullAtom;
+    return g_null_atom;
 
-  if (AccessibleNode* accessibleNode = element->existingAccessibleNode()) {
-    for (const auto& item : accessibleNode->m_stringProperties) {
+  if (AccessibleNode* accessible_node = element->ExistingAccessibleNode()) {
+    for (const auto& item : accessible_node->string_properties_) {
       if (item.first == property)
         return item.second;
     }
@@ -65,163 +65,163 @@ const AtomicString& AccessibleNode::getProperty(Element* element,
   }
 
   NOTREACHED();
-  return nullAtom;
+  return g_null_atom;
 }
 
 AtomicString AccessibleNode::autocomplete() const {
-  return getProperty(m_element, AOMStringProperty::kAutocomplete);
+  return GetProperty(element_, AOMStringProperty::kAutocomplete);
 }
 
 void AccessibleNode::setAutocomplete(const AtomicString& autocomplete) {
-  setStringProperty(AOMStringProperty::kAutocomplete, autocomplete);
-  notifyAttributeChanged(aria_autocompleteAttr);
+  SetStringProperty(AOMStringProperty::kAutocomplete, autocomplete);
+  NotifyAttributeChanged(aria_autocompleteAttr);
 }
 
 AtomicString AccessibleNode::checked() const {
-  return getProperty(m_element, AOMStringProperty::kChecked);
+  return GetProperty(element_, AOMStringProperty::kChecked);
 }
 
 void AccessibleNode::setChecked(const AtomicString& checked) {
-  setStringProperty(AOMStringProperty::kChecked, checked);
-  notifyAttributeChanged(aria_checkedAttr);
+  SetStringProperty(AOMStringProperty::kChecked, checked);
+  NotifyAttributeChanged(aria_checkedAttr);
 }
 
 AtomicString AccessibleNode::current() const {
-  return getProperty(m_element, AOMStringProperty::kCurrent);
+  return GetProperty(element_, AOMStringProperty::kCurrent);
 }
 
 void AccessibleNode::setCurrent(const AtomicString& current) {
-  setStringProperty(AOMStringProperty::kCurrent, current);
+  SetStringProperty(AOMStringProperty::kCurrent, current);
 
-  if (AXObjectCache* cache = m_element->document().existingAXObjectCache())
-    cache->handleAttributeChanged(aria_currentAttr, m_element);
+  if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
+    cache->HandleAttributeChanged(aria_currentAttr, element_);
 }
 
 AtomicString AccessibleNode::invalid() const {
-  return getProperty(m_element, AOMStringProperty::kInvalid);
+  return GetProperty(element_, AOMStringProperty::kInvalid);
 }
 
 void AccessibleNode::setInvalid(const AtomicString& invalid) {
-  setStringProperty(AOMStringProperty::kInvalid, invalid);
-  notifyAttributeChanged(aria_invalidAttr);
+  SetStringProperty(AOMStringProperty::kInvalid, invalid);
+  NotifyAttributeChanged(aria_invalidAttr);
 }
 
 AtomicString AccessibleNode::keyShortcuts() const {
-  return getProperty(m_element, AOMStringProperty::kKeyShortcuts);
+  return GetProperty(element_, AOMStringProperty::kKeyShortcuts);
 }
 
-void AccessibleNode::setKeyShortcuts(const AtomicString& keyShortcuts) {
-  setStringProperty(AOMStringProperty::kKeyShortcuts, keyShortcuts);
-  notifyAttributeChanged(aria_keyshortcutsAttr);
+void AccessibleNode::setKeyShortcuts(const AtomicString& key_shortcuts) {
+  SetStringProperty(AOMStringProperty::kKeyShortcuts, key_shortcuts);
+  NotifyAttributeChanged(aria_keyshortcutsAttr);
 }
 
 AtomicString AccessibleNode::label() const {
-  return getProperty(m_element, AOMStringProperty::kLabel);
+  return GetProperty(element_, AOMStringProperty::kLabel);
 }
 
 void AccessibleNode::setLabel(const AtomicString& label) {
-  setStringProperty(AOMStringProperty::kLabel, label);
-  notifyAttributeChanged(aria_labelAttr);
+  SetStringProperty(AOMStringProperty::kLabel, label);
+  NotifyAttributeChanged(aria_labelAttr);
 }
 
 AtomicString AccessibleNode::live() const {
-  return getProperty(m_element, AOMStringProperty::kLive);
+  return GetProperty(element_, AOMStringProperty::kLive);
 }
 
 void AccessibleNode::setLive(const AtomicString& live) {
-  setStringProperty(AOMStringProperty::kLive, live);
-  notifyAttributeChanged(aria_liveAttr);
+  SetStringProperty(AOMStringProperty::kLive, live);
+  NotifyAttributeChanged(aria_liveAttr);
 }
 
 AtomicString AccessibleNode::orientation() const {
-  return getProperty(m_element, AOMStringProperty::kOrientation);
+  return GetProperty(element_, AOMStringProperty::kOrientation);
 }
 
 void AccessibleNode::setOrientation(const AtomicString& orientation) {
-  setStringProperty(AOMStringProperty::kOrientation, orientation);
-  notifyAttributeChanged(aria_orientationAttr);
+  SetStringProperty(AOMStringProperty::kOrientation, orientation);
+  NotifyAttributeChanged(aria_orientationAttr);
 }
 
 AtomicString AccessibleNode::placeholder() const {
-  return getProperty(m_element, AOMStringProperty::kPlaceholder);
+  return GetProperty(element_, AOMStringProperty::kPlaceholder);
 }
 
 void AccessibleNode::setPlaceholder(const AtomicString& placeholder) {
-  setStringProperty(AOMStringProperty::kPlaceholder, placeholder);
-  notifyAttributeChanged(aria_placeholderAttr);
+  SetStringProperty(AOMStringProperty::kPlaceholder, placeholder);
+  NotifyAttributeChanged(aria_placeholderAttr);
 }
 
 AtomicString AccessibleNode::relevant() const {
-  return getProperty(m_element, AOMStringProperty::kRelevant);
+  return GetProperty(element_, AOMStringProperty::kRelevant);
 }
 
 void AccessibleNode::setRelevant(const AtomicString& relevant) {
-  setStringProperty(AOMStringProperty::kRelevant, relevant);
-  notifyAttributeChanged(aria_relevantAttr);
+  SetStringProperty(AOMStringProperty::kRelevant, relevant);
+  NotifyAttributeChanged(aria_relevantAttr);
 }
 
 AtomicString AccessibleNode::role() const {
-  return getProperty(m_element, AOMStringProperty::kRole);
+  return GetProperty(element_, AOMStringProperty::kRole);
 }
 
 void AccessibleNode::setRole(const AtomicString& role) {
-  setStringProperty(AOMStringProperty::kRole, role);
-  notifyAttributeChanged(roleAttr);
+  SetStringProperty(AOMStringProperty::kRole, role);
+  NotifyAttributeChanged(roleAttr);
 }
 
 AtomicString AccessibleNode::roleDescription() const {
-  return getProperty(m_element, AOMStringProperty::kRoleDescription);
+  return GetProperty(element_, AOMStringProperty::kRoleDescription);
 }
 
-void AccessibleNode::setRoleDescription(const AtomicString& roleDescription) {
-  setStringProperty(AOMStringProperty::kRoleDescription, roleDescription);
-  notifyAttributeChanged(aria_roledescriptionAttr);
+void AccessibleNode::setRoleDescription(const AtomicString& role_description) {
+  SetStringProperty(AOMStringProperty::kRoleDescription, role_description);
+  NotifyAttributeChanged(aria_roledescriptionAttr);
 }
 
 AtomicString AccessibleNode::sort() const {
-  return getProperty(m_element, AOMStringProperty::kSort);
+  return GetProperty(element_, AOMStringProperty::kSort);
 }
 
 void AccessibleNode::setSort(const AtomicString& sort) {
-  setStringProperty(AOMStringProperty::kSort, sort);
-  notifyAttributeChanged(aria_sortAttr);
+  SetStringProperty(AOMStringProperty::kSort, sort);
+  NotifyAttributeChanged(aria_sortAttr);
 }
 
 AtomicString AccessibleNode::valueText() const {
-  return getProperty(m_element, AOMStringProperty::kValueText);
+  return GetProperty(element_, AOMStringProperty::kValueText);
 }
 
-void AccessibleNode::setValueText(const AtomicString& valueText) {
-  setStringProperty(AOMStringProperty::kValueText, valueText);
-  notifyAttributeChanged(aria_valuetextAttr);
+void AccessibleNode::setValueText(const AtomicString& value_text) {
+  SetStringProperty(AOMStringProperty::kValueText, value_text);
+  NotifyAttributeChanged(aria_valuetextAttr);
 }
 
-void AccessibleNode::setStringProperty(AOMStringProperty property,
+void AccessibleNode::SetStringProperty(AOMStringProperty property,
                                        const AtomicString& value) {
-  for (auto& item : m_stringProperties) {
+  for (auto& item : string_properties_) {
     if (item.first == property) {
       item.second = value;
       return;
     }
   }
 
-  m_stringProperties.push_back(std::make_pair(property, value));
+  string_properties_.push_back(std::make_pair(property, value));
 }
 
-void AccessibleNode::notifyAttributeChanged(
+void AccessibleNode::NotifyAttributeChanged(
     const blink::QualifiedName& attribute) {
   // TODO(dmazzoni): Make a cleaner API for this rather than pretending
   // the DOM attribute changed.
-  if (AXObjectCache* cache = getAXObjectCache())
-    cache->handleAttributeChanged(attribute, m_element);
+  if (AXObjectCache* cache = GetAXObjectCache())
+    cache->HandleAttributeChanged(attribute, element_);
 }
 
-AXObjectCache* AccessibleNode::getAXObjectCache() {
-  return m_element->document().existingAXObjectCache();
+AXObjectCache* AccessibleNode::GetAXObjectCache() {
+  return element_->GetDocument().ExistingAXObjectCache();
 }
 
 DEFINE_TRACE(AccessibleNode) {
-  visitor->trace(m_element);
+  visitor->Trace(element_);
 }
 
 }  // namespace blink

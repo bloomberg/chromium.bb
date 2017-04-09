@@ -22,15 +22,15 @@ constexpr float kMostlyFillViewportThresholdOfVisibleProportion = 0.75f;
 
 MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
     HTMLVideoElement& video)
-    : EventListener(CPPEventListenerType),
-      m_videoElement(video),
-      m_checkViewportIntersectionTimer(
-          TaskRunnerHelper::get(TaskType::Unthrottled, &video.document()),
+    : EventListener(kCPPEventListenerType),
+      video_element_(video),
+      check_viewport_intersection_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnthrottled, &video.GetDocument()),
           this,
           &MediaCustomControlsFullscreenDetector::
-              onCheckViewportIntersectionTimerFired) {
-  if (videoElement().isConnected())
-    attach();
+              OnCheckViewportIntersectionTimerFired) {
+  if (VideoElement().isConnected())
+    Attach();
 }
 
 bool MediaCustomControlsFullscreenDetector::operator==(
@@ -38,61 +38,61 @@ bool MediaCustomControlsFullscreenDetector::operator==(
   return this == &other;
 }
 
-void MediaCustomControlsFullscreenDetector::attach() {
-  videoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
-  videoElement().document().addEventListener(
+void MediaCustomControlsFullscreenDetector::Attach() {
+  VideoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
+  VideoElement().GetDocument().addEventListener(
       EventTypeNames::webkitfullscreenchange, this, true);
-  videoElement().document().addEventListener(EventTypeNames::fullscreenchange,
-                                             this, true);
-}
-
-void MediaCustomControlsFullscreenDetector::detach() {
-  videoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
-                                     true);
-  videoElement().document().removeEventListener(
-      EventTypeNames::webkitfullscreenchange, this, true);
-  videoElement().document().removeEventListener(
+  VideoElement().GetDocument().addEventListener(
       EventTypeNames::fullscreenchange, this, true);
-  m_checkViewportIntersectionTimer.stop();
-
-  if (videoElement().webMediaPlayer())
-    videoElement().webMediaPlayer()->setIsEffectivelyFullscreen(false);
 }
 
-bool MediaCustomControlsFullscreenDetector::computeIsDominantVideoForTests(
-    const IntRect& targetRect,
-    const IntRect& rootRect,
-    const IntRect& intersectionRect) {
-  if (targetRect.isEmpty() || rootRect.isEmpty())
+void MediaCustomControlsFullscreenDetector::Detach() {
+  VideoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
+                                     true);
+  VideoElement().GetDocument().removeEventListener(
+      EventTypeNames::webkitfullscreenchange, this, true);
+  VideoElement().GetDocument().removeEventListener(
+      EventTypeNames::fullscreenchange, this, true);
+  check_viewport_intersection_timer_.Stop();
+
+  if (VideoElement().GetWebMediaPlayer())
+    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(false);
+}
+
+bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
+    const IntRect& target_rect,
+    const IntRect& root_rect,
+    const IntRect& intersection_rect) {
+  if (target_rect.IsEmpty() || root_rect.IsEmpty())
     return false;
 
-  const float xOccupationProportion =
-      1.0f * intersectionRect.width() / rootRect.width();
-  const float yOccupationProportion =
-      1.0f * intersectionRect.height() / rootRect.height();
+  const float x_occupation_proportion =
+      1.0f * intersection_rect.Width() / root_rect.Width();
+  const float y_occupation_proportion =
+      1.0f * intersection_rect.Height() / root_rect.Height();
 
   // If the viewport is mostly occupied by the video, return true.
-  if (std::min(xOccupationProportion, yOccupationProportion) >=
+  if (std::min(x_occupation_proportion, y_occupation_proportion) >=
       kMostlyFillViewportThresholdOfOccupationProportion) {
     return true;
   }
 
   // If neither of the dimensions of the viewport is mostly occupied by the
   // video, return false.
-  if (std::max(xOccupationProportion, yOccupationProportion) <
+  if (std::max(x_occupation_proportion, y_occupation_proportion) <
       kMostlyFillViewportThresholdOfOccupationProportion) {
     return false;
   }
 
   // If the video is mostly visible in the indominant dimension, return true.
   // Otherwise return false.
-  if (xOccupationProportion > yOccupationProportion) {
-    return targetRect.height() *
+  if (x_occupation_proportion > y_occupation_proportion) {
+    return target_rect.Height() *
                kMostlyFillViewportThresholdOfVisibleProportion <
-           intersectionRect.height();
+           intersection_rect.Height();
   }
-  return targetRect.width() * kMostlyFillViewportThresholdOfVisibleProportion <
-         intersectionRect.width();
+  return target_rect.Width() * kMostlyFillViewportThresholdOfVisibleProportion <
+         intersection_rect.Width();
 }
 
 void MediaCustomControlsFullscreenDetector::handleEvent(
@@ -103,57 +103,57 @@ void MediaCustomControlsFullscreenDetector::handleEvent(
          event->type() == EventTypeNames::fullscreenchange);
 
   // Video is not loaded yet.
-  if (videoElement().getReadyState() < HTMLMediaElement::kHaveMetadata)
+  if (VideoElement().getReadyState() < HTMLMediaElement::kHaveMetadata)
     return;
 
-  if (!videoElement().isConnected() || !isVideoOrParentFullscreen()) {
-    m_checkViewportIntersectionTimer.stop();
+  if (!VideoElement().isConnected() || !IsVideoOrParentFullscreen()) {
+    check_viewport_intersection_timer_.Stop();
 
-    if (videoElement().webMediaPlayer())
-      videoElement().webMediaPlayer()->setIsEffectivelyFullscreen(false);
+    if (VideoElement().GetWebMediaPlayer())
+      VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(false);
 
     return;
   }
 
-  m_checkViewportIntersectionTimer.startOneShot(kCheckFullscreenIntervalSeconds,
-                                                BLINK_FROM_HERE);
+  check_viewport_intersection_timer_.StartOneShot(
+      kCheckFullscreenIntervalSeconds, BLINK_FROM_HERE);
 }
 
-void MediaCustomControlsFullscreenDetector::contextDestroyed() {
+void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
   // This method is called by HTMLVideoElement when it observes context destroy.
   // The reason is that when HTMLMediaElement observes context destroy, it will
   // destroy webMediaPlayer() thus the final setIsEffectivelyFullscreen(false)
   // is not called.
-  detach();
+  Detach();
 }
 
 void MediaCustomControlsFullscreenDetector::
-    onCheckViewportIntersectionTimerFired(TimerBase*) {
-  DCHECK(isVideoOrParentFullscreen());
-  IntersectionGeometry geometry(nullptr, videoElement(), Vector<Length>(),
+    OnCheckViewportIntersectionTimerFired(TimerBase*) {
+  DCHECK(IsVideoOrParentFullscreen());
+  IntersectionGeometry geometry(nullptr, VideoElement(), Vector<Length>(),
                                 true);
-  geometry.computeGeometry();
+  geometry.ComputeGeometry();
 
-  bool isDominant = computeIsDominantVideoForTests(
-      geometry.targetIntRect(), geometry.rootIntRect(),
-      geometry.intersectionIntRect());
+  bool is_dominant = ComputeIsDominantVideoForTests(
+      geometry.TargetIntRect(), geometry.RootIntRect(),
+      geometry.IntersectionIntRect());
 
-  if (videoElement().webMediaPlayer())
-    videoElement().webMediaPlayer()->setIsEffectivelyFullscreen(isDominant);
+  if (VideoElement().GetWebMediaPlayer())
+    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(is_dominant);
 }
 
-bool MediaCustomControlsFullscreenDetector::isVideoOrParentFullscreen() {
-  Element* fullscreenElement =
-      Fullscreen::currentFullScreenElementFrom(videoElement().document());
-  if (!fullscreenElement)
+bool MediaCustomControlsFullscreenDetector::IsVideoOrParentFullscreen() {
+  Element* fullscreen_element =
+      Fullscreen::CurrentFullScreenElementFrom(VideoElement().GetDocument());
+  if (!fullscreen_element)
     return false;
 
-  return fullscreenElement->contains(&videoElement());
+  return fullscreen_element->contains(&VideoElement());
 }
 
 DEFINE_TRACE(MediaCustomControlsFullscreenDetector) {
-  EventListener::trace(visitor);
-  visitor->trace(m_videoElement);
+  EventListener::Trace(visitor);
+  visitor->Trace(video_element_);
 }
 
 }  // namespace blink

@@ -17,50 +17,50 @@ namespace content {
 ContextMenuParams ContextMenuParamsBuilder::Build(
     const blink::WebContextMenuData& data) {
   ContextMenuParams params;
-  params.media_type = data.mediaType;
-  params.x = data.mousePosition.x;
-  params.y = data.mousePosition.y;
-  params.link_url = data.linkURL;
-  params.unfiltered_link_url = data.linkURL;
-  params.src_url = data.srcURL;
-  params.has_image_contents = data.hasImageContents;
-  params.page_url = data.pageURL;
-  params.keyword_url = data.keywordURL;
-  params.frame_url = data.frameURL;
-  params.media_flags = data.mediaFlags;
-  params.selection_text = data.selectedText.utf16();
-  params.title_text = data.titleText.utf16();
-  params.misspelled_word = data.misspelledWord.utf16();
-  params.spellcheck_enabled = data.isSpellCheckingEnabled;
-  params.is_editable = data.isEditable;
-  params.writing_direction_default = data.writingDirectionDefault;
-  params.writing_direction_left_to_right = data.writingDirectionLeftToRight;
-  params.writing_direction_right_to_left = data.writingDirectionRightToLeft;
-  params.edit_flags = data.editFlags;
-  params.frame_charset = data.frameEncoding.utf8();
-  params.referrer_policy = data.referrerPolicy;
-  params.suggested_filename = data.suggestedFilename.utf16();
-  params.input_field_type = data.inputFieldType;
+  params.media_type = data.media_type;
+  params.x = data.mouse_position.x;
+  params.y = data.mouse_position.y;
+  params.link_url = data.link_url;
+  params.unfiltered_link_url = data.link_url;
+  params.src_url = data.src_url;
+  params.has_image_contents = data.has_image_contents;
+  params.page_url = data.page_url;
+  params.keyword_url = data.keyword_url;
+  params.frame_url = data.frame_url;
+  params.media_flags = data.media_flags;
+  params.selection_text = data.selected_text.Utf16();
+  params.title_text = data.title_text.Utf16();
+  params.misspelled_word = data.misspelled_word.Utf16();
+  params.spellcheck_enabled = data.is_spell_checking_enabled;
+  params.is_editable = data.is_editable;
+  params.writing_direction_default = data.writing_direction_default;
+  params.writing_direction_left_to_right = data.writing_direction_left_to_right;
+  params.writing_direction_right_to_left = data.writing_direction_right_to_left;
+  params.edit_flags = data.edit_flags;
+  params.frame_charset = data.frame_encoding.Utf8();
+  params.referrer_policy = data.referrer_policy;
+  params.suggested_filename = data.suggested_filename.Utf16();
+  params.input_field_type = data.input_field_type;
 
-  if (!data.imageResponse.isNull()) {
+  if (!data.image_response.IsNull()) {
     GetContentClient()->renderer()->AddImageContextMenuProperties(
-        data.imageResponse, &params.properties);
+        data.image_response, &params.properties);
   }
 
-  for (size_t i = 0; i < data.dictionarySuggestions.size(); ++i)
+  for (size_t i = 0; i < data.dictionary_suggestions.size(); ++i)
     params.dictionary_suggestions.push_back(
-        data.dictionarySuggestions[i].utf16());
+        data.dictionary_suggestions[i].Utf16());
 
   params.custom_context.is_pepper_menu = false;
-  for (size_t i = 0; i < data.customItems.size(); ++i)
-    params.custom_items.push_back(MenuItemBuilder::Build(data.customItems[i]));
+  for (size_t i = 0; i < data.custom_items.size(); ++i)
+    params.custom_items.push_back(MenuItemBuilder::Build(data.custom_items[i]));
 
-  if (!data.frameHistoryItem.isNull()) {
+  if (!data.frame_history_item.IsNull()) {
     params.frame_page_state =
-        SingleHistoryItemToPageState(data.frameHistoryItem);
+        SingleHistoryItemToPageState(data.frame_history_item);
   }
 
-  params.link_text = data.linkText.utf16();
+  params.link_text = data.link_text.Utf16();
 
   return params;
 }

@@ -17,7 +17,7 @@ namespace WTF {
 template <typename Derived, bool noDestructor>
 class ConditionalDestructor {
  public:
-  ~ConditionalDestructor() { static_cast<Derived*>(this)->finalize(); }
+  ~ConditionalDestructor() { static_cast<Derived*>(this)->Finalize(); }
 };
 
 template <typename Derived>

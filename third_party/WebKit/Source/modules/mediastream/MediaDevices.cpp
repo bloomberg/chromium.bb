@@ -26,230 +26,232 @@ namespace {
 class PromiseSuccessCallback final : public NavigatorUserMediaSuccessCallback {
  public:
   explicit PromiseSuccessCallback(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
 
   ~PromiseSuccessCallback() {}
 
-  void handleEvent(MediaStream* stream) { m_resolver->resolve(stream); }
+  void handleEvent(MediaStream* stream) { resolver_->Resolve(stream); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_resolver);
-    NavigatorUserMediaSuccessCallback::trace(visitor);
+    visitor->Trace(resolver_);
+    NavigatorUserMediaSuccessCallback::Trace(visitor);
   }
 
  private:
-  Member<ScriptPromiseResolver> m_resolver;
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 class PromiseErrorCallback final : public NavigatorUserMediaErrorCallback {
  public:
   explicit PromiseErrorCallback(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
 
   ~PromiseErrorCallback() {}
 
-  void handleEvent(NavigatorUserMediaError* error) {
-    m_resolver->reject(error);
-  }
+  void handleEvent(NavigatorUserMediaError* error) { resolver_->Reject(error); }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_resolver);
-    NavigatorUserMediaErrorCallback::trace(visitor);
+    visitor->Trace(resolver_);
+    NavigatorUserMediaErrorCallback::Trace(visitor);
   }
 
  private:
-  Member<ScriptPromiseResolver> m_resolver;
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace
 
-MediaDevices* MediaDevices::create(ExecutionContext* context) {
-  MediaDevices* mediaDevices = new MediaDevices(context);
-  mediaDevices->suspendIfNeeded();
-  return mediaDevices;
+MediaDevices* MediaDevices::Create(ExecutionContext* context) {
+  MediaDevices* media_devices = new MediaDevices(context);
+  media_devices->SuspendIfNeeded();
+  return media_devices;
 }
 
 MediaDevices::MediaDevices(ExecutionContext* context)
     : SuspendableObject(context),
-      m_observing(false),
-      m_stopped(false),
-      m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaDevices>::create(
+      observing_(false),
+      stopped_(false),
+      dispatch_scheduled_event_runner_(AsyncMethodRunner<MediaDevices>::Create(
           this,
-          &MediaDevices::dispatchScheduledEvent)) {}
+          &MediaDevices::DispatchScheduledEvent)) {}
 
 MediaDevices::~MediaDevices() {}
 
-ScriptPromise MediaDevices::enumerateDevices(ScriptState* scriptState) {
-  Document* document = toDocument(scriptState->getExecutionContext());
-  UserMediaController* userMedia = UserMediaController::from(document->frame());
-  if (!userMedia)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(NotSupportedError,
+ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
+  Document* document = ToDocument(script_state->GetExecutionContext());
+  UserMediaController* user_media =
+      UserMediaController::From(document->GetFrame());
+  if (!user_media)
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kNotSupportedError,
                              "No media device controller available; is this a "
                              "detached window?"));
 
   MediaDevicesRequest* request =
-      MediaDevicesRequest::create(scriptState, userMedia);
-  return request->start();
+      MediaDevicesRequest::Create(script_state, user_media);
+  return request->Start();
 }
 
-ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState,
+ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
                                          const MediaStreamConstraints& options,
-                                         ExceptionState& exceptionState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+                                         ExceptionState& exception_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
-  NavigatorUserMediaSuccessCallback* successCallback =
+  NavigatorUserMediaSuccessCallback* success_callback =
       new PromiseSuccessCallback(resolver);
-  NavigatorUserMediaErrorCallback* errorCallback =
+  NavigatorUserMediaErrorCallback* error_callback =
       new PromiseErrorCallback(resolver);
 
-  Document* document = toDocument(scriptState->getExecutionContext());
-  UserMediaController* userMedia = UserMediaController::from(document->frame());
-  if (!userMedia)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(NotSupportedError,
+  Document* document = ToDocument(script_state->GetExecutionContext());
+  UserMediaController* user_media =
+      UserMediaController::From(document->GetFrame());
+  if (!user_media)
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kNotSupportedError,
                              "No media device controller available; is this a "
                              "detached window?"));
 
-  MediaErrorState errorState;
-  UserMediaRequest* request = UserMediaRequest::create(
-      document, userMedia, options, successCallback, errorCallback, errorState);
+  MediaErrorState error_state;
+  UserMediaRequest* request =
+      UserMediaRequest::Create(document, user_media, options, success_callback,
+                               error_callback, error_state);
   if (!request) {
-    DCHECK(errorState.hadException());
-    if (errorState.canGenerateException()) {
-      errorState.raiseException(exceptionState);
-      return exceptionState.reject(scriptState);
+    DCHECK(error_state.HadException());
+    if (error_state.CanGenerateException()) {
+      error_state.RaiseException(exception_state);
+      return exception_state.Reject(script_state);
     }
-    ScriptPromise rejectedPromise = resolver->promise();
-    resolver->reject(errorState.createError());
-    return rejectedPromise;
+    ScriptPromise rejected_promise = resolver->Promise();
+    resolver->Reject(error_state.CreateError());
+    return rejected_promise;
   }
 
-  String errorMessage;
-  if (!request->isSecureContextUse(errorMessage)) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(NotSupportedError, errorMessage));
+  String error_message;
+  if (!request->IsSecureContextUse(error_message)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kNotSupportedError, error_message));
   }
 
-  request->start();
-  return resolver->promise();
+  request->Start();
+  return resolver->Promise();
 }
 
-void MediaDevices::didChangeMediaDevices() {
-  Document* document = toDocument(getExecutionContext());
+void MediaDevices::DidChangeMediaDevices() {
+  Document* document = ToDocument(GetExecutionContext());
   DCHECK(document);
 
   if (RuntimeEnabledFeatures::onDeviceChangeEnabled())
-    scheduleDispatchEvent(Event::create(EventTypeNames::devicechange));
+    ScheduleDispatchEvent(Event::Create(EventTypeNames::devicechange));
 }
 
-const AtomicString& MediaDevices::interfaceName() const {
+const AtomicString& MediaDevices::InterfaceName() const {
   return EventTargetNames::MediaDevices;
 }
 
-ExecutionContext* MediaDevices::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+ExecutionContext* MediaDevices::GetExecutionContext() const {
+  return SuspendableObject::GetExecutionContext();
 }
 
-void MediaDevices::removeAllEventListeners() {
-  EventTargetWithInlineData::removeAllEventListeners();
-  DCHECK(!hasEventListeners());
-  stopObserving();
+void MediaDevices::RemoveAllEventListeners() {
+  EventTargetWithInlineData::RemoveAllEventListeners();
+  DCHECK(!HasEventListeners());
+  StopObserving();
 }
 
-void MediaDevices::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  startObserving();
+void MediaDevices::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  StartObserving();
 }
 
-void MediaDevices::removedEventListener(
-    const AtomicString& eventType,
-    const RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::removedEventListener(eventType,
-                                                  registeredListener);
-  if (!hasEventListeners())
-    stopObserving();
+void MediaDevices::RemovedEventListener(
+    const AtomicString& event_type,
+    const RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::RemovedEventListener(event_type,
+                                                  registered_listener);
+  if (!HasEventListeners())
+    StopObserving();
 }
 
-bool MediaDevices::hasPendingActivity() const {
-  DCHECK(m_stopped || m_observing == hasEventListeners());
-  return m_observing;
+bool MediaDevices::HasPendingActivity() const {
+  DCHECK(stopped_ || observing_ == HasEventListeners());
+  return observing_;
 }
 
-void MediaDevices::contextDestroyed(ExecutionContext*) {
-  if (m_stopped)
+void MediaDevices::ContextDestroyed(ExecutionContext*) {
+  if (stopped_)
     return;
 
-  m_stopped = true;
-  stopObserving();
+  stopped_ = true;
+  StopObserving();
 }
 
-void MediaDevices::suspend() {
-  m_dispatchScheduledEventRunner->suspend();
+void MediaDevices::Suspend() {
+  dispatch_scheduled_event_runner_->Suspend();
 }
 
-void MediaDevices::resume() {
-  m_dispatchScheduledEventRunner->resume();
+void MediaDevices::Resume() {
+  dispatch_scheduled_event_runner_->Resume();
 }
 
-void MediaDevices::scheduleDispatchEvent(Event* event) {
-  m_scheduledEvents.push_back(event);
-  m_dispatchScheduledEventRunner->runAsync();
+void MediaDevices::ScheduleDispatchEvent(Event* event) {
+  scheduled_events_.push_back(event);
+  dispatch_scheduled_event_runner_->RunAsync();
 }
 
-void MediaDevices::dispatchScheduledEvent() {
+void MediaDevices::DispatchScheduledEvent() {
   HeapVector<Member<Event>> events;
-  events.swap(m_scheduledEvents);
+  events.Swap(scheduled_events_);
 
   for (const auto& event : events)
-    dispatchEvent(event);
+    DispatchEvent(event);
 }
 
-void MediaDevices::startObserving() {
-  if (m_observing || m_stopped)
+void MediaDevices::StartObserving() {
+  if (observing_ || stopped_)
     return;
 
-  UserMediaController* userMedia = getUserMediaController();
-  if (!userMedia)
+  UserMediaController* user_media = GetUserMediaController();
+  if (!user_media)
     return;
 
-  userMedia->setMediaDeviceChangeObserver(this);
-  m_observing = true;
+  user_media->SetMediaDeviceChangeObserver(this);
+  observing_ = true;
 }
 
-void MediaDevices::stopObserving() {
-  if (!m_observing)
+void MediaDevices::StopObserving() {
+  if (!observing_)
     return;
 
-  UserMediaController* userMedia = getUserMediaController();
-  if (!userMedia)
+  UserMediaController* user_media = GetUserMediaController();
+  if (!user_media)
     return;
 
-  userMedia->setMediaDeviceChangeObserver(nullptr);
-  m_observing = false;
+  user_media->SetMediaDeviceChangeObserver(nullptr);
+  observing_ = false;
 }
 
-UserMediaController* MediaDevices::getUserMediaController() {
-  Document* document = toDocument(getExecutionContext());
+UserMediaController* MediaDevices::GetUserMediaController() {
+  Document* document = ToDocument(GetExecutionContext());
   if (!document)
     return nullptr;
 
-  return UserMediaController::from(document->frame());
+  return UserMediaController::From(document->GetFrame());
 }
 
-void MediaDevices::dispose() {
-  stopObserving();
+void MediaDevices::Dispose() {
+  StopObserving();
 }
 
 DEFINE_TRACE(MediaDevices) {
-  visitor->trace(m_dispatchScheduledEventRunner);
-  visitor->trace(m_scheduledEvents);
-  EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  visitor->Trace(dispatch_scheduled_event_runner_);
+  visitor->Trace(scheduled_events_);
+  EventTargetWithInlineData::Trace(visitor);
+  SuspendableObject::Trace(visitor);
 }
 
 }  // namespace blink

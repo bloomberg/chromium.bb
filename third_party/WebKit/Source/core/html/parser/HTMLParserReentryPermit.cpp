@@ -6,11 +6,11 @@
 
 namespace blink {
 
-PassRefPtr<HTMLParserReentryPermit> HTMLParserReentryPermit::create() {
-  return adoptRef(new HTMLParserReentryPermit());
+PassRefPtr<HTMLParserReentryPermit> HTMLParserReentryPermit::Create() {
+  return AdoptRef(new HTMLParserReentryPermit());
 }
 
 HTMLParserReentryPermit::HTMLParserReentryPermit()
-    : m_scriptNestingLevel(0), m_parserPauseFlag(false) {}
+    : script_nesting_level_(0), parser_pause_flag_(false) {}
 
 }  // namespace blink

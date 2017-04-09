@@ -60,186 +60,187 @@ class StyleBuilderConverter {
   STATIC_ONLY(StyleBuilderConverter);
 
  public:
-  static PassRefPtr<StyleReflection> convertBoxReflect(StyleResolverState&,
+  static PassRefPtr<StyleReflection> ConvertBoxReflect(StyleResolverState&,
                                                        const CSSValue&);
-  static AtomicString convertFragmentIdentifier(StyleResolverState&,
+  static AtomicString ConvertFragmentIdentifier(StyleResolverState&,
                                                 const CSSValue&);
-  static Color convertColor(StyleResolverState&,
+  static Color ConvertColor(StyleResolverState&,
                             const CSSValue&,
-                            bool forVisitedLink = false);
+                            bool for_visited_link = false);
   template <typename T>
-  static T convertComputedLength(StyleResolverState&, const CSSValue&);
-  static LengthBox convertClip(StyleResolverState&, const CSSValue&);
-  static PassRefPtr<ClipPathOperation> convertClipPath(StyleResolverState&,
+  static T ConvertComputedLength(StyleResolverState&, const CSSValue&);
+  static LengthBox ConvertClip(StyleResolverState&, const CSSValue&);
+  static PassRefPtr<ClipPathOperation> ConvertClipPath(StyleResolverState&,
                                                        const CSSValue&);
-  static FilterOperations convertFilterOperations(StyleResolverState&,
+  static FilterOperations ConvertFilterOperations(StyleResolverState&,
                                                   const CSSValue&);
-  static FilterOperations convertOffscreenFilterOperations(const CSSValue&);
+  static FilterOperations ConvertOffscreenFilterOperations(const CSSValue&);
   template <typename T>
-  static T convertFlags(StyleResolverState&, const CSSValue&);
-  static FontDescription::FamilyDescription convertFontFamily(
+  static T ConvertFlags(StyleResolverState&, const CSSValue&);
+  static FontDescription::FamilyDescription ConvertFontFamily(
       StyleResolverState&,
       const CSSValue&);
-  static PassRefPtr<FontFeatureSettings> convertFontFeatureSettings(
+  static PassRefPtr<FontFeatureSettings> ConvertFontFeatureSettings(
       StyleResolverState&,
       const CSSValue&);
-  static PassRefPtr<FontVariationSettings> convertFontVariationSettings(
+  static PassRefPtr<FontVariationSettings> ConvertFontVariationSettings(
       StyleResolverState&,
       const CSSValue&);
-  static FontDescription::Size convertFontSize(StyleResolverState&,
+  static FontDescription::Size ConvertFontSize(StyleResolverState&,
                                                const CSSValue&);
-  static float convertFontSizeAdjust(StyleResolverState&, const CSSValue&);
-  static FontWeight convertFontWeight(StyleResolverState&, const CSSValue&);
-  static FontDescription::FontVariantCaps convertFontVariantCaps(
+  static float ConvertFontSizeAdjust(StyleResolverState&, const CSSValue&);
+  static FontWeight ConvertFontWeight(StyleResolverState&, const CSSValue&);
+  static FontDescription::FontVariantCaps ConvertFontVariantCaps(
       StyleResolverState&,
       const CSSValue&);
-  static FontDescription::VariantLigatures convertFontVariantLigatures(
+  static FontDescription::VariantLigatures ConvertFontVariantLigatures(
       StyleResolverState&,
       const CSSValue&);
-  static FontVariantNumeric convertFontVariantNumeric(StyleResolverState&,
+  static FontVariantNumeric ConvertFontVariantNumeric(StyleResolverState&,
                                                       const CSSValue&);
-  static StyleSelfAlignmentData convertSelfOrDefaultAlignmentData(
+  static StyleSelfAlignmentData ConvertSelfOrDefaultAlignmentData(
       StyleResolverState&,
       const CSSValue&);
-  static StyleContentAlignmentData convertContentAlignmentData(
+  static StyleContentAlignmentData ConvertContentAlignmentData(
       StyleResolverState&,
       const CSSValue&);
-  static GridAutoFlow convertGridAutoFlow(StyleResolverState&, const CSSValue&);
-  static GridPosition convertGridPosition(StyleResolverState&, const CSSValue&);
-  static GridTrackSize convertGridTrackSize(StyleResolverState&,
+  static GridAutoFlow ConvertGridAutoFlow(StyleResolverState&, const CSSValue&);
+  static GridPosition ConvertGridPosition(StyleResolverState&, const CSSValue&);
+  static GridTrackSize ConvertGridTrackSize(StyleResolverState&,
                                             const CSSValue&);
-  static Vector<GridTrackSize> convertGridTrackSizeList(StyleResolverState&,
+  static Vector<GridTrackSize> ConvertGridTrackSizeList(StyleResolverState&,
                                                         const CSSValue&);
   template <typename T>
-  static T convertLineWidth(StyleResolverState&, const CSSValue&);
-  static Length convertLength(const StyleResolverState&, const CSSValue&);
-  static UnzoomedLength convertUnzoomedLength(const StyleResolverState&,
+  static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
+  static Length ConvertLength(const StyleResolverState&, const CSSValue&);
+  static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);
-  static Length convertLengthOrAuto(const StyleResolverState&, const CSSValue&);
-  static Length convertLengthSizing(StyleResolverState&, const CSSValue&);
-  static Length convertLengthMaxSizing(StyleResolverState&, const CSSValue&);
-  static TabSize convertLengthOrTabSpaces(StyleResolverState&, const CSSValue&);
-  static Length convertLineHeight(StyleResolverState&, const CSSValue&);
-  static float convertNumberOrPercentage(StyleResolverState&, const CSSValue&);
-  static StyleOffsetRotation convertOffsetRotate(StyleResolverState&,
+  static Length ConvertLengthOrAuto(const StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthSizing(StyleResolverState&, const CSSValue&);
+  static Length ConvertLengthMaxSizing(StyleResolverState&, const CSSValue&);
+  static TabSize ConvertLengthOrTabSpaces(StyleResolverState&, const CSSValue&);
+  static Length ConvertLineHeight(StyleResolverState&, const CSSValue&);
+  static float ConvertNumberOrPercentage(StyleResolverState&, const CSSValue&);
+  static StyleOffsetRotation ConvertOffsetRotate(StyleResolverState&,
                                                  const CSSValue&);
-  static LengthPoint convertPosition(StyleResolverState&, const CSSValue&);
-  static LengthPoint convertPositionOrAuto(StyleResolverState&,
+  static LengthPoint ConvertPosition(StyleResolverState&, const CSSValue&);
+  static LengthPoint ConvertPositionOrAuto(StyleResolverState&,
                                            const CSSValue&);
-  static float convertPerspective(StyleResolverState&, const CSSValue&);
-  static Length convertQuirkyLength(StyleResolverState&, const CSSValue&);
-  static PassRefPtr<QuotesData> convertQuotes(StyleResolverState&,
+  static float ConvertPerspective(StyleResolverState&, const CSSValue&);
+  static Length ConvertQuirkyLength(StyleResolverState&, const CSSValue&);
+  static PassRefPtr<QuotesData> ConvertQuotes(StyleResolverState&,
                                               const CSSValue&);
-  static LengthSize convertRadius(StyleResolverState&, const CSSValue&);
-  static EPaintOrder convertPaintOrder(StyleResolverState&, const CSSValue&);
-  static ShadowData convertShadow(const CSSToLengthConversionData&,
+  static LengthSize ConvertRadius(StyleResolverState&, const CSSValue&);
+  static EPaintOrder ConvertPaintOrder(StyleResolverState&, const CSSValue&);
+  static ShadowData ConvertShadow(const CSSToLengthConversionData&,
                                   StyleResolverState*,
                                   const CSSValue&);
-  static double convertValueToNumber(const CSSFunctionValue*,
+  static double ConvertValueToNumber(const CSSFunctionValue*,
                                      const CSSPrimitiveValue*);
-  static PassRefPtr<ShadowList> convertShadowList(StyleResolverState&,
+  static PassRefPtr<ShadowList> ConvertShadowList(StyleResolverState&,
                                                   const CSSValue&);
-  static ShapeValue* convertShapeValue(StyleResolverState&, const CSSValue&);
-  static float convertSpacing(StyleResolverState&, const CSSValue&);
+  static ShapeValue* ConvertShapeValue(StyleResolverState&, const CSSValue&);
+  static float ConvertSpacing(StyleResolverState&, const CSSValue&);
   template <CSSValueID IdForNone>
-  static AtomicString convertString(StyleResolverState&, const CSSValue&);
-  static PassRefPtr<SVGDashArray> convertStrokeDasharray(StyleResolverState&,
+  static AtomicString ConvertString(StyleResolverState&, const CSSValue&);
+  static PassRefPtr<SVGDashArray> ConvertStrokeDasharray(StyleResolverState&,
                                                          const CSSValue&);
-  static StyleColor convertStyleColor(StyleResolverState&,
+  static StyleColor ConvertStyleColor(StyleResolverState&,
                                       const CSSValue&,
-                                      bool forVisitedLink = false);
-  static StyleAutoColor convertStyleAutoColor(StyleResolverState&,
+                                      bool for_visited_link = false);
+  static StyleAutoColor ConvertStyleAutoColor(StyleResolverState&,
                                               const CSSValue&,
-                                              bool forVisitedLink = false);
-  static float convertTextStrokeWidth(StyleResolverState&, const CSSValue&);
-  static TextSizeAdjust convertTextSizeAdjust(StyleResolverState&,
+                                              bool for_visited_link = false);
+  static float ConvertTextStrokeWidth(StyleResolverState&, const CSSValue&);
+  static TextSizeAdjust ConvertTextSizeAdjust(StyleResolverState&,
                                               const CSSValue&);
-  static TransformOperations convertTransformOperations(StyleResolverState&,
+  static TransformOperations ConvertTransformOperations(StyleResolverState&,
                                                         const CSSValue&);
-  static TransformOrigin convertTransformOrigin(StyleResolverState&,
+  static TransformOrigin ConvertTransformOrigin(StyleResolverState&,
                                                 const CSSValue&);
 
-  static void convertGridTrackList(const CSSValue&,
-                                   Vector<GridTrackSize>&,
-                                   NamedGridLinesMap&,
-                                   OrderedNamedGridLines&,
-                                   Vector<GridTrackSize>& autoRepeatTrackSizes,
-                                   NamedGridLinesMap&,
-                                   OrderedNamedGridLines&,
-                                   size_t& autoRepeatInsertionPoint,
-                                   AutoRepeatType&,
-                                   StyleResolverState&);
-  static void createImplicitNamedGridLinesFromGridArea(
+  static void ConvertGridTrackList(
+      const CSSValue&,
+      Vector<GridTrackSize>&,
+      NamedGridLinesMap&,
+      OrderedNamedGridLines&,
+      Vector<GridTrackSize>& auto_repeat_track_sizes,
+      NamedGridLinesMap&,
+      OrderedNamedGridLines&,
+      size_t& auto_repeat_insertion_point,
+      AutoRepeatType&,
+      StyleResolverState&);
+  static void CreateImplicitNamedGridLinesFromGridArea(
       const NamedGridAreaMap&,
       NamedGridLinesMap&,
       GridTrackSizingDirection);
-  static void convertOrderedNamedGridLinesMapToNamedGridLinesMap(
+  static void ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
       const OrderedNamedGridLines&,
       NamedGridLinesMap&);
 
-  static ScrollSnapPoints convertSnapPoints(StyleResolverState&,
+  static ScrollSnapPoints ConvertSnapPoints(StyleResolverState&,
                                             const CSSValue&);
-  static Vector<LengthPoint> convertSnapCoordinates(StyleResolverState&,
+  static Vector<LengthPoint> ConvertSnapCoordinates(StyleResolverState&,
                                                     const CSSValue&);
-  static LengthPoint convertSnapDestination(StyleResolverState&,
+  static LengthPoint ConvertSnapDestination(StyleResolverState&,
                                             const CSSValue&);
-  static PassRefPtr<TranslateTransformOperation> convertTranslate(
+  static PassRefPtr<TranslateTransformOperation> ConvertTranslate(
       StyleResolverState&,
       const CSSValue&);
-  static PassRefPtr<RotateTransformOperation> convertRotate(StyleResolverState&,
+  static PassRefPtr<RotateTransformOperation> ConvertRotate(StyleResolverState&,
                                                             const CSSValue&);
-  static PassRefPtr<ScaleTransformOperation> convertScale(StyleResolverState&,
+  static PassRefPtr<ScaleTransformOperation> ConvertScale(StyleResolverState&,
                                                           const CSSValue&);
-  static RespectImageOrientationEnum convertImageOrientation(
+  static RespectImageOrientationEnum ConvertImageOrientation(
       StyleResolverState&,
       const CSSValue&);
-  static PassRefPtr<StylePath> convertPathOrNone(StyleResolverState&,
+  static PassRefPtr<StylePath> ConvertPathOrNone(StyleResolverState&,
                                                  const CSSValue&);
-  static StyleOffsetRotation convertOffsetRotate(const CSSValue&);
+  static StyleOffsetRotation ConvertOffsetRotate(const CSSValue&);
   template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-  static Length convertPositionLength(StyleResolverState&, const CSSValue&);
-  static Rotation convertRotation(const CSSValue&);
+  static Length ConvertPositionLength(StyleResolverState&, const CSSValue&);
+  static Rotation ConvertRotation(const CSSValue&);
 
-  static const CSSValue& convertRegisteredPropertyInitialValue(const CSSValue&);
-  static const CSSValue& convertRegisteredPropertyValue(
+  static const CSSValue& ConvertRegisteredPropertyInitialValue(const CSSValue&);
+  static const CSSValue& ConvertRegisteredPropertyValue(
       const StyleResolverState&,
       const CSSValue&);
 };
 
 template <typename T>
-T StyleBuilderConverter::convertComputedLength(StyleResolverState& state,
+T StyleBuilderConverter::ConvertComputedLength(StyleResolverState& state,
                                                const CSSValue& value) {
-  return toCSSPrimitiveValue(value).computeLength<T>(
-      state.cssToLengthConversionData());
+  return ToCSSPrimitiveValue(value).ComputeLength<T>(
+      state.CssToLengthConversionData());
 }
 
 template <typename T>
-T StyleBuilderConverter::convertFlags(StyleResolverState& state,
+T StyleBuilderConverter::ConvertFlags(StyleResolverState& state,
                                       const CSSValue& value) {
   T flags = static_cast<T>(0);
-  if (value.isIdentifierValue() &&
-      toCSSIdentifierValue(value).getValueID() == CSSValueNone)
+  if (value.IsIdentifierValue() &&
+      ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
     return flags;
-  for (auto& flagValue : toCSSValueList(value))
-    flags |= toCSSIdentifierValue(*flagValue).convertTo<T>();
+  for (auto& flag_value : ToCSSValueList(value))
+    flags |= ToCSSIdentifierValue(*flag_value).ConvertTo<T>();
   return flags;
 }
 
 template <typename T>
-T StyleBuilderConverter::convertLineWidth(StyleResolverState& state,
+T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
                                           const CSSValue& value) {
-  if (value.isIdentifierValue()) {
-    CSSValueID valueID = toCSSIdentifierValue(value).getValueID();
-    if (valueID == CSSValueThin)
+  if (value.IsIdentifierValue()) {
+    CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+    if (value_id == CSSValueThin)
       return 1;
-    if (valueID == CSSValueMedium)
+    if (value_id == CSSValueMedium)
       return 3;
-    if (valueID == CSSValueThick)
+    if (value_id == CSSValueThick)
       return 5;
     NOTREACHED();
     return 0;
   }
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
   // FIXME: We are moving to use the full page zoom implementation to handle
   // high-dpi.  In that case specyfing a border-width of less than 1px would
   // result in a border that is one device pixel thick.  With this change that
@@ -247,49 +248,49 @@ T StyleBuilderConverter::convertLineWidth(StyleResolverState& state,
   // device pixels or zoom adjusted CSS pixels instead of raw CSS pixels.
   // Reference crbug.com/485650 and crbug.com/382483
   double result =
-      primitiveValue.computeLength<double>(state.cssToLengthConversionData());
+      primitive_value.ComputeLength<double>(state.CssToLengthConversionData());
   if (result > 0.0 && result < 1.0)
     return 1.0;
-  return clampTo<T>(roundForImpreciseConversion<T>(result),
+  return clampTo<T>(RoundForImpreciseConversion<T>(result),
                     defaultMinimumForClamp<T>(), defaultMaximumForClamp<T>());
 }
 
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-Length StyleBuilderConverter::convertPositionLength(StyleResolverState& state,
+Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
                                                     const CSSValue& value) {
-  if (value.isValuePair()) {
-    const CSSValuePair& pair = toCSSValuePair(value);
-    Length length = StyleBuilderConverter::convertLength(state, pair.second());
-    if (toCSSIdentifierValue(pair.first()).getValueID() == cssValueFor0)
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    Length length = StyleBuilderConverter::ConvertLength(state, pair.Second());
+    if (ToCSSIdentifierValue(pair.First()).GetValueID() == cssValueFor0)
       return length;
-    DCHECK_EQ(toCSSIdentifierValue(pair.first()).getValueID(), cssValueFor100);
-    return length.subtractFromOneHundredPercent();
+    DCHECK_EQ(ToCSSIdentifierValue(pair.First()).GetValueID(), cssValueFor100);
+    return length.SubtractFromOneHundredPercent();
   }
 
-  if (value.isIdentifierValue()) {
-    switch (toCSSIdentifierValue(value).getValueID()) {
+  if (value.IsIdentifierValue()) {
+    switch (ToCSSIdentifierValue(value).GetValueID()) {
       case cssValueFor0:
-        return Length(0, Percent);
+        return Length(0, kPercent);
       case cssValueFor100:
-        return Length(100, Percent);
+        return Length(100, kPercent);
       case CSSValueCenter:
-        return Length(50, Percent);
+        return Length(50, kPercent);
       default:
         NOTREACHED();
     }
   }
 
-  return StyleBuilderConverter::convertLength(state,
-                                              toCSSPrimitiveValue(value));
+  return StyleBuilderConverter::ConvertLength(state,
+                                              ToCSSPrimitiveValue(value));
 }
 
 template <CSSValueID IdForNone>
-AtomicString StyleBuilderConverter::convertString(StyleResolverState&,
+AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
                                                   const CSSValue& value) {
-  if (value.isStringValue())
-    return AtomicString(toCSSStringValue(value).value());
-  DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), IdForNone);
-  return nullAtom;
+  if (value.IsStringValue())
+    return AtomicString(ToCSSStringValue(value).Value());
+  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), IdForNone);
+  return g_null_atom;
 }
 
 }  // namespace blink

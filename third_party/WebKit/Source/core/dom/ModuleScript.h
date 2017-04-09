@@ -19,9 +19,9 @@ namespace blink {
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-state
 enum class ModuleInstantiationState {
-  Uninstantiated,
-  Errored,
-  Instantiated,
+  kUninstantiated,
+  kErrored,
+  kInstantiated,
 };
 
 // ModuleScript is a model object for the "module script" spec concept.
@@ -30,49 +30,49 @@ class CORE_EXPORT ModuleScript final
     : public GarbageCollectedFinalized<ModuleScript>,
       public TraceWrapperBase {
  public:
-  static ModuleScript* create(
+  static ModuleScript* Create(
       ScriptModule record,
-      const KURL& baseURL,
+      const KURL& base_url,
       const String& nonce,
-      ParserDisposition parserState,
-      WebURLRequest::FetchCredentialsMode credentialsMode) {
-    return new ModuleScript(record, baseURL, nonce, parserState,
-                            credentialsMode);
+      ParserDisposition parser_state,
+      WebURLRequest::FetchCredentialsMode credentials_mode) {
+    return new ModuleScript(record, base_url, nonce, parser_state,
+                            credentials_mode);
   }
   ~ModuleScript() = default;
 
-  ScriptModule& record() { return m_record; }
-  void clearRecord() { m_record = ScriptModule(); }
-  const KURL& baseURL() const { return m_baseURL; }
+  ScriptModule& Record() { return record_; }
+  void ClearRecord() { record_ = ScriptModule(); }
+  const KURL& BaseURL() const { return base_url_; }
 
-  ModuleInstantiationState instantiationState() const {
-    return m_instantiationState;
+  ModuleInstantiationState InstantiationState() const {
+    return instantiation_state_;
   }
 
-  void setInstantiationSuccess();
-  void setInstantiationError(v8::Isolate*, v8::Local<v8::Value> error);
+  void SetInstantiationSuccess();
+  void SetInstantiationError(v8::Isolate*, v8::Local<v8::Value> error);
 
-  ParserDisposition parserState() const { return m_parserState; }
-  WebURLRequest::FetchCredentialsMode credentialsMode() const {
-    return m_credentialsMode;
+  ParserDisposition ParserState() const { return parser_state_; }
+  WebURLRequest::FetchCredentialsMode CredentialsMode() const {
+    return credentials_mode_;
   }
-  const String& nonce() const { return m_nonce; }
+  const String& Nonce() const { return nonce_; }
 
   DECLARE_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   ModuleScript(ScriptModule record,
-               const KURL& baseURL,
+               const KURL& base_url,
                const String& nonce,
-               ParserDisposition parserState,
-               WebURLRequest::FetchCredentialsMode credentialsMode)
-      : m_record(record),
-        m_baseURL(baseURL),
-        m_instantiationError(this),
-        m_nonce(nonce),
-        m_parserState(parserState),
-        m_credentialsMode(credentialsMode) {}
+               ParserDisposition parser_state,
+               WebURLRequest::FetchCredentialsMode credentials_mode)
+      : record_(record),
+        base_url_(base_url),
+        instantiation_error_(this),
+        nonce_(nonce),
+        parser_state_(parser_state),
+        credentials_mode_(credentials_mode) {}
 
   // Note: A "module script"'s "setttings object" is ommitted, as we currently
   // always have access to the corresponding Modulator when operating on a
@@ -80,26 +80,26 @@ class CORE_EXPORT ModuleScript final
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-module-record
-  ScriptModule m_record;
+  ScriptModule record_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-base-url
-  const KURL m_baseURL;
+  const KURL base_url_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-state
-  ModuleInstantiationState m_instantiationState =
-      ModuleInstantiationState::Uninstantiated;
+  ModuleInstantiationState instantiation_state_ =
+      ModuleInstantiationState::kUninstantiated;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-error
-  TraceWrapperV8Reference<v8::Value> m_instantiationError;
+  TraceWrapperV8Reference<v8::Value> instantiation_error_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-nonce
-  const String m_nonce;
+  const String nonce_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-parser
-  const ParserDisposition m_parserState;
+  const ParserDisposition parser_state_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-credentials-mode
-  const WebURLRequest::FetchCredentialsMode m_credentialsMode;
+  const WebURLRequest::FetchCredentialsMode credentials_mode_;
 };
 
 }  // namespace blink

@@ -43,34 +43,34 @@ class SVGGeometryElement : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  virtual Path asPath() const = 0;
+  virtual Path AsPath() const = 0;
   bool isPointInFill(SVGPointTearOff*) const;
   bool isPointInStroke(SVGPointTearOff*) const;
 
-  void toClipPath(Path&) const;
+  void ToClipPath(Path&) const;
 
-  SVGAnimatedNumber* pathLength() const { return m_pathLength.get(); }
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  SVGAnimatedNumber* pathLength() const { return path_length_.Get(); }
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   virtual float getTotalLength();
   virtual SVGPointTearOff* getPointAtLength(float distance);
-  float pathLengthScaleFactor() const;
-  virtual float computePathLength() const;
+  float PathLengthScaleFactor() const;
+  virtual float ComputePathLength() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   SVGGeometryElement(const QualifiedName&,
                      Document&,
-                     ConstructionType = CreateSVGElement);
+                     ConstructionType = kCreateSVGElement);
 
  private:
-  bool isSVGGeometryElement() const final { return true; }
+  bool IsSVGGeometryElement() const final { return true; }
 
-  Member<SVGAnimatedNumber> m_pathLength;
+  Member<SVGAnimatedNumber> path_length_;
 };
 
-inline bool isSVGGeometryElement(const SVGElement& element) {
-  return element.isSVGGeometryElement();
+inline bool IsSVGGeometryElement(const SVGElement& element) {
+  return element.IsSVGGeometryElement();
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGeometryElement);

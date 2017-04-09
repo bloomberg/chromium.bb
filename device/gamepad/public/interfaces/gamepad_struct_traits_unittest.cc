@@ -26,36 +26,36 @@ blink::WebGamepad GetWebGamepadInstance(GamepadTestDataType type) {
 
   blink::WebGamepadVector wgv;
   memset(&wgv, 0, sizeof(blink::WebGamepadVector));
-  wgv.notNull = true;
+  wgv.not_null = true;
   wgv.x = wgv.y = wgv.z = 1.0f;
 
   blink::WebGamepadQuaternion wgq;
   memset(&wgq, 0, sizeof(blink::WebGamepadQuaternion));
-  wgq.notNull = true;
+  wgq.not_null = true;
   wgq.x = wgq.y = wgq.z = wgq.w = 2.0f;
 
   blink::WebGamepadPose wgp;
   memset(&wgp, 0, sizeof(blink::WebGamepadPose));
   if (type == GamepadPose_Null) {
-    wgp.notNull = false;
+    wgp.not_null = false;
   } else if (type == GamepadCommon) {
-    wgp.notNull = wgp.hasOrientation = wgp.hasPosition = true;
+    wgp.not_null = wgp.has_orientation = wgp.has_position = true;
     wgp.orientation = wgq;
     wgp.position = wgv;
-    wgp.angularAcceleration = wgv;
+    wgp.angular_acceleration = wgv;
   } else if (type == GamepadPose_HasOrientation) {
-    wgp.notNull = wgp.hasOrientation = true;
-    wgp.hasPosition = false;
+    wgp.not_null = wgp.has_orientation = true;
+    wgp.has_position = false;
     wgp.orientation = wgq;
-    wgp.angularAcceleration = wgv;
+    wgp.angular_acceleration = wgv;
   } else if (type == GamepadPose_HasPosition) {
-    wgp.notNull = wgp.hasPosition = true;
-    wgp.hasOrientation = false;
+    wgp.not_null = wgp.has_position = true;
+    wgp.has_orientation = false;
     wgp.position = wgv;
-    wgp.angularAcceleration = wgv;
+    wgp.angular_acceleration = wgv;
   }
 
-  blink::WebUChar wch[blink::WebGamepad::mappingLengthCap] = {
+  blink::WebUChar wch[blink::WebGamepad::kMappingLengthCap] = {
       1,    8,    9,     127,   128,   1024,  1025,  1949,
       2047, 2048, 16383, 16384, 20000, 32767, 32768, 65535};
 
@@ -63,23 +63,23 @@ blink::WebGamepad GetWebGamepadInstance(GamepadTestDataType type) {
   memset(&send, 0, sizeof(blink::WebGamepad));
 
   send.connected = true;
-  for (size_t i = 0; i < blink::WebGamepad::mappingLengthCap; i++) {
+  for (size_t i = 0; i < blink::WebGamepad::kMappingLengthCap; i++) {
     send.id[i] = send.mapping[i] = wch[i];
   }
   send.timestamp = 1234567890123456789ULL;
-  send.axesLength = 0U;
-  for (size_t i = 0; i < blink::WebGamepad::axesLengthCap; i++) {
-    send.axesLength++;
+  send.axes_length = 0U;
+  for (size_t i = 0; i < blink::WebGamepad::kAxesLengthCap; i++) {
+    send.axes_length++;
     send.axes[i] = 1.0;
   }
-  send.buttonsLength = 0U;
-  for (size_t i = 0; i < blink::WebGamepad::buttonsLengthCap; i++) {
-    send.buttonsLength++;
+  send.buttons_length = 0U;
+  for (size_t i = 0; i < blink::WebGamepad::kButtonsLengthCap; i++) {
+    send.buttons_length++;
     send.buttons[i] = wgb;
   }
   send.pose = wgp;
-  send.hand = blink::WebGamepadHand::GamepadHandRight;
-  send.displayId = static_cast<unsigned short>(16);
+  send.hand = blink::WebGamepadHand::kGamepadHandRight;
+  send.display_id = static_cast<unsigned short>(16);
 
   return send;
 }
@@ -92,38 +92,40 @@ bool isWebGamepadButtonEqual(const blink::WebGamepadButton& lhs,
 
 bool isWebGamepadVectorEqual(const blink::WebGamepadVector& lhs,
                              const blink::WebGamepadVector& rhs) {
-  return ((lhs.notNull == false && rhs.notNull == false) ||
-          (lhs.notNull == rhs.notNull && lhs.x == rhs.x && lhs.y == rhs.y &&
+  return ((lhs.not_null == false && rhs.not_null == false) ||
+          (lhs.not_null == rhs.not_null && lhs.x == rhs.x && lhs.y == rhs.y &&
            lhs.z == rhs.z));
 }
 
 bool isWebGamepadQuaternionEqual(const blink::WebGamepadQuaternion& lhs,
                                  const blink::WebGamepadQuaternion& rhs) {
-  return ((lhs.notNull == false && rhs.notNull == false) ||
-          (lhs.notNull == rhs.notNull && lhs.x == rhs.x && lhs.y == rhs.y &&
+  return ((lhs.not_null == false && rhs.not_null == false) ||
+          (lhs.not_null == rhs.not_null && lhs.x == rhs.x && lhs.y == rhs.y &&
            lhs.z == rhs.z && lhs.w == rhs.w));
 }
 
 bool isWebGamepadPoseEqual(const blink::WebGamepadPose& lhs,
                            const blink::WebGamepadPose& rhs) {
-  if (lhs.notNull == false && rhs.notNull == false) {
+  if (lhs.not_null == false && rhs.not_null == false) {
     return true;
   }
-  if (lhs.notNull != rhs.notNull || lhs.hasOrientation != rhs.hasOrientation ||
-      lhs.hasPosition != rhs.hasPosition ||
-      !isWebGamepadVectorEqual(lhs.angularVelocity, rhs.angularVelocity) ||
-      !isWebGamepadVectorEqual(lhs.linearVelocity, rhs.linearVelocity) ||
-      !isWebGamepadVectorEqual(lhs.angularAcceleration,
-                               rhs.angularAcceleration) ||
-      !isWebGamepadVectorEqual(lhs.linearAcceleration,
-                               rhs.linearAcceleration)) {
+  if (lhs.not_null != rhs.not_null ||
+      lhs.has_orientation != rhs.has_orientation ||
+      lhs.has_position != rhs.has_position ||
+      !isWebGamepadVectorEqual(lhs.angular_velocity, rhs.angular_velocity) ||
+      !isWebGamepadVectorEqual(lhs.linear_velocity, rhs.linear_velocity) ||
+      !isWebGamepadVectorEqual(lhs.angular_acceleration,
+                               rhs.angular_acceleration) ||
+      !isWebGamepadVectorEqual(lhs.linear_acceleration,
+                               rhs.linear_acceleration)) {
     return false;
   }
-  if (lhs.hasOrientation &&
+  if (lhs.has_orientation &&
       !isWebGamepadQuaternionEqual(lhs.orientation, rhs.orientation)) {
     return false;
   }
-  if (lhs.hasPosition && !isWebGamepadVectorEqual(lhs.position, rhs.position)) {
+  if (lhs.has_position &&
+      !isWebGamepadVectorEqual(lhs.position, rhs.position)) {
     return false;
   }
   return true;
@@ -132,28 +134,28 @@ bool isWebGamepadPoseEqual(const blink::WebGamepadPose& lhs,
 bool isWebGamepadEqual(const blink::WebGamepad& send,
                        const blink::WebGamepad& echo) {
   if (send.connected != echo.connected || send.timestamp != echo.timestamp ||
-      send.axesLength != echo.axesLength ||
-      send.buttonsLength != echo.buttonsLength ||
+      send.axes_length != echo.axes_length ||
+      send.buttons_length != echo.buttons_length ||
       !isWebGamepadPoseEqual(send.pose, echo.pose) || send.hand != echo.hand ||
-      send.displayId != echo.displayId) {
+      send.display_id != echo.display_id) {
     return false;
   }
-  for (size_t i = 0; i < blink::WebGamepad::idLengthCap; i++) {
+  for (size_t i = 0; i < blink::WebGamepad::kIdLengthCap; i++) {
     if (send.id[i] != echo.id[i]) {
       return false;
     }
   }
-  for (size_t i = 0; i < blink::WebGamepad::axesLengthCap; i++) {
+  for (size_t i = 0; i < blink::WebGamepad::kAxesLengthCap; i++) {
     if (send.axes[i] != echo.axes[i]) {
       return false;
     }
   }
-  for (size_t i = 0; i < blink::WebGamepad::buttonsLengthCap; i++) {
+  for (size_t i = 0; i < blink::WebGamepad::kButtonsLengthCap; i++) {
     if (!isWebGamepadButtonEqual(send.buttons[i], echo.buttons[i])) {
       return false;
     }
   }
-  for (size_t i = 0; i < blink::WebGamepad::mappingLengthCap; i++) {
+  for (size_t i = 0; i < blink::WebGamepad::kMappingLengthCap; i++) {
     if (send.mapping[i] != echo.mapping[i]) {
       return false;
     }

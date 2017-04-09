@@ -38,153 +38,156 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static Node* enclosingBlockToSplitTreeTo(Node* startNode);
-static bool isElementForFormatBlock(const QualifiedName& tagName);
-static inline bool isElementForFormatBlock(Node* node) {
-  return node->isElementNode() &&
-         isElementForFormatBlock(toElement(node)->tagQName());
+static Node* EnclosingBlockToSplitTreeTo(Node* start_node);
+static bool IsElementForFormatBlock(const QualifiedName& tag_name);
+static inline bool IsElementForFormatBlock(Node* node) {
+  return node->IsElementNode() &&
+         IsElementForFormatBlock(ToElement(node)->TagQName());
 }
 
-static Element* enclosingBlockFlowElement(
-    const VisiblePosition& visiblePosition) {
-  if (visiblePosition.isNull())
+static Element* EnclosingBlockFlowElement(
+    const VisiblePosition& visible_position) {
+  if (visible_position.IsNull())
     return nullptr;
-  return enclosingBlockFlowElement(
-      *visiblePosition.deepEquivalent().anchorNode());
+  return EnclosingBlockFlowElement(
+      *visible_position.DeepEquivalent().AnchorNode());
 }
 
 FormatBlockCommand::FormatBlockCommand(Document& document,
-                                       const QualifiedName& tagName)
-    : ApplyBlockElementCommand(document, tagName), m_didApply(false) {}
+                                       const QualifiedName& tag_name)
+    : ApplyBlockElementCommand(document, tag_name), did_apply_(false) {}
 
-void FormatBlockCommand::formatSelection(
-    const VisiblePosition& startOfSelection,
-    const VisiblePosition& endOfSelection,
-    EditingState* editingState) {
-  if (!isElementForFormatBlock(tagName()))
+void FormatBlockCommand::FormatSelection(
+    const VisiblePosition& start_of_selection,
+    const VisiblePosition& end_of_selection,
+    EditingState* editing_state) {
+  if (!IsElementForFormatBlock(TagName()))
     return;
-  ApplyBlockElementCommand::formatSelection(startOfSelection, endOfSelection,
-                                            editingState);
-  m_didApply = true;
+  ApplyBlockElementCommand::FormatSelection(start_of_selection,
+                                            end_of_selection, editing_state);
+  did_apply_ = true;
 }
 
-void FormatBlockCommand::formatRange(const Position& start,
+void FormatBlockCommand::FormatRange(const Position& start,
                                      const Position& end,
-                                     const Position& endOfSelection,
-                                     HTMLElement*& blockElement,
-                                     EditingState* editingState) {
-  Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
-  Element* root = rootEditableElementOf(start);
+                                     const Position& end_of_selection,
+                                     HTMLElement*& block_element,
+                                     EditingState* editing_state) {
+  Element* ref_element = EnclosingBlockFlowElement(CreateVisiblePosition(end));
+  Element* root = RootEditableElementOf(start);
   // Root is null for elements with contenteditable=false.
-  if (!root || !refElement)
+  if (!root || !ref_element)
     return;
 
-  Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.anchorNode());
-  Node* outerBlock = (start.anchorNode() == nodeToSplitTo)
-                         ? start.anchorNode()
-                         : splitTreeToNode(start.anchorNode(), nodeToSplitTo);
-  Node* nodeAfterInsertionPosition = outerBlock;
-  Range* range = Range::create(document(), start, endOfSelection);
+  Node* node_to_split_to = EnclosingBlockToSplitTreeTo(start.AnchorNode());
+  Node* outer_block =
+      (start.AnchorNode() == node_to_split_to)
+          ? start.AnchorNode()
+          : SplitTreeToNode(start.AnchorNode(), node_to_split_to);
+  Node* node_after_insertion_position = outer_block;
+  Range* range = Range::Create(GetDocument(), start, end_of_selection);
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  if (isElementForFormatBlock(refElement->tagQName()) &&
-      createVisiblePosition(start).deepEquivalent() ==
-          startOfBlock(createVisiblePosition(start)).deepEquivalent() &&
-      (createVisiblePosition(end).deepEquivalent() ==
-           endOfBlock(createVisiblePosition(end)).deepEquivalent() ||
-       isNodeVisiblyContainedWithin(*refElement, *range)) &&
-      refElement != root && !root->isDescendantOf(refElement)) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (IsElementForFormatBlock(ref_element->TagQName()) &&
+      CreateVisiblePosition(start).DeepEquivalent() ==
+          StartOfBlock(CreateVisiblePosition(start)).DeepEquivalent() &&
+      (CreateVisiblePosition(end).DeepEquivalent() ==
+           EndOfBlock(CreateVisiblePosition(end)).DeepEquivalent() ||
+       IsNodeVisiblyContainedWithin(*ref_element, *range)) &&
+      ref_element != root && !root->IsDescendantOf(ref_element)) {
     // Already in a block element that only contains the current paragraph
-    if (refElement->hasTagName(tagName()))
+    if (ref_element->HasTagName(TagName()))
       return;
-    nodeAfterInsertionPosition = refElement;
+    node_after_insertion_position = ref_element;
   }
 
-  if (!blockElement) {
+  if (!block_element) {
     // Create a new blockquote and insert it as a child of the root editable
     // element. We accomplish this by splitting all parents of the current
     // paragraph up to that point.
-    blockElement = createBlockElement();
-    insertNodeBefore(blockElement, nodeAfterInsertionPosition, editingState);
-    if (editingState->isAborted())
+    block_element = CreateBlockElement();
+    InsertNodeBefore(block_element, node_after_insertion_position,
+                     editing_state);
+    if (editing_state->IsAborted())
       return;
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  Position lastParagraphInBlockNode =
-      blockElement->lastChild() ? Position::afterNode(blockElement->lastChild())
-                                : Position();
-  bool wasEndOfParagraph =
-      isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode));
+  Position last_paragraph_in_block_node =
+      block_element->LastChild()
+          ? Position::AfterNode(block_element->LastChild())
+          : Position();
+  bool was_end_of_paragraph =
+      IsEndOfParagraph(CreateVisiblePosition(last_paragraph_in_block_node));
 
-  moveParagraphWithClones(createVisiblePosition(start),
-                          createVisiblePosition(end), blockElement, outerBlock,
-                          editingState);
-  if (editingState->isAborted())
+  MoveParagraphWithClones(CreateVisiblePosition(start),
+                          CreateVisiblePosition(end), block_element,
+                          outer_block, editing_state);
+  if (editing_state->IsAborted())
     return;
 
   // Copy the inline style of the original block element to the newly created
   // block-style element.
-  if (outerBlock != nodeAfterInsertionPosition &&
-      toHTMLElement(nodeAfterInsertionPosition)->hasAttribute(styleAttr))
-    blockElement->setAttribute(
+  if (outer_block != node_after_insertion_position &&
+      ToHTMLElement(node_after_insertion_position)->hasAttribute(styleAttr))
+    block_element->setAttribute(
         styleAttr,
-        toHTMLElement(nodeAfterInsertionPosition)->getAttribute(styleAttr));
+        ToHTMLElement(node_after_insertion_position)->getAttribute(styleAttr));
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (wasEndOfParagraph &&
-      !isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode)) &&
-      !isStartOfParagraph(createVisiblePosition(lastParagraphInBlockNode)))
-    insertBlockPlaceholder(lastParagraphInBlockNode, editingState);
+  if (was_end_of_paragraph &&
+      !IsEndOfParagraph(CreateVisiblePosition(last_paragraph_in_block_node)) &&
+      !IsStartOfParagraph(CreateVisiblePosition(last_paragraph_in_block_node)))
+    InsertBlockPlaceholder(last_paragraph_in_block_node, editing_state);
 }
 
-Element* FormatBlockCommand::elementForFormatBlockCommand(
+Element* FormatBlockCommand::ElementForFormatBlockCommand(
     const EphemeralRange& range) {
-  Node* commonAncestor = range.commonAncestorContainer();
-  while (commonAncestor && !isElementForFormatBlock(commonAncestor))
-    commonAncestor = commonAncestor->parentNode();
+  Node* common_ancestor = range.CommonAncestorContainer();
+  while (common_ancestor && !IsElementForFormatBlock(common_ancestor))
+    common_ancestor = common_ancestor->parentNode();
 
-  if (!commonAncestor)
+  if (!common_ancestor)
     return 0;
 
   Element* element =
-      rootEditableElement(*range.startPosition().computeContainerNode());
-  if (!element || commonAncestor->contains(element))
+      RootEditableElement(*range.StartPosition().ComputeContainerNode());
+  if (!element || common_ancestor->contains(element))
     return 0;
 
-  return commonAncestor->isElementNode() ? toElement(commonAncestor) : 0;
+  return common_ancestor->IsElementNode() ? ToElement(common_ancestor) : 0;
 }
 
-bool isElementForFormatBlock(const QualifiedName& tagName) {
+bool IsElementForFormatBlock(const QualifiedName& tag_name) {
   DEFINE_STATIC_LOCAL(
-      HashSet<QualifiedName>, blockTags,
+      HashSet<QualifiedName>, block_tags,
       ({
           addressTag, articleTag, asideTag,  blockquoteTag, ddTag,     divTag,
           dlTag,      dtTag,      footerTag, h1Tag,         h2Tag,     h3Tag,
           h4Tag,      h5Tag,      h6Tag,     headerTag,     hgroupTag, mainTag,
           navTag,     pTag,       preTag,    sectionTag,
       }));
-  return blockTags.contains(tagName);
+  return block_tags.Contains(tag_name);
 }
 
-Node* enclosingBlockToSplitTreeTo(Node* startNode) {
-  DCHECK(startNode);
-  Node* lastBlock = startNode;
-  for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*startNode)) {
-    if (!hasEditableStyle(runner))
-      return lastBlock;
-    if (isTableCell(&runner) || isHTMLBodyElement(&runner) ||
-        !runner.parentNode() || !hasEditableStyle(*runner.parentNode()) ||
-        isElementForFormatBlock(&runner))
+Node* EnclosingBlockToSplitTreeTo(Node* start_node) {
+  DCHECK(start_node);
+  Node* last_block = start_node;
+  for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*start_node)) {
+    if (!HasEditableStyle(runner))
+      return last_block;
+    if (IsTableCell(&runner) || isHTMLBodyElement(&runner) ||
+        !runner.parentNode() || !HasEditableStyle(*runner.parentNode()) ||
+        IsElementForFormatBlock(&runner))
       return &runner;
-    if (isEnclosingBlock(&runner))
-      lastBlock = &runner;
-    if (isHTMLListElement(&runner))
-      return hasEditableStyle(*runner.parentNode()) ? runner.parentNode()
+    if (IsEnclosingBlock(&runner))
+      last_block = &runner;
+    if (IsHTMLListElement(&runner))
+      return HasEditableStyle(*runner.parentNode()) ? runner.parentNode()
                                                     : &runner;
   }
-  return lastBlock;
+  return last_block;
 }
 
 }  // namespace blink

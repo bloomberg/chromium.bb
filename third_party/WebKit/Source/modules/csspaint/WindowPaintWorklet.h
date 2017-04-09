@@ -21,7 +21,7 @@ class MODULES_EXPORT WindowPaintWorklet final
   USING_GARBAGE_COLLECTED_MIXIN(WindowPaintWorklet);
 
  public:
-  static WindowPaintWorklet& from(LocalDOMWindow&);
+  static WindowPaintWorklet& From(LocalDOMWindow&);
   static Worklet* paintWorklet(LocalDOMWindow&);
   PaintWorklet* paintWorklet();
 
@@ -29,9 +29,9 @@ class MODULES_EXPORT WindowPaintWorklet final
 
  private:
   explicit WindowPaintWorklet(LocalDOMWindow&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<PaintWorklet> m_paintWorklet;
+  Member<PaintWorklet> paint_worklet_;
 };
 
 }  // namespace blink

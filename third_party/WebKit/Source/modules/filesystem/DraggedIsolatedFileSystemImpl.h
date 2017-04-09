@@ -49,21 +49,21 @@ class DraggedIsolatedFileSystemImpl final
   USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
 
  public:
-  static DOMFileSystem* getDOMFileSystem(DataObject* host,
+  static DOMFileSystem* GetDOMFileSystem(DataObject* host,
                                          ExecutionContext*,
                                          const DataObjectItem&);
 
-  static const char* supplementName();
-  static DraggedIsolatedFileSystemImpl* from(DataObject*);
+  static const char* SupplementName();
+  static DraggedIsolatedFileSystemImpl* From(DataObject*);
 
   DECLARE_TRACE();
 
-  static void prepareForDataObject(DataObject*);
+  static void PrepareForDataObject(DataObject*);
 
  private:
   DraggedIsolatedFileSystemImpl() = default;
 
-  HeapHashMap<String, Member<DOMFileSystem>> m_filesystems;
+  HeapHashMap<String, Member<DOMFileSystem>> filesystems_;
 };
 
 }  // namespace blink

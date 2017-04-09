@@ -37,33 +37,34 @@
 namespace blink {
 
 StorageNamespace::StorageNamespace(
-    std::unique_ptr<WebStorageNamespace> webStorageNamespace)
-    : m_webStorageNamespace(std::move(webStorageNamespace)) {}
+    std::unique_ptr<WebStorageNamespace> web_storage_namespace)
+    : web_storage_namespace_(std::move(web_storage_namespace)) {}
 
 StorageNamespace::~StorageNamespace() {}
 
-StorageArea* StorageNamespace::localStorageArea(SecurityOrigin* origin) {
-  ASSERT(isMainThread());
-  static WebStorageNamespace* localStorageNamespace = nullptr;
-  if (!localStorageNamespace)
-    localStorageNamespace = Platform::current()->createLocalStorageNamespace();
-  return StorageArea::create(
-      WTF::wrapUnique(
-          localStorageNamespace->createStorageArea(WebSecurityOrigin(origin))),
-      LocalStorage);
+StorageArea* StorageNamespace::LocalStorageArea(SecurityOrigin* origin) {
+  ASSERT(IsMainThread());
+  static WebStorageNamespace* local_storage_namespace = nullptr;
+  if (!local_storage_namespace)
+    local_storage_namespace =
+        Platform::Current()->CreateLocalStorageNamespace();
+  return StorageArea::Create(
+      WTF::WrapUnique(local_storage_namespace->CreateStorageArea(
+          WebSecurityOrigin(origin))),
+      kLocalStorage);
 }
 
-StorageArea* StorageNamespace::storageArea(SecurityOrigin* origin) {
-  return StorageArea::create(
-      WTF::wrapUnique(
-          m_webStorageNamespace->createStorageArea(WebSecurityOrigin(origin))),
-      SessionStorage);
+StorageArea* StorageNamespace::GetStorageArea(SecurityOrigin* origin) {
+  return StorageArea::Create(
+      WTF::WrapUnique(
+          web_storage_namespace_->CreateStorageArea(WebSecurityOrigin(origin))),
+      kSessionStorage);
 }
 
-bool StorageNamespace::isSameNamespace(
-    const WebStorageNamespace& sessionNamespace) const {
-  return m_webStorageNamespace &&
-         m_webStorageNamespace->isSameNamespace(sessionNamespace);
+bool StorageNamespace::IsSameNamespace(
+    const WebStorageNamespace& session_namespace) const {
+  return web_storage_namespace_ &&
+         web_storage_namespace_->IsSameNamespace(session_namespace);
 }
 
 }  // namespace blink

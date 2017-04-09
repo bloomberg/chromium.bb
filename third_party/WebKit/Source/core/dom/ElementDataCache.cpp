@@ -30,42 +30,42 @@
 
 namespace blink {
 
-inline unsigned attributeHash(const Vector<Attribute>& attributes) {
-  return StringHasher::hashMemory(attributes.data(),
+inline unsigned AttributeHash(const Vector<Attribute>& attributes) {
+  return StringHasher::HashMemory(attributes.Data(),
                                   attributes.size() * sizeof(Attribute));
 }
 
-inline bool hasSameAttributes(const Vector<Attribute>& attributes,
-                              ShareableElementData& elementData) {
-  if (attributes.size() != elementData.attributes().size())
+inline bool HasSameAttributes(const Vector<Attribute>& attributes,
+                              ShareableElementData& element_data) {
+  if (attributes.size() != element_data.Attributes().size())
     return false;
-  return !memcmp(attributes.data(), elementData.m_attributeArray,
+  return !memcmp(attributes.Data(), element_data.attribute_array_,
                  attributes.size() * sizeof(Attribute));
 }
 
 ShareableElementData*
-ElementDataCache::cachedShareableElementDataWithAttributes(
+ElementDataCache::CachedShareableElementDataWithAttributes(
     const Vector<Attribute>& attributes) {
-  DCHECK(!attributes.isEmpty());
+  DCHECK(!attributes.IsEmpty());
 
   ShareableElementDataCache::ValueType* it =
-      m_shareableElementDataCache.insert(attributeHash(attributes), nullptr)
-          .storedValue;
+      shareable_element_data_cache_.insert(AttributeHash(attributes), nullptr)
+          .stored_value;
 
   // FIXME: This prevents sharing when there's a hash collision.
-  if (it->value && !hasSameAttributes(attributes, *it->value))
-    return ShareableElementData::createWithAttributes(attributes);
+  if (it->value && !HasSameAttributes(attributes, *it->value))
+    return ShareableElementData::CreateWithAttributes(attributes);
 
   if (!it->value)
-    it->value = ShareableElementData::createWithAttributes(attributes);
+    it->value = ShareableElementData::CreateWithAttributes(attributes);
 
-  return it->value.get();
+  return it->value.Get();
 }
 
 ElementDataCache::ElementDataCache() {}
 
 DEFINE_TRACE(ElementDataCache) {
-  visitor->trace(m_shareableElementDataCache);
+  visitor->Trace(shareable_element_data_cache_);
 }
 
 }  // namespace blink

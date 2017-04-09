@@ -28,7 +28,7 @@
 
 namespace blink {
 
-enum FontBaseline { AlphabeticBaseline, IdeographicBaseline };
+enum FontBaseline { kAlphabeticBaseline, kIdeographicBaseline };
 
 }  // namespace blink
 

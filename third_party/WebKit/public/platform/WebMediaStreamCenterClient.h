@@ -41,7 +41,7 @@ class BLINK_PLATFORM_EXPORT WebMediaStreamCenterClient {
  public:
   virtual ~WebMediaStreamCenterClient() {}
 
-  virtual void stopLocalMediaStream(const WebMediaStream&) = 0;
+  virtual void StopLocalMediaStream(const WebMediaStream&) = 0;
 };
 
 }  // namespace blink

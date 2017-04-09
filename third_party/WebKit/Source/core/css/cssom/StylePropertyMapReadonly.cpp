@@ -20,77 +20,77 @@ class StylePropertyMapIterationSource final
  public:
   explicit StylePropertyMapIterationSource(
       HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> values)
-      : m_index(0), m_values(values) {}
+      : index_(0), values_(values) {}
 
-  bool next(ScriptState*,
+  bool Next(ScriptState*,
             String& key,
             CSSStyleValueOrCSSStyleValueSequence& value,
             ExceptionState&) override {
-    if (m_index >= m_values.size())
+    if (index_ >= values_.size())
       return false;
 
     const StylePropertyMapReadonly::StylePropertyMapEntry& pair =
-        m_values.at(m_index++);
+        values_.at(index_++);
     key = pair.first;
     value = pair.second;
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_values);
+    visitor->Trace(values_);
     PairIterable<String, CSSStyleValueOrCSSStyleValueSequence>::
-        IterationSource::trace(visitor);
+        IterationSource::Trace(visitor);
   }
 
  private:
-  size_t m_index;
-  const HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> m_values;
+  size_t index_;
+  const HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> values_;
 };
 
 }  // namespace
 
-CSSStyleValue* StylePropertyMapReadonly::get(const String& propertyName,
-                                             ExceptionState& exceptionState) {
-  CSSPropertyID propertyID = cssPropertyID(propertyName);
-  if (propertyID == CSSPropertyInvalid || propertyID == CSSPropertyVariable) {
+CSSStyleValue* StylePropertyMapReadonly::get(const String& property_name,
+                                             ExceptionState& exception_state) {
+  CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
     // TODO(meade): Handle custom properties here.
-    exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return nullptr;
   }
 
-  CSSStyleValueVector styleVector = getAllInternal(propertyID);
-  if (styleVector.isEmpty())
+  CSSStyleValueVector style_vector = GetAllInternal(property_id);
+  if (style_vector.IsEmpty())
     return nullptr;
 
-  return styleVector[0];
+  return style_vector[0];
 }
 
 CSSStyleValueVector StylePropertyMapReadonly::getAll(
-    const String& propertyName,
-    ExceptionState& exceptionState) {
-  CSSPropertyID propertyID = cssPropertyID(propertyName);
-  if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable)
-    return getAllInternal(propertyID);
+    const String& property_name,
+    ExceptionState& exception_state) {
+  CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable)
+    return GetAllInternal(property_id);
 
   // TODO(meade): Handle custom properties here.
-  exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
   return CSSStyleValueVector();
 }
 
-bool StylePropertyMapReadonly::has(const String& propertyName,
-                                   ExceptionState& exceptionState) {
-  CSSPropertyID propertyID = cssPropertyID(propertyName);
-  if (propertyID != CSSPropertyInvalid && propertyID != CSSPropertyVariable)
-    return !getAllInternal(propertyID).isEmpty();
+bool StylePropertyMapReadonly::has(const String& property_name,
+                                   ExceptionState& exception_state) {
+  CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id != CSSPropertyInvalid && property_id != CSSPropertyVariable)
+    return !GetAllInternal(property_id).IsEmpty();
 
   // TODO(meade): Handle custom properties here.
-  exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+  exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
   return false;
 }
 
 StylePropertyMapReadonly::IterationSource*
-StylePropertyMapReadonly::startIteration(ScriptState*, ExceptionState&) {
-  return new StylePropertyMapIterationSource(getIterationEntries());
+StylePropertyMapReadonly::StartIteration(ScriptState*, ExceptionState&) {
+  return new StylePropertyMapIterationSource(GetIterationEntries());
 }
 
 }  // namespace blink

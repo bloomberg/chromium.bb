@@ -35,156 +35,156 @@
 namespace blink {
 
 using ArenaTestHelpers::TrackedAllocator;
-using TreeTestHelpers::initRandom;
-using TreeTestHelpers::nextRandom;
+using TreeTestHelpers::InitRandom;
+using TreeTestHelpers::NextRandom;
 
 TEST(PODRedBlackTreeTest, TestTreeAllocatesFromArena) {
-  RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
+  RefPtr<TrackedAllocator> allocator = TrackedAllocator::Create();
   {
     typedef PODFreeListArena<PODRedBlackTree<int>::Node> PODIntegerArena;
-    RefPtr<PODIntegerArena> arena = PODIntegerArena::create(allocator);
+    RefPtr<PODIntegerArena> arena = PODIntegerArena::Create(allocator);
     PODRedBlackTree<int> tree(arena);
-    int numAdditions = 2 * PODArena::DefaultChunkSize / sizeof(int);
-    for (int i = 0; i < numAdditions; ++i)
-      tree.add(i);
-    EXPECT_GT(allocator->numRegions(), 1);
+    int num_additions = 2 * PODArena::kDefaultChunkSize / sizeof(int);
+    for (int i = 0; i < num_additions; ++i)
+      tree.Add(i);
+    EXPECT_GT(allocator->NumRegions(), 1);
   }
-  EXPECT_EQ(allocator->numRegions(), 0);
+  EXPECT_EQ(allocator->NumRegions(), 0);
 }
 
 TEST(PODRedBlackTreeTest, TestSingleElementInsertion) {
   PODRedBlackTree<int> tree;
-  tree.add(5);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(5));
+  tree.Add(5);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(5));
 }
 
 TEST(PODRedBlackTreeTest, TestMultipleElementInsertion) {
   PODRedBlackTree<int> tree;
-  tree.add(4);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(4));
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(3));
-  tree.add(5);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(5));
-  EXPECT_TRUE(tree.contains(4));
-  EXPECT_TRUE(tree.contains(3));
+  tree.Add(4);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(4));
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(3));
+  tree.Add(5);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(5));
+  EXPECT_TRUE(tree.Contains(4));
+  EXPECT_TRUE(tree.Contains(3));
 }
 
 TEST(PODRedBlackTreeTest, TestDuplicateElementInsertion) {
   PODRedBlackTree<int> tree;
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
   EXPECT_EQ(3, tree.size());
-  EXPECT_TRUE(tree.contains(3));
+  EXPECT_TRUE(tree.Contains(3));
 }
 
 TEST(PODRedBlackTreeTest, TestSingleElementInsertionAndDeletion) {
   PODRedBlackTree<int> tree;
-  tree.add(5);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(5));
-  tree.remove(5);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_FALSE(tree.contains(5));
+  tree.Add(5);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(5));
+  tree.Remove(5);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_FALSE(tree.Contains(5));
 }
 
 TEST(PODRedBlackTreeTest, TestMultipleElementInsertionAndDeletion) {
   PODRedBlackTree<int> tree;
-  tree.add(4);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(4));
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(3));
-  tree.add(5);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(5));
-  EXPECT_TRUE(tree.contains(4));
-  EXPECT_TRUE(tree.contains(3));
-  tree.remove(4);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(3));
-  EXPECT_FALSE(tree.contains(4));
-  EXPECT_TRUE(tree.contains(5));
-  tree.remove(5);
-  ASSERT_TRUE(tree.checkInvariants());
-  EXPECT_TRUE(tree.contains(3));
-  EXPECT_FALSE(tree.contains(4));
-  EXPECT_FALSE(tree.contains(5));
+  tree.Add(4);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(4));
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(3));
+  tree.Add(5);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(5));
+  EXPECT_TRUE(tree.Contains(4));
+  EXPECT_TRUE(tree.Contains(3));
+  tree.Remove(4);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(3));
+  EXPECT_FALSE(tree.Contains(4));
+  EXPECT_TRUE(tree.Contains(5));
+  tree.Remove(5);
+  ASSERT_TRUE(tree.CheckInvariants());
+  EXPECT_TRUE(tree.Contains(3));
+  EXPECT_FALSE(tree.Contains(4));
+  EXPECT_FALSE(tree.Contains(5));
   EXPECT_EQ(1, tree.size());
 }
 
 TEST(PODRedBlackTreeTest, TestDuplicateElementInsertionAndDeletion) {
   PODRedBlackTree<int> tree;
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(3);
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(3);
+  ASSERT_TRUE(tree.CheckInvariants());
   EXPECT_EQ(3, tree.size());
-  EXPECT_TRUE(tree.contains(3));
-  tree.remove(3);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.remove(3);
-  ASSERT_TRUE(tree.checkInvariants());
+  EXPECT_TRUE(tree.Contains(3));
+  tree.Remove(3);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Remove(3);
+  ASSERT_TRUE(tree.CheckInvariants());
   EXPECT_EQ(1, tree.size());
-  EXPECT_TRUE(tree.contains(3));
-  tree.remove(3);
-  ASSERT_TRUE(tree.checkInvariants());
+  EXPECT_TRUE(tree.Contains(3));
+  tree.Remove(3);
+  ASSERT_TRUE(tree.CheckInvariants());
   EXPECT_EQ(0, tree.size());
-  EXPECT_FALSE(tree.contains(3));
+  EXPECT_FALSE(tree.Contains(3));
 }
 
 TEST(PODRedBlackTreeTest, FailingInsertionRegressionTest1) {
   // These numbers came from a previously-failing randomized test run.
   PODRedBlackTree<int> tree;
-  tree.add(5113);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(4517);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(3373);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(9307);
-  ASSERT_TRUE(tree.checkInvariants());
-  tree.add(7077);
-  ASSERT_TRUE(tree.checkInvariants());
+  tree.Add(5113);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(4517);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(3373);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(9307);
+  ASSERT_TRUE(tree.CheckInvariants());
+  tree.Add(7077);
+  ASSERT_TRUE(tree.CheckInvariants());
 }
 
 namespace {
-void InsertionAndDeletionTest(const int32_t seed, const int treeSize) {
-  initRandom(seed);
-  const int maximumValue = treeSize;
+void InsertionAndDeletionTest(const int32_t seed, const int tree_size) {
+  InitRandom(seed);
+  const int maximum_value = tree_size;
   // Build the tree.
   PODRedBlackTree<int> tree;
   Vector<int> values;
-  for (int i = 0; i < treeSize; i++) {
-    int value = nextRandom(maximumValue);
-    tree.add(value);
-    ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
+  for (int i = 0; i < tree_size; i++) {
+    int value = NextRandom(maximum_value);
+    tree.Add(value);
+    ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
     values.push_back(value);
   }
   // Churn the tree's contents.
-  for (int i = 0; i < treeSize; i++) {
+  for (int i = 0; i < tree_size; i++) {
     // Pick a random value to remove.
-    int index = nextRandom(treeSize);
+    int index = NextRandom(tree_size);
     int value = values[index];
     // Remove this value.
-    tree.remove(value);
-    ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
+    tree.Remove(value);
+    ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
     // Replace it with a new one.
-    value = nextRandom(maximumValue);
+    value = NextRandom(maximum_value);
     values[index] = value;
-    tree.add(value);
-    ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
+    tree.Add(value);
+    ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
   }
 }
 }  // anonymous namespace

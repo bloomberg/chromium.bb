@@ -13,7 +13,7 @@ bool NGExclusion::operator==(const NGExclusion& other) const {
 }
 
 String NGExclusion::ToString() const {
-  return String::format("Rect: %s Type: %d", rect.ToString().ascii().data(),
+  return String::Format("Rect: %s Type: %d", rect.ToString().Ascii().Data(),
                         type);
 }
 
@@ -58,7 +58,7 @@ NGExclusions::NGExclusions(const NGExclusions& other) {
 }
 
 void NGExclusions::Add(const NGExclusion& exclusion) {
-  storage.push_back(WTF::makeUnique<NGExclusion>(exclusion));
+  storage.push_back(WTF::MakeUnique<NGExclusion>(exclusion));
   if (exclusion.type == NGExclusion::kFloatLeft) {
     last_left_float = storage.rbegin()->get();
   } else if (exclusion.type == NGExclusion::kFloatRight) {
@@ -67,7 +67,7 @@ void NGExclusions::Add(const NGExclusion& exclusion) {
 }
 
 inline NGExclusions& NGExclusions::operator=(const NGExclusions& other) {
-  storage.clear();
+  storage.Clear();
   last_left_float = nullptr;
   last_right_float = nullptr;
   for (const auto& exclusion : other.storage)

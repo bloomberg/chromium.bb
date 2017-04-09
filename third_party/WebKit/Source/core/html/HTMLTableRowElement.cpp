@@ -45,17 +45,17 @@ inline HTMLTableRowElement::HTMLTableRowElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLTableRowElement)
 
-bool HTMLTableRowElement::hasLegalLinkAttribute(
+bool HTMLTableRowElement::HasLegalLinkAttribute(
     const QualifiedName& name) const {
   return name == backgroundAttr ||
-         HTMLTablePartElement::hasLegalLinkAttribute(name);
+         HTMLTablePartElement::HasLegalLinkAttribute(name);
 }
 
-const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const {
+const QualifiedName& HTMLTableRowElement::SubResourceAttributeName() const {
   return backgroundAttr;
 }
 
-static int findIndexInRowCollection(const HTMLCollection& rows,
+static int FindIndexInRowCollection(const HTMLCollection& rows,
                                     const HTMLTableRowElement& target) {
   Element* candidate = rows.item(0);
   for (int i = 0; candidate; i++, candidate = rows.item(i)) {
@@ -66,78 +66,79 @@ static int findIndexInRowCollection(const HTMLCollection& rows,
 }
 
 int HTMLTableRowElement::rowIndex() const {
-  ContainerNode* maybeTable = parentNode();
-  if (maybeTable && isHTMLTableSectionElement(maybeTable)) {
+  ContainerNode* maybe_table = parentNode();
+  if (maybe_table && IsHTMLTableSectionElement(maybe_table)) {
     // Skip THEAD, TBODY and TFOOT.
-    maybeTable = maybeTable->parentNode();
+    maybe_table = maybe_table->parentNode();
   }
-  if (!(maybeTable && isHTMLTableElement(maybeTable)))
+  if (!(maybe_table && isHTMLTableElement(maybe_table)))
     return -1;
-  return findIndexInRowCollection(*toHTMLTableElement(maybeTable)->rows(),
+  return FindIndexInRowCollection(*toHTMLTableElement(maybe_table)->rows(),
                                   *this);
 }
 
 int HTMLTableRowElement::sectionRowIndex() const {
-  ContainerNode* maybeTable = parentNode();
-  if (!maybeTable)
+  ContainerNode* maybe_table = parentNode();
+  if (!maybe_table)
     return -1;
   HTMLCollection* rows = nullptr;
-  if (isHTMLTableSectionElement(maybeTable))
-    rows = toHTMLTableSectionElement(maybeTable)->rows();
-  else if (isHTMLTableElement(maybeTable))
-    rows = toHTMLTableElement(maybeTable)->rows();
+  if (IsHTMLTableSectionElement(maybe_table))
+    rows = ToHTMLTableSectionElement(maybe_table)->rows();
+  else if (isHTMLTableElement(maybe_table))
+    rows = toHTMLTableElement(maybe_table)->rows();
   if (!rows)
     return -1;
-  return findIndexInRowCollection(*rows, *this);
+  return FindIndexInRowCollection(*rows, *this);
 }
 
 HTMLElement* HTMLTableRowElement::insertCell(int index,
-                                             ExceptionState& exceptionState) {
+                                             ExceptionState& exception_state) {
   HTMLCollection* children = cells();
-  int numCells = children ? children->length() : 0;
-  if (index < -1 || index > numCells) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The value provided (" + String::number(index) +
-                            ") is outside the range [-1, " +
-                            String::number(numCells) + "].");
+  int num_cells = children ? children->length() : 0;
+  if (index < -1 || index > num_cells) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The value provided (" + String::Number(index) +
+                             ") is outside the range [-1, " +
+                             String::Number(num_cells) + "].");
     return nullptr;
   }
 
-  HTMLTableCellElement* cell = HTMLTableCellElement::create(tdTag, document());
-  if (numCells == index || index == -1)
-    appendChild(cell, exceptionState);
+  HTMLTableCellElement* cell =
+      HTMLTableCellElement::Create(tdTag, GetDocument());
+  if (num_cells == index || index == -1)
+    AppendChild(cell, exception_state);
   else
-    insertBefore(cell, children->item(index), exceptionState);
+    InsertBefore(cell, children->item(index), exception_state);
   return cell;
 }
 
 void HTMLTableRowElement::deleteCell(int index,
-                                     ExceptionState& exceptionState) {
+                                     ExceptionState& exception_state) {
   HTMLCollection* children = cells();
-  int numCells = children ? children->length() : 0;
+  int num_cells = children ? children->length() : 0;
   // 1. If index is less than −1 or greater than or equal to the number of
   // elements in the cells collection, then throw "IndexSizeError".
-  if (index < -1 || index >= numCells) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The value provided (" + String::number(index) +
-                            ") is outside the range [0, " +
-                            String::number(numCells) + ").");
+  if (index < -1 || index >= num_cells) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The value provided (" + String::Number(index) +
+                             ") is outside the range [0, " +
+                             String::Number(num_cells) + ").");
     return;
   }
   // 2. If index is −1, remove the last element in the cells collection
   // from its parent, or do nothing if the cells collection is empty.
   if (index == -1) {
-    if (numCells == 0)
+    if (num_cells == 0)
       return;
-    index = numCells - 1;
+    index = num_cells - 1;
   }
   // 3. Remove the indexth element in the cells collection from its parent.
   Element* cell = children->item(index);
-  HTMLElement::removeChild(cell, exceptionState);
+  HTMLElement::RemoveChild(cell, exception_state);
 }
 
 HTMLCollection* HTMLTableRowElement::cells() {
-  return ensureCachedCollection<HTMLCollection>(TRCells);
+  return EnsureCachedCollection<HTMLCollection>(kTRCells);
 }
 
 }  // namespace blink

@@ -31,13 +31,13 @@ class WebAuthentication final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebAuthentication* create(LocalFrame& frame) {
+  static WebAuthentication* Create(LocalFrame& frame) {
     return new WebAuthentication(frame);
   }
 
   virtual ~WebAuthentication();
 
-  void dispose();
+  void Dispose();
 
   ScriptPromise makeCredential(ScriptState*,
                                const RelyingPartyAccount&,

@@ -47,8 +47,7 @@ class AttributeCollectionGeneric {
   using ValueType = typename Container::ValueType;
   using iterator = ValueType*;
 
-  AttributeCollectionGeneric(Container& attributes)
-      : m_attributes(attributes) {}
+  AttributeCollectionGeneric(Container& attributes) : attributes_(attributes) {}
 
   ValueType& operator[](unsigned index) const { return at(index); }
   ValueType& at(unsigned index) const {
@@ -56,22 +55,22 @@ class AttributeCollectionGeneric {
     return begin()[index];
   }
 
-  iterator begin() const { return m_attributes.data(); }
+  iterator begin() const { return attributes_.Data(); }
   iterator end() const { return begin() + size(); }
 
-  unsigned size() const { return m_attributes.size(); }
-  bool isEmpty() const { return !size(); }
+  unsigned size() const { return attributes_.size(); }
+  bool IsEmpty() const { return !size(); }
 
-  iterator find(const QualifiedName&) const;
-  iterator find(const AtomicString& name, bool shouldIgnoreCase) const;
-  size_t findIndex(const QualifiedName&, bool shouldIgnoreCase = false) const;
-  size_t findIndex(const AtomicString& name, bool shouldIgnoreCase) const;
+  iterator Find(const QualifiedName&) const;
+  iterator Find(const AtomicString& name, bool should_ignore_case) const;
+  size_t FindIndex(const QualifiedName&, bool should_ignore_case = false) const;
+  size_t FindIndex(const AtomicString& name, bool should_ignore_case) const;
 
  protected:
-  size_t findSlowCase(const AtomicString& name,
-                      bool shouldIgnoreAttributeCase) const;
+  size_t FindSlowCase(const AtomicString& name,
+                      bool should_ignore_attribute_case) const;
 
-  ContainerMemberType m_attributes;
+  ContainerMemberType attributes_;
 };
 
 class AttributeArray {
@@ -81,14 +80,14 @@ class AttributeArray {
   using ValueType = const Attribute;
 
   AttributeArray(const Attribute* array, unsigned size)
-      : m_array(array), m_size(size) {}
+      : array_(array), size_(size) {}
 
-  const Attribute* data() const { return m_array; }
-  unsigned size() const { return m_size; }
+  const Attribute* Data() const { return array_; }
+  unsigned size() const { return size_; }
 
  private:
-  const Attribute* m_array;
-  unsigned m_size;
+  const Attribute* array_;
+  unsigned size_;
 };
 
 class AttributeCollection
@@ -112,38 +111,38 @@ class MutableAttributeCollection
             attributes) {}
 
   // These functions do no error/duplicate checking.
-  void append(const QualifiedName&, const AtomicString& value);
-  void remove(unsigned index);
+  void Append(const QualifiedName&, const AtomicString& value);
+  void Remove(unsigned index);
 };
 
-inline void MutableAttributeCollection::append(const QualifiedName& name,
+inline void MutableAttributeCollection::Append(const QualifiedName& name,
                                                const AtomicString& value) {
-  m_attributes.push_back(Attribute(name, value));
+  attributes_.push_back(Attribute(name, value));
 }
 
-inline void MutableAttributeCollection::remove(unsigned index) {
-  m_attributes.erase(index);
+inline void MutableAttributeCollection::Remove(unsigned index) {
+  attributes_.erase(index);
 }
 
 template <typename Container, typename ContainerMemberType>
 inline typename AttributeCollectionGeneric<Container,
                                            ContainerMemberType>::iterator
-AttributeCollectionGeneric<Container, ContainerMemberType>::find(
+AttributeCollectionGeneric<Container, ContainerMemberType>::Find(
     const AtomicString& name,
-    bool shouldIgnoreCase) const {
-  size_t index = findIndex(name, shouldIgnoreCase);
+    bool should_ignore_case) const {
+  size_t index = FindIndex(name, should_ignore_case);
   return index != kNotFound ? &at(index) : nullptr;
 }
 
 template <typename Container, typename ContainerMemberType>
 inline size_t
-AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
+AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
     const QualifiedName& name,
-    bool shouldIgnoreCase) const {
+    bool should_ignore_case) const {
   iterator end = this->end();
   unsigned index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
-    if (it->name().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
+    if (it->GetName().MatchesPossiblyIgnoringCase(name, should_ignore_case))
       return index;
   }
   return kNotFound;
@@ -154,10 +153,10 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
 // getAttribute is not).
 template <typename Container, typename ContainerMemberType>
 inline size_t
-AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
+AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
     const AtomicString& name,
-    bool shouldIgnoreCase) const {
-  bool doSlowCheck = shouldIgnoreCase;
+    bool should_ignore_case) const {
+  bool do_slow_check = should_ignore_case;
 
   // Optimize for the case where the attribute exists and its name exactly
   // matches.
@@ -166,36 +165,36 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
   for (iterator it = begin(); it != end; ++it, ++index) {
     // FIXME: Why check the prefix? Namespaces should be all that matter.
     // Most attributes (all of HTML and CSS) have no namespace.
-    if (!it->name().hasPrefix()) {
-      if (name == it->localName())
+    if (!it->GetName().HasPrefix()) {
+      if (name == it->LocalName())
         return index;
     } else {
-      doSlowCheck = true;
+      do_slow_check = true;
     }
   }
 
-  if (doSlowCheck)
-    return findSlowCase(name, shouldIgnoreCase);
+  if (do_slow_check)
+    return FindSlowCase(name, should_ignore_case);
   return kNotFound;
 }
 
 template <typename Container, typename ContainerMemberType>
 inline typename AttributeCollectionGeneric<Container,
                                            ContainerMemberType>::iterator
-AttributeCollectionGeneric<Container, ContainerMemberType>::find(
+AttributeCollectionGeneric<Container, ContainerMemberType>::Find(
     const QualifiedName& name) const {
   iterator end = this->end();
   for (iterator it = begin(); it != end; ++it) {
-    if (it->name().matches(name))
+    if (it->GetName().Matches(name))
       return it;
   }
   return nullptr;
 }
 
 template <typename Container, typename ContainerMemberType>
-size_t AttributeCollectionGeneric<Container, ContainerMemberType>::findSlowCase(
+size_t AttributeCollectionGeneric<Container, ContainerMemberType>::FindSlowCase(
     const AtomicString& name,
-    bool shouldIgnoreAttributeCase) const {
+    bool should_ignore_attribute_case) const {
   // Continue to checking case-insensitively and/or full namespaced names if
   // necessary:
   iterator end = this->end();
@@ -203,15 +202,16 @@ size_t AttributeCollectionGeneric<Container, ContainerMemberType>::findSlowCase(
   for (iterator it = begin(); it != end; ++it, ++index) {
     // FIXME: Why check the prefix? Namespace is all that should matter
     // and all HTML/SVG attributes have a null namespace!
-    if (!it->name().hasPrefix()) {
-      if (shouldIgnoreAttributeCase && equalIgnoringCase(name, it->localName()))
+    if (!it->GetName().HasPrefix()) {
+      if (should_ignore_attribute_case &&
+          EqualIgnoringCase(name, it->LocalName()))
         return index;
     } else {
       // FIXME: Would be faster to do this comparison without calling toString,
       // which generates a temporary string by concatenation. But this branch is
       // only reached if the attribute name has a prefix, which is rare in HTML.
-      if (equalPossiblyIgnoringCase(name, it->name().toString(),
-                                    shouldIgnoreAttributeCase))
+      if (EqualPossiblyIgnoringCase(name, it->GetName().ToString(),
+                                    should_ignore_attribute_case))
         return index;
     }
   }

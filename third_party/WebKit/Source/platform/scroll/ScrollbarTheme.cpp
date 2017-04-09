@@ -50,376 +50,380 @@
 
 namespace blink {
 
-bool ScrollbarTheme::gMockScrollbarsEnabled = false;
+bool ScrollbarTheme::g_mock_scrollbars_enabled_ = false;
 
-static inline bool shouldPaintScrollbarPart(const IntRect& partRect,
-                                            const CullRect& cullRect) {
-  return (!partRect.isEmpty()) || cullRect.intersectsCullRect(partRect);
+static inline bool ShouldPaintScrollbarPart(const IntRect& part_rect,
+                                            const CullRect& cull_rect) {
+  return (!part_rect.IsEmpty()) || cull_rect.IntersectsCullRect(part_rect);
 }
 
-bool ScrollbarTheme::paint(const Scrollbar& scrollbar,
-                           GraphicsContext& graphicsContext,
-                           const CullRect& cullRect) {
+bool ScrollbarTheme::Paint(const Scrollbar& scrollbar,
+                           GraphicsContext& graphics_context,
+                           const CullRect& cull_rect) {
   // Create the ScrollbarControlPartMask based on the cullRect
-  ScrollbarControlPartMask scrollMask = NoPart;
+  ScrollbarControlPartMask scroll_mask = kNoPart;
 
-  IntRect backButtonStartPaintRect;
-  IntRect backButtonEndPaintRect;
-  IntRect forwardButtonStartPaintRect;
-  IntRect forwardButtonEndPaintRect;
-  if (hasButtons(scrollbar)) {
-    backButtonStartPaintRect =
-        backButtonRect(scrollbar, BackButtonStartPart, true);
-    if (shouldPaintScrollbarPart(backButtonStartPaintRect, cullRect))
-      scrollMask |= BackButtonStartPart;
-    backButtonEndPaintRect = backButtonRect(scrollbar, BackButtonEndPart, true);
-    if (shouldPaintScrollbarPart(backButtonEndPaintRect, cullRect))
-      scrollMask |= BackButtonEndPart;
-    forwardButtonStartPaintRect =
-        forwardButtonRect(scrollbar, ForwardButtonStartPart, true);
-    if (shouldPaintScrollbarPart(forwardButtonStartPaintRect, cullRect))
-      scrollMask |= ForwardButtonStartPart;
-    forwardButtonEndPaintRect =
-        forwardButtonRect(scrollbar, ForwardButtonEndPart, true);
-    if (shouldPaintScrollbarPart(forwardButtonEndPaintRect, cullRect))
-      scrollMask |= ForwardButtonEndPart;
+  IntRect back_button_start_paint_rect;
+  IntRect back_button_end_paint_rect;
+  IntRect forward_button_start_paint_rect;
+  IntRect forward_button_end_paint_rect;
+  if (HasButtons(scrollbar)) {
+    back_button_start_paint_rect =
+        BackButtonRect(scrollbar, kBackButtonStartPart, true);
+    if (ShouldPaintScrollbarPart(back_button_start_paint_rect, cull_rect))
+      scroll_mask |= kBackButtonStartPart;
+    back_button_end_paint_rect =
+        BackButtonRect(scrollbar, kBackButtonEndPart, true);
+    if (ShouldPaintScrollbarPart(back_button_end_paint_rect, cull_rect))
+      scroll_mask |= kBackButtonEndPart;
+    forward_button_start_paint_rect =
+        ForwardButtonRect(scrollbar, kForwardButtonStartPart, true);
+    if (ShouldPaintScrollbarPart(forward_button_start_paint_rect, cull_rect))
+      scroll_mask |= kForwardButtonStartPart;
+    forward_button_end_paint_rect =
+        ForwardButtonRect(scrollbar, kForwardButtonEndPart, true);
+    if (ShouldPaintScrollbarPart(forward_button_end_paint_rect, cull_rect))
+      scroll_mask |= kForwardButtonEndPart;
   }
 
-  IntRect startTrackRect;
-  IntRect thumbRect;
-  IntRect endTrackRect;
-  IntRect trackPaintRect = trackRect(scrollbar, true);
-  scrollMask |= TrackBGPart;
-  bool thumbPresent = hasThumb(scrollbar);
-  if (thumbPresent) {
-    IntRect track = trackRect(scrollbar);
-    splitTrack(scrollbar, track, startTrackRect, thumbRect, endTrackRect);
-    if (shouldPaintScrollbarPart(thumbRect, cullRect))
-      scrollMask |= ThumbPart;
-    if (shouldPaintScrollbarPart(startTrackRect, cullRect))
-      scrollMask |= BackTrackPart;
-    if (shouldPaintScrollbarPart(endTrackRect, cullRect))
-      scrollMask |= ForwardTrackPart;
+  IntRect start_track_rect;
+  IntRect thumb_rect;
+  IntRect end_track_rect;
+  IntRect track_paint_rect = TrackRect(scrollbar, true);
+  scroll_mask |= kTrackBGPart;
+  bool thumb_present = HasThumb(scrollbar);
+  if (thumb_present) {
+    IntRect track = TrackRect(scrollbar);
+    SplitTrack(scrollbar, track, start_track_rect, thumb_rect, end_track_rect);
+    if (ShouldPaintScrollbarPart(thumb_rect, cull_rect))
+      scroll_mask |= kThumbPart;
+    if (ShouldPaintScrollbarPart(start_track_rect, cull_rect))
+      scroll_mask |= kBackTrackPart;
+    if (ShouldPaintScrollbarPart(end_track_rect, cull_rect))
+      scroll_mask |= kForwardTrackPart;
   }
 
   // Paint the scrollbar background (only used by custom CSS scrollbars).
-  paintScrollbarBackground(graphicsContext, scrollbar);
+  PaintScrollbarBackground(graphics_context, scrollbar);
 
   // Paint the back and forward buttons.
-  if (scrollMask & BackButtonStartPart)
-    paintButton(graphicsContext, scrollbar, backButtonStartPaintRect,
-                BackButtonStartPart);
-  if (scrollMask & BackButtonEndPart)
-    paintButton(graphicsContext, scrollbar, backButtonEndPaintRect,
-                BackButtonEndPart);
-  if (scrollMask & ForwardButtonStartPart)
-    paintButton(graphicsContext, scrollbar, forwardButtonStartPaintRect,
-                ForwardButtonStartPart);
-  if (scrollMask & ForwardButtonEndPart)
-    paintButton(graphicsContext, scrollbar, forwardButtonEndPaintRect,
-                ForwardButtonEndPart);
+  if (scroll_mask & kBackButtonStartPart)
+    PaintButton(graphics_context, scrollbar, back_button_start_paint_rect,
+                kBackButtonStartPart);
+  if (scroll_mask & kBackButtonEndPart)
+    PaintButton(graphics_context, scrollbar, back_button_end_paint_rect,
+                kBackButtonEndPart);
+  if (scroll_mask & kForwardButtonStartPart)
+    PaintButton(graphics_context, scrollbar, forward_button_start_paint_rect,
+                kForwardButtonStartPart);
+  if (scroll_mask & kForwardButtonEndPart)
+    PaintButton(graphics_context, scrollbar, forward_button_end_paint_rect,
+                kForwardButtonEndPart);
 
-  if (scrollMask & TrackBGPart)
-    paintTrackBackground(graphicsContext, scrollbar, trackPaintRect);
+  if (scroll_mask & kTrackBGPart)
+    PaintTrackBackground(graphics_context, scrollbar, track_paint_rect);
 
-  if ((scrollMask & ForwardTrackPart) || (scrollMask & BackTrackPart)) {
+  if ((scroll_mask & kForwardTrackPart) || (scroll_mask & kBackTrackPart)) {
     // Paint the track pieces above and below the thumb.
-    if (scrollMask & BackTrackPart)
-      paintTrackPiece(graphicsContext, scrollbar, startTrackRect,
-                      BackTrackPart);
-    if (scrollMask & ForwardTrackPart)
-      paintTrackPiece(graphicsContext, scrollbar, endTrackRect,
-                      ForwardTrackPart);
+    if (scroll_mask & kBackTrackPart)
+      PaintTrackPiece(graphics_context, scrollbar, start_track_rect,
+                      kBackTrackPart);
+    if (scroll_mask & kForwardTrackPart)
+      PaintTrackPiece(graphics_context, scrollbar, end_track_rect,
+                      kForwardTrackPart);
 
-    paintTickmarks(graphicsContext, scrollbar, trackPaintRect);
+    PaintTickmarks(graphics_context, scrollbar, track_paint_rect);
   }
 
   // Paint the thumb.
-  if (scrollMask & ThumbPart) {
-    Optional<CompositingRecorder> compositingRecorder;
-    float opacity = thumbOpacity(scrollbar);
+  if (scroll_mask & kThumbPart) {
+    Optional<CompositingRecorder> compositing_recorder;
+    float opacity = ThumbOpacity(scrollbar);
     if (opacity != 1.0f) {
-      FloatRect floatThumbRect(thumbRect);
-      floatThumbRect.inflate(1);  // some themes inflate thumb bounds
-      compositingRecorder.emplace(graphicsContext, scrollbar,
-                                  SkBlendMode::kSrcOver, opacity,
-                                  &floatThumbRect);
+      FloatRect float_thumb_rect(thumb_rect);
+      float_thumb_rect.Inflate(1);  // some themes inflate thumb bounds
+      compositing_recorder.emplace(graphics_context, scrollbar,
+                                   SkBlendMode::kSrcOver, opacity,
+                                   &float_thumb_rect);
     }
 
-    paintThumb(graphicsContext, scrollbar, thumbRect);
+    PaintThumb(graphics_context, scrollbar, thumb_rect);
   }
 
   return true;
 }
 
-ScrollbarPart ScrollbarTheme::hitTest(const ScrollbarThemeClient& scrollbar,
-                                      const IntPoint& positionInRootFrame) {
-  ScrollbarPart result = NoPart;
-  if (!scrollbar.enabled())
+ScrollbarPart ScrollbarTheme::HitTest(const ScrollbarThemeClient& scrollbar,
+                                      const IntPoint& position_in_root_frame) {
+  ScrollbarPart result = kNoPart;
+  if (!scrollbar.Enabled())
     return result;
 
-  IntPoint testPosition = scrollbar.convertFromRootFrame(positionInRootFrame);
-  testPosition.move(scrollbar.x(), scrollbar.y());
+  IntPoint test_position =
+      scrollbar.ConvertFromRootFrame(position_in_root_frame);
+  test_position.Move(scrollbar.X(), scrollbar.Y());
 
-  if (!scrollbar.frameRect().contains(testPosition))
-    return NoPart;
+  if (!scrollbar.FrameRect().Contains(test_position))
+    return kNoPart;
 
-  result = ScrollbarBGPart;
+  result = kScrollbarBGPart;
 
-  IntRect track = trackRect(scrollbar);
-  if (track.contains(testPosition)) {
-    IntRect beforeThumbRect;
-    IntRect thumbRect;
-    IntRect afterThumbRect;
-    splitTrack(scrollbar, track, beforeThumbRect, thumbRect, afterThumbRect);
-    if (thumbRect.contains(testPosition))
-      result = ThumbPart;
-    else if (beforeThumbRect.contains(testPosition))
-      result = BackTrackPart;
-    else if (afterThumbRect.contains(testPosition))
-      result = ForwardTrackPart;
+  IntRect track = TrackRect(scrollbar);
+  if (track.Contains(test_position)) {
+    IntRect before_thumb_rect;
+    IntRect thumb_rect;
+    IntRect after_thumb_rect;
+    SplitTrack(scrollbar, track, before_thumb_rect, thumb_rect,
+               after_thumb_rect);
+    if (thumb_rect.Contains(test_position))
+      result = kThumbPart;
+    else if (before_thumb_rect.Contains(test_position))
+      result = kBackTrackPart;
+    else if (after_thumb_rect.Contains(test_position))
+      result = kForwardTrackPart;
     else
-      result = TrackBGPart;
-  } else if (backButtonRect(scrollbar, BackButtonStartPart)
-                 .contains(testPosition)) {
-    result = BackButtonStartPart;
-  } else if (backButtonRect(scrollbar, BackButtonEndPart)
-                 .contains(testPosition)) {
-    result = BackButtonEndPart;
-  } else if (forwardButtonRect(scrollbar, ForwardButtonStartPart)
-                 .contains(testPosition)) {
-    result = ForwardButtonStartPart;
-  } else if (forwardButtonRect(scrollbar, ForwardButtonEndPart)
-                 .contains(testPosition)) {
-    result = ForwardButtonEndPart;
+      result = kTrackBGPart;
+  } else if (BackButtonRect(scrollbar, kBackButtonStartPart)
+                 .Contains(test_position)) {
+    result = kBackButtonStartPart;
+  } else if (BackButtonRect(scrollbar, kBackButtonEndPart)
+                 .Contains(test_position)) {
+    result = kBackButtonEndPart;
+  } else if (ForwardButtonRect(scrollbar, kForwardButtonStartPart)
+                 .Contains(test_position)) {
+    result = kForwardButtonStartPart;
+  } else if (ForwardButtonRect(scrollbar, kForwardButtonEndPart)
+                 .Contains(test_position)) {
+    result = kForwardButtonEndPart;
   }
   return result;
 }
 
-void ScrollbarTheme::paintScrollCorner(
+void ScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
-    const DisplayItemClient& displayItemClient,
-    const IntRect& cornerRect) {
-  if (cornerRect.isEmpty())
+    const DisplayItemClient& display_item_client,
+    const IntRect& corner_rect) {
+  if (corner_rect.IsEmpty())
     return;
 
-  if (DrawingRecorder::useCachedDrawingIfPossible(
-          context, displayItemClient, DisplayItem::kScrollbarCorner))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context, display_item_client, DisplayItem::kScrollbarCorner))
     return;
 
-  DrawingRecorder recorder(context, displayItemClient,
-                           DisplayItem::kScrollbarCorner, cornerRect);
+  DrawingRecorder recorder(context, display_item_client,
+                           DisplayItem::kScrollbarCorner, corner_rect);
 #if OS(MACOSX)
-  context.fillRect(cornerRect, Color::white);
+  context.FillRect(corner_rect, Color::kWhite);
 #else
-  Platform::current()->themeEngine()->paint(
-      context.canvas(), WebThemeEngine::PartScrollbarCorner,
-      WebThemeEngine::StateNormal, WebRect(cornerRect), 0);
+  Platform::Current()->ThemeEngine()->Paint(
+      context.Canvas(), WebThemeEngine::kPartScrollbarCorner,
+      WebThemeEngine::kStateNormal, WebRect(corner_rect), 0);
 #endif
 }
 
-bool ScrollbarTheme::shouldCenterOnThumb(const ScrollbarThemeClient& scrollbar,
+bool ScrollbarTheme::ShouldCenterOnThumb(const ScrollbarThemeClient& scrollbar,
                                          const WebMouseEvent& evt) {
-  return Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(
-      evt.button, evt.modifiers() & WebInputEvent::ShiftKey,
-      evt.modifiers() & WebInputEvent::AltKey);
+  return Platform::Current()->ScrollbarBehavior()->ShouldCenterOnThumb(
+      evt.button, evt.GetModifiers() & WebInputEvent::kShiftKey,
+      evt.GetModifiers() & WebInputEvent::kAltKey);
 }
 
-void ScrollbarTheme::paintTickmarks(GraphicsContext& context,
+void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
                                     const Scrollbar& scrollbar,
                                     const IntRect& rect) {
 // Android paints tickmarks in the browser at FindResultBar.java.
 #if !OS(ANDROID)
-  if (scrollbar.orientation() != VerticalScrollbar)
+  if (scrollbar.Orientation() != kVerticalScrollbar)
     return;
 
-  if (rect.height() <= 0 || rect.width() <= 0)
+  if (rect.Height() <= 0 || rect.Width() <= 0)
     return;
 
   // Get the tickmarks for the frameview.
   Vector<IntRect> tickmarks;
-  scrollbar.getTickmarks(tickmarks);
+  scrollbar.GetTickmarks(tickmarks);
   if (!tickmarks.size())
     return;
 
-  if (DrawingRecorder::useCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, scrollbar, DisplayItem::kScrollbarTickmarks))
     return;
 
   DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTickmarks,
                            rect);
-  GraphicsContextStateSaver stateSaver(context);
-  context.setShouldAntialias(false);
+  GraphicsContextStateSaver state_saver(context);
+  context.SetShouldAntialias(false);
 
   for (Vector<IntRect>::const_iterator i = tickmarks.begin();
        i != tickmarks.end(); ++i) {
     // Calculate how far down (in %) the tick-mark should appear.
-    const float percent = static_cast<float>(i->y()) / scrollbar.totalSize();
+    const float percent = static_cast<float>(i->Y()) / scrollbar.TotalSize();
 
     // Calculate how far down (in pixels) the tick-mark should appear.
-    const int yPos = rect.y() + (rect.height() * percent);
+    const int y_pos = rect.Y() + (rect.Height() * percent);
 
-    FloatRect tickRect(rect.x(), yPos, rect.width(), 3);
-    context.fillRect(tickRect, Color(0xCC, 0xAA, 0x00, 0xFF));
+    FloatRect tick_rect(rect.X(), y_pos, rect.Width(), 3);
+    context.FillRect(tick_rect, Color(0xCC, 0xAA, 0x00, 0xFF));
 
-    FloatRect tickStroke(rect.x() + tickmarkBorderWidth(), yPos + 1,
-                         rect.width() - 2 * tickmarkBorderWidth(), 1);
-    context.fillRect(tickStroke, Color(0xFF, 0xDD, 0x00, 0xFF));
+    FloatRect tick_stroke(rect.X() + TickmarkBorderWidth(), y_pos + 1,
+                          rect.Width() - 2 * TickmarkBorderWidth(), 1);
+    context.FillRect(tick_stroke, Color(0xFF, 0xDD, 0x00, 0xFF));
   }
 #endif
 }
 
-bool ScrollbarTheme::shouldSnapBackToDragOrigin(
+bool ScrollbarTheme::ShouldSnapBackToDragOrigin(
     const ScrollbarThemeClient& scrollbar,
     const WebMouseEvent& evt) {
-  IntPoint mousePosition = scrollbar.convertFromRootFrame(
-      flooredIntPoint(evt.positionInRootFrame()));
-  mousePosition.move(scrollbar.x(), scrollbar.y());
-  return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(
-      mousePosition, trackRect(scrollbar),
-      scrollbar.orientation() == HorizontalScrollbar);
+  IntPoint mouse_position = scrollbar.ConvertFromRootFrame(
+      FlooredIntPoint(evt.PositionInRootFrame()));
+  mouse_position.Move(scrollbar.X(), scrollbar.Y());
+  return Platform::Current()->ScrollbarBehavior()->ShouldSnapBackToDragOrigin(
+      mouse_position, TrackRect(scrollbar),
+      scrollbar.Orientation() == kHorizontalScrollbar);
 }
 
-double ScrollbarTheme::overlayScrollbarFadeOutDelaySeconds() const {
+double ScrollbarTheme::OverlayScrollbarFadeOutDelaySeconds() const {
   // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
   return 0.0;
 }
 
-double ScrollbarTheme::overlayScrollbarFadeOutDurationSeconds() const {
+double ScrollbarTheme::OverlayScrollbarFadeOutDurationSeconds() const {
   // On Mac, fading is controlled by the painting code in ScrollAnimatorMac.
   return 0.0;
 }
 
-int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient& scrollbar,
-                                  float scrollPosition) {
-  if (scrollbar.enabled()) {
-    float size = scrollbar.totalSize() - scrollbar.visibleSize();
+int ScrollbarTheme::ThumbPosition(const ScrollbarThemeClient& scrollbar,
+                                  float scroll_position) {
+  if (scrollbar.Enabled()) {
+    float size = scrollbar.TotalSize() - scrollbar.VisibleSize();
     // Avoid doing a floating point divide by zero and return 1 when
     // usedTotalSize == visibleSize.
     if (!size)
       return 0;
-    float pos = std::max(0.0f, scrollPosition) *
-                (trackLength(scrollbar) - thumbLength(scrollbar)) / size;
+    float pos = std::max(0.0f, scroll_position) *
+                (TrackLength(scrollbar) - ThumbLength(scrollbar)) / size;
     return (pos < 1 && pos > 0) ? 1 : pos;
   }
   return 0;
 }
 
-int ScrollbarTheme::thumbLength(const ScrollbarThemeClient& scrollbar) {
-  if (!scrollbar.enabled())
+int ScrollbarTheme::ThumbLength(const ScrollbarThemeClient& scrollbar) {
+  if (!scrollbar.Enabled())
     return 0;
 
-  float overhang = fabsf(scrollbar.elasticOverscroll());
+  float overhang = fabsf(scrollbar.ElasticOverscroll());
   float proportion = 0.0f;
-  float totalSize = scrollbar.totalSize();
-  if (totalSize > 0.0f) {
-    proportion = (scrollbar.visibleSize() - overhang) / totalSize;
+  float total_size = scrollbar.TotalSize();
+  if (total_size > 0.0f) {
+    proportion = (scrollbar.VisibleSize() - overhang) / total_size;
   }
-  int trackLen = trackLength(scrollbar);
-  int length = round(proportion * trackLen);
-  length = std::max(length, minimumThumbLength(scrollbar));
-  if (length > trackLen)
+  int track_len = TrackLength(scrollbar);
+  int length = round(proportion * track_len);
+  length = std::max(length, MinimumThumbLength(scrollbar));
+  if (length > track_len)
     length = 0;  // Once the thumb is below the track length, it just goes away
                  // (to make more room for the track).
   return length;
 }
 
-int ScrollbarTheme::trackPosition(const ScrollbarThemeClient& scrollbar) {
-  IntRect constrainedTrackRect =
-      constrainTrackRectToTrackPieces(scrollbar, trackRect(scrollbar));
-  return (scrollbar.orientation() == HorizontalScrollbar)
-             ? constrainedTrackRect.x() - scrollbar.x()
-             : constrainedTrackRect.y() - scrollbar.y();
+int ScrollbarTheme::TrackPosition(const ScrollbarThemeClient& scrollbar) {
+  IntRect constrained_track_rect =
+      ConstrainTrackRectToTrackPieces(scrollbar, TrackRect(scrollbar));
+  return (scrollbar.Orientation() == kHorizontalScrollbar)
+             ? constrained_track_rect.X() - scrollbar.X()
+             : constrained_track_rect.Y() - scrollbar.Y();
 }
 
-int ScrollbarTheme::trackLength(const ScrollbarThemeClient& scrollbar) {
-  IntRect constrainedTrackRect =
-      constrainTrackRectToTrackPieces(scrollbar, trackRect(scrollbar));
-  return (scrollbar.orientation() == HorizontalScrollbar)
-             ? constrainedTrackRect.width()
-             : constrainedTrackRect.height();
+int ScrollbarTheme::TrackLength(const ScrollbarThemeClient& scrollbar) {
+  IntRect constrained_track_rect =
+      ConstrainTrackRectToTrackPieces(scrollbar, TrackRect(scrollbar));
+  return (scrollbar.Orientation() == kHorizontalScrollbar)
+             ? constrained_track_rect.Width()
+             : constrained_track_rect.Height();
 }
 
-IntRect ScrollbarTheme::thumbRect(const ScrollbarThemeClient& scrollbar) {
-  if (!hasThumb(scrollbar))
+IntRect ScrollbarTheme::ThumbRect(const ScrollbarThemeClient& scrollbar) {
+  if (!HasThumb(scrollbar))
     return IntRect();
 
-  IntRect track = trackRect(scrollbar);
-  IntRect startTrackRect;
-  IntRect thumbRect;
-  IntRect endTrackRect;
-  splitTrack(scrollbar, track, startTrackRect, thumbRect, endTrackRect);
+  IntRect track = TrackRect(scrollbar);
+  IntRect start_track_rect;
+  IntRect thumb_rect;
+  IntRect end_track_rect;
+  SplitTrack(scrollbar, track, start_track_rect, thumb_rect, end_track_rect);
 
-  return thumbRect;
+  return thumb_rect;
 }
 
-int ScrollbarTheme::thumbThickness(const ScrollbarThemeClient& scrollbar) {
-  IntRect track = trackRect(scrollbar);
-  return scrollbar.orientation() == HorizontalScrollbar ? track.height()
-                                                        : track.width();
+int ScrollbarTheme::ThumbThickness(const ScrollbarThemeClient& scrollbar) {
+  IntRect track = TrackRect(scrollbar);
+  return scrollbar.Orientation() == kHorizontalScrollbar ? track.Height()
+                                                         : track.Width();
 }
 
-void ScrollbarTheme::splitTrack(const ScrollbarThemeClient& scrollbar,
-                                const IntRect& unconstrainedTrackRect,
-                                IntRect& beforeThumbRect,
-                                IntRect& thumbRect,
-                                IntRect& afterThumbRect) {
+void ScrollbarTheme::SplitTrack(const ScrollbarThemeClient& scrollbar,
+                                const IntRect& unconstrained_track_rect,
+                                IntRect& before_thumb_rect,
+                                IntRect& thumb_rect,
+                                IntRect& after_thumb_rect) {
   // This function won't even get called unless we're big enough to have some
   // combination of these three rects where at least one of them is non-empty.
-  IntRect trackRect =
-      constrainTrackRectToTrackPieces(scrollbar, unconstrainedTrackRect);
-  int thumbPos = thumbPosition(scrollbar);
-  if (scrollbar.orientation() == HorizontalScrollbar) {
-    thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y(),
-                        thumbLength(scrollbar), scrollbar.height());
-    beforeThumbRect =
-        IntRect(trackRect.x(), trackRect.y(), thumbPos + thumbRect.width() / 2,
-                trackRect.height());
-    afterThumbRect =
-        IntRect(trackRect.x() + beforeThumbRect.width(), trackRect.y(),
-                trackRect.maxX() - beforeThumbRect.maxX(), trackRect.height());
+  IntRect track_rect =
+      ConstrainTrackRectToTrackPieces(scrollbar, unconstrained_track_rect);
+  int thumb_pos = ThumbPosition(scrollbar);
+  if (scrollbar.Orientation() == kHorizontalScrollbar) {
+    thumb_rect = IntRect(track_rect.X() + thumb_pos, track_rect.Y(),
+                         ThumbLength(scrollbar), scrollbar.Height());
+    before_thumb_rect =
+        IntRect(track_rect.X(), track_rect.Y(),
+                thumb_pos + thumb_rect.Width() / 2, track_rect.Height());
+    after_thumb_rect = IntRect(
+        track_rect.X() + before_thumb_rect.Width(), track_rect.Y(),
+        track_rect.MaxX() - before_thumb_rect.MaxX(), track_rect.Height());
   } else {
-    thumbRect = IntRect(trackRect.x(), trackRect.y() + thumbPos,
-                        scrollbar.width(), thumbLength(scrollbar));
-    beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), trackRect.width(),
-                              thumbPos + thumbRect.height() / 2);
-    afterThumbRect =
-        IntRect(trackRect.x(), trackRect.y() + beforeThumbRect.height(),
-                trackRect.width(), trackRect.maxY() - beforeThumbRect.maxY());
+    thumb_rect = IntRect(track_rect.X(), track_rect.Y() + thumb_pos,
+                         scrollbar.Width(), ThumbLength(scrollbar));
+    before_thumb_rect =
+        IntRect(track_rect.X(), track_rect.Y(), track_rect.Width(),
+                thumb_pos + thumb_rect.Height() / 2);
+    after_thumb_rect = IntRect(
+        track_rect.X(), track_rect.Y() + before_thumb_rect.Height(),
+        track_rect.Width(), track_rect.MaxY() - before_thumb_rect.MaxY());
   }
 }
 
-ScrollbarTheme& ScrollbarTheme::theme() {
-  if (ScrollbarTheme::mockScrollbarsEnabled()) {
+ScrollbarTheme& ScrollbarTheme::GetTheme() {
+  if (ScrollbarTheme::MockScrollbarsEnabled()) {
     if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
-      DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());
-      return overlayMockTheme;
+      DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlay_mock_theme, ());
+      return overlay_mock_theme;
     }
 
-    DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mockTheme, ());
-    return mockTheme;
+    DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mock_theme, ());
+    return mock_theme;
   }
-  return nativeTheme();
+  return NativeTheme();
 }
 
-void ScrollbarTheme::setMockScrollbarsEnabled(bool flag) {
-  gMockScrollbarsEnabled = flag;
+void ScrollbarTheme::SetMockScrollbarsEnabled(bool flag) {
+  g_mock_scrollbars_enabled_ = flag;
 }
 
-bool ScrollbarTheme::mockScrollbarsEnabled() {
-  return gMockScrollbarsEnabled;
+bool ScrollbarTheme::MockScrollbarsEnabled() {
+  return g_mock_scrollbars_enabled_;
 }
 
-DisplayItem::Type ScrollbarTheme::buttonPartToDisplayItemType(
+DisplayItem::Type ScrollbarTheme::ButtonPartToDisplayItemType(
     ScrollbarPart part) {
   switch (part) {
-    case BackButtonStartPart:
+    case kBackButtonStartPart:
       return DisplayItem::kScrollbarBackButtonStart;
-    case BackButtonEndPart:
+    case kBackButtonEndPart:
       return DisplayItem::kScrollbarBackButtonEnd;
-    case ForwardButtonStartPart:
+    case kForwardButtonStartPart:
       return DisplayItem::kScrollbarForwardButtonStart;
-    case ForwardButtonEndPart:
+    case kForwardButtonEndPart:
       return DisplayItem::kScrollbarForwardButtonEnd;
     default:
       ASSERT_NOT_REACHED();
@@ -427,12 +431,12 @@ DisplayItem::Type ScrollbarTheme::buttonPartToDisplayItemType(
   }
 }
 
-DisplayItem::Type ScrollbarTheme::trackPiecePartToDisplayItemType(
+DisplayItem::Type ScrollbarTheme::TrackPiecePartToDisplayItemType(
     ScrollbarPart part) {
   switch (part) {
-    case BackTrackPart:
+    case kBackTrackPart:
       return DisplayItem::kScrollbarBackTrack;
-    case ForwardTrackPart:
+    case kForwardTrackPart:
       return DisplayItem::kScrollbarForwardTrack;
     default:
       ASSERT_NOT_REACHED();

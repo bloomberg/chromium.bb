@@ -33,13 +33,13 @@ namespace blink {
 //   proxy servers, to fetch fresh contents directly from the end server.
 //   Used in Shift-Reload.
 enum class WebFrameLoadType {
-  Standard,
-  BackForward,
-  Reload,
-  ReplaceCurrentItem,
-  InitialInChildFrame,
-  InitialHistoryLoad,
-  ReloadBypassingCache,
+  kStandard,
+  kBackForward,
+  kReload,
+  kReplaceCurrentItem,
+  kInitialInChildFrame,
+  kInitialHistoryLoad,
+  kReloadBypassingCache,
 };
 
 }  // namespace blink

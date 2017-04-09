@@ -58,7 +58,7 @@ class IntrusiveHeap {
 
   size_t size() const { return size_; }
 
-  void clear() {
+  void Clear() {
     for (size_t i = 1; i <= size_; i++) {
       MakeHole(i);
     }
@@ -66,12 +66,12 @@ class IntrusiveHeap {
     size_ = 0;
   }
 
-  const T& min() const {
+  const T& Min() const {
     DCHECK_GE(size_, 1u);
     return nodes_[1];
   }
 
-  void pop() {
+  void Pop() {
     DCHECK_GE(size_, 1u);
     MakeHole(1u);
     size_t top_index = size_--;

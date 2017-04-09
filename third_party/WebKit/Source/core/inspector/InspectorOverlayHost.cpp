@@ -30,20 +30,20 @@
 
 namespace blink {
 
-InspectorOverlayHost::InspectorOverlayHost() : m_listener(nullptr) {}
+InspectorOverlayHost::InspectorOverlayHost() : listener_(nullptr) {}
 
 void InspectorOverlayHost::resume() {
-  if (m_listener)
-    m_listener->overlayResumed();
+  if (listener_)
+    listener_->OverlayResumed();
 }
 
 void InspectorOverlayHost::stepOver() {
-  if (m_listener)
-    m_listener->overlaySteppedOver();
+  if (listener_)
+    listener_->OverlaySteppedOver();
 }
 
 DEFINE_TRACE(InspectorOverlayHost) {
-  visitor->trace(m_listener);
+  visitor->Trace(listener_);
 }
 
 }  // namespace blink

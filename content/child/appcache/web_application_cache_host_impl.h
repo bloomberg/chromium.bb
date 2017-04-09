@@ -41,20 +41,20 @@ class WebApplicationCacheHostImpl
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 
   // blink::WebApplicationCacheHost:
-  void willStartMainResourceRequest(
+  void WillStartMainResourceRequest(
       blink::WebURLRequest&,
       const blink::WebApplicationCacheHost*) override;
-  void willStartSubResourceRequest(blink::WebURLRequest&) override;
-  void selectCacheWithoutManifest() override;
-  bool selectCacheWithManifest(const blink::WebURL& manifestURL) override;
-  void didReceiveResponseForMainResource(const blink::WebURLResponse&) override;
-  void didReceiveDataForMainResource(const char* data, unsigned len) override;
-  void didFinishLoadingMainResource(bool success) override;
-  blink::WebApplicationCacheHost::Status getStatus() override;
-  bool startUpdate() override;
-  bool swapCache() override;
-  void getResourceList(blink::WebVector<ResourceInfo>* resources) override;
-  void getAssociatedCacheInfo(CacheInfo* info) override;
+  void WillStartSubResourceRequest(blink::WebURLRequest&) override;
+  void SelectCacheWithoutManifest() override;
+  bool SelectCacheWithManifest(const blink::WebURL& manifestURL) override;
+  void DidReceiveResponseForMainResource(const blink::WebURLResponse&) override;
+  void DidReceiveDataForMainResource(const char* data, unsigned len) override;
+  void DidFinishLoadingMainResource(bool success) override;
+  blink::WebApplicationCacheHost::Status GetStatus() override;
+  bool StartUpdate() override;
+  bool SwapCache() override;
+  void GetResourceList(blink::WebVector<ResourceInfo>* resources) override;
+  void GetAssociatedCacheInfo(CacheInfo* info) override;
 
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };

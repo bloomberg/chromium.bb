@@ -44,74 +44,74 @@
 
 namespace blink {
 
-static void storeDetail(ScriptState* scriptState,
+static void StoreDetail(ScriptState* script_state,
                         CustomEvent* impl,
                         v8::Local<v8::Object> wrapper,
                         v8::Local<v8::Value> detail) {
-  auto privateDetail =
-      V8PrivateProperty::getCustomEventDetail(scriptState->isolate());
-  privateDetail.set(wrapper, detail);
+  auto private_detail =
+      V8PrivateProperty::GetCustomEventDetail(script_state->GetIsolate());
+  private_detail.Set(wrapper, detail);
 
   // When a custom event is created in an isolated world, serialize
   // |detail| and store it in |impl| so that we can clone |detail|
   // when the getter of |detail| is called in the main world later.
-  if (scriptState->world().isIsolatedWorld())
-    impl->setSerializedDetail(
-        SerializedScriptValue::serializeAndSwallowExceptions(
-            scriptState->isolate(), detail));
+  if (script_state->World().IsIsolatedWorld())
+    impl->SetSerializedDetail(
+        SerializedScriptValue::SerializeAndSwallowExceptions(
+            script_state->GetIsolate(), detail));
 }
 
 void V8CustomEvent::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(
-      info.GetIsolate(), ExceptionState::ConstructionContext, "CustomEvent");
+  ExceptionState exception_state(
+      info.GetIsolate(), ExceptionState::kConstructionContext, "CustomEvent");
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.throwTypeError(
-        ExceptionMessages::notEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   V8StringResource<> type = info[0];
-  if (!type.prepare())
+  if (!type.Prepare())
     return;
 
-  CustomEventInit eventInitDict;
-  if (!isUndefinedOrNull(info[1])) {
+  CustomEventInit event_init_dict;
+  if (!IsUndefinedOrNull(info[1])) {
     if (!info[1]->IsObject()) {
-      exceptionState.throwTypeError(
+      exception_state.ThrowTypeError(
           "parameter 2 ('eventInitDict') is not an object.");
       return;
     }
-    V8CustomEventInit::toImpl(info.GetIsolate(), info[1], eventInitDict,
-                              exceptionState);
-    if (exceptionState.hadException())
+    V8CustomEventInit::toImpl(info.GetIsolate(), info[1], event_init_dict,
+                              exception_state);
+    if (exception_state.HadException())
       return;
   }
 
-  CustomEvent* impl = CustomEvent::create(type, eventInitDict);
+  CustomEvent* impl = CustomEvent::Create(type, event_init_dict);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->associateWithWrapper(
+  wrapper = impl->AssociateWithWrapper(
       info.GetIsolate(), &V8CustomEvent::wrapperTypeInfo, wrapper);
 
   // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
   // |detail| as a private property to avoid cycle references.
-  if (eventInitDict.hasDetail()) {
-    v8::Local<v8::Value> v8Detail = eventInitDict.detail().v8Value();
-    storeDetail(ScriptState::current(info.GetIsolate()), impl, wrapper,
-                v8Detail);
+  if (event_init_dict.hasDetail()) {
+    v8::Local<v8::Value> v8_detail = event_init_dict.detail().V8Value();
+    StoreDetail(ScriptState::Current(info.GetIsolate()), impl, wrapper,
+                v8_detail);
   }
-  v8SetReturnValue(info, wrapper);
+  V8SetReturnValue(info, wrapper);
 }
 
 void V8CustomEvent::initCustomEventMethodEpilogueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     CustomEvent* impl) {
-  if (impl->isBeingDispatched())
+  if (impl->IsBeingDispatched())
     return;
   if (info.Length() >= 4) {
     v8::Local<v8::Value> detail = info[3];
     if (!detail.IsEmpty()) {
-      storeDetail(ScriptState::current(info.GetIsolate()), impl, info.Holder(),
+      StoreDetail(ScriptState::Current(info.GetIsolate()), impl, info.Holder(),
                   detail);
     }
   }
@@ -121,26 +121,26 @@ void V8CustomEvent::detailAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
-  ScriptState* scriptState = ScriptState::current(isolate);
+  ScriptState* script_state = ScriptState::Current(isolate);
 
-  auto privateDetail = V8PrivateProperty::getCustomEventDetail(isolate);
-  v8::Local<v8::Value> detail = privateDetail.getOrEmpty(info.Holder());
+  auto private_detail = V8PrivateProperty::GetCustomEventDetail(isolate);
+  v8::Local<v8::Value> detail = private_detail.GetOrEmpty(info.Holder());
   if (!detail.IsEmpty()) {
-    v8SetReturnValue(info, detail);
+    V8SetReturnValue(info, detail);
     return;
   }
 
   // Be careful not to return a V8 value which is created in different world.
-  if (SerializedScriptValue* serializedValue = event->serializedDetail()) {
-    detail = serializedValue->deserialize(isolate);
-  } else if (scriptState->world().isIsolatedWorld()) {
-    v8::Local<v8::Value> mainWorldDetail =
-        privateDetail.getFromMainWorld(event);
-    if (!mainWorldDetail.IsEmpty()) {
-      event->setSerializedDetail(
-          SerializedScriptValue::serializeAndSwallowExceptions(
-              isolate, mainWorldDetail));
-      detail = event->serializedDetail()->deserialize(isolate);
+  if (SerializedScriptValue* serialized_value = event->SerializedDetail()) {
+    detail = serialized_value->Deserialize(isolate);
+  } else if (script_state->World().IsIsolatedWorld()) {
+    v8::Local<v8::Value> main_world_detail =
+        private_detail.GetFromMainWorld(event);
+    if (!main_world_detail.IsEmpty()) {
+      event->SetSerializedDetail(
+          SerializedScriptValue::SerializeAndSwallowExceptions(
+              isolate, main_world_detail));
+      detail = event->SerializedDetail()->Deserialize(isolate);
     }
   }
 
@@ -148,8 +148,8 @@ void V8CustomEvent::detailAttributeGetterCustom(
   // value is null.
   if (detail.IsEmpty())
     detail = v8::Null(isolate);
-  privateDetail.set(info.Holder(), detail);
-  v8SetReturnValue(info, detail);
+  private_detail.Set(info.Holder(), detail);
+  V8SetReturnValue(info, detail);
 }
 
 }  // namespace blink

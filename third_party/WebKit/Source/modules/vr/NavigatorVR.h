@@ -32,30 +32,30 @@ class MODULES_EXPORT NavigatorVR final
   WTF_MAKE_NONCOPYABLE(NavigatorVR);
 
  public:
-  static NavigatorVR* from(Document&);
-  static NavigatorVR& from(Navigator&);
+  static NavigatorVR* From(Document&);
+  static NavigatorVR& From(Navigator&);
   virtual ~NavigatorVR();
 
   static ScriptPromise getVRDisplays(ScriptState*, Navigator&);
   ScriptPromise getVRDisplays(ScriptState*);
 
-  VRController* controller();
-  Document* document();
-  bool isFocused() { return m_focused; }
+  VRController* Controller();
+  Document* GetDocument();
+  bool IsFocused() { return focused_; }
 
   // Queues up event to be fired soon.
-  void enqueueVREvent(VRDisplayEvent*);
+  void EnqueueVREvent(VRDisplayEvent*);
 
   // Dispatches an event immediately.
-  void dispatchVREvent(VRDisplayEvent*);
+  void DispatchVREvent(VRDisplayEvent*);
 
   // Inherited from FocusChangedObserver.
-  void focusedFrameChanged() override;
+  void FocusedFrameChanged() override;
 
   // Inherited from LocalDOMWindow::EventListenerObserver.
-  void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveAllEventListeners(LocalDOMWindow*) override;
+  void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -65,15 +65,15 @@ class MODULES_EXPORT NavigatorVR final
 
   explicit NavigatorVR(Navigator&);
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  void fireVRDisplayPresentChange(VRDisplay*);
+  void FireVRDisplayPresentChange(VRDisplay*);
 
-  Member<VRController> m_controller;
+  Member<VRController> controller_;
 
   // Whether this page is listening for vrdisplayactivate event.
-  bool m_listeningForActivate = false;
-  bool m_focused = false;
+  bool listening_for_activate_ = false;
+  bool focused_ = false;
 };
 
 }  // namespace blink

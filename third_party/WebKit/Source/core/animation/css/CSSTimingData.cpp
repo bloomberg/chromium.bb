@@ -9,22 +9,22 @@
 namespace blink {
 
 CSSTimingData::CSSTimingData() {
-  m_delayList.push_back(initialDelay());
-  m_durationList.push_back(initialDuration());
-  m_timingFunctionList.push_back(initialTimingFunction());
+  delay_list_.push_back(InitialDelay());
+  duration_list_.push_back(InitialDuration());
+  timing_function_list_.push_back(InitialTimingFunction());
 }
 
 CSSTimingData::CSSTimingData(const CSSTimingData& other)
-    : m_delayList(other.m_delayList),
-      m_durationList(other.m_durationList),
-      m_timingFunctionList(other.m_timingFunctionList) {}
+    : delay_list_(other.delay_list_),
+      duration_list_(other.duration_list_),
+      timing_function_list_(other.timing_function_list_) {}
 
-Timing CSSTimingData::convertToTiming(size_t index) const {
+Timing CSSTimingData::ConvertToTiming(size_t index) const {
   Timing timing;
-  timing.startDelay = getRepeated(m_delayList, index);
-  timing.iterationDuration = getRepeated(m_durationList, index);
-  timing.timingFunction = getRepeated(m_timingFunctionList, index);
-  timing.assertValid();
+  timing.start_delay = GetRepeated(delay_list_, index);
+  timing.iteration_duration = GetRepeated(duration_list_, index);
+  timing.timing_function = GetRepeated(timing_function_list_, index);
+  timing.AssertValid();
   return timing;
 }
 

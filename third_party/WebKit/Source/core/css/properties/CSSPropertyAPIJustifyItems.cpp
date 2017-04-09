@@ -15,20 +15,20 @@ const CSSValue* CSSPropertyAPIJustifyItems::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-  CSSParserTokenRange rangeCopy = range;
+  CSSParserTokenRange range_copy = range;
   CSSIdentifierValue* legacy =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueLegacy>(rangeCopy);
-  CSSIdentifierValue* positionKeyword =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueCenter, CSSValueLeft,
-                                             CSSValueRight>(rangeCopy);
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+  CSSIdentifierValue* position_keyword =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueCenter, CSSValueLeft,
+                                             CSSValueRight>(range_copy);
   if (!legacy)
-    legacy = CSSPropertyParserHelpers::consumeIdent<CSSValueLegacy>(rangeCopy);
-  if (legacy && positionKeyword) {
-    range = rangeCopy;
-    return CSSValuePair::create(legacy, positionKeyword,
-                                CSSValuePair::DropIdenticalValues);
+    legacy = CSSPropertyParserHelpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+  if (legacy && position_keyword) {
+    range = range_copy;
+    return CSSValuePair::Create(legacy, position_keyword,
+                                CSSValuePair::kDropIdenticalValues);
   }
-  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
+  return CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(range);
 }
 
 }  // namespace blink

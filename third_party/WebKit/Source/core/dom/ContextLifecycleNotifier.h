@@ -43,10 +43,10 @@ class CORE_EXPORT ContextLifecycleNotifier
   WTF_MAKE_NONCOPYABLE(ContextLifecycleNotifier);
 
  public:
-  void notifyResumingSuspendableObjects();
-  void notifySuspendingSuspendableObjects();
+  void NotifyResumingSuspendableObjects();
+  void NotifySuspendingSuspendableObjects();
 
-  unsigned suspendableObjectCount() const;
+  unsigned SuspendableObjectCount() const;
 
  protected:
   // Need a default constructor to link core and modules separately.
@@ -57,7 +57,7 @@ class CORE_EXPORT ContextLifecycleNotifier
   ContextLifecycleNotifier() {}
 
 #if DCHECK_IS_ON()
-  bool contains(SuspendableObject*) const;
+  bool Contains(SuspendableObject*) const;
 #endif
 };
 

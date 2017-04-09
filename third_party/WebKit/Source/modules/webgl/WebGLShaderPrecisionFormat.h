@@ -39,8 +39,8 @@ class WebGLShaderPrecisionFormat final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLShaderPrecisionFormat* create(GLint rangeMin,
-                                            GLint rangeMax,
+  static WebGLShaderPrecisionFormat* Create(GLint range_min,
+                                            GLint range_max,
                                             GLint precision);
 
   GLint rangeMin() const;
@@ -50,11 +50,11 @@ class WebGLShaderPrecisionFormat final
   DEFINE_INLINE_TRACE() {}
 
  private:
-  WebGLShaderPrecisionFormat(GLint rangeMin, GLint rangeMax, GLint precision);
+  WebGLShaderPrecisionFormat(GLint range_min, GLint range_max, GLint precision);
 
-  GLint m_rangeMin;
-  GLint m_rangeMax;
-  GLint m_precision;
+  GLint range_min_;
+  GLint range_max_;
+  GLint precision_;
 };
 
 }  // namespace blink

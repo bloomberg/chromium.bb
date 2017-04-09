@@ -36,397 +36,399 @@
 
 namespace blink {
 
-static bool isErrorStatusCode(int statusCode) {
-  return statusCode >= 400;
+static bool IsErrorStatusCode(int status_code) {
+  return status_code >= 400;
 }
 
-XHRReplayData* XHRReplayData::create(ExecutionContext* executionContext,
+XHRReplayData* XHRReplayData::Create(ExecutionContext* execution_context,
                                      const AtomicString& method,
                                      const KURL& url,
                                      bool async,
-                                     PassRefPtr<EncodedFormData> formData,
-                                     bool includeCredentials) {
-  return new XHRReplayData(executionContext, method, url, async,
-                           std::move(formData), includeCredentials);
+                                     PassRefPtr<EncodedFormData> form_data,
+                                     bool include_credentials) {
+  return new XHRReplayData(execution_context, method, url, async,
+                           std::move(form_data), include_credentials);
 }
 
-void XHRReplayData::addHeader(const AtomicString& key,
+void XHRReplayData::AddHeader(const AtomicString& key,
                               const AtomicString& value) {
-  m_headers.set(key, value);
+  headers_.Set(key, value);
 }
 
-XHRReplayData::XHRReplayData(ExecutionContext* executionContext,
+XHRReplayData::XHRReplayData(ExecutionContext* execution_context,
                              const AtomicString& method,
                              const KURL& url,
                              bool async,
-                             PassRefPtr<EncodedFormData> formData,
-                             bool includeCredentials)
-    : m_executionContext(executionContext),
-      m_method(method),
-      m_url(url),
-      m_async(async),
-      m_formData(std::move(formData)),
-      m_includeCredentials(includeCredentials) {}
+                             PassRefPtr<EncodedFormData> form_data,
+                             bool include_credentials)
+    : execution_context_(execution_context),
+      method_(method),
+      url_(url),
+      async_(async),
+      form_data_(std::move(form_data)),
+      include_credentials_(include_credentials) {}
 
 DEFINE_TRACE(XHRReplayData) {
-  visitor->trace(m_executionContext);
+  visitor->Trace(execution_context_);
 }
 
 // ResourceData
 NetworkResourcesData::ResourceData::ResourceData(
-    NetworkResourcesData* networkResourcesData,
-    const String& requestId,
-    const String& loaderId,
-    const KURL& requestedURL)
-    : m_networkResourcesData(networkResourcesData),
-      m_requestId(requestId),
-      m_loaderId(loaderId),
-      m_requestedURL(requestedURL),
-      m_base64Encoded(false),
-      m_isContentEvicted(false),
-      m_type(InspectorPageAgent::OtherResource),
-      m_httpStatusCode(0),
-      m_rawHeaderSize(0),
-      m_pendingEncodedDataLength(0),
-      m_cachedResource(nullptr) {}
+    NetworkResourcesData* network_resources_data,
+    const String& request_id,
+    const String& loader_id,
+    const KURL& requested_url)
+    : network_resources_data_(network_resources_data),
+      request_id_(request_id),
+      loader_id_(loader_id),
+      requested_url_(requested_url),
+      base64_encoded_(false),
+      is_content_evicted_(false),
+      type_(InspectorPageAgent::kOtherResource),
+      http_status_code_(0),
+      raw_header_size_(0),
+      pending_encoded_data_length_(0),
+      cached_resource_(nullptr) {}
 
 DEFINE_TRACE(NetworkResourcesData::ResourceData) {
-  visitor->trace(m_networkResourcesData);
-  visitor->trace(m_xhrReplayData);
-  visitor->template registerWeakMembers<
+  visitor->Trace(network_resources_data_);
+  visitor->Trace(xhr_replay_data_);
+  visitor->template RegisterWeakMembers<
       NetworkResourcesData::ResourceData,
-      &NetworkResourcesData::ResourceData::clearWeakMembers>(this);
+      &NetworkResourcesData::ResourceData::ClearWeakMembers>(this);
 }
 
-void NetworkResourcesData::ResourceData::setContent(const String& content,
-                                                    bool base64Encoded) {
-  ASSERT(!hasData());
-  ASSERT(!hasContent());
-  m_content = content;
-  m_base64Encoded = base64Encoded;
+void NetworkResourcesData::ResourceData::SetContent(const String& content,
+                                                    bool base64_encoded) {
+  ASSERT(!HasData());
+  ASSERT(!HasContent());
+  content_ = content;
+  base64_encoded_ = base64_encoded;
 }
 
-size_t NetworkResourcesData::ResourceData::removeContent() {
+size_t NetworkResourcesData::ResourceData::RemoveContent() {
   size_t result = 0;
-  if (hasData()) {
-    ASSERT(!hasContent());
-    result = m_dataBuffer->size();
-    m_dataBuffer = nullptr;
+  if (HasData()) {
+    ASSERT(!HasContent());
+    result = data_buffer_->size();
+    data_buffer_ = nullptr;
   }
 
-  if (hasContent()) {
-    ASSERT(!hasData());
-    result = m_content.charactersSizeInBytes();
-    m_content = String();
+  if (HasContent()) {
+    ASSERT(!HasData());
+    result = content_.CharactersSizeInBytes();
+    content_ = String();
   }
   return result;
 }
 
-size_t NetworkResourcesData::ResourceData::evictContent() {
-  m_isContentEvicted = true;
-  return removeContent();
+size_t NetworkResourcesData::ResourceData::EvictContent() {
+  is_content_evicted_ = true;
+  return RemoveContent();
 }
 
-void NetworkResourcesData::ResourceData::setResource(Resource* cachedResource) {
-  m_cachedResource = cachedResource;
+void NetworkResourcesData::ResourceData::SetResource(
+    Resource* cached_resource) {
+  cached_resource_ = cached_resource;
 }
 
-void NetworkResourcesData::ResourceData::clearWeakMembers(Visitor* visitor) {
-  if (!m_cachedResource || ThreadHeap::isHeapObjectAlive(m_cachedResource))
+void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
+  if (!cached_resource_ || ThreadHeap::IsHeapObjectAlive(cached_resource_))
     return;
 
   // Mark loaded resources or resources without the buffer as loaded.
-  if (m_cachedResource->isLoaded() || !m_cachedResource->resourceBuffer()) {
-    if (!isErrorStatusCode(m_cachedResource->response().httpStatusCode())) {
+  if (cached_resource_->IsLoaded() || !cached_resource_->ResourceBuffer()) {
+    if (!IsErrorStatusCode(cached_resource_->GetResponse().HttpStatusCode())) {
       String content;
-      bool base64Encoded;
-      if (InspectorPageAgent::cachedResourceContent(m_cachedResource, &content,
-                                                    &base64Encoded))
-        m_networkResourcesData->setResourceContent(requestId(), content,
-                                                   base64Encoded);
+      bool base64_encoded;
+      if (InspectorPageAgent::CachedResourceContent(cached_resource_, &content,
+                                                    &base64_encoded))
+        network_resources_data_->SetResourceContent(RequestId(), content,
+                                                    base64_encoded);
     }
   } else {
     // We could be evicting resource being loaded, save the loaded part, the
     // rest will be appended.
-    m_networkResourcesData->maybeAddResourceData(
-        requestId(), m_cachedResource->resourceBuffer()->data(),
-        m_cachedResource->resourceBuffer()->size());
+    network_resources_data_->MaybeAddResourceData(
+        RequestId(), cached_resource_->ResourceBuffer()->Data(),
+        cached_resource_->ResourceBuffer()->size());
   }
-  m_cachedResource = nullptr;
+  cached_resource_ = nullptr;
 }
 
-size_t NetworkResourcesData::ResourceData::dataLength() const {
-  return m_dataBuffer ? m_dataBuffer->size() : 0;
+size_t NetworkResourcesData::ResourceData::DataLength() const {
+  return data_buffer_ ? data_buffer_->size() : 0;
 }
 
-void NetworkResourcesData::ResourceData::appendData(const char* data,
-                                                    size_t dataLength) {
-  ASSERT(!hasContent());
-  if (!m_dataBuffer)
-    m_dataBuffer = SharedBuffer::create(data, dataLength);
+void NetworkResourcesData::ResourceData::AppendData(const char* data,
+                                                    size_t data_length) {
+  ASSERT(!HasContent());
+  if (!data_buffer_)
+    data_buffer_ = SharedBuffer::Create(data, data_length);
   else
-    m_dataBuffer->append(data, dataLength);
+    data_buffer_->Append(data, data_length);
 }
 
-size_t NetworkResourcesData::ResourceData::decodeDataToContent() {
-  DCHECK(!hasContent());
-  DCHECK(hasData());
-  size_t dataLength = m_dataBuffer->size();
-  bool success = InspectorPageAgent::sharedBufferContent(
-      m_dataBuffer, m_mimeType, m_textEncodingName, &m_content,
-      &m_base64Encoded);
+size_t NetworkResourcesData::ResourceData::DecodeDataToContent() {
+  DCHECK(!HasContent());
+  DCHECK(HasData());
+  size_t data_length = data_buffer_->size();
+  bool success = InspectorPageAgent::SharedBufferContent(
+      data_buffer_, mime_type_, text_encoding_name_, &content_,
+      &base64_encoded_);
   DCHECK(success);
-  m_dataBuffer = nullptr;
-  return m_content.charactersSizeInBytes() - dataLength;
+  data_buffer_ = nullptr;
+  return content_.CharactersSizeInBytes() - data_length;
 }
 
 // NetworkResourcesData
-NetworkResourcesData::NetworkResourcesData(size_t totalBufferSize,
-                                           size_t resourceBufferSize)
-    : m_contentSize(0),
-      m_maximumResourcesContentSize(totalBufferSize),
-      m_maximumSingleResourceContentSize(resourceBufferSize) {}
+NetworkResourcesData::NetworkResourcesData(size_t total_buffer_size,
+                                           size_t resource_buffer_size)
+    : content_size_(0),
+      maximum_resources_content_size_(total_buffer_size),
+      maximum_single_resource_content_size_(resource_buffer_size) {}
 
 NetworkResourcesData::~NetworkResourcesData() {}
 
 DEFINE_TRACE(NetworkResourcesData) {
-  visitor->trace(m_requestIdToResourceDataMap);
+  visitor->Trace(request_id_to_resource_data_map_);
 }
 
-void NetworkResourcesData::resourceCreated(const String& requestId,
-                                           const String& loaderId,
-                                           const KURL& requestedURL) {
-  ensureNoDataForRequestId(requestId);
-  m_requestIdToResourceDataMap.set(
-      requestId, new ResourceData(this, requestId, loaderId, requestedURL));
+void NetworkResourcesData::ResourceCreated(const String& request_id,
+                                           const String& loader_id,
+                                           const KURL& requested_url) {
+  EnsureNoDataForRequestId(request_id);
+  request_id_to_resource_data_map_.Set(
+      request_id, new ResourceData(this, request_id, loader_id, requested_url));
 }
 
-void NetworkResourcesData::responseReceived(const String& requestId,
-                                            const String& frameId,
+void NetworkResourcesData::ResponseReceived(const String& request_id,
+                                            const String& frame_id,
                                             const ResourceResponse& response) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  resourceData->setFrameId(frameId);
-  resourceData->setMimeType(response.mimeType());
-  resourceData->setTextEncodingName(response.textEncodingName());
-  resourceData->setHTTPStatusCode(response.httpStatusCode());
-  resourceData->setRawHeaderSize(response.encodedDataLength());
+  resource_data->SetFrameId(frame_id);
+  resource_data->SetMimeType(response.MimeType());
+  resource_data->SetTextEncodingName(response.TextEncodingName());
+  resource_data->SetHTTPStatusCode(response.HttpStatusCode());
+  resource_data->SetRawHeaderSize(response.EncodedDataLength());
 
-  String filePath = response.downloadedFilePath();
-  if (!filePath.isEmpty()) {
-    std::unique_ptr<BlobData> blobData =
-        BlobData::createForFileWithUnknownSize(filePath);
-    AtomicString mimeType;
-    if (response.isHTTP())
-      mimeType = extractMIMETypeFromMediaType(
-          response.httpHeaderField(HTTPNames::Content_Type));
-    if (mimeType.isEmpty())
-      mimeType = response.mimeType();
-    if (mimeType.isEmpty())
-      mimeType = AtomicString("text/plain");
-    blobData->setContentType(mimeType);
-    resourceData->setDownloadedFileBlob(
-        BlobDataHandle::create(std::move(blobData), -1));
+  String file_path = response.DownloadedFilePath();
+  if (!file_path.IsEmpty()) {
+    std::unique_ptr<BlobData> blob_data =
+        BlobData::CreateForFileWithUnknownSize(file_path);
+    AtomicString mime_type;
+    if (response.IsHTTP())
+      mime_type = ExtractMIMETypeFromMediaType(
+          response.HttpHeaderField(HTTPNames::Content_Type));
+    if (mime_type.IsEmpty())
+      mime_type = response.MimeType();
+    if (mime_type.IsEmpty())
+      mime_type = AtomicString("text/plain");
+    blob_data->SetContentType(mime_type);
+    resource_data->SetDownloadedFileBlob(
+        BlobDataHandle::Create(std::move(blob_data), -1));
   }
 }
 
-void NetworkResourcesData::setResourceType(
-    const String& requestId,
+void NetworkResourcesData::SetResourceType(
+    const String& request_id,
     InspectorPageAgent::ResourceType type) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  resourceData->setType(type);
+  resource_data->SetType(type);
 }
 
-InspectorPageAgent::ResourceType NetworkResourcesData::resourceType(
-    const String& requestId) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
-    return InspectorPageAgent::OtherResource;
-  return resourceData->type();
+InspectorPageAgent::ResourceType NetworkResourcesData::GetResourceType(
+    const String& request_id) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
+    return InspectorPageAgent::kOtherResource;
+  return resource_data->GetType();
 }
 
-void NetworkResourcesData::setResourceContent(const String& requestId,
+void NetworkResourcesData::SetResourceContent(const String& request_id,
                                               const String& content,
-                                              bool base64Encoded) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+                                              bool base64_encoded) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  size_t dataLength = content.charactersSizeInBytes();
-  if (dataLength > m_maximumSingleResourceContentSize)
+  size_t data_length = content.CharactersSizeInBytes();
+  if (data_length > maximum_single_resource_content_size_)
     return;
-  if (resourceData->isContentEvicted())
+  if (resource_data->IsContentEvicted())
     return;
-  if (ensureFreeSpace(dataLength) && !resourceData->isContentEvicted()) {
+  if (EnsureFreeSpace(data_length) && !resource_data->IsContentEvicted()) {
     // We can not be sure that we didn't try to save this request data while it
     // was loading, so remove it, if any.
-    if (resourceData->hasContent())
-      m_contentSize -= resourceData->removeContent();
-    m_requestIdsDeque.push_back(requestId);
-    resourceData->setContent(content, base64Encoded);
-    m_contentSize += dataLength;
+    if (resource_data->HasContent())
+      content_size_ -= resource_data->RemoveContent();
+    request_ids_deque_.push_back(request_id);
+    resource_data->SetContent(content, base64_encoded);
+    content_size_ += data_length;
   }
 }
 
-void NetworkResourcesData::maybeAddResourceData(const String& requestId,
+void NetworkResourcesData::MaybeAddResourceData(const String& request_id,
                                                 const char* data,
-                                                size_t dataLength) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+                                                size_t data_length) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  if (resourceData->dataLength() + dataLength >
-      m_maximumSingleResourceContentSize)
-    m_contentSize -= resourceData->evictContent();
-  if (resourceData->isContentEvicted())
+  if (resource_data->DataLength() + data_length >
+      maximum_single_resource_content_size_)
+    content_size_ -= resource_data->EvictContent();
+  if (resource_data->IsContentEvicted())
     return;
-  if (ensureFreeSpace(dataLength) && !resourceData->isContentEvicted()) {
-    m_requestIdsDeque.push_back(requestId);
-    resourceData->appendData(data, dataLength);
-    m_contentSize += dataLength;
+  if (EnsureFreeSpace(data_length) && !resource_data->IsContentEvicted()) {
+    request_ids_deque_.push_back(request_id);
+    resource_data->AppendData(data, data_length);
+    content_size_ += data_length;
   }
 }
 
-void NetworkResourcesData::maybeDecodeDataToContent(const String& requestId) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+void NetworkResourcesData::MaybeDecodeDataToContent(const String& request_id) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  if (!resourceData->hasData())
+  if (!resource_data->HasData())
     return;
-  m_contentSize += resourceData->decodeDataToContent();
-  size_t dataLength = resourceData->content().charactersSizeInBytes();
-  if (dataLength > m_maximumSingleResourceContentSize)
-    m_contentSize -= resourceData->evictContent();
+  content_size_ += resource_data->DecodeDataToContent();
+  size_t data_length = resource_data->Content().CharactersSizeInBytes();
+  if (data_length > maximum_single_resource_content_size_)
+    content_size_ -= resource_data->EvictContent();
 }
 
-void NetworkResourcesData::addResource(const String& requestId,
-                                       Resource* cachedResource) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+void NetworkResourcesData::AddResource(const String& request_id,
+                                       Resource* cached_resource) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  resourceData->setResource(cachedResource);
+  resource_data->SetResource(cached_resource);
 }
 
-NetworkResourcesData::ResourceData const* NetworkResourcesData::data(
-    const String& requestId) {
-  return resourceDataForRequestId(requestId);
+NetworkResourcesData::ResourceData const* NetworkResourcesData::Data(
+    const String& request_id) {
+  return ResourceDataForRequestId(request_id);
 }
 
-XHRReplayData* NetworkResourcesData::xhrReplayData(const String& requestId) {
-  if (m_reusedXHRReplayDataRequestIds.contains(requestId))
-    return xhrReplayData(m_reusedXHRReplayDataRequestIds.at(requestId));
+XHRReplayData* NetworkResourcesData::XhrReplayData(const String& request_id) {
+  if (reused_xhr_replay_data_request_ids_.Contains(request_id))
+    return XhrReplayData(reused_xhr_replay_data_request_ids_.at(request_id));
 
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return 0;
-  return resourceData->xhrReplayData();
+  return resource_data->XhrReplayData();
 }
 
-void NetworkResourcesData::setCertificate(
-    const String& requestId,
+void NetworkResourcesData::SetCertificate(
+    const String& request_id,
     const Vector<AtomicString>& certificate) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  resourceData->setCertificate(certificate);
+  resource_data->SetCertificate(certificate);
 }
 
-void NetworkResourcesData::setXHRReplayData(const String& requestId,
-                                            XHRReplayData* xhrReplayData) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData) {
+void NetworkResourcesData::SetXHRReplayData(const String& request_id,
+                                            XHRReplayData* xhr_replay_data) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data) {
     Vector<String> result;
-    for (auto& request : m_reusedXHRReplayDataRequestIds) {
-      if (request.value == requestId)
-        setXHRReplayData(request.key, xhrReplayData);
+    for (auto& request : reused_xhr_replay_data_request_ids_) {
+      if (request.value == request_id)
+        SetXHRReplayData(request.key, xhr_replay_data);
     }
     return;
   }
 
-  resourceData->setXHRReplayData(xhrReplayData);
+  resource_data->SetXHRReplayData(xhr_replay_data);
 }
 
 HeapVector<Member<NetworkResourcesData::ResourceData>>
-NetworkResourcesData::resources() {
+NetworkResourcesData::Resources() {
   HeapVector<Member<ResourceData>> result;
-  for (auto& request : m_requestIdToResourceDataMap)
+  for (auto& request : request_id_to_resource_data_map_)
     result.push_back(request.value);
   return result;
 }
 
-int NetworkResourcesData::getAndClearPendingEncodedDataLength(
-    const String& requestId) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+int NetworkResourcesData::GetAndClearPendingEncodedDataLength(
+    const String& request_id) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return 0;
 
-  int pendingEncodedDataLength = resourceData->pendingEncodedDataLength();
-  resourceData->clearPendingEncodedDataLength();
-  return pendingEncodedDataLength;
+  int pending_encoded_data_length = resource_data->PendingEncodedDataLength();
+  resource_data->ClearPendingEncodedDataLength();
+  return pending_encoded_data_length;
 }
 
-void NetworkResourcesData::addPendingEncodedDataLength(const String& requestId,
-                                                       int encodedDataLength) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+void NetworkResourcesData::AddPendingEncodedDataLength(
+    const String& request_id,
+    int encoded_data_length) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
 
-  resourceData->addPendingEncodedDataLength(encodedDataLength);
+  resource_data->AddPendingEncodedDataLength(encoded_data_length);
 }
 
-void NetworkResourcesData::clear(const String& preservedLoaderId) {
-  if (!m_requestIdToResourceDataMap.size())
+void NetworkResourcesData::Clear(const String& preserved_loader_id) {
+  if (!request_id_to_resource_data_map_.size())
     return;
-  m_requestIdsDeque.clear();
-  m_contentSize = 0;
+  request_ids_deque_.Clear();
+  content_size_ = 0;
 
-  ResourceDataMap preservedMap;
+  ResourceDataMap preserved_map;
 
-  for (auto& resource : m_requestIdToResourceDataMap) {
-    ResourceData* resourceData = resource.value;
-    if (!preservedLoaderId.isNull() &&
-        resourceData->loaderId() == preservedLoaderId)
-      preservedMap.set(resource.key, resource.value);
+  for (auto& resource : request_id_to_resource_data_map_) {
+    ResourceData* resource_data = resource.value;
+    if (!preserved_loader_id.IsNull() &&
+        resource_data->LoaderId() == preserved_loader_id)
+      preserved_map.Set(resource.key, resource.value);
   }
-  m_requestIdToResourceDataMap.swap(preservedMap);
+  request_id_to_resource_data_map_.Swap(preserved_map);
 
-  m_reusedXHRReplayDataRequestIds.clear();
+  reused_xhr_replay_data_request_ids_.Clear();
 }
 
-void NetworkResourcesData::setResourcesDataSizeLimits(
-    size_t resourcesContentSize,
-    size_t singleResourceContentSize) {
-  clear();
-  m_maximumResourcesContentSize = resourcesContentSize;
-  m_maximumSingleResourceContentSize = singleResourceContentSize;
+void NetworkResourcesData::SetResourcesDataSizeLimits(
+    size_t resources_content_size,
+    size_t single_resource_content_size) {
+  Clear();
+  maximum_resources_content_size_ = resources_content_size;
+  maximum_single_resource_content_size_ = single_resource_content_size;
 }
 
 NetworkResourcesData::ResourceData*
-NetworkResourcesData::resourceDataForRequestId(const String& requestId) {
-  if (requestId.isNull())
+NetworkResourcesData::ResourceDataForRequestId(const String& request_id) {
+  if (request_id.IsNull())
     return 0;
-  return m_requestIdToResourceDataMap.at(requestId);
+  return request_id_to_resource_data_map_.at(request_id);
 }
 
-void NetworkResourcesData::ensureNoDataForRequestId(const String& requestId) {
-  ResourceData* resourceData = resourceDataForRequestId(requestId);
-  if (!resourceData)
+void NetworkResourcesData::EnsureNoDataForRequestId(const String& request_id) {
+  ResourceData* resource_data = ResourceDataForRequestId(request_id);
+  if (!resource_data)
     return;
-  if (resourceData->hasContent() || resourceData->hasData())
-    m_contentSize -= resourceData->evictContent();
-  m_requestIdToResourceDataMap.erase(requestId);
+  if (resource_data->HasContent() || resource_data->HasData())
+    content_size_ -= resource_data->EvictContent();
+  request_id_to_resource_data_map_.erase(request_id);
 }
 
-bool NetworkResourcesData::ensureFreeSpace(size_t size) {
-  if (size > m_maximumResourcesContentSize)
+bool NetworkResourcesData::EnsureFreeSpace(size_t size) {
+  if (size > maximum_resources_content_size_)
     return false;
 
-  while (size > m_maximumResourcesContentSize - m_contentSize) {
-    String requestId = m_requestIdsDeque.takeFirst();
-    ResourceData* resourceData = resourceDataForRequestId(requestId);
-    if (resourceData)
-      m_contentSize -= resourceData->evictContent();
+  while (size > maximum_resources_content_size_ - content_size_) {
+    String request_id = request_ids_deque_.TakeFirst();
+    ResourceData* resource_data = ResourceDataForRequestId(request_id);
+    if (resource_data)
+      content_size_ -= resource_data->EvictContent();
   }
   return true;
 }

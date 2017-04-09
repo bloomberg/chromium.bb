@@ -62,448 +62,454 @@ namespace blink {
 using protocol::Array;
 using protocol::Maybe;
 using protocol::Response;
-unsigned InspectorLayerTreeAgent::s_lastSnapshotId;
+unsigned InspectorLayerTreeAgent::last_snapshot_id_;
 
-inline String idForLayer(const GraphicsLayer* graphicsLayer) {
-  return String::number(graphicsLayer->platformLayer()->id());
+inline String IdForLayer(const GraphicsLayer* graphics_layer) {
+  return String::Number(graphics_layer->PlatformLayer()->Id());
 }
 
-static std::unique_ptr<protocol::LayerTree::ScrollRect> buildScrollRect(
+static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
     const WebRect& rect,
     const String& type) {
-  std::unique_ptr<protocol::DOM::Rect> rectObject =
+  std::unique_ptr<protocol::DOM::Rect> rect_object =
       protocol::DOM::Rect::create()
           .setX(rect.x)
           .setY(rect.y)
           .setHeight(rect.height)
           .setWidth(rect.width)
           .build();
-  std::unique_ptr<protocol::LayerTree::ScrollRect> scrollRectObject =
+  std::unique_ptr<protocol::LayerTree::ScrollRect> scroll_rect_object =
       protocol::LayerTree::ScrollRect::create()
-          .setRect(std::move(rectObject))
+          .setRect(std::move(rect_object))
           .setType(type)
           .build();
-  return scrollRectObject;
+  return scroll_rect_object;
 }
 
 static std::unique_ptr<Array<protocol::LayerTree::ScrollRect>>
-buildScrollRectsForLayer(GraphicsLayer* graphicsLayer,
-                         bool reportWheelScrollers) {
-  std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scrollRects =
+BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
+                         bool report_wheel_scrollers) {
+  std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       Array<protocol::LayerTree::ScrollRect>::create();
-  WebLayer* webLayer = graphicsLayer->platformLayer();
-  WebVector<WebRect> nonFastScrollableRects =
-      webLayer->nonFastScrollableRegion();
-  for (size_t i = 0; i < nonFastScrollableRects.size(); ++i) {
-    scrollRects->addItem(buildScrollRect(
-        nonFastScrollableRects[i],
+  WebLayer* web_layer = graphics_layer->PlatformLayer();
+  WebVector<WebRect> non_fast_scrollable_rects =
+      web_layer->NonFastScrollableRegion();
+  for (size_t i = 0; i < non_fast_scrollable_rects.size(); ++i) {
+    scroll_rects->addItem(BuildScrollRect(
+        non_fast_scrollable_rects[i],
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
-  WebVector<WebRect> touchEventHandlerRects =
-      webLayer->touchEventHandlerRegion();
-  for (size_t i = 0; i < touchEventHandlerRects.size(); ++i) {
-    scrollRects->addItem(buildScrollRect(
-        touchEventHandlerRects[i],
+  WebVector<WebRect> touch_event_handler_rects =
+      web_layer->TouchEventHandlerRegion();
+  for (size_t i = 0; i < touch_event_handler_rects.size(); ++i) {
+    scroll_rects->addItem(BuildScrollRect(
+        touch_event_handler_rects[i],
         protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
   }
-  if (reportWheelScrollers) {
-    WebRect webRect(webLayer->position().x, webLayer->position().y,
-                    webLayer->bounds().width, webLayer->bounds().height);
-    scrollRects->addItem(buildScrollRect(
-        webRect, protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
+  if (report_wheel_scrollers) {
+    WebRect web_rect(web_layer->GetPosition().x, web_layer->GetPosition().y,
+                     web_layer->Bounds().width, web_layer->Bounds().height);
+    scroll_rects->addItem(BuildScrollRect(
+        web_rect,
+        protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
-  return scrollRects->length() ? std::move(scrollRects) : nullptr;
+  return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
 }
 
-static std::unique_ptr<protocol::LayerTree::Layer> buildObjectForLayer(
-    GraphicsLayer* graphicsLayer,
-    int nodeId,
-    bool reportWheelEventListeners) {
-  WebLayer* webLayer = graphicsLayer->platformLayer();
-  std::unique_ptr<protocol::LayerTree::Layer> layerObject =
+static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
+    GraphicsLayer* graphics_layer,
+    int node_id,
+    bool report_wheel_event_listeners) {
+  WebLayer* web_layer = graphics_layer->PlatformLayer();
+  std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
-          .setLayerId(idForLayer(graphicsLayer))
-          .setOffsetX(webLayer->position().x)
-          .setOffsetY(webLayer->position().y)
-          .setWidth(webLayer->bounds().width)
-          .setHeight(webLayer->bounds().height)
-          .setPaintCount(graphicsLayer->paintCount())
-          .setDrawsContent(webLayer->drawsContent())
+          .setLayerId(IdForLayer(graphics_layer))
+          .setOffsetX(web_layer->GetPosition().x)
+          .setOffsetY(web_layer->GetPosition().y)
+          .setWidth(web_layer->Bounds().width)
+          .setHeight(web_layer->Bounds().height)
+          .setPaintCount(graphics_layer->PaintCount())
+          .setDrawsContent(web_layer->DrawsContent())
           .build();
 
-  if (nodeId)
-    layerObject->setBackendNodeId(nodeId);
+  if (node_id)
+    layer_object->setBackendNodeId(node_id);
 
-  GraphicsLayer* parent = graphicsLayer->parent();
+  GraphicsLayer* parent = graphics_layer->Parent();
   if (parent)
-    layerObject->setParentLayerId(idForLayer(parent));
-  if (!graphicsLayer->contentsAreVisible())
-    layerObject->setInvisible(true);
-  const TransformationMatrix& transform = graphicsLayer->transform();
-  if (!transform.isIdentity()) {
-    TransformationMatrix::FloatMatrix4 flattenedMatrix;
-    transform.toColumnMajorFloatArray(flattenedMatrix);
-    std::unique_ptr<Array<double>> transformArray = Array<double>::create();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattenedMatrix); ++i)
-      transformArray->addItem(flattenedMatrix[i]);
-    layerObject->setTransform(std::move(transformArray));
-    const FloatPoint3D& transformOrigin = graphicsLayer->transformOrigin();
+    layer_object->setParentLayerId(IdForLayer(parent));
+  if (!graphics_layer->ContentsAreVisible())
+    layer_object->setInvisible(true);
+  const TransformationMatrix& transform = graphics_layer->Transform();
+  if (!transform.IsIdentity()) {
+    TransformationMatrix::FloatMatrix4 flattened_matrix;
+    transform.ToColumnMajorFloatArray(flattened_matrix);
+    std::unique_ptr<Array<double>> transform_array = Array<double>::create();
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattened_matrix); ++i)
+      transform_array->addItem(flattened_matrix[i]);
+    layer_object->setTransform(std::move(transform_array));
+    const FloatPoint3D& transform_origin = graphics_layer->TransformOrigin();
     // FIXME: rename these to setTransformOrigin*
-    if (webLayer->bounds().width > 0)
-      layerObject->setAnchorX(transformOrigin.x() / webLayer->bounds().width);
+    if (web_layer->Bounds().width > 0)
+      layer_object->setAnchorX(transform_origin.X() /
+                               web_layer->Bounds().width);
     else
-      layerObject->setAnchorX(0.0);
-    if (webLayer->bounds().height > 0)
-      layerObject->setAnchorY(transformOrigin.y() / webLayer->bounds().height);
+      layer_object->setAnchorX(0.0);
+    if (web_layer->Bounds().height > 0)
+      layer_object->setAnchorY(transform_origin.Y() /
+                               web_layer->Bounds().height);
     else
-      layerObject->setAnchorY(0.0);
-    layerObject->setAnchorZ(transformOrigin.z());
+      layer_object->setAnchorY(0.0);
+    layer_object->setAnchorZ(transform_origin.Z());
   }
-  std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scrollRects =
-      buildScrollRectsForLayer(graphicsLayer, reportWheelEventListeners);
-  if (scrollRects)
-    layerObject->setScrollRects(std::move(scrollRects));
-  return layerObject;
+  std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
+      BuildScrollRectsForLayer(graphics_layer, report_wheel_event_listeners);
+  if (scroll_rects)
+    layer_object->setScrollRects(std::move(scroll_rects));
+  return layer_object;
 }
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(
-    InspectedFrames* inspectedFrames)
-    : m_inspectedFrames(inspectedFrames), m_suppressLayerPaintEvents(false) {}
+    InspectedFrames* inspected_frames)
+    : inspected_frames_(inspected_frames),
+      suppress_layer_paint_events_(false) {}
 
 InspectorLayerTreeAgent::~InspectorLayerTreeAgent() {}
 
 DEFINE_TRACE(InspectorLayerTreeAgent) {
-  visitor->trace(m_inspectedFrames);
-  InspectorBaseAgent::trace(visitor);
+  visitor->Trace(inspected_frames_);
+  InspectorBaseAgent::Trace(visitor);
 }
 
-void InspectorLayerTreeAgent::restore() {
+void InspectorLayerTreeAgent::Restore() {
   // We do not re-enable layer agent automatically after navigation. This is
   // because it depends on DOMAgent and node ids in particular, so we let
   // front-end request document and re-enable the agent manually after this.
 }
 
 Response InspectorLayerTreeAgent::enable() {
-  m_instrumentingAgents->addInspectorLayerTreeAgent(this);
-  Document* document = m_inspectedFrames->root()->document();
+  instrumenting_agents_->addInspectorLayerTreeAgent(this);
+  Document* document = inspected_frames_->Root()->GetDocument();
   if (document &&
-      document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
-    layerTreeDidChange();
+      document->Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean)
+    LayerTreeDidChange();
   return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::disable() {
-  m_instrumentingAgents->removeInspectorLayerTreeAgent(this);
-  m_snapshotById.clear();
+  instrumenting_agents_->removeInspectorLayerTreeAgent(this);
+  snapshot_by_id_.Clear();
   return Response::OK();
 }
 
-void InspectorLayerTreeAgent::layerTreeDidChange() {
-  frontend()->layerTreeDidChange(buildLayerTree());
+void InspectorLayerTreeAgent::LayerTreeDidChange() {
+  GetFrontend()->layerTreeDidChange(BuildLayerTree());
 }
 
-void InspectorLayerTreeAgent::didPaint(const GraphicsLayer* graphicsLayer,
+void InspectorLayerTreeAgent::DidPaint(const GraphicsLayer* graphics_layer,
                                        GraphicsContext&,
                                        const LayoutRect& rect) {
-  if (m_suppressLayerPaintEvents)
+  if (suppress_layer_paint_events_)
     return;
   // Should only happen for FrameView paints when compositing is off. Consider
   // different instrumentation method for that.
-  if (!graphicsLayer)
+  if (!graphics_layer)
     return;
 
-  std::unique_ptr<protocol::DOM::Rect> domRect = protocol::DOM::Rect::create()
-                                                     .setX(rect.x())
-                                                     .setY(rect.y())
-                                                     .setWidth(rect.width())
-                                                     .setHeight(rect.height())
-                                                     .build();
-  frontend()->layerPainted(idForLayer(graphicsLayer), std::move(domRect));
+  std::unique_ptr<protocol::DOM::Rect> dom_rect = protocol::DOM::Rect::create()
+                                                      .setX(rect.X())
+                                                      .setY(rect.Y())
+                                                      .setWidth(rect.Width())
+                                                      .setHeight(rect.Height())
+                                                      .build();
+  GetFrontend()->layerPainted(IdForLayer(graphics_layer), std::move(dom_rect));
 }
 
 std::unique_ptr<Array<protocol::LayerTree::Layer>>
-InspectorLayerTreeAgent::buildLayerTree() {
-  PaintLayerCompositor* compositor = paintLayerCompositor();
-  if (!compositor || !compositor->inCompositingMode())
+InspectorLayerTreeAgent::BuildLayerTree() {
+  PaintLayerCompositor* compositor = GetPaintLayerCompositor();
+  if (!compositor || !compositor->InCompositingMode())
     return nullptr;
 
-  LayerIdToNodeIdMap layerIdToNodeIdMap;
+  LayerIdToNodeIdMap layer_id_to_node_id_map;
   std::unique_ptr<Array<protocol::LayerTree::Layer>> layers =
       Array<protocol::LayerTree::Layer>::create();
-  buildLayerIdToNodeIdMap(compositor->rootLayer(), layerIdToNodeIdMap);
-  int scrollingLayerId = m_inspectedFrames->root()
-                             ->view()
-                             ->layerForScrolling()
-                             ->platformLayer()
-                             ->id();
-  bool haveBlockingWheelEventHandlers =
-      m_inspectedFrames->root()->chromeClient().eventListenerProperties(
-          m_inspectedFrames->root(), WebEventListenerClass::MouseWheel) ==
-      WebEventListenerProperties::Blocking;
+  BuildLayerIdToNodeIdMap(compositor->RootLayer(), layer_id_to_node_id_map);
+  int scrolling_layer_id = inspected_frames_->Root()
+                               ->View()
+                               ->LayerForScrolling()
+                               ->PlatformLayer()
+                               ->Id();
+  bool have_blocking_wheel_event_handlers =
+      inspected_frames_->Root()->GetChromeClient().EventListenerProperties(
+          inspected_frames_->Root(), WebEventListenerClass::kMouseWheel) ==
+      WebEventListenerProperties::kBlocking;
 
-  gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers,
-                       haveBlockingWheelEventHandlers, scrollingLayerId);
+  GatherGraphicsLayers(RootGraphicsLayer(), layer_id_to_node_id_map, layers,
+                       have_blocking_wheel_event_handlers, scrolling_layer_id);
   return layers;
 }
 
-void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(
+void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
     PaintLayer* root,
-    LayerIdToNodeIdMap& layerIdToNodeIdMap) {
-  if (root->hasCompositedLayerMapping()) {
-    if (Node* node = root->layoutObject().generatingNode()) {
-      GraphicsLayer* graphicsLayer =
-          root->compositedLayerMapping()->childForSuperlayers();
-      layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(),
-                             idForNode(node));
+    LayerIdToNodeIdMap& layer_id_to_node_id_map) {
+  if (root->HasCompositedLayerMapping()) {
+    if (Node* node = root->GetLayoutObject().GeneratingNode()) {
+      GraphicsLayer* graphics_layer =
+          root->GetCompositedLayerMapping()->ChildForSuperlayers();
+      layer_id_to_node_id_map.Set(graphics_layer->PlatformLayer()->Id(),
+                                  IdForNode(node));
     }
   }
-  for (PaintLayer* child = root->firstChild(); child;
-       child = child->nextSibling())
-    buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
-  if (!root->layoutObject().isLayoutIFrame())
+  for (PaintLayer* child = root->FirstChild(); child;
+       child = child->NextSibling())
+    BuildLayerIdToNodeIdMap(child, layer_id_to_node_id_map);
+  if (!root->GetLayoutObject().IsLayoutIFrame())
     return;
-  FrameView* childFrameView =
-      toFrameView(toLayoutPart(root->layoutObject()).frameViewBase());
-  LayoutViewItem childLayoutViewItem = childFrameView->layoutViewItem();
-  if (!childLayoutViewItem.isNull()) {
-    if (PaintLayerCompositor* childCompositor =
-            childLayoutViewItem.compositor())
-      buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);
+  FrameView* child_frame_view =
+      ToFrameView(ToLayoutPart(root->GetLayoutObject()).GetFrameViewBase());
+  LayoutViewItem child_layout_view_item = child_frame_view->GetLayoutViewItem();
+  if (!child_layout_view_item.IsNull()) {
+    if (PaintLayerCompositor* child_compositor =
+            child_layout_view_item.Compositor())
+      BuildLayerIdToNodeIdMap(child_compositor->RootLayer(),
+                              layer_id_to_node_id_map);
   }
 }
 
-void InspectorLayerTreeAgent::gatherGraphicsLayers(
+void InspectorLayerTreeAgent::GatherGraphicsLayers(
     GraphicsLayer* root,
-    HashMap<int, int>& layerIdToNodeIdMap,
+    HashMap<int, int>& layer_id_to_node_id_map,
     std::unique_ptr<Array<protocol::LayerTree::Layer>>& layers,
-    bool hasWheelEventHandlers,
-    int scrollingLayerId) {
-  int layerId = root->platformLayer()->id();
-  if (m_pageOverlayLayerIds.find(layerId) != WTF::kNotFound)
+    bool has_wheel_event_handlers,
+    int scrolling_layer_id) {
+  int layer_id = root->PlatformLayer()->Id();
+  if (page_overlay_layer_ids_.Find(layer_id) != WTF::kNotFound)
     return;
-  layers->addItem(buildObjectForLayer(
-      root, layerIdToNodeIdMap.at(layerId),
-      hasWheelEventHandlers && layerId == scrollingLayerId));
-  for (size_t i = 0, size = root->children().size(); i < size; ++i)
-    gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers,
-                         hasWheelEventHandlers, scrollingLayerId);
+  layers->addItem(BuildObjectForLayer(
+      root, layer_id_to_node_id_map.at(layer_id),
+      has_wheel_event_handlers && layer_id == scrolling_layer_id));
+  for (size_t i = 0, size = root->Children().size(); i < size; ++i)
+    GatherGraphicsLayers(root->Children()[i], layer_id_to_node_id_map, layers,
+                         has_wheel_event_handlers, scrolling_layer_id);
 }
 
-int InspectorLayerTreeAgent::idForNode(Node* node) {
-  return DOMNodeIds::idForNode(node);
+int InspectorLayerTreeAgent::IdForNode(Node* node) {
+  return DOMNodeIds::IdForNode(node);
 }
 
-PaintLayerCompositor* InspectorLayerTreeAgent::paintLayerCompositor() {
-  LayoutViewItem layoutView = m_inspectedFrames->root()->contentLayoutItem();
+PaintLayerCompositor* InspectorLayerTreeAgent::GetPaintLayerCompositor() {
+  LayoutViewItem layout_view = inspected_frames_->Root()->ContentLayoutItem();
   PaintLayerCompositor* compositor =
-      layoutView.isNull() ? nullptr : layoutView.compositor();
+      layout_view.IsNull() ? nullptr : layout_view.Compositor();
   return compositor;
 }
 
-GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer() {
-  return m_inspectedFrames->root()
-      ->page()
-      ->visualViewport()
-      .rootGraphicsLayer();
+GraphicsLayer* InspectorLayerTreeAgent::RootGraphicsLayer() {
+  return inspected_frames_->Root()
+      ->GetPage()
+      ->GetVisualViewport()
+      .RootGraphicsLayer();
 }
 
-static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId) {
-  if (root->platformLayer()->id() == layerId)
+static GraphicsLayer* FindLayerById(GraphicsLayer* root, int layer_id) {
+  if (root->PlatformLayer()->Id() == layer_id)
     return root;
-  for (size_t i = 0, size = root->children().size(); i < size; ++i) {
-    if (GraphicsLayer* layer = findLayerById(root->children()[i], layerId))
+  for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
+    if (GraphicsLayer* layer = FindLayerById(root->Children()[i], layer_id))
       return layer;
   }
   return nullptr;
 }
 
-Response InspectorLayerTreeAgent::layerById(const String& layerId,
+Response InspectorLayerTreeAgent::LayerById(const String& layer_id,
                                             GraphicsLayer*& result) {
   bool ok;
-  int id = layerId.toInt(&ok);
+  int id = layer_id.ToInt(&ok);
   if (!ok)
     return Response::Error("Invalid layer id");
-  PaintLayerCompositor* compositor = paintLayerCompositor();
+  PaintLayerCompositor* compositor = GetPaintLayerCompositor();
   if (!compositor)
     return Response::Error("Not in compositing mode");
 
-  result = findLayerById(rootGraphicsLayer(), id);
+  result = FindLayerById(RootGraphicsLayer(), id);
   if (!result)
     return Response::Error("No layer matching given id found");
   return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::compositingReasons(
-    const String& layerId,
-    std::unique_ptr<Array<String>>* reasonStrings) {
-  GraphicsLayer* graphicsLayer = nullptr;
-  Response response = layerById(layerId, graphicsLayer);
+    const String& layer_id,
+    std::unique_ptr<Array<String>>* reason_strings) {
+  GraphicsLayer* graphics_layer = nullptr;
+  Response response = LayerById(layer_id, graphics_layer);
   if (!response.isSuccess())
     return response;
-  CompositingReasons reasonsBitmask = graphicsLayer->getCompositingReasons();
-  *reasonStrings = Array<String>::create();
+  CompositingReasons reasons_bitmask = graphics_layer->GetCompositingReasons();
+  *reason_strings = Array<String>::create();
   for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
-    if (!(reasonsBitmask & kCompositingReasonStringMap[i].reason))
+    if (!(reasons_bitmask & kCompositingReasonStringMap[i].reason))
       continue;
-    (*reasonStrings)->addItem(kCompositingReasonStringMap[i].shortName);
+    (*reason_strings)->addItem(kCompositingReasonStringMap[i].short_name);
 #ifndef _NDEBUG
-    reasonsBitmask &= ~kCompositingReasonStringMap[i].reason;
+    reasons_bitmask &= ~kCompositingReasonStringMap[i].reason;
 #endif
   }
-  ASSERT(!reasonsBitmask);
+  ASSERT(!reasons_bitmask);
   return Response::OK();
 }
 
-Response InspectorLayerTreeAgent::makeSnapshot(const String& layerId,
-                                               String* snapshotId) {
+Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
+                                               String* snapshot_id) {
   GraphicsLayer* layer = nullptr;
-  Response response = layerById(layerId, layer);
+  Response response = LayerById(layer_id, layer);
   if (!response.isSuccess())
     return response;
-  if (!layer->drawsContent())
+  if (!layer->DrawsContent())
     return Response::Error("Layer does not draw content");
 
-  IntSize size = expandedIntSize(layer->size());
+  IntSize size = ExpandedIntSize(layer->size());
 
-  IntRect interestRect(IntPoint(0, 0), size);
-  m_suppressLayerPaintEvents = true;
-  layer->paint(&interestRect);
-  m_suppressLayerPaintEvents = false;
+  IntRect interest_rect(IntPoint(0, 0), size);
+  suppress_layer_paint_events_ = true;
+  layer->Paint(&interest_rect);
+  suppress_layer_paint_events_ = false;
 
-  GraphicsContext context(layer->getPaintController());
-  context.beginRecording(interestRect);
-  layer->getPaintController().paintArtifact().replay(interestRect, context);
+  GraphicsContext context(layer->GetPaintController());
+  context.BeginRecording(interest_rect);
+  layer->GetPaintController().GetPaintArtifact().Replay(interest_rect, context);
   RefPtr<PictureSnapshot> snapshot =
-      adoptRef(new PictureSnapshot(ToSkPicture(context.endRecording())));
+      AdoptRef(new PictureSnapshot(ToSkPicture(context.EndRecording())));
 
-  *snapshotId = String::number(++s_lastSnapshotId);
-  bool newEntry = m_snapshotById.insert(*snapshotId, snapshot).isNewEntry;
-  DCHECK(newEntry);
+  *snapshot_id = String::Number(++last_snapshot_id_);
+  bool new_entry = snapshot_by_id_.insert(*snapshot_id, snapshot).is_new_entry;
+  DCHECK(new_entry);
   return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::loadSnapshot(
     std::unique_ptr<Array<protocol::LayerTree::PictureTile>> tiles,
-    String* snapshotId) {
+    String* snapshot_id) {
   if (!tiles->length())
     return Response::Error("Invalid argument, no tiles provided");
-  Vector<RefPtr<PictureSnapshot::TilePictureStream>> decodedTiles;
-  decodedTiles.grow(tiles->length());
+  Vector<RefPtr<PictureSnapshot::TilePictureStream>> decoded_tiles;
+  decoded_tiles.Grow(tiles->length());
   for (size_t i = 0; i < tiles->length(); ++i) {
     protocol::LayerTree::PictureTile* tile = tiles->get(i);
-    decodedTiles[i] = adoptRef(new PictureSnapshot::TilePictureStream());
-    decodedTiles[i]->layerOffset.set(tile->getX(), tile->getY());
-    if (!base64Decode(tile->getPicture(), decodedTiles[i]->data))
+    decoded_tiles[i] = AdoptRef(new PictureSnapshot::TilePictureStream());
+    decoded_tiles[i]->layer_offset.Set(tile->getX(), tile->getY());
+    if (!Base64Decode(tile->getPicture(), decoded_tiles[i]->data))
       return Response::Error("Invalid base64 encoding");
   }
-  RefPtr<PictureSnapshot> snapshot = PictureSnapshot::load(decodedTiles);
+  RefPtr<PictureSnapshot> snapshot = PictureSnapshot::Load(decoded_tiles);
   if (!snapshot)
     return Response::Error("Invalid snapshot format");
-  if (snapshot->isEmpty())
+  if (snapshot->IsEmpty())
     return Response::Error("Empty snapshot");
 
-  *snapshotId = String::number(++s_lastSnapshotId);
-  bool newEntry = m_snapshotById.insert(*snapshotId, snapshot).isNewEntry;
-  DCHECK(newEntry);
+  *snapshot_id = String::Number(++last_snapshot_id_);
+  bool new_entry = snapshot_by_id_.insert(*snapshot_id, snapshot).is_new_entry;
+  DCHECK(new_entry);
   return Response::OK();
 }
 
-Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshotId) {
-  SnapshotById::iterator it = m_snapshotById.find(snapshotId);
-  if (it == m_snapshotById.end())
+Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshot_id) {
+  SnapshotById::iterator it = snapshot_by_id_.Find(snapshot_id);
+  if (it == snapshot_by_id_.end())
     return Response::Error("Snapshot not found");
-  m_snapshotById.erase(it);
+  snapshot_by_id_.erase(it);
   return Response::OK();
 }
 
-Response InspectorLayerTreeAgent::snapshotById(const String& snapshotId,
-                                               const PictureSnapshot*& result) {
-  SnapshotById::iterator it = m_snapshotById.find(snapshotId);
-  if (it == m_snapshotById.end())
+Response InspectorLayerTreeAgent::GetSnapshotById(
+    const String& snapshot_id,
+    const PictureSnapshot*& result) {
+  SnapshotById::iterator it = snapshot_by_id_.Find(snapshot_id);
+  if (it == snapshot_by_id_.end())
     return Response::Error("Snapshot not found");
-  result = it->value.get();
+  result = it->value.Get();
   return Response::OK();
 }
 
-Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshotId,
-                                                 Maybe<int> fromStep,
-                                                 Maybe<int> toStep,
+Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshot_id,
+                                                 Maybe<int> from_step,
+                                                 Maybe<int> to_step,
                                                  Maybe<double> scale,
-                                                 String* dataURL) {
+                                                 String* data_url) {
   const PictureSnapshot* snapshot = nullptr;
-  Response response = snapshotById(snapshotId, snapshot);
+  Response response = GetSnapshotById(snapshot_id, snapshot);
   if (!response.isSuccess())
     return response;
-  std::unique_ptr<Vector<char>> base64Data = snapshot->replay(
-      fromStep.fromMaybe(0), toStep.fromMaybe(0), scale.fromMaybe(1.0));
-  if (!base64Data)
+  std::unique_ptr<Vector<char>> base64_data = snapshot->Replay(
+      from_step.fromMaybe(0), to_step.fromMaybe(0), scale.fromMaybe(1.0));
+  if (!base64_data)
     return Response::Error("Image encoding failed");
   StringBuilder url;
-  url.append("data:image/png;base64,");
-  url.reserveCapacity(url.length() + base64Data->size());
-  url.append(base64Data->begin(), base64Data->size());
-  *dataURL = url.toString();
+  url.Append("data:image/png;base64,");
+  url.ReserveCapacity(url.length() + base64_data->size());
+  url.Append(base64_data->begin(), base64_data->size());
+  *data_url = url.ToString();
   return Response::OK();
 }
 
-static void parseRect(protocol::DOM::Rect* object, FloatRect* rect) {
+static void ParseRect(protocol::DOM::Rect* object, FloatRect* rect) {
   *rect = FloatRect(object->getX(), object->getY(), object->getWidth(),
                     object->getHeight());
 }
 
 Response InspectorLayerTreeAgent::profileSnapshot(
-    const String& snapshotId,
-    Maybe<int> minRepeatCount,
-    Maybe<double> minDuration,
-    Maybe<protocol::DOM::Rect> clipRect,
-    std::unique_ptr<protocol::Array<protocol::Array<double>>>* outTimings) {
+    const String& snapshot_id,
+    Maybe<int> min_repeat_count,
+    Maybe<double> min_duration,
+    Maybe<protocol::DOM::Rect> clip_rect,
+    std::unique_ptr<protocol::Array<protocol::Array<double>>>* out_timings) {
   const PictureSnapshot* snapshot = nullptr;
-  Response response = snapshotById(snapshotId, snapshot);
+  Response response = GetSnapshotById(snapshot_id, snapshot);
   if (!response.isSuccess())
     return response;
   FloatRect rect;
-  if (clipRect.isJust())
-    parseRect(clipRect.fromJust(), &rect);
-  std::unique_ptr<PictureSnapshot::Timings> timings =
-      snapshot->profile(minRepeatCount.fromMaybe(1), minDuration.fromMaybe(0),
-                        clipRect.isJust() ? &rect : 0);
-  *outTimings = Array<Array<double>>::create();
+  if (clip_rect.isJust())
+    ParseRect(clip_rect.fromJust(), &rect);
+  std::unique_ptr<PictureSnapshot::Timings> timings = snapshot->Profile(
+      min_repeat_count.fromMaybe(1), min_duration.fromMaybe(0),
+      clip_rect.isJust() ? &rect : 0);
+  *out_timings = Array<Array<double>>::create();
   for (size_t i = 0; i < timings->size(); ++i) {
     const Vector<double>& row = (*timings)[i];
-    std::unique_ptr<Array<double>> outRow = Array<double>::create();
+    std::unique_ptr<Array<double>> out_row = Array<double>::create();
     for (size_t j = 0; j < row.size(); ++j)
-      outRow->addItem(row[j]);
-    (*outTimings)->addItem(std::move(outRow));
+      out_row->addItem(row[j]);
+    (*out_timings)->addItem(std::move(out_row));
   }
   return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::snapshotCommandLog(
-    const String& snapshotId,
-    std::unique_ptr<Array<protocol::DictionaryValue>>* commandLog) {
+    const String& snapshot_id,
+    std::unique_ptr<Array<protocol::DictionaryValue>>* command_log) {
   const PictureSnapshot* snapshot = nullptr;
-  Response response = snapshotById(snapshotId, snapshot);
+  Response response = GetSnapshotById(snapshot_id, snapshot);
   if (!response.isSuccess())
     return response;
   protocol::ErrorSupport errors;
-  std::unique_ptr<protocol::Value> logValue = protocol::StringUtil::parseJSON(
-      snapshot->snapshotCommandLog()->toJSONString());
-  *commandLog =
-      Array<protocol::DictionaryValue>::fromValue(logValue.get(), &errors);
+  std::unique_ptr<protocol::Value> log_value = protocol::StringUtil::parseJSON(
+      snapshot->SnapshotCommandLog()->ToJSONString());
+  *command_log =
+      Array<protocol::DictionaryValue>::fromValue(log_value.get(), &errors);
   if (errors.hasErrors())
     return Response::Error(errors.errors());
   return Response::OK();
 }
 
-void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer) {
-  m_pageOverlayLayerIds.push_back(layer->platformLayer()->id());
+void InspectorLayerTreeAgent::WillAddPageOverlay(const GraphicsLayer* layer) {
+  page_overlay_layer_ids_.push_back(layer->PlatformLayer()->Id());
 }
 
-void InspectorLayerTreeAgent::didRemovePageOverlay(const GraphicsLayer* layer) {
-  size_t index = m_pageOverlayLayerIds.find(layer->platformLayer()->id());
+void InspectorLayerTreeAgent::DidRemovePageOverlay(const GraphicsLayer* layer) {
+  size_t index = page_overlay_layer_ids_.Find(layer->PlatformLayer()->Id());
   if (index == WTF::kNotFound)
     return;
-  m_pageOverlayLayerIds.erase(index);
+  page_overlay_layer_ids_.erase(index);
 }
 
 }  // namespace blink

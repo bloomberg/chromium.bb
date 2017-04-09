@@ -9,67 +9,68 @@
 namespace blink {
 
 enum TestType {
-  TestIdentity = 0,
-  TestTranslate = 1,
-  TestClip = 2,
-  TestXClip = TestTranslate | TestClip,
+  kTestIdentity = 0,
+  kTestTranslate = 1,
+  kTestClip = 2,
+  kTestXClip = kTestTranslate | kTestClip,
 };
 
 void RunTest(TestType test) {
-  const unsigned width = 2;
-  const unsigned height = 2;
-  const unsigned storageSize = width * height;
-  const unsigned original[] = {0xFF333333, 0xFF666666, 0xFF999999, 0xFFCCCCCC};
-  EXPECT_EQ(storageSize, sizeof(original) / sizeof(original[0]));
-  unsigned bits[storageSize];
-  memcpy(bits, original, sizeof(original));
-  SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+  const unsigned kWidth = 2;
+  const unsigned kHeight = 2;
+  const unsigned kStorageSize = kWidth * kHeight;
+  const unsigned kOriginal[] = {0xFF333333, 0xFF666666, 0xFF999999, 0xFFCCCCCC};
+  EXPECT_EQ(kStorageSize, sizeof(kOriginal) / sizeof(kOriginal[0]));
+  unsigned bits[kStorageSize];
+  memcpy(bits, kOriginal, sizeof(kOriginal));
+  SkImageInfo info = SkImageInfo::MakeN32Premul(kWidth, kHeight);
   SkBitmap bitmap;
   bitmap.installPixels(info, bits, info.minRowBytes());
 
   SkiaPaintCanvas canvas(bitmap);
-  if (test & TestTranslate)
-    canvas.translate(width / 2, 0);
-  if (test & TestClip) {
-    SkRect clipRect = {0, height / 2, width, height};
-    canvas.clipRect(clipRect);
+  if (test & kTestTranslate)
+    canvas.translate(kWidth / 2, 0);
+  if (test & kTestClip) {
+    SkRect clip_rect = {0, kHeight / 2, kWidth, kHeight};
+    canvas.clipRect(clip_rect);
   }
   {
     SkIRect clip =
         SkIRect::MakeSize(canvas.getBaseLayerSize())
             .makeOffset(
-                (test & TestTranslate) ? -(static_cast<int>(width)) / 2 : 0, 0);
-    GraphicsContextCanvas bitLocker(&canvas, clip);
-    CGContextRef cgContext = bitLocker.cgContext();
-    CGColorRef testColor = CGColorGetConstantColor(kCGColorWhite);
-    CGContextSetFillColorWithColor(cgContext, testColor);
-    CGRect cgRect = {{0, 0}, {width, height}};
-    CGContextFillRect(cgContext, cgRect);
+                (test & kTestTranslate) ? -(static_cast<int>(kWidth)) / 2 : 0,
+                0);
+    GraphicsContextCanvas bit_locker(&canvas, clip);
+    CGContextRef cg_context = bit_locker.CgContext();
+    CGColorRef test_color = CGColorGetConstantColor(kCGColorWhite);
+    CGContextSetFillColorWithColor(cg_context, test_color);
+    CGRect cg_rect = {{0, 0}, {kWidth, kHeight}};
+    CGContextFillRect(cg_context, cg_rect);
   }
-  const unsigned results[][storageSize] = {
+  const unsigned kResults[][kStorageSize] = {
       {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF},  // identity
       {0xFF333333, 0xFFFFFFFF, 0xFF999999, 0xFFFFFFFF},  // translate
       {0xFF333333, 0xFF666666, 0xFFFFFFFF, 0xFFFFFFFF},  // clip
       {0xFF333333, 0xFF666666, 0xFF999999, 0xFFFFFFFF}   // translate | clip
   };
-  for (unsigned index = 0; index < storageSize; index++)
-    EXPECT_EQ(results[test][index], bits[index]);
+  for (unsigned index = 0; index < kStorageSize; index++)
+    EXPECT_EQ(kResults[test][index], bits[index]);
 }
 
 TEST(GraphicsContextCanvasTest, Identity) {
-  RunTest(TestIdentity);
+  RunTest(kTestIdentity);
 }
 
 TEST(GraphicsContextCanvasTest, Translate) {
-  RunTest(TestTranslate);
+  RunTest(kTestTranslate);
 }
 
 TEST(GraphicsContextCanvasTest, Clip) {
-  RunTest(TestClip);
+  RunTest(kTestClip);
 }
 
 TEST(GraphicsContextCanvasTest, XClip) {
-  RunTest(TestXClip);
+  RunTest(kTestXClip);
 }
 
 }  // namespace

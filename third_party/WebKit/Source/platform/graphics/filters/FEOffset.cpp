@@ -32,51 +32,51 @@
 namespace blink {
 
 FEOffset::FEOffset(Filter* filter, float dx, float dy)
-    : FilterEffect(filter), m_dx(dx), m_dy(dy) {}
+    : FilterEffect(filter), dx_(dx), dy_(dy) {}
 
-FEOffset* FEOffset::create(Filter* filter, float dx, float dy) {
+FEOffset* FEOffset::Create(Filter* filter, float dx, float dy) {
   return new FEOffset(filter, dx, dy);
 }
 
-float FEOffset::dx() const {
-  return m_dx;
+float FEOffset::Dx() const {
+  return dx_;
 }
 
-void FEOffset::setDx(float dx) {
-  m_dx = dx;
+void FEOffset::SetDx(float dx) {
+  dx_ = dx;
 }
 
-float FEOffset::dy() const {
-  return m_dy;
+float FEOffset::Dy() const {
+  return dy_;
 }
 
-void FEOffset::setDy(float dy) {
-  m_dy = dy;
+void FEOffset::SetDy(float dy) {
+  dy_ = dy;
 }
 
-FloatRect FEOffset::mapEffect(const FloatRect& rect) const {
+FloatRect FEOffset::MapEffect(const FloatRect& rect) const {
   FloatRect result = rect;
-  result.move(getFilter()->applyHorizontalScale(m_dx),
-              getFilter()->applyVerticalScale(m_dy));
+  result.Move(GetFilter()->ApplyHorizontalScale(dx_),
+              GetFilter()->ApplyVerticalScale(dy_));
   return result;
 }
 
-sk_sp<SkImageFilter> FEOffset::createImageFilter() {
-  Filter* filter = this->getFilter();
-  SkImageFilter::CropRect cropRect = getCropRect();
+sk_sp<SkImageFilter> FEOffset::CreateImageFilter() {
+  Filter* filter = this->GetFilter();
+  SkImageFilter::CropRect crop_rect = GetCropRect();
   return SkOffsetImageFilter::Make(
-      SkFloatToScalar(filter->applyHorizontalScale(m_dx)),
-      SkFloatToScalar(filter->applyVerticalScale(m_dy)),
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()),
-      &cropRect);
+      SkFloatToScalar(filter->ApplyHorizontalScale(dx_)),
+      SkFloatToScalar(filter->ApplyVerticalScale(dy_)),
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()),
+      &crop_rect);
 }
 
-TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const {
-  writeIndent(ts, indent);
+TextStream& FEOffset::ExternalRepresentation(TextStream& ts, int indent) const {
+  WriteIndent(ts, indent);
   ts << "[feOffset";
-  FilterEffect::externalRepresentation(ts);
-  ts << " dx=\"" << dx() << "\" dy=\"" << dy() << "\"]\n";
-  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  FilterEffect::ExternalRepresentation(ts);
+  ts << " dx=\"" << Dx() << "\" dy=\"" << Dy() << "\"]\n";
+  InputEffect(0)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

@@ -63,8 +63,8 @@ int setInterval(ScriptState*,
                 const String& handler,
                 int timeout,
                 const Vector<ScriptValue>&);
-void clearTimeout(EventTarget&, int timeoutId);
-void clearInterval(EventTarget&, int timeoutId);
+void clearTimeout(EventTarget&, int timeout_id);
+void clearInterval(EventTarget&, int timeout_id);
 }
 
 }  // namespace blink

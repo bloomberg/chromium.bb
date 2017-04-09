@@ -34,13 +34,13 @@
 
 namespace blink {
 
-void WebHeap::collectGarbageForTesting() {
-  ThreadState::current()->collectGarbage(
-      BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+void WebHeap::CollectGarbageForTesting() {
+  ThreadState::Current()->CollectGarbage(
+      BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithSweep, BlinkGC::kForcedGC);
 }
 
-void WebHeap::collectAllGarbageForTesting() {
-  ThreadState::current()->collectAllGarbage();
+void WebHeap::CollectAllGarbageForTesting() {
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 }  // namespace blink

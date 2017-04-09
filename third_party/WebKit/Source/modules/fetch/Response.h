@@ -33,21 +33,21 @@ class MODULES_EXPORT Response final : public Body {
   // These "create" function which takes a ScriptState* must be called with
   // entering an appropriate V8 context.
   // From Response.idl:
-  static Response* create(ScriptState*, ExceptionState&);
-  static Response* create(ScriptState*,
+  static Response* Create(ScriptState*, ExceptionState&);
+  static Response* Create(ScriptState*,
                           ScriptValue body,
                           const ResponseInit&,
                           ExceptionState&);
 
-  static Response* create(ScriptState*,
+  static Response* Create(ScriptState*,
                           BodyStreamBuffer*,
-                          const String& contentType,
+                          const String& content_type,
                           const ResponseInit&,
                           ExceptionState&);
-  static Response* create(ExecutionContext*, FetchResponseData*);
-  static Response* create(ScriptState*, const WebServiceWorkerResponse&);
+  static Response* Create(ExecutionContext*, FetchResponseData*);
+  static Response* Create(ScriptState*, const WebServiceWorkerResponse&);
 
-  static Response* createClone(const Response&);
+  static Response* CreateClone(const Response&);
 
   static Response* error(ScriptState*);
   static Response* redirect(ScriptState*,
@@ -55,7 +55,7 @@ class MODULES_EXPORT Response final : public Body {
                             unsigned short status,
                             ExceptionState&);
 
-  const FetchResponseData* response() const { return m_response; }
+  const FetchResponseData* GetResponse() const { return response_; }
 
   // From Response.idl:
   String type() const;
@@ -71,33 +71,31 @@ class MODULES_EXPORT Response final : public Body {
   Response* clone(ScriptState*, ExceptionState&);
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // Does not call response.setBlobDataHandle().
-  void populateWebServiceWorkerResponse(
+  void PopulateWebServiceWorkerResponse(
       WebServiceWorkerResponse& /* response */);
 
-  bool hasBody() const;
-  BodyStreamBuffer* bodyBuffer() override { return m_response->buffer(); }
+  bool HasBody() const;
+  BodyStreamBuffer* BodyBuffer() override { return response_->Buffer(); }
   // Returns the BodyStreamBuffer of |m_response|. This method doesn't check
   // the internal response of |m_response| even if |m_response| has it.
-  const BodyStreamBuffer* bodyBuffer() const override {
-    return m_response->buffer();
+  const BodyStreamBuffer* BodyBuffer() const override {
+    return response_->Buffer();
   }
   // Returns the BodyStreamBuffer of the internal response of |m_response| if
   // any. Otherwise, returns one of |m_response|.
-  BodyStreamBuffer* internalBodyBuffer() {
-    return m_response->internalBuffer();
-  }
-  const BodyStreamBuffer* internalBodyBuffer() const {
-    return m_response->internalBuffer();
+  BodyStreamBuffer* InternalBodyBuffer() { return response_->InternalBuffer(); }
+  const BodyStreamBuffer* InternalBodyBuffer() const {
+    return response_->InternalBuffer();
   }
   bool bodyUsed() override;
 
-  String mimeType() const override;
-  String internalMIMEType() const;
+  String MimeType() const override;
+  String InternalMIMEType() const;
 
-  const Vector<KURL>& internalURLList() const;
+  const Vector<KURL>& InternalURLList() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -106,11 +104,11 @@ class MODULES_EXPORT Response final : public Body {
   Response(ExecutionContext*, FetchResponseData*);
   Response(ExecutionContext*, FetchResponseData*, Headers*);
 
-  void installBody();
-  void refreshBody(ScriptState*);
+  void InstallBody();
+  void RefreshBody(ScriptState*);
 
-  const Member<FetchResponseData> m_response;
-  const Member<Headers> m_headers;
+  const Member<FetchResponseData> response_;
+  const Member<Headers> headers_;
 };
 
 }  // namespace blink

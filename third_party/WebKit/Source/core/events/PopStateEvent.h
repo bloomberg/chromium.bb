@@ -41,21 +41,21 @@ class PopStateEvent final : public Event {
 
  public:
   ~PopStateEvent() override;
-  static PopStateEvent* create();
-  static PopStateEvent* create(PassRefPtr<SerializedScriptValue>, History*);
-  static PopStateEvent* create(const AtomicString&, const PopStateEventInit&);
+  static PopStateEvent* Create();
+  static PopStateEvent* Create(PassRefPtr<SerializedScriptValue>, History*);
+  static PopStateEvent* Create(const AtomicString&, const PopStateEventInit&);
 
-  ScriptValue state() const { return m_state; }
-  SerializedScriptValue* serializedState() const {
-    return m_serializedState.get();
+  ScriptValue state() const { return state_; }
+  SerializedScriptValue* SerializedState() const {
+    return serialized_state_.Get();
   }
-  void setSerializedState(PassRefPtr<SerializedScriptValue> state) {
-    DCHECK(!m_serializedState);
-    m_serializedState = std::move(state);
+  void SetSerializedState(PassRefPtr<SerializedScriptValue> state) {
+    DCHECK(!serialized_state_);
+    serialized_state_ = std::move(state);
   }
-  History* history() const { return m_history.get(); }
+  History* GetHistory() const { return history_.Get(); }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -64,9 +64,9 @@ class PopStateEvent final : public Event {
   PopStateEvent(const AtomicString&, const PopStateEventInit&);
   PopStateEvent(PassRefPtr<SerializedScriptValue>, History*);
 
-  RefPtr<SerializedScriptValue> m_serializedState;
-  ScriptValue m_state;
-  Member<History> m_history;
+  RefPtr<SerializedScriptValue> serialized_state_;
+  ScriptValue state_;
+  Member<History> history_;
 };
 
 }  // namespace blink

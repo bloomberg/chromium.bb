@@ -25,14 +25,14 @@ class PerformanceObserverEntryList
   virtual ~PerformanceObserverEntryList();
 
   PerformanceEntryVector getEntries() const;
-  PerformanceEntryVector getEntriesByType(const String& entryType);
+  PerformanceEntryVector getEntriesByType(const String& entry_type);
   PerformanceEntryVector getEntriesByName(const String& name,
-                                          const String& entryType);
+                                          const String& entry_type);
 
   DECLARE_TRACE();
 
  protected:
-  PerformanceEntryVector m_performanceEntries;
+  PerformanceEntryVector performance_entries_;
 };
 
 }  // namespace blink

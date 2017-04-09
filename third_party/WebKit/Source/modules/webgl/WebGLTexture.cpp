@@ -30,40 +30,40 @@
 
 namespace blink {
 
-WebGLTexture* WebGLTexture::create(WebGLRenderingContextBase* ctx) {
+WebGLTexture* WebGLTexture::Create(WebGLRenderingContextBase* ctx) {
   return new WebGLTexture(ctx);
 }
 
 WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
-    : WebGLSharedPlatform3DObject(ctx), m_target(0) {
+    : WebGLSharedPlatform3DObject(ctx), target_(0) {
   GLuint texture;
-  ctx->contextGL()->GenTextures(1, &texture);
-  setObject(texture);
+  ctx->ContextGL()->GenTextures(1, &texture);
+  SetObject(texture);
 }
 
 WebGLTexture::~WebGLTexture() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLTexture::setTarget(GLenum target) {
-  if (!object())
+void WebGLTexture::SetTarget(GLenum target) {
+  if (!Object())
     return;
   // Target is finalized the first time bindTexture() is called.
-  if (m_target)
+  if (target_)
     return;
-  m_target = target;
+  target_ = target;
 }
 
-void WebGLTexture::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteTextures(1, &m_object);
-  m_object = 0;
+void WebGLTexture::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteTextures(1, &object_);
+  object_ = 0;
 }
 
-int WebGLTexture::mapTargetToIndex(GLenum target) const {
-  if (m_target == GL_TEXTURE_2D) {
+int WebGLTexture::MapTargetToIndex(GLenum target) const {
+  if (target_ == GL_TEXTURE_2D) {
     if (target == GL_TEXTURE_2D)
       return 0;
-  } else if (m_target == GL_TEXTURE_CUBE_MAP) {
+  } else if (target_ == GL_TEXTURE_CUBE_MAP) {
     switch (target) {
       case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
         return 0;
@@ -78,17 +78,17 @@ int WebGLTexture::mapTargetToIndex(GLenum target) const {
       case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
         return 5;
     }
-  } else if (m_target == GL_TEXTURE_3D) {
+  } else if (target_ == GL_TEXTURE_3D) {
     if (target == GL_TEXTURE_3D)
       return 0;
-  } else if (m_target == GL_TEXTURE_2D_ARRAY) {
+  } else if (target_ == GL_TEXTURE_2D_ARRAY) {
     if (target == GL_TEXTURE_2D_ARRAY)
       return 0;
   }
   return -1;
 }
 
-GLint WebGLTexture::computeLevelCount(GLsizei width,
+GLint WebGLTexture::ComputeLevelCount(GLsizei width,
                                       GLsizei height,
                                       GLsizei depth) {
   // return 1 + log2Floor(std::max(width, height));
@@ -109,17 +109,17 @@ GLint WebGLTexture::computeLevelCount(GLsizei width,
   return log + 1;
 }
 
-void WebGLTexture::updateLastUploadedVideo(WebMediaPlayer* player) {
-  if (player && player->getLastUploadedFrameInfo(
-                    &m_lastUploadedVideoWidth, &m_lastUploadedVideoHeight,
-                    &m_lastUploadedVideoTimestamp)) {
+void WebGLTexture::UpdateLastUploadedVideo(WebMediaPlayer* player) {
+  if (player && player->GetLastUploadedFrameInfo(
+                    &last_uploaded_video_width_, &last_uploaded_video_height_,
+                    &last_uploaded_video_timestamp_)) {
     return;
   }
 
   // getCurrentFrameInfo was unavailable or failed
-  m_lastUploadedVideoWidth = 0;
-  m_lastUploadedVideoHeight = 0;
-  m_lastUploadedVideoTimestamp = 0.0;
+  last_uploaded_video_width_ = 0;
+  last_uploaded_video_height_ = 0;
+  last_uploaded_video_timestamp_ = 0.0;
 }
 
 }  // namespace blink

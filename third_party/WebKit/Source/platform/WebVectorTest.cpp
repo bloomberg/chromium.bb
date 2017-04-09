@@ -15,14 +15,14 @@ TEST(WebVectorTest, Iterators) {
   for (int i = 0; i < 5; ++i)
     input.push_back(i);
 
-  WebVector<int> webVector(input);
-  const WebVector<int>& constWebVector = webVector;
+  WebVector<int> web_vector(input);
+  const WebVector<int>& const_web_vector = web_vector;
   Vector<int> output;
 
-  ASSERT_EQ(input.size(), webVector.size());
+  ASSERT_EQ(input.size(), web_vector.size());
 
   // Use begin()/end() iterators directly.
-  for (WebVector<int>::iterator it = webVector.begin(); it != webVector.end();
+  for (WebVector<int>::iterator it = web_vector.begin(); it != web_vector.end();
        ++it)
     output.push_back(*it);
   ASSERT_EQ(input.size(), output.size());
@@ -30,17 +30,17 @@ TEST(WebVectorTest, Iterators) {
     EXPECT_EQ(input[i], output[i]);
 
   // Use begin()/end() const_iterators directly.
-  output.clear();
-  for (WebVector<int>::const_iterator it = constWebVector.begin();
-       it != constWebVector.end(); ++it)
+  output.Clear();
+  for (WebVector<int>::const_iterator it = const_web_vector.begin();
+       it != const_web_vector.end(); ++it)
     output.push_back(*it);
   ASSERT_EQ(input.size(), output.size());
   for (size_t i = 0; i < input.size(); ++i)
     EXPECT_EQ(input[i], output[i]);
 
   // Use range-based for loop.
-  output.clear();
-  for (int x : webVector)
+  output.Clear();
+  for (int x : web_vector)
     output.push_back(x);
   ASSERT_EQ(input.size(), output.size());
   for (size_t i = 0; i < input.size(); ++i)
@@ -49,36 +49,36 @@ TEST(WebVectorTest, Iterators) {
 
 TEST(WebVectorTest, IsEmpty) {
   WebVector<int> vector;
-  ASSERT_TRUE(vector.isEmpty());
+  ASSERT_TRUE(vector.IsEmpty());
   int value = 1;
-  vector.assign(&value, 1);
+  vector.Assign(&value, 1);
   ASSERT_EQ(1u, vector.size());
-  ASSERT_FALSE(vector.isEmpty());
+  ASSERT_FALSE(vector.IsEmpty());
 }
 
 TEST(WebVectorTest, Swap) {
-  const int firstData[] = {1, 2, 3, 4, 5};
-  const int secondData[] = {6, 5, 8};
-  const size_t kFirstDataLength = WTF_ARRAY_LENGTH(firstData);
-  const size_t kSecondDataLength = WTF_ARRAY_LENGTH(secondData);
+  const int kFirstData[] = {1, 2, 3, 4, 5};
+  const int kSecondData[] = {6, 5, 8};
+  const size_t k_first_data_length = WTF_ARRAY_LENGTH(kFirstData);
+  const size_t k_second_data_length = WTF_ARRAY_LENGTH(kSecondData);
 
-  WebVector<int> first(firstData, kFirstDataLength);
-  WebVector<int> second(secondData, kSecondDataLength);
-  ASSERT_EQ(kFirstDataLength, first.size());
-  ASSERT_EQ(kSecondDataLength, second.size());
-  first.swap(second);
-  ASSERT_EQ(kSecondDataLength, first.size());
-  ASSERT_EQ(kFirstDataLength, second.size());
+  WebVector<int> first(kFirstData, k_first_data_length);
+  WebVector<int> second(kSecondData, k_second_data_length);
+  ASSERT_EQ(k_first_data_length, first.size());
+  ASSERT_EQ(k_second_data_length, second.size());
+  first.Swap(second);
+  ASSERT_EQ(k_second_data_length, first.size());
+  ASSERT_EQ(k_first_data_length, second.size());
   for (size_t i = 0; i < first.size(); ++i)
-    EXPECT_EQ(secondData[i], first[i]);
+    EXPECT_EQ(kSecondData[i], first[i]);
   for (size_t i = 0; i < second.size(); ++i)
-    EXPECT_EQ(firstData[i], second[i]);
+    EXPECT_EQ(kFirstData[i], second[i]);
 }
 
 TEST(WebVectorTest, CreateFromPointer) {
-  const int values[] = {1, 2, 3, 4, 5};
+  const int kValues[] = {1, 2, 3, 4, 5};
 
-  WebVector<int> vector(values, 3);
+  WebVector<int> vector(kValues, 3);
   ASSERT_EQ(3u, vector.size());
   ASSERT_EQ(1, vector[0]);
   ASSERT_EQ(2, vector[1]);

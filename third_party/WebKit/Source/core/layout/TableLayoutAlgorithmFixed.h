@@ -33,17 +33,17 @@ class TableLayoutAlgorithmFixed final : public TableLayoutAlgorithm {
  public:
   TableLayoutAlgorithmFixed(LayoutTable*);
 
-  void computeIntrinsicLogicalWidths(LayoutUnit& minWidth,
-                                     LayoutUnit& maxWidth) override;
-  void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth,
-                                        LayoutUnit& maxWidth) const override;
-  void layout() override;
-  void willChangeTableLayout() override;
+  void ComputeIntrinsicLogicalWidths(LayoutUnit& min_width,
+                                     LayoutUnit& max_width) override;
+  void ApplyPreferredLogicalWidthQuirks(LayoutUnit& min_width,
+                                        LayoutUnit& max_width) const override;
+  void GetLayout() override;
+  void WillChangeTableLayout() override;
 
  private:
-  int calcWidthArray();
+  int CalcWidthArray();
 
-  Vector<Length> m_width;
+  Vector<Length> width_;
 };
 
 }  // namespace blink

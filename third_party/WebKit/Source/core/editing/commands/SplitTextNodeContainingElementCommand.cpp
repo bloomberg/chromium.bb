@@ -36,37 +36,37 @@ namespace blink {
 SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(
     Text* text,
     int offset)
-    : CompositeEditCommand(text->document()), m_text(text), m_offset(offset) {
-  DCHECK(m_text);
-  DCHECK_GT(m_text->length(), 0u);
+    : CompositeEditCommand(text->GetDocument()), text_(text), offset_(offset) {
+  DCHECK(text_);
+  DCHECK_GT(text_->length(), 0u);
 }
 
-void SplitTextNodeContainingElementCommand::doApply(EditingState*) {
-  DCHECK(m_text);
-  DCHECK_GT(m_offset, 0);
+void SplitTextNodeContainingElementCommand::DoApply(EditingState*) {
+  DCHECK(text_);
+  DCHECK_GT(offset_, 0);
 
-  splitTextNode(m_text.get(), m_offset);
+  SplitTextNode(text_.Get(), offset_);
 
-  Element* parent = m_text->parentElement();
+  Element* parent = text_->parentElement();
   if (!parent || !parent->parentElement() ||
-      !hasEditableStyle(*parent->parentElement()))
+      !HasEditableStyle(*parent->parentElement()))
     return;
 
-  LayoutObject* parentLayoutObject = parent->layoutObject();
-  if (!parentLayoutObject || !parentLayoutObject->isInline()) {
-    wrapContentsInDummySpan(parent);
-    Node* firstChild = parent->firstChild();
-    if (!firstChild || !firstChild->isElementNode())
+  LayoutObject* parent_layout_object = parent->GetLayoutObject();
+  if (!parent_layout_object || !parent_layout_object->IsInline()) {
+    WrapContentsInDummySpan(parent);
+    Node* first_child = parent->FirstChild();
+    if (!first_child || !first_child->IsElementNode())
       return;
-    parent = toElement(firstChild);
+    parent = ToElement(first_child);
   }
 
-  splitElement(parent, m_text.get());
+  SplitElement(parent, text_.Get());
 }
 
 DEFINE_TRACE(SplitTextNodeContainingElementCommand) {
-  visitor->trace(m_text);
-  CompositeEditCommand::trace(visitor);
+  visitor->Trace(text_);
+  CompositeEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

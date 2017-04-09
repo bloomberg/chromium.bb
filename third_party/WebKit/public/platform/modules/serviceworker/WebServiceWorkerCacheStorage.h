@@ -41,14 +41,14 @@ class WebServiceWorkerCacheStorage {
 
   // dispatchOpen() can return a WebServiceWorkerCache object. These objects
   // are owned by Blink and should be destroyed when they are no longer needed.
-  virtual void dispatchHas(std::unique_ptr<CacheStorageCallbacks>,
-                           const WebString& cacheName) = 0;
-  virtual void dispatchOpen(std::unique_ptr<CacheStorageWithCacheCallbacks>,
-                            const WebString& cacheName) = 0;
-  virtual void dispatchDelete(std::unique_ptr<CacheStorageCallbacks>,
-                              const WebString& cacheName) = 0;
-  virtual void dispatchKeys(std::unique_ptr<CacheStorageKeysCallbacks>) = 0;
-  virtual void dispatchMatch(std::unique_ptr<CacheStorageMatchCallbacks>,
+  virtual void DispatchHas(std::unique_ptr<CacheStorageCallbacks>,
+                           const WebString& cache_name) = 0;
+  virtual void DispatchOpen(std::unique_ptr<CacheStorageWithCacheCallbacks>,
+                            const WebString& cache_name) = 0;
+  virtual void DispatchDelete(std::unique_ptr<CacheStorageCallbacks>,
+                              const WebString& cache_name) = 0;
+  virtual void DispatchKeys(std::unique_ptr<CacheStorageKeysCallbacks>) = 0;
+  virtual void DispatchMatch(std::unique_ptr<CacheStorageMatchCallbacks>,
                              const WebServiceWorkerRequest&,
                              const WebServiceWorkerCache::QueryParams&) = 0;
 };

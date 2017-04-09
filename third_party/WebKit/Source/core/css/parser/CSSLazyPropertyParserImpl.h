@@ -20,16 +20,16 @@ class CSSLazyPropertyParserImpl : public CSSLazyPropertyParser {
   CSSLazyPropertyParserImpl(CSSParserTokenRange block, CSSLazyParsingState*);
 
   // CSSLazyPropertyParser:
-  StylePropertySet* parseProperties() override;
+  StylePropertySet* ParseProperties() override;
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_lazyState);
-    CSSLazyPropertyParser::trace(visitor);
+    visitor->Trace(lazy_state_);
+    CSSLazyPropertyParser::Trace(visitor);
   }
 
  private:
-  Vector<CSSParserToken> m_tokens;
-  Member<CSSLazyParsingState> m_lazyState;
+  Vector<CSSParserToken> tokens_;
+  Member<CSSLazyParsingState> lazy_state_;
 };
 
 }  // namespace blink

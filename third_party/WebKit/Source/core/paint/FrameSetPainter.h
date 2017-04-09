@@ -18,18 +18,19 @@ class FrameSetPainter {
   STACK_ALLOCATED();
 
  public:
-  FrameSetPainter(const LayoutFrameSet& layoutFrameSet)
-      : m_layoutFrameSet(layoutFrameSet) {}
+  FrameSetPainter(const LayoutFrameSet& layout_frame_set)
+      : layout_frame_set_(layout_frame_set) {}
 
-  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  void paintBorders(const PaintInfo&, const LayoutPoint& adjustedPaintOffset);
-  void paintChildren(const PaintInfo&, const LayoutPoint& adjustedPaintOffset);
-  void paintRowBorder(const PaintInfo&, const IntRect&);
-  void paintColumnBorder(const PaintInfo&, const IntRect&);
+  void PaintBorders(const PaintInfo&, const LayoutPoint& adjusted_paint_offset);
+  void PaintChildren(const PaintInfo&,
+                     const LayoutPoint& adjusted_paint_offset);
+  void PaintRowBorder(const PaintInfo&, const IntRect&);
+  void PaintColumnBorder(const PaintInfo&, const IntRect&);
 
-  const LayoutFrameSet& m_layoutFrameSet;
+  const LayoutFrameSet& layout_frame_set_;
 };
 
 }  // namespace blink

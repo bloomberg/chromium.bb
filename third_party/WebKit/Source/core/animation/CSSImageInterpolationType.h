@@ -16,51 +16,51 @@ class CSSImageInterpolationType : public CSSInterpolationType {
   CSSImageInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {}
 
-  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
-  void composite(UnderlyingValueOwner&,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner&,
+                 double underlying_fraction,
                  const InterpolationValue&,
-                 double interpolationFraction) const final;
-  void applyStandardPropertyValue(const InterpolableValue&,
+                 double interpolation_fraction) const final;
+  void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
-  static InterpolationValue maybeConvertCSSValue(const CSSValue&,
-                                                 bool acceptGradients);
-  static InterpolationValue maybeConvertStyleImage(const StyleImage&,
-                                                   bool acceptGradients);
-  static InterpolationValue maybeConvertStyleImage(const StyleImage* image,
-                                                   bool acceptGradients) {
-    return image ? maybeConvertStyleImage(*image, acceptGradients) : nullptr;
+  static InterpolationValue MaybeConvertCSSValue(const CSSValue&,
+                                                 bool accept_gradients);
+  static InterpolationValue MaybeConvertStyleImage(const StyleImage&,
+                                                   bool accept_gradients);
+  static InterpolationValue MaybeConvertStyleImage(const StyleImage* image,
+                                                   bool accept_gradients) {
+    return image ? MaybeConvertStyleImage(*image, accept_gradients) : nullptr;
   }
-  static PairwiseInterpolationValue staticMergeSingleConversions(
+  static PairwiseInterpolationValue StaticMergeSingleConversions(
       InterpolationValue&& start,
       InterpolationValue&& end);
-  static CSSValue* createCSSValue(const InterpolableValue&,
+  static CSSValue* CreateCSSValue(const InterpolableValue&,
                                   const NonInterpolableValue*);
-  static StyleImage* resolveStyleImage(CSSPropertyID,
+  static StyleImage* ResolveStyleImage(CSSPropertyID,
                                        const InterpolableValue&,
                                        const NonInterpolableValue*,
                                        StyleResolverState&);
-  static bool equalNonInterpolableValues(const NonInterpolableValue*,
+  static bool EqualNonInterpolableValues(const NonInterpolableValue*,
                                          const NonInterpolableValue*);
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertValue(const CSSValue&,
+  InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
 
-  PairwiseInterpolationValue maybeMergeSingles(
+  PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final {
-    return staticMergeSingleConversions(std::move(start), std::move(end));
+    return StaticMergeSingleConversions(std::move(start), std::move(end));
   }
 };
 

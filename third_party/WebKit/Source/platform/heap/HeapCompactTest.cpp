@@ -27,52 +27,52 @@ WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap);
 
 namespace blink {
 
-static const size_t chunkRange = SparseHeapBitmap::s_bitmapChunkRange;
-static const size_t unitPointer = 0x1u
-                                  << SparseHeapBitmap::s_pointerAlignmentInBits;
+static const size_t kChunkRange = SparseHeapBitmap::kBitmapChunkRange;
+static const size_t kUnitPointer = 0x1u
+                                   << SparseHeapBitmap::kPointerAlignmentInBits;
 
 TEST(HeapCompactTest, SparseBitmapBasic) {
   Address base = reinterpret_cast<Address>(0x10000u);
-  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::create(base);
+  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::Create(base);
 
-  size_t doubleChunk = 2 * chunkRange;
+  size_t double_chunk = 2 * kChunkRange;
 
   // 101010... starting at |base|.
-  for (size_t i = 0; i < doubleChunk; i += 2 * unitPointer)
-    bitmap->add(base + i);
+  for (size_t i = 0; i < double_chunk; i += 2 * kUnitPointer)
+    bitmap->Add(base + i);
 
   // Check that hasRange() returns a bitmap subtree, if any, for a given
   // address.
-  EXPECT_TRUE(!!bitmap->hasRange(base, 1));
-  EXPECT_TRUE(!!bitmap->hasRange(base + unitPointer, 1));
-  EXPECT_FALSE(!!bitmap->hasRange(base - unitPointer, 1));
+  EXPECT_TRUE(!!bitmap->HasRange(base, 1));
+  EXPECT_TRUE(!!bitmap->HasRange(base + kUnitPointer, 1));
+  EXPECT_FALSE(!!bitmap->HasRange(base - kUnitPointer, 1));
 
   // Test implementation details.. that each SparseHeapBitmap node maps
   // |s_bitmapChunkRange| ranges only.
-  EXPECT_EQ(bitmap->hasRange(base + unitPointer, 1),
-            bitmap->hasRange(base + 2 * unitPointer, 1));
+  EXPECT_EQ(bitmap->HasRange(base + kUnitPointer, 1),
+            bitmap->HasRange(base + 2 * kUnitPointer, 1));
   // Second range will be just past the first.
-  EXPECT_NE(bitmap->hasRange(base, 1), bitmap->hasRange(base + chunkRange, 1));
+  EXPECT_NE(bitmap->HasRange(base, 1), bitmap->HasRange(base + kChunkRange, 1));
 
   // Iterate a range that will encompass more than one 'chunk'.
   SparseHeapBitmap* start =
-      bitmap->hasRange(base + 2 * unitPointer, doubleChunk);
+      bitmap->HasRange(base + 2 * kUnitPointer, double_chunk);
   EXPECT_TRUE(!!start);
-  for (size_t i = 2 * unitPointer; i < doubleChunk; i += 2 * unitPointer) {
-    EXPECT_TRUE(start->isSet(base + i));
-    EXPECT_FALSE(start->isSet(base + i + unitPointer));
+  for (size_t i = 2 * kUnitPointer; i < double_chunk; i += 2 * kUnitPointer) {
+    EXPECT_TRUE(start->IsSet(base + i));
+    EXPECT_FALSE(start->IsSet(base + i + kUnitPointer));
   }
 }
 
 TEST(HeapCompactTest, SparseBitmapBuild) {
   Address base = reinterpret_cast<Address>(0x10000u);
-  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::create(base);
+  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::Create(base);
 
-  size_t doubleChunk = 2 * chunkRange;
+  size_t double_chunk = 2 * kChunkRange;
 
   // Create a sparse bitmap containing at least three chunks.
-  bitmap->add(base - doubleChunk);
-  bitmap->add(base + doubleChunk);
+  bitmap->Add(base - double_chunk);
+  bitmap->Add(base + double_chunk);
 
   // This is sanity testing internal implementation details of
   // SparseHeapBitmap; probing |isSet()| outside the bitmap
@@ -81,236 +81,237 @@ TEST(HeapCompactTest, SparseBitmapBuild) {
   // Regardless, the testing here verifies that a |hasRange()| that
   // straddles multiple internal nodes, returns a bitmap that is
   // capable of returning correct |isSet()| results.
-  SparseHeapBitmap* start =
-      bitmap->hasRange(base - doubleChunk - 2 * unitPointer, 4 * unitPointer);
+  SparseHeapBitmap* start = bitmap->HasRange(
+      base - double_chunk - 2 * kUnitPointer, 4 * kUnitPointer);
   EXPECT_TRUE(!!start);
-  EXPECT_TRUE(start->isSet(base - doubleChunk));
-  EXPECT_FALSE(start->isSet(base - doubleChunk + unitPointer));
-  EXPECT_FALSE(start->isSet(base));
-  EXPECT_FALSE(start->isSet(base + unitPointer));
-  EXPECT_FALSE(start->isSet(base + doubleChunk));
-  EXPECT_FALSE(start->isSet(base + doubleChunk + unitPointer));
+  EXPECT_TRUE(start->IsSet(base - double_chunk));
+  EXPECT_FALSE(start->IsSet(base - double_chunk + kUnitPointer));
+  EXPECT_FALSE(start->IsSet(base));
+  EXPECT_FALSE(start->IsSet(base + kUnitPointer));
+  EXPECT_FALSE(start->IsSet(base + double_chunk));
+  EXPECT_FALSE(start->IsSet(base + double_chunk + kUnitPointer));
 
-  start = bitmap->hasRange(base - doubleChunk - 2 * unitPointer,
-                           2 * doubleChunk + 2 * unitPointer);
+  start = bitmap->HasRange(base - double_chunk - 2 * kUnitPointer,
+                           2 * double_chunk + 2 * kUnitPointer);
   EXPECT_TRUE(!!start);
-  EXPECT_TRUE(start->isSet(base - doubleChunk));
-  EXPECT_FALSE(start->isSet(base - doubleChunk + unitPointer));
-  EXPECT_TRUE(start->isSet(base));
-  EXPECT_FALSE(start->isSet(base + unitPointer));
-  EXPECT_TRUE(start->isSet(base + doubleChunk));
-  EXPECT_FALSE(start->isSet(base + doubleChunk + unitPointer));
+  EXPECT_TRUE(start->IsSet(base - double_chunk));
+  EXPECT_FALSE(start->IsSet(base - double_chunk + kUnitPointer));
+  EXPECT_TRUE(start->IsSet(base));
+  EXPECT_FALSE(start->IsSet(base + kUnitPointer));
+  EXPECT_TRUE(start->IsSet(base + double_chunk));
+  EXPECT_FALSE(start->IsSet(base + double_chunk + kUnitPointer));
 
-  start = bitmap->hasRange(base, 20);
+  start = bitmap->HasRange(base, 20);
   EXPECT_TRUE(!!start);
   // Probing for values outside of hasRange() should be considered
   // undefined, but do it to exercise the (left) tree traversal.
-  EXPECT_TRUE(start->isSet(base - doubleChunk));
-  EXPECT_FALSE(start->isSet(base - doubleChunk + unitPointer));
-  EXPECT_TRUE(start->isSet(base));
-  EXPECT_FALSE(start->isSet(base + unitPointer));
-  EXPECT_TRUE(start->isSet(base + doubleChunk));
-  EXPECT_FALSE(start->isSet(base + doubleChunk + unitPointer));
+  EXPECT_TRUE(start->IsSet(base - double_chunk));
+  EXPECT_FALSE(start->IsSet(base - double_chunk + kUnitPointer));
+  EXPECT_TRUE(start->IsSet(base));
+  EXPECT_FALSE(start->IsSet(base + kUnitPointer));
+  EXPECT_TRUE(start->IsSet(base + double_chunk));
+  EXPECT_FALSE(start->IsSet(base + double_chunk + kUnitPointer));
 
-  start = bitmap->hasRange(base + chunkRange + 2 * unitPointer, 2048);
+  start = bitmap->HasRange(base + kChunkRange + 2 * kUnitPointer, 2048);
   EXPECT_TRUE(!!start);
   // Probing for values outside of hasRange() should be considered
   // undefined, but do it to exercise node traversal.
-  EXPECT_FALSE(start->isSet(base - doubleChunk));
-  EXPECT_FALSE(start->isSet(base - doubleChunk + unitPointer));
-  EXPECT_FALSE(start->isSet(base));
-  EXPECT_FALSE(start->isSet(base + unitPointer));
-  EXPECT_FALSE(start->isSet(base + chunkRange));
-  EXPECT_TRUE(start->isSet(base + doubleChunk));
-  EXPECT_FALSE(start->isSet(base + doubleChunk + unitPointer));
+  EXPECT_FALSE(start->IsSet(base - double_chunk));
+  EXPECT_FALSE(start->IsSet(base - double_chunk + kUnitPointer));
+  EXPECT_FALSE(start->IsSet(base));
+  EXPECT_FALSE(start->IsSet(base + kUnitPointer));
+  EXPECT_FALSE(start->IsSet(base + kChunkRange));
+  EXPECT_TRUE(start->IsSet(base + double_chunk));
+  EXPECT_FALSE(start->IsSet(base + double_chunk + kUnitPointer));
 }
 
 TEST(HeapCompactTest, SparseBitmapLeftExtension) {
   Address base = reinterpret_cast<Address>(0x10000u);
-  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::create(base);
+  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::Create(base);
 
-  SparseHeapBitmap* start = bitmap->hasRange(base, 1);
+  SparseHeapBitmap* start = bitmap->HasRange(base, 1);
   EXPECT_TRUE(start);
 
   // Verify that re-adding is a no-op.
-  bitmap->add(base);
-  EXPECT_EQ(start, bitmap->hasRange(base, 1));
+  bitmap->Add(base);
+  EXPECT_EQ(start, bitmap->HasRange(base, 1));
 
   // Adding an Address |A| before a single-address SparseHeapBitmap node should
   // cause that node to  be "left extended" to use |A| as its new base.
-  bitmap->add(base - 2 * unitPointer);
-  EXPECT_EQ(bitmap->hasRange(base, 1),
-            bitmap->hasRange(base - 2 * unitPointer, 1));
+  bitmap->Add(base - 2 * kUnitPointer);
+  EXPECT_EQ(bitmap->HasRange(base, 1),
+            bitmap->HasRange(base - 2 * kUnitPointer, 1));
 
   // Reset.
-  bitmap = SparseHeapBitmap::create(base);
+  bitmap = SparseHeapBitmap::Create(base);
 
   // If attempting same as above, but the Address |A| is outside the
   // chunk size of a node, a new SparseHeapBitmap node needs to be
   // created to the left of |bitmap|.
-  bitmap->add(base - chunkRange);
-  EXPECT_NE(bitmap->hasRange(base, 1),
-            bitmap->hasRange(base - 2 * unitPointer, 1));
+  bitmap->Add(base - kChunkRange);
+  EXPECT_NE(bitmap->HasRange(base, 1),
+            bitmap->HasRange(base - 2 * kUnitPointer, 1));
 
-  bitmap = SparseHeapBitmap::create(base);
-  bitmap->add(base - chunkRange + unitPointer);
+  bitmap = SparseHeapBitmap::Create(base);
+  bitmap->Add(base - kChunkRange + kUnitPointer);
   // This address is just inside the horizon and shouldn't create a new chunk.
-  EXPECT_EQ(bitmap->hasRange(base, 1),
-            bitmap->hasRange(base - 2 * unitPointer, 1));
+  EXPECT_EQ(bitmap->HasRange(base, 1),
+            bitmap->HasRange(base - 2 * kUnitPointer, 1));
   // ..but this one should, like for the sub-test above.
-  bitmap->add(base - chunkRange);
-  EXPECT_EQ(bitmap->hasRange(base, 1),
-            bitmap->hasRange(base - 2 * unitPointer, 1));
-  EXPECT_NE(bitmap->hasRange(base, 1), bitmap->hasRange(base - chunkRange, 1));
+  bitmap->Add(base - kChunkRange);
+  EXPECT_EQ(bitmap->HasRange(base, 1),
+            bitmap->HasRange(base - 2 * kUnitPointer, 1));
+  EXPECT_NE(bitmap->HasRange(base, 1), bitmap->HasRange(base - kChunkRange, 1));
 }
 
-static void preciselyCollectGarbage() {
-  ThreadState::current()->collectGarbage(
-      BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+static void PreciselyCollectGarbage() {
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithSweep,
+                                         BlinkGC::kForcedGC);
 }
 
-static void performHeapCompaction() {
-  EXPECT_FALSE(HeapCompact::scheduleCompactionGCForTesting(true));
-  preciselyCollectGarbage();
-  EXPECT_FALSE(HeapCompact::scheduleCompactionGCForTesting(false));
+static void PerformHeapCompaction() {
+  EXPECT_FALSE(HeapCompact::ScheduleCompactionGCForTesting(true));
+  PreciselyCollectGarbage();
+  EXPECT_FALSE(HeapCompact::ScheduleCompactionGCForTesting(false));
 }
 
 // Do several GCs to make sure that later GCs don't free up old memory from
 // previously run tests in this process.
-static void clearOutOldGarbage() {
-  ThreadHeap& heap = ThreadState::current()->heap();
+static void ClearOutOldGarbage() {
+  ThreadHeap& heap = ThreadState::Current()->Heap();
   while (true) {
-    size_t used = heap.objectPayloadSizeForTesting();
-    preciselyCollectGarbage();
-    if (heap.objectPayloadSizeForTesting() >= used)
+    size_t used = heap.ObjectPayloadSizeForTesting();
+    PreciselyCollectGarbage();
+    if (heap.ObjectPayloadSizeForTesting() >= used)
       break;
   }
 }
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
  public:
-  static IntWrapper* create(int x) { return new IntWrapper(x); }
+  static IntWrapper* Create(int x) { return new IntWrapper(x); }
 
-  virtual ~IntWrapper() { ++s_destructorCalls; }
+  virtual ~IntWrapper() { ++destructor_calls_; }
 
-  static int s_destructorCalls;
+  static int destructor_calls_;
   DEFINE_INLINE_TRACE() {}
 
-  int value() const { return m_x; }
+  int Value() const { return x_; }
 
   bool operator==(const IntWrapper& other) const {
-    return other.value() == value();
+    return other.Value() == Value();
   }
 
-  unsigned hash() { return IntHash<int>::hash(m_x); }
+  unsigned GetHash() { return IntHash<int>::GetHash(x_); }
 
-  IntWrapper(int x) : m_x(x) {}
+  IntWrapper(int x) : x_(x) {}
 
  private:
   IntWrapper();
-  int m_x;
+  int x_;
 };
 static_assert(WTF::IsTraceable<IntWrapper>::value,
               "IsTraceable<> template failed to recognize trace method.");
 
 TEST(HeapCompactTest, CompactVector) {
-  clearOutOldGarbage();
+  ClearOutOldGarbage();
 
-  IntWrapper* val = IntWrapper::create(1);
+  IntWrapper* val = IntWrapper::Create(1);
   Persistent<IntVector> vector = new IntVector(10, val);
   EXPECT_EQ(10u, vector->size());
 
   for (size_t i = 0; i < vector->size(); ++i)
     EXPECT_EQ(val, (*vector)[i]);
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   for (size_t i = 0; i < vector->size(); ++i)
     EXPECT_EQ(val, (*vector)[i]);
 }
 
 TEST(HeapCompactTest, CompactHashMap) {
-  clearOutOldGarbage();
+  ClearOutOldGarbage();
 
-  Persistent<IntMap> intMap = new IntMap();
+  Persistent<IntMap> int_map = new IntMap();
   for (size_t i = 0; i < 100; ++i) {
-    IntWrapper* val = IntWrapper::create(i);
-    intMap->insert(val, 100 - i);
+    IntWrapper* val = IntWrapper::Create(i);
+    int_map->insert(val, 100 - i);
   }
 
-  EXPECT_EQ(100u, intMap->size());
-  for (auto k : *intMap)
-    EXPECT_EQ(k.key->value(), 100 - k.value);
+  EXPECT_EQ(100u, int_map->size());
+  for (auto k : *int_map)
+    EXPECT_EQ(k.key->Value(), 100 - k.value);
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
-  for (auto k : *intMap)
-    EXPECT_EQ(k.key->value(), 100 - k.value);
+  for (auto k : *int_map)
+    EXPECT_EQ(k.key->Value(), 100 - k.value);
 }
 
 TEST(HeapCompactTest, CompactVectorPartHashMap) {
-  clearOutOldGarbage();
+  ClearOutOldGarbage();
 
   using IntMapVector = HeapVector<IntMap>;
 
-  Persistent<IntMapVector> intMapVector = new IntMapVector();
+  Persistent<IntMapVector> int_map_vector = new IntMapVector();
   for (size_t i = 0; i < 10; ++i) {
     IntMap map;
     for (size_t j = 0; j < 10; ++j) {
-      IntWrapper* val = IntWrapper::create(j);
+      IntWrapper* val = IntWrapper::Create(j);
       map.insert(val, 10 - j);
     }
-    intMapVector->push_back(map);
+    int_map_vector->push_back(map);
   }
 
-  EXPECT_EQ(10u, intMapVector->size());
-  for (auto map : *intMapVector) {
+  EXPECT_EQ(10u, int_map_vector->size());
+  for (auto map : *int_map_vector) {
     EXPECT_EQ(10u, map.size());
     for (auto k : map) {
-      EXPECT_EQ(k.key->value(), 10 - k.value);
+      EXPECT_EQ(k.key->Value(), 10 - k.value);
     }
   }
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
-  EXPECT_EQ(10u, intMapVector->size());
-  for (auto map : *intMapVector) {
+  EXPECT_EQ(10u, int_map_vector->size());
+  for (auto map : *int_map_vector) {
     EXPECT_EQ(10u, map.size());
     for (auto k : map) {
-      EXPECT_EQ(k.key->value(), 10 - k.value);
+      EXPECT_EQ(k.key->Value(), 10 - k.value);
     }
   }
 }
 
 TEST(HeapCompactTest, CompactHashPartVector) {
-  clearOutOldGarbage();
+  ClearOutOldGarbage();
 
   using IntVectorMap = HeapHashMap<int, IntVector>;
 
-  Persistent<IntVectorMap> intVectorMap = new IntVectorMap();
+  Persistent<IntVectorMap> int_vector_map = new IntVectorMap();
   for (size_t i = 0; i < 10; ++i) {
     IntVector vector;
     for (size_t j = 0; j < 10; ++j) {
-      vector.push_back(IntWrapper::create(j));
+      vector.push_back(IntWrapper::Create(j));
     }
-    intVectorMap->insert(1 + i, vector);
+    int_vector_map->insert(1 + i, vector);
   }
 
-  EXPECT_EQ(10u, intVectorMap->size());
-  for (const IntVector& intVector : intVectorMap->values()) {
-    EXPECT_EQ(10u, intVector.size());
-    for (size_t i = 0; i < intVector.size(); ++i) {
-      EXPECT_EQ(static_cast<int>(i), intVector[i]->value());
+  EXPECT_EQ(10u, int_vector_map->size());
+  for (const IntVector& int_vector : int_vector_map->Values()) {
+    EXPECT_EQ(10u, int_vector.size());
+    for (size_t i = 0; i < int_vector.size(); ++i) {
+      EXPECT_EQ(static_cast<int>(i), int_vector[i]->Value());
     }
   }
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
-  EXPECT_EQ(10u, intVectorMap->size());
-  for (const IntVector& intVector : intVectorMap->values()) {
-    EXPECT_EQ(10u, intVector.size());
-    for (size_t i = 0; i < intVector.size(); ++i) {
-      EXPECT_EQ(static_cast<int>(i), intVector[i]->value());
+  EXPECT_EQ(10u, int_vector_map->size());
+  for (const IntVector& int_vector : int_vector_map->Values()) {
+    EXPECT_EQ(10u, int_vector.size());
+    for (size_t i = 0; i < int_vector.size(); ++i) {
+      EXPECT_EQ(static_cast<int>(i), int_vector[i]->Value());
     }
   }
 }
@@ -318,57 +319,57 @@ TEST(HeapCompactTest, CompactHashPartVector) {
 TEST(HeapCompactTest, CompactDeques) {
   Persistent<IntDeque> deque = new IntDeque;
   for (int i = 0; i < 8; ++i) {
-    deque->push_front(IntWrapper::create(i));
+    deque->push_front(IntWrapper::Create(i));
   }
   EXPECT_EQ(8u, deque->size());
 
   for (size_t i = 0; i < deque->size(); ++i)
-    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->value());
+    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   for (size_t i = 0; i < deque->size(); ++i)
-    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->value());
+    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
 }
 
 TEST(HeapCompactTest, CompactDequeVectors) {
   Persistent<HeapDeque<IntVector>> deque = new HeapDeque<IntVector>;
   for (int i = 0; i < 8; ++i) {
-    IntWrapper* value = IntWrapper::create(i);
+    IntWrapper* value = IntWrapper::Create(i);
     IntVector vector = IntVector(8, value);
     deque->push_front(vector);
   }
   EXPECT_EQ(8u, deque->size());
 
   for (size_t i = 0; i < deque->size(); ++i)
-    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->value());
+    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   for (size_t i = 0; i < deque->size(); ++i)
-    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->value());
+    EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
 }
 
 TEST(HeapCompactTest, CompactLinkedHashSet) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntWrapper>>;
   Persistent<OrderedHashSet> set = new OrderedHashSet;
   for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::create(i);
+    IntWrapper* value = IntWrapper::Create(i);
     set->insert(value);
   }
   EXPECT_EQ(13u, set->size());
 
   int expected = 0;
   for (IntWrapper* v : *set) {
-    EXPECT_EQ(expected, v->value());
+    EXPECT_EQ(expected, v->Value());
     expected++;
   }
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   expected = 0;
   for (IntWrapper* v : *set) {
-    EXPECT_EQ(expected, v->value());
+    EXPECT_EQ(expected, v->Value());
     expected++;
   }
 }
@@ -377,7 +378,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetVector) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntVector>>;
   Persistent<OrderedHashSet> set = new OrderedHashSet;
   for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::create(i);
+    IntWrapper* value = IntWrapper::Create(i);
     IntVector* vector = new IntVector(19, value);
     set->insert(vector);
   }
@@ -385,15 +386,15 @@ TEST(HeapCompactTest, CompactLinkedHashSetVector) {
 
   int expected = 0;
   for (IntVector* v : *set) {
-    EXPECT_EQ(expected, (*v)[0]->value());
+    EXPECT_EQ(expected, (*v)[0]->Value());
     expected++;
   }
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   expected = 0;
   for (IntVector* v : *set) {
-    EXPECT_EQ(expected, (*v)[0]->value());
+    EXPECT_EQ(expected, (*v)[0]->Value());
     expected++;
   }
 }
@@ -404,7 +405,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
 
   Persistent<OrderedHashSet> set = new OrderedHashSet;
   for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::create(i);
+    IntWrapper* value = IntWrapper::Create(i);
     Inner* inner = new Inner;
     inner->insert(value);
     set->insert(inner);
@@ -414,16 +415,16 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
   int expected = 0;
   for (const Inner* v : *set) {
     EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->value());
+    EXPECT_EQ(expected, (*v->begin())->Value());
     expected++;
   }
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   expected = 0;
   for (const Inner* v : *set) {
     EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->value());
+    EXPECT_EQ(expected, (*v->begin())->Value());
     expected++;
   }
 }
@@ -434,7 +435,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
 
   Persistent<OrderedHashSet> set = new OrderedHashSet;
   for (int i = 0; i < 13; ++i) {
-    IntWrapper* value = IntWrapper::create(i);
+    IntWrapper* value = IntWrapper::Create(i);
     Inner* inner = new Inner;
     inner->insert(value);
     set->insert(inner);
@@ -444,16 +445,16 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
   int expected = 0;
   for (const Inner* v : *set) {
     EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->value());
+    EXPECT_EQ(expected, (*v->begin())->Value());
     expected++;
   }
 
-  performHeapCompaction();
+  PerformHeapCompaction();
 
   expected = 0;
   for (const Inner* v : *set) {
     EXPECT_EQ(1u, v->size());
-    EXPECT_EQ(expected, (*v->begin())->value());
+    EXPECT_EQ(expected, (*v->begin())->Value());
     expected++;
   }
 }

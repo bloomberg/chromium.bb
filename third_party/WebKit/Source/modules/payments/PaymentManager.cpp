@@ -26,9 +26,9 @@ template <>
 struct TypeConverter<PaymentAppOptionPtr, blink::PaymentAppOption> {
   static PaymentAppOptionPtr Convert(const blink::PaymentAppOption& input) {
     PaymentAppOptionPtr output = PaymentAppOption::New();
-    output->name = input.hasName() ? input.name() : WTF::emptyString;
+    output->name = input.hasName() ? input.name() : WTF::g_empty_string;
     output->icon = input.hasIcon() ? input.icon() : WTF::String();
-    output->id = input.hasId() ? input.id() : WTF::emptyString;
+    output->id = input.hasId() ? input.id() : WTF::g_empty_string;
     if (input.hasEnabledMethods()) {
       output->enabled_methods =
           WTF::Vector<WTF::String>(input.enabledMethods());
@@ -41,7 +41,7 @@ template <>
 struct TypeConverter<PaymentAppManifestPtr, blink::PaymentAppManifest> {
   static PaymentAppManifestPtr Convert(const blink::PaymentAppManifest& input) {
     PaymentAppManifestPtr output = PaymentAppManifest::New();
-    output->name = input.hasName() ? input.name() : WTF::emptyString;
+    output->name = input.hasName() ? input.name() : WTF::g_empty_string;
     output->icon = input.hasIcon() ? input.icon() : WTF::String();
     if (input.hasOptions()) {
       for (size_t i = 0; i < input.options().size(); ++i) {
@@ -87,121 +87,121 @@ struct TypeConverter<blink::PaymentAppOption, PaymentAppOptionPtr> {
 
 namespace blink {
 
-PaymentManager* PaymentManager::create(
+PaymentManager* PaymentManager::Create(
     ServiceWorkerRegistration* registration) {
   return new PaymentManager(registration);
 }
 
-ScriptPromise PaymentManager::setManifest(ScriptState* scriptState,
+ScriptPromise PaymentManager::setManifest(ScriptState* script_state,
                                           const PaymentAppManifest& manifest) {
-  if (!m_manager) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError,
-                                          "Payment app manager unavailable."));
+  if (!manager_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError,
+                                           "Payment app manager unavailable."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  m_manager->SetManifest(
+  manager_->SetManifest(
       payments::mojom::blink::PaymentAppManifest::From(manifest),
-      convertToBaseCallback(WTF::bind(&PaymentManager::onSetManifest,
-                                      wrapPersistent(this),
-                                      wrapPersistent(resolver))));
+      ConvertToBaseCallback(WTF::Bind(&PaymentManager::OnSetManifest,
+                                      WrapPersistent(this),
+                                      WrapPersistent(resolver))));
 
   return promise;
 }
 
-ScriptPromise PaymentManager::getManifest(ScriptState* scriptState) {
-  if (!m_manager) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError,
-                                          "Payment app manager unavailable."));
+ScriptPromise PaymentManager::getManifest(ScriptState* script_state) {
+  if (!manager_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError,
+                                           "Payment app manager unavailable."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  m_manager->GetManifest(convertToBaseCallback(
-      WTF::bind(&PaymentManager::onGetManifest, wrapPersistent(this),
-                wrapPersistent(resolver))));
+  manager_->GetManifest(ConvertToBaseCallback(
+      WTF::Bind(&PaymentManager::OnGetManifest, WrapPersistent(this),
+                WrapPersistent(resolver))));
 
   return promise;
 }
 
 PaymentInstruments* PaymentManager::instruments() {
-  if (!m_instruments)
-    m_instruments = new PaymentInstruments();
-  return m_instruments;
+  if (!instruments_)
+    instruments_ = new PaymentInstruments();
+  return instruments_;
 }
 
 DEFINE_TRACE(PaymentManager) {
-  visitor->trace(m_registration);
-  visitor->trace(m_instruments);
+  visitor->Trace(registration_);
+  visitor->Trace(instruments_);
 }
 
 PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
-    : m_registration(registration), m_instruments(nullptr) {
+    : registration_(registration), instruments_(nullptr) {
   DCHECK(registration);
-  Platform::current()->interfaceProvider()->getInterface(
-      mojo::MakeRequest(&m_manager));
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&manager_));
 
-  m_manager.set_connection_error_handler(convertToBaseCallback(WTF::bind(
-      &PaymentManager::onServiceConnectionError, wrapWeakPersistent(this))));
+  manager_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
+      &PaymentManager::OnServiceConnectionError, WrapWeakPersistent(this))));
 
-  m_manager->Init(m_registration->scope());
+  manager_->Init(registration_->scope());
 }
 
-void PaymentManager::onSetManifest(
+void PaymentManager::OnSetManifest(
     ScriptPromiseResolver* resolver,
     payments::mojom::blink::PaymentAppManifestError error) {
   DCHECK(resolver);
   switch (error) {
     case payments::mojom::blink::PaymentAppManifestError::NONE:
-      resolver->resolve();
+      resolver->Resolve();
       break;
     case payments::mojom::blink::PaymentAppManifestError::NOT_IMPLEMENTED:
-      resolver->reject(
-          DOMException::create(NotSupportedError, "Not implemented yet."));
+      resolver->Reject(
+          DOMException::Create(kNotSupportedError, "Not implemented yet."));
       break;
     case payments::mojom::blink::PaymentAppManifestError::NO_ACTIVE_WORKER:
-      resolver->reject(
-          DOMException::create(InvalidStateError, "No active service worker."));
+      resolver->Reject(DOMException::Create(kInvalidStateError,
+                                            "No active service worker."));
       break;
     case payments::mojom::blink::PaymentAppManifestError::
         MANIFEST_STORAGE_OPERATION_FAILED:
-      resolver->reject(DOMException::create(
-          InvalidStateError, "Storing manifest data is failed."));
+      resolver->Reject(DOMException::Create(
+          kInvalidStateError, "Storing manifest data is failed."));
       break;
   }
 }
 
-void PaymentManager::onGetManifest(
+void PaymentManager::OnGetManifest(
     ScriptPromiseResolver* resolver,
     payments::mojom::blink::PaymentAppManifestPtr manifest,
     payments::mojom::blink::PaymentAppManifestError error) {
   DCHECK(resolver);
   switch (error) {
     case payments::mojom::blink::PaymentAppManifestError::NONE:
-      resolver->resolve(
+      resolver->Resolve(
           mojo::ConvertTo<PaymentAppManifest>(std::move(manifest)));
       break;
     case payments::mojom::blink::PaymentAppManifestError::NOT_IMPLEMENTED:
-      resolver->reject(
-          DOMException::create(NotSupportedError, "Not implemented yet."));
+      resolver->Reject(
+          DOMException::Create(kNotSupportedError, "Not implemented yet."));
       break;
     case payments::mojom::blink::PaymentAppManifestError::NO_ACTIVE_WORKER:
     case payments::mojom::blink::PaymentAppManifestError::
         MANIFEST_STORAGE_OPERATION_FAILED:
-      resolver->reject(DOMException::create(
-          AbortError,
+      resolver->Reject(DOMException::Create(
+          kAbortError,
           "No payment app manifest associated with the service worker."));
       break;
   }
 }
 
-void PaymentManager::onServiceConnectionError() {
-  m_manager.reset();
+void PaymentManager::OnServiceConnectionError() {
+  manager_.reset();
 }
 
 }  // namespace blink

@@ -25,21 +25,22 @@ struct PaintChunkProperties {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
   PaintChunkProperties(const PropertyTreeState& state)
-      : propertyTreeState(state), backfaceHidden(false) {}
+      : property_tree_state(state), backface_hidden(false) {}
 
   PaintChunkProperties()
-      : propertyTreeState(nullptr, nullptr, nullptr), backfaceHidden(false) {}
+      : property_tree_state(nullptr, nullptr, nullptr),
+        backface_hidden(false) {}
 
-  PropertyTreeState propertyTreeState;
-  bool backfaceHidden;
+  PropertyTreeState property_tree_state;
+  bool backface_hidden;
 };
 
 // Equality is based only on the pointers and is not 'deep' which would require
 // crawling the entire property tree to compute.
 inline bool operator==(const PaintChunkProperties& a,
                        const PaintChunkProperties& b) {
-  return a.propertyTreeState == b.propertyTreeState &&
-         a.backfaceHidden == b.backfaceHidden;
+  return a.property_tree_state == b.property_tree_state &&
+         a.backface_hidden == b.backface_hidden;
 }
 
 inline bool operator!=(const PaintChunkProperties& a,

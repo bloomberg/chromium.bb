@@ -33,15 +33,15 @@ ContextMenuItem::ContextMenuItem(ContextMenuItemType type,
                                  ContextMenuAction action,
                                  const String& title,
                                  const String& icon,
-                                 ContextMenu* subMenu)
-    : m_type(type),
-      m_action(action),
-      m_title(title),
-      m_icon(icon),
-      m_enabled(true),
-      m_checked(false) {
-  if (subMenu)
-    setSubMenu(subMenu);
+                                 ContextMenu* sub_menu)
+    : type_(type),
+      action_(action),
+      title_(title),
+      icon_(icon),
+      enabled_(true),
+      checked_(false) {
+  if (sub_menu)
+    SetSubMenu(sub_menu);
 }
 
 ContextMenuItem::ContextMenuItem(ContextMenuItemType type,
@@ -50,67 +50,67 @@ ContextMenuItem::ContextMenuItem(ContextMenuItemType type,
                                  const String& icon,
                                  bool enabled,
                                  bool checked)
-    : m_type(type),
-      m_action(action),
-      m_title(title),
-      m_icon(icon),
-      m_enabled(enabled),
-      m_checked(checked) {}
+    : type_(type),
+      action_(action),
+      title_(title),
+      icon_(icon),
+      enabled_(enabled),
+      checked_(checked) {}
 
 ContextMenuItem::ContextMenuItem(ContextMenuAction action,
                                  const String& title,
                                  bool enabled,
                                  bool checked,
-                                 const Vector<ContextMenuItem>& subMenuItems)
-    : m_type(SubmenuType),
-      m_action(action),
-      m_title(title),
-      m_enabled(enabled),
-      m_checked(checked),
-      m_subMenuItems(subMenuItems) {}
+                                 const Vector<ContextMenuItem>& sub_menu_items)
+    : type_(kSubmenuType),
+      action_(action),
+      title_(title),
+      enabled_(enabled),
+      checked_(checked),
+      sub_menu_items_(sub_menu_items) {}
 
 ContextMenuItem::~ContextMenuItem() {}
 
-void ContextMenuItem::setSubMenu(ContextMenu* subMenu) {
-  if (subMenu) {
-    m_type = SubmenuType;
-    m_subMenuItems = subMenu->items();
+void ContextMenuItem::SetSubMenu(ContextMenu* sub_menu) {
+  if (sub_menu) {
+    type_ = kSubmenuType;
+    sub_menu_items_ = sub_menu->Items();
   } else {
-    m_type = ActionType;
-    m_subMenuItems.clear();
+    type_ = kActionType;
+    sub_menu_items_.Clear();
   }
 }
 
-void ContextMenuItem::setType(ContextMenuItemType type) {
-  m_type = type;
+void ContextMenuItem::SetType(ContextMenuItemType type) {
+  type_ = type;
 }
 
-ContextMenuItemType ContextMenuItem::type() const {
-  return m_type;
+ContextMenuItemType ContextMenuItem::GetType() const {
+  return type_;
 }
 
-void ContextMenuItem::setAction(ContextMenuAction action) {
-  m_action = action;
+void ContextMenuItem::SetAction(ContextMenuAction action) {
+  action_ = action;
 }
 
-ContextMenuAction ContextMenuItem::action() const {
-  return m_action;
+ContextMenuAction ContextMenuItem::Action() const {
+  return action_;
 }
 
-void ContextMenuItem::setChecked(bool checked) {
-  m_checked = checked;
+void ContextMenuItem::SetChecked(bool checked) {
+  checked_ = checked;
 }
 
-bool ContextMenuItem::checked() const {
-  return m_checked;
+bool ContextMenuItem::Checked() const {
+  return checked_;
 }
 
-void ContextMenuItem::setEnabled(bool enabled) {
-  m_enabled = enabled;
+void ContextMenuItem::SetEnabled(bool enabled) {
+  enabled_ = enabled;
 }
 
-bool ContextMenuItem::enabled() const {
-  return m_enabled;
+bool ContextMenuItem::Enabled() const {
+  return enabled_;
 }
 
 }  // namespace blink

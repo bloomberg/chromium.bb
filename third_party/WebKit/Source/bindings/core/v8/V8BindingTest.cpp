@@ -16,140 +16,149 @@ namespace {
 
 template <typename T>
 v8::Local<v8::Value> ToV8(V8TestingScope* scope, T value) {
-  return blink::ToV8(value, scope->context()->Global(), scope->isolate());
+  return blink::ToV8(value, scope->GetContext()->Global(), scope->GetIsolate());
 }
 
 TEST(V8BindingTest, toImplSequence) {
   V8TestingScope scope;
   {
-    v8::Local<v8::Array> v8StringArray = v8::Array::New(scope.isolate(), 2);
-    v8StringArray
-        ->Set(scope.context(), ToV8(&scope, 0), ToV8(&scope, "Hello, World!"))
+    v8::Local<v8::Array> v8_string_array =
+        v8::Array::New(scope.GetIsolate(), 2);
+    v8_string_array
+        ->Set(scope.GetContext(), ToV8(&scope, 0),
+              ToV8(&scope, "Hello, World!"))
         .ToChecked();
-    v8StringArray
-        ->Set(scope.context(), ToV8(&scope, 1), ToV8(&scope, "Hi, Mom!"))
+    v8_string_array
+        ->Set(scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, "Hi, Mom!"))
         .ToChecked();
 
-    NonThrowableExceptionState exceptionState;
-    Vector<String> stringVector = toImplSequence<Vector<String>>(
-        scope.isolate(), v8StringArray, exceptionState);
-    EXPECT_EQ(2U, stringVector.size());
-    EXPECT_EQ("Hello, World!", stringVector[0]);
-    EXPECT_EQ("Hi, Mom!", stringVector[1]);
+    NonThrowableExceptionState exception_state;
+    Vector<String> string_vector = ToImplSequence<Vector<String>>(
+        scope.GetIsolate(), v8_string_array, exception_state);
+    EXPECT_EQ(2U, string_vector.size());
+    EXPECT_EQ("Hello, World!", string_vector[0]);
+    EXPECT_EQ("Hi, Mom!", string_vector[1]);
   }
 }
 
 TEST(V8BindingTest, toImplArray) {
   V8TestingScope scope;
   {
-    v8::Local<v8::Array> v8StringArray = v8::Array::New(scope.isolate(), 2);
-    EXPECT_TRUE(v8CallBoolean(v8StringArray->Set(
-        scope.context(), ToV8(&scope, 0), ToV8(&scope, "Hello, World!"))));
-    EXPECT_TRUE(v8CallBoolean(v8StringArray->Set(
-        scope.context(), ToV8(&scope, 1), ToV8(&scope, "Hi, Mom!"))));
+    v8::Local<v8::Array> v8_string_array =
+        v8::Array::New(scope.GetIsolate(), 2);
+    EXPECT_TRUE(V8CallBoolean(v8_string_array->Set(
+        scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, "Hello, World!"))));
+    EXPECT_TRUE(V8CallBoolean(v8_string_array->Set(
+        scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, "Hi, Mom!"))));
 
-    NonThrowableExceptionState exceptionState;
-    Vector<String> stringVector = toImplArray<Vector<String>>(
-        v8StringArray, 0, scope.isolate(), exceptionState);
-    EXPECT_EQ(2U, stringVector.size());
-    EXPECT_EQ("Hello, World!", stringVector[0]);
-    EXPECT_EQ("Hi, Mom!", stringVector[1]);
+    NonThrowableExceptionState exception_state;
+    Vector<String> string_vector = ToImplArray<Vector<String>>(
+        v8_string_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(2U, string_vector.size());
+    EXPECT_EQ("Hello, World!", string_vector[0]);
+    EXPECT_EQ("Hi, Mom!", string_vector[1]);
   }
   {
-    v8::Local<v8::Array> v8UnsignedArray = v8::Array::New(scope.isolate(), 3);
-    EXPECT_TRUE(v8CallBoolean(v8UnsignedArray->Set(
-        scope.context(), ToV8(&scope, 0), ToV8(&scope, 42))));
-    EXPECT_TRUE(v8CallBoolean(v8UnsignedArray->Set(
-        scope.context(), ToV8(&scope, 1), ToV8(&scope, 1729))));
-    EXPECT_TRUE(v8CallBoolean(v8UnsignedArray->Set(
-        scope.context(), ToV8(&scope, 2), ToV8(&scope, 31773))));
+    v8::Local<v8::Array> v8_unsigned_array =
+        v8::Array::New(scope.GetIsolate(), 3);
+    EXPECT_TRUE(V8CallBoolean(v8_unsigned_array->Set(
+        scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, 42))));
+    EXPECT_TRUE(V8CallBoolean(v8_unsigned_array->Set(
+        scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, 1729))));
+    EXPECT_TRUE(V8CallBoolean(v8_unsigned_array->Set(
+        scope.GetContext(), ToV8(&scope, 2), ToV8(&scope, 31773))));
 
-    NonThrowableExceptionState exceptionState;
-    Vector<unsigned> unsignedVector = toImplArray<Vector<unsigned>>(
-        v8UnsignedArray, 0, scope.isolate(), exceptionState);
-    EXPECT_EQ(3U, unsignedVector.size());
-    EXPECT_EQ(42U, unsignedVector[0]);
-    EXPECT_EQ(1729U, unsignedVector[1]);
-    EXPECT_EQ(31773U, unsignedVector[2]);
+    NonThrowableExceptionState exception_state;
+    Vector<unsigned> unsigned_vector = ToImplArray<Vector<unsigned>>(
+        v8_unsigned_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(3U, unsigned_vector.size());
+    EXPECT_EQ(42U, unsigned_vector[0]);
+    EXPECT_EQ(1729U, unsigned_vector[1]);
+    EXPECT_EQ(31773U, unsigned_vector[2]);
   }
   {
-    const double doublePi = 3.141592653589793238;
-    const float floatPi = doublePi;
-    v8::Local<v8::Array> v8RealArray = v8::Array::New(scope.isolate(), 1);
-    EXPECT_TRUE(v8CallBoolean(v8RealArray->Set(scope.context(), ToV8(&scope, 0),
-                                               ToV8(&scope, doublePi))));
+    const double kDoublePi = 3.141592653589793238;
+    const float kFloatPi = kDoublePi;
+    v8::Local<v8::Array> v8_real_array = v8::Array::New(scope.GetIsolate(), 1);
+    EXPECT_TRUE(V8CallBoolean(v8_real_array->Set(
+        scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, kDoublePi))));
 
-    NonThrowableExceptionState exceptionState;
-    Vector<double> doubleVector = toImplArray<Vector<double>>(
-        v8RealArray, 0, scope.isolate(), exceptionState);
-    EXPECT_EQ(1U, doubleVector.size());
-    EXPECT_EQ(doublePi, doubleVector[0]);
+    NonThrowableExceptionState exception_state;
+    Vector<double> double_vector = ToImplArray<Vector<double>>(
+        v8_real_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(1U, double_vector.size());
+    EXPECT_EQ(kDoublePi, double_vector[0]);
 
-    Vector<float> floatVector = toImplArray<Vector<float>>(
-        v8RealArray, 0, scope.isolate(), exceptionState);
-    EXPECT_EQ(1U, floatVector.size());
-    EXPECT_EQ(floatPi, floatVector[0]);
+    Vector<float> float_vector = ToImplArray<Vector<float>>(
+        v8_real_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(1U, float_vector.size());
+    EXPECT_EQ(kFloatPi, float_vector[0]);
   }
   {
-    v8::Local<v8::Array> v8Array = v8::Array::New(scope.isolate(), 3);
-    EXPECT_TRUE(v8CallBoolean(v8Array->Set(scope.context(), ToV8(&scope, 0),
-                                           ToV8(&scope, "Vini, vidi, vici."))));
-    EXPECT_TRUE(v8CallBoolean(
-        v8Array->Set(scope.context(), ToV8(&scope, 1), ToV8(&scope, 65535))));
-    EXPECT_TRUE(v8CallBoolean(
-        v8Array->Set(scope.context(), ToV8(&scope, 2), ToV8(&scope, 0.125))));
+    v8::Local<v8::Array> v8_array = v8::Array::New(scope.GetIsolate(), 3);
+    EXPECT_TRUE(
+        V8CallBoolean(v8_array->Set(scope.GetContext(), ToV8(&scope, 0),
+                                    ToV8(&scope, "Vini, vidi, vici."))));
+    EXPECT_TRUE(V8CallBoolean(v8_array->Set(scope.GetContext(), ToV8(&scope, 1),
+                                            ToV8(&scope, 65535))));
+    EXPECT_TRUE(V8CallBoolean(v8_array->Set(scope.GetContext(), ToV8(&scope, 2),
+                                            ToV8(&scope, 0.125))));
 
-    NonThrowableExceptionState exceptionState;
-    Vector<v8::Local<v8::Value>> v8HandleVector =
-        toImplArray<Vector<v8::Local<v8::Value>>>(v8Array, 0, scope.isolate(),
-                                                  exceptionState);
-    EXPECT_EQ(3U, v8HandleVector.size());
-    EXPECT_EQ("Vini, vidi, vici.",
-              toUSVString(scope.isolate(), v8HandleVector[0], exceptionState));
-    EXPECT_EQ(65535U, toUInt32(scope.isolate(), v8HandleVector[1],
-                               NormalConversion, exceptionState));
+    NonThrowableExceptionState exception_state;
+    Vector<v8::Local<v8::Value>> v8_handle_vector =
+        ToImplArray<Vector<v8::Local<v8::Value>>>(
+            v8_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(3U, v8_handle_vector.size());
+    EXPECT_EQ(
+        "Vini, vidi, vici.",
+        ToUSVString(scope.GetIsolate(), v8_handle_vector[0], exception_state));
+    EXPECT_EQ(65535U, ToUInt32(scope.GetIsolate(), v8_handle_vector[1],
+                               kNormalConversion, exception_state));
 
-    Vector<ScriptValue> scriptValueVector = toImplArray<Vector<ScriptValue>>(
-        v8Array, 0, scope.isolate(), exceptionState);
-    EXPECT_EQ(3U, scriptValueVector.size());
-    String reportOnZela;
-    EXPECT_TRUE(scriptValueVector[0].toString(reportOnZela));
-    EXPECT_EQ("Vini, vidi, vici.", reportOnZela);
-    EXPECT_EQ(65535U, toUInt32(scope.isolate(), scriptValueVector[1].v8Value(),
-                               NormalConversion, exceptionState));
+    Vector<ScriptValue> script_value_vector = ToImplArray<Vector<ScriptValue>>(
+        v8_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(3U, script_value_vector.size());
+    String report_on_zela;
+    EXPECT_TRUE(script_value_vector[0].ToString(report_on_zela));
+    EXPECT_EQ("Vini, vidi, vici.", report_on_zela);
+    EXPECT_EQ(65535U,
+              ToUInt32(scope.GetIsolate(), script_value_vector[1].V8Value(),
+                       kNormalConversion, exception_state));
   }
   {
-    v8::Local<v8::Array> v8StringArray1 = v8::Array::New(scope.isolate(), 2);
-    EXPECT_TRUE(v8CallBoolean(v8StringArray1->Set(
-        scope.context(), ToV8(&scope, 0), ToV8(&scope, "foo"))));
-    EXPECT_TRUE(v8CallBoolean(v8StringArray1->Set(
-        scope.context(), ToV8(&scope, 1), ToV8(&scope, "bar"))));
-    v8::Local<v8::Array> v8StringArray2 = v8::Array::New(scope.isolate(), 3);
-    EXPECT_TRUE(v8CallBoolean(v8StringArray2->Set(
-        scope.context(), ToV8(&scope, 0), ToV8(&scope, "x"))));
-    EXPECT_TRUE(v8CallBoolean(v8StringArray2->Set(
-        scope.context(), ToV8(&scope, 1), ToV8(&scope, "y"))));
-    EXPECT_TRUE(v8CallBoolean(v8StringArray2->Set(
-        scope.context(), ToV8(&scope, 2), ToV8(&scope, "z"))));
-    v8::Local<v8::Array> v8StringArrayArray =
-        v8::Array::New(scope.isolate(), 2);
-    EXPECT_TRUE(v8CallBoolean(v8StringArrayArray->Set(
-        scope.context(), ToV8(&scope, 0), v8StringArray1)));
-    EXPECT_TRUE(v8CallBoolean(v8StringArrayArray->Set(
-        scope.context(), ToV8(&scope, 1), v8StringArray2)));
+    v8::Local<v8::Array> v8_string_array1 =
+        v8::Array::New(scope.GetIsolate(), 2);
+    EXPECT_TRUE(V8CallBoolean(v8_string_array1->Set(
+        scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, "foo"))));
+    EXPECT_TRUE(V8CallBoolean(v8_string_array1->Set(
+        scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, "bar"))));
+    v8::Local<v8::Array> v8_string_array2 =
+        v8::Array::New(scope.GetIsolate(), 3);
+    EXPECT_TRUE(V8CallBoolean(v8_string_array2->Set(
+        scope.GetContext(), ToV8(&scope, 0), ToV8(&scope, "x"))));
+    EXPECT_TRUE(V8CallBoolean(v8_string_array2->Set(
+        scope.GetContext(), ToV8(&scope, 1), ToV8(&scope, "y"))));
+    EXPECT_TRUE(V8CallBoolean(v8_string_array2->Set(
+        scope.GetContext(), ToV8(&scope, 2), ToV8(&scope, "z"))));
+    v8::Local<v8::Array> v8_string_array_array =
+        v8::Array::New(scope.GetIsolate(), 2);
+    EXPECT_TRUE(V8CallBoolean(v8_string_array_array->Set(
+        scope.GetContext(), ToV8(&scope, 0), v8_string_array1)));
+    EXPECT_TRUE(V8CallBoolean(v8_string_array_array->Set(
+        scope.GetContext(), ToV8(&scope, 1), v8_string_array2)));
 
-    NonThrowableExceptionState exceptionState;
-    Vector<Vector<String>> stringVectorVector =
-        toImplArray<Vector<Vector<String>>>(v8StringArrayArray, 0,
-                                            scope.isolate(), exceptionState);
-    EXPECT_EQ(2U, stringVectorVector.size());
-    EXPECT_EQ(2U, stringVectorVector[0].size());
-    EXPECT_EQ("foo", stringVectorVector[0][0]);
-    EXPECT_EQ("bar", stringVectorVector[0][1]);
-    EXPECT_EQ(3U, stringVectorVector[1].size());
-    EXPECT_EQ("x", stringVectorVector[1][0]);
-    EXPECT_EQ("y", stringVectorVector[1][1]);
-    EXPECT_EQ("z", stringVectorVector[1][2]);
+    NonThrowableExceptionState exception_state;
+    Vector<Vector<String>> string_vector_vector =
+        ToImplArray<Vector<Vector<String>>>(
+            v8_string_array_array, 0, scope.GetIsolate(), exception_state);
+    EXPECT_EQ(2U, string_vector_vector.size());
+    EXPECT_EQ(2U, string_vector_vector[0].size());
+    EXPECT_EQ("foo", string_vector_vector[0][0]);
+    EXPECT_EQ("bar", string_vector_vector[0][1]);
+    EXPECT_EQ(3U, string_vector_vector[1].size());
+    EXPECT_EQ("x", string_vector_vector[1][0]);
+    EXPECT_EQ("y", string_vector_vector[1][1]);
+    EXPECT_EQ("z", string_vector_vector[1][2]);
   }
 }
 

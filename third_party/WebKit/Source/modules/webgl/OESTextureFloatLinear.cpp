@@ -29,25 +29,25 @@ namespace blink {
 
 OESTextureFloatLinear::OESTextureFloatLinear(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_OES_texture_float_linear");
 }
 
-WebGLExtensionName OESTextureFloatLinear::name() const {
-  return OESTextureFloatLinearName;
+WebGLExtensionName OESTextureFloatLinear::GetName() const {
+  return kOESTextureFloatLinearName;
 }
 
-OESTextureFloatLinear* OESTextureFloatLinear::create(
+OESTextureFloatLinear* OESTextureFloatLinear::Create(
     WebGLRenderingContextBase* context) {
   return new OESTextureFloatLinear(context);
 }
 
-bool OESTextureFloatLinear::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+bool OESTextureFloatLinear::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_OES_texture_float_linear");
 }
 
-const char* OESTextureFloatLinear::extensionName() {
+const char* OESTextureFloatLinear::ExtensionName() {
   return "OES_texture_float_linear";
 }
 

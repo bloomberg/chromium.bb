@@ -51,24 +51,23 @@ void DOMActivityLogger::AttachToWorld(int world_id,
                                       const std::string& extension_id) {
   // If there is no logger registered for world_id, construct a new logger
   // and register it with world_id.
-  if (!blink::hasDOMActivityLogger(world_id,
-                                   WebString::fromUTF8(extension_id))) {
+  if (!blink::HasDOMActivityLogger(world_id,
+                                   WebString::FromUTF8(extension_id))) {
     DOMActivityLogger* logger = new DOMActivityLogger(extension_id);
-    blink::setDOMActivityLogger(world_id,
-                                WebString::fromUTF8(extension_id),
+    blink::SetDOMActivityLogger(world_id, WebString::FromUTF8(extension_id),
                                 logger);
   }
 }
 
-void DOMActivityLogger::logGetter(const WebString& api_name,
+void DOMActivityLogger::LogGetter(const WebString& api_name,
                                   const WebURL& url,
                                   const WebString& title) {
-  SendDomActionMessage(api_name.utf8(), url, title.utf16(),
+  SendDomActionMessage(api_name.Utf8(), url, title.Utf16(),
                        DomActionType::GETTER,
                        std::unique_ptr<base::ListValue>(new base::ListValue()));
 }
 
-void DOMActivityLogger::logSetter(const WebString& api_name,
+void DOMActivityLogger::LogSetter(const WebString& api_name,
                                   const v8::Local<v8::Value>& new_value,
                                   const WebURL& url,
                                   const WebString& title) {
@@ -81,37 +80,37 @@ void DOMActivityLogger::logSetter(const WebString& api_name,
                                   const WebURL& url,
                                   const WebString& title) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  std::string api_name_utf8 = api_name.utf8();
+  std::string api_name_utf8 = api_name.Utf8();
   AppendV8Value(api_name_utf8, new_value, args.get());
   if (!old_value.IsEmpty())
     AppendV8Value(api_name_utf8, old_value, args.get());
-  SendDomActionMessage(api_name_utf8, url, title.utf16(), DomActionType::SETTER,
+  SendDomActionMessage(api_name_utf8, url, title.Utf16(), DomActionType::SETTER,
                        std::move(args));
 }
 
-void DOMActivityLogger::logMethod(const WebString& api_name,
+void DOMActivityLogger::LogMethod(const WebString& api_name,
                                   int argc,
                                   const v8::Local<v8::Value>* argv,
                                   const WebURL& url,
                                   const WebString& title) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  std::string api_name_utf8 = api_name.utf8();
+  std::string api_name_utf8 = api_name.Utf8();
   for (int i = 0; i < argc; ++i)
     AppendV8Value(api_name_utf8, argv[i], args.get());
-  SendDomActionMessage(api_name_utf8, url, title.utf16(), DomActionType::METHOD,
+  SendDomActionMessage(api_name_utf8, url, title.Utf16(), DomActionType::METHOD,
                        std::move(args));
 }
 
-void DOMActivityLogger::logEvent(const WebString& event_name,
+void DOMActivityLogger::LogEvent(const WebString& event_name,
                                  int argc,
                                  const WebString* argv,
                                  const WebURL& url,
                                  const WebString& title) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
-  std::string event_name_utf8 = event_name.utf8();
+  std::string event_name_utf8 = event_name.Utf8();
   for (int i = 0; i < argc; ++i)
-    args->AppendString(argv[i].utf16());
-  SendDomActionMessage(event_name_utf8, url, title.utf16(),
+    args->AppendString(argv[i].Utf16());
+  SendDomActionMessage(event_name_utf8, url, title.Utf16(),
                        DomActionType::METHOD, std::move(args));
 }
 

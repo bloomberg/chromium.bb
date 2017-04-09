@@ -12,12 +12,12 @@ namespace blink {
 
 class LineLayoutRubyText : public LineLayoutBlockFlow {
  public:
-  explicit LineLayoutRubyText(LayoutRubyText* layoutRubyText)
-      : LineLayoutBlockFlow(layoutRubyText) {}
+  explicit LineLayoutRubyText(LayoutRubyText* layout_ruby_text)
+      : LineLayoutBlockFlow(layout_ruby_text) {}
 
   explicit LineLayoutRubyText(const LineLayoutItem& item)
       : LineLayoutBlockFlow(item) {
-    SECURITY_DCHECK(!item || item.isRubyText());
+    SECURITY_DCHECK(!item || item.IsRubyText());
   }
 
   explicit LineLayoutRubyText(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}
@@ -25,10 +25,10 @@ class LineLayoutRubyText : public LineLayoutBlockFlow {
   LineLayoutRubyText() {}
 
  private:
-  LayoutRubyText* toRubyText() { return toLayoutRubyText(layoutObject()); }
+  LayoutRubyText* ToRubyText() { return ToLayoutRubyText(GetLayoutObject()); }
 
-  const LayoutRubyText* toRubyText() const {
-    return toLayoutRubyText(layoutObject());
+  const LayoutRubyText* ToRubyText() const {
+    return ToLayoutRubyText(GetLayoutObject());
   }
 };
 

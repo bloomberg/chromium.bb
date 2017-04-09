@@ -39,33 +39,33 @@ class CORE_EXPORT TouchList final : public GarbageCollected<TouchList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TouchList* create() { return new TouchList; }
+  static TouchList* Create() { return new TouchList; }
 
-  static TouchList* create(const HeapVector<Member<Touch>>& touches) {
+  static TouchList* Create(const HeapVector<Member<Touch>>& touches) {
     TouchList* list = new TouchList;
-    list->m_values.appendVector(touches);
+    list->values_.AppendVector(touches);
     return list;
   }
 
-  static TouchList* adopt(HeapVector<Member<Touch>>& touches) {
+  static TouchList* Adopt(HeapVector<Member<Touch>>& touches) {
     return new TouchList(touches);
   }
 
-  unsigned length() const { return m_values.size(); }
+  unsigned length() const { return values_.size(); }
 
   Touch* item(unsigned);
   const Touch* item(unsigned) const;
 
-  void append(Touch* touch) { m_values.push_back(touch); }
+  void Append(Touch* touch) { values_.push_back(touch); }
 
   DECLARE_TRACE();
 
  private:
   TouchList() {}
 
-  TouchList(HeapVector<Member<Touch>>& touches) { m_values.swap(touches); }
+  TouchList(HeapVector<Member<Touch>>& touches) { values_.Swap(touches); }
 
-  HeapVector<Member<Touch>> m_values;
+  HeapVector<Member<Touch>> values_;
 };
 
 }  // namespace blink

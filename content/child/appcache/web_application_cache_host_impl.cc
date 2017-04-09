@@ -89,7 +89,7 @@ WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
 void WebApplicationCacheHostImpl::OnCacheSelected(
     const AppCacheInfo& info) {
   cache_info_ = info;
-  client_->didChangeCacheAssociation();
+  client_->DidChangeCacheAssociation();
 }
 
 void WebApplicationCacheHostImpl::OnStatusChanged(
@@ -132,7 +132,7 @@ void WebApplicationCacheHostImpl::OnEventRaised(
       break;
   }
 
-  client_->notifyEventListener(static_cast<EventID>(event_id));
+  client_->NotifyEventListener(static_cast<EventID>(event_id));
 }
 
 void WebApplicationCacheHostImpl::OnProgressEventRaised(
@@ -144,7 +144,7 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
                                            num_total, url.spec().c_str());
   OnLogMessage(APPCACHE_LOG_INFO, message);
   status_ = APPCACHE_STATUS_DOWNLOADING;
-  client_->notifyProgressEventListener(url, num_total, num_complete);
+  client_->NotifyProgressEventListener(url, num_total, num_complete);
 }
 
 void WebApplicationCacheHostImpl::OnErrorEventRaised(
@@ -161,23 +161,23 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
   if (details.is_cross_origin) {
     // Don't leak detailed information to script for cross-origin resources.
     DCHECK_EQ(APPCACHE_RESOURCE_ERROR, details.reason);
-    client_->notifyErrorEventListener(
-        static_cast<ErrorReason>(details.reason), details.url, 0, WebString());
+    client_->NotifyErrorEventListener(static_cast<ErrorReason>(details.reason),
+                                      details.url, 0, WebString());
   } else {
-    client_->notifyErrorEventListener(static_cast<ErrorReason>(details.reason),
-                                      details.url,
-                                      details.status,
-                                      WebString::fromUTF8(details.message));
+    client_->NotifyErrorEventListener(static_cast<ErrorReason>(details.reason),
+                                      details.url, details.status,
+                                      WebString::FromUTF8(details.message));
   }
 }
 
-void WebApplicationCacheHostImpl::willStartMainResourceRequest(
-    WebURLRequest& request, const WebApplicationCacheHost* spawning_host) {
-  request.setAppCacheHostID(host_id_);
+void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
+    WebURLRequest& request,
+    const WebApplicationCacheHost* spawning_host) {
+  request.SetAppCacheHostID(host_id_);
 
-  original_main_resource_url_ = ClearUrlRef(request.url());
+  original_main_resource_url_ = ClearUrlRef(request.Url());
 
-  std::string method = request.httpMethod().utf8();
+  std::string method = request.HttpMethod().Utf8();
   is_get_method_ = (method == kHttpGETMethod);
   DCHECK(method == base::ToUpperASCII(method));
 
@@ -189,25 +189,25 @@ void WebApplicationCacheHostImpl::willStartMainResourceRequest(
   }
 }
 
-void WebApplicationCacheHostImpl::willStartSubResourceRequest(
+void WebApplicationCacheHostImpl::WillStartSubResourceRequest(
     WebURLRequest& request) {
-  request.setAppCacheHostID(host_id_);
+  request.SetAppCacheHostID(host_id_);
 }
 
-void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
+void WebApplicationCacheHostImpl::SelectCacheWithoutManifest() {
   if (was_select_cache_called_)
     return;
   was_select_cache_called_ = true;
 
-  status_ = (document_response_.appCacheID() == kAppCacheNoCacheId) ?
-      APPCACHE_STATUS_UNCACHED : APPCACHE_STATUS_CHECKING;
+  status_ = (document_response_.AppCacheID() == kAppCacheNoCacheId)
+                ? APPCACHE_STATUS_UNCACHED
+                : APPCACHE_STATUS_CHECKING;
   is_new_master_entry_ = OLD_ENTRY;
   backend_->SelectCache(host_id_, document_url_,
-                        document_response_.appCacheID(),
-                        GURL());
+                        document_response_.AppCacheID(), GURL());
 }
 
-bool WebApplicationCacheHostImpl::selectCacheWithManifest(
+bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
     const WebURL& manifest_url) {
   if (was_select_cache_called_)
     return true;
@@ -217,7 +217,7 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
 
   // 6.9.6 The application cache selection algorithm
   // Check for new 'master' entries.
-  if (document_response_.appCacheID() == kAppCacheNoCacheId) {
+  if (document_response_.AppCacheID() == kAppCacheNoCacheId) {
     if (is_scheme_supported_ && is_get_method_ &&
         (manifest_gurl.GetOrigin() == document_url_.GetOrigin())) {
       status_ = APPCACHE_STATUS_CHECKING;
@@ -236,10 +236,10 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
 
   // 6.9.6 The application cache selection algorithm
   // Check for 'foreign' entries.
-  GURL document_manifest_gurl(document_response_.appCacheManifestURL());
+  GURL document_manifest_gurl(document_response_.AppCacheManifestURL());
   if (document_manifest_gurl != manifest_gurl) {
     backend_->MarkAsForeignEntry(host_id_, document_url_,
-                                 document_response_.appCacheID());
+                                 document_response_.AppCacheID());
     status_ = APPCACHE_STATUS_UNCACHED;
     return false;  // the navigation will be restarted
   }
@@ -248,43 +248,43 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
 
   // Its a 'master' entry thats already in the cache.
   backend_->SelectCache(host_id_, document_url_,
-                        document_response_.appCacheID(),
-                        manifest_gurl);
+                        document_response_.AppCacheID(), manifest_gurl);
   return true;
 }
 
-void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
+void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
     const WebURLResponse& response) {
   document_response_ = response;
-  document_url_ = ClearUrlRef(document_response_.url());
+  document_url_ = ClearUrlRef(document_response_.Url());
   if (document_url_ != original_main_resource_url_)
     is_get_method_ = true;  // A redirect was involved.
   original_main_resource_url_ = GURL();
 
   is_scheme_supported_ =  IsSchemeSupportedForAppCache(document_url_);
-  if ((document_response_.appCacheID() != kAppCacheNoCacheId) ||
+  if ((document_response_.AppCacheID() != kAppCacheNoCacheId) ||
       !is_scheme_supported_ || !is_get_method_)
     is_new_master_entry_ = OLD_ENTRY;
 }
 
-void WebApplicationCacheHostImpl::didReceiveDataForMainResource(
-    const char* data, unsigned len) {
+void WebApplicationCacheHostImpl::DidReceiveDataForMainResource(
+    const char* data,
+    unsigned len) {
   if (is_new_master_entry_ == OLD_ENTRY)
     return;
   // TODO(michaeln): write me
 }
 
-void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
+void WebApplicationCacheHostImpl::DidFinishLoadingMainResource(bool success) {
   if (is_new_master_entry_ == OLD_ENTRY)
     return;
   // TODO(michaeln): write me
 }
 
-WebApplicationCacheHost::Status WebApplicationCacheHostImpl::getStatus() {
+WebApplicationCacheHost::Status WebApplicationCacheHostImpl::GetStatus() {
   return static_cast<WebApplicationCacheHost::Status>(status_);
 }
 
-bool WebApplicationCacheHostImpl::startUpdate() {
+bool WebApplicationCacheHostImpl::StartUpdate() {
   if (!backend_->StartUpdate(host_id_))
     return false;
   if (status_ == APPCACHE_STATUS_IDLE ||
@@ -295,24 +295,24 @@ bool WebApplicationCacheHostImpl::startUpdate() {
   return true;
 }
 
-bool WebApplicationCacheHostImpl::swapCache() {
+bool WebApplicationCacheHostImpl::SwapCache() {
   if (!backend_->SwapCache(host_id_))
     return false;
   status_ = backend_->GetStatus(host_id_);
   return true;
 }
 
-void WebApplicationCacheHostImpl::getAssociatedCacheInfo(
+void WebApplicationCacheHostImpl::GetAssociatedCacheInfo(
     WebApplicationCacheHost::CacheInfo* info) {
-  info->manifestURL = cache_info_.manifest_url;
+  info->manifest_url = cache_info_.manifest_url;
   if (!cache_info_.is_complete)
     return;
-  info->creationTime = cache_info_.creation_time.ToDoubleT();
-  info->updateTime = cache_info_.last_update_time.ToDoubleT();
-  info->totalSize = cache_info_.size;
+  info->creation_time = cache_info_.creation_time.ToDoubleT();
+  info->update_time = cache_info_.last_update_time.ToDoubleT();
+  info->total_size = cache_info_.size;
 }
 
-void WebApplicationCacheHostImpl::getResourceList(
+void WebApplicationCacheHostImpl::GetResourceList(
     WebVector<ResourceInfo>* resources) {
   if (!cache_info_.is_complete)
     return;
@@ -322,14 +322,14 @@ void WebApplicationCacheHostImpl::getResourceList(
   WebVector<ResourceInfo> web_resources(resource_infos.size());
   for (size_t i = 0; i < resource_infos.size(); ++i) {
     web_resources[i].size = resource_infos[i].size;
-    web_resources[i].isMaster = resource_infos[i].is_master;
-    web_resources[i].isExplicit = resource_infos[i].is_explicit;
-    web_resources[i].isManifest = resource_infos[i].is_manifest;
-    web_resources[i].isForeign = resource_infos[i].is_foreign;
-    web_resources[i].isFallback = resource_infos[i].is_fallback;
+    web_resources[i].is_master = resource_infos[i].is_master;
+    web_resources[i].is_explicit = resource_infos[i].is_explicit;
+    web_resources[i].is_manifest = resource_infos[i].is_manifest;
+    web_resources[i].is_foreign = resource_infos[i].is_foreign;
+    web_resources[i].is_fallback = resource_infos[i].is_fallback;
     web_resources[i].url = resource_infos[i].url;
   }
-  resources->swap(web_resources);
+  resources->Swap(web_resources);
 }
 
 }  // namespace content

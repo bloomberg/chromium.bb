@@ -16,59 +16,59 @@ class TerminatedArrayBuilder {
  public:
   explicit TerminatedArrayBuilder(
       typename ArrayType<T>::Allocator::PassPtr array)
-      : m_array(array), m_count(0), m_capacity(0) {
-    if (!m_array)
+      : array_(array), count_(0), capacity_(0) {
+    if (!array_)
       return;
-    m_capacity = m_count = m_array->size();
-    DCHECK(m_array->at(m_count - 1).isLastInArray());
+    capacity_ = count_ = array_->size();
+    DCHECK(array_->at(count_ - 1).IsLastInArray());
   }
 
-  void grow(size_t count) {
+  void Grow(size_t count) {
     DCHECK(count);
-    if (!m_array) {
-      DCHECK(!m_count);
-      DCHECK(!m_capacity);
-      m_capacity = count;
-      m_array = ArrayType<T>::Allocator::create(m_capacity);
+    if (!array_) {
+      DCHECK(!count_);
+      DCHECK(!capacity_);
+      capacity_ = count;
+      array_ = ArrayType<T>::Allocator::Create(capacity_);
     } else {
-      DCHECK(m_array->at(m_count - 1).isLastInArray());
-      m_capacity += count;
-      m_array = ArrayType<T>::Allocator::resize(
-          ArrayType<T>::Allocator::release(m_array), m_capacity);
-      m_array->at(m_count - 1).setLastInArray(false);
+      DCHECK(array_->at(count_ - 1).IsLastInArray());
+      capacity_ += count;
+      array_ = ArrayType<T>::Allocator::Resize(
+          ArrayType<T>::Allocator::Release(array_), capacity_);
+      array_->at(count_ - 1).SetLastInArray(false);
     }
-    m_array->at(m_capacity - 1).setLastInArray(true);
+    array_->at(capacity_ - 1).SetLastInArray(true);
   }
 
-  void append(const T& item) {
-    RELEASE_ASSERT(m_count < m_capacity);
-    DCHECK(!item.isLastInArray());
-    m_array->at(m_count++) = item;
-    if (m_count == m_capacity)
-      m_array->at(m_capacity - 1).setLastInArray(true);
+  void Append(const T& item) {
+    RELEASE_ASSERT(count_ < capacity_);
+    DCHECK(!item.IsLastInArray());
+    array_->at(count_++) = item;
+    if (count_ == capacity_)
+      array_->at(capacity_ - 1).SetLastInArray(true);
   }
 
-  typename ArrayType<T>::Allocator::PassPtr release() {
-    RELEASE_ASSERT(m_count == m_capacity);
-    assertValid();
-    return ArrayType<T>::Allocator::release(m_array);
+  typename ArrayType<T>::Allocator::PassPtr Release() {
+    RELEASE_ASSERT(count_ == capacity_);
+    AssertValid();
+    return ArrayType<T>::Allocator::Release(array_);
   }
 
  private:
 #if DCHECK_IS_ON()
-  void assertValid() {
-    for (size_t i = 0; i < m_count; ++i) {
-      bool isLastInArray = (i + 1 == m_count);
-      DCHECK_EQ(m_array->at(i).isLastInArray(), isLastInArray);
+  void AssertValid() {
+    for (size_t i = 0; i < count_; ++i) {
+      bool is_last_in_array = (i + 1 == count_);
+      DCHECK_EQ(array_->at(i).IsLastInArray(), is_last_in_array);
     }
   }
 #else
-  void assertValid() {}
+  void AssertValid() {}
 #endif
 
-  typename ArrayType<T>::Allocator::Ptr m_array;
-  size_t m_count;
-  size_t m_capacity;
+  typename ArrayType<T>::Allocator::Ptr array_;
+  size_t count_;
+  size_t capacity_;
 };
 
 }  // namespace WTF

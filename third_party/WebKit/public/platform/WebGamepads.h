@@ -35,10 +35,10 @@ namespace blink {
 // browser.
 class WebGamepads {
  public:
-  static const size_t itemsLengthCap = 4;
+  static const size_t kItemsLengthCap = 4;
 
   // Gamepad data for N separate gamepad devices.
-  WebGamepad items[itemsLengthCap];
+  WebGamepad items[kItemsLengthCap];
 };
 
 #pragma pack(pop)

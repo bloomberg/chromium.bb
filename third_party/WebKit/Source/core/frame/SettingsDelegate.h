@@ -46,30 +46,30 @@ class CORE_EXPORT SettingsDelegate {
   explicit SettingsDelegate(std::unique_ptr<Settings>);
   virtual ~SettingsDelegate();
 
-  Settings* settings() const { return m_settings.get(); }
+  Settings* GetSettings() const { return settings_.get(); }
 
   // We currently use an enum instead of individual invalidation
   // functions to make generating Settings.in slightly easier.
   enum ChangeType {
-    StyleChange,
-    ViewportDescriptionChange,
-    ViewportRuleChange,
-    DNSPrefetchingChange,
-    ImageLoadingChange,
-    TextAutosizingChange,
-    FontFamilyChange,
-    AcceleratedCompositingChange,
-    MediaQueryChange,
-    AccessibilityStateChange,
-    TextTrackKindUserPreferenceChange,
-    DOMWorldsChange,
-    MediaControlsChange,
+    kStyleChange,
+    kViewportDescriptionChange,
+    kViewportRuleChange,
+    kDNSPrefetchingChange,
+    kImageLoadingChange,
+    kTextAutosizingChange,
+    kFontFamilyChange,
+    kAcceleratedCompositingChange,
+    kMediaQueryChange,
+    kAccessibilityStateChange,
+    kTextTrackKindUserPreferenceChange,
+    kDOMWorldsChange,
+    kMediaControlsChange,
   };
 
-  virtual void settingsChanged(ChangeType) = 0;
+  virtual void SettingsChanged(ChangeType) = 0;
 
  protected:
-  std::unique_ptr<Settings> const m_settings;
+  std::unique_ptr<Settings> const settings_;
 };
 
 }  // namespace blink

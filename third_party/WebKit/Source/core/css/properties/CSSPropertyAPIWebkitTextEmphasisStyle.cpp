@@ -13,31 +13,31 @@ namespace blink {
 const CSSValue* CSSPropertyAPIWebkitTextEmphasisStyle::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  if (CSSValue* textEmphasisStyle =
-          CSSPropertyParserHelpers::consumeString(range))
-    return textEmphasisStyle;
+  if (CSSValue* text_emphasis_style =
+          CSSPropertyParserHelpers::ConsumeString(range))
+    return text_emphasis_style;
 
   CSSIdentifierValue* fill =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueFilled, CSSValueOpen>(
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
           range);
   CSSIdentifierValue* shape =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueDot, CSSValueCircle,
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueDot, CSSValueCircle,
                                              CSSValueDoubleCircle,
                                              CSSValueTriangle, CSSValueSesame>(
           range);
   if (!fill) {
-    fill = CSSPropertyParserHelpers::consumeIdent<CSSValueFilled, CSSValueOpen>(
+    fill = CSSPropertyParserHelpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
         range);
   }
   if (fill && shape) {
-    CSSValueList* parsedValues = CSSValueList::createSpaceSeparated();
-    parsedValues->append(*fill);
-    parsedValues->append(*shape);
-    return parsedValues;
+    CSSValueList* parsed_values = CSSValueList::CreateSpaceSeparated();
+    parsed_values->Append(*fill);
+    parsed_values->Append(*shape);
+    return parsed_values;
   }
   if (fill)
     return fill;

@@ -215,7 +215,7 @@ cc::SharedBitmapManager* MockRenderThread::GetSharedBitmapManager() {
 }
 
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
-  blink::WebScriptController::registerExtension(extension);
+  blink::WebScriptController::RegisterExtension(extension);
 }
 
 void MockRenderThread::ScheduleIdleHandler(int64_t initial_delay_ms) {}

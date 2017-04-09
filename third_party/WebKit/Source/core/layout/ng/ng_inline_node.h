@@ -38,7 +38,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   ~NGInlineNode() override;
 
   LayoutBlockFlow* GetLayoutBlockFlow() const { return block_; }
-  const ComputedStyle& Style() const override { return block_->styleRef(); }
+  const ComputedStyle& Style() const override { return block_->StyleRef(); }
   NGLayoutInputNode* NextSibling() override;
 
   RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*) override;
@@ -75,7 +75,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayout();
-  bool IsPrepareLayoutFinished() const { return !text_content_.isNull(); }
+  bool IsPrepareLayoutFinished() const { return !text_content_.IsNull(); }
 
   void CollectInlines(LayoutObject* start, LayoutBlockFlow*);
   LayoutObject* CollectInlines(LayoutObject* start,
@@ -126,7 +126,7 @@ class NGLayoutInlineItem {
         end_offset_(end),
         bidi_level_(UBIDI_LTR),
         script_(USCRIPT_INVALID_CODE),
-        fallback_priority_(FontFallbackPriority::Invalid),
+        fallback_priority_(FontFallbackPriority::kInvalid),
         rotate_sideways_(false),
         style_(style),
         layout_object_(layout_object),

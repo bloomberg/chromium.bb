@@ -43,7 +43,7 @@ const char* kDefaultManifestName = "Default Name";
 const char* kDefaultManifestShortName = "Default Short Name";
 const char* kDefaultStartUrl = "https://www.example.com/index.html";
 const blink::WebDisplayMode kDefaultManifestDisplayMode =
-    blink::WebDisplayModeStandalone;
+    blink::kWebDisplayModeStandalone;
 
 // WebContents subclass which mocks out image and manifest fetching.
 class MockWebContents : public content::TestWebContents {

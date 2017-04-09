@@ -757,7 +757,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                                      bool has_fetch_handler,
                                      base::Time dispatch_event_time) {
     version_->FinishRequest(
-        request_id, result == blink::WebServiceWorkerEventResultCompleted,
+        request_id, result == blink::kWebServiceWorkerEventResultCompleted,
         dispatch_event_time);
     version_->set_fetch_handler_existence(
         has_fetch_handler
@@ -765,7 +765,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
             : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
 
     ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-    if (result == blink::WebServiceWorkerEventResultRejected)
+    if (result == blink::kWebServiceWorkerEventResultRejected)
       status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
 
     *out_result = status;

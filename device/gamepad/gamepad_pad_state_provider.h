@@ -59,13 +59,13 @@ struct PadState {
   // corresponding bit will be set to 1.
 
   // If we ever increase the max axis count this will need to be updated.
-  static_assert(blink::WebGamepad::axesLengthCap <=
+  static_assert(blink::WebGamepad::kAxesLengthCap <=
                     std::numeric_limits<uint32_t>::digits,
                 "axis_mask is not large enough");
   uint32_t axis_mask;
 
   // If we ever increase the max button count this will need to be updated.
-  static_assert(blink::WebGamepad::buttonsLengthCap <=
+  static_assert(blink::WebGamepad::kButtonsLengthCap <=
                     std::numeric_limits<uint32_t>::digits,
                 "button_mask is not large enough");
   uint32_t button_mask;

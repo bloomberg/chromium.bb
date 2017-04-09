@@ -7,31 +7,31 @@
 namespace blink {
 
 TextBufferBase::TextBufferBase() {
-  m_buffer.reserveCapacity(1024);
-  m_buffer.resize(capacity());
+  buffer_.ReserveCapacity(1024);
+  buffer_.Resize(Capacity());
 }
 
-void TextBufferBase::shiftData(size_t) {}
+void TextBufferBase::ShiftData(size_t) {}
 
-void TextBufferBase::pushCharacters(UChar ch, size_t length) {
+void TextBufferBase::PushCharacters(UChar ch, size_t length) {
   if (length == 0)
     return;
-  std::fill_n(ensureDestination(length), length, ch);
+  std::fill_n(EnsureDestination(length), length, ch);
 }
 
-UChar* TextBufferBase::ensureDestination(size_t length) {
-  if (m_size + length > capacity())
-    grow(m_size + length);
-  UChar* ans = calcDestination(length);
-  m_size += length;
+UChar* TextBufferBase::EnsureDestination(size_t length) {
+  if (size_ + length > Capacity())
+    Grow(size_ + length);
+  UChar* ans = CalcDestination(length);
+  size_ += length;
   return ans;
 }
 
-void TextBufferBase::grow(size_t demand) {
-  size_t oldCapacity = capacity();
-  m_buffer.resize(demand);
-  m_buffer.resize(capacity());
-  shiftData(oldCapacity);
+void TextBufferBase::Grow(size_t demand) {
+  size_t old_capacity = Capacity();
+  buffer_.Resize(demand);
+  buffer_.Resize(Capacity());
+  ShiftData(old_capacity);
 }
 
 }  // namespace blink

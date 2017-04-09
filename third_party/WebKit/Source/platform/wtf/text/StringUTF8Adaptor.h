@@ -47,35 +47,35 @@ class StringUTF8Adaptor final {
 
  public:
   StringUTF8Adaptor(const String& string,
-                    UTF8ConversionMode mode = LenientUTF8Conversion)
-      : m_data(0), m_length(0) {
-    if (string.isEmpty())
+                    UTF8ConversionMode mode = kLenientUTF8Conversion)
+      : data_(0), length_(0) {
+    if (string.IsEmpty())
       return;
     // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses
     // UTF-8 when processing 8 bit strings. If |relative| is entirely ASCII, we
     // luck out and can avoid mallocing a new buffer to hold the UTF-8 data
     // because UTF-8 and Latin-1 use the same code units for ASCII code points.
-    if (string.is8Bit() && string.containsOnlyASCII()) {
-      m_data = reinterpret_cast<const char*>(string.characters8());
-      m_length = string.length();
+    if (string.Is8Bit() && string.ContainsOnlyASCII()) {
+      data_ = reinterpret_cast<const char*>(string.Characters8());
+      length_ = string.length();
     } else {
-      m_utf8Buffer = string.utf8(mode);
-      m_data = m_utf8Buffer.data();
-      m_length = m_utf8Buffer.length();
+      utf8_buffer_ = string.Utf8(mode);
+      data_ = utf8_buffer_.Data();
+      length_ = utf8_buffer_.length();
     }
   }
 
-  const char* data() const { return m_data; }
-  size_t length() const { return m_length; }
+  const char* Data() const { return data_; }
+  size_t length() const { return length_; }
 
-  base::StringPiece asStringPiece() const {
-    return base::StringPiece(m_data, m_length);
+  base::StringPiece AsStringPiece() const {
+    return base::StringPiece(data_, length_);
   }
 
  private:
-  CString m_utf8Buffer;
-  const char* m_data;
-  size_t m_length;
+  CString utf8_buffer_;
+  const char* data_;
+  size_t length_;
 };
 
 }  // namespace WTF

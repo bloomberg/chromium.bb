@@ -6,19 +6,19 @@
 
 namespace blink {
 
-CompositorWorkerProxyClient* CompositorWorkerProxyClient::from(
+CompositorWorkerProxyClient* CompositorWorkerProxyClient::From(
     WorkerClients* clients) {
   return static_cast<CompositorWorkerProxyClient*>(
-      Supplement<WorkerClients>::from(clients, supplementName()));
+      Supplement<WorkerClients>::From(clients, SupplementName()));
 }
 
-const char* CompositorWorkerProxyClient::supplementName() {
+const char* CompositorWorkerProxyClient::SupplementName() {
   return "CompositorWorkerProxyClient";
 }
 
-void provideCompositorWorkerProxyClientTo(WorkerClients* clients,
+void ProvideCompositorWorkerProxyClientTo(WorkerClients* clients,
                                           CompositorWorkerProxyClient* client) {
-  clients->provideSupplement(CompositorWorkerProxyClient::supplementName(),
+  clients->ProvideSupplement(CompositorWorkerProxyClient::SupplementName(),
                              client);
 }
 

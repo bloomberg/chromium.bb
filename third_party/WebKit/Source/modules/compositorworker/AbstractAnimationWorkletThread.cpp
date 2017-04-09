@@ -18,49 +18,49 @@ namespace blink {
 template class WorkletThreadHolder<AbstractAnimationWorkletThread>;
 
 AbstractAnimationWorkletThread::AbstractAnimationWorkletThread(
-    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy) {}
+    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    WorkerReportingProxy& worker_reporting_proxy)
+    : WorkerThread(std::move(worker_loader_proxy), worker_reporting_proxy) {}
 
 AbstractAnimationWorkletThread::~AbstractAnimationWorkletThread() {}
 
-WorkerBackingThread& AbstractAnimationWorkletThread::workerBackingThread() {
-  return *WorkletThreadHolder<AbstractAnimationWorkletThread>::getInstance()
-              ->thread();
+WorkerBackingThread& AbstractAnimationWorkletThread::GetWorkerBackingThread() {
+  return *WorkletThreadHolder<AbstractAnimationWorkletThread>::GetInstance()
+              ->GetThread();
 }
 
-void collectAllGarbageOnThread(WaitableEvent* doneEvent) {
-  blink::ThreadState::current()->collectAllGarbage();
-  doneEvent->signal();
+void CollectAllGarbageOnThread(WaitableEvent* done_event) {
+  blink::ThreadState::Current()->CollectAllGarbage();
+  done_event->Signal();
 }
 
-void AbstractAnimationWorkletThread::collectAllGarbage() {
-  DCHECK(isMainThread());
-  WaitableEvent doneEvent;
-  WorkletThreadHolder<AbstractAnimationWorkletThread>* workletThreadHolder =
-      WorkletThreadHolder<AbstractAnimationWorkletThread>::getInstance();
-  if (!workletThreadHolder)
+void AbstractAnimationWorkletThread::CollectAllGarbage() {
+  DCHECK(IsMainThread());
+  WaitableEvent done_event;
+  WorkletThreadHolder<AbstractAnimationWorkletThread>* worklet_thread_holder =
+      WorkletThreadHolder<AbstractAnimationWorkletThread>::GetInstance();
+  if (!worklet_thread_holder)
     return;
-  workletThreadHolder->thread()->backingThread().postTask(
-      BLINK_FROM_HERE, crossThreadBind(&collectAllGarbageOnThread,
-                                       crossThreadUnretained(&doneEvent)));
-  doneEvent.wait();
+  worklet_thread_holder->GetThread()->BackingThread().PostTask(
+      BLINK_FROM_HERE, CrossThreadBind(&CollectAllGarbageOnThread,
+                                       CrossThreadUnretained(&done_event)));
+  done_event.Wait();
 }
 
-void AbstractAnimationWorkletThread::ensureSharedBackingThread() {
-  DCHECK(isMainThread());
-  WorkletThreadHolder<AbstractAnimationWorkletThread>::ensureInstance(
-      Platform::current()->compositorThread());
+void AbstractAnimationWorkletThread::EnsureSharedBackingThread() {
+  DCHECK(IsMainThread());
+  WorkletThreadHolder<AbstractAnimationWorkletThread>::EnsureInstance(
+      Platform::Current()->CompositorThread());
 }
 
-void AbstractAnimationWorkletThread::clearSharedBackingThread() {
-  DCHECK(isMainThread());
-  WorkletThreadHolder<AbstractAnimationWorkletThread>::clearInstance();
+void AbstractAnimationWorkletThread::ClearSharedBackingThread() {
+  DCHECK(IsMainThread());
+  WorkletThreadHolder<AbstractAnimationWorkletThread>::ClearInstance();
 }
 
-void AbstractAnimationWorkletThread::createSharedBackingThreadForTest() {
-  WorkletThreadHolder<AbstractAnimationWorkletThread>::createForTest(
-      Platform::current()->compositorThread());
+void AbstractAnimationWorkletThread::CreateSharedBackingThreadForTest() {
+  WorkletThreadHolder<AbstractAnimationWorkletThread>::CreateForTest(
+      Platform::Current()->CompositorThread());
 }
 
 }  // namespace blink

@@ -27,33 +27,33 @@ class PermissionStatus final : public EventTargetWithInlineData,
                                public mojom::blink::PermissionObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(PermissionStatus, dispose);
+  USING_PRE_FINALIZER(PermissionStatus, Dispose);
 
   using MojoPermissionDescriptor = mojom::blink::PermissionDescriptorPtr;
   using MojoPermissionStatus = mojom::blink::PermissionStatus;
 
  public:
-  static PermissionStatus* take(ScriptPromiseResolver*,
+  static PermissionStatus* Take(ScriptPromiseResolver*,
                                 MojoPermissionStatus,
                                 MojoPermissionDescriptor);
 
-  static PermissionStatus* createAndListen(ExecutionContext*,
+  static PermissionStatus* CreateAndListen(ExecutionContext*,
                                            MojoPermissionStatus,
                                            MojoPermissionDescriptor);
   ~PermissionStatus() override;
-  void dispose();
+  void Dispose();
 
   // EventTarget implementation.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // SuspendableObject implementation.
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   String state() const;
 
@@ -66,14 +66,14 @@ class PermissionStatus final : public EventTargetWithInlineData,
                    MojoPermissionStatus,
                    MojoPermissionDescriptor);
 
-  void startListening();
-  void stopListening();
+  void StartListening();
+  void StopListening();
 
   void OnPermissionStatusChange(MojoPermissionStatus);
 
-  MojoPermissionStatus m_status;
-  MojoPermissionDescriptor m_descriptor;
-  mojo::Binding<mojom::blink::PermissionObserver> m_binding;
+  MojoPermissionStatus status_;
+  MojoPermissionDescriptor descriptor_;
+  mojo::Binding<mojom::blink::PermissionObserver> binding_;
 };
 
 }  // namespace blink

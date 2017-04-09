@@ -35,22 +35,23 @@ class XMLDocument final : public Document {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XMLDocument* create(const DocumentInit& initializer = DocumentInit()) {
-    return new XMLDocument(initializer, XMLDocumentClass);
+  static XMLDocument* Create(const DocumentInit& initializer = DocumentInit()) {
+    return new XMLDocument(initializer, kXMLDocumentClass);
   }
 
-  static XMLDocument* createXHTML(
+  static XMLDocument* CreateXHTML(
       const DocumentInit& initializer = DocumentInit()) {
-    return new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass);
+    return new XMLDocument(initializer,
+                           kXMLDocumentClass | kXHTMLDocumentClass);
   }
 
-  static XMLDocument* createSVG(
+  static XMLDocument* CreateSVG(
       const DocumentInit& initializer = DocumentInit()) {
-    return new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass);
+    return new XMLDocument(initializer, kXMLDocumentClass | kSVGDocumentClass);
   }
 
  protected:
-  XMLDocument(const DocumentInit&, DocumentClassFlags documentClasses);
+  XMLDocument(const DocumentInit&, DocumentClassFlags document_classes);
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(XMLDocument);

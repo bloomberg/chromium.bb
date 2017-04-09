@@ -14,150 +14,148 @@
 
 namespace blink {
 
-MediaValues* MediaValuesDynamic::create(Document& document) {
-  return MediaValuesDynamic::create(frameFrom(document));
+MediaValues* MediaValuesDynamic::Create(Document& document) {
+  return MediaValuesDynamic::Create(FrameFrom(document));
 }
 
-MediaValues* MediaValuesDynamic::create(LocalFrame* frame) {
-  if (!frame || !frame->view() || !frame->document() ||
-      frame->document()->layoutViewItem().isNull())
-    return MediaValuesCached::create();
+MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
+  if (!frame || !frame->View() || !frame->GetDocument() ||
+      frame->GetDocument()->GetLayoutViewItem().IsNull())
+    return MediaValuesCached::Create();
   return new MediaValuesDynamic(frame);
 }
 
 MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame)
-    : m_frame(frame),
-      m_viewportDimensionsOverridden(false),
-      m_viewportWidthOverride(0),
-      m_viewportHeightOverride(0) {
-  DCHECK(m_frame);
+    : frame_(frame),
+      viewport_dimensions_overridden_(false),
+      viewport_width_override_(0),
+      viewport_height_override_(0) {
+  DCHECK(frame_);
 }
 
 MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame,
-                                       bool overriddenViewportDimensions,
-                                       double viewportWidth,
-                                       double viewportHeight)
-    : m_frame(frame),
-      m_viewportDimensionsOverridden(overriddenViewportDimensions),
-      m_viewportWidthOverride(viewportWidth),
-      m_viewportHeightOverride(viewportHeight) {
-  DCHECK(m_frame);
+                                       bool overridden_viewport_dimensions,
+                                       double viewport_width,
+                                       double viewport_height)
+    : frame_(frame),
+      viewport_dimensions_overridden_(overridden_viewport_dimensions),
+      viewport_width_override_(viewport_width),
+      viewport_height_override_(viewport_height) {
+  DCHECK(frame_);
 }
 
-MediaValues* MediaValuesDynamic::copy() const {
-  return new MediaValuesDynamic(m_frame, m_viewportDimensionsOverridden,
-                                m_viewportWidthOverride,
-                                m_viewportHeightOverride);
+MediaValues* MediaValuesDynamic::Copy() const {
+  return new MediaValuesDynamic(frame_, viewport_dimensions_overridden_,
+                                viewport_width_override_,
+                                viewport_height_override_);
 }
 
-bool MediaValuesDynamic::computeLength(double value,
+bool MediaValuesDynamic::ComputeLength(double value,
                                        CSSPrimitiveValue::UnitType type,
                                        int& result) const {
-  return MediaValues::computeLength(value, type,
-                                    calculateDefaultFontSize(m_frame),
-                                    calculateViewportWidth(m_frame),
-                                    calculateViewportHeight(m_frame), result);
+  return MediaValues::ComputeLength(
+      value, type, CalculateDefaultFontSize(frame_),
+      CalculateViewportWidth(frame_), CalculateViewportHeight(frame_), result);
 }
 
-bool MediaValuesDynamic::computeLength(double value,
+bool MediaValuesDynamic::ComputeLength(double value,
                                        CSSPrimitiveValue::UnitType type,
                                        double& result) const {
-  return MediaValues::computeLength(value, type,
-                                    calculateDefaultFontSize(m_frame),
-                                    calculateViewportWidth(m_frame),
-                                    calculateViewportHeight(m_frame), result);
+  return MediaValues::ComputeLength(
+      value, type, CalculateDefaultFontSize(frame_),
+      CalculateViewportWidth(frame_), CalculateViewportHeight(frame_), result);
 }
 
-double MediaValuesDynamic::viewportWidth() const {
-  if (m_viewportDimensionsOverridden)
-    return m_viewportWidthOverride;
-  return calculateViewportWidth(m_frame);
+double MediaValuesDynamic::ViewportWidth() const {
+  if (viewport_dimensions_overridden_)
+    return viewport_width_override_;
+  return CalculateViewportWidth(frame_);
 }
 
-double MediaValuesDynamic::viewportHeight() const {
-  if (m_viewportDimensionsOverridden)
-    return m_viewportHeightOverride;
-  return calculateViewportHeight(m_frame);
+double MediaValuesDynamic::ViewportHeight() const {
+  if (viewport_dimensions_overridden_)
+    return viewport_height_override_;
+  return CalculateViewportHeight(frame_);
 }
 
-int MediaValuesDynamic::deviceWidth() const {
-  return calculateDeviceWidth(m_frame);
+int MediaValuesDynamic::DeviceWidth() const {
+  return CalculateDeviceWidth(frame_);
 }
 
-int MediaValuesDynamic::deviceHeight() const {
-  return calculateDeviceHeight(m_frame);
+int MediaValuesDynamic::DeviceHeight() const {
+  return CalculateDeviceHeight(frame_);
 }
 
-float MediaValuesDynamic::devicePixelRatio() const {
-  return calculateDevicePixelRatio(m_frame);
+float MediaValuesDynamic::DevicePixelRatio() const {
+  return CalculateDevicePixelRatio(frame_);
 }
 
-int MediaValuesDynamic::colorBitsPerComponent() const {
-  return calculateColorBitsPerComponent(m_frame);
+int MediaValuesDynamic::ColorBitsPerComponent() const {
+  return CalculateColorBitsPerComponent(frame_);
 }
 
-int MediaValuesDynamic::monochromeBitsPerComponent() const {
-  return calculateMonochromeBitsPerComponent(m_frame);
+int MediaValuesDynamic::MonochromeBitsPerComponent() const {
+  return CalculateMonochromeBitsPerComponent(frame_);
 }
 
-PointerType MediaValuesDynamic::primaryPointerType() const {
-  return calculatePrimaryPointerType(m_frame);
+PointerType MediaValuesDynamic::PrimaryPointerType() const {
+  return CalculatePrimaryPointerType(frame_);
 }
 
-int MediaValuesDynamic::availablePointerTypes() const {
-  return calculateAvailablePointerTypes(m_frame);
+int MediaValuesDynamic::AvailablePointerTypes() const {
+  return CalculateAvailablePointerTypes(frame_);
 }
 
-HoverType MediaValuesDynamic::primaryHoverType() const {
-  return calculatePrimaryHoverType(m_frame);
+HoverType MediaValuesDynamic::PrimaryHoverType() const {
+  return CalculatePrimaryHoverType(frame_);
 }
 
-int MediaValuesDynamic::availableHoverTypes() const {
-  return calculateAvailableHoverTypes(m_frame);
+int MediaValuesDynamic::AvailableHoverTypes() const {
+  return CalculateAvailableHoverTypes(frame_);
 }
 
-bool MediaValuesDynamic::threeDEnabled() const {
-  return calculateThreeDEnabled(m_frame);
+bool MediaValuesDynamic::ThreeDEnabled() const {
+  return CalculateThreeDEnabled(frame_);
 }
 
-const String MediaValuesDynamic::mediaType() const {
-  return calculateMediaType(m_frame);
+const String MediaValuesDynamic::MediaType() const {
+  return CalculateMediaType(frame_);
 }
 
-WebDisplayMode MediaValuesDynamic::displayMode() const {
-  return calculateDisplayMode(m_frame);
+WebDisplayMode MediaValuesDynamic::DisplayMode() const {
+  return CalculateDisplayMode(frame_);
 }
 
-bool MediaValuesDynamic::strictMode() const {
-  return calculateStrictMode(m_frame);
+bool MediaValuesDynamic::StrictMode() const {
+  return CalculateStrictMode(frame_);
 }
 
-DisplayShape MediaValuesDynamic::displayShape() const {
-  return calculateDisplayShape(m_frame);
+DisplayShape MediaValuesDynamic::GetDisplayShape() const {
+  return CalculateDisplayShape(frame_);
 }
 
-ColorSpaceGamut MediaValuesDynamic::colorGamut() const {
-  return calculateColorGamut(m_frame);
+ColorSpaceGamut MediaValuesDynamic::ColorGamut() const {
+  return CalculateColorGamut(frame_);
 }
 
-Document* MediaValuesDynamic::document() const {
-  return m_frame->document();
+Document* MediaValuesDynamic::GetDocument() const {
+  return frame_->GetDocument();
 }
 
-bool MediaValuesDynamic::hasValues() const {
-  return m_frame;
+bool MediaValuesDynamic::HasValues() const {
+  return frame_;
 }
 
 DEFINE_TRACE(MediaValuesDynamic) {
-  visitor->trace(m_frame);
-  MediaValues::trace(visitor);
+  visitor->Trace(frame_);
+  MediaValues::Trace(visitor);
 }
 
-void MediaValuesDynamic::overrideViewportDimensions(double width,
+void MediaValuesDynamic::OverrideViewportDimensions(double width,
                                                     double height) {
-  m_viewportDimensionsOverridden = true;
-  m_viewportWidthOverride = width;
-  m_viewportHeightOverride = height;
+  viewport_dimensions_overridden_ = true;
+  viewport_width_override_ = width;
+  viewport_height_override_ = height;
 }
 
 }  // namespace blink

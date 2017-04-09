@@ -13,7 +13,7 @@ ParsedFeaturePolicyHeader FeaturePolicyHeaderFromWeb(
        web_feature_policy_header) {
     ParsedFeaturePolicyDeclaration declaration;
     declaration.feature = web_declaration.feature;
-    declaration.matches_all_origins = web_declaration.matchesAllOrigins;
+    declaration.matches_all_origins = web_declaration.matches_all_origins;
     for (const blink::WebSecurityOrigin& web_origin : web_declaration.origins)
       declaration.origins.push_back(web_origin);
     result.push_back(declaration);
@@ -28,7 +28,7 @@ blink::WebParsedFeaturePolicy FeaturePolicyHeaderToWeb(
        feature_policy_header) {
     blink::WebParsedFeaturePolicyDeclaration web_declaration;
     web_declaration.feature = declaration.feature;
-    web_declaration.matchesAllOrigins = declaration.matches_all_origins;
+    web_declaration.matches_all_origins = declaration.matches_all_origins;
     std::vector<blink::WebSecurityOrigin> web_origins;
     for (const url::Origin& origin : declaration.origins)
       web_origins.push_back(origin);

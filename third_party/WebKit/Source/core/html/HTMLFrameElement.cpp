@@ -34,45 +34,45 @@ using namespace HTMLNames;
 
 inline HTMLFrameElement::HTMLFrameElement(Document& document)
     : HTMLFrameElementBase(frameTag, document),
-      m_frameBorder(true),
-      m_frameBorderSet(false) {}
+      frame_border_(true),
+      frame_border_set_(false) {}
 
 DEFINE_NODE_FACTORY(HTMLFrameElement)
 
-bool HTMLFrameElement::layoutObjectIsNeeded(const ComputedStyle&) {
+bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) {
   // For compatibility, frames render even when display: none is set.
-  return contentFrame();
+  return ContentFrame();
 }
 
-LayoutObject* HTMLFrameElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutFrame(this);
 }
 
-bool HTMLFrameElement::noResize() const {
+bool HTMLFrameElement::NoResize() const {
   return hasAttribute(noresizeAttr);
 }
 
-void HTMLFrameElement::attachLayoutTree(const AttachContext& context) {
-  HTMLFrameElementBase::attachLayoutTree(context);
+void HTMLFrameElement::AttachLayoutTree(const AttachContext& context) {
+  HTMLFrameElementBase::AttachLayoutTree(context);
 
-  if (HTMLFrameSetElement* frameSetElement =
-          Traversal<HTMLFrameSetElement>::firstAncestor(*this)) {
-    if (!m_frameBorderSet)
-      m_frameBorder = frameSetElement->hasFrameBorder();
+  if (HTMLFrameSetElement* frame_set_element =
+          Traversal<HTMLFrameSetElement>::FirstAncestor(*this)) {
+    if (!frame_border_set_)
+      frame_border_ = frame_set_element->HasFrameBorder();
   }
 }
 
-void HTMLFrameElement::parseAttribute(
+void HTMLFrameElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == frameborderAttr) {
-    m_frameBorder = params.newValue.toInt();
-    m_frameBorderSet = !params.newValue.isNull();
+    frame_border_ = params.new_value.ToInt();
+    frame_border_set_ = !params.new_value.IsNull();
     // FIXME: If we are already attached, this has no effect.
   } else if (params.name == noresizeAttr) {
-    if (layoutObject())
-      layoutObject()->updateFromElement();
+    if (GetLayoutObject())
+      GetLayoutObject()->UpdateFromElement();
   } else {
-    HTMLFrameElementBase::parseAttribute(params);
+    HTMLFrameElementBase::ParseAttribute(params);
   }
 }
 

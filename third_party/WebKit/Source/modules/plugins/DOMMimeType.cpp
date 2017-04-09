@@ -27,48 +27,49 @@
 
 namespace blink {
 
-DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData,
+DOMMimeType::DOMMimeType(PassRefPtr<PluginData> plugin_data,
                          LocalFrame* frame,
                          unsigned index)
     : ContextClient(frame),
-      m_pluginData(std::move(pluginData)),
-      m_index(index) {}
+      plugin_data_(std::move(plugin_data)),
+      index_(index) {}
 
 DOMMimeType::~DOMMimeType() {}
 
 DEFINE_TRACE(DOMMimeType) {
-  ContextClient::trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 const String& DOMMimeType::type() const {
-  return mimeClassInfo().type;
+  return GetMimeClassInfo().type;
 }
 
 String DOMMimeType::suffixes() const {
-  const Vector<String>& extensions = mimeClassInfo().extensions;
+  const Vector<String>& extensions = GetMimeClassInfo().extensions;
 
   StringBuilder builder;
   for (size_t i = 0; i < extensions.size(); ++i) {
     if (i)
-      builder.append(',');
-    builder.append(extensions[i]);
+      builder.Append(',');
+    builder.Append(extensions[i]);
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
 const String& DOMMimeType::description() const {
-  return mimeClassInfo().desc;
+  return GetMimeClassInfo().desc;
 }
 
 DOMPlugin* DOMMimeType::enabledPlugin() const {
   // FIXME: allowPlugins is just a client call. We should not need
   // to bounce through the loader to get there.
   // Something like: frame()->page()->client()->allowPlugins().
-  if (!frame() || !frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
+  if (!GetFrame() ||
+      !GetFrame()->Loader().AllowPlugins(kNotAboutToInstantiatePlugin))
     return nullptr;
 
-  return DOMPlugin::create(m_pluginData.get(), frame(),
-                           m_pluginData->mimePluginIndices()[m_index]);
+  return DOMPlugin::Create(plugin_data_.Get(), GetFrame(),
+                           plugin_data_->MimePluginIndices()[index_]);
 }
 
 }  // namespace blink

@@ -42,28 +42,28 @@ class IdTargetObserverRegistry final
   friend class IdTargetObserver;
 
  public:
-  static IdTargetObserverRegistry* create();
+  static IdTargetObserverRegistry* Create();
   DECLARE_TRACE();
-  void notifyObservers(const AtomicString& id);
-  bool hasObservers(const AtomicString& id) const;
+  void NotifyObservers(const AtomicString& id);
+  bool HasObservers(const AtomicString& id) const;
 
  private:
-  IdTargetObserverRegistry() : m_notifyingObserversInSet(nullptr) {}
-  void addObserver(const AtomicString& id, IdTargetObserver*);
-  void removeObserver(const AtomicString& id, IdTargetObserver*);
-  void notifyObserversInternal(const AtomicString& id);
+  IdTargetObserverRegistry() : notifying_observers_in_set_(nullptr) {}
+  void AddObserver(const AtomicString& id, IdTargetObserver*);
+  void RemoveObserver(const AtomicString& id, IdTargetObserver*);
+  void NotifyObserversInternal(const AtomicString& id);
 
   typedef HeapHashSet<Member<IdTargetObserver>> ObserverSet;
   typedef HeapHashMap<StringImpl*, Member<ObserverSet>> IdToObserverSetMap;
-  IdToObserverSetMap m_registry;
-  Member<ObserverSet> m_notifyingObserversInSet;
+  IdToObserverSetMap registry_;
+  Member<ObserverSet> notifying_observers_in_set_;
 };
 
-inline void IdTargetObserverRegistry::notifyObservers(const AtomicString& id) {
-  DCHECK(!m_notifyingObserversInSet);
-  if (id.isEmpty() || m_registry.isEmpty())
+inline void IdTargetObserverRegistry::NotifyObservers(const AtomicString& id) {
+  DCHECK(!notifying_observers_in_set_);
+  if (id.IsEmpty() || registry_.IsEmpty())
     return;
-  IdTargetObserverRegistry::notifyObserversInternal(id);
+  IdTargetObserverRegistry::NotifyObserversInternal(id);
 }
 
 }  // namespace blink

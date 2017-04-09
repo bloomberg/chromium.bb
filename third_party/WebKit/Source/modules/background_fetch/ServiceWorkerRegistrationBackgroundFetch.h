@@ -24,7 +24,7 @@ class ServiceWorkerRegistrationBackgroundFetch final
  public:
   virtual ~ServiceWorkerRegistrationBackgroundFetch();
 
-  static ServiceWorkerRegistrationBackgroundFetch& from(
+  static ServiceWorkerRegistrationBackgroundFetch& From(
       ServiceWorkerRegistration&);
 
   static BackgroundFetchManager* backgroundFetch(ServiceWorkerRegistration&);
@@ -34,10 +34,10 @@ class ServiceWorkerRegistrationBackgroundFetch final
 
  private:
   explicit ServiceWorkerRegistrationBackgroundFetch(ServiceWorkerRegistration*);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<ServiceWorkerRegistration> m_registration;
-  Member<BackgroundFetchManager> m_backgroundFetchManager;
+  Member<ServiceWorkerRegistration> registration_;
+  Member<BackgroundFetchManager> background_fetch_manager_;
 };
 
 }  // namespace blink

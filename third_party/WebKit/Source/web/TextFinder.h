@@ -57,54 +57,54 @@ class WEB_EXPORT TextFinder final
   WTF_MAKE_NONCOPYABLE(TextFinder);
 
  public:
-  static TextFinder* create(WebLocalFrameImpl& ownerFrame);
+  static TextFinder* Create(WebLocalFrameImpl& owner_frame);
 
-  bool find(int identifier,
-            const WebString& searchText,
+  bool Find(int identifier,
+            const WebString& search_text,
             const WebFindOptions&,
-            bool wrapWithinFrame,
-            bool* activeNow = nullptr);
-  void clearActiveFindMatch();
-  void stopFindingAndClearSelection();
-  void increaseMatchCount(int identifier, int count);
-  int findMatchMarkersVersion() const { return m_findMatchMarkersVersion; }
-  WebFloatRect activeFindMatchRect();
-  void findMatchRects(WebVector<WebFloatRect>&);
-  int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect);
+            bool wrap_within_frame,
+            bool* active_now = nullptr);
+  void ClearActiveFindMatch();
+  void StopFindingAndClearSelection();
+  void IncreaseMatchCount(int identifier, int count);
+  int FindMatchMarkersVersion() const { return find_match_markers_version_; }
+  WebFloatRect ActiveFindMatchRect();
+  void FindMatchRects(WebVector<WebFloatRect>&);
+  int SelectNearestFindMatch(const WebFloatPoint&, WebRect* selection_rect);
 
   // Starts brand new scoping request: resets the scoping state and
   // asyncronously calls scopeStringMatches().
-  void startScopingStringMatches(int identifier,
-                                 const WebString& searchText,
+  void StartScopingStringMatches(int identifier,
+                                 const WebString& search_text,
                                  const WebFindOptions&);
 
   // Cancels any outstanding requests for scoping string matches on the frame.
-  void cancelPendingScopingEffort();
+  void CancelPendingScopingEffort();
 
   // This function is called to reset the total number of matches found during
   // the scoping effort.
-  void resetMatchCount();
+  void ResetMatchCount();
 
   // Return the index in the find-in-page cache of the match closest to the
   // provided point in find-in-page coordinates, or -1 in case of error.
   // The squared distance to the closest match is returned in the
   // |distanceSquared| parameter.
-  int nearestFindMatch(const FloatPoint&, float* distanceSquared);
+  int NearestFindMatch(const FloatPoint&, float* distance_squared);
 
   // Returns whether this frame has the active match.
-  bool activeMatchFrame() const { return m_currentActiveMatchFrame; }
+  bool ActiveMatchFrame() const { return current_active_match_frame_; }
 
   // Returns the active match in the current frame. Could be a null range if
   // the local frame has no active match.
-  Range* activeMatch() const { return m_activeMatch.get(); }
+  Range* ActiveMatch() const { return active_match_.Get(); }
 
-  void flushCurrentScoping();
+  void FlushCurrentScoping();
 
-  void resetActiveMatch() { m_activeMatch = nullptr; }
+  void ResetActiveMatch() { active_match_ = nullptr; }
 
-  int totalMatchCount() const { return m_totalMatchCount; }
-  bool scopingInProgress() const { return m_scopingInProgress; }
-  void increaseMarkerVersion() { ++m_findMatchMarkersVersion; }
+  int TotalMatchCount() const { return total_match_count_; }
+  bool ScopingInProgress() const { return scoping_in_progress_; }
+  void IncreaseMarkerVersion() { ++find_match_markers_version_; }
 
   ~TextFinder();
 
@@ -116,14 +116,14 @@ class WEB_EXPORT TextFinder final
 
     DECLARE_TRACE();
 
-    Member<Range> m_range;
+    Member<Range> range_;
 
     // 1-based index within this frame.
-    int m_ordinal;
+    int ordinal_;
 
     // In find-in-page coordinates.
     // Lazily calculated by updateFindMatchRects.
-    FloatRect m_rect;
+    FloatRect rect_;
   };
 
   DECLARE_TRACE();
@@ -132,51 +132,52 @@ class WEB_EXPORT TextFinder final
   class DeferredScopeStringMatches;
   friend class DeferredScopeStringMatches;
 
-  explicit TextFinder(WebLocalFrameImpl& ownerFrame);
+  explicit TextFinder(WebLocalFrameImpl& owner_frame);
 
   // Notifies the delegate about a new selection rect.
-  void reportFindInPageSelection(const WebRect& selectionRect,
-                                 int activeMatchOrdinal,
+  void ReportFindInPageSelection(const WebRect& selection_rect,
+                                 int active_match_ordinal,
                                  int identifier);
 
-  void reportFindInPageResultToAccessibility(int identifier);
+  void ReportFindInPageResultToAccessibility(int identifier);
 
   // Clear the find-in-page matches cache forcing rects to be fully
   // calculated again next time updateFindMatchRects is called.
-  void clearFindMatchesCache();
+  void ClearFindMatchesCache();
 
   // Select a find-in-page match marker in the current frame using a cache
   // match index returned by nearestFindMatch. Returns the ordinal of the new
   // selected match or -1 in case of error. Also provides the bounding box of
   // the marker in window coordinates if selectionRect is not null.
-  int selectFindMatch(unsigned index, WebRect* selectionRect);
+  int SelectFindMatch(unsigned index, WebRect* selection_rect);
 
   // Compute and cache the rects for FindMatches if required.
   // Rects are automatically invalidated in case of content size changes,
   // propagating the invalidation to child frames.
-  void updateFindMatchRects();
+  void UpdateFindMatchRects();
 
   // Sets the markers within a range as active or inactive. Returns true if at
   // least one such marker found.
-  bool setMarkerActive(Range*, bool active);
+  bool SetMarkerActive(Range*, bool active);
 
   // Removes all markers.
-  void unmarkAllTextMatches();
+  void UnmarkAllTextMatches();
 
   // Determines whether the scoping effort is required for a particular frame.
   // It is not necessary if the frame is invisible, for example, or if this
   // is a repeat search that already returned nothing last time the same prefix
   // was searched.
-  bool shouldScopeMatches(const WTF::String& searchText, const WebFindOptions&);
+  bool ShouldScopeMatches(const WTF::String& search_text,
+                          const WebFindOptions&);
 
   // Removes the current frame from the global scoping effort and triggers any
   // updates if appropriate. This method does not mark the scoping operation
   // as finished.
-  void flushCurrentScopingEffort(int identifier);
+  void FlushCurrentScopingEffort(int identifier);
 
   // Finishes the current scoping effort and triggers any updates if
   // appropriate.
-  void finishCurrentScopingEffort(int identifier);
+  void FinishCurrentScopingEffort(int identifier);
 
   // Counts how many times a particular string occurs within the frame.  It
   // also retrieves the location of the string and updates a vector in the
@@ -187,103 +188,103 @@ class WEB_EXPORT TextFinder final
   // multiple frames to be searched at the same time and provides a way to
   // cancel at any time (see cancelPendingScopingEffort).  The parameter
   // searchText specifies what to look for.
-  void scopeStringMatches(int identifier,
-                          const WebString& searchText,
+  void ScopeStringMatches(int identifier,
+                          const WebString& search_text,
                           const WebFindOptions&);
 
   // Queue up a deferred call to scopeStringMatches.
-  void scopeStringMatchesSoon(int identifier,
-                              const WebString& searchText,
+  void ScopeStringMatchesSoon(int identifier,
+                              const WebString& search_text,
                               const WebFindOptions&);
 
   // Called by a DeferredScopeStringMatches instance.
-  void resumeScopingStringMatches(int identifier,
-                                  const WebString& searchText,
+  void ResumeScopingStringMatches(int identifier,
+                                  const WebString& search_text,
                                   const WebFindOptions&);
 
   // Determines whether to invalidate the content area and scrollbar.
-  void invalidateIfNecessary();
+  void InvalidateIfNecessary();
 
-  WebLocalFrameImpl& ownerFrame() const {
-    DCHECK(m_ownerFrame);
-    return *m_ownerFrame;
+  WebLocalFrameImpl& OwnerFrame() const {
+    DCHECK(owner_frame_);
+    return *owner_frame_;
   }
 
-  Member<WebLocalFrameImpl> m_ownerFrame;
+  Member<WebLocalFrameImpl> owner_frame_;
 
   // Indicates whether this frame currently has the active match.
-  bool m_currentActiveMatchFrame;
+  bool current_active_match_frame_;
 
   // The range of the active match for the current frame.
-  Member<Range> m_activeMatch;
+  Member<Range> active_match_;
 
   // The index of the active match for the current frame.
-  int m_activeMatchIndex;
+  int active_match_index_;
 
   // The scoping effort can time out and we need to keep track of where we
   // ended our last search so we can continue from where we left of.
   //
   // This range is collapsed to the end position of the last successful
   // search; the new search should start from this position.
-  Member<Range> m_resumeScopingFromRange;
+  Member<Range> resume_scoping_from_range_;
 
   // Keeps track of the last string this frame searched for. This is used for
   // short-circuiting searches in the following scenarios: When a frame has
   // been searched and returned 0 results, we don't need to search that frame
   // again if the user is just adding to the search (making it more specific).
-  WTF::String m_lastSearchString;
+  WTF::String last_search_string_;
 
   // Keeps track of how many matches this frame has found so far, so that we
   // don't lose count between scoping efforts, and is also used (in conjunction
   // with m_lastSearchString) to figure out if we need to search the frame
   // again.
-  int m_lastMatchCount;
+  int last_match_count_;
 
   // This variable keeps a cumulative total of matches found so far in this
   // frame, and is only incremented by calling IncreaseMatchCount.
-  int m_totalMatchCount;
+  int total_match_count_;
 
   // Keeps track of whether the frame is currently scoping (being searched for
   // matches).
-  bool m_frameScoping;
+  bool frame_scoping_;
 
   // Identifier of the latest find-in-page request. Required to be stored in
   // the frame in order to reply if required in case the frame is detached.
-  int m_findRequestIdentifier;
+  int find_request_identifier_;
 
   // Keeps track of when the scoping effort should next invalidate the scrollbar
   // and the frame area.
-  int m_nextInvalidateAfter;
+  int next_invalidate_after_;
 
   // Pending call to scopeStringMatches.
-  Member<DeferredScopeStringMatches> m_deferredScopingWork;
+  Member<DeferredScopeStringMatches> deferred_scoping_work_;
 
   // Version number incremented whenever this frame's find-in-page match
   // markers change.
-  int m_findMatchMarkersVersion;
+  int find_match_markers_version_;
 
   // Local cache of the find match markers currently displayed for this frame.
-  HeapVector<FindMatch> m_findMatchesCache;
+  HeapVector<FindMatch> find_matches_cache_;
 
   // Contents size when find-in-page match rects were last computed for this
   // frame's cache.
-  IntSize m_contentsSizeForCurrentFindMatchRects;
+  IntSize contents_size_for_current_find_match_rects_;
 
   // This flag is used by the scoping effort to determine if we need to figure
   // out which rectangle is the active match. Once we find the active
   // rectangle we clear this flag.
-  bool m_locatingActiveRect;
+  bool locating_active_rect_;
 
   // Keeps track of whether there is an scoping effort ongoing in the frame.
-  bool m_scopingInProgress;
+  bool scoping_in_progress_;
 
   // Keeps track of whether the last find request completed its scoping effort
   // without finding any matches in this frame.
-  bool m_lastFindRequestCompletedWithNoMatches;
+  bool last_find_request_completed_with_no_matches_;
 
   // Determines if the rects in the find-in-page matches cache of this frame
   // are invalid and should be recomputed.
-  bool m_findMatchRectsAreValid;
+  bool find_match_rects_are_valid_;
 };
 
 }  // namespace blink

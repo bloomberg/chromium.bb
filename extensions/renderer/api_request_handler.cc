@@ -27,7 +27,7 @@ APIRequestHandler::PendingRequest::PendingRequest(
       context(isolate, context),
       callback(isolate, callback),
       user_gesture_token(
-          blink::WebUserGestureIndicator::currentUserGestureToken()) {
+          blink::WebUserGestureIndicator::CurrentUserGestureToken()) {
   if (!local_callback_args.empty()) {
     callback_arguments.reserve(local_callback_args.size());
     for (const auto& arg : local_callback_args)
@@ -93,7 +93,7 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
   }
 
   request->has_user_gesture =
-      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
+      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe();
   request->arguments = std::move(arguments);
   request->method_name = method;
   request->thread = thread;

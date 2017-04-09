@@ -17,55 +17,55 @@ class LayoutTable;
 // Common super class for LayoutTableCol, LayoutTableSection and LayoutTableRow.
 class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
  public:
-  static bool doCellsHaveDirtyWidth(const LayoutObject& tablePart,
+  static bool DoCellsHaveDirtyWidth(const LayoutObject& table_part,
                                     const LayoutTable&,
                                     const StyleDifference&,
-                                    const ComputedStyle& oldStyle);
+                                    const ComputedStyle& old_style);
 
   class MutableForPainting : public LayoutObject::MutableForPainting {
    public:
-    void updatePaintResult(PaintResult, const CullRect& paintRect);
+    void UpdatePaintResult(PaintResult, const CullRect& paint_rect);
 
    private:
     friend class LayoutTableBoxComponent;
     MutableForPainting(const LayoutTableBoxComponent& box)
         : LayoutObject::MutableForPainting(box) {}
   };
-  MutableForPainting getMutableForPainting() const {
+  MutableForPainting GetMutableForPainting() const {
     return MutableForPainting(*this);
   }
 
  protected:
   explicit LayoutTableBoxComponent(Element* element)
-      : LayoutBox(element), m_lastPaintResult(FullyPainted) {}
+      : LayoutBox(element), last_paint_result_(kFullyPainted) {}
 
-  const LayoutObjectChildList* children() const { return &m_children; }
-  LayoutObjectChildList* children() { return &m_children; }
+  const LayoutObjectChildList* Children() const { return &children_; }
+  LayoutObjectChildList* Children() { return &children_; }
 
-  LayoutObject* firstChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->firstChild();
+  LayoutObject* FirstChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->FirstChild();
   }
-  LayoutObject* lastChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->lastChild();
+  LayoutObject* LastChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->LastChild();
   }
 
  private:
   // If you have a LayoutTableBoxComponent, use firstChild or lastChild instead.
-  void slowFirstChild() const = delete;
-  void slowLastChild() const = delete;
+  void SlowFirstChild() const = delete;
+  void SlowLastChild() const = delete;
 
-  LayoutObjectChildList* virtualChildren() override { return children(); }
-  const LayoutObjectChildList* virtualChildren() const override {
-    return children();
+  LayoutObjectChildList* VirtualChildren() override { return Children(); }
+  const LayoutObjectChildList* VirtualChildren() const override {
+    return Children();
   }
 
-  LayoutObjectChildList m_children;
+  LayoutObjectChildList children_;
 
   friend class MutableForPainting;
-  PaintResult m_lastPaintResult;
-  CullRect m_lastPaintRect;
+  PaintResult last_paint_result_;
+  CullRect last_paint_rect_;
 };
 
 }  // namespace blink

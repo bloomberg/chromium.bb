@@ -29,123 +29,117 @@
 
 namespace blink {
 
-SVGFELightElement::SVGFELightElement(const QualifiedName& tagName,
+SVGFELightElement::SVGFELightElement(const QualifiedName& tag_name,
                                      Document& document)
-    : SVGElement(tagName, document),
-      m_azimuth(SVGAnimatedNumber::create(this,
-                                          SVGNames::azimuthAttr,
-                                          SVGNumber::create())),
-      m_elevation(SVGAnimatedNumber::create(this,
-                                            SVGNames::elevationAttr,
-                                            SVGNumber::create())),
-      m_x(SVGAnimatedNumber::create(this,
-                                    SVGNames::xAttr,
-                                    SVGNumber::create())),
-      m_y(SVGAnimatedNumber::create(this,
-                                    SVGNames::yAttr,
-                                    SVGNumber::create())),
-      m_z(SVGAnimatedNumber::create(this,
-                                    SVGNames::zAttr,
-                                    SVGNumber::create())),
-      m_pointsAtX(SVGAnimatedNumber::create(this,
-                                            SVGNames::pointsAtXAttr,
-                                            SVGNumber::create())),
-      m_pointsAtY(SVGAnimatedNumber::create(this,
-                                            SVGNames::pointsAtYAttr,
-                                            SVGNumber::create())),
-      m_pointsAtZ(SVGAnimatedNumber::create(this,
-                                            SVGNames::pointsAtZAttr,
-                                            SVGNumber::create())),
-      m_specularExponent(
-          SVGAnimatedNumber::create(this,
+    : SVGElement(tag_name, document),
+      azimuth_(SVGAnimatedNumber::Create(this,
+                                         SVGNames::azimuthAttr,
+                                         SVGNumber::Create())),
+      elevation_(SVGAnimatedNumber::Create(this,
+                                           SVGNames::elevationAttr,
+                                           SVGNumber::Create())),
+      x_(SVGAnimatedNumber::Create(this, SVGNames::xAttr, SVGNumber::Create())),
+      y_(SVGAnimatedNumber::Create(this, SVGNames::yAttr, SVGNumber::Create())),
+      z_(SVGAnimatedNumber::Create(this, SVGNames::zAttr, SVGNumber::Create())),
+      points_at_x_(SVGAnimatedNumber::Create(this,
+                                             SVGNames::pointsAtXAttr,
+                                             SVGNumber::Create())),
+      points_at_y_(SVGAnimatedNumber::Create(this,
+                                             SVGNames::pointsAtYAttr,
+                                             SVGNumber::Create())),
+      points_at_z_(SVGAnimatedNumber::Create(this,
+                                             SVGNames::pointsAtZAttr,
+                                             SVGNumber::Create())),
+      specular_exponent_(
+          SVGAnimatedNumber::Create(this,
                                     SVGNames::specularExponentAttr,
-                                    SVGNumber::create(1))),
-      m_limitingConeAngle(
-          SVGAnimatedNumber::create(this,
+                                    SVGNumber::Create(1))),
+      limiting_cone_angle_(
+          SVGAnimatedNumber::Create(this,
                                     SVGNames::limitingConeAngleAttr,
-                                    SVGNumber::create())) {
-  addToPropertyMap(m_azimuth);
-  addToPropertyMap(m_elevation);
-  addToPropertyMap(m_x);
-  addToPropertyMap(m_y);
-  addToPropertyMap(m_z);
-  addToPropertyMap(m_pointsAtX);
-  addToPropertyMap(m_pointsAtY);
-  addToPropertyMap(m_pointsAtZ);
-  addToPropertyMap(m_specularExponent);
-  addToPropertyMap(m_limitingConeAngle);
+                                    SVGNumber::Create())) {
+  AddToPropertyMap(azimuth_);
+  AddToPropertyMap(elevation_);
+  AddToPropertyMap(x_);
+  AddToPropertyMap(y_);
+  AddToPropertyMap(z_);
+  AddToPropertyMap(points_at_x_);
+  AddToPropertyMap(points_at_y_);
+  AddToPropertyMap(points_at_z_);
+  AddToPropertyMap(specular_exponent_);
+  AddToPropertyMap(limiting_cone_angle_);
 }
 
 DEFINE_TRACE(SVGFELightElement) {
-  visitor->trace(m_azimuth);
-  visitor->trace(m_elevation);
-  visitor->trace(m_x);
-  visitor->trace(m_y);
-  visitor->trace(m_z);
-  visitor->trace(m_pointsAtX);
-  visitor->trace(m_pointsAtY);
-  visitor->trace(m_pointsAtZ);
-  visitor->trace(m_specularExponent);
-  visitor->trace(m_limitingConeAngle);
-  SVGElement::trace(visitor);
+  visitor->Trace(azimuth_);
+  visitor->Trace(elevation_);
+  visitor->Trace(x_);
+  visitor->Trace(y_);
+  visitor->Trace(z_);
+  visitor->Trace(points_at_x_);
+  visitor->Trace(points_at_y_);
+  visitor->Trace(points_at_z_);
+  visitor->Trace(specular_exponent_);
+  visitor->Trace(limiting_cone_angle_);
+  SVGElement::Trace(visitor);
 }
 
-SVGFELightElement* SVGFELightElement::findLightElement(
-    const SVGElement& svgElement) {
-  return Traversal<SVGFELightElement>::firstChild(svgElement);
+SVGFELightElement* SVGFELightElement::FindLightElement(
+    const SVGElement& svg_element) {
+  return Traversal<SVGFELightElement>::FirstChild(svg_element);
 }
 
-FloatPoint3D SVGFELightElement::position() const {
-  return FloatPoint3D(x()->currentValue()->value(),
-                      y()->currentValue()->value(),
-                      z()->currentValue()->value());
+FloatPoint3D SVGFELightElement::GetPosition() const {
+  return FloatPoint3D(x()->CurrentValue()->Value(),
+                      y()->CurrentValue()->Value(),
+                      z()->CurrentValue()->Value());
 }
 
-FloatPoint3D SVGFELightElement::pointsAt() const {
-  return FloatPoint3D(pointsAtX()->currentValue()->value(),
-                      pointsAtY()->currentValue()->value(),
-                      pointsAtZ()->currentValue()->value());
+FloatPoint3D SVGFELightElement::PointsAt() const {
+  return FloatPoint3D(pointsAtX()->CurrentValue()->Value(),
+                      pointsAtY()->CurrentValue()->Value(),
+                      pointsAtZ()->CurrentValue()->Value());
 }
 
-void SVGFELightElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::azimuthAttr ||
-      attrName == SVGNames::elevationAttr || attrName == SVGNames::xAttr ||
-      attrName == SVGNames::yAttr || attrName == SVGNames::zAttr ||
-      attrName == SVGNames::pointsAtXAttr ||
-      attrName == SVGNames::pointsAtYAttr ||
-      attrName == SVGNames::pointsAtZAttr ||
-      attrName == SVGNames::specularExponentAttr ||
-      attrName == SVGNames::limitingConeAngleAttr) {
+void SVGFELightElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::azimuthAttr ||
+      attr_name == SVGNames::elevationAttr || attr_name == SVGNames::xAttr ||
+      attr_name == SVGNames::yAttr || attr_name == SVGNames::zAttr ||
+      attr_name == SVGNames::pointsAtXAttr ||
+      attr_name == SVGNames::pointsAtYAttr ||
+      attr_name == SVGNames::pointsAtZAttr ||
+      attr_name == SVGNames::specularExponentAttr ||
+      attr_name == SVGNames::limitingConeAngleAttr) {
     ContainerNode* parent = parentNode();
     if (!parent)
       return;
 
-    LayoutObject* layoutObject = parent->layoutObject();
-    if (!layoutObject || !layoutObject->isSVGResourceFilterPrimitive())
+    LayoutObject* layout_object = parent->GetLayoutObject();
+    if (!layout_object || !layout_object->IsSVGResourceFilterPrimitive())
       return;
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
+    SVGElement::InvalidationGuard invalidation_guard(this);
     if (isSVGFEDiffuseLightingElement(*parent))
-      toSVGFEDiffuseLightingElement(*parent).lightElementAttributeChanged(
-          this, attrName);
+      toSVGFEDiffuseLightingElement(*parent).LightElementAttributeChanged(
+          this, attr_name);
     else if (isSVGFESpecularLightingElement(*parent))
-      toSVGFESpecularLightingElement(*parent).lightElementAttributeChanged(
-          this, attrName);
+      toSVGFESpecularLightingElement(*parent).LightElementAttributeChanged(
+          this, attr_name);
 
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGFELightElement::childrenChanged(const ChildrenChange& change) {
-  SVGElement::childrenChanged(change);
+void SVGFELightElement::ChildrenChanged(const ChildrenChange& change) {
+  SVGElement::ChildrenChanged(change);
 
-  if (!change.byParser) {
+  if (!change.by_parser) {
     if (ContainerNode* parent = parentNode()) {
-      LayoutObject* layoutObject = parent->layoutObject();
-      if (layoutObject && layoutObject->isSVGResourceFilterPrimitive())
-        markForLayoutAndParentResourceInvalidation(layoutObject);
+      LayoutObject* layout_object = parent->GetLayoutObject();
+      if (layout_object && layout_object->IsSVGResourceFilterPrimitive())
+        MarkForLayoutAndParentResourceInvalidation(layout_object);
     }
   }
 }

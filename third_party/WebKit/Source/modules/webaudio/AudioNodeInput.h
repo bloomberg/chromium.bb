@@ -47,24 +47,24 @@ class AudioNodeInput final : public AudioSummingJunction {
   USING_FAST_MALLOC(AudioNodeInput);
 
  public:
-  static std::unique_ptr<AudioNodeInput> create(AudioHandler&);
+  static std::unique_ptr<AudioNodeInput> Create(AudioHandler&);
 
   // AudioSummingJunction
-  void didUpdate() override;
+  void DidUpdate() override;
 
   // Can be called from any thread.
-  AudioHandler& handler() const { return m_handler; }
+  AudioHandler& Handler() const { return handler_; }
 
   // Must be called with the context's graph lock.
-  void connect(AudioNodeOutput&);
-  void disconnect(AudioNodeOutput&);
+  void Connect(AudioNodeOutput&);
+  void Disconnect(AudioNodeOutput&);
 
   // disable() will take the output out of the active connections list and set
   // aside in a disabled list.
   // enable() will put the output back into the active connections list.
   // Must be called with the context's graph lock.
-  void enable(AudioNodeOutput&);
-  void disable(AudioNodeOutput&);
+  void Enable(AudioNodeOutput&);
+  void Disable(AudioNodeOutput&);
 
   // pull() processes all of the AudioNodes connected to us.
   // In the case of multiple connections it sums the result into an internal
@@ -72,28 +72,28 @@ class AudioNodeInput final : public AudioSummingJunction {
   // where possible using inPlaceBus.  It returns the bus which it rendered
   // into, returning inPlaceBus if in-place processing was performed.
   // Called from context's audio thread.
-  AudioBus* pull(AudioBus* inPlaceBus, size_t framesToProcess);
+  AudioBus* Pull(AudioBus* in_place_bus, size_t frames_to_process);
 
   // bus() contains the rendered audio after pull() has been called for each
   // time quantum.
   // Called from context's audio thread.
-  AudioBus* bus();
+  AudioBus* Bus();
 
   // updateInternalBus() updates m_internalSummingBus appropriately for the
   // number of channels.  This must be called when we own the context's graph
   // lock in the audio thread at the very start or end of the render quantum.
-  void updateInternalBus();
+  void UpdateInternalBus();
 
   // The number of channels of the connection with the largest number of
   // channels.
-  unsigned numberOfChannels() const;
+  unsigned NumberOfChannels() const;
 
  private:
   explicit AudioNodeInput(AudioHandler&);
 
   // This reference is safe because the AudioHandler owns this AudioNodeInput
   // object.
-  AudioHandler& m_handler;
+  AudioHandler& handler_;
 
   // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will
   // not be processed) by the audio graph rendering.  But, from JavaScript's
@@ -103,13 +103,13 @@ class AudioNodeInput final : public AudioSummingJunction {
   // These raw pointers are safe. Owner AudioNodes of these AudioNodeOutputs
   // manage their lifetime, and AudioNode::dispose() disconnects all of
   // connections.
-  HashSet<AudioNodeOutput*> m_disabledOutputs;
+  HashSet<AudioNodeOutput*> disabled_outputs_;
 
   // Called from context's audio thread.
-  AudioBus* internalSummingBus();
-  void sumAllConnections(AudioBus* summingBus, size_t framesToProcess);
+  AudioBus* InternalSummingBus();
+  void SumAllConnections(AudioBus* summing_bus, size_t frames_to_process);
 
-  RefPtr<AudioBus> m_internalSummingBus;
+  RefPtr<AudioBus> internal_summing_bus_;
 };
 
 }  // namespace blink

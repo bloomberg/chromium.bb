@@ -38,150 +38,152 @@ namespace blink {
 class MarginIntervalGenerator {
  public:
   MarginIntervalGenerator(unsigned radius);
-  void set(int y, const IntShapeInterval&);
-  IntShapeInterval intervalAt(int y) const;
+  void Set(int y, const IntShapeInterval&);
+  IntShapeInterval IntervalAt(int y) const;
 
  private:
-  Vector<int> m_xIntercepts;
-  int m_y;
-  int m_x1;
-  int m_x2;
+  Vector<int> x_intercepts_;
+  int y_;
+  int x1_;
+  int x2_;
 };
 
 MarginIntervalGenerator::MarginIntervalGenerator(unsigned radius)
-    : m_y(0), m_x1(0), m_x2(0) {
-  m_xIntercepts.resize(radius + 1);
-  unsigned radiusSquared = radius * radius;
+    : y_(0), x1_(0), x2_(0) {
+  x_intercepts_.Resize(radius + 1);
+  unsigned radius_squared = radius * radius;
   for (unsigned y = 0; y <= radius; y++)
-    m_xIntercepts[y] = sqrt(static_cast<double>(radiusSquared - y * y));
+    x_intercepts_[y] = sqrt(static_cast<double>(radius_squared - y * y));
 }
 
-void MarginIntervalGenerator::set(int y, const IntShapeInterval& interval) {
+void MarginIntervalGenerator::Set(int y, const IntShapeInterval& interval) {
   DCHECK_GE(y, 0);
-  DCHECK_GE(interval.x1(), 0);
-  m_y = y;
-  m_x1 = interval.x1();
-  m_x2 = interval.x2();
+  DCHECK_GE(interval.X1(), 0);
+  y_ = y;
+  x1_ = interval.X1();
+  x2_ = interval.X2();
 }
 
-IntShapeInterval MarginIntervalGenerator::intervalAt(int y) const {
-  unsigned xInterceptsIndex = abs(y - m_y);
-  int dx = (xInterceptsIndex >= m_xIntercepts.size())
+IntShapeInterval MarginIntervalGenerator::IntervalAt(int y) const {
+  unsigned x_intercepts_index = abs(y - y_);
+  int dx = (x_intercepts_index >= x_intercepts_.size())
                ? 0
-               : m_xIntercepts[xInterceptsIndex];
-  return IntShapeInterval(m_x1 - dx, m_x2 + dx);
+               : x_intercepts_[x_intercepts_index];
+  return IntShapeInterval(x1_ - dx, x2_ + dx);
 }
 
 std::unique_ptr<RasterShapeIntervals>
-RasterShapeIntervals::computeShapeMarginIntervals(int shapeMargin) const {
-  int marginIntervalsSize = (offset() > shapeMargin)
-                                ? size()
-                                : size() - offset() * 2 + shapeMargin * 2;
+RasterShapeIntervals::ComputeShapeMarginIntervals(int shape_margin) const {
+  int margin_intervals_size = (Offset() > shape_margin)
+                                  ? size()
+                                  : size() - Offset() * 2 + shape_margin * 2;
   std::unique_ptr<RasterShapeIntervals> result =
-      WTF::wrapUnique(new RasterShapeIntervals(
-          marginIntervalsSize, std::max(shapeMargin, offset())));
-  MarginIntervalGenerator marginIntervalGenerator(shapeMargin);
+      WTF::WrapUnique(new RasterShapeIntervals(
+          margin_intervals_size, std::max(shape_margin, Offset())));
+  MarginIntervalGenerator margin_interval_generator(shape_margin);
 
-  for (int y = bounds().y(); y < bounds().maxY(); ++y) {
-    const IntShapeInterval& intervalAtY = intervalAt(y);
-    if (intervalAtY.isEmpty())
+  for (int y = Bounds().Y(); y < Bounds().MaxY(); ++y) {
+    const IntShapeInterval& interval_at_y = IntervalAt(y);
+    if (interval_at_y.IsEmpty())
       continue;
 
-    marginIntervalGenerator.set(y, intervalAtY);
-    int marginY0 = std::max(minY(), y - shapeMargin);
-    int marginY1 = std::min(maxY(), y + shapeMargin + 1);
+    margin_interval_generator.Set(y, interval_at_y);
+    int margin_y0 = std::max(MinY(), y - shape_margin);
+    int margin_y1 = std::min(MaxY(), y + shape_margin + 1);
 
-    for (int marginY = y - 1; marginY >= marginY0; --marginY) {
-      if (marginY > bounds().y() && intervalAt(marginY).contains(intervalAtY))
+    for (int margin_y = y - 1; margin_y >= margin_y0; --margin_y) {
+      if (margin_y > Bounds().Y() &&
+          IntervalAt(margin_y).Contains(interval_at_y))
         break;
-      result->intervalAt(marginY).unite(
-          marginIntervalGenerator.intervalAt(marginY));
+      result->IntervalAt(margin_y).Unite(
+          margin_interval_generator.IntervalAt(margin_y));
     }
 
-    result->intervalAt(y).unite(marginIntervalGenerator.intervalAt(y));
+    result->IntervalAt(y).Unite(margin_interval_generator.IntervalAt(y));
 
-    for (int marginY = y + 1; marginY < marginY1; ++marginY) {
-      if (marginY < bounds().maxY() &&
-          intervalAt(marginY).contains(intervalAtY))
+    for (int margin_y = y + 1; margin_y < margin_y1; ++margin_y) {
+      if (margin_y < Bounds().MaxY() &&
+          IntervalAt(margin_y).Contains(interval_at_y))
         break;
-      result->intervalAt(marginY).unite(
-          marginIntervalGenerator.intervalAt(marginY));
+      result->IntervalAt(margin_y).Unite(
+          margin_interval_generator.IntervalAt(margin_y));
     }
   }
 
-  result->initializeBounds();
+  result->InitializeBounds();
   return result;
 }
 
-void RasterShapeIntervals::initializeBounds() {
-  m_bounds = IntRect();
-  for (int y = minY(); y < maxY(); ++y) {
-    const IntShapeInterval& intervalAtY = intervalAt(y);
-    if (intervalAtY.isEmpty())
+void RasterShapeIntervals::InitializeBounds() {
+  bounds_ = IntRect();
+  for (int y = MinY(); y < MaxY(); ++y) {
+    const IntShapeInterval& interval_at_y = IntervalAt(y);
+    if (interval_at_y.IsEmpty())
       continue;
-    m_bounds.unite(IntRect(intervalAtY.x1(), y, intervalAtY.width(), 1));
+    bounds_.Unite(IntRect(interval_at_y.X1(), y, interval_at_y.Width(), 1));
   }
 }
 
-void RasterShapeIntervals::buildBoundsPath(Path& path) const {
-  int maxY = bounds().maxY();
-  for (int y = bounds().y(); y < maxY; y++) {
-    if (intervalAt(y).isEmpty())
+void RasterShapeIntervals::BuildBoundsPath(Path& path) const {
+  int max_y = Bounds().MaxY();
+  for (int y = Bounds().Y(); y < max_y; y++) {
+    if (IntervalAt(y).IsEmpty())
       continue;
 
-    IntShapeInterval extent = intervalAt(y);
-    int endY = y + 1;
-    for (; endY < maxY; endY++) {
-      if (intervalAt(endY).isEmpty() || intervalAt(endY) != extent)
+    IntShapeInterval extent = IntervalAt(y);
+    int end_y = y + 1;
+    for (; end_y < max_y; end_y++) {
+      if (IntervalAt(end_y).IsEmpty() || IntervalAt(end_y) != extent)
         break;
     }
-    path.addRect(FloatRect(extent.x1(), y, extent.width(), endY - y));
-    y = endY - 1;
+    path.AddRect(FloatRect(extent.X1(), y, extent.Width(), end_y - y));
+    y = end_y - 1;
   }
 }
 
-const RasterShapeIntervals& RasterShape::marginIntervals() const {
-  DCHECK_GE(shapeMargin(), 0);
-  if (!shapeMargin())
-    return *m_intervals;
+const RasterShapeIntervals& RasterShape::MarginIntervals() const {
+  DCHECK_GE(ShapeMargin(), 0);
+  if (!ShapeMargin())
+    return *intervals_;
 
-  int shapeMarginInt = clampTo<int>(ceil(shapeMargin()), 0);
-  int maxShapeMarginInt =
-      std::max(m_marginRectSize.width(), m_marginRectSize.height()) * sqrtf(2);
-  if (!m_marginIntervals)
-    m_marginIntervals = m_intervals->computeShapeMarginIntervals(
-        std::min(shapeMarginInt, maxShapeMarginInt));
+  int shape_margin_int = clampTo<int>(ceil(ShapeMargin()), 0);
+  int max_shape_margin_int =
+      std::max(margin_rect_size_.Width(), margin_rect_size_.Height()) *
+      sqrtf(2);
+  if (!margin_intervals_)
+    margin_intervals_ = intervals_->ComputeShapeMarginIntervals(
+        std::min(shape_margin_int, max_shape_margin_int));
 
-  return *m_marginIntervals;
+  return *margin_intervals_;
 }
 
-LineSegment RasterShape::getExcludedInterval(LayoutUnit logicalTop,
-                                             LayoutUnit logicalHeight) const {
-  const RasterShapeIntervals& intervals = marginIntervals();
-  if (intervals.isEmpty())
+LineSegment RasterShape::GetExcludedInterval(LayoutUnit logical_top,
+                                             LayoutUnit logical_height) const {
+  const RasterShapeIntervals& intervals = MarginIntervals();
+  if (intervals.IsEmpty())
     return LineSegment();
 
-  int y1 = logicalTop.toInt();
-  int y2 = (logicalTop + logicalHeight).toInt();
+  int y1 = logical_top.ToInt();
+  int y2 = (logical_top + logical_height).ToInt();
   DCHECK_GE(y2, y1);
-  if (y2 < intervals.bounds().y() || y1 >= intervals.bounds().maxY())
+  if (y2 < intervals.Bounds().Y() || y1 >= intervals.Bounds().MaxY())
     return LineSegment();
 
-  y1 = std::max(y1, intervals.bounds().y());
-  y2 = std::min(y2, intervals.bounds().maxY());
-  IntShapeInterval excludedInterval;
+  y1 = std::max(y1, intervals.Bounds().Y());
+  y2 = std::min(y2, intervals.Bounds().MaxY());
+  IntShapeInterval excluded_interval;
 
   if (y1 == y2) {
-    excludedInterval = intervals.intervalAt(y1);
+    excluded_interval = intervals.IntervalAt(y1);
   } else {
     for (int y = y1; y < y2; y++)
-      excludedInterval.unite(intervals.intervalAt(y));
+      excluded_interval.Unite(intervals.IntervalAt(y));
   }
 
   // Note: |marginIntervals()| returns end-point exclusive
   // intervals. |excludedInterval.x2()| contains the left-most pixel
   // offset to the right of the calculated union.
-  return LineSegment(excludedInterval.x1(), excludedInterval.x2());
+  return LineSegment(excluded_interval.X1(), excluded_interval.X2());
 }
 
 }  // namespace blink

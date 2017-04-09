@@ -109,14 +109,14 @@ class ScopedRGBEmulationColorMask {
 
  public:
   ScopedRGBEmulationColorMask(WebGLRenderingContextBase*,
-                              GLboolean* colorMask,
+                              GLboolean* color_mask,
                               DrawingBuffer*);
   ~ScopedRGBEmulationColorMask();
 
  private:
-  Member<WebGLRenderingContextBase> m_context;
-  GLboolean m_colorMask[4];
-  const bool m_requiresEmulation;
+  Member<WebGLRenderingContextBase> context_;
+  GLboolean color_mask_[4];
+  const bool requires_emulation_;
 };
 
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
@@ -126,24 +126,24 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
  public:
   ~WebGLRenderingContextBase() override;
 
-  virtual String contextName() const = 0;
-  virtual void registerContextExtensions() = 0;
+  virtual String ContextName() const = 0;
+  virtual void RegisterContextExtensions() = 0;
 
-  virtual void initializeNewContext();
+  virtual void InitializeNewContext();
 
-  static unsigned getWebGLVersion(const CanvasRenderingContext*);
+  static unsigned GetWebGLVersion(const CanvasRenderingContext*);
 
   static std::unique_ptr<WebGraphicsContext3DProvider>
-  createWebGraphicsContext3DProvider(HTMLCanvasElement*,
+  CreateWebGraphicsContext3DProvider(HTMLCanvasElement*,
                                      const CanvasContextCreationAttributes&,
-                                     unsigned webGLVersion);
+                                     unsigned web_gl_version);
   static std::unique_ptr<WebGraphicsContext3DProvider>
-  createWebGraphicsContext3DProvider(ScriptState*,
+  CreateWebGraphicsContext3DProvider(ScriptState*,
                                      const CanvasContextCreationAttributes&,
-                                     unsigned webGLVersion);
-  static void forceNextWebGLContextCreationToFail();
+                                     unsigned web_gl_version);
+  static void ForceNextWebGLContextCreationToFail();
 
-  unsigned version() const { return m_version; }
+  unsigned Version() const { return version_; }
 
   int drawingBufferWidth() const;
   int drawingBufferHeight() const;
@@ -157,12 +157,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void bindTexture(GLenum target, WebGLTexture*);
   void blendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
   void blendEquation(GLenum mode);
-  void blendEquationSeparate(GLenum modeRGB, GLenum modeAlpha);
+  void blendEquationSeparate(GLenum mode_rgb, GLenum mode_alpha);
   void blendFunc(GLenum sfactor, GLenum dfactor);
-  void blendFuncSeparate(GLenum srcRGB,
-                         GLenum dstRGB,
-                         GLenum srcAlpha,
-                         GLenum dstAlpha);
+  void blendFuncSeparate(GLenum src_rgb,
+                         GLenum dst_rgb,
+                         GLenum src_alpha,
+                         GLenum dst_alpha);
 
   void bufferData(GLenum target, long long size, GLenum usage);
   void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
@@ -234,18 +234,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void depthFunc(GLenum);
   void depthMask(GLboolean);
-  void depthRange(GLfloat zNear, GLfloat zFar);
+  void depthRange(GLfloat z_near, GLfloat z_far);
   void detachShader(WebGLProgram*, WebGLShader*);
   void disable(GLenum cap);
   void disableVertexAttribArray(GLuint index);
   void drawArrays(GLenum mode, GLint first, GLsizei count);
   void drawElements(GLenum mode, GLsizei count, GLenum type, long long offset);
 
-  void drawArraysInstancedANGLE(GLenum mode,
+  void DrawArraysInstancedANGLE(GLenum mode,
                                 GLint first,
                                 GLsizei count,
                                 GLsizei primcount);
-  void drawElementsInstancedANGLE(GLenum mode,
+  void DrawElementsInstancedANGLE(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
                                   long long offset,
@@ -288,8 +288,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        GLenum pname);
   ScriptValue getShaderParameter(ScriptState*, WebGLShader*, GLenum pname);
   String getShaderInfoLog(WebGLShader*);
-  WebGLShaderPrecisionFormat* getShaderPrecisionFormat(GLenum shaderType,
-                                                       GLenum precisionType);
+  WebGLShaderPrecisionFormat* getShaderPrecisionFormat(GLenum shader_type,
+                                                       GLenum precision_type);
   String getShaderSource(WebGLShader*);
   Nullable<Vector<String>> getSupportedExtensions();
   virtual ScriptValue getTexParameter(ScriptState*,
@@ -506,77 +506,77 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLsizei stride,
                            long long offset);
 
-  void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
+  void VertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
   void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
   // WEBGL_lose_context support
   enum AutoRecoveryMethod {
     // Don't restore automatically.
-    Manual,
+    kManual,
 
     // Restore when resources are available.
-    WhenAvailable,
+    kWhenAvailable,
 
     // Restore as soon as possible, but only when
     // the canvas is visible.
-    Auto
+    kAuto
   };
-  void loseContext(LostContextMode) override;
-  void forceLostContext(LostContextMode, AutoRecoveryMethod);
-  void forceRestoreContext();
-  void loseContextImpl(LostContextMode, AutoRecoveryMethod);
-  uint32_t numberOfContextLosses() const;
+  void LoseContext(LostContextMode) override;
+  void ForceLostContext(LostContextMode, AutoRecoveryMethod);
+  void ForceRestoreContext();
+  void LoseContextImpl(LostContextMode, AutoRecoveryMethod);
+  uint32_t NumberOfContextLosses() const;
 
   // Utilities to restore GL state to match the rendering context's
   // saved state. Use these after contextGL()-based state changes that
   // bypass the rendering context.
-  void restoreScissorEnabled();
-  void restoreScissorBox();
-  void restoreClearColor();
-  void restoreColorMask();
+  void RestoreScissorEnabled();
+  void RestoreScissorBox();
+  void RestoreClearColor();
+  void RestoreColorMask();
 
-  gpu::gles2::GLES2Interface* contextGL() const {
-    DrawingBuffer* d = drawingBuffer();
+  gpu::gles2::GLES2Interface* ContextGL() const {
+    DrawingBuffer* d = GetDrawingBuffer();
     if (!d)
       return nullptr;
-    return d->contextGL();
+    return d->ContextGL();
   }
-  WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
-  Extensions3DUtil* extensionsUtil();
+  WebGLContextGroup* ContextGroup() const { return context_group_.Get(); }
+  Extensions3DUtil* ExtensionsUtil();
 
-  void reshape(int width, int height) override;
+  void Reshape(int width, int height) override;
 
-  void markLayerComposited() override;
-  ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) override;
+  void MarkLayerComposited() override;
+  ImageData* PaintRenderingResultsToImageData(SourceDrawingBuffer) override;
 
-  unsigned maxVertexAttribs() const { return m_maxVertexAttribs; }
+  unsigned MaxVertexAttribs() const { return max_vertex_attribs_; }
 
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   // Returns approximate gpu memory allocated per pixel.
-  int externallyAllocatedBytesPerPixel() override;
+  int ExternallyAllocatedBytesPerPixel() override;
 
   class TextureUnitState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
    public:
-    TraceWrapperMember<WebGLTexture> m_texture2DBinding;
-    TraceWrapperMember<WebGLTexture> m_textureCubeMapBinding;
-    TraceWrapperMember<WebGLTexture> m_texture3DBinding;
-    TraceWrapperMember<WebGLTexture> m_texture2DArrayBinding;
+    TraceWrapperMember<WebGLTexture> texture2d_binding_;
+    TraceWrapperMember<WebGLTexture> texture_cube_map_binding_;
+    TraceWrapperMember<WebGLTexture> texture3d_binding_;
+    TraceWrapperMember<WebGLTexture> texture2d_array_binding_;
 
     DECLARE_TRACE();
     // Wrappers are traced by parent since TextureUnitState is not a heap
     // object.
   };
 
-  PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const override;
-  ImageData* toImageData(SnapshotReason) override;
-  void setFilterQuality(SkFilterQuality) override;
-  bool isWebGL2OrHigher() { return version() >= 2; }
+  PassRefPtr<Image> GetImage(AccelerationHint, SnapshotReason) const override;
+  ImageData* ToImageData(SnapshotReason) override;
+  void SetFilterQuality(SkFilterQuality) override;
+  bool IsWebGL2OrHigher() { return Version() >= 2; }
 
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
@@ -584,7 +584,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // For use by WebVR which doesn't use the normal compositing path.
   // This clears the backbuffer if preserveDrawingBuffer is false.
-  void markCompositedAndClearBackbufferIfNeeded();
+  void MarkCompositedAndClearBackbufferIfNeeded();
 
  protected:
   friend class EXTDisjointTimerQuery;
@@ -617,20 +617,20 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             const CanvasContextCreationAttributes&,
                             unsigned);
-  PassRefPtr<DrawingBuffer> createDrawingBuffer(
+  PassRefPtr<DrawingBuffer> CreateDrawingBuffer(
       std::unique_ptr<WebGraphicsContext3DProvider>,
       DrawingBuffer::ChromiumImageUsage);
-  void setupFlags();
+  void SetupFlags();
 
   // CanvasRenderingContext implementation.
-  bool is3d() const override { return true; }
-  bool isComposited() const override { return true; }
-  bool isAccelerated() const override { return true; }
-  void setIsHidden(bool) override;
-  bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
-  WebLayer* platformLayer() const override;
-  void stop() override;
-  void finalizeFrame() override;
+  bool Is3d() const override { return true; }
+  bool IsComposited() const override { return true; }
+  bool IsAccelerated() const override { return true; }
+  void SetIsHidden(bool) override;
+  bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) override;
+  WebLayer* PlatformLayer() const override;
+  void Stop() override;
+  void FinalizeFrame() override;
 
   // DrawingBuffer::Client implementation.
   bool DrawingBufferClientIsBoundForDraw() override;
@@ -642,255 +642,256 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void DrawingBufferClientRestoreFramebufferBinding() override;
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
 
-  virtual void destroyContext();
-  void markContextChanged(ContentChangeType);
+  virtual void DestroyContext();
+  void MarkContextChanged(ContentChangeType);
 
-  void onErrorMessage(const char*, int32_t id);
+  void OnErrorMessage(const char*, int32_t id);
 
-  void notifyCanvasContextChanged();
+  void NotifyCanvasContextChanged();
 
   // Query if depth_stencil buffer is supported.
-  bool isDepthStencilSupported() { return m_isDepthStencilSupported; }
+  bool IsDepthStencilSupported() { return is_depth_stencil_supported_; }
 
   // Check if each enabled vertex attribute is bound to a buffer.
-  bool validateRenderingState(const char*);
+  bool ValidateRenderingState(const char*);
 
-  bool validateWebGLObject(const char*, WebGLObject*);
+  bool ValidateWebGLObject(const char*, WebGLObject*);
 
   // Adds a compressed texture format.
-  void addCompressedTextureFormat(GLenum);
-  void removeAllCompressedTextureFormats();
+  void AddCompressedTextureFormat(GLenum);
+  void RemoveAllCompressedTextureFormats();
 
   // Set UNPACK_ALIGNMENT to 1, all other parameters to 0.
-  virtual void resetUnpackParameters();
+  virtual void ResetUnpackParameters();
   // Restore the client unpack parameters.
-  virtual void restoreUnpackParameters();
+  virtual void RestoreUnpackParameters();
 
-  PassRefPtr<Image> drawImageIntoBuffer(PassRefPtr<Image>,
+  PassRefPtr<Image> DrawImageIntoBuffer(PassRefPtr<Image>,
                                         int width,
                                         int height,
-                                        const char* functionName);
+                                        const char* function_name);
 
-  PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*);
+  PassRefPtr<Image> VideoFrameToImage(HTMLVideoElement*);
 
   // Structure for rendering to a DrawingBuffer, instead of directly
   // to the back-buffer of m_context.
-  RefPtr<DrawingBuffer> m_drawingBuffer;
-  DrawingBuffer* drawingBuffer() const;
+  RefPtr<DrawingBuffer> drawing_buffer_;
+  DrawingBuffer* GetDrawingBuffer() const;
 
-  TraceWrapperMember<WebGLContextGroup> m_contextGroup;
+  TraceWrapperMember<WebGLContextGroup> context_group_;
 
-  bool m_isHidden;
-  LostContextMode m_contextLostMode;
-  AutoRecoveryMethod m_autoRecoveryMethod;
+  bool is_hidden_;
+  LostContextMode context_lost_mode_;
+  AutoRecoveryMethod auto_recovery_method_;
   // Dispatches a context lost event once it is determined that one is needed.
   // This is used for synthetic, WEBGL_lose_context and real context losses. For
   // real ones, it's likely that there's no JavaScript on the stack, but that
   // might be dependent on how exactly the platform discovers that the context
   // was lost. For better portability we always defer the dispatch of the event.
-  TaskRunnerTimer<WebGLRenderingContextBase> m_dispatchContextLostEventTimer;
-  bool m_restoreAllowed;
-  TaskRunnerTimer<WebGLRenderingContextBase> m_restoreTimer;
+  TaskRunnerTimer<WebGLRenderingContextBase> dispatch_context_lost_event_timer_;
+  bool restore_allowed_;
+  TaskRunnerTimer<WebGLRenderingContextBase> restore_timer_;
 
-  bool m_markedCanvasDirty;
-  bool m_animationFrameInProgress;
+  bool marked_canvas_dirty_;
+  bool animation_frame_in_progress_;
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
-  TraceWrapperMember<WebGLBuffer> m_boundArrayBuffer;
+  TraceWrapperMember<WebGLBuffer> bound_array_buffer_;
 
-  Member<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
-  TraceWrapperMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
-  void setBoundVertexArrayObject(WebGLVertexArrayObjectBase*);
+  Member<WebGLVertexArrayObjectBase> default_vertex_array_object_;
+  TraceWrapperMember<WebGLVertexArrayObjectBase> bound_vertex_array_object_;
+  void SetBoundVertexArrayObject(WebGLVertexArrayObjectBase*);
 
   enum VertexAttribValueType {
-    Float32ArrayType,
-    Int32ArrayType,
-    Uint32ArrayType,
+    kFloat32ArrayType,
+    kInt32ArrayType,
+    kUint32ArrayType,
   };
 
-  Vector<VertexAttribValueType> m_vertexAttribType;
-  unsigned m_maxVertexAttribs;
-  void setVertexAttribType(GLuint index, VertexAttribValueType);
+  Vector<VertexAttribValueType> vertex_attrib_type_;
+  unsigned max_vertex_attribs_;
+  void SetVertexAttribType(GLuint index, VertexAttribValueType);
 
-  TraceWrapperMember<WebGLProgram> m_currentProgram;
-  TraceWrapperMember<WebGLFramebuffer> m_framebufferBinding;
-  TraceWrapperMember<WebGLRenderbuffer> m_renderbufferBinding;
+  TraceWrapperMember<WebGLProgram> current_program_;
+  TraceWrapperMember<WebGLFramebuffer> framebuffer_binding_;
+  TraceWrapperMember<WebGLRenderbuffer> renderbuffer_binding_;
 
-  HeapVector<TextureUnitState> m_textureUnits;
-  unsigned long m_activeTextureUnit;
+  HeapVector<TextureUnitState> texture_units_;
+  unsigned long active_texture_unit_;
 
-  Vector<GLenum> m_compressedTextureFormats;
+  Vector<GLenum> compressed_texture_formats_;
 
   // Fixed-size cache of reusable image buffers for video texImage2D calls.
   class LRUImageBufferCache {
    public:
     LRUImageBufferCache(int capacity);
     // The pointer returned is owned by the image buffer map.
-    ImageBuffer* imageBuffer(const IntSize&);
+    ImageBuffer* GetImageBuffer(const IntSize&);
 
    private:
-    void bubbleToFront(int idx);
-    std::unique_ptr<std::unique_ptr<ImageBuffer>[]> m_buffers;
-    int m_capacity;
+    void BubbleToFront(int idx);
+    std::unique_ptr<std::unique_ptr<ImageBuffer>[]> buffers_;
+    int capacity_;
   };
-  LRUImageBufferCache m_generatedImageCache;
+  LRUImageBufferCache generated_image_cache_;
 
-  GLint m_maxTextureSize;
-  GLint m_maxCubeMapTextureSize;
-  GLint m_max3DTextureSize;
-  GLint m_maxArrayTextureLayers;
-  GLint m_maxRenderbufferSize;
-  GLint m_maxViewportDims[2];
-  GLint m_maxTextureLevel;
-  GLint m_maxCubeMapTextureLevel;
-  GLint m_max3DTextureLevel;
+  GLint max_texture_size_;
+  GLint max_cube_map_texture_size_;
+  GLint max3d_texture_size_;
+  GLint max_array_texture_layers_;
+  GLint max_renderbuffer_size_;
+  GLint max_viewport_dims_[2];
+  GLint max_texture_level_;
+  GLint max_cube_map_texture_level_;
+  GLint max3d_texture_level_;
 
-  GLint m_maxDrawBuffers;
-  GLint m_maxColorAttachments;
-  GLenum m_backDrawBuffer;
-  bool m_drawBuffersWebGLRequirementsChecked;
-  bool m_drawBuffersSupported;
+  GLint max_draw_buffers_;
+  GLint max_color_attachments_;
+  GLenum back_draw_buffer_;
+  bool draw_buffers_web_gl_requirements_checked_;
+  bool draw_buffers_supported_;
 
-  GLenum m_readBufferOfDefaultFramebuffer;
+  GLenum read_buffer_of_default_framebuffer_;
 
-  GLint m_packAlignment;
-  GLint m_unpackAlignment;
-  bool m_unpackFlipY;
-  bool m_unpackPremultiplyAlpha;
-  GLenum m_unpackColorspaceConversion;
+  GLint pack_alignment_;
+  GLint unpack_alignment_;
+  bool unpack_flip_y_;
+  bool unpack_premultiply_alpha_;
+  GLenum unpack_colorspace_conversion_;
 
-  GLfloat m_clearColor[4];
-  bool m_scissorEnabled;
-  GLint m_scissorBox[4];
-  GLfloat m_clearDepth;
-  GLint m_clearStencil;
-  GLboolean m_colorMask[4];
-  GLboolean m_depthMask;
+  GLfloat clear_color_[4];
+  bool scissor_enabled_;
+  GLint scissor_box_[4];
+  GLfloat clear_depth_;
+  GLint clear_stencil_;
+  GLboolean color_mask_[4];
+  GLboolean depth_mask_;
 
-  bool m_stencilEnabled;
-  GLuint m_stencilMask, m_stencilMaskBack;
-  GLint m_stencilFuncRef,
-      m_stencilFuncRefBack;  // Note that these are the user specified values,
-                             // not the internal clamped value.
-  GLuint m_stencilFuncMask, m_stencilFuncMaskBack;
+  bool stencil_enabled_;
+  GLuint stencil_mask_, stencil_mask_back_;
+  GLint stencil_func_ref_,
+      stencil_func_ref_back_;  // Note that these are the user specified values,
+                               // not the internal clamped value.
+  GLuint stencil_func_mask_, stencil_func_mask_back_;
 
-  bool m_isDepthStencilSupported;
+  bool is_depth_stencil_supported_;
 
-  bool m_synthesizedErrorsToConsole;
-  int m_numGLErrorsToConsoleAllowed;
+  bool synthesized_errors_to_console_;
+  int num_gl_errors_to_console_allowed_;
 
-  unsigned long m_onePlusMaxNonDefaultTextureUnit;
+  unsigned long one_plus_max_non_default_texture_unit_;
 
-  std::unique_ptr<Extensions3DUtil> m_extensionsUtil;
+  std::unique_ptr<Extensions3DUtil> extensions_util_;
 
   enum ExtensionFlags {
-    ApprovedExtension = 0x00,
+    kApprovedExtension = 0x00,
     // Extension that is behind the draft extensions runtime flag:
-    DraftExtension = 0x01,
+    kDraftExtension = 0x01,
   };
 
   class ExtensionTracker : public GarbageCollected<ExtensionTracker>,
                            public TraceWrapperBase {
    public:
     ExtensionTracker(ExtensionFlags flags, const char* const* prefixes)
-        : m_draft(flags & DraftExtension), m_prefixes(prefixes) {}
+        : draft_(flags & kDraftExtension), prefixes_(prefixes) {}
 
-    bool draft() const { return m_draft; }
+    bool Draft() const { return draft_; }
 
-    const char* const* prefixes() const;
-    bool matchesNameWithPrefixes(const String&) const;
+    const char* const* Prefixes() const;
+    bool MatchesNameWithPrefixes(const String&) const;
 
-    virtual WebGLExtension* getExtension(WebGLRenderingContextBase*) = 0;
-    virtual bool supported(WebGLRenderingContextBase*) const = 0;
-    virtual const char* extensionName() const = 0;
-    virtual void loseExtension(bool) = 0;
+    virtual WebGLExtension* GetExtension(WebGLRenderingContextBase*) = 0;
+    virtual bool Supported(WebGLRenderingContextBase*) const = 0;
+    virtual const char* ExtensionName() const = 0;
+    virtual void LoseExtension(bool) = 0;
 
     // This is only used for keeping the JS wrappers of extensions alive.
-    virtual WebGLExtension* getExtensionObjectIfAlreadyEnabled() = 0;
+    virtual WebGLExtension* GetExtensionObjectIfAlreadyEnabled() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
 
    private:
-    bool m_draft;
-    const char* const* m_prefixes;
+    bool draft_;
+    const char* const* prefixes_;
   };
 
   template <typename T>
   class TypedExtensionTracker final : public ExtensionTracker {
    public:
-    static TypedExtensionTracker<T>* create(Member<T>& extensionField,
+    static TypedExtensionTracker<T>* Create(Member<T>& extension_field,
                                             ExtensionFlags flags,
                                             const char* const* prefixes) {
-      return new TypedExtensionTracker<T>(extensionField, flags, prefixes);
+      return new TypedExtensionTracker<T>(extension_field, flags, prefixes);
     }
 
-    WebGLExtension* getExtension(WebGLRenderingContextBase* context) override {
-      if (!m_extension) {
-        m_extension = T::create(context);
-        m_extensionField = m_extension;
+    WebGLExtension* GetExtension(WebGLRenderingContextBase* context) override {
+      if (!extension_) {
+        extension_ = T::Create(context);
+        extension_field_ = extension_;
       }
 
-      return m_extension;
+      return extension_;
     }
 
-    bool supported(WebGLRenderingContextBase* context) const override {
-      return T::supported(context);
+    bool Supported(WebGLRenderingContextBase* context) const override {
+      return T::Supported(context);
     }
 
-    const char* extensionName() const override { return T::extensionName(); }
+    const char* ExtensionName() const override { return T::ExtensionName(); }
 
-    void loseExtension(bool force) override {
-      if (m_extension) {
-        m_extension->lose(force);
-        if (m_extension->isLost())
-          m_extension = nullptr;
+    void LoseExtension(bool force) override {
+      if (extension_) {
+        extension_->Lose(force);
+        if (extension_->IsLost())
+          extension_ = nullptr;
       }
     }
 
-    WebGLExtension* getExtensionObjectIfAlreadyEnabled() override {
-      return m_extension;
+    WebGLExtension* GetExtensionObjectIfAlreadyEnabled() override {
+      return extension_;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_extension);
-      ExtensionTracker::trace(visitor);
+      visitor->Trace(extension_);
+      ExtensionTracker::Trace(visitor);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-      visitor->traceWrappers(m_extension);
+      visitor->TraceWrappers(extension_);
     }
 
    private:
-    TypedExtensionTracker(Member<T>& extensionField,
+    TypedExtensionTracker(Member<T>& extension_field,
                           ExtensionFlags flags,
                           const char* const* prefixes)
         : ExtensionTracker(flags, prefixes),
-          m_extensionField(extensionField),
-          m_extension(this, nullptr) {}
+          extension_field_(extension_field),
+          extension_(this, nullptr) {}
 
     GC_PLUGIN_IGNORE("http://crbug.com/519953")
-    Member<T>& m_extensionField;
+    Member<T>& extension_field_;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
-    TraceWrapperMember<T> m_extension;
+    TraceWrapperMember<T> extension_;
   };
 
-  bool m_extensionEnabled[WebGLExtensionNameCount];
-  HeapVector<TraceWrapperMember<ExtensionTracker>> m_extensions;
+  bool extension_enabled_[kWebGLExtensionNameCount];
+  HeapVector<TraceWrapperMember<ExtensionTracker>> extensions_;
 
   template <typename T>
-  void registerExtension(Member<T>& extensionPtr,
-                         ExtensionFlags flags = ApprovedExtension,
+  void RegisterExtension(Member<T>& extension_ptr,
+                         ExtensionFlags flags = kApprovedExtension,
                          const char* const* prefixes = nullptr) {
-    m_extensions.push_back(TraceWrapperMember<ExtensionTracker>(
-        this, TypedExtensionTracker<T>::create(extensionPtr, flags, prefixes)));
+    extensions_.push_back(TraceWrapperMember<ExtensionTracker>(
+        this,
+        TypedExtensionTracker<T>::Create(extension_ptr, flags, prefixes)));
   }
 
-  bool extensionSupportedAndAllowed(const ExtensionTracker*);
+  bool ExtensionSupportedAndAllowed(const ExtensionTracker*);
 
-  inline bool extensionEnabled(WebGLExtensionName name) {
-    return m_extensionEnabled[name];
+  inline bool ExtensionEnabled(WebGLExtensionName name) {
+    return extension_enabled_[name];
   }
 
   // ScopedDrawingBufferBinder is used for
@@ -902,56 +903,56 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     STACK_ALLOCATED();
 
    public:
-    ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer,
-                              WebGLFramebuffer* framebufferBinding)
-        : m_drawingBuffer(drawingBuffer),
-          m_readFramebufferBinding(framebufferBinding) {
+    ScopedDrawingBufferBinder(DrawingBuffer* drawing_buffer,
+                              WebGLFramebuffer* framebuffer_binding)
+        : drawing_buffer_(drawing_buffer),
+          read_framebuffer_binding_(framebuffer_binding) {
       // Commit DrawingBuffer if needed (e.g., for multisampling)
-      if (!m_readFramebufferBinding && m_drawingBuffer)
-        m_drawingBuffer->resolveAndBindForReadAndDraw();
+      if (!read_framebuffer_binding_ && drawing_buffer_)
+        drawing_buffer_->ResolveAndBindForReadAndDraw();
     }
 
     ~ScopedDrawingBufferBinder() {
       // Restore DrawingBuffer if needed
-      if (!m_readFramebufferBinding && m_drawingBuffer)
-        m_drawingBuffer->restoreFramebufferBindings();
+      if (!read_framebuffer_binding_ && drawing_buffer_)
+        drawing_buffer_->RestoreFramebufferBindings();
     }
 
    private:
-    DrawingBuffer* m_drawingBuffer;
-    Member<WebGLFramebuffer> m_readFramebufferBinding;
+    DrawingBuffer* drawing_buffer_;
+    Member<WebGLFramebuffer> read_framebuffer_binding_;
   };
 
   // Errors raised by synthesizeGLError() while the context is lost.
-  Vector<GLenum> m_lostContextErrors;
+  Vector<GLenum> lost_context_errors_;
   // Other errors raised by synthesizeGLError().
-  Vector<GLenum> m_syntheticErrors;
+  Vector<GLenum> synthetic_errors_;
 
-  bool m_isWebGL2FormatsTypesAdded;
-  bool m_isWebGL2TexImageSourceFormatsTypesAdded;
-  bool m_isWebGL2InternalFormatsCopyTexImageAdded;
-  bool m_isOESTextureFloatFormatsTypesAdded;
-  bool m_isOESTextureHalfFloatFormatsTypesAdded;
-  bool m_isWebGLDepthTextureFormatsTypesAdded;
-  bool m_isEXTsRGBFormatsTypesAdded;
+  bool is_web_gl2_formats_types_added_;
+  bool is_web_gl2_tex_image_source_formats_types_added_;
+  bool is_web_gl2_internal_formats_copy_tex_image_added_;
+  bool is_oes_texture_float_formats_types_added_;
+  bool is_oes_texture_half_float_formats_types_added_;
+  bool is_web_gl_depth_texture_formats_types_added_;
+  bool is_ex_ts_rgb_formats_types_added_;
 
-  std::set<GLenum> m_supportedInternalFormats;
-  std::set<GLenum> m_supportedTexImageSourceInternalFormats;
-  std::set<GLenum> m_supportedInternalFormatsCopyTexImage;
-  std::set<GLenum> m_supportedFormats;
-  std::set<GLenum> m_supportedTexImageSourceFormats;
-  std::set<GLenum> m_supportedTypes;
-  std::set<GLenum> m_supportedTexImageSourceTypes;
+  std::set<GLenum> supported_internal_formats_;
+  std::set<GLenum> supported_tex_image_source_internal_formats_;
+  std::set<GLenum> supported_internal_formats_copy_tex_image_;
+  std::set<GLenum> supported_formats_;
+  std::set<GLenum> supported_tex_image_source_formats_;
+  std::set<GLenum> supported_types_;
+  std::set<GLenum> supported_tex_image_source_types_;
 
   // Helpers for getParameter and others
-  ScriptValue getBooleanParameter(ScriptState*, GLenum);
-  ScriptValue getBooleanArrayParameter(ScriptState*, GLenum);
-  ScriptValue getFloatParameter(ScriptState*, GLenum);
-  ScriptValue getIntParameter(ScriptState*, GLenum);
-  ScriptValue getInt64Parameter(ScriptState*, GLenum);
-  ScriptValue getUnsignedIntParameter(ScriptState*, GLenum);
-  ScriptValue getWebGLFloatArrayParameter(ScriptState*, GLenum);
-  ScriptValue getWebGLIntArrayParameter(ScriptState*, GLenum);
+  ScriptValue GetBooleanParameter(ScriptState*, GLenum);
+  ScriptValue GetBooleanArrayParameter(ScriptState*, GLenum);
+  ScriptValue GetFloatParameter(ScriptState*, GLenum);
+  ScriptValue GetIntParameter(ScriptState*, GLenum);
+  ScriptValue GetInt64Parameter(ScriptState*, GLenum);
+  ScriptValue GetUnsignedIntParameter(ScriptState*, GLenum);
+  ScriptValue GetWebGLFloatArrayParameter(ScriptState*, GLenum);
+  ScriptValue GetWebGLIntArrayParameter(ScriptState*, GLenum);
 
   // Clear the backbuffer if it was composited since the last operation.
   // clearMask is set to the bitfield of any clear that would happen anyway at
@@ -959,37 +960,37 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // unnecessary.
   enum HowToClear {
     // Skip clearing the backbuffer.
-    Skipped,
+    kSkipped,
     // Clear the backbuffer.
-    JustClear,
+    kJustClear,
     // Combine webgl.clear() API with the backbuffer clear, so webgl.clear()
     // doesn't have to call glClear() again.
-    CombinedClear
+    kCombinedClear
   };
-  HowToClear clearIfComposited(GLbitfield clearMask = 0);
+  HowToClear ClearIfComposited(GLbitfield clear_mask = 0);
 
   // Convert texture internal format.
-  GLenum convertTexInternalFormat(GLenum internalformat, GLenum type);
+  GLenum ConvertTexInternalFormat(GLenum internalformat, GLenum type);
 
   enum TexImageFunctionType {
-    TexImage,
-    TexSubImage,
-    CopyTexImage,
-    CompressedTexImage
+    kTexImage,
+    kTexSubImage,
+    kCopyTexImage,
+    kCompressedTexImage
   };
 
   // This must stay in sync with WebMediaPlayer::TexImageFunctionID.
   enum TexImageFunctionID {
-    TexImage2D,
-    TexSubImage2D,
-    TexImage3D,
-    TexSubImage3D
+    kTexImage2D,
+    kTexSubImage2D,
+    kTexImage3D,
+    kTexSubImage3D
   };
 
-  static SnapshotReason functionIDToSnapshotReason(TexImageFunctionID);
+  static SnapshotReason FunctionIDToSnapshotReason(TexImageFunctionID);
 
-  enum TexImageDimension { Tex2D, Tex3D };
-  void texImage2DBase(GLenum target,
+  enum TexImageDimension { kTex2D, kTex3D };
+  void TexImage2DBase(GLenum target,
                       GLint level,
                       GLint internalformat,
                       GLsizei width,
@@ -998,7 +999,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                       GLenum format,
                       GLenum type,
                       const void* pixels);
-  void texImageImpl(TexImageFunctionID,
+  void TexImageImpl(TexImageFunctionID,
                     GLenum target,
                     GLint level,
                     GLint internalformat,
@@ -1009,96 +1010,96 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     GLenum type,
                     Image*,
                     WebGLImageConversion::ImageHtmlDomSource,
-                    bool flipY,
-                    bool premultiplyAlpha,
+                    bool flip_y,
+                    bool premultiply_alpha,
                     const IntRect&,
                     GLsizei depth,
-                    GLint unpackImageHeight);
+                    GLint unpack_image_height);
 
   template <typename T>
-  IntRect getTextureSourceSize(T* textureSource) {
-    return IntRect(0, 0, textureSource->width(), textureSource->height());
+  IntRect GetTextureSourceSize(T* texture_source) {
+    return IntRect(0, 0, texture_source->width(), texture_source->height());
   }
 
   template <typename T>
-  bool validateTexImageSubRectangle(const char* functionName,
-                                    TexImageFunctionID functionID,
+  bool ValidateTexImageSubRectangle(const char* function_name,
+                                    TexImageFunctionID function_id,
                                     T* image,
-                                    const IntRect& subRect,
+                                    const IntRect& sub_rect,
                                     GLsizei depth,
-                                    GLint unpackImageHeight,
-                                    bool* selectingSubRectangle) {
-    DCHECK(functionName);
-    DCHECK(selectingSubRectangle);
+                                    GLint unpack_image_height,
+                                    bool* selecting_sub_rectangle) {
+    DCHECK(function_name);
+    DCHECK(selecting_sub_rectangle);
     DCHECK(image);
-    int imageWidth = static_cast<int>(image->width());
-    int imageHeight = static_cast<int>(image->height());
-    *selectingSubRectangle =
-        !(subRect.x() == 0 && subRect.y() == 0 &&
-          subRect.width() == imageWidth && subRect.height() == imageHeight);
+    int image_width = static_cast<int>(image->width());
+    int image_height = static_cast<int>(image->height());
+    *selecting_sub_rectangle =
+        !(sub_rect.X() == 0 && sub_rect.Y() == 0 &&
+          sub_rect.Width() == image_width && sub_rect.Height() == image_height);
     // If the source image rect selects anything except the entire
     // contents of the image, assert that we're running WebGL 2.0 or
     // higher, since this should never happen for WebGL 1.0 (even though
     // the code could support it). If the image is null, that will be
     // signaled as an error later.
-    DCHECK(!*selectingSubRectangle || isWebGL2OrHigher())
-        << "subRect = (" << subRect.width() << " x " << subRect.height()
-        << ") @ (" << subRect.x() << ", " << subRect.y() << "), image = ("
-        << imageWidth << " x " << imageHeight << ")";
+    DCHECK(!*selecting_sub_rectangle || IsWebGL2OrHigher())
+        << "subRect = (" << sub_rect.Width() << " x " << sub_rect.Height()
+        << ") @ (" << sub_rect.X() << ", " << sub_rect.Y() << "), image = ("
+        << image_width << " x " << image_height << ")";
 
-    if (subRect.x() < 0 || subRect.y() < 0 || subRect.maxX() > imageWidth ||
-        subRect.maxY() > imageHeight || subRect.width() < 0 ||
-        subRect.height() < 0) {
-      synthesizeGLError(GL_INVALID_OPERATION, functionName,
+    if (sub_rect.X() < 0 || sub_rect.Y() < 0 || sub_rect.MaxX() > image_width ||
+        sub_rect.MaxY() > image_height || sub_rect.Width() < 0 ||
+        sub_rect.Height() < 0) {
+      SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                         "source sub-rectangle specified via pixel unpack "
                         "parameters is invalid");
       return false;
     }
 
-    if (functionID == TexImage3D || functionID == TexSubImage3D) {
-      DCHECK_GE(unpackImageHeight, 0);
+    if (function_id == kTexImage3D || function_id == kTexSubImage3D) {
+      DCHECK_GE(unpack_image_height, 0);
 
       if (depth < 1) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+        SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "Can't define a 3D texture with depth < 1");
         return false;
       }
 
       // According to the WebGL 2.0 spec, specifying depth > 1 means
       // to select multiple rectangles stacked vertically.
-      WTF::CheckedNumeric<GLint> maxYAccessed;
-      if (unpackImageHeight) {
-        maxYAccessed = unpackImageHeight;
+      WTF::CheckedNumeric<GLint> max_y_accessed;
+      if (unpack_image_height) {
+        max_y_accessed = unpack_image_height;
       } else {
-        maxYAccessed = subRect.height();
+        max_y_accessed = sub_rect.Height();
       }
-      maxYAccessed *= depth - 1;
-      maxYAccessed += subRect.height();
-      maxYAccessed += subRect.y();
+      max_y_accessed *= depth - 1;
+      max_y_accessed += sub_rect.Height();
+      max_y_accessed += sub_rect.Y();
 
-      if (!maxYAccessed.IsValid()) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+      if (!max_y_accessed.IsValid()) {
+        SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "Out-of-range parameters passed for 3D texture "
                           "upload");
         return false;
       }
 
-      if (maxYAccessed.ValueOrDie() > imageHeight) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+      if (max_y_accessed.ValueOrDie() > image_height) {
+        SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                           "Not enough data supplied to upload to a 3D texture "
                           "with depth > 1");
         return false;
       }
     } else {
       DCHECK_EQ(depth, 1);
-      DCHECK_EQ(unpackImageHeight, 0);
+      DCHECK_EQ(unpack_image_height, 0);
     }
     return true;
   }
 
   // Copy from the source directly to the texture via the gpu, without a
   // read-back to system memory.  Source could be canvas or imageBitmap.
-  void texImageByGPU(TexImageFunctionID,
+  void TexImageByGPU(TexImageFunctionID,
                      WebGLTexture*,
                      GLenum target,
                      GLint level,
@@ -1108,64 +1109,66 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLint yoffset,
                      GLint zoffset,
                      CanvasImageSource*,
-                     const IntRect& sourceSubRectangle);
-  virtual bool canUseTexImageByGPU(TexImageFunctionID,
+                     const IntRect& source_sub_rectangle);
+  virtual bool CanUseTexImageByGPU(TexImageFunctionID,
                                    GLint internalformat,
                                    GLenum type);
 
-  virtual WebGLImageConversion::PixelStoreParams getPackPixelStoreParams();
-  virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(
+  virtual WebGLImageConversion::PixelStoreParams GetPackPixelStoreParams();
+  virtual WebGLImageConversion::PixelStoreParams GetUnpackPixelStoreParams(
       TexImageDimension);
 
   // Helper function for copyTex{Sub}Image, check whether the internalformat
   // and the color buffer format of the current bound framebuffer combination
   // is valid.
-  bool isTexInternalFormatColorBufferCombinationValid(GLenum texInternalFormat,
-                                                      GLenum colorBufferFormat);
+  bool IsTexInternalFormatColorBufferCombinationValid(
+      GLenum tex_internal_format,
+      GLenum color_buffer_format);
 
   // Helper function to verify limits on the length of uniform and attribute
   // locations.
-  virtual unsigned getMaxWebGLLocationLength() const { return 256; }
-  bool validateLocationLength(const char* functionName, const String&);
+  virtual unsigned GetMaxWebGLLocationLength() const { return 256; }
+  bool ValidateLocationLength(const char* function_name, const String&);
 
   // Helper function to check if size is non-negative.
   // Generate GL error and return false for negative inputs; otherwise, return
   // true.
-  bool validateSize(const char* functionName, GLint x, GLint y, GLint z = 0);
+  bool ValidateSize(const char* function_name, GLint x, GLint y, GLint z = 0);
 
   // Helper function to check if all characters in the string belong to the
   // ASCII subset as defined in GLSL ES 1.0 spec section 3.1.
-  bool validateString(const char* functionName, const String&);
+  bool ValidateString(const char* function_name, const String&);
 
   // Helper function to check if all characters in the shader source belong to
   // the ASCII subset as defined in GLSL ES 1.0 spec section 3.1 Character Set
   // for WebGL 1.0 and in GLSL ES 3.00 spec section 3.1 Character Set for WebGL
   // 2.0.
-  bool validateShaderSource(const String&);
+  bool ValidateShaderSource(const String&);
 
   // Helper function to check texture binding target and texture bound to the
   // target.  Generate GL errors and return 0 if target is invalid or texture
   // bound is null.  Otherwise, return the texture bound to the target.
-  WebGLTexture* validateTextureBinding(const char* functionName, GLenum target);
+  WebGLTexture* ValidateTextureBinding(const char* function_name,
+                                       GLenum target);
 
   // Wrapper function for validateTexture2D(3D)Binding, used in texImageHelper
   // functions.
-  virtual WebGLTexture* validateTexImageBinding(const char*,
+  virtual WebGLTexture* ValidateTexImageBinding(const char*,
                                                 TexImageFunctionID,
                                                 GLenum);
 
   // Helper function to check texture 2D target and texture bound to the target.
   // Generate GL errors and return 0 if target is invalid or texture bound is
   // null.  Otherwise, return the texture bound to the target.
-  WebGLTexture* validateTexture2DBinding(const char* functionName,
+  WebGLTexture* ValidateTexture2DBinding(const char* function_name,
                                          GLenum target);
 
-  void addExtensionSupportedFormatsTypes();
+  void AddExtensionSupportedFormatsTypes();
 
   // Helper function to check input internalformat/format/type for functions
   // Tex{Sub}Image taking TexImageSource source data.  Generates GL error and
   // returns false if parameters are invalid.
-  bool validateTexImageSourceFormatAndType(const char* functionName,
+  bool ValidateTexImageSourceFormatAndType(const char* function_name,
                                            TexImageFunctionType,
                                            GLenum internalformat,
                                            GLenum format,
@@ -1174,7 +1177,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check input internalformat/format/type for functions
   // Tex{Sub}Image.  Generates GL error and returns false if parameters are
   // invalid.
-  bool validateTexFuncFormatAndType(const char* functionName,
+  bool ValidateTexFuncFormatAndType(const char* function_name,
                                     TexImageFunctionType,
                                     GLenum internalformat,
                                     GLenum format,
@@ -1184,56 +1187,57 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check readbuffer validity for copyTex{Sub}Image.
   // If yes, obtains the bound read framebuffer, returns true.
   // If not, generates a GL error, returns false.
-  bool validateReadBufferAndGetInfo(const char* functionName,
-                                    WebGLFramebuffer*& readFramebufferBinding);
+  bool ValidateReadBufferAndGetInfo(
+      const char* function_name,
+      WebGLFramebuffer*& read_framebuffer_binding);
 
   // Helper function to check format/type and ArrayBuffer view type for
   // readPixels.
   // Generates INVALID_ENUM and returns false if parameters are invalid.
   // Generates INVALID_OPERATION if ArrayBuffer view type is incompatible with
   // type.
-  virtual bool validateReadPixelsFormatAndType(GLenum format,
+  virtual bool ValidateReadPixelsFormatAndType(GLenum format,
                                                GLenum type,
                                                DOMArrayBufferView*);
 
   // Helper function to check parameters of readPixels. Returns true if all
   // parameters are valid. Otherwise, generates appropriate error and returns
   // false.
-  bool validateReadPixelsFuncParameters(GLsizei width,
+  bool ValidateReadPixelsFuncParameters(GLsizei width,
                                         GLsizei height,
                                         GLenum format,
                                         GLenum type,
                                         DOMArrayBufferView*,
-                                        long long bufferSize);
+                                        long long buffer_size);
 
-  virtual GLint getMaxTextureLevelForTarget(GLenum target);
+  virtual GLint GetMaxTextureLevelForTarget(GLenum target);
 
   // Helper function to check input level for functions {copy}Tex{Sub}Image.
   // Generates GL error and returns false if level is invalid.
-  bool validateTexFuncLevel(const char* functionName,
+  bool ValidateTexFuncLevel(const char* function_name,
                             GLenum target,
                             GLint level);
 
   // Helper function to check if a 64-bit value is non-negative and can fit into
   // a 32-bit integer.  Generates GL error and returns false if not.
-  bool validateValueFitNonNegInt32(const char* functionName,
-                                   const char* paramName,
+  bool ValidateValueFitNonNegInt32(const char* function_name,
+                                   const char* param_name,
                                    long long value);
 
   enum TexFuncValidationSourceType {
-    SourceArrayBufferView,
-    SourceImageData,
-    SourceHTMLImageElement,
-    SourceHTMLCanvasElement,
-    SourceHTMLVideoElement,
-    SourceImageBitmap,
-    SourceUnpackBuffer,
+    kSourceArrayBufferView,
+    kSourceImageData,
+    kSourceHTMLImageElement,
+    kSourceHTMLCanvasElement,
+    kSourceHTMLVideoElement,
+    kSourceImageBitmap,
+    kSourceUnpackBuffer,
   };
 
   // Helper function for tex{Sub}Image{2|3}D to check if the input
   // format/type/level/target/width/height/depth/border/xoffset/yoffset/zoffset
   // are valid.  Otherwise, it would return quickly without doing other work.
-  bool validateTexFunc(const char* functionName,
+  bool ValidateTexFunc(const char* function_name,
                        TexImageFunctionType,
                        TexFuncValidationSourceType,
                        GLenum target,
@@ -1252,7 +1256,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check input width and height for functions {copy,
   // compressed}Tex{Sub}Image.  Generates GL error and returns false if width or
   // height is invalid.
-  bool validateTexFuncDimensions(const char* functionName,
+  bool ValidateTexFuncDimensions(const char* function_name,
                                  TexImageFunctionType,
                                  GLenum target,
                                  GLint level,
@@ -1263,7 +1267,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to check input parameters for functions
   // {copy}Tex{Sub}Image.  Generates GL error and returns false if parameters
   // are invalid.
-  bool validateTexFuncParameters(const char* functionName,
+  bool ValidateTexFuncParameters(const char* function_name,
                                  TexImageFunctionType,
                                  TexFuncValidationSourceType,
                                  GLenum target,
@@ -1276,12 +1280,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                  GLenum format,
                                  GLenum type);
 
-  enum NullDisposition { NullAllowed, NullNotAllowed, NullNotReachable };
+  enum NullDisposition { kNullAllowed, kNullNotAllowed, kNullNotReachable };
 
   // Helper function to validate that the given ArrayBufferView
   // is of the correct type and contains enough data for the texImage call.
   // Generates GL error and returns false if parameters are invalid.
-  bool validateTexFuncData(const char* functionName,
+  bool ValidateTexFuncData(const char* function_name,
                            TexImageDimension,
                            GLint level,
                            GLsizei width,
@@ -1291,246 +1295,246 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLenum type,
                            DOMArrayBufferView* pixels,
                            NullDisposition,
-                           GLuint srcOffset);
+                           GLuint src_offset);
 
   // Helper function to validate a given texture format is settable as in
   // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and
   // copyTexSubImage2D.
   // Generates GL error and returns false if the format is not settable.
-  bool validateSettableTexFormat(const char* functionName, GLenum format);
+  bool ValidateSettableTexFormat(const char* function_name, GLenum format);
 
   // Helper function to validate format for CopyTexImage.
-  bool validateCopyTexFormat(const char* functionName, GLenum format);
+  bool ValidateCopyTexFormat(const char* function_name, GLenum format);
 
   // Helper function for validating compressed texture formats.
-  bool validateCompressedTexFormat(const char* functionName, GLenum format);
+  bool ValidateCompressedTexFormat(const char* function_name, GLenum format);
 
   // Helper function to validate if front/back stencilMask and stencilFunc
   // settings are the same.
-  bool validateStencilSettings(const char* functionName);
+  bool ValidateStencilSettings(const char* function_name);
 
   // Helper function to validate stencil or depth func.
-  bool validateStencilOrDepthFunc(const char* functionName, GLenum);
+  bool ValidateStencilOrDepthFunc(const char* function_name, GLenum);
 
   // Helper function for texParameterf and texParameteri.
-  void texParameter(GLenum target,
+  void TexParameter(GLenum target,
                     GLenum pname,
                     GLfloat paramf,
                     GLint parami,
-                    bool isFloat);
+                    bool is_float);
 
   // Helper function to print GL errors to console.
-  void printGLErrorToConsole(const String&);
+  void PrintGLErrorToConsole(const String&);
 
   // Helper function to print warnings to console. Currently
   // used only to warn about use of obsolete functions.
-  void printWarningToConsole(const String&);
+  void PrintWarningToConsole(const String&);
 
   // Helper function to validate the target for checkFramebufferStatus and
   // validateFramebufferFuncParameters.
-  virtual bool validateFramebufferTarget(GLenum target);
+  virtual bool ValidateFramebufferTarget(GLenum target);
 
   // Get the framebuffer bound to given target
-  virtual WebGLFramebuffer* getFramebufferBinding(GLenum target);
+  virtual WebGLFramebuffer* GetFramebufferBinding(GLenum target);
 
-  virtual WebGLFramebuffer* getReadFramebufferBinding();
+  virtual WebGLFramebuffer* GetReadFramebufferBinding();
 
   // Helper function to validate input parameters for framebuffer functions.
   // Generate GL error if parameters are illegal.
-  bool validateFramebufferFuncParameters(const char* functionName,
+  bool ValidateFramebufferFuncParameters(const char* function_name,
                                          GLenum target,
                                          GLenum attachment);
 
   // Helper function to validate blend equation mode.
-  bool validateBlendEquation(const char* functionName, GLenum);
+  bool ValidateBlendEquation(const char* function_name, GLenum);
 
   // Helper function to validate blend func factors.
-  bool validateBlendFuncFactors(const char* functionName,
+  bool ValidateBlendFuncFactors(const char* function_name,
                                 GLenum src,
                                 GLenum dst);
 
   // Helper function to validate a GL capability.
-  virtual bool validateCapability(const char* functionName, GLenum);
+  virtual bool ValidateCapability(const char* function_name, GLenum);
 
   // Helper function to validate input parameters for uniform functions.
-  bool validateUniformParameters(const char* functionName,
+  bool ValidateUniformParameters(const char* function_name,
                                  const WebGLUniformLocation*,
                                  void*,
                                  GLsizei,
                                  GLsizei mod,
-                                 GLuint srcOffset,
-                                 GLuint srcLength);
-  bool validateUniformMatrixParameters(const char* functionName,
+                                 GLuint src_offset,
+                                 GLuint src_length);
+  bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
                                        DOMFloat32Array*,
                                        GLsizei mod,
-                                       GLuint srcOffset,
-                                       GLuint srcLength);
-  bool validateUniformMatrixParameters(const char* functionName,
+                                       GLuint src_offset,
+                                       GLuint src_length);
+  bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
                                        void*,
                                        GLsizei,
                                        GLsizei mod,
-                                       GLuint srcOffset,
-                                       GLuint srcLength);
+                                       GLuint src_offset,
+                                       GLuint src_length);
 
   template <typename WTFTypedArray>
-  bool validateUniformParameters(
-      const char* functionName,
+  bool ValidateUniformParameters(
+      const char* function_name,
       const WebGLUniformLocation* location,
       const TypedFlexibleArrayBufferView<WTFTypedArray>& v,
-      GLsizei requiredMinSize,
-      GLuint srcOffset,
-      GLuint srcLength) {
-    if (!v.dataMaybeOnStack()) {
-      synthesizeGLError(GL_INVALID_VALUE, functionName, "no array");
+      GLsizei required_min_size,
+      GLuint src_offset,
+      GLuint src_length) {
+    if (!v.DataMaybeOnStack()) {
+      SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
       return false;
     }
-    return validateUniformMatrixParameters(
-        functionName, location, false, v.dataMaybeOnStack(), v.length(),
-        requiredMinSize, srcOffset, srcLength);
+    return ValidateUniformMatrixParameters(
+        function_name, location, false, v.DataMaybeOnStack(), v.length(),
+        required_min_size, src_offset, src_length);
   }
 
   // Helper function to validate the target for bufferData and
   // getBufferParameter.
-  virtual bool validateBufferTarget(const char* functionName, GLenum target);
+  virtual bool ValidateBufferTarget(const char* function_name, GLenum target);
 
   // Helper function to validate the target for bufferData.
   // Return the current bound buffer to target, or 0 if the target is invalid.
-  virtual WebGLBuffer* validateBufferDataTarget(const char* functionName,
+  virtual WebGLBuffer* ValidateBufferDataTarget(const char* function_name,
                                                 GLenum target);
   // Helper function to validate the usage for bufferData.
-  virtual bool validateBufferDataUsage(const char* functionName, GLenum usage);
+  virtual bool ValidateBufferDataUsage(const char* function_name, GLenum usage);
 
-  virtual bool validateAndUpdateBufferBindTarget(const char* functionName,
+  virtual bool ValidateAndUpdateBufferBindTarget(const char* function_name,
                                                  GLenum target,
                                                  WebGLBuffer*);
 
-  virtual void removeBoundBuffer(WebGLBuffer*);
+  virtual void RemoveBoundBuffer(WebGLBuffer*);
 
   // Helper function for tex{Sub}Image2D to make sure image is ready and
   // wouldn't taint Origin.
-  bool validateHTMLImageElement(const char* functionName,
+  bool ValidateHTMLImageElement(const char* function_name,
                                 HTMLImageElement*,
                                 ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure canvas is ready and
   // wouldn't taint Origin.
-  bool validateHTMLCanvasElement(const char* functionName,
+  bool ValidateHTMLCanvasElement(const char* function_name,
                                  HTMLCanvasElement*,
                                  ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't
   // taint Origin.
-  bool validateHTMLVideoElement(const char* functionName,
+  bool ValidateHTMLVideoElement(const char* function_name,
                                 HTMLVideoElement*,
                                 ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure imagebitmap is ready and
   // wouldn't taint Origin.
-  bool validateImageBitmap(const char* functionName,
+  bool ValidateImageBitmap(const char* function_name,
                            ImageBitmap*,
                            ExceptionState&);
 
   // Helper function to validate drawArrays(Instanced) calls
-  bool validateDrawArrays(const char* functionName);
+  bool ValidateDrawArrays(const char* function_name);
 
   // Helper function to validate drawElements(Instanced) calls
-  bool validateDrawElements(const char* functionName,
+  bool ValidateDrawElements(const char* function_name,
                             GLenum type,
                             long long offset);
 
   // Helper functions to bufferData() and bufferSubData().
-  void bufferDataImpl(GLenum target,
+  void BufferDataImpl(GLenum target,
                       long long size,
                       const void* data,
                       GLenum usage);
-  void bufferSubDataImpl(GLenum target,
+  void BufferSubDataImpl(GLenum target,
                          long long offset,
                          GLsizeiptr,
                          const void* data);
 
   // Helper function for delete* (deleteBuffer, deleteProgram, etc) functions.
   // Return false if caller should return without further processing.
-  bool deleteObject(WebGLObject*);
+  bool DeleteObject(WebGLObject*);
 
   // Helper function for bind* (bindBuffer, bindTexture, etc) and useProgram.
   // If the object has already been deleted, set deleted to true upon return.
   // Return false if caller should return without further processing.
-  bool checkObjectToBeBound(const char* functionName,
+  bool CheckObjectToBeBound(const char* function_name,
                             WebGLObject*,
                             bool& deleted);
 
-  void dispatchContextLostEvent(TimerBase*);
+  void DispatchContextLostEvent(TimerBase*);
   // Helper for restoration after context lost.
-  void maybeRestoreContext(TimerBase*);
+  void MaybeRestoreContext(TimerBase*);
 
-  enum ConsoleDisplayPreference { DisplayInConsole, DontDisplayInConsole };
+  enum ConsoleDisplayPreference { kDisplayInConsole, kDontDisplayInConsole };
 
   // Reports an error to glGetError, sends a message to the JavaScript
   // console.
-  void synthesizeGLError(GLenum,
-                         const char* functionName,
+  void SynthesizeGLError(GLenum,
+                         const char* function_name,
                          const char* description,
-                         ConsoleDisplayPreference = DisplayInConsole);
-  void emitGLWarning(const char* function, const char* reason);
+                         ConsoleDisplayPreference = kDisplayInConsole);
+  void EmitGLWarning(const char* function, const char* reason);
 
-  String ensureNotNull(const String&) const;
+  String EnsureNotNull(const String&) const;
 
   // Enable or disable stencil test based on user setting and
   // whether the current FBO has a stencil buffer.
-  void applyStencilTest();
+  void ApplyStencilTest();
 
   // Helper for enabling or disabling a capability.
-  void enableOrDisable(GLenum capability, bool enable);
+  void EnableOrDisable(GLenum capability, bool enable);
 
   // Clamp the width and height to GL_MAX_VIEWPORT_DIMS.
-  IntSize clampedCanvasSize() const;
+  IntSize ClampedCanvasSize() const;
 
   // First time called, if EXT_draw_buffers is supported, query the value;
   // otherwise return 0.  Later, return the cached value.
-  GLint maxDrawBuffers();
-  GLint maxColorAttachments();
+  GLint MaxDrawBuffers();
+  GLint MaxColorAttachments();
 
-  void setBackDrawBuffer(GLenum);
-  void setFramebuffer(GLenum, WebGLFramebuffer*);
+  void SetBackDrawBuffer(GLenum);
+  void SetFramebuffer(GLenum, WebGLFramebuffer*);
 
-  virtual void restoreCurrentFramebuffer();
-  void restoreCurrentTexture2D();
+  virtual void RestoreCurrentFramebuffer();
+  void RestoreCurrentTexture2D();
 
-  void findNewMaxNonDefaultTextureUnit();
+  void FindNewMaxNonDefaultTextureUnit();
 
-  virtual void renderbufferStorageImpl(GLenum target,
+  virtual void RenderbufferStorageImpl(GLenum target,
                                        GLsizei samples,
                                        GLenum internalformat,
                                        GLsizei width,
                                        GLsizei height,
-                                       const char* functionName);
+                                       const char* function_name);
 
   friend class WebGLStateRestorer;
   friend class WebGLRenderingContextEvictionManager;
 
-  static void activateContext(WebGLRenderingContextBase*);
-  static void deactivateContext(WebGLRenderingContextBase*);
-  static void addToEvictedList(WebGLRenderingContextBase*);
-  static void removeFromEvictedList(WebGLRenderingContextBase*);
-  static void restoreEvictedContext(WebGLRenderingContextBase*);
-  static void forciblyLoseOldestContext(const String& reason);
+  static void ActivateContext(WebGLRenderingContextBase*);
+  static void DeactivateContext(WebGLRenderingContextBase*);
+  static void AddToEvictedList(WebGLRenderingContextBase*);
+  static void RemoveFromEvictedList(WebGLRenderingContextBase*);
+  static void RestoreEvictedContext(WebGLRenderingContextBase*);
+  static void ForciblyLoseOldestContext(const String& reason);
   // Return the least recently used context's position in the active context
   // vector.  If the vector is empty, return the maximum allowed active context
   // number.
-  static WebGLRenderingContextBase* oldestContext();
-  static WebGLRenderingContextBase* oldestEvictedContext();
+  static WebGLRenderingContextBase* OldestContext();
+  static WebGLRenderingContextBase* OldestEvictedContext();
 
   friend class ScopedRGBEmulationColorMask;
-  unsigned m_activeScopedRGBEmulationColorMasks;
+  unsigned active_scoped_rgb_emulation_color_masks_;
 
-  ImageBitmap* transferToImageBitmapBase(ScriptState*);
+  ImageBitmap* TransferToImageBitmapBase(ScriptState*);
 
   // Helper functions for tex(Sub)Image2D && texSubImage3D
-  void texImageHelperDOMArrayBufferView(TexImageFunctionID,
+  void TexImageHelperDOMArrayBufferView(TexImageFunctionID,
                                         GLenum,
                                         GLint,
                                         GLint,
@@ -1545,8 +1549,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                         GLint,
                                         DOMArrayBufferView*,
                                         NullDisposition,
-                                        GLuint srcOffset);
-  void texImageHelperImageData(TexImageFunctionID,
+                                        GLuint src_offset);
+  void TexImageHelperImageData(TexImageFunctionID,
                                GLenum,
                                GLint,
                                GLint,
@@ -1560,7 +1564,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                ImageData*,
                                const IntRect&,
                                GLint);
-  void texImageHelperHTMLImageElement(TexImageFunctionID,
+  void TexImageHelperHTMLImageElement(TexImageFunctionID,
                                       GLenum,
                                       GLint,
                                       GLint,
@@ -1574,7 +1578,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLsizei,
                                       GLint,
                                       ExceptionState&);
-  void texImageHelperHTMLCanvasElement(TexImageFunctionID,
+  void TexImageHelperHTMLCanvasElement(TexImageFunctionID,
                                        GLenum,
                                        GLint,
                                        GLint,
@@ -1588,7 +1592,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        GLsizei,
                                        GLint,
                                        ExceptionState&);
-  void texImageHelperHTMLVideoElement(TexImageFunctionID,
+  void TexImageHelperHTMLVideoElement(TexImageFunctionID,
                                       GLenum,
                                       GLint,
                                       GLint,
@@ -1602,7 +1606,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLsizei,
                                       GLint,
                                       ExceptionState&);
-  void texImageHelperImageBitmap(TexImageFunctionID,
+  void TexImageHelperImageBitmap(TexImageFunctionID,
                                  GLenum,
                                  GLint,
                                  GLint,
@@ -1616,13 +1620,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                  GLsizei,
                                  GLint,
                                  ExceptionState&);
-  static const char* getTexImageFunctionName(TexImageFunctionID);
-  IntRect sentinelEmptyRect();
-  IntRect safeGetImageSize(Image*);
-  IntRect getImageDataSize(ImageData*);
+  static const char* GetTexImageFunctionName(TexImageFunctionID);
+  IntRect SentinelEmptyRect();
+  IntRect SafeGetImageSize(Image*);
+  IntRect GetImageDataSize(ImageData*);
 
   // Helper implementing readPixels for WebGL 1.0 and 2.0.
-  void readPixelsHelper(GLint x,
+  void ReadPixelsHelper(GLint x,
                         GLint y,
                         GLsizei width,
                         GLsizei height,
@@ -1638,13 +1642,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             const CanvasContextCreationAttributes&,
                             unsigned);
-  static bool supportOwnOffscreenSurface(ExecutionContext*);
+  static bool SupportOwnOffscreenSurface(ExecutionContext*);
   static std::unique_ptr<WebGraphicsContext3DProvider>
-  createContextProviderInternal(HTMLCanvasElement*,
+  CreateContextProviderInternal(HTMLCanvasElement*,
                                 ScriptState*,
                                 const CanvasContextCreationAttributes&,
                                 unsigned);
-  void texImageCanvasByGPU(TexImageFunctionID,
+  void TexImageCanvasByGPU(TexImageFunctionID,
                            HTMLCanvasElement*,
                            GLuint,
                            GLenum,
@@ -1652,20 +1656,20 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLint,
                            GLint,
                            GLint,
-                           const IntRect& sourceSubRectangle);
-  void texImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
+                           const IntRect& source_sub_rectangle);
+  void TexImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
 
-  sk_sp<SkImage> makeImageSnapshot(SkImageInfo&);
-  const unsigned m_version;
+  sk_sp<SkImage> MakeImageSnapshot(SkImageInfo&);
+  const unsigned version_;
 
-  bool isPaintable() const final { return drawingBuffer(); }
+  bool IsPaintable() const final { return GetDrawingBuffer(); }
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase,
                   CanvasRenderingContext,
                   context,
-                  context->is3d(),
-                  context.is3d());
+                  context->Is3d(),
+                  context.Is3d());
 
 }  // namespace blink
 

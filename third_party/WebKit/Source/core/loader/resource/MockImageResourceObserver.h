@@ -15,41 +15,41 @@ namespace blink {
 
 class MockImageResourceObserver final : public ImageResourceObserver {
  public:
-  static std::unique_ptr<MockImageResourceObserver> create(
+  static std::unique_ptr<MockImageResourceObserver> Create(
       ImageResourceContent* content) {
-    return WTF::wrapUnique(new MockImageResourceObserver(content));
+    return WTF::WrapUnique(new MockImageResourceObserver(content));
   }
   ~MockImageResourceObserver() override;
 
-  void removeAsObserver();
+  void RemoveAsObserver();
 
-  int imageChangedCount() const { return m_imageChangedCount; }
-  bool imageNotifyFinishedCalled() const;
+  int ImageChangedCount() const { return image_changed_count_; }
+  bool ImageNotifyFinishedCalled() const;
 
-  int imageWidthOnLastImageChanged() const {
-    return m_imageWidthOnLastImageChanged;
+  int ImageWidthOnLastImageChanged() const {
+    return image_width_on_last_image_changed_;
   }
-  int imageWidthOnImageNotifyFinished() const {
-    return m_imageWidthOnImageNotifyFinished;
+  int ImageWidthOnImageNotifyFinished() const {
+    return image_width_on_image_notify_finished_;
   }
-  ResourceStatus statusOnImageNotifyFinished() const {
-    return m_statusOnImageNotifyFinished;
+  ResourceStatus StatusOnImageNotifyFinished() const {
+    return status_on_image_notify_finished_;
   }
 
  private:
   explicit MockImageResourceObserver(ImageResourceContent*);
 
   // ImageResourceObserver overrides.
-  void imageNotifyFinished(ImageResourceContent*) override;
-  void imageChanged(ImageResourceContent*, const IntRect*) override;
-  String debugName() const override { return "MockImageResourceObserver"; }
+  void ImageNotifyFinished(ImageResourceContent*) override;
+  void ImageChanged(ImageResourceContent*, const IntRect*) override;
+  String DebugName() const override { return "MockImageResourceObserver"; }
 
-  Persistent<ImageResourceContent> m_content;
-  int m_imageChangedCount;
-  int m_imageWidthOnLastImageChanged;
-  int m_imageNotifyFinishedCount;
-  int m_imageWidthOnImageNotifyFinished;
-  ResourceStatus m_statusOnImageNotifyFinished = ResourceStatus::NotStarted;
+  Persistent<ImageResourceContent> content_;
+  int image_changed_count_;
+  int image_width_on_last_image_changed_;
+  int image_notify_finished_count_;
+  int image_width_on_image_notify_finished_;
+  ResourceStatus status_on_image_notify_finished_ = ResourceStatus::kNotStarted;
 };
 
 }  // namespace blink

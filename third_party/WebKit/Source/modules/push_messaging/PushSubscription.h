@@ -29,16 +29,16 @@ class PushSubscription final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PushSubscription* take(ScriptPromiseResolver*,
+  static PushSubscription* Take(ScriptPromiseResolver*,
                                 std::unique_ptr<WebPushSubscription>,
                                 ServiceWorkerRegistration*);
-  static void dispose(WebPushSubscription* subscriptionRaw);
+  static void Dispose(WebPushSubscription* subscription_raw);
 
   virtual ~PushSubscription();
 
-  KURL endpoint() const { return m_endpoint; }
+  KURL endpoint() const { return endpoint_; }
 
-  PushSubscriptionOptions* options() const { return m_options.get(); }
+  PushSubscriptionOptions* options() const { return options_.Get(); }
 
   DOMArrayBuffer* getKey(const AtomicString& name) const;
   ScriptPromise unsubscribe(ScriptState*);
@@ -50,14 +50,14 @@ class PushSubscription final
  private:
   PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);
 
-  KURL m_endpoint;
+  KURL endpoint_;
 
-  Member<PushSubscriptionOptions> m_options;
+  Member<PushSubscriptionOptions> options_;
 
-  Member<DOMArrayBuffer> m_p256dh;
-  Member<DOMArrayBuffer> m_auth;
+  Member<DOMArrayBuffer> p256dh_;
+  Member<DOMArrayBuffer> auth_;
 
-  Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+  Member<ServiceWorkerRegistration> service_worker_registration_;
 };
 
 }  // namespace blink

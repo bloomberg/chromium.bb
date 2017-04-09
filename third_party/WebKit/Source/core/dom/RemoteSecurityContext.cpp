@@ -13,35 +13,35 @@ namespace blink {
 RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
   // RemoteSecurityContext's origin is expected to stay uninitialized until
   // we set it using replicated origin data from the browser process.
-  DCHECK(!getSecurityOrigin());
+  DCHECK(!GetSecurityOrigin());
 
   // Start with a clean slate.
-  setContentSecurityPolicy(ContentSecurityPolicy::create());
+  SetContentSecurityPolicy(ContentSecurityPolicy::Create());
 
   // FIXME: Document::initSecurityContext has a few other things we may
   // eventually want here, such as enforcing a setting to
   // grantUniversalAccess().
 }
 
-RemoteSecurityContext* RemoteSecurityContext::create() {
+RemoteSecurityContext* RemoteSecurityContext::Create() {
   return new RemoteSecurityContext();
 }
 
 DEFINE_TRACE(RemoteSecurityContext) {
-  SecurityContext::trace(visitor);
+  SecurityContext::Trace(visitor);
 }
 
-void RemoteSecurityContext::setReplicatedOrigin(
+void RemoteSecurityContext::SetReplicatedOrigin(
     PassRefPtr<SecurityOrigin> origin) {
   DCHECK(origin);
-  setSecurityOrigin(std::move(origin));
-  contentSecurityPolicy()->setupSelf(*getSecurityOrigin());
+  SetSecurityOrigin(std::move(origin));
+  GetContentSecurityPolicy()->SetupSelf(*GetSecurityOrigin());
 }
 
-void RemoteSecurityContext::resetReplicatedContentSecurityPolicy() {
-  DCHECK(getSecurityOrigin());
-  setContentSecurityPolicy(ContentSecurityPolicy::create());
-  contentSecurityPolicy()->setupSelf(*getSecurityOrigin());
+void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
+  DCHECK(GetSecurityOrigin());
+  SetContentSecurityPolicy(ContentSecurityPolicy::Create());
+  GetContentSecurityPolicy()->SetupSelf(*GetSecurityOrigin());
 }
 
 }  // namespace blink

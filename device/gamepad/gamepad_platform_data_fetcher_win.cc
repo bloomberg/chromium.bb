@@ -120,10 +120,10 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
         // This is the first time we've seen this device, so do some one-time
         // initialization
         pad.connected = true;
-        swprintf(pad.id, WebGamepad::idLengthCap,
+        swprintf(pad.id, WebGamepad::kIdLengthCap,
                  L"Xbox 360 Controller (XInput STANDARD %ls)",
                  GamepadSubTypeName(caps.SubType));
-        swprintf(pad.mapping, WebGamepad::mappingLengthCap, L"standard");
+        swprintf(pad.mapping, WebGamepad::kMappingLengthCap, L"standard");
       }
     }
   }
@@ -166,11 +166,11 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
 
   if (dwResult == ERROR_SUCCESS) {
     pad.timestamp = state.dwPacketNumber;
-    pad.buttonsLength = 0;
+    pad.buttons_length = 0;
     WORD val = state.Gamepad.wButtons;
-#define ADD(b)                                               \
-  pad.buttons[pad.buttonsLength].pressed = (val & (b)) != 0; \
-  pad.buttons[pad.buttonsLength++].value = ((val & (b)) ? 1.f : 0.f);
+#define ADD(b)                                                \
+  pad.buttons[pad.buttons_length].pressed = (val & (b)) != 0; \
+  pad.buttons[pad.buttons_length++].value = ((val & (b)) ? 1.f : 0.f);
     ADD(XINPUT_GAMEPAD_A);
     ADD(XINPUT_GAMEPAD_B);
     ADD(XINPUT_GAMEPAD_X);
@@ -178,13 +178,14 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
     ADD(XINPUT_GAMEPAD_LEFT_SHOULDER);
     ADD(XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
-    pad.buttons[pad.buttonsLength].pressed =
+    pad.buttons[pad.buttons_length].pressed =
         state.Gamepad.bLeftTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    pad.buttons[pad.buttonsLength++].value = state.Gamepad.bLeftTrigger / 255.f;
+    pad.buttons[pad.buttons_length++].value =
+        state.Gamepad.bLeftTrigger / 255.f;
 
-    pad.buttons[pad.buttonsLength].pressed =
+    pad.buttons[pad.buttons_length].pressed =
         state.Gamepad.bRightTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    pad.buttons[pad.buttonsLength++].value =
+    pad.buttons[pad.buttons_length++].value =
         state.Gamepad.bRightTrigger / 255.f;
 
     ADD(XINPUT_GAMEPAD_BACK);
@@ -196,12 +197,12 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
     ADD(XINPUT_GAMEPAD_DPAD_LEFT);
     ADD(XINPUT_GAMEPAD_DPAD_RIGHT);
 #undef ADD
-    pad.axesLength = 0;
+    pad.axes_length = 0;
 
     float value = 0.0;
 #define ADD(a, factor)                     \
   value = factor * NormalizeXInputAxis(a); \
-  pad.axes[pad.axesLength++] = value;
+  pad.axes[pad.axes_length++] = value;
 
     // XInput are +up/+right, -down/-left, we want -up/-left.
     ADD(state.Gamepad.sThumbLX, 1);

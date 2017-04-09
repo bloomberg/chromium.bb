@@ -29,9 +29,9 @@
 namespace blink {
 
 enum EditingBoundaryCrossingRule {
-  CanCrossEditingBoundary,
-  CannotCrossEditingBoundary,
-  CanSkipOverEditingBoundary
+  kCanCrossEditingBoundary,
+  kCannotCrossEditingBoundary,
+  kCanSkipOverEditingBoundary
 };
 
 }  // namespace blink

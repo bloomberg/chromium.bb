@@ -44,9 +44,9 @@ class MODULES_EXPORT ExtendableEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ExtendableEvent* create(const AtomicString& type,
+  static ExtendableEvent* Create(const AtomicString& type,
                                  const ExtendableEventInit&);
-  static ExtendableEvent* create(const AtomicString& type,
+  static ExtendableEvent* Create(const AtomicString& type,
                                  const ExtendableEventInit&,
                                  WaitUntilObserver*);
 
@@ -54,7 +54,7 @@ class MODULES_EXPORT ExtendableEvent : public Event {
 
   void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
   DECLARE_VIRTUAL_TRACE();
 
  protected:
@@ -63,7 +63,7 @@ class MODULES_EXPORT ExtendableEvent : public Event {
                   const ExtendableEventInit&,
                   WaitUntilObserver*);
 
-  Member<WaitUntilObserver> m_observer;
+  Member<WaitUntilObserver> observer_;
 };
 
 }  // namespace blink

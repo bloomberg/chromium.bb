@@ -20,34 +20,35 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:
   ~OffscreenCanvasPlaceholder();
 
-  virtual void setPlaceholderFrame(RefPtr<StaticBitmapImage>,
+  virtual void SetPlaceholderFrame(RefPtr<StaticBitmapImage>,
                                    WeakPtr<OffscreenCanvasFrameDispatcher>,
                                    RefPtr<WebTaskRunner>,
-                                   unsigned resourceId);
-  void releasePlaceholderFrame();
+                                   unsigned resource_id);
+  void ReleasePlaceholderFrame();
 
-  static OffscreenCanvasPlaceholder* getPlaceholderById(unsigned placeholderId);
+  static OffscreenCanvasPlaceholder* GetPlaceholderById(
+      unsigned placeholder_id);
 
-  void registerPlaceholder(unsigned placeholderId);
-  void unregisterPlaceholder();
-  const RefPtr<StaticBitmapImage>& placeholderFrame() const {
-    return m_placeholderFrame;
+  void RegisterPlaceholder(unsigned placeholder_id);
+  void UnregisterPlaceholder();
+  const RefPtr<StaticBitmapImage>& PlaceholderFrame() const {
+    return placeholder_frame_;
   }
 
  private:
-  bool isPlaceholderRegistered() const {
-    return m_placeholderId != kNoPlaceholderId;
+  bool IsPlaceholderRegistered() const {
+    return placeholder_id_ != kNoPlaceholderId;
   }
 
-  RefPtr<StaticBitmapImage> m_placeholderFrame;
-  WeakPtr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
-  RefPtr<WebTaskRunner> m_frameDispatcherTaskRunner;
-  unsigned m_placeholderFrameResourceId = 0;
+  RefPtr<StaticBitmapImage> placeholder_frame_;
+  WeakPtr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
+  RefPtr<WebTaskRunner> frame_dispatcher_task_runner_;
+  unsigned placeholder_frame_resource_id_ = 0;
 
   enum {
     kNoPlaceholderId = -1,
   };
-  int m_placeholderId = kNoPlaceholderId;
+  int placeholder_id_ = kNoPlaceholderId;
 };
 
 }  // blink

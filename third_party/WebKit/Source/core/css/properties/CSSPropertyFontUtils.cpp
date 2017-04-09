@@ -13,131 +13,132 @@
 
 namespace blink {
 
-CSSValue* CSSPropertyFontUtils::consumeFontSize(
+CSSValue* CSSPropertyFontUtils::ConsumeFontSize(
     CSSParserTokenRange& range,
-    CSSParserMode cssParserMode,
+    CSSParserMode css_parser_mode,
     CSSPropertyParserHelpers::UnitlessQuirk unitless) {
-  if (range.peek().id() >= CSSValueXxSmall &&
-      range.peek().id() <= CSSValueLarger)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, cssParserMode, ValueRangeNonNegative, unitless);
+  if (range.Peek().Id() >= CSSValueXxSmall &&
+      range.Peek().Id() <= CSSValueLarger)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, css_parser_mode, kValueRangeNonNegative, unitless);
 }
 
-CSSValue* CSSPropertyFontUtils::consumeLineHeight(CSSParserTokenRange& range,
-                                                  CSSParserMode cssParserMode) {
-  if (range.peek().id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+CSSValue* CSSPropertyFontUtils::ConsumeLineHeight(
+    CSSParserTokenRange& range,
+    CSSParserMode css_parser_mode) {
+  if (range.Peek().Id() == CSSValueNormal)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSPrimitiveValue* lineHeight =
-      CSSPropertyParserHelpers::consumeNumber(range, ValueRangeNonNegative);
-  if (lineHeight)
-    return lineHeight;
-  return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, cssParserMode, ValueRangeNonNegative);
+  CSSPrimitiveValue* line_height =
+      CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+  if (line_height)
+    return line_height;
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, css_parser_mode, kValueRangeNonNegative);
 }
 
-CSSValueList* CSSPropertyFontUtils::consumeFontFamily(
+CSSValueList* CSSPropertyFontUtils::ConsumeFontFamily(
     CSSParserTokenRange& range) {
-  CSSValueList* list = CSSValueList::createCommaSeparated();
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
   do {
-    CSSValue* parsedValue = consumeGenericFamily(range);
-    if (parsedValue) {
-      list->append(*parsedValue);
+    CSSValue* parsed_value = ConsumeGenericFamily(range);
+    if (parsed_value) {
+      list->Append(*parsed_value);
     } else {
-      parsedValue = consumeFamilyName(range);
-      if (parsedValue) {
-        list->append(*parsedValue);
+      parsed_value = ConsumeFamilyName(range);
+      if (parsed_value) {
+        list->Append(*parsed_value);
       } else {
         return nullptr;
       }
     }
-  } while (CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(range));
+  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
   return list;
 }
 
-CSSValue* CSSPropertyFontUtils::consumeGenericFamily(
+CSSValue* CSSPropertyFontUtils::ConsumeGenericFamily(
     CSSParserTokenRange& range) {
-  return CSSPropertyParserHelpers::consumeIdentRange(range, CSSValueSerif,
+  return CSSPropertyParserHelpers::ConsumeIdentRange(range, CSSValueSerif,
                                                      CSSValueWebkitBody);
 }
 
-CSSValue* CSSPropertyFontUtils::consumeFamilyName(CSSParserTokenRange& range) {
-  if (range.peek().type() == StringToken) {
-    return CSSFontFamilyValue::create(
-        range.consumeIncludingWhitespace().value().toString());
+CSSValue* CSSPropertyFontUtils::ConsumeFamilyName(CSSParserTokenRange& range) {
+  if (range.Peek().GetType() == kStringToken) {
+    return CSSFontFamilyValue::Create(
+        range.ConsumeIncludingWhitespace().Value().ToString());
   }
-  if (range.peek().type() != IdentToken)
+  if (range.Peek().GetType() != kIdentToken)
     return nullptr;
-  String familyName = concatenateFamilyName(range);
-  if (familyName.isNull())
+  String family_name = ConcatenateFamilyName(range);
+  if (family_name.IsNull())
     return nullptr;
-  return CSSFontFamilyValue::create(familyName);
+  return CSSFontFamilyValue::Create(family_name);
 }
 
-String CSSPropertyFontUtils::concatenateFamilyName(CSSParserTokenRange& range) {
+String CSSPropertyFontUtils::ConcatenateFamilyName(CSSParserTokenRange& range) {
   StringBuilder builder;
-  bool addedSpace = false;
-  const CSSParserToken& firstToken = range.peek();
-  while (range.peek().type() == IdentToken) {
-    if (!builder.isEmpty()) {
-      builder.append(' ');
-      addedSpace = true;
+  bool added_space = false;
+  const CSSParserToken& first_token = range.Peek();
+  while (range.Peek().GetType() == kIdentToken) {
+    if (!builder.IsEmpty()) {
+      builder.Append(' ');
+      added_space = true;
     }
-    builder.append(range.consumeIncludingWhitespace().value());
+    builder.Append(range.ConsumeIncludingWhitespace().Value());
   }
-  if (!addedSpace &&
-      CSSPropertyParserHelpers::isCSSWideKeyword(firstToken.value()))
+  if (!added_space &&
+      CSSPropertyParserHelpers::IsCSSWideKeyword(first_token.Value()))
     return String();
-  return builder.toString();
+  return builder.ToString();
 }
 
-CSSIdentifierValue* CSSPropertyFontUtils::consumeFontWeight(
+CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontWeight(
     CSSParserTokenRange& range) {
-  const CSSParserToken& token = range.peek();
-  if (token.id() >= CSSValueNormal && token.id() <= CSSValueLighter)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  if (token.type() != NumberToken ||
-      token.numericValueType() != IntegerValueType)
+  const CSSParserToken& token = range.Peek();
+  if (token.Id() >= CSSValueNormal && token.Id() <= CSSValueLighter)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  if (token.GetType() != kNumberToken ||
+      token.GetNumericValueType() != kIntegerValueType)
     return nullptr;
-  int weight = static_cast<int>(token.numericValue());
+  int weight = static_cast<int>(token.NumericValue());
   if ((weight % 100) || weight < 100 || weight > 900)
     return nullptr;
-  range.consumeIncludingWhitespace();
-  return CSSIdentifierValue::create(
+  range.ConsumeIncludingWhitespace();
+  return CSSIdentifierValue::Create(
       static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1));
 }
 
 // TODO(bugsnash): move this to the FontFeatureSettings API when it is no longer
 // being used by methods outside of the API
-CSSValue* CSSPropertyFontUtils::consumeFontFeatureSettings(
+CSSValue* CSSPropertyFontUtils::ConsumeFontFeatureSettings(
     CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  CSSValueList* settings = CSSValueList::createCommaSeparated();
+  if (range.Peek().Id() == CSSValueNormal)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValueList* settings = CSSValueList::CreateCommaSeparated();
   do {
-    CSSFontFeatureValue* fontFeatureValue =
-        CSSPropertyFontUtils::consumeFontFeatureTag(range);
-    if (!fontFeatureValue)
+    CSSFontFeatureValue* font_feature_value =
+        CSSPropertyFontUtils::ConsumeFontFeatureTag(range);
+    if (!font_feature_value)
       return nullptr;
-    settings->append(*fontFeatureValue);
-  } while (CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(range));
+    settings->Append(*font_feature_value);
+  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
   return settings;
 }
 
-CSSFontFeatureValue* CSSPropertyFontUtils::consumeFontFeatureTag(
+CSSFontFeatureValue* CSSPropertyFontUtils::ConsumeFontFeatureTag(
     CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
-  static const unsigned tagNameLength = 4;
+  static const unsigned kTagNameLength = 4;
 
-  const CSSParserToken& token = range.consumeIncludingWhitespace();
+  const CSSParserToken& token = range.ConsumeIncludingWhitespace();
   // Feature tag name comes first
-  if (token.type() != StringToken)
+  if (token.GetType() != kStringToken)
     return nullptr;
-  if (token.value().length() != tagNameLength)
+  if (token.Value().length() != kTagNameLength)
     return nullptr;
-  AtomicString tag = token.value().toAtomicString();
-  for (unsigned i = 0; i < tagNameLength; ++i) {
+  AtomicString tag = token.Value().ToAtomicString();
+  for (unsigned i = 0; i < kTagNameLength; ++i) {
     // Limits the range of characters to 0x20-0x7E, following the tag name rules
     // defined in the OpenType specification.
     UChar character = tag[i];
@@ -145,19 +146,19 @@ CSSFontFeatureValue* CSSPropertyFontUtils::consumeFontFeatureTag(
       return nullptr;
   }
 
-  int tagValue = 1;
+  int tag_value = 1;
   // Feature tag values could follow: <integer> | on | off
-  if (range.peek().type() == NumberToken &&
-      range.peek().numericValueType() == IntegerValueType &&
-      range.peek().numericValue() >= 0) {
-    tagValue = clampTo<int>(range.consumeIncludingWhitespace().numericValue());
-    if (tagValue < 0)
+  if (range.Peek().GetType() == kNumberToken &&
+      range.Peek().GetNumericValueType() == kIntegerValueType &&
+      range.Peek().NumericValue() >= 0) {
+    tag_value = clampTo<int>(range.ConsumeIncludingWhitespace().NumericValue());
+    if (tag_value < 0)
       return nullptr;
-  } else if (range.peek().id() == CSSValueOn ||
-             range.peek().id() == CSSValueOff) {
-    tagValue = range.consumeIncludingWhitespace().id() == CSSValueOn;
+  } else if (range.Peek().Id() == CSSValueOn ||
+             range.Peek().Id() == CSSValueOff) {
+    tag_value = range.ConsumeIncludingWhitespace().Id() == CSSValueOn;
   }
-  return CSSFontFeatureValue::create(tag, tagValue);
+  return CSSFontFeatureValue::Create(tag, tag_value);
 }
 
 }  // namespace blink

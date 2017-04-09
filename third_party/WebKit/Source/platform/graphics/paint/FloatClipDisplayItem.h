@@ -16,27 +16,27 @@ class PLATFORM_EXPORT FloatClipDisplayItem final
  public:
   FloatClipDisplayItem(const DisplayItemClient& client,
                        Type type,
-                       const FloatRect& clipRect)
+                       const FloatRect& clip_rect)
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
-        m_clipRect(clipRect) {
-    ASSERT(isFloatClipType(type));
+        clip_rect_(clip_rect) {
+    ASSERT(IsFloatClipType(type));
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-  bool equals(const DisplayItem& other) const final {
-    return DisplayItem::equals(other) &&
-           m_clipRect ==
-               static_cast<const FloatClipDisplayItem&>(other).m_clipRect;
+  bool Equals(const DisplayItem& other) const final {
+    return DisplayItem::Equals(other) &&
+           clip_rect_ ==
+               static_cast<const FloatClipDisplayItem&>(other).clip_rect_;
   }
 
-  const FloatRect m_clipRect;
+  const FloatRect clip_rect_;
 };
 
 class PLATFORM_EXPORT EndFloatClipDisplayItem final
@@ -44,17 +44,17 @@ class PLATFORM_EXPORT EndFloatClipDisplayItem final
  public:
   EndFloatClipDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(isEndFloatClipType(type));
+    ASSERT(IsEndFloatClipType(type));
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #if DCHECK_IS_ON()
-  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
-    return DisplayItem::isFloatClipType(otherType);
+  bool IsEndAndPairedWith(DisplayItem::Type other_type) const final {
+    return DisplayItem::IsFloatClipType(other_type);
   }
 #endif
 };

@@ -84,7 +84,7 @@ void UtilityThreadImpl::EnsureBlinkInitialized() {
   }
 
   blink_platform_impl_.reset(new UtilityBlinkPlatformImpl);
-  blink::Platform::initialize(blink_platform_impl_.get());
+  blink::Platform::Initialize(blink_platform_impl_.get());
 }
 
 void UtilityThreadImpl::Init() {

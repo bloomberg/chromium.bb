@@ -17,97 +17,97 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     DISALLOW_NEW();
     // Members variables must be thread safe, since they're copied to the parser
     // thread
-    double viewportWidth;
-    double viewportHeight;
-    int deviceWidth;
-    int deviceHeight;
-    float devicePixelRatio;
-    int colorBitsPerComponent;
-    int monochromeBitsPerComponent;
-    PointerType primaryPointerType;
-    int availablePointerTypes;
-    HoverType primaryHoverType;
-    int availableHoverTypes;
-    int defaultFontSize;
-    bool threeDEnabled;
-    bool strictMode;
-    String mediaType;
-    WebDisplayMode displayMode;
-    DisplayShape displayShape;
-    ColorSpaceGamut colorGamut;
+    double viewport_width;
+    double viewport_height;
+    int device_width;
+    int device_height;
+    float device_pixel_ratio;
+    int color_bits_per_component;
+    int monochrome_bits_per_component;
+    PointerType primary_pointer_type;
+    int available_pointer_types;
+    HoverType primary_hover_type;
+    int available_hover_types;
+    int default_font_size;
+    bool three_d_enabled;
+    bool strict_mode;
+    String media_type;
+    WebDisplayMode display_mode;
+    DisplayShape display_shape;
+    ColorSpaceGamut color_gamut;
 
     MediaValuesCachedData();
     explicit MediaValuesCachedData(Document&);
 
-    MediaValuesCachedData deepCopy() const {
+    MediaValuesCachedData DeepCopy() const {
       MediaValuesCachedData data;
-      data.viewportWidth = viewportWidth;
-      data.viewportHeight = viewportHeight;
-      data.deviceWidth = deviceWidth;
-      data.deviceHeight = deviceHeight;
-      data.devicePixelRatio = devicePixelRatio;
-      data.colorBitsPerComponent = colorBitsPerComponent;
-      data.monochromeBitsPerComponent = monochromeBitsPerComponent;
-      data.primaryPointerType = primaryPointerType;
-      data.availablePointerTypes = availablePointerTypes;
-      data.primaryHoverType = primaryHoverType;
-      data.availableHoverTypes = availableHoverTypes;
-      data.defaultFontSize = defaultFontSize;
-      data.threeDEnabled = threeDEnabled;
-      data.strictMode = strictMode;
-      data.mediaType = mediaType.isolatedCopy();
-      data.displayMode = displayMode;
-      data.displayShape = displayShape;
-      data.colorGamut = colorGamut;
+      data.viewport_width = viewport_width;
+      data.viewport_height = viewport_height;
+      data.device_width = device_width;
+      data.device_height = device_height;
+      data.device_pixel_ratio = device_pixel_ratio;
+      data.color_bits_per_component = color_bits_per_component;
+      data.monochrome_bits_per_component = monochrome_bits_per_component;
+      data.primary_pointer_type = primary_pointer_type;
+      data.available_pointer_types = available_pointer_types;
+      data.primary_hover_type = primary_hover_type;
+      data.available_hover_types = available_hover_types;
+      data.default_font_size = default_font_size;
+      data.three_d_enabled = three_d_enabled;
+      data.strict_mode = strict_mode;
+      data.media_type = media_type.IsolatedCopy();
+      data.display_mode = display_mode;
+      data.display_shape = display_shape;
+      data.color_gamut = color_gamut;
       return data;
     }
   };
 
-  static MediaValuesCached* create();
-  static MediaValuesCached* create(const MediaValuesCachedData&);
-  MediaValues* copy() const override;
-  bool computeLength(double value,
+  static MediaValuesCached* Create();
+  static MediaValuesCached* Create(const MediaValuesCachedData&);
+  MediaValues* Copy() const override;
+  bool ComputeLength(double value,
                      CSSPrimitiveValue::UnitType,
                      int& result) const override;
-  bool computeLength(double value,
+  bool ComputeLength(double value,
                      CSSPrimitiveValue::UnitType,
                      double& result) const override;
 
-  double viewportWidth() const override;
-  double viewportHeight() const override;
-  int deviceWidth() const override;
-  int deviceHeight() const override;
-  float devicePixelRatio() const override;
-  int colorBitsPerComponent() const override;
-  int monochromeBitsPerComponent() const override;
-  PointerType primaryPointerType() const override;
-  int availablePointerTypes() const override;
-  HoverType primaryHoverType() const override;
-  int availableHoverTypes() const override;
-  bool threeDEnabled() const override;
-  bool strictMode() const override;
-  Document* document() const override;
-  bool hasValues() const override;
-  const String mediaType() const override;
-  WebDisplayMode displayMode() const override;
-  DisplayShape displayShape() const override;
-  ColorSpaceGamut colorGamut() const override;
+  double ViewportWidth() const override;
+  double ViewportHeight() const override;
+  int DeviceWidth() const override;
+  int DeviceHeight() const override;
+  float DevicePixelRatio() const override;
+  int ColorBitsPerComponent() const override;
+  int MonochromeBitsPerComponent() const override;
+  PointerType PrimaryPointerType() const override;
+  int AvailablePointerTypes() const override;
+  HoverType PrimaryHoverType() const override;
+  int AvailableHoverTypes() const override;
+  bool ThreeDEnabled() const override;
+  bool StrictMode() const override;
+  Document* GetDocument() const override;
+  bool HasValues() const override;
+  const String MediaType() const override;
+  WebDisplayMode DisplayMode() const override;
+  DisplayShape GetDisplayShape() const override;
+  ColorSpaceGamut ColorGamut() const override;
 
-  void overrideViewportDimensions(double width, double height) override;
+  void OverrideViewportDimensions(double width, double height) override;
 
  protected:
   MediaValuesCached();
   MediaValuesCached(LocalFrame*);
   MediaValuesCached(const MediaValuesCachedData&);
 
-  MediaValuesCachedData m_data;
+  MediaValuesCachedData data_;
 };
 
 template <>
 struct CrossThreadCopier<MediaValuesCached::MediaValuesCachedData> {
   typedef MediaValuesCached::MediaValuesCachedData Type;
-  static Type copy(const MediaValuesCached::MediaValuesCachedData& data) {
-    return data.deepCopy();
+  static Type Copy(const MediaValuesCached::MediaValuesCachedData& data) {
+    return data.DeepCopy();
   }
 };
 

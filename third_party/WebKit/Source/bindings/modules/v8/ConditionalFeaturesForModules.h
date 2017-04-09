@@ -7,7 +7,7 @@
 
 namespace blink {
 
-void registerInstallConditionalFeaturesForModules();
+void RegisterInstallConditionalFeaturesForModules();
 
 }  // namespace blink
 

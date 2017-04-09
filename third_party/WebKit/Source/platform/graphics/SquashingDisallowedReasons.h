@@ -12,24 +12,24 @@
 namespace blink {
 
 enum SquashingDisallowedReason {
-  SquashingDisallowedReasonsNone = 0,
-  SquashingDisallowedReasonScrollsWithRespectToSquashingLayer = 1 << 0,
-  SquashingDisallowedReasonSquashingSparsityExceeded = 1 << 1,
-  SquashingDisallowedReasonClippingContainerMismatch = 1 << 2,
-  SquashingDisallowedReasonOpacityAncestorMismatch = 1 << 3,
-  SquashingDisallowedReasonTransformAncestorMismatch = 1 << 4,
-  SquashingDisallowedReasonFilterMismatch = 1 << 5,
-  SquashingDisallowedReasonWouldBreakPaintOrder = 1 << 6,
-  SquashingDisallowedReasonSquashingVideoIsDisallowed = 1 << 7,
-  SquashingDisallowedReasonSquashedLayerClipsCompositingDescendants = 1 << 8,
-  SquashingDisallowedReasonSquashingLayoutPartIsDisallowed = 1 << 9,
-  SquashingDisallowedReasonSquashingBlendingIsDisallowed = 1 << 10,
-  SquashingDisallowedReasonNearestFixedPositionMismatch = 1 << 11,
-  SquashingDisallowedReasonScrollChildWithCompositedDescendants = 1 << 12,
-  SquashingDisallowedReasonSquashingLayerIsAnimating = 1 << 13,
-  SquashingDisallowedReasonRenderingContextMismatch = 1 << 14,
-  SquashingDisallowedReasonNonTranslationTransform = 1 << 15,
-  SquashingDisallowedReasonFragmentedContent = 1 << 16,
+  kSquashingDisallowedReasonsNone = 0,
+  kSquashingDisallowedReasonScrollsWithRespectToSquashingLayer = 1 << 0,
+  kSquashingDisallowedReasonSquashingSparsityExceeded = 1 << 1,
+  kSquashingDisallowedReasonClippingContainerMismatch = 1 << 2,
+  kSquashingDisallowedReasonOpacityAncestorMismatch = 1 << 3,
+  kSquashingDisallowedReasonTransformAncestorMismatch = 1 << 4,
+  kSquashingDisallowedReasonFilterMismatch = 1 << 5,
+  kSquashingDisallowedReasonWouldBreakPaintOrder = 1 << 6,
+  kSquashingDisallowedReasonSquashingVideoIsDisallowed = 1 << 7,
+  kSquashingDisallowedReasonSquashedLayerClipsCompositingDescendants = 1 << 8,
+  kSquashingDisallowedReasonSquashingLayoutPartIsDisallowed = 1 << 9,
+  kSquashingDisallowedReasonSquashingBlendingIsDisallowed = 1 << 10,
+  kSquashingDisallowedReasonNearestFixedPositionMismatch = 1 << 11,
+  kSquashingDisallowedReasonScrollChildWithCompositedDescendants = 1 << 12,
+  kSquashingDisallowedReasonSquashingLayerIsAnimating = 1 << 13,
+  kSquashingDisallowedReasonRenderingContextMismatch = 1 << 14,
+  kSquashingDisallowedReasonNonTranslationTransform = 1 << 15,
+  kSquashingDisallowedReasonFragmentedContent = 1 << 16,
 };
 
 typedef unsigned SquashingDisallowedReasons;
@@ -37,7 +37,7 @@ typedef unsigned SquashingDisallowedReasons;
 struct SquashingDisallowedReasonStringMap {
   STACK_ALLOCATED();
   SquashingDisallowedReasons reason;
-  const char* shortName;
+  const char* short_name;
   const char* description;
 };
 

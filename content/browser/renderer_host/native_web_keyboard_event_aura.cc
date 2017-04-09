@@ -60,10 +60,10 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event,
     : WebKeyboardEvent(ui::MakeWebKeyboardEvent(key_event)),
       os_event(nullptr),
       skip_in_browser(false) {
-  m_type = blink::WebInputEvent::Char;
-  windowsKeyCode = character;
+  type_ = blink::WebInputEvent::kChar;
+  windows_key_code = character;
   text[0] = character;
-  unmodifiedText[0] = character;
+  unmodified_text[0] = character;
 }
 
 NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(

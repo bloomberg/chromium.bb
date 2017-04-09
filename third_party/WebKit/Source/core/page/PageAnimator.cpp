@@ -16,85 +16,88 @@
 namespace blink {
 
 PageAnimator::PageAnimator(Page& page)
-    : m_page(page),
-      m_servicingAnimations(false),
-      m_updatingLayoutAndStyleForPainting(false) {}
+    : page_(page),
+      servicing_animations_(false),
+      updating_layout_and_style_for_painting_(false) {}
 
-PageAnimator* PageAnimator::create(Page& page) {
+PageAnimator* PageAnimator::Create(Page& page) {
   return new PageAnimator(page);
 }
 
 DEFINE_TRACE(PageAnimator) {
-  visitor->trace(m_page);
+  visitor->Trace(page_);
 }
 
-void PageAnimator::serviceScriptedAnimations(
-    double monotonicAnimationStartTime) {
-  AutoReset<bool> servicing(&m_servicingAnimations, true);
-  clock().updateTime(monotonicAnimationStartTime);
+void PageAnimator::ServiceScriptedAnimations(
+    double monotonic_animation_start_time) {
+  AutoReset<bool> servicing(&servicing_animations_, true);
+  Clock().UpdateTime(monotonic_animation_start_time);
 
   HeapVector<Member<Document>, 32> documents;
-  for (Frame* frame = m_page->mainFrame(); frame;
-       frame = frame->tree().traverseNext()) {
-    if (frame->isLocalFrame())
-      documents.push_back(toLocalFrame(frame)->document());
+  for (Frame* frame = page_->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->IsLocalFrame())
+      documents.push_back(ToLocalFrame(frame)->GetDocument());
   }
 
   for (auto& document : documents) {
-    ScopedFrameBlamer frameBlamer(document->frame());
+    ScopedFrameBlamer frame_blamer(document->GetFrame());
     TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
-    DocumentAnimations::updateAnimationTimingForAnimationFrame(*document);
-    if (document->view()) {
-      if (document->view()->shouldThrottleRendering())
+    DocumentAnimations::UpdateAnimationTimingForAnimationFrame(*document);
+    if (document->View()) {
+      if (document->View()->ShouldThrottleRendering())
         continue;
       // Disallow throttling in case any script needs to do a synchronous
       // lifecycle update in other frames which are throttled.
-      DocumentLifecycle::DisallowThrottlingScope noThrottlingScope(
-          document->lifecycle());
-      if (ScrollableArea* scrollableArea =
-              document->view()->getScrollableArea())
-        scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
+      DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
+          document->Lifecycle());
+      if (ScrollableArea* scrollable_area =
+              document->View()->GetScrollableArea())
+        scrollable_area->ServiceScrollAnimations(
+            monotonic_animation_start_time);
 
-      if (const FrameView::ScrollableAreaSet* animatingScrollableAreas =
-              document->view()->animatingScrollableAreas()) {
+      if (const FrameView::ScrollableAreaSet* animating_scrollable_areas =
+              document->View()->AnimatingScrollableAreas()) {
         // Iterate over a copy, since ScrollableAreas may deregister
         // themselves during the iteration.
-        HeapVector<Member<ScrollableArea>> animatingScrollableAreasCopy;
-        copyToVector(*animatingScrollableAreas, animatingScrollableAreasCopy);
-        for (ScrollableArea* scrollableArea : animatingScrollableAreasCopy)
-          scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
+        HeapVector<Member<ScrollableArea>> animating_scrollable_areas_copy;
+        CopyToVector(*animating_scrollable_areas,
+                     animating_scrollable_areas_copy);
+        for (ScrollableArea* scrollable_area : animating_scrollable_areas_copy)
+          scrollable_area->ServiceScrollAnimations(
+              monotonic_animation_start_time);
       }
-      SVGDocumentExtensions::serviceOnAnimationFrame(*document);
+      SVGDocumentExtensions::ServiceOnAnimationFrame(*document);
     }
     // TODO(skyostil): This function should not run for documents without views.
-    DocumentLifecycle::DisallowThrottlingScope noThrottlingScope(
-        document->lifecycle());
-    document->serviceScriptedAnimations(monotonicAnimationStartTime);
+    DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
+        document->Lifecycle());
+    document->ServiceScriptedAnimations(monotonic_animation_start_time);
   }
 }
 
-void PageAnimator::setSuppressFrameRequestsWorkaroundFor704763Only(
-    bool suppressFrameRequests) {
+void PageAnimator::SetSuppressFrameRequestsWorkaroundFor704763Only(
+    bool suppress_frame_requests) {
   // If we are enabling the suppression and it was already enabled then we must
   // have missed disabling it at the end of a previous frame.
-  DCHECK(!m_suppressFrameRequestsWorkaroundFor704763Only ||
-         !suppressFrameRequests);
-  m_suppressFrameRequestsWorkaroundFor704763Only = suppressFrameRequests;
+  DCHECK(!suppress_frame_requests_workaround_for704763_only_ ||
+         !suppress_frame_requests);
+  suppress_frame_requests_workaround_for704763_only_ = suppress_frame_requests;
 }
 
 DISABLE_CFI_PERF
-void PageAnimator::scheduleVisualUpdate(LocalFrame* frame) {
-  if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting ||
-      m_suppressFrameRequestsWorkaroundFor704763Only) {
+void PageAnimator::ScheduleVisualUpdate(LocalFrame* frame) {
+  if (servicing_animations_ || updating_layout_and_style_for_painting_ ||
+      suppress_frame_requests_workaround_for704763_only_) {
     return;
   }
-  m_page->chromeClient().scheduleAnimation(frame->view());
+  page_->GetChromeClient().ScheduleAnimation(frame->View());
 }
 
-void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame) {
-  FrameView* view = rootFrame.view();
-  AutoReset<bool> servicing(&m_updatingLayoutAndStyleForPainting, true);
-  view->updateAllLifecyclePhases();
+void PageAnimator::UpdateAllLifecyclePhases(LocalFrame& root_frame) {
+  FrameView* view = root_frame.View();
+  AutoReset<bool> servicing(&updating_layout_and_style_for_painting_, true);
+  view->UpdateAllLifecyclePhases();
 }
 
 }  // namespace blink

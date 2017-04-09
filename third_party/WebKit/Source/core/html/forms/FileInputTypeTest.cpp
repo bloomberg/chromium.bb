@@ -27,84 +27,87 @@ TEST(FileInputTypeTest, createFileList) {
            "filesystem:http://example.com/isolated/hash/non-native-file");
   FileMetadata metadata;
   metadata.length = 64;
-  metadata.modificationTime = 1.0 * msPerDay + 3;
+  metadata.modification_time = 1.0 * kMsPerDay + 3;
   files.push_back(FileChooserFileInfo(url, metadata));
 
-  FileList* list = FileInputType::createFileList(files, false);
+  FileList* list = FileInputType::CreateFileList(files, false);
   ASSERT_TRUE(list);
   ASSERT_EQ(2u, list->length());
 
-  EXPECT_EQ("/native/path/native-file", list->item(0)->path());
+  EXPECT_EQ("/native/path/native-file", list->item(0)->GetPath());
   EXPECT_EQ("display-name", list->item(0)->name());
-  EXPECT_TRUE(list->item(0)->fileSystemURL().isEmpty());
+  EXPECT_TRUE(list->item(0)->FileSystemURL().IsEmpty());
 
-  EXPECT_TRUE(list->item(1)->path().isEmpty());
+  EXPECT_TRUE(list->item(1)->GetPath().IsEmpty());
   EXPECT_EQ("non-native-file", list->item(1)->name());
-  EXPECT_EQ(url, list->item(1)->fileSystemURL());
+  EXPECT_EQ(url, list->item(1)->FileSystemURL());
   EXPECT_EQ(64u, list->item(1)->size());
-  EXPECT_EQ(1.0 * msPerDay + 3, list->item(1)->lastModified());
+  EXPECT_EQ(1.0 * kMsPerDay + 3, list->item(1)->lastModified());
 }
 
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
-  Document* document = Document::create();
-  HTMLInputElement* input = HTMLInputElement::create(*document, false);
-  InputType* fileInput = FileInputType::create(*input);
+  Document* document = Document::Create();
+  HTMLInputElement* input = HTMLInputElement::Create(*document, false);
+  InputType* file_input = FileInputType::Create(*input);
 
-  DataObject* nativeFileRawDragData = DataObject::create();
-  const DragData nativeFileDragData(nativeFileRawDragData, IntPoint(),
-                                    IntPoint(), DragOperationCopy);
-  nativeFileDragData.platformData()->add(File::create("/native/path"));
-  nativeFileDragData.platformData()->setFilesystemId("fileSystemId");
-  fileInput->receiveDroppedFiles(&nativeFileDragData);
-  EXPECT_EQ("fileSystemId", fileInput->droppedFileSystemId());
-  ASSERT_EQ(1u, fileInput->files()->length());
-  EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
+  DataObject* native_file_raw_drag_data = DataObject::Create();
+  const DragData native_file_drag_data(native_file_raw_drag_data, IntPoint(),
+                                       IntPoint(), kDragOperationCopy);
+  native_file_drag_data.PlatformData()->Add(File::Create("/native/path"));
+  native_file_drag_data.PlatformData()->SetFilesystemId("fileSystemId");
+  file_input->ReceiveDroppedFiles(&native_file_drag_data);
+  EXPECT_EQ("fileSystemId", file_input->DroppedFileSystemId());
+  ASSERT_EQ(1u, file_input->Files()->length());
+  EXPECT_EQ(String("/native/path"), file_input->Files()->item(0)->GetPath());
 
-  DataObject* nonNativeFileRawDragData = DataObject::create();
-  const DragData nonNativeFileDragData(nonNativeFileRawDragData, IntPoint(),
-                                       IntPoint(), DragOperationCopy);
+  DataObject* non_native_file_raw_drag_data = DataObject::Create();
+  const DragData non_native_file_drag_data(non_native_file_raw_drag_data,
+                                           IntPoint(), IntPoint(),
+                                           kDragOperationCopy);
   FileMetadata metadata;
   metadata.length = 1234;
   const KURL url(ParsedURLStringTag(),
                  "filesystem:http://example.com/isolated/hash/non-native-file");
-  nonNativeFileDragData.platformData()->add(
-      File::createForFileSystemFile(url, metadata, File::IsUserVisible));
-  nonNativeFileDragData.platformData()->setFilesystemId("fileSystemId");
-  fileInput->receiveDroppedFiles(&nonNativeFileDragData);
+  non_native_file_drag_data.PlatformData()->Add(
+      File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible));
+  non_native_file_drag_data.PlatformData()->SetFilesystemId("fileSystemId");
+  file_input->ReceiveDroppedFiles(&non_native_file_drag_data);
   // Dropping non-native files should not change the existing files.
-  EXPECT_EQ("fileSystemId", fileInput->droppedFileSystemId());
-  ASSERT_EQ(1u, fileInput->files()->length());
-  EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
+  EXPECT_EQ("fileSystemId", file_input->DroppedFileSystemId());
+  ASSERT_EQ(1u, file_input->Files()->length());
+  EXPECT_EQ(String("/native/path"), file_input->Files()->item(0)->GetPath());
 }
 
 TEST(FileInputTypeTest, setFilesFromPaths) {
-  Document* document = Document::create();
-  HTMLInputElement* input = HTMLInputElement::create(*document, false);
-  InputType* fileInput = FileInputType::create(*input);
+  Document* document = Document::Create();
+  HTMLInputElement* input = HTMLInputElement::Create(*document, false);
+  InputType* file_input = FileInputType::Create(*input);
   Vector<String> paths;
   paths.push_back("/native/path");
   paths.push_back("/native/path2");
-  fileInput->setFilesFromPaths(paths);
-  ASSERT_EQ(1u, fileInput->files()->length());
-  EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
+  file_input->SetFilesFromPaths(paths);
+  ASSERT_EQ(1u, file_input->Files()->length());
+  EXPECT_EQ(String("/native/path"), file_input->Files()->item(0)->GetPath());
 
   // Try to upload multiple files without multipleAttr
-  paths.clear();
+  paths.Clear();
   paths.push_back("/native/path1");
   paths.push_back("/native/path2");
-  fileInput->setFilesFromPaths(paths);
-  ASSERT_EQ(1u, fileInput->files()->length());
-  EXPECT_EQ(String("/native/path1"), fileInput->files()->item(0)->path());
+  file_input->SetFilesFromPaths(paths);
+  ASSERT_EQ(1u, file_input->Files()->length());
+  EXPECT_EQ(String("/native/path1"), file_input->Files()->item(0)->GetPath());
 
   // Try to upload multiple files with multipleAttr
-  input->setBooleanAttribute(HTMLNames::multipleAttr, true);
-  paths.clear();
+  input->SetBooleanAttribute(HTMLNames::multipleAttr, true);
+  paths.Clear();
   paths.push_back("/native/real/path1");
   paths.push_back("/native/real/path2");
-  fileInput->setFilesFromPaths(paths);
-  ASSERT_EQ(2u, fileInput->files()->length());
-  EXPECT_EQ(String("/native/real/path1"), fileInput->files()->item(0)->path());
-  EXPECT_EQ(String("/native/real/path2"), fileInput->files()->item(1)->path());
+  file_input->SetFilesFromPaths(paths);
+  ASSERT_EQ(2u, file_input->Files()->length());
+  EXPECT_EQ(String("/native/real/path1"),
+            file_input->Files()->item(0)->GetPath());
+  EXPECT_EQ(String("/native/real/path2"),
+            file_input->Files()->item(1)->GetPath());
 }
 
 }  // namespace blink

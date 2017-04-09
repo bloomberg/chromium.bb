@@ -17,88 +17,89 @@ namespace blink {
 
 class TimerPerfTest : public ::testing::Test {
  public:
-  void nopTask(TimerBase*) {}
+  void NopTask(TimerBase*) {}
 
-  void recordStartRunTime(TimerBase*) { m_runStart = base::ThreadTicks::Now(); }
+  void RecordStartRunTime(TimerBase*) { run_start_ = base::ThreadTicks::Now(); }
 
-  void recordEndRunTime(TimerBase*) {
-    m_runEnd = base::ThreadTicks::Now();
+  void RecordEndRunTime(TimerBase*) {
+    run_end_ = base::ThreadTicks::Now();
     base::MessageLoop::current()->QuitNow();
   }
 
-  base::ThreadTicks m_runStart;
-  base::ThreadTicks m_runEnd;
+  base::ThreadTicks run_start_;
+  base::ThreadTicks run_end_;
 };
 
 TEST_F(TimerPerfTest, PostAndRunTimers) {
-  const int numIterations = 10000;
-  Vector<std::unique_ptr<Timer<TimerPerfTest>>> timers(numIterations);
-  for (int i = 0; i < numIterations; i++) {
-    timers[i].reset(new Timer<TimerPerfTest>(this, &TimerPerfTest::nopTask));
+  const int kNumIterations = 10000;
+  Vector<std::unique_ptr<Timer<TimerPerfTest>>> timers(kNumIterations);
+  for (int i = 0; i < kNumIterations; i++) {
+    timers[i].reset(new Timer<TimerPerfTest>(this, &TimerPerfTest::NopTask));
   }
 
-  Timer<TimerPerfTest> measureRunStart(this,
-                                       &TimerPerfTest::recordStartRunTime);
-  Timer<TimerPerfTest> measureRunEnd(this, &TimerPerfTest::recordEndRunTime);
+  Timer<TimerPerfTest> measure_run_start(this,
+                                         &TimerPerfTest::RecordStartRunTime);
+  Timer<TimerPerfTest> measure_run_end(this, &TimerPerfTest::RecordEndRunTime);
 
-  measureRunStart.startOneShot(0.0, BLINK_FROM_HERE);
-  base::ThreadTicks postStart = base::ThreadTicks::Now();
-  for (int i = 0; i < numIterations; i++) {
-    timers[i]->startOneShot(0.0, BLINK_FROM_HERE);
+  measure_run_start.StartOneShot(0.0, BLINK_FROM_HERE);
+  base::ThreadTicks post_start = base::ThreadTicks::Now();
+  for (int i = 0; i < kNumIterations; i++) {
+    timers[i]->StartOneShot(0.0, BLINK_FROM_HERE);
   }
-  base::ThreadTicks postEnd = base::ThreadTicks::Now();
-  measureRunEnd.startOneShot(0.0, BLINK_FROM_HERE);
+  base::ThreadTicks post_end = base::ThreadTicks::Now();
+  measure_run_end.StartOneShot(0.0, BLINK_FROM_HERE);
 
-  testing::enterRunLoop();
+  testing::EnterRunLoop();
 
-  double postingTime = (postEnd - postStart).InMicroseconds();
-  double postingTimeUsPerCall =
-      postingTime / static_cast<double>(numIterations);
-  LOG(INFO) << "TimerBase::startOneShot cost (us/call) " << postingTimeUsPerCall
-            << " (total " << postingTime << " us)";
-  LOG(INFO) << "Time to run " << numIterations << " trivial tasks (us) "
-            << (m_runEnd - m_runStart).InMicroseconds();
+  double posting_time = (post_end - post_start).InMicroseconds();
+  double posting_time_us_per_call =
+      posting_time / static_cast<double>(kNumIterations);
+  LOG(INFO) << "TimerBase::startOneShot cost (us/call) "
+            << posting_time_us_per_call << " (total " << posting_time << " us)";
+  LOG(INFO) << "Time to run " << kNumIterations << " trivial tasks (us) "
+            << (run_end_ - run_start_).InMicroseconds();
 }
 
 TEST_F(TimerPerfTest, PostThenCancelTenThousandTimers) {
-  const int numIterations = 10000;
-  Vector<std::unique_ptr<Timer<TimerPerfTest>>> timers(numIterations);
-  for (int i = 0; i < numIterations; i++) {
-    timers[i].reset(new Timer<TimerPerfTest>(this, &TimerPerfTest::nopTask));
+  const int kNumIterations = 10000;
+  Vector<std::unique_ptr<Timer<TimerPerfTest>>> timers(kNumIterations);
+  for (int i = 0; i < kNumIterations; i++) {
+    timers[i].reset(new Timer<TimerPerfTest>(this, &TimerPerfTest::NopTask));
   }
 
-  Timer<TimerPerfTest> measureRunStart(this,
-                                       &TimerPerfTest::recordStartRunTime);
-  Timer<TimerPerfTest> measureRunEnd(this, &TimerPerfTest::recordEndRunTime);
+  Timer<TimerPerfTest> measure_run_start(this,
+                                         &TimerPerfTest::RecordStartRunTime);
+  Timer<TimerPerfTest> measure_run_end(this, &TimerPerfTest::RecordEndRunTime);
 
-  measureRunStart.startOneShot(0.0, BLINK_FROM_HERE);
-  base::ThreadTicks postStart = base::ThreadTicks::Now();
-  for (int i = 0; i < numIterations; i++) {
-    timers[i]->startOneShot(0.0, BLINK_FROM_HERE);
+  measure_run_start.StartOneShot(0.0, BLINK_FROM_HERE);
+  base::ThreadTicks post_start = base::ThreadTicks::Now();
+  for (int i = 0; i < kNumIterations; i++) {
+    timers[i]->StartOneShot(0.0, BLINK_FROM_HERE);
   }
-  base::ThreadTicks postEnd = base::ThreadTicks::Now();
-  measureRunEnd.startOneShot(0.0, BLINK_FROM_HERE);
+  base::ThreadTicks post_end = base::ThreadTicks::Now();
+  measure_run_end.StartOneShot(0.0, BLINK_FROM_HERE);
 
-  base::ThreadTicks cancelStart = base::ThreadTicks::Now();
-  for (int i = 0; i < numIterations; i++) {
-    timers[i]->stop();
+  base::ThreadTicks cancel_start = base::ThreadTicks::Now();
+  for (int i = 0; i < kNumIterations; i++) {
+    timers[i]->Stop();
   }
-  base::ThreadTicks cancelEnd = base::ThreadTicks::Now();
+  base::ThreadTicks cancel_end = base::ThreadTicks::Now();
 
-  testing::enterRunLoop();
+  testing::EnterRunLoop();
 
-  double postingTime = (postEnd - postStart).InMicroseconds();
-  double postingTimeUsPerCall =
-      postingTime / static_cast<double>(numIterations);
-  LOG(INFO) << "TimerBase::startOneShot cost (us/call) " << postingTimeUsPerCall
-            << " (total " << postingTime << " us)";
+  double posting_time = (post_end - post_start).InMicroseconds();
+  double posting_time_us_per_call =
+      posting_time / static_cast<double>(kNumIterations);
+  LOG(INFO) << "TimerBase::startOneShot cost (us/call) "
+            << posting_time_us_per_call << " (total " << posting_time << " us)";
 
-  double cancelTime = (cancelEnd - cancelStart).InMicroseconds();
-  double cancelTimeUsPerCall = cancelTime / static_cast<double>(numIterations);
-  LOG(INFO) << "TimerBase::stop cost (us/call) " << cancelTimeUsPerCall
-            << " (total " << cancelTime << " us)";
-  LOG(INFO) << "Time to run " << numIterations << " canceled tasks (us) "
-            << (m_runEnd - m_runStart).InMicroseconds();
+  double cancel_time = (cancel_end - cancel_start).InMicroseconds();
+  double cancel_time_us_per_call =
+      cancel_time / static_cast<double>(kNumIterations);
+  LOG(INFO) << "TimerBase::stop cost (us/call) " << cancel_time_us_per_call
+            << " (total " << cancel_time << " us)";
+  LOG(INFO) << "Time to run " << kNumIterations << " canceled tasks (us) "
+            << (run_end_ - run_start_).InMicroseconds();
 }
 
 }  // namespace blink

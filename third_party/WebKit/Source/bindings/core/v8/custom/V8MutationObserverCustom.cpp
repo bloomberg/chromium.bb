@@ -43,30 +43,30 @@ namespace blink {
 
 void V8MutationObserver::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(),
-                                ExceptionState::ConstructionContext,
-                                "MutationObserver");
+  ExceptionState exception_state(info.GetIsolate(),
+                                 ExceptionState::kConstructionContext,
+                                 "MutationObserver");
   if (info.Length() < 1) {
-    exceptionState.throwTypeError(
-        ExceptionMessages::notEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   v8::Local<v8::Value> arg = info[0];
   if (!arg->IsFunction()) {
-    exceptionState.throwTypeError("Callback argument must be a function");
+    exception_state.ThrowTypeError("Callback argument must be a function");
     return;
   }
 
   v8::Local<v8::Object> wrapper = info.Holder();
 
   MutationCallback* callback =
-      V8MutationCallback::create(v8::Local<v8::Function>::Cast(arg), wrapper,
-                                 ScriptState::current(info.GetIsolate()));
-  MutationObserver* observer = MutationObserver::create(callback);
+      V8MutationCallback::Create(v8::Local<v8::Function>::Cast(arg), wrapper,
+                                 ScriptState::Current(info.GetIsolate()));
+  MutationObserver* observer = MutationObserver::Create(callback);
 
-  v8SetReturnValue(info,
-                   V8DOMWrapper::associateObjectWithWrapper(
+  V8SetReturnValue(info,
+                   V8DOMWrapper::AssociateObjectWithWrapper(
                        info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
 }
 

@@ -71,7 +71,7 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   }
   void clear_cache_policy_override() {
     cache_policy_override_set_ = false;
-    cache_policy_override_ = blink::WebCachePolicy::UseProtocolCachePolicy;
+    cache_policy_override_ = blink::WebCachePolicy::kUseProtocolCachePolicy;
   }
   bool is_cache_policy_override_set() const {
     return cache_policy_override_set_;

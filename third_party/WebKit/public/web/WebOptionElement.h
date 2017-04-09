@@ -44,14 +44,14 @@ class WebOptionElement final : public WebElement {
   WebOptionElement(const WebOptionElement& element) : WebElement(element) {}
 
   WebOptionElement& operator=(const WebOptionElement& element) {
-    WebElement::assign(element);
+    WebElement::Assign(element);
     return *this;
   }
-  void assign(const WebOptionElement& element) { WebElement::assign(element); }
+  void Assign(const WebOptionElement& element) { WebElement::Assign(element); }
 
-  BLINK_EXPORT WebString value() const;
-  BLINK_EXPORT WebString text() const;
-  BLINK_EXPORT WebString label() const;
+  BLINK_EXPORT WebString Value() const;
+  BLINK_EXPORT WebString GetText() const;
+  BLINK_EXPORT WebString Label() const;
 
 #if BLINK_IMPLEMENTATION
   WebOptionElement(HTMLOptionElement*);

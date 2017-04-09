@@ -29,17 +29,17 @@ namespace blink {
 
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
  public:
-  static PassRefPtr<CustomFontData> create() {
-    return adoptRef(new CustomFontData());
+  static PassRefPtr<CustomFontData> Create() {
+    return AdoptRef(new CustomFontData());
   }
 
   virtual ~CustomFontData() {}
 
-  virtual void beginLoadIfNeeded() const {}
-  virtual bool isLoading() const { return false; }
-  virtual bool isLoadingFallback() const { return false; }
-  virtual bool shouldSkipDrawing() const { return false; }
-  virtual void clearFontFaceSource() {}
+  virtual void BeginLoadIfNeeded() const {}
+  virtual bool IsLoading() const { return false; }
+  virtual bool IsLoadingFallback() const { return false; }
+  virtual bool ShouldSkipDrawing() const { return false; }
+  virtual void ClearFontFaceSource() {}
 
  protected:
   CustomFontData() {}

@@ -14,15 +14,15 @@ namespace blink {
 enum class FontFallbackPriority {
   // For regular non-symbols text,
   // normal text fallback in FontFallbackIterator
-  Text,
+  kText,
   // For emoji in text presentaiton
-  EmojiText,
+  kEmojiText,
   // For emoji in emoji presentation
-  EmojiEmoji,
-  Invalid
+  kEmojiEmoji,
+  kInvalid
 };
 
-bool isNonTextFallbackPriority(FontFallbackPriority);
+bool IsNonTextFallbackPriority(FontFallbackPriority);
 
 };  // namespace blink
 

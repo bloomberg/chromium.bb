@@ -43,7 +43,7 @@ namespace {
 
 int runHelper(base::TestSuite* testSuite) {
   content::SetUpBlinkTestEnvironment();
-  blink::SchemeRegistry::initialize();
+  blink::SchemeRegistry::Initialize();
 
   int result = testSuite->Run();
 
@@ -56,7 +56,7 @@ int runHelper(base::TestSuite* testSuite) {
   // Collect garbage (including threadspecific persistent handles) in order
   // to release mock objects referred from v8 or Oilpan heap. Otherwise false
   // mock leaks will be reported.
-  blink::V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  blink::V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
 
   content::TearDownBlinkTestEnvironment();
 

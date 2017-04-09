@@ -40,18 +40,18 @@ typedef uint64_t LinkHash;
 // Use the low 32-bits of the 64-bit LinkHash as the key for HashSets.
 struct LinkHashHash {
   STATIC_ONLY(LinkHashHash);
-  static unsigned hash(LinkHash key) { return static_cast<unsigned>(key); }
-  static bool equal(LinkHash a, LinkHash b) { return a == b; }
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static unsigned GetHash(LinkHash key) { return static_cast<unsigned>(key); }
+  static bool Equal(LinkHash a, LinkHash b) { return a == b; }
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 
   // See AlreadyHashed::avoidDeletedValue.
-  static unsigned avoidDeletedValue(LinkHash hash64) {
+  static unsigned AvoidDeletedValue(LinkHash hash64) {
     ASSERT(hash64);
     unsigned hash = static_cast<unsigned>(hash64);
-    unsigned newHash = hash | (!(hash + 1) << 31);
-    ASSERT(newHash);
-    ASSERT(newHash != 0xFFFFFFFF);
-    return newHash;
+    unsigned new_hash = hash | (!(hash + 1) << 31);
+    ASSERT(new_hash);
+    ASSERT(new_hash != 0xFFFFFFFF);
+    return new_hash;
   }
 };
 
@@ -59,8 +59,8 @@ struct LinkHashHash {
 // base URL, and returns the hash of the string that will be used for visited
 // link coloring. It will return the special value of 0 if attributeURL does not
 // look like a relative URL.
-PLATFORM_EXPORT LinkHash visitedLinkHash(const KURL& base,
-                                         const AtomicString& attributeURL);
+PLATFORM_EXPORT LinkHash VisitedLinkHash(const KURL& base,
+                                         const AtomicString& attribute_url);
 
 }  // namespace blink
 

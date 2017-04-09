@@ -31,191 +31,191 @@ namespace WTF {
 namespace Unicode {
 
 enum CharDirection {
-  LeftToRight = U_LEFT_TO_RIGHT,
-  RightToLeft = U_RIGHT_TO_LEFT,
-  EuropeanNumber = U_EUROPEAN_NUMBER,
-  EuropeanNumberSeparator = U_EUROPEAN_NUMBER_SEPARATOR,
-  EuropeanNumberTerminator = U_EUROPEAN_NUMBER_TERMINATOR,
-  ArabicNumber = U_ARABIC_NUMBER,
-  CommonNumberSeparator = U_COMMON_NUMBER_SEPARATOR,
-  BlockSeparator = U_BLOCK_SEPARATOR,
-  SegmentSeparator = U_SEGMENT_SEPARATOR,
-  WhiteSpaceNeutral = U_WHITE_SPACE_NEUTRAL,
-  OtherNeutral = U_OTHER_NEUTRAL,
-  LeftToRightEmbedding = U_LEFT_TO_RIGHT_EMBEDDING,
-  LeftToRightOverride = U_LEFT_TO_RIGHT_OVERRIDE,
-  RightToLeftArabic = U_RIGHT_TO_LEFT_ARABIC,
-  RightToLeftEmbedding = U_RIGHT_TO_LEFT_EMBEDDING,
-  RightToLeftOverride = U_RIGHT_TO_LEFT_OVERRIDE,
-  PopDirectionalFormat = U_POP_DIRECTIONAL_FORMAT,
-  NonSpacingMark = U_DIR_NON_SPACING_MARK,
-  BoundaryNeutral = U_BOUNDARY_NEUTRAL
+  kLeftToRight = U_LEFT_TO_RIGHT,
+  kRightToLeft = U_RIGHT_TO_LEFT,
+  kEuropeanNumber = U_EUROPEAN_NUMBER,
+  kEuropeanNumberSeparator = U_EUROPEAN_NUMBER_SEPARATOR,
+  kEuropeanNumberTerminator = U_EUROPEAN_NUMBER_TERMINATOR,
+  kArabicNumber = U_ARABIC_NUMBER,
+  kCommonNumberSeparator = U_COMMON_NUMBER_SEPARATOR,
+  kBlockSeparator = U_BLOCK_SEPARATOR,
+  kSegmentSeparator = U_SEGMENT_SEPARATOR,
+  kWhiteSpaceNeutral = U_WHITE_SPACE_NEUTRAL,
+  kOtherNeutral = U_OTHER_NEUTRAL,
+  kLeftToRightEmbedding = U_LEFT_TO_RIGHT_EMBEDDING,
+  kLeftToRightOverride = U_LEFT_TO_RIGHT_OVERRIDE,
+  kRightToLeftArabic = U_RIGHT_TO_LEFT_ARABIC,
+  kRightToLeftEmbedding = U_RIGHT_TO_LEFT_EMBEDDING,
+  kRightToLeftOverride = U_RIGHT_TO_LEFT_OVERRIDE,
+  kPopDirectionalFormat = U_POP_DIRECTIONAL_FORMAT,
+  kNonSpacingMark = U_DIR_NON_SPACING_MARK,
+  kBoundaryNeutral = U_BOUNDARY_NEUTRAL
 };
 
 enum CharDecompositionType {
-  DecompositionNone = U_DT_NONE,
-  DecompositionCanonical = U_DT_CANONICAL,
-  DecompositionCompat = U_DT_COMPAT,
-  DecompositionCircle = U_DT_CIRCLE,
-  DecompositionFinal = U_DT_FINAL,
-  DecompositionFont = U_DT_FONT,
-  DecompositionFraction = U_DT_FRACTION,
-  DecompositionInitial = U_DT_INITIAL,
-  DecompositionIsolated = U_DT_ISOLATED,
-  DecompositionMedial = U_DT_MEDIAL,
-  DecompositionNarrow = U_DT_NARROW,
-  DecompositionNoBreak = U_DT_NOBREAK,
-  DecompositionSmall = U_DT_SMALL,
-  DecompositionSquare = U_DT_SQUARE,
-  DecompositionSub = U_DT_SUB,
-  DecompositionSuper = U_DT_SUPER,
-  DecompositionVertical = U_DT_VERTICAL,
-  DecompositionWide = U_DT_WIDE,
+  kDecompositionNone = U_DT_NONE,
+  kDecompositionCanonical = U_DT_CANONICAL,
+  kDecompositionCompat = U_DT_COMPAT,
+  kDecompositionCircle = U_DT_CIRCLE,
+  kDecompositionFinal = U_DT_FINAL,
+  kDecompositionFont = U_DT_FONT,
+  kDecompositionFraction = U_DT_FRACTION,
+  kDecompositionInitial = U_DT_INITIAL,
+  kDecompositionIsolated = U_DT_ISOLATED,
+  kDecompositionMedial = U_DT_MEDIAL,
+  kDecompositionNarrow = U_DT_NARROW,
+  kDecompositionNoBreak = U_DT_NOBREAK,
+  kDecompositionSmall = U_DT_SMALL,
+  kDecompositionSquare = U_DT_SQUARE,
+  kDecompositionSub = U_DT_SUB,
+  kDecompositionSuper = U_DT_SUPER,
+  kDecompositionVertical = U_DT_VERTICAL,
+  kDecompositionWide = U_DT_WIDE,
 };
 
 enum CharCategory {
-  NoCategory = 0,
-  Other_NotAssigned = U_MASK(U_GENERAL_OTHER_TYPES),
-  Letter_Uppercase = U_MASK(U_UPPERCASE_LETTER),
-  Letter_Lowercase = U_MASK(U_LOWERCASE_LETTER),
-  Letter_Titlecase = U_MASK(U_TITLECASE_LETTER),
-  Letter_Modifier = U_MASK(U_MODIFIER_LETTER),
-  Letter_Other = U_MASK(U_OTHER_LETTER),
+  kNoCategory = 0,
+  kOther_NotAssigned = U_MASK(U_GENERAL_OTHER_TYPES),
+  kLetter_Uppercase = U_MASK(U_UPPERCASE_LETTER),
+  kLetter_Lowercase = U_MASK(U_LOWERCASE_LETTER),
+  kLetter_Titlecase = U_MASK(U_TITLECASE_LETTER),
+  kLetter_Modifier = U_MASK(U_MODIFIER_LETTER),
+  kLetter_Other = U_MASK(U_OTHER_LETTER),
 
-  Mark_NonSpacing = U_MASK(U_NON_SPACING_MARK),
-  Mark_Enclosing = U_MASK(U_ENCLOSING_MARK),
-  Mark_SpacingCombining = U_MASK(U_COMBINING_SPACING_MARK),
+  kMark_NonSpacing = U_MASK(U_NON_SPACING_MARK),
+  kMark_Enclosing = U_MASK(U_ENCLOSING_MARK),
+  kMark_SpacingCombining = U_MASK(U_COMBINING_SPACING_MARK),
 
-  Number_DecimalDigit = U_MASK(U_DECIMAL_DIGIT_NUMBER),
-  Number_Letter = U_MASK(U_LETTER_NUMBER),
-  Number_Other = U_MASK(U_OTHER_NUMBER),
+  kNumber_DecimalDigit = U_MASK(U_DECIMAL_DIGIT_NUMBER),
+  kNumber_Letter = U_MASK(U_LETTER_NUMBER),
+  kNumber_Other = U_MASK(U_OTHER_NUMBER),
 
-  Separator_Space = U_MASK(U_SPACE_SEPARATOR),
-  Separator_Line = U_MASK(U_LINE_SEPARATOR),
-  Separator_Paragraph = U_MASK(U_PARAGRAPH_SEPARATOR),
+  kSeparator_Space = U_MASK(U_SPACE_SEPARATOR),
+  kSeparator_Line = U_MASK(U_LINE_SEPARATOR),
+  kSeparator_Paragraph = U_MASK(U_PARAGRAPH_SEPARATOR),
 
-  Other_Control = U_MASK(U_CONTROL_CHAR),
-  Other_Format = U_MASK(U_FORMAT_CHAR),
-  Other_PrivateUse = U_MASK(U_PRIVATE_USE_CHAR),
-  Other_Surrogate = U_MASK(U_SURROGATE),
+  kOther_Control = U_MASK(U_CONTROL_CHAR),
+  kOther_Format = U_MASK(U_FORMAT_CHAR),
+  kOther_PrivateUse = U_MASK(U_PRIVATE_USE_CHAR),
+  kOther_Surrogate = U_MASK(U_SURROGATE),
 
-  Punctuation_Dash = U_MASK(U_DASH_PUNCTUATION),
-  Punctuation_Open = U_MASK(U_START_PUNCTUATION),
-  Punctuation_Close = U_MASK(U_END_PUNCTUATION),
-  Punctuation_Connector = U_MASK(U_CONNECTOR_PUNCTUATION),
-  Punctuation_Other = U_MASK(U_OTHER_PUNCTUATION),
+  kPunctuation_Dash = U_MASK(U_DASH_PUNCTUATION),
+  kPunctuation_Open = U_MASK(U_START_PUNCTUATION),
+  kPunctuation_Close = U_MASK(U_END_PUNCTUATION),
+  kPunctuation_Connector = U_MASK(U_CONNECTOR_PUNCTUATION),
+  kPunctuation_Other = U_MASK(U_OTHER_PUNCTUATION),
 
-  Symbol_Math = U_MASK(U_MATH_SYMBOL),
-  Symbol_Currency = U_MASK(U_CURRENCY_SYMBOL),
-  Symbol_Modifier = U_MASK(U_MODIFIER_SYMBOL),
-  Symbol_Other = U_MASK(U_OTHER_SYMBOL),
+  kSymbol_Math = U_MASK(U_MATH_SYMBOL),
+  kSymbol_Currency = U_MASK(U_CURRENCY_SYMBOL),
+  kSymbol_Modifier = U_MASK(U_MODIFIER_SYMBOL),
+  kSymbol_Other = U_MASK(U_OTHER_SYMBOL),
 
-  Punctuation_InitialQuote = U_MASK(U_INITIAL_PUNCTUATION),
-  Punctuation_FinalQuote = U_MASK(U_FINAL_PUNCTUATION)
+  kPunctuation_InitialQuote = U_MASK(U_INITIAL_PUNCTUATION),
+  kPunctuation_FinalQuote = U_MASK(U_FINAL_PUNCTUATION)
 };
 
-inline UChar32 foldCase(UChar32 c) {
+inline UChar32 FoldCase(UChar32 c) {
   return u_foldCase(c, U_FOLD_CASE_DEFAULT);
 }
 
-inline int foldCase(UChar* result,
-                    int resultLength,
+inline int FoldCase(UChar* result,
+                    int result_length,
                     const UChar* src,
-                    int srcLength,
+                    int src_length,
                     bool* error) {
   UErrorCode status = U_ZERO_ERROR;
-  int realLength = u_strFoldCase(result, resultLength, src, srcLength,
-                                 U_FOLD_CASE_DEFAULT, &status);
+  int real_length = u_strFoldCase(result, result_length, src, src_length,
+                                  U_FOLD_CASE_DEFAULT, &status);
   *error = !U_SUCCESS(status);
-  return realLength;
+  return real_length;
 }
 
-inline int toLower(UChar* result,
-                   int resultLength,
+inline int ToLower(UChar* result,
+                   int result_length,
                    const UChar* src,
-                   int srcLength,
+                   int src_length,
                    bool* error) {
   UErrorCode status = U_ZERO_ERROR;
-  int realLength =
-      u_strToLower(result, resultLength, src, srcLength, "", &status);
+  int real_length =
+      u_strToLower(result, result_length, src, src_length, "", &status);
   *error = !!U_FAILURE(status);
-  return realLength;
+  return real_length;
 }
 
-inline UChar32 toLower(UChar32 c) {
+inline UChar32 ToLower(UChar32 c) {
   return u_tolower(c);
 }
 
-inline UChar32 toUpper(UChar32 c) {
+inline UChar32 ToUpper(UChar32 c) {
   return u_toupper(c);
 }
 
-inline int toUpper(UChar* result,
-                   int resultLength,
+inline int ToUpper(UChar* result,
+                   int result_length,
                    const UChar* src,
-                   int srcLength,
+                   int src_length,
                    bool* error) {
   UErrorCode status = U_ZERO_ERROR;
-  int realLength =
-      u_strToUpper(result, resultLength, src, srcLength, "", &status);
+  int real_length =
+      u_strToUpper(result, result_length, src, src_length, "", &status);
   *error = !!U_FAILURE(status);
-  return realLength;
+  return real_length;
 }
 
-inline UChar32 toTitleCase(UChar32 c) {
+inline UChar32 ToTitleCase(UChar32 c) {
   return u_totitle(c);
 }
 
-inline bool isArabicChar(UChar32 c) {
+inline bool IsArabicChar(UChar32 c) {
   return ublock_getCode(c) == UBLOCK_ARABIC;
 }
 
-inline bool isAlphanumeric(UChar32 c) {
+inline bool IsAlphanumeric(UChar32 c) {
   return !!u_isalnum(c);
 }
 
-inline bool isSeparatorSpace(UChar32 c) {
+inline bool IsSeparatorSpace(UChar32 c) {
   return u_charType(c) == U_SPACE_SEPARATOR;
 }
 
-inline bool isPrintableChar(UChar32 c) {
+inline bool IsPrintableChar(UChar32 c) {
   return !!u_isprint(c);
 }
 
-inline bool isPunct(UChar32 c) {
+inline bool IsPunct(UChar32 c) {
   return !!u_ispunct(c);
 }
 
-inline bool hasLineBreakingPropertyComplexContext(UChar32 c) {
+inline bool HasLineBreakingPropertyComplexContext(UChar32 c) {
   return u_getIntPropertyValue(c, UCHAR_LINE_BREAK) == U_LB_COMPLEX_CONTEXT;
 }
 
-inline UChar32 mirroredChar(UChar32 c) {
+inline UChar32 MirroredChar(UChar32 c) {
   return u_charMirror(c);
 }
 
-inline CharCategory category(UChar32 c) {
+inline CharCategory Category(UChar32 c) {
   return static_cast<CharCategory>(U_GET_GC_MASK(c));
 }
 
-inline CharDirection direction(UChar32 c) {
+inline CharDirection Direction(UChar32 c) {
   return static_cast<CharDirection>(u_charDirection(c));
 }
 
-inline bool isLower(UChar32 c) {
+inline bool IsLower(UChar32 c) {
   return !!u_islower(c);
 }
 
-inline uint8_t combiningClass(UChar32 c) {
+inline uint8_t CombiningClass(UChar32 c) {
   return u_getCombiningClass(c);
 }
 
-inline CharDecompositionType decompositionType(UChar32 c) {
+inline CharDecompositionType DecompositionType(UChar32 c) {
   return static_cast<CharDecompositionType>(
       u_getIntPropertyValue(c, UCHAR_DECOMPOSITION_TYPE));
 }
 
-inline int umemcasecmp(const UChar* a, const UChar* b, int len) {
+inline int Umemcasecmp(const UChar* a, const UChar* b, int len) {
   return u_memcasecmp(a, b, len, U_FOLD_CASE_DEFAULT);
 }
 

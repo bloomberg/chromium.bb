@@ -8,8 +8,8 @@
 
 namespace blink {
 
-bool AnimatablePath::equalTo(const AnimatableValue* value) const {
-  return dataEquivalent(m_path.get(), toAnimatablePath(value)->m_path.get());
+bool AnimatablePath::EqualTo(const AnimatableValue* value) const {
+  return DataEquivalent(path_.Get(), ToAnimatablePath(value)->path_.Get());
 }
 
 }  // namespace blink

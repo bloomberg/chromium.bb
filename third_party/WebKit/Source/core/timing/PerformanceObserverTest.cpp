@@ -17,89 +17,86 @@ namespace blink {
 
 class MockPerformanceBase : public PerformanceBase {
  public:
-  explicit MockPerformanceBase(ScriptState* scriptState)
-      : PerformanceBase(
-            0,
-            TaskRunnerHelper::get(TaskType::PerformanceTimeline, scriptState)) {
-  }
+  explicit MockPerformanceBase(ScriptState* script_state)
+      : PerformanceBase(0,
+                        TaskRunnerHelper::Get(TaskType::kPerformanceTimeline,
+                                              script_state)) {}
   ~MockPerformanceBase() {}
 
-  ExecutionContext* getExecutionContext() const override { return nullptr; }
+  ExecutionContext* GetExecutionContext() const override { return nullptr; }
 };
 
 class PerformanceObserverTest : public ::testing::Test {
  protected:
-  void initialize(ScriptState* scriptState) {
+  void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
-        v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
-    m_base = new MockPerformanceBase(scriptState);
-    m_cb = PerformanceObserverCallback::create(scriptState, callback);
-    m_observer = PerformanceObserver::create(scriptState->getExecutionContext(),
-                                             m_base, m_cb);
+        v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
+    base_ = new MockPerformanceBase(script_state);
+    cb_ = PerformanceObserverCallback::Create(script_state, callback);
+    observer_ = PerformanceObserver::Create(script_state->GetExecutionContext(),
+                                            base_, cb_);
   }
 
-  bool isRegistered() { return m_observer->m_isRegistered; }
-  int numPerformanceEntries() {
-    return m_observer->m_performanceEntries.size();
-  }
-  void deliver() { m_observer->deliver(); }
+  bool IsRegistered() { return observer_->is_registered_; }
+  int NumPerformanceEntries() { return observer_->performance_entries_.size(); }
+  void Deliver() { observer_->Deliver(); }
 
-  Persistent<MockPerformanceBase> m_base;
-  Persistent<PerformanceObserverCallback> m_cb;
-  Persistent<PerformanceObserver> m_observer;
+  Persistent<MockPerformanceBase> base_;
+  Persistent<PerformanceObserverCallback> cb_;
+  Persistent<PerformanceObserver> observer_;
 };
 
 TEST_F(PerformanceObserverTest, Observe) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
-  NonThrowableExceptionState exceptionState;
+  NonThrowableExceptionState exception_state;
   PerformanceObserverInit options;
-  Vector<String> entryTypeVec;
-  entryTypeVec.push_back("mark");
-  options.setEntryTypes(entryTypeVec);
+  Vector<String> entry_type_vec;
+  entry_type_vec.push_back("mark");
+  options.setEntryTypes(entry_type_vec);
 
-  m_observer->observe(options, exceptionState);
-  EXPECT_TRUE(isRegistered());
+  observer_->observe(options, exception_state);
+  EXPECT_TRUE(IsRegistered());
 }
 
 TEST_F(PerformanceObserverTest, Enqueue) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
-  Persistent<PerformanceEntry> entry = PerformanceMark::create("m", 1234);
-  EXPECT_EQ(0, numPerformanceEntries());
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create("m", 1234);
+  EXPECT_EQ(0, NumPerformanceEntries());
 
-  m_observer->enqueuePerformanceEntry(*entry);
-  EXPECT_EQ(1, numPerformanceEntries());
+  observer_->EnqueuePerformanceEntry(*entry);
+  EXPECT_EQ(1, NumPerformanceEntries());
 }
 
 TEST_F(PerformanceObserverTest, Deliver) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
-  Persistent<PerformanceEntry> entry = PerformanceMark::create("m", 1234);
-  EXPECT_EQ(0, numPerformanceEntries());
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create("m", 1234);
+  EXPECT_EQ(0, NumPerformanceEntries());
 
-  m_observer->enqueuePerformanceEntry(*entry);
-  EXPECT_EQ(1, numPerformanceEntries());
+  observer_->EnqueuePerformanceEntry(*entry);
+  EXPECT_EQ(1, NumPerformanceEntries());
 
-  deliver();
-  EXPECT_EQ(0, numPerformanceEntries());
+  Deliver();
+  EXPECT_EQ(0, NumPerformanceEntries());
 }
 
 TEST_F(PerformanceObserverTest, Disconnect) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
-  Persistent<PerformanceEntry> entry = PerformanceMark::create("m", 1234);
-  EXPECT_EQ(0, numPerformanceEntries());
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create("m", 1234);
+  EXPECT_EQ(0, NumPerformanceEntries());
 
-  m_observer->enqueuePerformanceEntry(*entry);
-  EXPECT_EQ(1, numPerformanceEntries());
+  observer_->EnqueuePerformanceEntry(*entry);
+  EXPECT_EQ(1, NumPerformanceEntries());
 
-  m_observer->disconnect();
-  EXPECT_FALSE(isRegistered());
-  EXPECT_EQ(0, numPerformanceEntries());
+  observer_->disconnect();
+  EXPECT_FALSE(IsRegistered());
+  EXPECT_EQ(0, NumPerformanceEntries());
 }
 }

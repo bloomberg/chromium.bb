@@ -71,9 +71,9 @@ size_t ServiceWorkerFetchRequest::EstimatedStructSize() {
 
 ServiceWorkerResponse::ServiceWorkerResponse()
     : status_code(0),
-      response_type(blink::WebServiceWorkerResponseTypeOpaque),
+      response_type(blink::kWebServiceWorkerResponseTypeOpaque),
       blob_size(0),
-      error(blink::WebServiceWorkerResponseErrorUnknown) {}
+      error(blink::kWebServiceWorkerResponseErrorUnknown) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     std::unique_ptr<std::vector<GURL>> url_list,
@@ -127,7 +127,7 @@ size_t ServiceWorkerResponse::EstimatedStructSize() {
 
 ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
     : handle_id(kInvalidServiceWorkerHandleId),
-      state(blink::WebServiceWorkerStateUnknown),
+      state(blink::kWebServiceWorkerStateUnknown),
       version_id(kInvalidServiceWorkerVersionId) {}
 
 bool ServiceWorkerObjectInfo::IsValid() const {
@@ -141,9 +141,8 @@ ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
 }
 
 ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
-    : client_type(blink::WebServiceWorkerClientTypeWindow),
-      include_uncontrolled(false) {
-}
+    : client_type(blink::kWebServiceWorkerClientTypeWindow),
+      include_uncontrolled(false) {}
 
 ExtendableMessageEventSource::ExtendableMessageEventSource() {}
 

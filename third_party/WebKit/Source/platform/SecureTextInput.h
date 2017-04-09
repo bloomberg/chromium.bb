@@ -39,11 +39,11 @@ namespace blink {
 #if OS(MACOSX)
 // Once enableSecureTextInput is called, secure text input mode is set until
 // disableSecureTextInput has been called.
-PLATFORM_EXPORT void enableSecureTextInput();
-PLATFORM_EXPORT void disableSecureTextInput();
+PLATFORM_EXPORT void EnableSecureTextInput();
+PLATFORM_EXPORT void DisableSecureTextInput();
 #else
-inline void enableSecureTextInput() {}
-inline void disableSecureTextInput() {}
+inline void EnableSecureTextInput() {}
+inline void DisableSecureTextInput() {}
 #endif
 
 }  // namespace blink

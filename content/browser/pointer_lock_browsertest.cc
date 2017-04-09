@@ -195,12 +195,12 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
       "var x; var y; var mX; var mY; document.addEventListener('mousemove', "
       "function(e) {x = e.x; y = e.y; mX = e.movementX; mY = e.movementY;});"));
 
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseMove,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.setPositionInWidget(10, 11);
-  mouse_event.movementX = 12;
-  mouse_event.movementY = 13;
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseMove,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.SetPositionInWidget(10, 11);
+  mouse_event.movement_x = 12;
+  mouse_event.movement_y = 13;
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
 
   // Make sure that the renderer handled the input event.
@@ -245,10 +245,10 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
                                                &transformed_point);
 
-  mouse_event.setPositionInWidget(-transformed_point.x() + 14,
+  mouse_event.SetPositionInWidget(-transformed_point.x() + 14,
                                   -transformed_point.y() + 15);
-  mouse_event.movementX = 16;
-  mouse_event.movementY = 17;
+  mouse_event.movement_x = 16;
+  mouse_event.movement_y = 17;
   // We use root_view intentionally as the RenderWidgetHostInputEventRouter is
   // responsible for correctly routing the event to the child frame.
   router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
@@ -341,11 +341,11 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   root_observer.Wait();
 
   blink::WebMouseWheelEvent wheel_event(
-      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  wheel_event.setPositionInWidget(10, 11);
-  wheel_event.deltaX = -12;
-  wheel_event.deltaY = -13;
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  wheel_event.SetPositionInWidget(10, 11);
+  wheel_event.delta_x = -12;
+  wheel_event.delta_y = -13;
   router->RouteMouseWheelEvent(root_view, &wheel_event, ui::LatencyInfo());
 
   // Make sure that the renderer handled the input event.
@@ -391,10 +391,10 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
                                                &transformed_point);
 
-  wheel_event.setPositionInWidget(-transformed_point.x() + 14,
+  wheel_event.SetPositionInWidget(-transformed_point.x() + 14,
                                   -transformed_point.y() + 15);
-  wheel_event.deltaX = -16;
-  wheel_event.deltaY = -17;
+  wheel_event.delta_x = -16;
+  wheel_event.delta_y = -17;
   // We use root_view intentionally as the RenderWidgetHostInputEventRouter is
   // responsible for correctly routing the event to the child frame.
   router->RouteMouseWheelEvent(root_view, &wheel_event, ui::LatencyInfo());

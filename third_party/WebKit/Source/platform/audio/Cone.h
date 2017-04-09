@@ -45,24 +45,24 @@ class PLATFORM_EXPORT ConeEffect {
   ConeEffect();
 
   // Returns scalar gain for the given source/listener positions/orientations
-  double gain(FloatPoint3D sourcePosition,
-              FloatPoint3D sourceOrientation,
-              FloatPoint3D listenerPosition);
+  double Gain(FloatPoint3D source_position,
+              FloatPoint3D source_orientation,
+              FloatPoint3D listener_position);
 
   // Angles in degrees
-  void setInnerAngle(double innerAngle) { m_innerAngle = innerAngle; }
-  double innerAngle() const { return m_innerAngle; }
+  void SetInnerAngle(double inner_angle) { inner_angle_ = inner_angle; }
+  double InnerAngle() const { return inner_angle_; }
 
-  void setOuterAngle(double outerAngle) { m_outerAngle = outerAngle; }
-  double outerAngle() const { return m_outerAngle; }
+  void SetOuterAngle(double outer_angle) { outer_angle_ = outer_angle; }
+  double OuterAngle() const { return outer_angle_; }
 
-  void setOuterGain(double outerGain) { m_outerGain = outerGain; }
-  double outerGain() const { return m_outerGain; }
+  void SetOuterGain(double outer_gain) { outer_gain_ = outer_gain; }
+  double OuterGain() const { return outer_gain_; }
 
  protected:
-  double m_innerAngle;
-  double m_outerAngle;
-  double m_outerGain;
+  double inner_angle_;
+  double outer_angle_;
+  double outer_gain_;
 };
 
 }  // namespace blink

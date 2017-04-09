@@ -55,13 +55,13 @@ void PremultiplyAlpha(const uint8_t color_in[3],
 
 const char* PointState(blink::WebTouchPoint::State state) {
   switch (state) {
-    case blink::WebTouchPoint::StateReleased:
+    case blink::WebTouchPoint::kStateReleased:
       return "Released";
-    case blink::WebTouchPoint::StatePressed:
+    case blink::WebTouchPoint::kStatePressed:
       return "Pressed";
-    case blink::WebTouchPoint::StateMoved:
+    case blink::WebTouchPoint::kStateMoved:
       return "Moved";
-    case blink::WebTouchPoint::StateCancelled:
+    case blink::WebTouchPoint::kStateCancelled:
       return "Cancelled";
     default:
       return "Unknown";
@@ -80,18 +80,18 @@ void PrintTouchList(WebTestDelegate* delegate,
 
 void PrintEventDetails(WebTestDelegate* delegate,
                        const blink::WebInputEvent& event) {
-  if (blink::WebInputEvent::isTouchEventType(event.type())) {
+  if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
     const blink::WebTouchEvent& touch =
         static_cast<const blink::WebTouchEvent&>(event);
-    PrintTouchList(delegate, touch.touches, touch.touchesLength);
-  } else if (blink::WebInputEvent::isMouseEventType(event.type()) ||
-             event.type() == blink::WebInputEvent::MouseWheel) {
+    PrintTouchList(delegate, touch.touches, touch.touches_length);
+  } else if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
+             event.GetType() == blink::WebInputEvent::kMouseWheel) {
     const blink::WebMouseEvent& mouse =
         static_cast<const blink::WebMouseEvent&>(event);
     delegate->PrintMessage(base::StringPrintf("* %.2f, %.2f\n",
-                                              mouse.positionInWidget().x,
-                                              mouse.positionInWidget().y));
-  } else if (blink::WebInputEvent::isGestureEventType(event.type())) {
+                                              mouse.PositionInWidget().x,
+                                              mouse.PositionInWidget().y));
+  } else if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);
     delegate->PrintMessage(
@@ -101,11 +101,11 @@ void PrintEventDetails(WebTestDelegate* delegate,
 
 blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
     const blink::WebString& string) {
-  if (string == blink::WebString::fromUTF8("raw"))
-    return blink::WebPluginContainer::TouchEventRequestTypeRaw;
-  if (string == blink::WebString::fromUTF8("synthetic"))
-    return blink::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse;
-  return blink::WebPluginContainer::TouchEventRequestTypeNone;
+  if (string == blink::WebString::FromUTF8("raw"))
+    return blink::WebPluginContainer::kTouchEventRequestTypeRaw;
+  if (string == blink::WebString::FromUTF8("synthetic"))
+    return blink::WebPluginContainer::kTouchEventRequestTypeSynthesizedMouse;
+  return blink::WebPluginContainer::kTouchEventRequestTypeNone;
 }
 
 }  // namespace
@@ -121,20 +121,20 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
       mailbox_changed_(false),
       framebuffer_(0),
       touch_event_request_(
-          blink::WebPluginContainer::TouchEventRequestTypeNone),
+          blink::WebPluginContainer::kTouchEventRequestTypeNone),
       re_request_touch_events_(false),
       print_event_details_(false),
       print_user_gesture_status_(false),
       can_process_drag_(false),
       supports_keyboard_focus_(false),
-      is_persistent_(params.mimeType == PluginPersistsMimeType()),
-      can_create_without_renderer_(params.mimeType ==
+      is_persistent_(params.mime_type == PluginPersistsMimeType()),
+      can_create_without_renderer_(params.mime_type ==
                                    CanCreateWithoutRendererMimeType()) {
-  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-  size_t size = params.attributeNames.size();
+  DCHECK_EQ(params.attribute_names.size(), params.attribute_values.size());
+  size_t size = params.attribute_names.size();
   for (size_t i = 0; i < size; ++i) {
-    const blink::WebString& attribute_name = params.attributeNames[i];
-    const blink::WebString& attribute_value = params.attributeValues[i];
+    const blink::WebString& attribute_name = params.attribute_names[i];
+    const blink::WebString& attribute_value = params.attribute_values[i];
 
     if (attribute_name == "primitive")
       scene_.primitive = ParsePrimitive(attribute_value);
@@ -164,45 +164,46 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
 
 TestPlugin::~TestPlugin() {}
 
-bool TestPlugin::initialize(blink::WebPluginContainer* container) {
+bool TestPlugin::Initialize(blink::WebPluginContainer* container) {
   DCHECK(container);
-  DCHECK_EQ(this, container->plugin());
+  DCHECK_EQ(this, container->Plugin());
 
   container_ = container;
 
   blink::Platform::ContextAttributes attrs;
-  attrs.webGLVersion = 1;  // We are creating a context through the WebGL APIs.
-  blink::WebURL url = container->document().url();
+  attrs.web_gl_version =
+      1;  // We are creating a context through the WebGL APIs.
+  blink::WebURL url = container->GetDocument().Url();
   blink::Platform::GraphicsInfo gl_info;
   context_provider_ = base::WrapUnique(
-      blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
+      blink::Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
           attrs, url, nullptr, &gl_info));
-  if (!context_provider_->bindToCurrentThread())
+  if (!context_provider_->BindToCurrentThread())
     context_provider_ = nullptr;
-  gl_ = context_provider_ ? context_provider_->contextGL() : nullptr;
+  gl_ = context_provider_ ? context_provider_->ContextGL() : nullptr;
 
   if (!InitScene())
     return false;
 
   layer_ = cc::TextureLayer::CreateForMailbox(this);
   web_layer_ = base::WrapUnique(new cc_blink::WebLayerImpl(layer_));
-  container_->setWebLayer(web_layer_.get());
+  container_->SetWebLayer(web_layer_.get());
   if (re_request_touch_events_) {
-    container_->requestTouchEventType(
-        blink::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse);
-    container_->requestTouchEventType(
-        blink::WebPluginContainer::TouchEventRequestTypeRaw);
+    container_->RequestTouchEventType(
+        blink::WebPluginContainer::kTouchEventRequestTypeSynthesizedMouse);
+    container_->RequestTouchEventType(
+        blink::WebPluginContainer::kTouchEventRequestTypeRaw);
   }
-  container_->requestTouchEventType(touch_event_request_);
-  container_->setWantsWheelEvents(true);
+  container_->RequestTouchEventType(touch_event_request_);
+  container_->SetWantsWheelEvents(true);
   return true;
 }
 
-void TestPlugin::destroy() {
+void TestPlugin::Destroy() {
   if (layer_.get())
     layer_->ClearTexture();
   if (container_)
-    container_->setWebLayer(0);
+    container_->SetWebLayer(0);
   web_layer_.reset();
   layer_ = NULL;
   DestroyScene();
@@ -213,25 +214,25 @@ void TestPlugin::destroy() {
   container_ = nullptr;
   frame_ = nullptr;
 
-  blink::Platform::current()
-      ->mainThread()
-      ->getSingleThreadTaskRunner()
+  blink::Platform::Current()
+      ->MainThread()
+      ->GetSingleThreadTaskRunner()
       ->DeleteSoon(FROM_HERE, this);
 }
 
-blink::WebPluginContainer* TestPlugin::container() const {
+blink::WebPluginContainer* TestPlugin::Container() const {
   return container_;
 }
 
-bool TestPlugin::canProcessDrag() const {
+bool TestPlugin::CanProcessDrag() const {
   return can_process_drag_;
 }
 
-bool TestPlugin::supportsKeyboardFocus() const {
+bool TestPlugin::SupportsKeyboardFocus() const {
   return supports_keyboard_focus_;
 }
 
-void TestPlugin::updateGeometry(
+void TestPlugin::UpdateGeometry(
     const blink::WebRect& window_rect,
     const blink::WebRect& clip_rect,
     const blink::WebRect& unobscured_rect,
@@ -241,7 +242,7 @@ void TestPlugin::updateGeometry(
     return;
   rect_ = clip_rect;
 
-  if (rect_.isEmpty()) {
+  if (rect_.IsEmpty()) {
     texture_mailbox_ = cc::TextureMailbox();
   } else if (gl_) {
     gl_->Viewport(0, 0, rect_.width, rect_.height);
@@ -286,7 +287,7 @@ void TestPlugin::updateGeometry(
   layer_->SetNeedsDisplay();
 }
 
-bool TestPlugin::isPlaceholder() {
+bool TestPlugin::IsPlaceholder() {
   return false;
 }
 
@@ -348,7 +349,7 @@ void TestPlugin::ParseColor(const blink::WebString& string, uint8_t color[3]) {
 }
 
 float TestPlugin::ParseOpacity(const blink::WebString& string) {
-  return static_cast<float>(atof(string.utf8().data()));
+  return static_cast<float>(atof(string.Utf8().data()));
 }
 
 bool TestPlugin::ParseBoolean(const blink::WebString& string) {
@@ -537,10 +538,10 @@ GLuint TestPlugin::LoadProgram(const std::string& vertex_source,
   return program;
 }
 
-blink::WebInputEventResult TestPlugin::handleInputEvent(
+blink::WebInputEventResult TestPlugin::HandleInputEvent(
     const blink::WebInputEvent& event,
     blink::WebCursorInfo& info) {
-  const char* event_name = blink::WebInputEvent::GetName(event.type());
+  const char* event_name = blink::WebInputEvent::GetName(event.GetType());
   if (!strcmp(event_name, "") || !strcmp(event_name, "Undefined"))
     event_name = "unknown";
   delegate_->PrintMessage(std::string("Plugin received event: ") + event_name +
@@ -550,15 +551,15 @@ blink::WebInputEventResult TestPlugin::handleInputEvent(
   if (print_user_gesture_status_)
     delegate_->PrintMessage(
         std::string("* ") +
-        (blink::WebUserGestureIndicator::isProcessingUserGesture() ? ""
+        (blink::WebUserGestureIndicator::IsProcessingUserGesture() ? ""
                                                                    : "not ") +
         "handling user gesture\n");
   if (is_persistent_)
     delegate_->PrintMessage(std::string("TestPlugin: isPersistent\n"));
-  return blink::WebInputEventResult::NotHandled;
+  return blink::WebInputEventResult::kNotHandled;
 }
 
-bool TestPlugin::handleDragStatusUpdate(
+bool TestPlugin::HandleDragStatusUpdate(
     blink::WebDragStatus drag_status,
     const blink::WebDragData& data,
     blink::WebDragOperationsMask mask,
@@ -566,19 +567,19 @@ bool TestPlugin::handleDragStatusUpdate(
     const blink::WebPoint& screen_position) {
   const char* drag_status_name = 0;
   switch (drag_status) {
-    case blink::WebDragStatusEnter:
+    case blink::kWebDragStatusEnter:
       drag_status_name = "DragEnter";
       break;
-    case blink::WebDragStatusOver:
+    case blink::kWebDragStatusOver:
       drag_status_name = "DragOver";
       break;
-    case blink::WebDragStatusLeave:
+    case blink::kWebDragStatusLeave:
       drag_status_name = "DragLeave";
       break;
-    case blink::WebDragStatusDrop:
+    case blink::kWebDragStatusDrop:
       drag_status_name = "DragDrop";
       break;
-    case blink::WebDragStatusUnknown:
+    case blink::kWebDragStatusUnknown:
       NOTREACHED();
   }
   delegate_->PrintMessage(std::string("Plugin received event: ") +

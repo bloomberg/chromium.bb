@@ -55,7 +55,7 @@
 namespace blink {
 
 PictureSnapshot::PictureSnapshot(sk_sp<const SkPicture> picture)
-    : m_picture(std::move(picture)) {}
+    : picture_(std::move(picture)) {}
 
 class SkiaImageDecoder final : public SkImageDeserializer {
  public:
@@ -63,17 +63,17 @@ class SkiaImageDecoder final : public SkImageDeserializer {
                                 size_t length,
                                 const SkIRect* subset) override {
     // No need to copy the data; this decodes immediately.
-    RefPtr<SegmentReader> segmentReader =
-        SegmentReader::createFromSkData(SkData::MakeWithoutCopy(data, length));
-    std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(
-        std::move(segmentReader), true, ImageDecoder::AlphaPremultiplied,
-        ColorBehavior::ignore());
-    if (!imageDecoder)
+    RefPtr<SegmentReader> segment_reader =
+        SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(data, length));
+    std::unique_ptr<ImageDecoder> image_decoder = ImageDecoder::Create(
+        std::move(segment_reader), true, ImageDecoder::kAlphaPremultiplied,
+        ColorBehavior::Ignore());
+    if (!image_decoder)
       return nullptr;
 
-    ImageFrame* frame = imageDecoder->frameBufferAtIndex(0);
-    return (frame && !imageDecoder->failed())
-               ? frame->finalizePixelsAndGetImage()
+    ImageFrame* frame = image_decoder->FrameBufferAtIndex(0);
+    return (frame && !image_decoder->Failed())
+               ? frame->FinalizePixelsAndGetImage()
                : nullptr;
   }
   sk_sp<SkImage> makeFromData(SkData* data, const SkIRect* subset) override {
@@ -81,46 +81,46 @@ class SkiaImageDecoder final : public SkImageDeserializer {
   }
 };
 
-PassRefPtr<PictureSnapshot> PictureSnapshot::load(
+PassRefPtr<PictureSnapshot> PictureSnapshot::Load(
     const Vector<RefPtr<TilePictureStream>>& tiles) {
-  ASSERT(!tiles.isEmpty());
+  ASSERT(!tiles.IsEmpty());
   Vector<sk_sp<SkPicture>> pictures;
-  pictures.reserveCapacity(tiles.size());
-  FloatRect unionRect;
-  for (const auto& tileStream : tiles) {
-    SkMemoryStream stream(tileStream->data.begin(), tileStream->data.size());
+  pictures.ReserveCapacity(tiles.size());
+  FloatRect union_rect;
+  for (const auto& tile_stream : tiles) {
+    SkMemoryStream stream(tile_stream->data.begin(), tile_stream->data.size());
     SkiaImageDecoder factory;
     sk_sp<SkPicture> picture = SkPicture::MakeFromStream(&stream, &factory);
     if (!picture)
       return nullptr;
-    FloatRect cullRect(picture->cullRect());
-    cullRect.moveBy(tileStream->layerOffset);
-    unionRect.unite(cullRect);
+    FloatRect cull_rect(picture->cullRect());
+    cull_rect.MoveBy(tile_stream->layer_offset);
+    union_rect.Unite(cull_rect);
     pictures.push_back(std::move(picture));
   }
   if (tiles.size() == 1)
-    return adoptRef(new PictureSnapshot(std::move(pictures[0])));
+    return AdoptRef(new PictureSnapshot(std::move(pictures[0])));
   SkPictureRecorder recorder;
   SkCanvas* canvas =
-      recorder.beginRecording(unionRect.width(), unionRect.height(), 0, 0);
+      recorder.beginRecording(union_rect.Width(), union_rect.Height(), 0, 0);
   for (size_t i = 0; i < pictures.size(); ++i) {
     canvas->save();
-    canvas->translate(tiles[i]->layerOffset.x() - unionRect.x(),
-                      tiles[i]->layerOffset.y() - unionRect.y());
+    canvas->translate(tiles[i]->layer_offset.X() - union_rect.X(),
+                      tiles[i]->layer_offset.Y() - union_rect.Y());
     pictures[i]->playback(canvas, 0);
     canvas->restore();
   }
-  return adoptRef(new PictureSnapshot(recorder.finishRecordingAsPicture()));
+  return AdoptRef(new PictureSnapshot(recorder.finishRecordingAsPicture()));
 }
 
-bool PictureSnapshot::isEmpty() const {
-  return m_picture->cullRect().isEmpty();
+bool PictureSnapshot::IsEmpty() const {
+  return picture_->cullRect().isEmpty();
 }
 
-std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep,
-                                                      unsigned toStep,
+std::unique_ptr<Vector<char>> PictureSnapshot::Replay(unsigned from_step,
+                                                      unsigned to_step,
                                                       double scale) const {
-  const SkIRect bounds = m_picture->cullRect().roundOut();
+  const SkIRect bounds = picture_->cullRect().roundOut();
   int width = ceil(scale * bounds.width());
   int height = ceil(scale * bounds.height());
 
@@ -130,76 +130,77 @@ std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep,
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
   bitmap.eraseARGB(0, 0, 0, 0);
   {
-    ReplayingCanvas canvas(bitmap, fromStep, toStep);
+    ReplayingCanvas canvas(bitmap, from_step, to_step);
     // Disable LCD text preemptively, because the picture opacity is unknown.
     // The canonical API involves SkSurface props, but since we're not
     // SkSurface-based at this point (see TODO above) we (ab)use saveLayer for
     // this purpose.
-    SkAutoCanvasRestore autoRestore(&canvas, false);
+    SkAutoCanvasRestore auto_restore(&canvas, false);
     canvas.saveLayer(nullptr, nullptr);
 
     canvas.scale(scale, scale);
-    canvas.resetStepCount();
-    m_picture->playback(&canvas, &canvas);
+    canvas.ResetStepCount();
+    picture_->playback(&canvas, &canvas);
   }
-  std::unique_ptr<Vector<char>> base64Data = WTF::makeUnique<Vector<char>>();
-  Vector<char> encodedImage;
+  std::unique_ptr<Vector<char>> base64_data = WTF::MakeUnique<Vector<char>>();
+  Vector<char> encoded_image;
 
   sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
   if (!image)
     return nullptr;
 
-  ImagePixelLocker pixelLocker(image, kUnpremul_SkAlphaType,
-                               kRGBA_8888_SkColorType);
-  ImageDataBuffer imageData(
+  ImagePixelLocker pixel_locker(image, kUnpremul_SkAlphaType,
+                                kRGBA_8888_SkColorType);
+  ImageDataBuffer image_data(
       IntSize(image->width(), image->height()),
-      static_cast<const unsigned char*>(pixelLocker.pixels()));
-  if (!PNGImageEncoder::encode(
-          imageData, reinterpret_cast<Vector<unsigned char>*>(&encodedImage)))
+      static_cast<const unsigned char*>(pixel_locker.Pixels()));
+  if (!PNGImageEncoder::Encode(
+          image_data, reinterpret_cast<Vector<unsigned char>*>(&encoded_image)))
     return nullptr;
 
-  base64Encode(encodedImage, *base64Data);
-  return base64Data;
+  Base64Encode(encoded_image, *base64_data);
+  return base64_data;
 }
 
-std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::profile(
-    unsigned minRepeatCount,
-    double minDuration,
-    const FloatRect* clipRect) const {
+std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::Profile(
+    unsigned min_repeat_count,
+    double min_duration,
+    const FloatRect* clip_rect) const {
   std::unique_ptr<PictureSnapshot::Timings> timings =
-      WTF::makeUnique<PictureSnapshot::Timings>();
-  timings->reserveCapacity(minRepeatCount);
-  const SkIRect bounds = m_picture->cullRect().roundOut();
+      WTF::MakeUnique<PictureSnapshot::Timings>();
+  timings->ReserveCapacity(min_repeat_count);
+  const SkIRect bounds = picture_->cullRect().roundOut();
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
   bitmap.eraseARGB(0, 0, 0, 0);
 
-  double now = WTF::monotonicallyIncreasingTime();
-  double stopTime = now + minDuration;
-  for (unsigned step = 0; step < minRepeatCount || now < stopTime; ++step) {
+  double now = WTF::MonotonicallyIncreasingTime();
+  double stop_time = now + min_duration;
+  for (unsigned step = 0; step < min_repeat_count || now < stop_time; ++step) {
     timings->push_back(Vector<double>());
-    Vector<double>* currentTimings = &timings->back();
+    Vector<double>* current_timings = &timings->back();
     if (timings->size() > 1)
-      currentTimings->reserveCapacity(timings->begin()->size());
+      current_timings->ReserveCapacity(timings->begin()->size());
     ProfilingCanvas canvas(bitmap);
-    if (clipRect) {
-      canvas.clipRect(SkRect::MakeXYWH(clipRect->x(), clipRect->y(),
-                                       clipRect->width(), clipRect->height()));
-      canvas.resetStepCount();
+    if (clip_rect) {
+      canvas.clipRect(SkRect::MakeXYWH(clip_rect->X(), clip_rect->Y(),
+                                       clip_rect->Width(),
+                                       clip_rect->Height()));
+      canvas.ResetStepCount();
     }
-    canvas.setTimings(currentTimings);
-    m_picture->playback(&canvas);
-    now = WTF::monotonicallyIncreasingTime();
+    canvas.SetTimings(current_timings);
+    picture_->playback(&canvas);
+    now = WTF::MonotonicallyIncreasingTime();
   }
   return timings;
 }
 
-std::unique_ptr<JSONArray> PictureSnapshot::snapshotCommandLog() const {
-  const SkIRect bounds = m_picture->cullRect().roundOut();
+std::unique_ptr<JSONArray> PictureSnapshot::SnapshotCommandLog() const {
+  const SkIRect bounds = picture_->cullRect().roundOut();
   LoggingCanvas canvas(bounds.width(), bounds.height());
-  m_picture->playback(&canvas);
-  return canvas.log();
+  picture_->playback(&canvas);
+  return canvas.Log();
 }
 
 }  // namespace blink

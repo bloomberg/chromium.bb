@@ -6,7 +6,7 @@
 
 namespace blink {
 
-CSSNumericValue* CSSNumericValue::parse(const String& cssText,
+CSSNumericValue* CSSNumericValue::parse(const String& css_text,
                                         ExceptionState&) {
   // TODO(meade): Implement
   return nullptr;

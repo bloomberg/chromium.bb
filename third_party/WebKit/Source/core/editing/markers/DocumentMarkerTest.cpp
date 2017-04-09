@@ -16,10 +16,10 @@ TEST_F(DocumentMarkerTest, MarkerTypeIteratorEmpty) {
 }
 
 TEST_F(DocumentMarkerTest, MarkerTypeIteratorOne) {
-  DocumentMarker::MarkerTypes types(DocumentMarker::Spelling);
+  DocumentMarker::MarkerTypes types(DocumentMarker::kSpelling);
   ASSERT_TRUE(types.begin() != types.end());
   auto it = types.begin();
-  EXPECT_EQ(DocumentMarker::Spelling, *it);
+  EXPECT_EQ(DocumentMarker::kSpelling, *it);
   ++it;
   EXPECT_TRUE(it == types.end());
 }
@@ -28,9 +28,9 @@ TEST_F(DocumentMarkerTest, MarkerTypeIteratorConsecutive) {
   DocumentMarker::MarkerTypes types(0b11);  // Spelling | Grammar
   ASSERT_TRUE(types.begin() != types.end());
   auto it = types.begin();
-  EXPECT_EQ(DocumentMarker::Spelling, *it);
+  EXPECT_EQ(DocumentMarker::kSpelling, *it);
   ++it;
-  EXPECT_EQ(DocumentMarker::Grammar, *it);
+  EXPECT_EQ(DocumentMarker::kGrammar, *it);
   ++it;
   EXPECT_TRUE(it == types.end());
 }
@@ -39,9 +39,9 @@ TEST_F(DocumentMarkerTest, MarkerTypeIteratorDistributed) {
   DocumentMarker::MarkerTypes types(0b101);  // Spelling | TextMatch
   ASSERT_TRUE(types.begin() != types.end());
   auto it = types.begin();
-  EXPECT_EQ(DocumentMarker::Spelling, *it);
+  EXPECT_EQ(DocumentMarker::kSpelling, *it);
   ++it;
-  EXPECT_EQ(DocumentMarker::TextMatch, *it);
+  EXPECT_EQ(DocumentMarker::kTextMatch, *it);
   ++it;
   EXPECT_TRUE(it == types.end());
 }

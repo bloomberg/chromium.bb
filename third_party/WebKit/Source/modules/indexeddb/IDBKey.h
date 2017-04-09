@@ -39,23 +39,23 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
  public:
   typedef HeapVector<Member<IDBKey>> KeyArray;
 
-  static IDBKey* createInvalid() { return new IDBKey(); }
+  static IDBKey* CreateInvalid() { return new IDBKey(); }
 
-  static IDBKey* createNumber(double number) {
-    return new IDBKey(NumberType, number);
+  static IDBKey* CreateNumber(double number) {
+    return new IDBKey(kNumberType, number);
   }
 
-  static IDBKey* createBinary(PassRefPtr<SharedBuffer> binary) {
+  static IDBKey* CreateBinary(PassRefPtr<SharedBuffer> binary) {
     return new IDBKey(std::move(binary));
   }
 
-  static IDBKey* createString(const String& string) {
+  static IDBKey* CreateString(const String& string) {
     return new IDBKey(string);
   }
 
-  static IDBKey* createDate(double date) { return new IDBKey(DateType, date); }
+  static IDBKey* CreateDate(double date) { return new IDBKey(kDateType, date); }
 
-  static IDBKey* createArray(const KeyArray& array) {
+  static IDBKey* CreateArray(const KeyArray& array) {
     return new IDBKey(array);
   }
 
@@ -66,64 +66,64 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
   // These values are written to logs. New enum values can be added, but
   // existing enums must never be renumbered or deleted and reused.
   enum Type {
-    InvalidType = 0,
-    ArrayType = 1,
-    BinaryType = 2,
-    StringType = 3,
-    DateType = 4,
-    NumberType = 5,
-    TypeEnumMax,
+    kInvalidType = 0,
+    kArrayType = 1,
+    kBinaryType = 2,
+    kStringType = 3,
+    kDateType = 4,
+    kNumberType = 5,
+    kTypeEnumMax,
   };
 
-  Type getType() const { return m_type; }
-  bool isValid() const;
+  Type GetType() const { return type_; }
+  bool IsValid() const;
 
-  const KeyArray& array() const {
-    ASSERT(m_type == ArrayType);
-    return m_array;
+  const KeyArray& Array() const {
+    ASSERT(type_ == kArrayType);
+    return array_;
   }
 
-  PassRefPtr<SharedBuffer> binary() const {
-    ASSERT(m_type == BinaryType);
-    return m_binary;
+  PassRefPtr<SharedBuffer> Binary() const {
+    ASSERT(type_ == kBinaryType);
+    return binary_;
   }
 
-  const String& string() const {
-    ASSERT(m_type == StringType);
-    return m_string;
+  const String& GetString() const {
+    ASSERT(type_ == kStringType);
+    return string_;
   }
 
-  double date() const {
-    ASSERT(m_type == DateType);
-    return m_number;
+  double Date() const {
+    ASSERT(type_ == kDateType);
+    return number_;
   }
 
-  double number() const {
-    ASSERT(m_type == NumberType);
-    return m_number;
+  double Number() const {
+    ASSERT(type_ == kNumberType);
+    return number_;
   }
 
-  int compare(const IDBKey* other) const;
-  bool isLessThan(const IDBKey* other) const;
-  bool isEqual(const IDBKey* other) const;
+  int Compare(const IDBKey* other) const;
+  bool IsLessThan(const IDBKey* other) const;
+  bool IsEqual(const IDBKey* other) const;
 
   // Returns a new key array with invalid keys and duplicates removed.
-  KeyArray toMultiEntryArray() const;
+  KeyArray ToMultiEntryArray() const;
 
  private:
-  IDBKey() : m_type(InvalidType) {}
-  IDBKey(Type type, double number) : m_type(type), m_number(number) {}
-  explicit IDBKey(const String& value) : m_type(StringType), m_string(value) {}
+  IDBKey() : type_(kInvalidType) {}
+  IDBKey(Type type, double number) : type_(type), number_(number) {}
+  explicit IDBKey(const String& value) : type_(kStringType), string_(value) {}
   explicit IDBKey(PassRefPtr<SharedBuffer> value)
-      : m_type(BinaryType), m_binary(std::move(value)) {}
-  explicit IDBKey(const KeyArray& keyArray)
-      : m_type(ArrayType), m_array(keyArray) {}
+      : type_(kBinaryType), binary_(std::move(value)) {}
+  explicit IDBKey(const KeyArray& key_array)
+      : type_(kArrayType), array_(key_array) {}
 
-  const Type m_type;
-  const KeyArray m_array;
-  RefPtr<SharedBuffer> m_binary;
-  const String m_string;
-  const double m_number = 0;
+  const Type type_;
+  const KeyArray array_;
+  RefPtr<SharedBuffer> binary_;
+  const String string_;
+  const double number_ = 0;
 };
 
 }  // namespace blink

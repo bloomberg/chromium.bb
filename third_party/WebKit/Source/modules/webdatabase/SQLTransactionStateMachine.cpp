@@ -30,33 +30,33 @@
 namespace blink {
 
 #if DCHECK_IS_ON()
-const char* nameForSQLTransactionState(SQLTransactionState state) {
+const char* NameForSQLTransactionState(SQLTransactionState state) {
   switch (state) {
-    case SQLTransactionState::End:
+    case SQLTransactionState::kEnd:
       return "end";
-    case SQLTransactionState::Idle:
+    case SQLTransactionState::kIdle:
       return "idle";
-    case SQLTransactionState::AcquireLock:
+    case SQLTransactionState::kAcquireLock:
       return "acquireLock";
-    case SQLTransactionState::OpenTransactionAndPreflight:
+    case SQLTransactionState::kOpenTransactionAndPreflight:
       return "openTransactionAndPreflight";
-    case SQLTransactionState::RunStatements:
+    case SQLTransactionState::kRunStatements:
       return "runStatements";
-    case SQLTransactionState::PostflightAndCommit:
+    case SQLTransactionState::kPostflightAndCommit:
       return "postflightAndCommit";
-    case SQLTransactionState::CleanupAndTerminate:
+    case SQLTransactionState::kCleanupAndTerminate:
       return "cleanupAndTerminate";
-    case SQLTransactionState::CleanupAfterTransactionErrorCallback:
+    case SQLTransactionState::kCleanupAfterTransactionErrorCallback:
       return "cleanupAfterTransactionErrorCallback";
-    case SQLTransactionState::DeliverTransactionCallback:
+    case SQLTransactionState::kDeliverTransactionCallback:
       return "deliverTransactionCallback";
-    case SQLTransactionState::DeliverTransactionErrorCallback:
+    case SQLTransactionState::kDeliverTransactionErrorCallback:
       return "deliverTransactionErrorCallback";
-    case SQLTransactionState::DeliverStatementCallback:
+    case SQLTransactionState::kDeliverStatementCallback:
       return "deliverStatementCallback";
-    case SQLTransactionState::DeliverQuotaIncreaseCallback:
+    case SQLTransactionState::kDeliverQuotaIncreaseCallback:
       return "deliverQuotaIncreaseCallback";
-    case SQLTransactionState::DeliverSuccessCallback:
+    case SQLTransactionState::kDeliverSuccessCallback:
       return "deliverSuccessCallback";
     default:
       return "UNKNOWN";

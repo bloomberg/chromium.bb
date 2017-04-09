@@ -8,7 +8,7 @@
 
 namespace blink {
 
-DOMPoint* DOMPoint::create(double x, double y, double z, double w) {
+DOMPoint* DOMPoint::Create(double x, double y, double z, double w) {
   return new DOMPoint(x, y, z, w);
 }
 

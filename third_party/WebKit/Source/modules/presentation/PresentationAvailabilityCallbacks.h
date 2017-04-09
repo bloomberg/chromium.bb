@@ -27,12 +27,12 @@ class PresentationAvailabilityCallbacks final
                                     const WTF::Vector<KURL>&);
   ~PresentationAvailabilityCallbacks() override;
 
-  void onSuccess(bool value) override;
-  void onError(const WebPresentationError&) override;
+  void OnSuccess(bool value) override;
+  void OnError(const WebPresentationError&) override;
 
  private:
-  Persistent<PresentationAvailabilityProperty> m_resolver;
-  const WTF::Vector<KURL> m_urls;
+  Persistent<PresentationAvailabilityProperty> resolver_;
+  const WTF::Vector<KURL> urls_;
 
   WTF_MAKE_NONCOPYABLE(PresentationAvailabilityCallbacks);
 };

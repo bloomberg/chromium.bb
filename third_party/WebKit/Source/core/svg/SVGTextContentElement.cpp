@@ -38,12 +38,12 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGLengthAdjustType>() {
+GetStaticStringEntries<SVGLengthAdjustType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
-    entries.push_back(std::make_pair(SVGLengthAdjustSpacing, "spacing"));
+  if (entries.IsEmpty()) {
+    entries.push_back(std::make_pair(kSVGLengthAdjustSpacing, "spacing"));
     entries.push_back(
-        std::make_pair(SVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"));
+        std::make_pair(kSVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"));
   }
   return entries;
 }
@@ -53,251 +53,255 @@ getStaticStringEntries<SVGLengthAdjustType>() {
 // manually.
 class SVGAnimatedTextLength final : public SVGAnimatedLength {
  public:
-  static SVGAnimatedTextLength* create(SVGTextContentElement* contextElement) {
-    return new SVGAnimatedTextLength(contextElement);
+  static SVGAnimatedTextLength* Create(SVGTextContentElement* context_element) {
+    return new SVGAnimatedTextLength(context_element);
   }
 
   SVGLengthTearOff* baseVal() override {
-    SVGTextContentElement* textContentElement =
-        toSVGTextContentElement(contextElement());
-    if (!textContentElement->textLengthIsSpecifiedByUser())
-      baseValue()->newValueSpecifiedUnits(
-          CSSPrimitiveValue::UnitType::Number,
-          textContentElement->getComputedTextLength());
+    SVGTextContentElement* text_content_element =
+        ToSVGTextContentElement(contextElement());
+    if (!text_content_element->TextLengthIsSpecifiedByUser())
+      BaseValue()->NewValueSpecifiedUnits(
+          CSSPrimitiveValue::UnitType::kNumber,
+          text_content_element->getComputedTextLength());
 
     return SVGAnimatedLength::baseVal();
   }
 
  private:
-  SVGAnimatedTextLength(SVGTextContentElement* contextElement)
-      : SVGAnimatedLength(contextElement,
+  SVGAnimatedTextLength(SVGTextContentElement* context_element)
+      : SVGAnimatedLength(context_element,
                           SVGNames::textLengthAttr,
-                          SVGLength::create(SVGLengthMode::Width)) {}
+                          SVGLength::Create(SVGLengthMode::kWidth)) {}
 };
 
-SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName,
+SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,
                                              Document& document)
-    : SVGGraphicsElement(tagName, document),
-      m_textLength(SVGAnimatedTextLength::create(this)),
-      m_textLengthIsSpecifiedByUser(false),
-      m_lengthAdjust(SVGAnimatedEnumeration<SVGLengthAdjustType>::create(
+    : SVGGraphicsElement(tag_name, document),
+      text_length_(SVGAnimatedTextLength::Create(this)),
+      text_length_is_specified_by_user_(false),
+      length_adjust_(SVGAnimatedEnumeration<SVGLengthAdjustType>::Create(
           this,
           SVGNames::lengthAdjustAttr,
-          SVGLengthAdjustSpacing)) {
-  addToPropertyMap(m_textLength);
-  addToPropertyMap(m_lengthAdjust);
+          kSVGLengthAdjustSpacing)) {
+  AddToPropertyMap(text_length_);
+  AddToPropertyMap(length_adjust_);
 }
 
 DEFINE_TRACE(SVGTextContentElement) {
-  visitor->trace(m_textLength);
-  visitor->trace(m_lengthAdjust);
-  SVGGraphicsElement::trace(visitor);
+  visitor->Trace(text_length_);
+  visitor->Trace(length_adjust_);
+  SVGGraphicsElement::Trace(visitor);
 }
 
 unsigned SVGTextContentElement::getNumberOfChars() {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  return SVGTextQuery(layoutObject()).numberOfCharacters();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  return SVGTextQuery(GetLayoutObject()).NumberOfCharacters();
 }
 
 float SVGTextContentElement::getComputedTextLength() {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  return SVGTextQuery(layoutObject()).textLength();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  return SVGTextQuery(GetLayoutObject()).TextLength();
 }
 
 float SVGTextContentElement::getSubStringLength(
     unsigned charnum,
     unsigned nchars,
-    ExceptionState& exceptionState) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+    ExceptionState& exception_state) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  unsigned numberOfChars = getNumberOfChars();
-  if (charnum >= numberOfChars) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "charnum", charnum, getNumberOfChars()));
+  unsigned number_of_chars = getNumberOfChars();
+  if (charnum >= number_of_chars) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "charnum", charnum, getNumberOfChars()));
     return 0.0f;
   }
 
-  if (nchars > numberOfChars - charnum)
-    nchars = numberOfChars - charnum;
+  if (nchars > number_of_chars - charnum)
+    nchars = number_of_chars - charnum;
 
-  return SVGTextQuery(layoutObject()).subStringLength(charnum, nchars);
+  return SVGTextQuery(GetLayoutObject()).SubStringLength(charnum, nchars);
 }
 
 SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(
     unsigned charnum,
-    ExceptionState& exceptionState) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+    ExceptionState& exception_state) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (charnum >= getNumberOfChars()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "charnum", charnum, getNumberOfChars()));
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "charnum", charnum, getNumberOfChars()));
     return nullptr;
   }
 
   FloatPoint point =
-      SVGTextQuery(layoutObject()).startPositionOfCharacter(charnum);
-  return SVGPointTearOff::create(SVGPoint::create(point), 0,
-                                 PropertyIsNotAnimVal);
+      SVGTextQuery(GetLayoutObject()).StartPositionOfCharacter(charnum);
+  return SVGPointTearOff::Create(SVGPoint::Create(point), 0,
+                                 kPropertyIsNotAnimVal);
 }
 
 SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(
     unsigned charnum,
-    ExceptionState& exceptionState) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+    ExceptionState& exception_state) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (charnum >= getNumberOfChars()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "charnum", charnum, getNumberOfChars()));
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "charnum", charnum, getNumberOfChars()));
     return nullptr;
   }
 
   FloatPoint point =
-      SVGTextQuery(layoutObject()).endPositionOfCharacter(charnum);
-  return SVGPointTearOff::create(SVGPoint::create(point), 0,
-                                 PropertyIsNotAnimVal);
+      SVGTextQuery(GetLayoutObject()).EndPositionOfCharacter(charnum);
+  return SVGPointTearOff::Create(SVGPoint::Create(point), 0,
+                                 kPropertyIsNotAnimVal);
 }
 
 SVGRectTearOff* SVGTextContentElement::getExtentOfChar(
     unsigned charnum,
-    ExceptionState& exceptionState) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+    ExceptionState& exception_state) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (charnum >= getNumberOfChars()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "charnum", charnum, getNumberOfChars()));
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "charnum", charnum, getNumberOfChars()));
     return nullptr;
   }
 
-  FloatRect rect = SVGTextQuery(layoutObject()).extentOfCharacter(charnum);
-  return SVGRectTearOff::create(SVGRect::create(rect), 0, PropertyIsNotAnimVal);
+  FloatRect rect = SVGTextQuery(GetLayoutObject()).ExtentOfCharacter(charnum);
+  return SVGRectTearOff::Create(SVGRect::Create(rect), 0,
+                                kPropertyIsNotAnimVal);
 }
 
-float SVGTextContentElement::getRotationOfChar(unsigned charnum,
-                                               ExceptionState& exceptionState) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+float SVGTextContentElement::getRotationOfChar(
+    unsigned charnum,
+    ExceptionState& exception_state) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (charnum >= getNumberOfChars()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "charnum", charnum, getNumberOfChars()));
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "charnum", charnum, getNumberOfChars()));
     return 0.0f;
   }
 
-  return SVGTextQuery(layoutObject()).rotationOfCharacter(charnum);
+  return SVGTextQuery(GetLayoutObject()).RotationOfCharacter(charnum);
 }
 
 int SVGTextContentElement::getCharNumAtPosition(
     SVGPointTearOff* point,
-    ExceptionState& exceptionState) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  return SVGTextQuery(layoutObject())
-      .characterNumberAtPosition(point->target()->value());
+    ExceptionState& exception_state) {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  return SVGTextQuery(GetLayoutObject())
+      .CharacterNumberAtPosition(point->Target()->Value());
 }
 
 void SVGTextContentElement::selectSubString(unsigned charnum,
                                             unsigned nchars,
-                                            ExceptionState& exceptionState) {
-  unsigned numberOfChars = getNumberOfChars();
-  if (charnum >= numberOfChars) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "charnum", charnum, getNumberOfChars()));
+                                            ExceptionState& exception_state) {
+  unsigned number_of_chars = getNumberOfChars();
+  if (charnum >= number_of_chars) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "charnum", charnum, getNumberOfChars()));
     return;
   }
 
-  if (nchars > numberOfChars - charnum)
-    nchars = numberOfChars - charnum;
+  if (nchars > number_of_chars - charnum)
+    nchars = number_of_chars - charnum;
 
-  DCHECK(document().frame());
+  DCHECK(GetDocument().GetFrame());
 
   // Find selection start
-  VisiblePosition start = VisiblePosition::firstPositionInNode(
+  VisiblePosition start = VisiblePosition::FirstPositionInNode(
       const_cast<SVGTextContentElement*>(this));
   for (unsigned i = 0; i < charnum; ++i)
-    start = nextPositionOf(start);
+    start = NextPositionOf(start);
 
   // Find selection end
   VisiblePosition end(start);
   for (unsigned i = 0; i < nchars; ++i)
-    end = nextPositionOf(end);
+    end = NextPositionOf(end);
 
   // TODO(editing-dev): We assume |start| and |end| are not null and we don't
   // known when |start| and |end| are null. Once we get a such case, we check
   // null for |start| and |end|.
-  document().frame()->selection().setSelection(
+  GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(start.deepEquivalent(), end.deepEquivalent())
-          .setAffinity(start.affinity())
-          .build());
+          .SetBaseAndExtent(start.DeepEquivalent(), end.DeepEquivalent())
+          .SetAffinity(start.Affinity())
+          .Build());
 }
 
-bool SVGTextContentElement::isPresentationAttribute(
+bool SVGTextContentElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name.matches(XMLNames::spaceAttr))
+  if (name.Matches(XMLNames::spaceAttr))
     return true;
-  return SVGGraphicsElement::isPresentationAttribute(name);
+  return SVGGraphicsElement::IsPresentationAttribute(name);
 }
 
-void SVGTextContentElement::collectStyleForPresentationAttribute(
+void SVGTextContentElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
-  if (name.matches(XMLNames::spaceAttr)) {
-    DEFINE_STATIC_LOCAL(const AtomicString, preserveString, ("preserve"));
+  if (name.Matches(XMLNames::spaceAttr)) {
+    DEFINE_STATIC_LOCAL(const AtomicString, preserve_string, ("preserve"));
 
-    if (value == preserveString) {
-      UseCounter::count(document(), UseCounter::WhiteSpacePreFromXMLSpace);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+    if (value == preserve_string) {
+      UseCounter::Count(GetDocument(), UseCounter::kWhiteSpacePreFromXMLSpace);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValuePre);
     } else {
-      UseCounter::count(document(), UseCounter::WhiteSpaceNowrapFromXMLSpace);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+      UseCounter::Count(GetDocument(),
+                        UseCounter::kWhiteSpaceNowrapFromXMLSpace);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValueNowrap);
     }
   } else {
-    SVGGraphicsElement::collectStyleForPresentationAttribute(name, value,
+    SVGGraphicsElement::CollectStyleForPresentationAttribute(name, value,
                                                              style);
   }
 }
 
-void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::textLengthAttr)
-    m_textLengthIsSpecifiedByUser = true;
+void SVGTextContentElement::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::textLengthAttr)
+    text_length_is_specified_by_user_ = true;
 
-  if (attrName == SVGNames::textLengthAttr ||
-      attrName == SVGNames::lengthAdjustAttr ||
-      attrName == XMLNames::spaceAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+  if (attr_name == SVGNames::textLengthAttr ||
+      attr_name == SVGNames::lengthAdjustAttr ||
+      attr_name == XMLNames::spaceAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    if (LayoutObject* layoutObject = this->layoutObject())
-      markForLayoutAndParentResourceInvalidation(layoutObject);
+    if (LayoutObject* layout_object = this->GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(layout_object);
 
     return;
   }
 
-  SVGGraphicsElement::svgAttributeChanged(attrName);
+  SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-bool SVGTextContentElement::selfHasRelativeLengths() const {
+bool SVGTextContentElement::SelfHasRelativeLengths() const {
   // Any element of the <text> subtree is advertized as using relative lengths.
   // On any window size change, we have to relayout the text subtree, as the
   // effective 'on-screen' font size may change.
   return true;
 }
 
-SVGTextContentElement* SVGTextContentElement::elementFromLineLayoutItem(
-    const LineLayoutItem& lineLayoutItem) {
-  if (!lineLayoutItem ||
-      (!lineLayoutItem.isSVGText() && !lineLayoutItem.isSVGInline()))
+SVGTextContentElement* SVGTextContentElement::ElementFromLineLayoutItem(
+    const LineLayoutItem& line_layout_item) {
+  if (!line_layout_item ||
+      (!line_layout_item.IsSVGText() && !line_layout_item.IsSVGInline()))
     return nullptr;
 
-  SVGElement* element = toSVGElement(lineLayoutItem.node());
+  SVGElement* element = ToSVGElement(line_layout_item.GetNode());
   DCHECK(element);
-  return isSVGTextContentElement(*element) ? toSVGTextContentElement(element)
+  return IsSVGTextContentElement(*element) ? ToSVGTextContentElement(element)
                                            : 0;
 }
 

@@ -48,52 +48,52 @@ class MODULES_EXPORT VibrationController final
   explicit VibrationController(Document&);
   virtual ~VibrationController();
 
-  static VibrationPattern sanitizeVibrationPattern(
+  static VibrationPattern SanitizeVibrationPattern(
       const UnsignedLongOrUnsignedLongSequence&);
 
-  bool vibrate(const VibrationPattern&);
-  void doVibrate(TimerBase*);
-  void didVibrate();
+  bool Vibrate(const VibrationPattern&);
+  void DoVibrate(TimerBase*);
+  void DidVibrate();
 
   // Cancels the ongoing vibration if there is one.
-  void cancel();
-  void didCancel();
+  void Cancel();
+  void DidCancel();
 
   // Whether a pattern is being processed. If this is true, the vibration
   // hardware may currently be active, but during a pause it may be inactive.
-  bool isRunning() const { return m_isRunning; }
+  bool IsRunning() const { return is_running_; }
 
-  VibrationPattern pattern() const { return m_pattern; }
+  VibrationPattern Pattern() const { return pattern_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   // Inherited from ContextLifecycleObserver.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // Inherited from PageVisibilityObserver.
-  void pageVisibilityChanged() override;
+  void PageVisibilityChanged() override;
 
   // Ptr to VibrationManager mojo interface. This is reset in |contextDestroyed|
   // and must not be called or recreated after it is reset.
-  device::mojom::blink::VibrationManagerPtr m_vibrationManager;
+  device::mojom::blink::VibrationManagerPtr vibration_manager_;
 
   // Timer for calling |doVibrate| after a delay. It is safe to call
   // |startOneshot| when the timer is already running: it may affect the time
   // at which it fires, but |doVibrate| will still be called only once.
-  TaskRunnerTimer<VibrationController> m_timerDoVibrate;
+  TaskRunnerTimer<VibrationController> timer_do_vibrate_;
 
   // Whether a pattern is being processed. The vibration hardware may
   // currently be active, or during a pause it may be inactive.
-  bool m_isRunning;
+  bool is_running_;
 
   // Whether an async mojo call to cancel is pending.
-  bool m_isCallingCancel;
+  bool is_calling_cancel_;
 
   // Whether an async mojo call to vibrate is pending.
-  bool m_isCallingVibrate;
+  bool is_calling_vibrate_;
 
-  VibrationPattern m_pattern;
+  VibrationPattern pattern_;
 };
 
 }  // namespace blink

@@ -32,38 +32,39 @@
 namespace blink {
 
 ConeEffect::ConeEffect()
-    : m_innerAngle(360.0), m_outerAngle(360.0), m_outerGain(0.0) {}
+    : inner_angle_(360.0), outer_angle_(360.0), outer_gain_(0.0) {}
 
-double ConeEffect::gain(FloatPoint3D sourcePosition,
-                        FloatPoint3D sourceOrientation,
-                        FloatPoint3D listenerPosition) {
-  if (sourceOrientation.isZero() ||
-      ((m_innerAngle == 360.0) && (m_outerAngle == 360.0)))
+double ConeEffect::Gain(FloatPoint3D source_position,
+                        FloatPoint3D source_orientation,
+                        FloatPoint3D listener_position) {
+  if (source_orientation.IsZero() ||
+      ((inner_angle_ == 360.0) && (outer_angle_ == 360.0)))
     return 1.0;  // no cone specified - unity gain
 
   // Source-listener vector
-  FloatPoint3D sourceToListener = listenerPosition - sourcePosition;
+  FloatPoint3D source_to_listener = listener_position - source_position;
 
   // Angle between the source orientation vector and the source-listener vector
-  double angle = rad2deg(sourceToListener.angleBetween(sourceOrientation));
-  double absAngle = fabs(angle);
+  double angle = rad2deg(source_to_listener.AngleBetween(source_orientation));
+  double abs_angle = fabs(angle);
 
   // Divide by 2.0 here since API is entire angle (not half-angle)
-  double absInnerAngle = fabs(m_innerAngle) / 2.0;
-  double absOuterAngle = fabs(m_outerAngle) / 2.0;
+  double abs_inner_angle = fabs(inner_angle_) / 2.0;
+  double abs_outer_angle = fabs(outer_angle_) / 2.0;
   double gain = 1.0;
 
-  if (absAngle <= absInnerAngle)
+  if (abs_angle <= abs_inner_angle)
     // No attenuation
     gain = 1.0;
-  else if (absAngle >= absOuterAngle)
+  else if (abs_angle >= abs_outer_angle)
     // Max attenuation
-    gain = m_outerGain;
+    gain = outer_gain_;
   else {
     // Between inner and outer cones
     // inner -> outer, x goes from 0 -> 1
-    double x = (absAngle - absInnerAngle) / (absOuterAngle - absInnerAngle);
-    gain = (1.0 - x) + m_outerGain * x;
+    double x =
+        (abs_angle - abs_inner_angle) / (abs_outer_angle - abs_inner_angle);
+    gain = (1.0 - x) + outer_gain_ * x;
   }
 
   return gain;

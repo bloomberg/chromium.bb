@@ -33,96 +33,97 @@
 namespace blink {
 
 LayoutSVGRect::LayoutSVGRect(SVGRectElement* node)
-    : LayoutSVGShape(node), m_usePathFallback(false) {}
+    : LayoutSVGShape(node), use_path_fallback_(false) {}
 
 LayoutSVGRect::~LayoutSVGRect() {}
 
-void LayoutSVGRect::updateShapeFromElement() {
+void LayoutSVGRect::UpdateShapeFromElement() {
   // Before creating a new object we need to clear the cached bounding box
   // to avoid using garbage.
-  m_fillBoundingBox = FloatRect();
-  m_strokeBoundingBox = FloatRect();
-  m_usePathFallback = false;
-  SVGRectElement* rect = toSVGRectElement(element());
+  fill_bounding_box_ = FloatRect();
+  stroke_bounding_box_ = FloatRect();
+  use_path_fallback_ = false;
+  SVGRectElement* rect = toSVGRectElement(GetElement());
   DCHECK(rect);
 
-  SVGLengthContext lengthContext(rect);
-  FloatSize boundingBoxSize(
-      lengthContext.valueForLength(styleRef().width(), styleRef(),
-                                   SVGLengthMode::Width),
-      lengthContext.valueForLength(styleRef().height(), styleRef(),
-                                   SVGLengthMode::Height));
+  SVGLengthContext length_context(rect);
+  FloatSize bounding_box_size(
+      length_context.ValueForLength(StyleRef().Width(), StyleRef(),
+                                    SVGLengthMode::kWidth),
+      length_context.ValueForLength(StyleRef().Height(), StyleRef(),
+                                    SVGLengthMode::kHeight));
 
   // Spec: "A negative value is an error."
-  if (boundingBoxSize.width() < 0 || boundingBoxSize.height() < 0)
+  if (bounding_box_size.Width() < 0 || bounding_box_size.Height() < 0)
     return;
 
   // Spec: "A value of zero disables rendering of the element."
-  if (!boundingBoxSize.isEmpty()) {
+  if (!bounding_box_size.IsEmpty()) {
     // Fallback to LayoutSVGShape and path-based hit detection if the rect
     // has rounded corners or a non-scaling or non-simple stroke.
-    if (lengthContext.valueForLength(styleRef().svgStyle().rx(), styleRef(),
-                                     SVGLengthMode::Width) > 0 ||
-        lengthContext.valueForLength(styleRef().svgStyle().ry(), styleRef(),
-                                     SVGLengthMode::Height) > 0 ||
-        hasNonScalingStroke() || !definitelyHasSimpleStroke()) {
-      LayoutSVGShape::updateShapeFromElement();
-      m_usePathFallback = true;
+    if (length_context.ValueForLength(StyleRef().SvgStyle().Rx(), StyleRef(),
+                                      SVGLengthMode::kWidth) > 0 ||
+        length_context.ValueForLength(StyleRef().SvgStyle().Ry(), StyleRef(),
+                                      SVGLengthMode::kHeight) > 0 ||
+        HasNonScalingStroke() || !DefinitelyHasSimpleStroke()) {
+      LayoutSVGShape::UpdateShapeFromElement();
+      use_path_fallback_ = true;
       return;
     }
   }
 
-  m_fillBoundingBox = FloatRect(
+  fill_bounding_box_ = FloatRect(
       FloatPoint(
-          lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(),
-                                       SVGLengthMode::Width),
-          lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(),
-                                       SVGLengthMode::Height)),
-      boundingBoxSize);
-  m_strokeBoundingBox = m_fillBoundingBox;
-  if (style()->svgStyle().hasStroke())
-    m_strokeBoundingBox.inflate(strokeWidth() / 2);
-  if (element())
-    element()->setNeedsResizeObserverUpdate();
+          length_context.ValueForLength(StyleRef().SvgStyle().X(), StyleRef(),
+                                        SVGLengthMode::kWidth),
+          length_context.ValueForLength(StyleRef().SvgStyle().Y(), StyleRef(),
+                                        SVGLengthMode::kHeight)),
+      bounding_box_size);
+  stroke_bounding_box_ = fill_bounding_box_;
+  if (Style()->SvgStyle().HasStroke())
+    stroke_bounding_box_.Inflate(StrokeWidth() / 2);
+  if (GetElement())
+    GetElement()->SetNeedsResizeObserverUpdate();
 }
 
-bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point) {
+bool LayoutSVGRect::ShapeDependentStrokeContains(const FloatPoint& point) {
   // The optimized code below does not support non-simple strokes so we need
   // to fall back to LayoutSVGShape::shapeDependentStrokeContains in these
   // cases.
-  if (m_usePathFallback || !definitelyHasSimpleStroke()) {
-    if (!hasPath())
-      LayoutSVGShape::updateShapeFromElement();
-    return LayoutSVGShape::shapeDependentStrokeContains(point);
+  if (use_path_fallback_ || !DefinitelyHasSimpleStroke()) {
+    if (!HasPath())
+      LayoutSVGShape::UpdateShapeFromElement();
+    return LayoutSVGShape::ShapeDependentStrokeContains(point);
   }
 
-  const float halfStrokeWidth = strokeWidth() / 2;
-  const float halfWidth = m_fillBoundingBox.width() / 2;
-  const float halfHeight = m_fillBoundingBox.height() / 2;
+  const float half_stroke_width = StrokeWidth() / 2;
+  const float half_width = fill_bounding_box_.Width() / 2;
+  const float half_height = fill_bounding_box_.Height() / 2;
 
-  const FloatPoint fillBoundingBoxCenter = FloatPoint(
-      m_fillBoundingBox.x() + halfWidth, m_fillBoundingBox.y() + halfHeight);
-  const float absDeltaX = std::abs(point.x() - fillBoundingBoxCenter.x());
-  const float absDeltaY = std::abs(point.y() - fillBoundingBoxCenter.y());
+  const FloatPoint fill_bounding_box_center =
+      FloatPoint(fill_bounding_box_.X() + half_width,
+                 fill_bounding_box_.Y() + half_height);
+  const float abs_delta_x = std::abs(point.X() - fill_bounding_box_center.X());
+  const float abs_delta_y = std::abs(point.Y() - fill_bounding_box_center.Y());
 
-  if (!(absDeltaX <= halfWidth + halfStrokeWidth &&
-        absDeltaY <= halfHeight + halfStrokeWidth))
+  if (!(abs_delta_x <= half_width + half_stroke_width &&
+        abs_delta_y <= half_height + half_stroke_width))
     return false;
 
-  return (halfWidth - halfStrokeWidth <= absDeltaX) ||
-         (halfHeight - halfStrokeWidth <= absDeltaY);
+  return (half_width - half_stroke_width <= abs_delta_x) ||
+         (half_height - half_stroke_width <= abs_delta_y);
 }
 
-bool LayoutSVGRect::shapeDependentFillContains(const FloatPoint& point,
-                                               const WindRule fillRule) const {
-  if (m_usePathFallback)
-    return LayoutSVGShape::shapeDependentFillContains(point, fillRule);
-  return m_fillBoundingBox.contains(point.x(), point.y());
+bool LayoutSVGRect::ShapeDependentFillContains(const FloatPoint& point,
+                                               const WindRule fill_rule) const {
+  if (use_path_fallback_)
+    return LayoutSVGShape::ShapeDependentFillContains(point, fill_rule);
+  return fill_bounding_box_.Contains(point.X(), point.Y());
 }
 
 // Returns true if the stroke is continuous and definitely uses miter joins.
-bool LayoutSVGRect::definitelyHasSimpleStroke() const {
-  const SVGComputedStyle& svgStyle = style()->svgStyle();
+bool LayoutSVGRect::DefinitelyHasSimpleStroke() const {
+  const SVGComputedStyle& svg_style = Style()->SvgStyle();
 
   // The four angles of a rect are 90 degrees. Using the formula at:
   // http://www.w3.org/TR/SVG/painting.html#StrokeMiterlimitProperty
@@ -140,9 +141,9 @@ bool LayoutSVGRect::definitelyHasSimpleStroke() const {
   // miterlimits, the join style used might not be correct (e.g. a miterlimit
   // of 1.4142135 should result in bevel joins, but may be drawn using miter
   // joins).
-  return svgStyle.strokeDashArray()->isEmpty() &&
-         svgStyle.joinStyle() == MiterJoin &&
-         svgStyle.strokeMiterLimit() >= 1.5;
+  return svg_style.StrokeDashArray()->IsEmpty() &&
+         svg_style.JoinStyle() == kMiterJoin &&
+         svg_style.StrokeMiterLimit() >= 1.5;
 }
 
 }  // namespace blink

@@ -30,60 +30,59 @@
 namespace WTF {
 
 ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
-                                 unsigned byteOffset)
-    : m_byteOffset(byteOffset),
-      m_isNeuterable(true),
-      m_buffer(std::move(buffer)),
-      m_prevView(nullptr),
-      m_nextView(nullptr) {
-  m_baseAddress =
-      m_buffer
-          ? (static_cast<char*>(m_buffer->dataMaybeShared()) + m_byteOffset)
-          : nullptr;
-  if (m_buffer)
-    m_buffer->addView(this);
+                                 unsigned byte_offset)
+    : byte_offset_(byte_offset),
+      is_neuterable_(true),
+      buffer_(std::move(buffer)),
+      prev_view_(nullptr),
+      next_view_(nullptr) {
+  base_address_ =
+      buffer_ ? (static_cast<char*>(buffer_->DataMaybeShared()) + byte_offset_)
+              : nullptr;
+  if (buffer_)
+    buffer_->AddView(this);
 }
 
 ArrayBufferView::~ArrayBufferView() {
-  if (m_buffer)
-    m_buffer->removeView(this);
+  if (buffer_)
+    buffer_->RemoveView(this);
 }
 
-void ArrayBufferView::neuter() {
-  m_buffer = nullptr;
-  m_byteOffset = 0;
+void ArrayBufferView::Neuter() {
+  buffer_ = nullptr;
+  byte_offset_ = 0;
 }
 
-const char* ArrayBufferView::typeName() {
-  switch (type()) {
-    case TypeInt8:
+const char* ArrayBufferView::TypeName() {
+  switch (GetType()) {
+    case kTypeInt8:
       return "Int8";
       break;
-    case TypeUint8:
+    case kTypeUint8:
       return "UInt8";
       break;
-    case TypeUint8Clamped:
+    case kTypeUint8Clamped:
       return "UInt8Clamped";
       break;
-    case TypeInt16:
+    case kTypeInt16:
       return "Int16";
       break;
-    case TypeUint16:
+    case kTypeUint16:
       return "UInt16";
       break;
-    case TypeInt32:
+    case kTypeInt32:
       return "Int32";
       break;
-    case TypeUint32:
+    case kTypeUint32:
       return "Uint32";
       break;
-    case TypeFloat32:
+    case kTypeFloat32:
       return "Float32";
       break;
-    case TypeFloat64:
+    case kTypeFloat64:
       return "Float64";
       break;
-    case TypeDataView:
+    case kTypeDataView:
       return "DataView";
       break;
   }

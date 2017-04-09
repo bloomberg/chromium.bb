@@ -12,60 +12,60 @@
 
 namespace blink {
 
-ForeignFetchEvent* ForeignFetchEvent::create(
-    ScriptState* scriptState,
+ForeignFetchEvent* ForeignFetchEvent::Create(
+    ScriptState* script_state,
     const AtomicString& type,
     const ForeignFetchEventInit& initializer) {
-  return new ForeignFetchEvent(scriptState, type, initializer, nullptr,
+  return new ForeignFetchEvent(script_state, type, initializer, nullptr,
                                nullptr);
 }
 
-ForeignFetchEvent* ForeignFetchEvent::create(
-    ScriptState* scriptState,
+ForeignFetchEvent* ForeignFetchEvent::Create(
+    ScriptState* script_state,
     const AtomicString& type,
     const ForeignFetchEventInit& initializer,
-    ForeignFetchRespondWithObserver* respondWithObserver,
-    WaitUntilObserver* waitUntilObserver) {
-  return new ForeignFetchEvent(scriptState, type, initializer,
-                               respondWithObserver, waitUntilObserver);
+    ForeignFetchRespondWithObserver* respond_with_observer,
+    WaitUntilObserver* wait_until_observer) {
+  return new ForeignFetchEvent(script_state, type, initializer,
+                               respond_with_observer, wait_until_observer);
 }
 
 Request* ForeignFetchEvent::request() const {
-  return m_request;
+  return request_;
 }
 
 String ForeignFetchEvent::origin() const {
-  return m_origin;
+  return origin_;
 }
 
-void ForeignFetchEvent::respondWith(ScriptState* scriptState,
-                                    ScriptPromise scriptPromise,
-                                    ExceptionState& exceptionState) {
+void ForeignFetchEvent::respondWith(ScriptState* script_state,
+                                    ScriptPromise script_promise,
+                                    ExceptionState& exception_state) {
   stopImmediatePropagation();
-  if (m_observer)
-    m_observer->respondWith(scriptState, scriptPromise, exceptionState);
+  if (observer_)
+    observer_->RespondWith(script_state, script_promise, exception_state);
 }
 
-const AtomicString& ForeignFetchEvent::interfaceName() const {
+const AtomicString& ForeignFetchEvent::InterfaceName() const {
   return EventNames::ForeignFetchEvent;
 }
 
 ForeignFetchEvent::ForeignFetchEvent(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const AtomicString& type,
     const ForeignFetchEventInit& initializer,
-    ForeignFetchRespondWithObserver* respondWithObserver,
-    WaitUntilObserver* waitUntilObserver)
-    : ExtendableEvent(type, initializer, waitUntilObserver),
-      m_observer(respondWithObserver) {
+    ForeignFetchRespondWithObserver* respond_with_observer,
+    WaitUntilObserver* wait_until_observer)
+    : ExtendableEvent(type, initializer, wait_until_observer),
+      observer_(respond_with_observer) {
   if (initializer.hasOrigin())
-    m_origin = initializer.origin();
+    origin_ = initializer.origin();
   if (initializer.hasRequest()) {
-    m_request = initializer.request();
-    ScriptState::Scope scope(scriptState);
-    m_request = initializer.request();
-    v8::Local<v8::Value> request = ToV8(m_request, scriptState);
-    v8::Local<v8::Value> event = ToV8(this, scriptState);
+    request_ = initializer.request();
+    ScriptState::Scope scope(script_state);
+    request_ = initializer.request();
+    v8::Local<v8::Value> request = ToV8(request_, script_state);
+    v8::Local<v8::Value> event = ToV8(this, script_state);
     if (event.IsEmpty()) {
       // |toV8| can return an empty handle when the worker is terminating.
       // We don't want the renderer to crash in such cases.
@@ -76,8 +76,8 @@ ForeignFetchEvent::ForeignFetchEvent(
     DCHECK(event->IsObject());
     // Sets a hidden value in order to teach V8 the dependency from
     // the event to the request.
-    V8PrivateProperty::getFetchEventRequest(scriptState->isolate())
-        .set(event.As<v8::Object>(), request);
+    V8PrivateProperty::GetFetchEventRequest(script_state->GetIsolate())
+        .Set(event.As<v8::Object>(), request);
     // From the same reason as above, setHiddenValue can return false.
     // TODO(yhirano): Add an assertion that it returns true once the
     // graceful shutdown mechanism is introduced.
@@ -85,9 +85,9 @@ ForeignFetchEvent::ForeignFetchEvent(
 }
 
 DEFINE_TRACE(ForeignFetchEvent) {
-  visitor->trace(m_observer);
-  visitor->trace(m_request);
-  ExtendableEvent::trace(visitor);
+  visitor->Trace(observer_);
+  visitor->Trace(request_);
+  ExtendableEvent::Trace(visitor);
 }
 
 }  // namespace blink

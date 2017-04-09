@@ -18,54 +18,53 @@ namespace blink {
 
 class WebDoubleSize {
  public:
-  bool isEmpty() const { return m_width <= 0 || m_height <= 0; }
+  bool IsEmpty() const { return width_ <= 0 || height_ <= 0; }
 
-  WebDoubleSize() : m_width(0), m_height(0) {}
+  WebDoubleSize() : width_(0), height_(0) {}
 
-  WebDoubleSize(double m_width, double m_height)
-      : m_width(m_width), m_height(m_height) {}
+  WebDoubleSize(double width, double height) : width_(width), height_(height) {}
 
 #if INSIDE_BLINK
   WebDoubleSize(const DoubleSize& size)
-      : m_width(size.width()), m_height(size.height()) {}
+      : width_(size.Width()), height_(size.Height()) {}
 
   WebDoubleSize& operator=(const DoubleSize& size) {
-    m_width = size.width();
-    m_height = size.height();
+    width_ = size.Width();
+    height_ = size.Height();
     return *this;
   }
 
-  operator DoubleSize() const { return DoubleSize(m_width, m_height); }
+  operator DoubleSize() const { return DoubleSize(width_, height_); }
 #else
   WebDoubleSize(const gfx::SizeF& size)
-      : m_width(size.width()), m_height(size.height()) {}
+      : width_(size.width()), height_(size.height()) {}
 
   WebDoubleSize(const gfx::Vector2dF& vector)
-      : m_width(vector.x()), m_height(vector.y()) {}
+      : width_(vector.x()), height_(vector.y()) {}
 
   WebDoubleSize& operator=(const gfx::SizeF& size) {
-    m_width = size.width();
-    m_height = size.height();
+    width_ = size.width();
+    height_ = size.height();
     return *this;
   }
 
   WebDoubleSize& operator=(const gfx::Vector2dF& vector) {
-    m_width = vector.x();
-    m_height = vector.y();
+    width_ = vector.x();
+    height_ = vector.y();
     return *this;
   }
 #endif
 
-  double width() const { return m_width; }
-  double height() const { return m_height; }
+  double Width() const { return width_; }
+  double Height() const { return height_; }
 
  private:
-  double m_width;
-  double m_height;
+  double width_;
+  double height_;
 };
 
 inline bool operator==(const WebDoubleSize& a, const WebDoubleSize& b) {
-  return a.width() == b.width() && a.height() == b.height();
+  return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
 inline bool operator!=(const WebDoubleSize& a, const WebDoubleSize& b) {

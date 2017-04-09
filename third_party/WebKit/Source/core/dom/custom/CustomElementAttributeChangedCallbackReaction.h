@@ -20,15 +20,15 @@ class CORE_EXPORT CustomElementAttributeChangedCallbackReaction final
  public:
   CustomElementAttributeChangedCallbackReaction(CustomElementDefinition*,
                                                 const QualifiedName&,
-                                                const AtomicString& oldValue,
-                                                const AtomicString& newValue);
+                                                const AtomicString& old_value,
+                                                const AtomicString& new_value);
 
  private:
-  void invoke(Element*) override;
+  void Invoke(Element*) override;
 
-  QualifiedName m_name;
-  AtomicString m_oldValue;
-  AtomicString m_newValue;
+  QualifiedName name_;
+  AtomicString old_value_;
+  AtomicString new_value_;
 };
 
 }  // namespace blink

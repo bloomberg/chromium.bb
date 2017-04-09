@@ -20,12 +20,12 @@ class CustomCompositorAnimations final {
 
  public:
   CustomCompositorAnimations() {}
-  void applyUpdate(Element&, const CompositorMutation&);
+  void ApplyUpdate(Element&, const CompositorMutation&);
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_animation); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(animation_); }
 
  private:
-  Member<Animation> m_animation;
+  Member<Animation> animation_;
 };
 
 }  // namespace blink

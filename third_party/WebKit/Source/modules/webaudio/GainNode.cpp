@@ -33,76 +33,76 @@
 namespace blink {
 
 GainHandler::GainHandler(AudioNode& node,
-                         float sampleRate,
+                         float sample_rate,
                          AudioParamHandler& gain)
-    : AudioHandler(NodeTypeGain, node, sampleRate),
-      m_lastGain(1.0),
-      m_gain(gain),
-      m_sampleAccurateGainValues(
+    : AudioHandler(kNodeTypeGain, node, sample_rate),
+      last_gain_(1.0),
+      gain_(gain),
+      sample_accurate_gain_values_(
           AudioUtilities::kRenderQuantumFrames)  // FIXME: can probably
                                                  // share temp buffer
                                                  // in context
 {
-  addInput();
-  addOutput(1);
+  AddInput();
+  AddOutput(1);
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<GainHandler> GainHandler::create(AudioNode& node,
-                                            float sampleRate,
+PassRefPtr<GainHandler> GainHandler::Create(AudioNode& node,
+                                            float sample_rate,
                                             AudioParamHandler& gain) {
-  return adoptRef(new GainHandler(node, sampleRate, gain));
+  return AdoptRef(new GainHandler(node, sample_rate, gain));
 }
 
-void GainHandler::process(size_t framesToProcess) {
+void GainHandler::Process(size_t frames_to_process) {
   // FIXME: for some cases there is a nice optimization to avoid processing
   // here, and let the gain change happen in the summing junction input of the
   // AudioNode we're connected to.  Then we can avoid all of the following:
 
-  AudioBus* outputBus = output(0).bus();
-  DCHECK(outputBus);
+  AudioBus* output_bus = Output(0).Bus();
+  DCHECK(output_bus);
 
-  if (!isInitialized() || !input(0).isConnected()) {
-    outputBus->zero();
+  if (!IsInitialized() || !Input(0).IsConnected()) {
+    output_bus->Zero();
   } else {
-    AudioBus* inputBus = input(0).bus();
+    AudioBus* input_bus = Input(0).Bus();
 
-    if (m_gain->hasSampleAccurateValues()) {
+    if (gain_->HasSampleAccurateValues()) {
       // Apply sample-accurate gain scaling for precise envelopes, grain
       // windows, etc.
-      DCHECK_LE(framesToProcess, m_sampleAccurateGainValues.size());
-      if (framesToProcess <= m_sampleAccurateGainValues.size()) {
-        float* gainValues = m_sampleAccurateGainValues.data();
-        m_gain->calculateSampleAccurateValues(gainValues, framesToProcess);
-        outputBus->copyWithSampleAccurateGainValuesFrom(*inputBus, gainValues,
-                                                        framesToProcess);
+      DCHECK_LE(frames_to_process, sample_accurate_gain_values_.size());
+      if (frames_to_process <= sample_accurate_gain_values_.size()) {
+        float* gain_values = sample_accurate_gain_values_.Data();
+        gain_->CalculateSampleAccurateValues(gain_values, frames_to_process);
+        output_bus->CopyWithSampleAccurateGainValuesFrom(
+            *input_bus, gain_values, frames_to_process);
         // Update m_lastGain so if the timeline ever ends, we get
         // consistent data for the smoothing below.  (Without this,
         // m_lastGain was the last value before the timeline started
         // procesing.
-        m_lastGain = gainValues[framesToProcess - 1];
+        last_gain_ = gain_values[frames_to_process - 1];
       }
     } else {
       // Apply the gain with de-zippering into the output bus.
-      if (!m_lastGain && m_lastGain == m_gain->value()) {
+      if (!last_gain_ && last_gain_ == gain_->Value()) {
         // If the gain is 0 (and we've converged on dezippering), just zero the
         // bus and set the silence hint.
-        outputBus->zero();
+        output_bus->Zero();
       } else {
-        outputBus->copyWithGainFrom(*inputBus, &m_lastGain, m_gain->value());
+        output_bus->CopyWithGainFrom(*input_bus, &last_gain_, gain_->Value());
       }
     }
   }
 }
 
-void GainHandler::processOnlyAudioParams(size_t framesToProcess) {
-  DCHECK(context()->isAudioThread());
-  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+void GainHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
+  DCHECK(Context()->IsAudioThread());
+  DCHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
 
   float values[AudioUtilities::kRenderQuantumFrames];
 
-  m_gain->calculateSampleAccurateValues(values, framesToProcess);
+  gain_->CalculateSampleAccurateValues(values, frames_to_process);
 }
 
 // FIXME: this can go away when we do mixing with gain directly in summing
@@ -112,62 +112,62 @@ void GainHandler::processOnlyAudioParams(size_t framesToProcess) {
 // Sometimes this may be called more than once with different channel counts, in
 // which case we must safely uninitialize and then re-initialize with the new
 // channel count.
-void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
-  DCHECK(context()->isAudioThread());
-  ASSERT(context()->isGraphOwner());
+void GainHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
+  DCHECK(Context()->IsAudioThread());
+  ASSERT(Context()->IsGraphOwner());
 
   DCHECK(input);
-  DCHECK_EQ(input, &this->input(0));
-  if (input != &this->input(0))
+  DCHECK_EQ(input, &this->Input(0));
+  if (input != &this->Input(0))
     return;
 
-  unsigned numberOfChannels = input->numberOfChannels();
+  unsigned number_of_channels = input->NumberOfChannels();
 
-  if (isInitialized() && numberOfChannels != output(0).numberOfChannels()) {
+  if (IsInitialized() && number_of_channels != Output(0).NumberOfChannels()) {
     // We're already initialized but the channel count has changed.
-    uninitialize();
+    Uninitialize();
   }
 
-  if (!isInitialized()) {
+  if (!IsInitialized()) {
     // This will propagate the channel count to any nodes connected further
     // downstream in the graph.
-    output(0).setNumberOfChannels(numberOfChannels);
-    initialize();
+    Output(0).SetNumberOfChannels(number_of_channels);
+    Initialize();
   }
 
-  AudioHandler::checkNumberOfChannelsForInput(input);
+  AudioHandler::CheckNumberOfChannelsForInput(input);
 }
 
 // ----------------------------------------------------------------
 
 GainNode::GainNode(BaseAudioContext& context)
     : AudioNode(context),
-      m_gain(AudioParam::create(context, ParamTypeGainGain, 1.0)) {
-  setHandler(
-      GainHandler::create(*this, context.sampleRate(), m_gain->handler()));
+      gain_(AudioParam::Create(context, kParamTypeGainGain, 1.0)) {
+  SetHandler(
+      GainHandler::Create(*this, context.sampleRate(), gain_->Handler()));
 }
 
-GainNode* GainNode::create(BaseAudioContext& context,
-                           ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+GainNode* GainNode::Create(BaseAudioContext& context,
+                           ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
   return new GainNode(context);
 }
 
-GainNode* GainNode::create(BaseAudioContext* context,
+GainNode* GainNode::Create(BaseAudioContext* context,
                            const GainOptions& options,
-                           ExceptionState& exceptionState) {
-  GainNode* node = create(*context, exceptionState);
+                           ExceptionState& exception_state) {
+  GainNode* node = Create(*context, exception_state);
 
   if (!node)
     return nullptr;
 
-  node->handleChannelOptions(options, exceptionState);
+  node->HandleChannelOptions(options, exception_state);
 
   if (options.hasGain())
     node->gain()->setValue(options.gain());
@@ -176,12 +176,12 @@ GainNode* GainNode::create(BaseAudioContext* context,
 }
 
 AudioParam* GainNode::gain() const {
-  return m_gain;
+  return gain_;
 }
 
 DEFINE_TRACE(GainNode) {
-  visitor->trace(m_gain);
-  AudioNode::trace(visitor);
+  visitor->Trace(gain_);
+  AudioNode::Trace(visitor);
 }
 
 }  // namespace blink

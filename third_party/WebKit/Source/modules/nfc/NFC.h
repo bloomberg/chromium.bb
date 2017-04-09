@@ -29,17 +29,17 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
                   public device::nfc::mojom::blink::NFCClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NFC);
-  USING_PRE_FINALIZER(NFC, dispose);
+  USING_PRE_FINALIZER(NFC, Dispose);
 
  public:
-  static NFC* create(LocalFrame*);
+  static NFC* Create(LocalFrame*);
 
   virtual ~NFC();
 
-  void dispose();
+  void Dispose();
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // Pushes NFCPushMessage asynchronously to NFC tag / peer.
   ScriptPromise push(ScriptState*,
@@ -59,7 +59,7 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   ScriptPromise cancelWatch(ScriptState*);
 
   // Implementation of PageVisibilityObserver.
-  void pageVisibilityChanged() override;
+  void PageVisibilityChanged() override;
 
   // Interface required by garbage collection.
   DECLARE_VIRTUAL_TRACE();
@@ -67,7 +67,7 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
  private:
   // Returns promise with DOMException if feature is not supported
   // or when context is not secure. Otherwise, returns empty promise.
-  ScriptPromise rejectIfNotSupported(ScriptState*);
+  ScriptPromise RejectIfNotSupported(ScriptState*);
 
   void OnRequestCompleted(ScriptPromiseResolver*,
                           device::nfc::mojom::blink::NFCErrorPtr);
@@ -83,11 +83,11 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
 
  private:
   explicit NFC(LocalFrame*);
-  device::nfc::mojom::blink::NFCPtr m_nfc;
-  mojo::Binding<device::nfc::mojom::blink::NFCClient> m_client;
-  HeapHashSet<Member<ScriptPromiseResolver>> m_requests;
+  device::nfc::mojom::blink::NFCPtr nfc_;
+  mojo::Binding<device::nfc::mojom::blink::NFCClient> client_;
+  HeapHashSet<Member<ScriptPromiseResolver>> requests_;
   using WatchCallbacksMap = HeapHashMap<uint32_t, Member<MessageCallback>>;
-  WatchCallbacksMap m_callbacks;
+  WatchCallbacksMap callbacks_;
 };
 
 }  // namespace blink

@@ -77,7 +77,7 @@ struct Value;
 %%define class-name %(class_name)sHash
 %%define lookup-function-name findValueImpl
 %%define hash-function-name value_hash_function
-%%define slot-name nameOffset
+%%define slot-name name_offset
 %%define word-array-name value_word_list
 %%pic
 %%enum
@@ -89,7 +89,7 @@ struct Value;
 #pragma clang diagnostic pop
 #endif
 
-const Value* findValue(const char* str, unsigned int len) {
+const Value* FindValue(const char* str, unsigned int len) {
   return CSSValueKeywordsHash::findValueImpl(str, len);
 }
 
@@ -101,9 +101,9 @@ const char* getValueName(CSSValueID id) {
 bool isValueAllowedInMode(unsigned short id, CSSParserMode mode) {
   switch (id) {
     %(ua_sheet_mode_values_keywords)s
-      return isUASheetBehavior(mode);
+      return IsUASheetBehavior(mode);
     %(quirks_mode_or_ua_sheet_mode_values_keywords)s
-      return isUASheetBehavior(mode) || isQuirksModeBehavior(mode);
+      return IsUASheetBehavior(mode) || IsQuirksModeBehavior(mode);
     default:
       return true;
   }

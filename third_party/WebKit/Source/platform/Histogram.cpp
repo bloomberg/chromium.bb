@@ -12,17 +12,17 @@ namespace blink {
 CustomCountHistogram::CustomCountHistogram(const char* name,
                                            base::HistogramBase::Sample min,
                                            base::HistogramBase::Sample max,
-                                           int32_t bucketCount) {
-  m_histogram = base::Histogram::FactoryGet(
-      name, min, max, bucketCount,
+                                           int32_t bucket_count) {
+  histogram_ = base::Histogram::FactoryGet(
+      name, min, max, bucket_count,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
 CustomCountHistogram::CustomCountHistogram(base::HistogramBase* histogram)
-    : m_histogram(histogram) {}
+    : histogram_(histogram) {}
 
-void CustomCountHistogram::count(base::HistogramBase::Sample sample) {
-  m_histogram->Add(sample);
+void CustomCountHistogram::Count(base::HistogramBase::Sample sample) {
+  histogram_->Add(sample);
 }
 
 BooleanHistogram::BooleanHistogram(const char* name)
@@ -32,21 +32,21 @@ BooleanHistogram::BooleanHistogram(const char* name)
 
 EnumerationHistogram::EnumerationHistogram(
     const char* name,
-    base::HistogramBase::Sample boundaryValue)
+    base::HistogramBase::Sample boundary_value)
     : CustomCountHistogram(base::LinearHistogram::FactoryGet(
           name,
           1,
-          boundaryValue,
-          boundaryValue + 1,
+          boundary_value,
+          boundary_value + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag)) {}
 
 SparseHistogram::SparseHistogram(const char* name) {
-  m_histogram = base::SparseHistogram::FactoryGet(
+  histogram_ = base::SparseHistogram::FactoryGet(
       name, base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
-void SparseHistogram::sample(base::HistogramBase::Sample sample) {
-  m_histogram->Add(sample);
+void SparseHistogram::Sample(base::HistogramBase::Sample sample) {
+  histogram_->Add(sample);
 }
 
 }  // namespace blink

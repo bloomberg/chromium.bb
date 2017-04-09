@@ -28,12 +28,12 @@ class StorageManager final : public GarbageCollectedFinalized<StorageManager>,
   DECLARE_TRACE();
 
  private:
-  mojom::blink::PermissionService* getPermissionService(ExecutionContext*);
-  void permissionServiceConnectionError();
-  void permissionRequestComplete(ScriptPromiseResolver*,
+  mojom::blink::PermissionService* GetPermissionService(ExecutionContext*);
+  void PermissionServiceConnectionError();
+  void PermissionRequestComplete(ScriptPromiseResolver*,
                                  mojom::blink::PermissionStatus);
 
-  mojom::blink::PermissionServicePtr m_permissionService;
+  mojom::blink::PermissionServicePtr permission_service_;
 };
 
 }  // namespace blink

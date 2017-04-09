@@ -13,7 +13,7 @@ bool NGPhysicalLocation::operator==(const NGPhysicalLocation& other) const {
 }
 
 String NGPhysicalLocation::ToString() const {
-  return String::format("%dx%d", left.toInt(), top.toInt());
+  return String::Format("%dx%d", left.ToInt(), top.ToInt());
 }
 
 }  // namespace blink

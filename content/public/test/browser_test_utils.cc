@@ -215,17 +215,17 @@ void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
                             ui::DomCode code,
                             ui::KeyboardCode key_code,
                             NativeWebKeyboardEvent* event) {
-  event->domKey = key;
-  event->domCode = static_cast<int>(code);
-  event->nativeKeyCode = ui::KeycodeConverter::DomCodeToNativeKeycode(code);
-  event->windowsKeyCode = key_code;
-  event->isSystemKey = false;
+  event->dom_key = key;
+  event->dom_code = static_cast<int>(code);
+  event->native_key_code = ui::KeycodeConverter::DomCodeToNativeKeycode(code);
+  event->windows_key_code = key_code;
+  event->is_system_key = false;
   event->skip_in_browser = true;
 
-  if (type == blink::WebInputEvent::Char ||
-      type == blink::WebInputEvent::RawKeyDown) {
+  if (type == blink::WebInputEvent::kChar ||
+      type == blink::WebInputEvent::kRawKeyDown) {
     event->text[0] = key_code;
-    event->unmodifiedText[0] = key_code;
+    event->unmodified_text[0] = key_code;
   }
 }
 
@@ -534,18 +534,18 @@ void SimulateMouseClickAt(WebContents* web_contents,
                           blink::WebMouseEvent::Button button,
                           const gfx::Point& point) {
   blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::MouseDown, modifiers,
+      blink::WebInputEvent::kMouseDown, modifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_event.button = button;
-  mouse_event.setPositionInWidget(point.x(), point.y());
+  mouse_event.SetPositionInWidget(point.x(), point.y());
   // Mac needs positionInScreen for events to plugins.
   gfx::Rect offset = web_contents->GetContainerBounds();
-  mouse_event.setPositionInScreen(point.x() + offset.x(),
+  mouse_event.SetPositionInScreen(point.x() + offset.x(),
                                   point.y() + offset.y());
-  mouse_event.clickCount = 1;
+  mouse_event.click_count = 1;
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       mouse_event);
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       mouse_event);
 }
@@ -554,9 +554,9 @@ void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point) {
   blink::WebMouseEvent mouse_event(
-      type, blink::WebInputEvent::NoModifiers,
+      type, blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  mouse_event.setPositionInWidget(point.x(), point.y());
+  mouse_event.SetPositionInWidget(point.x(), point.y());
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       mouse_event);
 }
@@ -565,12 +565,12 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
                              const gfx::Point& point,
                              const gfx::Vector2d& delta) {
   blink::WebMouseWheelEvent wheel_event(
-      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
 
-  wheel_event.setPositionInWidget(point.x(), point.y());
-  wheel_event.deltaX = delta.x();
-  wheel_event.deltaY = delta.y();
+  wheel_event.SetPositionInWidget(point.x(), point.y());
+  wheel_event.delta_x = delta.x();
+  wheel_event.delta_y = delta.y();
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
       web_contents->GetRenderViewHost()->GetWidget());
   widget_host->ForwardWheelEvent(wheel_event);
@@ -583,32 +583,32 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
       web_contents->GetRenderViewHost()->GetWidget());
 
   blink::WebGestureEvent scroll_begin(
-      blink::WebGestureEvent::GestureScrollBegin,
-      blink::WebInputEvent::NoModifiers,
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  scroll_begin.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_begin.x = point.x();
   scroll_begin.y = point.y();
   widget_host->ForwardGestureEvent(scroll_begin);
 
   blink::WebGestureEvent scroll_update(
-      blink::WebGestureEvent::GestureScrollUpdate,
-      blink::WebInputEvent::NoModifiers,
+      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  scroll_update.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_update.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_update.x = point.x();
   scroll_update.y = point.y();
-  scroll_update.data.scrollUpdate.deltaX = delta.x();
-  scroll_update.data.scrollUpdate.deltaY = delta.y();
-  scroll_update.data.scrollUpdate.velocityX = 0;
-  scroll_update.data.scrollUpdate.velocityY = 0;
+  scroll_update.data.scroll_update.delta_x = delta.x();
+  scroll_update.data.scroll_update.delta_y = delta.y();
+  scroll_update.data.scroll_update.velocity_x = 0;
+  scroll_update.data.scroll_update.velocity_y = 0;
   widget_host->ForwardGestureEvent(scroll_update);
 
   blink::WebGestureEvent scroll_end(
-      blink::WebGestureEvent::GestureScrollEnd,
-      blink::WebInputEvent::NoModifiers,
+      blink::WebGestureEvent::kGestureScrollEnd,
+      blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  scroll_end.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_end.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_end.x = point.x() + delta.x();
   scroll_end.y = point.y() + delta.y();
   widget_host->ForwardGestureEvent(scroll_end);
@@ -621,41 +621,41 @@ void SimulateGestureFlingSequence(WebContents* web_contents,
       web_contents->GetRenderViewHost()->GetWidget());
 
   blink::WebGestureEvent scroll_begin(
-      blink::WebGestureEvent::GestureScrollBegin,
-      blink::WebInputEvent::NoModifiers,
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  scroll_begin.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_begin.x = point.x();
   scroll_begin.y = point.y();
   widget_host->ForwardGestureEvent(scroll_begin);
 
   blink::WebGestureEvent scroll_end(
-      blink::WebGestureEvent::GestureScrollEnd,
-      blink::WebInputEvent::NoModifiers,
+      blink::WebGestureEvent::kGestureScrollEnd,
+      blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  scroll_end.sourceDevice = blink::WebGestureDeviceTouchpad;
+  scroll_end.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_end.x = point.x();
   scroll_end.y = point.y();
   widget_host->ForwardGestureEvent(scroll_end);
 
   blink::WebGestureEvent fling_start(
-      blink::WebGestureEvent::GestureFlingStart,
-      blink::WebInputEvent::NoModifiers,
+      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  fling_start.sourceDevice = blink::WebGestureDeviceTouchpad;
+  fling_start.source_device = blink::kWebGestureDeviceTouchpad;
   fling_start.x = point.x();
   fling_start.y = point.y();
-  fling_start.data.flingStart.targetViewport = false;
-  fling_start.data.flingStart.velocityX = velocity.x();
-  fling_start.data.flingStart.velocityY = velocity.y();
+  fling_start.data.fling_start.target_viewport = false;
+  fling_start.data.fling_start.velocity_x = velocity.x();
+  fling_start.data.fling_start.velocity_y = velocity.y();
   widget_host->ForwardGestureEvent(fling_start);
 }
 
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap(
-      blink::WebGestureEvent::GestureTap, 0,
+      blink::WebGestureEvent::kGestureTap, 0,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  tap.sourceDevice = blink::WebGestureDeviceTouchpad;
+  tap.source_device = blink::kWebGestureDeviceTouchpad;
   tap.x = point.x();
   tap.y = point.y();
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
@@ -667,9 +667,9 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
                                 unsigned modifiers,
                                 const gfx::Point& point) {
   blink::WebGestureEvent tap(
-      blink::WebGestureEvent::GestureTap, modifiers,
+      blink::WebGestureEvent::kGestureTap, modifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  tap.sourceDevice = blink::WebGestureDeviceTouchpad;
+  tap.source_device = blink::kWebGestureDeviceTouchpad;
   tap.x = point.x();
   tap.y = point.y();
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
@@ -701,66 +701,66 @@ void SimulateKeyPress(WebContents* web_contents,
   // The order of these key down events shouldn't matter for our simulation.
   // For our simulation we can use either the left keys or the right keys.
   if (control) {
-    modifiers |= blink::WebInputEvent::ControlKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+    modifiers |= blink::WebInputEvent::kControlKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kRawKeyDown,
                       ui::DomKey::CONTROL, ui::DomCode::CONTROL_LEFT,
                       ui::VKEY_CONTROL, modifiers);
   }
 
   if (shift) {
-    modifiers |= blink::WebInputEvent::ShiftKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+    modifiers |= blink::WebInputEvent::kShiftKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kRawKeyDown,
                       ui::DomKey::SHIFT, ui::DomCode::SHIFT_LEFT,
                       ui::VKEY_SHIFT, modifiers);
   }
 
   if (alt) {
-    modifiers |= blink::WebInputEvent::AltKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+    modifiers |= blink::WebInputEvent::kAltKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kRawKeyDown,
                       ui::DomKey::ALT, ui::DomCode::ALT_LEFT, ui::VKEY_MENU,
                       modifiers);
   }
 
   if (command) {
-    modifiers |= blink::WebInputEvent::MetaKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown,
+    modifiers |= blink::WebInputEvent::kMetaKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kRawKeyDown,
                       ui::DomKey::META, ui::DomCode::META_LEFT,
                       ui::VKEY_COMMAND, modifiers);
   }
-  InjectRawKeyEvent(web_contents, blink::WebInputEvent::RawKeyDown, key, code,
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::kRawKeyDown, key, code,
                     key_code, modifiers);
 
-  InjectRawKeyEvent(web_contents, blink::WebInputEvent::Char, key, code,
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::kChar, key, code,
                     key_code, modifiers);
 
-  InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp, key, code,
+  InjectRawKeyEvent(web_contents, blink::WebInputEvent::kKeyUp, key, code,
                     key_code, modifiers);
 
   // The order of these key releases shouldn't matter for our simulation.
   if (control) {
-    modifiers &= ~blink::WebInputEvent::ControlKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+    modifiers &= ~blink::WebInputEvent::kControlKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kKeyUp,
                       ui::DomKey::CONTROL, ui::DomCode::CONTROL_LEFT,
                       ui::VKEY_CONTROL, modifiers);
   }
 
   if (shift) {
-    modifiers &= ~blink::WebInputEvent::ShiftKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+    modifiers &= ~blink::WebInputEvent::kShiftKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kKeyUp,
                       ui::DomKey::SHIFT, ui::DomCode::SHIFT_LEFT,
                       ui::VKEY_SHIFT, modifiers);
   }
 
   if (alt) {
-    modifiers &= ~blink::WebInputEvent::AltKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+    modifiers &= ~blink::WebInputEvent::kAltKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kKeyUp,
                       ui::DomKey::ALT, ui::DomCode::ALT_LEFT, ui::VKEY_MENU,
                       modifiers);
   }
 
   if (command) {
-    modifiers &= ~blink::WebInputEvent::MetaKey;
-    InjectRawKeyEvent(web_contents, blink::WebInputEvent::KeyUp,
+    modifiers &= ~blink::WebInputEvent::kMetaKey;
+    InjectRawKeyEvent(web_contents, blink::WebInputEvent::kKeyUp,
                       ui::DomKey::META, ui::DomCode::META_LEFT,
                       ui::VKEY_COMMAND, modifiers);
   }

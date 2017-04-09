@@ -172,8 +172,8 @@ void BrowserPluginEmbedder::OnAttach(
 
 bool BrowserPluginEmbedder::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ((event.windowsKeyCode != ui::VKEY_ESCAPE) ||
-      (event.modifiers() & blink::WebInputEvent::InputModifiers)) {
+  if ((event.windows_key_code != ui::VKEY_ESCAPE) ||
+      (event.GetModifiers() & blink::WebInputEvent::kInputModifiers)) {
     return false;
   }
 

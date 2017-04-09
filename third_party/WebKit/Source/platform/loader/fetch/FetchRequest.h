@@ -45,15 +45,15 @@ class PLATFORM_EXPORT FetchRequest {
   STACK_ALLOCATED();
 
  public:
-  enum DeferOption { NoDefer, LazyLoad, IdleLoad };
+  enum DeferOption { kNoDefer, kLazyLoad, kIdleLoad };
   enum OriginRestriction {
-    UseDefaultOriginRestrictionForType,
-    RestrictToSameOrigin,
-    NoOriginRestriction
+    kUseDefaultOriginRestrictionForType,
+    kRestrictToSameOrigin,
+    kNoOriginRestriction
   };
   enum PlaceholderImageRequestType {
-    DisallowPlaceholder = 0,  // The requested image must not be a placeholder.
-    AllowPlaceholder,         // The image is allowed to be a placeholder.
+    kDisallowPlaceholder = 0,  // The requested image must not be a placeholder.
+    kAllowPlaceholder,         // The image is allowed to be a placeholder.
   };
   // TODO(toyoshim): Consider to define an enum for preload options, and use it
   // instead of bool in this class, FrameFetchContext, and so on. If it is
@@ -63,9 +63,9 @@ class PLATFORM_EXPORT FetchRequest {
   struct ResourceWidth {
     DISALLOW_NEW();
     float width;
-    bool isSet;
+    bool is_set;
 
-    ResourceWidth() : width(0), isSet(false) {}
+    ResourceWidth() : width(0), is_set(false) {}
   };
 
   FetchRequest(const ResourceRequest&,
@@ -77,94 +77,97 @@ class PLATFORM_EXPORT FetchRequest {
   FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
   ~FetchRequest();
 
-  ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
-  const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
-  const KURL& url() const { return m_resourceRequest.url(); }
+  ResourceRequest& MutableResourceRequest() { return resource_request_; }
+  const ResourceRequest& GetResourceRequest() const {
+    return resource_request_;
+  }
+  const KURL& Url() const { return resource_request_.Url(); }
 
-  void setRequestContext(WebURLRequest::RequestContext context) {
-    m_resourceRequest.setRequestContext(context);
+  void SetRequestContext(WebURLRequest::RequestContext context) {
+    resource_request_.SetRequestContext(context);
   }
 
-  const String& charset() const { return m_charset; }
-  void setCharset(const String& charset) { m_charset = charset; }
+  const String& Charset() const { return charset_; }
+  void SetCharset(const String& charset) { charset_ = charset; }
 
-  const ResourceLoaderOptions& options() const { return m_options; }
+  const ResourceLoaderOptions& Options() const { return options_; }
 
-  DeferOption defer() const { return m_defer; }
-  void setDefer(DeferOption defer) { m_defer = defer; }
+  DeferOption Defer() const { return defer_; }
+  void SetDefer(DeferOption defer) { defer_ = defer; }
 
-  ResourceWidth getResourceWidth() const { return m_resourceWidth; }
-  void setResourceWidth(ResourceWidth);
+  ResourceWidth GetResourceWidth() const { return resource_width_; }
+  void SetResourceWidth(ResourceWidth);
 
-  ClientHintsPreferences& clientHintsPreferences() {
-    return m_clientHintPreferences;
+  ClientHintsPreferences& GetClientHintsPreferences() {
+    return client_hint_preferences_;
   }
 
-  bool isSpeculativePreload() const { return m_speculativePreload; }
-  void setSpeculativePreload(bool speculativePreload, double discoveryTime = 0);
+  bool IsSpeculativePreload() const { return speculative_preload_; }
+  void SetSpeculativePreload(bool speculative_preload,
+                             double discovery_time = 0);
 
-  double preloadDiscoveryTime() { return m_preloadDiscoveryTime; }
+  double PreloadDiscoveryTime() { return preload_discovery_time_; }
 
-  bool isLinkPreload() const { return m_options.initiatorInfo.isLinkPreload; }
-  void setLinkPreload(bool isLinkPreload) {
-    m_options.initiatorInfo.isLinkPreload = isLinkPreload;
-  }
-
-  void setContentSecurityCheck(
-      ContentSecurityPolicyDisposition contentSecurityPolicyOption) {
-    m_options.contentSecurityPolicyOption = contentSecurityPolicyOption;
-  }
-  void setCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
-  OriginRestriction getOriginRestriction() const { return m_originRestriction; }
-  void setOriginRestriction(OriginRestriction restriction) {
-    m_originRestriction = restriction;
-  }
-  const IntegrityMetadataSet integrityMetadata() const {
-    return m_options.integrityMetadata;
-  }
-  void setIntegrityMetadata(const IntegrityMetadataSet& metadata) {
-    m_options.integrityMetadata = metadata;
+  bool IsLinkPreload() const { return options_.initiator_info.is_link_preload; }
+  void SetLinkPreload(bool is_link_preload) {
+    options_.initiator_info.is_link_preload = is_link_preload;
   }
 
-  String contentSecurityPolicyNonce() const {
-    return m_options.contentSecurityPolicyNonce;
+  void SetContentSecurityCheck(
+      ContentSecurityPolicyDisposition content_security_policy_option) {
+    options_.content_security_policy_option = content_security_policy_option;
   }
-  void setContentSecurityPolicyNonce(const String& nonce) {
-    m_options.contentSecurityPolicyNonce = nonce;
+  void SetCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
+  OriginRestriction GetOriginRestriction() const { return origin_restriction_; }
+  void SetOriginRestriction(OriginRestriction restriction) {
+    origin_restriction_ = restriction;
+  }
+  const IntegrityMetadataSet IntegrityMetadata() const {
+    return options_.integrity_metadata;
+  }
+  void SetIntegrityMetadata(const IntegrityMetadataSet& metadata) {
+    options_.integrity_metadata = metadata;
   }
 
-  void setParserDisposition(ParserDisposition parserDisposition) {
-    m_options.parserDisposition = parserDisposition;
+  String ContentSecurityPolicyNonce() const {
+    return options_.content_security_policy_nonce;
+  }
+  void SetContentSecurityPolicyNonce(const String& nonce) {
+    options_.content_security_policy_nonce = nonce;
   }
 
-  void setCacheAwareLoadingEnabled(
-      CacheAwareLoadingEnabled cacheAwareLoadingEnabled) {
-    m_options.cacheAwareLoadingEnabled = cacheAwareLoadingEnabled;
+  void SetParserDisposition(ParserDisposition parser_disposition) {
+    options_.parser_disposition = parser_disposition;
   }
 
-  void makeSynchronous();
+  void SetCacheAwareLoadingEnabled(
+      CacheAwareLoadingEnabled cache_aware_loading_enabled) {
+    options_.cache_aware_loading_enabled = cache_aware_loading_enabled;
+  }
 
-  PlaceholderImageRequestType placeholderImageRequestType() const {
-    return m_placeholderImageRequestType;
+  void MakeSynchronous();
+
+  PlaceholderImageRequestType GetPlaceholderImageRequestType() const {
+    return placeholder_image_request_type_;
   }
 
   // Configures the request to load an image placeholder if the request is
   // eligible (e.g. the url's protocol is HTTP, etc.). If this request is
   // non-eligible, this method doesn't modify the ResourceRequest. Calling this
   // method sets m_placeholderImageRequestType to the appropriate value.
-  void setAllowImagePlaceholder();
+  void SetAllowImagePlaceholder();
 
  private:
-  ResourceRequest m_resourceRequest;
-  String m_charset;
-  ResourceLoaderOptions m_options;
-  bool m_speculativePreload;
-  double m_preloadDiscoveryTime;
-  DeferOption m_defer;
-  OriginRestriction m_originRestriction;
-  ResourceWidth m_resourceWidth;
-  ClientHintsPreferences m_clientHintPreferences;
-  PlaceholderImageRequestType m_placeholderImageRequestType;
+  ResourceRequest resource_request_;
+  String charset_;
+  ResourceLoaderOptions options_;
+  bool speculative_preload_;
+  double preload_discovery_time_;
+  DeferOption defer_;
+  OriginRestriction origin_restriction_;
+  ResourceWidth resource_width_;
+  ClientHintsPreferences client_hint_preferences_;
+  PlaceholderImageRequestType placeholder_image_request_type_;
 };
 
 }  // namespace blink

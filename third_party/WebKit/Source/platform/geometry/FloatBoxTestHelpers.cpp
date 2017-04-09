@@ -37,17 +37,17 @@ bool ApproximatelyEqual(const float& a, const float& b) {
 }
 
 bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {
-  if (!ApproximatelyEqual(a.x(), b.x()) || !ApproximatelyEqual(a.y(), b.y()) ||
-      !ApproximatelyEqual(a.z(), b.z()) ||
-      !ApproximatelyEqual(a.width(), b.width()) ||
-      !ApproximatelyEqual(a.height(), b.height()) ||
-      !ApproximatelyEqual(a.depth(), b.depth())) {
+  if (!ApproximatelyEqual(a.X(), b.X()) || !ApproximatelyEqual(a.Y(), b.Y()) ||
+      !ApproximatelyEqual(a.Z(), b.Z()) ||
+      !ApproximatelyEqual(a.Width(), b.Width()) ||
+      !ApproximatelyEqual(a.Height(), b.Height()) ||
+      !ApproximatelyEqual(a.Depth(), b.Depth())) {
     return false;
   }
   return true;
 }
 
-::testing::AssertionResult AssertAlmostEqual(const char* m_expr,
+::testing::AssertionResult AssertAlmostEqual(const char* expr,
                                              const char* n_expr,
                                              const FloatBox& m,
                                              const FloatBox& n) {
@@ -55,23 +55,23 @@ bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {
     return ::testing::AssertionFailure()
            << "       Value of:" << n_expr << std::endl
            << "         Actual:" << testing::PrintToString(n) << std::endl
-           << "Expected Approx:" << m_expr << std::endl
+           << "Expected Approx:" << expr << std::endl
            << "       Which is:" << ::testing::PrintToString(m);
   }
   return ::testing::AssertionSuccess();
 }
 
-::testing::AssertionResult AssertContains(const char* m_expr,
+::testing::AssertionResult AssertContains(const char* expr,
                                           const char* n_expr,
                                           const FloatBox& m,
                                           const FloatBox& n) {
-  FloatBox newM = m;
-  newM.expandTo(n);
-  if (!ApproximatelyEqual(m, newM)) {
+  FloatBox new_m = m;
+  new_m.ExpandTo(n);
+  if (!ApproximatelyEqual(m, new_m)) {
     return ::testing::AssertionFailure()
            << "        Value of:" << n_expr << std::endl
            << "          Actual:" << testing::PrintToString(n) << std::endl
-           << "Not Contained in:" << m_expr << std::endl
+           << "Not Contained in:" << expr << std::endl
            << "        Which is:" << ::testing::PrintToString(m);
   }
   return ::testing::AssertionSuccess();

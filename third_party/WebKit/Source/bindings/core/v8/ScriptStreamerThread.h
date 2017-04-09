@@ -23,34 +23,34 @@ class CORE_EXPORT ScriptStreamerThread {
   WTF_MAKE_NONCOPYABLE(ScriptStreamerThread);
 
  public:
-  static void init();
-  static ScriptStreamerThread* shared();
+  static void Init();
+  static ScriptStreamerThread* Shared();
 
-  void postTask(std::unique_ptr<CrossThreadClosure>);
+  void PostTask(std::unique_ptr<CrossThreadClosure>);
 
-  bool isRunningTask() const {
-    MutexLocker locker(m_mutex);
-    return m_runningTask;
+  bool IsRunningTask() const {
+    MutexLocker locker(mutex_);
+    return running_task_;
   }
 
-  void taskDone();
+  void TaskDone();
 
-  static void runScriptStreamingTask(
+  static void RunScriptStreamingTask(
       std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>,
       ScriptStreamer*);
 
  private:
-  ScriptStreamerThread() : m_runningTask(false) {}
+  ScriptStreamerThread() : running_task_(false) {}
 
-  bool isRunning() const { return !!m_thread; }
+  bool IsRunning() const { return !!thread_; }
 
-  WebThread& platformThread();
+  WebThread& PlatformThread();
 
   // At the moment, we only use one thread, so we can only stream one script
   // at a time. FIXME: Use a thread pool and stream multiple scripts.
-  std::unique_ptr<WebThread> m_thread;
-  bool m_runningTask;
-  mutable Mutex m_mutex;  // Guards m_runningTask.
+  std::unique_ptr<WebThread> thread_;
+  bool running_task_;
+  mutable Mutex mutex_;  // Guards m_runningTask.
 };
 
 }  // namespace blink

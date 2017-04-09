@@ -53,18 +53,18 @@ class DocumentStyleSheetCollector {
                               HeapHashSet<Member<Document>>*);
   ~DocumentStyleSheetCollector();
 
-  void appendActiveStyleSheet(const ActiveStyleSheet&);
-  void appendSheetForList(StyleSheet*);
+  void AppendActiveStyleSheet(const ActiveStyleSheet&);
+  void AppendSheetForList(StyleSheet*);
 
-  bool hasVisited(Document* document) const {
-    return m_visitedDocuments->contains(document);
+  bool HasVisited(Document* document) const {
+    return visited_documents_->Contains(document);
   }
-  void willVisit(Document* document) { m_visitedDocuments->insert(document); }
+  void WillVisit(Document* document) { visited_documents_->insert(document); }
 
  private:
-  Member<StyleSheetCollection> m_collection;
-  HeapVector<Member<StyleSheet>>* m_styleSheetsForStyleSheetList;
-  HeapHashSet<Member<Document>>* m_visitedDocuments;
+  Member<StyleSheetCollection> collection_;
+  HeapVector<Member<StyleSheet>>* style_sheets_for_style_sheet_list_;
+  HeapHashSet<Member<Document>>* visited_documents_;
 };
 
 class ActiveDocumentStyleSheetCollector final
@@ -73,7 +73,7 @@ class ActiveDocumentStyleSheetCollector final
   ActiveDocumentStyleSheetCollector(StyleSheetCollection&);
 
  private:
-  HeapHashSet<Member<Document>> m_visitedDocuments;
+  HeapHashSet<Member<Document>> visited_documents_;
 };
 
 class ImportedDocumentStyleSheetCollector final

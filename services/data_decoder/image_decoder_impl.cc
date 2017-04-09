@@ -69,11 +69,11 @@ void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
 #endif  // defined(OS_CHROMEOS)
   if (codec == mojom::ImageCodec::DEFAULT) {
     decoded_image =
-        blink::WebImage::fromData(
+        blink::WebImage::FromData(
             blink::WebData(reinterpret_cast<const char*>(encoded_data.data()),
                            encoded_data.size()),
             desired_image_frame_size)
-            .getSkBitmap();
+            .GetSkBitmap();
   }
 
   if (!decoded_image.isNull()) {

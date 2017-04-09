@@ -12,47 +12,47 @@
 namespace blink {
 
 enum RectComponentIndex : unsigned {
-  RectX,
-  RectY,
-  RectWidth,
-  RectHeight,
-  RectComponentIndexCount,
+  kRectX,
+  kRectY,
+  kRectWidth,
+  kRectHeight,
+  kRectComponentIndexCount,
 };
 
-InterpolationValue SVGRectInterpolationType::maybeConvertNeutral(
+InterpolationValue SVGRectInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
   std::unique_ptr<InterpolableList> result =
-      InterpolableList::create(RectComponentIndexCount);
-  for (size_t i = 0; i < RectComponentIndexCount; i++)
-    result->set(i, InterpolableNumber::create(0));
+      InterpolableList::Create(kRectComponentIndexCount);
+  for (size_t i = 0; i < kRectComponentIndexCount; i++)
+    result->Set(i, InterpolableNumber::Create(0));
   return InterpolationValue(std::move(result));
 }
 
-InterpolationValue SVGRectInterpolationType::maybeConvertSVGValue(
-    const SVGPropertyBase& svgValue) const {
-  if (svgValue.type() != AnimatedRect)
+InterpolationValue SVGRectInterpolationType::MaybeConvertSVGValue(
+    const SVGPropertyBase& svg_value) const {
+  if (svg_value.GetType() != kAnimatedRect)
     return nullptr;
 
-  const SVGRect& rect = toSVGRect(svgValue);
+  const SVGRect& rect = ToSVGRect(svg_value);
   std::unique_ptr<InterpolableList> result =
-      InterpolableList::create(RectComponentIndexCount);
-  result->set(RectX, InterpolableNumber::create(rect.x()));
-  result->set(RectY, InterpolableNumber::create(rect.y()));
-  result->set(RectWidth, InterpolableNumber::create(rect.width()));
-  result->set(RectHeight, InterpolableNumber::create(rect.height()));
+      InterpolableList::Create(kRectComponentIndexCount);
+  result->Set(kRectX, InterpolableNumber::Create(rect.X()));
+  result->Set(kRectY, InterpolableNumber::Create(rect.Y()));
+  result->Set(kRectWidth, InterpolableNumber::Create(rect.Width()));
+  result->Set(kRectHeight, InterpolableNumber::Create(rect.Height()));
   return InterpolationValue(std::move(result));
 }
 
-SVGPropertyBase* SVGRectInterpolationType::appliedSVGValue(
-    const InterpolableValue& interpolableValue,
+SVGPropertyBase* SVGRectInterpolationType::AppliedSVGValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  const InterpolableList& list = toInterpolableList(interpolableValue);
-  SVGRect* result = SVGRect::create();
-  result->setX(toInterpolableNumber(list.get(RectX))->value());
-  result->setY(toInterpolableNumber(list.get(RectY))->value());
-  result->setWidth(toInterpolableNumber(list.get(RectWidth))->value());
-  result->setHeight(toInterpolableNumber(list.get(RectHeight))->value());
+  const InterpolableList& list = ToInterpolableList(interpolable_value);
+  SVGRect* result = SVGRect::Create();
+  result->SetX(ToInterpolableNumber(list.Get(kRectX))->Value());
+  result->SetY(ToInterpolableNumber(list.Get(kRectY))->Value());
+  result->SetWidth(ToInterpolableNumber(list.Get(kRectWidth))->Value());
+  result->SetHeight(ToInterpolableNumber(list.Get(kRectHeight))->Value());
   return result;
 }
 

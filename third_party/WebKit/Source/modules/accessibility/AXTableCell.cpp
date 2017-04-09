@@ -37,53 +37,53 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableCell::AXTableCell(LayoutObject* layoutObject,
-                         AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache) {}
+AXTableCell::AXTableCell(LayoutObject* layout_object,
+                         AXObjectCacheImpl& ax_object_cache)
+    : AXLayoutObject(layout_object, ax_object_cache) {}
 
 AXTableCell::~AXTableCell() {}
 
-AXTableCell* AXTableCell::create(LayoutObject* layoutObject,
-                                 AXObjectCacheImpl& axObjectCache) {
-  return new AXTableCell(layoutObject, axObjectCache);
+AXTableCell* AXTableCell::Create(LayoutObject* layout_object,
+                                 AXObjectCacheImpl& ax_object_cache) {
+  return new AXTableCell(layout_object, ax_object_cache);
 }
 
-bool AXTableCell::isTableHeaderCell() const {
-  return getNode() && getNode()->hasTagName(thTag);
+bool AXTableCell::IsTableHeaderCell() const {
+  return GetNode() && GetNode()->HasTagName(thTag);
 }
 
-bool AXTableCell::isRowHeaderCell() const {
-  const AtomicString& scope = getAttribute(scopeAttr);
-  return equalIgnoringASCIICase(scope, "row") ||
-         equalIgnoringASCIICase(scope, "rowgroup");
+bool AXTableCell::IsRowHeaderCell() const {
+  const AtomicString& scope = GetAttribute(scopeAttr);
+  return EqualIgnoringASCIICase(scope, "row") ||
+         EqualIgnoringASCIICase(scope, "rowgroup");
 }
 
-bool AXTableCell::isColumnHeaderCell() const {
-  const AtomicString& scope = getAttribute(scopeAttr);
-  return equalIgnoringASCIICase(scope, "col") ||
-         equalIgnoringASCIICase(scope, "colgroup");
+bool AXTableCell::IsColumnHeaderCell() const {
+  const AtomicString& scope = GetAttribute(scopeAttr);
+  return EqualIgnoringASCIICase(scope, "col") ||
+         EqualIgnoringASCIICase(scope, "colgroup");
 }
 
-bool AXTableCell::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
-  if (decision == IncludeObject)
+bool AXTableCell::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  AXObjectInclusion decision = DefaultObjectInclusion(ignored_reasons);
+  if (decision == kIncludeObject)
     return false;
-  if (decision == IgnoreObject)
+  if (decision == kIgnoreObject)
     return true;
 
-  if (!isTableCell())
-    return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
+  if (!IsTableCell())
+    return AXLayoutObject::ComputeAccessibilityIsIgnored(ignored_reasons);
 
   return false;
 }
 
-AXObject* AXTableCell::parentTable() const {
-  if (!m_layoutObject || !m_layoutObject->isTableCell())
+AXObject* AXTableCell::ParentTable() const {
+  if (!layout_object_ || !layout_object_->IsTableCell())
     return 0;
 
   // If the document no longer exists, we might not have an axObjectCache.
-  if (isDetached())
+  if (IsDetached())
     return 0;
 
   // Do not use getOrCreate. parentTable() can be called while the layout tree
@@ -92,148 +92,150 @@ AXObject* AXTableCell::parentTable() const {
   // that the AXTable must be created before AXTableCells. This should always be
   // the case when AT clients access a table.
   // https://bugs.webkit.org/show_bug.cgi?id=42652
-  return axObjectCache().get(toLayoutTableCell(m_layoutObject)->table());
+  return AxObjectCache().Get(ToLayoutTableCell(layout_object_)->Table());
 }
 
-bool AXTableCell::isTableCell() const {
-  AXObject* parent = parentObjectUnignored();
-  if (!parent || !parent->isTableRow())
+bool AXTableCell::IsTableCell() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent || !parent->IsTableRow())
     return false;
 
   return true;
 }
 
-unsigned AXTableCell::ariaColumnIndex() const {
-  const AtomicString& colIndex = getAttribute(aria_colindexAttr);
-  if (colIndex.toInt() >= 1)
-    return colIndex.toInt();
+unsigned AXTableCell::AriaColumnIndex() const {
+  const AtomicString& col_index = GetAttribute(aria_colindexAttr);
+  if (col_index.ToInt() >= 1)
+    return col_index.ToInt();
 
-  AXObject* parent = parentObjectUnignored();
-  if (!parent || !parent->isTableRow())
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent || !parent->IsTableRow())
     return 0;
 
-  return m_ariaColIndexFromRow;
+  return aria_col_index_from_row_;
 }
 
-unsigned AXTableCell::ariaRowIndex() const {
-  const AtomicString& rowIndex = getAttribute(aria_rowindexAttr);
-  if (rowIndex.toInt() >= 1)
-    return rowIndex.toInt();
+unsigned AXTableCell::AriaRowIndex() const {
+  const AtomicString& row_index = GetAttribute(aria_rowindexAttr);
+  if (row_index.ToInt() >= 1)
+    return row_index.ToInt();
 
-  AXObject* parent = parentObjectUnignored();
-  if (!parent || !parent->isTableRow())
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent || !parent->IsTableRow())
     return 0;
 
-  return toAXTableRow(parent)->ariaRowIndex();
+  return ToAXTableRow(parent)->AriaRowIndex();
 }
 
-static AccessibilityRole decideRoleFromSibling(LayoutTableCell* siblingCell) {
-  if (!siblingCell)
-    return CellRole;
+static AccessibilityRole DecideRoleFromSibling(LayoutTableCell* sibling_cell) {
+  if (!sibling_cell)
+    return kCellRole;
 
-  if (Node* siblingNode = siblingCell->node()) {
-    if (siblingNode->hasTagName(thTag))
-      return ColumnHeaderRole;
-    if (siblingNode->hasTagName(tdTag))
-      return RowHeaderRole;
+  if (Node* sibling_node = sibling_cell->GetNode()) {
+    if (sibling_node->HasTagName(thTag))
+      return kColumnHeaderRole;
+    if (sibling_node->HasTagName(tdTag))
+      return kRowHeaderRole;
   }
 
-  return CellRole;
+  return kCellRole;
 }
 
-AccessibilityRole AXTableCell::scanToDecideHeaderRole() {
-  if (!isTableHeaderCell())
-    return CellRole;
+AccessibilityRole AXTableCell::ScanToDecideHeaderRole() {
+  if (!IsTableHeaderCell())
+    return kCellRole;
 
   // Check scope attribute first.
-  if (isRowHeaderCell())
-    return RowHeaderRole;
+  if (IsRowHeaderCell())
+    return kRowHeaderRole;
 
-  if (isColumnHeaderCell())
-    return ColumnHeaderRole;
+  if (IsColumnHeaderCell())
+    return kColumnHeaderRole;
 
   // Check the previous cell and the next cell on the same row.
-  LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
-  AccessibilityRole headerRole = CellRole;
+  LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
+  AccessibilityRole header_role = kCellRole;
 
   // if header is preceded by header cells on the same row, then it is a
   // column header. If it is preceded by other cells then it's a row header.
-  if ((headerRole = decideRoleFromSibling(layoutCell->previousCell())) !=
-      CellRole)
-    return headerRole;
+  if ((header_role = DecideRoleFromSibling(layout_cell->PreviousCell())) !=
+      kCellRole)
+    return header_role;
 
   // if header is followed by header cells on the same row, then it is a
   // column header. If it is followed by other cells then it's a row header.
-  if ((headerRole = decideRoleFromSibling(layoutCell->nextCell())) != CellRole)
-    return headerRole;
+  if ((header_role = DecideRoleFromSibling(layout_cell->NextCell())) !=
+      kCellRole)
+    return header_role;
 
   // If there are no other cells on that row, then it is a column header.
-  return ColumnHeaderRole;
+  return kColumnHeaderRole;
 }
 
-AccessibilityRole AXTableCell::determineAccessibilityRole() {
-  if (!isTableCell())
-    return AXLayoutObject::determineAccessibilityRole();
+AccessibilityRole AXTableCell::DetermineAccessibilityRole() {
+  if (!IsTableCell())
+    return AXLayoutObject::DetermineAccessibilityRole();
 
-  return scanToDecideHeaderRole();
+  return ScanToDecideHeaderRole();
 }
 
-void AXTableCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange) {
-  if (!m_layoutObject || !m_layoutObject->isTableCell())
+void AXTableCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
+  if (!layout_object_ || !layout_object_->IsTableCell())
     return;
 
-  LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
-  rowRange.first = layoutCell->rowIndex();
-  rowRange.second = layoutCell->rowSpan();
+  LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
+  row_range.first = layout_cell->RowIndex();
+  row_range.second = layout_cell->RowSpan();
 
   // Since our table might have multiple sections, we have to offset our row
   // appropriately.
-  LayoutTableSection* section = layoutCell->section();
-  LayoutTable* table = layoutCell->table();
+  LayoutTableSection* section = layout_cell->Section();
+  LayoutTable* table = layout_cell->Table();
   if (!table || !section)
     return;
 
-  LayoutTableSection* tableSection = table->topSection();
-  unsigned rowOffset = 0;
-  while (tableSection) {
-    if (tableSection == section)
+  LayoutTableSection* table_section = table->TopSection();
+  unsigned row_offset = 0;
+  while (table_section) {
+    if (table_section == section)
       break;
-    rowOffset += tableSection->numRows();
-    tableSection = table->sectionBelow(tableSection, SkipEmptySections);
+    row_offset += table_section->NumRows();
+    table_section = table->SectionBelow(table_section, kSkipEmptySections);
   }
 
-  rowRange.first += rowOffset;
+  row_range.first += row_offset;
 }
 
-void AXTableCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange) {
-  if (!m_layoutObject || !m_layoutObject->isTableCell())
+void AXTableCell::ColumnIndexRange(
+    std::pair<unsigned, unsigned>& column_range) {
+  if (!layout_object_ || !layout_object_->IsTableCell())
     return;
 
-  LayoutTableCell* cell = toLayoutTableCell(m_layoutObject);
-  columnRange.first = cell->table()->absoluteColumnToEffectiveColumn(
-      cell->absoluteColumnIndex());
-  columnRange.second = cell->table()->absoluteColumnToEffectiveColumn(
-                           cell->absoluteColumnIndex() + cell->colSpan()) -
-                       columnRange.first;
+  LayoutTableCell* cell = ToLayoutTableCell(layout_object_);
+  column_range.first = cell->Table()->AbsoluteColumnToEffectiveColumn(
+      cell->AbsoluteColumnIndex());
+  column_range.second = cell->Table()->AbsoluteColumnToEffectiveColumn(
+                            cell->AbsoluteColumnIndex() + cell->ColSpan()) -
+                        column_range.first;
 }
 
-SortDirection AXTableCell::getSortDirection() const {
-  if (roleValue() != RowHeaderRole && roleValue() != ColumnHeaderRole)
-    return SortDirectionUndefined;
+SortDirection AXTableCell::GetSortDirection() const {
+  if (RoleValue() != kRowHeaderRole && RoleValue() != kColumnHeaderRole)
+    return kSortDirectionUndefined;
 
-  const AtomicString& ariaSort =
-      getAOMPropertyOrARIAAttribute(AOMStringProperty::kSort);
-  if (ariaSort.isEmpty())
-    return SortDirectionUndefined;
-  if (equalIgnoringASCIICase(ariaSort, "none"))
-    return SortDirectionNone;
-  if (equalIgnoringASCIICase(ariaSort, "ascending"))
-    return SortDirectionAscending;
-  if (equalIgnoringASCIICase(ariaSort, "descending"))
-    return SortDirectionDescending;
-  if (equalIgnoringASCIICase(ariaSort, "other"))
-    return SortDirectionOther;
-  return SortDirectionUndefined;
+  const AtomicString& aria_sort =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kSort);
+  if (aria_sort.IsEmpty())
+    return kSortDirectionUndefined;
+  if (EqualIgnoringASCIICase(aria_sort, "none"))
+    return kSortDirectionNone;
+  if (EqualIgnoringASCIICase(aria_sort, "ascending"))
+    return kSortDirectionAscending;
+  if (EqualIgnoringASCIICase(aria_sort, "descending"))
+    return kSortDirectionDescending;
+  if (EqualIgnoringASCIICase(aria_sort, "other"))
+    return kSortDirectionOther;
+  return kSortDirectionUndefined;
 }
 
 }  // namespace blink

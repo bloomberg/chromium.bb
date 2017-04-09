@@ -12,22 +12,23 @@ namespace blink {
 
 class LayoutPartItem : public LayoutBoxItem {
  public:
-  explicit LayoutPartItem(LayoutPart* layoutPart) : LayoutBoxItem(layoutPart) {}
+  explicit LayoutPartItem(LayoutPart* layout_part)
+      : LayoutBoxItem(layout_part) {}
 
   explicit LayoutPartItem(const LayoutItem& item) : LayoutBoxItem(item) {
-    SECURITY_DCHECK(!item || item.isLayoutPart());
+    SECURITY_DCHECK(!item || item.IsLayoutPart());
   }
 
   explicit LayoutPartItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}
 
   LayoutPartItem() {}
 
-  void updateOnWidgetChange() { toPart()->updateOnWidgetChange(); }
+  void UpdateOnWidgetChange() { ToPart()->UpdateOnWidgetChange(); }
 
  private:
-  LayoutPart* toPart() { return toLayoutPart(layoutObject()); }
+  LayoutPart* ToPart() { return ToLayoutPart(GetLayoutObject()); }
 
-  const LayoutPart* toPart() const { return toLayoutPart(layoutObject()); }
+  const LayoutPart* ToPart() const { return ToLayoutPart(GetLayoutObject()); }
 };
 
 }  // namespace blink

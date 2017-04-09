@@ -46,13 +46,13 @@ class SVGTransformListTearOff final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGTransformListTearOff* create(
+  static SVGTransformListTearOff* Create(
       SVGTransformList* target,
-      SVGElement* contextElement,
-      PropertyIsAnimValType propertyIsAnimVal,
-      const QualifiedName& attributeName = QualifiedName::null()) {
-    return new SVGTransformListTearOff(target, contextElement,
-                                       propertyIsAnimVal, attributeName);
+      SVGElement* context_element,
+      PropertyIsAnimValType property_is_anim_val,
+      const QualifiedName& attribute_name = QualifiedName::Null()) {
+    return new SVGTransformListTearOff(target, context_element,
+                                       property_is_anim_val, attribute_name);
   }
 
   ~SVGTransformListTearOff() override;

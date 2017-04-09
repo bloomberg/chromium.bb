@@ -33,45 +33,45 @@ namespace WTF {
 
 class Int32Array final : public IntegralTypedArrayBase<int> {
  public:
-  static inline PassRefPtr<Int32Array> create(unsigned length);
-  static inline PassRefPtr<Int32Array> create(const int* array,
+  static inline PassRefPtr<Int32Array> Create(unsigned length);
+  static inline PassRefPtr<Int32Array> Create(const int* array,
                                               unsigned length);
-  static inline PassRefPtr<Int32Array> create(PassRefPtr<ArrayBuffer>,
-                                              unsigned byteOffset,
+  static inline PassRefPtr<Int32Array> Create(PassRefPtr<ArrayBuffer>,
+                                              unsigned byte_offset,
                                               unsigned length);
 
-  using TypedArrayBase<int>::set;
-  using IntegralTypedArrayBase<int>::set;
+  using TypedArrayBase<int>::Set;
+  using IntegralTypedArrayBase<int>::Set;
 
-  ViewType type() const override { return TypeInt32; }
+  ViewType GetType() const override { return kTypeInt32; }
 
  private:
   inline Int32Array(PassRefPtr<ArrayBuffer>,
-                    unsigned byteOffset,
+                    unsigned byte_offset,
                     unsigned length);
   // Make constructor visible to superclass.
   friend class TypedArrayBase<int>;
 };
 
-PassRefPtr<Int32Array> Int32Array::create(unsigned length) {
-  return TypedArrayBase<int>::create<Int32Array>(length);
+PassRefPtr<Int32Array> Int32Array::Create(unsigned length) {
+  return TypedArrayBase<int>::Create<Int32Array>(length);
 }
 
-PassRefPtr<Int32Array> Int32Array::create(const int* array, unsigned length) {
-  return TypedArrayBase<int>::create<Int32Array>(array, length);
+PassRefPtr<Int32Array> Int32Array::Create(const int* array, unsigned length) {
+  return TypedArrayBase<int>::Create<Int32Array>(array, length);
 }
 
-PassRefPtr<Int32Array> Int32Array::create(PassRefPtr<ArrayBuffer> buffer,
-                                          unsigned byteOffset,
+PassRefPtr<Int32Array> Int32Array::Create(PassRefPtr<ArrayBuffer> buffer,
+                                          unsigned byte_offset,
                                           unsigned length) {
-  return TypedArrayBase<int>::create<Int32Array>(std::move(buffer), byteOffset,
+  return TypedArrayBase<int>::Create<Int32Array>(std::move(buffer), byte_offset,
                                                  length);
 }
 
 Int32Array::Int32Array(PassRefPtr<ArrayBuffer> buffer,
-                       unsigned byteOffset,
+                       unsigned byte_offset,
                        unsigned length)
-    : IntegralTypedArrayBase<int>(std::move(buffer), byteOffset, length) {}
+    : IntegralTypedArrayBase<int>(std::move(buffer), byte_offset, length) {}
 
 }  // namespace WTF
 

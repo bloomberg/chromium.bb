@@ -37,56 +37,56 @@
 
 namespace blink {
 
-int WebCString::compare(const WebCString& other) const {
+int WebCString::Compare(const WebCString& other) const {
   // A null string is always less than a non null one.
-  if (isNull() != other.isNull())
-    return isNull() ? -1 : 1;
+  if (IsNull() != other.IsNull())
+    return IsNull() ? -1 : 1;
 
-  if (isNull())
+  if (IsNull())
     return 0;  // Both WebStrings are null.
 
-  return strcmp(m_private->data(), other.m_private->data());
+  return strcmp(private_->Data(), other.private_->Data());
 }
 
-void WebCString::reset() {
-  m_private.reset();
+void WebCString::Reset() {
+  private_.Reset();
 }
 
-void WebCString::assign(const WebCString& other) {
-  assign(other.m_private.get());
+void WebCString::Assign(const WebCString& other) {
+  Assign(other.private_.Get());
 }
 
-void WebCString::assign(const char* data, size_t length) {
-  assign(WTF::CString(data, length).impl());
+void WebCString::Assign(const char* data, size_t length) {
+  Assign(WTF::CString(data, length).Impl());
 }
 
 size_t WebCString::length() const {
-  return m_private.isNull() ? 0 : m_private->length();
+  return private_.IsNull() ? 0 : private_->length();
 }
 
-const char* WebCString::data() const {
-  return m_private.isNull() ? 0 : m_private->data();
+const char* WebCString::Data() const {
+  return private_.IsNull() ? 0 : private_->Data();
 }
 
-WebString WebCString::utf16() const {
-  return WebString::fromUTF8(data(), length());
+WebString WebCString::Utf16() const {
+  return WebString::FromUTF8(Data(), length());
 }
 
 WebCString::WebCString(const WTF::CString& s) {
-  assign(s.impl());
+  Assign(s.Impl());
 }
 
 WebCString& WebCString::operator=(const WTF::CString& s) {
-  assign(s.impl());
+  Assign(s.Impl());
   return *this;
 }
 
 WebCString::operator WTF::CString() const {
-  return m_private.get();
+  return private_.Get();
 }
 
-void WebCString::assign(WTF::CStringImpl* p) {
-  m_private = p;
+void WebCString::Assign(WTF::CStringImpl* p) {
+  private_ = p;
 }
 
 }  // namespace blink

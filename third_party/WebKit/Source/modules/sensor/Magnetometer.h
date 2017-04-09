@@ -13,14 +13,14 @@ class Magnetometer final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Magnetometer* create(ExecutionContext*,
+  static Magnetometer* Create(ExecutionContext*,
                               const SensorOptions&,
                               ExceptionState&);
-  static Magnetometer* create(ExecutionContext*, ExceptionState&);
+  static Magnetometer* Create(ExecutionContext*, ExceptionState&);
 
-  double x(bool& isNull) const;
-  double y(bool& isNull) const;
-  double z(bool& isNull) const;
+  double x(bool& is_null) const;
+  double y(bool& is_null) const;
+  double z(bool& is_null) const;
 
   DECLARE_VIRTUAL_TRACE();
 

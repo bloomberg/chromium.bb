@@ -39,46 +39,46 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
-    : HTMLElement(templateTag, document), m_content(this, nullptr) {}
+    : HTMLElement(templateTag, document), content_(this, nullptr) {}
 
 DEFINE_NODE_FACTORY(HTMLTemplateElement)
 
 HTMLTemplateElement::~HTMLTemplateElement() {}
 
 DocumentFragment* HTMLTemplateElement::content() const {
-  if (!m_content)
-    m_content = TemplateContentDocumentFragment::create(
-        document().ensureTemplateDocument(),
+  if (!content_)
+    content_ = TemplateContentDocumentFragment::Create(
+        GetDocument().EnsureTemplateDocument(),
         const_cast<HTMLTemplateElement*>(this));
 
-  return m_content.get();
+  return content_.Get();
 }
 
 Node* HTMLTemplateElement::cloneNode(bool deep, ExceptionState&) {
   if (!deep)
-    return cloneElementWithoutChildren();
+    return CloneElementWithoutChildren();
 
-  Node* clone = cloneElementWithChildren();
-  if (m_content)
-    content()->cloneChildNodes(toHTMLTemplateElement(clone)->content());
+  Node* clone = CloneElementWithChildren();
+  if (content_)
+    content()->CloneChildNodes(toHTMLTemplateElement(clone)->content());
   return clone;
 }
 
-void HTMLTemplateElement::didMoveToNewDocument(Document& oldDocument) {
-  HTMLElement::didMoveToNewDocument(oldDocument);
-  if (!m_content)
+void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {
+  HTMLElement::DidMoveToNewDocument(old_document);
+  if (!content_)
     return;
-  document().ensureTemplateDocument().adoptIfNeeded(*m_content);
+  GetDocument().EnsureTemplateDocument().AdoptIfNeeded(*content_);
 }
 
 DEFINE_TRACE(HTMLTemplateElement) {
-  visitor->trace(m_content);
-  HTMLElement::trace(visitor);
+  visitor->Trace(content_);
+  HTMLElement::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(HTMLTemplateElement) {
-  visitor->traceWrappers(m_content);
-  HTMLElement::traceWrappers(visitor);
+  visitor->TraceWrappers(content_);
+  HTMLElement::TraceWrappers(visitor);
 }
 
 }  // namespace blink

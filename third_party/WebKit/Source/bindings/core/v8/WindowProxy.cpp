@@ -45,58 +45,58 @@ namespace blink {
 WindowProxy::~WindowProxy() {
   // clearForClose() or clearForNavigation() must be invoked before destruction
   // starts.
-  DCHECK(m_lifecycle != Lifecycle::ContextIsInitialized);
+  DCHECK(lifecycle_ != Lifecycle::kContextIsInitialized);
 }
 
 DEFINE_TRACE(WindowProxy) {
-  visitor->trace(m_frame);
+  visitor->Trace(frame_);
 }
 
 WindowProxy::WindowProxy(v8::Isolate* isolate,
                          Frame& frame,
                          RefPtr<DOMWrapperWorld> world)
-    : m_isolate(isolate),
-      m_frame(frame),
+    : isolate_(isolate),
+      frame_(frame),
 
-      m_world(std::move(world)),
-      m_lifecycle(Lifecycle::ContextIsUninitialized) {}
+      world_(std::move(world)),
+      lifecycle_(Lifecycle::kContextIsUninitialized) {}
 
-void WindowProxy::clearForClose() {
-  disposeContext(DoNotDetachGlobal);
+void WindowProxy::ClearForClose() {
+  DisposeContext(kDoNotDetachGlobal);
 }
 
-void WindowProxy::clearForNavigation() {
-  disposeContext(DetachGlobal);
+void WindowProxy::ClearForNavigation() {
+  DisposeContext(kDetachGlobal);
 }
 
-v8::Local<v8::Object> WindowProxy::globalProxyIfNotDetached() {
-  if (m_lifecycle == Lifecycle::ContextIsInitialized) {
-    DLOG_IF(FATAL, !m_isGlobalObjectAttached)
+v8::Local<v8::Object> WindowProxy::GlobalProxyIfNotDetached() {
+  if (lifecycle_ == Lifecycle::kContextIsInitialized) {
+    DLOG_IF(FATAL, !is_global_object_attached_)
         << "Context is initialized but global object is detached!";
-    return m_globalProxy.newLocal(m_isolate);
+    return global_proxy_.NewLocal(isolate_);
   }
   return v8::Local<v8::Object>();
 }
 
-v8::Local<v8::Object> WindowProxy::releaseGlobalProxy() {
-  DCHECK(m_lifecycle == Lifecycle::ContextIsUninitialized ||
-         m_lifecycle == Lifecycle::GlobalObjectIsDetached);
+v8::Local<v8::Object> WindowProxy::ReleaseGlobalProxy() {
+  DCHECK(lifecycle_ == Lifecycle::kContextIsUninitialized ||
+         lifecycle_ == Lifecycle::kGlobalObjectIsDetached);
 
   // Make sure the global object was detached from the proxy by calling
   // clearForNavigation().
-  DLOG_IF(FATAL, m_isGlobalObjectAttached)
+  DLOG_IF(FATAL, is_global_object_attached_)
       << "Context not detached by calling clearForNavigation()";
 
-  v8::Local<v8::Object> globalProxy = m_globalProxy.newLocal(m_isolate);
-  m_globalProxy.clear();
-  return globalProxy;
+  v8::Local<v8::Object> global_proxy = global_proxy_.NewLocal(isolate_);
+  global_proxy_.Clear();
+  return global_proxy;
 }
 
-void WindowProxy::setGlobalProxy(v8::Local<v8::Object> globalProxy) {
-  DCHECK_EQ(m_lifecycle, Lifecycle::ContextIsUninitialized);
+void WindowProxy::SetGlobalProxy(v8::Local<v8::Object> global_proxy) {
+  DCHECK_EQ(lifecycle_, Lifecycle::kContextIsUninitialized);
 
-  CHECK(m_globalProxy.isEmpty());
-  m_globalProxy.set(m_isolate, globalProxy);
+  CHECK(global_proxy_.IsEmpty());
+  global_proxy_.Set(isolate_, global_proxy);
 
   // Initialize the window proxy now, to re-establish the connection between
   // the global object and the v8::Context. This is really only needed for a
@@ -104,7 +104,7 @@ void WindowProxy::setGlobalProxy(v8::Local<v8::Object> globalProxy) {
   // Without this, existing script references to a swapped in RemoteDOMWindow
   // would be broken until that RemoteDOMWindow was vended again through an
   // interface like window.frames.
-  initialize();
+  Initialize();
 }
 
 // Create a new environment and setup the global object.
@@ -142,24 +142,24 @@ void WindowProxy::setGlobalProxy(v8::Local<v8::Object> globalProxy) {
 // the frame. However, a new inner window is created for the new page.
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
-void WindowProxy::initializeIfNeeded() {
-  if (m_lifecycle == Lifecycle::ContextIsUninitialized ||
-      m_lifecycle == Lifecycle::GlobalObjectIsDetached) {
-    initialize();
+void WindowProxy::InitializeIfNeeded() {
+  if (lifecycle_ == Lifecycle::kContextIsUninitialized ||
+      lifecycle_ == Lifecycle::kGlobalObjectIsDetached) {
+    Initialize();
   }
 }
 
-v8::Local<v8::Object> WindowProxy::associateWithWrapper(
+v8::Local<v8::Object> WindowProxy::AssociateWithWrapper(
     DOMWindow* window,
-    const WrapperTypeInfo* wrapperTypeInfo,
+    const WrapperTypeInfo* wrapper_type_info,
     v8::Local<v8::Object> wrapper) {
-  if (m_world->domDataStore().set(m_isolate, window, wrapperTypeInfo,
-                                  wrapper)) {
-    wrapperTypeInfo->wrapperCreated();
-    V8DOMWrapper::setNativeInfo(m_isolate, wrapper, wrapperTypeInfo, window);
-    DCHECK(V8DOMWrapper::hasInternalFieldsSet(wrapper));
+  if (world_->DomDataStore().Set(isolate_, window, wrapper_type_info,
+                                 wrapper)) {
+    wrapper_type_info->WrapperCreated();
+    V8DOMWrapper::SetNativeInfo(isolate_, wrapper, wrapper_type_info, window);
+    DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
   }
-  SECURITY_CHECK(toScriptWrappable(wrapper) == window);
+  SECURITY_CHECK(ToScriptWrappable(wrapper) == window);
   return wrapper;
 }
 

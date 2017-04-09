@@ -26,8 +26,8 @@ Env::Env() {
   base::FeatureList::InitializeInstance(std::string(), std::string());
   base::i18n::InitializeICU();
 
-  blink::WebRuntimeFeatures::enableExperimentalFeatures(true);
-  blink::WebRuntimeFeatures::enableTestOnlyFeatures(true);
+  blink::WebRuntimeFeatures::EnableExperimentalFeatures(true);
+  blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 
   gin::V8Initializer::LoadV8Snapshot();
   gin::V8Initializer::LoadV8Natives();

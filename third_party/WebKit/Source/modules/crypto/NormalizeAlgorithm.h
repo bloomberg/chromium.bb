@@ -45,8 +45,8 @@ namespace blink {
 
 struct AlgorithmError {
   STACK_ALLOCATED();
-  WebCryptoErrorType errorType;
-  WebString errorDetails;
+  WebCryptoErrorType error_type;
+  WebString error_details;
 };
 
 typedef DictionaryOrString AlgorithmIdentifier;
@@ -62,7 +62,7 @@ typedef DictionaryOrString AlgorithmIdentifier;
 // a error type and a (non-localized) debug string.
 //
 // [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-MODULES_EXPORT WARN_UNUSED_RESULT bool normalizeAlgorithm(
+MODULES_EXPORT WARN_UNUSED_RESULT bool NormalizeAlgorithm(
     const AlgorithmIdentifier&,
     WebCryptoOperation,
     WebCryptoAlgorithm&,

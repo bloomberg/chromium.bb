@@ -43,19 +43,19 @@ class AudioBasicInspectorHandler : public AudioHandler {
  public:
   AudioBasicInspectorHandler(NodeType,
                              AudioNode&,
-                             float sampleRate,
-                             unsigned outputChannelCount);
+                             float sample_rate,
+                             unsigned output_channel_count);
 
   // AudioHandler
-  void pullInputs(size_t framesToProcess) final;
-  void checkNumberOfChannelsForInput(AudioNodeInput*) final;
+  void PullInputs(size_t frames_to_process) final;
+  void CheckNumberOfChannelsForInput(AudioNodeInput*) final;
 
-  virtual void updatePullStatus();
+  virtual void UpdatePullStatus();
 
  protected:
   // When setting to true, AudioBasicInspectorHandler will be pulled
   // automaticlly by BaseAudioContext before the end of each render quantum.
-  bool m_needAutomaticPull;
+  bool need_automatic_pull_;
 };
 
 class AudioBasicInspectorNode : public AudioNode {
@@ -67,10 +67,10 @@ class AudioBasicInspectorNode : public AudioNode {
   // TODO(tkent): Should AudioBasicInspectorNode override other variants of
   // connect() and disconnect()?
   AudioNode* connect(AudioNode*,
-                     unsigned outputIndex,
-                     unsigned inputIndex,
+                     unsigned output_index,
+                     unsigned input_index,
                      ExceptionState&) final;
-  void disconnect(unsigned outputIndex, ExceptionState&) final;
+  void disconnect(unsigned output_index, ExceptionState&) final;
 };
 
 }  // namespace blink

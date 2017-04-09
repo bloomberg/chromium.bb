@@ -24,14 +24,14 @@ class PLATFORM_EXPORT CompositorFilterKeyframe : public CompositorKeyframe {
                            const TimingFunction&);
   ~CompositorFilterKeyframe();
 
-  std::unique_ptr<cc::FilterKeyframe> cloneToCC() const;
+  std::unique_ptr<cc::FilterKeyframe> CloneToCC() const;
 
   // CompositorKeyframe implementation.
-  double time() const override;
-  const cc::TimingFunction* ccTimingFunction() const override;
+  double Time() const override;
+  const cc::TimingFunction* CcTimingFunction() const override;
 
  private:
-  std::unique_ptr<cc::FilterKeyframe> m_filterKeyframe;
+  std::unique_ptr<cc::FilterKeyframe> filter_keyframe_;
 };
 
 }  // namespace blink

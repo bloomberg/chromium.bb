@@ -10,9 +10,9 @@ namespace blink {
 // These number must correspond to
 // base::MemoryPressureListener::MemoryPressureLevel.
 enum WebMemoryPressureLevel {
-  WebMemoryPressureLevelNone,
-  WebMemoryPressureLevelModerate,
-  WebMemoryPressureLevelCritical,
+  kWebMemoryPressureLevelNone,
+  kWebMemoryPressureLevelModerate,
+  kWebMemoryPressureLevelCritical,
 };
 
 }  // namespace blink

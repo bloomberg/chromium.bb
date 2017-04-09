@@ -34,95 +34,95 @@
 
 namespace blink {
 
-const int HRTFDatabase::MinElevation = -45;
-const int HRTFDatabase::MaxElevation = 90;
-const unsigned HRTFDatabase::RawElevationAngleSpacing = 15;
-const unsigned HRTFDatabase::NumberOfRawElevations =
+const int HRTFDatabase::kMinElevation = -45;
+const int HRTFDatabase::kMaxElevation = 90;
+const unsigned HRTFDatabase::kRawElevationAngleSpacing = 15;
+const unsigned HRTFDatabase::kNumberOfRawElevations =
     10;  // -45 -> +90 (each 15 degrees)
-const unsigned HRTFDatabase::InterpolationFactor = 1;
-const unsigned HRTFDatabase::NumberOfTotalElevations =
-    NumberOfRawElevations * InterpolationFactor;
+const unsigned HRTFDatabase::kInterpolationFactor = 1;
+const unsigned HRTFDatabase::kNumberOfTotalElevations =
+    kNumberOfRawElevations * kInterpolationFactor;
 
-std::unique_ptr<HRTFDatabase> HRTFDatabase::create(float sampleRate) {
-  return WTF::wrapUnique(new HRTFDatabase(sampleRate));
+std::unique_ptr<HRTFDatabase> HRTFDatabase::Create(float sample_rate) {
+  return WTF::WrapUnique(new HRTFDatabase(sample_rate));
 }
 
-HRTFDatabase::HRTFDatabase(float sampleRate)
-    : m_elevations(NumberOfTotalElevations), m_sampleRate(sampleRate) {
-  unsigned elevationIndex = 0;
-  for (int elevation = MinElevation; elevation <= MaxElevation;
-       elevation += RawElevationAngleSpacing) {
-    std::unique_ptr<HRTFElevation> hrtfElevation =
-        HRTFElevation::createForSubject("Composite", elevation, sampleRate);
-    DCHECK(hrtfElevation.get());
-    if (!hrtfElevation.get())
+HRTFDatabase::HRTFDatabase(float sample_rate)
+    : elevations_(kNumberOfTotalElevations), sample_rate_(sample_rate) {
+  unsigned elevation_index = 0;
+  for (int elevation = kMinElevation; elevation <= kMaxElevation;
+       elevation += kRawElevationAngleSpacing) {
+    std::unique_ptr<HRTFElevation> hrtf_elevation =
+        HRTFElevation::CreateForSubject("Composite", elevation, sample_rate);
+    DCHECK(hrtf_elevation.get());
+    if (!hrtf_elevation.get())
       return;
 
-    m_elevations[elevationIndex] = std::move(hrtfElevation);
-    elevationIndex += InterpolationFactor;
+    elevations_[elevation_index] = std::move(hrtf_elevation);
+    elevation_index += kInterpolationFactor;
   }
 
   // Now, go back and interpolate elevations.
-  if (InterpolationFactor > 1) {
-    for (unsigned i = 0; i < NumberOfTotalElevations;
-         i += InterpolationFactor) {
-      unsigned j = (i + InterpolationFactor);
-      if (j >= NumberOfTotalElevations)
+  if (kInterpolationFactor > 1) {
+    for (unsigned i = 0; i < kNumberOfTotalElevations;
+         i += kInterpolationFactor) {
+      unsigned j = (i + kInterpolationFactor);
+      if (j >= kNumberOfTotalElevations)
         j = i;  // for last elevation interpolate with itself
 
       // Create the interpolated convolution kernels and delays.
-      for (unsigned jj = 1; jj < InterpolationFactor; ++jj) {
+      for (unsigned jj = 1; jj < kInterpolationFactor; ++jj) {
         float x =
-            static_cast<float>(jj) / static_cast<float>(InterpolationFactor);
-        m_elevations[i + jj] = HRTFElevation::createByInterpolatingSlices(
-            m_elevations[i].get(), m_elevations[j].get(), x, sampleRate);
-        DCHECK(m_elevations[i + jj].get());
+            static_cast<float>(jj) / static_cast<float>(kInterpolationFactor);
+        elevations_[i + jj] = HRTFElevation::CreateByInterpolatingSlices(
+            elevations_[i].get(), elevations_[j].get(), x, sample_rate);
+        DCHECK(elevations_[i + jj].get());
       }
     }
   }
 }
 
-void HRTFDatabase::getKernelsFromAzimuthElevation(double azimuthBlend,
-                                                  unsigned azimuthIndex,
-                                                  double elevationAngle,
-                                                  HRTFKernel*& kernelL,
-                                                  HRTFKernel*& kernelR,
-                                                  double& frameDelayL,
-                                                  double& frameDelayR) {
-  unsigned elevationIndex = indexFromElevationAngle(elevationAngle);
-  SECURITY_DCHECK(elevationIndex < m_elevations.size() &&
-                  m_elevations.size() > 0);
+void HRTFDatabase::GetKernelsFromAzimuthElevation(double azimuth_blend,
+                                                  unsigned azimuth_index,
+                                                  double elevation_angle,
+                                                  HRTFKernel*& kernel_l,
+                                                  HRTFKernel*& kernel_r,
+                                                  double& frame_delay_l,
+                                                  double& frame_delay_r) {
+  unsigned elevation_index = IndexFromElevationAngle(elevation_angle);
+  SECURITY_DCHECK(elevation_index < elevations_.size() &&
+                  elevations_.size() > 0);
 
-  if (!m_elevations.size()) {
-    kernelL = 0;
-    kernelR = 0;
+  if (!elevations_.size()) {
+    kernel_l = 0;
+    kernel_r = 0;
     return;
   }
 
-  if (elevationIndex > m_elevations.size() - 1)
-    elevationIndex = m_elevations.size() - 1;
+  if (elevation_index > elevations_.size() - 1)
+    elevation_index = elevations_.size() - 1;
 
-  HRTFElevation* hrtfElevation = m_elevations[elevationIndex].get();
-  DCHECK(hrtfElevation);
-  if (!hrtfElevation) {
-    kernelL = 0;
-    kernelR = 0;
+  HRTFElevation* hrtf_elevation = elevations_[elevation_index].get();
+  DCHECK(hrtf_elevation);
+  if (!hrtf_elevation) {
+    kernel_l = 0;
+    kernel_r = 0;
     return;
   }
 
-  hrtfElevation->getKernelsFromAzimuth(azimuthBlend, azimuthIndex, kernelL,
-                                       kernelR, frameDelayL, frameDelayR);
+  hrtf_elevation->GetKernelsFromAzimuth(azimuth_blend, azimuth_index, kernel_l,
+                                        kernel_r, frame_delay_l, frame_delay_r);
 }
 
-unsigned HRTFDatabase::indexFromElevationAngle(double elevationAngle) {
+unsigned HRTFDatabase::IndexFromElevationAngle(double elevation_angle) {
   // Clamp to allowed range.
-  elevationAngle =
-      clampTo<double, double>(elevationAngle, MinElevation, MaxElevation);
+  elevation_angle =
+      clampTo<double, double>(elevation_angle, kMinElevation, kMaxElevation);
 
-  unsigned elevationIndex =
-      static_cast<int>(InterpolationFactor * (elevationAngle - MinElevation) /
-                       RawElevationAngleSpacing);
-  return elevationIndex;
+  unsigned elevation_index = static_cast<int>(
+      kInterpolationFactor * (elevation_angle - kMinElevation) /
+      kRawElevationAngleSpacing);
+  return elevation_index;
 }
 
 }  // namespace blink

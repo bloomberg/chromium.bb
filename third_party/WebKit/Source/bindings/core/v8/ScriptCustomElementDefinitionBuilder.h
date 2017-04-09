@@ -33,37 +33,37 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   ScriptCustomElementDefinitionBuilder(
       ScriptState*,
       CustomElementRegistry*,
-      const ScriptValue& constructorScriptValue,
+      const ScriptValue& constructor_script_value,
       ExceptionState&);
   ~ScriptCustomElementDefinitionBuilder();
 
-  bool checkConstructorIntrinsics() override;
-  bool checkConstructorNotRegistered() override;
-  bool checkPrototype() override;
-  bool rememberOriginalProperties() override;
-  CustomElementDefinition* build(const CustomElementDescriptor&) override;
+  bool CheckConstructorIntrinsics() override;
+  bool CheckConstructorNotRegistered() override;
+  bool CheckPrototype() override;
+  bool RememberOriginalProperties() override;
+  CustomElementDefinition* Build(const CustomElementDescriptor&) override;
 
  private:
-  static ScriptCustomElementDefinitionBuilder* s_stack;
+  static ScriptCustomElementDefinitionBuilder* stack_;
 
-  ScriptCustomElementDefinitionBuilder* m_prev;
-  RefPtr<ScriptState> m_scriptState;
-  Member<CustomElementRegistry> m_registry;
-  v8::Local<v8::Value> m_constructorValue;
-  v8::Local<v8::Object> m_constructor;
-  v8::Local<v8::Object> m_prototype;
-  v8::Local<v8::Function> m_connectedCallback;
-  v8::Local<v8::Function> m_disconnectedCallback;
-  v8::Local<v8::Function> m_adoptedCallback;
-  v8::Local<v8::Function> m_attributeChangedCallback;
-  HashSet<AtomicString> m_observedAttributes;
-  ExceptionState& m_exceptionState;
+  ScriptCustomElementDefinitionBuilder* prev_;
+  RefPtr<ScriptState> script_state_;
+  Member<CustomElementRegistry> registry_;
+  v8::Local<v8::Value> constructor_value_;
+  v8::Local<v8::Object> constructor_;
+  v8::Local<v8::Object> prototype_;
+  v8::Local<v8::Function> connected_callback_;
+  v8::Local<v8::Function> disconnected_callback_;
+  v8::Local<v8::Function> adopted_callback_;
+  v8::Local<v8::Function> attribute_changed_callback_;
+  HashSet<AtomicString> observed_attributes_;
+  ExceptionState& exception_state_;
 
-  bool valueForName(const v8::Local<v8::Object>&,
+  bool ValueForName(const v8::Local<v8::Object>&,
                     const StringView&,
                     v8::Local<v8::Value>&) const;
-  bool callableForName(const StringView&, v8::Local<v8::Function>&) const;
-  bool retrieveObservedAttributes();
+  bool CallableForName(const StringView&, v8::Local<v8::Function>&) const;
+  bool RetrieveObservedAttributes();
 };
 
 }  // namespace blink

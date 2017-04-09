@@ -7,12 +7,12 @@
 namespace blink {
 
 StyleWillChangeData::StyleWillChangeData()
-    : m_contents(false), m_scrollPosition(false) {}
+    : contents_(false), scroll_position_(false) {}
 
 StyleWillChangeData::StyleWillChangeData(const StyleWillChangeData& o)
     : RefCounted<StyleWillChangeData>(),
-      m_properties(o.m_properties),
-      m_contents(o.m_contents),
-      m_scrollPosition(o.m_scrollPosition) {}
+      properties_(o.properties_),
+      contents_(o.contents_),
+      scroll_position_(o.scroll_position_) {}
 
 }  // namespace blink

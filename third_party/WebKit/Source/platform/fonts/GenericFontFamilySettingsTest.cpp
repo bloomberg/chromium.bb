@@ -10,19 +10,19 @@ namespace blink {
 
 TEST(GenericFontFamilySettingsTest, FirstAvailableFontFamily) {
   GenericFontFamilySettings settings;
-  EXPECT_TRUE(settings.standard().isEmpty());
+  EXPECT_TRUE(settings.Standard().IsEmpty());
 
   // Returns the first available font if starts with ",".
-  settings.updateStandard(",not exist, Arial");
-  EXPECT_EQ("Arial", settings.standard());
+  settings.UpdateStandard(",not exist, Arial");
+  EXPECT_EQ("Arial", settings.Standard());
 
   // Otherwise returns any strings as they were set.
-  AtomicString nonLists[] = {
+  AtomicString non_lists[] = {
       "Arial", "not exist", "not exist, Arial",
   };
-  for (const AtomicString& name : nonLists) {
-    settings.updateStandard(name);
-    EXPECT_EQ(name, settings.standard());
+  for (const AtomicString& name : non_lists) {
+    settings.UpdateStandard(name);
+    EXPECT_EQ(name, settings.Standard());
   }
 }
 

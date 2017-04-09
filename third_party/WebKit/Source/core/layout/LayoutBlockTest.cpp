@@ -14,16 +14,16 @@ namespace blink {
 class LayoutBlockTest : public RenderingTest {};
 
 TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
-  LayoutObject* obj = LayoutBlockFlow::createAnonymous(&document());
-  EXPECT_FALSE(obj->style());
+  LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument());
+  EXPECT_FALSE(obj->Style());
   EXPECT_STREQ("LayoutBlockFlow (anonymous)",
-               obj->decoratedName().ascii().data());
-  obj->destroy();
+               obj->DecoratedName().Ascii().Data());
+  obj->Destroy();
 }
 
 TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
   RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<div id='list' style='overflow-y:auto; width:150px; height:100px'>"
       "  <div style='height:20px'>Item</div>"
@@ -33,21 +33,22 @@ TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
       "  <div style='height:20px'>Item</div>"
       "  <div style='height:20px'>Item</div>"
       "</div>");
-  Element* listElement = document().getElementById("list");
-  ASSERT_TRUE(listElement);
-  LayoutBox* listBox = toLayoutBox(listElement->layoutObject());
-  Element* itemElement = ElementTraversal::firstChild(*listElement);
-  ASSERT_TRUE(itemElement);
-  ASSERT_GT(listBox->verticalScrollbarWidth(), 0);
-  ASSERT_EQ(itemElement->offsetWidth(),
-            150 - listBox->verticalScrollbarWidth());
+  Element* list_element = GetDocument().GetElementById("list");
+  ASSERT_TRUE(list_element);
+  LayoutBox* list_box = ToLayoutBox(list_element->GetLayoutObject());
+  Element* item_element = ElementTraversal::FirstChild(*list_element);
+  ASSERT_TRUE(item_element);
+  ASSERT_GT(list_box->VerticalScrollbarWidth(), 0);
+  ASSERT_EQ(item_element->OffsetWidth(),
+            150 - list_box->VerticalScrollbarWidth());
 
-  DummyExceptionStateForTesting exceptionState;
-  listElement->style()->setCSSText("width:150px;height:100px;", exceptionState);
-  ASSERT_FALSE(exceptionState.hadException());
-  document().view()->updateAllLifecyclePhases();
-  ASSERT_EQ(listBox->verticalScrollbarWidth(), 0);
-  ASSERT_EQ(itemElement->offsetWidth(), 150);
+  DummyExceptionStateForTesting exception_state;
+  list_element->style()->setCSSText("width:150px;height:100px;",
+                                    exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_EQ(list_box->VerticalScrollbarWidth(), 0);
+  ASSERT_EQ(item_element->OffsetWidth(), 150);
 }
 
 }  // namespace blink

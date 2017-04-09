@@ -47,21 +47,21 @@ struct SerializedResource;
 class PLATFORM_EXPORT MHTMLArchive final
     : public GarbageCollected<MHTMLArchive> {
  public:
-  static MHTMLArchive* create(const KURL&, PassRefPtr<const SharedBuffer>);
+  static MHTMLArchive* Create(const KURL&, PassRefPtr<const SharedBuffer>);
 
   // Binary encoding results in smaller MHTML files but they might not work in
   // other browsers.
-  enum EncodingPolicy { UseDefaultEncoding, UseBinaryEncoding };
+  enum EncodingPolicy { kUseDefaultEncoding, kUseBinaryEncoding };
 
   // Generates an MHTML header and appends it to |outputBuffer|.
   //
   // Same |boundary| needs to be used for all generateMHTMLHeader and
   // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  static void generateMHTMLHeader(const String& boundary,
+  static void GenerateMHTMLHeader(const String& boundary,
                                   const String& title,
-                                  const String& mimeType,
-                                  Vector<char>& outputBuffer);
+                                  const String& mime_type,
+                                  Vector<char>& output_buffer);
 
   // Serializes SerializedResource as an MHTML part and appends it in
   // |outputBuffer|.
@@ -72,11 +72,11 @@ class PLATFORM_EXPORT MHTMLArchive final
   //
   // If |contentID| is non-empty, then it will be used as a Content-ID header.
   // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
-  static void generateMHTMLPart(const String& boundary,
-                                const String& contentID,
+  static void GenerateMHTMLPart(const String& boundary,
+                                const String& content_id,
                                 EncodingPolicy,
                                 const SerializedResource&,
-                                Vector<char>& outputBuffer);
+                                Vector<char>& output_buffer);
 
   // Generates an MHTML footer and appends it to |outputBuffer| for testing
   // purposes.
@@ -84,25 +84,25 @@ class PLATFORM_EXPORT MHTMLArchive final
   // Same |boundary| needs to be used for all generateMHTMLHeader and
   // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  static void generateMHTMLFooterForTesting(const String& boundary,
-                                            Vector<char>& outputBuffer);
+  static void GenerateMHTMLFooterForTesting(const String& boundary,
+                                            Vector<char>& output_buffer);
 
   typedef HeapHashMap<String, Member<ArchiveResource>> SubArchiveResources;
 
-  ArchiveResource* mainResource() { return m_mainResource.get(); }
-  ArchiveResource* subresourceForURL(const KURL&) const;
+  ArchiveResource* MainResource() { return main_resource_.Get(); }
+  ArchiveResource* SubresourceForURL(const KURL&) const;
 
   DECLARE_TRACE();
 
  private:
   MHTMLArchive();
 
-  void setMainResource(ArchiveResource*);
-  void addSubresource(ArchiveResource*);
-  static bool canLoadArchive(const KURL&);
+  void SetMainResource(ArchiveResource*);
+  void AddSubresource(ArchiveResource*);
+  static bool CanLoadArchive(const KURL&);
 
-  Member<ArchiveResource> m_mainResource;
-  SubArchiveResources m_subresources;
+  Member<ArchiveResource> main_resource_;
+  SubArchiveResources subresources_;
 };
 
 }  // namespace blink

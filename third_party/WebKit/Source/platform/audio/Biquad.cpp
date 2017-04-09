@@ -45,55 +45,55 @@ namespace blink {
 const int kBufferSize = 1024;
 #endif
 
-Biquad::Biquad() : m_hasSampleAccurateValues(false) {
+Biquad::Biquad() : has_sample_accurate_values_(false) {
 #if OS(MACOSX)
   // Allocate two samples more for filter history
-  m_inputBuffer.allocate(kBufferSize + 2);
-  m_outputBuffer.allocate(kBufferSize + 2);
+  input_buffer_.Allocate(kBufferSize + 2);
+  output_buffer_.Allocate(kBufferSize + 2);
 #endif
 
   // Allocate enough space for the a-rate filter coefficients to handle a
   // rendering quantum of 128 frames.
-  m_b0.allocate(AudioUtilities::kRenderQuantumFrames);
-  m_b1.allocate(AudioUtilities::kRenderQuantumFrames);
-  m_b2.allocate(AudioUtilities::kRenderQuantumFrames);
-  m_a1.allocate(AudioUtilities::kRenderQuantumFrames);
-  m_a2.allocate(AudioUtilities::kRenderQuantumFrames);
+  b0_.Allocate(AudioUtilities::kRenderQuantumFrames);
+  b1_.Allocate(AudioUtilities::kRenderQuantumFrames);
+  b2_.Allocate(AudioUtilities::kRenderQuantumFrames);
+  a1_.Allocate(AudioUtilities::kRenderQuantumFrames);
+  a2_.Allocate(AudioUtilities::kRenderQuantumFrames);
 
   // Initialize as pass-thru (straight-wire, no filter effect)
-  setNormalizedCoefficients(0, 1, 0, 0, 1, 0, 0);
+  SetNormalizedCoefficients(0, 1, 0, 0, 1, 0, 0);
 
-  reset();  // clear filter memory
+  Reset();  // clear filter memory
 }
 
 Biquad::~Biquad() {}
 
-void Biquad::process(const float* sourceP,
-                     float* destP,
-                     size_t framesToProcess) {
+void Biquad::Process(const float* source_p,
+                     float* dest_p,
+                     size_t frames_to_process) {
   // WARNING: sourceP and destP may be pointing to the same area of memory!
   // Be sure to read from sourceP before writing to destP!
-  if (hasSampleAccurateValues()) {
-    int n = framesToProcess;
+  if (HasSampleAccurateValues()) {
+    int n = frames_to_process;
 
     // Create local copies of member variables
-    double x1 = m_x1;
-    double x2 = m_x2;
-    double y1 = m_y1;
-    double y2 = m_y2;
+    double x1 = x1_;
+    double x2 = x2_;
+    double y1 = y1_;
+    double y2 = y2_;
 
-    const double* b0 = m_b0.data();
-    const double* b1 = m_b1.data();
-    const double* b2 = m_b2.data();
-    const double* a1 = m_a1.data();
-    const double* a2 = m_a2.data();
+    const double* b0 = b0_.Data();
+    const double* b1 = b1_.Data();
+    const double* b2 = b2_.Data();
+    const double* a1 = a1_.Data();
+    const double* a2 = a2_.Data();
 
     for (int k = 0; k < n; ++k) {
       // FIXME: this can be optimized by pipelining the multiply adds...
-      float x = *sourceP++;
+      float x = *source_p++;
       float y = b0[k] * x + b1[k] * x1 + b2[k] * x2 - a1[k] * y1 - a2[k] * y2;
 
-      *destP++ = y;
+      *dest_p++ = y;
 
       // Update state variables
       x2 = x1;
@@ -104,10 +104,10 @@ void Biquad::process(const float* sourceP,
 
     // Local variables back to member. Flush denormals here so we
     // don't slow down the inner loop above.
-    m_x1 = DenormalDisabler::flushDenormalFloatToZero(x1);
-    m_x2 = DenormalDisabler::flushDenormalFloatToZero(x2);
-    m_y1 = DenormalDisabler::flushDenormalFloatToZero(y1);
-    m_y2 = DenormalDisabler::flushDenormalFloatToZero(y2);
+    x1_ = DenormalDisabler::FlushDenormalFloatToZero(x1);
+    x2_ = DenormalDisabler::FlushDenormalFloatToZero(x2);
+    y1_ = DenormalDisabler::FlushDenormalFloatToZero(y1);
+    y2_ = DenormalDisabler::FlushDenormalFloatToZero(y2);
 
     // There is an assumption here that once we have sample accurate values we
     // can never go back to not having sample accurate values.  This is
@@ -119,19 +119,19 @@ void Biquad::process(const float* sourceP,
     // documented so it's not clear how to update them anyway.
   } else {
 #if OS(MACOSX)
-    double* inputP = m_inputBuffer.data();
-    double* outputP = m_outputBuffer.data();
+    double* input_p = input_buffer_.Data();
+    double* output_p = output_buffer_.Data();
 
     // Set up filter state.  This is needed in case we're switching from
     // filtering with variable coefficients (i.e., with automations) to
     // fixed coefficients (without automations).
-    inputP[0] = m_x2;
-    inputP[1] = m_x1;
-    outputP[0] = m_y2;
-    outputP[1] = m_y1;
+    input_p[0] = x2_;
+    input_p[1] = x1_;
+    output_p[0] = y2_;
+    output_p[1] = y1_;
 
     // Use vecLib if available
-    processFast(sourceP, destP, framesToProcess);
+    ProcessFast(source_p, dest_p, frames_to_process);
 
     // Copy the last inputs and outputs to the filter memory variables.
     // This is needed because the next rendering quantum might be an
@@ -139,32 +139,32 @@ void Biquad::process(const float* sourceP,
     // sourceP and destP can be the same block of memory, we can't read from
     // sourceP to get the last inputs.  Fortunately, processFast has put the
     // last inputs in input[0] and input[1].
-    m_x1 = inputP[1];
-    m_x2 = inputP[0];
-    m_y1 = destP[framesToProcess - 1];
-    m_y2 = destP[framesToProcess - 2];
+    x1_ = input_p[1];
+    x2_ = input_p[0];
+    y1_ = dest_p[frames_to_process - 1];
+    y2_ = dest_p[frames_to_process - 2];
 
 #else
-    int n = framesToProcess;
+    int n = frames_to_process;
 
     // Create local copies of member variables
-    double x1 = m_x1;
-    double x2 = m_x2;
-    double y1 = m_y1;
-    double y2 = m_y2;
+    double x1 = x1_;
+    double x2 = x2_;
+    double y1 = y1_;
+    double y2 = y2_;
 
-    double b0 = m_b0[0];
-    double b1 = m_b1[0];
-    double b2 = m_b2[0];
-    double a1 = m_a1[0];
-    double a2 = m_a2[0];
+    double b0 = b0_[0];
+    double b1 = b1_[0];
+    double b2 = b2_[0];
+    double a1 = a1_[0];
+    double a2 = a2_[0];
 
     while (n--) {
       // FIXME: this can be optimized by pipelining the multiply adds...
-      float x = *sourceP++;
+      float x = *source_p++;
       float y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
 
-      *destP++ = y;
+      *dest_p++ = y;
 
       // Update state variables
       x2 = x1;
@@ -175,10 +175,10 @@ void Biquad::process(const float* sourceP,
 
     // Local variables back to member. Flush denormals here so we
     // don't slow down the inner loop above.
-    m_x1 = DenormalDisabler::flushDenormalFloatToZero(x1);
-    m_x2 = DenormalDisabler::flushDenormalFloatToZero(x2);
-    m_y1 = DenormalDisabler::flushDenormalFloatToZero(y1);
-    m_y2 = DenormalDisabler::flushDenormalFloatToZero(y2);
+    x1_ = DenormalDisabler::FlushDenormalFloatToZero(x1);
+    x2_ = DenormalDisabler::FlushDenormalFloatToZero(x2);
+    y1_ = DenormalDisabler::FlushDenormalFloatToZero(y1);
+    y2_ = DenormalDisabler::FlushDenormalFloatToZero(y2);
 #endif
   }
 }
@@ -187,84 +187,84 @@ void Biquad::process(const float* sourceP,
 
 // Here we have optimized version using Accelerate.framework
 
-void Biquad::processFast(const float* sourceP,
-                         float* destP,
-                         size_t framesToProcess) {
-  double filterCoefficients[5];
-  filterCoefficients[0] = m_b0[0];
-  filterCoefficients[1] = m_b1[0];
-  filterCoefficients[2] = m_b2[0];
-  filterCoefficients[3] = m_a1[0];
-  filterCoefficients[4] = m_a2[0];
+void Biquad::ProcessFast(const float* source_p,
+                         float* dest_p,
+                         size_t frames_to_process) {
+  double filter_coefficients[5];
+  filter_coefficients[0] = b0_[0];
+  filter_coefficients[1] = b1_[0];
+  filter_coefficients[2] = b2_[0];
+  filter_coefficients[3] = a1_[0];
+  filter_coefficients[4] = a2_[0];
 
-  double* inputP = m_inputBuffer.data();
-  double* outputP = m_outputBuffer.data();
+  double* input_p = input_buffer_.Data();
+  double* output_p = output_buffer_.Data();
 
-  double* input2P = inputP + 2;
-  double* output2P = outputP + 2;
+  double* input2p = input_p + 2;
+  double* output2p = output_p + 2;
 
   // Break up processing into smaller slices (kBufferSize) if necessary.
 
-  int n = framesToProcess;
+  int n = frames_to_process;
 
   while (n > 0) {
-    int framesThisTime = n < kBufferSize ? n : kBufferSize;
+    int frames_this_time = n < kBufferSize ? n : kBufferSize;
 
     // Copy input to input buffer
-    for (int i = 0; i < framesThisTime; ++i)
-      input2P[i] = *sourceP++;
+    for (int i = 0; i < frames_this_time; ++i)
+      input2p[i] = *source_p++;
 
-    processSliceFast(inputP, outputP, filterCoefficients, framesThisTime);
+    ProcessSliceFast(input_p, output_p, filter_coefficients, frames_this_time);
 
     // Copy output buffer to output (converts float -> double).
-    for (int i = 0; i < framesThisTime; ++i)
-      *destP++ = static_cast<float>(output2P[i]);
+    for (int i = 0; i < frames_this_time; ++i)
+      *dest_p++ = static_cast<float>(output2p[i]);
 
-    n -= framesThisTime;
+    n -= frames_this_time;
   }
 }
 
-void Biquad::processSliceFast(double* sourceP,
-                              double* destP,
-                              double* coefficientsP,
-                              size_t framesToProcess) {
+void Biquad::ProcessSliceFast(double* source_p,
+                              double* dest_p,
+                              double* coefficients_p,
+                              size_t frames_to_process) {
   // Use double-precision for filter stability
-  vDSP_deq22D(sourceP, 1, coefficientsP, destP, 1, framesToProcess);
+  vDSP_deq22D(source_p, 1, coefficients_p, dest_p, 1, frames_to_process);
 
   // Save history.  Note that sourceP and destP reference m_inputBuffer and
   // m_outputBuffer respectively.  These buffers are allocated (in the
   // constructor) with space for two extra samples so it's OK to access array
   // values two beyond framesToProcess.
-  sourceP[0] = sourceP[framesToProcess - 2 + 2];
-  sourceP[1] = sourceP[framesToProcess - 1 + 2];
-  destP[0] = destP[framesToProcess - 2 + 2];
-  destP[1] = destP[framesToProcess - 1 + 2];
+  source_p[0] = source_p[frames_to_process - 2 + 2];
+  source_p[1] = source_p[frames_to_process - 1 + 2];
+  dest_p[0] = dest_p[frames_to_process - 2 + 2];
+  dest_p[1] = dest_p[frames_to_process - 1 + 2];
 }
 
 #endif  // OS(MACOSX)
 
-void Biquad::reset() {
+void Biquad::Reset() {
 #if OS(MACOSX)
   // Two extra samples for filter history
-  double* inputP = m_inputBuffer.data();
-  inputP[0] = 0;
-  inputP[1] = 0;
+  double* input_p = input_buffer_.Data();
+  input_p[0] = 0;
+  input_p[1] = 0;
 
-  double* outputP = m_outputBuffer.data();
-  outputP[0] = 0;
-  outputP[1] = 0;
+  double* output_p = output_buffer_.Data();
+  output_p[0] = 0;
+  output_p[1] = 0;
 
 #endif
-  m_x1 = m_x2 = m_y1 = m_y2 = 0;
+  x1_ = x2_ = y1_ = y2_ = 0;
 }
 
-void Biquad::setLowpassParams(int index, double cutoff, double resonance) {
+void Biquad::SetLowpassParams(int index, double cutoff, double resonance) {
   // Limit cutoff to 0 to 1.
   cutoff = clampTo(cutoff, 0.0, 1.0);
 
   if (cutoff == 1) {
     // When cutoff is 1, the z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   } else if (cutoff > 0) {
     // Compute biquad coefficients for lowpass filter
 
@@ -282,21 +282,21 @@ void Biquad::setLowpassParams(int index, double cutoff, double resonance) {
     double a1 = -2 * cosw;
     double a2 = 1 - alpha;
 
-    setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+    SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
   } else {
     // When cutoff is zero, nothing gets through the filter, so set
     // coefficients up correctly.
-    setNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setHighpassParams(int index, double cutoff, double resonance) {
+void Biquad::SetHighpassParams(int index, double cutoff, double resonance) {
   // Limit cutoff to 0 to 1.
   cutoff = clampTo(cutoff, 0.0, 1.0);
 
   if (cutoff == 1) {
     // The z-transform is 0.
-    setNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
   } else if (cutoff > 0) {
     // Compute biquad coefficients for highpass filter
 
@@ -314,145 +314,145 @@ void Biquad::setHighpassParams(int index, double cutoff, double resonance) {
     double a1 = -2 * cosw;
     double a2 = 1 - alpha;
 
-    setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+    SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
   } else {
     // When cutoff is zero, we need to be careful because the above
     // gives a quadratic divided by the same quadratic, with poles
     // and zeros on the unit circle in the same place. When cutoff
     // is zero, the z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setNormalizedCoefficients(int index,
+void Biquad::SetNormalizedCoefficients(int index,
                                        double b0,
                                        double b1,
                                        double b2,
                                        double a0,
                                        double a1,
                                        double a2) {
-  double a0Inverse = 1 / a0;
+  double a0_inverse = 1 / a0;
 
-  m_b0[index] = b0 * a0Inverse;
-  m_b1[index] = b1 * a0Inverse;
-  m_b2[index] = b2 * a0Inverse;
-  m_a1[index] = a1 * a0Inverse;
-  m_a2[index] = a2 * a0Inverse;
+  b0_[index] = b0 * a0_inverse;
+  b1_[index] = b1 * a0_inverse;
+  b2_[index] = b2 * a0_inverse;
+  a1_[index] = a1 * a0_inverse;
+  a2_[index] = a2 * a0_inverse;
 }
 
-void Biquad::setLowShelfParams(int index, double frequency, double dbGain) {
+void Biquad::SetLowShelfParams(int index, double frequency, double db_gain) {
   // Clip frequencies to between 0 and 1, inclusive.
   frequency = clampTo(frequency, 0.0, 1.0);
 
-  double A = pow(10.0, dbGain / 40);
+  double a = pow(10.0, db_gain / 40);
 
   if (frequency == 1) {
     // The z-transform is a constant gain.
-    setNormalizedCoefficients(index, A * A, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, a * a, 0, 0, 1, 0, 0);
   } else if (frequency > 0) {
     double w0 = piDouble * frequency;
-    double S = 1;  // filter slope (1 is max value)
-    double alpha = 0.5 * sin(w0) * sqrt((A + 1 / A) * (1 / S - 1) + 2);
+    double s = 1;  // filter slope (1 is max value)
+    double alpha = 0.5 * sin(w0) * sqrt((a + 1 / a) * (1 / s - 1) + 2);
     double k = cos(w0);
-    double k2 = 2 * sqrt(A) * alpha;
-    double aPlusOne = A + 1;
-    double aMinusOne = A - 1;
+    double k2 = 2 * sqrt(a) * alpha;
+    double a_plus_one = a + 1;
+    double a_minus_one = a - 1;
 
-    double b0 = A * (aPlusOne - aMinusOne * k + k2);
-    double b1 = 2 * A * (aMinusOne - aPlusOne * k);
-    double b2 = A * (aPlusOne - aMinusOne * k - k2);
-    double a0 = aPlusOne + aMinusOne * k + k2;
-    double a1 = -2 * (aMinusOne + aPlusOne * k);
-    double a2 = aPlusOne + aMinusOne * k - k2;
+    double b0 = a * (a_plus_one - a_minus_one * k + k2);
+    double b1 = 2 * a * (a_minus_one - a_plus_one * k);
+    double b2 = a * (a_plus_one - a_minus_one * k - k2);
+    double a0 = a_plus_one + a_minus_one * k + k2;
+    double a1 = -2 * (a_minus_one + a_plus_one * k);
+    double a2 = a_plus_one + a_minus_one * k - k2;
 
-    setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+    SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
   } else {
     // When frequency is 0, the z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setHighShelfParams(int index, double frequency, double dbGain) {
+void Biquad::SetHighShelfParams(int index, double frequency, double db_gain) {
   // Clip frequencies to between 0 and 1, inclusive.
   frequency = clampTo(frequency, 0.0, 1.0);
 
-  double A = pow(10.0, dbGain / 40);
+  double a = pow(10.0, db_gain / 40);
 
   if (frequency == 1) {
     // The z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   } else if (frequency > 0) {
     double w0 = piDouble * frequency;
-    double S = 1;  // filter slope (1 is max value)
-    double alpha = 0.5 * sin(w0) * sqrt((A + 1 / A) * (1 / S - 1) + 2);
+    double s = 1;  // filter slope (1 is max value)
+    double alpha = 0.5 * sin(w0) * sqrt((a + 1 / a) * (1 / s - 1) + 2);
     double k = cos(w0);
-    double k2 = 2 * sqrt(A) * alpha;
-    double aPlusOne = A + 1;
-    double aMinusOne = A - 1;
+    double k2 = 2 * sqrt(a) * alpha;
+    double a_plus_one = a + 1;
+    double a_minus_one = a - 1;
 
-    double b0 = A * (aPlusOne + aMinusOne * k + k2);
-    double b1 = -2 * A * (aMinusOne + aPlusOne * k);
-    double b2 = A * (aPlusOne + aMinusOne * k - k2);
-    double a0 = aPlusOne - aMinusOne * k + k2;
-    double a1 = 2 * (aMinusOne - aPlusOne * k);
-    double a2 = aPlusOne - aMinusOne * k - k2;
+    double b0 = a * (a_plus_one + a_minus_one * k + k2);
+    double b1 = -2 * a * (a_minus_one + a_plus_one * k);
+    double b2 = a * (a_plus_one + a_minus_one * k - k2);
+    double a0 = a_plus_one - a_minus_one * k + k2;
+    double a1 = 2 * (a_minus_one - a_plus_one * k);
+    double a2 = a_plus_one - a_minus_one * k - k2;
 
-    setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+    SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
   } else {
     // When frequency = 0, the filter is just a gain, A^2.
-    setNormalizedCoefficients(index, A * A, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, a * a, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setPeakingParams(int index,
+void Biquad::SetPeakingParams(int index,
                               double frequency,
-                              double Q,
-                              double dbGain) {
+                              double q,
+                              double db_gain) {
   // Clip frequencies to between 0 and 1, inclusive.
   frequency = clampTo(frequency, 0.0, 1.0);
 
   // Don't let Q go negative, which causes an unstable filter.
-  Q = std::max(0.0, Q);
+  q = std::max(0.0, q);
 
-  double A = pow(10.0, dbGain / 40);
+  double a = pow(10.0, db_gain / 40);
 
   if (frequency > 0 && frequency < 1) {
-    if (Q > 0) {
+    if (q > 0) {
       double w0 = piDouble * frequency;
-      double alpha = sin(w0) / (2 * Q);
+      double alpha = sin(w0) / (2 * q);
       double k = cos(w0);
 
-      double b0 = 1 + alpha * A;
+      double b0 = 1 + alpha * a;
       double b1 = -2 * k;
-      double b2 = 1 - alpha * A;
-      double a0 = 1 + alpha / A;
+      double b2 = 1 - alpha * a;
+      double a0 = 1 + alpha / a;
       double a1 = -2 * k;
-      double a2 = 1 - alpha / A;
+      double a2 = 1 - alpha / a;
 
-      setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+      SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
     } else {
       // When Q = 0, the above formulas have problems. If we look at
       // the z-transform, we can see that the limit as Q->0 is A^2, so
       // set the filter that way.
-      setNormalizedCoefficients(index, A * A, 0, 0, 1, 0, 0);
+      SetNormalizedCoefficients(index, a * a, 0, 0, 1, 0, 0);
     }
   } else {
     // When frequency is 0 or 1, the z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setAllpassParams(int index, double frequency, double Q) {
+void Biquad::SetAllpassParams(int index, double frequency, double q) {
   // Clip frequencies to between 0 and 1, inclusive.
   frequency = clampTo(frequency, 0.0, 1.0);
 
   // Don't let Q go negative, which causes an unstable filter.
-  Q = std::max(0.0, Q);
+  q = std::max(0.0, q);
 
   if (frequency > 0 && frequency < 1) {
-    if (Q > 0) {
+    if (q > 0) {
       double w0 = piDouble * frequency;
-      double alpha = sin(w0) / (2 * Q);
+      double alpha = sin(w0) / (2 * q);
       double k = cos(w0);
 
       double b0 = 1 - alpha;
@@ -462,30 +462,30 @@ void Biquad::setAllpassParams(int index, double frequency, double Q) {
       double a1 = -2 * k;
       double a2 = 1 - alpha;
 
-      setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+      SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
     } else {
       // When Q = 0, the above formulas have problems. If we look at
       // the z-transform, we can see that the limit as Q->0 is -1, so
       // set the filter that way.
-      setNormalizedCoefficients(index, -1, 0, 0, 1, 0, 0);
+      SetNormalizedCoefficients(index, -1, 0, 0, 1, 0, 0);
     }
   } else {
     // When frequency is 0 or 1, the z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setNotchParams(int index, double frequency, double Q) {
+void Biquad::SetNotchParams(int index, double frequency, double q) {
   // Clip frequencies to between 0 and 1, inclusive.
   frequency = clampTo(frequency, 0.0, 1.0);
 
   // Don't let Q go negative, which causes an unstable filter.
-  Q = std::max(0.0, Q);
+  q = std::max(0.0, q);
 
   if (frequency > 0 && frequency < 1) {
-    if (Q > 0) {
+    if (q > 0) {
       double w0 = piDouble * frequency;
-      double alpha = sin(w0) / (2 * Q);
+      double alpha = sin(w0) / (2 * q);
       double k = cos(w0);
 
       double b0 = 1;
@@ -495,30 +495,30 @@ void Biquad::setNotchParams(int index, double frequency, double Q) {
       double a1 = -2 * k;
       double a2 = 1 - alpha;
 
-      setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+      SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
     } else {
       // When Q = 0, the above formulas have problems. If we look at
       // the z-transform, we can see that the limit as Q->0 is 0, so
       // set the filter that way.
-      setNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
+      SetNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
     }
   } else {
     // When frequency is 0 or 1, the z-transform is 1.
-    setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::setBandpassParams(int index, double frequency, double Q) {
+void Biquad::SetBandpassParams(int index, double frequency, double q) {
   // No negative frequencies allowed.
   frequency = std::max(0.0, frequency);
 
   // Don't let Q go negative, which causes an unstable filter.
-  Q = std::max(0.0, Q);
+  q = std::max(0.0, q);
 
   if (frequency > 0 && frequency < 1) {
     double w0 = piDouble * frequency;
-    if (Q > 0) {
-      double alpha = sin(w0) / (2 * Q);
+    if (q > 0) {
+      double alpha = sin(w0) / (2 * q);
       double k = cos(w0);
 
       double b0 = alpha;
@@ -528,12 +528,12 @@ void Biquad::setBandpassParams(int index, double frequency, double Q) {
       double a1 = -2 * k;
       double a2 = 1 - alpha;
 
-      setNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
+      SetNormalizedCoefficients(index, b0, b1, b2, a0, a1, a2);
     } else {
       // When Q = 0, the above formulas have problems. If we look at
       // the z-transform, we can see that the limit as Q->0 is 1, so
       // set the filter that way.
-      setNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
+      SetNormalizedCoefficients(index, 1, 0, 0, 1, 0, 0);
     }
   } else {
     // When the cutoff is zero, the z-transform approaches 0, if Q
@@ -541,14 +541,14 @@ void Biquad::setBandpassParams(int index, double frequency, double Q) {
     // pretty much undefined. What should we do in this case?
     // For now, just make the filter 0. When the cutoff is 1, the
     // z-transform also approaches 0.
-    setNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
+    SetNormalizedCoefficients(index, 0, 0, 0, 1, 0, 0);
   }
 }
 
-void Biquad::getFrequencyResponse(int nFrequencies,
+void Biquad::GetFrequencyResponse(int n_frequencies,
                                   const float* frequency,
-                                  float* magResponse,
-                                  float* phaseResponse) {
+                                  float* mag_response,
+                                  float* phase_response) {
   // Evaluate the Z-transform of the filter at given normalized
   // frequency from 0 to 1.  (1 corresponds to the Nyquist
   // frequency.)
@@ -566,21 +566,21 @@ void Biquad::getFrequencyResponse(int nFrequencies,
   // with z1 = 1/z and z = exp(j*pi*frequency). Hence z1 = exp(-j*pi*frequency)
 
   // Make local copies of the coefficients as a micro-optimization.
-  double b0 = m_b0[0];
-  double b1 = m_b1[0];
-  double b2 = m_b2[0];
-  double a1 = m_a1[0];
-  double a2 = m_a2[0];
+  double b0 = b0_[0];
+  double b1 = b1_[0];
+  double b2 = b2_[0];
+  double a1 = a1_[0];
+  double a2 = a2_[0];
 
-  for (int k = 0; k < nFrequencies; ++k) {
+  for (int k = 0; k < n_frequencies; ++k) {
     double omega = -piDouble * frequency[k];
     std::complex<double> z = std::complex<double>(cos(omega), sin(omega));
     std::complex<double> numerator = b0 + (b1 + b2 * z) * z;
     std::complex<double> denominator =
         std::complex<double>(1, 0) + (a1 + a2 * z) * z;
     std::complex<double> response = numerator / denominator;
-    magResponse[k] = static_cast<float>(abs(response));
-    phaseResponse[k] =
+    mag_response[k] = static_cast<float>(abs(response));
+    phase_response[k] =
         static_cast<float>(atan2(imag(response), real(response)));
   }
 }

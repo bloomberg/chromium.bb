@@ -38,36 +38,36 @@ class PLATFORM_EXPORT PathTraversalState final {
 
  public:
   enum PathTraversalAction {
-    TraversalTotalLength,
-    TraversalPointAtLength,
-    TraversalSegmentAtLength,
-    TraversalNormalAngleAtLength
+    kTraversalTotalLength,
+    kTraversalPointAtLength,
+    kTraversalSegmentAtLength,
+    kTraversalNormalAngleAtLength
   };
 
   PathTraversalState(PathTraversalAction);
 
-  float closeSubpath();
-  float moveTo(const FloatPoint&);
-  float lineTo(const FloatPoint&);
-  float cubicBezierTo(const FloatPoint& newControl1,
-                      const FloatPoint& newControl2,
-                      const FloatPoint& newEnd);
+  float CloseSubpath();
+  float MoveTo(const FloatPoint&);
+  float LineTo(const FloatPoint&);
+  float CubicBezierTo(const FloatPoint& new_control1,
+                      const FloatPoint& new_control2,
+                      const FloatPoint& new_end);
 
-  void processSegment();
+  void ProcessSegment();
 
  public:
-  PathTraversalAction m_action;
-  bool m_success;
+  PathTraversalAction action_;
+  bool success_;
 
-  FloatPoint m_current;
-  FloatPoint m_start;
+  FloatPoint current_;
+  FloatPoint start_;
 
-  float m_totalLength;
-  float m_desiredLength;
+  float total_length_;
+  float desired_length_;
 
   // For normal calculations
-  FloatPoint m_previous;
-  float m_normalAngle;  // degrees
+  FloatPoint previous_;
+  float normal_angle_;  // degrees
 };
 
 }  // namespace blink

@@ -36,8 +36,8 @@
 namespace blink {
 
 enum IDBKeyPathParseError {
-  IDBKeyPathParseErrorNone,
-  IDBKeyPathParseErrorIdentifier,
+  kIDBKeyPathParseErrorNone,
+  kIDBKeyPathParseErrorIdentifier,
 };
 
 MODULES_EXPORT void IDBParseKeyPath(const String&,
@@ -48,36 +48,36 @@ class MODULES_EXPORT IDBKeyPath {
   DISALLOW_NEW();
 
  public:
-  IDBKeyPath() : m_type(NullType) {}
+  IDBKeyPath() : type_(kNullType) {}
   explicit IDBKeyPath(const String&);
   explicit IDBKeyPath(const Vector<String>& array);
-  explicit IDBKeyPath(const StringOrStringSequence& keyPath);
+  explicit IDBKeyPath(const StringOrStringSequence& key_path);
   IDBKeyPath(const WebIDBKeyPath&);
 
   operator WebIDBKeyPath() const;
 
-  enum Type { NullType = 0, StringType, ArrayType };
+  enum Type { kNullType = 0, kStringType, kArrayType };
 
-  Type getType() const { return m_type; }
+  Type GetType() const { return type_; }
 
-  const Vector<String>& array() const {
-    ASSERT(m_type == ArrayType);
-    return m_array;
+  const Vector<String>& Array() const {
+    ASSERT(type_ == kArrayType);
+    return array_;
   }
 
-  const String& string() const {
-    ASSERT(m_type == StringType);
-    return m_string;
+  const String& GetString() const {
+    ASSERT(type_ == kStringType);
+    return string_;
   }
 
-  bool isNull() const { return m_type == NullType; }
-  bool isValid() const;
+  bool IsNull() const { return type_ == kNullType; }
+  bool IsValid() const;
   bool operator==(const IDBKeyPath& other) const;
 
  private:
-  Type m_type;
-  String m_string;
-  Vector<String> m_array;
+  Type type_;
+  String string_;
+  Vector<String> array_;
 };
 
 }  // namespace blink

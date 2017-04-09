@@ -11,7 +11,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIWebkitBoxFlexGroup::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyParserHelpers::consumeInteger(range, 0);
+  return CSSPropertyParserHelpers::ConsumeInteger(range, 0);
 }
 
 }  // namespace blink

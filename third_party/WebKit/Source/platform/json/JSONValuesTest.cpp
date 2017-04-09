@@ -13,30 +13,30 @@ namespace {
 
 class JSONValueDeletionVerifier : public JSONValue {
  public:
-  JSONValueDeletionVerifier(int& counter) : m_counter(counter) {}
+  JSONValueDeletionVerifier(int& counter) : counter_(counter) {}
 
-  ~JSONValueDeletionVerifier() override { ++m_counter; }
+  ~JSONValueDeletionVerifier() override { ++counter_; }
 
  private:
-  int& m_counter;
+  int& counter_;
 };
 
 }  // namespace
 
 TEST(JSONValuesTest, ArrayCastDoesNotLeak) {
-  int deletionCount = 0;
-  std::unique_ptr<JSONValueDeletionVerifier> notAnArray(
-      new JSONValueDeletionVerifier(deletionCount));
-  EXPECT_EQ(nullptr, JSONArray::from(std::move(notAnArray)));
-  EXPECT_EQ(1, deletionCount);
+  int deletion_count = 0;
+  std::unique_ptr<JSONValueDeletionVerifier> not_an_array(
+      new JSONValueDeletionVerifier(deletion_count));
+  EXPECT_EQ(nullptr, JSONArray::From(std::move(not_an_array)));
+  EXPECT_EQ(1, deletion_count);
 }
 
 TEST(JSONValuesTest, ObjectCastDoesNotLeak) {
-  int deletionCount = 0;
-  std::unique_ptr<JSONValueDeletionVerifier> notAnObject(
-      new JSONValueDeletionVerifier(deletionCount));
-  EXPECT_EQ(nullptr, JSONArray::from(std::move(notAnObject)));
-  EXPECT_EQ(1, deletionCount);
+  int deletion_count = 0;
+  std::unique_ptr<JSONValueDeletionVerifier> not_an_object(
+      new JSONValueDeletionVerifier(deletion_count));
+  EXPECT_EQ(nullptr, JSONArray::From(std::move(not_an_object)));
+  EXPECT_EQ(1, deletion_count);
 }
 
 }  // namespace blink

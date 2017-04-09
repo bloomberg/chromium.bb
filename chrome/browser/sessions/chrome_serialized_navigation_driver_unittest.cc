@@ -36,7 +36,7 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyAlways) {
   sessions::SerializedNavigationEntry navigation =
       sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest();
   sessions::SerializedNavigationEntryTestHelper::SetReferrerPolicy(
-      blink::WebReferrerPolicyAlways, &navigation);
+      blink::kWebReferrerPolicyAlways, &navigation);
 
   content::PageState page_state =
       content::PageState::CreateFromURL(sessions::test_data::kVirtualURL);
@@ -47,7 +47,7 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyAlways) {
   EXPECT_EQ(sessions::test_data::kIndex, navigation.index());
   EXPECT_EQ(sessions::test_data::kUniqueID, navigation.unique_id());
   EXPECT_EQ(sessions::test_data::kReferrerURL, navigation.referrer_url());
-  EXPECT_EQ(blink::WebReferrerPolicyAlways, navigation.referrer_policy());
+  EXPECT_EQ(blink::kWebReferrerPolicyAlways, navigation.referrer_policy());
   EXPECT_EQ(sessions::test_data::kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(sessions::test_data::kTitle, navigation.title());
   EXPECT_EQ(page_state.ToEncodedData(), navigation.encoded_page_state());
@@ -74,7 +74,7 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
   sessions::SerializedNavigationEntry navigation =
       sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest();
   sessions::SerializedNavigationEntryTestHelper::SetReferrerPolicy(
-      blink::WebReferrerPolicyNever, &navigation);
+      blink::kWebReferrerPolicyNever, &navigation);
 
   content::PageState page_state =
       content::PageState::CreateFromURL(sessions::test_data::kVirtualURL);
@@ -104,6 +104,6 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
 
   // Fields that were sanitized.
   EXPECT_EQ(GURL(), navigation.referrer_url());
-  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer_policy());
+  EXPECT_EQ(blink::kWebReferrerPolicyDefault, navigation.referrer_policy());
   EXPECT_EQ(page_state.ToEncodedData(), navigation.encoded_page_state());
 }

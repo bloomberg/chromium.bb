@@ -15,122 +15,122 @@
 
 namespace blink {
 
-EventSourceParser::EventSourceParser(const AtomicString& lastEventId,
+EventSourceParser::EventSourceParser(const AtomicString& last_event_id,
                                      Client* client)
-    : m_id(lastEventId),
-      m_lastEventId(lastEventId),
-      m_client(client),
-      m_codec(newTextCodec(UTF8Encoding())) {}
+    : id_(last_event_id),
+      last_event_id_(last_event_id),
+      client_(client),
+      codec_(NewTextCodec(UTF8Encoding())) {}
 
-void EventSourceParser::addBytes(const char* bytes, size_t size) {
+void EventSourceParser::AddBytes(const char* bytes, size_t size) {
   // A line consists of |m_line| followed by
   // |bytes[start..(next line break)]|.
   size_t start = 0;
   const unsigned char kBOM[] = {0xef, 0xbb, 0xbf};
-  for (size_t i = 0; i < size && !m_isStopped; ++i) {
+  for (size_t i = 0; i < size && !is_stopped_; ++i) {
     // As kBOM contains neither CR nor LF, we can think BOM and the line
     // break separately.
-    if (m_isRecognizingBOM &&
-        m_line.size() + (i - start) == WTF_ARRAY_LENGTH(kBOM)) {
-      Vector<char> line = m_line;
-      line.append(&bytes[start], i - start);
+    if (is_recognizing_bom_ &&
+        line_.size() + (i - start) == WTF_ARRAY_LENGTH(kBOM)) {
+      Vector<char> line = line_;
+      line.Append(&bytes[start], i - start);
       DCHECK_EQ(line.size(), WTF_ARRAY_LENGTH(kBOM));
-      m_isRecognizingBOM = false;
-      if (memcmp(line.data(), kBOM, sizeof(kBOM)) == 0) {
+      is_recognizing_bom_ = false;
+      if (memcmp(line.Data(), kBOM, sizeof(kBOM)) == 0) {
         start = i;
-        m_line.clear();
+        line_.Clear();
         continue;
       }
     }
-    if (m_isRecognizingCRLF && bytes[i] == '\n') {
+    if (is_recognizing_crlf_ && bytes[i] == '\n') {
       // This is the latter part of "\r\n".
-      m_isRecognizingCRLF = false;
+      is_recognizing_crlf_ = false;
       ++start;
       continue;
     }
-    m_isRecognizingCRLF = false;
+    is_recognizing_crlf_ = false;
     if (bytes[i] == '\r' || bytes[i] == '\n') {
-      m_line.append(&bytes[start], i - start);
-      parseLine();
-      m_line.clear();
+      line_.Append(&bytes[start], i - start);
+      ParseLine();
+      line_.Clear();
       start = i + 1;
-      m_isRecognizingCRLF = bytes[i] == '\r';
-      m_isRecognizingBOM = false;
+      is_recognizing_crlf_ = bytes[i] == '\r';
+      is_recognizing_bom_ = false;
     }
   }
-  if (m_isStopped)
+  if (is_stopped_)
     return;
-  m_line.append(&bytes[start], size - start);
+  line_.Append(&bytes[start], size - start);
 }
 
-void EventSourceParser::parseLine() {
-  if (m_line.size() == 0) {
-    m_lastEventId = m_id;
+void EventSourceParser::ParseLine() {
+  if (line_.size() == 0) {
+    last_event_id_ = id_;
     // We dispatch an event when seeing an empty line.
-    if (!m_data.isEmpty()) {
-      DCHECK_EQ(m_data[m_data.size() - 1], '\n');
-      String data = fromUTF8(m_data.data(), m_data.size() - 1);
-      m_client->onMessageEvent(
-          m_eventType.isEmpty() ? EventTypeNames::message : m_eventType, data,
-          m_lastEventId);
-      m_data.clear();
+    if (!data_.IsEmpty()) {
+      DCHECK_EQ(data_[data_.size() - 1], '\n');
+      String data = FromUTF8(data_.Data(), data_.size() - 1);
+      client_->OnMessageEvent(
+          event_type_.IsEmpty() ? EventTypeNames::message : event_type_, data,
+          last_event_id_);
+      data_.Clear();
     }
-    m_eventType = nullAtom;
+    event_type_ = g_null_atom;
     return;
   }
-  size_t fieldNameEnd = m_line.find(':');
-  size_t fieldValueStart;
-  if (fieldNameEnd == WTF::kNotFound) {
-    fieldNameEnd = m_line.size();
-    fieldValueStart = fieldNameEnd;
+  size_t field_name_end = line_.Find(':');
+  size_t field_value_start;
+  if (field_name_end == WTF::kNotFound) {
+    field_name_end = line_.size();
+    field_value_start = field_name_end;
   } else {
-    fieldValueStart = fieldNameEnd + 1;
-    if (fieldValueStart < m_line.size() && m_line[fieldValueStart] == ' ') {
-      ++fieldValueStart;
+    field_value_start = field_name_end + 1;
+    if (field_value_start < line_.size() && line_[field_value_start] == ' ') {
+      ++field_value_start;
     }
   }
-  size_t fieldValueSize = m_line.size() - fieldValueStart;
-  String fieldName = fromUTF8(m_line.data(), fieldNameEnd);
-  if (fieldName == "event") {
-    m_eventType =
-        AtomicString(fromUTF8(m_line.data() + fieldValueStart, fieldValueSize));
+  size_t field_value_size = line_.size() - field_value_start;
+  String field_name = FromUTF8(line_.Data(), field_name_end);
+  if (field_name == "event") {
+    event_type_ = AtomicString(
+        FromUTF8(line_.Data() + field_value_start, field_value_size));
     return;
   }
-  if (fieldName == "data") {
-    m_data.append(m_line.data() + fieldValueStart, fieldValueSize);
-    m_data.push_back('\n');
+  if (field_name == "data") {
+    data_.Append(line_.Data() + field_value_start, field_value_size);
+    data_.push_back('\n');
     return;
   }
-  if (fieldName == "id") {
-    m_id =
-        AtomicString(fromUTF8(m_line.data() + fieldValueStart, fieldValueSize));
+  if (field_name == "id") {
+    id_ = AtomicString(
+        FromUTF8(line_.Data() + field_value_start, field_value_size));
     return;
   }
-  if (fieldName == "retry") {
-    bool hasOnlyDigits = true;
-    for (size_t i = fieldValueStart; i < m_line.size() && hasOnlyDigits; ++i)
-      hasOnlyDigits = isASCIIDigit(m_line[i]);
-    if (fieldValueStart == m_line.size()) {
-      m_client->onReconnectionTimeSet(EventSource::defaultReconnectDelay);
-    } else if (hasOnlyDigits) {
+  if (field_name == "retry") {
+    bool has_only_digits = true;
+    for (size_t i = field_value_start; i < line_.size() && has_only_digits; ++i)
+      has_only_digits = IsASCIIDigit(line_[i]);
+    if (field_value_start == line_.size()) {
+      client_->OnReconnectionTimeSet(EventSource::kDefaultReconnectDelay);
+    } else if (has_only_digits) {
       bool ok;
-      auto reconnectionTime =
-          fromUTF8(m_line.data() + fieldValueStart, fieldValueSize)
-              .toUInt64Strict(&ok);
+      auto reconnection_time =
+          FromUTF8(line_.Data() + field_value_start, field_value_size)
+              .ToUInt64Strict(&ok);
       if (ok)
-        m_client->onReconnectionTimeSet(reconnectionTime);
+        client_->OnReconnectionTimeSet(reconnection_time);
     }
     return;
   }
   // Unrecognized field name. Ignore!
 }
 
-String EventSourceParser::fromUTF8(const char* bytes, size_t size) {
-  return m_codec->decode(bytes, size, WTF::DataEOF);
+String EventSourceParser::FromUTF8(const char* bytes, size_t size) {
+  return codec_->Decode(bytes, size, WTF::kDataEOF);
 }
 
 DEFINE_TRACE(EventSourceParser) {
-  visitor->trace(m_client);
+  visitor->Trace(client_);
 }
 
 }  // namespace blink

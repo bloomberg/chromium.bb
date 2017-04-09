@@ -17,10 +17,10 @@ bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID unresolvedProperty) {
     {% for property in properties_including_aliases if property[flag] %}
     case {{property.property_id}}:
     {% endfor %}
-    {% if function_name in ("isInheritedProperty", "isProperty") %}
+    {% if function_name in ("IsInheritedProperty", "IsProperty") %}
     case CSSPropertyVariable:
     {% endif %}
-    {% if function_name == "isProperty" %}
+    {% if function_name == "IsProperty" %}
     case CSSPropertyApplyAtRule:
     {% endif %}
       return true;
@@ -30,7 +30,7 @@ bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID unresolvedProperty) {
 }
 {% endfor %}
 
-char CSSPropertyMetadata::repetitionSeparator(CSSPropertyID unresolvedProperty) {
+char CSSPropertyMetadata::RepetitionSeparator(CSSPropertyID unresolvedProperty) {
   switch (unresolvedProperty) {
   {% for property in properties_including_aliases if property.separator %}
   case {{property.property_id}}:
@@ -41,11 +41,11 @@ char CSSPropertyMetadata::repetitionSeparator(CSSPropertyID unresolvedProperty) 
   }
 }
 
-bool CSSPropertyMetadata::propertyIsRepeated(CSSPropertyID unresolvedProperty) {
-  return repetitionSeparator(unresolvedProperty) != 0;
+bool CSSPropertyMetadata::PropertyIsRepeated(CSSPropertyID unresolvedProperty) {
+  return RepetitionSeparator(unresolvedProperty) != 0;
 }
 
-bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty) {
+bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
   CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
   static std::bitset<numCSSProperties>* enabledProperties = nullptr;
   if (!enabledProperties) {
@@ -69,13 +69,13 @@ bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty) {
   return RuntimeEnabledFeatures::cssApplyAtRulesEnabled();
 }
 
-void CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(
+void CSSPropertyMetadata::FilterEnabledCSSPropertiesIntoVector(
     const CSSPropertyID* properties,
     size_t propertyCount,
     Vector<CSSPropertyID>& outVector) {
   for (unsigned i = 0; i < propertyCount; i++) {
     CSSPropertyID property = properties[i];
-    if (isEnabledProperty(property))
+    if (IsEnabledProperty(property))
       outVector.push_back(property);
   }
 }

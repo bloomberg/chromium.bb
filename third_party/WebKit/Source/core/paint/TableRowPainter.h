@@ -20,21 +20,21 @@ class TableRowPainter {
   STACK_ALLOCATED();
 
  public:
-  TableRowPainter(const LayoutTableRow& layoutTableRow)
-      : m_layoutTableRow(layoutTableRow) {}
+  TableRowPainter(const LayoutTableRow& layout_table_row)
+      : layout_table_row_(layout_table_row) {}
 
-  void paint(const PaintInfo&, const LayoutPoint&);
-  void paintOutline(const PaintInfo&, const LayoutPoint&);
-  void paintBoxDecorationBackground(const PaintInfo&,
+  void Paint(const PaintInfo&, const LayoutPoint&);
+  void PaintOutline(const PaintInfo&, const LayoutPoint&);
+  void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&,
-                                    const CellSpan& dirtiedColumns);
+                                    const CellSpan& dirtied_columns);
 
  private:
-  void paintBackgroundBehindCell(const LayoutTableCell&,
+  void PaintBackgroundBehindCell(const LayoutTableCell&,
                                  const PaintInfo&,
                                  const LayoutPoint&);
 
-  const LayoutTableRow& m_layoutTableRow;
+  const LayoutTableRow& layout_table_row_;
 };
 
 }  // namespace blink

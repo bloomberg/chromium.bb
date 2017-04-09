@@ -13,23 +13,23 @@ namespace blink {
 
 namespace {
 
-bool typesMatch(const InterpolableValue* start, const InterpolableValue* end) {
+bool TypesMatch(const InterpolableValue* start, const InterpolableValue* end) {
   if (start == end)
     return true;
-  if (start->isNumber())
-    return end->isNumber();
-  if (start->isBool())
-    return end->isBool();
-  if (start->isAnimatableValue())
-    return end->isAnimatableValue();
-  if (!(start->isList() && end->isList()))
+  if (start->IsNumber())
+    return end->IsNumber();
+  if (start->IsBool())
+    return end->IsBool();
+  if (start->IsAnimatableValue())
+    return end->IsAnimatableValue();
+  if (!(start->IsList() && end->IsList()))
     return false;
-  const InterpolableList* startList = toInterpolableList(start);
-  const InterpolableList* endList = toInterpolableList(end);
-  if (startList->length() != endList->length())
+  const InterpolableList* start_list = ToInterpolableList(start);
+  const InterpolableList* end_list = ToInterpolableList(end);
+  if (start_list->length() != end_list->length())
     return false;
-  for (size_t i = 0; i < startList->length(); ++i) {
-    if (!typesMatch(startList->get(i), endList->get(i)))
+  for (size_t i = 0; i < start_list->length(); ++i) {
+    if (!TypesMatch(start_list->Get(i), end_list->Get(i)))
       return false;
   }
   return true;
@@ -42,25 +42,25 @@ LegacyStyleInterpolation::LegacyStyleInterpolation(
     std::unique_ptr<InterpolableValue> end,
     CSSPropertyID id)
     : Interpolation(),
-      m_start(std::move(start)),
-      m_end(std::move(end)),
-      m_property(id),
-      m_cachedFraction(0),
-      m_cachedIteration(0),
-      m_cachedValue(m_start ? m_start->clone() : nullptr) {
-  RELEASE_ASSERT(typesMatch(m_start.get(), m_end.get()));
+      start_(std::move(start)),
+      end_(std::move(end)),
+      property_(id),
+      cached_fraction_(0),
+      cached_iteration_(0),
+      cached_value_(start_ ? start_->Clone() : nullptr) {
+  RELEASE_ASSERT(TypesMatch(start_.get(), end_.get()));
 }
 
-void LegacyStyleInterpolation::apply(StyleResolverState& state) const {
-  AnimatedStyleBuilder::applyProperty(id(), *state.style(),
-                                      currentValue().get());
+void LegacyStyleInterpolation::Apply(StyleResolverState& state) const {
+  AnimatedStyleBuilder::ApplyProperty(Id(), *state.Style(),
+                                      CurrentValue().Get());
 }
 
-void LegacyStyleInterpolation::interpolate(int iteration, double fraction) {
-  if (m_cachedFraction != fraction || m_cachedIteration != iteration) {
-    m_start->interpolate(*m_end, fraction, *m_cachedValue);
-    m_cachedIteration = iteration;
-    m_cachedFraction = fraction;
+void LegacyStyleInterpolation::Interpolate(int iteration, double fraction) {
+  if (cached_fraction_ != fraction || cached_iteration_ != iteration) {
+    start_->Interpolate(*end_, fraction, *cached_value_);
+    cached_iteration_ = iteration;
+    cached_fraction_ = fraction;
   }
 }
 

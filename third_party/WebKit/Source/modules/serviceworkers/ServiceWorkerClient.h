@@ -28,34 +28,34 @@ class MODULES_EXPORT ServiceWorkerClient
   // To be used by CallbackPromiseAdapter.
   using WebType = std::unique_ptr<WebServiceWorkerClientInfo>;
 
-  static ServiceWorkerClient* take(ScriptPromiseResolver*,
+  static ServiceWorkerClient* Take(ScriptPromiseResolver*,
                                    std::unique_ptr<WebServiceWorkerClientInfo>);
-  static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
+  static ServiceWorkerClient* Create(const WebServiceWorkerClientInfo&);
 
   virtual ~ServiceWorkerClient();
 
   // Client.idl
-  String url() const { return m_url; }
+  String url() const { return url_; }
   String frameType() const;
-  String id() const { return m_uuid; }
+  String id() const { return uuid_; }
   void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
 
-  static bool canTransferArrayBuffersAndImageBitmaps() { return false; }
+  static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
 
-  String uuid() const { return m_uuid; }
+  String Uuid() const { return uuid_; }
 
  private:
-  String m_uuid;
-  String m_url;
-  WebURLRequest::FrameType m_frameType;
+  String uuid_;
+  String url_;
+  WebURLRequest::FrameType frame_type_;
 };
 
 }  // namespace blink

@@ -34,32 +34,32 @@
 
 namespace blink {
 
-bool WebUserGestureToken::hasGestures() const {
-  return !m_token.isNull() && m_token->hasGestures();
+bool WebUserGestureToken::HasGestures() const {
+  return !token_.IsNull() && token_->HasGestures();
 }
 
-void WebUserGestureToken::setOutOfProcess() {
-  m_token->setTimeoutPolicy(UserGestureToken::OutOfProcess);
+void WebUserGestureToken::SetOutOfProcess() {
+  token_->SetTimeoutPolicy(UserGestureToken::kOutOfProcess);
 }
 
-void WebUserGestureToken::setJavascriptPrompt() {
-  m_token->setTimeoutPolicy(UserGestureToken::HasPaused);
+void WebUserGestureToken::SetJavascriptPrompt() {
+  token_->SetTimeoutPolicy(UserGestureToken::kHasPaused);
 }
 
 WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token) {
-  m_token = token;
+  token_ = token;
 }
 
 WebUserGestureToken::operator PassRefPtr<UserGestureToken>() const {
-  return m_token.get();
+  return token_.Get();
 }
 
-void WebUserGestureToken::assign(const WebUserGestureToken& other) {
-  m_token = other.m_token;
+void WebUserGestureToken::Assign(const WebUserGestureToken& other) {
+  token_ = other.token_;
 }
 
-void WebUserGestureToken::reset() {
-  m_token.reset();
+void WebUserGestureToken::Reset() {
+  token_.Reset();
 }
 
 }  // namespace blink

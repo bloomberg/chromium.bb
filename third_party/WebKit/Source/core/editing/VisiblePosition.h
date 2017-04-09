@@ -38,14 +38,14 @@ namespace blink {
 // the callers do not really care (they just want the
 // deep position without regard to line position), and this
 // is cheaper than UPSTREAM
-#define VP_DEFAULT_AFFINITY TextAffinity::Downstream
+#define VP_DEFAULT_AFFINITY TextAffinity::kDownstream
 
 // Callers who do not know where on the line the position is,
 // but would like UPSTREAM if at a line break or DOWNSTREAM
 // otherwise, need a clear way to specify that.  The
 // constructors auto-correct UPSTREAM to DOWNSTREAM if the
 // position is not at a line break.
-#define VP_UPSTREAM_IF_POSSIBLE TextAffinity::Upstream
+#define VP_UPSTREAM_IF_POSSIBLE TextAffinity::kUpstream
 
 // |VisiblePosition| is an immutable object representing "canonical position"
 // with affinity.
@@ -74,7 +74,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
 
   // Node: Other than |createVisiblePosition()| and
   // |createVisiblePositionDeprecated()|, we should not use |create()|.
-  static VisiblePositionTemplate create(
+  static VisiblePositionTemplate Create(
       const PositionWithAffinityTemplate<Strategy>&);
 
   // Intentionally delete |operator==()| and |operator!=()| for reducing
@@ -84,48 +84,48 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
   bool operator==(const VisiblePositionTemplate&) const = delete;
   bool operator!=(const VisiblePositionTemplate&) const = delete;
 
-  bool isValid() const;
+  bool IsValid() const;
 
   // TODO(xiaochengh): We should have |DCHECK(isValid())| in the following
   // functions. However, there are some clients storing a VisiblePosition and
   // inspecting its properties after mutation. This should be fixed.
-  bool isNull() const { return m_positionWithAffinity.isNull(); }
-  bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
-  bool isOrphan() const { return deepEquivalent().isOrphan(); }
+  bool IsNull() const { return position_with_affinity_.IsNull(); }
+  bool IsNotNull() const { return position_with_affinity_.IsNotNull(); }
+  bool IsOrphan() const { return DeepEquivalent().IsOrphan(); }
 
-  PositionTemplate<Strategy> deepEquivalent() const {
-    return m_positionWithAffinity.position();
+  PositionTemplate<Strategy> DeepEquivalent() const {
+    return position_with_affinity_.GetPosition();
   }
-  PositionTemplate<Strategy> toParentAnchoredPosition() const {
-    return deepEquivalent().parentAnchoredEquivalent();
+  PositionTemplate<Strategy> ToParentAnchoredPosition() const {
+    return DeepEquivalent().ParentAnchoredEquivalent();
   }
-  PositionWithAffinityTemplate<Strategy> toPositionWithAffinity() const {
-    return m_positionWithAffinity;
+  PositionWithAffinityTemplate<Strategy> ToPositionWithAffinity() const {
+    return position_with_affinity_;
   }
-  TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
+  TextAffinity Affinity() const { return position_with_affinity_.Affinity(); }
 
-  static VisiblePositionTemplate<Strategy> afterNode(Node*);
-  static VisiblePositionTemplate<Strategy> beforeNode(Node*);
-  static VisiblePositionTemplate<Strategy> firstPositionInNode(Node*);
-  static VisiblePositionTemplate<Strategy> inParentAfterNode(const Node&);
-  static VisiblePositionTemplate<Strategy> inParentBeforeNode(const Node&);
-  static VisiblePositionTemplate<Strategy> lastPositionInNode(Node*);
+  static VisiblePositionTemplate<Strategy> AfterNode(Node*);
+  static VisiblePositionTemplate<Strategy> BeforeNode(Node*);
+  static VisiblePositionTemplate<Strategy> FirstPositionInNode(Node*);
+  static VisiblePositionTemplate<Strategy> InParentAfterNode(const Node&);
+  static VisiblePositionTemplate<Strategy> InParentBeforeNode(const Node&);
+  static VisiblePositionTemplate<Strategy> LastPositionInNode(Node*);
 
   DECLARE_TRACE();
 
 #ifndef NDEBUG
-  void showTreeForThis() const;
+  void ShowTreeForThis() const;
 #endif
 
  private:
   explicit VisiblePositionTemplate(
       const PositionWithAffinityTemplate<Strategy>&);
 
-  PositionWithAffinityTemplate<Strategy> m_positionWithAffinity;
+  PositionWithAffinityTemplate<Strategy> position_with_affinity_;
 
 #if DCHECK_IS_ON()
-  uint64_t m_domTreeVersion;
-  uint64_t m_styleVersion;
+  uint64_t dom_tree_version_;
+  uint64_t style_version_;
 #endif
 };
 
@@ -139,13 +139,13 @@ using VisiblePositionInFlatTree =
     VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
 CORE_EXPORT VisiblePosition
-createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
+CreateVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition CreateVisiblePosition(const PositionWithAffinity&);
 CORE_EXPORT VisiblePositionInFlatTree
-createVisiblePosition(const PositionInFlatTree&,
+CreateVisiblePosition(const PositionInFlatTree&,
                       TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePositionInFlatTree
-createVisiblePosition(const PositionInFlatTreeWithAffinity&);
+CreateVisiblePosition(const PositionInFlatTreeWithAffinity&);
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisiblePosition&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&,

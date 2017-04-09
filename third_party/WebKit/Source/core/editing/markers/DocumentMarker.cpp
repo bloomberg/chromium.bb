@@ -38,191 +38,191 @@ DocumentMarkerDetails::~DocumentMarkerDetails() {}
 
 class DocumentMarkerDescription final : public DocumentMarkerDetails {
  public:
-  static DocumentMarkerDescription* create(const String&);
+  static DocumentMarkerDescription* Create(const String&);
 
-  const String& description() const { return m_description; }
-  bool isDescription() const override { return true; }
+  const String& Description() const { return description_; }
+  bool IsDescription() const override { return true; }
 
  private:
   explicit DocumentMarkerDescription(const String& description)
-      : m_description(description) {}
+      : description_(description) {}
 
-  String m_description;
+  String description_;
 };
 
-DocumentMarkerDescription* DocumentMarkerDescription::create(
+DocumentMarkerDescription* DocumentMarkerDescription::Create(
     const String& description) {
   return new DocumentMarkerDescription(description);
 }
 
-inline DocumentMarkerDescription* toDocumentMarkerDescription(
+inline DocumentMarkerDescription* ToDocumentMarkerDescription(
     DocumentMarkerDetails* details) {
-  if (details && details->isDescription())
+  if (details && details->IsDescription())
     return static_cast<DocumentMarkerDescription*>(details);
   return 0;
 }
 
 class DocumentMarkerTextMatch final : public DocumentMarkerDetails {
  public:
-  static DocumentMarkerTextMatch* create(DocumentMarker::MatchStatus);
+  static DocumentMarkerTextMatch* Create(DocumentMarker::MatchStatus);
 
   bool IsActiveMatch() const {
-    return m_matchStatus == DocumentMarker::MatchStatus::kActive;
+    return match_status_ == DocumentMarker::MatchStatus::kActive;
   }
 
-  bool isTextMatch() const override { return true; }
+  bool IsTextMatch() const override { return true; }
 
  private:
-  explicit DocumentMarkerTextMatch(DocumentMarker::MatchStatus matchStatus)
-      : m_matchStatus(matchStatus) {}
+  explicit DocumentMarkerTextMatch(DocumentMarker::MatchStatus match_status)
+      : match_status_(match_status) {}
 
-  DocumentMarker::MatchStatus m_matchStatus;
+  DocumentMarker::MatchStatus match_status_;
 };
 
-DocumentMarkerTextMatch* DocumentMarkerTextMatch::create(
-    DocumentMarker::MatchStatus matchStatus) {
+DocumentMarkerTextMatch* DocumentMarkerTextMatch::Create(
+    DocumentMarker::MatchStatus match_status) {
   DEFINE_STATIC_LOCAL(
-      DocumentMarkerTextMatch, activeInstance,
+      DocumentMarkerTextMatch, active_instance,
       (new DocumentMarkerTextMatch(DocumentMarker::MatchStatus::kActive)));
   DEFINE_STATIC_LOCAL(
-      DocumentMarkerTextMatch, inactiveInstance,
+      DocumentMarkerTextMatch, inactive_instance,
       (new DocumentMarkerTextMatch(DocumentMarker::MatchStatus::kInactive)));
-  return matchStatus == DocumentMarker::MatchStatus::kActive
-             ? &activeInstance
-             : &inactiveInstance;
+  return match_status == DocumentMarker::MatchStatus::kActive
+             ? &active_instance
+             : &inactive_instance;
 }
 
-inline DocumentMarkerTextMatch* toDocumentMarkerTextMatch(
+inline DocumentMarkerTextMatch* ToDocumentMarkerTextMatch(
     DocumentMarkerDetails* details) {
-  if (details && details->isTextMatch())
+  if (details && details->IsTextMatch())
     return static_cast<DocumentMarkerTextMatch*>(details);
   return 0;
 }
 
 class TextCompositionMarkerDetails final : public DocumentMarkerDetails {
  public:
-  static TextCompositionMarkerDetails* create(Color underlineColor,
+  static TextCompositionMarkerDetails* Create(Color underline_color,
                                               bool thick,
-                                              Color backgroundColor);
+                                              Color background_color);
 
-  bool isComposition() const override { return true; }
-  Color underlineColor() const { return m_underlineColor; }
-  bool thick() const { return m_thick; }
-  Color backgroundColor() const { return m_backgroundColor; }
+  bool IsComposition() const override { return true; }
+  Color UnderlineColor() const { return underline_color_; }
+  bool Thick() const { return thick_; }
+  Color BackgroundColor() const { return background_color_; }
 
  private:
-  TextCompositionMarkerDetails(Color underlineColor,
+  TextCompositionMarkerDetails(Color underline_color,
                                bool thick,
-                               Color backgroundColor)
-      : m_underlineColor(underlineColor),
-        m_backgroundColor(backgroundColor),
-        m_thick(thick) {}
+                               Color background_color)
+      : underline_color_(underline_color),
+        background_color_(background_color),
+        thick_(thick) {}
 
-  Color m_underlineColor;
-  Color m_backgroundColor;
-  bool m_thick;
+  Color underline_color_;
+  Color background_color_;
+  bool thick_;
 };
 
-TextCompositionMarkerDetails* TextCompositionMarkerDetails::create(
-    Color underlineColor,
+TextCompositionMarkerDetails* TextCompositionMarkerDetails::Create(
+    Color underline_color,
     bool thick,
-    Color backgroundColor) {
-  return new TextCompositionMarkerDetails(underlineColor, thick,
-                                          backgroundColor);
+    Color background_color) {
+  return new TextCompositionMarkerDetails(underline_color, thick,
+                                          background_color);
 }
 
-inline TextCompositionMarkerDetails* toTextCompositionMarkerDetails(
+inline TextCompositionMarkerDetails* ToTextCompositionMarkerDetails(
     DocumentMarkerDetails* details) {
-  if (details && details->isComposition())
+  if (details && details->IsComposition())
     return static_cast<TextCompositionMarkerDetails*>(details);
   return nullptr;
 }
 
 DocumentMarker::DocumentMarker(MarkerType type,
-                               unsigned startOffset,
-                               unsigned endOffset,
+                               unsigned start_offset,
+                               unsigned end_offset,
                                const String& description)
-    : m_type(type),
-      m_startOffset(startOffset),
-      m_endOffset(endOffset),
-      m_details(description.isEmpty()
-                    ? nullptr
-                    : DocumentMarkerDescription::create(description)) {}
+    : type_(type),
+      start_offset_(start_offset),
+      end_offset_(end_offset),
+      details_(description.IsEmpty()
+                   ? nullptr
+                   : DocumentMarkerDescription::Create(description)) {}
 
-DocumentMarker::DocumentMarker(unsigned startOffset,
-                               unsigned endOffset,
-                               DocumentMarker::MatchStatus matchStatus)
-    : m_type(DocumentMarker::TextMatch),
-      m_startOffset(startOffset),
-      m_endOffset(endOffset),
-      m_details(DocumentMarkerTextMatch::create(matchStatus)) {}
+DocumentMarker::DocumentMarker(unsigned start_offset,
+                               unsigned end_offset,
+                               DocumentMarker::MatchStatus match_status)
+    : type_(DocumentMarker::kTextMatch),
+      start_offset_(start_offset),
+      end_offset_(end_offset),
+      details_(DocumentMarkerTextMatch::Create(match_status)) {}
 
-DocumentMarker::DocumentMarker(unsigned startOffset,
-                               unsigned endOffset,
-                               Color underlineColor,
+DocumentMarker::DocumentMarker(unsigned start_offset,
+                               unsigned end_offset,
+                               Color underline_color,
                                bool thick,
-                               Color backgroundColor)
-    : m_type(DocumentMarker::Composition),
-      m_startOffset(startOffset),
-      m_endOffset(endOffset),
-      m_details(TextCompositionMarkerDetails::create(underlineColor,
-                                                     thick,
-                                                     backgroundColor)) {}
+                               Color background_color)
+    : type_(DocumentMarker::kComposition),
+      start_offset_(start_offset),
+      end_offset_(end_offset),
+      details_(TextCompositionMarkerDetails::Create(underline_color,
+                                                    thick,
+                                                    background_color)) {}
 
 DocumentMarker::DocumentMarker(const DocumentMarker& marker)
-    : m_type(marker.type()),
-      m_startOffset(marker.startOffset()),
-      m_endOffset(marker.endOffset()),
-      m_details(marker.details()) {}
+    : type_(marker.GetType()),
+      start_offset_(marker.StartOffset()),
+      end_offset_(marker.EndOffset()),
+      details_(marker.Details()) {}
 
-void DocumentMarker::shiftOffsets(int delta) {
-  m_startOffset += delta;
-  m_endOffset += delta;
+void DocumentMarker::ShiftOffsets(int delta) {
+  start_offset_ += delta;
+  end_offset_ += delta;
 }
 
-void DocumentMarker::setIsActiveMatch(bool active) {
-  m_details = DocumentMarkerTextMatch::create(
+void DocumentMarker::SetIsActiveMatch(bool active) {
+  details_ = DocumentMarkerTextMatch::Create(
       active ? DocumentMarker::MatchStatus::kActive
              : DocumentMarker::MatchStatus::kInactive);
 }
 
-const String& DocumentMarker::description() const {
+const String& DocumentMarker::Description() const {
   if (DocumentMarkerDescription* details =
-          toDocumentMarkerDescription(m_details.get()))
-    return details->description();
-  return emptyString;
+          ToDocumentMarkerDescription(details_.Get()))
+    return details->Description();
+  return g_empty_string;
 }
 
 bool DocumentMarker::IsActiveMatch() const {
   if (DocumentMarkerTextMatch* details =
-          toDocumentMarkerTextMatch(m_details.get()))
+          ToDocumentMarkerTextMatch(details_.Get()))
     return details->IsActiveMatch();
   return false;
 }
 
-Color DocumentMarker::underlineColor() const {
+Color DocumentMarker::UnderlineColor() const {
   if (TextCompositionMarkerDetails* details =
-          toTextCompositionMarkerDetails(m_details.get()))
-    return details->underlineColor();
-  return Color::transparent;
+          ToTextCompositionMarkerDetails(details_.Get()))
+    return details->UnderlineColor();
+  return Color::kTransparent;
 }
 
-bool DocumentMarker::thick() const {
+bool DocumentMarker::Thick() const {
   if (TextCompositionMarkerDetails* details =
-          toTextCompositionMarkerDetails(m_details.get()))
-    return details->thick();
+          ToTextCompositionMarkerDetails(details_.Get()))
+    return details->Thick();
   return false;
 }
 
-Color DocumentMarker::backgroundColor() const {
+Color DocumentMarker::BackgroundColor() const {
   if (TextCompositionMarkerDetails* details =
-          toTextCompositionMarkerDetails(m_details.get()))
-    return details->backgroundColor();
-  return Color::transparent;
+          ToTextCompositionMarkerDetails(details_.Get()))
+    return details->BackgroundColor();
+  return Color::kTransparent;
 }
 
 DEFINE_TRACE(DocumentMarker) {
-  visitor->trace(m_details);
+  visitor->Trace(details_);
 }
 
 }  // namespace blink

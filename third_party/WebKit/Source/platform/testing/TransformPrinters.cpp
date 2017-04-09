@@ -12,11 +12,11 @@
 namespace blink {
 
 void PrintTo(const AffineTransform& transform, std::ostream* os) {
-  *os << transform.toString();
+  *os << transform.ToString();
 }
 
 void PrintTo(const TransformationMatrix& matrix, std::ostream* os) {
-  *os << matrix.toString();
+  *os << matrix.ToString();
 }
 
 }  // namespace blink

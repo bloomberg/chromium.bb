@@ -44,115 +44,115 @@ namespace blink {
 LayoutSliderContainer::LayoutSliderContainer(SliderContainerElement* element)
     : LayoutFlexibleBox(element) {}
 
-inline static Decimal sliderPosition(HTMLInputElement* element) {
-  const StepRange stepRange(element->createStepRange(RejectAny));
-  const Decimal oldValue =
-      parseToDecimalForNumberType(element->value(), stepRange.defaultValue());
-  return stepRange.proportionFromValue(stepRange.clampValue(oldValue));
+inline static Decimal SliderPosition(HTMLInputElement* element) {
+  const StepRange step_range(element->CreateStepRange(kRejectAny));
+  const Decimal old_value =
+      ParseToDecimalForNumberType(element->value(), step_range.DefaultValue());
+  return step_range.ProportionFromValue(step_range.ClampValue(old_value));
 }
 
-inline static bool hasVerticalAppearance(HTMLInputElement* input) {
-  DCHECK(input->layoutObject());
-  const ComputedStyle& sliderStyle = input->layoutObject()->styleRef();
+inline static bool HasVerticalAppearance(HTMLInputElement* input) {
+  DCHECK(input->GetLayoutObject());
+  const ComputedStyle& slider_style = input->GetLayoutObject()->StyleRef();
 
-  return sliderStyle.appearance() == SliderVerticalPart;
+  return slider_style.Appearance() == kSliderVerticalPart;
 }
 
-void LayoutSliderContainer::computeLogicalHeight(
-    LayoutUnit logicalHeight,
-    LayoutUnit logicalTop,
-    LogicalExtentComputedValues& computedValues) const {
-  HTMLInputElement* input = toHTMLInputElement(node()->ownerShadowHost());
-  bool isVertical = hasVerticalAppearance(input);
+void LayoutSliderContainer::ComputeLogicalHeight(
+    LayoutUnit logical_height,
+    LayoutUnit logical_top,
+    LogicalExtentComputedValues& computed_values) const {
+  HTMLInputElement* input = toHTMLInputElement(GetNode()->OwnerShadowHost());
+  bool is_vertical = HasVerticalAppearance(input);
 
-  if (input->layoutObject()->isSlider() && !isVertical && input->list()) {
-    int offsetFromCenter =
-        LayoutTheme::theme().sliderTickOffsetFromTrackCenter();
-    LayoutUnit trackHeight;
-    if (offsetFromCenter < 0) {
-      trackHeight = LayoutUnit(-2 * offsetFromCenter);
+  if (input->GetLayoutObject()->IsSlider() && !is_vertical && input->list()) {
+    int offset_from_center =
+        LayoutTheme::GetTheme().SliderTickOffsetFromTrackCenter();
+    LayoutUnit track_height;
+    if (offset_from_center < 0) {
+      track_height = LayoutUnit(-2 * offset_from_center);
     } else {
-      int tickLength = LayoutTheme::theme().sliderTickSize().height();
-      trackHeight = LayoutUnit(2 * (offsetFromCenter + tickLength));
+      int tick_length = LayoutTheme::GetTheme().SliderTickSize().Height();
+      track_height = LayoutUnit(2 * (offset_from_center + tick_length));
     }
-    float zoomFactor = style()->effectiveZoom();
-    if (zoomFactor != 1.0)
-      trackHeight *= zoomFactor;
+    float zoom_factor = Style()->EffectiveZoom();
+    if (zoom_factor != 1.0)
+      track_height *= zoom_factor;
 
     // FIXME: The trackHeight should have been added before updateLogicalHeight
     // was called to avoid this hack.
-    setIntrinsicContentLogicalHeight(trackHeight);
+    SetIntrinsicContentLogicalHeight(track_height);
 
-    LayoutBox::computeLogicalHeight(trackHeight, logicalTop, computedValues);
+    LayoutBox::ComputeLogicalHeight(track_height, logical_top, computed_values);
     return;
   }
-  if (isVertical)
-    logicalHeight = LayoutUnit(LayoutSlider::defaultTrackLength);
+  if (is_vertical)
+    logical_height = LayoutUnit(LayoutSlider::kDefaultTrackLength);
 
   // FIXME: The trackHeight should have been added before updateLogicalHeight
   // was called to avoid this hack.
-  setIntrinsicContentLogicalHeight(logicalHeight);
+  SetIntrinsicContentLogicalHeight(logical_height);
 
-  LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
+  LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
-void LayoutSliderContainer::layout() {
-  HTMLInputElement* input = toHTMLInputElement(node()->ownerShadowHost());
-  bool isVertical = hasVerticalAppearance(input);
-  mutableStyleRef().setFlexDirection(isVertical ? FlowColumn : FlowRow);
-  TextDirection oldTextDirection = style()->direction();
-  if (isVertical) {
+void LayoutSliderContainer::GetLayout() {
+  HTMLInputElement* input = toHTMLInputElement(GetNode()->OwnerShadowHost());
+  bool is_vertical = HasVerticalAppearance(input);
+  MutableStyleRef().SetFlexDirection(is_vertical ? kFlowColumn : kFlowRow);
+  TextDirection old_text_direction = Style()->Direction();
+  if (is_vertical) {
     // FIXME: Work around rounding issues in RTL vertical sliders. We want them
     // to render identically to LTR vertical sliders. We can remove this work
     // around when subpixel rendering is enabled on all ports.
-    mutableStyleRef().setDirection(TextDirection::kLtr);
+    MutableStyleRef().SetDirection(TextDirection::kLtr);
   }
 
-  Element* thumbElement = input->userAgentShadowRoot()->getElementById(
-      ShadowElementNames::sliderThumb());
-  Element* trackElement = input->userAgentShadowRoot()->getElementById(
-      ShadowElementNames::sliderTrack());
-  LayoutBox* thumb = thumbElement ? thumbElement->layoutBox() : 0;
-  LayoutBox* track = trackElement ? trackElement->layoutBox() : 0;
+  Element* thumb_element = input->UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::SliderThumb());
+  Element* track_element = input->UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::SliderTrack());
+  LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : 0;
+  LayoutBox* track = track_element ? track_element->GetLayoutBox() : 0;
 
-  SubtreeLayoutScope layoutScope(*this);
+  SubtreeLayoutScope layout_scope(*this);
   // Force a layout to reset the position of the thumb so the code below doesn't
   // move the thumb to the wrong place.
   // FIXME: Make a custom layout class for the track and move the thumb
   // positioning code there.
   if (track)
-    layoutScope.setChildNeedsLayout(track);
+    layout_scope.SetChildNeedsLayout(track);
 
-  LayoutFlexibleBox::layout();
+  LayoutFlexibleBox::GetLayout();
 
-  mutableStyleRef().setDirection(oldTextDirection);
+  MutableStyleRef().SetDirection(old_text_direction);
   // These should always exist, unless someone mutates the shadow DOM (e.g., in
   // the inspector).
   if (!thumb || !track)
     return;
 
-  double percentageOffset = sliderPosition(input).toDouble();
-  LayoutUnit availableExtent =
-      isVertical ? track->contentHeight() : track->contentWidth();
-  availableExtent -=
-      isVertical ? thumb->size().height() : thumb->size().width();
-  LayoutUnit offset(percentageOffset * availableExtent);
-  LayoutPoint thumbLocation = thumb->location();
-  if (isVertical)
-    thumbLocation.setY(thumbLocation.y() + track->contentHeight() -
-                       thumb->size().height() - offset);
-  else if (style()->isLeftToRightDirection())
-    thumbLocation.setX(thumbLocation.x() + offset);
+  double percentage_offset = SliderPosition(input).ToDouble();
+  LayoutUnit available_extent =
+      is_vertical ? track->ContentHeight() : track->ContentWidth();
+  available_extent -=
+      is_vertical ? thumb->size().Height() : thumb->size().Width();
+  LayoutUnit offset(percentage_offset * available_extent);
+  LayoutPoint thumb_location = thumb->Location();
+  if (is_vertical)
+    thumb_location.SetY(thumb_location.Y() + track->ContentHeight() -
+                        thumb->size().Height() - offset);
+  else if (Style()->IsLeftToRightDirection())
+    thumb_location.SetX(thumb_location.X() + offset);
   else
-    thumbLocation.setX(thumbLocation.x() - offset);
-  thumb->setLocation(thumbLocation);
+    thumb_location.SetX(thumb_location.X() - offset);
+  thumb->SetLocation(thumb_location);
 
   // We need one-off invalidation code here because painting of the timeline
   // element does not go through style.
   // Instead it has a custom implementation in C++ code.
   // Therefore the style system cannot understand when it needs to be paint
   // invalidated.
-  setShouldDoFullPaintInvalidation();
+  SetShouldDoFullPaintInvalidation();
 }
 
 }  // namespace blink

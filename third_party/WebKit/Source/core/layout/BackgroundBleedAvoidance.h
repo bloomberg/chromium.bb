@@ -8,10 +8,10 @@
 namespace blink {
 
 enum BackgroundBleedAvoidance {
-  BackgroundBleedNone,
-  BackgroundBleedShrinkBackground,
-  BackgroundBleedClipOnly,
-  BackgroundBleedClipLayer,
+  kBackgroundBleedNone,
+  kBackgroundBleedShrinkBackground,
+  kBackgroundBleedClipOnly,
+  kBackgroundBleedClipLayer,
 };
 
 }  // namespace blink

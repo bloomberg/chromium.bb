@@ -21,158 +21,159 @@
 namespace blink {
 
 PassRefPtr<AcceleratedStaticBitmapImage>
-AcceleratedStaticBitmapImage::createFromSharedContextImage(
+AcceleratedStaticBitmapImage::CreateFromSharedContextImage(
     sk_sp<SkImage> image) {
-  return adoptRef(new AcceleratedStaticBitmapImage(std::move(image)));
+  return AdoptRef(new AcceleratedStaticBitmapImage(std::move(image)));
 }
 
 PassRefPtr<AcceleratedStaticBitmapImage>
-AcceleratedStaticBitmapImage::createFromWebGLContextImage(
+AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& syncToken,
-    unsigned textureId,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> contextProvider,
-    IntSize mailboxSize) {
-  return adoptRef(new AcceleratedStaticBitmapImage(
-      mailbox, syncToken, textureId, contextProvider, mailboxSize));
+    const gpu::SyncToken& sync_token,
+    unsigned texture_id,
+    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
+    IntSize mailbox_size) {
+  return AdoptRef(new AcceleratedStaticBitmapImage(
+      mailbox, sync_token, texture_id, context_provider, mailbox_size));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     sk_sp<SkImage> image) {
-  m_textureHolder = WTF::wrapUnique(new SkiaTextureHolder(std::move(image)));
-  m_threadChecker.DetachFromThread();
+  texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(std::move(image)));
+  thread_checker_.DetachFromThread();
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& syncToken,
-    unsigned textureId,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> contextProvider,
-    IntSize mailboxSize) {
-  m_textureHolder = WTF::wrapUnique(new MailboxTextureHolder(
-      mailbox, syncToken, textureId, contextProvider, mailboxSize));
-  m_threadChecker.DetachFromThread();
+    const gpu::SyncToken& sync_token,
+    unsigned texture_id,
+    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
+    IntSize mailbox_size) {
+  texture_holder_ = WTF::WrapUnique(new MailboxTextureHolder(
+      mailbox, sync_token, texture_id, context_provider, mailbox_size));
+  thread_checker_.DetachFromThread();
 }
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {}
 
 IntSize AcceleratedStaticBitmapImage::size() const {
-  return m_textureHolder->size();
+  return texture_holder_->size();
 }
 
-void AcceleratedStaticBitmapImage::updateSyncToken(gpu::SyncToken syncToken) {
-  m_textureHolder->updateSyncToken(syncToken);
+void AcceleratedStaticBitmapImage::UpdateSyncToken(gpu::SyncToken sync_token) {
+  texture_holder_->UpdateSyncToken(sync_token);
 }
 
-void AcceleratedStaticBitmapImage::copyToTexture(
-    WebGraphicsContext3DProvider* destProvider,
-    GLuint destTextureId,
-    GLenum internalFormat,
-    GLenum destType,
-    bool flipY) {
-  checkThread();
-  if (!isValid())
+void AcceleratedStaticBitmapImage::CopyToTexture(
+    WebGraphicsContext3DProvider* dest_provider,
+    GLuint dest_texture_id,
+    GLenum internal_format,
+    GLenum dest_type,
+    bool flip_y) {
+  CheckThread();
+  if (!IsValid())
     return;
   // |destProvider| may not be the same context as the one used for |m_image|,
   // so we use a mailbox to generate a texture id for |destProvider| to access.
-  ensureMailbox();
+  EnsureMailbox();
 
   // Get a texture id that |destProvider| knows about and copy from it.
-  gpu::gles2::GLES2Interface* destGL = destProvider->contextGL();
-  destGL->WaitSyncTokenCHROMIUM(m_textureHolder->syncToken().GetData());
-  GLuint sourceTextureId = destGL->CreateAndConsumeTextureCHROMIUM(
-      GL_TEXTURE_2D, m_textureHolder->mailbox().name);
-  destGL->CopyTextureCHROMIUM(sourceTextureId, 0, GL_TEXTURE_2D, destTextureId,
-                              0, internalFormat, destType, flipY, false, false);
+  gpu::gles2::GLES2Interface* dest_gl = dest_provider->ContextGL();
+  dest_gl->WaitSyncTokenCHROMIUM(texture_holder_->GetSyncToken().GetData());
+  GLuint source_texture_id = dest_gl->CreateAndConsumeTextureCHROMIUM(
+      GL_TEXTURE_2D, texture_holder_->GetMailbox().name);
+  dest_gl->CopyTextureCHROMIUM(source_texture_id, 0, GL_TEXTURE_2D,
+                               dest_texture_id, 0, internal_format, dest_type,
+                               flip_y, false, false);
   // This drops the |destGL| context's reference on our |m_mailbox|, but it's
   // still held alive by our SkImage.
-  destGL->DeleteTextures(1, &sourceTextureId);
+  dest_gl->DeleteTextures(1, &source_texture_id);
 }
 
-sk_sp<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame() {
-  checkThread();
-  if (!isValid())
+sk_sp<SkImage> AcceleratedStaticBitmapImage::ImageForCurrentFrame() {
+  CheckThread();
+  if (!IsValid())
     return nullptr;
-  createImageFromMailboxIfNeeded();
-  return m_textureHolder->skImage();
+  CreateImageFromMailboxIfNeeded();
+  return texture_holder_->GetSkImage();
 }
 
-void AcceleratedStaticBitmapImage::draw(PaintCanvas* canvas,
+void AcceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                         const PaintFlags& flags,
-                                        const FloatRect& dstRect,
-                                        const FloatRect& srcRect,
+                                        const FloatRect& dst_rect,
+                                        const FloatRect& src_rect,
                                         RespectImageOrientationEnum,
-                                        ImageClampingMode imageClampingMode) {
+                                        ImageClampingMode image_clamping_mode) {
   // TODO(ccameron): This function should not ignore |colorBehavior|.
   // https://crbug.com/672306
-  checkThread();
-  if (!isValid())
+  CheckThread();
+  if (!IsValid())
     return;
-  createImageFromMailboxIfNeeded();
-  sk_sp<SkImage> image = m_textureHolder->skImage();
-  StaticBitmapImage::drawHelper(canvas, flags, dstRect, srcRect,
-                                imageClampingMode, image);
+  CreateImageFromMailboxIfNeeded();
+  sk_sp<SkImage> image = texture_holder_->GetSkImage();
+  StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect,
+                                image_clamping_mode, image);
 }
 
-bool AcceleratedStaticBitmapImage::isValid() {
-  if (!m_textureHolder)
+bool AcceleratedStaticBitmapImage::IsValid() {
+  if (!texture_holder_)
     return false;
-  if (!SharedGpuContext::isValid())
+  if (!SharedGpuContext::IsValid())
     return false;  // Gpu context was lost
-  unsigned sharedContextId = m_textureHolder->sharedContextId();
-  if (sharedContextId != SharedGpuContext::kNoSharedContext &&
-      sharedContextId != SharedGpuContext::contextId()) {
+  unsigned shared_context_id = texture_holder_->SharedContextId();
+  if (shared_context_id != SharedGpuContext::kNoSharedContext &&
+      shared_context_id != SharedGpuContext::ContextId()) {
     // Gpu context was lost and restored since the resource was created.
     return false;
   }
   return true;
 }
 
-void AcceleratedStaticBitmapImage::createImageFromMailboxIfNeeded() {
-  if (m_textureHolder->sharedContextId() != SharedGpuContext::kNoSharedContext)
+void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
+  if (texture_holder_->SharedContextId() != SharedGpuContext::kNoSharedContext)
     return;
-  if (m_textureHolder->isSkiaTextureHolder())
+  if (texture_holder_->IsSkiaTextureHolder())
     return;
-  m_textureHolder =
-      WTF::wrapUnique(new SkiaTextureHolder(std::move(m_textureHolder)));
+  texture_holder_ =
+      WTF::WrapUnique(new SkiaTextureHolder(std::move(texture_holder_)));
 }
 
-void AcceleratedStaticBitmapImage::ensureMailbox() {
-  if (m_textureHolder->isMailboxTextureHolder())
+void AcceleratedStaticBitmapImage::EnsureMailbox() {
+  if (texture_holder_->IsMailboxTextureHolder())
     return;
 
-  m_textureHolder =
-      WTF::wrapUnique(new MailboxTextureHolder(std::move(m_textureHolder)));
+  texture_holder_ =
+      WTF::WrapUnique(new MailboxTextureHolder(std::move(texture_holder_)));
 }
 
-void AcceleratedStaticBitmapImage::transfer() {
-  checkThread();
-  ensureMailbox();
+void AcceleratedStaticBitmapImage::Transfer() {
+  CheckThread();
+  EnsureMailbox();
   // If |m_textureThreadTaskRunner| in TextureHolder is set, it means that
   // the |m_texture| in this class has been consumed on the current thread,
   // which may happen when we have chained transfers. When that is the case,
   // we must not reset |m_imageThreadTaskRunner|, so we ensure that
   // releaseImage() or releaseTexture() is called on the right thread.
-  if (!m_textureHolder->wasTransferred()) {
-    WebThread* currentThread = Platform::current()->currentThread();
-    m_textureHolder->setWasTransferred(true);
-    m_textureHolder->setTextureThreadTaskRunner(
-        currentThread->getWebTaskRunner());
+  if (!texture_holder_->WasTransferred()) {
+    WebThread* current_thread = Platform::Current()->CurrentThread();
+    texture_holder_->SetWasTransferred(true);
+    texture_holder_->SetTextureThreadTaskRunner(
+        current_thread->GetWebTaskRunner());
   }
-  m_detachThreadAtNextCheck = true;
+  detach_thread_at_next_check_ = true;
 }
 
-bool AcceleratedStaticBitmapImage::currentFrameKnownToBeOpaque(
-    MetadataMode metadataMode) {
-  return m_textureHolder->currentFrameKnownToBeOpaque(metadataMode);
+bool AcceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque(
+    MetadataMode metadata_mode) {
+  return texture_holder_->CurrentFrameKnownToBeOpaque(metadata_mode);
 }
 
-void AcceleratedStaticBitmapImage::checkThread() {
-  if (m_detachThreadAtNextCheck) {
-    m_threadChecker.DetachFromThread();
-    m_detachThreadAtNextCheck = false;
+void AcceleratedStaticBitmapImage::CheckThread() {
+  if (detach_thread_at_next_check_) {
+    thread_checker_.DetachFromThread();
+    detach_thread_at_next_check_ = false;
   }
-  CHECK(m_threadChecker.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
 }
 
 }  // namespace blink

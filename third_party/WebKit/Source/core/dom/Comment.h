@@ -31,7 +31,7 @@ class Comment final : public CharacterData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Comment* create(Document&, const String&);
+  static Comment* Create(Document&, const String&);
 
  private:
   Comment(Document&, const String&);

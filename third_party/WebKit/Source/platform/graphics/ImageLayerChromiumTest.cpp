@@ -40,23 +40,24 @@ namespace {
 
 class TestImage : public Image {
  public:
-  static PassRefPtr<TestImage> create(const IntSize& size, bool opaque) {
-    return adoptRef(new TestImage(size, opaque));
+  static PassRefPtr<TestImage> Create(const IntSize& size, bool opaque) {
+    return AdoptRef(new TestImage(size, opaque));
   }
 
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
-    return m_image->isOpaque();
+  bool CurrentFrameKnownToBeOpaque(
+      MetadataMode = kUseCurrentMetadata) override {
+    return image_->isOpaque();
   }
 
-  IntSize size() const override { return m_size; }
+  IntSize size() const override { return size_; }
 
-  sk_sp<SkImage> imageForCurrentFrame() override { return m_image; }
+  sk_sp<SkImage> ImageForCurrentFrame() override { return image_; }
 
-  void destroyDecodedData() override {
+  void DestroyDecodedData() override {
     // Image pure virtual stub.
   }
 
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
@@ -66,68 +67,69 @@ class TestImage : public Image {
   }
 
  private:
-  TestImage(IntSize size, bool opaque) : Image(0), m_size(size) {
-    sk_sp<SkSurface> surface = createSkSurface(size, opaque);
+  TestImage(IntSize size, bool opaque) : Image(0), size_(size) {
+    sk_sp<SkSurface> surface = CreateSkSurface(size, opaque);
     if (!surface)
       return;
 
     surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-    m_image = surface->makeImageSnapshot();
+    image_ = surface->makeImageSnapshot();
   }
 
-  static sk_sp<SkSurface> createSkSurface(IntSize size, bool opaque) {
+  static sk_sp<SkSurface> CreateSkSurface(IntSize size, bool opaque) {
     return SkSurface::MakeRaster(SkImageInfo::MakeN32(
-        size.width(), size.height(),
+        size.Width(), size.Height(),
         opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
   }
 
-  IntSize m_size;
-  sk_sp<SkImage> m_image;
+  IntSize size_;
+  sk_sp<SkImage> image_;
 };
 
 }  // anonymous namespace
 
 TEST(ImageLayerChromiumTest, imageLayerContentReset) {
   FakeGraphicsLayerClient client;
-  std::unique_ptr<FakeGraphicsLayer> graphicsLayer =
-      WTF::wrapUnique(new FakeGraphicsLayer(&client));
-  ASSERT_TRUE(graphicsLayer.get());
+  std::unique_ptr<FakeGraphicsLayer> graphics_layer =
+      WTF::WrapUnique(new FakeGraphicsLayer(&client));
+  ASSERT_TRUE(graphics_layer.get());
 
-  ASSERT_FALSE(graphicsLayer->hasContentsLayer());
-  ASSERT_FALSE(graphicsLayer->contentsLayer());
+  ASSERT_FALSE(graphics_layer->HasContentsLayer());
+  ASSERT_FALSE(graphics_layer->ContentsLayer());
 
   bool opaque = false;
-  RefPtr<Image> image = TestImage::create(IntSize(100, 100), opaque);
-  ASSERT_TRUE(image.get());
+  RefPtr<Image> image = TestImage::Create(IntSize(100, 100), opaque);
+  ASSERT_TRUE(image.Get());
 
-  graphicsLayer->setContentsToImage(image.get());
-  ASSERT_TRUE(graphicsLayer->hasContentsLayer());
-  ASSERT_TRUE(graphicsLayer->contentsLayer());
+  graphics_layer->SetContentsToImage(image.Get());
+  ASSERT_TRUE(graphics_layer->HasContentsLayer());
+  ASSERT_TRUE(graphics_layer->ContentsLayer());
 
-  graphicsLayer->setContentsToImage(0);
-  ASSERT_FALSE(graphicsLayer->hasContentsLayer());
-  ASSERT_FALSE(graphicsLayer->contentsLayer());
+  graphics_layer->SetContentsToImage(0);
+  ASSERT_FALSE(graphics_layer->HasContentsLayer());
+  ASSERT_FALSE(graphics_layer->ContentsLayer());
 }
 
 TEST(ImageLayerChromiumTest, opaqueImages) {
   FakeGraphicsLayerClient client;
-  std::unique_ptr<FakeGraphicsLayer> graphicsLayer =
-      WTF::wrapUnique(new FakeGraphicsLayer(&client));
-  ASSERT_TRUE(graphicsLayer.get());
+  std::unique_ptr<FakeGraphicsLayer> graphics_layer =
+      WTF::WrapUnique(new FakeGraphicsLayer(&client));
+  ASSERT_TRUE(graphics_layer.get());
 
   bool opaque = true;
-  RefPtr<Image> opaqueImage = TestImage::create(IntSize(100, 100), opaque);
-  ASSERT_TRUE(opaqueImage.get());
-  RefPtr<Image> nonOpaqueImage = TestImage::create(IntSize(100, 100), !opaque);
-  ASSERT_TRUE(nonOpaqueImage.get());
+  RefPtr<Image> opaque_image = TestImage::Create(IntSize(100, 100), opaque);
+  ASSERT_TRUE(opaque_image.Get());
+  RefPtr<Image> non_opaque_image =
+      TestImage::Create(IntSize(100, 100), !opaque);
+  ASSERT_TRUE(non_opaque_image.Get());
 
-  ASSERT_FALSE(graphicsLayer->contentsLayer());
+  ASSERT_FALSE(graphics_layer->ContentsLayer());
 
-  graphicsLayer->setContentsToImage(opaqueImage.get());
-  ASSERT_TRUE(graphicsLayer->contentsLayer()->opaque());
+  graphics_layer->SetContentsToImage(opaque_image.Get());
+  ASSERT_TRUE(graphics_layer->ContentsLayer()->Opaque());
 
-  graphicsLayer->setContentsToImage(nonOpaqueImage.get());
-  ASSERT_FALSE(graphicsLayer->contentsLayer()->opaque());
+  graphics_layer->SetContentsToImage(non_opaque_image.Get());
+  ASSERT_FALSE(graphics_layer->ContentsLayer()->Opaque());
 }
 
 }  // namespace blink

@@ -18,82 +18,85 @@
 
 namespace blink {
 
-void SVGImagePainter::paint(const PaintInfo& paintInfo) {
-  if (paintInfo.phase != PaintPhaseForeground ||
-      m_layoutSVGImage.style()->visibility() != EVisibility::kVisible ||
-      !m_layoutSVGImage.imageResource()->hasImage())
+void SVGImagePainter::Paint(const PaintInfo& paint_info) {
+  if (paint_info.phase != kPaintPhaseForeground ||
+      layout_svg_image_.Style()->Visibility() != EVisibility::kVisible ||
+      !layout_svg_image_.ImageResource()->HasImage())
     return;
 
-  FloatRect boundingBox = m_layoutSVGImage.visualRectInLocalSVGCoordinates();
-  if (!paintInfo.cullRect().intersectsCullRect(
-          m_layoutSVGImage.localToSVGParentTransform(), boundingBox))
+  FloatRect bounding_box = layout_svg_image_.VisualRectInLocalSVGCoordinates();
+  if (!paint_info.GetCullRect().IntersectsCullRect(
+          layout_svg_image_.LocalToSVGParentTransform(), bounding_box))
     return;
 
-  PaintInfo paintInfoBeforeFiltering(paintInfo);
+  PaintInfo paint_info_before_filtering(paint_info);
   // Images cannot have children so do not call updateCullRect.
-  SVGTransformContext transformContext(
-      paintInfoBeforeFiltering.context, m_layoutSVGImage,
-      m_layoutSVGImage.localToSVGParentTransform());
+  SVGTransformContext transform_context(
+      paint_info_before_filtering.context, layout_svg_image_,
+      layout_svg_image_.LocalToSVGParentTransform());
   {
-    SVGPaintContext paintContext(m_layoutSVGImage, paintInfoBeforeFiltering);
-    if (paintContext.applyClipMaskAndFilterIfNecessary() &&
-        !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-            paintContext.paintInfo().context, m_layoutSVGImage,
-            paintContext.paintInfo().phase)) {
+    SVGPaintContext paint_context(layout_svg_image_,
+                                  paint_info_before_filtering);
+    if (paint_context.ApplyClipMaskAndFilterIfNecessary() &&
+        !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+            paint_context.GetPaintInfo().context, layout_svg_image_,
+            paint_context.GetPaintInfo().phase)) {
       LayoutObjectDrawingRecorder recorder(
-          paintContext.paintInfo().context, m_layoutSVGImage,
-          paintContext.paintInfo().phase, boundingBox);
-      paintForeground(paintContext.paintInfo());
+          paint_context.GetPaintInfo().context, layout_svg_image_,
+          paint_context.GetPaintInfo().phase, bounding_box);
+      PaintForeground(paint_context.GetPaintInfo());
     }
   }
 
-  if (m_layoutSVGImage.style()->outlineWidth()) {
-    PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
-    outlinePaintInfo.phase = PaintPhaseSelfOutlineOnly;
-    ObjectPainter(m_layoutSVGImage)
-        .paintOutline(outlinePaintInfo, LayoutPoint(boundingBox.location()));
+  if (layout_svg_image_.Style()->OutlineWidth()) {
+    PaintInfo outline_paint_info(paint_info_before_filtering);
+    outline_paint_info.phase = kPaintPhaseSelfOutlineOnly;
+    ObjectPainter(layout_svg_image_)
+        .PaintOutline(outline_paint_info, LayoutPoint(bounding_box.Location()));
   }
 }
 
-void SVGImagePainter::paintForeground(const PaintInfo& paintInfo) {
-  const LayoutImageResource* imageResource = m_layoutSVGImage.imageResource();
-  IntSize imageViewportSize = expandedIntSize(computeImageViewportSize());
-  if (imageViewportSize.isEmpty())
+void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
+  const LayoutImageResource* image_resource = layout_svg_image_.ImageResource();
+  IntSize image_viewport_size = ExpandedIntSize(ComputeImageViewportSize());
+  if (image_viewport_size.IsEmpty())
     return;
 
-  RefPtr<Image> image = imageResource->image(
-      imageViewportSize, m_layoutSVGImage.style()->effectiveZoom());
-  FloatRect destRect = m_layoutSVGImage.objectBoundingBox();
-  FloatRect srcRect(0, 0, image->width(), image->height());
+  RefPtr<Image> image = image_resource->GetImage(
+      image_viewport_size, layout_svg_image_.Style()->EffectiveZoom());
+  FloatRect dest_rect = layout_svg_image_.ObjectBoundingBox();
+  FloatRect src_rect(0, 0, image->width(), image->height());
 
-  SVGImageElement* imageElement = toSVGImageElement(m_layoutSVGImage.element());
-  imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect,
-                                                                     srcRect);
+  SVGImageElement* image_element =
+      toSVGImageElement(layout_svg_image_.GetElement());
+  image_element->preserveAspectRatio()->CurrentValue()->TransformRect(dest_rect,
+                                                                      src_rect);
 
-  InterpolationQuality interpolationQuality = InterpolationDefault;
-  interpolationQuality = ImageQualityController::imageQualityController()
-                             ->chooseInterpolationQuality(
-                                 m_layoutSVGImage, image.get(), image.get(),
-                                 LayoutSize(destRect.size()));
+  InterpolationQuality interpolation_quality = kInterpolationDefault;
+  interpolation_quality = ImageQualityController::GetImageQualityController()
+                              ->ChooseInterpolationQuality(
+                                  layout_svg_image_, image.Get(), image.Get(),
+                                  LayoutSize(dest_rect.size()));
 
-  InterpolationQuality previousInterpolationQuality =
-      paintInfo.context.imageInterpolationQuality();
-  paintInfo.context.setImageInterpolationQuality(interpolationQuality);
-  paintInfo.context.drawImage(image.get(), destRect, &srcRect);
-  paintInfo.context.setImageInterpolationQuality(previousInterpolationQuality);
+  InterpolationQuality previous_interpolation_quality =
+      paint_info.context.ImageInterpolationQuality();
+  paint_info.context.SetImageInterpolationQuality(interpolation_quality);
+  paint_info.context.DrawImage(image.Get(), dest_rect, &src_rect);
+  paint_info.context.SetImageInterpolationQuality(
+      previous_interpolation_quality);
 }
 
-FloatSize SVGImagePainter::computeImageViewportSize() const {
-  DCHECK(m_layoutSVGImage.imageResource()->hasImage());
+FloatSize SVGImagePainter::ComputeImageViewportSize() const {
+  DCHECK(layout_svg_image_.ImageResource()->HasImage());
 
-  if (toSVGImageElement(m_layoutSVGImage.element())
+  if (toSVGImageElement(layout_svg_image_.GetElement())
           ->preserveAspectRatio()
-          ->currentValue()
-          ->align() != SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
-    return m_layoutSVGImage.objectBoundingBox().size();
+          ->CurrentValue()
+          ->Align() != SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
+    return layout_svg_image_.ObjectBoundingBox().size();
 
-  ImageResourceContent* cachedImage =
-      m_layoutSVGImage.imageResource()->cachedImage();
+  ImageResourceContent* cached_image =
+      layout_svg_image_.ImageResource()->CachedImage();
 
   // Images with preserveAspectRatio=none should force non-uniform scaling. This
   // can be achieved by setting the image's container size to its viewport size
@@ -102,14 +105,14 @@ FloatSize SVGImagePainter::computeImageViewportSize() const {
   // and https://drafts.csswg.org/css-images-3/#default-sizing.
 
   // Avoid returning the size of the broken image.
-  if (cachedImage->errorOccurred())
+  if (cached_image->ErrorOccurred())
     return FloatSize();
 
-  if (cachedImage->getImage()->isSVGImage())
-    return toSVGImage(cachedImage->getImage())
-        ->concreteObjectSize(m_layoutSVGImage.objectBoundingBox().size());
+  if (cached_image->GetImage()->IsSVGImage())
+    return ToSVGImage(cached_image->GetImage())
+        ->ConcreteObjectSize(layout_svg_image_.ObjectBoundingBox().size());
 
-  return FloatSize(cachedImage->getImage()->size());
+  return FloatSize(cached_image->GetImage()->size());
 }
 
 }  // namespace blink

@@ -74,17 +74,17 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ImageData* create(const IntSize&,
+  static ImageData* Create(const IntSize&,
                            const ImageDataColorSettings* = nullptr);
-  static ImageData* create(const IntSize&,
+  static ImageData* Create(const IntSize&,
                            DOMArrayBufferView*,
                            const ImageDataColorSettings* = nullptr);
 
-  static ImageData* create(unsigned width, unsigned height, ExceptionState&);
-  static ImageData* create(DOMUint8ClampedArray*,
+  static ImageData* Create(unsigned width, unsigned height, ExceptionState&);
+  static ImageData* Create(DOMUint8ClampedArray*,
                            unsigned width,
                            ExceptionState&);
-  static ImageData* create(DOMUint8ClampedArray*,
+  static ImageData* Create(DOMUint8ClampedArray*,
                            unsigned width,
                            unsigned height,
                            ExceptionState&);
@@ -100,57 +100,57 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                              ExceptionState&);
 
   void getColorSettings(ImageDataColorSettings& result) {
-    result = m_colorSettings;
+    result = color_settings_;
   }
 
-  static ImageData* createForTest(const IntSize&);
-  static ImageData* createForTest(const IntSize&,
+  static ImageData* CreateForTest(const IntSize&);
+  static ImageData* CreateForTest(const IntSize&,
                                   DOMArrayBufferView*,
                                   const ImageDataColorSettings* = nullptr);
-  static sk_sp<SkColorSpace> getSkColorSpaceForTest(const CanvasColorSpace&,
+  static sk_sp<SkColorSpace> GetSkColorSpaceForTest(const CanvasColorSpace&,
                                                     const CanvasPixelFormat&);
 
-  static CanvasColorSpace canvasColorSpace(const String&);
-  static String canvasColorSpaceName(const CanvasColorSpace&);
-  static ImageDataStorageFormat imageDataStorageFormat(const String&);
-  static unsigned storageFormatDataSize(const String&);
+  static CanvasColorSpace GetCanvasColorSpace(const String&);
+  static String CanvasColorSpaceName(const CanvasColorSpace&);
+  static ImageDataStorageFormat GetImageDataStorageFormat(const String&);
+  static unsigned StorageFormatDataSize(const String&);
   static DOMArrayBufferView*
-  convertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
+  ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       WTF::ArrayBufferContents&,
       CanvasPixelFormat,
       ImageDataStorageFormat);
 
-  IntSize size() const { return m_size; }
-  int width() const { return m_size.width(); }
-  int height() const { return m_size.height(); }
+  IntSize size() const { return size_; }
+  int width() const { return size_.Width(); }
+  int height() const { return size_.Height(); }
 
   DOMUint8ClampedArray* data();
   const DOMUint8ClampedArray* data() const;
-  ImageDataArray& dataUnion() { return m_dataUnion; }
-  const ImageDataArray& dataUnion() const { return m_dataUnion; }
-  void dataUnion(ImageDataArray& result) { result = m_dataUnion; };
+  ImageDataArray& dataUnion() { return data_union_; }
+  const ImageDataArray& dataUnion() const { return data_union_; }
+  void dataUnion(ImageDataArray& result) { result = data_union_; };
 
-  sk_sp<SkColorSpace> skColorSpace();
-  bool imageDataInCanvasColorSettings(const CanvasColorSpace&,
+  sk_sp<SkColorSpace> GetSkColorSpace();
+  bool ImageDataInCanvasColorSettings(const CanvasColorSpace&,
                                       const CanvasPixelFormat&,
                                       std::unique_ptr<uint8_t[]>&);
 
   // ImageBitmapSource implementation
-  IntSize bitmapSourceSize() const override { return m_size; }
-  ScriptPromise createImageBitmap(ScriptState*,
+  IntSize BitmapSourceSize() const override { return size_; }
+  ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
-                                  Optional<IntRect> cropRect,
+                                  Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions&,
                                   ExceptionState&) override;
 
-  void trace(Visitor*);
+  void Trace(Visitor*);
 
-  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper) override;
 
-  static bool validateConstructorArguments(
+  static bool ValidateConstructorArguments(
       const unsigned&,
       const IntSize* = nullptr,
       const unsigned& = 0,
@@ -164,34 +164,34 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
             DOMArrayBufferView*,
             const ImageDataColorSettings* = nullptr);
 
-  IntSize m_size;
-  ImageDataColorSettings m_colorSettings;
-  ImageDataArray m_dataUnion;
-  Member<DOMUint8ClampedArray> m_data;
-  Member<DOMUint16Array> m_dataU16;
-  Member<DOMFloat32Array> m_dataF32;
+  IntSize size_;
+  ImageDataColorSettings color_settings_;
+  ImageDataArray data_union_;
+  Member<DOMUint8ClampedArray> data_;
+  Member<DOMUint16Array> data_u16_;
+  Member<DOMFloat32Array> data_f32_;
 
-  static DOMArrayBufferView* allocateAndValidateDataArray(
+  static DOMArrayBufferView* AllocateAndValidateDataArray(
       const unsigned&,
       ImageDataStorageFormat,
       ExceptionState* = nullptr);
 
-  static DOMUint8ClampedArray* allocateAndValidateUint8ClampedArray(
+  static DOMUint8ClampedArray* AllocateAndValidateUint8ClampedArray(
       const unsigned&,
       ExceptionState* = nullptr);
 
-  static DOMUint16Array* allocateAndValidateUint16Array(
+  static DOMUint16Array* AllocateAndValidateUint16Array(
       const unsigned&,
       ExceptionState* = nullptr);
 
-  static DOMFloat32Array* allocateAndValidateFloat32Array(
+  static DOMFloat32Array* AllocateAndValidateFloat32Array(
       const unsigned&,
       ExceptionState* = nullptr);
 
-  static DOMFloat32Array* convertFloat16ArrayToFloat32Array(const uint16_t*,
+  static DOMFloat32Array* ConvertFloat16ArrayToFloat32Array(const uint16_t*,
                                                             unsigned);
 
-  static sk_sp<SkColorSpace> getSkColorSpace(const CanvasColorSpace&,
+  static sk_sp<SkColorSpace> GetSkColorSpace(const CanvasColorSpace&,
                                              const CanvasPixelFormat&);
 };
 

@@ -28,7 +28,7 @@ class MODULES_EXPORT NotificationImageLoader final
       public ThreadableLoaderClient {
  public:
   // Type names are used in UMAs, so do not rename.
-  enum class Type { Image, Icon, Badge, ActionIcon };
+  enum class Type { kImage, kIcon, kBadge, kActionIcon };
 
   // The bitmap may be empty if the request failed or the image data could not
   // be decoded.
@@ -39,35 +39,35 @@ class MODULES_EXPORT NotificationImageLoader final
 
   // Scales down |image| according to its type and returns result. If it is
   // already small enough, |image| is returned unchanged.
-  static SkBitmap scaleDownIfNeeded(const SkBitmap& image, Type);
+  static SkBitmap ScaleDownIfNeeded(const SkBitmap& image, Type);
 
   // Asynchronously downloads an image from the given url, decodes the loaded
   // data, and passes the bitmap to the callback. Times out if the load takes
   // too long and ImageCallback is invoked with an empty bitmap.
-  void start(ExecutionContext*, const KURL&, std::unique_ptr<ImageCallback>);
+  void Start(ExecutionContext*, const KURL&, std::unique_ptr<ImageCallback>);
 
   // Cancels the pending load, if there is one. The |m_imageCallback| will not
   // be run.
-  void stop();
+  void Stop();
 
   // ThreadableLoaderClient interface.
-  void didReceiveData(const char* data, unsigned length) override;
-  void didFinishLoading(unsigned long resourceIdentifier,
-                        double finishTime) override;
-  void didFail(const ResourceError&) override;
-  void didFailRedirectCheck() override;
+  void DidReceiveData(const char* data, unsigned length) override;
+  void DidFinishLoading(unsigned long resource_identifier,
+                        double finish_time) override;
+  void DidFail(const ResourceError&) override;
+  void DidFailRedirectCheck() override;
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_threadableLoader); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(threadable_loader_); }
 
  private:
-  void runCallbackWithEmptyBitmap();
+  void RunCallbackWithEmptyBitmap();
 
-  Type m_type;
-  bool m_stopped;
-  double m_startTime;
-  RefPtr<SharedBuffer> m_data;
-  std::unique_ptr<ImageCallback> m_imageCallback;
-  Member<ThreadableLoader> m_threadableLoader;
+  Type type_;
+  bool stopped_;
+  double start_time_;
+  RefPtr<SharedBuffer> data_;
+  std::unique_ptr<ImageCallback> image_callback_;
+  Member<ThreadableLoader> threadable_loader_;
 };
 
 }  // namespace blink

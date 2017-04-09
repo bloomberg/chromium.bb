@@ -13,55 +13,55 @@
 namespace blink {
 
 enum CSSParserTokenType {
-  IdentToken = 0,
-  FunctionToken,
-  AtKeywordToken,
-  HashToken,
-  UrlToken,
-  BadUrlToken,
-  DelimiterToken,
-  NumberToken,
-  PercentageToken,
-  DimensionToken,
-  IncludeMatchToken,
-  DashMatchToken,
-  PrefixMatchToken,
-  SuffixMatchToken,
-  SubstringMatchToken,
-  ColumnToken,
-  UnicodeRangeToken,
-  WhitespaceToken,
-  CDOToken,
-  CDCToken,
-  ColonToken,
-  SemicolonToken,
-  CommaToken,
-  LeftParenthesisToken,
-  RightParenthesisToken,
-  LeftBracketToken,
-  RightBracketToken,
-  LeftBraceToken,
-  RightBraceToken,
-  StringToken,
-  BadStringToken,
-  EOFToken,
-  CommentToken,
+  kIdentToken = 0,
+  kFunctionToken,
+  kAtKeywordToken,
+  kHashToken,
+  kUrlToken,
+  kBadUrlToken,
+  kDelimiterToken,
+  kNumberToken,
+  kPercentageToken,
+  kDimensionToken,
+  kIncludeMatchToken,
+  kDashMatchToken,
+  kPrefixMatchToken,
+  kSuffixMatchToken,
+  kSubstringMatchToken,
+  kColumnToken,
+  kUnicodeRangeToken,
+  kWhitespaceToken,
+  kCDOToken,
+  kCDCToken,
+  kColonToken,
+  kSemicolonToken,
+  kCommaToken,
+  kLeftParenthesisToken,
+  kRightParenthesisToken,
+  kLeftBracketToken,
+  kRightBracketToken,
+  kLeftBraceToken,
+  kRightBraceToken,
+  kStringToken,
+  kBadStringToken,
+  kEOFToken,
+  kCommentToken,
 };
 
 enum NumericSign {
-  NoSign,
-  PlusSign,
-  MinusSign,
+  kNoSign,
+  kPlusSign,
+  kMinusSign,
 };
 
 enum NumericValueType {
-  IntegerValueType,
-  NumberValueType,
+  kIntegerValueType,
+  kNumberValueType,
 };
 
 enum HashTokenType {
-  HashTokenId,
-  HashTokenUnrestricted,
+  kHashTokenId,
+  kHashTokenUnrestricted,
 };
 
 class CORE_EXPORT CSSParserToken {
@@ -69,13 +69,13 @@ class CORE_EXPORT CSSParserToken {
 
  public:
   enum BlockType {
-    NotBlock,
-    BlockStart,
-    BlockEnd,
+    kNotBlock,
+    kBlockStart,
+    kBlockEnd,
   };
 
-  CSSParserToken(CSSParserTokenType, BlockType = NotBlock);
-  CSSParserToken(CSSParserTokenType, StringView, BlockType = NotBlock);
+  CSSParserToken(CSSParserTokenType, BlockType = kNotBlock);
+  CSSParserToken(CSSParserTokenType, StringView, BlockType = kNotBlock);
 
   CSSParserToken(CSSParserTokenType, UChar);  // for DelimiterToken
   CSSParserToken(CSSParserTokenType,
@@ -94,83 +94,83 @@ class CORE_EXPORT CSSParserToken {
   }
 
   // Converts NumberToken to DimensionToken.
-  void convertToDimensionWithUnit(StringView);
+  void ConvertToDimensionWithUnit(StringView);
 
   // Converts NumberToken to PercentageToken.
-  void convertToPercentage();
+  void ConvertToPercentage();
 
-  CSSParserTokenType type() const {
-    return static_cast<CSSParserTokenType>(m_type);
+  CSSParserTokenType GetType() const {
+    return static_cast<CSSParserTokenType>(type_);
   }
-  StringView value() const {
-    if (m_valueIs8Bit)
-      return StringView(reinterpret_cast<const LChar*>(m_valueDataCharRaw),
-                        m_valueLength);
-    return StringView(reinterpret_cast<const UChar*>(m_valueDataCharRaw),
-                      m_valueLength);
+  StringView Value() const {
+    if (value_is8_bit_)
+      return StringView(reinterpret_cast<const LChar*>(value_data_char_raw_),
+                        value_length_);
+    return StringView(reinterpret_cast<const UChar*>(value_data_char_raw_),
+                      value_length_);
   }
 
-  UChar delimiter() const;
-  NumericSign numericSign() const;
-  NumericValueType numericValueType() const;
-  double numericValue() const;
-  HashTokenType getHashTokenType() const {
-    DCHECK_EQ(m_type, static_cast<unsigned>(HashToken));
-    return m_hashTokenType;
+  UChar Delimiter() const;
+  NumericSign GetNumericSign() const;
+  NumericValueType GetNumericValueType() const;
+  double NumericValue() const;
+  HashTokenType GetHashTokenType() const {
+    DCHECK_EQ(type_, static_cast<unsigned>(kHashToken));
+    return hash_token_type_;
   }
-  BlockType getBlockType() const { return static_cast<BlockType>(m_blockType); }
-  CSSPrimitiveValue::UnitType unitType() const {
-    return static_cast<CSSPrimitiveValue::UnitType>(m_unit);
+  BlockType GetBlockType() const { return static_cast<BlockType>(block_type_); }
+  CSSPrimitiveValue::UnitType GetUnitType() const {
+    return static_cast<CSSPrimitiveValue::UnitType>(unit_);
   }
-  UChar32 unicodeRangeStart() const {
-    DCHECK_EQ(m_type, static_cast<unsigned>(UnicodeRangeToken));
-    return m_unicodeRange.start;
+  UChar32 UnicodeRangeStart() const {
+    DCHECK_EQ(type_, static_cast<unsigned>(kUnicodeRangeToken));
+    return unicode_range_.start;
   }
-  UChar32 unicodeRangeEnd() const {
-    DCHECK_EQ(m_type, static_cast<unsigned>(UnicodeRangeToken));
-    return m_unicodeRange.end;
+  UChar32 UnicodeRangeEnd() const {
+    DCHECK_EQ(type_, static_cast<unsigned>(kUnicodeRangeToken));
+    return unicode_range_.end;
   }
-  CSSValueID id() const;
-  CSSValueID functionId() const;
+  CSSValueID Id() const;
+  CSSValueID FunctionId() const;
 
-  bool hasStringBacking() const;
+  bool HasStringBacking() const;
 
-  CSSPropertyID parseAsUnresolvedCSSPropertyID() const;
+  CSSPropertyID ParseAsUnresolvedCSSPropertyID() const;
 
-  void serialize(StringBuilder&) const;
+  void Serialize(StringBuilder&) const;
 
-  CSSParserToken copyWithUpdatedString(const StringView&) const;
+  CSSParserToken CopyWithUpdatedString(const StringView&) const;
 
  private:
-  void initValueFromStringView(StringView string) {
-    m_valueLength = string.length();
-    m_valueIs8Bit = string.is8Bit();
-    m_valueDataCharRaw = string.bytes();
+  void InitValueFromStringView(StringView string) {
+    value_length_ = string.length();
+    value_is8_bit_ = string.Is8Bit();
+    value_data_char_raw_ = string.Bytes();
   }
-  unsigned m_type : 6;              // CSSParserTokenType
-  unsigned m_blockType : 2;         // BlockType
-  unsigned m_numericValueType : 1;  // NumericValueType
-  unsigned m_numericSign : 2;       // NumericSign
-  unsigned m_unit : 7;              // CSSPrimitiveValue::UnitType
+  unsigned type_ : 6;                // CSSParserTokenType
+  unsigned block_type_ : 2;          // BlockType
+  unsigned numeric_value_type_ : 1;  // NumericValueType
+  unsigned numeric_sign_ : 2;        // NumericSign
+  unsigned unit_ : 7;                // CSSPrimitiveValue::UnitType
 
-  bool valueDataCharRawEqual(const CSSParserToken& other) const;
+  bool ValueDataCharRawEqual(const CSSParserToken& other) const;
 
   // m_value... is an unpacked StringView so that we can pack it
   // tightly with the rest of this object for a smaller object size.
-  bool m_valueIs8Bit : 1;
-  unsigned m_valueLength;
-  const void* m_valueDataCharRaw;  // Either LChar* or UChar*.
+  bool value_is8_bit_ : 1;
+  unsigned value_length_;
+  const void* value_data_char_raw_;  // Either LChar* or UChar*.
 
   union {
-    UChar m_delimiter;
-    HashTokenType m_hashTokenType;
-    double m_numericValue;
-    mutable int m_id;
+    UChar delimiter_;
+    HashTokenType hash_token_type_;
+    double numeric_value_;
+    mutable int id_;
 
     struct {
       UChar32 start;
       UChar32 end;
-    } m_unicodeRange;
+    } unicode_range_;
   };
 };
 

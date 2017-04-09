@@ -44,14 +44,14 @@ class CSSViewportRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSViewportRule* create(StyleRuleViewport* viewportRule,
+  static CSSViewportRule* Create(StyleRuleViewport* viewport_rule,
                                  CSSStyleSheet* sheet) {
-    return new CSSViewportRule(viewportRule, sheet);
+    return new CSSViewportRule(viewport_rule, sheet);
   }
   ~CSSViewportRule() override;
 
   String cssText() const override;
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
 
   CSSStyleDeclaration* style() const;
 
@@ -62,8 +62,8 @@ class CSSViewportRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kViewportRule; }
 
-  Member<StyleRuleViewport> m_viewportRule;
-  mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  Member<StyleRuleViewport> viewport_rule_;
+  mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, kViewportRule);

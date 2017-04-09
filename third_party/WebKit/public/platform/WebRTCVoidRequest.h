@@ -43,28 +43,28 @@ class RTCVoidRequest;
 class WebRTCVoidRequest {
  public:
   WebRTCVoidRequest() {}
-  WebRTCVoidRequest(const WebRTCVoidRequest& other) { assign(other); }
-  ~WebRTCVoidRequest() { reset(); }
+  WebRTCVoidRequest(const WebRTCVoidRequest& other) { Assign(other); }
+  ~WebRTCVoidRequest() { Reset(); }
 
   WebRTCVoidRequest& operator=(const WebRTCVoidRequest& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebRTCVoidRequest&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebRTCVoidRequest&);
 
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT void requestSucceeded() const;
-  BLINK_PLATFORM_EXPORT void requestFailed(const WebString& error) const;
+  BLINK_PLATFORM_EXPORT void RequestSucceeded() const;
+  BLINK_PLATFORM_EXPORT void RequestFailed(const WebString& error) const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCVoidRequest(RTCVoidRequest*);
 #endif
 
  private:
-  WebPrivatePtr<RTCVoidRequest> m_private;
+  WebPrivatePtr<RTCVoidRequest> private_;
 };
 
 }  // namespace blink

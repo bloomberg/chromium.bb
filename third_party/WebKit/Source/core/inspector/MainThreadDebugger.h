@@ -56,73 +56,73 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
 
    public:
     virtual ~ClientMessageLoop() {}
-    virtual void run(LocalFrame*) = 0;
-    virtual void quitNow() = 0;
-    virtual void runIfWaitingForDebugger(LocalFrame*) = 0;
+    virtual void Run(LocalFrame*) = 0;
+    virtual void QuitNow() = 0;
+    virtual void RunIfWaitingForDebugger(LocalFrame*) = 0;
   };
 
   explicit MainThreadDebugger(v8::Isolate*);
   ~MainThreadDebugger() override;
 
-  static MainThreadDebugger* instance();
-  static void interruptMainThreadAndRun(
+  static MainThreadDebugger* Instance();
+  static void InterruptMainThreadAndRun(
       std::unique_ptr<InspectorTaskRunner::Task>);
 
-  InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
-  bool isWorker() override { return false; }
-  bool isPaused() const { return m_paused; }
-  void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
+  InspectorTaskRunner* TaskRunner() const { return task_runner_.get(); }
+  bool IsWorker() override { return false; }
+  bool IsPaused() const { return paused_; }
+  void SetClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
 
   // TODO(dgozman): by making this method virtual, we can move many methods to
   // ThreadDebugger and avoid some duplication. Should be careful about
   // performance.
-  int contextGroupId(LocalFrame*);
-  void didClearContextsForFrame(LocalFrame*);
-  void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
-  void contextWillBeDestroyed(ScriptState*);
-  void exceptionThrown(ExecutionContext*, ErrorEvent*);
+  int ContextGroupId(LocalFrame*);
+  void DidClearContextsForFrame(LocalFrame*);
+  void ContextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
+  void ContextWillBeDestroyed(ScriptState*);
+  void ExceptionThrown(ExecutionContext*, ErrorEvent*);
 
  private:
-  void reportConsoleMessage(ExecutionContext*,
+  void ReportConsoleMessage(ExecutionContext*,
                             MessageSource,
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
-  int contextGroupId(ExecutionContext*) override;
+  int ContextGroupId(ExecutionContext*) override;
 
   // V8InspectorClient implementation.
-  void runMessageLoopOnPause(int contextGroupId) override;
+  void runMessageLoopOnPause(int context_group_id) override;
   void quitMessageLoopOnPause() override;
-  void muteMetrics(int contextGroupId) override;
-  void unmuteMetrics(int contextGroupId) override;
+  void muteMetrics(int context_group_id) override;
+  void unmuteMetrics(int context_group_id) override;
   v8::Local<v8::Context> ensureDefaultContextInGroup(
-      int contextGroupId) override;
-  void beginEnsureAllContextsInGroup(int contextGroupId) override;
-  void endEnsureAllContextsInGroup(int contextGroupId) override;
-  bool canExecuteScripts(int contextGroupId) override;
-  void runIfWaitingForDebugger(int contextGroupId) override;
-  void consoleAPIMessage(int contextGroupId,
+      int context_group_id) override;
+  void beginEnsureAllContextsInGroup(int context_group_id) override;
+  void endEnsureAllContextsInGroup(int context_group_id) override;
+  bool canExecuteScripts(int context_group_id) override;
+  void runIfWaitingForDebugger(int context_group_id) override;
+  void consoleAPIMessage(int context_group_id,
                          v8::Isolate::MessageErrorLevel,
                          const v8_inspector::StringView& message,
                          const v8_inspector::StringView& url,
-                         unsigned lineNumber,
-                         unsigned columnNumber,
+                         unsigned line_number,
+                         unsigned column_number,
                          v8_inspector::V8StackTrace*) override;
-  void consoleClear(int contextGroupId) override;
+  void consoleClear(int context_group_id) override;
   void installAdditionalCommandLineAPI(v8::Local<v8::Context>,
                                        v8::Local<v8::Object>) override;
   v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*,
                                        v8::Local<v8::Context>) override;
 
-  static void querySelectorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  static void querySelectorAllCallback(
+  static void QuerySelectorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void QuerySelectorAllCallback(
       const v8::FunctionCallbackInfo<v8::Value>&);
-  static void xpathSelectorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  static void XpathSelectorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  std::unique_ptr<ClientMessageLoop> m_clientMessageLoop;
-  std::unique_ptr<InspectorTaskRunner> m_taskRunner;
-  bool m_paused;
-  static MainThreadDebugger* s_instance;
+  std::unique_ptr<ClientMessageLoop> client_message_loop_;
+  std::unique_ptr<InspectorTaskRunner> task_runner_;
+  bool paused_;
+  static MainThreadDebugger* instance_;
 };
 
 }  // namespace blink

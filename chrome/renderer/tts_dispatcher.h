@@ -40,11 +40,11 @@ class TtsDispatcher
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // blink::WebSpeechSynthesizer implementation.
-  void updateVoiceList() override;
-  void speak(const blink::WebSpeechSynthesisUtterance& utterance) override;
-  void pause() override;
-  void resume() override;
-  void cancel() override;
+  void UpdateVoiceList() override;
+  void Speak(const blink::WebSpeechSynthesisUtterance& utterance) override;
+  void Pause() override;
+  void Resume() override;
+  void Cancel() override;
 
   blink::WebSpeechSynthesisUtterance FindUtterance(int utterance_id);
 

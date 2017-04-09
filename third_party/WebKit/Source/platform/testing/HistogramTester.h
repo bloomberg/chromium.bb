@@ -20,17 +20,17 @@ class HistogramTester {
   HistogramTester();
   ~HistogramTester();
 
-  void expectUniqueSample(const std::string& name,
+  void ExpectUniqueSample(const std::string& name,
                           base::HistogramBase::Sample,
                           base::HistogramBase::Count) const;
-  void expectBucketCount(const std::string& name,
+  void ExpectBucketCount(const std::string& name,
                          base::HistogramBase::Sample,
                          base::HistogramBase::Count) const;
-  void expectTotalCount(const std::string& name,
+  void ExpectTotalCount(const std::string& name,
                         base::HistogramBase::Count) const;
 
  private:
-  std::unique_ptr<base::HistogramTester> m_histogramTester;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 }  // namespace blink

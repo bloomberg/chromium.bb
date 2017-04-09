@@ -78,94 +78,94 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, Unconstrained) {
 // constraint results in failure to select a candidate.
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnHeight) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().height.setExact(123467890);
+  constraint_factory_.basic().height.SetExact(123467890);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().height.name(),
+  EXPECT_EQ(constraint_factory_.basic().height.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().height.setMin(123467890);
+  constraint_factory_.basic().height.SetMin(123467890);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().height.name(),
+  EXPECT_EQ(constraint_factory_.basic().height.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().height.setMax(0);
+  constraint_factory_.basic().height.SetMax(0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().height.name(),
+  EXPECT_EQ(constraint_factory_.basic().height.GetName(),
             result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnWidth) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().width.setExact(123467890);
+  constraint_factory_.basic().width.SetExact(123467890);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().width.name(),
+  EXPECT_EQ(constraint_factory_.basic().width.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().width.setMin(123467890);
+  constraint_factory_.basic().width.SetMin(123467890);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().width.name(),
+  EXPECT_EQ(constraint_factory_.basic().width.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().width.setMax(0);
+  constraint_factory_.basic().width.SetMax(0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().width.name(),
+  EXPECT_EQ(constraint_factory_.basic().width.GetName(),
             result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest,
        OverconstrainedOnAspectRatio) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().aspectRatio.setExact(123467890);
+  constraint_factory_.basic().aspect_ratio.SetExact(123467890);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
+  EXPECT_EQ(constraint_factory_.basic().aspect_ratio.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().aspectRatio.setMin(123467890);
+  constraint_factory_.basic().aspect_ratio.SetMin(123467890);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
+  EXPECT_EQ(constraint_factory_.basic().aspect_ratio.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().aspectRatio.setMax(0.00001);
+  constraint_factory_.basic().aspect_ratio.SetMax(0.00001);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
+  EXPECT_EQ(constraint_factory_.basic().aspect_ratio.GetName(),
             result.failed_constraint_name());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
   constraint_factory_.Reset();
-  constraint_factory_.basic().frameRate.setExact(123467890.0);
+  constraint_factory_.basic().frame_rate.SetExact(123467890.0);
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().frameRate.name(),
+  EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().frameRate.setMin(123467890.0);
+  constraint_factory_.basic().frame_rate.SetMin(123467890.0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().frameRate.name(),
+  EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
             result.failed_constraint_name());
 
   constraint_factory_.Reset();
-  constraint_factory_.basic().frameRate.setMax(0.0);
+  constraint_factory_.basic().frame_rate.SetMax(0.0);
   result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().frameRate.name(),
+  EXPECT_EQ(constraint_factory_.basic().frame_rate.GetName(),
             result.failed_constraint_name());
 }
 
@@ -174,8 +174,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, OverconstrainedOnFrameRate) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryDeviceID) {
   const std::string kDeviceID = "Some ID";
   constraint_factory_.Reset();
-  constraint_factory_.basic().deviceId.setExact(
-      blink::WebString::fromASCII(kDeviceID));
+  constraint_factory_.basic().device_id.SetExact(
+      blink::WebString::FromASCII(kDeviceID));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kDeviceID, result.device_id());
@@ -191,14 +191,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealDeviceID) {
   const std::string kDeviceID = "Some ID";
   const std::string kIdealID = "Ideal ID";
   blink::WebVector<blink::WebString> device_ids(static_cast<size_t>(2));
-  device_ids[0] = blink::WebString::fromASCII(kDeviceID);
-  device_ids[1] = blink::WebString::fromASCII(kIdealID);
+  device_ids[0] = blink::WebString::FromASCII(kDeviceID);
+  device_ids[1] = blink::WebString::FromASCII(kIdealID);
   constraint_factory_.Reset();
-  constraint_factory_.basic().deviceId.setExact(device_ids);
+  constraint_factory_.basic().device_id.SetExact(device_ids);
 
   blink::WebVector<blink::WebString> ideal_id(static_cast<size_t>(1));
-  ideal_id[0] = blink::WebString::fromASCII(kIdealID);
-  constraint_factory_.basic().deviceId.setIdeal(ideal_id);
+  ideal_id[0] = blink::WebString::FromASCII(kIdealID);
+  constraint_factory_.basic().device_id.SetIdeal(ideal_id);
 
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -215,7 +215,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryNoiseReduction) {
   constraint_factory_.Reset();
   const bool kNoiseReductionValues[] = {true, false};
   for (auto noise_reduction : kNoiseReductionValues) {
-    constraint_factory_.basic().googNoiseReduction.setExact(noise_reduction);
+    constraint_factory_.basic().goog_noise_reduction.SetExact(noise_reduction);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(noise_reduction, result.noise_reduction());
@@ -232,7 +232,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealNoiseReduction) {
   constraint_factory_.Reset();
   const bool kNoiseReductionValues[] = {true, false};
   for (auto noise_reduction : kNoiseReductionValues) {
-    constraint_factory_.basic().googNoiseReduction.setIdeal(noise_reduction);
+    constraint_factory_.basic().goog_noise_reduction.SetIdeal(noise_reduction);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(noise_reduction, result.noise_reduction());
@@ -248,7 +248,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealNoiseReduction) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactHeight) {
   constraint_factory_.Reset();
   const int kHeight = 1000;
-  constraint_factory_.basic().height.setExact(kHeight);
+  constraint_factory_.basic().height.SetExact(kHeight);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kHeight, result.Height());
@@ -265,7 +265,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactHeight) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinHeight) {
   constraint_factory_.Reset();
   const int kHeight = 2000;
-  constraint_factory_.basic().height.setMin(kHeight);
+  constraint_factory_.basic().height.SetMin(kHeight);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kHeight is greater that the default, so expect kHeight.
@@ -280,7 +280,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinHeight) {
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const int kSmallHeight = 100;
-  constraint_factory_.basic().height.setMin(kSmallHeight);
+  constraint_factory_.basic().height.SetMin(kSmallHeight);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallHeight is less that the default, so expect the default.
@@ -299,7 +299,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   {
     constraint_factory_.Reset();
     const int kMaxHeight = kDefaultScreenCastHeight - 100;
-    constraint_factory_.basic().height.setMax(kMaxHeight);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
@@ -317,7 +317,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   {
     constraint_factory_.Reset();
     const int kMaxHeight = kDefaultScreenCastHeight + 100;
-    constraint_factory_.basic().height.setMax(kMaxHeight);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
@@ -334,7 +334,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxHeight) {
   // kMaxHeight greater than the maximum allowed.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMax(kMaxScreenCastDimension + 100);
+    constraint_factory_.basic().height.SetMax(kMaxScreenCastDimension + 100);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
@@ -356,8 +356,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
     constraint_factory_.Reset();
     const int kMinHeight = kDefaultScreenCastHeight - 100;
     const int kMaxHeight = kDefaultScreenCastHeight + 100;
-    constraint_factory_.basic().height.setMin(kMinHeight);
-    constraint_factory_.basic().height.setMax(kMaxHeight);
+    constraint_factory_.basic().height.SetMin(kMinHeight);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
@@ -376,8 +376,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
     constraint_factory_.Reset();
     const int kMinHeight = kDefaultScreenCastHeight + 100;
     const int kMaxHeight = kDefaultScreenCastHeight + 200;
-    constraint_factory_.basic().height.setMin(kMinHeight);
-    constraint_factory_.basic().height.setMax(kMaxHeight);
+    constraint_factory_.basic().height.SetMin(kMinHeight);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
@@ -396,8 +396,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryHeightRange) {
     constraint_factory_.Reset();
     const int kMinHeight = kDefaultScreenCastHeight - 200;
     const int kMaxHeight = kDefaultScreenCastHeight - 100;
-    constraint_factory_.basic().height.setMin(kMinHeight);
-    constraint_factory_.basic().height.setMax(kMaxHeight);
+    constraint_factory_.basic().height.SetMin(kMinHeight);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
@@ -417,7 +417,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
   {
     constraint_factory_.Reset();
     const int kIdealHeight = 1000;
-    constraint_factory_.basic().height.setIdeal(kIdealHeight);
+    constraint_factory_.basic().height.SetIdeal(kIdealHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kIdealHeight, result.Height());
@@ -434,8 +434,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     constraint_factory_.Reset();
     const int kIdealHeight = 1000;
     const int kMaxHeight = 800;
-    constraint_factory_.basic().height.setIdeal(kIdealHeight);
-    constraint_factory_.basic().height.setMax(kMaxHeight);
+    constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal height is greater than the maximum, expect maximum.
@@ -456,8 +456,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
     constraint_factory_.Reset();
     const int kIdealHeight = 1000;
     const int kMinHeight = 1200;
-    constraint_factory_.basic().height.setIdeal(kIdealHeight);
-    constraint_factory_.basic().height.setMin(kMinHeight);
+    constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+    constraint_factory_.basic().height.SetMin(kMinHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal height is less than the minimum, expect minimum.
@@ -476,19 +476,19 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
   // Ideal intersects a box.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMin(500);
-    constraint_factory_.basic().height.setMax(1000);
-    constraint_factory_.basic().width.setMin(100);
-    constraint_factory_.basic().width.setMax(500);
+    constraint_factory_.basic().height.SetMin(500);
+    constraint_factory_.basic().height.SetMax(1000);
+    constraint_factory_.basic().width.SetMin(100);
+    constraint_factory_.basic().width.SetMax(500);
     const int kIdealHeight = 750;
-    constraint_factory_.basic().height.setIdeal(kIdealHeight);
+    constraint_factory_.basic().height.SetIdeal(kIdealHeight);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal height is included in the bounding box.
     EXPECT_EQ(kIdealHeight, result.Height());
     double default_aspect_ratio =
-        static_cast<double>(constraint_factory_.basic().width.max()) /
-        constraint_factory_.basic().height.max();
+        static_cast<double>(constraint_factory_.basic().width.Max()) /
+        constraint_factory_.basic().height.Max();
     // Expect width closest to kIdealHeight * default aspect ratio.
     EXPECT_EQ(std::round(kIdealHeight * default_aspect_ratio), result.Width());
     CheckNonResolutionDefaults(result);
@@ -501,17 +501,17 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
   {
     const int kMaxHeight = 1000;
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMin(500);
-    constraint_factory_.basic().height.setMax(kMaxHeight);
-    constraint_factory_.basic().width.setMin(100);
-    constraint_factory_.basic().width.setMax(500);
-    constraint_factory_.basic().height.setIdeal(1200);
+    constraint_factory_.basic().height.SetMin(500);
+    constraint_factory_.basic().height.SetMax(kMaxHeight);
+    constraint_factory_.basic().width.SetMin(100);
+    constraint_factory_.basic().width.SetMax(500);
+    constraint_factory_.basic().height.SetIdeal(1200);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxHeight, result.Height());
     // Expect width closest to kMaxHeight * default aspect ratio, which is
     // outside the box. Closest it max width.
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(100.0 / kMaxHeight,
               result.track_adapter_settings().min_aspect_ratio);
@@ -522,17 +522,17 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
   // Ideal outside the constrained set, closest to a single point.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMin(500);
-    constraint_factory_.basic().height.setMax(1000);
-    constraint_factory_.basic().width.setMin(500);
-    constraint_factory_.basic().width.setMax(1000);
-    constraint_factory_.basic().aspectRatio.setMin(1.0);
-    constraint_factory_.basic().height.setIdeal(1200);
+    constraint_factory_.basic().height.SetMin(500);
+    constraint_factory_.basic().height.SetMax(1000);
+    constraint_factory_.basic().width.SetMin(500);
+    constraint_factory_.basic().width.SetMax(1000);
+    constraint_factory_.basic().aspect_ratio.SetMin(1.0);
+    constraint_factory_.basic().height.SetIdeal(1200);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // (max-height, max-width) is the single point closest to the ideal line.
-    EXPECT_EQ(constraint_factory_.basic().height.max(), result.Height());
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(1000.0 / 500.0, result.track_adapter_settings().max_aspect_ratio);
@@ -543,7 +543,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealHeight) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactWidth) {
   constraint_factory_.Reset();
   const int kWidth = 1000;
-  constraint_factory_.basic().width.setExact(kWidth);
+  constraint_factory_.basic().width.SetExact(kWidth);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kWidth, result.Width());
@@ -560,7 +560,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactWidth) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinWidth) {
   constraint_factory_.Reset();
   const int kWidth = 3000;
-  constraint_factory_.basic().width.setMin(kWidth);
+  constraint_factory_.basic().width.SetMin(kWidth);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kWidth is greater that the default, so expect kWidth.
@@ -576,7 +576,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinWidth) {
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const int kSmallWidth = 100;
-  constraint_factory_.basic().width.setMin(kSmallWidth);
+  constraint_factory_.basic().width.SetMin(kSmallWidth);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallWidth is less that the default, so expect the default.
@@ -596,7 +596,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
   {
     constraint_factory_.Reset();
     const int kMaxWidth = kDefaultScreenCastWidth - 100;
-    constraint_factory_.basic().width.setMax(kMaxWidth);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // kSmallWidth is less that the default, so expect kSmallWidth.
@@ -615,7 +615,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
   {
     constraint_factory_.Reset();
     const int kMaxWidth = kDefaultScreenCastWidth + 100;
-    constraint_factory_.basic().width.setMax(kMaxWidth);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // kSmallWidth is less that the default, so expect kSmallWidth.
@@ -633,7 +633,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxWidth) {
   // kMaxWidth greater than the maximum allowed (gets ignored).
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setMax(kMaxScreenCastDimension + 100);
+    constraint_factory_.basic().width.SetMax(kMaxScreenCastDimension + 100);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // kSmallWidth is less that the default, so expect kSmallWidth.
@@ -657,8 +657,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
     constraint_factory_.Reset();
     const int kMinWidth = kDefaultScreenCastWidth - 200;
     const int kMaxWidth = kDefaultScreenCastWidth - 100;
-    constraint_factory_.basic().width.setMin(kMinWidth);
-    constraint_factory_.basic().width.setMax(kMaxWidth);
+    constraint_factory_.basic().width.SetMin(kMinWidth);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxWidth, result.Width());
@@ -677,8 +677,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
     constraint_factory_.Reset();
     const int kMinWidth = kDefaultScreenCastWidth - 100;
     const int kMaxWidth = kDefaultScreenCastWidth + 100;
-    constraint_factory_.basic().width.setMin(kMinWidth);
-    constraint_factory_.basic().width.setMax(kMaxWidth);
+    constraint_factory_.basic().width.SetMin(kMinWidth);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxWidth, result.Width());
@@ -697,8 +697,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryWidthRange) {
     constraint_factory_.Reset();
     const int kMinWidth = kDefaultScreenCastWidth + 100;
     const int kMaxWidth = kDefaultScreenCastWidth + 200;
-    constraint_factory_.basic().width.setMin(kMinWidth);
-    constraint_factory_.basic().width.setMax(kMaxWidth);
+    constraint_factory_.basic().width.SetMin(kMinWidth);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxWidth, result.Width());
@@ -718,7 +718,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
   {
     constraint_factory_.Reset();
     const int kIdealWidth = 1000;
-    constraint_factory_.basic().width.setIdeal(kIdealWidth);
+    constraint_factory_.basic().width.SetIdeal(kIdealWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kIdealWidth, result.Width());
@@ -735,8 +735,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
     constraint_factory_.Reset();
     const int kIdealWidth = 1000;
     const int kMaxWidth = 800;
-    constraint_factory_.basic().width.setIdeal(kIdealWidth);
-    constraint_factory_.basic().width.setMax(kMaxWidth);
+    constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxWidth, result.Width());
@@ -756,8 +756,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
     constraint_factory_.Reset();
     const int kIdealWidth = 1000;
     const int kMinWidth = 1200;
-    constraint_factory_.basic().width.setIdeal(kIdealWidth);
-    constraint_factory_.basic().width.setMin(kMinWidth);
+    constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+    constraint_factory_.basic().width.SetMin(kMinWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMinWidth, result.Width());
@@ -776,20 +776,20 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
   // Ideal intersects a box.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setMin(500);
-    constraint_factory_.basic().width.setMax(1000);
-    constraint_factory_.basic().height.setMin(100);
-    constraint_factory_.basic().height.setMax(500);
+    constraint_factory_.basic().width.SetMin(500);
+    constraint_factory_.basic().width.SetMax(1000);
+    constraint_factory_.basic().height.SetMin(100);
+    constraint_factory_.basic().height.SetMax(500);
     const int kIdealWidth = 750;
-    constraint_factory_.basic().width.setIdeal(kIdealWidth);
+    constraint_factory_.basic().width.SetIdeal(kIdealWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal width is included in the bounding box.
     EXPECT_EQ(kIdealWidth, result.Width());
     // Expect height closest to kIdealWidth / default aspect ratio.
     double default_aspect_ratio =
-        static_cast<double>(constraint_factory_.basic().width.max()) /
-        constraint_factory_.basic().height.max();
+        static_cast<double>(constraint_factory_.basic().width.Max()) /
+        constraint_factory_.basic().height.Max();
     EXPECT_EQ(std::round(kIdealWidth / default_aspect_ratio), result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(500.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
@@ -801,17 +801,17 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
   {
     const int kMaxWidth = 1000;
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setMin(500);
-    constraint_factory_.basic().width.setMax(kMaxWidth);
-    constraint_factory_.basic().height.setMin(100);
-    constraint_factory_.basic().height.setMax(500);
-    constraint_factory_.basic().width.setIdeal(1200);
+    constraint_factory_.basic().width.SetMin(500);
+    constraint_factory_.basic().width.SetMax(kMaxWidth);
+    constraint_factory_.basic().height.SetMin(100);
+    constraint_factory_.basic().height.SetMax(500);
+    constraint_factory_.basic().width.SetIdeal(1200);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxWidth, result.Width());
     // kMaxWidth / kDefaultScreenCastAspectRatio is outside the box. Closest is
     // max height.
-    EXPECT_EQ(constraint_factory_.basic().height.max(), result.Height());
+    EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(500.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(static_cast<double>(kMaxWidth) / 100.0,
@@ -822,17 +822,17 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
   // Ideal outside the constrained set, closest to a single point.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setMin(100);
-    constraint_factory_.basic().width.setMax(500);
-    constraint_factory_.basic().height.setMin(100);
-    constraint_factory_.basic().height.setMax(500);
-    constraint_factory_.basic().aspectRatio.setMax(1.0);
-    constraint_factory_.basic().width.setIdeal(1200);
+    constraint_factory_.basic().width.SetMin(100);
+    constraint_factory_.basic().width.SetMax(500);
+    constraint_factory_.basic().height.SetMin(100);
+    constraint_factory_.basic().height.SetMax(500);
+    constraint_factory_.basic().aspect_ratio.SetMax(1.0);
+    constraint_factory_.basic().width.SetIdeal(1200);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // (max-width, max-height) is the single point closest to the ideal line.
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
-    EXPECT_EQ(constraint_factory_.basic().height.max(), result.Height());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(100.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(1.0, result.track_adapter_settings().max_aspect_ratio);
@@ -843,7 +843,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealWidth) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactAspectRatio) {
   constraint_factory_.Reset();
   const double kAspectRatio = 2.0;
-  constraint_factory_.basic().aspectRatio.setExact(kAspectRatio);
+  constraint_factory_.basic().aspect_ratio.SetExact(kAspectRatio);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // Given that the default aspect ratio cannot be preserved, the algorithm
@@ -861,7 +861,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactAspectRatio) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
   constraint_factory_.Reset();
   const double kAspectRatio = 2.0;
-  constraint_factory_.basic().aspectRatio.setMin(kAspectRatio);
+  constraint_factory_.basic().aspect_ratio.SetMin(kAspectRatio);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kAspectRatio is greater that the default, so expect kAspectRatio.
@@ -876,7 +876,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const double kSmallAspectRatio = 0.5;
-  constraint_factory_.basic().aspectRatio.setMin(kSmallAspectRatio);
+  constraint_factory_.basic().aspect_ratio.SetMin(kSmallAspectRatio);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallAspectRatio is less that the default, so expect the default.
@@ -894,7 +894,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinAspectRatio) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxAspectRatio) {
   constraint_factory_.Reset();
   const double kAspectRatio = 2.0;
-  constraint_factory_.basic().aspectRatio.setMax(kAspectRatio);
+  constraint_factory_.basic().aspect_ratio.SetMax(kAspectRatio);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kAspectRatio is greater that the default, so expect the default.
@@ -908,7 +908,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxAspectRatio) {
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   const double kSmallAspectRatio = 0.5;
-  constraint_factory_.basic().aspectRatio.setMax(kSmallAspectRatio);
+  constraint_factory_.basic().aspect_ratio.SetMax(kSmallAspectRatio);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kSmallAspectRatio is less that the default, so expect kSmallAspectRatio.
@@ -931,8 +931,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
   {
     const double kMinAspectRatio = 0.5;
     const double kMaxAspectRatio = 2.0;
-    constraint_factory_.basic().aspectRatio.setMin(kMinAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMax(kMaxAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMax(kMaxAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Range includes default, so expect the default.
@@ -949,8 +949,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
   {
     const double kMinAspectRatio = 2.0;
     const double kMaxAspectRatio = 3.0;
-    constraint_factory_.basic().aspectRatio.setMin(kMinAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMax(kMaxAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMax(kMaxAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The whole range is greater than the default. Expect the minimum.
@@ -968,8 +968,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeAspectRatio) {
   {
     const double kMinAspectRatio = 0.5;
     const double kMaxAspectRatio = 1.0;
-    constraint_factory_.basic().aspectRatio.setMin(kMinAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMax(kMaxAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMax(kMaxAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The whole range is less than the default. Expect the maximum.
@@ -990,7 +990,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
   {
     constraint_factory_.Reset();
     const double kIdealAspectRatio = 2.0;
-    constraint_factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
@@ -1005,8 +1005,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     constraint_factory_.Reset();
     const double kIdealAspectRatio = 2.0;
     const double kMaxAspectRatio = 1.5;
-    constraint_factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMax(kMaxAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMax(kMaxAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect ratio is greater than the maximum, expect maximum.
@@ -1027,8 +1027,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     constraint_factory_.Reset();
     const double kIdealAspectRatio = 1.0;
     const double kMinAspectRatio = 1.5;
-    constraint_factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMin(kMinAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect ratio is less than the maximum, expect minimum.
@@ -1047,37 +1047,37 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
   // Ideal intersects a box.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMin(100);
-    constraint_factory_.basic().height.setMax(500);
-    constraint_factory_.basic().width.setMin(100);
-    constraint_factory_.basic().width.setMax(500);
+    constraint_factory_.basic().height.SetMin(100);
+    constraint_factory_.basic().height.SetMax(500);
+    constraint_factory_.basic().width.SetMin(100);
+    constraint_factory_.basic().width.SetMax(500);
     const double kIdealAspectRatio = 2.0;
-    constraint_factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect-ratio is included in the bounding box, with the value
     // closest to a standard width or height being the cut with the maximum
     // width.
     EXPECT_EQ(
-        std::round(constraint_factory_.basic().width.max() / kIdealAspectRatio),
+        std::round(constraint_factory_.basic().width.Max() / kIdealAspectRatio),
         result.Height());
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(100.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(500.0 / 100.0, result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
 
-    constraint_factory_.basic().height.setMin(1000);
-    constraint_factory_.basic().height.setMax(5000);
-    constraint_factory_.basic().width.setMin(1000);
-    constraint_factory_.basic().width.setMax(5000);
+    constraint_factory_.basic().height.SetMin(1000);
+    constraint_factory_.basic().height.SetMax(5000);
+    constraint_factory_.basic().width.SetMin(1000);
+    constraint_factory_.basic().width.SetMax(5000);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect-ratio is included in the bounding box.
     EXPECT_EQ(
-        std::round(constraint_factory_.basic().width.max() / kIdealAspectRatio),
+        std::round(constraint_factory_.basic().width.Max() / kIdealAspectRatio),
         result.Height());
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1000.0 / 5000.0,
               result.track_adapter_settings().min_aspect_ratio);
@@ -1086,9 +1086,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     CheckTrackAdapterSettingsEqualsFormat(result);
 
     constraint_factory_.Reset();
-    constraint_factory_.basic().aspectRatio.setIdeal(kIdealAspectRatio);
-    constraint_factory_.basic().height.setMin(250);
-    constraint_factory_.basic().width.setMin(250);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
+    constraint_factory_.basic().height.SetMin(250);
+    constraint_factory_.basic().width.SetMin(250);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal aspect-ratio is included in the bounding box. Preserving default
@@ -1108,20 +1108,20 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     const double kMinAspectRatio = 0.5;
     const double kMaxAspectRatio = 2.0;
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMin(100);
-    constraint_factory_.basic().height.setMax(500);
-    constraint_factory_.basic().width.setMin(100);
-    constraint_factory_.basic().width.setMax(500);
-    constraint_factory_.basic().aspectRatio.setMin(kMinAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMax(kMaxAspectRatio);
-    constraint_factory_.basic().aspectRatio.setIdeal(3.0);
+    constraint_factory_.basic().height.SetMin(100);
+    constraint_factory_.basic().height.SetMax(500);
+    constraint_factory_.basic().width.SetMin(100);
+    constraint_factory_.basic().width.SetMax(500);
+    constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMax(kMaxAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(3.0);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal is closest to kMaxAspectRatio.
     EXPECT_EQ(
-        std::round(constraint_factory_.basic().width.max() / kMaxAspectRatio),
+        std::round(constraint_factory_.basic().width.Max() / kMaxAspectRatio),
         result.Height());
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
               result.track_adapter_settings().min_aspect_ratio);
@@ -1129,13 +1129,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
               result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
 
-    constraint_factory_.basic().aspectRatio.setIdeal(0.3);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(0.3);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal is closest to kMinAspectRatio.
-    EXPECT_EQ(constraint_factory_.basic().height.max(), result.Height());
+    EXPECT_EQ(constraint_factory_.basic().height.Max(), result.Height());
     EXPECT_EQ(
-        std::round(constraint_factory_.basic().height.max() * kMinAspectRatio),
+        std::round(constraint_factory_.basic().height.Max() * kMinAspectRatio),
         result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
@@ -1147,17 +1147,17 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
     // Use a box that is bigger and further from the origin to force closeness
     // to a different default dimension.
     constraint_factory_.Reset();
-    constraint_factory_.basic().aspectRatio.setMin(kMinAspectRatio);
-    constraint_factory_.basic().aspectRatio.setMax(kMaxAspectRatio);
-    constraint_factory_.basic().height.setMin(3000);
-    constraint_factory_.basic().width.setMin(3000);
-    constraint_factory_.basic().aspectRatio.setIdeal(3.0);
+    constraint_factory_.basic().aspect_ratio.SetMin(kMinAspectRatio);
+    constraint_factory_.basic().aspect_ratio.SetMax(kMaxAspectRatio);
+    constraint_factory_.basic().height.SetMin(3000);
+    constraint_factory_.basic().width.SetMin(3000);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(3.0);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal is closest to kMaxAspectRatio.
-    EXPECT_EQ(constraint_factory_.basic().height.min(), result.Height());
+    EXPECT_EQ(constraint_factory_.basic().height.Min(), result.Height());
     EXPECT_EQ(
-        std::round(constraint_factory_.basic().height.min() * kMaxAspectRatio),
+        std::round(constraint_factory_.basic().height.Min() * kMaxAspectRatio),
         result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
@@ -1166,14 +1166,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
               result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
 
-    constraint_factory_.basic().aspectRatio.setIdeal(0.3);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(0.3);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal is closest to kMinAspectRatio.
     EXPECT_EQ(
-        std::round(constraint_factory_.basic().width.min() / kMinAspectRatio),
+        std::round(constraint_factory_.basic().width.Min() / kMinAspectRatio),
         result.Height());
-    EXPECT_EQ(constraint_factory_.basic().width.min(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().width.Min(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(kMinAspectRatio,
               result.track_adapter_settings().min_aspect_ratio);
@@ -1185,17 +1185,17 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
   // Ideal outside the constrained area, closest to a single point.
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().height.setMin(100);
-    constraint_factory_.basic().height.setMax(500);
-    constraint_factory_.basic().width.setMin(100);
-    constraint_factory_.basic().width.setMax(500);
-    constraint_factory_.basic().aspectRatio.setMin(1.0);
-    constraint_factory_.basic().aspectRatio.setIdeal(10.0);
+    constraint_factory_.basic().height.SetMin(100);
+    constraint_factory_.basic().height.SetMax(500);
+    constraint_factory_.basic().width.SetMin(100);
+    constraint_factory_.basic().width.SetMax(500);
+    constraint_factory_.basic().aspect_ratio.SetMin(1.0);
+    constraint_factory_.basic().aspect_ratio.SetIdeal(10.0);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // Ideal is closest to the min height and max width.
-    EXPECT_EQ(constraint_factory_.basic().height.min(), result.Height());
-    EXPECT_EQ(constraint_factory_.basic().width.max(), result.Width());
+    EXPECT_EQ(constraint_factory_.basic().height.Min(), result.Height());
+    EXPECT_EQ(constraint_factory_.basic().width.Max(), result.Width());
     CheckNonResolutionDefaults(result);
     EXPECT_EQ(1.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(500.0 / 100.0, result.track_adapter_settings().max_aspect_ratio);
@@ -1206,7 +1206,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealAspectRatio) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactFrameRate) {
   constraint_factory_.Reset();
   const double kFrameRate = 45.0;
-  constraint_factory_.basic().frameRate.setExact(kFrameRate);
+  constraint_factory_.basic().frame_rate.SetExact(kFrameRate);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kFrameRate, result.FrameRate());
@@ -1217,7 +1217,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryExactFrameRate) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinFrameRate) {
   constraint_factory_.Reset();
   const double kFrameRate = 45.0;
-  constraint_factory_.basic().frameRate.setMin(kFrameRate);
+  constraint_factory_.basic().frame_rate.SetMin(kFrameRate);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kFrameRate is greater that the default, so expect kFrameRate.
@@ -1226,7 +1226,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinFrameRate) {
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 
   const double kSmallFrameRate = 5.0;
-  constraint_factory_.basic().frameRate.setMin(kSmallFrameRate);
+  constraint_factory_.basic().frame_rate.SetMin(kSmallFrameRate);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kFrameRate is greater that the default, so expect kFrameRate.
@@ -1238,7 +1238,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMinFrameRate) {
 TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxFrameRate) {
   constraint_factory_.Reset();
   const double kFrameRate = 45.0;
-  constraint_factory_.basic().frameRate.setMax(kFrameRate);
+  constraint_factory_.basic().frame_rate.SetMax(kFrameRate);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kFrameRate is greater that the default, so expect the default.
@@ -1247,7 +1247,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryMaxFrameRate) {
   CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
 
   const double kSmallFrameRate = 5.0;
-  constraint_factory_.basic().frameRate.setMax(kSmallFrameRate);
+  constraint_factory_.basic().frame_rate.SetMax(kSmallFrameRate);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // kFrameRate is less that the default, so expect kFrameRate.
@@ -1261,8 +1261,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeFrameRate) {
   {
     const double kMinFrameRate = 15.0;
     const double kMaxFrameRate = 45.0;
-    constraint_factory_.basic().frameRate.setMax(kMinFrameRate);
-    constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMinFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The range includes the default, so expect the default.
@@ -1274,8 +1274,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeFrameRate) {
   {
     const double kMinFrameRate = 45.0;
     const double kMaxFrameRate = 55.0;
-    constraint_factory_.basic().frameRate.setMax(kMinFrameRate);
-    constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMinFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The whole range is greater that the default, so expect the minimum.
@@ -1287,8 +1287,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, MandatoryRangeFrameRate) {
   {
     const double kMinFrameRate = 10.0;
     const double kMaxFrameRate = 15.0;
-    constraint_factory_.basic().frameRate.setMax(kMinFrameRate);
-    constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMinFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The whole range is less that the default, so expect the maximum.
@@ -1303,7 +1303,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
   {
     constraint_factory_.Reset();
     const double kIdealFrameRate = 45.0;
-    constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
+    constraint_factory_.basic().frame_rate.SetIdeal(kIdealFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kIdealFrameRate, result.FrameRate());
@@ -1316,8 +1316,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
     constraint_factory_.Reset();
     const double kIdealFrameRate = 45.0;
     const double kMaxFrameRate = 30.0;
-    constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
-    constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
+    constraint_factory_.basic().frame_rate.SetIdeal(kIdealFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMaxFrameRate, result.FrameRate());
@@ -1330,8 +1330,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
     constraint_factory_.Reset();
     const double kIdealFrameRate = 45.0;
     const double kMinFrameRate = 50.0;
-    constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
-    constraint_factory_.basic().frameRate.setMin(kMinFrameRate);
+    constraint_factory_.basic().frame_rate.SetIdeal(kIdealFrameRate);
+    constraint_factory_.basic().frame_rate.SetMin(kMinFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kMinFrameRate, result.FrameRate());
@@ -1345,9 +1345,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, IdealFrameRate) {
     const double kIdealFrameRate = 45.0;
     const double kMinFrameRate = 35.0;
     const double kMaxFrameRate = 50.0;
-    constraint_factory_.basic().frameRate.setIdeal(kIdealFrameRate);
-    constraint_factory_.basic().frameRate.setMin(kMinFrameRate);
-    constraint_factory_.basic().frameRate.setMax(kMaxFrameRate);
+    constraint_factory_.basic().frame_rate.SetIdeal(kIdealFrameRate);
+    constraint_factory_.basic().frame_rate.SetMin(kMinFrameRate);
+    constraint_factory_.basic().frame_rate.SetMax(kMaxFrameRate);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(kIdealFrameRate, result.FrameRate());
@@ -1363,8 +1363,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setMin(2000000000);
-  advanced1.height.setMin(2000000000);
+  advanced1.width.SetMin(2000000000);
+  advanced1.height.SetMin(2000000000);
   // The first advanced set cannot be satisfied and is therefore ignored in all
   // calls to SelectSettings().
   // In this case, default settings must be selected.
@@ -1377,9 +1377,9 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.height.setMax(400);
-  advanced2.width.setMax(500);
-  advanced2.aspectRatio.setExact(5.0 / 4.0);
+  advanced2.height.SetMax(400);
+  advanced2.width.SetMax(500);
+  advanced2.aspect_ratio.SetExact(5.0 / 4.0);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(400, result.Height());
@@ -1391,7 +1391,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 
   blink::WebMediaTrackConstraintSet& advanced3 =
       constraint_factory_.AddAdvanced();
-  advanced3.frameRate.setMax(10.0);
+  advanced3.frame_rate.SetMax(10.0);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The third advanced set is supported in addition to the previous set.
@@ -1406,8 +1406,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
 
   blink::WebMediaTrackConstraintSet& advanced4 =
       constraint_factory_.AddAdvanced();
-  advanced4.width.setExact(1000);
-  advanced4.height.setExact(1000);
+  advanced4.width.SetExact(1000);
+  advanced4.height.SetExact(1000);
   result = SelectSettings();
   // The fourth advanced set cannot be supported in combination with the
   // previous two sets, so it must be ignored.
@@ -1421,8 +1421,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().width.setIdeal(100);
-  constraint_factory_.basic().height.setIdeal(100);
+  constraint_factory_.basic().width.SetIdeal(100);
+  constraint_factory_.basic().height.SetIdeal(100);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The closest point to (100, 100) that satisfies all previous constraint
@@ -1438,8 +1438,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   EXPECT_EQ(5.0 / 4.0, result.track_adapter_settings().max_aspect_ratio);
   CheckTrackAdapterSettingsEqualsFormat(result);
 
-  constraint_factory_.basic().width.setIdeal(2000);
-  constraint_factory_.basic().height.setIdeal(1500);
+  constraint_factory_.basic().width.SetIdeal(2000);
+  constraint_factory_.basic().height.SetIdeal(1500);
   result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   // The projection of (2000,1500) on the aspect-ratio line 5.0/4.0 is beyond
@@ -1460,12 +1460,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
     constraint_factory_.Reset();
     blink::WebMediaTrackConstraintSet& advanced1 =
         constraint_factory_.AddAdvanced();
-    advanced1.width.setExact(40000000);
-    advanced1.height.setExact(40000000);
+    advanced1.width.SetExact(40000000);
+    advanced1.height.SetExact(40000000);
     blink::WebMediaTrackConstraintSet& advanced2 =
         constraint_factory_.AddAdvanced();
-    advanced2.width.setExact(300000000);
-    advanced2.height.setExact(300000000);
+    advanced2.width.SetExact(300000000);
+    advanced2.height.SetExact(300000000);
     auto result = SelectSettings();
     // None of the constraint sets can be satisfied. Default resolution should
     // be selected.
@@ -1477,8 +1477,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
 
     blink::WebMediaTrackConstraintSet& advanced3 =
         constraint_factory_.AddAdvanced();
-    advanced3.width.setExact(1920);
-    advanced3.height.setExact(1080);
+    advanced3.width.SetExact(1920);
+    advanced3.height.SetExact(1080);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(1920, result.Width());
@@ -1492,8 +1492,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
 
     blink::WebMediaTrackConstraintSet& advanced4 =
         constraint_factory_.AddAdvanced();
-    advanced4.width.setExact(640);
-    advanced4.height.setExact(480);
+    advanced4.width.SetExact(640);
+    advanced4.height.SetExact(480);
     result = SelectSettings();
     // The fourth constraint set contradicts the third set. The fourth set
     // should be ignored.
@@ -1507,8 +1507,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedExactResolution) {
               result.track_adapter_settings().max_aspect_ratio);
     CheckTrackAdapterSettingsEqualsFormat(result);
 
-    constraint_factory_.basic().width.setIdeal(800);
-    constraint_factory_.basic().height.setIdeal(600);
+    constraint_factory_.basic().width.SetIdeal(800);
+    constraint_factory_.basic().height.SetIdeal(600);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     // The exact constraints has priority over ideal.
@@ -1528,11 +1528,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setExact(1920);
-  advanced1.height.setExact(1080);
+  advanced1.width.SetExact(1920);
+  advanced1.height.SetExact(1080);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.frameRate.setExact(60.0);
+  advanced2.frame_rate.SetExact(60.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(1920, result.Width());
@@ -1547,15 +1547,15 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedNoiseReduction) {
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setMin(640);
-  advanced1.height.setMin(480);
+  advanced1.width.SetMin(640);
+  advanced1.height.SetMin(480);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
   const int kMinWidth = 4000;
   const int kMinHeight = 2000;
-  advanced2.width.setMin(kMinWidth);
-  advanced2.height.setMin(kMinHeight);
-  advanced2.googNoiseReduction.setExact(false);
+  advanced2.width.SetMin(kMinWidth);
+  advanced2.height.SetMin(kMinHeight);
+  advanced2.goog_noise_reduction.SetExact(false);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kMinWidth, result.Width());
@@ -1578,14 +1578,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setExact(640);
-  advanced1.height.setExact(480);
-  advanced1.googNoiseReduction.setExact(true);
+  advanced1.width.SetExact(640);
+  advanced1.height.SetExact(480);
+  advanced1.goog_noise_reduction.SetExact(true);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.width.setExact(1920);
-  advanced2.height.setExact(1080);
-  advanced2.googNoiseReduction.setExact(false);
+  advanced2.width.SetExact(1920);
+  advanced2.height.SetExact(1080);
+  advanced2.goog_noise_reduction.SetExact(false);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(640, result.Width());
@@ -1601,12 +1601,12 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setExact(640);
-  advanced1.height.setExact(480);
+  advanced1.width.SetExact(640);
+  advanced1.height.SetExact(480);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.width.setExact(1920);
-  advanced2.height.setExact(1080);
+  advanced2.width.SetExact(1920);
+  advanced2.height.SetExact(1080);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(640, result.Width());
@@ -1622,13 +1622,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setMax(640);
-  advanced1.height.setMax(480);
+  advanced1.width.SetMax(640);
+  advanced1.height.SetMax(480);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.width.setMin(1920);
-  advanced2.height.setMin(1080);
-  advanced2.frameRate.setExact(60.0);
+  advanced2.width.SetMin(1920);
+  advanced2.height.SetMin(1080);
+  advanced2.frame_rate.SetExact(60.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(640, result.Width());
@@ -1649,13 +1649,13 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setMin(kMinWidth);
-  advanced1.height.setMin(kMinHeight);
+  advanced1.width.SetMin(kMinWidth);
+  advanced1.height.SetMin(kMinHeight);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.width.setMax(640);
-  advanced2.height.setMax(480);
-  advanced2.frameRate.setExact(60.0);
+  advanced2.width.SetMax(640);
+  advanced2.height.SetMax(480);
+  advanced2.frame_rate.SetExact(60.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(std::round(kMinHeight * kDefaultScreenCastAspectRatio),
@@ -1674,10 +1674,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.aspectRatio.setExact(10.0);
+  advanced1.aspect_ratio.SetExact(10.0);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.aspectRatio.setExact(3.0);
+  advanced2.aspect_ratio.SetExact(3.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(std::round(kDefaultScreenCastHeight * 10.0), result.Width());
@@ -1693,10 +1693,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.aspectRatio.setMin(10.0);
+  advanced1.aspect_ratio.SetMin(10.0);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.aspectRatio.setMax(3.0);
+  advanced2.aspect_ratio.SetMax(3.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(std::round(kDefaultScreenCastHeight * 10.0), result.Width());
@@ -1714,10 +1714,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.frameRate.setExact(40.0);
+  advanced1.frame_rate.SetExact(40.0);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.frameRate.setExact(45.0);
+  advanced2.frame_rate.SetExact(45.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(40.0, result.FrameRate());
@@ -1730,10 +1730,10 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.frameRate.setMin(40.0);
+  advanced1.frame_rate.SetMin(40.0);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.frameRate.setMax(35.0);
+  advanced2.frame_rate.SetMax(35.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_LE(40.0, result.FrameRate());
@@ -1747,14 +1747,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.width.setMax(kMaxWidth);
+  advanced1.width.SetMax(kMaxWidth);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.width.setMin(2000);
-  advanced2.frameRate.setExact(10.0);
+  advanced2.width.SetMin(2000);
+  advanced2.frame_rate.SetExact(10.0);
   blink::WebMediaTrackConstraintSet& advanced3 =
       constraint_factory_.AddAdvanced();
-  advanced3.frameRate.setExact(90.0);
+  advanced3.frame_rate.SetExact(90.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kMaxWidth, result.Width());
@@ -1775,14 +1775,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  advanced1.height.setMax(kMaxHeight);
+  advanced1.height.SetMax(kMaxHeight);
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.height.setMin(4500);
-  advanced2.frameRate.setExact(10.0);
+  advanced2.height.SetMin(4500);
+  advanced2.frame_rate.SetExact(10.0);
   blink::WebMediaTrackConstraintSet& advanced3 =
       constraint_factory_.AddAdvanced();
-  advanced3.frameRate.setExact(60.0);
+  advanced3.frame_rate.SetExact(60.0);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(kMaxHeight * kDefaultScreenCastAspectRatio, result.Width());
@@ -1805,15 +1805,15 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedDeviceID) {
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  blink::WebString id_vector1[] = {blink::WebString::fromASCII(kDeviceID1),
-                                   blink::WebString::fromASCII(kDeviceID2)};
-  advanced1.deviceId.setExact(
+  blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
+                                   blink::WebString::FromASCII(kDeviceID2)};
+  advanced1.device_id.SetExact(
       blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
-  blink::WebString id_vector2[] = {blink::WebString::fromASCII(kDeviceID2),
-                                   blink::WebString::fromASCII(kDeviceID3)};
+  blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
+                                   blink::WebString::FromASCII(kDeviceID3)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.deviceId.setExact(
+  advanced2.device_id.SetExact(
       blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -1832,15 +1832,15 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest,
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced1 =
       constraint_factory_.AddAdvanced();
-  blink::WebString id_vector1[] = {blink::WebString::fromASCII(kDeviceID1),
-                                   blink::WebString::fromASCII(kDeviceID2)};
-  advanced1.deviceId.setExact(
+  blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
+                                   blink::WebString::FromASCII(kDeviceID2)};
+  advanced1.device_id.SetExact(
       blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
-  blink::WebString id_vector2[] = {blink::WebString::fromASCII(kDeviceID3),
-                                   blink::WebString::fromASCII(kDeviceID4)};
+  blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID3),
+                                   blink::WebString::FromASCII(kDeviceID4)};
   blink::WebMediaTrackConstraintSet& advanced2 =
       constraint_factory_.AddAdvanced();
-  advanced2.deviceId.setExact(
+  advanced2.device_id.SetExact(
       blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -1857,14 +1857,14 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, AdvancedIdealDeviceID) {
   constraint_factory_.Reset();
   blink::WebMediaTrackConstraintSet& advanced =
       constraint_factory_.AddAdvanced();
-  blink::WebString id_vector1[] = {blink::WebString::fromASCII(kDeviceID1),
-                                   blink::WebString::fromASCII(kDeviceID2)};
-  advanced.deviceId.setExact(
+  blink::WebString id_vector1[] = {blink::WebString::FromASCII(kDeviceID1),
+                                   blink::WebString::FromASCII(kDeviceID2)};
+  advanced.device_id.SetExact(
       blink::WebVector<blink::WebString>(id_vector1, arraysize(id_vector1)));
 
-  blink::WebString id_vector2[] = {blink::WebString::fromASCII(kDeviceID2),
-                                   blink::WebString::fromASCII(kDeviceID3)};
-  constraint_factory_.basic().deviceId.setIdeal(
+  blink::WebString id_vector2[] = {blink::WebString::FromASCII(kDeviceID2),
+                                   blink::WebString::FromASCII(kDeviceID3)};
+  constraint_factory_.basic().device_id.SetIdeal(
       blink::WebVector<blink::WebString>(id_vector2, arraysize(id_vector2)));
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
@@ -1887,8 +1887,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setIdeal(630);
-    constraint_factory_.basic().height.setIdeal(470);
+    constraint_factory_.basic().width.SetIdeal(630);
+    constraint_factory_.basic().height.SetIdeal(470);
     auto result = SelectSettings();
     EXPECT_EQ(630, result.Width());
     EXPECT_EQ(470, result.Height());
@@ -1900,8 +1900,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setExact(640);
-    constraint_factory_.basic().height.setExact(480);
+    constraint_factory_.basic().width.SetExact(640);
+    constraint_factory_.basic().height.SetExact(480);
     auto result = SelectSettings();
     EXPECT_EQ(640, result.Width());
     EXPECT_EQ(480, result.Height());
@@ -1913,8 +1913,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setExact(1000);
-    constraint_factory_.basic().height.setExact(500);
+    constraint_factory_.basic().width.SetExact(1000);
+    constraint_factory_.basic().height.SetExact(500);
     auto result = SelectSettings();
     EXPECT_EQ(1000, result.Width());
     EXPECT_EQ(500, result.Height());
@@ -1926,8 +1926,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setExact(630);
-    constraint_factory_.basic().height.setExact(470);
+    constraint_factory_.basic().width.SetExact(630);
+    constraint_factory_.basic().height.SetExact(470);
     auto result = SelectSettings();
     EXPECT_EQ(630, result.Width());
     EXPECT_EQ(470, result.Height());
@@ -1939,11 +1939,11 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().width.setIdeal(630);
-    constraint_factory_.basic().width.setMin(629);
-    constraint_factory_.basic().width.setMax(631);
-    constraint_factory_.basic().height.setIdeal(470);
-    constraint_factory_.basic().height.setMin(469);
+    constraint_factory_.basic().width.SetIdeal(630);
+    constraint_factory_.basic().width.SetMin(629);
+    constraint_factory_.basic().width.SetMax(631);
+    constraint_factory_.basic().height.SetIdeal(470);
+    constraint_factory_.basic().height.SetMin(469);
     auto result = SelectSettings();
     EXPECT_EQ(630, result.Width());
     EXPECT_EQ(470, result.Height());
@@ -1957,8 +1957,8 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
   }
   {
     constraint_factory_.Reset();
-    constraint_factory_.basic().aspectRatio.setExact(1.32);
-    constraint_factory_.basic().height.setIdeal(480);
+    constraint_factory_.basic().aspect_ratio.SetExact(1.32);
+    constraint_factory_.basic().height.SetIdeal(480);
     auto result = SelectSettings();
     EXPECT_EQ(std::round(480 * 1.32), result.Width());
     EXPECT_EQ(480, result.Height());

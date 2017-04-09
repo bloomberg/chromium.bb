@@ -58,65 +58,65 @@ class CORE_EXPORT AsyncTask {
   ~AsyncTask();
 
  private:
-  ThreadDebugger* m_debugger;
-  void* m_task;
-  bool m_recurring;
+  ThreadDebugger* debugger_;
+  void* task_;
+  bool recurring_;
 };
 
 // Called from generated instrumentation code.
-CORE_EXPORT CoreProbeSink* toCoreProbeSink(WorkerGlobalScope*);
-CORE_EXPORT CoreProbeSink* toCoreProbeSinkForNonDocumentContext(
+CORE_EXPORT CoreProbeSink* ToCoreProbeSink(WorkerGlobalScope*);
+CORE_EXPORT CoreProbeSink* ToCoreProbeSinkForNonDocumentContext(
     ExecutionContext*);
 
-inline CoreProbeSink* toCoreProbeSink(LocalFrame* frame) {
-  return frame ? frame->instrumentingAgents() : nullptr;
+inline CoreProbeSink* ToCoreProbeSink(LocalFrame* frame) {
+  return frame ? frame->InstrumentingAgents() : nullptr;
 }
 
-inline CoreProbeSink* toCoreProbeSink(Document& document) {
-  LocalFrame* frame = document.frame();
-  if (!frame && document.templateDocumentHost())
-    frame = document.templateDocumentHost()->frame();
-  return toCoreProbeSink(frame);
+inline CoreProbeSink* ToCoreProbeSink(Document& document) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame && document.TemplateDocumentHost())
+    frame = document.TemplateDocumentHost()->GetFrame();
+  return ToCoreProbeSink(frame);
 }
 
-inline CoreProbeSink* toCoreProbeSink(Document* document) {
-  return document ? toCoreProbeSink(*document) : nullptr;
+inline CoreProbeSink* ToCoreProbeSink(Document* document) {
+  return document ? ToCoreProbeSink(*document) : nullptr;
 }
 
-inline CoreProbeSink* toCoreProbeSink(ExecutionContext* context) {
+inline CoreProbeSink* ToCoreProbeSink(ExecutionContext* context) {
   if (!context)
     return nullptr;
-  return context->isDocument() ? toCoreProbeSink(*toDocument(context))
-                               : toCoreProbeSinkForNonDocumentContext(context);
+  return context->IsDocument() ? ToCoreProbeSink(*ToDocument(context))
+                               : ToCoreProbeSinkForNonDocumentContext(context);
 }
 
-inline CoreProbeSink* toCoreProbeSink(Node* node) {
-  return node ? toCoreProbeSink(node->document()) : nullptr;
+inline CoreProbeSink* ToCoreProbeSink(Node* node) {
+  return node ? ToCoreProbeSink(node->GetDocument()) : nullptr;
 }
 
-inline CoreProbeSink* toCoreProbeSink(EventTarget* eventTarget) {
-  return eventTarget ? toCoreProbeSink(eventTarget->getExecutionContext())
-                     : nullptr;
+inline CoreProbeSink* ToCoreProbeSink(EventTarget* event_target) {
+  return event_target ? ToCoreProbeSink(event_target->GetExecutionContext())
+                      : nullptr;
 }
 
-CORE_EXPORT void asyncTaskScheduled(ExecutionContext*,
+CORE_EXPORT void AsyncTaskScheduled(ExecutionContext*,
                                     const String& name,
                                     void*);
-CORE_EXPORT void asyncTaskScheduledBreakable(ExecutionContext*,
+CORE_EXPORT void AsyncTaskScheduledBreakable(ExecutionContext*,
                                              const char* name,
                                              void*);
-CORE_EXPORT void asyncTaskCanceled(ExecutionContext*, void*);
-CORE_EXPORT void asyncTaskCanceledBreakable(ExecutionContext*,
+CORE_EXPORT void AsyncTaskCanceled(ExecutionContext*, void*);
+CORE_EXPORT void AsyncTaskCanceledBreakable(ExecutionContext*,
                                             const char* name,
                                             void*);
 
-CORE_EXPORT void allAsyncTasksCanceled(ExecutionContext*);
-CORE_EXPORT void canceledAfterReceivedResourceResponse(LocalFrame*,
+CORE_EXPORT void AllAsyncTasksCanceled(ExecutionContext*);
+CORE_EXPORT void CanceledAfterReceivedResourceResponse(LocalFrame*,
                                                        DocumentLoader*,
                                                        unsigned long identifier,
                                                        const ResourceResponse&,
                                                        Resource*);
-CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*,
+CORE_EXPORT void ContinueWithPolicyIgnore(LocalFrame*,
                                           DocumentLoader*,
                                           unsigned long identifier,
                                           const ResourceResponse&,

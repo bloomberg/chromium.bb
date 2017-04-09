@@ -25,9 +25,9 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForRendererScheduler
   ~WebThreadImplForRendererScheduler() override;
 
   // WebThread implementation.
-  WebScheduler* scheduler() const override;
-  PlatformThreadId threadId() const override;
-  WebTaskRunner* getWebTaskRunner() override;
+  WebScheduler* Scheduler() const override;
+  PlatformThreadId ThreadId() const override;
+  WebTaskRunner* GetWebTaskRunner() override;
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* GetTaskRunner() const override;

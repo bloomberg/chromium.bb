@@ -39,36 +39,36 @@ class HTMLEntitySearch {
  public:
   HTMLEntitySearch();
 
-  void advance(UChar);
+  void Advance(UChar);
 
-  bool isEntityPrefix() const { return !!m_first; }
-  int currentLength() const { return m_currentLength; }
+  bool IsEntityPrefix() const { return !!first_; }
+  int CurrentLength() const { return current_length_; }
 
-  const HTMLEntityTableEntry* mostRecentMatch() const {
-    return m_mostRecentMatch;
+  const HTMLEntityTableEntry* MostRecentMatch() const {
+    return most_recent_match_;
   }
 
  private:
   enum CompareResult {
-    Before,
-    Prefix,
-    After,
+    kBefore,
+    kPrefix,
+    kAfter,
   };
 
-  CompareResult compare(const HTMLEntityTableEntry*, UChar) const;
-  const HTMLEntityTableEntry* findFirst(UChar) const;
-  const HTMLEntityTableEntry* findLast(UChar) const;
+  CompareResult Compare(const HTMLEntityTableEntry*, UChar) const;
+  const HTMLEntityTableEntry* FindFirst(UChar) const;
+  const HTMLEntityTableEntry* FindLast(UChar) const;
 
-  void fail() {
-    m_first = 0;
-    m_last = 0;
+  void Fail() {
+    first_ = 0;
+    last_ = 0;
   }
 
-  int m_currentLength;
+  int current_length_;
 
-  const HTMLEntityTableEntry* m_mostRecentMatch;
-  const HTMLEntityTableEntry* m_first;
-  const HTMLEntityTableEntry* m_last;
+  const HTMLEntityTableEntry* most_recent_match_;
+  const HTMLEntityTableEntry* first_;
+  const HTMLEntityTableEntry* last_;
 };
 
 }  // namespace blink

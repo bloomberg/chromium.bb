@@ -20,204 +20,204 @@ namespace blink {
 class AnimationEffectStackTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    pageHolder = DummyPageHolder::create();
-    document = &pageHolder->document();
-    document->animationClock().resetTimeForTesting();
-    timeline = DocumentTimeline::create(document.get());
+    page_holder = DummyPageHolder::Create();
+    document = &page_holder->GetDocument();
+    document->GetAnimationClock().ResetTimeForTesting();
+    timeline = DocumentTimeline::Create(document.Get());
     element = document->createElement("foo");
   }
 
-  Animation* play(KeyframeEffect* effect, double startTime) {
-    Animation* animation = timeline->play(effect);
-    animation->setStartTime(startTime * 1000);
-    animation->update(TimingUpdateOnDemand);
+  Animation* Play(KeyframeEffect* effect, double start_time) {
+    Animation* animation = timeline->Play(effect);
+    animation->setStartTime(start_time * 1000);
+    animation->Update(kTimingUpdateOnDemand);
     return animation;
   }
 
-  void updateTimeline(double time) {
-    document->animationClock().updateTime(document->timeline().zeroTime() +
-                                          time);
-    timeline->serviceAnimations(TimingUpdateForAnimationFrame);
+  void UpdateTimeline(double time) {
+    document->GetAnimationClock().UpdateTime(document->Timeline().ZeroTime() +
+                                             time);
+    timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 
-  size_t sampledEffectCount() {
-    return element->ensureElementAnimations()
-        .effectStack()
-        .m_sampledEffects.size();
+  size_t SampledEffectCount() {
+    return element->EnsureElementAnimations()
+        .GetEffectStack()
+        .sampled_effects_.size();
   }
 
-  EffectModel* makeEffectModel(CSSPropertyID id,
+  EffectModel* MakeEffectModel(CSSPropertyID id,
                                PassRefPtr<AnimatableValue> value) {
     AnimatableValueKeyframeVector keyframes(2);
-    keyframes[0] = AnimatableValueKeyframe::create();
-    keyframes[0]->setOffset(0.0);
-    keyframes[0]->setPropertyValue(id, value.get());
-    keyframes[1] = AnimatableValueKeyframe::create();
-    keyframes[1]->setOffset(1.0);
-    keyframes[1]->setPropertyValue(id, value.get());
-    return AnimatableValueKeyframeEffectModel::create(keyframes);
+    keyframes[0] = AnimatableValueKeyframe::Create();
+    keyframes[0]->SetOffset(0.0);
+    keyframes[0]->SetPropertyValue(id, value.Get());
+    keyframes[1] = AnimatableValueKeyframe::Create();
+    keyframes[1]->SetOffset(1.0);
+    keyframes[1]->SetPropertyValue(id, value.Get());
+    return AnimatableValueKeyframeEffectModel::Create(keyframes);
   }
 
-  InertEffect* makeInertEffect(EffectModel* effect) {
+  InertEffect* MakeInertEffect(EffectModel* effect) {
     Timing timing;
-    timing.fillMode = Timing::FillMode::BOTH;
-    return InertEffect::create(effect, timing, false, 0);
+    timing.fill_mode = Timing::FillMode::BOTH;
+    return InertEffect::Create(effect, timing, false, 0);
   }
 
-  KeyframeEffect* makeKeyframeEffect(EffectModel* effect,
+  KeyframeEffect* MakeKeyframeEffect(EffectModel* effect,
                                      double duration = 10) {
     Timing timing;
-    timing.fillMode = Timing::FillMode::BOTH;
-    timing.iterationDuration = duration;
-    return KeyframeEffect::create(element.get(), effect, timing);
+    timing.fill_mode = Timing::FillMode::BOTH;
+    timing.iteration_duration = duration;
+    return KeyframeEffect::Create(element.Get(), effect, timing);
   }
 
-  AnimatableValue* interpolationValue(
-      const ActiveInterpolationsMap& activeInterpolations,
+  AnimatableValue* InterpolationValue(
+      const ActiveInterpolationsMap& active_interpolations,
       CSSPropertyID id) {
     Interpolation& interpolation =
-        *activeInterpolations.at(PropertyHandle(id)).at(0);
-    return toLegacyStyleInterpolation(interpolation).currentValue().get();
+        *active_interpolations.at(PropertyHandle(id)).at(0);
+    return ToLegacyStyleInterpolation(interpolation).CurrentValue().Get();
   }
 
-  std::unique_ptr<DummyPageHolder> pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Document> document;
   Persistent<DocumentTimeline> timeline;
   Persistent<Element> element;
 };
 
 TEST_F(AnimationEffectStackTest, ElementAnimationsSorted) {
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(1))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(1))),
        10);
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(2))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(2))),
        15);
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(3))),
        5);
-  ActiveInterpolationsMap result = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), 0, 0,
-      KeyframeEffectReadOnly::DefaultPriority);
+  ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), 0, 0,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
-  EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(3).get()));
+  EXPECT_TRUE(InterpolationValue(result, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(3).Get()));
 }
 
 TEST_F(AnimationEffectStackTest, NewAnimations) {
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(1))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(1))),
        15);
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(2))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyZIndex, AnimatableDouble::Create(2))),
        10);
-  HeapVector<Member<const InertEffect>> newAnimations;
-  InertEffect* inert1 = makeInertEffect(
-      makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3)));
-  InertEffect* inert2 = makeInertEffect(
-      makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(4)));
-  newAnimations.push_back(inert1);
-  newAnimations.push_back(inert2);
-  ActiveInterpolationsMap result = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), &newAnimations, 0,
-      KeyframeEffectReadOnly::DefaultPriority);
+  HeapVector<Member<const InertEffect>> new_animations;
+  InertEffect* inert1 = MakeInertEffect(
+      MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(3)));
+  InertEffect* inert2 = MakeInertEffect(
+      MakeEffectModel(CSSPropertyZIndex, AnimatableDouble::Create(4)));
+  new_animations.push_back(inert1);
+  new_animations.push_back(inert2);
+  ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), &new_animations, 0,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(2u, result.size());
-  EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(3).get()));
-  EXPECT_TRUE(interpolationValue(result, CSSPropertyZIndex)
-                  ->equals(AnimatableDouble::create(4).get()));
+  EXPECT_TRUE(InterpolationValue(result, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_TRUE(InterpolationValue(result, CSSPropertyZIndex)
+                  ->Equals(AnimatableDouble::Create(4).Get()));
 }
 
 TEST_F(AnimationEffectStackTest, CancelledAnimations) {
-  HeapHashSet<Member<const Animation>> cancelledAnimations;
+  HeapHashSet<Member<const Animation>> cancelled_animations;
   Animation* animation =
-      play(makeKeyframeEffect(makeEffectModel(CSSPropertyFontSize,
-                                              AnimatableDouble::create(1))),
+      Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize,
+                                              AnimatableDouble::Create(1))),
            0);
-  cancelledAnimations.insert(animation);
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(2))),
+  cancelled_animations.insert(animation);
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyZIndex, AnimatableDouble::Create(2))),
        0);
-  ActiveInterpolationsMap result = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), 0, &cancelledAnimations,
-      KeyframeEffectReadOnly::DefaultPriority);
+  ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), 0,
+      &cancelled_animations, KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
-  EXPECT_TRUE(interpolationValue(result, CSSPropertyZIndex)
-                  ->equals(AnimatableDouble::create(2).get()));
+  EXPECT_TRUE(InterpolationValue(result, CSSPropertyZIndex)
+                  ->Equals(AnimatableDouble::Create(2).Get()));
 }
 
 TEST_F(AnimationEffectStackTest, ClearedEffectsRemoved) {
   Animation* animation =
-      play(makeKeyframeEffect(makeEffectModel(CSSPropertyFontSize,
-                                              AnimatableDouble::create(1))),
+      Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize,
+                                              AnimatableDouble::Create(1))),
            10);
-  ActiveInterpolationsMap result = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), 0, 0,
-      KeyframeEffectReadOnly::DefaultPriority);
+  ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), 0, 0,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
-  EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(1).get()));
+  EXPECT_TRUE(InterpolationValue(result, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(1).Get()));
 
   animation->setEffect(0);
-  result = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), 0, 0,
-      KeyframeEffectReadOnly::DefaultPriority);
+  result = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), 0, 0,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(0u, result.size());
 }
 
 TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(1))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(1))),
        2);
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(2))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(2))),
        6);
-  play(makeKeyframeEffect(
-           makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3))),
+  Play(MakeKeyframeEffect(
+           MakeEffectModel(CSSPropertyFontSize, AnimatableDouble::Create(3))),
        4);
-  document->compositorPendingAnimations().update(
+  document->GetCompositorPendingAnimations().Update(
       Optional<CompositorElementIdSet>());
   ActiveInterpolationsMap interpolations;
 
-  updateTimeline(11);
-  ThreadState::current()->collectAllGarbage();
-  interpolations = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::DefaultPriority);
+  UpdateTimeline(11);
+  ThreadState::Current()->CollectAllGarbage();
+  interpolations = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(3).get()));
-  EXPECT_EQ(3u, sampledEffectCount());
+  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(3u, SampledEffectCount());
 
-  updateTimeline(13);
-  ThreadState::current()->collectAllGarbage();
-  interpolations = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::DefaultPriority);
+  UpdateTimeline(13);
+  ThreadState::Current()->CollectAllGarbage();
+  interpolations = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(3).get()));
-  EXPECT_EQ(3u, sampledEffectCount());
+  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(3u, SampledEffectCount());
 
-  updateTimeline(15);
-  ThreadState::current()->collectAllGarbage();
-  interpolations = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::DefaultPriority);
+  UpdateTimeline(15);
+  ThreadState::Current()->CollectAllGarbage();
+  interpolations = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(3).get()));
-  EXPECT_EQ(2u, sampledEffectCount());
+  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(2u, SampledEffectCount());
 
-  updateTimeline(17);
-  ThreadState::current()->collectAllGarbage();
-  interpolations = EffectStack::activeInterpolations(
-      &element->elementAnimations()->effectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::DefaultPriority);
+  UpdateTimeline(17);
+  ThreadState::Current()->CollectAllGarbage();
+  interpolations = EffectStack::ActiveInterpolations(
+      &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
+      KeyframeEffectReadOnly::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
-  EXPECT_TRUE(interpolationValue(interpolations, CSSPropertyFontSize)
-                  ->equals(AnimatableDouble::create(3).get()));
-  EXPECT_EQ(1u, sampledEffectCount());
+  EXPECT_TRUE(InterpolationValue(interpolations, CSSPropertyFontSize)
+                  ->Equals(AnimatableDouble::Create(3).Get()));
+  EXPECT_EQ(1u, SampledEffectCount());
 }
 
 }  // namespace blink

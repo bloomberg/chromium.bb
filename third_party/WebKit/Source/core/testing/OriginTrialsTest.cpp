@@ -19,13 +19,13 @@ bool OriginTrialsTest::staticAttribute() {
   return true;
 }
 
-bool OriginTrialsTest::throwingAttribute(ScriptState* scriptState,
-                                         ExceptionState& exceptionState) {
-  String errorMessage;
+bool OriginTrialsTest::throwingAttribute(ScriptState* script_state,
+                                         ExceptionState& exception_state) {
+  String error_message;
   if (!OriginTrials::originTrialsSampleAPIEnabled(
-          scriptState->getExecutionContext())) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
+          script_state->GetExecutionContext())) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
         "The Origin Trials Sample API has not been enabled in this context");
     return false;
   }

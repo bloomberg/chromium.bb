@@ -33,33 +33,34 @@ namespace blink {
 NavigatorGeolocation::NavigatorGeolocation(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-const char* NavigatorGeolocation::supplementName() {
+const char* NavigatorGeolocation::SupplementName() {
   return "NavigatorGeolocation";
 }
 
-NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator) {
+NavigatorGeolocation& NavigatorGeolocation::From(Navigator& navigator) {
   NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorGeolocation(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator) {
-  return NavigatorGeolocation::from(navigator).geolocation();
+  return NavigatorGeolocation::From(navigator).geolocation();
 }
 
 Geolocation* NavigatorGeolocation::geolocation() {
-  if (!m_geolocation && supplementable()->frame())
-    m_geolocation = Geolocation::create(supplementable()->frame()->document());
-  return m_geolocation;
+  if (!geolocation_ && GetSupplementable()->GetFrame())
+    geolocation_ =
+        Geolocation::Create(GetSupplementable()->GetFrame()->GetDocument());
+  return geolocation_;
 }
 
 DEFINE_TRACE(NavigatorGeolocation) {
-  visitor->trace(m_geolocation);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(geolocation_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

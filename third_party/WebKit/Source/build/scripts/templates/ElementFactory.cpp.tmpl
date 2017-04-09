@@ -38,12 +38,12 @@ static {{namespace}}Element* {{tag|symbol}}Constructor(
     CreateElementFlags flags) {
   {% if tag.runtimeEnabled %}
   if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
-    return {{fallback_interface}}::create({{tag|symbol}}Tag, document);
+    return {{fallback_interface}}::Create({{tag|symbol}}Tag, document);
   {% endif %}
-  return {{tag.interface}}::create(
+  return {{tag.interface}}::Create(
       {%- if tag.multipleTagNames %}{{tag|symbol}}Tag, {% endif -%}
       document
-      {%- if tag.constructorNeedsCreatedByParser %}, flags & CreatedByParser{% endif -%}
+      {%- if tag.constructorNeedsCreatedByParser %}, flags & kCreatedByParser{% endif -%}
   );
 }
 {% endfor %}
@@ -64,7 +64,7 @@ static void create{{namespace}}FunctionMap() {
   {% endfor %}
   };
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)
-    g_constructors->set(data[i].tag.localName(), data[i].func);
+    g_constructors->Set(data[i].tag.LocalName(), data[i].func);
 }
 
 {{namespace}}Element* {{namespace}}ElementFactory::create{{namespace}}Element(
@@ -82,23 +82,23 @@ static void create{{namespace}}FunctionMap() {
   // TODO(dominicc): When the HTML parser can pass an error
   // reporting ExceptionState, and "v0" custom elements have been
   // removed, consolidate custom element creation into one place.
-  if (flags != CreatedByCreateElement && CustomElement::shouldCreateCustomElement(localName)) {
-    QualifiedName tagName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI);
-    if (flags & AsynchronousCustomElements)
-      return CustomElement::createCustomElementAsync(document, tagName);
-    return CustomElement::createCustomElementSync(document, tagName);
+  if (flags != kCreatedByCreateElement && CustomElement::ShouldCreateCustomElement(localName)) {
+    QualifiedName tagName(g_null_atom, localName, HTMLNames::xhtmlNamespaceURI);
+    if (flags & kAsynchronousCustomElements)
+      return CustomElement::CreateCustomElementAsync(document, tagName);
+    return CustomElement::CreateCustomElementSync(document, tagName);
   }
   {% endif %}
 
-  if (document.registrationContext() &&
-      V0CustomElement::isValidName(localName)) {
-    Element* element = document.registrationContext()->createCustomTagElement(
-        document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
-    SECURITY_DCHECK(element->is{{namespace}}Element());
-    return to{{namespace}}Element(element);
+  if (document.RegistrationContext() &&
+      V0CustomElement::IsValidName(localName)) {
+    Element* element = document.RegistrationContext()->CreateCustomTagElement(
+        document, QualifiedName(g_null_atom, localName, {{namespace_prefix}}NamespaceURI));
+    SECURITY_DCHECK(element->Is{{namespace}}Element());
+    return To{{namespace}}Element(element);
   }
 
-  return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);
+  return {{fallback_interface}}::Create(QualifiedName(g_null_atom, localName, {{namespace_prefix}}NamespaceURI), document);
 }
 
 } // namespace blink

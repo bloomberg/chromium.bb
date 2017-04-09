@@ -33,12 +33,12 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
   // We need to check if there is a valid frame since the unittests
   // do not have one and they will inject their own |sink_params_| for testing.
   blink::WebLocalFrame* const web_frame =
-      blink::WebLocalFrame::frameForCurrentContext();
+      blink::WebLocalFrame::FrameForCurrentContext();
   RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
   if (render_frame) {
     int sample_rate = AudioDeviceFactory::GetOutputDeviceInfo(
                           render_frame->GetRoutingID(), 0, std::string(),
-                          web_frame->getSecurityOrigin())
+                          web_frame->GetSecurityOrigin())
                           .output_params()
                           .sample_rate();
     sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -84,7 +84,7 @@ void WebRtcLocalAudioSourceProvider::OnSetFormat(
 
 void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) {
-  if (state ==  blink::WebMediaStreamSource::ReadyStateEnded)
+  if (state == blink::WebMediaStreamSource::kReadyStateEnded)
     track_stopped_ = true;
 }
 
@@ -111,13 +111,14 @@ void WebRtcLocalAudioSourceProvider::OnData(
   }
 }
 
-void WebRtcLocalAudioSourceProvider::setClient(
+void WebRtcLocalAudioSourceProvider::SetClient(
     blink::WebAudioSourceProviderClient* client) {
   NOTREACHED();
 }
 
-void WebRtcLocalAudioSourceProvider::provideInput(
-    const WebVector<float*>& audio_data, size_t number_of_frames) {
+void WebRtcLocalAudioSourceProvider::ProvideInput(
+    const WebVector<float*>& audio_data,
+    size_t number_of_frames) {
   DCHECK_EQ(number_of_frames, kWebAudioRenderBufferSize);
   if (!output_wrapper_ ||
       static_cast<size_t>(output_wrapper_->channels()) != audio_data.size()) {

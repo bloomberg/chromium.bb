@@ -20,7 +20,7 @@ TEST(MediaConditionParserTest, Basic) {
   // The first string represents the input string.
   // The second string represents the output string, if present.
   // Otherwise, the output string is identical to the first string.
-  TestCase testCases[] = {
+  TestCase test_cases[] = {
       {"screen", "not all"},
       {"screen and (color)", "not all"},
       {"all and (min-width:500px)", "not all"},
@@ -36,13 +36,13 @@ TEST(MediaConditionParserTest, Basic) {
   };
 
   // FIXME: We should test comma-seperated media conditions
-  for (unsigned i = 0; testCases[i].input; ++i) {
-    CSSTokenizer tokenizer(testCases[i].input);
-    MediaQuerySet* mediaConditionQuerySet =
-        MediaQueryParser::parseMediaCondition(tokenizer.tokenRange());
-    ASSERT_EQ(mediaConditionQuerySet->queryVector().size(), (unsigned)1);
-    String queryText = mediaConditionQuerySet->queryVector()[0]->cssText();
-    ASSERT_STREQ(testCases[i].output, queryText.ascii().data());
+  for (unsigned i = 0; test_cases[i].input; ++i) {
+    CSSTokenizer tokenizer(test_cases[i].input);
+    MediaQuerySet* media_condition_query_set =
+        MediaQueryParser::ParseMediaCondition(tokenizer.TokenRange());
+    ASSERT_EQ(media_condition_query_set->QueryVector().size(), (unsigned)1);
+    String query_text = media_condition_query_set->QueryVector()[0]->CssText();
+    ASSERT_STREQ(test_cases[i].output, query_text.Ascii().Data());
   }
 }
 

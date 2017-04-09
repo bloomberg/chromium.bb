@@ -23,214 +23,214 @@ namespace {
 
 class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
  public:
-  MockServiceWorkerContextClient() : m_hasAssociatedRegistration(true) {}
+  MockServiceWorkerContextClient() : has_associated_registration_(true) {}
   ~MockServiceWorkerContextClient() override {}
-  MOCK_METHOD0(workerReadyForInspection, void());
-  MOCK_METHOD0(workerContextFailedToStart, void());
-  MOCK_METHOD0(workerScriptLoaded, void());
-  MOCK_METHOD0(createServiceWorkerNetworkProvider,
+  MOCK_METHOD0(WorkerReadyForInspection, void());
+  MOCK_METHOD0(WorkerContextFailedToStart, void());
+  MOCK_METHOD0(WorkerScriptLoaded, void());
+  MOCK_METHOD0(CreateServiceWorkerNetworkProvider,
                WebServiceWorkerNetworkProvider*());
-  MOCK_METHOD0(createServiceWorkerProvider, WebServiceWorkerProvider*());
-  bool hasAssociatedRegistration() override {
-    return m_hasAssociatedRegistration;
+  MOCK_METHOD0(CreateServiceWorkerProvider, WebServiceWorkerProvider*());
+  bool HasAssociatedRegistration() override {
+    return has_associated_registration_;
   }
-  void setHasAssociatedRegistration(bool hasAssociatedRegistration) {
-    m_hasAssociatedRegistration = hasAssociatedRegistration;
+  void SetHasAssociatedRegistration(bool has_associated_registration) {
+    has_associated_registration_ = has_associated_registration;
   }
-  void getClient(const WebString&,
+  void GetClient(const WebString&,
                  std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
-  void getClients(const WebServiceWorkerClientQueryOptions&,
+  void GetClients(const WebServiceWorkerClientQueryOptions&,
                   std::unique_ptr<WebServiceWorkerClientsCallbacks>) override {
     NOTREACHED();
   }
-  void openWindow(const WebURL&,
+  void OpenWindow(const WebURL&,
                   std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
-  void postMessageToClient(const WebString& uuid,
+  void PostMessageToClient(const WebString& uuid,
                            const WebString&,
                            WebMessagePortChannelArray) override {
     NOTREACHED();
   }
-  void skipWaiting(
+  void SkipWaiting(
       std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) override {
     NOTREACHED();
   }
-  void claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) override {
+  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) override {
     NOTREACHED();
   }
-  void focus(const WebString& uuid,
+  void Focus(const WebString& uuid,
              std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
-  void navigate(const WebString& uuid,
+  void Navigate(const WebString& uuid,
                 const WebURL&,
                 std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
     NOTREACHED();
   }
-  void registerForeignFetchScopes(
-      const WebVector<WebURL>& subScopes,
+  void RegisterForeignFetchScopes(
+      const WebVector<WebURL>& sub_scopes,
       const WebVector<WebSecurityOrigin>& origins) override {
     NOTREACHED();
   }
 
  private:
-  bool m_hasAssociatedRegistration;
+  bool has_associated_registration_;
 };
 
 class WebEmbeddedWorkerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_mockClient = new MockServiceWorkerContextClient();
-    m_worker =
-        WTF::wrapUnique(WebEmbeddedWorker::create(m_mockClient, nullptr));
+    mock_client_ = new MockServiceWorkerContextClient();
+    worker_ = WTF::WrapUnique(WebEmbeddedWorker::Create(mock_client_, nullptr));
 
-    WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw.js");
+    WebURL script_url = URLTestHelpers::ToKURL("https://www.example.com/sw.js");
     WebURLResponse response;
-    response.setMIMEType("text/javascript");
-    response.setHTTPStatusCode(200);
-    Platform::current()->getURLLoaderMockFactory()->registerURL(scriptURL,
+    response.SetMIMEType("text/javascript");
+    response.SetHTTPStatusCode(200);
+    Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(script_url,
                                                                 response, "");
 
-    m_startData.scriptURL = scriptURL;
-    m_startData.userAgent = WebString("dummy user agent");
-    m_startData.pauseAfterDownloadMode =
-        WebEmbeddedWorkerStartData::DontPauseAfterDownload;
-    m_startData.waitForDebuggerMode =
-        WebEmbeddedWorkerStartData::DontWaitForDebugger;
-    m_startData.v8CacheOptions = WebSettings::V8CacheOptionsDefault;
+    start_data_.script_url = script_url;
+    start_data_.user_agent = WebString("dummy user agent");
+    start_data_.pause_after_download_mode =
+        WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
+    start_data_.wait_for_debugger_mode =
+        WebEmbeddedWorkerStartData::kDontWaitForDebugger;
+    start_data_.v8_cache_options = WebSettings::kV8CacheOptionsDefault;
   }
 
   void TearDown() override {
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  WebEmbeddedWorkerStartData m_startData;
-  MockServiceWorkerContextClient* m_mockClient;
-  std::unique_ptr<WebEmbeddedWorker> m_worker;
+  WebEmbeddedWorkerStartData start_data_;
+  MockServiceWorkerContextClient* mock_client_;
+  std::unique_ptr<WebEmbeddedWorker> worker_;
 };
 
 }  // namespace
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
-  EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
-  m_worker->terminateWorkerContext();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  worker_->TerminateWorkerContext();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_startData.waitForDebuggerMode = WebEmbeddedWorkerStartData::WaitForDebugger;
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  start_data_.wait_for_debugger_mode =
+      WebEmbeddedWorkerStartData::kWaitForDebugger;
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
-  EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
-  m_worker->terminateWorkerContext();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  worker_->TerminateWorkerContext();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the shadow page.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Terminate before loading the script.
-  EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
-  m_worker->terminateWorkerContext();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  worker_->TerminateWorkerContext();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_startData.pauseAfterDownloadMode =
-      WebEmbeddedWorkerStartData::PauseAfterDownload;
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  start_data_.pause_after_download_mode =
+      WebEmbeddedWorkerStartData::kPauseAfterDownload;
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the shadow page.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the script.
-  EXPECT_CALL(*m_mockClient, workerScriptLoaded()).Times(1);
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider()).Times(0);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider()).Times(0);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Terminate before resuming after download.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider()).Times(0);
-  EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
-  m_worker->terminateWorkerContext();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider()).Times(0);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  worker_->TerminateWorkerContext();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
-  WebURL scriptURL =
-      URLTestHelpers::toKURL("https://www.example.com/sw-404.js");
+  WebURL script_url =
+      URLTestHelpers::ToKURL("https://www.example.com/sw-404.js");
   WebURLResponse response;
-  response.setMIMEType("text/javascript");
-  response.setHTTPStatusCode(404);
+  response.SetMIMEType("text/javascript");
+  response.SetHTTPStatusCode(404);
   WebURLError error;
   error.reason = 1010;
   error.domain = "WebEmbeddedWorkerImplTest";
-  Platform::current()->getURLLoaderMockFactory()->registerErrorURL(
-      scriptURL, response, error);
-  m_startData.scriptURL = scriptURL;
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
+      script_url, response, error);
+  start_data_.script_url = script_url;
 
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the shadow page.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the script.
-  EXPECT_CALL(*m_mockClient, workerScriptLoaded()).Times(0);
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider()).Times(0);
-  EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(0);
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider()).Times(0);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, NoRegistration) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_startData.pauseAfterDownloadMode =
-      WebEmbeddedWorkerStartData::PauseAfterDownload;
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  start_data_.pause_after_download_mode =
+      WebEmbeddedWorkerStartData::kPauseAfterDownload;
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the shadow page.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the script.
-  m_mockClient->setHasAssociatedRegistration(false);
-  EXPECT_CALL(*m_mockClient, workerScriptLoaded()).Times(0);
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider()).Times(0);
-  EXPECT_CALL(*m_mockClient, workerContextFailedToStart()).Times(1);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  mock_client_->SetHasAssociatedRegistration(false);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(0);
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider()).Times(0);
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(1);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 // The running worker is detected as a memory leak. crbug.com/586897
@@ -241,22 +241,22 @@ TEST_F(WebEmbeddedWorkerImplTest, NoRegistration) {
 #endif
 
 TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the shadow page.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the script.
-  EXPECT_CALL(*m_mockClient, workerScriptLoaded()).Times(1);
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider())
+  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 // The running worker is detected as a memory leak. crbug.com/586897
@@ -267,29 +267,29 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
 #endif
 
 TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
-  EXPECT_CALL(*m_mockClient, workerReadyForInspection()).Times(1);
-  m_startData.pauseAfterDownloadMode =
-      WebEmbeddedWorkerStartData::PauseAfterDownload;
-  m_worker->startWorkerContext(m_startData);
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
+  start_data_.pause_after_download_mode =
+      WebEmbeddedWorkerStartData::kPauseAfterDownload;
+  worker_->StartWorkerContext(start_data_);
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the shadow page.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerNetworkProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerNetworkProvider())
       .WillOnce(::testing::Return(nullptr));
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Load the script.
-  EXPECT_CALL(*m_mockClient, workerScriptLoaded()).Times(1);
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider()).Times(0);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  EXPECT_CALL(*mock_client_, WorkerScriptLoaded()).Times(1);
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider()).Times(0);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 
   // Resume after download.
-  EXPECT_CALL(*m_mockClient, createServiceWorkerProvider())
+  EXPECT_CALL(*mock_client_, CreateServiceWorkerProvider())
       .WillOnce(::testing::Return(nullptr));
-  m_worker->resumeAfterDownload();
-  ::testing::Mock::VerifyAndClearExpectations(m_mockClient);
+  worker_->ResumeAfterDownload();
+  ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
 }  // namespace blink

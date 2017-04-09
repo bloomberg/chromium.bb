@@ -18,9 +18,9 @@ namespace content {
 bool WebTouchEventTraits::AllTouchPointsHaveState(
     const WebTouchEvent& event,
     blink::WebTouchPoint::State state) {
-  if (!event.touchesLength)
+  if (!event.touches_length)
     return false;
-  for (size_t i = 0; i < event.touchesLength; ++i) {
+  for (size_t i = 0; i < event.touches_length; ++i) {
     if (event.touches[i].state != state)
       return false;
   }
@@ -28,22 +28,22 @@ bool WebTouchEventTraits::AllTouchPointsHaveState(
 }
 
 bool WebTouchEventTraits::IsTouchSequenceStart(const WebTouchEvent& event) {
-  DCHECK(event.touchesLength ||
-         event.type() == WebInputEvent::TouchScrollStarted);
-  if (event.type() != WebInputEvent::TouchStart)
+  DCHECK(event.touches_length ||
+         event.GetType() == WebInputEvent::kTouchScrollStarted);
+  if (event.GetType() != WebInputEvent::kTouchStart)
     return false;
-  return AllTouchPointsHaveState(event, blink::WebTouchPoint::StatePressed);
+  return AllTouchPointsHaveState(event, blink::WebTouchPoint::kStatePressed);
 }
 
 bool WebTouchEventTraits::IsTouchSequenceEnd(const WebTouchEvent& event) {
-  if (event.type() != WebInputEvent::TouchEnd &&
-      event.type() != WebInputEvent::TouchCancel)
+  if (event.GetType() != WebInputEvent::kTouchEnd &&
+      event.GetType() != WebInputEvent::kTouchCancel)
     return false;
-  if (!event.touchesLength)
+  if (!event.touches_length)
     return true;
-  for (size_t i = 0; i < event.touchesLength; ++i) {
-    if (event.touches[i].state != blink::WebTouchPoint::StateReleased &&
-        event.touches[i].state != blink::WebTouchPoint::StateCancelled)
+  for (size_t i = 0; i < event.touches_length; ++i) {
+    if (event.touches[i].state != blink::WebTouchPoint::kStateReleased &&
+        event.touches[i].state != blink::WebTouchPoint::kStateCancelled)
       return false;
   }
   return true;
@@ -52,14 +52,14 @@ bool WebTouchEventTraits::IsTouchSequenceEnd(const WebTouchEvent& event) {
 void WebTouchEventTraits::ResetType(WebInputEvent::Type type,
                                     double timestamp_sec,
                                     WebTouchEvent* event) {
-  DCHECK(WebInputEvent::isTouchEventType(type));
-  DCHECK(type != WebInputEvent::TouchScrollStarted);
+  DCHECK(WebInputEvent::IsTouchEventType(type));
+  DCHECK(type != WebInputEvent::kTouchScrollStarted);
 
-  event->setType(type);
-  event->dispatchType = type == WebInputEvent::TouchCancel
-                            ? WebInputEvent::EventNonBlocking
-                            : WebInputEvent::Blocking;
-  event->setTimeStampSeconds(timestamp_sec);
+  event->SetType(type);
+  event->dispatch_type = type == WebInputEvent::kTouchCancel
+                             ? WebInputEvent::kEventNonBlocking
+                             : WebInputEvent::kBlocking;
+  event->SetTimeStampSeconds(timestamp_sec);
 }
 
 void WebTouchEventTraits::ResetTypeAndTouchStates(WebInputEvent::Type type,
@@ -67,25 +67,25 @@ void WebTouchEventTraits::ResetTypeAndTouchStates(WebInputEvent::Type type,
                                                   WebTouchEvent* event) {
   ResetType(type, timestamp_sec, event);
 
-  WebTouchPoint::State newState = WebTouchPoint::StateUndefined;
-  switch (event->type()) {
-    case WebInputEvent::TouchStart:
-      newState = WebTouchPoint::StatePressed;
+  WebTouchPoint::State newState = WebTouchPoint::kStateUndefined;
+  switch (event->GetType()) {
+    case WebInputEvent::kTouchStart:
+      newState = WebTouchPoint::kStatePressed;
       break;
-    case WebInputEvent::TouchMove:
-      newState = WebTouchPoint::StateMoved;
+    case WebInputEvent::kTouchMove:
+      newState = WebTouchPoint::kStateMoved;
       break;
-    case WebInputEvent::TouchEnd:
-      newState = WebTouchPoint::StateReleased;
+    case WebInputEvent::kTouchEnd:
+      newState = WebTouchPoint::kStateReleased;
       break;
-    case WebInputEvent::TouchCancel:
-      newState = WebTouchPoint::StateCancelled;
+    case WebInputEvent::kTouchCancel:
+      newState = WebTouchPoint::kStateCancelled;
       break;
     default:
       NOTREACHED();
       break;
   }
-  for (size_t i = 0; i < event->touchesLength; ++i)
+  for (size_t i = 0; i < event->touches_length; ++i)
     event->touches[i].state = newState;
 }
 

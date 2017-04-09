@@ -16,16 +16,16 @@ class LayoutNGBlockFlow final : public LayoutBlockFlow {
   explicit LayoutNGBlockFlow(Element*);
   ~LayoutNGBlockFlow() override = default;
 
-  void layoutBlock(bool relayoutChildren) override;
-  NGBlockNode* boxForTesting() const { return m_box.get(); }
+  void GetLayoutBlock(bool relayout_children) override;
+  NGBlockNode* BoxForTesting() const { return box_.Get(); }
 
  private:
-  bool isOfType(LayoutObjectType) const override;
+  bool IsOfType(LayoutObjectType) const override;
 
-  Persistent<NGBlockNode> m_box;
+  Persistent<NGBlockNode> box_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, isLayoutNGBlockFlow());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());
 
 }  // namespace blink
 

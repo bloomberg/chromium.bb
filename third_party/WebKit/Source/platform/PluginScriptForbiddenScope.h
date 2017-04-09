@@ -46,7 +46,7 @@ class PLATFORM_EXPORT PluginScriptForbiddenScope final {
   PluginScriptForbiddenScope();
   ~PluginScriptForbiddenScope();
 
-  static bool isForbidden();
+  static bool IsForbidden();
 };
 
 }  // namespace blink

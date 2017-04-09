@@ -133,10 +133,10 @@ base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
   return idle_helper_.CurrentIdleTaskDeadline();
 }
 
-void WorkerSchedulerImpl::willProcessTask(TaskQueue* task_queue,
+void WorkerSchedulerImpl::WillProcessTask(TaskQueue* task_queue,
                                           double start_time) {}
 
-void WorkerSchedulerImpl::didProcessTask(TaskQueue* task_queue,
+void WorkerSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
                                          double start_time,
                                          double end_time) {
   base::TimeTicks start_time_ticks =
@@ -146,7 +146,7 @@ void WorkerSchedulerImpl::didProcessTask(TaskQueue* task_queue,
   load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
 }
 
-void WorkerSchedulerImpl::onBeginNestedMessageLoop() {}
+void WorkerSchedulerImpl::OnBeginNestedMessageLoop() {}
 
 }  // namespace scheduler
 }  // namespace blink

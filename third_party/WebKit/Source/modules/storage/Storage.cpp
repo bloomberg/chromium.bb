@@ -31,78 +31,78 @@
 
 namespace blink {
 
-Storage* Storage::create(LocalFrame* frame, StorageArea* storageArea) {
-  return new Storage(frame, storageArea);
+Storage* Storage::Create(LocalFrame* frame, StorageArea* storage_area) {
+  return new Storage(frame, storage_area);
 }
 
-Storage::Storage(LocalFrame* frame, StorageArea* storageArea)
-    : ContextClient(frame), m_storageArea(storageArea) {
+Storage::Storage(LocalFrame* frame, StorageArea* storage_area)
+    : ContextClient(frame), storage_area_(storage_area) {
   DCHECK(frame);
-  DCHECK(m_storageArea);
+  DCHECK(storage_area_);
 }
 
-String Storage::anonymousNamedGetter(const AtomicString& name,
-                                     ExceptionState& exceptionState) {
-  bool found = contains(name, exceptionState);
-  if (exceptionState.hadException() || !found)
+String Storage::AnonymousNamedGetter(const AtomicString& name,
+                                     ExceptionState& exception_state) {
+  bool found = Contains(name, exception_state);
+  if (exception_state.HadException() || !found)
     return String();
-  String result = getItem(name, exceptionState);
-  if (exceptionState.hadException())
+  String result = getItem(name, exception_state);
+  if (exception_state.HadException())
     return String();
   return result;
 }
 
-bool Storage::anonymousNamedSetter(const AtomicString& name,
+bool Storage::AnonymousNamedSetter(const AtomicString& name,
                                    const AtomicString& value,
-                                   ExceptionState& exceptionState) {
-  setItem(name, value, exceptionState);
+                                   ExceptionState& exception_state) {
+  setItem(name, value, exception_state);
   return true;
 }
 
-DeleteResult Storage::anonymousNamedDeleter(const AtomicString& name,
-                                            ExceptionState& exceptionState) {
-  bool found = contains(name, exceptionState);
+DeleteResult Storage::AnonymousNamedDeleter(const AtomicString& name,
+                                            ExceptionState& exception_state) {
+  bool found = Contains(name, exception_state);
   if (!found)
-    return DeleteUnknownProperty;
-  if (exceptionState.hadException())
-    return DeleteReject;
-  removeItem(name, exceptionState);
-  if (exceptionState.hadException())
-    return DeleteReject;
-  return DeleteSuccess;
+    return kDeleteUnknownProperty;
+  if (exception_state.HadException())
+    return kDeleteReject;
+  removeItem(name, exception_state);
+  if (exception_state.HadException())
+    return kDeleteReject;
+  return kDeleteSuccess;
 }
 
-void Storage::namedPropertyEnumerator(Vector<String>& names,
-                                      ExceptionState& exceptionState) {
-  unsigned length = this->length(exceptionState);
-  if (exceptionState.hadException())
+void Storage::NamedPropertyEnumerator(Vector<String>& names,
+                                      ExceptionState& exception_state) {
+  unsigned length = this->length(exception_state);
+  if (exception_state.HadException())
     return;
-  names.resize(length);
+  names.Resize(length);
   for (unsigned i = 0; i < length; ++i) {
-    String key = this->key(i, exceptionState);
-    if (exceptionState.hadException())
+    String key = this->key(i, exception_state);
+    if (exception_state.HadException())
       return;
-    ASSERT(!key.isNull());
-    String val = getItem(key, exceptionState);
-    if (exceptionState.hadException())
+    ASSERT(!key.IsNull());
+    String val = getItem(key, exception_state);
+    if (exception_state.HadException())
       return;
     names[i] = key;
   }
 }
 
-bool Storage::namedPropertyQuery(const AtomicString& name,
-                                 ExceptionState& exceptionState) {
+bool Storage::NamedPropertyQuery(const AtomicString& name,
+                                 ExceptionState& exception_state) {
   if (name == "length")
     return false;
-  bool found = contains(name, exceptionState);
-  if (exceptionState.hadException() || !found)
+  bool found = Contains(name, exception_state);
+  if (exception_state.HadException() || !found)
     return false;
   return true;
 }
 
 DEFINE_TRACE(Storage) {
-  visitor->trace(m_storageArea);
-  ContextClient::trace(visitor);
+  visitor->Trace(storage_area_);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

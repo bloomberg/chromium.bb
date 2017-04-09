@@ -52,32 +52,32 @@ struct WebURLError {
 
   // A flag showing whether or not "unreachableURL" has a copy in the
   // cache that was too stale to return for this request.
-  bool staleCopyInCache;
+  bool stale_copy_in_cache;
 
   // A flag showing whether this error should be treated as a cancellation,
   // e.g. we do not show console errors for cancellations.
-  bool isCancellation;
+  bool is_cancellation;
 
   // A flag showing whether this error is the result of a request being
   // ignored (e.g. through shouldOverrideUrlLoading).
-  bool wasIgnoredByHandler;
+  bool was_ignored_by_handler;
 
   // A flag showing whether this error is a disk cache miss by requesting to
   // load only from disk cache.
-  bool isCacheMiss;
+  bool is_cache_miss;
 
   // The url that failed to load.
-  WebURL unreachableURL;
+  WebURL unreachable_url;
 
   // A description for the error.
-  WebString localizedDescription;
+  WebString localized_description;
 
   WebURLError()
       : reason(0),
-        staleCopyInCache(false),
-        isCancellation(false),
-        wasIgnoredByHandler(false),
-        isCacheMiss(false) {}
+        stale_copy_in_cache(false),
+        is_cancellation(false),
+        was_ignored_by_handler(false),
+        is_cache_miss(false) {}
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebURLError(const ResourceError&);

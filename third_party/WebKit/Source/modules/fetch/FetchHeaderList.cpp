@@ -11,14 +11,14 @@
 
 namespace blink {
 
-FetchHeaderList* FetchHeaderList::create() {
+FetchHeaderList* FetchHeaderList::Create() {
   return new FetchHeaderList();
 }
 
-FetchHeaderList* FetchHeaderList::clone() const {
-  FetchHeaderList* list = create();
-  for (size_t i = 0; i < m_headerList.size(); ++i)
-    list->append(m_headerList[i]->first, m_headerList[i]->second);
+FetchHeaderList* FetchHeaderList::Clone() const {
+  FetchHeaderList* list = Create();
+  for (size_t i = 0; i < header_list_.size(); ++i)
+    list->Append(header_list_[i]->first, header_list_[i]->second);
   return list;
 }
 
@@ -26,14 +26,14 @@ FetchHeaderList::FetchHeaderList() {}
 
 FetchHeaderList::~FetchHeaderList() {}
 
-void FetchHeaderList::append(const String& name, const String& value) {
+void FetchHeaderList::Append(const String& name, const String& value) {
   // "To append a name/value (|name|/|value|) pair to a header list (|list|),
   // append a new header whose name is |name|, byte lowercased, and value is
   // |value|, to |list|."
-  m_headerList.push_back(WTF::wrapUnique(new Header(name.lower(), value)));
+  header_list_.push_back(WTF::WrapUnique(new Header(name.Lower(), value)));
 }
 
-void FetchHeaderList::set(const String& name, const String& value) {
+void FetchHeaderList::Set(const String& name, const String& value) {
   // "To set a name/value (|name|/|value|) pair in a header list (|list|), run
   // these steps:
   // 1. Byte lowercase |name|.
@@ -41,130 +41,130 @@ void FetchHeaderList::set(const String& name, const String& value) {
   //    of the first such header to |value| and remove the others.
   // 3. Otherwise, append a new header whose name is |name| and value is
   //    |value|, to |list|."
-  const String lowercasedName = name.lower();
-  for (size_t i = 0; i < m_headerList.size(); ++i) {
-    if (m_headerList[i]->first == lowercasedName) {
-      m_headerList[i]->second = value;
-      for (size_t j = i + 1; j < m_headerList.size();) {
-        if (m_headerList[j]->first == lowercasedName)
-          m_headerList.erase(j);
+  const String lowercased_name = name.Lower();
+  for (size_t i = 0; i < header_list_.size(); ++i) {
+    if (header_list_[i]->first == lowercased_name) {
+      header_list_[i]->second = value;
+      for (size_t j = i + 1; j < header_list_.size();) {
+        if (header_list_[j]->first == lowercased_name)
+          header_list_.erase(j);
         else
           ++j;
       }
       return;
     }
   }
-  m_headerList.push_back(WTF::makeUnique<Header>(lowercasedName, value));
+  header_list_.push_back(WTF::MakeUnique<Header>(lowercased_name, value));
 }
 
-String FetchHeaderList::extractMIMEType() const {
+String FetchHeaderList::ExtractMIMEType() const {
   // To extract a MIME type from a header list (headers), run these steps:
   // 1. Let MIMEType be the result of parsing `Content-Type` in headers.
-  String mimeType;
-  if (!get("Content-Type", mimeType)) {
+  String mime_type;
+  if (!Get("Content-Type", mime_type)) {
     // 2. If MIMEType is null or failure, return the empty byte sequence.
     return String();
   }
   // 3. Return MIMEType, byte lowercased.
-  return mimeType.lower();
+  return mime_type.Lower();
 }
 
 size_t FetchHeaderList::size() const {
-  return m_headerList.size();
+  return header_list_.size();
 }
 
-void FetchHeaderList::remove(const String& name) {
+void FetchHeaderList::Remove(const String& name) {
   // "To delete a name (|name|) from a header list (|list|), remove all headers
   // whose name is |name|, byte lowercased, from |list|."
-  const String lowercasedName = name.lower();
-  for (size_t i = 0; i < m_headerList.size();) {
-    if (m_headerList[i]->first == lowercasedName)
-      m_headerList.erase(i);
+  const String lowercased_name = name.Lower();
+  for (size_t i = 0; i < header_list_.size();) {
+    if (header_list_[i]->first == lowercased_name)
+      header_list_.erase(i);
     else
       ++i;
   }
 }
 
-bool FetchHeaderList::get(const String& name, String& result) const {
-  const String lowercasedName = name.lower();
+bool FetchHeaderList::Get(const String& name, String& result) const {
+  const String lowercased_name = name.Lower();
   bool found = false;
-  for (const auto& header : m_headerList) {
-    if (header->first == lowercasedName) {
+  for (const auto& header : header_list_) {
+    if (header->first == lowercased_name) {
       if (!found) {
         result = "";
-        result.append(header->second);
+        result.Append(header->second);
         found = true;
       } else {
-        result.append(",");
-        result.append(header->second);
+        result.Append(",");
+        result.Append(header->second);
       }
     }
   }
   return found;
 }
 
-void FetchHeaderList::getAll(const String& name, Vector<String>& result) const {
-  const String lowercasedName = name.lower();
-  result.clear();
-  for (size_t i = 0; i < m_headerList.size(); ++i) {
-    if (m_headerList[i]->first == lowercasedName)
-      result.push_back(m_headerList[i]->second);
+void FetchHeaderList::GetAll(const String& name, Vector<String>& result) const {
+  const String lowercased_name = name.Lower();
+  result.Clear();
+  for (size_t i = 0; i < header_list_.size(); ++i) {
+    if (header_list_[i]->first == lowercased_name)
+      result.push_back(header_list_[i]->second);
   }
 }
 
-bool FetchHeaderList::has(const String& name) const {
-  const String lowercasedName = name.lower();
-  for (size_t i = 0; i < m_headerList.size(); ++i) {
-    if (m_headerList[i]->first == lowercasedName)
+bool FetchHeaderList::Has(const String& name) const {
+  const String lowercased_name = name.Lower();
+  for (size_t i = 0; i < header_list_.size(); ++i) {
+    if (header_list_[i]->first == lowercased_name)
       return true;
   }
   return false;
 }
 
-void FetchHeaderList::clearList() {
-  m_headerList.clear();
+void FetchHeaderList::ClearList() {
+  header_list_.Clear();
 }
 
-bool FetchHeaderList::containsNonSimpleHeader() const {
-  for (size_t i = 0; i < m_headerList.size(); ++i) {
-    if (!FetchUtils::isSimpleHeader(AtomicString(m_headerList[i]->first),
-                                    AtomicString(m_headerList[i]->second)))
+bool FetchHeaderList::ContainsNonSimpleHeader() const {
+  for (size_t i = 0; i < header_list_.size(); ++i) {
+    if (!FetchUtils::IsSimpleHeader(AtomicString(header_list_[i]->first),
+                                    AtomicString(header_list_[i]->second)))
       return true;
   }
   return false;
 }
 
-void FetchHeaderList::sortAndCombine() {
+void FetchHeaderList::SortAndCombine() {
   // https://fetch.spec.whatwg.org/#concept-header-list-sort-and-combine
   // "To sort and combine a header list..."
-  if (m_headerList.isEmpty())
+  if (header_list_.IsEmpty())
     return;
 
   std::sort(
-      m_headerList.begin(), m_headerList.end(),
+      header_list_.begin(), header_list_.end(),
       [](const std::unique_ptr<Header>& a, const std::unique_ptr<Header>& b) {
-        return WTF::codePointCompareLessThan(a->first, b->first);
+        return WTF::CodePointCompareLessThan(a->first, b->first);
       });
 
-  for (size_t index = m_headerList.size() - 1; index > 0; --index) {
-    if (m_headerList[index - 1]->first == m_headerList[index]->first) {
-      m_headerList[index - 1]->second.append(",");
-      m_headerList[index - 1]->second.append(m_headerList[index]->second);
-      m_headerList.erase(index, 1);
+  for (size_t index = header_list_.size() - 1; index > 0; --index) {
+    if (header_list_[index - 1]->first == header_list_[index]->first) {
+      header_list_[index - 1]->second.Append(",");
+      header_list_[index - 1]->second.Append(header_list_[index]->second);
+      header_list_.erase(index, 1);
     }
   }
 }
 
-bool FetchHeaderList::isValidHeaderName(const String& name) {
+bool FetchHeaderList::IsValidHeaderName(const String& name) {
   // "A name is a case-insensitive byte sequence that matches the field-name
   // token production."
-  return isValidHTTPToken(name);
+  return IsValidHTTPToken(name);
 }
 
-bool FetchHeaderList::isValidHeaderValue(const String& value) {
+bool FetchHeaderList::IsValidHeaderValue(const String& value) {
   // "A value is a byte sequence that matches the field-value token production
   // and contains no 0x0A or 0x0D bytes."
-  return isValidHTTPHeaderValue(value);
+  return IsValidHTTPHeaderValue(value);
 }
 
 }  // namespace blink

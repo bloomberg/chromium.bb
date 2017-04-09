@@ -29,208 +29,210 @@ namespace blink {
 namespace {
 
 // TODO(mlamouri): refactor in one common place.
-PresentationController* presentationController(
-    ExecutionContext* executionContext) {
-  DCHECK(executionContext);
+PresentationController* GetPresentationController(
+    ExecutionContext* execution_context) {
+  DCHECK(execution_context);
 
-  Document* document = toDocument(executionContext);
-  if (!document->frame())
+  Document* document = ToDocument(execution_context);
+  if (!document->GetFrame())
     return nullptr;
-  return PresentationController::from(*document->frame());
+  return PresentationController::From(*document->GetFrame());
 }
 
-WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
-  PresentationController* controller = presentationController(executionContext);
-  return controller ? controller->client() : nullptr;
+WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
+  PresentationController* controller =
+      GetPresentationController(execution_context);
+  return controller ? controller->Client() : nullptr;
 }
 
-Settings* settings(ExecutionContext* executionContext) {
-  DCHECK(executionContext);
+Settings* GetSettings(ExecutionContext* execution_context) {
+  DCHECK(execution_context);
 
-  Document* document = toDocument(executionContext);
-  return document->settings();
+  Document* document = ToDocument(execution_context);
+  return document->GetSettings();
 }
 
 }  // anonymous namespace
 
 // static
-PresentationRequest* PresentationRequest::create(
-    ExecutionContext* executionContext,
+PresentationRequest* PresentationRequest::Create(
+    ExecutionContext* execution_context,
     const String& url,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   Vector<String> urls(1);
   urls[0] = url;
-  return create(executionContext, urls, exceptionState);
+  return Create(execution_context, urls, exception_state);
 }
 
-PresentationRequest* PresentationRequest::create(
-    ExecutionContext* executionContext,
+PresentationRequest* PresentationRequest::Create(
+    ExecutionContext* execution_context,
     const Vector<String>& urls,
-    ExceptionState& exceptionState) {
-  if (toDocument(executionContext)->isSandboxed(SandboxPresentation)) {
-    exceptionState.throwSecurityError(
+    ExceptionState& exception_state) {
+  if (ToDocument(execution_context)->IsSandboxed(kSandboxPresentation)) {
+    exception_state.ThrowSecurityError(
         "The document is sandboxed and lacks the 'allow-presentation' flag.");
     return nullptr;
   }
 
-  if (urls.isEmpty()) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Do not support empty sequence of URLs.");
+  if (urls.IsEmpty()) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Do not support empty sequence of URLs.");
     return nullptr;
   }
 
-  Vector<KURL> parsedUrls(urls.size());
+  Vector<KURL> parsed_urls(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
-    const KURL& parsedUrl = KURL(executionContext->url(), urls[i]);
+    const KURL& parsed_url = KURL(execution_context->Url(), urls[i]);
 
-    if (!parsedUrl.isValid() ||
-        !(parsedUrl.protocolIsInHTTPFamily() || parsedUrl.protocolIs("cast"))) {
-      exceptionState.throwDOMException(
-          SyntaxError, "'" + urls[i] + "' can't be resolved to a valid URL.");
+    if (!parsed_url.IsValid() || !(parsed_url.ProtocolIsInHTTPFamily() ||
+                                   parsed_url.ProtocolIs("cast"))) {
+      exception_state.ThrowDOMException(
+          kSyntaxError, "'" + urls[i] + "' can't be resolved to a valid URL.");
       return nullptr;
     }
 
-    if (MixedContentChecker::isMixedContent(
-            executionContext->getSecurityOrigin(), parsedUrl)) {
-      exceptionState.throwSecurityError(
+    if (MixedContentChecker::IsMixedContent(
+            execution_context->GetSecurityOrigin(), parsed_url)) {
+      exception_state.ThrowSecurityError(
           "Presentation of an insecure document [" + urls[i] +
           "] is prohibited from a secure context.");
       return nullptr;
     }
 
-    parsedUrls[i] = parsedUrl;
+    parsed_urls[i] = parsed_url;
   }
-  return new PresentationRequest(executionContext, parsedUrls);
+  return new PresentationRequest(execution_context, parsed_urls);
 }
 
-const AtomicString& PresentationRequest::interfaceName() const {
+const AtomicString& PresentationRequest::InterfaceName() const {
   return EventTargetNames::PresentationRequest;
 }
 
-ExecutionContext* PresentationRequest::getExecutionContext() const {
-  return ContextClient::getExecutionContext();
+ExecutionContext* PresentationRequest::GetExecutionContext() const {
+  return ContextClient::GetExecutionContext();
 }
 
-void PresentationRequest::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  if (eventType == EventTypeNames::connectionavailable)
-    UseCounter::count(
-        getExecutionContext(),
-        UseCounter::PresentationRequestConnectionAvailableEventListener);
+void PresentationRequest::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  if (event_type == EventTypeNames::connectionavailable)
+    UseCounter::Count(
+        GetExecutionContext(),
+        UseCounter::kPresentationRequestConnectionAvailableEventListener);
 }
 
-bool PresentationRequest::hasPendingActivity() const {
+bool PresentationRequest::HasPendingActivity() const {
   // Prevents garbage collecting of this object when not hold by another
   // object but still has listeners registered.
-  return getExecutionContext() && hasEventListeners();
+  return GetExecutionContext() && HasEventListeners();
 }
 
-ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
-  Settings* contextSettings = settings(getExecutionContext());
-  bool isUserGestureRequired =
-      !contextSettings || contextSettings->getPresentationRequiresUserGesture();
+ScriptPromise PresentationRequest::start(ScriptState* script_state) {
+  Settings* context_settings = GetSettings(GetExecutionContext());
+  bool is_user_gesture_required =
+      !context_settings ||
+      context_settings->GetPresentationRequiresUserGesture();
 
-  if (isUserGestureRequired && !UserGestureIndicator::utilizeUserGesture())
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidAccessError,
+  if (is_user_gesture_required && !UserGestureIndicator::UtilizeUserGesture())
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
-
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (!client)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidStateError,
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  client->startPresentation(
-      m_urls, WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
-  return resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  client->StartPresentation(
+      urls_, WTF::MakeUnique<PresentationConnectionCallbacks>(resolver, this));
+  return resolver->Promise();
 }
 
-ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
+ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
                                              const String& id) {
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (!client)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidStateError,
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
   PresentationController* controller =
-      presentationController(getExecutionContext());
+      GetPresentationController(GetExecutionContext());
   DCHECK(controller);
 
-  PresentationConnection* existingConnection =
-      controller->findExistingConnection(m_urls, id);
-  if (existingConnection) {
-    client->reconnectPresentation(
-        m_urls, id,
-        WTF::makeUnique<ExistingPresentationConnectionCallbacks>(
-            resolver, existingConnection));
+  PresentationConnection* existing_connection =
+      controller->FindExistingConnection(urls_, id);
+  if (existing_connection) {
+    client->ReconnectPresentation(
+        urls_, id,
+        WTF::MakeUnique<ExistingPresentationConnectionCallbacks>(
+            resolver, existing_connection));
   } else {
-    client->reconnectPresentation(
-        m_urls, id,
-        WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
+    client->ReconnectPresentation(
+        urls_, id,
+        WTF::MakeUnique<PresentationConnectionCallbacks>(resolver, this));
   }
-  return resolver->promise();
+  return resolver->Promise();
 }
 
-ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (!client)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidStateError,
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  if (!m_availabilityProperty) {
-    m_availabilityProperty = new PresentationAvailabilityProperty(
-        scriptState->getExecutionContext(), this,
-        PresentationAvailabilityProperty::Ready);
+  if (!availability_property_) {
+    availability_property_ = new PresentationAvailabilityProperty(
+        script_state->GetExecutionContext(), this,
+        PresentationAvailabilityProperty::kReady);
 
-    client->getAvailability(m_urls,
-                            WTF::makeUnique<PresentationAvailabilityCallbacks>(
-                                m_availabilityProperty, m_urls));
+    client->GetAvailability(urls_,
+                            WTF::MakeUnique<PresentationAvailabilityCallbacks>(
+                                availability_property_, urls_));
   }
-  return m_availabilityProperty->promise(scriptState->world());
+  return availability_property_->Promise(script_state->World());
 }
 
-const Vector<KURL>& PresentationRequest::urls() const {
-  return m_urls;
+const Vector<KURL>& PresentationRequest::Urls() const {
+  return urls_;
 }
 
 DEFINE_TRACE(PresentationRequest) {
-  visitor->trace(m_availabilityProperty);
-  EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  visitor->Trace(availability_property_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
-PresentationRequest::PresentationRequest(ExecutionContext* executionContext,
+PresentationRequest::PresentationRequest(ExecutionContext* execution_context,
                                          const Vector<KURL>& urls)
-    : ContextClient(executionContext), m_urls(urls) {
-  recordOriginTypeAccess(executionContext);
+    : ContextClient(execution_context), urls_(urls) {
+  RecordOriginTypeAccess(execution_context);
 }
 
-void PresentationRequest::recordOriginTypeAccess(
-    ExecutionContext* executionContext) const {
-  DCHECK(executionContext);
-  if (executionContext->isSecureContext()) {
-    UseCounter::count(executionContext,
-                      UseCounter::PresentationRequestSecureOrigin);
+void PresentationRequest::RecordOriginTypeAccess(
+    ExecutionContext* execution_context) const {
+  DCHECK(execution_context);
+  if (execution_context->IsSecureContext()) {
+    UseCounter::Count(execution_context,
+                      UseCounter::kPresentationRequestSecureOrigin);
   } else {
-    UseCounter::count(executionContext,
-                      UseCounter::PresentationRequestInsecureOrigin);
+    UseCounter::Count(execution_context,
+                      UseCounter::kPresentationRequestInsecureOrigin);
   }
 }
 

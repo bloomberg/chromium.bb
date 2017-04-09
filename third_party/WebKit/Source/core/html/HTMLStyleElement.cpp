@@ -36,65 +36,65 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLStyleElement::HTMLStyleElement(Document& document,
-                                          bool createdByParser)
+                                          bool created_by_parser)
     : HTMLElement(styleTag, document),
-      StyleElement(&document, createdByParser),
-      m_firedLoad(false),
-      m_loadedSheet(false) {}
+      StyleElement(&document, created_by_parser),
+      fired_load_(false),
+      loaded_sheet_(false) {}
 
 HTMLStyleElement::~HTMLStyleElement() {}
 
-HTMLStyleElement* HTMLStyleElement::create(Document& document,
-                                           bool createdByParser) {
-  return new HTMLStyleElement(document, createdByParser);
+HTMLStyleElement* HTMLStyleElement::Create(Document& document,
+                                           bool created_by_parser) {
+  return new HTMLStyleElement(document, created_by_parser);
 }
 
-void HTMLStyleElement::parseAttribute(
+void HTMLStyleElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == titleAttr && m_sheet && isInDocumentTree()) {
-    m_sheet->setTitle(params.newValue);
+  if (params.name == titleAttr && sheet_ && IsInDocumentTree()) {
+    sheet_->SetTitle(params.new_value);
   } else if (params.name == mediaAttr && isConnected() &&
-             document().isActive() && m_sheet) {
-    m_sheet->setMediaQueries(MediaQuerySet::create(params.newValue));
-    document().styleEngine().mediaQueriesChangedInScope(treeScope());
+             GetDocument().IsActive() && sheet_) {
+    sheet_->SetMediaQueries(MediaQuerySet::Create(params.new_value));
+    GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
   } else {
-    HTMLElement::parseAttribute(params);
+    HTMLElement::ParseAttribute(params);
   }
 }
 
-void HTMLStyleElement::finishParsingChildren() {
+void HTMLStyleElement::FinishParsingChildren() {
   StyleElement::ProcessingResult result =
-      StyleElement::finishParsingChildren(*this);
-  HTMLElement::finishParsingChildren();
-  if (result == StyleElement::ProcessingFatalError)
-    notifyLoadedSheetAndAllCriticalSubresources(
-        ErrorOccurredLoadingSubresource);
+      StyleElement::FinishParsingChildren(*this);
+  HTMLElement::FinishParsingChildren();
+  if (result == StyleElement::kProcessingFatalError)
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        kErrorOccurredLoadingSubresource);
 }
 
-Node::InsertionNotificationRequest HTMLStyleElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLElement::insertedInto(insertionPoint);
-  return InsertionShouldCallDidNotifySubtreeInsertions;
+Node::InsertionNotificationRequest HTMLStyleElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
+  return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint) {
-  HTMLElement::removedFrom(insertionPoint);
-  StyleElement::removedFrom(*this, insertionPoint);
+void HTMLStyleElement::RemovedFrom(ContainerNode* insertion_point) {
+  HTMLElement::RemovedFrom(insertion_point);
+  StyleElement::RemovedFrom(*this, insertion_point);
 }
 
-void HTMLStyleElement::didNotifySubtreeInsertionsToDocument() {
-  if (StyleElement::processStyleSheet(document(), *this) ==
-      StyleElement::ProcessingFatalError)
-    notifyLoadedSheetAndAllCriticalSubresources(
-        ErrorOccurredLoadingSubresource);
+void HTMLStyleElement::DidNotifySubtreeInsertionsToDocument() {
+  if (StyleElement::ProcessStyleSheet(GetDocument(), *this) ==
+      StyleElement::kProcessingFatalError)
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        kErrorOccurredLoadingSubresource);
 }
 
-void HTMLStyleElement::childrenChanged(const ChildrenChange& change) {
-  HTMLElement::childrenChanged(change);
-  if (StyleElement::childrenChanged(*this) ==
-      StyleElement::ProcessingFatalError)
-    notifyLoadedSheetAndAllCriticalSubresources(
-        ErrorOccurredLoadingSubresource);
+void HTMLStyleElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLElement::ChildrenChanged(change);
+  if (StyleElement::ChildrenChanged(*this) ==
+      StyleElement::kProcessingFatalError)
+    NotifyLoadedSheetAndAllCriticalSubresources(
+        kErrorOccurredLoadingSubresource);
 }
 
 const AtomicString& HTMLStyleElement::media() const {
@@ -105,46 +105,46 @@ const AtomicString& HTMLStyleElement::type() const {
   return getAttribute(typeAttr);
 }
 
-void HTMLStyleElement::dispatchPendingEvent(
+void HTMLStyleElement::DispatchPendingEvent(
     std::unique_ptr<IncrementLoadEventDelayCount> count) {
-  dispatchEvent(Event::create(m_loadedSheet ? EventTypeNames::load
+  DispatchEvent(Event::Create(loaded_sheet_ ? EventTypeNames::load
                                             : EventTypeNames::error));
 
   // Checks Document's load event synchronously here for performance.
   // This is safe because dispatchPendingEvent() is called asynchronously.
-  count->clearAndCheckLoadEvent();
+  count->ClearAndCheckLoadEvent();
 }
 
-void HTMLStyleElement::notifyLoadedSheetAndAllCriticalSubresources(
-    LoadedSheetErrorStatus errorStatus) {
-  bool isLoadEvent = errorStatus == NoErrorLoadingSubresource;
-  if (m_firedLoad && isLoadEvent)
+void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
+    LoadedSheetErrorStatus error_status) {
+  bool is_load_event = error_status == kNoErrorLoadingSubresource;
+  if (fired_load_ && is_load_event)
     return;
-  m_loadedSheet = isLoadEvent;
-  TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
-      ->postTask(
-          BLINK_FROM_HERE,
-          WTF::bind(
-              &HTMLStyleElement::dispatchPendingEvent, wrapPersistent(this),
-              WTF::passed(IncrementLoadEventDelayCount::create(document()))));
-  m_firedLoad = true;
+  loaded_sheet_ = is_load_event;
+  TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,
+                           WrapPersistent(this),
+                           WTF::Passed(IncrementLoadEventDelayCount::Create(
+                               GetDocument()))));
+  fired_load_ = true;
 }
 
 bool HTMLStyleElement::disabled() const {
-  if (!m_sheet)
+  if (!sheet_)
     return false;
 
-  return m_sheet->disabled();
+  return sheet_->disabled();
 }
 
-void HTMLStyleElement::setDisabled(bool setDisabled) {
-  if (CSSStyleSheet* styleSheet = sheet())
-    styleSheet->setDisabled(setDisabled);
+void HTMLStyleElement::setDisabled(bool set_disabled) {
+  if (CSSStyleSheet* style_sheet = sheet())
+    style_sheet->setDisabled(set_disabled);
 }
 
 DEFINE_TRACE(HTMLStyleElement) {
-  StyleElement::trace(visitor);
-  HTMLElement::trace(visitor);
+  StyleElement::Trace(visitor);
+  HTMLElement::Trace(visitor);
 }
 
 }  // namespace blink

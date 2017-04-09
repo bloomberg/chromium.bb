@@ -8,21 +8,19 @@ namespace blink {
 
 DeviceLightEvent::~DeviceLightEvent() {}
 
-DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType, double value)
+DeviceLightEvent::DeviceLightEvent(const AtomicString& event_type, double value)
     // The DeviceLightEvent bubbles but is not cancelable.
-    : Event(eventType, true, false),
-      m_value(value) {}
+    : Event(event_type, true, false), value_(value) {}
 
-DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType,
+DeviceLightEvent::DeviceLightEvent(const AtomicString& event_type,
                                    const DeviceLightEventInit& initializer)
-    : Event(eventType, initializer),
-      m_value(initializer.hasValue()
-                  ? initializer.value()
-                  : std::numeric_limits<double>::infinity()) {
-  setCanBubble(true);
+    : Event(event_type, initializer),
+      value_(initializer.hasValue() ? initializer.value()
+                                    : std::numeric_limits<double>::infinity()) {
+  SetCanBubble(true);
 }
 
-const AtomicString& DeviceLightEvent::interfaceName() const {
+const AtomicString& DeviceLightEvent::InterfaceName() const {
   return EventNames::DeviceLightEvent;
 }
 

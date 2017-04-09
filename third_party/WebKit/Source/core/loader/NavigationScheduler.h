@@ -56,45 +56,45 @@ class CORE_EXPORT NavigationScheduler final
   WTF_MAKE_NONCOPYABLE(NavigationScheduler);
 
  public:
-  static NavigationScheduler* create(LocalFrame* frame) {
+  static NavigationScheduler* Create(LocalFrame* frame) {
     return new NavigationScheduler(frame);
   }
 
   ~NavigationScheduler();
 
-  bool locationChangePending();
-  bool isNavigationScheduledWithin(double intervalInSeconds) const;
+  bool LocationChangePending();
+  bool IsNavigationScheduledWithin(double interval_in_seconds) const;
 
-  void scheduleRedirect(double delay, const KURL&);
-  void scheduleLocationChange(Document*,
+  void ScheduleRedirect(double delay, const KURL&);
+  void ScheduleLocationChange(Document*,
                               const KURL&,
-                              bool replacesCurrentItem = true);
-  void schedulePageBlock(Document*, int reason);
-  void scheduleFormSubmission(Document*, FormSubmission*);
-  void scheduleReload();
+                              bool replaces_current_item = true);
+  void SchedulePageBlock(Document*, int reason);
+  void ScheduleFormSubmission(Document*, FormSubmission*);
+  void ScheduleReload();
 
-  void startTimer();
-  void cancel();
+  void StartTimer();
+  void Cancel();
 
   DECLARE_TRACE();
 
  private:
   explicit NavigationScheduler(LocalFrame*);
 
-  bool shouldScheduleReload() const;
-  bool shouldScheduleNavigation(const KURL&) const;
+  bool ShouldScheduleReload() const;
+  bool ShouldScheduleNavigation(const KURL&) const;
 
-  void navigateTask();
-  void schedule(ScheduledNavigation*);
+  void NavigateTask();
+  void Schedule(ScheduledNavigation*);
 
-  static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
+  static bool MustReplaceCurrentItem(LocalFrame* target_frame);
 
-  Member<LocalFrame> m_frame;
-  TaskHandle m_navigateTaskHandle;
-  Member<ScheduledNavigation> m_redirect;
+  Member<LocalFrame> frame_;
+  TaskHandle navigate_task_handle_;
+  Member<ScheduledNavigation> redirect_;
 
   // Exists because we can't deref m_frame in destructor.
-  WebScheduler::NavigatingFrameType m_frameType;
+  WebScheduler::NavigatingFrameType frame_type_;
 };
 
 class NavigationDisablerForBeforeUnload {
@@ -102,15 +102,15 @@ class NavigationDisablerForBeforeUnload {
   STACK_ALLOCATED();
 
  public:
-  NavigationDisablerForBeforeUnload() { s_navigationDisableCount++; }
+  NavigationDisablerForBeforeUnload() { navigation_disable_count_++; }
   ~NavigationDisablerForBeforeUnload() {
-    DCHECK(s_navigationDisableCount);
-    s_navigationDisableCount--;
+    DCHECK(navigation_disable_count_);
+    navigation_disable_count_--;
   }
-  static bool isNavigationAllowed() { return !s_navigationDisableCount; }
+  static bool IsNavigationAllowed() { return !navigation_disable_count_; }
 
  private:
-  static unsigned s_navigationDisableCount;
+  static unsigned navigation_disable_count_;
 };
 
 }  // namespace blink

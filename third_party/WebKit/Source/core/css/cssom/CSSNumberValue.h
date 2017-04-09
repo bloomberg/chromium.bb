@@ -18,23 +18,25 @@ class CORE_EXPORT CSSNumberValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSNumberValue* create(double value) {
+  static CSSNumberValue* Create(double value) {
     return new CSSNumberValue(value);
   }
 
-  double value() const { return m_value; }
+  double value() const { return value_; }
 
-  CSSValue* toCSSValue() const override {
-    return CSSPrimitiveValue::create(m_value,
-                                     CSSPrimitiveValue::UnitType::Number);
+  CSSValue* ToCSSValue() const override {
+    return CSSPrimitiveValue::Create(value_,
+                                     CSSPrimitiveValue::UnitType::kNumber);
   }
 
-  StyleValueType type() const override { return StyleValueType::NumberType; }
+  StyleValueType GetType() const override {
+    return StyleValueType::kNumberType;
+  }
 
  private:
-  CSSNumberValue(double value) : m_value(value) {}
+  CSSNumberValue(double value) : value_(value) {}
 
-  double m_value;
+  double value_;
 };
 
 }  // namespace blink

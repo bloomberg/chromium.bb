@@ -26,27 +26,27 @@ class AudioWorkletProcessorDefinition;
 class MODULES_EXPORT AudioWorkletProcessor
     : public GarbageCollectedFinalized<AudioWorkletProcessor> {
  public:
-  static AudioWorkletProcessor* create(AudioWorkletGlobalScope*,
+  static AudioWorkletProcessor* Create(AudioWorkletGlobalScope*,
                                        const String& name);
   virtual ~AudioWorkletProcessor();
 
-  void setInstance(v8::Isolate*, v8::Local<v8::Object> instance);
+  void SetInstance(v8::Isolate*, v8::Local<v8::Object> instance);
 
-  v8::Local<v8::Object> instanceLocal(v8::Isolate*);
+  v8::Local<v8::Object> InstanceLocal(v8::Isolate*);
 
   // |AudioWorkletHandler| invokes this method to process audio.
-  void process(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer);
+  void Process(AudioBuffer* input_buffer, AudioBuffer* output_buffer);
 
-  const String& name() const { return m_name; }
+  const String& GetName() const { return name_; }
 
   DECLARE_TRACE();
 
  private:
   AudioWorkletProcessor(AudioWorkletGlobalScope*, const String& name);
 
-  Member<AudioWorkletGlobalScope> m_globalScope;
-  const String m_name;
-  ScopedPersistent<v8::Object> m_instance;
+  Member<AudioWorkletGlobalScope> global_scope_;
+  const String name_;
+  ScopedPersistent<v8::Object> instance_;
 };
 
 }  // namespace blink

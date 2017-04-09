@@ -55,12 +55,13 @@ enum class WebRTCBundlePolicy { kBalanced, kMaxCompat, kMaxBundle };
 enum class WebRTCRtcpMuxPolicy { kNegotiate, kRequire };
 
 struct WebRTCConfiguration {
-  WebVector<WebRTCIceServer> iceServers;
-  WebRTCIceTransportPolicy iceTransportPolicy = WebRTCIceTransportPolicy::kAll;
-  WebRTCBundlePolicy bundlePolicy = WebRTCBundlePolicy::kBalanced;
-  WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kRequire;
+  WebVector<WebRTCIceServer> ice_servers;
+  WebRTCIceTransportPolicy ice_transport_policy =
+      WebRTCIceTransportPolicy::kAll;
+  WebRTCBundlePolicy bundle_policy = WebRTCBundlePolicy::kBalanced;
+  WebRTCRtcpMuxPolicy rtcp_mux_policy = WebRTCRtcpMuxPolicy::kRequire;
   WebVector<std::unique_ptr<WebRTCCertificate>> certificates;
-  int iceCandidatePoolSize = 0;
+  int ice_candidate_pool_size = 0;
 };
 
 }  // namespace blink

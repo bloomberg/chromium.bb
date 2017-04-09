@@ -47,23 +47,23 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
 
  public:
   ~PerformanceResourceTiming() override;
-  static PerformanceResourceTiming* create(const ResourceTimingInfo& info,
-                                           double timeOrigin,
-                                           double startTime,
-                                           double lastRedirectEndTime,
-                                           bool allowTimingDetails,
-                                           bool allowRedirectDetails) {
+  static PerformanceResourceTiming* Create(const ResourceTimingInfo& info,
+                                           double time_origin,
+                                           double start_time,
+                                           double last_redirect_end_time,
+                                           bool allow_timing_details,
+                                           bool allow_redirect_details) {
     return new PerformanceResourceTiming(
-        info, timeOrigin, startTime, lastRedirectEndTime, allowTimingDetails,
-        allowRedirectDetails);
+        info, time_origin, start_time, last_redirect_end_time,
+        allow_timing_details, allow_redirect_details);
   }
 
-  static PerformanceResourceTiming* create(const ResourceTimingInfo& info,
-                                           double timeOrigin,
-                                           double startTime,
-                                           bool allowTimingDetails) {
-    return new PerformanceResourceTiming(info, timeOrigin, startTime, 0.0,
-                                         allowTimingDetails, false);
+  static PerformanceResourceTiming* Create(const ResourceTimingInfo& info,
+                                           double time_origin,
+                                           double start_time,
+                                           bool allow_timing_details) {
+    return new PerformanceResourceTiming(info, time_origin, start_time, 0.0,
+                                         allow_timing_details, false);
   }
   // Related doc: https://goo.gl/uNecAj.
   virtual AtomicString initiatorType() const;
@@ -84,43 +84,43 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   unsigned long long decodedBodySize() const;
 
  protected:
-  void buildJSONValue(V8ObjectBuilder&) const override;
+  void BuildJSONValue(V8ObjectBuilder&) const override;
 
   // This constructor is for PerformanceNavigationTiming.
   // Related doc: https://goo.gl/uNecAj.
   PerformanceResourceTiming(const String& name,
-                            const String& entryType,
-                            double startTime,
+                            const String& entry_type,
+                            double start_time,
                             double duration);
 
  private:
   PerformanceResourceTiming(const ResourceTimingInfo&,
-                            double timeOrigin,
-                            double startTime,
-                            double lastRedirectEndTime,
-                            bool m_allowTimingDetails,
-                            bool m_allowRedirectDetails);
+                            double time_origin,
+                            double start_time,
+                            double last_redirect_end_time,
+                            bool allow_timing_details,
+                            bool allow_redirect_details);
 
-  double workerReady() const;
+  double WorkerReady() const;
 
-  virtual ResourceLoadTiming* resourceLoadTiming() const;
-  virtual bool allowTimingDetails() const;
-  virtual bool didReuseConnection() const;
-  virtual unsigned long long getTransferSize() const;
-  virtual unsigned long long getEncodedBodySize() const;
-  virtual unsigned long long getDecodedBodySize() const;
+  virtual ResourceLoadTiming* GetResourceLoadTiming() const;
+  virtual bool AllowTimingDetails() const;
+  virtual bool DidReuseConnection() const;
+  virtual unsigned long long GetTransferSize() const;
+  virtual unsigned long long GetEncodedBodySize() const;
+  virtual unsigned long long GetDecodedBodySize() const;
 
-  AtomicString m_initiatorType;
-  double m_timeOrigin;
-  RefPtr<ResourceLoadTiming> m_timing;
-  double m_lastRedirectEndTime;
-  double m_finishTime;
-  unsigned long long m_transferSize;
-  unsigned long long m_encodedBodySize;
-  unsigned long long m_decodedBodySize;
-  bool m_didReuseConnection;
-  bool m_allowTimingDetails;
-  bool m_allowRedirectDetails;
+  AtomicString initiator_type_;
+  double time_origin_;
+  RefPtr<ResourceLoadTiming> timing_;
+  double last_redirect_end_time_;
+  double finish_time_;
+  unsigned long long transfer_size_;
+  unsigned long long encoded_body_size_;
+  unsigned long long decoded_body_size_;
+  bool did_reuse_connection_;
+  bool allow_timing_details_;
+  bool allow_redirect_details_;
 };
 
 }  // namespace blink

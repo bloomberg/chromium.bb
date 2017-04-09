@@ -18,18 +18,18 @@ class PaintLayer;
 enum ClipRectsCacheSlot {
   // Relative to the ancestor treated as the root (e.g. transformed layer).
   // Used for hit testing.
-  RootRelativeClipRects,
-  RootRelativeClipRectsIgnoringViewportClip,
+  kRootRelativeClipRects,
+  kRootRelativeClipRectsIgnoringViewportClip,
 
   // Relative to the LayoutView's layer. Used for compositing overlap testing.
-  AbsoluteClipRects,
+  kAbsoluteClipRects,
 
   // Relative to painting ancestor. Used for painting.
-  PaintingClipRects,
-  PaintingClipRectsIgnoringOverflowClip,
+  kPaintingClipRects,
+  kPaintingClipRectsIgnoringOverflowClip,
 
-  NumberOfClipRectsCacheSlots,
-  UncachedClipRects,
+  kNumberOfClipRectsCacheSlots,
+  kUncachedClipRects,
 };
 
 class ClipRectsCache {
@@ -41,27 +41,27 @@ class ClipRectsCache {
         : root(nullptr)
 #if DCHECK_IS_ON()
           ,
-          overlayScrollbarClipBehavior(IgnorePlatformOverlayScrollbarSize)
+          overlay_scrollbar_clip_behavior(kIgnorePlatformOverlayScrollbarSize)
 #endif
     {
     }
     const PaintLayer* root;
-    RefPtr<ClipRects> clipRects;
+    RefPtr<ClipRects> clip_rects;
 #if DCHECK_IS_ON()
-    OverlayScrollbarClipBehavior overlayScrollbarClipBehavior;
+    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior;
 #endif
   };
-  Entry& get(ClipRectsCacheSlot slot) {
-    DCHECK(slot < NumberOfClipRectsCacheSlots);
-    return m_entries[slot];
+  Entry& Get(ClipRectsCacheSlot slot) {
+    DCHECK(slot < kNumberOfClipRectsCacheSlots);
+    return entries_[slot];
   }
-  void clear(ClipRectsCacheSlot slot) {
-    DCHECK(slot < NumberOfClipRectsCacheSlots);
-    m_entries[slot] = Entry();
+  void Clear(ClipRectsCacheSlot slot) {
+    DCHECK(slot < kNumberOfClipRectsCacheSlots);
+    entries_[slot] = Entry();
   }
 
  private:
-  Entry m_entries[NumberOfClipRectsCacheSlots];
+  Entry entries_[kNumberOfClipRectsCacheSlots];
 };
 
 }  // namespace blink

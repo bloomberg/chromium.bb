@@ -17,13 +17,13 @@ class SVGRootInlineBoxPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGRootInlineBoxPainter(const SVGRootInlineBox& svgRootInlineBox)
-      : m_svgRootInlineBox(svgRootInlineBox) {}
+  SVGRootInlineBoxPainter(const SVGRootInlineBox& svg_root_inline_box)
+      : svg_root_inline_box_(svg_root_inline_box) {}
 
-  void paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const SVGRootInlineBox& m_svgRootInlineBox;
+  const SVGRootInlineBox& svg_root_inline_box_;
 };
 
 }  // namespace blink

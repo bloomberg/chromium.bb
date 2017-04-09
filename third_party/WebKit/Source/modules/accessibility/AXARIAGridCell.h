@@ -42,19 +42,19 @@ class AXARIAGridCell final : public AXTableCell {
   AXARIAGridCell(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXARIAGridCell* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXARIAGridCell* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXARIAGridCell() override;
 
   // fills in the start location and row span of cell
-  void rowIndexRange(std::pair<unsigned, unsigned>& rowRange) override;
+  void RowIndexRange(std::pair<unsigned, unsigned>& row_range) override;
   // fills in the start location and column span of cell
-  void columnIndexRange(std::pair<unsigned, unsigned>& columnRange) override;
-  AccessibilityRole scanToDecideHeaderRole() final;
+  void ColumnIndexRange(std::pair<unsigned, unsigned>& column_range) override;
+  AccessibilityRole ScanToDecideHeaderRole() final;
 
  protected:
-  bool isAriaColumnHeader() const;
-  bool isAriaRowHeader() const;
-  AXObject* parentTable() const override;
+  bool IsAriaColumnHeader() const;
+  bool IsAriaRowHeader() const;
+  AXObject* ParentTable() const override;
 };
 
 }  // namespace blink

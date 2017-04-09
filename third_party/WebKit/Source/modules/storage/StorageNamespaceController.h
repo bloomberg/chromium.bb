@@ -22,29 +22,29 @@ class MODULES_EXPORT StorageNamespaceController final
   USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 
  public:
-  StorageNamespace* sessionStorage(bool optionalCreate = true);
-  StorageClient* getStorageClient() { return m_client; }
+  StorageNamespace* SessionStorage(bool optional_create = true);
+  StorageClient* GetStorageClient() { return client_; }
   ~StorageNamespaceController();
 
-  static void provideStorageNamespaceTo(Page&, StorageClient*);
-  static StorageNamespaceController* from(Page* page) {
+  static void ProvideStorageNamespaceTo(Page&, StorageClient*);
+  static StorageNamespaceController* From(Page* page) {
     return static_cast<StorageNamespaceController*>(
-        Supplement<Page>::from(page, supplementName()));
+        Supplement<Page>::From(page, SupplementName()));
   }
 
   DECLARE_TRACE();
 
-  InspectorDOMStorageAgent* inspectorAgent() { return m_inspectorAgent; }
-  void setInspectorAgent(InspectorDOMStorageAgent* agent) {
-    m_inspectorAgent = agent;
+  InspectorDOMStorageAgent* InspectorAgent() { return inspector_agent_; }
+  void SetInspectorAgent(InspectorDOMStorageAgent* agent) {
+    inspector_agent_ = agent;
   }
 
  private:
   explicit StorageNamespaceController(StorageClient*);
-  static const char* supplementName();
-  std::unique_ptr<StorageNamespace> m_sessionStorage;
-  StorageClient* m_client;
-  Member<InspectorDOMStorageAgent> m_inspectorAgent;
+  static const char* SupplementName();
+  std::unique_ptr<StorageNamespace> session_storage_;
+  StorageClient* client_;
+  Member<InspectorDOMStorageAgent> inspector_agent_;
 };
 
 }  // namespace blink

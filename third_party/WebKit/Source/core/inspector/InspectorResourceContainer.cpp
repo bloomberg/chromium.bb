@@ -9,46 +9,46 @@
 namespace blink {
 
 InspectorResourceContainer::InspectorResourceContainer(
-    InspectedFrames* inspectedFrames)
-    : m_inspectedFrames(inspectedFrames) {}
+    InspectedFrames* inspected_frames)
+    : inspected_frames_(inspected_frames) {}
 
 InspectorResourceContainer::~InspectorResourceContainer() {}
 
 DEFINE_TRACE(InspectorResourceContainer) {
-  visitor->trace(m_inspectedFrames);
+  visitor->Trace(inspected_frames_);
 }
 
-void InspectorResourceContainer::didCommitLoadForLocalFrame(LocalFrame* frame) {
-  if (frame != m_inspectedFrames->root())
+void InspectorResourceContainer::DidCommitLoadForLocalFrame(LocalFrame* frame) {
+  if (frame != inspected_frames_->Root())
     return;
-  m_styleSheetContents.clear();
-  m_styleElementContents.clear();
+  style_sheet_contents_.Clear();
+  style_element_contents_.Clear();
 }
 
-void InspectorResourceContainer::storeStyleSheetContent(const String& url,
+void InspectorResourceContainer::StoreStyleSheetContent(const String& url,
                                                         const String& content) {
-  m_styleSheetContents.set(url, content);
+  style_sheet_contents_.Set(url, content);
 }
 
-bool InspectorResourceContainer::loadStyleSheetContent(const String& url,
+bool InspectorResourceContainer::LoadStyleSheetContent(const String& url,
                                                        String* content) {
-  if (!m_styleSheetContents.contains(url))
+  if (!style_sheet_contents_.Contains(url))
     return false;
-  *content = m_styleSheetContents.at(url);
+  *content = style_sheet_contents_.at(url);
   return true;
 }
 
-void InspectorResourceContainer::storeStyleElementContent(
-    int backendNodeId,
+void InspectorResourceContainer::StoreStyleElementContent(
+    int backend_node_id,
     const String& content) {
-  m_styleElementContents.set(backendNodeId, content);
+  style_element_contents_.Set(backend_node_id, content);
 }
 
-bool InspectorResourceContainer::loadStyleElementContent(int backendNodeId,
+bool InspectorResourceContainer::LoadStyleElementContent(int backend_node_id,
                                                          String* content) {
-  if (!m_styleElementContents.contains(backendNodeId))
+  if (!style_element_contents_.Contains(backend_node_id))
     return false;
-  *content = m_styleElementContents.at(backendNodeId);
+  *content = style_element_contents_.at(backend_node_id);
   return true;
 }
 

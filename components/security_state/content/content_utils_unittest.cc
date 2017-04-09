@@ -233,14 +233,14 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   security_info.security_level = security_state::HTTP_SHOW_WARNING;
   blink::WebSecurityStyle security_style =
       GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleNeutral, security_style);
+  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify no explanation was shown, because Form Not Secure was not triggered.
   EXPECT_EQ(0u, explanations.neutral_explanations.size());
 
   explanations.neutral_explanations.clear();
   security_info.displayed_credit_card_field_on_http = true;
   security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleNeutral, security_style);
+  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify one explanation was shown, because Form Not Secure was triggered.
   EXPECT_EQ(1u, explanations.neutral_explanations.size());
 
@@ -250,7 +250,7 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   security_info.displayed_credit_card_field_on_http = true;
   security_info.displayed_password_field_on_http = true;
   security_style = GetSecurityStyle(security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleNeutral, security_style);
+  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify only one explanation was shown when Form Not Secure is triggered.
   EXPECT_EQ(1u, explanations.neutral_explanations.size());
 }

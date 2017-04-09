@@ -9,45 +9,45 @@
 namespace blink {
 
 CSSAnimationData::CSSAnimationData() {
-  m_nameList.push_back(initialName());
-  m_iterationCountList.push_back(initialIterationCount());
-  m_directionList.push_back(initialDirection());
-  m_fillModeList.push_back(initialFillMode());
-  m_playStateList.push_back(initialPlayState());
+  name_list_.push_back(InitialName());
+  iteration_count_list_.push_back(InitialIterationCount());
+  direction_list_.push_back(InitialDirection());
+  fill_mode_list_.push_back(InitialFillMode());
+  play_state_list_.push_back(InitialPlayState());
 }
 
 CSSAnimationData::CSSAnimationData(const CSSAnimationData& other)
     : CSSTimingData(other),
-      m_nameList(other.m_nameList),
-      m_iterationCountList(other.m_iterationCountList),
-      m_directionList(other.m_directionList),
-      m_fillModeList(other.m_fillModeList),
-      m_playStateList(other.m_playStateList) {}
+      name_list_(other.name_list_),
+      iteration_count_list_(other.iteration_count_list_),
+      direction_list_(other.direction_list_),
+      fill_mode_list_(other.fill_mode_list_),
+      play_state_list_(other.play_state_list_) {}
 
-const AtomicString& CSSAnimationData::initialName() {
+const AtomicString& CSSAnimationData::InitialName() {
   DEFINE_STATIC_LOCAL(const AtomicString, name, ("none"));
   return name;
 }
 
-bool CSSAnimationData::animationsMatchForStyleRecalc(
+bool CSSAnimationData::AnimationsMatchForStyleRecalc(
     const CSSAnimationData& other) const {
-  return m_nameList == other.m_nameList &&
-         m_playStateList == other.m_playStateList &&
-         m_iterationCountList == other.m_iterationCountList &&
-         m_directionList == other.m_directionList &&
-         m_fillModeList == other.m_fillModeList &&
-         delayList() == other.delayList() &&
-         durationList() == other.durationList();
+  return name_list_ == other.name_list_ &&
+         play_state_list_ == other.play_state_list_ &&
+         iteration_count_list_ == other.iteration_count_list_ &&
+         direction_list_ == other.direction_list_ &&
+         fill_mode_list_ == other.fill_mode_list_ &&
+         DelayList() == other.DelayList() &&
+         DurationList() == other.DurationList();
 }
 
-Timing CSSAnimationData::convertToTiming(size_t index) const {
-  DCHECK_LT(index, m_nameList.size());
-  Timing timing = CSSTimingData::convertToTiming(index);
+Timing CSSAnimationData::ConvertToTiming(size_t index) const {
+  DCHECK_LT(index, name_list_.size());
+  Timing timing = CSSTimingData::ConvertToTiming(index);
 
-  timing.iterationCount = getRepeated(m_iterationCountList, index);
-  timing.direction = getRepeated(m_directionList, index);
-  timing.fillMode = getRepeated(m_fillModeList, index);
-  timing.assertValid();
+  timing.iteration_count = GetRepeated(iteration_count_list_, index);
+  timing.direction = GetRepeated(direction_list_, index);
+  timing.fill_mode = GetRepeated(fill_mode_list_, index);
+  timing.AssertValid();
   return timing;
 }
 

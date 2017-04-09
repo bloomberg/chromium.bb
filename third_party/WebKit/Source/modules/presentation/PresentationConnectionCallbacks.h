@@ -29,16 +29,16 @@ class PresentationConnectionCallbacks final
   ~PresentationConnectionCallbacks() override = default;
 
   // WebCallbacks implementation
-  void onSuccess(const WebPresentationInfo&) override;
-  void onError(const WebPresentationError&) override;
+  void OnSuccess(const WebPresentationInfo&) override;
+  void OnError(const WebPresentationError&) override;
 
   // WebPresentationConnectionCallbacks implementation
-  WebPresentationConnection* getConnection() override;
+  WebPresentationConnection* GetConnection() override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
-  Persistent<PresentationRequest> m_request;
-  WeakPersistent<PresentationConnection> m_connection;
+  Persistent<ScriptPromiseResolver> resolver_;
+  Persistent<PresentationRequest> request_;
+  WeakPersistent<PresentationConnection> connection_;
 
   WTF_MAKE_NONCOPYABLE(PresentationConnectionCallbacks);
 };

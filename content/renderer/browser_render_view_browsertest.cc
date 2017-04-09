@@ -60,7 +60,7 @@ class TestShellContentRendererClient : public ShellContentRendererClient {
       *error_html = "A suffusion of yellow.";
     latest_error_valid_ = true;
     latest_error_reason_ = error.reason;
-    latest_error_stale_copy_in_cache_ = error.staleCopyInCache;
+    latest_error_stale_copy_in_cache_ = error.stale_copy_in_cache;
   }
 
   bool GetLatestError(int* error_code, bool* stale_cache_entry_present) {

@@ -28,13 +28,13 @@ namespace blink {
 
 LayoutSVGTSpan::LayoutSVGTSpan(Element* element) : LayoutSVGInline(element) {}
 
-bool LayoutSVGTSpan::isChildAllowed(LayoutObject* child,
+bool LayoutSVGTSpan::IsChildAllowed(LayoutObject* child,
                                     const ComputedStyle&) const {
   // Always allow text (except empty textnodes and <br>).
-  if (child->isText())
-    return SVGLayoutSupport::isLayoutableTextNode(child);
+  if (child->IsText())
+    return SVGLayoutSupport::IsLayoutableTextNode(child);
 
-  return child->isSVGInline() && !child->isSVGTextPath();
+  return child->IsSVGInline() && !child->IsSVGTextPath();
 }
 
 }  // namespace blink

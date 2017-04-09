@@ -355,15 +355,15 @@ TEST_F(MAYBE_PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.setPositionInWidget(bounds.CenterPoint().x(),
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
                                   bounds.CenterPoint().y());
-  mouse_event.clickCount = 1;
+  mouse_event.click_count = 1;
   SendWebMouseEvent(mouse_event);
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   SendWebMouseEvent(mouse_event);
   ProcessPendingMessages();
 
@@ -413,10 +413,10 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithIframe) {
   // Find the frame and set it as the focused one.  This should mean that that
   // the printout should only contain the contents of that frame.
   auto* web_view = view_->GetWebView();
-  WebFrame* sub1_frame = web_view->findFrameByName(WebString::fromUTF8("sub1"));
+  WebFrame* sub1_frame = web_view->FindFrameByName(WebString::FromUTF8("sub1"));
   ASSERT_TRUE(sub1_frame);
-  web_view->setFocusedFrame(sub1_frame);
-  ASSERT_NE(web_view->focusedFrame(), web_view->mainFrame());
+  web_view->SetFocusedFrame(sub1_frame);
+  ASSERT_NE(web_view->FocusedFrame(), web_view->MainFrame());
 
   // Initiate printing.
   OnPrintPages();
@@ -662,15 +662,15 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
-                                   blink::WebInputEvent::NoModifiers,
-                                   blink::WebInputEvent::TimeStampForTesting);
-  mouse_event.button = blink::WebMouseEvent::Button::Left;
-  mouse_event.setPositionInWidget(bounds.CenterPoint().x(),
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
                                   bounds.CenterPoint().y());
-  mouse_event.clickCount = 1;
+  mouse_event.click_count = 1;
   SendWebMouseEvent(mouse_event);
-  mouse_event.setType(blink::WebInputEvent::MouseUp);
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   SendWebMouseEvent(mouse_event);
 
   VerifyPreviewRequest(true);
@@ -921,7 +921,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
 // Test to verify that preview generated only for one page.
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
-  GetMainFrame()->selectRange(blink::WebRange(1, 3));
+  GetMainFrame()->SelectRange(blink::WebRange(1, 3));
 
   // Fill in some dummy values.
   base::DictionaryValue dict;

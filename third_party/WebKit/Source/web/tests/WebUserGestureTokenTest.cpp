@@ -40,35 +40,35 @@ namespace blink {
 
 TEST(WebUserGestureTokenTest, Basic) {
   WebUserGestureToken token;
-  EXPECT_FALSE(token.hasGestures());
+  EXPECT_FALSE(token.HasGestures());
 
   {
     WebScopedUserGesture indicator(token);
-    EXPECT_FALSE(WebUserGestureIndicator::isProcessingUserGesture());
+    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
   }
 
   {
-    UserGestureIndicator indicator(DocumentUserGestureToken::create(
-        nullptr, UserGestureToken::NewGesture));
-    EXPECT_TRUE(WebUserGestureIndicator::isProcessingUserGesture());
-    token = WebUserGestureIndicator::currentUserGestureToken();
+    UserGestureIndicator indicator(DocumentUserGestureToken::Create(
+        nullptr, UserGestureToken::kNewGesture));
+    EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture());
+    token = WebUserGestureIndicator::CurrentUserGestureToken();
   }
 
-  EXPECT_TRUE(token.hasGestures());
-  EXPECT_FALSE(WebUserGestureIndicator::isProcessingUserGesture());
-
-  {
-    WebScopedUserGesture indicator(token);
-    EXPECT_TRUE(WebUserGestureIndicator::isProcessingUserGesture());
-    WebUserGestureIndicator::consumeUserGesture();
-    EXPECT_FALSE(WebUserGestureIndicator::isProcessingUserGesture());
-  }
-
-  EXPECT_FALSE(token.hasGestures());
+  EXPECT_TRUE(token.HasGestures());
+  EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
 
   {
     WebScopedUserGesture indicator(token);
-    EXPECT_FALSE(WebUserGestureIndicator::isProcessingUserGesture());
+    EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture());
+    WebUserGestureIndicator::ConsumeUserGesture();
+    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
+  }
+
+  EXPECT_FALSE(token.HasGestures());
+
+  {
+    WebScopedUserGesture indicator(token);
+    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
   }
 }
 

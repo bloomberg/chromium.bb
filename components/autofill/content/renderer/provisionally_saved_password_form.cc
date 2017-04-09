@@ -25,8 +25,8 @@ void ProvisionallySavedPasswordForm::Set(
 
 void ProvisionallySavedPasswordForm::Reset() {
   password_form_.reset();
-  form_element_.reset();
-  input_element_.reset();
+  form_element_.Reset();
+  input_element_.Reset();
 }
 
 bool ProvisionallySavedPasswordForm::IsSet() const {

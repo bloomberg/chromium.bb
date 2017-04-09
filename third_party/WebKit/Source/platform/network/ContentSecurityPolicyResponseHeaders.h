@@ -41,16 +41,16 @@ class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders final {
   ContentSecurityPolicyResponseHeaders() {}
   explicit ContentSecurityPolicyResponseHeaders(const ResourceResponse&);
 
-  const String& contentSecurityPolicy() const {
-    return m_contentSecurityPolicy;
+  const String& ContentSecurityPolicy() const {
+    return content_security_policy_;
   }
-  const String& contentSecurityPolicyReportOnly() const {
-    return m_contentSecurityPolicyReportOnly;
+  const String& ContentSecurityPolicyReportOnly() const {
+    return content_security_policy_report_only_;
   }
 
  private:
-  String m_contentSecurityPolicy;
-  String m_contentSecurityPolicyReportOnly;
+  String content_security_policy_;
+  String content_security_policy_report_only_;
 };
 
 }  // namespace blink

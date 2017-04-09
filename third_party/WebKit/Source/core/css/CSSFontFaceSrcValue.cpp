@@ -42,92 +42,92 @@
 
 namespace blink {
 
-bool CSSFontFaceSrcValue::isSupportedFormat() const {
+bool CSSFontFaceSrcValue::IsSupportedFormat() const {
   // Normally we would just check the format, but in order to avoid conflicts
   // with the old WinIE style of font-face, we will also check to see if the URL
   // ends with .eot.  If so, we'll go ahead and assume that we shouldn't load
   // it.
-  if (m_format.isEmpty()) {
-    return m_absoluteResource.startsWith("data:", TextCaseASCIIInsensitive) ||
-           !m_absoluteResource.endsWith(".eot", TextCaseASCIIInsensitive);
+  if (format_.IsEmpty()) {
+    return absolute_resource_.StartsWith("data:", kTextCaseASCIIInsensitive) ||
+           !absolute_resource_.EndsWith(".eot", kTextCaseASCIIInsensitive);
   }
 
-  return FontCustomPlatformData::supportsFormat(m_format);
+  return FontCustomPlatformData::SupportsFormat(format_);
 }
 
-String CSSFontFaceSrcValue::customCSSText() const {
+String CSSFontFaceSrcValue::CustomCSSText() const {
   StringBuilder result;
-  if (isLocal()) {
-    result.append("local(");
-    result.append(serializeString(m_absoluteResource));
-    result.append(')');
+  if (IsLocal()) {
+    result.Append("local(");
+    result.Append(SerializeString(absolute_resource_));
+    result.Append(')');
   } else {
-    result.append(serializeURI(m_specifiedResource));
+    result.Append(SerializeURI(specified_resource_));
   }
-  if (!m_format.isEmpty()) {
-    result.append(" format(");
-    result.append(serializeString(m_format));
-    result.append(')');
+  if (!format_.IsEmpty()) {
+    result.Append(" format(");
+    result.Append(SerializeString(format_));
+    result.Append(')');
   }
-  return result.toString();
+  return result.ToString();
 }
 
-bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const {
-  return m_fetched && m_fetched->resource()->loadFailedOrCanceled();
+bool CSSFontFaceSrcValue::HasFailedOrCanceledSubresources() const {
+  return fetched_ && fetched_->GetResource()->LoadFailedOrCanceled();
 }
 
-static void setCrossOriginAccessControl(FetchRequest& request,
-                                        SecurityOrigin* securityOrigin) {
+static void SetCrossOriginAccessControl(FetchRequest& request,
+                                        SecurityOrigin* security_origin) {
   // Local fonts are accessible from file: URLs even when
   // allowFileAccessFromFileURLs is false.
-  if (request.url().isLocalFile())
+  if (request.Url().IsLocalFile())
     return;
 
-  request.setCrossOriginAccessControl(securityOrigin,
-                                      CrossOriginAttributeAnonymous);
+  request.SetCrossOriginAccessControl(security_origin,
+                                      kCrossOriginAttributeAnonymous);
 }
 
-FontResource* CSSFontFaceSrcValue::fetch(Document* document) const {
-  if (!m_fetched) {
-    ResourceRequest resourceRequest(m_absoluteResource);
-    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-        m_referrer.referrerPolicy, resourceRequest.url(), m_referrer.referrer));
-    FetchRequest request(resourceRequest, FetchInitiatorTypeNames::css);
+FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
+  if (!fetched_) {
+    ResourceRequest resource_request(absolute_resource_);
+    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
+    FetchRequest request(resource_request, FetchInitiatorTypeNames::css);
     if (RuntimeEnabledFeatures::webFontsCacheAwareTimeoutAdaptationEnabled())
-      request.setCacheAwareLoadingEnabled(IsCacheAwareLoadingEnabled);
-    request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
-    SecurityOrigin* securityOrigin = document->getSecurityOrigin();
-    setCrossOriginAccessControl(request, securityOrigin);
-    FontResource* resource = FontResource::fetch(request, document->fetcher());
+      request.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
+    request.SetContentSecurityCheck(should_check_content_security_policy_);
+    SecurityOrigin* security_origin = document->GetSecurityOrigin();
+    SetCrossOriginAccessControl(request, security_origin);
+    FontResource* resource = FontResource::Fetch(request, document->Fetcher());
     if (!resource)
       return nullptr;
-    m_fetched = FontResourceHelper::create(resource);
+    fetched_ = FontResourceHelper::Create(resource);
   } else {
     // FIXME: CSSFontFaceSrcValue::fetch is invoked when @font-face rule
     // is processed by StyleResolver / StyleEngine.
-    restoreCachedResourceIfNeeded(document);
+    RestoreCachedResourceIfNeeded(document);
   }
-  return m_fetched->resource();
+  return fetched_->GetResource();
 }
 
-void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(
+void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
     Document* document) const {
-  DCHECK(m_fetched);
+  DCHECK(fetched_);
   DCHECK(document);
-  DCHECK(document->fetcher());
+  DCHECK(document->Fetcher());
 
-  const String resourceURL = document->completeURL(m_absoluteResource);
-  DCHECK_EQ(m_shouldCheckContentSecurityPolicy,
-            m_fetched->resource()->options().contentSecurityPolicyOption);
-  document->fetcher()->emulateLoadStartedForInspector(
-      m_fetched->resource(), KURL(ParsedURLString, resourceURL),
-      WebURLRequest::RequestContextFont, FetchInitiatorTypeNames::css);
+  const String resource_url = document->CompleteURL(absolute_resource_);
+  DCHECK_EQ(should_check_content_security_policy_,
+            fetched_->GetResource()->Options().content_security_policy_option);
+  document->Fetcher()->EmulateLoadStartedForInspector(
+      fetched_->GetResource(), KURL(kParsedURLString, resource_url),
+      WebURLRequest::kRequestContextFont, FetchInitiatorTypeNames::css);
 }
 
-bool CSSFontFaceSrcValue::equals(const CSSFontFaceSrcValue& other) const {
-  return m_isLocal == other.m_isLocal && m_format == other.m_format &&
-         m_specifiedResource == other.m_specifiedResource &&
-         m_absoluteResource == other.m_absoluteResource;
+bool CSSFontFaceSrcValue::Equals(const CSSFontFaceSrcValue& other) const {
+  return is_local_ == other.is_local_ && format_ == other.format_ &&
+         specified_resource_ == other.specified_resource_ &&
+         absolute_resource_ == other.absolute_resource_;
 }
 
 }  // namespace blink

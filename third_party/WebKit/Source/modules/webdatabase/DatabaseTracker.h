@@ -52,7 +52,7 @@ class MODULES_EXPORT DatabaseTracker {
   USING_FAST_MALLOC(DatabaseTracker);
 
  public:
-  static DatabaseTracker& tracker();
+  static DatabaseTracker& Tracker();
   // This singleton will potentially be used from multiple worker threads and
   // the page's context thread simultaneously.  To keep this safe, it's
   // currently using 4 locks.  In order to avoid deadlock when taking multiple
@@ -62,27 +62,27 @@ class MODULES_EXPORT DatabaseTracker {
   // m_databaseGuard and m_openDatabaseMapGuard currently don't overlap.
   // notificationMutex() is currently independent of the other locks.
 
-  bool canEstablishDatabase(DatabaseContext*,
+  bool CanEstablishDatabase(DatabaseContext*,
                             const String& name,
-                            const String& displayName,
-                            unsigned estimatedSize,
+                            const String& display_name,
+                            unsigned estimated_size,
                             DatabaseError&);
-  String fullPathForDatabase(SecurityOrigin*,
+  String FullPathForDatabase(SecurityOrigin*,
                              const String& name,
-                             bool createIfDoesNotExist = true);
+                             bool create_if_does_not_exist = true);
 
-  void addOpenDatabase(Database*);
-  void removeOpenDatabase(Database*);
+  void AddOpenDatabase(Database*);
+  void RemoveOpenDatabase(Database*);
 
-  unsigned long long getMaxSizeForDatabase(const Database*);
+  unsigned long long GetMaxSizeForDatabase(const Database*);
 
-  void closeDatabasesImmediately(SecurityOrigin*, const String& name);
+  void CloseDatabasesImmediately(SecurityOrigin*, const String& name);
 
   using DatabaseCallback = Function<void(Database*)>;
-  void forEachOpenDatabaseInPage(Page*, std::unique_ptr<DatabaseCallback>);
+  void ForEachOpenDatabaseInPage(Page*, std::unique_ptr<DatabaseCallback>);
 
-  void prepareToOpenDatabase(Database*);
-  void failedToOpenDatabase(Database*);
+  void PrepareToOpenDatabase(Database*);
+  void FailedToOpenDatabase(Database*);
 
  private:
   using DatabaseSet = HashSet<CrossThreadPersistent<Database>>;
@@ -91,13 +91,13 @@ class MODULES_EXPORT DatabaseTracker {
 
   DatabaseTracker();
 
-  void closeOneDatabaseImmediately(const String& originIdentifier,
+  void CloseOneDatabaseImmediately(const String& origin_identifier,
                                    const String& name,
                                    Database*);
 
-  Mutex m_openDatabaseMapGuard;
+  Mutex open_database_map_guard_;
 
-  mutable std::unique_ptr<DatabaseOriginMap> m_openDatabaseMap;
+  mutable std::unique_ptr<DatabaseOriginMap> open_database_map_;
 };
 
 }  // namespace blink

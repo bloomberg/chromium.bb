@@ -17,120 +17,121 @@
 namespace blink {
 
 ConstantSourceHandler::ConstantSourceHandler(AudioNode& node,
-                                             float sampleRate,
+                                             float sample_rate,
                                              AudioParamHandler& offset)
-    : AudioScheduledSourceHandler(NodeTypeConstantSource, node, sampleRate),
-      m_offset(offset),
-      m_sampleAccurateValues(AudioUtilities::kRenderQuantumFrames) {
+    : AudioScheduledSourceHandler(kNodeTypeConstantSource, node, sample_rate),
+      offset_(offset),
+      sample_accurate_values_(AudioUtilities::kRenderQuantumFrames) {
   // A ConstantSource is always mono.
-  addOutput(1);
+  AddOutput(1);
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<ConstantSourceHandler> ConstantSourceHandler::create(
+PassRefPtr<ConstantSourceHandler> ConstantSourceHandler::Create(
     AudioNode& node,
-    float sampleRate,
+    float sample_rate,
     AudioParamHandler& offset) {
-  return adoptRef(new ConstantSourceHandler(node, sampleRate, offset));
+  return AdoptRef(new ConstantSourceHandler(node, sample_rate, offset));
 }
 
 ConstantSourceHandler::~ConstantSourceHandler() {
-  uninitialize();
+  Uninitialize();
 }
 
-void ConstantSourceHandler::process(size_t framesToProcess) {
-  AudioBus* outputBus = output(0).bus();
-  DCHECK(outputBus);
+void ConstantSourceHandler::Process(size_t frames_to_process) {
+  AudioBus* output_bus = Output(0).Bus();
+  DCHECK(output_bus);
 
-  if (!isInitialized() || !outputBus->numberOfChannels()) {
-    outputBus->zero();
+  if (!IsInitialized() || !output_bus->NumberOfChannels()) {
+    output_bus->Zero();
     return;
   }
 
   // The audio thread can't block on this lock, so we call tryLock() instead.
-  MutexTryLocker tryLocker(m_processLock);
-  if (!tryLocker.locked()) {
+  MutexTryLocker try_locker(process_lock_);
+  if (!try_locker.Locked()) {
     // Too bad - the tryLock() failed.
-    outputBus->zero();
+    output_bus->Zero();
     return;
   }
 
-  size_t quantumFrameOffset;
-  size_t nonSilentFramesToProcess;
-  double startFrameOffset;
+  size_t quantum_frame_offset;
+  size_t non_silent_frames_to_process;
+  double start_frame_offset;
 
   // Figure out where in the current rendering quantum that the source is
   // active and for how many frames.
-  updateSchedulingInfo(framesToProcess, outputBus, quantumFrameOffset,
-                       nonSilentFramesToProcess, startFrameOffset);
+  UpdateSchedulingInfo(frames_to_process, output_bus, quantum_frame_offset,
+                       non_silent_frames_to_process, start_frame_offset);
 
-  if (!nonSilentFramesToProcess) {
-    outputBus->zero();
+  if (!non_silent_frames_to_process) {
+    output_bus->Zero();
     return;
   }
 
-  if (m_offset->hasSampleAccurateValues()) {
-    DCHECK_LE(framesToProcess, m_sampleAccurateValues.size());
-    if (framesToProcess <= m_sampleAccurateValues.size()) {
-      float* offsets = m_sampleAccurateValues.data();
-      m_offset->calculateSampleAccurateValues(offsets, framesToProcess);
-      if (nonSilentFramesToProcess > 0) {
-        memcpy(outputBus->channel(0)->mutableData() + quantumFrameOffset,
-               offsets + quantumFrameOffset,
-               nonSilentFramesToProcess * sizeof(*offsets));
-        outputBus->clearSilentFlag();
+  if (offset_->HasSampleAccurateValues()) {
+    DCHECK_LE(frames_to_process, sample_accurate_values_.size());
+    if (frames_to_process <= sample_accurate_values_.size()) {
+      float* offsets = sample_accurate_values_.Data();
+      offset_->CalculateSampleAccurateValues(offsets, frames_to_process);
+      if (non_silent_frames_to_process > 0) {
+        memcpy(output_bus->Channel(0)->MutableData() + quantum_frame_offset,
+               offsets + quantum_frame_offset,
+               non_silent_frames_to_process * sizeof(*offsets));
+        output_bus->ClearSilentFlag();
       } else {
-        outputBus->zero();
+        output_bus->Zero();
       }
     }
   } else {
-    float value = m_offset->value();
+    float value = offset_->Value();
 
     if (value == 0) {
-      outputBus->zero();
+      output_bus->Zero();
     } else {
-      float* dest = outputBus->channel(0)->mutableData();
-      dest += quantumFrameOffset;
-      for (unsigned k = 0; k < nonSilentFramesToProcess; ++k) {
+      float* dest = output_bus->Channel(0)->MutableData();
+      dest += quantum_frame_offset;
+      for (unsigned k = 0; k < non_silent_frames_to_process; ++k) {
         dest[k] = value;
       }
-      outputBus->clearSilentFlag();
+      output_bus->ClearSilentFlag();
     }
   }
 }
 
-bool ConstantSourceHandler::propagatesSilence() const {
-  return !isPlayingOrScheduled() || hasFinished();
+bool ConstantSourceHandler::PropagatesSilence() const {
+  return !IsPlayingOrScheduled() || HasFinished();
 }
 
 // ----------------------------------------------------------------
 ConstantSourceNode::ConstantSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
-      m_offset(AudioParam::create(context, ParamTypeConstantSourceValue, 1)) {
-  setHandler(ConstantSourceHandler::create(*this, context.sampleRate(),
-                                           m_offset->handler()));
+      offset_(AudioParam::Create(context, kParamTypeConstantSourceValue, 1)) {
+  SetHandler(ConstantSourceHandler::Create(*this, context.sampleRate(),
+                                           offset_->Handler()));
 }
 
-ConstantSourceNode* ConstantSourceNode::create(BaseAudioContext& context,
-                                               ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+ConstantSourceNode* ConstantSourceNode::Create(
+    BaseAudioContext& context,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
   return new ConstantSourceNode(context);
 }
 
-ConstantSourceNode* ConstantSourceNode::create(
+ConstantSourceNode* ConstantSourceNode::Create(
     BaseAudioContext* context,
     const ConstantSourceOptions& options,
-    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  ConstantSourceNode* node = create(*context, exceptionState);
+  ConstantSourceNode* node = Create(*context, exception_state);
 
   if (!node)
     return nullptr;
@@ -141,16 +142,16 @@ ConstantSourceNode* ConstantSourceNode::create(
 }
 
 DEFINE_TRACE(ConstantSourceNode) {
-  visitor->trace(m_offset);
-  AudioScheduledSourceNode::trace(visitor);
+  visitor->Trace(offset_);
+  AudioScheduledSourceNode::Trace(visitor);
 }
 
-ConstantSourceHandler& ConstantSourceNode::constantSourceHandler() const {
-  return static_cast<ConstantSourceHandler&>(handler());
+ConstantSourceHandler& ConstantSourceNode::GetConstantSourceHandler() const {
+  return static_cast<ConstantSourceHandler&>(Handler());
 }
 
 AudioParam* ConstantSourceNode::offset() {
-  return m_offset;
+  return offset_;
 }
 
 }  // namespace blink

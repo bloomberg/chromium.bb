@@ -43,106 +43,108 @@ namespace {
 
 struct ExceptionParams {
   ExceptionParams(ExceptionCode code,
-                  const String& defaultMessage = String(),
+                  const String& default_message = String(),
                   const String& message = String())
-      : code(code), message(message.isEmpty() ? defaultMessage : message) {}
+      : code(code), message(message.IsEmpty() ? default_message : message) {}
 
   ExceptionCode code;
   String message;
 };
 
-ExceptionParams getExceptionParams(const WebServiceWorkerError& webError) {
-  switch (webError.errorType) {
-    case WebServiceWorkerError::ErrorTypeAbort:
-      return ExceptionParams(AbortError,
+ExceptionParams GetExceptionParams(const WebServiceWorkerError& web_error) {
+  switch (web_error.error_type) {
+    case WebServiceWorkerError::kErrorTypeAbort:
+      return ExceptionParams(kAbortError,
                              "The Service Worker operation was aborted.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeActivate:
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeActivate:
       // Not currently returned as a promise rejection.
       // TODO: Introduce new ActivateError type to ExceptionCodes?
-      return ExceptionParams(AbortError,
+      return ExceptionParams(kAbortError,
                              "The Service Worker activation failed.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeDisabled:
-      return ExceptionParams(NotSupportedError,
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeDisabled:
+      return ExceptionParams(kNotSupportedError,
                              "Service Worker support is disabled.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeInstall:
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeInstall:
       // TODO: Introduce new InstallError type to ExceptionCodes?
-      return ExceptionParams(AbortError,
+      return ExceptionParams(kAbortError,
                              "The Service Worker installation failed.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeScriptEvaluateFailed:
-      return ExceptionParams(AbortError,
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeScriptEvaluateFailed:
+      return ExceptionParams(kAbortError,
                              "The Service Worker script failed to evaluate.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeNavigation:
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeNavigation:
       // ErrorTypeNavigation should have bailed out before calling this.
       ASSERT_NOT_REACHED();
-      return ExceptionParams(UnknownError);
-    case WebServiceWorkerError::ErrorTypeNetwork:
-      return ExceptionParams(NetworkError,
+      return ExceptionParams(kUnknownError);
+    case WebServiceWorkerError::kErrorTypeNetwork:
+      return ExceptionParams(kNetworkError,
                              "The Service Worker failed by network.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeNotFound:
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeNotFound:
       return ExceptionParams(
-          NotFoundError, "The specified Service Worker resource was not found.",
-          webError.message);
-    case WebServiceWorkerError::ErrorTypeSecurity:
+          kNotFoundError,
+          "The specified Service Worker resource was not found.",
+          web_error.message);
+    case WebServiceWorkerError::kErrorTypeSecurity:
       return ExceptionParams(
-          SecurityError,
+          kSecurityError,
           "The Service Worker security policy prevented an action.",
-          webError.message);
-    case WebServiceWorkerError::ErrorTypeState:
-      return ExceptionParams(InvalidStateError,
+          web_error.message);
+    case WebServiceWorkerError::kErrorTypeState:
+      return ExceptionParams(kInvalidStateError,
                              "The Service Worker state was not valid.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeTimeout:
-      return ExceptionParams(AbortError,
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeTimeout:
+      return ExceptionParams(kAbortError,
                              "The Service Worker operation timed out.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeUnknown:
-      return ExceptionParams(UnknownError,
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeUnknown:
+      return ExceptionParams(kUnknownError,
                              "An unknown error occurred within Service Worker.",
-                             webError.message);
-    case WebServiceWorkerError::ErrorTypeType:
+                             web_error.message);
+    case WebServiceWorkerError::kErrorTypeType:
       // ErrorTypeType should have been handled before reaching this point.
       ASSERT_NOT_REACHED();
-      return ExceptionParams(UnknownError);
+      return ExceptionParams(kUnknownError);
   }
   ASSERT_NOT_REACHED();
-  return ExceptionParams(UnknownError);
+  return ExceptionParams(kUnknownError);
 }
 
 }  // namespace
 
 // static
-DOMException* ServiceWorkerError::take(ScriptPromiseResolver*,
-                                       const WebServiceWorkerError& webError) {
-  ExceptionParams params = getExceptionParams(webError);
-  ASSERT(params.code != UnknownError);
-  return DOMException::create(params.code, params.message);
+DOMException* ServiceWorkerError::Take(ScriptPromiseResolver*,
+                                       const WebServiceWorkerError& web_error) {
+  ExceptionParams params = GetExceptionParams(web_error);
+  ASSERT(params.code != kUnknownError);
+  return DOMException::Create(params.code, params.message);
 }
 
 // static
-v8::Local<v8::Value> ServiceWorkerErrorForUpdate::take(
+v8::Local<v8::Value> ServiceWorkerErrorForUpdate::Take(
     ScriptPromiseResolver* resolver,
-    const WebServiceWorkerError& webError) {
-  ScriptState* scriptState = resolver->getScriptState();
-  switch (webError.errorType) {
-    case WebServiceWorkerError::ErrorTypeNetwork:
-    case WebServiceWorkerError::ErrorTypeNotFound:
-    case WebServiceWorkerError::ErrorTypeScriptEvaluateFailed:
+    const WebServiceWorkerError& web_error) {
+  ScriptState* script_state = resolver->GetScriptState();
+  switch (web_error.error_type) {
+    case WebServiceWorkerError::kErrorTypeNetwork:
+    case WebServiceWorkerError::kErrorTypeNotFound:
+    case WebServiceWorkerError::kErrorTypeScriptEvaluateFailed:
       // According to the spec, these errors during update should result in
       // a TypeError.
-      return V8ThrowException::createTypeError(
-          scriptState->isolate(), getExceptionParams(webError).message);
-    case WebServiceWorkerError::ErrorTypeType:
-      return V8ThrowException::createTypeError(scriptState->isolate(),
-                                               webError.message);
+      return V8ThrowException::CreateTypeError(
+          script_state->GetIsolate(), GetExceptionParams(web_error).message);
+    case WebServiceWorkerError::kErrorTypeType:
+      return V8ThrowException::CreateTypeError(script_state->GetIsolate(),
+                                               web_error.message);
     default:
-      return ToV8(ServiceWorkerError::take(resolver, webError),
-                  scriptState->context()->Global(), scriptState->isolate());
+      return ToV8(ServiceWorkerError::Take(resolver, web_error),
+                  script_state->GetContext()->Global(),
+                  script_state->GetIsolate());
   }
 }
 

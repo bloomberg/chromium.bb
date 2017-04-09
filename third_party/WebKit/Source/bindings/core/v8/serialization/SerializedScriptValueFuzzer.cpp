@@ -26,8 +26,8 @@ namespace {
 
 // Intentionally leaked during fuzzing.
 // See testing/libfuzzer/efficient_fuzzer.md.
-DummyPageHolder* pageHolder = nullptr;
-WebBlobInfoArray* blobInfoArray = nullptr;
+DummyPageHolder* g_page_holder = nullptr;
+WebBlobInfoArray* g_blob_info_array = nullptr;
 
 enum : uint32_t {
   kFuzzMessagePorts = 1 << 0,
@@ -37,11 +37,11 @@ enum : uint32_t {
 class WebMessagePortChannelImpl final : public WebMessagePortChannel {
  public:
   // WebMessagePortChannel
-  void setClient(WebMessagePortChannelClient* client) override {}
-  void postMessage(const WebString&, WebMessagePortChannelArray) {
+  void SetClient(WebMessagePortChannelClient* client) override {}
+  void PostMessage(const WebString&, WebMessagePortChannelArray) {
     NOTIMPLEMENTED();
   }
-  bool tryGetMessage(WebString*, WebMessagePortChannelArray&) { return false; }
+  bool TryGetMessage(WebString*, WebMessagePortChannelArray&) { return false; }
 };
 
 }  // namespace
@@ -50,13 +50,13 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   const char kExposeGC[] = "--expose_gc";
   v8::V8::SetFlagsFromString(kExposeGC, sizeof(kExposeGC));
   InitializeBlinkFuzzTest(argc, argv);
-  pageHolder = DummyPageHolder::create().release();
-  pageHolder->frame().settings()->setScriptEnabled(true);
-  blobInfoArray = new WebBlobInfoArray();
-  blobInfoArray->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                              "text/plain", 12);
-  blobInfoArray->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
-                              "/native/path", "path", "text/plain");
+  g_page_holder = DummyPageHolder::Create().release();
+  g_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
+  g_blob_info_array = new WebBlobInfoArray();
+  g_blob_info_array->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                  "text/plain", 12);
+  g_blob_info_array->emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                  "/native/path", "path", "text/plain");
   return 0;
 }
 
@@ -67,35 +67,36 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
 
   // Used to control what kind of extra data is provided to the deserializer.
-  unsigned hash = StringHasher::hashMemory(data, size);
+  unsigned hash = StringHasher::HashMemory(data, size);
 
   SerializedScriptValue::DeserializeOptions options;
 
   // If message ports are requested, make some.
-  MessagePortArray* messagePorts = nullptr;
+  MessagePortArray* message_ports = nullptr;
   if (hash & kFuzzMessagePorts) {
-    options.messagePorts = new MessagePortArray(3);
-    std::generate(messagePorts->begin(), messagePorts->end(), []() {
-      MessagePort* port = MessagePort::create(pageHolder->document());
-      port->entangle(WTF::makeUnique<WebMessagePortChannelImpl>());
+    options.message_ports = new MessagePortArray(3);
+    std::generate(message_ports->begin(), message_ports->end(), []() {
+      MessagePort* port = MessagePort::Create(g_page_holder->GetDocument());
+      port->Entangle(WTF::MakeUnique<WebMessagePortChannelImpl>());
       return port;
     });
   }
 
   // If blobs are requested, supply blob info.
-  options.blobInfo = (hash & kFuzzBlobInfo) ? blobInfoArray : nullptr;
+  options.blob_info = (hash & kFuzzBlobInfo) ? g_blob_info_array : nullptr;
 
   // Set up.
-  ScriptState* scriptState = toScriptStateForMainWorld(&pageHolder->frame());
-  v8::Isolate* isolate = scriptState->isolate();
-  ScriptState::Scope scope(scriptState);
-  v8::TryCatch tryCatch(isolate);
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(&g_page_holder->GetFrame());
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ScriptState::Scope scope(script_state);
+  v8::TryCatch try_catch(isolate);
 
   // Deserialize.
-  RefPtr<SerializedScriptValue> serializedScriptValue =
-      SerializedScriptValue::create(reinterpret_cast<const char*>(data), size);
-  serializedScriptValue->deserialize(isolate, options);
-  CHECK(!tryCatch.HasCaught())
+  RefPtr<SerializedScriptValue> serialized_script_value =
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data), size);
+  serialized_script_value->Deserialize(isolate, options);
+  CHECK(!try_catch.HasCaught())
       << "deserialize() should return null rather than throwing an exception.";
 
   // Request a V8 GC. Oilpan will be invoked by the GC epilogue.
@@ -104,7 +105,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // a chain of persistent handles), so some objects may not be collected until
   // a subsequent iteration. This is slow enough as is, so we compromise on one
   // major GC, as opposed to the 5 used in V8GCController for unit tests.
-  V8PerIsolateData::mainThreadIsolate()->RequestGarbageCollectionForTesting(
+  V8PerIsolateData::MainThreadIsolate()->RequestGarbageCollectionForTesting(
       v8::Isolate::kFullGarbageCollection);
 
   return 0;

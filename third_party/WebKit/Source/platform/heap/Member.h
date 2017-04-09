@@ -17,130 +17,130 @@ template <typename T>
 class TraceWrapperMember;
 
 enum class TracenessMemberConfiguration {
-  Traced,
-  Untraced,
+  kTraced,
+  kUntraced,
 };
 
 template <typename T,
           TracenessMemberConfiguration tracenessConfiguration =
-              TracenessMemberConfiguration::Traced>
+              TracenessMemberConfiguration::kTraced>
 class MemberBase {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  MemberBase() : m_raw(nullptr) { saveCreationThreadState(); }
+  MemberBase() : raw_(nullptr) { SaveCreationThreadState(); }
 
-  MemberBase(std::nullptr_t) : m_raw(nullptr) { saveCreationThreadState(); }
+  MemberBase(std::nullptr_t) : raw_(nullptr) { SaveCreationThreadState(); }
 
-  MemberBase(T* raw) : m_raw(raw) {
-    saveCreationThreadState();
-    checkPointer();
+  MemberBase(T* raw) : raw_(raw) {
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
-  explicit MemberBase(T& raw) : m_raw(&raw) {
-    saveCreationThreadState();
-    checkPointer();
+  explicit MemberBase(T& raw) : raw_(&raw) {
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
-  MemberBase(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1)) {
-    saveCreationThreadState();
+  MemberBase(WTF::HashTableDeletedValueType) : raw_(reinterpret_cast<T*>(-1)) {
+    SaveCreationThreadState();
   }
 
-  bool isHashTableDeletedValue() const {
-    return m_raw == reinterpret_cast<T*>(-1);
+  bool IsHashTableDeletedValue() const {
+    return raw_ == reinterpret_cast<T*>(-1);
   }
 
-  MemberBase(const MemberBase& other) : m_raw(other) {
-    saveCreationThreadState();
-    checkPointer();
+  MemberBase(const MemberBase& other) : raw_(other) {
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
   template <typename U>
   MemberBase(const Persistent<U>& other) {
-    saveCreationThreadState();
-    m_raw = other;
-    checkPointer();
+    SaveCreationThreadState();
+    raw_ = other;
+    CheckPointer();
   }
 
   template <typename U>
-  MemberBase(const MemberBase<U>& other) : m_raw(other) {
-    saveCreationThreadState();
-    checkPointer();
+  MemberBase(const MemberBase<U>& other) : raw_(other) {
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
-  T* release() {
-    T* result = m_raw;
-    m_raw = nullptr;
+  T* Release() {
+    T* result = raw_;
+    raw_ = nullptr;
     return result;
   }
 
-  explicit operator bool() const { return m_raw; }
+  explicit operator bool() const { return raw_; }
 
-  operator T*() const { return m_raw; }
+  operator T*() const { return raw_; }
 
-  T* operator->() const { return m_raw; }
-  T& operator*() const { return *m_raw; }
+  T* operator->() const { return raw_; }
+  T& operator*() const { return *raw_; }
 
   template <typename U>
   MemberBase& operator=(const Persistent<U>& other) {
-    m_raw = other;
-    checkPointer();
+    raw_ = other;
+    CheckPointer();
     return *this;
   }
 
   template <typename U>
   MemberBase& operator=(const MemberBase<U>& other) {
-    m_raw = other;
-    checkPointer();
+    raw_ = other;
+    CheckPointer();
     return *this;
   }
 
   template <typename U>
   MemberBase& operator=(U* other) {
-    m_raw = other;
-    checkPointer();
+    raw_ = other;
+    CheckPointer();
     return *this;
   }
 
   MemberBase& operator=(std::nullptr_t) {
-    m_raw = nullptr;
+    raw_ = nullptr;
     return *this;
   }
 
-  void swap(MemberBase<T>& other) {
-    std::swap(m_raw, other.m_raw);
-    checkPointer();
+  void Swap(MemberBase<T>& other) {
+    std::swap(raw_, other.raw_);
+    CheckPointer();
   }
 
-  T* get() const { return m_raw; }
+  T* Get() const { return raw_; }
 
-  void clear() { m_raw = nullptr; }
+  void Clear() { raw_ = nullptr; }
 
  protected:
-  void checkPointer() {
+  void CheckPointer() {
 #if DCHECK_IS_ON()
-    if (!m_raw)
+    if (!raw_)
       return;
     // HashTable can store a special value (which is not aligned to the
     // allocation granularity) to Member<> to represent a deleted entry.
     // Thus we treat a pointer that is not aligned to the granularity
     // as a valid pointer.
-    if (reinterpret_cast<intptr_t>(m_raw) % allocationGranularity)
+    if (reinterpret_cast<intptr_t>(raw_) % kAllocationGranularity)
       return;
 
-    if (tracenessConfiguration != TracenessMemberConfiguration::Untraced) {
-      ThreadState* current = ThreadState::current();
+    if (tracenessConfiguration != TracenessMemberConfiguration::kUntraced) {
+      ThreadState* current = ThreadState::Current();
       DCHECK(current);
       // m_creationThreadState may be null when this is used in a heap
       // collection which initialized the Member with memset and the
       // constructor wasn't called.
-      if (m_creationThreadState) {
+      if (creation_thread_state_) {
         // Member should point to objects that belong in the same ThreadHeap.
-        DCHECK(m_creationThreadState->isOnThreadHeap(m_raw));
+        DCHECK(creation_thread_state_->IsOnThreadHeap(raw_));
         // Member should point to objects that belong in the same ThreadHeap.
-        DCHECK_EQ(&current->heap(), &m_creationThreadState->heap());
+        DCHECK_EQ(&current->Heap(), &creation_thread_state_->Heap());
       } else {
-        DCHECK(current->isOnThreadHeap(m_raw));
+        DCHECK(current->IsOnThreadHeap(raw_));
       }
     }
 
@@ -161,23 +161,23 @@ class MemberBase {
 #endif
   }
 
-  void saveCreationThreadState() {
+  void SaveCreationThreadState() {
 #if DCHECK_IS_ON()
-    if (tracenessConfiguration == TracenessMemberConfiguration::Untraced) {
-      m_creationThreadState = nullptr;
+    if (tracenessConfiguration == TracenessMemberConfiguration::kUntraced) {
+      creation_thread_state_ = nullptr;
     } else {
-      m_creationThreadState = ThreadState::current();
+      creation_thread_state_ = ThreadState::Current();
       // Members should be created in an attached thread. But an empty
       // value Member may be created on an unattached thread by a heap
       // collection iterator.
-      DCHECK(m_creationThreadState || !m_raw);
+      DCHECK(creation_thread_state_ || !raw_);
     }
 #endif
   }
 
-  T* m_raw;
+  T* raw_;
 #if DCHECK_IS_ON()
-  const ThreadState* m_creationThreadState;
+  const ThreadState* creation_thread_state_;
 #endif
 };
 
@@ -187,9 +187,9 @@ class MemberBase {
 // During the mark phase of the GC all live objects are marked as live and
 // all Member fields of a live object will be traced marked as live as well.
 template <typename T>
-class Member : public MemberBase<T, TracenessMemberConfiguration::Traced> {
+class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  typedef MemberBase<T, TracenessMemberConfiguration::Traced> Parent;
+  typedef MemberBase<T, TracenessMemberConfiguration::kTraced> Parent;
 
  public:
   Member() : Parent() {}
@@ -246,68 +246,68 @@ class SameThreadCheckedMember : public Member<T> {
   typedef Member<T> Parent;
 
  public:
-  SameThreadCheckedMember() : Parent() { saveCreationThreadState(); }
+  SameThreadCheckedMember() : Parent() { SaveCreationThreadState(); }
   SameThreadCheckedMember(std::nullptr_t) : Parent(nullptr) {
-    saveCreationThreadState();
+    SaveCreationThreadState();
   }
 
   SameThreadCheckedMember(T* raw) : Parent(raw) {
-    saveCreationThreadState();
-    checkPointer();
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
   SameThreadCheckedMember(T& raw) : Parent(raw) {
-    saveCreationThreadState();
-    checkPointer();
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
   SameThreadCheckedMember(WTF::HashTableDeletedValueType x) : Parent(x) {
-    saveCreationThreadState();
-    checkPointer();
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
   SameThreadCheckedMember(const SameThreadCheckedMember& other)
       : Parent(other) {
-    saveCreationThreadState();
+    SaveCreationThreadState();
   }
   template <typename U>
   SameThreadCheckedMember(const SameThreadCheckedMember<U>& other)
       : Parent(other) {
-    saveCreationThreadState();
-    checkPointer();
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
   template <typename U>
   SameThreadCheckedMember(const Persistent<U>& other) : Parent(other) {
-    saveCreationThreadState();
-    checkPointer();
+    SaveCreationThreadState();
+    CheckPointer();
   }
 
   template <typename U>
   SameThreadCheckedMember& operator=(const Persistent<U>& other) {
     Parent::operator=(other);
-    checkPointer();
+    CheckPointer();
     return *this;
   }
 
   template <typename U>
   SameThreadCheckedMember& operator=(const SameThreadCheckedMember<U>& other) {
     Parent::operator=(other);
-    checkPointer();
+    CheckPointer();
     return *this;
   }
 
   template <typename U>
   SameThreadCheckedMember& operator=(const WeakMember<U>& other) {
     Parent::operator=(other);
-    checkPointer();
+    CheckPointer();
     return *this;
   }
 
   template <typename U>
   SameThreadCheckedMember& operator=(U* other) {
     Parent::operator=(other);
-    checkPointer();
+    CheckPointer();
     return *this;
   }
 
@@ -317,40 +317,40 @@ class SameThreadCheckedMember : public Member<T> {
   }
 
  private:
-  void checkPointer() {
-    if (!this->m_raw)
+  void CheckPointer() {
+    if (!this->raw_)
       return;
     // HashTable can store a special value (which is not aligned to the
     // allocation granularity) to Member<> to represent a deleted entry.
     // Thus we treat a pointer that is not aligned to the granularity
     // as a valid pointer.
-    if (reinterpret_cast<intptr_t>(this->m_raw) % allocationGranularity)
+    if (reinterpret_cast<intptr_t>(this->raw_) % kAllocationGranularity)
       return;
 
-    ThreadState* current = ThreadState::current();
+    ThreadState* current = ThreadState::Current();
     DCHECK(current);
     // m_creationThreadState may be null when this is used in a heap
     // collection which initialized the Member with memset and the
     // constructor wasn't called.
-    if (m_creationThreadState) {
+    if (creation_thread_state_) {
       // Member should point to objects that belong in the same ThreadHeap.
-      CHECK(m_creationThreadState->isOnThreadHeap(this->m_raw));
+      CHECK(creation_thread_state_->IsOnThreadHeap(this->raw_));
       // Member should point to objects that belong in the same ThreadHeap.
-      CHECK_EQ(&current->heap(), &m_creationThreadState->heap());
+      CHECK_EQ(&current->Heap(), &creation_thread_state_->Heap());
     } else {
-      CHECK(current->isOnThreadHeap(this->m_raw));
+      CHECK(current->IsOnThreadHeap(this->raw_));
     }
   }
 
-  void saveCreationThreadState() {
-    m_creationThreadState = ThreadState::current();
+  void SaveCreationThreadState() {
+    creation_thread_state_ = ThreadState::Current();
     // All Members should be created in an attached thread, but an empty
     // value Member may be created on an unattached thread by a heap
     // collection iterator.
-    CHECK(this->m_creationThreadState || !this->m_raw);
+    CHECK(this->creation_thread_state_ || !this->raw_);
   }
 
-  const ThreadState* m_creationThreadState;
+  const ThreadState* creation_thread_state_;
 };
 
 // WeakMember is similar to Member in that it is used to point to other oilpan
@@ -361,8 +361,8 @@ class SameThreadCheckedMember : public Member<T> {
 // collected. At the time of GC the weak pointers will automatically be set to
 // null.
 template <typename T>
-class WeakMember : public MemberBase<T, TracenessMemberConfiguration::Traced> {
-  typedef MemberBase<T, TracenessMemberConfiguration::Traced> Parent;
+class WeakMember : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
+  typedef MemberBase<T, TracenessMemberConfiguration::kTraced> Parent;
 
  public:
   WeakMember() : Parent() {}
@@ -381,32 +381,32 @@ class WeakMember : public MemberBase<T, TracenessMemberConfiguration::Traced> {
 
   template <typename U>
   WeakMember& operator=(const Persistent<U>& other) {
-    this->m_raw = other;
-    this->checkPointer();
+    this->raw_ = other;
+    this->CheckPointer();
     return *this;
   }
 
   template <typename U>
   WeakMember& operator=(const Member<U>& other) {
-    this->m_raw = other;
-    this->checkPointer();
+    this->raw_ = other;
+    this->CheckPointer();
     return *this;
   }
 
   template <typename U>
   WeakMember& operator=(U* other) {
-    this->m_raw = other;
-    this->checkPointer();
+    this->raw_ = other;
+    this->CheckPointer();
     return *this;
   }
 
   WeakMember& operator=(std::nullptr_t) {
-    this->m_raw = nullptr;
+    this->raw_ = nullptr;
     return *this;
   }
 
  private:
-  T** cell() const { return const_cast<T**>(&this->m_raw); }
+  T** Cell() const { return const_cast<T**>(&this->raw_); }
 
   friend class Visitor;
 };
@@ -421,8 +421,8 @@ class WeakMember : public MemberBase<T, TracenessMemberConfiguration::Traced> {
 // while the raw pointer is pointing to the object.
 template <typename T>
 class UntracedMember final
-    : public MemberBase<T, TracenessMemberConfiguration::Untraced> {
-  typedef MemberBase<T, TracenessMemberConfiguration::Untraced> Parent;
+    : public MemberBase<T, TracenessMemberConfiguration::kUntraced> {
+  typedef MemberBase<T, TracenessMemberConfiguration::kUntraced> Parent;
 
  public:
   UntracedMember() : Parent() {}
@@ -441,27 +441,27 @@ class UntracedMember final
 
   template <typename U>
   UntracedMember& operator=(const Persistent<U>& other) {
-    this->m_raw = other;
-    this->checkPointer();
+    this->raw_ = other;
+    this->CheckPointer();
     return *this;
   }
 
   template <typename U>
   UntracedMember& operator=(const Member<U>& other) {
-    this->m_raw = other;
-    this->checkPointer();
+    this->raw_ = other;
+    this->CheckPointer();
     return *this;
   }
 
   template <typename U>
   UntracedMember& operator=(U* other) {
-    this->m_raw = other;
-    this->checkPointer();
+    this->raw_ = other;
+    this->CheckPointer();
     return *this;
   }
 
   UntracedMember& operator=(std::nullptr_t) {
-    this->m_raw = nullptr;
+    this->raw_ = nullptr;
     return *this;
   }
 };
@@ -475,11 +475,11 @@ template <typename T>
 struct MemberHash : PtrHash<T> {
   STATIC_ONLY(MemberHash);
   template <typename U>
-  static unsigned hash(const U& key) {
-    return PtrHash<T>::hash(key);
+  static unsigned GetHash(const U& key) {
+    return PtrHash<T>::GetHash(key);
   }
   template <typename U, typename V>
-  static bool equal(const U& a, const V& b) {
+  static bool Equal(const U& a, const V& b) {
     return a == b;
   }
 };

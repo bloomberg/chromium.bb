@@ -13,19 +13,19 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
   WTF_MAKE_NONCOPYABLE(CSSUnsupportedStyleValue);
 
  public:
-  static CSSUnsupportedStyleValue* create(const String& cssText) {
-    return new CSSUnsupportedStyleValue(cssText);
+  static CSSUnsupportedStyleValue* Create(const String& css_text) {
+    return new CSSUnsupportedStyleValue(css_text);
   }
 
-  StyleValueType type() const override { return StyleValueType::Unknown; }
-  const CSSValue* toCSSValue() const override;
-  const CSSValue* toCSSValueWithProperty(CSSPropertyID) const override;
-  String cssText() const override { return m_cssText; }
+  StyleValueType GetType() const override { return StyleValueType::kUnknown; }
+  const CSSValue* ToCSSValue() const override;
+  const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const override;
+  String cssText() const override { return css_text_; }
 
  private:
-  CSSUnsupportedStyleValue(const String& cssText) : m_cssText(cssText) {}
+  CSSUnsupportedStyleValue(const String& css_text) : css_text_(css_text) {}
 
-  String m_cssText;
+  String css_text_;
 };
 
 }  // namespace blink

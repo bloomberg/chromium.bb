@@ -27,19 +27,19 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 
  public:
-  static ScreenOrientation* create(LocalFrame*);
+  static ScreenOrientation* Create(LocalFrame*);
 
   ~ScreenOrientation() override;
 
   // EventTarget implementation.
-  const WTF::AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const WTF::AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   String type() const;
   unsigned short angle() const;
 
-  void setType(WebScreenOrientationType);
-  void setAngle(unsigned short);
+  void SetType(WebScreenOrientationType);
+  void SetAngle(unsigned short);
 
   ScriptPromise lock(ScriptState*, const AtomicString& orientation);
   void unlock();
@@ -47,17 +47,17 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
   // Helper being used by this class and LockOrientationCallback.
-  static const AtomicString& orientationTypeToString(WebScreenOrientationType);
+  static const AtomicString& OrientationTypeToString(WebScreenOrientationType);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit ScreenOrientation(LocalFrame*);
 
-  ScreenOrientationControllerImpl* controller();
+  ScreenOrientationControllerImpl* Controller();
 
-  WebScreenOrientationType m_type;
-  unsigned short m_angle;
+  WebScreenOrientationType type_;
+  unsigned short angle_;
 };
 
 }  // namespace blink

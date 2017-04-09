@@ -38,13 +38,13 @@ class VariableReference final : public Expression {
   explicit VariableReference(const String& name);
 
  private:
-  Value evaluate(EvaluationContext&) const override;
-  Value::Type resultType() const override {
+  Value Evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override {
     NOTREACHED();
-    return Value::NumberValue;
+    return Value::kNumberValue;
   }
 
-  String m_name;
+  String name_;
 };
 
 }  // namespace XPath

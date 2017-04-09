@@ -28,18 +28,18 @@ class RequestInit {
 
   String method;
   Member<Headers> headers;
-  Dictionary headersDictionary;
-  String contentType;
+  Dictionary headers_dictionary;
+  String content_type;
   Member<BytesConsumer> body;
   Referrer referrer;
   String mode;
   String credentials;
   String redirect;
   String integrity;
-  RefPtr<EncodedFormData> attachedCredential;
+  RefPtr<EncodedFormData> attached_credential;
   // True if any members in RequestInit are set and hence the referrer member
   // should be used in the Request constructor.
-  bool areAnyMembersSet;
+  bool are_any_members_set;
 };
 
 }  // namespace blink

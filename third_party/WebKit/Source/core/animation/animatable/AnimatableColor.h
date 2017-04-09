@@ -47,10 +47,10 @@ class AnimatableColorImpl {
   bool operator==(const AnimatableColorImpl&) const;
 
  private:
-  float m_alpha;
-  float m_red;
-  float m_green;
-  float m_blue;
+  float alpha_;
+  float red_;
+  float green_;
+  float blue_;
 };
 
 // This class handles both the regular and 'visted link' colors for a given
@@ -59,21 +59,21 @@ class AnimatableColorImpl {
 // but inefficient.
 class AnimatableColor final : public AnimatableValue {
  public:
-  static PassRefPtr<AnimatableColor> create(
+  static PassRefPtr<AnimatableColor> Create(
       const AnimatableColorImpl&,
-      const AnimatableColorImpl& visitedLinkColor);
+      const AnimatableColorImpl& visited_link_color);
 
  private:
   AnimatableColor(const AnimatableColorImpl& color,
-                  const AnimatableColorImpl& visitedLinkColor)
-      : m_color(color), m_visitedLinkColor(visitedLinkColor) {}
-  AnimatableType type() const override { return TypeColor; }
-  bool equalTo(const AnimatableValue*) const override;
-  const AnimatableColorImpl m_color;
-  const AnimatableColorImpl m_visitedLinkColor;
+                  const AnimatableColorImpl& visited_link_color)
+      : color_(color), visited_link_color_(visited_link_color) {}
+  AnimatableType GetType() const override { return kTypeColor; }
+  bool EqualTo(const AnimatableValue*) const override;
+  const AnimatableColorImpl color_;
+  const AnimatableColorImpl visited_link_color_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableColor, isColor());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableColor, IsColor());
 
 }  // namespace blink
 

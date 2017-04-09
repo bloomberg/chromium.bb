@@ -60,55 +60,55 @@ class CORE_EXPORT AnimationTimeline
   class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
    public:
     // Calls AnimationTimeline's wake() method after duration seconds.
-    virtual void wakeAfter(double duration) = 0;
-    virtual void serviceOnNextFrame() = 0;
+    virtual void WakeAfter(double duration) = 0;
+    virtual void ServiceOnNextFrame() = 0;
     virtual ~PlatformTiming() {}
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  static AnimationTimeline* create(Document*, PlatformTiming* = nullptr);
+  static AnimationTimeline* Create(Document*, PlatformTiming* = nullptr);
 
   virtual ~AnimationTimeline() {}
 
-  void serviceAnimations(TimingUpdateReason);
-  void scheduleNextService();
+  void ServiceAnimations(TimingUpdateReason);
+  void ScheduleNextService();
 
-  Animation* play(AnimationEffectReadOnly*);
+  Animation* Play(AnimationEffectReadOnly*);
   HeapVector<Member<Animation>> getAnimations();
 
-  void animationAttached(Animation&);
+  void AnimationAttached(Animation&);
 
-  bool isActive();
-  bool hasPendingUpdates() const {
-    return !m_animationsNeedingUpdate.isEmpty();
+  bool IsActive();
+  bool HasPendingUpdates() const {
+    return !animations_needing_update_.IsEmpty();
   }
-  double zeroTime();
-  double currentTime(bool& isNull);
+  double ZeroTime();
+  double currentTime(bool& is_null);
   double currentTime();
-  double currentTimeInternal(bool& isNull);
-  double currentTimeInternal();
+  double CurrentTimeInternal(bool& is_null);
+  double CurrentTimeInternal();
   void setCurrentTime(double);
-  void setCurrentTimeInternal(double);
-  double effectiveTime();
-  void pauseAnimationsForTesting(double);
+  void SetCurrentTimeInternal(double);
+  double EffectiveTime();
+  void PauseAnimationsForTesting(double);
 
-  void setAllCompositorPending(bool sourceChanged = false);
-  void setOutdatedAnimation(Animation*);
-  void clearOutdatedAnimation(Animation*);
-  bool hasOutdatedAnimation() const { return m_outdatedAnimationCount > 0; }
-  bool needsAnimationTimingUpdate();
-  void invalidateKeyframeEffects(const TreeScope&);
+  void SetAllCompositorPending(bool source_changed = false);
+  void SetOutdatedAnimation(Animation*);
+  void ClearOutdatedAnimation(Animation*);
+  bool HasOutdatedAnimation() const { return outdated_animation_count_ > 0; }
+  bool NeedsAnimationTimingUpdate();
+  void InvalidateKeyframeEffects(const TreeScope&);
 
-  void setPlaybackRate(double);
-  double playbackRate() const;
+  void SetPlaybackRate(double);
+  double PlaybackRate() const;
 
-  CompositorAnimationTimeline* compositorTimeline() const {
-    return m_compositorTimeline.get();
+  CompositorAnimationTimeline* CompositorTimeline() const {
+    return compositor_timeline_.get();
   }
 
-  Document* document() { return m_document.get(); }
-  void wake();
-  void resetForTesting();
+  Document* GetDocument() { return document_.Get(); }
+  void Wake();
+  void ResetForTesting();
 
   DECLARE_TRACE();
 
@@ -116,46 +116,46 @@ class CORE_EXPORT AnimationTimeline
   AnimationTimeline(Document*, PlatformTiming*);
 
  private:
-  Member<Document> m_document;
-  double m_zeroTime;
-  bool m_zeroTimeInitialized;
-  unsigned m_outdatedAnimationCount;
+  Member<Document> document_;
+  double zero_time_;
+  bool zero_time_initialized_;
+  unsigned outdated_animation_count_;
   // Animations which will be updated on the next frame
   // i.e. current, in effect, or had timing changed
-  HeapHashSet<Member<Animation>> m_animationsNeedingUpdate;
-  HeapHashSet<WeakMember<Animation>> m_animations;
+  HeapHashSet<Member<Animation>> animations_needing_update_;
+  HeapHashSet<WeakMember<Animation>> animations_;
 
-  double m_playbackRate;
+  double playback_rate_;
 
   friend class SMILTimeContainer;
-  static const double s_minimumDelay;
+  static const double kMinimumDelay;
 
-  Member<PlatformTiming> m_timing;
-  double m_lastCurrentTimeInternal;
+  Member<PlatformTiming> timing_;
+  double last_current_time_internal_;
 
-  std::unique_ptr<CompositorAnimationTimeline> m_compositorTimeline;
+  std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
 
   class AnimationTimelineTiming final : public PlatformTiming {
    public:
     AnimationTimelineTiming(AnimationTimeline* timeline)
-        : m_timeline(timeline),
-          m_timer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
-                                        timeline->document()),
-                  this,
-                  &AnimationTimelineTiming::timerFired) {
-      DCHECK(m_timeline);
+        : timeline_(timeline),
+          timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
+                                       timeline->GetDocument()),
+                 this,
+                 &AnimationTimelineTiming::TimerFired) {
+      DCHECK(timeline_);
     }
 
-    void wakeAfter(double duration) override;
-    void serviceOnNextFrame() override;
+    void WakeAfter(double duration) override;
+    void ServiceOnNextFrame() override;
 
-    void timerFired(TimerBase*) { m_timeline->wake(); }
+    void TimerFired(TimerBase*) { timeline_->Wake(); }
 
     DECLARE_VIRTUAL_TRACE();
 
    private:
-    Member<AnimationTimeline> m_timeline;
-    TaskRunnerTimer<AnimationTimelineTiming> m_timer;
+    Member<AnimationTimeline> timeline_;
+    TaskRunnerTimer<AnimationTimelineTiming> timer_;
   };
 
   friend class AnimationAnimationTimelineTest;

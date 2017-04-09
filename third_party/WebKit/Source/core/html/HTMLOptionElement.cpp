@@ -48,8 +48,7 @@ namespace blink {
 using namespace HTMLNames;
 
 HTMLOptionElement::HTMLOptionElement(Document& document)
-    : HTMLElement(optionTag, document), m_isSelected(false) {
-}
+    : HTMLElement(optionTag, document), is_selected_(false) {}
 
 // An explicit empty destructor should be in HTMLOptionElement.cpp, because
 // if an implicit destructor is used or an empty destructor is defined in
@@ -58,378 +57,379 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 // a compile error because of lack of ComputedStyle definition.
 HTMLOptionElement::~HTMLOptionElement() {}
 
-HTMLOptionElement* HTMLOptionElement::create(Document& document) {
+HTMLOptionElement* HTMLOptionElement::Create(Document& document) {
   HTMLOptionElement* option = new HTMLOptionElement(document);
-  option->ensureUserAgentShadowRoot();
+  option->EnsureUserAgentShadowRoot();
   return option;
 }
 
-HTMLOptionElement* HTMLOptionElement::createForJSConstructor(
+HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
     Document& document,
     const String& data,
     const AtomicString& value,
-    bool defaultSelected,
+    bool default_selected,
     bool selected,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   HTMLOptionElement* element = new HTMLOptionElement(document);
-  element->ensureUserAgentShadowRoot();
-  element->appendChild(Text::create(document, data.isNull() ? "" : data),
-                       exceptionState);
-  if (exceptionState.hadException())
+  element->EnsureUserAgentShadowRoot();
+  element->AppendChild(Text::Create(document, data.IsNull() ? "" : data),
+                       exception_state);
+  if (exception_state.HadException())
     return nullptr;
 
-  if (!value.isNull())
+  if (!value.IsNull())
     element->setValue(value);
-  if (defaultSelected)
-    element->setAttribute(selectedAttr, emptyAtom);
-  element->setSelected(selected);
+  if (default_selected)
+    element->setAttribute(selectedAttr, g_empty_atom);
+  element->SetSelected(selected);
 
   return element;
 }
 
-void HTMLOptionElement::attachLayoutTree(const AttachContext& context) {
-  AttachContext optionContext(context);
-  RefPtr<ComputedStyle> resolvedStyle;
-  if (!context.resolvedStyle && parentComputedStyle()) {
-    if (HTMLSelectElement* select = ownerSelectElement())
-      select->updateListOnLayoutObject();
-    resolvedStyle = originalStyleForLayoutObject();
-    optionContext.resolvedStyle = resolvedStyle.get();
+void HTMLOptionElement::AttachLayoutTree(const AttachContext& context) {
+  AttachContext option_context(context);
+  RefPtr<ComputedStyle> resolved_style;
+  if (!context.resolved_style && ParentComputedStyle()) {
+    if (HTMLSelectElement* select = OwnerSelectElement())
+      select->UpdateListOnLayoutObject();
+    resolved_style = OriginalStyleForLayoutObject();
+    option_context.resolved_style = resolved_style.Get();
   }
-  HTMLElement::attachLayoutTree(optionContext);
+  HTMLElement::AttachLayoutTree(option_context);
 }
 
-bool HTMLOptionElement::supportsFocus() const {
-  HTMLSelectElement* select = ownerSelectElement();
-  if (select && select->usesMenuList())
+bool HTMLOptionElement::SupportsFocus() const {
+  HTMLSelectElement* select = OwnerSelectElement();
+  if (select && select->UsesMenuList())
     return false;
-  return HTMLElement::supportsFocus();
+  return HTMLElement::SupportsFocus();
 }
 
-bool HTMLOptionElement::matchesDefaultPseudoClass() const {
-  return fastHasAttribute(selectedAttr);
+bool HTMLOptionElement::MatchesDefaultPseudoClass() const {
+  return FastHasAttribute(selectedAttr);
 }
 
-bool HTMLOptionElement::matchesEnabledPseudoClass() const {
-  return !isDisabledFormControl();
+bool HTMLOptionElement::MatchesEnabledPseudoClass() const {
+  return !IsDisabledFormControl();
 }
 
-String HTMLOptionElement::displayLabel() const {
-  Document& document = this->document();
+String HTMLOptionElement::DisplayLabel() const {
+  Document& document = this->GetDocument();
   String text;
 
   // WinIE does not use the label attribute, so as a quirk, we ignore it.
-  if (!document.inQuirksMode())
-    text = fastGetAttribute(labelAttr);
+  if (!document.InQuirksMode())
+    text = FastGetAttribute(labelAttr);
 
   // FIXME: The following treats an element with the label attribute set to
   // the empty string the same as an element with no label attribute at all.
   // Is that correct? If it is, then should the label function work the same
   // way?
-  if (text.isEmpty())
-    text = collectOptionInnerText();
+  if (text.IsEmpty())
+    text = CollectOptionInnerText();
 
-  return text.stripWhiteSpace(isHTMLSpace<UChar>)
-      .simplifyWhiteSpace(isHTMLSpace<UChar>);
+  return text.StripWhiteSpace(IsHTMLSpace<UChar>)
+      .SimplifyWhiteSpace(IsHTMLSpace<UChar>);
 }
 
 String HTMLOptionElement::text() const {
-  return collectOptionInnerText()
-      .stripWhiteSpace(isHTMLSpace<UChar>)
-      .simplifyWhiteSpace(isHTMLSpace<UChar>);
+  return CollectOptionInnerText()
+      .StripWhiteSpace(IsHTMLSpace<UChar>)
+      .SimplifyWhiteSpace(IsHTMLSpace<UChar>);
 }
 
 void HTMLOptionElement::setText(const String& text,
-                                ExceptionState& exceptionState) {
+                                ExceptionState& exception_state) {
   // Changing the text causes a recalc of a select's items, which will reset the
   // selected index to the first item if the select is single selection with a
   // menu list.  We attempt to preserve the selected item.
-  HTMLSelectElement* select = ownerSelectElement();
-  bool selectIsMenuList = select && select->usesMenuList();
-  int oldSelectedIndex = selectIsMenuList ? select->selectedIndex() : -1;
+  HTMLSelectElement* select = OwnerSelectElement();
+  bool select_is_menu_list = select && select->UsesMenuList();
+  int old_selected_index = select_is_menu_list ? select->selectedIndex() : -1;
 
-  if (hasOneTextChild()) {
-    toText(firstChild())->setData(text);
+  if (HasOneTextChild()) {
+    ToText(FirstChild())->setData(text);
   } else {
-    removeChildren();
-    appendChild(Text::create(document(), text), exceptionState);
+    RemoveChildren();
+    AppendChild(Text::Create(GetDocument(), text), exception_state);
   }
 
-  if (selectIsMenuList && select->selectedIndex() != oldSelectedIndex)
-    select->setSelectedIndex(oldSelectedIndex);
+  if (select_is_menu_list && select->selectedIndex() != old_selected_index)
+    select->setSelectedIndex(old_selected_index);
 }
 
-void HTMLOptionElement::accessKeyAction(bool) {
-  if (HTMLSelectElement* select = ownerSelectElement())
-    select->selectOptionByAccessKey(this);
+void HTMLOptionElement::AccessKeyAction(bool) {
+  if (HTMLSelectElement* select = OwnerSelectElement())
+    select->SelectOptionByAccessKey(this);
 }
 
 int HTMLOptionElement::index() const {
   // It would be faster to cache the index, but harder to get it right in all
   // cases.
 
-  HTMLSelectElement* selectElement = ownerSelectElement();
-  if (!selectElement)
+  HTMLSelectElement* select_element = OwnerSelectElement();
+  if (!select_element)
     return 0;
 
-  int optionIndex = 0;
-  for (const auto& option : selectElement->optionList()) {
+  int option_index = 0;
+  for (const auto& option : select_element->GetOptionList()) {
     if (option == this)
-      return optionIndex;
-    ++optionIndex;
+      return option_index;
+    ++option_index;
   }
 
   return 0;
 }
 
-int HTMLOptionElement::listIndex() const {
-  if (HTMLSelectElement* selectElement = ownerSelectElement())
-    return selectElement->listIndexForOption(*this);
+int HTMLOptionElement::ListIndex() const {
+  if (HTMLSelectElement* select_element = OwnerSelectElement())
+    return select_element->ListIndexForOption(*this);
   return -1;
 }
 
-void HTMLOptionElement::parseAttribute(
+void HTMLOptionElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
   if (name == valueAttr) {
-    if (HTMLDataListElement* dataList = ownerDataListElement())
-      dataList->optionElementChildrenChanged();
+    if (HTMLDataListElement* data_list = OwnerDataListElement())
+      data_list->OptionElementChildrenChanged();
   } else if (name == disabledAttr) {
-    if (params.oldValue.isNull() != params.newValue.isNull()) {
-      pseudoStateChanged(CSSSelector::PseudoDisabled);
-      pseudoStateChanged(CSSSelector::PseudoEnabled);
-      if (layoutObject())
-        LayoutTheme::theme().controlStateChanged(*layoutObject(),
-                                                 EnabledControlState);
+    if (params.old_value.IsNull() != params.new_value.IsNull()) {
+      PseudoStateChanged(CSSSelector::kPseudoDisabled);
+      PseudoStateChanged(CSSSelector::kPseudoEnabled);
+      if (GetLayoutObject())
+        LayoutTheme::GetTheme().ControlStateChanged(*GetLayoutObject(),
+                                                    kEnabledControlState);
     }
   } else if (name == selectedAttr) {
-    if (params.oldValue.isNull() != params.newValue.isNull() && !m_isDirty)
-      setSelected(!params.newValue.isNull());
-    pseudoStateChanged(CSSSelector::PseudoDefault);
+    if (params.old_value.IsNull() != params.new_value.IsNull() && !is_dirty_)
+      SetSelected(!params.new_value.IsNull());
+    PseudoStateChanged(CSSSelector::kPseudoDefault);
   } else if (name == labelAttr) {
-    updateLabel();
+    UpdateLabel();
   } else {
-    HTMLElement::parseAttribute(params);
+    HTMLElement::ParseAttribute(params);
   }
 }
 
 String HTMLOptionElement::value() const {
-  const AtomicString& value = fastGetAttribute(valueAttr);
-  if (!value.isNull())
+  const AtomicString& value = FastGetAttribute(valueAttr);
+  if (!value.IsNull())
     return value;
-  return collectOptionInnerText()
-      .stripWhiteSpace(isHTMLSpace<UChar>)
-      .simplifyWhiteSpace(isHTMLSpace<UChar>);
+  return CollectOptionInnerText()
+      .StripWhiteSpace(IsHTMLSpace<UChar>)
+      .SimplifyWhiteSpace(IsHTMLSpace<UChar>);
 }
 
 void HTMLOptionElement::setValue(const AtomicString& value) {
   setAttribute(valueAttr, value);
 }
 
-bool HTMLOptionElement::selected() const {
-  return m_isSelected;
+bool HTMLOptionElement::Selected() const {
+  return is_selected_;
 }
 
-void HTMLOptionElement::setSelected(bool selected) {
-  if (m_isSelected == selected)
+void HTMLOptionElement::SetSelected(bool selected) {
+  if (is_selected_ == selected)
     return;
 
-  setSelectedState(selected);
+  SetSelectedState(selected);
 
-  if (HTMLSelectElement* select = ownerSelectElement())
-    select->optionSelectionStateChanged(this, selected);
+  if (HTMLSelectElement* select = OwnerSelectElement())
+    select->OptionSelectionStateChanged(this, selected);
 }
 
 bool HTMLOptionElement::selectedForBinding() const {
-  return selected();
+  return Selected();
 }
 
 void HTMLOptionElement::setSelectedForBinding(bool selected) {
-  bool wasSelected = m_isSelected;
-  setSelected(selected);
+  bool was_selected = is_selected_;
+  SetSelected(selected);
 
   // As of December 2015, the HTML specification says the dirtiness becomes
   // true by |selected| setter unconditionally. However it caused a real bug,
   // crbug.com/570367, and is not compatible with other browsers.
   // Firefox seems not to set dirtiness if an option is owned by a select
   // element and selectedness is not changed.
-  if (ownerSelectElement() && wasSelected == m_isSelected)
+  if (OwnerSelectElement() && was_selected == is_selected_)
     return;
 
-  m_isDirty = true;
+  is_dirty_ = true;
 }
 
-void HTMLOptionElement::setSelectedState(bool selected) {
-  if (m_isSelected == selected)
+void HTMLOptionElement::SetSelectedState(bool selected) {
+  if (is_selected_ == selected)
     return;
 
-  m_isSelected = selected;
-  pseudoStateChanged(CSSSelector::PseudoChecked);
+  is_selected_ = selected;
+  PseudoStateChanged(CSSSelector::kPseudoChecked);
 
-  if (HTMLSelectElement* select = ownerSelectElement()) {
-    select->invalidateSelectedItems();
+  if (HTMLSelectElement* select = OwnerSelectElement()) {
+    select->InvalidateSelectedItems();
 
-    if (AXObjectCache* cache = document().existingAXObjectCache()) {
+    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
       // If there is a layoutObject (most common), fire accessibility
       // notifications only when it's a listbox (and not a menu list). If
       // there's no layoutObject, fire them anyway just to be safe (to make sure
       // the AX tree is in sync).
-      if (!select->layoutObject() || select->layoutObject()->isListBox()) {
-        cache->listboxOptionStateChanged(this);
-        cache->listboxSelectedChildrenChanged(select);
+      if (!select->GetLayoutObject() ||
+          select->GetLayoutObject()->IsListBox()) {
+        cache->ListboxOptionStateChanged(this);
+        cache->ListboxSelectedChildrenChanged(select);
       }
     }
   }
 }
 
-void HTMLOptionElement::setDirty(bool value) {
-  m_isDirty = true;
+void HTMLOptionElement::SetDirty(bool value) {
+  is_dirty_ = true;
 }
 
-void HTMLOptionElement::childrenChanged(const ChildrenChange& change) {
-  if (HTMLDataListElement* dataList = ownerDataListElement())
-    dataList->optionElementChildrenChanged();
-  else if (HTMLSelectElement* select = ownerSelectElement())
-    select->optionElementChildrenChanged(*this);
-  updateLabel();
-  HTMLElement::childrenChanged(change);
+void HTMLOptionElement::ChildrenChanged(const ChildrenChange& change) {
+  if (HTMLDataListElement* data_list = OwnerDataListElement())
+    data_list->OptionElementChildrenChanged();
+  else if (HTMLSelectElement* select = OwnerSelectElement())
+    select->OptionElementChildrenChanged(*this);
+  UpdateLabel();
+  HTMLElement::ChildrenChanged(change);
 }
 
-HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const {
-  return Traversal<HTMLDataListElement>::firstAncestor(*this);
+HTMLDataListElement* HTMLOptionElement::OwnerDataListElement() const {
+  return Traversal<HTMLDataListElement>::FirstAncestor(*this);
 }
 
-HTMLSelectElement* HTMLOptionElement::ownerSelectElement() const {
+HTMLSelectElement* HTMLOptionElement::OwnerSelectElement() const {
   if (!parentNode())
     return nullptr;
   if (isHTMLSelectElement(*parentNode()))
     return toHTMLSelectElement(parentNode());
   if (!isHTMLOptGroupElement(*parentNode()))
     return nullptr;
-  Node* grandParent = parentNode()->parentNode();
-  return isHTMLSelectElement(grandParent) ? toHTMLSelectElement(grandParent)
-                                          : nullptr;
+  Node* grand_parent = parentNode()->parentNode();
+  return isHTMLSelectElement(grand_parent) ? toHTMLSelectElement(grand_parent)
+                                           : nullptr;
 }
 
 String HTMLOptionElement::label() const {
-  const AtomicString& label = fastGetAttribute(labelAttr);
-  if (!label.isNull())
+  const AtomicString& label = FastGetAttribute(labelAttr);
+  if (!label.IsNull())
     return label;
-  return collectOptionInnerText()
-      .stripWhiteSpace(isHTMLSpace<UChar>)
-      .simplifyWhiteSpace(isHTMLSpace<UChar>);
+  return CollectOptionInnerText()
+      .StripWhiteSpace(IsHTMLSpace<UChar>)
+      .SimplifyWhiteSpace(IsHTMLSpace<UChar>);
 }
 
 void HTMLOptionElement::setLabel(const AtomicString& label) {
   setAttribute(labelAttr, label);
 }
 
-String HTMLOptionElement::textIndentedToRespectGroupLabel() const {
+String HTMLOptionElement::TextIndentedToRespectGroupLabel() const {
   ContainerNode* parent = parentNode();
   if (parent && isHTMLOptGroupElement(*parent))
-    return "    " + displayLabel();
-  return displayLabel();
+    return "    " + DisplayLabel();
+  return DisplayLabel();
 }
 
-bool HTMLOptionElement::ownElementDisabled() const {
-  return fastHasAttribute(disabledAttr);
+bool HTMLOptionElement::OwnElementDisabled() const {
+  return FastHasAttribute(disabledAttr);
 }
 
-bool HTMLOptionElement::isDisabledFormControl() const {
-  if (ownElementDisabled())
+bool HTMLOptionElement::IsDisabledFormControl() const {
+  if (OwnElementDisabled())
     return true;
   if (Element* parent = parentElement())
-    return isHTMLOptGroupElement(*parent) && parent->isDisabledFormControl();
+    return isHTMLOptGroupElement(*parent) && parent->IsDisabledFormControl();
   return false;
 }
 
-String HTMLOptionElement::defaultToolTip() const {
-  if (HTMLSelectElement* select = ownerSelectElement())
-    return select->defaultToolTip();
+String HTMLOptionElement::DefaultToolTip() const {
+  if (HTMLSelectElement* select = OwnerSelectElement())
+    return select->DefaultToolTip();
   return String();
 }
 
-Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLElement::insertedInto(insertionPoint);
-  if (HTMLSelectElement* select = ownerSelectElement()) {
-    if (insertionPoint == select || (isHTMLOptGroupElement(*insertionPoint) &&
-                                     insertionPoint->parentNode() == select))
-      select->optionInserted(*this, m_isSelected);
+Node::InsertionNotificationRequest HTMLOptionElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
+  if (HTMLSelectElement* select = OwnerSelectElement()) {
+    if (insertion_point == select || (isHTMLOptGroupElement(*insertion_point) &&
+                                      insertion_point->parentNode() == select))
+      select->OptionInserted(*this, is_selected_);
   }
-  return InsertionDone;
+  return kInsertionDone;
 }
 
-void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint) {
-  if (isHTMLSelectElement(*insertionPoint)) {
+void HTMLOptionElement::RemovedFrom(ContainerNode* insertion_point) {
+  if (isHTMLSelectElement(*insertion_point)) {
     if (!parentNode() || isHTMLOptGroupElement(*parentNode()))
-      toHTMLSelectElement(insertionPoint)->optionRemoved(*this);
-  } else if (isHTMLOptGroupElement(*insertionPoint)) {
-    Node* parent = insertionPoint->parentNode();
+      toHTMLSelectElement(insertion_point)->OptionRemoved(*this);
+  } else if (isHTMLOptGroupElement(*insertion_point)) {
+    Node* parent = insertion_point->parentNode();
     if (isHTMLSelectElement(parent))
-      toHTMLSelectElement(parent)->optionRemoved(*this);
+      toHTMLSelectElement(parent)->OptionRemoved(*this);
   }
-  HTMLElement::removedFrom(insertionPoint);
+  HTMLElement::RemovedFrom(insertion_point);
 }
 
-String HTMLOptionElement::collectOptionInnerText() const {
+String HTMLOptionElement::CollectOptionInnerText() const {
   StringBuilder text;
-  for (Node* node = firstChild(); node;) {
-    if (node->isTextNode())
-      text.append(node->nodeValue());
+  for (Node* node = FirstChild(); node;) {
+    if (node->IsTextNode())
+      text.Append(node->nodeValue());
     // Text nodes inside script elements are not part of the option text.
-    if (node->isElementNode() && toElement(node)->isScriptElement())
-      node = NodeTraversal::nextSkippingChildren(*node, this);
+    if (node->IsElementNode() && ToElement(node)->IsScriptElement())
+      node = NodeTraversal::NextSkippingChildren(*node, this);
     else
-      node = NodeTraversal::next(*node, this);
+      node = NodeTraversal::Next(*node, this);
   }
-  return text.toString();
+  return text.ToString();
 }
 
 HTMLFormElement* HTMLOptionElement::form() const {
-  if (HTMLSelectElement* selectElement = ownerSelectElement())
-    return selectElement->formOwner();
+  if (HTMLSelectElement* select_element = OwnerSelectElement())
+    return select_element->formOwner();
 
   return nullptr;
 }
 
-void HTMLOptionElement::didAddUserAgentShadowRoot(ShadowRoot& root) {
-  updateLabel();
+void HTMLOptionElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
+  UpdateLabel();
 }
 
-void HTMLOptionElement::updateLabel() {
-  if (ShadowRoot* root = userAgentShadowRoot())
-    root->setTextContent(displayLabel());
+void HTMLOptionElement::UpdateLabel() {
+  if (ShadowRoot* root = UserAgentShadowRoot())
+    root->setTextContent(DisplayLabel());
 }
 
-bool HTMLOptionElement::spatialNavigationFocused() const {
-  HTMLSelectElement* select = ownerSelectElement();
-  if (!select || !select->isFocused())
+bool HTMLOptionElement::SpatialNavigationFocused() const {
+  HTMLSelectElement* select = OwnerSelectElement();
+  if (!select || !select->IsFocused())
     return false;
-  return select->spatialNavigationFocusedOption() == this;
+  return select->SpatialNavigationFocusedOption() == this;
 }
 
-bool HTMLOptionElement::isDisplayNone() const {
+bool HTMLOptionElement::IsDisplayNone() const {
   // If the style is not set, then the node is still unattached.
   // We have to wait till it gets attached to read the display property.
-  const ComputedStyle* style = nonLayoutObjectComputedStyle();
+  const ComputedStyle* style = NonLayoutObjectComputedStyle();
   if (!style)
     return false;
 
-  if (style->display() != EDisplay::kNone) {
+  if (style->Display() != EDisplay::kNone) {
     // We need to check the parent's display property.  Parent's
     // display:none doesn't override children's display properties in
     // ComputedStyle.
     Element* parent = parentElement();
     DCHECK(parent);
     if (isHTMLOptGroupElement(*parent)) {
-      const ComputedStyle* parentStyle = parent->computedStyle()
-                                             ? parent->computedStyle()
-                                             : parent->ensureComputedStyle();
-      return !parentStyle || parentStyle->display() == EDisplay::kNone;
+      const ComputedStyle* parent_style = parent->GetComputedStyle()
+                                              ? parent->GetComputedStyle()
+                                              : parent->EnsureComputedStyle();
+      return !parent_style || parent_style->Display() == EDisplay::kNone;
     }
   }
-  return style->display() == EDisplay::kNone;
+  return style->Display() == EDisplay::kNone;
 }
 
 String HTMLOptionElement::innerText() {

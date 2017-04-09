@@ -45,29 +45,30 @@ namespace blink {
 
 namespace DOMWindowTimers {
 
-static bool isAllowed(ScriptState* scriptState,
-                      ExecutionContext* executionContext,
-                      bool isEval) {
-  if (executionContext->isDocument()) {
-    Document* document = static_cast<Document*>(executionContext);
-    if (!document->frame())
+static bool IsAllowed(ScriptState* script_state,
+                      ExecutionContext* execution_context,
+                      bool is_eval) {
+  if (execution_context->IsDocument()) {
+    Document* document = static_cast<Document*>(execution_context);
+    if (!document->GetFrame())
       return false;
-    if (isEval && !document->contentSecurityPolicy()->allowEval(
-                      scriptState, SecurityViolationReportingPolicy::Report,
-                      ContentSecurityPolicy::WillNotThrowException))
+    if (is_eval && !document->GetContentSecurityPolicy()->AllowEval(
+                       script_state, SecurityViolationReportingPolicy::kReport,
+                       ContentSecurityPolicy::kWillNotThrowException))
       return false;
     return true;
   }
-  if (executionContext->isWorkerGlobalScope()) {
-    WorkerGlobalScope* workerGlobalScope =
-        static_cast<WorkerGlobalScope*>(executionContext);
-    if (!workerGlobalScope->scriptController())
+  if (execution_context->IsWorkerGlobalScope()) {
+    WorkerGlobalScope* worker_global_scope =
+        static_cast<WorkerGlobalScope*>(execution_context);
+    if (!worker_global_scope->ScriptController())
       return false;
-    ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy();
-    if (isEval && policy &&
-        !policy->allowEval(scriptState,
-                           SecurityViolationReportingPolicy::Report,
-                           ContentSecurityPolicy::WillNotThrowException))
+    ContentSecurityPolicy* policy =
+        worker_global_scope->GetContentSecurityPolicy();
+    if (is_eval && policy &&
+        !policy->AllowEval(script_state,
+                           SecurityViolationReportingPolicy::kReport,
+                           ContentSecurityPolicy::kWillNotThrowException))
       return false;
     return true;
   }
@@ -75,84 +76,84 @@ static bool isAllowed(ScriptState* scriptState,
   return false;
 }
 
-int setTimeout(ScriptState* scriptState,
-               EventTarget& eventTarget,
+int setTimeout(ScriptState* script_state,
+               EventTarget& event_target,
                const ScriptValue& handler,
                int timeout,
                const Vector<ScriptValue>& arguments) {
-  ExecutionContext* executionContext = eventTarget.getExecutionContext();
-  if (!isAllowed(scriptState, executionContext, false))
+  ExecutionContext* execution_context = event_target.GetExecutionContext();
+  if (!IsAllowed(script_state, execution_context, false))
     return 0;
-  if (timeout >= 0 && executionContext->isDocument()) {
+  if (timeout >= 0 && execution_context->IsDocument()) {
     // FIXME: Crude hack that attempts to pass idle time to V8. This should
     // be done using the scheduler instead.
-    V8GCForContextDispose::instance().notifyIdle();
+    V8GCForContextDispose::Instance().NotifyIdle();
   }
-  ScheduledAction* action = ScheduledAction::create(
-      scriptState, executionContext, handler, arguments);
-  return DOMTimer::install(executionContext, action, timeout, true);
+  ScheduledAction* action = ScheduledAction::Create(
+      script_state, execution_context, handler, arguments);
+  return DOMTimer::Install(execution_context, action, timeout, true);
 }
 
-int setTimeout(ScriptState* scriptState,
-               EventTarget& eventTarget,
+int setTimeout(ScriptState* script_state,
+               EventTarget& event_target,
                const String& handler,
                int timeout,
                const Vector<ScriptValue>&) {
-  ExecutionContext* executionContext = eventTarget.getExecutionContext();
-  if (!isAllowed(scriptState, executionContext, true))
+  ExecutionContext* execution_context = event_target.GetExecutionContext();
+  if (!IsAllowed(script_state, execution_context, true))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
   // perfomance issue.
-  if (handler.isEmpty())
+  if (handler.IsEmpty())
     return 0;
-  if (timeout >= 0 && executionContext->isDocument()) {
+  if (timeout >= 0 && execution_context->IsDocument()) {
     // FIXME: Crude hack that attempts to pass idle time to V8. This should
     // be done using the scheduler instead.
-    V8GCForContextDispose::instance().notifyIdle();
+    V8GCForContextDispose::Instance().NotifyIdle();
   }
   ScheduledAction* action =
-      ScheduledAction::create(scriptState, executionContext, handler);
-  return DOMTimer::install(executionContext, action, timeout, true);
+      ScheduledAction::Create(script_state, execution_context, handler);
+  return DOMTimer::Install(execution_context, action, timeout, true);
 }
 
-int setInterval(ScriptState* scriptState,
-                EventTarget& eventTarget,
+int setInterval(ScriptState* script_state,
+                EventTarget& event_target,
                 const ScriptValue& handler,
                 int timeout,
                 const Vector<ScriptValue>& arguments) {
-  ExecutionContext* executionContext = eventTarget.getExecutionContext();
-  if (!isAllowed(scriptState, executionContext, false))
+  ExecutionContext* execution_context = event_target.GetExecutionContext();
+  if (!IsAllowed(script_state, execution_context, false))
     return 0;
-  ScheduledAction* action = ScheduledAction::create(
-      scriptState, executionContext, handler, arguments);
-  return DOMTimer::install(executionContext, action, timeout, false);
+  ScheduledAction* action = ScheduledAction::Create(
+      script_state, execution_context, handler, arguments);
+  return DOMTimer::Install(execution_context, action, timeout, false);
 }
 
-int setInterval(ScriptState* scriptState,
-                EventTarget& eventTarget,
+int setInterval(ScriptState* script_state,
+                EventTarget& event_target,
                 const String& handler,
                 int timeout,
                 const Vector<ScriptValue>&) {
-  ExecutionContext* executionContext = eventTarget.getExecutionContext();
-  if (!isAllowed(scriptState, executionContext, true))
+  ExecutionContext* execution_context = event_target.GetExecutionContext();
+  if (!IsAllowed(script_state, execution_context, true))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
   // perfomance issue.
-  if (handler.isEmpty())
+  if (handler.IsEmpty())
     return 0;
   ScheduledAction* action =
-      ScheduledAction::create(scriptState, executionContext, handler);
-  return DOMTimer::install(executionContext, action, timeout, false);
+      ScheduledAction::Create(script_state, execution_context, handler);
+  return DOMTimer::Install(execution_context, action, timeout, false);
 }
 
-void clearTimeout(EventTarget& eventTarget, int timeoutID) {
-  if (ExecutionContext* context = eventTarget.getExecutionContext())
-    DOMTimer::removeByID(context, timeoutID);
+void clearTimeout(EventTarget& event_target, int timeout_id) {
+  if (ExecutionContext* context = event_target.GetExecutionContext())
+    DOMTimer::RemoveByID(context, timeout_id);
 }
 
-void clearInterval(EventTarget& eventTarget, int timeoutID) {
-  if (ExecutionContext* context = eventTarget.getExecutionContext())
-    DOMTimer::removeByID(context, timeoutID);
+void clearInterval(EventTarget& event_target, int timeout_id) {
+  if (ExecutionContext* context = event_target.GetExecutionContext())
+    DOMTimer::RemoveByID(context, timeout_id);
 }
 
 }  // namespace DOMWindowTimers

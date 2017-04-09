@@ -33,15 +33,15 @@ class HTMLParamElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLParamElement);
 
-  const AtomicString& name() const;
-  const AtomicString& value() const;
+  const AtomicString& GetName() const;
+  const AtomicString& Value() const;
 
-  static bool isURLParameter(const String&);
+  static bool IsURLParameter(const String&);
 
  private:
   explicit HTMLParamElement(Document&);
 
-  bool isURLAttribute(const Attribute&) const override;
+  bool IsURLAttribute(const Attribute&) const override;
 };
 
 }  // namespace blink

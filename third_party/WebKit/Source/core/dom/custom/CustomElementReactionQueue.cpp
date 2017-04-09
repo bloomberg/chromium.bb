@@ -10,38 +10,38 @@
 
 namespace blink {
 
-CustomElementReactionQueue::CustomElementReactionQueue() : m_index(0u) {}
+CustomElementReactionQueue::CustomElementReactionQueue() : index_(0u) {}
 
 CustomElementReactionQueue::~CustomElementReactionQueue() {}
 
 DEFINE_TRACE(CustomElementReactionQueue) {
-  visitor->trace(m_reactions);
+  visitor->Trace(reactions_);
 }
 
-void CustomElementReactionQueue::add(CustomElementReaction* reaction) {
-  m_reactions.push_back(reaction);
+void CustomElementReactionQueue::Add(CustomElementReaction* reaction) {
+  reactions_.push_back(reaction);
 }
 
 // There is one queue per element, so this could be invoked
 // recursively.
-void CustomElementReactionQueue::invokeReactions(Element* element) {
+void CustomElementReactionQueue::InvokeReactions(Element* element) {
   TRACE_EVENT1("blink", "CustomElementReactionQueue::invokeReactions", "name",
-               element->localName().utf8());
-  while (m_index < m_reactions.size()) {
-    CustomElementReaction* reaction = m_reactions[m_index];
-    m_reactions[m_index++] = nullptr;
-    reaction->invoke(element);
+               element->localName().Utf8());
+  while (index_ < reactions_.size()) {
+    CustomElementReaction* reaction = reactions_[index_];
+    reactions_[index_++] = nullptr;
+    reaction->Invoke(element);
   }
   // Unlike V0CustomElementsCallbackQueue, reactions are always
   // inserted by steps which bump the global element queue. This
   // means we do not need queue "owner" guards.
   // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-reactions
-  clear();
+  Clear();
 }
 
-void CustomElementReactionQueue::clear() {
-  m_index = 0;
-  m_reactions.resize(0);
+void CustomElementReactionQueue::Clear() {
+  index_ = 0;
+  reactions_.Resize(0);
 }
 
 }  // namespace blink

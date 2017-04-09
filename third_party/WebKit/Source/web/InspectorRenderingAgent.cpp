@@ -16,39 +16,39 @@ namespace blink {
 using protocol::Response;
 
 namespace RenderingAgentState {
-static const char showDebugBorders[] = "showDebugBorders";
-static const char showFPSCounter[] = "showFPSCounter";
-static const char showPaintRects[] = "showPaintRects";
-static const char showScrollBottleneckRects[] = "showScrollBottleneckRects";
-static const char showSizeOnResize[] = "showSizeOnResize";
+static const char kShowDebugBorders[] = "showDebugBorders";
+static const char kShowFPSCounter[] = "showFPSCounter";
+static const char kShowPaintRects[] = "showPaintRects";
+static const char kShowScrollBottleneckRects[] = "showScrollBottleneckRects";
+static const char kShowSizeOnResize[] = "showSizeOnResize";
 }
 
-InspectorRenderingAgent* InspectorRenderingAgent::create(
-    WebLocalFrameImpl* webLocalFrameImpl,
+InspectorRenderingAgent* InspectorRenderingAgent::Create(
+    WebLocalFrameImpl* web_local_frame_impl,
     InspectorOverlay* overlay) {
-  return new InspectorRenderingAgent(webLocalFrameImpl, overlay);
+  return new InspectorRenderingAgent(web_local_frame_impl, overlay);
 }
 
 InspectorRenderingAgent::InspectorRenderingAgent(
-    WebLocalFrameImpl* webLocalFrameImpl,
+    WebLocalFrameImpl* web_local_frame_impl,
     InspectorOverlay* overlay)
-    : m_webLocalFrameImpl(webLocalFrameImpl), m_overlay(overlay) {}
+    : web_local_frame_impl_(web_local_frame_impl), overlay_(overlay) {}
 
-WebViewImpl* InspectorRenderingAgent::webViewImpl() {
-  return m_webLocalFrameImpl->viewImpl();
+WebViewImpl* InspectorRenderingAgent::GetWebViewImpl() {
+  return web_local_frame_impl_->ViewImpl();
 }
 
-void InspectorRenderingAgent::restore() {
+void InspectorRenderingAgent::Restore() {
   setShowDebugBorders(
-      m_state->booleanProperty(RenderingAgentState::showDebugBorders, false));
+      state_->booleanProperty(RenderingAgentState::kShowDebugBorders, false));
   setShowFPSCounter(
-      m_state->booleanProperty(RenderingAgentState::showFPSCounter, false));
+      state_->booleanProperty(RenderingAgentState::kShowFPSCounter, false));
   setShowPaintRects(
-      m_state->booleanProperty(RenderingAgentState::showPaintRects, false));
-  setShowScrollBottleneckRects(m_state->booleanProperty(
-      RenderingAgentState::showScrollBottleneckRects, false));
+      state_->booleanProperty(RenderingAgentState::kShowPaintRects, false));
+  setShowScrollBottleneckRects(state_->booleanProperty(
+      RenderingAgentState::kShowScrollBottleneckRects, false));
   setShowViewportSizeOnResize(
-      m_state->booleanProperty(RenderingAgentState::showSizeOnResize, false));
+      state_->booleanProperty(RenderingAgentState::kShowSizeOnResize, false));
 }
 
 Response InspectorRenderingAgent::disable() {
@@ -61,63 +61,66 @@ Response InspectorRenderingAgent::disable() {
 }
 
 Response InspectorRenderingAgent::setShowDebugBorders(bool show) {
-  m_state->setBoolean(RenderingAgentState::showDebugBorders, show);
+  state_->setBoolean(RenderingAgentState::kShowDebugBorders, show);
   if (show) {
-    Response response = compositingEnabled();
+    Response response = CompositingEnabled();
     if (!response.isSuccess())
       return response;
   }
-  webViewImpl()->setShowDebugBorders(show);
+  GetWebViewImpl()->SetShowDebugBorders(show);
   return Response::OK();
 }
 
 Response InspectorRenderingAgent::setShowFPSCounter(bool show) {
-  m_state->setBoolean(RenderingAgentState::showFPSCounter, show);
+  state_->setBoolean(RenderingAgentState::kShowFPSCounter, show);
   if (show) {
-    Response response = compositingEnabled();
+    Response response = CompositingEnabled();
     if (!response.isSuccess())
       return response;
   }
-  webViewImpl()->setShowFPSCounter(show);
+  GetWebViewImpl()->SetShowFPSCounter(show);
   return Response::OK();
 }
 
 Response InspectorRenderingAgent::setShowPaintRects(bool show) {
-  m_state->setBoolean(RenderingAgentState::showPaintRects, show);
-  webViewImpl()->setShowPaintRects(show);
-  if (!show && m_webLocalFrameImpl->frameView())
-    m_webLocalFrameImpl->frameView()->invalidate();
+  state_->setBoolean(RenderingAgentState::kShowPaintRects, show);
+  GetWebViewImpl()->SetShowPaintRects(show);
+  if (!show && web_local_frame_impl_->GetFrameView())
+    web_local_frame_impl_->GetFrameView()->Invalidate();
   return Response::OK();
 }
 
 Response InspectorRenderingAgent::setShowScrollBottleneckRects(bool show) {
-  m_state->setBoolean(RenderingAgentState::showScrollBottleneckRects, show);
+  state_->setBoolean(RenderingAgentState::kShowScrollBottleneckRects, show);
   if (show) {
-    Response response = compositingEnabled();
+    Response response = CompositingEnabled();
     if (!response.isSuccess())
       return response;
   }
-  webViewImpl()->setShowScrollBottleneckRects(show);
+  GetWebViewImpl()->SetShowScrollBottleneckRects(show);
   return Response::OK();
 }
 
 Response InspectorRenderingAgent::setShowViewportSizeOnResize(bool show) {
-  m_state->setBoolean(RenderingAgentState::showSizeOnResize, show);
-  if (m_overlay)
-    m_overlay->setShowViewportSizeOnResize(show);
+  state_->setBoolean(RenderingAgentState::kShowSizeOnResize, show);
+  if (overlay_)
+    overlay_->SetShowViewportSizeOnResize(show);
   return Response::OK();
 }
 
-Response InspectorRenderingAgent::compositingEnabled() {
-  if (!webViewImpl()->page()->settings().getAcceleratedCompositingEnabled())
+Response InspectorRenderingAgent::CompositingEnabled() {
+  if (!GetWebViewImpl()
+           ->GetPage()
+           ->GetSettings()
+           .GetAcceleratedCompositingEnabled())
     return Response::Error("Compositing mode is not supported");
   return Response::OK();
 }
 
 DEFINE_TRACE(InspectorRenderingAgent) {
-  visitor->trace(m_webLocalFrameImpl);
-  visitor->trace(m_overlay);
-  InspectorBaseAgent::trace(visitor);
+  visitor->Trace(web_local_frame_impl_);
+  visitor->Trace(overlay_);
+  InspectorBaseAgent::Trace(visitor);
 }
 
 }  // namespace blink

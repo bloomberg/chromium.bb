@@ -12,31 +12,31 @@ namespace blink {
 NotificationEvent::NotificationEvent(const AtomicString& type,
                                      const NotificationEventInit& initializer)
     : ExtendableEvent(type, initializer),
-      m_action(initializer.action()),
-      m_reply(initializer.reply()) {
+      action_(initializer.action()),
+      reply_(initializer.reply()) {
   if (initializer.hasNotification())
-    m_notification = initializer.notification();
+    notification_ = initializer.notification();
 }
 
 NotificationEvent::NotificationEvent(const AtomicString& type,
                                      const NotificationEventInit& initializer,
                                      WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer),
-      m_action(initializer.action()),
-      m_reply(initializer.reply()) {
+      action_(initializer.action()),
+      reply_(initializer.reply()) {
   if (initializer.hasNotification())
-    m_notification = initializer.notification();
+    notification_ = initializer.notification();
 }
 
 NotificationEvent::~NotificationEvent() {}
 
-const AtomicString& NotificationEvent::interfaceName() const {
+const AtomicString& NotificationEvent::InterfaceName() const {
   return EventNames::NotificationEvent;
 }
 
 DEFINE_TRACE(NotificationEvent) {
-  visitor->trace(m_notification);
-  ExtendableEvent::trace(visitor);
+  visitor->Trace(notification_);
+  ExtendableEvent::Trace(visitor);
 }
 
 }  // namespace blink

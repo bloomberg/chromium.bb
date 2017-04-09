@@ -353,7 +353,7 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling fields.
   content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(1, 1));
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   // Wait until that interaction causes the password value to be revealed.
   WaitForElementValue(expected_element, expected_value);

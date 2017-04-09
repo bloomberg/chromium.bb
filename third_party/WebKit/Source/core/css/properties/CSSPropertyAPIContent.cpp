@@ -18,56 +18,56 @@ using CSSCounterValue = cssvalue::CSSCounterValue;
 
 namespace {
 
-CSSValue* consumeAttr(CSSParserTokenRange args,
+CSSValue* ConsumeAttr(CSSParserTokenRange args,
                       const CSSParserContext* context) {
-  if (args.peek().type() != IdentToken)
+  if (args.Peek().GetType() != kIdentToken)
     return nullptr;
 
-  AtomicString attrName =
-      args.consumeIncludingWhitespace().value().toAtomicString();
-  if (!args.atEnd())
+  AtomicString attr_name =
+      args.ConsumeIncludingWhitespace().Value().ToAtomicString();
+  if (!args.AtEnd())
     return nullptr;
 
   // TODO(esprehn): This should be lowerASCII().
-  if (context->isHTMLDocument())
-    attrName = attrName.lower();
+  if (context->IsHTMLDocument())
+    attr_name = attr_name.Lower();
 
-  CSSFunctionValue* attrValue = CSSFunctionValue::create(CSSValueAttr);
-  attrValue->append(*CSSCustomIdentValue::create(attrName));
-  return attrValue;
+  CSSFunctionValue* attr_value = CSSFunctionValue::Create(CSSValueAttr);
+  attr_value->Append(*CSSCustomIdentValue::Create(attr_name));
+  return attr_value;
 }
 
-CSSValue* consumeCounterContent(CSSParserTokenRange args, bool counters) {
+CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
   CSSCustomIdentValue* identifier =
-      CSSPropertyParserHelpers::consumeCustomIdent(args);
+      CSSPropertyParserHelpers::ConsumeCustomIdent(args);
   if (!identifier)
     return nullptr;
 
   CSSStringValue* separator = nullptr;
   if (!counters) {
-    separator = CSSStringValue::create(String());
+    separator = CSSStringValue::Create(String());
   } else {
-    if (!CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args) ||
-        args.peek().type() != StringToken)
+    if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args) ||
+        args.Peek().GetType() != kStringToken)
       return nullptr;
-    separator = CSSStringValue::create(
-        args.consumeIncludingWhitespace().value().toString());
+    separator = CSSStringValue::Create(
+        args.ConsumeIncludingWhitespace().Value().ToString());
   }
 
-  CSSIdentifierValue* listStyle = nullptr;
-  if (CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(args)) {
-    CSSValueID id = args.peek().id();
+  CSSIdentifierValue* list_style = nullptr;
+  if (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)) {
+    CSSValueID id = args.Peek().Id();
     if ((id != CSSValueNone &&
          (id < CSSValueDisc || id > CSSValueKatakanaIroha)))
       return nullptr;
-    listStyle = CSSPropertyParserHelpers::consumeIdent(args);
+    list_style = CSSPropertyParserHelpers::ConsumeIdent(args);
   } else {
-    listStyle = CSSIdentifierValue::create(CSSValueDecimal);
+    list_style = CSSIdentifierValue::Create(CSSValueDecimal);
   }
 
-  if (!args.atEnd())
+  if (!args.AtEnd())
     return nullptr;
-  return CSSCounterValue::create(identifier, listStyle, separator);
+  return CSSCounterValue::Create(identifier, list_style, separator);
 }
 
 }  // namespace
@@ -75,38 +75,38 @@ CSSValue* consumeCounterContent(CSSParserTokenRange args, bool counters) {
 const CSSValue* CSSPropertyAPIContent::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (CSSPropertyParserHelpers::identMatches<CSSValueNone, CSSValueNormal>(
-          range.peek().id()))
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueNone, CSSValueNormal>(
+          range.Peek().Id()))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValueList* values = CSSValueList::createSpaceSeparated();
+  CSSValueList* values = CSSValueList::CreateSpaceSeparated();
 
   do {
-    CSSValue* parsedValue =
-        CSSPropertyParserHelpers::consumeImage(range, &context);
-    if (!parsedValue) {
-      parsedValue = CSSPropertyParserHelpers::consumeIdent<
+    CSSValue* parsed_value =
+        CSSPropertyParserHelpers::ConsumeImage(range, &context);
+    if (!parsed_value) {
+      parsed_value = CSSPropertyParserHelpers::ConsumeIdent<
           CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote,
           CSSValueNoCloseQuote>(range);
     }
-    if (!parsedValue)
-      parsedValue = CSSPropertyParserHelpers::consumeString(range);
-    if (!parsedValue) {
-      if (range.peek().functionId() == CSSValueAttr) {
-        parsedValue = consumeAttr(
-            CSSPropertyParserHelpers::consumeFunction(range), &context);
-      } else if (range.peek().functionId() == CSSValueCounter) {
-        parsedValue = consumeCounterContent(
-            CSSPropertyParserHelpers::consumeFunction(range), false);
-      } else if (range.peek().functionId() == CSSValueCounters) {
-        parsedValue = consumeCounterContent(
-            CSSPropertyParserHelpers::consumeFunction(range), true);
+    if (!parsed_value)
+      parsed_value = CSSPropertyParserHelpers::ConsumeString(range);
+    if (!parsed_value) {
+      if (range.Peek().FunctionId() == CSSValueAttr) {
+        parsed_value = ConsumeAttr(
+            CSSPropertyParserHelpers::ConsumeFunction(range), &context);
+      } else if (range.Peek().FunctionId() == CSSValueCounter) {
+        parsed_value = ConsumeCounterContent(
+            CSSPropertyParserHelpers::ConsumeFunction(range), false);
+      } else if (range.Peek().FunctionId() == CSSValueCounters) {
+        parsed_value = ConsumeCounterContent(
+            CSSPropertyParserHelpers::ConsumeFunction(range), true);
       }
-      if (!parsedValue)
+      if (!parsed_value)
         return nullptr;
     }
-    values->append(*parsedValue);
-  } while (!range.atEnd());
+    values->Append(*parsed_value);
+  } while (!range.AtEnd());
 
   return values;
 }

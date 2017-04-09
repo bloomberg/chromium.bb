@@ -134,7 +134,7 @@ void HandleElement(
     safe_browsing::ElementToNodeMap* element_to_node_map) {
   // Retrieve the link and resolve the link in case it's relative.
   blink::WebURL full_url =
-      element.document().completeURL(element.getAttribute("src"));
+      element.GetDocument().CompleteURL(element.GetAttribute("src"));
 
   const GURL& child_url = GURL(full_url);
   if (!child_url.is_empty() && child_url.is_valid()) {
@@ -143,7 +143,7 @@ void HandleElement(
 
   SafeBrowsingHostMsg_ThreatDOMDetails_Node child_node;
   child_node.url = child_url;
-  child_node.tag_name = element.tagName().utf8();
+  child_node.tag_name = element.TagName().Utf8();
   child_node.parent = summary_node->url;
 
   // Populate the element's attributes, but only collect the ones that are
@@ -155,13 +155,13 @@ void HandleElement(
     const std::vector<std::string> attributes_to_collect =
         tag_attribute_iter->attributes;
     for (const std::string& attribute : attributes_to_collect) {
-      blink::WebString attr_webstring = blink::WebString::fromASCII(attribute);
-      if (!element.hasAttribute(attr_webstring)) {
+      blink::WebString attr_webstring = blink::WebString::FromASCII(attribute);
+      if (!element.HasAttribute(attr_webstring)) {
         continue;
       }
       child_node.attributes.push_back(std::make_pair(
           attribute, TruncateAttributeString(
-                         element.getAttribute(attr_webstring).ascii())));
+                         element.GetAttribute(attr_webstring).Ascii())));
       if (child_node.attributes.size() == ThreatDOMDetails::kMaxAttributes) {
         break;
       }
@@ -173,8 +173,8 @@ void HandleElement(
   // also update the parent's children with the current node's ID.
   const int child_id = static_cast<int>(element_to_node_map->size()) + 1;
   child_node.node_id = child_id;
-  blink::WebNode cur_parent_element = element.parentNode();
-  while (!cur_parent_element.isNull()) {
+  blink::WebNode cur_parent_element = element.ParentNode();
+  while (!cur_parent_element.IsNull()) {
     if (element_to_node_map->count(cur_parent_element) > 0) {
       SafeBrowsingHostMsg_ThreatDOMDetails_Node* parent_node =
           GetNodeForElement(cur_parent_element, *element_to_node_map,
@@ -190,7 +190,7 @@ void HandleElement(
       // It's possible that the direct parent of this node wasn't handled, so it
       // isn't represented in |element_to_node_map|. Try walking up the
       // hierarchy to see if a parent further up was handled.
-      cur_parent_element = cur_parent_element.parentNode();
+      cur_parent_element = cur_parent_element.ParentNode();
     }
   }
   // Add the child node to the list of resources.
@@ -203,13 +203,13 @@ bool ShouldHandleElement(
     const blink::WebElement& element,
     const std::vector<TagAndAttributesItem>& tag_and_attributes_list) {
   // Resources with a SRC are always handled.
-  if ((element.hasHTMLTagName("iframe") || element.hasHTMLTagName("frame") ||
-       element.hasHTMLTagName("embed") || element.hasHTMLTagName("script")) &&
-      element.hasAttribute("src")) {
+  if ((element.HasHTMLTagName("iframe") || element.HasHTMLTagName("frame") ||
+       element.HasHTMLTagName("embed") || element.HasHTMLTagName("script")) &&
+      element.HasAttribute("src")) {
     return true;
   }
 
-  std::string tag_name_lower = base::ToLowerASCII(element.tagName().ascii());
+  std::string tag_name_lower = base::ToLowerASCII(element.TagName().Ascii());
   const auto& tag_attribute_iter =
       std::find_if(tag_and_attributes_list.begin(),
                    tag_and_attributes_list.end(), TagNameIs(tag_name_lower));
@@ -220,7 +220,7 @@ bool ShouldHandleElement(
   const std::vector<std::string>& valid_attributes =
       tag_attribute_iter->attributes;
   for (const std::string& attribute : valid_attributes) {
-    if (element.hasAttribute(blink::WebString::fromASCII(attribute))) {
+    if (element.HasAttribute(blink::WebString::FromASCII(attribute))) {
       return true;
     }
   }
@@ -275,18 +275,18 @@ void ThreatDOMDetails::ExtractResources(
   if (!frame)
     return;
   SafeBrowsingHostMsg_ThreatDOMDetails_Node details_node;
-  blink::WebDocument document = frame->document();
-  details_node.url = GURL(document.url());
-  if (document.isNull()) {
+  blink::WebDocument document = frame->GetDocument();
+  details_node.url = GURL(document.Url());
+  if (document.IsNull()) {
     // Nothing in this frame. Just report its URL.
     resources->push_back(details_node);
     return;
   }
 
   ElementToNodeMap element_to_node_map;
-  blink::WebElementCollection elements = document.all();
-  blink::WebElement element = elements.firstItem();
-  for (; !element.isNull(); element = elements.nextItem()) {
+  blink::WebElementCollection elements = document.All();
+  blink::WebElement element = elements.FirstItem();
+  for (; !element.IsNull(); element = elements.NextItem()) {
     if (ShouldHandleElement(element, tag_and_attributes_list_)) {
       HandleElement(element, tag_and_attributes_list_, &details_node, resources,
                     &element_to_node_map);

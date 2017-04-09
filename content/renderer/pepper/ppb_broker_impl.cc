@@ -103,7 +103,7 @@ int32_t PPB_Broker_Impl::GetHandle(int32_t* handle) {
 GURL PPB_Broker_Impl::GetDocumentUrl() {
   PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(pp_instance());
-  return plugin_instance->container()->document().url();
+  return plugin_instance->container()->GetDocument().Url();
 }
 
 // Transfers ownership of the handle to the plugin.

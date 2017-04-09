@@ -124,7 +124,7 @@ NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
   // TODO(ikilpatrick): The writing mode switching here looks wrong.
   NGBoxFragment float_fragment(
       floating_object->writing_mode,
-      toNGPhysicalBoxFragment(floating_object->fragment.get()));
+      ToNGPhysicalBoxFragment(floating_object->fragment.Get()));
 
   // Find a layout opportunity that will fit our float.
   NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
@@ -173,10 +173,10 @@ void PositionPendingFloats(const LayoutUnit& origin_block_offset,
     floating_object->origin_offset.block_offset = origin_block_offset;
     floating_object->from_offset.block_offset = bfc_block_offset;
 
-    NGLogicalOffset offset = PositionFloat(floating_object.get(), space);
+    NGLogicalOffset offset = PositionFloat(floating_object.Get(), space);
     builder->AddFloatingObject(floating_object, offset);
   }
-  builder->MutableUnpositionedFloats().clear();
+  builder->MutableUnpositionedFloats().Clear();
 }
 
 }  // namespace blink

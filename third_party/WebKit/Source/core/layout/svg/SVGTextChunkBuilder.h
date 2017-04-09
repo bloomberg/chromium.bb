@@ -45,24 +45,24 @@ class SVGTextChunkBuilder {
  public:
   SVGTextChunkBuilder();
 
-  void processTextChunks(const Vector<SVGInlineTextBox*>&);
+  void ProcessTextChunks(const Vector<SVGInlineTextBox*>&);
 
  protected:
   typedef Vector<SVGInlineTextBox*>::const_iterator BoxListConstIterator;
 
-  virtual void handleTextChunk(BoxListConstIterator boxStart,
-                               BoxListConstIterator boxEnd);
+  virtual void HandleTextChunk(BoxListConstIterator box_start,
+                               BoxListConstIterator box_end);
 
  private:
-  void processTextLengthSpacingCorrection(bool isVerticalText,
-                                          float textLengthShift,
+  void ProcessTextLengthSpacingCorrection(bool is_vertical_text,
+                                          float text_length_shift,
                                           Vector<SVGTextFragment>&,
-                                          unsigned& atCharacter);
-  void applyTextLengthScaleAdjustment(float textLengthScale,
-                                      float textLengthBias,
+                                          unsigned& at_character);
+  void ApplyTextLengthScaleAdjustment(float text_length_scale,
+                                      float text_length_bias,
                                       Vector<SVGTextFragment>&);
-  void processTextAnchorCorrection(bool isVerticalText,
-                                   float textAnchorShift,
+  void ProcessTextAnchorCorrection(bool is_vertical_text,
+                                   float text_anchor_shift,
                                    Vector<SVGTextFragment>&);
 };
 
@@ -73,17 +73,17 @@ class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
  public:
   SVGTextPathChunkBuilder();
 
-  float totalLength() const { return m_totalLength; }
-  unsigned totalCharacters() const { return m_totalCharacters; }
-  float totalTextAnchorShift() const { return m_totalTextAnchorShift; }
+  float TotalLength() const { return total_length_; }
+  unsigned TotalCharacters() const { return total_characters_; }
+  float TotalTextAnchorShift() const { return total_text_anchor_shift_; }
 
  private:
-  void handleTextChunk(BoxListConstIterator boxStart,
-                       BoxListConstIterator boxEnd) override;
+  void HandleTextChunk(BoxListConstIterator box_start,
+                       BoxListConstIterator box_end) override;
 
-  float m_totalLength;
-  unsigned m_totalCharacters;
-  float m_totalTextAnchorShift;
+  float total_length_;
+  unsigned total_characters_;
+  float total_text_anchor_shift_;
 };
 
 }  // namespace blink

@@ -14,7 +14,7 @@ class ICOImageDecoderTest : public ImageDecoderTest {
 
  protected:
   blink::WebImageDecoder* CreateWebKitImageDecoder() const override {
-     return new blink::WebImageDecoder(blink::WebImageDecoder::TypeICO);
+    return new blink::WebImageDecoder(blink::WebImageDecoder::kTypeICO);
   }
 };
 

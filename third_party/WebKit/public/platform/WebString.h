@@ -94,84 +94,84 @@ class WebString {
     kStrictReplacingErrorsWithFFFD,
   };
 
-  ~WebString() { reset(); }
+  ~WebString() { Reset(); }
 
   WebString() {}
 
-  WebString(const WebUChar* data, size_t len) { assign(data, len); }
+  WebString(const WebUChar* data, size_t len) { Assign(data, len); }
 
-  WebString(const WebString& s) { assign(s); }
+  WebString(const WebString& s) { Assign(s); }
 
   WebString& operator=(const WebString& s) {
-    assign(s);
+    Assign(s);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebString&);
-  BLINK_PLATFORM_EXPORT void assign(const WebUChar* data, size_t len);
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebString&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebUChar* data, size_t len);
 
-  BLINK_PLATFORM_EXPORT bool equals(const WebString&) const;
-  BLINK_PLATFORM_EXPORT bool equals(const char* characters, size_t len) const;
-  bool equals(const char* characters) const {
-    return equals(characters, characters ? strlen(characters) : 0);
+  BLINK_PLATFORM_EXPORT bool Equals(const WebString&) const;
+  BLINK_PLATFORM_EXPORT bool Equals(const char* characters, size_t len) const;
+  bool Equals(const char* characters) const {
+    return Equals(characters, characters ? strlen(characters) : 0);
   }
 
   BLINK_PLATFORM_EXPORT size_t length() const;
 
-  bool isEmpty() const { return !length(); }
-  bool isNull() const { return m_private.isNull(); }
+  bool IsEmpty() const { return !length(); }
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT std::string utf8(
+  BLINK_PLATFORM_EXPORT std::string Utf8(
       UTF8ConversionMode = UTF8ConversionMode::kLenient) const;
 
-  BLINK_PLATFORM_EXPORT static WebString fromUTF8(const char* data,
+  BLINK_PLATFORM_EXPORT static WebString FromUTF8(const char* data,
                                                   size_t length);
-  static WebString fromUTF8(const std::string& s) {
-    return fromUTF8(s.data(), s.length());
+  static WebString FromUTF8(const std::string& s) {
+    return FromUTF8(s.data(), s.length());
   }
 
-  base::string16 utf16() const {
-    return base::Latin1OrUTF16ToUTF16(length(), data8(), data16());
+  base::string16 Utf16() const {
+    return base::Latin1OrUTF16ToUTF16(length(), Data8(), Data16());
   }
 
-  BLINK_PLATFORM_EXPORT static WebString fromUTF16(const base::string16&);
+  BLINK_PLATFORM_EXPORT static WebString FromUTF16(const base::string16&);
 
-  BLINK_PLATFORM_EXPORT static WebString fromUTF16(
+  BLINK_PLATFORM_EXPORT static WebString FromUTF16(
       const base::NullableString16&);
 
-  static base::NullableString16 toNullableString16(const WebString& s) {
-    return base::NullableString16(s.utf16(), s.isNull());
+  static base::NullableString16 ToNullableString16(const WebString& s) {
+    return base::NullableString16(s.Utf16(), s.IsNull());
   }
 
-  BLINK_PLATFORM_EXPORT std::string latin1() const;
+  BLINK_PLATFORM_EXPORT std::string Latin1() const;
 
-  BLINK_PLATFORM_EXPORT static WebString fromLatin1(const WebLChar* data,
+  BLINK_PLATFORM_EXPORT static WebString FromLatin1(const WebLChar* data,
                                                     size_t length);
 
-  static WebString fromLatin1(const std::string& s) {
-    return fromLatin1(reinterpret_cast<const WebLChar*>(s.data()), s.length());
+  static WebString FromLatin1(const std::string& s) {
+    return FromLatin1(reinterpret_cast<const WebLChar*>(s.data()), s.length());
   }
 
   // This asserts if the string contains non-ascii characters.
   // Use this rather than calling base::UTF16ToASCII() which always incurs
   // (likely unnecessary) string16 conversion.
-  BLINK_PLATFORM_EXPORT std::string ascii() const;
+  BLINK_PLATFORM_EXPORT std::string Ascii() const;
 
   // Use this rather than calling base::IsStringASCII().
-  BLINK_PLATFORM_EXPORT bool containsOnlyASCII() const;
+  BLINK_PLATFORM_EXPORT bool ContainsOnlyASCII() const;
 
   // Does same as fromLatin1 but asserts if the given string has non-ascii char.
-  BLINK_PLATFORM_EXPORT static WebString fromASCII(const std::string&);
+  BLINK_PLATFORM_EXPORT static WebString FromASCII(const std::string&);
 
   template <int N>
   WebString(const char (&data)[N]) {
-    assign(fromUTF8(data, N - 1));
+    Assign(FromUTF8(data, N - 1));
   }
 
   template <int N>
   WebString& operator=(const char (&data)[N]) {
-    assign(fromUTF8(data, N - 1));
+    Assign(FromUTF8(data, N - 1));
     return *this;
   }
 
@@ -188,17 +188,17 @@ class WebString {
 #endif
 
  private:
-  BLINK_PLATFORM_EXPORT bool is8Bit() const;
-  BLINK_PLATFORM_EXPORT const WebLChar* data8() const;
-  BLINK_PLATFORM_EXPORT const WebUChar* data16() const;
+  BLINK_PLATFORM_EXPORT bool Is8Bit() const;
+  BLINK_PLATFORM_EXPORT const WebLChar* Data8() const;
+  BLINK_PLATFORM_EXPORT const WebUChar* Data16() const;
 
-  BLINK_PLATFORM_EXPORT void assign(WTF::StringImpl*);
+  BLINK_PLATFORM_EXPORT void Assign(WTF::StringImpl*);
 
-  WebPrivatePtr<WTF::StringImpl> m_private;
+  WebPrivatePtr<WTF::StringImpl> private_;
 };
 
 inline bool operator==(const WebString& a, const char* b) {
-  return a.equals(b);
+  return a.Equals(b);
 }
 
 inline bool operator!=(const WebString& a, const char* b) {
@@ -214,7 +214,7 @@ inline bool operator!=(const char* a, const WebString& b) {
 }
 
 inline bool operator==(const WebString& a, const WebString& b) {
-  return a.equals(b);
+  return a.Equals(b);
 }
 
 inline bool operator!=(const WebString& a, const WebString& b) {

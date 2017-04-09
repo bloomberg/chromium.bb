@@ -44,50 +44,50 @@ class WaitableEvent;
 
 class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
  public:
-  static DatabaseThread* create() { return new DatabaseThread; }
+  static DatabaseThread* Create() { return new DatabaseThread; }
   ~DatabaseThread();
   DECLARE_TRACE();
 
   // Callable only from the main thread.
-  void start();
-  void terminate();
+  void Start();
+  void Terminate();
 
   // Callable from the main thread or the database thread.
-  void scheduleTask(std::unique_ptr<DatabaseTask>);
-  bool isDatabaseThread() const;
+  void ScheduleTask(std::unique_ptr<DatabaseTask>);
+  bool IsDatabaseThread() const;
 
   // Callable only from the database thread.
-  void recordDatabaseOpen(Database*);
-  void recordDatabaseClosed(Database*);
-  bool isDatabaseOpen(Database*);
+  void RecordDatabaseOpen(Database*);
+  void RecordDatabaseClosed(Database*);
+  bool IsDatabaseOpen(Database*);
 
-  SQLTransactionClient* transactionClient() {
-    return m_transactionClient.get();
+  SQLTransactionClient* TransactionClient() {
+    return transaction_client_.get();
   }
-  SQLTransactionCoordinator* transactionCoordinator() {
-    return m_transactionCoordinator.get();
+  SQLTransactionCoordinator* TransactionCoordinator() {
+    return transaction_coordinator_.Get();
   }
 
  private:
   DatabaseThread();
 
-  void setupDatabaseThread();
-  void cleanupDatabaseThread();
-  void cleanupDatabaseThreadCompleted();
+  void SetupDatabaseThread();
+  void CleanupDatabaseThread();
+  void CleanupDatabaseThreadCompleted();
 
-  std::unique_ptr<WebThreadSupportingGC> m_thread;
+  std::unique_ptr<WebThreadSupportingGC> thread_;
 
   // This set keeps track of the open databases that have been used on this
   // thread.  This must be updated in the database thread though it is
   // constructed and destructed in the context thread.
-  HashSet<CrossThreadPersistent<Database>> m_openDatabaseSet;
+  HashSet<CrossThreadPersistent<Database>> open_database_set_;
 
-  std::unique_ptr<SQLTransactionClient> m_transactionClient;
-  CrossThreadPersistent<SQLTransactionCoordinator> m_transactionCoordinator;
-  WaitableEvent* m_cleanupSync;
+  std::unique_ptr<SQLTransactionClient> transaction_client_;
+  CrossThreadPersistent<SQLTransactionCoordinator> transaction_coordinator_;
+  WaitableEvent* cleanup_sync_;
 
-  Mutex m_terminationRequestedMutex;
-  bool m_terminationRequested;
+  Mutex termination_requested_mutex_;
+  bool termination_requested_;
 };
 
 }  // namespace blink

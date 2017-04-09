@@ -40,27 +40,27 @@ namespace blink {
 class DirectoryReaderBase
     : public GarbageCollectedFinalized<DirectoryReaderBase> {
  public:
-  DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
-  void setHasMoreEntries(bool hasMoreEntries) {
-    m_hasMoreEntries = hasMoreEntries;
+  DOMFileSystemBase* Filesystem() const { return file_system_.Get(); }
+  void SetHasMoreEntries(bool has_more_entries) {
+    has_more_entries_ = has_more_entries;
   }
 
   virtual ~DirectoryReaderBase() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_fileSystem); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(file_system_); }
 
  protected:
-  DirectoryReaderBase(DOMFileSystemBase* fileSystem, const String& fullPath)
-      : m_fileSystem(fileSystem),
-        m_fullPath(fullPath),
-        m_hasMoreEntries(true) {}
+  DirectoryReaderBase(DOMFileSystemBase* file_system, const String& full_path)
+      : file_system_(file_system),
+        full_path_(full_path),
+        has_more_entries_(true) {}
 
-  Member<DOMFileSystemBase> m_fileSystem;
+  Member<DOMFileSystemBase> file_system_;
 
   // This is a virtual path.
-  String m_fullPath;
+  String full_path_;
 
-  bool m_hasMoreEntries;
+  bool has_more_entries_;
 };
 
 }  // namespace blink

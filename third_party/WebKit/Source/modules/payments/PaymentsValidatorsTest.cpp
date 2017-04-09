@@ -12,44 +12,47 @@ namespace blink {
 namespace {
 
 struct CurrencyCodeTestCase {
-  CurrencyCodeTestCase(const char* code, const char* system, bool expectedValid)
-      : code(code), system(system), expectedValid(expectedValid) {}
+  CurrencyCodeTestCase(const char* code,
+                       const char* system,
+                       bool expected_valid)
+      : code(code), system(system), expected_valid(expected_valid) {}
   ~CurrencyCodeTestCase() {}
 
   const char* code;
   const char* system;
-  bool expectedValid;
+  bool expected_valid;
 };
 
 class PaymentsCurrencyValidatorTest
     : public testing::TestWithParam<CurrencyCodeTestCase> {};
 
-const char* longString2048() {
-  static char longString[2049];
+const char* LongString2048() {
+  static char long_string[2049];
   for (int i = 0; i < 2048; i++)
-    longString[i] = 'a';
-  longString[2048] = '\0';
-  return longString;
+    long_string[i] = 'a';
+  long_string[2048] = '\0';
+  return long_string;
 }
 
-const char* longString2049() {
-  static char longString[2050];
+const char* LongString2049() {
+  static char long_string[2050];
   for (int i = 0; i < 2049; i++)
-    longString[i] = 'a';
-  longString[2049] = '\0';
-  return longString;
+    long_string[i] = 'a';
+  long_string[2049] = '\0';
+  return long_string;
 }
 
 TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat) {
-  String errorMessage;
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidCurrencyCodeFormat(
-                GetParam().code, GetParam().system, &errorMessage))
-      << errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidCurrencyCodeFormat(
+                GetParam().code, GetParam().system, &error_message))
+      << error_message;
+  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
+      << error_message;
 
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidCurrencyCodeFormat(
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidCurrencyCodeFormat(
                 GetParam().code, GetParam().system, nullptr));
 }
 
@@ -78,38 +81,39 @@ INSTANTIATE_TEST_CASE_P(
         CurrencyCodeTestCase("ANYSTRING", "urn:iso:std:iso:4217", false),
         CurrencyCodeTestCase("", "http://www.example.com", true),
         CurrencyCodeTestCase("", "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase(longString2048(), "http://www.example.com", true),
-        CurrencyCodeTestCase(longString2048(), "urn:iso:std:iso:4217", false),
-        CurrencyCodeTestCase(longString2049(),
+        CurrencyCodeTestCase(LongString2048(), "http://www.example.com", true),
+        CurrencyCodeTestCase(LongString2048(), "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase(LongString2049(),
                              "http://www.example.com",
                              false)));
 
 struct TestCase {
-  TestCase(const char* input, bool expectedValid)
-      : input(input), expectedValid(expectedValid) {}
+  TestCase(const char* input, bool expected_valid)
+      : input(input), expected_valid(expected_valid) {}
   ~TestCase() {}
 
   const char* input;
-  bool expectedValid;
+  bool expected_valid;
 };
 
-std::ostream& operator<<(std::ostream& out, const TestCase& testCase) {
-  out << "'" << testCase.input << "' is expected to be "
-      << (testCase.expectedValid ? "valid" : "invalid");
+std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
+  out << "'" << test_case.input << "' is expected to be "
+      << (test_case.expected_valid ? "valid" : "invalid");
   return out;
 }
 
 class PaymentsAmountValidatorTest : public testing::TestWithParam<TestCase> {};
 
 TEST_P(PaymentsAmountValidatorTest, IsValidAmountFormat) {
-  String errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, PaymentsValidators::isValidAmountFormat(
-                                          GetParam().input, &errorMessage))
-      << errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid, PaymentsValidators::IsValidAmountFormat(
+                                           GetParam().input, &error_message))
+      << error_message;
+  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
+      << error_message;
 
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidAmountFormat(GetParam().input, nullptr));
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidAmountFormat(GetParam().input, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -145,16 +149,17 @@ INSTANTIATE_TEST_CASE_P(
 class PaymentsRegionValidatorTest : public testing::TestWithParam<TestCase> {};
 
 TEST_P(PaymentsRegionValidatorTest, IsValidCountryCodeFormat) {
-  String errorMessage;
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidCountryCodeFormat(GetParam().input,
-                                                         &errorMessage))
-      << errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidCountryCodeFormat(GetParam().input,
+                                                         &error_message))
+      << error_message;
+  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
+      << error_message;
 
   EXPECT_EQ(
-      GetParam().expectedValid,
-      PaymentsValidators::isValidCountryCodeFormat(GetParam().input, nullptr));
+      GetParam().expected_valid,
+      PaymentsValidators::IsValidCountryCodeFormat(GetParam().input, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(CountryCodes,
@@ -171,16 +176,17 @@ class PaymentsLanguageValidatorTest : public testing::TestWithParam<TestCase> {
 };
 
 TEST_P(PaymentsLanguageValidatorTest, IsValidLanguageCodeFormat) {
-  String errorMessage;
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidLanguageCodeFormat(GetParam().input,
-                                                          &errorMessage))
-      << errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidLanguageCodeFormat(GetParam().input,
+                                                          &error_message))
+      << error_message;
+  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
+      << error_message;
 
   EXPECT_EQ(
-      GetParam().expectedValid,
-      PaymentsValidators::isValidLanguageCodeFormat(GetParam().input, nullptr));
+      GetParam().expected_valid,
+      PaymentsValidators::IsValidLanguageCodeFormat(GetParam().input, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(LanguageCodes,
@@ -198,16 +204,17 @@ INSTANTIATE_TEST_CASE_P(LanguageCodes,
 class PaymentsScriptValidatorTest : public testing::TestWithParam<TestCase> {};
 
 TEST_P(PaymentsScriptValidatorTest, IsValidScriptCodeFormat) {
-  String errorMessage;
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidScriptCodeFormat(GetParam().input,
-                                                        &errorMessage))
-      << errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidScriptCodeFormat(GetParam().input,
+                                                        &error_message))
+      << error_message;
+  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
+      << error_message;
 
   EXPECT_EQ(
-      GetParam().expectedValid,
-      PaymentsValidators::isValidScriptCodeFormat(GetParam().input, nullptr));
+      GetParam().expected_valid,
+      PaymentsValidators::IsValidScriptCodeFormat(GetParam().input, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(ScriptCodes,
@@ -223,20 +230,20 @@ INSTANTIATE_TEST_CASE_P(ScriptCodes,
                                         TestCase("LATN", false)));
 
 struct ShippingAddressTestCase {
-  ShippingAddressTestCase(const char* countryCode,
-                          const char* languageCode,
-                          const char* scriptCode,
-                          bool expectedValid)
-      : countryCode(countryCode),
-        languageCode(languageCode),
-        scriptCode(scriptCode),
-        expectedValid(expectedValid) {}
+  ShippingAddressTestCase(const char* country_code,
+                          const char* language_code,
+                          const char* script_code,
+                          bool expected_valid)
+      : country_code(country_code),
+        language_code(language_code),
+        script_code(script_code),
+        expected_valid(expected_valid) {}
   ~ShippingAddressTestCase() {}
 
-  const char* countryCode;
-  const char* languageCode;
-  const char* scriptCode;
-  bool expectedValid;
+  const char* country_code;
+  const char* language_code;
+  const char* script_code;
+  bool expected_valid;
 };
 
 class PaymentsShippingAddressValidatorTest
@@ -245,18 +252,19 @@ class PaymentsShippingAddressValidatorTest
 TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress) {
   payments::mojom::blink::PaymentAddressPtr address =
       payments::mojom::blink::PaymentAddress::New();
-  address->country = GetParam().countryCode;
-  address->language_code = GetParam().languageCode;
-  address->script_code = GetParam().scriptCode;
+  address->country = GetParam().country_code;
+  address->language_code = GetParam().language_code;
+  address->script_code = GetParam().script_code;
 
-  String errorMessage;
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidShippingAddress(address, &errorMessage))
-      << errorMessage;
-  EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
+  String error_message;
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidShippingAddress(address, &error_message))
+      << error_message;
+  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
+      << error_message;
 
-  EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidShippingAddress(address, nullptr));
+  EXPECT_EQ(GetParam().expected_valid,
+            PaymentsValidators::IsValidShippingAddress(address, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(

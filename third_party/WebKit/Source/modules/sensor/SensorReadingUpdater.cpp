@@ -13,59 +13,59 @@ using device::mojom::blink::ReportingMode;
 
 namespace blink {
 
-SensorReadingUpdater::SensorReadingUpdater(SensorProxy* sensorProxy)
-    : m_sensorProxy(sensorProxy),
-      m_document(m_sensorProxy->document()),
-      m_hasPendingAnimationFrameTask(false) {}
+SensorReadingUpdater::SensorReadingUpdater(SensorProxy* sensor_proxy)
+    : sensor_proxy_(sensor_proxy),
+      document_(sensor_proxy_->GetDocument()),
+      has_pending_animation_frame_task_(false) {}
 
-void SensorReadingUpdater::enqueueAnimationFrameTask() {
-  if (!m_document || m_document->isDetached()) {
+void SensorReadingUpdater::EnqueueAnimationFrameTask() {
+  if (!document_ || document_->IsDetached()) {
     // If the document has detached the scheduled callbacks
     // will never be called.
-    m_hasPendingAnimationFrameTask = false;
-    m_document = m_sensorProxy->document();
-    if (!m_document || m_document->isDetached())
+    has_pending_animation_frame_task_ = false;
+    document_ = sensor_proxy_->GetDocument();
+    if (!document_ || document_->IsDetached())
       return;
   }
 
-  if (m_hasPendingAnimationFrameTask)
+  if (has_pending_animation_frame_task_)
     return;
 
-  auto callback = WTF::bind(&SensorReadingUpdater::onAnimationFrame,
-                            wrapWeakPersistent(this));
-  m_document->enqueueAnimationFrameTask(std::move(callback));
-  m_hasPendingAnimationFrameTask = true;
+  auto callback = WTF::Bind(&SensorReadingUpdater::OnAnimationFrame,
+                            WrapWeakPersistent(this));
+  document_->EnqueueAnimationFrameTask(std::move(callback));
+  has_pending_animation_frame_task_ = true;
 }
 
-void SensorReadingUpdater::start() {
-  enqueueAnimationFrameTask();
+void SensorReadingUpdater::Start() {
+  EnqueueAnimationFrameTask();
 }
 
-void SensorReadingUpdater::onAnimationFrame() {
-  m_hasPendingAnimationFrameTask = false;
-  onAnimationFrameInternal();
+void SensorReadingUpdater::OnAnimationFrame() {
+  has_pending_animation_frame_task_ = false;
+  OnAnimationFrameInternal();
 }
 
 DEFINE_TRACE(SensorReadingUpdater) {
-  visitor->trace(m_document);
-  visitor->trace(m_sensorProxy);
+  visitor->Trace(document_);
+  visitor->Trace(sensor_proxy_);
 }
 
 class SensorReadingUpdaterContinuous : public SensorReadingUpdater {
  public:
-  explicit SensorReadingUpdaterContinuous(SensorProxy* sensorProxy)
-      : SensorReadingUpdater(sensorProxy) {}
+  explicit SensorReadingUpdaterContinuous(SensorProxy* sensor_proxy)
+      : SensorReadingUpdater(sensor_proxy) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SensorReadingUpdater::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { SensorReadingUpdater::Trace(visitor); }
 
  protected:
-  void onAnimationFrameInternal() override {
-    if (!m_sensorProxy->isActive())
+  void OnAnimationFrameInternal() override {
+    if (!sensor_proxy_->IsActive())
       return;
 
-    m_sensorProxy->updateSensorReading();
-    m_sensorProxy->notifySensorChanged(WTF::monotonicallyIncreasingTime());
-    enqueueAnimationFrameTask();
+    sensor_proxy_->UpdateSensorReading();
+    sensor_proxy_->NotifySensorChanged(WTF::MonotonicallyIncreasingTime());
+    EnqueueAnimationFrameTask();
   }
 };
 
@@ -74,47 +74,47 @@ class SensorReadingUpdaterContinuous : public SensorReadingUpdater {
 // (i.e. until longest notification period elapses) rAF stops after that.
 class SensorReadingUpdaterOnChange : public SensorReadingUpdater {
  public:
-  explicit SensorReadingUpdaterOnChange(SensorProxy* sensorProxy)
-      : SensorReadingUpdater(sensorProxy),
-        m_newDataArrivedTime(0.0),
-        m_newDataArrived(false) {}
+  explicit SensorReadingUpdaterOnChange(SensorProxy* sensor_proxy)
+      : SensorReadingUpdater(sensor_proxy),
+        new_data_arrived_time_(0.0),
+        new_data_arrived_(false) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SensorReadingUpdater::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { SensorReadingUpdater::Trace(visitor); }
 
-  void start() override {
-    m_newDataArrived = true;
-    SensorReadingUpdater::start();
+  void Start() override {
+    new_data_arrived_ = true;
+    SensorReadingUpdater::Start();
   }
 
  protected:
-  void onAnimationFrameInternal() override {
-    if (!m_sensorProxy->isActive())
+  void OnAnimationFrameInternal() override {
+    if (!sensor_proxy_->IsActive())
       return;
 
-    double timestamp = WTF::monotonicallyIncreasingTime();
+    double timestamp = WTF::MonotonicallyIncreasingTime();
 
-    if (m_newDataArrived) {
-      m_newDataArrived = false;
-      m_sensorProxy->updateSensorReading();
-      m_newDataArrivedTime = timestamp;
+    if (new_data_arrived_) {
+      new_data_arrived_ = false;
+      sensor_proxy_->UpdateSensorReading();
+      new_data_arrived_time_ = timestamp;
     }
-    m_sensorProxy->notifySensorChanged(timestamp);
+    sensor_proxy_->NotifySensorChanged(timestamp);
 
-    DCHECK_GT(m_sensorProxy->frequenciesUsed().front(), 0.0);
-    double longestNotificationPeriod =
-        1 / m_sensorProxy->frequenciesUsed().front();
+    DCHECK_GT(sensor_proxy_->FrequenciesUsed().front(), 0.0);
+    double longest_notification_period =
+        1 / sensor_proxy_->FrequenciesUsed().front();
 
-    if (timestamp - m_newDataArrivedTime <= longestNotificationPeriod)
-      enqueueAnimationFrameTask();
+    if (timestamp - new_data_arrived_time_ <= longest_notification_period)
+      EnqueueAnimationFrameTask();
   }
 
  private:
-  double m_newDataArrivedTime;
-  bool m_newDataArrived;
+  double new_data_arrived_time_;
+  bool new_data_arrived_;
 };
 
 // static
-SensorReadingUpdater* SensorReadingUpdater::create(SensorProxy* proxy,
+SensorReadingUpdater* SensorReadingUpdater::Create(SensorProxy* proxy,
                                                    ReportingMode mode) {
   if (mode == ReportingMode::CONTINUOUS)
     return new SensorReadingUpdaterContinuous(proxy);

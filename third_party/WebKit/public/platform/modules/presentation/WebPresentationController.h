@@ -13,13 +13,17 @@ class WebPresentationConnection;
 struct WebPresentationInfo;
 class WebString;
 
-enum class WebPresentationConnectionCloseReason { Error = 0, Closed, WentAway };
+enum class WebPresentationConnectionCloseReason {
+  kError = 0,
+  kClosed,
+  kWentAway
+};
 
 enum class WebPresentationConnectionState {
-  Connecting = 0,
-  Connected,
-  Closed,
-  Terminated,
+  kConnecting = 0,
+  kConnected,
+  kClosed,
+  kTerminated,
 };
 
 // The delegate Blink provides to WebPresentationClient in order to get updates.
@@ -29,24 +33,24 @@ class BLINK_PLATFORM_EXPORT WebPresentationController {
 
   // Called when the presentation is started using the default presentation URL
   // and id.
-  virtual WebPresentationConnection* didStartDefaultPresentation(
+  virtual WebPresentationConnection* DidStartDefaultPresentation(
       const WebPresentationInfo&) = 0;
 
   // Called when the state of a presentation connection changes.
-  virtual void didChangeConnectionState(const WebPresentationInfo&,
+  virtual void DidChangeConnectionState(const WebPresentationInfo&,
                                         WebPresentationConnectionState) = 0;
 
   // Called when a connection closes.
-  virtual void didCloseConnection(const WebPresentationInfo&,
+  virtual void DidCloseConnection(const WebPresentationInfo&,
                                   WebPresentationConnectionCloseReason,
                                   const WebString& message) = 0;
 
   // Called when a text message is received from the presentation.
-  virtual void didReceiveConnectionTextMessage(const WebPresentationInfo&,
+  virtual void DidReceiveConnectionTextMessage(const WebPresentationInfo&,
                                                const WebString& message) = 0;
 
   // Called when a binary message is received from the presentation.
-  virtual void didReceiveConnectionBinaryMessage(const WebPresentationInfo&,
+  virtual void DidReceiveConnectionBinaryMessage(const WebPresentationInfo&,
                                                  const uint8_t* data,
                                                  size_t length) = 0;
 };

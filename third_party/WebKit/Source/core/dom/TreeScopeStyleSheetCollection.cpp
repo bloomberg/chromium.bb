@@ -41,38 +41,38 @@
 namespace blink {
 
 TreeScopeStyleSheetCollection::TreeScopeStyleSheetCollection(
-    TreeScope& treeScope)
-    : m_treeScope(treeScope) {}
+    TreeScope& tree_scope)
+    : tree_scope_(tree_scope) {}
 
-void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node& node) {
+void TreeScopeStyleSheetCollection::AddStyleSheetCandidateNode(Node& node) {
   if (node.isConnected())
-    m_styleSheetCandidateNodes.add(&node);
+    style_sheet_candidate_nodes_.Add(&node);
 }
 
-bool TreeScopeStyleSheetCollection::mediaQueryAffectingValueChanged() {
-  bool needsActiveStyleUpdate = false;
-  for (const auto& activeSheet : m_activeAuthorStyleSheets) {
-    if (activeSheet.first->mediaQueries())
-      needsActiveStyleUpdate = true;
-    StyleSheetContents* contents = activeSheet.first->contents();
-    if (contents->hasMediaQueries())
-      contents->clearRuleSet();
+bool TreeScopeStyleSheetCollection::MediaQueryAffectingValueChanged() {
+  bool needs_active_style_update = false;
+  for (const auto& active_sheet : active_author_style_sheets_) {
+    if (active_sheet.first->MediaQueries())
+      needs_active_style_update = true;
+    StyleSheetContents* contents = active_sheet.first->Contents();
+    if (contents->HasMediaQueries())
+      contents->ClearRuleSet();
   }
-  return needsActiveStyleUpdate;
+  return needs_active_style_update;
 }
 
-void TreeScopeStyleSheetCollection::applyActiveStyleSheetChanges(
-    StyleSheetCollection& newCollection) {
-  document().styleEngine().applyRuleSetChanges(
-      treeScope(), activeAuthorStyleSheets(),
-      newCollection.activeAuthorStyleSheets());
-  newCollection.swap(*this);
+void TreeScopeStyleSheetCollection::ApplyActiveStyleSheetChanges(
+    StyleSheetCollection& new_collection) {
+  GetDocument().GetStyleEngine().ApplyRuleSetChanges(
+      GetTreeScope(), ActiveAuthorStyleSheets(),
+      new_collection.ActiveAuthorStyleSheets());
+  new_collection.Swap(*this);
 }
 
 DEFINE_TRACE(TreeScopeStyleSheetCollection) {
-  visitor->trace(m_treeScope);
-  visitor->trace(m_styleSheetCandidateNodes);
-  StyleSheetCollection::trace(visitor);
+  visitor->Trace(tree_scope_);
+  visitor->Trace(style_sheet_candidate_nodes_);
+  StyleSheetCollection::Trace(visitor);
 }
 
 }  // namespace blink

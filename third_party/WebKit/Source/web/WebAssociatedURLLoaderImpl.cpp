@@ -63,21 +63,21 @@ class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
   WTF_MAKE_NONCOPYABLE(HTTPRequestHeaderValidator);
 
  public:
-  HTTPRequestHeaderValidator() : m_isSafe(true) {}
+  HTTPRequestHeaderValidator() : is_safe_(true) {}
   ~HTTPRequestHeaderValidator() override {}
 
-  void visitHeader(const WebString& name, const WebString& value) override;
-  bool isSafe() const { return m_isSafe; }
+  void VisitHeader(const WebString& name, const WebString& value) override;
+  bool IsSafe() const { return is_safe_; }
 
  private:
-  bool m_isSafe;
+  bool is_safe_;
 };
 
-void HTTPRequestHeaderValidator::visitHeader(const WebString& name,
+void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
                                              const WebString& value) {
-  m_isSafe = m_isSafe && isValidHTTPToken(name) &&
-             !FetchUtils::isForbiddenHeaderName(name) &&
-             isValidHTTPHeaderValue(value);
+  is_safe_ = is_safe_ && IsValidHTTPToken(name) &&
+             !FetchUtils::IsForbiddenHeaderName(name) &&
+             IsValidHTTPHeaderValue(value);
 }
 
 }  // namespace
@@ -91,45 +91,45 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WTF_MAKE_NONCOPYABLE(ClientAdapter);
 
  public:
-  static std::unique_ptr<ClientAdapter> create(
+  static std::unique_ptr<ClientAdapter> Create(
       WebAssociatedURLLoaderImpl*,
       WebAssociatedURLLoaderClient*,
       const WebAssociatedURLLoaderOptions&,
       RefPtr<WebTaskRunner>);
 
   // ThreadableLoaderClient
-  void didSendData(unsigned long long /*bytesSent*/,
+  void DidSendData(unsigned long long /*bytesSent*/,
                    unsigned long long /*totalBytesToBeSent*/) override;
-  void didReceiveResponse(unsigned long,
+  void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didDownloadData(int /*dataLength*/) override;
-  void didReceiveData(const char*, unsigned /*dataLength*/) override;
-  void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void didFinishLoading(unsigned long /*identifier*/,
+  void DidDownloadData(int /*dataLength*/) override;
+  void DidReceiveData(const char*, unsigned /*dataLength*/) override;
+  void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
+  void DidFinishLoading(unsigned long /*identifier*/,
                         double /*finishTime*/) override;
-  void didFail(const ResourceError&) override;
-  void didFailRedirectCheck() override;
+  void DidFail(const ResourceError&) override;
+  void DidFailRedirectCheck() override;
 
   // DocumentThreadableLoaderClient
-  bool willFollowRedirect(
+  bool WillFollowRedirect(
       const ResourceRequest& /*newRequest*/,
       const ResourceResponse& /*redirectResponse*/) override;
 
   // Sets an error to be reported back to the client, asychronously.
-  void setDelayedError(const ResourceError&);
+  void SetDelayedError(const ResourceError&);
 
   // Enables forwarding of error notifications to the
   // WebAssociatedURLLoaderClient. These
   // must be deferred until after the call to
   // WebAssociatedURLLoader::loadAsynchronously() completes.
-  void enableErrorNotifications();
+  void EnableErrorNotifications();
 
   // Stops loading and releases the DocumentThreadableLoader as early as
   // possible.
-  WebAssociatedURLLoaderClient* releaseClient() {
-    WebAssociatedURLLoaderClient* client = m_client;
-    m_client = nullptr;
+  WebAssociatedURLLoaderClient* ReleaseClient() {
+    WebAssociatedURLLoaderClient* client = client_;
+    client_ = nullptr;
     return client;
   }
 
@@ -139,176 +139,176 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
                 const WebAssociatedURLLoaderOptions&,
                 RefPtr<WebTaskRunner>);
 
-  void notifyError(TimerBase*);
+  void NotifyError(TimerBase*);
 
-  WebAssociatedURLLoaderImpl* m_loader;
-  WebAssociatedURLLoaderClient* m_client;
-  WebAssociatedURLLoaderOptions m_options;
-  WebURLError m_error;
+  WebAssociatedURLLoaderImpl* loader_;
+  WebAssociatedURLLoaderClient* client_;
+  WebAssociatedURLLoaderOptions options_;
+  WebURLError error_;
 
-  TaskRunnerTimer<ClientAdapter> m_errorTimer;
-  bool m_enableErrorNotifications;
-  bool m_didFail;
+  TaskRunnerTimer<ClientAdapter> error_timer_;
+  bool enable_error_notifications_;
+  bool did_fail_;
 };
 
 std::unique_ptr<WebAssociatedURLLoaderImpl::ClientAdapter>
-WebAssociatedURLLoaderImpl::ClientAdapter::create(
+WebAssociatedURLLoaderImpl::ClientAdapter::Create(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
-    RefPtr<WebTaskRunner> taskRunner) {
-  return WTF::wrapUnique(
-      new ClientAdapter(loader, client, options, taskRunner));
+    RefPtr<WebTaskRunner> task_runner) {
+  return WTF::WrapUnique(
+      new ClientAdapter(loader, client, options, task_runner));
 }
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
-    RefPtr<WebTaskRunner> taskRunner)
-    : m_loader(loader),
-      m_client(client),
-      m_options(options),
-      m_errorTimer(std::move(taskRunner), this, &ClientAdapter::notifyError),
-      m_enableErrorNotifications(false),
-      m_didFail(false) {
-  DCHECK(m_loader);
-  DCHECK(m_client);
+    RefPtr<WebTaskRunner> task_runner)
+    : loader_(loader),
+      client_(client),
+      options_(options),
+      error_timer_(std::move(task_runner), this, &ClientAdapter::NotifyError),
+      enable_error_notifications_(false),
+      did_fail_(false) {
+  DCHECK(loader_);
+  DCHECK(client_);
 }
 
-bool WebAssociatedURLLoaderImpl::ClientAdapter::willFollowRedirect(
-    const ResourceRequest& newRequest,
-    const ResourceResponse& redirectResponse) {
-  if (!m_client)
+bool WebAssociatedURLLoaderImpl::ClientAdapter::WillFollowRedirect(
+    const ResourceRequest& new_request,
+    const ResourceResponse& redirect_response) {
+  if (!client_)
     return true;
 
-  WrappedResourceRequest wrappedNewRequest(newRequest);
-  WrappedResourceResponse wrappedRedirectResponse(redirectResponse);
-  return m_client->willFollowRedirect(wrappedNewRequest,
-                                      wrappedRedirectResponse);
+  WrappedResourceRequest wrapped_new_request(new_request);
+  WrappedResourceResponse wrapped_redirect_response(redirect_response);
+  return client_->WillFollowRedirect(wrapped_new_request,
+                                     wrapped_redirect_response);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didSendData(
-    unsigned long long bytesSent,
-    unsigned long long totalBytesToBeSent) {
-  if (!m_client)
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidSendData(
+    unsigned long long bytes_sent,
+    unsigned long long total_bytes_to_be_sent) {
+  if (!client_)
     return;
 
-  m_client->didSendData(bytesSent, totalBytesToBeSent);
+  client_->DidSendData(bytes_sent, total_bytes_to_be_sent);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didReceiveResponse(
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   ALLOW_UNUSED_LOCAL(handle);
   DCHECK(!handle);
-  if (!m_client)
+  if (!client_)
     return;
 
-  if (m_options.exposeAllResponseHeaders ||
-      m_options.crossOriginRequestPolicy !=
+  if (options_.expose_all_response_headers ||
+      options_.cross_origin_request_policy !=
           WebAssociatedURLLoaderOptions::
-              CrossOriginRequestPolicyUseAccessControl) {
+              kCrossOriginRequestPolicyUseAccessControl) {
     // Use the original ResourceResponse.
-    m_client->didReceiveResponse(WrappedResourceResponse(response));
+    client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;
   }
 
-  HTTPHeaderSet exposedHeaders;
-  extractCorsExposedHeaderNamesList(response, exposedHeaders);
-  HTTPHeaderSet blockedHeaders;
-  for (const auto& header : response.httpHeaderFields()) {
-    if (FetchUtils::isForbiddenResponseHeaderName(header.key) ||
-        (!isOnAccessControlResponseHeaderWhitelist(header.key) &&
-         !exposedHeaders.contains(header.key)))
-      blockedHeaders.insert(header.key);
+  HTTPHeaderSet exposed_headers;
+  ExtractCorsExposedHeaderNamesList(response, exposed_headers);
+  HTTPHeaderSet blocked_headers;
+  for (const auto& header : response.HttpHeaderFields()) {
+    if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
+        (!IsOnAccessControlResponseHeaderWhitelist(header.key) &&
+         !exposed_headers.Contains(header.key)))
+      blocked_headers.insert(header.key);
   }
 
-  if (blockedHeaders.isEmpty()) {
+  if (blocked_headers.IsEmpty()) {
     // Use the original ResourceResponse.
-    m_client->didReceiveResponse(WrappedResourceResponse(response));
+    client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;
   }
 
   // If there are blocked headers, copy the response so we can remove them.
-  WebURLResponse validatedResponse = WrappedResourceResponse(response);
-  for (const auto& header : blockedHeaders)
-    validatedResponse.clearHTTPHeaderField(header);
-  m_client->didReceiveResponse(validatedResponse);
+  WebURLResponse validated_response = WrappedResourceResponse(response);
+  for (const auto& header : blocked_headers)
+    validated_response.ClearHTTPHeaderField(header);
+  client_->DidReceiveResponse(validated_response);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didDownloadData(
-    int dataLength) {
-  if (!m_client)
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidDownloadData(
+    int data_length) {
+  if (!client_)
     return;
 
-  m_client->didDownloadData(dataLength);
+  client_->DidDownloadData(data_length);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didReceiveData(
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveData(
     const char* data,
-    unsigned dataLength) {
-  if (!m_client)
+    unsigned data_length) {
+  if (!client_)
     return;
 
-  CHECK_LE(dataLength, static_cast<unsigned>(std::numeric_limits<int>::max()));
+  CHECK_LE(data_length, static_cast<unsigned>(std::numeric_limits<int>::max()));
 
-  m_client->didReceiveData(data, dataLength);
+  client_->DidReceiveData(data, data_length);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didReceiveCachedMetadata(
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveCachedMetadata(
     const char* data,
-    int dataLength) {
-  if (!m_client)
+    int data_length) {
+  if (!client_)
     return;
 
-  m_client->didReceiveCachedMetadata(data, dataLength);
+  client_->DidReceiveCachedMetadata(data, data_length);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didFinishLoading(
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidFinishLoading(
     unsigned long identifier,
-    double finishTime) {
-  if (!m_client)
+    double finish_time) {
+  if (!client_)
     return;
 
-  m_loader->clientAdapterDone();
+  loader_->ClientAdapterDone();
 
-  releaseClient()->didFinishLoading(finishTime);
+  ReleaseClient()->DidFinishLoading(finish_time);
   // |this| may be dead here.
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didFail(
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
     const ResourceError& error) {
-  if (!m_client)
+  if (!client_)
     return;
 
-  m_loader->clientAdapterDone();
+  loader_->ClientAdapterDone();
 
-  m_didFail = true;
-  m_error = WebURLError(error);
-  if (m_enableErrorNotifications)
-    notifyError(&m_errorTimer);
+  did_fail_ = true;
+  error_ = WebURLError(error);
+  if (enable_error_notifications_)
+    NotifyError(&error_timer_);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::didFailRedirectCheck() {
-  didFail(ResourceError());
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
+  DidFail(ResourceError());
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::enableErrorNotifications() {
-  m_enableErrorNotifications = true;
+void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
+  enable_error_notifications_ = true;
   // If an error has already been received, start a timer to report it to the
   // client after WebAssociatedURLLoader::loadAsynchronously has returned to the
   // caller.
-  if (m_didFail)
-    m_errorTimer.startOneShot(0, BLINK_FROM_HERE);
+  if (did_fail_)
+    error_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::notifyError(TimerBase* timer) {
-  DCHECK_EQ(timer, &m_errorTimer);
+void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {
+  DCHECK_EQ(timer, &error_timer_);
 
-  if (m_client)
-    releaseClient()->didFail(m_error);
+  if (client_)
+    ReleaseClient()->DidFail(error_);
   // |this| may be dead here.
 }
 
@@ -319,168 +319,169 @@ class WebAssociatedURLLoaderImpl::Observer final
 
  public:
   Observer(WebAssociatedURLLoaderImpl* parent, Document* document)
-      : ContextLifecycleObserver(document), m_parent(parent) {}
+      : ContextLifecycleObserver(document), parent_(parent) {}
 
-  void dispose() {
-    m_parent = nullptr;
-    clearContext();
+  void Dispose() {
+    parent_ = nullptr;
+    ClearContext();
   }
 
-  void contextDestroyed(ExecutionContext*) override {
-    if (m_parent)
-      m_parent->documentDestroyed();
+  void ContextDestroyed(ExecutionContext*) override {
+    if (parent_)
+      parent_->DocumentDestroyed();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ContextLifecycleObserver::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { ContextLifecycleObserver::Trace(visitor); }
 
-  WebAssociatedURLLoaderImpl* m_parent;
+  WebAssociatedURLLoaderImpl* parent_;
 };
 
 WebAssociatedURLLoaderImpl::WebAssociatedURLLoaderImpl(
-    WebLocalFrameImpl* frameImpl,
+    WebLocalFrameImpl* frame_impl,
     const WebAssociatedURLLoaderOptions& options)
-    : m_client(nullptr),
-      m_options(options),
-      m_observer(new Observer(this, frameImpl->frame()->document())) {}
+    : client_(nullptr),
+      options_(options),
+      observer_(new Observer(this, frame_impl->GetFrame()->GetDocument())) {}
 
 WebAssociatedURLLoaderImpl::~WebAssociatedURLLoaderImpl() {
-  cancel();
+  Cancel();
 }
 
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum: " #a)
 
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyDeny,
-                   DenyCrossOriginRequests);
+STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyDeny,
+                   kDenyCrossOriginRequests);
 STATIC_ASSERT_ENUM(
-    WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl,
-    UseAccessControl);
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyAllow,
-                   AllowCrossOriginRequests);
+    WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyUseAccessControl,
+    kUseAccessControl);
+STATIC_ASSERT_ENUM(
+    WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow,
+    kAllowCrossOriginRequests);
 
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::ConsiderPreflight,
-                   ConsiderPreflight);
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::ForcePreflight,
-                   ForcePreflight);
-STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::PreventPreflight,
-                   PreventPreflight);
+STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kConsiderPreflight,
+                   kConsiderPreflight);
+STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kForcePreflight,
+                   kForcePreflight);
+STATIC_ASSERT_ENUM(WebAssociatedURLLoaderOptions::kPreventPreflight,
+                   kPreventPreflight);
 
-void WebAssociatedURLLoaderImpl::loadAsynchronously(
+void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     const WebURLRequest& request,
     WebAssociatedURLLoaderClient* client) {
-  DCHECK(!m_client);
-  DCHECK(!m_loader);
-  DCHECK(!m_clientAdapter);
+  DCHECK(!client_);
+  DCHECK(!loader_);
+  DCHECK(!client_adapter_);
 
   DCHECK(client);
 
-  bool allowLoad = true;
-  WebURLRequest newRequest(request);
-  if (m_options.untrustedHTTP) {
-    WebString method = newRequest.httpMethod();
-    allowLoad = m_observer && isValidHTTPToken(method) &&
-                FetchUtils::isUsefulMethod(method);
-    if (allowLoad) {
-      newRequest.setHTTPMethod(FetchUtils::normalizeMethod(method));
+  bool allow_load = true;
+  WebURLRequest new_request(request);
+  if (options_.untrusted_http) {
+    WebString method = new_request.HttpMethod();
+    allow_load = observer_ && IsValidHTTPToken(method) &&
+                 FetchUtils::IsUsefulMethod(method);
+    if (allow_load) {
+      new_request.SetHTTPMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
-      newRequest.visitHTTPHeaderFields(&validator);
-      allowLoad = validator.isSafe();
+      new_request.VisitHTTPHeaderFields(&validator);
+      allow_load = validator.IsSafe();
     }
   }
 
-  RefPtr<WebTaskRunner> taskRunner = TaskRunnerHelper::get(
-      TaskType::UnspecedLoading,
-      m_observer ? toDocument(m_observer->lifecycleContext()) : nullptr);
-  m_client = client;
-  m_clientAdapter =
-      ClientAdapter::create(this, client, m_options, std::move(taskRunner));
+  RefPtr<WebTaskRunner> task_runner = TaskRunnerHelper::Get(
+      TaskType::kUnspecedLoading,
+      observer_ ? ToDocument(observer_->LifecycleContext()) : nullptr);
+  client_ = client;
+  client_adapter_ =
+      ClientAdapter::Create(this, client, options_, std::move(task_runner));
 
-  if (allowLoad) {
+  if (allow_load) {
     ThreadableLoaderOptions options;
-    options.preflightPolicy =
-        static_cast<PreflightPolicy>(m_options.preflightPolicy);
-    options.crossOriginRequestPolicy = static_cast<CrossOriginRequestPolicy>(
-        m_options.crossOriginRequestPolicy);
+    options.preflight_policy =
+        static_cast<PreflightPolicy>(options_.preflight_policy);
+    options.cross_origin_request_policy = static_cast<CrossOriginRequestPolicy>(
+        options_.cross_origin_request_policy);
 
-    ResourceLoaderOptions resourceLoaderOptions;
-    resourceLoaderOptions.allowCredentials = m_options.allowCredentials
-                                                 ? AllowStoredCredentials
-                                                 : DoNotAllowStoredCredentials;
-    resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
+    ResourceLoaderOptions resource_loader_options;
+    resource_loader_options.allow_credentials =
+        options_.allow_credentials ? kAllowStoredCredentials
+                                   : kDoNotAllowStoredCredentials;
+    resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-    const ResourceRequest& webcoreRequest = newRequest.toResourceRequest();
-    if (webcoreRequest.requestContext() ==
-        WebURLRequest::RequestContextUnspecified) {
+    const ResourceRequest& webcore_request = new_request.ToResourceRequest();
+    if (webcore_request.GetRequestContext() ==
+        WebURLRequest::kRequestContextUnspecified) {
       // FIXME: We load URLs without setting a TargetType (and therefore a
       // request context) in several places in content/
       // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
       // Remove this once those places are patched up.
-      newRequest.setRequestContext(WebURLRequest::RequestContextInternal);
+      new_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
     }
 
-    Document* document = toDocument(m_observer->lifecycleContext());
+    Document* document = ToDocument(observer_->LifecycleContext());
     DCHECK(document);
-    m_loader = DocumentThreadableLoader::create(
-        *ThreadableLoadingContext::create(*document), m_clientAdapter.get(),
-        options, resourceLoaderOptions);
-    m_loader->start(webcoreRequest);
+    loader_ = DocumentThreadableLoader::Create(
+        *ThreadableLoadingContext::Create(*document), client_adapter_.get(),
+        options, resource_loader_options);
+    loader_->Start(webcore_request);
   }
 
-  if (!m_loader) {
+  if (!loader_) {
     // FIXME: return meaningful error codes.
-    m_clientAdapter->didFail(ResourceError());
+    client_adapter_->DidFail(ResourceError());
   }
-  m_clientAdapter->enableErrorNotifications();
+  client_adapter_->EnableErrorNotifications();
 }
 
-void WebAssociatedURLLoaderImpl::cancel() {
-  disposeObserver();
-  cancelLoader();
-  releaseClient();
+void WebAssociatedURLLoaderImpl::Cancel() {
+  DisposeObserver();
+  CancelLoader();
+  ReleaseClient();
 }
 
-void WebAssociatedURLLoaderImpl::clientAdapterDone() {
-  disposeObserver();
-  releaseClient();
+void WebAssociatedURLLoaderImpl::ClientAdapterDone() {
+  DisposeObserver();
+  ReleaseClient();
 }
 
-void WebAssociatedURLLoaderImpl::cancelLoader() {
-  if (!m_clientAdapter)
+void WebAssociatedURLLoaderImpl::CancelLoader() {
+  if (!client_adapter_)
     return;
 
   // Prevent invocation of the WebAssociatedURLLoaderClient methods.
-  m_clientAdapter->releaseClient();
+  client_adapter_->ReleaseClient();
 
-  if (m_loader) {
-    m_loader->cancel();
-    m_loader = nullptr;
+  if (loader_) {
+    loader_->Cancel();
+    loader_ = nullptr;
   }
-  m_clientAdapter.reset();
+  client_adapter_.reset();
 }
 
-void WebAssociatedURLLoaderImpl::setDefersLoading(bool defersLoading) {
-  if (m_loader)
-    m_loader->setDefersLoading(defersLoading);
+void WebAssociatedURLLoaderImpl::SetDefersLoading(bool defers_loading) {
+  if (loader_)
+    loader_->SetDefersLoading(defers_loading);
 }
 
-void WebAssociatedURLLoaderImpl::setLoadingTaskRunner(blink::WebTaskRunner*) {
+void WebAssociatedURLLoaderImpl::SetLoadingTaskRunner(blink::WebTaskRunner*) {
   // TODO(alexclarke): Maybe support this one day if it proves worthwhile.
 }
 
-void WebAssociatedURLLoaderImpl::documentDestroyed() {
-  disposeObserver();
-  cancelLoader();
+void WebAssociatedURLLoaderImpl::DocumentDestroyed() {
+  DisposeObserver();
+  CancelLoader();
 
-  if (!m_client)
+  if (!client_)
     return;
 
-  releaseClient()->didFail(ResourceError());
+  ReleaseClient()->DidFail(ResourceError());
   // |this| may be dead here.
 }
 
-void WebAssociatedURLLoaderImpl::disposeObserver() {
-  if (!m_observer)
+void WebAssociatedURLLoaderImpl::DisposeObserver() {
+  if (!observer_)
     return;
 
   // TODO(tyoshino): Remove this assert once Document is fixed so that
@@ -498,10 +499,10 @@ void WebAssociatedURLLoaderImpl::disposeObserver() {
   // there could be a WebURLLoader instance behind the
   // DocumentThreadableLoader instance. So, for safety, we chose to just
   // crash here.
-  CHECK(ThreadState::current());
+  CHECK(ThreadState::Current());
 
-  m_observer->dispose();
-  m_observer = nullptr;
+  observer_->Dispose();
+  observer_ = nullptr;
 }
 
 }  // namespace blink

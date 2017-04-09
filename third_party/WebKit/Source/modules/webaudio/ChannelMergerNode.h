@@ -39,32 +39,34 @@ class ChannelMergerOptions;
 
 class ChannelMergerHandler final : public AudioHandler {
  public:
-  static PassRefPtr<ChannelMergerHandler> create(AudioNode&,
-                                                 float sampleRate,
-                                                 unsigned numberOfInputs);
+  static PassRefPtr<ChannelMergerHandler> Create(AudioNode&,
+                                                 float sample_rate,
+                                                 unsigned number_of_inputs);
 
-  void process(size_t framesToProcess) override;
-  void setChannelCount(unsigned long, ExceptionState&) final;
-  void setChannelCountMode(const String&, ExceptionState&) final;
+  void Process(size_t frames_to_process) override;
+  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCountMode(const String&, ExceptionState&) final;
 
  private:
-  ChannelMergerHandler(AudioNode&, float sampleRate, unsigned numberOfInputs);
+  ChannelMergerHandler(AudioNode&,
+                       float sample_rate,
+                       unsigned number_of_inputs);
 };
 
 class ChannelMergerNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ChannelMergerNode* create(BaseAudioContext&, ExceptionState&);
-  static ChannelMergerNode* create(BaseAudioContext&,
-                                   unsigned numberOfInputs,
+  static ChannelMergerNode* Create(BaseAudioContext&, ExceptionState&);
+  static ChannelMergerNode* Create(BaseAudioContext&,
+                                   unsigned number_of_inputs,
                                    ExceptionState&);
-  static ChannelMergerNode* create(BaseAudioContext*,
+  static ChannelMergerNode* Create(BaseAudioContext*,
                                    const ChannelMergerOptions&,
                                    ExceptionState&);
 
  private:
-  ChannelMergerNode(BaseAudioContext&, unsigned numberOfInputs);
+  ChannelMergerNode(BaseAudioContext&, unsigned number_of_inputs);
 };
 
 }  // namespace blink

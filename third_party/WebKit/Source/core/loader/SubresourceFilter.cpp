@@ -13,62 +13,62 @@
 namespace blink {
 
 // static
-SubresourceFilter* SubresourceFilter::create(
+SubresourceFilter* SubresourceFilter::Create(
     DocumentLoader* loader,
     std::unique_ptr<WebDocumentSubresourceFilter> filter) {
   return new SubresourceFilter(loader, std::move(filter));
 }
 
 SubresourceFilter::SubresourceFilter(
-    DocumentLoader* documentLoader,
-    std::unique_ptr<WebDocumentSubresourceFilter> subresourceFilter)
-    : m_documentLoader(documentLoader),
-      m_subresourceFilter(std::move(subresourceFilter)) {}
+    DocumentLoader* document_loader,
+    std::unique_ptr<WebDocumentSubresourceFilter> subresource_filter)
+    : document_loader_(document_loader),
+      subresource_filter_(std::move(subresource_filter)) {}
 
 SubresourceFilter::~SubresourceFilter() {}
 
-bool SubresourceFilter::allowLoad(
-    const KURL& resourceUrl,
-    WebURLRequest::RequestContext requestContext,
-    SecurityViolationReportingPolicy reportingPolicy) {
+bool SubresourceFilter::AllowLoad(
+    const KURL& resource_url,
+    WebURLRequest::RequestContext request_context,
+    SecurityViolationReportingPolicy reporting_policy) {
   // TODO(csharrison): Implement a caching layer here which is a HashMap of
   // Pair<url string, context> -> LoadPolicy.
-  WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
-      m_subresourceFilter->getLoadPolicy(resourceUrl, requestContext);
-  if (reportingPolicy == SecurityViolationReportingPolicy::Report)
-    reportLoad(loadPolicy);
-  return loadPolicy != WebDocumentSubresourceFilter::kDisallow;
+  WebDocumentSubresourceFilter::LoadPolicy load_policy =
+      subresource_filter_->GetLoadPolicy(resource_url, request_context);
+  if (reporting_policy == SecurityViolationReportingPolicy::kReport)
+    ReportLoad(load_policy);
+  return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
-bool SubresourceFilter::allowWebSocketConnection(const KURL& url) {
-  WebDocumentSubresourceFilter::LoadPolicy loadPolicy =
-      m_subresourceFilter->getLoadPolicyForWebSocketConnect(url);
+bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
+  WebDocumentSubresourceFilter::LoadPolicy load_policy =
+      subresource_filter_->GetLoadPolicyForWebSocketConnect(url);
 
   // Post a task to notify this load to avoid unduly blocking the worker
   // thread. Note that this unconditionally calls reportLoad unlike allowLoad,
   // because there aren't developer-invisible connections (like speculative
   // preloads) happening here.
-  RefPtr<WebTaskRunner> taskRunner =
-      TaskRunnerHelper::get(TaskType::Networking, m_documentLoader->frame());
-  DCHECK(taskRunner->runsTasksOnCurrentThread());
-  taskRunner->postTask(BLINK_FROM_HERE,
-                       WTF::bind(&SubresourceFilter::reportLoad,
-                                 wrapPersistent(this), loadPolicy));
-  return loadPolicy != WebDocumentSubresourceFilter::kDisallow;
+  RefPtr<WebTaskRunner> task_runner = TaskRunnerHelper::Get(
+      TaskType::kNetworking, document_loader_->GetFrame());
+  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  task_runner->PostTask(BLINK_FROM_HERE,
+                        WTF::Bind(&SubresourceFilter::ReportLoad,
+                                  WrapPersistent(this), load_policy));
+  return load_policy != WebDocumentSubresourceFilter::kDisallow;
 }
 
-void SubresourceFilter::reportLoad(
-    WebDocumentSubresourceFilter::LoadPolicy loadPolicy) {
+void SubresourceFilter::ReportLoad(
+    WebDocumentSubresourceFilter::LoadPolicy load_policy) {
   // TODO(csharrison): log console errors here.
-  switch (loadPolicy) {
+  switch (load_policy) {
     case WebDocumentSubresourceFilter::kAllow:
       break;
     case WebDocumentSubresourceFilter::kDisallow:
-      m_subresourceFilter->reportDisallowedLoad();
+      subresource_filter_->ReportDisallowedLoad();
     // fall through
     case WebDocumentSubresourceFilter::kWouldDisallow:
-      m_documentLoader->didObserveLoadingBehavior(
-          WebLoadingBehaviorSubresourceFilterMatch);
+      document_loader_->DidObserveLoadingBehavior(
+          kWebLoadingBehaviorSubresourceFilterMatch);
       break;
   }
 }

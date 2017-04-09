@@ -44,44 +44,44 @@ class SVGLengthList final
  public:
   typedef SVGLengthListTearOff TearOffType;
 
-  static SVGLengthList* create(SVGLengthMode mode = SVGLengthMode::Other) {
+  static SVGLengthList* Create(SVGLengthMode mode = SVGLengthMode::kOther) {
     return new SVGLengthList(mode);
   }
 
   ~SVGLengthList() override;
 
-  SVGParsingError setValueAsString(const String&);
+  SVGParsingError SetValueAsString(const String&);
 
   // SVGPropertyBase:
-  SVGPropertyBase* cloneForAnimation(const String&) const override;
-  SVGLengthList* clone() override;
-  String valueAsString() const override;
-  SVGLengthMode unitMode() const { return m_mode; }
+  SVGPropertyBase* CloneForAnimation(const String&) const override;
+  SVGLengthList* Clone() override;
+  String ValueAsString() const override;
+  SVGLengthMode UnitMode() const { return mode_; }
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
-                              SVGPropertyBase* fromValue,
-                              SVGPropertyBase* toValue,
-                              SVGPropertyBase* toAtEndOfDurationValue,
+                              unsigned repeat_count,
+                              SVGPropertyBase* from_value,
+                              SVGPropertyBase* to_value,
+                              SVGPropertyBase* to_at_end_of_duration_value,
                               SVGElement*) override;
-  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-  static AnimatedPropertyType classType() { return AnimatedLengthList; }
-  AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType ClassType() { return kAnimatedLengthList; }
+  AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
   explicit SVGLengthList(SVGLengthMode);
 
   // Create SVGLength items used to adjust the list length
   // when animation from/to lists are longer than this list.
-  SVGLength* createPaddingItem() const override;
+  SVGLength* CreatePaddingItem() const override;
 
   template <typename CharType>
-  SVGParsingError parseInternal(const CharType*& ptr, const CharType* end);
+  SVGParsingError ParseInternal(const CharType*& ptr, const CharType* end);
 
-  SVGLengthMode m_mode;
+  SVGLengthMode mode_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLengthList);

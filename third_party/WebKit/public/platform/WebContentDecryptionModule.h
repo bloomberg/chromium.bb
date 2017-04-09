@@ -41,10 +41,10 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModule {
   virtual ~WebContentDecryptionModule();
 
   // Must return non-null.
-  virtual WebContentDecryptionModuleSession* createSession() = 0;
+  virtual WebContentDecryptionModuleSession* CreateSession() = 0;
 
-  virtual void setServerCertificate(const unsigned char* certificate,
-                                    size_t certificateLength,
+  virtual void SetServerCertificate(const unsigned char* certificate,
+                                    size_t certificate_length,
                                     WebContentDecryptionModuleResult) = 0;
 };
 

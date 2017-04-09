@@ -16,27 +16,27 @@ struct CompositedSelection;
 // end points as well as metadata for the selection region.
 class BLINK_EXPORT WebSelection {
  public:
-  enum SelectionType { NoSelection, CaretSelection, RangeSelection };
+  enum SelectionType { kNoSelection, kCaretSelection, kRangeSelection };
 
 #if INSIDE_BLINK
   explicit WebSelection(const CompositedSelection&);
 #endif
   WebSelection(const WebSelection&);
 
-  const WebSelectionBound& start() const { return m_start; }
-  const WebSelectionBound& end() const { return m_end; }
+  const WebSelectionBound& Start() const { return start_; }
+  const WebSelectionBound& end() const { return end_; }
 
-  bool isNone() const { return selectionType() == NoSelection; }
-  bool isCaret() const { return selectionType() == CaretSelection; }
-  bool isRange() const { return selectionType() == RangeSelection; }
+  bool IsNone() const { return GetSelectionType() == kNoSelection; }
+  bool IsCaret() const { return GetSelectionType() == kCaretSelection; }
+  bool IsRange() const { return GetSelectionType() == kRangeSelection; }
 
  private:
-  SelectionType selectionType() const { return m_selectionType; }
+  SelectionType GetSelectionType() const { return selection_type_; }
 
-  SelectionType m_selectionType;
+  SelectionType selection_type_;
 
-  WebSelectionBound m_start;
-  WebSelectionBound m_end;
+  WebSelectionBound start_;
+  WebSelectionBound end_;
 };
 
 }  // namespace blink

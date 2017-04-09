@@ -214,7 +214,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     // TODO: settled_fetch.response.status_text
 
     settled_fetch.response.response_type =
-        blink::WebServiceWorkerResponseTypeDefault;
+        blink::kWebServiceWorkerResponseTypeDefault;
 
     // TODO(peter): The |headers| should be set to the real response headers,
     // but the download manager does not relay those to us yet.

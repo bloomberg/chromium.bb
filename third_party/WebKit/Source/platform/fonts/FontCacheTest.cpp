@@ -13,43 +13,43 @@
 namespace blink {
 
 TEST(FontCache, getLastResortFallbackFont) {
-  FontCache* fontCache = FontCache::fontCache();
-  ASSERT_TRUE(fontCache);
+  FontCache* font_cache = FontCache::GetFontCache();
+  ASSERT_TRUE(font_cache);
 
-  FontDescription fontDescription;
-  fontDescription.setGenericFamily(FontDescription::StandardFamily);
-  RefPtr<SimpleFontData> fontData =
-      fontCache->getLastResortFallbackFont(fontDescription, Retain);
-  EXPECT_TRUE(fontData);
+  FontDescription font_description;
+  font_description.SetGenericFamily(FontDescription::kStandardFamily);
+  RefPtr<SimpleFontData> font_data =
+      font_cache->GetLastResortFallbackFont(font_description, kRetain);
+  EXPECT_TRUE(font_data);
 
-  fontDescription.setGenericFamily(FontDescription::SansSerifFamily);
-  fontData = fontCache->getLastResortFallbackFont(fontDescription, Retain);
-  EXPECT_TRUE(fontData);
+  font_description.SetGenericFamily(FontDescription::kSansSerifFamily);
+  font_data = font_cache->GetLastResortFallbackFont(font_description, kRetain);
+  EXPECT_TRUE(font_data);
 }
 
 TEST(FontCache, firstAvailableOrFirst) {
-  EXPECT_TRUE(FontCache::firstAvailableOrFirst("").isEmpty());
-  EXPECT_TRUE(FontCache::firstAvailableOrFirst(String()).isEmpty());
+  EXPECT_TRUE(FontCache::FirstAvailableOrFirst("").IsEmpty());
+  EXPECT_TRUE(FontCache::FirstAvailableOrFirst(String()).IsEmpty());
 
-  EXPECT_EQ("Arial", FontCache::firstAvailableOrFirst("Arial"));
-  EXPECT_EQ("not exist", FontCache::firstAvailableOrFirst("not exist"));
+  EXPECT_EQ("Arial", FontCache::FirstAvailableOrFirst("Arial"));
+  EXPECT_EQ("not exist", FontCache::FirstAvailableOrFirst("not exist"));
 
-  EXPECT_EQ("Arial", FontCache::firstAvailableOrFirst("Arial, not exist"));
-  EXPECT_EQ("Arial", FontCache::firstAvailableOrFirst("not exist, Arial"));
+  EXPECT_EQ("Arial", FontCache::FirstAvailableOrFirst("Arial, not exist"));
+  EXPECT_EQ("Arial", FontCache::FirstAvailableOrFirst("not exist, Arial"));
   EXPECT_EQ("Arial",
-            FontCache::firstAvailableOrFirst("not exist, Arial, not exist"));
+            FontCache::FirstAvailableOrFirst("not exist, Arial, not exist"));
 
   EXPECT_EQ("not exist",
-            FontCache::firstAvailableOrFirst("not exist, not exist 2"));
+            FontCache::FirstAvailableOrFirst("not exist, not exist 2"));
 
-  EXPECT_EQ("Arial", FontCache::firstAvailableOrFirst(", not exist, Arial"));
+  EXPECT_EQ("Arial", FontCache::FirstAvailableOrFirst(", not exist, Arial"));
   EXPECT_EQ("not exist",
-            FontCache::firstAvailableOrFirst(", not exist, not exist"));
+            FontCache::FirstAvailableOrFirst(", not exist, not exist"));
 }
 
 #if !OS(MACOSX)
 TEST(FontCache, systemFont) {
-  FontCache::systemFontFamily();
+  FontCache::SystemFontFamily();
   // Test the function does not crash. Return value varies by system and config.
 }
 #endif

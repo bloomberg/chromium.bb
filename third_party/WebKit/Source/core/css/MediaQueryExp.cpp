@@ -40,32 +40,33 @@ namespace blink {
 
 using namespace MediaFeatureNames;
 
-static inline bool featureWithValidIdent(const String& mediaFeature,
+static inline bool FeatureWithValidIdent(const String& media_feature,
                                          CSSValueID ident) {
-  if (mediaFeature == displayModeMediaFeature)
+  if (media_feature == displayModeMediaFeature)
     return ident == CSSValueFullscreen || ident == CSSValueStandalone ||
            ident == CSSValueMinimalUi || ident == CSSValueBrowser;
 
-  if (mediaFeature == orientationMediaFeature)
+  if (media_feature == orientationMediaFeature)
     return ident == CSSValuePortrait || ident == CSSValueLandscape;
 
-  if (mediaFeature == pointerMediaFeature ||
-      mediaFeature == anyPointerMediaFeature)
+  if (media_feature == pointerMediaFeature ||
+      media_feature == anyPointerMediaFeature)
     return ident == CSSValueNone || ident == CSSValueCoarse ||
            ident == CSSValueFine;
 
-  if (mediaFeature == hoverMediaFeature || mediaFeature == anyHoverMediaFeature)
+  if (media_feature == hoverMediaFeature ||
+      media_feature == anyHoverMediaFeature)
     return ident == CSSValueNone || ident == CSSValueHover;
 
-  if (mediaFeature == scanMediaFeature)
+  if (media_feature == scanMediaFeature)
     return ident == CSSValueInterlace || ident == CSSValueProgressive;
 
   if (RuntimeEnabledFeatures::mediaQueryShapeEnabled()) {
-    if (mediaFeature == shapeMediaFeature)
+    if (media_feature == shapeMediaFeature)
       return ident == CSSValueRect || ident == CSSValueRound;
   }
 
-  if (mediaFeature == colorGamutMediaFeature) {
+  if (media_feature == colorGamutMediaFeature) {
     return ident == CSSValueSRGB || ident == CSSValueP3 ||
            ident == CSSValueRec2020;
   }
@@ -73,261 +74,266 @@ static inline bool featureWithValidIdent(const String& mediaFeature,
   return false;
 }
 
-static inline bool featureWithValidPositiveLength(const String& mediaFeature,
+static inline bool FeatureWithValidPositiveLength(const String& media_feature,
                                                   const CSSParserToken& token) {
-  if (!(CSSPrimitiveValue::isLength(token.unitType()) ||
-        (token.type() == NumberToken && token.numericValue() == 0)) ||
-      token.numericValue() < 0)
+  if (!(CSSPrimitiveValue::IsLength(token.GetUnitType()) ||
+        (token.GetType() == kNumberToken && token.NumericValue() == 0)) ||
+      token.NumericValue() < 0)
     return false;
 
-  return mediaFeature == heightMediaFeature ||
-         mediaFeature == maxHeightMediaFeature ||
-         mediaFeature == minHeightMediaFeature ||
-         mediaFeature == widthMediaFeature ||
-         mediaFeature == maxWidthMediaFeature ||
-         mediaFeature == minWidthMediaFeature ||
-         mediaFeature == deviceHeightMediaFeature ||
-         mediaFeature == maxDeviceHeightMediaFeature ||
-         mediaFeature == minDeviceHeightMediaFeature ||
-         mediaFeature == deviceWidthMediaFeature ||
-         mediaFeature == minDeviceWidthMediaFeature ||
-         mediaFeature == maxDeviceWidthMediaFeature;
+  return media_feature == heightMediaFeature ||
+         media_feature == maxHeightMediaFeature ||
+         media_feature == minHeightMediaFeature ||
+         media_feature == widthMediaFeature ||
+         media_feature == maxWidthMediaFeature ||
+         media_feature == minWidthMediaFeature ||
+         media_feature == deviceHeightMediaFeature ||
+         media_feature == maxDeviceHeightMediaFeature ||
+         media_feature == minDeviceHeightMediaFeature ||
+         media_feature == deviceWidthMediaFeature ||
+         media_feature == minDeviceWidthMediaFeature ||
+         media_feature == maxDeviceWidthMediaFeature;
 }
 
-static inline bool featureWithValidDensity(const String& mediaFeature,
+static inline bool FeatureWithValidDensity(const String& media_feature,
                                            const CSSParserToken& token) {
-  if ((token.unitType() != CSSPrimitiveValue::UnitType::DotsPerPixel &&
-       token.unitType() != CSSPrimitiveValue::UnitType::DotsPerInch &&
-       token.unitType() != CSSPrimitiveValue::UnitType::DotsPerCentimeter) ||
-      token.numericValue() <= 0)
+  if ((token.GetUnitType() != CSSPrimitiveValue::UnitType::kDotsPerPixel &&
+       token.GetUnitType() != CSSPrimitiveValue::UnitType::kDotsPerInch &&
+       token.GetUnitType() !=
+           CSSPrimitiveValue::UnitType::kDotsPerCentimeter) ||
+      token.NumericValue() <= 0)
     return false;
 
-  return mediaFeature == resolutionMediaFeature ||
-         mediaFeature == minResolutionMediaFeature ||
-         mediaFeature == maxResolutionMediaFeature;
+  return media_feature == resolutionMediaFeature ||
+         media_feature == minResolutionMediaFeature ||
+         media_feature == maxResolutionMediaFeature;
 }
 
-static inline bool featureWithPositiveInteger(const String& mediaFeature,
+static inline bool FeatureWithPositiveInteger(const String& media_feature,
                                               const CSSParserToken& token) {
-  if (token.numericValueType() != IntegerValueType || token.numericValue() < 0)
+  if (token.GetNumericValueType() != kIntegerValueType ||
+      token.NumericValue() < 0)
     return false;
 
-  return mediaFeature == colorMediaFeature ||
-         mediaFeature == maxColorMediaFeature ||
-         mediaFeature == minColorMediaFeature ||
-         mediaFeature == colorIndexMediaFeature ||
-         mediaFeature == maxColorIndexMediaFeature ||
-         mediaFeature == minColorIndexMediaFeature ||
-         mediaFeature == monochromeMediaFeature ||
-         mediaFeature == maxMonochromeMediaFeature ||
-         mediaFeature == minMonochromeMediaFeature;
+  return media_feature == colorMediaFeature ||
+         media_feature == maxColorMediaFeature ||
+         media_feature == minColorMediaFeature ||
+         media_feature == colorIndexMediaFeature ||
+         media_feature == maxColorIndexMediaFeature ||
+         media_feature == minColorIndexMediaFeature ||
+         media_feature == monochromeMediaFeature ||
+         media_feature == maxMonochromeMediaFeature ||
+         media_feature == minMonochromeMediaFeature;
 }
 
-static inline bool featureWithPositiveNumber(const String& mediaFeature,
+static inline bool FeatureWithPositiveNumber(const String& media_feature,
                                              const CSSParserToken& token) {
-  if (token.type() != NumberToken || token.numericValue() < 0)
+  if (token.GetType() != kNumberToken || token.NumericValue() < 0)
     return false;
 
-  return mediaFeature == transform3dMediaFeature ||
-         mediaFeature == devicePixelRatioMediaFeature ||
-         mediaFeature == maxDevicePixelRatioMediaFeature ||
-         mediaFeature == minDevicePixelRatioMediaFeature;
+  return media_feature == transform3dMediaFeature ||
+         media_feature == devicePixelRatioMediaFeature ||
+         media_feature == maxDevicePixelRatioMediaFeature ||
+         media_feature == minDevicePixelRatioMediaFeature;
 }
 
-static inline bool featureWithZeroOrOne(const String& mediaFeature,
+static inline bool FeatureWithZeroOrOne(const String& media_feature,
                                         const CSSParserToken& token) {
-  if (token.numericValueType() != IntegerValueType ||
-      !(token.numericValue() == 1 || !token.numericValue()))
+  if (token.GetNumericValueType() != kIntegerValueType ||
+      !(token.NumericValue() == 1 || !token.NumericValue()))
     return false;
 
-  return mediaFeature == gridMediaFeature;
+  return media_feature == gridMediaFeature;
 }
 
-static inline bool featureWithAspectRatio(const String& mediaFeature) {
-  return mediaFeature == aspectRatioMediaFeature ||
-         mediaFeature == deviceAspectRatioMediaFeature ||
-         mediaFeature == minAspectRatioMediaFeature ||
-         mediaFeature == maxAspectRatioMediaFeature ||
-         mediaFeature == minDeviceAspectRatioMediaFeature ||
-         mediaFeature == maxDeviceAspectRatioMediaFeature;
+static inline bool FeatureWithAspectRatio(const String& media_feature) {
+  return media_feature == aspectRatioMediaFeature ||
+         media_feature == deviceAspectRatioMediaFeature ||
+         media_feature == minAspectRatioMediaFeature ||
+         media_feature == maxAspectRatioMediaFeature ||
+         media_feature == minDeviceAspectRatioMediaFeature ||
+         media_feature == maxDeviceAspectRatioMediaFeature;
 }
 
-static inline bool featureWithoutValue(const String& mediaFeature) {
+static inline bool FeatureWithoutValue(const String& media_feature) {
   // Media features that are prefixed by min/max cannot be used without a value.
-  return mediaFeature == monochromeMediaFeature ||
-         mediaFeature == colorMediaFeature ||
-         mediaFeature == colorIndexMediaFeature ||
-         mediaFeature == gridMediaFeature ||
-         mediaFeature == heightMediaFeature ||
-         mediaFeature == widthMediaFeature ||
-         mediaFeature == deviceHeightMediaFeature ||
-         mediaFeature == deviceWidthMediaFeature ||
-         mediaFeature == orientationMediaFeature ||
-         mediaFeature == aspectRatioMediaFeature ||
-         mediaFeature == deviceAspectRatioMediaFeature ||
-         mediaFeature == hoverMediaFeature ||
-         mediaFeature == anyHoverMediaFeature ||
-         mediaFeature == transform3dMediaFeature ||
-         mediaFeature == pointerMediaFeature ||
-         mediaFeature == anyPointerMediaFeature ||
-         mediaFeature == devicePixelRatioMediaFeature ||
-         mediaFeature == resolutionMediaFeature ||
-         mediaFeature == displayModeMediaFeature ||
-         mediaFeature == scanMediaFeature ||
-         mediaFeature == shapeMediaFeature ||
-         mediaFeature == colorGamutMediaFeature;
+  return media_feature == monochromeMediaFeature ||
+         media_feature == colorMediaFeature ||
+         media_feature == colorIndexMediaFeature ||
+         media_feature == gridMediaFeature ||
+         media_feature == heightMediaFeature ||
+         media_feature == widthMediaFeature ||
+         media_feature == deviceHeightMediaFeature ||
+         media_feature == deviceWidthMediaFeature ||
+         media_feature == orientationMediaFeature ||
+         media_feature == aspectRatioMediaFeature ||
+         media_feature == deviceAspectRatioMediaFeature ||
+         media_feature == hoverMediaFeature ||
+         media_feature == anyHoverMediaFeature ||
+         media_feature == transform3dMediaFeature ||
+         media_feature == pointerMediaFeature ||
+         media_feature == anyPointerMediaFeature ||
+         media_feature == devicePixelRatioMediaFeature ||
+         media_feature == resolutionMediaFeature ||
+         media_feature == displayModeMediaFeature ||
+         media_feature == scanMediaFeature ||
+         media_feature == shapeMediaFeature ||
+         media_feature == colorGamutMediaFeature;
 }
 
-bool MediaQueryExp::isViewportDependent() const {
-  return m_mediaFeature == widthMediaFeature ||
-         m_mediaFeature == heightMediaFeature ||
-         m_mediaFeature == minWidthMediaFeature ||
-         m_mediaFeature == minHeightMediaFeature ||
-         m_mediaFeature == maxWidthMediaFeature ||
-         m_mediaFeature == maxHeightMediaFeature ||
-         m_mediaFeature == orientationMediaFeature ||
-         m_mediaFeature == aspectRatioMediaFeature ||
-         m_mediaFeature == minAspectRatioMediaFeature ||
-         m_mediaFeature == devicePixelRatioMediaFeature ||
-         m_mediaFeature == resolutionMediaFeature ||
-         m_mediaFeature == maxAspectRatioMediaFeature ||
-         m_mediaFeature == maxDevicePixelRatioMediaFeature ||
-         m_mediaFeature == minDevicePixelRatioMediaFeature;
+bool MediaQueryExp::IsViewportDependent() const {
+  return media_feature_ == widthMediaFeature ||
+         media_feature_ == heightMediaFeature ||
+         media_feature_ == minWidthMediaFeature ||
+         media_feature_ == minHeightMediaFeature ||
+         media_feature_ == maxWidthMediaFeature ||
+         media_feature_ == maxHeightMediaFeature ||
+         media_feature_ == orientationMediaFeature ||
+         media_feature_ == aspectRatioMediaFeature ||
+         media_feature_ == minAspectRatioMediaFeature ||
+         media_feature_ == devicePixelRatioMediaFeature ||
+         media_feature_ == resolutionMediaFeature ||
+         media_feature_ == maxAspectRatioMediaFeature ||
+         media_feature_ == maxDevicePixelRatioMediaFeature ||
+         media_feature_ == minDevicePixelRatioMediaFeature;
 }
 
-bool MediaQueryExp::isDeviceDependent() const {
-  return m_mediaFeature == deviceAspectRatioMediaFeature ||
-         m_mediaFeature == deviceWidthMediaFeature ||
-         m_mediaFeature == deviceHeightMediaFeature ||
-         m_mediaFeature == minDeviceAspectRatioMediaFeature ||
-         m_mediaFeature == minDeviceWidthMediaFeature ||
-         m_mediaFeature == minDeviceHeightMediaFeature ||
-         m_mediaFeature == maxDeviceAspectRatioMediaFeature ||
-         m_mediaFeature == maxDeviceWidthMediaFeature ||
-         m_mediaFeature == maxDeviceHeightMediaFeature ||
-         m_mediaFeature == shapeMediaFeature;
+bool MediaQueryExp::IsDeviceDependent() const {
+  return media_feature_ == deviceAspectRatioMediaFeature ||
+         media_feature_ == deviceWidthMediaFeature ||
+         media_feature_ == deviceHeightMediaFeature ||
+         media_feature_ == minDeviceAspectRatioMediaFeature ||
+         media_feature_ == minDeviceWidthMediaFeature ||
+         media_feature_ == minDeviceHeightMediaFeature ||
+         media_feature_ == maxDeviceAspectRatioMediaFeature ||
+         media_feature_ == maxDeviceWidthMediaFeature ||
+         media_feature_ == maxDeviceHeightMediaFeature ||
+         media_feature_ == shapeMediaFeature;
 }
 
 MediaQueryExp::MediaQueryExp(const MediaQueryExp& other)
-    : m_mediaFeature(other.mediaFeature()), m_expValue(other.expValue()) {}
+    : media_feature_(other.MediaFeature()), exp_value_(other.ExpValue()) {}
 
-MediaQueryExp::MediaQueryExp(const String& mediaFeature,
-                             const MediaQueryExpValue& expValue)
-    : m_mediaFeature(mediaFeature), m_expValue(expValue) {}
+MediaQueryExp::MediaQueryExp(const String& media_feature,
+                             const MediaQueryExpValue& exp_value)
+    : media_feature_(media_feature), exp_value_(exp_value) {}
 
-MediaQueryExp* MediaQueryExp::createIfValid(
-    const String& mediaFeature,
-    const Vector<CSSParserToken, 4>& tokenList) {
-  DCHECK(!mediaFeature.isNull());
+MediaQueryExp* MediaQueryExp::CreateIfValid(
+    const String& media_feature,
+    const Vector<CSSParserToken, 4>& token_list) {
+  DCHECK(!media_feature.IsNull());
 
-  MediaQueryExpValue expValue;
-  String lowerMediaFeature = attemptStaticStringCreation(mediaFeature.lower());
+  MediaQueryExpValue exp_value;
+  String lower_media_feature =
+      AttemptStaticStringCreation(media_feature.Lower());
 
   // Create value for media query expression that must have 1 or more values.
-  if (tokenList.size() == 0 && featureWithoutValue(lowerMediaFeature)) {
+  if (token_list.size() == 0 && FeatureWithoutValue(lower_media_feature)) {
     // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
-  } else if (tokenList.size() == 1) {
-    CSSParserToken token = tokenList.front();
+  } else if (token_list.size() == 1) {
+    CSSParserToken token = token_list.front();
 
-    if (token.type() == IdentToken) {
-      CSSValueID ident = token.id();
-      if (!featureWithValidIdent(lowerMediaFeature, ident))
+    if (token.GetType() == kIdentToken) {
+      CSSValueID ident = token.Id();
+      if (!FeatureWithValidIdent(lower_media_feature, ident))
         return nullptr;
-      expValue.id = ident;
-      expValue.isID = true;
-    } else if (token.type() == NumberToken || token.type() == PercentageToken ||
-               token.type() == DimensionToken) {
+      exp_value.id = ident;
+      exp_value.is_id = true;
+    } else if (token.GetType() == kNumberToken ||
+               token.GetType() == kPercentageToken ||
+               token.GetType() == kDimensionToken) {
       // Check for numeric token types since it is only safe for these types to
       // call numericValue.
-      if (featureWithValidDensity(lowerMediaFeature, token) ||
-          featureWithValidPositiveLength(lowerMediaFeature, token)) {
+      if (FeatureWithValidDensity(lower_media_feature, token) ||
+          FeatureWithValidPositiveLength(lower_media_feature, token)) {
         // Media features that must have non-negative <density>, ie. dppx, dpi
         // or dpcm, or Media features that must have non-negative <length> or
         // number value.
-        expValue.value = token.numericValue();
-        expValue.unit = token.unitType();
-        expValue.isValue = true;
-      } else if (featureWithPositiveInteger(lowerMediaFeature, token) ||
-                 featureWithPositiveNumber(lowerMediaFeature, token) ||
-                 featureWithZeroOrOne(lowerMediaFeature, token)) {
+        exp_value.value = token.NumericValue();
+        exp_value.unit = token.GetUnitType();
+        exp_value.is_value = true;
+      } else if (FeatureWithPositiveInteger(lower_media_feature, token) ||
+                 FeatureWithPositiveNumber(lower_media_feature, token) ||
+                 FeatureWithZeroOrOne(lower_media_feature, token)) {
         // Media features that must have non-negative integer value,
         // or media features that must have non-negative number value,
         // or media features that must have (0|1) value.
-        expValue.value = token.numericValue();
-        expValue.unit = CSSPrimitiveValue::UnitType::Number;
-        expValue.isValue = true;
+        exp_value.value = token.NumericValue();
+        exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+        exp_value.is_value = true;
       } else {
         return nullptr;
       }
     } else {
       return nullptr;
     }
-  } else if (tokenList.size() == 3 &&
-             featureWithAspectRatio(lowerMediaFeature)) {
+  } else if (token_list.size() == 3 &&
+             FeatureWithAspectRatio(lower_media_feature)) {
     // TODO(timloh): <ratio> is supposed to allow whitespace around the '/'
     // Applicable to device-aspect-ratio and aspect-ratio.
-    const CSSParserToken& numerator = tokenList[0];
-    const CSSParserToken& delimiter = tokenList[1];
-    const CSSParserToken& denominator = tokenList[2];
-    if (delimiter.type() != DelimiterToken || delimiter.delimiter() != '/')
+    const CSSParserToken& numerator = token_list[0];
+    const CSSParserToken& delimiter = token_list[1];
+    const CSSParserToken& denominator = token_list[2];
+    if (delimiter.GetType() != kDelimiterToken || delimiter.Delimiter() != '/')
       return nullptr;
-    if (numerator.type() != NumberToken || numerator.numericValue() <= 0 ||
-        numerator.numericValueType() != IntegerValueType)
+    if (numerator.GetType() != kNumberToken || numerator.NumericValue() <= 0 ||
+        numerator.GetNumericValueType() != kIntegerValueType)
       return nullptr;
-    if (denominator.type() != NumberToken || denominator.numericValue() <= 0 ||
-        denominator.numericValueType() != IntegerValueType)
+    if (denominator.GetType() != kNumberToken ||
+        denominator.NumericValue() <= 0 ||
+        denominator.GetNumericValueType() != kIntegerValueType)
       return nullptr;
 
-    expValue.numerator = (unsigned)numerator.numericValue();
-    expValue.denominator = (unsigned)denominator.numericValue();
-    expValue.isRatio = true;
+    exp_value.numerator = (unsigned)numerator.NumericValue();
+    exp_value.denominator = (unsigned)denominator.NumericValue();
+    exp_value.is_ratio = true;
   } else {
     return nullptr;
   }
 
-  return new MediaQueryExp(lowerMediaFeature, expValue);
+  return new MediaQueryExp(lower_media_feature, exp_value);
 }
 
 MediaQueryExp::~MediaQueryExp() {}
 
 bool MediaQueryExp::operator==(const MediaQueryExp& other) const {
-  return (other.m_mediaFeature == m_mediaFeature) &&
-         ((!other.m_expValue.isValid() && !m_expValue.isValid()) ||
-          (other.m_expValue.isValid() && m_expValue.isValid() &&
-           other.m_expValue.equals(m_expValue)));
+  return (other.media_feature_ == media_feature_) &&
+         ((!other.exp_value_.IsValid() && !exp_value_.IsValid()) ||
+          (other.exp_value_.IsValid() && exp_value_.IsValid() &&
+           other.exp_value_.Equals(exp_value_)));
 }
 
-String MediaQueryExp::serialize() const {
+String MediaQueryExp::Serialize() const {
   StringBuilder result;
-  result.append('(');
-  result.append(m_mediaFeature.lower());
-  if (m_expValue.isValid()) {
-    result.append(": ");
-    result.append(m_expValue.cssText());
+  result.Append('(');
+  result.Append(media_feature_.Lower());
+  if (exp_value_.IsValid()) {
+    result.Append(": ");
+    result.Append(exp_value_.CssText());
   }
-  result.append(')');
+  result.Append(')');
 
-  return result.toString();
+  return result.ToString();
 }
 
-static inline String printNumber(double number) {
-  return Decimal::fromDouble(number).toString();
+static inline String PrintNumber(double number) {
+  return Decimal::FromDouble(number).ToString();
 }
 
-String MediaQueryExpValue::cssText() const {
+String MediaQueryExpValue::CssText() const {
   StringBuilder output;
-  if (isValue) {
-    output.append(printNumber(value));
-    output.append(CSSPrimitiveValue::unitTypeToString(unit));
-  } else if (isRatio) {
-    output.append(printNumber(numerator));
-    output.append('/');
-    output.append(printNumber(denominator));
-  } else if (isID) {
-    output.append(getValueName(id));
+  if (is_value) {
+    output.Append(PrintNumber(value));
+    output.Append(CSSPrimitiveValue::UnitTypeToString(unit));
+  } else if (is_ratio) {
+    output.Append(PrintNumber(numerator));
+    output.Append('/');
+    output.Append(PrintNumber(denominator));
+  } else if (is_id) {
+    output.Append(getValueName(id));
   }
 
-  return output.toString();
+  return output.ToString();
 }
 
 }  // namespace blink

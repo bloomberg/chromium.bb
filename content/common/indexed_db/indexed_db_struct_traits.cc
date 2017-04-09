@@ -25,29 +25,29 @@ StructTraits<indexed_db::mojom::KeyDataView, IndexedDBKey>::data(
     const IndexedDBKey& key) {
   auto data = indexed_db::mojom::KeyData::New();
   switch (key.type()) {
-    case blink::WebIDBKeyTypeInvalid:
+    case blink::kWebIDBKeyTypeInvalid:
       data->set_other(indexed_db::mojom::DatalessKeyType::Invalid);
       return data;
-    case blink::WebIDBKeyTypeArray:
+    case blink::kWebIDBKeyTypeArray:
       data->set_key_array(key.array());
       return data;
-    case blink::WebIDBKeyTypeBinary:
+    case blink::kWebIDBKeyTypeBinary:
       data->set_binary(std::vector<uint8_t>(
           key.binary().data(), key.binary().data() + key.binary().size()));
       return data;
-    case blink::WebIDBKeyTypeString:
+    case blink::kWebIDBKeyTypeString:
       data->set_string(key.string());
       return data;
-    case blink::WebIDBKeyTypeDate:
+    case blink::kWebIDBKeyTypeDate:
       data->set_date(key.date());
       return data;
-    case blink::WebIDBKeyTypeNumber:
+    case blink::kWebIDBKeyTypeNumber:
       data->set_number(key.number());
       return data;
-    case blink::WebIDBKeyTypeNull:
+    case blink::kWebIDBKeyTypeNull:
       data->set_other(indexed_db::mojom::DatalessKeyType::Null);
       return data;
-    case blink::WebIDBKeyTypeMin:
+    case blink::kWebIDBKeyTypeMin:
       break;
   }
   NOTREACHED();
@@ -85,18 +85,18 @@ bool StructTraits<indexed_db::mojom::KeyDataView, IndexedDBKey>::Read(
       return true;
     }
     case indexed_db::mojom::KeyDataDataView::Tag::DATE:
-      *out = IndexedDBKey(data_view.date(), blink::WebIDBKeyTypeDate);
+      *out = IndexedDBKey(data_view.date(), blink::kWebIDBKeyTypeDate);
       return true;
     case indexed_db::mojom::KeyDataDataView::Tag::NUMBER:
-      *out = IndexedDBKey(data_view.number(), blink::WebIDBKeyTypeNumber);
+      *out = IndexedDBKey(data_view.number(), blink::kWebIDBKeyTypeNumber);
       return true;
     case indexed_db::mojom::KeyDataDataView::Tag::OTHER:
       switch (data_view.other()) {
         case indexed_db::mojom::DatalessKeyType::Invalid:
-          *out = IndexedDBKey(blink::WebIDBKeyTypeInvalid);
+          *out = IndexedDBKey(blink::kWebIDBKeyTypeInvalid);
           return true;
         case indexed_db::mojom::DatalessKeyType::Null:
-          *out = IndexedDBKey(blink::WebIDBKeyTypeNull);
+          *out = IndexedDBKey(blink::kWebIDBKeyTypeNull);
           return true;
       }
   }
@@ -113,10 +113,10 @@ StructTraits<indexed_db::mojom::KeyPathDataView, IndexedDBKeyPath>::data(
 
   auto data = indexed_db::mojom::KeyPathData::New();
   switch (key_path.type()) {
-    case blink::WebIDBKeyPathTypeString:
+    case blink::kWebIDBKeyPathTypeString:
       data->set_string(key_path.string());
       return data;
-    case blink::WebIDBKeyPathTypeArray:
+    case blink::kWebIDBKeyPathTypeArray:
       data->set_string_array(key_path.array());
       return data;
     default:
@@ -250,13 +250,13 @@ CursorDirection
 EnumTraits<CursorDirection, blink::WebIDBCursorDirection>::ToMojom(
     blink::WebIDBCursorDirection input) {
   switch (input) {
-    case blink::WebIDBCursorDirectionNext:
+    case blink::kWebIDBCursorDirectionNext:
       return CursorDirection::Next;
-    case blink::WebIDBCursorDirectionNextNoDuplicate:
+    case blink::kWebIDBCursorDirectionNextNoDuplicate:
       return CursorDirection::NextNoDuplicate;
-    case blink::WebIDBCursorDirectionPrev:
+    case blink::kWebIDBCursorDirectionPrev:
       return CursorDirection::Prev;
-    case blink::WebIDBCursorDirectionPrevNoDuplicate:
+    case blink::kWebIDBCursorDirectionPrevNoDuplicate:
       return CursorDirection::PrevNoDuplicate;
   }
   NOTREACHED();
@@ -269,16 +269,16 @@ bool EnumTraits<CursorDirection, blink::WebIDBCursorDirection>::FromMojom(
     blink::WebIDBCursorDirection* output) {
   switch (input) {
     case CursorDirection::Next:
-      *output = blink::WebIDBCursorDirectionNext;
+      *output = blink::kWebIDBCursorDirectionNext;
       return true;
     case CursorDirection::NextNoDuplicate:
-      *output = blink::WebIDBCursorDirectionNextNoDuplicate;
+      *output = blink::kWebIDBCursorDirectionNextNoDuplicate;
       return true;
     case CursorDirection::Prev:
-      *output = blink::WebIDBCursorDirectionPrev;
+      *output = blink::kWebIDBCursorDirectionPrev;
       return true;
     case CursorDirection::PrevNoDuplicate:
-      *output = blink::WebIDBCursorDirectionPrevNoDuplicate;
+      *output = blink::kWebIDBCursorDirectionPrevNoDuplicate;
       return true;
   }
   return false;
@@ -288,9 +288,9 @@ bool EnumTraits<CursorDirection, blink::WebIDBCursorDirection>::FromMojom(
 DataLoss EnumTraits<DataLoss, blink::WebIDBDataLoss>::ToMojom(
     blink::WebIDBDataLoss input) {
   switch (input) {
-    case blink::WebIDBDataLossNone:
+    case blink::kWebIDBDataLossNone:
       return DataLoss::None;
-    case blink::WebIDBDataLossTotal:
+    case blink::kWebIDBDataLossTotal:
       return DataLoss::Total;
   }
   NOTREACHED();
@@ -303,10 +303,10 @@ bool EnumTraits<DataLoss, blink::WebIDBDataLoss>::FromMojom(
     blink::WebIDBDataLoss* output) {
   switch (input) {
     case DataLoss::None:
-      *output = blink::WebIDBDataLossNone;
+      *output = blink::kWebIDBDataLossNone;
       return true;
     case DataLoss::Total:
-      *output = blink::WebIDBDataLossTotal;
+      *output = blink::kWebIDBDataLossTotal;
       return true;
   }
   return false;
@@ -316,15 +316,15 @@ bool EnumTraits<DataLoss, blink::WebIDBDataLoss>::FromMojom(
 OperationType EnumTraits<OperationType, blink::WebIDBOperationType>::ToMojom(
     blink::WebIDBOperationType input) {
   switch (input) {
-    case blink::WebIDBAdd:
+    case blink::kWebIDBAdd:
       return OperationType::Add;
-    case blink::WebIDBPut:
+    case blink::kWebIDBPut:
       return OperationType::Put;
-    case blink::WebIDBDelete:
+    case blink::kWebIDBDelete:
       return OperationType::Delete;
-    case blink::WebIDBClear:
+    case blink::kWebIDBClear:
       return OperationType::Clear;
-    case blink::WebIDBOperationTypeCount:
+    case blink::kWebIDBOperationTypeCount:
       // WebIDBOperationTypeCount is not a valid option.
       break;
   }
@@ -338,16 +338,16 @@ bool EnumTraits<OperationType, blink::WebIDBOperationType>::FromMojom(
     blink::WebIDBOperationType* output) {
   switch (input) {
     case OperationType::Add:
-      *output = blink::WebIDBAdd;
+      *output = blink::kWebIDBAdd;
       return true;
     case OperationType::Put:
-      *output = blink::WebIDBPut;
+      *output = blink::kWebIDBPut;
       return true;
     case OperationType::Delete:
-      *output = blink::WebIDBDelete;
+      *output = blink::kWebIDBDelete;
       return true;
     case OperationType::Clear:
-      *output = blink::WebIDBClear;
+      *output = blink::kWebIDBClear;
       return true;
   }
   return false;
@@ -357,11 +357,11 @@ bool EnumTraits<OperationType, blink::WebIDBOperationType>::FromMojom(
 PutMode EnumTraits<PutMode, blink::WebIDBPutMode>::ToMojom(
     blink::WebIDBPutMode input) {
   switch (input) {
-    case blink::WebIDBPutModeAddOrUpdate:
+    case blink::kWebIDBPutModeAddOrUpdate:
       return PutMode::AddOrUpdate;
-    case blink::WebIDBPutModeAddOnly:
+    case blink::kWebIDBPutModeAddOnly:
       return PutMode::AddOnly;
-    case blink::WebIDBPutModeCursorUpdate:
+    case blink::kWebIDBPutModeCursorUpdate:
       return PutMode::CursorUpdate;
   }
   NOTREACHED();
@@ -374,13 +374,13 @@ bool EnumTraits<PutMode, blink::WebIDBPutMode>::FromMojom(
     blink::WebIDBPutMode* output) {
   switch (input) {
     case PutMode::AddOrUpdate:
-      *output = blink::WebIDBPutModeAddOrUpdate;
+      *output = blink::kWebIDBPutModeAddOrUpdate;
       return true;
     case PutMode::AddOnly:
-      *output = blink::WebIDBPutModeAddOnly;
+      *output = blink::kWebIDBPutModeAddOnly;
       return true;
     case PutMode::CursorUpdate:
-      *output = blink::WebIDBPutModeCursorUpdate;
+      *output = blink::kWebIDBPutModeCursorUpdate;
       return true;
   }
   return false;
@@ -390,9 +390,9 @@ bool EnumTraits<PutMode, blink::WebIDBPutMode>::FromMojom(
 TaskType EnumTraits<TaskType, blink::WebIDBTaskType>::ToMojom(
     blink::WebIDBTaskType input) {
   switch (input) {
-    case blink::WebIDBTaskTypeNormal:
+    case blink::kWebIDBTaskTypeNormal:
       return TaskType::Normal;
-    case blink::WebIDBTaskTypePreemptive:
+    case blink::kWebIDBTaskTypePreemptive:
       return TaskType::Preemptive;
   }
   NOTREACHED();
@@ -405,10 +405,10 @@ bool EnumTraits<TaskType, blink::WebIDBTaskType>::FromMojom(
     blink::WebIDBTaskType* output) {
   switch (input) {
     case TaskType::Normal:
-      *output = blink::WebIDBTaskTypeNormal;
+      *output = blink::kWebIDBTaskTypeNormal;
       return true;
     case TaskType::Preemptive:
-      *output = blink::WebIDBTaskTypePreemptive;
+      *output = blink::kWebIDBTaskTypePreemptive;
       return true;
   }
   return false;
@@ -419,11 +419,11 @@ TransactionMode
 EnumTraits<TransactionMode, blink::WebIDBTransactionMode>::ToMojom(
     blink::WebIDBTransactionMode input) {
   switch (input) {
-    case blink::WebIDBTransactionModeReadOnly:
+    case blink::kWebIDBTransactionModeReadOnly:
       return TransactionMode::ReadOnly;
-    case blink::WebIDBTransactionModeReadWrite:
+    case blink::kWebIDBTransactionModeReadWrite:
       return TransactionMode::ReadWrite;
-    case blink::WebIDBTransactionModeVersionChange:
+    case blink::kWebIDBTransactionModeVersionChange:
       return TransactionMode::VersionChange;
   }
   NOTREACHED();
@@ -436,13 +436,13 @@ bool EnumTraits<TransactionMode, blink::WebIDBTransactionMode>::FromMojom(
     blink::WebIDBTransactionMode* output) {
   switch (input) {
     case TransactionMode::ReadOnly:
-      *output = blink::WebIDBTransactionModeReadOnly;
+      *output = blink::kWebIDBTransactionModeReadOnly;
       return true;
     case TransactionMode::ReadWrite:
-      *output = blink::WebIDBTransactionModeReadWrite;
+      *output = blink::kWebIDBTransactionModeReadWrite;
       return true;
     case TransactionMode::VersionChange:
-      *output = blink::WebIDBTransactionModeVersionChange;
+      *output = blink::kWebIDBTransactionModeVersionChange;
       return true;
   }
   return false;

@@ -17,8 +17,8 @@ class CORE_EXPORT SelectionAdjuster final {
   STATIC_ONLY(SelectionAdjuster);
 
  public:
-  static void adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelection*);
-  static void adjustSelectionToAvoidCrossingShadowBoundaries(
+  static void AdjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelection*);
+  static void AdjustSelectionToAvoidCrossingShadowBoundaries(
       VisibleSelectionInFlatTree*);
 };
 

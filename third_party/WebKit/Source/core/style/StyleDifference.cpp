@@ -9,14 +9,14 @@ namespace blink {
 std::ostream& operator<<(std::ostream& out, const StyleDifference& diff) {
   out << "StyleDifference{layoutType=";
 
-  switch (diff.m_layoutType) {
-    case StyleDifference::NoLayout:
+  switch (diff.layout_type_) {
+    case StyleDifference::kNoLayout:
       out << "NoLayout";
       break;
-    case StyleDifference::PositionedMovement:
+    case StyleDifference::kPositionedMovement:
       out << "PositionedMovement";
       break;
-    case StyleDifference::FullLayout:
+    case StyleDifference::kFullLayout:
       out << "FullLayout";
       break;
     default:
@@ -25,14 +25,14 @@ std::ostream& operator<<(std::ostream& out, const StyleDifference& diff) {
   }
 
   out << ", paintInvalidationType=";
-  switch (diff.m_paintInvalidationType) {
-    case StyleDifference::NoPaintInvalidation:
+  switch (diff.paint_invalidation_type_) {
+    case StyleDifference::kNoPaintInvalidation:
       out << "NoPaintInvalidation";
       break;
-    case StyleDifference::PaintInvalidationObject:
+    case StyleDifference::kPaintInvalidationObject:
       out << "PaintInvalidationObject";
       break;
-    case StyleDifference::PaintInvalidationSubtree:
+    case StyleDifference::kPaintInvalidationSubtree:
       out << "PaintInvalidationSubtree";
       break;
     default:
@@ -40,36 +40,36 @@ std::ostream& operator<<(std::ostream& out, const StyleDifference& diff) {
       break;
   }
 
-  out << ", recomputeOverflow=" << diff.m_recomputeOverflow;
-  out << ", visualRectUpdate=" << diff.m_visualRectUpdate;
+  out << ", recomputeOverflow=" << diff.recompute_overflow_;
+  out << ", visualRectUpdate=" << diff.visual_rect_update_;
 
   out << ", propertySpecificDifferences=";
-  int diffCount = 0;
+  int diff_count = 0;
   for (int i = 0; i < StyleDifference::kPropertyDifferenceCount; i++) {
-    unsigned bitTest = 1 << i;
-    if (diff.m_propertySpecificDifferences & bitTest) {
-      if (diffCount++ > 0)
+    unsigned bit_test = 1 << i;
+    if (diff.property_specific_differences_ & bit_test) {
+      if (diff_count++ > 0)
         out << "|";
-      switch (bitTest) {
-        case StyleDifference::TransformChanged:
+      switch (bit_test) {
+        case StyleDifference::kTransformChanged:
           out << "TransformChanged";
           break;
-        case StyleDifference::OpacityChanged:
+        case StyleDifference::kOpacityChanged:
           out << "OpacityChanged";
           break;
-        case StyleDifference::ZIndexChanged:
+        case StyleDifference::kZIndexChanged:
           out << "ZIndexChanged";
           break;
-        case StyleDifference::FilterChanged:
+        case StyleDifference::kFilterChanged:
           out << "FilterChanged";
           break;
-        case StyleDifference::BackdropFilterChanged:
+        case StyleDifference::kBackdropFilterChanged:
           out << "BackdropFilterChanged";
           break;
-        case StyleDifference::CSSClipChanged:
+        case StyleDifference::kCSSClipChanged:
           out << "CSSClipChanged";
           break;
-        case StyleDifference::TextDecorationOrColorChanged:
+        case StyleDifference::kTextDecorationOrColorChanged:
           out << "TextDecorationOrColorChanged";
           break;
         default:
@@ -80,7 +80,7 @@ std::ostream& operator<<(std::ostream& out, const StyleDifference& diff) {
   }
 
   out << ", scrollAnchorDisablingPropertyChanged="
-      << diff.m_scrollAnchorDisablingPropertyChanged;
+      << diff.scroll_anchor_disabling_property_changed_;
 
   return out << "}";
 }

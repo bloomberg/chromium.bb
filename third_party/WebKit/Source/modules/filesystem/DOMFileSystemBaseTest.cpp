@@ -13,55 +13,57 @@ namespace blink {
 class DOMFileSystemBaseTest : public ::testing::Test {
  public:
   DOMFileSystemBaseTest() {
-    m_filePath = testing::blinkRootDir();
-    m_filePath.append("/Source/modules/filesystem/DOMFileSystemBaseTest.cpp");
-    getFileMetadata(m_filePath, m_fileMetadata);
-    m_fileMetadata.platformPath = m_filePath;
+    file_path_ = testing::BlinkRootDir();
+    file_path_.Append("/Source/modules/filesystem/DOMFileSystemBaseTest.cpp");
+    GetFileMetadata(file_path_, file_metadata_);
+    file_metadata_.platform_path = file_path_;
   }
 
  protected:
-  String m_filePath;
-  FileMetadata m_fileMetadata;
+  String file_path_;
+  FileMetadata file_metadata_;
 };
 
 TEST_F(DOMFileSystemBaseTest, externalFilesystemFilesAreUserVisible) {
-  KURL rootUrl = DOMFileSystemBase::createFileSystemRootURL(
-      "http://chromium.org/", FileSystemTypeExternal);
+  KURL root_url = DOMFileSystemBase::CreateFileSystemRootURL(
+      "http://chromium.org/", kFileSystemTypeExternal);
 
-  File* file = DOMFileSystemBase::createFile(m_fileMetadata, rootUrl,
-                                             FileSystemTypeExternal,
+  File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
+                                             kFileSystemTypeExternal,
                                              "DOMFileSystemBaseTest.cpp");
   EXPECT_TRUE(file);
-  EXPECT_TRUE(file->hasBackingFile());
-  EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ(File::kIsUserVisible, file->GetUserVisibility());
   EXPECT_EQ("DOMFileSystemBaseTest.cpp", file->name());
-  EXPECT_EQ(m_filePath, file->path());
+  EXPECT_EQ(file_path_, file->GetPath());
 }
 
 TEST_F(DOMFileSystemBaseTest, temporaryFilesystemFilesAreNotUserVisible) {
-  KURL rootUrl = DOMFileSystemBase::createFileSystemRootURL(
-      "http://chromium.org/", FileSystemTypeTemporary);
+  KURL root_url = DOMFileSystemBase::CreateFileSystemRootURL(
+      "http://chromium.org/", kFileSystemTypeTemporary);
 
-  File* file = DOMFileSystemBase::createFile(
-      m_fileMetadata, rootUrl, FileSystemTypeTemporary, "UserVisibleName.txt");
+  File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
+                                             kFileSystemTypeTemporary,
+                                             "UserVisibleName.txt");
   EXPECT_TRUE(file);
-  EXPECT_TRUE(file->hasBackingFile());
-  EXPECT_EQ(File::IsNotUserVisible, file->getUserVisibility());
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ(File::kIsNotUserVisible, file->GetUserVisibility());
   EXPECT_EQ("UserVisibleName.txt", file->name());
-  EXPECT_EQ(m_filePath, file->path());
+  EXPECT_EQ(file_path_, file->GetPath());
 }
 
 TEST_F(DOMFileSystemBaseTest, persistentFilesystemFilesAreNotUserVisible) {
-  KURL rootUrl = DOMFileSystemBase::createFileSystemRootURL(
-      "http://chromium.org/", FileSystemTypePersistent);
+  KURL root_url = DOMFileSystemBase::CreateFileSystemRootURL(
+      "http://chromium.org/", kFileSystemTypePersistent);
 
-  File* file = DOMFileSystemBase::createFile(
-      m_fileMetadata, rootUrl, FileSystemTypePersistent, "UserVisibleName.txt");
+  File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
+                                             kFileSystemTypePersistent,
+                                             "UserVisibleName.txt");
   EXPECT_TRUE(file);
-  EXPECT_TRUE(file->hasBackingFile());
-  EXPECT_EQ(File::IsNotUserVisible, file->getUserVisibility());
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ(File::kIsNotUserVisible, file->GetUserVisibility());
   EXPECT_EQ("UserVisibleName.txt", file->name());
-  EXPECT_EQ(m_filePath, file->path());
+  EXPECT_EQ(file_path_, file->GetPath());
 }
 
 }  // namespace blink

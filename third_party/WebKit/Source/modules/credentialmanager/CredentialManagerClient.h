@@ -31,30 +31,30 @@ class MODULES_EXPORT CredentialManagerClient final
   virtual ~CredentialManagerClient();
   DECLARE_VIRTUAL_TRACE();
 
-  static const char* supplementName();
-  static CredentialManagerClient* from(Page*);
-  static CredentialManagerClient* from(ExecutionContext*);
+  static const char* SupplementName();
+  static CredentialManagerClient* From(Page*);
+  static CredentialManagerClient* From(ExecutionContext*);
 
   // Ownership of the callback is transferred to the callee for each of
   // the following methods.
-  virtual void dispatchFailedSignIn(
+  virtual void DispatchFailedSignIn(
       const WebCredential&,
       WebCredentialManagerClient::NotificationCallbacks*);
-  virtual void dispatchStore(
+  virtual void DispatchStore(
       const WebCredential&,
       WebCredentialManagerClient::NotificationCallbacks*);
-  virtual void dispatchRequireUserMediation(
+  virtual void DispatchRequireUserMediation(
       WebCredentialManagerClient::NotificationCallbacks*);
-  virtual void dispatchGet(bool zeroClickOnly,
-                           bool includePasswords,
+  virtual void DispatchGet(bool zero_click_only,
+                           bool include_passwords,
                            const WebVector<WebURL>& federations,
                            WebCredentialManagerClient::RequestCallbacks*);
 
  private:
-  WebCredentialManagerClient* m_client;
+  WebCredentialManagerClient* client_;
 };
 
-MODULES_EXPORT void provideCredentialManagerClientTo(Page&,
+MODULES_EXPORT void ProvideCredentialManagerClientTo(Page&,
                                                      CredentialManagerClient*);
 
 }  // namespace blink

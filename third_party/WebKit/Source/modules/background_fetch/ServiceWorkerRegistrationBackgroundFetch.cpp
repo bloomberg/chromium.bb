@@ -11,26 +11,26 @@ namespace blink {
 ServiceWorkerRegistrationBackgroundFetch::
     ServiceWorkerRegistrationBackgroundFetch(
         ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    : registration_(registration) {}
 
 ServiceWorkerRegistrationBackgroundFetch::
     ~ServiceWorkerRegistrationBackgroundFetch() = default;
 
-const char* ServiceWorkerRegistrationBackgroundFetch::supplementName() {
+const char* ServiceWorkerRegistrationBackgroundFetch::SupplementName() {
   return "ServiceWorkerRegistrationBackgroundFetch";
 }
 
 ServiceWorkerRegistrationBackgroundFetch&
-ServiceWorkerRegistrationBackgroundFetch::from(
+ServiceWorkerRegistrationBackgroundFetch::From(
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationBackgroundFetch* supplement =
       static_cast<ServiceWorkerRegistrationBackgroundFetch*>(
-          Supplement<ServiceWorkerRegistration>::from(registration,
-                                                      supplementName()));
+          Supplement<ServiceWorkerRegistration>::From(registration,
+                                                      SupplementName()));
 
   if (!supplement) {
     supplement = new ServiceWorkerRegistrationBackgroundFetch(&registration);
-    provideTo(registration, supplementName(), supplement);
+    ProvideTo(registration, SupplementName(), supplement);
   }
 
   return *supplement;
@@ -39,22 +39,22 @@ ServiceWorkerRegistrationBackgroundFetch::from(
 BackgroundFetchManager*
 ServiceWorkerRegistrationBackgroundFetch::backgroundFetch(
     ServiceWorkerRegistration& registration) {
-  return ServiceWorkerRegistrationBackgroundFetch::from(registration)
+  return ServiceWorkerRegistrationBackgroundFetch::From(registration)
       .backgroundFetch();
 }
 
 BackgroundFetchManager*
 ServiceWorkerRegistrationBackgroundFetch::backgroundFetch() {
-  if (!m_backgroundFetchManager)
-    m_backgroundFetchManager = BackgroundFetchManager::create(m_registration);
+  if (!background_fetch_manager_)
+    background_fetch_manager_ = BackgroundFetchManager::Create(registration_);
 
-  return m_backgroundFetchManager.get();
+  return background_fetch_manager_.Get();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationBackgroundFetch) {
-  visitor->trace(m_registration);
-  visitor->trace(m_backgroundFetchManager);
-  Supplement<ServiceWorkerRegistration>::trace(visitor);
+  visitor->Trace(registration_);
+  visitor->Trace(background_fetch_manager_);
+  Supplement<ServiceWorkerRegistration>::Trace(visitor);
 }
 
 }  // namespace blink

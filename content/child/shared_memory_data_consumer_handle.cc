@@ -55,7 +55,7 @@ class SharedMemoryDataConsumerHandle::Context final
     : public base::RefCountedThreadSafe<Context> {
  public:
   explicit Context(const base::Closure& on_reader_detached)
-      : result_(Ok),
+      : result_(kOk),
         first_offset_(0),
         client_(nullptr),
         writer_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -112,7 +112,7 @@ class SharedMemoryDataConsumerHandle::Context final
     DCHECK(!client_);
     notification_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     client_ = client;
-    if (client && !(IsEmpty() && result() == Ok)) {
+    if (client && !(IsEmpty() && result() == kOk)) {
       // We cannot notify synchronously because the user doesn't have the reader
       // yet.
       notification_task_runner_->PostTask(
@@ -209,7 +209,7 @@ class SharedMemoryDataConsumerHandle::Context final
       // It is safe to access member variables without lock because |client_|
       // is bound to the current thread.
       if (client_)
-        client_->didGetReadable();
+        client_->DidGetReadable();
       return;
     }
     if (repost) {
@@ -304,8 +304,8 @@ void SharedMemoryDataConsumerHandle::Writer::AddData(
 
 void SharedMemoryDataConsumerHandle::Writer::Close() {
   base::AutoLock lock(context_->lock());
-  if (context_->result() == Ok) {
-    context_->set_result(Done);
+  if (context_->result() == kOk) {
+    context_->set_result(kDone);
     context_->ResetOnReaderDetached();
     if (context_->IsEmpty()) {
       // We cannot issue the notification synchronously because this function
@@ -317,10 +317,10 @@ void SharedMemoryDataConsumerHandle::Writer::Close() {
 
 void SharedMemoryDataConsumerHandle::Writer::Fail() {
   base::AutoLock lock(context_->lock());
-  if (context_->result() == Ok) {
+  if (context_->result() == kOk) {
     // TODO(yhirano): Use an appropriate error code other than
     // UnexpectedError.
-    context_->set_result(UnexpectedError);
+    context_->set_result(kUnexpectedError);
 
     if (context_->is_two_phase_read_in_progress()) {
       // If we are in two-phase read session, we cannot discard the data. We
@@ -351,7 +351,7 @@ SharedMemoryDataConsumerHandle::ReaderImpl::~ReaderImpl() {
   context_->ClearIfNecessary();
 }
 
-Result SharedMemoryDataConsumerHandle::ReaderImpl::read(
+Result SharedMemoryDataConsumerHandle::ReaderImpl::Read(
     void* data,
     size_t size,
     Flags flags,
@@ -361,10 +361,10 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::read(
   size_t total_read_size = 0;
   *read_size_to_return = 0;
 
-  if (context_->result() == Ok && context_->is_two_phase_read_in_progress())
-    context_->set_result(UnexpectedError);
+  if (context_->result() == kOk && context_->is_two_phase_read_in_progress())
+    context_->set_result(kUnexpectedError);
 
-  if (context_->result() != Ok && context_->result() != Done)
+  if (context_->result() != kOk && context_->result() != kDone)
     return context_->result();
 
   while (!context_->IsEmpty() && total_read_size < size) {
@@ -380,13 +380,13 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::read(
   }
   *read_size_to_return = total_read_size;
   if (total_read_size || !context_->IsEmpty())
-    return Ok;
-  if (context_->result() == Done)
-    return Done;
-  return ShouldWait;
+    return kOk;
+  if (context_->result() == kDone)
+    return kDone;
+  return kShouldWait;
 }
 
-Result SharedMemoryDataConsumerHandle::ReaderImpl::beginRead(
+Result SharedMemoryDataConsumerHandle::ReaderImpl::BeginRead(
     const void** buffer,
     Flags flags,
     size_t* available) {
@@ -395,38 +395,38 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::beginRead(
 
   base::AutoLock lock(context_->lock());
 
-  if (context_->result() == Ok && context_->is_two_phase_read_in_progress())
-    context_->set_result(UnexpectedError);
+  if (context_->result() == kOk && context_->is_two_phase_read_in_progress())
+    context_->set_result(kUnexpectedError);
 
-  if (context_->result() != Ok && context_->result() != Done)
+  if (context_->result() != kOk && context_->result() != kDone)
     return context_->result();
 
   if (context_->IsEmpty())
-    return context_->result() == Done ? Done : ShouldWait;
+    return context_->result() == kDone ? kDone : kShouldWait;
 
   context_->set_is_two_phase_read_in_progress(true);
   auto* top = context_->Top();
   *buffer = top->payload() + context_->first_offset();
   *available = top->length() - context_->first_offset();
 
-  return Ok;
+  return kOk;
 }
 
-Result SharedMemoryDataConsumerHandle::ReaderImpl::endRead(size_t read_size) {
+Result SharedMemoryDataConsumerHandle::ReaderImpl::EndRead(size_t read_size) {
   base::AutoLock lock(context_->lock());
 
   if (!context_->is_two_phase_read_in_progress())
-    return UnexpectedError;
+    return kUnexpectedError;
 
   context_->set_is_two_phase_read_in_progress(false);
-  if (context_->result() != Ok && context_->result() != Done) {
+  if (context_->result() != kOk && context_->result() != kDone) {
     // We have an error, so we can discard the stored data.
     context_->ClearQueue();
   } else {
     context_->Consume(read_size);
   }
 
-  return Ok;
+  return kOk;
 }
 
 SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
@@ -449,11 +449,11 @@ SharedMemoryDataConsumerHandle::~SharedMemoryDataConsumerHandle() {
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle::Reader>
-SharedMemoryDataConsumerHandle::obtainReader(Client* client) {
+SharedMemoryDataConsumerHandle::ObtainReader(Client* client) {
   return base::WrapUnique(new ReaderImpl(context_, client));
 }
 
-const char* SharedMemoryDataConsumerHandle::debugName() const {
+const char* SharedMemoryDataConsumerHandle::DebugName() const {
   return "SharedMemoryDataConsumerHandle";
 }
 

@@ -13,15 +13,15 @@ namespace WTF {
 TEST(StringBufferTest, Initial) {
   StringBuffer<LChar> buf1;
   EXPECT_EQ(0u, buf1.length());
-  EXPECT_FALSE(buf1.characters());
+  EXPECT_FALSE(buf1.Characters());
 
   StringBuffer<LChar> buf2(0);
   EXPECT_EQ(0u, buf2.length());
-  EXPECT_FALSE(buf2.characters());
+  EXPECT_FALSE(buf2.Characters());
 
   StringBuffer<LChar> buf3(1);
   EXPECT_EQ(1u, buf3.length());
-  EXPECT_TRUE(buf3.characters());
+  EXPECT_TRUE(buf3.Characters());
 }
 
 TEST(StringBufferTest, shrink) {
@@ -30,11 +30,11 @@ TEST(StringBufferTest, shrink) {
   buf[0] = 'a';
   buf[1] = 'b';
 
-  buf.shrink(1);
+  buf.Shrink(1);
   EXPECT_EQ(1u, buf.length());
   EXPECT_EQ('a', buf[0]);
 
-  buf.shrink(0);
+  buf.Shrink(0);
   EXPECT_EQ(0u, buf.length());
 }
 

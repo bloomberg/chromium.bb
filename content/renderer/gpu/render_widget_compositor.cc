@@ -109,25 +109,27 @@ cc::LayerSelectionBound ConvertWebSelectionBound(
     const WebSelection& web_selection,
     bool is_start) {
   cc::LayerSelectionBound cc_bound;
-  if (web_selection.isNone())
+  if (web_selection.IsNone())
     return cc_bound;
 
   const blink::WebSelectionBound& web_bound =
-      is_start ? web_selection.start() : web_selection.end();
-  DCHECK(web_bound.layerId);
+      is_start ? web_selection.Start() : web_selection.end();
+  DCHECK(web_bound.layer_id);
   cc_bound.type = gfx::SelectionBound::CENTER;
-  if (web_selection.isRange()) {
+  if (web_selection.IsRange()) {
     if (is_start) {
-      cc_bound.type = web_bound.isTextDirectionRTL ? gfx::SelectionBound::RIGHT
-                                                   : gfx::SelectionBound::LEFT;
+      cc_bound.type = web_bound.is_text_direction_rtl
+                          ? gfx::SelectionBound::RIGHT
+                          : gfx::SelectionBound::LEFT;
     } else {
-      cc_bound.type = web_bound.isTextDirectionRTL ? gfx::SelectionBound::LEFT
-                                                   : gfx::SelectionBound::RIGHT;
+      cc_bound.type = web_bound.is_text_direction_rtl
+                          ? gfx::SelectionBound::LEFT
+                          : gfx::SelectionBound::RIGHT;
     }
   }
-  cc_bound.layer_id = web_bound.layerId;
-  cc_bound.edge_top = gfx::Point(web_bound.edgeTopInLayer);
-  cc_bound.edge_bottom = gfx::Point(web_bound.edgeBottomInLayer);
+  cc_bound.layer_id = web_bound.layer_id;
+  cc_bound.edge_top = gfx::Point(web_bound.edge_top_in_layer);
+  cc_bound.edge_bottom = gfx::Point(web_bound.edge_bottom_in_layer);
   return cc_bound;
 }
 
@@ -172,11 +174,11 @@ gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor,
 
 // Check cc::BrowserControlsState, and blink::WebBrowserControlsState
 // are kept in sync.
-static_assert(int(blink::WebBrowserControlsBoth) == int(cc::BOTH),
+static_assert(int(blink::kWebBrowserControlsBoth) == int(cc::BOTH),
               "mismatching enums: BOTH");
-static_assert(int(blink::WebBrowserControlsHidden) == int(cc::HIDDEN),
+static_assert(int(blink::kWebBrowserControlsHidden) == int(cc::HIDDEN),
               "mismatching enums: HIDDEN");
-static_assert(int(blink::WebBrowserControlsShown) == int(cc::SHOWN),
+static_assert(int(blink::kWebBrowserControlsShown) == int(cc::SHOWN),
               "mismatching enums: SHOWN");
 
 static cc::BrowserControlsState ConvertBrowserControlsState(
@@ -650,29 +652,29 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
-cc::FrameSinkId RenderWidgetCompositor::getFrameSinkId() {
+cc::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
+void RenderWidgetCompositor::SetRootLayer(const blink::WebLayer& layer) {
   layer_tree_host_->SetRootLayer(
       static_cast<const cc_blink::WebLayerImpl*>(&layer)->layer());
 }
 
-void RenderWidgetCompositor::clearRootLayer() {
+void RenderWidgetCompositor::ClearRootLayer() {
   layer_tree_host_->SetRootLayer(scoped_refptr<cc::Layer>());
 }
 
-cc::AnimationHost* RenderWidgetCompositor::compositorAnimationHost() {
+cc::AnimationHost* RenderWidgetCompositor::CompositorAnimationHost() {
   return animation_host_.get();
 }
 
-void RenderWidgetCompositor::setViewportSize(
+void RenderWidgetCompositor::SetViewportSize(
     const WebSize& device_viewport_size) {
   layer_tree_host_->SetViewportSize(device_viewport_size);
 }
 
-WebSize RenderWidgetCompositor::getViewportSize() const {
+WebSize RenderWidgetCompositor::GetViewportSize() const {
   return layer_tree_host_->device_viewport_size();
 }
 
@@ -681,24 +683,24 @@ WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
   return point;
 }
 
-void RenderWidgetCompositor::setDeviceScaleFactor(float device_scale) {
+void RenderWidgetCompositor::SetDeviceScaleFactor(float device_scale) {
   layer_tree_host_->SetDeviceScaleFactor(device_scale);
 }
 
-void RenderWidgetCompositor::setBackgroundColor(blink::WebColor color) {
+void RenderWidgetCompositor::SetBackgroundColor(blink::WebColor color) {
   layer_tree_host_->set_background_color(color);
   layer_tree_host_->set_has_transparent_background(SkColorGetA(color) <
                                                    SK_AlphaOPAQUE);
 }
 
-void RenderWidgetCompositor::setVisible(bool visible) {
+void RenderWidgetCompositor::SetVisible(bool visible) {
   if (never_visible_)
     return;
 
   layer_tree_host_->SetVisible(visible);
 }
 
-void RenderWidgetCompositor::setPageScaleFactorAndLimits(
+void RenderWidgetCompositor::SetPageScaleFactorAndLimits(
     float page_scale_factor,
     float minimum,
     float maximum) {
@@ -706,7 +708,7 @@ void RenderWidgetCompositor::setPageScaleFactorAndLimits(
                                                 maximum);
 }
 
-void RenderWidgetCompositor::startPageScaleAnimation(
+void RenderWidgetCompositor::StartPageScaleAnimation(
     const blink::WebPoint& destination,
     bool use_anchor,
     float new_page_scale,
@@ -718,24 +720,24 @@ void RenderWidgetCompositor::startPageScaleAnimation(
       duration);
 }
 
-bool RenderWidgetCompositor::hasPendingPageScaleAnimation() const {
+bool RenderWidgetCompositor::HasPendingPageScaleAnimation() const {
   return layer_tree_host_->HasPendingPageScaleAnimation();
 }
 
-void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
+void RenderWidgetCompositor::HeuristicsForGpuRasterizationUpdated(
     bool matches_heuristics) {
   layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);
 }
 
-void RenderWidgetCompositor::setNeedsBeginFrame() {
+void RenderWidgetCompositor::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void RenderWidgetCompositor::didStopFlinging() {
+void RenderWidgetCompositor::DidStopFlinging() {
   layer_tree_host_->DidStopFlinging();
 }
 
-void RenderWidgetCompositor::registerViewportLayers(
+void RenderWidgetCompositor::RegisterViewportLayers(
     const blink::WebLayer* overscrollElasticityLayer,
     const blink::WebLayer* pageScaleLayer,
     const blink::WebLayer* innerViewportScrollLayer,
@@ -760,59 +762,59 @@ void RenderWidgetCompositor::registerViewportLayers(
           : NULL);
 }
 
-void RenderWidgetCompositor::clearViewportLayers() {
+void RenderWidgetCompositor::ClearViewportLayers() {
   layer_tree_host_->RegisterViewportLayers(
       scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>(),
       scoped_refptr<cc::Layer>(), scoped_refptr<cc::Layer>());
 }
 
-void RenderWidgetCompositor::registerSelection(
+void RenderWidgetCompositor::RegisterSelection(
     const blink::WebSelection& selection) {
   layer_tree_host_->RegisterSelection(ConvertWebSelection(selection));
 }
 
-void RenderWidgetCompositor::clearSelection() {
+void RenderWidgetCompositor::ClearSelection() {
   cc::LayerSelection empty_selection;
   layer_tree_host_->RegisterSelection(empty_selection);
 }
 
-void RenderWidgetCompositor::setMutatorClient(
+void RenderWidgetCompositor::SetMutatorClient(
     std::unique_ptr<blink::WebCompositorMutatorClient> client) {
   TRACE_EVENT0("compositor-worker", "RenderWidgetCompositor::setMutatorClient");
   layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
 
-void RenderWidgetCompositor::forceRecalculateRasterScales() {
+void RenderWidgetCompositor::ForceRecalculateRasterScales() {
   layer_tree_host_->SetNeedsRecalculateRasterScales();
 }
 
 static_assert(static_cast<cc::EventListenerClass>(
-                  blink::WebEventListenerClass::TouchStartOrMove) ==
+                  blink::WebEventListenerClass::kTouchStartOrMove) ==
                   cc::EventListenerClass::kTouchStartOrMove,
               "EventListenerClass and WebEventListenerClass enums must match");
 static_assert(static_cast<cc::EventListenerClass>(
-                  blink::WebEventListenerClass::MouseWheel) ==
+                  blink::WebEventListenerClass::kMouseWheel) ==
                   cc::EventListenerClass::kMouseWheel,
               "EventListenerClass and WebEventListenerClass enums must match");
 
 static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::Nothing) ==
+                  blink::WebEventListenerProperties::kNothing) ==
                   cc::EventListenerProperties::kNone,
               "EventListener and WebEventListener enums must match");
 static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::Passive) ==
+                  blink::WebEventListenerProperties::kPassive) ==
                   cc::EventListenerProperties::kPassive,
               "EventListener and WebEventListener enums must match");
 static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::Blocking) ==
+                  blink::WebEventListenerProperties::kBlocking) ==
                   cc::EventListenerProperties::kBlocking,
               "EventListener and WebEventListener enums must match");
 static_assert(static_cast<cc::EventListenerProperties>(
-                  blink::WebEventListenerProperties::BlockingAndPassive) ==
+                  blink::WebEventListenerProperties::kBlockingAndPassive) ==
                   cc::EventListenerProperties::kBlockingAndPassive,
               "EventListener and WebEventListener enums must match");
 
-void RenderWidgetCompositor::setEventListenerProperties(
+void RenderWidgetCompositor::SetEventListenerProperties(
     blink::WebEventListenerClass eventClass,
     blink::WebEventListenerProperties properties) {
   layer_tree_host_->SetEventListenerProperties(
@@ -820,7 +822,7 @@ void RenderWidgetCompositor::setEventListenerProperties(
       static_cast<cc::EventListenerProperties>(properties));
 }
 
-void RenderWidgetCompositor::updateEventRectsForSubframeIfNecessary() {
+void RenderWidgetCompositor::UpdateEventRectsForSubframeIfNecessary() {
   if (!is_for_oopif_)
     return;
 
@@ -833,22 +835,22 @@ void RenderWidgetCompositor::updateEventRectsForSubframeIfNecessary() {
   using blink::WebEventListenerClass;
 
   WebEventListenerProperties touch_start_properties =
-      eventListenerProperties(WebEventListenerClass::TouchStartOrMove);
+      EventListenerProperties(WebEventListenerClass::kTouchStartOrMove);
   WebEventListenerProperties touch_end_cancel_properties =
-      eventListenerProperties(WebEventListenerClass::TouchEndOrCancel);
+      EventListenerProperties(WebEventListenerClass::kTouchEndOrCancel);
   bool has_touch_handlers =
-      touch_start_properties == WebEventListenerProperties::Blocking ||
+      touch_start_properties == WebEventListenerProperties::kBlocking ||
       touch_start_properties ==
-          WebEventListenerProperties::BlockingAndPassive ||
-      touch_end_cancel_properties == WebEventListenerProperties::Blocking ||
+          WebEventListenerProperties::kBlockingAndPassive ||
+      touch_end_cancel_properties == WebEventListenerProperties::kBlocking ||
       touch_end_cancel_properties ==
-          WebEventListenerProperties::BlockingAndPassive;
+          WebEventListenerProperties::kBlockingAndPassive;
 
   WebEventListenerProperties wheel_event_properties =
-      eventListenerProperties(WebEventListenerClass::MouseWheel);
+      EventListenerProperties(WebEventListenerClass::kMouseWheel);
   bool has_wheel_handlers =
-      wheel_event_properties == WebEventListenerProperties::Blocking ||
-      wheel_event_properties == WebEventListenerProperties::BlockingAndPassive;
+      wheel_event_properties == WebEventListenerProperties::kBlocking ||
+      wheel_event_properties == WebEventListenerProperties::kBlockingAndPassive;
 
   cc::Layer* root_layer = layer_tree_host_->root_layer();
   cc::Region touch_handler_region;
@@ -863,18 +865,18 @@ void RenderWidgetCompositor::updateEventRectsForSubframeIfNecessary() {
 }
 
 blink::WebEventListenerProperties
-RenderWidgetCompositor::eventListenerProperties(
+RenderWidgetCompositor::EventListenerProperties(
     blink::WebEventListenerClass event_class) const {
   return static_cast<blink::WebEventListenerProperties>(
       layer_tree_host_->event_listener_properties(
           static_cast<cc::EventListenerClass>(event_class)));
 }
 
-void RenderWidgetCompositor::setHaveScrollEventHandlers(bool has_handlers) {
+void RenderWidgetCompositor::SetHaveScrollEventHandlers(bool has_handlers) {
   layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
 }
 
-bool RenderWidgetCompositor::haveScrollEventHandlers() const {
+bool RenderWidgetCompositor::HaveScrollEventHandlers() const {
   return layer_tree_host_->have_scroll_event_handlers();
 }
 
@@ -883,9 +885,9 @@ void CompositeAndReadbackAsyncCallback(
     std::unique_ptr<cc::CopyOutputResult> result) {
   if (result->HasBitmap()) {
     std::unique_ptr<SkBitmap> result_bitmap = result->TakeBitmap();
-    callback->didCompositeAndReadback(*result_bitmap);
+    callback->DidCompositeAndReadback(*result_bitmap);
   } else {
-    callback->didCompositeAndReadback(SkBitmap());
+    callback->DidCompositeAndReadback(SkBitmap());
   }
 }
 
@@ -897,7 +899,7 @@ bool RenderWidgetCompositor::CompositeIsSynchronous() const {
   return false;
 }
 
-void RenderWidgetCompositor::layoutAndPaintAsync(
+void RenderWidgetCompositor::LayoutAndPaintAsync(
     blink::WebLayoutAndPaintAsyncCallback* callback) {
   DCHECK(!layout_and_paint_async_callback_);
   layout_and_paint_async_callback_ = callback;
@@ -929,11 +931,11 @@ void RenderWidgetCompositor::LayoutAndUpdateLayers() {
 void RenderWidgetCompositor::InvokeLayoutAndPaintCallback() {
   if (!layout_and_paint_async_callback_)
     return;
-  layout_and_paint_async_callback_->didLayoutAndPaint();
+  layout_and_paint_async_callback_->DidLayoutAndPaint();
   layout_and_paint_async_callback_ = nullptr;
 }
 
-void RenderWidgetCompositor::compositeAndReadbackAsync(
+void RenderWidgetCompositor::CompositeAndReadbackAsync(
     blink::WebCompositeAndReadbackAsyncCallback* callback) {
   DCHECK(!layout_and_paint_async_callback_);
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
@@ -968,33 +970,33 @@ void RenderWidgetCompositor::SynchronouslyComposite() {
   layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
-void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
+void RenderWidgetCompositor::SetDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
-int RenderWidgetCompositor::layerTreeId() const {
+int RenderWidgetCompositor::LayerTreeId() const {
   return layer_tree_host_->GetId();
 }
 
-void RenderWidgetCompositor::setShowFPSCounter(bool show) {
+void RenderWidgetCompositor::SetShowFPSCounter(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_fps_counter = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::setShowPaintRects(bool show) {
+void RenderWidgetCompositor::SetShowPaintRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_paint_rects = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::setShowDebugBorders(bool show) {
+void RenderWidgetCompositor::SetShowDebugBorders(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_debug_borders = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
+void RenderWidgetCompositor::SetShowScrollBottleneckRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_touch_event_handler_rects = show;
   debug_state.show_wheel_event_handler_rects = show;
@@ -1002,7 +1004,7 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::updateBrowserControlsState(
+void RenderWidgetCompositor::UpdateBrowserControlsState(
     WebBrowserControlsState constraints,
     WebBrowserControlsState current,
     bool animate) {
@@ -1011,12 +1013,12 @@ void RenderWidgetCompositor::updateBrowserControlsState(
       ConvertBrowserControlsState(current), animate);
 }
 
-void RenderWidgetCompositor::setBrowserControlsHeight(float height,
+void RenderWidgetCompositor::SetBrowserControlsHeight(float height,
                                                       bool shrink) {
   layer_tree_host_->SetBrowserControlsHeight(height, shrink);
 }
 
-void RenderWidgetCompositor::setBrowserControlsShownRatio(float ratio) {
+void RenderWidgetCompositor::SetBrowserControlsShownRatio(float ratio) {
   layer_tree_host_->SetBrowserControlsShownRatio(ratio);
 }
 

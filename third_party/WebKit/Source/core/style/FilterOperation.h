@@ -65,7 +65,7 @@ class CORE_EXPORT FilterOperation
     NONE
   };
 
-  static bool canInterpolate(FilterOperation::OperationType type) {
+  static bool CanInterpolate(FilterOperation::OperationType type) {
     switch (type) {
       case GRAYSCALE:
       case SEPIA:
@@ -91,70 +91,70 @@ class CORE_EXPORT FilterOperation
   virtual ~FilterOperation() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  static FilterOperation* blend(const FilterOperation* from,
+  static FilterOperation* Blend(const FilterOperation* from,
                                 const FilterOperation* to,
                                 double progress);
   virtual bool operator==(const FilterOperation&) const = 0;
   bool operator!=(const FilterOperation& o) const { return !(*this == o); }
 
-  OperationType type() const { return m_type; }
-  virtual bool isSameType(const FilterOperation& o) const {
-    return o.type() == m_type;
+  OperationType GetType() const { return type_; }
+  virtual bool IsSameType(const FilterOperation& o) const {
+    return o.GetType() == type_;
   }
 
   // True if the alpha channel of any pixel can change under this operation.
-  virtual bool affectsOpacity() const { return false; }
+  virtual bool AffectsOpacity() const { return false; }
   // True if the the value of one pixel can affect the value of another pixel
   // under this operation, such as blur.
-  virtual bool movesPixels() const { return false; }
+  virtual bool MovesPixels() const { return false; }
 
   // Maps "forward" to determine which pixels in a destination rect are
   // affected by pixels in the source rect.
   // See also FilterEffect::mapRect.
-  virtual FloatRect mapRect(const FloatRect& rect) const { return rect; }
+  virtual FloatRect MapRect(const FloatRect& rect) const { return rect; }
 
  protected:
-  FilterOperation(OperationType type) : m_type(type) {}
+  FilterOperation(OperationType type) : type_(type) {}
 
-  OperationType m_type;
+  OperationType type_;
 
  private:
-  virtual FilterOperation* blend(const FilterOperation* from,
+  virtual FilterOperation* Blend(const FilterOperation* from,
                                  double progress) const = 0;
 };
 
-#define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType) \
-  DEFINE_TYPE_CASTS(thisType, FilterOperation, op,                  \
-                    op->type() == FilterOperation::operationType,   \
-                    op.type() == FilterOperation::operationType);
+#define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType)  \
+  DEFINE_TYPE_CASTS(thisType, FilterOperation, op,                   \
+                    op->GetType() == FilterOperation::operationType, \
+                    op.GetType() == FilterOperation::operationType);
 
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
-  static ReferenceFilterOperation* create(const String& url,
-                                          SVGElementProxy& elementProxy) {
-    return new ReferenceFilterOperation(url, elementProxy);
+  static ReferenceFilterOperation* Create(const String& url,
+                                          SVGElementProxy& element_proxy) {
+    return new ReferenceFilterOperation(url, element_proxy);
   }
 
-  bool affectsOpacity() const override { return true; }
-  bool movesPixels() const override { return true; }
-  FloatRect mapRect(const FloatRect&) const override;
+  bool AffectsOpacity() const override { return true; }
+  bool MovesPixels() const override { return true; }
+  FloatRect MapRect(const FloatRect&) const override;
 
-  const String& url() const { return m_url; }
+  const String& Url() const { return url_; }
 
-  Filter* getFilter() const { return m_filter.get(); }
-  void setFilter(Filter* filter) { m_filter = filter; }
+  Filter* GetFilter() const { return filter_.Get(); }
+  void SetFilter(Filter* filter) { filter_ = filter; }
 
-  SVGElementProxy& elementProxy() const { return *m_elementProxy; }
+  SVGElementProxy& ElementProxy() const { return *element_proxy_; }
 
-  void addClient(SVGResourceClient*);
-  void removeClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient*);
+  void RemoveClient(SVGResourceClient*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   ReferenceFilterOperation(const String& url, SVGElementProxy&);
 
-  FilterOperation* blend(const FilterOperation* from,
+  FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override {
     NOTREACHED();
     return nullptr;
@@ -162,9 +162,9 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
 
   bool operator==(const FilterOperation&) const override;
 
-  String m_url;
-  Member<SVGElementProxy> m_elementProxy;
-  Member<Filter> m_filter;
+  String url_;
+  Member<SVGElementProxy> element_proxy_;
+  Member<Filter> filter_;
 };
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
@@ -173,33 +173,33 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
 // matrix effect.  For HUE_ROTATE, the angle of rotation is stored in m_amount.
 class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
  public:
-  static BasicColorMatrixFilterOperation* create(double amount,
+  static BasicColorMatrixFilterOperation* Create(double amount,
                                                  OperationType type) {
     return new BasicColorMatrixFilterOperation(amount, type);
   }
 
-  double amount() const { return m_amount; }
+  double Amount() const { return amount_; }
 
  private:
-  FilterOperation* blend(const FilterOperation* from,
+  FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override;
   bool operator==(const FilterOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const BasicColorMatrixFilterOperation* other =
         static_cast<const BasicColorMatrixFilterOperation*>(&o);
-    return m_amount == other->m_amount;
+    return amount_ == other->amount_;
   }
 
   BasicColorMatrixFilterOperation(double amount, OperationType type)
-      : FilterOperation(type), m_amount(amount) {}
+      : FilterOperation(type), amount_(amount) {}
 
-  double m_amount;
+  double amount_;
 };
 
-inline bool isBasicColorMatrixFilterOperation(
+inline bool IsBasicColorMatrixFilterOperation(
     const FilterOperation& operation) {
-  FilterOperation::OperationType type = operation.type();
+  FilterOperation::OperationType type = operation.GetType();
   return type == FilterOperation::GRAYSCALE || type == FilterOperation::SEPIA ||
          type == FilterOperation::SATURATE ||
          type == FilterOperation::HUE_ROTATE;
@@ -208,43 +208,43 @@ inline bool isBasicColorMatrixFilterOperation(
 DEFINE_TYPE_CASTS(BasicColorMatrixFilterOperation,
                   FilterOperation,
                   op,
-                  isBasicColorMatrixFilterOperation(*op),
-                  isBasicColorMatrixFilterOperation(op));
+                  IsBasicColorMatrixFilterOperation(*op),
+                  IsBasicColorMatrixFilterOperation(op));
 
 // INVERT, BRIGHTNESS, CONTRAST and OPACITY are variations on a basic component
 // transfer effect.
 class CORE_EXPORT BasicComponentTransferFilterOperation
     : public FilterOperation {
  public:
-  static BasicComponentTransferFilterOperation* create(double amount,
+  static BasicComponentTransferFilterOperation* Create(double amount,
                                                        OperationType type) {
     return new BasicComponentTransferFilterOperation(amount, type);
   }
 
-  double amount() const { return m_amount; }
+  double Amount() const { return amount_; }
 
-  bool affectsOpacity() const override { return m_type == OPACITY; }
+  bool AffectsOpacity() const override { return type_ == OPACITY; }
 
  private:
-  FilterOperation* blend(const FilterOperation* from,
+  FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override;
   bool operator==(const FilterOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const BasicComponentTransferFilterOperation* other =
         static_cast<const BasicComponentTransferFilterOperation*>(&o);
-    return m_amount == other->m_amount;
+    return amount_ == other->amount_;
   }
 
   BasicComponentTransferFilterOperation(double amount, OperationType type)
-      : FilterOperation(type), m_amount(amount) {}
+      : FilterOperation(type), amount_(amount) {}
 
-  double m_amount;
+  double amount_;
 };
 
-inline bool isBasicComponentTransferFilterOperation(
+inline bool IsBasicComponentTransferFilterOperation(
     const FilterOperation& operation) {
-  FilterOperation::OperationType type = operation.type();
+  FilterOperation::OperationType type = operation.GetType();
   return type == FilterOperation::INVERT || type == FilterOperation::OPACITY ||
          type == FilterOperation::BRIGHTNESS ||
          type == FilterOperation::CONTRAST;
@@ -253,92 +253,92 @@ inline bool isBasicComponentTransferFilterOperation(
 DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation,
                   FilterOperation,
                   op,
-                  isBasicComponentTransferFilterOperation(*op),
-                  isBasicComponentTransferFilterOperation(op));
+                  IsBasicComponentTransferFilterOperation(*op),
+                  IsBasicComponentTransferFilterOperation(op));
 
 class CORE_EXPORT BlurFilterOperation : public FilterOperation {
  public:
-  static BlurFilterOperation* create(const Length& stdDeviation) {
-    return new BlurFilterOperation(stdDeviation);
+  static BlurFilterOperation* Create(const Length& std_deviation) {
+    return new BlurFilterOperation(std_deviation);
   }
 
-  const Length& stdDeviation() const { return m_stdDeviation; }
+  const Length& StdDeviation() const { return std_deviation_; }
 
-  bool affectsOpacity() const override { return true; }
-  bool movesPixels() const override { return true; }
-  FloatRect mapRect(const FloatRect&) const override;
+  bool AffectsOpacity() const override { return true; }
+  bool MovesPixels() const override { return true; }
+  FloatRect MapRect(const FloatRect&) const override;
 
  private:
-  FilterOperation* blend(const FilterOperation* from,
+  FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override;
   bool operator==(const FilterOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const BlurFilterOperation* other =
         static_cast<const BlurFilterOperation*>(&o);
-    return m_stdDeviation == other->m_stdDeviation;
+    return std_deviation_ == other->std_deviation_;
   }
 
-  BlurFilterOperation(const Length& stdDeviation)
-      : FilterOperation(BLUR), m_stdDeviation(stdDeviation) {}
+  BlurFilterOperation(const Length& std_deviation)
+      : FilterOperation(BLUR), std_deviation_(std_deviation) {}
 
-  Length m_stdDeviation;
+  Length std_deviation_;
 };
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
-  static DropShadowFilterOperation* create(const ShadowData& shadow) {
+  static DropShadowFilterOperation* Create(const ShadowData& shadow) {
     return new DropShadowFilterOperation(shadow);
   }
 
-  const ShadowData& shadow() const { return m_shadow; }
+  const ShadowData& Shadow() const { return shadow_; }
 
-  bool affectsOpacity() const override { return true; }
-  bool movesPixels() const override { return true; }
-  FloatRect mapRect(const FloatRect&) const override;
+  bool AffectsOpacity() const override { return true; }
+  bool MovesPixels() const override { return true; }
+  FloatRect MapRect(const FloatRect&) const override;
 
  private:
-  FilterOperation* blend(const FilterOperation* from,
+  FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override;
   bool operator==(const FilterOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const DropShadowFilterOperation* other =
         static_cast<const DropShadowFilterOperation*>(&o);
-    return m_shadow == other->m_shadow;
+    return shadow_ == other->shadow_;
   }
 
   DropShadowFilterOperation(const ShadowData& shadow)
-      : FilterOperation(DROP_SHADOW), m_shadow(shadow) {}
+      : FilterOperation(DROP_SHADOW), shadow_(shadow) {}
 
-  ShadowData m_shadow;
+  ShadowData shadow_;
 };
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
 class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
  public:
-  static BoxReflectFilterOperation* create(const BoxReflection& reflection) {
+  static BoxReflectFilterOperation* Create(const BoxReflection& reflection) {
     return new BoxReflectFilterOperation(reflection);
   }
 
-  const BoxReflection& reflection() const { return m_reflection; }
+  const BoxReflection& Reflection() const { return reflection_; }
 
-  bool affectsOpacity() const override { return true; }
-  bool movesPixels() const override { return true; }
-  FloatRect mapRect(const FloatRect&) const override;
+  bool AffectsOpacity() const override { return true; }
+  bool MovesPixels() const override { return true; }
+  FloatRect MapRect(const FloatRect&) const override;
 
  private:
-  FilterOperation* blend(const FilterOperation* from,
+  FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override;
   bool operator==(const FilterOperation&) const override;
 
   BoxReflectFilterOperation(const BoxReflection& reflection)
-      : FilterOperation(BOX_REFLECT), m_reflection(reflection) {}
+      : FilterOperation(BOX_REFLECT), reflection_(reflection) {}
 
-  BoxReflection m_reflection;
+  BoxReflection reflection_;
 };
 DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
 

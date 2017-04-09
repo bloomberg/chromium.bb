@@ -30,75 +30,76 @@
 
 namespace blink {
 
-IDBDatabaseCallbacks* IDBDatabaseCallbacks::create() {
+IDBDatabaseCallbacks* IDBDatabaseCallbacks::Create() {
   return new IDBDatabaseCallbacks();
 }
 
-IDBDatabaseCallbacks::IDBDatabaseCallbacks() : m_database(nullptr) {}
+IDBDatabaseCallbacks::IDBDatabaseCallbacks() : database_(nullptr) {}
 
 IDBDatabaseCallbacks::~IDBDatabaseCallbacks() {}
 
 DEFINE_TRACE(IDBDatabaseCallbacks) {
-  visitor->trace(m_database);
+  visitor->Trace(database_);
 }
 
-void IDBDatabaseCallbacks::onForcedClose() {
-  if (m_database)
-    m_database->forceClose();
+void IDBDatabaseCallbacks::OnForcedClose() {
+  if (database_)
+    database_->ForceClose();
 }
 
-void IDBDatabaseCallbacks::onVersionChange(int64_t oldVersion,
-                                           int64_t newVersion) {
-  if (m_database)
-    m_database->onVersionChange(oldVersion, newVersion);
+void IDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
+                                           int64_t new_version) {
+  if (database_)
+    database_->OnVersionChange(old_version, new_version);
 }
 
-void IDBDatabaseCallbacks::onAbort(int64_t transactionId, DOMException* error) {
-  if (m_database)
-    m_database->onAbort(transactionId, error);
+void IDBDatabaseCallbacks::OnAbort(int64_t transaction_id,
+                                   DOMException* error) {
+  if (database_)
+    database_->OnAbort(transaction_id, error);
 }
 
-void IDBDatabaseCallbacks::onComplete(int64_t transactionId) {
-  if (m_database)
-    m_database->onComplete(transactionId);
+void IDBDatabaseCallbacks::OnComplete(int64_t transaction_id) {
+  if (database_)
+    database_->OnComplete(transaction_id);
 }
 
-void IDBDatabaseCallbacks::onChanges(
+void IDBDatabaseCallbacks::OnChanges(
     const std::unordered_map<int32_t, std::vector<int32_t>>&
         observation_index_map,
     const WebVector<WebIDBObservation>& observations,
     const TransactionMap& transactions) {
-  if (!m_database)
+  if (!database_)
     return;
 
-  m_database->onChanges(observation_index_map, observations, transactions);
+  database_->OnChanges(observation_index_map, observations, transactions);
 }
 
-void IDBDatabaseCallbacks::connect(IDBDatabase* database) {
-  DCHECK(!m_database);
+void IDBDatabaseCallbacks::Connect(IDBDatabase* database) {
+  DCHECK(!database_);
   DCHECK(database);
-  m_database = database;
+  database_ = database;
 }
 
 std::unique_ptr<WebIDBDatabaseCallbacks>
-IDBDatabaseCallbacks::createWebCallbacks() {
-  DCHECK(!m_webCallbacks);
+IDBDatabaseCallbacks::CreateWebCallbacks() {
+  DCHECK(!web_callbacks_);
   std::unique_ptr<WebIDBDatabaseCallbacks> callbacks =
-      WebIDBDatabaseCallbacksImpl::create(this);
-  m_webCallbacks = callbacks.get();
+      WebIDBDatabaseCallbacksImpl::Create(this);
+  web_callbacks_ = callbacks.get();
   return callbacks;
 }
 
-void IDBDatabaseCallbacks::detachWebCallbacks() {
-  if (m_webCallbacks) {
-    m_webCallbacks->detach();
-    m_webCallbacks = nullptr;
+void IDBDatabaseCallbacks::DetachWebCallbacks() {
+  if (web_callbacks_) {
+    web_callbacks_->Detach();
+    web_callbacks_ = nullptr;
   }
 }
 
-void IDBDatabaseCallbacks::webCallbacksDestroyed() {
-  DCHECK(m_webCallbacks);
-  m_webCallbacks = nullptr;
+void IDBDatabaseCallbacks::WebCallbacksDestroyed() {
+  DCHECK(web_callbacks_);
+  web_callbacks_ = nullptr;
 }
 
 }  // namespace blink

@@ -16,115 +16,115 @@ MultipartImageResourceParser::MultipartImageResourceParser(
     const ResourceResponse& response,
     const Vector<char>& boundary,
     Client* client)
-    : m_originalResponse(response), m_boundary(boundary), m_client(client) {
+    : original_response_(response), boundary_(boundary), client_(client) {
   // Some servers report a boundary prefixed with "--".  See
   // https://crbug.com/5786.
-  if (m_boundary.size() < 2 || m_boundary[0] != '-' || m_boundary[1] != '-')
-    m_boundary.push_front("--", 2);
+  if (boundary_.size() < 2 || boundary_[0] != '-' || boundary_[1] != '-')
+    boundary_.push_front("--", 2);
 }
 
-void MultipartImageResourceParser::appendData(const char* bytes, size_t size) {
-  DCHECK(!isCancelled());
+void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
+  DCHECK(!IsCancelled());
   // m_sawLastBoundary means that we've already received the final boundary
   // token. The server should stop sending us data at this point, but if it
   // does, we just throw it away.
-  if (m_sawLastBoundary)
+  if (saw_last_boundary_)
     return;
-  m_data.append(bytes, size);
+  data_.Append(bytes, size);
 
-  if (m_isParsingTop) {
+  if (is_parsing_top_) {
     // Eat leading \r\n
-    size_t pos = skippableLength(m_data, 0);
+    size_t pos = SkippableLength(data_, 0);
     // +2 for "--"
-    if (m_data.size() < m_boundary.size() + 2 + pos) {
+    if (data_.size() < boundary_.size() + 2 + pos) {
       // We don't have enough data yet to make a boundary token.  Just wait
       // until the next chunk of data arrives.
       return;
     }
     if (pos)
-      m_data.erase(0, pos);
+      data_.erase(0, pos);
 
     // Some servers don't send a boundary token before the first chunk of
     // data.  We handle this case anyway (Gecko does too).
-    if (0 != memcmp(m_data.data(), m_boundary.data(), m_boundary.size())) {
-      m_data.push_front("\n", 1);
-      m_data.prependVector(m_boundary);
+    if (0 != memcmp(data_.Data(), boundary_.Data(), boundary_.size())) {
+      data_.push_front("\n", 1);
+      data_.PrependVector(boundary_);
     }
-    m_isParsingTop = false;
+    is_parsing_top_ = false;
   }
 
   // Headers
-  if (m_isParsingHeaders) {
-    if (!parseHeaders()) {
+  if (is_parsing_headers_) {
+    if (!ParseHeaders()) {
       // Get more data before trying again.
       return;
     }
     // Successfully parsed headers.
-    m_isParsingHeaders = false;
-    if (isCancelled())
+    is_parsing_headers_ = false;
+    if (IsCancelled())
       return;
   }
 
-  size_t boundaryPosition;
-  while ((boundaryPosition = findBoundary(m_data, &m_boundary)) != kNotFound) {
+  size_t boundary_position;
+  while ((boundary_position = FindBoundary(data_, &boundary_)) != kNotFound) {
     // Strip out trailing \r\n characters in the buffer preceding the boundary
     // on the same lines as does Firefox.
-    size_t dataSize = boundaryPosition;
-    if (boundaryPosition > 0 && m_data[boundaryPosition - 1] == '\n') {
-      dataSize--;
-      if (boundaryPosition > 1 && m_data[boundaryPosition - 2] == '\r') {
-        dataSize--;
+    size_t data_size = boundary_position;
+    if (boundary_position > 0 && data_[boundary_position - 1] == '\n') {
+      data_size--;
+      if (boundary_position > 1 && data_[boundary_position - 2] == '\r') {
+        data_size--;
       }
     }
-    if (dataSize) {
-      m_client->multipartDataReceived(m_data.data(), dataSize);
-      if (isCancelled())
+    if (data_size) {
+      client_->MultipartDataReceived(data_.Data(), data_size);
+      if (IsCancelled())
         return;
     }
-    size_t boundaryEndPosition = boundaryPosition + m_boundary.size();
-    if (boundaryEndPosition < m_data.size() &&
-        '-' == m_data[boundaryEndPosition]) {
+    size_t boundary_end_position = boundary_position + boundary_.size();
+    if (boundary_end_position < data_.size() &&
+        '-' == data_[boundary_end_position]) {
       // This was the last boundary so we can stop processing.
-      m_sawLastBoundary = true;
-      m_data.clear();
+      saw_last_boundary_ = true;
+      data_.Clear();
       return;
     }
 
     // We can now throw out data up through the boundary
-    m_data.erase(0, boundaryEndPosition);
+    data_.erase(0, boundary_end_position);
 
     // Ok, back to parsing headers
-    if (!parseHeaders()) {
-      m_isParsingHeaders = true;
+    if (!ParseHeaders()) {
+      is_parsing_headers_ = true;
       break;
     }
-    if (isCancelled())
+    if (IsCancelled())
       return;
   }
 
   // At this point, we should send over any data we have, but keep enough data
   // buffered to handle a boundary that may have been truncated. "+2" for CRLF,
   // as we may ignore the last CRLF.
-  if (!m_isParsingHeaders && m_data.size() > m_boundary.size() + 2) {
-    size_t sendLength = m_data.size() - m_boundary.size() - 2;
-    m_client->multipartDataReceived(m_data.data(), sendLength);
-    m_data.erase(0, sendLength);
+  if (!is_parsing_headers_ && data_.size() > boundary_.size() + 2) {
+    size_t send_length = data_.size() - boundary_.size() - 2;
+    client_->MultipartDataReceived(data_.Data(), send_length);
+    data_.erase(0, send_length);
   }
 }
 
-void MultipartImageResourceParser::finish() {
-  DCHECK(!isCancelled());
-  if (m_sawLastBoundary)
+void MultipartImageResourceParser::Finish() {
+  DCHECK(!IsCancelled());
+  if (saw_last_boundary_)
     return;
   // If we have any pending data and we're not in a header, go ahead and send
   // it to the client.
-  if (!m_isParsingHeaders && !m_data.isEmpty())
-    m_client->multipartDataReceived(m_data.data(), m_data.size());
-  m_data.clear();
-  m_sawLastBoundary = true;
+  if (!is_parsing_headers_ && !data_.IsEmpty())
+    client_->MultipartDataReceived(data_.Data(), data_.size());
+  data_.Clear();
+  saw_last_boundary_ = true;
 }
 
-size_t MultipartImageResourceParser::skippableLength(const Vector<char>& data,
+size_t MultipartImageResourceParser::SkippableLength(const Vector<char>& data,
                                                      size_t pos) {
   if (data.size() >= pos + 2 && data[pos] == '\r' && data[pos + 1] == '\n')
     return 2;
@@ -133,55 +133,55 @@ size_t MultipartImageResourceParser::skippableLength(const Vector<char>& data,
   return 0;
 }
 
-bool MultipartImageResourceParser::parseHeaders() {
+bool MultipartImageResourceParser::ParseHeaders() {
   // Eat leading \r\n
-  size_t pos = skippableLength(m_data, 0);
+  size_t pos = SkippableLength(data_, 0);
 
   // Create a ResourceResponse based on the original set of headers + the
   // replacement headers. We only replace the same few headers that gecko does.
   // See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
   ResourceResponse response;
-  response.setURL(m_originalResponse.url());
-  for (const auto& header : m_originalResponse.httpHeaderFields())
-    response.addHTTPHeaderField(header.key, header.value);
+  response.SetURL(original_response_.Url());
+  for (const auto& header : original_response_.HttpHeaderFields())
+    response.AddHTTPHeaderField(header.key, header.value);
 
   size_t end = 0;
-  if (!parseMultipartHeadersFromBody(m_data.data() + pos, m_data.size() - pos,
+  if (!ParseMultipartHeadersFromBody(data_.Data() + pos, data_.size() - pos,
                                      &response, &end))
     return false;
-  m_data.erase(0, end + pos);
+  data_.erase(0, end + pos);
   // Send the response!
-  m_client->onePartInMultipartReceived(response);
+  client_->OnePartInMultipartReceived(response);
   return true;
 }
 
 // Boundaries are supposed to be preceeded with --, but it looks like gecko
 // doesn't require the dashes to exist.  See nsMultiMixedConv::FindToken.
-size_t MultipartImageResourceParser::findBoundary(const Vector<char>& data,
+size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
                                                   Vector<char>* boundary) {
-  auto it = std::search(data.data(), data.data() + data.size(),
-                        boundary->data(), boundary->data() + boundary->size());
-  if (it == data.data() + data.size())
+  auto it = std::search(data.Data(), data.Data() + data.size(),
+                        boundary->Data(), boundary->Data() + boundary->size());
+  if (it == data.Data() + data.size())
     return kNotFound;
 
-  size_t boundaryPosition = it - data.data();
+  size_t boundary_position = it - data.Data();
   // Back up over -- for backwards compat
   // TODO(tc): Don't we only want to do this once?  Gecko code doesn't seem to
   // care.
-  if (boundaryPosition >= 2) {
-    if (data[boundaryPosition - 1] == '-' &&
-        data[boundaryPosition - 2] == '-') {
-      boundaryPosition -= 2;
+  if (boundary_position >= 2) {
+    if (data[boundary_position - 1] == '-' &&
+        data[boundary_position - 2] == '-') {
+      boundary_position -= 2;
       Vector<char> v(2, '-');
-      v.appendVector(*boundary);
+      v.AppendVector(*boundary);
       *boundary = v;
     }
   }
-  return boundaryPosition;
+  return boundary_position;
 }
 
 DEFINE_TRACE(MultipartImageResourceParser) {
-  visitor->trace(m_client);
+  visitor->Trace(client_);
 }
 
 }  // namespace blink

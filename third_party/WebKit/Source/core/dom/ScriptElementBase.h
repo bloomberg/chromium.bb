@@ -38,53 +38,53 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
  public:
   virtual ~ScriptElementBase() {}
 
-  static ScriptElementBase* fromElementIfPossible(Element*);
+  static ScriptElementBase* FromElementIfPossible(Element*);
 
-  virtual void dispatchLoadEvent() = 0;
-  virtual void dispatchErrorEvent() = 0;
+  virtual void DispatchLoadEvent() = 0;
+  virtual void DispatchErrorEvent() = 0;
 
-  virtual bool asyncAttributeValue() const = 0;
-  virtual String charsetAttributeValue() const = 0;
-  virtual String crossOriginAttributeValue() const = 0;
-  virtual bool deferAttributeValue() const = 0;
-  virtual String eventAttributeValue() const = 0;
-  virtual String forAttributeValue() const = 0;
-  virtual String integrityAttributeValue() const = 0;
-  virtual String languageAttributeValue() const = 0;
-  virtual String sourceAttributeValue() const = 0;
-  virtual String typeAttributeValue() const = 0;
+  virtual bool AsyncAttributeValue() const = 0;
+  virtual String CharsetAttributeValue() const = 0;
+  virtual String CrossOriginAttributeValue() const = 0;
+  virtual bool DeferAttributeValue() const = 0;
+  virtual String EventAttributeValue() const = 0;
+  virtual String ForAttributeValue() const = 0;
+  virtual String IntegrityAttributeValue() const = 0;
+  virtual String LanguageAttributeValue() const = 0;
+  virtual String SourceAttributeValue() const = 0;
+  virtual String TypeAttributeValue() const = 0;
 
-  virtual String textFromChildren() = 0;
-  virtual String textContent() const = 0;
-  virtual bool hasSourceAttribute() const = 0;
-  virtual bool isConnected() const = 0;
-  virtual bool hasChildren() const = 0;
-  virtual bool isNonceableElement() const = 0;
-  virtual AtomicString initiatorName() const = 0;
+  virtual String TextFromChildren() = 0;
+  virtual String TextContent() const = 0;
+  virtual bool HasSourceAttribute() const = 0;
+  virtual bool IsConnected() const = 0;
+  virtual bool HasChildren() const = 0;
+  virtual bool IsNonceableElement() const = 0;
+  virtual AtomicString InitiatorName() const = 0;
 
-  virtual bool allowInlineScriptForCSP(const AtomicString& nonce,
+  virtual bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                        const WTF::OrdinalNumber&,
-                                       const String& scriptContent) = 0;
-  virtual Document& document() const = 0;
-  virtual void setScriptElementForBinding(
+                                       const String& script_content) = 0;
+  virtual Document& GetDocument() const = 0;
+  virtual void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) = 0;
 
-  ScriptLoader* loader() const { return m_loader.get(); }
+  ScriptLoader* Loader() const { return loader_.Get(); }
 
-  AtomicString nonce() const { return m_nonce; }
-  void setNonce(const String& nonce) { m_nonce = AtomicString(nonce); }
+  AtomicString nonce() const { return nonce_; }
+  void setNonce(const String& nonce) { nonce_ = AtomicString(nonce); }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  void initializeScriptLoader(bool parserInserted,
-                              bool alreadyStarted,
-                              bool createdDuringDocumentWrite);
+  void InitializeScriptLoader(bool parser_inserted,
+                              bool already_started,
+                              bool created_during_document_write);
 
-  Member<ScriptLoader> m_loader;
+  Member<ScriptLoader> loader_;
 
  private:
-  AtomicString m_nonce;
+  AtomicString nonce_;
 };
 
 }  // namespace blink

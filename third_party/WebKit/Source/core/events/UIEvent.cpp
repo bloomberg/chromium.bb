@@ -26,65 +26,65 @@
 
 namespace blink {
 
-UIEvent::UIEvent() : m_detail(0), m_sourceCapabilities(nullptr) {}
+UIEvent::UIEvent() : detail_(0), source_capabilities_(nullptr) {}
 
-UIEvent::UIEvent(const AtomicString& eventType,
-                 bool canBubbleArg,
-                 bool cancelableArg,
-                 ComposedMode composedMode,
-                 TimeTicks platformTimeStamp,
-                 AbstractView* viewArg,
-                 int detailArg,
-                 InputDeviceCapabilities* sourceCapabilitiesArg)
-    : Event(eventType,
-            canBubbleArg,
-            cancelableArg,
-            composedMode,
-            platformTimeStamp),
-      m_view(viewArg),
-      m_detail(detailArg),
-      m_sourceCapabilities(sourceCapabilitiesArg) {}
+UIEvent::UIEvent(const AtomicString& event_type,
+                 bool can_bubble_arg,
+                 bool cancelable_arg,
+                 ComposedMode composed_mode,
+                 TimeTicks platform_time_stamp,
+                 AbstractView* view_arg,
+                 int detail_arg,
+                 InputDeviceCapabilities* source_capabilities_arg)
+    : Event(event_type,
+            can_bubble_arg,
+            cancelable_arg,
+            composed_mode,
+            platform_time_stamp),
+      view_(view_arg),
+      detail_(detail_arg),
+      source_capabilities_(source_capabilities_arg) {}
 
-UIEvent::UIEvent(const AtomicString& eventType, const UIEventInit& initializer)
-    : Event(eventType, initializer),
-      m_view(initializer.view()),
-      m_detail(initializer.detail()),
-      m_sourceCapabilities(initializer.sourceCapabilities()) {}
+UIEvent::UIEvent(const AtomicString& event_type, const UIEventInit& initializer)
+    : Event(event_type, initializer),
+      view_(initializer.view()),
+      detail_(initializer.detail()),
+      source_capabilities_(initializer.sourceCapabilities()) {}
 
 UIEvent::~UIEvent() {}
 
-void UIEvent::initUIEvent(const AtomicString& typeArg,
-                          bool canBubbleArg,
-                          bool cancelableArg,
-                          AbstractView* viewArg,
-                          int detailArg) {
-  initUIEventInternal(typeArg, canBubbleArg, cancelableArg, nullptr, viewArg,
-                      detailArg, nullptr);
+void UIEvent::initUIEvent(const AtomicString& type_arg,
+                          bool can_bubble_arg,
+                          bool cancelable_arg,
+                          AbstractView* view_arg,
+                          int detail_arg) {
+  InitUIEventInternal(type_arg, can_bubble_arg, cancelable_arg, nullptr,
+                      view_arg, detail_arg, nullptr);
 }
 
-void UIEvent::initUIEventInternal(
-    const AtomicString& typeArg,
-    bool canBubbleArg,
-    bool cancelableArg,
-    EventTarget* relatedTarget,
-    AbstractView* viewArg,
-    int detailArg,
-    InputDeviceCapabilities* sourceCapabilitiesArg) {
-  if (isBeingDispatched())
+void UIEvent::InitUIEventInternal(
+    const AtomicString& type_arg,
+    bool can_bubble_arg,
+    bool cancelable_arg,
+    EventTarget* related_target,
+    AbstractView* view_arg,
+    int detail_arg,
+    InputDeviceCapabilities* source_capabilities_arg) {
+  if (IsBeingDispatched())
     return;
 
-  initEvent(typeArg, canBubbleArg, cancelableArg, relatedTarget);
+  initEvent(type_arg, can_bubble_arg, cancelable_arg, related_target);
 
-  m_view = viewArg;
-  m_detail = detailArg;
-  m_sourceCapabilities = sourceCapabilitiesArg;
+  view_ = view_arg;
+  detail_ = detail_arg;
+  source_capabilities_ = source_capabilities_arg;
 }
 
-bool UIEvent::isUIEvent() const {
+bool UIEvent::IsUIEvent() const {
   return true;
 }
 
-const AtomicString& UIEvent::interfaceName() const {
+const AtomicString& UIEvent::InterfaceName() const {
   return EventNames::UIEvent;
 }
 
@@ -93,9 +93,9 @@ int UIEvent::which() const {
 }
 
 DEFINE_TRACE(UIEvent) {
-  visitor->trace(m_view);
-  visitor->trace(m_sourceCapabilities);
-  Event::trace(visitor);
+  visitor->Trace(view_);
+  visitor->Trace(source_capabilities_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

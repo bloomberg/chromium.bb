@@ -13,31 +13,32 @@
 namespace blink {
 
 ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
-    : ContextLifecycleObserver(frame ? frame->document() : nullptr) {
-  if (frame && frame->document())
-    DCHECK(frame->document()->isContextThread());
+    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
+  if (frame && frame->GetDocument())
+    DCHECK(frame->GetDocument()->IsContextThread());
 
   // For now we only support very limited task types.
-  for (auto type : {TaskType::UnspecedTimer, TaskType::UnspecedLoading,
-                    TaskType::Networking, TaskType::PostedMessage,
-                    TaskType::CanvasBlobSerialization, TaskType::Unthrottled}) {
-    m_taskRunners.insert(type, TaskRunnerHelper::get(type, frame));
+  for (auto type :
+       {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
+        TaskType::kNetworking, TaskType::kPostedMessage,
+        TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled}) {
+    task_runners_.insert(type, TaskRunnerHelper::Get(type, frame));
   }
 }
 
-RefPtr<WebTaskRunner> ParentFrameTaskRunners::get(TaskType type) {
-  MutexLocker lock(m_taskRunnersMutex);
-  return m_taskRunners.at(type);
+RefPtr<WebTaskRunner> ParentFrameTaskRunners::Get(TaskType type) {
+  MutexLocker lock(task_runners_mutex_);
+  return task_runners_.at(type);
 }
 
 DEFINE_TRACE(ParentFrameTaskRunners) {
-  ContextLifecycleObserver::trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-void ParentFrameTaskRunners::contextDestroyed(ExecutionContext*) {
-  MutexLocker lock(m_taskRunnersMutex);
-  for (auto& entry : m_taskRunners)
-    entry.value = Platform::current()->currentThread()->getWebTaskRunner();
+void ParentFrameTaskRunners::ContextDestroyed(ExecutionContext*) {
+  MutexLocker lock(task_runners_mutex_);
+  for (auto& entry : task_runners_)
+    entry.value = Platform::Current()->CurrentThread()->GetWebTaskRunner();
 }
 
 }  // namespace blink

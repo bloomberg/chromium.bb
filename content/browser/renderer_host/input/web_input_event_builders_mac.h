@@ -27,7 +27,7 @@ class CONTENT_EXPORT WebMouseEventBuilder {
       NSEvent* event,
       NSView* view,
       blink::WebPointerProperties::PointerType pointerType =
-          blink::WebPointerProperties::PointerType::Mouse);
+          blink::WebPointerProperties::PointerType::kMouse);
 };
 
 class CONTENT_EXPORT WebMouseWheelEventBuilder {

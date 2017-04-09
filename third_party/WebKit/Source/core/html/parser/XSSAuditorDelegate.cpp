@@ -41,95 +41,95 @@
 
 namespace blink {
 
-String XSSInfo::buildConsoleError() const {
+String XSSInfo::BuildConsoleError() const {
   StringBuilder message;
-  message.append("The XSS Auditor ");
-  message.append(m_didBlockEntirePage ? "blocked access to"
-                                      : "refused to execute a script in");
-  message.append(" '");
-  message.append(m_originalURL);
-  message.append("' because ");
-  message.append(m_didBlockEntirePage ? "the source code of a script"
-                                      : "its source code");
-  message.append(" was found within the request.");
+  message.Append("The XSS Auditor ");
+  message.Append(did_block_entire_page_ ? "blocked access to"
+                                        : "refused to execute a script in");
+  message.Append(" '");
+  message.Append(original_url_);
+  message.Append("' because ");
+  message.Append(did_block_entire_page_ ? "the source code of a script"
+                                        : "its source code");
+  message.Append(" was found within the request.");
 
-  if (m_didSendXSSProtectionHeader)
-    message.append(
+  if (did_send_xss_protection_header_)
+    message.Append(
         " The server sent an 'X-XSS-Protection' header requesting this "
         "behavior.");
   else
-    message.append(
+    message.Append(
         " The auditor was enabled as the server did not send an "
         "'X-XSS-Protection' header.");
 
-  return message.toString();
+  return message.ToString();
 }
 
-bool XSSInfo::isSafeToSendToAnotherThread() const {
-  return m_originalURL.isSafeToSendToAnotherThread();
+bool XSSInfo::IsSafeToSendToAnotherThread() const {
+  return original_url_.IsSafeToSendToAnotherThread();
 }
 
 XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
-    : m_document(document), m_didSendNotifications(false) {
-  DCHECK(isMainThread());
-  DCHECK(m_document);
+    : document_(document), did_send_notifications_(false) {
+  DCHECK(IsMainThread());
+  DCHECK(document_);
 }
 
 DEFINE_TRACE(XSSAuditorDelegate) {
-  visitor->trace(m_document);
+  visitor->Trace(document_);
 }
 
-PassRefPtr<EncodedFormData> XSSAuditorDelegate::generateViolationReport(
-    const XSSInfo& xssInfo) {
-  DCHECK(isMainThread());
+PassRefPtr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
+    const XSSInfo& xss_info) {
+  DCHECK(IsMainThread());
 
-  FrameLoader& frameLoader = m_document->frame()->loader();
-  String httpBody;
-  if (frameLoader.documentLoader()) {
-    if (EncodedFormData* formData =
-            frameLoader.documentLoader()->originalRequest().httpBody())
-      httpBody = formData->flattenToString();
+  FrameLoader& frame_loader = document_->GetFrame()->Loader();
+  String http_body;
+  if (frame_loader.GetDocumentLoader()) {
+    if (EncodedFormData* form_data =
+            frame_loader.GetDocumentLoader()->OriginalRequest().HttpBody())
+      http_body = form_data->FlattenToString();
   }
 
-  std::unique_ptr<JSONObject> reportDetails = JSONObject::create();
-  reportDetails->setString("request-url", xssInfo.m_originalURL);
-  reportDetails->setString("request-body", httpBody);
+  std::unique_ptr<JSONObject> report_details = JSONObject::Create();
+  report_details->SetString("request-url", xss_info.original_url_);
+  report_details->SetString("request-body", http_body);
 
-  std::unique_ptr<JSONObject> reportObject = JSONObject::create();
-  reportObject->setObject("xss-report", std::move(reportDetails));
+  std::unique_ptr<JSONObject> report_object = JSONObject::Create();
+  report_object->SetObject("xss-report", std::move(report_details));
 
-  return EncodedFormData::create(reportObject->toJSONString().utf8().data());
+  return EncodedFormData::Create(report_object->ToJSONString().Utf8().Data());
 }
 
-void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo) {
-  DCHECK(isMainThread());
+void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
+  DCHECK(IsMainThread());
 
-  UseCounter::count(m_document, xssInfo.m_didBlockEntirePage
-                                    ? UseCounter::XSSAuditorBlockedEntirePage
-                                    : UseCounter::XSSAuditorBlockedScript);
+  UseCounter::Count(document_, xss_info.did_block_entire_page_
+                                   ? UseCounter::kXSSAuditorBlockedEntirePage
+                                   : UseCounter::kXSSAuditorBlockedScript);
 
-  m_document->addConsoleMessage(ConsoleMessage::create(
-      JSMessageSource, ErrorMessageLevel, xssInfo.buildConsoleError()));
+  document_->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, kErrorMessageLevel, xss_info.BuildConsoleError()));
 
-  FrameLoader& frameLoader = m_document->frame()->loader();
-  if (xssInfo.m_didBlockEntirePage)
-    frameLoader.stopAllLoaders();
+  FrameLoader& frame_loader = document_->GetFrame()->Loader();
+  if (xss_info.did_block_entire_page_)
+    frame_loader.StopAllLoaders();
 
-  if (!m_didSendNotifications && frameLoader.client()) {
-    m_didSendNotifications = true;
+  if (!did_send_notifications_ && frame_loader.Client()) {
+    did_send_notifications_ = true;
 
-    frameLoader.client()->didDetectXSS(m_document->url(),
-                                       xssInfo.m_didBlockEntirePage);
+    frame_loader.Client()->DidDetectXSS(document_->Url(),
+                                        xss_info.did_block_entire_page_);
 
-    if (!m_reportURL.isEmpty())
-      PingLoader::sendViolationReport(m_document->frame(), m_reportURL,
-                                      generateViolationReport(xssInfo),
-                                      PingLoader::XSSAuditorViolationReport);
+    if (!report_url_.IsEmpty())
+      PingLoader::SendViolationReport(document_->GetFrame(), report_url_,
+                                      GenerateViolationReport(xss_info),
+                                      PingLoader::kXSSAuditorViolationReport);
   }
 
-  if (xssInfo.m_didBlockEntirePage) {
-    m_document->frame()->navigationScheduler().schedulePageBlock(
-        m_document, ResourceError::BLOCKED_BY_XSS_AUDITOR);
+  if (xss_info.did_block_entire_page_) {
+    document_->GetFrame()->GetNavigationScheduler().SchedulePageBlock(
+        document_, ResourceError::BLOCKED_BY_XSS_AUDITOR);
   }
 }
 

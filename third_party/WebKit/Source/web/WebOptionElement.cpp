@@ -37,31 +37,31 @@
 
 namespace blink {
 
-WebString WebOptionElement::value() const {
-  return constUnwrap<HTMLOptionElement>()->value();
+WebString WebOptionElement::Value() const {
+  return ConstUnwrap<HTMLOptionElement>()->value();
 }
 
-WebString WebOptionElement::text() const {
-  return constUnwrap<HTMLOptionElement>()->displayLabel();
+WebString WebOptionElement::GetText() const {
+  return ConstUnwrap<HTMLOptionElement>()->DisplayLabel();
 }
 
-WebString WebOptionElement::label() const {
-  return constUnwrap<HTMLOptionElement>()->label();
+WebString WebOptionElement::Label() const {
+  return ConstUnwrap<HTMLOptionElement>()->label();
 }
 
 WebOptionElement::WebOptionElement(HTMLOptionElement* elem)
     : WebElement(elem) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebOptionElement,
-                           isHTMLOptionElement(constUnwrap<Node>()));
+                           isHTMLOptionElement(ConstUnwrap<Node>()));
 
 WebOptionElement& WebOptionElement::operator=(HTMLOptionElement* elem) {
-  m_private = elem;
+  private_ = elem;
   return *this;
 }
 
 WebOptionElement::operator HTMLOptionElement*() const {
-  return toHTMLOptionElement(m_private.get());
+  return toHTMLOptionElement(private_.Get());
 }
 
 }  // namespace blink

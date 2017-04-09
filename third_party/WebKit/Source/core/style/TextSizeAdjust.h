@@ -14,23 +14,23 @@ class TextSizeAdjust {
   DISALLOW_NEW();
 
  public:
-  TextSizeAdjust(float adjustment) : m_adjustment(adjustment) {}
+  TextSizeAdjust(float adjustment) : adjustment_(adjustment) {}
 
   // Negative values are invalid so we use them internally to signify 'auto'.
-  static TextSizeAdjust adjustAuto() { return TextSizeAdjust(-1); }
+  static TextSizeAdjust AdjustAuto() { return TextSizeAdjust(-1); }
   // An adjustment of 'none' is equivalent to 100%.
-  static TextSizeAdjust adjustNone() { return TextSizeAdjust(1); }
+  static TextSizeAdjust AdjustNone() { return TextSizeAdjust(1); }
 
-  bool isAuto() const { return m_adjustment < 0.f; }
+  bool IsAuto() const { return adjustment_ < 0.f; }
 
-  float multiplier() const {
+  float Multiplier() const {
     // If the adjustment is 'auto', no multiplier is available.
-    DCHECK(!isAuto());
-    return m_adjustment;
+    DCHECK(!IsAuto());
+    return adjustment_;
   }
 
   bool operator==(const TextSizeAdjust& o) const {
-    return m_adjustment == o.m_adjustment;
+    return adjustment_ == o.adjustment_;
   }
 
   bool operator!=(const TextSizeAdjust& o) const { return !(*this == o); }
@@ -38,7 +38,7 @@ class TextSizeAdjust {
  private:
   // Percent adjustment, without units (i.e., 10% is .1 and not 10). Negative
   // values indicate 'auto' adjustment.
-  float m_adjustment;
+  float adjustment_;
 };
 
 }  // namespace blink

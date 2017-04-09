@@ -27,94 +27,96 @@
 
 namespace blink {
 
-void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver,
-                                        LineInfo& lineInfo,
+void LineBreaker::SkipLeadingWhitespace(InlineBidiResolver& resolver,
+                                        LineInfo& line_info,
                                         LineWidth& width) {
-  while (!resolver.position().atEnd() &&
-         !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
-    LineLayoutItem lineLayoutItem = resolver.position().getLineLayoutItem();
-    if (lineLayoutItem.isOutOfFlowPositioned()) {
-      setStaticPositions(m_block, LineLayoutBox(lineLayoutItem),
-                         width.indentText());
-      if (lineLayoutItem.style()->isOriginalDisplayInlineType()) {
-        resolver.runs().addRun(
-            createRun(0, 1, LineLayoutItem(lineLayoutItem), resolver));
-        lineInfo.incrementRunsFromLeadingWhitespace();
+  while (
+      !resolver.GetPosition().AtEnd() &&
+      !RequiresLineBox(resolver.GetPosition(), line_info, kLeadingWhitespace)) {
+    LineLayoutItem line_layout_item =
+        resolver.GetPosition().GetLineLayoutItem();
+    if (line_layout_item.IsOutOfFlowPositioned()) {
+      SetStaticPositions(block_, LineLayoutBox(line_layout_item),
+                         width.IndentText());
+      if (line_layout_item.Style()->IsOriginalDisplayInlineType()) {
+        resolver.Runs().AddRun(
+            CreateRun(0, 1, LineLayoutItem(line_layout_item), resolver));
+        line_info.IncrementRunsFromLeadingWhitespace();
       }
-    } else if (lineLayoutItem.isFloating()) {
-      m_block.insertFloatingObject(LineLayoutBox(lineLayoutItem));
-      m_block.placeNewFloats(m_block.logicalHeight(), &width);
+    } else if (line_layout_item.IsFloating()) {
+      block_.InsertFloatingObject(LineLayoutBox(line_layout_item));
+      block_.PlaceNewFloats(block_.LogicalHeight(), &width);
     }
-    resolver.position().increment(&resolver);
+    resolver.GetPosition().Increment(&resolver);
   }
-  resolver.commitExplicitEmbedding(resolver.runs());
+  resolver.CommitExplicitEmbedding(resolver.Runs());
 }
 
-void LineBreaker::reset() {
-  m_positionedObjects.clear();
-  m_hyphenated = false;
-  m_clear = EClear::kNone;
+void LineBreaker::Reset() {
+  positioned_objects_.Clear();
+  hyphenated_ = false;
+  clear_ = EClear::kNone;
 }
 
-InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver,
-                                          LineInfo& lineInfo,
-                                          LayoutTextInfo& layoutTextInfo,
-                                          WordMeasurements& wordMeasurements) {
-  reset();
+InlineIterator LineBreaker::NextLineBreak(InlineBidiResolver& resolver,
+                                          LineInfo& line_info,
+                                          LayoutTextInfo& layout_text_info,
+                                          WordMeasurements& word_measurements) {
+  Reset();
 
-  DCHECK(resolver.position().root() == m_block);
+  DCHECK(resolver.GetPosition().Root() == block_);
 
-  bool appliedStartWidth = resolver.position().offset() > 0;
+  bool applied_start_width = resolver.GetPosition().Offset() > 0;
 
   LineWidth width(
-      m_block, lineInfo.isFirstLine(),
-      requiresIndent(lineInfo.isFirstLine(),
-                     lineInfo.previousLineBrokeCleanly(), m_block.styleRef()));
+      block_, line_info.IsFirstLine(),
+      RequiresIndent(line_info.IsFirstLine(),
+                     line_info.PreviousLineBrokeCleanly(), block_.StyleRef()));
 
-  skipLeadingWhitespace(resolver, lineInfo, width);
+  SkipLeadingWhitespace(resolver, line_info, width);
 
-  if (resolver.position().atEnd())
-    return resolver.position();
+  if (resolver.GetPosition().AtEnd())
+    return resolver.GetPosition();
 
-  BreakingContext context(resolver, lineInfo, width, layoutTextInfo,
-                          appliedStartWidth, m_block);
+  BreakingContext context(resolver, line_info, width, layout_text_info,
+                          applied_start_width, block_);
 
-  while (context.currentItem()) {
-    context.initializeForCurrentObject();
-    if (context.currentItem().isBR()) {
-      context.handleBR(m_clear);
-    } else if (context.currentItem().isOutOfFlowPositioned()) {
-      context.handleOutOfFlowPositioned(m_positionedObjects);
-    } else if (context.currentItem().isFloating()) {
-      context.handleFloat();
-    } else if (context.currentItem().isLayoutInline()) {
-      context.handleEmptyInline();
-    } else if (context.currentItem().isAtomicInlineLevel()) {
-      context.handleReplaced();
-    } else if (context.currentItem().isText()) {
-      if (context.handleText(wordMeasurements, m_hyphenated)) {
+  while (context.CurrentItem()) {
+    context.InitializeForCurrentObject();
+    if (context.CurrentItem().IsBR()) {
+      context.HandleBR(clear_);
+    } else if (context.CurrentItem().IsOutOfFlowPositioned()) {
+      context.HandleOutOfFlowPositioned(positioned_objects_);
+    } else if (context.CurrentItem().IsFloating()) {
+      context.HandleFloat();
+    } else if (context.CurrentItem().IsLayoutInline()) {
+      context.HandleEmptyInline();
+    } else if (context.CurrentItem().IsAtomicInlineLevel()) {
+      context.HandleReplaced();
+    } else if (context.CurrentItem().IsText()) {
+      if (context.HandleText(word_measurements, hyphenated_)) {
         // We've hit a hard text line break. Our line break iterator is updated,
         // so go ahead and early return.
-        return context.lineBreak();
+        return context.LineBreak();
       }
     } else {
       NOTREACHED();
     }
 
-    if (context.atEnd())
-      return context.handleEndOfLine();
+    if (context.AtEnd())
+      return context.HandleEndOfLine();
 
-    context.commitAndUpdateLineBreakIfNeeded();
+    context.CommitAndUpdateLineBreakIfNeeded();
 
-    if (context.atEnd())
-      return context.handleEndOfLine();
+    if (context.AtEnd())
+      return context.HandleEndOfLine();
 
-    context.increment();
+    context.Increment();
   }
 
-  context.clearLineBreakIfFitsOnLine();
+  context.ClearLineBreakIfFitsOnLine();
 
-  return context.handleEndOfLine();
+  return context.HandleEndOfLine();
 }
 
 }  // namespace blink

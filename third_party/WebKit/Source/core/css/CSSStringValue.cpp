@@ -10,14 +10,14 @@
 namespace blink {
 
 CSSStringValue::CSSStringValue(const String& str)
-    : CSSValue(StringClass), m_string(str) {}
+    : CSSValue(kStringClass), string_(str) {}
 
-String CSSStringValue::customCSSText() const {
-  return serializeString(m_string);
+String CSSStringValue::CustomCSSText() const {
+  return SerializeString(string_);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSStringValue) {
-  CSSValue::traceAfterDispatch(visitor);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

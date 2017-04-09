@@ -34,196 +34,198 @@
 
 namespace blink {
 
-static inline float determinant(const FloatSize& a, const FloatSize& b) {
-  return a.width() * b.height() - a.height() * b.width();
+static inline float Determinant(const FloatSize& a, const FloatSize& b) {
+  return a.Width() * b.Height() - a.Height() * b.Width();
 }
 
-static inline bool areCollinearPoints(const FloatPoint& p0,
+static inline bool AreCollinearPoints(const FloatPoint& p0,
                                       const FloatPoint& p1,
                                       const FloatPoint& p2) {
-  return !determinant(p1 - p0, p2 - p0);
+  return !Determinant(p1 - p0, p2 - p0);
 }
 
-static inline bool areCoincidentPoints(const FloatPoint& p0,
+static inline bool AreCoincidentPoints(const FloatPoint& p0,
                                        const FloatPoint& p1) {
-  return p0.x() == p1.x() && p0.y() == p1.y();
+  return p0.X() == p1.X() && p0.Y() == p1.Y();
 }
 
-static inline bool isPointOnLineSegment(const FloatPoint& vertex1,
+static inline bool IsPointOnLineSegment(const FloatPoint& vertex1,
                                         const FloatPoint& vertex2,
                                         const FloatPoint& point) {
-  return point.x() >= std::min(vertex1.x(), vertex2.x()) &&
-         point.x() <= std::max(vertex1.x(), vertex2.x()) &&
-         areCollinearPoints(vertex1, vertex2, point);
+  return point.X() >= std::min(vertex1.X(), vertex2.X()) &&
+         point.X() <= std::max(vertex1.X(), vertex2.X()) &&
+         AreCollinearPoints(vertex1, vertex2, point);
 }
 
-static inline unsigned nextVertexIndex(unsigned vertexIndex,
-                                       unsigned nVertices,
+static inline unsigned NextVertexIndex(unsigned vertex_index,
+                                       unsigned n_vertices,
                                        bool clockwise) {
-  return ((clockwise) ? vertexIndex + 1 : vertexIndex - 1 + nVertices) %
-         nVertices;
+  return ((clockwise) ? vertex_index + 1 : vertex_index - 1 + n_vertices) %
+         n_vertices;
 }
 
-static unsigned findNextEdgeVertexIndex(const FloatPolygon& polygon,
-                                        unsigned vertexIndex1,
+static unsigned FindNextEdgeVertexIndex(const FloatPolygon& polygon,
+                                        unsigned vertex_index1,
                                         bool clockwise) {
-  unsigned nVertices = polygon.numberOfVertices();
-  unsigned vertexIndex2 = nextVertexIndex(vertexIndex1, nVertices, clockwise);
+  unsigned n_vertices = polygon.NumberOfVertices();
+  unsigned vertex_index2 =
+      NextVertexIndex(vertex_index1, n_vertices, clockwise);
 
-  while (vertexIndex2 && areCoincidentPoints(polygon.vertexAt(vertexIndex1),
-                                             polygon.vertexAt(vertexIndex2)))
-    vertexIndex2 = nextVertexIndex(vertexIndex2, nVertices, clockwise);
+  while (vertex_index2 && AreCoincidentPoints(polygon.VertexAt(vertex_index1),
+                                              polygon.VertexAt(vertex_index2)))
+    vertex_index2 = NextVertexIndex(vertex_index2, n_vertices, clockwise);
 
-  while (vertexIndex2) {
-    unsigned vertexIndex3 = nextVertexIndex(vertexIndex2, nVertices, clockwise);
-    if (!areCollinearPoints(polygon.vertexAt(vertexIndex1),
-                            polygon.vertexAt(vertexIndex2),
-                            polygon.vertexAt(vertexIndex3)))
+  while (vertex_index2) {
+    unsigned vertex_index3 =
+        NextVertexIndex(vertex_index2, n_vertices, clockwise);
+    if (!AreCollinearPoints(polygon.VertexAt(vertex_index1),
+                            polygon.VertexAt(vertex_index2),
+                            polygon.VertexAt(vertex_index3)))
       break;
-    vertexIndex2 = vertexIndex3;
+    vertex_index2 = vertex_index3;
   }
 
-  return vertexIndex2;
+  return vertex_index2;
 }
 
 FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices,
-                           WindRule fillRule)
-    : m_vertices(std::move(vertices)), m_fillRule(fillRule) {
-  unsigned nVertices = numberOfVertices();
-  m_edges.resize(nVertices);
-  m_empty = nVertices < 3;
+                           WindRule fill_rule)
+    : vertices_(std::move(vertices)), fill_rule_(fill_rule) {
+  unsigned n_vertices = NumberOfVertices();
+  edges_.Resize(n_vertices);
+  empty_ = n_vertices < 3;
 
-  if (nVertices)
-    m_boundingBox.setLocation(vertexAt(0));
+  if (n_vertices)
+    bounding_box_.SetLocation(VertexAt(0));
 
-  if (m_empty)
+  if (empty_)
     return;
 
-  unsigned minVertexIndex = 0;
-  for (unsigned i = 1; i < nVertices; ++i) {
-    const FloatPoint& vertex = vertexAt(i);
-    if (vertex.y() < vertexAt(minVertexIndex).y() ||
-        (vertex.y() == vertexAt(minVertexIndex).y() &&
-         vertex.x() < vertexAt(minVertexIndex).x()))
-      minVertexIndex = i;
+  unsigned min_vertex_index = 0;
+  for (unsigned i = 1; i < n_vertices; ++i) {
+    const FloatPoint& vertex = VertexAt(i);
+    if (vertex.Y() < VertexAt(min_vertex_index).Y() ||
+        (vertex.Y() == VertexAt(min_vertex_index).Y() &&
+         vertex.X() < VertexAt(min_vertex_index).X()))
+      min_vertex_index = i;
   }
-  FloatPoint nextVertex = vertexAt((minVertexIndex + 1) % nVertices);
-  FloatPoint prevVertex =
-      vertexAt((minVertexIndex + nVertices - 1) % nVertices);
-  bool clockwise = determinant(vertexAt(minVertexIndex) - prevVertex,
-                               nextVertex - prevVertex) > 0;
+  FloatPoint next_vertex = VertexAt((min_vertex_index + 1) % n_vertices);
+  FloatPoint prev_vertex =
+      VertexAt((min_vertex_index + n_vertices - 1) % n_vertices);
+  bool clockwise = Determinant(VertexAt(min_vertex_index) - prev_vertex,
+                               next_vertex - prev_vertex) > 0;
 
-  unsigned edgeIndex = 0;
-  unsigned vertexIndex1 = 0;
+  unsigned edge_index = 0;
+  unsigned vertex_index1 = 0;
   do {
-    m_boundingBox.extend(vertexAt(vertexIndex1));
-    unsigned vertexIndex2 =
-        findNextEdgeVertexIndex(*this, vertexIndex1, clockwise);
-    m_edges[edgeIndex].m_polygon = this;
-    m_edges[edgeIndex].m_vertexIndex1 = vertexIndex1;
-    m_edges[edgeIndex].m_vertexIndex2 = vertexIndex2;
-    m_edges[edgeIndex].m_edgeIndex = edgeIndex;
-    ++edgeIndex;
-    vertexIndex1 = vertexIndex2;
-  } while (vertexIndex1);
+    bounding_box_.Extend(VertexAt(vertex_index1));
+    unsigned vertex_index2 =
+        FindNextEdgeVertexIndex(*this, vertex_index1, clockwise);
+    edges_[edge_index].polygon_ = this;
+    edges_[edge_index].vertex_index1_ = vertex_index1;
+    edges_[edge_index].vertex_index2_ = vertex_index2;
+    edges_[edge_index].edge_index_ = edge_index;
+    ++edge_index;
+    vertex_index1 = vertex_index2;
+  } while (vertex_index1);
 
-  if (edgeIndex > 3) {
-    const FloatPolygonEdge& firstEdge = m_edges[0];
-    const FloatPolygonEdge& lastEdge = m_edges[edgeIndex - 1];
-    if (areCollinearPoints(lastEdge.vertex1(), lastEdge.vertex2(),
-                           firstEdge.vertex2())) {
-      m_edges[0].m_vertexIndex1 = lastEdge.m_vertexIndex1;
-      edgeIndex--;
+  if (edge_index > 3) {
+    const FloatPolygonEdge& first_edge = edges_[0];
+    const FloatPolygonEdge& last_edge = edges_[edge_index - 1];
+    if (AreCollinearPoints(last_edge.Vertex1(), last_edge.Vertex2(),
+                           first_edge.Vertex2())) {
+      edges_[0].vertex_index1_ = last_edge.vertex_index1_;
+      edge_index--;
     }
   }
 
-  m_edges.resize(edgeIndex);
-  m_empty = m_edges.size() < 3;
+  edges_.Resize(edge_index);
+  empty_ = edges_.size() < 3;
 
-  if (m_empty)
+  if (empty_)
     return;
 
-  for (unsigned i = 0; i < m_edges.size(); ++i) {
-    FloatPolygonEdge* edge = &m_edges[i];
-    m_edgeTree.add(EdgeInterval(edge->minY(), edge->maxY(), edge));
+  for (unsigned i = 0; i < edges_.size(); ++i) {
+    FloatPolygonEdge* edge = &edges_[i];
+    edge_tree_.Add(EdgeInterval(edge->MinY(), edge->MaxY(), edge));
   }
 }
 
-bool FloatPolygon::overlappingEdges(
-    float minY,
-    float maxY,
+bool FloatPolygon::OverlappingEdges(
+    float min_y,
+    float max_y,
     Vector<const FloatPolygonEdge*>& result) const {
-  Vector<FloatPolygon::EdgeInterval> overlappingEdgeIntervals;
-  m_edgeTree.allOverlaps(FloatPolygon::EdgeInterval(minY, maxY, 0),
-                         overlappingEdgeIntervals);
-  unsigned overlappingEdgeIntervalsSize = overlappingEdgeIntervals.size();
-  result.resize(overlappingEdgeIntervalsSize);
-  for (unsigned i = 0; i < overlappingEdgeIntervalsSize; ++i) {
+  Vector<FloatPolygon::EdgeInterval> overlapping_edge_intervals;
+  edge_tree_.AllOverlaps(FloatPolygon::EdgeInterval(min_y, max_y, 0),
+                         overlapping_edge_intervals);
+  unsigned overlapping_edge_intervals_size = overlapping_edge_intervals.size();
+  result.Resize(overlapping_edge_intervals_size);
+  for (unsigned i = 0; i < overlapping_edge_intervals_size; ++i) {
     const FloatPolygonEdge* edge = static_cast<const FloatPolygonEdge*>(
-        overlappingEdgeIntervals[i].data());
+        overlapping_edge_intervals[i].Data());
     ASSERT(edge);
     result[i] = edge;
   }
-  return overlappingEdgeIntervalsSize > 0;
+  return overlapping_edge_intervals_size > 0;
 }
 
-static inline float leftSide(const FloatPoint& vertex1,
+static inline float LeftSide(const FloatPoint& vertex1,
                              const FloatPoint& vertex2,
                              const FloatPoint& point) {
-  return ((point.x() - vertex1.x()) * (vertex2.y() - vertex1.y())) -
-         ((vertex2.x() - vertex1.x()) * (point.y() - vertex1.y()));
+  return ((point.X() - vertex1.X()) * (vertex2.Y() - vertex1.Y())) -
+         ((vertex2.X() - vertex1.X()) * (point.Y() - vertex1.Y()));
 }
 
-bool FloatPolygon::containsEvenOdd(const FloatPoint& point) const {
-  unsigned crossingCount = 0;
-  for (unsigned i = 0; i < numberOfEdges(); ++i) {
-    const FloatPoint& vertex1 = edgeAt(i).vertex1();
-    const FloatPoint& vertex2 = edgeAt(i).vertex2();
-    if (isPointOnLineSegment(vertex1, vertex2, point))
+bool FloatPolygon::ContainsEvenOdd(const FloatPoint& point) const {
+  unsigned crossing_count = 0;
+  for (unsigned i = 0; i < NumberOfEdges(); ++i) {
+    const FloatPoint& vertex1 = EdgeAt(i).Vertex1();
+    const FloatPoint& vertex2 = EdgeAt(i).Vertex2();
+    if (IsPointOnLineSegment(vertex1, vertex2, point))
       return true;
-    if ((vertex1.y() <= point.y() && vertex2.y() > point.y()) ||
-        (vertex1.y() > point.y() && vertex2.y() <= point.y())) {
-      float vt = (point.y() - vertex1.y()) / (vertex2.y() - vertex1.y());
-      if (point.x() < vertex1.x() + vt * (vertex2.x() - vertex1.x()))
-        ++crossingCount;
+    if ((vertex1.Y() <= point.Y() && vertex2.Y() > point.Y()) ||
+        (vertex1.Y() > point.Y() && vertex2.Y() <= point.Y())) {
+      float vt = (point.Y() - vertex1.Y()) / (vertex2.Y() - vertex1.Y());
+      if (point.X() < vertex1.X() + vt * (vertex2.X() - vertex1.X()))
+        ++crossing_count;
     }
   }
-  return crossingCount & 1;
+  return crossing_count & 1;
 }
 
-bool FloatPolygon::containsNonZero(const FloatPoint& point) const {
-  int windingNumber = 0;
-  for (unsigned i = 0; i < numberOfEdges(); ++i) {
-    const FloatPoint& vertex1 = edgeAt(i).vertex1();
-    const FloatPoint& vertex2 = edgeAt(i).vertex2();
-    if (isPointOnLineSegment(vertex1, vertex2, point))
+bool FloatPolygon::ContainsNonZero(const FloatPoint& point) const {
+  int winding_number = 0;
+  for (unsigned i = 0; i < NumberOfEdges(); ++i) {
+    const FloatPoint& vertex1 = EdgeAt(i).Vertex1();
+    const FloatPoint& vertex2 = EdgeAt(i).Vertex2();
+    if (IsPointOnLineSegment(vertex1, vertex2, point))
       return true;
-    if (vertex2.y() <= point.y()) {
-      if ((vertex1.y() > point.y()) && (leftSide(vertex1, vertex2, point) > 0))
-        ++windingNumber;
-    } else if (vertex2.y() >= point.y()) {
-      if ((vertex1.y() <= point.y()) && (leftSide(vertex1, vertex2, point) < 0))
-        --windingNumber;
+    if (vertex2.Y() <= point.Y()) {
+      if ((vertex1.Y() > point.Y()) && (LeftSide(vertex1, vertex2, point) > 0))
+        ++winding_number;
+    } else if (vertex2.Y() >= point.Y()) {
+      if ((vertex1.Y() <= point.Y()) && (LeftSide(vertex1, vertex2, point) < 0))
+        --winding_number;
     }
   }
-  return windingNumber;
+  return winding_number;
 }
 
-bool FloatPolygon::contains(const FloatPoint& point) const {
-  if (!m_boundingBox.contains(point))
+bool FloatPolygon::Contains(const FloatPoint& point) const {
+  if (!bounding_box_.Contains(point))
     return false;
-  return (fillRule() == RULE_NONZERO) ? containsNonZero(point)
-                                      : containsEvenOdd(point);
+  return (FillRule() == RULE_NONZERO) ? ContainsNonZero(point)
+                                      : ContainsEvenOdd(point);
 }
 
-bool VertexPair::intersection(const VertexPair& other,
+bool VertexPair::Intersection(const VertexPair& other,
                               FloatPoint& point) const {
   // See: http://paulbourke.net/geometry/pointlineplane/,
   // "Intersection point of two lines in 2 dimensions"
 
-  const FloatSize& thisDelta = vertex2() - vertex1();
-  const FloatSize& otherDelta = other.vertex2() - other.vertex1();
-  float denominator = determinant(thisDelta, otherDelta);
+  const FloatSize& this_delta = Vertex2() - Vertex1();
+  const FloatSize& other_delta = other.Vertex2() - other.Vertex1();
+  float denominator = Determinant(this_delta, other_delta);
   if (!denominator)
     return false;
 
@@ -232,14 +234,15 @@ bool VertexPair::intersection(const VertexPair& other,
   // vertex1 + u * (vertex2 - vertex1), when 0 <= u <= 1. We're computing the
   // values of u for each line at their intersection point.
 
-  const FloatSize& vertex1Delta = vertex1() - other.vertex1();
-  float uThisLine = determinant(otherDelta, vertex1Delta) / denominator;
-  float uOtherLine = determinant(thisDelta, vertex1Delta) / denominator;
+  const FloatSize& vertex1_delta = Vertex1() - other.Vertex1();
+  float u_this_line = Determinant(other_delta, vertex1_delta) / denominator;
+  float u_other_line = Determinant(this_delta, vertex1_delta) / denominator;
 
-  if (uThisLine < 0 || uOtherLine < 0 || uThisLine > 1 || uOtherLine > 1)
+  if (u_this_line < 0 || u_other_line < 0 || u_this_line > 1 ||
+      u_other_line > 1)
     return false;
 
-  point = vertex1() + uThisLine * thisDelta;
+  point = Vertex1() + u_this_line * this_delta;
   return true;
 }
 

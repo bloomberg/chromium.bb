@@ -20,8 +20,8 @@ class PushError {
  public:
   // For CallbackPromiseAdapter.
   using WebType = const WebPushError&;
-  static DOMException* take(ScriptPromiseResolver*,
-                            const WebPushError& webError);
+  static DOMException* Take(ScriptPromiseResolver*,
+                            const WebPushError& web_error);
 };
 
 }  // namespace blink

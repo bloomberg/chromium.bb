@@ -35,107 +35,107 @@
 
 namespace blink {
 
-const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
-const double AudioParamHandler::SnapThreshold = 0.001;
+const double AudioParamHandler::kDefaultSmoothingConstant = 0.05;
+const double AudioParamHandler::kSnapThreshold = 0.001;
 
 AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
-                                     AudioParamType paramType,
-                                     double defaultValue,
-                                     float minValue,
-                                     float maxValue)
-    : AudioSummingJunction(context.deferredTaskHandler()),
-      m_paramType(paramType),
-      m_intrinsicValue(defaultValue),
-      m_defaultValue(defaultValue),
-      m_minValue(minValue),
-      m_maxValue(maxValue) {
+                                     AudioParamType param_type,
+                                     double default_value,
+                                     float min_value,
+                                     float max_value)
+    : AudioSummingJunction(context.GetDeferredTaskHandler()),
+      param_type_(param_type),
+      intrinsic_value_(default_value),
+      default_value_(default_value),
+      min_value_(min_value),
+      max_value_(max_value) {
   // The destination MUST exist because we need the destination handler for the
   // AudioParam.
   RELEASE_ASSERT(context.destination());
 
-  m_destinationHandler = &context.destination()->audioDestinationHandler();
-  m_timeline.setSmoothedValue(defaultValue);
+  destination_handler_ = &context.destination()->GetAudioDestinationHandler();
+  timeline_.SetSmoothedValue(default_value);
 }
 
-AudioDestinationHandler& AudioParamHandler::destinationHandler() const {
-  return *m_destinationHandler;
+AudioDestinationHandler& AudioParamHandler::DestinationHandler() const {
+  return *destination_handler_;
 }
 
-void AudioParamHandler::setParamType(AudioParamType paramType) {
-  m_paramType = paramType;
+void AudioParamHandler::SetParamType(AudioParamType param_type) {
+  param_type_ = param_type;
 }
 
-String AudioParamHandler::getParamName() const {
+String AudioParamHandler::GetParamName() const {
   // The returned string should be the name of the node and the name of the
   // AudioParam for that node.
-  switch (m_paramType) {
-    case ParamTypeAudioBufferSourcePlaybackRate:
+  switch (param_type_) {
+    case kParamTypeAudioBufferSourcePlaybackRate:
       return "AudioBufferSource.playbackRate";
-    case ParamTypeAudioBufferSourceDetune:
+    case kParamTypeAudioBufferSourceDetune:
       return "AudioBufferSource.detune";
-    case ParamTypeBiquadFilterFrequency:
+    case kParamTypeBiquadFilterFrequency:
       return "BiquadFilter.frequency";
-    case ParamTypeBiquadFilterQ:
-    case ParamTypeBiquadFilterQLowpass:
-    case ParamTypeBiquadFilterQHighpass:
+    case kParamTypeBiquadFilterQ:
+    case kParamTypeBiquadFilterQLowpass:
+    case kParamTypeBiquadFilterQHighpass:
       // We don't really need separate names for the Q parameter for lowpass and
       // highpass filters.  The difference is only for the histograms.
       return "BiquadFilter.Q";
-    case ParamTypeBiquadFilterGain:
+    case kParamTypeBiquadFilterGain:
       return "BiquadFilter.gain";
-    case ParamTypeBiquadFilterDetune:
+    case kParamTypeBiquadFilterDetune:
       return "BiquadFilter.detune";
-    case ParamTypeDelayDelayTime:
+    case kParamTypeDelayDelayTime:
       return "Delay.delayTime";
-    case ParamTypeDynamicsCompressorThreshold:
+    case kParamTypeDynamicsCompressorThreshold:
       return "DynamicsCompressor.threshold";
-    case ParamTypeDynamicsCompressorKnee:
+    case kParamTypeDynamicsCompressorKnee:
       return "DynamicsCompressor.knee";
-    case ParamTypeDynamicsCompressorRatio:
+    case kParamTypeDynamicsCompressorRatio:
       return "DynamicsCompressor.ratio";
-    case ParamTypeDynamicsCompressorAttack:
+    case kParamTypeDynamicsCompressorAttack:
       return "DynamicsCompressor.attack";
-    case ParamTypeDynamicsCompressorRelease:
+    case kParamTypeDynamicsCompressorRelease:
       return "DynamicsCompressor.release";
-    case ParamTypeGainGain:
+    case kParamTypeGainGain:
       return "Gain.gain";
-    case ParamTypeOscillatorFrequency:
+    case kParamTypeOscillatorFrequency:
       return "Oscillator.frequency";
-    case ParamTypeOscillatorDetune:
+    case kParamTypeOscillatorDetune:
       return "Oscillator.detune";
-    case ParamTypeStereoPannerPan:
+    case kParamTypeStereoPannerPan:
       return "StereoPanner.pan";
-    case ParamTypePannerPositionX:
+    case kParamTypePannerPositionX:
       return "Panner.positionX";
-    case ParamTypePannerPositionY:
+    case kParamTypePannerPositionY:
       return "Panner.positionY";
-    case ParamTypePannerPositionZ:
+    case kParamTypePannerPositionZ:
       return "Panner.positionZ";
-    case ParamTypePannerOrientationX:
+    case kParamTypePannerOrientationX:
       return "Panner.orientationX";
-    case ParamTypePannerOrientationY:
+    case kParamTypePannerOrientationY:
       return "Panner.orientationY";
-    case ParamTypePannerOrientationZ:
+    case kParamTypePannerOrientationZ:
       return "Panner.orientationZ";
-    case ParamTypeAudioListenerPositionX:
+    case kParamTypeAudioListenerPositionX:
       return "AudioListener.positionX";
-    case ParamTypeAudioListenerPositionY:
+    case kParamTypeAudioListenerPositionY:
       return "AudioListener.positionY";
-    case ParamTypeAudioListenerPositionZ:
+    case kParamTypeAudioListenerPositionZ:
       return "AudioListener.positionZ";
-    case ParamTypeAudioListenerForwardX:
+    case kParamTypeAudioListenerForwardX:
       return "AudioListener.forwardX";
-    case ParamTypeAudioListenerForwardY:
+    case kParamTypeAudioListenerForwardY:
       return "AudioListener.forwardY";
-    case ParamTypeAudioListenerForwardZ:
+    case kParamTypeAudioListenerForwardZ:
       return "AudioListener.forwardZ";
-    case ParamTypeAudioListenerUpX:
+    case kParamTypeAudioListenerUpX:
       return "AudioListener.upX";
-    case ParamTypeAudioListenerUpY:
+    case kParamTypeAudioListenerUpY:
       return "AudioListener.upY";
-    case ParamTypeAudioListenerUpZ:
+    case kParamTypeAudioListenerUpZ:
       return "AudioListener.upZ";
-    case ParamTypeConstantSourceValue:
+    case kParamTypeConstantSourceValue:
       return "ConstantSource.sourceValue";
   };
 
@@ -143,194 +143,195 @@ String AudioParamHandler::getParamName() const {
   return "UnknownNode.unknownAudioParam";
 }
 
-float AudioParamHandler::value() {
+float AudioParamHandler::Value() {
   // Update value for timeline.
-  float v = intrinsicValue();
-  if (deferredTaskHandler().isAudioThread()) {
-    bool hasValue;
-    float timelineValue = m_timeline.valueForContextTime(
-        destinationHandler(), v, hasValue, minValue(), maxValue());
+  float v = IntrinsicValue();
+  if (GetDeferredTaskHandler().IsAudioThread()) {
+    bool has_value;
+    float timeline_value = timeline_.ValueForContextTime(
+        DestinationHandler(), v, has_value, MinValue(), MaxValue());
 
-    if (hasValue)
-      v = timelineValue;
+    if (has_value)
+      v = timeline_value;
   }
 
-  setIntrinsicValue(v);
+  SetIntrinsicValue(v);
   return v;
 }
 
-void AudioParamHandler::setIntrinsicValue(float newValue) {
-  newValue = clampTo(newValue, m_minValue, m_maxValue);
-  noBarrierStore(&m_intrinsicValue, newValue);
+void AudioParamHandler::SetIntrinsicValue(float new_value) {
+  new_value = clampTo(new_value, min_value_, max_value_);
+  NoBarrierStore(&intrinsic_value_, new_value);
 }
 
-void AudioParamHandler::setValue(float value) {
-  setIntrinsicValue(value);
-  updateHistograms(value);
+void AudioParamHandler::SetValue(float value) {
+  SetIntrinsicValue(value);
+  UpdateHistograms(value);
 }
 
-float AudioParamHandler::smoothedValue() {
-  return m_timeline.smoothedValue();
+float AudioParamHandler::SmoothedValue() {
+  return timeline_.SmoothedValue();
 }
 
-bool AudioParamHandler::smooth() {
+bool AudioParamHandler::Smooth() {
   // If values have been explicitly scheduled on the timeline, then use the
   // exact value.  Smoothing effectively is performed by the timeline.
-  bool useTimelineValue = false;
+  bool use_timeline_value = false;
   float value =
-      m_timeline.valueForContextTime(destinationHandler(), intrinsicValue(),
-                                     useTimelineValue, minValue(), maxValue());
+      timeline_.ValueForContextTime(DestinationHandler(), IntrinsicValue(),
+                                    use_timeline_value, MinValue(), MaxValue());
 
-  float smoothedValue = m_timeline.smoothedValue();
-  if (smoothedValue == value) {
+  float smoothed_value = timeline_.SmoothedValue();
+  if (smoothed_value == value) {
     // Smoothed value has already approached and snapped to value.
-    setIntrinsicValue(value);
+    SetIntrinsicValue(value);
     return true;
   }
 
-  if (useTimelineValue) {
-    m_timeline.setSmoothedValue(value);
+  if (use_timeline_value) {
+    timeline_.SetSmoothedValue(value);
   } else {
     // Dezipper - exponential approach.
-    smoothedValue += (value - smoothedValue) * DefaultSmoothingConstant;
+    smoothed_value += (value - smoothed_value) * kDefaultSmoothingConstant;
 
     // If we get close enough then snap to actual value.
     // FIXME: the threshold needs to be adjustable depending on range - but
     // this is OK general purpose value.
-    if (fabs(smoothedValue - value) < SnapThreshold)
-      smoothedValue = value;
-    m_timeline.setSmoothedValue(smoothedValue);
+    if (fabs(smoothed_value - value) < kSnapThreshold)
+      smoothed_value = value;
+    timeline_.SetSmoothedValue(smoothed_value);
   }
 
-  setIntrinsicValue(value);
+  SetIntrinsicValue(value);
   return false;
 }
 
-float AudioParamHandler::finalValue() {
-  float value = intrinsicValue();
-  calculateFinalValues(&value, 1, false);
+float AudioParamHandler::FinalValue() {
+  float value = IntrinsicValue();
+  CalculateFinalValues(&value, 1, false);
   return value;
 }
 
-void AudioParamHandler::calculateSampleAccurateValues(float* values,
-                                                      unsigned numberOfValues) {
-  bool isSafe =
-      deferredTaskHandler().isAudioThread() && values && numberOfValues;
-  DCHECK(isSafe);
-  if (!isSafe)
+void AudioParamHandler::CalculateSampleAccurateValues(
+    float* values,
+    unsigned number_of_values) {
+  bool is_safe =
+      GetDeferredTaskHandler().IsAudioThread() && values && number_of_values;
+  DCHECK(is_safe);
+  if (!is_safe)
     return;
 
-  calculateFinalValues(values, numberOfValues, true);
+  CalculateFinalValues(values, number_of_values, true);
 }
 
-void AudioParamHandler::calculateFinalValues(float* values,
-                                             unsigned numberOfValues,
-                                             bool sampleAccurate) {
-  bool isGood =
-      deferredTaskHandler().isAudioThread() && values && numberOfValues;
-  DCHECK(isGood);
-  if (!isGood)
+void AudioParamHandler::CalculateFinalValues(float* values,
+                                             unsigned number_of_values,
+                                             bool sample_accurate) {
+  bool is_good =
+      GetDeferredTaskHandler().IsAudioThread() && values && number_of_values;
+  DCHECK(is_good);
+  if (!is_good)
     return;
 
   // The calculated result will be the "intrinsic" value summed with all
   // audio-rate connections.
 
-  if (sampleAccurate) {
+  if (sample_accurate) {
     // Calculate sample-accurate (a-rate) intrinsic values.
-    calculateTimelineValues(values, numberOfValues);
+    CalculateTimelineValues(values, number_of_values);
   } else {
     // Calculate control-rate (k-rate) intrinsic value.
-    bool hasValue;
-    float value = intrinsicValue();
-    float timelineValue = m_timeline.valueForContextTime(
-        destinationHandler(), value, hasValue, minValue(), maxValue());
+    bool has_value;
+    float value = IntrinsicValue();
+    float timeline_value = timeline_.ValueForContextTime(
+        DestinationHandler(), value, has_value, MinValue(), MaxValue());
 
-    if (hasValue)
-      value = timelineValue;
+    if (has_value)
+      value = timeline_value;
 
     values[0] = value;
-    setIntrinsicValue(value);
+    SetIntrinsicValue(value);
   }
 
   // Now sum all of the audio-rate connections together (unity-gain summing
   // junction).  Note that connections would normally be mono, but we mix down
   // to mono if necessary.
-  RefPtr<AudioBus> summingBus = AudioBus::create(1, numberOfValues, false);
-  summingBus->setChannelMemory(0, values, numberOfValues);
+  RefPtr<AudioBus> summing_bus = AudioBus::Create(1, number_of_values, false);
+  summing_bus->SetChannelMemory(0, values, number_of_values);
 
-  for (unsigned i = 0; i < numberOfRenderingConnections(); ++i) {
-    AudioNodeOutput* output = renderingOutput(i);
+  for (unsigned i = 0; i < NumberOfRenderingConnections(); ++i) {
+    AudioNodeOutput* output = RenderingOutput(i);
     DCHECK(output);
 
     // Render audio from this output.
-    AudioBus* connectionBus =
-        output->pull(0, AudioUtilities::kRenderQuantumFrames);
+    AudioBus* connection_bus =
+        output->Pull(0, AudioUtilities::kRenderQuantumFrames);
 
     // Sum, with unity-gain.
-    summingBus->sumFrom(*connectionBus);
+    summing_bus->SumFrom(*connection_bus);
   }
 }
 
-void AudioParamHandler::calculateTimelineValues(float* values,
-                                                unsigned numberOfValues) {
+void AudioParamHandler::CalculateTimelineValues(float* values,
+                                                unsigned number_of_values) {
   // Calculate values for this render quantum.  Normally
   // |numberOfValues| will equal to
   // AudioUtilities::kRenderQuantumFrames (the render quantum size).
-  double sampleRate = destinationHandler().sampleRate();
-  size_t startFrame = destinationHandler().currentSampleFrame();
-  size_t endFrame = startFrame + numberOfValues;
+  double sample_rate = DestinationHandler().SampleRate();
+  size_t start_frame = DestinationHandler().CurrentSampleFrame();
+  size_t end_frame = start_frame + number_of_values;
 
   // Note we're running control rate at the sample-rate.
   // Pass in the current value as default value.
-  setIntrinsicValue(m_timeline.valuesForFrameRange(
-      startFrame, endFrame, intrinsicValue(), values, numberOfValues,
-      sampleRate, sampleRate, minValue(), maxValue()));
+  SetIntrinsicValue(timeline_.ValuesForFrameRange(
+      start_frame, end_frame, IntrinsicValue(), values, number_of_values,
+      sample_rate, sample_rate, MinValue(), MaxValue()));
 }
 
-void AudioParamHandler::connect(AudioNodeOutput& output) {
-  ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioParamHandler::Connect(AudioNodeOutput& output) {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
 
-  if (m_outputs.contains(&output))
+  if (outputs_.Contains(&output))
     return;
 
-  output.addParam(*this);
-  m_outputs.insert(&output);
-  changedOutputs();
+  output.AddParam(*this);
+  outputs_.insert(&output);
+  ChangedOutputs();
 }
 
-void AudioParamHandler::disconnect(AudioNodeOutput& output) {
-  ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioParamHandler::Disconnect(AudioNodeOutput& output) {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
 
-  if (m_outputs.contains(&output)) {
-    m_outputs.erase(&output);
-    changedOutputs();
-    output.removeParam(*this);
+  if (outputs_.Contains(&output)) {
+    outputs_.erase(&output);
+    ChangedOutputs();
+    output.RemoveParam(*this);
   }
 }
 
-int AudioParamHandler::computeQHistogramValue(float newValue) const {
+int AudioParamHandler::ComputeQHistogramValue(float new_value) const {
   // For the Q value, assume a useful range is [0, 25] and that 0.25 dB
   // resolution is good enough.  Then, we can map the floating point Q value (in
   // dB) to an integer just by multipling by 4 and rounding.
-  newValue = clampTo(newValue, 0.0, 25.0);
-  return static_cast<int>(4 * newValue + 0.5);
+  new_value = clampTo(new_value, 0.0, 25.0);
+  return static_cast<int>(4 * new_value + 0.5);
 }
 
-void AudioParamHandler::updateHistograms(float newValue) {
-  switch (m_paramType) {
-    case ParamTypeBiquadFilterQLowpass: {
+void AudioParamHandler::UpdateHistograms(float new_value) {
+  switch (param_type_) {
+    case kParamTypeBiquadFilterQLowpass: {
       // The histogram for the Q value for a lowpass biquad filter.
-      DEFINE_STATIC_LOCAL(SparseHistogram, lowpassQHistogram,
+      DEFINE_STATIC_LOCAL(SparseHistogram, lowpass_q_histogram,
                           ("WebAudio.BiquadFilter.Q.Lowpass"));
 
-      lowpassQHistogram.sample(computeQHistogramValue(newValue));
+      lowpass_q_histogram.Sample(ComputeQHistogramValue(new_value));
     } break;
-    case ParamTypeBiquadFilterQHighpass: {
+    case kParamTypeBiquadFilterQHighpass: {
       // The histogram for the Q value for a highpass biquad filter.
-      DEFINE_STATIC_LOCAL(SparseHistogram, highpassQHistogram,
+      DEFINE_STATIC_LOCAL(SparseHistogram, highpass_q_histogram,
                           ("WebAudio.BiquadFilter.Q.Highpass"));
 
-      highpassQHistogram.sample(computeQHistogramValue(newValue));
+      highpass_q_histogram.Sample(ComputeQHistogramValue(new_value));
     } break;
     default:
       // Nothing to do for all other types.
@@ -341,98 +342,99 @@ void AudioParamHandler::updateHistograms(float newValue) {
 // ----------------------------------------------------------------
 
 AudioParam::AudioParam(BaseAudioContext& context,
-                       AudioParamType paramType,
-                       double defaultValue,
-                       float minValue,
-                       float maxValue)
-    : m_handler(AudioParamHandler::create(context,
-                                          paramType,
-                                          defaultValue,
-                                          minValue,
-                                          maxValue)),
-      m_context(context) {}
+                       AudioParamType param_type,
+                       double default_value,
+                       float min_value,
+                       float max_value)
+    : handler_(AudioParamHandler::Create(context,
+                                         param_type,
+                                         default_value,
+                                         min_value,
+                                         max_value)),
+      context_(context) {}
 
-AudioParam* AudioParam::create(BaseAudioContext& context,
-                               AudioParamType paramType,
-                               double defaultValue) {
+AudioParam* AudioParam::Create(BaseAudioContext& context,
+                               AudioParamType param_type,
+                               double default_value) {
   // Default nominal range is most negative float to most positive.  This
   // basically means any value is valid, except that floating-point infinities
   // are excluded.
   float limit = std::numeric_limits<float>::max();
-  return new AudioParam(context, paramType, defaultValue, -limit, limit);
+  return new AudioParam(context, param_type, default_value, -limit, limit);
 }
 
-AudioParam* AudioParam::create(BaseAudioContext& context,
-                               AudioParamType paramType,
-                               double defaultValue,
-                               float minValue,
-                               float maxValue) {
-  DCHECK_LE(minValue, maxValue);
-  return new AudioParam(context, paramType, defaultValue, minValue, maxValue);
+AudioParam* AudioParam::Create(BaseAudioContext& context,
+                               AudioParamType param_type,
+                               double default_value,
+                               float min_value,
+                               float max_value) {
+  DCHECK_LE(min_value, max_value);
+  return new AudioParam(context, param_type, default_value, min_value,
+                        max_value);
 }
 
 DEFINE_TRACE(AudioParam) {
-  visitor->trace(m_context);
+  visitor->Trace(context_);
 }
 
 float AudioParam::value() const {
-  return handler().value();
+  return Handler().Value();
 }
 
-void AudioParam::warnIfOutsideRange(const String& paramMethod, float value) {
+void AudioParam::WarnIfOutsideRange(const String& param_method, float value) {
   if (value < minValue() || value > maxValue()) {
-    context()->getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, WarningMessageLevel,
-        handler().getParamName() + "." + paramMethod + " " +
-            String::number(value) + " outside nominal range [" +
-            String::number(minValue()) + ", " + String::number(maxValue()) +
+    Context()->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
+        Handler().GetParamName() + "." + param_method + " " +
+            String::Number(value) + " outside nominal range [" +
+            String::Number(minValue()) + ", " + String::Number(maxValue()) +
             "]; value will be clamped."));
   }
 }
 
 void AudioParam::setValue(float value) {
-  warnIfOutsideRange("value", value);
-  handler().setValue(value);
+  WarnIfOutsideRange("value", value);
+  Handler().SetValue(value);
 }
 
 float AudioParam::defaultValue() const {
-  return handler().defaultValue();
+  return Handler().DefaultValue();
 }
 
 float AudioParam::minValue() const {
-  return handler().minValue();
+  return Handler().MinValue();
 }
 
 float AudioParam::maxValue() const {
-  return handler().maxValue();
+  return Handler().MaxValue();
 }
 
-void AudioParam::setParamType(AudioParamType paramType) {
-  handler().setParamType(paramType);
+void AudioParam::SetParamType(AudioParamType param_type) {
+  Handler().SetParamType(param_type);
 }
 
 AudioParam* AudioParam::setValueAtTime(float value,
                                        double time,
-                                       ExceptionState& exceptionState) {
-  warnIfOutsideRange("setValueAtTime value", value);
-  handler().timeline().setValueAtTime(value, time, exceptionState);
-  handler().updateHistograms(value);
+                                       ExceptionState& exception_state) {
+  WarnIfOutsideRange("setValueAtTime value", value);
+  Handler().Timeline().SetValueAtTime(value, time, exception_state);
+  Handler().UpdateHistograms(value);
   return this;
 }
 
 AudioParam* AudioParam::linearRampToValueAtTime(
     float value,
     double time,
-    ExceptionState& exceptionState) {
-  warnIfOutsideRange("linearRampToValueAtTime value", value);
-  handler().timeline().linearRampToValueAtTime(
-      value, time, handler().intrinsicValue(), context()->currentTime(),
-      exceptionState);
+    ExceptionState& exception_state) {
+  WarnIfOutsideRange("linearRampToValueAtTime value", value);
+  Handler().Timeline().LinearRampToValueAtTime(
+      value, time, Handler().IntrinsicValue(), Context()->currentTime(),
+      exception_state);
 
   // This is probably the best we can do for the histogram.  We don't want to
   // run the automation to get all the values and use them to update the
   // histogram.
-  handler().updateHistograms(value);
+  Handler().UpdateHistograms(value);
 
   return this;
 }
@@ -440,27 +442,27 @@ AudioParam* AudioParam::linearRampToValueAtTime(
 AudioParam* AudioParam::exponentialRampToValueAtTime(
     float value,
     double time,
-    ExceptionState& exceptionState) {
-  warnIfOutsideRange("exponentialRampToValue value", value);
-  handler().timeline().exponentialRampToValueAtTime(
-      value, time, handler().intrinsicValue(), context()->currentTime(),
-      exceptionState);
+    ExceptionState& exception_state) {
+  WarnIfOutsideRange("exponentialRampToValue value", value);
+  Handler().Timeline().ExponentialRampToValueAtTime(
+      value, time, Handler().IntrinsicValue(), Context()->currentTime(),
+      exception_state);
 
   // This is probably the best we can do for the histogram.  We don't want to
   // run the automation to get all the values and use them to update the
   // histogram.
-  handler().updateHistograms(value);
+  Handler().UpdateHistograms(value);
 
   return this;
 }
 
 AudioParam* AudioParam::setTargetAtTime(float target,
                                         double time,
-                                        double timeConstant,
-                                        ExceptionState& exceptionState) {
-  warnIfOutsideRange("setTargetAtTime value", target);
-  handler().timeline().setTargetAtTime(target, time, timeConstant,
-                                       exceptionState);
+                                        double time_constant,
+                                        ExceptionState& exception_state) {
+  WarnIfOutsideRange("setTargetAtTime value", target);
+  Handler().Timeline().SetTargetAtTime(target, time, time_constant,
+                                       exception_state);
 
   // Don't update the histogram here.  It's not clear in normal usage if the
   // parameter value will actually reach |target|.
@@ -470,21 +472,21 @@ AudioParam* AudioParam::setTargetAtTime(float target,
 AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve,
                                             double time,
                                             double duration,
-                                            ExceptionState& exceptionState) {
-  float* curveData = curve->data();
+                                            ExceptionState& exception_state) {
+  float* curve_data = curve->Data();
   float min = minValue();
   float max = maxValue();
 
   // First, find any non-finite value in the curve and throw an exception if
   // there are any.
   for (unsigned k = 0; k < curve->length(); ++k) {
-    float value = curveData[k];
+    float value = curve_data[k];
 
     if (!std::isfinite(value)) {
-      exceptionState.throwDOMException(
-          V8TypeError, "The provided float value for the curve at element " +
-                           String::number(k) + " is non-finite: " +
-                           String::number(value));
+      exception_state.ThrowDOMException(
+          kV8TypeError, "The provided float value for the curve at element " +
+                            String::Number(k) +
+                            " is non-finite: " + String::Number(value));
       return nullptr;
     }
   }
@@ -493,16 +495,16 @@ AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve,
   // nominal range.  It's probably not necessary to produce a warning on every
   // value outside the nominal range.
   for (unsigned k = 0; k < curve->length(); ++k) {
-    float value = curveData[k];
+    float value = curve_data[k];
 
     if (value < min || value > max) {
-      warnIfOutsideRange("setValueCurveAtTime value", value);
+      WarnIfOutsideRange("setValueCurveAtTime value", value);
       break;
     }
   }
 
-  handler().timeline().setValueCurveAtTime(curve, time, duration,
-                                           exceptionState);
+  Handler().Timeline().SetValueCurveAtTime(curve, time, duration,
+                                           exception_state);
 
   // We could update the histogram with every value in the curve, due to
   // interpolation, we'll probably be missing many values.  So we don't update
@@ -511,15 +513,15 @@ AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve,
   return this;
 }
 
-AudioParam* AudioParam::cancelScheduledValues(double startTime,
-                                              ExceptionState& exceptionState) {
-  handler().timeline().cancelScheduledValues(startTime, exceptionState);
+AudioParam* AudioParam::cancelScheduledValues(double start_time,
+                                              ExceptionState& exception_state) {
+  Handler().Timeline().CancelScheduledValues(start_time, exception_state);
   return this;
 }
 
-AudioParam* AudioParam::cancelAndHoldAtTime(double startTime,
-                                            ExceptionState& exceptionState) {
-  handler().timeline().cancelAndHoldAtTime(startTime, exceptionState);
+AudioParam* AudioParam::cancelAndHoldAtTime(double start_time,
+                                            ExceptionState& exception_state) {
+  Handler().Timeline().CancelAndHoldAtTime(start_time, exception_state);
   return this;
 }
 

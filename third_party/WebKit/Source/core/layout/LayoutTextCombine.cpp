@@ -24,63 +24,64 @@
 
 namespace blink {
 
-const float textCombineMargin = 1.1f;  // Allow em + 10% margin
+const float kTextCombineMargin = 1.1f;  // Allow em + 10% margin
 
 LayoutTextCombine::LayoutTextCombine(Node* node, PassRefPtr<StringImpl> string)
     : LayoutText(node, std::move(string)),
-      m_combinedTextWidth(0),
-      m_scaleX(1.0f),
-      m_isCombined(false),
-      m_needsFontUpdate(false) {}
+      combined_text_width_(0),
+      scale_x_(1.0f),
+      is_combined_(false),
+      needs_font_update_(false) {}
 
-void LayoutTextCombine::styleDidChange(StyleDifference diff,
-                                       const ComputedStyle* oldStyle) {
-  setStyleInternal(ComputedStyle::clone(styleRef()));
-  LayoutText::styleDidChange(diff, oldStyle);
+void LayoutTextCombine::StyleDidChange(StyleDifference diff,
+                                       const ComputedStyle* old_style) {
+  SetStyleInternal(ComputedStyle::Clone(StyleRef()));
+  LayoutText::StyleDidChange(diff, old_style);
 
-  updateIsCombined();
+  UpdateIsCombined();
 }
 
-void LayoutTextCombine::setTextInternal(PassRefPtr<StringImpl> text) {
-  LayoutText::setTextInternal(std::move(text));
+void LayoutTextCombine::SetTextInternal(PassRefPtr<StringImpl> text) {
+  LayoutText::SetTextInternal(std::move(text));
 
-  updateIsCombined();
+  UpdateIsCombined();
 }
 
-float LayoutTextCombine::width(unsigned from,
+float LayoutTextCombine::Width(unsigned from,
                                unsigned length,
                                const Font& font,
-                               LayoutUnit xPosition,
+                               LayoutUnit x_position,
                                TextDirection direction,
-                               HashSet<const SimpleFontData*>* fallbackFonts,
-                               FloatRect* glyphBounds) const {
+                               HashSet<const SimpleFontData*>* fallback_fonts,
+                               FloatRect* glyph_bounds) const {
   if (!length)
     return 0;
 
-  if (hasEmptyText())
+  if (HasEmptyText())
     return 0;
 
-  if (m_isCombined)
-    return font.getFontDescription().computedSize();
+  if (is_combined_)
+    return font.GetFontDescription().ComputedSize();
 
-  return LayoutText::width(from, length, font, xPosition, direction,
-                           fallbackFonts, glyphBounds);
+  return LayoutText::Width(from, length, font, x_position, direction,
+                           fallback_fonts, glyph_bounds);
 }
 
-void scaleHorizontallyAndTranslate(GraphicsContext& context,
-                                   float scaleX,
-                                   float centerX,
-                                   float offsetX,
-                                   float offsetY) {
-  context.concatCTM(AffineTransform(
-      scaleX, 0, 0, 1, centerX * (1.0f - scaleX) + offsetX * scaleX, offsetY));
+void ScaleHorizontallyAndTranslate(GraphicsContext& context,
+                                   float scale_x,
+                                   float center_x,
+                                   float offset_x,
+                                   float offset_y) {
+  context.ConcatCTM(AffineTransform(
+      scale_x, 0, 0, 1, center_x * (1.0f - scale_x) + offset_x * scale_x,
+      offset_y));
 }
 
-void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context,
-                                                     const LayoutRect& boxRect,
+void LayoutTextCombine::TransformToInlineCoordinates(GraphicsContext& context,
+                                                     const LayoutRect& box_rect,
                                                      bool clip) const {
-  DCHECK_EQ(m_needsFontUpdate, false);
-  DCHECK(m_isCombined);
+  DCHECK_EQ(needs_font_update_, false);
+  DCHECK(is_combined_);
 
   // On input, the |boxRect| is:
   // 1. Horizontal flow, rotated from the main vertical flow coordinate using
@@ -94,81 +95,83 @@ void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context,
   // We move it so that it comes to the center of em excluding internal
   // leading.
 
-  float cellHeight = boxRect.height();
-  float internalLeading = styleRef().font().primaryFont()->internalLeading();
-  float offsetY = -internalLeading / 2;
+  float cell_height = box_rect.Height();
+  float internal_leading =
+      StyleRef().GetFont().PrimaryFont()->InternalLeading();
+  float offset_y = -internal_leading / 2;
   float width;
-  if (m_scaleX >= 1.0f) {
+  if (scale_x_ >= 1.0f) {
     // Fast path, more than 90% of cases
-    DCHECK_EQ(m_scaleX, 1.0f);
-    float offsetX = (cellHeight - m_combinedTextWidth) / 2;
-    context.concatCTM(AffineTransform::translation(offsetX, offsetY));
-    width = boxRect.width();
+    DCHECK_EQ(scale_x_, 1.0f);
+    float offset_x = (cell_height - combined_text_width_) / 2;
+    context.ConcatCTM(AffineTransform::Translation(offset_x, offset_y));
+    width = box_rect.Width();
   } else {
-    DCHECK_GE(m_scaleX, 0.0f);
-    float centerX = boxRect.x() + cellHeight / 2;
-    width = m_combinedTextWidth / m_scaleX;
-    float offsetX = (cellHeight - width) / 2;
-    scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX, offsetY);
+    DCHECK_GE(scale_x_, 0.0f);
+    float center_x = box_rect.X() + cell_height / 2;
+    width = combined_text_width_ / scale_x_;
+    float offset_x = (cell_height - width) / 2;
+    ScaleHorizontallyAndTranslate(context, scale_x_, center_x, offset_x,
+                                  offset_y);
   }
 
   if (clip)
-    context.clip(FloatRect(boxRect.x(), boxRect.y(), width, cellHeight));
+    context.Clip(FloatRect(box_rect.X(), box_rect.Y(), width, cell_height));
 }
 
-void LayoutTextCombine::updateIsCombined() {
+void LayoutTextCombine::UpdateIsCombined() {
   // CSS3 spec says text-combine works only in vertical writing mode.
-  m_isCombined = !style()->isHorizontalWritingMode()
+  is_combined_ = !Style()->IsHorizontalWritingMode()
                  // Nothing to combine.
-                 && !hasEmptyText();
+                 && !HasEmptyText();
 
-  if (m_isCombined)
-    m_needsFontUpdate = true;
+  if (is_combined_)
+    needs_font_update_ = true;
 }
 
-void LayoutTextCombine::updateFont() {
-  if (!m_needsFontUpdate)
+void LayoutTextCombine::UpdateFont() {
+  if (!needs_font_update_)
     return;
 
-  m_needsFontUpdate = false;
+  needs_font_update_ = false;
 
-  if (!m_isCombined)
+  if (!is_combined_)
     return;
 
   unsigned offset = 0;
-  TextRun run = constructTextRun(originalFont(), this, offset, textLength(),
-                                 styleRef(), style()->direction());
-  FontDescription description = originalFont().getFontDescription();
-  float emWidth = description.computedSize();
-  if (!(style()->textDecorationsInEffect() &
-        (TextDecorationUnderline | TextDecorationOverline)))
-    emWidth *= textCombineMargin;
+  TextRun run = ConstructTextRun(OriginalFont(), this, offset, TextLength(),
+                                 StyleRef(), Style()->Direction());
+  FontDescription description = OriginalFont().GetFontDescription();
+  float em_width = description.ComputedSize();
+  if (!(Style()->TextDecorationsInEffect() &
+        (kTextDecorationUnderline | kTextDecorationOverline)))
+    em_width *= kTextCombineMargin;
 
   // We are going to draw combined text horizontally.
-  description.setOrientation(FontOrientation::Horizontal);
-  m_combinedTextWidth = originalFont().width(run);
+  description.SetOrientation(FontOrientation::kHorizontal);
+  combined_text_width_ = OriginalFont().Width(run);
 
-  FontSelector* fontSelector = style()->font().getFontSelector();
+  FontSelector* font_selector = Style()->GetFont().GetFontSelector();
 
-  bool shouldUpdateFont = mutableStyleRef().setFontDescription(
+  bool should_update_font = MutableStyleRef().SetFontDescription(
       description);  // Need to change font orientation to horizontal.
 
-  if (m_combinedTextWidth <= emWidth) {
-    m_scaleX = 1.0f;
+  if (combined_text_width_ <= em_width) {
+    scale_x_ = 1.0f;
   } else {
     // Need to try compressed glyphs.
-    static const FontWidthVariant widthVariants[] = {HalfWidth, ThirdWidth,
-                                                     QuarterWidth};
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(widthVariants); ++i) {
-      description.setWidthVariant(widthVariants[i]);
-      Font compressedFont = Font(description);
-      compressedFont.update(fontSelector);
-      float runWidth = compressedFont.width(run);
-      if (runWidth <= emWidth) {
-        m_combinedTextWidth = runWidth;
+    static const FontWidthVariant kWidthVariants[] = {kHalfWidth, kThirdWidth,
+                                                      kQuarterWidth};
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kWidthVariants); ++i) {
+      description.SetWidthVariant(kWidthVariants[i]);
+      Font compressed_font = Font(description);
+      compressed_font.Update(font_selector);
+      float run_width = compressed_font.Width(run);
+      if (run_width <= em_width) {
+        combined_text_width_ = run_width;
 
         // Replace my font with the new one.
-        shouldUpdateFont = mutableStyleRef().setFontDescription(description);
+        should_update_font = MutableStyleRef().SetFontDescription(description);
         break;
       }
     }
@@ -176,16 +179,16 @@ void LayoutTextCombine::updateFont() {
     // If width > ~1em, shrink to fit within ~1em, otherwise render without
     // scaling (no expansion).
     // http://dev.w3.org/csswg/css-writing-modes-3/#text-combine-compression
-    if (m_combinedTextWidth > emWidth) {
-      m_scaleX = emWidth / m_combinedTextWidth;
-      m_combinedTextWidth = emWidth;
+    if (combined_text_width_ > em_width) {
+      scale_x_ = em_width / combined_text_width_;
+      combined_text_width_ = em_width;
     } else {
-      m_scaleX = 1.0f;
+      scale_x_ = 1.0f;
     }
   }
 
-  if (shouldUpdateFont)
-    style()->font().update(fontSelector);
+  if (should_update_font)
+    Style()->GetFont().Update(font_selector);
 }
 
 }  // namespace blink

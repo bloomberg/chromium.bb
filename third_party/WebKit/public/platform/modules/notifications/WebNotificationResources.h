@@ -26,7 +26,7 @@ struct WebNotificationResources {
 
   // Icons for the actions. A bitmap may be empty if the developer did not
   // provide an icon, or fetching of the icon failed.
-  WebVector<SkBitmap> actionIcons;
+  WebVector<SkBitmap> action_icons;
 };
 
 }  // namespace blink

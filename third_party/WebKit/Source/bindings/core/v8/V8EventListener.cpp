@@ -38,15 +38,15 @@
 
 namespace blink {
 
-V8EventListener::V8EventListener(bool isAttribute, ScriptState* scriptState)
-    : V8AbstractEventListener(isAttribute,
-                              scriptState->world(),
-                              scriptState->isolate()) {}
+V8EventListener::V8EventListener(bool is_attribute, ScriptState* script_state)
+    : V8AbstractEventListener(is_attribute,
+                              script_state->World(),
+                              script_state->GetIsolate()) {}
 
-v8::Local<v8::Function> V8EventListener::getListenerFunction(
-    ScriptState* scriptState) {
+v8::Local<v8::Function> V8EventListener::GetListenerFunction(
+    ScriptState* script_state) {
   v8::Local<v8::Object> listener =
-      getListenerObject(scriptState->getExecutionContext());
+      GetListenerObject(script_state->GetExecutionContext());
 
   // Has the listener been disposed?
   if (listener.IsEmpty())
@@ -59,12 +59,13 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(
   // attributes in HTML) has [TreatNonObjectAsNull], which implies that
   // non-function objects should be treated as no-op functions that return
   // undefined.
-  if (isAttribute())
+  if (IsAttribute())
     return v8::Local<v8::Function>();
 
   // Getting the handleEvent property can runs script in the getter.
-  if (ScriptForbiddenScope::isScriptForbidden()) {
-    V8ThrowException::throwError(isolate(), "Script execution is forbidden.");
+  if (ScriptForbiddenScope::IsScriptForbidden()) {
+    V8ThrowException::ThrowError(GetIsolate(),
+                                 "Script execution is forbidden.");
     return v8::Local<v8::Function>();
   }
 
@@ -73,8 +74,8 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(
     // handleEvent property and that the value is a function.
     v8::Local<v8::Value> property;
     if (listener
-            ->Get(scriptState->context(),
-                  v8AtomicString(isolate(), "handleEvent"))
+            ->Get(script_state->GetContext(),
+                  V8AtomicString(GetIsolate(), "handleEvent"))
             .ToLocal(&property) &&
         property->IsFunction())
       return v8::Local<v8::Function>::Cast(property);
@@ -83,35 +84,36 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(
   return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::callListenerFunction(
-    ScriptState* scriptState,
-    v8::Local<v8::Value> jsEvent,
+v8::Local<v8::Value> V8EventListener::CallListenerFunction(
+    ScriptState* script_state,
+    v8::Local<v8::Value> js_event,
     Event* event) {
-  ASSERT(!jsEvent.IsEmpty());
-  v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
-  v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
-  if (handlerFunction.IsEmpty() || receiver.IsEmpty())
+  ASSERT(!js_event.IsEmpty());
+  v8::Local<v8::Function> handler_function = GetListenerFunction(script_state);
+  v8::Local<v8::Object> receiver = GetReceiverObject(script_state, event);
+  if (handler_function.IsEmpty() || receiver.IsEmpty())
     return v8::Local<v8::Value>();
 
-  if (!scriptState->getExecutionContext()->isDocument())
+  if (!script_state->GetExecutionContext()->IsDocument())
     return v8::Local<v8::Value>();
 
-  LocalFrame* frame = toDocument(scriptState->getExecutionContext())->frame();
+  LocalFrame* frame =
+      ToDocument(script_state->GetExecutionContext())->GetFrame();
   if (!frame)
     return v8::Local<v8::Value>();
 
   // TODO(jochen): Consider moving this check into canExecuteScripts.
   // http://crbug.com/608641
-  if (scriptState->world().isMainWorld() &&
-      !scriptState->getExecutionContext()->canExecuteScripts(
-          AboutToExecuteScript))
+  if (script_state->World().IsMainWorld() &&
+      !script_state->GetExecutionContext()->CanExecuteScripts(
+          kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
-  v8::Local<v8::Value> parameters[1] = {jsEvent};
+  v8::Local<v8::Value> parameters[1] = {js_event};
   v8::Local<v8::Value> result;
-  if (!V8ScriptRunner::callFunction(handlerFunction, frame->document(),
+  if (!V8ScriptRunner::CallFunction(handler_function, frame->GetDocument(),
                                     receiver, WTF_ARRAY_LENGTH(parameters),
-                                    parameters, scriptState->isolate())
+                                    parameters, script_state->GetIsolate())
            .ToLocal(&result))
     return v8::Local<v8::Value>();
   return result;

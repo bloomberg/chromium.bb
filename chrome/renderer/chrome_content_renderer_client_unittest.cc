@@ -68,8 +68,8 @@ const char kChatAppURL[] = "https://talkgadget.google.com/hangouts/foo";
 
 #if !defined(DISABLE_NACL)
 bool AllowsDevInterfaces(const WebPluginParams& params) {
-  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    if (params.attributeNames[i] == "@dev")
+  for (size_t i = 0; i < params.attribute_names.size(); ++i) {
+    if (params.attribute_names[i] == "@dev")
       return true;
   }
   return false;
@@ -78,10 +78,10 @@ bool AllowsDevInterfaces(const WebPluginParams& params) {
 void AddFakeDevAttribute(WebPluginParams* params) {
   WebVector<WebString> names(static_cast<size_t>(1));
   WebVector<WebString> values(static_cast<size_t>(1));
-  names[0] = WebString::fromUTF8("@dev");
+  names[0] = WebString::FromUTF8("@dev");
   values[0] = WebString();
-  params->attributeNames.swap(names);
-  params->attributeValues.swap(values);
+  params->attribute_names.Swap(names);
+  params->attribute_values.Swap(values);
 }
 #endif
 
@@ -387,10 +387,10 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
 TEST_F(ChromeContentRendererClientTest, AddImageContextMenuProperties) {
   ChromeContentRendererClient client;
   blink::WebURLResponse web_url_response;
-  web_url_response.addHTTPHeaderField(
-      blink::WebString::fromUTF8(
+  web_url_response.AddHTTPHeaderField(
+      blink::WebString::FromUTF8(
           data_reduction_proxy::chrome_proxy_content_transform_header()),
-      blink::WebString::fromUTF8(
+      blink::WebString::FromUTF8(
           data_reduction_proxy::empty_image_directive()));
   std::map<std::string, std::string> properties;
   client.AddImageContextMenuProperties(web_url_response, &properties);

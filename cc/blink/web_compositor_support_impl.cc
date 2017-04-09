@@ -36,33 +36,33 @@ WebCompositorSupportImpl::WebCompositorSupportImpl() {
 WebCompositorSupportImpl::~WebCompositorSupportImpl() {
 }
 
-std::unique_ptr<WebLayer> WebCompositorSupportImpl::createLayer() {
+std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayer() {
   return base::MakeUnique<WebLayerImpl>();
 }
 
-std::unique_ptr<WebLayer> WebCompositorSupportImpl::createLayerFromCCLayer(
+std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayerFromCCLayer(
     cc::Layer* layer) {
   return base::MakeUnique<WebLayerImpl>(layer);
 }
 
-std::unique_ptr<WebContentLayer> WebCompositorSupportImpl::createContentLayer(
+std::unique_ptr<WebContentLayer> WebCompositorSupportImpl::CreateContentLayer(
     WebContentLayerClient* client) {
   return base::MakeUnique<WebContentLayerImpl>(client);
 }
 
 std::unique_ptr<WebExternalTextureLayer>
-WebCompositorSupportImpl::createExternalTextureLayer(
+WebCompositorSupportImpl::CreateExternalTextureLayer(
     cc::TextureLayerClient* client) {
   return base::MakeUnique<WebExternalTextureLayerImpl>(client);
 }
 
 std::unique_ptr<blink::WebImageLayer>
-WebCompositorSupportImpl::createImageLayer() {
+WebCompositorSupportImpl::CreateImageLayer() {
   return base::MakeUnique<WebImageLayerImpl>();
 }
 
 std::unique_ptr<WebScrollbarLayer>
-WebCompositorSupportImpl::createScrollbarLayer(
+WebCompositorSupportImpl::CreateScrollbarLayer(
     std::unique_ptr<WebScrollbar> scrollbar,
     WebScrollbarThemePainter painter,
     std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
@@ -72,7 +72,7 @@ WebCompositorSupportImpl::createScrollbarLayer(
 }
 
 std::unique_ptr<WebScrollbarLayer>
-WebCompositorSupportImpl::createOverlayScrollbarLayer(
+WebCompositorSupportImpl::CreateOverlayScrollbarLayer(
     std::unique_ptr<WebScrollbar> scrollbar,
     WebScrollbarThemePainter painter,
     std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
@@ -82,7 +82,7 @@ WebCompositorSupportImpl::createOverlayScrollbarLayer(
 }
 
 std::unique_ptr<WebScrollbarLayer>
-WebCompositorSupportImpl::createSolidColorScrollbarLayer(
+WebCompositorSupportImpl::CreateSolidColorScrollbarLayer(
     WebScrollbar::Orientation orientation,
     int thumb_thickness,
     int track_start,

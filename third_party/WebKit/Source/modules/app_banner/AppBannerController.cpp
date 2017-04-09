@@ -20,41 +20,41 @@
 
 namespace blink {
 
-AppBannerController::AppBannerController(LocalFrame& frame) : m_frame(frame) {}
+AppBannerController::AppBannerController(LocalFrame& frame) : frame_(frame) {}
 
-void AppBannerController::bindMojoRequest(
+void AppBannerController::BindMojoRequest(
     LocalFrame* frame,
     mojom::blink::AppBannerControllerRequest request) {
   DCHECK(frame);
 
-  mojo::MakeStrongBinding(WTF::wrapUnique(new AppBannerController(*frame)),
+  mojo::MakeStrongBinding(WTF::WrapUnique(new AppBannerController(*frame)),
                           std::move(request));
 }
 
 void AppBannerController::BannerPromptRequest(
-    mojom::blink::AppBannerServicePtr servicePtr,
-    mojom::blink::AppBannerEventRequest eventRequest,
+    mojom::blink::AppBannerServicePtr service_ptr,
+    mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms,
     const BannerPromptRequestCallback& callback) {
-  if (!m_frame || !m_frame->document()) {
+  if (!frame_ || !frame_->GetDocument()) {
     callback.Run(mojom::blink::AppBannerPromptReply::NONE, "");
     return;
   }
 
   mojom::AppBannerPromptReply reply =
-      m_frame->domWindow()->dispatchEvent(BeforeInstallPromptEvent::create(
-          EventTypeNames::beforeinstallprompt, *m_frame, std::move(servicePtr),
-          std::move(eventRequest), platforms)) ==
-              DispatchEventResult::NotCanceled
+      frame_->DomWindow()->DispatchEvent(BeforeInstallPromptEvent::Create(
+          EventTypeNames::beforeinstallprompt, *frame_, std::move(service_ptr),
+          std::move(event_request), platforms)) ==
+              DispatchEventResult::kNotCanceled
           ? mojom::AppBannerPromptReply::NONE
           : mojom::AppBannerPromptReply::CANCEL;
 
-  AtomicString referrer = SecurityPolicy::generateReferrer(
-                              m_frame->document()->getReferrerPolicy(), KURL(),
-                              m_frame->document()->outgoingReferrer())
+  AtomicString referrer = SecurityPolicy::GenerateReferrer(
+                              frame_->GetDocument()->GetReferrerPolicy(),
+                              KURL(), frame_->GetDocument()->OutgoingReferrer())
                               .referrer;
 
-  callback.Run(reply, referrer.isNull() ? emptyString : referrer);
+  callback.Run(reply, referrer.IsNull() ? g_empty_string : referrer);
 }
 
 }  // namespace blink

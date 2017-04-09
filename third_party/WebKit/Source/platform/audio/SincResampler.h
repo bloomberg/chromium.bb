@@ -48,54 +48,54 @@ class PLATFORM_EXPORT SincResampler {
   // kernelSize can be adjusted for quality (higher is better)
   // numberOfKernelOffsets is used for interpolation and is the number of
   // sub-sample kernel shifts.
-  SincResampler(double scaleFactor,
-                unsigned kernelSize = 32,
-                unsigned numberOfKernelOffsets = 32);
+  SincResampler(double scale_factor,
+                unsigned kernel_size = 32,
+                unsigned number_of_kernel_offsets = 32);
 
   // Processes numberOfSourceFrames from source to produce numberOfSourceFrames
   // / scaleFactor frames in destination.
-  void process(const float* source,
+  void Process(const float* source,
                float* destination,
-               unsigned numberOfSourceFrames);
+               unsigned number_of_source_frames);
 
   // Process with input source callback function for streaming applications.
-  void process(AudioSourceProvider*,
+  void Process(AudioSourceProvider*,
                float* destination,
-               size_t framesToProcess);
+               size_t frames_to_process);
 
  protected:
-  void initializeKernel();
-  void consumeSource(float* buffer, unsigned numberOfSourceFrames);
+  void InitializeKernel();
+  void ConsumeSource(float* buffer, unsigned number_of_source_frames);
 
-  double m_scaleFactor;
-  unsigned m_kernelSize;
-  unsigned m_numberOfKernelOffsets;
+  double scale_factor_;
+  unsigned kernel_size_;
+  unsigned number_of_kernel_offsets_;
 
   // m_kernelStorage has m_numberOfKernelOffsets kernels back-to-back, each of
   // size m_kernelSize.  The kernel offsets are sub-sample shifts of a windowed
   // sinc() shifted from 0.0 to 1.0 sample.
-  AudioFloatArray m_kernelStorage;
+  AudioFloatArray kernel_storage_;
 
   // m_virtualSourceIndex is an index on the source input buffer with sub-sample
   // precision.  It must be double precision to avoid drift.
-  double m_virtualSourceIndex;
+  double virtual_source_index_;
 
   // This is the number of destination frames we generate per processing pass on
   // the buffer.
-  unsigned m_blockSize;
+  unsigned block_size_;
 
   // Source is copied into this buffer for each processing pass.
-  AudioFloatArray m_inputBuffer;
+  AudioFloatArray input_buffer_;
 
-  const float* m_source;
-  unsigned m_sourceFramesAvailable;
+  const float* source_;
+  unsigned source_frames_available_;
 
   // m_sourceProvider is used to provide the audio input stream to the
   // resampler.
-  AudioSourceProvider* m_sourceProvider;
+  AudioSourceProvider* source_provider_;
 
   // The buffer is primed once at the very beginning of processing.
-  bool m_isBufferPrimed;
+  bool is_buffer_primed_;
 };
 
 }  // namespace blink

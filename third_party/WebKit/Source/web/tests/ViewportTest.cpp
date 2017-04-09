@@ -52,2983 +52,2984 @@
 
 namespace blink {
 
-using blink::testing::runPendingTasks;
+using blink::testing::RunPendingTasks;
 
 class ViewportTest : public ::testing::Test {
  protected:
   ViewportTest()
-      : m_baseURL("http://www.test.com/"), m_chromeURL("chrome://") {}
+      : base_url_("http://www.test.com/"), chrome_url_("chrome://") {}
 
   ~ViewportTest() override {
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  void registerMockedHttpURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLLoadFromBase(
-        WebString::fromUTF8(m_baseURL), testing::webTestDataPath(),
-        WebString::fromUTF8(fileName));
+  void RegisterMockedHttpURLLoad(const std::string& file_name) {
+    URLTestHelpers::RegisterMockedURLLoadFromBase(
+        WebString::FromUTF8(base_url_), testing::WebTestDataPath(),
+        WebString::FromUTF8(file_name));
   }
 
-  void registerMockedChromeURLLoad(const std::string& fileName) {
-    URLTestHelpers::registerMockedURLLoadFromBase(
-        WebString::fromUTF8(m_chromeURL), testing::webTestDataPath(),
-        WebString::fromUTF8(fileName));
+  void RegisterMockedChromeURLLoad(const std::string& file_name) {
+    URLTestHelpers::RegisterMockedURLLoadFromBase(
+        WebString::FromUTF8(chrome_url_), testing::WebTestDataPath(),
+        WebString::FromUTF8(file_name));
   }
 
-  void executeScript(WebFrame* frame, const WebString& code) {
-    frame->executeScript(WebScriptSource(code));
-    runPendingTasks();
+  void ExecuteScript(WebFrame* frame, const WebString& code) {
+    frame->ExecuteScript(WebScriptSource(code));
+    RunPendingTasks();
   }
 
-  std::string m_baseURL;
-  std::string m_chromeURL;
+  std::string base_url_;
+  std::string chrome_url_;
 };
 
-static void setViewportSettings(WebSettings* settings) {
-  settings->setViewportEnabled(true);
-  settings->setViewportMetaEnabled(true);
-  settings->setMainFrameResizesAreOrientationChanges(true);
+static void SetViewportSettings(WebSettings* settings) {
+  settings->SetViewportEnabled(true);
+  settings->SetViewportMetaEnabled(true);
+  settings->SetMainFrameResizesAreOrientationChanges(true);
 }
 
-static PageScaleConstraints runViewportTest(Page* page,
-                                            int initialWidth,
-                                            int initialHeight) {
-  IntSize initialViewportSize(initialWidth, initialHeight);
-  toLocalFrame(page->mainFrame())
-      ->view()
-      ->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
-  ViewportDescription description = page->viewportDescription();
-  PageScaleConstraints constraints = description.resolve(
-      FloatSize(initialViewportSize), Length(980, blink::Fixed));
+static PageScaleConstraints RunViewportTest(Page* page,
+                                            int initial_width,
+                                            int initial_height) {
+  IntSize initial_viewport_size(initial_width, initial_height);
+  ToLocalFrame(page->MainFrame())
+      ->View()
+      ->SetFrameRect(IntRect(IntPoint::Zero(), initial_viewport_size));
+  ViewportDescription description = page->GetViewportDescription();
+  PageScaleConstraints constraints = description.Resolve(
+      FloatSize(initial_viewport_size), Length(980, blink::kFixed));
 
-  constraints.fitToContentsWidth(constraints.layoutSize.width(), initialWidth);
-  constraints.resolveAutoInitialScale();
+  constraints.FitToContentsWidth(constraints.layout_size.Width(),
+                                 initial_width);
+  constraints.ResolveAutoInitialScale();
   return constraints;
 }
 
 TEST_F(ViewportTest, viewport1) {
-  registerMockedHttpURLLoad("viewport/viewport-1.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-1.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-1.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-1.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport2) {
-  registerMockedHttpURLLoad("viewport/viewport-2.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-2.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-2.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-2.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(0.32f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.32f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(0.32f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.32f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport3) {
-  registerMockedHttpURLLoad("viewport/viewport-3.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-3.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-3.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-3.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport4) {
-  registerMockedHttpURLLoad("viewport/viewport-4.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-4.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-4.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-4.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(160, constraints.layoutSize.width());
-  EXPECT_EQ(176, constraints.layoutSize.height());
-  EXPECT_NEAR(2.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(160, constraints.layout_size.Width());
+  EXPECT_EQ(176, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport5) {
-  registerMockedHttpURLLoad("viewport/viewport-5.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-5.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-5.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-5.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport6) {
-  registerMockedHttpURLLoad("viewport/viewport-6.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-6.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-6.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-6.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(200, constraints.layoutSize.width());
-  EXPECT_EQ(220, constraints.layoutSize.height());
-  EXPECT_NEAR(1.6f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.6f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(200, constraints.layout_size.Width());
+  EXPECT_EQ(220, constraints.layout_size.Height());
+  EXPECT_NEAR(1.6f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.6f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport7) {
-  registerMockedHttpURLLoad("viewport/viewport-7.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-7.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-7.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-7.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport8) {
-  registerMockedHttpURLLoad("viewport/viewport-8.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-8.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-8.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-8.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport9) {
-  registerMockedHttpURLLoad("viewport/viewport-9.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-9.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-9.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-9.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport10) {
-  registerMockedHttpURLLoad("viewport/viewport-10.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-10.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-10.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-10.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport11) {
-  registerMockedHttpURLLoad("viewport/viewport-11.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-11.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-11.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-11.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.32f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.32f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.32f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.32f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport12) {
-  registerMockedHttpURLLoad("viewport/viewport-12.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-12.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-12.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-12.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport13) {
-  registerMockedHttpURLLoad("viewport/viewport-13.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-13.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-13.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-13.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport14) {
-  registerMockedHttpURLLoad("viewport/viewport-14.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-14.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-14.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-14.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport15) {
-  registerMockedHttpURLLoad("viewport/viewport-15.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-15.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-15.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-15.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport16) {
-  registerMockedHttpURLLoad("viewport/viewport-16.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-16.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-16.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-16.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport17) {
-  registerMockedHttpURLLoad("viewport/viewport-17.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-17.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-17.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-17.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport18) {
-  registerMockedHttpURLLoad("viewport/viewport-18.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-18.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-18.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-18.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport19) {
-  registerMockedHttpURLLoad("viewport/viewport-19.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-19.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-19.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-19.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(160, constraints.layoutSize.width());
-  EXPECT_EQ(176, constraints.layoutSize.height());
-  EXPECT_NEAR(2.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(160, constraints.layout_size.Width());
+  EXPECT_EQ(176, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport20) {
-  registerMockedHttpURLLoad("viewport/viewport-20.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-20.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-20.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-20.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport21) {
-  registerMockedHttpURLLoad("viewport/viewport-21.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-21.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-21.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-21.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport22) {
-  registerMockedHttpURLLoad("viewport/viewport-22.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-22.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-22.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-22.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport23) {
-  registerMockedHttpURLLoad("viewport/viewport-23.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-23.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-23.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-23.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(3.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(3.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(3.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(3.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport24) {
-  registerMockedHttpURLLoad("viewport/viewport-24.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-24.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-24.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-24.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(4.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(4.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(4.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(4.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(4.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(4.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport25) {
-  registerMockedHttpURLLoad("viewport/viewport-25.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-25.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-25.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-25.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport26) {
-  registerMockedHttpURLLoad("viewport/viewport-26.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-26.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-26.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-26.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(8.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(8.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(9.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(8.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(8.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(9.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport27) {
-  registerMockedHttpURLLoad("viewport/viewport-27.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-27.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-27.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-27.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.32f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.32f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.32f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.32f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport28) {
-  registerMockedHttpURLLoad("viewport/viewport-28.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-28.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-28.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-28.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(352, constraints.layoutSize.width());
-  EXPECT_NEAR(387.2, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(0.91f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.91f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(352, constraints.layout_size.Width());
+  EXPECT_NEAR(387.2, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(0.91f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.91f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport29) {
-  registerMockedHttpURLLoad("viewport/viewport-29.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-29.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-29.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-29.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(700, constraints.layoutSize.width());
-  EXPECT_EQ(770, constraints.layoutSize.height());
-  EXPECT_NEAR(0.46f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.46f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(700, constraints.layout_size.Width());
+  EXPECT_EQ(770, constraints.layout_size.Height());
+  EXPECT_NEAR(0.46f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.46f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport30) {
-  registerMockedHttpURLLoad("viewport/viewport-30.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-30.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-30.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-30.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(200, constraints.layoutSize.width());
-  EXPECT_EQ(220, constraints.layoutSize.height());
-  EXPECT_NEAR(1.6f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.6f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(200, constraints.layout_size.Width());
+  EXPECT_EQ(220, constraints.layout_size.Height());
+  EXPECT_NEAR(1.6f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.6f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport31) {
-  registerMockedHttpURLLoad("viewport/viewport-31.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-31.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-31.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-31.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(700, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(700, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport32) {
-  registerMockedHttpURLLoad("viewport/viewport-32.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-32.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-32.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-32.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(200, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(200, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport33) {
-  registerMockedHttpURLLoad("viewport/viewport-33.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-33.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-33.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-33.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(2.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport34) {
-  registerMockedHttpURLLoad("viewport/viewport-34.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-34.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-34.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-34.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport35) {
-  registerMockedHttpURLLoad("viewport/viewport-35.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-35.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-35.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-35.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport36) {
-  registerMockedHttpURLLoad("viewport/viewport-36.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-36.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-36.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-36.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_NEAR(636.36, constraints.layoutSize.width(), 0.01f);
-  EXPECT_EQ(700, constraints.layoutSize.height());
-  EXPECT_NEAR(1.6f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.50f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(636.36, constraints.layout_size.Width(), 0.01f);
+  EXPECT_EQ(700, constraints.layout_size.Height());
+  EXPECT_NEAR(1.6f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.50f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport37) {
-  registerMockedHttpURLLoad("viewport/viewport-37.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-37.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-37.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-37.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport38) {
-  registerMockedHttpURLLoad("viewport/viewport-38.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-38.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-38.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-38.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport39) {
-  registerMockedHttpURLLoad("viewport/viewport-39.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-39.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-39.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-39.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(200, constraints.layoutSize.width());
-  EXPECT_EQ(700, constraints.layoutSize.height());
-  EXPECT_NEAR(1.6f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.6f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(200, constraints.layout_size.Width());
+  EXPECT_EQ(700, constraints.layout_size.Height());
+  EXPECT_NEAR(1.6f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.6f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport40) {
-  registerMockedHttpURLLoad("viewport/viewport-40.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-40.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-40.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-40.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(700, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(0.46f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.46f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(700, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(0.46f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.46f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport41) {
-  registerMockedHttpURLLoad("viewport/viewport-41.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-41.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-41.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-41.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1000, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.32f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1000, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.32f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport42) {
-  registerMockedHttpURLLoad("viewport/viewport-42.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-42.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-42.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-42.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(1000, constraints.layoutSize.height());
-  EXPECT_NEAR(2.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(1000, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport43) {
-  registerMockedHttpURLLoad("viewport/viewport-43.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-43.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-43.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-43.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport44) {
-  registerMockedHttpURLLoad("viewport/viewport-44.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-44.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-44.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-44.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(10000, constraints.layoutSize.width());
-  EXPECT_EQ(10000, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(10000, constraints.layout_size.Width());
+  EXPECT_EQ(10000, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport45) {
-  registerMockedHttpURLLoad("viewport/viewport-45.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-45.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-45.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-45.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(3200, constraints.layoutSize.width());
-  EXPECT_EQ(3520, constraints.layoutSize.height());
-  EXPECT_NEAR(0.1f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.1f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(0.1f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(3200, constraints.layout_size.Width());
+  EXPECT_EQ(3520, constraints.layout_size.Height());
+  EXPECT_NEAR(0.1f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.1f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.1f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport46) {
-  registerMockedHttpURLLoad("viewport/viewport-46.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-46.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-46.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-46.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(32, constraints.layoutSize.width());
-  EXPECT_NEAR(35.2, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(32, constraints.layout_size.Width());
+  EXPECT_NEAR(35.2, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport47) {
-  registerMockedHttpURLLoad("viewport/viewport-47.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-47.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-47.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-47.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(3000, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(3000, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport48) {
-  registerMockedHttpURLLoad("viewport/viewport-48.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-48.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-48.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-48.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(3000, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(3000, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport49) {
-  registerMockedHttpURLLoad("viewport/viewport-49.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-49.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-49.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-49.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport50) {
-  registerMockedHttpURLLoad("viewport/viewport-50.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-50.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-50.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-50.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport51) {
-  registerMockedHttpURLLoad("viewport/viewport-51.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-51.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-51.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-51.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport52) {
-  registerMockedHttpURLLoad("viewport/viewport-52.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-52.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-52.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-52.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport53) {
-  registerMockedHttpURLLoad("viewport/viewport-53.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-53.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-53.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-53.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport54) {
-  registerMockedHttpURLLoad("viewport/viewport-54.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-54.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-54.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-54.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport55) {
-  registerMockedHttpURLLoad("viewport/viewport-55.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-55.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-55.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-55.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport56) {
-  registerMockedHttpURLLoad("viewport/viewport-56.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-56.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-56.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-56.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport57) {
-  registerMockedHttpURLLoad("viewport/viewport-57.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-57.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-57.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-57.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport58) {
-  registerMockedHttpURLLoad("viewport/viewport-58.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-58.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-58.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-58.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(3200, constraints.layoutSize.width());
-  EXPECT_EQ(3520, constraints.layoutSize.height());
-  EXPECT_NEAR(0.1f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.1f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(3200, constraints.layout_size.Width());
+  EXPECT_EQ(3520, constraints.layout_size.Height());
+  EXPECT_NEAR(0.1f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.1f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport59) {
-  registerMockedHttpURLLoad("viewport/viewport-59.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-59.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-59.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-59.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport60) {
-  registerMockedHttpURLLoad("viewport/viewport-60.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-60.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-60.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-60.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(32, constraints.layoutSize.width());
-  EXPECT_NEAR(35.2, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(32, constraints.layout_size.Width());
+  EXPECT_NEAR(35.2, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport61) {
-  registerMockedHttpURLLoad("viewport/viewport-61.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-61.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-61.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-61.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport62) {
-  registerMockedHttpURLLoad("viewport/viewport-62.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-62.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-62.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-62.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport63) {
-  registerMockedHttpURLLoad("viewport/viewport-63.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-63.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-63.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-63.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport64) {
-  registerMockedHttpURLLoad("viewport/viewport-64.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-64.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-64.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-64.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport65) {
-  registerMockedHttpURLLoad("viewport/viewport-65.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-65.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-65.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-65.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport66) {
-  registerMockedHttpURLLoad("viewport/viewport-66.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-66.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-66.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-66.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport67) {
-  registerMockedHttpURLLoad("viewport/viewport-67.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-67.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-67.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-67.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport68) {
-  registerMockedHttpURLLoad("viewport/viewport-68.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-68.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-68.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-68.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport69) {
-  registerMockedHttpURLLoad("viewport/viewport-69.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-69.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-69.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-69.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport70) {
-  registerMockedHttpURLLoad("viewport/viewport-70.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-70.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-70.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-70.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport71) {
-  registerMockedHttpURLLoad("viewport/viewport-71.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-71.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-71.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-71.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport72) {
-  registerMockedHttpURLLoad("viewport/viewport-72.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-72.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-72.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-72.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport73) {
-  registerMockedHttpURLLoad("viewport/viewport-73.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-73.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-73.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-73.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport74) {
-  registerMockedHttpURLLoad("viewport/viewport-74.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-74.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-74.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-74.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport75) {
-  registerMockedHttpURLLoad("viewport/viewport-75.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-75.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-75.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-75.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport76) {
-  registerMockedHttpURLLoad("viewport/viewport-76.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-76.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-76.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-76.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(32, constraints.layoutSize.width());
-  EXPECT_NEAR(35.2, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(32, constraints.layout_size.Width());
+  EXPECT_NEAR(35.2, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport77) {
-  registerMockedHttpURLLoad("viewport/viewport-77.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-77.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-77.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-77.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1280, constraints.layoutSize.width());
-  EXPECT_EQ(1408, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(1280, constraints.layout_size.Width());
+  EXPECT_EQ(1408, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport78) {
-  registerMockedHttpURLLoad("viewport/viewport-78.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-78.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-78.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-78.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(100, constraints.layoutSize.width());
-  EXPECT_EQ(110, constraints.layoutSize.height());
-  EXPECT_NEAR(3.2f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(3.2f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(100, constraints.layout_size.Width());
+  EXPECT_EQ(110, constraints.layout_size.Height());
+  EXPECT_NEAR(3.2f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(3.2f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport79) {
-  registerMockedHttpURLLoad("viewport/viewport-79.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-79.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-79.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-79.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport80) {
-  registerMockedHttpURLLoad("viewport/viewport-80.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-80.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-80.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-80.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport81) {
-  registerMockedHttpURLLoad("viewport/viewport-81.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-81.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-81.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-81.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(3000, constraints.layoutSize.width());
-  EXPECT_EQ(3300, constraints.layoutSize.height());
-  EXPECT_NEAR(0.25f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.25f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(3000, constraints.layout_size.Width());
+  EXPECT_EQ(3300, constraints.layout_size.Height());
+  EXPECT_NEAR(0.25f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.25f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport82) {
-  registerMockedHttpURLLoad("viewport/viewport-82.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-82.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-82.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-82.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport83) {
-  registerMockedHttpURLLoad("viewport/viewport-83.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-83.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-83.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-83.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport84) {
-  registerMockedHttpURLLoad("viewport/viewport-84.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-84.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-84.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-84.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_EQ(480, constraints.layoutSize.height());
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_EQ(480, constraints.layout_size.Height());
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport85) {
-  registerMockedHttpURLLoad("viewport/viewport-85.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-85.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-85.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-85.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(540, constraints.layoutSize.width());
-  EXPECT_EQ(594, constraints.layoutSize.height());
-  EXPECT_NEAR(0.59f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.59f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(540, constraints.layout_size.Width());
+  EXPECT_EQ(594, constraints.layout_size.Height());
+  EXPECT_NEAR(0.59f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.59f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport86) {
-  registerMockedHttpURLLoad("viewport/viewport-86.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-86.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-86.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-86.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_NEAR(457.14, constraints.layoutSize.width(), 0.01f);
-  EXPECT_NEAR(502.86, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(0.7f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.7f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(457.14, constraints.layout_size.Width(), 0.01f);
+  EXPECT_NEAR(502.86, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.7f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.7f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport87) {
-  registerMockedHttpURLLoad("viewport/viewport-87.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-87.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-87.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-87.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport88) {
-  registerMockedHttpURLLoad("viewport/viewport-88.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-88.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-88.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-88.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport90) {
-  registerMockedHttpURLLoad("viewport/viewport-90.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-90.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-90.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-90.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(700, constraints.layoutSize.width());
-  EXPECT_EQ(770, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.46f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(700, constraints.layout_size.Width());
+  EXPECT_EQ(770, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.46f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport100) {
-  registerMockedHttpURLLoad("viewport/viewport-100.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-100.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-100.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-100.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport101) {
-  registerMockedHttpURLLoad("viewport/viewport-101.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-101.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-101.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-101.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport102) {
-  registerMockedHttpURLLoad("viewport/viewport-102.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-102.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-102.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-102.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport103) {
-  registerMockedHttpURLLoad("viewport/viewport-103.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-103.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-103.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-103.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport104) {
-  registerMockedHttpURLLoad("viewport/viewport-104.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-104.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-104.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-104.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport105) {
-  registerMockedHttpURLLoad("viewport/viewport-105.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-105.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-105.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-105.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport106) {
-  registerMockedHttpURLLoad("viewport/viewport-106.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-106.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-106.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-106.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport107) {
-  registerMockedHttpURLLoad("viewport/viewport-107.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-107.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-107.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-107.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport108) {
-  registerMockedHttpURLLoad("viewport/viewport-108.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-108.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-108.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-108.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport109) {
-  registerMockedHttpURLLoad("viewport/viewport-109.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-109.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-109.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-109.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport110) {
-  registerMockedHttpURLLoad("viewport/viewport-110.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-110.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-110.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-110.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport111) {
-  registerMockedHttpURLLoad("viewport/viewport-111.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-111.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-111.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-111.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport112) {
-  registerMockedHttpURLLoad("viewport/viewport-112.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-112.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-112.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-112.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport113) {
-  registerMockedHttpURLLoad("viewport/viewport-113.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-113.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-113.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-113.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport114) {
-  registerMockedHttpURLLoad("viewport/viewport-114.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-114.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-114.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-114.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport115) {
-  registerMockedHttpURLLoad("viewport/viewport-115.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-115.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-115.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-115.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport116) {
-  registerMockedHttpURLLoad("viewport/viewport-116.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-116.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-116.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-116.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(400, constraints.layoutSize.width());
-  EXPECT_EQ(440, constraints.layoutSize.height());
-  EXPECT_NEAR(0.8f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.8f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(400, constraints.layout_size.Width());
+  EXPECT_EQ(440, constraints.layout_size.Height());
+  EXPECT_NEAR(0.8f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.8f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport117) {
-  registerMockedHttpURLLoad("viewport/viewport-117.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-117.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-117.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-117.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(400, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(400, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport118) {
-  registerMockedHttpURLLoad("viewport/viewport-118.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-118.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-118.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-118.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport119) {
-  registerMockedHttpURLLoad("viewport/viewport-119.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-119.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-119.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-119.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport120) {
-  registerMockedHttpURLLoad("viewport/viewport-120.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-120.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-120.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-120.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport121) {
-  registerMockedHttpURLLoad("viewport/viewport-121.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-121.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-121.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-121.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport122) {
-  registerMockedHttpURLLoad("viewport/viewport-122.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-122.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-122.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-122.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport123) {
-  registerMockedHttpURLLoad("viewport/viewport-123.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-123.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-123.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-123.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport124) {
-  registerMockedHttpURLLoad("viewport/viewport-124.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-124.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-124.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-124.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport125) {
-  registerMockedHttpURLLoad("viewport/viewport-125.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-125.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-125.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-125.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport126) {
-  registerMockedHttpURLLoad("viewport/viewport-126.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-126.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-126.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-126.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport127) {
-  registerMockedHttpURLLoad("viewport/viewport-127.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-127.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-127.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-127.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layoutSize.width());
-  EXPECT_NEAR(70.4, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport129) {
-  registerMockedHttpURLLoad("viewport/viewport-129.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-129.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-129.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-129.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(123, constraints.layoutSize.width());
-  EXPECT_NEAR(135.3, constraints.layoutSize.height(), 0.01f);
-  EXPECT_NEAR(2.60f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.60f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(123, constraints.layout_size.Width());
+  EXPECT_NEAR(135.3, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(2.60f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.60f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport130) {
-  registerMockedHttpURLLoad("viewport/viewport-130.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-130.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-130.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-130.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport131) {
-  registerMockedHttpURLLoad("viewport/viewport-131.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-131.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-131.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-131.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.maximumScale, 0.01f);
-  EXPECT_FALSE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport132) {
-  registerMockedHttpURLLoad("viewport/viewport-132.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-132.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-132.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-132.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport133) {
-  registerMockedHttpURLLoad("viewport/viewport-133.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-133.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-133.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-133.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(10.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(10.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(10.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(10.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport134) {
-  registerMockedHttpURLLoad("viewport/viewport-134.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-134.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-134.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-134.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(160, constraints.layoutSize.width());
-  EXPECT_EQ(176, constraints.layoutSize.height());
-  EXPECT_NEAR(2.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(160, constraints.layout_size.Width());
+  EXPECT_EQ(176, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport135) {
-  registerMockedHttpURLLoad("viewport/viewport-135.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-135.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-135.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-135.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport136) {
-  registerMockedHttpURLLoad("viewport/viewport-136.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-136.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-136.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-136.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport137) {
-  registerMockedHttpURLLoad("viewport/viewport-137.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-137.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-137.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-137.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewport138) {
-  registerMockedHttpURLLoad("viewport/viewport-138.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-138.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-138.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-138.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_NEAR(123.0f, constraints.layoutSize.width(), 0.01);
-  EXPECT_NEAR(135.3f, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(2.60f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.60f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(123.0f, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(135.3f, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(2.60f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.60f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyHandheldFriendly) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-handheldfriendly.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-handheldfriendly.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
-static void setQuirkViewportSettings(WebSettings* settings) {
-  setViewportSettings(settings);
+static void SetQuirkViewportSettings(WebSettings* settings) {
+  SetViewportSettings(settings);
 
   // This quirk allows content attributes of meta viewport tags to be merged.
-  settings->setViewportMetaMergeContentQuirk(true);
+  settings->SetViewportMetaMergeContentQuirk(true);
 }
 
 TEST_F(ViewportTest, viewportLegacyMergeQuirk1) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-merge-quirk-1.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-merge-quirk-1.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-merge-quirk-1.html", true, nullptr,
-      nullptr, nullptr, setQuirkViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-merge-quirk-1.html", true, nullptr,
+      nullptr, nullptr, SetQuirkViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.maximumScale, 0.01f);
-  EXPECT_FALSE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyMergeQuirk2) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-merge-quirk-2.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-merge-quirk-2.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-merge-quirk-2.html", true, nullptr,
-      nullptr, nullptr, setQuirkViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-merge-quirk-2.html", true, nullptr,
+      nullptr, nullptr, SetQuirkViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
   // This quirk allows content attributes of meta viewport tags to be merged.
-  page->settings().setViewportMetaMergeContentQuirk(true);
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  page->GetSettings().SetViewportMetaMergeContentQuirk(true);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(500, constraints.layoutSize.width());
-  EXPECT_EQ(550, constraints.layoutSize.height());
-  EXPECT_NEAR(2.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(2.0f, constraints.maximumScale, 0.01f);
-  EXPECT_FALSE(page->viewportDescription().userZoom);
+  EXPECT_EQ(500, constraints.layout_size.Width());
+  EXPECT_EQ(550, constraints.layout_size.Height());
+  EXPECT_NEAR(2.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWithoutContent) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-mobileoptimized.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-mobileoptimized.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWith0) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized-2.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized-2.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-mobileoptimized-2.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-mobileoptimized-2.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyMobileOptimizedMetaWith400) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized-2.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized-2.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-mobileoptimized-2.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-mobileoptimized-2.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering2) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-2.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-2.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-2.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-2.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(300, constraints.layoutSize.width());
-  EXPECT_EQ(330, constraints.layoutSize.height());
-  EXPECT_NEAR(1.07f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.07f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(300, constraints.layout_size.Width());
+  EXPECT_EQ(330, constraints.layout_size.Height());
+  EXPECT_NEAR(1.07f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.07f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering3) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-3.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-3.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-3.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-3.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(300, constraints.layoutSize.width());
-  EXPECT_EQ(330, constraints.layoutSize.height());
-  EXPECT_NEAR(1.07f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.07f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(300, constraints.layout_size.Width());
+  EXPECT_EQ(330, constraints.layout_size.Height());
+  EXPECT_NEAR(1.07f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.07f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering4) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-4.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-4.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-4.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-4.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(300, constraints.layoutSize.width());
-  EXPECT_EQ(330, constraints.layoutSize.height());
-  EXPECT_NEAR(1.07f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.07f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(300, constraints.layout_size.Width());
+  EXPECT_EQ(330, constraints.layout_size.Height());
+  EXPECT_NEAR(1.07f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.07f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering5) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-5.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-5.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-5.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-5.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering6) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-6.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-6.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-6.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-6.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering7) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-7.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-7.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-7.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-7.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(300, constraints.layoutSize.width());
-  EXPECT_EQ(330, constraints.layoutSize.height());
-  EXPECT_NEAR(1.07f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.07f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(300, constraints.layout_size.Width());
+  EXPECT_EQ(330, constraints.layout_size.Height());
+  EXPECT_NEAR(1.07f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.07f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyOrdering8) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-8.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-8.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-8.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-8.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
+  Page* page = web_view_helper.WebView()->GetPage();
 
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(300, constraints.layoutSize.width());
-  EXPECT_EQ(330, constraints.layoutSize.height());
-  EXPECT_NEAR(1.07f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.07f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(300, constraints.layout_size.Width());
+  EXPECT_EQ(330, constraints.layout_size.Height());
+  EXPECT_NEAR(1.07f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.07f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyEmptyAtViewportDoesntOverrideViewportMeta) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-ordering-10.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-10.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-ordering-10.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-ordering-10.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 800, 600);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 800, 600);
 
-  EXPECT_EQ(5000, constraints.layoutSize.width());
+  EXPECT_EQ(5000, constraints.layout_size.Width());
 }
 
 TEST_F(ViewportTest, viewportLegacyDefaultValueChangedByXHTMLMP) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-xhtmlmp.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-xhtmlmp.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest,
        viewportLegacyDefaultValueChangedByXHTMLMPAndOverriddenByMeta) {
-  registerMockedHttpURLLoad(
+  RegisterMockedHttpURLLoad(
       "viewport/viewport-legacy-xhtmlmp-misplaced-doctype.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-xhtmlmp-misplaced-doctype.html",
-      true, nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-xhtmlmp-misplaced-doctype.html",
+      true, nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyXHTMLMPOrdering) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp-ordering.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp-ordering.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-xhtmlmp-ordering.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-xhtmlmp-ordering.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(640, constraints.layoutSize.width());
-  EXPECT_EQ(704, constraints.layoutSize.height());
-  EXPECT_NEAR(0.5f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.5f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(640, constraints.layout_size.Width());
+  EXPECT_EQ(704, constraints.layout_size.Height());
+  EXPECT_NEAR(0.5f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.5f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLegacyXHTMLMPRemoveAndAdd) {
-  registerMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-xhtmlmp.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-xhtmlmp.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 
-  executeScript(webViewHelper.webView()->mainFrame(),
+  ExecuteScript(web_view_helper.WebView()->MainFrame(),
                 "originalDoctype = document.doctype;"
                 "document.removeChild(originalDoctype);");
 
-  constraints = runViewportTest(page, 320, 352);
+  constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 
-  executeScript(webViewHelper.webView()->mainFrame(),
+  ExecuteScript(web_view_helper.WebView()->MainFrame(),
                 "document.insertBefore(originalDoctype, document.firstChild);");
 
-  constraints = runViewportTest(page, 320, 352);
+  constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScale) {
-  registerMockedHttpURLLoad(
+  RegisterMockedHttpURLLoad(
       "viewport/viewport-limits-adjusted-for-no-user-scale.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-limits-adjusted-for-no-user-scale.html",
-      true, nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-limits-adjusted-for-no-user-scale.html",
+      true, nullptr, nullptr, nullptr, SetViewportSettings);
 
-  webViewHelper.webView()->updateAllLifecyclePhases();
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 10, 10);
+  web_view_helper.WebView()->UpdateAllLifecyclePhases();
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 
-  EXPECT_FALSE(page->viewportDescription().userZoom);
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
 }
 
 TEST_F(ViewportTest, viewportLimitsAdjustedForUserScale) {
-  registerMockedHttpURLLoad(
+  RegisterMockedHttpURLLoad(
       "viewport/viewport-limits-adjusted-for-user-scale.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-limits-adjusted-for-user-scale.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-limits-adjusted-for-user-scale.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
 
-  webViewHelper.webView()->updateAllLifecyclePhases();
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 10, 10);
+  web_view_helper.WebView()->UpdateAllLifecyclePhases();
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 10, 10);
 
-  EXPECT_TRUE(page->viewportDescription().userZoom);
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
 }
 
 TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
-  FrameTestHelpers::WebViewHelper webViewHelper;
+  FrameTestHelpers::WebViewHelper web_view_helper;
 
-  registerMockedHttpURLLoad(
+  RegisterMockedHttpURLLoad(
       "viewport/viewport-gpu-rasterization-disabled-without-viewport.html");
-  webViewHelper.initializeAndLoad(
-      m_baseURL +
+  web_view_helper.InitializeAndLoad(
+      base_url_ +
           "viewport/viewport-gpu-rasterization-disabled-without-viewport.html",
-      true, nullptr, nullptr, nullptr, setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_FALSE(webViewHelper.webView()
-                   ->matchesHeuristicsForGpuRasterizationForTesting());
+      true, nullptr, nullptr, nullptr, SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_FALSE(web_view_helper.WebView()
+                   ->MatchesHeuristicsForGpuRasterizationForTesting());
   // Also test that setting enableViewport to false (as on desktop Chrome)
   // supports GPU raster unconditionally.
-  webViewHelper.initializeAndLoad(
-      m_baseURL +
+  web_view_helper.InitializeAndLoad(
+      base_url_ +
           "viewport/viewport-gpu-rasterization-disabled-without-viewport.html",
       true);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-gpu-rasterization.html", true, nullptr,
-      nullptr, nullptr, setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  RegisterMockedHttpURLLoad("viewport/viewport-gpu-rasterization.html");
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-gpu-rasterization.html", true, nullptr,
+      nullptr, nullptr, SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad(
+  RegisterMockedHttpURLLoad(
       "viewport/viewport-gpu-rasterization-expanded-heuristics.html");
-  webViewHelper.initializeAndLoad(
-      m_baseURL +
+  web_view_helper.InitializeAndLoad(
+      base_url_ +
           "viewport/viewport-gpu-rasterization-expanded-heuristics.html",
-      true, nullptr, nullptr, nullptr, setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+      true, nullptr, nullptr, nullptr, SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad("viewport/viewport-1.html");
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-1.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  RegisterMockedHttpURLLoad("viewport/viewport-1.html");
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-1.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad("viewport/viewport-15.html");
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-15.html", true,
-                                  nullptr, nullptr, nullptr,
-                                  setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  RegisterMockedHttpURLLoad("viewport/viewport-15.html");
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-15.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad("viewport/viewport-130.html");
-  webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-130.html",
-                                  true, nullptr, nullptr, nullptr,
-                                  setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  RegisterMockedHttpURLLoad("viewport/viewport-130.html");
+  web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-130.html",
+                                    true, nullptr, nullptr, nullptr,
+                                    SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-handheldfriendly.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-handheldfriendly.html");
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-handheldfriendly.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 
-  registerMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-legacy-handheldfriendly.html", true,
-      nullptr, nullptr, nullptr, setViewportSettings);
-  webViewHelper.webView()->resize(WebSize(640, 480));
-  EXPECT_TRUE(webViewHelper.webView()
-                  ->matchesHeuristicsForGpuRasterizationForTesting());
+  RegisterMockedHttpURLLoad("viewport/viewport-legacy-mobileoptimized.html");
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-legacy-handheldfriendly.html", true,
+      nullptr, nullptr, nullptr, SetViewportSettings);
+  web_view_helper.WebView()->Resize(WebSize(640, 480));
+  EXPECT_TRUE(web_view_helper.WebView()
+                  ->MatchesHeuristicsForGpuRasterizationForTesting());
 }
 
 class ConsoleMessageWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  virtual void didAddMessageToConsole(const WebConsoleMessage& msg,
-                                      const WebString& sourceName,
-                                      unsigned sourceLine,
-                                      const WebString& stackTrace) {
+  virtual void DidAddMessageToConsole(const WebConsoleMessage& msg,
+                                      const WebString& source_name,
+                                      unsigned source_line,
+                                      const WebString& stack_trace) {
     messages.push_back(msg);
   }
 
@@ -3036,180 +3037,185 @@ class ConsoleMessageWebFrameClient
 };
 
 TEST_F(ViewportTest, viewportWarnings1) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-1.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-1.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-1.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-1.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_TRUE(webFrameClient.messages.isEmpty());
+  EXPECT_TRUE(web_frame_client.messages.IsEmpty());
 
-  EXPECT_EQ(320, constraints.layoutSize.width());
-  EXPECT_EQ(352, constraints.layoutSize.height());
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(2.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(320, constraints.layout_size.Width());
+  EXPECT_EQ(352, constraints.layout_size.Height());
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(2.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportWarnings2) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-2.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-2.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-2.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-2.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1U, webFrameClient.messages.size());
-  EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
+  EXPECT_EQ(1U, web_frame_client.messages.size());
+  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+            web_frame_client.messages[0].level);
   EXPECT_STREQ("The key \"wwidth\" is not recognized and ignored.",
-               webFrameClient.messages[0].text.utf8().c_str());
+               web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_EQ(980, constraints.layoutSize.width());
-  EXPECT_EQ(1078, constraints.layoutSize.height());
-  EXPECT_NEAR(0.33f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(0.33f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_EQ(1078, constraints.layout_size.Height());
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportWarnings3) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-3.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-3.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-3.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-3.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1U, webFrameClient.messages.size());
-  EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
+  EXPECT_EQ(1U, web_frame_client.messages.size());
+  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+            web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "The value \"unrecognized-width\" for key \"width\" is invalid, and has "
       "been ignored.",
-      webFrameClient.messages[0].text.utf8().c_str());
+      web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_NEAR(64.0f, constraints.layoutSize.width(), 0.01);
-  EXPECT_NEAR(70.4f, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(64.0f, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(70.4f, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportWarnings4) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-4.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-4.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-4.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-4.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1U, webFrameClient.messages.size());
-  EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
+  EXPECT_EQ(1U, web_frame_client.messages.size());
+  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+            web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "The value \"123x456\" for key \"width\" was truncated to its numeric "
       "prefix.",
-      webFrameClient.messages[0].text.utf8().c_str());
+      web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_NEAR(123.0f, constraints.layoutSize.width(), 0.01);
-  EXPECT_NEAR(135.3f, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(2.60f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(2.60f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(123.0f, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(135.3f, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(2.60f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(2.60f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportWarnings5) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-5.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-5.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-5.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-5.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1U, webFrameClient.messages.size());
+  EXPECT_EQ(1U, web_frame_client.messages.size());
 
-  EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
+  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+            web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "Error parsing a meta element's content: ';' is not a valid key-value "
       "pair separator. Please use ',' instead.",
-      webFrameClient.messages[0].text.utf8().c_str());
+      web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_NEAR(320.0f, constraints.layoutSize.width(), 0.01);
-  EXPECT_NEAR(352.0f, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(1.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(1.0f, constraints.maximumScale, 0.01f);
-  EXPECT_FALSE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(320.0f, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(352.0f, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(1.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(1.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_FALSE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportWarnings6) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-6.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-6.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-6.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-6.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  PageScaleConstraints constraints = runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(1U, webFrameClient.messages.size());
-  EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
+  EXPECT_EQ(1U, web_frame_client.messages.size());
+  EXPECT_EQ(WebConsoleMessage::kLevelWarning,
+            web_frame_client.messages[0].level);
   EXPECT_STREQ(
       "The value \"\" for key \"width\" is invalid, and has been ignored.",
-      webFrameClient.messages[0].text.utf8().c_str());
+      web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_NEAR(64.0f, constraints.layoutSize.width(), 0.01);
-  EXPECT_NEAR(70.4f, constraints.layoutSize.height(), 0.01);
-  EXPECT_NEAR(5.0f, constraints.initialScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimumScale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.maximumScale, 0.01f);
-  EXPECT_TRUE(page->viewportDescription().userZoom);
+  EXPECT_NEAR(64.0f, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(70.4f, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
+  EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
 TEST_F(ViewportTest, viewportWarnings7) {
-  ConsoleMessageWebFrameClient webFrameClient;
+  ConsoleMessageWebFrameClient web_frame_client;
 
-  registerMockedHttpURLLoad("viewport/viewport-warnings-7.html");
+  RegisterMockedHttpURLLoad("viewport/viewport-warnings-7.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(
-      m_baseURL + "viewport/viewport-warnings-7.html", true, &webFrameClient,
-      nullptr, nullptr, setViewportSettings);
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(
+      base_url_ + "viewport/viewport-warnings-7.html", true, &web_frame_client,
+      nullptr, nullptr, SetViewportSettings);
 
-  Page* page = webViewHelper.webView()->page();
-  runViewportTest(page, 320, 352);
+  Page* page = web_view_helper.WebView()->GetPage();
+  RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(0U, webFrameClient.messages.size());
+  EXPECT_EQ(0U, web_frame_client.messages.size());
 }
 
 }  // namespace blink

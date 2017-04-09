@@ -42,210 +42,210 @@ class URLSchemesRegistry final {
       :  // For ServiceWorker schemes: HTTP is required because http://localhost
          // is considered secure. Additional checks are performed to ensure that
          // other http pages are filtered out.
-        serviceWorkerSchemes({"http", "https"}),
-        fetchAPISchemes({"http", "https"}),
-        allowedInReferrerSchemes({"http", "https"}) {
+        service_worker_schemes({"http", "https"}),
+        fetch_api_schemes({"http", "https"}),
+        allowed_in_referrer_schemes({"http", "https"}) {
     for (auto& scheme : url::GetLocalSchemes())
-      localSchemes.insert(scheme.c_str());
+      local_schemes.insert(scheme.c_str());
     for (auto& scheme : url::GetSecureSchemes())
-      secureSchemes.insert(scheme.c_str());
+      secure_schemes.insert(scheme.c_str());
     for (auto& scheme : url::GetNoAccessSchemes())
-      schemesWithUniqueOrigins.insert(scheme.c_str());
+      schemes_with_unique_origins.insert(scheme.c_str());
     for (auto& scheme : url::GetCORSEnabledSchemes())
-      CORSEnabledSchemes.insert(scheme.c_str());
+      cors_enabled_schemes.insert(scheme.c_str());
     for (auto& scheme : url::GetCSPBypassingSchemes()) {
-      contentSecurityPolicyBypassingSchemes.insert(
-          scheme.c_str(), SchemeRegistry::PolicyAreaAll);
+      content_security_policy_bypassing_schemes.insert(
+          scheme.c_str(), SchemeRegistry::kPolicyAreaAll);
     }
     for (auto& scheme : url::GetEmptyDocumentSchemes())
-      emptyDocumentSchemes.insert(scheme.c_str());
+      empty_document_schemes.insert(scheme.c_str());
   }
   ~URLSchemesRegistry() = default;
 
-  URLSchemesSet localSchemes;
-  URLSchemesSet displayIsolatedURLSchemes;
-  URLSchemesSet secureSchemes;
-  URLSchemesSet schemesWithUniqueOrigins;
-  URLSchemesSet emptyDocumentSchemes;
-  URLSchemesSet schemesForbiddenFromDomainRelaxation;
-  URLSchemesSet notAllowingJavascriptURLsSchemes;
-  URLSchemesSet CORSEnabledSchemes;
-  URLSchemesSet serviceWorkerSchemes;
-  URLSchemesSet fetchAPISchemes;
-  URLSchemesSet firstPartyWhenTopLevelSchemes;
+  URLSchemesSet local_schemes;
+  URLSchemesSet display_isolated_url_schemes;
+  URLSchemesSet secure_schemes;
+  URLSchemesSet schemes_with_unique_origins;
+  URLSchemesSet empty_document_schemes;
+  URLSchemesSet schemes_forbidden_from_domain_relaxation;
+  URLSchemesSet not_allowing_javascript_ur_ls_schemes;
+  URLSchemesSet cors_enabled_schemes;
+  URLSchemesSet service_worker_schemes;
+  URLSchemesSet fetch_api_schemes;
+  URLSchemesSet first_party_when_top_level_schemes;
   URLSchemesMap<SchemeRegistry::PolicyAreas>
-      contentSecurityPolicyBypassingSchemes;
-  URLSchemesSet secureContextBypassingSchemes;
-  URLSchemesSet allowedInReferrerSchemes;
+      content_security_policy_bypassing_schemes;
+  URLSchemesSet secure_context_bypassing_schemes;
+  URLSchemesSet allowed_in_referrer_schemes;
 
  private:
-  friend const URLSchemesRegistry& getURLSchemesRegistry();
-  friend URLSchemesRegistry& getMutableURLSchemesRegistry();
+  friend const URLSchemesRegistry& GetURLSchemesRegistry();
+  friend URLSchemesRegistry& GetMutableURLSchemesRegistry();
 
-  static URLSchemesRegistry& getInstance() {
+  static URLSchemesRegistry& GetInstance() {
     DEFINE_STATIC_LOCAL(URLSchemesRegistry, schemes, ());
     return schemes;
   }
 };
 
-const URLSchemesRegistry& getURLSchemesRegistry() {
-  return URLSchemesRegistry::getInstance();
+const URLSchemesRegistry& GetURLSchemesRegistry() {
+  return URLSchemesRegistry::GetInstance();
 }
 
-URLSchemesRegistry& getMutableURLSchemesRegistry() {
+URLSchemesRegistry& GetMutableURLSchemesRegistry() {
 #if DCHECK_IS_ON()
-  DCHECK(WTF::isBeforeThreadCreated());
+  DCHECK(WTF::IsBeforeThreadCreated());
 #endif
-  return URLSchemesRegistry::getInstance();
+  return URLSchemesRegistry::GetInstance();
 }
 
 }  // namespace
 
 // Must be called before we create other threads to avoid racy static local
 // initialization.
-void SchemeRegistry::initialize() {
-  getURLSchemesRegistry();
+void SchemeRegistry::Initialize() {
+  GetURLSchemesRegistry();
 }
 
-void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().localSchemes.insert(scheme);
+void SchemeRegistry::RegisterURLSchemeAsLocal(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().local_schemes.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+bool SchemeRegistry::ShouldTreatURLSchemeAsLocal(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().localSchemes.contains(scheme);
+  return GetURLSchemesRegistry().local_schemes.Contains(scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsNoAccess(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().schemesWithUniqueOrigins.insert(scheme);
+void SchemeRegistry::RegisterURLSchemeAsNoAccess(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().schemes_with_unique_origins.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+bool SchemeRegistry::ShouldTreatURLSchemeAsNoAccess(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().schemesWithUniqueOrigins.contains(scheme);
+  return GetURLSchemesRegistry().schemes_with_unique_origins.Contains(scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsDisplayIsolated(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().displayIsolatedURLSchemes.insert(scheme);
+void SchemeRegistry::RegisterURLSchemeAsDisplayIsolated(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().display_isolated_url_schemes.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
+bool SchemeRegistry::ShouldTreatURLSchemeAsDisplayIsolated(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().displayIsolatedURLSchemes.contains(scheme);
+  return GetURLSchemesRegistry().display_isolated_url_schemes.Contains(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
+bool SchemeRegistry::ShouldTreatURLSchemeAsRestrictingMixedContent(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
+  DCHECK_EQ(scheme, scheme.Lower());
   return scheme == "https";
 }
 
-void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().secureSchemes.insert(scheme);
+void SchemeRegistry::RegisterURLSchemeAsSecure(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().secure_schemes.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+bool SchemeRegistry::ShouldTreatURLSchemeAsSecure(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().secureSchemes.contains(scheme);
+  return GetURLSchemesRegistry().secure_schemes.Contains(scheme);
 }
 
-bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+bool SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().emptyDocumentSchemes.contains(scheme);
+  return GetURLSchemesRegistry().empty_document_schemes.Contains(scheme);
 }
 
-void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(
+void SchemeRegistry::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return;
 
   if (forbidden) {
-    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.insert(
-        scheme);
+    GetMutableURLSchemesRegistry()
+        .schemes_forbidden_from_domain_relaxation.insert(scheme);
   } else {
-    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.erase(
-        scheme);
+    GetMutableURLSchemesRegistry()
+        .schemes_forbidden_from_domain_relaxation.erase(scheme);
   }
 }
 
-bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(
+bool SchemeRegistry::IsDomainRelaxationForbiddenForURLScheme(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.contains(
-      scheme);
+  return GetURLSchemesRegistry()
+      .schemes_forbidden_from_domain_relaxation.Contains(scheme);
 }
 
-bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
+bool SchemeRegistry::CanDisplayOnlyIfCanRequest(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
   return scheme == "blob" || scheme == "filesystem";
 }
 
-void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(
+void SchemeRegistry::RegisterURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().notAllowingJavascriptURLsSchemes.insert(
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().not_allowing_javascript_ur_ls_schemes.insert(
       scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
+bool SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().notAllowingJavascriptURLsSchemes.contains(
+  return GetURLSchemesRegistry().not_allowing_javascript_ur_ls_schemes.Contains(
       scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsCORSEnabled(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().CORSEnabledSchemes.insert(scheme);
+void SchemeRegistry::RegisterURLSchemeAsCORSEnabled(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().cors_enabled_schemes.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+bool SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().CORSEnabledSchemes.contains(scheme);
+  return GetURLSchemesRegistry().cors_enabled_schemes.Contains(scheme);
 }
 
-String SchemeRegistry::listOfCORSEnabledURLSchemes() {
+String SchemeRegistry::ListOfCORSEnabledURLSchemes() {
   StringBuilder builder;
-  bool addSeparator = false;
-  for (const auto& scheme : getURLSchemesRegistry().CORSEnabledSchemes) {
-    if (addSeparator)
-      builder.append(", ");
+  bool add_separator = false;
+  for (const auto& scheme : GetURLSchemesRegistry().cors_enabled_schemes) {
+    if (add_separator)
+      builder.Append(", ");
     else
-      addSeparator = true;
+      add_separator = true;
 
-    builder.append(scheme);
+    builder.Append(scheme);
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme) {
+bool SchemeRegistry::ShouldTreatURLSchemeAsLegacy(const String& scheme) {
   return scheme == "ftp" || scheme == "gopher";
 }
 
-bool SchemeRegistry::shouldTrackUsageMetricsForScheme(const String& scheme) {
+bool SchemeRegistry::ShouldTrackUsageMetricsForScheme(const String& scheme) {
   // The scheme represents content which likely cannot be easily updated.
   // Specifically this includes internal pages such as about, chrome-devtools,
   // etc.
@@ -257,113 +257,118 @@ bool SchemeRegistry::shouldTrackUsageMetricsForScheme(const String& scheme) {
   return scheme == "http" || scheme == "https" || scheme == "file";
 }
 
-void SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(
+void SchemeRegistry::RegisterURLSchemeAsAllowingServiceWorkers(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().serviceWorkerSchemes.insert(scheme);
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().service_worker_schemes.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
+bool SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().serviceWorkerSchemes.contains(scheme);
+  return GetURLSchemesRegistry().service_worker_schemes.Contains(scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(
+void SchemeRegistry::RegisterURLSchemeAsSupportingFetchAPI(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().fetchAPISchemes.insert(scheme);
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().fetch_api_schemes.insert(scheme);
 }
 
-bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
+bool SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
     return false;
-  return getURLSchemesRegistry().fetchAPISchemes.contains(scheme);
+  return GetURLSchemesRegistry().fetch_api_schemes.Contains(scheme);
 }
 
-void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(
+void SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.insert(scheme);
-}
-
-void SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel(
-    const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.erase(scheme);
-}
-
-bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-    const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
-    return false;
-  return getURLSchemesRegistry().firstPartyWhenTopLevelSchemes.contains(scheme);
-}
-
-void SchemeRegistry::registerURLSchemeAsAllowedForReferrer(
-    const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().allowedInReferrerSchemes.insert(scheme);
-}
-
-void SchemeRegistry::removeURLSchemeAsAllowedForReferrer(const String& scheme) {
-  getMutableURLSchemesRegistry().allowedInReferrerSchemes.erase(scheme);
-}
-
-bool SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(
-    const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  if (scheme.isEmpty())
-    return false;
-  return getURLSchemesRegistry().allowedInReferrerSchemes.contains(scheme);
-}
-
-void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
-    const String& scheme,
-    PolicyAreas policyAreas) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.insert(
-      scheme, policyAreas);
-}
-
-void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
-    const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.erase(
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().first_party_when_top_level_schemes.insert(
       scheme);
 }
 
-bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
+void SchemeRegistry::RemoveURLSchemeAsFirstPartyWhenTopLevel(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().first_party_when_top_level_schemes.erase(
+      scheme);
+}
+
+bool SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
+    return false;
+  return GetURLSchemesRegistry().first_party_when_top_level_schemes.Contains(
+      scheme);
+}
+
+void SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().allowed_in_referrer_schemes.insert(scheme);
+}
+
+void SchemeRegistry::RemoveURLSchemeAsAllowedForReferrer(const String& scheme) {
+  GetMutableURLSchemesRegistry().allowed_in_referrer_schemes.erase(scheme);
+}
+
+bool SchemeRegistry::ShouldTreatURLSchemeAsAllowedForReferrer(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  if (scheme.IsEmpty())
+    return false;
+  return GetURLSchemesRegistry().allowed_in_referrer_schemes.Contains(scheme);
+}
+
+void SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme,
-    PolicyAreas policyAreas) {
-  ASSERT(policyAreas != PolicyAreaNone);
-  if (scheme.isEmpty() || policyAreas == PolicyAreaNone)
+    PolicyAreas policy_areas) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry()
+      .content_security_policy_bypassing_schemes.insert(scheme, policy_areas);
+}
+
+void SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry()
+      .content_security_policy_bypassing_schemes.erase(scheme);
+}
+
+bool SchemeRegistry::SchemeShouldBypassContentSecurityPolicy(
+    const String& scheme,
+    PolicyAreas policy_areas) {
+  ASSERT(policy_areas != kPolicyAreaNone);
+  if (scheme.IsEmpty() || policy_areas == kPolicyAreaNone)
     return false;
 
   // get() returns 0 (PolicyAreaNone) if there is no entry in the map.
   // Thus by default, schemes do not bypass CSP.
-  return (getURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.at(
+  return (GetURLSchemesRegistry().content_security_policy_bypassing_schemes.at(
               scheme) &
-          policyAreas) == policyAreas;
+          policy_areas) == policy_areas;
 }
 
-void SchemeRegistry::registerURLSchemeBypassingSecureContextCheck(
+void SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(
     const String& scheme) {
-  DCHECK_EQ(scheme, scheme.lower());
-  getMutableURLSchemesRegistry().secureContextBypassingSchemes.insert(scheme);
+  DCHECK_EQ(scheme, scheme.Lower());
+  GetMutableURLSchemesRegistry().secure_context_bypassing_schemes.insert(
+      scheme);
 }
 
-bool SchemeRegistry::schemeShouldBypassSecureContextCheck(
+bool SchemeRegistry::SchemeShouldBypassSecureContextCheck(
     const String& scheme) {
-  if (scheme.isEmpty())
+  if (scheme.IsEmpty())
     return false;
-  DCHECK_EQ(scheme, scheme.lower());
-  return getURLSchemesRegistry().secureContextBypassingSchemes.contains(scheme);
+  DCHECK_EQ(scheme, scheme.Lower());
+  return GetURLSchemesRegistry().secure_context_bypassing_schemes.Contains(
+      scheme);
 }
 
 }  // namespace blink

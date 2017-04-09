@@ -21,14 +21,14 @@ class CORE_EXPORT NthIndexData final : public GarbageCollected<NthIndexData> {
   NthIndexData(ContainerNode&);
   NthIndexData(ContainerNode&, const QualifiedName& type);
 
-  unsigned nthIndex(Element&) const;
-  unsigned nthLastIndex(Element&) const;
-  unsigned nthOfTypeIndex(Element&) const;
-  unsigned nthLastOfTypeIndex(Element&) const;
+  unsigned NthIndex(Element&) const;
+  unsigned NthLastIndex(Element&) const;
+  unsigned NthOfTypeIndex(Element&) const;
+  unsigned NthLastOfTypeIndex(Element&) const;
 
  private:
-  HeapHashMap<Member<Element>, unsigned> m_elementIndexMap;
-  unsigned m_count = 0;
+  HeapHashMap<Member<Element>, unsigned> element_index_map_;
+  unsigned count_ = 0;
 
   DECLARE_TRACE();
 };
@@ -41,27 +41,27 @@ class CORE_EXPORT NthIndexCache final {
   explicit NthIndexCache(Document&);
   ~NthIndexCache();
 
-  static unsigned nthChildIndex(Element&);
-  static unsigned nthLastChildIndex(Element&);
-  static unsigned nthOfTypeIndex(Element&);
-  static unsigned nthLastOfTypeIndex(Element&);
+  static unsigned NthChildIndex(Element&);
+  static unsigned NthLastChildIndex(Element&);
+  static unsigned NthOfTypeIndex(Element&);
+  static unsigned NthLastOfTypeIndex(Element&);
 
  private:
   using IndexByType = HeapHashMap<String, Member<NthIndexData>>;
   using ParentMap = HeapHashMap<Member<Node>, Member<NthIndexData>>;
   using ParentMapForType = HeapHashMap<Member<Node>, Member<IndexByType>>;
 
-  void cacheNthIndexDataForParent(Element&);
-  void cacheNthOfTypeIndexDataForParent(Element&);
-  IndexByType& ensureTypeIndexMap(ContainerNode&);
-  NthIndexData* nthTypeIndexDataForParent(Element&) const;
+  void CacheNthIndexDataForParent(Element&);
+  void CacheNthOfTypeIndexDataForParent(Element&);
+  IndexByType& EnsureTypeIndexMap(ContainerNode&);
+  NthIndexData* NthTypeIndexDataForParent(Element&) const;
 
-  Member<Document> m_document;
-  Member<ParentMap> m_parentMap;
-  Member<ParentMapForType> m_parentMapForType;
+  Member<Document> document_;
+  Member<ParentMap> parent_map_;
+  Member<ParentMapForType> parent_map_for_type_;
 
 #if DCHECK_IS_ON()
-  uint64_t m_domTreeVersion;
+  uint64_t dom_tree_version_;
 #endif
 };
 

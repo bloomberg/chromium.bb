@@ -9,7 +9,7 @@
 
 namespace blink {
 
-ScriptElementBase* ScriptElementBase::fromElementIfPossible(Element* element) {
+ScriptElementBase* ScriptElementBase::FromElementIfPossible(Element* element) {
   if (isHTMLScriptElement(*element))
     return toHTMLScriptElement(element);
   if (isSVGScriptElement(*element))
@@ -17,16 +17,16 @@ ScriptElementBase* ScriptElementBase::fromElementIfPossible(Element* element) {
   return nullptr;
 }
 
-void ScriptElementBase::initializeScriptLoader(
-    bool parserInserted,
-    bool alreadyStarted,
-    bool createdDuringDocumentWrite) {
-  m_loader = ScriptLoader::create(this, parserInserted, alreadyStarted,
-                                  createdDuringDocumentWrite);
+void ScriptElementBase::InitializeScriptLoader(
+    bool parser_inserted,
+    bool already_started,
+    bool created_during_document_write) {
+  loader_ = ScriptLoader::Create(this, parser_inserted, already_started,
+                                 created_during_document_write);
 }
 
 DEFINE_TRACE(ScriptElementBase) {
-  visitor->trace(m_loader);
+  visitor->Trace(loader_);
 }
 
 }  // namespace blink

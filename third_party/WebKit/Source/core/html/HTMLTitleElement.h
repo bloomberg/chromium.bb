@@ -38,11 +38,11 @@ class HTMLTitleElement final : public HTMLElement {
  private:
   explicit HTMLTitleElement(Document&);
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  void childrenChanged(const ChildrenChange&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  bool m_ignoreTitleUpdatesWhenChildrenChange;
+  bool ignore_title_updates_when_children_change_;
 };
 
 }  // namespace blink

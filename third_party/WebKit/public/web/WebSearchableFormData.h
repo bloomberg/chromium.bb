@@ -47,19 +47,19 @@ class WebSearchableFormData {
   // will return false.
   BLINK_EXPORT WebSearchableFormData(
       const WebFormElement&,
-      const WebInputElement& selectedInputElement = WebInputElement());
+      const WebInputElement& selected_input_element = WebInputElement());
 
-  bool isValid() { return m_url.isValid(); }
+  bool IsValid() { return url_.IsValid(); }
 
   // URL for the searchable form request.
-  const WebURL& url() const { return m_url; }
+  const WebURL& Url() const { return url_; }
 
   // Encoding used to encode the form parameters; never empty.
-  const WebString& encoding() const { return m_encoding; }
+  const WebString& Encoding() const { return encoding_; }
 
  private:
-  WebURL m_url;
-  WebString m_encoding;
+  WebURL url_;
+  WebString encoding_;
 };
 
 }  // namespace blink

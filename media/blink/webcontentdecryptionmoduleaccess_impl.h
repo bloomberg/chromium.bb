@@ -30,8 +30,8 @@ class WebContentDecryptionModuleAccessImpl
   ~WebContentDecryptionModuleAccessImpl() override;
 
   // blink::WebContentDecryptionModuleAccess interface.
-  blink::WebMediaKeySystemConfiguration getConfiguration() override;
-  void createContentDecryptionModule(
+  blink::WebMediaKeySystemConfiguration GetConfiguration() override;
+  void CreateContentDecryptionModule(
       blink::WebContentDecryptionModuleResult result) override;
 
  private:

@@ -32,7 +32,7 @@ class Sensor : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class SensorState { Idle, Activating, Activated };
+  enum class SensorState { kIdle, kActivating, kActivated };
 
   ~Sensor() override;
 
@@ -40,23 +40,23 @@ class Sensor : public EventTargetWithInlineData,
   void stop();
 
   // EventTarget overrides.
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventTargetNames::Sensor;
   }
-  ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextLifecycleObserver::GetExecutionContext();
   }
 
   // Getters
   bool activated() const;
-  DOMHighResTimeStamp timestamp(ScriptState*, bool& isNull) const;
+  DOMHighResTimeStamp timestamp(ScriptState*, bool& is_null) const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
 
   // ActiveScriptWrappable overrides.
-  bool hasPendingActivity() const override;
+  bool HasPendingActivity() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -72,49 +72,49 @@ class Sensor : public EventTargetWithInlineData,
   // The default implementation will init frequency configuration parameter,
   // concrete sensor implementations can override this method to handle other
   // parameters if needed.
-  virtual SensorConfigurationPtr createSensorConfig();
+  virtual SensorConfigurationPtr CreateSensorConfig();
 
-  double readingValue(int index, bool& isNull) const;
-  double readingValueUnchecked(int index) const;
-  bool canReturnReadings() const;
-  bool isActivated() const { return m_state == SensorState::Activated; }
+  double ReadingValue(int index, bool& is_null) const;
+  double ReadingValueUnchecked(int index) const;
+  bool CanReturnReadings() const;
+  bool IsActivated() const { return state_ == SensorState::kActivated; }
 
  private:
-  void initSensorProxyIfNeeded();
+  void InitSensorProxyIfNeeded();
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // SensorProxy::Observer overrides.
-  void onSensorInitialized() override;
-  void notifySensorChanged(double timestamp) override;
-  void onSensorError(ExceptionCode,
-                     const String& sanitizedMessage,
-                     const String& unsanitizedMessage) override;
+  void OnSensorInitialized() override;
+  void NotifySensorChanged(double timestamp) override;
+  void OnSensorError(ExceptionCode,
+                     const String& sanitized_message,
+                     const String& unsanitized_message) override;
 
-  void onStartRequestCompleted(bool);
-  void onStopRequestCompleted(bool);
+  void OnStartRequestCompleted(bool);
+  void OnStopRequestCompleted(bool);
 
-  void startListening();
-  void stopListening();
+  void StartListening();
+  void StopListening();
 
-  void updateState(SensorState newState);
-  void reportError(ExceptionCode = UnknownError,
-                   const String& sanitizedMessage = String(),
-                   const String& unsanitizedMessage = String());
+  void UpdateState(SensorState new_state);
+  void ReportError(ExceptionCode = kUnknownError,
+                   const String& sanitized_message = String(),
+                   const String& unsanitized_message = String());
 
-  void notifySensorReadingChanged();
-  void notifyOnActivate();
-  void notifyError(DOMException* error);
+  void NotifySensorReadingChanged();
+  void NotifyOnActivate();
+  void NotifyError(DOMException* error);
 
  private:
-  SensorOptions m_sensorOptions;
-  device::mojom::blink::SensorType m_type;
-  SensorState m_state;
-  Member<SensorProxy> m_sensorProxy;
-  device::SensorReading m_storedData;
-  SensorConfigurationPtr m_configuration;
-  double m_lastUpdateTimestamp;
+  SensorOptions sensor_options_;
+  device::mojom::blink::SensorType type_;
+  SensorState state_;
+  Member<SensorProxy> sensor_proxy_;
+  device::SensorReading stored_data_;
+  SensorConfigurationPtr configuration_;
+  double last_update_timestamp_;
 };
 
 }  // namespace blink

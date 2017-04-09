@@ -27,118 +27,118 @@ namespace blink {
 
 class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
  public:
-  MockSurfaceFactory() : m_createSurfaceCount(0) {}
+  MockSurfaceFactory() : create_surface_count_(0) {}
 
-  virtual std::unique_ptr<ImageBufferSurface> createSurface(
+  virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
       const IntSize& size,
-      OpacityMode opacityMode,
-      sk_sp<SkColorSpace> colorSpace,
-      SkColorType colorType) {
-    m_createSurfaceCount++;
-    return WTF::wrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacityMode, InitializeImagePixels, std::move(colorSpace),
-        colorType));
+      OpacityMode opacity_mode,
+      sk_sp<SkColorSpace> color_space,
+      SkColorType color_type) {
+    create_surface_count_++;
+    return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
+        size, opacity_mode, kInitializeImagePixels, std::move(color_space),
+        color_type));
   }
 
   virtual ~MockSurfaceFactory() {}
 
-  int createSurfaceCount() { return m_createSurfaceCount; }
+  int CreateSurfaceCount() { return create_surface_count_; }
 
  private:
-  int m_createSurfaceCount;
+  int create_surface_count_;
 };
 
 class RecordingImageBufferSurfaceTest : public Test {
  protected:
   RecordingImageBufferSurfaceTest() {
-    std::unique_ptr<MockSurfaceFactory> surfaceFactory =
-        WTF::makeUnique<MockSurfaceFactory>();
-    m_surfaceFactory = surfaceFactory.get();
-    std::unique_ptr<RecordingImageBufferSurface> testSurface =
-        WTF::wrapUnique(new RecordingImageBufferSurface(
-            IntSize(10, 10), std::move(surfaceFactory), NonOpaque, nullptr));
-    m_testSurface = testSurface.get();
+    std::unique_ptr<MockSurfaceFactory> surface_factory =
+        WTF::MakeUnique<MockSurfaceFactory>();
+    surface_factory_ = surface_factory.get();
+    std::unique_ptr<RecordingImageBufferSurface> test_surface =
+        WTF::WrapUnique(new RecordingImageBufferSurface(
+            IntSize(10, 10), std::move(surface_factory), kNonOpaque, nullptr));
+    test_surface_ = test_surface.get();
     // We create an ImageBuffer in order for the testSurface to be
     // properly initialized with a GraphicsContext
-    m_imageBuffer = ImageBuffer::create(std::move(testSurface));
-    EXPECT_FALSE(!m_imageBuffer);
-    m_testSurface->initializeCurrentFrame();
+    image_buffer_ = ImageBuffer::Create(std::move(test_surface));
+    EXPECT_FALSE(!image_buffer_);
+    test_surface_->InitializeCurrentFrame();
   }
 
  public:
-  RecordingImageBufferSurface* testSurface() { return m_testSurface; }
-  int createSurfaceCount() { return m_surfaceFactory->createSurfaceCount(); }
-  PaintCanvas* canvas() { return m_imageBuffer->canvas(); }
+  RecordingImageBufferSurface* TestSurface() { return test_surface_; }
+  int CreateSurfaceCount() { return surface_factory_->CreateSurfaceCount(); }
+  PaintCanvas* Canvas() { return image_buffer_->Canvas(); }
 
-  void expectDisplayListEnabled(bool displayListEnabled) {
-    EXPECT_EQ(displayListEnabled, (bool)m_testSurface->m_currentFrame.get());
-    EXPECT_EQ(!displayListEnabled,
-              (bool)m_testSurface->m_fallbackSurface.get());
-    int expectedSurfaceCreationCount = displayListEnabled ? 0 : 1;
-    EXPECT_EQ(expectedSurfaceCreationCount,
-              m_surfaceFactory->createSurfaceCount());
+  void ExpectDisplayListEnabled(bool display_list_enabled) {
+    EXPECT_EQ(display_list_enabled, (bool)test_surface_->current_frame_.get());
+    EXPECT_EQ(!display_list_enabled,
+              (bool)test_surface_->fallback_surface_.get());
+    int expected_surface_creation_count = display_list_enabled ? 0 : 1;
+    EXPECT_EQ(expected_surface_creation_count,
+              surface_factory_->CreateSurfaceCount());
   }
 
  private:
-  MockSurfaceFactory* m_surfaceFactory;
-  RecordingImageBufferSurface* m_testSurface;
-  std::unique_ptr<ImageBuffer> m_imageBuffer;
+  MockSurfaceFactory* surface_factory_;
+  RecordingImageBufferSurface* test_surface_;
+  std::unique_ptr<ImageBuffer> image_buffer_;
 };
 
 TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture) {
-  sk_sp<PaintRecord> record = testSurface()->getRecord();
+  sk_sp<PaintRecord> record = TestSurface()->GetRecord();
   EXPECT_TRUE(record.get());
-  expectDisplayListEnabled(true);
+  ExpectDisplayListEnabled(true);
 }
 
 TEST_F(RecordingImageBufferSurfaceTest, testNoFallbackWithClear) {
-  testSurface()->willOverwriteCanvas();
-  testSurface()->getRecord();
-  expectDisplayListEnabled(true);
+  TestSurface()->WillOverwriteCanvas();
+  TestSurface()->GetRecord();
+  ExpectDisplayListEnabled(true);
 }
 
 TEST_F(RecordingImageBufferSurfaceTest, testNonAnimatedCanvasUpdate) {
   // Acquire picture twice to simulate a static canvas: nothing drawn between
   // updates.
-  testSurface()->didDraw(FloatRect(0, 0, 1, 1));
-  testSurface()->getRecord();
-  testSurface()->getRecord();
-  expectDisplayListEnabled(true);
+  TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
+  TestSurface()->GetRecord();
+  TestSurface()->GetRecord();
+  ExpectDisplayListEnabled(true);
 }
 
 TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithoutClear) {
-  testSurface()->didDraw(FloatRect(0, 0, 1, 1));
-  testSurface()->getRecord();
-  EXPECT_EQ(0, createSurfaceCount());
-  expectDisplayListEnabled(true);  // first frame has an implicit clear
-  testSurface()->didDraw(FloatRect(0, 0, 1, 1));
-  testSurface()->getRecord();
-  expectDisplayListEnabled(false);
+  TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
+  TestSurface()->GetRecord();
+  EXPECT_EQ(0, CreateSurfaceCount());
+  ExpectDisplayListEnabled(true);  // first frame has an implicit clear
+  TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
+  TestSurface()->GetRecord();
+  ExpectDisplayListEnabled(false);
 }
 
 TEST_F(RecordingImageBufferSurfaceTest, testAnimatedWithClear) {
-  testSurface()->getRecord();
-  testSurface()->willOverwriteCanvas();
-  testSurface()->didDraw(FloatRect(0, 0, 1, 1));
-  testSurface()->getRecord();
-  expectDisplayListEnabled(true);
+  TestSurface()->GetRecord();
+  TestSurface()->WillOverwriteCanvas();
+  TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
+  TestSurface()->GetRecord();
+  ExpectDisplayListEnabled(true);
   // clear after use
-  testSurface()->didDraw(FloatRect(0, 0, 1, 1));
-  testSurface()->willOverwriteCanvas();
-  testSurface()->getRecord();
-  expectDisplayListEnabled(true);
+  TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
+  TestSurface()->WillOverwriteCanvas();
+  TestSurface()->GetRecord();
+  ExpectDisplayListEnabled(true);
 }
 
 TEST_F(RecordingImageBufferSurfaceTest, testClearRect) {
-  testSurface()->getRecord();
-  PaintFlags clearFlags;
-  clearFlags.setBlendMode(SkBlendMode::kClear);
-  canvas()->drawRect(SkRect::MakeWH(testSurface()->size().width(),
-                                    testSurface()->size().height()),
-                     clearFlags);
-  testSurface()->didDraw(FloatRect(0, 0, 1, 1));
-  testSurface()->getRecord();
-  expectDisplayListEnabled(true);
+  TestSurface()->GetRecord();
+  PaintFlags clear_flags;
+  clear_flags.setBlendMode(SkBlendMode::kClear);
+  Canvas()->drawRect(SkRect::MakeWH(TestSurface()->size().Width(),
+                                    TestSurface()->size().Height()),
+                     clear_flags);
+  TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
+  TestSurface()->GetRecord();
+  ExpectDisplayListEnabled(true);
 }
 
 }  // namespace blink

@@ -63,11 +63,11 @@ void VisitedLinkSlave::UpdateVisitedLinks(
 void VisitedLinkSlave::AddVisitedLinks(
     const std::vector<VisitedLinkSlave::Fingerprint>& fingerprints) {
   for (size_t i = 0; i < fingerprints.size(); ++i)
-    WebView::updateVisitedLinkState(fingerprints[i]);
+    WebView::UpdateVisitedLinkState(fingerprints[i]);
 }
 
 void VisitedLinkSlave::ResetVisitedLinks(bool invalidate_hashes) {
-  WebView::resetVisitedLinkState(invalidate_hashes);
+  WebView::ResetVisitedLinkState(invalidate_hashes);
 }
 
 void VisitedLinkSlave::FreeTable() {

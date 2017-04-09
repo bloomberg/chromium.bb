@@ -18,36 +18,35 @@ class PLATFORM_EXPORT BeginTransform3DDisplayItem final
   BeginTransform3DDisplayItem(const DisplayItemClient& client,
                               Type type,
                               const TransformationMatrix& transform,
-                              const FloatPoint3D& transformOrigin)
+                              const FloatPoint3D& transform_origin)
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
-        m_transform(transform),
-        m_transformOrigin(transformOrigin) {
-    ASSERT(DisplayItem::isTransform3DType(type));
+        transform_(transform),
+        transform_origin_(transform_origin) {
+    ASSERT(DisplayItem::IsTransform3DType(type));
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
-  const TransformationMatrix& transform() const { return m_transform; }
-  const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
+  const TransformationMatrix& Transform() const { return transform_; }
+  const FloatPoint3D& TransformOrigin() const { return transform_origin_; }
 
  private:
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
+  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
-  bool equals(const DisplayItem& other) const final {
-    return DisplayItem::equals(other) &&
-           m_transform ==
+  bool Equals(const DisplayItem& other) const final {
+    return DisplayItem::Equals(other) &&
+           transform_ == static_cast<const BeginTransform3DDisplayItem&>(other)
+                             .transform_ &&
+           transform_origin_ ==
                static_cast<const BeginTransform3DDisplayItem&>(other)
-                   .m_transform &&
-           m_transformOrigin ==
-               static_cast<const BeginTransform3DDisplayItem&>(other)
-                   .m_transformOrigin;
+                   .transform_origin_;
   }
 
-  const TransformationMatrix m_transform;
-  const FloatPoint3D m_transformOrigin;
+  const TransformationMatrix transform_;
+  const FloatPoint3D transform_origin_;
 };
 
 class PLATFORM_EXPORT EndTransform3DDisplayItem final
@@ -55,18 +54,18 @@ class PLATFORM_EXPORT EndTransform3DDisplayItem final
  public:
   EndTransform3DDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(DisplayItem::isEndTransform3DType(type));
+    ASSERT(DisplayItem::IsEndTransform3DType(type));
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #if DCHECK_IS_ON()
-  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
-    return DisplayItem::transform3DTypeToEndTransform3DType(otherType) ==
-           getType();
+  bool IsEndAndPairedWith(DisplayItem::Type other_type) const final {
+    return DisplayItem::Transform3DTypeToEndTransform3DType(other_type) ==
+           GetType();
   }
 #endif
 };

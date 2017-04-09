@@ -18,11 +18,13 @@ class MessageCallback : public GarbageCollectedFinalized<MessageCallback> {
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void handleMessage(const NFCMessage&) = 0;
 
-  void setScriptState(ScriptState* scriptState) { m_scriptState = scriptState; }
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  void SetScriptState(ScriptState* script_state) {
+    script_state_ = script_state;
+  }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
  private:
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<ScriptState> script_state_;
 };
 
 }  // namespace blink

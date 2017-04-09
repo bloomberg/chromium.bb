@@ -284,30 +284,30 @@ class CONTENT_EXPORT RenderWidget
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
-  blink::WebLayerTreeView* initializeLayerTreeView() override;
-  void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
-  void didChangeCursor(const blink::WebCursorInfo&) override;
-  void closeWidgetSoon() override;
-  void show(blink::WebNavigationPolicy) override;
-  blink::WebRect windowRect() override;
-  blink::WebRect viewRect() override;
-  void setToolTipText(const blink::WebString& text,
+  blink::WebLayerTreeView* InitializeLayerTreeView() override;
+  void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+  void DidChangeCursor(const blink::WebCursorInfo&) override;
+  void CloseWidgetSoon() override;
+  void Show(blink::WebNavigationPolicy) override;
+  blink::WebRect WindowRect() override;
+  blink::WebRect ViewRect() override;
+  void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override;
-  void setWindowRect(const blink::WebRect&) override;
-  blink::WebScreenInfo screenInfo() override;
-  void didHandleGestureEvent(const blink::WebGestureEvent& event,
+  void SetWindowRect(const blink::WebRect&) override;
+  blink::WebScreenInfo GetScreenInfo() override;
+  void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
-  void didOverscroll(const blink::WebFloatSize& overscrollDelta,
+  void DidOverscroll(const blink::WebFloatSize& overscrollDelta,
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
-  void showVirtualKeyboardOnElementFocus() override;
-  void convertViewportToWindow(blink::WebRect* rect) override;
-  void convertWindowToViewport(blink::WebFloatRect* rect) override;
-  bool requestPointerLock() override;
-  void requestPointerUnlock() override;
-  bool isPointerLocked() override;
-  void startDragging(blink::WebReferrerPolicy policy,
+  void ShowVirtualKeyboardOnElementFocus() override;
+  void ConvertViewportToWindow(blink::WebRect* rect) override;
+  void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
+  bool RequestPointerLock() override;
+  void RequestPointerUnlock() override;
+  bool IsPointerLocked() override;
+  void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const blink::WebImage& image,
@@ -322,7 +322,7 @@ class CONTENT_EXPORT RenderWidget
   // tap may be needed.
   // Performs various checks on the given WebNode to apply heuristics to
   // determine if triggering is appropriate.
-  void showUnhandledTapUIIfNeeded(const blink::WebPoint& tapped_position,
+  void ShowUnhandledTapUIIfNeeded(const blink::WebPoint& tapped_position,
                                   const blink::WebNode& tapped_node,
                                   bool page_changed) override;
 #endif
@@ -621,10 +621,10 @@ class CONTENT_EXPORT RenderWidget
   void SetPendingWindowRect(const blink::WebRect& r);
 
   // Check whether the WebWidget has any touch event handlers registered.
-  void hasTouchEventHandlers(bool has_handlers) override;
+  void HasTouchEventHandlers(bool has_handlers) override;
 
   // Tell the browser about the actions permitted for a new touch point.
-  void setTouchAction(blink::WebTouchAction touch_action) override;
+  void SetTouchAction(blink::WebTouchAction touch_action) override;
 
   // Sends an ACK to the browser process during the next compositor frame.
   void OnWaitNextFrameForTests(int routing_id);

@@ -42,65 +42,65 @@ class PLATFORM_EXPORT TransformOperations {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  explicit TransformOperations(bool makeIdentity = false);
+  explicit TransformOperations(bool make_identity = false);
   TransformOperations(const EmptyTransformOperations&) {}
 
   bool operator==(const TransformOperations& o) const;
   bool operator!=(const TransformOperations& o) const { return !(*this == o); }
 
-  void apply(const FloatSize& sz, TransformationMatrix& t) const {
-    for (unsigned i = 0; i < m_operations.size(); ++i)
-      m_operations[i]->apply(t, sz);
+  void Apply(const FloatSize& sz, TransformationMatrix& t) const {
+    for (unsigned i = 0; i < operations_.size(); ++i)
+      operations_[i]->Apply(t, sz);
   }
 
   // Return true if any of the operation types are 3D operation types (even if
   // the values describe affine transforms)
-  bool has3DOperation() const {
-    for (unsigned i = 0; i < m_operations.size(); ++i)
-      if (m_operations[i]->is3DOperation())
+  bool Has3DOperation() const {
+    for (unsigned i = 0; i < operations_.size(); ++i)
+      if (operations_[i]->Is3DOperation())
         return true;
     return false;
   }
 
-  bool dependsOnBoxSize() const {
-    for (unsigned i = 0; i < m_operations.size(); ++i) {
-      if (m_operations[i]->dependsOnBoxSize())
+  bool DependsOnBoxSize() const {
+    for (unsigned i = 0; i < operations_.size(); ++i) {
+      if (operations_[i]->DependsOnBoxSize())
         return true;
     }
     return false;
   }
 
-  bool operationsMatch(const TransformOperations&) const;
+  bool OperationsMatch(const TransformOperations&) const;
 
-  void clear() { m_operations.clear(); }
+  void Clear() { operations_.Clear(); }
 
-  Vector<RefPtr<TransformOperation>>& operations() { return m_operations; }
-  const Vector<RefPtr<TransformOperation>>& operations() const {
-    return m_operations;
+  Vector<RefPtr<TransformOperation>>& Operations() { return operations_; }
+  const Vector<RefPtr<TransformOperation>>& Operations() const {
+    return operations_;
   }
 
-  size_t size() const { return m_operations.size(); }
+  size_t size() const { return operations_.size(); }
   const TransformOperation* at(size_t index) const {
-    return index < m_operations.size() ? m_operations.at(index).get() : 0;
+    return index < operations_.size() ? operations_.at(index).Get() : 0;
   }
 
-  bool blendedBoundsForBox(const FloatBox&,
+  bool BlendedBoundsForBox(const FloatBox&,
                            const TransformOperations& from,
-                           const double& minProgress,
-                           const double& maxProgress,
+                           const double& min_progress,
+                           const double& max_progress,
                            FloatBox* bounds) const;
-  TransformOperations blendByMatchingOperations(const TransformOperations& from,
+  TransformOperations BlendByMatchingOperations(const TransformOperations& from,
                                                 const double& progress) const;
-  PassRefPtr<TransformOperation> blendByUsingMatrixInterpolation(
+  PassRefPtr<TransformOperation> BlendByUsingMatrixInterpolation(
       const TransformOperations& from,
       double progress) const;
-  TransformOperations blend(const TransformOperations& from,
+  TransformOperations Blend(const TransformOperations& from,
                             double progress) const;
-  TransformOperations add(const TransformOperations& addend) const;
-  TransformOperations zoom(double factor) const;
+  TransformOperations Add(const TransformOperations& addend) const;
+  TransformOperations Zoom(double factor) const;
 
  private:
-  Vector<RefPtr<TransformOperation>> m_operations;
+  Vector<RefPtr<TransformOperation>> operations_;
 };
 
 }  // namespace blink

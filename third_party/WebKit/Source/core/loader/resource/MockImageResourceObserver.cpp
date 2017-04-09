@@ -12,44 +12,44 @@ namespace blink {
 
 MockImageResourceObserver::MockImageResourceObserver(
     ImageResourceContent* content)
-    : m_content(content),
-      m_imageChangedCount(0),
-      m_imageWidthOnLastImageChanged(0),
-      m_imageNotifyFinishedCount(0),
-      m_imageWidthOnImageNotifyFinished(0) {
-  m_content->addObserver(this);
+    : content_(content),
+      image_changed_count_(0),
+      image_width_on_last_image_changed_(0),
+      image_notify_finished_count_(0),
+      image_width_on_image_notify_finished_(0) {
+  content_->AddObserver(this);
 }
 
 MockImageResourceObserver::~MockImageResourceObserver() {
-  removeAsObserver();
+  RemoveAsObserver();
 }
 
-void MockImageResourceObserver::removeAsObserver() {
-  if (!m_content)
+void MockImageResourceObserver::RemoveAsObserver() {
+  if (!content_)
     return;
-  m_content->removeObserver(this);
-  m_content = nullptr;
+  content_->RemoveObserver(this);
+  content_ = nullptr;
 }
 
-void MockImageResourceObserver::imageChanged(ImageResourceContent* image,
+void MockImageResourceObserver::ImageChanged(ImageResourceContent* image,
                                              const IntRect*) {
-  m_imageChangedCount++;
-  m_imageWidthOnLastImageChanged =
-      m_content->hasImage() ? m_content->getImage()->width() : 0;
+  image_changed_count_++;
+  image_width_on_last_image_changed_ =
+      content_->HasImage() ? content_->GetImage()->width() : 0;
 }
 
-void MockImageResourceObserver::imageNotifyFinished(
+void MockImageResourceObserver::ImageNotifyFinished(
     ImageResourceContent* image) {
-  ASSERT_EQ(0, m_imageNotifyFinishedCount);
-  m_imageNotifyFinishedCount++;
-  m_imageWidthOnImageNotifyFinished =
-      m_content->hasImage() ? m_content->getImage()->width() : 0;
-  m_statusOnImageNotifyFinished = m_content->getStatus();
+  ASSERT_EQ(0, image_notify_finished_count_);
+  image_notify_finished_count_++;
+  image_width_on_image_notify_finished_ =
+      content_->HasImage() ? content_->GetImage()->width() : 0;
+  status_on_image_notify_finished_ = content_->GetStatus();
 }
 
-bool MockImageResourceObserver::imageNotifyFinishedCalled() const {
-  DCHECK_LE(m_imageNotifyFinishedCount, 1);
-  return m_imageNotifyFinishedCount;
+bool MockImageResourceObserver::ImageNotifyFinishedCalled() const {
+  DCHECK_LE(image_notify_finished_count_, 1);
+  return image_notify_finished_count_;
 }
 
 }  // namespace blink

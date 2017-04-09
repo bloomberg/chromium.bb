@@ -37,24 +37,25 @@
 namespace blink {
 
 SpellCheckerClientImpl::SpellCheckerClientImpl(WebViewImpl* webview)
-    : m_webView(webview), m_spellCheckThisFieldStatus(SpellCheckAutomatic) {}
+    : web_view_(webview),
+      spell_check_this_field_status_(kSpellCheckAutomatic) {}
 
 SpellCheckerClientImpl::~SpellCheckerClientImpl() {}
 
-bool SpellCheckerClientImpl::shouldSpellcheckByDefault() {
+bool SpellCheckerClientImpl::ShouldSpellcheckByDefault() {
   // Spellcheck should be enabled for all editable areas (such as textareas,
   // contentEditable regions, designMode docs and inputs).
-  if (!m_webView->focusedCoreFrame()->isLocalFrame())
+  if (!web_view_->FocusedCoreFrame()->IsLocalFrame())
     return false;
-  const LocalFrame* frame = toLocalFrame(m_webView->focusedCoreFrame());
+  const LocalFrame* frame = ToLocalFrame(web_view_->FocusedCoreFrame());
   if (!frame)
     return false;
-  if (frame->spellChecker().isSpellCheckingEnabledInFocusedNode())
+  if (frame->GetSpellChecker().IsSpellCheckingEnabledInFocusedNode())
     return true;
-  const Document* document = frame->document();
+  const Document* document = frame->GetDocument();
   if (!document)
     return false;
-  const Element* element = document->focusedElement();
+  const Element* element = document->FocusedElement();
   // If |element| is null, we default to allowing spellchecking. This is done
   // in order to mitigate the issue when the user clicks outside the textbox,
   // as a result of which |element| becomes null, resulting in all the spell
@@ -63,64 +64,64 @@ bool SpellCheckerClientImpl::shouldSpellcheckByDefault() {
   // cause any problems to the LocalFrame's behavior.
   if (!element)
     return true;
-  const LayoutObject* layoutObject = element->layoutObject();
-  if (!layoutObject)
+  const LayoutObject* layout_object = element->GetLayoutObject();
+  if (!layout_object)
     return false;
 
   return true;
 }
 
-bool SpellCheckerClientImpl::isSpellCheckingEnabled() {
-  if (m_spellCheckThisFieldStatus == SpellCheckForcedOff)
+bool SpellCheckerClientImpl::IsSpellCheckingEnabled() {
+  if (spell_check_this_field_status_ == kSpellCheckForcedOff)
     return false;
-  if (m_spellCheckThisFieldStatus == SpellCheckForcedOn)
+  if (spell_check_this_field_status_ == kSpellCheckForcedOn)
     return true;
-  return shouldSpellcheckByDefault();
+  return ShouldSpellcheckByDefault();
 }
 
-void SpellCheckerClientImpl::toggleSpellCheckingEnabled() {
-  if (isSpellCheckingEnabled()) {
-    m_spellCheckThisFieldStatus = SpellCheckForcedOff;
-    if (Page* page = m_webView->page()) {
-      for (Frame* frame = page->mainFrame(); frame;
-           frame = frame->tree().traverseNext()) {
-        if (!frame->isLocalFrame())
+void SpellCheckerClientImpl::ToggleSpellCheckingEnabled() {
+  if (IsSpellCheckingEnabled()) {
+    spell_check_this_field_status_ = kSpellCheckForcedOff;
+    if (Page* page = web_view_->GetPage()) {
+      for (Frame* frame = page->MainFrame(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        if (!frame->IsLocalFrame())
           continue;
-        toLocalFrame(frame)->document()->markers().removeMarkers(
+        ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkers(
             DocumentMarker::MisspellingMarkers());
       }
     }
   } else {
-    m_spellCheckThisFieldStatus = SpellCheckForcedOn;
-    if (m_webView->focusedCoreFrame()->isLocalFrame()) {
-      if (LocalFrame* frame = toLocalFrame(m_webView->focusedCoreFrame())) {
-        VisibleSelection frameSelection =
-            frame->selection().computeVisibleSelectionInDOMTreeDeprecated();
+    spell_check_this_field_status_ = kSpellCheckForcedOn;
+    if (web_view_->FocusedCoreFrame()->IsLocalFrame()) {
+      if (LocalFrame* frame = ToLocalFrame(web_view_->FocusedCoreFrame())) {
+        VisibleSelection frame_selection =
+            frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
         // If a selection is in an editable element spell check its content.
-        if (Element* rootEditableElement =
-                frameSelection.rootEditableElement()) {
-          frame->spellChecker().didBeginEditing(rootEditableElement);
+        if (Element* root_editable_element =
+                frame_selection.RootEditableElement()) {
+          frame->GetSpellChecker().DidBeginEditing(root_editable_element);
         }
       }
     }
   }
 }
 
-void SpellCheckerClientImpl::updateSpellingUIWithMisspelledWord(
-    const String& misspelledWord) {
-  if (m_webView->spellCheckClient())
-    m_webView->spellCheckClient()->updateSpellingUIWithMisspelledWord(
-        WebString(misspelledWord));
+void SpellCheckerClientImpl::UpdateSpellingUIWithMisspelledWord(
+    const String& misspelled_word) {
+  if (web_view_->SpellCheckClient())
+    web_view_->SpellCheckClient()->UpdateSpellingUIWithMisspelledWord(
+        WebString(misspelled_word));
 }
 
-void SpellCheckerClientImpl::showSpellingUI(bool show) {
-  if (m_webView->spellCheckClient())
-    m_webView->spellCheckClient()->showSpellingUI(show);
+void SpellCheckerClientImpl::ShowSpellingUI(bool show) {
+  if (web_view_->SpellCheckClient())
+    web_view_->SpellCheckClient()->ShowSpellingUI(show);
 }
 
-bool SpellCheckerClientImpl::spellingUIIsShowing() {
-  if (m_webView->spellCheckClient())
-    return m_webView->spellCheckClient()->isShowingSpellingUI();
+bool SpellCheckerClientImpl::SpellingUIIsShowing() {
+  if (web_view_->SpellCheckClient())
+    return web_view_->SpellCheckClient()->IsShowingSpellingUI();
   return false;
 }
 

@@ -6,19 +6,19 @@
 
 namespace blink {
 
-float WebMouseWheelEvent::deltaXInRootFrame() const {
-  return deltaX / m_frameScale;
+float WebMouseWheelEvent::DeltaXInRootFrame() const {
+  return delta_x / frame_scale_;
 }
 
-float WebMouseWheelEvent::deltaYInRootFrame() const {
-  return deltaY / m_frameScale;
+float WebMouseWheelEvent::DeltaYInRootFrame() const {
+  return delta_y / frame_scale_;
 }
 
-WebMouseWheelEvent WebMouseWheelEvent::flattenTransform() const {
+WebMouseWheelEvent WebMouseWheelEvent::FlattenTransform() const {
   WebMouseWheelEvent result = *this;
-  result.deltaX /= result.m_frameScale;
-  result.deltaY /= result.m_frameScale;
-  result.flattenTransformSelf();
+  result.delta_x /= result.frame_scale_;
+  result.delta_y /= result.frame_scale_;
+  result.FlattenTransformSelf();
   return result;
 }
 

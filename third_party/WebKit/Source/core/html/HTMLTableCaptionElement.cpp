@@ -36,16 +36,16 @@ inline HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLTableCaptionElement)
 
-void HTMLTableCaptionElement::collectStyleForPresentationAttribute(
+void HTMLTableCaptionElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == alignAttr) {
-    if (!value.isEmpty())
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide,
+    if (!value.IsEmpty())
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide,
                                               value);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 

@@ -13,17 +13,17 @@
 
 namespace blink {
 
-{{namespace}}* {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type) {
+{{namespace}}* {{namespace}}{{suffix}}Factory::Create(ExecutionContext* executionContext, const String& type) {
   {% for event in events if event|script_name|create_event_whitelist or event|script_name|create_event_measure_whitelist %}
   {% if event|script_name|create_event_whitelist or event|script_name|create_event_measure_whitelist %}
-  if (equalIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
+  if (EqualIgnoringCase(type, "{{event|script_name}}"){% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
   {% else %}
   if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
   {% endif %}
     {% if not event|script_name|create_event_whitelist %}
-    UseCounter::count(executionContext, UseCounter::{{event|script_name|measure_name}});
+    UseCounter::Count(executionContext, UseCounter::k{{event|script_name|measure_name}});
     {% endif %}
-    return {{event|cpp_name}}::create();
+    return {{event|cpp_name}}::Create();
   }
   {% endfor %}
   return nullptr;

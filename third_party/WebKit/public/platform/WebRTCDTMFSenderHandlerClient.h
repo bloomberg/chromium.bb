@@ -36,7 +36,7 @@ class WebRTCDTMFSenderHandlerClient {
  public:
   virtual ~WebRTCDTMFSenderHandlerClient() {}
 
-  virtual void didPlayTone(const WebString& tone) = 0;
+  virtual void DidPlayTone(const WebString& tone) = 0;
 };
 
 }  // namespace blink

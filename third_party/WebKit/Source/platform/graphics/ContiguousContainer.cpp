@@ -22,159 +22,159 @@ class ContiguousContainerBase::Buffer {
   USING_FAST_MALLOC(Buffer);
 
  public:
-  Buffer(size_t bufferSize, const char* typeName) {
-    m_capacity = WTF::Partitions::bufferActualSize(bufferSize);
-    m_begin = m_end =
-        static_cast<char*>(WTF::Partitions::bufferMalloc(m_capacity, typeName));
+  Buffer(size_t buffer_size, const char* type_name) {
+    capacity_ = WTF::Partitions::BufferActualSize(buffer_size);
+    begin_ = end_ =
+        static_cast<char*>(WTF::Partitions::BufferMalloc(capacity_, type_name));
     ANNOTATE_NEW_BUFFER(m_begin, m_capacity, 0);
   }
 
   ~Buffer() {
     ANNOTATE_DELETE_BUFFER(m_begin, m_capacity, usedCapacity());
-    WTF::Partitions::bufferFree(m_begin);
+    WTF::Partitions::BufferFree(begin_);
   }
 
-  size_t capacity() const { return m_capacity; }
-  size_t usedCapacity() const { return m_end - m_begin; }
-  size_t unusedCapacity() const { return capacity() - usedCapacity(); }
-  bool isEmpty() const { return usedCapacity() == 0; }
+  size_t Capacity() const { return capacity_; }
+  size_t UsedCapacity() const { return end_ - begin_; }
+  size_t UnusedCapacity() const { return Capacity() - UsedCapacity(); }
+  bool IsEmpty() const { return UsedCapacity() == 0; }
 
-  void* allocate(size_t objectSize) {
-    ASSERT(unusedCapacity() >= objectSize);
+  void* Allocate(size_t object_size) {
+    ASSERT(UnusedCapacity() >= object_size);
     ANNOTATE_CHANGE_SIZE(m_begin, m_capacity, usedCapacity(),
                          usedCapacity() + objectSize);
-    void* result = m_end;
-    m_end += objectSize;
+    void* result = end_;
+    end_ += object_size;
     return result;
   }
 
-  void deallocateLastObject(void* object) {
-    RELEASE_ASSERT(m_begin <= object && object < m_end);
+  void DeallocateLastObject(void* object) {
+    RELEASE_ASSERT(begin_ <= object && object < end_);
     ANNOTATE_CHANGE_SIZE(m_begin, m_capacity, usedCapacity(),
                          static_cast<char*>(object) - m_begin);
-    m_end = static_cast<char*>(object);
+    end_ = static_cast<char*>(object);
   }
 
  private:
   // m_begin <= m_end <= m_begin + m_capacity
-  char* m_begin;
-  char* m_end;
-  size_t m_capacity;
+  char* begin_;
+  char* end_;
+  size_t capacity_;
 };
 
-ContiguousContainerBase::ContiguousContainerBase(size_t maxObjectSize)
-    : m_endIndex(0), m_maxObjectSize(maxObjectSize) {}
+ContiguousContainerBase::ContiguousContainerBase(size_t max_object_size)
+    : end_index_(0), max_object_size_(max_object_size) {}
 
 ContiguousContainerBase::ContiguousContainerBase(
     ContiguousContainerBase&& source)
-    : ContiguousContainerBase(source.m_maxObjectSize) {
-  swap(source);
+    : ContiguousContainerBase(source.max_object_size_) {
+  Swap(source);
 }
 
 ContiguousContainerBase::~ContiguousContainerBase() {}
 
 ContiguousContainerBase& ContiguousContainerBase::operator=(
     ContiguousContainerBase&& source) {
-  swap(source);
+  Swap(source);
   return *this;
 }
 
-size_t ContiguousContainerBase::capacityInBytes() const {
+size_t ContiguousContainerBase::CapacityInBytes() const {
   size_t capacity = 0;
-  for (const auto& buffer : m_buffers)
-    capacity += buffer->capacity();
+  for (const auto& buffer : buffers_)
+    capacity += buffer->Capacity();
   return capacity;
 }
 
-size_t ContiguousContainerBase::usedCapacityInBytes() const {
-  size_t usedCapacity = 0;
-  for (const auto& buffer : m_buffers)
-    usedCapacity += buffer->usedCapacity();
-  return usedCapacity;
+size_t ContiguousContainerBase::UsedCapacityInBytes() const {
+  size_t used_capacity = 0;
+  for (const auto& buffer : buffers_)
+    used_capacity += buffer->UsedCapacity();
+  return used_capacity;
 }
 
-size_t ContiguousContainerBase::memoryUsageInBytes() const {
-  return sizeof(*this) + capacityInBytes() +
-         m_elements.capacity() * sizeof(m_elements[0]);
+size_t ContiguousContainerBase::MemoryUsageInBytes() const {
+  return sizeof(*this) + CapacityInBytes() +
+         elements_.Capacity() * sizeof(elements_[0]);
 }
 
-void ContiguousContainerBase::reserveInitialCapacity(size_t bufferSize,
-                                                     const char* typeName) {
-  allocateNewBufferForNextAllocation(bufferSize, typeName);
+void ContiguousContainerBase::ReserveInitialCapacity(size_t buffer_size,
+                                                     const char* type_name) {
+  AllocateNewBufferForNextAllocation(buffer_size, type_name);
 }
 
-void* ContiguousContainerBase::allocate(size_t objectSize,
-                                        const char* typeName) {
-  ASSERT(objectSize <= m_maxObjectSize);
+void* ContiguousContainerBase::Allocate(size_t object_size,
+                                        const char* type_name) {
+  ASSERT(object_size <= max_object_size_);
 
-  Buffer* bufferForAlloc = nullptr;
-  if (!m_buffers.isEmpty()) {
-    Buffer* endBuffer = m_buffers[m_endIndex].get();
-    if (endBuffer->unusedCapacity() >= objectSize)
-      bufferForAlloc = endBuffer;
-    else if (m_endIndex + 1 < m_buffers.size())
-      bufferForAlloc = m_buffers[++m_endIndex].get();
+  Buffer* buffer_for_alloc = nullptr;
+  if (!buffers_.IsEmpty()) {
+    Buffer* end_buffer = buffers_[end_index_].get();
+    if (end_buffer->UnusedCapacity() >= object_size)
+      buffer_for_alloc = end_buffer;
+    else if (end_index_ + 1 < buffers_.size())
+      buffer_for_alloc = buffers_[++end_index_].get();
   }
 
-  if (!bufferForAlloc) {
-    size_t newBufferSize = m_buffers.isEmpty()
-                               ? kDefaultInitialBufferSize * m_maxObjectSize
-                               : 2 * m_buffers.back()->capacity();
-    bufferForAlloc =
-        allocateNewBufferForNextAllocation(newBufferSize, typeName);
+  if (!buffer_for_alloc) {
+    size_t new_buffer_size = buffers_.IsEmpty()
+                                 ? kDefaultInitialBufferSize * max_object_size_
+                                 : 2 * buffers_.back()->Capacity();
+    buffer_for_alloc =
+        AllocateNewBufferForNextAllocation(new_buffer_size, type_name);
   }
 
-  void* element = bufferForAlloc->allocate(objectSize);
-  m_elements.push_back(element);
+  void* element = buffer_for_alloc->Allocate(object_size);
+  elements_.push_back(element);
   return element;
 }
 
-void ContiguousContainerBase::removeLast() {
-  void* object = m_elements.back();
-  m_elements.pop_back();
+void ContiguousContainerBase::RemoveLast() {
+  void* object = elements_.back();
+  elements_.pop_back();
 
-  Buffer* endBuffer = m_buffers[m_endIndex].get();
-  endBuffer->deallocateLastObject(object);
+  Buffer* end_buffer = buffers_[end_index_].get();
+  end_buffer->DeallocateLastObject(object);
 
-  if (endBuffer->isEmpty()) {
-    if (m_endIndex > 0)
-      m_endIndex--;
-    if (m_endIndex + 2 < m_buffers.size())
-      m_buffers.pop_back();
+  if (end_buffer->IsEmpty()) {
+    if (end_index_ > 0)
+      end_index_--;
+    if (end_index_ + 2 < buffers_.size())
+      buffers_.pop_back();
   }
 }
 
-void ContiguousContainerBase::clear() {
-  m_elements.clear();
-  m_buffers.clear();
-  m_endIndex = 0;
+void ContiguousContainerBase::Clear() {
+  elements_.Clear();
+  buffers_.Clear();
+  end_index_ = 0;
 }
 
-void ContiguousContainerBase::swap(ContiguousContainerBase& other) {
-  m_elements.swap(other.m_elements);
-  m_buffers.swap(other.m_buffers);
-  std::swap(m_endIndex, other.m_endIndex);
-  std::swap(m_maxObjectSize, other.m_maxObjectSize);
+void ContiguousContainerBase::Swap(ContiguousContainerBase& other) {
+  elements_.Swap(other.elements_);
+  buffers_.Swap(other.buffers_);
+  std::swap(end_index_, other.end_index_);
+  std::swap(max_object_size_, other.max_object_size_);
 }
 
-void ContiguousContainerBase::shrinkToFit() {
-  while (m_endIndex < m_buffers.size() - 1) {
-    DCHECK(m_buffers.back()->isEmpty());
-    m_buffers.pop_back();
+void ContiguousContainerBase::ShrinkToFit() {
+  while (end_index_ < buffers_.size() - 1) {
+    DCHECK(buffers_.back()->IsEmpty());
+    buffers_.pop_back();
   }
 }
 
 ContiguousContainerBase::Buffer*
-ContiguousContainerBase::allocateNewBufferForNextAllocation(
-    size_t bufferSize,
-    const char* typeName) {
-  ASSERT(m_buffers.isEmpty() || m_endIndex == m_buffers.size() - 1);
-  std::unique_ptr<Buffer> newBuffer =
-      WTF::makeUnique<Buffer>(bufferSize, typeName);
-  Buffer* bufferToReturn = newBuffer.get();
-  m_buffers.push_back(std::move(newBuffer));
-  m_endIndex = m_buffers.size() - 1;
-  return bufferToReturn;
+ContiguousContainerBase::AllocateNewBufferForNextAllocation(
+    size_t buffer_size,
+    const char* type_name) {
+  ASSERT(buffers_.IsEmpty() || end_index_ == buffers_.size() - 1);
+  std::unique_ptr<Buffer> new_buffer =
+      WTF::MakeUnique<Buffer>(buffer_size, type_name);
+  Buffer* buffer_to_return = new_buffer.get();
+  buffers_.push_back(std::move(new_buffer));
+  end_index_ = buffers_.size() - 1;
+  return buffer_to_return;
 }
 
 }  // namespace blink

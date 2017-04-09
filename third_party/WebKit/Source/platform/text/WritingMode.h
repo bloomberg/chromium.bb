@@ -40,19 +40,19 @@ namespace blink {
 enum class WritingMode : unsigned { kHorizontalTb, kVerticalRl, kVerticalLr };
 
 // Lines have horizontal orientation; modes horizontal-tb.
-inline bool isHorizontalWritingMode(WritingMode writingMode) {
-  return writingMode == WritingMode::kHorizontalTb;
+inline bool IsHorizontalWritingMode(WritingMode writing_mode) {
+  return writing_mode == WritingMode::kHorizontalTb;
 }
 
 // Bottom of the line occurs earlier in the block; modes vertical-lr.
-inline bool isFlippedLinesWritingMode(WritingMode writingMode) {
-  return writingMode == WritingMode::kVerticalLr;
+inline bool IsFlippedLinesWritingMode(WritingMode writing_mode) {
+  return writing_mode == WritingMode::kVerticalLr;
 }
 
 // Block progression increases in the opposite direction to normal; modes
 // vertical-rl.
-inline bool isFlippedBlocksWritingMode(WritingMode writingMode) {
-  return writingMode == WritingMode::kVerticalRl;
+inline bool IsFlippedBlocksWritingMode(WritingMode writing_mode) {
+  return writing_mode == WritingMode::kVerticalRl;
 }
 
 }  // namespace blink

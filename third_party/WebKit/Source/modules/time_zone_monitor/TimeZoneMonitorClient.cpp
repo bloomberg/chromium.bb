@@ -27,9 +27,9 @@ void NotifyTimezoneChangeToV8(v8::Isolate* isolate) {
   v8::Date::DateTimeConfigurationChangeNotification(isolate);
 }
 
-void NotifyTimezoneChangeOnWorkerThread(WorkerThread* workerThread) {
-  DCHECK(workerThread->isCurrentThread());
-  NotifyTimezoneChangeToV8(toIsolate(workerThread->globalScope()));
+void NotifyTimezoneChangeOnWorkerThread(WorkerThread* worker_thread) {
+  DCHECK(worker_thread->IsCurrentThread());
+  NotifyTimezoneChangeToV8(ToIsolate(worker_thread->GlobalScope()));
 }
 
 }  // namespace
@@ -39,41 +39,41 @@ void TimeZoneMonitorClient::Init() {
   DEFINE_STATIC_LOCAL(TimeZoneMonitorClient, instance, ());
 
   device::mojom::blink::TimeZoneMonitorPtr monitor;
-  Platform::current()->connector()->BindInterface(
+  Platform::Current()->GetConnector()->BindInterface(
       device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor));
-  monitor->AddClient(instance.m_binding.CreateInterfacePtrAndBind());
+  monitor->AddClient(instance.binding_.CreateInterfacePtrAndBind());
 }
 
-TimeZoneMonitorClient::TimeZoneMonitorClient() : m_binding(this) {
-  DCHECK(isMainThread());
+TimeZoneMonitorClient::TimeZoneMonitorClient() : binding_(this) {
+  DCHECK(IsMainThread());
 }
 
 TimeZoneMonitorClient::~TimeZoneMonitorClient() {}
 
-void TimeZoneMonitorClient::OnTimeZoneChange(const String& timeZoneInfo) {
-  DCHECK(isMainThread());
+void TimeZoneMonitorClient::OnTimeZoneChange(const String& time_zone_info) {
+  DCHECK(IsMainThread());
 
-  if (!timeZoneInfo.isEmpty()) {
+  if (!time_zone_info.IsEmpty()) {
     icu::TimeZone* zone = icu::TimeZone::createTimeZone(
-        icu::UnicodeString::fromUTF8(timeZoneInfo.utf8().data()));
+        icu::UnicodeString::fromUTF8(time_zone_info.Utf8().Data()));
     icu::TimeZone::adoptDefault(zone);
-    VLOG(1) << "ICU default timezone is set to " << timeZoneInfo;
+    VLOG(1) << "ICU default timezone is set to " << time_zone_info;
   }
 
-  NotifyTimezoneChangeToV8(V8PerIsolateData::mainThreadIsolate());
+  NotifyTimezoneChangeToV8(V8PerIsolateData::MainThreadIsolate());
 
-  HashSet<WorkerThread*>& threads = WorkerThread::workerThreads();
+  HashSet<WorkerThread*>& threads = WorkerThread::WorkerThreads();
   HashSet<WorkerBackingThread*> posted;
   for (WorkerThread* thread : threads) {
     // Ensure every WorkerBackingThread(holding one platform thread) only get
     // the task posted once, because one WorkerBackingThread could be shared
     // among multiple WorkerThreads.
-    if (posted.contains(&thread->workerBackingThread()))
+    if (posted.Contains(&thread->GetWorkerBackingThread()))
       continue;
-    thread->postTask(BLINK_FROM_HERE,
-                     crossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
-                                     WTF::crossThreadUnretained(thread)));
-    posted.insert(&thread->workerBackingThread());
+    thread->PostTask(BLINK_FROM_HERE,
+                     CrossThreadBind(&NotifyTimezoneChangeOnWorkerThread,
+                                     WTF::CrossThreadUnretained(thread)));
+    posted.insert(&thread->GetWorkerBackingThread());
   }
 }
 

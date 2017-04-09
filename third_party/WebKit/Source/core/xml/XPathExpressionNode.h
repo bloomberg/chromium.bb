@@ -47,9 +47,9 @@ struct CORE_EXPORT EvaluationContext {
   Member<Node> node;
   unsigned long size;
   unsigned long position;
-  HashMap<String, String> variableBindings;
+  HashMap<String, String> variable_bindings;
 
-  bool hadTypeConversionError;
+  bool had_type_conversion_error;
 };
 
 class CORE_EXPORT ParseNode : public GarbageCollectedFinalized<ParseNode> {
@@ -66,46 +66,46 @@ class CORE_EXPORT Expression : public ParseNode {
   ~Expression() override;
   DECLARE_VIRTUAL_TRACE();
 
-  virtual Value evaluate(EvaluationContext&) const = 0;
+  virtual Value Evaluate(EvaluationContext&) const = 0;
 
-  void addSubExpression(Expression* expr) {
-    m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
-    m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
-    m_isContextSizeSensitive |= expr->m_isContextSizeSensitive;
-    m_subExpressions.push_back(expr);
-  }
-
-  bool isContextNodeSensitive() const { return m_isContextNodeSensitive; }
-  bool isContextPositionSensitive() const {
-    return m_isContextPositionSensitive;
-  }
-  bool isContextSizeSensitive() const { return m_isContextSizeSensitive; }
-  void setIsContextNodeSensitive(bool value) {
-    m_isContextNodeSensitive = value;
-  }
-  void setIsContextPositionSensitive(bool value) {
-    m_isContextPositionSensitive = value;
-  }
-  void setIsContextSizeSensitive(bool value) {
-    m_isContextSizeSensitive = value;
+  void AddSubExpression(Expression* expr) {
+    is_context_node_sensitive_ |= expr->is_context_node_sensitive_;
+    is_context_position_sensitive_ |= expr->is_context_position_sensitive_;
+    is_context_size_sensitive_ |= expr->is_context_size_sensitive_;
+    sub_expressions_.push_back(expr);
   }
 
-  virtual Value::Type resultType() const = 0;
+  bool IsContextNodeSensitive() const { return is_context_node_sensitive_; }
+  bool IsContextPositionSensitive() const {
+    return is_context_position_sensitive_;
+  }
+  bool IsContextSizeSensitive() const { return is_context_size_sensitive_; }
+  void SetIsContextNodeSensitive(bool value) {
+    is_context_node_sensitive_ = value;
+  }
+  void SetIsContextPositionSensitive(bool value) {
+    is_context_position_sensitive_ = value;
+  }
+  void SetIsContextSizeSensitive(bool value) {
+    is_context_size_sensitive_ = value;
+  }
+
+  virtual Value::Type ResultType() const = 0;
 
  protected:
-  unsigned subExprCount() const { return m_subExpressions.size(); }
-  Expression* subExpr(unsigned i) { return m_subExpressions[i].get(); }
-  const Expression* subExpr(unsigned i) const {
-    return m_subExpressions[i].get();
+  unsigned SubExprCount() const { return sub_expressions_.size(); }
+  Expression* SubExpr(unsigned i) { return sub_expressions_[i].Get(); }
+  const Expression* SubExpr(unsigned i) const {
+    return sub_expressions_[i].Get();
   }
 
  private:
-  HeapVector<Member<Expression>> m_subExpressions;
+  HeapVector<Member<Expression>> sub_expressions_;
 
   // Evaluation details that can be used for optimization.
-  bool m_isContextNodeSensitive;
-  bool m_isContextPositionSensitive;
-  bool m_isContextSizeSensitive;
+  bool is_context_node_sensitive_;
+  bool is_context_position_sensitive_;
+  bool is_context_size_sensitive_;
 };
 
 }  // namespace XPath

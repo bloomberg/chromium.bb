@@ -17,16 +17,16 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
  public:
   ~MailboxTextureHolder() override;
 
-  bool isSkiaTextureHolder() final { return false; }
-  bool isMailboxTextureHolder() final { return true; }
-  unsigned sharedContextId() final;
-  IntSize size() const final { return m_size; }
-  bool currentFrameKnownToBeOpaque(Image::MetadataMode) final { return false; }
+  bool IsSkiaTextureHolder() final { return false; }
+  bool IsMailboxTextureHolder() final { return true; }
+  unsigned SharedContextId() final;
+  IntSize size() const final { return size_; }
+  bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final { return false; }
 
-  gpu::Mailbox mailbox() final { return m_mailbox; }
-  gpu::SyncToken syncToken() final { return m_syncToken; }
-  void updateSyncToken(gpu::SyncToken syncToken) final {
-    m_syncToken = syncToken;
+  gpu::Mailbox GetMailbox() final { return mailbox_; }
+  gpu::SyncToken GetSyncToken() final { return sync_token_; }
+  void UpdateSyncToken(gpu::SyncToken sync_token) final {
+    sync_token_ = sync_token;
   }
 
   // In WebGL's commit or transferToImageBitmap calls, it will call the
@@ -34,22 +34,22 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   // input parameters for this method.
   MailboxTextureHolder(const gpu::Mailbox&,
                        const gpu::SyncToken&,
-                       unsigned textureIdToDeleteAfterMailboxConsumed,
+                       unsigned texture_id_to_delete_after_mailbox_consumed,
                        WeakPtr<WebGraphicsContext3DProviderWrapper>,
-                       IntSize mailboxSize);
+                       IntSize mailbox_size);
   // This function turns a texture-backed SkImage into a mailbox and a
   // syncToken.
   MailboxTextureHolder(std::unique_ptr<TextureHolder>);
 
  private:
-  void releaseTextureThreadSafe();
+  void ReleaseTextureThreadSafe();
 
-  gpu::Mailbox m_mailbox;
-  gpu::SyncToken m_syncToken;
-  unsigned m_textureId;
-  WeakPtr<WebGraphicsContext3DProviderWrapper> m_contextProvider;
-  IntSize m_size;
-  bool m_isConvertedFromSkiaTexture;
+  gpu::Mailbox mailbox_;
+  gpu::SyncToken sync_token_;
+  unsigned texture_id_;
+  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_;
+  IntSize size_;
+  bool is_converted_from_skia_texture_;
 };
 
 }  // namespace blink

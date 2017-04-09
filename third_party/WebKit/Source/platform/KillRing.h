@@ -37,11 +37,11 @@ class PLATFORM_EXPORT KillRing {
 
  public:
   KillRing() {}
-  void append(const String&);
-  void prepend(const String&);
-  String yank();
-  void startNewSequence();
-  void setToYankedState();
+  void Append(const String&);
+  void Prepend(const String&);
+  String Yank();
+  void StartNewSequence();
+  void SetToYankedState();
 };
 
 }  // namespace blink

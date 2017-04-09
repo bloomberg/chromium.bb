@@ -19,14 +19,14 @@ static blink::WebContentDecryptionModuleResult::SessionStatus ConvertStatus(
     case SessionInitStatus::UNKNOWN_STATUS:
       break;
     case SessionInitStatus::NEW_SESSION:
-      return blink::WebContentDecryptionModuleResult::NewSession;
+      return blink::WebContentDecryptionModuleResult::kNewSession;
     case SessionInitStatus::SESSION_NOT_FOUND:
-      return blink::WebContentDecryptionModuleResult::SessionNotFound;
+      return blink::WebContentDecryptionModuleResult::kSessionNotFound;
     case SessionInitStatus::SESSION_ALREADY_EXISTS:
-      return blink::WebContentDecryptionModuleResult::SessionAlreadyExists;
+      return blink::WebContentDecryptionModuleResult::kSessionAlreadyExists;
   }
   NOTREACHED();
-  return blink::WebContentDecryptionModuleResult::SessionNotFound;
+  return blink::WebContentDecryptionModuleResult::kSessionNotFound;
 }
 
 NewSessionCdmResultPromise::NewSessionCdmResultPromise(
@@ -63,7 +63,7 @@ void NewSessionCdmResultPromise::resolve(const std::string& session_id) {
   base::UmaHistogramTimes(key_system_uma_prefix_ + kTimeUMAPrefix + uma_name_,
                           base::TimeTicks::Now() - creation_time_);
 
-  web_cdm_result_.completeWithSession(ConvertStatus(status));
+  web_cdm_result_.CompleteWithSession(ConvertStatus(status));
 }
 
 void NewSessionCdmResultPromise::reject(CdmPromise::Exception exception_code,
@@ -72,9 +72,9 @@ void NewSessionCdmResultPromise::reject(CdmPromise::Exception exception_code,
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_,
                      ConvertCdmExceptionToResultForUMA(exception_code));
-  web_cdm_result_.completeWithError(ConvertCdmException(exception_code),
+  web_cdm_result_.CompleteWithError(ConvertCdmException(exception_code),
                                     system_code,
-                                    blink::WebString::fromUTF8(error_message));
+                                    blink::WebString::FromUTF8(error_message));
 }
 
 }  // namespace media

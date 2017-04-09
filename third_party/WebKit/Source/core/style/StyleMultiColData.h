@@ -37,34 +37,34 @@ namespace blink {
 
 class CORE_EXPORT StyleMultiColData : public RefCounted<StyleMultiColData> {
  public:
-  static PassRefPtr<StyleMultiColData> create() {
-    return adoptRef(new StyleMultiColData);
+  static PassRefPtr<StyleMultiColData> Create() {
+    return AdoptRef(new StyleMultiColData);
   }
-  PassRefPtr<StyleMultiColData> copy() const {
-    return adoptRef(new StyleMultiColData(*this));
+  PassRefPtr<StyleMultiColData> Copy() const {
+    return AdoptRef(new StyleMultiColData(*this));
   }
 
   bool operator==(const StyleMultiColData&) const;
   bool operator!=(const StyleMultiColData& o) const { return !(*this == o); }
 
-  unsigned short ruleWidth() const {
-    if (m_rule.style() == BorderStyleNone ||
-        m_rule.style() == BorderStyleHidden)
+  unsigned short RuleWidth() const {
+    if (rule_.Style() == kBorderStyleNone ||
+        rule_.Style() == kBorderStyleHidden)
       return 0;
-    return m_rule.width();
+    return rule_.Width();
   }
 
-  float m_width;
-  unsigned short m_count;
-  float m_gap;
-  BorderValue m_rule;
-  StyleColor m_visitedLinkColumnRuleColor;
+  float width_;
+  unsigned short count_;
+  float gap_;
+  BorderValue rule_;
+  StyleColor visited_link_column_rule_color_;
 
-  unsigned m_autoWidth : 1;
-  unsigned m_autoCount : 1;
-  unsigned m_normalGap : 1;
-  unsigned m_fill : 1;  // ColumnFill
-  unsigned m_columnSpan : 1;
+  unsigned auto_width_ : 1;
+  unsigned auto_count_ : 1;
+  unsigned normal_gap_ : 1;
+  unsigned fill_ : 1;  // ColumnFill
+  unsigned column_span_ : 1;
 
  private:
   StyleMultiColData();

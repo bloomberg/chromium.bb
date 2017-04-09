@@ -30,80 +30,80 @@
 
 namespace blink {
 
-WaveShaperProcessor::WaveShaperProcessor(float sampleRate,
-                                         size_t numberOfChannels)
-    : AudioDSPKernelProcessor(sampleRate, numberOfChannels),
-      m_oversample(OverSampleNone) {}
+WaveShaperProcessor::WaveShaperProcessor(float sample_rate,
+                                         size_t number_of_channels)
+    : AudioDSPKernelProcessor(sample_rate, number_of_channels),
+      oversample_(kOverSampleNone) {}
 
 WaveShaperProcessor::~WaveShaperProcessor() {
-  if (isInitialized())
-    uninitialize();
+  if (IsInitialized())
+    Uninitialize();
 }
 
-std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::createKernel() {
-  return WTF::makeUnique<WaveShaperDSPKernel>(this);
+std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::CreateKernel() {
+  return WTF::MakeUnique<WaveShaperDSPKernel>(this);
 }
 
-void WaveShaperProcessor::setCurve(const float* curveData,
-                                   unsigned curveLength) {
-  DCHECK(isMainThread());
+void WaveShaperProcessor::SetCurve(const float* curve_data,
+                                   unsigned curve_length) {
+  DCHECK(IsMainThread());
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
+  MutexLocker process_locker(process_lock_);
 
-  if (curveLength == 0 || !curveData) {
-    m_curve = nullptr;
+  if (curve_length == 0 || !curve_data) {
+    curve_ = nullptr;
     return;
   }
 
   // Copy the curve data, if any, to our internal buffer.
-  m_curve = WTF::makeUnique<Vector<float>>(curveLength);
-  memcpy(m_curve->data(), curveData, sizeof(float) * curveLength);
+  curve_ = WTF::MakeUnique<Vector<float>>(curve_length);
+  memcpy(curve_->Data(), curve_data, sizeof(float) * curve_length);
 }
 
-void WaveShaperProcessor::setOversample(OverSampleType oversample) {
+void WaveShaperProcessor::SetOversample(OverSampleType oversample) {
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
+  MutexLocker process_locker(process_lock_);
 
-  m_oversample = oversample;
+  oversample_ = oversample;
 
-  if (oversample != OverSampleNone) {
-    for (unsigned i = 0; i < m_kernels.size(); ++i) {
+  if (oversample != kOverSampleNone) {
+    for (unsigned i = 0; i < kernels_.size(); ++i) {
       WaveShaperDSPKernel* kernel =
-          static_cast<WaveShaperDSPKernel*>(m_kernels[i].get());
-      kernel->lazyInitializeOversampling();
+          static_cast<WaveShaperDSPKernel*>(kernels_[i].get());
+      kernel->LazyInitializeOversampling();
     }
   }
 }
 
-void WaveShaperProcessor::process(const AudioBus* source,
+void WaveShaperProcessor::Process(const AudioBus* source,
                                   AudioBus* destination,
-                                  size_t framesToProcess) {
-  if (!isInitialized()) {
-    destination->zero();
+                                  size_t frames_to_process) {
+  if (!IsInitialized()) {
+    destination->Zero();
     return;
   }
 
-  bool channelCountMatches =
-      source->numberOfChannels() == destination->numberOfChannels() &&
-      source->numberOfChannels() == m_kernels.size();
-  DCHECK(channelCountMatches);
-  if (!channelCountMatches)
+  bool channel_count_matches =
+      source->NumberOfChannels() == destination->NumberOfChannels() &&
+      source->NumberOfChannels() == kernels_.size();
+  DCHECK(channel_count_matches);
+  if (!channel_count_matches)
     return;
 
   // The audio thread can't block on this lock, so we call tryLock() instead.
-  MutexTryLocker tryLocker(m_processLock);
-  if (tryLocker.locked()) {
+  MutexTryLocker try_locker(process_lock_);
+  if (try_locker.Locked()) {
     // For each channel of our input, process using the corresponding
     // WaveShaperDSPKernel into the output channel.
-    for (unsigned i = 0; i < m_kernels.size(); ++i)
-      m_kernels[i]->process(source->channel(i)->data(),
-                            destination->channel(i)->mutableData(),
-                            framesToProcess);
+    for (unsigned i = 0; i < kernels_.size(); ++i)
+      kernels_[i]->Process(source->Channel(i)->Data(),
+                           destination->Channel(i)->MutableData(),
+                           frames_to_process);
   } else {
     // Too bad - the tryLock() failed. We must be in the middle of a setCurve()
     // call.
-    destination->zero();
+    destination->Zero();
   }
 }
 

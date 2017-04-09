@@ -38,37 +38,37 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   LayoutFileUploadControl(HTMLInputElement*);
   ~LayoutFileUploadControl() override;
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectFileUploadControl ||
-           LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectFileUploadControl ||
+           LayoutBlockFlow::IsOfType(type);
   }
 
-  String buttonValue();
-  String fileTextValue() const;
+  String ButtonValue();
+  String FileTextValue() const;
 
-  HTMLInputElement* uploadButton() const;
-  int uploadButtonWidth();
+  HTMLInputElement* UploadButton() const;
+  int UploadButtonWidth();
 
-  static const int afterButtonSpacing = 4;
+  static const int kAfterButtonSpacing = 4;
 
-  const char* name() const override { return "LayoutFileUploadControl"; }
+  const char* GetName() const override { return "LayoutFileUploadControl"; }
 
  private:
-  void updateFromElement() override;
-  void computeIntrinsicLogicalWidths(
-      LayoutUnit& minLogicalWidth,
-      LayoutUnit& maxLogicalWidth) const override;
-  void computePreferredLogicalWidths() override;
-  void paintObject(const PaintInfo&, const LayoutPoint&) const override;
+  void UpdateFromElement() override;
+  void ComputeIntrinsicLogicalWidths(
+      LayoutUnit& min_logical_width,
+      LayoutUnit& max_logical_width) const override;
+  void ComputePreferredLogicalWidths() override;
+  void PaintObject(const PaintInfo&, const LayoutPoint&) const override;
 
-  int maxFilenameWidth() const;
+  int MaxFilenameWidth() const;
 
-  PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
 
-  bool m_canReceiveDroppedFiles;
+  bool can_receive_dropped_files_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, isFileUploadControl());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, IsFileUploadControl());
 
 }  // namespace blink
 

@@ -43,39 +43,39 @@ class PLATFORM_EXPORT AudioDSPKernel {
   USING_FAST_MALLOC(AudioDSPKernel);
 
  public:
-  AudioDSPKernel(AudioDSPKernelProcessor* kernelProcessor)
-      : m_kernelProcessor(kernelProcessor),
-        m_sampleRate(kernelProcessor->sampleRate()) {}
+  AudioDSPKernel(AudioDSPKernelProcessor* kernel_processor)
+      : kernel_processor_(kernel_processor),
+        sample_rate_(kernel_processor->SampleRate()) {}
 
-  AudioDSPKernel(float sampleRate)
-      : m_kernelProcessor(nullptr), m_sampleRate(sampleRate) {}
+  AudioDSPKernel(float sample_rate)
+      : kernel_processor_(nullptr), sample_rate_(sample_rate) {}
 
   virtual ~AudioDSPKernel();
 
   // Subclasses must override process() to do the processing and reset() to
   // reset DSP state.
-  virtual void process(const float* source,
+  virtual void Process(const float* source,
                        float* destination,
-                       size_t framesToProcess) = 0;
+                       size_t frames_to_process) = 0;
   // Subclasses that have AudioParams must override this to process the
   // AudioParams.
-  virtual void processOnlyAudioParams(size_t framesToProcess){};
-  virtual void reset() = 0;
+  virtual void ProcessOnlyAudioParams(size_t frames_to_process){};
+  virtual void Reset() = 0;
 
-  float sampleRate() const { return m_sampleRate; }
-  double nyquist() const { return 0.5 * sampleRate(); }
+  float SampleRate() const { return sample_rate_; }
+  double Nyquist() const { return 0.5 * SampleRate(); }
 
-  AudioDSPKernelProcessor* processor() { return m_kernelProcessor; }
-  const AudioDSPKernelProcessor* processor() const { return m_kernelProcessor; }
+  AudioDSPKernelProcessor* Processor() { return kernel_processor_; }
+  const AudioDSPKernelProcessor* Processor() const { return kernel_processor_; }
 
-  virtual double tailTime() const = 0;
-  virtual double latencyTime() const = 0;
+  virtual double TailTime() const = 0;
+  virtual double LatencyTime() const = 0;
 
  protected:
   // This raw pointer is safe because the AudioDSPKernelProcessor object is
   // guaranteed to be kept alive while the AudioDSPKernel object is alive.
-  AudioDSPKernelProcessor* m_kernelProcessor;
-  float m_sampleRate;
+  AudioDSPKernelProcessor* kernel_processor_;
+  float sample_rate_;
 };
 
 }  // namespace blink

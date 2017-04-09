@@ -42,31 +42,31 @@ class SpeechSynthesisUtterance final
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 
  public:
-  static SpeechSynthesisUtterance* create(ExecutionContext*, const String&);
+  static SpeechSynthesisUtterance* Create(ExecutionContext*, const String&);
 
   ~SpeechSynthesisUtterance() override;
 
-  const String& text() const { return m_platformUtterance->text(); }
-  void setText(const String& text) { m_platformUtterance->setText(text); }
+  const String& text() const { return platform_utterance_->GetText(); }
+  void setText(const String& text) { platform_utterance_->SetText(text); }
 
-  const String& lang() const { return m_platformUtterance->lang(); }
-  void setLang(const String& lang) { m_platformUtterance->setLang(lang); }
+  const String& lang() const { return platform_utterance_->Lang(); }
+  void setLang(const String& lang) { platform_utterance_->SetLang(lang); }
 
   SpeechSynthesisVoice* voice() const;
   void setVoice(SpeechSynthesisVoice*);
 
-  float volume() const { return m_platformUtterance->volume(); }
-  void setVolume(float volume) { m_platformUtterance->setVolume(volume); }
+  float volume() const { return platform_utterance_->Volume(); }
+  void setVolume(float volume) { platform_utterance_->SetVolume(volume); }
 
-  float rate() const { return m_platformUtterance->rate(); }
-  void setRate(float rate) { m_platformUtterance->setRate(rate); }
+  float rate() const { return platform_utterance_->Rate(); }
+  void setRate(float rate) { platform_utterance_->SetRate(rate); }
 
-  float pitch() const { return m_platformUtterance->pitch(); }
-  void setPitch(float pitch) { m_platformUtterance->setPitch(pitch); }
+  float pitch() const { return platform_utterance_->Pitch(); }
+  void setPitch(float pitch) { platform_utterance_->SetPitch(pitch); }
 
-  double startTime() const { return m_platformUtterance->startTime(); }
-  void setStartTime(double startTime) {
-    m_platformUtterance->setStartTime(startTime);
+  double StartTime() const { return platform_utterance_->StartTime(); }
+  void SetStartTime(double start_time) {
+    platform_utterance_->SetStartTime(start_time);
   }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
@@ -77,12 +77,12 @@ class SpeechSynthesisUtterance final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-  ExecutionContext* getExecutionContext() const override {
-    return ContextClient::getExecutionContext();
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextClient::GetExecutionContext();
   }
 
-  PlatformSpeechSynthesisUtterance* platformUtterance() const {
-    return m_platformUtterance;
+  PlatformSpeechSynthesisUtterance* PlatformUtterance() const {
+    return platform_utterance_;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -91,10 +91,10 @@ class SpeechSynthesisUtterance final
   SpeechSynthesisUtterance(ExecutionContext*, const String&);
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
-  Member<SpeechSynthesisVoice> m_voice;
+  Member<PlatformSpeechSynthesisUtterance> platform_utterance_;
+  Member<SpeechSynthesisVoice> voice_;
 };
 
 }  // namespace blink

@@ -30,55 +30,56 @@
 
 namespace blink {
 
-void TrailingObjects::updateMidpointsForTrailingObjects(
-    LineMidpointState& lineMidpointState,
-    const InlineIterator& lBreak,
-    CollapseFirstSpaceOrNot collapseFirstSpace) {
-  if (!m_whitespace)
+void TrailingObjects::UpdateMidpointsForTrailingObjects(
+    LineMidpointState& line_midpoint_state,
+    const InlineIterator& l_break,
+    CollapseFirstSpaceOrNot collapse_first_space) {
+  if (!whitespace_)
     return;
 
   // This object is either going to be part of the last midpoint, or it is going
   // to be the actual endpoint. In both cases we just decrease our pos by 1
   // level to exclude the space, allowing it to - in effect - collapse into the
   // newline.
-  if (lineMidpointState.numMidpoints() % 2) {
+  if (line_midpoint_state.NumMidpoints() % 2) {
     // Find the trailing space object's midpoint.
-    int trailingSpaceMidpoint = lineMidpointState.numMidpoints() - 1;
-    for (; trailingSpaceMidpoint > 0 &&
-           lineMidpointState.midpoints()[trailingSpaceMidpoint]
-                   .getLineLayoutItem() != m_whitespace;
-         --trailingSpaceMidpoint) {
+    int trailing_space_midpoint = line_midpoint_state.NumMidpoints() - 1;
+    for (; trailing_space_midpoint > 0 &&
+           line_midpoint_state.Midpoints()[trailing_space_midpoint]
+                   .GetLineLayoutItem() != whitespace_;
+         --trailing_space_midpoint) {
     }
-    DCHECK_GE(trailingSpaceMidpoint, 0);
-    if (collapseFirstSpace == CollapseFirstSpace)
-      lineMidpointState.midpoints()[trailingSpaceMidpoint].setOffset(
-          lineMidpointState.midpoints()[trailingSpaceMidpoint].offset() - 1);
+    DCHECK_GE(trailing_space_midpoint, 0);
+    if (collapse_first_space == kCollapseFirstSpace)
+      line_midpoint_state.Midpoints()[trailing_space_midpoint].SetOffset(
+          line_midpoint_state.Midpoints()[trailing_space_midpoint].Offset() -
+          1);
 
     // Now make sure every single trailingPositionedBox following the
     // trailingSpaceMidpoint properly stops and starts ignoring spaces.
-    size_t currentMidpoint = trailingSpaceMidpoint + 1;
-    for (size_t i = 0; i < m_objects.size(); ++i) {
-      if (currentMidpoint >= lineMidpointState.numMidpoints()) {
+    size_t current_midpoint = trailing_space_midpoint + 1;
+    for (size_t i = 0; i < objects_.size(); ++i) {
+      if (current_midpoint >= line_midpoint_state.NumMidpoints()) {
         // We don't have a midpoint for this box yet.
-        ensureLineBoxInsideIgnoredSpaces(&lineMidpointState,
-                                         LineLayoutItem(m_objects[i]));
+        EnsureLineBoxInsideIgnoredSpaces(&line_midpoint_state,
+                                         LineLayoutItem(objects_[i]));
       } else {
-        DCHECK(lineMidpointState.midpoints()[currentMidpoint]
-                   .getLineLayoutItem() == m_objects[i]);
-        DCHECK(lineMidpointState.midpoints()[currentMidpoint + 1]
-                   .getLineLayoutItem() == m_objects[i]);
+        DCHECK(line_midpoint_state.Midpoints()[current_midpoint]
+                   .GetLineLayoutItem() == objects_[i]);
+        DCHECK(line_midpoint_state.Midpoints()[current_midpoint + 1]
+                   .GetLineLayoutItem() == objects_[i]);
       }
-      currentMidpoint += 2;
+      current_midpoint += 2;
     }
-  } else if (!lBreak.getLineLayoutItem()) {
-    DCHECK_EQ(collapseFirstSpace, CollapseFirstSpace);
+  } else if (!l_break.GetLineLayoutItem()) {
+    DCHECK_EQ(collapse_first_space, kCollapseFirstSpace);
     // Add a new end midpoint that stops right at the very end.
-    unsigned length = m_whitespace.textLength();
+    unsigned length = whitespace_.TextLength();
     unsigned pos = length >= 2 ? length - 2 : UINT_MAX;
-    InlineIterator endMid(0, m_whitespace, pos);
-    lineMidpointState.startIgnoringSpaces(endMid);
-    for (size_t i = 0; i < m_objects.size(); ++i) {
-      ensureLineBoxInsideIgnoredSpaces(&lineMidpointState, m_objects[i]);
+    InlineIterator end_mid(0, whitespace_, pos);
+    line_midpoint_state.StartIgnoringSpaces(end_mid);
+    for (size_t i = 0; i < objects_.size(); ++i) {
+      EnsureLineBoxInsideIgnoredSpaces(&line_midpoint_state, objects_[i]);
     }
   }
 }

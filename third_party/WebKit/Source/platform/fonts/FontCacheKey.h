@@ -43,66 +43,64 @@ namespace blink {
 
 // Multiplying the floating point size by 100 gives two decimal point
 // precision which should be sufficient.
-static const unsigned s_fontSizePrecisionMultiplier = 100;
+static const unsigned kFontSizePrecisionMultiplier = 100;
 
 struct FontCacheKey {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  FontCacheKey() : m_creationParams(), m_fontSize(0), m_options(0) {}
-  FontCacheKey(FontFaceCreationParams creationParams,
-               float fontSize,
+  FontCacheKey() : creation_params_(), font_size_(0), options_(0) {}
+  FontCacheKey(FontFaceCreationParams creation_params,
+               float font_size,
                unsigned options,
-               PassRefPtr<FontVariationSettings> variationSettings)
-      : m_creationParams(creationParams),
-        m_fontSize(fontSize * s_fontSizePrecisionMultiplier),
-        m_options(options),
-        m_variationSettings(std::move(variationSettings)) {}
+               PassRefPtr<FontVariationSettings> variation_settings)
+      : creation_params_(creation_params),
+        font_size_(font_size * kFontSizePrecisionMultiplier),
+        options_(options),
+        variation_settings_(std::move(variation_settings)) {}
 
   FontCacheKey(WTF::HashTableDeletedValueType)
-      : m_fontSize(hashTableDeletedSize()) {}
+      : font_size_(HashTableDeletedSize()) {}
 
-  unsigned hash() const {
-    unsigned hashCodes[4] = {
-        m_creationParams.hash(), m_fontSize, m_options,
-        m_variationSettings ? m_variationSettings->hash() : 0};
-    return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
+  unsigned GetHash() const {
+    unsigned hash_codes[4] = {
+        creation_params_.GetHash(), font_size_, options_,
+        variation_settings_ ? variation_settings_->GetHash() : 0};
+    return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
 
   bool operator==(const FontCacheKey& other) const {
-    return m_creationParams == other.m_creationParams &&
-           m_fontSize == other.m_fontSize && m_options == other.m_options &&
-           m_variationSettings == other.m_variationSettings;
+    return creation_params_ == other.creation_params_ &&
+           font_size_ == other.font_size_ && options_ == other.options_ &&
+           variation_settings_ == other.variation_settings_;
   }
 
-  bool isHashTableDeletedValue() const {
-    return m_fontSize == hashTableDeletedSize();
+  bool IsHashTableDeletedValue() const {
+    return font_size_ == HashTableDeletedSize();
   }
 
-  static unsigned precisionMultiplier() {
-    return s_fontSizePrecisionMultiplier;
-  }
+  static unsigned PrecisionMultiplier() { return kFontSizePrecisionMultiplier; }
 
-  void clearFontSize() { m_fontSize = 0; }
+  void ClearFontSize() { font_size_ = 0; }
 
  private:
-  static unsigned hashTableDeletedSize() { return 0xFFFFFFFFU; }
+  static unsigned HashTableDeletedSize() { return 0xFFFFFFFFU; }
 
-  FontFaceCreationParams m_creationParams;
-  unsigned m_fontSize;
-  unsigned m_options;
-  RefPtr<FontVariationSettings> m_variationSettings;
+  FontFaceCreationParams creation_params_;
+  unsigned font_size_;
+  unsigned options_;
+  RefPtr<FontVariationSettings> variation_settings_;
 };
 
 struct FontCacheKeyHash {
   STATIC_ONLY(FontCacheKeyHash);
-  static unsigned hash(const FontCacheKey& key) { return key.hash(); }
+  static unsigned GetHash(const FontCacheKey& key) { return key.GetHash(); }
 
-  static bool equal(const FontCacheKey& a, const FontCacheKey& b) {
+  static bool Equal(const FontCacheKey& a, const FontCacheKey& b) {
     return a == b;
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 struct FontCacheKeyTraits : WTF::SimpleClassHashTraits<FontCacheKey> {

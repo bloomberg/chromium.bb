@@ -43,41 +43,41 @@ class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
   WTF_MAKE_NONCOPYABLE(ElementShadow);
 
  public:
-  static ElementShadow* create();
+  static ElementShadow* Create();
 
-  Element& host() const {
-    DCHECK(m_shadowRoot);
-    return m_shadowRoot->host();
+  Element& Host() const {
+    DCHECK(shadow_root_);
+    return shadow_root_->host();
   }
 
   // TODO(hayato): Remove youngestShadowRoot() and oldestShadowRoot() from
   // ElementShadow
-  ShadowRoot& youngestShadowRoot() const;
-  ShadowRoot& oldestShadowRoot() const {
-    DCHECK(m_shadowRoot);
-    return *m_shadowRoot;
+  ShadowRoot& YoungestShadowRoot() const;
+  ShadowRoot& OldestShadowRoot() const {
+    DCHECK(shadow_root_);
+    return *shadow_root_;
   }
 
-  ElementShadow* containingShadow() const;
+  ElementShadow* ContainingShadow() const;
 
-  ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);
+  ShadowRoot& AddShadowRoot(Element& shadow_host, ShadowRootType);
 
-  bool hasSameStyles(const ElementShadow&) const;
+  bool HasSameStyles(const ElementShadow&) const;
 
-  void attach(const Node::AttachContext&);
-  void detach(const Node::AttachContext&);
+  void Attach(const Node::AttachContext&);
+  void Detach(const Node::AttachContext&);
 
-  void distributeIfNeeded();
+  void DistributeIfNeeded();
 
-  void setNeedsDistributionRecalc();
-  bool needsDistributionRecalc() const { return m_needsDistributionRecalc; }
+  void SetNeedsDistributionRecalc();
+  bool NeedsDistributionRecalc() const { return needs_distribution_recalc_; }
 
-  bool isV1() const { return youngestShadowRoot().isV1(); }
-  bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); }
+  bool IsV1() const { return YoungestShadowRoot().IsV1(); }
+  bool IsOpenOrV0() const { return YoungestShadowRoot().IsOpenOrV0(); }
 
-  ElementShadowV0& v0() const {
-    DCHECK(m_elementShadowV0);
-    return *m_elementShadowV0;
+  ElementShadowV0& V0() const {
+    DCHECK(element_shadow_v0_);
+    return *element_shadow_v0_;
   }
 
   DECLARE_TRACE();
@@ -86,36 +86,36 @@ class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
  private:
   ElementShadow();
 
-  void appendShadowRoot(ShadowRoot&);
-  void distribute();
+  void AppendShadowRoot(ShadowRoot&);
+  void Distribute();
 
-  TraceWrapperMember<ElementShadowV0> m_elementShadowV0;
-  TraceWrapperMember<ShadowRoot> m_shadowRoot;
-  bool m_needsDistributionRecalc;
+  TraceWrapperMember<ElementShadowV0> element_shadow_v0_;
+  TraceWrapperMember<ShadowRoot> shadow_root_;
+  bool needs_distribution_recalc_;
 };
 
-inline ShadowRoot* Node::youngestShadowRoot() const {
-  if (!isElementNode())
+inline ShadowRoot* Node::YoungestShadowRoot() const {
+  if (!IsElementNode())
     return nullptr;
-  return toElement(this)->youngestShadowRoot();
+  return ToElement(this)->YoungestShadowRoot();
 }
 
-inline ShadowRoot* Element::youngestShadowRoot() const {
-  if (ElementShadow* shadow = this->shadow())
-    return &shadow->youngestShadowRoot();
+inline ShadowRoot* Element::YoungestShadowRoot() const {
+  if (ElementShadow* shadow = this->Shadow())
+    return &shadow->YoungestShadowRoot();
   return nullptr;
 }
 
-inline ElementShadow* ElementShadow::containingShadow() const {
-  if (ShadowRoot* parentRoot = host().containingShadowRoot())
-    return parentRoot->owner();
+inline ElementShadow* ElementShadow::ContainingShadow() const {
+  if (ShadowRoot* parent_root = Host().ContainingShadowRoot())
+    return parent_root->Owner();
   return nullptr;
 }
 
-inline void ElementShadow::distributeIfNeeded() {
-  if (m_needsDistributionRecalc)
-    distribute();
-  m_needsDistributionRecalc = false;
+inline void ElementShadow::DistributeIfNeeded() {
+  if (needs_distribution_recalc_)
+    Distribute();
+  needs_distribution_recalc_ = false;
 }
 
 }  // namespace blink

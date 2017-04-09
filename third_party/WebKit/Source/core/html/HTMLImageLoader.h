@@ -30,19 +30,19 @@ namespace blink {
 
 class CORE_EXPORT HTMLImageLoader final : public ImageLoader {
  public:
-  static HTMLImageLoader* create(Element* element) {
+  static HTMLImageLoader* Create(Element* element) {
     return new HTMLImageLoader(element);
   }
   ~HTMLImageLoader() override;
 
-  void dispatchLoadEvent() override;
+  void DispatchLoadEvent() override;
 
-  void imageNotifyFinished(ImageResourceContent*) override;
-  String debugName() const override { return "HTMLImageLoader"; }
+  void ImageNotifyFinished(ImageResourceContent*) override;
+  String DebugName() const override { return "HTMLImageLoader"; }
 
  private:
   explicit HTMLImageLoader(Element*);
-  void noImageResourceToLoad() override;
+  void NoImageResourceToLoad() override;
 };
 
 }  // namespace blink

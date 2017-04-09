@@ -64,7 +64,7 @@ void ColorPicker::SetEnabled(bool enabled) {
 
     WebCursor pointer_cursor;
     WebCursor::CursorInfo cursor_info;
-    cursor_info.type = blink::WebCursorInfo::TypePointer;
+    cursor_info.type = blink::WebCursorInfo::kTypePointer;
     pointer_cursor.InitFromCursorInfo(cursor_info);
     host_->SetCursor(pointer_cursor);
   }
@@ -112,14 +112,14 @@ void ColorPicker::FrameUpdated(const SkBitmap& bitmap,
 }
 
 bool ColorPicker::HandleMouseEvent(const blink::WebMouseEvent& event) {
-  last_cursor_x_ = event.positionInWidget().x;
-  last_cursor_y_ = event.positionInWidget().y;
+  last_cursor_x_ = event.PositionInWidget().x;
+  last_cursor_y_ = event.PositionInWidget().y;
   if (frame_.drawsNothing())
     return true;
 
-  if (event.button == blink::WebMouseEvent::Button::Left &&
-      (event.type() == blink::WebInputEvent::MouseDown ||
-       event.type() == blink::WebInputEvent::MouseMove)) {
+  if (event.button == blink::WebMouseEvent::Button::kLeft &&
+      (event.GetType() == blink::WebInputEvent::kMouseDown ||
+       event.GetType() == blink::WebInputEvent::kMouseMove)) {
     if (last_cursor_x_ < 0 || last_cursor_x_ >= frame_.width() ||
         last_cursor_y_ < 0 || last_cursor_y_ >= frame_.height()) {
       return true;
@@ -250,7 +250,7 @@ void ColorPicker::UpdateCursor() {
 
   WebCursor cursor;
   WebCursor::CursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::TypeCustom;
+  cursor_info.type = blink::WebCursorInfo::kTypeCustom;
   cursor_info.image_scale_factor = device_scale_factor;
   cursor_info.custom_image = result;
   cursor_info.hotspot =

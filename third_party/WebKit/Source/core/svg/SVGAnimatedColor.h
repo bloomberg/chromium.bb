@@ -43,30 +43,30 @@ class SVGAnimationElement;
 // are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
  public:
-  static SVGColorProperty* create(const String& colorString) {
-    return new SVGColorProperty(colorString);
+  static SVGColorProperty* Create(const String& color_string) {
+    return new SVGColorProperty(color_string);
   }
 
-  SVGPropertyBase* cloneForAnimation(const String&) const override;
-  String valueAsString() const override;
+  SVGPropertyBase* CloneForAnimation(const String&) const override;
+  String ValueAsString() const override;
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
+                              unsigned repeat_count,
                               SVGPropertyBase* from,
                               SVGPropertyBase* to,
-                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGPropertyBase* to_at_end_of_duration_value,
                               SVGElement*) override;
-  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-  static AnimatedPropertyType classType() { return AnimatedColor; }
-  AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType ClassType() { return kAnimatedColor; }
+  AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
   explicit SVGColorProperty(const String&);
 
-  StyleColor m_styleColor;
+  StyleColor style_color_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGColorProperty);

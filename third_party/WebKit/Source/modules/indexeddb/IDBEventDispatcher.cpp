@@ -33,38 +33,38 @@
 
 namespace blink {
 
-DispatchEventResult IDBEventDispatcher::dispatch(
+DispatchEventResult IDBEventDispatcher::Dispatch(
     Event* event,
-    HeapVector<Member<EventTarget>>& eventTargets) {
-  size_t size = eventTargets.size();
+    HeapVector<Member<EventTarget>>& event_targets) {
+  size_t size = event_targets.size();
   ASSERT(size);
 
-  event->setEventPhase(Event::kCapturingPhase);
+  event->SetEventPhase(Event::kCapturingPhase);
   for (size_t i = size - 1; i; --i) {  // Don't do the first element.
-    event->setCurrentTarget(eventTargets[i].get());
-    eventTargets[i]->fireEventListeners(event);
-    if (event->propagationStopped())
+    event->SetCurrentTarget(event_targets[i].Get());
+    event_targets[i]->FireEventListeners(event);
+    if (event->PropagationStopped())
       goto doneDispatching;
   }
 
-  event->setEventPhase(Event::kAtTarget);
-  event->setCurrentTarget(eventTargets[0].get());
-  eventTargets[0]->fireEventListeners(event);
-  if (event->propagationStopped() || !event->bubbles() || event->cancelBubble())
+  event->SetEventPhase(Event::kAtTarget);
+  event->SetCurrentTarget(event_targets[0].Get());
+  event_targets[0]->FireEventListeners(event);
+  if (event->PropagationStopped() || !event->bubbles() || event->cancelBubble())
     goto doneDispatching;
 
-  event->setEventPhase(Event::kBubblingPhase);
+  event->SetEventPhase(Event::kBubblingPhase);
   for (size_t i = 1; i < size; ++i) {  // Don't do the first element.
-    event->setCurrentTarget(eventTargets[i].get());
-    eventTargets[i]->fireEventListeners(event);
-    if (event->propagationStopped() || event->cancelBubble())
+    event->SetCurrentTarget(event_targets[i].Get());
+    event_targets[i]->FireEventListeners(event);
+    if (event->PropagationStopped() || event->cancelBubble())
       goto doneDispatching;
   }
 
 doneDispatching:
-  event->setCurrentTarget(nullptr);
-  event->setEventPhase(Event::kNone);
-  return EventTarget::dispatchEventResult(*event);
+  event->SetCurrentTarget(nullptr);
+  event->SetEventPhase(Event::kNone);
+  return EventTarget::GetDispatchEventResult(*event);
 }
 
 }  // namespace blink

@@ -281,7 +281,7 @@ void DatabaseImpl::Put(
     UMA_HISTOGRAM_BOOLEAN("Storage.IndexedDB.PutValidBlob",
                           handle.get() != nullptr);
     if (!handle) {
-      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+      IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
                                    kInvalidBlobUuid);
       idb_runner_->PostTask(FROM_HERE, base::Bind(&IndexedDBCallbacks::OnError,
                                                   callbacks, error));
@@ -868,7 +868,7 @@ void DatabaseImpl::IDBThreadHelper::OnGotUsageAndQuotaForCommit(
   } else {
     connection_->AbortTransaction(
         transaction,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionQuotaError));
   }
 }
 

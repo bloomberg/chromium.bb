@@ -53,16 +53,16 @@ class FileSystemClient {
   FileSystemClient() {}
   virtual ~FileSystemClient() {}
 
-  virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
-  virtual void requestFileSystemAccessAsync(
+  virtual bool RequestFileSystemAccessSync(ExecutionContext*) = 0;
+  virtual void RequestFileSystemAccessAsync(
       ExecutionContext*,
       std::unique_ptr<ContentSettingCallbacks>) = 0;
 };
 
-MODULES_EXPORT void provideLocalFileSystemTo(LocalFrame&,
+MODULES_EXPORT void ProvideLocalFileSystemTo(LocalFrame&,
                                              std::unique_ptr<FileSystemClient>);
 
-MODULES_EXPORT void provideLocalFileSystemToWorker(
+MODULES_EXPORT void ProvideLocalFileSystemToWorker(
     WorkerClients*,
     std::unique_ptr<FileSystemClient>);
 

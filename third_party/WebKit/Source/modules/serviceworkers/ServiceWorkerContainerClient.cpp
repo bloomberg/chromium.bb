@@ -17,53 +17,53 @@ namespace blink {
 ServiceWorkerContainerClient::ServiceWorkerContainerClient(
     Document& document,
     std::unique_ptr<WebServiceWorkerProvider> provider)
-    : Supplement<Document>(document), m_provider(std::move(provider)) {}
+    : Supplement<Document>(document), provider_(std::move(provider)) {}
 
 ServiceWorkerContainerClient::ServiceWorkerContainerClient(
     WorkerClients& clients,
     std::unique_ptr<WebServiceWorkerProvider> provider)
-    : Supplement<WorkerClients>(clients), m_provider(std::move(provider)) {}
+    : Supplement<WorkerClients>(clients), provider_(std::move(provider)) {}
 
 ServiceWorkerContainerClient::~ServiceWorkerContainerClient() {}
 
-const char* ServiceWorkerContainerClient::supplementName() {
+const char* ServiceWorkerContainerClient::SupplementName() {
   return "ServiceWorkerContainerClient";
 }
 
-ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(
+ServiceWorkerContainerClient* ServiceWorkerContainerClient::From(
     ExecutionContext* context) {
   if (!context)
     return nullptr;
-  if (context->isWorkerGlobalScope()) {
-    WorkerClients* workerClients = toWorkerGlobalScope(context)->clients();
-    DCHECK(workerClients);
+  if (context->IsWorkerGlobalScope()) {
+    WorkerClients* worker_clients = ToWorkerGlobalScope(context)->Clients();
+    DCHECK(worker_clients);
     ServiceWorkerContainerClient* client =
         static_cast<ServiceWorkerContainerClient*>(
-            Supplement<WorkerClients>::from(workerClients, supplementName()));
+            Supplement<WorkerClients>::From(worker_clients, SupplementName()));
     DCHECK(client);
     return client;
   }
-  Document* document = toDocument(context);
-  if (!document->frame())
+  Document* document = ToDocument(context);
+  if (!document->GetFrame())
     return nullptr;
 
   ServiceWorkerContainerClient* client =
       static_cast<ServiceWorkerContainerClient*>(
-          Supplement<Document>::from(document, supplementName()));
+          Supplement<Document>::From(document, SupplementName()));
   if (!client) {
     client = new ServiceWorkerContainerClient(
         *document,
-        document->frame()->loader().client()->createServiceWorkerProvider());
-    Supplement<Document>::provideTo(*document, supplementName(), client);
+        document->GetFrame()->Loader().Client()->CreateServiceWorkerProvider());
+    Supplement<Document>::ProvideTo(*document, SupplementName(), client);
   }
   return client;
 }
 
-void provideServiceWorkerContainerClientToWorker(
+void ProvideServiceWorkerContainerClientToWorker(
     WorkerClients* clients,
     std::unique_ptr<WebServiceWorkerProvider> provider) {
-  clients->provideSupplement(
-      ServiceWorkerContainerClient::supplementName(),
+  clients->ProvideSupplement(
+      ServiceWorkerContainerClient::SupplementName(),
       new ServiceWorkerContainerClient(*clients, std::move(provider)));
 }
 

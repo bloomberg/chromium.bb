@@ -32,27 +32,27 @@ class LayoutFieldset final : public LayoutBlockFlow {
  public:
   explicit LayoutFieldset(Element*);
 
-  LayoutBox* findInFlowLegend() const;
+  LayoutBox* FindInFlowLegend() const;
 
-  const char* name() const override { return "LayoutFieldset"; }
+  const char* GetName() const override { return "LayoutFieldset"; }
 
  private:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectFieldset || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectFieldset || LayoutBlockFlow::IsOfType(type);
   }
 
-  LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren,
+  LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 
-  void computePreferredLogicalWidths() override;
-  bool avoidsFloats() const override { return true; }
+  void ComputePreferredLogicalWidths() override;
+  bool AvoidsFloats() const override { return true; }
 
-  void paintBoxDecorationBackground(const PaintInfo&,
+  void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&) const override;
-  void paintMask(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintMask(const PaintInfo&, const LayoutPoint&) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, isFieldset());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, IsFieldset());
 
 }  // namespace blink
 

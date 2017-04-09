@@ -31,7 +31,7 @@ void UserGesturesNativeHandler::IsProcessingUserGesture(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(v8::Boolean::New(
       args.GetIsolate(),
-      blink::WebUserGestureIndicator::isProcessingUserGesture()));
+      blink::WebUserGestureIndicator::IsProcessingUserGesture()));
 }
 
 void UserGesturesNativeHandler::RunWithUserGesture(
@@ -45,7 +45,7 @@ void UserGesturesNativeHandler::RunWithUserGesture(
 
 void UserGesturesNativeHandler::RunWithoutUserGesture(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  blink::WebUserGestureIndicator::consumeUserGesture();
+  blink::WebUserGestureIndicator::ConsumeUserGesture();
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
   v8::Local<v8::Value> no_args;

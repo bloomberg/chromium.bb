@@ -44,7 +44,7 @@ class PublicURLManager final
   USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 
  public:
-  static PublicURLManager* create(ExecutionContext*);
+  static PublicURLManager* Create(ExecutionContext*);
 
   // Generates a new Blob URL and registers the URLRegistrable to the
   // corresponding URLRegistry with the Blob URL. Returns the serialization
@@ -54,14 +54,14 @@ class PublicURLManager final
   // |uuid|. It's not the UUID generated and appended to the BlobURL, but an
   // identifier for the object to which URL(s) are generated e.g. ones
   // returned by blink::Blob::uuid().
-  String registerURL(ExecutionContext*, URLRegistrable*, const String& uuid);
+  String RegisterURL(ExecutionContext*, URLRegistrable*, const String& uuid);
   // Revokes the given URL.
-  void revoke(const KURL&);
+  void Revoke(const KURL&);
   // Revokes all URLs associated with |uuid|.
-  void revoke(const String& uuid);
+  void Revoke(const String& uuid);
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -77,8 +77,8 @@ class PublicURLManager final
   // each of the URLs.
   typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
 
-  RegistryURLMap m_registryToURL;
-  bool m_isStopped;
+  RegistryURLMap registry_to_url_;
+  bool is_stopped_;
 };
 
 }  // namespace blink

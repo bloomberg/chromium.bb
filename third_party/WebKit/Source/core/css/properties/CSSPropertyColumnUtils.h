@@ -15,11 +15,11 @@ class CSSValue;
 class CSSPropertyColumnUtils {
   STATIC_ONLY(CSSPropertyColumnUtils);
 
-  static CSSValue* consumeColumnCount(CSSParserTokenRange&);
+  static CSSValue* ConsumeColumnCount(CSSParserTokenRange&);
 
-  static CSSValue* consumeColumnWidth(CSSParserTokenRange&);
+  static CSSValue* ConsumeColumnWidth(CSSParserTokenRange&);
 
-  static bool consumeColumnWidthOrCount(CSSParserTokenRange&,
+  static bool ConsumeColumnWidthOrCount(CSSParserTokenRange&,
                                         CSSValue*&,
                                         CSSValue*&);
 };

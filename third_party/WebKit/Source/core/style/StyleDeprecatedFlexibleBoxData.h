@@ -33,11 +33,11 @@ namespace blink {
 class StyleDeprecatedFlexibleBoxData
     : public RefCounted<StyleDeprecatedFlexibleBoxData> {
  public:
-  static PassRefPtr<StyleDeprecatedFlexibleBoxData> create() {
-    return adoptRef(new StyleDeprecatedFlexibleBoxData);
+  static PassRefPtr<StyleDeprecatedFlexibleBoxData> Create() {
+    return AdoptRef(new StyleDeprecatedFlexibleBoxData);
   }
-  PassRefPtr<StyleDeprecatedFlexibleBoxData> copy() const {
-    return adoptRef(new StyleDeprecatedFlexibleBoxData(*this));
+  PassRefPtr<StyleDeprecatedFlexibleBoxData> Copy() const {
+    return AdoptRef(new StyleDeprecatedFlexibleBoxData(*this));
   }
 
   bool operator==(const StyleDeprecatedFlexibleBoxData&) const;
@@ -46,8 +46,8 @@ class StyleDeprecatedFlexibleBoxData
   }
 
   float flex;
-  unsigned flexGroup;
-  unsigned ordinalGroup;
+  unsigned flex_group;
+  unsigned ordinal_group;
 
   unsigned align : 3;   // EBoxAlignment
   unsigned pack : 2;    // EBoxPack

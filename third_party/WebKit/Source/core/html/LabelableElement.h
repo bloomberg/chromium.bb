@@ -44,19 +44,19 @@ class CORE_EXPORT LabelableElement : public HTMLElement {
  public:
   ~LabelableElement() override;
   LabelsNodeList* labels();
-  virtual bool supportLabels() const { return false; }
+  virtual bool SupportLabels() const { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  LabelableElement(const QualifiedName& tagName, Document&);
+  LabelableElement(const QualifiedName& tag_name, Document&);
 
  private:
-  bool isLabelable() const final { return true; }
+  bool IsLabelable() const final { return true; }
 };
 
-inline bool isLabelableElement(const HTMLElement& element) {
-  return element.isLabelable();
+inline bool IsLabelableElement(const HTMLElement& element) {
+  return element.IsLabelable();
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(LabelableElement);

@@ -13,125 +13,125 @@
 namespace blink {
 
 GraphicsContextCanvas::GraphicsContextCanvas(PaintCanvas* canvas,
-                                             const SkIRect& userClipRect,
-                                             SkScalar bitmapScaleFactor)
-    : m_canvas(canvas),
-      m_cgContext(0),
-      m_bitmapScaleFactor(bitmapScaleFactor),
-      m_useDeviceBits(false),
-      m_bitmapIsDummy(false) {
-  m_canvas->save();
-  m_canvas->clipRect(SkRect::MakeFromIRect(userClipRect));
+                                             const SkIRect& user_clip_rect,
+                                             SkScalar bitmap_scale_factor)
+    : canvas_(canvas),
+      cg_context_(0),
+      bitmap_scale_factor_(bitmap_scale_factor),
+      use_device_bits_(false),
+      bitmap_is_dummy_(false) {
+  canvas_->save();
+  canvas_->clipRect(SkRect::MakeFromIRect(user_clip_rect));
 }
 
 GraphicsContextCanvas::~GraphicsContextCanvas() {
-  releaseIfNeeded();
-  m_canvas->restore();
+  ReleaseIfNeeded();
+  canvas_->restore();
 }
 
-SkIRect GraphicsContextCanvas::computeDirtyRect() {
+SkIRect GraphicsContextCanvas::ComputeDirtyRect() {
   // If the user specified a clip region, assume that it was tight and that the
   // dirty rect is approximately the whole bitmap.
-  return SkIRect::MakeWH(m_offscreen.width(), m_offscreen.height());
+  return SkIRect::MakeWH(offscreen_.width(), offscreen_.height());
 }
 
 // This must be called to balance calls to cgContext
-void GraphicsContextCanvas::releaseIfNeeded() {
-  if (!m_cgContext)
+void GraphicsContextCanvas::ReleaseIfNeeded() {
+  if (!cg_context_)
     return;
-  if (!m_useDeviceBits && !m_bitmapIsDummy) {
+  if (!use_device_bits_ && !bitmap_is_dummy_) {
     // Find the bits that were drawn to.
-    SkIRect bounds = computeDirtyRect();
+    SkIRect bounds = ComputeDirtyRect();
     SkBitmap subset;
-    if (!m_offscreen.extractSubset(&subset, bounds)) {
+    if (!offscreen_.extractSubset(&subset, bounds)) {
       return;
     }
     subset.setImmutable();  // Prevents a defensive copy inside Skia.
-    m_canvas->save();
-    m_canvas->setMatrix(SkMatrix::I());  // Reset back to device space.
-    m_canvas->translate(bounds.x() + m_bitmapOffset.x(),
-                        bounds.y() + m_bitmapOffset.y());
-    m_canvas->scale(1.f / m_bitmapScaleFactor, 1.f / m_bitmapScaleFactor);
-    m_canvas->drawBitmap(subset, 0, 0);
-    m_canvas->restore();
+    canvas_->save();
+    canvas_->setMatrix(SkMatrix::I());  // Reset back to device space.
+    canvas_->translate(bounds.x() + bitmap_offset_.x(),
+                       bounds.y() + bitmap_offset_.y());
+    canvas_->scale(1.f / bitmap_scale_factor_, 1.f / bitmap_scale_factor_);
+    canvas_->drawBitmap(subset, 0, 0);
+    canvas_->restore();
   }
-  CGContextRelease(m_cgContext);
-  m_cgContext = 0;
-  m_useDeviceBits = false;
-  m_bitmapIsDummy = false;
+  CGContextRelease(cg_context_);
+  cg_context_ = 0;
+  use_device_bits_ = false;
+  bitmap_is_dummy_ = false;
 }
 
-CGContextRef GraphicsContextCanvas::cgContext() {
-  releaseIfNeeded();  // This flushes any prior bitmap use
+CGContextRef GraphicsContextCanvas::CgContext() {
+  ReleaseIfNeeded();  // This flushes any prior bitmap use
 
   SkIRect clip_bounds;
-  if (!m_canvas->getDeviceClipBounds(&clip_bounds)) {
+  if (!canvas_->getDeviceClipBounds(&clip_bounds)) {
     // If the clip is empty, then there is nothing to draw. The caller may
     // attempt to draw (to-be-clipped) results, so ensure there is a dummy
     // non-NULL CGContext to use.
-    m_bitmapIsDummy = true;
+    bitmap_is_dummy_ = true;
     clip_bounds = SkIRect::MakeXYWH(0, 0, 1, 1);
   }
 
   // remember the top/left, in case we need to compose this later
-  m_bitmapOffset.set(clip_bounds.x(), clip_bounds.y());
+  bitmap_offset_.set(clip_bounds.x(), clip_bounds.y());
 
   // Now make clip_bounds be relative to the current layer/device
-  if (!m_bitmapIsDummy) {
-    m_canvas->temporary_internal_describeTopLayer(nullptr, &clip_bounds);
+  if (!bitmap_is_dummy_) {
+    canvas_->temporary_internal_describeTopLayer(nullptr, &clip_bounds);
   }
 
-  SkPixmap devicePixels;
-  ToPixmap(m_canvas, &devicePixels);
+  SkPixmap device_pixels;
+  ToPixmap(canvas_, &device_pixels);
 
   // Only draw directly if we have pixels, and we're only rect-clipped.
   // If not, we allocate an offscreen and draw into that, relying on the
   // compositing step to apply skia's clip.
-  m_useDeviceBits =
-      devicePixels.addr() && m_canvas->isClipRect() && !m_bitmapIsDummy;
-  WTF::RetainPtr<CGColorSpace> colorSpace(CGColorSpaceCreateDeviceRGB());
+  use_device_bits_ =
+      device_pixels.addr() && canvas_->isClipRect() && !bitmap_is_dummy_;
+  WTF::RetainPtr<CGColorSpace> color_space(CGColorSpaceCreateDeviceRGB());
 
-  int displayHeight;
-  if (m_useDeviceBits) {
+  int display_height;
+  if (use_device_bits_) {
     SkPixmap subset;
-    bool result = devicePixels.extractSubset(&subset, clip_bounds);
+    bool result = device_pixels.extractSubset(&subset, clip_bounds);
     DCHECK(result);
     if (!result)
       return 0;
-    displayHeight = subset.height();
-    m_cgContext = CGBitmapContextCreate(
+    display_height = subset.height();
+    cg_context_ = CGBitmapContextCreate(
         subset.writable_addr(), subset.width(), subset.height(), 8,
-        subset.rowBytes(), colorSpace.get(),
+        subset.rowBytes(), color_space.Get(),
         kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
   } else {
-    bool result = m_offscreen.tryAllocN32Pixels(
-        SkScalarCeilToInt(m_bitmapScaleFactor * clip_bounds.width()),
-        SkScalarCeilToInt(m_bitmapScaleFactor * clip_bounds.height()));
+    bool result = offscreen_.tryAllocN32Pixels(
+        SkScalarCeilToInt(bitmap_scale_factor_ * clip_bounds.width()),
+        SkScalarCeilToInt(bitmap_scale_factor_ * clip_bounds.height()));
     DCHECK(result);
     if (!result)
       return 0;
-    m_offscreen.eraseColor(0);
-    displayHeight = m_offscreen.height();
-    m_cgContext = CGBitmapContextCreate(
-        m_offscreen.getPixels(), m_offscreen.width(), m_offscreen.height(), 8,
-        m_offscreen.rowBytes(), colorSpace.get(),
+    offscreen_.eraseColor(0);
+    display_height = offscreen_.height();
+    cg_context_ = CGBitmapContextCreate(
+        offscreen_.getPixels(), offscreen_.width(), offscreen_.height(), 8,
+        offscreen_.rowBytes(), color_space.Get(),
         kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
   }
-  DCHECK(m_cgContext);
+  DCHECK(cg_context_);
 
-  SkMatrix matrix = m_canvas->getTotalMatrix();
-  matrix.postTranslate(-SkIntToScalar(m_bitmapOffset.x()),
-                       -SkIntToScalar(m_bitmapOffset.y()));
-  matrix.postScale(m_bitmapScaleFactor, -m_bitmapScaleFactor);
-  matrix.postTranslate(0, SkIntToScalar(displayHeight));
+  SkMatrix matrix = canvas_->getTotalMatrix();
+  matrix.postTranslate(-SkIntToScalar(bitmap_offset_.x()),
+                       -SkIntToScalar(bitmap_offset_.y()));
+  matrix.postScale(bitmap_scale_factor_, -bitmap_scale_factor_);
+  matrix.postTranslate(0, SkIntToScalar(display_height));
 
-  CGContextConcatCTM(m_cgContext, skia::SkMatrixToCGAffineTransform(matrix));
+  CGContextConcatCTM(cg_context_, skia::SkMatrixToCGAffineTransform(matrix));
 
-  return m_cgContext;
+  return cg_context_;
 }
 
-bool GraphicsContextCanvas::hasEmptyClipRegion() const {
-  return m_canvas->isClipEmpty();
+bool GraphicsContextCanvas::HasEmptyClipRegion() const {
+  return canvas_->isClipEmpty();
 }
 
 }  // namespace blink

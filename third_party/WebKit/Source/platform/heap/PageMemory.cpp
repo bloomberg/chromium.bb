@@ -11,111 +11,111 @@
 
 namespace blink {
 
-void MemoryRegion::release() {
-  WTF::FreePages(m_base, m_size);
+void MemoryRegion::Release() {
+  WTF::FreePages(base_, size_);
 }
 
-bool MemoryRegion::commit() {
-  WTF::RecommitSystemPages(m_base, m_size);
-  return WTF::SetSystemPagesAccessible(m_base, m_size);
+bool MemoryRegion::Commit() {
+  WTF::RecommitSystemPages(base_, size_);
+  return WTF::SetSystemPagesAccessible(base_, size_);
 }
 
-void MemoryRegion::decommit() {
-  ASAN_UNPOISON_MEMORY_REGION(m_base, m_size);
-  WTF::DecommitSystemPages(m_base, m_size);
-  WTF::SetSystemPagesInaccessible(m_base, m_size);
+void MemoryRegion::Decommit() {
+  ASAN_UNPOISON_MEMORY_REGION(base_, size_);
+  WTF::DecommitSystemPages(base_, size_);
+  WTF::SetSystemPagesInaccessible(base_, size_);
 }
 
 PageMemoryRegion::PageMemoryRegion(Address base,
                                    size_t size,
-                                   unsigned numPages,
-                                   RegionTree* regionTree)
+                                   unsigned num_pages,
+                                   RegionTree* region_tree)
     : MemoryRegion(base, size),
-      m_isLargePage(numPages == 1),
-      m_numPages(numPages),
-      m_regionTree(regionTree) {
-  m_regionTree->add(this);
-  for (size_t i = 0; i < blinkPagesPerRegion; ++i)
-    m_inUse[i] = false;
+      is_large_page_(num_pages == 1),
+      num_pages_(num_pages),
+      region_tree_(region_tree) {
+  region_tree_->Add(this);
+  for (size_t i = 0; i < kBlinkPagesPerRegion; ++i)
+    in_use_[i] = false;
 }
 
 PageMemoryRegion::~PageMemoryRegion() {
-  if (m_regionTree)
-    m_regionTree->remove(this);
-  release();
+  if (region_tree_)
+    region_tree_->Remove(this);
+  Release();
 }
 
-void PageMemoryRegion::pageDeleted(Address page) {
-  markPageUnused(page);
-  if (!atomicDecrement(&m_numPages))
+void PageMemoryRegion::PageDeleted(Address page) {
+  MarkPageUnused(page);
+  if (!AtomicDecrement(&num_pages_))
     delete this;
 }
 
 // TODO(haraken): Like partitionOutOfMemoryWithLotsOfUncommitedPages(),
 // we should probably have a way to distinguish physical memory OOM from
 // virtual address space OOM.
-static NEVER_INLINE void blinkGCOutOfMemory() {
+static NEVER_INLINE void BlinkGCOutOfMemory() {
   OOM_CRASH();
 }
 
-PageMemoryRegion* PageMemoryRegion::allocate(size_t size,
-                                             unsigned numPages,
-                                             RegionTree* regionTree) {
+PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,
+                                             unsigned num_pages,
+                                             RegionTree* region_tree) {
   // Round size up to the allocation granularity.
   size = (size + WTF::kPageAllocationGranularityOffsetMask) &
          WTF::kPageAllocationGranularityBaseMask;
   Address base = static_cast<Address>(
-      WTF::AllocPages(nullptr, size, blinkPageSize, WTF::PageInaccessible));
+      WTF::AllocPages(nullptr, size, kBlinkPageSize, WTF::PageInaccessible));
   if (!base)
-    blinkGCOutOfMemory();
-  return new PageMemoryRegion(base, size, numPages, regionTree);
+    BlinkGCOutOfMemory();
+  return new PageMemoryRegion(base, size, num_pages, region_tree);
 }
 
-PageMemoryRegion* RegionTree::lookup(Address address) {
-  RegionTreeNode* current = m_root;
+PageMemoryRegion* RegionTree::Lookup(Address address) {
+  RegionTreeNode* current = root_;
   while (current) {
-    Address base = current->m_region->base();
+    Address base = current->region_->Base();
     if (address < base) {
-      current = current->m_left;
+      current = current->left_;
       continue;
     }
-    if (address >= base + current->m_region->size()) {
-      current = current->m_right;
+    if (address >= base + current->region_->size()) {
+      current = current->right_;
       continue;
     }
-    ASSERT(current->m_region->contains(address));
-    return current->m_region;
+    ASSERT(current->region_->Contains(address));
+    return current->region_;
   }
   return nullptr;
 }
 
-void RegionTree::add(PageMemoryRegion* region) {
+void RegionTree::Add(PageMemoryRegion* region) {
   ASSERT(region);
-  RegionTreeNode* newTree = new RegionTreeNode(region);
-  newTree->addTo(&m_root);
+  RegionTreeNode* new_tree = new RegionTreeNode(region);
+  new_tree->AddTo(&root_);
 }
 
-void RegionTreeNode::addTo(RegionTreeNode** context) {
-  Address base = m_region->base();
+void RegionTreeNode::AddTo(RegionTreeNode** context) {
+  Address base = region_->Base();
   for (RegionTreeNode* current = *context; current; current = *context) {
-    ASSERT(!current->m_region->contains(base));
-    context = (base < current->m_region->base()) ? &current->m_left
-                                                 : &current->m_right;
+    ASSERT(!current->region_->Contains(base));
+    context =
+        (base < current->region_->Base()) ? &current->left_ : &current->right_;
   }
   *context = this;
 }
 
-void RegionTree::remove(PageMemoryRegion* region) {
+void RegionTree::Remove(PageMemoryRegion* region) {
   ASSERT(region);
-  ASSERT(m_root);
-  Address base = region->base();
-  RegionTreeNode** context = &m_root;
-  RegionTreeNode* current = m_root;
+  ASSERT(root_);
+  Address base = region->Base();
+  RegionTreeNode** context = &root_;
+  RegionTreeNode* current = root_;
   for (; current; current = *context) {
-    if (region == current->m_region)
+    if (region == current->region_)
       break;
-    context = (base < current->m_region->base()) ? &current->m_left
-                                                 : &current->m_right;
+    context =
+        (base < current->region_->Base()) ? &current->left_ : &current->right_;
   }
 
   // Shutdown via detachMainThread might not have populated the region tree.
@@ -123,55 +123,55 @@ void RegionTree::remove(PageMemoryRegion* region) {
     return;
 
   *context = nullptr;
-  if (current->m_left) {
-    current->m_left->addTo(context);
-    current->m_left = nullptr;
+  if (current->left_) {
+    current->left_->AddTo(context);
+    current->left_ = nullptr;
   }
-  if (current->m_right) {
-    current->m_right->addTo(context);
-    current->m_right = nullptr;
+  if (current->right_) {
+    current->right_->AddTo(context);
+    current->right_ = nullptr;
   }
   delete current;
 }
 
 PageMemory::PageMemory(PageMemoryRegion* reserved, const MemoryRegion& writable)
-    : m_reserved(reserved), m_writable(writable) {
-  ASSERT(reserved->contains(writable));
+    : reserved_(reserved), writable_(writable) {
+  ASSERT(reserved->Contains(writable));
 
   // Register the writable area of the memory as part of the LSan root set.
   // Only the writable area is mapped and can contain C++ objects.  Those
   // C++ objects can contain pointers to objects outside of the heap and
   // should therefore be part of the LSan root set.
-  __lsan_register_root_region(m_writable.base(), m_writable.size());
+  __lsan_register_root_region(writable_.Base(), writable_.size());
 }
 
-PageMemory* PageMemory::setupPageMemoryInRegion(PageMemoryRegion* region,
-                                                size_t pageOffset,
-                                                size_t payloadSize) {
+PageMemory* PageMemory::SetupPageMemoryInRegion(PageMemoryRegion* region,
+                                                size_t page_offset,
+                                                size_t payload_size) {
   // Setup the payload one guard page into the page memory.
-  Address payloadAddress = region->base() + pageOffset + blinkGuardPageSize;
-  return new PageMemory(region, MemoryRegion(payloadAddress, payloadSize));
+  Address payload_address = region->Base() + page_offset + kBlinkGuardPageSize;
+  return new PageMemory(region, MemoryRegion(payload_address, payload_size));
 }
 
-static size_t roundToOsPageSize(size_t size) {
+static size_t RoundToOsPageSize(size_t size) {
   return (size + WTF::kSystemPageSize - 1) & ~(WTF::kSystemPageSize - 1);
 }
 
-PageMemory* PageMemory::allocate(size_t payloadSize, RegionTree* regionTree) {
-  ASSERT(payloadSize > 0);
+PageMemory* PageMemory::Allocate(size_t payload_size, RegionTree* region_tree) {
+  ASSERT(payload_size > 0);
 
   // Virtual memory allocation routines operate in OS page sizes.
   // Round up the requested size to nearest os page size.
-  payloadSize = roundToOsPageSize(payloadSize);
+  payload_size = RoundToOsPageSize(payload_size);
 
   // Overallocate by 2 times OS page size to have space for a
   // guard page at the beginning and end of blink heap page.
-  size_t allocationSize = payloadSize + 2 * blinkGuardPageSize;
-  PageMemoryRegion* pageMemoryRegion =
-      PageMemoryRegion::allocateLargePage(allocationSize, regionTree);
+  size_t allocation_size = payload_size + 2 * kBlinkGuardPageSize;
+  PageMemoryRegion* page_memory_region =
+      PageMemoryRegion::AllocateLargePage(allocation_size, region_tree);
   PageMemory* storage =
-      setupPageMemoryInRegion(pageMemoryRegion, 0, payloadSize);
-  RELEASE_ASSERT(storage->commit());
+      SetupPageMemoryInRegion(page_memory_region, 0, payload_size);
+  RELEASE_ASSERT(storage->Commit());
   return storage;
 }
 

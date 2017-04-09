@@ -51,31 +51,31 @@ class CORE_EXPORT StyleSheetCollection
   friend class ActiveDocumentStyleSheetCollector;
   friend class ImportedDocumentStyleSheetCollector;
 
-  static StyleSheetCollection* create() { return new StyleSheetCollection; }
+  static StyleSheetCollection* Create() { return new StyleSheetCollection; }
 
-  const ActiveStyleSheetVector& activeAuthorStyleSheets() const {
-    return m_activeAuthorStyleSheets;
+  const ActiveStyleSheetVector& ActiveAuthorStyleSheets() const {
+    return active_author_style_sheets_;
   }
   const HeapVector<TraceWrapperMember<StyleSheet>>&
-  styleSheetsForStyleSheetList() const {
-    return m_styleSheetsForStyleSheetList;
+  StyleSheetsForStyleSheetList() const {
+    return style_sheets_for_style_sheet_list_;
   }
 
-  void swap(StyleSheetCollection&);
-  void swapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
-  void appendActiveStyleSheet(const ActiveStyleSheet&);
-  void appendSheetForList(StyleSheet*);
+  void Swap(StyleSheetCollection&);
+  void SwapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
+  void AppendActiveStyleSheet(const ActiveStyleSheet&);
+  void AppendSheetForList(StyleSheet*);
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-  void dispose();
+  void Dispose();
 
  protected:
   StyleSheetCollection();
 
-  HeapVector<TraceWrapperMember<StyleSheet>> m_styleSheetsForStyleSheetList;
-  ActiveStyleSheetVector m_activeAuthorStyleSheets;
+  HeapVector<TraceWrapperMember<StyleSheet>> style_sheets_for_style_sheet_list_;
+  ActiveStyleSheetVector active_author_style_sheets_;
 };
 
 }  // namespace blink

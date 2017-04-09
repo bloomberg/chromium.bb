@@ -86,7 +86,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(SCOPE, info.scopeUri().toString());
         Assert.assertEquals(NAME, info.name());
         Assert.assertEquals(SHORT_NAME, info.shortName());
-        Assert.assertEquals(WebDisplayMode.MinimalUi, info.displayMode());
+        Assert.assertEquals(WebDisplayMode.kMinimalUi, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.PORTRAIT, info.orientation());
         Assert.assertTrue(info.hasValidThemeColor());
         Assert.assertEquals(1L, info.themeColor());

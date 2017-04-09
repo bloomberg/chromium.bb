@@ -42,31 +42,33 @@ class BaseCheckableInputType : public InputType, public InputTypeView {
 
  public:
   DECLARE_VIRTUAL_TRACE();
-  using InputType::element;
+  using InputType::GetElement;
 
  protected:
   BaseCheckableInputType(HTMLInputElement& element)
-      : InputType(element), InputTypeView(element), m_isInClickHandler(false) {}
-  void handleKeydownEvent(KeyboardEvent*) override;
+      : InputType(element),
+        InputTypeView(element),
+        is_in_click_handler_(false) {}
+  void HandleKeydownEvent(KeyboardEvent*) override;
 
-  bool m_isInClickHandler;
+  bool is_in_click_handler_;
 
  private:
-  InputTypeView* createView() override;
-  FormControlState saveFormControlState() const final;
-  void restoreFormControlState(const FormControlState&) final;
-  void appendToFormData(FormData&) const final;
-  void handleKeypressEvent(KeyboardEvent*) final;
-  bool canSetStringValue() const final;
-  void accessKeyAction(bool sendMouseEvents) final;
-  bool matchesDefaultPseudoClass() override;
-  ValueMode valueMode() const override;
-  void setValue(const String&,
+  InputTypeView* CreateView() override;
+  FormControlState SaveFormControlState() const final;
+  void RestoreFormControlState(const FormControlState&) final;
+  void AppendToFormData(FormData&) const final;
+  void HandleKeypressEvent(KeyboardEvent*) final;
+  bool CanSetStringValue() const final;
+  void AccessKeyAction(bool send_mouse_events) final;
+  bool MatchesDefaultPseudoClass() override;
+  ValueMode GetValueMode() const override;
+  void SetValue(const String&,
                 bool,
                 TextFieldEventBehavior,
                 TextControlSetValueSelection) final;
-  void readingChecked() const final;
-  bool isCheckable() final;
+  void ReadingChecked() const final;
+  bool IsCheckable() final;
 };
 
 }  // namespace blink

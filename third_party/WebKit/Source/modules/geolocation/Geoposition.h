@@ -39,23 +39,23 @@ class Geoposition final : public GarbageCollected<Geoposition>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Geoposition* create(Coordinates* coordinates, DOMTimeStamp timestamp) {
+  static Geoposition* Create(Coordinates* coordinates, DOMTimeStamp timestamp) {
     return new Geoposition(coordinates, timestamp);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_coordinates); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(coordinates_); }
 
-  DOMTimeStamp timestamp() const { return m_timestamp; }
-  Coordinates* coords() const { return m_coordinates; }
+  DOMTimeStamp timestamp() const { return timestamp_; }
+  Coordinates* coords() const { return coordinates_; }
 
  private:
   Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
-      : m_coordinates(coordinates), m_timestamp(timestamp) {
-    DCHECK(m_coordinates);
+      : coordinates_(coordinates), timestamp_(timestamp) {
+    DCHECK(coordinates_);
   }
 
-  Member<Coordinates> m_coordinates;
-  DOMTimeStamp m_timestamp;
+  Member<Coordinates> coordinates_;
+  DOMTimeStamp timestamp_;
 };
 
 }  // namespace blink

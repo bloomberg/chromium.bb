@@ -14,62 +14,63 @@ namespace blink {
 
 PaymentResponse::PaymentResponse(
     payments::mojom::blink::PaymentResponsePtr response,
-    PaymentCompleter* paymentCompleter)
-    : m_methodName(response->method_name),
-      m_stringifiedDetails(response->stringified_details),
-      m_shippingAddress(
+    PaymentCompleter* payment_completer)
+    : method_name_(response->method_name),
+      stringified_details_(response->stringified_details),
+      shipping_address_(
           response->shipping_address
               ? new PaymentAddress(std::move(response->shipping_address))
               : nullptr),
-      m_shippingOption(response->shipping_option),
-      m_payerName(response->payer_name),
-      m_payerEmail(response->payer_email),
-      m_payerPhone(response->payer_phone),
-      m_paymentCompleter(paymentCompleter) {
-  DCHECK(m_paymentCompleter);
+      shipping_option_(response->shipping_option),
+      payer_name_(response->payer_name),
+      payer_email_(response->payer_email),
+      payer_phone_(response->payer_phone),
+      payment_completer_(payment_completer) {
+  DCHECK(payment_completer_);
 }
 
 PaymentResponse::~PaymentResponse() {}
 
-ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  result.addString("methodName", methodName());
-  result.add("details", details(scriptState, ASSERT_NO_EXCEPTION));
+ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  result.AddString("methodName", methodName());
+  result.Add("details", details(script_state, ASSERT_NO_EXCEPTION));
 
   if (shippingAddress())
-    result.add("shippingAddress",
-               shippingAddress()->toJSONForBinding(scriptState));
+    result.Add("shippingAddress",
+               shippingAddress()->toJSONForBinding(script_state));
   else
-    result.addNull("shippingAddress");
+    result.AddNull("shippingAddress");
 
-  result.addStringOrNull("shippingOption", shippingOption())
-      .addStringOrNull("payerName", payerName())
-      .addStringOrNull("payerEmail", payerEmail())
-      .addStringOrNull("payerPhone", payerPhone());
+  result.AddStringOrNull("shippingOption", shippingOption())
+      .AddStringOrNull("payerName", payerName())
+      .AddStringOrNull("payerEmail", payerEmail())
+      .AddStringOrNull("payerPhone", payerPhone());
 
-  return result.scriptValue();
+  return result.GetScriptValue();
 }
 
-ScriptValue PaymentResponse::details(ScriptState* scriptState,
-                                     ExceptionState& exceptionState) const {
-  return ScriptValue(
-      scriptState, fromJSONString(scriptState->isolate(), m_stringifiedDetails,
-                                  exceptionState));
+ScriptValue PaymentResponse::details(ScriptState* script_state,
+                                     ExceptionState& exception_state) const {
+  return ScriptValue(script_state,
+                     FromJSONString(script_state->GetIsolate(),
+                                    stringified_details_, exception_state));
 }
 
-ScriptPromise PaymentResponse::complete(ScriptState* scriptState,
+ScriptPromise PaymentResponse::complete(ScriptState* script_state,
                                         const String& result) {
-  PaymentCompleter::PaymentComplete convertedResult = PaymentCompleter::Unknown;
+  PaymentCompleter::PaymentComplete converted_result =
+      PaymentCompleter::kUnknown;
   if (result == "success")
-    convertedResult = PaymentCompleter::Success;
+    converted_result = PaymentCompleter::kSuccess;
   else if (result == "fail")
-    convertedResult = PaymentCompleter::Fail;
-  return m_paymentCompleter->complete(scriptState, convertedResult);
+    converted_result = PaymentCompleter::kFail;
+  return payment_completer_->Complete(script_state, converted_result);
 }
 
 DEFINE_TRACE(PaymentResponse) {
-  visitor->trace(m_shippingAddress);
-  visitor->trace(m_paymentCompleter);
+  visitor->Trace(shipping_address_);
+  visitor->Trace(payment_completer_);
 }
 
 }  // namespace blink

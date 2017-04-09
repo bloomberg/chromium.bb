@@ -36,19 +36,19 @@
 
 namespace blink {
 
-const char* StorageQuotaClient::supplementName() {
+const char* StorageQuotaClient::SupplementName() {
   return "StorageQuotaClient";
 }
 
-StorageQuotaClient* StorageQuotaClient::from(ExecutionContext* context) {
-  if (!context->isDocument())
+StorageQuotaClient* StorageQuotaClient::From(ExecutionContext* context) {
+  if (!context->IsDocument())
     return 0;
   return static_cast<StorageQuotaClient*>(
-      Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+      Supplement<Page>::From(ToDocument(context)->GetPage(), SupplementName()));
 }
 
-void provideStorageQuotaClientTo(Page& page, StorageQuotaClient* client) {
-  page.provideSupplement(StorageQuotaClient::supplementName(), client);
+void ProvideStorageQuotaClientTo(Page& page, StorageQuotaClient* client) {
+  page.ProvideSupplement(StorageQuotaClient::SupplementName(), client);
 }
 
 }  // namespace blink

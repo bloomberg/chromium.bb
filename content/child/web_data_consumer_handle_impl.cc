@@ -47,12 +47,12 @@ WebDataConsumerHandleImpl::ReaderImpl::ReaderImpl(
 WebDataConsumerHandleImpl::ReaderImpl::~ReaderImpl() {
 }
 
-Result WebDataConsumerHandleImpl::ReaderImpl::read(void* data,
+Result WebDataConsumerHandleImpl::ReaderImpl::Read(void* data,
                                                    size_t size,
                                                    Flags flags,
                                                    size_t* read_size) {
   // We need this variable definition to avoid a link error.
-  const Flags kNone = FlagNone;
+  const Flags kNone = kFlagNone;
   DCHECK_EQ(flags, kNone);
   DCHECK_LE(size, std::numeric_limits<uint32_t>::max());
 
@@ -65,10 +65,10 @@ Result WebDataConsumerHandleImpl::ReaderImpl::read(void* data,
     // So we query the signals state directly.
     mojo::HandleSignalsState state = context_->handle()->QuerySignalsState();
     if (state.readable())
-      return Ok;
+      return kOk;
     if (state.never_readable())
-      return Done;
-    return ShouldWait;
+      return kDone;
+    return kShouldWait;
   }
 
   uint32_t size_to_pass = size;
@@ -81,11 +81,11 @@ Result WebDataConsumerHandleImpl::ReaderImpl::read(void* data,
   return HandleReadResult(rv);
 }
 
-Result WebDataConsumerHandleImpl::ReaderImpl::beginRead(const void** buffer,
+Result WebDataConsumerHandleImpl::ReaderImpl::BeginRead(const void** buffer,
                                                         Flags flags,
                                                         size_t* available) {
   // We need this variable definition to avoid a link error.
-  const Flags kNone = FlagNone;
+  const Flags kNone = kFlagNone;
   DCHECK_EQ(flags, kNone);
 
   *buffer = nullptr;
@@ -101,26 +101,26 @@ Result WebDataConsumerHandleImpl::ReaderImpl::beginRead(const void** buffer,
   return HandleReadResult(rv);
 }
 
-Result WebDataConsumerHandleImpl::ReaderImpl::endRead(size_t read_size) {
+Result WebDataConsumerHandleImpl::ReaderImpl::EndRead(size_t read_size) {
   MojoResult rv = mojo::EndReadDataRaw(context_->handle().get(), read_size);
-  return rv == MOJO_RESULT_OK ? Ok : UnexpectedError;
+  return rv == MOJO_RESULT_OK ? kOk : kUnexpectedError;
 }
 
 Result WebDataConsumerHandleImpl::ReaderImpl::HandleReadResult(
     MojoResult mojo_result) {
   switch (mojo_result) {
     case MOJO_RESULT_OK:
-      return Ok;
+      return kOk;
     case MOJO_RESULT_FAILED_PRECONDITION:
-      return Done;
+      return kDone;
     case MOJO_RESULT_BUSY:
-      return Busy;
+      return kBusy;
     case MOJO_RESULT_SHOULD_WAIT:
-      return ShouldWait;
+      return kShouldWait;
     case MOJO_RESULT_RESOURCE_EXHAUSTED:
-      return ResourceExhausted;
+      return kResourceExhausted;
     default:
-      return UnexpectedError;
+      return kUnexpectedError;
   }
 }
 
@@ -132,7 +132,7 @@ void WebDataConsumerHandleImpl::ReaderImpl::StartWatching() {
 
 void WebDataConsumerHandleImpl::ReaderImpl::OnHandleGotReadable(MojoResult) {
   DCHECK(client_);
-  client_->didGetReadable();
+  client_->DidGetReadable();
 }
 
 WebDataConsumerHandleImpl::WebDataConsumerHandleImpl(Handle handle)
@@ -142,11 +142,11 @@ WebDataConsumerHandleImpl::~WebDataConsumerHandleImpl() {
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle::Reader>
-WebDataConsumerHandleImpl::obtainReader(Client* client) {
+WebDataConsumerHandleImpl::ObtainReader(Client* client) {
   return base::WrapUnique(new ReaderImpl(context_, client));
 }
 
-const char* WebDataConsumerHandleImpl::debugName() const {
+const char* WebDataConsumerHandleImpl::DebugName() const {
   return "WebDataConsumerHandleImpl";
 }
 

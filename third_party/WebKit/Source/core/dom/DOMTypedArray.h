@@ -31,56 +31,57 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
  public:
   typedef typename WTFTypedArray::ValueType ValueType;
 
-  static ThisType* create(PassRefPtr<WTFTypedArray> bufferView) {
-    return new ThisType(std::move(bufferView));
+  static ThisType* Create(PassRefPtr<WTFTypedArray> buffer_view) {
+    return new ThisType(std::move(buffer_view));
   }
-  static ThisType* create(unsigned length) {
-    return create(WTFTypedArray::create(length));
+  static ThisType* Create(unsigned length) {
+    return Create(WTFTypedArray::Create(length));
   }
-  static ThisType* create(const ValueType* array, unsigned length) {
-    return create(WTFTypedArray::create(array, length));
+  static ThisType* Create(const ValueType* array, unsigned length) {
+    return Create(WTFTypedArray::Create(array, length));
   }
-  static ThisType* create(PassRefPtr<WTF::ArrayBuffer> buffer,
-                          unsigned byteOffset,
+  static ThisType* Create(PassRefPtr<WTF::ArrayBuffer> buffer,
+                          unsigned byte_offset,
                           unsigned length) {
-    return create(WTFTypedArray::create(std::move(buffer), byteOffset, length));
+    return Create(
+        WTFTypedArray::Create(std::move(buffer), byte_offset, length));
   }
-  static ThisType* create(DOMArrayBufferBase* buffer,
-                          unsigned byteOffset,
+  static ThisType* Create(DOMArrayBufferBase* buffer,
+                          unsigned byte_offset,
                           unsigned length) {
-    RefPtr<WTFTypedArray> bufferView =
-        WTFTypedArray::create(buffer->buffer(), byteOffset, length);
-    return new ThisType(bufferView.release(), buffer);
+    RefPtr<WTFTypedArray> buffer_view =
+        WTFTypedArray::Create(buffer->Buffer(), byte_offset, length);
+    return new ThisType(buffer_view.Release(), buffer);
   }
 
-  static ThisType* createOrNull(unsigned length) {
+  static ThisType* CreateOrNull(unsigned length) {
     RefPtr<WTF::ArrayBuffer> buffer =
-        WTF::ArrayBuffer::createOrNull(length, sizeof(ValueType));
-    return buffer ? create(buffer.release(), 0, length) : nullptr;
+        WTF::ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
+    return buffer ? Create(buffer.Release(), 0, length) : nullptr;
   }
 
-  const WTFTypedArray* view() const {
-    return static_cast<const WTFTypedArray*>(DOMArrayBufferView::view());
+  const WTFTypedArray* View() const {
+    return static_cast<const WTFTypedArray*>(DOMArrayBufferView::View());
   }
-  WTFTypedArray* view() {
-    return static_cast<WTFTypedArray*>(DOMArrayBufferView::view());
+  WTFTypedArray* View() {
+    return static_cast<WTFTypedArray*>(DOMArrayBufferView::View());
   }
 
-  ValueType* data() const { return view()->data(); }
-  unsigned length() const { return view()->length(); }
+  ValueType* Data() const { return View()->Data(); }
+  unsigned length() const { return View()->length(); }
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
-  ValueType item(unsigned index) const { return view()->item(index); }
+  ValueType Item(unsigned index) const { return View()->Item(index); }
 
-  v8::Local<v8::Object> wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creationContext) override;
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) override;
 
  private:
-  explicit DOMTypedArray(PassRefPtr<WTFTypedArray> bufferView)
-      : DOMArrayBufferView(bufferView) {}
-  DOMTypedArray(PassRefPtr<WTFTypedArray> bufferView,
-                DOMArrayBufferBase* domArrayBuffer)
-      : DOMArrayBufferView(bufferView, domArrayBuffer) {}
+  explicit DOMTypedArray(PassRefPtr<WTFTypedArray> buffer_view)
+      : DOMArrayBufferView(buffer_view) {}
+  DOMTypedArray(PassRefPtr<WTFTypedArray> buffer_view,
+                DOMArrayBufferBase* dom_array_buffer)
+      : DOMArrayBufferView(buffer_view, dom_array_buffer) {}
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

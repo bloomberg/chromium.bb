@@ -68,7 +68,7 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
 };
 
 FakeWebTaskRunner::FakeWebTaskRunner()
-    : data_(adoptRef(new Data)), base_task_runner_(new BaseTaskRunner(data_)) {}
+    : data_(AdoptRef(new Data)), base_task_runner_(new BaseTaskRunner(data_)) {}
 
 FakeWebTaskRunner::FakeWebTaskRunner(
     PassRefPtr<Data> data,
@@ -78,34 +78,34 @@ FakeWebTaskRunner::FakeWebTaskRunner(
 FakeWebTaskRunner::~FakeWebTaskRunner() {
 }
 
-void FakeWebTaskRunner::setTime(double new_time) {
+void FakeWebTaskRunner::SetTime(double new_time) {
   data_->time_ = new_time;
 }
 
-void FakeWebTaskRunner::postDelayedTask(const WebTraceLocation&,
+void FakeWebTaskRunner::PostDelayedTask(const WebTraceLocation&,
                                         base::OnceClosure closure,
                                         double delay_ms) {
   data_->PostTask(std::move(closure),
                   base::TimeDelta::FromMillisecondsD(delay_ms));
 }
 
-bool FakeWebTaskRunner::runsTasksOnCurrentThread() {
+bool FakeWebTaskRunner::RunsTasksOnCurrentThread() {
   return true;
 }
 
-double FakeWebTaskRunner::virtualTimeSeconds() const {
+double FakeWebTaskRunner::VirtualTimeSeconds() const {
   return data_->time_;
 }
 
-double FakeWebTaskRunner::monotonicallyIncreasingVirtualTimeSeconds() const {
+double FakeWebTaskRunner::MonotonicallyIncreasingVirtualTimeSeconds() const {
   return data_->time_;
 }
 
-SingleThreadTaskRunner* FakeWebTaskRunner::toSingleThreadTaskRunner() {
+SingleThreadTaskRunner* FakeWebTaskRunner::ToSingleThreadTaskRunner() {
   return base_task_runner_.get();
 }
 
-void FakeWebTaskRunner::runUntilIdle() {
+void FakeWebTaskRunner::RunUntilIdle() {
   while (!data_->task_queue_.empty()) {
     // Move the task to run into a local variable in case it touches the
     // task queue by posting a new task.
@@ -115,7 +115,7 @@ void FakeWebTaskRunner::runUntilIdle() {
   }
 }
 
-void FakeWebTaskRunner::advanceTimeAndRun(double delta_seconds) {
+void FakeWebTaskRunner::AdvanceTimeAndRun(double delta_seconds) {
   data_->time_ += delta_seconds;
   for (auto it = data_->FindRunnableTask(); it != data_->task_queue_.end();
        it = data_->FindRunnableTask()) {
@@ -126,7 +126,7 @@ void FakeWebTaskRunner::advanceTimeAndRun(double delta_seconds) {
 }
 
 std::deque<std::pair<base::OnceClosure, double>>
-FakeWebTaskRunner::takePendingTasksForTesting() {
+FakeWebTaskRunner::TakePendingTasksForTesting() {
   return std::move(data_->task_queue_);
 }
 

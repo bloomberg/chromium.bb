@@ -11,27 +11,27 @@
 
 namespace blink {
 
-const AtomicString& TrackDefault::audioKeyword() {
+const AtomicString& TrackDefault::AudioKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, audio, ("audio"));
   return audio;
 }
 
-const AtomicString& TrackDefault::videoKeyword() {
+const AtomicString& TrackDefault::VideoKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, video, ("video"));
   return video;
 }
 
-const AtomicString& TrackDefault::textKeyword() {
+const AtomicString& TrackDefault::TextKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, text, ("text"));
   return text;
 }
 
-TrackDefault* TrackDefault::create(const AtomicString& type,
+TrackDefault* TrackDefault::Create(const AtomicString& type,
                                    const String& language,
                                    const String& label,
                                    const Vector<String>& kinds,
-                                   const String& byteStreamTrackID,
-                                   ExceptionState& exceptionState) {
+                                   const String& byte_stream_track_id,
+                                   ExceptionState& exception_state) {
   // Per 11 Nov 2014 Editor's Draft
   // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-TrackDefault
   // with expectation that
@@ -41,39 +41,39 @@ TrackDefault* TrackDefault::create(const AtomicString& type,
   //    language tag, then throw an INVALID_ACCESS_ERR and abort these steps.
   // FIXME: Implement BCP 47 language tag validation.
 
-  if (type == audioKeyword()) {
+  if (type == AudioKeyword()) {
     // 2.1. If |type| equals "audio":
     //      If any string in |kinds| contains a value that is not listed as
     //      applying to audio in the kind categories table, then throw a
     //      TypeError and abort these steps.
     for (const String& kind : kinds) {
-      if (!AudioTrack::isValidKindKeyword(kind)) {
-        exceptionState.throwTypeError("Invalid audio track default kind '" +
-                                      kind + "'");
+      if (!AudioTrack::IsValidKindKeyword(kind)) {
+        exception_state.ThrowTypeError("Invalid audio track default kind '" +
+                                       kind + "'");
         return nullptr;
       }
     }
-  } else if (type == videoKeyword()) {
+  } else if (type == VideoKeyword()) {
     // 2.2. If |type| equals "video":
     //      If any string in |kinds| contains a value that is not listed as
     //      applying to video in the kind categories table, then throw a
     //      TypeError and abort these steps.
     for (const String& kind : kinds) {
-      if (!VideoTrack::isValidKindKeyword(kind)) {
-        exceptionState.throwTypeError("Invalid video track default kind '" +
-                                      kind + "'");
+      if (!VideoTrack::IsValidKindKeyword(kind)) {
+        exception_state.ThrowTypeError("Invalid video track default kind '" +
+                                       kind + "'");
         return nullptr;
       }
     }
-  } else if (type == textKeyword()) {
+  } else if (type == TextKeyword()) {
     // 2.3. If |type| equals "text":
     //      If any string in |kinds| contains a value that is not listed in the
     //      text track kind list, then throw a TypeError and abort these
     //      steps.
     for (const String& kind : kinds) {
-      if (!TextTrack::isValidKindKeyword(kind)) {
-        exceptionState.throwTypeError("Invalid text track default kind '" +
-                                      kind + "'");
+      if (!TextTrack::IsValidKindKeyword(kind)) {
+        exception_state.ThrowTypeError("Invalid text track default kind '" +
+                                       kind + "'");
         return nullptr;
       }
     }
@@ -89,7 +89,7 @@ TrackDefault* TrackDefault::create(const AtomicString& type,
   // 7. Set the byteStreamTrackID attribute on this new object to
   //    |byteStreamTrackID|.
   // These steps are done as constructor initializers.
-  return new TrackDefault(type, language, label, kinds, byteStreamTrackID);
+  return new TrackDefault(type, language, label, kinds, byte_stream_track_id);
 }
 
 TrackDefault::~TrackDefault() {}
@@ -98,11 +98,11 @@ TrackDefault::TrackDefault(const AtomicString& type,
                            const String& language,
                            const String& label,
                            const Vector<String>& kinds,
-                           const String& byteStreamTrackID)
-    : m_type(type),
-      m_byteStreamTrackID(byteStreamTrackID),
-      m_language(language),
-      m_label(label),
-      m_kinds(kinds) {}
+                           const String& byte_stream_track_id)
+    : type_(type),
+      byte_stream_track_id_(byte_stream_track_id),
+      language_(language),
+      label_(label),
+      kinds_(kinds) {}
 
 }  // namespace blink

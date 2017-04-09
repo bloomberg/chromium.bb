@@ -38,9 +38,9 @@ namespace blink {
 class CompositorTransformOperations;
 class TransformOperations;
 
-PLATFORM_EXPORT void toCompositorTransformOperations(
-    const TransformOperations& inOperations,
-    CompositorTransformOperations* outOperations);
+PLATFORM_EXPORT void ToCompositorTransformOperations(
+    const TransformOperations& in_operations,
+    CompositorTransformOperations* out_operations);
 
 }  // namespace blink
 

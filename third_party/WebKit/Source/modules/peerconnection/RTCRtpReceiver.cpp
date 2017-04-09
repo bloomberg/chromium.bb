@@ -10,18 +10,18 @@ namespace blink {
 
 RTCRtpReceiver::RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver> receiver,
                                MediaStreamTrack* track)
-    : m_receiver(std::move(receiver)), m_track(track) {
-  DCHECK(m_receiver);
-  DCHECK(m_track);
-  DCHECK_EQ(static_cast<String>(m_receiver->track().id()), m_track->id());
+    : receiver_(std::move(receiver)), track_(track) {
+  DCHECK(receiver_);
+  DCHECK(track_);
+  DCHECK_EQ(static_cast<String>(receiver_->Track().Id()), track_->id());
 }
 
 MediaStreamTrack* RTCRtpReceiver::track() const {
-  return m_track;
+  return track_;
 }
 
 DEFINE_TRACE(RTCRtpReceiver) {
-  visitor->trace(m_track);
+  visitor->Trace(track_);
 }
 
 }  // namespace blink

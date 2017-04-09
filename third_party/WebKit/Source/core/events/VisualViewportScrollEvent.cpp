@@ -16,9 +16,9 @@ VisualViewportScrollEvent::VisualViewportScrollEvent()
             false)  // non-bubbling non-cancellable
 {}
 
-void VisualViewportScrollEvent::doneDispatchingEventAtCurrentTarget() {
-  UseCounter::count(currentTarget()->getExecutionContext(),
-                    UseCounter::VisualViewportScrollFired);
+void VisualViewportScrollEvent::DoneDispatchingEventAtCurrentTarget() {
+  UseCounter::Count(currentTarget()->GetExecutionContext(),
+                    UseCounter::kVisualViewportScrollFired);
 }
 
 }  // namespace blink

@@ -29,9 +29,9 @@ inline SVGPolygonElement::SVGPolygonElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGPolygonElement)
 
-Path SVGPolygonElement::asPath() const {
-  Path path = asPathFromPoints();
-  path.closeSubpath();
+Path SVGPolygonElement::AsPath() const {
+  Path path = AsPathFromPoints();
+  path.CloseSubpath();
   return path;
 }
 

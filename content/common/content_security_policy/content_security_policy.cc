@@ -52,7 +52,7 @@ void ReportViolation(CSPContext* context,
 
   std::stringstream message;
 
-  if (policy.header.type == blink::WebContentSecurityPolicyTypeReport)
+  if (policy.header.type == blink::kWebContentSecurityPolicyTypeReport)
     message << "[Report Only] ";
 
   if (directive_name == CSPDirective::FormAction)
@@ -115,8 +115,8 @@ bool ShouldBypassContentSecurityPolicy(CSPContext* context, const GURL& url) {
 
 ContentSecurityPolicy::ContentSecurityPolicy()
     : header(std::string(),
-             blink::WebContentSecurityPolicyTypeEnforce,
-             blink::WebContentSecurityPolicySourceHTTP) {}
+             blink::kWebContentSecurityPolicyTypeEnforce,
+             blink::kWebContentSecurityPolicySourceHTTP) {}
 
 ContentSecurityPolicy::ContentSecurityPolicy(
     const ContentSecurityPolicyHeader& header,
@@ -147,7 +147,7 @@ bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
             AllowDirective(context, policy, directive, directive_name, url,
                            is_redirect, source_location);
         return allowed ||
-               policy.header.type == blink::WebContentSecurityPolicyTypeReport;
+               policy.header.type == blink::kWebContentSecurityPolicyTypeReport;
       }
     }
     current_directive_name = CSPFallback(current_directive_name);

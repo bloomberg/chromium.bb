@@ -33,45 +33,45 @@ class WebLayerTreeViewImplForTesting
   explicit WebLayerTreeViewImplForTesting(const cc::LayerTreeSettings&);
   ~WebLayerTreeViewImplForTesting() override;
 
-  static cc::LayerTreeSettings defaultLayerTreeSettings();
-  cc::LayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
-  bool hasLayer(const WebLayer&);
+  static cc::LayerTreeSettings DefaultLayerTreeSettings();
+  cc::LayerTreeHost* GetLayerTreeHost() { return layer_tree_host_.get(); }
+  bool HasLayer(const WebLayer&);
 
   // blink::WebLayerTreeView implementation.
-  void setRootLayer(const blink::WebLayer&) override;
-  void clearRootLayer() override;
-  cc::AnimationHost* compositorAnimationHost() override;
-  virtual void setViewportSize(const blink::WebSize& unusedDeprecated,
-                               const blink::WebSize& deviceViewportSize);
-  void setViewportSize(const blink::WebSize&) override;
-  WebSize getViewportSize() const override;
-  void setDeviceScaleFactor(float) override;
-  void setBackgroundColor(blink::WebColor) override;
-  void setVisible(bool) override;
-  void setPageScaleFactorAndLimits(float pageScaleFactor,
+  void SetRootLayer(const blink::WebLayer&) override;
+  void ClearRootLayer() override;
+  cc::AnimationHost* CompositorAnimationHost() override;
+  virtual void SetViewportSize(const blink::WebSize& unused_deprecated,
+                               const blink::WebSize& device_viewport_size);
+  void SetViewportSize(const blink::WebSize&) override;
+  WebSize GetViewportSize() const override;
+  void SetDeviceScaleFactor(float) override;
+  void SetBackgroundColor(blink::WebColor) override;
+  void SetVisible(bool) override;
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;
-  void startPageScaleAnimation(const blink::WebPoint& destination,
-                               bool useAnchor,
-                               float newPageScale,
-                               double durationSec) override;
-  void setNeedsBeginFrame() override;
-  void didStopFlinging() override;
-  void setDeferCommits(bool) override;
-  void registerViewportLayers(
-      const blink::WebLayer* overscrollElasticityLayer,
-      const blink::WebLayer* pageScaleLayerLayer,
-      const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer) override;
-  void clearViewportLayers() override;
-  void registerSelection(const blink::WebSelection&) override;
-  void clearSelection() override;
-  void setEventListenerProperties(blink::WebEventListenerClass eventClass,
+  void StartPageScaleAnimation(const blink::WebPoint& destination,
+                               bool use_anchor,
+                               float new_page_scale,
+                               double duration_sec) override;
+  void SetNeedsBeginFrame() override;
+  void DidStopFlinging() override;
+  void SetDeferCommits(bool) override;
+  void RegisterViewportLayers(
+      const blink::WebLayer* overscroll_elasticity_layer,
+      const blink::WebLayer* page_scale_layer_layer,
+      const blink::WebLayer* inner_viewport_scroll_layer,
+      const blink::WebLayer* outer_viewport_scroll_layer) override;
+  void ClearViewportLayers() override;
+  void RegisterSelection(const blink::WebSelection&) override;
+  void ClearSelection() override;
+  void SetEventListenerProperties(blink::WebEventListenerClass event_class,
                                   blink::WebEventListenerProperties) override;
-  blink::WebEventListenerProperties eventListenerProperties(
-      blink::WebEventListenerClass eventClass) const override;
-  void setHaveScrollEventHandlers(bool) override;
-  bool haveScrollEventHandlers() const override;
+  blink::WebEventListenerProperties EventListenerProperties(
+      blink::WebEventListenerClass event_class) const override;
+  void SetHaveScrollEventHandlers(bool) override;
+  bool HaveScrollEventHandlers() const override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
@@ -79,13 +79,13 @@ class WebLayerTreeViewImplForTesting
   void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void UpdateLayerTreeHost() override;
-  void ApplyViewportDeltas(const gfx::Vector2dF& innerDelta,
-                           const gfx::Vector2dF& outerDelta,
-                           const gfx::Vector2dF& elasticOverscrollDelta,
-                           float pageScale,
-                           float browserControlsDelta) override;
-  void RecordWheelAndTouchScrollingCount(bool hasScrolledByWheel,
-                                         bool hasScrolledByTouch) override;
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
+                           const gfx::Vector2dF& outer_delta,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float page_scale,
+                           float browser_controls_delta) override;
+  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
+                                         bool has_scrolled_by_touch) override;
   void RequestNewCompositorFrameSink() override;
   void DidInitializeCompositorFrameSink() override {}
   void DidFailToInitializeCompositorFrameSink() override;
@@ -100,9 +100,9 @@ class WebLayerTreeViewImplForTesting
   void DidLoseCompositorFrameSink() override {}
 
  private:
-  cc::TestTaskGraphRunner m_taskGraphRunner;
-  std::unique_ptr<cc::AnimationHost> m_animationHost;
-  std::unique_ptr<cc::LayerTreeHost> m_layerTreeHost;
+  cc::TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<cc::AnimationHost> animation_host_;
+  std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
 };
 
 }  // namespace blink

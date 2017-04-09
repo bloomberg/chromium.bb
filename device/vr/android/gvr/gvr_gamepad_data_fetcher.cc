@@ -90,16 +90,17 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // This is the first time we've seen this device, so do some one-time
     // initialization
     pad.connected = true;
-    CopyToWebUString(pad.id, WebGamepad::idLengthCap,
+    CopyToWebUString(pad.id, WebGamepad::kIdLengthCap,
                      base::UTF8ToUTF16("Daydream Controller"));
-    CopyToWebUString(pad.mapping, WebGamepad::mappingLengthCap,
+    CopyToWebUString(pad.mapping, WebGamepad::kMappingLengthCap,
                      base::UTF8ToUTF16(""));
-    pad.buttonsLength = 1;
-    pad.axesLength = 2;
+    pad.buttons_length = 1;
+    pad.axes_length = 2;
 
-    pad.displayId = display_id_;
+    pad.display_id = display_id_;
 
-    pad.hand = provided_data.right_handed ? GamepadHandRight : GamepadHandLeft;
+    pad.hand =
+        provided_data.right_handed ? kGamepadHandRight : kGamepadHandLeft;
   }
 
   pad.timestamp = provided_data.timestamp;
@@ -117,28 +118,28 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   pad.buttons[0].pressed = provided_data.controller_button_pressed;
   pad.buttons[0].value = pad.buttons[0].pressed ? 1.0f : 0.0f;
 
-  pad.pose.notNull = true;
-  pad.pose.hasOrientation = true;
-  pad.pose.hasPosition = false;
+  pad.pose.not_null = true;
+  pad.pose.has_orientation = true;
+  pad.pose.has_position = false;
 
   gvr_quatf orientation = provided_data.orientation;
-  pad.pose.orientation.notNull = true;
+  pad.pose.orientation.not_null = true;
   pad.pose.orientation.x = orientation.qx;
   pad.pose.orientation.y = orientation.qy;
   pad.pose.orientation.z = orientation.qz;
   pad.pose.orientation.w = orientation.qw;
 
   gvr_vec3f accel = provided_data.accel;
-  pad.pose.linearAcceleration.notNull = true;
-  pad.pose.linearAcceleration.x = accel.x;
-  pad.pose.linearAcceleration.y = accel.y;
-  pad.pose.linearAcceleration.z = accel.z;
+  pad.pose.linear_acceleration.not_null = true;
+  pad.pose.linear_acceleration.x = accel.x;
+  pad.pose.linear_acceleration.y = accel.y;
+  pad.pose.linear_acceleration.z = accel.z;
 
   gvr_vec3f gyro = provided_data.gyro;
-  pad.pose.angularVelocity.notNull = true;
-  pad.pose.angularVelocity.x = gyro.x;
-  pad.pose.angularVelocity.y = gyro.y;
-  pad.pose.angularVelocity.z = gyro.z;
+  pad.pose.angular_velocity.not_null = true;
+  pad.pose.angular_velocity.x = gyro.x;
+  pad.pose.angular_velocity.y = gyro.y;
+  pad.pose.angular_velocity.z = gyro.z;
 }
 
 void GvrGamepadDataFetcher::PauseHint(bool paused) {}

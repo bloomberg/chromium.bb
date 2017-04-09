@@ -36,229 +36,232 @@
 namespace blink {
 
 TEST(LayoutUnitTest, LayoutUnitInt) {
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(INT_MIN).toInt());
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(INT_MIN / 2).toInt());
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit - 1).toInt());
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit).toInt());
-  EXPECT_EQ(intMinForLayoutUnit + 1,
-            LayoutUnit(intMinForLayoutUnit + 1).toInt());
-  EXPECT_EQ(intMinForLayoutUnit / 2,
-            LayoutUnit(intMinForLayoutUnit / 2).toInt());
-  EXPECT_EQ(-10000, LayoutUnit(-10000).toInt());
-  EXPECT_EQ(-1000, LayoutUnit(-1000).toInt());
-  EXPECT_EQ(-100, LayoutUnit(-100).toInt());
-  EXPECT_EQ(-10, LayoutUnit(-10).toInt());
-  EXPECT_EQ(-1, LayoutUnit(-1).toInt());
-  EXPECT_EQ(0, LayoutUnit(0).toInt());
-  EXPECT_EQ(1, LayoutUnit(1).toInt());
-  EXPECT_EQ(100, LayoutUnit(100).toInt());
-  EXPECT_EQ(1000, LayoutUnit(1000).toInt());
-  EXPECT_EQ(10000, LayoutUnit(10000).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit / 2,
-            LayoutUnit(intMaxForLayoutUnit / 2).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit - 1,
-            LayoutUnit(intMaxForLayoutUnit - 1).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit + 1).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(INT_MAX / 2).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(INT_MAX).toInt());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(INT_MIN).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(INT_MIN / 2).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(kIntMinForLayoutUnit - 1).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(kIntMinForLayoutUnit).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit + 1,
+            LayoutUnit(kIntMinForLayoutUnit + 1).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit / 2,
+            LayoutUnit(kIntMinForLayoutUnit / 2).ToInt());
+  EXPECT_EQ(-10000, LayoutUnit(-10000).ToInt());
+  EXPECT_EQ(-1000, LayoutUnit(-1000).ToInt());
+  EXPECT_EQ(-100, LayoutUnit(-100).ToInt());
+  EXPECT_EQ(-10, LayoutUnit(-10).ToInt());
+  EXPECT_EQ(-1, LayoutUnit(-1).ToInt());
+  EXPECT_EQ(0, LayoutUnit(0).ToInt());
+  EXPECT_EQ(1, LayoutUnit(1).ToInt());
+  EXPECT_EQ(100, LayoutUnit(100).ToInt());
+  EXPECT_EQ(1000, LayoutUnit(1000).ToInt());
+  EXPECT_EQ(10000, LayoutUnit(10000).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit / 2,
+            LayoutUnit(kIntMaxForLayoutUnit / 2).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit - 1,
+            LayoutUnit(kIntMaxForLayoutUnit - 1).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(kIntMaxForLayoutUnit).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(kIntMaxForLayoutUnit + 1).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(INT_MAX / 2).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(INT_MAX).ToInt());
 }
 
 TEST(LayoutUnitTest, LayoutUnitFloat) {
-  const float tolerance = 1.0f / kFixedPointDenominator;
-  EXPECT_FLOAT_EQ(1.0f, LayoutUnit(1.0f).toFloat());
-  EXPECT_FLOAT_EQ(1.25f, LayoutUnit(1.25f).toFloat());
-  EXPECT_NEAR(LayoutUnit(1.1f).toFloat(), 1.1f, tolerance);
-  EXPECT_NEAR(LayoutUnit(1.33f).toFloat(), 1.33f, tolerance);
-  EXPECT_NEAR(LayoutUnit(1.3333f).toFloat(), 1.3333f, tolerance);
-  EXPECT_NEAR(LayoutUnit(1.53434f).toFloat(), 1.53434f, tolerance);
-  EXPECT_NEAR(LayoutUnit(345634).toFloat(), 345634.0f, tolerance);
-  EXPECT_NEAR(LayoutUnit(345634.12335f).toFloat(), 345634.12335f, tolerance);
-  EXPECT_NEAR(LayoutUnit(-345634.12335f).toFloat(), -345634.12335f, tolerance);
-  EXPECT_NEAR(LayoutUnit(-345634).toFloat(), -345634.0f, tolerance);
+  const float kTolerance = 1.0f / kFixedPointDenominator;
+  EXPECT_FLOAT_EQ(1.0f, LayoutUnit(1.0f).ToFloat());
+  EXPECT_FLOAT_EQ(1.25f, LayoutUnit(1.25f).ToFloat());
+  EXPECT_NEAR(LayoutUnit(1.1f).ToFloat(), 1.1f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(1.33f).ToFloat(), 1.33f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(1.3333f).ToFloat(), 1.3333f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(1.53434f).ToFloat(), 1.53434f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(345634).ToFloat(), 345634.0f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(345634.12335f).ToFloat(), 345634.12335f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(-345634.12335f).ToFloat(), -345634.12335f, kTolerance);
+  EXPECT_NEAR(LayoutUnit(-345634).ToFloat(), -345634.0f, kTolerance);
 }
 
 TEST(LayoutUnitTest, LayoutUnitRounding) {
-  EXPECT_EQ(-2, LayoutUnit(-1.9f).round());
-  EXPECT_EQ(-2, LayoutUnit(-1.6f).round());
-  EXPECT_EQ(-2, LayoutUnit::fromFloatRound(-1.51f).round());
-  EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-1.5f).round());
-  EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-1.49f).round());
-  EXPECT_EQ(-1, LayoutUnit(-1.0f).round());
-  EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-0.99f).round());
-  EXPECT_EQ(-1, LayoutUnit::fromFloatRound(-0.51f).round());
-  EXPECT_EQ(0, LayoutUnit::fromFloatRound(-0.50f).round());
-  EXPECT_EQ(0, LayoutUnit::fromFloatRound(-0.49f).round());
-  EXPECT_EQ(0, LayoutUnit(-0.1f).round());
-  EXPECT_EQ(0, LayoutUnit(0.0f).round());
-  EXPECT_EQ(0, LayoutUnit(0.1f).round());
-  EXPECT_EQ(0, LayoutUnit::fromFloatRound(0.49f).round());
-  EXPECT_EQ(1, LayoutUnit::fromFloatRound(0.50f).round());
-  EXPECT_EQ(1, LayoutUnit::fromFloatRound(0.51f).round());
-  EXPECT_EQ(1, LayoutUnit(0.99f).round());
-  EXPECT_EQ(1, LayoutUnit(1.0f).round());
-  EXPECT_EQ(1, LayoutUnit::fromFloatRound(1.49f).round());
-  EXPECT_EQ(2, LayoutUnit::fromFloatRound(1.5f).round());
-  EXPECT_EQ(2, LayoutUnit::fromFloatRound(1.51f).round());
+  EXPECT_EQ(-2, LayoutUnit(-1.9f).Round());
+  EXPECT_EQ(-2, LayoutUnit(-1.6f).Round());
+  EXPECT_EQ(-2, LayoutUnit::FromFloatRound(-1.51f).Round());
+  EXPECT_EQ(-1, LayoutUnit::FromFloatRound(-1.5f).Round());
+  EXPECT_EQ(-1, LayoutUnit::FromFloatRound(-1.49f).Round());
+  EXPECT_EQ(-1, LayoutUnit(-1.0f).Round());
+  EXPECT_EQ(-1, LayoutUnit::FromFloatRound(-0.99f).Round());
+  EXPECT_EQ(-1, LayoutUnit::FromFloatRound(-0.51f).Round());
+  EXPECT_EQ(0, LayoutUnit::FromFloatRound(-0.50f).Round());
+  EXPECT_EQ(0, LayoutUnit::FromFloatRound(-0.49f).Round());
+  EXPECT_EQ(0, LayoutUnit(-0.1f).Round());
+  EXPECT_EQ(0, LayoutUnit(0.0f).Round());
+  EXPECT_EQ(0, LayoutUnit(0.1f).Round());
+  EXPECT_EQ(0, LayoutUnit::FromFloatRound(0.49f).Round());
+  EXPECT_EQ(1, LayoutUnit::FromFloatRound(0.50f).Round());
+  EXPECT_EQ(1, LayoutUnit::FromFloatRound(0.51f).Round());
+  EXPECT_EQ(1, LayoutUnit(0.99f).Round());
+  EXPECT_EQ(1, LayoutUnit(1.0f).Round());
+  EXPECT_EQ(1, LayoutUnit::FromFloatRound(1.49f).Round());
+  EXPECT_EQ(2, LayoutUnit::FromFloatRound(1.5f).Round());
+  EXPECT_EQ(2, LayoutUnit::FromFloatRound(1.51f).Round());
 }
 
 TEST(LayoutUnitTest, LayoutUnitSnapSizeToPixel) {
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1), LayoutUnit(0)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1), LayoutUnit(0.5)));
-  EXPECT_EQ(2, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0)));
-  EXPECT_EQ(2, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.49)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.5)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.75)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.99)));
-  EXPECT_EQ(2, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1), LayoutUnit(0)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1), LayoutUnit(0.5)));
+  EXPECT_EQ(2, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0)));
+  EXPECT_EQ(2, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.49)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.5)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.75)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(0.99)));
+  EXPECT_EQ(2, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1)));
 
-  EXPECT_EQ(0, snapSizeToPixel(LayoutUnit(0.5), LayoutUnit(1.5)));
-  EXPECT_EQ(0, snapSizeToPixel(LayoutUnit(0.99), LayoutUnit(1.5)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.0), LayoutUnit(1.5)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.49), LayoutUnit(1.5)));
-  EXPECT_EQ(1, snapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1.5)));
+  EXPECT_EQ(0, SnapSizeToPixel(LayoutUnit(0.5), LayoutUnit(1.5)));
+  EXPECT_EQ(0, SnapSizeToPixel(LayoutUnit(0.99), LayoutUnit(1.5)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.0), LayoutUnit(1.5)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.49), LayoutUnit(1.5)));
+  EXPECT_EQ(1, SnapSizeToPixel(LayoutUnit(1.5), LayoutUnit(1.5)));
 
-  EXPECT_EQ(101, snapSizeToPixel(LayoutUnit(100.5), LayoutUnit(100)));
-  EXPECT_EQ(intMaxForLayoutUnit,
-            snapSizeToPixel(LayoutUnit(intMaxForLayoutUnit), LayoutUnit(0.3)));
-  EXPECT_EQ(intMinForLayoutUnit,
-            snapSizeToPixel(LayoutUnit(intMinForLayoutUnit), LayoutUnit(-0.3)));
+  EXPECT_EQ(101, SnapSizeToPixel(LayoutUnit(100.5), LayoutUnit(100)));
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            SnapSizeToPixel(LayoutUnit(kIntMaxForLayoutUnit), LayoutUnit(0.3)));
+  EXPECT_EQ(
+      kIntMinForLayoutUnit,
+      SnapSizeToPixel(LayoutUnit(kIntMinForLayoutUnit), LayoutUnit(-0.3)));
 }
 
 TEST(LayoutUnitTest, LayoutUnitMultiplication) {
-  EXPECT_EQ(1, (LayoutUnit(1) * LayoutUnit(1)).toInt());
-  EXPECT_EQ(2, (LayoutUnit(1) * LayoutUnit(2)).toInt());
-  EXPECT_EQ(2, (LayoutUnit(2) * LayoutUnit(1)).toInt());
-  EXPECT_EQ(1, (LayoutUnit(2) * LayoutUnit(0.5)).toInt());
-  EXPECT_EQ(1, (LayoutUnit(0.5) * LayoutUnit(2)).toInt());
-  EXPECT_EQ(100, (LayoutUnit(100) * LayoutUnit(1)).toInt());
+  EXPECT_EQ(1, (LayoutUnit(1) * LayoutUnit(1)).ToInt());
+  EXPECT_EQ(2, (LayoutUnit(1) * LayoutUnit(2)).ToInt());
+  EXPECT_EQ(2, (LayoutUnit(2) * LayoutUnit(1)).ToInt());
+  EXPECT_EQ(1, (LayoutUnit(2) * LayoutUnit(0.5)).ToInt());
+  EXPECT_EQ(1, (LayoutUnit(0.5) * LayoutUnit(2)).ToInt());
+  EXPECT_EQ(100, (LayoutUnit(100) * LayoutUnit(1)).ToInt());
 
-  EXPECT_EQ(-1, (LayoutUnit(-1) * LayoutUnit(1)).toInt());
-  EXPECT_EQ(-2, (LayoutUnit(-1) * LayoutUnit(2)).toInt());
-  EXPECT_EQ(-2, (LayoutUnit(-2) * LayoutUnit(1)).toInt());
-  EXPECT_EQ(-1, (LayoutUnit(-2) * LayoutUnit(0.5)).toInt());
-  EXPECT_EQ(-1, (LayoutUnit(-0.5) * LayoutUnit(2)).toInt());
-  EXPECT_EQ(-100, (LayoutUnit(-100) * LayoutUnit(1)).toInt());
+  EXPECT_EQ(-1, (LayoutUnit(-1) * LayoutUnit(1)).ToInt());
+  EXPECT_EQ(-2, (LayoutUnit(-1) * LayoutUnit(2)).ToInt());
+  EXPECT_EQ(-2, (LayoutUnit(-2) * LayoutUnit(1)).ToInt());
+  EXPECT_EQ(-1, (LayoutUnit(-2) * LayoutUnit(0.5)).ToInt());
+  EXPECT_EQ(-1, (LayoutUnit(-0.5) * LayoutUnit(2)).ToInt());
+  EXPECT_EQ(-100, (LayoutUnit(-100) * LayoutUnit(1)).ToInt());
 
-  EXPECT_EQ(1, (LayoutUnit(-1) * LayoutUnit(-1)).toInt());
-  EXPECT_EQ(2, (LayoutUnit(-1) * LayoutUnit(-2)).toInt());
-  EXPECT_EQ(2, (LayoutUnit(-2) * LayoutUnit(-1)).toInt());
-  EXPECT_EQ(1, (LayoutUnit(-2) * LayoutUnit(-0.5)).toInt());
-  EXPECT_EQ(1, (LayoutUnit(-0.5) * LayoutUnit(-2)).toInt());
-  EXPECT_EQ(100, (LayoutUnit(-100) * LayoutUnit(-1)).toInt());
+  EXPECT_EQ(1, (LayoutUnit(-1) * LayoutUnit(-1)).ToInt());
+  EXPECT_EQ(2, (LayoutUnit(-1) * LayoutUnit(-2)).ToInt());
+  EXPECT_EQ(2, (LayoutUnit(-2) * LayoutUnit(-1)).ToInt());
+  EXPECT_EQ(1, (LayoutUnit(-2) * LayoutUnit(-0.5)).ToInt());
+  EXPECT_EQ(1, (LayoutUnit(-0.5) * LayoutUnit(-2)).ToInt());
+  EXPECT_EQ(100, (LayoutUnit(-100) * LayoutUnit(-1)).ToInt());
 
-  EXPECT_EQ(333, (LayoutUnit(100) * LayoutUnit(3.33)).round());
-  EXPECT_EQ(-333, (LayoutUnit(-100) * LayoutUnit(3.33)).round());
-  EXPECT_EQ(333, (LayoutUnit(-100) * LayoutUnit(-3.33)).round());
+  EXPECT_EQ(333, (LayoutUnit(100) * LayoutUnit(3.33)).Round());
+  EXPECT_EQ(-333, (LayoutUnit(-100) * LayoutUnit(3.33)).Round());
+  EXPECT_EQ(333, (LayoutUnit(-100) * LayoutUnit(-3.33)).Round());
 
-  size_t aHundredSizeT = 100;
-  EXPECT_EQ(100, (LayoutUnit(aHundredSizeT) * LayoutUnit(1)).toInt());
-  EXPECT_EQ(400, (aHundredSizeT * LayoutUnit(4)).toInt());
-  EXPECT_EQ(400, (LayoutUnit(4) * aHundredSizeT).toInt());
+  size_t a_hundred_size_t = 100;
+  EXPECT_EQ(100, (LayoutUnit(a_hundred_size_t) * LayoutUnit(1)).ToInt());
+  EXPECT_EQ(400, (a_hundred_size_t * LayoutUnit(4)).ToInt());
+  EXPECT_EQ(400, (LayoutUnit(4) * a_hundred_size_t).ToInt());
 
-  int quarterMax = intMaxForLayoutUnit / 4;
-  EXPECT_EQ(quarterMax * 2, (LayoutUnit(quarterMax) * LayoutUnit(2)).toInt());
-  EXPECT_EQ(quarterMax * 3, (LayoutUnit(quarterMax) * LayoutUnit(3)).toInt());
-  EXPECT_EQ(quarterMax * 4, (LayoutUnit(quarterMax) * LayoutUnit(4)).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit,
-            (LayoutUnit(quarterMax) * LayoutUnit(5)).toInt());
+  int quarter_max = kIntMaxForLayoutUnit / 4;
+  EXPECT_EQ(quarter_max * 2, (LayoutUnit(quarter_max) * LayoutUnit(2)).ToInt());
+  EXPECT_EQ(quarter_max * 3, (LayoutUnit(quarter_max) * LayoutUnit(3)).ToInt());
+  EXPECT_EQ(quarter_max * 4, (LayoutUnit(quarter_max) * LayoutUnit(4)).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            (LayoutUnit(quarter_max) * LayoutUnit(5)).ToInt());
 
-  size_t overflowIntSizeT = intMaxForLayoutUnit * 4;
-  EXPECT_EQ(intMaxForLayoutUnit,
-            (LayoutUnit(overflowIntSizeT) * LayoutUnit(2)).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, (overflowIntSizeT * LayoutUnit(4)).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, (LayoutUnit(4) * overflowIntSizeT).toInt());
+  size_t overflow_int_size_t = kIntMaxForLayoutUnit * 4;
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            (LayoutUnit(overflow_int_size_t) * LayoutUnit(2)).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            (overflow_int_size_t * LayoutUnit(4)).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            (LayoutUnit(4) * overflow_int_size_t).ToInt());
 }
 
 TEST(LayoutUnitTest, LayoutUnitDivision) {
-  EXPECT_EQ(1, (LayoutUnit(1) / LayoutUnit(1)).toInt());
-  EXPECT_EQ(0, (LayoutUnit(1) / LayoutUnit(2)).toInt());
-  EXPECT_EQ(2, (LayoutUnit(2) / LayoutUnit(1)).toInt());
-  EXPECT_EQ(4, (LayoutUnit(2) / LayoutUnit(0.5)).toInt());
-  EXPECT_EQ(0, (LayoutUnit(0.5) / LayoutUnit(2)).toInt());
-  EXPECT_EQ(10, (LayoutUnit(100) / LayoutUnit(10)).toInt());
-  EXPECT_FLOAT_EQ(0.5f, (LayoutUnit(1) / LayoutUnit(2)).toFloat());
-  EXPECT_FLOAT_EQ(0.25f, (LayoutUnit(0.5) / LayoutUnit(2)).toFloat());
+  EXPECT_EQ(1, (LayoutUnit(1) / LayoutUnit(1)).ToInt());
+  EXPECT_EQ(0, (LayoutUnit(1) / LayoutUnit(2)).ToInt());
+  EXPECT_EQ(2, (LayoutUnit(2) / LayoutUnit(1)).ToInt());
+  EXPECT_EQ(4, (LayoutUnit(2) / LayoutUnit(0.5)).ToInt());
+  EXPECT_EQ(0, (LayoutUnit(0.5) / LayoutUnit(2)).ToInt());
+  EXPECT_EQ(10, (LayoutUnit(100) / LayoutUnit(10)).ToInt());
+  EXPECT_FLOAT_EQ(0.5f, (LayoutUnit(1) / LayoutUnit(2)).ToFloat());
+  EXPECT_FLOAT_EQ(0.25f, (LayoutUnit(0.5) / LayoutUnit(2)).ToFloat());
 
-  EXPECT_EQ(-1, (LayoutUnit(-1) / LayoutUnit(1)).toInt());
-  EXPECT_EQ(0, (LayoutUnit(-1) / LayoutUnit(2)).toInt());
-  EXPECT_EQ(-2, (LayoutUnit(-2) / LayoutUnit(1)).toInt());
-  EXPECT_EQ(-4, (LayoutUnit(-2) / LayoutUnit(0.5)).toInt());
-  EXPECT_EQ(0, (LayoutUnit(-0.5) / LayoutUnit(2)).toInt());
-  EXPECT_EQ(-10, (LayoutUnit(-100) / LayoutUnit(10)).toInt());
-  EXPECT_FLOAT_EQ(-0.5f, (LayoutUnit(-1) / LayoutUnit(2)).toFloat());
-  EXPECT_FLOAT_EQ(-0.25f, (LayoutUnit(-0.5) / LayoutUnit(2)).toFloat());
+  EXPECT_EQ(-1, (LayoutUnit(-1) / LayoutUnit(1)).ToInt());
+  EXPECT_EQ(0, (LayoutUnit(-1) / LayoutUnit(2)).ToInt());
+  EXPECT_EQ(-2, (LayoutUnit(-2) / LayoutUnit(1)).ToInt());
+  EXPECT_EQ(-4, (LayoutUnit(-2) / LayoutUnit(0.5)).ToInt());
+  EXPECT_EQ(0, (LayoutUnit(-0.5) / LayoutUnit(2)).ToInt());
+  EXPECT_EQ(-10, (LayoutUnit(-100) / LayoutUnit(10)).ToInt());
+  EXPECT_FLOAT_EQ(-0.5f, (LayoutUnit(-1) / LayoutUnit(2)).ToFloat());
+  EXPECT_FLOAT_EQ(-0.25f, (LayoutUnit(-0.5) / LayoutUnit(2)).ToFloat());
 
-  EXPECT_EQ(1, (LayoutUnit(-1) / LayoutUnit(-1)).toInt());
-  EXPECT_EQ(0, (LayoutUnit(-1) / LayoutUnit(-2)).toInt());
-  EXPECT_EQ(2, (LayoutUnit(-2) / LayoutUnit(-1)).toInt());
-  EXPECT_EQ(4, (LayoutUnit(-2) / LayoutUnit(-0.5)).toInt());
-  EXPECT_EQ(0, (LayoutUnit(-0.5) / LayoutUnit(-2)).toInt());
-  EXPECT_EQ(10, (LayoutUnit(-100) / LayoutUnit(-10)).toInt());
-  EXPECT_FLOAT_EQ(0.5f, (LayoutUnit(-1) / LayoutUnit(-2)).toFloat());
-  EXPECT_FLOAT_EQ(0.25f, (LayoutUnit(-0.5) / LayoutUnit(-2)).toFloat());
+  EXPECT_EQ(1, (LayoutUnit(-1) / LayoutUnit(-1)).ToInt());
+  EXPECT_EQ(0, (LayoutUnit(-1) / LayoutUnit(-2)).ToInt());
+  EXPECT_EQ(2, (LayoutUnit(-2) / LayoutUnit(-1)).ToInt());
+  EXPECT_EQ(4, (LayoutUnit(-2) / LayoutUnit(-0.5)).ToInt());
+  EXPECT_EQ(0, (LayoutUnit(-0.5) / LayoutUnit(-2)).ToInt());
+  EXPECT_EQ(10, (LayoutUnit(-100) / LayoutUnit(-10)).ToInt());
+  EXPECT_FLOAT_EQ(0.5f, (LayoutUnit(-1) / LayoutUnit(-2)).ToFloat());
+  EXPECT_FLOAT_EQ(0.25f, (LayoutUnit(-0.5) / LayoutUnit(-2)).ToFloat());
 
-  size_t aHundredSizeT = 100;
-  EXPECT_EQ(50, (LayoutUnit(aHundredSizeT) / LayoutUnit(2)).toInt());
-  EXPECT_EQ(25, (aHundredSizeT / LayoutUnit(4)).toInt());
-  EXPECT_EQ(4, (LayoutUnit(400) / aHundredSizeT).toInt());
+  size_t a_hundred_size_t = 100;
+  EXPECT_EQ(50, (LayoutUnit(a_hundred_size_t) / LayoutUnit(2)).ToInt());
+  EXPECT_EQ(25, (a_hundred_size_t / LayoutUnit(4)).ToInt());
+  EXPECT_EQ(4, (LayoutUnit(400) / a_hundred_size_t).ToInt());
 
-  EXPECT_EQ(intMaxForLayoutUnit / 2,
-            (LayoutUnit(intMaxForLayoutUnit) / LayoutUnit(2)).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit,
-            (LayoutUnit(intMaxForLayoutUnit) / LayoutUnit(0.5)).toInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit / 2,
+            (LayoutUnit(kIntMaxForLayoutUnit) / LayoutUnit(2)).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            (LayoutUnit(kIntMaxForLayoutUnit) / LayoutUnit(0.5)).ToInt());
 }
 
 TEST(LayoutUnitTest, LayoutUnitCeil) {
-  EXPECT_EQ(0, LayoutUnit(0).ceil());
-  EXPECT_EQ(1, LayoutUnit(0.1).ceil());
-  EXPECT_EQ(1, LayoutUnit(0.5).ceil());
-  EXPECT_EQ(1, LayoutUnit(0.9).ceil());
-  EXPECT_EQ(1, LayoutUnit(1.0).ceil());
-  EXPECT_EQ(2, LayoutUnit(1.1).ceil());
+  EXPECT_EQ(0, LayoutUnit(0).Ceil());
+  EXPECT_EQ(1, LayoutUnit(0.1).Ceil());
+  EXPECT_EQ(1, LayoutUnit(0.5).Ceil());
+  EXPECT_EQ(1, LayoutUnit(0.9).Ceil());
+  EXPECT_EQ(1, LayoutUnit(1.0).Ceil());
+  EXPECT_EQ(2, LayoutUnit(1.1).Ceil());
 
-  EXPECT_EQ(0, LayoutUnit(-0.1).ceil());
-  EXPECT_EQ(0, LayoutUnit(-0.5).ceil());
-  EXPECT_EQ(0, LayoutUnit(-0.9).ceil());
-  EXPECT_EQ(-1, LayoutUnit(-1.0).ceil());
+  EXPECT_EQ(0, LayoutUnit(-0.1).Ceil());
+  EXPECT_EQ(0, LayoutUnit(-0.5).Ceil());
+  EXPECT_EQ(0, LayoutUnit(-0.9).Ceil());
+  EXPECT_EQ(-1, LayoutUnit(-1.0).Ceil());
 
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit).ceil());
-  EXPECT_EQ(intMaxForLayoutUnit,
-            (LayoutUnit(intMaxForLayoutUnit) - LayoutUnit(0.5)).ceil());
-  EXPECT_EQ(intMaxForLayoutUnit - 1,
-            (LayoutUnit(intMaxForLayoutUnit) - LayoutUnit(1)).ceil());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(kIntMaxForLayoutUnit).Ceil());
+  EXPECT_EQ(kIntMaxForLayoutUnit,
+            (LayoutUnit(kIntMaxForLayoutUnit) - LayoutUnit(0.5)).Ceil());
+  EXPECT_EQ(kIntMaxForLayoutUnit - 1,
+            (LayoutUnit(kIntMaxForLayoutUnit) - LayoutUnit(1)).Ceil());
 
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit).ceil());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(kIntMinForLayoutUnit).Ceil());
 }
 
 TEST(LayoutUnitTest, LayoutUnitFloor) {
-  EXPECT_EQ(0, LayoutUnit(0).floor());
-  EXPECT_EQ(0, LayoutUnit(0.1).floor());
-  EXPECT_EQ(0, LayoutUnit(0.5).floor());
-  EXPECT_EQ(0, LayoutUnit(0.9).floor());
-  EXPECT_EQ(1, LayoutUnit(1.0).floor());
-  EXPECT_EQ(1, LayoutUnit(1.1).floor());
+  EXPECT_EQ(0, LayoutUnit(0).Floor());
+  EXPECT_EQ(0, LayoutUnit(0.1).Floor());
+  EXPECT_EQ(0, LayoutUnit(0.5).Floor());
+  EXPECT_EQ(0, LayoutUnit(0.9).Floor());
+  EXPECT_EQ(1, LayoutUnit(1.0).Floor());
+  EXPECT_EQ(1, LayoutUnit(1.1).Floor());
 
-  EXPECT_EQ(-1, LayoutUnit(-0.1).floor());
-  EXPECT_EQ(-1, LayoutUnit(-0.5).floor());
-  EXPECT_EQ(-1, LayoutUnit(-0.9).floor());
-  EXPECT_EQ(-1, LayoutUnit(-1.0).floor());
+  EXPECT_EQ(-1, LayoutUnit(-0.1).Floor());
+  EXPECT_EQ(-1, LayoutUnit(-0.5).Floor());
+  EXPECT_EQ(-1, LayoutUnit(-0.9).Floor());
+  EXPECT_EQ(-1, LayoutUnit(-1.0).Floor());
 
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(intMaxForLayoutUnit).floor());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(kIntMaxForLayoutUnit).Floor());
 
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(intMinForLayoutUnit).floor());
-  EXPECT_EQ(intMinForLayoutUnit,
-            (LayoutUnit(intMinForLayoutUnit) + LayoutUnit(0.5)).floor());
-  EXPECT_EQ(intMinForLayoutUnit + 1,
-            (LayoutUnit(intMinForLayoutUnit) + LayoutUnit(1)).floor());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(kIntMinForLayoutUnit).Floor());
+  EXPECT_EQ(kIntMinForLayoutUnit,
+            (LayoutUnit(kIntMinForLayoutUnit) + LayoutUnit(0.5)).Floor());
+  EXPECT_EQ(kIntMinForLayoutUnit + 1,
+            (LayoutUnit(kIntMinForLayoutUnit) + LayoutUnit(1)).Floor());
 }
 
 TEST(LayoutUnitTest, LayoutUnitFloatOverflow) {
   // These should overflow to the max/min according to their sign.
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0f).toInt());
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0f).toInt());
-  EXPECT_EQ(intMaxForLayoutUnit, LayoutUnit(176972000.0).toInt());
-  EXPECT_EQ(intMinForLayoutUnit, LayoutUnit(-176972000.0).toInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(176972000.0f).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(-176972000.0f).ToInt());
+  EXPECT_EQ(kIntMaxForLayoutUnit, LayoutUnit(176972000.0).ToInt());
+  EXPECT_EQ(kIntMinForLayoutUnit, LayoutUnit(-176972000.0).ToInt());
 }
 
 TEST(LayoutUnitTest, UnaryMinus) {
@@ -266,13 +269,13 @@ TEST(LayoutUnitTest, UnaryMinus) {
   EXPECT_EQ(LayoutUnit(999), -LayoutUnit(-999));
   EXPECT_EQ(LayoutUnit(-999), -LayoutUnit(999));
 
-  LayoutUnit negativeMax;
-  negativeMax.setRawValue(LayoutUnit::min().rawValue() + 1);
-  EXPECT_EQ(negativeMax, -LayoutUnit::max());
-  EXPECT_EQ(LayoutUnit::max(), -negativeMax);
+  LayoutUnit negative_max;
+  negative_max.SetRawValue(LayoutUnit::Min().RawValue() + 1);
+  EXPECT_EQ(negative_max, -LayoutUnit::Max());
+  EXPECT_EQ(LayoutUnit::Max(), -negative_max);
 
   // -LayoutUnit::min() is saturated to LayoutUnit::max()
-  EXPECT_EQ(LayoutUnit::max(), -LayoutUnit::min());
+  EXPECT_EQ(LayoutUnit::Max(), -LayoutUnit::Min());
 }
 
 }  // namespace blink

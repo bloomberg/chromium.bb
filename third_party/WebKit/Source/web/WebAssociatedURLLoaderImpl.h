@@ -27,43 +27,43 @@ class WebAssociatedURLLoaderImpl final : public WebAssociatedURLLoader {
                              const WebAssociatedURLLoaderOptions&);
   ~WebAssociatedURLLoaderImpl();
 
-  void loadAsynchronously(const WebURLRequest&,
+  void LoadAsynchronously(const WebURLRequest&,
                           WebAssociatedURLLoaderClient*) override;
-  void cancel() override;
-  void setDefersLoading(bool) override;
-  void setLoadingTaskRunner(blink::WebTaskRunner*) override;
+  void Cancel() override;
+  void SetDefersLoading(bool) override;
+  void SetLoadingTaskRunner(blink::WebTaskRunner*) override;
 
   // Called by |m_observer| to handle destruction of the Document associated
   // with the frame given to the constructor.
-  void documentDestroyed();
+  void DocumentDestroyed();
 
   // Called by ClientAdapter to handle completion of loading.
-  void clientAdapterDone();
+  void ClientAdapterDone();
 
  private:
   class ClientAdapter;
   class Observer;
 
-  void cancelLoader();
-  void disposeObserver();
+  void CancelLoader();
+  void DisposeObserver();
 
-  WebAssociatedURLLoaderClient* releaseClient() {
-    WebAssociatedURLLoaderClient* client = m_client;
-    m_client = nullptr;
+  WebAssociatedURLLoaderClient* ReleaseClient() {
+    WebAssociatedURLLoaderClient* client = client_;
+    client_ = nullptr;
     return client;
   }
 
-  WebAssociatedURLLoaderClient* m_client;
-  WebAssociatedURLLoaderOptions m_options;
+  WebAssociatedURLLoaderClient* client_;
+  WebAssociatedURLLoaderOptions options_;
 
   // An adapter which converts the DocumentThreadableLoaderClient method
   // calls into the WebURLLoaderClient method calls.
-  std::unique_ptr<ClientAdapter> m_clientAdapter;
-  Persistent<DocumentThreadableLoader> m_loader;
+  std::unique_ptr<ClientAdapter> client_adapter_;
+  Persistent<DocumentThreadableLoader> loader_;
 
   // A ContextLifecycleObserver for cancelling |m_loader| when the Document
   // is detached.
-  Persistent<Observer> m_observer;
+  Persistent<Observer> observer_;
 };
 
 }  // namespace blink

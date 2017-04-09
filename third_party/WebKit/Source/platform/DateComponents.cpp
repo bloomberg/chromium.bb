@@ -39,62 +39,62 @@
 namespace blink {
 
 // HTML5 specification defines minimum week of year is one.
-const int DateComponents::minimumWeekNumber = 1;
+const int DateComponents::kMinimumWeekNumber = 1;
 
 // HTML5 specification defines maximum week of year is 53.
-const int DateComponents::maximumWeekNumber = 53;
+const int DateComponents::kMaximumWeekNumber = 53;
 
-static const int maximumMonthInMaximumYear =
+static const int kMaximumMonthInMaximumYear =
     8;  // This is September, since months are 0 based.
-static const int maximumDayInMaximumMonth = 13;
-static const int maximumWeekInMaximumYear = 37;  // The week of 275760-09-13
+static const int kMaximumDayInMaximumMonth = 13;
+static const int kMaximumWeekInMaximumYear = 37;  // The week of 275760-09-13
 
-static const int daysInMonth[12] = {31, 28, 31, 30, 31, 30,
-                                    31, 31, 30, 31, 30, 31};
+static const int kDaysInMonth[12] = {31, 28, 31, 30, 31, 30,
+                                     31, 31, 30, 31, 30, 31};
 
 // 'month' is 0-based.
-static int maxDayOfMonth(int year, int month) {
+static int MaxDayOfMonth(int year, int month) {
   if (month != 1)  // February?
-    return daysInMonth[month];
-  return isLeapYear(year) ? 29 : 28;
+    return kDaysInMonth[month];
+  return IsLeapYear(year) ? 29 : 28;
 }
 
 // 'month' is 0-based.
-static int dayOfWeek(int year, int month, int day) {
-  int shiftedMonth = month + 2;
+static int DayOfWeek(int year, int month, int day) {
+  int shifted_month = month + 2;
   // 2:January, 3:Feburuary, 4:March, ...
 
   // Zeller's congruence
-  if (shiftedMonth <= 3) {
-    shiftedMonth += 12;
+  if (shifted_month <= 3) {
+    shifted_month += 12;
     year--;
   }
   // 4:March, ..., 14:January, 15:February
 
-  int highYear = year / 100;
-  int lowYear = year % 100;
+  int high_year = year / 100;
+  int low_year = year % 100;
   // We add 6 to make the result Sunday-origin.
-  int result = (day + 13 * shiftedMonth / 5 + lowYear + lowYear / 4 +
-                highYear / 4 + 5 * highYear + 6) %
+  int result = (day + 13 * shifted_month / 5 + low_year + low_year / 4 +
+                high_year / 4 + 5 * high_year + 6) %
                7;
   return result;
 }
 
-int DateComponents::weekDay() const {
-  return dayOfWeek(m_year, m_month, m_monthDay);
+int DateComponents::WeekDay() const {
+  return DayOfWeek(year_, month_, month_day_);
 }
 
-int DateComponents::maxWeekNumberInYear() const {
-  int day = dayOfWeek(m_year, 0, 1);  // January 1.
-  return day == Thursday || (day == Wednesday && isLeapYear(m_year))
-             ? maximumWeekNumber
-             : maximumWeekNumber - 1;
+int DateComponents::MaxWeekNumberInYear() const {
+  int day = DayOfWeek(year_, 0, 1);  // January 1.
+  return day == kThursday || (day == kWednesday && IsLeapYear(year_))
+             ? kMaximumWeekNumber
+             : kMaximumWeekNumber - 1;
 }
 
-static unsigned countDigits(const String& src, unsigned start) {
+static unsigned CountDigits(const String& src, unsigned start) {
   unsigned index = start;
   for (; index < src.length(); ++index) {
-    if (!isASCIIDigit(src[index]))
+    if (!IsASCIIDigit(src[index]))
       break;
   }
   return index - start;
@@ -102,19 +102,19 @@ static unsigned countDigits(const String& src, unsigned start) {
 
 // Very strict integer parser. Do not allow leading or trailing whitespace
 // unlike charactersToIntStrict().
-static bool toInt(const String& src,
-                  unsigned parseStart,
-                  unsigned parseLength,
+static bool ToInt(const String& src,
+                  unsigned parse_start,
+                  unsigned parse_length,
                   int& out) {
-  if (parseStart + parseLength > src.length() || !parseLength)
+  if (parse_start + parse_length > src.length() || !parse_length)
     return false;
   int value = 0;
-  unsigned current = parseStart;
-  unsigned end = current + parseLength;
+  unsigned current = parse_start;
+  unsigned end = current + parse_length;
 
   // We don't need to handle negative numbers for ISO 8601.
   for (; current < end; ++current) {
-    if (!isASCIIDigit(src[current]))
+    if (!IsASCIIDigit(src[current]))
       return false;
     int digit = src[current] - '0';
     if (value > (INT_MAX - digit) / 10)  // Check for overflow.
@@ -125,93 +125,93 @@ static bool toInt(const String& src,
   return true;
 }
 
-bool DateComponents::parseYear(const String& src,
+bool DateComponents::ParseYear(const String& src,
                                unsigned start,
                                unsigned& end) {
-  unsigned digitsLength = countDigits(src, start);
+  unsigned digits_length = CountDigits(src, start);
   // Needs at least 4 digits according to the standard.
-  if (digitsLength < 4)
+  if (digits_length < 4)
     return false;
   int year;
-  if (!toInt(src, start, digitsLength, year))
+  if (!ToInt(src, start, digits_length, year))
     return false;
-  if (year < minimumYear() || year > maximumYear())
+  if (year < MinimumYear() || year > MaximumYear())
     return false;
-  m_year = year;
-  end = start + digitsLength;
+  year_ = year;
+  end = start + digits_length;
   return true;
 }
 
-static bool withinHTMLDateLimits(int year, int month) {
-  if (year < DateComponents::minimumYear())
+static bool WithinHTMLDateLimits(int year, int month) {
+  if (year < DateComponents::MinimumYear())
     return false;
-  if (year < DateComponents::maximumYear())
+  if (year < DateComponents::MaximumYear())
     return true;
-  return month <= maximumMonthInMaximumYear;
+  return month <= kMaximumMonthInMaximumYear;
 }
 
-static bool withinHTMLDateLimits(int year, int month, int monthDay) {
-  if (year < DateComponents::minimumYear())
+static bool WithinHTMLDateLimits(int year, int month, int month_day) {
+  if (year < DateComponents::MinimumYear())
     return false;
-  if (year < DateComponents::maximumYear())
+  if (year < DateComponents::MaximumYear())
     return true;
-  if (month < maximumMonthInMaximumYear)
+  if (month < kMaximumMonthInMaximumYear)
     return true;
-  return monthDay <= maximumDayInMaximumMonth;
+  return month_day <= kMaximumDayInMaximumMonth;
 }
 
-static bool withinHTMLDateLimits(int year,
+static bool WithinHTMLDateLimits(int year,
                                  int month,
-                                 int monthDay,
+                                 int month_day,
                                  int hour,
                                  int minute,
                                  int second,
                                  int millisecond) {
-  if (year < DateComponents::minimumYear())
+  if (year < DateComponents::MinimumYear())
     return false;
-  if (year < DateComponents::maximumYear())
+  if (year < DateComponents::MaximumYear())
     return true;
-  if (month < maximumMonthInMaximumYear)
+  if (month < kMaximumMonthInMaximumYear)
     return true;
-  if (monthDay < maximumDayInMaximumMonth)
+  if (month_day < kMaximumDayInMaximumMonth)
     return true;
-  if (monthDay > maximumDayInMaximumMonth)
+  if (month_day > kMaximumDayInMaximumMonth)
     return false;
   // (year, month, monthDay) =
   // (maximumYear, maximumMonthInMaximumYear, maximumDayInMaximumMonth)
   return !hour && !minute && !second && !millisecond;
 }
 
-bool DateComponents::addDay(int dayDiff) {
-  ASSERT(m_monthDay);
+bool DateComponents::AddDay(int day_diff) {
+  ASSERT(month_day_);
 
-  int day = m_monthDay + dayDiff;
-  if (day > maxDayOfMonth(m_year, m_month)) {
-    day = m_monthDay;
-    int year = m_year;
-    int month = m_month;
-    int maxDay = maxDayOfMonth(year, month);
-    for (; dayDiff > 0; --dayDiff) {
+  int day = month_day_ + day_diff;
+  if (day > MaxDayOfMonth(year_, month_)) {
+    day = month_day_;
+    int year = year_;
+    int month = month_;
+    int max_day = MaxDayOfMonth(year, month);
+    for (; day_diff > 0; --day_diff) {
       ++day;
-      if (day > maxDay) {
+      if (day > max_day) {
         day = 1;
         ++month;
         if (month >= 12) {  // month is 0-origin.
           month = 0;
           ++year;
         }
-        maxDay = maxDayOfMonth(year, month);
+        max_day = MaxDayOfMonth(year, month);
       }
     }
-    if (!withinHTMLDateLimits(year, month, day))
+    if (!WithinHTMLDateLimits(year, month, day))
       return false;
-    m_year = year;
-    m_month = month;
+    year_ = year;
+    month_ = month;
   } else if (day < 1) {
-    int month = m_month;
-    int year = m_year;
-    day = m_monthDay;
-    for (; dayDiff < 0; ++dayDiff) {
+    int month = month_;
+    int year = year_;
+    day = month_day_;
+    for (; day_diff < 0; ++day_diff) {
       --day;
       if (day < 1) {
         --month;
@@ -219,29 +219,29 @@ bool DateComponents::addDay(int dayDiff) {
           month = 11;
           --year;
         }
-        day = maxDayOfMonth(year, month);
+        day = MaxDayOfMonth(year, month);
       }
     }
-    if (!withinHTMLDateLimits(year, month, day))
+    if (!WithinHTMLDateLimits(year, month, day))
       return false;
-    m_year = year;
-    m_month = month;
+    year_ = year;
+    month_ = month;
   } else {
-    if (!withinHTMLDateLimits(m_year, m_month, day))
+    if (!WithinHTMLDateLimits(year_, month_, day))
       return false;
   }
-  m_monthDay = day;
+  month_day_ = day;
   return true;
 }
 
-bool DateComponents::addMinute(int minute) {
+bool DateComponents::AddMinute(int minute) {
   // This function is used to adjust timezone offset. So m_year, m_month,
   // m_monthDay have values between the lower and higher limits.
-  ASSERT(withinHTMLDateLimits(m_year, m_month, m_monthDay));
+  ASSERT(WithinHTMLDateLimits(year_, month_, month_day_));
 
   int carry;
   // minute can be negative or greater than 59.
-  minute += m_minute;
+  minute += minute_;
   if (minute > 59) {
     carry = minute / 60;
     minute = minute % 60;
@@ -251,14 +251,14 @@ bool DateComponents::addMinute(int minute) {
     carry = -carry;
     ASSERT(minute >= 0 && minute <= 59);
   } else {
-    if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, m_hour, minute,
-                              m_second, m_millisecond))
+    if (!WithinHTMLDateLimits(year_, month_, month_day_, hour_, minute, second_,
+                              millisecond_))
       return false;
-    m_minute = minute;
+    minute_ = minute;
     return true;
   }
 
-  int hour = m_hour + carry;
+  int hour = hour_ + carry;
   if (hour > 23) {
     carry = hour / 24;
     hour = hour % 24;
@@ -268,26 +268,26 @@ bool DateComponents::addMinute(int minute) {
     carry = -carry;
     ASSERT(hour >= 0 && hour <= 23);
   } else {
-    if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, hour, minute,
-                              m_second, m_millisecond))
+    if (!WithinHTMLDateLimits(year_, month_, month_day_, hour, minute, second_,
+                              millisecond_))
       return false;
-    m_minute = minute;
-    m_hour = hour;
+    minute_ = minute;
+    hour_ = hour;
     return true;
   }
-  if (!addDay(carry))
+  if (!AddDay(carry))
     return false;
-  if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, hour, minute, m_second,
-                            m_millisecond))
+  if (!WithinHTMLDateLimits(year_, month_, month_day_, hour, minute, second_,
+                            millisecond_))
     return false;
-  m_minute = minute;
-  m_hour = hour;
+  minute_ = minute;
+  hour_ = hour;
   return true;
 }
 
 // Parses a timezone part, and adjust year, month, monthDay, hour, minute,
 // second, millisecond.
-bool DateComponents::parseTimeZone(const String& src,
+bool DateComponents::ParseTimeZone(const String& src,
                                    unsigned start,
                                    unsigned& end) {
   if (start >= src.length())
@@ -309,7 +309,7 @@ bool DateComponents::parseTimeZone(const String& src,
 
   int hour;
   int minute;
-  if (!toInt(src, index, 2, hour) || hour < 0 || hour > 23)
+  if (!ToInt(src, index, 2, hour) || hour < 0 || hour > 23)
     return false;
   index += 2;
 
@@ -317,7 +317,7 @@ bool DateComponents::parseTimeZone(const String& src,
     return false;
   ++index;
 
-  if (!toInt(src, index, 2, minute) || minute < 0 || minute > 59)
+  if (!ToInt(src, index, 2, minute) || minute < 0 || minute > 59)
     return false;
   index += 2;
 
@@ -327,39 +327,39 @@ bool DateComponents::parseTimeZone(const String& src,
   }
 
   // Subtract the timezone offset.
-  if (!addMinute(-(hour * 60 + minute)))
+  if (!AddMinute(-(hour * 60 + minute)))
     return false;
   end = index;
   return true;
 }
 
-bool DateComponents::parseMonth(const String& src,
+bool DateComponents::ParseMonth(const String& src,
                                 unsigned start,
                                 unsigned& end) {
   unsigned index;
-  if (!parseYear(src, start, index))
+  if (!ParseYear(src, start, index))
     return false;
   if (index >= src.length() || src[index] != '-')
     return false;
   ++index;
 
   int month;
-  if (!toInt(src, index, 2, month) || month < 1 || month > 12)
+  if (!ToInt(src, index, 2, month) || month < 1 || month > 12)
     return false;
   --month;
-  if (!withinHTMLDateLimits(m_year, month))
+  if (!WithinHTMLDateLimits(year_, month))
     return false;
-  m_month = month;
+  month_ = month;
   end = index + 2;
-  m_type = Month;
+  type_ = kMonth;
   return true;
 }
 
-bool DateComponents::parseDate(const String& src,
+bool DateComponents::ParseDate(const String& src,
                                unsigned start,
                                unsigned& end) {
   unsigned index;
-  if (!parseMonth(src, start, index))
+  if (!ParseMonth(src, start, index))
     return false;
   // '-' and 2-digits are needed.
   if (index + 2 >= src.length())
@@ -369,22 +369,22 @@ bool DateComponents::parseDate(const String& src,
   ++index;
 
   int day;
-  if (!toInt(src, index, 2, day) || day < 1 ||
-      day > maxDayOfMonth(m_year, m_month))
+  if (!ToInt(src, index, 2, day) || day < 1 ||
+      day > MaxDayOfMonth(year_, month_))
     return false;
-  if (!withinHTMLDateLimits(m_year, m_month, day))
+  if (!WithinHTMLDateLimits(year_, month_, day))
     return false;
-  m_monthDay = day;
+  month_day_ = day;
   end = index + 2;
-  m_type = Date;
+  type_ = kDate;
   return true;
 }
 
-bool DateComponents::parseWeek(const String& src,
+bool DateComponents::ParseWeek(const String& src,
                                unsigned start,
                                unsigned& end) {
   unsigned index;
-  if (!parseYear(src, start, index))
+  if (!ParseYear(src, start, index))
     return false;
 
   // 4 characters ('-' 'W' digit digit) are needed.
@@ -398,22 +398,22 @@ bool DateComponents::parseWeek(const String& src,
   ++index;
 
   int week;
-  if (!toInt(src, index, 2, week) || week < minimumWeekNumber ||
-      week > maxWeekNumberInYear())
+  if (!ToInt(src, index, 2, week) || week < kMinimumWeekNumber ||
+      week > MaxWeekNumberInYear())
     return false;
-  if (m_year == maximumYear() && week > maximumWeekInMaximumYear)
+  if (year_ == MaximumYear() && week > kMaximumWeekInMaximumYear)
     return false;
-  m_week = week;
+  week_ = week;
   end = index + 2;
-  m_type = Week;
+  type_ = kWeek;
   return true;
 }
 
-bool DateComponents::parseTime(const String& src,
+bool DateComponents::ParseTime(const String& src,
                                unsigned start,
                                unsigned& end) {
   int hour;
-  if (!toInt(src, start, 2, hour) || hour < 0 || hour > 23)
+  if (!ToInt(src, start, 2, hour) || hour < 0 || hour > 23)
     return false;
   unsigned index = start + 2;
   if (index >= src.length())
@@ -423,7 +423,7 @@ bool DateComponents::parseTime(const String& src,
   ++index;
 
   int minute;
-  if (!toInt(src, index, 2, minute) || minute < 0 || minute > 59)
+  if (!ToInt(src, index, 2, minute) || minute < 0 || minute > 59)
     return false;
   index += 2;
 
@@ -432,288 +432,286 @@ bool DateComponents::parseTime(const String& src,
   // Optional second part.
   // Do not return with false because the part is optional.
   if (index + 2 < src.length() && src[index] == ':') {
-    if (toInt(src, index + 1, 2, second) && second >= 0 && second <= 59) {
+    if (ToInt(src, index + 1, 2, second) && second >= 0 && second <= 59) {
       index += 3;
 
       // Optional fractional second part.
       if (index < src.length() && src[index] == '.') {
-        unsigned digitsLength = countDigits(src, index + 1);
-        if (digitsLength > 0) {
+        unsigned digits_length = CountDigits(src, index + 1);
+        if (digits_length > 0) {
           ++index;
           bool ok;
-          if (digitsLength == 1) {
-            ok = toInt(src, index, 1, millisecond);
+          if (digits_length == 1) {
+            ok = ToInt(src, index, 1, millisecond);
             millisecond *= 100;
-          } else if (digitsLength == 2) {
-            ok = toInt(src, index, 2, millisecond);
+          } else if (digits_length == 2) {
+            ok = ToInt(src, index, 2, millisecond);
             millisecond *= 10;
-          } else if (digitsLength == 3) {
-            ok = toInt(src, index, 3, millisecond);
+          } else if (digits_length == 3) {
+            ok = ToInt(src, index, 3, millisecond);
           } else {  // digitsLength >= 4
             return false;
           }
           DCHECK(ok);
-          index += digitsLength;
+          index += digits_length;
         }
       }
     }
   }
-  m_hour = hour;
-  m_minute = minute;
-  m_second = second;
-  m_millisecond = millisecond;
+  hour_ = hour;
+  minute_ = minute;
+  second_ = second;
+  millisecond_ = millisecond;
   end = index;
-  m_type = Time;
+  type_ = kTime;
   return true;
 }
 
-bool DateComponents::parseDateTimeLocal(const String& src,
+bool DateComponents::ParseDateTimeLocal(const String& src,
                                         unsigned start,
                                         unsigned& end) {
   unsigned index;
-  if (!parseDate(src, start, index))
+  if (!ParseDate(src, start, index))
     return false;
   if (index >= src.length())
     return false;
   if (src[index] != 'T')
     return false;
   ++index;
-  if (!parseTime(src, index, end))
+  if (!ParseTime(src, index, end))
     return false;
-  if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, m_hour, m_minute,
-                            m_second, m_millisecond))
+  if (!WithinHTMLDateLimits(year_, month_, month_day_, hour_, minute_, second_,
+                            millisecond_))
     return false;
-  m_type = DateTimeLocal;
+  type_ = kDateTimeLocal;
   return true;
 }
 
-static inline double positiveFmod(double value, double divider) {
+static inline double PositiveFmod(double value, double divider) {
   double remainder = fmod(value, divider);
   return remainder < 0 ? remainder + divider : remainder;
 }
 
-void DateComponents::setMillisecondsSinceMidnightInternal(double msInDay) {
-  ASSERT(msInDay >= 0 && msInDay < msPerDay);
-  m_millisecond = static_cast<int>(fmod(msInDay, msPerSecond));
-  double value = std::floor(msInDay / msPerSecond);
-  m_second = static_cast<int>(fmod(value, secondsPerMinute));
-  value = std::floor(value / secondsPerMinute);
-  m_minute = static_cast<int>(fmod(value, minutesPerHour));
-  m_hour = static_cast<int>(value / minutesPerHour);
+void DateComponents::SetMillisecondsSinceMidnightInternal(double ms_in_day) {
+  ASSERT(ms_in_day >= 0 && ms_in_day < kMsPerDay);
+  millisecond_ = static_cast<int>(fmod(ms_in_day, kMsPerSecond));
+  double value = std::floor(ms_in_day / kMsPerSecond);
+  second_ = static_cast<int>(fmod(value, kSecondsPerMinute));
+  value = std::floor(value / kSecondsPerMinute);
+  minute_ = static_cast<int>(fmod(value, kMinutesPerHour));
+  hour_ = static_cast<int>(value / kMinutesPerHour);
 }
 
-bool DateComponents::setMillisecondsSinceEpochForDateInternal(double ms) {
-  m_year = msToYear(ms);
-  int yearDay = dayInYear(ms, m_year);
-  m_month = monthFromDayInYear(yearDay, isLeapYear(m_year));
-  m_monthDay = dayInMonthFromDayInYear(yearDay, isLeapYear(m_year));
+bool DateComponents::SetMillisecondsSinceEpochForDateInternal(double ms) {
+  year_ = MsToYear(ms);
+  int year_day = DayInYear(ms, year_);
+  month_ = MonthFromDayInYear(year_day, IsLeapYear(year_));
+  month_day_ = DayInMonthFromDayInYear(year_day, IsLeapYear(year_));
   return true;
 }
 
-bool DateComponents::setMillisecondsSinceEpochForDate(double ms) {
-  m_type = Invalid;
+bool DateComponents::SetMillisecondsSinceEpochForDate(double ms) {
+  type_ = kInvalid;
   if (!std::isfinite(ms))
     return false;
-  if (!setMillisecondsSinceEpochForDateInternal(round(ms)))
+  if (!SetMillisecondsSinceEpochForDateInternal(round(ms)))
     return false;
-  if (!withinHTMLDateLimits(m_year, m_month, m_monthDay))
+  if (!WithinHTMLDateLimits(year_, month_, month_day_))
     return false;
-  m_type = Date;
+  type_ = kDate;
   return true;
 }
 
-bool DateComponents::setMillisecondsSinceEpochForDateTime(double ms) {
-  m_type = Invalid;
+bool DateComponents::SetMillisecondsSinceEpochForDateTime(double ms) {
+  type_ = kInvalid;
   if (!std::isfinite(ms))
     return false;
   ms = round(ms);
-  setMillisecondsSinceMidnightInternal(positiveFmod(ms, msPerDay));
-  if (!setMillisecondsSinceEpochForDateInternal(ms))
+  SetMillisecondsSinceMidnightInternal(PositiveFmod(ms, kMsPerDay));
+  if (!SetMillisecondsSinceEpochForDateInternal(ms))
     return false;
-  if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, m_hour, m_minute,
-                            m_second, m_millisecond))
+  if (!WithinHTMLDateLimits(year_, month_, month_day_, hour_, minute_, second_,
+                            millisecond_))
     return false;
-  m_type = DateTime;
+  type_ = kDateTime;
   return true;
 }
 
-bool DateComponents::setMillisecondsSinceEpochForDateTimeLocal(double ms) {
+bool DateComponents::SetMillisecondsSinceEpochForDateTimeLocal(double ms) {
   // Internal representation of DateTimeLocal is the same as DateTime except
   // m_type.
-  if (!setMillisecondsSinceEpochForDateTime(ms))
+  if (!SetMillisecondsSinceEpochForDateTime(ms))
     return false;
-  m_type = DateTimeLocal;
+  type_ = kDateTimeLocal;
   return true;
 }
 
-bool DateComponents::setMillisecondsSinceEpochForMonth(double ms) {
-  m_type = Invalid;
+bool DateComponents::SetMillisecondsSinceEpochForMonth(double ms) {
+  type_ = kInvalid;
   if (!std::isfinite(ms))
     return false;
-  if (!setMillisecondsSinceEpochForDateInternal(round(ms)))
+  if (!SetMillisecondsSinceEpochForDateInternal(round(ms)))
     return false;
-  if (!withinHTMLDateLimits(m_year, m_month))
+  if (!WithinHTMLDateLimits(year_, month_))
     return false;
-  m_type = Month;
+  type_ = kMonth;
   return true;
 }
 
-bool DateComponents::setMillisecondsSinceMidnight(double ms) {
-  m_type = Invalid;
+bool DateComponents::SetMillisecondsSinceMidnight(double ms) {
+  type_ = kInvalid;
   if (!std::isfinite(ms))
     return false;
-  setMillisecondsSinceMidnightInternal(positiveFmod(round(ms), msPerDay));
-  m_type = Time;
+  SetMillisecondsSinceMidnightInternal(PositiveFmod(round(ms), kMsPerDay));
+  type_ = kTime;
   return true;
 }
 
-bool DateComponents::setMonthsSinceEpoch(double months) {
+bool DateComponents::SetMonthsSinceEpoch(double months) {
   if (!std::isfinite(months))
     return false;
   months = round(months);
-  double doubleMonth = positiveFmod(months, 12);
-  double doubleYear = 1970 + (months - doubleMonth) / 12;
-  if (doubleYear < minimumYear() || maximumYear() < doubleYear)
+  double double_month = PositiveFmod(months, 12);
+  double double_year = 1970 + (months - double_month) / 12;
+  if (double_year < MinimumYear() || MaximumYear() < double_year)
     return false;
-  int year = static_cast<int>(doubleYear);
-  int month = static_cast<int>(doubleMonth);
-  if (!withinHTMLDateLimits(year, month))
+  int year = static_cast<int>(double_year);
+  int month = static_cast<int>(double_month);
+  if (!WithinHTMLDateLimits(year, month))
     return false;
-  m_year = year;
-  m_month = month;
-  m_type = Month;
+  year_ = year;
+  month_ = month;
+  type_ = kMonth;
   return true;
 }
 
 // Offset from January 1st to Monday of the ISO 8601's first week.
 //   ex. If January 1st is Friday, such Monday is 3 days later. Returns 3.
-static int offsetTo1stWeekStart(int year) {
-  int offsetTo1stWeekStart = 1 - dayOfWeek(year, 0, 1);
-  if (offsetTo1stWeekStart <= -4)
-    offsetTo1stWeekStart += 7;
-  return offsetTo1stWeekStart;
+static int OffsetTo1stWeekStart(int year) {
+  int offset_to1st_week_start = 1 - DayOfWeek(year, 0, 1);
+  if (offset_to1st_week_start <= -4)
+    offset_to1st_week_start += 7;
+  return offset_to1st_week_start;
 }
 
-bool DateComponents::setMillisecondsSinceEpochForWeek(double ms) {
-  m_type = Invalid;
+bool DateComponents::SetMillisecondsSinceEpochForWeek(double ms) {
+  type_ = kInvalid;
   if (!std::isfinite(ms))
     return false;
   ms = round(ms);
 
-  m_year = msToYear(ms);
-  if (m_year < minimumYear() || m_year > maximumYear())
+  year_ = MsToYear(ms);
+  if (year_ < MinimumYear() || year_ > MaximumYear())
     return false;
 
-  int yearDay = dayInYear(ms, m_year);
-  int offset = offsetTo1stWeekStart(m_year);
-  if (yearDay < offset) {
+  int year_day = DayInYear(ms, year_);
+  int offset = OffsetTo1stWeekStart(year_);
+  if (year_day < offset) {
     // The day belongs to the last week of the previous year.
-    m_year--;
-    if (m_year <= minimumYear())
+    year_--;
+    if (year_ <= MinimumYear())
       return false;
-    m_week = maxWeekNumberInYear();
+    week_ = MaxWeekNumberInYear();
   } else {
-    m_week = ((yearDay - offset) / 7) + 1;
-    if (m_week > maxWeekNumberInYear()) {
-      m_year++;
-      m_week = 1;
+    week_ = ((year_day - offset) / 7) + 1;
+    if (week_ > MaxWeekNumberInYear()) {
+      year_++;
+      week_ = 1;
     }
-    if (m_year > maximumYear() ||
-        (m_year == maximumYear() && m_week > maximumWeekInMaximumYear))
+    if (year_ > MaximumYear() ||
+        (year_ == MaximumYear() && week_ > kMaximumWeekInMaximumYear))
       return false;
   }
-  m_type = Week;
+  type_ = kWeek;
   return true;
 }
 
-bool DateComponents::setWeek(int year, int weekNumber) {
-  m_type = Invalid;
-  if (year < minimumYear() || year > maximumYear())
+bool DateComponents::SetWeek(int year, int week_number) {
+  type_ = kInvalid;
+  if (year < MinimumYear() || year > MaximumYear())
     return false;
-  m_year = year;
-  if (weekNumber < 1 || weekNumber > maxWeekNumberInYear())
+  year_ = year;
+  if (week_number < 1 || week_number > MaxWeekNumberInYear())
     return false;
-  m_week = weekNumber;
-  m_type = Week;
+  week_ = week_number;
+  type_ = kWeek;
   return true;
 }
 
-double DateComponents::millisecondsSinceEpochForTime() const {
-  ASSERT(m_type == Time || m_type == DateTime || m_type == DateTimeLocal);
-  return ((m_hour * minutesPerHour + m_minute) * secondsPerMinute + m_second) *
-             msPerSecond +
-         m_millisecond;
+double DateComponents::MillisecondsSinceEpochForTime() const {
+  ASSERT(type_ == kTime || type_ == kDateTime || type_ == kDateTimeLocal);
+  return ((hour_ * kMinutesPerHour + minute_) * kSecondsPerMinute + second_) *
+             kMsPerSecond +
+         millisecond_;
 }
 
-double DateComponents::millisecondsSinceEpoch() const {
-  switch (m_type) {
-    case Date:
-      return dateToDaysFrom1970(m_year, m_month, m_monthDay) * msPerDay;
-    case DateTime:
-    case DateTimeLocal:
-      return dateToDaysFrom1970(m_year, m_month, m_monthDay) * msPerDay +
-             millisecondsSinceEpochForTime();
-    case Month:
-      return dateToDaysFrom1970(m_year, m_month, 1) * msPerDay;
-    case Time:
-      return millisecondsSinceEpochForTime();
-    case Week:
-      return (dateToDaysFrom1970(m_year, 0, 1) + offsetTo1stWeekStart(m_year) +
-              (m_week - 1) * 7) *
-             msPerDay;
-    case Invalid:
+double DateComponents::MillisecondsSinceEpoch() const {
+  switch (type_) {
+    case kDate:
+      return DateToDaysFrom1970(year_, month_, month_day_) * kMsPerDay;
+    case kDateTime:
+    case kDateTimeLocal:
+      return DateToDaysFrom1970(year_, month_, month_day_) * kMsPerDay +
+             MillisecondsSinceEpochForTime();
+    case kMonth:
+      return DateToDaysFrom1970(year_, month_, 1) * kMsPerDay;
+    case kTime:
+      return MillisecondsSinceEpochForTime();
+    case kWeek:
+      return (DateToDaysFrom1970(year_, 0, 1) + OffsetTo1stWeekStart(year_) +
+              (week_ - 1) * 7) *
+             kMsPerDay;
+    case kInvalid:
       break;
   }
   ASSERT_NOT_REACHED();
-  return invalidMilliseconds();
+  return InvalidMilliseconds();
 }
 
-double DateComponents::monthsSinceEpoch() const {
-  ASSERT(m_type == Month);
-  return (m_year - 1970) * 12 + m_month;
+double DateComponents::MonthsSinceEpoch() const {
+  ASSERT(type_ == kMonth);
+  return (year_ - 1970) * 12 + month_;
 }
 
-String DateComponents::toStringForTime(SecondFormat format) const {
-  ASSERT(m_type == DateTime || m_type == DateTimeLocal || m_type == Time);
-  SecondFormat effectiveFormat = format;
-  if (m_millisecond)
-    effectiveFormat = Millisecond;
-  else if (format == None && m_second)
-    effectiveFormat = Second;
+String DateComponents::ToStringForTime(SecondFormat format) const {
+  ASSERT(type_ == kDateTime || type_ == kDateTimeLocal || type_ == kTime);
+  SecondFormat effective_format = format;
+  if (millisecond_)
+    effective_format = kMillisecond;
+  else if (format == kNone && second_)
+    effective_format = kSecond;
 
-  switch (effectiveFormat) {
+  switch (effective_format) {
     default:
       ASSERT_NOT_REACHED();
     // Fallback to None.
-    case None:
-      return String::format("%02d:%02d", m_hour, m_minute);
-    case Second:
-      return String::format("%02d:%02d:%02d", m_hour, m_minute, m_second);
-    case Millisecond:
-      return String::format("%02d:%02d:%02d.%03d", m_hour, m_minute, m_second,
-                            m_millisecond);
+    case kNone:
+      return String::Format("%02d:%02d", hour_, minute_);
+    case kSecond:
+      return String::Format("%02d:%02d:%02d", hour_, minute_, second_);
+    case kMillisecond:
+      return String::Format("%02d:%02d:%02d.%03d", hour_, minute_, second_,
+                            millisecond_);
   }
 }
 
-String DateComponents::toString(SecondFormat format) const {
-  switch (m_type) {
-    case Date:
-      return String::format("%04d-%02d-%02d", m_year, m_month + 1, m_monthDay);
-    case DateTime:
-      return String::format("%04d-%02d-%02dT", m_year, m_month + 1,
-                            m_monthDay) +
-             toStringForTime(format) + String("Z");
-    case DateTimeLocal:
-      return String::format("%04d-%02d-%02dT", m_year, m_month + 1,
-                            m_monthDay) +
-             toStringForTime(format);
-    case Month:
-      return String::format("%04d-%02d", m_year, m_month + 1);
-    case Time:
-      return toStringForTime(format);
-    case Week:
-      return String::format("%04d-W%02d", m_year, m_week);
-    case Invalid:
+String DateComponents::ToString(SecondFormat format) const {
+  switch (type_) {
+    case kDate:
+      return String::Format("%04d-%02d-%02d", year_, month_ + 1, month_day_);
+    case kDateTime:
+      return String::Format("%04d-%02d-%02dT", year_, month_ + 1, month_day_) +
+             ToStringForTime(format) + String("Z");
+    case kDateTimeLocal:
+      return String::Format("%04d-%02d-%02dT", year_, month_ + 1, month_day_) +
+             ToStringForTime(format);
+    case kMonth:
+      return String::Format("%04d-%02d", year_, month_ + 1);
+    case kTime:
+      return ToStringForTime(format);
+    case kWeek:
+      return String::Format("%04d-W%02d", year_, week_);
+    case kInvalid:
       break;
   }
   ASSERT_NOT_REACHED();

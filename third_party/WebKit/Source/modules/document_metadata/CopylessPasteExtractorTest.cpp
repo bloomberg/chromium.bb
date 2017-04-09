@@ -18,7 +18,7 @@ namespace {
 class CopylessPasteExtractorTest : public ::testing::Test {
  public:
   CopylessPasteExtractorTest()
-      : m_content(
+      : content_(
             "\n"
             "\n"
             "{\"@type\": \"NewsArticle\","
@@ -29,78 +29,78 @@ class CopylessPasteExtractorTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  void TearDown() override { ThreadState::current()->collectAllGarbage(); }
+  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
-  Document& document() const { return m_dummyPageHolder->document(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
-  String extract() { return CopylessPasteExtractor::extract(document()); }
+  String Extract() { return CopylessPasteExtractor::Extract(GetDocument()); }
 
-  void setHtmlInnerHTML(const String&);
+  void SetHtmlInnerHTML(const String&);
 
-  String m_content;
+  String content_;
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void CopylessPasteExtractorTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
-void CopylessPasteExtractorTest::setHtmlInnerHTML(const String& htmlContent) {
-  document().documentElement()->setInnerHTML((htmlContent));
+void CopylessPasteExtractorTest::SetHtmlInnerHTML(const String& html_content) {
+  GetDocument().documentElement()->setInnerHTML((html_content));
 }
 
 TEST_F(CopylessPasteExtractorTest, empty) {
-  String extracted = extract();
+  String extracted = Extract();
   String expected = "[]";
   EXPECT_EQ(expected, extracted);
 }
 
 TEST_F(CopylessPasteExtractorTest, basic) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<body>"
       "<script type=\"application/ld+json\">" +
-      m_content +
+      content_ +
       "</script>"
       "</body>");
 
-  String extracted = extract();
-  String expected = "[" + m_content + "]";
+  String extracted = Extract();
+  String expected = "[" + content_ + "]";
   EXPECT_EQ(expected, extracted);
 }
 
 TEST_F(CopylessPasteExtractorTest, header) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "<script type=\"application/ld+json\">" +
-      m_content +
+      content_ +
       "</script>"
       "</head>");
 
-  String extracted = extract();
-  String expected = "[" + m_content + "]";
+  String extracted = Extract();
+  String expected = "[" + content_ + "]";
   EXPECT_EQ(expected, extracted);
 }
 
 TEST_F(CopylessPasteExtractorTest, multiple) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "<script type=\"application/ld+json\">" +
-      m_content +
+      content_ +
       "</script>"
       "</head>"
       "<body>"
       "<script type=\"application/ld+json\">" +
-      m_content +
+      content_ +
       "</script>"
       "<script type=\"application/ld+json\">" +
-      m_content +
+      content_ +
       "</script>"
       "</body>");
 
-  String extracted = extract();
-  String expected = "[" + m_content + "," + m_content + "," + m_content + "]";
+  String extracted = Extract();
+  String expected = "[" + content_ + "," + content_ + "," + content_ + "]";
   EXPECT_EQ(expected, extracted);
 }
 

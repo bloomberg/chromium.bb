@@ -38,16 +38,16 @@ class DelayDSPKernel final : public AudioDelayDSPKernel {
   explicit DelayDSPKernel(DelayProcessor*);
 
  protected:
-  bool hasSampleAccurateValues() override;
-  void calculateSampleAccurateValues(float* delayTimes,
-                                     size_t framesToProcess) override;
-  double delayTime(float sampleRate) override;
+  bool HasSampleAccurateValues() override;
+  void CalculateSampleAccurateValues(float* delay_times,
+                                     size_t frames_to_process) override;
+  double DelayTime(float sample_rate) override;
 
-  void processOnlyAudioParams(size_t framesToProcess) override;
+  void ProcessOnlyAudioParams(size_t frames_to_process) override;
 
  private:
-  DelayProcessor* getDelayProcessor() {
-    return static_cast<DelayProcessor*>(processor());
+  DelayProcessor* GetDelayProcessor() {
+    return static_cast<DelayProcessor*>(Processor());
   }
 };
 

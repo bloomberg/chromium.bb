@@ -35,65 +35,65 @@ class ClipRects : public RefCounted<ClipRects> {
   USING_FAST_MALLOC(ClipRects);
 
  public:
-  static PassRefPtr<ClipRects> create() { return adoptRef(new ClipRects); }
-  static PassRefPtr<ClipRects> create(const ClipRects& other) {
-    return adoptRef(new ClipRects(other));
+  static PassRefPtr<ClipRects> Create() { return AdoptRef(new ClipRects); }
+  static PassRefPtr<ClipRects> Create(const ClipRects& other) {
+    return AdoptRef(new ClipRects(other));
   }
 
-  ClipRects() : m_fixed(0) {}
+  ClipRects() : fixed_(0) {}
 
-  void reset(const LayoutRect& r) {
-    m_overflowClipRect = r;
-    m_fixedClipRect = r;
-    m_posClipRect = r;
-    m_fixed = 0;
+  void Reset(const LayoutRect& r) {
+    overflow_clip_rect_ = r;
+    fixed_clip_rect_ = r;
+    pos_clip_rect_ = r;
+    fixed_ = 0;
   }
 
-  const ClipRect& overflowClipRect() const { return m_overflowClipRect; }
-  void setOverflowClipRect(const ClipRect& r) { m_overflowClipRect = r; }
+  const ClipRect& OverflowClipRect() const { return overflow_clip_rect_; }
+  void SetOverflowClipRect(const ClipRect& r) { overflow_clip_rect_ = r; }
 
-  const ClipRect& fixedClipRect() const { return m_fixedClipRect; }
-  void setFixedClipRect(const ClipRect& r) { m_fixedClipRect = r; }
+  const ClipRect& FixedClipRect() const { return fixed_clip_rect_; }
+  void SetFixedClipRect(const ClipRect& r) { fixed_clip_rect_ = r; }
 
-  const ClipRect& posClipRect() const { return m_posClipRect; }
-  void setPosClipRect(const ClipRect& r) { m_posClipRect = r; }
+  const ClipRect& PosClipRect() const { return pos_clip_rect_; }
+  void SetPosClipRect(const ClipRect& r) { pos_clip_rect_ = r; }
 
-  bool fixed() const { return static_cast<bool>(m_fixed); }
-  void setFixed(bool fixed) { m_fixed = fixed ? 1 : 0; }
+  bool Fixed() const { return static_cast<bool>(fixed_); }
+  void SetFixed(bool fixed) { fixed_ = fixed ? 1 : 0; }
 
   bool operator==(const ClipRects& other) const {
-    return m_overflowClipRect == other.overflowClipRect() &&
-           m_fixedClipRect == other.fixedClipRect() &&
-           m_posClipRect == other.posClipRect() && fixed() == other.fixed();
+    return overflow_clip_rect_ == other.OverflowClipRect() &&
+           fixed_clip_rect_ == other.FixedClipRect() &&
+           pos_clip_rect_ == other.PosClipRect() && Fixed() == other.Fixed();
   }
 
   bool operator!=(const ClipRects& other) const { return !(*this == other); }
 
   ClipRects& operator=(const ClipRects& other) {
-    m_overflowClipRect = other.overflowClipRect();
-    m_fixedClipRect = other.fixedClipRect();
-    m_posClipRect = other.posClipRect();
-    m_fixed = other.fixed();
+    overflow_clip_rect_ = other.OverflowClipRect();
+    fixed_clip_rect_ = other.FixedClipRect();
+    pos_clip_rect_ = other.PosClipRect();
+    fixed_ = other.Fixed();
     return *this;
   }
 
  private:
   ClipRects(const LayoutRect& r)
-      : m_overflowClipRect(r),
-        m_fixedClipRect(r),
-        m_posClipRect(r),
-        m_fixed(0) {}
+      : overflow_clip_rect_(r),
+        fixed_clip_rect_(r),
+        pos_clip_rect_(r),
+        fixed_(0) {}
 
   ClipRects(const ClipRects& other)
-      : m_overflowClipRect(other.overflowClipRect()),
-        m_fixedClipRect(other.fixedClipRect()),
-        m_posClipRect(other.posClipRect()),
-        m_fixed(other.fixed()) {}
+      : overflow_clip_rect_(other.OverflowClipRect()),
+        fixed_clip_rect_(other.FixedClipRect()),
+        pos_clip_rect_(other.PosClipRect()),
+        fixed_(other.Fixed()) {}
 
-  ClipRect m_overflowClipRect;
-  ClipRect m_fixedClipRect;
-  ClipRect m_posClipRect;
-  unsigned m_fixed;
+  ClipRect overflow_clip_rect_;
+  ClipRect fixed_clip_rect_;
+  ClipRect pos_clip_rect_;
+  unsigned fixed_;
 };
 
 }  // namespace blink

@@ -36,11 +36,11 @@ class Text;
 #define AppleConvertedSpace "Apple-converted-space"
 
 enum EAnnotateForInterchange {
-  DoNotAnnotateForInterchange,
-  AnnotateForInterchange
+  kDoNotAnnotateForInterchange,
+  kAnnotateForInterchange
 };
 
-String convertHTMLTextToInterchangeFormat(const String&, const Text&);
+String ConvertHTMLTextToInterchangeFormat(const String&, const Text&);
 
 }  // namespace blink
 

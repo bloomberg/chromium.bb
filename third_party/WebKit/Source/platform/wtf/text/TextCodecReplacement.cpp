@@ -12,9 +12,9 @@
 namespace WTF {
 
 TextCodecReplacement::TextCodecReplacement()
-    : m_replacementErrorReturned(false) {}
+    : replacement_error_returned_(false) {}
 
-void TextCodecReplacement::registerEncodingNames(
+void TextCodecReplacement::RegisterEncodingNames(
     EncodingNameRegistrar registrar) {
   // The 'replacement' label itself should not be referenceable by
   // resources or script - it's a specification convenience - but much of
@@ -29,21 +29,21 @@ void TextCodecReplacement::registerEncodingNames(
   registrar("iso-2022-kr", "replacement");
 }
 
-static std::unique_ptr<TextCodec> newStreamingTextDecoderReplacement(
+static std::unique_ptr<TextCodec> NewStreamingTextDecoderReplacement(
     const TextEncoding&,
     const void*) {
-  return WTF::wrapUnique(new TextCodecReplacement);
+  return WTF::WrapUnique(new TextCodecReplacement);
 }
 
-void TextCodecReplacement::registerCodecs(TextCodecRegistrar registrar) {
-  registrar("replacement", newStreamingTextDecoderReplacement, 0);
+void TextCodecReplacement::RegisterCodecs(TextCodecRegistrar registrar) {
+  registrar("replacement", NewStreamingTextDecoderReplacement, 0);
 }
 
-String TextCodecReplacement::decode(const char*,
+String TextCodecReplacement::Decode(const char*,
                                     size_t length,
                                     FlushBehavior,
                                     bool,
-                                    bool& sawError) {
+                                    bool& saw_error) {
   // https://encoding.spec.whatwg.org/#replacement-decoder
 
   // 1. If byte is end-of-stream, return finished.
@@ -52,10 +52,10 @@ String TextCodecReplacement::decode(const char*,
 
   // 2. If replacement error returned flag is unset, set the replacement
   // error returned flag and return error.
-  if (!m_replacementErrorReturned) {
-    m_replacementErrorReturned = true;
-    sawError = true;
-    return String(&replacementCharacter, 1);
+  if (!replacement_error_returned_) {
+    replacement_error_returned_ = true;
+    saw_error = true;
+    return String(&kReplacementCharacter, 1);
   }
 
   // 3. Return finished.

@@ -19,21 +19,21 @@ namespace blink {
 
 class PLATFORM_EXPORT HyphenationMinikin : public Hyphenation {
  public:
-  bool openDictionary(const AtomicString& locale);
+  bool OpenDictionary(const AtomicString& locale);
 
-  size_t lastHyphenLocation(const StringView& text,
-                            size_t beforeIndex) const override;
-  Vector<size_t, 8> hyphenLocations(const StringView&) const override;
+  size_t LastHyphenLocation(const StringView& text,
+                            size_t before_index) const override;
+  Vector<size_t, 8> HyphenLocations(const StringView&) const override;
 
-  static PassRefPtr<HyphenationMinikin> fromFileForTesting(base::File);
+  static PassRefPtr<HyphenationMinikin> FromFileForTesting(base::File);
 
  private:
-  bool openDictionary(base::File);
+  bool OpenDictionary(base::File);
 
-  std::vector<uint8_t> hyphenate(const StringView&) const;
+  std::vector<uint8_t> Hyphenate(const StringView&) const;
 
-  base::MemoryMappedFile m_file;
-  std::unique_ptr<android::Hyphenator> m_hyphenator;
+  base::MemoryMappedFile file_;
+  std::unique_ptr<android::Hyphenator> hyphenator_;
 };
 
 }  // namespace blink

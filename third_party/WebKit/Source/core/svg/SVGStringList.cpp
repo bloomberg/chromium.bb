@@ -33,124 +33,125 @@ SVGStringList::SVGStringList() {}
 
 SVGStringList::~SVGStringList() {}
 
-void SVGStringList::initialize(const String& item) {
-  m_values.clear();
-  m_values.push_back(item);
+void SVGStringList::Initialize(const String& item) {
+  values_.Clear();
+  values_.push_back(item);
 }
 
-String SVGStringList::getItem(size_t index, ExceptionState& exceptionState) {
-  if (!checkIndexBound(index, exceptionState))
+String SVGStringList::GetItem(size_t index, ExceptionState& exception_state) {
+  if (!CheckIndexBound(index, exception_state))
     return String();
 
-  return m_values.at(index);
+  return values_.at(index);
 }
 
-void SVGStringList::insertItemBefore(const String& newItem, size_t index) {
+void SVGStringList::InsertItemBefore(const String& new_item, size_t index) {
   // Spec: If the index is greater than or equal to numberOfItems, then the new
   // item is appended to the end of the list.
-  if (index > m_values.size())
-    index = m_values.size();
+  if (index > values_.size())
+    index = values_.size();
 
   // Spec: Inserts a new item into the list at the specified position. The index
   // of the item before which the new item is to be inserted. The first item is
   // number 0. If the index is equal to 0, then the new item is inserted at the
   // front of the list.
-  m_values.insert(index, newItem);
+  values_.insert(index, new_item);
 }
 
-String SVGStringList::removeItem(size_t index, ExceptionState& exceptionState) {
-  if (!checkIndexBound(index, exceptionState))
+String SVGStringList::RemoveItem(size_t index,
+                                 ExceptionState& exception_state) {
+  if (!CheckIndexBound(index, exception_state))
     return String();
 
-  String oldItem = m_values.at(index);
-  m_values.erase(index);
-  return oldItem;
+  String old_item = values_.at(index);
+  values_.erase(index);
+  return old_item;
 }
 
-void SVGStringList::appendItem(const String& newItem) {
-  m_values.push_back(newItem);
+void SVGStringList::AppendItem(const String& new_item) {
+  values_.push_back(new_item);
 }
 
-void SVGStringList::replaceItem(const String& newItem,
+void SVGStringList::ReplaceItem(const String& new_item,
                                 size_t index,
-                                ExceptionState& exceptionState) {
-  if (!checkIndexBound(index, exceptionState))
+                                ExceptionState& exception_state) {
+  if (!CheckIndexBound(index, exception_state))
     return;
 
   // Update the value at the desired position 'index'.
-  m_values[index] = newItem;
+  values_[index] = new_item;
 }
 
 template <typename CharType>
-void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end) {
-  const UChar delimiter = ' ';
+void SVGStringList::ParseInternal(const CharType*& ptr, const CharType* end) {
+  const UChar kDelimiter = ' ';
 
   while (ptr < end) {
     const CharType* start = ptr;
-    while (ptr < end && *ptr != delimiter && !isHTMLSpace<CharType>(*ptr))
+    while (ptr < end && *ptr != kDelimiter && !IsHTMLSpace<CharType>(*ptr))
       ptr++;
     if (ptr == start)
       break;
-    m_values.push_back(String(start, ptr - start));
-    skipOptionalSVGSpacesOrDelimiter(ptr, end, delimiter);
+    values_.push_back(String(start, ptr - start));
+    SkipOptionalSVGSpacesOrDelimiter(ptr, end, kDelimiter);
   }
 }
 
-SVGParsingError SVGStringList::setValueAsString(const String& data) {
+SVGParsingError SVGStringList::SetValueAsString(const String& data) {
   // FIXME: Add more error checking and reporting.
-  m_values.clear();
+  values_.Clear();
 
-  if (data.isEmpty())
-    return SVGParseStatus::NoError;
+  if (data.IsEmpty())
+    return SVGParseStatus::kNoError;
 
-  if (data.is8Bit()) {
-    const LChar* ptr = data.characters8();
+  if (data.Is8Bit()) {
+    const LChar* ptr = data.Characters8();
     const LChar* end = ptr + data.length();
-    parseInternal(ptr, end);
+    ParseInternal(ptr, end);
   } else {
-    const UChar* ptr = data.characters16();
+    const UChar* ptr = data.Characters16();
     const UChar* end = ptr + data.length();
-    parseInternal(ptr, end);
+    ParseInternal(ptr, end);
   }
-  return SVGParseStatus::NoError;
+  return SVGParseStatus::kNoError;
 }
 
-String SVGStringList::valueAsString() const {
+String SVGStringList::ValueAsString() const {
   StringBuilder builder;
 
-  Vector<String>::const_iterator it = m_values.begin();
-  Vector<String>::const_iterator itEnd = m_values.end();
-  if (it != itEnd) {
-    builder.append(*it);
+  Vector<String>::const_iterator it = values_.begin();
+  Vector<String>::const_iterator it_end = values_.end();
+  if (it != it_end) {
+    builder.Append(*it);
     ++it;
 
-    for (; it != itEnd; ++it) {
-      builder.append(' ');
-      builder.append(*it);
+    for (; it != it_end; ++it) {
+      builder.Append(' ');
+      builder.Append(*it);
     }
   }
 
-  return builder.toString();
+  return builder.ToString();
 }
 
-bool SVGStringList::checkIndexBound(size_t index,
-                                    ExceptionState& exceptionState) {
-  if (index >= m_values.size()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "index", index, m_values.size()));
+bool SVGStringList::CheckIndexBound(size_t index,
+                                    ExceptionState& exception_state) {
+  if (index >= values_.size()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
+                             "index", index, values_.size()));
     return false;
   }
 
   return true;
 }
 
-void SVGStringList::add(SVGPropertyBase* other, SVGElement* contextElement) {
+void SVGStringList::Add(SVGPropertyBase* other, SVGElement* context_element) {
   // SVGStringList is never animated.
   NOTREACHED();
 }
 
-void SVGStringList::calculateAnimatedValue(SVGAnimationElement*,
+void SVGStringList::CalculateAnimatedValue(SVGAnimationElement*,
                                            float,
                                            unsigned,
                                            SVGPropertyBase*,
@@ -161,7 +162,7 @@ void SVGStringList::calculateAnimatedValue(SVGAnimationElement*,
   NOTREACHED();
 }
 
-float SVGStringList::calculateDistance(SVGPropertyBase*, SVGElement*) {
+float SVGStringList::CalculateDistance(SVGPropertyBase*, SVGElement*) {
   // SVGStringList is never animated.
   NOTREACHED();
 

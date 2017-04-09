@@ -24,231 +24,232 @@
 
 namespace blink {
 
-OffscreenCanvas::OffscreenCanvas(const IntSize& size) : m_size(size) {}
+OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {}
 
-OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height) {
+OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
   return new OffscreenCanvas(
       IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
 
 OffscreenCanvas::~OffscreenCanvas() {}
 
-void OffscreenCanvas::dispose() {
-  if (m_context) {
-    m_context->detachOffscreenCanvas();
-    m_context = nullptr;
+void OffscreenCanvas::Dispose() {
+  if (context_) {
+    context_->DetachOffscreenCanvas();
+    context_ = nullptr;
   }
-  if (m_commitPromiseResolver) {
+  if (commit_promise_resolver_) {
     // keepAliveWhilePending() guarantees the promise resolver is never
     // GC-ed before the OffscreenCanvas
-    m_commitPromiseResolver->reject();
-    m_commitPromiseResolver.clear();
+    commit_promise_resolver_->Reject();
+    commit_promise_resolver_.Clear();
   }
 }
 
 void OffscreenCanvas::setWidth(unsigned width) {
-  IntSize newSize = m_size;
-  newSize.setWidth(clampTo<int>(width));
-  setSize(newSize);
+  IntSize new_size = size_;
+  new_size.SetWidth(clampTo<int>(width));
+  SetSize(new_size);
 }
 
 void OffscreenCanvas::setHeight(unsigned height) {
-  IntSize newSize = m_size;
-  newSize.setHeight(clampTo<int>(height));
-  setSize(newSize);
+  IntSize new_size = size_;
+  new_size.SetHeight(clampTo<int>(height));
+  SetSize(new_size);
 }
 
-void OffscreenCanvas::setSize(const IntSize& size) {
-  if (m_context) {
-    if (m_context->is3d()) {
-      if (size != m_size)
-        m_context->reshape(size.width(), size.height());
-    } else if (m_context->is2d()) {
-      m_context->reset();
+void OffscreenCanvas::SetSize(const IntSize& size) {
+  if (context_) {
+    if (context_->Is3d()) {
+      if (size != size_)
+        context_->Reshape(size.Width(), size.Height());
+    } else if (context_->Is2d()) {
+      context_->Reset();
     }
   }
-  m_size = size;
-  if (m_frameDispatcher) {
-    m_frameDispatcher->reshape(m_size.width(), m_size.height());
+  size_ = size;
+  if (frame_dispatcher_) {
+    frame_dispatcher_->Reshape(size_.Width(), size_.Height());
   }
 }
 
-void OffscreenCanvas::setNeutered() {
-  ASSERT(!m_context);
-  m_isNeutered = true;
-  m_size.setWidth(0);
-  m_size.setHeight(0);
+void OffscreenCanvas::SetNeutered() {
+  ASSERT(!context_);
+  is_neutered_ = true;
+  size_.SetWidth(0);
+  size_.SetHeight(0);
 }
 
 ImageBitmap* OffscreenCanvas::transferToImageBitmap(
-    ScriptState* scriptState,
-    ExceptionState& exceptionState) {
-  if (m_isNeutered) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  if (is_neutered_) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "Cannot transfer an ImageBitmap from a detached OffscreenCanvas");
     return nullptr;
   }
-  if (!m_context) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Cannot transfer an ImageBitmap from an "
-                                     "OffscreenCanvas with no context");
+  if (!context_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "Cannot transfer an ImageBitmap from an "
+                                      "OffscreenCanvas with no context");
     return nullptr;
   }
-  ImageBitmap* image = m_context->transferToImageBitmap(scriptState);
+  ImageBitmap* image = context_->TransferToImageBitmap(script_state);
   if (!image) {
     // Undocumented exception (not in spec)
-    exceptionState.throwDOMException(V8Error, "Out of memory");
+    exception_state.ThrowDOMException(kV8Error, "Out of memory");
   }
   return image;
 }
 
-PassRefPtr<Image> OffscreenCanvas::getSourceImageForCanvas(
+PassRefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
     SnapshotReason reason,
     const FloatSize& size) const {
-  if (!m_context) {
-    *status = InvalidSourceImageStatus;
+  if (!context_) {
+    *status = kInvalidSourceImageStatus;
     sk_sp<SkSurface> surface =
-        SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
-    return surface ? StaticBitmapImage::create(surface->makeImageSnapshot())
+        SkSurface::MakeRasterN32Premul(size_.Width(), size_.Height());
+    return surface ? StaticBitmapImage::Create(surface->makeImageSnapshot())
                    : nullptr;
   }
-  if (!size.width() || !size.height()) {
-    *status = ZeroSizeCanvasSourceImageStatus;
+  if (!size.Width() || !size.Height()) {
+    *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
   }
-  RefPtr<Image> image = m_context->getImage(hint, reason);
+  RefPtr<Image> image = context_->GetImage(hint, reason);
   if (!image) {
-    *status = InvalidSourceImageStatus;
+    *status = kInvalidSourceImageStatus;
   } else {
-    *status = NormalSourceImageStatus;
+    *status = kNormalSourceImageStatus;
   }
-  return image.release();
+  return image.Release();
 }
 
-IntSize OffscreenCanvas::bitmapSourceSize() const {
-  return m_size;
+IntSize OffscreenCanvas::BitmapSourceSize() const {
+  return size_;
 }
 
-ScriptPromise OffscreenCanvas::createImageBitmap(
-    ScriptState* scriptState,
+ScriptPromise OffscreenCanvas::CreateImageBitmap(
+    ScriptState* script_state,
     EventTarget&,
-    Optional<IntRect> cropRect,
+    Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options,
-    ExceptionState& exceptionState) {
-  if ((cropRect &&
-       !ImageBitmap::isSourceSizeValid(cropRect->width(), cropRect->height(),
-                                       exceptionState)) ||
-      !ImageBitmap::isSourceSizeValid(bitmapSourceSize().width(),
-                                      bitmapSourceSize().height(),
-                                      exceptionState))
+    ExceptionState& exception_state) {
+  if ((crop_rect &&
+       !ImageBitmap::IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
+                                       exception_state)) ||
+      !ImageBitmap::IsSourceSizeValid(BitmapSourceSize().Width(),
+                                      BitmapSourceSize().Height(),
+                                      exception_state))
     return ScriptPromise();
-  if (!ImageBitmap::isResizeOptionValid(options, exceptionState))
+  if (!ImageBitmap::IsResizeOptionValid(options, exception_state))
     return ScriptPromise();
-  return ImageBitmapSource::fulfillImageBitmap(
-      scriptState,
-      isPaintable() ? ImageBitmap::create(this, cropRect, options) : nullptr);
+  return ImageBitmapSource::FulfillImageBitmap(
+      script_state,
+      IsPaintable() ? ImageBitmap::Create(this, crop_rect, options) : nullptr);
 }
 
-bool OffscreenCanvas::isOpaque() const {
-  if (!m_context)
+bool OffscreenCanvas::IsOpaque() const {
+  if (!context_)
     return false;
-  return !m_context->creationAttributes().hasAlpha();
+  return !context_->CreationAttributes().hasAlpha();
 }
 
-CanvasRenderingContext* OffscreenCanvas::getCanvasRenderingContext(
-    ScriptState* scriptState,
+CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
+    ScriptState* script_state,
     const String& id,
     const CanvasContextCreationAttributes& attributes) {
-  CanvasRenderingContext::ContextType contextType =
-      CanvasRenderingContext::contextTypeFromId(id);
+  CanvasRenderingContext::ContextType context_type =
+      CanvasRenderingContext::ContextTypeFromId(id);
 
   // Unknown type.
-  if (contextType == CanvasRenderingContext::ContextTypeCount)
+  if (context_type == CanvasRenderingContext::kContextTypeCount)
     return nullptr;
 
   CanvasRenderingContextFactory* factory =
-      getRenderingContextFactory(contextType);
+      GetRenderingContextFactory(context_type);
   if (!factory)
     return nullptr;
 
-  if (m_context) {
-    if (m_context->getContextType() != contextType) {
-      factory->onError(
+  if (context_) {
+    if (context_->GetContextType() != context_type) {
+      factory->OnError(
           this, "OffscreenCanvas has an existing context of a different type");
       return nullptr;
     }
   } else {
-    m_context = factory->create(scriptState, this, attributes);
+    context_ = factory->Create(script_state, this, attributes);
   }
 
-  return m_context.get();
+  return context_.Get();
 }
 
 OffscreenCanvas::ContextFactoryVector&
-OffscreenCanvas::renderingContextFactories() {
-  DEFINE_STATIC_LOCAL(ContextFactoryVector, s_contextFactories,
-                      (CanvasRenderingContext::ContextTypeCount));
-  return s_contextFactories;
+OffscreenCanvas::RenderingContextFactories() {
+  DEFINE_STATIC_LOCAL(ContextFactoryVector, context_factories,
+                      (CanvasRenderingContext::kContextTypeCount));
+  return context_factories;
 }
 
-CanvasRenderingContextFactory* OffscreenCanvas::getRenderingContextFactory(
+CanvasRenderingContextFactory* OffscreenCanvas::GetRenderingContextFactory(
     int type) {
-  ASSERT(type < CanvasRenderingContext::ContextTypeCount);
-  return renderingContextFactories()[type].get();
+  ASSERT(type < CanvasRenderingContext::kContextTypeCount);
+  return RenderingContextFactories()[type].get();
 }
 
-void OffscreenCanvas::registerRenderingContextFactory(
-    std::unique_ptr<CanvasRenderingContextFactory> renderingContextFactory) {
+void OffscreenCanvas::RegisterRenderingContextFactory(
+    std::unique_ptr<CanvasRenderingContextFactory> rendering_context_factory) {
   CanvasRenderingContext::ContextType type =
-      renderingContextFactory->getContextType();
-  ASSERT(type < CanvasRenderingContext::ContextTypeCount);
-  ASSERT(!renderingContextFactories()[type]);
-  renderingContextFactories()[type] = std::move(renderingContextFactory);
+      rendering_context_factory->GetContextType();
+  ASSERT(type < CanvasRenderingContext::kContextTypeCount);
+  ASSERT(!RenderingContextFactories()[type]);
+  RenderingContextFactories()[type] = std::move(rendering_context_factory);
 }
 
-bool OffscreenCanvas::originClean() const {
-  return m_originClean && !m_disableReadingFromCanvas;
+bool OffscreenCanvas::OriginClean() const {
+  return origin_clean_ && !disable_reading_from_canvas_;
 }
 
-bool OffscreenCanvas::isPaintable() const {
-  if (!m_context)
-    return ImageBuffer::canCreateImageBuffer(m_size);
-  return m_context->isPaintable() && m_size.width() && m_size.height();
+bool OffscreenCanvas::IsPaintable() const {
+  if (!context_)
+    return ImageBuffer::CanCreateImageBuffer(size_);
+  return context_->IsPaintable() && size_.Width() && size_.Height();
 }
 
-bool OffscreenCanvas::isAccelerated() const {
-  return m_context && m_context->isAccelerated();
+bool OffscreenCanvas::IsAccelerated() const {
+  return context_ && context_->IsAccelerated();
 }
 
-OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
-  if (!m_frameDispatcher) {
+OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
+  if (!frame_dispatcher_) {
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
-    m_frameDispatcher = WTF::wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
-        this, m_clientId, m_sinkId, m_placeholderCanvasId, m_size.width(),
-        m_size.height()));
+    frame_dispatcher_ = WTF::WrapUnique(new OffscreenCanvasFrameDispatcherImpl(
+        this, client_id_, sink_id_, placeholder_canvas_id_, size_.Width(),
+        size_.Height()));
   }
-  return m_frameDispatcher.get();
+  return frame_dispatcher_.get();
 }
 
-ScriptPromise OffscreenCanvas::commit(RefPtr<StaticBitmapImage> image,
-                                      bool isWebGLSoftwareRendering,
-                                      ScriptState* scriptState) {
-  getOrCreateFrameDispatcher()->setNeedsBeginFrame(true);
+ScriptPromise OffscreenCanvas::Commit(RefPtr<StaticBitmapImage> image,
+                                      bool is_web_gl_software_rendering,
+                                      ScriptState* script_state) {
+  GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(true);
 
-  if (!m_commitPromiseResolver) {
-    m_commitPromiseResolver = ScriptPromiseResolver::create(scriptState);
-    m_commitPromiseResolver->keepAliveWhilePending();
+  if (!commit_promise_resolver_) {
+    commit_promise_resolver_ = ScriptPromiseResolver::Create(script_state);
+    commit_promise_resolver_->KeepAliveWhilePending();
 
     if (image) {
       // We defer the submission of commit frames at the end of JS task
-      m_currentFrame = std::move(image);
-      m_currentFrameIsWebGLSoftwareRendering = isWebGLSoftwareRendering;
-      m_context->needsFinalizeFrame();
+      current_frame_ = std::move(image);
+      current_frame_is_web_gl_software_rendering_ =
+          is_web_gl_software_rendering;
+      context_->NeedsFinalizeFrame();
     }
   } else if (image) {
     // Two possible scenarios:
@@ -256,102 +257,104 @@ ScriptPromise OffscreenCanvas::commit(RefPtr<StaticBitmapImage> image,
     // frames committed before JS task finishes. (m_currentFrame!=nullptr)
     // 2. The current frame has been dispatched but the promise is not
     // resolved yet. (m_currentFrame==nullptr)
-    m_currentFrame = std::move(image);
-    m_currentFrameIsWebGLSoftwareRendering = isWebGLSoftwareRendering;
+    current_frame_ = std::move(image);
+    current_frame_is_web_gl_software_rendering_ = is_web_gl_software_rendering;
   }
 
-  return m_commitPromiseResolver->promise();
+  return commit_promise_resolver_->Promise();
 }
 
-void OffscreenCanvas::finalizeFrame() {
-  if (m_currentFrame) {
+void OffscreenCanvas::FinalizeFrame() {
+  if (current_frame_) {
     // TODO(eseckler): OffscreenCanvas shouldn't dispatch CompositorFrames
     // without a prior BeginFrame.
-    doCommit(std::move(m_currentFrame), m_currentFrameIsWebGLSoftwareRendering);
+    DoCommit(std::move(current_frame_),
+             current_frame_is_web_gl_software_rendering_);
   }
 }
 
-void OffscreenCanvas::doCommit(RefPtr<StaticBitmapImage> image,
-                               bool isWebGLSoftwareRendering) {
-  double commitStartTime = WTF::monotonicallyIncreasingTime();
-  getOrCreateFrameDispatcher()->dispatchFrame(std::move(image), commitStartTime,
-                                              isWebGLSoftwareRendering);
+void OffscreenCanvas::DoCommit(RefPtr<StaticBitmapImage> image,
+                               bool is_web_gl_software_rendering) {
+  double commit_start_time = WTF::MonotonicallyIncreasingTime();
+  GetOrCreateFrameDispatcher()->DispatchFrame(
+      std::move(image), commit_start_time, is_web_gl_software_rendering);
 }
 
-void OffscreenCanvas::beginFrame() {
-  if (m_currentFrame) {
+void OffscreenCanvas::BeginFrame() {
+  if (current_frame_) {
     // TODO(eseckler): beginFrame() shouldn't be used as confirmation of
     // CompositorFrame activation.
     // If we have an overdraw backlog, push the frame from the backlog
     // first and save the promise resolution for later.
     // Then we need to wait for one more frame time to resolve the existing
     // promise.
-    doCommit(std::move(m_currentFrame), m_currentFrameIsWebGLSoftwareRendering);
-  } else if (m_commitPromiseResolver) {
-    m_commitPromiseResolver->resolve();
-    m_commitPromiseResolver.clear();
+    DoCommit(std::move(current_frame_),
+             current_frame_is_web_gl_software_rendering_);
+  } else if (commit_promise_resolver_) {
+    commit_promise_resolver_->Resolve();
+    commit_promise_resolver_.Clear();
     // We need to tell parent frame to stop sending signals on begin frame to
     // avoid overhead once we resolve the promise.
-    getOrCreateFrameDispatcher()->setNeedsBeginFrame(false);
+    GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(false);
   }
 }
 
-ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
+ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
                                              const ImageEncodeOptions& options,
-                                             ExceptionState& exceptionState) {
-  if (this->isNeutered()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "OffscreenCanvas object is detached.");
-    return exceptionState.reject(scriptState);
+                                             ExceptionState& exception_state) {
+  if (this->IsNeutered()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "OffscreenCanvas object is detached.");
+    return exception_state.Reject(script_state);
   }
 
-  if (!this->originClean()) {
-    exceptionState.throwSecurityError(
+  if (!this->OriginClean()) {
+    exception_state.ThrowSecurityError(
         "Tainted OffscreenCanvas may not be exported.");
-    return exceptionState.reject(scriptState);
+    return exception_state.Reject(script_state);
   }
 
-  if (!this->isPaintable()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The size of the OffscreenCanvas is zero.");
-    return exceptionState.reject(scriptState);
+  if (!this->IsPaintable()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The size of the OffscreenCanvas is zero.");
+    return exception_state.Reject(script_state);
   }
 
-  double startTime = WTF::monotonicallyIncreasingTime();
-  String encodingMimeType = ImageEncoderUtils::toEncodingMimeType(
-      options.type(), ImageEncoderUtils::EncodeReasonConvertToBlobPromise);
+  double start_time = WTF::MonotonicallyIncreasingTime();
+  String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
+      options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
 
-  ImageData* imageData = nullptr;
-  if (this->renderingContext()) {
-    imageData = this->renderingContext()->toImageData(SnapshotReasonUnknown);
+  ImageData* image_data = nullptr;
+  if (this->RenderingContext()) {
+    image_data = this->RenderingContext()->ToImageData(kSnapshotReasonUnknown);
   }
-  if (!imageData) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "OffscreenCanvas object has no rendering contexts");
-    return exceptionState.reject(scriptState);
+  if (!image_data) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "OffscreenCanvas object has no rendering contexts");
+    return exception_state.Reject(script_state);
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
   Document* document =
-      scriptState->getExecutionContext()->isDocument()
-          ? static_cast<Document*>(scriptState->getExecutionContext())
+      script_state->GetExecutionContext()->IsDocument()
+          ? static_cast<Document*>(script_state->GetExecutionContext())
           : nullptr;
 
-  CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(
-      imageData->data(), encodingMimeType, imageData->size(), startTime,
+  CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
+      image_data->data(), encoding_mime_type, image_data->size(), start_time,
       document, resolver);
 
-  asyncCreator->scheduleAsyncBlobCreation(options.quality());
+  async_creator->ScheduleAsyncBlobCreation(options.quality());
 
-  return resolver->promise();
+  return resolver->Promise();
 }
 
 DEFINE_TRACE(OffscreenCanvas) {
-  visitor->trace(m_context);
-  visitor->trace(m_executionContext);
-  visitor->trace(m_commitPromiseResolver);
-  EventTargetWithInlineData::trace(visitor);
+  visitor->Trace(context_);
+  visitor->Trace(execution_context_);
+  visitor->Trace(commit_promise_resolver_);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 }  // namespace blink

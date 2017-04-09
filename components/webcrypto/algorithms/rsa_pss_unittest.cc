@@ -23,8 +23,8 @@ namespace {
 
 blink::WebCryptoAlgorithm CreateRsaPssAlgorithm(
     unsigned int salt_length_bytes) {
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdRsaPss,
+  return blink::WebCryptoAlgorithm::AdoptParamsAndCreate(
+      blink::kWebCryptoAlgorithmIdRsaPss,
       new blink::WebCryptoRsaPssParams(salt_length_bytes));
 }
 
@@ -34,15 +34,15 @@ class WebCryptoRsaPssTest : public WebCryptoTestBase {};
 // lengthed salt.
 TEST_F(WebCryptoRsaPssTest, SignIsRandom) {
   // Import public/private key pair.
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::CreateNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::CreateNull();
 
   ImportRsaKeyPair(
       HexStringToBytes(kPublicKeySpkiDerHex),
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
-      CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaPss,
-                                     blink::WebCryptoAlgorithmIdSha1),
-      true, blink::WebCryptoKeyUsageVerify, blink::WebCryptoKeyUsageSign,
+      CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaPss,
+                                     blink::kWebCryptoAlgorithmIdSha1),
+      true, blink::kWebCryptoKeyUsageVerify, blink::kWebCryptoKeyUsageSign,
       &public_key, &private_key);
 
   // Use a 20-byte length salt.
@@ -87,15 +87,15 @@ TEST_F(WebCryptoRsaPssTest, SignIsRandom) {
 // case is not random.
 TEST_F(WebCryptoRsaPssTest, SignVerifyNoSalt) {
   // Import public/private key pair.
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::CreateNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::CreateNull();
 
   ImportRsaKeyPair(
       HexStringToBytes(kPublicKeySpkiDerHex),
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
-      CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaPss,
-                                     blink::WebCryptoAlgorithmIdSha1),
-      true, blink::WebCryptoKeyUsageVerify, blink::WebCryptoKeyUsageSign,
+      CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaPss,
+                                     blink::kWebCryptoAlgorithmIdSha1),
+      true, blink::kWebCryptoKeyUsageVerify, blink::kWebCryptoKeyUsageSign,
       &public_key, &private_key);
 
   // Zero-length salt.
@@ -132,15 +132,15 @@ TEST_F(WebCryptoRsaPssTest, SignVerifyNoSalt) {
 
 TEST_F(WebCryptoRsaPssTest, SignEmptyMessage) {
   // Import public/private key pair.
-  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::CreateNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::CreateNull();
 
   ImportRsaKeyPair(
       HexStringToBytes(kPublicKeySpkiDerHex),
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
-      CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaPss,
-                                     blink::WebCryptoAlgorithmIdSha1),
-      true, blink::WebCryptoKeyUsageVerify, blink::WebCryptoKeyUsageSign,
+      CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaPss,
+                                     blink::kWebCryptoAlgorithmIdSha1),
+      true, blink::kWebCryptoKeyUsageVerify, blink::kWebCryptoKeyUsageSign,
       &public_key, &private_key);
 
   blink::WebCryptoAlgorithm params = CreateRsaPssAlgorithm(20);
@@ -189,15 +189,15 @@ TEST_F(WebCryptoRsaPssTest, VerifyKnownAnswer) {
     ASSERT_TRUE(test->GetString("key", &key_name));
 
     // Import the public key.
-    blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+    blink::WebCryptoKey public_key = blink::WebCryptoKey::CreateNull();
     std::vector<uint8_t> spki_bytes =
         GetBytesFromHexString(keys_dict, key_name);
 
     ASSERT_EQ(Status::Success(),
-              ImportKey(blink::WebCryptoKeyFormatSpki, CryptoData(spki_bytes),
+              ImportKey(blink::kWebCryptoKeyFormatSpki, CryptoData(spki_bytes),
                         CreateRsaHashedImportAlgorithm(
-                            blink::WebCryptoAlgorithmIdRsaPss, hash.id()),
-                        true, blink::WebCryptoKeyUsageVerify, &public_key));
+                            blink::kWebCryptoAlgorithmIdRsaPss, hash.Id()),
+                        true, blink::kWebCryptoKeyUsageVerify, &public_key));
 
     int saltLength;
     ASSERT_TRUE(test->GetInteger("saltLength", &saltLength));

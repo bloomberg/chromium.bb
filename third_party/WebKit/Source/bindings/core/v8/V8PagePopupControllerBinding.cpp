@@ -18,36 +18,38 @@ namespace blink {
 
 namespace {
 
-void pagePopupControllerAttributeGetter(
+void PagePopupControllerAttributeGetter(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
   DOMWindow* impl = V8Window::toImpl(holder);
-  PagePopupController* cppValue = nullptr;
-  if (LocalFrame* frame = toLocalDOMWindow(impl)->frame())
-    cppValue = PagePopupSupplement::from(*frame).pagePopupController();
-  v8SetReturnValue(info, ToV8(cppValue, holder, info.GetIsolate()));
+  PagePopupController* cpp_value = nullptr;
+  if (LocalFrame* frame = ToLocalDOMWindow(impl)->GetFrame())
+    cpp_value = PagePopupSupplement::From(*frame).GetPagePopupController();
+  V8SetReturnValue(info, ToV8(cpp_value, holder, info.GetIsolate()));
 }
 
-void pagePopupControllerAttributeGetterCallback(
+void PagePopupControllerAttributeGetterCallback(
     v8::Local<v8::Name>,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  pagePopupControllerAttributeGetter(info);
+  PagePopupControllerAttributeGetter(info);
 }
 
 }  // namespace
 
-void V8PagePopupControllerBinding::installPagePopupController(
+void V8PagePopupControllerBinding::InstallPagePopupController(
     v8::Local<v8::Context> context,
-    v8::Local<v8::Object> windowWrapper) {
-  ExecutionContext* executionContext =
-      toExecutionContext(windowWrapper->CreationContext());
-  if (!(executionContext && executionContext->isDocument() &&
-        ContextFeatures::pagePopupEnabled(toDocument(executionContext))))
+    v8::Local<v8::Object> window_wrapper) {
+  ExecutionContext* execution_context =
+      ToExecutionContext(window_wrapper->CreationContext());
+  if (!(execution_context && execution_context->IsDocument() &&
+        ContextFeatures::PagePopupEnabled(ToDocument(execution_context))))
     return;
 
-  windowWrapper->SetAccessor(
-      context, v8AtomicString(context->GetIsolate(), "pagePopupController"),
-      pagePopupControllerAttributeGetterCallback).ToChecked();
+  window_wrapper
+      ->SetAccessor(
+          context, V8AtomicString(context->GetIsolate(), "pagePopupController"),
+          PagePopupControllerAttributeGetterCallback)
+      .ToChecked();
 }
 
 }  // namespace blink

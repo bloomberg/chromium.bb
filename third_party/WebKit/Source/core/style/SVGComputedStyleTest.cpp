@@ -11,13 +11,13 @@ namespace blink {
 // Ensures RefPtr values are compared by their values, not by pointers.
 #define TEST_STYLE_REFPTR_VALUE_NO_DIFF(type, fieldName)        \
   {                                                             \
-    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create(); \
-    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create(); \
-    RefPtr<type> value1 = type::create();                       \
-    RefPtr<type> value2 = value1->copy();                       \
-    svg1->set##fieldName(value1);                               \
-    svg2->set##fieldName(value2);                               \
-    EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());       \
+    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::Create(); \
+    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::Create(); \
+    RefPtr<type> value1 = type::Create();                       \
+    RefPtr<type> value2 = value1->Copy();                       \
+    svg1->Set##fieldName(value1);                               \
+    svg2->Set##fieldName(value2);                               \
+    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());       \
   }
 
 // This is not very useful for fields directly stored by values, because they
@@ -25,11 +25,11 @@ namespace blink {
 // comparisons and tests when we change some field to RefPtr in the future.
 #define TEST_STYLE_VALUE_NO_DIFF(type, fieldName)                 \
   {                                                               \
-    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create();   \
-    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create();   \
-    svg1->set##fieldName(SVGComputedStyle::initial##fieldName()); \
-    svg2->set##fieldName(SVGComputedStyle::initial##fieldName()); \
-    EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());         \
+    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();   \
+    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();   \
+    svg1->Set##fieldName(SVGComputedStyle::Initial##fieldName()); \
+    svg2->Set##fieldName(SVGComputedStyle::Initial##fieldName()); \
+    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());         \
   }
 
 TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
@@ -40,30 +40,30 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
   TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
 
   {
-    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create();
-    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create();
-    svg1->setStrokePaint(SVGComputedStyle::initialStrokePaintType(),
-                         SVGComputedStyle::initialStrokePaintColor(),
-                         SVGComputedStyle::initialStrokePaintUri(), true,
+    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();
+    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();
+    svg1->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
+                         SVGComputedStyle::InitialStrokePaintColor(),
+                         SVGComputedStyle::InitialStrokePaintUri(), true,
                          false);
-    svg2->setStrokePaint(SVGComputedStyle::initialStrokePaintType(),
-                         SVGComputedStyle::initialStrokePaintColor(),
-                         SVGComputedStyle::initialStrokePaintUri(), true,
+    svg2->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
+                         SVGComputedStyle::InitialStrokePaintColor(),
+                         SVGComputedStyle::InitialStrokePaintUri(), true,
                          false);
-    EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());
+    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());
   }
   {
-    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create();
-    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::create();
-    svg1->setStrokePaint(SVGComputedStyle::initialStrokePaintType(),
-                         SVGComputedStyle::initialStrokePaintColor(),
-                         SVGComputedStyle::initialStrokePaintUri(), false,
+    RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();
+    RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();
+    svg1->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
+                         SVGComputedStyle::InitialStrokePaintColor(),
+                         SVGComputedStyle::InitialStrokePaintUri(), false,
                          true);
-    svg2->setStrokePaint(SVGComputedStyle::initialStrokePaintType(),
-                         SVGComputedStyle::initialStrokePaintColor(),
-                         SVGComputedStyle::initialStrokePaintUri(), false,
+    svg2->SetStrokePaint(SVGComputedStyle::InitialStrokePaintType(),
+                         SVGComputedStyle::InitialStrokePaintColor(),
+                         SVGComputedStyle::InitialStrokePaintUri(), false,
                          true);
-    EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());
+    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());
   }
 }
 

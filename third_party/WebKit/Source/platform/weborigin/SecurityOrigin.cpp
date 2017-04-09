@@ -46,24 +46,24 @@
 
 namespace blink {
 
-const int InvalidPort = 0;
-const int MaxAllowedPort = 65535;
+const int kInvalidPort = 0;
+const int kMaxAllowedPort = 65535;
 
-static URLSecurityOriginMap* s_urlOriginMap = 0;
+static URLSecurityOriginMap* g_url_origin_map = 0;
 
-static SecurityOrigin* getOriginFromMap(const KURL& url) {
-  if (s_urlOriginMap)
-    return s_urlOriginMap->getOrigin(url);
+static SecurityOrigin* GetOriginFromMap(const KURL& url) {
+  if (g_url_origin_map)
+    return g_url_origin_map->GetOrigin(url);
   return nullptr;
 }
 
-bool SecurityOrigin::shouldUseInnerURL(const KURL& url) {
+bool SecurityOrigin::ShouldUseInnerURL(const KURL& url) {
   // FIXME: Blob URLs don't have inner URLs. Their form is
   // "blob:<inner-origin>/<UUID>", so treating the part after "blob:" as a URL
   // is incorrect.
-  if (url.protocolIs("blob"))
+  if (url.ProtocolIs("blob"))
     return true;
-  if (url.protocolIs("filesystem"))
+  if (url.ProtocolIs("filesystem"))
     return true;
   return false;
 }
@@ -71,40 +71,40 @@ bool SecurityOrigin::shouldUseInnerURL(const KURL& url) {
 // In general, extracting the inner URL varies by scheme. It just so happens
 // that all the URL schemes we currently support that use inner URLs for their
 // security origin can be parsed using this algorithm.
-KURL SecurityOrigin::extractInnerURL(const KURL& url) {
-  if (url.innerURL())
-    return *url.innerURL();
+KURL SecurityOrigin::ExtractInnerURL(const KURL& url) {
+  if (url.InnerURL())
+    return *url.InnerURL();
   // FIXME: Update this callsite to use the innerURL member function when
   // we finish implementing it.
-  return KURL(ParsedURLString, url.path());
+  return KURL(kParsedURLString, url.GetPath());
 }
 
-void SecurityOrigin::setMap(URLSecurityOriginMap* map) {
-  s_urlOriginMap = map;
+void SecurityOrigin::SetMap(URLSecurityOriginMap* map) {
+  g_url_origin_map = map;
 }
 
-static bool shouldTreatAsUniqueOrigin(const KURL& url) {
-  if (!url.isValid())
+static bool ShouldTreatAsUniqueOrigin(const KURL& url) {
+  if (!url.IsValid())
     return true;
 
   // FIXME: Do we need to unwrap the URL further?
-  KURL relevantURL;
-  if (SecurityOrigin::shouldUseInnerURL(url)) {
-    relevantURL = SecurityOrigin::extractInnerURL(url);
-    if (!relevantURL.isValid())
+  KURL relevant_url;
+  if (SecurityOrigin::ShouldUseInnerURL(url)) {
+    relevant_url = SecurityOrigin::ExtractInnerURL(url);
+    if (!relevant_url.IsValid())
       return true;
   } else {
-    relevantURL = url;
+    relevant_url = url;
   }
 
   // URLs with schemes that require an authority, but which don't have one,
   // will have failed the isValid() test; e.g. valid HTTP URLs must have a
   // host.
-  ASSERT(!(
-      (relevantURL.protocolIsInHTTPFamily() || relevantURL.protocolIs("ftp")) &&
-      relevantURL.host().isEmpty()));
+  ASSERT(!((relevant_url.ProtocolIsInHTTPFamily() ||
+            relevant_url.ProtocolIs("ftp")) &&
+           relevant_url.Host().IsEmpty()));
 
-  if (SchemeRegistry::shouldTreatURLSchemeAsNoAccess(relevantURL.protocol()))
+  if (SchemeRegistry::ShouldTreatURLSchemeAsNoAccess(relevant_url.Protocol()))
     return true;
 
   // This is the common case.
@@ -112,129 +112,130 @@ static bool shouldTreatAsUniqueOrigin(const KURL& url) {
 }
 
 SecurityOrigin::SecurityOrigin(const KURL& url)
-    : m_protocol(url.protocol()),
-      m_host(url.host()),
-      m_port(url.port()),
-      m_effectivePort(url.port() ? url.port()
-                                 : defaultPortForProtocol(m_protocol)),
-      m_isUnique(false),
-      m_universalAccess(false),
-      m_domainWasSetInDOM(false),
-      m_blockLocalAccessFromLocalOrigin(false),
-      m_isUniqueOriginPotentiallyTrustworthy(false) {
-  if (m_protocol.isNull())
-    m_protocol = emptyString;
-  if (m_host.isNull())
-    m_host = emptyString;
+    : protocol_(url.Protocol()),
+      host_(url.Host()),
+      port_(url.Port()),
+      effective_port_(url.Port() ? url.Port()
+                                 : DefaultPortForProtocol(protocol_)),
+      is_unique_(false),
+      universal_access_(false),
+      domain_was_set_in_dom_(false),
+      block_local_access_from_local_origin_(false),
+      is_unique_origin_potentially_trustworthy_(false) {
+  if (protocol_.IsNull())
+    protocol_ = g_empty_string;
+  if (host_.IsNull())
+    host_ = g_empty_string;
 
   // Suborigins are serialized into the host, so extract it if necessary.
-  String suboriginName;
-  if (deserializeSuboriginAndProtocolAndHost(m_protocol, m_host, suboriginName,
-                                             m_protocol, m_host)) {
-    if (!url.port())
-      m_effectivePort = defaultPortForProtocol(m_protocol);
+  String suborigin_name;
+  if (DeserializeSuboriginAndProtocolAndHost(protocol_, host_, suborigin_name,
+                                             protocol_, host_)) {
+    if (!url.Port())
+      effective_port_ = DefaultPortForProtocol(protocol_);
 
-    m_suborigin.setName(suboriginName);
+    suborigin_.SetName(suborigin_name);
   }
 
   // document.domain starts as m_host, but can be set by the DOM.
-  m_domain = m_host;
+  domain_ = host_;
 
-  if (isDefaultPortForProtocol(m_port, m_protocol))
-    m_port = InvalidPort;
+  if (IsDefaultPortForProtocol(port_, protocol_))
+    port_ = kInvalidPort;
 
   // By default, only local SecurityOrigins can load local resources.
-  m_canLoadLocalResources = isLocal();
+  can_load_local_resources_ = IsLocal();
 }
 
 SecurityOrigin::SecurityOrigin()
-    : m_protocol(emptyString),
-      m_host(emptyString),
-      m_domain(emptyString),
-      m_port(InvalidPort),
-      m_effectivePort(InvalidPort),
-      m_isUnique(true),
-      m_universalAccess(false),
-      m_domainWasSetInDOM(false),
-      m_canLoadLocalResources(false),
-      m_blockLocalAccessFromLocalOrigin(false),
-      m_isUniqueOriginPotentiallyTrustworthy(false) {}
+    : protocol_(g_empty_string),
+      host_(g_empty_string),
+      domain_(g_empty_string),
+      port_(kInvalidPort),
+      effective_port_(kInvalidPort),
+      is_unique_(true),
+      universal_access_(false),
+      domain_was_set_in_dom_(false),
+      can_load_local_resources_(false),
+      block_local_access_from_local_origin_(false),
+      is_unique_origin_potentially_trustworthy_(false) {}
 
 SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
-    : m_protocol(other->m_protocol.isolatedCopy()),
-      m_host(other->m_host.isolatedCopy()),
-      m_domain(other->m_domain.isolatedCopy()),
-      m_suborigin(other->m_suborigin),
-      m_port(other->m_port),
-      m_effectivePort(other->m_effectivePort),
-      m_isUnique(other->m_isUnique),
-      m_universalAccess(other->m_universalAccess),
-      m_domainWasSetInDOM(other->m_domainWasSetInDOM),
-      m_canLoadLocalResources(other->m_canLoadLocalResources),
-      m_blockLocalAccessFromLocalOrigin(
-          other->m_blockLocalAccessFromLocalOrigin),
-      m_isUniqueOriginPotentiallyTrustworthy(
-          other->m_isUniqueOriginPotentiallyTrustworthy) {}
+    : protocol_(other->protocol_.IsolatedCopy()),
+      host_(other->host_.IsolatedCopy()),
+      domain_(other->domain_.IsolatedCopy()),
+      suborigin_(other->suborigin_),
+      port_(other->port_),
+      effective_port_(other->effective_port_),
+      is_unique_(other->is_unique_),
+      universal_access_(other->universal_access_),
+      domain_was_set_in_dom_(other->domain_was_set_in_dom_),
+      can_load_local_resources_(other->can_load_local_resources_),
+      block_local_access_from_local_origin_(
+          other->block_local_access_from_local_origin_),
+      is_unique_origin_potentially_trustworthy_(
+          other->is_unique_origin_potentially_trustworthy_) {}
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::create(const KURL& url) {
-  if (RefPtr<SecurityOrigin> origin = getOriginFromMap(url))
-    return origin.release();
+PassRefPtr<SecurityOrigin> SecurityOrigin::Create(const KURL& url) {
+  if (RefPtr<SecurityOrigin> origin = GetOriginFromMap(url))
+    return origin.Release();
 
-  if (shouldTreatAsUniqueOrigin(url)) {
-    RefPtr<SecurityOrigin> origin = adoptRef(new SecurityOrigin());
-    return origin.release();
+  if (ShouldTreatAsUniqueOrigin(url)) {
+    RefPtr<SecurityOrigin> origin = AdoptRef(new SecurityOrigin());
+    return origin.Release();
   }
 
-  if (shouldUseInnerURL(url))
-    return adoptRef(new SecurityOrigin(extractInnerURL(url)));
+  if (ShouldUseInnerURL(url))
+    return AdoptRef(new SecurityOrigin(ExtractInnerURL(url)));
 
-  return adoptRef(new SecurityOrigin(url));
+  return AdoptRef(new SecurityOrigin(url));
 }
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::createUnique() {
-  RefPtr<SecurityOrigin> origin = adoptRef(new SecurityOrigin());
-  ASSERT(origin->isUnique());
-  return origin.release();
+PassRefPtr<SecurityOrigin> SecurityOrigin::CreateUnique() {
+  RefPtr<SecurityOrigin> origin = AdoptRef(new SecurityOrigin());
+  ASSERT(origin->IsUnique());
+  return origin.Release();
 }
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::isolatedCopy() const {
-  return adoptRef(new SecurityOrigin(this));
+PassRefPtr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {
+  return AdoptRef(new SecurityOrigin(this));
 }
 
-void SecurityOrigin::setDomainFromDOM(const String& newDomain) {
-  m_domainWasSetInDOM = true;
-  m_domain = newDomain;
+void SecurityOrigin::SetDomainFromDOM(const String& new_domain) {
+  domain_was_set_in_dom_ = true;
+  domain_ = new_domain;
 }
 
-bool SecurityOrigin::isSecure(const KURL& url) {
-  if (SchemeRegistry::shouldTreatURLSchemeAsSecure(url.protocol()))
+bool SecurityOrigin::IsSecure(const KURL& url) {
+  if (SchemeRegistry::ShouldTreatURLSchemeAsSecure(url.Protocol()))
     return true;
 
   // URLs that wrap inner URLs are secure if those inner URLs are secure.
-  if (shouldUseInnerURL(url) && SchemeRegistry::shouldTreatURLSchemeAsSecure(
-                                    extractInnerURL(url).protocol()))
+  if (ShouldUseInnerURL(url) && SchemeRegistry::ShouldTreatURLSchemeAsSecure(
+                                    ExtractInnerURL(url).Protocol()))
     return true;
 
-  if (SecurityPolicy::isUrlWhiteListedTrustworthy(url))
+  if (SecurityPolicy::IsUrlWhiteListedTrustworthy(url))
     return true;
 
   return false;
 }
 
-bool SecurityOrigin::canAccess(const SecurityOrigin* other) const {
-  if (m_universalAccess)
+bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
+  if (universal_access_)
     return true;
 
   if (this == other)
     return true;
 
-  if (isUnique() || other->isUnique())
+  if (IsUnique() || other->IsUnique())
     return false;
 
-  if (hasSuborigin() != other->hasSuborigin())
+  if (HasSuborigin() != other->HasSuborigin())
     return false;
 
-  if (hasSuborigin() && suborigin()->name() != other->suborigin()->name())
+  if (HasSuborigin() &&
+      GetSuborigin()->GetName() != other->GetSuborigin()->GetName())
     return false;
 
   // document.domain handling, as per
@@ -246,62 +247,62 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const {
   // 2) Both documents have set document.domain. In this case, we insist
   //    that the documents have set document.domain to the same value and
   //    that the scheme of the URLs match. Ports do not need to match.
-  bool canAccess = false;
-  if (m_protocol == other->m_protocol) {
-    if (!m_domainWasSetInDOM && !other->m_domainWasSetInDOM) {
-      if (m_host == other->m_host && m_port == other->m_port)
-        canAccess = true;
-    } else if (m_domainWasSetInDOM && other->m_domainWasSetInDOM) {
-      if (m_domain == other->m_domain)
-        canAccess = true;
+  bool can_access = false;
+  if (protocol_ == other->protocol_) {
+    if (!domain_was_set_in_dom_ && !other->domain_was_set_in_dom_) {
+      if (host_ == other->host_ && port_ == other->port_)
+        can_access = true;
+    } else if (domain_was_set_in_dom_ && other->domain_was_set_in_dom_) {
+      if (domain_ == other->domain_)
+        can_access = true;
     }
   }
 
-  if (canAccess && isLocal())
-    canAccess = passesFileCheck(other);
+  if (can_access && IsLocal())
+    can_access = PassesFileCheck(other);
 
-  return canAccess;
+  return can_access;
 }
 
-bool SecurityOrigin::passesFileCheck(const SecurityOrigin* other) const {
-  ASSERT(isLocal() && other->isLocal());
+bool SecurityOrigin::PassesFileCheck(const SecurityOrigin* other) const {
+  ASSERT(IsLocal() && other->IsLocal());
 
-  return !m_blockLocalAccessFromLocalOrigin &&
-         !other->m_blockLocalAccessFromLocalOrigin;
+  return !block_local_access_from_local_origin_ &&
+         !other->block_local_access_from_local_origin_;
 }
 
-bool SecurityOrigin::canRequest(const KURL& url) const {
-  if (m_universalAccess)
+bool SecurityOrigin::CanRequest(const KURL& url) const {
+  if (universal_access_)
     return true;
 
-  if (getOriginFromMap(url) == this)
+  if (GetOriginFromMap(url) == this)
     return true;
 
-  if (isUnique())
+  if (IsUnique())
     return false;
 
-  RefPtr<SecurityOrigin> targetOrigin = SecurityOrigin::create(url);
+  RefPtr<SecurityOrigin> target_origin = SecurityOrigin::Create(url);
 
-  if (targetOrigin->isUnique())
+  if (target_origin->IsUnique())
     return false;
 
   // We call isSameSchemeHostPort here instead of canAccess because we want
   // to ignore document.domain effects.
-  if (isSameSchemeHostPort(targetOrigin.get()))
+  if (IsSameSchemeHostPort(target_origin.Get()))
     return true;
 
-  if (SecurityPolicy::isAccessWhiteListed(this, targetOrigin.get()))
+  if (SecurityPolicy::IsAccessWhiteListed(this, target_origin.Get()))
     return true;
 
   return false;
 }
 
-bool SecurityOrigin::canRequestNoSuborigin(const KURL& url) const {
-  return !hasSuborigin() && canRequest(url);
+bool SecurityOrigin::CanRequestNoSuborigin(const KURL& url) const {
+  return !HasSuborigin() && CanRequest(url);
 }
 
-bool SecurityOrigin::taintsCanvas(const KURL& url) const {
-  if (canRequest(url))
+bool SecurityOrigin::TaintsCanvas(const KURL& url) const {
+  if (CanRequest(url))
     return false;
 
   // This function exists because we treat data URLs as having a unique origin,
@@ -310,313 +311,316 @@ bool SecurityOrigin::taintsCanvas(const KURL& url) const {
   // we special case data URLs below. If we change to match HTML5 w.r.t.
   // data URL security, then we can remove this function in favor of
   // !canRequest.
-  if (url.protocolIsData())
+  if (url.ProtocolIsData())
     return false;
 
   return true;
 }
 
-bool SecurityOrigin::canDisplay(const KURL& url) const {
-  if (m_universalAccess)
+bool SecurityOrigin::CanDisplay(const KURL& url) const {
+  if (universal_access_)
     return true;
 
-  String protocol = url.protocol();
-  if (SchemeRegistry::canDisplayOnlyIfCanRequest(protocol))
-    return canRequest(url);
+  String protocol = url.Protocol();
+  if (SchemeRegistry::CanDisplayOnlyIfCanRequest(protocol))
+    return CanRequest(url);
 
-  if (SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(protocol))
-    return m_protocol == protocol ||
-           SecurityPolicy::isAccessToURLWhiteListed(this, url);
+  if (SchemeRegistry::ShouldTreatURLSchemeAsDisplayIsolated(protocol))
+    return protocol_ == protocol ||
+           SecurityPolicy::IsAccessToURLWhiteListed(this, url);
 
-  if (SchemeRegistry::shouldTreatURLSchemeAsLocal(protocol))
-    return canLoadLocalResources() ||
-           SecurityPolicy::isAccessToURLWhiteListed(this, url);
+  if (SchemeRegistry::ShouldTreatURLSchemeAsLocal(protocol))
+    return CanLoadLocalResources() ||
+           SecurityPolicy::IsAccessToURLWhiteListed(this, url);
 
   return true;
 }
 
-bool SecurityOrigin::isPotentiallyTrustworthy() const {
-  ASSERT(m_protocol != "data");
-  if (isUnique())
-    return m_isUniqueOriginPotentiallyTrustworthy;
+bool SecurityOrigin::IsPotentiallyTrustworthy() const {
+  ASSERT(protocol_ != "data");
+  if (IsUnique())
+    return is_unique_origin_potentially_trustworthy_;
 
-  if (SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() ||
-      isLocalhost())
+  if (SchemeRegistry::ShouldTreatURLSchemeAsSecure(protocol_) || IsLocal() ||
+      IsLocalhost())
     return true;
 
-  if (SecurityPolicy::isOriginWhiteListedTrustworthy(*this))
+  if (SecurityPolicy::IsOriginWhiteListedTrustworthy(*this))
     return true;
 
   return false;
 }
 
 // static
-String SecurityOrigin::isPotentiallyTrustworthyErrorMessage() {
+String SecurityOrigin::IsPotentiallyTrustworthyErrorMessage() {
   return "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
 }
 
-void SecurityOrigin::grantLoadLocalResources() {
+void SecurityOrigin::GrantLoadLocalResources() {
   // Granting privileges to some, but not all, documents in a SecurityOrigin
   // is a security hazard because the documents without the privilege can
   // obtain the privilege by injecting script into the documents that have
   // been granted the privilege.
-  m_canLoadLocalResources = true;
+  can_load_local_resources_ = true;
 }
 
-void SecurityOrigin::grantUniversalAccess() {
-  m_universalAccess = true;
+void SecurityOrigin::GrantUniversalAccess() {
+  universal_access_ = true;
 }
 
-void SecurityOrigin::addSuborigin(const Suborigin& suborigin) {
+void SecurityOrigin::AddSuborigin(const Suborigin& suborigin) {
   ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
   // Changing suborigins midstream is bad. Very bad. It should not happen.
   // This is, in fact,  one of the very basic invariants that makes
   // suborigins an effective security tool.
-  RELEASE_ASSERT(m_suborigin.name().isNull() ||
-                 (m_suborigin.name() == suborigin.name()));
-  m_suborigin.setTo(suborigin);
+  RELEASE_ASSERT(suborigin_.GetName().IsNull() ||
+                 (suborigin_.GetName() == suborigin.GetName()));
+  suborigin_.SetTo(suborigin);
 }
 
-void SecurityOrigin::blockLocalAccessFromLocalOrigin() {
-  ASSERT(isLocal());
-  m_blockLocalAccessFromLocalOrigin = true;
+void SecurityOrigin::BlockLocalAccessFromLocalOrigin() {
+  ASSERT(IsLocal());
+  block_local_access_from_local_origin_ = true;
 }
 
-bool SecurityOrigin::isLocal() const {
-  return SchemeRegistry::shouldTreatURLSchemeAsLocal(m_protocol);
+bool SecurityOrigin::IsLocal() const {
+  return SchemeRegistry::ShouldTreatURLSchemeAsLocal(protocol_);
 }
 
-bool SecurityOrigin::isLocalhost() const {
+bool SecurityOrigin::IsLocalhost() const {
   // Note: net::isLocalhost has looser checks which allow uppercase hosts, as
   // well as hosts like "a.localhost". The net code is also less optimized and
   // slower (mainly string and vector allocations).
-  if (m_host == "localhost")
+  if (host_ == "localhost")
     return true;
 
-  if (m_host == "[::1]")
+  if (host_ == "[::1]")
     return true;
 
   // Test if m_host matches 127.0.0.1/8
-  DCHECK(m_host.containsOnlyASCII());
-  StringUTF8Adaptor utf8(m_host);
-  Vector<uint8_t, 4> ipNumber;
-  ipNumber.resize(4);
+  DCHECK(host_.ContainsOnlyASCII());
+  StringUTF8Adaptor utf8(host_);
+  Vector<uint8_t, 4> ip_number;
+  ip_number.Resize(4);
 
-  int numComponents;
-  url::Component hostComponent(0, utf8.length());
+  int num_components;
+  url::Component host_component(0, utf8.length());
   url::CanonHostInfo::Family family = url::IPv4AddressToNumber(
-      utf8.data(), hostComponent, &(ipNumber)[0], &numComponents);
+      utf8.Data(), host_component, &(ip_number)[0], &num_components);
   if (family != url::CanonHostInfo::IPV4)
     return false;
-  return ipNumber[0] == 127;
+  return ip_number[0] == 127;
 }
 
-String SecurityOrigin::toString() const {
-  if (isUnique())
+String SecurityOrigin::ToString() const {
+  if (IsUnique())
     return "null";
-  if (isLocal() && m_blockLocalAccessFromLocalOrigin)
+  if (IsLocal() && block_local_access_from_local_origin_)
     return "null";
-  return toRawString();
+  return ToRawString();
 }
 
-AtomicString SecurityOrigin::toAtomicString() const {
-  if (isUnique())
+AtomicString SecurityOrigin::ToAtomicString() const {
+  if (IsUnique())
     return AtomicString("null");
-  if (isLocal() && m_blockLocalAccessFromLocalOrigin)
+  if (IsLocal() && block_local_access_from_local_origin_)
     return AtomicString("null");
-  return toRawAtomicString();
+  return ToRawAtomicString();
 }
 
-String SecurityOrigin::toPhysicalOriginString() const {
-  if (isUnique())
+String SecurityOrigin::ToPhysicalOriginString() const {
+  if (IsUnique())
     return "null";
-  if (isLocal() && m_blockLocalAccessFromLocalOrigin)
+  if (IsLocal() && block_local_access_from_local_origin_)
     return "null";
-  return toRawStringIgnoreSuborigin();
+  return ToRawStringIgnoreSuborigin();
 }
 
-String SecurityOrigin::toRawString() const {
-  if (m_protocol == "file")
+String SecurityOrigin::ToRawString() const {
+  if (protocol_ == "file")
     return "file://";
 
   StringBuilder result;
-  buildRawString(result, true);
-  return result.toString();
+  BuildRawString(result, true);
+  return result.ToString();
 }
 
-String SecurityOrigin::toRawStringIgnoreSuborigin() const {
-  if (m_protocol == "file")
+String SecurityOrigin::ToRawStringIgnoreSuborigin() const {
+  if (protocol_ == "file")
     return "file://";
 
   StringBuilder result;
-  buildRawString(result, false);
-  return result.toString();
+  BuildRawString(result, false);
+  return result.ToString();
 }
 
 // Returns true if and only if a suborigin component was found. If false, no
 // guarantees about the return value |suboriginName| are made.
-bool SecurityOrigin::deserializeSuboriginAndProtocolAndHost(
-    const String& oldProtocol,
-    const String& oldHost,
-    String& suboriginName,
-    String& newProtocol,
-    String& newHost) {
-  String originalProtocol = oldProtocol;
-  if (oldProtocol != "http-so" && oldProtocol != "https-so")
+bool SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
+    const String& old_protocol,
+    const String& old_host,
+    String& suborigin_name,
+    String& new_protocol,
+    String& new_host) {
+  String original_protocol = old_protocol;
+  if (old_protocol != "http-so" && old_protocol != "https-so")
     return false;
 
-  size_t protocolEnd = oldProtocol.reverseFind("-so");
-  DCHECK_NE(protocolEnd, WTF::kNotFound);
-  newProtocol = oldProtocol.substring(0, protocolEnd);
+  size_t protocol_end = old_protocol.ReverseFind("-so");
+  DCHECK_NE(protocol_end, WTF::kNotFound);
+  new_protocol = old_protocol.Substring(0, protocol_end);
 
-  size_t suboriginEnd = oldHost.find('.');
+  size_t suborigin_end = old_host.Find('.');
   // Suborigins cannot be empty.
-  if (suboriginEnd == 0 || suboriginEnd == WTF::kNotFound) {
-    newProtocol = originalProtocol;
+  if (suborigin_end == 0 || suborigin_end == WTF::kNotFound) {
+    new_protocol = original_protocol;
     return false;
   }
 
-  suboriginName = oldHost.substring(0, suboriginEnd);
-  newHost = oldHost.substring(suboriginEnd + 1);
+  suborigin_name = old_host.Substring(0, suborigin_end);
+  new_host = old_host.Substring(suborigin_end + 1);
 
   return true;
 }
 
-AtomicString SecurityOrigin::toRawAtomicString() const {
-  if (m_protocol == "file")
+AtomicString SecurityOrigin::ToRawAtomicString() const {
+  if (protocol_ == "file")
     return AtomicString("file://");
 
   StringBuilder result;
-  buildRawString(result, true);
-  return result.toAtomicString();
+  BuildRawString(result, true);
+  return result.ToAtomicString();
 }
 
-void SecurityOrigin::buildRawString(StringBuilder& builder,
-                                    bool includeSuborigin) const {
-  builder.append(m_protocol);
-  if (includeSuborigin && hasSuborigin()) {
-    builder.append("-so://");
-    builder.append(m_suborigin.name());
-    builder.append('.');
+void SecurityOrigin::BuildRawString(StringBuilder& builder,
+                                    bool include_suborigin) const {
+  builder.Append(protocol_);
+  if (include_suborigin && HasSuborigin()) {
+    builder.Append("-so://");
+    builder.Append(suborigin_.GetName());
+    builder.Append('.');
   } else {
-    builder.append("://");
+    builder.Append("://");
   }
-  builder.append(m_host);
+  builder.Append(host_);
 
-  if (m_port) {
-    builder.append(':');
-    builder.appendNumber(m_port);
+  if (port_) {
+    builder.Append(':');
+    builder.AppendNumber(port_);
   }
 }
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::createFromString(
-    const String& originString) {
-  return SecurityOrigin::create(KURL(KURL(), originString));
+PassRefPtr<SecurityOrigin> SecurityOrigin::CreateFromString(
+    const String& origin_string) {
+  return SecurityOrigin::Create(KURL(KURL(), origin_string));
 }
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol,
+PassRefPtr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
                                                   const String& host,
                                                   int port) {
-  if (port < 0 || port > MaxAllowedPort)
-    return createUnique();
+  if (port < 0 || port > kMaxAllowedPort)
+    return CreateUnique();
 
-  DCHECK_EQ(host, decodeURLEscapeSequences(host));
+  DCHECK_EQ(host, DecodeURLEscapeSequences(host));
 
-  String portPart = port ? ":" + String::number(port) : String();
-  return create(KURL(KURL(), protocol + "://" + host + portPart + "/"));
+  String port_part = port ? ":" + String::Number(port) : String();
+  return Create(KURL(KURL(), protocol + "://" + host + port_part + "/"));
 }
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol,
+PassRefPtr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
                                                   const String& host,
                                                   int port,
                                                   const String& suborigin) {
-  RefPtr<SecurityOrigin> origin = create(protocol, host, port);
-  if (!suborigin.isEmpty())
-    origin->m_suborigin.setName(suborigin);
-  return origin.release();
+  RefPtr<SecurityOrigin> origin = Create(protocol, host, port);
+  if (!suborigin.IsEmpty())
+    origin->suborigin_.SetName(suborigin);
+  return origin.Release();
 }
 
-bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const {
+bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
   if (this == other)
     return true;
 
-  if (isUnique() || other->isUnique())
+  if (IsUnique() || other->IsUnique())
     return false;
 
-  if (m_host != other->m_host)
+  if (host_ != other->host_)
     return false;
 
-  if (m_protocol != other->m_protocol)
+  if (protocol_ != other->protocol_)
     return false;
 
-  if (m_port != other->m_port)
+  if (port_ != other->port_)
     return false;
 
-  if (isLocal() && !passesFileCheck(other))
+  if (IsLocal() && !PassesFileCheck(other))
     return false;
 
   return true;
 }
 
-bool SecurityOrigin::isSameSchemeHostPortAndSuborigin(
+bool SecurityOrigin::IsSameSchemeHostPortAndSuborigin(
     const SecurityOrigin* other) const {
-  bool sameSuborigins =
-      (hasSuborigin() == other->hasSuborigin()) &&
-      (!hasSuborigin() || (suborigin()->name() == other->suborigin()->name()));
-  return isSameSchemeHostPort(other) && sameSuborigins;
+  bool same_suborigins =
+      (HasSuborigin() == other->HasSuborigin()) &&
+      (!HasSuborigin() ||
+       (GetSuborigin()->GetName() == other->GetSuborigin()->GetName()));
+  return IsSameSchemeHostPort(other) && same_suborigins;
 }
 
-bool SecurityOrigin::areSameSchemeHostPort(const KURL& a, const KURL& b) {
-  RefPtr<SecurityOrigin> originA = SecurityOrigin::create(a);
-  RefPtr<SecurityOrigin> originB = SecurityOrigin::create(b);
-  return originB->isSameSchemeHostPort(originA.get());
+bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
+  RefPtr<SecurityOrigin> origin_a = SecurityOrigin::Create(a);
+  RefPtr<SecurityOrigin> origin_b = SecurityOrigin::Create(b);
+  return origin_b->IsSameSchemeHostPort(origin_a.Get());
 }
 
-const KURL& SecurityOrigin::urlWithUniqueSecurityOrigin() {
-  ASSERT(isMainThread());
-  DEFINE_STATIC_LOCAL(const KURL, uniqueSecurityOriginURL,
-                      (ParsedURLString, "data:,"));
-  return uniqueSecurityOriginURL;
+const KURL& SecurityOrigin::UrlWithUniqueSecurityOrigin() {
+  ASSERT(IsMainThread());
+  DEFINE_STATIC_LOCAL(const KURL, unique_security_origin_url,
+                      (kParsedURLString, "data:,"));
+  return unique_security_origin_url;
 }
 
 std::unique_ptr<SecurityOrigin::PrivilegeData>
-SecurityOrigin::createPrivilegeData() const {
-  std::unique_ptr<PrivilegeData> privilegeData =
-      WTF::wrapUnique(new PrivilegeData);
-  privilegeData->m_universalAccess = m_universalAccess;
-  privilegeData->m_canLoadLocalResources = m_canLoadLocalResources;
-  privilegeData->m_blockLocalAccessFromLocalOrigin =
-      m_blockLocalAccessFromLocalOrigin;
-  return privilegeData;
+SecurityOrigin::CreatePrivilegeData() const {
+  std::unique_ptr<PrivilegeData> privilege_data =
+      WTF::WrapUnique(new PrivilegeData);
+  privilege_data->universal_access_ = universal_access_;
+  privilege_data->can_load_local_resources_ = can_load_local_resources_;
+  privilege_data->block_local_access_from_local_origin_ =
+      block_local_access_from_local_origin_;
+  return privilege_data;
 }
 
-void SecurityOrigin::transferPrivilegesFrom(
-    std::unique_ptr<PrivilegeData> privilegeData) {
-  m_universalAccess = privilegeData->m_universalAccess;
-  m_canLoadLocalResources = privilegeData->m_canLoadLocalResources;
-  m_blockLocalAccessFromLocalOrigin =
-      privilegeData->m_blockLocalAccessFromLocalOrigin;
+void SecurityOrigin::TransferPrivilegesFrom(
+    std::unique_ptr<PrivilegeData> privilege_data) {
+  universal_access_ = privilege_data->universal_access_;
+  can_load_local_resources_ = privilege_data->can_load_local_resources_;
+  block_local_access_from_local_origin_ =
+      privilege_data->block_local_access_from_local_origin_;
 }
 
-void SecurityOrigin::setUniqueOriginIsPotentiallyTrustworthy(
-    bool isUniqueOriginPotentiallyTrustworthy) {
-  ASSERT(!isUniqueOriginPotentiallyTrustworthy || isUnique());
-  m_isUniqueOriginPotentiallyTrustworthy = isUniqueOriginPotentiallyTrustworthy;
+void SecurityOrigin::SetUniqueOriginIsPotentiallyTrustworthy(
+    bool is_unique_origin_potentially_trustworthy) {
+  ASSERT(!is_unique_origin_potentially_trustworthy || IsUnique());
+  is_unique_origin_potentially_trustworthy_ =
+      is_unique_origin_potentially_trustworthy;
 }
 
-String SecurityOrigin::canonicalizeHost(const String& host, bool* success) {
-  url::Component outHost;
-  url::RawCanonOutputT<char> canonOutput;
-  if (host.is8Bit()) {
+String SecurityOrigin::CanonicalizeHost(const String& host, bool* success) {
+  url::Component out_host;
+  url::RawCanonOutputT<char> canon_output;
+  if (host.Is8Bit()) {
     StringUTF8Adaptor utf8(host);
-    *success = url::CanonicalizeHost(
-        utf8.data(), url::Component(0, utf8.length()), &canonOutput, &outHost);
+    *success =
+        url::CanonicalizeHost(utf8.Data(), url::Component(0, utf8.length()),
+                              &canon_output, &out_host);
   } else {
-    *success = url::CanonicalizeHost(host.characters16(),
+    *success = url::CanonicalizeHost(host.Characters16(),
                                      url::Component(0, host.length()),
-                                     &canonOutput, &outHost);
+                                     &canon_output, &out_host);
   }
-  return String::fromUTF8(canonOutput.data(), canonOutput.length());
+  return String::FromUTF8(canon_output.data(), canon_output.length());
 }
 
 }  // namespace blink

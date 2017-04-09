@@ -35,16 +35,16 @@
 
 namespace blink {
 
-void FontPlatformData::setupPaint(SkPaint* paint,
-                                  float deviceScaleFactor,
+void FontPlatformData::SetupPaint(SkPaint* paint,
+                                  float device_scale_factor,
                                   const Font*) const {
-  m_style.applyToPaint(*paint, deviceScaleFactor);
+  style_.ApplyToPaint(*paint, device_scale_factor);
 
-  const float ts = m_textSize >= 0 ? m_textSize : 12;
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
   paint->setTextSize(SkFloatToScalar(ts));
-  paint->setTypeface(m_typeface);
-  paint->setFakeBoldText(m_syntheticBold);
-  paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
+  paint->setTypeface(typeface_);
+  paint->setFakeBoldText(synthetic_bold_);
+  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
   // TODO(drott): Due to Skia bug 5917
   // https://bugs.chromium.org/p/skia/issues/detail?id=5917 correct advance

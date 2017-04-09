@@ -17,9 +17,9 @@ gin::WrapperInfo GCController::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
 void GCController::Install(blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 

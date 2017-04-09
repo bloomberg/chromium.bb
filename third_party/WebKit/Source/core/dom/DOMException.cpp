@@ -36,7 +36,7 @@ static const struct CoreException {
   const char* const name;
   const char* const message;
   const int code;
-} coreExceptions[] = {
+} kCoreExceptions[] = {
     // This list must be kept in sync with the one in ExceptionCode.h
     {"IndexSizeError",
      "Index or size was negative, or greater than the allowed value.", 1},
@@ -154,15 +154,15 @@ static const struct CoreException {
     {"InvalidPointerId", "PointerId was invalid.", 0},
 };
 
-static const CoreException* getErrorEntry(ExceptionCode ec) {
-  size_t tableSize = WTF_ARRAY_LENGTH(coreExceptions);
-  size_t tableIndex = ec - IndexSizeError;
+static const CoreException* GetErrorEntry(ExceptionCode ec) {
+  size_t table_size = WTF_ARRAY_LENGTH(kCoreExceptions);
+  size_t table_index = ec - kIndexSizeError;
 
-  return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
+  return table_index < table_size ? &kCoreExceptions[table_index] : 0;
 }
 
-static int getErrorCode(const String& name) {
-  for (const CoreException& entry : coreExceptions) {
+static int GetErrorCode(const String& name) {
+  for (const CoreException& entry : kCoreExceptions) {
     if (entry.name == name)
       return entry.code;
   }
@@ -171,40 +171,40 @@ static int getErrorCode(const String& name) {
 
 DOMException::DOMException(unsigned short code,
                            const String& name,
-                           const String& sanitizedMessage,
-                           const String& unsanitizedMessage) {
+                           const String& sanitized_message,
+                           const String& unsanitized_message) {
   DCHECK(name);
-  m_code = code;
-  m_name = name;
-  m_sanitizedMessage = sanitizedMessage;
-  m_unsanitizedMessage = unsanitizedMessage;
+  code_ = code;
+  name_ = name;
+  sanitized_message_ = sanitized_message;
+  unsanitized_message_ = unsanitized_message;
 }
 
-DOMException* DOMException::create(ExceptionCode ec,
-                                   const String& sanitizedMessage,
-                                   const String& unsanitizedMessage) {
-  const CoreException* entry = getErrorEntry(ec);
+DOMException* DOMException::Create(ExceptionCode ec,
+                                   const String& sanitized_message,
+                                   const String& unsanitized_message) {
+  const CoreException* entry = GetErrorEntry(ec);
   DCHECK(entry);
   return new DOMException(
       entry->code, entry->name ? entry->name : "Error",
-      sanitizedMessage.isNull() ? String(entry->message) : sanitizedMessage,
-      unsanitizedMessage);
+      sanitized_message.IsNull() ? String(entry->message) : sanitized_message,
+      unsanitized_message);
 }
 
-DOMException* DOMException::create(const String& message, const String& name) {
-  return new DOMException(getErrorCode(name), name, message, message);
+DOMException* DOMException::Create(const String& message, const String& name) {
+  return new DOMException(GetErrorCode(name), name, message, message);
 }
 
 String DOMException::toString() const {
   return name() + ": " + message();
 }
 
-String DOMException::toStringForConsole() const {
-  return name() + ": " + messageForConsole();
+String DOMException::ToStringForConsole() const {
+  return name() + ": " + MessageForConsole();
 }
 
-String DOMException::getErrorName(ExceptionCode ec) {
-  const CoreException* entry = getErrorEntry(ec);
+String DOMException::GetErrorName(ExceptionCode ec) {
+  const CoreException* entry = GetErrorEntry(ec);
   DCHECK(entry);
   if (!entry)
     return "UnknownError";
@@ -212,8 +212,8 @@ String DOMException::getErrorName(ExceptionCode ec) {
   return entry->name;
 }
 
-String DOMException::getErrorMessage(ExceptionCode ec) {
-  const CoreException* entry = getErrorEntry(ec);
+String DOMException::GetErrorMessage(ExceptionCode ec) {
+  const CoreException* entry = GetErrorEntry(ec);
   DCHECK(entry);
   if (!entry)
     return "Unknown error.";

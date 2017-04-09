@@ -16,29 +16,29 @@ namespace {
 // Helper returning the top DOMWindow as a LocalDOMWindow. Returns nullptr if it
 // is not a LocalDOMWindow.
 // This does not work with OOPIF.
-LocalDOMWindow* getTopLocalDOMWindow(LocalDOMWindow* window) {
-  if (!window->top() || !window->top()->isLocalDOMWindow())
+LocalDOMWindow* GetTopLocalDOMWindow(LocalDOMWindow* window) {
+  if (!window->top() || !window->top()->IsLocalDOMWindow())
     return nullptr;
   return static_cast<LocalDOMWindow*>(window->top());
 }
 
 }  // anonymous namespace
 
-MediaControlsWindowEventListener* MediaControlsWindowEventListener::create(
-    MediaControls* mediaControls,
+MediaControlsWindowEventListener* MediaControlsWindowEventListener::Create(
+    MediaControls* media_controls,
     std::unique_ptr<Callback> callback) {
-  return new MediaControlsWindowEventListener(mediaControls,
+  return new MediaControlsWindowEventListener(media_controls,
                                               std::move(callback));
 }
 
 MediaControlsWindowEventListener::MediaControlsWindowEventListener(
-    MediaControls* mediaControls,
+    MediaControls* media_controls,
     std::unique_ptr<Callback> callback)
-    : EventListener(CPPEventListenerType),
-      m_mediaControls(mediaControls),
-      m_callback(std::move(callback)),
-      m_isActive(false) {
-  DCHECK(m_callback);
+    : EventListener(kCPPEventListenerType),
+      media_controls_(media_controls),
+      callback_(std::move(callback)),
+      is_active_(false) {
+  DCHECK(callback_);
 }
 
 bool MediaControlsWindowEventListener::operator==(
@@ -46,74 +46,74 @@ bool MediaControlsWindowEventListener::operator==(
   return this == &other;
 }
 
-void MediaControlsWindowEventListener::start() {
-  if (m_isActive)
+void MediaControlsWindowEventListener::Start() {
+  if (is_active_)
     return;
 
-  if (LocalDOMWindow* window = m_mediaControls->ownerDocument().domWindow()) {
+  if (LocalDOMWindow* window = media_controls_->OwnerDocument().domWindow()) {
     window->addEventListener(EventTypeNames::click, this, true);
 
-    if (LocalDOMWindow* outerWindow = getTopLocalDOMWindow(window)) {
-      if (window != outerWindow)
-        outerWindow->addEventListener(EventTypeNames::click, this, true);
-      outerWindow->addEventListener(EventTypeNames::resize, this, true);
+    if (LocalDOMWindow* outer_window = GetTopLocalDOMWindow(window)) {
+      if (window != outer_window)
+        outer_window->addEventListener(EventTypeNames::click, this, true);
+      outer_window->addEventListener(EventTypeNames::resize, this, true);
     }
   }
 
-  m_mediaControls->panelElement()->addEventListener(EventTypeNames::click, this,
+  media_controls_->PanelElement()->addEventListener(EventTypeNames::click, this,
                                                     false);
-  m_mediaControls->timelineElement()->addEventListener(EventTypeNames::click,
+  media_controls_->TimelineElement()->addEventListener(EventTypeNames::click,
                                                        this, false);
-  m_mediaControls->castButtonElement()->addEventListener(EventTypeNames::click,
+  media_controls_->CastButtonElement()->addEventListener(EventTypeNames::click,
                                                          this, false);
-  m_mediaControls->volumeSliderElement()->addEventListener(
+  media_controls_->VolumeSliderElement()->addEventListener(
       EventTypeNames::click, this, false);
 
-  m_isActive = true;
+  is_active_ = true;
 }
 
-void MediaControlsWindowEventListener::stop() {
-  if (!m_isActive)
+void MediaControlsWindowEventListener::Stop() {
+  if (!is_active_)
     return;
 
-  if (LocalDOMWindow* window = m_mediaControls->ownerDocument().domWindow()) {
+  if (LocalDOMWindow* window = media_controls_->OwnerDocument().domWindow()) {
     window->removeEventListener(EventTypeNames::click, this, true);
 
-    if (LocalDOMWindow* outerWindow = getTopLocalDOMWindow(window)) {
-      if (window != outerWindow)
-        outerWindow->removeEventListener(EventTypeNames::click, this, true);
-      outerWindow->removeEventListener(EventTypeNames::resize, this, true);
+    if (LocalDOMWindow* outer_window = GetTopLocalDOMWindow(window)) {
+      if (window != outer_window)
+        outer_window->removeEventListener(EventTypeNames::click, this, true);
+      outer_window->removeEventListener(EventTypeNames::resize, this, true);
     }
 
-    m_isActive = false;
+    is_active_ = false;
   }
 
-  m_mediaControls->panelElement()->removeEventListener(EventTypeNames::click,
+  media_controls_->PanelElement()->removeEventListener(EventTypeNames::click,
                                                        this, false);
-  m_mediaControls->timelineElement()->removeEventListener(EventTypeNames::click,
+  media_controls_->TimelineElement()->removeEventListener(EventTypeNames::click,
                                                           this, false);
-  m_mediaControls->castButtonElement()->removeEventListener(
+  media_controls_->CastButtonElement()->removeEventListener(
       EventTypeNames::click, this, false);
-  m_mediaControls->volumeSliderElement()->removeEventListener(
+  media_controls_->VolumeSliderElement()->removeEventListener(
       EventTypeNames::click, this, false);
 
-  m_isActive = false;
+  is_active_ = false;
 }
 
 void MediaControlsWindowEventListener::handleEvent(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     Event* event) {
   DCHECK(event->type() == EventTypeNames::click ||
          event->type() == EventTypeNames::resize);
 
-  if (!m_isActive)
+  if (!is_active_)
     return;
-  (*m_callback.get())();
+  (*callback_.get())();
 }
 
 DEFINE_TRACE(MediaControlsWindowEventListener) {
-  EventListener::trace(visitor);
-  visitor->trace(m_mediaControls);
+  EventListener::Trace(visitor);
+  visitor->Trace(media_controls_);
 }
 
 }  // namespace blink

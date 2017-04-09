@@ -33,13 +33,13 @@ class LineLayoutItem;
 class SVGPointTearOff;
 
 enum SVGLengthAdjustType {
-  SVGLengthAdjustUnknown,
-  SVGLengthAdjustSpacing,
-  SVGLengthAdjustSpacingAndGlyphs
+  kSVGLengthAdjustUnknown,
+  kSVGLengthAdjustSpacing,
+  kSVGLengthAdjustSpacingAndGlyphs
 };
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGLengthAdjustType>();
+GetStaticStringEntries<SVGLengthAdjustType>();
 
 class SVGTextContentElement : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
@@ -47,9 +47,9 @@ class SVGTextContentElement : public SVGGraphicsElement {
  public:
   // Forward declare enumerations in the W3C naming scheme, for IDL generation.
   enum {
-    kLengthadjustUnknown = SVGLengthAdjustUnknown,
-    kLengthadjustSpacing = SVGLengthAdjustSpacing,
-    kLengthadjustSpacingandglyphs = SVGLengthAdjustSpacingAndGlyphs
+    kLengthadjustUnknown = kSVGLengthAdjustUnknown,
+    kLengthadjustSpacing = kSVGLengthAdjustSpacing,
+    kLengthadjustSpacingandglyphs = kSVGLengthAdjustSpacingAndGlyphs
   };
 
   unsigned getNumberOfChars();
@@ -62,13 +62,15 @@ class SVGTextContentElement : public SVGGraphicsElement {
   int getCharNumAtPosition(SVGPointTearOff*, ExceptionState&);
   void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
-  static SVGTextContentElement* elementFromLineLayoutItem(
+  static SVGTextContentElement* ElementFromLineLayoutItem(
       const LineLayoutItem&);
 
-  SVGAnimatedLength* textLength() { return m_textLength.get(); }
-  bool textLengthIsSpecifiedByUser() { return m_textLengthIsSpecifiedByUser; }
+  SVGAnimatedLength* textLength() { return text_length_.Get(); }
+  bool TextLengthIsSpecifiedByUser() {
+    return text_length_is_specified_by_user_;
+  }
   SVGAnimatedEnumeration<SVGLengthAdjustType>* lengthAdjust() {
-    return m_lengthAdjust.get();
+    return length_adjust_.Get();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -76,24 +78,24 @@ class SVGTextContentElement : public SVGGraphicsElement {
  protected:
   SVGTextContentElement(const QualifiedName&, Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const final;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const final;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) final;
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
  private:
-  bool isTextContent() const final { return true; }
+  bool IsTextContent() const final { return true; }
 
-  Member<SVGAnimatedLength> m_textLength;
-  bool m_textLengthIsSpecifiedByUser;
-  Member<SVGAnimatedEnumeration<SVGLengthAdjustType>> m_lengthAdjust;
+  Member<SVGAnimatedLength> text_length_;
+  bool text_length_is_specified_by_user_;
+  Member<SVGAnimatedEnumeration<SVGLengthAdjustType>> length_adjust_;
 };
 
-inline bool isSVGTextContentElement(const SVGElement& element) {
-  return element.isTextContent();
+inline bool IsSVGTextContentElement(const SVGElement& element) {
+  return element.IsTextContent();
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);

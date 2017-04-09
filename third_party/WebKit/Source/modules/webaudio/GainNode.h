@@ -42,33 +42,33 @@ class GainOptions;
 
 class GainHandler final : public AudioHandler {
  public:
-  static PassRefPtr<GainHandler> create(AudioNode&,
-                                        float sampleRate,
+  static PassRefPtr<GainHandler> Create(AudioNode&,
+                                        float sample_rate,
                                         AudioParamHandler& gain);
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
-  void processOnlyAudioParams(size_t framesToProcess) override;
+  void Process(size_t frames_to_process) override;
+  void ProcessOnlyAudioParams(size_t frames_to_process) override;
 
   // Called in the main thread when the number of channels for the input may
   // have changed.
-  void checkNumberOfChannelsForInput(AudioNodeInput*) override;
+  void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
 
  private:
-  GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);
+  GainHandler(AudioNode&, float sample_rate, AudioParamHandler& gain);
 
-  float m_lastGain;  // for de-zippering
-  RefPtr<AudioParamHandler> m_gain;
+  float last_gain_;  // for de-zippering
+  RefPtr<AudioParamHandler> gain_;
 
-  AudioFloatArray m_sampleAccurateGainValues;
+  AudioFloatArray sample_accurate_gain_values_;
 };
 
 class GainNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GainNode* create(BaseAudioContext&, ExceptionState&);
-  static GainNode* create(BaseAudioContext*,
+  static GainNode* Create(BaseAudioContext&, ExceptionState&);
+  static GainNode* Create(BaseAudioContext*,
                           const GainOptions&,
                           ExceptionState&);
   DECLARE_VIRTUAL_TRACE();
@@ -78,7 +78,7 @@ class GainNode final : public AudioNode {
  private:
   GainNode(BaseAudioContext&);
 
-  Member<AudioParam> m_gain;
+  Member<AudioParam> gain_;
 };
 
 }  // namespace blink

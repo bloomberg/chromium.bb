@@ -12,40 +12,40 @@
 
 namespace blink {
 
-AudioWorklet* AudioWorklet::create(LocalFrame* frame) {
+AudioWorklet* AudioWorklet::Create(LocalFrame* frame) {
   return new AudioWorklet(frame);
 }
 
 AudioWorklet::AudioWorklet(LocalFrame* frame)
-    : Worklet(frame), m_workletMessagingProxy(nullptr) {}
+    : Worklet(frame), worklet_messaging_proxy_(nullptr) {}
 
 AudioWorklet::~AudioWorklet() {
-  if (m_workletMessagingProxy)
-    m_workletMessagingProxy->parentObjectDestroyed();
+  if (worklet_messaging_proxy_)
+    worklet_messaging_proxy_->ParentObjectDestroyed();
 }
 
-void AudioWorklet::initialize() {
-  AudioWorkletThread::ensureSharedBackingThread();
+void AudioWorklet::Initialize() {
+  AudioWorkletThread::EnsureSharedBackingThread();
 
-  DCHECK(!m_workletMessagingProxy);
-  DCHECK(getExecutionContext());
+  DCHECK(!worklet_messaging_proxy_);
+  DCHECK(GetExecutionContext());
 
-  m_workletMessagingProxy =
-      new AudioWorkletMessagingProxy(getExecutionContext());
-  m_workletMessagingProxy->initialize();
+  worklet_messaging_proxy_ =
+      new AudioWorkletMessagingProxy(GetExecutionContext());
+  worklet_messaging_proxy_->Initialize();
 }
 
-bool AudioWorklet::isInitialized() const {
-  return m_workletMessagingProxy;
+bool AudioWorklet::IsInitialized() const {
+  return worklet_messaging_proxy_;
 }
 
-WorkletGlobalScopeProxy* AudioWorklet::workletGlobalScopeProxy() const {
-  DCHECK(m_workletMessagingProxy);
-  return m_workletMessagingProxy;
+WorkletGlobalScopeProxy* AudioWorklet::GetWorkletGlobalScopeProxy() const {
+  DCHECK(worklet_messaging_proxy_);
+  return worklet_messaging_proxy_;
 }
 
 DEFINE_TRACE(AudioWorklet) {
-  Worklet::trace(visitor);
+  Worklet::Trace(visitor);
 }
 
 }  // namespace blink

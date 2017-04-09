@@ -12,30 +12,32 @@ namespace blink {
 class PerformanceNavigationTimingTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
   }
 
-  AtomicString getNavigationType(NavigationType type, Document* document) {
-    return PerformanceNavigationTiming::getNavigationType(type, document);
+  AtomicString GetNavigationType(NavigationType type, Document* document) {
+    return PerformanceNavigationTiming::GetNavigationType(type, document);
   }
 
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(PerformanceNavigationTimingTest, GetNavigationType) {
-  m_pageHolder->page().setVisibilityState(PageVisibilityStatePrerender, false);
-  AtomicString returnedType =
-      getNavigationType(NavigationTypeBackForward, &m_pageHolder->document());
-  EXPECT_EQ(returnedType, "prerender");
+  page_holder_->GetPage().SetVisibilityState(kPageVisibilityStatePrerender,
+                                             false);
+  AtomicString returned_type = GetNavigationType(kNavigationTypeBackForward,
+                                                 &page_holder_->GetDocument());
+  EXPECT_EQ(returned_type, "prerender");
 
-  m_pageHolder->page().setVisibilityState(PageVisibilityStateHidden, false);
-  returnedType =
-      getNavigationType(NavigationTypeBackForward, &m_pageHolder->document());
-  EXPECT_EQ(returnedType, "back_forward");
+  page_holder_->GetPage().SetVisibilityState(kPageVisibilityStateHidden, false);
+  returned_type = GetNavigationType(kNavigationTypeBackForward,
+                                    &page_holder_->GetDocument());
+  EXPECT_EQ(returned_type, "back_forward");
 
-  m_pageHolder->page().setVisibilityState(PageVisibilityStateVisible, false);
-  returnedType = getNavigationType(NavigationTypeFormResubmitted,
-                                   &m_pageHolder->document());
-  EXPECT_EQ(returnedType, "navigate");
+  page_holder_->GetPage().SetVisibilityState(kPageVisibilityStateVisible,
+                                             false);
+  returned_type = GetNavigationType(kNavigationTypeFormResubmitted,
+                                    &page_holder_->GetDocument());
+  EXPECT_EQ(returned_type, "navigate");
 }
 }  // namespace blink

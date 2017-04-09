@@ -41,10 +41,10 @@ class BluetoothRemoteGATTDescriptor final
 
   // IDL exposed interface:
   BluetoothRemoteGATTCharacteristic* characteristic() {
-    return m_characteristic;
+    return characteristic_;
   }
-  String uuid() { return m_descriptor->uuid; }
-  DOMDataView* value() const { return m_value; }
+  String uuid() { return descriptor_->uuid; }
+  DOMDataView* value() const { return value_; }
   ScriptPromise readValue(ScriptState*);
   ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
 
@@ -54,9 +54,9 @@ class BluetoothRemoteGATTDescriptor final
  private:
   friend class DescriptorReadValueCallback;
 
-  BluetoothRemoteGATTServer* GetGatt() { return m_characteristic->GetGatt(); }
+  BluetoothRemoteGATTServer* GetGatt() { return characteristic_->GetGatt(); }
   mojom::blink::WebBluetoothService* GetService() {
-    return m_characteristic->m_device->bluetooth()->Service();
+    return characteristic_->device_->GetBluetooth()->Service();
   }
 
   void ReadValueCallback(ScriptPromiseResolver*,
@@ -69,9 +69,9 @@ class BluetoothRemoteGATTDescriptor final
 
   DOMException* CreateInvalidDescriptorError();
 
-  mojom::blink::WebBluetoothRemoteGATTDescriptorPtr m_descriptor;
-  Member<BluetoothRemoteGATTCharacteristic> m_characteristic;
-  Member<DOMDataView> m_value;
+  mojom::blink::WebBluetoothRemoteGATTDescriptorPtr descriptor_;
+  Member<BluetoothRemoteGATTCharacteristic> characteristic_;
+  Member<DOMDataView> value_;
 };
 
 }  // namespace blink

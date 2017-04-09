@@ -33,15 +33,15 @@
 
 namespace blink {
 
-static inline unsigned stretchDistanceToDesired(FontTraits desired,
+static inline unsigned StretchDistanceToDesired(FontTraits desired,
                                                 FontTraits candidate) {
-  return abs(static_cast<int>(desired.stretch() - candidate.stretch()));
+  return abs(static_cast<int>(desired.Stretch() - candidate.Stretch()));
 }
 
-static inline unsigned styleScore(FontTraits desired, FontTraits candidate) {
-  static_assert(FontStyleNormal == 0 && FontStyleItalic == 2,
+static inline unsigned StyleScore(FontTraits desired, FontTraits candidate) {
+  static_assert(kFontStyleNormal == 0 && kFontStyleItalic == 2,
                 "Enumeration values need to match lookup table.");
-  unsigned styleScoreLookupTable[][FontStyleItalic + 1] = {
+  unsigned style_score_lookup_table[][kFontStyleItalic + 1] = {
       // "If the value is normal, normal faces are checked first, then oblique
       // faces, then italic faces."
       // i.e. normal has the highest score, then oblique, then italic.
@@ -57,83 +57,89 @@ static inline unsigned styleScore(FontTraits desired, FontTraits candidate) {
       // highest.
       {0, 1, 2}};
 
-  SECURITY_DCHECK(desired.style() < FontStyleItalic + 1);
-  SECURITY_DCHECK(candidate.style() < FontStyleItalic + 1);
+  SECURITY_DCHECK(desired.Style() < kFontStyleItalic + 1);
+  SECURITY_DCHECK(candidate.Style() < kFontStyleItalic + 1);
 
-  return styleScoreLookupTable[desired.style()][candidate.style()];
+  return style_score_lookup_table[desired.Style()][candidate.Style()];
 }
 
-static inline unsigned weightScore(FontTraits desired, FontTraits candidate) {
-  static_assert(FontWeight100 == 0 && FontWeight900 - FontWeight100 == 8,
+static inline unsigned WeightScore(FontTraits desired, FontTraits candidate) {
+  static_assert(kFontWeight100 == 0 && kFontWeight900 - kFontWeight100 == 8,
                 "Enumeration values need to match lookup table.");
-  static const unsigned scoreLookupSize = FontWeight900 + 1;
+  static const unsigned kScoreLookupSize = kFontWeight900 + 1;
   // https://drafts.csswg.org/css-fonts/#font-style-matching
   // "..if the desired weight is available that face matches. "
-  static const unsigned weightScoreLookup[scoreLookupSize][scoreLookupSize] = {
-      // "If the desired weight is less than 400, weights below the desired
-      // weight are checked in descending order followed by weights above the
-      // desired weight in ascending order until a match is found."
-      {9, 8, 7, 6, 5, 4, 3, 2, 1},  // FontWeight100 desired
-      {8, 9, 7, 6, 5, 4, 3, 2, 1},  // FontWeight200 desired
-      {7, 8, 9, 6, 5, 4, 3, 2, 1},  // FontWeight300 desired
+  static const unsigned kWeightScoreLookup[kScoreLookupSize][kScoreLookupSize] =
+      {
+          // "If the desired weight is less than 400, weights below the desired
+          // weight are checked in descending order followed by weights above
+          // the
+          // desired weight in ascending order until a match is found."
+          {9, 8, 7, 6, 5, 4, 3, 2, 1},  // FontWeight100 desired
+          {8, 9, 7, 6, 5, 4, 3, 2, 1},  // FontWeight200 desired
+          {7, 8, 9, 6, 5, 4, 3, 2, 1},  // FontWeight300 desired
 
-      // "If the desired weight is 400, 500 is checked first and then the rule
-      // for desired weights less than 400 is used."
-      {5, 6, 7, 9, 8, 4, 3, 2, 1},  // FontWeight400 desired
+          // "If the desired weight is 400, 500 is checked first and then the
+          // rule
+          // for desired weights less than 400 is used."
+          {5, 6, 7, 9, 8, 4, 3, 2, 1},  // FontWeight400 desired
 
-      // "If the desired weight is 500, 400 is checked first and then the rule
-      // for desired weights less than 400 is used."
-      {5, 6, 7, 8, 9, 4, 3, 2, 1},  // FontWeight500 desired
+          // "If the desired weight is 500, 400 is checked first and then the
+          // rule
+          // for desired weights less than 400 is used."
+          {5, 6, 7, 8, 9, 4, 3, 2, 1},  // FontWeight500 desired
 
-      // "If the desired weight is greater than 500, weights above the desired
-      // weight are checked in ascending order followed by weights below the
-      // desired weight in descending order until a match is found."
-      {1, 2, 3, 4, 5, 9, 8, 7, 6},  // FontWeight600 desired
-      {1, 2, 3, 4, 5, 6, 9, 8, 7},  // FontWeight700 desired
-      {1, 2, 3, 4, 5, 6, 7, 9, 8},  // FontWeight800 desired
-      {1, 2, 3, 4, 5, 6, 7, 8, 9}   // FontWeight900 desired
-  };
+          // "If the desired weight is greater than 500, weights above the
+          // desired
+          // weight are checked in ascending order followed by weights below the
+          // desired weight in descending order until a match is found."
+          {1, 2, 3, 4, 5, 9, 8, 7, 6},  // FontWeight600 desired
+          {1, 2, 3, 4, 5, 6, 9, 8, 7},  // FontWeight700 desired
+          {1, 2, 3, 4, 5, 6, 7, 9, 8},  // FontWeight800 desired
+          {1, 2, 3, 4, 5, 6, 7, 8, 9}   // FontWeight900 desired
+      };
 
-  unsigned desiredScoresLookup = static_cast<unsigned>(desired.weight());
-  unsigned candidateScoreLookup = static_cast<unsigned>(candidate.weight());
-  SECURITY_DCHECK(desiredScoresLookup < scoreLookupSize);
-  SECURITY_DCHECK(candidateScoreLookup < scoreLookupSize);
+  unsigned desired_scores_lookup = static_cast<unsigned>(desired.Weight());
+  unsigned candidate_score_lookup = static_cast<unsigned>(candidate.Weight());
+  SECURITY_DCHECK(desired_scores_lookup < kScoreLookupSize);
+  SECURITY_DCHECK(candidate_score_lookup < kScoreLookupSize);
 
-  return weightScoreLookup[desiredScoresLookup][candidateScoreLookup];
+  return kWeightScoreLookup[desired_scores_lookup][candidate_score_lookup];
 }
 
-bool FontStyleMatcher::isCandidateBetter(CSSSegmentedFontFace* candidate,
+bool FontStyleMatcher::IsCandidateBetter(CSSSegmentedFontFace* candidate,
                                          CSSSegmentedFontFace* current) {
-  const FontTraits& candidateTraits = candidate->traits();
-  const FontTraits& currentTraits = current->traits();
+  const FontTraits& candidate_traits = candidate->Traits();
+  const FontTraits& current_traits = current->Traits();
 
   // According to CSS3 Fonts Font Style matching, there is a precedence for
   // matching:
   // A better stretch match wins over a better style match, a better style match
   // wins over a better weight match, where "better" means closer to the desired
   // traits.
-  int stretchComparison = 0, styleComparison = 0, weightComparison = 0;
+  int stretch_comparison = 0, style_comparison = 0, weight_comparison = 0;
 
-  stretchComparison = stretchDistanceToDesired(m_fontTraits, candidateTraits) -
-                      stretchDistanceToDesired(m_fontTraits, currentTraits);
+  stretch_comparison =
+      StretchDistanceToDesired(font_traits_, candidate_traits) -
+      StretchDistanceToDesired(font_traits_, current_traits);
 
-  if (stretchComparison > 0)
+  if (stretch_comparison > 0)
     return false;
-  if (stretchComparison < 0)
+  if (stretch_comparison < 0)
     return true;
 
-  styleComparison = styleScore(m_fontTraits, candidateTraits) -
-                    styleScore(m_fontTraits, currentTraits);
+  style_comparison = StyleScore(font_traits_, candidate_traits) -
+                     StyleScore(font_traits_, current_traits);
 
-  if (styleComparison > 0)
+  if (style_comparison > 0)
     return true;
-  if (styleComparison < 0)
+  if (style_comparison < 0)
     return false;
 
-  weightComparison = weightScore(m_fontTraits, candidateTraits) -
-                     weightScore(m_fontTraits, currentTraits);
+  weight_comparison = WeightScore(font_traits_, candidate_traits) -
+                      WeightScore(font_traits_, current_traits);
 
-  if (weightComparison > 0)
+  if (weight_comparison > 0)
     return true;
 
   return false;

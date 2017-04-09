@@ -31,50 +31,50 @@ namespace blink {
 inline SVGAnimateTransformElement::SVGAnimateTransformElement(
     Document& document)
     : SVGAnimateElement(SVGNames::animateTransformTag, document),
-      m_transformType(kSvgTransformUnknown) {}
+      transform_type_(kSvgTransformUnknown) {}
 
 DEFINE_NODE_FACTORY(SVGAnimateTransformElement)
 
-bool SVGAnimateTransformElement::hasValidTarget() {
-  if (!SVGAnimateElement::hasValidTarget())
+bool SVGAnimateTransformElement::HasValidTarget() {
+  if (!SVGAnimateElement::HasValidTarget())
     return false;
-  if (getAttributeType() == AttributeTypeCSS)
+  if (GetAttributeType() == kAttributeTypeCSS)
     return false;
-  return m_type == AnimatedTransformList;
+  return type_ == kAnimatedTransformList;
 }
 
-void SVGAnimateTransformElement::resolveTargetProperty() {
+void SVGAnimateTransformElement::ResolveTargetProperty() {
   DCHECK(targetElement());
-  m_targetProperty = targetElement()->propertyFromAttribute(attributeName());
-  m_type = m_targetProperty ? m_targetProperty->type() : AnimatedUnknown;
+  target_property_ = targetElement()->PropertyFromAttribute(AttributeName());
+  type_ = target_property_ ? target_property_->GetType() : kAnimatedUnknown;
   // <animateTransform> only animates AnimatedTransformList.
   // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
-  if (m_type != AnimatedTransformList)
-    m_type = AnimatedUnknown;
+  if (type_ != kAnimatedTransformList)
+    type_ = kAnimatedUnknown;
   // Because of the syntactic mismatch between the CSS and SVGProperty
   // representations, disallow CSS animations of transforms. Support for that
   // is better added to the <animate> element since the <animateTransform>
   // element is deprecated and quirky. (We also reject this case via
   // hasValidAttributeType above.)
-  m_cssPropertyId = CSSPropertyInvalid;
+  css_property_id_ = CSSPropertyInvalid;
 }
 
-SVGPropertyBase* SVGAnimateTransformElement::createPropertyForAnimation(
+SVGPropertyBase* SVGAnimateTransformElement::CreatePropertyForAnimation(
     const String& value) const {
-  DCHECK(isAnimatingSVGDom());
-  return SVGTransformList::create(m_transformType, value);
+  DCHECK(IsAnimatingSVGDom());
+  return SVGTransformList::Create(transform_type_, value);
 }
 
-void SVGAnimateTransformElement::parseAttribute(
+void SVGAnimateTransformElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == SVGNames::typeAttr) {
-    m_transformType = parseTransformType(params.newValue);
-    if (m_transformType == kSvgTransformMatrix)
-      m_transformType = kSvgTransformUnknown;
+    transform_type_ = ParseTransformType(params.new_value);
+    if (transform_type_ == kSvgTransformMatrix)
+      transform_type_ = kSvgTransformUnknown;
     return;
   }
 
-  SVGAnimateElement::parseAttribute(params);
+  SVGAnimateElement::ParseAttribute(params);
 }
 
 }  // namespace blink

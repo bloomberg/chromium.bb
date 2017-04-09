@@ -15,12 +15,12 @@ ActiveLoader::ActiveLoader(
     : loader_(std::move(loader)), deferred_(false) {}
 
 ActiveLoader::~ActiveLoader() {
-  loader_->cancel();
+  loader_->Cancel();
 }
 
 void ActiveLoader::SetDeferred(bool deferred) {
   deferred_ = deferred;
-  loader_->setDefersLoading(deferred);
+  loader_->SetDefersLoading(deferred);
 }
 
 }  // namespace media

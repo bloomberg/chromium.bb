@@ -37,22 +37,22 @@ class CounterContent {
   CounterContent(const AtomicString& identifier,
                  EListStyleType style,
                  const AtomicString& separator)
-      : m_identifier(identifier), m_listStyle(style), m_separator(separator) {}
+      : identifier_(identifier), list_style_(style), separator_(separator) {}
 
-  const AtomicString& identifier() const { return m_identifier; }
-  EListStyleType listStyle() const { return m_listStyle; }
-  const AtomicString& separator() const { return m_separator; }
+  const AtomicString& Identifier() const { return identifier_; }
+  EListStyleType ListStyle() const { return list_style_; }
+  const AtomicString& Separator() const { return separator_; }
 
  private:
-  AtomicString m_identifier;
-  EListStyleType m_listStyle;
-  AtomicString m_separator;
+  AtomicString identifier_;
+  EListStyleType list_style_;
+  AtomicString separator_;
 };
 
 static inline bool operator==(const CounterContent& a,
                               const CounterContent& b) {
-  return a.identifier() == b.identifier() && a.listStyle() == b.listStyle() &&
-         a.separator() == b.separator();
+  return a.Identifier() == b.Identifier() && a.ListStyle() == b.ListStyle() &&
+         a.Separator() == b.Separator();
 }
 
 }  // namespace blink

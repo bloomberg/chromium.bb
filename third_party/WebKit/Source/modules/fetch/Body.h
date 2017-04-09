@@ -40,29 +40,29 @@ class MODULES_EXPORT Body : public GarbageCollected<Body>,
 
   ScriptPromise arrayBuffer(ScriptState*);
   ScriptPromise blob(ScriptState*);
-  ScriptPromise formData(ScriptState*);
+  ScriptPromise FormData(ScriptState*);
   ScriptPromise json(ScriptState*);
   ScriptPromise text(ScriptState*);
   ScriptValue body(ScriptState*);
-  virtual BodyStreamBuffer* bodyBuffer() = 0;
-  virtual const BodyStreamBuffer* bodyBuffer() const = 0;
+  virtual BodyStreamBuffer* BodyBuffer() = 0;
+  virtual const BodyStreamBuffer* BodyBuffer() const = 0;
 
   virtual bool bodyUsed();
-  bool isBodyLocked();
+  bool IsBodyLocked();
 
   // ScriptWrappable override.
-  bool hasPendingActivity() const override;
+  bool HasPendingActivity() const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ContextClient::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { ContextClient::Trace(visitor); }
 
  private:
-  virtual String mimeType() const = 0;
+  virtual String MimeType() const = 0;
 
   // Body consumption algorithms will reject with a TypeError in a number of
   // error conditions. This method wraps those up into one call which returns
   // an empty ScriptPromise if the consumption may proceed, and a
   // ScriptPromise rejected with a TypeError if it ought to be blocked.
-  ScriptPromise rejectInvalidConsumption(ScriptState*);
+  ScriptPromise RejectInvalidConsumption(ScriptState*);
 };
 
 }  // namespace blink

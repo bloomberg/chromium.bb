@@ -30,7 +30,7 @@ class Bluetooth final : public GarbageCollectedFinalized<Bluetooth>,
                               const RequestDeviceOptions&,
                               ExceptionState&);
 
-  mojom::blink::WebBluetoothService* Service() { return m_service.get(); }
+  mojom::blink::WebBluetoothService* Service() { return service_.get(); }
 
   // Interface required by Garbage Collection:
   DECLARE_VIRTUAL_TRACE();
@@ -49,9 +49,9 @@ class Bluetooth final : public GarbageCollectedFinalized<Bluetooth>,
   // Map of device ids to BluetoothDevice objects.
   // Ensures only one BluetoothDevice instance represents each
   // Bluetooth device inside a single global object.
-  HeapHashMap<String, Member<BluetoothDevice>> m_deviceInstanceMap;
+  HeapHashMap<String, Member<BluetoothDevice>> device_instance_map_;
 
-  mojom::blink::WebBluetoothServicePtr m_service;
+  mojom::blink::WebBluetoothServicePtr service_;
 };
 
 }  // namespace blink

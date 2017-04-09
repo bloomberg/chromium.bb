@@ -20,21 +20,21 @@ class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMRectReadOnly* create(double x,
+  static DOMRectReadOnly* Create(double x,
                                  double y,
                                  double width,
                                  double height);
   static DOMRectReadOnly* fromRect(const DOMRectInit&);
 
-  double x() const { return m_x; }
-  double y() const { return m_y; }
-  double width() const { return m_width; }
-  double height() const { return m_height; }
+  double x() const { return x_; }
+  double y() const { return y_; }
+  double width() const { return width_; }
+  double height() const { return height_; }
 
-  double top() const { return std::min(m_y, m_y + m_height); }
-  double right() const { return std::max(m_x, m_x + m_width); }
-  double bottom() const { return std::max(m_y, m_y + m_height); }
-  double left() const { return std::min(m_x, m_x + m_width); }
+  double top() const { return std::min(y_, y_ + height_); }
+  double right() const { return std::max(x_, x_ + width_); }
+  double bottom() const { return std::max(y_, y_ + height_); }
+  double left() const { return std::min(x_, x_ + width_); }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -43,10 +43,10 @@ class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
  protected:
   DOMRectReadOnly(double x, double y, double width, double height);
 
-  double m_x;
-  double m_y;
-  double m_width;
-  double m_height;
+  double x_;
+  double y_;
+  double width_;
+  double height_;
 };
 
 }  // namespace blink

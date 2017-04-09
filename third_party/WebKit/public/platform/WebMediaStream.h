@@ -44,47 +44,47 @@ class WebMediaStream {
   };
 
   WebMediaStream() {}
-  WebMediaStream(const WebMediaStream& other) { assign(other); }
-  ~WebMediaStream() { reset(); }
+  WebMediaStream(const WebMediaStream& other) { Assign(other); }
+  ~WebMediaStream() { Reset(); }
 
   WebMediaStream& operator=(const WebMediaStream& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebMediaStream&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebMediaStream&);
 
-  BLINK_PLATFORM_EXPORT void initialize(
-      const WebVector<WebMediaStreamTrack>& audioTracks,
-      const WebVector<WebMediaStreamTrack>& videoTracks);
-  BLINK_PLATFORM_EXPORT void initialize(
+  BLINK_PLATFORM_EXPORT void Initialize(
+      const WebVector<WebMediaStreamTrack>& audio_tracks,
+      const WebVector<WebMediaStreamTrack>& video_tracks);
+  BLINK_PLATFORM_EXPORT void Initialize(
       const WebString& label,
-      const WebVector<WebMediaStreamTrack>& audioTracks,
-      const WebVector<WebMediaStreamTrack>& videoTracks);
+      const WebVector<WebMediaStreamTrack>& audio_tracks,
+      const WebVector<WebMediaStreamTrack>& video_tracks);
 
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT WebString id() const;
+  BLINK_PLATFORM_EXPORT WebString Id() const;
 
-  BLINK_PLATFORM_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
-  BLINK_PLATFORM_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
+  BLINK_PLATFORM_EXPORT void AudioTracks(WebVector<WebMediaStreamTrack>&) const;
+  BLINK_PLATFORM_EXPORT void VideoTracks(WebVector<WebMediaStreamTrack>&) const;
   // If a track is not found with the specified id, the returned track's
   // |isNull| will return true.
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack
-  getAudioTrack(const WebString& trackId) const;
+  GetAudioTrack(const WebString& track_id) const;
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack
-  getVideoTrack(const WebString& trackId) const;
+  GetVideoTrack(const WebString& track_id) const;
 
-  BLINK_PLATFORM_EXPORT void addTrack(const WebMediaStreamTrack&);
-  BLINK_PLATFORM_EXPORT void removeTrack(const WebMediaStreamTrack&);
+  BLINK_PLATFORM_EXPORT void AddTrack(const WebMediaStreamTrack&);
+  BLINK_PLATFORM_EXPORT void RemoveTrack(const WebMediaStreamTrack&);
 
   // Extra data associated with this WebMediaStream.
   // If non-null, the extra data pointer will be deleted when the object is
   // destroyed.  Setting the extra data pointer will cause any existing non-null
   // extra data pointer to be deleted.
-  BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
-  BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
+  BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
+  BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebMediaStream(MediaStreamDescriptor*);
@@ -93,7 +93,7 @@ class WebMediaStream {
 #endif
 
  private:
-  WebPrivatePtr<MediaStreamDescriptor> m_private;
+  WebPrivatePtr<MediaStreamDescriptor> private_;
 };
 
 }  // namespace blink

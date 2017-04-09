@@ -11,15 +11,15 @@ namespace blink {
 using URLSearchParamsTest = ::testing::Test;
 
 TEST_F(URLSearchParamsTest, ToEncodedFormData) {
-  URLSearchParams* params = URLSearchParams::create(String());
-  EXPECT_EQ("", params->toEncodedFormData()->flattenToString());
+  URLSearchParams* params = URLSearchParams::Create(String());
+  EXPECT_EQ("", params->ToEncodedFormData()->FlattenToString());
 
   params->append("name", "value");
-  EXPECT_EQ("name=value", params->toEncodedFormData()->flattenToString());
+  EXPECT_EQ("name=value", params->ToEncodedFormData()->FlattenToString());
 
   params->append("another name", "another value");
   EXPECT_EQ("name=value&another+name=another+value",
-            params->toEncodedFormData()->flattenToString());
+            params->ToEncodedFormData()->FlattenToString());
 }
 
 }  // namespace blink

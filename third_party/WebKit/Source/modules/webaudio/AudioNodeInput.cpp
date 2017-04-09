@@ -32,46 +32,46 @@
 namespace blink {
 
 inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
-    : AudioSummingJunction(handler.context()->deferredTaskHandler()),
-      m_handler(handler) {
+    : AudioSummingJunction(handler.Context()->GetDeferredTaskHandler()),
+      handler_(handler) {
   // Set to mono by default.
-  m_internalSummingBus =
-      AudioBus::create(1, AudioUtilities::kRenderQuantumFrames);
+  internal_summing_bus_ =
+      AudioBus::Create(1, AudioUtilities::kRenderQuantumFrames);
 }
 
-std::unique_ptr<AudioNodeInput> AudioNodeInput::create(AudioHandler& handler) {
-  return WTF::wrapUnique(new AudioNodeInput(handler));
+std::unique_ptr<AudioNodeInput> AudioNodeInput::Create(AudioHandler& handler) {
+  return WTF::WrapUnique(new AudioNodeInput(handler));
 }
 
-void AudioNodeInput::connect(AudioNodeOutput& output) {
-  ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioNodeInput::Connect(AudioNodeOutput& output) {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
 
   // Check if we're already connected to this output.
-  if (m_outputs.contains(&output))
+  if (outputs_.Contains(&output))
     return;
 
-  output.addInput(*this);
-  m_outputs.insert(&output);
-  changedOutputs();
+  output.AddInput(*this);
+  outputs_.insert(&output);
+  ChangedOutputs();
 }
 
-void AudioNodeInput::disconnect(AudioNodeOutput& output) {
-  ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioNodeInput::Disconnect(AudioNodeOutput& output) {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
 
   // First try to disconnect from "active" connections.
-  if (m_outputs.contains(&output)) {
-    m_outputs.erase(&output);
-    changedOutputs();
-    output.removeInput(*this);
+  if (outputs_.Contains(&output)) {
+    outputs_.erase(&output);
+    ChangedOutputs();
+    output.RemoveInput(*this);
     // Note: it's important to return immediately after removeInput() calls
     // since the node may be deleted.
     return;
   }
 
   // Otherwise, try to disconnect from disabled connections.
-  if (m_disabledOutputs.contains(&output)) {
-    m_disabledOutputs.erase(&output);
-    output.removeInput(*this);
+  if (disabled_outputs_.Contains(&output)) {
+    disabled_outputs_.erase(&output);
+    output.RemoveInput(*this);
     // Note: it's important to return immediately after all removeInput() calls
     // since the node may be deleted.
     return;
@@ -80,146 +80,147 @@ void AudioNodeInput::disconnect(AudioNodeOutput& output) {
   ASSERT_NOT_REACHED();
 }
 
-void AudioNodeInput::disable(AudioNodeOutput& output) {
-  ASSERT(deferredTaskHandler().isGraphOwner());
-  DCHECK(m_outputs.contains(&output));
+void AudioNodeInput::Disable(AudioNodeOutput& output) {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
+  DCHECK(outputs_.Contains(&output));
 
-  m_disabledOutputs.insert(&output);
-  m_outputs.erase(&output);
-  changedOutputs();
+  disabled_outputs_.insert(&output);
+  outputs_.erase(&output);
+  ChangedOutputs();
 
   // Propagate disabled state to outputs.
-  handler().disableOutputsIfNecessary();
+  Handler().DisableOutputsIfNecessary();
 }
 
-void AudioNodeInput::enable(AudioNodeOutput& output) {
-  ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioNodeInput::Enable(AudioNodeOutput& output) {
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
 
   // Move output from disabled list to active list.
-  m_outputs.insert(&output);
-  if (m_disabledOutputs.size() > 0) {
-    DCHECK(m_disabledOutputs.contains(&output));
-    m_disabledOutputs.erase(&output);
+  outputs_.insert(&output);
+  if (disabled_outputs_.size() > 0) {
+    DCHECK(disabled_outputs_.Contains(&output));
+    disabled_outputs_.erase(&output);
   }
-  changedOutputs();
+  ChangedOutputs();
 
   // Propagate enabled state to outputs.
-  handler().enableOutputsIfNecessary();
+  Handler().EnableOutputsIfNecessary();
 }
 
-void AudioNodeInput::didUpdate() {
-  handler().checkNumberOfChannelsForInput(this);
+void AudioNodeInput::DidUpdate() {
+  Handler().CheckNumberOfChannelsForInput(this);
 }
 
-void AudioNodeInput::updateInternalBus() {
-  DCHECK(deferredTaskHandler().isAudioThread());
-  ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioNodeInput::UpdateInternalBus() {
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
+  ASSERT(GetDeferredTaskHandler().IsGraphOwner());
 
-  unsigned numberOfInputChannels = numberOfChannels();
+  unsigned number_of_input_channels = NumberOfChannels();
 
-  if (numberOfInputChannels == m_internalSummingBus->numberOfChannels())
+  if (number_of_input_channels == internal_summing_bus_->NumberOfChannels())
     return;
 
-  m_internalSummingBus = AudioBus::create(numberOfInputChannels,
-                                          AudioUtilities::kRenderQuantumFrames);
+  internal_summing_bus_ = AudioBus::Create(
+      number_of_input_channels, AudioUtilities::kRenderQuantumFrames);
 }
 
-unsigned AudioNodeInput::numberOfChannels() const {
-  AudioHandler::ChannelCountMode mode = handler().internalChannelCountMode();
-  if (mode == AudioHandler::Explicit)
-    return handler().channelCount();
+unsigned AudioNodeInput::NumberOfChannels() const {
+  AudioHandler::ChannelCountMode mode = Handler().InternalChannelCountMode();
+  if (mode == AudioHandler::kExplicit)
+    return Handler().ChannelCount();
 
   // Find the number of channels of the connection with the largest number of
   // channels.
-  unsigned maxChannels = 1;  // one channel is the minimum allowed
+  unsigned max_channels = 1;  // one channel is the minimum allowed
 
-  for (AudioNodeOutput* output : m_outputs) {
+  for (AudioNodeOutput* output : outputs_) {
     // Use output()->numberOfChannels() instead of
     // output->bus()->numberOfChannels(), because the calling of
     // AudioNodeOutput::bus() is not safe here.
-    maxChannels = std::max(maxChannels, output->numberOfChannels());
+    max_channels = std::max(max_channels, output->NumberOfChannels());
   }
 
-  if (mode == AudioHandler::ClampedMax)
-    maxChannels =
-        std::min(maxChannels, static_cast<unsigned>(handler().channelCount()));
+  if (mode == AudioHandler::kClampedMax)
+    max_channels =
+        std::min(max_channels, static_cast<unsigned>(Handler().ChannelCount()));
 
-  return maxChannels;
+  return max_channels;
 }
 
-AudioBus* AudioNodeInput::bus() {
-  DCHECK(deferredTaskHandler().isAudioThread());
+AudioBus* AudioNodeInput::Bus() {
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // Handle single connection specially to allow for in-place processing.
-  if (numberOfRenderingConnections() == 1 &&
-      handler().internalChannelCountMode() == AudioHandler::Max)
-    return renderingOutput(0)->bus();
+  if (NumberOfRenderingConnections() == 1 &&
+      Handler().InternalChannelCountMode() == AudioHandler::kMax)
+    return RenderingOutput(0)->Bus();
 
   // Multiple connections case or complex ChannelCountMode (or no connections).
-  return internalSummingBus();
+  return InternalSummingBus();
 }
 
-AudioBus* AudioNodeInput::internalSummingBus() {
-  DCHECK(deferredTaskHandler().isAudioThread());
+AudioBus* AudioNodeInput::InternalSummingBus() {
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
-  return m_internalSummingBus.get();
+  return internal_summing_bus_.Get();
 }
 
-void AudioNodeInput::sumAllConnections(AudioBus* summingBus,
-                                       size_t framesToProcess) {
-  DCHECK(deferredTaskHandler().isAudioThread());
+void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
+                                       size_t frames_to_process) {
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // We shouldn't be calling this method if there's only one connection, since
   // it's less efficient.
   //    DCHECK(numberOfRenderingConnections() > 1 ||
   //        handler().internalChannelCountMode() != AudioHandler::Max);
 
-  DCHECK(summingBus);
-  if (!summingBus)
+  DCHECK(summing_bus);
+  if (!summing_bus)
     return;
 
-  summingBus->zero();
+  summing_bus->Zero();
 
   AudioBus::ChannelInterpretation interpretation =
-      handler().internalChannelInterpretation();
+      Handler().InternalChannelInterpretation();
 
-  for (unsigned i = 0; i < numberOfRenderingConnections(); ++i) {
-    AudioNodeOutput* output = renderingOutput(i);
+  for (unsigned i = 0; i < NumberOfRenderingConnections(); ++i) {
+    AudioNodeOutput* output = RenderingOutput(i);
     DCHECK(output);
 
     // Render audio from this output.
-    AudioBus* connectionBus = output->pull(0, framesToProcess);
+    AudioBus* connection_bus = output->Pull(0, frames_to_process);
 
     // Sum, with unity-gain.
-    summingBus->sumFrom(*connectionBus, interpretation);
+    summing_bus->SumFrom(*connection_bus, interpretation);
   }
 }
 
-AudioBus* AudioNodeInput::pull(AudioBus* inPlaceBus, size_t framesToProcess) {
-  DCHECK(deferredTaskHandler().isAudioThread());
+AudioBus* AudioNodeInput::Pull(AudioBus* in_place_bus,
+                               size_t frames_to_process) {
+  DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
   // Handle single connection case.
-  if (numberOfRenderingConnections() == 1 &&
-      handler().internalChannelCountMode() == AudioHandler::Max) {
+  if (NumberOfRenderingConnections() == 1 &&
+      Handler().InternalChannelCountMode() == AudioHandler::kMax) {
     // The output will optimize processing using inPlaceBus if it's able.
-    AudioNodeOutput* output = this->renderingOutput(0);
-    return output->pull(inPlaceBus, framesToProcess);
+    AudioNodeOutput* output = this->RenderingOutput(0);
+    return output->Pull(in_place_bus, frames_to_process);
   }
 
-  AudioBus* internalSummingBus = this->internalSummingBus();
+  AudioBus* internal_summing_bus = this->InternalSummingBus();
 
-  if (!numberOfRenderingConnections()) {
+  if (!NumberOfRenderingConnections()) {
     // At least, generate silence if we're not connected to anything.
     // FIXME: if we wanted to get fancy, we could propagate a 'silent hint' here
     // to optimize the downstream graph processing.
-    internalSummingBus->zero();
-    return internalSummingBus;
+    internal_summing_bus->Zero();
+    return internal_summing_bus;
   }
 
   // Handle multiple connections case.
-  sumAllConnections(internalSummingBus, framesToProcess);
+  SumAllConnections(internal_summing_bus, frames_to_process);
 
-  return internalSummingBus;
+  return internal_summing_bus;
 }
 
 }  // namespace blink

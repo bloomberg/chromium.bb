@@ -10,25 +10,25 @@
 
 namespace blink {
 
-CSSFontFamilyValue* CSSFontFamilyValue::create(const String& familyName) {
-  if (familyName.isNull())
-    return new CSSFontFamilyValue(familyName);
+CSSFontFamilyValue* CSSFontFamilyValue::Create(const String& family_name) {
+  if (family_name.IsNull())
+    return new CSSFontFamilyValue(family_name);
   CSSValuePool::FontFamilyValueCache::AddResult entry =
-      cssValuePool().getFontFamilyCacheEntry(familyName);
-  if (!entry.storedValue->value)
-    entry.storedValue->value = new CSSFontFamilyValue(familyName);
-  return entry.storedValue->value;
+      CssValuePool().GetFontFamilyCacheEntry(family_name);
+  if (!entry.stored_value->value)
+    entry.stored_value->value = new CSSFontFamilyValue(family_name);
+  return entry.stored_value->value;
 }
 
 CSSFontFamilyValue::CSSFontFamilyValue(const String& str)
-    : CSSValue(FontFamilyClass), m_string(str) {}
+    : CSSValue(kFontFamilyClass), string_(str) {}
 
-String CSSFontFamilyValue::customCSSText() const {
-  return serializeFontFamily(m_string);
+String CSSFontFamilyValue::CustomCSSText() const {
+  return SerializeFontFamily(string_);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSFontFamilyValue) {
-  CSSValue::traceAfterDispatch(visitor);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

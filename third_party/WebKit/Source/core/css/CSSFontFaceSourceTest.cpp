@@ -15,38 +15,38 @@ namespace blink {
 
 class DummyFontFaceSource : public CSSFontFaceSource {
  public:
-  PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override {
-    return SimpleFontData::create(
+  PassRefPtr<SimpleFontData> CreateFontData(const FontDescription&) override {
+    return SimpleFontData::Create(
         FontPlatformData(SkTypeface::MakeDefault(), "", 0, false, false));
   }
 
   DummyFontFaceSource() {}
 
-  PassRefPtr<SimpleFontData> getFontDataForSize(float size) {
-    FontDescription fontDescription;
-    fontDescription.setSizeAdjust(size);
-    fontDescription.setAdjustedSize(size);
-    return getFontData(fontDescription);
+  PassRefPtr<SimpleFontData> GetFontDataForSize(float size) {
+    FontDescription font_description;
+    font_description.SetSizeAdjust(size);
+    font_description.SetAdjustedSize(size);
+    return GetFontData(font_description);
   }
 };
 
 namespace {
 
-unsigned simulateHashCalculation(float size) {
-  FontDescription fontDescription;
-  fontDescription.setSizeAdjust(size);
-  fontDescription.setAdjustedSize(size);
-  return fontDescription.cacheKey(FontFaceCreationParams()).hash();
+unsigned SimulateHashCalculation(float size) {
+  FontDescription font_description;
+  font_description.SetSizeAdjust(size);
+  font_description.SetAdjustedSize(size);
+  return font_description.CacheKey(FontFaceCreationParams()).GetHash();
 }
 }
 
 TEST(CSSFontFaceSourceTest, HashCollision) {
-  DummyFontFaceSource fontFaceSource;
+  DummyFontFaceSource font_face_source;
   // Even if the hash value collide, fontface cache should return different
   // value for different fonts.
-  EXPECT_EQ(simulateHashCalculation(8775), simulateHashCalculation(418));
-  EXPECT_NE(fontFaceSource.getFontDataForSize(8775),
-            fontFaceSource.getFontDataForSize(418));
+  EXPECT_EQ(SimulateHashCalculation(8775), SimulateHashCalculation(418));
+  EXPECT_NE(font_face_source.GetFontDataForSize(8775),
+            font_face_source.GetFontDataForSize(418));
 }
 
 }  // namespace blink

@@ -26,10 +26,10 @@
 
 namespace blink {
 
-static WebBlendMode toWebBlendMode(SVGFEBlendElement::Mode mode) {
-#define MAP_BLEND_MODE(MODENAME)          \
-  case SVGFEBlendElement::Mode##MODENAME: \
-    return WebBlendMode##MODENAME
+static WebBlendMode ToWebBlendMode(SVGFEBlendElement::Mode mode) {
+#define MAP_BLEND_MODE(MODENAME)           \
+  case SVGFEBlendElement::kMode##MODENAME: \
+    return kWebBlendMode##MODENAME
 
   switch (mode) {
     MAP_BLEND_MODE(Normal);
@@ -50,117 +50,117 @@ static WebBlendMode toWebBlendMode(SVGFEBlendElement::Mode mode) {
     MAP_BLEND_MODE(Luminosity);
     default:
       NOTREACHED();
-      return WebBlendModeNormal;
+      return kWebBlendModeNormal;
   }
 #undef MAP_BLEND_MODE
 }
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGFEBlendElement::Mode>() {
+GetStaticStringEntries<SVGFEBlendElement::Mode>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
-    entries.push_back(std::make_pair(SVGFEBlendElement::ModeNormal, "normal"));
+  if (entries.IsEmpty()) {
+    entries.push_back(std::make_pair(SVGFEBlendElement::kModeNormal, "normal"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeMultiply, "multiply"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::ModeScreen, "screen"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::ModeDarken, "darken"));
+        std::make_pair(SVGFEBlendElement::kModeMultiply, "multiply"));
+    entries.push_back(std::make_pair(SVGFEBlendElement::kModeScreen, "screen"));
+    entries.push_back(std::make_pair(SVGFEBlendElement::kModeDarken, "darken"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeLighten, "lighten"));
+        std::make_pair(SVGFEBlendElement::kModeLighten, "lighten"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeOverlay, "overlay"));
+        std::make_pair(SVGFEBlendElement::kModeOverlay, "overlay"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeColorDodge, "color-dodge"));
+        std::make_pair(SVGFEBlendElement::kModeColorDodge, "color-dodge"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeColorBurn, "color-burn"));
+        std::make_pair(SVGFEBlendElement::kModeColorBurn, "color-burn"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeHardLight, "hard-light"));
+        std::make_pair(SVGFEBlendElement::kModeHardLight, "hard-light"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeSoftLight, "soft-light"));
+        std::make_pair(SVGFEBlendElement::kModeSoftLight, "soft-light"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeDifference, "difference"));
+        std::make_pair(SVGFEBlendElement::kModeDifference, "difference"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeExclusion, "exclusion"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::ModeHue, "hue"));
+        std::make_pair(SVGFEBlendElement::kModeExclusion, "exclusion"));
+    entries.push_back(std::make_pair(SVGFEBlendElement::kModeHue, "hue"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeSaturation, "saturation"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::ModeColor, "color"));
+        std::make_pair(SVGFEBlendElement::kModeSaturation, "saturation"));
+    entries.push_back(std::make_pair(SVGFEBlendElement::kModeColor, "color"));
     entries.push_back(
-        std::make_pair(SVGFEBlendElement::ModeLuminosity, "luminosity"));
+        std::make_pair(SVGFEBlendElement::kModeLuminosity, "luminosity"));
   }
   return entries;
 }
 
 template <>
-unsigned short getMaxExposedEnumValue<SVGFEBlendElement::Mode>() {
-  return SVGFEBlendElement::ModeLighten;
+unsigned short GetMaxExposedEnumValue<SVGFEBlendElement::Mode>() {
+  return SVGFEBlendElement::kModeLighten;
 }
 
 inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document),
-      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)),
-      m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr)),
-      m_mode(
-          SVGAnimatedEnumeration<Mode>::create(this,
-                                               SVGNames::modeAttr,
-                                               SVGFEBlendElement::ModeNormal)) {
-  addToPropertyMap(m_in1);
-  addToPropertyMap(m_in2);
-  addToPropertyMap(m_mode);
+      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
+      in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
+      mode_(SVGAnimatedEnumeration<Mode>::Create(
+          this,
+          SVGNames::modeAttr,
+          SVGFEBlendElement::kModeNormal)) {
+  AddToPropertyMap(in1_);
+  AddToPropertyMap(in2_);
+  AddToPropertyMap(mode_);
 }
 
 DEFINE_TRACE(SVGFEBlendElement) {
-  visitor->trace(m_in1);
-  visitor->trace(m_in2);
-  visitor->trace(m_mode);
-  SVGFilterPrimitiveStandardAttributes::trace(visitor);
+  visitor->Trace(in1_);
+  visitor->Trace(in2_);
+  visitor->Trace(mode_);
+  SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFEBlendElement)
 
-bool SVGFEBlendElement::setFilterEffectAttribute(
+bool SVGFEBlendElement::SetFilterEffectAttribute(
     FilterEffect* effect,
-    const QualifiedName& attrName) {
+    const QualifiedName& attr_name) {
   FEBlend* blend = static_cast<FEBlend*>(effect);
-  if (attrName == SVGNames::modeAttr)
-    return blend->setBlendMode(
-        toWebBlendMode(m_mode->currentValue()->enumValue()));
+  if (attr_name == SVGNames::modeAttr)
+    return blend->SetBlendMode(
+        ToWebBlendMode(mode_->CurrentValue()->EnumValue()));
 
-  return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(
-      effect, attrName);
+  return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
+      effect, attr_name);
 }
 
-void SVGFEBlendElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::modeAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    primitiveAttributeChanged(attrName);
+void SVGFEBlendElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::modeAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attrName == SVGNames::inAttr || attrName == SVGNames::in2Attr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::in2Attr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    Invalidate();
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
 }
 
-FilterEffect* SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder,
+FilterEffect* SVGFEBlendElement::Build(SVGFilterBuilder* filter_builder,
                                        Filter* filter) {
-  FilterEffect* input1 = filterBuilder->getEffectById(
-      AtomicString(m_in1->currentValue()->value()));
-  FilterEffect* input2 = filterBuilder->getEffectById(
-      AtomicString(m_in2->currentValue()->value()));
+  FilterEffect* input1 = filter_builder->GetEffectById(
+      AtomicString(in1_->CurrentValue()->Value()));
+  FilterEffect* input2 = filter_builder->GetEffectById(
+      AtomicString(in2_->CurrentValue()->Value()));
   DCHECK(input1);
   DCHECK(input2);
 
-  FilterEffect* effect = FEBlend::create(
-      filter, toWebBlendMode(m_mode->currentValue()->enumValue()));
-  FilterEffectVector& inputEffects = effect->inputEffects();
-  inputEffects.reserveCapacity(2);
-  inputEffects.push_back(input1);
-  inputEffects.push_back(input2);
+  FilterEffect* effect = FEBlend::Create(
+      filter, ToWebBlendMode(mode_->CurrentValue()->EnumValue()));
+  FilterEffectVector& input_effects = effect->InputEffects();
+  input_effects.ReserveCapacity(2);
+  input_effects.push_back(input1);
+  input_effects.push_back(input2);
   return effect;
 }
 

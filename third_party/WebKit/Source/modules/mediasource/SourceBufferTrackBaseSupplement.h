@@ -20,15 +20,15 @@ class SourceBufferTrackBaseSupplement
 
  public:
   static SourceBuffer* sourceBuffer(TrackBase&);
-  static void setSourceBuffer(TrackBase&, SourceBuffer*);
+  static void SetSourceBuffer(TrackBase&, SourceBuffer*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  static SourceBufferTrackBaseSupplement& from(TrackBase&);
-  static SourceBufferTrackBaseSupplement* fromIfExists(TrackBase&);
+  static SourceBufferTrackBaseSupplement& From(TrackBase&);
+  static SourceBufferTrackBaseSupplement* FromIfExists(TrackBase&);
 
-  Member<SourceBuffer> m_sourceBuffer;
+  Member<SourceBuffer> source_buffer_;
 };
 
 }  // namespace blink

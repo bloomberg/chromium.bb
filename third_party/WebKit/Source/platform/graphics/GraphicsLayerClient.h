@@ -37,33 +37,33 @@ class GraphicsLayer;
 class IntRect;
 
 enum GraphicsLayerPaintingPhaseFlags {
-  GraphicsLayerPaintBackground = (1 << 0),
-  GraphicsLayerPaintForeground = (1 << 1),
-  GraphicsLayerPaintMask = (1 << 2),
-  GraphicsLayerPaintOverflowContents = (1 << 3),
-  GraphicsLayerPaintCompositedScroll = (1 << 4),
-  GraphicsLayerPaintChildClippingMask = (1 << 5),
-  GraphicsLayerPaintAncestorClippingMask = (1 << 6),
-  GraphicsLayerPaintDecoration = (1 << 7),
-  GraphicsLayerPaintAllWithOverflowClip =
-      (GraphicsLayerPaintBackground | GraphicsLayerPaintForeground |
-       GraphicsLayerPaintMask |
-       GraphicsLayerPaintDecoration)
+  kGraphicsLayerPaintBackground = (1 << 0),
+  kGraphicsLayerPaintForeground = (1 << 1),
+  kGraphicsLayerPaintMask = (1 << 2),
+  kGraphicsLayerPaintOverflowContents = (1 << 3),
+  kGraphicsLayerPaintCompositedScroll = (1 << 4),
+  kGraphicsLayerPaintChildClippingMask = (1 << 5),
+  kGraphicsLayerPaintAncestorClippingMask = (1 << 6),
+  kGraphicsLayerPaintDecoration = (1 << 7),
+  kGraphicsLayerPaintAllWithOverflowClip =
+      (kGraphicsLayerPaintBackground | kGraphicsLayerPaintForeground |
+       kGraphicsLayerPaintMask |
+       kGraphicsLayerPaintDecoration)
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 
 enum {
-  LayerTreeNormal = 0,
+  kLayerTreeNormal = 0,
   // Dump extra debugging info like layer addresses.
-  LayerTreeIncludesDebugInfo = 1 << 0,
-  LayerTreeIncludesPaintInvalidations = 1 << 1,
-  LayerTreeIncludesPaintingPhases = 1 << 2,
-  LayerTreeIncludesRootLayer = 1 << 3,
-  LayerTreeIncludesClipAndScrollParents = 1 << 4,
-  LayerTreeIncludesCompositingReasons = 1 << 5,
+  kLayerTreeIncludesDebugInfo = 1 << 0,
+  kLayerTreeIncludesPaintInvalidations = 1 << 1,
+  kLayerTreeIncludesPaintingPhases = 1 << 2,
+  kLayerTreeIncludesRootLayer = 1 << 3,
+  kLayerTreeIncludesClipAndScrollParents = 1 << 4,
+  kLayerTreeIncludesCompositingReasons = 1 << 5,
   // Outputs all layers as a layer tree. The default is output children
   // (excluding the root) as a layer list, in paint (preorder) order.
-  OutputAsLayerTree = 1 << 6,
+  kOutputAsLayerTree = 1 << 6,
 };
 typedef unsigned LayerTreeFlags;
 
@@ -71,23 +71,23 @@ class PLATFORM_EXPORT GraphicsLayerClient {
  public:
   virtual ~GraphicsLayerClient() {}
 
-  virtual void invalidateTargetElementForTesting() {}
+  virtual void InvalidateTargetElementForTesting() {}
 
-  virtual IntRect computeInterestRect(
+  virtual IntRect ComputeInterestRect(
       const GraphicsLayer*,
-      const IntRect& previousInterestRect) const = 0;
-  virtual LayoutSize subpixelAccumulation() const { return LayoutSize(); }
+      const IntRect& previous_interest_rect) const = 0;
+  virtual LayoutSize SubpixelAccumulation() const { return LayoutSize(); }
   // Returns whether the client needs to be repainted with respect to the given
   // graphics layer.
-  virtual bool needsRepaint(const GraphicsLayer&) const = 0;
-  virtual void paintContents(const GraphicsLayer*,
+  virtual bool NeedsRepaint(const GraphicsLayer&) const = 0;
+  virtual void PaintContents(const GraphicsLayer*,
                              GraphicsContext&,
                              GraphicsLayerPaintingPhase,
-                             const IntRect& interestRect) const = 0;
+                             const IntRect& interest_rect) const = 0;
 
-  virtual bool isTrackingRasterInvalidations() const { return false; }
+  virtual bool IsTrackingRasterInvalidations() const { return false; }
 
-  virtual String debugName(const GraphicsLayer*) const = 0;
+  virtual String DebugName(const GraphicsLayer*) const = 0;
 
 #if DCHECK_IS_ON()
   // CompositedLayerMapping overrides this to verify that it is not
@@ -95,7 +95,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
   // This is executed in GraphicsLayer construction and destruction
   // to verify that we don't create or destroy GraphicsLayers
   // while painting.
-  virtual void verifyNotPainting() {}
+  virtual void VerifyNotPainting() {}
 #endif
 };
 

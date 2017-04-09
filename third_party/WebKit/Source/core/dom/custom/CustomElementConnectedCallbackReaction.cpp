@@ -11,11 +11,11 @@ namespace blink {
 CustomElementConnectedCallbackReaction::CustomElementConnectedCallbackReaction(
     CustomElementDefinition* definition)
     : CustomElementReaction(definition) {
-  DCHECK(definition->hasConnectedCallback());
+  DCHECK(definition->HasConnectedCallback());
 }
 
-void CustomElementConnectedCallbackReaction::invoke(Element* element) {
-  m_definition->runConnectedCallback(element);
+void CustomElementConnectedCallbackReaction::Invoke(Element* element) {
+  definition_->RunConnectedCallback(element);
 }
 
 }  // namespace blink

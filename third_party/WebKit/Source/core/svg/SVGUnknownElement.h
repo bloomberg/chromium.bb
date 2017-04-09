@@ -50,7 +50,7 @@ class SVGUnknownElement final : public SVGElement {
  private:
   SVGUnknownElement(const QualifiedName&, Document&);
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 };
 
 }  // namespace blink

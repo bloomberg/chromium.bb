@@ -34,33 +34,33 @@ namespace blink {
 
 class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
  public:
-  static PlatformSpeechSynthesizerMock* create(
+  static PlatformSpeechSynthesizerMock* Create(
       PlatformSpeechSynthesizerClient*);
 
   ~PlatformSpeechSynthesizerMock() override;
-  void speak(PlatformSpeechSynthesisUtterance*) override;
-  void pause() override;
-  void resume() override;
-  void cancel() override;
+  void Speak(PlatformSpeechSynthesisUtterance*) override;
+  void Pause() override;
+  void Resume() override;
+  void Cancel() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*);
 
-  void initializeVoiceList() override;
+  void InitializeVoiceList() override;
 
-  void speakNext();
-  void speakNow();
+  void SpeakNext();
+  void SpeakNow();
 
-  void speakingErrorOccurred(TimerBase*);
-  void speakingFinished(TimerBase*);
+  void SpeakingErrorOccurred(TimerBase*);
+  void SpeakingFinished(TimerBase*);
 
-  Timer<PlatformSpeechSynthesizerMock> m_speakingErrorOccurredTimer;
-  Timer<PlatformSpeechSynthesizerMock> m_speakingFinishedTimer;
+  Timer<PlatformSpeechSynthesizerMock> speaking_error_occurred_timer_;
+  Timer<PlatformSpeechSynthesizerMock> speaking_finished_timer_;
 
-  Member<PlatformSpeechSynthesisUtterance> m_currentUtterance;
-  HeapDeque<Member<PlatformSpeechSynthesisUtterance>> m_queuedUtterances;
+  Member<PlatformSpeechSynthesisUtterance> current_utterance_;
+  HeapDeque<Member<PlatformSpeechSynthesisUtterance>> queued_utterances_;
 };
 
 }  // namespace blink

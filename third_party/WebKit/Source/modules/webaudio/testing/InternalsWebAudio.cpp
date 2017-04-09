@@ -10,7 +10,7 @@
 namespace blink {
 
 unsigned InternalsWebAudio::audioHandlerCount(Internals& internals) {
-  return InstanceCounters::counterValue(InstanceCounters::AudioHandlerCounter);
+  return InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter);
 }
 
 }  // namespace blink

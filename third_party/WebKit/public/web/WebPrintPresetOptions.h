@@ -13,10 +13,10 @@ struct WebPageRange;
 typedef std::vector<WebPageRange> WebPageRanges;
 
 enum WebDuplexMode {
-  WebUnknownDuplexMode = -1,
-  WebSimplex,
-  WebLongEdge,
-  WebShortEdge
+  kWebUnknownDuplexMode = -1,
+  kWebSimplex,
+  kWebLongEdge,
+  kWebShortEdge
 };
 
 struct WebPageRange {
@@ -26,25 +26,27 @@ struct WebPageRange {
 
 struct WebPrintPresetOptions {
   WebPrintPresetOptions()
-      : isScalingDisabled(false), copies(0), duplexMode(WebUnknownDuplexMode) {}
+      : is_scaling_disabled(false),
+        copies(0),
+        duplex_mode(kWebUnknownDuplexMode) {}
 
   // Specifies whether scaling is disabled.
-  bool isScalingDisabled;
+  bool is_scaling_disabled;
 
   // Specifies the number of copies to be printed.
   int copies;
 
   // Specifies duplex mode to be used for printing.
-  WebDuplexMode duplexMode;
+  WebDuplexMode duplex_mode;
 
   // Specifies page range to be used for printing.
-  WebPageRanges pageRanges;
+  WebPageRanges page_ranges;
 
   // True if all the pages in the PDF are the same size.
-  bool isPageSizeUniform;
+  bool is_page_size_uniform;
 
   // Only valid if the page sizes are uniform. The page size in points.
-  WebSize uniformPageSize;
+  WebSize uniform_page_size;
 };
 
 }  // namespace blink

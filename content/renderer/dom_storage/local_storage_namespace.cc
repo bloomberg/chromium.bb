@@ -24,13 +24,13 @@ LocalStorageNamespace::LocalStorageNamespace(
 LocalStorageNamespace::~LocalStorageNamespace() {
 }
 
-WebStorageArea* LocalStorageNamespace::createStorageArea(
+WebStorageArea* LocalStorageNamespace::CreateStorageArea(
     const blink::WebSecurityOrigin& origin) {
   return new LocalStorageArea(
       local_storage_cached_areas_->GetCachedArea(origin));
 }
 
-bool LocalStorageNamespace::isSameNamespace(
+bool LocalStorageNamespace::IsSameNamespace(
     const WebStorageNamespace& other) const {
   NOTREACHED() << "This method should only be called for session storage.";
   return false;

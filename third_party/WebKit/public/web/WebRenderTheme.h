@@ -37,9 +37,9 @@
 namespace blink {
 
 // Set caret blink interval for text input areas.
-BLINK_EXPORT void setCaretBlinkInterval(double);
+BLINK_EXPORT void SetCaretBlinkInterval(double);
 
-BLINK_EXPORT void setFocusRingColor(WebColor);
+BLINK_EXPORT void SetFocusRingColor(WebColor);
 
 }  // namespace blink
 

@@ -34,40 +34,40 @@ class SVGSVGElement;
 class LayoutSVGViewportContainer final : public LayoutSVGContainer {
  public:
   explicit LayoutSVGViewportContainer(SVGSVGElement*);
-  FloatRect viewport() const { return m_viewport; }
+  FloatRect Viewport() const { return viewport_; }
 
-  bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
+  bool IsLayoutSizeChanged() const { return is_layout_size_changed_; }
 
-  void setNeedsTransformUpdate() override;
+  void SetNeedsTransformUpdate() override;
 
-  const char* name() const override { return "LayoutSVGViewportContainer"; }
+  const char* GetName() const override { return "LayoutSVGViewportContainer"; }
 
  private:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGViewportContainer ||
-           LayoutSVGContainer::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGViewportContainer ||
+           LayoutSVGContainer::IsOfType(type);
   }
 
-  void layout() override;
+  void GetLayout() override;
 
-  AffineTransform localToSVGParentTransform() const override {
-    return m_localToParentTransform;
+  AffineTransform LocalToSVGParentTransform() const override {
+    return local_to_parent_transform_;
   }
 
-  SVGTransformChange calculateLocalTransform() override;
+  SVGTransformChange CalculateLocalTransform() override;
 
-  bool nodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& pointInParent,
+  bool NodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& point_in_parent,
                         HitTestAction) override;
 
-  FloatRect m_viewport;
-  mutable AffineTransform m_localToParentTransform;
-  bool m_isLayoutSizeChanged : 1;
-  bool m_needsTransformUpdate : 1;
+  FloatRect viewport_;
+  mutable AffineTransform local_to_parent_transform_;
+  bool is_layout_size_changed_ : 1;
+  bool needs_transform_update_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGViewportContainer,
-                                isSVGViewportContainer());
+                                IsSVGViewportContainer());
 
 }  // namespace blink
 

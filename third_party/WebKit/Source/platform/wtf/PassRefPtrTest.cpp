@@ -12,13 +12,14 @@ namespace WTF {
 class RefCountedClass : public RefCounted<RefCountedClass> {};
 
 TEST(PassRefPtrTest, MoveConstructor) {
-  PassRefPtr<RefCountedClass> oldPassRefPtr = adoptRef(new RefCountedClass());
-  RefCountedClass* rawPtr = oldPassRefPtr.get();
-  EXPECT_EQ(rawPtr->refCount(), 1);
-  PassRefPtr<RefCountedClass> newPassRefPtr(std::move(oldPassRefPtr));
-  EXPECT_EQ(oldPassRefPtr.get(), nullptr);
-  EXPECT_EQ(newPassRefPtr.get(), rawPtr);
-  EXPECT_EQ(rawPtr->refCount(), 1);
+  PassRefPtr<RefCountedClass> old_pass_ref_ptr =
+      AdoptRef(new RefCountedClass());
+  RefCountedClass* raw_ptr = old_pass_ref_ptr.Get();
+  EXPECT_EQ(raw_ptr->RefCount(), 1);
+  PassRefPtr<RefCountedClass> new_pass_ref_ptr(std::move(old_pass_ref_ptr));
+  EXPECT_EQ(old_pass_ref_ptr.Get(), nullptr);
+  EXPECT_EQ(new_pass_ref_ptr.Get(), raw_ptr);
+  EXPECT_EQ(raw_ptr->RefCount(), 1);
 }
 
 }  // namespace WTF

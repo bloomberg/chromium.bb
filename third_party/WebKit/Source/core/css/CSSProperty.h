@@ -35,78 +35,78 @@ namespace blink {
 
 struct StylePropertyMetadata {
   DISALLOW_NEW();
-  StylePropertyMetadata(CSSPropertyID propertyID,
-                        bool isSetFromShorthand,
-                        int indexInShorthandsVector,
+  StylePropertyMetadata(CSSPropertyID property_id,
+                        bool is_set_from_shorthand,
+                        int index_in_shorthands_vector,
                         bool important,
                         bool implicit,
                         bool inherited)
-      : m_propertyID(propertyID),
-        m_isSetFromShorthand(isSetFromShorthand),
-        m_indexInShorthandsVector(indexInShorthandsVector),
-        m_important(important),
-        m_implicit(implicit),
-        m_inherited(inherited) {}
+      : property_id_(property_id),
+        is_set_from_shorthand_(is_set_from_shorthand),
+        index_in_shorthands_vector_(index_in_shorthands_vector),
+        important_(important),
+        implicit_(implicit),
+        inherited_(inherited) {}
 
-  CSSPropertyID shorthandID() const;
+  CSSPropertyID ShorthandID() const;
 
-  unsigned m_propertyID : 10;
-  unsigned m_isSetFromShorthand : 1;
+  unsigned property_id_ : 10;
+  unsigned is_set_from_shorthand_ : 1;
   // If this property was set as part of an ambiguous shorthand, gives the index
   // in the shorthands vector.
-  unsigned m_indexInShorthandsVector : 2;
-  unsigned m_important : 1;
+  unsigned index_in_shorthands_vector_ : 2;
+  unsigned important_ : 1;
   // Whether or not the property was set implicitly as the result of a
   // shorthand.
-  unsigned m_implicit : 1;
-  unsigned m_inherited : 1;
+  unsigned implicit_ : 1;
+  unsigned inherited_ : 1;
 };
 
 class CSSProperty {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  CSSProperty(CSSPropertyID propertyID,
+  CSSProperty(CSSPropertyID property_id,
               const CSSValue& value,
               bool important = false,
-              bool isSetFromShorthand = false,
-              int indexInShorthandsVector = 0,
+              bool is_set_from_shorthand = false,
+              int index_in_shorthands_vector = 0,
               bool implicit = false)
-      : m_metadata(propertyID,
-                   isSetFromShorthand,
-                   indexInShorthandsVector,
-                   important,
-                   implicit,
-                   CSSPropertyMetadata::isInheritedProperty(propertyID)),
-        m_value(value) {}
+      : metadata_(property_id,
+                  is_set_from_shorthand,
+                  index_in_shorthands_vector,
+                  important,
+                  implicit,
+                  CSSPropertyMetadata::IsInheritedProperty(property_id)),
+        value_(value) {}
 
   // FIXME: Remove this.
   CSSProperty(StylePropertyMetadata metadata, const CSSValue& value)
-      : m_metadata(metadata), m_value(value) {}
+      : metadata_(metadata), value_(value) {}
 
-  CSSPropertyID id() const {
-    return static_cast<CSSPropertyID>(m_metadata.m_propertyID);
+  CSSPropertyID Id() const {
+    return static_cast<CSSPropertyID>(metadata_.property_id_);
   }
-  bool isSetFromShorthand() const { return m_metadata.m_isSetFromShorthand; }
-  CSSPropertyID shorthandID() const { return m_metadata.shorthandID(); }
-  bool isImportant() const { return m_metadata.m_important; }
+  bool IsSetFromShorthand() const { return metadata_.is_set_from_shorthand_; }
+  CSSPropertyID ShorthandID() const { return metadata_.ShorthandID(); }
+  bool IsImportant() const { return metadata_.important_; }
 
-  const CSSValue* value() const { return m_value.get(); }
+  const CSSValue* Value() const { return value_.Get(); }
 
-  static CSSPropertyID resolveDirectionAwareProperty(CSSPropertyID,
+  static CSSPropertyID ResolveDirectionAwareProperty(CSSPropertyID,
                                                      TextDirection,
                                                      WritingMode);
-  static bool isAffectedByAllProperty(CSSPropertyID);
+  static bool IsAffectedByAllProperty(CSSPropertyID);
 
-  const StylePropertyMetadata& metadata() const { return m_metadata; }
+  const StylePropertyMetadata& Metadata() const { return metadata_; }
 
   bool operator==(const CSSProperty& other) const;
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_value); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(value_); }
 
  private:
-  StylePropertyMetadata m_metadata;
-  Member<const CSSValue> m_value;
+  StylePropertyMetadata metadata_;
+  Member<const CSSValue> value_;
 };
 
 }  // namespace blink

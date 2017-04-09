@@ -43,80 +43,80 @@ using namespace WTF;
 using namespace Unicode;
 using namespace XPath;
 
-Parser* Parser::currentParser = nullptr;
+Parser* Parser::current_parser_ = nullptr;
 
-enum XMLCat { NameStart, NameCont, NotPartOfName };
+enum XMLCat { kNameStart, kNameCont, kNotPartOfName };
 
 typedef HashMap<String, Step::Axis> AxisNamesMap;
 
-static XMLCat charCat(UChar aChar) {
+static XMLCat CharCat(UChar a_char) {
   // might need to add some special cases from the XML spec.
 
-  if (aChar == '_')
-    return NameStart;
+  if (a_char == '_')
+    return kNameStart;
 
-  if (aChar == '.' || aChar == '-')
-    return NameCont;
-  CharCategory category = Unicode::category(aChar);
-  if (category & (Letter_Uppercase | Letter_Lowercase | Letter_Other |
-                  Letter_Titlecase | Number_Letter))
-    return NameStart;
-  if (category & (Mark_NonSpacing | Mark_SpacingCombining | Mark_Enclosing |
-                  Letter_Modifier | Number_DecimalDigit))
-    return NameCont;
-  return NotPartOfName;
+  if (a_char == '.' || a_char == '-')
+    return kNameCont;
+  CharCategory category = Unicode::Category(a_char);
+  if (category & (kLetter_Uppercase | kLetter_Lowercase | kLetter_Other |
+                  kLetter_Titlecase | kNumber_Letter))
+    return kNameStart;
+  if (category & (kMark_NonSpacing | kMark_SpacingCombining | kMark_Enclosing |
+                  kLetter_Modifier | kNumber_DecimalDigit))
+    return kNameCont;
+  return kNotPartOfName;
 }
 
-static void setUpAxisNamesMap(AxisNamesMap& axisNames) {
+static void SetUpAxisNamesMap(AxisNamesMap& axis_names) {
   struct AxisName {
     const char* name;
     Step::Axis axis;
   };
-  const AxisName axisNameList[] = {
-      {"ancestor", Step::AncestorAxis},
-      {"ancestor-or-self", Step::AncestorOrSelfAxis},
-      {"attribute", Step::AttributeAxis},
-      {"child", Step::ChildAxis},
-      {"descendant", Step::DescendantAxis},
-      {"descendant-or-self", Step::DescendantOrSelfAxis},
-      {"following", Step::FollowingAxis},
-      {"following-sibling", Step::FollowingSiblingAxis},
-      {"namespace", Step::NamespaceAxis},
-      {"parent", Step::ParentAxis},
-      {"preceding", Step::PrecedingAxis},
-      {"preceding-sibling", Step::PrecedingSiblingAxis},
-      {"self", Step::SelfAxis}};
-  for (const auto& axisName : axisNameList)
-    axisNames.set(axisName.name, axisName.axis);
+  const AxisName kAxisNameList[] = {
+      {"ancestor", Step::kAncestorAxis},
+      {"ancestor-or-self", Step::kAncestorOrSelfAxis},
+      {"attribute", Step::kAttributeAxis},
+      {"child", Step::kChildAxis},
+      {"descendant", Step::kDescendantAxis},
+      {"descendant-or-self", Step::kDescendantOrSelfAxis},
+      {"following", Step::kFollowingAxis},
+      {"following-sibling", Step::kFollowingSiblingAxis},
+      {"namespace", Step::kNamespaceAxis},
+      {"parent", Step::kParentAxis},
+      {"preceding", Step::kPrecedingAxis},
+      {"preceding-sibling", Step::kPrecedingSiblingAxis},
+      {"self", Step::kSelfAxis}};
+  for (const auto& axis_name : kAxisNameList)
+    axis_names.Set(axis_name.name, axis_name.axis);
 }
 
-static bool isAxisName(const String& name, Step::Axis& type) {
-  DEFINE_STATIC_LOCAL(AxisNamesMap, axisNames, ());
+static bool IsAxisName(const String& name, Step::Axis& type) {
+  DEFINE_STATIC_LOCAL(AxisNamesMap, axis_names, ());
 
-  if (axisNames.isEmpty())
-    setUpAxisNamesMap(axisNames);
+  if (axis_names.IsEmpty())
+    SetUpAxisNamesMap(axis_names);
 
-  AxisNamesMap::iterator it = axisNames.find(name);
-  if (it == axisNames.end())
+  AxisNamesMap::iterator it = axis_names.Find(name);
+  if (it == axis_names.end())
     return false;
   type = it->value;
   return true;
 }
 
-static bool isNodeTypeName(const String& name) {
-  DEFINE_STATIC_LOCAL(HashSet<String>, nodeTypeNames,
+static bool IsNodeTypeName(const String& name) {
+  DEFINE_STATIC_LOCAL(HashSet<String>, node_type_names,
                       ({
                           "comment", "text", "processing-instruction", "node",
                       }));
-  return nodeTypeNames.contains(name);
+  return node_type_names.Contains(name);
 }
 
 // Returns whether the current token can possibly be a binary operator, given
 // the previous token. Necessary to disambiguate some of the operators
 // (* (multiply), div, and, or, mod) in the [32] Operator rule
 // (check http://www.w3.org/TR/xpath#exprlex).
-bool Parser::isBinaryOperatorContext() const {
-  switch (m_lastTokenType) {
+bool Parser::IsBinaryOperatorContext() const {
+  switch (last_token_type_) {
     case 0:
     case '@':
     case AXISNAME:
@@ -139,57 +139,57 @@ bool Parser::isBinaryOperatorContext() const {
   }
 }
 
-void Parser::skipWS() {
-  while (m_nextPos < m_data.length() && isSpaceOrNewline(m_data[m_nextPos]))
-    ++m_nextPos;
+void Parser::SkipWS() {
+  while (next_pos_ < data_.length() && IsSpaceOrNewline(data_[next_pos_]))
+    ++next_pos_;
 }
 
-Token Parser::makeTokenAndAdvance(int code, int advance) {
-  m_nextPos += advance;
+Token Parser::MakeTokenAndAdvance(int code, int advance) {
+  next_pos_ += advance;
   return Token(code);
 }
 
-Token Parser::makeTokenAndAdvance(int code,
+Token Parser::MakeTokenAndAdvance(int code,
                                   NumericOp::Opcode val,
                                   int advance) {
-  m_nextPos += advance;
+  next_pos_ += advance;
   return Token(code, val);
 }
 
-Token Parser::makeTokenAndAdvance(int code, EqTestOp::Opcode val, int advance) {
-  m_nextPos += advance;
+Token Parser::MakeTokenAndAdvance(int code, EqTestOp::Opcode val, int advance) {
+  next_pos_ += advance;
   return Token(code, val);
 }
 
 // Returns next char if it's there and interesting, 0 otherwise
-char Parser::peekAheadHelper() {
-  if (m_nextPos + 1 >= m_data.length())
+char Parser::PeekAheadHelper() {
+  if (next_pos_ + 1 >= data_.length())
     return 0;
-  UChar next = m_data[m_nextPos + 1];
+  UChar next = data_[next_pos_ + 1];
   if (next >= 0xff)
     return 0;
   return next;
 }
 
-char Parser::peekCurHelper() {
-  if (m_nextPos >= m_data.length())
+char Parser::PeekCurHelper() {
+  if (next_pos_ >= data_.length())
     return 0;
-  UChar next = m_data[m_nextPos];
+  UChar next = data_[next_pos_];
   if (next >= 0xff)
     return 0;
   return next;
 }
 
-Token Parser::lexString() {
-  UChar delimiter = m_data[m_nextPos];
-  int startPos = m_nextPos + 1;
+Token Parser::LexString() {
+  UChar delimiter = data_[next_pos_];
+  int start_pos = next_pos_ + 1;
 
-  for (m_nextPos = startPos; m_nextPos < m_data.length(); ++m_nextPos) {
-    if (m_data[m_nextPos] == delimiter) {
-      String value = m_data.substring(startPos, m_nextPos - startPos);
-      if (value.isNull())
+  for (next_pos_ = start_pos; next_pos_ < data_.length(); ++next_pos_) {
+    if (data_[next_pos_] == delimiter) {
+      String value = data_.Substring(start_pos, next_pos_ - start_pos);
+      if (value.IsNull())
         value = "";
-      ++m_nextPos;  // Consume the char.
+      ++next_pos_;  // Consume the char.
       return Token(LITERAL, value);
     }
   }
@@ -198,74 +198,74 @@ Token Parser::lexString() {
   return Token(XPATH_ERROR);
 }
 
-Token Parser::lexNumber() {
-  int startPos = m_nextPos;
-  bool seenDot = false;
+Token Parser::LexNumber() {
+  int start_pos = next_pos_;
+  bool seen_dot = false;
 
   // Go until end or a non-digits character.
-  for (; m_nextPos < m_data.length(); ++m_nextPos) {
-    UChar aChar = m_data[m_nextPos];
-    if (aChar >= 0xff)
+  for (; next_pos_ < data_.length(); ++next_pos_) {
+    UChar a_char = data_[next_pos_];
+    if (a_char >= 0xff)
       break;
 
-    if (aChar < '0' || aChar > '9') {
-      if (aChar == '.' && !seenDot)
-        seenDot = true;
+    if (a_char < '0' || a_char > '9') {
+      if (a_char == '.' && !seen_dot)
+        seen_dot = true;
       else
         break;
     }
   }
 
-  return Token(NUMBER, m_data.substring(startPos, m_nextPos - startPos));
+  return Token(NUMBER, data_.Substring(start_pos, next_pos_ - start_pos));
 }
 
-bool Parser::lexNCName(String& name) {
-  int startPos = m_nextPos;
-  if (m_nextPos >= m_data.length())
+bool Parser::LexNCName(String& name) {
+  int start_pos = next_pos_;
+  if (next_pos_ >= data_.length())
     return false;
 
-  if (charCat(m_data[m_nextPos]) != NameStart)
+  if (CharCat(data_[next_pos_]) != kNameStart)
     return false;
 
   // Keep going until we get a character that's not good for names.
-  for (; m_nextPos < m_data.length(); ++m_nextPos) {
-    if (charCat(m_data[m_nextPos]) == NotPartOfName)
+  for (; next_pos_ < data_.length(); ++next_pos_) {
+    if (CharCat(data_[next_pos_]) == kNotPartOfName)
       break;
   }
 
-  name = m_data.substring(startPos, m_nextPos - startPos);
+  name = data_.Substring(start_pos, next_pos_ - start_pos);
   return true;
 }
 
-bool Parser::lexQName(String& name) {
+bool Parser::LexQName(String& name) {
   String n1;
-  if (!lexNCName(n1))
+  if (!LexNCName(n1))
     return false;
 
-  skipWS();
+  SkipWS();
 
   // If the next character is :, what we just got it the prefix, if not,
   // it's the whole thing.
-  if (peekAheadHelper() != ':') {
+  if (PeekAheadHelper() != ':') {
     name = n1;
     return true;
   }
 
   String n2;
-  if (!lexNCName(n2))
+  if (!LexNCName(n2))
     return false;
 
   name = n1 + ":" + n2;
   return true;
 }
 
-Token Parser::nextTokenInternal() {
-  skipWS();
+Token Parser::NextTokenInternal() {
+  SkipWS();
 
-  if (m_nextPos >= m_data.length())
+  if (next_pos_ >= data_.length())
     return Token(0);
 
-  char code = peekCurHelper();
+  char code = PeekCurHelper();
   switch (code) {
     case '(':
     case ')':
@@ -274,10 +274,10 @@ Token Parser::nextTokenInternal() {
     case '@':
     case ',':
     case '|':
-      return makeTokenAndAdvance(code);
+      return MakeTokenAndAdvance(code);
     case '\'':
     case '\"':
-      return lexString();
+      return LexString();
     case '0':
     case '1':
     case '2':
@@ -288,78 +288,78 @@ Token Parser::nextTokenInternal() {
     case '7':
     case '8':
     case '9':
-      return lexNumber();
+      return LexNumber();
     case '.': {
-      char next = peekAheadHelper();
+      char next = PeekAheadHelper();
       if (next == '.')
-        return makeTokenAndAdvance(DOTDOT, 2);
+        return MakeTokenAndAdvance(DOTDOT, 2);
       if (next >= '0' && next <= '9')
-        return lexNumber();
-      return makeTokenAndAdvance('.');
+        return LexNumber();
+      return MakeTokenAndAdvance('.');
     }
     case '/':
-      if (peekAheadHelper() == '/')
-        return makeTokenAndAdvance(SLASHSLASH, 2);
-      return makeTokenAndAdvance('/');
+      if (PeekAheadHelper() == '/')
+        return MakeTokenAndAdvance(SLASHSLASH, 2);
+      return MakeTokenAndAdvance('/');
     case '+':
-      return makeTokenAndAdvance(PLUS);
+      return MakeTokenAndAdvance(PLUS);
     case '-':
-      return makeTokenAndAdvance(MINUS);
+      return MakeTokenAndAdvance(MINUS);
     case '=':
-      return makeTokenAndAdvance(EQOP, EqTestOp::OpcodeEqual);
+      return MakeTokenAndAdvance(EQOP, EqTestOp::kOpcodeEqual);
     case '!':
-      if (peekAheadHelper() == '=')
-        return makeTokenAndAdvance(EQOP, EqTestOp::OpcodeNotEqual, 2);
+      if (PeekAheadHelper() == '=')
+        return MakeTokenAndAdvance(EQOP, EqTestOp::kOpcodeNotEqual, 2);
       return Token(XPATH_ERROR);
     case '<':
-      if (peekAheadHelper() == '=')
-        return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeLessOrEqual, 2);
-      return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeLessThan);
+      if (PeekAheadHelper() == '=')
+        return MakeTokenAndAdvance(RELOP, EqTestOp::kOpcodeLessOrEqual, 2);
+      return MakeTokenAndAdvance(RELOP, EqTestOp::kOpcodeLessThan);
     case '>':
-      if (peekAheadHelper() == '=')
-        return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeGreaterOrEqual, 2);
-      return makeTokenAndAdvance(RELOP, EqTestOp::OpcodeGreaterThan);
+      if (PeekAheadHelper() == '=')
+        return MakeTokenAndAdvance(RELOP, EqTestOp::kOpcodeGreaterOrEqual, 2);
+      return MakeTokenAndAdvance(RELOP, EqTestOp::kOpcodeGreaterThan);
     case '*':
-      if (isBinaryOperatorContext())
-        return makeTokenAndAdvance(MULOP, NumericOp::OP_Mul);
-      ++m_nextPos;
+      if (IsBinaryOperatorContext())
+        return MakeTokenAndAdvance(MULOP, NumericOp::kOP_Mul);
+      ++next_pos_;
       return Token(NAMETEST, "*");
     case '$': {  // $ QName
-      m_nextPos++;
+      next_pos_++;
       String name;
-      if (!lexQName(name))
+      if (!LexQName(name))
         return Token(XPATH_ERROR);
       return Token(VARIABLEREFERENCE, name);
     }
   }
 
   String name;
-  if (!lexNCName(name))
+  if (!LexNCName(name))
     return Token(XPATH_ERROR);
 
-  skipWS();
+  SkipWS();
   // If we're in an operator context, check for any operator names
-  if (isBinaryOperatorContext()) {
+  if (IsBinaryOperatorContext()) {
     if (name == "and")  // ### hash?
       return Token(AND);
     if (name == "or")
       return Token(OR);
     if (name == "mod")
-      return Token(MULOP, NumericOp::OP_Mod);
+      return Token(MULOP, NumericOp::kOP_Mod);
     if (name == "div")
-      return Token(MULOP, NumericOp::OP_Div);
+      return Token(MULOP, NumericOp::kOP_Div);
   }
 
   // See whether we are at a :
-  if (peekCurHelper() == ':') {
-    m_nextPos++;
+  if (PeekCurHelper() == ':') {
+    next_pos_++;
     // Any chance it's an axis name?
-    if (peekCurHelper() == ':') {
-      m_nextPos++;
+    if (PeekCurHelper() == ':') {
+      next_pos_++;
 
       // It might be an axis name.
       Step::Axis axis;
-      if (isAxisName(name, axis))
+      if (IsAxisName(name, axis))
         return Token(AXISNAME, axis);
       // Ugh, :: is only valid in axis names -> error
       return Token(XPATH_ERROR);
@@ -367,26 +367,26 @@ Token Parser::nextTokenInternal() {
 
     // Seems like this is a fully qualified qname, or perhaps the * modified
     // one from NameTest
-    skipWS();
-    if (peekCurHelper() == '*') {
-      m_nextPos++;
+    SkipWS();
+    if (PeekCurHelper() == '*') {
+      next_pos_++;
       return Token(NAMETEST, name + ":*");
     }
 
     // Make a full qname.
     String n2;
-    if (!lexNCName(n2))
+    if (!LexNCName(n2))
       return Token(XPATH_ERROR);
 
     name = name + ":" + n2;
   }
 
-  skipWS();
-  if (peekCurHelper() == '(') {
+  SkipWS();
+  if (PeekCurHelper() == '(') {
     // Note: we don't swallow the ( here!
 
     // Either node type of function name
-    if (isNodeTypeName(name)) {
+    if (IsNodeTypeName(name)) {
       if (name == "processing-instruction")
         return Token(PI, name);
 
@@ -400,30 +400,30 @@ Token Parser::nextTokenInternal() {
   return Token(NAMETEST, name);
 }
 
-Token Parser::nextToken() {
-  Token toRet = nextTokenInternal();
-  m_lastTokenType = toRet.type;
-  return toRet;
+Token Parser::NextToken() {
+  Token to_ret = NextTokenInternal();
+  last_token_type_ = to_ret.type;
+  return to_ret;
 }
 
 Parser::Parser() {
-  reset(String());
+  Reset(String());
 }
 
 Parser::~Parser() {}
 
-void Parser::reset(const String& data) {
-  m_nextPos = 0;
-  m_data = data;
-  m_lastTokenType = 0;
+void Parser::Reset(const String& data) {
+  next_pos_ = 0;
+  data_ = data;
+  last_token_type_ = 0;
 
-  m_topExpr = nullptr;
-  m_gotNamespaceError = false;
+  top_expr_ = nullptr;
+  got_namespace_error_ = false;
 }
 
-int Parser::lex(void* data) {
+int Parser::Lex(void* data) {
   YYSTYPE* yylval = static_cast<YYSTYPE*>(data);
-  Token tok = nextToken();
+  Token tok = NextToken();
 
   switch (tok.type) {
     case AXISNAME:
@@ -444,79 +444,79 @@ int Parser::lex(void* data) {
     case NUMBER:
     case NAMETEST:
       yylval->str = new String(tok.str);
-      registerString(yylval->str);
+      RegisterString(yylval->str);
       break;
   }
 
   return tok.type;
 }
 
-bool Parser::expandQName(const String& qName,
-                         AtomicString& localName,
-                         AtomicString& namespaceURI) {
-  size_t colon = qName.find(':');
+bool Parser::ExpandQName(const String& q_name,
+                         AtomicString& local_name,
+                         AtomicString& namespace_uri) {
+  size_t colon = q_name.Find(':');
   if (colon != kNotFound) {
-    if (!m_resolver)
+    if (!resolver_)
       return false;
-    namespaceURI = m_resolver->lookupNamespaceURI(qName.left(colon));
-    if (namespaceURI.isNull())
+    namespace_uri = resolver_->lookupNamespaceURI(q_name.Left(colon));
+    if (namespace_uri.IsNull())
       return false;
-    localName = AtomicString(qName.substring(colon + 1));
+    local_name = AtomicString(q_name.Substring(colon + 1));
   } else {
-    localName = AtomicString(qName);
+    local_name = AtomicString(q_name);
   }
 
   return true;
 }
 
-Expression* Parser::parseStatement(const String& statement,
+Expression* Parser::ParseStatement(const String& statement,
                                    XPathNSResolver* resolver,
-                                   ExceptionState& exceptionState) {
-  reset(statement);
+                                   ExceptionState& exception_state) {
+  Reset(statement);
 
-  m_resolver = resolver;
+  resolver_ = resolver;
 
-  Parser* oldParser = currentParser;
-  currentParser = this;
-  int parseError = xpathyyparse(this);
-  currentParser = oldParser;
+  Parser* old_parser = current_parser_;
+  current_parser_ = this;
+  int parse_error = xpathyyparse(this);
+  current_parser_ = old_parser;
 
-  if (parseError) {
-    m_strings.clear();
+  if (parse_error) {
+    strings_.Clear();
 
-    m_topExpr = nullptr;
+    top_expr_ = nullptr;
 
-    if (m_gotNamespaceError)
-      exceptionState.throwDOMException(
-          NamespaceError,
+    if (got_namespace_error_)
+      exception_state.ThrowDOMException(
+          kNamespaceError,
           "The string '" + statement + "' contains unresolvable namespaces.");
     else
-      exceptionState.throwDOMException(
-          SyntaxError,
+      exception_state.ThrowDOMException(
+          kSyntaxError,
           "The string '" + statement + "' is not a valid XPath expression.");
     return nullptr;
   }
-  DCHECK_EQ(m_strings.size(), 0u);
-  Expression* result = m_topExpr;
-  m_topExpr = nullptr;
+  DCHECK_EQ(strings_.size(), 0u);
+  Expression* result = top_expr_;
+  top_expr_ = nullptr;
 
   return result;
 }
 
-void Parser::registerString(String* s) {
+void Parser::RegisterString(String* s) {
   if (!s)
     return;
 
-  DCHECK(!m_strings.contains(s));
-  m_strings.insert(WTF::wrapUnique(s));
+  DCHECK(!strings_.Contains(s));
+  strings_.insert(WTF::WrapUnique(s));
 }
 
-void Parser::deleteString(String* s) {
+void Parser::DeleteString(String* s) {
   if (!s)
     return;
 
-  DCHECK(m_strings.contains(s));
-  m_strings.erase(s);
+  DCHECK(strings_.Contains(s));
+  strings_.erase(s);
 }
 
 }  // namespace blink

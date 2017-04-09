@@ -139,13 +139,13 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   ~TestWebURLLoaderClient() override {}
 
   // blink::WebURLLoaderClient implementation:
-  bool willFollowRedirect(
+  bool WillFollowRedirect(
       blink::WebURLRequest& newRequest,
       const blink::WebURLResponse& redirectResponse) override {
     EXPECT_TRUE(loader_);
 
     if (check_redirect_request_priority_)
-      EXPECT_EQ(redirect_request_priority, newRequest.getPriority());
+      EXPECT_EQ(redirect_request_priority, newRequest.GetPriority());
 
     // No test currently simulates mutiple redirects.
     EXPECT_FALSE(did_receive_redirect_);
@@ -157,13 +157,12 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     return true;
   }
 
-  void didSendData(unsigned long long bytesSent,
+  void DidSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override {
     EXPECT_TRUE(loader_);
   }
 
-  void didReceiveResponse(
-      const blink::WebURLResponse& response) override {
+  void DidReceiveResponse(const blink::WebURLResponse& response) override {
     EXPECT_TRUE(loader_);
     EXPECT_FALSE(did_receive_response_);
 
@@ -173,17 +172,17 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void didDownloadData(int dataLength, int encodedDataLength) override {
+  void DidDownloadData(int dataLength, int encodedDataLength) override {
     EXPECT_TRUE(loader_);
   }
 
-  void didReceiveData(const char* data, int dataLength) override {
+  void DidReceiveData(const char* data, int dataLength) override {
     EXPECT_TRUE(loader_);
     // The response should have started, but must not have finished, or failed.
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
     EXPECT_EQ(net::OK, error_.reason);
-    EXPECT_EQ("", error_.domain.utf8());
+    EXPECT_EQ("", error_.domain.Utf8());
 
     received_data_.append(data, dataLength);
 
@@ -191,7 +190,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void didFinishLoading(double finishTime,
+  void DidFinishLoading(double finishTime,
                         int64_t totalEncodedDataLength,
                         int64_t totalEncodedBodyLength) override {
     EXPECT_TRUE(loader_);
@@ -203,7 +202,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void didFail(const blink::WebURLError& error,
+  void DidFail(const blink::WebURLError& error,
                int64_t totalEncodedDataLength,
                int64_t totalEncodedBodyLength) override {
     EXPECT_TRUE(loader_);
@@ -267,17 +266,17 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoStartAsyncRequest() {
     blink::WebURLRequest request{GURL(kTestURL)};
-    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
-    client()->loader()->loadAsynchronously(request, client());
+    request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+    client()->loader()->LoadAsynchronously(request, client());
     ASSERT_TRUE(peer());
   }
 
   void DoStartAsyncRequestWithPriority(
       blink::WebURLRequest::Priority priority) {
     blink::WebURLRequest request{GURL(kTestURL)};
-    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
-    request.setPriority(priority);
-    client()->loader()->loadAsynchronously(request, client());
+    request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+    request.SetPriority(priority);
+    client()->loader()->LoadAsynchronously(request, client());
     ASSERT_TRUE(peer());
   }
 
@@ -327,7 +326,7 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
     EXPECT_EQ(net::OK, client()->error().reason);
-    EXPECT_EQ("", client()->error().domain.utf8());
+    EXPECT_EQ("", client()->error().domain.Utf8());
   }
 
   void DoFailRequest() {
@@ -336,7 +335,7 @@ class WebURLLoaderImplTest : public testing::Test {
                                strlen(kTestData), strlen(kTestData));
     EXPECT_FALSE(client()->did_finish());
     EXPECT_EQ(net::ERR_FAILED, client()->error().reason);
-    EXPECT_EQ(net::kErrorDomain, client()->error().domain.utf8());
+    EXPECT_EQ(net::kErrorDomain, client()->error().domain.Utf8());
   }
 
   void DoReceiveResponseFtp() {
@@ -387,9 +386,9 @@ TEST_F(WebURLLoaderImplTest, Redirect) {
 
 TEST_F(WebURLLoaderImplTest, RedirectCorrectPriority) {
   DoStartAsyncRequestWithPriority(
-      blink::WebURLRequest::Priority::PriorityVeryHigh);
+      blink::WebURLRequest::Priority::kPriorityVeryHigh);
   client()->set_redirect_request_priority(
-      blink::WebURLRequest::Priority::PriorityVeryHigh);
+      blink::WebURLRequest::Priority::kPriorityVeryHigh);
   DoReceiveRedirect();
   DoReceiveResponse();
   DoReceiveData();
@@ -445,7 +444,7 @@ TEST_F(WebURLLoaderImplTest, DeleteOnFail) {
 
 TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
   client()->DeleteLoader();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(client()->did_receive_response());
@@ -455,18 +454,18 @@ TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
 
 TEST_F(WebURLLoaderImplTest, DataURL) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_TRUE(client()->did_finish());
   EXPECT_EQ(net::OK, client()->error().reason);
-  EXPECT_EQ("", client()->error().domain.utf8());
+  EXPECT_EQ("", client()->error().domain.Utf8());
 }
 
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_response();
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_receive_response());
   EXPECT_EQ("", client()->received_data());
@@ -476,7 +475,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_data();
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_receive_response());
   EXPECT_EQ("blah!", client()->received_data());
@@ -486,7 +485,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_finish();
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_receive_response());
   EXPECT_EQ("blah!", client()->received_data());
@@ -495,7 +494,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
 
 TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
 
   // setDefersLoading() might be called with either false or true in no
   // specific order. The user of the API will not have sufficient information
@@ -503,34 +502,34 @@ TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   // handle calling setDefersLoading any number of times with any values from
   // any point in time.
 
-  client()->loader()->setDefersLoading(false);
-  client()->loader()->setDefersLoading(true);
-  client()->loader()->setDefersLoading(true);
+  client()->loader()->SetDefersLoading(false);
+  client()->loader()->SetDefersLoading(true);
+  client()->loader()->SetDefersLoading(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(client()->did_finish());
 
-  client()->loader()->setDefersLoading(false);
-  client()->loader()->setDefersLoading(true);
+  client()->loader()->SetDefersLoading(false);
+  client()->loader()->SetDefersLoading(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(client()->did_finish());
 
-  client()->loader()->setDefersLoading(false);
+  client()->loader()->SetDefersLoading(false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_finish());
 
-  client()->loader()->setDefersLoading(true);
-  client()->loader()->setDefersLoading(false);
-  client()->loader()->setDefersLoading(false);
+  client()->loader()->SetDefersLoading(true);
+  client()->loader()->SetDefersLoading(false);
+  client()->loader()->SetDefersLoading(false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(client()->did_finish());
 
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_EQ(net::OK, client()->error().reason);
-  EXPECT_EQ("", client()->error().domain.utf8());
+  EXPECT_EQ("", client()->error().domain.Utf8());
 }
 
 TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
-  client()->loader()->setDefersLoading(true);
+  client()->loader()->SetDefersLoading(true);
   EXPECT_FALSE(dispatcher()->defers_loading());
   DoStartAsyncRequest();
   EXPECT_TRUE(dispatcher()->defers_loading());
@@ -601,19 +600,19 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   const GURL kStreamURL = GURL("http://bar");
   const std::string kMimeType = "text/html";
   blink::WebURLRequest request(kNavigationURL);
-  request.setFrameType(blink::WebURLRequest::FrameTypeTopLevel);
-  request.setRequestContext(blink::WebURLRequest::RequestContextFrame);
+  request.SetFrameType(blink::WebURLRequest::kFrameTypeTopLevel);
+  request.SetRequestContext(blink::WebURLRequest::kRequestContextFrame);
   std::unique_ptr<StreamOverrideParameters> stream_override(
       new StreamOverrideParameters());
   stream_override->stream_url = kStreamURL;
   stream_override->response.mime_type = kMimeType;
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(std::move(stream_override));
-  request.setExtraData(extra_data);
+  request.SetExtraData(extra_data);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBrowserSideNavigation);
 
-  client()->loader()->loadAsynchronously(request, client());
+  client()->loader()->LoadAsynchronously(request, client());
 
   // The stream url should have been added to the ResourceRequest.
   ASSERT_TRUE(peer());
@@ -625,8 +624,8 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   EXPECT_TRUE(client()->did_receive_response());
 
   // The response info should have been overriden.
-  ASSERT_FALSE(client()->response().isNull());
-  EXPECT_EQ(kMimeType, client()->response().mimeType().latin1());
+  ASSERT_FALSE(client()->response().IsNull());
+  EXPECT_EQ(kMimeType, client()->response().MimeType().Latin1());
 
   DoReceiveData();
   DoCompleteRequest();
@@ -656,7 +655,7 @@ TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
     info.socket_address = net::HostPortPair(test.ip, 443);
     blink::WebURLResponse response;
     WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true);
-    EXPECT_EQ(test.expected, response.remoteIPAddress().utf8());
+    EXPECT_EQ(test.expected, response.RemoteIPAddress().Utf8());
   };
 }
 
@@ -668,7 +667,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   const int kEncodedDataLength = 130;
   const GURL url(kTestURL);
   blink::WebURLRequest request(url);
-  request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
+  request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
 
   // Prepare a mock response
   SyncLoadResponse sync_load_response;
@@ -685,7 +684,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   blink::WebData data;
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
-  client()->loader()->loadSynchronously(
+  client()->loader()->LoadSynchronously(
       request, response, error, data, encoded_data_length, encoded_body_length);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);

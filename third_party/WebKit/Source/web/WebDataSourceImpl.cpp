@@ -42,150 +42,151 @@
 
 namespace blink {
 
-WebDataSourceImpl* WebDataSourceImpl::create(
+WebDataSourceImpl* WebDataSourceImpl::Create(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& data,
-    ClientRedirectPolicy clientRedirectPolicy) {
+    ClientRedirectPolicy client_redirect_policy) {
   DCHECK(frame);
 
-  return new WebDataSourceImpl(frame, request, data, clientRedirectPolicy);
+  return new WebDataSourceImpl(frame, request, data, client_redirect_policy);
 }
 
-const WebURLRequest& WebDataSourceImpl::originalRequest() const {
-  return m_originalRequestWrapper;
+const WebURLRequest& WebDataSourceImpl::OriginalRequest() const {
+  return original_request_wrapper_;
 }
 
-const WebURLRequest& WebDataSourceImpl::getRequest() const {
-  return m_requestWrapper;
+const WebURLRequest& WebDataSourceImpl::GetRequest() const {
+  return request_wrapper_;
 }
 
-const WebURLResponse& WebDataSourceImpl::response() const {
-  return m_responseWrapper;
+const WebURLResponse& WebDataSourceImpl::GetResponse() const {
+  return response_wrapper_;
 }
 
-bool WebDataSourceImpl::hasUnreachableURL() const {
-  return !DocumentLoader::unreachableURL().isEmpty();
+bool WebDataSourceImpl::HasUnreachableURL() const {
+  return !DocumentLoader::UnreachableURL().IsEmpty();
 }
 
-WebURL WebDataSourceImpl::unreachableURL() const {
-  return DocumentLoader::unreachableURL();
+WebURL WebDataSourceImpl::UnreachableURL() const {
+  return DocumentLoader::UnreachableURL();
 }
 
-void WebDataSourceImpl::appendRedirect(const WebURL& url) {
-  DocumentLoader::appendRedirect(url);
+void WebDataSourceImpl::AppendRedirect(const WebURL& url) {
+  DocumentLoader::AppendRedirect(url);
 }
 
-void WebDataSourceImpl::updateNavigation(double redirectStartTime,
-                                         double redirectEndTime,
-                                         double fetchStartTime,
-                                         bool hasRedirect) {
+void WebDataSourceImpl::UpdateNavigation(double redirect_start_time,
+                                         double redirect_end_time,
+                                         double fetch_start_time,
+                                         bool has_redirect) {
   // Updates the redirection timing if there is at least one redirection
   // (between two URLs).
-  if (hasRedirect) {
-    timing().setRedirectStart(redirectStartTime);
-    timing().setRedirectEnd(redirectEndTime);
+  if (has_redirect) {
+    GetTiming().SetRedirectStart(redirect_start_time);
+    GetTiming().SetRedirectEnd(redirect_end_time);
   }
-  timing().setFetchStart(fetchStartTime);
+  GetTiming().SetFetchStart(fetch_start_time);
 }
 
-void WebDataSourceImpl::redirectChain(WebVector<WebURL>& result) const {
-  result.assign(m_redirectChain);
+void WebDataSourceImpl::RedirectChain(WebVector<WebURL>& result) const {
+  result.Assign(redirect_chain_);
 }
 
-bool WebDataSourceImpl::isClientRedirect() const {
-  return DocumentLoader::isClientRedirect();
+bool WebDataSourceImpl::IsClientRedirect() const {
+  return DocumentLoader::IsClientRedirect();
 }
 
-bool WebDataSourceImpl::replacesCurrentHistoryItem() const {
-  return DocumentLoader::replacesCurrentHistoryItem();
+bool WebDataSourceImpl::ReplacesCurrentHistoryItem() const {
+  return DocumentLoader::ReplacesCurrentHistoryItem();
 }
 
-WebNavigationType WebDataSourceImpl::navigationType() const {
-  return toWebNavigationType(DocumentLoader::getNavigationType());
+WebNavigationType WebDataSourceImpl::GetNavigationType() const {
+  return ToWebNavigationType(DocumentLoader::GetNavigationType());
 }
 
-WebDataSource::ExtraData* WebDataSourceImpl::getExtraData() const {
-  return m_extraData.get();
+WebDataSource::ExtraData* WebDataSourceImpl::GetExtraData() const {
+  return extra_data_.get();
 }
 
-void WebDataSourceImpl::setExtraData(ExtraData* extraData) {
+void WebDataSourceImpl::SetExtraData(ExtraData* extra_data) {
   // extraData can't be a std::unique_ptr because setExtraData is a WebKit API
   // function.
-  m_extraData = WTF::wrapUnique(extraData);
+  extra_data_ = WTF::WrapUnique(extra_data);
 }
 
-void WebDataSourceImpl::setNavigationStartTime(double navigationStart) {
-  timing().setNavigationStart(navigationStart);
+void WebDataSourceImpl::SetNavigationStartTime(double navigation_start) {
+  GetTiming().SetNavigationStart(navigation_start);
 }
 
-WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type) {
+WebNavigationType WebDataSourceImpl::ToWebNavigationType(NavigationType type) {
   switch (type) {
-    case NavigationTypeLinkClicked:
-      return WebNavigationTypeLinkClicked;
-    case NavigationTypeFormSubmitted:
-      return WebNavigationTypeFormSubmitted;
-    case NavigationTypeBackForward:
-      return WebNavigationTypeBackForward;
-    case NavigationTypeReload:
-      return WebNavigationTypeReload;
-    case NavigationTypeFormResubmitted:
-      return WebNavigationTypeFormResubmitted;
-    case NavigationTypeOther:
+    case kNavigationTypeLinkClicked:
+      return kWebNavigationTypeLinkClicked;
+    case kNavigationTypeFormSubmitted:
+      return kWebNavigationTypeFormSubmitted;
+    case kNavigationTypeBackForward:
+      return kWebNavigationTypeBackForward;
+    case kNavigationTypeReload:
+      return kWebNavigationTypeReload;
+    case kNavigationTypeFormResubmitted:
+      return kWebNavigationTypeFormResubmitted;
+    case kNavigationTypeOther:
     default:
-      return WebNavigationTypeOther;
+      return kWebNavigationTypeOther;
   }
 }
 
-WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame,
-                                     const ResourceRequest& request,
-                                     const SubstituteData& data,
-                                     ClientRedirectPolicy clientRedirectPolicy)
-    : DocumentLoader(frame, request, data, clientRedirectPolicy),
-      m_originalRequestWrapper(DocumentLoader::originalRequest()),
-      m_requestWrapper(DocumentLoader::getRequest()),
-      m_responseWrapper(DocumentLoader::response()) {}
+WebDataSourceImpl::WebDataSourceImpl(
+    LocalFrame* frame,
+    const ResourceRequest& request,
+    const SubstituteData& data,
+    ClientRedirectPolicy client_redirect_policy)
+    : DocumentLoader(frame, request, data, client_redirect_policy),
+      original_request_wrapper_(DocumentLoader::OriginalRequest()),
+      request_wrapper_(DocumentLoader::GetRequest()),
+      response_wrapper_(DocumentLoader::GetResponse()) {}
 
 WebDataSourceImpl::~WebDataSourceImpl() {
   // Verify that detachFromFrame() has been called.
-  DCHECK(!m_extraData);
+  DCHECK(!extra_data_);
 }
 
-void WebDataSourceImpl::detachFromFrame() {
-  DocumentLoader::detachFromFrame();
-  m_extraData.reset();
+void WebDataSourceImpl::DetachFromFrame() {
+  DocumentLoader::DetachFromFrame();
+  extra_data_.reset();
 }
 
-void WebDataSourceImpl::setSubresourceFilter(
-    WebDocumentSubresourceFilter* subresourceFilter) {
-  DocumentLoader::setSubresourceFilter(
-      SubresourceFilter::create(this, WTF::wrapUnique(subresourceFilter)));
+void WebDataSourceImpl::SetSubresourceFilter(
+    WebDocumentSubresourceFilter* subresource_filter) {
+  DocumentLoader::SetSubresourceFilter(
+      SubresourceFilter::Create(this, WTF::WrapUnique(subresource_filter)));
 }
 
-void WebDataSourceImpl::setServiceWorkerNetworkProvider(
+void WebDataSourceImpl::SetServiceWorkerNetworkProvider(
     std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
-  DocumentLoader::setServiceWorkerNetworkProvider(std::move(provider));
+  DocumentLoader::SetServiceWorkerNetworkProvider(std::move(provider));
 }
 
 WebServiceWorkerNetworkProvider*
-WebDataSourceImpl::getServiceWorkerNetworkProvider() {
-  return DocumentLoader::getServiceWorkerNetworkProvider();
+WebDataSourceImpl::GetServiceWorkerNetworkProvider() {
+  return DocumentLoader::GetServiceWorkerNetworkProvider();
 }
 
-void WebDataSourceImpl::setSourceLocation(
-    const WebSourceLocation& sourceLocation) {
+void WebDataSourceImpl::SetSourceLocation(
+    const WebSourceLocation& source_location) {
   std::unique_ptr<SourceLocation> location =
-      SourceLocation::create(sourceLocation.url, sourceLocation.lineNumber,
-                             sourceLocation.columnNumber, nullptr);
-  DocumentLoader::setSourceLocation(std::move(location));
+      SourceLocation::Create(source_location.url, source_location.line_number,
+                             source_location.column_number, nullptr);
+  DocumentLoader::SetSourceLocation(std::move(location));
 }
 
-void WebDataSourceImpl::resetSourceLocation() {
-  DocumentLoader::setSourceLocation(nullptr);
+void WebDataSourceImpl::ResetSourceLocation() {
+  DocumentLoader::SetSourceLocation(nullptr);
 }
 
 DEFINE_TRACE(WebDataSourceImpl) {
-  DocumentLoader::trace(visitor);
+  DocumentLoader::Trace(visitor);
 }
 
 }  // namespace blink

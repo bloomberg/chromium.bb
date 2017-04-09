@@ -46,7 +46,7 @@ class WorkerNavigatorStorageQuota final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 
  public:
-  static WorkerNavigatorStorageQuota& from(WorkerNavigator&);
+  static WorkerNavigatorStorageQuota& From(WorkerNavigator&);
 
   static StorageManager* storage(WorkerNavigator&);
 
@@ -56,9 +56,9 @@ class WorkerNavigatorStorageQuota final
 
  private:
   explicit WorkerNavigatorStorageQuota();
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  mutable Member<StorageManager> m_storageManager;
+  mutable Member<StorageManager> storage_manager_;
 };
 
 }  // namespace blink

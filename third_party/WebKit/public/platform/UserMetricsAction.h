@@ -13,11 +13,11 @@ namespace blink {
 // self-contained within WebKit.
 class UserMetricsAction : public WebNonCopyable {
  public:
-  explicit UserMetricsAction(const char* action) : m_action(action) {}
-  const char* action() const { return m_action; }
+  explicit UserMetricsAction(const char* action) : action_(action) {}
+  const char* Action() const { return action_; }
 
  private:
-  const char* const m_action;
+  const char* const action_;
 };
 
 }  // namespace blink

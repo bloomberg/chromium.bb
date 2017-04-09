@@ -14,35 +14,35 @@ DOMWindowPerformance::DOMWindowPerformance(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
 DEFINE_TRACE(DOMWindowPerformance) {
-  visitor->trace(m_performance);
-  Supplement<LocalDOMWindow>::trace(visitor);
+  visitor->Trace(performance_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 // static
-const char* DOMWindowPerformance::supplementName() {
+const char* DOMWindowPerformance::SupplementName() {
   return "DOMWindowPerformance";
 }
 
 // static
-DOMWindowPerformance& DOMWindowPerformance::from(LocalDOMWindow& window) {
+DOMWindowPerformance& DOMWindowPerformance::From(LocalDOMWindow& window) {
   DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(
-      Supplement<LocalDOMWindow>::from(window, supplementName()));
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
     supplement = new DOMWindowPerformance(window);
-    provideTo(window, supplementName(), supplement);
+    ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 // static
 Performance* DOMWindowPerformance::performance(LocalDOMWindow& window) {
-  return from(window).performance();
+  return From(window).performance();
 }
 
 Performance* DOMWindowPerformance::performance() {
-  if (!m_performance)
-    m_performance = Performance::create(supplementable()->frame());
-  return m_performance.get();
+  if (!performance_)
+    performance_ = Performance::Create(GetSupplementable()->GetFrame());
+  return performance_.Get();
 }
 
 }  // namespace blink

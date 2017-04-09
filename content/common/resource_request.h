@@ -56,11 +56,11 @@ struct CONTENT_EXPORT ResourceRequest {
   GURL referrer;
 
   // The referrer policy to use.
-  blink::WebReferrerPolicy referrer_policy = blink::WebReferrerPolicyAlways;
+  blink::WebReferrerPolicy referrer_policy = blink::kWebReferrerPolicyAlways;
 
   // The frame's visibility state.
   blink::WebPageVisibilityState visibility_state =
-      blink::WebPageVisibilityStateVisible;
+      blink::kWebPageVisibilityStateVisible;
 
   // Additional HTTP request headers.
   //
@@ -121,7 +121,7 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // The mixed content context type to be used for mixed content checks.
   blink::WebMixedContentContextType fetch_mixed_content_context_type =
-      blink::WebMixedContentContextType::Blockable;
+      blink::WebMixedContentContextType::kBlockable;
 
   // The frame type passed to the ServiceWorker.
   RequestContextFrameType fetch_frame_type =

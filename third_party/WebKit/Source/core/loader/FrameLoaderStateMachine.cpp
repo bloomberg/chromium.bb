@@ -35,39 +35,39 @@
 namespace blink {
 
 FrameLoaderStateMachine::FrameLoaderStateMachine()
-    : m_state(CreatingInitialEmptyDocument) {}
+    : state_(kCreatingInitialEmptyDocument) {}
 
-bool FrameLoaderStateMachine::committedFirstRealDocumentLoad() const {
-  return m_state >= CommittedFirstRealLoad;
+bool FrameLoaderStateMachine::CommittedFirstRealDocumentLoad() const {
+  return state_ >= kCommittedFirstRealLoad;
 }
 
-bool FrameLoaderStateMachine::creatingInitialEmptyDocument() const {
-  return m_state == CreatingInitialEmptyDocument;
+bool FrameLoaderStateMachine::CreatingInitialEmptyDocument() const {
+  return state_ == kCreatingInitialEmptyDocument;
 }
 
-bool FrameLoaderStateMachine::committedMultipleRealLoads() const {
-  return m_state == CommittedMultipleRealLoads;
+bool FrameLoaderStateMachine::CommittedMultipleRealLoads() const {
+  return state_ == kCommittedMultipleRealLoads;
 }
 
-bool FrameLoaderStateMachine::isDisplayingInitialEmptyDocument() const {
-  return m_state >= DisplayingInitialEmptyDocument &&
-         m_state < CommittedFirstRealLoad;
+bool FrameLoaderStateMachine::IsDisplayingInitialEmptyDocument() const {
+  return state_ >= kDisplayingInitialEmptyDocument &&
+         state_ < kCommittedFirstRealLoad;
 }
 
-void FrameLoaderStateMachine::advanceTo(State state) {
-  DCHECK_LT(m_state, state);
-  m_state = state;
+void FrameLoaderStateMachine::AdvanceTo(State state) {
+  DCHECK_LT(state_, state);
+  state_ = state;
 }
 
-String FrameLoaderStateMachine::toString() const {
-  switch (m_state) {
-    case CreatingInitialEmptyDocument:
+String FrameLoaderStateMachine::ToString() const {
+  switch (state_) {
+    case kCreatingInitialEmptyDocument:
       return "CreatingInitialEmptyDocument";
-    case DisplayingInitialEmptyDocument:
+    case kDisplayingInitialEmptyDocument:
       return "DisplayingInitialEmptyDocument";
-    case CommittedFirstRealLoad:
+    case kCommittedFirstRealLoad:
       return "CommittedFirstRealLoad";
-    case CommittedMultipleRealLoads:
+    case kCommittedMultipleRealLoads:
       return "CommittedMultipleRealLoads";
     default:
       NOTREACHED();

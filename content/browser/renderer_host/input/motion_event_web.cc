@@ -22,25 +22,25 @@ namespace content {
 namespace {
 
 ui::MotionEvent::Action GetActionFrom(const WebTouchEvent& event) {
-  DCHECK(event.touchesLength);
-  switch (event.type()) {
-    case WebInputEvent::TouchStart:
+  DCHECK(event.touches_length);
+  switch (event.GetType()) {
+    case WebInputEvent::kTouchStart:
       if (WebTouchEventTraits::AllTouchPointsHaveState(
-              event, WebTouchPoint::StatePressed))
+              event, WebTouchPoint::kStatePressed))
         return ui::MotionEvent::ACTION_DOWN;
       else
         return ui::MotionEvent::ACTION_POINTER_DOWN;
-    case WebInputEvent::TouchEnd:
+    case WebInputEvent::kTouchEnd:
       if (WebTouchEventTraits::AllTouchPointsHaveState(
-              event, WebTouchPoint::StateReleased))
+              event, WebTouchPoint::kStateReleased))
         return ui::MotionEvent::ACTION_UP;
       else
         return ui::MotionEvent::ACTION_POINTER_UP;
-    case WebInputEvent::TouchCancel:
+    case WebInputEvent::kTouchCancel:
       DCHECK(WebTouchEventTraits::AllTouchPointsHaveState(
-          event, WebTouchPoint::StateCancelled));
+          event, WebTouchPoint::kStateCancelled));
       return ui::MotionEvent::ACTION_CANCEL;
-    case WebInputEvent::TouchMove:
+    case WebInputEvent::kTouchMove:
       return ui::MotionEvent::ACTION_MOVE;
     default:
       break;
@@ -51,9 +51,9 @@ ui::MotionEvent::Action GetActionFrom(const WebTouchEvent& event) {
 }
 
 int GetActionIndexFrom(const WebTouchEvent& event) {
-  for (size_t i = 0; i < event.touchesLength; ++i) {
-    if (event.touches[i].state != WebTouchPoint::StateUndefined &&
-        event.touches[i].state != WebTouchPoint::StateStationary)
+  for (size_t i = 0; i < event.touches_length; ++i) {
+    if (event.touches[i].state != WebTouchPoint::kStateUndefined &&
+        event.touches[i].state != WebTouchPoint::kStateStationary)
       return i;
   }
   return -1;
@@ -65,7 +65,7 @@ MotionEventWeb::MotionEventWeb(const WebTouchEvent& event)
     : event_(event),
       cached_action_(GetActionFrom(event)),
       cached_action_index_(GetActionIndexFrom(event)),
-      unique_event_id_(event.uniqueTouchEventId) {
+      unique_event_id_(event.unique_touch_event_id) {
   DCHECK_GT(GetPointerCount(), 0U);
 }
 
@@ -84,11 +84,13 @@ int MotionEventWeb::GetActionIndex() const {
          cached_action_ == ACTION_POINTER_DOWN)
       << "Invalid action for GetActionIndex(): " << cached_action_;
   DCHECK_GE(cached_action_index_, 0);
-  DCHECK_LT(cached_action_index_, static_cast<int>(event_.touchesLength));
+  DCHECK_LT(cached_action_index_, static_cast<int>(event_.touches_length));
   return cached_action_index_;
 }
 
-size_t MotionEventWeb::GetPointerCount() const { return event_.touchesLength; }
+size_t MotionEventWeb::GetPointerCount() const {
+  return event_.touches_length;
+}
 
 int MotionEventWeb::GetPointerId(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
@@ -107,52 +109,52 @@ float MotionEventWeb::GetY(size_t pointer_index) const {
 
 float MotionEventWeb::GetRawX(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return event_.touches[pointer_index].screenPosition.x;
+  return event_.touches[pointer_index].screen_position.x;
 }
 
 float MotionEventWeb::GetRawY(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return event_.touches[pointer_index].screenPosition.y;
+  return event_.touches[pointer_index].screen_position.y;
 }
 
 float MotionEventWeb::GetTouchMajor(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return 2.f * std::max(event_.touches[pointer_index].radiusX,
-                        event_.touches[pointer_index].radiusY);
+  return 2.f * std::max(event_.touches[pointer_index].radius_x,
+                        event_.touches[pointer_index].radius_y);
 }
 
 float MotionEventWeb::GetTouchMinor(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  return 2.f * std::min(event_.touches[pointer_index].radiusX,
-                        event_.touches[pointer_index].radiusY);
+  return 2.f * std::min(event_.touches[pointer_index].radius_x,
+                        event_.touches[pointer_index].radius_y);
 }
 
 float MotionEventWeb::GetOrientation(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
 
-  float orientation_rad = event_.touches[pointer_index].rotationAngle
-      * M_PI / 180.f;
+  float orientation_rad =
+      event_.touches[pointer_index].rotation_angle * M_PI / 180.f;
   DCHECK(0 <= orientation_rad && orientation_rad <= M_PI_2)
       << "Unexpected touch rotation angle";
 
   if (GetToolType(pointer_index) == TOOL_TYPE_STYLUS) {
     const WebPointerProperties& pointer = event_.touches[pointer_index];
 
-    if (pointer.tiltY <= 0 && pointer.tiltX < 0) {
+    if (pointer.tilt_y <= 0 && pointer.tilt_x < 0) {
       // Stylus is tilted to the left away from the user or straight
       // to the left thus the orientation should be within [pi/2,pi).
       orientation_rad += static_cast<float>(M_PI_2);
-    } else if (pointer.tiltY < 0 && pointer.tiltX >= 0) {
+    } else if (pointer.tilt_y < 0 && pointer.tilt_x >= 0) {
       // Stylus is tilted to the right away from the user or straight away
       // from the user thus the orientation should be within [-pi,-pi/2).
       orientation_rad -= static_cast<float>(M_PI);
-    } else if (pointer.tiltY >= 0 && pointer.tiltX > 0) {
+    } else if (pointer.tilt_y >= 0 && pointer.tilt_x > 0) {
       // Stylus is tilted to the right towards the user or straight
       // to the right thus the orientation should be within [-pi/2,0).
       orientation_rad -= static_cast<float>(M_PI_2);
     }
-  } else if (event_.touches[pointer_index].radiusX
-             > event_.touches[pointer_index].radiusY) {
+  } else if (event_.touches[pointer_index].radius_x >
+             event_.touches[pointer_index].radius_y) {
     // The case radiusX == radiusY is omitted from here on purpose: for circles,
     // we want to pass the angle (which could be any value in such cases but
     // always seems to be set to zero) unchanged.
@@ -174,10 +176,10 @@ float MotionEventWeb::GetTilt(size_t pointer_index) const {
 
   const WebPointerProperties& pointer = event_.touches[pointer_index];
 
-  float tilt_x_r = sin(pointer.tiltX * M_PI / 180.f);
-  float tilt_x_z = cos(pointer.tiltX * M_PI / 180.f);
-  float tilt_y_r = sin(pointer.tiltY * M_PI / 180.f);
-  float tilt_y_z = cos(pointer.tiltY * M_PI / 180.f);
+  float tilt_x_r = sin(pointer.tilt_x * M_PI / 180.f);
+  float tilt_x_z = cos(pointer.tilt_x * M_PI / 180.f);
+  float tilt_y_r = sin(pointer.tilt_y * M_PI / 180.f);
+  float tilt_y_z = cos(pointer.tilt_y * M_PI / 180.f);
   float r_x = tilt_x_r * tilt_y_z;
   float r_y = tilt_y_r * tilt_x_z;
   float r = sqrt(r_x * r_x + r_y * r_y);
@@ -188,7 +190,7 @@ float MotionEventWeb::GetTilt(size_t pointer_index) const {
 
 base::TimeTicks MotionEventWeb::GetEventTime() const {
   return base::TimeTicks() +
-         base::TimeDelta::FromMicroseconds(event_.timeStampSeconds() *
+         base::TimeDelta::FromMicroseconds(event_.TimeStampSeconds() *
                                            base::Time::kMicrosecondsPerSecond);
 }
 
@@ -198,16 +200,16 @@ ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
 
   const WebPointerProperties& pointer = event_.touches[pointer_index];
 
-  switch (pointer.pointerType) {
-    case WebPointerProperties::PointerType::Unknown:
+  switch (pointer.pointer_type) {
+    case WebPointerProperties::PointerType::kUnknown:
       return TOOL_TYPE_UNKNOWN;
-    case WebPointerProperties::PointerType::Mouse:
+    case WebPointerProperties::PointerType::kMouse:
       return TOOL_TYPE_MOUSE;
-    case WebPointerProperties::PointerType::Pen:
+    case WebPointerProperties::PointerType::kPen:
       return TOOL_TYPE_STYLUS;
-    case WebPointerProperties::PointerType::Eraser:
+    case WebPointerProperties::PointerType::kEraser:
       return TOOL_TYPE_ERASER;
-    case WebPointerProperties::PointerType::Touch:
+    case WebPointerProperties::PointerType::kTouch:
       return TOOL_TYPE_FINGER;
   }
   NOTREACHED() << "Unexpected pointerType";
@@ -219,7 +221,7 @@ int MotionEventWeb::GetButtonState() const {
 }
 
 int MotionEventWeb::GetFlags() const {
-  return ui::WebEventModifiersToEventFlags(event_.modifiers());
+  return ui::WebEventModifiersToEventFlags(event_.GetModifiers());
 }
 
 }  // namespace content

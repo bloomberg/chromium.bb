@@ -16,25 +16,25 @@ class PLATFORM_EXPORT BeginTransformDisplayItem final
   BeginTransformDisplayItem(const DisplayItemClient& client,
                             const AffineTransform& transform)
       : PairedBeginDisplayItem(client, kBeginTransform, sizeof(*this)),
-        m_transform(transform) {}
+        transform_(transform) {}
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
-  const AffineTransform& transform() const { return m_transform; }
+  const AffineTransform& Transform() const { return transform_; }
 
  private:
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
+  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
-  bool equals(const DisplayItem& other) const final {
-    return DisplayItem::equals(other) &&
-           m_transform ==
-               static_cast<const BeginTransformDisplayItem&>(other).m_transform;
+  bool Equals(const DisplayItem& other) const final {
+    return DisplayItem::Equals(other) &&
+           transform_ ==
+               static_cast<const BeginTransformDisplayItem&>(other).transform_;
   }
 
-  const AffineTransform m_transform;
+  const AffineTransform transform_;
 };
 
 class PLATFORM_EXPORT EndTransformDisplayItem final
@@ -43,14 +43,14 @@ class PLATFORM_EXPORT EndTransformDisplayItem final
   EndTransformDisplayItem(const DisplayItemClient& client)
       : PairedEndDisplayItem(client, kEndTransform, sizeof(*this)) {}
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #if DCHECK_IS_ON()
-  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
-    return otherType == kBeginTransform;
+  bool IsEndAndPairedWith(DisplayItem::Type other_type) const final {
+    return other_type == kBeginTransform;
   }
 #endif
 };

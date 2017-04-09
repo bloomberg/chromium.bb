@@ -45,21 +45,21 @@ class BaseTextInputType : public TextFieldInputType {
   ~BaseTextInputType() override;
 
  private:
-  bool tooLong(const String&,
+  bool TooLong(const String&,
                TextControlElement::NeedsToCheckDirtyFlag) const final;
-  bool tooShort(const String&,
+  bool TooShort(const String&,
                 TextControlElement::NeedsToCheckDirtyFlag) const final;
-  int maxLength() const final;
-  int minLength() const final;
-  bool patternMismatch(const String&) const final;
-  bool supportsPlaceholder() const final;
-  bool supportsSelectionAPI() const override;
-  bool supportsAutocapitalize() const override;
+  int MaxLength() const final;
+  int MinLength() const final;
+  bool PatternMismatch(const String&) const final;
+  bool SupportsPlaceholder() const final;
+  bool SupportsSelectionAPI() const override;
+  bool SupportsAutocapitalize() const override;
 
   // m_regexp and m_patternForRegexp are mutable because they are kinds of
   // cache.
-  mutable std::unique_ptr<ScriptRegexp> m_regexp;
-  mutable AtomicString m_patternForRegexp;
+  mutable std::unique_ptr<ScriptRegexp> regexp_;
+  mutable AtomicString pattern_for_regexp_;
 };
 
 }  // namespace blink

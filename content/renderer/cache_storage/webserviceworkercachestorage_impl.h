@@ -35,15 +35,15 @@ class WebServiceWorkerCacheStorageImpl
   ~WebServiceWorkerCacheStorageImpl() override;
 
   // From WebServiceWorkerCacheStorage:
-  void dispatchHas(std::unique_ptr<CacheStorageCallbacks> callbacks,
+  void DispatchHas(std::unique_ptr<CacheStorageCallbacks> callbacks,
                    const blink::WebString& cacheName) override;
-  void dispatchOpen(std::unique_ptr<CacheStorageWithCacheCallbacks> callbacks,
+  void DispatchOpen(std::unique_ptr<CacheStorageWithCacheCallbacks> callbacks,
                     const blink::WebString& cacheName) override;
-  void dispatchDelete(std::unique_ptr<CacheStorageCallbacks> callbacks,
+  void DispatchDelete(std::unique_ptr<CacheStorageCallbacks> callbacks,
                       const blink::WebString& cacheName) override;
-  void dispatchKeys(
+  void DispatchKeys(
       std::unique_ptr<CacheStorageKeysCallbacks> callbacks) override;
-  void dispatchMatch(
+  void DispatchMatch(
       std::unique_ptr<CacheStorageMatchCallbacks> callbacks,
       const blink::WebServiceWorkerRequest& request,
       const blink::WebServiceWorkerCache::QueryParams& query_params) override;

@@ -14,7 +14,7 @@ namespace blink {
 // used in layout and unit tests.
 class WebMockClipboard : public WebClipboard {
  public:
-  virtual WebImage readRawImage(Buffer) { return WebImage(); }
+  virtual WebImage ReadRawImage(Buffer) { return WebImage(); }
 };
 
 }  // namespace blink

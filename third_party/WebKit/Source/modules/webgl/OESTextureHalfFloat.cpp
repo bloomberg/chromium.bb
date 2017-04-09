@@ -29,25 +29,25 @@ namespace blink {
 
 OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_OES_texture_half_float");
 }
 
-WebGLExtensionName OESTextureHalfFloat::name() const {
-  return OESTextureHalfFloatName;
+WebGLExtensionName OESTextureHalfFloat::GetName() const {
+  return kOESTextureHalfFloatName;
 }
 
-OESTextureHalfFloat* OESTextureHalfFloat::create(
+OESTextureHalfFloat* OESTextureHalfFloat::Create(
     WebGLRenderingContextBase* context) {
   return new OESTextureHalfFloat(context);
 }
 
-bool OESTextureHalfFloat::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+bool OESTextureHalfFloat::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_OES_texture_half_float");
 }
 
-const char* OESTextureHalfFloat::extensionName() {
+const char* OESTextureHalfFloat::ExtensionName() {
   return "OES_texture_half_float";
 }
 

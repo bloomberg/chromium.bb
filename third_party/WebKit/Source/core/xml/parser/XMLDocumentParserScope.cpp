@@ -27,36 +27,36 @@
 
 namespace blink {
 
-Document* XMLDocumentParserScope::currentDocument = 0;
+Document* XMLDocumentParserScope::current_document_ = 0;
 
 XMLDocumentParserScope::XMLDocumentParserScope(Document* document)
-    : m_oldDocument(currentDocument),
-      m_oldGenericErrorFunc(xmlGenericError),
-      m_oldStructuredErrorFunc(xmlStructuredError),
-      m_oldErrorContext(xmlGenericErrorContext) {
-  currentDocument = document;
+    : old_document_(current_document_),
+      old_generic_error_func_(xmlGenericError),
+      old_structured_error_func_(xmlStructuredError),
+      old_error_context_(xmlGenericErrorContext) {
+  current_document_ = document;
 }
 
 XMLDocumentParserScope::XMLDocumentParserScope(
     Document* document,
-    xmlGenericErrorFunc genericErrorFunc,
-    xmlStructuredErrorFunc structuredErrorFunc,
-    void* errorContext)
-    : m_oldDocument(currentDocument),
-      m_oldGenericErrorFunc(xmlGenericError),
-      m_oldStructuredErrorFunc(xmlStructuredError),
-      m_oldErrorContext(xmlGenericErrorContext) {
-  currentDocument = document;
-  if (genericErrorFunc)
-    xmlSetGenericErrorFunc(errorContext, genericErrorFunc);
-  if (structuredErrorFunc)
-    xmlSetStructuredErrorFunc(errorContext, structuredErrorFunc);
+    xmlGenericErrorFunc generic_error_func,
+    xmlStructuredErrorFunc structured_error_func,
+    void* error_context)
+    : old_document_(current_document_),
+      old_generic_error_func_(xmlGenericError),
+      old_structured_error_func_(xmlStructuredError),
+      old_error_context_(xmlGenericErrorContext) {
+  current_document_ = document;
+  if (generic_error_func)
+    xmlSetGenericErrorFunc(error_context, generic_error_func);
+  if (structured_error_func)
+    xmlSetStructuredErrorFunc(error_context, structured_error_func);
 }
 
 XMLDocumentParserScope::~XMLDocumentParserScope() {
-  currentDocument = m_oldDocument;
-  xmlSetGenericErrorFunc(m_oldErrorContext, m_oldGenericErrorFunc);
-  xmlSetStructuredErrorFunc(m_oldErrorContext, m_oldStructuredErrorFunc);
+  current_document_ = old_document_;
+  xmlSetGenericErrorFunc(old_error_context_, old_generic_error_func_);
+  xmlSetStructuredErrorFunc(old_error_context_, old_structured_error_func_);
 }
 
 }  // namespace blink

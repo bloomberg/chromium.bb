@@ -19,11 +19,11 @@ class PLATFORM_EXPORT MemoryCoordinatorClient : public GarbageCollectedMixin {
 
   // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
   // gone.
-  virtual void onMemoryPressure(WebMemoryPressureLevel) {}
+  virtual void OnMemoryPressure(WebMemoryPressureLevel) {}
 
-  virtual void onMemoryStateChange(MemoryState) {}
+  virtual void OnMemoryStateChange(MemoryState) {}
 
-  virtual void onPurgeMemory() {}
+  virtual void OnPurgeMemory() {}
 };
 
 // MemoryCoordinator listens to some events which could be opportunities
@@ -33,42 +33,42 @@ class PLATFORM_EXPORT MemoryCoordinator final
   WTF_MAKE_NONCOPYABLE(MemoryCoordinator);
 
  public:
-  static MemoryCoordinator& instance();
+  static MemoryCoordinator& Instance();
 
   // Whether the device Blink runs on is a low-end device.
   // Can be overridden in layout tests via internals.
-  static bool isLowEndDevice();
+  static bool IsLowEndDevice();
 
   // Caches whether this device is a low-end device in a static member.
   // instance() is not used as it's a heap allocated object - meaning it's not
   // thread-safe as well as might break tests counting the heap size.
-  static void initialize();
+  static void Initialize();
 
-  void registerClient(MemoryCoordinatorClient*);
-  void unregisterClient(MemoryCoordinatorClient*);
+  void RegisterClient(MemoryCoordinatorClient*);
+  void UnregisterClient(MemoryCoordinatorClient*);
 
   // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
   // gone.
-  void onMemoryPressure(WebMemoryPressureLevel);
+  void OnMemoryPressure(WebMemoryPressureLevel);
 
-  void onMemoryStateChange(MemoryState);
+  void OnMemoryStateChange(MemoryState);
 
-  void onPurgeMemory();
+  void OnPurgeMemory();
 
   DECLARE_TRACE();
 
  private:
   friend class Internals;
 
-  static void setIsLowEndDeviceForTesting(bool);
+  static void SetIsLowEndDeviceForTesting(bool);
 
   MemoryCoordinator();
 
-  void clearMemory();
+  void ClearMemory();
 
-  static bool s_isLowEndDevice;
+  static bool is_low_end_device_;
 
-  HeapHashSet<WeakMember<MemoryCoordinatorClient>> m_clients;
+  HeapHashSet<WeakMember<MemoryCoordinatorClient>> clients_;
 };
 
 }  // namespace blink

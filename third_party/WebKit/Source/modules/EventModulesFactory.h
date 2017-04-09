@@ -18,11 +18,11 @@ class Event;
 
 class EventModulesFactory final : public EventFactoryBase {
  public:
-  static std::unique_ptr<EventModulesFactory> create() {
-    return WTF::makeUnique<EventModulesFactory>();
+  static std::unique_ptr<EventModulesFactory> Create() {
+    return WTF::MakeUnique<EventModulesFactory>();
   }
 
-  Event* create(ExecutionContext*, const String& eventType) override;
+  Event* Create(ExecutionContext*, const String& event_type) override;
 };
 
 }  // namespace blink

@@ -43,45 +43,45 @@ class CORE_EXPORT SharedStyleFinder {
   // them to be compacted. :(
   SharedStyleFinder(const ElementResolveContext& context,
                     const RuleFeatureSet& features,
-                    RuleSet* siblingRuleSet,
-                    RuleSet* uncommonAttributeRuleSet,
-                    StyleResolver& styleResolver)
-      : m_elementAffectedByClassRules(false),
-        m_features(features),
-        m_siblingRuleSet(siblingRuleSet),
-        m_uncommonAttributeRuleSet(uncommonAttributeRuleSet),
-        m_styleResolver(&styleResolver),
-        m_context(context) {}
+                    RuleSet* sibling_rule_set,
+                    RuleSet* uncommon_attribute_rule_set,
+                    StyleResolver& style_resolver)
+      : element_affected_by_class_rules_(false),
+        features_(features),
+        sibling_rule_set_(sibling_rule_set),
+        uncommon_attribute_rule_set_(uncommon_attribute_rule_set),
+        style_resolver_(&style_resolver),
+        context_(context) {}
 
-  ComputedStyle* findSharedStyle();
+  ComputedStyle* FindSharedStyle();
 
  private:
-  Element* findElementForStyleSharing() const;
+  Element* FindElementForStyleSharing() const;
 
   // Only used when we're collecting stats on styles.
-  bool documentContainsValidCandidate() const;
+  bool DocumentContainsValidCandidate() const;
 
-  bool classNamesAffectedByRules(const SpaceSplitString&) const;
+  bool ClassNamesAffectedByRules(const SpaceSplitString&) const;
 
-  bool canShareStyleWithElement(Element& candidate) const;
-  bool canShareStyleWithControl(Element& candidate) const;
-  bool sharingCandidateHasIdenticalStyleAffectingAttributes(
+  bool CanShareStyleWithElement(Element& candidate) const;
+  bool CanShareStyleWithControl(Element& candidate) const;
+  bool SharingCandidateHasIdenticalStyleAffectingAttributes(
       Element& candidate) const;
-  bool sharingCandidateCanShareHostStyles(Element& candidate) const;
-  bool sharingCandidateAssignedToSameSlot(Element& candidate) const;
-  bool sharingCandidateDistributedToSameInsertionPoint(
+  bool SharingCandidateCanShareHostStyles(Element& candidate) const;
+  bool SharingCandidateAssignedToSameSlot(Element& candidate) const;
+  bool SharingCandidateDistributedToSameInsertionPoint(
       Element& candidate) const;
-  bool matchesRuleSet(RuleSet*);
+  bool MatchesRuleSet(RuleSet*);
 
-  Element& element() const { return *m_context.element(); }
-  Document& document() const { return element().document(); }
+  Element& GetElement() const { return *context_.GetElement(); }
+  Document& GetDocument() const { return GetElement().GetDocument(); }
 
-  bool m_elementAffectedByClassRules;
-  const RuleFeatureSet& m_features;
-  Member<RuleSet> m_siblingRuleSet;
-  Member<RuleSet> m_uncommonAttributeRuleSet;
-  Member<StyleResolver> m_styleResolver;
-  const ElementResolveContext& m_context;
+  bool element_affected_by_class_rules_;
+  const RuleFeatureSet& features_;
+  Member<RuleSet> sibling_rule_set_;
+  Member<RuleSet> uncommon_attribute_rule_set_;
+  Member<StyleResolver> style_resolver_;
+  const ElementResolveContext& context_;
 
   friend class SharedStyleFinderTest;
 };

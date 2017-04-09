@@ -39,9 +39,9 @@
 namespace blink {
 namespace URLTestHelpers {
 
-inline blink::KURL toKURL(const std::string& url) {
-  WTF::String wtfString(url.c_str());
-  return blink::KURL(blink::ParsedURLString, wtfString);
+inline blink::KURL ToKURL(const std::string& url) {
+  WTF::String wtf_string(url.c_str());
+  return blink::KURL(blink::kParsedURLString, wtf_string);
 }
 
 // Avoid directly using these methods, instead please use ScopedMockedURL (or
@@ -56,25 +56,25 @@ inline blink::KURL toKURL(const std::string& url) {
 
 // Registers from a base URL and a base file path, and returns a calculated full
 // URL.
-WebURL registerMockedURLLoadFromBase(
-    const WebString& baseURL,
-    const WebString& basePath,
-    const WebString& fileName,
-    const WebString& mimeType = WebString::fromUTF8("text/html"));
+WebURL RegisterMockedURLLoadFromBase(
+    const WebString& base_url,
+    const WebString& base_path,
+    const WebString& file_name,
+    const WebString& mime_type = WebString::FromUTF8("text/html"));
 
 // Registers from a full URL and a full file path.
-void registerMockedURLLoad(
-    const WebURL& fullURL,
-    const WebString& filePath,
-    const WebString& mimeType = WebString::fromUTF8("text/html"));
+void RegisterMockedURLLoad(
+    const WebURL& full_url,
+    const WebString& file_path,
+    const WebString& mime_type = WebString::FromUTF8("text/html"));
 
 // Registers with a custom response.
-void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL,
-                                             const WebString& filePath,
+void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
+                                             const WebString& file_path,
                                              WebURLResponse);
 
 // Registers a mock URL that returns a 404 error.
-void registerMockedErrorURLLoad(const WebURL& fullURL);
+void RegisterMockedErrorURLLoad(const WebURL& full_url);
 
 }  // namespace URLTestHelpers
 }  // namespace blink

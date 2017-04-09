@@ -160,7 +160,7 @@ void FillProcessData(
   if (task_manager->GetWebCacheStats(id, &cache_stats)) {
     out_process->image_cache = CreateCacheData(cache_stats.images);
     out_process->script_cache = CreateCacheData(cache_stats.scripts);
-    out_process->css_cache = CreateCacheData(cache_stats.cssStyleSheets);
+    out_process->css_cache = CreateCacheData(cache_stats.css_style_sheets);
   }
 }
 

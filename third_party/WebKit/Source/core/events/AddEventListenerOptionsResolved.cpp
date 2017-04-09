@@ -7,18 +7,18 @@
 namespace blink {
 
 AddEventListenerOptionsResolved::AddEventListenerOptionsResolved()
-    : m_passiveForcedForDocumentTarget(false), m_passiveSpecified(false) {}
+    : passive_forced_for_document_target_(false), passive_specified_(false) {}
 
 AddEventListenerOptionsResolved::AddEventListenerOptionsResolved(
     const AddEventListenerOptions& options)
     : AddEventListenerOptions(options),
-      m_passiveForcedForDocumentTarget(false),
-      m_passiveSpecified(false) {}
+      passive_forced_for_document_target_(false),
+      passive_specified_(false) {}
 
 AddEventListenerOptionsResolved::~AddEventListenerOptionsResolved() {}
 
 DEFINE_TRACE(AddEventListenerOptionsResolved) {
-  AddEventListenerOptions::trace(visitor);
+  AddEventListenerOptions::Trace(visitor);
 }
 
 }  // namespace blink

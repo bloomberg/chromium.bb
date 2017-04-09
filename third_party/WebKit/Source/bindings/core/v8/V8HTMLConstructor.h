@@ -16,7 +16,7 @@ class CORE_EXPORT V8HTMLConstructor {
   STATIC_ONLY(V8HTMLConstructor)
 
  public:
-  static void htmlConstructor(const v8::FunctionCallbackInfo<v8::Value>&,
+  static void HtmlConstructor(const v8::FunctionCallbackInfo<v8::Value>&,
                               const WrapperTypeInfo&,
                               const HTMLElementType);
 };

@@ -60,68 +60,68 @@ class WebBlobRegistry {
   class Builder {
    public:
     virtual ~Builder() {}
-    virtual void appendData(const WebThreadSafeData&) = 0;
-    virtual void appendFile(const WebString& path,
+    virtual void AppendData(const WebThreadSafeData&) = 0;
+    virtual void AppendFile(const WebString& path,
                             uint64_t offset,
                             uint64_t length,
-                            double expectedModificationTime) = 0;
+                            double expected_modification_time) = 0;
     // Calling this method ensures the given blob lives for the creation of
     // the new blob.
-    virtual void appendBlob(const WebString& uuid,
+    virtual void AppendBlob(const WebString& uuid,
                             uint64_t offset,
                             uint64_t length) = 0;
-    virtual void appendFileSystemURL(const WebURL&,
+    virtual void AppendFileSystemURL(const WebURL&,
                                      uint64_t offset,
                                      uint64_t length,
-                                     double expectedModificationTime) = 0;
+                                     double expected_modification_time) = 0;
 
     // Builds the blob. All calls to append* are invalid after calling this
     // method.
-    virtual void build() = 0;
+    virtual void Build() = 0;
   };
 
   virtual ~WebBlobRegistry() {}
 
   // TODO(dmurph): Deprecate and migrate to createBuilder
-  virtual void registerBlobData(const WebString& uuid, const WebBlobData&) {}
+  virtual void RegisterBlobData(const WebString& uuid, const WebBlobData&) {}
 
   // The blob is finalized (and sent to the browser) on calling build() on the
   // Builder object.
-  virtual std::unique_ptr<Builder> createBuilder(
+  virtual std::unique_ptr<Builder> CreateBuilder(
       const WebString& uuid,
-      const WebString& contentType) = 0;
+      const WebString& content_type) = 0;
 
-  virtual void addBlobDataRef(const WebString& uuid) {}
-  virtual void removeBlobDataRef(const WebString& uuid) {}
-  virtual void registerPublicBlobURL(const WebURL&, const WebString& uuid) {}
-  virtual void revokePublicBlobURL(const WebURL&) {}
+  virtual void AddBlobDataRef(const WebString& uuid) {}
+  virtual void RemoveBlobDataRef(const WebString& uuid) {}
+  virtual void RegisterPublicBlobURL(const WebURL&, const WebString& uuid) {}
+  virtual void RevokePublicBlobURL(const WebURL&) {}
 
   // Registers a stream URL referring to a stream with the specified media
   // type.
-  virtual void registerStreamURL(const WebURL&, const WebString&) = 0;
+  virtual void RegisterStreamURL(const WebURL&, const WebString&) = 0;
 
   // Registers a stream URL referring to the stream identified by the
   // specified srcURL.
-  virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) = 0;
+  virtual void RegisterStreamURL(const WebURL&, const WebURL& src_url) = 0;
 
   // Add data to the stream referred by the URL.
-  virtual void addDataToStream(const WebURL&,
+  virtual void AddDataToStream(const WebURL&,
                                const char* data,
                                size_t length) = 0;
 
   // Flush contents buffered in the stream to the corresponding reader.
-  virtual void flushStream(const WebURL&) = 0;
+  virtual void FlushStream(const WebURL&) = 0;
 
   // Tell the registry that construction of this stream has completed
   // successfully and so it won't receive any more data.
-  virtual void finalizeStream(const WebURL&) = 0;
+  virtual void FinalizeStream(const WebURL&) = 0;
 
   // Tell the registry that construction of this stream has been aborted and
   // so it won't receive any more data.
-  virtual void abortStream(const WebURL&) = 0;
+  virtual void AbortStream(const WebURL&) = 0;
 
   // Unregisters a stream referred by the URL.
-  virtual void unregisterStreamURL(const WebURL&) = 0;
+  virtual void UnregisterStreamURL(const WebURL&) = 0;
 };
 
 }  // namespace blink

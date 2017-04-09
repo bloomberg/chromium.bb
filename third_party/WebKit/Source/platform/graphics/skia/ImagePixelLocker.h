@@ -24,12 +24,12 @@ class ImagePixelLocker final {
  public:
   ImagePixelLocker(sk_sp<const SkImage>, SkAlphaType, SkColorType);
 
-  const void* pixels() const { return m_pixels; }
+  const void* Pixels() const { return pixels_; }
 
  private:
-  const sk_sp<const SkImage> m_image;
-  const void* m_pixels;
-  Vector<char> m_pixelStorage;
+  const sk_sp<const SkImage> image_;
+  const void* pixels_;
+  Vector<char> pixel_storage_;
 };
 
 }  // namespace blink

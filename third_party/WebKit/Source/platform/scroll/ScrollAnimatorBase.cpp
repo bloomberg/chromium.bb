@@ -36,55 +36,55 @@
 
 namespace blink {
 
-ScrollAnimatorBase::ScrollAnimatorBase(ScrollableArea* scrollableArea)
-    : m_scrollableArea(scrollableArea) {}
+ScrollAnimatorBase::ScrollAnimatorBase(ScrollableArea* scrollable_area)
+    : scrollable_area_(scrollable_area) {}
 
 ScrollAnimatorBase::~ScrollAnimatorBase() {}
 
-ScrollOffset ScrollAnimatorBase::computeDeltaToConsume(
+ScrollOffset ScrollAnimatorBase::ComputeDeltaToConsume(
     const ScrollOffset& delta) const {
-  ScrollOffset newPos =
-      m_scrollableArea->clampScrollOffset(m_currentOffset + delta);
-  return newPos - m_currentOffset;
+  ScrollOffset new_pos =
+      scrollable_area_->ClampScrollOffset(current_offset_ + delta);
+  return new_pos - current_offset_;
 }
 
-ScrollResult ScrollAnimatorBase::userScroll(ScrollGranularity,
+ScrollResult ScrollAnimatorBase::UserScroll(ScrollGranularity,
                                             const ScrollOffset& delta) {
-  ScrollOffset consumedDelta = computeDeltaToConsume(delta);
-  ScrollOffset newPos = m_currentOffset + consumedDelta;
-  if (m_currentOffset == newPos)
-    return ScrollResult(false, false, delta.width(), delta.height());
+  ScrollOffset consumed_delta = ComputeDeltaToConsume(delta);
+  ScrollOffset new_pos = current_offset_ + consumed_delta;
+  if (current_offset_ == new_pos)
+    return ScrollResult(false, false, delta.Width(), delta.Height());
 
-  m_currentOffset = newPos;
+  current_offset_ = new_pos;
 
-  notifyOffsetChanged();
+  NotifyOffsetChanged();
 
-  return ScrollResult(consumedDelta.width(), consumedDelta.height(),
-                      delta.width() - consumedDelta.width(),
-                      delta.height() - consumedDelta.height());
+  return ScrollResult(consumed_delta.Width(), consumed_delta.Height(),
+                      delta.Width() - consumed_delta.Width(),
+                      delta.Height() - consumed_delta.Height());
 }
 
-void ScrollAnimatorBase::scrollToOffsetWithoutAnimation(
+void ScrollAnimatorBase::ScrollToOffsetWithoutAnimation(
     const ScrollOffset& offset) {
-  m_currentOffset = offset;
-  notifyOffsetChanged();
+  current_offset_ = offset;
+  NotifyOffsetChanged();
 }
 
-void ScrollAnimatorBase::setCurrentOffset(const ScrollOffset& offset) {
-  m_currentOffset = offset;
+void ScrollAnimatorBase::SetCurrentOffset(const ScrollOffset& offset) {
+  current_offset_ = offset;
 }
 
-ScrollOffset ScrollAnimatorBase::currentOffset() const {
-  return m_currentOffset;
+ScrollOffset ScrollAnimatorBase::CurrentOffset() const {
+  return current_offset_;
 }
 
-void ScrollAnimatorBase::notifyOffsetChanged() {
-  scrollOffsetChanged(m_currentOffset, UserScroll);
+void ScrollAnimatorBase::NotifyOffsetChanged() {
+  ScrollOffsetChanged(current_offset_, kUserScroll);
 }
 
 DEFINE_TRACE(ScrollAnimatorBase) {
-  visitor->trace(m_scrollableArea);
-  ScrollAnimatorCompositorCoordinator::trace(visitor);
+  visitor->Trace(scrollable_area_);
+  ScrollAnimatorCompositorCoordinator::Trace(visitor);
 }
 
 }  // namespace blink

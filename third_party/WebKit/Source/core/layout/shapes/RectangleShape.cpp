@@ -33,65 +33,65 @@
 
 namespace blink {
 
-static inline float ellipseXIntercept(float y, float rx, float ry) {
+static inline float EllipseXIntercept(float y, float rx, float ry) {
   DCHECK_GT(ry, 0);
   return rx * sqrt(1 - (y * y) / (ry * ry));
 }
 
-FloatRect RectangleShape::shapeMarginBounds() const {
-  DCHECK_GE(shapeMargin(), 0);
-  if (!shapeMargin())
-    return m_bounds;
+FloatRect RectangleShape::ShapeMarginBounds() const {
+  DCHECK_GE(ShapeMargin(), 0);
+  if (!ShapeMargin())
+    return bounds_;
 
-  float boundsX = x() - shapeMargin();
-  float boundsY = y() - shapeMargin();
-  float boundsWidth = width() + shapeMargin() * 2;
-  float boundsHeight = height() + shapeMargin() * 2;
-  return FloatRect(boundsX, boundsY, boundsWidth, boundsHeight);
+  float bounds_x = X() - ShapeMargin();
+  float bounds_y = Y() - ShapeMargin();
+  float bounds_width = Width() + ShapeMargin() * 2;
+  float bounds_height = Height() + ShapeMargin() * 2;
+  return FloatRect(bounds_x, bounds_y, bounds_width, bounds_height);
 }
 
-LineSegment RectangleShape::getExcludedInterval(
-    LayoutUnit logicalTop,
-    LayoutUnit logicalHeight) const {
-  const FloatRect& bounds = shapeMarginBounds();
-  if (bounds.isEmpty())
+LineSegment RectangleShape::GetExcludedInterval(
+    LayoutUnit logical_top,
+    LayoutUnit logical_height) const {
+  const FloatRect& bounds = ShapeMarginBounds();
+  if (bounds.IsEmpty())
     return LineSegment();
 
-  float y1 = logicalTop.toFloat();
-  float y2 = (logicalTop + logicalHeight).toFloat();
+  float y1 = logical_top.ToFloat();
+  float y2 = (logical_top + logical_height).ToFloat();
 
-  if (y2 < bounds.y() || y1 >= bounds.maxY())
+  if (y2 < bounds.Y() || y1 >= bounds.MaxY())
     return LineSegment();
 
-  float x1 = bounds.x();
-  float x2 = bounds.maxX();
+  float x1 = bounds.X();
+  float x2 = bounds.MaxX();
 
-  float marginRadiusX = rx() + shapeMargin();
-  float marginRadiusY = ry() + shapeMargin();
+  float margin_radius_x = Rx() + ShapeMargin();
+  float margin_radius_y = Ry() + ShapeMargin();
 
-  if (marginRadiusY > 0) {
-    if (y2 < bounds.y() + marginRadiusY) {
-      float yi = y2 - bounds.y() - marginRadiusY;
-      float xi = ellipseXIntercept(yi, marginRadiusX, marginRadiusY);
-      x1 = bounds.x() + marginRadiusX - xi;
-      x2 = bounds.maxX() - marginRadiusX + xi;
-    } else if (y1 > bounds.maxY() - marginRadiusY) {
-      float yi = y1 - (bounds.maxY() - marginRadiusY);
-      float xi = ellipseXIntercept(yi, marginRadiusX, marginRadiusY);
-      x1 = bounds.x() + marginRadiusX - xi;
-      x2 = bounds.maxX() - marginRadiusX + xi;
+  if (margin_radius_y > 0) {
+    if (y2 < bounds.Y() + margin_radius_y) {
+      float yi = y2 - bounds.Y() - margin_radius_y;
+      float xi = EllipseXIntercept(yi, margin_radius_x, margin_radius_y);
+      x1 = bounds.X() + margin_radius_x - xi;
+      x2 = bounds.MaxX() - margin_radius_x + xi;
+    } else if (y1 > bounds.MaxY() - margin_radius_y) {
+      float yi = y1 - (bounds.MaxY() - margin_radius_y);
+      float xi = EllipseXIntercept(yi, margin_radius_x, margin_radius_y);
+      x1 = bounds.X() + margin_radius_x - xi;
+      x2 = bounds.MaxX() - margin_radius_x + xi;
     }
   }
 
   return LineSegment(x1, x2);
 }
 
-void RectangleShape::buildDisplayPaths(DisplayPaths& paths) const {
-  paths.shape.addRoundedRect(m_bounds, m_radii);
-  if (shapeMargin())
-    paths.marginShape.addRoundedRect(
-        shapeMarginBounds(), FloatSize(m_radii.width() + shapeMargin(),
-                                       m_radii.height() + shapeMargin()));
+void RectangleShape::BuildDisplayPaths(DisplayPaths& paths) const {
+  paths.shape.AddRoundedRect(bounds_, radii_);
+  if (ShapeMargin())
+    paths.margin_shape.AddRoundedRect(
+        ShapeMarginBounds(), FloatSize(radii_.Width() + ShapeMargin(),
+                                       radii_.Height() + ShapeMargin()));
 }
 
 }  // namespace blink

@@ -18,20 +18,20 @@ class BoundaryEventDispatcher {
   BoundaryEventDispatcher() {}
   virtual ~BoundaryEventDispatcher() {}
 
-  void sendBoundaryEvents(EventTarget* exitedTarget,
-                          EventTarget* enteredTarget);
+  void SendBoundaryEvents(EventTarget* exited_target,
+                          EventTarget* entered_target);
 
  protected:
-  virtual void dispatchOut(EventTarget*, EventTarget* relatedTarget) = 0;
-  virtual void dispatchOver(EventTarget*, EventTarget* relatedTarget) = 0;
-  virtual void dispatchLeave(EventTarget*,
-                             EventTarget* relatedTarget,
-                             bool checkForListener) = 0;
-  virtual void dispatchEnter(EventTarget*,
-                             EventTarget* relatedTarget,
-                             bool checkForListener) = 0;
-  virtual AtomicString getLeaveEvent() = 0;
-  virtual AtomicString getEnterEvent() = 0;
+  virtual void DispatchOut(EventTarget*, EventTarget* related_target) = 0;
+  virtual void DispatchOver(EventTarget*, EventTarget* related_target) = 0;
+  virtual void DispatchLeave(EventTarget*,
+                             EventTarget* related_target,
+                             bool check_for_listener) = 0;
+  virtual void DispatchEnter(EventTarget*,
+                             EventTarget* related_target,
+                             bool check_for_listener) = 0;
+  virtual AtomicString GetLeaveEvent() = 0;
+  virtual AtomicString GetEnterEvent() = 0;
 };
 
 }  // namespace blink

@@ -16,7 +16,7 @@ class CSSOMKeywords {
   STATIC_ONLY(CSSOMKeywords);
 
  public:
-  static bool validKeywordForProperty(CSSPropertyID, const CSSKeywordValue&);
+  static bool ValidKeywordForProperty(CSSPropertyID, const CSSKeywordValue&);
 };
 
 }  // namespace blink

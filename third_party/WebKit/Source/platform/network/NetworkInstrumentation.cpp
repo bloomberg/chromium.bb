@@ -40,21 +40,21 @@ namespace {
 
 std::unique_ptr<TracedValue> scopedResourceTrackerBeginData(
     const blink::ResourceRequest& request) {
-  std::unique_ptr<TracedValue> data = TracedValue::create();
-  data->setString("url", request.url().getString());
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
+  data->SetString("url", request.Url().GetString());
   return data;
 }
 
 std::unique_ptr<TracedValue> resourcePrioritySetData(
     blink::ResourceLoadPriority priority) {
-  std::unique_ptr<TracedValue> data = TracedValue::create();
-  data->setInteger("priority", priority);
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
+  data->SetInteger("priority", priority);
   return data;
 }
 
 std::unique_ptr<TracedValue> endResourceLoadData(RequestOutcome outcome) {
-  std::unique_ptr<TracedValue> data = TracedValue::create();
-  data->setString("outcome", RequestOutcomeToString(outcome));
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
+  data->SetString("outcome", RequestOutcomeToString(outcome));
   return data;
 }
 

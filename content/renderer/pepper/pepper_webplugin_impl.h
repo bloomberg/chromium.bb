@@ -38,47 +38,47 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   PepperPluginInstanceImpl* instance() { return instance_.get(); }
 
   // blink::WebPlugin implementation.
-  blink::WebPluginContainer* container() const override;
-  bool initialize(blink::WebPluginContainer* container) override;
-  void destroy() override;
-  v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate) override;
-  void updateAllLifecyclePhases() override {}
-  void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
-  void updateGeometry(const blink::WebRect& window_rect,
+  blink::WebPluginContainer* Container() const override;
+  bool Initialize(blink::WebPluginContainer* container) override;
+  void Destroy() override;
+  v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
+  void UpdateAllLifecyclePhases() override {}
+  void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
+  void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
                       const blink::WebVector<blink::WebRect>& cut_outs_rects,
                       bool is_visible) override;
-  void updateFocus(bool focused, blink::WebFocusType focus_type) override;
-  void updateVisibility(bool visible) override;
-  blink::WebInputEventResult handleInputEvent(
+  void UpdateFocus(bool focused, blink::WebFocusType focus_type) override;
+  void UpdateVisibility(bool visible) override;
+  blink::WebInputEventResult HandleInputEvent(
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;
-  void didReceiveResponse(const blink::WebURLResponse& response) override;
-  void didReceiveData(const char* data, int data_length) override;
-  void didFinishLoading() override;
-  void didFailLoading(const blink::WebURLError&) override;
-  bool hasSelection() const override;
-  blink::WebString selectionAsText() const override;
-  blink::WebString selectionAsMarkup() const override;
-  blink::WebURL linkAtPosition(const blink::WebPoint& position) const override;
-  bool getPrintPresetOptionsFromDocument(
+  void DidReceiveResponse(const blink::WebURLResponse& response) override;
+  void DidReceiveData(const char* data, int data_length) override;
+  void DidFinishLoading() override;
+  void DidFailLoading(const blink::WebURLError&) override;
+  bool HasSelection() const override;
+  blink::WebString SelectionAsText() const override;
+  blink::WebString SelectionAsMarkup() const override;
+  blink::WebURL LinkAtPosition(const blink::WebPoint& position) const override;
+  bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options) override;
-  bool startFind(const blink::WebString& search_text,
+  bool StartFind(const blink::WebString& search_text,
                  bool case_sensitive,
                  int identifier) override;
-  void selectFindResult(bool forward, int identifier) override;
-  void stopFind() override;
-  bool supportsPaginatedPrint() override;
-  bool isPrintScalingDisabled() override;
+  void SelectFindResult(bool forward, int identifier) override;
+  void StopFind() override;
+  bool SupportsPaginatedPrint() override;
+  bool IsPrintScalingDisabled() override;
 
-  int printBegin(const blink::WebPrintParams& print_params) override;
-  void printPage(int page_number, blink::WebCanvas* canvas) override;
-  void printEnd() override;
+  int PrintBegin(const blink::WebPrintParams& print_params) override;
+  void PrintPage(int page_number, blink::WebCanvas* canvas) override;
+  void PrintEnd() override;
 
-  bool canRotateView() override;
-  void rotateView(RotationType type) override;
-  bool isPlaceholder() override;
+  bool CanRotateView() override;
+  void RotateView(RotationType type) override;
+  bool IsPlaceholder() override;
 
  private:
   friend class base::DeleteHelper<PepperWebPluginImpl>;

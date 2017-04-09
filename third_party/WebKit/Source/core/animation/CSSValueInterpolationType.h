@@ -16,47 +16,47 @@ class CSSValueInterpolationType : public CSSInterpolationType {
   CSSValueInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {}
 
-  PairwiseInterpolationValue maybeConvertPairwise(
-      const PropertySpecificKeyframe& startKeyframe,
-      const PropertySpecificKeyframe& endKeyframe,
+  PairwiseInterpolationValue MaybeConvertPairwise(
+      const PropertySpecificKeyframe& start_keyframe,
+      const PropertySpecificKeyframe& end_keyframe,
       const InterpolationEnvironment&,
       const InterpolationValue& underlying,
       ConversionCheckers&) const final {
     return nullptr;
   }
 
-  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final {
     return nullptr;
   }
 
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final {
     // This type will never interpolate or composite with the underlying value.
     // Returning nullptr here means no value will be applied and the value in
     // ComputedStyle will remain unchanged.
     return nullptr;
   }
-  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertValue(const CSSValue& value,
+  InterpolationValue MaybeConvertValue(const CSSValue& value,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
 
-  void composite(UnderlyingValueOwner& underlyingValueOwner,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner& underlying_value_owner,
+                 double underlying_fraction,
                  const InterpolationValue& value,
-                 double interpolationFraction) const final {
-    underlyingValueOwner.set(*this, value);
+                 double interpolation_fraction) const final {
+    underlying_value_owner.Set(*this, value);
   }
 
-  void applyStandardPropertyValue(const InterpolableValue&,
+  void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
-  const CSSValue* createCSSValue(const InterpolableValue&,
+  const CSSValue* CreateCSSValue(const InterpolableValue&,
                                  const NonInterpolableValue*,
                                  const StyleResolverState&) const final;
 };

@@ -174,9 +174,9 @@ void TextInputManager::SelectionBoundsChanged(
     focus_bound.set_type(gfx::SelectionBound::CENTER);
   } else {
     // Whether text is LTR at the anchor handle.
-    bool anchor_LTR = params.anchor_dir == blink::WebTextDirectionLeftToRight;
+    bool anchor_LTR = params.anchor_dir == blink::kWebTextDirectionLeftToRight;
     // Whether text is LTR at the focus handle.
-    bool focus_LTR = params.focus_dir == blink::WebTextDirectionLeftToRight;
+    bool focus_LTR = params.focus_dir == blink::kWebTextDirectionLeftToRight;
 
     if ((params.is_anchor_first && anchor_LTR) ||
         (!params.is_anchor_first && !anchor_LTR)) {

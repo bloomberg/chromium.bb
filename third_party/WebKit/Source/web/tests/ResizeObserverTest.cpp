@@ -26,22 +26,22 @@ namespace {
 class TestResizeObserverCallback : public ResizeObserverCallback {
  public:
   TestResizeObserverCallback(Document& document)
-      : m_document(document), m_callCount(0) {}
+      : document_(document), call_count_(0) {}
   void handleEvent(const HeapVector<Member<ResizeObserverEntry>>& entries,
                    ResizeObserver*) override {
-    m_callCount++;
+    call_count_++;
   }
-  ExecutionContext* getExecutionContext() const { return m_document; }
-  int callCount() const { return m_callCount; }
+  ExecutionContext* GetExecutionContext() const { return document_; }
+  int CallCount() const { return call_count_; }
 
   DEFINE_INLINE_TRACE() {
-    ResizeObserverCallback::trace(visitor);
-    visitor->trace(m_document);
+    ResizeObserverCallback::Trace(visitor);
+    visitor->Trace(document_);
   }
 
  private:
-  Member<Document> m_document;
-  int m_callCount;
+  Member<Document> document_;
+  int call_count_;
 };
 
 }  // namespace
@@ -56,92 +56,93 @@ class TestResizeObserverCallback : public ResizeObserverCallback {
 class ResizeObserverUnitTest : public SimTest {};
 
 TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
 
-  mainResource.start();
-  mainResource.write(
+  main_resource.Start();
+  main_resource.Write(
       "<div id='domTarget' style='width:100px;height:100px'>yo</div>"
       "<svg height='200' width='200'>"
       "<circle id='svgTarget' cx='100' cy='100' r='100'/>"
       "</svg>");
-  mainResource.finish();
+  main_resource.Finish();
 
-  ResizeObserverCallback* callback = new TestResizeObserverCallback(document());
-  ResizeObserver* observer = ResizeObserver::create(document(), callback);
-  Element* domTarget = document().getElementById("domTarget");
-  Element* svgTarget = document().getElementById("svgTarget");
-  ResizeObservation* domObservation =
-      new ResizeObservation(domTarget, observer);
-  ResizeObservation* svgObservation =
-      new ResizeObservation(svgTarget, observer);
+  ResizeObserverCallback* callback =
+      new TestResizeObserverCallback(GetDocument());
+  ResizeObserver* observer = ResizeObserver::Create(GetDocument(), callback);
+  Element* dom_target = GetDocument().GetElementById("domTarget");
+  Element* svg_target = GetDocument().GetElementById("svgTarget");
+  ResizeObservation* dom_observation =
+      new ResizeObservation(dom_target, observer);
+  ResizeObservation* svg_observation =
+      new ResizeObservation(svg_target, observer);
 
   // Initial observation is out of sync
-  ASSERT_TRUE(domObservation->observationSizeOutOfSync());
-  ASSERT_TRUE(svgObservation->observationSizeOutOfSync());
+  ASSERT_TRUE(dom_observation->ObservationSizeOutOfSync());
+  ASSERT_TRUE(svg_observation->ObservationSizeOutOfSync());
 
   // Target size is correct
-  LayoutSize size = domObservation->computeTargetSize();
-  ASSERT_EQ(size.width(), 100);
-  ASSERT_EQ(size.height(), 100);
-  domObservation->setObservationSize(size);
+  LayoutSize size = dom_observation->ComputeTargetSize();
+  ASSERT_EQ(size.Width(), 100);
+  ASSERT_EQ(size.Height(), 100);
+  dom_observation->SetObservationSize(size);
 
-  size = svgObservation->computeTargetSize();
-  ASSERT_EQ(size.width(), 200);
-  ASSERT_EQ(size.height(), 200);
-  svgObservation->setObservationSize(size);
+  size = svg_observation->ComputeTargetSize();
+  ASSERT_EQ(size.Width(), 200);
+  ASSERT_EQ(size.Height(), 200);
+  svg_observation->SetObservationSize(size);
 
   // Target size is in sync
-  ASSERT_FALSE(domObservation->observationSizeOutOfSync());
+  ASSERT_FALSE(dom_observation->ObservationSizeOutOfSync());
 
   // Target depths
-  ASSERT_EQ(svgObservation->targetDepth() - domObservation->targetDepth(),
+  ASSERT_EQ(svg_observation->TargetDepth() - dom_observation->TargetDepth(),
             (size_t)1);
 }
 
 TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
   ResizeObserverController& controller =
-      document().ensureResizeObserverController();
+      GetDocument().EnsureResizeObserverController();
   const HeapHashSet<WeakMember<ResizeObserver>>& observers =
-      controller.observers();
+      controller.Observers();
   ASSERT_EQ(observers.size(), 0U);
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-  ScriptController& script = document().executingFrame()->script();
+  ScriptController& script = GetDocument().ExecutingFrame()->Script();
 
   //
   // Test whether ResizeObserver is kept alive by direct JS reference
   //
-  script.executeScriptInMainWorldAndReturnValue(
+  script.ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode("var ro = new ResizeObserver( entries => {});"),
-      ScriptController::ExecuteScriptWhenScriptsDisabled);
+      ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
-  script.executeScriptInMainWorldAndReturnValue(
+  script.ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode("ro = undefined;"),
-      ScriptController::ExecuteScriptWhenScriptsDisabled);
-  V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
-  WebHeap::collectAllGarbageForTesting();
-  ASSERT_EQ(observers.isEmpty(), true);
+      ScriptController::kExecuteScriptWhenScriptsDisabled);
+  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  WebHeap::CollectAllGarbageForTesting();
+  ASSERT_EQ(observers.IsEmpty(), true);
 
   //
   // Test whether ResizeObserver is kept alive by an Element
   //
-  script.executeScriptInMainWorldAndReturnValue(
+  script.ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode("var ro = new ResizeObserver( () => {});"
                        "var el = document.createElement('div');"
                        "ro.observe(el);"
                        "ro = undefined;"),
-      ScriptController::ExecuteScriptWhenScriptsDisabled);
+      ScriptController::kExecuteScriptWhenScriptsDisabled);
   ASSERT_EQ(observers.size(), 1U);
-  V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
-  WebHeap::collectAllGarbageForTesting();
+  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  WebHeap::CollectAllGarbageForTesting();
   ASSERT_EQ(observers.size(), 1U);
-  script.executeScriptInMainWorldAndReturnValue(
+  script.ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode("el = undefined;"),
-      ScriptController::ExecuteScriptWhenScriptsDisabled);
-  V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
-  WebHeap::collectAllGarbageForTesting();
-  ASSERT_EQ(observers.isEmpty(), true);
+      ScriptController::kExecuteScriptWhenScriptsDisabled);
+  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  WebHeap::CollectAllGarbageForTesting();
+  ASSERT_EQ(observers.IsEmpty(), true);
 }
 
 }  // namespace blink

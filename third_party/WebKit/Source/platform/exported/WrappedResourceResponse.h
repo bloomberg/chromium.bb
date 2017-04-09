@@ -44,12 +44,12 @@ class WrappedResourceResponse : public WebURLResponse {
  public:
   ~WrappedResourceResponse() {}
 
-  explicit WrappedResourceResponse(ResourceResponse& resourceResponse)
-      : WebURLResponse(resourceResponse) {}
+  explicit WrappedResourceResponse(ResourceResponse& resource_response)
+      : WebURLResponse(resource_response) {}
 
-  explicit WrappedResourceResponse(const ResourceResponse& resourceResponse)
+  explicit WrappedResourceResponse(const ResourceResponse& resource_response)
       : WrappedResourceResponse(
-            const_cast<ResourceResponse&>(resourceResponse)) {}
+            const_cast<ResourceResponse&>(resource_response)) {}
 };
 
 }  // namespace blink

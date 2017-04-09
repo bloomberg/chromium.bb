@@ -27,70 +27,69 @@ namespace blink {
 
 inline SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(SVGNames::lineTag, document),
-      m_x1(SVGAnimatedLength::create(this,
-                                     SVGNames::x1Attr,
-                                     SVGLength::create(SVGLengthMode::Width))),
-      m_y1(SVGAnimatedLength::create(this,
-                                     SVGNames::y1Attr,
-                                     SVGLength::create(SVGLengthMode::Height))),
-      m_x2(SVGAnimatedLength::create(this,
-                                     SVGNames::x2Attr,
-                                     SVGLength::create(SVGLengthMode::Width))),
-      m_y2(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::y2Attr,
-                                    SVGLength::create(SVGLengthMode::Height))) {
-  addToPropertyMap(m_x1);
-  addToPropertyMap(m_y1);
-  addToPropertyMap(m_x2);
-  addToPropertyMap(m_y2);
+      x1_(SVGAnimatedLength::Create(this,
+                                    SVGNames::x1Attr,
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      y1_(SVGAnimatedLength::Create(this,
+                                    SVGNames::y1Attr,
+                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      x2_(SVGAnimatedLength::Create(this,
+                                    SVGNames::x2Attr,
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      y2_(SVGAnimatedLength::Create(
+          this,
+          SVGNames::y2Attr,
+          SVGLength::Create(SVGLengthMode::kHeight))) {
+  AddToPropertyMap(x1_);
+  AddToPropertyMap(y1_);
+  AddToPropertyMap(x2_);
+  AddToPropertyMap(y2_);
 }
 
 DEFINE_TRACE(SVGLineElement) {
-  visitor->trace(m_x1);
-  visitor->trace(m_y1);
-  visitor->trace(m_x2);
-  visitor->trace(m_y2);
-  SVGGeometryElement::trace(visitor);
+  visitor->Trace(x1_);
+  visitor->Trace(y1_);
+  visitor->Trace(x2_);
+  visitor->Trace(y2_);
+  SVGGeometryElement::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGLineElement)
 
-Path SVGLineElement::asPath() const {
+Path SVGLineElement::AsPath() const {
   Path path;
 
-  SVGLengthContext lengthContext(this);
-  path.moveTo(FloatPoint(x1()->currentValue()->value(lengthContext),
-                         y1()->currentValue()->value(lengthContext)));
-  path.addLineTo(FloatPoint(x2()->currentValue()->value(lengthContext),
-                            y2()->currentValue()->value(lengthContext)));
+  SVGLengthContext length_context(this);
+  path.MoveTo(FloatPoint(x1()->CurrentValue()->Value(length_context),
+                         y1()->CurrentValue()->Value(length_context)));
+  path.AddLineTo(FloatPoint(x2()->CurrentValue()->Value(length_context),
+                            y2()->CurrentValue()->Value(length_context)));
 
   return path;
 }
 
-void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::x1Attr || attrName == SVGNames::y1Attr ||
-      attrName == SVGNames::x2Attr || attrName == SVGNames::y2Attr) {
-    updateRelativeLengthsInformation();
+void SVGLineElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::x1Attr || attr_name == SVGNames::y1Attr ||
+      attr_name == SVGNames::x2Attr || attr_name == SVGNames::y2Attr) {
+    UpdateRelativeLengthsInformation();
 
-    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-    if (!layoutObject)
+    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
+    if (!layout_object)
       return;
 
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    layoutObject->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(layoutObject);
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    layout_object->SetNeedsShapeUpdate();
+    MarkForLayoutAndParentResourceInvalidation(layout_object);
     return;
   }
 
-  SVGGeometryElement::svgAttributeChanged(attrName);
+  SVGGeometryElement::SvgAttributeChanged(attr_name);
 }
 
-bool SVGLineElement::selfHasRelativeLengths() const {
-  return m_x1->currentValue()->isRelative() ||
-         m_y1->currentValue()->isRelative() ||
-         m_x2->currentValue()->isRelative() ||
-         m_y2->currentValue()->isRelative();
+bool SVGLineElement::SelfHasRelativeLengths() const {
+  return x1_->CurrentValue()->IsRelative() ||
+         y1_->CurrentValue()->IsRelative() ||
+         x2_->CurrentValue()->IsRelative() || y2_->CurrentValue()->IsRelative();
 }
 
 }  // namespace blink

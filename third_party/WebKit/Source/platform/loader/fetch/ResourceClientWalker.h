@@ -41,17 +41,17 @@ class ResourceClientWalker {
  public:
   explicit ResourceClientWalker(
       const HeapHashCountedSet<WeakMember<ResourceClient>>& set)
-      : m_clientSet(set) {
-    copyToVector(m_clientSet, m_clientVector);
+      : client_set_(set) {
+    CopyToVector(client_set_, client_vector_);
   }
 
-  T* next() {
-    size_t size = m_clientVector.size();
-    while (m_index < size) {
-      ResourceClient* next = m_clientVector[m_index++];
+  T* Next() {
+    size_t size = client_vector_.size();
+    while (index_ < size) {
+      ResourceClient* next = client_vector_[index_++];
       DCHECK(next);
-      if (m_clientSet.contains(next)) {
-        DCHECK(T::isExpectedType(next));
+      if (client_set_.Contains(next)) {
+        DCHECK(T::IsExpectedType(next));
         return static_cast<T*>(next);
       }
     }
@@ -59,9 +59,9 @@ class ResourceClientWalker {
   }
 
  private:
-  const HeapHashCountedSet<WeakMember<ResourceClient>>& m_clientSet;
-  HeapVector<Member<ResourceClient>> m_clientVector;
-  size_t m_index = 0;
+  const HeapHashCountedSet<WeakMember<ResourceClient>>& client_set_;
+  HeapVector<Member<ResourceClient>> client_vector_;
+  size_t index_ = 0;
 };
 
 }  // namespace blink

@@ -17,12 +17,12 @@ class WebMetaElement final : public WebElement {
   WebMetaElement(const WebMetaElement& element) : WebElement(element) {}
 
   WebMetaElement& operator=(const WebMetaElement& element) {
-    WebElement::assign(element);
+    WebElement::Assign(element);
     return *this;
   }
-  void assign(const WebMetaElement& element) { WebElement::assign(element); }
+  void Assign(const WebMetaElement& element) { WebElement::Assign(element); }
 
-  BLINK_EXPORT WebString computeEncoding() const;
+  BLINK_EXPORT WebString ComputeEncoding() const;
 
 #if BLINK_IMPLEMENTATION
   WebMetaElement(HTMLMetaElement*);

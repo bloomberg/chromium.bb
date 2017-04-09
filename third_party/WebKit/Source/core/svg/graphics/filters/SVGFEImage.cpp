@@ -43,174 +43,175 @@ namespace blink {
 
 FEImage::FEImage(Filter* filter,
                  PassRefPtr<Image> image,
-                 SVGPreserveAspectRatio* preserveAspectRatio)
+                 SVGPreserveAspectRatio* preserve_aspect_ratio)
     : FilterEffect(filter),
-      m_image(image),
-      m_treeScope(nullptr),
-      m_preserveAspectRatio(preserveAspectRatio) {
-  FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
+      image_(image),
+      tree_scope_(nullptr),
+      preserve_aspect_ratio_(preserve_aspect_ratio) {
+  FilterEffect::SetOperatingColorSpace(kColorSpaceDeviceRGB);
 }
 
 FEImage::FEImage(Filter* filter,
-                 TreeScope& treeScope,
+                 TreeScope& tree_scope,
                  const String& href,
-                 SVGPreserveAspectRatio* preserveAspectRatio)
+                 SVGPreserveAspectRatio* preserve_aspect_ratio)
     : FilterEffect(filter),
-      m_treeScope(&treeScope),
-      m_href(href),
-      m_preserveAspectRatio(preserveAspectRatio) {
-  FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
+      tree_scope_(&tree_scope),
+      href_(href),
+      preserve_aspect_ratio_(preserve_aspect_ratio) {
+  FilterEffect::SetOperatingColorSpace(kColorSpaceDeviceRGB);
 }
 
 DEFINE_TRACE(FEImage) {
-  visitor->trace(m_treeScope);
-  visitor->trace(m_preserveAspectRatio);
-  FilterEffect::trace(visitor);
+  visitor->Trace(tree_scope_);
+  visitor->Trace(preserve_aspect_ratio_);
+  FilterEffect::Trace(visitor);
 }
 
-FEImage* FEImage::createWithImage(Filter* filter,
-                                  PassRefPtr<Image> image,
-                                  SVGPreserveAspectRatio* preserveAspectRatio) {
-  return new FEImage(filter, std::move(image), preserveAspectRatio);
-}
-
-FEImage* FEImage::createWithIRIReference(
+FEImage* FEImage::CreateWithImage(
     Filter* filter,
-    TreeScope& treeScope,
+    PassRefPtr<Image> image,
+    SVGPreserveAspectRatio* preserve_aspect_ratio) {
+  return new FEImage(filter, std::move(image), preserve_aspect_ratio);
+}
+
+FEImage* FEImage::CreateWithIRIReference(
+    Filter* filter,
+    TreeScope& tree_scope,
     const String& href,
-    SVGPreserveAspectRatio* preserveAspectRatio) {
-  return new FEImage(filter, treeScope, href, preserveAspectRatio);
+    SVGPreserveAspectRatio* preserve_aspect_ratio) {
+  return new FEImage(filter, tree_scope, href, preserve_aspect_ratio);
 }
 
-static FloatRect getLayoutObjectRepaintRect(LayoutObject* layoutObject) {
-  return layoutObject->localToSVGParentTransform().mapRect(
-      layoutObject->visualRectInLocalSVGCoordinates());
+static FloatRect GetLayoutObjectRepaintRect(LayoutObject* layout_object) {
+  return layout_object->LocalToSVGParentTransform().MapRect(
+      layout_object->VisualRectInLocalSVGCoordinates());
 }
 
-AffineTransform makeMapBetweenRects(const FloatRect& source,
+AffineTransform MakeMapBetweenRects(const FloatRect& source,
                                     const FloatRect& dest) {
   AffineTransform transform;
-  transform.translate(dest.x() - source.x(), dest.y() - source.y());
-  transform.scale(dest.width() / source.width(),
-                  dest.height() / source.height());
+  transform.Translate(dest.X() - source.X(), dest.Y() - source.Y());
+  transform.Scale(dest.Width() / source.Width(),
+                  dest.Height() / source.Height());
   return transform;
 }
 
-FloatRect FEImage::mapInputs(const FloatRect&) const {
-  LayoutObject* layoutObject = referencedLayoutObject();
-  if (!m_image && !layoutObject)
+FloatRect FEImage::MapInputs(const FloatRect&) const {
+  LayoutObject* layout_object = ReferencedLayoutObject();
+  if (!image_ && !layout_object)
     return FloatRect();
 
-  FloatRect destRect =
-      getFilter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
-  FloatRect srcRect;
-  if (layoutObject) {
-    srcRect = getLayoutObjectRepaintRect(layoutObject);
-    SVGElement* contextNode = toSVGElement(layoutObject->node());
+  FloatRect dest_rect =
+      GetFilter()->MapLocalRectToAbsoluteRect(FilterPrimitiveSubregion());
+  FloatRect src_rect;
+  if (layout_object) {
+    src_rect = GetLayoutObjectRepaintRect(layout_object);
+    SVGElement* context_node = ToSVGElement(layout_object->GetNode());
 
-    if (contextNode->hasRelativeLengths()) {
+    if (context_node->HasRelativeLengths()) {
       // FIXME: This fixes relative lengths but breaks non-relative ones (see
       // crbug/260709).
-      SVGLengthContext lengthContext(contextNode);
-      FloatSize viewportSize;
-      if (lengthContext.determineViewport(viewportSize)) {
-        srcRect =
-            makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect)
-                .mapRect(srcRect);
+      SVGLengthContext length_context(context_node);
+      FloatSize viewport_size;
+      if (length_context.DetermineViewport(viewport_size)) {
+        src_rect = MakeMapBetweenRects(FloatRect(FloatPoint(), viewport_size),
+                                       dest_rect)
+                       .MapRect(src_rect);
       }
     } else {
-      srcRect = getFilter()->mapLocalRectToAbsoluteRect(srcRect);
-      srcRect.move(destRect.x(), destRect.y());
+      src_rect = GetFilter()->MapLocalRectToAbsoluteRect(src_rect);
+      src_rect.Move(dest_rect.X(), dest_rect.Y());
     }
-    destRect.intersect(srcRect);
+    dest_rect.Intersect(src_rect);
   } else {
-    srcRect = FloatRect(FloatPoint(), FloatSize(m_image->size()));
-    m_preserveAspectRatio->transformRect(destRect, srcRect);
+    src_rect = FloatRect(FloatPoint(), FloatSize(image_->size()));
+    preserve_aspect_ratio_->TransformRect(dest_rect, src_rect);
   }
-  return destRect;
+  return dest_rect;
 }
 
-LayoutObject* FEImage::referencedLayoutObject() const {
-  if (!m_treeScope)
+LayoutObject* FEImage::ReferencedLayoutObject() const {
+  if (!tree_scope_)
     return nullptr;
-  Element* hrefElement =
-      SVGURIReference::targetElementFromIRIString(m_href, *m_treeScope);
-  if (!hrefElement || !hrefElement->isSVGElement())
+  Element* href_element =
+      SVGURIReference::TargetElementFromIRIString(href_, *tree_scope_);
+  if (!href_element || !href_element->IsSVGElement())
     return nullptr;
-  return hrefElement->layoutObject();
+  return href_element->GetLayoutObject();
 }
 
-TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const {
-  IntSize imageSize;
-  if (m_image)
-    imageSize = m_image->size();
-  else if (LayoutObject* layoutObject = referencedLayoutObject())
-    imageSize =
-        enclosingIntRect(getLayoutObjectRepaintRect(layoutObject)).size();
-  writeIndent(ts, indent);
+TextStream& FEImage::ExternalRepresentation(TextStream& ts, int indent) const {
+  IntSize image_size;
+  if (image_)
+    image_size = image_->size();
+  else if (LayoutObject* layout_object = ReferencedLayoutObject())
+    image_size =
+        EnclosingIntRect(GetLayoutObjectRepaintRect(layout_object)).size();
+  WriteIndent(ts, indent);
   ts << "[feImage";
-  FilterEffect::externalRepresentation(ts);
-  ts << " image-size=\"" << imageSize.width() << "x" << imageSize.height()
+  FilterEffect::ExternalRepresentation(ts);
+  ts << " image-size=\"" << image_size.Width() << "x" << image_size.Height()
      << "\"]\n";
   // FIXME: should this dump also object returned by SVGFEImage::image() ?
   return ts;
 }
 
-sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(
-    const LayoutObject& layoutObject) {
-  FloatRect dstRect = filterPrimitiveSubregion();
+sk_sp<SkImageFilter> FEImage::CreateImageFilterForLayoutObject(
+    const LayoutObject& layout_object) {
+  FloatRect dst_rect = FilterPrimitiveSubregion();
 
   AffineTransform transform;
-  SVGElement* contextNode = toSVGElement(layoutObject.node());
+  SVGElement* context_node = ToSVGElement(layout_object.GetNode());
 
-  if (contextNode->hasRelativeLengths()) {
-    SVGLengthContext lengthContext(contextNode);
-    FloatSize viewportSize;
+  if (context_node->HasRelativeLengths()) {
+    SVGLengthContext length_context(context_node);
+    FloatSize viewport_size;
 
     // If we're referencing an element with percentage units, eg. <rect
     // with="30%"> those values were resolved against the viewport.  Build up a
     // transformation that maps from the viewport space to the filter primitive
     // subregion.
-    if (lengthContext.determineViewport(viewportSize))
+    if (length_context.DetermineViewport(viewport_size))
       transform =
-          makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), dstRect);
+          MakeMapBetweenRects(FloatRect(FloatPoint(), viewport_size), dst_rect);
   } else {
-    transform.translate(dstRect.x(), dstRect.y());
+    transform.Translate(dst_rect.X(), dst_rect.Y());
   }
 
   // TODO(chrishtr): use tighter bounds for this.
-  FloatRect bounds(LayoutRect::infiniteIntRect());
+  FloatRect bounds(LayoutRect::InfiniteIntRect());
   PaintRecordBuilder builder(bounds);
-  SVGPaintContext::paintResourceSubtree(builder.context(), &layoutObject);
+  SVGPaintContext::PaintResourceSubtree(builder.Context(), &layout_object);
 
-  PaintRecorder paintRecorder;
-  PaintCanvas* canvas = paintRecorder.beginRecording(dstRect);
-  canvas->concat(affineTransformToSkMatrix(transform));
-  builder.endRecording(*canvas);
+  PaintRecorder paint_recorder;
+  PaintCanvas* canvas = paint_recorder.beginRecording(dst_rect);
+  canvas->concat(AffineTransformToSkMatrix(transform));
+  builder.EndRecording(*canvas);
 
   return SkPictureImageFilter::Make(
-      ToSkPicture(paintRecorder.finishRecordingAsPicture()), dstRect);
+      ToSkPicture(paint_recorder.finishRecordingAsPicture()), dst_rect);
 }
 
-sk_sp<SkImageFilter> FEImage::createImageFilter() {
-  if (auto* layoutObject = referencedLayoutObject())
-    return createImageFilterForLayoutObject(*layoutObject);
+sk_sp<SkImageFilter> FEImage::CreateImageFilter() {
+  if (auto* layout_object = ReferencedLayoutObject())
+    return CreateImageFilterForLayoutObject(*layout_object);
 
-  sk_sp<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
+  sk_sp<SkImage> image = image_ ? image_->ImageForCurrentFrame() : nullptr;
   if (!image) {
     // "A href reference that is an empty image (zero width or zero height),
     //  that fails to download, is non-existent, or that cannot be displayed
     //  (e.g. because it is not in a supported image format) fills the filter
     //  primitive subregion with transparent black."
-    return createTransparentBlack();
+    return CreateTransparentBlack();
   }
 
-  FloatRect srcRect = FloatRect(FloatPoint(), FloatSize(m_image->size()));
-  FloatRect dstRect = filterPrimitiveSubregion();
+  FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(image_->size()));
+  FloatRect dst_rect = FilterPrimitiveSubregion();
 
-  m_preserveAspectRatio->transformRect(dstRect, srcRect);
+  preserve_aspect_ratio_->TransformRect(dst_rect, src_rect);
 
-  return SkImageSource::Make(std::move(image), srcRect, dstRect,
+  return SkImageSource::Make(std::move(image), src_rect, dst_rect,
                              kHigh_SkFilterQuality);
 }
 

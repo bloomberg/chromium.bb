@@ -28,91 +28,91 @@ class FindPaintOffsetNeedingUpdateScope {
   FindPaintOffsetNeedingUpdateScope(
       const LayoutObject& object,
       const PaintPropertyTreeBuilderContext& context)
-      : m_object(object),
-        m_context(context),
-        m_oldPaintOffset(object.paintOffset()) {
-    if (object.paintProperties() &&
-        object.paintProperties()->paintOffsetTranslation()) {
-      m_oldPaintOffsetTranslation =
-          object.paintProperties()->paintOffsetTranslation()->clone();
+      : object_(object),
+        context_(context),
+        old_paint_offset_(object.PaintOffset()) {
+    if (object.PaintProperties() &&
+        object.PaintProperties()->PaintOffsetTranslation()) {
+      old_paint_offset_translation_ =
+          object.PaintProperties()->PaintOffsetTranslation()->Clone();
     }
   }
 
   ~FindPaintOffsetNeedingUpdateScope() {
-    if (m_context.isActuallyNeeded)
+    if (context_.is_actually_needed)
       return;
-    DCHECK_OBJECT_PROPERTY_EQ(m_object, &m_oldPaintOffset,
-                              &m_object.paintOffset());
-    const auto* paintOffsetTranslation =
-        m_object.paintProperties()
-            ? m_object.paintProperties()->paintOffsetTranslation()
+    DCHECK_OBJECT_PROPERTY_EQ(object_, &old_paint_offset_,
+                              &object_.PaintOffset());
+    const auto* paint_offset_translation =
+        object_.PaintProperties()
+            ? object_.PaintProperties()->PaintOffsetTranslation()
             : nullptr;
-    DCHECK_OBJECT_PROPERTY_EQ(m_object, m_oldPaintOffsetTranslation.get(),
-                              paintOffsetTranslation);
+    DCHECK_OBJECT_PROPERTY_EQ(object_, old_paint_offset_translation_.Get(),
+                              paint_offset_translation);
   }
 
  private:
-  const LayoutObject& m_object;
-  const PaintPropertyTreeBuilderContext& m_context;
-  LayoutPoint m_oldPaintOffset;
-  RefPtr<const TransformPaintPropertyNode> m_oldPaintOffsetTranslation;
+  const LayoutObject& object_;
+  const PaintPropertyTreeBuilderContext& context_;
+  LayoutPoint old_paint_offset_;
+  RefPtr<const TransformPaintPropertyNode> old_paint_offset_translation_;
 };
 
 class FindVisualRectNeedingUpdateScopeBase {
  protected:
   FindVisualRectNeedingUpdateScopeBase(const LayoutObject& object,
                                        const PaintInvalidatorContext& context,
-                                       const LayoutRect& oldVisualRect)
-      : m_object(object),
-        m_context(context),
-        m_oldVisualRect(oldVisualRect),
-        m_neededVisualRectUpdate(context.needsVisualRectUpdate(object)) {
-    if (m_neededVisualRectUpdate) {
+                                       const LayoutRect& old_visual_rect)
+      : object_(object),
+        context_(context),
+        old_visual_rect_(old_visual_rect),
+        needed_visual_rect_update_(context.NeedsVisualRectUpdate(object)) {
+    if (needed_visual_rect_update_) {
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ||
-             (context.m_treeBuilderContext &&
-              context.m_treeBuilderContext->isActuallyNeeded));
+             (context.tree_builder_context_ &&
+              context.tree_builder_context_->is_actually_needed));
       return;
     }
-    context.m_forceVisualRectUpdateForChecking = true;
-    DCHECK(context.needsVisualRectUpdate(object));
+    context.force_visual_rect_update_for_checking_ = true;
+    DCHECK(context.NeedsVisualRectUpdate(object));
   }
 
   ~FindVisualRectNeedingUpdateScopeBase() {
-    m_context.m_forceVisualRectUpdateForChecking = false;
-    DCHECK_EQ(m_neededVisualRectUpdate,
-              m_context.needsVisualRectUpdate(m_object));
+    context_.force_visual_rect_update_for_checking_ = false;
+    DCHECK_EQ(needed_visual_rect_update_,
+              context_.NeedsVisualRectUpdate(object_));
   }
 
-  static LayoutRect inflatedRect(const LayoutRect& r) {
+  static LayoutRect InflatedRect(const LayoutRect& r) {
     LayoutRect result = r;
-    result.inflate(1);
+    result.Inflate(1);
     return result;
   }
 
-  void checkVisualRect(const LayoutRect& newVisualRect) {
-    if (m_neededVisualRectUpdate)
+  void CheckVisualRect(const LayoutRect& new_visual_rect) {
+    if (needed_visual_rect_update_)
       return;
-    DCHECK((m_oldVisualRect.isEmpty() && newVisualRect.isEmpty()) ||
-           m_object.enclosingLayer()->subtreeIsInvisible() ||
-           m_oldVisualRect == newVisualRect ||
+    DCHECK((old_visual_rect_.IsEmpty() && new_visual_rect.IsEmpty()) ||
+           object_.EnclosingLayer()->SubtreeIsInvisible() ||
+           old_visual_rect_ == new_visual_rect ||
            // The following check is to tolerate the differences caused by
            // pixel snapping that may happen for one rect but not for another
            // while we need neither paint invalidation nor raster invalidation
            // for the change. This may miss some real subpixel changes of visual
            // rects. TODO(wangxianzhu): Look into whether we can tighten this
            // for SPv2.
-           (inflatedRect(m_oldVisualRect).contains(newVisualRect) &&
-            inflatedRect(newVisualRect).contains(m_oldVisualRect)))
+           (InflatedRect(old_visual_rect_).Contains(new_visual_rect) &&
+            InflatedRect(new_visual_rect).Contains(old_visual_rect_)))
         << "Visual rect changed without needing update"
-        << " object=" << m_object.debugName()
-        << " old=" << m_oldVisualRect.toString()
-        << " new=" << newVisualRect.toString();
+        << " object=" << object_.DebugName()
+        << " old=" << old_visual_rect_.ToString()
+        << " new=" << new_visual_rect.ToString();
   }
 
-  const LayoutObject& m_object;
-  const PaintInvalidatorContext& m_context;
-  LayoutRect m_oldVisualRect;
-  bool m_neededVisualRectUpdate;
+  const LayoutObject& object_;
+  const PaintInvalidatorContext& context_;
+  LayoutRect old_visual_rect_;
+  bool needed_visual_rect_update_;
 };
 
 // For updates of visual rects (e.g. of scroll controls, caret, selection,etc.)
@@ -121,17 +121,17 @@ class FindVisualRectNeedingUpdateScope : FindVisualRectNeedingUpdateScopeBase {
  public:
   FindVisualRectNeedingUpdateScope(const LayoutObject& object,
                                    const PaintInvalidatorContext& context,
-                                   const LayoutRect& oldVisualRect,
+                                   const LayoutRect& old_visual_rect,
                                    // Must be a reference to a rect that
                                    // outlives this scope.
-                                   const LayoutRect& newVisualRect)
-      : FindVisualRectNeedingUpdateScopeBase(object, context, oldVisualRect),
-        m_newVisualRectRef(newVisualRect) {}
+                                   const LayoutRect& new_visual_rect)
+      : FindVisualRectNeedingUpdateScopeBase(object, context, old_visual_rect),
+        new_visual_rect_ref_(new_visual_rect) {}
 
-  ~FindVisualRectNeedingUpdateScope() { checkVisualRect(m_newVisualRectRef); }
+  ~FindVisualRectNeedingUpdateScope() { CheckVisualRect(new_visual_rect_ref_); }
 
  private:
-  const LayoutRect& m_newVisualRectRef;
+  const LayoutRect& new_visual_rect_ref_;
 };
 
 // For updates of object visual rect and location.
@@ -142,36 +142,36 @@ class FindObjectVisualRectNeedingUpdateScope
                                          const PaintInvalidatorContext& context)
       : FindVisualRectNeedingUpdateScopeBase(object,
                                              context,
-                                             object.visualRect()),
-        m_oldLocation(ObjectPaintInvalidator(object).locationInBacking()) {}
+                                             object.VisualRect()),
+        old_location_(ObjectPaintInvalidator(object).LocationInBacking()) {}
 
   ~FindObjectVisualRectNeedingUpdateScope() {
-    checkVisualRect(m_object.visualRect());
-    checkLocation();
+    CheckVisualRect(object_.VisualRect());
+    CheckLocation();
   }
 
-  void checkLocation() {
-    if (m_neededVisualRectUpdate)
+  void CheckLocation() {
+    if (needed_visual_rect_update_)
       return;
-    LayoutPoint newLocation =
-        ObjectPaintInvalidator(m_object).locationInBacking();
+    LayoutPoint new_location =
+        ObjectPaintInvalidator(object_).LocationInBacking();
     // Location of LayoutText and non-root SVG is location of the visual rect
     // which have been checked above.
-    DCHECK(m_object.isText() || m_object.isSVGChild() ||
-           newLocation == m_oldLocation ||
-           m_object.enclosingLayer()->subtreeIsInvisible() ||
+    DCHECK(object_.IsText() || object_.IsSVGChild() ||
+           new_location == old_location_ ||
+           object_.EnclosingLayer()->SubtreeIsInvisible() ||
            // See checkVisualRect for the issue of approximation.
            LayoutRect(-1, -1, 2, 2)
-               .contains(LayoutRect(LayoutPoint(newLocation - m_oldLocation),
+               .Contains(LayoutRect(LayoutPoint(new_location - old_location_),
                                     LayoutSize())))
         << "Location changed without needing update"
-        << " object=" << m_object.debugName()
-        << " old=" << m_oldLocation.toString()
-        << " new=" << newLocation.toString();
+        << " object=" << object_.DebugName()
+        << " old=" << old_location_.ToString()
+        << " new=" << new_location.ToString();
   }
 
  private:
-  LayoutPoint m_oldLocation;
+  LayoutPoint old_location_;
 };
 
 }  // namespace blink

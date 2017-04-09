@@ -44,7 +44,7 @@ class MIDIInput final : public MIDIPort {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIInput* create(MIDIAccess*,
+  static MIDIInput* Create(MIDIAccess*,
                            const String& id,
                            const String& manufacturer,
                            const String& name,
@@ -56,21 +56,21 @@ class MIDIInput final : public MIDIPort {
   void setOnmidimessage(EventListener*);
 
   // EventTarget
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventTargetNames::MIDIInput;
   }
 
   // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of
   // performance.now().
-  void didReceiveMIDIData(unsigned portIndex,
+  void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           size_t length,
-                          double timeStamp);
+                          double time_stamp);
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:

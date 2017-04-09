@@ -12,165 +12,171 @@
 
 namespace blink {
 
-ScriptValue ReadableStreamOperations::createReadableStream(
-    ScriptState* scriptState,
-    UnderlyingSourceBase* underlyingSource,
+ScriptValue ReadableStreamOperations::CreateReadableStream(
+    ScriptState* script_state,
+    UnderlyingSourceBase* underlying_source,
     ScriptValue strategy) {
-  ScriptState::Scope scope(scriptState);
+  ScriptState::Scope scope(script_state);
 
-  v8::Local<v8::Value> jsUnderlyingSource = ToV8(underlyingSource, scriptState);
-  v8::Local<v8::Value> jsStrategy = strategy.v8Value();
-  v8::Local<v8::Value> args[] = {jsUnderlyingSource, jsStrategy};
+  v8::Local<v8::Value> js_underlying_source =
+      ToV8(underlying_source, script_state);
+  v8::Local<v8::Value> js_strategy = strategy.V8Value();
+  v8::Local<v8::Value> args[] = {js_underlying_source, js_strategy};
   return ScriptValue(
-      scriptState,
-      V8ScriptRunner::callExtraOrCrash(
-          scriptState, "createReadableStreamWithExternalController", args));
+      script_state,
+      V8ScriptRunner::CallExtraOrCrash(
+          script_state, "createReadableStreamWithExternalController", args));
 }
 
-ScriptValue ReadableStreamOperations::createCountQueuingStrategy(
-    ScriptState* scriptState,
-    size_t highWaterMark) {
-  ScriptState::Scope scope(scriptState);
+ScriptValue ReadableStreamOperations::CreateCountQueuingStrategy(
+    ScriptState* script_state,
+    size_t high_water_mark) {
+  ScriptState::Scope scope(script_state);
 
   v8::Local<v8::Value> args[] = {
-      v8::Number::New(scriptState->isolate(), highWaterMark)};
+      v8::Number::New(script_state->GetIsolate(), high_water_mark)};
   return ScriptValue(
-      scriptState, V8ScriptRunner::callExtraOrCrash(
-                       scriptState, "createBuiltInCountQueuingStrategy", args));
+      script_state,
+      V8ScriptRunner::CallExtraOrCrash(
+          script_state, "createBuiltInCountQueuingStrategy", args));
 }
 
-ScriptValue ReadableStreamOperations::getReader(ScriptState* scriptState,
+ScriptValue ReadableStreamOperations::GetReader(ScriptState* script_state,
                                                 ScriptValue stream,
                                                 ExceptionState& es) {
-  ASSERT(isReadableStream(scriptState, stream));
+  ASSERT(IsReadableStream(script_state, stream));
 
-  v8::TryCatch block(scriptState->isolate());
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
+  v8::TryCatch block(script_state->GetIsolate());
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
   ScriptValue result(
-      scriptState,
-      V8ScriptRunner::callExtra(scriptState,
+      script_state,
+      V8ScriptRunner::CallExtra(script_state,
                                 "AcquireReadableStreamDefaultReader", args));
   if (block.HasCaught())
-    es.rethrowV8Exception(block.Exception());
+    es.RethrowV8Exception(block.Exception());
   return result;
 }
 
-bool ReadableStreamOperations::isReadableStream(ScriptState* scriptState,
+bool ReadableStreamOperations::IsReadableStream(ScriptState* script_state,
                                                 ScriptValue value) {
-  ASSERT(!value.isEmpty());
+  ASSERT(!value.IsEmpty());
 
-  if (!value.isObject())
+  if (!value.IsObject())
     return false;
 
-  v8::Local<v8::Value> args[] = {value.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStream", args)
+  v8::Local<v8::Value> args[] = {value.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state, "IsReadableStream",
+                                          args)
       ->ToBoolean()
       ->Value();
 }
 
-bool ReadableStreamOperations::isDisturbed(ScriptState* scriptState,
+bool ReadableStreamOperations::IsDisturbed(ScriptState* script_state,
                                            ScriptValue stream) {
-  ASSERT(isReadableStream(scriptState, stream));
+  ASSERT(IsReadableStream(script_state, stream));
 
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState,
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state,
                                           "IsReadableStreamDisturbed", args)
       ->ToBoolean()
       ->Value();
 }
 
-bool ReadableStreamOperations::isLocked(ScriptState* scriptState,
+bool ReadableStreamOperations::IsLocked(ScriptState* script_state,
                                         ScriptValue stream) {
-  ASSERT(isReadableStream(scriptState, stream));
+  ASSERT(IsReadableStream(script_state, stream));
 
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamLocked",
-                                          args)
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state,
+                                          "IsReadableStreamLocked", args)
       ->ToBoolean()
       ->Value();
 }
 
-bool ReadableStreamOperations::isReadable(ScriptState* scriptState,
+bool ReadableStreamOperations::IsReadable(ScriptState* script_state,
                                           ScriptValue stream) {
-  ASSERT(isReadableStream(scriptState, stream));
+  ASSERT(IsReadableStream(script_state, stream));
 
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState,
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state,
                                           "IsReadableStreamReadable", args)
       ->ToBoolean()
       ->Value();
 }
 
-bool ReadableStreamOperations::isClosed(ScriptState* scriptState,
+bool ReadableStreamOperations::IsClosed(ScriptState* script_state,
                                         ScriptValue stream) {
-  ASSERT(isReadableStream(scriptState, stream));
+  ASSERT(IsReadableStream(script_state, stream));
 
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState, "IsReadableStreamClosed",
-                                          args)
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state,
+                                          "IsReadableStreamClosed", args)
       ->ToBoolean()
       ->Value();
 }
 
-bool ReadableStreamOperations::isErrored(ScriptState* scriptState,
+bool ReadableStreamOperations::IsErrored(ScriptState* script_state,
                                          ScriptValue stream) {
-  ASSERT(isReadableStream(scriptState, stream));
+  ASSERT(IsReadableStream(script_state, stream));
 
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState,
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state,
                                           "IsReadableStreamErrored", args)
       ->ToBoolean()
       ->Value();
 }
 
-bool ReadableStreamOperations::isReadableStreamDefaultReader(
-    ScriptState* scriptState,
+bool ReadableStreamOperations::IsReadableStreamDefaultReader(
+    ScriptState* script_state,
     ScriptValue value) {
-  ASSERT(!value.isEmpty());
+  ASSERT(!value.IsEmpty());
 
-  if (!value.isObject())
+  if (!value.IsObject())
     return false;
 
-  v8::Local<v8::Value> args[] = {value.v8Value()};
-  return V8ScriptRunner::callExtraOrCrash(scriptState,
+  v8::Local<v8::Value> args[] = {value.V8Value()};
+  return V8ScriptRunner::CallExtraOrCrash(script_state,
                                           "IsReadableStreamDefaultReader", args)
       ->ToBoolean()
       ->Value();
 }
 
-ScriptPromise ReadableStreamOperations::defaultReaderRead(
-    ScriptState* scriptState,
+ScriptPromise ReadableStreamOperations::DefaultReaderRead(
+    ScriptState* script_state,
     ScriptValue reader) {
-  ASSERT(isReadableStreamDefaultReader(scriptState, reader));
+  ASSERT(IsReadableStreamDefaultReader(script_state, reader));
 
-  v8::Local<v8::Value> args[] = {reader.v8Value()};
-  return ScriptPromise::cast(
-      scriptState, V8ScriptRunner::callExtraOrCrash(
-                       scriptState, "ReadableStreamDefaultReaderRead", args));
+  v8::Local<v8::Value> args[] = {reader.V8Value()};
+  return ScriptPromise::Cast(
+      script_state, V8ScriptRunner::CallExtraOrCrash(
+                        script_state, "ReadableStreamDefaultReaderRead", args));
 }
 
-void ReadableStreamOperations::tee(ScriptState* scriptState,
+void ReadableStreamOperations::Tee(ScriptState* script_state,
                                    ScriptValue stream,
-                                   ScriptValue* newStream1,
-                                   ScriptValue* newStream2) {
-  DCHECK(isReadableStream(scriptState, stream));
-  DCHECK(!isLocked(scriptState, stream));
+                                   ScriptValue* new_stream1,
+                                   ScriptValue* new_stream2) {
+  DCHECK(IsReadableStream(script_state, stream));
+  DCHECK(!IsLocked(script_state, stream));
 
-  v8::Local<v8::Value> args[] = {stream.v8Value()};
+  v8::Local<v8::Value> args[] = {stream.V8Value()};
 
-  ScriptValue result(scriptState, V8ScriptRunner::callExtraOrCrash(
-                                      scriptState, "ReadableStreamTee", args));
-  DCHECK(result.v8Value()->IsArray());
-  v8::Local<v8::Array> branches = result.v8Value().As<v8::Array>();
+  ScriptValue result(script_state,
+                     V8ScriptRunner::CallExtraOrCrash(
+                         script_state, "ReadableStreamTee", args));
+  DCHECK(result.V8Value()->IsArray());
+  v8::Local<v8::Array> branches = result.V8Value().As<v8::Array>();
   DCHECK_EQ(2u, branches->Length());
 
-  *newStream1 = ScriptValue(
-      scriptState, branches->Get(scriptState->context(), 0).ToLocalChecked());
-  *newStream2 = ScriptValue(
-      scriptState, branches->Get(scriptState->context(), 1).ToLocalChecked());
+  *new_stream1 = ScriptValue(
+      script_state,
+      branches->Get(script_state->GetContext(), 0).ToLocalChecked());
+  *new_stream2 = ScriptValue(
+      script_state,
+      branches->Get(script_state->GetContext(), 1).ToLocalChecked());
 
-  DCHECK(isReadableStream(scriptState, *newStream1));
-  DCHECK(isReadableStream(scriptState, *newStream2));
+  DCHECK(IsReadableStream(script_state, *new_stream1));
+  DCHECK(IsReadableStream(script_state, *new_stream2));
 }
 
 }  // namespace blink

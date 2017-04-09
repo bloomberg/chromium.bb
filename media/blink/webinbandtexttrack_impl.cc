@@ -24,28 +24,28 @@ WebInbandTextTrackImpl::~WebInbandTextTrackImpl() {
   DCHECK(!client_);
 }
 
-void WebInbandTextTrackImpl::setClient(
+void WebInbandTextTrackImpl::SetClient(
     blink::WebInbandTextTrackClient* client) {
   client_ = client;
 }
 
-blink::WebInbandTextTrackClient* WebInbandTextTrackImpl::client() {
+blink::WebInbandTextTrackClient* WebInbandTextTrackImpl::Client() {
   return client_;
 }
 
-WebInbandTextTrackImpl::Kind WebInbandTextTrackImpl::kind() const {
+WebInbandTextTrackImpl::Kind WebInbandTextTrackImpl::GetKind() const {
   return kind_;
 }
 
-blink::WebString WebInbandTextTrackImpl::label() const {
+blink::WebString WebInbandTextTrackImpl::Label() const {
   return label_;
 }
 
-blink::WebString WebInbandTextTrackImpl::language() const {
+blink::WebString WebInbandTextTrackImpl::Language() const {
   return language_;
 }
 
-blink::WebString WebInbandTextTrackImpl::id() const {
+blink::WebString WebInbandTextTrackImpl::Id() const {
   return id_;
 }
 

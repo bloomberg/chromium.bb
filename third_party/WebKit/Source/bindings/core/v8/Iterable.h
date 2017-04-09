@@ -17,70 +17,75 @@ namespace blink {
 template <typename KeyType, typename ValueType>
 class Iterable {
  public:
-  Iterator* keysForBinding(ScriptState* scriptState,
-                           ExceptionState& exceptionState) {
-    IterationSource* source = this->startIteration(scriptState, exceptionState);
+  Iterator* keysForBinding(ScriptState* script_state,
+                           ExceptionState& exception_state) {
+    IterationSource* source =
+        this->StartIteration(script_state, exception_state);
     if (!source)
       return nullptr;
     return new IterableIterator<KeySelector>(source);
   }
 
-  Iterator* valuesForBinding(ScriptState* scriptState,
-                             ExceptionState& exceptionState) {
-    IterationSource* source = this->startIteration(scriptState, exceptionState);
+  Iterator* valuesForBinding(ScriptState* script_state,
+                             ExceptionState& exception_state) {
+    IterationSource* source =
+        this->StartIteration(script_state, exception_state);
     if (!source)
       return nullptr;
     return new IterableIterator<ValueSelector>(source);
   }
 
-  Iterator* entriesForBinding(ScriptState* scriptState,
-                              ExceptionState& exceptionState) {
-    IterationSource* source = this->startIteration(scriptState, exceptionState);
+  Iterator* entriesForBinding(ScriptState* script_state,
+                              ExceptionState& exception_state) {
+    IterationSource* source =
+        this->StartIteration(script_state, exception_state);
     if (!source)
       return nullptr;
     return new IterableIterator<EntrySelector>(source);
   }
 
-  void forEachForBinding(ScriptState* scriptState,
-                         const ScriptValue& thisValue,
+  void forEachForBinding(ScriptState* script_state,
+                         const ScriptValue& this_value,
                          const ScriptValue& callback,
-                         const ScriptValue& thisArg,
-                         ExceptionState& exceptionState) {
-    IterationSource* source = this->startIteration(scriptState, exceptionState);
+                         const ScriptValue& this_arg,
+                         ExceptionState& exception_state) {
+    IterationSource* source =
+        this->StartIteration(script_state, exception_state);
 
-    v8::Isolate* isolate = scriptState->isolate();
-    v8::TryCatch tryCatch(isolate);
+    v8::Isolate* isolate = script_state->GetIsolate();
+    v8::TryCatch try_catch(isolate);
 
-    v8::Local<v8::Object> creationContext(thisValue.v8Value().As<v8::Object>());
-    v8::Local<v8::Function> v8Callback(callback.v8Value().As<v8::Function>());
-    v8::Local<v8::Value> v8ThisArg(thisArg.v8Value());
+    v8::Local<v8::Object> creation_context(
+        this_value.V8Value().As<v8::Object>());
+    v8::Local<v8::Function> v8_callback(callback.V8Value().As<v8::Function>());
+    v8::Local<v8::Value> v8_this_arg(this_arg.V8Value());
     v8::Local<v8::Value> args[3];
 
-    args[2] = thisValue.v8Value();
+    args[2] = this_value.V8Value();
 
     while (true) {
       KeyType key;
       ValueType value;
 
-      if (!source->next(scriptState, key, value, exceptionState))
+      if (!source->Next(script_state, key, value, exception_state))
         return;
 
-      ASSERT(!exceptionState.hadException());
+      ASSERT(!exception_state.HadException());
 
-      args[0] = ToV8(value, creationContext, isolate);
-      args[1] = ToV8(key, creationContext, isolate);
+      args[0] = ToV8(value, creation_context, isolate);
+      args[1] = ToV8(key, creation_context, isolate);
       if (args[0].IsEmpty() || args[1].IsEmpty()) {
-        if (tryCatch.HasCaught())
-          exceptionState.rethrowV8Exception(tryCatch.Exception());
+        if (try_catch.HasCaught())
+          exception_state.RethrowV8Exception(try_catch.Exception());
         return;
       }
 
       v8::Local<v8::Value> result;
-      if (!V8ScriptRunner::callFunction(v8Callback,
-                                        scriptState->getExecutionContext(),
-                                        v8ThisArg, 3, args, isolate)
+      if (!V8ScriptRunner::CallFunction(v8_callback,
+                                        script_state->GetExecutionContext(),
+                                        v8_this_arg, 3, args, isolate)
                .ToLocal(&result)) {
-        exceptionState.rethrowV8Exception(tryCatch.Exception());
+        exception_state.RethrowV8Exception(try_catch.Exception());
         return;
       }
     }
@@ -92,17 +97,17 @@ class Iterable {
 
     // If end of iteration has been reached or an exception thrown: return
     // false.  Otherwise: set |key| and |value| and return true.
-    virtual bool next(ScriptState*, KeyType&, ValueType&, ExceptionState&) = 0;
+    virtual bool Next(ScriptState*, KeyType&, ValueType&, ExceptionState&) = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
  private:
-  virtual IterationSource* startIteration(ScriptState*, ExceptionState&) = 0;
+  virtual IterationSource* StartIteration(ScriptState*, ExceptionState&) = 0;
 
   struct KeySelector {
     STATIC_ONLY(KeySelector);
-    static const KeyType& select(ScriptState*,
+    static const KeyType& Select(ScriptState*,
                                  const KeyType& key,
                                  const ValueType& value) {
       return key;
@@ -110,7 +115,7 @@ class Iterable {
   };
   struct ValueSelector {
     STATIC_ONLY(ValueSelector);
-    static const ValueType& select(ScriptState*,
+    static const ValueType& Select(ScriptState*,
                                    const KeyType& key,
                                    const ValueType& value) {
       return value;
@@ -118,17 +123,18 @@ class Iterable {
   };
   struct EntrySelector {
     STATIC_ONLY(EntrySelector);
-    static Vector<ScriptValue, 2> select(ScriptState* scriptState,
+    static Vector<ScriptValue, 2> Select(ScriptState* script_state,
                                          const KeyType& key,
                                          const ValueType& value) {
-      v8::Local<v8::Object> creationContext = scriptState->context()->Global();
-      v8::Isolate* isolate = scriptState->isolate();
+      v8::Local<v8::Object> creation_context =
+          script_state->GetContext()->Global();
+      v8::Isolate* isolate = script_state->GetIsolate();
 
       Vector<ScriptValue, 2> entry;
       entry.push_back(
-          ScriptValue(scriptState, ToV8(key, creationContext, isolate)));
+          ScriptValue(script_state, ToV8(key, creation_context, isolate)));
       entry.push_back(
-          ScriptValue(scriptState, ToV8(value, creationContext, isolate)));
+          ScriptValue(script_state, ToV8(value, creation_context, isolate)));
       return entry;
     }
   };
@@ -136,33 +142,33 @@ class Iterable {
   template <typename Selector>
   class IterableIterator final : public Iterator {
    public:
-    explicit IterableIterator(IterationSource* source) : m_source(source) {}
+    explicit IterableIterator(IterationSource* source) : source_(source) {}
 
-    ScriptValue next(ScriptState* scriptState,
-                     ExceptionState& exceptionState) override {
+    ScriptValue next(ScriptState* script_state,
+                     ExceptionState& exception_state) override {
       KeyType key;
       ValueType value;
 
-      if (!m_source->next(scriptState, key, value, exceptionState))
-        return v8IteratorResultDone(scriptState);
+      if (!source_->Next(script_state, key, value, exception_state))
+        return V8IteratorResultDone(script_state);
 
-      return v8IteratorResult(scriptState,
-                              Selector::select(scriptState, key, value));
+      return V8IteratorResult(script_state,
+                              Selector::Select(script_state, key, value));
     }
 
-    ScriptValue next(ScriptState* scriptState,
+    ScriptValue next(ScriptState* script_state,
                      ScriptValue,
-                     ExceptionState& exceptionState) override {
-      return next(scriptState, exceptionState);
+                     ExceptionState& exception_state) override {
+      return next(script_state, exception_state);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_source);
-      Iterator::trace(visitor);
+      visitor->Trace(source_);
+      Iterator::Trace(visitor);
     }
 
    private:
-    Member<IterationSource> m_source;
+    Member<IterationSource> source_;
   };
 };
 
@@ -171,8 +177,9 @@ class Iterable {
 template <typename KeyType, typename ValueType>
 class PairIterable : public Iterable<KeyType, ValueType> {
  public:
-  Iterator* iterator(ScriptState* scriptState, ExceptionState& exceptionState) {
-    return this->entriesForBinding(scriptState, exceptionState);
+  Iterator* GetIterator(ScriptState* script_state,
+                        ExceptionState& exception_state) {
+    return this->entriesForBinding(script_state, exception_state);
   }
 };
 

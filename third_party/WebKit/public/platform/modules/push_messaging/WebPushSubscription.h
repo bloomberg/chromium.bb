@@ -16,13 +16,13 @@ struct WebPushSubscription {
   // The |endpoint|, |p256dh| and |auth| must all be unique for each
   // subscription.
   WebPushSubscription(const WebURL& endpoint,
-                      bool userVisibleOnly,
-                      const WebString& applicationServerKey,
+                      bool user_visible_only,
+                      const WebString& application_server_key,
                       const WebVector<unsigned char>& p256dh,
                       const WebVector<unsigned char>& auth)
       : endpoint(endpoint), p256dh(p256dh), auth(auth) {
-    options.userVisibleOnly = userVisibleOnly;
-    options.applicationServerKey = applicationServerKey;
+    options.user_visible_only = user_visible_only;
+    options.application_server_key = application_server_key;
   }
 
   WebURL endpoint;

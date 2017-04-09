@@ -9,11 +9,11 @@
 
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
-using blink::WebDragOperationNone;
-using blink::WebDragOperationCopy;
-using blink::WebDragOperationLink;
-using blink::WebDragOperationMove;
-using blink::WebDragOperationGeneric;
+using blink::kWebDragOperationNone;
+using blink::kWebDragOperationCopy;
+using blink::kWebDragOperationLink;
+using blink::kWebDragOperationMove;
+using blink::kWebDragOperationGeneric;
 
 namespace content {
 
@@ -25,34 +25,32 @@ WebDragOperation WinDragOpToWebDragOp(DWORD effect) {
 }
 
 WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects) {
-  WebDragOperationsMask ops = WebDragOperationNone;
+  WebDragOperationsMask ops = kWebDragOperationNone;
   if (effects & DROPEFFECT_COPY)
-    ops = static_cast<WebDragOperationsMask>(ops | WebDragOperationCopy);
+    ops = static_cast<WebDragOperationsMask>(ops | kWebDragOperationCopy);
   if (effects & DROPEFFECT_LINK)
-    ops = static_cast<WebDragOperationsMask>(ops | WebDragOperationLink);
+    ops = static_cast<WebDragOperationsMask>(ops | kWebDragOperationLink);
   if (effects & DROPEFFECT_MOVE)
-    ops = static_cast<WebDragOperationsMask>(ops | WebDragOperationMove |
-                                             WebDragOperationGeneric);
+    ops = static_cast<WebDragOperationsMask>(ops | kWebDragOperationMove |
+                                             kWebDragOperationGeneric);
   return ops;
 }
 
 DWORD WebDragOpToWinDragOp(WebDragOperation op) {
-  DCHECK(op == WebDragOperationNone ||
-         op == WebDragOperationCopy ||
-         op == WebDragOperationLink ||
-         op == WebDragOperationMove ||
-         op == (WebDragOperationMove | WebDragOperationGeneric));
+  DCHECK(op == kWebDragOperationNone || op == kWebDragOperationCopy ||
+         op == kWebDragOperationLink || op == kWebDragOperationMove ||
+         op == (kWebDragOperationMove | kWebDragOperationGeneric));
 
   return WebDragOpMaskToWinDragOpMask(op);
 }
 
 DWORD WebDragOpMaskToWinDragOpMask(WebDragOperationsMask ops) {
   DWORD win_ops = DROPEFFECT_NONE;
-  if (ops & WebDragOperationCopy)
+  if (ops & kWebDragOperationCopy)
     win_ops |= DROPEFFECT_COPY;
-  if (ops & WebDragOperationLink)
+  if (ops & kWebDragOperationLink)
     win_ops |= DROPEFFECT_LINK;
-  if (ops & (WebDragOperationMove | WebDragOperationGeneric))
+  if (ops & (kWebDragOperationMove | kWebDragOperationGeneric))
     win_ops |= DROPEFFECT_MOVE;
   return win_ops;
 }

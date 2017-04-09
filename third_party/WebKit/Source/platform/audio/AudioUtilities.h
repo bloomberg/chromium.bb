@@ -38,28 +38,28 @@ namespace AudioUtilities {
 static const unsigned kRenderQuantumFrames = 128;
 
 // Standard functions for converting to and from decibel values from linear.
-PLATFORM_EXPORT float linearToDecibels(float);
-PLATFORM_EXPORT float decibelsToLinear(float);
+PLATFORM_EXPORT float LinearToDecibels(float);
+PLATFORM_EXPORT float DecibelsToLinear(float);
 
 // timeConstant is the time it takes a first-order linear time-invariant system
 // to reach the value 1 - 1/e (around 63.2%) given a step input response.
 // discreteTimeConstantForSampleRate() will return the discrete time-constant
 // for the specific sampleRate.
-PLATFORM_EXPORT double discreteTimeConstantForSampleRate(double timeConstant,
-                                                         double sampleRate);
+PLATFORM_EXPORT double DiscreteTimeConstantForSampleRate(double time_constant,
+                                                         double sample_rate);
 
 // Convert the time to a sample frame at the given sample rate.
-PLATFORM_EXPORT size_t timeToSampleFrame(double time, double sampleRate);
+PLATFORM_EXPORT size_t TimeToSampleFrame(double time, double sample_rate);
 
 // Check that |sampleRate| is a valid rate for AudioBuffers.
-PLATFORM_EXPORT bool isValidAudioBufferSampleRate(float sampleRate);
+PLATFORM_EXPORT bool IsValidAudioBufferSampleRate(float sample_rate);
 
 // Return max/min sample rate supported by AudioBuffers.
-PLATFORM_EXPORT float minAudioBufferSampleRate();
-PLATFORM_EXPORT float maxAudioBufferSampleRate();
+PLATFORM_EXPORT float MinAudioBufferSampleRate();
+PLATFORM_EXPORT float MaxAudioBufferSampleRate();
 
 // Check to see if x is a power of two.  If x == 0, returns false.
-PLATFORM_EXPORT bool isPowerOfTwo(size_t x);
+PLATFORM_EXPORT bool IsPowerOfTwo(size_t x);
 
 }  // namespace AudioUtilities
 }  // namespace blink

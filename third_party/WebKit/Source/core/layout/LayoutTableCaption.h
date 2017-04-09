@@ -46,20 +46,20 @@ class LayoutTableCaption final : public LayoutBlockFlow {
  public:
   explicit LayoutTableCaption(Element*);
   ~LayoutTableCaption() override;
-  LayoutUnit containingBlockLogicalWidthForContent() const override;
+  LayoutUnit ContainingBlockLogicalWidthForContent() const override;
 
  private:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectTableCaption || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectTableCaption || LayoutBlockFlow::IsOfType(type);
   }
 
-  void insertedIntoTree() override;
-  void willBeRemovedFromTree() override;
+  void InsertedIntoTree() override;
+  void WillBeRemovedFromTree() override;
 
-  LayoutTable* table() const;
+  LayoutTable* Table() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCaption, isTableCaption());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCaption, IsTableCaption());
 
 }  // namespace blink
 

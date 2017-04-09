@@ -6,7 +6,7 @@
 
 namespace blink {
 
-v8::Local<v8::Value> IDLDictionaryBase::toV8Impl(v8::Local<v8::Object>,
+v8::Local<v8::Value> IDLDictionaryBase::ToV8Impl(v8::Local<v8::Object>,
                                                  v8::Isolate*) const {
   NOTREACHED();
   return v8::Local<v8::Value>();

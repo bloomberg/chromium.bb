@@ -34,36 +34,36 @@ class MODULES_EXPORT FetchDataLoader
     virtual ~Client() {}
 
     // The method corresponding to createLoaderAs... is called on success.
-    virtual void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle>) {
+    virtual void DidFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle>) {
       NOTREACHED();
     }
-    virtual void didFetchDataLoadedArrayBuffer(DOMArrayBuffer*) {
+    virtual void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer*) {
       NOTREACHED();
     }
-    virtual void didFetchDataLoadedString(const String&) { NOTREACHED(); }
+    virtual void DidFetchDataLoadedString(const String&) { NOTREACHED(); }
     // This is called after all data are read from |handle| and written
     // to |outStream|, and |outStream| is closed or aborted.
-    virtual void didFetchDataLoadedStream() { NOTREACHED(); }
+    virtual void DidFetchDataLoadedStream() { NOTREACHED(); }
 
     // This function is called when a "custom" FetchDataLoader (none of the
     // ones listed above) finishes loading.
-    virtual void didFetchDataLoadedCustomFormat() { NOTREACHED(); }
+    virtual void DidFetchDataLoadedCustomFormat() { NOTREACHED(); }
 
-    virtual void didFetchDataLoadFailed() = 0;
+    virtual void DidFetchDataLoadFailed() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  static FetchDataLoader* createLoaderAsBlobHandle(const String& mimeType);
-  static FetchDataLoader* createLoaderAsArrayBuffer();
-  static FetchDataLoader* createLoaderAsString();
-  static FetchDataLoader* createLoaderAsStream(Stream*);
+  static FetchDataLoader* CreateLoaderAsBlobHandle(const String& mime_type);
+  static FetchDataLoader* CreateLoaderAsArrayBuffer();
+  static FetchDataLoader* CreateLoaderAsString();
+  static FetchDataLoader* CreateLoaderAsStream(Stream*);
   virtual ~FetchDataLoader() {}
 
   // |consumer| must not have a client when called.
-  virtual void start(BytesConsumer* /* consumer */, Client*) = 0;
+  virtual void Start(BytesConsumer* /* consumer */, Client*) = 0;
 
-  virtual void cancel() = 0;
+  virtual void Cancel() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

@@ -14,9 +14,9 @@ namespace {
 
 class MockResourceFactory final : public ResourceFactory {
  public:
-  MockResourceFactory() : ResourceFactory(Resource::Mock) {}
+  MockResourceFactory() : ResourceFactory(Resource::kMock) {}
 
-  Resource* create(const ResourceRequest& request,
+  Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options,
                    const String&) const override {
     return new MockResource(request, options);
@@ -26,20 +26,20 @@ class MockResourceFactory final : public ResourceFactory {
 }  // namespace
 
 // static
-MockResource* MockResource::fetch(FetchRequest& request,
+MockResource* MockResource::Fetch(FetchRequest& request,
                                   ResourceFetcher* fetcher) {
-  request.setRequestContext(WebURLRequest::RequestContextSubresource);
-  Resource* resource = fetcher->requestResource(request, MockResourceFactory());
+  request.SetRequestContext(WebURLRequest::kRequestContextSubresource);
+  Resource* resource = fetcher->RequestResource(request, MockResourceFactory());
   return static_cast<MockResource*>(resource);
 }
 
 // static
-MockResource* MockResource::create(const ResourceRequest& request) {
+MockResource* MockResource::Create(const ResourceRequest& request) {
   return new MockResource(request, ResourceLoaderOptions());
 }
 
 MockResource::MockResource(const ResourceRequest& request,
                            const ResourceLoaderOptions& options)
-    : Resource(request, Resource::Mock, options) {}
+    : Resource(request, Resource::kMock, options) {}
 
 }  // namespace blink

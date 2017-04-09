@@ -30,10 +30,10 @@
 
 namespace blink {
 
-FloatPoint::FloatPoint(const CGPoint& p) : m_x(p.x), m_y(p.y) {}
+FloatPoint::FloatPoint(const CGPoint& p) : x_(p.x), y_(p.y) {}
 
 FloatPoint::operator CGPoint() const {
-  return CGPointMake(m_x, m_y);
+  return CGPointMake(x_, y_);
 }
 
 }  // namespace blink

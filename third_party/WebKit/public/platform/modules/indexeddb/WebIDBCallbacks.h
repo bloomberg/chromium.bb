@@ -44,28 +44,28 @@ class WebIDBCallbacks {
   virtual ~WebIDBCallbacks() {}
 
   // Pointers transfer ownership.
-  virtual void onError(const WebIDBDatabaseError&) = 0;
-  virtual void onSuccess(const WebVector<WebString>&) = 0;
-  virtual void onSuccess(WebIDBCursor*,
+  virtual void OnError(const WebIDBDatabaseError&) = 0;
+  virtual void OnSuccess(const WebVector<WebString>&) = 0;
+  virtual void OnSuccess(WebIDBCursor*,
                          const WebIDBKey&,
-                         const WebIDBKey& primaryKey,
+                         const WebIDBKey& primary_key,
                          const WebIDBValue&) = 0;
-  virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
-  virtual void onSuccess(const WebIDBKey&) = 0;
-  virtual void onSuccess(const WebIDBValue&) = 0;
-  virtual void onSuccess(const WebVector<WebIDBValue>&) = 0;
-  virtual void onSuccess(long long) = 0;
-  virtual void onSuccess() = 0;
-  virtual void onSuccess(const WebIDBKey&,
-                         const WebIDBKey& primaryKey,
+  virtual void OnSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
+  virtual void OnSuccess(const WebIDBKey&) = 0;
+  virtual void OnSuccess(const WebIDBValue&) = 0;
+  virtual void OnSuccess(const WebVector<WebIDBValue>&) = 0;
+  virtual void OnSuccess(long long) = 0;
+  virtual void OnSuccess() = 0;
+  virtual void OnSuccess(const WebIDBKey&,
+                         const WebIDBKey& primary_key,
                          const WebIDBValue&) = 0;
-  virtual void onBlocked(long long oldVersion) = 0;
-  virtual void onUpgradeNeeded(long long oldVersion,
+  virtual void OnBlocked(long long old_version) = 0;
+  virtual void OnUpgradeNeeded(long long old_version,
                                WebIDBDatabase*,
                                const WebIDBMetadata&,
-                               unsigned short dataLoss,
-                               WebString dataLossMessage) = 0;
-  virtual void detach() = 0;
+                               unsigned short data_loss,
+                               WebString data_loss_message) = 0;
+  virtual void Detach() = 0;
 };
 
 }  // namespace blink

@@ -13,45 +13,45 @@ namespace blink {
 class WebContentSettingCallbacksPrivate
     : public RefCounted<WebContentSettingCallbacksPrivate> {
  public:
-  static PassRefPtr<WebContentSettingCallbacksPrivate> create(
+  static PassRefPtr<WebContentSettingCallbacksPrivate> Create(
       std::unique_ptr<ContentSettingCallbacks> callbacks) {
-    return adoptRef(
+    return AdoptRef(
         new WebContentSettingCallbacksPrivate(std::move(callbacks)));
   }
 
-  ContentSettingCallbacks* callbacks() { return m_callbacks.get(); }
+  ContentSettingCallbacks* Callbacks() { return callbacks_.get(); }
 
  private:
   WebContentSettingCallbacksPrivate(
       std::unique_ptr<ContentSettingCallbacks> callbacks)
-      : m_callbacks(std::move(callbacks)) {}
-  std::unique_ptr<ContentSettingCallbacks> m_callbacks;
+      : callbacks_(std::move(callbacks)) {}
+  std::unique_ptr<ContentSettingCallbacks> callbacks_;
 };
 
 WebContentSettingCallbacks::WebContentSettingCallbacks(
     std::unique_ptr<ContentSettingCallbacks>&& callbacks) {
-  m_private = WebContentSettingCallbacksPrivate::create(std::move(callbacks));
+  private_ = WebContentSettingCallbacksPrivate::Create(std::move(callbacks));
 }
 
-void WebContentSettingCallbacks::reset() {
-  m_private.reset();
+void WebContentSettingCallbacks::Reset() {
+  private_.Reset();
 }
 
-void WebContentSettingCallbacks::assign(
+void WebContentSettingCallbacks::Assign(
     const WebContentSettingCallbacks& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
-void WebContentSettingCallbacks::doAllow() {
-  ASSERT(!m_private.isNull());
-  m_private->callbacks()->onAllowed();
-  m_private.reset();
+void WebContentSettingCallbacks::DoAllow() {
+  ASSERT(!private_.IsNull());
+  private_->Callbacks()->OnAllowed();
+  private_.Reset();
 }
 
-void WebContentSettingCallbacks::doDeny() {
-  ASSERT(!m_private.isNull());
-  m_private->callbacks()->onDenied();
-  m_private.reset();
+void WebContentSettingCallbacks::DoDeny() {
+  ASSERT(!private_.IsNull());
+  private_->Callbacks()->OnDenied();
+  private_.Reset();
 }
 
 }  // namespace blink

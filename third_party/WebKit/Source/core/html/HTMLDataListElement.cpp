@@ -42,27 +42,31 @@ namespace blink {
 inline HTMLDataListElement::HTMLDataListElement(Document& document)
     : HTMLElement(HTMLNames::datalistTag, document) {}
 
-HTMLDataListElement* HTMLDataListElement::create(Document& document) {
-  UseCounter::count(document, UseCounter::DataListElement);
+HTMLDataListElement* HTMLDataListElement::Create(Document& document) {
+  UseCounter::Count(document, UseCounter::kDataListElement);
   return new HTMLDataListElement(document);
 }
 
 HTMLDataListOptionsCollection* HTMLDataListElement::options() {
-  return ensureCachedCollection<HTMLDataListOptionsCollection>(DataListOptions);
+  return EnsureCachedCollection<HTMLDataListOptionsCollection>(
+      kDataListOptions);
 }
 
-void HTMLDataListElement::childrenChanged(const ChildrenChange& change) {
-  HTMLElement::childrenChanged(change);
-  if (!change.byParser)
-    treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
+void HTMLDataListElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLElement::ChildrenChanged(change);
+  if (!change.by_parser)
+    GetTreeScope().GetIdTargetObserverRegistry().NotifyObservers(
+        GetIdAttribute());
 }
 
-void HTMLDataListElement::finishParsingChildren() {
-  treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
+void HTMLDataListElement::FinishParsingChildren() {
+  GetTreeScope().GetIdTargetObserverRegistry().NotifyObservers(
+      GetIdAttribute());
 }
 
-void HTMLDataListElement::optionElementChildrenChanged() {
-  treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
+void HTMLDataListElement::OptionElementChildrenChanged() {
+  GetTreeScope().GetIdTargetObserverRegistry().NotifyObservers(
+      GetIdAttribute());
 }
 
 }  // namespace blink

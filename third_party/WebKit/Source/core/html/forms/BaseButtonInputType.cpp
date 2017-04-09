@@ -47,56 +47,56 @@ BaseButtonInputType::BaseButtonInputType(HTMLInputElement& element)
     : InputType(element), KeyboardClickableInputTypeView(element) {}
 
 DEFINE_TRACE(BaseButtonInputType) {
-  KeyboardClickableInputTypeView::trace(visitor);
-  InputType::trace(visitor);
+  KeyboardClickableInputTypeView::Trace(visitor);
+  InputType::Trace(visitor);
 }
 
-InputTypeView* BaseButtonInputType::createView() {
+InputTypeView* BaseButtonInputType::CreateView() {
   return this;
 }
 
-void BaseButtonInputType::createShadowSubtree() {
-  DCHECK(element().userAgentShadowRoot());
-  element().userAgentShadowRoot()->appendChild(
-      Text::create(element().document(), displayValue()));
+void BaseButtonInputType::CreateShadowSubtree() {
+  DCHECK(GetElement().UserAgentShadowRoot());
+  GetElement().UserAgentShadowRoot()->AppendChild(
+      Text::Create(GetElement().GetDocument(), DisplayValue()));
 }
 
-void BaseButtonInputType::valueAttributeChanged() {
-  toTextOrDie(element().userAgentShadowRoot()->firstChild())
-      ->setData(displayValue());
+void BaseButtonInputType::ValueAttributeChanged() {
+  ToTextOrDie(GetElement().UserAgentShadowRoot()->FirstChild())
+      ->setData(DisplayValue());
 }
 
-String BaseButtonInputType::displayValue() const {
-  return element().valueOrDefaultLabel().removeCharacters(isHTMLLineBreak);
+String BaseButtonInputType::DisplayValue() const {
+  return GetElement().ValueOrDefaultLabel().RemoveCharacters(IsHTMLLineBreak);
 }
 
-bool BaseButtonInputType::shouldSaveAndRestoreFormControlState() const {
+bool BaseButtonInputType::ShouldSaveAndRestoreFormControlState() const {
   return false;
 }
 
-void BaseButtonInputType::appendToFormData(FormData&) const {}
+void BaseButtonInputType::AppendToFormData(FormData&) const {}
 
-LayoutObject* BaseButtonInputType::createLayoutObject(
+LayoutObject* BaseButtonInputType::CreateLayoutObject(
     const ComputedStyle&) const {
-  return new LayoutButton(&element());
+  return new LayoutButton(&GetElement());
 }
 
-InputType::ValueMode BaseButtonInputType::valueMode() const {
+InputType::ValueMode BaseButtonInputType::GetValueMode() const {
   return ValueMode::kDefault;
 }
 
-void BaseButtonInputType::setValue(const String& sanitizedValue,
+void BaseButtonInputType::SetValue(const String& sanitized_value,
                                    bool,
                                    TextFieldEventBehavior,
                                    TextControlSetValueSelection) {
-  element().setAttribute(valueAttr, AtomicString(sanitizedValue));
+  GetElement().setAttribute(valueAttr, AtomicString(sanitized_value));
 }
 
-bool BaseButtonInputType::matchesDefaultPseudoClass() {
+bool BaseButtonInputType::MatchesDefaultPseudoClass() {
   // HTMLFormElement::findDefaultButton() traverses the tree. So we check
   // canBeSuccessfulSubmitButton() first for early return.
-  return canBeSuccessfulSubmitButton() && element().form() &&
-         element().form()->findDefaultButton() == &element();
+  return CanBeSuccessfulSubmitButton() && GetElement().Form() &&
+         GetElement().Form()->FindDefaultButton() == &GetElement();
 }
 
 }  // namespace blink

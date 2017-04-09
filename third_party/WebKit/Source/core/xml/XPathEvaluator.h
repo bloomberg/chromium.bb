@@ -44,14 +44,14 @@ class XPathEvaluator final : public GarbageCollected<XPathEvaluator>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XPathEvaluator* create() { return new XPathEvaluator; }
+  static XPathEvaluator* Create() { return new XPathEvaluator; }
 
   XPathExpression* createExpression(const String& expression,
                                     XPathNSResolver*,
                                     ExceptionState&);
-  XPathNSResolver* createNSResolver(Node* nodeResolver);
+  XPathNSResolver* createNSResolver(Node* node_resolver);
   XPathResult* evaluate(const String& expression,
-                        Node* contextNode,
+                        Node* context_node,
                         XPathNSResolver*,
                         unsigned short type,
                         const ScriptValue&,

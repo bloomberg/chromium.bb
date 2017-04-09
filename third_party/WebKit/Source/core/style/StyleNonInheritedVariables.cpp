@@ -10,38 +10,38 @@ namespace blink {
 
 bool StyleNonInheritedVariables::operator==(
     const StyleNonInheritedVariables& other) const {
-  if (m_data.size() != other.m_data.size())
+  if (data_.size() != other.data_.size())
     return false;
 
-  for (const auto& iter : m_data) {
-    RefPtr<CSSVariableData> otherData = other.m_data.at(iter.key);
-    if (!dataEquivalent(iter.value, otherData))
+  for (const auto& iter : data_) {
+    RefPtr<CSSVariableData> other_data = other.data_.at(iter.key);
+    if (!DataEquivalent(iter.value, other_data))
       return false;
   }
 
   return true;
 }
 
-CSSVariableData* StyleNonInheritedVariables::getVariable(
+CSSVariableData* StyleNonInheritedVariables::GetVariable(
     const AtomicString& name) const {
-  return m_data.at(name);
+  return data_.at(name);
 }
 
-void StyleNonInheritedVariables::setRegisteredVariable(
+void StyleNonInheritedVariables::SetRegisteredVariable(
     const AtomicString& name,
-    const CSSValue* parsedValue) {
-  m_registeredData.set(name, const_cast<CSSValue*>(parsedValue));
+    const CSSValue* parsed_value) {
+  registered_data_.Set(name, const_cast<CSSValue*>(parsed_value));
 }
 
-void StyleNonInheritedVariables::removeVariable(const AtomicString& name) {
-  m_data.set(name, nullptr);
-  m_registeredData.set(name, nullptr);
+void StyleNonInheritedVariables::RemoveVariable(const AtomicString& name) {
+  data_.Set(name, nullptr);
+  registered_data_.Set(name, nullptr);
 }
 
 StyleNonInheritedVariables::StyleNonInheritedVariables(
     StyleNonInheritedVariables& other) {
-  m_data = other.m_data;
-  m_registeredData = other.m_registeredData;
+  data_ = other.data_;
+  registered_data_ = other.registered_data_;
 }
 
 }  // namespace blink

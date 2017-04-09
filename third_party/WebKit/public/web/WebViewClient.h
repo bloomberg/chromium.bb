@@ -71,20 +71,20 @@ class WebViewClient : protected WebWidgetClient {
   // could be fulfilled.  The client should not load the request.
   // The policy parameter indicates how the new view will be displayed in
   // WebWidgetClient::show.
-  virtual WebView* createView(WebLocalFrame* creator,
+  virtual WebView* CreateView(WebLocalFrame* creator,
                               const WebURLRequest& request,
                               const WebWindowFeatures& features,
                               const WebString& name,
                               WebNavigationPolicy policy,
-                              bool suppressOpener) {
+                              bool suppress_opener) {
     return 0;
   }
 
   // Create a new popup WebWidget.
-  virtual WebWidget* createPopupMenu(WebPopupType) { return 0; }
+  virtual WebWidget* CreatePopupMenu(WebPopupType) { return 0; }
 
   // Create a session storage namespace object associated with this WebView.
-  virtual WebStorageNamespace* createSessionStorageNamespace() { return 0; }
+  virtual WebStorageNamespace* CreateSessionStorageNamespace() { return 0; }
 
   // Misc ----------------------------------------------------------------
 
@@ -92,29 +92,29 @@ class WebViewClient : protected WebWidgetClient {
   // non-null, then it selects a particular frame, including its
   // children, to print.  Otherwise, the main frame and its children
   // should be printed.
-  virtual void printPage(WebLocalFrame*) {}
+  virtual void PrintPage(WebLocalFrame*) {}
 
   // This method enumerates all the files in the path. It returns immediately
   // and asynchronously invokes the WebFileChooserCompletion with all the
   // files in the directory. Returns false if the WebFileChooserCompletion
   // will never be called.
-  virtual bool enumerateChosenDirectory(const WebString& path,
+  virtual bool EnumerateChosenDirectory(const WebString& path,
                                         WebFileChooserCompletion*) {
     return false;
   }
 
   // Called when PageImportanceSignals for the WebView is updated.
-  virtual void pageImportanceSignalsChanged() {}
+  virtual void PageImportanceSignalsChanged() {}
 
   // Called to get the position of the root window containing the widget
   // in screen coordinates.
-  virtual WebRect rootWindowRect() { return WebRect(); }
+  virtual WebRect RootWindowRect() { return WebRect(); }
 
   // Editing -------------------------------------------------------------
 
   // These methods allow the client to intercept and overrule editing
   // operations.
-  virtual void didChangeContents() {}
+  virtual void DidChangeContents() {}
 
   // Dialogs -------------------------------------------------------------
 
@@ -123,7 +123,7 @@ class WebViewClient : protected WebWidgetClient {
   // WebDateTimeChooserCompletion::didChooseValue or didCancelChooser. If the
   // implementation opened date/time chooser UI successfully, it should return
   // true. This function is used only if ExternalDateTimeChooser is used.
-  virtual bool openDateTimeChooser(const WebDateTimeChooserParams&,
+  virtual bool OpenDateTimeChooser(const WebDateTimeChooserParams&,
                                    WebDateTimeChooserCompletion*) {
     return false;
   }
@@ -131,69 +131,69 @@ class WebViewClient : protected WebWidgetClient {
   // Show a notification popup for the specified form validation messages
   // besides the anchor rectangle. An implementation of this function should
   // not hide the popup until hideValidationMessage call.
-  virtual void showValidationMessage(const WebRect& anchorInViewport,
-                                     const WebString& mainText,
-                                     WebTextDirection mainTextDir,
-                                     const WebString& supplementalText,
-                                     WebTextDirection supplementalTextDir) {}
+  virtual void ShowValidationMessage(const WebRect& anchor_in_viewport,
+                                     const WebString& main_text,
+                                     WebTextDirection main_text_dir,
+                                     const WebString& supplemental_text,
+                                     WebTextDirection supplemental_text_dir) {}
 
   // Hide notifation popup for form validation messages.
-  virtual void hideValidationMessage() {}
+  virtual void HideValidationMessage() {}
 
   // Move the existing notifation popup to the new anchor position.
-  virtual void moveValidationMessage(const WebRect& anchorInViewport) {}
+  virtual void MoveValidationMessage(const WebRect& anchor_in_viewport) {}
 
   // UI ------------------------------------------------------------------
 
   // Called when script modifies window.status
-  virtual void setStatusText(const WebString&) {}
+  virtual void SetStatusText(const WebString&) {}
 
   // Called when hovering over an anchor with the given URL.
-  virtual void setMouseOverURL(const WebURL&) {}
+  virtual void SetMouseOverURL(const WebURL&) {}
 
   // Called when keyboard focus switches to an anchor with the given URL.
-  virtual void setKeyboardFocusURL(const WebURL&) {}
+  virtual void SetKeyboardFocusURL(const WebURL&) {}
 
   // Called to determine if drag-n-drop operations may initiate a page
   // navigation.
-  virtual bool acceptsLoadDrops() { return true; }
+  virtual bool AcceptsLoadDrops() { return true; }
 
   // Take focus away from the WebView by focusing an adjacent UI element
   // in the containing window.
-  virtual void focusNext() {}
-  virtual void focusPrevious() {}
+  virtual void FocusNext() {}
+  virtual void FocusPrevious() {}
 
   // Called when a new node gets focused. |fromNode| is the previously focused
   // node, |toNode| is the newly focused node. Either can be null.
-  virtual void focusedNodeChanged(const WebNode& fromNode,
-                                  const WebNode& toNode) {}
+  virtual void FocusedNodeChanged(const WebNode& from_node,
+                                  const WebNode& to_node) {}
 
   // Called to check if layout update should be processed.
-  virtual bool canUpdateLayout() { return false; }
+  virtual bool CanUpdateLayout() { return false; }
 
   // Indicates two things:
   //   1) This view may have a new layout now.
   //   2) Calling layout() is a no-op.
   // After calling WebWidget::layout(), expect to get this notification
   // unless the view did not need a layout.
-  virtual void didUpdateLayout() {}
+  virtual void DidUpdateLayout() {}
 
   // Return true to swallow the input event if the embedder will start a
   // disambiguation popup
-  virtual bool didTapMultipleTargets(const WebSize& visualViewportOffset,
-                                     const WebRect& touchRect,
-                                     const WebVector<WebRect>& targetRects) {
+  virtual bool DidTapMultipleTargets(const WebSize& visual_viewport_offset,
+                                     const WebRect& touch_rect,
+                                     const WebVector<WebRect>& target_rects) {
     return false;
   }
 
   // Returns comma separated list of accept languages.
-  virtual WebString acceptLanguages() { return WebString(); }
+  virtual WebString AcceptLanguages() { return WebString(); }
 
   // Called when the View has changed size as a result of an auto-resize.
-  virtual void didAutoResize(const WebSize& newSize) {}
+  virtual void DidAutoResize(const WebSize& new_size) {}
 
   // Called when the View acquires focus.
-  virtual void didFocus() {}
+  virtual void DidFocus() {}
 
   // TODO(lfg): The callback below is exposed in RenderViewObserver and only
   // used to implement autofill. We should figure out a better way to plumb
@@ -201,71 +201,71 @@ class WebViewClient : protected WebWidgetClient {
   // Called immediately after a mousedown event is dispatched due to a mouse
   // press or gesture tap.
   // Note: This is called even when the mouse down event is prevent default.
-  virtual void onMouseDown(const WebNode& mouseDownNode) {}
+  virtual void OnMouseDown(const WebNode& mouse_down_node) {}
 
   // Session history -----------------------------------------------------
 
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session
   // history).
-  virtual void navigateBackForwardSoon(int offset) {}
+  virtual void NavigateBackForwardSoon(int offset) {}
 
   // Returns the number of history items before/after the current
   // history item.
-  virtual int historyBackListCount() { return 0; }
-  virtual int historyForwardListCount() { return 0; }
+  virtual int HistoryBackListCount() { return 0; }
+  virtual int HistoryForwardListCount() { return 0; }
 
   // Developer tools -----------------------------------------------------
 
   // Called to notify the client that the inspector's settings were
   // changed and should be saved.  See WebView::inspectorSettings.
-  virtual void didUpdateInspectorSettings() {}
+  virtual void DidUpdateInspectorSettings() {}
 
-  virtual void didUpdateInspectorSetting(const WebString& key,
+  virtual void DidUpdateInspectorSetting(const WebString& key,
                                          const WebString& value) {}
 
   // Speech --------------------------------------------------------------
 
   // Access the embedder API for speech recognition services.
-  virtual WebSpeechRecognizer* speechRecognizer() { return 0; }
+  virtual WebSpeechRecognizer* SpeechRecognizer() { return 0; }
 
   // Zoom ----------------------------------------------------------------
 
   // Informs the browser that the zoom levels for this frame have changed from
   // the default values.
-  virtual void zoomLimitsChanged(double minimumLevel, double maximumLevel) {}
+  virtual void ZoomLimitsChanged(double minimum_level, double maximum_level) {}
 
   // Informs the browser that the page scale has changed.
-  virtual void pageScaleFactorChanged() {}
+  virtual void PageScaleFactorChanged() {}
 
   // Draggable regions ----------------------------------------------------
 
   // Informs the browser that the draggable regions have been updated.
-  virtual void draggableRegionsChanged() {}
+  virtual void DraggableRegionsChanged() {}
 
-  virtual bool canHandleGestureEvent() { return false; }
+  virtual bool CanHandleGestureEvent() { return false; }
 
   // TODO(lfg): These methods are only exposed through WebViewClient while we
   // refactor WebView to not inherit from WebWidget.
   // WebWidgetClient overrides.
-  void closeWidgetSoon() override {}
-  void convertViewportToWindow(WebRect* rect) override {}
-  void convertWindowToViewport(WebFloatRect* rect) override {}
-  void didHandleGestureEvent(const WebGestureEvent& event,
-                             bool eventCancelled) override {}
-  void didOverscroll(const WebFloatSize& overscrollDelta,
-                     const WebFloatSize& accumulatedOverscroll,
-                     const WebFloatPoint& positionInViewport,
-                     const WebFloatSize& velocityInViewport) override {}
-  void hasTouchEventHandlers(bool) override {}
-  WebLayerTreeView* initializeLayerTreeView() override { return nullptr; }
-  WebScreenInfo screenInfo() override { return WebScreenInfo(); }
-  void setTouchAction(WebTouchAction touchAction) override {}
-  void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition,
-                                  const WebNode& tappedNode,
-                                  bool pageChanged) override {}
-  void show(WebNavigationPolicy) override {}
-  virtual WebWidgetClient* widgetClient() { return this; }
+  void CloseWidgetSoon() override {}
+  void ConvertViewportToWindow(WebRect* rect) override {}
+  void ConvertWindowToViewport(WebFloatRect* rect) override {}
+  void DidHandleGestureEvent(const WebGestureEvent& event,
+                             bool event_cancelled) override {}
+  void DidOverscroll(const WebFloatSize& overscroll_delta,
+                     const WebFloatSize& accumulated_overscroll,
+                     const WebFloatPoint& position_in_viewport,
+                     const WebFloatSize& velocity_in_viewport) override {}
+  void HasTouchEventHandlers(bool) override {}
+  WebLayerTreeView* InitializeLayerTreeView() override { return nullptr; }
+  WebScreenInfo GetScreenInfo() override { return WebScreenInfo(); }
+  void SetTouchAction(WebTouchAction touch_action) override {}
+  void ShowUnhandledTapUIIfNeeded(const WebPoint& tapped_position,
+                                  const WebNode& tapped_node,
+                                  bool page_changed) override {}
+  void Show(WebNavigationPolicy) override {}
+  virtual WebWidgetClient* WidgetClient() { return this; }
 
  protected:
 };

@@ -9,31 +9,30 @@
 
 namespace blink {
 
-static unsigned emptyPolicy =
-    static_cast<unsigned>(Suborigin::SuboriginPolicyOptions::None);
+static unsigned g_empty_policy =
+    static_cast<unsigned>(Suborigin::SuboriginPolicyOptions::kNone);
 
-Suborigin::Suborigin() : m_optionsMask(emptyPolicy) {}
+Suborigin::Suborigin() : options_mask_(g_empty_policy) {}
 
 Suborigin::Suborigin(const Suborigin* other)
-    : m_name(other->m_name.isolatedCopy()),
-      m_optionsMask(other->m_optionsMask) {}
+    : name_(other->name_.IsolatedCopy()), options_mask_(other->options_mask_) {}
 
-void Suborigin::setTo(const Suborigin& other) {
-  m_name = other.m_name;
-  m_optionsMask = other.m_optionsMask;
+void Suborigin::SetTo(const Suborigin& other) {
+  name_ = other.name_;
+  options_mask_ = other.options_mask_;
 }
 
-void Suborigin::addPolicyOption(SuboriginPolicyOptions option) {
-  m_optionsMask |= static_cast<unsigned>(option);
+void Suborigin::AddPolicyOption(SuboriginPolicyOptions option) {
+  options_mask_ |= static_cast<unsigned>(option);
 }
 
-bool Suborigin::policyContains(SuboriginPolicyOptions option) const {
-  return m_optionsMask & static_cast<unsigned>(option);
+bool Suborigin::PolicyContains(SuboriginPolicyOptions option) const {
+  return options_mask_ & static_cast<unsigned>(option);
 }
 
-void Suborigin::clear() {
-  m_name = String();
-  m_optionsMask = emptyPolicy;
+void Suborigin::Clear() {
+  name_ = String();
+  options_mask_ = g_empty_policy;
 }
 
 }  // namespace blink

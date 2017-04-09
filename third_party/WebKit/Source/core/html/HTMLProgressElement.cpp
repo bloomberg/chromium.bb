@@ -34,61 +34,61 @@ namespace blink {
 
 using namespace HTMLNames;
 
-const double HTMLProgressElement::IndeterminatePosition = -1;
-const double HTMLProgressElement::InvalidPosition = -2;
+const double HTMLProgressElement::kIndeterminatePosition = -1;
+const double HTMLProgressElement::kInvalidPosition = -2;
 
 HTMLProgressElement::HTMLProgressElement(Document& document)
-    : LabelableElement(progressTag, document), m_value(nullptr) {
-  UseCounter::count(document, UseCounter::ProgressElement);
+    : LabelableElement(progressTag, document), value_(nullptr) {
+  UseCounter::Count(document, UseCounter::kProgressElement);
 }
 
 HTMLProgressElement::~HTMLProgressElement() {}
 
-HTMLProgressElement* HTMLProgressElement::create(Document& document) {
+HTMLProgressElement* HTMLProgressElement::Create(Document& document) {
   HTMLProgressElement* progress = new HTMLProgressElement(document);
-  progress->ensureUserAgentShadowRoot();
+  progress->EnsureUserAgentShadowRoot();
   return progress;
 }
 
-LayoutObject* HTMLProgressElement::createLayoutObject(
+LayoutObject* HTMLProgressElement::CreateLayoutObject(
     const ComputedStyle& style) {
-  if (!style.hasAppearance()) {
-    UseCounter::count(document(),
-                      UseCounter::ProgressElementWithNoneAppearance);
-    return LayoutObject::createObject(this, style);
+  if (!style.HasAppearance()) {
+    UseCounter::Count(GetDocument(),
+                      UseCounter::kProgressElementWithNoneAppearance);
+    return LayoutObject::CreateObject(this, style);
   }
-  UseCounter::count(document(),
-                    UseCounter::ProgressElementWithProgressBarAppearance);
+  UseCounter::Count(GetDocument(),
+                    UseCounter::kProgressElementWithProgressBarAppearance);
   return new LayoutProgress(this);
 }
 
-LayoutProgress* HTMLProgressElement::layoutProgress() const {
-  if (layoutObject() && layoutObject()->isProgress())
-    return toLayoutProgress(layoutObject());
+LayoutProgress* HTMLProgressElement::GetLayoutProgress() const {
+  if (GetLayoutObject() && GetLayoutObject()->IsProgress())
+    return ToLayoutProgress(GetLayoutObject());
   return nullptr;
 }
 
-void HTMLProgressElement::parseAttribute(
+void HTMLProgressElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == valueAttr) {
-    if (params.oldValue.isNull() != params.newValue.isNull())
-      pseudoStateChanged(CSSSelector::PseudoIndeterminate);
-    didElementStateChange();
+    if (params.old_value.IsNull() != params.new_value.IsNull())
+      PseudoStateChanged(CSSSelector::kPseudoIndeterminate);
+    DidElementStateChange();
   } else if (params.name == maxAttr) {
-    didElementStateChange();
+    DidElementStateChange();
   } else {
-    LabelableElement::parseAttribute(params);
+    LabelableElement::ParseAttribute(params);
   }
 }
 
-void HTMLProgressElement::attachLayoutTree(const AttachContext& context) {
-  LabelableElement::attachLayoutTree(context);
-  if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress()))
-    layoutItem.updateFromElement();
+void HTMLProgressElement::AttachLayoutTree(const AttachContext& context) {
+  LabelableElement::AttachLayoutTree(context);
+  if (LayoutProgressItem layout_item = LayoutProgressItem(GetLayoutProgress()))
+    layout_item.UpdateFromElement();
 }
 
 double HTMLProgressElement::value() const {
-  double value = getFloatingPointAttribute(valueAttr);
+  double value = GetFloatingPointAttribute(valueAttr);
   // Otherwise, if the parsed value was greater than or equal to the maximum
   // value, then the current value of the progress bar is the maximum value
   // of the progress bar. Otherwise, if parsing the value attribute's value
@@ -98,11 +98,11 @@ double HTMLProgressElement::value() const {
 }
 
 void HTMLProgressElement::setValue(double value) {
-  setFloatingPointAttribute(valueAttr, std::max(value, 0.));
+  SetFloatingPointAttribute(valueAttr, std::max(value, 0.));
 }
 
 double HTMLProgressElement::max() const {
-  double max = getFloatingPointAttribute(maxAttr);
+  double max = GetFloatingPointAttribute(maxAttr);
   // Otherwise, if the element has no max attribute, or if it has one but
   // parsing it resulted in an error, or if the parsed value was less than or
   // equal to zero, then the maximum value of the progress bar is 1.0.
@@ -112,54 +112,54 @@ double HTMLProgressElement::max() const {
 void HTMLProgressElement::setMax(double max) {
   // FIXME: The specification says we should ignore the input value if it is
   // inferior or equal to 0.
-  setFloatingPointAttribute(maxAttr, max > 0 ? max : 1);
+  SetFloatingPointAttribute(maxAttr, max > 0 ? max : 1);
 }
 
 double HTMLProgressElement::position() const {
-  if (!isDeterminate())
-    return HTMLProgressElement::IndeterminatePosition;
+  if (!IsDeterminate())
+    return HTMLProgressElement::kIndeterminatePosition;
   return value() / max();
 }
 
-bool HTMLProgressElement::isDeterminate() const {
-  return fastHasAttribute(valueAttr);
+bool HTMLProgressElement::IsDeterminate() const {
+  return FastHasAttribute(valueAttr);
 }
 
-void HTMLProgressElement::didElementStateChange() {
-  setValueWidthPercentage(position() * 100);
-  if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress()))
-    layoutItem.updateFromElement();
+void HTMLProgressElement::DidElementStateChange() {
+  SetValueWidthPercentage(position() * 100);
+  if (LayoutProgressItem layout_item = LayoutProgressItem(GetLayoutProgress()))
+    layout_item.UpdateFromElement();
 }
 
-void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root) {
-  DCHECK(!m_value);
+void HTMLProgressElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
+  DCHECK(!value_);
 
-  ProgressShadowElement* inner = ProgressShadowElement::create(document());
-  inner->setShadowPseudoId(AtomicString("-webkit-progress-inner-element"));
-  root.appendChild(inner);
+  ProgressShadowElement* inner = ProgressShadowElement::Create(GetDocument());
+  inner->SetShadowPseudoId(AtomicString("-webkit-progress-inner-element"));
+  root.AppendChild(inner);
 
-  ProgressShadowElement* bar = ProgressShadowElement::create(document());
-  bar->setShadowPseudoId(AtomicString("-webkit-progress-bar"));
-  m_value = ProgressShadowElement::create(document());
-  m_value->setShadowPseudoId(AtomicString("-webkit-progress-value"));
-  setValueWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);
-  bar->appendChild(m_value);
+  ProgressShadowElement* bar = ProgressShadowElement::Create(GetDocument());
+  bar->SetShadowPseudoId(AtomicString("-webkit-progress-bar"));
+  value_ = ProgressShadowElement::Create(GetDocument());
+  value_->SetShadowPseudoId(AtomicString("-webkit-progress-value"));
+  SetValueWidthPercentage(HTMLProgressElement::kIndeterminatePosition * 100);
+  bar->AppendChild(value_);
 
-  inner->appendChild(bar);
+  inner->AppendChild(bar);
 }
 
-bool HTMLProgressElement::shouldAppearIndeterminate() const {
-  return !isDeterminate();
+bool HTMLProgressElement::ShouldAppearIndeterminate() const {
+  return !IsDeterminate();
 }
 
 DEFINE_TRACE(HTMLProgressElement) {
-  visitor->trace(m_value);
-  LabelableElement::trace(visitor);
+  visitor->Trace(value_);
+  LabelableElement::Trace(visitor);
 }
 
-void HTMLProgressElement::setValueWidthPercentage(double width) const {
-  m_value->setInlineStyleProperty(CSSPropertyWidth, width,
-                                  CSSPrimitiveValue::UnitType::Percentage);
+void HTMLProgressElement::SetValueWidthPercentage(double width) const {
+  value_->SetInlineStyleProperty(CSSPropertyWidth, width,
+                                 CSSPrimitiveValue::UnitType::kPercentage);
 }
 
 }  // namespace blink

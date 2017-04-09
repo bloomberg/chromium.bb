@@ -87,7 +87,7 @@ void ChromeRenderViewObserver::OnUpdateBrowserControlsState(
 #endif
 
 void ChromeRenderViewObserver::OnGetWebApplicationInfo() {
-  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
   DCHECK(main_frame);
 
   WebApplicationInfo web_app_info;
@@ -98,14 +98,14 @@ void ChromeRenderViewObserver::OnGetWebApplicationInfo() {
   // TODO(mlamouri): Associate this message with an actual frame, to avoid the
   // need to check whether or not the main frame is local.
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE &&
-      main_frame->isWebLocalFrame()) {
+      main_frame->IsWebLocalFrame()) {
     blink::WebConsoleMessage message(
-        blink::WebConsoleMessage::LevelWarning,
+        blink::WebConsoleMessage::kLevelWarning,
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
         "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
         "content=\"yes\"> - "
         "http://developers.google.com/chrome/mobile/docs/installtohomescreen");
-    main_frame->toWebLocalFrame()->addMessageToConsole(message);
+    main_frame->ToWebLocalFrame()->AddMessageToConsole(message);
   }
 
   // Prune out any data URLs in the set of icons.  The browser process expects
@@ -132,7 +132,7 @@ void ChromeRenderViewObserver::OnGetWebApplicationInfo() {
 
 void ChromeRenderViewObserver::OnSetWindowFeatures(
     const blink::mojom::WindowFeatures& window_features) {
-  render_view()->GetWebView()->setWindowFeatures(
+  render_view()->GetWebView()->SetWindowFeatures(
       content::ConvertMojoWindowFeaturesToWebWindowFeatures(window_features));
 }
 

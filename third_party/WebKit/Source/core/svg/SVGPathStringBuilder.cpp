@@ -24,33 +24,34 @@
 
 namespace blink {
 
-String SVGPathStringBuilder::result() {
-  unsigned size = m_stringBuilder.length();
+String SVGPathStringBuilder::Result() {
+  unsigned size = string_builder_.length();
   if (!size)
     return String();
 
   // Remove trailing space.
-  m_stringBuilder.resize(size - 1);
-  return m_stringBuilder.toString();
+  string_builder_.Resize(size - 1);
+  return string_builder_.ToString();
 }
 
-static void appendFloat(StringBuilder& stringBuilder, float value) {
-  stringBuilder.append(' ');
-  stringBuilder.appendNumber(value);
+static void AppendFloat(StringBuilder& string_builder, float value) {
+  string_builder.Append(' ');
+  string_builder.AppendNumber(value);
 }
 
-static void appendBool(StringBuilder& stringBuilder, bool value) {
-  stringBuilder.append(' ');
-  stringBuilder.appendNumber(value);
+static void AppendBool(StringBuilder& string_builder, bool value) {
+  string_builder.Append(' ');
+  string_builder.AppendNumber(value);
 }
 
-static void appendPoint(StringBuilder& stringBuilder, const FloatPoint& point) {
-  appendFloat(stringBuilder, point.x());
-  appendFloat(stringBuilder, point.y());
+static void AppendPoint(StringBuilder& string_builder,
+                        const FloatPoint& point) {
+  AppendFloat(string_builder, point.X());
+  AppendFloat(string_builder, point.Y());
 }
 
 // TODO(fs): Centralized location for this (SVGPathSeg.h?)
-static const char pathSegmentCharacter[] = {
+static const char kPathSegmentCharacter[] = {
     0,    // PathSegUnknown
     'Z',  // PathSegClosePath
     'M',  // PathSegMoveToAbs
@@ -73,58 +74,58 @@ static const char pathSegmentCharacter[] = {
     't',  // PathSegCurveToQuadraticSmoothRel
 };
 
-void SVGPathStringBuilder::emitSegment(const PathSegmentData& segment) {
-  DCHECK_GT(segment.command, PathSegUnknown);
-  DCHECK_LE(segment.command, PathSegCurveToQuadraticSmoothRel);
-  m_stringBuilder.append(pathSegmentCharacter[segment.command]);
+void SVGPathStringBuilder::EmitSegment(const PathSegmentData& segment) {
+  DCHECK_GT(segment.command, kPathSegUnknown);
+  DCHECK_LE(segment.command, kPathSegCurveToQuadraticSmoothRel);
+  string_builder_.Append(kPathSegmentCharacter[segment.command]);
 
   switch (segment.command) {
-    case PathSegMoveToRel:
-    case PathSegMoveToAbs:
-    case PathSegLineToRel:
-    case PathSegLineToAbs:
-    case PathSegCurveToQuadraticSmoothRel:
-    case PathSegCurveToQuadraticSmoothAbs:
-      appendPoint(m_stringBuilder, segment.targetPoint);
+    case kPathSegMoveToRel:
+    case kPathSegMoveToAbs:
+    case kPathSegLineToRel:
+    case kPathSegLineToAbs:
+    case kPathSegCurveToQuadraticSmoothRel:
+    case kPathSegCurveToQuadraticSmoothAbs:
+      AppendPoint(string_builder_, segment.target_point);
       break;
-    case PathSegLineToHorizontalRel:
-    case PathSegLineToHorizontalAbs:
-      appendFloat(m_stringBuilder, segment.targetPoint.x());
+    case kPathSegLineToHorizontalRel:
+    case kPathSegLineToHorizontalAbs:
+      AppendFloat(string_builder_, segment.target_point.X());
       break;
-    case PathSegLineToVerticalRel:
-    case PathSegLineToVerticalAbs:
-      appendFloat(m_stringBuilder, segment.targetPoint.y());
+    case kPathSegLineToVerticalRel:
+    case kPathSegLineToVerticalAbs:
+      AppendFloat(string_builder_, segment.target_point.Y());
       break;
-    case PathSegClosePath:
+    case kPathSegClosePath:
       break;
-    case PathSegCurveToCubicRel:
-    case PathSegCurveToCubicAbs:
-      appendPoint(m_stringBuilder, segment.point1);
-      appendPoint(m_stringBuilder, segment.point2);
-      appendPoint(m_stringBuilder, segment.targetPoint);
+    case kPathSegCurveToCubicRel:
+    case kPathSegCurveToCubicAbs:
+      AppendPoint(string_builder_, segment.point1);
+      AppendPoint(string_builder_, segment.point2);
+      AppendPoint(string_builder_, segment.target_point);
       break;
-    case PathSegCurveToCubicSmoothRel:
-    case PathSegCurveToCubicSmoothAbs:
-      appendPoint(m_stringBuilder, segment.point2);
-      appendPoint(m_stringBuilder, segment.targetPoint);
+    case kPathSegCurveToCubicSmoothRel:
+    case kPathSegCurveToCubicSmoothAbs:
+      AppendPoint(string_builder_, segment.point2);
+      AppendPoint(string_builder_, segment.target_point);
       break;
-    case PathSegCurveToQuadraticRel:
-    case PathSegCurveToQuadraticAbs:
-      appendPoint(m_stringBuilder, segment.point1);
-      appendPoint(m_stringBuilder, segment.targetPoint);
+    case kPathSegCurveToQuadraticRel:
+    case kPathSegCurveToQuadraticAbs:
+      AppendPoint(string_builder_, segment.point1);
+      AppendPoint(string_builder_, segment.target_point);
       break;
-    case PathSegArcRel:
-    case PathSegArcAbs:
-      appendPoint(m_stringBuilder, segment.point1);
-      appendFloat(m_stringBuilder, segment.point2.x());
-      appendBool(m_stringBuilder, segment.arcLarge);
-      appendBool(m_stringBuilder, segment.arcSweep);
-      appendPoint(m_stringBuilder, segment.targetPoint);
+    case kPathSegArcRel:
+    case kPathSegArcAbs:
+      AppendPoint(string_builder_, segment.point1);
+      AppendFloat(string_builder_, segment.point2.X());
+      AppendBool(string_builder_, segment.arc_large);
+      AppendBool(string_builder_, segment.arc_sweep);
+      AppendPoint(string_builder_, segment.target_point);
       break;
     default:
       NOTREACHED();
   }
-  m_stringBuilder.append(' ');
+  string_builder_.Append(' ');
 }
 
 }  // namespace blink

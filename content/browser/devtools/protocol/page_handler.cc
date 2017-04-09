@@ -244,7 +244,7 @@ Response PageHandler::Navigate(const std::string& url,
 
   web_contents->GetController().LoadURL(
       gurl,
-      Referrer(GURL(referrer.fromMaybe("")), blink::WebReferrerPolicyDefault),
+      Referrer(GURL(referrer.fromMaybe("")), blink::kWebReferrerPolicyDefault),
       ui::PAGE_TRANSITION_TYPED, std::string());
   return Response::FallThrough();
 }

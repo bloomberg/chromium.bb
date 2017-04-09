@@ -35,36 +35,36 @@
 
 namespace blink {
 
-TextDirection directionForRun(TextRun& run, bool* hasStrongDirectionality) {
-  if (!hasStrongDirectionality) {
+TextDirection DirectionForRun(TextRun& run, bool* has_strong_directionality) {
+  if (!has_strong_directionality) {
     // 8bit is Latin-1 and therefore is always LTR.
-    if (run.is8Bit())
+    if (run.Is8Bit())
       return TextDirection::kLtr;
 
     // length == 1 for more than 90% of cases of width() for CJK text.
-    if (run.length() == 1 && U16_IS_SINGLE(run.characters16()[0]))
-      return directionForCharacter(run.characters16()[0]);
+    if (run.length() == 1 && U16_IS_SINGLE(run.Characters16()[0]))
+      return DirectionForCharacter(run.Characters16()[0]);
   }
 
-  BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-  bidiResolver.setStatus(
-      BidiStatus(run.direction(), run.directionalOverride()));
-  bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-  return bidiResolver.determineDirectionality(hasStrongDirectionality);
+  BidiResolver<TextRunIterator, BidiCharacterRun> bidi_resolver;
+  bidi_resolver.SetStatus(
+      BidiStatus(run.Direction(), run.DirectionalOverride()));
+  bidi_resolver.SetPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
+  return bidi_resolver.DetermineDirectionality(has_strong_directionality);
 }
 
-TextDirection determineDirectionality(const String& value,
-                                      bool* hasStrongDirectionality) {
+TextDirection DetermineDirectionality(const String& value,
+                                      bool* has_strong_directionality) {
   TextRun run(value);
-  return directionForRun(run, hasStrongDirectionality);
+  return DirectionForRun(run, has_strong_directionality);
 }
 
-TextRun textRunWithDirectionality(const String& value,
-                                  bool* hasStrongDirectionality) {
+TextRun TextRunWithDirectionality(const String& value,
+                                  bool* has_strong_directionality) {
   TextRun run(value);
-  TextDirection direction = directionForRun(run, hasStrongDirectionality);
-  if (hasStrongDirectionality)
-    run.setDirection(direction);
+  TextDirection direction = DirectionForRun(run, has_strong_directionality);
+  if (has_strong_directionality)
+    run.SetDirection(direction);
   return run;
 }
 

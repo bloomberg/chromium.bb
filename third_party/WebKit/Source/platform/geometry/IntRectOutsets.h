@@ -44,35 +44,35 @@ class PLATFORM_EXPORT IntRectOutsets {
   DISALLOW_NEW();
 
  public:
-  IntRectOutsets() : m_top(0), m_right(0), m_bottom(0), m_left(0) {}
+  IntRectOutsets() : top_(0), right_(0), bottom_(0), left_(0) {}
 
   IntRectOutsets(int top, int right, int bottom, int left)
-      : m_top(top), m_right(right), m_bottom(bottom), m_left(left) {}
+      : top_(top), right_(right), bottom_(bottom), left_(left) {}
 
-  int top() const { return m_top; }
-  int right() const { return m_right; }
-  int bottom() const { return m_bottom; }
-  int left() const { return m_left; }
+  int Top() const { return top_; }
+  int Right() const { return right_; }
+  int Bottom() const { return bottom_; }
+  int Left() const { return left_; }
 
-  void setTop(int top) { m_top = top; }
-  void setRight(int right) { m_right = right; }
-  void setBottom(int bottom) { m_bottom = bottom; }
-  void setLeft(int left) { m_left = left; }
+  void SetTop(int top) { top_ = top; }
+  void SetRight(int right) { right_ = right; }
+  void SetBottom(int bottom) { bottom_ = bottom; }
+  void SetLeft(int left) { left_ = left; }
 
-  bool isZero() const { return !left() && !right() && !top() && !bottom(); }
+  bool IsZero() const { return !Left() && !Right() && !Top() && !Bottom(); }
 
  private:
-  int m_top;
-  int m_right;
-  int m_bottom;
-  int m_left;
+  int top_;
+  int right_;
+  int bottom_;
+  int left_;
 };
 
 inline void operator+=(IntRectOutsets& a, const IntRectOutsets& b) {
-  a.setTop(a.top() + b.top());
-  a.setRight(a.right() + b.right());
-  a.setBottom(a.bottom() + b.bottom());
-  a.setLeft(a.left() + b.left());
+  a.SetTop(a.Top() + b.Top());
+  a.SetRight(a.Right() + b.Right());
+  a.SetBottom(a.Bottom() + b.Bottom());
+  a.SetLeft(a.Left() + b.Left());
 }
 
 }  // namespace blink

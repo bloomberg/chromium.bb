@@ -15,24 +15,24 @@ class StylePath;
 
 class PathInterpolationFunctions {
  public:
-  static std::unique_ptr<SVGPathByteStream> appliedValue(
+  static std::unique_ptr<SVGPathByteStream> AppliedValue(
       const InterpolableValue&,
       const NonInterpolableValue*);
 
-  static void composite(UnderlyingValueOwner&,
-                        double underlyingFraction,
+  static void Composite(UnderlyingValueOwner&,
+                        double underlying_fraction,
                         const InterpolationType&,
                         const InterpolationValue&);
 
-  static InterpolationValue convertValue(const SVGPathByteStream&);
+  static InterpolationValue ConvertValue(const SVGPathByteStream&);
 
-  static InterpolationValue convertValue(const StylePath*);
+  static InterpolationValue ConvertValue(const StylePath*);
 
-  static InterpolationValue maybeConvertNeutral(
+  static InterpolationValue MaybeConvertNeutral(
       const InterpolationValue& underlying,
       InterpolationType::ConversionCheckers&);
 
-  static PairwiseInterpolationValue maybeMergeSingles(
+  static PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end);
 };

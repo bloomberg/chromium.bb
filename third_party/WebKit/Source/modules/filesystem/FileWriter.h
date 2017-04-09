@@ -53,10 +53,10 @@ class FileWriter final : public EventTargetWithInlineData,
                          public WebFileWriterClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
-  USING_PRE_FINALIZER(FileWriter, dispose);
+  USING_PRE_FINALIZER(FileWriter, Dispose);
 
  public:
-  static FileWriter* create(ExecutionContext*);
+  static FileWriter* Create(ExecutionContext*);
   ~FileWriter() override;
 
   enum ReadyState { kInit = 0, kWriting = 1, kDone = 2 };
@@ -65,24 +65,24 @@ class FileWriter final : public EventTargetWithInlineData,
   void seek(long long position, ExceptionState&);
   void truncate(long long length, ExceptionState&);
   void abort(ExceptionState&);
-  ReadyState getReadyState() const { return m_readyState; }
-  DOMException* error() const { return m_error.get(); }
+  ReadyState getReadyState() const { return ready_state_; }
+  DOMException* error() const { return error_.Get(); }
 
   // WebFileWriterClient
-  void didWrite(long long bytes, bool complete) override;
-  void didTruncate() override;
-  void didFail(WebFileError) override;
+  void DidWrite(long long bytes, bool complete) override;
+  void DidTruncate() override;
+  void DidFail(WebFileError) override;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextLifecycleObserver::GetExecutionContext();
   }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
@@ -96,37 +96,37 @@ class FileWriter final : public EventTargetWithInlineData,
 
  private:
   enum Operation {
-    OperationNone,
-    OperationWrite,
-    OperationTruncate,
-    OperationAbort
+    kOperationNone,
+    kOperationWrite,
+    kOperationTruncate,
+    kOperationAbort
   };
 
   explicit FileWriter(ExecutionContext*);
 
-  void completeAbort();
+  void CompleteAbort();
 
-  void doOperation(Operation);
+  void DoOperation(Operation);
 
-  void signalCompletion(FileError::ErrorCode);
+  void SignalCompletion(FileError::ErrorCode);
 
-  void fireEvent(const AtomicString& type);
+  void FireEvent(const AtomicString& type);
 
-  void setError(FileError::ErrorCode, ExceptionState&);
+  void SetError(FileError::ErrorCode, ExceptionState&);
 
-  void dispose();
+  void Dispose();
 
-  Member<DOMException> m_error;
-  ReadyState m_readyState;
-  Operation m_operationInProgress;
-  Operation m_queuedOperation;
-  long long m_bytesWritten;
-  long long m_bytesToWrite;
-  long long m_truncateLength;
-  long long m_numAborts;
-  long long m_recursionDepth;
-  double m_lastProgressNotificationTimeMS;
-  Member<Blob> m_blobBeingWritten;
+  Member<DOMException> error_;
+  ReadyState ready_state_;
+  Operation operation_in_progress_;
+  Operation queued_operation_;
+  long long bytes_written_;
+  long long bytes_to_write_;
+  long long truncate_length_;
+  long long num_aborts_;
+  long long recursion_depth_;
+  double last_progress_notification_time_ms_;
+  Member<Blob> blob_being_written_;
 };
 
 }  // namespace blink

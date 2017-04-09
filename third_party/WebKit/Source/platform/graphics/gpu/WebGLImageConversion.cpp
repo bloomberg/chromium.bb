@@ -19,157 +19,157 @@ namespace blink {
 
 namespace {
 
-const float maxInt8Value = INT8_MAX;
-const float maxUInt8Value = UINT8_MAX;
-const float maxInt16Value = INT16_MAX;
-const float maxUInt16Value = UINT16_MAX;
-const double maxInt32Value = INT32_MAX;
-const double maxUInt32Value = UINT32_MAX;
+const float kMaxInt8Value = INT8_MAX;
+const float kMaxUInt8Value = UINT8_MAX;
+const float kMaxInt16Value = INT16_MAX;
+const float kMaxUInt16Value = UINT16_MAX;
+const double kMaxInt32Value = INT32_MAX;
+const double kMaxUInt32Value = UINT32_MAX;
 
 int8_t ClampMin(int8_t value) {
-  const static int8_t minInt8Value = INT8_MIN + 1;
-  return value < minInt8Value ? minInt8Value : value;
+  const static int8_t kMinInt8Value = INT8_MIN + 1;
+  return value < kMinInt8Value ? kMinInt8Value : value;
 }
 
 int16_t ClampMin(int16_t value) {
-  const static int16_t minInt16Value = INT16_MIN + 1;
-  return value < minInt16Value ? minInt16Value : value;
+  const static int16_t kMinInt16Value = INT16_MIN + 1;
+  return value < kMinInt16Value ? kMinInt16Value : value;
 }
 
 int32_t ClampMin(int32_t value) {
-  const static int32_t minInt32Value = INT32_MIN + 1;
-  return value < minInt32Value ? minInt32Value : value;
+  const static int32_t kMinInt32Value = INT32_MIN + 1;
+  return value < kMinInt32Value ? kMinInt32Value : value;
 }
 
-WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat,
-                                               GLenum destinationType) {
-  WebGLImageConversion::DataFormat dstFormat =
-      WebGLImageConversion::DataFormatRGBA8;
-  switch (destinationType) {
+WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
+                                               GLenum destination_type) {
+  WebGLImageConversion::DataFormat dst_format =
+      WebGLImageConversion::kDataFormatRGBA8;
+  switch (destination_type) {
     case GL_BYTE:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RED:
         case GL_RED_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatR8_S;
+          dst_format = WebGLImageConversion::kDataFormatR8_S;
           break;
         case GL_RG:
         case GL_RG_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRG8_S;
+          dst_format = WebGLImageConversion::kDataFormatRG8_S;
           break;
         case GL_RGB:
         case GL_RGB_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGB8_S;
+          dst_format = WebGLImageConversion::kDataFormatRGB8_S;
           break;
         case GL_RGBA:
         case GL_RGBA_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGBA8_S;
+          dst_format = WebGLImageConversion::kDataFormatRGBA8_S;
           break;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_UNSIGNED_BYTE:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RGB:
         case GL_RGB_INTEGER:
         case GL_SRGB_EXT:
-          dstFormat = WebGLImageConversion::DataFormatRGB8;
+          dst_format = WebGLImageConversion::kDataFormatRGB8;
           break;
         case GL_RGBA:
         case GL_RGBA_INTEGER:
         case GL_SRGB_ALPHA_EXT:
-          dstFormat = WebGLImageConversion::DataFormatRGBA8;
+          dst_format = WebGLImageConversion::kDataFormatRGBA8;
           break;
         case GL_ALPHA:
-          dstFormat = WebGLImageConversion::DataFormatA8;
+          dst_format = WebGLImageConversion::kDataFormatA8;
           break;
         case GL_LUMINANCE:
         case GL_RED:
         case GL_RED_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatR8;
+          dst_format = WebGLImageConversion::kDataFormatR8;
           break;
         case GL_RG:
         case GL_RG_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRG8;
+          dst_format = WebGLImageConversion::kDataFormatRG8;
           break;
         case GL_LUMINANCE_ALPHA:
-          dstFormat = WebGLImageConversion::DataFormatRA8;
+          dst_format = WebGLImageConversion::kDataFormatRA8;
           break;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_SHORT:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RED_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatR16_S;
+          dst_format = WebGLImageConversion::kDataFormatR16_S;
           break;
         case GL_RG_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRG16_S;
+          dst_format = WebGLImageConversion::kDataFormatRG16_S;
           break;
         case GL_RGB_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGB16_S;
+          dst_format = WebGLImageConversion::kDataFormatRGB16_S;
         case GL_RGBA_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGBA16_S;
+          dst_format = WebGLImageConversion::kDataFormatRGBA16_S;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_UNSIGNED_SHORT:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RED_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatR16;
+          dst_format = WebGLImageConversion::kDataFormatR16;
           break;
         case GL_DEPTH_COMPONENT:
-          dstFormat = WebGLImageConversion::DataFormatD16;
+          dst_format = WebGLImageConversion::kDataFormatD16;
           break;
         case GL_RG_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRG16;
+          dst_format = WebGLImageConversion::kDataFormatRG16;
           break;
         case GL_RGB_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGB16;
+          dst_format = WebGLImageConversion::kDataFormatRGB16;
           break;
         case GL_RGBA_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGBA16;
+          dst_format = WebGLImageConversion::kDataFormatRGBA16;
           break;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_INT:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RED_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatR32_S;
+          dst_format = WebGLImageConversion::kDataFormatR32_S;
           break;
         case GL_RG_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRG32_S;
+          dst_format = WebGLImageConversion::kDataFormatRG32_S;
           break;
         case GL_RGB_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGB32_S;
+          dst_format = WebGLImageConversion::kDataFormatRGB32_S;
           break;
         case GL_RGBA_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGBA32_S;
+          dst_format = WebGLImageConversion::kDataFormatRGBA32_S;
           break;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_UNSIGNED_INT:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RED_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatR32;
+          dst_format = WebGLImageConversion::kDataFormatR32;
           break;
         case GL_DEPTH_COMPONENT:
-          dstFormat = WebGLImageConversion::DataFormatD32;
+          dst_format = WebGLImageConversion::kDataFormatD32;
           break;
         case GL_RG_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRG32;
+          dst_format = WebGLImageConversion::kDataFormatRG32;
           break;
         case GL_RGB_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGB32;
+          dst_format = WebGLImageConversion::kDataFormatRGB32;
           break;
         case GL_RGBA_INTEGER:
-          dstFormat = WebGLImageConversion::DataFormatRGBA32;
+          dst_format = WebGLImageConversion::kDataFormatRGBA32;
           break;
         default:
           ASSERT_NOT_REACHED();
@@ -177,83 +177,83 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat,
       break;
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
     case GL_HALF_FLOAT:
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RGBA:
-          dstFormat = WebGLImageConversion::DataFormatRGBA16F;
+          dst_format = WebGLImageConversion::kDataFormatRGBA16F;
           break;
         case GL_RGB:
-          dstFormat = WebGLImageConversion::DataFormatRGB16F;
+          dst_format = WebGLImageConversion::kDataFormatRGB16F;
           break;
         case GL_RG:
-          dstFormat = WebGLImageConversion::DataFormatRG16F;
+          dst_format = WebGLImageConversion::kDataFormatRG16F;
           break;
         case GL_ALPHA:
-          dstFormat = WebGLImageConversion::DataFormatA16F;
+          dst_format = WebGLImageConversion::kDataFormatA16F;
           break;
         case GL_LUMINANCE:
         case GL_RED:
-          dstFormat = WebGLImageConversion::DataFormatR16F;
+          dst_format = WebGLImageConversion::kDataFormatR16F;
           break;
         case GL_LUMINANCE_ALPHA:
-          dstFormat = WebGLImageConversion::DataFormatRA16F;
+          dst_format = WebGLImageConversion::kDataFormatRA16F;
           break;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_FLOAT:  // OES_texture_float
-      switch (destinationFormat) {
+      switch (destination_format) {
         case GL_RGBA:
-          dstFormat = WebGLImageConversion::DataFormatRGBA32F;
+          dst_format = WebGLImageConversion::kDataFormatRGBA32F;
           break;
         case GL_RGB:
-          dstFormat = WebGLImageConversion::DataFormatRGB32F;
+          dst_format = WebGLImageConversion::kDataFormatRGB32F;
           break;
         case GL_RG:
-          dstFormat = WebGLImageConversion::DataFormatRG32F;
+          dst_format = WebGLImageConversion::kDataFormatRG32F;
           break;
         case GL_ALPHA:
-          dstFormat = WebGLImageConversion::DataFormatA32F;
+          dst_format = WebGLImageConversion::kDataFormatA32F;
           break;
         case GL_LUMINANCE:
         case GL_RED:
-          dstFormat = WebGLImageConversion::DataFormatR32F;
+          dst_format = WebGLImageConversion::kDataFormatR32F;
           break;
         case GL_DEPTH_COMPONENT:
-          dstFormat = WebGLImageConversion::DataFormatD32F;
+          dst_format = WebGLImageConversion::kDataFormatD32F;
           break;
         case GL_LUMINANCE_ALPHA:
-          dstFormat = WebGLImageConversion::DataFormatRA32F;
+          dst_format = WebGLImageConversion::kDataFormatRA32F;
           break;
         default:
           ASSERT_NOT_REACHED();
       }
       break;
     case GL_UNSIGNED_SHORT_4_4_4_4:
-      dstFormat = WebGLImageConversion::DataFormatRGBA4444;
+      dst_format = WebGLImageConversion::kDataFormatRGBA4444;
       break;
     case GL_UNSIGNED_SHORT_5_5_5_1:
-      dstFormat = WebGLImageConversion::DataFormatRGBA5551;
+      dst_format = WebGLImageConversion::kDataFormatRGBA5551;
       break;
     case GL_UNSIGNED_SHORT_5_6_5:
-      dstFormat = WebGLImageConversion::DataFormatRGB565;
+      dst_format = WebGLImageConversion::kDataFormatRGB565;
       break;
     case GL_UNSIGNED_INT_5_9_9_9_REV:
-      dstFormat = WebGLImageConversion::DataFormatRGB5999;
+      dst_format = WebGLImageConversion::kDataFormatRGB5999;
       break;
     case GL_UNSIGNED_INT_24_8:
-      dstFormat = WebGLImageConversion::DataFormatDS24_8;
+      dst_format = WebGLImageConversion::kDataFormatDS24_8;
       break;
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
-      dstFormat = WebGLImageConversion::DataFormatRGB10F11F11F;
+      dst_format = WebGLImageConversion::kDataFormatRGB10F11F11F;
       break;
     case GL_UNSIGNED_INT_2_10_10_10_REV:
-      dstFormat = WebGLImageConversion::DataFormatRGBA2_10_10_10;
+      dst_format = WebGLImageConversion::kDataFormatRGBA2_10_10_10;
       break;
     default:
       ASSERT_NOT_REACHED();
   }
-  return dstFormat;
+  return dst_format;
 }
 
 // The following Float to Half-Float conversion code is from the implementation
@@ -304,7 +304,7 @@ void generatetables(){
 }
 */
 
-unsigned short baseTable[512] = {
+unsigned short g_base_table[512] = {
     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
@@ -353,7 +353,7 @@ unsigned short baseTable[512] = {
     64512, 64512, 64512, 64512, 64512, 64512, 64512, 64512, 64512, 64512, 64512,
     64512, 64512, 64512, 64512, 64512, 64512};
 
-unsigned char shiftTable[512] = {
+unsigned char g_shift_table[512] = {
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
@@ -382,10 +382,11 @@ unsigned char shiftTable[512] = {
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 13};
 
-unsigned short convertFloatToHalfFloat(float f) {
+unsigned short ConvertFloatToHalfFloat(float f) {
   unsigned temp = *(reinterpret_cast<unsigned*>(&f));
   unsigned signexp = (temp >> 23) & 0x1ff;
-  return baseTable[signexp] + ((temp & 0x007fffff) >> shiftTable[signexp]);
+  return g_base_table[signexp] +
+         ((temp & 0x007fffff) >> g_shift_table[signexp]);
 }
 
 /* BEGIN CODE SHARED WITH MOZILLA FIREFOX */
@@ -399,16 +400,16 @@ unsigned short convertFloatToHalfFloat(float f) {
 //----------------------------------------------------------------------
 // Pixel unpacking routines.
 template <int format, typename SourceType, typename DstType>
-void unpack(const SourceType*, DstType*, unsigned) {
+void Unpack(const SourceType*, DstType*, unsigned) {
   ASSERT_NOT_REACHED();
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatARGB8, uint8_t, uint8_t>(
     const uint8_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[1];
     destination[1] = source[2];
     destination[2] = source[3];
@@ -419,11 +420,11 @@ void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, uint8_t>(
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatABGR8, uint8_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatABGR8, uint8_t, uint8_t>(
     const uint8_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[3];
     destination[1] = source[2];
     destination[2] = source[1];
@@ -434,83 +435,87 @@ void unpack<WebGLImageConversion::DataFormatABGR8, uint8_t, uint8_t>(
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatBGRA8, uint8_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatBGRA8, uint8_t, uint8_t>(
     const uint8_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
+    unsigned pixels_per_row) {
   const uint32_t* source32 = reinterpret_cast_ptr<const uint32_t*>(source);
   uint32_t* destination32 = reinterpret_cast_ptr<uint32_t*>(destination);
 
 #if CPU(X86) || CPU(X86_64)
-  SIMD::unpackOneRowOfBGRA8LittleToRGBA8(source32, destination32, pixelsPerRow);
+  SIMD::UnpackOneRowOfBGRA8LittleToRGBA8(source32, destination32,
+                                         pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::unpackOneRowOfBGRA8LittleToRGBA8MSA(source32, destination32,
                                             pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     uint32_t bgra = source32[i];
 #if CPU(BIG_ENDIAN)
     uint32_t brMask = 0xff00ff00;
     uint32_t gaMask = 0x00ff00ff;
 #else
-    uint32_t brMask = 0x00ff00ff;
-    uint32_t gaMask = 0xff00ff00;
+    uint32_t br_mask = 0x00ff00ff;
+    uint32_t ga_mask = 0xff00ff00;
 #endif
-    uint32_t rgba = (((bgra >> 16) | (bgra << 16)) & brMask) | (bgra & gaMask);
+    uint32_t rgba =
+        (((bgra >> 16) | (bgra << 16)) & br_mask) | (bgra & ga_mask);
     destination32[i] = rgba;
   }
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatRGBA5551, uint16_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatRGBA5551, uint16_t, uint8_t>(
     const uint16_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
+    unsigned pixels_per_row) {
 #if CPU(X86) || CPU(X86_64)
-  SIMD::unpackOneRowOfRGBA5551LittleToRGBA8(source, destination, pixelsPerRow);
+  SIMD::UnpackOneRowOfRGBA5551LittleToRGBA8(source, destination,
+                                            pixels_per_row);
 #endif
 #if HAVE(ARM_NEON_INTRINSICS)
-  SIMD::unpackOneRowOfRGBA5551ToRGBA8(source, destination, pixelsPerRow);
+  SIMD::UnpackOneRowOfRGBA5551ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::unpackOneRowOfRGBA5551ToRGBA8MSA(source, destination, pixelsPerRow);
 #endif
 
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    uint16_t packedValue = source[0];
-    uint8_t r = packedValue >> 11;
-    uint8_t g = (packedValue >> 6) & 0x1F;
-    uint8_t b = (packedValue >> 1) & 0x1F;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    uint16_t packed_value = source[0];
+    uint8_t r = packed_value >> 11;
+    uint8_t g = (packed_value >> 6) & 0x1F;
+    uint8_t b = (packed_value >> 1) & 0x1F;
     destination[0] = (r << 3) | (r & 0x7);
     destination[1] = (g << 3) | (g & 0x7);
     destination[2] = (b << 3) | (b & 0x7);
-    destination[3] = (packedValue & 0x1) ? 0xFF : 0x0;
+    destination[3] = (packed_value & 0x1) ? 0xFF : 0x0;
     source += 1;
     destination += 4;
   }
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatRGBA4444, uint16_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatRGBA4444, uint16_t, uint8_t>(
     const uint16_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
+    unsigned pixels_per_row) {
 #if CPU(X86) || CPU(X86_64)
-  SIMD::unpackOneRowOfRGBA4444LittleToRGBA8(source, destination, pixelsPerRow);
+  SIMD::UnpackOneRowOfRGBA4444LittleToRGBA8(source, destination,
+                                            pixels_per_row);
 #endif
 #if HAVE(ARM_NEON_INTRINSICS)
-  SIMD::unpackOneRowOfRGBA4444ToRGBA8(source, destination, pixelsPerRow);
+  SIMD::UnpackOneRowOfRGBA4444ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::unpackOneRowOfRGBA4444ToRGBA8MSA(source, destination, pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    uint16_t packedValue = source[0];
-    uint8_t r = packedValue >> 12;
-    uint8_t g = (packedValue >> 8) & 0x0F;
-    uint8_t b = (packedValue >> 4) & 0x0F;
-    uint8_t a = packedValue & 0x0F;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    uint16_t packed_value = source[0];
+    uint8_t r = packed_value >> 12;
+    uint8_t g = (packed_value >> 8) & 0x0F;
+    uint8_t b = (packed_value >> 4) & 0x0F;
+    uint8_t a = packed_value & 0x0F;
     destination[0] = r << 4 | r;
     destination[1] = g << 4 | g;
     destination[2] = b << 4 | b;
@@ -521,11 +526,11 @@ void unpack<WebGLImageConversion::DataFormatRGBA4444, uint16_t, uint8_t>(
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatRA8, uint8_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatRA8, uint8_t, uint8_t>(
     const uint8_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[0];
     destination[2] = source[0];
@@ -536,11 +541,11 @@ void unpack<WebGLImageConversion::DataFormatRA8, uint8_t, uint8_t>(
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatAR8, uint8_t, uint8_t>(
+void Unpack<WebGLImageConversion::kDataFormatAR8, uint8_t, uint8_t>(
     const uint8_t* source,
     uint8_t* destination,
-    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[1];
     destination[1] = source[1];
     destination[2] = source[1];
@@ -551,75 +556,75 @@ void unpack<WebGLImageConversion::DataFormatAR8, uint8_t, uint8_t>(
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatRGBA8, uint8_t, float>(
+void Unpack<WebGLImageConversion::kDataFormatRGBA8, uint8_t, float>(
     const uint8_t* source,
     float* destination,
-    unsigned pixelsPerRow) {
-  const float scaleFactor = 1.0f / 255.0f;
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
-    destination[2] = source[2] * scaleFactor;
-    destination[3] = source[3] * scaleFactor;
+    unsigned pixels_per_row) {
+  const float kScaleFactor = 1.0f / 255.0f;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = source[0] * kScaleFactor;
+    destination[1] = source[1] * kScaleFactor;
+    destination[2] = source[2] * kScaleFactor;
+    destination[3] = source[3] * kScaleFactor;
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatBGRA8, uint8_t, float>(
+void Unpack<WebGLImageConversion::kDataFormatBGRA8, uint8_t, float>(
     const uint8_t* source,
     float* destination,
-    unsigned pixelsPerRow) {
-  const float scaleFactor = 1.0f / 255.0f;
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = source[2] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
-    destination[2] = source[0] * scaleFactor;
-    destination[3] = source[3] * scaleFactor;
+    unsigned pixels_per_row) {
+  const float kScaleFactor = 1.0f / 255.0f;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = source[2] * kScaleFactor;
+    destination[1] = source[1] * kScaleFactor;
+    destination[2] = source[0] * kScaleFactor;
+    destination[3] = source[3] * kScaleFactor;
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatABGR8, uint8_t, float>(
+void Unpack<WebGLImageConversion::kDataFormatABGR8, uint8_t, float>(
     const uint8_t* source,
     float* destination,
-    unsigned pixelsPerRow) {
-  const float scaleFactor = 1.0f / 255.0f;
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = source[3] * scaleFactor;
-    destination[1] = source[2] * scaleFactor;
-    destination[2] = source[1] * scaleFactor;
-    destination[3] = source[0] * scaleFactor;
+    unsigned pixels_per_row) {
+  const float kScaleFactor = 1.0f / 255.0f;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = source[3] * kScaleFactor;
+    destination[1] = source[2] * kScaleFactor;
+    destination[2] = source[1] * kScaleFactor;
+    destination[3] = source[0] * kScaleFactor;
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatARGB8, uint8_t, float>(
+void Unpack<WebGLImageConversion::kDataFormatARGB8, uint8_t, float>(
     const uint8_t* source,
     float* destination,
-    unsigned pixelsPerRow) {
-  const float scaleFactor = 1.0f / 255.0f;
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = source[1] * scaleFactor;
-    destination[1] = source[2] * scaleFactor;
-    destination[2] = source[3] * scaleFactor;
-    destination[3] = source[0] * scaleFactor;
+    unsigned pixels_per_row) {
+  const float kScaleFactor = 1.0f / 255.0f;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = source[1] * kScaleFactor;
+    destination[1] = source[2] * kScaleFactor;
+    destination[2] = source[3] * kScaleFactor;
+    destination[3] = source[0] * kScaleFactor;
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(
+void Unpack<WebGLImageConversion::kDataFormatRA32F, float, float>(
     const float* source,
     float* destination,
-    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[0];
     destination[2] = source[0];
@@ -630,20 +635,20 @@ void unpack<WebGLImageConversion::DataFormatRA32F, float, float>(
 }
 
 template <>
-void unpack<WebGLImageConversion::DataFormatRGBA2_10_10_10, uint32_t, float>(
+void Unpack<WebGLImageConversion::kDataFormatRGBA2_10_10_10, uint32_t, float>(
     const uint32_t* source,
     float* destination,
-    unsigned pixelsPerRow) {
-  static const float rgbScaleFactor = 1.0f / 1023.0f;
-  static const float alphaScaleFactor = 1.0f / 3.0f;
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    uint32_t packedValue = source[0];
-    destination[0] = static_cast<float>(packedValue & 0x3FF) * rgbScaleFactor;
+    unsigned pixels_per_row) {
+  static const float kRgbScaleFactor = 1.0f / 1023.0f;
+  static const float kAlphaScaleFactor = 1.0f / 3.0f;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    uint32_t packed_value = source[0];
+    destination[0] = static_cast<float>(packed_value & 0x3FF) * kRgbScaleFactor;
     destination[1] =
-        static_cast<float>((packedValue >> 10) & 0x3FF) * rgbScaleFactor;
+        static_cast<float>((packed_value >> 10) & 0x3FF) * kRgbScaleFactor;
     destination[2] =
-        static_cast<float>((packedValue >> 20) & 0x3FF) * rgbScaleFactor;
-    destination[3] = static_cast<float>(packedValue >> 30) * alphaScaleFactor;
+        static_cast<float>((packed_value >> 20) & 0x3FF) * kRgbScaleFactor;
+    destination[3] = static_cast<float>(packed_value >> 30) * kAlphaScaleFactor;
     source += 1;
     destination += 4;
   }
@@ -654,18 +659,18 @@ void unpack<WebGLImageConversion::DataFormatRGBA2_10_10_10, uint32_t, float>(
 //
 
 template <int format, int alphaOp, typename SourceType, typename DstType>
-void pack(const SourceType*, DstType*, unsigned) {
+void Pack(const SourceType*, DstType*, unsigned) {
   ASSERT_NOT_REACHED();
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatA8,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatA8,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[3];
     source += 4;
     destination += 1;
@@ -673,13 +678,13 @@ void pack<WebGLImageConversion::DataFormatA8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR8,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatR8,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     source += 4;
     destination += 1;
@@ -687,17 +692,17 @@ void pack<WebGLImageConversion::DataFormatR8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR8,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatR8,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    destination[0] = sourceR;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    destination[0] = source_r;
     source += 4;
     destination += 1;
   }
@@ -705,36 +710,36 @@ void pack<WebGLImageConversion::DataFormatR8,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatR8,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatR8,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
+                   unsigned pixels_per_row) {
 #if CPU(X86) || CPU(X86_64)
-  SIMD::packOneRowOfRGBA8LittleToR8(source, destination, pixelsPerRow);
+  SIMD::PackOneRowOfRGBA8LittleToR8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::packOneRowOfRGBA8LittleToR8MSA(source, destination, pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    destination[0] = sourceR;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    destination[0] = source_r;
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA8,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRA8,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[3];
     source += 4;
@@ -743,17 +748,17 @@ void pack<WebGLImageConversion::DataFormatRA8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA8,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRA8,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    destination[0] = sourceR;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    destination[0] = source_r;
     destination[1] = source[3];
     source += 4;
     destination += 2;
@@ -762,23 +767,23 @@ void pack<WebGLImageConversion::DataFormatRA8,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRA8,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRA8,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
+                   unsigned pixels_per_row) {
 #if CPU(X86) || CPU(X86_64)
-  SIMD::packOneRowOfRGBA8LittleToRA8(source, destination, pixelsPerRow);
+  SIMD::PackOneRowOfRGBA8LittleToRA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::packOneRowOfRGBA8LittleToRA8MSA(source, destination, pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    destination[0] = sourceR;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    destination[0] = source_r;
     destination[1] = source[3];
     source += 4;
     destination += 2;
@@ -786,13 +791,13 @@ void pack<WebGLImageConversion::DataFormatRA8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB8,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGB8,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[1];
     destination[2] = source[2];
@@ -802,23 +807,23 @@ void pack<WebGLImageConversion::DataFormatRGB8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB8,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB8,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    destination[0] = sourceR;
-    destination[1] = sourceG;
-    destination[2] = sourceB;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    destination[0] = source_r;
+    destination[1] = source_g;
+    destination[2] = source_b;
     source += 4;
     destination += 3;
   }
@@ -826,46 +831,46 @@ void pack<WebGLImageConversion::DataFormatRGB8,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRGB8,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB8,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    destination[0] = sourceR;
-    destination[1] = sourceG;
-    destination[2] = sourceB;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    destination[0] = source_r;
+    destination[1] = source_g;
+    destination[2] = source_b;
     source += 4;
     destination += 3;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA8,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA8,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    destination[0] = sourceR;
-    destination[1] = sourceG;
-    destination[2] = sourceB;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    destination[0] = source_r;
+    destination[1] = source_g;
+    destination[2] = source_b;
     destination[3] = source[3];
     source += 4;
     destination += 4;
@@ -874,29 +879,29 @@ void pack<WebGLImageConversion::DataFormatRGBA8,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA8,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA8,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
+                   unsigned pixels_per_row) {
 #if CPU(X86) || CPU(X86_64)
-  SIMD::packOneRowOfRGBA8LittleToRGBA8(source, destination, pixelsPerRow);
+  SIMD::PackOneRowOfRGBA8LittleToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::packOneRowOfRGBA8LittleToRGBA8MSA(source, destination, pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    destination[0] = sourceR;
-    destination[1] = sourceG;
-    destination[2] = sourceB;
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    destination[0] = source_r;
+    destination[1] = source_g;
+    destination[2] = source_b;
     destination[3] = source[3];
     source += 4;
     destination += 4;
@@ -904,20 +909,21 @@ void pack<WebGLImageConversion::DataFormatRGBA8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA4444,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGBA4444,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
+                    unsigned pixels_per_row) {
 #if HAVE(ARM_NEON_INTRINSICS)
-  SIMD::packOneRowOfRGBA8ToUnsignedShort4444(source, destination, pixelsPerRow);
+  SIMD::PackOneRowOfRGBA8ToUnsignedShort4444(source, destination,
+                                             pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::packOneRowOfRGBA8ToUnsignedShort4444MSA(source, destination,
                                                 pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     *destination = (((source[0] & 0xF0) << 8) | ((source[1] & 0xF0) << 4) |
                     (source[2] & 0xF0) | (source[3] >> 4));
     source += 4;
@@ -926,22 +932,22 @@ void pack<WebGLImageConversion::DataFormatRGBA4444,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA4444,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA4444,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    *destination = (((sourceR & 0xF0) << 8) | ((sourceG & 0xF0) << 4) |
-                    (sourceB & 0xF0) | (source[3] >> 4));
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    *destination = (((source_r & 0xF0) << 8) | ((source_g & 0xF0) << 4) |
+                    (source_b & 0xF0) | (source[3] >> 4));
     source += 4;
     destination += 1;
   }
@@ -949,42 +955,43 @@ void pack<WebGLImageConversion::DataFormatRGBA4444,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA4444,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA4444,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    *destination = (((sourceR & 0xF0) << 8) | ((sourceG & 0xF0) << 4) |
-                    (sourceB & 0xF0) | (source[3] >> 4));
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    *destination = (((source_r & 0xF0) << 8) | ((source_g & 0xF0) << 4) |
+                    (source_b & 0xF0) | (source[3] >> 4));
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA5551,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGBA5551,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
+                    unsigned pixels_per_row) {
 #if HAVE(ARM_NEON_INTRINSICS)
-  SIMD::packOneRowOfRGBA8ToUnsignedShort5551(source, destination, pixelsPerRow);
+  SIMD::PackOneRowOfRGBA8ToUnsignedShort5551(source, destination,
+                                             pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::packOneRowOfRGBA8ToUnsignedShort5551MSA(source, destination,
                                                 pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     *destination = (((source[0] & 0xF8) << 8) | ((source[1] & 0xF8) << 3) |
                     ((source[2] & 0xF8) >> 2) | (source[3] >> 7));
     source += 4;
@@ -993,22 +1000,22 @@ void pack<WebGLImageConversion::DataFormatRGBA5551,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA5551,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA5551,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    *destination = (((sourceR & 0xF8) << 8) | ((sourceG & 0xF8) << 3) |
-                    ((sourceB & 0xF8) >> 2) | (source[3] >> 7));
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    *destination = (((source_r & 0xF8) << 8) | ((source_g & 0xF8) << 3) |
+                    ((source_b & 0xF8) >> 2) | (source[3] >> 7));
     source += 4;
     destination += 1;
   }
@@ -1016,42 +1023,43 @@ void pack<WebGLImageConversion::DataFormatRGBA5551,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA5551,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA5551,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    *destination = (((sourceR & 0xF8) << 8) | ((sourceG & 0xF8) << 3) |
-                    ((sourceB & 0xF8) >> 2) | (source[3] >> 7));
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    *destination = (((source_r & 0xF8) << 8) | ((source_g & 0xF8) << 3) |
+                    ((source_b & 0xF8) >> 2) | (source[3] >> 7));
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB565,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGB565,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
+                    unsigned pixels_per_row) {
 #if HAVE(ARM_NEON_INTRINSICS)
-  SIMD::packOneRowOfRGBA8ToUnsignedShort565(source, destination, pixelsPerRow);
+  SIMD::PackOneRowOfRGBA8ToUnsignedShort565(source, destination,
+                                            pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
   SIMD::packOneRowOfRGBA8ToUnsignedShort565MSA(source, destination,
                                                pixelsPerRow);
 #endif
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     *destination = (((source[0] & 0xF8) << 8) | ((source[1] & 0xFC) << 3) |
                     ((source[2] & 0xF8) >> 3));
     source += 4;
@@ -1060,22 +1068,22 @@ void pack<WebGLImageConversion::DataFormatRGB565,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB565,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB565,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] / 255.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    *destination = (((sourceR & 0xF8) << 8) | ((sourceG & 0xFC) << 3) |
-                    ((sourceB & 0xF8) >> 3));
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] / 255.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    *destination = (((source_r & 0xF8) << 8) | ((source_g & 0xFC) << 3) |
+                    ((source_b & 0xF8) >> 3));
     source += 4;
     destination += 1;
   }
@@ -1083,35 +1091,35 @@ void pack<WebGLImageConversion::DataFormatRGB565,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRGB565,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB565,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint16_t>(const uint8_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 255.0f / source[3] : 1.0f;
-    uint8_t sourceR =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
-    uint8_t sourceG =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
-    uint8_t sourceB =
-        static_cast<uint8_t>(static_cast<float>(source[2]) * scaleFactor);
-    *destination = (((sourceR & 0xF8) << 8) | ((sourceG & 0xFC) << 3) |
-                    ((sourceB & 0xF8) >> 3));
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
+    uint8_t source_r =
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
+    uint8_t source_g =
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
+    uint8_t source_b =
+        static_cast<uint8_t>(static_cast<float>(source[2]) * scale_factor);
+    *destination = (((source_r & 0xF8) << 8) | ((source_g & 0xFC) << 3) |
+                    ((source_b & 0xF8) >> 3));
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB32F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGB32F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[1];
     destination[2] = source[2];
@@ -1121,51 +1129,51 @@ void pack<WebGLImageConversion::DataFormatRGB32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB32F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB32F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
-    destination[2] = source[2] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = source[0] * scale_factor;
+    destination[1] = source[1] * scale_factor;
+    destination[2] = source[2] * scale_factor;
     source += 4;
     destination += 3;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB32F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB32F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
-    destination[2] = source[2] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = source[0] * scale_factor;
+    destination[1] = source[1] * scale_factor;
+    destination[2] = source[2] * scale_factor;
     source += 4;
     destination += 3;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA32F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA32F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
-    destination[2] = source[2] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = source[0] * scale_factor;
+    destination[1] = source[1] * scale_factor;
+    destination[2] = source[2] * scale_factor;
     destination[3] = source[3];
     source += 4;
     destination += 4;
@@ -1173,17 +1181,17 @@ void pack<WebGLImageConversion::DataFormatRGBA32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA32F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA32F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
-    destination[2] = source[2] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = source[0] * scale_factor;
+    destination[1] = source[1] * scale_factor;
+    destination[2] = source[2] * scale_factor;
     destination[3] = source[3];
     source += 4;
     destination += 4;
@@ -1191,13 +1199,13 @@ void pack<WebGLImageConversion::DataFormatRGBA32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatA32F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatA32F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[3];
     source += 4;
     destination += 1;
@@ -1205,13 +1213,13 @@ void pack<WebGLImageConversion::DataFormatA32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR32F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatR32F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     source += 4;
     destination += 1;
@@ -1219,43 +1227,43 @@ void pack<WebGLImageConversion::DataFormatR32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR32F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatR32F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = source[0] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = source[0] * scale_factor;
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR32F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatR32F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = source[0] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = source[0] * scale_factor;
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA32F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRA32F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[3];
     source += 4;
@@ -1264,15 +1272,15 @@ void pack<WebGLImageConversion::DataFormatRA32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA32F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRA32F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = source[0] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = source[0] * scale_factor;
     destination[1] = source[3];
     source += 4;
     destination += 2;
@@ -1280,15 +1288,15 @@ void pack<WebGLImageConversion::DataFormatRA32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA32F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRA32F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = source[0] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = source[0] * scale_factor;
     destination[1] = source[3];
     source += 4;
     destination += 2;
@@ -1296,249 +1304,249 @@ void pack<WebGLImageConversion::DataFormatRA32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA16F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGBA16F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = convertFloatToHalfFloat(source[0]);
-    destination[1] = convertFloatToHalfFloat(source[1]);
-    destination[2] = convertFloatToHalfFloat(source[2]);
-    destination[3] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = ConvertFloatToHalfFloat(source[0]);
+    destination[1] = ConvertFloatToHalfFloat(source[1]);
+    destination[2] = ConvertFloatToHalfFloat(source[2]);
+    destination[3] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA16F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA16F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
-    destination[2] = convertFloatToHalfFloat(source[2] * scaleFactor);
-    destination[3] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[1] * scale_factor);
+    destination[2] = ConvertFloatToHalfFloat(source[2] * scale_factor);
+    destination[3] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA16F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA16F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
-    destination[2] = convertFloatToHalfFloat(source[2] * scaleFactor);
-    destination[3] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[1] * scale_factor);
+    destination[2] = ConvertFloatToHalfFloat(source[2] * scale_factor);
+    destination[3] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB16F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRGB16F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = convertFloatToHalfFloat(source[0]);
-    destination[1] = convertFloatToHalfFloat(source[1]);
-    destination[2] = convertFloatToHalfFloat(source[2]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = ConvertFloatToHalfFloat(source[0]);
+    destination[1] = ConvertFloatToHalfFloat(source[1]);
+    destination[2] = ConvertFloatToHalfFloat(source[2]);
     source += 4;
     destination += 3;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB16F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB16F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
-    destination[2] = convertFloatToHalfFloat(source[2] * scaleFactor);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[1] * scale_factor);
+    destination[2] = ConvertFloatToHalfFloat(source[2] * scale_factor);
     source += 4;
     destination += 3;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGB16F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRGB16F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
-    destination[2] = convertFloatToHalfFloat(source[2] * scaleFactor);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[1] * scale_factor);
+    destination[2] = ConvertFloatToHalfFloat(source[2] * scale_factor);
     source += 4;
     destination += 3;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA16F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRA16F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = convertFloatToHalfFloat(source[0]);
-    destination[1] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = ConvertFloatToHalfFloat(source[0]);
+    destination[1] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 2;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA16F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRA16F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 2;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRA16F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRA16F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 2;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR16F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatR16F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = convertFloatToHalfFloat(source[0]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = ConvertFloatToHalfFloat(source[0]);
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR16F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatR16F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatR16F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatR16F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatA16F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatA16F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = convertFloatToHalfFloat(source[3]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = ConvertFloatToHalfFloat(source[3]);
     source += 4;
     destination += 1;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA8_S,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA8_S,
+          WebGLImageConversion::kAlphaDoPremultiply,
           int8_t,
           int8_t>(const int8_t* source,
                   int8_t* destination,
-                  unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                  unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[3] = ClampMin(source[3]);
-    float scaleFactor = static_cast<float>(destination[3]) / maxInt8Value;
+    float scale_factor = static_cast<float>(destination[3]) / kMaxInt8Value;
     destination[0] = static_cast<int8_t>(
-        static_cast<float>(ClampMin(source[0])) * scaleFactor);
+        static_cast<float>(ClampMin(source[0])) * scale_factor);
     destination[1] = static_cast<int8_t>(
-        static_cast<float>(ClampMin(source[1])) * scaleFactor);
+        static_cast<float>(ClampMin(source[1])) * scale_factor);
     destination[2] = static_cast<int8_t>(
-        static_cast<float>(ClampMin(source[2])) * scaleFactor);
+        static_cast<float>(ClampMin(source[2])) * scale_factor);
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA16,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA16,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint16_t,
           uint16_t>(const uint16_t* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = static_cast<float>(source[3]) / maxUInt16Value;
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = static_cast<float>(source[3]) / kMaxUInt16Value;
     destination[0] =
-        static_cast<uint16_t>(static_cast<float>(source[0]) * scaleFactor);
+        static_cast<uint16_t>(static_cast<float>(source[0]) * scale_factor);
     destination[1] =
-        static_cast<uint16_t>(static_cast<float>(source[1]) * scaleFactor);
+        static_cast<uint16_t>(static_cast<float>(source[1]) * scale_factor);
     destination[2] =
-        static_cast<uint16_t>(static_cast<float>(source[2]) * scaleFactor);
+        static_cast<uint16_t>(static_cast<float>(source[2]) * scale_factor);
     destination[3] = source[3];
     source += 4;
     destination += 4;
@@ -1546,41 +1554,41 @@ void pack<WebGLImageConversion::DataFormatRGBA16,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA16_S,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA16_S,
+          WebGLImageConversion::kAlphaDoPremultiply,
           int16_t,
           int16_t>(const int16_t* source,
                    int16_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[3] = ClampMin(source[3]);
-    float scaleFactor = static_cast<float>(destination[3]) / maxInt16Value;
+    float scale_factor = static_cast<float>(destination[3]) / kMaxInt16Value;
     destination[0] = static_cast<int16_t>(
-        static_cast<float>(ClampMin(source[0])) * scaleFactor);
+        static_cast<float>(ClampMin(source[0])) * scale_factor);
     destination[1] = static_cast<int16_t>(
-        static_cast<float>(ClampMin(source[1])) * scaleFactor);
+        static_cast<float>(ClampMin(source[1])) * scale_factor);
     destination[2] = static_cast<int16_t>(
-        static_cast<float>(ClampMin(source[2])) * scaleFactor);
+        static_cast<float>(ClampMin(source[2])) * scale_factor);
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA32,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA32,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint32_t,
           uint32_t>(const uint32_t* source,
                     uint32_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    double scaleFactor = static_cast<double>(source[3]) / maxUInt32Value;
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    double scale_factor = static_cast<double>(source[3]) / kMaxUInt32Value;
     destination[0] =
-        static_cast<uint32_t>(static_cast<double>(source[0]) * scaleFactor);
+        static_cast<uint32_t>(static_cast<double>(source[0]) * scale_factor);
     destination[1] =
-        static_cast<uint32_t>(static_cast<double>(source[1]) * scaleFactor);
+        static_cast<uint32_t>(static_cast<double>(source[1]) * scale_factor);
     destination[2] =
-        static_cast<uint32_t>(static_cast<double>(source[2]) * scaleFactor);
+        static_cast<uint32_t>(static_cast<double>(source[2]) * scale_factor);
     destination[3] = source[3];
     source += 4;
     destination += 4;
@@ -1588,34 +1596,34 @@ void pack<WebGLImageConversion::DataFormatRGBA32,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA32_S,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA32_S,
+          WebGLImageConversion::kAlphaDoPremultiply,
           int32_t,
           int32_t>(const int32_t* source,
                    int32_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[3] = ClampMin(source[3]);
-    double scaleFactor = static_cast<double>(destination[3]) / maxInt32Value;
+    double scale_factor = static_cast<double>(destination[3]) / kMaxInt32Value;
     destination[0] = static_cast<int32_t>(
-        static_cast<double>(ClampMin(source[0])) * scaleFactor);
+        static_cast<double>(ClampMin(source[0])) * scale_factor);
     destination[1] = static_cast<int32_t>(
-        static_cast<double>(ClampMin(source[1])) * scaleFactor);
+        static_cast<double>(ClampMin(source[1])) * scale_factor);
     destination[2] = static_cast<int32_t>(
-        static_cast<double>(ClampMin(source[2])) * scaleFactor);
+        static_cast<double>(ClampMin(source[2])) * scale_factor);
     source += 4;
     destination += 4;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRGBA2_10_10_10,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           uint32_t>(const float* source,
                     uint32_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     uint32_t r = static_cast<uint32_t>(source[0] * source[3] * 1023.0f);
     uint32_t g = static_cast<uint32_t>(source[1] * source[3] * 1023.0f);
     uint32_t b = static_cast<uint32_t>(source[2] * source[3] * 1023.0f);
@@ -1627,13 +1635,13 @@ void pack<WebGLImageConversion::DataFormatRGBA2_10_10_10,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRG8,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRG8,
+          WebGLImageConversion::kAlphaDoNothing,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[1];
     source += 4;
@@ -1642,18 +1650,18 @@ void pack<WebGLImageConversion::DataFormatRG8,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRG8,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRG8,
+          WebGLImageConversion::kAlphaDoPremultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = static_cast<float>(source[3]) / maxUInt8Value;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = static_cast<float>(source[3]) / kMaxUInt8Value;
     destination[0] =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
     destination[1] =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
     source += 4;
     destination += 2;
   }
@@ -1661,50 +1669,50 @@ void pack<WebGLImageConversion::DataFormatRG8,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRG8,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRG8,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           uint8_t,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
-                   unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor =
-        source[3] ? maxUInt8Value / static_cast<float>(source[3]) : 1.0f;
+                   unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor =
+        source[3] ? kMaxUInt8Value / static_cast<float>(source[3]) : 1.0f;
     destination[0] =
-        static_cast<uint8_t>(static_cast<float>(source[0]) * scaleFactor);
+        static_cast<uint8_t>(static_cast<float>(source[0]) * scale_factor);
     destination[1] =
-        static_cast<uint8_t>(static_cast<float>(source[1]) * scaleFactor);
+        static_cast<uint8_t>(static_cast<float>(source[1]) * scale_factor);
     source += 4;
     destination += 2;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRG16F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRG16F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    destination[0] = convertFloatToHalfFloat(source[0]);
-    destination[1] = convertFloatToHalfFloat(source[1]);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    destination[0] = ConvertFloatToHalfFloat(source[0]);
+    destination[1] = ConvertFloatToHalfFloat(source[1]);
     source += 4;
     destination += 2;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRG16F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRG16F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[1] * scale_factor);
     source += 4;
     destination += 2;
   }
@@ -1712,29 +1720,29 @@ void pack<WebGLImageConversion::DataFormatRG16F,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRG16F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRG16F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           uint16_t>(const float* source,
                     uint16_t* destination,
-                    unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = convertFloatToHalfFloat(source[0] * scaleFactor);
-    destination[1] = convertFloatToHalfFloat(source[1] * scaleFactor);
+                    unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = ConvertFloatToHalfFloat(source[0] * scale_factor);
+    destination[1] = ConvertFloatToHalfFloat(source[1] * scale_factor);
     source += 4;
     destination += 2;
   }
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRG32F,
-          WebGLImageConversion::AlphaDoNothing,
+void Pack<WebGLImageConversion::kDataFormatRG32F,
+          WebGLImageConversion::kAlphaDoNothing,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
     destination[0] = source[0];
     destination[1] = source[1];
     source += 4;
@@ -1743,16 +1751,16 @@ void pack<WebGLImageConversion::DataFormatRG32F,
 }
 
 template <>
-void pack<WebGLImageConversion::DataFormatRG32F,
-          WebGLImageConversion::AlphaDoPremultiply,
+void Pack<WebGLImageConversion::kDataFormatRG32F,
+          WebGLImageConversion::kAlphaDoPremultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3];
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3];
+    destination[0] = source[0] * scale_factor;
+    destination[1] = source[1] * scale_factor;
     source += 4;
     destination += 2;
   }
@@ -1760,195 +1768,198 @@ void pack<WebGLImageConversion::DataFormatRG32F,
 
 // FIXME: this routine is lossy and must be removed.
 template <>
-void pack<WebGLImageConversion::DataFormatRG32F,
-          WebGLImageConversion::AlphaDoUnmultiply,
+void Pack<WebGLImageConversion::kDataFormatRG32F,
+          WebGLImageConversion::kAlphaDoUnmultiply,
           float,
           float>(const float* source,
                  float* destination,
-                 unsigned pixelsPerRow) {
-  for (unsigned i = 0; i < pixelsPerRow; ++i) {
-    float scaleFactor = source[3] ? 1.0f / source[3] : 1.0f;
-    destination[0] = source[0] * scaleFactor;
-    destination[1] = source[1] * scaleFactor;
+                 unsigned pixels_per_row) {
+  for (unsigned i = 0; i < pixels_per_row; ++i) {
+    float scale_factor = source[3] ? 1.0f / source[3] : 1.0f;
+    destination[0] = source[0] * scale_factor;
+    destination[1] = source[1] * scale_factor;
     source += 4;
     destination += 2;
   }
 }
 
 bool HasAlpha(int format) {
-  return format == WebGLImageConversion::DataFormatA8 ||
-         format == WebGLImageConversion::DataFormatA16F ||
-         format == WebGLImageConversion::DataFormatA32F ||
-         format == WebGLImageConversion::DataFormatRA8 ||
-         format == WebGLImageConversion::DataFormatAR8 ||
-         format == WebGLImageConversion::DataFormatRA16F ||
-         format == WebGLImageConversion::DataFormatRA32F ||
-         format == WebGLImageConversion::DataFormatRGBA8 ||
-         format == WebGLImageConversion::DataFormatBGRA8 ||
-         format == WebGLImageConversion::DataFormatARGB8 ||
-         format == WebGLImageConversion::DataFormatABGR8 ||
-         format == WebGLImageConversion::DataFormatRGBA16F ||
-         format == WebGLImageConversion::DataFormatRGBA32F ||
-         format == WebGLImageConversion::DataFormatRGBA4444 ||
-         format == WebGLImageConversion::DataFormatRGBA5551 ||
-         format == WebGLImageConversion::DataFormatRGBA8_S ||
-         format == WebGLImageConversion::DataFormatRGBA16 ||
-         format == WebGLImageConversion::DataFormatRGBA16_S ||
-         format == WebGLImageConversion::DataFormatRGBA32 ||
-         format == WebGLImageConversion::DataFormatRGBA32_S ||
-         format == WebGLImageConversion::DataFormatRGBA2_10_10_10;
+  return format == WebGLImageConversion::kDataFormatA8 ||
+         format == WebGLImageConversion::kDataFormatA16F ||
+         format == WebGLImageConversion::kDataFormatA32F ||
+         format == WebGLImageConversion::kDataFormatRA8 ||
+         format == WebGLImageConversion::kDataFormatAR8 ||
+         format == WebGLImageConversion::kDataFormatRA16F ||
+         format == WebGLImageConversion::kDataFormatRA32F ||
+         format == WebGLImageConversion::kDataFormatRGBA8 ||
+         format == WebGLImageConversion::kDataFormatBGRA8 ||
+         format == WebGLImageConversion::kDataFormatARGB8 ||
+         format == WebGLImageConversion::kDataFormatABGR8 ||
+         format == WebGLImageConversion::kDataFormatRGBA16F ||
+         format == WebGLImageConversion::kDataFormatRGBA32F ||
+         format == WebGLImageConversion::kDataFormatRGBA4444 ||
+         format == WebGLImageConversion::kDataFormatRGBA5551 ||
+         format == WebGLImageConversion::kDataFormatRGBA8_S ||
+         format == WebGLImageConversion::kDataFormatRGBA16 ||
+         format == WebGLImageConversion::kDataFormatRGBA16_S ||
+         format == WebGLImageConversion::kDataFormatRGBA32 ||
+         format == WebGLImageConversion::kDataFormatRGBA32_S ||
+         format == WebGLImageConversion::kDataFormatRGBA2_10_10_10;
 }
 
 bool HasColor(int format) {
-  return format == WebGLImageConversion::DataFormatRGBA8 ||
-         format == WebGLImageConversion::DataFormatRGBA16F ||
-         format == WebGLImageConversion::DataFormatRGBA32F ||
-         format == WebGLImageConversion::DataFormatRGB8 ||
-         format == WebGLImageConversion::DataFormatRGB16F ||
-         format == WebGLImageConversion::DataFormatRGB32F ||
-         format == WebGLImageConversion::DataFormatBGR8 ||
-         format == WebGLImageConversion::DataFormatBGRA8 ||
-         format == WebGLImageConversion::DataFormatARGB8 ||
-         format == WebGLImageConversion::DataFormatABGR8 ||
-         format == WebGLImageConversion::DataFormatRGBA5551 ||
-         format == WebGLImageConversion::DataFormatRGBA4444 ||
-         format == WebGLImageConversion::DataFormatRGB565 ||
-         format == WebGLImageConversion::DataFormatR8 ||
-         format == WebGLImageConversion::DataFormatR16F ||
-         format == WebGLImageConversion::DataFormatR32F ||
-         format == WebGLImageConversion::DataFormatRA8 ||
-         format == WebGLImageConversion::DataFormatRA16F ||
-         format == WebGLImageConversion::DataFormatRA32F ||
-         format == WebGLImageConversion::DataFormatAR8 ||
-         format == WebGLImageConversion::DataFormatRGBA8_S ||
-         format == WebGLImageConversion::DataFormatRGBA16 ||
-         format == WebGLImageConversion::DataFormatRGBA16_S ||
-         format == WebGLImageConversion::DataFormatRGBA32 ||
-         format == WebGLImageConversion::DataFormatRGBA32_S ||
-         format == WebGLImageConversion::DataFormatRGBA2_10_10_10 ||
-         format == WebGLImageConversion::DataFormatRGB8_S ||
-         format == WebGLImageConversion::DataFormatRGB16 ||
-         format == WebGLImageConversion::DataFormatRGB16_S ||
-         format == WebGLImageConversion::DataFormatRGB32 ||
-         format == WebGLImageConversion::DataFormatRGB32_S ||
-         format == WebGLImageConversion::DataFormatRGB10F11F11F ||
-         format == WebGLImageConversion::DataFormatRGB5999 ||
-         format == WebGLImageConversion::DataFormatRG8 ||
-         format == WebGLImageConversion::DataFormatRG8_S ||
-         format == WebGLImageConversion::DataFormatRG16 ||
-         format == WebGLImageConversion::DataFormatRG16_S ||
-         format == WebGLImageConversion::DataFormatRG32 ||
-         format == WebGLImageConversion::DataFormatRG32_S ||
-         format == WebGLImageConversion::DataFormatRG16F ||
-         format == WebGLImageConversion::DataFormatRG32F ||
-         format == WebGLImageConversion::DataFormatR8_S ||
-         format == WebGLImageConversion::DataFormatR16 ||
-         format == WebGLImageConversion::DataFormatR16_S ||
-         format == WebGLImageConversion::DataFormatR32 ||
-         format == WebGLImageConversion::DataFormatR32_S;
+  return format == WebGLImageConversion::kDataFormatRGBA8 ||
+         format == WebGLImageConversion::kDataFormatRGBA16F ||
+         format == WebGLImageConversion::kDataFormatRGBA32F ||
+         format == WebGLImageConversion::kDataFormatRGB8 ||
+         format == WebGLImageConversion::kDataFormatRGB16F ||
+         format == WebGLImageConversion::kDataFormatRGB32F ||
+         format == WebGLImageConversion::kDataFormatBGR8 ||
+         format == WebGLImageConversion::kDataFormatBGRA8 ||
+         format == WebGLImageConversion::kDataFormatARGB8 ||
+         format == WebGLImageConversion::kDataFormatABGR8 ||
+         format == WebGLImageConversion::kDataFormatRGBA5551 ||
+         format == WebGLImageConversion::kDataFormatRGBA4444 ||
+         format == WebGLImageConversion::kDataFormatRGB565 ||
+         format == WebGLImageConversion::kDataFormatR8 ||
+         format == WebGLImageConversion::kDataFormatR16F ||
+         format == WebGLImageConversion::kDataFormatR32F ||
+         format == WebGLImageConversion::kDataFormatRA8 ||
+         format == WebGLImageConversion::kDataFormatRA16F ||
+         format == WebGLImageConversion::kDataFormatRA32F ||
+         format == WebGLImageConversion::kDataFormatAR8 ||
+         format == WebGLImageConversion::kDataFormatRGBA8_S ||
+         format == WebGLImageConversion::kDataFormatRGBA16 ||
+         format == WebGLImageConversion::kDataFormatRGBA16_S ||
+         format == WebGLImageConversion::kDataFormatRGBA32 ||
+         format == WebGLImageConversion::kDataFormatRGBA32_S ||
+         format == WebGLImageConversion::kDataFormatRGBA2_10_10_10 ||
+         format == WebGLImageConversion::kDataFormatRGB8_S ||
+         format == WebGLImageConversion::kDataFormatRGB16 ||
+         format == WebGLImageConversion::kDataFormatRGB16_S ||
+         format == WebGLImageConversion::kDataFormatRGB32 ||
+         format == WebGLImageConversion::kDataFormatRGB32_S ||
+         format == WebGLImageConversion::kDataFormatRGB10F11F11F ||
+         format == WebGLImageConversion::kDataFormatRGB5999 ||
+         format == WebGLImageConversion::kDataFormatRG8 ||
+         format == WebGLImageConversion::kDataFormatRG8_S ||
+         format == WebGLImageConversion::kDataFormatRG16 ||
+         format == WebGLImageConversion::kDataFormatRG16_S ||
+         format == WebGLImageConversion::kDataFormatRG32 ||
+         format == WebGLImageConversion::kDataFormatRG32_S ||
+         format == WebGLImageConversion::kDataFormatRG16F ||
+         format == WebGLImageConversion::kDataFormatRG32F ||
+         format == WebGLImageConversion::kDataFormatR8_S ||
+         format == WebGLImageConversion::kDataFormatR16 ||
+         format == WebGLImageConversion::kDataFormatR16_S ||
+         format == WebGLImageConversion::kDataFormatR32 ||
+         format == WebGLImageConversion::kDataFormatR32_S;
 }
 
 template <int Format>
 struct IsInt8Format {
   STATIC_ONLY(IsInt8Format);
-  static const bool value = Format == WebGLImageConversion::DataFormatRGBA8_S ||
-                            Format == WebGLImageConversion::DataFormatRGB8_S ||
-                            Format == WebGLImageConversion::DataFormatRG8_S ||
-                            Format == WebGLImageConversion::DataFormatR8_S;
+  static const bool value =
+      Format == WebGLImageConversion::kDataFormatRGBA8_S ||
+      Format == WebGLImageConversion::kDataFormatRGB8_S ||
+      Format == WebGLImageConversion::kDataFormatRG8_S ||
+      Format == WebGLImageConversion::kDataFormatR8_S;
 };
 
 template <int Format>
 struct IsInt16Format {
   STATIC_ONLY(IsInt16Format);
   static const bool value =
-      Format == WebGLImageConversion::DataFormatRGBA16_S ||
-      Format == WebGLImageConversion::DataFormatRGB16_S ||
-      Format == WebGLImageConversion::DataFormatRG16_S ||
-      Format == WebGLImageConversion::DataFormatR16_S;
+      Format == WebGLImageConversion::kDataFormatRGBA16_S ||
+      Format == WebGLImageConversion::kDataFormatRGB16_S ||
+      Format == WebGLImageConversion::kDataFormatRG16_S ||
+      Format == WebGLImageConversion::kDataFormatR16_S;
 };
 
 template <int Format>
 struct IsInt32Format {
   STATIC_ONLY(IsInt32Format);
   static const bool value =
-      Format == WebGLImageConversion::DataFormatRGBA32_S ||
-      Format == WebGLImageConversion::DataFormatRGB32_S ||
-      Format == WebGLImageConversion::DataFormatRG32_S ||
-      Format == WebGLImageConversion::DataFormatR32_S;
+      Format == WebGLImageConversion::kDataFormatRGBA32_S ||
+      Format == WebGLImageConversion::kDataFormatRGB32_S ||
+      Format == WebGLImageConversion::kDataFormatRG32_S ||
+      Format == WebGLImageConversion::kDataFormatR32_S;
 };
 
 template <int Format>
 struct IsUInt8Format {
   STATIC_ONLY(IsUInt8Format);
-  static const bool value = Format == WebGLImageConversion::DataFormatRGBA8 ||
-                            Format == WebGLImageConversion::DataFormatRGB8 ||
-                            Format == WebGLImageConversion::DataFormatRG8 ||
-                            Format == WebGLImageConversion::DataFormatR8 ||
-                            Format == WebGLImageConversion::DataFormatBGRA8 ||
-                            Format == WebGLImageConversion::DataFormatBGR8 ||
-                            Format == WebGLImageConversion::DataFormatARGB8 ||
-                            Format == WebGLImageConversion::DataFormatABGR8 ||
-                            Format == WebGLImageConversion::DataFormatRA8 ||
-                            Format == WebGLImageConversion::DataFormatAR8 ||
-                            Format == WebGLImageConversion::DataFormatA8;
+  static const bool value = Format == WebGLImageConversion::kDataFormatRGBA8 ||
+                            Format == WebGLImageConversion::kDataFormatRGB8 ||
+                            Format == WebGLImageConversion::kDataFormatRG8 ||
+                            Format == WebGLImageConversion::kDataFormatR8 ||
+                            Format == WebGLImageConversion::kDataFormatBGRA8 ||
+                            Format == WebGLImageConversion::kDataFormatBGR8 ||
+                            Format == WebGLImageConversion::kDataFormatARGB8 ||
+                            Format == WebGLImageConversion::kDataFormatABGR8 ||
+                            Format == WebGLImageConversion::kDataFormatRA8 ||
+                            Format == WebGLImageConversion::kDataFormatAR8 ||
+                            Format == WebGLImageConversion::kDataFormatA8;
 };
 
 template <int Format>
 struct IsUInt16Format {
   STATIC_ONLY(IsUInt16Format);
-  static const bool value = Format == WebGLImageConversion::DataFormatRGBA16 ||
-                            Format == WebGLImageConversion::DataFormatRGB16 ||
-                            Format == WebGLImageConversion::DataFormatRG16 ||
-                            Format == WebGLImageConversion::DataFormatR16;
+  static const bool value = Format == WebGLImageConversion::kDataFormatRGBA16 ||
+                            Format == WebGLImageConversion::kDataFormatRGB16 ||
+                            Format == WebGLImageConversion::kDataFormatRG16 ||
+                            Format == WebGLImageConversion::kDataFormatR16;
 };
 
 template <int Format>
 struct IsUInt32Format {
   STATIC_ONLY(IsUInt32Format);
-  static const bool value = Format == WebGLImageConversion::DataFormatRGBA32 ||
-                            Format == WebGLImageConversion::DataFormatRGB32 ||
-                            Format == WebGLImageConversion::DataFormatRG32 ||
-                            Format == WebGLImageConversion::DataFormatR32;
+  static const bool value = Format == WebGLImageConversion::kDataFormatRGBA32 ||
+                            Format == WebGLImageConversion::kDataFormatRGB32 ||
+                            Format == WebGLImageConversion::kDataFormatRG32 ||
+                            Format == WebGLImageConversion::kDataFormatR32;
 };
 
 template <int Format>
 struct IsFloatFormat {
   STATIC_ONLY(IsFloatFormat);
-  static const bool value = Format == WebGLImageConversion::DataFormatRGBA32F ||
-                            Format == WebGLImageConversion::DataFormatRGB32F ||
-                            Format == WebGLImageConversion::DataFormatRA32F ||
-                            Format == WebGLImageConversion::DataFormatR32F ||
-                            Format == WebGLImageConversion::DataFormatA32F ||
-                            Format == WebGLImageConversion::DataFormatRG32F;
+  static const bool value =
+      Format == WebGLImageConversion::kDataFormatRGBA32F ||
+      Format == WebGLImageConversion::kDataFormatRGB32F ||
+      Format == WebGLImageConversion::kDataFormatRA32F ||
+      Format == WebGLImageConversion::kDataFormatR32F ||
+      Format == WebGLImageConversion::kDataFormatA32F ||
+      Format == WebGLImageConversion::kDataFormatRG32F;
 };
 
 template <int Format>
 struct IsHalfFloatFormat {
   STATIC_ONLY(IsHalfFloatFormat);
-  static const bool value = Format == WebGLImageConversion::DataFormatRGBA16F ||
-                            Format == WebGLImageConversion::DataFormatRGB16F ||
-                            Format == WebGLImageConversion::DataFormatRA16F ||
-                            Format == WebGLImageConversion::DataFormatR16F ||
-                            Format == WebGLImageConversion::DataFormatA16F ||
-                            Format == WebGLImageConversion::DataFormatRG16F;
+  static const bool value =
+      Format == WebGLImageConversion::kDataFormatRGBA16F ||
+      Format == WebGLImageConversion::kDataFormatRGB16F ||
+      Format == WebGLImageConversion::kDataFormatRA16F ||
+      Format == WebGLImageConversion::kDataFormatR16F ||
+      Format == WebGLImageConversion::kDataFormatA16F ||
+      Format == WebGLImageConversion::kDataFormatRG16F;
 };
 
 template <int Format>
 struct Is32bppFormat {
   STATIC_ONLY(Is32bppFormat);
   static const bool value =
-      Format == WebGLImageConversion::DataFormatRGBA2_10_10_10 ||
-      Format == WebGLImageConversion::DataFormatRGB5999 ||
-      Format == WebGLImageConversion::DataFormatRGB10F11F11F;
+      Format == WebGLImageConversion::kDataFormatRGBA2_10_10_10 ||
+      Format == WebGLImageConversion::kDataFormatRGB5999 ||
+      Format == WebGLImageConversion::kDataFormatRGB10F11F11F;
 };
 
 template <int Format>
 struct Is16bppFormat {
   STATIC_ONLY(Is16bppFormat);
   static const bool value =
-      Format == WebGLImageConversion::DataFormatRGBA5551 ||
-      Format == WebGLImageConversion::DataFormatRGBA4444 ||
-      Format == WebGLImageConversion::DataFormatRGB565;
+      Format == WebGLImageConversion::kDataFormatRGBA5551 ||
+      Format == WebGLImageConversion::kDataFormatRGBA4444 ||
+      Format == WebGLImageConversion::kDataFormatRGB565;
 };
 
 template <int Format,
@@ -2132,9 +2143,9 @@ struct UsesFloatIntermediateFormat {
   STATIC_ONLY(UsesFloatIntermediateFormat);
   static const bool value =
       IsFloatFormat<Format>::value || IsHalfFloatFormat<Format>::value ||
-      Format == WebGLImageConversion::DataFormatRGBA2_10_10_10 ||
-      Format == WebGLImageConversion::DataFormatRGB10F11F11F ||
-      Format == WebGLImageConversion::DataFormatRGB5999;
+      Format == WebGLImageConversion::kDataFormatRGBA2_10_10_10 ||
+      Format == WebGLImageConversion::kDataFormatRGB10F11F11F ||
+      Format == WebGLImageConversion::kDataFormatRGB5999;
 };
 
 template <int Format>
@@ -2142,84 +2153,85 @@ struct IntermediateFormat {
   STATIC_ONLY(IntermediateFormat);
   static const int value =
       UsesFloatIntermediateFormat<Format>::value
-          ? WebGLImageConversion::DataFormatRGBA32F
+          ? WebGLImageConversion::kDataFormatRGBA32F
           : IsInt32Format<Format>::value
-                ? WebGLImageConversion::DataFormatRGBA32_S
+                ? WebGLImageConversion::kDataFormatRGBA32_S
                 : IsUInt32Format<Format>::value
-                      ? WebGLImageConversion::DataFormatRGBA32
+                      ? WebGLImageConversion::kDataFormatRGBA32
                       : IsInt16Format<Format>::value
-                            ? WebGLImageConversion::DataFormatRGBA16_S
+                            ? WebGLImageConversion::kDataFormatRGBA16_S
                             : (IsUInt16Format<Format>::value ||
                                Is32bppFormat<Format>::value)
-                                  ? WebGLImageConversion::DataFormatRGBA16
+                                  ? WebGLImageConversion::kDataFormatRGBA16
                                   : IsInt8Format<Format>::value
                                         ? WebGLImageConversion::
-                                              DataFormatRGBA8_S
-                                        : WebGLImageConversion::DataFormatRGBA8;
+                                              kDataFormatRGBA8_S
+                                        : WebGLImageConversion::
+                                              kDataFormatRGBA8;
 };
 
 unsigned TexelBytesForFormat(WebGLImageConversion::DataFormat format) {
   switch (format) {
-    case WebGLImageConversion::DataFormatR8:
-    case WebGLImageConversion::DataFormatR8_S:
-    case WebGLImageConversion::DataFormatA8:
+    case WebGLImageConversion::kDataFormatR8:
+    case WebGLImageConversion::kDataFormatR8_S:
+    case WebGLImageConversion::kDataFormatA8:
       return 1;
-    case WebGLImageConversion::DataFormatRG8:
-    case WebGLImageConversion::DataFormatRG8_S:
-    case WebGLImageConversion::DataFormatRA8:
-    case WebGLImageConversion::DataFormatAR8:
-    case WebGLImageConversion::DataFormatRGBA5551:
-    case WebGLImageConversion::DataFormatRGBA4444:
-    case WebGLImageConversion::DataFormatRGB565:
-    case WebGLImageConversion::DataFormatA16F:
-    case WebGLImageConversion::DataFormatR16:
-    case WebGLImageConversion::DataFormatR16_S:
-    case WebGLImageConversion::DataFormatR16F:
-    case WebGLImageConversion::DataFormatD16:
+    case WebGLImageConversion::kDataFormatRG8:
+    case WebGLImageConversion::kDataFormatRG8_S:
+    case WebGLImageConversion::kDataFormatRA8:
+    case WebGLImageConversion::kDataFormatAR8:
+    case WebGLImageConversion::kDataFormatRGBA5551:
+    case WebGLImageConversion::kDataFormatRGBA4444:
+    case WebGLImageConversion::kDataFormatRGB565:
+    case WebGLImageConversion::kDataFormatA16F:
+    case WebGLImageConversion::kDataFormatR16:
+    case WebGLImageConversion::kDataFormatR16_S:
+    case WebGLImageConversion::kDataFormatR16F:
+    case WebGLImageConversion::kDataFormatD16:
       return 2;
-    case WebGLImageConversion::DataFormatRGB8:
-    case WebGLImageConversion::DataFormatRGB8_S:
-    case WebGLImageConversion::DataFormatBGR8:
+    case WebGLImageConversion::kDataFormatRGB8:
+    case WebGLImageConversion::kDataFormatRGB8_S:
+    case WebGLImageConversion::kDataFormatBGR8:
       return 3;
-    case WebGLImageConversion::DataFormatRGBA8:
-    case WebGLImageConversion::DataFormatRGBA8_S:
-    case WebGLImageConversion::DataFormatARGB8:
-    case WebGLImageConversion::DataFormatABGR8:
-    case WebGLImageConversion::DataFormatBGRA8:
-    case WebGLImageConversion::DataFormatR32:
-    case WebGLImageConversion::DataFormatR32_S:
-    case WebGLImageConversion::DataFormatR32F:
-    case WebGLImageConversion::DataFormatA32F:
-    case WebGLImageConversion::DataFormatRA16F:
-    case WebGLImageConversion::DataFormatRGBA2_10_10_10:
-    case WebGLImageConversion::DataFormatRGB10F11F11F:
-    case WebGLImageConversion::DataFormatRGB5999:
-    case WebGLImageConversion::DataFormatRG16:
-    case WebGLImageConversion::DataFormatRG16_S:
-    case WebGLImageConversion::DataFormatRG16F:
-    case WebGLImageConversion::DataFormatD32:
-    case WebGLImageConversion::DataFormatD32F:
-    case WebGLImageConversion::DataFormatDS24_8:
+    case WebGLImageConversion::kDataFormatRGBA8:
+    case WebGLImageConversion::kDataFormatRGBA8_S:
+    case WebGLImageConversion::kDataFormatARGB8:
+    case WebGLImageConversion::kDataFormatABGR8:
+    case WebGLImageConversion::kDataFormatBGRA8:
+    case WebGLImageConversion::kDataFormatR32:
+    case WebGLImageConversion::kDataFormatR32_S:
+    case WebGLImageConversion::kDataFormatR32F:
+    case WebGLImageConversion::kDataFormatA32F:
+    case WebGLImageConversion::kDataFormatRA16F:
+    case WebGLImageConversion::kDataFormatRGBA2_10_10_10:
+    case WebGLImageConversion::kDataFormatRGB10F11F11F:
+    case WebGLImageConversion::kDataFormatRGB5999:
+    case WebGLImageConversion::kDataFormatRG16:
+    case WebGLImageConversion::kDataFormatRG16_S:
+    case WebGLImageConversion::kDataFormatRG16F:
+    case WebGLImageConversion::kDataFormatD32:
+    case WebGLImageConversion::kDataFormatD32F:
+    case WebGLImageConversion::kDataFormatDS24_8:
       return 4;
-    case WebGLImageConversion::DataFormatRGB16:
-    case WebGLImageConversion::DataFormatRGB16_S:
-    case WebGLImageConversion::DataFormatRGB16F:
+    case WebGLImageConversion::kDataFormatRGB16:
+    case WebGLImageConversion::kDataFormatRGB16_S:
+    case WebGLImageConversion::kDataFormatRGB16F:
       return 6;
-    case WebGLImageConversion::DataFormatRGBA16:
-    case WebGLImageConversion::DataFormatRGBA16_S:
-    case WebGLImageConversion::DataFormatRA32F:
-    case WebGLImageConversion::DataFormatRGBA16F:
-    case WebGLImageConversion::DataFormatRG32:
-    case WebGLImageConversion::DataFormatRG32_S:
-    case WebGLImageConversion::DataFormatRG32F:
+    case WebGLImageConversion::kDataFormatRGBA16:
+    case WebGLImageConversion::kDataFormatRGBA16_S:
+    case WebGLImageConversion::kDataFormatRA32F:
+    case WebGLImageConversion::kDataFormatRGBA16F:
+    case WebGLImageConversion::kDataFormatRG32:
+    case WebGLImageConversion::kDataFormatRG32_S:
+    case WebGLImageConversion::kDataFormatRG32F:
       return 8;
-    case WebGLImageConversion::DataFormatRGB32:
-    case WebGLImageConversion::DataFormatRGB32_S:
-    case WebGLImageConversion::DataFormatRGB32F:
+    case WebGLImageConversion::kDataFormatRGB32:
+    case WebGLImageConversion::kDataFormatRGB32_S:
+    case WebGLImageConversion::kDataFormatRGB32F:
       return 12;
-    case WebGLImageConversion::DataFormatRGBA32:
-    case WebGLImageConversion::DataFormatRGBA32_S:
-    case WebGLImageConversion::DataFormatRGBA32F:
+    case WebGLImageConversion::kDataFormatRGBA32:
+    case WebGLImageConversion::kDataFormatRGBA32_S:
+    case WebGLImageConversion::kDataFormatRGBA32F:
       return 16;
     default:
       return 0;
@@ -2232,80 +2244,80 @@ class FormatConverter {
   STACK_ALLOCATED();
 
  public:
-  FormatConverter(const IntRect& sourceDataSubRectangle,
+  FormatConverter(const IntRect& source_data_sub_rectangle,
                   int depth,
-                  int unpackImageHeight,
-                  const void* srcStart,
-                  void* dstStart,
-                  int srcStride,
-                  int srcRowOffset,
-                  int dstStride)
-      : m_srcSubRectangle(sourceDataSubRectangle),
-        m_depth(depth),
-        m_unpackImageHeight(unpackImageHeight),
-        m_srcStart(srcStart),
-        m_dstStart(dstStart),
-        m_srcStride(srcStride),
-        m_srcRowOffset(srcRowOffset),
-        m_dstStride(dstStride),
-        m_success(false) {
-    const unsigned MaxNumberOfComponents = 4;
-    const unsigned MaxBytesPerComponent = 4;
-    m_unpackedIntermediateSrcData = wrapArrayUnique(
-        new uint8_t[m_srcSubRectangle.width() * MaxNumberOfComponents *
-                    MaxBytesPerComponent]);
-    ASSERT(m_unpackedIntermediateSrcData.get());
+                  int unpack_image_height,
+                  const void* src_start,
+                  void* dst_start,
+                  int src_stride,
+                  int src_row_offset,
+                  int dst_stride)
+      : src_sub_rectangle_(source_data_sub_rectangle),
+        depth_(depth),
+        unpack_image_height_(unpack_image_height),
+        src_start_(src_start),
+        dst_start_(dst_start),
+        src_stride_(src_stride),
+        src_row_offset_(src_row_offset),
+        dst_stride_(dst_stride),
+        success_(false) {
+    const unsigned kMaxNumberOfComponents = 4;
+    const unsigned kMaxBytesPerComponent = 4;
+    unpacked_intermediate_src_data_ = WrapArrayUnique(
+        new uint8_t[src_sub_rectangle_.Width() * kMaxNumberOfComponents *
+                    kMaxBytesPerComponent]);
+    ASSERT(unpacked_intermediate_src_data_.get());
   }
 
-  void convert(WebGLImageConversion::DataFormat srcFormat,
-               WebGLImageConversion::DataFormat dstFormat,
+  void Convert(WebGLImageConversion::DataFormat src_format,
+               WebGLImageConversion::DataFormat dst_format,
                WebGLImageConversion::AlphaOp);
-  bool Success() const { return m_success; }
+  bool Success() const { return success_; }
 
  private:
   template <WebGLImageConversion::DataFormat SrcFormat>
-  void convert(WebGLImageConversion::DataFormat dstFormat,
+  void Convert(WebGLImageConversion::DataFormat dst_format,
                WebGLImageConversion::AlphaOp);
 
   template <WebGLImageConversion::DataFormat SrcFormat,
             WebGLImageConversion::DataFormat DstFormat>
-  void convert(WebGLImageConversion::AlphaOp);
+  void Convert(WebGLImageConversion::AlphaOp);
 
   template <WebGLImageConversion::DataFormat SrcFormat,
             WebGLImageConversion::DataFormat DstFormat,
             WebGLImageConversion::AlphaOp alphaOp>
-  void convert();
+  void Convert();
 
-  const IntRect& m_srcSubRectangle;
-  const int m_depth;
-  const int m_unpackImageHeight;
-  const void* const m_srcStart;
-  void* const m_dstStart;
-  const int m_srcStride, m_srcRowOffset, m_dstStride;
-  bool m_success;
-  std::unique_ptr<uint8_t[]> m_unpackedIntermediateSrcData;
+  const IntRect& src_sub_rectangle_;
+  const int depth_;
+  const int unpack_image_height_;
+  const void* const src_start_;
+  void* const dst_start_;
+  const int src_stride_, src_row_offset_, dst_stride_;
+  bool success_;
+  std::unique_ptr<uint8_t[]> unpacked_intermediate_src_data_;
 };
 
-void FormatConverter::convert(WebGLImageConversion::DataFormat srcFormat,
-                              WebGLImageConversion::DataFormat dstFormat,
-                              WebGLImageConversion::AlphaOp alphaOp) {
+void FormatConverter::Convert(WebGLImageConversion::DataFormat src_format,
+                              WebGLImageConversion::DataFormat dst_format,
+                              WebGLImageConversion::AlphaOp alpha_op) {
 #define FORMATCONVERTER_CASE_SRCFORMAT(SrcFormat) \
   case SrcFormat:                                 \
-    return convert<SrcFormat>(dstFormat, alphaOp);
+    return Convert<SrcFormat>(dst_format, alpha_op);
 
-  switch (srcFormat) {
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRA8)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRA32F)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA8)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatARGB8)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatABGR8)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatAR8)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatBGRA8)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA5551)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA4444)
-    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::DataFormatRGBA32F)
+  switch (src_format) {
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatRA8)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatRA32F)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatRGBA8)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatARGB8)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatABGR8)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatAR8)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatBGRA8)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatRGBA5551)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatRGBA4444)
+    FORMATCONVERTER_CASE_SRCFORMAT(WebGLImageConversion::kDataFormatRGBA32F)
     FORMATCONVERTER_CASE_SRCFORMAT(
-        WebGLImageConversion::DataFormatRGBA2_10_10_10)
+        WebGLImageConversion::kDataFormatRGBA2_10_10_10)
     default:
       ASSERT_NOT_REACHED();
   }
@@ -2313,41 +2325,41 @@ void FormatConverter::convert(WebGLImageConversion::DataFormat srcFormat,
 }
 
 template <WebGLImageConversion::DataFormat SrcFormat>
-void FormatConverter::convert(WebGLImageConversion::DataFormat dstFormat,
-                              WebGLImageConversion::AlphaOp alphaOp) {
+void FormatConverter::Convert(WebGLImageConversion::DataFormat dst_format,
+                              WebGLImageConversion::AlphaOp alpha_op) {
 #define FORMATCONVERTER_CASE_DSTFORMAT(DstFormat) \
   case DstFormat:                                 \
-    return convert<SrcFormat, DstFormat>(alphaOp);
+    return Convert<SrcFormat, DstFormat>(alpha_op);
 
-  switch (dstFormat) {
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatR8)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatR16F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatR32F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatA8)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatA16F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatA32F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRA8)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRA16F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRA32F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGB8)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGB565)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGB16F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGB32F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA8)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA5551)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA4444)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA16F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA8_S)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA16)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA16_S)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRGBA32_S)
+  switch (dst_format) {
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatR8)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatR16F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatR32F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatA8)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatA16F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatA32F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRA8)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRA16F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRA32F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGB8)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGB565)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGB16F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGB32F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA8)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA5551)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA4444)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA16F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA32F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA8_S)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA16)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA16_S)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA32)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRGBA32_S)
     FORMATCONVERTER_CASE_DSTFORMAT(
-        WebGLImageConversion::DataFormatRGBA2_10_10_10)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG8)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG16F)
-    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::DataFormatRG32F)
+        WebGLImageConversion::kDataFormatRGBA2_10_10_10)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRG8)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRG16F)
+    FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRG32F)
     default:
       ASSERT_NOT_REACHED();
   }
@@ -2357,15 +2369,15 @@ void FormatConverter::convert(WebGLImageConversion::DataFormat dstFormat,
 
 template <WebGLImageConversion::DataFormat SrcFormat,
           WebGLImageConversion::DataFormat DstFormat>
-void FormatConverter::convert(WebGLImageConversion::AlphaOp alphaOp) {
+void FormatConverter::Convert(WebGLImageConversion::AlphaOp alpha_op) {
 #define FORMATCONVERTER_CASE_ALPHAOP(alphaOp) \
   case alphaOp:                               \
-    return convert<SrcFormat, DstFormat, alphaOp>();
+    return Convert<SrcFormat, DstFormat, alphaOp>();
 
-  switch (alphaOp) {
-    FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::AlphaDoNothing)
-    FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::AlphaDoPremultiply)
-    FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::AlphaDoUnmultiply)
+  switch (alpha_op) {
+    FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::kAlphaDoNothing)
+    FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::kAlphaDoPremultiply)
+    FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::kAlphaDoUnmultiply)
     default:
       ASSERT_NOT_REACHED();
   }
@@ -2376,34 +2388,34 @@ template <int Format>
 struct SupportsConversionFromDomElements {
   STATIC_ONLY(SupportsConversionFromDomElements);
   static const bool value =
-      Format == WebGLImageConversion::DataFormatRGBA8 ||
-      Format == WebGLImageConversion::DataFormatRGB8 ||
-      Format == WebGLImageConversion::DataFormatRG8 ||
-      Format == WebGLImageConversion::DataFormatRA8 ||
-      Format == WebGLImageConversion::DataFormatR8 ||
-      Format == WebGLImageConversion::DataFormatRGBA32F ||
-      Format == WebGLImageConversion::DataFormatRGB32F ||
-      Format == WebGLImageConversion::DataFormatRG32F ||
-      Format == WebGLImageConversion::DataFormatRA32F ||
-      Format == WebGLImageConversion::DataFormatR32F ||
-      Format == WebGLImageConversion::DataFormatRGBA16F ||
-      Format == WebGLImageConversion::DataFormatRGB16F ||
-      Format == WebGLImageConversion::DataFormatRG16F ||
-      Format == WebGLImageConversion::DataFormatRA16F ||
-      Format == WebGLImageConversion::DataFormatR16F ||
-      Format == WebGLImageConversion::DataFormatRGBA5551 ||
-      Format == WebGLImageConversion::DataFormatRGBA4444 ||
-      Format == WebGLImageConversion::DataFormatRGB565;
+      Format == WebGLImageConversion::kDataFormatRGBA8 ||
+      Format == WebGLImageConversion::kDataFormatRGB8 ||
+      Format == WebGLImageConversion::kDataFormatRG8 ||
+      Format == WebGLImageConversion::kDataFormatRA8 ||
+      Format == WebGLImageConversion::kDataFormatR8 ||
+      Format == WebGLImageConversion::kDataFormatRGBA32F ||
+      Format == WebGLImageConversion::kDataFormatRGB32F ||
+      Format == WebGLImageConversion::kDataFormatRG32F ||
+      Format == WebGLImageConversion::kDataFormatRA32F ||
+      Format == WebGLImageConversion::kDataFormatR32F ||
+      Format == WebGLImageConversion::kDataFormatRGBA16F ||
+      Format == WebGLImageConversion::kDataFormatRGB16F ||
+      Format == WebGLImageConversion::kDataFormatRG16F ||
+      Format == WebGLImageConversion::kDataFormatRA16F ||
+      Format == WebGLImageConversion::kDataFormatR16F ||
+      Format == WebGLImageConversion::kDataFormatRGBA5551 ||
+      Format == WebGLImageConversion::kDataFormatRGBA4444 ||
+      Format == WebGLImageConversion::kDataFormatRGB565;
 };
 
 template <WebGLImageConversion::DataFormat SrcFormat,
           WebGLImageConversion::DataFormat DstFormat,
           WebGLImageConversion::AlphaOp alphaOp>
-void FormatConverter::convert() {
+void FormatConverter::Convert() {
   // Many instantiations of this template function will never be entered, so we
   // try to return immediately in these cases to avoid generating useless code.
   if (SrcFormat == DstFormat &&
-      alphaOp == WebGLImageConversion::AlphaDoNothing) {
+      alphaOp == WebGLImageConversion::kAlphaDoNothing) {
     ASSERT_NOT_REACHED();
     return;
   }
@@ -2414,127 +2426,132 @@ void FormatConverter::convert() {
 
   // Only textures uploaded from DOM elements or ImageData can allow DstFormat
   // != SrcFormat.
-  const bool srcFormatComesFromDOMElementOrImageData =
-      WebGLImageConversion::srcFormatComeFromDOMElementOrImageData(SrcFormat);
-  if (!srcFormatComesFromDOMElementOrImageData && SrcFormat != DstFormat) {
+  const bool src_format_comes_from_dom_element_or_image_data =
+      WebGLImageConversion::SrcFormatComeFromDOMElementOrImageData(SrcFormat);
+  if (!src_format_comes_from_dom_element_or_image_data &&
+      SrcFormat != DstFormat) {
     ASSERT_NOT_REACHED();
     return;
   }
   // Likewise, only textures uploaded from DOM elements or ImageData can
   // possibly need to be unpremultiplied.
-  if (!srcFormatComesFromDOMElementOrImageData &&
-      alphaOp == WebGLImageConversion::AlphaDoUnmultiply) {
+  if (!src_format_comes_from_dom_element_or_image_data &&
+      alphaOp == WebGLImageConversion::kAlphaDoUnmultiply) {
     ASSERT_NOT_REACHED();
     return;
   }
-  if (srcFormatComesFromDOMElementOrImageData &&
-      alphaOp == WebGLImageConversion::AlphaDoUnmultiply &&
+  if (src_format_comes_from_dom_element_or_image_data &&
+      alphaOp == WebGLImageConversion::kAlphaDoUnmultiply &&
       !SupportsConversionFromDomElements<DstFormat>::value) {
     ASSERT_NOT_REACHED();
     return;
   }
   if ((!HasAlpha(SrcFormat) || !HasColor(SrcFormat) || !HasColor(DstFormat)) &&
-      alphaOp != WebGLImageConversion::AlphaDoNothing) {
+      alphaOp != WebGLImageConversion::kAlphaDoNothing) {
     ASSERT_NOT_REACHED();
     return;
   }
   // If converting DOM element data to UNSIGNED_INT_5_9_9_9_REV or
   // UNSIGNED_INT_10F_11F_11F_REV, we should always switch to FLOAT instead to
   // avoid unpacking/packing these two types.
-  if (srcFormatComesFromDOMElementOrImageData && SrcFormat != DstFormat &&
-      (DstFormat == WebGLImageConversion::DataFormatRGB5999 ||
-       DstFormat == WebGLImageConversion::DataFormatRGB10F11F11F)) {
+  if (src_format_comes_from_dom_element_or_image_data &&
+      SrcFormat != DstFormat &&
+      (DstFormat == WebGLImageConversion::kDataFormatRGB5999 ||
+       DstFormat == WebGLImageConversion::kDataFormatRGB10F11F11F)) {
     ASSERT_NOT_REACHED();
     return;
   }
 
   typedef typename DataTypeForFormat<SrcFormat>::Type SrcType;
   typedef typename DataTypeForFormat<DstFormat>::Type DstType;
-  const int IntermFormat = IntermediateFormat<DstFormat>::value;
-  typedef typename DataTypeForFormat<IntermFormat>::Type IntermType;
-  const ptrdiff_t srcStrideInElements = m_srcStride / sizeof(SrcType);
-  const ptrdiff_t dstStrideInElements = m_dstStride / sizeof(DstType);
-  const bool trivialUnpack = SrcFormat == IntermFormat;
-  const bool trivialPack = DstFormat == IntermFormat &&
-                           alphaOp == WebGLImageConversion::AlphaDoNothing;
-  ASSERT(!trivialUnpack || !trivialPack);
+  const int kIntermFormat = IntermediateFormat<DstFormat>::value;
+  typedef typename DataTypeForFormat<kIntermFormat>::Type IntermType;
+  const ptrdiff_t src_stride_in_elements = src_stride_ / sizeof(SrcType);
+  const ptrdiff_t dst_stride_in_elements = dst_stride_ / sizeof(DstType);
+  const bool kTrivialUnpack = SrcFormat == kIntermFormat;
+  const bool kTrivialPack = DstFormat == kIntermFormat &&
+                            alphaOp == WebGLImageConversion::kAlphaDoNothing;
+  ASSERT(!kTrivialUnpack || !kTrivialPack);
 
-  const SrcType* srcRowStart =
+  const SrcType* src_row_start =
       static_cast<const SrcType*>(static_cast<const void*>(
-          static_cast<const uint8_t*>(m_srcStart) +
-          ((m_srcStride * m_srcSubRectangle.y()) + m_srcRowOffset)));
+          static_cast<const uint8_t*>(src_start_) +
+          ((src_stride_ * src_sub_rectangle_.Y()) + src_row_offset_)));
 
   // If packing multiple images into a 3D texture, and flipY is true,
   // then the sub-rectangle is pointing at the start of the
   // "bottommost" of those images. Since the source pointer strides in
   // the positive direction, we need to back it up to point at the
   // last, or "topmost", of these images.
-  if (m_dstStride < 0 && m_depth > 1) {
-    srcRowStart -= (m_depth - 1) * srcStrideInElements * m_unpackImageHeight;
+  if (dst_stride_ < 0 && depth_ > 1) {
+    src_row_start -=
+        (depth_ - 1) * src_stride_in_elements * unpack_image_height_;
   }
 
-  DstType* dstRowStart = static_cast<DstType*>(m_dstStart);
-  if (trivialUnpack) {
-    for (int d = 0; d < m_depth; ++d) {
-      for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
-        pack<DstFormat, alphaOp>(srcRowStart, dstRowStart,
-                                 m_srcSubRectangle.width());
-        srcRowStart += srcStrideInElements;
-        dstRowStart += dstStrideInElements;
+  DstType* dst_row_start = static_cast<DstType*>(dst_start_);
+  if (kTrivialUnpack) {
+    for (int d = 0; d < depth_; ++d) {
+      for (int i = 0; i < src_sub_rectangle_.Height(); ++i) {
+        Pack<DstFormat, alphaOp>(src_row_start, dst_row_start,
+                                 src_sub_rectangle_.Width());
+        src_row_start += src_stride_in_elements;
+        dst_row_start += dst_stride_in_elements;
       }
-      srcRowStart += srcStrideInElements *
-                     (m_unpackImageHeight - m_srcSubRectangle.height());
+      src_row_start += src_stride_in_elements *
+                       (unpack_image_height_ - src_sub_rectangle_.Height());
     }
-  } else if (trivialPack) {
-    for (int d = 0; d < m_depth; ++d) {
-      for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
-        unpack<SrcFormat>(srcRowStart, dstRowStart, m_srcSubRectangle.width());
-        srcRowStart += srcStrideInElements;
-        dstRowStart += dstStrideInElements;
+  } else if (kTrivialPack) {
+    for (int d = 0; d < depth_; ++d) {
+      for (int i = 0; i < src_sub_rectangle_.Height(); ++i) {
+        Unpack<SrcFormat>(src_row_start, dst_row_start,
+                          src_sub_rectangle_.Width());
+        src_row_start += src_stride_in_elements;
+        dst_row_start += dst_stride_in_elements;
       }
-      srcRowStart += srcStrideInElements *
-                     (m_unpackImageHeight - m_srcSubRectangle.height());
+      src_row_start += src_stride_in_elements *
+                       (unpack_image_height_ - src_sub_rectangle_.Height());
     }
   } else {
-    for (int d = 0; d < m_depth; ++d) {
-      for (int i = 0; i < m_srcSubRectangle.height(); ++i) {
-        unpack<SrcFormat>(srcRowStart, reinterpret_cast<IntermType*>(
-                                           m_unpackedIntermediateSrcData.get()),
-                          m_srcSubRectangle.width());
-        pack<DstFormat, alphaOp>(
-            reinterpret_cast<IntermType*>(m_unpackedIntermediateSrcData.get()),
-            dstRowStart, m_srcSubRectangle.width());
-        srcRowStart += srcStrideInElements;
-        dstRowStart += dstStrideInElements;
+    for (int d = 0; d < depth_; ++d) {
+      for (int i = 0; i < src_sub_rectangle_.Height(); ++i) {
+        Unpack<SrcFormat>(src_row_start,
+                          reinterpret_cast<IntermType*>(
+                              unpacked_intermediate_src_data_.get()),
+                          src_sub_rectangle_.Width());
+        Pack<DstFormat, alphaOp>(reinterpret_cast<IntermType*>(
+                                     unpacked_intermediate_src_data_.get()),
+                                 dst_row_start, src_sub_rectangle_.Width());
+        src_row_start += src_stride_in_elements;
+        dst_row_start += dst_stride_in_elements;
       }
-      srcRowStart += srcStrideInElements *
-                     (m_unpackImageHeight - m_srcSubRectangle.height());
+      src_row_start += src_stride_in_elements *
+                       (unpack_image_height_ - src_sub_rectangle_.Height());
     }
   }
-  m_success = true;
+  success_ = true;
   return;
 }
 
-bool frameIsValid(const SkBitmap& frameBitmap) {
-  return !frameBitmap.isNull() && !frameBitmap.empty() &&
-         frameBitmap.colorType() == kN32_SkColorType;
+bool FrameIsValid(const SkBitmap& frame_bitmap) {
+  return !frame_bitmap.isNull() && !frame_bitmap.empty() &&
+         frame_bitmap.colorType() == kN32_SkColorType;
 }
 
 }  // anonymous namespace
 
 WebGLImageConversion::PixelStoreParams::PixelStoreParams()
     : alignment(4),
-      rowLength(0),
-      imageHeight(0),
-      skipPixels(0),
-      skipRows(0),
-      skipImages(0) {}
+      row_length(0),
+      image_height(0),
+      skip_pixels(0),
+      skip_rows(0),
+      skip_images(0) {}
 
-bool WebGLImageConversion::computeFormatAndTypeParameters(
+bool WebGLImageConversion::ComputeFormatAndTypeParameters(
     GLenum format,
     GLenum type,
-    unsigned* componentsPerPixel,
-    unsigned* bytesPerComponent) {
+    unsigned* components_per_pixel,
+    unsigned* bytes_per_component) {
   switch (format) {
     case GL_ALPHA:
     case GL_LUMINANCE:
@@ -2542,65 +2559,65 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(
     case GL_RED_INTEGER:
     case GL_DEPTH_COMPONENT:
     case GL_DEPTH_STENCIL:  // Treat it as one component.
-      *componentsPerPixel = 1;
+      *components_per_pixel = 1;
       break;
     case GL_LUMINANCE_ALPHA:
     case GL_RG:
     case GL_RG_INTEGER:
-      *componentsPerPixel = 2;
+      *components_per_pixel = 2;
       break;
     case GL_RGB:
     case GL_RGB_INTEGER:
     case GL_SRGB_EXT:  // GL_EXT_sRGB
-      *componentsPerPixel = 3;
+      *components_per_pixel = 3;
       break;
     case GL_RGBA:
     case GL_RGBA_INTEGER:
     case GL_BGRA_EXT:        // GL_EXT_texture_format_BGRA8888
     case GL_SRGB_ALPHA_EXT:  // GL_EXT_sRGB
-      *componentsPerPixel = 4;
+      *components_per_pixel = 4;
       break;
     default:
       return false;
   }
   switch (type) {
     case GL_BYTE:
-      *bytesPerComponent = sizeof(GLbyte);
+      *bytes_per_component = sizeof(GLbyte);
       break;
     case GL_UNSIGNED_BYTE:
-      *bytesPerComponent = sizeof(GLubyte);
+      *bytes_per_component = sizeof(GLubyte);
       break;
     case GL_SHORT:
-      *bytesPerComponent = sizeof(GLshort);
+      *bytes_per_component = sizeof(GLshort);
       break;
     case GL_UNSIGNED_SHORT:
-      *bytesPerComponent = sizeof(GLushort);
+      *bytes_per_component = sizeof(GLushort);
       break;
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
-      *componentsPerPixel = 1;
-      *bytesPerComponent = sizeof(GLushort);
+      *components_per_pixel = 1;
+      *bytes_per_component = sizeof(GLushort);
       break;
     case GL_INT:
-      *bytesPerComponent = sizeof(GLint);
+      *bytes_per_component = sizeof(GLint);
       break;
     case GL_UNSIGNED_INT:
-      *bytesPerComponent = sizeof(GLuint);
+      *bytes_per_component = sizeof(GLuint);
       break;
     case GL_UNSIGNED_INT_24_8_OES:
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
     case GL_UNSIGNED_INT_2_10_10_10_REV:
-      *componentsPerPixel = 1;
-      *bytesPerComponent = sizeof(GLuint);
+      *components_per_pixel = 1;
+      *bytes_per_component = sizeof(GLuint);
       break;
     case GL_FLOAT:  // OES_texture_float
-      *bytesPerComponent = sizeof(GLfloat);
+      *bytes_per_component = sizeof(GLfloat);
       break;
     case GL_HALF_FLOAT:
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
-      *bytesPerComponent = sizeof(GLushort);
+      *bytes_per_component = sizeof(GLushort);
       break;
     default:
       return false;
@@ -2608,170 +2625,172 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(
   return true;
 }
 
-GLenum WebGLImageConversion::computeImageSizeInBytes(
+GLenum WebGLImageConversion::ComputeImageSizeInBytes(
     GLenum format,
     GLenum type,
     GLsizei width,
     GLsizei height,
     GLsizei depth,
     const PixelStoreParams& params,
-    unsigned* imageSizeInBytes,
-    unsigned* paddingInBytes,
-    unsigned* skipSizeInBytes) {
-  ASSERT(imageSizeInBytes);
+    unsigned* image_size_in_bytes,
+    unsigned* padding_in_bytes,
+    unsigned* skip_size_in_bytes) {
+  ASSERT(image_size_in_bytes);
   ASSERT(params.alignment == 1 || params.alignment == 2 ||
          params.alignment == 4 || params.alignment == 8);
-  ASSERT(params.rowLength >= 0 && params.imageHeight >= 0);
-  ASSERT(params.skipPixels >= 0 && params.skipRows >= 0 &&
-         params.skipImages >= 0);
+  ASSERT(params.row_length >= 0 && params.image_height >= 0);
+  ASSERT(params.skip_pixels >= 0 && params.skip_rows >= 0 &&
+         params.skip_images >= 0);
   if (width < 0 || height < 0 || depth < 0)
     return GL_INVALID_VALUE;
   if (!width || !height || !depth) {
-    *imageSizeInBytes = 0;
-    if (paddingInBytes)
-      *paddingInBytes = 0;
-    if (skipSizeInBytes)
-      *skipSizeInBytes = 0;
+    *image_size_in_bytes = 0;
+    if (padding_in_bytes)
+      *padding_in_bytes = 0;
+    if (skip_size_in_bytes)
+      *skip_size_in_bytes = 0;
     return GL_NO_ERROR;
   }
 
-  int rowLength = params.rowLength > 0 ? params.rowLength : width;
-  int imageHeight = params.imageHeight > 0 ? params.imageHeight : height;
+  int row_length = params.row_length > 0 ? params.row_length : width;
+  int image_height = params.image_height > 0 ? params.image_height : height;
 
-  unsigned bytesPerComponent, componentsPerPixel;
-  if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent,
-                                      &componentsPerPixel))
+  unsigned bytes_per_component, components_per_pixel;
+  if (!ComputeFormatAndTypeParameters(format, type, &bytes_per_component,
+                                      &components_per_pixel))
     return GL_INVALID_ENUM;
-  unsigned bytesPerGroup = bytesPerComponent * componentsPerPixel;
-  CheckedNumeric<uint32_t> checkedValue = static_cast<uint32_t>(rowLength);
-  checkedValue *= bytesPerGroup;
-  if (!checkedValue.IsValid())
+  unsigned bytes_per_group = bytes_per_component * components_per_pixel;
+  CheckedNumeric<uint32_t> checked_value = static_cast<uint32_t>(row_length);
+  checked_value *= bytes_per_group;
+  if (!checked_value.IsValid())
     return GL_INVALID_VALUE;
 
-  unsigned lastRowSize;
-  if (params.rowLength > 0 && params.rowLength != width) {
+  unsigned last_row_size;
+  if (params.row_length > 0 && params.row_length != width) {
     CheckedNumeric<uint32_t> tmp = width;
-    tmp *= bytesPerGroup;
+    tmp *= bytes_per_group;
     if (!tmp.IsValid())
       return GL_INVALID_VALUE;
-    lastRowSize = tmp.ValueOrDie();
+    last_row_size = tmp.ValueOrDie();
   } else {
-    lastRowSize = checkedValue.ValueOrDie();
+    last_row_size = checked_value.ValueOrDie();
   }
 
   unsigned padding = 0;
-  CheckedNumeric<uint32_t> checkedResidual = checkedValue % params.alignment;
-  if (!checkedResidual.IsValid()) {
+  CheckedNumeric<uint32_t> checked_residual = checked_value % params.alignment;
+  if (!checked_residual.IsValid()) {
     return GL_INVALID_VALUE;
   }
-  unsigned residual = checkedResidual.ValueOrDie();
+  unsigned residual = checked_residual.ValueOrDie();
   if (residual) {
     padding = params.alignment - residual;
-    checkedValue += padding;
+    checked_value += padding;
   }
-  if (!checkedValue.IsValid())
+  if (!checked_value.IsValid())
     return GL_INVALID_VALUE;
-  unsigned paddedRowSize = checkedValue.ValueOrDie();
+  unsigned padded_row_size = checked_value.ValueOrDie();
 
-  CheckedNumeric<uint32_t> rows = imageHeight;
+  CheckedNumeric<uint32_t> rows = image_height;
   rows *= (depth - 1);
   // Last image is not affected by IMAGE_HEIGHT parameter.
   rows += height;
   if (!rows.IsValid())
     return GL_INVALID_VALUE;
-  checkedValue *= (rows - 1);
+  checked_value *= (rows - 1);
   // Last row is not affected by ROW_LENGTH parameter.
-  checkedValue += lastRowSize;
-  if (!checkedValue.IsValid())
+  checked_value += last_row_size;
+  if (!checked_value.IsValid())
     return GL_INVALID_VALUE;
-  *imageSizeInBytes = checkedValue.ValueOrDie();
-  if (paddingInBytes)
-    *paddingInBytes = padding;
+  *image_size_in_bytes = checked_value.ValueOrDie();
+  if (padding_in_bytes)
+    *padding_in_bytes = padding;
 
-  CheckedNumeric<uint32_t> skipSize = 0;
-  if (params.skipImages > 0) {
-    CheckedNumeric<uint32_t> tmp = paddedRowSize;
-    tmp *= imageHeight;
-    tmp *= params.skipImages;
+  CheckedNumeric<uint32_t> skip_size = 0;
+  if (params.skip_images > 0) {
+    CheckedNumeric<uint32_t> tmp = padded_row_size;
+    tmp *= image_height;
+    tmp *= params.skip_images;
     if (!tmp.IsValid())
       return GL_INVALID_VALUE;
-    skipSize += tmp.ValueOrDie();
+    skip_size += tmp.ValueOrDie();
   }
-  if (params.skipRows > 0) {
-    CheckedNumeric<uint32_t> tmp = paddedRowSize;
-    tmp *= params.skipRows;
+  if (params.skip_rows > 0) {
+    CheckedNumeric<uint32_t> tmp = padded_row_size;
+    tmp *= params.skip_rows;
     if (!tmp.IsValid())
       return GL_INVALID_VALUE;
-    skipSize += tmp.ValueOrDie();
+    skip_size += tmp.ValueOrDie();
   }
-  if (params.skipPixels > 0) {
-    CheckedNumeric<uint32_t> tmp = bytesPerGroup;
-    tmp *= params.skipPixels;
+  if (params.skip_pixels > 0) {
+    CheckedNumeric<uint32_t> tmp = bytes_per_group;
+    tmp *= params.skip_pixels;
     if (!tmp.IsValid())
       return GL_INVALID_VALUE;
-    skipSize += tmp.ValueOrDie();
+    skip_size += tmp.ValueOrDie();
   }
-  if (!skipSize.IsValid())
+  if (!skip_size.IsValid())
     return GL_INVALID_VALUE;
-  if (skipSizeInBytes)
-    *skipSizeInBytes = skipSize.ValueOrDie();
+  if (skip_size_in_bytes)
+    *skip_size_in_bytes = skip_size.ValueOrDie();
 
-  checkedValue += skipSize.ValueOrDie();
-  if (!checkedValue.IsValid())
+  checked_value += skip_size.ValueOrDie();
+  if (!checked_value.IsValid())
     return GL_INVALID_VALUE;
   return GL_NO_ERROR;
 }
 
 WebGLImageConversion::ImageExtractor::ImageExtractor(
     Image* image,
-    ImageHtmlDomSource imageHtmlDomSource,
-    bool premultiplyAlpha,
-    bool ignoreColorSpace) {
-  m_image = image;
-  m_imageHtmlDomSource = imageHtmlDomSource;
-  extractImage(premultiplyAlpha, ignoreColorSpace);
+    ImageHtmlDomSource image_html_dom_source,
+    bool premultiply_alpha,
+    bool ignore_color_space) {
+  image_ = image;
+  image_html_dom_source_ = image_html_dom_source;
+  ExtractImage(premultiply_alpha, ignore_color_space);
 }
 
-void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha,
-                                                        bool ignoreColorSpace) {
-  ASSERT(!m_imagePixelLocker);
+void WebGLImageConversion::ImageExtractor::ExtractImage(
+    bool premultiply_alpha,
+    bool ignore_color_space) {
+  ASSERT(!image_pixel_locker_);
 
-  if (!m_image)
+  if (!image_)
     return;
 
-  sk_sp<SkImage> skiaImage = m_image->imageForCurrentFrame();
-  SkImageInfo info = skiaImage ? SkImageInfo::MakeN32Premul(m_image->width(),
-                                                            m_image->height())
-                               : SkImageInfo::MakeUnknown();
-  m_alphaOp = AlphaDoNothing;
-  bool hasAlpha = skiaImage ? !skiaImage->isOpaque() : true;
+  sk_sp<SkImage> skia_image = image_->ImageForCurrentFrame();
+  SkImageInfo info =
+      skia_image ? SkImageInfo::MakeN32Premul(image_->width(), image_->height())
+                 : SkImageInfo::MakeUnknown();
+  alpha_op_ = kAlphaDoNothing;
+  bool has_alpha = skia_image ? !skia_image->isOpaque() : true;
 
-  if ((!skiaImage || ignoreColorSpace || (hasAlpha && !premultiplyAlpha)) &&
-      m_image->data()) {
+  if ((!skia_image || ignore_color_space ||
+       (has_alpha && !premultiply_alpha)) &&
+      image_->Data()) {
     // Attempt to get raw unpremultiplied image data.
-    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
-        m_image->data(), true, ImageDecoder::AlphaNotPremultiplied,
-        ignoreColorSpace ? ColorBehavior::ignore()
-                         : ColorBehavior::transformToGlobalTarget()));
-    if (!decoder || !decoder->frameCount())
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
+        image_->Data(), true, ImageDecoder::kAlphaNotPremultiplied,
+        ignore_color_space ? ColorBehavior::Ignore()
+                           : ColorBehavior::TransformToGlobalTarget()));
+    if (!decoder || !decoder->FrameCount())
       return;
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    if (!frame || frame->getStatus() != ImageFrame::FrameComplete)
+    ImageFrame* frame = decoder->FrameBufferAtIndex(0);
+    if (!frame || frame->GetStatus() != ImageFrame::kFrameComplete)
       return;
-    hasAlpha = frame->hasAlpha();
-    SkBitmap bitmap = frame->bitmap();
-    if (!frameIsValid(bitmap))
+    has_alpha = frame->HasAlpha();
+    SkBitmap bitmap = frame->Bitmap();
+    if (!FrameIsValid(bitmap))
       return;
 
     // TODO(fmalita): Partial frames are not supported currently: only fully
     // decoded frames make it through.  We could potentially relax this and
     // use SkImage::MakeFromBitmap(bitmap) to make a copy.
-    skiaImage = frame->finalizePixelsAndGetImage();
+    skia_image = frame->FinalizePixelsAndGetImage();
     info = bitmap.info();
 
-    if (hasAlpha && premultiplyAlpha)
-      m_alphaOp = AlphaDoPremultiply;
-  } else if (!premultiplyAlpha && hasAlpha) {
+    if (has_alpha && premultiply_alpha)
+      alpha_op_ = kAlphaDoPremultiply;
+  } else if (!premultiply_alpha && has_alpha) {
     // 1. For texImage2D with HTMLVideoElment input, assume no PremultiplyAlpha
     //    had been applied and the alpha value for each pixel is 0xFF.  This is
     //    true at present; if it is changed in the future it will need
@@ -2779,34 +2798,34 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha,
     // 2. For texImage2D with HTMLCanvasElement input in which alpha is already
     //    premultiplied in this port, do AlphaDoUnmultiply if
     //    UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to false.
-    if (m_imageHtmlDomSource != HtmlDomVideo)
-      m_alphaOp = AlphaDoUnmultiply;
+    if (image_html_dom_source_ != kHtmlDomVideo)
+      alpha_op_ = kAlphaDoUnmultiply;
   }
 
-  if (!skiaImage)
+  if (!skia_image)
     return;
 
-  m_imageSourceFormat = SK_B32_SHIFT ? DataFormatRGBA8 : DataFormatBGRA8;
-  m_imageSourceUnpackAlignment =
+  image_source_format_ = SK_B32_SHIFT ? kDataFormatRGBA8 : kDataFormatBGRA8;
+  image_source_unpack_alignment_ =
       0;  // FIXME: this seems to always be zero - why use at all?
 
-  ASSERT(skiaImage->width() && skiaImage->height());
-  m_imageWidth = skiaImage->width();
-  m_imageHeight = skiaImage->height();
+  ASSERT(skia_image->width() && skia_image->height());
+  image_width_ = skia_image->width();
+  image_height_ = skia_image->height();
 
   // Fail if the image was downsampled because of memory limits.
-  if (m_imageWidth != (unsigned)m_image->width() ||
-      m_imageHeight != (unsigned)m_image->height())
+  if (image_width_ != (unsigned)image_->width() ||
+      image_height_ != (unsigned)image_->height())
     return;
 
-  m_imagePixelLocker.emplace(std::move(skiaImage), info.alphaType(),
-                             kN32_SkColorType);
+  image_pixel_locker_.emplace(std::move(skia_image), info.alphaType(),
+                              kN32_SkColorType);
 }
 
-unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format) {
+unsigned WebGLImageConversion::GetChannelBitsByFormat(GLenum format) {
   switch (format) {
     case GL_ALPHA:
-      return ChannelAlpha;
+      return kChannelAlpha;
     case GL_RED:
     case GL_RED_INTEGER:
     case GL_R8:
@@ -2819,7 +2838,7 @@ unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format) {
     case GL_R32I:
     case GL_R16F:
     case GL_R32F:
-      return ChannelRed;
+      return kChannelRed;
     case GL_RG:
     case GL_RG_INTEGER:
     case GL_RG8:
@@ -2832,11 +2851,11 @@ unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format) {
     case GL_RG32I:
     case GL_RG16F:
     case GL_RG32F:
-      return ChannelRG;
+      return kChannelRG;
     case GL_LUMINANCE:
-      return ChannelRGB;
+      return kChannelRGB;
     case GL_LUMINANCE_ALPHA:
-      return ChannelRGBA;
+      return kChannelRGBA;
     case GL_RGB:
     case GL_RGB_INTEGER:
     case GL_RGB8:
@@ -2854,7 +2873,7 @@ unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format) {
     case GL_RGB9_E5:
     case GL_SRGB_EXT:
     case GL_SRGB8:
-      return ChannelRGB;
+      return kChannelRGB;
     case GL_RGBA:
     case GL_RGBA_INTEGER:
     case GL_RGBA8:
@@ -2873,301 +2892,305 @@ unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format) {
     case GL_RGB10_A2UI:
     case GL_SRGB_ALPHA_EXT:
     case GL_SRGB8_ALPHA8:
-      return ChannelRGBA;
+      return kChannelRGBA;
     case GL_DEPTH_COMPONENT:
     case GL_DEPTH_COMPONENT16:
     case GL_DEPTH_COMPONENT24:
     case GL_DEPTH_COMPONENT32F:
-      return ChannelDepth;
+      return kChannelDepth;
     case GL_STENCIL:
     case GL_STENCIL_INDEX8:
-      return ChannelStencil;
+      return kChannelStencil;
     case GL_DEPTH_STENCIL:
     case GL_DEPTH24_STENCIL8:
     case GL_DEPTH32F_STENCIL8:
-      return ChannelDepthStencil;
+      return kChannelDepthStencil;
     default:
       return 0;
   }
 }
 
-bool WebGLImageConversion::packImageData(Image* image,
-                                         const void* pixels,
-                                         GLenum format,
-                                         GLenum type,
-                                         bool flipY,
-                                         AlphaOp alphaOp,
-                                         DataFormat sourceFormat,
-                                         unsigned sourceImageWidth,
-                                         unsigned sourceImageHeight,
-                                         const IntRect& sourceImageSubRectangle,
-                                         int depth,
-                                         unsigned sourceUnpackAlignment,
-                                         int unpackImageHeight,
-                                         Vector<uint8_t>& data) {
+bool WebGLImageConversion::PackImageData(
+    Image* image,
+    const void* pixels,
+    GLenum format,
+    GLenum type,
+    bool flip_y,
+    AlphaOp alpha_op,
+    DataFormat source_format,
+    unsigned source_image_width,
+    unsigned source_image_height,
+    const IntRect& source_image_sub_rectangle,
+    int depth,
+    unsigned source_unpack_alignment,
+    int unpack_image_height,
+    Vector<uint8_t>& data) {
   if (!pixels)
     return false;
 
-  unsigned packedSize;
+  unsigned packed_size;
   // Output data is tightly packed (alignment == 1).
   PixelStoreParams params;
   params.alignment = 1;
-  if (computeImageSizeInBytes(format, type, sourceImageSubRectangle.width(),
-                              sourceImageSubRectangle.height(), depth, params,
-                              &packedSize, 0, 0) != GL_NO_ERROR)
+  if (ComputeImageSizeInBytes(format, type, source_image_sub_rectangle.Width(),
+                              source_image_sub_rectangle.Height(), depth,
+                              params, &packed_size, 0, 0) != GL_NO_ERROR)
     return false;
-  data.resize(packedSize);
+  data.Resize(packed_size);
 
-  return packPixels(
-      reinterpret_cast<const uint8_t*>(pixels), sourceFormat, sourceImageWidth,
-      sourceImageHeight, sourceImageSubRectangle, depth, sourceUnpackAlignment,
-      unpackImageHeight, format, type, alphaOp, data.data(), flipY);
+  return PackPixels(reinterpret_cast<const uint8_t*>(pixels), source_format,
+                    source_image_width, source_image_height,
+                    source_image_sub_rectangle, depth, source_unpack_alignment,
+                    unpack_image_height, format, type, alpha_op, data.Data(),
+                    flip_y);
 }
 
-bool WebGLImageConversion::extractImageData(
-    const uint8_t* imageData,
-    DataFormat sourceDataFormat,
-    const IntSize& imageDataSize,
-    const IntRect& sourceImageSubRectangle,
+bool WebGLImageConversion::ExtractImageData(
+    const uint8_t* image_data,
+    DataFormat source_data_format,
+    const IntSize& image_data_size,
+    const IntRect& source_image_sub_rectangle,
     int depth,
-    int unpackImageHeight,
+    int unpack_image_height,
     GLenum format,
     GLenum type,
-    bool flipY,
-    bool premultiplyAlpha,
+    bool flip_y,
+    bool premultiply_alpha,
     Vector<uint8_t>& data) {
-  if (!imageData)
+  if (!image_data)
     return false;
-  int width = imageDataSize.width();
-  int height = imageDataSize.height();
+  int width = image_data_size.Width();
+  int height = image_data_size.Height();
 
-  unsigned packedSize;
+  unsigned packed_size;
   // Output data is tightly packed (alignment == 1).
   PixelStoreParams params;
   params.alignment = 1;
-  if (computeImageSizeInBytes(format, type, sourceImageSubRectangle.width(),
-                              sourceImageSubRectangle.height(), depth, params,
-                              &packedSize, 0, 0) != GL_NO_ERROR)
+  if (ComputeImageSizeInBytes(format, type, source_image_sub_rectangle.Width(),
+                              source_image_sub_rectangle.Height(), depth,
+                              params, &packed_size, 0, 0) != GL_NO_ERROR)
     return false;
-  data.resize(packedSize);
+  data.Resize(packed_size);
 
-  if (!packPixels(imageData, sourceDataFormat, width, height,
-                  sourceImageSubRectangle, depth, 0, unpackImageHeight, format,
-                  type, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing,
-                  data.data(), flipY))
+  if (!PackPixels(image_data, source_data_format, width, height,
+                  source_image_sub_rectangle, depth, 0, unpack_image_height,
+                  format, type,
+                  premultiply_alpha ? kAlphaDoPremultiply : kAlphaDoNothing,
+                  data.Data(), flip_y))
     return false;
 
   return true;
 }
 
-bool WebGLImageConversion::extractTextureData(unsigned width,
+bool WebGLImageConversion::ExtractTextureData(unsigned width,
                                               unsigned height,
                                               GLenum format,
                                               GLenum type,
-                                              unsigned unpackAlignment,
-                                              bool flipY,
-                                              bool premultiplyAlpha,
+                                              unsigned unpack_alignment,
+                                              bool flip_y,
+                                              bool premultiply_alpha,
                                               const void* pixels,
                                               Vector<uint8_t>& data) {
   // Assumes format, type, etc. have already been validated.
-  DataFormat sourceDataFormat = getDataFormat(format, type);
+  DataFormat source_data_format = GetDataFormat(format, type);
 
   // Resize the output buffer.
-  unsigned int componentsPerPixel, bytesPerComponent;
-  if (!computeFormatAndTypeParameters(format, type, &componentsPerPixel,
-                                      &bytesPerComponent))
+  unsigned int components_per_pixel, bytes_per_component;
+  if (!ComputeFormatAndTypeParameters(format, type, &components_per_pixel,
+                                      &bytes_per_component))
     return false;
-  unsigned bytesPerPixel = componentsPerPixel * bytesPerComponent;
-  data.resize(width * height * bytesPerPixel);
+  unsigned bytes_per_pixel = components_per_pixel * bytes_per_component;
+  data.Resize(width * height * bytes_per_pixel);
 
-  if (!packPixels(static_cast<const uint8_t*>(pixels), sourceDataFormat, width,
-                  height, IntRect(0, 0, width, height), 1, unpackAlignment, 0,
-                  format, type,
-                  (premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing),
-                  data.data(), flipY))
+  if (!PackPixels(static_cast<const uint8_t*>(pixels), source_data_format,
+                  width, height, IntRect(0, 0, width, height), 1,
+                  unpack_alignment, 0, format, type,
+                  (premultiply_alpha ? kAlphaDoPremultiply : kAlphaDoNothing),
+                  data.Data(), flip_y))
     return false;
 
   return true;
 }
 
-bool WebGLImageConversion::packPixels(const uint8_t* sourceData,
-                                      DataFormat sourceDataFormat,
-                                      unsigned sourceDataWidth,
-                                      unsigned sourceDataHeight,
-                                      const IntRect& sourceDataSubRectangle,
+bool WebGLImageConversion::PackPixels(const uint8_t* source_data,
+                                      DataFormat source_data_format,
+                                      unsigned source_data_width,
+                                      unsigned source_data_height,
+                                      const IntRect& source_data_sub_rectangle,
                                       int depth,
-                                      unsigned sourceUnpackAlignment,
-                                      int unpackImageHeight,
-                                      unsigned destinationFormat,
-                                      unsigned destinationType,
-                                      AlphaOp alphaOp,
-                                      void* destinationData,
-                                      bool flipY) {
+                                      unsigned source_unpack_alignment,
+                                      int unpack_image_height,
+                                      unsigned destination_format,
+                                      unsigned destination_type,
+                                      AlphaOp alpha_op,
+                                      void* destination_data,
+                                      bool flip_y) {
   DCHECK_GE(depth, 1);
-  if (unpackImageHeight == 0) {
-    unpackImageHeight = sourceDataSubRectangle.height();
+  if (unpack_image_height == 0) {
+    unpack_image_height = source_data_sub_rectangle.Height();
   }
-  int validSrc = sourceDataWidth * TexelBytesForFormat(sourceDataFormat);
+  int valid_src = source_data_width * TexelBytesForFormat(source_data_format);
   int remainder =
-      sourceUnpackAlignment ? (validSrc % sourceUnpackAlignment) : 0;
-  int srcStride =
-      remainder ? (validSrc + sourceUnpackAlignment - remainder) : validSrc;
-  int srcRowOffset =
-      sourceDataSubRectangle.x() * TexelBytesForFormat(sourceDataFormat);
+      source_unpack_alignment ? (valid_src % source_unpack_alignment) : 0;
+  int src_stride =
+      remainder ? (valid_src + source_unpack_alignment - remainder) : valid_src;
+  int src_row_offset =
+      source_data_sub_rectangle.X() * TexelBytesForFormat(source_data_format);
 
-  DataFormat dstDataFormat = getDataFormat(destinationFormat, destinationType);
-  int dstStride =
-      sourceDataSubRectangle.width() * TexelBytesForFormat(dstDataFormat);
-  if (flipY) {
-    destinationData =
-        static_cast<uint8_t*>(destinationData) +
-        dstStride * ((depth * sourceDataSubRectangle.height()) - 1);
-    dstStride = -dstStride;
+  DataFormat dst_data_format =
+      GetDataFormat(destination_format, destination_type);
+  int dst_stride =
+      source_data_sub_rectangle.Width() * TexelBytesForFormat(dst_data_format);
+  if (flip_y) {
+    destination_data =
+        static_cast<uint8_t*>(destination_data) +
+        dst_stride * ((depth * source_data_sub_rectangle.Height()) - 1);
+    dst_stride = -dst_stride;
   }
-  if (!HasAlpha(sourceDataFormat) || !HasColor(sourceDataFormat) ||
-      !HasColor(dstDataFormat))
-    alphaOp = AlphaDoNothing;
+  if (!HasAlpha(source_data_format) || !HasColor(source_data_format) ||
+      !HasColor(dst_data_format))
+    alpha_op = kAlphaDoNothing;
 
-  if (sourceDataFormat == dstDataFormat && alphaOp == AlphaDoNothing) {
-    const uint8_t* basePtr =
-        sourceData + srcStride * sourceDataSubRectangle.y();
-    const uint8_t* baseEnd =
-        sourceData + srcStride * sourceDataSubRectangle.maxY();
+  if (source_data_format == dst_data_format && alpha_op == kAlphaDoNothing) {
+    const uint8_t* base_ptr =
+        source_data + src_stride * source_data_sub_rectangle.Y();
+    const uint8_t* base_end =
+        source_data + src_stride * source_data_sub_rectangle.MaxY();
 
     // If packing multiple images into a 3D texture, and flipY is true,
     // then the sub-rectangle is pointing at the start of the
     // "bottommost" of those images. Since the source pointer strides in
     // the positive direction, we need to back it up to point at the
     // last, or "topmost", of these images.
-    if (flipY && depth > 1) {
-      const ptrdiff_t distanceToTopImage =
-          (depth - 1) * srcStride * unpackImageHeight;
-      basePtr -= distanceToTopImage;
-      baseEnd -= distanceToTopImage;
+    if (flip_y && depth > 1) {
+      const ptrdiff_t distance_to_top_image =
+          (depth - 1) * src_stride * unpack_image_height;
+      base_ptr -= distance_to_top_image;
+      base_end -= distance_to_top_image;
     }
 
-    unsigned rowSize = (dstStride > 0) ? dstStride : -dstStride;
-    uint8_t* dst = static_cast<uint8_t*>(destinationData);
+    unsigned row_size = (dst_stride > 0) ? dst_stride : -dst_stride;
+    uint8_t* dst = static_cast<uint8_t*>(destination_data);
 
     for (int i = 0; i < depth; ++i) {
-      const uint8_t* ptr = basePtr;
-      const uint8_t* ptrEnd = baseEnd;
-      while (ptr < ptrEnd) {
-        memcpy(dst, ptr + srcRowOffset, rowSize);
-        ptr += srcStride;
-        dst += dstStride;
+      const uint8_t* ptr = base_ptr;
+      const uint8_t* ptr_end = base_end;
+      while (ptr < ptr_end) {
+        memcpy(dst, ptr + src_row_offset, row_size);
+        ptr += src_stride;
+        dst += dst_stride;
       }
-      basePtr += unpackImageHeight * srcStride;
-      baseEnd += unpackImageHeight * srcStride;
+      base_ptr += unpack_image_height * src_stride;
+      base_end += unpack_image_height * src_stride;
     }
     return true;
   }
 
-  FormatConverter converter(sourceDataSubRectangle, depth, unpackImageHeight,
-                            sourceData, destinationData, srcStride,
-                            srcRowOffset, dstStride);
-  converter.convert(sourceDataFormat, dstDataFormat, alphaOp);
+  FormatConverter converter(source_data_sub_rectangle, depth,
+                            unpack_image_height, source_data, destination_data,
+                            src_stride, src_row_offset, dst_stride);
+  converter.Convert(source_data_format, dst_data_format, alpha_op);
   if (!converter.Success())
     return false;
   return true;
 }
 
-void WebGLImageConversion::unpackPixels(const uint16_t* sourceData,
-                                        DataFormat sourceDataFormat,
-                                        unsigned pixelsPerRow,
-                                        uint8_t* destinationData) {
-  switch (sourceDataFormat) {
-    case DataFormatRGBA4444: {
+void WebGLImageConversion::UnpackPixels(const uint16_t* source_data,
+                                        DataFormat source_data_format,
+                                        unsigned pixels_per_row,
+                                        uint8_t* destination_data) {
+  switch (source_data_format) {
+    case kDataFormatRGBA4444: {
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA4444>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
-      unpack<WebGLImageConversion::DataFormatRGBA4444>(
-          srcRowStart, destinationData, pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA4444>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
+      Unpack<WebGLImageConversion::kDataFormatRGBA4444>(
+          src_row_start, destination_data, pixels_per_row);
     } break;
-    case DataFormatRGBA5551: {
+    case kDataFormatRGBA5551: {
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA5551>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
-      unpack<WebGLImageConversion::DataFormatRGBA5551>(
-          srcRowStart, destinationData, pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA5551>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
+      Unpack<WebGLImageConversion::kDataFormatRGBA5551>(
+          src_row_start, destination_data, pixels_per_row);
     } break;
-    case DataFormatBGRA8: {
-      const uint8_t* psrc = (const uint8_t*)sourceData;
+    case kDataFormatBGRA8: {
+      const uint8_t* psrc = (const uint8_t*)source_data;
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatBGRA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(psrc);
-      unpack<WebGLImageConversion::DataFormatBGRA8>(
-          srcRowStart, destinationData, pixelsPerRow);
+          WebGLImageConversion::kDataFormatBGRA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(psrc);
+      Unpack<WebGLImageConversion::kDataFormatBGRA8>(
+          src_row_start, destination_data, pixels_per_row);
     } break;
     default:
       break;
   }
 }
 
-void WebGLImageConversion::packPixels(const uint8_t* sourceData,
-                                      DataFormat sourceDataFormat,
-                                      unsigned pixelsPerRow,
-                                      uint8_t* destinationData) {
-  switch (sourceDataFormat) {
-    case DataFormatRA8: {
+void WebGLImageConversion::PackPixels(const uint8_t* source_data,
+                                      DataFormat source_data_format,
+                                      unsigned pixels_per_row,
+                                      uint8_t* destination_data) {
+  switch (source_data_format) {
+    case kDataFormatRA8: {
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
-      pack<WebGLImageConversion::DataFormatRA8,
-           WebGLImageConversion::AlphaDoUnmultiply>(
-          srcRowStart, destinationData, pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
+      Pack<WebGLImageConversion::kDataFormatRA8,
+           WebGLImageConversion::kAlphaDoUnmultiply>(
+          src_row_start, destination_data, pixels_per_row);
     } break;
-    case DataFormatR8: {
+    case kDataFormatR8: {
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
-      pack<WebGLImageConversion::DataFormatR8,
-           WebGLImageConversion::AlphaDoUnmultiply>(
-          srcRowStart, destinationData, pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
+      Pack<WebGLImageConversion::kDataFormatR8,
+           WebGLImageConversion::kAlphaDoUnmultiply>(
+          src_row_start, destination_data, pixels_per_row);
     } break;
-    case DataFormatRGBA8: {
+    case kDataFormatRGBA8: {
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
-      pack<WebGLImageConversion::DataFormatRGBA8,
-           WebGLImageConversion::AlphaDoUnmultiply>(
-          srcRowStart, destinationData, pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
+      Pack<WebGLImageConversion::kDataFormatRGBA8,
+           WebGLImageConversion::kAlphaDoUnmultiply>(
+          src_row_start, destination_data, pixels_per_row);
     } break;
-    case DataFormatRGBA4444: {
-      uint16_t* pdst = (uint16_t*)destinationData;
+    case kDataFormatRGBA4444: {
+      uint16_t* pdst = (uint16_t*)destination_data;
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+          WebGLImageConversion::kDataFormatRGBA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA4444>::Type DstType;
-      DstType* dstRowStart = static_cast<DstType*>(pdst);
-      pack<WebGLImageConversion::DataFormatRGBA4444,
-           WebGLImageConversion::AlphaDoNothing>(srcRowStart, dstRowStart,
-                                                 pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA4444>::Type DstType;
+      DstType* dst_row_start = static_cast<DstType*>(pdst);
+      Pack<WebGLImageConversion::kDataFormatRGBA4444,
+           WebGLImageConversion::kAlphaDoNothing>(src_row_start, dst_row_start,
+                                                  pixels_per_row);
     } break;
-    case DataFormatRGBA5551: {
-      uint16_t* pdst = (uint16_t*)destinationData;
+    case kDataFormatRGBA5551: {
+      uint16_t* pdst = (uint16_t*)destination_data;
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+          WebGLImageConversion::kDataFormatRGBA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA5551>::Type DstType;
-      DstType* dstRowStart = static_cast<DstType*>(pdst);
-      pack<WebGLImageConversion::DataFormatRGBA5551,
-           WebGLImageConversion::AlphaDoNothing>(srcRowStart, dstRowStart,
-                                                 pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGBA5551>::Type DstType;
+      DstType* dst_row_start = static_cast<DstType*>(pdst);
+      Pack<WebGLImageConversion::kDataFormatRGBA5551,
+           WebGLImageConversion::kAlphaDoNothing>(src_row_start, dst_row_start,
+                                                  pixels_per_row);
     } break;
-    case DataFormatRGB565: {
-      uint16_t* pdst = (uint16_t*)destinationData;
+    case kDataFormatRGB565: {
+      uint16_t* pdst = (uint16_t*)destination_data;
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGBA8>::Type SrcType;
-      const SrcType* srcRowStart = static_cast<const SrcType*>(sourceData);
+          WebGLImageConversion::kDataFormatRGBA8>::Type SrcType;
+      const SrcType* src_row_start = static_cast<const SrcType*>(source_data);
       typedef typename DataTypeForFormat<
-          WebGLImageConversion::DataFormatRGB565>::Type DstType;
-      DstType* dstRowStart = static_cast<DstType*>(pdst);
-      pack<WebGLImageConversion::DataFormatRGB565,
-           WebGLImageConversion::AlphaDoNothing>(srcRowStart, dstRowStart,
-                                                 pixelsPerRow);
+          WebGLImageConversion::kDataFormatRGB565>::Type DstType;
+      DstType* dst_row_start = static_cast<DstType*>(pdst);
+      Pack<WebGLImageConversion::kDataFormatRGB565,
+           WebGLImageConversion::kAlphaDoNothing>(src_row_start, dst_row_start,
+                                                  pixels_per_row);
     } break;
     default:
       break;

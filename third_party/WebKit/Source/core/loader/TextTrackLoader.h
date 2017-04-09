@@ -41,8 +41,8 @@ class TextTrackLoaderClient : public GarbageCollectedMixin {
  public:
   virtual ~TextTrackLoaderClient() {}
 
-  virtual void newCuesAvailable(TextTrackLoader*) = 0;
-  virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) = 0;
+  virtual void NewCuesAvailable(TextTrackLoader*) = 0;
+  virtual void CueLoadingCompleted(TextTrackLoader*, bool loading_failed) = 0;
 };
 
 class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
@@ -51,49 +51,49 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
   USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 
  public:
-  static TextTrackLoader* create(TextTrackLoaderClient& client,
+  static TextTrackLoader* Create(TextTrackLoaderClient& client,
                                  Document& document) {
     return new TextTrackLoader(client, document);
   }
   ~TextTrackLoader() override;
 
-  bool load(const KURL&, CrossOriginAttributeValue);
-  void cancelLoad();
+  bool Load(const KURL&, CrossOriginAttributeValue);
+  void CancelLoad();
 
-  enum State { Idle, Loading, Finished, Failed };
-  State loadState() { return m_state; }
+  enum State { kIdle, kLoading, kFinished, kFailed };
+  State LoadState() { return state_; }
 
-  void getNewCues(HeapVector<Member<TextTrackCue>>& outputCues);
+  void GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues);
 
   DECLARE_TRACE();
 
  private:
   // RawResourceClient
-  bool redirectReceived(Resource*,
+  bool RedirectReceived(Resource*,
                         const ResourceRequest&,
                         const ResourceResponse&) override;
-  void dataReceived(Resource*, const char* data, size_t length) override;
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "TextTrackLoader"; }
+  void DataReceived(Resource*, const char* data, size_t length) override;
+  void NotifyFinished(Resource*) override;
+  String DebugName() const override { return "TextTrackLoader"; }
 
   // VTTParserClient
-  void newCuesParsed() override;
-  void fileFailedToParse() override;
+  void NewCuesParsed() override;
+  void FileFailedToParse() override;
 
   TextTrackLoader(TextTrackLoaderClient&, Document&);
 
-  void cueLoadTimerFired(TimerBase*);
-  void corsPolicyPreventedLoad(SecurityOrigin*, const KURL&);
+  void CueLoadTimerFired(TimerBase*);
+  void CorsPolicyPreventedLoad(SecurityOrigin*, const KURL&);
 
-  Document& document() const { return *m_document; }
+  Document& GetDocument() const { return *document_; }
 
-  Member<TextTrackLoaderClient> m_client;
-  Member<VTTParser> m_cueParser;
+  Member<TextTrackLoaderClient> client_;
+  Member<VTTParser> cue_parser_;
   // FIXME: Remove this pointer and get the Document from m_client.
-  Member<Document> m_document;
-  TaskRunnerTimer<TextTrackLoader> m_cueLoadTimer;
-  State m_state;
-  bool m_newCuesAvailable;
+  Member<Document> document_;
+  TaskRunnerTimer<TextTrackLoader> cue_load_timer_;
+  State state_;
+  bool new_cues_available_;
 };
 
 }  // namespace blink

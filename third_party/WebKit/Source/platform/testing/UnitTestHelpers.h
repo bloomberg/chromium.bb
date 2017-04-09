@@ -37,33 +37,33 @@ namespace testing {
 
 // Note: You may want to use TestingPlatformSupportWithMockScheduler to
 // provides runUntilIdle() method that can work with WebURLLoaderMockFactory.
-void runPendingTasks();
+void RunPendingTasks();
 
 // Waits for delayed task to complete or timers to fire for |delayMs|
 // milliseconds.
-void runDelayedTasks(double delayMs);
+void RunDelayedTasks(double delay_ms);
 
-void enterRunLoop();
-void exitRunLoop();
+void EnterRunLoop();
+void ExitRunLoop();
 
-void yieldCurrentThread();
+void YieldCurrentThread();
 
 // Returns Blink top directory as an absolute path, e.g.
 // /src/third_party/WebKit.
-String blinkRootDir();
+String BlinkRootDir();
 
 // Returns test data absolute path for webkit_unit_tests, i.e.
 // <blinkRootDir>/Source/web/tests/data/<relativePath>.
 // It returns the top web test directory if |relativePath| was not specified.
-String webTestDataPath(const String& relativePath = String());
+String WebTestDataPath(const String& relative_path = String());
 
 // Returns test data absolute path for blink_platform_unittests, i.e.
 // <blinkRootDir>/Source/platform/testing/data/<relativePath>.
 // It returns the top platform test directory if |relativePath| was not
 // specified.
-String platformTestDataPath(const String& relativePath = String());
+String PlatformTestDataPath(const String& relative_path = String());
 
-PassRefPtr<SharedBuffer> readFromFile(const String& path);
+PassRefPtr<SharedBuffer> ReadFromFile(const String& path);
 
 }  // namespace testing
 }  // namespace blink

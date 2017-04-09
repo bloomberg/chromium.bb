@@ -42,38 +42,38 @@ class MIDIMessageEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIMessageEvent* create(double timeStamp, DOMUint8Array* data) {
-    return new MIDIMessageEvent(timeStamp, data);
+  static MIDIMessageEvent* Create(double time_stamp, DOMUint8Array* data) {
+    return new MIDIMessageEvent(time_stamp, data);
   }
 
-  static MIDIMessageEvent* create(const AtomicString& type,
+  static MIDIMessageEvent* Create(const AtomicString& type,
                                   const MIDIMessageEventInit& initializer) {
     return new MIDIMessageEvent(type, initializer);
   }
 
-  DOMUint8Array* data() { return m_data; }
+  DOMUint8Array* data() { return data_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::MIDIMessageEvent;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_data);
-    Event::trace(visitor);
+    visitor->Trace(data_);
+    Event::Trace(visitor);
   }
 
  private:
-  MIDIMessageEvent(double timeStamp, DOMUint8Array* data)
+  MIDIMessageEvent(double time_stamp, DOMUint8Array* data)
       : Event(EventTypeNames::midimessage,
               true,
               false,
-              TimeTicks() + TimeDelta::FromSecondsD(timeStamp)),
-        m_data(data) {}
+              TimeTicks() + TimeDelta::FromSecondsD(time_stamp)),
+        data_(data) {}
 
   MIDIMessageEvent(const AtomicString& type,
                    const MIDIMessageEventInit& initializer);
 
-  Member<DOMUint8Array> m_data;
+  Member<DOMUint8Array> data_;
 };
 
 }  // namespace blink

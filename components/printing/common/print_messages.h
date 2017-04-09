@@ -100,7 +100,7 @@ struct PrintHostMsg_SetOptionsFromDocument_Params {
 #define IPC_MESSAGE_START PrintMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPrintScalingOption,
-                          blink::WebPrintScalingOptionLast)
+                          blink::kWebPrintScalingOptionLast)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)

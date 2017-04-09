@@ -25,7 +25,7 @@ void NGMarginStrut::Append(const LayoutUnit& value) {
 }
 
 String NGMarginStrut::ToString() const {
-  return String::format("%d %d", margin.toInt(), negative_margin.toInt());
+  return String::Format("%d %d", margin.ToInt(), negative_margin.ToInt());
 }
 
 std::ostream& operator<<(std::ostream& stream, const NGMarginStrut& value) {

@@ -38,19 +38,19 @@ class WebGLRenderingContextBase;
 // multiple WebGLRenderingContexts.
 class WebGLSharedObject : public WebGLObject {
  public:
-  WebGLContextGroup* contextGroup() const { return m_contextGroup; }
+  WebGLContextGroup* ContextGroup() const { return context_group_; }
 
-  virtual bool isBuffer() const { return false; }
-  virtual bool isProgram() const { return false; }
-  virtual bool isQuery() const { return false; }
-  virtual bool isRenderbuffer() const { return false; }
-  virtual bool isSampler() const { return false; }
-  virtual bool isShader() const { return false; }
-  virtual bool isSync() const { return false; }
-  virtual bool isTexture() const { return false; }
-  virtual bool isTransformFeedback() const { return false; }
+  virtual bool IsBuffer() const { return false; }
+  virtual bool IsProgram() const { return false; }
+  virtual bool IsQuery() const { return false; }
+  virtual bool IsRenderbuffer() const { return false; }
+  virtual bool IsSampler() const { return false; }
+  virtual bool IsShader() const { return false; }
+  virtual bool IsSync() const { return false; }
+  virtual bool IsTexture() const { return false; }
+  virtual bool IsTransformFeedback() const { return false; }
 
-  bool validate(const WebGLContextGroup* contextGroup,
+  bool Validate(const WebGLContextGroup* context_group,
                 const WebGLRenderingContextBase*) const final;
 
   DECLARE_VIRTUAL_TRACE();
@@ -60,14 +60,14 @@ class WebGLSharedObject : public WebGLObject {
  protected:
   explicit WebGLSharedObject(WebGLRenderingContextBase*);
 
-  bool hasGroupOrContext() const final { return m_contextGroup; }
+  bool HasGroupOrContext() const final { return context_group_; }
 
-  uint32_t currentNumberOfContextLosses() const final;
+  uint32_t CurrentNumberOfContextLosses() const final;
 
-  gpu::gles2::GLES2Interface* getAGLInterface() const final;
+  gpu::gles2::GLES2Interface* GetAGLInterface() const final;
 
  private:
-  TraceWrapperMember<WebGLContextGroup> m_contextGroup;
+  TraceWrapperMember<WebGLContextGroup> context_group_;
 };
 
 }  // namespace blink

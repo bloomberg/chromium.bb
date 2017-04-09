@@ -30,112 +30,112 @@
 namespace blink {
 
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
-    : m_isolate(isolate),
-      m_v8Inspector(v8_inspector::V8Inspector::create(isolate, this)),
-      m_v8TracingCpuProfiler(v8::TracingCpuProfiler::Create(isolate)) {}
+    : isolate_(isolate),
+      v8_inspector_(v8_inspector::V8Inspector::create(isolate, this)),
+      v8_tracing_cpu_profiler_(v8::TracingCpuProfiler::Create(isolate)) {}
 
 ThreadDebugger::~ThreadDebugger() {}
 
 // static
-ThreadDebugger* ThreadDebugger::from(v8::Isolate* isolate) {
+ThreadDebugger* ThreadDebugger::From(v8::Isolate* isolate) {
   if (!isolate)
     return nullptr;
-  V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-  return data ? static_cast<ThreadDebugger*>(data->threadDebugger()) : nullptr;
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  return data ? static_cast<ThreadDebugger*>(data->ThreadDebugger()) : nullptr;
 }
 
 // static
-MessageLevel ThreadDebugger::v8MessageLevelToMessageLevel(
+MessageLevel ThreadDebugger::V8MessageLevelToMessageLevel(
     v8::Isolate::MessageErrorLevel level) {
-  MessageLevel result = InfoMessageLevel;
+  MessageLevel result = kInfoMessageLevel;
   switch (level) {
     case v8::Isolate::kMessageDebug:
-      result = VerboseMessageLevel;
+      result = kVerboseMessageLevel;
       break;
     case v8::Isolate::kMessageWarning:
-      result = WarningMessageLevel;
+      result = kWarningMessageLevel;
       break;
     case v8::Isolate::kMessageError:
-      result = ErrorMessageLevel;
+      result = kErrorMessageLevel;
       break;
     case v8::Isolate::kMessageLog:
     case v8::Isolate::kMessageInfo:
     default:
-      result = InfoMessageLevel;
+      result = kInfoMessageLevel;
       break;
   }
   return result;
 }
 
-void ThreadDebugger::idleStarted(v8::Isolate* isolate) {
-  if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-    debugger->v8Inspector()->idleStarted();
+void ThreadDebugger::IdleStarted(v8::Isolate* isolate) {
+  if (ThreadDebugger* debugger = ThreadDebugger::From(isolate))
+    debugger->GetV8Inspector()->idleStarted();
 }
 
-void ThreadDebugger::idleFinished(v8::Isolate* isolate) {
-  if (ThreadDebugger* debugger = ThreadDebugger::from(isolate))
-    debugger->v8Inspector()->idleFinished();
+void ThreadDebugger::IdleFinished(v8::Isolate* isolate) {
+  if (ThreadDebugger* debugger = ThreadDebugger::From(isolate))
+    debugger->GetV8Inspector()->idleFinished();
 }
 
-void ThreadDebugger::asyncTaskScheduled(const String& operationName,
+void ThreadDebugger::AsyncTaskScheduled(const String& operation_name,
                                         void* task,
                                         bool recurring) {
-  m_v8Inspector->asyncTaskScheduled(toV8InspectorStringView(operationName),
+  v8_inspector_->asyncTaskScheduled(ToV8InspectorStringView(operation_name),
                                     task, recurring);
 }
 
-void ThreadDebugger::asyncTaskCanceled(void* task) {
-  m_v8Inspector->asyncTaskCanceled(task);
+void ThreadDebugger::AsyncTaskCanceled(void* task) {
+  v8_inspector_->asyncTaskCanceled(task);
 }
 
-void ThreadDebugger::allAsyncTasksCanceled() {
-  m_v8Inspector->allAsyncTasksCanceled();
+void ThreadDebugger::AllAsyncTasksCanceled() {
+  v8_inspector_->allAsyncTasksCanceled();
 }
 
-void ThreadDebugger::asyncTaskStarted(void* task) {
-  m_v8Inspector->asyncTaskStarted(task);
+void ThreadDebugger::AsyncTaskStarted(void* task) {
+  v8_inspector_->asyncTaskStarted(task);
 }
 
-void ThreadDebugger::asyncTaskFinished(void* task) {
-  m_v8Inspector->asyncTaskFinished(task);
+void ThreadDebugger::AsyncTaskFinished(void* task) {
+  v8_inspector_->asyncTaskFinished(task);
 }
 
-unsigned ThreadDebugger::promiseRejected(
+unsigned ThreadDebugger::PromiseRejected(
     v8::Local<v8::Context> context,
-    const String& errorMessage,
+    const String& error_message,
     v8::Local<v8::Value> exception,
     std::unique_ptr<SourceLocation> location) {
-  const String defaultMessage = "Uncaught (in promise)";
-  String message = errorMessage;
-  if (message.isEmpty())
-    message = defaultMessage;
-  else if (message.startsWith("Uncaught "))
-    message = message.substring(0, 8) + " (in promise)" + message.substring(8);
+  const String default_message = "Uncaught (in promise)";
+  String message = error_message;
+  if (message.IsEmpty())
+    message = default_message;
+  else if (message.StartsWith("Uncaught "))
+    message = message.Substring(0, 8) + " (in promise)" + message.Substring(8);
 
-  reportConsoleMessage(toExecutionContext(context), JSMessageSource,
-                       ErrorMessageLevel, message, location.get());
-  String url = location->url();
-  return v8Inspector()->exceptionThrown(
-      context, toV8InspectorStringView(defaultMessage), exception,
-      toV8InspectorStringView(message), toV8InspectorStringView(url),
-      location->lineNumber(), location->columnNumber(),
-      location->takeStackTrace(), location->scriptId());
+  ReportConsoleMessage(ToExecutionContext(context), kJSMessageSource,
+                       kErrorMessageLevel, message, location.get());
+  String url = location->Url();
+  return GetV8Inspector()->exceptionThrown(
+      context, ToV8InspectorStringView(default_message), exception,
+      ToV8InspectorStringView(message), ToV8InspectorStringView(url),
+      location->LineNumber(), location->ColumnNumber(),
+      location->TakeStackTrace(), location->ScriptId());
 }
 
-void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context,
-                                             unsigned promiseRejectionId) {
+void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
+                                             unsigned promise_rejection_id) {
   const String message = "Handler added to rejected promise";
-  v8Inspector()->exceptionRevoked(context, promiseRejectionId,
-                                  toV8InspectorStringView(message));
+  GetV8Inspector()->exceptionRevoked(context, promise_rejection_id,
+                                     ToV8InspectorStringView(message));
 }
 
 void ThreadDebugger::beginUserGesture() {
-  m_userGestureIndicator = WTF::wrapUnique(
-      new UserGestureIndicator(DocumentUserGestureToken::create(nullptr)));
+  user_gesture_indicator_ = WTF::WrapUnique(
+      new UserGestureIndicator(DocumentUserGestureToken::Create(nullptr)));
 }
 
 void ThreadDebugger::endUserGesture() {
-  m_userGestureIndicator.reset();
+  user_gesture_indicator_.reset();
 }
 
 std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(
@@ -143,32 +143,32 @@ std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(
   static const char kNode[] = "node";
   static const char kArray[] = "array";
   static const char kError[] = "error";
-  if (V8Node::hasInstance(value, m_isolate))
-    return toV8InspectorStringBuffer(kNode);
-  if (V8NodeList::hasInstance(value, m_isolate) ||
-      V8DOMTokenList::hasInstance(value, m_isolate) ||
-      V8HTMLCollection::hasInstance(value, m_isolate) ||
-      V8HTMLAllCollection::hasInstance(value, m_isolate)) {
-    return toV8InspectorStringBuffer(kArray);
+  if (V8Node::hasInstance(value, isolate_))
+    return ToV8InspectorStringBuffer(kNode);
+  if (V8NodeList::hasInstance(value, isolate_) ||
+      V8DOMTokenList::hasInstance(value, isolate_) ||
+      V8HTMLCollection::hasInstance(value, isolate_) ||
+      V8HTMLAllCollection::hasInstance(value, isolate_)) {
+    return ToV8InspectorStringBuffer(kArray);
   }
-  if (V8DOMException::hasInstance(value, m_isolate))
-    return toV8InspectorStringBuffer(kError);
+  if (V8DOMException::hasInstance(value, isolate_))
+    return ToV8InspectorStringBuffer(kError);
   return nullptr;
 }
 
 bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value) {
-  return V8DOMWrapper::isWrapper(m_isolate, value);
+  return V8DOMWrapper::IsWrapper(isolate_, value);
 }
 
 double ThreadDebugger::currentTimeMS() {
-  return WTF::currentTimeMS();
+  return WTF::CurrentTimeMS();
 }
 
 bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object) {
-  if (object->InternalFieldCount() < v8DefaultWrapperInternalFieldCount)
+  if (object->InternalFieldCount() < kV8DefaultWrapperInternalFieldCount)
     return true;
   v8::Local<v8::Value> wrapper =
-      object->GetInternalField(v8DOMWrapperObjectIndex);
+      object->GetInternalField(kV8DOMWrapperObjectIndex);
   // Skip wrapper boilerplates which are like regular wrappers but don't have
   // native object.
   if (!wrapper.IsEmpty() && wrapper->IsUndefined())
@@ -176,65 +176,65 @@ bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object) {
   return true;
 }
 
-static void returnDataCallback(
+static void ReturnDataCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   info.GetReturnValue().Set(info.Data());
 }
 
-static v8::Maybe<bool> createDataProperty(v8::Local<v8::Context> context,
+static v8::Maybe<bool> CreateDataProperty(v8::Local<v8::Context> context,
                                           v8::Local<v8::Object> object,
                                           v8::Local<v8::Name> key,
                                           v8::Local<v8::Value> value) {
-  v8::TryCatch tryCatch(context->GetIsolate());
-  v8::Isolate::DisallowJavascriptExecutionScope throwJs(
+  v8::TryCatch try_catch(context->GetIsolate());
+  v8::Isolate::DisallowJavascriptExecutionScope throw_js(
       context->GetIsolate(),
       v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
   return object->CreateDataProperty(context, key, value);
 }
 
-static void createFunctionPropertyWithData(v8::Local<v8::Context> context,
+static void CreateFunctionPropertyWithData(v8::Local<v8::Context> context,
                                            v8::Local<v8::Object> object,
                                            const char* name,
                                            v8::FunctionCallback callback,
                                            v8::Local<v8::Value> data,
                                            const char* description) {
-  v8::Local<v8::String> funcName = v8String(context->GetIsolate(), name);
+  v8::Local<v8::String> func_name = V8String(context->GetIsolate(), name);
   v8::Local<v8::Function> func;
   if (!v8::Function::New(context, callback, data, 0,
                          v8::ConstructorBehavior::kThrow)
            .ToLocal(&func))
     return;
-  func->SetName(funcName);
-  v8::Local<v8::String> returnValue =
-      v8String(context->GetIsolate(), description);
-  v8::Local<v8::Function> toStringFunction;
-  if (v8::Function::New(context, returnDataCallback, returnValue, 0,
+  func->SetName(func_name);
+  v8::Local<v8::String> return_value =
+      V8String(context->GetIsolate(), description);
+  v8::Local<v8::Function> to_string_function;
+  if (v8::Function::New(context, ReturnDataCallback, return_value, 0,
                         v8::ConstructorBehavior::kThrow)
-          .ToLocal(&toStringFunction))
-    createDataProperty(context, func,
-                       v8String(context->GetIsolate(), "toString"),
-                       toStringFunction);
-  createDataProperty(context, object, funcName, func);
+          .ToLocal(&to_string_function))
+    CreateDataProperty(context, func,
+                       V8String(context->GetIsolate(), "toString"),
+                       to_string_function);
+  CreateDataProperty(context, object, func_name, func);
 }
 
-v8::Maybe<bool> ThreadDebugger::createDataPropertyInArray(
+v8::Maybe<bool> ThreadDebugger::CreateDataPropertyInArray(
     v8::Local<v8::Context> context,
     v8::Local<v8::Array> array,
     int index,
     v8::Local<v8::Value> value) {
-  v8::TryCatch tryCatch(context->GetIsolate());
-  v8::Isolate::DisallowJavascriptExecutionScope throwJs(
+  v8::TryCatch try_catch(context->GetIsolate());
+  v8::Isolate::DisallowJavascriptExecutionScope throw_js(
       context->GetIsolate(),
       v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
   return array->CreateDataProperty(context, index, value);
 }
 
-void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context,
+void ThreadDebugger::CreateFunctionProperty(v8::Local<v8::Context> context,
                                             v8::Local<v8::Object> object,
                                             const char* name,
                                             v8::FunctionCallback callback,
                                             const char* description) {
-  createFunctionPropertyWithData(context, object, name, callback,
+  CreateFunctionPropertyWithData(context, object, name, callback,
                                  v8::External::New(context->GetIsolate(), this),
                                  description);
 }
@@ -242,47 +242,47 @@ void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context,
 void ThreadDebugger::installAdditionalCommandLineAPI(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> object) {
-  createFunctionProperty(
+  CreateFunctionProperty(
       context, object, "getEventListeners",
-      ThreadDebugger::getEventListenersCallback,
+      ThreadDebugger::GetEventListenersCallback,
       "function getEventListeners(node) { [Command Line API] }");
 
-  v8::Local<v8::Value> functionValue;
+  v8::Local<v8::Value> function_value;
   bool success =
-      V8ScriptRunner::compileAndRunInternalScript(
-          v8String(m_isolate, "(function(e) { console.log(e.type, e); })"),
-          m_isolate)
-          .ToLocal(&functionValue) &&
-      functionValue->IsFunction();
+      V8ScriptRunner::CompileAndRunInternalScript(
+          V8String(isolate_, "(function(e) { console.log(e.type, e); })"),
+          isolate_)
+          .ToLocal(&function_value) &&
+      function_value->IsFunction();
   DCHECK(success);
-  createFunctionPropertyWithData(
-      context, object, "monitorEvents", ThreadDebugger::monitorEventsCallback,
-      functionValue,
+  CreateFunctionPropertyWithData(
+      context, object, "monitorEvents", ThreadDebugger::MonitorEventsCallback,
+      function_value,
       "function monitorEvents(object, [types]) { [Command Line API] }");
-  createFunctionPropertyWithData(
+  CreateFunctionPropertyWithData(
       context, object, "unmonitorEvents",
-      ThreadDebugger::unmonitorEventsCallback, functionValue,
+      ThreadDebugger::UnmonitorEventsCallback, function_value,
       "function unmonitorEvents(object, [types]) { [Command Line API] }");
 }
 
-static Vector<String> normalizeEventTypes(
+static Vector<String> NormalizeEventTypes(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   Vector<String> types;
   if (info.Length() > 1 && info[1]->IsString())
-    types.push_back(toCoreString(info[1].As<v8::String>()));
+    types.push_back(ToCoreString(info[1].As<v8::String>()));
   if (info.Length() > 1 && info[1]->IsArray()) {
-    v8::Local<v8::Array> typesArray = v8::Local<v8::Array>::Cast(info[1]);
-    for (size_t i = 0; i < typesArray->Length(); ++i) {
-      v8::Local<v8::Value> typeValue;
-      if (!typesArray->Get(info.GetIsolate()->GetCurrentContext(), i)
-               .ToLocal(&typeValue) ||
-          !typeValue->IsString())
+    v8::Local<v8::Array> types_array = v8::Local<v8::Array>::Cast(info[1]);
+    for (size_t i = 0; i < types_array->Length(); ++i) {
+      v8::Local<v8::Value> type_value;
+      if (!types_array->Get(info.GetIsolate()->GetCurrentContext(), i)
+               .ToLocal(&type_value) ||
+          !type_value->IsString())
         continue;
-      types.push_back(toCoreString(v8::Local<v8::String>::Cast(typeValue)));
+      types.push_back(ToCoreString(v8::Local<v8::String>::Cast(type_value)));
     }
   }
   if (info.Length() == 1)
-    types.appendVector(
+    types.AppendVector(
         Vector<String>({"mouse",   "key",          "touch",
                         "pointer", "control",      "load",
                         "unload",  "abort",        "error",
@@ -291,81 +291,81 @@ static Vector<String> normalizeEventTypes(
                         "blur",    "resize",       "scroll",
                         "search",  "devicemotion", "deviceorientation"}));
 
-  Vector<String> outputTypes;
+  Vector<String> output_types;
   for (size_t i = 0; i < types.size(); ++i) {
     if (types[i] == "mouse")
-      outputTypes.appendVector(
+      output_types.AppendVector(
           Vector<String>({"auxclick", "click", "dblclick", "mousedown",
                           "mouseeenter", "mouseleave", "mousemove", "mouseout",
                           "mouseover", "mouseup", "mouseleave", "mousewheel"}));
     else if (types[i] == "key")
-      outputTypes.appendVector(
+      output_types.AppendVector(
           Vector<String>({"keydown", "keyup", "keypress", "textInput"}));
     else if (types[i] == "touch")
-      outputTypes.appendVector(Vector<String>(
+      output_types.AppendVector(Vector<String>(
           {"touchstart", "touchmove", "touchend", "touchcancel"}));
     else if (types[i] == "pointer")
-      outputTypes.appendVector(Vector<String>(
+      output_types.AppendVector(Vector<String>(
           {"pointerover", "pointerout", "pointerenter", "pointerleave",
            "pointerdown", "pointerup", "pointermove", "pointercancel",
            "gotpointercapture", "lostpointercapture"}));
     else if (types[i] == "control")
-      outputTypes.appendVector(
+      output_types.AppendVector(
           Vector<String>({"resize", "scroll", "zoom", "focus", "blur", "select",
                           "input", "change", "submit", "reset"}));
     else
-      outputTypes.push_back(types[i]);
+      output_types.push_back(types[i]);
   }
-  return outputTypes;
+  return output_types;
 }
 
-static EventTarget* firstArgumentAsEventTarget(
+static EventTarget* FirstArgumentAsEventTarget(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (info.Length() < 1)
     return nullptr;
   if (EventTarget* target =
           V8EventTarget::toImplWithTypeCheck(info.GetIsolate(), info[0]))
     return target;
-  return toDOMWindow(info.GetIsolate(), info[0]);
+  return ToDOMWindow(info.GetIsolate(), info[0]);
 }
 
-void ThreadDebugger::setMonitorEventsCallback(
+void ThreadDebugger::SetMonitorEventsCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     bool enabled) {
-  EventTarget* eventTarget = firstArgumentAsEventTarget(info);
-  if (!eventTarget)
+  EventTarget* event_target = FirstArgumentAsEventTarget(info);
+  if (!event_target)
     return;
-  Vector<String> types = normalizeEventTypes(info);
-  EventListener* eventListener = V8EventListenerHelper::getEventListener(
-      ScriptState::current(info.GetIsolate()),
+  Vector<String> types = NormalizeEventTypes(info);
+  EventListener* event_listener = V8EventListenerHelper::GetEventListener(
+      ScriptState::Current(info.GetIsolate()),
       v8::Local<v8::Function>::Cast(info.Data()), false,
-      enabled ? ListenerFindOrCreate : ListenerFindOnly);
-  if (!eventListener)
+      enabled ? kListenerFindOrCreate : kListenerFindOnly);
+  if (!event_listener)
     return;
   for (size_t i = 0; i < types.size(); ++i) {
     if (enabled)
-      eventTarget->addEventListener(AtomicString(types[i]), eventListener,
-                                    false);
+      event_target->addEventListener(AtomicString(types[i]), event_listener,
+                                     false);
     else
-      eventTarget->removeEventListener(AtomicString(types[i]), eventListener,
-                                       false);
+      event_target->removeEventListener(AtomicString(types[i]), event_listener,
+                                        false);
   }
 }
 
 // static
-void ThreadDebugger::monitorEventsCallback(
+void ThreadDebugger::MonitorEventsCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  setMonitorEventsCallback(info, true);
+  SetMonitorEventsCallback(info, true);
 }
 
 // static
-void ThreadDebugger::unmonitorEventsCallback(
+void ThreadDebugger::UnmonitorEventsCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  setMonitorEventsCallback(info, false);
+  SetMonitorEventsCallback(info, false);
 }
 
 // static
-void ThreadDebugger::getEventListenersCallback(
+void ThreadDebugger::GetEventListenersCallback(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (info.Length() < 1)
     return;
@@ -375,44 +375,45 @@ void ThreadDebugger::getEventListenersCallback(
   DCHECK(debugger);
   v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  int groupId = debugger->contextGroupId(toExecutionContext(context));
+  int group_id = debugger->ContextGroupId(ToExecutionContext(context));
 
-  V8EventListenerInfoList listenerInfo;
+  V8EventListenerInfoList listener_info;
   // eventListeners call can produce message on ErrorEvent during lazy event
   // listener compilation.
-  if (groupId)
-    debugger->muteMetrics(groupId);
-  InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0],
-                                                         &listenerInfo);
-  if (groupId)
-    debugger->unmuteMetrics(groupId);
+  if (group_id)
+    debugger->muteMetrics(group_id);
+  InspectorDOMDebuggerAgent::EventListenersInfoForTarget(isolate, info[0],
+                                                         &listener_info);
+  if (group_id)
+    debugger->unmuteMetrics(group_id);
 
   v8::Local<v8::Object> result = v8::Object::New(isolate);
-  AtomicString currentEventType;
+  AtomicString current_event_type;
   v8::Local<v8::Array> listeners;
-  size_t outputIndex = 0;
-  for (auto& info : listenerInfo) {
-    if (currentEventType != info.eventType) {
-      currentEventType = info.eventType;
+  size_t output_index = 0;
+  for (auto& info : listener_info) {
+    if (current_event_type != info.event_type) {
+      current_event_type = info.event_type;
       listeners = v8::Array::New(isolate);
-      outputIndex = 0;
-      createDataProperty(context, result, v8String(isolate, currentEventType),
+      output_index = 0;
+      CreateDataProperty(context, result, V8String(isolate, current_event_type),
                          listeners);
     }
 
-    v8::Local<v8::Object> listenerObject = v8::Object::New(isolate);
-    createDataProperty(context, listenerObject, v8String(isolate, "listener"),
+    v8::Local<v8::Object> listener_object = v8::Object::New(isolate);
+    CreateDataProperty(context, listener_object, V8String(isolate, "listener"),
                        info.handler);
-    createDataProperty(context, listenerObject, v8String(isolate, "useCapture"),
-                       v8::Boolean::New(isolate, info.useCapture));
-    createDataProperty(context, listenerObject, v8String(isolate, "passive"),
+    CreateDataProperty(context, listener_object,
+                       V8String(isolate, "useCapture"),
+                       v8::Boolean::New(isolate, info.use_capture));
+    CreateDataProperty(context, listener_object, V8String(isolate, "passive"),
                        v8::Boolean::New(isolate, info.passive));
-    createDataProperty(context, listenerObject, v8String(isolate, "once"),
+    CreateDataProperty(context, listener_object, V8String(isolate, "once"),
                        v8::Boolean::New(isolate, info.once));
-    createDataProperty(context, listenerObject, v8String(isolate, "type"),
-                       v8String(isolate, currentEventType));
-    createDataPropertyInArray(context, listeners, outputIndex++,
-                              listenerObject);
+    CreateDataProperty(context, listener_object, V8String(isolate, "type"),
+                       V8String(isolate, current_event_type));
+    CreateDataPropertyInArray(context, listeners, output_index++,
+                              listener_object);
   }
   info.GetReturnValue().Set(result);
 }
@@ -421,56 +422,56 @@ void ThreadDebugger::consoleTime(const v8_inspector::StringView& title) {
   // TODO(dgozman): we can save on a copy here if trace macro would take a
   // pointer with length.
   TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console",
-                                toCoreString(title).utf8().data(), this);
+                                ToCoreString(title).Utf8().Data(), this);
 }
 
 void ThreadDebugger::consoleTimeEnd(const v8_inspector::StringView& title) {
   // TODO(dgozman): we can save on a copy here if trace macro would take a
   // pointer with length.
   TRACE_EVENT_COPY_ASYNC_END0("blink.console",
-                              toCoreString(title).utf8().data(), this);
+                              ToCoreString(title).Utf8().Data(), this);
 }
 
 void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {
-  v8::Isolate* isolate = m_isolate;
+  v8::Isolate* isolate = isolate_;
   // TODO(dgozman): we can save on a copy here if TracedValue would take a
   // StringView.
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data",
-      InspectorTimeStampEvent::data(currentExecutionContext(isolate),
-                                    toCoreString(title)));
+      InspectorTimeStampEvent::Data(CurrentExecutionContext(isolate),
+                                    ToCoreString(title)));
 }
 
 void ThreadDebugger::startRepeatingTimer(
     double interval,
     V8InspectorClient::TimerCallback callback,
     void* data) {
-  m_timerData.push_back(data);
-  m_timerCallbacks.push_back(callback);
+  timer_data_.push_back(data);
+  timer_callbacks_.push_back(callback);
 
-  std::unique_ptr<Timer<ThreadDebugger>> timer = WTF::wrapUnique(
-      new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
-  Timer<ThreadDebugger>* timerPtr = timer.get();
-  m_timers.push_back(std::move(timer));
-  timerPtr->startRepeating(interval, BLINK_FROM_HERE);
+  std::unique_ptr<Timer<ThreadDebugger>> timer = WTF::WrapUnique(
+      new Timer<ThreadDebugger>(this, &ThreadDebugger::OnTimer));
+  Timer<ThreadDebugger>* timer_ptr = timer.get();
+  timers_.push_back(std::move(timer));
+  timer_ptr->StartRepeating(interval, BLINK_FROM_HERE);
 }
 
 void ThreadDebugger::cancelTimer(void* data) {
-  for (size_t index = 0; index < m_timerData.size(); ++index) {
-    if (m_timerData[index] == data) {
-      m_timers[index]->stop();
-      m_timerCallbacks.erase(index);
-      m_timers.erase(index);
-      m_timerData.erase(index);
+  for (size_t index = 0; index < timer_data_.size(); ++index) {
+    if (timer_data_[index] == data) {
+      timers_[index]->Stop();
+      timer_callbacks_.erase(index);
+      timers_.erase(index);
+      timer_data_.erase(index);
       return;
     }
   }
 }
 
-void ThreadDebugger::onTimer(TimerBase* timer) {
-  for (size_t index = 0; index < m_timers.size(); ++index) {
-    if (m_timers[index].get() == timer) {
-      m_timerCallbacks[index](m_timerData[index]);
+void ThreadDebugger::OnTimer(TimerBase* timer) {
+  for (size_t index = 0; index < timers_.size(); ++index) {
+    if (timers_[index].get() == timer) {
+      timer_callbacks_[index](timer_data_[index]);
       return;
     }
   }

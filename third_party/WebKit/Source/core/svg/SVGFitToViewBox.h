@@ -36,23 +36,23 @@ class QualifiedName;
 
 class SVGFitToViewBox : public GarbageCollectedMixin {
  public:
-  static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect,
+  static AffineTransform ViewBoxToViewTransform(const FloatRect& view_box_rect,
                                                 SVGPreserveAspectRatio*,
-                                                float viewWidth,
-                                                float viewHeight);
+                                                float view_width,
+                                                float view_height);
 
-  static bool isKnownAttribute(const QualifiedName&);
+  static bool IsKnownAttribute(const QualifiedName&);
 
-  bool hasValidViewBox() const { return m_viewBox->currentValue()->isValid(); }
-  bool hasEmptyViewBox() const {
-    return m_viewBox->currentValue()->isValid() &&
-           m_viewBox->currentValue()->value().isEmpty();
+  bool HasValidViewBox() const { return view_box_->CurrentValue()->IsValid(); }
+  bool HasEmptyViewBox() const {
+    return view_box_->CurrentValue()->IsValid() &&
+           view_box_->CurrentValue()->Value().IsEmpty();
   }
 
   // JS API
-  SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
+  SVGAnimatedRect* viewBox() const { return view_box_.Get(); }
   SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const {
-    return m_preserveAspectRatio.get();
+    return preserve_aspect_ratio_.Get();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -61,8 +61,8 @@ class SVGFitToViewBox : public GarbageCollectedMixin {
   explicit SVGFitToViewBox(SVGElement*);
 
  private:
-  Member<SVGAnimatedRect> m_viewBox;
-  Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+  Member<SVGAnimatedRect> view_box_;
+  Member<SVGAnimatedPreserveAspectRatio> preserve_aspect_ratio_;
 };
 
 }  // namespace blink

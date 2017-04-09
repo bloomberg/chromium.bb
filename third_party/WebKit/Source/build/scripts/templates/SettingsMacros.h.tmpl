@@ -6,8 +6,8 @@
 
 #define SETTINGS_GETTERS_AND_SETTERS \
     {% for setting in settings %}
-    {{setting.type|to_passing_type}} get{{setting.name|upper_first}}() const { return m_{{setting.name}}; } \
-    void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}); \
+    {{setting.type|to_passing_type}} Get{{setting.name|upper_first}}() const { return m_{{setting.name}}; } \
+    void Set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}); \
     {% endfor %}
     void setFromStrings(const String& name, const String& value);
 // End of SETTINGS_GETTERS_AND_SETTERS.
@@ -32,31 +32,31 @@
 
 #define SETTINGS_SETTER_BODIES \
 {% for setting in settings %}
-void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}) { \
+void Settings::Set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}) { \
   if (m_{{setting.name}} == {{setting.name}}) \
     return; \
   m_{{setting.name}} = {{setting.name}}; \
   {% if setting.invalidate %}
-  invalidate(SettingsDelegate::{{setting.invalidate}}Change); \
+  Invalidate(SettingsDelegate::k{{setting.invalidate}}Change); \
   {% endif  %}
 } \
 {% endfor %}
 void Settings::setFromStrings(const String& name, const String& value) { \
   {% for setting in settings %}
   if (name == "{{setting.name}}") { \
-    set{{setting.name|upper_first}}( \
+    Set{{setting.name|upper_first}}( \
       {% if setting.type == 'String' %}
       value \
       {% elif setting.type == 'bool' %}
-      value.isEmpty() || value == "true" \
+      value.IsEmpty() || value == "true" \
       {% elif setting.type == 'int' %}
-      value.toInt() \
+      value.ToInt() \
       {% elif setting.type == 'float' %}
-      value.toFloat() \
+      value.ToFloat() \
       {% elif setting.type == 'double' %}
-      value.toDouble() \
+      value.ToDouble() \
       {% else %}
-      static_cast<{{setting.type}}>(value.toInt()) \
+      static_cast<{{setting.type}}>(value.ToInt()) \
       {% endif %}
     ); \
     return; \

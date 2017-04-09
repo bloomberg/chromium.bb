@@ -29,29 +29,29 @@
 
 namespace blink {
 
-const char* SpeechRecognitionController::supplementName() {
+const char* SpeechRecognitionController::SupplementName() {
   return "SpeechRecognitionController";
 }
 
 SpeechRecognitionController::SpeechRecognitionController(
     std::unique_ptr<SpeechRecognitionClient> client)
-    : m_client(std::move(client)) {}
+    : client_(std::move(client)) {}
 
 SpeechRecognitionController::~SpeechRecognitionController() {
   // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.
 }
 
-SpeechRecognitionController* SpeechRecognitionController::create(
+SpeechRecognitionController* SpeechRecognitionController::Create(
     std::unique_ptr<SpeechRecognitionClient> client) {
   return new SpeechRecognitionController(std::move(client));
 }
 
-void provideSpeechRecognitionTo(
+void ProvideSpeechRecognitionTo(
     Page& page,
     std::unique_ptr<SpeechRecognitionClient> client) {
-  SpeechRecognitionController::provideTo(
-      page, SpeechRecognitionController::supplementName(),
-      SpeechRecognitionController::create(std::move(client)));
+  SpeechRecognitionController::ProvideTo(
+      page, SpeechRecognitionController::SupplementName(),
+      SpeechRecognitionController::Create(std::move(client)));
 }
 
 }  // namespace blink

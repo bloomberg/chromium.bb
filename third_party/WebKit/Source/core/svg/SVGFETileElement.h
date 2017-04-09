@@ -31,17 +31,17 @@ class SVGFETileElement final : public SVGFilterPrimitiveStandardAttributes {
 
  public:
   DECLARE_NODE_FACTORY(SVGFETileElement);
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFETileElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

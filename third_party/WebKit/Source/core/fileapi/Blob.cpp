@@ -50,26 +50,26 @@ class BlobURLRegistry final : public URLRegistry {
   // SecurityOrigin is passed together with KURL so that the registry can
   // save it for entries from whose KURL the origin is not recoverable by
   // using BlobURL::getOrigin().
-  void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-  void unregisterURL(const KURL&) override;
+  void RegisterURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+  void UnregisterURL(const KURL&) override;
 
-  static URLRegistry& registry();
+  static URLRegistry& Registry();
 };
 
-void BlobURLRegistry::registerURL(SecurityOrigin* origin,
-                                  const KURL& publicURL,
-                                  URLRegistrable* registrableObject) {
-  ASSERT(&registrableObject->registry() == this);
-  Blob* blob = static_cast<Blob*>(registrableObject);
-  BlobRegistry::registerPublicBlobURL(origin, publicURL,
-                                      blob->blobDataHandle());
+void BlobURLRegistry::RegisterURL(SecurityOrigin* origin,
+                                  const KURL& public_url,
+                                  URLRegistrable* registrable_object) {
+  ASSERT(&registrable_object->Registry() == this);
+  Blob* blob = static_cast<Blob*>(registrable_object);
+  BlobRegistry::RegisterPublicBlobURL(origin, public_url,
+                                      blob->GetBlobDataHandle());
 }
 
-void BlobURLRegistry::unregisterURL(const KURL& publicURL) {
-  BlobRegistry::revokePublicBlobURL(publicURL);
+void BlobURLRegistry::UnregisterURL(const KURL& public_url) {
+  BlobRegistry::RevokePublicBlobURL(public_url);
 }
 
-URLRegistry& BlobURLRegistry::registry() {
+URLRegistry& BlobURLRegistry::Registry() {
   // This is called on multiple threads.
   // (This code assumes it is safe to register or unregister URLs on
   // BlobURLRegistry (that is implemented by the embedder) on
@@ -81,63 +81,65 @@ URLRegistry& BlobURLRegistry::registry() {
 
 }  // namespace
 
-Blob::Blob(PassRefPtr<BlobDataHandle> dataHandle)
-    : m_blobDataHandle(std::move(dataHandle)), m_isClosed(false) {}
+Blob::Blob(PassRefPtr<BlobDataHandle> data_handle)
+    : blob_data_handle_(std::move(data_handle)), is_closed_(false) {}
 
 Blob::~Blob() {}
 
 // static
-Blob* Blob::create(
+Blob* Blob::Create(
     ExecutionContext* context,
-    const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blobParts,
+    const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& blob_parts,
     const BlobPropertyBag& options,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   ASSERT(options.hasType());
 
   ASSERT(options.hasEndings());
-  bool normalizeLineEndingsToNative = options.endings() == "native";
-  if (normalizeLineEndingsToNative)
-    UseCounter::count(context, UseCounter::FileAPINativeLineEndings);
+  bool normalize_line_endings_to_native = options.endings() == "native";
+  if (normalize_line_endings_to_native)
+    UseCounter::Count(context, UseCounter::kFileAPINativeLineEndings);
 
-  std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(normalizeType(options.type()));
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  blob_data->SetContentType(NormalizeType(options.type()));
 
-  populateBlobData(blobData.get(), blobParts, normalizeLineEndingsToNative);
+  PopulateBlobData(blob_data.get(), blob_parts,
+                   normalize_line_endings_to_native);
 
-  long long blobSize = blobData->length();
-  return new Blob(BlobDataHandle::create(std::move(blobData), blobSize));
+  long long blob_size = blob_data->length();
+  return new Blob(BlobDataHandle::Create(std::move(blob_data), blob_size));
 }
 
-Blob* Blob::create(const unsigned char* data,
+Blob* Blob::Create(const unsigned char* data,
                    size_t bytes,
-                   const String& contentType) {
+                   const String& content_type) {
   ASSERT(data);
 
-  std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(contentType);
-  blobData->appendBytes(data, bytes);
-  long long blobSize = blobData->length();
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  blob_data->SetContentType(content_type);
+  blob_data->AppendBytes(data, bytes);
+  long long blob_size = blob_data->length();
 
-  return new Blob(BlobDataHandle::create(std::move(blobData), blobSize));
+  return new Blob(BlobDataHandle::Create(std::move(blob_data), blob_size));
 }
 
 // static
-void Blob::populateBlobData(
-    BlobData* blobData,
+void Blob::PopulateBlobData(
+    BlobData* blob_data,
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts,
-    bool normalizeLineEndingsToNative) {
+    bool normalize_line_endings_to_native) {
   for (const auto& item : parts) {
     if (item.isArrayBuffer()) {
-      DOMArrayBuffer* arrayBuffer = item.getAsArrayBuffer();
-      blobData->appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
+      DOMArrayBuffer* array_buffer = item.getAsArrayBuffer();
+      blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
     } else if (item.isArrayBufferView()) {
-      DOMArrayBufferView* arrayBufferView = item.getAsArrayBufferView();
-      blobData->appendBytes(arrayBufferView->baseAddress(),
-                            arrayBufferView->byteLength());
+      DOMArrayBufferView* array_buffer_view = item.getAsArrayBufferView();
+      blob_data->AppendBytes(array_buffer_view->BaseAddress(),
+                             array_buffer_view->byteLength());
     } else if (item.isBlob()) {
-      item.getAsBlob()->appendTo(*blobData);
+      item.getAsBlob()->AppendTo(*blob_data);
     } else if (item.isUSVString()) {
-      blobData->appendText(item.getAsUSVString(), normalizeLineEndingsToNative);
+      blob_data->AppendText(item.getAsUSVString(),
+                            normalize_line_endings_to_native);
     } else {
       NOTREACHED();
     }
@@ -145,7 +147,7 @@ void Blob::populateBlobData(
 }
 
 // static
-void Blob::clampSliceOffsets(long long size, long long& start, long long& end) {
+void Blob::ClampSliceOffsets(long long size, long long& start, long long& end) {
   ASSERT(size != -1);
 
   // Convert the negative value that is used to select from the end.
@@ -171,73 +173,73 @@ void Blob::clampSliceOffsets(long long size, long long& start, long long& end) {
 
 Blob* Blob::slice(long long start,
                   long long end,
-                  const String& contentType,
-                  ExceptionState& exceptionState) const {
+                  const String& content_type,
+                  ExceptionState& exception_state) const {
   if (isClosed()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Blob has been closed.");
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "Blob has been closed.");
     return nullptr;
   }
 
   long long size = this->size();
-  clampSliceOffsets(size, start, end);
+  ClampSliceOffsets(size, start, end);
 
   long long length = end - start;
-  std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(normalizeType(contentType));
-  blobData->appendBlob(m_blobDataHandle, start, length);
-  return Blob::create(BlobDataHandle::create(std::move(blobData), length));
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  blob_data->SetContentType(NormalizeType(content_type));
+  blob_data->AppendBlob(blob_data_handle_, start, length);
+  return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
 }
 
-void Blob::close(ScriptState* scriptState, ExceptionState& exceptionState) {
+void Blob::close(ScriptState* script_state, ExceptionState& exception_state) {
   if (isClosed()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "Blob has been closed.");
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "Blob has been closed.");
     return;
   }
 
   // Dereferencing a Blob that has been closed should result in
   // a network error. Revoke URLs registered against it through
   // its UUID.
-  DOMURL::revokeObjectUUID(scriptState->getExecutionContext(), uuid());
+  DOMURL::RevokeObjectUUID(script_state->GetExecutionContext(), Uuid());
 
   // A Blob enters a 'readability state' of closed, where it will report its
   // size as zero. Blob and FileReader operations now throws on
   // being passed a Blob in that state. Downstream uses of closed Blobs
   // (e.g., XHR.send()) consider them as empty.
-  std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->setContentType(type());
-  m_blobDataHandle = BlobDataHandle::create(std::move(blobData), 0);
-  m_isClosed = true;
+  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  blob_data->SetContentType(type());
+  blob_data_handle_ = BlobDataHandle::Create(std::move(blob_data), 0);
+  is_closed_ = true;
 }
 
-void Blob::appendTo(BlobData& blobData) const {
-  blobData.appendBlob(m_blobDataHandle, 0, m_blobDataHandle->size());
+void Blob::AppendTo(BlobData& blob_data) const {
+  blob_data.AppendBlob(blob_data_handle_, 0, blob_data_handle_->size());
 }
 
-URLRegistry& Blob::registry() const {
-  return BlobURLRegistry::registry();
+URLRegistry& Blob::Registry() const {
+  return BlobURLRegistry::Registry();
 }
 
 // static
-String Blob::normalizeType(const String& type) {
-  if (type.isNull())
-    return emptyString;
+String Blob::NormalizeType(const String& type) {
+  if (type.IsNull())
+    return g_empty_string;
   const size_t length = type.length();
-  if (type.is8Bit()) {
-    const LChar* chars = type.characters8();
+  if (type.Is8Bit()) {
+    const LChar* chars = type.Characters8();
     for (size_t i = 0; i < length; ++i) {
       if (chars[i] < 0x20 || chars[i] > 0x7e)
-        return emptyString;
+        return g_empty_string;
     }
   } else {
-    const UChar* chars = type.characters16();
+    const UChar* chars = type.Characters16();
     for (size_t i = 0; i < length; ++i) {
       if (chars[i] < 0x0020 || chars[i] > 0x007e)
-        return emptyString;
+        return g_empty_string;
     }
   }
-  return type.lower();
+  return type.Lower();
 }
 
 }  // namespace blink

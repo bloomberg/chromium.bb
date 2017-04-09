@@ -10,29 +10,29 @@ WebEncryptedMediaKeyInformation::WebEncryptedMediaKeyInformation() {}
 
 WebEncryptedMediaKeyInformation::~WebEncryptedMediaKeyInformation() {}
 
-WebData WebEncryptedMediaKeyInformation::id() const {
-  return m_id;
+WebData WebEncryptedMediaKeyInformation::Id() const {
+  return id_;
 }
 
-void WebEncryptedMediaKeyInformation::setId(const WebData& id) {
-  m_id.assign(id);
+void WebEncryptedMediaKeyInformation::SetId(const WebData& id) {
+  id_.Assign(id);
 }
 
 WebEncryptedMediaKeyInformation::KeyStatus
-WebEncryptedMediaKeyInformation::status() const {
-  return m_status;
+WebEncryptedMediaKeyInformation::Status() const {
+  return status_;
 }
 
-void WebEncryptedMediaKeyInformation::setStatus(KeyStatus status) {
-  m_status = status;
+void WebEncryptedMediaKeyInformation::SetStatus(KeyStatus status) {
+  status_ = status;
 }
 
-uint32_t WebEncryptedMediaKeyInformation::systemCode() const {
-  return m_systemCode;
+uint32_t WebEncryptedMediaKeyInformation::SystemCode() const {
+  return system_code_;
 }
 
-void WebEncryptedMediaKeyInformation::setSystemCode(uint32_t systemCode) {
-  m_systemCode = systemCode;
+void WebEncryptedMediaKeyInformation::SetSystemCode(uint32_t system_code) {
+  system_code_ = system_code;
 }
 
 }  // namespace blink

@@ -28,29 +28,29 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   // null.
   //
   // These transforms are not flattened to 2d.
-  const TransformationMatrix* getCachedTransform(
-      const TransformPaintPropertyNode* ancestorTransform);
+  const TransformationMatrix* GetCachedTransform(
+      const TransformPaintPropertyNode* ancestor_transform);
 
   // Stores the "transformed rect" of |this| in the space of |ancestors|,
   // into a local cache.
-  void setCachedTransform(const TransformPaintPropertyNode* ancestorTransform,
-                          const TransformationMatrix& toAncestor);
+  void SetCachedTransform(const TransformPaintPropertyNode* ancestor_transform,
+                          const TransformationMatrix& to_ancestor);
 
-  static void clearCache();
+  static void ClearCache();
 
  private:
   struct TransformCacheEntry {
-    const TransformPaintPropertyNode* ancestorNode;
-    TransformationMatrix toAncestor;
-    TransformCacheEntry(const TransformPaintPropertyNode* ancestorNodeArg,
-                        const TransformationMatrix& toAncestorArg)
-        : ancestorNode(ancestorNodeArg), toAncestor(toAncestorArg) {}
+    const TransformPaintPropertyNode* ancestor_node;
+    TransformationMatrix to_ancestor;
+    TransformCacheEntry(const TransformPaintPropertyNode* ancestor_node_arg,
+                        const TransformationMatrix& to_ancestor_arg)
+        : ancestor_node(ancestor_node_arg), to_ancestor(to_ancestor_arg) {}
   };
 
-  void invalidateCacheIfNeeded();
+  void InvalidateCacheIfNeeded();
 
-  Vector<TransformCacheEntry> m_transformCache;
-  unsigned m_cacheGeneration;
+  Vector<TransformCacheEntry> transform_cache_;
+  unsigned cache_generation_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryMapperTransformCache);
 };

@@ -65,216 +65,219 @@
 
 namespace blink {
 
-void LocalWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
-  if (m_lifecycle != Lifecycle::ContextIsInitialized)
+void LocalWindowProxy::DisposeContext(GlobalDetachmentBehavior behavior) {
+  if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Context> context = m_scriptState->context();
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Local<v8::Context> context = script_state_->GetContext();
   // The embedder could run arbitrary code in response to the
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
-  frame()->loader().client()->willReleaseScriptContext(context,
-                                                       m_world->worldId());
-  MainThreadDebugger::instance()->contextWillBeDestroyed(m_scriptState.get());
+  GetFrame()->Loader().Client()->WillReleaseScriptContext(context,
+                                                          world_->GetWorldId());
+  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.Get());
 
-  if (behavior == DetachGlobal) {
-    v8::Local<v8::Context> context = m_scriptState->context();
+  if (behavior == kDetachGlobal) {
+    v8::Local<v8::Context> context = script_state_->GetContext();
     // Clean up state on the global proxy, which will be reused.
-    if (!m_globalProxy.isEmpty()) {
-      CHECK(m_globalProxy == context->Global());
-      CHECK_EQ(toScriptWrappable(context->Global()),
-               toScriptWrappable(
+    if (!global_proxy_.IsEmpty()) {
+      CHECK(global_proxy_ == context->Global());
+      CHECK_EQ(ToScriptWrappable(context->Global()),
+               ToScriptWrappable(
                    context->Global()->GetPrototype().As<v8::Object>()));
-      m_globalProxy.get().SetWrapperClassId(0);
+      global_proxy_.Get().SetWrapperClassId(0);
     }
-    V8DOMWrapper::clearNativeInfo(isolate(), context->Global());
-    m_scriptState->detachGlobalObject();
+    V8DOMWrapper::ClearNativeInfo(GetIsolate(), context->Global());
+    script_state_->DetachGlobalObject();
 
 #if DCHECK_IS_ON()
-    didDetachGlobalObject();
+    DidDetachGlobalObject();
 #endif
   }
 
-  m_scriptState->disposePerContextData();
+  script_state_->DisposePerContextData();
 
   // It's likely that disposing the context has created a lot of
   // garbage. Notify V8 about this so it'll have a chance of cleaning
   // it up when idle.
-  V8GCForContextDispose::instance().notifyContextDisposed(
-      frame()->isMainFrame());
+  V8GCForContextDispose::Instance().NotifyContextDisposed(
+      GetFrame()->IsMainFrame());
 
-  DCHECK_EQ(m_lifecycle, Lifecycle::ContextIsInitialized);
-  m_lifecycle = behavior == DetachGlobal ? Lifecycle::GlobalObjectIsDetached
-                                         : Lifecycle::FrameIsDetached;
+  DCHECK_EQ(lifecycle_, Lifecycle::kContextIsInitialized);
+  lifecycle_ = behavior == kDetachGlobal ? Lifecycle::kGlobalObjectIsDetached
+                                         : Lifecycle::kFrameIsDetached;
 }
 
-void LocalWindowProxy::initialize() {
+void LocalWindowProxy::Initialize() {
   TRACE_EVENT1("v8", "LocalWindowProxy::initialize", "isMainWindow",
-               frame()->isMainFrame());
+               GetFrame()->IsMainFrame());
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
-      frame()->isMainFrame()
+      GetFrame()->IsMainFrame()
           ? "Blink.Binding.InitializeMainLocalWindowProxy"
           : "Blink.Binding.InitializeNonMainLocalWindowProxy");
 
-  ScriptForbiddenScope::AllowUserAgentScript allowScript;
+  ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
-  v8::HandleScope handleScope(isolate());
+  v8::HandleScope handle_scope(GetIsolate());
 
-  createContext();
+  CreateContext();
 
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Context> context = m_scriptState->context();
-  if (m_globalProxy.isEmpty()) {
-    m_globalProxy.set(isolate(), context->Global());
-    CHECK(!m_globalProxy.isEmpty());
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Local<v8::Context> context = script_state_->GetContext();
+  if (global_proxy_.IsEmpty()) {
+    global_proxy_.Set(GetIsolate(), context->Global());
+    CHECK(!global_proxy_.IsEmpty());
   }
 
-  setupWindowPrototypeChain();
+  SetupWindowPrototypeChain();
 
   SecurityOrigin* origin = 0;
-  if (m_world->isMainWorld()) {
+  if (world_->IsMainWorld()) {
     // ActivityLogger for main world is updated within updateDocumentInternal().
-    updateDocumentInternal();
-    origin = frame()->document()->getSecurityOrigin();
+    UpdateDocumentInternal();
+    origin = GetFrame()->GetDocument()->GetSecurityOrigin();
     // FIXME: Can this be removed when CSP moves to browser?
-    ContentSecurityPolicy* csp = frame()->document()->contentSecurityPolicy();
-    context->AllowCodeGenerationFromStrings(
-        csp->allowEval(0, SecurityViolationReportingPolicy::SuppressReporting));
+    ContentSecurityPolicy* csp =
+        GetFrame()->GetDocument()->GetContentSecurityPolicy();
+    context->AllowCodeGenerationFromStrings(csp->AllowEval(
+        0, SecurityViolationReportingPolicy::kSuppressReporting));
     context->SetErrorMessageForCodeGenerationFromStrings(
-        v8String(isolate(), csp->evalDisabledErrorMessage()));
+        V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   } else {
-    updateActivityLogger();
-    origin = m_world->isolatedWorldSecurityOrigin();
-    setSecurityToken(origin);
+    UpdateActivityLogger();
+    origin = world_->IsolatedWorldSecurityOrigin();
+    SetSecurityToken(origin);
   }
 
-  MainThreadDebugger::instance()->contextCreated(m_scriptState.get(), frame(),
-                                                 origin);
-  frame()->loader().client()->didCreateScriptContext(context,
-                                                     m_world->worldId());
+  MainThreadDebugger::Instance()->ContextCreated(script_state_.Get(),
+                                                 GetFrame(), origin);
+  GetFrame()->Loader().Client()->DidCreateScriptContext(context,
+                                                        world_->GetWorldId());
   // If conditional features for window have been queued before the V8 context
   // was ready, then inject them into the context now
-  if (m_world->isMainWorld()) {
-    installConditionalFeaturesOnWindow(m_scriptState.get());
+  if (world_->IsMainWorld()) {
+    InstallConditionalFeaturesOnWindow(script_state_.Get());
   }
 
-  if (m_world->isMainWorld())
-    frame()->loader().dispatchDidClearWindowObjectInMainWorld();
+  if (world_->IsMainWorld())
+    GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();
 }
 
-void LocalWindowProxy::createContext() {
+void LocalWindowProxy::CreateContext() {
   // Create a new v8::Context with the window object as the global object
   // (aka the inner global). Reuse the outer global proxy if it already exists.
-  v8::Local<v8::ObjectTemplate> globalTemplate =
-      V8Window::domTemplate(isolate(), *m_world)->InstanceTemplate();
-  CHECK(!globalTemplate.IsEmpty());
+  v8::Local<v8::ObjectTemplate> global_template =
+      V8Window::domTemplate(GetIsolate(), *world_)->InstanceTemplate();
+  CHECK(!global_template.IsEmpty());
 
-  Vector<const char*> extensionNames;
+  Vector<const char*> extension_names;
   // Dynamically tell v8 about our extensions now.
-  if (frame()->loader().client()->allowScriptExtensions()) {
-    const V8Extensions& extensions = ScriptController::registeredExtensions();
-    extensionNames.reserveInitialCapacity(extensions.size());
+  if (GetFrame()->Loader().Client()->AllowScriptExtensions()) {
+    const V8Extensions& extensions = ScriptController::RegisteredExtensions();
+    extension_names.ReserveInitialCapacity(extensions.size());
     for (const auto* extension : extensions)
-      extensionNames.push_back(extension->name());
+      extension_names.push_back(extension->name());
   }
-  v8::ExtensionConfiguration extensionConfiguration(extensionNames.size(),
-                                                    extensionNames.data());
+  v8::ExtensionConfiguration extension_configuration(extension_names.size(),
+                                                     extension_names.Data());
 
   v8::Local<v8::Context> context;
   {
-    V8PerIsolateData::UseCounterDisabledScope useCounterDisabled(
-        V8PerIsolateData::from(isolate()));
+    V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
+        V8PerIsolateData::From(GetIsolate()));
     context =
-        v8::Context::New(isolate(), &extensionConfiguration, globalTemplate,
-                         m_globalProxy.newLocal(isolate()));
+        v8::Context::New(GetIsolate(), &extension_configuration,
+                         global_template, global_proxy_.NewLocal(GetIsolate()));
   }
   CHECK(!context.IsEmpty());
 
 #if DCHECK_IS_ON()
-  didAttachGlobalObject();
+  DidAttachGlobalObject();
 #endif
 
-  m_scriptState = ScriptState::create(context, m_world);
+  script_state_ = ScriptState::Create(context, world_);
 
-  DCHECK(m_lifecycle == Lifecycle::ContextIsUninitialized ||
-         m_lifecycle == Lifecycle::GlobalObjectIsDetached);
-  m_lifecycle = Lifecycle::ContextIsInitialized;
-  DCHECK(m_scriptState->contextIsValid());
+  DCHECK(lifecycle_ == Lifecycle::kContextIsUninitialized ||
+         lifecycle_ == Lifecycle::kGlobalObjectIsDetached);
+  lifecycle_ = Lifecycle::kContextIsInitialized;
+  DCHECK(script_state_->ContextIsValid());
 }
 
-void LocalWindowProxy::setupWindowPrototypeChain() {
+void LocalWindowProxy::SetupWindowPrototypeChain() {
   // Associate the window wrapper object and its prototype chain with the
   // corresponding native DOMWindow object.
-  DOMWindow* window = frame()->domWindow();
-  const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
-  v8::Local<v8::Context> context = m_scriptState->context();
+  DOMWindow* window = GetFrame()->DomWindow();
+  const WrapperTypeInfo* wrapper_type_info = window->GetWrapperTypeInfo();
+  v8::Local<v8::Context> context = script_state_->GetContext();
 
   // The global proxy object.  Note this is not the global object.
-  v8::Local<v8::Object> globalProxy = context->Global();
-  CHECK(m_globalProxy == globalProxy);
-  V8DOMWrapper::setNativeInfo(isolate(), globalProxy, wrapperTypeInfo, window);
+  v8::Local<v8::Object> global_proxy = context->Global();
+  CHECK(global_proxy_ == global_proxy);
+  V8DOMWrapper::SetNativeInfo(GetIsolate(), global_proxy, wrapper_type_info,
+                              window);
   // Mark the handle to be traced by Oilpan, since the global proxy has a
   // reference to the DOMWindow.
-  m_globalProxy.get().SetWrapperClassId(wrapperTypeInfo->wrapperClassId);
+  global_proxy_.Get().SetWrapperClassId(wrapper_type_info->wrapper_class_id);
 
   // The global object, aka window wrapper object.
-  v8::Local<v8::Object> windowWrapper =
-      globalProxy->GetPrototype().As<v8::Object>();
-  v8::Local<v8::Object> associatedWrapper =
-      associateWithWrapper(window, wrapperTypeInfo, windowWrapper);
-  DCHECK(associatedWrapper == windowWrapper);
+  v8::Local<v8::Object> window_wrapper =
+      global_proxy->GetPrototype().As<v8::Object>();
+  v8::Local<v8::Object> associated_wrapper =
+      AssociateWithWrapper(window, wrapper_type_info, window_wrapper);
+  DCHECK(associated_wrapper == window_wrapper);
 
   // The prototype object of Window interface.
-  v8::Local<v8::Object> windowPrototype =
-      windowWrapper->GetPrototype().As<v8::Object>();
-  CHECK(!windowPrototype.IsEmpty());
-  V8DOMWrapper::setNativeInfo(isolate(), windowPrototype, wrapperTypeInfo,
+  v8::Local<v8::Object> window_prototype =
+      window_wrapper->GetPrototype().As<v8::Object>();
+  CHECK(!window_prototype.IsEmpty());
+  V8DOMWrapper::SetNativeInfo(GetIsolate(), window_prototype, wrapper_type_info,
                               window);
 
   // The named properties object of Window interface.
-  v8::Local<v8::Object> windowProperties =
-      windowPrototype->GetPrototype().As<v8::Object>();
-  CHECK(!windowProperties.IsEmpty());
-  V8DOMWrapper::setNativeInfo(isolate(), windowProperties, wrapperTypeInfo,
-                              window);
+  v8::Local<v8::Object> window_properties =
+      window_prototype->GetPrototype().As<v8::Object>();
+  CHECK(!window_properties.IsEmpty());
+  V8DOMWrapper::SetNativeInfo(GetIsolate(), window_properties,
+                              wrapper_type_info, window);
 
   // TODO(keishi): Remove installPagePopupController and implement
   // PagePopupController in another way.
-  V8PagePopupControllerBinding::installPagePopupController(context,
-                                                           windowWrapper);
+  V8PagePopupControllerBinding::InstallPagePopupController(context,
+                                                           window_wrapper);
 }
 
-void LocalWindowProxy::updateDocumentProperty() {
-  DCHECK(m_world->isMainWorld());
+void LocalWindowProxy::UpdateDocumentProperty() {
+  DCHECK(world_->IsMainWorld());
 
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Context> context = m_scriptState->context();
-  v8::Local<v8::Value> documentWrapper =
-      ToV8(frame()->document(), context->Global(), isolate());
-  DCHECK(documentWrapper->IsObject());
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Local<v8::Context> context = script_state_->GetContext();
+  v8::Local<v8::Value> document_wrapper =
+      ToV8(GetFrame()->GetDocument(), context->Global(), GetIsolate());
+  DCHECK(document_wrapper->IsObject());
   // Update the cached accessor for window.document.
-  CHECK(V8PrivateProperty::getWindowDocumentCachedAccessor(isolate()).set(
-      context->Global(), documentWrapper));
+  CHECK(V8PrivateProperty::GetWindowDocumentCachedAccessor(GetIsolate())
+            .Set(context->Global(), document_wrapper));
 }
 
-void LocalWindowProxy::updateActivityLogger() {
-  m_scriptState->perContextData()->setActivityLogger(
-      V8DOMActivityLogger::activityLogger(
-          m_world->worldId(),
-          frame()->document() ? frame()->document()->baseURI() : KURL()));
+void LocalWindowProxy::UpdateActivityLogger() {
+  script_state_->PerContextData()->SetActivityLogger(
+      V8DOMActivityLogger::ActivityLogger(
+          world_->GetWorldId(), GetFrame()->GetDocument()
+                                    ? GetFrame()->GetDocument()->baseURI()
+                                    : KURL()));
 }
 
-void LocalWindowProxy::setSecurityToken(SecurityOrigin* origin) {
+void LocalWindowProxy::SetSecurityToken(SecurityOrigin* origin) {
   // If two tokens are equal, then the SecurityOrigins canAccess each other.
   // If two tokens are not equal, then we have to call canAccess.
   // Note: we can't use the HTTPOrigin if it was set from the DOM.
   String token;
   // If document.domain is modified, v8 needs to do a full canAccess check,
   // so always use an empty security token in that case.
-  bool delaySet = m_world->isMainWorld() && origin->domainWasSetInDOM();
-  if (origin && !delaySet)
-    token = origin->toString();
+  bool delay_set = world_->IsMainWorld() && origin->DomainWasSetInDOM();
+  if (origin && !delay_set)
+    token = origin->ToString();
 
   // An empty or "null" token means we always have to call
   // canAccess. The toString method on securityOrigins returns the
@@ -282,98 +285,99 @@ void LocalWindowProxy::setSecurityToken(SecurityOrigin* origin) {
   // origins that should only allow access to themselves. In this
   // case, we use the global object as the security token to avoid
   // calling canAccess when a script accesses its own objects.
-  v8::HandleScope handleScope(isolate());
-  v8::Local<v8::Context> context = m_scriptState->context();
-  if (token.isEmpty() || token == "null") {
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Context> context = script_state_->GetContext();
+  if (token.IsEmpty() || token == "null") {
     context->UseDefaultSecurityToken();
     return;
   }
 
-  if (m_world->isIsolatedWorld()) {
-    SecurityOrigin* frameSecurityOrigin =
-        frame()->document()->getSecurityOrigin();
-    String frameSecurityToken = frameSecurityOrigin->toString();
+  if (world_->IsIsolatedWorld()) {
+    SecurityOrigin* frame_security_origin =
+        GetFrame()->GetDocument()->GetSecurityOrigin();
+    String frame_security_token = frame_security_origin->ToString();
     // We need to check the return value of domainWasSetInDOM() on the
     // frame's SecurityOrigin because, if that's the case, only
     // SecurityOrigin::m_domain would have been modified.
     // m_domain is not used by SecurityOrigin::toString(), so we would end
     // up generating the same token that was already set.
-    if (frameSecurityOrigin->domainWasSetInDOM() ||
-        frameSecurityToken.isEmpty() || frameSecurityToken == "null") {
+    if (frame_security_origin->DomainWasSetInDOM() ||
+        frame_security_token.IsEmpty() || frame_security_token == "null") {
       context->UseDefaultSecurityToken();
       return;
     }
-    token = frameSecurityToken + token;
+    token = frame_security_token + token;
   }
 
   // NOTE: V8 does identity comparison in fast path, must use a symbol
   // as the security token.
-  context->SetSecurityToken(v8AtomicString(isolate(), token));
+  context->SetSecurityToken(V8AtomicString(GetIsolate(), token));
 }
 
-void LocalWindowProxy::updateDocument() {
-  DCHECK(m_world->isMainWorld());
+void LocalWindowProxy::UpdateDocument() {
+  DCHECK(world_->IsMainWorld());
   // For an uninitialized main window proxy, there's nothing we need
   // to update. The update is done when the window proxy gets initialized later.
-  if (m_lifecycle == Lifecycle::ContextIsUninitialized)
+  if (lifecycle_ == Lifecycle::kContextIsUninitialized)
     return;
 
   // For a navigated-away window proxy, reinitialize it as a new window with new
   // context and document.
-  if (m_lifecycle == Lifecycle::GlobalObjectIsDetached) {
-    initialize();
-    DCHECK_EQ(Lifecycle::ContextIsInitialized, m_lifecycle);
+  if (lifecycle_ == Lifecycle::kGlobalObjectIsDetached) {
+    Initialize();
+    DCHECK_EQ(Lifecycle::kContextIsInitialized, lifecycle_);
     // Initialization internally updates the document properties, so just
     // return afterwards.
     return;
   }
 
-  updateDocumentInternal();
+  UpdateDocumentInternal();
 }
 
-void LocalWindowProxy::updateDocumentInternal() {
-  updateActivityLogger();
-  updateDocumentProperty();
-  updateSecurityOrigin(frame()->document()->getSecurityOrigin());
+void LocalWindowProxy::UpdateDocumentInternal() {
+  UpdateActivityLogger();
+  UpdateDocumentProperty();
+  UpdateSecurityOrigin(GetFrame()->GetDocument()->GetSecurityOrigin());
 }
 
-static v8::Local<v8::Value> getNamedProperty(
-    HTMLDocument* htmlDocument,
+static v8::Local<v8::Value> GetNamedProperty(
+    HTMLDocument* html_document,
     const AtomicString& key,
-    v8::Local<v8::Object> creationContext,
+    v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
-  if (!htmlDocument->hasNamedItem(key) && !htmlDocument->hasExtraNamedItem(key))
-    return v8Undefined();
+  if (!html_document->HasNamedItem(key) &&
+      !html_document->HasExtraNamedItem(key))
+    return V8Undefined();
 
-  DocumentNameCollection* items = htmlDocument->documentNamedItems(key);
-  if (items->isEmpty())
-    return v8Undefined();
+  DocumentNameCollection* items = html_document->DocumentNamedItems(key);
+  if (items->IsEmpty())
+    return V8Undefined();
 
-  if (items->hasExactlyOneItem()) {
-    HTMLElement* element = items->item(0);
+  if (items->HasExactlyOneItem()) {
+    HTMLElement* element = items->Item(0);
     DCHECK(element);
     Frame* frame = isHTMLIFrameElement(*element)
-                       ? toHTMLIFrameElement(*element).contentFrame()
+                       ? toHTMLIFrameElement(*element).ContentFrame()
                        : 0;
     if (frame)
-      return ToV8(frame->domWindow(), creationContext, isolate);
-    return ToV8(element, creationContext, isolate);
+      return ToV8(frame->DomWindow(), creation_context, isolate);
+    return ToV8(element, creation_context, isolate);
   }
-  return ToV8(items, creationContext, isolate);
+  return ToV8(items, creation_context, isolate);
 }
 
-static void getter(v8::Local<v8::Name> property,
+static void Getter(v8::Local<v8::Name> property,
                    const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!property->IsString())
     return;
   // FIXME: Consider passing StringImpl directly.
-  AtomicString name = toCoreAtomicString(property.As<v8::String>());
-  HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
-  DCHECK(htmlDocument);
+  AtomicString name = ToCoreAtomicString(property.As<v8::String>());
+  HTMLDocument* html_document = V8HTMLDocument::toImpl(info.Holder());
+  DCHECK(html_document);
   v8::Local<v8::Value> result =
-      getNamedProperty(htmlDocument, name, info.Holder(), info.GetIsolate());
+      GetNamedProperty(html_document, name, info.Holder(), info.GetIsolate());
   if (!result.IsEmpty()) {
-    v8SetReturnValue(info, result);
+    V8SetReturnValue(info, result);
     return;
   }
   v8::Local<v8::Value> value;
@@ -381,60 +385,62 @@ static void getter(v8::Local<v8::Name> property,
           ->GetRealNamedPropertyInPrototypeChain(
               info.GetIsolate()->GetCurrentContext(), property.As<v8::String>())
           .ToLocal(&value))
-    v8SetReturnValue(info, value);
+    V8SetReturnValue(info, value);
 }
 
-void LocalWindowProxy::namedItemAdded(HTMLDocument* document,
+void LocalWindowProxy::NamedItemAdded(HTMLDocument* document,
                                       const AtomicString& name) {
-  DCHECK(m_world->isMainWorld());
+  DCHECK(world_->IsMainWorld());
 
   // Currently only contexts in attached frames can change the named items.
   // TODO(yukishiino): Support detached frame's case, too, since the spec is not
   // saying that the document needs to be attached to the DOM.
   // https://html.spec.whatwg.org/C/dom.html#dom-document-nameditem
-  DCHECK(m_lifecycle == Lifecycle::ContextIsInitialized);
+  DCHECK(lifecycle_ == Lifecycle::kContextIsInitialized);
   // TODO(yukishiino): Remove the following if-clause due to the above DCHECK.
-  if (m_lifecycle != Lifecycle::ContextIsInitialized)
+  if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Object> documentWrapper =
-      m_world->domDataStore().get(document, isolate());
-  documentWrapper->SetAccessor(isolate()->GetCurrentContext(),
-                               v8String(isolate(), name), getter).ToChecked();
-}
-
-void LocalWindowProxy::namedItemRemoved(HTMLDocument* document,
-                                        const AtomicString& name) {
-  DCHECK(m_world->isMainWorld());
-
-  // Currently only contexts in attached frames can change the named items.
-  // TODO(yukishiino): Support detached frame's case, too, since the spec is not
-  // saying that the document needs to be attached to the DOM.
-  // https://html.spec.whatwg.org/C/dom.html#dom-document-nameditem
-  DCHECK(m_lifecycle == Lifecycle::ContextIsInitialized);
-  // TODO(yukishiino): Remove the following if-clause due to the above DCHECK.
-  if (m_lifecycle != Lifecycle::ContextIsInitialized)
-    return;
-
-  if (document->hasNamedItem(name) || document->hasExtraNamedItem(name))
-    return;
-  ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Object> documentWrapper =
-      m_world->domDataStore().get(document, isolate());
-  documentWrapper
-      ->Delete(isolate()->GetCurrentContext(), v8String(isolate(), name))
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Local<v8::Object> document_wrapper =
+      world_->DomDataStore().Get(document, GetIsolate());
+  document_wrapper
+      ->SetAccessor(GetIsolate()->GetCurrentContext(),
+                    V8String(GetIsolate(), name), Getter)
       .ToChecked();
 }
 
-void LocalWindowProxy::updateSecurityOrigin(SecurityOrigin* origin) {
-  // For an uninitialized window proxy, there's nothing we need to update. The
-  // update is done when the window proxy gets initialized later.
-  if (m_lifecycle == Lifecycle::ContextIsUninitialized ||
-      m_lifecycle == Lifecycle::GlobalObjectIsDetached)
+void LocalWindowProxy::NamedItemRemoved(HTMLDocument* document,
+                                        const AtomicString& name) {
+  DCHECK(world_->IsMainWorld());
+
+  // Currently only contexts in attached frames can change the named items.
+  // TODO(yukishiino): Support detached frame's case, too, since the spec is not
+  // saying that the document needs to be attached to the DOM.
+  // https://html.spec.whatwg.org/C/dom.html#dom-document-nameditem
+  DCHECK(lifecycle_ == Lifecycle::kContextIsInitialized);
+  // TODO(yukishiino): Remove the following if-clause due to the above DCHECK.
+  if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  setSecurityToken(origin);
+  if (document->HasNamedItem(name) || document->HasExtraNamedItem(name))
+    return;
+  ScriptState::Scope scope(script_state_.Get());
+  v8::Local<v8::Object> document_wrapper =
+      world_->DomDataStore().Get(document, GetIsolate());
+  document_wrapper
+      ->Delete(GetIsolate()->GetCurrentContext(), V8String(GetIsolate(), name))
+      .ToChecked();
+}
+
+void LocalWindowProxy::UpdateSecurityOrigin(SecurityOrigin* origin) {
+  // For an uninitialized window proxy, there's nothing we need to update. The
+  // update is done when the window proxy gets initialized later.
+  if (lifecycle_ == Lifecycle::kContextIsUninitialized ||
+      lifecycle_ == Lifecycle::kGlobalObjectIsDetached)
+    return;
+
+  SetSecurityToken(origin);
 }
 
 LocalWindowProxy::LocalWindowProxy(v8::Isolate* isolate,

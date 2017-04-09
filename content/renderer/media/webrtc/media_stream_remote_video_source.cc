@@ -235,10 +235,10 @@ void MediaStreamRemoteVideoSource::OnChanged(
   DCHECK(CalledOnValidThread());
   switch (state) {
     case webrtc::MediaStreamTrackInterface::kLive:
-      SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
+      SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
       break;
     case webrtc::MediaStreamTrackInterface::kEnded:
-      SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
+      SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
       break;
     default:
       NOTREACHED();

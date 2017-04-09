@@ -22,39 +22,39 @@ class ConstructorFails : public TestCustomElementDefinition {
   ConstructorFails(const CustomElementDescriptor& descriptor)
       : TestCustomElementDefinition(descriptor) {}
   ~ConstructorFails() override = default;
-  bool runConstructor(Element*) override { return false; }
+  bool RunConstructor(Element*) override { return false; }
 };
 
 }  // namespace
 
 TEST(CustomElementDefinitionTest, upgrade_clearsReactionQueueOnFailure) {
   Element* element = CreateElement("a-a");
-  EXPECT_EQ(CustomElementState::Undefined, element->getCustomElementState())
+  EXPECT_EQ(CustomElementState::kUndefined, element->GetCustomElementState())
       << "sanity check: this element should be ready to upgrade";
   {
     CEReactionsScope reactions;
-    reactions.enqueueToCurrentQueue(
+    reactions.EnqueueToCurrentQueue(
         element, new TestReaction({new Unreached(
                      "upgrade failure should clear the reaction queue")}));
     ConstructorFails definition(CustomElementDescriptor("a-a", "a-a"));
-    definition.upgrade(element);
+    definition.Upgrade(element);
   }
-  EXPECT_EQ(CustomElementState::Failed, element->getCustomElementState())
+  EXPECT_EQ(CustomElementState::kFailed, element->GetCustomElementState())
       << "failing to construct should have set the 'failed' element state";
 }
 
 TEST(CustomElementDefinitionTest,
      upgrade_clearsReactionQueueOnFailure_backupStack) {
   Element* element = CreateElement("a-a");
-  EXPECT_EQ(CustomElementState::Undefined, element->getCustomElementState())
+  EXPECT_EQ(CustomElementState::kUndefined, element->GetCustomElementState())
       << "sanity check: this element should be ready to upgrade";
-  ResetCustomElementReactionStackForTest resetReactionStack;
-  resetReactionStack.stack().enqueueToBackupQueue(
+  ResetCustomElementReactionStackForTest reset_reaction_stack;
+  reset_reaction_stack.Stack().EnqueueToBackupQueue(
       element, new TestReaction({new Unreached(
                    "upgrade failure should clear the reaction queue")}));
   ConstructorFails definition(CustomElementDescriptor("a-a", "a-a"));
-  definition.upgrade(element);
-  EXPECT_EQ(CustomElementState::Failed, element->getCustomElementState())
+  definition.Upgrade(element);
+  EXPECT_EQ(CustomElementState::kFailed, element->GetCustomElementState())
       << "failing to construct should have set the 'failed' element state";
 }
 

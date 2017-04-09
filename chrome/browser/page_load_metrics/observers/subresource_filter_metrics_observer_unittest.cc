@@ -63,7 +63,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
   InitializePageLoadTiming(&timing);
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorSubresourceFilterMatch;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
   // Navigate away from the current page to force logging of metrics.
@@ -151,7 +151,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorSubresourceFilterMatch;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
   SimulateLoadedResource({false /* was_cached */,
@@ -246,7 +246,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorSubresourceFilterMatch;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
   SimulateLoadedResource({false /* was_cached */,

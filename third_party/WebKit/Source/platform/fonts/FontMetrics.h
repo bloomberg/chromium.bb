@@ -27,161 +27,164 @@
 
 namespace blink {
 
-const unsigned gDefaultUnitsPerEm = 1000;
+const unsigned kGDefaultUnitsPerEm = 1000;
 
 class FontMetrics {
   DISALLOW_NEW();
 
  public:
   FontMetrics()
-      : m_unitsPerEm(gDefaultUnitsPerEm),
-        m_ascent(0),
-        m_descent(0),
-        m_lineGap(0),
-        m_lineSpacing(0),
-        m_xHeight(0),
-        m_zeroWidth(0),
-        m_underlinethickness(0),
-        m_underlinePosition(0),
-        m_ascentInt(0),
-        m_descentInt(0),
-        m_hasXHeight(false),
-        m_hasZeroWidth(false) {}
+      : units_per_em_(kGDefaultUnitsPerEm),
+        ascent_(0),
+        descent_(0),
+        line_gap_(0),
+        line_spacing_(0),
+        x_height_(0),
+        zero_width_(0),
+        underlinethickness_(0),
+        underline_position_(0),
+        ascent_int_(0),
+        descent_int_(0),
+        has_x_height_(false),
+        has_zero_width_(false) {}
 
-  unsigned unitsPerEm() const { return m_unitsPerEm; }
-  void setUnitsPerEm(unsigned unitsPerEm) { m_unitsPerEm = unitsPerEm; }
+  unsigned UnitsPerEm() const { return units_per_em_; }
+  void SetUnitsPerEm(unsigned units_per_em) { units_per_em_ = units_per_em; }
 
-  float floatAscent(FontBaseline baselineType = AlphabeticBaseline) const {
-    if (baselineType == AlphabeticBaseline)
-      return m_ascent;
-    return floatHeight() / 2;
+  float FloatAscent(FontBaseline baseline_type = kAlphabeticBaseline) const {
+    if (baseline_type == kAlphabeticBaseline)
+      return ascent_;
+    return FloatHeight() / 2;
   }
 
-  void setAscent(float ascent) {
-    m_ascent = ascent;
-    m_ascentInt = lroundf(ascent);
+  void SetAscent(float ascent) {
+    ascent_ = ascent;
+    ascent_int_ = lroundf(ascent);
   }
 
-  float floatDescent(FontBaseline baselineType = AlphabeticBaseline) const {
-    if (baselineType == AlphabeticBaseline)
-      return m_descent;
-    return floatHeight() / 2;
+  float FloatDescent(FontBaseline baseline_type = kAlphabeticBaseline) const {
+    if (baseline_type == kAlphabeticBaseline)
+      return descent_;
+    return FloatHeight() / 2;
   }
 
-  void setDescent(float descent) {
-    m_descent = descent;
-    m_descentInt = lroundf(descent);
+  void SetDescent(float descent) {
+    descent_ = descent;
+    descent_int_ = lroundf(descent);
   }
 
-  float floatHeight(FontBaseline baselineType = AlphabeticBaseline) const {
-    return floatAscent() + floatDescent();
+  float FloatHeight(FontBaseline baseline_type = kAlphabeticBaseline) const {
+    return FloatAscent() + FloatDescent();
   }
 
-  float floatLineGap() const { return m_lineGap; }
-  void setLineGap(float lineGap) { m_lineGap = lineGap; }
+  float FloatLineGap() const { return line_gap_; }
+  void SetLineGap(float line_gap) { line_gap_ = line_gap; }
 
-  float floatLineSpacing() const { return m_lineSpacing; }
-  void setLineSpacing(float lineSpacing) { m_lineSpacing = lineSpacing; }
+  float FloatLineSpacing() const { return line_spacing_; }
+  void SetLineSpacing(float line_spacing) { line_spacing_ = line_spacing; }
 
-  float xHeight() const { return m_xHeight; }
-  void setXHeight(float xHeight) {
-    m_xHeight = xHeight;
-    m_hasXHeight = true;
+  float XHeight() const { return x_height_; }
+  void SetXHeight(float x_height) {
+    x_height_ = x_height;
+    has_x_height_ = true;
   }
 
-  bool hasXHeight() const { return m_hasXHeight && m_xHeight > 0; }
-  void setHasXHeight(bool hasXHeight) { m_hasXHeight = hasXHeight; }
+  bool HasXHeight() const { return has_x_height_ && x_height_ > 0; }
+  void SetHasXHeight(bool has_x_height) { has_x_height_ = has_x_height; }
 
   // Integer variants of certain metrics, used for HTML rendering.
-  int ascent(FontBaseline baselineType = AlphabeticBaseline) const {
-    if (baselineType == AlphabeticBaseline)
-      return m_ascentInt;
-    return height() - height() / 2;
+  int Ascent(FontBaseline baseline_type = kAlphabeticBaseline) const {
+    if (baseline_type == kAlphabeticBaseline)
+      return ascent_int_;
+    return Height() - Height() / 2;
   }
 
-  int descent(FontBaseline baselineType = AlphabeticBaseline) const {
-    if (baselineType == AlphabeticBaseline)
-      return m_descentInt;
-    return height() / 2;
+  int Descent(FontBaseline baseline_type = kAlphabeticBaseline) const {
+    if (baseline_type == kAlphabeticBaseline)
+      return descent_int_;
+    return Height() / 2;
   }
 
-  int height(FontBaseline baselineType = AlphabeticBaseline) const {
-    return ascent() + descent();
+  int Height(FontBaseline baseline_type = kAlphabeticBaseline) const {
+    return Ascent() + Descent();
   }
 
-  int lineGap() const { return lroundf(m_lineGap); }
-  int lineSpacing() const { return lroundf(m_lineSpacing); }
+  int LineGap() const { return lroundf(line_gap_); }
+  int LineSpacing() const { return lroundf(line_spacing_); }
 
   // LayoutUnit variants of certain metrics.
   // LayoutNG should use LayoutUnit for the block progression metrics.
   // TODO(kojii): Consider keeping converted values.
-  LayoutUnit fixedAscent(FontBaseline baselineType = AlphabeticBaseline) const {
-    return LayoutUnit::fromFloatRound(floatAscent(baselineType));
+  LayoutUnit FixedAscent(
+      FontBaseline baseline_type = kAlphabeticBaseline) const {
+    return LayoutUnit::FromFloatRound(FloatAscent(baseline_type));
   }
 
-  LayoutUnit fixedDescent(
-      FontBaseline baselineType = AlphabeticBaseline) const {
-    return LayoutUnit::fromFloatRound(floatDescent(baselineType));
+  LayoutUnit FixedDescent(
+      FontBaseline baseline_type = kAlphabeticBaseline) const {
+    return LayoutUnit::FromFloatRound(FloatDescent(baseline_type));
   }
 
-  LayoutUnit fixedLineSpacing() const {
-    return LayoutUnit::fromFloatRound(m_lineSpacing);
+  LayoutUnit FixedLineSpacing() const {
+    return LayoutUnit::FromFloatRound(line_spacing_);
   }
 
-  bool hasIdenticalAscentDescentAndLineGap(const FontMetrics& other) const {
-    return ascent() == other.ascent() && descent() == other.descent() &&
-           lineGap() == other.lineGap();
+  bool HasIdenticalAscentDescentAndLineGap(const FontMetrics& other) const {
+    return Ascent() == other.Ascent() && Descent() == other.Descent() &&
+           LineGap() == other.LineGap();
   }
 
-  float zeroWidth() const { return m_zeroWidth; }
-  void setZeroWidth(float zeroWidth) {
-    m_zeroWidth = zeroWidth;
-    m_hasZeroWidth = true;
+  float ZeroWidth() const { return zero_width_; }
+  void SetZeroWidth(float zero_width) {
+    zero_width_ = zero_width;
+    has_zero_width_ = true;
   }
 
-  bool hasZeroWidth() const { return m_hasZeroWidth; }
-  void setHasZeroWidth(bool hasZeroWidth) { m_hasZeroWidth = hasZeroWidth; }
-
-  float underlineThickness() const { return m_underlinethickness; }
-  void setUnderlineThickness(float underlineThickness) {
-    m_underlinethickness = underlineThickness;
+  bool HasZeroWidth() const { return has_zero_width_; }
+  void SetHasZeroWidth(bool has_zero_width) {
+    has_zero_width_ = has_zero_width;
   }
 
-  float underlinePosition() const { return m_underlinePosition; }
-  void setUnderlinePosition(float underlinePosition) {
-    m_underlinePosition = underlinePosition;
+  float UnderlineThickness() const { return underlinethickness_; }
+  void SetUnderlineThickness(float underline_thickness) {
+    underlinethickness_ = underline_thickness;
+  }
+
+  float UnderlinePosition() const { return underline_position_; }
+  void SetUnderlinePosition(float underline_position) {
+    underline_position_ = underline_position;
   }
 
  private:
   friend class SimpleFontData;
 
-  void reset() {
-    m_unitsPerEm = gDefaultUnitsPerEm;
-    m_ascent = 0;
-    m_descent = 0;
-    m_ascentInt = 0;
-    m_descentInt = 0;
-    m_lineGap = 0;
-    m_lineSpacing = 0;
-    m_xHeight = 0;
-    m_hasXHeight = false;
-    m_underlinethickness = 0;
-    m_underlinePosition = 0;
+  void Reset() {
+    units_per_em_ = kGDefaultUnitsPerEm;
+    ascent_ = 0;
+    descent_ = 0;
+    ascent_int_ = 0;
+    descent_int_ = 0;
+    line_gap_ = 0;
+    line_spacing_ = 0;
+    x_height_ = 0;
+    has_x_height_ = false;
+    underlinethickness_ = 0;
+    underline_position_ = 0;
   }
 
-  unsigned m_unitsPerEm;
-  float m_ascent;
-  float m_descent;
-  float m_lineGap;
-  float m_lineSpacing;
-  float m_xHeight;
-  float m_zeroWidth;
-  float m_underlinethickness;
-  float m_underlinePosition;
-  int m_ascentInt;
-  int m_descentInt;
-  bool m_hasXHeight;
-  bool m_hasZeroWidth;
+  unsigned units_per_em_;
+  float ascent_;
+  float descent_;
+  float line_gap_;
+  float line_spacing_;
+  float x_height_;
+  float zero_width_;
+  float underlinethickness_;
+  float underline_position_;
+  int ascent_int_;
+  int descent_int_;
+  bool has_x_height_;
+  bool has_zero_width_;
 };
 
 }  // namespace blink

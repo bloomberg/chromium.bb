@@ -34,127 +34,130 @@
 namespace blink {
 
 SimplifyMarkupCommand::SimplifyMarkupCommand(Document& document,
-                                             Node* firstNode,
-                                             Node* nodeAfterLast)
+                                             Node* first_node,
+                                             Node* node_after_last)
     : CompositeEditCommand(document),
-      m_firstNode(firstNode),
-      m_nodeAfterLast(nodeAfterLast) {}
+      first_node_(first_node),
+      node_after_last_(node_after_last) {}
 
-void SimplifyMarkupCommand::doApply(EditingState* editingState) {
-  ContainerNode* rootNode = m_firstNode->parentNode();
-  HeapVector<Member<ContainerNode>> nodesToRemove;
+void SimplifyMarkupCommand::DoApply(EditingState* editing_state) {
+  ContainerNode* root_node = first_node_->parentNode();
+  HeapVector<Member<ContainerNode>> nodes_to_remove;
 
   // Walk through the inserted nodes, to see if there are elements that could be
   // removed without affecting the style. The goal is to produce leaner markup
   // even when starting from a verbose fragment.
   // We look at inline elements as well as non top level divs that don't have
   // attributes.
-  for (Node* node = m_firstNode.get(); node && node != m_nodeAfterLast;
-       node = NodeTraversal::next(*node)) {
-    if (node->hasChildren() || (node->isTextNode() && node->nextSibling()))
+  for (Node* node = first_node_.Get(); node && node != node_after_last_;
+       node = NodeTraversal::Next(*node)) {
+    if (node->hasChildren() || (node->IsTextNode() && node->nextSibling()))
       continue;
 
-    ContainerNode* const startingNode = node->parentNode();
-    if (!startingNode)
+    ContainerNode* const starting_node = node->parentNode();
+    if (!starting_node)
       continue;
-    const ComputedStyle* startingStyle = startingNode->computedStyle();
-    if (!startingStyle)
+    const ComputedStyle* starting_style = starting_node->GetComputedStyle();
+    if (!starting_style)
       continue;
-    ContainerNode* currentNode = startingNode;
-    ContainerNode* topNodeWithStartingStyle = nullptr;
-    while (currentNode != rootNode) {
-      if (currentNode->parentNode() != rootNode &&
-          isRemovableBlock(currentNode))
-        nodesToRemove.push_back(currentNode);
+    ContainerNode* current_node = starting_node;
+    ContainerNode* top_node_with_starting_style = nullptr;
+    while (current_node != root_node) {
+      if (current_node->parentNode() != root_node &&
+          IsRemovableBlock(current_node))
+        nodes_to_remove.push_back(current_node);
 
-      currentNode = currentNode->parentNode();
-      if (!currentNode)
+      current_node = current_node->parentNode();
+      if (!current_node)
         break;
 
-      if (!currentNode->layoutObject() ||
-          !currentNode->layoutObject()->isLayoutInline() ||
-          toLayoutInline(currentNode->layoutObject())->alwaysCreateLineBoxes())
+      if (!current_node->GetLayoutObject() ||
+          !current_node->GetLayoutObject()->IsLayoutInline() ||
+          ToLayoutInline(current_node->GetLayoutObject())
+              ->AlwaysCreateLineBoxes())
         continue;
 
-      if (currentNode->firstChild() != currentNode->lastChild()) {
-        topNodeWithStartingStyle = 0;
+      if (current_node->FirstChild() != current_node->LastChild()) {
+        top_node_with_starting_style = 0;
         break;
       }
 
-      if (!currentNode->computedStyle()
-               ->visualInvalidationDiff(*startingStyle)
-               .hasDifference())
-        topNodeWithStartingStyle = currentNode;
+      if (!current_node->GetComputedStyle()
+               ->VisualInvalidationDiff(*starting_style)
+               .HasDifference())
+        top_node_with_starting_style = current_node;
     }
-    if (topNodeWithStartingStyle) {
-      for (Node& node : NodeTraversal::inclusiveAncestorsOf(*startingNode)) {
-        if (node == topNodeWithStartingStyle)
+    if (top_node_with_starting_style) {
+      for (Node& node : NodeTraversal::InclusiveAncestorsOf(*starting_node)) {
+        if (node == top_node_with_starting_style)
           break;
-        nodesToRemove.push_back(static_cast<ContainerNode*>(&node));
+        nodes_to_remove.push_back(static_cast<ContainerNode*>(&node));
       }
     }
   }
 
   // we perform all the DOM mutations at once.
-  for (size_t i = 0; i < nodesToRemove.size(); ++i) {
+  for (size_t i = 0; i < nodes_to_remove.size(); ++i) {
     // FIXME: We can do better by directly moving children from
     // nodesToRemove[i].
-    int numPrunedAncestors =
-        pruneSubsequentAncestorsToRemove(nodesToRemove, i, editingState);
-    if (editingState->isAborted())
+    int num_pruned_ancestors =
+        PruneSubsequentAncestorsToRemove(nodes_to_remove, i, editing_state);
+    if (editing_state->IsAborted())
       return;
-    if (numPrunedAncestors < 0)
+    if (num_pruned_ancestors < 0)
       continue;
-    removeNodePreservingChildren(nodesToRemove[i], editingState,
-                                 AssumeContentIsAlwaysEditable);
-    if (editingState->isAborted())
+    RemoveNodePreservingChildren(nodes_to_remove[i], editing_state,
+                                 kAssumeContentIsAlwaysEditable);
+    if (editing_state->IsAborted())
       return;
-    i += numPrunedAncestors;
+    i += num_pruned_ancestors;
   }
 }
 
-int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(
-    HeapVector<Member<ContainerNode>>& nodesToRemove,
-    size_t startNodeIndex,
-    EditingState* editingState) {
-  size_t pastLastNodeToRemove = startNodeIndex + 1;
-  for (; pastLastNodeToRemove < nodesToRemove.size(); ++pastLastNodeToRemove) {
-    if (nodesToRemove[pastLastNodeToRemove - 1]->parentNode() !=
-        nodesToRemove[pastLastNodeToRemove])
+int SimplifyMarkupCommand::PruneSubsequentAncestorsToRemove(
+    HeapVector<Member<ContainerNode>>& nodes_to_remove,
+    size_t start_node_index,
+    EditingState* editing_state) {
+  size_t past_last_node_to_remove = start_node_index + 1;
+  for (; past_last_node_to_remove < nodes_to_remove.size();
+       ++past_last_node_to_remove) {
+    if (nodes_to_remove[past_last_node_to_remove - 1]->parentNode() !=
+        nodes_to_remove[past_last_node_to_remove])
       break;
-    DCHECK_EQ(nodesToRemove[pastLastNodeToRemove]->firstChild(),
-              nodesToRemove[pastLastNodeToRemove]->lastChild());
+    DCHECK_EQ(nodes_to_remove[past_last_node_to_remove]->FirstChild(),
+              nodes_to_remove[past_last_node_to_remove]->LastChild());
   }
 
-  ContainerNode* highestAncestorToRemove =
-      nodesToRemove[pastLastNodeToRemove - 1].get();
-  ContainerNode* parent = highestAncestorToRemove->parentNode();
+  ContainerNode* highest_ancestor_to_remove =
+      nodes_to_remove[past_last_node_to_remove - 1].Get();
+  ContainerNode* parent = highest_ancestor_to_remove->parentNode();
   if (!parent)  // Parent has already been removed.
     return -1;
 
-  if (pastLastNodeToRemove == startNodeIndex + 1)
+  if (past_last_node_to_remove == start_node_index + 1)
     return 0;
 
-  removeNode(nodesToRemove[startNodeIndex], editingState,
-             AssumeContentIsAlwaysEditable);
-  if (editingState->isAborted())
+  RemoveNode(nodes_to_remove[start_node_index], editing_state,
+             kAssumeContentIsAlwaysEditable);
+  if (editing_state->IsAborted())
     return -1;
-  insertNodeBefore(nodesToRemove[startNodeIndex], highestAncestorToRemove,
-                   editingState, AssumeContentIsAlwaysEditable);
-  if (editingState->isAborted())
+  InsertNodeBefore(nodes_to_remove[start_node_index],
+                   highest_ancestor_to_remove, editing_state,
+                   kAssumeContentIsAlwaysEditable);
+  if (editing_state->IsAborted())
     return -1;
-  removeNode(highestAncestorToRemove, editingState,
-             AssumeContentIsAlwaysEditable);
-  if (editingState->isAborted())
+  RemoveNode(highest_ancestor_to_remove, editing_state,
+             kAssumeContentIsAlwaysEditable);
+  if (editing_state->IsAborted())
     return -1;
 
-  return pastLastNodeToRemove - startNodeIndex - 1;
+  return past_last_node_to_remove - start_node_index - 1;
 }
 
 DEFINE_TRACE(SimplifyMarkupCommand) {
-  visitor->trace(m_firstNode);
-  visitor->trace(m_nodeAfterLast);
-  CompositeEditCommand::trace(visitor);
+  visitor->Trace(first_node_);
+  visitor->Trace(node_after_last_);
+  CompositeEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

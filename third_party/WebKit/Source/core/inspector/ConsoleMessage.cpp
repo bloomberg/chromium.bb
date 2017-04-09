@@ -10,20 +10,20 @@
 namespace blink {
 
 // static
-ConsoleMessage* ConsoleMessage::createForRequest(
+ConsoleMessage* ConsoleMessage::CreateForRequest(
     MessageSource source,
     MessageLevel level,
     const String& message,
     const String& url,
-    unsigned long requestIdentifier) {
-  ConsoleMessage* consoleMessage = ConsoleMessage::create(
-      source, level, message, SourceLocation::capture(url, 0, 0));
-  consoleMessage->m_requestIdentifier = requestIdentifier;
-  return consoleMessage;
+    unsigned long request_identifier) {
+  ConsoleMessage* console_message = ConsoleMessage::Create(
+      source, level, message, SourceLocation::Capture(url, 0, 0));
+  console_message->request_identifier_ = request_identifier;
+  return console_message;
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(
+ConsoleMessage* ConsoleMessage::Create(
     MessageSource source,
     MessageLevel level,
     const String& message,
@@ -32,64 +32,64 @@ ConsoleMessage* ConsoleMessage::create(
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source,
+ConsoleMessage* ConsoleMessage::Create(MessageSource source,
                                        MessageLevel level,
                                        const String& message) {
-  return ConsoleMessage::create(source, level, message,
-                                SourceLocation::capture());
+  return ConsoleMessage::Create(source, level, message,
+                                SourceLocation::Capture());
 }
 
 // static
-ConsoleMessage* ConsoleMessage::createFromWorker(
+ConsoleMessage* ConsoleMessage::CreateFromWorker(
     MessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location,
-    const String& workerId) {
-  ConsoleMessage* consoleMessage = ConsoleMessage::create(
-      WorkerMessageSource, level, message, std::move(location));
-  consoleMessage->m_workerId = workerId;
-  return consoleMessage;
+    const String& worker_id) {
+  ConsoleMessage* console_message = ConsoleMessage::Create(
+      kWorkerMessageSource, level, message, std::move(location));
+  console_message->worker_id_ = worker_id;
+  return console_message;
 }
 
 ConsoleMessage::ConsoleMessage(MessageSource source,
                                MessageLevel level,
                                const String& message,
                                std::unique_ptr<SourceLocation> location)
-    : m_source(source),
-      m_level(level),
-      m_message(message),
-      m_location(std::move(location)),
-      m_requestIdentifier(0),
-      m_timestamp(WTF::currentTimeMS()) {}
+    : source_(source),
+      level_(level),
+      message_(message),
+      location_(std::move(location)),
+      request_identifier_(0),
+      timestamp_(WTF::CurrentTimeMS()) {}
 
 ConsoleMessage::~ConsoleMessage() {}
 
-SourceLocation* ConsoleMessage::location() const {
-  return m_location.get();
+SourceLocation* ConsoleMessage::Location() const {
+  return location_.get();
 }
 
-unsigned long ConsoleMessage::requestIdentifier() const {
-  return m_requestIdentifier;
+unsigned long ConsoleMessage::RequestIdentifier() const {
+  return request_identifier_;
 }
 
-double ConsoleMessage::timestamp() const {
-  return m_timestamp;
+double ConsoleMessage::Timestamp() const {
+  return timestamp_;
 }
 
-MessageSource ConsoleMessage::source() const {
-  return m_source;
+MessageSource ConsoleMessage::Source() const {
+  return source_;
 }
 
-MessageLevel ConsoleMessage::level() const {
-  return m_level;
+MessageLevel ConsoleMessage::Level() const {
+  return level_;
 }
 
-const String& ConsoleMessage::message() const {
-  return m_message;
+const String& ConsoleMessage::Message() const {
+  return message_;
 }
 
-const String& ConsoleMessage::workerId() const {
-  return m_workerId;
+const String& ConsoleMessage::WorkerId() const {
+  return worker_id_;
 }
 
 DEFINE_TRACE(ConsoleMessage) {}

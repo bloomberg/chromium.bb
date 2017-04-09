@@ -40,35 +40,35 @@ class SQLErrorData {
   USING_FAST_MALLOC(SQLErrorData);
 
  public:
-  static std::unique_ptr<SQLErrorData> create(unsigned code,
+  static std::unique_ptr<SQLErrorData> Create(unsigned code,
                                               const String& message) {
-    return WTF::wrapUnique(new SQLErrorData(code, message));
+    return WTF::WrapUnique(new SQLErrorData(code, message));
   }
 
-  static std::unique_ptr<SQLErrorData> create(unsigned code,
+  static std::unique_ptr<SQLErrorData> Create(unsigned code,
                                               const char* message,
-                                              int sqliteCode,
-                                              const char* sqliteMessage) {
-    return create(
-        code, String::format("%s (%d %s)", message, sqliteCode, sqliteMessage));
+                                              int sqlite_code,
+                                              const char* sqlite_message) {
+    return Create(code, String::Format("%s (%d %s)", message, sqlite_code,
+                                       sqlite_message));
   }
 
-  static std::unique_ptr<SQLErrorData> create(const SQLErrorData& data) {
-    return create(data.code(), data.message());
+  static std::unique_ptr<SQLErrorData> Create(const SQLErrorData& data) {
+    return Create(data.Code(), data.Message());
   }
 
   SQLErrorData(const SQLErrorData& data)
-      : m_code(data.m_code), m_message(data.m_message.isolatedCopy()) {}
+      : code_(data.code_), message_(data.message_.IsolatedCopy()) {}
 
-  unsigned code() const { return m_code; }
-  String message() const { return m_message.isolatedCopy(); }
+  unsigned Code() const { return code_; }
+  String Message() const { return message_.IsolatedCopy(); }
 
  private:
   SQLErrorData(unsigned code, const String& message)
-      : m_code(code), m_message(message.isolatedCopy()) {}
+      : code_(code), message_(message.IsolatedCopy()) {}
 
-  unsigned m_code;
-  String m_message;
+  unsigned code_;
+  String message_;
 };
 
 class SQLError final : public GarbageCollectedFinalized<SQLError>,
@@ -76,13 +76,13 @@ class SQLError final : public GarbageCollectedFinalized<SQLError>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SQLError* create(const SQLErrorData& data) {
+  static SQLError* Create(const SQLErrorData& data) {
     return new SQLError(data);
   }
   DEFINE_INLINE_TRACE() {}
 
-  unsigned code() const { return m_data.code(); }
-  String message() const { return m_data.message(); }
+  unsigned code() const { return data_.Code(); }
+  String message() const { return data_.Message(); }
 
   enum SQLErrorCode {
     kUnknownErr = 0,
@@ -95,14 +95,14 @@ class SQLError final : public GarbageCollectedFinalized<SQLError>,
     kTimeoutErr = 7
   };
 
-  static const char quotaExceededErrorMessage[];
-  static const char unknownErrorMessage[];
-  static const char versionErrorMessage[];
+  static const char kQuotaExceededErrorMessage[];
+  static const char kUnknownErrorMessage[];
+  static const char kVersionErrorMessage[];
 
  private:
-  explicit SQLError(const SQLErrorData& data) : m_data(data) {}
+  explicit SQLError(const SQLErrorData& data) : data_(data) {}
 
-  const SQLErrorData m_data;
+  const SQLErrorData data_;
 };
 
 }  // namespace blink

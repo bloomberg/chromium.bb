@@ -43,99 +43,98 @@ namespace blink {
 LayoutSVGModelObject::LayoutSVGModelObject(SVGElement* node)
     : LayoutObject(node) {}
 
-bool LayoutSVGModelObject::isChildAllowed(LayoutObject* child,
+bool LayoutSVGModelObject::IsChildAllowed(LayoutObject* child,
                                           const ComputedStyle&) const {
-  return child->isSVG() &&
-         !(child->isSVGInline() || child->isSVGInlineText() ||
-           child->isSVGGradientStop());
+  return child->IsSVG() && !(child->IsSVGInline() || child->IsSVGInlineText() ||
+                             child->IsSVGGradientStop());
 }
 
-void LayoutSVGModelObject::mapLocalToAncestor(
+void LayoutSVGModelObject::MapLocalToAncestor(
     const LayoutBoxModelObject* ancestor,
-    TransformState& transformState,
+    TransformState& transform_state,
     MapCoordinatesFlags flags) const {
-  SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, flags);
+  SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
 
-LayoutRect LayoutSVGModelObject::absoluteVisualRect() const {
-  return SVGLayoutSupport::visualRectInAncestorSpace(*this, *view());
+LayoutRect LayoutSVGModelObject::AbsoluteVisualRect() const {
+  return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View());
 }
 
-void LayoutSVGModelObject::mapAncestorToLocal(
+void LayoutSVGModelObject::MapAncestorToLocal(
     const LayoutBoxModelObject* ancestor,
-    TransformState& transformState,
+    TransformState& transform_state,
     MapCoordinatesFlags flags) const {
-  SVGLayoutSupport::mapAncestorToLocal(*this, ancestor, transformState, flags);
+  SVGLayoutSupport::MapAncestorToLocal(*this, ancestor, transform_state, flags);
 }
 
-const LayoutObject* LayoutSVGModelObject::pushMappingToContainer(
-    const LayoutBoxModelObject* ancestorToStopAt,
-    LayoutGeometryMap& geometryMap) const {
-  return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt,
-                                                  geometryMap);
+const LayoutObject* LayoutSVGModelObject::PushMappingToContainer(
+    const LayoutBoxModelObject* ancestor_to_stop_at,
+    LayoutGeometryMap& geometry_map) const {
+  return SVGLayoutSupport::PushMappingToContainer(this, ancestor_to_stop_at,
+                                                  geometry_map);
 }
 
-void LayoutSVGModelObject::absoluteRects(
+void LayoutSVGModelObject::AbsoluteRects(
     Vector<IntRect>& rects,
-    const LayoutPoint& accumulatedOffset) const {
-  IntRect rect = enclosingIntRect(strokeBoundingBox());
-  rect.moveBy(roundedIntPoint(accumulatedOffset));
+    const LayoutPoint& accumulated_offset) const {
+  IntRect rect = EnclosingIntRect(StrokeBoundingBox());
+  rect.MoveBy(RoundedIntPoint(accumulated_offset));
   rects.push_back(rect);
 }
 
-void LayoutSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads,
+void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
                                          MapCoordinatesFlags mode) const {
-  quads.push_back(localToAbsoluteQuad(strokeBoundingBox(), mode));
+  quads.push_back(LocalToAbsoluteQuad(StrokeBoundingBox(), mode));
 }
 
-FloatRect LayoutSVGModelObject::localBoundingBoxRectForAccessibility() const {
-  return strokeBoundingBox();
+FloatRect LayoutSVGModelObject::LocalBoundingBoxRectForAccessibility() const {
+  return StrokeBoundingBox();
 }
 
-void LayoutSVGModelObject::willBeDestroyed() {
-  SVGResourcesCache::clientDestroyed(this);
-  LayoutObject::willBeDestroyed();
+void LayoutSVGModelObject::WillBeDestroyed() {
+  SVGResourcesCache::ClientDestroyed(this);
+  LayoutObject::WillBeDestroyed();
 }
 
-void LayoutSVGModelObject::computeLayerHitTestRects(
+void LayoutSVGModelObject::ComputeLayerHitTestRects(
     LayerHitTestRects& rects) const {
   // Using just the rect for the SVGRoot is good enough for now.
-  SVGLayoutSupport::findTreeRootObject(this)->computeLayerHitTestRects(rects);
+  SVGLayoutSupport::FindTreeRootObject(this)->ComputeLayerHitTestRects(rects);
 }
 
-void LayoutSVGModelObject::addLayerHitTestRects(
+void LayoutSVGModelObject::AddLayerHitTestRects(
     LayerHitTestRects&,
-    const PaintLayer* currentLayer,
-    const LayoutPoint& layerOffset,
-    const LayoutRect& containerRect) const {
+    const PaintLayer* current_layer,
+    const LayoutPoint& layer_offset,
+    const LayoutRect& container_rect) const {
   // We don't walk into SVG trees at all - just report their container.
 }
 
-void LayoutSVGModelObject::styleDidChange(StyleDifference diff,
-                                          const ComputedStyle* oldStyle) {
-  if (diff.needsFullLayout()) {
-    setNeedsBoundariesUpdate();
-    if (diff.transformChanged())
-      setNeedsTransformUpdate();
+void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
+                                          const ComputedStyle* old_style) {
+  if (diff.NeedsFullLayout()) {
+    SetNeedsBoundariesUpdate();
+    if (diff.TransformChanged())
+      SetNeedsTransformUpdate();
   }
 
-  if (isBlendingAllowed()) {
-    bool hasBlendModeChanged =
-        (oldStyle && oldStyle->hasBlendMode()) == !style()->hasBlendMode();
-    if (parent() && hasBlendModeChanged)
-      parent()->descendantIsolationRequirementsChanged(
-          style()->hasBlendMode() ? DescendantIsolationRequired
-                                  : DescendantIsolationNeedsUpdate);
+  if (IsBlendingAllowed()) {
+    bool has_blend_mode_changed =
+        (old_style && old_style->HasBlendMode()) == !Style()->HasBlendMode();
+    if (Parent() && has_blend_mode_changed)
+      Parent()->DescendantIsolationRequirementsChanged(
+          Style()->HasBlendMode() ? kDescendantIsolationRequired
+                                  : kDescendantIsolationNeedsUpdate);
 
-    if (hasBlendModeChanged)
-      setNeedsPaintPropertyUpdate();
+    if (has_blend_mode_changed)
+      SetNeedsPaintPropertyUpdate();
   }
 
-  LayoutObject::styleDidChange(diff, oldStyle);
-  SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
+  LayoutObject::StyleDidChange(diff, old_style);
+  SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());
 }
 
-bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&,
+bool LayoutSVGModelObject::NodeAtPoint(HitTestResult&,
                                        const HitTestLocation&,
                                        const LayoutPoint&,
                                        HitTestAction) {
@@ -146,9 +145,9 @@ bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&,
 // The SVG addOutlineRects() method adds rects in local coordinates so the
 // default absoluteElementBoundingBoxRect() returns incorrect values for SVG
 // objects. Overriding this method provides access to the absolute bounds.
-IntRect LayoutSVGModelObject::absoluteElementBoundingBoxRect() const {
-  return localToAbsoluteQuad(FloatQuad(visualRectInLocalSVGCoordinates()))
-      .enclosingBoundingBox();
+IntRect LayoutSVGModelObject::AbsoluteElementBoundingBoxRect() const {
+  return LocalToAbsoluteQuad(FloatQuad(VisualRectInLocalSVGCoordinates()))
+      .EnclosingBoundingBox();
 }
 
 }  // namespace blink

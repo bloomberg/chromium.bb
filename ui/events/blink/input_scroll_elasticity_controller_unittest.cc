@@ -13,21 +13,21 @@ namespace ui {
 namespace {
 
 enum Phase {
-  PhaseNone = blink::WebMouseWheelEvent::PhaseNone,
-  PhaseBegan = blink::WebMouseWheelEvent::PhaseBegan,
-  PhaseStationary = blink::WebMouseWheelEvent::PhaseStationary,
-  PhaseChanged = blink::WebMouseWheelEvent::PhaseChanged,
-  PhaseEnded = blink::WebMouseWheelEvent::PhaseEnded,
-  PhaseCancelled = blink::WebMouseWheelEvent::PhaseCancelled,
-  PhaseMayBegin = blink::WebMouseWheelEvent::PhaseMayBegin,
+  PhaseNone = blink::WebMouseWheelEvent::kPhaseNone,
+  PhaseBegan = blink::WebMouseWheelEvent::kPhaseBegan,
+  PhaseStationary = blink::WebMouseWheelEvent::kPhaseStationary,
+  PhaseChanged = blink::WebMouseWheelEvent::kPhaseChanged,
+  PhaseEnded = blink::WebMouseWheelEvent::kPhaseEnded,
+  PhaseCancelled = blink::WebMouseWheelEvent::kPhaseCancelled,
+  PhaseMayBegin = blink::WebMouseWheelEvent::kPhaseMayBegin,
 };
 
 enum InertialPhaseState {
   UnknownMomentumPhase =
-      blink::WebGestureEvent::InertialPhaseState::UnknownMomentumPhase,
+      blink::WebGestureEvent::InertialPhaseState::kUnknownMomentumPhase,
   NonMomentumPhase =
-      blink::WebGestureEvent::InertialPhaseState::NonMomentumPhase,
-  MomentumPhase = blink::WebGestureEvent::InertialPhaseState::MomentumPhase,
+      blink::WebGestureEvent::InertialPhaseState::kNonMomentumPhase,
+  MomentumPhase = blink::WebGestureEvent::InertialPhaseState::kMomentumPhase,
 };
 
 class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
@@ -90,11 +90,11 @@ class ScrollElasticityControllerTest : public testing::Test {
   void SendGestureScrollBegin(InertialPhaseState inertialPhase) {
     TickCurrentTime();
     blink::WebGestureEvent event(
-        blink::WebInputEvent::GestureScrollBegin,
-        blink::WebInputEvent::NoModifiers,
+        blink::WebInputEvent::kGestureScrollBegin,
+        blink::WebInputEvent::kNoModifiers,
         (current_time_ - base::TimeTicks()).InSecondsF());
-    event.sourceDevice = blink::WebGestureDeviceTouchpad;
-    event.data.scrollBegin.inertialPhase =
+    event.source_device = blink::kWebGestureDeviceTouchpad;
+    event.data.scroll_begin.inertial_phase =
         static_cast<blink::WebGestureEvent::InertialPhaseState>(inertialPhase);
 
     controller_.ObserveGestureEventAndResult(event,
@@ -108,14 +108,14 @@ class ScrollElasticityControllerTest : public testing::Test {
       const gfx::Vector2dF& overscroll_delta = gfx::Vector2dF()) {
     TickCurrentTime();
     blink::WebGestureEvent event(
-        blink::WebInputEvent::GestureScrollUpdate,
-        blink::WebInputEvent::NoModifiers,
+        blink::WebInputEvent::kGestureScrollUpdate,
+        blink::WebInputEvent::kNoModifiers,
         (current_time_ - base::TimeTicks()).InSecondsF());
-    event.sourceDevice = blink::WebGestureDeviceTouchpad;
-    event.data.scrollUpdate.inertialPhase =
+    event.source_device = blink::kWebGestureDeviceTouchpad;
+    event.data.scroll_update.inertial_phase =
         static_cast<blink::WebGestureEvent::InertialPhaseState>(inertialPhase);
-    event.data.scrollUpdate.deltaX = -event_delta.x();
-    event.data.scrollUpdate.deltaY = -event_delta.y();
+    event.data.scroll_update.delta_x = -event_delta.x();
+    event.data.scroll_update.delta_y = -event_delta.y();
 
     cc::InputHandlerScrollResult scroll_result;
     scroll_result.did_overscroll_root = !overscroll_delta.IsZero();
@@ -128,10 +128,10 @@ class ScrollElasticityControllerTest : public testing::Test {
   void SendGestureScrollEnd() {
     TickCurrentTime();
     blink::WebGestureEvent event(
-        blink::WebInputEvent::GestureScrollEnd,
-        blink::WebInputEvent::NoModifiers,
+        blink::WebInputEvent::kGestureScrollEnd,
+        blink::WebInputEvent::kNoModifiers,
         (current_time_ - base::TimeTicks()).InSecondsF());
-    event.sourceDevice = blink::WebGestureDeviceTouchpad;
+    event.source_device = blink::kWebGestureDeviceTouchpad;
 
     controller_.ObserveGestureEventAndResult(event,
                                              cc::InputHandlerScrollResult());

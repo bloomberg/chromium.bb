@@ -16,35 +16,35 @@ class ImageResourceContent;
 
 class CORE_EXPORT CanvasImageElementSource : public CanvasImageSource {
  public:
-  virtual ImageLoader& imageLoader() const = 0;
-  virtual FloatSize sourceDefaultObjectSize() = 0;
+  virtual ImageLoader& GetImageLoader() const = 0;
+  virtual FloatSize SourceDefaultObjectSize() = 0;
 
-  PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
+  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
                                             SnapshotReason,
                                             const FloatSize&) const override;
 
-  bool wouldTaintOrigin(
-      SecurityOrigin* destinationSecurityOrigin) const override;
+  bool WouldTaintOrigin(
+      SecurityOrigin* destination_security_origin) const override;
 
-  FloatSize elementSize(const FloatSize& defaultObjectSize) const override;
-  FloatSize defaultDestinationSize(
-      const FloatSize& defaultObjectSize) const override;
+  FloatSize ElementSize(const FloatSize& default_object_size) const override;
+  FloatSize DefaultDestinationSize(
+      const FloatSize& default_object_size) const override;
 
-  bool isAccelerated() const override;
+  bool IsAccelerated() const override;
 
-  int sourceWidth() override;
-  int sourceHeight() override;
+  int SourceWidth() override;
+  int SourceHeight() override;
 
-  bool isSVGSource() const override;
+  bool IsSVGSource() const override;
 
-  bool isOpaque() const override;
+  bool IsOpaque() const override;
 
-  const KURL& sourceURL() const override;
+  const KURL& SourceURL() const override;
 
  private:
-  ImageResourceContent* cachedImage() const;
-  const Element& element() const;
+  ImageResourceContent* CachedImage() const;
+  const Element& GetElement() const;
 };
 
 }  // namespace blink

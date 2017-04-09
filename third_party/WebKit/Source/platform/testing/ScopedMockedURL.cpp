@@ -11,17 +11,17 @@
 namespace blink {
 namespace testing {
 
-ScopedMockedURL::ScopedMockedURL(const WebURL& url) : m_url(url) {}
+ScopedMockedURL::ScopedMockedURL(const WebURL& url) : url_(url) {}
 
 ScopedMockedURL::~ScopedMockedURL() {
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(m_url);
+  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url_);
 }
 
-ScopedMockedURLLoad::ScopedMockedURLLoad(const WebURL& fullURL,
-                                         const WebString& filePath,
-                                         const WebString& mimeType)
-    : ScopedMockedURL(fullURL) {
-  URLTestHelpers::registerMockedURLLoad(fullURL, filePath, mimeType);
+ScopedMockedURLLoad::ScopedMockedURLLoad(const WebURL& full_url,
+                                         const WebString& file_path,
+                                         const WebString& mime_type)
+    : ScopedMockedURL(full_url) {
+  URLTestHelpers::RegisterMockedURLLoad(full_url, file_path, mime_type);
 }
 
 }  // namespace testing

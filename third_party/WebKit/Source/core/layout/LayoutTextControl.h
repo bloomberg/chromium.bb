@@ -35,76 +35,76 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
  public:
   ~LayoutTextControl() override;
 
-  TextControlElement* textControlElement() const;
-  virtual PassRefPtr<ComputedStyle> createInnerEditorStyle(
-      const ComputedStyle& startStyle) const = 0;
+  TextControlElement* GetTextControlElement() const;
+  virtual PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+      const ComputedStyle& start_style) const = 0;
 
-  const char* name() const override { return "LayoutTextControl"; }
+  const char* GetName() const override { return "LayoutTextControl"; }
 
  protected:
   LayoutTextControl(TextControlElement*);
 
   // This convenience function should not be made public because
   // innerEditorElement may outlive the layout tree.
-  HTMLElement* innerEditorElement() const;
+  HTMLElement* InnerEditorElement() const;
 
-  int scrollbarThickness() const;
-  void adjustInnerEditorStyle(ComputedStyle& textBlockStyle) const;
+  int ScrollbarThickness() const;
+  void AdjustInnerEditorStyle(ComputedStyle& text_block_style) const;
 
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void hitInnerEditorElement(HitTestResult&,
-                             const LayoutPoint& pointInContainer,
-                             const LayoutPoint& accumulatedOffset);
+  void HitInnerEditorElement(HitTestResult&,
+                             const LayoutPoint& point_in_container,
+                             const LayoutPoint& accumulated_offset);
 
-  int textBlockLogicalWidth() const;
-  int textBlockLogicalHeight() const;
+  int TextBlockLogicalWidth() const;
+  int TextBlockLogicalHeight() const;
 
-  float scaleEmToUnits(int x) const;
+  float ScaleEmToUnits(int x) const;
 
-  static bool hasValidAvgCharWidth(const SimpleFontData*,
+  static bool HasValidAvgCharWidth(const SimpleFontData*,
                                    const AtomicString& family);
-  virtual float getAvgCharWidth(const AtomicString& family) const;
-  virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const = 0;
-  virtual LayoutUnit computeControlLogicalHeight(
-      LayoutUnit lineHeight,
-      LayoutUnit nonContentHeight) const = 0;
+  virtual float GetAvgCharWidth(const AtomicString& family) const;
+  virtual LayoutUnit PreferredContentLogicalWidth(float char_width) const = 0;
+  virtual LayoutUnit ComputeControlLogicalHeight(
+      LayoutUnit line_height,
+      LayoutUnit non_content_height) const = 0;
 
-  void updateFromElement() override;
-  void computeLogicalHeight(LayoutUnit logicalHeight,
-                            LayoutUnit logicalTop,
+  void UpdateFromElement() override;
+  void ComputeLogicalHeight(LayoutUnit logical_height,
+                            LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
-  LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren,
+  LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;
 
-  int firstLineBoxBaseline() const override;
+  int FirstLineBoxBaseline() const override;
   // We need to override this function because we don't want overflow:hidden on
   // an <input> to affect the baseline calculation. This is necessary because we
   // are an inline-block element as an implementation detail which would
   // normally be affected by this.
-  bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
+  bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
     return true;
   }
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectTextControl || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectTextControl || LayoutBlockFlow::IsOfType(type);
   }
 
  private:
-  void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth,
-                                     LayoutUnit& maxLogicalWidth) const final;
-  void computePreferredLogicalWidths() final;
-  void removeLeftoverAnonymousBlock(LayoutBlock*) final {}
-  bool avoidsFloats() const final { return true; }
+  void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
+                                     LayoutUnit& max_logical_width) const final;
+  void ComputePreferredLogicalWidths() final;
+  void RemoveLeftoverAnonymousBlock(LayoutBlock*) final {}
+  bool AvoidsFloats() const final { return true; }
 
-  void addOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additionalOffset,
+  void AddOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additional_offset,
                        IncludeBlockVisualOverflowOrNot) const final;
 
-  bool canBeProgramaticallyScrolled() const final { return true; }
+  bool CanBeProgramaticallyScrolled() const final { return true; }
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, isTextControl());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, IsTextControl());
 
 // LayoutObject for our inner container, for <search> and others.
 // We can't use LayoutFlexibleBox directly, because flexboxes have a different
@@ -116,20 +116,20 @@ class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
       : LayoutFlexibleBox(element) {}
   ~LayoutTextControlInnerContainer() override {}
 
-  int baselinePosition(FontBaseline baseline,
-                       bool firstLine,
+  int BaselinePosition(FontBaseline baseline,
+                       bool first_line,
                        LineDirectionMode direction,
                        LinePositionMode position) const override {
-    return LayoutBlock::baselinePosition(baseline, firstLine, direction,
+    return LayoutBlock::BaselinePosition(baseline, first_line, direction,
                                          position);
   }
-  int firstLineBoxBaseline() const override {
-    return LayoutBlock::firstLineBoxBaseline();
+  int FirstLineBoxBaseline() const override {
+    return LayoutBlock::FirstLineBoxBaseline();
   }
-  int inlineBlockBaseline(LineDirectionMode direction) const override {
-    return LayoutBlock::inlineBlockBaseline(direction);
+  int InlineBlockBaseline(LineDirectionMode direction) const override {
+    return LayoutBlock::InlineBlockBaseline(direction);
   }
-  bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
+  bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
     return true;
   }
 };

@@ -30,25 +30,25 @@ class MODULES_EXPORT PresentationRequest final
  public:
   ~PresentationRequest() = default;
 
-  static PresentationRequest* create(ExecutionContext*,
+  static PresentationRequest* Create(ExecutionContext*,
                                      const String& url,
                                      ExceptionState&);
-  static PresentationRequest* create(ExecutionContext*,
+  static PresentationRequest* Create(ExecutionContext*,
                                      const Vector<String>& urls,
                                      ExceptionState&);
 
   // EventTarget implementation.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   ScriptPromise start(ScriptState*);
   ScriptPromise reconnect(ScriptState*, const String& id);
   ScriptPromise getAvailability(ScriptState*);
 
-  const Vector<KURL>& urls() const;
+  const Vector<KURL>& Urls() const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
 
@@ -56,16 +56,16 @@ class MODULES_EXPORT PresentationRequest final
 
  protected:
   // EventTarget implementation.
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
   PresentationRequest(ExecutionContext*, const Vector<KURL>&);
 
-  void recordOriginTypeAccess(ExecutionContext*) const;
+  void RecordOriginTypeAccess(ExecutionContext*) const;
 
-  Member<PresentationAvailabilityProperty> m_availabilityProperty;
-  Vector<KURL> m_urls;
+  Member<PresentationAvailabilityProperty> availability_property_;
+  Vector<KURL> urls_;
 };
 
 }  // namespace blink

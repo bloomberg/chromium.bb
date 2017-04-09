@@ -42,19 +42,19 @@ class WebDOMActivityLogger {
  public:
   virtual ~WebDOMActivityLogger() {}
 
-  virtual void logGetter(const WebString& apiName,
+  virtual void LogGetter(const WebString& api_name,
                          const WebURL& url,
                          const WebString& title) {}
-  virtual void logSetter(const WebString& apiName,
-                         const v8::Local<v8::Value>& newValue,
+  virtual void LogSetter(const WebString& api_name,
+                         const v8::Local<v8::Value>& new_value,
                          const WebURL& url,
                          const WebString& title) {}
-  virtual void logMethod(const WebString& apiName,
+  virtual void LogMethod(const WebString& api_name,
                          int argc,
                          const v8::Local<v8::Value>* argv,
                          const WebURL& url,
                          const WebString& title) {}
-  virtual void logEvent(const WebString& eventName,
+  virtual void LogEvent(const WebString& event_name,
                         int argc,
                         const WebString* argv,
                         const WebURL& url,
@@ -64,15 +64,15 @@ class WebDOMActivityLogger {
 // Checks if a logger already exists for the world identified by worldId and
 // extensionID (worldId may be 0 identifying the main world). Extension ID is
 // used only in the case of main world and ignored otherwise.
-BLINK_EXPORT bool hasDOMActivityLogger(int worldId,
-                                       const WebString& extensionId);
+BLINK_EXPORT bool HasDOMActivityLogger(int world_id,
+                                       const WebString& extension_id);
 
 // Checks if the provided logger is non-null and if so associates it with the
 // world identified by worldId and extension ID (worldId may be 0 identifying
 // the main world). The extension ID is ignored for other worlds than the main
 // one.
-BLINK_EXPORT void setDOMActivityLogger(int worldId,
-                                       const WebString& extensionId,
+BLINK_EXPORT void SetDOMActivityLogger(int world_id,
+                                       const WebString& extension_id,
                                        WebDOMActivityLogger*);
 
 }  // namespace blink

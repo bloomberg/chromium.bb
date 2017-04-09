@@ -13,241 +13,244 @@ class PositionIteratorTest : public EditingTestBase {};
 
 // For http://crbug.com/695317
 TEST_F(PositionIteratorTest, decrementWithInputElement) {
-  setBodyContent("123<input value='abc'>");
-  Element* const input = document().querySelector("input");
+  SetBodyContent("123<input value='abc'>");
+  Element* const input = GetDocument().QuerySelector("input");
   Node* const text = input->previousSibling();
 
   // Decrement until start of "123" from INPUT on DOM tree
-  PositionIterator domIterator(Position::lastPositionInNode(document().body()));
-  EXPECT_EQ(Position::lastPositionInNode(document().body()),
-            domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position::afterNode(input), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position::beforeNode(input), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position(document().body(), 1), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position(text, 3), domIterator.computePosition());
+  PositionIterator dom_iterator(
+      Position::LastPositionInNode(GetDocument().body()));
+  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+            dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::AfterNode(input), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::BeforeNode(input), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position(text, 3), dom_iterator.ComputePosition());
 
   // Decrement until start of "123" from INPUT on flat tree
-  PositionIteratorInFlatTree flatIterator(
-      PositionInFlatTree::lastPositionInNode(document().body()));
-  EXPECT_EQ(PositionInFlatTree::lastPositionInNode(document().body()),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::afterNode(input),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::beforeNode(input),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree(document().body(), 1),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree(text, 3), flatIterator.computePosition());
+  PositionIteratorInFlatTree flat_iterator(
+      PositionInFlatTree::LastPositionInNode(GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(GetDocument().body()),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(input),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(input),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree(text, 3), flat_iterator.ComputePosition());
 }
 
 TEST_F(PositionIteratorTest, decrementWithSelectElement) {
-  setBodyContent("123<select><option>1</option><option>2</option></select>");
-  Element* const select = document().querySelector("select");
+  SetBodyContent("123<select><option>1</option><option>2</option></select>");
+  Element* const select = GetDocument().QuerySelector("select");
   Node* text = select->previousSibling();
 
   // Decrement until start of "123" from SELECT on DOM tree
-  PositionIterator domIterator(Position::lastPositionInNode(document().body()));
-  EXPECT_EQ(Position::lastPositionInNode(document().body()),
-            domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position::afterNode(select), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position::afterNode(select), domIterator.computePosition())
+  PositionIterator dom_iterator(
+      Position::LastPositionInNode(GetDocument().body()));
+  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+            dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::AfterNode(select), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::AfterNode(select), dom_iterator.ComputePosition())
       << "This is redundant result, we should not have. see "
          "http://crbug.com/697283";
-  domIterator.decrement();
-  EXPECT_EQ(Position::beforeNode(select), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position(document().body(), 1), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position(text, 3), domIterator.computePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::BeforeNode(select), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position(text, 3), dom_iterator.ComputePosition());
 
   // Decrement until start of "123" from SELECT on flat tree
-  PositionIteratorInFlatTree flatIterator(
-      PositionInFlatTree::lastPositionInNode(document().body()));
-  EXPECT_EQ(PositionInFlatTree::lastPositionInNode(document().body()),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::afterNode(select),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::afterNode(select),
-            flatIterator.computePosition())
+  PositionIteratorInFlatTree flat_iterator(
+      PositionInFlatTree::LastPositionInNode(GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(GetDocument().body()),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(select),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(select),
+            flat_iterator.ComputePosition())
       << "This is redundant result, we should not have. see "
          "http://crbug.com/697283";
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::beforeNode(select),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree(document().body(), 1),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree(text, 3), flatIterator.computePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(select),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree(text, 3), flat_iterator.ComputePosition());
 }
 
 // For http://crbug.com/695317
 TEST_F(PositionIteratorTest, decrementWithTextAreaElement) {
-  setBodyContent("123<textarea>456</textarea>");
-  Element* const textarea = document().querySelector("textarea");
+  SetBodyContent("123<textarea>456</textarea>");
+  Element* const textarea = GetDocument().QuerySelector("textarea");
   Node* const text = textarea->previousSibling();
 
   // Decrement until end of "123" from after TEXTAREA on DOM tree
-  PositionIterator domIterator(Position::lastPositionInNode(document().body()));
-  EXPECT_EQ(Position::lastPositionInNode(document().body()),
-            domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position::afterNode(textarea), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position::beforeNode(textarea), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position(document().body(), 1), domIterator.computePosition());
-  domIterator.decrement();
-  EXPECT_EQ(Position(text, 3), domIterator.computePosition());
+  PositionIterator dom_iterator(
+      Position::LastPositionInNode(GetDocument().body()));
+  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+            dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::AfterNode(textarea), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position::BeforeNode(textarea), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
+  dom_iterator.Decrement();
+  EXPECT_EQ(Position(text, 3), dom_iterator.ComputePosition());
 
   // Decrement until end of "123" from after TEXTAREA on flat tree
-  PositionIteratorInFlatTree flatIterator(
-      PositionInFlatTree::lastPositionInNode(document().body()));
-  EXPECT_EQ(PositionInFlatTree::lastPositionInNode(document().body()),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::afterNode(textarea),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree::beforeNode(textarea),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree(document().body(), 1),
-            flatIterator.computePosition());
-  flatIterator.decrement();
-  EXPECT_EQ(PositionInFlatTree(text, 3), flatIterator.computePosition());
+  PositionIteratorInFlatTree flat_iterator(
+      PositionInFlatTree::LastPositionInNode(GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(GetDocument().body()),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(textarea),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(textarea),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
+            flat_iterator.ComputePosition());
+  flat_iterator.Decrement();
+  EXPECT_EQ(PositionInFlatTree(text, 3), flat_iterator.ComputePosition());
 }
 
 // For http://crbug.com/695317
 TEST_F(PositionIteratorTest, incrementWithInputElement) {
-  setBodyContent("<input value='abc'>123");
-  Element* const input = document().querySelector("input");
+  SetBodyContent("<input value='abc'>123");
+  Element* const input = GetDocument().QuerySelector("input");
   Node* const text = input->nextSibling();
 
   // Increment until start of "123" from INPUT on DOM tree
-  PositionIterator domIterator(
-      Position::firstPositionInNode(document().body()));
-  EXPECT_EQ(Position(document().body(), 0), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::beforeNode(input), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::afterNode(input), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position(document().body(), 1), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position(text, 0), domIterator.computePosition());
+  PositionIterator dom_iterator(
+      Position::FirstPositionInNode(GetDocument().body()));
+  EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::BeforeNode(input), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::AfterNode(input), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position(text, 0), dom_iterator.ComputePosition());
 
   // Increment until start of "123" from INPUT on flat tree
-  PositionIteratorInFlatTree flatIterator(
-      PositionInFlatTree::firstPositionInNode(document().body()));
-  EXPECT_EQ(PositionInFlatTree(document().body(), 0),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::beforeNode(input),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::afterNode(input),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree(document().body(), 1),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree(text, 0), flatIterator.computePosition());
+  PositionIteratorInFlatTree flat_iterator(
+      PositionInFlatTree::FirstPositionInNode(GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(input),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(input),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree(text, 0), flat_iterator.ComputePosition());
 }
 
 TEST_F(PositionIteratorTest, incrementWithSelectElement) {
-  setBodyContent("<select><option>1</option><option>2</option></select>123");
-  Element* const select = document().querySelector("select");
+  SetBodyContent("<select><option>1</option><option>2</option></select>123");
+  Element* const select = GetDocument().QuerySelector("select");
   Node* const text = select->nextSibling();
 
   // Increment until start of "123" from SELECT on DOM tree
-  PositionIterator domIterator(
-      Position::firstPositionInNode(document().body()));
-  EXPECT_EQ(Position(document().body(), 0), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::beforeNode(select), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::afterNode(select), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::afterNode(select), domIterator.computePosition())
+  PositionIterator dom_iterator(
+      Position::FirstPositionInNode(GetDocument().body()));
+  EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::BeforeNode(select), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::AfterNode(select), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::AfterNode(select), dom_iterator.ComputePosition())
       << "This is redundant result, we should not have. see "
          "http://crbug.com/697283";
-  domIterator.increment();
-  EXPECT_EQ(Position(document().body(), 1), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position(text, 0), domIterator.computePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position(text, 0), dom_iterator.ComputePosition());
 
   // Increment until start of "123" from SELECT on flat tree
-  PositionIteratorInFlatTree flatIterator(
-      PositionInFlatTree::firstPositionInNode(document().body()));
-  EXPECT_EQ(PositionInFlatTree(document().body(), 0),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::beforeNode(select),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::afterNode(select),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::afterNode(select),
-            flatIterator.computePosition())
+  PositionIteratorInFlatTree flat_iterator(
+      PositionInFlatTree::FirstPositionInNode(GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(select),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(select),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(select),
+            flat_iterator.ComputePosition())
       << "This is redundant result, we should not have. see "
          "http://crbug.com/697283";
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree(document().body(), 1),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree(text, 0), flatIterator.computePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree(text, 0), flat_iterator.ComputePosition());
 }
 
 // For http://crbug.com/695317
 TEST_F(PositionIteratorTest, incrementWithTextAreaElement) {
-  setBodyContent("<textarea>123</textarea>456");
-  Element* const textarea = document().querySelector("textarea");
+  SetBodyContent("<textarea>123</textarea>456");
+  Element* const textarea = GetDocument().QuerySelector("textarea");
   Node* const text = textarea->nextSibling();
 
   // Increment until start of "123" from TEXTAREA on DOM tree
-  PositionIterator domIterator(
-      Position::firstPositionInNode(document().body()));
-  EXPECT_EQ(Position(document().body(), 0), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::beforeNode(textarea), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position::afterNode(textarea), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position(document().body(), 1), domIterator.computePosition());
-  domIterator.increment();
-  EXPECT_EQ(Position(text, 0), domIterator.computePosition());
+  PositionIterator dom_iterator(
+      Position::FirstPositionInNode(GetDocument().body()));
+  EXPECT_EQ(Position(GetDocument().body(), 0), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::BeforeNode(textarea), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position::AfterNode(textarea), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position(GetDocument().body(), 1), dom_iterator.ComputePosition());
+  dom_iterator.Increment();
+  EXPECT_EQ(Position(text, 0), dom_iterator.ComputePosition());
 
   // Increment until start of "123" from TEXTAREA on flat tree
-  PositionIteratorInFlatTree flatIterator(
-      PositionInFlatTree::firstPositionInNode(document().body()));
-  EXPECT_EQ(PositionInFlatTree(document().body(), 0),
-            flatIterator.computePosition());
+  PositionIteratorInFlatTree flat_iterator(
+      PositionInFlatTree::FirstPositionInNode(GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 0),
+            flat_iterator.ComputePosition());
   // TODO(yosin): We should not traverse inside TEXTAREA
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::beforeNode(textarea),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree::afterNode(textarea),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree(document().body(), 1),
-            flatIterator.computePosition());
-  flatIterator.increment();
-  EXPECT_EQ(PositionInFlatTree(text, 0), flatIterator.computePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::BeforeNode(textarea),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree::AfterNode(textarea),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
+            flat_iterator.ComputePosition());
+  flat_iterator.Increment();
+  EXPECT_EQ(PositionInFlatTree(text, 0), flat_iterator.ComputePosition());
 }
 
 }  // namespace blink

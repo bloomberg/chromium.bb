@@ -29,29 +29,29 @@ namespace blink {
 
 OESTextureFloat::OESTextureFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  if (context->extensionsUtil()->ensureExtensionEnabled(
+  if (context->ExtensionsUtil()->EnsureExtensionEnabled(
           "GL_OES_texture_float")) {
     // Implicitly enable rendering to float textures
-    context->extensionsUtil()->ensureExtensionEnabled(
+    context->ExtensionsUtil()->EnsureExtensionEnabled(
         "GL_CHROMIUM_color_buffer_float_rgba");
-    context->extensionsUtil()->ensureExtensionEnabled(
+    context->ExtensionsUtil()->EnsureExtensionEnabled(
         "GL_CHROMIUM_color_buffer_float_rgb");
   }
 }
 
-WebGLExtensionName OESTextureFloat::name() const {
-  return OESTextureFloatName;
+WebGLExtensionName OESTextureFloat::GetName() const {
+  return kOESTextureFloatName;
 }
 
-OESTextureFloat* OESTextureFloat::create(WebGLRenderingContextBase* context) {
+OESTextureFloat* OESTextureFloat::Create(WebGLRenderingContextBase* context) {
   return new OESTextureFloat(context);
 }
 
-bool OESTextureFloat::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension("GL_OES_texture_float");
+bool OESTextureFloat::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension("GL_OES_texture_float");
 }
 
-const char* OESTextureFloat::extensionName() {
+const char* OESTextureFloat::ExtensionName() {
   return "OES_texture_float";
 }
 

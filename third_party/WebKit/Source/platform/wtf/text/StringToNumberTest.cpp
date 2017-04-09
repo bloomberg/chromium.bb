@@ -13,7 +13,7 @@ TEST(StringToNumberTest, TestCharactersToIntStrict) {
 #define EXPECT_VALID(string, expectedValue, base)                             \
   do {                                                                        \
     bool ok;                                                                  \
-    int value = charactersToIntStrict(reinterpret_cast<const LChar*>(string), \
+    int value = CharactersToIntStrict(reinterpret_cast<const LChar*>(string), \
                                       std::strlen(string), &ok, base);        \
     EXPECT_TRUE(ok);                                                          \
     EXPECT_EQ(value, expectedValue);                                          \
@@ -22,7 +22,7 @@ TEST(StringToNumberTest, TestCharactersToIntStrict) {
 #define EXPECT_INVALID(string, base)                              \
   do {                                                            \
     bool ok;                                                      \
-    charactersToIntStrict(reinterpret_cast<const LChar*>(string), \
+    CharactersToIntStrict(reinterpret_cast<const LChar*>(string), \
                           std::strlen(string), &ok, base);        \
     EXPECT_FALSE(ok);                                             \
   } while (false)

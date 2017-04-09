@@ -22,158 +22,162 @@ const int kColdModeChunkSize = 16384;  // in UTF16 code units
 const int kInvalidLength = -1;
 const int kInvalidChunkIndex = -1;
 
-bool shouldCheckNode(const Node& node) {
-  if (!node.isElementNode())
+bool ShouldCheckNode(const Node& node) {
+  if (!node.IsElementNode())
     return false;
   // TODO(editing-dev): Make |Position| constructors take const parameters.
   const Position& position =
-      Position::firstPositionInNode(const_cast<Node*>(&node));
-  if (!isEditablePosition(position))
+      Position::FirstPositionInNode(const_cast<Node*>(&node));
+  if (!IsEditablePosition(position))
     return false;
-  return SpellChecker::isSpellCheckingEnabledAt(position);
+  return SpellChecker::IsSpellCheckingEnabledAt(position);
 }
 
 }  // namespace
 
 // static
-ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::create(
+ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::Create(
     LocalFrame& frame) {
   return new ColdModeSpellCheckRequester(frame);
 }
 
 DEFINE_TRACE(ColdModeSpellCheckRequester) {
-  visitor->trace(m_frame);
-  visitor->trace(m_nextNode);
-  visitor->trace(m_currentRootEditable);
-  visitor->trace(m_currentChunkStart);
+  visitor->Trace(frame_);
+  visitor->Trace(next_node_);
+  visitor->Trace(current_root_editable_);
+  visitor->Trace(current_chunk_start_);
 }
 
 ColdModeSpellCheckRequester::ColdModeSpellCheckRequester(LocalFrame& frame)
-    : m_frame(frame),
-      m_lastCheckedDOMTreeVersion(0),
-      m_needsMoreInvocationForTesting(false) {}
+    : frame_(frame),
+      last_checked_dom_tree_version_(0),
+      needs_more_invocation_for_testing_(false) {}
 
-bool ColdModeSpellCheckRequester::fullDocumentChecked() const {
-  if (m_needsMoreInvocationForTesting) {
-    m_needsMoreInvocationForTesting = false;
+bool ColdModeSpellCheckRequester::FullDocumentChecked() const {
+  if (needs_more_invocation_for_testing_) {
+    needs_more_invocation_for_testing_ = false;
     return false;
   }
-  return !m_nextNode;
+  return !next_node_;
 }
 
-SpellCheckRequester& ColdModeSpellCheckRequester::spellCheckRequester() const {
-  return frame().spellChecker().spellCheckRequester();
+SpellCheckRequester& ColdModeSpellCheckRequester::GetSpellCheckRequester()
+    const {
+  return GetFrame().GetSpellChecker().GetSpellCheckRequester();
 }
 
-void ColdModeSpellCheckRequester::invoke(IdleDeadline* deadline) {
+void ColdModeSpellCheckRequester::Invoke(IdleDeadline* deadline) {
   TRACE_EVENT0("blink", "ColdModeSpellCheckRequester::invoke");
 
-  Node* body = frame().document()->body();
+  Node* body = GetFrame().GetDocument()->body();
   if (!body) {
-    resetCheckingProgress();
-    m_lastCheckedDOMTreeVersion = frame().document()->domTreeVersion();
+    ResetCheckingProgress();
+    last_checked_dom_tree_version_ = GetFrame().GetDocument()->DomTreeVersion();
     return;
   }
 
   // TODO(xiaochengh): Figure out if this has any performance impact.
-  frame().document()->updateStyleAndLayout();
+  GetFrame().GetDocument()->UpdateStyleAndLayout();
 
-  if (m_lastCheckedDOMTreeVersion != frame().document()->domTreeVersion())
-    resetCheckingProgress();
+  if (last_checked_dom_tree_version_ !=
+      GetFrame().GetDocument()->DomTreeVersion())
+    ResetCheckingProgress();
 
-  while (m_nextNode && deadline->timeRemaining() > 0)
-    step();
-  m_lastCheckedDOMTreeVersion = frame().document()->domTreeVersion();
+  while (next_node_ && deadline->timeRemaining() > 0)
+    Step();
+  last_checked_dom_tree_version_ = GetFrame().GetDocument()->DomTreeVersion();
 }
 
-void ColdModeSpellCheckRequester::resetCheckingProgress() {
-  m_nextNode = frame().document()->body();
-  m_currentRootEditable = nullptr;
-  m_currentFullLength = kInvalidLength;
-  m_currentChunkIndex = kInvalidChunkIndex;
-  m_currentChunkStart = Position();
+void ColdModeSpellCheckRequester::ResetCheckingProgress() {
+  next_node_ = GetFrame().GetDocument()->body();
+  current_root_editable_ = nullptr;
+  current_full_length_ = kInvalidLength;
+  current_chunk_index_ = kInvalidChunkIndex;
+  current_chunk_start_ = Position();
 }
 
-void ColdModeSpellCheckRequester::step() {
-  if (!m_nextNode)
+void ColdModeSpellCheckRequester::Step() {
+  if (!next_node_)
     return;
 
-  if (!m_currentRootEditable) {
-    searchForNextRootEditable();
-    return;
-  }
-
-  if (m_currentFullLength == kInvalidLength) {
-    initializeForCurrentRootEditable();
+  if (!current_root_editable_) {
+    SearchForNextRootEditable();
     return;
   }
 
-  DCHECK(m_currentChunkIndex != kInvalidChunkIndex);
-  requestCheckingForNextChunk();
+  if (current_full_length_ == kInvalidLength) {
+    InitializeForCurrentRootEditable();
+    return;
+  }
+
+  DCHECK(current_chunk_index_ != kInvalidChunkIndex);
+  RequestCheckingForNextChunk();
 }
 
-void ColdModeSpellCheckRequester::searchForNextRootEditable() {
+void ColdModeSpellCheckRequester::SearchForNextRootEditable() {
   // TODO(xiaochengh): Figure out if such small steps, which result in frequent
   // calls of |timeRemaining()|, have any performance impact. We might not want
   // to check remaining time so frequently in a page with millions of nodes.
 
-  if (shouldCheckNode(*m_nextNode)) {
-    m_currentRootEditable = toElement(m_nextNode);
+  if (ShouldCheckNode(*next_node_)) {
+    current_root_editable_ = ToElement(next_node_);
     return;
   }
 
-  m_nextNode = FlatTreeTraversal::next(*m_nextNode, frame().document()->body());
+  next_node_ =
+      FlatTreeTraversal::Next(*next_node_, GetFrame().GetDocument()->body());
 }
 
-void ColdModeSpellCheckRequester::initializeForCurrentRootEditable() {
-  const EphemeralRange& fullRange =
-      EphemeralRange::rangeOfContents(*m_currentRootEditable);
-  m_currentFullLength = TextIterator::rangeLength(fullRange.startPosition(),
-                                                  fullRange.endPosition());
+void ColdModeSpellCheckRequester::InitializeForCurrentRootEditable() {
+  const EphemeralRange& full_range =
+      EphemeralRange::RangeOfContents(*current_root_editable_);
+  current_full_length_ = TextIterator::RangeLength(full_range.StartPosition(),
+                                                   full_range.EndPosition());
 
-  m_currentChunkIndex = 0;
-  m_currentChunkStart = fullRange.startPosition();
+  current_chunk_index_ = 0;
+  current_chunk_start_ = full_range.StartPosition();
 }
 
-void ColdModeSpellCheckRequester::requestCheckingForNextChunk() {
+void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
   // Check the full content if it is short.
-  if (m_currentFullLength <= kColdModeChunkSize) {
-    spellCheckRequester().requestCheckingFor(
-        EphemeralRange::rangeOfContents(*m_currentRootEditable));
-    finishCheckingCurrentRootEditable();
+  if (current_full_length_ <= kColdModeChunkSize) {
+    GetSpellCheckRequester().RequestCheckingFor(
+        EphemeralRange::RangeOfContents(*current_root_editable_));
+    FinishCheckingCurrentRootEditable();
     return;
   }
 
-  const Position& chunkEnd =
-      calculateCharacterSubrange(
-          EphemeralRange(m_currentChunkStart,
-                         Position::lastPositionInNode(m_currentRootEditable)),
+  const Position& chunk_end =
+      CalculateCharacterSubrange(
+          EphemeralRange(current_chunk_start_,
+                         Position::LastPositionInNode(current_root_editable_)),
           0, kColdModeChunkSize)
-          .endPosition();
-  if (chunkEnd <= m_currentChunkStart) {
-    finishCheckingCurrentRootEditable();
+          .EndPosition();
+  if (chunk_end <= current_chunk_start_) {
+    FinishCheckingCurrentRootEditable();
     return;
   }
-  const EphemeralRange chunkRange(m_currentChunkStart, chunkEnd);
-  const EphemeralRange& checkRange = expandEndToSentenceBoundary(chunkRange);
-  spellCheckRequester().requestCheckingFor(checkRange, m_currentChunkIndex);
+  const EphemeralRange chunk_range(current_chunk_start_, chunk_end);
+  const EphemeralRange& check_range = ExpandEndToSentenceBoundary(chunk_range);
+  GetSpellCheckRequester().RequestCheckingFor(check_range,
+                                              current_chunk_index_);
 
-  m_currentChunkStart = checkRange.endPosition();
-  ++m_currentChunkIndex;
+  current_chunk_start_ = check_range.EndPosition();
+  ++current_chunk_index_;
 
-  if (m_currentChunkIndex * kColdModeChunkSize >= m_currentFullLength)
-    finishCheckingCurrentRootEditable();
+  if (current_chunk_index_ * kColdModeChunkSize >= current_full_length_)
+    FinishCheckingCurrentRootEditable();
 }
 
-void ColdModeSpellCheckRequester::finishCheckingCurrentRootEditable() {
-  DCHECK_EQ(m_nextNode, m_currentRootEditable);
-  m_nextNode = FlatTreeTraversal::nextSkippingChildren(
-      *m_nextNode, frame().document()->body());
+void ColdModeSpellCheckRequester::FinishCheckingCurrentRootEditable() {
+  DCHECK_EQ(next_node_, current_root_editable_);
+  next_node_ = FlatTreeTraversal::NextSkippingChildren(
+      *next_node_, GetFrame().GetDocument()->body());
 
-  m_currentRootEditable = nullptr;
-  m_currentFullLength = kInvalidLength;
-  m_currentChunkIndex = kInvalidChunkIndex;
-  m_currentChunkStart = Position();
+  current_root_editable_ = nullptr;
+  current_full_length_ = kInvalidLength;
+  current_chunk_index_ = kInvalidChunkIndex;
+  current_chunk_start_ = Position();
 }
 
 }  // namespace blink

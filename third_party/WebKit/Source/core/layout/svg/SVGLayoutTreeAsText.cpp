@@ -84,60 +84,60 @@ namespace blink {
 class TextStreamSeparator {
  public:
   TextStreamSeparator(const String& s)
-      : m_separator(s), m_needToSeparate(false) {}
+      : separator_(s), need_to_separate_(false) {}
 
  private:
   friend TextStream& operator<<(TextStream&, TextStreamSeparator&);
 
-  String m_separator;
-  bool m_needToSeparate;
+  String separator_;
+  bool need_to_separate_;
 };
 
 TextStream& operator<<(TextStream& ts, TextStreamSeparator& sep) {
-  if (sep.m_needToSeparate)
-    ts << sep.m_separator;
+  if (sep.need_to_separate_)
+    ts << sep.separator_;
   else
-    sep.m_needToSeparate = true;
+    sep.need_to_separate_ = true;
   return ts;
 }
 
 template <typename ValueType>
-static void writeNameValuePair(TextStream& ts,
+static void WriteNameValuePair(TextStream& ts,
                                const char* name,
                                ValueType value) {
   ts << " [" << name << "=" << value << "]";
 }
 
 template <typename ValueType>
-static void writeNameAndQuotedValue(TextStream& ts,
+static void WriteNameAndQuotedValue(TextStream& ts,
                                     const char* name,
                                     ValueType value) {
   ts << " [" << name << "=\"" << value << "\"]";
 }
 
-static void writeIfNotEmpty(TextStream& ts,
+static void WriteIfNotEmpty(TextStream& ts,
                             const char* name,
                             const String& value) {
-  if (!value.isEmpty())
-    writeNameValuePair(ts, name, value);
+  if (!value.IsEmpty())
+    WriteNameValuePair(ts, name, value);
 }
 
 template <typename ValueType>
-static void writeIfNotDefault(TextStream& ts,
+static void WriteIfNotDefault(TextStream& ts,
                               const char* name,
                               ValueType value,
-                              ValueType defaultValue) {
-  if (value != defaultValue)
-    writeNameValuePair(ts, name, value);
+                              ValueType default_value) {
+  if (value != default_value)
+    WriteNameValuePair(ts, name, value);
 }
 
 TextStream& operator<<(TextStream& ts, const AffineTransform& transform) {
-  if (transform.isIdentity()) {
+  if (transform.IsIdentity()) {
     ts << "identity";
   } else {
-    ts << "{m=((" << transform.a() << "," << transform.b() << ")("
-       << transform.c() << "," << transform.d() << ")) t=(" << transform.e()
-       << "," << transform.f() << ")}";
+    ts << "{m=((" << transform.A() << "," << transform.B() << ")("
+       << transform.C() << "," << transform.D() << ")) t=(" << transform.E()
+       << "," << transform.F() << ")}";
   }
 
   return ts;
@@ -160,11 +160,11 @@ namespace {
 
 template <typename Enum>
 String SVGEnumerationToString(Enum value) {
-  const SVGEnumerationStringEntries& entries = getStaticStringEntries<Enum>();
+  const SVGEnumerationStringEntries& entries = GetStaticStringEntries<Enum>();
 
   SVGEnumerationStringEntries::const_iterator it = entries.begin();
-  SVGEnumerationStringEntries::const_iterator itEnd = entries.end();
-  for (; it != itEnd; ++it) {
+  SVGEnumerationStringEntries::const_iterator it_end = entries.end();
+  for (; it != it_end; ++it) {
     if (value == it->first)
       return it->second;
   }
@@ -176,20 +176,20 @@ String SVGEnumerationToString(Enum value) {
 }  // namespace
 
 static TextStream& operator<<(TextStream& ts,
-                              const SVGUnitTypes::SVGUnitType& unitType) {
-  ts << SVGEnumerationToString<SVGUnitTypes::SVGUnitType>(unitType);
+                              const SVGUnitTypes::SVGUnitType& unit_type) {
+  ts << SVGEnumerationToString<SVGUnitTypes::SVGUnitType>(unit_type);
   return ts;
 }
 
 static TextStream& operator<<(TextStream& ts,
-                              const SVGMarkerUnitsType& markerUnit) {
-  ts << SVGEnumerationToString<SVGMarkerUnitsType>(markerUnit);
+                              const SVGMarkerUnitsType& marker_unit) {
+  ts << SVGEnumerationToString<SVGMarkerUnitsType>(marker_unit);
   return ts;
 }
 
 static TextStream& operator<<(TextStream& ts,
-                              const SVGMarkerOrientType& orientType) {
-  ts << SVGEnumerationToString<SVGMarkerOrientType>(orientType);
+                              const SVGMarkerOrientType& orient_type) {
+  ts << SVGEnumerationToString<SVGMarkerOrientType>(orient_type);
   return ts;
 }
 
@@ -209,13 +209,13 @@ static TextStream& operator<<(TextStream& ts, const DashArray& a) {
 // FIXME: Maybe this should be in GraphicsTypes.cpp
 static TextStream& operator<<(TextStream& ts, LineCap style) {
   switch (style) {
-    case ButtCap:
+    case kButtCap:
       ts << "BUTT";
       break;
-    case RoundCap:
+    case kRoundCap:
       ts << "ROUND";
       break;
-    case SquareCap:
+    case kSquareCap:
       ts << "SQUARE";
       break;
   }
@@ -225,13 +225,13 @@ static TextStream& operator<<(TextStream& ts, LineCap style) {
 // FIXME: Maybe this should be in GraphicsTypes.cpp
 static TextStream& operator<<(TextStream& ts, LineJoin style) {
   switch (style) {
-    case MiterJoin:
+    case kMiterJoin:
       ts << "MITER";
       break;
-    case RoundJoin:
+    case kRoundJoin:
       ts << "ROUND";
       break;
-    case BevelJoin:
+    case kBevelJoin:
       ts << "BEVEL";
       break;
   }
@@ -239,156 +239,162 @@ static TextStream& operator<<(TextStream& ts, LineJoin style) {
 }
 
 static TextStream& operator<<(TextStream& ts, const SVGSpreadMethodType& type) {
-  ts << SVGEnumerationToString<SVGSpreadMethodType>(type).upper();
+  ts << SVGEnumerationToString<SVGSpreadMethodType>(type).Upper();
   return ts;
 }
 
-static void writeSVGPaintingResource(
+static void WriteSVGPaintingResource(
     TextStream& ts,
-    const SVGPaintDescription& paintDescription) {
-  DCHECK(paintDescription.isValid);
-  if (!paintDescription.resource) {
-    ts << "[type=SOLID] [color=" << paintDescription.color << "]";
+    const SVGPaintDescription& paint_description) {
+  DCHECK(paint_description.is_valid);
+  if (!paint_description.resource) {
+    ts << "[type=SOLID] [color=" << paint_description.color << "]";
     return;
   }
 
-  LayoutSVGResourcePaintServer* paintServerContainer =
-      paintDescription.resource;
-  SVGElement* element = paintServerContainer->element();
+  LayoutSVGResourcePaintServer* paint_server_container =
+      paint_description.resource;
+  SVGElement* element = paint_server_container->GetElement();
   DCHECK(element);
 
-  if (paintServerContainer->resourceType() == PatternResourceType)
+  if (paint_server_container->ResourceType() == kPatternResourceType)
     ts << "[type=PATTERN]";
-  else if (paintServerContainer->resourceType() == LinearGradientResourceType)
+  else if (paint_server_container->ResourceType() ==
+           kLinearGradientResourceType)
     ts << "[type=LINEAR-GRADIENT]";
-  else if (paintServerContainer->resourceType() == RadialGradientResourceType)
+  else if (paint_server_container->ResourceType() ==
+           kRadialGradientResourceType)
     ts << "[type=RADIAL-GRADIENT]";
 
-  ts << " [id=\"" << element->getIdAttribute() << "\"]";
+  ts << " [id=\"" << element->GetIdAttribute() << "\"]";
 }
 
-static void writeStyle(TextStream& ts, const LayoutObject& object) {
-  const ComputedStyle& style = object.styleRef();
-  const SVGComputedStyle& svgStyle = style.svgStyle();
+static void WriteStyle(TextStream& ts, const LayoutObject& object) {
+  const ComputedStyle& style = object.StyleRef();
+  const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  if (!object.localSVGTransform().isIdentity())
-    writeNameValuePair(ts, "transform", object.localSVGTransform());
-  writeIfNotDefault(ts, "image rendering", style.imageRendering(),
-                    ComputedStyle::initialImageRendering());
-  writeIfNotDefault(ts, "opacity", style.opacity(),
-                    ComputedStyle::initialOpacity());
-  if (object.isSVGShape()) {
+  if (!object.LocalSVGTransform().IsIdentity())
+    WriteNameValuePair(ts, "transform", object.LocalSVGTransform());
+  WriteIfNotDefault(ts, "image rendering", style.ImageRendering(),
+                    ComputedStyle::InitialImageRendering());
+  WriteIfNotDefault(ts, "opacity", style.Opacity(),
+                    ComputedStyle::InitialOpacity());
+  if (object.IsSVGShape()) {
     const LayoutSVGShape& shape = static_cast<const LayoutSVGShape&>(object);
-    DCHECK(shape.element());
+    DCHECK(shape.GetElement());
 
-    SVGPaintDescription strokePaintDescription =
-        LayoutSVGResourcePaintServer::requestPaintDescription(
-            shape, shape.styleRef(), ApplyToStrokeMode);
-    if (strokePaintDescription.isValid) {
+    SVGPaintDescription stroke_paint_description =
+        LayoutSVGResourcePaintServer::RequestPaintDescription(
+            shape, shape.StyleRef(), kApplyToStrokeMode);
+    if (stroke_paint_description.is_valid) {
       TextStreamSeparator s(" ");
       ts << " [stroke={" << s;
-      writeSVGPaintingResource(ts, strokePaintDescription);
+      WriteSVGPaintingResource(ts, stroke_paint_description);
 
-      SVGLengthContext lengthContext(shape.element());
-      double dashOffset =
-          lengthContext.valueForLength(svgStyle.strokeDashOffset(), style);
-      double strokeWidth = lengthContext.valueForLength(svgStyle.strokeWidth());
-      DashArray dashArray = SVGLayoutSupport::resolveSVGDashArray(
-          *svgStyle.strokeDashArray(), style, lengthContext);
+      SVGLengthContext length_context(shape.GetElement());
+      double dash_offset =
+          length_context.ValueForLength(svg_style.StrokeDashOffset(), style);
+      double stroke_width =
+          length_context.ValueForLength(svg_style.StrokeWidth());
+      DashArray dash_array = SVGLayoutSupport::ResolveSVGDashArray(
+          *svg_style.StrokeDashArray(), style, length_context);
 
-      writeIfNotDefault(ts, "opacity", svgStyle.strokeOpacity(), 1.0f);
-      writeIfNotDefault(ts, "stroke width", strokeWidth, 1.0);
-      writeIfNotDefault(ts, "miter limit", svgStyle.strokeMiterLimit(), 4.0f);
-      writeIfNotDefault(ts, "line cap", svgStyle.capStyle(), ButtCap);
-      writeIfNotDefault(ts, "line join", svgStyle.joinStyle(), MiterJoin);
-      writeIfNotDefault(ts, "dash offset", dashOffset, 0.0);
-      if (!dashArray.isEmpty())
-        writeNameValuePair(ts, "dash array", dashArray);
+      WriteIfNotDefault(ts, "opacity", svg_style.StrokeOpacity(), 1.0f);
+      WriteIfNotDefault(ts, "stroke width", stroke_width, 1.0);
+      WriteIfNotDefault(ts, "miter limit", svg_style.StrokeMiterLimit(), 4.0f);
+      WriteIfNotDefault(ts, "line cap", svg_style.CapStyle(), kButtCap);
+      WriteIfNotDefault(ts, "line join", svg_style.JoinStyle(), kMiterJoin);
+      WriteIfNotDefault(ts, "dash offset", dash_offset, 0.0);
+      if (!dash_array.IsEmpty())
+        WriteNameValuePair(ts, "dash array", dash_array);
 
       ts << "}]";
     }
 
-    SVGPaintDescription fillPaintDescription =
-        LayoutSVGResourcePaintServer::requestPaintDescription(
-            shape, shape.styleRef(), ApplyToFillMode);
-    if (fillPaintDescription.isValid) {
+    SVGPaintDescription fill_paint_description =
+        LayoutSVGResourcePaintServer::RequestPaintDescription(
+            shape, shape.StyleRef(), kApplyToFillMode);
+    if (fill_paint_description.is_valid) {
       TextStreamSeparator s(" ");
       ts << " [fill={" << s;
-      writeSVGPaintingResource(ts, fillPaintDescription);
+      WriteSVGPaintingResource(ts, fill_paint_description);
 
-      writeIfNotDefault(ts, "opacity", svgStyle.fillOpacity(), 1.0f);
-      writeIfNotDefault(ts, "fill rule", svgStyle.fillRule(), RULE_NONZERO);
+      WriteIfNotDefault(ts, "opacity", svg_style.FillOpacity(), 1.0f);
+      WriteIfNotDefault(ts, "fill rule", svg_style.FillRule(), RULE_NONZERO);
       ts << "}]";
     }
-    writeIfNotDefault(ts, "clip rule", svgStyle.clipRule(), RULE_NONZERO);
+    WriteIfNotDefault(ts, "clip rule", svg_style.ClipRule(), RULE_NONZERO);
   }
 
-  writeIfNotEmpty(ts, "start marker", svgStyle.markerStartResource());
-  writeIfNotEmpty(ts, "middle marker", svgStyle.markerMidResource());
-  writeIfNotEmpty(ts, "end marker", svgStyle.markerEndResource());
+  WriteIfNotEmpty(ts, "start marker", svg_style.MarkerStartResource());
+  WriteIfNotEmpty(ts, "middle marker", svg_style.MarkerMidResource());
+  WriteIfNotEmpty(ts, "end marker", svg_style.MarkerEndResource());
 }
 
-static TextStream& writePositionAndStyle(TextStream& ts,
+static TextStream& WritePositionAndStyle(TextStream& ts,
                                          const LayoutObject& object) {
-  ts << " " << object.objectBoundingBox();
-  writeStyle(ts, object);
+  ts << " " << object.ObjectBoundingBox();
+  WriteStyle(ts, object);
   return ts;
 }
 
 static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
-  writePositionAndStyle(ts, shape);
+  WritePositionAndStyle(ts, shape);
 
-  SVGElement* svgElement = shape.element();
-  DCHECK(svgElement);
-  SVGLengthContext lengthContext(svgElement);
+  SVGElement* svg_element = shape.GetElement();
+  DCHECK(svg_element);
+  SVGLengthContext length_context(svg_element);
 
-  if (isSVGRectElement(*svgElement)) {
-    SVGRectElement& element = toSVGRectElement(*svgElement);
-    writeNameValuePair(ts, "x",
-                       element.x()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "y",
-                       element.y()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "width",
-                       element.width()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "height",
-                       element.height()->currentValue()->value(lengthContext));
-  } else if (isSVGLineElement(*svgElement)) {
-    SVGLineElement& element = toSVGLineElement(*svgElement);
-    writeNameValuePair(ts, "x1",
-                       element.x1()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "y1",
-                       element.y1()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "x2",
-                       element.x2()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "y2",
-                       element.y2()->currentValue()->value(lengthContext));
-  } else if (isSVGEllipseElement(*svgElement)) {
-    SVGEllipseElement& element = toSVGEllipseElement(*svgElement);
-    writeNameValuePair(ts, "cx",
-                       element.cx()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "cy",
-                       element.cy()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "rx",
-                       element.rx()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "ry",
-                       element.ry()->currentValue()->value(lengthContext));
-  } else if (isSVGCircleElement(*svgElement)) {
-    SVGCircleElement& element = toSVGCircleElement(*svgElement);
-    writeNameValuePair(ts, "cx",
-                       element.cx()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "cy",
-                       element.cy()->currentValue()->value(lengthContext));
-    writeNameValuePair(ts, "r",
-                       element.r()->currentValue()->value(lengthContext));
-  } else if (isSVGPolyElement(*svgElement)) {
-    writeNameAndQuotedValue(ts, "points", toSVGPolyElement(*svgElement)
-                                              .points()
-                                              ->currentValue()
-                                              ->valueAsString());
-  } else if (isSVGPathElement(*svgElement)) {
-    writeNameAndQuotedValue(
-        ts, "data",
-        toSVGPathElement(*svgElement).path()->currentValue()->valueAsString());
+  if (isSVGRectElement(*svg_element)) {
+    SVGRectElement& element = toSVGRectElement(*svg_element);
+    WriteNameValuePair(ts, "x",
+                       element.x()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "y",
+                       element.y()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "width",
+                       element.width()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "height",
+                       element.height()->CurrentValue()->Value(length_context));
+  } else if (isSVGLineElement(*svg_element)) {
+    SVGLineElement& element = toSVGLineElement(*svg_element);
+    WriteNameValuePair(ts, "x1",
+                       element.x1()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "y1",
+                       element.y1()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "x2",
+                       element.x2()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "y2",
+                       element.y2()->CurrentValue()->Value(length_context));
+  } else if (isSVGEllipseElement(*svg_element)) {
+    SVGEllipseElement& element = toSVGEllipseElement(*svg_element);
+    WriteNameValuePair(ts, "cx",
+                       element.cx()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "cy",
+                       element.cy()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "rx",
+                       element.rx()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "ry",
+                       element.ry()->CurrentValue()->Value(length_context));
+  } else if (isSVGCircleElement(*svg_element)) {
+    SVGCircleElement& element = toSVGCircleElement(*svg_element);
+    WriteNameValuePair(ts, "cx",
+                       element.cx()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "cy",
+                       element.cy()->CurrentValue()->Value(length_context));
+    WriteNameValuePair(ts, "r",
+                       element.r()->CurrentValue()->Value(length_context));
+  } else if (IsSVGPolyElement(*svg_element)) {
+    WriteNameAndQuotedValue(ts, "points",
+                            ToSVGPolyElement(*svg_element)
+                                .Points()
+                                ->CurrentValue()
+                                ->ValueAsString());
+  } else if (isSVGPathElement(*svg_element)) {
+    WriteNameAndQuotedValue(ts, "data",
+                            toSVGPathElement(*svg_element)
+                                .GetPath()
+                                ->CurrentValue()
+                                ->ValueAsString());
   } else {
     NOTREACHED();
   }
@@ -396,13 +402,13 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
 }
 
 static TextStream& operator<<(TextStream& ts, const LayoutSVGRoot& root) {
-  ts << " " << root.frameRect();
-  writeStyle(ts, root);
+  ts << " " << root.FrameRect();
+  WriteStyle(ts, root);
   return ts;
 }
 
-static void writeLayoutSVGTextBox(TextStream& ts, const LayoutSVGText& text) {
-  SVGRootInlineBox* box = toSVGRootInlineBox(text.firstRootBox());
+static void WriteLayoutSVGTextBox(TextStream& ts, const LayoutSVGText& text) {
+  SVGRootInlineBox* box = ToSVGRootInlineBox(text.FirstRootBox());
   if (!box)
     return;
 
@@ -410,167 +416,169 @@ static void writeLayoutSVGTextBox(TextStream& ts, const LayoutSVGText& text) {
   // landed. We want to preserve the old layout test results for now.
   ts << " contains 1 chunk(s)";
 
-  if (text.parent() && (text.parent()->resolveColor(CSSPropertyColor) !=
-                        text.resolveColor(CSSPropertyColor))) {
-    writeNameValuePair(
+  if (text.Parent() && (text.Parent()->ResolveColor(CSSPropertyColor) !=
+                        text.ResolveColor(CSSPropertyColor))) {
+    WriteNameValuePair(
         ts, "color",
-        text.resolveColor(CSSPropertyColor).nameForLayoutTreeAsText());
+        text.ResolveColor(CSSPropertyColor).NameForLayoutTreeAsText());
   }
 }
 
-static inline void writeSVGInlineTextBox(TextStream& ts,
-                                         SVGInlineTextBox* textBox,
+static inline void WriteSVGInlineTextBox(TextStream& ts,
+                                         SVGInlineTextBox* text_box,
                                          int indent) {
-  Vector<SVGTextFragment>& fragments = textBox->textFragments();
-  if (fragments.isEmpty())
+  Vector<SVGTextFragment>& fragments = text_box->TextFragments();
+  if (fragments.IsEmpty())
     return;
 
-  LineLayoutSVGInlineText textLineLayout =
-      LineLayoutSVGInlineText(textBox->getLineLayoutItem());
+  LineLayoutSVGInlineText text_line_layout =
+      LineLayoutSVGInlineText(text_box->GetLineLayoutItem());
 
-  const SVGComputedStyle& svgStyle = textLineLayout.style()->svgStyle();
-  String text = textBox->getLineLayoutItem().text();
+  const SVGComputedStyle& svg_style = text_line_layout.Style()->SvgStyle();
+  String text = text_box->GetLineLayoutItem().GetText();
 
-  unsigned fragmentsSize = fragments.size();
-  for (unsigned i = 0; i < fragmentsSize; ++i) {
+  unsigned fragments_size = fragments.size();
+  for (unsigned i = 0; i < fragments_size; ++i) {
     SVGTextFragment& fragment = fragments.at(i);
-    writeIndent(ts, indent + 1);
+    WriteIndent(ts, indent + 1);
 
-    unsigned startOffset = fragment.characterOffset;
-    unsigned endOffset = fragment.characterOffset + fragment.length;
+    unsigned start_offset = fragment.character_offset;
+    unsigned end_offset = fragment.character_offset + fragment.length;
 
     // FIXME: Remove this hack, once the new text layout engine is completly
     // landed. We want to preserve the old layout test results for now.
     ts << "chunk 1 ";
-    ETextAnchor anchor = svgStyle.textAnchor();
-    bool isVerticalText = !textLineLayout.style()->isHorizontalWritingMode();
+    ETextAnchor anchor = svg_style.TextAnchor();
+    bool is_vertical_text =
+        !text_line_layout.Style()->IsHorizontalWritingMode();
     if (anchor == TA_MIDDLE) {
       ts << "(middle anchor";
-      if (isVerticalText)
+      if (is_vertical_text)
         ts << ", vertical";
       ts << ") ";
     } else if (anchor == TA_END) {
       ts << "(end anchor";
-      if (isVerticalText)
+      if (is_vertical_text)
         ts << ", vertical";
       ts << ") ";
-    } else if (isVerticalText) {
+    } else if (is_vertical_text) {
       ts << "(vertical) ";
     }
-    startOffset -= textBox->start();
-    endOffset -= textBox->start();
+    start_offset -= text_box->Start();
+    end_offset -= text_box->Start();
     // </hack>
 
     ts << "text run " << i + 1 << " at (" << fragment.x << "," << fragment.y
        << ")";
-    ts << " startOffset " << startOffset << " endOffset " << endOffset;
-    if (isVerticalText)
+    ts << " startOffset " << start_offset << " endOffset " << end_offset;
+    if (is_vertical_text)
       ts << " height " << fragment.height;
     else
       ts << " width " << fragment.width;
 
-    if (!textBox->isLeftToRightDirection() || textBox->dirOverride()) {
-      ts << (textBox->isLeftToRightDirection() ? " LTR" : " RTL");
-      if (textBox->dirOverride())
+    if (!text_box->IsLeftToRightDirection() || text_box->DirOverride()) {
+      ts << (text_box->IsLeftToRightDirection() ? " LTR" : " RTL");
+      if (text_box->DirOverride())
         ts << " override";
     }
 
-    ts << ": " << quoteAndEscapeNonPrintables(
-                      text.substring(fragment.characterOffset, fragment.length))
+    ts << ": "
+       << QuoteAndEscapeNonPrintables(
+              text.Substring(fragment.character_offset, fragment.length))
        << "\n";
   }
 }
 
-static inline void writeSVGInlineTextBoxes(TextStream& ts,
+static inline void WriteSVGInlineTextBoxes(TextStream& ts,
                                            const LayoutText& text,
                                            int indent) {
-  for (InlineTextBox* box = text.firstTextBox(); box;
-       box = box->nextTextBox()) {
-    if (!box->isSVGInlineTextBox())
+  for (InlineTextBox* box = text.FirstTextBox(); box;
+       box = box->NextTextBox()) {
+    if (!box->IsSVGInlineTextBox())
       continue;
 
-    writeSVGInlineTextBox(ts, toSVGInlineTextBox(box), indent);
+    WriteSVGInlineTextBox(ts, ToSVGInlineTextBox(box), indent);
   }
 }
 
-static void writeStandardPrefix(TextStream& ts,
+static void WriteStandardPrefix(TextStream& ts,
                                 const LayoutObject& object,
                                 int indent) {
-  writeIndent(ts, indent);
-  ts << object.decoratedName();
+  WriteIndent(ts, indent);
+  ts << object.DecoratedName();
 
-  if (object.node())
-    ts << " {" << object.node()->nodeName() << "}";
+  if (object.GetNode())
+    ts << " {" << object.GetNode()->nodeName() << "}";
 }
 
-static void writeChildren(TextStream& ts,
+static void WriteChildren(TextStream& ts,
                           const LayoutObject& object,
                           int indent) {
-  for (LayoutObject* child = object.slowFirstChild(); child;
-       child = child->nextSibling())
-    write(ts, *child, indent + 1);
+  for (LayoutObject* child = object.SlowFirstChild(); child;
+       child = child->NextSibling())
+    Write(ts, *child, indent + 1);
 }
 
-static inline void writeCommonGradientProperties(
+static inline void WriteCommonGradientProperties(
     TextStream& ts,
-    SVGSpreadMethodType spreadMethod,
-    const AffineTransform& gradientTransform,
-    SVGUnitTypes::SVGUnitType gradientUnits) {
-  writeNameValuePair(ts, "gradientUnits", gradientUnits);
+    SVGSpreadMethodType spread_method,
+    const AffineTransform& gradient_transform,
+    SVGUnitTypes::SVGUnitType gradient_units) {
+  WriteNameValuePair(ts, "gradientUnits", gradient_units);
 
-  if (spreadMethod != SVGSpreadMethodPad)
-    ts << " [spreadMethod=" << spreadMethod << "]";
+  if (spread_method != kSVGSpreadMethodPad)
+    ts << " [spreadMethod=" << spread_method << "]";
 
-  if (!gradientTransform.isIdentity())
-    ts << " [gradientTransform=" << gradientTransform << "]";
+  if (!gradient_transform.IsIdentity())
+    ts << " [gradientTransform=" << gradient_transform << "]";
 }
 
-void writeSVGResourceContainer(TextStream& ts,
+void WriteSVGResourceContainer(TextStream& ts,
                                const LayoutObject& object,
                                int indent) {
-  writeStandardPrefix(ts, object, indent);
+  WriteStandardPrefix(ts, object, indent);
 
-  Element* element = toElement(object.node());
-  const AtomicString& id = element->getIdAttribute();
-  writeNameAndQuotedValue(ts, "id", id);
+  Element* element = ToElement(object.GetNode());
+  const AtomicString& id = element->GetIdAttribute();
+  WriteNameAndQuotedValue(ts, "id", id);
 
   LayoutSVGResourceContainer* resource =
-      toLayoutSVGResourceContainer(const_cast<LayoutObject*>(&object));
+      ToLayoutSVGResourceContainer(const_cast<LayoutObject*>(&object));
   DCHECK(resource);
 
-  if (resource->resourceType() == MaskerResourceType) {
-    LayoutSVGResourceMasker* masker = toLayoutSVGResourceMasker(resource);
-    writeNameValuePair(ts, "maskUnits", masker->maskUnits());
-    writeNameValuePair(ts, "maskContentUnits", masker->maskContentUnits());
+  if (resource->ResourceType() == kMaskerResourceType) {
+    LayoutSVGResourceMasker* masker = ToLayoutSVGResourceMasker(resource);
+    WriteNameValuePair(ts, "maskUnits", masker->MaskUnits());
+    WriteNameValuePair(ts, "maskContentUnits", masker->MaskContentUnits());
     ts << "\n";
-  } else if (resource->resourceType() == FilterResourceType) {
-    LayoutSVGResourceFilter* filter = toLayoutSVGResourceFilter(resource);
-    writeNameValuePair(ts, "filterUnits", filter->filterUnits());
-    writeNameValuePair(ts, "primitiveUnits", filter->primitiveUnits());
+  } else if (resource->ResourceType() == kFilterResourceType) {
+    LayoutSVGResourceFilter* filter = ToLayoutSVGResourceFilter(resource);
+    WriteNameValuePair(ts, "filterUnits", filter->FilterUnits());
+    WriteNameValuePair(ts, "primitiveUnits", filter->PrimitiveUnits());
     ts << "\n";
     // Creating a placeholder filter which is passed to the builder.
-    FloatRect dummyRect;
-    Filter* dummyFilter =
-        Filter::create(dummyRect, dummyRect, 1, Filter::BoundingBox);
-    SVGFilterBuilder builder(dummyFilter->getSourceGraphic());
-    builder.buildGraph(dummyFilter, toSVGFilterElement(*filter->element()),
-                       dummyRect);
-    if (FilterEffect* lastEffect = builder.lastEffect())
-      lastEffect->externalRepresentation(ts, indent + 1);
-  } else if (resource->resourceType() == ClipperResourceType) {
-    writeNameValuePair(ts, "clipPathUnits",
-                       toLayoutSVGResourceClipper(resource)->clipPathUnits());
+    FloatRect dummy_rect;
+    Filter* dummy_filter =
+        Filter::Create(dummy_rect, dummy_rect, 1, Filter::kBoundingBox);
+    SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
+    builder.BuildGraph(dummy_filter, toSVGFilterElement(*filter->GetElement()),
+                       dummy_rect);
+    if (FilterEffect* last_effect = builder.LastEffect())
+      last_effect->ExternalRepresentation(ts, indent + 1);
+  } else if (resource->ResourceType() == kClipperResourceType) {
+    WriteNameValuePair(ts, "clipPathUnits",
+                       ToLayoutSVGResourceClipper(resource)->ClipPathUnits());
     ts << "\n";
-  } else if (resource->resourceType() == MarkerResourceType) {
-    LayoutSVGResourceMarker* marker = toLayoutSVGResourceMarker(resource);
-    writeNameValuePair(ts, "markerUnits", marker->markerUnits());
-    ts << " [ref at " << marker->referencePoint() << "]";
+  } else if (resource->ResourceType() == kMarkerResourceType) {
+    LayoutSVGResourceMarker* marker = ToLayoutSVGResourceMarker(resource);
+    WriteNameValuePair(ts, "markerUnits", marker->MarkerUnits());
+    ts << " [ref at " << marker->ReferencePoint() << "]";
     ts << " [angle=";
-    if (marker->orientType() != SVGMarkerOrientAngle)
-      ts << marker->orientType() << "]\n";
+    if (marker->OrientType() != kSVGMarkerOrientAngle)
+      ts << marker->OrientType() << "]\n";
     else
-      ts << marker->angle() << "]\n";
-  } else if (resource->resourceType() == PatternResourceType) {
+      ts << marker->Angle() << "]\n";
+  } else if (resource->ResourceType() == kPatternResourceType) {
     LayoutSVGResourcePattern* pattern =
         static_cast<LayoutSVGResourcePattern*>(resource);
 
@@ -579,18 +587,18 @@ void writeSVGResourceContainer(TextStream& ts,
     // patterns using xlink:href, we need to build the full inheritance chain,
     // aka. collectPatternProperties()
     PatternAttributes attributes;
-    toSVGPatternElement(pattern->element())
-        ->collectPatternAttributes(attributes);
+    toSVGPatternElement(pattern->GetElement())
+        ->CollectPatternAttributes(attributes);
 
-    writeNameValuePair(ts, "patternUnits", attributes.patternUnits());
-    writeNameValuePair(ts, "patternContentUnits",
-                       attributes.patternContentUnits());
+    WriteNameValuePair(ts, "patternUnits", attributes.PatternUnits());
+    WriteNameValuePair(ts, "patternContentUnits",
+                       attributes.PatternContentUnits());
 
-    AffineTransform transform = attributes.patternTransform();
-    if (!transform.isIdentity())
+    AffineTransform transform = attributes.PatternTransform();
+    if (!transform.IsIdentity())
       ts << " [patternTransform=" << transform << "]";
     ts << "\n";
-  } else if (resource->resourceType() == LinearGradientResourceType) {
+  } else if (resource->ResourceType() == kLinearGradientResourceType) {
     LayoutSVGResourceLinearGradient* gradient =
         static_cast<LayoutSVGResourceLinearGradient*>(resource);
 
@@ -599,159 +607,159 @@ void writeSVGResourceContainer(TextStream& ts,
     // gradients using xlink:href, we need to build the full inheritance chain,
     // aka. collectGradientProperties()
     LinearGradientAttributes attributes;
-    toSVGLinearGradientElement(gradient->element())
-        ->collectGradientAttributes(attributes);
-    writeCommonGradientProperties(ts, attributes.spreadMethod(),
-                                  attributes.gradientTransform(),
-                                  attributes.gradientUnits());
+    toSVGLinearGradientElement(gradient->GetElement())
+        ->CollectGradientAttributes(attributes);
+    WriteCommonGradientProperties(ts, attributes.SpreadMethod(),
+                                  attributes.GradientTransform(),
+                                  attributes.GradientUnits());
 
-    ts << " [start=" << gradient->startPoint(attributes)
-       << "] [end=" << gradient->endPoint(attributes) << "]\n";
-  } else if (resource->resourceType() == RadialGradientResourceType) {
+    ts << " [start=" << gradient->StartPoint(attributes)
+       << "] [end=" << gradient->EndPoint(attributes) << "]\n";
+  } else if (resource->ResourceType() == kRadialGradientResourceType) {
     LayoutSVGResourceRadialGradient* gradient =
-        toLayoutSVGResourceRadialGradient(resource);
+        ToLayoutSVGResourceRadialGradient(resource);
 
     // Dump final results that are used for layout. No use in asking
     // SVGGradientElement for its gradientUnits(), as it may link to other
     // gradients using xlink:href, we need to build the full inheritance chain,
     // aka. collectGradientProperties()
     RadialGradientAttributes attributes;
-    toSVGRadialGradientElement(gradient->element())
-        ->collectGradientAttributes(attributes);
-    writeCommonGradientProperties(ts, attributes.spreadMethod(),
-                                  attributes.gradientTransform(),
-                                  attributes.gradientUnits());
+    toSVGRadialGradientElement(gradient->GetElement())
+        ->CollectGradientAttributes(attributes);
+    WriteCommonGradientProperties(ts, attributes.SpreadMethod(),
+                                  attributes.GradientTransform(),
+                                  attributes.GradientUnits());
 
-    FloatPoint focalPoint = gradient->focalPoint(attributes);
-    FloatPoint centerPoint = gradient->centerPoint(attributes);
-    float radius = gradient->radius(attributes);
-    float focalRadius = gradient->focalRadius(attributes);
+    FloatPoint focal_point = gradient->FocalPoint(attributes);
+    FloatPoint center_point = gradient->CenterPoint(attributes);
+    float radius = gradient->Radius(attributes);
+    float focal_radius = gradient->FocalRadius(attributes);
 
-    ts << " [center=" << centerPoint << "] [focal=" << focalPoint
-       << "] [radius=" << radius << "] [focalRadius=" << focalRadius << "]\n";
+    ts << " [center=" << center_point << "] [focal=" << focal_point
+       << "] [radius=" << radius << "] [focalRadius=" << focal_radius << "]\n";
   } else {
     ts << "\n";
   }
-  writeChildren(ts, object, indent);
+  WriteChildren(ts, object, indent);
 }
 
-void writeSVGContainer(TextStream& ts,
+void WriteSVGContainer(TextStream& ts,
                        const LayoutObject& container,
                        int indent) {
   // Currently LayoutSVGResourceFilterPrimitive has no meaningful output.
-  if (container.isSVGResourceFilterPrimitive())
+  if (container.IsSVGResourceFilterPrimitive())
     return;
-  writeStandardPrefix(ts, container, indent);
-  writePositionAndStyle(ts, container);
+  WriteStandardPrefix(ts, container, indent);
+  WritePositionAndStyle(ts, container);
   ts << "\n";
-  writeResources(ts, container, indent);
-  writeChildren(ts, container, indent);
+  WriteResources(ts, container, indent);
+  WriteChildren(ts, container, indent);
 }
 
-void write(TextStream& ts, const LayoutSVGRoot& root, int indent) {
-  writeStandardPrefix(ts, root, indent);
+void Write(TextStream& ts, const LayoutSVGRoot& root, int indent) {
+  WriteStandardPrefix(ts, root, indent);
   ts << root << "\n";
-  writeChildren(ts, root, indent);
+  WriteChildren(ts, root, indent);
 }
 
-void writeSVGText(TextStream& ts, const LayoutSVGText& text, int indent) {
-  writeStandardPrefix(ts, text, indent);
-  writePositionAndStyle(ts, text);
-  writeLayoutSVGTextBox(ts, text);
+void WriteSVGText(TextStream& ts, const LayoutSVGText& text, int indent) {
+  WriteStandardPrefix(ts, text, indent);
+  WritePositionAndStyle(ts, text);
+  WriteLayoutSVGTextBox(ts, text);
   ts << "\n";
-  writeResources(ts, text, indent);
-  writeChildren(ts, text, indent);
+  WriteResources(ts, text, indent);
+  WriteChildren(ts, text, indent);
 }
 
-void writeSVGInline(TextStream& ts, const LayoutSVGInline& text, int indent) {
-  writeStandardPrefix(ts, text, indent);
-  writePositionAndStyle(ts, text);
+void WriteSVGInline(TextStream& ts, const LayoutSVGInline& text, int indent) {
+  WriteStandardPrefix(ts, text, indent);
+  WritePositionAndStyle(ts, text);
   ts << "\n";
-  writeResources(ts, text, indent);
-  writeChildren(ts, text, indent);
+  WriteResources(ts, text, indent);
+  WriteChildren(ts, text, indent);
 }
 
-void writeSVGInlineText(TextStream& ts,
+void WriteSVGInlineText(TextStream& ts,
                         const LayoutSVGInlineText& text,
                         int indent) {
-  writeStandardPrefix(ts, text, indent);
-  writePositionAndStyle(ts, text);
+  WriteStandardPrefix(ts, text, indent);
+  WritePositionAndStyle(ts, text);
   ts << "\n";
-  writeResources(ts, text, indent);
-  writeSVGInlineTextBoxes(ts, text, indent);
+  WriteResources(ts, text, indent);
+  WriteSVGInlineTextBoxes(ts, text, indent);
 }
 
-void writeSVGImage(TextStream& ts, const LayoutSVGImage& image, int indent) {
-  writeStandardPrefix(ts, image, indent);
-  writePositionAndStyle(ts, image);
+void WriteSVGImage(TextStream& ts, const LayoutSVGImage& image, int indent) {
+  WriteStandardPrefix(ts, image, indent);
+  WritePositionAndStyle(ts, image);
   ts << "\n";
-  writeResources(ts, image, indent);
+  WriteResources(ts, image, indent);
 }
 
-void write(TextStream& ts, const LayoutSVGShape& shape, int indent) {
-  writeStandardPrefix(ts, shape, indent);
+void Write(TextStream& ts, const LayoutSVGShape& shape, int indent) {
+  WriteStandardPrefix(ts, shape, indent);
   ts << shape << "\n";
-  writeResources(ts, shape, indent);
+  WriteResources(ts, shape, indent);
 }
 
-void writeSVGGradientStop(TextStream& ts,
+void WriteSVGGradientStop(TextStream& ts,
                           const LayoutSVGGradientStop& stop,
                           int indent) {
-  writeStandardPrefix(ts, stop, indent);
+  WriteStandardPrefix(ts, stop, indent);
 
-  SVGStopElement* stopElement = toSVGStopElement(stop.node());
-  DCHECK(stopElement);
-  DCHECK(stop.style());
+  SVGStopElement* stop_element = toSVGStopElement(stop.GetNode());
+  DCHECK(stop_element);
+  DCHECK(stop.Style());
 
-  ts << " [offset=" << stopElement->offset()->currentValue()->value()
-     << "] [color=" << stopElement->stopColorIncludingOpacity() << "]\n";
+  ts << " [offset=" << stop_element->offset()->CurrentValue()->Value()
+     << "] [color=" << stop_element->StopColorIncludingOpacity() << "]\n";
 }
 
-void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
+void WriteResources(TextStream& ts, const LayoutObject& object, int indent) {
   SVGResources* resources =
-      SVGResourcesCache::cachedResourcesForLayoutObject(&object);
+      SVGResourcesCache::CachedResourcesForLayoutObject(&object);
   if (!resources)
     return;
-  const ComputedStyle& style = object.styleRef();
-  TreeScope& treeScope = object.document();
-  if (LayoutSVGResourceMasker* masker = resources->masker()) {
-    writeIndent(ts, indent);
+  const ComputedStyle& style = object.StyleRef();
+  TreeScope& tree_scope = object.GetDocument();
+  if (LayoutSVGResourceMasker* masker = resources->Masker()) {
+    WriteIndent(ts, indent);
     ts << " ";
-    writeNameAndQuotedValue(ts, "masker", style.svgStyle().maskerResource());
+    WriteNameAndQuotedValue(ts, "masker", style.SvgStyle().MaskerResource());
     ts << " ";
-    writeStandardPrefix(ts, *masker, 0);
-    ts << " " << masker->resourceBoundingBox(&object) << "\n";
+    WriteStandardPrefix(ts, *masker, 0);
+    ts << " " << masker->ResourceBoundingBox(&object) << "\n";
   }
-  if (LayoutSVGResourceClipper* clipper = resources->clipper()) {
-    DCHECK(style.clipPath());
-    DCHECK_EQ(style.clipPath()->type(), ClipPathOperation::REFERENCE);
-    const ReferenceClipPathOperation& clipPathReference =
-        toReferenceClipPathOperation(*style.clipPath());
-    AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
-        clipPathReference.url(), treeScope);
-    writeIndent(ts, indent);
+  if (LayoutSVGResourceClipper* clipper = resources->Clipper()) {
+    DCHECK(style.ClipPath());
+    DCHECK_EQ(style.ClipPath()->GetType(), ClipPathOperation::REFERENCE);
+    const ReferenceClipPathOperation& clip_path_reference =
+        ToReferenceClipPathOperation(*style.ClipPath());
+    AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
+        clip_path_reference.Url(), tree_scope);
+    WriteIndent(ts, indent);
     ts << " ";
-    writeNameAndQuotedValue(ts, "clipPath", id);
+    WriteNameAndQuotedValue(ts, "clipPath", id);
     ts << " ";
-    writeStandardPrefix(ts, *clipper, 0);
-    ts << " " << clipper->resourceBoundingBox(object.objectBoundingBox())
+    WriteStandardPrefix(ts, *clipper, 0);
+    ts << " " << clipper->ResourceBoundingBox(object.ObjectBoundingBox())
        << "\n";
   }
-  if (LayoutSVGResourceFilter* filter = resources->filter()) {
-    DCHECK(style.hasFilter());
-    DCHECK_EQ(style.filter().size(), 1u);
-    const FilterOperation& filterOperation = *style.filter().at(0);
-    DCHECK_EQ(filterOperation.type(), FilterOperation::REFERENCE);
-    const auto& referenceFilterOperation =
-        toReferenceFilterOperation(filterOperation);
-    AtomicString id = SVGURIReference::fragmentIdentifierFromIRIString(
-        referenceFilterOperation.url(), treeScope);
-    writeIndent(ts, indent);
+  if (LayoutSVGResourceFilter* filter = resources->Filter()) {
+    DCHECK(style.HasFilter());
+    DCHECK_EQ(style.Filter().size(), 1u);
+    const FilterOperation& filter_operation = *style.Filter().at(0);
+    DCHECK_EQ(filter_operation.GetType(), FilterOperation::REFERENCE);
+    const auto& reference_filter_operation =
+        ToReferenceFilterOperation(filter_operation);
+    AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
+        reference_filter_operation.Url(), tree_scope);
+    WriteIndent(ts, indent);
     ts << " ";
-    writeNameAndQuotedValue(ts, "filter", id);
+    WriteNameAndQuotedValue(ts, "filter", id);
     ts << " ";
-    writeStandardPrefix(ts, *filter, 0);
-    ts << " " << filter->resourceBoundingBox(&object) << "\n";
+    WriteStandardPrefix(ts, *filter, 0);
+    ts << " " << filter->ResourceBoundingBox(&object) << "\n";
   }
 }
 

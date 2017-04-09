@@ -38,12 +38,12 @@ namespace {
 
 class TestExtraData : public WebURLRequest::ExtraData {
  public:
-  explicit TestExtraData(bool* alive) : m_alive(alive) { *alive = true; }
+  explicit TestExtraData(bool* alive) : alive_(alive) { *alive = true; }
 
-  ~TestExtraData() override { *m_alive = false; }
+  ~TestExtraData() override { *alive_ = false; }
 
  private:
-  bool* m_alive;
+  bool* alive_;
 };
 
 }  // anonymous namespace
@@ -51,20 +51,20 @@ class TestExtraData : public WebURLRequest::ExtraData {
 TEST(WebURLRequestTest, ExtraData) {
   bool alive = false;
   {
-    WebURLRequest urlRequest;
-    TestExtraData* extraData = new TestExtraData(&alive);
+    WebURLRequest url_request;
+    TestExtraData* extra_data = new TestExtraData(&alive);
     EXPECT_TRUE(alive);
 
-    urlRequest.setExtraData(extraData);
-    EXPECT_EQ(extraData, urlRequest.getExtraData());
+    url_request.SetExtraData(extra_data);
+    EXPECT_EQ(extra_data, url_request.GetExtraData());
     {
-      WebURLRequest otherUrlRequest = urlRequest;
+      WebURLRequest other_url_request = url_request;
       EXPECT_TRUE(alive);
-      EXPECT_EQ(extraData, otherUrlRequest.getExtraData());
-      EXPECT_EQ(extraData, urlRequest.getExtraData());
+      EXPECT_EQ(extra_data, other_url_request.GetExtraData());
+      EXPECT_EQ(extra_data, url_request.GetExtraData());
     }
     EXPECT_TRUE(alive);
-    EXPECT_EQ(extraData, urlRequest.getExtraData());
+    EXPECT_EQ(extra_data, url_request.GetExtraData());
   }
   EXPECT_FALSE(alive);
 }

@@ -50,50 +50,50 @@ class PLATFORM_EXPORT ResourceResponse final {
 
  public:
   enum HTTPVersion {
-    HTTPVersionUnknown,
-    HTTPVersion_0_9,
-    HTTPVersion_1_0,
-    HTTPVersion_1_1,
-    HTTPVersion_2_0
+    kHTTPVersionUnknown,
+    kHTTPVersion_0_9,
+    kHTTPVersion_1_0,
+    kHTTPVersion_1_1,
+    kHTTPVersion_2_0
   };
   enum SecurityStyle {
-    SecurityStyleUnknown,
-    SecurityStyleUnauthenticated,
-    SecurityStyleAuthenticationBroken,
-    SecurityStyleWarning,
-    SecurityStyleAuthenticated
+    kSecurityStyleUnknown,
+    kSecurityStyleUnauthenticated,
+    kSecurityStyleAuthenticationBroken,
+    kSecurityStyleWarning,
+    kSecurityStyleAuthenticated
   };
 
   class PLATFORM_EXPORT SignedCertificateTimestamp final {
    public:
     SignedCertificateTimestamp(String status,
                                String origin,
-                               String logDescription,
-                               String logId,
+                               String log_description,
+                               String log_id,
                                int64_t timestamp,
-                               String hashAlgorithm,
-                               String signatureAlgorithm,
-                               String signatureData)
-        : m_status(status),
-          m_origin(origin),
-          m_logDescription(logDescription),
-          m_logId(logId),
-          m_timestamp(timestamp),
-          m_hashAlgorithm(hashAlgorithm),
-          m_signatureAlgorithm(signatureAlgorithm),
-          m_signatureData(signatureData) {}
+                               String hash_algorithm,
+                               String signature_algorithm,
+                               String signature_data)
+        : status_(status),
+          origin_(origin),
+          log_description_(log_description),
+          log_id_(log_id),
+          timestamp_(timestamp),
+          hash_algorithm_(hash_algorithm),
+          signature_algorithm_(signature_algorithm),
+          signature_data_(signature_data) {}
     explicit SignedCertificateTimestamp(
         const struct blink::WebURLResponse::SignedCertificateTimestamp&);
-    SignedCertificateTimestamp isolatedCopy() const;
+    SignedCertificateTimestamp IsolatedCopy() const;
 
-    String m_status;
-    String m_origin;
-    String m_logDescription;
-    String m_logId;
-    int64_t m_timestamp;
-    String m_hashAlgorithm;
-    String m_signatureAlgorithm;
-    String m_signatureData;
+    String status_;
+    String origin_;
+    String log_description_;
+    String log_id_;
+    int64_t timestamp_;
+    String hash_algorithm_;
+    String signature_algorithm_;
+    String signature_data_;
   };
 
   using SignedCertificateTimestampList =
@@ -101,27 +101,27 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   struct SecurityDetails {
     DISALLOW_NEW();
-    SecurityDetails() : validFrom(0), validTo(0) {}
+    SecurityDetails() : valid_from(0), valid_to(0) {}
     // All strings are human-readable values.
     String protocol;
     // keyExchange is the empty string if not applicable for the connection's
     // protocol.
-    String keyExchange;
+    String key_exchange;
     // keyExchangeGroup is the empty string if not applicable for the
     // connection's key exchange.
-    String keyExchangeGroup;
+    String key_exchange_group;
     String cipher;
     // mac is the empty string when the connection cipher suite does not
     // have a separate MAC value (i.e. if the cipher suite is AEAD).
     String mac;
-    String subjectName;
-    Vector<String> sanList;
+    String subject_name;
+    Vector<String> san_list;
     String issuer;
-    time_t validFrom;
-    time_t validTo;
+    time_t valid_from;
+    time_t valid_to;
     // DER-encoded X509Certificate certificate chain.
     Vector<AtomicString> certificate;
-    SignedCertificateTimestampList sctList;
+    SignedCertificateTimestampList sct_list;
   };
 
   class ExtraData : public RefCounted<ExtraData> {
@@ -132,18 +132,18 @@ class PLATFORM_EXPORT ResourceResponse final {
   explicit ResourceResponse(CrossThreadResourceResponseData*);
 
   // Gets a copy of the data suitable for passing to another thread.
-  std::unique_ptr<CrossThreadResourceResponseData> copyData() const;
+  std::unique_ptr<CrossThreadResourceResponseData> CopyData() const;
 
   ResourceResponse();
   ResourceResponse(const KURL&,
-                   const AtomicString& mimeType,
-                   long long expectedLength,
-                   const AtomicString& textEncodingName);
+                   const AtomicString& mime_type,
+                   long long expected_length,
+                   const AtomicString& text_encoding_name);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
 
-  bool isNull() const { return m_isNull; }
-  bool isHTTP() const;
+  bool IsNull() const { return is_null_; }
+  bool IsHTTP() const;
 
   // The URL of the resource. Note that if a service worker responded to the
   // request for this resource, it may have fetched an entirely different URL
@@ -160,198 +160,206 @@ class PLATFORM_EXPORT ResourceResponse final {
   // the resulting ResourceResponse, url() is "https://abc.com",
   // wasFetchedViaServiceWorker() is true, and originalURLViaServiceWorker() is
   // "https://def.com".
-  const KURL& url() const;
-  void setURL(const KURL&);
+  const KURL& Url() const;
+  void SetURL(const KURL&);
 
-  const AtomicString& mimeType() const;
-  void setMimeType(const AtomicString&);
+  const AtomicString& MimeType() const;
+  void SetMimeType(const AtomicString&);
 
-  long long expectedContentLength() const;
-  void setExpectedContentLength(long long);
+  long long ExpectedContentLength() const;
+  void SetExpectedContentLength(long long);
 
-  const AtomicString& textEncodingName() const;
-  void setTextEncodingName(const AtomicString&);
+  const AtomicString& TextEncodingName() const;
+  void SetTextEncodingName(const AtomicString&);
 
-  int httpStatusCode() const;
-  void setHTTPStatusCode(int);
+  int HttpStatusCode() const;
+  void SetHTTPStatusCode(int);
 
-  const AtomicString& httpStatusText() const;
-  void setHTTPStatusText(const AtomicString&);
+  const AtomicString& HttpStatusText() const;
+  void SetHTTPStatusText(const AtomicString&);
 
-  const AtomicString& httpHeaderField(const AtomicString& name) const;
-  void setHTTPHeaderField(const AtomicString& name, const AtomicString& value);
-  void addHTTPHeaderField(const AtomicString& name, const AtomicString& value);
-  void clearHTTPHeaderField(const AtomicString& name);
-  const HTTPHeaderMap& httpHeaderFields() const;
+  const AtomicString& HttpHeaderField(const AtomicString& name) const;
+  void SetHTTPHeaderField(const AtomicString& name, const AtomicString& value);
+  void AddHTTPHeaderField(const AtomicString& name, const AtomicString& value);
+  void ClearHTTPHeaderField(const AtomicString& name);
+  const HTTPHeaderMap& HttpHeaderFields() const;
 
-  bool isMultipart() const { return mimeType() == "multipart/x-mixed-replace"; }
+  bool IsMultipart() const { return MimeType() == "multipart/x-mixed-replace"; }
 
-  bool isAttachment() const;
+  bool IsAttachment() const;
 
-  AtomicString httpContentType() const;
+  AtomicString HttpContentType() const;
 
   // These functions return parsed values of the corresponding response headers.
   // NaN means that the header was not present or had invalid value.
-  bool cacheControlContainsNoCache() const;
-  bool cacheControlContainsNoStore() const;
-  bool cacheControlContainsMustRevalidate() const;
-  bool hasCacheValidatorFields() const;
-  double cacheControlMaxAge() const;
-  double date() const;
-  double age() const;
-  double expires() const;
-  double lastModified() const;
+  bool CacheControlContainsNoCache() const;
+  bool CacheControlContainsNoStore() const;
+  bool CacheControlContainsMustRevalidate() const;
+  bool HasCacheValidatorFields() const;
+  double CacheControlMaxAge() const;
+  double Date() const;
+  double Age() const;
+  double Expires() const;
+  double LastModified() const;
 
-  unsigned connectionID() const;
-  void setConnectionID(unsigned);
+  unsigned ConnectionID() const;
+  void SetConnectionID(unsigned);
 
-  bool connectionReused() const;
-  void setConnectionReused(bool);
+  bool ConnectionReused() const;
+  void SetConnectionReused(bool);
 
-  bool wasCached() const;
-  void setWasCached(bool);
+  bool WasCached() const;
+  void SetWasCached(bool);
 
-  ResourceLoadTiming* resourceLoadTiming() const;
-  void setResourceLoadTiming(PassRefPtr<ResourceLoadTiming>);
+  ResourceLoadTiming* GetResourceLoadTiming() const;
+  void SetResourceLoadTiming(PassRefPtr<ResourceLoadTiming>);
 
-  PassRefPtr<ResourceLoadInfo> resourceLoadInfo() const;
-  void setResourceLoadInfo(PassRefPtr<ResourceLoadInfo>);
+  PassRefPtr<ResourceLoadInfo> GetResourceLoadInfo() const;
+  void SetResourceLoadInfo(PassRefPtr<ResourceLoadInfo>);
 
-  HTTPVersion httpVersion() const { return m_httpVersion; }
-  void setHTTPVersion(HTTPVersion version) { m_httpVersion = version; }
+  HTTPVersion HttpVersion() const { return http_version_; }
+  void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
 
-  bool hasMajorCertificateErrors() const { return m_hasMajorCertificateErrors; }
-  void setHasMajorCertificateErrors(bool hasMajorCertificateErrors) {
-    m_hasMajorCertificateErrors = hasMajorCertificateErrors;
+  bool HasMajorCertificateErrors() const {
+    return has_major_certificate_errors_;
+  }
+  void SetHasMajorCertificateErrors(bool has_major_certificate_errors) {
+    has_major_certificate_errors_ = has_major_certificate_errors;
   }
 
-  SecurityStyle getSecurityStyle() const { return m_securityStyle; }
-  void setSecurityStyle(SecurityStyle securityStyle) {
-    m_securityStyle = securityStyle;
+  SecurityStyle GetSecurityStyle() const { return security_style_; }
+  void SetSecurityStyle(SecurityStyle security_style) {
+    security_style_ = security_style;
   }
 
-  const SecurityDetails* getSecurityDetails() const {
-    return &m_securityDetails;
+  const SecurityDetails* GetSecurityDetails() const {
+    return &security_details_;
   }
-  void setSecurityDetails(const String& protocol,
-                          const String& keyExchange,
-                          const String& keyExchangeGroup,
+  void SetSecurityDetails(const String& protocol,
+                          const String& key_exchange,
+                          const String& key_exchange_group,
                           const String& cipher,
                           const String& mac,
-                          const String& subjectName,
-                          const Vector<String>& sanList,
+                          const String& subject_name,
+                          const Vector<String>& san_list,
                           const String& issuer,
-                          time_t validFrom,
-                          time_t validTo,
+                          time_t valid_from,
+                          time_t valid_to,
                           const Vector<AtomicString>& certificate,
-                          const SignedCertificateTimestampList& sctList);
+                          const SignedCertificateTimestampList& sct_list);
 
-  long long appCacheID() const { return m_appCacheID; }
-  void setAppCacheID(long long id) { m_appCacheID = id; }
+  long long AppCacheID() const { return app_cache_id_; }
+  void SetAppCacheID(long long id) { app_cache_id_ = id; }
 
-  const KURL& appCacheManifestURL() const { return m_appCacheManifestURL; }
-  void setAppCacheManifestURL(const KURL& url) { m_appCacheManifestURL = url; }
+  const KURL& AppCacheManifestURL() const { return app_cache_manifest_url_; }
+  void SetAppCacheManifestURL(const KURL& url) {
+    app_cache_manifest_url_ = url;
+  }
 
-  bool wasFetchedViaSPDY() const { return m_wasFetchedViaSPDY; }
-  void setWasFetchedViaSPDY(bool value) { m_wasFetchedViaSPDY = value; }
+  bool WasFetchedViaSPDY() const { return was_fetched_via_spdy_; }
+  void SetWasFetchedViaSPDY(bool value) { was_fetched_via_spdy_ = value; }
 
   // See ServiceWorkerResponseInfo::was_fetched_via_service_worker.
-  bool wasFetchedViaServiceWorker() const {
-    return m_wasFetchedViaServiceWorker;
+  bool WasFetchedViaServiceWorker() const {
+    return was_fetched_via_service_worker_;
   }
-  void setWasFetchedViaServiceWorker(bool value) {
-    m_wasFetchedViaServiceWorker = value;
+  void SetWasFetchedViaServiceWorker(bool value) {
+    was_fetched_via_service_worker_ = value;
   }
 
-  bool wasFetchedViaForeignFetch() const { return m_wasFetchedViaForeignFetch; }
-  void setWasFetchedViaForeignFetch(bool value) {
-    m_wasFetchedViaForeignFetch = value;
+  bool WasFetchedViaForeignFetch() const {
+    return was_fetched_via_foreign_fetch_;
+  }
+  void SetWasFetchedViaForeignFetch(bool value) {
+    was_fetched_via_foreign_fetch_ = value;
   }
 
   // See ServiceWorkerResponseInfo::was_fallback_required.
-  bool wasFallbackRequiredByServiceWorker() const {
-    return m_wasFallbackRequiredByServiceWorker;
+  bool WasFallbackRequiredByServiceWorker() const {
+    return was_fallback_required_by_service_worker_;
   }
-  void setWasFallbackRequiredByServiceWorker(bool value) {
-    m_wasFallbackRequiredByServiceWorker = value;
+  void SetWasFallbackRequiredByServiceWorker(bool value) {
+    was_fallback_required_by_service_worker_ = value;
   }
 
-  WebServiceWorkerResponseType serviceWorkerResponseType() const {
-    return m_serviceWorkerResponseType;
+  WebServiceWorkerResponseType ServiceWorkerResponseType() const {
+    return service_worker_response_type_;
   }
-  void setServiceWorkerResponseType(WebServiceWorkerResponseType value) {
-    m_serviceWorkerResponseType = value;
+  void SetServiceWorkerResponseType(WebServiceWorkerResponseType value) {
+    service_worker_response_type_ = value;
   }
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.
-  const Vector<KURL>& urlListViaServiceWorker() const {
-    return m_urlListViaServiceWorker;
+  const Vector<KURL>& UrlListViaServiceWorker() const {
+    return url_list_via_service_worker_;
   }
-  void setURLListViaServiceWorker(const Vector<KURL>& urlList) {
-    m_urlListViaServiceWorker = urlList;
+  void SetURLListViaServiceWorker(const Vector<KURL>& url_list) {
+    url_list_via_service_worker_ = url_list;
   }
 
   // Returns the last URL of urlListViaServiceWorker if exists. Otherwise
   // returns an empty URL.
-  KURL originalURLViaServiceWorker() const;
+  KURL OriginalURLViaServiceWorker() const;
 
-  const Vector<char>& multipartBoundary() const { return m_multipartBoundary; }
-  void setMultipartBoundary(const char* bytes, size_t size) {
-    m_multipartBoundary.clear();
-    m_multipartBoundary.append(bytes, size);
+  const Vector<char>& MultipartBoundary() const { return multipart_boundary_; }
+  void SetMultipartBoundary(const char* bytes, size_t size) {
+    multipart_boundary_.Clear();
+    multipart_boundary_.Append(bytes, size);
   }
 
-  const String& cacheStorageCacheName() const {
-    return m_cacheStorageCacheName;
+  const String& CacheStorageCacheName() const {
+    return cache_storage_cache_name_;
   }
-  void setCacheStorageCacheName(const String& cacheStorageCacheName) {
-    m_cacheStorageCacheName = cacheStorageCacheName;
-  }
-
-  const Vector<String>& corsExposedHeaderNames() const {
-    return m_corsExposedHeaderNames;
-  }
-  void setCorsExposedHeaderNames(const Vector<String>& headerNames) {
-    m_corsExposedHeaderNames = headerNames;
+  void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
+    cache_storage_cache_name_ = cache_storage_cache_name;
   }
 
-  bool didServiceWorkerNavigationPreload() const {
-    return m_didServiceWorkerNavigationPreload;
+  const Vector<String>& CorsExposedHeaderNames() const {
+    return cors_exposed_header_names_;
   }
-  void setDidServiceWorkerNavigationPreload(bool value) {
-    m_didServiceWorkerNavigationPreload = value;
-  }
-
-  int64_t responseTime() const { return m_responseTime; }
-  void setResponseTime(int64_t responseTime) { m_responseTime = responseTime; }
-
-  const AtomicString& remoteIPAddress() const { return m_remoteIPAddress; }
-  void setRemoteIPAddress(const AtomicString& value) {
-    m_remoteIPAddress = value;
+  void SetCorsExposedHeaderNames(const Vector<String>& header_names) {
+    cors_exposed_header_names_ = header_names;
   }
 
-  unsigned short remotePort() const { return m_remotePort; }
-  void setRemotePort(unsigned short value) { m_remotePort = value; }
+  bool DidServiceWorkerNavigationPreload() const {
+    return did_service_worker_navigation_preload_;
+  }
+  void SetDidServiceWorkerNavigationPreload(bool value) {
+    did_service_worker_navigation_preload_ = value;
+  }
 
-  long long encodedDataLength() const { return m_encodedDataLength; }
-  void setEncodedDataLength(long long value);
+  int64_t ResponseTime() const { return response_time_; }
+  void SetResponseTime(int64_t response_time) {
+    response_time_ = response_time;
+  }
 
-  long long encodedBodyLength() const { return m_encodedBodyLength; }
-  void addToEncodedBodyLength(long long value);
+  const AtomicString& RemoteIPAddress() const { return remote_ip_address_; }
+  void SetRemoteIPAddress(const AtomicString& value) {
+    remote_ip_address_ = value;
+  }
 
-  long long decodedBodyLength() const { return m_decodedBodyLength; }
-  void addToDecodedBodyLength(long long value);
+  unsigned short RemotePort() const { return remote_port_; }
+  void SetRemotePort(unsigned short value) { remote_port_ = value; }
 
-  const String& downloadedFilePath() const { return m_downloadedFilePath; }
-  void setDownloadedFilePath(const String&);
+  long long EncodedDataLength() const { return encoded_data_length_; }
+  void SetEncodedDataLength(long long value);
+
+  long long EncodedBodyLength() const { return encoded_body_length_; }
+  void AddToEncodedBodyLength(long long value);
+
+  long long DecodedBodyLength() const { return decoded_body_length_; }
+  void AddToDecodedBodyLength(long long value);
+
+  const String& DownloadedFilePath() const { return downloaded_file_path_; }
+  void SetDownloadedFilePath(const String&);
 
   // Extra data associated with this response.
-  ExtraData* getExtraData() const { return m_extraData.get(); }
-  void setExtraData(PassRefPtr<ExtraData> extraData) {
-    m_extraData = std::move(extraData);
+  ExtraData* GetExtraData() const { return extra_data_.Get(); }
+  void SetExtraData(PassRefPtr<ExtraData> extra_data) {
+    extra_data_ = std::move(extra_data);
   }
 
-  unsigned memoryUsage() const {
+  unsigned MemoryUsage() const {
     // average size, mostly due to URL and Header Map strings
     return 1280;
   }
@@ -359,143 +367,143 @@ class PLATFORM_EXPORT ResourceResponse final {
   // PlzNavigate: Even if there is redirections, only one
   // ResourceResponse is built: the final response.
   // The redirect response chain can be accessed by this function.
-  const Vector<ResourceResponse>& redirectResponses() const {
-    return m_redirectResponses;
+  const Vector<ResourceResponse>& RedirectResponses() const {
+    return redirect_responses_;
   }
-  void appendRedirectResponse(const ResourceResponse&);
+  void AppendRedirectResponse(const ResourceResponse&);
 
   // This method doesn't compare the all members.
-  static bool compare(const ResourceResponse&, const ResourceResponse&);
+  static bool Compare(const ResourceResponse&, const ResourceResponse&);
 
  private:
-  void updateHeaderParsedState(const AtomicString& name);
+  void UpdateHeaderParsedState(const AtomicString& name);
 
-  KURL m_url;
-  AtomicString m_mimeType;
-  long long m_expectedContentLength;
-  AtomicString m_textEncodingName;
-  int m_httpStatusCode;
-  AtomicString m_httpStatusText;
-  HTTPHeaderMap m_httpHeaderFields;
-  bool m_wasCached : 1;
-  unsigned m_connectionID;
-  bool m_connectionReused : 1;
-  RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
-  RefPtr<ResourceLoadInfo> m_resourceLoadInfo;
+  KURL url_;
+  AtomicString mime_type_;
+  long long expected_content_length_;
+  AtomicString text_encoding_name_;
+  int http_status_code_;
+  AtomicString http_status_text_;
+  HTTPHeaderMap http_header_fields_;
+  bool was_cached_ : 1;
+  unsigned connection_id_;
+  bool connection_reused_ : 1;
+  RefPtr<ResourceLoadTiming> resource_load_timing_;
+  RefPtr<ResourceLoadInfo> resource_load_info_;
 
-  bool m_isNull : 1;
+  bool is_null_ : 1;
 
-  mutable CacheControlHeader m_cacheControlHeader;
+  mutable CacheControlHeader cache_control_header_;
 
-  mutable bool m_haveParsedAgeHeader : 1;
-  mutable bool m_haveParsedDateHeader : 1;
-  mutable bool m_haveParsedExpiresHeader : 1;
-  mutable bool m_haveParsedLastModifiedHeader : 1;
+  mutable bool have_parsed_age_header_ : 1;
+  mutable bool have_parsed_date_header_ : 1;
+  mutable bool have_parsed_expires_header_ : 1;
+  mutable bool have_parsed_last_modified_header_ : 1;
 
-  mutable double m_age;
-  mutable double m_date;
-  mutable double m_expires;
-  mutable double m_lastModified;
+  mutable double age_;
+  mutable double date_;
+  mutable double expires_;
+  mutable double last_modified_;
 
   // True if the resource was retrieved by the embedder in spite of
   // certificate errors.
-  bool m_hasMajorCertificateErrors;
+  bool has_major_certificate_errors_;
 
   // The security style of the resource.
   // This only contains a valid value when the DevTools Network domain is
   // enabled. (Otherwise, it contains a default value of Unknown.)
-  SecurityStyle m_securityStyle;
+  SecurityStyle security_style_;
 
   // Security details of this request's connection.
   // If m_securityStyle is Unknown or Unauthenticated, this does not contain
   // valid data.
-  SecurityDetails m_securityDetails;
+  SecurityDetails security_details_;
 
   // HTTP version used in the response, if known.
-  HTTPVersion m_httpVersion;
+  HTTPVersion http_version_;
 
   // The id of the appcache this response was retrieved from, or zero if
   // the response was not retrieved from an appcache.
-  long long m_appCacheID;
+  long long app_cache_id_;
 
   // The manifest url of the appcache this response was retrieved from, if any.
   // Note: only valid for main resource responses.
-  KURL m_appCacheManifestURL;
+  KURL app_cache_manifest_url_;
 
   // The multipart boundary of this response.
-  Vector<char> m_multipartBoundary;
+  Vector<char> multipart_boundary_;
 
   // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
-  bool m_wasFetchedViaSPDY;
+  bool was_fetched_via_spdy_;
 
   // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
-  bool m_wasFetchedViaProxy;
+  bool was_fetched_via_proxy_;
 
   // Was the resource fetched over a ServiceWorker.
-  bool m_wasFetchedViaServiceWorker;
+  bool was_fetched_via_service_worker_;
 
   // Was the resource fetched using a foreign fetch service worker.
-  bool m_wasFetchedViaForeignFetch;
+  bool was_fetched_via_foreign_fetch_;
 
   // Was the fallback request with skip service worker flag required.
-  bool m_wasFallbackRequiredByServiceWorker;
+  bool was_fallback_required_by_service_worker_;
 
   // The type of the response which was fetched by the ServiceWorker.
-  WebServiceWorkerResponseType m_serviceWorkerResponseType;
+  WebServiceWorkerResponseType service_worker_response_type_;
 
   // The URL list of the response which was fetched by the ServiceWorker.
   // This is empty if the response was created inside the ServiceWorker.
-  Vector<KURL> m_urlListViaServiceWorker;
+  Vector<KURL> url_list_via_service_worker_;
 
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Null if the response isn't from the CacheStorage.
-  String m_cacheStorageCacheName;
+  String cache_storage_cache_name_;
 
   // The headers that should be exposed according to CORS. Only guaranteed
   // to be set if the response was fetched by a ServiceWorker.
-  Vector<String> m_corsExposedHeaderNames;
+  Vector<String> cors_exposed_header_names_;
 
   // True if service worker navigation preload was performed due to
   // the request for this resource.
-  bool m_didServiceWorkerNavigationPreload;
+  bool did_service_worker_navigation_preload_;
 
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.
-  int64_t m_responseTime;
+  int64_t response_time_;
 
   // Remote IP address of the socket which fetched this resource.
-  AtomicString m_remoteIPAddress;
+  AtomicString remote_ip_address_;
 
   // Remote port number of the socket which fetched this resource.
-  unsigned short m_remotePort;
+  unsigned short remote_port_;
 
   // Size of the response in bytes prior to decompression.
-  long long m_encodedDataLength;
+  long long encoded_data_length_;
 
   // Size of the response body in bytes prior to decompression.
-  long long m_encodedBodyLength;
+  long long encoded_body_length_;
 
   // Sizes of the response body in bytes after any content-encoding is
   // removed.
-  long long m_decodedBodyLength;
+  long long decoded_body_length_;
 
   // The downloaded file path if the load streamed to a file.
-  String m_downloadedFilePath;
+  String downloaded_file_path_;
 
   // The handle to the downloaded file to ensure the underlying file will not
   // be deleted.
-  RefPtr<BlobDataHandle> m_downloadedFileHandle;
+  RefPtr<BlobDataHandle> downloaded_file_handle_;
 
   // ExtraData associated with the response.
-  RefPtr<ExtraData> m_extraData;
+  RefPtr<ExtraData> extra_data_;
 
   // PlzNavigate: the redirect responses are transmitted
   // inside the final response.
-  Vector<ResourceResponse> m_redirectResponses;
+  Vector<ResourceResponse> redirect_responses_;
 };
 
 inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) {
-  return ResourceResponse::compare(a, b);
+  return ResourceResponse::Compare(a, b);
 }
 inline bool operator!=(const ResourceResponse& a, const ResourceResponse& b) {
   return !(a == b);
@@ -507,41 +515,41 @@ struct CrossThreadResourceResponseData {
 
  public:
   CrossThreadResourceResponseData() {}
-  KURL m_url;
-  String m_mimeType;
-  long long m_expectedContentLength;
-  String m_textEncodingName;
-  int m_httpStatusCode;
-  String m_httpStatusText;
-  std::unique_ptr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
-  RefPtr<ResourceLoadTiming> m_resourceLoadTiming;
-  bool m_hasMajorCertificateErrors;
-  ResourceResponse::SecurityStyle m_securityStyle;
-  ResourceResponse::SecurityDetails m_securityDetails;
+  KURL url_;
+  String mime_type_;
+  long long expected_content_length_;
+  String text_encoding_name_;
+  int http_status_code_;
+  String http_status_text_;
+  std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
+  RefPtr<ResourceLoadTiming> resource_load_timing_;
+  bool has_major_certificate_errors_;
+  ResourceResponse::SecurityStyle security_style_;
+  ResourceResponse::SecurityDetails security_details_;
   // This is |certificate| from SecurityDetails since that structure should
   // use an AtomicString but this temporary structure is sent across threads.
-  Vector<String> m_certificate;
-  ResourceResponse::HTTPVersion m_httpVersion;
-  long long m_appCacheID;
-  KURL m_appCacheManifestURL;
-  Vector<char> m_multipartBoundary;
-  bool m_wasFetchedViaSPDY;
-  bool m_wasFetchedViaProxy;
-  bool m_wasFetchedViaServiceWorker;
-  bool m_wasFetchedViaForeignFetch;
-  bool m_wasFallbackRequiredByServiceWorker;
-  WebServiceWorkerResponseType m_serviceWorkerResponseType;
-  Vector<KURL> m_urlListViaServiceWorker;
-  String m_cacheStorageCacheName;
-  bool m_didServiceWorkerNavigationPreload;
-  int64_t m_responseTime;
-  String m_remoteIPAddress;
-  unsigned short m_remotePort;
-  long long m_encodedDataLength;
-  long long m_encodedBodyLength;
-  long long m_decodedBodyLength;
-  String m_downloadedFilePath;
-  RefPtr<BlobDataHandle> m_downloadedFileHandle;
+  Vector<String> certificate_;
+  ResourceResponse::HTTPVersion http_version_;
+  long long app_cache_id_;
+  KURL app_cache_manifest_url_;
+  Vector<char> multipart_boundary_;
+  bool was_fetched_via_spdy_;
+  bool was_fetched_via_proxy_;
+  bool was_fetched_via_service_worker_;
+  bool was_fetched_via_foreign_fetch_;
+  bool was_fallback_required_by_service_worker_;
+  WebServiceWorkerResponseType service_worker_response_type_;
+  Vector<KURL> url_list_via_service_worker_;
+  String cache_storage_cache_name_;
+  bool did_service_worker_navigation_preload_;
+  int64_t response_time_;
+  String remote_ip_address_;
+  unsigned short remote_port_;
+  long long encoded_data_length_;
+  long long encoded_body_length_;
+  long long decoded_body_length_;
+  String downloaded_file_path_;
+  RefPtr<BlobDataHandle> downloaded_file_handle_;
 };
 
 }  // namespace blink

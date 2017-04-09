@@ -37,18 +37,18 @@
 
 namespace blink {
 
-v8::RetainedObjectInfo* RetainedDOMInfo::createRetainedDOMInfo(
-    uint16_t classId,
+v8::RetainedObjectInfo* RetainedDOMInfo::CreateRetainedDOMInfo(
+    uint16_t class_id,
     v8::Local<v8::Value> wrapper) {
-  ASSERT(classId == WrapperTypeInfo::NodeClassId);
+  ASSERT(class_id == WrapperTypeInfo::kNodeClassId);
   if (!wrapper->IsObject())
     return 0;
   Node* node = V8Node::toImpl(wrapper.As<v8::Object>());
   return node ? new RetainedDOMInfo(node) : nullptr;
 }
 
-RetainedDOMInfo::RetainedDOMInfo(Node* root) : m_root(root) {
-  ASSERT(m_root);
+RetainedDOMInfo::RetainedDOMInfo(Node* root) : root_(root) {
+  ASSERT(root_);
 }
 
 RetainedDOMInfo::~RetainedDOMInfo() {}
@@ -68,21 +68,20 @@ bool RetainedDOMInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
 }
 
 intptr_t RetainedDOMInfo::GetHash() {
-  return PtrHash<void>::hash(m_root);
+  return PtrHash<void>::GetHash(root_);
 }
 
 const char* RetainedDOMInfo::GetGroupLabel() {
-  return m_root->isConnected() ? "(Document DOM trees)"
-                               : "(Detached DOM trees)";
+  return root_->isConnected() ? "(Document DOM trees)" : "(Detached DOM trees)";
 }
 
 const char* RetainedDOMInfo::GetLabel() {
-  return m_root->isConnected() ? "Document DOM tree" : "Detached DOM tree";
+  return root_->isConnected() ? "Document DOM tree" : "Detached DOM tree";
 }
 
 intptr_t RetainedDOMInfo::GetElementCount() {
   intptr_t count = 1;
-  for (Node& current : NodeTraversal::descendantsOf(*m_root)) {
+  for (Node& current : NodeTraversal::DescendantsOf(*root_)) {
     ALLOW_UNUSED_LOCAL(current);
     ++count;
   }
@@ -90,13 +89,13 @@ intptr_t RetainedDOMInfo::GetElementCount() {
 }
 
 intptr_t RetainedDOMInfo::GetEquivalenceClass() {
-  return reinterpret_cast<intptr_t>(m_root.get());
+  return reinterpret_cast<intptr_t>(root_.Get());
 }
 
 SuspendableObjectsInfo::SuspendableObjectsInfo(
-    int numberOfObjectsWithPendingActivity)
-    : m_numberOfObjectsWithPendingActivity(numberOfObjectsWithPendingActivity) {
-}
+    int number_of_objects_with_pending_activity)
+    : number_of_objects_with_pending_activity_(
+          number_of_objects_with_pending_activity) {}
 
 SuspendableObjectsInfo::~SuspendableObjectsInfo() {}
 
@@ -109,7 +108,7 @@ bool SuspendableObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
 }
 
 intptr_t SuspendableObjectsInfo::GetHash() {
-  return PtrHash<void>::hash(this);
+  return PtrHash<void>::GetHash(this);
 }
 
 const char* SuspendableObjectsInfo::GetGroupLabel() {
@@ -121,7 +120,7 @@ const char* SuspendableObjectsInfo::GetLabel() {
 }
 
 intptr_t SuspendableObjectsInfo::GetElementCount() {
-  return m_numberOfObjectsWithPendingActivity;
+  return number_of_objects_with_pending_activity_;
 }
 
 intptr_t SuspendableObjectsInfo::GetEquivalenceClass() {

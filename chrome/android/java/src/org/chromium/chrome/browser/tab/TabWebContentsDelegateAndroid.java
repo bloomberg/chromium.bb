@@ -76,7 +76,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     private FindMatchRectsListener mFindMatchRectsListener;
 
-    private int mDisplayMode = WebDisplayMode.Browser;
+    private int mDisplayMode = WebDisplayMode.kBrowser;
 
     protected Handler mHandler;
 

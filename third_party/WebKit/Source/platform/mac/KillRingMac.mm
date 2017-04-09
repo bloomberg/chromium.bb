@@ -40,36 +40,36 @@ void _NSNewKillRingSequence();
 void _NSSetKillRingToYankedState();
 }
 
-static void initializeKillRingIfNeeded() {
-  static bool initializedKillRing = false;
-  if (!initializedKillRing) {
-    initializedKillRing = true;
+static void InitializeKillRingIfNeeded() {
+  static bool initialized_kill_ring = false;
+  if (!initialized_kill_ring) {
+    initialized_kill_ring = true;
     _NSInitializeKillRing();
   }
 }
 
-void KillRing::append(const String& string) {
-  initializeKillRingIfNeeded();
+void KillRing::Append(const String& string) {
+  InitializeKillRingIfNeeded();
   _NSAppendToKillRing(string);
 }
 
-void KillRing::prepend(const String& string) {
-  initializeKillRingIfNeeded();
+void KillRing::Prepend(const String& string) {
+  InitializeKillRingIfNeeded();
   _NSPrependToKillRing(string);
 }
 
-String KillRing::yank() {
-  initializeKillRingIfNeeded();
+String KillRing::Yank() {
+  InitializeKillRingIfNeeded();
   return _NSYankFromKillRing();
 }
 
-void KillRing::startNewSequence() {
-  initializeKillRingIfNeeded();
+void KillRing::StartNewSequence() {
+  InitializeKillRingIfNeeded();
   _NSNewKillRingSequence();
 }
 
-void KillRing::setToYankedState() {
-  initializeKillRingIfNeeded();
+void KillRing::SetToYankedState() {
+  InitializeKillRingIfNeeded();
   _NSSetKillRingToYankedState();
 }
 

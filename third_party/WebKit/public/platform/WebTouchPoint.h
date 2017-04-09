@@ -43,31 +43,31 @@ class WebTouchPoint : public WebPointerProperties {
  public:
   WebTouchPoint()
       : WebPointerProperties(),
-        state(StateUndefined),
-        radiusX(0),
-        radiusY(0),
-        rotationAngle(0) {}
+        state(kStateUndefined),
+        radius_x(0),
+        radius_y(0),
+        rotation_angle(0) {}
 
   enum State {
-    StateUndefined,
-    StateReleased,
-    StatePressed,
-    StateMoved,
-    StateStationary,
-    StateCancelled,
-    StateMax = StateCancelled
+    kStateUndefined,
+    kStateReleased,
+    kStatePressed,
+    kStateMoved,
+    kStateStationary,
+    kStateCancelled,
+    kStateMax = kStateCancelled
   };
 
   State state;
 
   // TODO(mustaq): Move these coordinates to WebPointerProperties as private
   // class members, as in WebMouseEvent.h now. crbug.com/508283
-  WebFloatPoint screenPosition;
+  WebFloatPoint screen_position;
   WebFloatPoint position;
 
-  float radiusX;
-  float radiusY;
-  float rotationAngle;
+  float radius_x;
+  float radius_y;
+  float rotation_angle;
 };
 
 }  // namespace blink

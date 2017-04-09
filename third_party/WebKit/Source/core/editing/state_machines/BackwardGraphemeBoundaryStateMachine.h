@@ -23,49 +23,49 @@ class CORE_EXPORT BackwardGraphemeBoundaryStateMachine {
 
   // Find boundary offset by feeding preceding text.
   // This method must not be called after feedFollowingCodeUnit().
-  TextSegmentationMachineState feedPrecedingCodeUnit(UChar codeUnit);
+  TextSegmentationMachineState FeedPrecedingCodeUnit(UChar code_unit);
 
   // Tells the end of preceding text to the state machine.
-  TextSegmentationMachineState tellEndOfPrecedingText();
+  TextSegmentationMachineState TellEndOfPrecedingText();
 
   // Find boundary offset by feeding following text.
   // This method must be called after feedPrecedingCodeUnit() returns
   // NeedsFollowingCodeUnit.
-  TextSegmentationMachineState feedFollowingCodeUnit(UChar codeUnit);
+  TextSegmentationMachineState FeedFollowingCodeUnit(UChar code_unit);
 
   // Returns the next boundary offset. This method finalizes the state machine
   // if it is not finished.
-  int finalizeAndGetBoundaryOffset();
+  int FinalizeAndGetBoundaryOffset();
 
   // Resets the internal state to the initial state.
-  void reset();
+  void Reset();
 
  private:
   enum class InternalState;
   friend std::ostream& operator<<(std::ostream&, InternalState);
 
-  TextSegmentationMachineState moveToNextState(InternalState nextState);
+  TextSegmentationMachineState MoveToNextState(InternalState next_state);
 
-  TextSegmentationMachineState staySameState();
+  TextSegmentationMachineState StaySameState();
 
   // Updates the internal state to InternalState::Finished then returns
   // TextSegmentationMachineState::Finished.
-  TextSegmentationMachineState finish();
+  TextSegmentationMachineState Finish();
 
   // Used for composing supplementary code point with surrogate pairs.
-  UChar m_trailSurrogate = 0;
+  UChar trail_surrogate_ = 0;
 
   // The code point immediately after the m_BoundaryOffset.
-  UChar32 m_nextCodePoint;
+  UChar32 next_code_point_;
 
   // The relative offset from the begging of this state machine.
-  int m_boundaryOffset = 0;
+  int boundary_offset_ = 0;
 
   // The number of regional indicator symbols preceding to the begging offset.
-  int m_precedingRISCount = 0;
+  int preceding_ris_count_ = 0;
 
   // The internal state.
-  InternalState m_internalState;
+  InternalState internal_state_;
 };
 
 }  // namespace blink

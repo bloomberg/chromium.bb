@@ -26,61 +26,61 @@ class IntersectionGeometry {
  public:
   IntersectionGeometry(Element* root,
                        Element& target,
-                       const Vector<Length>& rootMargin,
-                       bool shouldReportRootBounds);
+                       const Vector<Length>& root_margin,
+                       bool should_report_root_bounds);
   ~IntersectionGeometry();
 
-  void computeGeometry();
+  void ComputeGeometry();
 
-  LayoutObject* root() const { return m_root; }
-  LayoutObject* target() const { return m_target; }
-
-  // Client rect in the coordinate system of the frame containing target.
-  LayoutRect targetRect() const { return m_targetRect; }
+  LayoutObject* Root() const { return root_; }
+  LayoutObject* Target() const { return target_; }
 
   // Client rect in the coordinate system of the frame containing target.
-  LayoutRect intersectionRect() const { return m_intersectionRect; }
+  LayoutRect TargetRect() const { return target_rect_; }
+
+  // Client rect in the coordinate system of the frame containing target.
+  LayoutRect IntersectionRect() const { return intersection_rect_; }
 
   // Client rect in the coordinate system of the frame containing root.
-  LayoutRect rootRect() const { return m_rootRect; }
+  LayoutRect RootRect() const { return root_rect_; }
 
-  bool doesIntersect() const { return m_doesIntersect; }
+  bool DoesIntersect() const { return does_intersect_; }
 
-  IntRect intersectionIntRect() const {
-    return pixelSnappedIntRect(m_intersectionRect);
+  IntRect IntersectionIntRect() const {
+    return PixelSnappedIntRect(intersection_rect_);
   }
 
-  IntRect targetIntRect() const { return pixelSnappedIntRect(m_targetRect); }
+  IntRect TargetIntRect() const { return PixelSnappedIntRect(target_rect_); }
 
-  IntRect rootIntRect() const { return pixelSnappedIntRect(m_rootRect); }
+  IntRect RootIntRect() const { return PixelSnappedIntRect(root_rect_); }
 
  private:
-  bool initializeCanComputeGeometry(Element* root, Element& target) const;
-  void initializeGeometry();
-  void initializeTargetRect();
-  void initializeRootRect();
-  void clipToRoot();
-  void mapTargetRectToTargetFrameCoordinates();
-  void mapRootRectToRootFrameCoordinates();
-  void mapIntersectionRectToTargetFrameCoordinates();
-  void applyRootMargin();
+  bool InitializeCanComputeGeometry(Element* root, Element& target) const;
+  void InitializeGeometry();
+  void InitializeTargetRect();
+  void InitializeRootRect();
+  void ClipToRoot();
+  void MapTargetRectToTargetFrameCoordinates();
+  void MapRootRectToRootFrameCoordinates();
+  void MapIntersectionRectToTargetFrameCoordinates();
+  void ApplyRootMargin();
 
   // Returns true iff it's possible to compute an intersection between root
   // and target.
-  bool canComputeGeometry() const { return m_canComputeGeometry; }
-  bool rootIsImplicit() const { return m_rootIsImplicit; }
-  bool shouldReportRootBounds() const { return m_shouldReportRootBounds; }
+  bool CanComputeGeometry() const { return can_compute_geometry_; }
+  bool RootIsImplicit() const { return root_is_implicit_; }
+  bool ShouldReportRootBounds() const { return should_report_root_bounds_; }
 
-  LayoutObject* m_root;
-  LayoutObject* m_target;
-  const Vector<Length> m_rootMargin;
-  LayoutRect m_targetRect;
-  LayoutRect m_intersectionRect;
-  LayoutRect m_rootRect;
-  unsigned m_doesIntersect : 1;
-  const unsigned m_shouldReportRootBounds : 1;
-  const unsigned m_rootIsImplicit : 1;
-  const unsigned m_canComputeGeometry : 1;
+  LayoutObject* root_;
+  LayoutObject* target_;
+  const Vector<Length> root_margin_;
+  LayoutRect target_rect_;
+  LayoutRect intersection_rect_;
+  LayoutRect root_rect_;
+  unsigned does_intersect_ : 1;
+  const unsigned should_report_root_bounds_ : 1;
+  const unsigned root_is_implicit_ : 1;
+  const unsigned can_compute_geometry_ : 1;
 };
 
 }  // namespace blink

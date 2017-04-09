@@ -13,46 +13,46 @@ namespace blink {
 class WebRTCLegacyStatsMemberIterator;
 
 enum WebRTCLegacyStatsMemberType {
-  WebRTCLegacyStatsMemberTypeInt,
-  WebRTCLegacyStatsMemberTypeInt64,
-  WebRTCLegacyStatsMemberTypeFloat,
-  WebRTCLegacyStatsMemberTypeString,
-  WebRTCLegacyStatsMemberTypeBool,
-  WebRTCLegacyStatsMemberTypeId,
+  kWebRTCLegacyStatsMemberTypeInt,
+  kWebRTCLegacyStatsMemberTypeInt64,
+  kWebRTCLegacyStatsMemberTypeFloat,
+  kWebRTCLegacyStatsMemberTypeString,
+  kWebRTCLegacyStatsMemberTypeBool,
+  kWebRTCLegacyStatsMemberTypeId,
 };
 
 class WebRTCLegacyStats {
  public:
   virtual ~WebRTCLegacyStats() {}
 
-  virtual WebString id() const = 0;
-  virtual WebString type() const = 0;
-  virtual double timestamp() const = 0;
+  virtual WebString Id() const = 0;
+  virtual WebString GetType() const = 0;
+  virtual double Timestamp() const = 0;
 
   // The caller owns the iterator. The iterator must not be used after
   // the |WebRTCLegacyStats| that created it is destroyed.
-  virtual WebRTCLegacyStatsMemberIterator* iterator() const = 0;
+  virtual WebRTCLegacyStatsMemberIterator* Iterator() const = 0;
 };
 
 class WebRTCLegacyStatsMemberIterator {
  public:
   virtual ~WebRTCLegacyStatsMemberIterator() {}
-  virtual bool isEnd() const = 0;
-  virtual void next() = 0;
+  virtual bool IsEnd() const = 0;
+  virtual void Next() = 0;
 
-  virtual WebString name() const = 0;
-  virtual WebRTCLegacyStatsMemberType type() const = 0;
+  virtual WebString GetName() const = 0;
+  virtual WebRTCLegacyStatsMemberType GetType() const = 0;
   // Value getters. No conversion is performed; the function must match the
   // member's |type|.
-  virtual int valueInt() const = 0;        // WebRTCLegacyStatsMemberTypeInt
-  virtual int64_t valueInt64() const = 0;  // WebRTCLegacyStatsMemberTypeInt64
-  virtual float valueFloat() const = 0;    // WebRTCLegacyStatsMemberTypeFloat
-  virtual WebString valueString()
+  virtual int ValueInt() const = 0;        // WebRTCLegacyStatsMemberTypeInt
+  virtual int64_t ValueInt64() const = 0;  // WebRTCLegacyStatsMemberTypeInt64
+  virtual float ValueFloat() const = 0;    // WebRTCLegacyStatsMemberTypeFloat
+  virtual WebString ValueString()
       const = 0;                       // WebRTCLegacyStatsMemberTypeString
-  virtual bool valueBool() const = 0;  // WebRTCLegacyStatsMemberTypeBool
+  virtual bool ValueBool() const = 0;  // WebRTCLegacyStatsMemberTypeBool
 
   // Converts the value to string (regardless of |type|).
-  virtual WebString valueToString() const = 0;
+  virtual WebString ValueToString() const = 0;
 };
 
 }  // namespace blink

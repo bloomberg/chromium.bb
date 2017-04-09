@@ -36,60 +36,60 @@ const char kDeviceNameTooLong[] =
 
 static void CanonicalizeFilter(
     const BluetoothLEScanFilterInit& filter,
-    mojom::blink::WebBluetoothLeScanFilterPtr& canonicalizedFilter,
-    ExceptionState& exceptionState) {
+    mojom::blink::WebBluetoothLeScanFilterPtr& canonicalized_filter,
+    ExceptionState& exception_state) {
   if (!(filter.hasServices() || filter.hasName() || filter.hasNamePrefix())) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "A filter must restrict the devices in some way.");
     return;
   }
 
   if (filter.hasServices()) {
     if (filter.services().size() == 0) {
-      exceptionState.throwTypeError(
+      exception_state.ThrowTypeError(
           "'services', if present, must contain at least one service.");
       return;
     }
-    canonicalizedFilter->services.emplace();
+    canonicalized_filter->services.emplace();
     for (const StringOrUnsignedLong& service : filter.services()) {
-      const String& validatedService =
-          BluetoothUUID::getService(service, exceptionState);
-      if (exceptionState.hadException())
+      const String& validated_service =
+          BluetoothUUID::getService(service, exception_state);
+      if (exception_state.HadException())
         return;
-      canonicalizedFilter->services->push_back(validatedService);
+      canonicalized_filter->services->push_back(validated_service);
     }
   }
 
   if (filter.hasName()) {
-    size_t nameLength = filter.name().utf8().length();
-    if (nameLength > kMaxDeviceNameLength) {
-      exceptionState.throwTypeError(kDeviceNameTooLong);
+    size_t name_length = filter.name().Utf8().length();
+    if (name_length > kMaxDeviceNameLength) {
+      exception_state.ThrowTypeError(kDeviceNameTooLong);
       return;
     }
-    canonicalizedFilter->name = filter.name();
+    canonicalized_filter->name = filter.name();
   }
 
   if (filter.hasNamePrefix()) {
-    size_t namePrefixLength = filter.namePrefix().utf8().length();
-    if (namePrefixLength > kMaxDeviceNameLength) {
-      exceptionState.throwTypeError(kDeviceNameTooLong);
+    size_t name_prefix_length = filter.namePrefix().Utf8().length();
+    if (name_prefix_length > kMaxDeviceNameLength) {
+      exception_state.ThrowTypeError(kDeviceNameTooLong);
       return;
     }
     if (filter.namePrefix().length() == 0) {
-      exceptionState.throwTypeError(
+      exception_state.ThrowTypeError(
           "'namePrefix', if present, must me non-empty.");
       return;
     }
-    canonicalizedFilter->name_prefix = filter.namePrefix();
+    canonicalized_filter->name_prefix = filter.namePrefix();
   }
 }
 
 static void ConvertRequestDeviceOptions(
     const RequestDeviceOptions& options,
     mojom::blink::WebBluetoothRequestDeviceOptionsPtr& result,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   if (!(options.hasFilters() ^ options.acceptAllDevices())) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "Either 'filters' should be present or 'acceptAllDevices' should be "
         "true, but not both.");
     return;
@@ -98,8 +98,8 @@ static void ConvertRequestDeviceOptions(
   result->accept_all_devices = options.acceptAllDevices();
 
   if (options.hasFilters()) {
-    if (options.filters().isEmpty()) {
-      exceptionState.throwTypeError(
+    if (options.filters().IsEmpty()) {
+      exception_state.ThrowTypeError(
           "'filters' member must be non-empty to find any devices.");
       return;
     }
@@ -107,25 +107,25 @@ static void ConvertRequestDeviceOptions(
     result->filters.emplace();
 
     for (const BluetoothLEScanFilterInit& filter : options.filters()) {
-      auto canonicalizedFilter = mojom::blink::WebBluetoothLeScanFilter::New();
+      auto canonicalized_filter = mojom::blink::WebBluetoothLeScanFilter::New();
 
-      CanonicalizeFilter(filter, canonicalizedFilter, exceptionState);
+      CanonicalizeFilter(filter, canonicalized_filter, exception_state);
 
-      if (exceptionState.hadException())
+      if (exception_state.HadException())
         return;
 
-      result->filters.value().push_back(std::move(canonicalizedFilter));
+      result->filters.value().push_back(std::move(canonicalized_filter));
     }
   }
 
   if (options.hasOptionalServices()) {
-    for (const StringOrUnsignedLong& optionalService :
+    for (const StringOrUnsignedLong& optional_service :
          options.optionalServices()) {
-      const String& validatedOptionalService =
-          BluetoothUUID::getService(optionalService, exceptionState);
-      if (exceptionState.hadException())
+      const String& validated_optional_service =
+          BluetoothUUID::getService(optional_service, exception_state);
+      if (exception_state.HadException())
         return;
-      result->optional_services.push_back(validatedOptionalService);
+      result->optional_services.push_back(validated_optional_service);
     }
   }
 }
@@ -134,100 +134,99 @@ void Bluetooth::RequestDeviceCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
     mojom::blink::WebBluetoothDevicePtr device) {
-  if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
     return;
 
   if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
-    BluetoothDevice* bluetoothDevice =
+    BluetoothDevice* bluetooth_device =
         GetBluetoothDeviceRepresentingDevice(std::move(device), resolver);
-    resolver->resolve(bluetoothDevice);
+    resolver->Resolve(bluetooth_device);
   } else {
-    resolver->reject(BluetoothError::CreateDOMException(result));
+    resolver->Reject(BluetoothError::CreateDOMException(result));
   }
 }
 
 // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetooth-requestdevice
-ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
+ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
                                        const RequestDeviceOptions& options,
-                                       ExceptionState& exceptionState) {
-  ExecutionContext* context = scriptState->getExecutionContext();
+                                       ExceptionState& exception_state) {
+  ExecutionContext* context = script_state->GetExecutionContext();
 
   // If the Relevant settings object is not a secure context, reject promise
   // with a SecurityError and abort these steps.
-  String errorMessage;
-  if (!context->isSecureContext(errorMessage)) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError, errorMessage));
+  String error_message;
+  if (!context->IsSecureContext(error_message)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kSecurityError, error_message));
   }
 
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
-  if (!UserGestureIndicator::consumeUserGesture()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            SecurityError,
+  if (!UserGestureIndicator::ConsumeUserGesture()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  if (!m_service) {
-    InterfaceProvider* interfaceProvider = nullptr;
-    if (context->isDocument()) {
-      Document* document = toDocument(context);
-      if (document->frame())
-        interfaceProvider = document->frame()->interfaceProvider();
+  if (!service_) {
+    InterfaceProvider* interface_provider = nullptr;
+    if (context->IsDocument()) {
+      Document* document = ToDocument(context);
+      if (document->GetFrame())
+        interface_provider = document->GetFrame()->GetInterfaceProvider();
     }
 
-    if (interfaceProvider)
-      interfaceProvider->getInterface(mojo::MakeRequest(&m_service));
+    if (interface_provider)
+      interface_provider->GetInterface(mojo::MakeRequest(&service_));
   }
 
-  if (!m_service) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(NotSupportedError));
+  if (!service_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kNotSupportedError));
   }
 
   // In order to convert the arguments from service names and aliases to just
   // UUIDs, do the following substeps:
-  auto deviceOptions = mojom::blink::WebBluetoothRequestDeviceOptions::New();
-  ConvertRequestDeviceOptions(options, deviceOptions, exceptionState);
+  auto device_options = mojom::blink::WebBluetoothRequestDeviceOptions::New();
+  ConvertRequestDeviceOptions(options, device_options, exception_state);
 
-  if (exceptionState.hadException())
-    return exceptionState.reject(scriptState);
+  if (exception_state.HadException())
+    return exception_state.Reject(script_state);
 
   // Record the eTLD+1 of the frame using the API.
-  Document* document = toDocument(context);
-  Platform::current()->recordRapporURL("Bluetooth.APIUsage.Origin",
-                                       document->url());
+  Document* document = ToDocument(context);
+  Platform::Current()->RecordRapporURL("Bluetooth.APIUsage.Origin",
+                                       document->Url());
 
   // Subsequent steps are handled in the browser process.
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  m_service->RequestDevice(
-      std::move(deviceOptions),
-      convertToBaseCallback(WTF::bind(&Bluetooth::RequestDeviceCallback,
-                                      wrapPersistent(this),
-                                      wrapPersistent(resolver))));
+  service_->RequestDevice(std::move(device_options),
+                          ConvertToBaseCallback(WTF::Bind(
+                              &Bluetooth::RequestDeviceCallback,
+                              WrapPersistent(this), WrapPersistent(resolver))));
   return promise;
 }
 
 DEFINE_TRACE(Bluetooth) {
-  visitor->trace(m_deviceInstanceMap);
+  visitor->Trace(device_instance_map_);
 }
 
 Bluetooth::Bluetooth() {}
 
 BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
-    mojom::blink::WebBluetoothDevicePtr devicePtr,
+    mojom::blink::WebBluetoothDevicePtr device_ptr,
     ScriptPromiseResolver* resolver) {
-  WTF::String id = devicePtr->id;
-  BluetoothDevice* device = m_deviceInstanceMap.at(id);
+  WTF::String id = device_ptr->id;
+  BluetoothDevice* device = device_instance_map_.at(id);
   if (!device) {
-    device = BluetoothDevice::take(resolver, std::move(devicePtr), this);
-    auto result = m_deviceInstanceMap.insert(id, device);
-    DCHECK(result.isNewEntry);
+    device = BluetoothDevice::Take(resolver, std::move(device_ptr), this);
+    auto result = device_instance_map_.insert(id, device);
+    DCHECK(result.is_new_entry);
   }
   return device;
 }

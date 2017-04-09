@@ -33,58 +33,58 @@ class SVGRect final : public SVGPropertyHelper<SVGRect> {
  public:
   typedef SVGRectTearOff TearOffType;
 
-  static SVGRect* create() { return new SVGRect(); }
+  static SVGRect* Create() { return new SVGRect(); }
 
-  static SVGRect* createInvalid() {
+  static SVGRect* CreateInvalid() {
     SVGRect* rect = new SVGRect();
-    rect->setInvalid();
+    rect->SetInvalid();
     return rect;
   }
 
-  static SVGRect* create(const FloatRect& rect) { return new SVGRect(rect); }
+  static SVGRect* Create(const FloatRect& rect) { return new SVGRect(rect); }
 
-  SVGRect* clone() const;
+  SVGRect* Clone() const;
 
-  const FloatRect& value() const { return m_value; }
-  void setValue(const FloatRect& v) { m_value = v; }
+  const FloatRect& Value() const { return value_; }
+  void SetValue(const FloatRect& v) { value_ = v; }
 
-  float x() const { return m_value.x(); }
-  float y() const { return m_value.y(); }
-  float width() const { return m_value.width(); }
-  float height() const { return m_value.height(); }
-  void setX(float f) { m_value.setX(f); }
-  void setY(float f) { m_value.setY(f); }
-  void setWidth(float f) { m_value.setWidth(f); }
-  void setHeight(float f) { m_value.setHeight(f); }
+  float X() const { return value_.X(); }
+  float Y() const { return value_.Y(); }
+  float Width() const { return value_.Width(); }
+  float Height() const { return value_.Height(); }
+  void SetX(float f) { value_.SetX(f); }
+  void SetY(float f) { value_.SetY(f); }
+  void SetWidth(float f) { value_.SetWidth(f); }
+  void SetHeight(float f) { value_.SetHeight(f); }
 
-  String valueAsString() const override;
-  SVGParsingError setValueAsString(const String&);
+  String ValueAsString() const override;
+  SVGParsingError SetValueAsString(const String&);
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
+                              unsigned repeat_count,
                               SVGPropertyBase* from,
                               SVGPropertyBase* to,
-                              SVGPropertyBase* toAtEndOfDurationValue,
-                              SVGElement* contextElement) override;
-  float calculateDistance(SVGPropertyBase* to,
-                          SVGElement* contextElement) override;
+                              SVGPropertyBase* to_at_end_of_duration_value,
+                              SVGElement* context_element) override;
+  float CalculateDistance(SVGPropertyBase* to,
+                          SVGElement* context_element) override;
 
-  bool isValid() const { return m_isValid; }
-  void setInvalid();
+  bool IsValid() const { return is_valid_; }
+  void SetInvalid();
 
-  static AnimatedPropertyType classType() { return AnimatedRect; }
+  static AnimatedPropertyType ClassType() { return kAnimatedRect; }
 
  private:
   SVGRect();
   SVGRect(const FloatRect&);
 
   template <typename CharType>
-  SVGParsingError parse(const CharType*& ptr, const CharType* end);
+  SVGParsingError Parse(const CharType*& ptr, const CharType* end);
 
-  bool m_isValid;
-  FloatRect m_value;
+  bool is_valid_;
+  FloatRect value_;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGRect);

@@ -68,209 +68,211 @@
 
 namespace blink {
 
-std::unique_ptr<ImageBuffer> ImageBuffer::create(
+std::unique_ptr<ImageBuffer> ImageBuffer::Create(
     std::unique_ptr<ImageBufferSurface> surface) {
-  if (!surface->isValid())
+  if (!surface->IsValid())
     return nullptr;
-  return WTF::wrapUnique(new ImageBuffer(std::move(surface)));
+  return WTF::WrapUnique(new ImageBuffer(std::move(surface)));
 }
 
-std::unique_ptr<ImageBuffer> ImageBuffer::create(
+std::unique_ptr<ImageBuffer> ImageBuffer::Create(
     const IntSize& size,
-    OpacityMode opacityMode,
-    ImageInitializationMode initializationMode,
-    sk_sp<SkColorSpace> colorSpace) {
-  SkColorType colorType = kN32_SkColorType;
-  if (colorSpace && SkColorSpace::Equals(colorSpace.get(),
-                                         SkColorSpace::MakeSRGBLinear().get()))
-    colorType = kRGBA_F16_SkColorType;
+    OpacityMode opacity_mode,
+    ImageInitializationMode initialization_mode,
+    sk_sp<SkColorSpace> color_space) {
+  SkColorType color_type = kN32_SkColorType;
+  if (color_space && SkColorSpace::Equals(color_space.get(),
+                                          SkColorSpace::MakeSRGBLinear().get()))
+    color_type = kRGBA_F16_SkColorType;
 
-  std::unique_ptr<ImageBufferSurface> surface(WTF::wrapUnique(
-      new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode,
-                                          std::move(colorSpace), colorType)));
+  std::unique_ptr<ImageBufferSurface> surface(
+      WTF::WrapUnique(new UnacceleratedImageBufferSurface(
+          size, opacity_mode, initialization_mode, std::move(color_space),
+          color_type)));
 
-  if (!surface->isValid())
+  if (!surface->IsValid())
     return nullptr;
-  return WTF::wrapUnique(new ImageBuffer(std::move(surface)));
+  return WTF::WrapUnique(new ImageBuffer(std::move(surface)));
 }
 
 ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
-    : m_weakPtrFactory(this),
-      m_snapshotState(InitialSnapshotState),
-      m_surface(std::move(surface)),
-      m_client(0),
-      m_gpuReadbackInvokedInCurrentFrame(false),
-      m_gpuReadbackSuccessiveFrames(0),
-      m_gpuMemoryUsage(0) {
-  m_surface->setImageBuffer(this);
-  updateGPUMemoryUsage();
+    : weak_ptr_factory_(this),
+      snapshot_state_(kInitialSnapshotState),
+      surface_(std::move(surface)),
+      client_(0),
+      gpu_readback_invoked_in_current_frame_(false),
+      gpu_readback_successive_frames_(0),
+      gpu_memory_usage_(0) {
+  surface_->SetImageBuffer(this);
+  UpdateGPUMemoryUsage();
 }
 
-intptr_t ImageBuffer::s_globalGPUMemoryUsage = 0;
-unsigned ImageBuffer::s_globalAcceleratedImageBufferCount = 0;
+intptr_t ImageBuffer::global_gpu_memory_usage_ = 0;
+unsigned ImageBuffer::global_accelerated_image_buffer_count_ = 0;
 
 ImageBuffer::~ImageBuffer() {
-  if (m_gpuMemoryUsage) {
-    DCHECK_GT(s_globalAcceleratedImageBufferCount, 0u);
-    s_globalAcceleratedImageBufferCount--;
+  if (gpu_memory_usage_) {
+    DCHECK_GT(global_accelerated_image_buffer_count_, 0u);
+    global_accelerated_image_buffer_count_--;
   }
-  ImageBuffer::s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
-  m_surface->setImageBuffer(nullptr);
+  ImageBuffer::global_gpu_memory_usage_ -= gpu_memory_usage_;
+  surface_->SetImageBuffer(nullptr);
 }
 
-bool ImageBuffer::canCreateImageBuffer(const IntSize& size) {
-  if (size.isEmpty())
+bool ImageBuffer::CanCreateImageBuffer(const IntSize& size) {
+  if (size.IsEmpty())
     return false;
-  CheckedNumeric<int> area = size.width();
-  area *= size.height();
+  CheckedNumeric<int> area = size.Width();
+  area *= size.Height();
   if (!area.IsValid() || area.ValueOrDie() > kMaxCanvasArea)
     return false;
-  if (size.width() > kMaxSkiaDim || size.height() > kMaxSkiaDim)
+  if (size.Width() > kMaxSkiaDim || size.Height() > kMaxSkiaDim)
     return false;
   return true;
 }
 
-PaintCanvas* ImageBuffer::canvas() const {
-  return m_surface->canvas();
+PaintCanvas* ImageBuffer::Canvas() const {
+  return surface_->Canvas();
 }
 
-void ImageBuffer::disableDeferral(DisableDeferralReason reason) const {
-  return m_surface->disableDeferral(reason);
+void ImageBuffer::DisableDeferral(DisableDeferralReason reason) const {
+  return surface_->DisableDeferral(reason);
 }
 
-bool ImageBuffer::writePixels(const SkImageInfo& info,
+bool ImageBuffer::WritePixels(const SkImageInfo& info,
                               const void* pixels,
-                              size_t rowBytes,
+                              size_t row_bytes,
                               int x,
                               int y) {
-  return m_surface->writePixels(info, pixels, rowBytes, x, y);
+  return surface_->WritePixels(info, pixels, row_bytes, x, y);
 }
 
-bool ImageBuffer::isSurfaceValid() const {
-  return m_surface->isValid();
+bool ImageBuffer::IsSurfaceValid() const {
+  return surface_->IsValid();
 }
 
-void ImageBuffer::finalizeFrame() {
-  if (isAccelerated() &&
-      ExpensiveCanvasHeuristicParameters::GPUReadbackForcesNoAcceleration &&
+void ImageBuffer::FinalizeFrame() {
+  if (IsAccelerated() &&
+      ExpensiveCanvasHeuristicParameters::kGPUReadbackForcesNoAcceleration &&
       !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
-    if (m_gpuReadbackInvokedInCurrentFrame) {
-      m_gpuReadbackSuccessiveFrames++;
-      m_gpuReadbackInvokedInCurrentFrame = false;
+    if (gpu_readback_invoked_in_current_frame_) {
+      gpu_readback_successive_frames_++;
+      gpu_readback_invoked_in_current_frame_ = false;
     } else {
-      m_gpuReadbackSuccessiveFrames = 0;
+      gpu_readback_successive_frames_ = 0;
     }
 
-    if (m_gpuReadbackSuccessiveFrames >=
-        ExpensiveCanvasHeuristicParameters::GPUReadbackMinSuccessiveFrames) {
-      disableAcceleration();
+    if (gpu_readback_successive_frames_ >=
+        ExpensiveCanvasHeuristicParameters::kGPUReadbackMinSuccessiveFrames) {
+      DisableAcceleration();
     }
   }
 
-  m_surface->finalizeFrame();
+  surface_->FinalizeFrame();
 }
 
-void ImageBuffer::doPaintInvalidation(const FloatRect& dirtyRect) {
-  m_surface->doPaintInvalidation(dirtyRect);
+void ImageBuffer::DoPaintInvalidation(const FloatRect& dirty_rect) {
+  surface_->DoPaintInvalidation(dirty_rect);
 }
 
-bool ImageBuffer::restoreSurface() const {
-  return m_surface->isValid() || m_surface->restore();
+bool ImageBuffer::RestoreSurface() const {
+  return surface_->IsValid() || surface_->Restore();
 }
 
-void ImageBuffer::notifySurfaceInvalid() {
-  if (m_client)
-    m_client->notifySurfaceInvalid();
+void ImageBuffer::NotifySurfaceInvalid() {
+  if (client_)
+    client_->NotifySurfaceInvalid();
 }
 
-void ImageBuffer::resetCanvas(PaintCanvas* canvas) const {
-  if (m_client)
-    m_client->restoreCanvasMatrixClipStack(canvas);
+void ImageBuffer::ResetCanvas(PaintCanvas* canvas) const {
+  if (client_)
+    client_->RestoreCanvasMatrixClipStack(canvas);
 }
 
-sk_sp<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint,
+sk_sp<SkImage> ImageBuffer::NewSkImageSnapshot(AccelerationHint hint,
                                                SnapshotReason reason) const {
-  if (m_snapshotState == InitialSnapshotState)
-    m_snapshotState = DidAcquireSnapshot;
+  if (snapshot_state_ == kInitialSnapshotState)
+    snapshot_state_ = kDidAcquireSnapshot;
 
-  if (!isSurfaceValid())
+  if (!IsSurfaceValid())
     return nullptr;
-  return m_surface->newImageSnapshot(hint, reason);
+  return surface_->NewImageSnapshot(hint, reason);
 }
 
-PassRefPtr<Image> ImageBuffer::newImageSnapshot(AccelerationHint hint,
+PassRefPtr<Image> ImageBuffer::NewImageSnapshot(AccelerationHint hint,
                                                 SnapshotReason reason) const {
-  sk_sp<SkImage> snapshot = newSkImageSnapshot(hint, reason);
+  sk_sp<SkImage> snapshot = NewSkImageSnapshot(hint, reason);
   if (!snapshot)
     return nullptr;
-  return StaticBitmapImage::create(std::move(snapshot));
+  return StaticBitmapImage::Create(std::move(snapshot));
 }
 
-void ImageBuffer::didDraw(const FloatRect& rect) const {
-  if (m_snapshotState == DidAcquireSnapshot)
-    m_snapshotState = DrawnToAfterSnapshot;
-  m_surface->didDraw(rect);
+void ImageBuffer::DidDraw(const FloatRect& rect) const {
+  if (snapshot_state_ == kDidAcquireSnapshot)
+    snapshot_state_ = kDrawnToAfterSnapshot;
+  surface_->DidDraw(rect);
 }
 
-WebLayer* ImageBuffer::platformLayer() const {
-  return m_surface->layer();
+WebLayer* ImageBuffer::PlatformLayer() const {
+  return surface_->Layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(SnapshotReason reason,
+bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
                                         gpu::gles2::GLES2Interface* gl,
                                         GLuint texture,
-                                        GLenum internalFormat,
-                                        GLenum destType,
+                                        GLenum internal_format,
+                                        GLenum dest_type,
                                         GLint level,
-                                        bool premultiplyAlpha,
-                                        bool flipY,
-                                        const IntPoint& destPoint,
-                                        const IntRect& sourceSubRectangle) {
-  if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(
-          GL_TEXTURE_2D, internalFormat, destType, level))
+                                        bool premultiply_alpha,
+                                        bool flip_y,
+                                        const IntPoint& dest_point,
+                                        const IntRect& source_sub_rectangle) {
+  if (!Extensions3DUtil::CanUseCopyTextureCHROMIUM(
+          GL_TEXTURE_2D, internal_format, dest_type, level))
     return false;
 
-  if (!isSurfaceValid())
+  if (!IsSurfaceValid())
     return false;
 
-  sk_sp<const SkImage> textureImage =
-      m_surface->newImageSnapshot(PreferAcceleration, reason);
-  if (!textureImage)
+  sk_sp<const SkImage> texture_image =
+      surface_->NewImageSnapshot(kPreferAcceleration, reason);
+  if (!texture_image)
     return false;
 
-  if (!m_surface->isAccelerated())
+  if (!surface_->IsAccelerated())
     return false;
 
-  DCHECK(textureImage->isTextureBacked());  // The isAccelerated() check above
-                                            // should guarantee this.
+  DCHECK(texture_image->isTextureBacked());  // The isAccelerated() check above
+                                             // should guarantee this.
   // Get the texture ID, flushing pending operations if needed.
-  const GrGLTextureInfo* textureInfo = skia::GrBackendObjectToGrGLTextureInfo(
-      textureImage->getTextureHandle(true));
-  if (!textureInfo || !textureInfo->fID)
+  const GrGLTextureInfo* texture_info = skia::GrBackendObjectToGrGLTextureInfo(
+      texture_image->getTextureHandle(true));
+  if (!texture_info || !texture_info->fID)
     return false;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::wrapUnique(
-      Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-  if (!provider || !provider->grContext())
+  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::WrapUnique(
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
+  if (!provider || !provider->GetGrContext())
     return false;
-  gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
+  gpu::gles2::GLES2Interface* shared_gl = provider->ContextGL();
 
   gpu::Mailbox mailbox;
 
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
-  sharedGL->GenMailboxCHROMIUM(mailbox.name);
-  sharedGL->ProduceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget,
-                                         mailbox.name);
-  const GLuint64 sharedFenceSync = sharedGL->InsertFenceSyncCHROMIUM();
-  sharedGL->Flush();
+  shared_gl->GenMailboxCHROMIUM(mailbox.name);
+  shared_gl->ProduceTextureDirectCHROMIUM(texture_info->fID,
+                                          texture_info->fTarget, mailbox.name);
+  const GLuint64 shared_fence_sync = shared_gl->InsertFenceSyncCHROMIUM();
+  shared_gl->Flush();
 
-  gpu::SyncToken produceSyncToken;
-  sharedGL->GenSyncTokenCHROMIUM(sharedFenceSync, produceSyncToken.GetData());
-  gl->WaitSyncTokenCHROMIUM(produceSyncToken.GetConstData());
+  gpu::SyncToken produce_sync_token;
+  shared_gl->GenSyncTokenCHROMIUM(shared_fence_sync,
+                                  produce_sync_token.GetData());
+  gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
 
-  GLuint sourceTexture =
-      gl->CreateAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox.name);
+  GLuint source_texture =
+      gl->CreateAndConsumeTextureCHROMIUM(texture_info->fTarget, mailbox.name);
 
   // The canvas is stored in a premultiplied format, so unpremultiply if
   // necessary. The canvas is also stored in an inverted position, so the flip
@@ -278,259 +280,260 @@ bool ImageBuffer::copyToPlatformTexture(SnapshotReason reason,
   // It is expected that callers of this method have already allocated
   // the platform texture with the appropriate size.
   gl->CopySubTextureCHROMIUM(
-      sourceTexture, 0, GL_TEXTURE_2D, texture, 0, destPoint.x(), destPoint.y(),
-      sourceSubRectangle.x(), sourceSubRectangle.y(),
-      sourceSubRectangle.width(), sourceSubRectangle.height(),
-      flipY ? GL_FALSE : GL_TRUE, GL_FALSE,
-      premultiplyAlpha ? GL_FALSE : GL_TRUE);
+      source_texture, 0, GL_TEXTURE_2D, texture, 0, dest_point.X(),
+      dest_point.Y(), source_sub_rectangle.X(), source_sub_rectangle.Y(),
+      source_sub_rectangle.Width(), source_sub_rectangle.Height(),
+      flip_y ? GL_FALSE : GL_TRUE, GL_FALSE,
+      premultiply_alpha ? GL_FALSE : GL_TRUE);
 
-  gl->DeleteTextures(1, &sourceTexture);
+  gl->DeleteTextures(1, &source_texture);
 
-  const GLuint64 contextFenceSync = gl->InsertFenceSyncCHROMIUM();
+  const GLuint64 context_fence_sync = gl->InsertFenceSyncCHROMIUM();
 
   gl->Flush();
 
-  gpu::SyncToken copySyncToken;
-  gl->GenSyncTokenCHROMIUM(contextFenceSync, copySyncToken.GetData());
-  sharedGL->WaitSyncTokenCHROMIUM(copySyncToken.GetConstData());
+  gpu::SyncToken copy_sync_token;
+  gl->GenSyncTokenCHROMIUM(context_fence_sync, copy_sync_token.GetData());
+  shared_gl->WaitSyncTokenCHROMIUM(copy_sync_token.GetConstData());
   // This disassociates the texture from the mailbox to avoid leaking the
   // mapping between the two.
-  sharedGL->ProduceTextureDirectCHROMIUM(0, textureInfo->fTarget, mailbox.name);
+  shared_gl->ProduceTextureDirectCHROMIUM(0, texture_info->fTarget,
+                                          mailbox.name);
 
   // Undo grContext texture binding changes introduced in this function.
-  GrContext* grContext = provider->grContext();
-  CHECK(grContext);  // We already check / early-out above if null.
-  grContext->resetContext(kTextureBinding_GrGLBackendState);
+  GrContext* gr_context = provider->GetGrContext();
+  CHECK(gr_context);  // We already check / early-out above if null.
+  gr_context->resetContext(kTextureBinding_GrGLBackendState);
 
   return true;
 }
 
-bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(
-    DrawingBuffer* drawingBuffer,
-    SourceDrawingBuffer sourceBuffer) {
-  if (!drawingBuffer || !m_surface->isAccelerated())
+bool ImageBuffer::CopyRenderingResultsFromDrawingBuffer(
+    DrawingBuffer* drawing_buffer,
+    SourceDrawingBuffer source_buffer) {
+  if (!drawing_buffer || !surface_->IsAccelerated())
     return false;
-  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::wrapUnique(
-      Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+  std::unique_ptr<WebGraphicsContext3DProvider> provider = WTF::WrapUnique(
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
   if (!provider)
     return false;
-  gpu::gles2::GLES2Interface* gl = provider->contextGL();
-  GLuint textureId = m_surface->getBackingTextureHandleForOverwrite();
-  if (!textureId)
+  gpu::gles2::GLES2Interface* gl = provider->ContextGL();
+  GLuint texture_id = surface_->GetBackingTextureHandleForOverwrite();
+  if (!texture_id)
     return false;
 
   gl->Flush();
 
-  return drawingBuffer->copyToPlatformTexture(
-      gl, textureId, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false, IntPoint(0, 0),
-      IntRect(IntPoint(0, 0), drawingBuffer->size()), sourceBuffer);
+  return drawing_buffer->CopyToPlatformTexture(
+      gl, texture_id, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false, IntPoint(0, 0),
+      IntRect(IntPoint(0, 0), drawing_buffer->size()), source_buffer);
 }
 
-void ImageBuffer::draw(GraphicsContext& context,
-                       const FloatRect& destRect,
-                       const FloatRect* srcPtr,
+void ImageBuffer::Draw(GraphicsContext& context,
+                       const FloatRect& dest_rect,
+                       const FloatRect* src_ptr,
                        SkBlendMode op) {
-  if (!isSurfaceValid())
+  if (!IsSurfaceValid())
     return;
 
-  FloatRect srcRect =
-      srcPtr ? *srcPtr : FloatRect(FloatPoint(), FloatSize(size()));
-  m_surface->draw(context, destRect, srcRect, op);
+  FloatRect src_rect =
+      src_ptr ? *src_ptr : FloatRect(FloatPoint(), FloatSize(size()));
+  surface_->Draw(context, dest_rect, src_rect, op);
 }
 
-void ImageBuffer::flush(FlushReason reason) {
-  if (m_surface->canvas()) {
-    m_surface->flush(reason);
+void ImageBuffer::Flush(FlushReason reason) {
+  if (surface_->Canvas()) {
+    surface_->Flush(reason);
   }
 }
 
-void ImageBuffer::flushGpu(FlushReason reason) {
-  if (m_surface->canvas()) {
-    m_surface->flushGpu(reason);
+void ImageBuffer::FlushGpu(FlushReason reason) {
+  if (surface_->Canvas()) {
+    surface_->FlushGpu(reason);
   }
 }
 
-bool ImageBuffer::getImageData(Multiply multiplied,
+bool ImageBuffer::GetImageData(Multiply multiplied,
                                const IntRect& rect,
                                WTF::ArrayBufferContents& contents) const {
-  uint8_t bytesPerPixel = 4;
-  if (m_surface->colorSpace())
-    bytesPerPixel = SkColorTypeBytesPerPixel(m_surface->colorType());
-  CheckedNumeric<int> dataSize = bytesPerPixel;
-  dataSize *= rect.width();
-  dataSize *= rect.height();
-  if (!dataSize.IsValid())
+  uint8_t bytes_per_pixel = 4;
+  if (surface_->ColorSpace())
+    bytes_per_pixel = SkColorTypeBytesPerPixel(surface_->ColorType());
+  CheckedNumeric<int> data_size = bytes_per_pixel;
+  data_size *= rect.Width();
+  data_size *= rect.Height();
+  if (!data_size.IsValid())
     return false;
 
-  if (!isSurfaceValid()) {
-    size_t allocSizeInBytes = rect.width() * rect.height() * bytesPerPixel;
-    auto data = WTF::ArrayBufferContents::createDataHandle(
-        allocSizeInBytes, WTF::ArrayBufferContents::ZeroInitialize);
+  if (!IsSurfaceValid()) {
+    size_t alloc_size_in_bytes = rect.Width() * rect.Height() * bytes_per_pixel;
+    auto data = WTF::ArrayBufferContents::CreateDataHandle(
+        alloc_size_in_bytes, WTF::ArrayBufferContents::kZeroInitialize);
     if (!data)
       return false;
-    WTF::ArrayBufferContents result(std::move(data), allocSizeInBytes,
-                                    WTF::ArrayBufferContents::NotShared);
-    result.transfer(contents);
+    WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
+                                    WTF::ArrayBufferContents::kNotShared);
+    result.Transfer(contents);
     return true;
   }
 
-  DCHECK(canvas());
+  DCHECK(Canvas());
 
-  sk_sp<SkImage> snapshot = m_surface->newImageSnapshot(
-      PreferNoAcceleration, SnapshotReasonGetImageData);
+  sk_sp<SkImage> snapshot = surface_->NewImageSnapshot(
+      kPreferNoAcceleration, kSnapshotReasonGetImageData);
   if (!snapshot)
     return false;
 
-  const bool mayHaveStrayArea =
-      m_surface->isAccelerated()  // GPU readback may fail silently
-      || rect.x() < 0 || rect.y() < 0 ||
-      rect.maxX() > m_surface->size().width() ||
-      rect.maxY() > m_surface->size().height();
-  size_t allocSizeInBytes = rect.width() * rect.height() * bytesPerPixel;
-  WTF::ArrayBufferContents::InitializationPolicy initializationPolicy =
-      mayHaveStrayArea ? WTF::ArrayBufferContents::ZeroInitialize
-                       : WTF::ArrayBufferContents::DontInitialize;
-  auto data = WTF::ArrayBufferContents::createDataHandle(allocSizeInBytes,
-                                                         initializationPolicy);
+  const bool may_have_stray_area =
+      surface_->IsAccelerated()  // GPU readback may fail silently
+      || rect.X() < 0 || rect.Y() < 0 ||
+      rect.MaxX() > surface_->size().Width() ||
+      rect.MaxY() > surface_->size().Height();
+  size_t alloc_size_in_bytes = rect.Width() * rect.Height() * bytes_per_pixel;
+  WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
+      may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
+                          : WTF::ArrayBufferContents::kDontInitialize;
+  auto data = WTF::ArrayBufferContents::CreateDataHandle(alloc_size_in_bytes,
+                                                         initialization_policy);
   if (!data)
     return false;
-  WTF::ArrayBufferContents result(std::move(data), allocSizeInBytes,
-                                  WTF::ArrayBufferContents::NotShared);
+  WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
+                                  WTF::ArrayBufferContents::kNotShared);
 
   // Skia does not support unpremultiplied read with an F16 to 8888 conversion
-  bool useF16Workaround = m_surface->colorType() == kRGBA_F16_SkColorType;
+  bool use_f16_workaround = surface_->ColorType() == kRGBA_F16_SkColorType;
 
-  SkAlphaType alphaType = (multiplied == Premultiplied || useF16Workaround)
-                              ? kPremul_SkAlphaType
-                              : kUnpremul_SkAlphaType;
+  SkAlphaType alpha_type = (multiplied == kPremultiplied || use_f16_workaround)
+                               ? kPremul_SkAlphaType
+                               : kUnpremul_SkAlphaType;
   // The workaround path use a canvas draw under the hood, which can only
   // use N32 at this time.
-  SkColorType colorType =
-      useF16Workaround ? kN32_SkColorType : kRGBA_8888_SkColorType;
+  SkColorType color_type =
+      use_f16_workaround ? kN32_SkColorType : kRGBA_8888_SkColorType;
 
   // Only use sRGB when the surface has a color space.  Converting untagged
   // pixels to a particular color space is not well-defined in Skia.
-  sk_sp<SkColorSpace> colorSpace = nullptr;
-  if (m_surface->colorSpace()) {
-    colorSpace = SkColorSpace::MakeSRGB();
+  sk_sp<SkColorSpace> color_space = nullptr;
+  if (surface_->ColorSpace()) {
+    color_space = SkColorSpace::MakeSRGB();
   }
 
-  SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), colorType,
-                                       alphaType, std::move(colorSpace));
+  SkImageInfo info = SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
+                                       alpha_type, std::move(color_space));
 
-  snapshot->readPixels(info, result.data(), bytesPerPixel * rect.width(),
-                       rect.x(), rect.y());
-  m_gpuReadbackInvokedInCurrentFrame = true;
+  snapshot->readPixels(info, result.Data(), bytes_per_pixel * rect.Width(),
+                       rect.X(), rect.Y());
+  gpu_readback_invoked_in_current_frame_ = true;
 
-  if (useF16Workaround) {
-    uint32_t* pixel = (uint32_t*)result.data();
-    size_t pixelCount = allocSizeInBytes / sizeof(uint32_t);
+  if (use_f16_workaround) {
+    uint32_t* pixel = (uint32_t*)result.Data();
+    size_t pixel_count = alloc_size_in_bytes / sizeof(uint32_t);
     // TODO(skbug.com/5853): make readPixels support RGBA output so that we no
     // longer
     // have to do this.
     if (kN32_SkColorType == kBGRA_8888_SkColorType) {
       // Convert BGRA to RGBA if necessary on this platform.
-      SkSwapRB(pixel, pixel, pixelCount);
+      SkSwapRB(pixel, pixel, pixel_count);
     }
     // TODO(skbug.com/5853): We should really be doing the unpremultiply in
     // linear space
     // and skia should provide that service.
-    if (multiplied == Unmultiplied) {
-      for (; pixelCount; --pixelCount) {
+    if (multiplied == kUnmultiplied) {
+      for (; pixel_count; --pixel_count) {
         *pixel = SkUnPreMultiply::UnPreMultiplyPreservingByteOrder(*pixel);
         ++pixel;
       }
     }
   }
 
-  result.transfer(contents);
+  result.Transfer(contents);
   return true;
 }
 
-void ImageBuffer::putByteArray(Multiply multiplied,
+void ImageBuffer::PutByteArray(Multiply multiplied,
                                const unsigned char* source,
-                               const IntSize& sourceSize,
-                               const IntRect& sourceRect,
-                               const IntPoint& destPoint) {
-  if (!isSurfaceValid())
+                               const IntSize& source_size,
+                               const IntRect& source_rect,
+                               const IntPoint& dest_point) {
+  if (!IsSurfaceValid())
     return;
-  uint8_t bytesPerPixel = 4;
-  if (m_surface->colorSpace())
-    bytesPerPixel = SkColorTypeBytesPerPixel(m_surface->colorType());
+  uint8_t bytes_per_pixel = 4;
+  if (surface_->ColorSpace())
+    bytes_per_pixel = SkColorTypeBytesPerPixel(surface_->ColorType());
 
-  DCHECK_GT(sourceRect.width(), 0);
-  DCHECK_GT(sourceRect.height(), 0);
+  DCHECK_GT(source_rect.Width(), 0);
+  DCHECK_GT(source_rect.Height(), 0);
 
-  int originX = sourceRect.x();
-  int destX = destPoint.x() + sourceRect.x();
-  DCHECK_GE(destX, 0);
-  DCHECK_LT(destX, m_surface->size().width());
-  DCHECK_GE(originX, 0);
-  DCHECK_LT(originX, sourceRect.maxX());
+  int origin_x = source_rect.X();
+  int dest_x = dest_point.X() + source_rect.X();
+  DCHECK_GE(dest_x, 0);
+  DCHECK_LT(dest_x, surface_->size().Width());
+  DCHECK_GE(origin_x, 0);
+  DCHECK_LT(origin_x, source_rect.MaxX());
 
-  int originY = sourceRect.y();
-  int destY = destPoint.y() + sourceRect.y();
-  DCHECK_GE(destY, 0);
-  DCHECK_LT(destY, m_surface->size().height());
-  DCHECK_GE(originY, 0);
-  DCHECK_LT(originY, sourceRect.maxY());
+  int origin_y = source_rect.Y();
+  int dest_y = dest_point.Y() + source_rect.Y();
+  DCHECK_GE(dest_y, 0);
+  DCHECK_LT(dest_y, surface_->size().Height());
+  DCHECK_GE(origin_y, 0);
+  DCHECK_LT(origin_y, source_rect.MaxY());
 
-  const size_t srcBytesPerRow = bytesPerPixel * sourceSize.width();
-  const void* srcAddr =
-      source + originY * srcBytesPerRow + originX * bytesPerPixel;
+  const size_t src_bytes_per_row = bytes_per_pixel * source_size.Width();
+  const void* src_addr =
+      source + origin_y * src_bytes_per_row + origin_x * bytes_per_pixel;
 
-  SkAlphaType alphaType;
-  if (Opaque == m_surface->getOpacityMode()) {
+  SkAlphaType alpha_type;
+  if (kOpaque == surface_->GetOpacityMode()) {
     // If the surface is opaque, tell it that we are writing opaque
     // pixels.  Writing non-opaque pixels to opaque is undefined in
     // Skia.  There is some discussion about whether it should be
     // defined in skbug.com/6157.  For now, we can get the desired
     // behavior (memcpy) by pretending the write is opaque.
-    alphaType = kOpaque_SkAlphaType;
+    alpha_type = kOpaque_SkAlphaType;
   } else {
-    alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType
-                                              : kUnpremul_SkAlphaType;
+    alpha_type = (multiplied == kPremultiplied) ? kPremul_SkAlphaType
+                                                : kUnpremul_SkAlphaType;
   }
 
   SkImageInfo info;
-  if (m_surface->colorSpace()) {
-    info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(),
-                             m_surface->colorType(), alphaType,
-                             m_surface->colorSpace());
+  if (surface_->ColorSpace()) {
+    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
+                             surface_->ColorType(), alpha_type,
+                             surface_->ColorSpace());
   } else {
-    info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(),
-                             kRGBA_8888_SkColorType, alphaType,
+    info = SkImageInfo::Make(source_rect.Width(), source_rect.Height(),
+                             kRGBA_8888_SkColorType, alpha_type,
                              SkColorSpace::MakeSRGB());
   }
-  m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
+  surface_->WritePixels(info, src_addr, src_bytes_per_row, dest_x, dest_y);
 }
 
-void ImageBuffer::updateGPUMemoryUsage() const {
-  if (this->isAccelerated()) {
+void ImageBuffer::UpdateGPUMemoryUsage() const {
+  if (this->IsAccelerated()) {
     // If image buffer is accelerated, we should keep track of GPU memory usage.
-    int gpuBufferCount = 2;
-    CheckedNumeric<intptr_t> checkedGPUUsage =
-        SkColorTypeBytesPerPixel(m_surface->colorType()) * gpuBufferCount;
-    checkedGPUUsage *= this->size().width();
-    checkedGPUUsage *= this->size().height();
-    intptr_t gpuMemoryUsage =
-        checkedGPUUsage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
+    int gpu_buffer_count = 2;
+    CheckedNumeric<intptr_t> checked_gpu_usage =
+        SkColorTypeBytesPerPixel(surface_->ColorType()) * gpu_buffer_count;
+    checked_gpu_usage *= this->size().Width();
+    checked_gpu_usage *= this->size().Height();
+    intptr_t gpu_memory_usage =
+        checked_gpu_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
 
-    if (!m_gpuMemoryUsage)  // was not accelerated before
-      s_globalAcceleratedImageBufferCount++;
+    if (!gpu_memory_usage_)  // was not accelerated before
+      global_accelerated_image_buffer_count_++;
 
-    s_globalGPUMemoryUsage += (gpuMemoryUsage - m_gpuMemoryUsage);
-    m_gpuMemoryUsage = gpuMemoryUsage;
-  } else if (m_gpuMemoryUsage) {
+    global_gpu_memory_usage_ += (gpu_memory_usage - gpu_memory_usage_);
+    gpu_memory_usage_ = gpu_memory_usage;
+  } else if (gpu_memory_usage_) {
     // In case of switching from accelerated to non-accelerated mode,
     // the GPU memory usage needs to be updated too.
-    DCHECK_GT(s_globalAcceleratedImageBufferCount, 0u);
-    s_globalAcceleratedImageBufferCount--;
-    s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
-    m_gpuMemoryUsage = 0;
+    DCHECK_GT(global_accelerated_image_buffer_count_, 0u);
+    global_accelerated_image_buffer_count_--;
+    global_gpu_memory_usage_ -= gpu_memory_usage_;
+    gpu_memory_usage_ = 0;
 
-    if (m_client)
-      m_client->didDisableAcceleration();
+    if (client_)
+      client_->DidDisableAcceleration();
   }
 }
 
@@ -539,14 +542,14 @@ namespace {
 class UnacceleratedSurfaceFactory
     : public RecordingImageBufferFallbackSurfaceFactory {
  public:
-  virtual std::unique_ptr<ImageBufferSurface> createSurface(
+  virtual std::unique_ptr<ImageBufferSurface> CreateSurface(
       const IntSize& size,
-      OpacityMode opacityMode,
-      sk_sp<SkColorSpace> colorSpace,
-      SkColorType colorType) {
-    return WTF::wrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacityMode, InitializeImagePixels, std::move(colorSpace),
-        colorType));
+      OpacityMode opacity_mode,
+      sk_sp<SkColorSpace> color_space,
+      SkColorType color_type) {
+    return WTF::WrapUnique(new UnacceleratedImageBufferSurface(
+        size, opacity_mode, kInitializeImagePixels, std::move(color_space),
+        color_type));
   }
 
   virtual ~UnacceleratedSurfaceFactory() {}
@@ -554,24 +557,24 @@ class UnacceleratedSurfaceFactory
 
 }  // namespace
 
-void ImageBuffer::disableAcceleration() {
-  if (!isAccelerated())
+void ImageBuffer::DisableAcceleration() {
+  if (!IsAccelerated())
     return;
 
   // Create and configure a recording (unaccelerated) surface.
-  std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory =
-      WTF::makeUnique<UnacceleratedSurfaceFactory>();
+  std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surface_factory =
+      WTF::MakeUnique<UnacceleratedSurfaceFactory>();
   std::unique_ptr<ImageBufferSurface> surface =
-      WTF::wrapUnique(new RecordingImageBufferSurface(
-          m_surface->size(), std::move(surfaceFactory),
-          m_surface->getOpacityMode(), m_surface->colorSpace(),
-          m_surface->colorType()));
-  setSurface(std::move(surface));
+      WTF::WrapUnique(new RecordingImageBufferSurface(
+          surface_->size(), std::move(surface_factory),
+          surface_->GetOpacityMode(), surface_->ColorSpace(),
+          surface_->ColorType()));
+  SetSurface(std::move(surface));
 }
 
-void ImageBuffer::setSurface(std::unique_ptr<ImageBufferSurface> surface) {
+void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   sk_sp<SkImage> image =
-      m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
+      surface_->NewImageSnapshot(kPreferNoAcceleration, kSnapshotReasonPaint);
 
   // image can be null if alloaction failed in which case we should just
   // abort the surface switch to reatain the old surface which is still
@@ -579,51 +582,51 @@ void ImageBuffer::setSurface(std::unique_ptr<ImageBufferSurface> surface) {
   if (!image)
     return;
 
-  if (surface->isRecording()) {
+  if (surface->IsRecording()) {
     // Using a GPU-backed image with RecordingImageBufferSurface
     // will fail at playback time.
     image = image->makeNonTextureImage();
   }
-  surface->canvas()->drawImage(std::move(image), 0, 0);
+  surface->Canvas()->drawImage(std::move(image), 0, 0);
 
-  surface->setImageBuffer(this);
-  if (m_client)
-    m_client->restoreCanvasMatrixClipStack(surface->canvas());
-  m_surface = std::move(surface);
+  surface->SetImageBuffer(this);
+  if (client_)
+    client_->RestoreCanvasMatrixClipStack(surface->Canvas());
+  surface_ = std::move(surface);
 
-  updateGPUMemoryUsage();
+  UpdateGPUMemoryUsage();
 }
 
-bool ImageDataBuffer::encodeImage(const String& mimeType,
+bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
-                                  Vector<unsigned char>* encodedImage) const {
-  if (mimeType == "image/jpeg") {
-    if (!JPEGImageEncoder::encode(*this, quality, encodedImage))
+                                  Vector<unsigned char>* encoded_image) const {
+  if (mime_type == "image/jpeg") {
+    if (!JPEGImageEncoder::Encode(*this, quality, encoded_image))
       return false;
-  } else if (mimeType == "image/webp") {
-    int compressionQuality = WEBPImageEncoder::DefaultCompressionQuality;
+  } else if (mime_type == "image/webp") {
+    int compression_quality = WEBPImageEncoder::kDefaultCompressionQuality;
     if (quality >= 0.0 && quality <= 1.0)
-      compressionQuality = static_cast<int>(quality * 100 + 0.5);
-    if (!WEBPImageEncoder::encode(*this, compressionQuality, encodedImage))
+      compression_quality = static_cast<int>(quality * 100 + 0.5);
+    if (!WEBPImageEncoder::Encode(*this, compression_quality, encoded_image))
       return false;
   } else {
-    if (!PNGImageEncoder::encode(*this, encodedImage))
+    if (!PNGImageEncoder::Encode(*this, encoded_image))
       return false;
-    DCHECK_EQ(mimeType, "image/png");
+    DCHECK_EQ(mime_type, "image/png");
   }
 
   return true;
 }
 
-String ImageDataBuffer::toDataURL(const String& mimeType,
+String ImageDataBuffer::ToDataURL(const String& mime_type,
                                   const double& quality) const {
-  DCHECK(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
+  DCHECK(MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(mime_type));
 
   Vector<unsigned char> result;
-  if (!encodeImage(mimeType, quality, &result))
+  if (!EncodeImage(mime_type, quality, &result))
     return "data:,";
 
-  return "data:" + mimeType + ";base64," + base64Encode(result);
+  return "data:" + mime_type + ";base64," + Base64Encode(result);
 }
 
 }  // namespace blink

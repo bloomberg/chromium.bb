@@ -39,45 +39,45 @@
 
 namespace blink {
 
-DirectoryEntrySync::DirectoryEntrySync(DOMFileSystemBase* fileSystem,
-                                       const String& fullPath)
-    : EntrySync(fileSystem, fullPath) {}
+DirectoryEntrySync::DirectoryEntrySync(DOMFileSystemBase* file_system,
+                                       const String& full_path)
+    : EntrySync(file_system, full_path) {}
 
 DirectoryReaderSync* DirectoryEntrySync::createReader() {
-  return DirectoryReaderSync::create(m_fileSystem, m_fullPath);
+  return DirectoryReaderSync::Create(file_system_, full_path_);
 }
 
 FileEntrySync* DirectoryEntrySync::getFile(const String& path,
                                            const FileSystemFlags& options,
-                                           ExceptionState& exceptionState) {
-  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::create();
-  m_fileSystem->getFile(this, path, options, helper->getSuccessCallback(),
-                        helper->getErrorCallback(),
-                        DOMFileSystemBase::Synchronous);
-  return static_cast<FileEntrySync*>(helper->getResult(exceptionState));
+                                           ExceptionState& exception_state) {
+  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::Create();
+  file_system_->GetFile(this, path, options, helper->GetSuccessCallback(),
+                        helper->GetErrorCallback(),
+                        DOMFileSystemBase::kSynchronous);
+  return static_cast<FileEntrySync*>(helper->GetResult(exception_state));
 }
 
 DirectoryEntrySync* DirectoryEntrySync::getDirectory(
     const String& path,
     const FileSystemFlags& options,
-    ExceptionState& exceptionState) {
-  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::create();
-  m_fileSystem->getDirectory(this, path, options, helper->getSuccessCallback(),
-                             helper->getErrorCallback(),
-                             DOMFileSystemBase::Synchronous);
-  return static_cast<DirectoryEntrySync*>(helper->getResult(exceptionState));
+    ExceptionState& exception_state) {
+  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::Create();
+  file_system_->GetDirectory(this, path, options, helper->GetSuccessCallback(),
+                             helper->GetErrorCallback(),
+                             DOMFileSystemBase::kSynchronous);
+  return static_cast<DirectoryEntrySync*>(helper->GetResult(exception_state));
 }
 
-void DirectoryEntrySync::removeRecursively(ExceptionState& exceptionState) {
-  VoidSyncCallbackHelper* helper = VoidSyncCallbackHelper::create();
-  m_fileSystem->removeRecursively(this, helper->getSuccessCallback(),
-                                  helper->getErrorCallback(),
-                                  DOMFileSystemBase::Synchronous);
-  helper->getResult(exceptionState);
+void DirectoryEntrySync::removeRecursively(ExceptionState& exception_state) {
+  VoidSyncCallbackHelper* helper = VoidSyncCallbackHelper::Create();
+  file_system_->RemoveRecursively(this, helper->GetSuccessCallback(),
+                                  helper->GetErrorCallback(),
+                                  DOMFileSystemBase::kSynchronous);
+  helper->GetResult(exception_state);
 }
 
 DEFINE_TRACE(DirectoryEntrySync) {
-  EntrySync::trace(visitor);
+  EntrySync::Trace(visitor);
 }
 
 }  // namespace blink

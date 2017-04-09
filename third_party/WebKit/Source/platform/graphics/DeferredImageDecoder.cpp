@@ -44,294 +44,294 @@ struct DeferredFrameData {
 
  public:
   DeferredFrameData()
-      : m_orientation(DefaultImageOrientation),
-        m_duration(0),
-        m_isComplete(false),
-        m_frameBytes(0),
-        m_uniqueID(DecodingImageGenerator::kNeedNewImageUniqueID) {}
+      : orientation_(kDefaultImageOrientation),
+        duration_(0),
+        is_complete_(false),
+        frame_bytes_(0),
+        unique_id_(DecodingImageGenerator::kNeedNewImageUniqueID) {}
 
-  ImageOrientation m_orientation;
-  float m_duration;
-  bool m_isComplete;
-  size_t m_frameBytes;
-  uint32_t m_uniqueID;
+  ImageOrientation orientation_;
+  float duration_;
+  bool is_complete_;
+  size_t frame_bytes_;
+  uint32_t unique_id_;
 };
 
-std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
-    PassRefPtr<SharedBuffer> passData,
-    bool dataComplete,
-    ImageDecoder::AlphaOption alphaOption,
-    const ColorBehavior& colorBehavior) {
-  RefPtr<SharedBuffer> data = passData;
+std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
+    PassRefPtr<SharedBuffer> pass_data,
+    bool data_complete,
+    ImageDecoder::AlphaOption alpha_option,
+    const ColorBehavior& color_behavior) {
+  RefPtr<SharedBuffer> data = pass_data;
 
-  std::unique_ptr<ImageDecoder> actualDecoder =
-      ImageDecoder::create(data, dataComplete, alphaOption, colorBehavior);
-  if (!actualDecoder)
+  std::unique_ptr<ImageDecoder> actual_decoder =
+      ImageDecoder::Create(data, data_complete, alpha_option, color_behavior);
+  if (!actual_decoder)
     return nullptr;
 
   std::unique_ptr<DeferredImageDecoder> decoder(
-      new DeferredImageDecoder(std::move(actualDecoder)));
+      new DeferredImageDecoder(std::move(actual_decoder)));
 
   // Since we've just instantiated a fresh decoder, there's no need to reset its
   // data.
-  decoder->setDataInternal(std::move(data), dataComplete, false);
+  decoder->SetDataInternal(std::move(data), data_complete, false);
 
   return decoder;
 }
 
-std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(
-    std::unique_ptr<ImageDecoder> actualDecoder) {
-  return WTF::wrapUnique(new DeferredImageDecoder(std::move(actualDecoder)));
+std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::CreateForTesting(
+    std::unique_ptr<ImageDecoder> actual_decoder) {
+  return WTF::WrapUnique(new DeferredImageDecoder(std::move(actual_decoder)));
 }
 
 DeferredImageDecoder::DeferredImageDecoder(
-    std::unique_ptr<ImageDecoder> actualDecoder)
-    : m_allDataReceived(false),
-      m_actualDecoder(std::move(actualDecoder)),
-      m_repetitionCount(cAnimationNone),
-      m_canYUVDecode(false),
-      m_hasHotSpot(false) {}
+    std::unique_ptr<ImageDecoder> actual_decoder)
+    : all_data_received_(false),
+      actual_decoder_(std::move(actual_decoder)),
+      repetition_count_(kCAnimationNone),
+      can_yuv_decode_(false),
+      has_hot_spot_(false) {}
 
 DeferredImageDecoder::~DeferredImageDecoder() {}
 
-String DeferredImageDecoder::filenameExtension() const {
-  return m_actualDecoder ? m_actualDecoder->filenameExtension()
-                         : m_filenameExtension;
+String DeferredImageDecoder::FilenameExtension() const {
+  return actual_decoder_ ? actual_decoder_->FilenameExtension()
+                         : filename_extension_;
 }
 
-sk_sp<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index) {
-  if (m_frameGenerator && m_frameGenerator->decodeFailed())
+sk_sp<SkImage> DeferredImageDecoder::CreateFrameAtIndex(size_t index) {
+  if (frame_generator_ && frame_generator_->DecodeFailed())
     return nullptr;
 
-  prepareLazyDecodedFrames();
+  PrepareLazyDecodedFrames();
 
-  if (index < m_frameData.size()) {
-    DeferredFrameData* frameData = &m_frameData[index];
-    if (m_actualDecoder)
-      frameData->m_frameBytes = m_actualDecoder->frameBytesAtIndex(index);
+  if (index < frame_data_.size()) {
+    DeferredFrameData* frame_data = &frame_data_[index];
+    if (actual_decoder_)
+      frame_data->frame_bytes_ = actual_decoder_->FrameBytesAtIndex(index);
     else
-      frameData->m_frameBytes = m_size.area() * sizeof(ImageFrame::PixelData);
+      frame_data->frame_bytes_ = size_.Area() * sizeof(ImageFrame::PixelData);
     // ImageFrameGenerator has the latest known alpha state. There will be a
     // performance boost if this frame is opaque.
-    DCHECK(m_frameGenerator);
-    return createFrameImageAtIndex(index, !m_frameGenerator->hasAlpha(index));
+    DCHECK(frame_generator_);
+    return CreateFrameImageAtIndex(index, !frame_generator_->HasAlpha(index));
   }
 
-  if (!m_actualDecoder || m_actualDecoder->failed())
+  if (!actual_decoder_ || actual_decoder_->Failed())
     return nullptr;
 
-  ImageFrame* frame = m_actualDecoder->frameBufferAtIndex(index);
-  if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
+  ImageFrame* frame = actual_decoder_->FrameBufferAtIndex(index);
+  if (!frame || frame->GetStatus() == ImageFrame::kFrameEmpty)
     return nullptr;
 
-  return (frame->getStatus() == ImageFrame::FrameComplete)
-             ? frame->finalizePixelsAndGetImage()
-             : SkImage::MakeFromBitmap(frame->bitmap());
+  return (frame->GetStatus() == ImageFrame::kFrameComplete)
+             ? frame->FinalizePixelsAndGetImage()
+             : SkImage::MakeFromBitmap(frame->Bitmap());
 }
 
-PassRefPtr<SharedBuffer> DeferredImageDecoder::data() {
-  if (!m_rwBuffer)
+PassRefPtr<SharedBuffer> DeferredImageDecoder::Data() {
+  if (!rw_buffer_)
     return nullptr;
-  sk_sp<SkROBuffer> roBuffer(m_rwBuffer->newRBufferSnapshot());
-  RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create();
-  SkROBuffer::Iter it(roBuffer.get());
+  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->newRBufferSnapshot());
+  RefPtr<SharedBuffer> shared_buffer = SharedBuffer::Create();
+  SkROBuffer::Iter it(ro_buffer.get());
   do {
-    sharedBuffer->append(static_cast<const char*>(it.data()), it.size());
+    shared_buffer->Append(static_cast<const char*>(it.data()), it.size());
   } while (it.next());
-  return sharedBuffer.release();
+  return shared_buffer.Release();
 }
 
-void DeferredImageDecoder::setData(PassRefPtr<SharedBuffer> data,
-                                   bool allDataReceived) {
-  setDataInternal(std::move(data), allDataReceived, true);
+void DeferredImageDecoder::SetData(PassRefPtr<SharedBuffer> data,
+                                   bool all_data_received) {
+  SetDataInternal(std::move(data), all_data_received, true);
 }
 
-void DeferredImageDecoder::setDataInternal(PassRefPtr<SharedBuffer> passData,
-                                           bool allDataReceived,
-                                           bool pushDataToDecoder) {
-  RefPtr<SharedBuffer> data = passData;
-  if (m_actualDecoder) {
-    m_allDataReceived = allDataReceived;
-    if (pushDataToDecoder)
-      m_actualDecoder->setData(data, allDataReceived);
-    prepareLazyDecodedFrames();
+void DeferredImageDecoder::SetDataInternal(PassRefPtr<SharedBuffer> pass_data,
+                                           bool all_data_received,
+                                           bool push_data_to_decoder) {
+  RefPtr<SharedBuffer> data = pass_data;
+  if (actual_decoder_) {
+    all_data_received_ = all_data_received;
+    if (push_data_to_decoder)
+      actual_decoder_->SetData(data, all_data_received);
+    PrepareLazyDecodedFrames();
   }
 
-  if (m_frameGenerator) {
-    if (!m_rwBuffer)
-      m_rwBuffer = WTF::wrapUnique(new SkRWBuffer(data->size()));
+  if (frame_generator_) {
+    if (!rw_buffer_)
+      rw_buffer_ = WTF::WrapUnique(new SkRWBuffer(data->size()));
 
     const char* segment = 0;
-    for (size_t length = data->getSomeData(segment, m_rwBuffer->size()); length;
-         length = data->getSomeData(segment, m_rwBuffer->size())) {
-      DCHECK_GE(data->size(), m_rwBuffer->size() + length);
-      const size_t remaining = data->size() - m_rwBuffer->size() - length;
-      m_rwBuffer->append(segment, length, remaining);
+    for (size_t length = data->GetSomeData(segment, rw_buffer_->size()); length;
+         length = data->GetSomeData(segment, rw_buffer_->size())) {
+      DCHECK_GE(data->size(), rw_buffer_->size() + length);
+      const size_t remaining = data->size() - rw_buffer_->size() - length;
+      rw_buffer_->append(segment, length, remaining);
     }
   }
 }
 
-bool DeferredImageDecoder::isSizeAvailable() {
+bool DeferredImageDecoder::IsSizeAvailable() {
   // m_actualDecoder is 0 only if image decoding is deferred and that means
   // the image header decoded successfully and the size is available.
-  return m_actualDecoder ? m_actualDecoder->isSizeAvailable() : true;
+  return actual_decoder_ ? actual_decoder_->IsSizeAvailable() : true;
 }
 
-bool DeferredImageDecoder::hasEmbeddedColorSpace() const {
-  return m_actualDecoder ? m_actualDecoder->hasEmbeddedColorSpace()
-                         : m_hasEmbeddedColorSpace;
+bool DeferredImageDecoder::HasEmbeddedColorSpace() const {
+  return actual_decoder_ ? actual_decoder_->HasEmbeddedColorSpace()
+                         : has_embedded_color_space_;
 }
 
 IntSize DeferredImageDecoder::size() const {
-  return m_actualDecoder ? m_actualDecoder->size() : m_size;
+  return actual_decoder_ ? actual_decoder_->size() : size_;
 }
 
-IntSize DeferredImageDecoder::frameSizeAtIndex(size_t index) const {
+IntSize DeferredImageDecoder::FrameSizeAtIndex(size_t index) const {
   // FIXME: LocalFrame size is assumed to be uniform. This might not be true for
   // future supported codecs.
-  return m_actualDecoder ? m_actualDecoder->frameSizeAtIndex(index) : m_size;
+  return actual_decoder_ ? actual_decoder_->FrameSizeAtIndex(index) : size_;
 }
 
-size_t DeferredImageDecoder::frameCount() {
-  return m_actualDecoder ? m_actualDecoder->frameCount() : m_frameData.size();
+size_t DeferredImageDecoder::FrameCount() {
+  return actual_decoder_ ? actual_decoder_->FrameCount() : frame_data_.size();
 }
 
-int DeferredImageDecoder::repetitionCount() const {
-  return m_actualDecoder ? m_actualDecoder->repetitionCount()
-                         : m_repetitionCount;
+int DeferredImageDecoder::RepetitionCount() const {
+  return actual_decoder_ ? actual_decoder_->RepetitionCount()
+                         : repetition_count_;
 }
 
-size_t DeferredImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
-  if (m_actualDecoder)
-    return m_actualDecoder->clearCacheExceptFrame(clearExceptFrame);
-  size_t frameBytesCleared = 0;
-  for (size_t i = 0; i < m_frameData.size(); ++i) {
-    if (i != clearExceptFrame) {
-      frameBytesCleared += m_frameData[i].m_frameBytes;
-      m_frameData[i].m_frameBytes = 0;
+size_t DeferredImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {
+  if (actual_decoder_)
+    return actual_decoder_->ClearCacheExceptFrame(clear_except_frame);
+  size_t frame_bytes_cleared = 0;
+  for (size_t i = 0; i < frame_data_.size(); ++i) {
+    if (i != clear_except_frame) {
+      frame_bytes_cleared += frame_data_[i].frame_bytes_;
+      frame_data_[i].frame_bytes_ = 0;
     }
   }
-  return frameBytesCleared;
+  return frame_bytes_cleared;
 }
 
-bool DeferredImageDecoder::frameHasAlphaAtIndex(size_t index) const {
-  if (m_actualDecoder)
-    return m_actualDecoder->frameHasAlphaAtIndex(index);
-  if (!m_frameGenerator->isMultiFrame())
-    return m_frameGenerator->hasAlpha(index);
+bool DeferredImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
+  if (actual_decoder_)
+    return actual_decoder_->FrameHasAlphaAtIndex(index);
+  if (!frame_generator_->IsMultiFrame())
+    return frame_generator_->HasAlpha(index);
   return true;
 }
 
-bool DeferredImageDecoder::frameIsCompleteAtIndex(size_t index) const {
-  if (m_actualDecoder)
-    return m_actualDecoder->frameIsCompleteAtIndex(index);
-  if (index < m_frameData.size())
-    return m_frameData[index].m_isComplete;
+bool DeferredImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+  if (actual_decoder_)
+    return actual_decoder_->FrameIsCompleteAtIndex(index);
+  if (index < frame_data_.size())
+    return frame_data_[index].is_complete_;
   return false;
 }
 
-float DeferredImageDecoder::frameDurationAtIndex(size_t index) const {
-  if (m_actualDecoder)
-    return m_actualDecoder->frameDurationAtIndex(index);
-  if (index < m_frameData.size())
-    return m_frameData[index].m_duration;
+float DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
+  if (actual_decoder_)
+    return actual_decoder_->FrameDurationAtIndex(index);
+  if (index < frame_data_.size())
+    return frame_data_[index].duration_;
   return 0;
 }
 
-size_t DeferredImageDecoder::frameBytesAtIndex(size_t index) const {
-  if (m_actualDecoder)
-    return m_actualDecoder->frameBytesAtIndex(index);
-  if (index < m_frameData.size())
-    return m_frameData[index].m_frameBytes;
+size_t DeferredImageDecoder::FrameBytesAtIndex(size_t index) const {
+  if (actual_decoder_)
+    return actual_decoder_->FrameBytesAtIndex(index);
+  if (index < frame_data_.size())
+    return frame_data_[index].frame_bytes_;
   return 0;
 }
 
-ImageOrientation DeferredImageDecoder::orientationAtIndex(size_t index) const {
-  if (m_actualDecoder)
-    return m_actualDecoder->orientation();
-  if (index < m_frameData.size())
-    return m_frameData[index].m_orientation;
-  return DefaultImageOrientation;
+ImageOrientation DeferredImageDecoder::OrientationAtIndex(size_t index) const {
+  if (actual_decoder_)
+    return actual_decoder_->Orientation();
+  if (index < frame_data_.size())
+    return frame_data_[index].orientation_;
+  return kDefaultImageOrientation;
 }
 
-void DeferredImageDecoder::activateLazyDecoding() {
-  if (m_frameGenerator)
+void DeferredImageDecoder::ActivateLazyDecoding() {
+  if (frame_generator_)
     return;
 
-  m_size = m_actualDecoder->size();
-  m_hasHotSpot = m_actualDecoder->hotSpot(m_hotSpot);
-  m_filenameExtension = m_actualDecoder->filenameExtension();
+  size_ = actual_decoder_->size();
+  has_hot_spot_ = actual_decoder_->HotSpot(hot_spot_);
+  filename_extension_ = actual_decoder_->FilenameExtension();
   // JPEG images support YUV decoding; other decoders do not. (WebP could in the
   // future.)
-  m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
-                   (m_filenameExtension == "jpg");
-  m_hasEmbeddedColorSpace = m_actualDecoder->hasEmbeddedColorSpace();
-  m_colorSpaceForSkImages = m_actualDecoder->colorSpaceForSkImages();
+  can_yuv_decode_ = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
+                    (filename_extension_ == "jpg");
+  has_embedded_color_space_ = actual_decoder_->HasEmbeddedColorSpace();
+  color_space_for_sk_images_ = actual_decoder_->ColorSpaceForSkImages();
 
-  const bool isSingleFrame =
-      m_actualDecoder->repetitionCount() == cAnimationNone ||
-      (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
-  const SkISize decodedSize =
-      SkISize::Make(m_actualDecoder->decodedSize().width(),
-                    m_actualDecoder->decodedSize().height());
-  m_frameGenerator = ImageFrameGenerator::create(
-      decodedSize, !isSingleFrame, m_actualDecoder->colorBehavior());
+  const bool is_single_frame =
+      actual_decoder_->RepetitionCount() == kCAnimationNone ||
+      (all_data_received_ && actual_decoder_->FrameCount() == 1u);
+  const SkISize decoded_size =
+      SkISize::Make(actual_decoder_->DecodedSize().Width(),
+                    actual_decoder_->DecodedSize().Height());
+  frame_generator_ = ImageFrameGenerator::Create(
+      decoded_size, !is_single_frame, actual_decoder_->GetColorBehavior());
 }
 
-void DeferredImageDecoder::prepareLazyDecodedFrames() {
-  if (!m_actualDecoder || !m_actualDecoder->isSizeAvailable())
+void DeferredImageDecoder::PrepareLazyDecodedFrames() {
+  if (!actual_decoder_ || !actual_decoder_->IsSizeAvailable())
     return;
 
-  activateLazyDecoding();
+  ActivateLazyDecoding();
 
-  const size_t previousSize = m_frameData.size();
-  m_frameData.resize(m_actualDecoder->frameCount());
+  const size_t previous_size = frame_data_.size();
+  frame_data_.Resize(actual_decoder_->FrameCount());
 
   // We have encountered a broken image file. Simply bail.
-  if (m_frameData.size() < previousSize)
+  if (frame_data_.size() < previous_size)
     return;
 
-  for (size_t i = previousSize; i < m_frameData.size(); ++i) {
-    m_frameData[i].m_duration = m_actualDecoder->frameDurationAtIndex(i);
-    m_frameData[i].m_orientation = m_actualDecoder->orientation();
-    m_frameData[i].m_isComplete = m_actualDecoder->frameIsCompleteAtIndex(i);
+  for (size_t i = previous_size; i < frame_data_.size(); ++i) {
+    frame_data_[i].duration_ = actual_decoder_->FrameDurationAtIndex(i);
+    frame_data_[i].orientation_ = actual_decoder_->Orientation();
+    frame_data_[i].is_complete_ = actual_decoder_->FrameIsCompleteAtIndex(i);
   }
 
   // The last lazy decoded frame created from previous call might be
   // incomplete so update its state.
-  if (previousSize) {
-    const size_t lastFrame = previousSize - 1;
-    m_frameData[lastFrame].m_isComplete =
-        m_actualDecoder->frameIsCompleteAtIndex(lastFrame);
+  if (previous_size) {
+    const size_t last_frame = previous_size - 1;
+    frame_data_[last_frame].is_complete_ =
+        actual_decoder_->FrameIsCompleteAtIndex(last_frame);
   }
 
-  if (m_allDataReceived) {
-    m_repetitionCount = m_actualDecoder->repetitionCount();
-    m_actualDecoder.reset();
+  if (all_data_received_) {
+    repetition_count_ = actual_decoder_->RepetitionCount();
+    actual_decoder_.reset();
     // Hold on to m_rwBuffer, which is still needed by createFrameAtIndex.
   }
 }
 
-sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
+sk_sp<SkImage> DeferredImageDecoder::CreateFrameImageAtIndex(
     size_t index,
-    bool knownToBeOpaque) {
-  const SkISize& decodedSize = m_frameGenerator->getFullSize();
-  ASSERT(decodedSize.width() > 0);
-  ASSERT(decodedSize.height() > 0);
+    bool known_to_be_opaque) {
+  const SkISize& decoded_size = frame_generator_->GetFullSize();
+  ASSERT(decoded_size.width() > 0);
+  ASSERT(decoded_size.height() > 0);
 
-  sk_sp<SkROBuffer> roBuffer(m_rwBuffer->newRBufferSnapshot());
-  RefPtr<SegmentReader> segmentReader =
-      SegmentReader::createFromSkROBuffer(std::move(roBuffer));
+  sk_sp<SkROBuffer> ro_buffer(rw_buffer_->newRBufferSnapshot());
+  RefPtr<SegmentReader> segment_reader =
+      SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
 
   SkImageInfo info = SkImageInfo::MakeN32(
-      decodedSize.width(), decodedSize.height(),
-      knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
-      m_colorSpaceForSkImages);
+      decoded_size.width(), decoded_size.height(),
+      known_to_be_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
+      color_space_for_sk_images_);
 
-  auto generator = WTF::makeUnique<DecodingImageGenerator>(
-      m_frameGenerator, info, std::move(segmentReader), m_allDataReceived,
-      index, m_frameData[index].m_uniqueID);
-  generator->setCanYUVDecode(m_canYUVDecode);
+  auto generator = WTF::MakeUnique<DecodingImageGenerator>(
+      frame_generator_, info, std::move(segment_reader), all_data_received_,
+      index, frame_data_[index].unique_id_);
+  generator->SetCanYUVDecode(can_yuv_decode_);
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(std::move(generator));
   if (!image)
     return nullptr;
@@ -339,22 +339,22 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
   // We can consider decoded bitmap constant and reuse uniqueID only after all
   // data is received.  We reuse it also for multiframe images when image data
   // is partially received but the frame data is fully received.
-  if (m_allDataReceived || m_frameData[index].m_isComplete) {
-    DCHECK(m_frameData[index].m_uniqueID ==
+  if (all_data_received_ || frame_data_[index].is_complete_) {
+    DCHECK(frame_data_[index].unique_id_ ==
                DecodingImageGenerator::kNeedNewImageUniqueID ||
-           m_frameData[index].m_uniqueID == image->uniqueID());
-    m_frameData[index].m_uniqueID = image->uniqueID();
+           frame_data_[index].unique_id_ == image->uniqueID());
+    frame_data_[index].unique_id_ = image->uniqueID();
   }
 
   return image;
 }
 
-bool DeferredImageDecoder::hotSpot(IntPoint& hotSpot) const {
-  if (m_actualDecoder)
-    return m_actualDecoder->hotSpot(hotSpot);
-  if (m_hasHotSpot)
-    hotSpot = m_hotSpot;
-  return m_hasHotSpot;
+bool DeferredImageDecoder::HotSpot(IntPoint& hot_spot) const {
+  if (actual_decoder_)
+    return actual_decoder_->HotSpot(hot_spot);
+  if (has_hot_spot_)
+    hot_spot = hot_spot_;
+  return has_hot_spot_;
 }
 
 }  // namespace blink
@@ -364,7 +364,7 @@ template <>
 struct VectorTraits<blink::DeferredFrameData>
     : public SimpleClassVectorTraits<blink::DeferredFrameData> {
   STATIC_ONLY(VectorTraits);
-  static const bool canInitializeWithMemset =
+  static const bool kCanInitializeWithMemset =
       false;  // Not all DeferredFrameData members initialize to 0.
 };
 }

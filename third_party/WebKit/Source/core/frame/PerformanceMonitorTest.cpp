@@ -18,118 +18,120 @@ class PerformanceMonitorTest : public ::testing::Test {
  protected:
   void SetUp() override;
   void TearDown() override;
-  LocalFrame* frame() const { return m_pageHolder->document().frame(); }
-  ExecutionContext* executionContext() const {
-    return &m_pageHolder->document();
+  LocalFrame* GetFrame() const {
+    return page_holder_->GetDocument().GetFrame();
   }
-  LocalFrame* anotherFrame() const {
-    return m_anotherPageHolder->document().frame();
+  ExecutionContext* GetExecutionContext() const {
+    return &page_holder_->GetDocument();
   }
-  ExecutionContext* anotherExecutionContext() const {
-    return &m_anotherPageHolder->document();
+  LocalFrame* AnotherFrame() const {
+    return another_page_holder_->GetDocument().GetFrame();
+  }
+  ExecutionContext* AnotherExecutionContext() const {
+    return &another_page_holder_->GetDocument();
   }
 
-  void willExecuteScript(ExecutionContext* executionContext) {
-    m_monitor->willExecuteScript(executionContext);
+  void WillExecuteScript(ExecutionContext* execution_context) {
+    monitor_->WillExecuteScript(execution_context);
   }
 
   // scheduler::TaskTimeObserver implementation
-  void willProcessTask(scheduler::TaskQueue* queue, double startTime) {
-    m_monitor->willProcessTask(queue, startTime);
+  void WillProcessTask(scheduler::TaskQueue* queue, double start_time) {
+    monitor_->WillProcessTask(queue, start_time);
   }
 
-  void didProcessTask(scheduler::TaskQueue* queue,
-                      double startTime,
-                      double endTime) {
-    m_monitor->didProcessTask(queue, startTime, endTime);
+  void DidProcessTask(scheduler::TaskQueue* queue,
+                      double start_time,
+                      double end_time) {
+    monitor_->DidProcessTask(queue, start_time, end_time);
   }
 
-  String frameContextURL();
-  int numUniqueFrameContextsSeen();
+  String FrameContextURL();
+  int NumUniqueFrameContextsSeen();
 
-  Persistent<PerformanceMonitor> m_monitor;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
-  std::unique_ptr<DummyPageHolder> m_anotherPageHolder;
+  Persistent<PerformanceMonitor> monitor_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
+  std::unique_ptr<DummyPageHolder> another_page_holder_;
 };
 
 void PerformanceMonitorTest::SetUp() {
-  m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
-  m_pageHolder->document().setURL(KURL(KURL(), "https://example.com/foo"));
-  m_monitor = new PerformanceMonitor(frame());
+  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  page_holder_->GetDocument().SetURL(KURL(KURL(), "https://example.com/foo"));
+  monitor_ = new PerformanceMonitor(GetFrame());
 
   // Create another dummy page holder and pretend this is the iframe.
-  m_anotherPageHolder = DummyPageHolder::create(IntSize(400, 300));
-  m_anotherPageHolder->document().setURL(
+  another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
+  another_page_holder_->GetDocument().SetURL(
       KURL(KURL(), "https://iframed.com/bar"));
 }
 
 void PerformanceMonitorTest::TearDown() {
-  m_monitor->shutdown();
+  monitor_->Shutdown();
 }
 
-String PerformanceMonitorTest::frameContextURL() {
+String PerformanceMonitorTest::FrameContextURL() {
   // This is reported only if there is a single frameContext URL.
-  if (m_monitor->m_taskHasMultipleContexts)
+  if (monitor_->task_has_multiple_contexts_)
     return "";
-  Frame* frame = toDocument(m_monitor->m_taskExecutionContext)->frame();
-  return toLocalFrame(frame)->document()->location()->href();
+  Frame* frame = ToDocument(monitor_->task_execution_context_)->GetFrame();
+  return ToLocalFrame(frame)->GetDocument()->location()->href();
 }
 
-int PerformanceMonitorTest::numUniqueFrameContextsSeen() {
-  if (!m_monitor->m_taskExecutionContext)
+int PerformanceMonitorTest::NumUniqueFrameContextsSeen() {
+  if (!monitor_->task_execution_context_)
     return 0;
-  if (!m_monitor->m_taskHasMultipleContexts)
+  if (!monitor_->task_has_multiple_contexts_)
     return 1;
   return 2;
 }
 
 TEST_F(PerformanceMonitorTest, SingleScriptInTask) {
-  willProcessTask(nullptr, 3719349.445172);
-  EXPECT_EQ(0, numUniqueFrameContextsSeen());
-  willExecuteScript(executionContext());
-  EXPECT_EQ(1, numUniqueFrameContextsSeen());
-  didProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
-  EXPECT_EQ(1, numUniqueFrameContextsSeen());
-  EXPECT_EQ("https://example.com/foo", frameContextURL());
+  WillProcessTask(nullptr, 3719349.445172);
+  EXPECT_EQ(0, NumUniqueFrameContextsSeen());
+  WillExecuteScript(GetExecutionContext());
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  DidProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  EXPECT_EQ("https://example.com/foo", FrameContextURL());
 }
 
 TEST_F(PerformanceMonitorTest, MultipleScriptsInTask_SingleContext) {
-  willProcessTask(nullptr, 3719349.445172);
-  EXPECT_EQ(0, numUniqueFrameContextsSeen());
-  willExecuteScript(executionContext());
-  EXPECT_EQ(1, numUniqueFrameContextsSeen());
-  EXPECT_EQ("https://example.com/foo", frameContextURL());
+  WillProcessTask(nullptr, 3719349.445172);
+  EXPECT_EQ(0, NumUniqueFrameContextsSeen());
+  WillExecuteScript(GetExecutionContext());
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  EXPECT_EQ("https://example.com/foo", FrameContextURL());
 
-  willExecuteScript(executionContext());
-  EXPECT_EQ(1, numUniqueFrameContextsSeen());
-  didProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
-  EXPECT_EQ(1, numUniqueFrameContextsSeen());
-  EXPECT_EQ("https://example.com/foo", frameContextURL());
+  WillExecuteScript(GetExecutionContext());
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  DidProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  EXPECT_EQ("https://example.com/foo", FrameContextURL());
 }
 
 TEST_F(PerformanceMonitorTest, MultipleScriptsInTask_MultipleContexts) {
-  willProcessTask(nullptr, 3719349.445172);
-  EXPECT_EQ(0, numUniqueFrameContextsSeen());
-  willExecuteScript(executionContext());
-  EXPECT_EQ(1, numUniqueFrameContextsSeen());
-  EXPECT_EQ("https://example.com/foo", frameContextURL());
+  WillProcessTask(nullptr, 3719349.445172);
+  EXPECT_EQ(0, NumUniqueFrameContextsSeen());
+  WillExecuteScript(GetExecutionContext());
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  EXPECT_EQ("https://example.com/foo", FrameContextURL());
 
-  willExecuteScript(anotherExecutionContext());
-  EXPECT_EQ(2, numUniqueFrameContextsSeen());
-  didProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
-  EXPECT_EQ(2, numUniqueFrameContextsSeen());
-  EXPECT_EQ("", frameContextURL());
+  WillExecuteScript(AnotherExecutionContext());
+  EXPECT_EQ(2, NumUniqueFrameContextsSeen());
+  DidProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
+  EXPECT_EQ(2, NumUniqueFrameContextsSeen());
+  EXPECT_EQ("", FrameContextURL());
 }
 
 TEST_F(PerformanceMonitorTest, NoScriptInLongTask) {
-  willProcessTask(nullptr, 3719349.445172);
-  willExecuteScript(executionContext());
-  didProcessTask(nullptr, 3719349.445172, 3719349.445182);
+  WillProcessTask(nullptr, 3719349.445172);
+  WillExecuteScript(GetExecutionContext());
+  DidProcessTask(nullptr, 3719349.445172, 3719349.445182);
 
-  willProcessTask(nullptr, 3719349.445172);
-  didProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
+  WillProcessTask(nullptr, 3719349.445172);
+  DidProcessTask(nullptr, 3719349.445172, 3719349.5561923);  // Long task
   // Without presence of Script, FrameContext URL is not available
-  EXPECT_EQ(0, numUniqueFrameContextsSeen());
+  EXPECT_EQ(0, NumUniqueFrameContextsSeen());
 }
 
 }  // namespace blink

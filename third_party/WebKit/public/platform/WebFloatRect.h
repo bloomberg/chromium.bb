@@ -49,7 +49,7 @@ struct WebFloatRect {
   float width;
   float height;
 
-  bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool IsEmpty() const { return width <= 0 || height <= 0; }
 
   WebFloatRect() : x(0), y(0), width(0), height(0) {}
 
@@ -58,13 +58,13 @@ struct WebFloatRect {
 
 #if INSIDE_BLINK
   WebFloatRect(const FloatRect& r)
-      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
+      : x(r.X()), y(r.Y()), width(r.Width()), height(r.Height()) {}
 
   WebFloatRect& operator=(const FloatRect& r) {
-    x = r.x();
-    y = r.y();
-    width = r.width();
-    height = r.height();
+    x = r.X();
+    y = r.Y();
+    width = r.Width();
+    height = r.Height();
     return *this;
   }
 

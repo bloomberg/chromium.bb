@@ -43,20 +43,20 @@ void V8MessageChannel::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
 
-  ExecutionContext* context = currentExecutionContext(isolate);
-  MessageChannel* channel = MessageChannel::create(context);
+  ExecutionContext* context = CurrentExecutionContext(isolate);
+  MessageChannel* channel = MessageChannel::Create(context);
 
   v8::Local<v8::Object> wrapper = info.Holder();
 
   // Create references from the MessageChannel wrapper to the two
   // MessagePort wrappers to make sure that the MessagePort wrappers
   // stay alive as long as the MessageChannel wrapper is around.
-  V8PrivateProperty::getMessageChannelPort1(isolate).set(
+  V8PrivateProperty::GetMessageChannelPort1(isolate).Set(
       wrapper, ToV8(channel->port1(), wrapper, isolate));
-  V8PrivateProperty::getMessageChannelPort2(isolate).set(
+  V8PrivateProperty::GetMessageChannelPort2(isolate).Set(
       wrapper, ToV8(channel->port2(), wrapper, isolate));
 
-  v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(
+  V8SetReturnValue(info, V8DOMWrapper::AssociateObjectWithWrapper(
                              isolate, channel, &wrapperTypeInfo, wrapper));
 }
 

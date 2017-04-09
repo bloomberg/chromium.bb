@@ -26,7 +26,7 @@ class ScreenOrientationDispatcher final
   WTF_MAKE_NONCOPYABLE(ScreenOrientationDispatcher);
 
  public:
-  static ScreenOrientationDispatcher& instance();
+  static ScreenOrientationDispatcher& Instance();
 
   ~ScreenOrientationDispatcher();
 
@@ -36,10 +36,10 @@ class ScreenOrientationDispatcher final
   ScreenOrientationDispatcher();
 
   // Inherited from PlatformEventDispatcher.
-  void startListening() override;
-  void stopListening() override;
+  void StartListening() override;
+  void StopListening() override;
 
-  device::mojom::blink::ScreenOrientationListenerPtr m_listener;
+  device::mojom::blink::ScreenOrientationListenerPtr listener_;
 };
 
 }  // namespace blink

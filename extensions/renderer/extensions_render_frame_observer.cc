@@ -102,7 +102,7 @@ void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
 
   SkColor color =
       deemphasized ? SkColorSetARGB(178, 0, 0, 0) : SK_ColorTRANSPARENT;
-  render_frame()->GetRenderView()->GetWebView()->setPageOverlayColor(color);
+  render_frame()->GetRenderView()->GetWebView()->SetPageOverlayColor(color);
 }
 
 void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(

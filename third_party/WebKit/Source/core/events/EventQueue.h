@@ -40,11 +40,11 @@ class CORE_EXPORT EventQueue : public GarbageCollectedFinalized<EventQueue> {
  public:
   virtual ~EventQueue() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-  virtual bool enqueueEvent(Event*) = 0;
-  virtual bool cancelEvent(Event*) = 0;
+  virtual bool EnqueueEvent(Event*) = 0;
+  virtual bool CancelEvent(Event*) = 0;
   // The accumulated and all the future events will be discarded, no events will
   // be dispatched anymore.
-  virtual void close() = 0;
+  virtual void Close() = 0;
 };
 
 }  // namespace blink

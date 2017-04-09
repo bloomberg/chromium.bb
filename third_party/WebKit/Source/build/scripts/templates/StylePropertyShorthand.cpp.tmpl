@@ -63,7 +63,7 @@ void getMatchingShorthandsForLonghand(
   {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {
       {% for shorthand in shorthands %}
-      result->uncheckedAppend({{shorthand.lower_camel_name}}Shorthand());
+      result->UncheckedAppend({{shorthand.lower_camel_name}}Shorthand());
       {% endfor %}
       break;
     }

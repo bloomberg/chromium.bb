@@ -15,41 +15,41 @@ namespace blink {
 class MockAudioProcessor final : public AudioProcessor {
  public:
   MockAudioProcessor() : AudioProcessor(48000, 2) {}
-  void initialize() override { m_initialized = true; }
-  void uninitialize() override { m_initialized = false; }
-  void process(const AudioBus*, AudioBus*, size_t) override {}
-  void reset() override {}
-  void setNumberOfChannels(unsigned) override {}
-  unsigned numberOfChannels() const override { return m_numberOfChannels; }
-  double tailTime() const override { return 0; }
-  double latencyTime() const override { return 0; }
+  void Initialize() override { initialized_ = true; }
+  void Uninitialize() override { initialized_ = false; }
+  void Process(const AudioBus*, AudioBus*, size_t) override {}
+  void Reset() override {}
+  void SetNumberOfChannels(unsigned) override {}
+  unsigned NumberOfChannels() const override { return number_of_channels_; }
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
 };
 
 class MockProcessorNode final : public AudioNode {
  public:
   MockProcessorNode(BaseAudioContext& context) : AudioNode(context) {
-    setHandler(AudioBasicProcessorHandler::create(
-        AudioHandler::NodeTypeWaveShaper, *this, 48000,
-        WTF::makeUnique<MockAudioProcessor>()));
-    handler().initialize();
+    SetHandler(AudioBasicProcessorHandler::Create(
+        AudioHandler::kNodeTypeWaveShaper, *this, 48000,
+        WTF::MakeUnique<MockAudioProcessor>()));
+    Handler().Initialize();
   }
 };
 
 TEST(AudioBasicProcessorHandlerTest, ProcessorFinalization) {
-  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::create();
-  OfflineAudioContext* context = OfflineAudioContext::create(
-      &page->document(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::Create();
+  OfflineAudioContext* context = OfflineAudioContext::Create(
+      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   MockProcessorNode* node = new MockProcessorNode(*context);
   AudioBasicProcessorHandler& handler =
-      static_cast<AudioBasicProcessorHandler&>(node->handler());
-  EXPECT_TRUE(handler.processor());
-  EXPECT_TRUE(handler.processor()->isInitialized());
+      static_cast<AudioBasicProcessorHandler&>(node->Handler());
+  EXPECT_TRUE(handler.Processor());
+  EXPECT_TRUE(handler.Processor()->IsInitialized());
   BaseAudioContext::AutoLocker locker(context);
-  handler.dispose();
+  handler.Dispose();
   // The AudioProcessor should live after dispose() and should not be
   // finalized because an audio thread is using it.
-  EXPECT_TRUE(handler.processor());
-  EXPECT_TRUE(handler.processor()->isInitialized());
+  EXPECT_TRUE(handler.Processor());
+  EXPECT_TRUE(handler.Processor()->IsInitialized());
 }
 
 }  // namespace blink

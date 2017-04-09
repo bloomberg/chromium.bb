@@ -10,9 +10,9 @@ EditingState::EditingState() {}
 
 EditingState::~EditingState() {}
 
-void EditingState::abort() {
-  DCHECK(!m_isAborted);
-  m_isAborted = true;
+void EditingState::Abort() {
+  DCHECK(!is_aborted_);
+  is_aborted_ = true;
 }
 
 // ---
@@ -24,10 +24,10 @@ IgnorableEditingAbortState::~IgnorableEditingAbortState() {}
 // ---
 
 NoEditingAbortChecker::NoEditingAbortChecker(const char* file, int line)
-    : m_file(file), m_line(line) {}
+    : file_(file), line_(line) {}
 
 NoEditingAbortChecker::~NoEditingAbortChecker() {
-  DCHECK_AT(!m_editingState.isAborted(), m_file, m_line)
+  DCHECK_AT(!editing_state_.IsAborted(), file_, line_)
       << "The operation should not have been aborted.";
 }
 

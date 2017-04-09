@@ -26,26 +26,26 @@
 namespace blink {
 
 SourceGraphic::SourceGraphic(Filter* filter) : FilterEffect(filter) {
-  setOperatingColorSpace(ColorSpaceDeviceRGB);
+  SetOperatingColorSpace(kColorSpaceDeviceRGB);
 }
 
 SourceGraphic::~SourceGraphic() {}
 
-SourceGraphic* SourceGraphic::create(Filter* filter) {
+SourceGraphic* SourceGraphic::Create(Filter* filter) {
   return new SourceGraphic(filter);
 }
 
-FloatRect SourceGraphic::mapInputs(const FloatRect& rect) const {
-  return !m_sourceRect.isEmpty() ? m_sourceRect : rect;
+FloatRect SourceGraphic::MapInputs(const FloatRect& rect) const {
+  return !source_rect_.IsEmpty() ? source_rect_ : rect;
 }
 
-void SourceGraphic::setSourceRect(const IntRect& sourceRect) {
-  m_sourceRect = sourceRect;
+void SourceGraphic::SetSourceRect(const IntRect& source_rect) {
+  source_rect_ = source_rect;
 }
 
-TextStream& SourceGraphic::externalRepresentation(TextStream& ts,
+TextStream& SourceGraphic::ExternalRepresentation(TextStream& ts,
                                                   int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[SourceGraphic]\n";
   return ts;
 }

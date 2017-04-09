@@ -12,20 +12,20 @@ namespace WTF {
 
 TEST(TextCodecICUTest, IgnorableCodePoint) {
   TextEncoding iso2022jp("iso-2022-jp");
-  std::unique_ptr<TextCodec> codec = TextCodecICU::create(iso2022jp, nullptr);
+  std::unique_ptr<TextCodec> codec = TextCodecICU::Create(iso2022jp, nullptr);
   Vector<UChar> source;
   source.push_back('a');
-  source.push_back(zeroWidthJoinerCharacter);
+  source.push_back(kZeroWidthJoinerCharacter);
   CString encoded =
-      codec->encode(source.data(), source.size(), EntitiesForUnencodables);
-  EXPECT_STREQ("a&#8205;", encoded.data());
+      codec->Encode(source.Data(), source.size(), kEntitiesForUnencodables);
+  EXPECT_STREQ("a&#8205;", encoded.Data());
 }
 
 TEST(TextCodecICUTest, UTF32AndQuestionMarks) {
   Vector<String> aliases;
   Vector<CString> results;
 
-  const UChar poo[] = {0xd83d, 0xdca9};  // U+1F4A9 PILE OF POO
+  const UChar kPoo[] = {0xd83d, 0xdca9};  // U+1F4A9 PILE OF POO
 
   aliases.push_back("UTF-32");
   results.push_back("\xFF\xFE\x00\x00\xA9\xF4\x01\x00");
@@ -42,16 +42,16 @@ TEST(TextCodecICUTest, UTF32AndQuestionMarks) {
     const CString& expected = results[i];
 
     TextEncoding encoding(alias);
-    std::unique_ptr<TextCodec> codec = TextCodecICU::create(encoding, nullptr);
+    std::unique_ptr<TextCodec> codec = TextCodecICU::Create(encoding, nullptr);
     {
       const UChar* data = nullptr;
-      CString encoded = codec->encode(data, 0, QuestionMarksForUnencodables);
-      EXPECT_STREQ("", encoded.data());
+      CString encoded = codec->Encode(data, 0, kQuestionMarksForUnencodables);
+      EXPECT_STREQ("", encoded.Data());
     }
     {
-      CString encoded = codec->encode(poo, WTF_ARRAY_LENGTH(poo),
-                                      QuestionMarksForUnencodables);
-      EXPECT_STREQ(expected.data(), encoded.data());
+      CString encoded = codec->Encode(kPoo, WTF_ARRAY_LENGTH(kPoo),
+                                      kQuestionMarksForUnencodables);
+      EXPECT_STREQ(expected.Data(), encoded.Data());
     }
   }
 }

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-const int SQLAuthAllow = SQLITE_OK;
-const int SQLAuthDeny = SQLITE_DENY;
+const int kSQLAuthAllow = SQLITE_OK;
+const int kSQLAuthDeny = SQLITE_DENY;
 
 }  // namespace blink

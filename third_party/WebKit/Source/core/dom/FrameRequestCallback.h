@@ -40,11 +40,11 @@ class FrameRequestCallback
  public:
   virtual ~FrameRequestCallback() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-  virtual void handleEvent(double highResTimeMs) = 0;
+  virtual void handleEvent(double high_res_time_ms) = 0;
 
-  int m_id;
-  bool m_cancelled;
-  bool m_useLegacyTimeBase;
+  int id_;
+  bool cancelled_;
+  bool use_legacy_time_base_;
 };
 
 }  // namespace blink

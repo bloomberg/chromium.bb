@@ -10,76 +10,77 @@
 
 namespace blink {
 
-const char ImageEncoderUtils::DefaultMimeType[] = "image/png";
+const char ImageEncoderUtils::kDefaultMimeType[] = "image/png";
 
 // This enum is used in a UMA histogram; the values should not be changed.
 enum RequestedImageMimeType {
-  RequestedImageMimeTypePng = 0,
-  RequestedImageMimeTypeJpeg = 1,
-  RequestedImageMimeTypeWebp = 2,
-  RequestedImageMimeTypeGif = 3,
-  RequestedImageMimeTypeBmp = 4,
-  RequestedImageMimeTypeIco = 5,
-  RequestedImageMimeTypeTiff = 6,
-  RequestedImageMimeTypeUnknown = 7,
-  NumberOfRequestedImageMimeTypes
+  kRequestedImageMimeTypePng = 0,
+  kRequestedImageMimeTypeJpeg = 1,
+  kRequestedImageMimeTypeWebp = 2,
+  kRequestedImageMimeTypeGif = 3,
+  kRequestedImageMimeTypeBmp = 4,
+  kRequestedImageMimeTypeIco = 5,
+  kRequestedImageMimeTypeTiff = 6,
+  kRequestedImageMimeTypeUnknown = 7,
+  kNumberOfRequestedImageMimeTypes
 };
 
-String ImageEncoderUtils::toEncodingMimeType(const String& mimeType,
-                                             const EncodeReason encodeReason) {
-  String lowercaseMimeType = mimeType.lower();
+String ImageEncoderUtils::ToEncodingMimeType(const String& mime_type,
+                                             const EncodeReason encode_reason) {
+  String lowercase_mime_type = mime_type.Lower();
 
-  if (mimeType.isNull())
-    lowercaseMimeType = DefaultMimeType;
+  if (mime_type.IsNull())
+    lowercase_mime_type = kDefaultMimeType;
 
-  RequestedImageMimeType imageFormat;
-  if (lowercaseMimeType == "image/png") {
-    imageFormat = RequestedImageMimeTypePng;
-  } else if (lowercaseMimeType == "image/jpeg") {
-    imageFormat = RequestedImageMimeTypeJpeg;
-  } else if (lowercaseMimeType == "image/webp") {
-    imageFormat = RequestedImageMimeTypeWebp;
-  } else if (lowercaseMimeType == "image/gif") {
-    imageFormat = RequestedImageMimeTypeGif;
-  } else if (lowercaseMimeType == "image/bmp" ||
-             lowercaseMimeType == "image/x-windows-bmp") {
-    imageFormat = RequestedImageMimeTypeBmp;
-  } else if (lowercaseMimeType == "image/x-icon") {
-    imageFormat = RequestedImageMimeTypeIco;
-  } else if (lowercaseMimeType == "image/tiff" ||
-             lowercaseMimeType == "image/x-tiff") {
-    imageFormat = RequestedImageMimeTypeTiff;
+  RequestedImageMimeType image_format;
+  if (lowercase_mime_type == "image/png") {
+    image_format = kRequestedImageMimeTypePng;
+  } else if (lowercase_mime_type == "image/jpeg") {
+    image_format = kRequestedImageMimeTypeJpeg;
+  } else if (lowercase_mime_type == "image/webp") {
+    image_format = kRequestedImageMimeTypeWebp;
+  } else if (lowercase_mime_type == "image/gif") {
+    image_format = kRequestedImageMimeTypeGif;
+  } else if (lowercase_mime_type == "image/bmp" ||
+             lowercase_mime_type == "image/x-windows-bmp") {
+    image_format = kRequestedImageMimeTypeBmp;
+  } else if (lowercase_mime_type == "image/x-icon") {
+    image_format = kRequestedImageMimeTypeIco;
+  } else if (lowercase_mime_type == "image/tiff" ||
+             lowercase_mime_type == "image/x-tiff") {
+    image_format = kRequestedImageMimeTypeTiff;
   } else {
-    imageFormat = RequestedImageMimeTypeUnknown;
+    image_format = kRequestedImageMimeTypeUnknown;
   }
 
-  if (encodeReason == EncodeReasonToDataURL) {
+  if (encode_reason == kEncodeReasonToDataURL) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, toDataURLImageFormatHistogram,
+        EnumerationHistogram, to_data_url_image_format_histogram,
         new EnumerationHistogram("Canvas.RequestedImageMimeTypes_toDataURL",
-                                 NumberOfRequestedImageMimeTypes));
-    toDataURLImageFormatHistogram.count(imageFormat);
-  } else if (encodeReason == EncodeReasonToBlobCallback) {
+                                 kNumberOfRequestedImageMimeTypes));
+    to_data_url_image_format_histogram.Count(image_format);
+  } else if (encode_reason == kEncodeReasonToBlobCallback) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, toBlobCallbackImageFormatHistogram,
+        EnumerationHistogram, to_blob_callback_image_format_histogram,
         new EnumerationHistogram(
             "Canvas.RequestedImageMimeTypes_toBlobCallback",
-            NumberOfRequestedImageMimeTypes));
-    toBlobCallbackImageFormatHistogram.count(imageFormat);
-  } else if (encodeReason == EncodeReasonConvertToBlobPromise) {
+            kNumberOfRequestedImageMimeTypes));
+    to_blob_callback_image_format_histogram.Count(image_format);
+  } else if (encode_reason == kEncodeReasonConvertToBlobPromise) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, convertToBlobPromiseImageFormatHistogram,
+        EnumerationHistogram, convert_to_blob_promise_image_format_histogram,
         new EnumerationHistogram(
             "Canvas.RequestedImageMimeTypes_convertToBlobPromise",
-            NumberOfRequestedImageMimeTypes));
-    convertToBlobPromiseImageFormatHistogram.count(imageFormat);
+            kNumberOfRequestedImageMimeTypes));
+    convert_to_blob_promise_image_format_histogram.Count(image_format);
   }
 
   // FIXME: Make isSupportedImageMIMETypeForEncoding threadsafe (to allow this
   // method to be used on a worker thread).
-  if (!MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(lowercaseMimeType))
-    lowercaseMimeType = DefaultMimeType;
-  return lowercaseMimeType;
+  if (!MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(
+          lowercase_mime_type))
+    lowercase_mime_type = kDefaultMimeType;
+  return lowercase_mime_type;
 }
 
 }  // namespace blink

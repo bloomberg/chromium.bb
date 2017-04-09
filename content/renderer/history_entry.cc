@@ -73,19 +73,19 @@ HistoryEntry::HistoryNode::CloneAndReplace(
   // the latter may not accurately reflect which URL is currently committed in
   // the frame.  See https://crbug.com/612713#c12.
   const WebHistoryItem& current_item = current_frame->current_history_item();
-  if (is_target_frame && clone_children_of_target && !current_item.isNull()) {
+  if (is_target_frame && clone_children_of_target && !current_item.IsNull()) {
     // TODO(creis): Setting the document sequence number here appears to be
     // unnecessary.  Remove this block if this DCHECK never fires.
-    DCHECK_EQ(current_item.documentSequenceNumber(),
-              new_history_node->item().documentSequenceNumber());
+    DCHECK_EQ(current_item.DocumentSequenceNumber(),
+              new_history_node->item().DocumentSequenceNumber());
   }
 
   // TODO(creis): This needs to be updated to handle HistoryEntry in
   // subframe processes, where the main frame isn't guaranteed to be in the
   // same process.
   if (current_frame && (clone_children_of_target || !is_target_frame)) {
-    for (WebFrame* child = current_frame->GetWebFrame()->firstChild(); child;
-         child = child->nextSibling()) {
+    for (WebFrame* child = current_frame->GetWebFrame()->FirstChild(); child;
+         child = child->NextSibling()) {
       RenderFrameImpl* child_render_frame =
           RenderFrameImpl::FromWebFrame(child);
       // TODO(creis): A child frame may be a RenderFrameProxy.  We should still
@@ -107,21 +107,21 @@ HistoryEntry::HistoryNode::CloneAndReplace(
 }
 
 void HistoryEntry::HistoryNode::set_item(const WebHistoryItem& item) {
-  DCHECK(!item.isNull());
-  entry_->unique_names_to_items_[item.target().utf8()] = this;
-  unique_names_.push_back(item.target().utf8());
+  DCHECK(!item.IsNull());
+  entry_->unique_names_to_items_[item.Target().Utf8()] = this;
+  unique_names_.push_back(item.Target().Utf8());
   item_ = item;
 }
 
 HistoryEntry::HistoryNode::HistoryNode(const base::WeakPtr<HistoryEntry>& entry,
                                        const WebHistoryItem& item)
     : entry_(entry) {
-  if (!item.isNull())
+  if (!item.IsNull())
     set_item(item);
 }
 
 HistoryEntry::HistoryNode::~HistoryNode() {
-  if (!entry_ || item_.isNull())
+  if (!entry_ || item_.IsNull())
     return;
 
   for (const std::string& name : unique_names_) {
@@ -172,7 +172,7 @@ HistoryEntry* HistoryEntry::CloneAndReplace(const WebHistoryItem& new_item,
 
 HistoryEntry::HistoryNode* HistoryEntry::GetHistoryNodeForFrame(
     RenderFrameImpl* frame) {
-  if (!frame->GetWebFrame()->parent())
+  if (!frame->GetWebFrame()->Parent())
     return root_history_node();
   return unique_names_to_items_[frame->unique_name()];
 }

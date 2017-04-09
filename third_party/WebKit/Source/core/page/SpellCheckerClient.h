@@ -38,11 +38,11 @@ class SpellCheckerClient {
  public:
   virtual ~SpellCheckerClient() {}
 
-  virtual bool isSpellCheckingEnabled() = 0;
-  virtual void toggleSpellCheckingEnabled() = 0;
-  virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) = 0;
-  virtual void showSpellingUI(bool show) = 0;
-  virtual bool spellingUIIsShowing() = 0;
+  virtual bool IsSpellCheckingEnabled() = 0;
+  virtual void ToggleSpellCheckingEnabled() = 0;
+  virtual void UpdateSpellingUIWithMisspelledWord(const WTF::String&) = 0;
+  virtual void ShowSpellingUI(bool show) = 0;
+  virtual bool SpellingUIIsShowing() = 0;
 };
 
 }  // namespace blink

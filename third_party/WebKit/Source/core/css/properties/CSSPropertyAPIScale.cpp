@@ -15,22 +15,22 @@ const CSSValue* CSSPropertyAPIScale::parseSingleValue(
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
   CSSValue* scale =
-      CSSPropertyParserHelpers::consumeNumber(range, ValueRangeAll);
+      CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
   if (!scale)
     return nullptr;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*scale);
-  scale = CSSPropertyParserHelpers::consumeNumber(range, ValueRangeAll);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*scale);
+  scale = CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
   if (scale) {
-    list->append(*scale);
-    scale = CSSPropertyParserHelpers::consumeNumber(range, ValueRangeAll);
+    list->Append(*scale);
+    scale = CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
     if (scale)
-      list->append(*scale);
+      list->Append(*scale);
   }
 
   return list;

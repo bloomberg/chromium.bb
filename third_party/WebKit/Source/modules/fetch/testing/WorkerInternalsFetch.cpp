@@ -14,11 +14,11 @@ Vector<String> WorkerInternalsFetch::getInternalResponseURLList(
     Response* response) {
   if (!response)
     return Vector<String>();
-  Vector<String> urlList;
-  urlList.reserveCapacity(response->internalURLList().size());
-  for (const auto& url : response->internalURLList())
-    urlList.push_back(url);
-  return urlList;
+  Vector<String> url_list;
+  url_list.ReserveCapacity(response->InternalURLList().size());
+  for (const auto& url : response->InternalURLList())
+    url_list.push_back(url);
+  return url_list;
 }
 
 }  // namespace blink

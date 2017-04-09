@@ -29,10 +29,10 @@ inline SVGFEDistantLightElement::SVGFEDistantLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEDistantLightElement)
 
-PassRefPtr<LightSource> SVGFEDistantLightElement::lightSource(
+PassRefPtr<LightSource> SVGFEDistantLightElement::GetLightSource(
     Filter* filter) const {
-  return DistantLightSource::create(azimuth()->currentValue()->value(),
-                                    elevation()->currentValue()->value());
+  return DistantLightSource::Create(azimuth()->CurrentValue()->Value(),
+                                    elevation()->CurrentValue()->Value());
 }
 
 }  // namespace blink

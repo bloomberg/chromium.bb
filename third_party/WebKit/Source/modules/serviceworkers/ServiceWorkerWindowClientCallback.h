@@ -14,13 +14,13 @@ class ScriptPromiseResolver;
 class NavigateClientCallback : public WebServiceWorkerClientCallbacks {
  public:
   explicit NavigateClientCallback(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
 
-  void onSuccess(std::unique_ptr<WebServiceWorkerClientInfo>) override;
-  void onError(const WebServiceWorkerError&) override;
+  void OnSuccess(std::unique_ptr<WebServiceWorkerClientInfo>) override;
+  void OnError(const WebServiceWorkerError&) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
   WTF_MAKE_NONCOPYABLE(NavigateClientCallback);
 };
 

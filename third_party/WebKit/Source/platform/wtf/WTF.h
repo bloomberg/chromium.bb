@@ -40,15 +40,15 @@ typedef void MainThreadFunction(void*);
 
 // This function must be called exactly once from the main thread before using
 // anything else in WTF.
-WTF_EXPORT void initialize(void (*)(MainThreadFunction, void*));
-WTF_EXPORT bool isMainThread();
+WTF_EXPORT void Initialize(void (*)(MainThreadFunction, void*));
+WTF_EXPORT bool IsMainThread();
 
 namespace internal {
-void callOnMainThread(MainThreadFunction*, void* context);
+void CallOnMainThread(MainThreadFunction*, void* context);
 }  // namespace internal
 
 }  // namespace WTF
 
-using WTF::isMainThread;
+using WTF::IsMainThread;
 
 #endif  // WTF_h

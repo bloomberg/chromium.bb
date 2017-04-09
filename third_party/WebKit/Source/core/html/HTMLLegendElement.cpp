@@ -38,34 +38,34 @@ inline HTMLLegendElement::HTMLLegendElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLLegendElement)
 
-HTMLFormControlElement* HTMLLegendElement::associatedControl() {
+HTMLFormControlElement* HTMLLegendElement::AssociatedControl() {
   // Check if there's a fieldset belonging to this legend.
   HTMLFieldSetElement* fieldset =
-      Traversal<HTMLFieldSetElement>::firstAncestor(*this);
+      Traversal<HTMLFieldSetElement>::FirstAncestor(*this);
   if (!fieldset)
     return nullptr;
 
   // Find first form element inside the fieldset that is not a legend element.
   // FIXME: Should we consider tabindex?
-  return Traversal<HTMLFormControlElement>::next(*fieldset, fieldset);
+  return Traversal<HTMLFormControlElement>::Next(*fieldset, fieldset);
 }
 
 void HTMLLegendElement::focus(const FocusParams& params) {
-  document().updateStyleAndLayoutTreeForNode(this);
-  if (isFocusable()) {
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  if (IsFocusable()) {
     Element::focus(params);
     return;
   }
 
   // To match other browsers' behavior, never restore previous selection.
-  if (HTMLFormControlElement* control = associatedControl())
-    control->focus(FocusParams(SelectionBehaviorOnFocus::Reset, params.type,
-                               params.sourceCapabilities));
+  if (HTMLFormControlElement* control = AssociatedControl())
+    control->focus(FocusParams(SelectionBehaviorOnFocus::kReset, params.type,
+                               params.source_capabilities));
 }
 
-void HTMLLegendElement::accessKeyAction(bool sendMouseEvents) {
-  if (HTMLFormControlElement* control = associatedControl())
-    control->accessKeyAction(sendMouseEvents);
+void HTMLLegendElement::AccessKeyAction(bool send_mouse_events) {
+  if (HTMLFormControlElement* control = AssociatedControl())
+    control->AccessKeyAction(send_mouse_events);
 }
 
 HTMLFormElement* HTMLLegendElement::form() const {

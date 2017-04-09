@@ -50,7 +50,7 @@
 #define DEFINE_STATIC_LOCAL(Type, Name, Arguments)            \
   static WTF::StaticSingleton<Type> s_##Name(                 \
       new WTF::StaticSingleton<Type>::WrapperType Arguments); \
-  Type& Name = s_##Name.get(false)
+  Type& Name = s_##Name.Get(false)
 
 // |DEFINE_THREAD_SAFE_STATIC_LOCAL()| is the cross-thread accessible variant
 // of |DEFINE_STATIC_LOCAL()|; use it if the singleton can be accessed by
@@ -59,7 +59,7 @@
 // TODO: rename as DEFINE_CROSS_THREAD_STATIC_LOCAL() ?
 #define DEFINE_THREAD_SAFE_STATIC_LOCAL(Type, Name, Initializer) \
   static WTF::StaticSingleton<Type> s_##Name(Initializer);       \
-  Type& Name = s_##Name.get(true)
+  Type& Name = s_##Name.Get(true)
 
 namespace blink {
 template <typename T>
@@ -80,14 +80,14 @@ class StaticSingleton final {
   struct Wrapper {
     using type = T;
 
-    static T& unwrap(T* singleton) { return *singleton; }
+    static T& Unwrap(T* singleton) { return *singleton; }
   };
 
   template <typename T>
   struct Wrapper<T, true> {
     using type = blink::Persistent<T>;
 
-    static T& unwrap(blink::Persistent<T>* singleton) {
+    static T& Unwrap(blink::Persistent<T>* singleton) {
       DCHECK(singleton);
       // If this assert triggers, you're supplying an empty ("()") 'Arguments'
       // argument to DEFINE_STATIC_LOCAL() - it must be the heap object you wish
@@ -108,41 +108,41 @@ class StaticSingleton final {
   // details.
 
   explicit StaticSingleton(WrapperType* instance)
-      : m_instance(LEAK_SANITIZER_REGISTER_STATIC_LOCAL(WrapperType, instance))
+      : instance_(LEAK_SANITIZER_REGISTER_STATIC_LOCAL(WrapperType, instance))
 #if DCHECK_IS_ON()
         ,
-        m_safelyInitialized(WTF::isBeforeThreadCreated()),
-        m_thread(WTF::internal::currentThreadSyscall())
+        safely_initialized_(WTF::IsBeforeThreadCreated()),
+        thread_(WTF::internal::CurrentThreadSyscall())
 #endif
   {
   }
 
-  Type& get(bool allowCrossThreadUse) const {
+  Type& Get(bool allow_cross_thread_use) const {
 #if DCHECK_IS_ON()
-    DCHECK(isNotRacy(allowCrossThreadUse));
+    DCHECK(IsNotRacy(allow_cross_thread_use));
 #endif
-    ALLOW_UNUSED_LOCAL(allowCrossThreadUse);
-    return Wrapper<Type>::unwrap(m_instance);
+    ALLOW_UNUSED_LOCAL(allow_cross_thread_use);
+    return Wrapper<Type>::Unwrap(instance_);
   }
 
-  operator Type&() { return get(); }
+  operator Type&() { return Get(); }
 
  private:
 #if DCHECK_IS_ON()
 
-  bool isNotRacy(bool allowCrossThreadUse) const {
+  bool IsNotRacy(bool allow_cross_thread_use) const {
     // Make sure that singleton is safely initialized, or
     // keeps being called on the same thread if cross-thread
     // use is not permitted.
-    return allowCrossThreadUse || m_safelyInitialized ||
-           m_thread == WTF::internal::currentThreadSyscall();
+    return allow_cross_thread_use || safely_initialized_ ||
+           thread_ == WTF::internal::CurrentThreadSyscall();
   }
 #endif
 
-  WrapperType* m_instance;
+  WrapperType* instance_;
 #if DCHECK_IS_ON()
-  bool m_safelyInitialized;
-  ThreadIdentifier m_thread;
+  bool safely_initialized_;
+  ThreadIdentifier thread_;
 #endif
 };
 
@@ -154,7 +154,7 @@ class StaticSingleton final {
 // DEFINE_STATIC_LOCAL macro, as this macro does not lead to an extra memory
 // allocation.
 #define DEFINE_STATIC_REF(type, name, arguments) \
-  static type* name = PassRefPtr<type>(arguments).leakRef();
+  static type* name = PassRefPtr<type>(arguments).LeakRef();
 
 /*
  * The reinterpret_cast<Type1*>([pointer to Type2]) expressions - where
@@ -197,7 +197,7 @@ namespace WTF {
  * C++'s idea of a reinterpret_cast lacks sufficient cojones.
  */
 template <typename TO, typename FROM>
-inline TO bitwiseCast(FROM from) {
+inline TO BitwiseCast(FROM from) {
   static_assert(sizeof(TO) == sizeof(FROM),
                 "WTF::bitwiseCast sizeof casted types should be equal");
   union {
@@ -209,7 +209,7 @@ inline TO bitwiseCast(FROM from) {
 }
 
 template <typename To, typename From>
-inline To safeCast(From value) {
+inline To SafeCast(From value) {
   return base::checked_cast<To>(value);
 }
 
@@ -263,7 +263,7 @@ char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 
 }  // namespace WTF
 
-using WTF::bitwiseCast;
-using WTF::safeCast;
+using WTF::BitwiseCast;
+using WTF::SafeCast;
 
 #endif  // WTF_StdLibExtras_h

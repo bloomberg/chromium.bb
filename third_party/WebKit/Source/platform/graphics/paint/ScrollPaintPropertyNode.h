@@ -36,121 +36,122 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     : public RefCounted<ScrollPaintPropertyNode> {
  public:
   // This node is really a sentinel, and does not represent a real scroll.
-  static ScrollPaintPropertyNode* root();
+  static ScrollPaintPropertyNode* Root();
 
-  static PassRefPtr<ScrollPaintPropertyNode> create(
+  static PassRefPtr<ScrollPaintPropertyNode> Create(
       PassRefPtr<const ScrollPaintPropertyNode> parent,
       const IntSize& clip,
       const IntSize& bounds,
-      bool userScrollableHorizontal,
-      bool userScrollableVertical,
-      MainThreadScrollingReasons mainThreadScrollingReasons,
-      WebLayerScrollClient* scrollClient) {
-    return adoptRef(new ScrollPaintPropertyNode(
-        std::move(parent), clip, bounds, userScrollableHorizontal,
-        userScrollableVertical, mainThreadScrollingReasons, scrollClient));
+      bool user_scrollable_horizontal,
+      bool user_scrollable_vertical,
+      MainThreadScrollingReasons main_thread_scrolling_reasons,
+      WebLayerScrollClient* scroll_client) {
+    return AdoptRef(new ScrollPaintPropertyNode(
+        std::move(parent), clip, bounds, user_scrollable_horizontal,
+        user_scrollable_vertical, main_thread_scrolling_reasons,
+        scroll_client));
   }
 
-  void update(PassRefPtr<const ScrollPaintPropertyNode> parent,
+  void Update(PassRefPtr<const ScrollPaintPropertyNode> parent,
               const IntSize& clip,
               const IntSize& bounds,
-              bool userScrollableHorizontal,
-              bool userScrollableVertical,
-              MainThreadScrollingReasons mainThreadScrollingReasons,
-              WebLayerScrollClient* scrollClient) {
-    DCHECK(!isRoot());
+              bool user_scrollable_horizontal,
+              bool user_scrollable_vertical,
+              MainThreadScrollingReasons main_thread_scrolling_reasons,
+              WebLayerScrollClient* scroll_client) {
+    DCHECK(!IsRoot());
     DCHECK(parent != this);
-    m_parent = std::move(parent);
-    m_clip = clip;
-    m_bounds = bounds;
-    m_userScrollableHorizontal = userScrollableHorizontal;
-    m_userScrollableVertical = userScrollableVertical;
-    m_mainThreadScrollingReasons = mainThreadScrollingReasons;
-    m_scrollClient = scrollClient;
+    parent_ = std::move(parent);
+    clip_ = clip;
+    bounds_ = bounds;
+    user_scrollable_horizontal_ = user_scrollable_horizontal;
+    user_scrollable_vertical_ = user_scrollable_vertical;
+    main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
+    scroll_client_ = scroll_client;
   }
 
-  const ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
-  bool isRoot() const { return !m_parent; }
+  const ScrollPaintPropertyNode* Parent() const { return parent_.Get(); }
+  bool IsRoot() const { return !parent_; }
 
   // The clipped area that contains the scrolled content.
-  const IntSize& clip() const { return m_clip; }
+  const IntSize& Clip() const { return clip_; }
 
   // The bounds of the content that is scrolled within |clip|.
-  const IntSize& bounds() const { return m_bounds; }
+  const IntSize& Bounds() const { return bounds_; }
 
-  bool userScrollableHorizontal() const { return m_userScrollableHorizontal; }
-  bool userScrollableVertical() const { return m_userScrollableVertical; }
+  bool UserScrollableHorizontal() const { return user_scrollable_horizontal_; }
+  bool UserScrollableVertical() const { return user_scrollable_vertical_; }
 
   // Return reason bitfield with values from cc::MainThreadScrollingReason.
-  MainThreadScrollingReasons mainThreadScrollingReasons() const {
-    return m_mainThreadScrollingReasons;
+  MainThreadScrollingReasons GetMainThreadScrollingReasons() const {
+    return main_thread_scrolling_reasons_;
   }
 
   // Main thread scrolling reason for the threaded scrolling disabled setting.
-  bool threadedScrollingDisabled() const {
-    return m_mainThreadScrollingReasons &
+  bool ThreadedScrollingDisabled() const {
+    return main_thread_scrolling_reasons_ &
            MainThreadScrollingReason::kThreadedScrollingDisabled;
   }
 
   // Main thread scrolling reason for background attachment fixed descendants.
-  bool hasBackgroundAttachmentFixedDescendants() const {
-    return m_mainThreadScrollingReasons &
+  bool HasBackgroundAttachmentFixedDescendants() const {
+    return main_thread_scrolling_reasons_ &
            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
-  WebLayerScrollClient* scrollClient() const { return m_scrollClient; }
+  WebLayerScrollClient* ScrollClient() const { return scroll_client_; }
 
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
-  PassRefPtr<ScrollPaintPropertyNode> clone() const {
+  PassRefPtr<ScrollPaintPropertyNode> Clone() const {
     RefPtr<ScrollPaintPropertyNode> cloned =
-        adoptRef(new ScrollPaintPropertyNode(
-            m_parent, m_clip, m_bounds, m_userScrollableHorizontal,
-            m_userScrollableVertical, m_mainThreadScrollingReasons,
-            m_scrollClient));
+        AdoptRef(new ScrollPaintPropertyNode(
+            parent_, clip_, bounds_, user_scrollable_horizontal_,
+            user_scrollable_vertical_, main_thread_scrolling_reasons_,
+            scroll_client_));
     return cloned;
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    return m_parent == o.m_parent && m_clip == o.m_clip &&
-           m_bounds == o.m_bounds &&
-           m_userScrollableHorizontal == o.m_userScrollableHorizontal &&
-           m_userScrollableVertical == o.m_userScrollableVertical &&
-           m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons &&
-           m_scrollClient == o.m_scrollClient;
+    return parent_ == o.parent_ && clip_ == o.clip_ && bounds_ == o.bounds_ &&
+           user_scrollable_horizontal_ == o.user_scrollable_horizontal_ &&
+           user_scrollable_vertical_ == o.user_scrollable_vertical_ &&
+           main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
+           scroll_client_ == o.scroll_client_;
   }
 
-  String toTreeString() const;
+  String ToTreeString() const;
 #endif
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  ScrollPaintPropertyNode(PassRefPtr<const ScrollPaintPropertyNode> parent,
-                          IntSize clip,
-                          IntSize bounds,
-                          bool userScrollableHorizontal,
-                          bool userScrollableVertical,
-                          MainThreadScrollingReasons mainThreadScrollingReasons,
-                          WebLayerScrollClient* scrollClient)
-      : m_parent(std::move(parent)),
-        m_clip(clip),
-        m_bounds(bounds),
-        m_userScrollableHorizontal(userScrollableHorizontal),
-        m_userScrollableVertical(userScrollableVertical),
-        m_mainThreadScrollingReasons(mainThreadScrollingReasons),
-        m_scrollClient(scrollClient) {}
+  ScrollPaintPropertyNode(
+      PassRefPtr<const ScrollPaintPropertyNode> parent,
+      IntSize clip,
+      IntSize bounds,
+      bool user_scrollable_horizontal,
+      bool user_scrollable_vertical,
+      MainThreadScrollingReasons main_thread_scrolling_reasons,
+      WebLayerScrollClient* scroll_client)
+      : parent_(std::move(parent)),
+        clip_(clip),
+        bounds_(bounds),
+        user_scrollable_horizontal_(user_scrollable_horizontal),
+        user_scrollable_vertical_(user_scrollable_vertical),
+        main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
+        scroll_client_(scroll_client) {}
 
-  RefPtr<const ScrollPaintPropertyNode> m_parent;
-  IntSize m_clip;
-  IntSize m_bounds;
-  bool m_userScrollableHorizontal : 1;
-  bool m_userScrollableVertical : 1;
-  MainThreadScrollingReasons m_mainThreadScrollingReasons;
-  WebLayerScrollClient* m_scrollClient;
+  RefPtr<const ScrollPaintPropertyNode> parent_;
+  IntSize clip_;
+  IntSize bounds_;
+  bool user_scrollable_horizontal_ : 1;
+  bool user_scrollable_vertical_ : 1;
+  MainThreadScrollingReasons main_thread_scrolling_reasons_;
+  WebLayerScrollClient* scroll_client_;
 };
 
 // Redeclared here to avoid ODR issues.

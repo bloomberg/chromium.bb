@@ -39,11 +39,11 @@
 
 namespace blink {
 
-WebMediaStream WebMediaStreamRegistry::lookupMediaStreamDescriptor(
+WebMediaStream WebMediaStreamRegistry::LookupMediaStreamDescriptor(
     const WebURL& url) {
   return WebMediaStream(
-      MediaStreamRegistry::registry().lookupMediaStreamDescriptor(
-          KURL(url).getString()));
+      MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
+          KURL(url).GetString()));
 }
 
 }  // namespace blink

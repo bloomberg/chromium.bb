@@ -15,34 +15,34 @@ namespace blink {
 
 class MediaElementFillingViewportTest : public SimTest {
  protected:
-  MediaElementFillingViewportTest() { webView().resize(WebSize(640, 480)); }
+  MediaElementFillingViewportTest() { WebView().Resize(WebSize(640, 480)); }
 
-  bool isMostlyFillingViewport(HTMLMediaElement* element) {
-    return element->m_mostlyFillingViewport;
+  bool IsMostlyFillingViewport(HTMLMediaElement* element) {
+    return element->mostly_filling_viewport_;
   }
 
-  bool viewportFillDebouncerTimerActive(HTMLMediaElement* element) {
-    return element->m_viewportFillDebouncerTimer.isActive();
+  bool ViewportFillDebouncerTimerActive(HTMLMediaElement* element) {
+    return element->viewport_fill_debouncer_timer_.IsActive();
   }
 
-  void checkViewportIntersectionChanged(HTMLMediaElement* element) {
-    element->activateViewportIntersectionMonitoring(true);
-    EXPECT_TRUE(element->m_checkViewportIntersectionTimer.isActive());
+  void CheckViewportIntersectionChanged(HTMLMediaElement* element) {
+    element->ActivateViewportIntersectionMonitoring(true);
+    EXPECT_TRUE(element->check_viewport_intersection_timer_.IsActive());
     // TODO(xjz): Mock the time and wait for 1s instead.
-    element->checkViewportIntersectionTimerFired(nullptr);
+    element->CheckViewportIntersectionTimerFired(nullptr);
   }
 
-  std::unique_ptr<SimRequest> createMainResource() {
-    std::unique_ptr<SimRequest> mainResource =
-        WTF::wrapUnique(new SimRequest("https://example.com/", "text/html"));
-    loadURL("https://example.com");
-    return mainResource;
+  std::unique_ptr<SimRequest> CreateMainResource() {
+    std::unique_ptr<SimRequest> main_resource =
+        WTF::WrapUnique(new SimRequest("https://example.com/", "text/html"));
+    LoadURL("https://example.com");
+    return main_resource;
   }
 };
 
 TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  mainResource->complete(
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  main_resource->Complete(
       "<!DOCTYPE html>"
       "<html>"
       "<video id='video' style = 'position:fixed; left:0; top:0; width:100%; "
@@ -50,19 +50,19 @@ TEST_F(MediaElementFillingViewportTest, MostlyFillingViewport) {
       "source src='test.webm'"
       "</video>"
       "</html>");
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      toElement<HTMLMediaElement>(document().getElementById("video"));
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_TRUE(viewportFillDebouncerTimerActive(element));
+      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
   // TODO(xjz): Mock the time and check isMostlyFillingViewport() after 5s.
 }
 
 TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  mainResource->complete(
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  main_resource->Complete(
       "<!DOCTYPE html>"
       "<html>"
       "<video id='video' style = 'position:fixed; left:0; top:0; width:80%; "
@@ -70,18 +70,18 @@ TEST_F(MediaElementFillingViewportTest, NotMostlyFillingViewport) {
       "source src='test.webm'"
       "</video>"
       "</html>");
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      toElement<HTMLMediaElement>(document().getElementById("video"));
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_FALSE(viewportFillDebouncerTimerActive(element));
+      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_FALSE(ViewportFillDebouncerTimerActive(element));
 }
 
 TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  mainResource->complete(
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  main_resource->Complete(
       "<!DOCTYPE html>"
       "<html>"
       "<video id='video' style = 'position:fixed; left:0; top:0; width:100%; "
@@ -89,27 +89,27 @@ TEST_F(MediaElementFillingViewportTest, FillingViewportChanged) {
       "source src='test.webm'"
       "</video>"
       "</html>");
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      toElement<HTMLMediaElement>(document().getElementById("video"));
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_TRUE(viewportFillDebouncerTimerActive(element));
+      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
 
   element->setAttribute("style",
                         "position:fixed; left:0; top:0; width:80%; height:80%;",
                         ASSERT_NO_EXCEPTION);
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_FALSE(viewportFillDebouncerTimerActive(element));
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_FALSE(ViewportFillDebouncerTimerActive(element));
 }
 
 TEST_F(MediaElementFillingViewportTest, LargeVideo) {
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  mainResource->complete(
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  main_resource->Complete(
       "<!DOCTYPE html>"
       "<html>"
       "<video id='video' style = 'position:fixed; left:0; top:0; width:200%; "
@@ -117,18 +117,18 @@ TEST_F(MediaElementFillingViewportTest, LargeVideo) {
       "source src='test.webm'"
       "</video>"
       "</html>");
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      toElement<HTMLMediaElement>(document().getElementById("video"));
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_TRUE(viewportFillDebouncerTimerActive(element));
+      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
 }
 
 TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
-  std::unique_ptr<SimRequest> mainResource = createMainResource();
-  mainResource->complete(
+  std::unique_ptr<SimRequest> main_resource = CreateMainResource();
+  main_resource->Complete(
       "<!DOCTYPE html>"
       "<html>"
       "<video id='video' style = 'position:fixed; left:0; top:0; width:100%; "
@@ -136,21 +136,21 @@ TEST_F(MediaElementFillingViewportTest, VideoScrollOutHalf) {
       "source src='test.webm'"
       "</video>"
       "</html>");
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
   HTMLMediaElement* element =
-      toElement<HTMLMediaElement>(document().getElementById("video"));
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_TRUE(viewportFillDebouncerTimerActive(element));
+      ToElement<HTMLMediaElement>(GetDocument().GetElementById("video"));
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_TRUE(ViewportFillDebouncerTimerActive(element));
 
   element->setAttribute(
       "style", "position:fixed; left:0; top:240px; width:100%; height:100%;",
       ASSERT_NO_EXCEPTION);
-  compositor().beginFrame();
-  checkViewportIntersectionChanged(element);
-  EXPECT_FALSE(isMostlyFillingViewport(element));
-  EXPECT_FALSE(viewportFillDebouncerTimerActive(element));
+  Compositor().BeginFrame();
+  CheckViewportIntersectionChanged(element);
+  EXPECT_FALSE(IsMostlyFillingViewport(element));
+  EXPECT_FALSE(ViewportFillDebouncerTimerActive(element));
 }
 
 }  // namespace blink

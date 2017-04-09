@@ -24,84 +24,84 @@ class TestPaintArtifact::DummyRectClient : public DisplayItemClient {
 
  public:
   DummyRectClient(const FloatRect& rect, Color color)
-      : m_rect(rect), m_color(color) {}
-  String debugName() const final { return "<dummy>"; }
-  LayoutRect visualRect() const final { return enclosingLayoutRect(m_rect); }
-  sk_sp<PaintRecord> makeRecord() const;
+      : rect_(rect), color_(color) {}
+  String DebugName() const final { return "<dummy>"; }
+  LayoutRect VisualRect() const final { return EnclosingLayoutRect(rect_); }
+  sk_sp<PaintRecord> MakeRecord() const;
 
  private:
-  FloatRect m_rect;
-  Color m_color;
+  FloatRect rect_;
+  Color color_;
 };
 
-sk_sp<PaintRecord> TestPaintArtifact::DummyRectClient::makeRecord() const {
+sk_sp<PaintRecord> TestPaintArtifact::DummyRectClient::MakeRecord() const {
   PaintRecorder recorder;
-  PaintCanvas* canvas = recorder.beginRecording(m_rect);
+  PaintCanvas* canvas = recorder.beginRecording(rect_);
   PaintFlags flags;
-  flags.setColor(m_color.rgb());
-  canvas->drawRect(m_rect, flags);
+  flags.setColor(color_.Rgb());
+  canvas->drawRect(rect_, flags);
   return recorder.finishRecordingAsPicture();
 }
 
-TestPaintArtifact::TestPaintArtifact() : m_displayItemList(0), m_built(false) {}
+TestPaintArtifact::TestPaintArtifact() : display_item_list_(0), built_(false) {}
 
 TestPaintArtifact::~TestPaintArtifact() {}
 
-TestPaintArtifact& TestPaintArtifact::chunk(
+TestPaintArtifact& TestPaintArtifact::Chunk(
     PassRefPtr<const TransformPaintPropertyNode> transform,
     PassRefPtr<const ClipPaintPropertyNode> clip,
     PassRefPtr<const EffectPaintPropertyNode> effect) {
-  PropertyTreeState propertyTreeState(transform.get(), clip.get(),
-                                      effect.get());
-  PaintChunkProperties properties(propertyTreeState);
-  return chunk(properties);
+  PropertyTreeState property_tree_state(transform.Get(), clip.Get(),
+                                        effect.Get());
+  PaintChunkProperties properties(property_tree_state);
+  return Chunk(properties);
 }
 
-TestPaintArtifact& TestPaintArtifact::chunk(
+TestPaintArtifact& TestPaintArtifact::Chunk(
     const PaintChunkProperties& properties) {
-  if (!m_paintChunks.isEmpty())
-    m_paintChunks.back().endIndex = m_displayItemList.size();
+  if (!paint_chunks_.IsEmpty())
+    paint_chunks_.back().end_index = display_item_list_.size();
   PaintChunk chunk;
-  chunk.beginIndex = m_displayItemList.size();
+  chunk.begin_index = display_item_list_.size();
   chunk.properties = properties;
-  m_paintChunks.push_back(chunk);
+  paint_chunks_.push_back(chunk);
   return *this;
 }
 
-TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds,
+TestPaintArtifact& TestPaintArtifact::RectDrawing(const FloatRect& bounds,
                                                   Color color) {
   std::unique_ptr<DummyRectClient> client =
-      WTF::makeUnique<DummyRectClient>(bounds, color);
-  m_displayItemList.allocateAndConstruct<DrawingDisplayItem>(
-      *client, DisplayItem::kDrawingFirst, client->makeRecord());
-  m_dummyClients.push_back(std::move(client));
+      WTF::MakeUnique<DummyRectClient>(bounds, color);
+  display_item_list_.AllocateAndConstruct<DrawingDisplayItem>(
+      *client, DisplayItem::kDrawingFirst, client->MakeRecord());
+  dummy_clients_.push_back(std::move(client));
   return *this;
 }
 
-TestPaintArtifact& TestPaintArtifact::foreignLayer(
+TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     const FloatPoint& location,
     const IntSize& size,
     scoped_refptr<cc::Layer> layer) {
-  FloatRect floatBounds(location, FloatSize(size));
+  FloatRect float_bounds(location, FloatSize(size));
   std::unique_ptr<DummyRectClient> client =
-      WTF::wrapUnique(new DummyRectClient(floatBounds, Color::transparent));
-  m_displayItemList.allocateAndConstruct<ForeignLayerDisplayItem>(
+      WTF::WrapUnique(new DummyRectClient(float_bounds, Color::kTransparent));
+  display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
       *client, DisplayItem::kForeignLayerFirst, std::move(layer), location,
       size);
-  m_dummyClients.push_back(std::move(client));
+  dummy_clients_.push_back(std::move(client));
   return *this;
 }
 
-const PaintArtifact& TestPaintArtifact::build() {
-  if (m_built)
-    return m_paintArtifact;
+const PaintArtifact& TestPaintArtifact::Build() {
+  if (built_)
+    return paint_artifact_;
 
-  if (!m_paintChunks.isEmpty())
-    m_paintChunks.back().endIndex = m_displayItemList.size();
-  m_paintArtifact = PaintArtifact(std::move(m_displayItemList),
-                                  std::move(m_paintChunks), true);
-  m_built = true;
-  return m_paintArtifact;
+  if (!paint_chunks_.IsEmpty())
+    paint_chunks_.back().end_index = display_item_list_.size();
+  paint_artifact_ = PaintArtifact(std::move(display_item_list_),
+                                  std::move(paint_chunks_), true);
+  built_ = true;
+  return paint_artifact_;
 }
 
 }  // namespace blink

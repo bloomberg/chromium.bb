@@ -12,24 +12,24 @@ namespace blink {
 
 FloatClipRecorder::FloatClipRecorder(GraphicsContext& context,
                                      const DisplayItemClient& client,
-                                     PaintPhase paintPhase,
-                                     const FloatRect& clipRect)
-    : m_context(context),
-      m_client(client),
-      m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase)) {
+                                     PaintPhase paint_phase,
+                                     const FloatRect& clip_rect)
+    : context_(context),
+      client_(client),
+      clip_type_(DisplayItem::PaintPhaseToFloatClipType(paint_phase)) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
-  m_context.getPaintController().createAndAppend<FloatClipDisplayItem>(
-      m_client, m_clipType, clipRect);
+  context_.GetPaintController().CreateAndAppend<FloatClipDisplayItem>(
+      client_, clip_type_, clip_rect);
 }
 
 FloatClipRecorder::~FloatClipRecorder() {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
-  DisplayItem::Type endType =
-      DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
-  m_context.getPaintController().endItem<EndFloatClipDisplayItem>(m_client,
-                                                                  endType);
+  DisplayItem::Type end_type =
+      DisplayItem::FloatClipTypeToEndFloatClipType(clip_type_);
+  context_.GetPaintController().EndItem<EndFloatClipDisplayItem>(client_,
+                                                                 end_type);
 }
 
 }  // namespace blink

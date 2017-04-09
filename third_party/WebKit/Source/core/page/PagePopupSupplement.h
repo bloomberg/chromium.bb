@@ -48,19 +48,19 @@ class CORE_EXPORT PagePopupSupplement final
   USING_GARBAGE_COLLECTED_MIXIN(PagePopupSupplement);
 
  public:
-  static PagePopupSupplement& from(LocalFrame&);
-  static void install(LocalFrame&, PagePopup&, PagePopupClient*);
-  static void uninstall(LocalFrame&);
+  static PagePopupSupplement& From(LocalFrame&);
+  static void Install(LocalFrame&, PagePopup&, PagePopupClient*);
+  static void Uninstall(LocalFrame&);
 
-  PagePopupController* pagePopupController() const;
+  PagePopupController* GetPagePopupController() const;
   DECLARE_TRACE();
 
  private:
   PagePopupSupplement(LocalFrame&, PagePopup&, PagePopupClient*);
-  static const char* supplementName();
-  void dispose();
+  static const char* SupplementName();
+  void Dispose();
 
-  Member<PagePopupController> m_controller;
+  Member<PagePopupController> controller_;
 };
 
 }  // namespace blink

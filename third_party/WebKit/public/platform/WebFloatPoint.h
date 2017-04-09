@@ -50,11 +50,11 @@ struct WebFloatPoint {
   WebFloatPoint(float x, float y) : x(x), y(y) {}
 
 #if INSIDE_BLINK
-  WebFloatPoint(const FloatPoint& p) : x(p.x()), y(p.y()) {}
+  WebFloatPoint(const FloatPoint& p) : x(p.X()), y(p.Y()) {}
 
   WebFloatPoint& operator=(const FloatPoint& p) {
-    x = p.x();
-    y = p.y();
+    x = p.X();
+    y = p.Y();
     return *this;
   }
 

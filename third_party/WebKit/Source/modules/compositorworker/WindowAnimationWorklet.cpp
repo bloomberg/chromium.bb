@@ -13,9 +13,9 @@ namespace blink {
 // static
 AnimationWorklet* WindowAnimationWorklet::animationWorklet(
     LocalDOMWindow& window) {
-  if (!window.frame())
+  if (!window.GetFrame())
     return nullptr;
-  return from(window).m_animationWorklet.get();
+  return From(window).animation_worklet_.Get();
 }
 
 // Break the following cycle when the context gets detached.
@@ -27,34 +27,34 @@ AnimationWorklet* WindowAnimationWorklet::animationWorklet(
 // => ThreadedWorkletMessagingProxy
 // => Document
 // => ... => window
-void WindowAnimationWorklet::contextDestroyed(ExecutionContext*) {
-  m_animationWorklet = nullptr;
+void WindowAnimationWorklet::ContextDestroyed(ExecutionContext*) {
+  animation_worklet_ = nullptr;
 }
 
 DEFINE_TRACE(WindowAnimationWorklet) {
-  visitor->trace(m_animationWorklet);
-  Supplement<LocalDOMWindow>::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(animation_worklet_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 // static
-WindowAnimationWorklet& WindowAnimationWorklet::from(LocalDOMWindow& window) {
+WindowAnimationWorklet& WindowAnimationWorklet::From(LocalDOMWindow& window) {
   WindowAnimationWorklet* supplement = static_cast<WindowAnimationWorklet*>(
-      Supplement<LocalDOMWindow>::from(window, supplementName()));
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
     supplement = new WindowAnimationWorklet(window);
-    provideTo(window, supplementName(), supplement);
+    ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 WindowAnimationWorklet::WindowAnimationWorklet(LocalDOMWindow& window)
-    : ContextLifecycleObserver(window.frame()->document()),
-      m_animationWorklet(AnimationWorklet::create(window.frame())) {
-  DCHECK(getExecutionContext());
+    : ContextLifecycleObserver(window.GetFrame()->GetDocument()),
+      animation_worklet_(AnimationWorklet::Create(window.GetFrame())) {
+  DCHECK(GetExecutionContext());
 }
 
-const char* WindowAnimationWorklet::supplementName() {
+const char* WindowAnimationWorklet::SupplementName() {
   return "WindowAnimationWorklet";
 }
 

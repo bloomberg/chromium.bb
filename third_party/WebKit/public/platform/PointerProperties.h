@@ -9,13 +9,13 @@ namespace blink {
 
 // Bit field values indicating available pointer types.
 enum PointerType {
-  PointerTypeNone = 1 << 0,
-  PointerTypeCoarse = 1 << 1,
-  PointerTypeFine = 1 << 2
+  kPointerTypeNone = 1 << 0,
+  kPointerTypeCoarse = 1 << 1,
+  kPointerTypeFine = 1 << 2
 };
 
 // Bit field values indicating available hover types.
-enum HoverType { HoverTypeNone = 1 << 0, HoverTypeHover = 1 << 1 };
+enum HoverType { kHoverTypeNone = 1 << 0, kHoverTypeHover = 1 << 1 };
 }
 
 #endif

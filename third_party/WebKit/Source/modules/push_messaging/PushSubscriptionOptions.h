@@ -24,20 +24,20 @@ class PushSubscriptionOptions final
  public:
   // Converts developer-provided dictionary to WebPushSubscriptionOptions.
   // Throws if applicationServerKey is invalid.
-  MODULES_EXPORT static WebPushSubscriptionOptions toWeb(
+  MODULES_EXPORT static WebPushSubscriptionOptions ToWeb(
       const PushSubscriptionOptionsInit&,
       ExceptionState&);
 
-  static PushSubscriptionOptions* create(
+  static PushSubscriptionOptions* Create(
       const WebPushSubscriptionOptions& options) {
     return new PushSubscriptionOptions(options);
   }
 
-  bool userVisibleOnly() const { return m_userVisibleOnly; }
+  bool userVisibleOnly() const { return user_visible_only_; }
 
   // Mutable by web developer. See https://github.com/w3c/push-api/issues/198.
   DOMArrayBuffer* applicationServerKey() const {
-    return m_applicationServerKey;
+    return application_server_key_;
   }
 
   DECLARE_TRACE();
@@ -45,8 +45,8 @@ class PushSubscriptionOptions final
  private:
   explicit PushSubscriptionOptions(const WebPushSubscriptionOptions&);
 
-  bool m_userVisibleOnly;
-  Member<DOMArrayBuffer> m_applicationServerKey;
+  bool user_visible_only_;
+  Member<DOMArrayBuffer> application_server_key_;
 };
 
 }  // namespace blink

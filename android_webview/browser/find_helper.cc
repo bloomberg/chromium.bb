@@ -47,8 +47,8 @@ void FindHelper::FindAllAsync(const base::string16& search_string) {
 
   WebFindOptions options;
   options.forward = true;
-  options.matchCase = false;
-  options.findNext = false;
+  options.match_case = false;
+  options.find_next = false;
 
   web_contents()->Find(current_request_id_, search_string, options);
 }
@@ -74,8 +74,8 @@ void FindHelper::FindNext(bool forward) {
 
   WebFindOptions options;
   options.forward = forward;
-  options.matchCase = false;
-  options.findNext = true;
+  options.match_case = false;
+  options.find_next = true;
 
   web_contents()->Find(current_request_id_, last_search_string_, options);
 }

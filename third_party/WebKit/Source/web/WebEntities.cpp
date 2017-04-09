@@ -36,46 +36,46 @@
 
 namespace blink {
 
-WebEntities::WebEntities(bool xmlEntities) {
-  DCHECK(m_entitiesMap.isEmpty());
-  m_entitiesMap.set(0x003c, "lt");
-  m_entitiesMap.set(0x003e, "gt");
-  m_entitiesMap.set(0x0026, "amp");
-  m_entitiesMap.set(0x0027, "apos");
-  m_entitiesMap.set(0x0022, "quot");
+WebEntities::WebEntities(bool xml_entities) {
+  DCHECK(entities_map_.IsEmpty());
+  entities_map_.Set(0x003c, "lt");
+  entities_map_.Set(0x003e, "gt");
+  entities_map_.Set(0x0026, "amp");
+  entities_map_.Set(0x0027, "apos");
+  entities_map_.Set(0x0022, "quot");
   // We add #39 for test-compatibility reason.
-  if (!xmlEntities)
-    m_entitiesMap.set(0x0027, String("#39"));
+  if (!xml_entities)
+    entities_map_.Set(0x0027, String("#39"));
 }
 
-String WebEntities::entityNameByCode(int code) const {
+String WebEntities::EntityNameByCode(int code) const {
   // FIXME: We should use find so we only do one hash lookup.
-  if (m_entitiesMap.contains(code))
-    return m_entitiesMap.at(code);
+  if (entities_map_.Contains(code))
+    return entities_map_.at(code);
   return "";
 }
 
-String WebEntities::convertEntitiesInString(const String& value) const {
+String WebEntities::ConvertEntitiesInString(const String& value) const {
   StringBuilder result;
-  bool didConvertEntity = false;
+  bool did_convert_entity = false;
   unsigned length = value.length();
   for (unsigned i = 0; i < length; ++i) {
     UChar c = value[i];
     // FIXME: We should use find so we only do one hash lookup.
-    if (m_entitiesMap.contains(c)) {
-      didConvertEntity = true;
-      result.append('&');
-      result.append(m_entitiesMap.at(c));
-      result.append(';');
+    if (entities_map_.Contains(c)) {
+      did_convert_entity = true;
+      result.Append('&');
+      result.Append(entities_map_.at(c));
+      result.Append(';');
     } else {
-      result.append(c);
+      result.Append(c);
     }
   }
 
-  if (!didConvertEntity)
+  if (!did_convert_entity)
     return value;
 
-  return result.toString();
+  return result.ToString();
 }
 
 }  // namespace blink

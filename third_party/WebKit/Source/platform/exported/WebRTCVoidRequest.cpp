@@ -36,24 +36,24 @@
 namespace blink {
 
 WebRTCVoidRequest::WebRTCVoidRequest(RTCVoidRequest* constraints)
-    : m_private(constraints) {}
+    : private_(constraints) {}
 
-void WebRTCVoidRequest::assign(const WebRTCVoidRequest& other) {
-  m_private = other.m_private;
+void WebRTCVoidRequest::Assign(const WebRTCVoidRequest& other) {
+  private_ = other.private_;
 }
 
-void WebRTCVoidRequest::reset() {
-  m_private.reset();
+void WebRTCVoidRequest::Reset() {
+  private_.Reset();
 }
 
-void WebRTCVoidRequest::requestSucceeded() const {
-  if (m_private.get())
-    m_private->requestSucceeded();
+void WebRTCVoidRequest::RequestSucceeded() const {
+  if (private_.Get())
+    private_->RequestSucceeded();
 }
 
-void WebRTCVoidRequest::requestFailed(const WebString& error) const {
-  if (m_private.get())
-    m_private->requestFailed(error);
+void WebRTCVoidRequest::RequestFailed(const WebString& error) const {
+  if (private_.Get())
+    private_->RequestFailed(error);
 }
 
 }  // namespace blink

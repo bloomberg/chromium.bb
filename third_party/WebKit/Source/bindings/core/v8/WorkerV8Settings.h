@@ -12,14 +12,16 @@ namespace blink {
 
 // The V8 settings that are passed from the main isolate to the worker isolate.
 struct CORE_EXPORT WorkerV8Settings {
-  enum class HeapLimitMode { Default, IncreasedForDebugging };
-  WorkerV8Settings(HeapLimitMode heapLimitMode, V8CacheOptions v8CacheOptions)
-      : m_heapLimitMode(heapLimitMode), m_v8CacheOptions(v8CacheOptions) {}
+  enum class HeapLimitMode { kDefault, kIncreasedForDebugging };
+  WorkerV8Settings(HeapLimitMode heap_limit_mode,
+                   V8CacheOptions v8_cache_options)
+      : heap_limit_mode_(heap_limit_mode),
+        v8_cache_options_(v8_cache_options) {}
   static WorkerV8Settings Default() {
-    return WorkerV8Settings(HeapLimitMode::Default, V8CacheOptionsDefault);
+    return WorkerV8Settings(HeapLimitMode::kDefault, kV8CacheOptionsDefault);
   }
-  HeapLimitMode m_heapLimitMode;
-  V8CacheOptions m_v8CacheOptions;
+  HeapLimitMode heap_limit_mode_;
+  V8CacheOptions v8_cache_options_;
 };
 
 }  // namespace blink

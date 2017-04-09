@@ -26,29 +26,29 @@ class SimCompositor final : public WebLayerTreeView {
   explicit SimCompositor();
   ~SimCompositor();
 
-  void setWebViewImpl(WebViewImpl&);
+  void SetWebViewImpl(WebViewImpl&);
 
   // Execute the BeginMainFrame processing steps, an approximation of what
   // cc::ThreadProxy::BeginMainFrame would do.
   // If time is not specified a 60Hz frame rate time progression is used.
-  SimDisplayItemList beginFrame(double timeDeltaInSeconds = 0.016);
+  SimDisplayItemList BeginFrame(double time_delta_in_seconds = 0.016);
 
-  bool needsBeginFrame() const { return m_needsBeginFrame; }
-  bool deferCommits() const { return m_deferCommits; }
+  bool NeedsBeginFrame() const { return needs_begin_frame_; }
+  bool DeferCommits() const { return defer_commits_; }
 
-  bool hasSelection() const { return m_hasSelection; }
+  bool HasSelection() const { return has_selection_; }
 
  private:
-  void setNeedsBeginFrame() override;
-  void setDeferCommits(bool) override;
-  void registerSelection(const WebSelection&) override;
-  void clearSelection() override;
+  void SetNeedsBeginFrame() override;
+  void SetDeferCommits(bool) override;
+  void RegisterSelection(const WebSelection&) override;
+  void ClearSelection() override;
 
-  bool m_needsBeginFrame;
-  bool m_deferCommits;
-  bool m_hasSelection;
-  WebViewImpl* m_webViewImpl;
-  double m_lastFrameTimeMonotonic;
+  bool needs_begin_frame_;
+  bool defer_commits_;
+  bool has_selection_;
+  WebViewImpl* web_view_impl_;
+  double last_frame_time_monotonic_;
 };
 
 }  // namespace blink

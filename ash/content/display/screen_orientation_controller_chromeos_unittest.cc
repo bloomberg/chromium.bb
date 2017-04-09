@@ -200,7 +200,7 @@ TEST_F(ScreenOrientationControllerTest, LockOrientation) {
   ASSERT_FALSE(RotationLocked());
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 }
@@ -214,7 +214,7 @@ TEST_F(ScreenOrientationControllerTest, Unlock) {
   ASSERT_FALSE(RotationLocked());
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -232,11 +232,11 @@ TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
   ASSERT_FALSE(RotationLocked());
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockPortrait);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -251,8 +251,8 @@ TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
 
   AttachAndActivateWebContents(content1.get(), focus_window1.get());
   AttachWebContents(content2.get(), focus_window2.get());
-  delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
-  delegate()->Lock(content2.get(), blink::WebScreenOrientationLockPortrait);
+  delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockLandscape);
+  delegate()->Lock(content2.get(), blink::kWebScreenOrientationLockPortrait);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -267,7 +267,7 @@ TEST_F(ScreenOrientationControllerTest, SecondContentCannotUnlock) {
 
   AttachAndActivateWebContents(content1.get(), focus_window1.get());
   AttachWebContents(content2.get(), focus_window2.get());
-  delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockLandscape);
   delegate()->Unlock(content2.get());
   EXPECT_TRUE(RotationLocked());
 }
@@ -280,7 +280,7 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
 
   AttachAndActivateWebContents(content.get(), focus_window1.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   ASSERT_TRUE(RotationLocked());
 
   aura::client::ActivationClient* activation_client =
@@ -302,8 +302,8 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
   AttachAndActivateWebContents(content1.get(), focus_window1.get());
   AttachWebContents(content2.get(), focus_window2.get());
 
-  delegate()->Lock(content1.get(), blink::WebScreenOrientationLockLandscape);
-  delegate()->Lock(content2.get(), blink::WebScreenOrientationLockPortrait);
+  delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockLandscape);
+  delegate()->Lock(content2.get(), blink::kWebScreenOrientationLockPortrait);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   aura::client::ActivationClient* activation_client =
@@ -323,7 +323,7 @@ TEST_F(ScreenOrientationControllerTest, VisibilityChangesLock) {
   std::unique_ptr<content::WebContents> content(CreateWebContents());
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   EXPECT_TRUE(RotationLocked());
 
   aura::Window* window = content->GetNativeView();
@@ -342,7 +342,7 @@ TEST_F(ScreenOrientationControllerTest, WindowDestructionRemovesLock) {
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
 
   AttachAndActivateWebContents(content.get(), focus_window1.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   ASSERT_TRUE(RotationLocked());
 
   focus_window1->RemoveChild(content->GetNativeView());
@@ -545,7 +545,7 @@ TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -568,7 +568,7 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockPortrait);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -592,7 +592,7 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
   delegate()->Lock(content.get(),
-                   blink::WebScreenOrientationLockPortraitPrimary);
+                   blink::kWebScreenOrientationLockPortraitPrimary);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -613,7 +613,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
   EnableMaximizeMode(true);
 
   AttachAndActivateWebContents(content.get(), focus_window.get());
-  delegate()->Lock(content.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
   delegate()->Unlock(content.get());
 
   SetUserRotationLocked(true);
@@ -697,25 +697,25 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
       Shell::Get()->screen_orientation_controller();
   orientation_controller->ToggleUserRotationLock();
   EXPECT_TRUE(orientation_controller->user_rotation_locked());
-  EXPECT_EQ(blink::WebScreenOrientationLockLandscapePrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapePrimary,
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_90);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitPrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_180);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::WebScreenOrientationLockLandscapeSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapeSecondary,
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
             UserLockedOrientation());
   orientation_controller->ToggleUserRotationLock();
 
@@ -724,25 +724,25 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
   UpdateDisplay("800x1280");
   orientation_controller->ToggleUserRotationLock();
   EXPECT_TRUE(orientation_controller->user_rotation_locked());
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitPrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitPrimary,
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_90);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::WebScreenOrientationLockLandscapePrimary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapePrimary,
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_180);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::WebScreenOrientationLockPortraitSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockPortraitSecondary,
             UserLockedOrientation());
 
   orientation_controller->ToggleUserRotationLock();
   SetInternalDisplayRotation(display::Display::ROTATE_270);
   orientation_controller->ToggleUserRotationLock();
-  EXPECT_EQ(blink::WebScreenOrientationLockLandscapeSecondary,
+  EXPECT_EQ(blink::kWebScreenOrientationLockLandscapeSecondary,
             UserLockedOrientation());
   orientation_controller->ToggleUserRotationLock();
 }
@@ -767,7 +767,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   orientation_controller->ToggleUserRotationLock();
   ASSERT_TRUE(orientation_controller->user_rotation_locked());
 
-  delegate()->Lock(content1.get(), blink::WebScreenOrientationLockPortrait);
+  delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockPortrait);
 
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
@@ -790,10 +790,10 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Application forced to be landscape.
-  delegate()->Lock(content2.get(), blink::WebScreenOrientationLockLandscape);
+  delegate()->Lock(content2.get(), blink::kWebScreenOrientationLockLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
-  delegate()->Lock(content1.get(), blink::WebScreenOrientationLockAny);
+  delegate()->Lock(content1.get(), blink::kWebScreenOrientationLockAny);
   activation_client->ActivateWindow(focus_window1.get());
   // Switching back to any will rotate to user rotation.
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());

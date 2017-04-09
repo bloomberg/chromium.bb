@@ -46,30 +46,30 @@ class PLATFORM_EXPORT AudioResampler {
 
  public:
   AudioResampler();
-  AudioResampler(unsigned numberOfChannels);
+  AudioResampler(unsigned number_of_channels);
   ~AudioResampler() {}
 
   // Given an AudioSourceProvider, process() resamples the source stream into
   // destinationBus.
-  void process(AudioSourceProvider*,
-               AudioBus* destinationBus,
-               size_t framesToProcess);
+  void Process(AudioSourceProvider*,
+               AudioBus* destination_bus,
+               size_t frames_to_process);
 
   // Resets the processing state.
-  void reset();
+  void Reset();
 
-  void configureChannels(unsigned numberOfChannels);
+  void ConfigureChannels(unsigned number_of_channels);
 
   // 0 < rate <= MaxRate
-  void setRate(double rate);
-  double rate() const { return m_rate; }
+  void SetRate(double rate);
+  double Rate() const { return rate_; }
 
-  static const double MaxRate;
+  static const double kMaxRate;
 
  private:
-  double m_rate;
-  Vector<std::unique_ptr<AudioResamplerKernel>> m_kernels;
-  RefPtr<AudioBus> m_sourceBus;
+  double rate_;
+  Vector<std::unique_ptr<AudioResamplerKernel>> kernels_;
+  RefPtr<AudioBus> source_bus_;
 };
 
 }  // namespace blink

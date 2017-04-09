@@ -35,22 +35,22 @@
 
 namespace blink {
 
-void WebDOMEvent::reset() {
-  assign(nullptr);
+void WebDOMEvent::Reset() {
+  Assign(nullptr);
 }
 
-void WebDOMEvent::assign(const WebDOMEvent& other) {
-  m_private = other.m_private;
+void WebDOMEvent::Assign(const WebDOMEvent& other) {
+  private_ = other.private_;
 }
 
-void WebDOMEvent::assign(Event* event) {
-  m_private = event;
+void WebDOMEvent::Assign(Event* event) {
+  private_ = event;
 }
 
-WebDOMEvent::WebDOMEvent(Event* event) : m_private(event) {}
+WebDOMEvent::WebDOMEvent(Event* event) : private_(event) {}
 
 WebDOMEvent::operator Event*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
 }  // namespace blink

@@ -19,8 +19,8 @@ using Command = BytesConsumerTestUtil::Command;
 using Result = BytesConsumer::Result;
 using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 
-String toString(const Vector<char>& v) {
-  return String(v.data(), v.size());
+String ToString(const Vector<char>& v) {
+  return String(v.Data(), v.size());
 }
 
 class TestClient final : public GarbageCollectedFinalized<TestClient>,
@@ -28,407 +28,407 @@ class TestClient final : public GarbageCollectedFinalized<TestClient>,
   USING_GARBAGE_COLLECTED_MIXIN(TestClient);
 
  public:
-  void onStateChange() override { ++m_numOnStateChangeCalled; }
-  int numOnStateChangeCalled() const { return m_numOnStateChangeCalled; }
+  void OnStateChange() override { ++num_on_state_change_called_; }
+  int NumOnStateChangeCalled() const { return num_on_state_change_called_; }
 
  private:
-  int m_numOnStateChangeCalled = 0;
+  int num_on_state_change_called_ = 0;
 };
 
 class BytesConsumerTeeTest : public ::testing::Test {
  public:
-  BytesConsumerTeeTest() : m_page(DummyPageHolder::create()) {}
+  BytesConsumerTeeTest() : page_(DummyPageHolder::Create()) {}
 
-  Document* document() { return &m_page->document(); }
+  Document* GetDocument() { return &page_->GetDocument(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_page;
+  std::unique_ptr<DummyPageHolder> page_;
 };
 
 class FakeBlobBytesConsumer : public BytesConsumer {
  public:
   explicit FakeBlobBytesConsumer(PassRefPtr<BlobDataHandle> handle)
-      : m_blobHandle(handle) {}
+      : blob_handle_(handle) {}
   ~FakeBlobBytesConsumer() override {}
 
-  Result beginRead(const char** buffer, size_t* available) override {
-    if (m_state == PublicState::Closed)
-      return Result::Done;
-    m_blobHandle = nullptr;
-    m_state = PublicState::Errored;
-    return Result::Error;
+  Result BeginRead(const char** buffer, size_t* available) override {
+    if (state_ == PublicState::kClosed)
+      return Result::kDone;
+    blob_handle_ = nullptr;
+    state_ = PublicState::kErrored;
+    return Result::kError;
   }
-  Result endRead(size_t readSize) override {
-    if (m_state == PublicState::Closed)
-      return Result::Error;
-    m_blobHandle = nullptr;
-    m_state = PublicState::Errored;
-    return Result::Error;
+  Result EndRead(size_t read_size) override {
+    if (state_ == PublicState::kClosed)
+      return Result::kError;
+    blob_handle_ = nullptr;
+    state_ = PublicState::kErrored;
+    return Result::kError;
   }
-  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy policy) {
-    if (m_state != PublicState::ReadableOrWaiting)
+  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy policy) {
+    if (state_ != PublicState::kReadableOrWaiting)
       return nullptr;
-    DCHECK(m_blobHandle);
-    if (policy == BlobSizePolicy::DisallowBlobWithInvalidSize &&
-        m_blobHandle->size() == UINT64_MAX)
+    DCHECK(blob_handle_);
+    if (policy == BlobSizePolicy::kDisallowBlobWithInvalidSize &&
+        blob_handle_->size() == UINT64_MAX)
       return nullptr;
-    m_state = PublicState::Closed;
-    return m_blobHandle.release();
+    state_ = PublicState::kClosed;
+    return blob_handle_.Release();
   }
 
-  void setClient(Client*) override {}
-  void clearClient() override {}
-  void cancel() override {}
-  PublicState getPublicState() const override { return m_state; }
-  Error getError() const override { return Error(); }
-  String debugName() const override { return "FakeBlobBytesConsumer"; }
+  void SetClient(Client*) override {}
+  void ClearClient() override {}
+  void Cancel() override {}
+  PublicState GetPublicState() const override { return state_; }
+  Error GetError() const override { return Error(); }
+  String DebugName() const override { return "FakeBlobBytesConsumer"; }
 
  private:
-  PublicState m_state = PublicState::ReadableOrWaiting;
-  RefPtr<BlobDataHandle> m_blobHandle;
+  PublicState state_ = PublicState::kReadableOrWaiting;
+  RefPtr<BlobDataHandle> blob_handle_;
 };
 
 TEST_F(BytesConsumerTeeTest, CreateDone) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
-  src->add(Command(Command::Done));
-  EXPECT_FALSE(src->isCancelled());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  src->Add(Command(Command::kDone));
+  EXPECT_FALSE(src->IsCancelled());
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->run();
-  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run();
+  auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->Run();
+  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
 
-  EXPECT_EQ(Result::Done, result1.first);
-  EXPECT_TRUE(result1.second.isEmpty());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(Result::Done, result2.first);
-  EXPECT_TRUE(result2.second.isEmpty());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_EQ(Result::kDone, result1.first);
+  EXPECT_TRUE(result1.second.IsEmpty());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(Result::kDone, result2.first);
+  EXPECT_TRUE(result2.second.IsEmpty());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 
   // Cancelling does nothing when closed.
-  dest1->cancel();
-  dest2->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  dest1->Cancel();
+  dest2->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 }
 
 TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Data, "world"));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Done));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kDone));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
 
-  auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->run();
-  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run();
+  auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->Run();
+  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
 
-  EXPECT_EQ(Result::Done, result1.first);
-  EXPECT_EQ("hello, world", toString(result1.second));
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(Result::Done, result2.first);
-  EXPECT_EQ("hello, world", toString(result2.second));
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_EQ(Result::kDone, result1.first);
+  EXPECT_EQ("hello, world", ToString(result1.second));
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(Result::kDone, result2.first);
+  EXPECT_EQ("hello, world", ToString(result2.second));
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 }
 
 TEST_F(BytesConsumerTeeTest, Error) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Data, "world"));
-  src->add(Command(Command::Error));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest2->getPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
 
-  auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->run();
-  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run();
+  auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->Run();
+  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
 
-  EXPECT_EQ(Result::Error, result1.first);
-  EXPECT_TRUE(result1.second.isEmpty());
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest1->getPublicState());
-  EXPECT_EQ(Result::Error, result2.first);
-  EXPECT_TRUE(result2.second.isEmpty());
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_EQ(Result::kError, result1.first);
+  EXPECT_TRUE(result1.second.IsEmpty());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
+  EXPECT_EQ(Result::kError, result2.first);
+  EXPECT_TRUE(result2.second.IsEmpty());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 
   // Cancelling does nothing when errored.
-  dest1->cancel();
-  dest2->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  dest1->Cancel();
+  dest2->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 }
 
 TEST_F(BytesConsumerTeeTest, Cancel) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Wait));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
 
-  EXPECT_FALSE(src->isCancelled());
-  dest1->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
-  dest2->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
-  EXPECT_TRUE(src->isCancelled());
+  EXPECT_FALSE(src->IsCancelled());
+  dest1->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
+  dest2->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
+  EXPECT_TRUE(src->IsCancelled());
 }
 
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Data, "world"));
-  src->add(Command(Command::Done));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kDone));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
 
-  EXPECT_FALSE(src->isCancelled());
-  dest1->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_FALSE(src->IsCancelled());
+  dest1->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 
-  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run();
+  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
 
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest2->getPublicState());
-  EXPECT_EQ(Result::Done, result2.first);
-  EXPECT_EQ("hello, world", toString(result2.second));
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest2->GetPublicState());
+  EXPECT_EQ(Result::kDone, result2.first);
+  EXPECT_EQ("hello, world", ToString(result2.second));
+  EXPECT_FALSE(src->IsCancelled());
 }
 
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
 
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Data, "world"));
-  src->add(Command(Command::Error));
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
 
-  EXPECT_FALSE(src->isCancelled());
-  dest1->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest2->getPublicState());
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_FALSE(src->IsCancelled());
+  dest1->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest2->GetPublicState());
+  EXPECT_FALSE(src->IsCancelled());
 
-  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run();
+  auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
 
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest2->getPublicState());
-  EXPECT_EQ(Result::Error, result2.first);
-  EXPECT_FALSE(src->isCancelled());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
+  EXPECT_EQ(Result::kError, result2.first);
+  EXPECT_FALSE(src->IsCancelled());
 }
 
 TEST_F(BytesConsumerTeeTest, BlobHandle) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
-  BytesConsumer* src = new FakeBlobBytesConsumer(blobDataHandle);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
+  BytesConsumer* src = new FakeBlobBytesConsumer(blob_data_handle);
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  RefPtr<BlobDataHandle> destBlobDataHandle1 = dest1->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize);
-  RefPtr<BlobDataHandle> destBlobDataHandle2 = dest2->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize);
-  ASSERT_TRUE(destBlobDataHandle1);
-  ASSERT_TRUE(destBlobDataHandle2);
-  EXPECT_EQ(12345u, destBlobDataHandle1->size());
-  EXPECT_EQ(12345u, destBlobDataHandle2->size());
+  RefPtr<BlobDataHandle> dest_blob_data_handle1 = dest1->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
+  RefPtr<BlobDataHandle> dest_blob_data_handle2 = dest2->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
+  ASSERT_TRUE(dest_blob_data_handle1);
+  ASSERT_TRUE(dest_blob_data_handle2);
+  EXPECT_EQ(12345u, dest_blob_data_handle1->size());
+  EXPECT_EQ(12345u, dest_blob_data_handle2->size());
 }
 
 TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), -1);
-  BytesConsumer* src = new FakeBlobBytesConsumer(blobDataHandle);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), -1);
+  BytesConsumer* src = new FakeBlobBytesConsumer(blob_data_handle);
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  RefPtr<BlobDataHandle> destBlobDataHandle1 = dest1->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize);
-  RefPtr<BlobDataHandle> destBlobDataHandle2 = dest2->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize);
-  ASSERT_TRUE(destBlobDataHandle1);
-  ASSERT_FALSE(destBlobDataHandle2);
-  EXPECT_EQ(UINT64_MAX, destBlobDataHandle1->size());
+  RefPtr<BlobDataHandle> dest_blob_data_handle1 = dest1->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
+  RefPtr<BlobDataHandle> dest_blob_data_handle2 = dest2->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
+  ASSERT_TRUE(dest_blob_data_handle1);
+  ASSERT_FALSE(dest_blob_data_handle2);
+  EXPECT_EQ(UINT64_MAX, dest_blob_data_handle1->size());
 }
 
 TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
-  src->add(Command(Command::Data, "a"));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Error));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  src->Add(Command(Command::kData, "a"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
   TestClient* client = new TestClient();
-  dest1->setClient(client);
+  dest1->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available = 0;
-  ASSERT_EQ(Result::Ok, dest1->beginRead(&buffer, &available));
+  ASSERT_EQ(Result::kOk, dest1->BeginRead(&buffer, &available));
   ASSERT_EQ(1u, available);
 
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
-  int numOnStateChangeCalled = client->numOnStateChangeCalled();
-  EXPECT_EQ(Result::Error,
-            (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->run().first);
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, dest1->getPublicState());
-  EXPECT_EQ(numOnStateChangeCalled + 1, client->numOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  int num_on_state_change_called = client->NumOnStateChangeCalled();
+  EXPECT_EQ(Result::kError,
+            (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run().first);
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
+  EXPECT_EQ(num_on_state_change_called + 1, client->NumOnStateChangeCalled());
   EXPECT_EQ('a', buffer[0]);
-  EXPECT_EQ(Result::Ok, dest1->endRead(available));
+  EXPECT_EQ(Result::kOk, dest1->EndRead(available));
 }
 
 TEST_F(BytesConsumerTeeTest,
        AsyncNotificationShouldBeDispatchedWhenAllDataIsConsumed) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
-  src->add(Command(Command::Data, "a"));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Done));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  src->Add(Command(Command::kData, "a"));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kDone));
   TestClient* client = new TestClient();
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  dest1->setClient(client);
+  dest1->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available = 0;
-  ASSERT_EQ(Result::Ok, dest1->beginRead(&buffer, &available));
+  ASSERT_EQ(Result::kOk, dest1->BeginRead(&buffer, &available));
   ASSERT_EQ(1u, available);
   EXPECT_EQ('a', buffer[0]);
 
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            src->getPublicState());
-  testing::runPendingTasks();
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, src->getPublicState());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            src->GetPublicState());
+  testing::RunPendingTasks();
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, src->GetPublicState());
   // Just for checking UAF.
   EXPECT_EQ('a', buffer[0]);
-  ASSERT_EQ(Result::Ok, dest1->endRead(1));
+  ASSERT_EQ(Result::kOk, dest1->EndRead(1));
 
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
-  testing::runPendingTasks();
-  EXPECT_EQ(1, client->numOnStateChangeCalled());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
+  testing::RunPendingTasks();
+  EXPECT_EQ(1, client->NumOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
 }
 
 TEST_F(BytesConsumerTeeTest,
        AsyncCloseNotificationShouldBeCancelledBySubsequentReadCall) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(document());
-  src->add(Command(Command::Data, "a"));
-  src->add(Command(Command::Done));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  src->Add(Command(Command::kData, "a"));
+  src->Add(Command(Command::kDone));
   TestClient* client = new TestClient();
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::tee(document(), src, &dest1, &dest2);
+  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  dest1->setClient(client);
+  dest1->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available = 0;
-  ASSERT_EQ(Result::Ok, dest1->beginRead(&buffer, &available));
+  ASSERT_EQ(Result::kOk, dest1->BeginRead(&buffer, &available));
   ASSERT_EQ(1u, available);
   EXPECT_EQ('a', buffer[0]);
 
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   // Just for checking UAF.
   EXPECT_EQ('a', buffer[0]);
-  ASSERT_EQ(Result::Ok, dest1->endRead(1));
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            dest1->getPublicState());
+  ASSERT_EQ(Result::kOk, dest1->EndRead(1));
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            dest1->GetPublicState());
 
-  EXPECT_EQ(Result::Done, dest1->beginRead(&buffer, &available));
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
-  testing::runPendingTasks();
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
+  EXPECT_EQ(Result::kDone, dest1->BeginRead(&buffer, &available));
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
+  testing::RunPendingTasks();
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
 }
 
 TEST(BytesConusmerTest, ClosedBytesConsumer) {
-  BytesConsumer* consumer = BytesConsumer::createClosed();
+  BytesConsumer* consumer = BytesConsumer::CreateClosed();
 
   const char* buffer = nullptr;
   size_t available = 0;
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, consumer->getPublicState());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, consumer->GetPublicState());
 }
 
 TEST(BytesConusmerTest, ErroredBytesConsumer) {
   BytesConsumer::Error error("hello");
-  BytesConsumer* consumer = BytesConsumer::createErrored(error);
+  BytesConsumer* consumer = BytesConsumer::CreateErrored(error);
 
   const char* buffer = nullptr;
   size_t available = 0;
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(error.message(), consumer->getError().message());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(error.Message(), consumer->GetError().Message());
 
-  consumer->cancel();
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, consumer->getPublicState());
+  consumer->Cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, consumer->GetPublicState());
 }
 
 }  // namespace

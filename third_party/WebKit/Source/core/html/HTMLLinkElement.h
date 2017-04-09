@@ -50,119 +50,123 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 
  public:
-  static HTMLLinkElement* create(Document&, bool createdByParser);
+  static HTMLLinkElement* Create(Document&, bool created_by_parser);
   ~HTMLLinkElement() override;
 
-  KURL href() const;
-  const AtomicString& rel() const;
-  String media() const { return m_media; }
-  String typeValue() const { return m_type; }
-  String asValue() const { return m_as; }
-  ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
-  const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
+  KURL Href() const;
+  const AtomicString& Rel() const;
+  String Media() const { return media_; }
+  String TypeValue() const { return type_; }
+  String AsValue() const { return as_; }
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  const LinkRelAttribute& RelAttribute() const { return rel_attribute_; }
   DOMTokenList& relList() const {
-    return static_cast<DOMTokenList&>(*m_relList);
+    return static_cast<DOMTokenList&>(*rel_list_);
   }
-  String scope() const { return m_scope; }
+  String Scope() const { return scope_; }
 
-  const AtomicString& type() const;
+  const AtomicString& GetType() const;
 
-  IconType getIconType() const;
+  IconType GetIconType() const;
 
   // the icon sizes as parsed from the HTML attribute
-  const Vector<IntSize>& iconSizes() const;
+  const Vector<IntSize>& IconSizes() const;
 
-  bool async() const;
+  bool Async() const;
 
   CSSStyleSheet* sheet() const {
-    return linkStyle() ? linkStyle()->sheet() : 0;
+    return GetLinkStyle() ? GetLinkStyle()->Sheet() : 0;
   }
   Document* import() const;
 
-  bool styleSheetIsLoading() const;
+  bool StyleSheetIsLoading() const;
 
-  bool isImport() const { return linkImport(); }
-  bool isDisabled() const { return linkStyle() && linkStyle()->isDisabled(); }
-  bool isEnabledViaScript() const {
-    return linkStyle() && linkStyle()->isEnabledViaScript();
+  bool IsImport() const { return GetLinkImport(); }
+  bool IsDisabled() const {
+    return GetLinkStyle() && GetLinkStyle()->IsDisabled();
+  }
+  bool IsEnabledViaScript() const {
+    return GetLinkStyle() && GetLinkStyle()->IsEnabledViaScript();
   }
 
   DOMTokenList* sizes() const;
 
-  void scheduleEvent();
+  void ScheduleEvent();
 
   // From LinkLoaderClient
-  bool shouldLoadLink() override;
+  bool ShouldLoadLink() override;
 
   // For LinkStyle
-  bool loadLink(const String& type,
+  bool LoadLink(const String& type,
                 const String& as,
                 const String& media,
                 ReferrerPolicy,
                 const KURL&);
-  bool isAlternate() const {
-    return linkStyle()->isUnset() && m_relAttribute.isAlternate();
+  bool IsAlternate() const {
+    return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate();
   }
-  bool shouldProcessStyle() { return linkResourceToProcess() && linkStyle(); }
-  bool isCreatedByParser() const { return m_createdByParser; }
+  bool ShouldProcessStyle() {
+    return LinkResourceToProcess() && GetLinkStyle();
+  }
+  bool IsCreatedByParser() const { return created_by_parser_; }
 
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  HTMLLinkElement(Document&, bool createdByParser);
+  HTMLLinkElement(Document&, bool created_by_parser);
 
-  LinkStyle* linkStyle() const;
-  LinkImport* linkImport() const;
-  LinkResource* linkResourceToProcess();
+  LinkStyle* GetLinkStyle() const;
+  LinkImport* GetLinkImport() const;
+  LinkResource* LinkResourceToProcess();
 
-  void process();
-  static void processCallback(Node*);
+  void Process();
+  static void ProcessCallback(Node*);
 
   // Always call this asynchronously because this can cause synchronous
   // Document load event and JavaScript execution.
-  void dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
+  void DispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
 
   // From Node and subclassses
-  void parseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  bool isURLAttribute(const Attribute&) const override;
-  bool hasLegalLinkAttribute(const QualifiedName&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
-  bool sheetLoaded() override;
-  void notifyLoadedSheetAndAllCriticalSubresources(
+  void ParseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  bool IsURLAttribute(const Attribute&) const override;
+  bool HasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
+  bool SheetLoaded() override;
+  void NotifyLoadedSheetAndAllCriticalSubresources(
       LoadedSheetErrorStatus) override;
-  void startLoadingDynamicSheet() override;
-  void finishParsingChildren() override;
+  void StartLoadingDynamicSheet() override;
+  void FinishParsingChildren() override;
 
   // From LinkLoaderClient
-  void linkLoaded() override;
-  void linkLoadingErrored() override;
-  void didStartLinkPrerender() override;
-  void didStopLinkPrerender() override;
-  void didSendLoadForLinkPrerender() override;
-  void didSendDOMContentLoadedForLinkPrerender() override;
-  RefPtr<WebTaskRunner> getLoadingTaskRunner() override;
+  void LinkLoaded() override;
+  void LinkLoadingErrored() override;
+  void DidStartLinkPrerender() override;
+  void DidStopLinkPrerender() override;
+  void DidSendLoadForLinkPrerender() override;
+  void DidSendDOMContentLoadedForLinkPrerender() override;
+  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
 
   // From DOMTokenListObserver
-  void valueWasSet() final;
+  void ValueWasSet() final;
 
-  Member<LinkResource> m_link;
-  Member<LinkLoader> m_linkLoader;
+  Member<LinkResource> link_;
+  Member<LinkLoader> link_loader_;
 
-  String m_type;
-  String m_as;
-  String m_media;
-  ReferrerPolicy m_referrerPolicy;
-  Member<DOMTokenList> m_sizes;
-  Vector<IntSize> m_iconSizes;
-  TraceWrapperMember<RelList> m_relList;
-  LinkRelAttribute m_relAttribute;
-  String m_scope;
+  String type_;
+  String as_;
+  String media_;
+  ReferrerPolicy referrer_policy_;
+  Member<DOMTokenList> sizes_;
+  Vector<IntSize> icon_sizes_;
+  TraceWrapperMember<RelList> rel_list_;
+  LinkRelAttribute rel_attribute_;
+  String scope_;
 
-  bool m_createdByParser;
+  bool created_by_parser_;
 };
 
 }  // namespace blink

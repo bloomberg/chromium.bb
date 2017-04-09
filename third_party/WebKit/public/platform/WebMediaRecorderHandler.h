@@ -17,18 +17,18 @@ class WebString;
 class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
  public:
   virtual ~WebMediaRecorderHandler() = default;
-  virtual bool initialize(WebMediaRecorderHandlerClient* client,
+  virtual bool Initialize(WebMediaRecorderHandlerClient* client,
                           const WebMediaStream& stream,
                           const WebString& type,
                           const WebString& codecs,
-                          int32_t audioBitsPerSecond,
-                          int32_t videoBitsPerSecond) {
+                          int32_t audio_bits_per_second,
+                          int32_t video_bits_per_second) {
     return false;
   }
-  virtual bool start(int timeslice) { return false; }
-  virtual void stop() {}
-  virtual void pause() {}
-  virtual void resume() {}
+  virtual bool Start(int timeslice) { return false; }
+  virtual void Stop() {}
+  virtual void Pause() {}
+  virtual void Resume() {}
 
   // MediaRecorder API isTypeSupported(), which boils down to
   // canSupportMimeType() [1] "If true is returned from this method, it only
@@ -37,7 +37,7 @@ class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
   // sufficient resources are not available to support the concrete media
   // encoding."
   // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
-  virtual bool canSupportMimeType(const WebString& type,
+  virtual bool CanSupportMimeType(const WebString& type,
                                   const WebString& codecs) {
     return false;
   }

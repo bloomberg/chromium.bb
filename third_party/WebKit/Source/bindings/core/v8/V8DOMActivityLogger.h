@@ -47,14 +47,15 @@ class CORE_EXPORT V8DOMActivityLogger {
  public:
   virtual ~V8DOMActivityLogger() {}
 
-  virtual void logGetter(const String& apiName) {}
-  virtual void logSetter(const String& apiName,
-                         const v8::Local<v8::Value>& newValue) {}
-  virtual void logMethod(const String& apiName,
+  virtual void LogGetter(const String& api_name) {}
+  virtual void LogSetter(const String& api_name,
+                         const v8::Local<v8::Value>& new_value) {}
+  virtual void LogMethod(const String& api_name,
                          int argc,
                          const v8::Local<v8::Value>* argv) {}
-  virtual void logEvent(const String& eventName, int argc, const String* argv) {
-  }
+  virtual void LogEvent(const String& event_name,
+                        int argc,
+                        const String* argv) {}
 
   // Associates a logger with the world identified by worldId (worlId may be 0
   // identifying the main world) and extension ID. Extension ID is used to
@@ -67,18 +68,18 @@ class CORE_EXPORT V8DOMActivityLogger {
   // extensions and their activity loggers in the main world, we require an
   // extension ID. Otherwise, extension activities may be logged under
   // a wrong extension ID.
-  static void setActivityLogger(int worldId,
+  static void SetActivityLogger(int world_id,
                                 const String&,
                                 std::unique_ptr<V8DOMActivityLogger>);
-  static V8DOMActivityLogger* activityLogger(int worldId,
-                                             const String& extensionId);
-  static V8DOMActivityLogger* activityLogger(int worldId, const KURL&);
+  static V8DOMActivityLogger* ActivityLogger(int world_id,
+                                             const String& extension_id);
+  static V8DOMActivityLogger* ActivityLogger(int world_id, const KURL&);
 
   // Returns activity logger for current V8 context or 0.
-  static V8DOMActivityLogger* currentActivityLogger();
+  static V8DOMActivityLogger* CurrentActivityLogger();
   // Returns activity logger for current V8 context if the context belongs to
   // an isolated world or 0.
-  static V8DOMActivityLogger* currentActivityLoggerIfIsolatedWorld();
+  static V8DOMActivityLogger* CurrentActivityLoggerIfIsolatedWorld();
 };
 
 }  // namespace blink

@@ -15,11 +15,11 @@ enum WebMeaningfulLayout {
   // * a canvas
   // An approximation for first layout that resulted in pixels on screen.
   // Not the best heuristic, and we should replace it with something better.
-  VisuallyNonEmpty,
+  kVisuallyNonEmpty,
   // First layout of a frame immediately after the parsing finished.
-  FinishedParsing,
+  kFinishedParsing,
   // First layout of a frame immediately after the loading finished.
-  FinishedLoading
+  kFinishedLoading
 };
 }
 

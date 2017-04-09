@@ -12,65 +12,65 @@
 namespace blink {
 
 struct PreconnectTestCase {
-  const char* baseURL;
+  const char* base_url;
   const char* url;
-  bool isCORS;
-  bool isHTTPS;
+  bool is_cors;
+  bool is_https;
 };
 
 class PreloaderNetworkHintsMock : public NetworkHintsInterface {
  public:
-  PreloaderNetworkHintsMock() : m_didPreconnect(false) {}
+  PreloaderNetworkHintsMock() : did_preconnect_(false) {}
 
-  void dnsPrefetchHost(const String& host) const {}
-  void preconnectHost(
+  void DnsPrefetchHost(const String& host) const {}
+  void PreconnectHost(
       const KURL& host,
-      const CrossOriginAttributeValue crossOrigin) const override {
-    m_didPreconnect = true;
-    m_isHTTPS = host.protocolIs("https");
-    m_isCrossOrigin = (crossOrigin == CrossOriginAttributeAnonymous);
+      const CrossOriginAttributeValue cross_origin) const override {
+    did_preconnect_ = true;
+    is_https_ = host.ProtocolIs("https");
+    is_cross_origin_ = (cross_origin == kCrossOriginAttributeAnonymous);
   }
 
-  bool didPreconnect() { return m_didPreconnect; }
-  bool isHTTPS() { return m_isHTTPS; }
-  bool isCrossOrigin() { return m_isCrossOrigin; }
+  bool DidPreconnect() { return did_preconnect_; }
+  bool IsHTTPS() { return is_https_; }
+  bool IsCrossOrigin() { return is_cross_origin_; }
 
  private:
-  mutable bool m_didPreconnect;
-  mutable bool m_isHTTPS;
-  mutable bool m_isCrossOrigin;
+  mutable bool did_preconnect_;
+  mutable bool is_https_;
+  mutable bool is_cross_origin_;
 };
 
 class HTMLResourcePreloaderTest : public testing::Test {
  protected:
-  HTMLResourcePreloaderTest() : m_dummyPageHolder(DummyPageHolder::create()) {}
+  HTMLResourcePreloaderTest() : dummy_page_holder_(DummyPageHolder::Create()) {}
 
-  void test(PreconnectTestCase testCase) {
+  void Test(PreconnectTestCase test_case) {
     // TODO(yoav): Need a mock loader here to verify things are happenning
     // beyond preconnect.
-    PreloaderNetworkHintsMock networkHints;
-    auto preloadRequest = PreloadRequest::createIfNeeded(
-        String(), TextPosition(), testCase.url,
-        KURL(ParsedURLStringTag(), testCase.baseURL), Resource::Image,
+    PreloaderNetworkHintsMock network_hints;
+    auto preload_request = PreloadRequest::CreateIfNeeded(
+        String(), TextPosition(), test_case.url,
+        KURL(ParsedURLStringTag(), test_case.base_url), Resource::kImage,
         ReferrerPolicy(), FetchRequest::ResourceWidth(),
-        ClientHintsPreferences(), PreloadRequest::RequestTypePreconnect);
-    DCHECK(preloadRequest);
-    if (testCase.isCORS)
-      preloadRequest->setCrossOrigin(CrossOriginAttributeAnonymous);
+        ClientHintsPreferences(), PreloadRequest::kRequestTypePreconnect);
+    DCHECK(preload_request);
+    if (test_case.is_cors)
+      preload_request->SetCrossOrigin(kCrossOriginAttributeAnonymous);
     HTMLResourcePreloader* preloader =
-        HTMLResourcePreloader::create(m_dummyPageHolder->document());
-    preloader->preload(std::move(preloadRequest), networkHints);
-    ASSERT_TRUE(networkHints.didPreconnect());
-    ASSERT_EQ(testCase.isCORS, networkHints.isCrossOrigin());
-    ASSERT_EQ(testCase.isHTTPS, networkHints.isHTTPS());
+        HTMLResourcePreloader::Create(dummy_page_holder_->GetDocument());
+    preloader->Preload(std::move(preload_request), network_hints);
+    ASSERT_TRUE(network_hints.DidPreconnect());
+    ASSERT_EQ(test_case.is_cors, network_hints.IsCrossOrigin());
+    ASSERT_EQ(test_case.is_https, network_hints.IsHTTPS());
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(HTMLResourcePreloaderTest, testPreconnect) {
-  PreconnectTestCase testCases[] = {
+  PreconnectTestCase test_cases[] = {
       {"http://example.test", "http://example.com", false, false},
       {"http://example.test", "http://example.com", true, false},
       {"http://example.test", "https://example.com", true, true},
@@ -81,8 +81,8 @@ TEST_F(HTMLResourcePreloaderTest, testPreconnect) {
       {"https://example.test", "//example.com", true, true},
   };
 
-  for (const auto& testCase : testCases)
-    test(testCase);
+  for (const auto& test_case : test_cases)
+    Test(test_case);
 }
 
 }  // namespace blink

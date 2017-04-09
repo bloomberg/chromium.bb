@@ -9,9 +9,9 @@
 
 namespace blink {
 
-CSSValue* CSSPositionValue::toCSSValue() const {
-  return CSSValuePair::create(m_x->toCSSValue(), m_y->toCSSValue(),
-                              CSSValuePair::KeepIdenticalValues);
+CSSValue* CSSPositionValue::ToCSSValue() const {
+  return CSSValuePair::Create(x_->ToCSSValue(), y_->ToCSSValue(),
+                              CSSValuePair::kKeepIdenticalValues);
 }
 
 }  // namespace blink

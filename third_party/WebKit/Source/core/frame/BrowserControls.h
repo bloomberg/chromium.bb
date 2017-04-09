@@ -20,7 +20,7 @@ class FloatSize;
 class CORE_EXPORT BrowserControls final
     : public GarbageCollected<BrowserControls> {
  public:
-  static BrowserControls* create(const Page& page) {
+  static BrowserControls* Create(const Page& page) {
     return new BrowserControls(page);
   }
 
@@ -28,37 +28,37 @@ class CORE_EXPORT BrowserControls final
 
   // The amount that the viewport was shrunk by to accommodate the top
   // controls.
-  float layoutHeight();
+  float LayoutHeight();
   // The amount that browser controls are currently shown.
-  float contentOffset();
+  float ContentOffset();
 
-  float height() const { return m_height; }
-  bool shrinkViewport() const { return m_shrinkViewport; }
-  void setHeight(float height, bool shrinkViewport);
+  float Height() const { return height_; }
+  bool ShrinkViewport() const { return shrink_viewport_; }
+  void SetHeight(float height, bool shrink_viewport);
 
-  float shownRatio() const { return m_shownRatio; }
-  void setShownRatio(float);
+  float ShownRatio() const { return shown_ratio_; }
+  void SetShownRatio(float);
 
-  void updateConstraintsAndState(WebBrowserControlsState constraints,
+  void UpdateConstraintsAndState(WebBrowserControlsState constraints,
                                  WebBrowserControlsState current,
                                  bool animate);
 
-  void scrollBegin();
+  void ScrollBegin();
 
   // Scrolls browser controls vertically if possible and returns the remaining
   // scroll amount.
-  FloatSize scrollBy(FloatSize scrollDelta);
+  FloatSize ScrollBy(FloatSize scroll_delta);
 
-  WebBrowserControlsState permittedState() const { return m_permittedState; }
+  WebBrowserControlsState PermittedState() const { return permitted_state_; }
 
  private:
   explicit BrowserControls(const Page&);
-  void resetBaseline();
+  void ResetBaseline();
 
-  Member<const Page> m_page;
+  Member<const Page> page_;
 
   // The browser controls height regardless of whether it is visible or not.
-  float m_height;
+  float height_;
 
   // The browser controls shown amount (normalized from 0 to 1) since the last
   // compositor commit. This value is updated from two sources:
@@ -68,20 +68,20 @@ class CORE_EXPORT BrowserControls final
   //     when responding to gesture scroll events.
   // This value is reflected in web layer tree and is synced with compositor
   // during the commit.
-  float m_shownRatio;
+  float shown_ratio_;
 
   // Content offset when last re-baseline occurred.
-  float m_baselineContentOffset;
+  float baseline_content_offset_;
 
   // Accumulated scroll delta since last re-baseline.
-  float m_accumulatedScrollDelta;
+  float accumulated_scroll_delta_;
 
   // If this is true, then the embedder shrunk the WebView size by the top
   // controls height.
-  bool m_shrinkViewport;
+  bool shrink_viewport_;
 
   // Constraints on the browser controls state
-  WebBrowserControlsState m_permittedState;
+  WebBrowserControlsState permitted_state_;
 };
 }  // namespace blink
 

@@ -38,40 +38,41 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutVideo::LayoutVideo(HTMLVideoElement* video) : LayoutMedia(video) {
-  setIntrinsicSize(calculateIntrinsicSize());
+  SetIntrinsicSize(CalculateIntrinsicSize());
 }
 
 LayoutVideo::~LayoutVideo() {}
 
-LayoutSize LayoutVideo::defaultSize() {
-  return LayoutSize(defaultWidth, defaultHeight);
+LayoutSize LayoutVideo::DefaultSize() {
+  return LayoutSize(kDefaultWidth, kDefaultHeight);
 }
 
-void LayoutVideo::intrinsicSizeChanged() {
-  if (videoElement()->shouldDisplayPosterImage())
-    LayoutMedia::intrinsicSizeChanged();
-  updateIntrinsicSize();
+void LayoutVideo::IntrinsicSizeChanged() {
+  if (VideoElement()->ShouldDisplayPosterImage())
+    LayoutMedia::IntrinsicSizeChanged();
+  UpdateIntrinsicSize();
 }
 
-void LayoutVideo::updateIntrinsicSize() {
-  LayoutSize size = calculateIntrinsicSize();
-  size.scale(style()->effectiveZoom());
+void LayoutVideo::UpdateIntrinsicSize() {
+  LayoutSize size = CalculateIntrinsicSize();
+  size.Scale(Style()->EffectiveZoom());
 
   // Never set the element size to zero when in a media document.
-  if (size.isEmpty() && node()->ownerDocument() &&
-      node()->ownerDocument()->isMediaDocument())
+  if (size.IsEmpty() && GetNode()->ownerDocument() &&
+      GetNode()->ownerDocument()->IsMediaDocument())
     return;
 
-  if (size == intrinsicSize())
+  if (size == IntrinsicSize())
     return;
 
-  setIntrinsicSize(size);
-  setPreferredLogicalWidthsDirty();
-  setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
+  SetIntrinsicSize(size);
+  SetPreferredLogicalWidthsDirty();
+  SetNeedsLayoutAndFullPaintInvalidation(
+      LayoutInvalidationReason::kSizeChanged);
 }
 
-LayoutSize LayoutVideo::calculateIntrinsicSize() {
-  HTMLVideoElement* video = videoElement();
+LayoutSize LayoutVideo::CalculateIntrinsicSize() {
+  HTMLVideoElement* video = VideoElement();
 
   // Spec text from 4.8.6
   //
@@ -84,162 +85,162 @@ LayoutSize LayoutVideo::calculateIntrinsicSize() {
   // height of the video resource, if that is available; otherwise it is the
   // intrinsic height of the poster frame, if that is available; otherwise it is
   // 150 CSS pixels.
-  WebMediaPlayer* webMediaPlayer = mediaElement()->webMediaPlayer();
-  if (webMediaPlayer &&
+  WebMediaPlayer* web_media_player = MediaElement()->GetWebMediaPlayer();
+  if (web_media_player &&
       video->getReadyState() >= HTMLVideoElement::kHaveMetadata) {
-    IntSize size = webMediaPlayer->naturalSize();
-    if (!size.isEmpty())
+    IntSize size = web_media_player->NaturalSize();
+    if (!size.IsEmpty())
       return LayoutSize(size);
   }
 
-  if (video->shouldDisplayPosterImage() && !m_cachedImageSize.isEmpty() &&
-      !imageResource()->errorOccurred())
-    return m_cachedImageSize;
+  if (video->ShouldDisplayPosterImage() && !cached_image_size_.IsEmpty() &&
+      !ImageResource()->ErrorOccurred())
+    return cached_image_size_;
 
   // <video> in standalone media documents should not use the default 300x150
   // size since they also have audio-only files. By setting the intrinsic
   // size to 300x1 the video will resize itself in these cases, and audio will
   // have the correct height (it needs to be > 0 for controls to layout
   // properly).
-  if (video->ownerDocument() && video->ownerDocument()->isMediaDocument())
-    return LayoutSize(defaultSize().width(), LayoutUnit(1));
+  if (video->ownerDocument() && video->ownerDocument()->IsMediaDocument())
+    return LayoutSize(DefaultSize().Width(), LayoutUnit(1));
 
-  return defaultSize();
+  return DefaultSize();
 }
 
-void LayoutVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect) {
-  LayoutMedia::imageChanged(newImage, rect);
+void LayoutVideo::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
+  LayoutMedia::ImageChanged(new_image, rect);
 
   // Cache the image intrinsic size so we can continue to use it to draw the
   // image correctly even if we know the video intrinsic size but aren't able to
   // draw video frames yet (we don't want to scale the poster to the video size
   // without keeping aspect ratio).
-  if (videoElement()->shouldDisplayPosterImage())
-    m_cachedImageSize = intrinsicSize();
+  if (VideoElement()->ShouldDisplayPosterImage())
+    cached_image_size_ = IntrinsicSize();
 
   // The intrinsic size is now that of the image, but in case we already had the
   // intrinsic size of the video we call this here to restore the video size.
-  updateIntrinsicSize();
+  UpdateIntrinsicSize();
 }
 
-bool LayoutVideo::shouldDisplayVideo() const {
-  return !videoElement()->shouldDisplayPosterImage();
+bool LayoutVideo::ShouldDisplayVideo() const {
+  return !VideoElement()->ShouldDisplayPosterImage();
 }
 
-void LayoutVideo::paintReplaced(const PaintInfo& paintInfo,
-                                const LayoutPoint& paintOffset) const {
-  VideoPainter(*this).paintReplaced(paintInfo, paintOffset);
+void LayoutVideo::PaintReplaced(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset) const {
+  VideoPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
-void LayoutVideo::layout() {
-  updatePlayer();
-  LayoutMedia::layout();
+void LayoutVideo::GetLayout() {
+  UpdatePlayer();
+  LayoutMedia::GetLayout();
 }
 
-HTMLVideoElement* LayoutVideo::videoElement() const {
-  return toHTMLVideoElement(node());
+HTMLVideoElement* LayoutVideo::VideoElement() const {
+  return toHTMLVideoElement(GetNode());
 }
 
-void LayoutVideo::updateFromElement() {
-  LayoutMedia::updateFromElement();
-  updatePlayer();
+void LayoutVideo::UpdateFromElement() {
+  LayoutMedia::UpdateFromElement();
+  UpdatePlayer();
 
   // If the DisplayMode of the video changed, then we need to paint.
-  setShouldDoFullPaintInvalidation();
+  SetShouldDoFullPaintInvalidation();
 }
 
-void LayoutVideo::updatePlayer() {
-  updateIntrinsicSize();
+void LayoutVideo::UpdatePlayer() {
+  UpdateIntrinsicSize();
 
-  WebMediaPlayer* mediaPlayer = mediaElement()->webMediaPlayer();
-  if (!mediaPlayer)
+  WebMediaPlayer* media_player = MediaElement()->GetWebMediaPlayer();
+  if (!media_player)
     return;
 
-  if (!videoElement()->inActiveDocument())
+  if (!VideoElement()->InActiveDocument())
     return;
 
-  videoElement()->setNeedsCompositingUpdate();
+  VideoElement()->SetNeedsCompositingUpdate();
 }
 
-LayoutUnit LayoutVideo::computeReplacedLogicalWidth(
-    ShouldComputePreferred shouldComputePreferred) const {
-  return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
+LayoutUnit LayoutVideo::ComputeReplacedLogicalWidth(
+    ShouldComputePreferred should_compute_preferred) const {
+  return LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
 }
 
-LayoutUnit LayoutVideo::computeReplacedLogicalHeight(
-    LayoutUnit estimatedUsedWidth) const {
-  return LayoutReplaced::computeReplacedLogicalHeight(estimatedUsedWidth);
+LayoutUnit LayoutVideo::ComputeReplacedLogicalHeight(
+    LayoutUnit estimated_used_width) const {
+  return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
 }
 
-LayoutUnit LayoutVideo::minimumReplacedHeight() const {
-  return LayoutReplaced::minimumReplacedHeight();
+LayoutUnit LayoutVideo::MinimumReplacedHeight() const {
+  return LayoutReplaced::MinimumReplacedHeight();
 }
 
-LayoutRect LayoutVideo::replacedContentRect() const {
-  if (shouldDisplayVideo()) {
+LayoutRect LayoutVideo::ReplacedContentRect() const {
+  if (ShouldDisplayVideo()) {
     // Video codecs may need to restart from an I-frame when the output is
     // resized. Round size in advance to avoid 1px snap difference.
     // TODO(trchen): The way of rounding is different from LayoutPart just to
     // match existing behavior. This is probably a bug and We should unify it
     // with LayoutPart.
-    return LayoutRect(pixelSnappedIntRect(computeObjectFit()));
+    return LayoutRect(PixelSnappedIntRect(ComputeObjectFit()));
   }
   // If we are displaying the poster image no pre-rounding is needed, but the
   // size of the image should be used for fitting instead.
-  return computeObjectFit(&m_cachedImageSize);
+  return ComputeObjectFit(&cached_image_size_);
 }
 
-bool LayoutVideo::supportsAcceleratedRendering() const {
-  return !!mediaElement()->platformLayer();
+bool LayoutVideo::SupportsAcceleratedRendering() const {
+  return !!MediaElement()->PlatformLayer();
 }
 
-static const LayoutBlock* layoutObjectPlaceholder(
-    const LayoutObject* layoutObject) {
-  LayoutObject* parent = layoutObject->parent();
+static const LayoutBlock* LayoutObjectPlaceholder(
+    const LayoutObject* layout_object) {
+  LayoutObject* parent = layout_object->Parent();
   if (!parent)
     return nullptr;
 
-  LayoutFullScreen* fullScreen =
-      parent->isLayoutFullScreen() ? toLayoutFullScreen(parent) : 0;
-  if (!fullScreen)
+  LayoutFullScreen* full_screen =
+      parent->IsLayoutFullScreen() ? ToLayoutFullScreen(parent) : 0;
+  if (!full_screen)
     return nullptr;
 
-  return fullScreen->placeholder();
+  return full_screen->Placeholder();
 }
 
-LayoutUnit LayoutVideo::offsetLeft(const Element* parent) const {
-  if (const LayoutBlock* block = layoutObjectPlaceholder(this))
-    return block->offsetLeft(parent);
-  return LayoutMedia::offsetLeft(parent);
+LayoutUnit LayoutVideo::OffsetLeft(const Element* parent) const {
+  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
+    return block->OffsetLeft(parent);
+  return LayoutMedia::OffsetLeft(parent);
 }
 
-LayoutUnit LayoutVideo::offsetTop(const Element* parent) const {
-  if (const LayoutBlock* block = layoutObjectPlaceholder(this))
-    return block->offsetTop(parent);
-  return LayoutMedia::offsetTop(parent);
+LayoutUnit LayoutVideo::OffsetTop(const Element* parent) const {
+  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
+    return block->OffsetTop(parent);
+  return LayoutMedia::OffsetTop(parent);
 }
 
-LayoutUnit LayoutVideo::offsetWidth() const {
-  if (const LayoutBlock* block = layoutObjectPlaceholder(this))
-    return block->offsetWidth();
-  return LayoutMedia::offsetWidth();
+LayoutUnit LayoutVideo::OffsetWidth() const {
+  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
+    return block->OffsetWidth();
+  return LayoutMedia::OffsetWidth();
 }
 
-LayoutUnit LayoutVideo::offsetHeight() const {
-  if (const LayoutBlock* block = layoutObjectPlaceholder(this))
-    return block->offsetHeight();
-  return LayoutMedia::offsetHeight();
+LayoutUnit LayoutVideo::OffsetHeight() const {
+  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
+    return block->OffsetHeight();
+  return LayoutMedia::OffsetHeight();
 }
 
-CompositingReasons LayoutVideo::additionalCompositingReasons() const {
-  HTMLMediaElement* element = toHTMLMediaElement(node());
-  if (element->isFullscreen() && element->usesOverlayFullscreenVideo())
-    return CompositingReasonVideo;
+CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
+  HTMLMediaElement* element = ToHTMLMediaElement(GetNode());
+  if (element->IsFullscreen() && element->UsesOverlayFullscreenVideo())
+    return kCompositingReasonVideo;
 
-  if (shouldDisplayVideo() && supportsAcceleratedRendering())
-    return CompositingReasonVideo;
+  if (ShouldDisplayVideo() && SupportsAcceleratedRendering())
+    return kCompositingReasonVideo;
 
-  return CompositingReasonNone;
+  return kCompositingReasonNone;
 }
 
 }  // namespace blink

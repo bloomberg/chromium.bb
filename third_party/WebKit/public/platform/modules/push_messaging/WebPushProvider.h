@@ -29,26 +29,26 @@ class WebPushProvider {
 
   // Takes ownership of the WebPushSubscriptionCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
-  virtual void subscribe(WebServiceWorkerRegistration*,
+  virtual void Subscribe(WebServiceWorkerRegistration*,
                          const WebPushSubscriptionOptions&,
                          std::unique_ptr<WebPushSubscriptionCallbacks>) = 0;
 
   // Takes ownership of the WebPushSubscriptionCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
-  virtual void getSubscription(
+  virtual void GetSubscription(
       WebServiceWorkerRegistration*,
       std::unique_ptr<WebPushSubscriptionCallbacks>) = 0;
 
   // Takes ownership of the WebPushPermissionStatusCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
-  virtual void getPermissionStatus(
+  virtual void GetPermissionStatus(
       WebServiceWorkerRegistration*,
       const WebPushSubscriptionOptions&,
       std::unique_ptr<WebPushPermissionStatusCallbacks>) = 0;
 
   // Takes ownership if the WebPushUnsubscribeCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
-  virtual void unsubscribe(WebServiceWorkerRegistration*,
+  virtual void Unsubscribe(WebServiceWorkerRegistration*,
                            std::unique_ptr<WebPushUnsubscribeCallbacks>) = 0;
 };
 

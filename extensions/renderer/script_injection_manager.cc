@@ -240,7 +240,7 @@ void ScriptInjectionManager::RFOHelper::OnExecuteDeclarativeScript(
   // TODO(markdittmer): URL-checking isn't the best security measure.
   // Begin script injection workflow only if the current URL is identical to
   // the one that matched declarative conditions in the browser.
-  if (GURL(render_frame()->GetWebFrame()->document().url()) == url) {
+  if (GURL(render_frame()->GetWebFrame()->GetDocument().Url()) == url) {
     manager_->HandleExecuteDeclarativeScript(render_frame(),
                                              tab_id,
                                              extension_id,

@@ -10,49 +10,49 @@
 
 namespace blink {
 
-ContextClient::ContextClient(ExecutionContext* executionContext)
-    : m_executionContext(executionContext) {}
+ContextClient::ContextClient(ExecutionContext* execution_context)
+    : execution_context_(execution_context) {}
 
 ContextClient::ContextClient(LocalFrame* frame)
-    : m_executionContext(frame ? frame->document() : nullptr) {}
+    : execution_context_(frame ? frame->GetDocument() : nullptr) {}
 
-ExecutionContext* ContextClient::getExecutionContext() const {
-  return m_executionContext && !m_executionContext->isContextDestroyed()
-             ? m_executionContext
+ExecutionContext* ContextClient::GetExecutionContext() const {
+  return execution_context_ && !execution_context_->IsContextDestroyed()
+             ? execution_context_
              : nullptr;
 }
 
-LocalFrame* ContextClient::frame() const {
-  return m_executionContext && m_executionContext->isDocument()
-             ? toDocument(m_executionContext)->frame()
+LocalFrame* ContextClient::GetFrame() const {
+  return execution_context_ && execution_context_->IsDocument()
+             ? ToDocument(execution_context_)->GetFrame()
              : nullptr;
 }
 
 DEFINE_TRACE(ContextClient) {
-  visitor->trace(m_executionContext);
+  visitor->Trace(execution_context_);
 }
 
-LocalFrame* ContextLifecycleObserver::frame() const {
-  return getExecutionContext() && getExecutionContext()->isDocument()
-             ? toDocument(getExecutionContext())->frame()
+LocalFrame* ContextLifecycleObserver::GetFrame() const {
+  return GetExecutionContext() && GetExecutionContext()->IsDocument()
+             ? ToDocument(GetExecutionContext())->GetFrame()
              : nullptr;
 }
 
 DOMWindowClient::DOMWindowClient(LocalDOMWindow* window)
-    : m_domWindow(window) {}
+    : dom_window_(window) {}
 
 DOMWindowClient::DOMWindowClient(LocalFrame* frame)
-    : m_domWindow(frame ? frame->domWindow() : nullptr) {}
+    : dom_window_(frame ? frame->DomWindow() : nullptr) {}
 
-LocalDOMWindow* DOMWindowClient::domWindow() const {
-  return m_domWindow && m_domWindow->frame() ? m_domWindow : nullptr;
+LocalDOMWindow* DOMWindowClient::DomWindow() const {
+  return dom_window_ && dom_window_->GetFrame() ? dom_window_ : nullptr;
 }
 
-LocalFrame* DOMWindowClient::frame() const {
-  return m_domWindow ? m_domWindow->frame() : nullptr;
+LocalFrame* DOMWindowClient::GetFrame() const {
+  return dom_window_ ? dom_window_->GetFrame() : nullptr;
 }
 
 DEFINE_TRACE(DOMWindowClient) {
-  visitor->trace(m_domWindow);
+  visitor->Trace(dom_window_);
 }
 }

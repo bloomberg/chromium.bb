@@ -36,31 +36,31 @@ class ClearButtonElement final : public HTMLDivElement {
   class ClearButtonOwner : public GarbageCollectedMixin {
    public:
     virtual ~ClearButtonOwner() {}
-    virtual void focusAndSelectClearButtonOwner() = 0;
-    virtual bool shouldClearButtonRespondToMouseEvents() = 0;
-    virtual void clearValue() = 0;
+    virtual void FocusAndSelectClearButtonOwner() = 0;
+    virtual bool ShouldClearButtonRespondToMouseEvents() = 0;
+    virtual void ClearValue() = 0;
   };
 
-  static ClearButtonElement* create(Document&, ClearButtonOwner&);
-  void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
+  static ClearButtonElement* Create(Document&, ClearButtonOwner&);
+  void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   ClearButtonElement(Document&, ClearButtonOwner&);
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
-  bool isMouseFocusable() const override { return false; }
-  void defaultEventHandler(Event*) override;
-  bool isClearButtonElement() const override;
+  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool IsMouseFocusable() const override { return false; }
+  void DefaultEventHandler(Event*) override;
+  bool IsClearButtonElement() const override;
 
-  Member<ClearButtonOwner> m_clearButtonOwner;
+  Member<ClearButtonOwner> clear_button_owner_;
 };
 
 DEFINE_TYPE_CASTS(ClearButtonElement,
                   Element,
                   element,
-                  element->isClearButtonElement(),
-                  element.isClearButtonElement());
+                  element->IsClearButtonElement(),
+                  element.IsClearButtonElement());
 
 }  // namespace blink
 

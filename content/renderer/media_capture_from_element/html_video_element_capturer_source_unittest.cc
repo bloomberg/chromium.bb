@@ -31,49 +31,43 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   MockWebMediaPlayer()  = default;
   ~MockWebMediaPlayer() override = default;
 
-  void load(LoadType, const blink::WebMediaPlayerSource&, CORSMode) override {}
-  void play() override {}
-  void pause() override {}
-  bool supportsSave() const override { return true; }
-  void seek(double seconds) override {}
-  void setRate(double) override {}
-  void setVolume(double) override {}
-  blink::WebTimeRanges buffered() const override {
+  void Load(LoadType, const blink::WebMediaPlayerSource&, CORSMode) override {}
+  void Play() override {}
+  void Pause() override {}
+  bool SupportsSave() const override { return true; }
+  void Seek(double seconds) override {}
+  void SetRate(double) override {}
+  void SetVolume(double) override {}
+  blink::WebTimeRanges Buffered() const override {
     return blink::WebTimeRanges();
   }
-  blink::WebTimeRanges seekable() const override {
+  blink::WebTimeRanges Seekable() const override {
     return blink::WebTimeRanges();
   }
-  void setSinkId(const blink::WebString& sinkId,
+  void SetSinkId(const blink::WebString& sinkId,
                  const blink::WebSecurityOrigin&,
                  blink::WebSetSinkIdCallbacks*) override {}
-  bool hasVideo() const override { return true; }
-  bool hasAudio() const override { return false; }
-  blink::WebSize naturalSize() const override {
-    return blink::WebSize(16, 10);
-  }
-  bool paused() const override { return false; }
-  bool seeking() const override { return false; }
-  double duration() const override { return 0.0; }
-  double currentTime() const override { return 0.0; }
-  NetworkState getNetworkState() const override {
-    return NetworkStateEmpty;
-  }
-  ReadyState getReadyState() const override {
-    return ReadyStateHaveNothing;
-  }
-  blink::WebString getErrorMessage() override { return blink::WebString(); }
-  bool didLoadingProgress() override { return true; }
-  bool hasSingleSecurityOrigin() const override { return true; }
-  bool didPassCORSAccessCheck() const override { return true; }
-  double mediaTimeForTimeValue(double timeValue) const override { return 0.0; }
-  unsigned decodedFrameCount() const override { return 0; }
-  unsigned droppedFrameCount() const override { return 0; }
-  unsigned corruptedFrameCount() const override { return 0; }
-  size_t audioDecodedByteCount() const override { return 0; }
-  size_t videoDecodedByteCount() const override { return 0; }
+  bool HasVideo() const override { return true; }
+  bool HasAudio() const override { return false; }
+  blink::WebSize NaturalSize() const override { return blink::WebSize(16, 10); }
+  bool Paused() const override { return false; }
+  bool Seeking() const override { return false; }
+  double Duration() const override { return 0.0; }
+  double CurrentTime() const override { return 0.0; }
+  NetworkState GetNetworkState() const override { return kNetworkStateEmpty; }
+  ReadyState GetReadyState() const override { return kReadyStateHaveNothing; }
+  blink::WebString GetErrorMessage() override { return blink::WebString(); }
+  bool DidLoadingProgress() override { return true; }
+  bool HasSingleSecurityOrigin() const override { return true; }
+  bool DidPassCORSAccessCheck() const override { return true; }
+  double MediaTimeForTimeValue(double timeValue) const override { return 0.0; }
+  unsigned DecodedFrameCount() const override { return 0; }
+  unsigned DroppedFrameCount() const override { return 0; }
+  unsigned CorruptedFrameCount() const override { return 0; }
+  size_t AudioDecodedByteCount() const override { return 0; }
+  size_t VideoDecodedByteCount() const override { return 0; }
 
-  void paint(blink::WebCanvas* canvas,
+  void Paint(blink::WebCanvas* canvas,
              const blink::WebRect& paint_rectangle,
              cc::PaintFlags&) override {
     // We could fill in |canvas| with a meaningful pattern in ARGB and verify
@@ -139,9 +133,9 @@ TEST_F(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
           &HTMLVideoElementCapturerSourceTest::OnVideoCaptureDeviceFormats,
           base::Unretained(this)));
   ASSERT_EQ(1u, formats.size());
-  EXPECT_EQ(web_media_player_->naturalSize().width,
+  EXPECT_EQ(web_media_player_->NaturalSize().width,
             formats[0].frame_size.width());
-  EXPECT_EQ(web_media_player_->naturalSize().height,
+  EXPECT_EQ(web_media_player_->NaturalSize().height,
             formats[0].frame_size.height());
 
   media::VideoCaptureParams params;

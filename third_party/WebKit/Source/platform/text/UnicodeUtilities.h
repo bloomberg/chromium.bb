@@ -33,22 +33,22 @@
 
 namespace blink {
 
-PLATFORM_EXPORT bool isSeparator(UChar32);
-PLATFORM_EXPORT bool isKanaLetter(UChar character);
-PLATFORM_EXPORT bool containsKanaLetters(const String&);
-PLATFORM_EXPORT void normalizeCharactersIntoNFCForm(const UChar* characters,
+PLATFORM_EXPORT bool IsSeparator(UChar32);
+PLATFORM_EXPORT bool IsKanaLetter(UChar character);
+PLATFORM_EXPORT bool ContainsKanaLetters(const String&);
+PLATFORM_EXPORT void NormalizeCharactersIntoNFCForm(const UChar* characters,
                                                     unsigned length,
                                                     Vector<UChar>& buffer);
-PLATFORM_EXPORT void foldQuoteMarksAndSoftHyphens(UChar* data, size_t length);
-PLATFORM_EXPORT void foldQuoteMarksAndSoftHyphens(String&);
-PLATFORM_EXPORT bool checkOnlyKanaLettersInStrings(const UChar* firstData,
-                                                   unsigned firstLength,
-                                                   const UChar* secondData,
-                                                   unsigned secondLength);
-PLATFORM_EXPORT bool checkKanaStringsEqual(const UChar* firstData,
-                                           unsigned firstLength,
-                                           const UChar* secondData,
-                                           unsigned secondLength);
+PLATFORM_EXPORT void FoldQuoteMarksAndSoftHyphens(UChar* data, size_t length);
+PLATFORM_EXPORT void FoldQuoteMarksAndSoftHyphens(String&);
+PLATFORM_EXPORT bool CheckOnlyKanaLettersInStrings(const UChar* first_data,
+                                                   unsigned first_length,
+                                                   const UChar* second_data,
+                                                   unsigned second_length);
+PLATFORM_EXPORT bool CheckKanaStringsEqual(const UChar* first_data,
+                                           unsigned first_length,
+                                           const UChar* second_data,
+                                           unsigned second_length);
 
 }  // namespace blink
 

@@ -36,15 +36,15 @@ class HTMLLIElement final : public HTMLElement {
  private:
   explicit HTMLLIElement(Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  void parseValue(const AtomicString&);
+  void ParseValue(const AtomicString&);
 };
 
 }  // namespace blink

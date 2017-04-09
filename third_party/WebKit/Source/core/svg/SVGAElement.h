@@ -35,7 +35,7 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
 
  public:
   DECLARE_NODE_FACTORY(SVGAElement);
-  SVGAnimatedString* svgTarget() { return m_svgTarget.get(); }
+  SVGAnimatedString* svgTarget() { return svg_target_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -44,32 +44,33 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
 
   String title() const override;
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  void defaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event*) override;
 
-  bool isLiveLink() const override { return isLink(); }
+  bool IsLiveLink() const override { return IsLink(); }
 
-  bool supportsFocus() const override;
-  bool shouldHaveFocusAppearance() const final;
-  void dispatchFocusEvent(Element* oldFocusedElement,
-                          WebFocusType,
-                          InputDeviceCapabilities* sourceCapabilities) override;
-  void dispatchBlurEvent(Element* newFocusedElement,
+  bool SupportsFocus() const override;
+  bool ShouldHaveFocusAppearance() const final;
+  void DispatchFocusEvent(
+      Element* old_focused_element,
+      WebFocusType,
+      InputDeviceCapabilities* source_capabilities) override;
+  void DispatchBlurEvent(Element* new_focused_element,
                          WebFocusType,
-                         InputDeviceCapabilities* sourceCapabilities) override;
-  bool isMouseFocusable() const override;
-  bool isKeyboardFocusable() const override;
-  bool isURLAttribute(const Attribute&) const override;
-  bool canStartSelection() const override;
+                         InputDeviceCapabilities* source_capabilities) override;
+  bool IsMouseFocusable() const override;
+  bool IsKeyboardFocusable() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  bool CanStartSelection() const override;
   int tabIndex() const override;
 
-  bool willRespondToMouseClickEvents() override;
+  bool WillRespondToMouseClickEvents() override;
 
-  Member<SVGAnimatedString> m_svgTarget;
-  bool m_wasFocusedByMouse;
+  Member<SVGAnimatedString> svg_target_;
+  bool was_focused_by_mouse_;
 };
 
 }  // namespace blink

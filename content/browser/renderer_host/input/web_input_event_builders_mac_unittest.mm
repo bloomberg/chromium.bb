@@ -74,36 +74,37 @@ TEST(WebInputEventBuilderMacTest, ArrowKeyNumPad) {
   NSEvent* mac_event = BuildFakeKeyEvent(0x7B, NSLeftArrowFunctionKey,
                                          NSNumericPadKeyMask, NSKeyDown);
   WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-  EXPECT_EQ(0, web_event.modifiers());
+  EXPECT_EQ(0, web_event.GetModifiers());
   EXPECT_EQ(ui::DomCode::ARROW_LEFT,
-            static_cast<ui::DomCode>(web_event.domCode));
-  EXPECT_EQ(ui::DomKey::ARROW_LEFT, web_event.domKey);
+            static_cast<ui::DomCode>(web_event.dom_code));
+  EXPECT_EQ(ui::DomKey::ARROW_LEFT, web_event.dom_key);
 
   // Right
   mac_event = BuildFakeKeyEvent(0x7C, NSRightArrowFunctionKey,
                                 NSNumericPadKeyMask, NSKeyDown);
   web_event = WebKeyboardEventBuilder::Build(mac_event);
-  EXPECT_EQ(0, web_event.modifiers());
+  EXPECT_EQ(0, web_event.GetModifiers());
   EXPECT_EQ(ui::DomCode::ARROW_RIGHT,
-            static_cast<ui::DomCode>(web_event.domCode));
-  EXPECT_EQ(ui::DomKey::ARROW_RIGHT, web_event.domKey);
+            static_cast<ui::DomCode>(web_event.dom_code));
+  EXPECT_EQ(ui::DomKey::ARROW_RIGHT, web_event.dom_key);
 
   // Down
   mac_event = BuildFakeKeyEvent(0x7D, NSDownArrowFunctionKey,
                                 NSNumericPadKeyMask, NSKeyDown);
   web_event = WebKeyboardEventBuilder::Build(mac_event);
-  EXPECT_EQ(0, web_event.modifiers());
+  EXPECT_EQ(0, web_event.GetModifiers());
   EXPECT_EQ(ui::DomCode::ARROW_DOWN,
-            static_cast<ui::DomCode>(web_event.domCode));
-  EXPECT_EQ(ui::DomKey::ARROW_DOWN, web_event.domKey);
+            static_cast<ui::DomCode>(web_event.dom_code));
+  EXPECT_EQ(ui::DomKey::ARROW_DOWN, web_event.dom_key);
 
   // Up
   mac_event = BuildFakeKeyEvent(0x7E, NSUpArrowFunctionKey, NSNumericPadKeyMask,
                                 NSKeyDown);
   web_event = WebKeyboardEventBuilder::Build(mac_event);
-  EXPECT_EQ(0, web_event.modifiers());
-  EXPECT_EQ(ui::DomCode::ARROW_UP, static_cast<ui::DomCode>(web_event.domCode));
-  EXPECT_EQ(ui::DomKey::ARROW_UP, web_event.domKey);
+  EXPECT_EQ(0, web_event.GetModifiers());
+  EXPECT_EQ(ui::DomCode::ARROW_UP,
+            static_cast<ui::DomCode>(web_event.dom_code));
+  EXPECT_EQ(ui::DomKey::ARROW_UP, web_event.dom_key);
 }
 
 // Test that control sequence generate the correct vkey code.
@@ -112,11 +113,11 @@ TEST(WebInputEventBuilderMacTest, ControlSequence) {
   NSEvent* mac_event =
       BuildFakeKeyEvent(0x21, 0x1b, NSControlKeyMask, NSKeyDown);
   WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-  EXPECT_EQ(ui::VKEY_OEM_4, web_event.windowsKeyCode);
+  EXPECT_EQ(ui::VKEY_OEM_4, web_event.windows_key_code);
   EXPECT_EQ(ui::DomCode::BRACKET_LEFT,
-            static_cast<ui::DomCode>(web_event.domCode));
+            static_cast<ui::DomCode>(web_event.dom_code));
   // Will only pass on US layout.
-  EXPECT_EQ(ui::DomKey::FromCharacter('['), web_event.domKey);
+  EXPECT_EQ(ui::DomKey::FromCharacter('['), web_event.dom_key);
 }
 
 // Test that numpad keys get mapped correctly.
@@ -163,9 +164,9 @@ TEST(WebInputEventBuilderMacTest, NumPadMapping) {
     NSEvent* mac_event = BuildFakeKeyEvent(table[i].mac_key_code,
                                            table[i].character, 0, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(table[i].windows_key_code, web_event.windowsKeyCode);
-    EXPECT_EQ(table[i].dom_code, static_cast<ui::DomCode>(web_event.domCode));
-    EXPECT_EQ(table[i].dom_key, web_event.domKey);
+    EXPECT_EQ(table[i].windows_key_code, web_event.windows_key_code);
+    EXPECT_EQ(table[i].dom_code, static_cast<ui::DomCode>(web_event.dom_code));
+    EXPECT_EQ(table[i].dom_key, web_event.dom_key);
   }
 }
 
@@ -180,7 +181,7 @@ TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys) {
         left.mac_key_code, 0, left.left_or_right_mask | left.non_specific_mask,
         NSFlagsChanged);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::RawKeyDown, web_event.type());
+    EXPECT_EQ(WebInputEvent::kRawKeyDown, web_event.GetType());
     // Press the right key
     mac_event =
         BuildFakeKeyEvent(right.mac_key_code, 0,
@@ -188,7 +189,7 @@ TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys) {
                               left.non_specific_mask,
                           NSFlagsChanged);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::RawKeyDown, web_event.type());
+    EXPECT_EQ(WebInputEvent::kRawKeyDown, web_event.GetType());
     // Release the right key
     mac_event = BuildFakeKeyEvent(
         right.mac_key_code, 0, left.left_or_right_mask | left.non_specific_mask,
@@ -196,7 +197,7 @@ TEST(WebInputEventFactoryTestMac, SimultaneousModifierKeys) {
     // Release the left key
     mac_event = BuildFakeKeyEvent(left.mac_key_code, 0, 0, NSFlagsChanged);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::KeyUp, web_event.type());
+    EXPECT_EQ(WebInputEvent::kKeyUp, web_event.GetType());
   }
 }
 
@@ -208,10 +209,10 @@ TEST(WebInputEventBuilderMacTest, MissingUndocumentedModifierFlags) {
     NSEvent* mac_event = BuildFakeKeyEvent(
         key.mac_key_code, 0, key.non_specific_mask, NSFlagsChanged);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::RawKeyDown, web_event.type());
+    EXPECT_EQ(WebInputEvent::kRawKeyDown, web_event.GetType());
     mac_event = BuildFakeKeyEvent(key.mac_key_code, 0, 0, NSFlagsChanged);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(WebInputEvent::KeyUp, web_event.type());
+    EXPECT_EQ(WebInputEvent::kKeyUp, web_event.GetType());
   }
 }
 
@@ -221,34 +222,34 @@ TEST(WebInputEventBuilderMacTest, SystemKeyEvents) {
   NSEvent* macEvent =
       BuildFakeKeyEvent(kVK_ANSI_B, 'B', NSCommandKeyMask, NSKeyDown);
   WebKeyboardEvent webEvent = WebKeyboardEventBuilder::Build(macEvent);
-  EXPECT_FALSE(webEvent.isSystemKey);
+  EXPECT_FALSE(webEvent.is_system_key);
 
   // Cmd + I should not be treated as system event.
   macEvent = BuildFakeKeyEvent(kVK_ANSI_I, 'I', NSCommandKeyMask, NSKeyDown);
   webEvent = WebKeyboardEventBuilder::Build(macEvent);
-  EXPECT_FALSE(webEvent.isSystemKey);
+  EXPECT_FALSE(webEvent.is_system_key);
 
   // Cmd + <some other modifier> + <B|I> should be treated as system event.
   macEvent = BuildFakeKeyEvent(kVK_ANSI_B, 'B',
                                NSCommandKeyMask | NSShiftKeyMask, NSKeyDown);
   webEvent = WebKeyboardEventBuilder::Build(macEvent);
-  EXPECT_TRUE(webEvent.isSystemKey);
+  EXPECT_TRUE(webEvent.is_system_key);
   macEvent = BuildFakeKeyEvent(kVK_ANSI_I, 'I',
                                NSCommandKeyMask | NSControlKeyMask, NSKeyDown);
   webEvent = WebKeyboardEventBuilder::Build(macEvent);
-  EXPECT_TRUE(webEvent.isSystemKey);
+  EXPECT_TRUE(webEvent.is_system_key);
 
   // Cmd + <any letter other then B and I> should be treated as system event.
   macEvent = BuildFakeKeyEvent(kVK_ANSI_S, 'S', NSCommandKeyMask, NSKeyDown);
   webEvent = WebKeyboardEventBuilder::Build(macEvent);
-  EXPECT_TRUE(webEvent.isSystemKey);
+  EXPECT_TRUE(webEvent.is_system_key);
 
   // Cmd + <some other modifier> + <any letter other then B and I> should be
   // treated as system event.
   macEvent = BuildFakeKeyEvent(kVK_ANSI_S, 'S',
                                NSCommandKeyMask | NSShiftKeyMask, NSKeyDown);
   webEvent = WebKeyboardEventBuilder::Build(macEvent);
-  EXPECT_TRUE(webEvent.isSystemKey);
+  EXPECT_TRUE(webEvent.is_system_key);
 }
 
 // Test generating |windowsKeyCode| from |NSEvent| 'keydown'/'keyup', US
@@ -284,20 +285,20 @@ TEST(WebInputEventBuilderMacTest, USAlnumNSEventToKeyCode) {
     NSEvent* mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyUp);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     // Test with Shift.
     mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.shift_character,
                                   NSShiftKeyMask, NSKeyDown);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.shift_character,
                                   NSShiftKeyMask, NSKeyUp);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
   }
 }
 
@@ -321,20 +322,20 @@ TEST(WebInputEventBuilderMacTest, JISNumNSEventToKeyCode) {
     NSEvent* mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyUp);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     // Test with Shift.
     mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.shift_character,
                                   NSShiftKeyMask, NSKeyDown);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.shift_character,
                                   NSShiftKeyMask, NSKeyUp);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
   }
 }
 
@@ -370,11 +371,11 @@ TEST(WebInputEventBuilderMacTest, USDvorakAlnumNSEventToKeyCode) {
     NSEvent* mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
     mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyUp);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(entry.key_code, web_event.windows_key_code);
   }
 }
 
@@ -406,13 +407,13 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlShift) {
     NSEvent* mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.character,
                                            NSControlKeyMask, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.domKey);
+    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.dom_key);
     // Tests ctrl_shift_dom_key.
     mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.shift_character,
                                   NSControlKeyMask | NSShiftKeyMask, NSKeyDown);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(ui::DomKey::FromCharacter(entry.shift_character),
-              web_event.domKey);
+              web_event.dom_key);
   }
 }
 
@@ -444,7 +445,7 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlAlt) {
     NSEvent* mac_event = BuildFakeKeyEvent(
         entry.mac_key_code, entry.alt_character, NSAlternateKeyMask, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(ui::DomKey::FromCharacter(entry.alt_character), web_event.domKey)
+    EXPECT_EQ(ui::DomKey::FromCharacter(entry.alt_character), web_event.dom_key)
         << "a " << entry.alt_character;
     // Tests ctrl_alt_dom_key.
     mac_event =
@@ -452,7 +453,7 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlAlt) {
                           NSControlKeyMask | NSAlternateKeyMask, NSKeyDown);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(ui::DomKey::FromCharacter(entry.ctrl_alt_character),
-              web_event.domKey)
+              web_event.dom_key)
         << "a_c " << entry.ctrl_alt_character;
   }
 
@@ -471,7 +472,7 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlAlt) {
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(
         ui::DomKey::DeadKeyFromCombiningCharacter(entry.alt_accent_character),
-        web_event.domKey)
+        web_event.dom_key)
         << "a " << entry.alt_accent_character;
 
     // Tests alt_accent_character with ctrl.
@@ -481,7 +482,7 @@ TEST(WebInputEventBuilderMacTest, DomKeyCtrlAlt) {
     web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(
         ui::DomKey::DeadKeyFromCombiningCharacter(entry.alt_accent_character),
-        web_event.domKey)
+        web_event.dom_key)
         << "a_c " << entry.alt_accent_character;
   }
 }
@@ -532,12 +533,12 @@ TEST(WebInputEventBuilderMacTest, DomKeyNonPrintable) {
     NSEvent* mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, entry.character, 0, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.dom_key, web_event.domKey) << entry.mac_key_code;
+    EXPECT_EQ(entry.dom_key, web_event.dom_key) << entry.mac_key_code;
     // Tests non-printable key with Shift.
     mac_event = BuildFakeKeyEvent(entry.mac_key_code, entry.character,
                                   NSShiftKeyMask, NSKeyDown);
     web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.dom_key, web_event.domKey) << "s " << entry.mac_key_code;
+    EXPECT_EQ(entry.dom_key, web_event.dom_key) << "s " << entry.mac_key_code;
   }
 }
 
@@ -559,7 +560,7 @@ TEST(WebInputEventBuilderMacTest, DomKeyFlagsChanged) {
     NSEvent* mac_event =
         BuildFakeKeyEvent(entry.mac_key_code, 0, 0, NSFlagsChanged);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(entry.dom_key, web_event.domKey) << entry.mac_key_code;
+    EXPECT_EQ(entry.dom_key, web_event.dom_key) << entry.mac_key_code;
   }
 }
 
@@ -571,8 +572,8 @@ TEST(WebInputEventBuilderMacTest, ContextMenuKey) {
   for (auto flags : kEventTypeToTest) {
     NSEvent* mac_event = BuildFakeKeyEvent(kVK_ContextMenu, 0, 0, flags);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
-    EXPECT_EQ(ui::DomKey::CONTEXT_MENU, web_event.domKey);
-    EXPECT_EQ(ui::VKEY_APPS, web_event.windowsKeyCode);
+    EXPECT_EQ(ui::DomKey::CONTEXT_MENU, web_event.dom_key);
+    EXPECT_EQ(ui::VKEY_APPS, web_event.windows_key_code);
   }
 }
 
@@ -603,17 +604,17 @@ TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
                                                 [window contentView]);
   ui::MouseWheelEvent ui_event(mac_event);
 
-  EXPECT_EQ(delta_x * ui::kScrollbarPixelsPerCocoaTick, web_event.deltaX);
-  EXPECT_EQ(web_event.deltaX, ui_event.x_offset());
+  EXPECT_EQ(delta_x * ui::kScrollbarPixelsPerCocoaTick, web_event.delta_x);
+  EXPECT_EQ(web_event.delta_x, ui_event.x_offset());
 
-  EXPECT_EQ(delta_y * ui::kScrollbarPixelsPerCocoaTick, web_event.deltaY);
-  EXPECT_EQ(web_event.deltaY, ui_event.y_offset());
+  EXPECT_EQ(delta_y * ui::kScrollbarPixelsPerCocoaTick, web_event.delta_y);
+  EXPECT_EQ(web_event.delta_y, ui_event.y_offset());
 
-  EXPECT_EQ(11, web_event.positionInWidget().x);
-  EXPECT_EQ(web_event.positionInWidget().x, ui_event.x());
+  EXPECT_EQ(11, web_event.PositionInWidget().x);
+  EXPECT_EQ(web_event.PositionInWidget().x, ui_event.x());
 
   // Both ui:: and blink:: events use an origin at the top-left.
-  EXPECT_EQ(100 - 22, web_event.positionInWidget().y);
-  EXPECT_EQ(web_event.positionInWidget().y, ui_event.y());
+  EXPECT_EQ(100 - 22, web_event.PositionInWidget().y);
+  EXPECT_EQ(web_event.PositionInWidget().y, ui_event.y());
   [window close];
 }

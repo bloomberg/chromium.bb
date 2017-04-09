@@ -34,27 +34,27 @@
 
 namespace blink {
 
-void PluginListBuilder::addPlugin(const WebString& name,
+void PluginListBuilder::AddPlugin(const WebString& name,
                                   const WebString& description,
-                                  const WebString& fileName) {
+                                  const WebString& file_name) {
   PluginInfo info;
   info.name = name;
   info.desc = description;
-  info.file = fileName;
-  m_results->push_back(info);
+  info.file = file_name;
+  results_->push_back(info);
 }
 
-void PluginListBuilder::addMediaTypeToLastPlugin(const WebString& name,
+void PluginListBuilder::AddMediaTypeToLastPlugin(const WebString& name,
                                                  const WebString& description) {
   MimeClassInfo info;
   info.type = name;
   info.desc = description;
-  m_results->back().mimes.push_back(info);
+  results_->back().mimes.push_back(info);
 }
 
-void PluginListBuilder::addFileExtensionToLastMediaType(
+void PluginListBuilder::AddFileExtensionToLastMediaType(
     const WebString& extension) {
-  MimeClassInfo& info = m_results->back().mimes.back();
+  MimeClassInfo& info = results_->back().mimes.back();
   info.extensions.push_back(extension);
 }
 

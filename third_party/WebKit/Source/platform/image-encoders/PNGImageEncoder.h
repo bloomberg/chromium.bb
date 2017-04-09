@@ -48,24 +48,24 @@ class PLATFORM_EXPORT PNGImageEncoderState final {
   WTF_MAKE_NONCOPYABLE(PNGImageEncoderState);
 
  public:
-  static std::unique_ptr<PNGImageEncoderState> create(
-      const IntSize& imageSize,
+  static std::unique_ptr<PNGImageEncoderState> Create(
+      const IntSize& image_size,
       Vector<unsigned char>* output);
   ~PNGImageEncoderState();
-  png_struct* png() {
-    ASSERT(m_png);
-    return m_png;
+  png_struct* Png() {
+    ASSERT(png_);
+    return png_;
   }
-  png_info* info() {
-    ASSERT(m_info);
-    return m_info;
+  png_info* Info() {
+    ASSERT(info_);
+    return info_;
   }
 
  private:
   PNGImageEncoderState(png_struct* png, png_info* info)
-      : m_png(png), m_info(info) {}
-  png_struct* m_png;
-  png_info* m_info;
+      : png_(png), info_(info) {}
+  png_struct* png_;
+  png_info* info_;
 };
 
 class PLATFORM_EXPORT PNGImageEncoder {
@@ -74,11 +74,11 @@ class PLATFORM_EXPORT PNGImageEncoder {
  public:
   // Encode the input data with default compression quality. See also
   // https://crbug.com/179289
-  static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
+  static bool Encode(const ImageDataBuffer&, Vector<unsigned char>* output);
 
   // Functions for progressive image encoding
-  static void writeOneRowToPng(unsigned char* pixels, PNGImageEncoderState*);
-  static void finalizePng(PNGImageEncoderState*);
+  static void WriteOneRowToPng(unsigned char* pixels, PNGImageEncoderState*);
+  static void FinalizePng(PNGImageEncoderState*);
 };
 
 }  // namespace blink

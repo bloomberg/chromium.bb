@@ -50,173 +50,173 @@ class PLATFORM_EXPORT ScrollbarTheme {
   // If true, then scrollbars with this theme will be painted every time
   // Scrollbar::setNeedsPaintInvalidation is called. If false, then only parts
   // which are explicitly invalidated will be repainted.
-  virtual bool shouldRepaintAllPartsOnInvalidation() const { return true; }
+  virtual bool ShouldRepaintAllPartsOnInvalidation() const { return true; }
 
-  virtual void updateEnabledState(const ScrollbarThemeClient&) {}
+  virtual void UpdateEnabledState(const ScrollbarThemeClient&) {}
 
-  virtual bool paint(const Scrollbar&, GraphicsContext&, const CullRect&);
+  virtual bool Paint(const Scrollbar&, GraphicsContext&, const CullRect&);
 
-  virtual ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&);
+  virtual ScrollbarPart HitTest(const ScrollbarThemeClient&, const IntPoint&);
 
   // This returns a fixed value regardless of device-scale-factor.
   // This returns thickness when scrollbar is painted.  i.e. It's not 0 even in
   // overlay scrollbar mode.
   // See also Scrollbar::scrollbarThickness().
-  virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) {
+  virtual int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) {
     return 0;
   }
-  virtual int scrollbarMargin() const { return 0; }
+  virtual int ScrollbarMargin() const { return 0; }
 
-  virtual WebScrollbarButtonsPlacement buttonsPlacement() const {
-    return WebScrollbarButtonsPlacementSingle;
+  virtual WebScrollbarButtonsPlacement ButtonsPlacement() const {
+    return kWebScrollbarButtonsPlacementSingle;
   }
 
-  virtual bool supportsControlTints() const { return false; }
-  virtual bool usesOverlayScrollbars() const { return false; }
-  virtual void updateScrollbarOverlayColorTheme(const ScrollbarThemeClient&) {}
+  virtual bool SupportsControlTints() const { return false; }
+  virtual bool UsesOverlayScrollbars() const { return false; }
+  virtual void UpdateScrollbarOverlayColorTheme(const ScrollbarThemeClient&) {}
 
   // If true, scrollbars that become invisible (i.e. overlay scrollbars that
   // fade out) should be marked as disabled. This option exists since Mac and
   // Aura overlays implement the fade out differently, with Mac painting code
   // fading out the scrollbars. Aura scrollbars require disabling the scrollbar
   // to prevent painting it.
-  virtual bool shouldDisableInvisibleScrollbars() const { return true; }
+  virtual bool ShouldDisableInvisibleScrollbars() const { return true; }
 
-  virtual bool invalidateOnMouseEnterExit() { return false; }
-  virtual bool invalidateOnWindowActiveChange() const { return false; }
+  virtual bool InvalidateOnMouseEnterExit() { return false; }
+  virtual bool InvalidateOnWindowActiveChange() const { return false; }
 
   // Returns parts of the scrollbar which must be repainted following a change
   // in the thumb position, given scroll positions before and after.
-  virtual ScrollbarPart invalidateOnThumbPositionChange(
+  virtual ScrollbarPart InvalidateOnThumbPositionChange(
       const ScrollbarThemeClient&,
-      float oldPosition,
-      float newPosition) const {
-    return AllParts;
+      float old_position,
+      float new_position) const {
+    return kAllParts;
   }
 
   // Returns parts of the scrollbar which must be repainted following a change
   // in enabled state.
-  virtual ScrollbarPart invalidateOnEnabledChange() const { return AllParts; }
+  virtual ScrollbarPart InvalidateOnEnabledChange() const { return kAllParts; }
 
-  virtual void paintScrollCorner(GraphicsContext&,
+  virtual void PaintScrollCorner(GraphicsContext&,
                                  const DisplayItemClient&,
-                                 const IntRect& cornerRect);
-  virtual void paintTickmarks(GraphicsContext&,
+                                 const IntRect& corner_rect);
+  virtual void PaintTickmarks(GraphicsContext&,
                               const Scrollbar&,
                               const IntRect&);
 
-  virtual bool shouldCenterOnThumb(const ScrollbarThemeClient&,
+  virtual bool ShouldCenterOnThumb(const ScrollbarThemeClient&,
                                    const WebMouseEvent&);
-  virtual bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient&,
+  virtual bool ShouldSnapBackToDragOrigin(const ScrollbarThemeClient&,
                                           const WebMouseEvent&);
-  virtual bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&,
+  virtual bool ShouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&,
                                                 const WebMouseEvent&) {
     return false;
   }
 
   // The position of the thumb relative to the track.
-  int thumbPosition(const ScrollbarThemeClient& scrollbar) {
-    return thumbPosition(scrollbar, scrollbar.currentPos());
+  int ThumbPosition(const ScrollbarThemeClient& scrollbar) {
+    return ThumbPosition(scrollbar, scrollbar.CurrentPos());
   }
-  virtual double overlayScrollbarFadeOutDelaySeconds() const;
-  virtual double overlayScrollbarFadeOutDurationSeconds() const;
+  virtual double OverlayScrollbarFadeOutDelaySeconds() const;
+  virtual double OverlayScrollbarFadeOutDurationSeconds() const;
   // The position the thumb would have, relative to the track, at the specified
   // scroll position.
-  virtual int thumbPosition(const ScrollbarThemeClient&, float scrollPosition);
+  virtual int ThumbPosition(const ScrollbarThemeClient&, float scroll_position);
   // The length of the thumb along the axis of the scrollbar.
-  virtual int thumbLength(const ScrollbarThemeClient&);
+  virtual int ThumbLength(const ScrollbarThemeClient&);
   // The position of the track relative to the scrollbar.
-  virtual int trackPosition(const ScrollbarThemeClient&);
+  virtual int TrackPosition(const ScrollbarThemeClient&);
   // The length of the track along the axis of the scrollbar.
-  virtual int trackLength(const ScrollbarThemeClient&);
+  virtual int TrackLength(const ScrollbarThemeClient&);
   // The opacity to be applied to the thumb.
-  virtual float thumbOpacity(const ScrollbarThemeClient&) const { return 1.0f; }
+  virtual float ThumbOpacity(const ScrollbarThemeClient&) const { return 1.0f; }
 
-  virtual bool hasButtons(const ScrollbarThemeClient&) = 0;
-  virtual bool hasThumb(const ScrollbarThemeClient&) = 0;
+  virtual bool HasButtons(const ScrollbarThemeClient&) = 0;
+  virtual bool HasThumb(const ScrollbarThemeClient&) = 0;
 
-  virtual IntRect backButtonRect(const ScrollbarThemeClient&,
+  virtual IntRect BackButtonRect(const ScrollbarThemeClient&,
                                  ScrollbarPart,
                                  bool painting = false) = 0;
-  virtual IntRect forwardButtonRect(const ScrollbarThemeClient&,
+  virtual IntRect ForwardButtonRect(const ScrollbarThemeClient&,
                                     ScrollbarPart,
                                     bool painting = false) = 0;
-  virtual IntRect trackRect(const ScrollbarThemeClient&,
+  virtual IntRect TrackRect(const ScrollbarThemeClient&,
                             bool painting = false) = 0;
-  virtual IntRect thumbRect(const ScrollbarThemeClient&);
-  virtual int thumbThickness(const ScrollbarThemeClient&);
+  virtual IntRect ThumbRect(const ScrollbarThemeClient&);
+  virtual int ThumbThickness(const ScrollbarThemeClient&);
 
-  virtual int minimumThumbLength(const ScrollbarThemeClient&) = 0;
+  virtual int MinimumThumbLength(const ScrollbarThemeClient&) = 0;
 
-  virtual void splitTrack(const ScrollbarThemeClient&,
+  virtual void SplitTrack(const ScrollbarThemeClient&,
                           const IntRect& track,
-                          IntRect& startTrack,
+                          IntRect& start_track,
                           IntRect& thumb,
-                          IntRect& endTrack);
+                          IntRect& end_track);
 
-  virtual void paintScrollbarBackground(GraphicsContext&, const Scrollbar&) {}
-  virtual void paintTrackBackground(GraphicsContext&,
+  virtual void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&) {}
+  virtual void PaintTrackBackground(GraphicsContext&,
                                     const Scrollbar&,
                                     const IntRect&) {}
-  virtual void paintTrackPiece(GraphicsContext&,
+  virtual void PaintTrackPiece(GraphicsContext&,
                                const Scrollbar&,
                                const IntRect&,
                                ScrollbarPart) {}
-  virtual void paintButton(GraphicsContext&,
+  virtual void PaintButton(GraphicsContext&,
                            const Scrollbar&,
                            const IntRect&,
                            ScrollbarPart) {}
-  virtual void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) {}
+  virtual void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) {}
 
-  virtual int maxOverlapBetweenPages() {
+  virtual int MaxOverlapBetweenPages() {
     return std::numeric_limits<int>::max();
   }
 
-  virtual double initialAutoscrollTimerDelay() { return 0.25; }
-  virtual double autoscrollTimerDelay() { return 0.05; }
+  virtual double InitialAutoscrollTimerDelay() { return 0.25; }
+  virtual double AutoscrollTimerDelay() { return 0.05; }
 
-  virtual IntRect constrainTrackRectToTrackPieces(const ScrollbarThemeClient&,
+  virtual IntRect ConstrainTrackRectToTrackPieces(const ScrollbarThemeClient&,
                                                   const IntRect& rect) {
     return rect;
   }
 
-  virtual void registerScrollbar(ScrollbarThemeClient&) {}
-  virtual void unregisterScrollbar(ScrollbarThemeClient&) {}
+  virtual void RegisterScrollbar(ScrollbarThemeClient&) {}
+  virtual void UnregisterScrollbar(ScrollbarThemeClient&) {}
 
-  virtual bool isMockTheme() const { return false; }
+  virtual bool IsMockTheme() const { return false; }
 
-  virtual bool usesNinePatchThumbResource() const { return false; }
+  virtual bool UsesNinePatchThumbResource() const { return false; }
 
   // For a nine-patch scrollbar, this defines the painting canvas size which the
   // painting code will use to paint the scrollbar into. The actual scrollbar
   // dimensions will be ignored for purposes of painting since the resource can
   // be then resized without a repaint.
-  virtual IntSize ninePatchThumbCanvasSize(const ScrollbarThemeClient&) const {
+  virtual IntSize NinePatchThumbCanvasSize(const ScrollbarThemeClient&) const {
     NOTREACHED();
     return IntSize();
   }
 
   // For a nine-patch resource, the aperture defines the center patch that will
   // be stretched out.
-  virtual IntRect ninePatchThumbAperture(const ScrollbarThemeClient&) const {
+  virtual IntRect NinePatchThumbAperture(const ScrollbarThemeClient&) const {
     NOTREACHED();
     return IntRect();
   }
 
-  static ScrollbarTheme& theme();
+  static ScrollbarTheme& GetTheme();
 
-  static void setMockScrollbarsEnabled(bool flag);
-  static bool mockScrollbarsEnabled();
+  static void SetMockScrollbarsEnabled(bool flag);
+  static bool MockScrollbarsEnabled();
 
  protected:
-  virtual int tickmarkBorderWidth() { return 0; }
-  static DisplayItem::Type buttonPartToDisplayItemType(ScrollbarPart);
-  static DisplayItem::Type trackPiecePartToDisplayItemType(ScrollbarPart);
+  virtual int TickmarkBorderWidth() { return 0; }
+  static DisplayItem::Type ButtonPartToDisplayItemType(ScrollbarPart);
+  static DisplayItem::Type TrackPiecePartToDisplayItemType(ScrollbarPart);
 
  private:
   static ScrollbarTheme&
-  nativeTheme();  // Must be implemented to return the correct theme subclass.
-  static bool gMockScrollbarsEnabled;
+  NativeTheme();  // Must be implemented to return the correct theme subclass.
+  static bool g_mock_scrollbars_enabled_;
 };
 
 }  // namespace blink

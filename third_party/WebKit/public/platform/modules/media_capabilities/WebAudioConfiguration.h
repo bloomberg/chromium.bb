@@ -14,7 +14,7 @@ namespace blink {
 // It is created by Blink and passed to consumers that can assume that all
 // required fields are properly set.
 struct WebAudioConfiguration {
-  WebString contentType;
+  WebString content_type;
 
   // `channels` is Optional too but it will be reflected with `isNull()`.
   WebString channels;

@@ -2828,37 +2828,8 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
 
         is_function_arguments = is_function_arguments or character_after_identifier == '('
 
-        # Remove "m_" and "s_" to allow them.
-        modified_identifier = sub(r'(^|(?<=::))[ms]_', '', identifier)
-        if not file_state.is_objective_c() and modified_identifier.find('_') >= 0:
-            # Various exceptions to the rule: JavaScript op codes functions, const_iterator.
-            if (not (filename.find('JavaScriptCore') >= 0 and modified_identifier.find('op_') >= 0)
-                    and not (filename.find('gtk') >= 0 and modified_identifier.startswith('webkit_') >= 0)
-                    and not (filename.find('StructTraits.h') >= 0)
-                    and not modified_identifier.startswith('tst_')
-                    and not modified_identifier.startswith('webkit_dom_object_')
-                    and not modified_identifier.startswith('webkit_soup')
-                    and not modified_identifier.startswith('NPN_')
-                    and not modified_identifier.startswith('NPP_')
-                    and not modified_identifier.startswith('NP_')
-                    and not modified_identifier.startswith('qt_')
-                    and not modified_identifier.startswith('_q_')
-                    and not modified_identifier.startswith('cairo_')
-                    and not modified_identifier.startswith('Ecore_')
-                    and not modified_identifier.startswith('Eina_')
-                    and not modified_identifier.startswith('Evas_')
-                    and not modified_identifier.startswith('Ewk_')
-                    and not modified_identifier.startswith('cti_')
-                    and not modified_identifier.find('::qt_') >= 0
-                    and not modified_identifier.find('::_q_') >= 0
-                    and not modified_identifier == 'const_iterator'
-                    and not modified_identifier == 'vm_throw'
-                    and not modified_identifier == 'DFG_OPERATION'):
-                error(line_number, 'readability/naming/underscores', 4, identifier +
-                      " is incorrectly named. Don't use underscores in your identifier names.")
-
         # Check for variables named 'l', these are too easy to confuse with '1' in some fonts
-        if modified_identifier == 'l':
+        if identifier == 'l':
             error(line_number, 'readability/naming', 4, identifier +
                   " is incorrectly named. Don't use the single letter 'l' as an identifier name.")
 

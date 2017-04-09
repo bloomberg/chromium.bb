@@ -42,24 +42,24 @@ class ValidationMessageClient : public GarbageCollectedMixin {
   // Show validation message for the specified anchor element. An
   // implementation of this function may hide the message automatically after
   // some period.
-  virtual void showValidationMessage(const Element& anchor,
-                                     const String& mainMessage,
+  virtual void ShowValidationMessage(const Element& anchor,
+                                     const String& main_message,
                                      TextDirection,
-                                     const String& subMessage,
+                                     const String& sub_message,
                                      TextDirection) = 0;
 
   // Hide validation message for the specified anchor if the message for the
   // anchor is already visible.
-  virtual void hideValidationMessage(const Element& anchor) = 0;
+  virtual void HideValidationMessage(const Element& anchor) = 0;
 
   // Returns true if the validation message for the specified anchor element
   // is visible.
-  virtual bool isValidationMessageVisible(const Element& anchor) = 0;
+  virtual bool IsValidationMessageVisible(const Element& anchor) = 0;
 
-  virtual void willUnloadDocument(const Document&) = 0;
-  virtual void documentDetached(const Document&) = 0;
+  virtual void WillUnloadDocument(const Document&) = 0;
+  virtual void DocumentDetached(const Document&) = 0;
 
-  virtual void willBeDestroyed() = 0;
+  virtual void WillBeDestroyed() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

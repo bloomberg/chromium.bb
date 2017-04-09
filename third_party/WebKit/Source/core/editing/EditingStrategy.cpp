@@ -13,21 +13,21 @@ namespace blink {
 // the last candidate, otherwise return the number of children for container
 // nodes and the length for unrendered text nodes.
 template <typename Traversal>
-int EditingAlgorithm<Traversal>::caretMaxOffset(const Node& node) {
+int EditingAlgorithm<Traversal>::CaretMaxOffset(const Node& node) {
   // For rendered text nodes, return the last position that a caret could
   // occupy.
-  if (node.isTextNode() && node.layoutObject())
-    return node.layoutObject()->caretMaxOffset();
+  if (node.IsTextNode() && node.GetLayoutObject())
+    return node.GetLayoutObject()->CaretMaxOffset();
   // For containers return the number of children. For others do the same as
   // above.
-  return lastOffsetForEditing(&node);
+  return LastOffsetForEditing(&node);
 }
 
 // TODO(yosin): We should move "isEmptyNonEditableNodeInEditable()" to
 // "EditingUtilities.cpp"
 // |isEmptyNonEditableNodeInEditable()| is introduced for fixing
 // http://crbug.com/428986.
-static bool isEmptyNonEditableNodeInEditable(const Node& node) {
+static bool IsEmptyNonEditableNodeInEditable(const Node& node) {
   // Editability is defined the DOM tree rather than the flat tree. For example:
   // DOM:
   //   <host>
@@ -38,8 +38,8 @@ static bool isEmptyNonEditableNodeInEditable(const Node& node) {
   // Flat Tree:
   //   <host><div ce><span1>unedittable</span></div></host>
   // e.g. editing/shadow/breaking-editing-boundaries.html
-  return !NodeTraversal::hasChildren(node) && !hasEditableStyle(node) &&
-         node.parentNode() && hasEditableStyle(*node.parentNode());
+  return !NodeTraversal::HasChildren(node) && !HasEditableStyle(node) &&
+         node.parentNode() && HasEditableStyle(*node.parentNode());
 }
 
 // TODO(yosin): We should move "editingIgnoresContent()" to
@@ -47,25 +47,25 @@ static bool isEmptyNonEditableNodeInEditable(const Node& node) {
 // TODO(yosin): We should not use |isEmptyNonEditableNodeInEditable()| in
 // |editingIgnoresContent()| since |isEmptyNonEditableNodeInEditable()|
 // requires clean layout tree.
-bool editingIgnoresContent(const Node& node) {
-  return !node.canContainRangeEndPoint() ||
-         isEmptyNonEditableNodeInEditable(node);
+bool EditingIgnoresContent(const Node& node) {
+  return !node.CanContainRangeEndPoint() ||
+         IsEmptyNonEditableNodeInEditable(node);
 }
 
 template <typename Traversal>
-int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node) {
+int EditingAlgorithm<Traversal>::LastOffsetForEditing(const Node* node) {
   DCHECK(node);
   if (!node)
     return 0;
-  if (node->isCharacterDataNode())
-    return node->maxCharacterOffset();
+  if (node->IsCharacterDataNode())
+    return node->MaxCharacterOffset();
 
-  if (Traversal::hasChildren(*node))
-    return Traversal::countChildren(*node);
+  if (Traversal::HasChildren(*node))
+    return Traversal::CountChildren(*node);
 
   // FIXME: Try return 0 here.
 
-  if (!editingIgnoresContent(*node))
+  if (!EditingIgnoresContent(*node))
     return 0;
 
   // editingIgnoresContent uses the same logic in
@@ -76,25 +76,25 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node) {
 }
 
 template <typename Strategy>
-Node* EditingAlgorithm<Strategy>::rootUserSelectAllForNode(Node* node) {
-  if (!node || usedValueOfUserSelect(*node) != SELECT_ALL)
+Node* EditingAlgorithm<Strategy>::RootUserSelectAllForNode(Node* node) {
+  if (!node || UsedValueOfUserSelect(*node) != SELECT_ALL)
     return nullptr;
-  Node* parent = Strategy::parent(*node);
+  Node* parent = Strategy::Parent(*node);
   if (!parent)
     return node;
 
-  Node* candidateRoot = node;
+  Node* candidate_root = node;
   while (parent) {
-    if (!parent->layoutObject()) {
-      parent = Strategy::parent(*parent);
+    if (!parent->GetLayoutObject()) {
+      parent = Strategy::Parent(*parent);
       continue;
     }
-    if (usedValueOfUserSelect(*parent) != SELECT_ALL)
+    if (UsedValueOfUserSelect(*parent) != SELECT_ALL)
       break;
-    candidateRoot = parent;
-    parent = Strategy::parent(*candidateRoot);
+    candidate_root = parent;
+    parent = Strategy::Parent(*candidate_root);
   }
-  return candidateRoot;
+  return candidate_root;
 }
 
 template class CORE_TEMPLATE_EXPORT EditingAlgorithm<NodeTraversal>;

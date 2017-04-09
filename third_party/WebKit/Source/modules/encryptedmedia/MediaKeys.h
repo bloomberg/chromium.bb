@@ -59,59 +59,59 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaKeys* create(
+  static MediaKeys* Create(
       ExecutionContext*,
-      const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
+      const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
       std::unique_ptr<WebContentDecryptionModule>);
   virtual ~MediaKeys();
 
   MediaKeySession* createSession(ScriptState*,
-                                 const String& sessionTypeString,
+                                 const String& session_type_string,
                                  ExceptionState&);
 
   ScriptPromise setServerCertificate(ScriptState*,
-                                     const DOMArrayPiece& serverCertificate);
+                                     const DOMArrayPiece& server_certificate);
 
   // Indicates that the provided HTMLMediaElement wants to use this object.
   // Returns true if no other HTMLMediaElement currently references this
   // object, false otherwise. If true, will take a weak reference to
   // HTMLMediaElement and expects the reservation to be accepted/cancelled
   // later.
-  bool reserveForMediaElement(HTMLMediaElement*);
+  bool ReserveForMediaElement(HTMLMediaElement*);
   // Indicates that SetMediaKeys completed successfully.
-  void acceptReservation();
+  void AcceptReservation();
   // Indicates that SetMediaKeys failed, so HTMLMediaElement did not
   // successfully link to this object.
-  void cancelReservation();
+  void CancelReservation();
 
   // The previously reserved and accepted HTMLMediaElement is no longer
   // using this object.
-  void clearMediaElement();
+  void ClearMediaElement();
 
-  WebContentDecryptionModule* contentDecryptionModule();
+  WebContentDecryptionModule* ContentDecryptionModule();
 
   DECLARE_VIRTUAL_TRACE();
 
   // ContextLifecycleObserver implementation.
   // FIXME: This class could derive from ContextLifecycleObserver
   // again (http://crbug.com/483722).
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
  private:
   MediaKeys(
       ExecutionContext*,
-      const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
+      const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
       std::unique_ptr<WebContentDecryptionModule>);
   class PendingAction;
 
-  bool sessionTypeSupported(WebEncryptedMediaSessionType);
-  void timerFired(TimerBase*);
+  bool SessionTypeSupported(WebEncryptedMediaSessionType);
+  void TimerFired(TimerBase*);
 
-  const WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
-  std::unique_ptr<WebContentDecryptionModule> m_cdm;
+  const WebVector<WebEncryptedMediaSessionType> supported_session_types_;
+  std::unique_ptr<WebContentDecryptionModule> cdm_;
 
   // Keep track of the HTMLMediaElement that references this object. Keeping
   // a WeakMember so that HTMLMediaElement's lifetime isn't dependent on
@@ -120,15 +120,15 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
   // before this object. This is due to WebMediaPlayerImpl (owned by
   // HTMLMediaElement) possibly having a pointer to Decryptor created
   // by WebContentDecryptionModuleImpl (owned by this object).
-  WeakMember<HTMLMediaElement> m_mediaElement;
+  WeakMember<HTMLMediaElement> media_element_;
 
   // Keep track of whether this object has been reserved by HTMLMediaElement
   // (i.e. a setMediaKeys operation is in progress). Destruction of this
   // object will be prevented until the setMediaKeys() completes.
-  bool m_reservedForMediaElement;
+  bool reserved_for_media_element_;
 
-  HeapDeque<Member<PendingAction>> m_pendingActions;
-  TaskRunnerTimer<MediaKeys> m_timer;
+  HeapDeque<Member<PendingAction>> pending_actions_;
+  TaskRunnerTimer<MediaKeys> timer_;
 };
 
 }  // namespace blink

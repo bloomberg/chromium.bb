@@ -101,7 +101,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   bool was_fallback_required_ = false;
   std::vector<GURL> url_list_via_service_worker_;
   blink::WebServiceWorkerResponseType response_type_via_service_worker_ =
-      blink::WebServiceWorkerResponseTypeDefault;
+      blink::kWebServiceWorkerResponseTypeDefault;
   base::TimeTicks service_worker_start_time_;
   base::TimeTicks service_worker_ready_time_;
   bool response_is_in_cache_storage_ = false;

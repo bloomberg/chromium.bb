@@ -37,128 +37,129 @@ using namespace HTMLNames;
 
 HTMLMeterElement::HTMLMeterElement(Document& document)
     : LabelableElement(meterTag, document) {
-  UseCounter::count(document, UseCounter::MeterElement);
+  UseCounter::Count(document, UseCounter::kMeterElement);
 }
 
 HTMLMeterElement::~HTMLMeterElement() {}
 
-HTMLMeterElement* HTMLMeterElement::create(Document& document) {
+HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
   HTMLMeterElement* meter = new HTMLMeterElement(document);
-  meter->ensureUserAgentShadowRoot();
+  meter->EnsureUserAgentShadowRoot();
   return meter;
 }
 
-LayoutObject* HTMLMeterElement::createLayoutObject(const ComputedStyle& style) {
-  switch (style.appearance()) {
-    case MeterPart:
-      UseCounter::count(document(),
-                        UseCounter::MeterElementWithMeterAppearance);
+LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style) {
+  switch (style.Appearance()) {
+    case kMeterPart:
+      UseCounter::Count(GetDocument(),
+                        UseCounter::kMeterElementWithMeterAppearance);
       break;
-    case NoControlPart:
-      UseCounter::count(document(), UseCounter::MeterElementWithNoneAppearance);
+    case kNoControlPart:
+      UseCounter::Count(GetDocument(),
+                        UseCounter::kMeterElementWithNoneAppearance);
       break;
     default:
       break;
   }
-  return LabelableElement::createLayoutObject(style);
+  return LabelableElement::CreateLayoutObject(style);
 }
 
-void HTMLMeterElement::parseAttribute(
+void HTMLMeterElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
   if (name == valueAttr || name == minAttr || name == maxAttr ||
       name == lowAttr || name == highAttr || name == optimumAttr)
-    didElementStateChange();
+    DidElementStateChange();
   else
-    LabelableElement::parseAttribute(params);
+    LabelableElement::ParseAttribute(params);
 }
 
 double HTMLMeterElement::value() const {
-  double value = getFloatingPointAttribute(valueAttr, 0);
+  double value = GetFloatingPointAttribute(valueAttr, 0);
   return std::min(std::max(value, min()), max());
 }
 
 void HTMLMeterElement::setValue(double value) {
-  setFloatingPointAttribute(valueAttr, value);
+  SetFloatingPointAttribute(valueAttr, value);
 }
 
 double HTMLMeterElement::min() const {
-  return getFloatingPointAttribute(minAttr, 0);
+  return GetFloatingPointAttribute(minAttr, 0);
 }
 
 void HTMLMeterElement::setMin(double min) {
-  setFloatingPointAttribute(minAttr, min);
+  SetFloatingPointAttribute(minAttr, min);
 }
 
 double HTMLMeterElement::max() const {
-  return std::max(getFloatingPointAttribute(maxAttr, std::max(1.0, min())),
+  return std::max(GetFloatingPointAttribute(maxAttr, std::max(1.0, min())),
                   min());
 }
 
 void HTMLMeterElement::setMax(double max) {
-  setFloatingPointAttribute(maxAttr, max);
+  SetFloatingPointAttribute(maxAttr, max);
 }
 
 double HTMLMeterElement::low() const {
-  double low = getFloatingPointAttribute(lowAttr, min());
+  double low = GetFloatingPointAttribute(lowAttr, min());
   return std::min(std::max(low, min()), max());
 }
 
 void HTMLMeterElement::setLow(double low) {
-  setFloatingPointAttribute(lowAttr, low);
+  SetFloatingPointAttribute(lowAttr, low);
 }
 
 double HTMLMeterElement::high() const {
-  double high = getFloatingPointAttribute(highAttr, max());
+  double high = GetFloatingPointAttribute(highAttr, max());
   return std::min(std::max(high, low()), max());
 }
 
 void HTMLMeterElement::setHigh(double high) {
-  setFloatingPointAttribute(highAttr, high);
+  SetFloatingPointAttribute(highAttr, high);
 }
 
 double HTMLMeterElement::optimum() const {
-  double optimum = getFloatingPointAttribute(optimumAttr, (max() + min()) / 2);
+  double optimum = GetFloatingPointAttribute(optimumAttr, (max() + min()) / 2);
   return std::min(std::max(optimum, min()), max());
 }
 
 void HTMLMeterElement::setOptimum(double optimum) {
-  setFloatingPointAttribute(optimumAttr, optimum);
+  SetFloatingPointAttribute(optimumAttr, optimum);
 }
 
-HTMLMeterElement::GaugeRegion HTMLMeterElement::getGaugeRegion() const {
-  double lowValue = low();
-  double highValue = high();
-  double theValue = value();
-  double optimumValue = optimum();
+HTMLMeterElement::GaugeRegion HTMLMeterElement::GetGaugeRegion() const {
+  double low_value = low();
+  double high_value = high();
+  double the_value = value();
+  double optimum_value = optimum();
 
-  if (optimumValue < lowValue) {
+  if (optimum_value < low_value) {
     // The optimum range stays under low
-    if (theValue <= lowValue)
-      return GaugeRegionOptimum;
-    if (theValue <= highValue)
-      return GaugeRegionSuboptimal;
-    return GaugeRegionEvenLessGood;
+    if (the_value <= low_value)
+      return kGaugeRegionOptimum;
+    if (the_value <= high_value)
+      return kGaugeRegionSuboptimal;
+    return kGaugeRegionEvenLessGood;
   }
 
-  if (highValue < optimumValue) {
+  if (high_value < optimum_value) {
     // The optimum range stays over high
-    if (highValue <= theValue)
-      return GaugeRegionOptimum;
-    if (lowValue <= theValue)
-      return GaugeRegionSuboptimal;
-    return GaugeRegionEvenLessGood;
+    if (high_value <= the_value)
+      return kGaugeRegionOptimum;
+    if (low_value <= the_value)
+      return kGaugeRegionSuboptimal;
+    return kGaugeRegionEvenLessGood;
   }
 
   // The optimum range stays between high and low.
   // According to the standard, <meter> never show GaugeRegionEvenLessGood in
   // this case because the value is never less or greater than min or max.
-  if (lowValue <= theValue && theValue <= highValue)
-    return GaugeRegionOptimum;
-  return GaugeRegionSuboptimal;
+  if (low_value <= the_value && the_value <= high_value)
+    return kGaugeRegionOptimum;
+  return kGaugeRegionSuboptimal;
 }
 
-double HTMLMeterElement::valueRatio() const {
+double HTMLMeterElement::ValueRatio() const {
   double min = this->min();
   double max = this->max();
   double value = this->value();
@@ -168,63 +169,63 @@ double HTMLMeterElement::valueRatio() const {
   return (value - min) / (max - min);
 }
 
-void HTMLMeterElement::didElementStateChange() {
-  updateValueAppearance(valueRatio() * 100);
+void HTMLMeterElement::DidElementStateChange() {
+  UpdateValueAppearance(ValueRatio() * 100);
 }
 
-void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root) {
-  DCHECK(!m_value);
+void HTMLMeterElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
+  DCHECK(!value_);
 
-  HTMLDivElement* inner = HTMLDivElement::create(document());
-  inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
-  root.appendChild(inner);
+  HTMLDivElement* inner = HTMLDivElement::Create(GetDocument());
+  inner->SetShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
+  root.AppendChild(inner);
 
-  HTMLDivElement* bar = HTMLDivElement::create(document());
-  bar->setShadowPseudoId(AtomicString("-webkit-meter-bar"));
+  HTMLDivElement* bar = HTMLDivElement::Create(GetDocument());
+  bar->SetShadowPseudoId(AtomicString("-webkit-meter-bar"));
 
-  m_value = HTMLDivElement::create(document());
-  updateValueAppearance(0);
-  bar->appendChild(m_value);
+  value_ = HTMLDivElement::Create(GetDocument());
+  UpdateValueAppearance(0);
+  bar->AppendChild(value_);
 
-  inner->appendChild(bar);
+  inner->AppendChild(bar);
 
-  HTMLDivElement* fallback = HTMLDivElement::create(document());
-  fallback->appendChild(HTMLContentElement::create(document()));
-  fallback->setShadowPseudoId(AtomicString("-internal-fallback"));
-  root.appendChild(fallback);
+  HTMLDivElement* fallback = HTMLDivElement::Create(GetDocument());
+  fallback->AppendChild(HTMLContentElement::Create(GetDocument()));
+  fallback->SetShadowPseudoId(AtomicString("-internal-fallback"));
+  root.AppendChild(fallback);
 }
 
-void HTMLMeterElement::updateValueAppearance(double percentage) {
-  DEFINE_STATIC_LOCAL(AtomicString, optimumPseudoId,
+void HTMLMeterElement::UpdateValueAppearance(double percentage) {
+  DEFINE_STATIC_LOCAL(AtomicString, optimum_pseudo_id,
                       ("-webkit-meter-optimum-value"));
-  DEFINE_STATIC_LOCAL(AtomicString, suboptimumPseudoId,
+  DEFINE_STATIC_LOCAL(AtomicString, suboptimum_pseudo_id,
                       ("-webkit-meter-suboptimum-value"));
-  DEFINE_STATIC_LOCAL(AtomicString, evenLessGoodPseudoId,
+  DEFINE_STATIC_LOCAL(AtomicString, even_less_good_pseudo_id,
                       ("-webkit-meter-even-less-good-value"));
 
-  m_value->setInlineStyleProperty(CSSPropertyWidth, percentage,
-                                  CSSPrimitiveValue::UnitType::Percentage);
-  switch (getGaugeRegion()) {
-    case GaugeRegionOptimum:
-      m_value->setShadowPseudoId(optimumPseudoId);
+  value_->SetInlineStyleProperty(CSSPropertyWidth, percentage,
+                                 CSSPrimitiveValue::UnitType::kPercentage);
+  switch (GetGaugeRegion()) {
+    case kGaugeRegionOptimum:
+      value_->SetShadowPseudoId(optimum_pseudo_id);
       break;
-    case GaugeRegionSuboptimal:
-      m_value->setShadowPseudoId(suboptimumPseudoId);
+    case kGaugeRegionSuboptimal:
+      value_->SetShadowPseudoId(suboptimum_pseudo_id);
       break;
-    case GaugeRegionEvenLessGood:
-      m_value->setShadowPseudoId(evenLessGoodPseudoId);
+    case kGaugeRegionEvenLessGood:
+      value_->SetShadowPseudoId(even_less_good_pseudo_id);
       break;
   }
 }
 
-bool HTMLMeterElement::canContainRangeEndPoint() const {
-  document().updateStyleAndLayoutTreeForNode(this);
-  return computedStyle() && !computedStyle()->hasAppearance();
+bool HTMLMeterElement::CanContainRangeEndPoint() const {
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  return GetComputedStyle() && !GetComputedStyle()->HasAppearance();
 }
 
 DEFINE_TRACE(HTMLMeterElement) {
-  visitor->trace(m_value);
-  LabelableElement::trace(visitor);
+  visitor->Trace(value_);
+  LabelableElement::Trace(visitor);
 }
 
 }  // namespace blink

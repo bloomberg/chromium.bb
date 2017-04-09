@@ -49,15 +49,15 @@ class WebServiceWorkerNetworkProvider {
   // A request is about to be sent out, and the client may modify it. Request
   // is writable, and changes to the URL, for example, will change the request
   // made.
-  virtual void willSendRequest(WebURLRequest&) {}
+  virtual void WillSendRequest(WebURLRequest&) {}
 
   // Whether the document associated with WebDataSource is controlled by the
   // ServiceWorker.
-  virtual bool isControlledByServiceWorker() { return false; }
+  virtual bool IsControlledByServiceWorker() { return false; }
 
   // Returns an identifier of the service worker controlling the document
   // associated with the WebDataSource.
-  virtual int64_t serviceWorkerID() { return -1; }
+  virtual int64_t ServiceWorkerID() { return -1; }
 };
 
 }  // namespace blink

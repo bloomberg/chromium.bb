@@ -14,7 +14,7 @@ namespace blink {
 class LayoutBoxTest : public RenderingTest {};
 
 TEST_F(LayoutBoxTest, BackgroundObscuredInRect) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>.column { width: 295.4px; padding-left: 10.4px; } "
       ".white-background { background: red; position: relative; overflow: "
       "hidden; border-radius: 1px; }"
@@ -22,13 +22,13 @@ TEST_F(LayoutBoxTest, BackgroundObscuredInRect) {
       "</style>"
       "<div class='column'> <div> <div id='target' class='white-background'> "
       "<div class='black-background'></div> </div> </div> </div>");
-  LayoutObject* layoutObject = getLayoutObjectByElementId("target");
-  ASSERT_TRUE(layoutObject);
-  ASSERT_TRUE(layoutObject->backgroundIsKnownToBeObscured());
+  LayoutObject* layout_object = GetLayoutObjectByElementId("target");
+  ASSERT_TRUE(layout_object);
+  ASSERT_TRUE(layout_object->BackgroundIsKnownToBeObscured());
 }
 
 TEST_F(LayoutBoxTest, BackgroundRect) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>div { position: absolute; width: 100px; height: 100px; padding: "
       "10px; border: 10px solid black; overflow: scroll; }"
       "#target1 { background: "
@@ -57,52 +57,52 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
 
   // #target1's opaque background color only fills the content box but its
   // translucent image extends to the borders.
-  LayoutBox* layoutBox = toLayoutBox(getLayoutObjectByElementId("target1"));
+  LayoutBox* layout_box = ToLayoutBox(GetLayoutObjectByElementId("target1"));
   EXPECT_EQ(LayoutRect(20, 20, 100, 100),
-            layoutBox->backgroundRect(BackgroundKnownOpaqueRect));
+            layout_box->BackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
-            layoutBox->backgroundRect(BackgroundClipRect));
+            layout_box->BackgroundRect(kBackgroundClipRect));
 
   // #target2's background color is opaque but only fills the padding-box
   // because it has local attachment. This eclipses the content-box image.
-  layoutBox = toLayoutBox(getLayoutObjectByElementId("target2"));
+  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target2"));
   EXPECT_EQ(LayoutRect(10, 10, 120, 120),
-            layoutBox->backgroundRect(BackgroundKnownOpaqueRect));
+            layout_box->BackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(10, 10, 120, 120),
-            layoutBox->backgroundRect(BackgroundClipRect));
+            layout_box->BackgroundRect(kBackgroundClipRect));
 
   // #target3's background color is not opaque so we only have a clip rect.
-  layoutBox = toLayoutBox(getLayoutObjectByElementId("target3"));
-  EXPECT_TRUE(layoutBox->backgroundRect(BackgroundKnownOpaqueRect).isEmpty());
+  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target3"));
+  EXPECT_TRUE(layout_box->BackgroundRect(kBackgroundKnownOpaqueRect).IsEmpty());
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
-            layoutBox->backgroundRect(BackgroundClipRect));
+            layout_box->BackgroundRect(kBackgroundClipRect));
 
   // #target4's background color has a blend mode so it isn't opaque.
-  layoutBox = toLayoutBox(getLayoutObjectByElementId("target4"));
-  EXPECT_TRUE(layoutBox->backgroundRect(BackgroundKnownOpaqueRect).isEmpty());
+  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target4"));
+  EXPECT_TRUE(layout_box->BackgroundRect(kBackgroundKnownOpaqueRect).IsEmpty());
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
-            layoutBox->backgroundRect(BackgroundClipRect));
+            layout_box->BackgroundRect(kBackgroundClipRect));
 
   // #target5's solid background only covers the content-box but it has a "none"
   // background covering the border box.
-  layoutBox = toLayoutBox(getLayoutObjectByElementId("target5"));
+  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target5"));
   EXPECT_EQ(LayoutRect(20, 20, 100, 100),
-            layoutBox->backgroundRect(BackgroundKnownOpaqueRect));
+            layout_box->BackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
-            layoutBox->backgroundRect(BackgroundClipRect));
+            layout_box->BackgroundRect(kBackgroundClipRect));
 
   // Because it can scroll due to local attachment, the opaque local background
   // in #target6 is treated as padding box for the clip rect, but remains the
   // content box for the known opaque rect.
-  layoutBox = toLayoutBox(getLayoutObjectByElementId("target6"));
+  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target6"));
   EXPECT_EQ(LayoutRect(20, 20, 100, 100),
-            layoutBox->backgroundRect(BackgroundKnownOpaqueRect));
+            layout_box->BackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(10, 10, 120, 120),
-            layoutBox->backgroundRect(BackgroundClipRect));
+            layout_box->BackgroundRect(kBackgroundClipRect));
 }
 
 TEST_F(LayoutBoxTest, LocationContainer) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div'>"
       "  <b>Inline content<img id='img'></b>"
       "</div>"
@@ -114,40 +114,40 @@ TEST_F(LayoutBoxTest, LocationContainer) {
       "  </tbody>"
       "</table>");
 
-  const LayoutBox* body = document().body()->layoutBox();
-  const LayoutBox* div = toLayoutBox(getLayoutObjectByElementId("div"));
-  const LayoutBox* img = toLayoutBox(getLayoutObjectByElementId("img"));
-  const LayoutBox* table = toLayoutBox(getLayoutObjectByElementId("table"));
-  const LayoutBox* tbody = toLayoutBox(getLayoutObjectByElementId("tbody"));
-  const LayoutBox* row = toLayoutBox(getLayoutObjectByElementId("row"));
-  const LayoutBox* cell = toLayoutBox(getLayoutObjectByElementId("cell"));
+  const LayoutBox* body = GetDocument().body()->GetLayoutBox();
+  const LayoutBox* div = ToLayoutBox(GetLayoutObjectByElementId("div"));
+  const LayoutBox* img = ToLayoutBox(GetLayoutObjectByElementId("img"));
+  const LayoutBox* table = ToLayoutBox(GetLayoutObjectByElementId("table"));
+  const LayoutBox* tbody = ToLayoutBox(GetLayoutObjectByElementId("tbody"));
+  const LayoutBox* row = ToLayoutBox(GetLayoutObjectByElementId("row"));
+  const LayoutBox* cell = ToLayoutBox(GetLayoutObjectByElementId("cell"));
 
-  EXPECT_EQ(body, div->locationContainer());
-  EXPECT_EQ(div, img->locationContainer());
-  EXPECT_EQ(body, table->locationContainer());
-  EXPECT_EQ(table, tbody->locationContainer());
-  EXPECT_EQ(tbody, row->locationContainer());
-  EXPECT_EQ(tbody, cell->locationContainer());
+  EXPECT_EQ(body, div->LocationContainer());
+  EXPECT_EQ(div, img->LocationContainer());
+  EXPECT_EQ(body, table->LocationContainer());
+  EXPECT_EQ(table, tbody->LocationContainer());
+  EXPECT_EQ(tbody, row->LocationContainer());
+  EXPECT_EQ(tbody, cell->LocationContainer());
 }
 
 TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='width: 600px; height: 200px; writing-mode: vertical-rl'>"
       "  <div id='box1' style='width: 100px'></div>"
       "  <div id='box2' style='width: 200px'></div>"
       "</div>");
 
-  const LayoutBox* box1 = toLayoutBox(getLayoutObjectByElementId("box1"));
-  EXPECT_EQ(LayoutPoint(0, 0), box1->location());
-  EXPECT_EQ(LayoutPoint(500, 0), box1->physicalLocation());
+  const LayoutBox* box1 = ToLayoutBox(GetLayoutObjectByElementId("box1"));
+  EXPECT_EQ(LayoutPoint(0, 0), box1->Location());
+  EXPECT_EQ(LayoutPoint(500, 0), box1->PhysicalLocation());
 
-  const LayoutBox* box2 = toLayoutBox(getLayoutObjectByElementId("box2"));
-  EXPECT_EQ(LayoutPoint(100, 0), box2->location());
-  EXPECT_EQ(LayoutPoint(300, 0), box2->physicalLocation());
+  const LayoutBox* box2 = ToLayoutBox(GetLayoutObjectByElementId("box2"));
+  EXPECT_EQ(LayoutPoint(100, 0), box2->Location());
+  EXPECT_EQ(LayoutPoint(300, 0), box2->PhysicalLocation());
 }
 
 TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div style='writing-mode: vertical-rl'>"
       "  <table style='border-spacing: 0'>"
       "    <thead><tr><td style='width: 50px'></td></tr></thead>"
@@ -165,53 +165,54 @@ TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
   // location and physicalLocation of a table row or a table cell should be
   // relative to the containing section.
 
-  const LayoutBox* row1 = toLayoutBox(getLayoutObjectByElementId("row1"));
-  EXPECT_EQ(LayoutPoint(0, 0), row1->location());
-  EXPECT_EQ(LayoutPoint(300, 0), row1->physicalLocation());
+  const LayoutBox* row1 = ToLayoutBox(GetLayoutObjectByElementId("row1"));
+  EXPECT_EQ(LayoutPoint(0, 0), row1->Location());
+  EXPECT_EQ(LayoutPoint(300, 0), row1->PhysicalLocation());
 
-  const LayoutBox* cell1 = toLayoutBox(getLayoutObjectByElementId("cell1"));
-  EXPECT_EQ(LayoutPoint(0, 0), cell1->location());
-  EXPECT_EQ(LayoutPoint(300, 0), cell1->physicalLocation());
+  const LayoutBox* cell1 = ToLayoutBox(GetLayoutObjectByElementId("cell1"));
+  EXPECT_EQ(LayoutPoint(0, 0), cell1->Location());
+  EXPECT_EQ(LayoutPoint(300, 0), cell1->PhysicalLocation());
 
-  const LayoutBox* row2 = toLayoutBox(getLayoutObjectByElementId("row2"));
-  EXPECT_EQ(LayoutPoint(100, 0), row2->location());
-  EXPECT_EQ(LayoutPoint(0, 0), row2->physicalLocation());
+  const LayoutBox* row2 = ToLayoutBox(GetLayoutObjectByElementId("row2"));
+  EXPECT_EQ(LayoutPoint(100, 0), row2->Location());
+  EXPECT_EQ(LayoutPoint(0, 0), row2->PhysicalLocation());
 
-  const LayoutBox* cell2 = toLayoutBox(getLayoutObjectByElementId("cell2"));
-  EXPECT_EQ(LayoutPoint(100, 0), cell2->location());
-  EXPECT_EQ(LayoutPoint(0, 0), cell2->physicalLocation());
+  const LayoutBox* cell2 = ToLayoutBox(GetLayoutObjectByElementId("cell2"));
+  EXPECT_EQ(LayoutPoint(100, 0), cell2->Location());
+  EXPECT_EQ(LayoutPoint(0, 0), cell2->PhysicalLocation());
 }
 
 TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg id='svg' style='writing-mode:vertical-rl' width='500' height='500'>"
       "  <foreignObject x='44' y='77' width='100' height='80' id='foreign'>"
       "    <div id='child' style='width: 33px; height: 55px'>"
       "    </div>"
       "  </foreignObject>"
       "</svg>");
-  const LayoutBox* svgRoot = toLayoutBox(getLayoutObjectByElementId("svg"));
-  const LayoutBox* foreign = toLayoutBox(getLayoutObjectByElementId("foreign"));
-  const LayoutBox* child = toLayoutBox(getLayoutObjectByElementId("child"));
+  const LayoutBox* svg_root = ToLayoutBox(GetLayoutObjectByElementId("svg"));
+  const LayoutBox* foreign = ToLayoutBox(GetLayoutObjectByElementId("foreign"));
+  const LayoutBox* child = ToLayoutBox(GetLayoutObjectByElementId("child"));
 
-  EXPECT_EQ(document().body()->layoutObject(), svgRoot->locationContainer());
+  EXPECT_EQ(GetDocument().body()->GetLayoutObject(),
+            svg_root->LocationContainer());
 
   // The foreign object's location is not affected by SVGRoot's writing-mode.
-  EXPECT_FALSE(foreign->locationContainer());
-  EXPECT_EQ(LayoutRect(44, 77, 100, 80), foreign->frameRect());
-  EXPECT_EQ(LayoutPoint(44, 77), foreign->physicalLocation());
+  EXPECT_FALSE(foreign->LocationContainer());
+  EXPECT_EQ(LayoutRect(44, 77, 100, 80), foreign->FrameRect());
+  EXPECT_EQ(LayoutPoint(44, 77), foreign->PhysicalLocation());
   // The writing mode style should be still be inherited.
-  EXPECT_TRUE(foreign->hasFlippedBlocksWritingMode());
+  EXPECT_TRUE(foreign->HasFlippedBlocksWritingMode());
 
   // The child of the foreign object is affected by writing-mode.
-  EXPECT_EQ(foreign, child->locationContainer());
-  EXPECT_EQ(LayoutRect(0, 0, 33, 55), child->frameRect());
-  EXPECT_EQ(LayoutPoint(67, 0), child->physicalLocation());
-  EXPECT_TRUE(child->hasFlippedBlocksWritingMode());
+  EXPECT_EQ(foreign, child->LocationContainer());
+  EXPECT_EQ(LayoutRect(0, 0, 33, 55), child->FrameRect());
+  EXPECT_EQ(LayoutPoint(67, 0), child->PhysicalLocation());
+  EXPECT_TRUE(child->HasFlippedBlocksWritingMode());
 }
 
 TEST_F(LayoutBoxTest, ControlClip) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; }"
       "  #target {"
@@ -220,14 +221,14 @@ TEST_F(LayoutBoxTest, ControlClip) {
       "  }"
       "</style>"
       "<input id='target' type='button' value='some text'/>");
-  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
-  EXPECT_TRUE(target->hasControlClip());
-  EXPECT_TRUE(target->hasClipRelatedProperty());
-  EXPECT_TRUE(target->shouldClipOverflow());
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_TRUE(target->HasControlClip());
+  EXPECT_TRUE(target->HasClipRelatedProperty());
+  EXPECT_TRUE(target->ShouldClipOverflow());
 #if OS(MACOSX)
-  EXPECT_EQ(LayoutRect(0, 0, 100, 18), target->clippingRect());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 18), target->ClippingRect());
 #else
-  EXPECT_EQ(LayoutRect(2, 2, 96, 46), target->clippingRect());
+  EXPECT_EQ(LayoutRect(2, 2, 96, 46), target->ClippingRect());
 #endif
 }
 

@@ -51,7 +51,7 @@ class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SubtleCrypto* create() { return new SubtleCrypto(); }
+  static SubtleCrypto* Create() { return new SubtleCrypto(); }
 
   ScriptPromise encrypt(ScriptState*,
                         const AlgorithmIdentifier&,
@@ -79,13 +79,13 @@ class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
   ScriptPromise generateKey(ScriptState*,
                             const AlgorithmIdentifier&,
                             bool extractable,
-                            const Vector<String>& keyUsages);
+                            const Vector<String>& key_usages);
   ScriptPromise importKey(ScriptState*,
                           const String&,
                           const ArrayBufferOrArrayBufferViewOrDictionary&,
                           const AlgorithmIdentifier&,
                           bool extractable,
-                          const Vector<String>& keyUsages);
+                          const Vector<String>& key_usages);
   ScriptPromise exportKey(ScriptState*, const String&, CryptoKey*);
 
   ScriptPromise wrapKey(ScriptState*,

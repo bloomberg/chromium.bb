@@ -51,18 +51,18 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebIDBCursorDirection stringToDirection(const String& modeString);
+  static WebIDBCursorDirection StringToDirection(const String& mode_string);
 
-  static IDBCursor* create(std::unique_ptr<WebIDBCursor>,
+  static IDBCursor* Create(std::unique_ptr<WebIDBCursor>,
                            WebIDBCursorDirection,
                            IDBRequest*,
                            IDBAny* source,
                            IDBTransaction*);
   virtual ~IDBCursor();
   DECLARE_TRACE();
-  void contextWillBeDestroyed() { m_backend.reset(); }
+  void ContextWillBeDestroyed() { backend_.reset(); }
 
-  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper) override;
@@ -79,22 +79,22 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   void continueFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
   void continuePrimaryKey(ScriptState*,
                           const ScriptValue& key,
-                          const ScriptValue& primaryKey,
+                          const ScriptValue& primary_key,
                           ExceptionState&);
   IDBRequest* deleteFunction(ScriptState*, ExceptionState&);
 
-  bool isKeyDirty() const { return m_keyDirty; }
-  bool isPrimaryKeyDirty() const { return m_primaryKeyDirty; }
-  bool isValueDirty() const { return m_valueDirty; }
+  bool isKeyDirty() const { return key_dirty_; }
+  bool isPrimaryKeyDirty() const { return primary_key_dirty_; }
+  bool isValueDirty() const { return value_dirty_; }
 
-  void continueFunction(IDBKey*, IDBKey* primaryKey, ExceptionState&);
-  void postSuccessHandlerCallback();
-  bool isDeleted() const;
-  void close();
-  void setValueReady(IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
-  IDBKey* idbPrimaryKey() const { return m_primaryKey; }
-  virtual bool isKeyCursor() const { return true; }
-  virtual bool isCursorWithValue() const { return false; }
+  void continueFunction(IDBKey*, IDBKey* primary_key, ExceptionState&);
+  void PostSuccessHandlerCallback();
+  bool IsDeleted() const;
+  void Close();
+  void SetValueReady(IDBKey*, IDBKey* primary_key, PassRefPtr<IDBValue>);
+  IDBKey* IdbPrimaryKey() const { return primary_key_; }
+  virtual bool IsKeyCursor() const { return true; }
+  virtual bool IsCursorWithValue() const { return false; }
 
  protected:
   IDBCursor(std::unique_ptr<WebIDBCursor>,
@@ -104,20 +104,20 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
             IDBTransaction*);
 
  private:
-  IDBObjectStore* effectiveObjectStore() const;
+  IDBObjectStore* EffectiveObjectStore() const;
 
-  std::unique_ptr<WebIDBCursor> m_backend;
-  Member<IDBRequest> m_request;
-  const WebIDBCursorDirection m_direction;
-  Member<IDBAny> m_source;
-  Member<IDBTransaction> m_transaction;
-  bool m_gotValue = false;
-  bool m_keyDirty = true;
-  bool m_primaryKeyDirty = true;
-  bool m_valueDirty = true;
-  Member<IDBKey> m_key;
-  Member<IDBKey> m_primaryKey;
-  RefPtr<IDBValue> m_value;
+  std::unique_ptr<WebIDBCursor> backend_;
+  Member<IDBRequest> request_;
+  const WebIDBCursorDirection direction_;
+  Member<IDBAny> source_;
+  Member<IDBTransaction> transaction_;
+  bool got_value_ = false;
+  bool key_dirty_ = true;
+  bool primary_key_dirty_ = true;
+  bool value_dirty_ = true;
+  Member<IDBKey> key_;
+  Member<IDBKey> primary_key_;
+  RefPtr<IDBValue> value_;
 };
 
 }  // namespace blink

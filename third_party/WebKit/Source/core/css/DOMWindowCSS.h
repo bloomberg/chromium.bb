@@ -42,7 +42,7 @@ class DOMWindowCSS : public GarbageCollected<DOMWindowCSS>,
 
  public:
   static bool supports(const String& property, const String& value);
-  static bool supports(const String& conditionText);
+  static bool supports(const String& condition_text);
   static String escape(const String& ident);
 
   DEFINE_INLINE_TRACE() {}

@@ -49,9 +49,9 @@ class DecimalStepRange {
                    const Decimal& step)
       : maximum(maximum), minimum(minimum), step(step) {}
 
-  Decimal clampValue(Decimal value) const {
-    const Decimal result = minimum + ((value - minimum) / step).round() * step;
-    ASSERT(result.isFinite());
+  Decimal ClampValue(Decimal value) const {
+    const Decimal result = minimum + ((value - minimum) / step).Round() * step;
+    ASSERT(result.IsFinite());
     return result > maximum ? result - step : result;
   }
 };
@@ -59,43 +59,43 @@ class DecimalStepRange {
 class DecimalTest : public ::testing::Test {
  protected:
   using Sign = Decimal::Sign;
-  static const Sign Positive = Decimal::Positive;
-  static const Sign Negative = Decimal::Negative;
+  static const Sign kPositive = Decimal::kPositive;
+  static const Sign kNegative = Decimal::kNegative;
 
-  Decimal encode(uint64_t coefficient, int exponent, Sign sign) {
+  Decimal Encode(uint64_t coefficient, int exponent, Sign sign) {
     return Decimal(sign, exponent, coefficient);
   }
 
-  Decimal fromString(const String& string) {
-    return Decimal::fromString(string);
+  Decimal FromString(const String& string) {
+    return Decimal::FromString(string);
   }
 
-  Decimal stepDown(const String& minimum,
+  Decimal StepDown(const String& minimum,
                    const String& maximum,
                    const String& step,
-                   const String& valueString,
-                   int numberOfStepTimes) {
-    DecimalStepRange stepRange(fromString(minimum), fromString(maximum),
-                               fromString(step));
-    Decimal value = fromString(valueString);
-    for (int i = 0; i < numberOfStepTimes; ++i) {
-      value -= stepRange.step;
-      value = stepRange.clampValue(value);
+                   const String& value_string,
+                   int number_of_step_times) {
+    DecimalStepRange step_range(FromString(minimum), FromString(maximum),
+                                FromString(step));
+    Decimal value = FromString(value_string);
+    for (int i = 0; i < number_of_step_times; ++i) {
+      value -= step_range.step;
+      value = step_range.ClampValue(value);
     }
     return value;
   }
 
-  Decimal stepUp(const String& minimum,
+  Decimal StepUp(const String& minimum,
                  const String& maximum,
                  const String& step,
-                 const String& valueString,
-                 int numberOfStepTimes) {
-    DecimalStepRange stepRange(fromString(minimum), fromString(maximum),
-                               fromString(step));
-    Decimal value = fromString(valueString);
-    for (int i = 0; i < numberOfStepTimes; ++i) {
-      value += stepRange.step;
-      value = stepRange.clampValue(value);
+                 const String& value_string,
+                 int number_of_step_times) {
+    DecimalStepRange step_range(FromString(minimum), FromString(maximum),
+                                FromString(step));
+    Decimal value = FromString(value_string);
+    for (int i = 0; i < number_of_step_times; ++i) {
+      value += step_range.step;
+      value = step_range.ClampValue(value);
     }
     return value;
   }
@@ -105,156 +105,156 @@ class DecimalTest : public ::testing::Test {
 // undefined references for DecimalTest::Positive and Negative.
 #define EXPECT_DECIMAL_ENCODED_DATA_EQ(expectedCoefficient, expectedExponent, \
                                        expectedSign, decimal)                 \
-  EXPECT_EQ((expectedCoefficient), (decimal).value().coefficient());          \
-  EXPECT_EQ((expectedExponent), (decimal).value().exponent());                \
-  EXPECT_EQ(Decimal::expectedSign, (decimal).value().getSign());
+  EXPECT_EQ((expectedCoefficient), (decimal).Value().Coefficient());          \
+  EXPECT_EQ((expectedExponent), (decimal).Value().Exponent());                \
+  EXPECT_EQ(Decimal::expectedSign, (decimal).Value().GetSign());
 
 #define EXPECT_DECIMAL_STREQ(expected, decimal) \
-  EXPECT_STREQ((expected), (decimal).toString().ascii().data())
+  EXPECT_STREQ((expected), (decimal).ToString().Ascii().Data())
 
 TEST_F(DecimalTest, Abs) {
-  EXPECT_EQ(encode(0, 0, Positive), encode(0, 0, Positive).abs());
-  EXPECT_EQ(encode(0, 0, Positive), encode(0, 0, Negative).abs());
+  EXPECT_EQ(Encode(0, 0, kPositive), Encode(0, 0, kPositive).Abs());
+  EXPECT_EQ(Encode(0, 0, kPositive), Encode(0, 0, kNegative).Abs());
 
-  EXPECT_EQ(encode(0, 10, Positive), encode(0, 10, Positive).abs());
-  EXPECT_EQ(encode(0, 10, Positive), encode(0, 10, Negative).abs());
+  EXPECT_EQ(Encode(0, 10, kPositive), Encode(0, 10, kPositive).Abs());
+  EXPECT_EQ(Encode(0, 10, kPositive), Encode(0, 10, kNegative).Abs());
 
-  EXPECT_EQ(encode(0, -10, Positive), encode(0, -10, Positive).abs());
-  EXPECT_EQ(encode(0, -10, Positive), encode(0, -10, Negative).abs());
+  EXPECT_EQ(Encode(0, -10, kPositive), Encode(0, -10, kPositive).Abs());
+  EXPECT_EQ(Encode(0, -10, kPositive), Encode(0, -10, kNegative).Abs());
 
-  EXPECT_EQ(encode(1, 0, Positive), encode(1, 0, Positive).abs());
-  EXPECT_EQ(encode(1, 0, Positive), encode(1, 0, Negative).abs());
+  EXPECT_EQ(Encode(1, 0, kPositive), Encode(1, 0, kPositive).Abs());
+  EXPECT_EQ(Encode(1, 0, kPositive), Encode(1, 0, kNegative).Abs());
 
-  EXPECT_EQ(encode(1, 10, Positive), encode(1, 10, Positive).abs());
-  EXPECT_EQ(encode(1, 10, Positive), encode(1, 10, Negative).abs());
+  EXPECT_EQ(Encode(1, 10, kPositive), Encode(1, 10, kPositive).Abs());
+  EXPECT_EQ(Encode(1, 10, kPositive), Encode(1, 10, kNegative).Abs());
 
-  EXPECT_EQ(encode(1, -10, Positive), encode(1, -10, Positive).abs());
-  EXPECT_EQ(encode(1, -10, Positive), encode(1, -10, Negative).abs());
+  EXPECT_EQ(Encode(1, -10, kPositive), Encode(1, -10, kPositive).Abs());
+  EXPECT_EQ(Encode(1, -10, kPositive), Encode(1, -10, kNegative).Abs());
 }
 
 TEST_F(DecimalTest, AbsBigExponent) {
-  EXPECT_EQ(encode(1, 1000, Positive), encode(1, 1000, Positive).abs());
-  EXPECT_EQ(encode(1, 1000, Positive), encode(1, 1000, Negative).abs());
+  EXPECT_EQ(Encode(1, 1000, kPositive), Encode(1, 1000, kPositive).Abs());
+  EXPECT_EQ(Encode(1, 1000, kPositive), Encode(1, 1000, kNegative).Abs());
 }
 
 TEST_F(DecimalTest, AbsSmallExponent) {
-  EXPECT_EQ(encode(1, -1000, Positive), encode(1, -1000, Positive).abs());
-  EXPECT_EQ(encode(1, -1000, Positive), encode(1, -1000, Negative).abs());
+  EXPECT_EQ(Encode(1, -1000, kPositive), Encode(1, -1000, kPositive).Abs());
+  EXPECT_EQ(Encode(1, -1000, kPositive), Encode(1, -1000, kNegative).Abs());
 }
 
 TEST_F(DecimalTest, AbsSpecialValues) {
-  EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Positive).abs());
-  EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Negative).abs());
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().abs());
+  EXPECT_EQ(Decimal::Infinity(kPositive), Decimal::Infinity(kPositive).Abs());
+  EXPECT_EQ(Decimal::Infinity(kPositive), Decimal::Infinity(kNegative).Abs());
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Abs());
 }
 
 TEST_F(DecimalTest, Add) {
-  EXPECT_EQ(encode(0, 0, Positive), Decimal(0) + Decimal(0));
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal(0) + Decimal(0));
   EXPECT_EQ(Decimal(1), Decimal(2) + Decimal(-1));
   EXPECT_EQ(Decimal(1), Decimal(-1) + Decimal(2));
-  EXPECT_EQ(encode(100, 0, Positive), Decimal(99) + Decimal(1));
-  EXPECT_EQ(encode(100, 0, Negative), Decimal(-50) + Decimal(-50));
-  EXPECT_EQ(encode(UINT64_C(1000000000000000), 35, Positive),
-            encode(1, 50, Positive) + Decimal(1));
-  EXPECT_EQ(encode(UINT64_C(1000000000000000), 35, Positive),
-            Decimal(1) + encode(1, 50, Positive));
-  EXPECT_EQ(encode(UINT64_C(10000000001), 0, Positive),
-            encode(1, 10, Positive) + Decimal(1));
-  EXPECT_EQ(encode(UINT64_C(10000000001), 0, Positive),
-            Decimal(1) + encode(1, 10, Positive));
-  EXPECT_EQ(encode(1, 0, Positive),
-            encode(1, -1022, Positive) + encode(1, 0, Positive));
-  EXPECT_EQ(encode(2, -1022, Positive),
-            encode(1, -1022, Positive) + encode(1, -1022, Positive));
+  EXPECT_EQ(Encode(100, 0, kPositive), Decimal(99) + Decimal(1));
+  EXPECT_EQ(Encode(100, 0, kNegative), Decimal(-50) + Decimal(-50));
+  EXPECT_EQ(Encode(UINT64_C(1000000000000000), 35, kPositive),
+            Encode(1, 50, kPositive) + Decimal(1));
+  EXPECT_EQ(Encode(UINT64_C(1000000000000000), 35, kPositive),
+            Decimal(1) + Encode(1, 50, kPositive));
+  EXPECT_EQ(Encode(UINT64_C(10000000001), 0, kPositive),
+            Encode(1, 10, kPositive) + Decimal(1));
+  EXPECT_EQ(Encode(UINT64_C(10000000001), 0, kPositive),
+            Decimal(1) + Encode(1, 10, kPositive));
+  EXPECT_EQ(Encode(1, 0, kPositive),
+            Encode(1, -1022, kPositive) + Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(2, -1022, kPositive),
+            Encode(1, -1022, kPositive) + Encode(1, -1022, kPositive));
 }
 
 TEST_F(DecimalTest, AddBigExponent) {
-  EXPECT_EQ(encode(1, 1022, Positive),
-            encode(1, 1022, Positive) + encode(1, 0, Positive));
-  EXPECT_EQ(encode(2, 1022, Positive),
-            encode(1, 1022, Positive) + encode(1, 1022, Positive));
-  EXPECT_EQ(Decimal::infinity(Positive),
-            encode(std::numeric_limits<uint64_t>::max(), 1022, Positive) +
-                encode(1, 0, Positive));
-  EXPECT_EQ(encode(1, 1022, Positive),
-            encode(1, 1022, Positive) + encode(1, -1000, Positive));
+  EXPECT_EQ(Encode(1, 1022, kPositive),
+            Encode(1, 1022, kPositive) + Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(2, 1022, kPositive),
+            Encode(1, 1022, kPositive) + Encode(1, 1022, kPositive));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Encode(std::numeric_limits<uint64_t>::max(), 1022, kPositive) +
+                Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(1, 1022, kPositive),
+            Encode(1, 1022, kPositive) + Encode(1, -1000, kPositive));
 }
 
 TEST_F(DecimalTest, AddSmallExponent) {
-  EXPECT_EQ(encode(1, 0, Positive),
-            encode(1, -1022, Positive) + encode(1, 0, Positive));
-  EXPECT_EQ(encode(2, -1022, Positive),
-            encode(1, -1022, Positive) + encode(1, -1022, Positive));
+  EXPECT_EQ(Encode(1, 0, kPositive),
+            Encode(1, -1022, kPositive) + Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(2, -1022, kPositive),
+            Encode(1, -1022, kPositive) + Encode(1, -1022, kPositive));
 }
 
 TEST_F(DecimalTest, AddSpecialValues) {
-  const Decimal Infinity(Decimal::infinity(Positive));
-  const Decimal MinusInfinity(Decimal::infinity(Negative));
-  const Decimal NaN(Decimal::nan());
-  const Decimal Ten(10);
+  const Decimal infinity(Decimal::Infinity(kPositive));
+  const Decimal minus_infinity(Decimal::Infinity(kNegative));
+  const Decimal na_n(Decimal::Nan());
+  const Decimal ten(10);
 
-  EXPECT_EQ(Infinity, Infinity + Infinity);
-  EXPECT_EQ(NaN, Infinity + MinusInfinity);
-  EXPECT_EQ(NaN, MinusInfinity + Infinity);
-  EXPECT_EQ(MinusInfinity, MinusInfinity + MinusInfinity);
+  EXPECT_EQ(infinity, infinity + infinity);
+  EXPECT_EQ(na_n, infinity + minus_infinity);
+  EXPECT_EQ(na_n, minus_infinity + infinity);
+  EXPECT_EQ(minus_infinity, minus_infinity + minus_infinity);
 
-  EXPECT_EQ(Infinity, Infinity + Ten);
-  EXPECT_EQ(Infinity, Ten + Infinity);
-  EXPECT_EQ(MinusInfinity, MinusInfinity + Ten);
-  EXPECT_EQ(MinusInfinity, Ten + MinusInfinity);
+  EXPECT_EQ(infinity, infinity + ten);
+  EXPECT_EQ(infinity, ten + infinity);
+  EXPECT_EQ(minus_infinity, minus_infinity + ten);
+  EXPECT_EQ(minus_infinity, ten + minus_infinity);
 
-  EXPECT_EQ(NaN, NaN + NaN);
-  EXPECT_EQ(NaN, NaN + Ten);
-  EXPECT_EQ(NaN, Ten + NaN);
+  EXPECT_EQ(na_n, na_n + na_n);
+  EXPECT_EQ(na_n, na_n + ten);
+  EXPECT_EQ(na_n, ten + na_n);
 
-  EXPECT_EQ(NaN, NaN - Infinity);
-  EXPECT_EQ(NaN, NaN - MinusInfinity);
-  EXPECT_EQ(NaN, Infinity - NaN);
-  EXPECT_EQ(NaN, MinusInfinity - NaN);
+  EXPECT_EQ(na_n, na_n - infinity);
+  EXPECT_EQ(na_n, na_n - minus_infinity);
+  EXPECT_EQ(na_n, infinity - na_n);
+  EXPECT_EQ(na_n, minus_infinity - na_n);
 }
 
 TEST_F(DecimalTest, Ceil) {
-  EXPECT_EQ(Decimal(1), Decimal(1).ceil());
-  EXPECT_EQ(Decimal(1), encode(1, -10, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(11, -1, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(13, -1, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(15, -1, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(19, -1, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(151, -2, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(101, -2, Positive).ceil());
-  EXPECT_EQ(Decimal(1), encode(199, -3, Positive).ceil());
-  EXPECT_EQ(Decimal(2), encode(199, -2, Positive).ceil());
-  EXPECT_EQ(Decimal(3), encode(209, -2, Positive).ceil());
+  EXPECT_EQ(Decimal(1), Decimal(1).Ceil());
+  EXPECT_EQ(Decimal(1), Encode(1, -10, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(11, -1, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(13, -1, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(15, -1, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(19, -1, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(151, -2, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(101, -2, kPositive).Ceil());
+  EXPECT_EQ(Decimal(1), Encode(199, -3, kPositive).Ceil());
+  EXPECT_EQ(Decimal(2), Encode(199, -2, kPositive).Ceil());
+  EXPECT_EQ(Decimal(3), Encode(209, -2, kPositive).Ceil());
 
-  EXPECT_EQ(Decimal(-1), Decimal(-1).ceil());
-  EXPECT_EQ(Decimal(0), encode(1, -10, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(11, -1, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(13, -1, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(15, -1, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(19, -1, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(151, -2, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(101, -2, Negative).ceil());
-  EXPECT_EQ(Decimal(0), encode(199, -3, Negative).ceil());
-  EXPECT_EQ(Decimal(-1), encode(199, -2, Negative).ceil());
-  EXPECT_EQ(Decimal(-2), encode(209, -2, Negative).ceil());
+  EXPECT_EQ(Decimal(-1), Decimal(-1).Ceil());
+  EXPECT_EQ(Decimal(0), Encode(1, -10, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(11, -1, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(13, -1, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(15, -1, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(19, -1, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(151, -2, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(101, -2, kNegative).Ceil());
+  EXPECT_EQ(Decimal(0), Encode(199, -3, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-1), Encode(199, -2, kNegative).Ceil());
+  EXPECT_EQ(Decimal(-2), Encode(209, -2, kNegative).Ceil());
   EXPECT_EQ(Decimal(1),
-            encode(UINT64_C(123456789012345678), -18, Positive).ceil());
+            Encode(UINT64_C(123456789012345678), -18, kPositive).Ceil());
 }
 
 TEST_F(DecimalTest, CeilingBigExponent) {
-  EXPECT_EQ(encode(1, 1000, Positive), encode(1, 1000, Positive).ceil());
-  EXPECT_EQ(encode(1, 1000, Negative), encode(1, 1000, Negative).ceil());
+  EXPECT_EQ(Encode(1, 1000, kPositive), Encode(1, 1000, kPositive).Ceil());
+  EXPECT_EQ(Encode(1, 1000, kNegative), Encode(1, 1000, kNegative).Ceil());
 }
 
 TEST_F(DecimalTest, CeilingSmallExponent) {
-  EXPECT_EQ(encode(1, 0, Positive), encode(1, -1000, Positive).ceil());
-  EXPECT_EQ(encode(0, 0, Negative), encode(1, -1000, Negative).ceil());
+  EXPECT_EQ(Encode(1, 0, kPositive), Encode(1, -1000, kPositive).Ceil());
+  EXPECT_EQ(Encode(0, 0, kNegative), Encode(1, -1000, kNegative).Ceil());
 }
 
 TEST_F(DecimalTest, CeilingSpecialValues) {
-  EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Positive).ceil());
-  EXPECT_EQ(Decimal::infinity(Negative), Decimal::infinity(Negative).ceil());
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().ceil());
+  EXPECT_EQ(Decimal::Infinity(kPositive), Decimal::Infinity(kPositive).Ceil());
+  EXPECT_EQ(Decimal::Infinity(kNegative), Decimal::Infinity(kNegative).Ceil());
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Ceil());
 }
 
 TEST_F(DecimalTest, Compare) {
@@ -274,421 +274,425 @@ TEST_F(DecimalTest, Compare) {
 }
 
 TEST_F(DecimalTest, CompareBigExponent) {
-  EXPECT_TRUE(encode(1, 1000, Positive) == encode(1, 1000, Positive));
-  EXPECT_FALSE(encode(1, 1000, Positive) != encode(1, 1000, Positive));
-  EXPECT_FALSE(encode(1, 1000, Positive) < encode(1, 1000, Positive));
-  EXPECT_TRUE(encode(1, 1000, Positive) <= encode(1, 1000, Positive));
-  EXPECT_FALSE(encode(1, 1000, Positive) > encode(1, 1000, Positive));
-  EXPECT_TRUE(encode(1, 1000, Positive) >= encode(1, 1000, Positive));
+  EXPECT_TRUE(Encode(1, 1000, kPositive) == Encode(1, 1000, kPositive));
+  EXPECT_FALSE(Encode(1, 1000, kPositive) != Encode(1, 1000, kPositive));
+  EXPECT_FALSE(Encode(1, 1000, kPositive) < Encode(1, 1000, kPositive));
+  EXPECT_TRUE(Encode(1, 1000, kPositive) <= Encode(1, 1000, kPositive));
+  EXPECT_FALSE(Encode(1, 1000, kPositive) > Encode(1, 1000, kPositive));
+  EXPECT_TRUE(Encode(1, 1000, kPositive) >= Encode(1, 1000, kPositive));
 
-  EXPECT_TRUE(encode(1, 1000, Negative) == encode(1, 1000, Negative));
-  EXPECT_FALSE(encode(1, 1000, Negative) != encode(1, 1000, Negative));
-  EXPECT_FALSE(encode(1, 1000, Negative) < encode(1, 1000, Negative));
-  EXPECT_TRUE(encode(1, 1000, Negative) <= encode(1, 1000, Negative));
-  EXPECT_FALSE(encode(1, 1000, Negative) > encode(1, 1000, Negative));
-  EXPECT_TRUE(encode(1, 1000, Negative) >= encode(1, 1000, Negative));
+  EXPECT_TRUE(Encode(1, 1000, kNegative) == Encode(1, 1000, kNegative));
+  EXPECT_FALSE(Encode(1, 1000, kNegative) != Encode(1, 1000, kNegative));
+  EXPECT_FALSE(Encode(1, 1000, kNegative) < Encode(1, 1000, kNegative));
+  EXPECT_TRUE(Encode(1, 1000, kNegative) <= Encode(1, 1000, kNegative));
+  EXPECT_FALSE(Encode(1, 1000, kNegative) > Encode(1, 1000, kNegative));
+  EXPECT_TRUE(Encode(1, 1000, kNegative) >= Encode(1, 1000, kNegative));
 
-  EXPECT_FALSE(encode(2, 1000, Positive) == encode(1, 1000, Positive));
-  EXPECT_TRUE(encode(2, 1000, Positive) != encode(1, 1000, Positive));
-  EXPECT_FALSE(encode(2, 1000, Positive) < encode(1, 1000, Positive));
-  EXPECT_FALSE(encode(2, 1000, Positive) <= encode(1, 1000, Positive));
-  EXPECT_TRUE(encode(2, 1000, Positive) > encode(1, 1000, Positive));
-  EXPECT_TRUE(encode(2, 1000, Positive) >= encode(1, 1000, Positive));
+  EXPECT_FALSE(Encode(2, 1000, kPositive) == Encode(1, 1000, kPositive));
+  EXPECT_TRUE(Encode(2, 1000, kPositive) != Encode(1, 1000, kPositive));
+  EXPECT_FALSE(Encode(2, 1000, kPositive) < Encode(1, 1000, kPositive));
+  EXPECT_FALSE(Encode(2, 1000, kPositive) <= Encode(1, 1000, kPositive));
+  EXPECT_TRUE(Encode(2, 1000, kPositive) > Encode(1, 1000, kPositive));
+  EXPECT_TRUE(Encode(2, 1000, kPositive) >= Encode(1, 1000, kPositive));
 
-  EXPECT_FALSE(encode(2, 1000, Negative) == encode(1, 1000, Negative));
-  EXPECT_TRUE(encode(2, 1000, Negative) != encode(1, 1000, Negative));
-  EXPECT_TRUE(encode(2, 1000, Negative) < encode(1, 1000, Negative));
-  EXPECT_TRUE(encode(2, 1000, Negative) <= encode(1, 1000, Negative));
-  EXPECT_FALSE(encode(2, 1000, Negative) > encode(1, 1000, Negative));
-  EXPECT_FALSE(encode(2, 1000, Negative) >= encode(1, 1000, Negative));
+  EXPECT_FALSE(Encode(2, 1000, kNegative) == Encode(1, 1000, kNegative));
+  EXPECT_TRUE(Encode(2, 1000, kNegative) != Encode(1, 1000, kNegative));
+  EXPECT_TRUE(Encode(2, 1000, kNegative) < Encode(1, 1000, kNegative));
+  EXPECT_TRUE(Encode(2, 1000, kNegative) <= Encode(1, 1000, kNegative));
+  EXPECT_FALSE(Encode(2, 1000, kNegative) > Encode(1, 1000, kNegative));
+  EXPECT_FALSE(Encode(2, 1000, kNegative) >= Encode(1, 1000, kNegative));
 }
 
 TEST_F(DecimalTest, CompareSmallExponent) {
-  EXPECT_TRUE(encode(1, -1000, Positive) == encode(1, -1000, Positive));
-  EXPECT_FALSE(encode(1, -1000, Positive) != encode(1, -1000, Positive));
-  EXPECT_FALSE(encode(1, -1000, Positive) < encode(1, -1000, Positive));
-  EXPECT_TRUE(encode(1, -1000, Positive) <= encode(1, -1000, Positive));
-  EXPECT_FALSE(encode(1, -1000, Positive) > encode(1, -1000, Positive));
-  EXPECT_TRUE(encode(1, -1000, Positive) >= encode(1, -1000, Positive));
+  EXPECT_TRUE(Encode(1, -1000, kPositive) == Encode(1, -1000, kPositive));
+  EXPECT_FALSE(Encode(1, -1000, kPositive) != Encode(1, -1000, kPositive));
+  EXPECT_FALSE(Encode(1, -1000, kPositive) < Encode(1, -1000, kPositive));
+  EXPECT_TRUE(Encode(1, -1000, kPositive) <= Encode(1, -1000, kPositive));
+  EXPECT_FALSE(Encode(1, -1000, kPositive) > Encode(1, -1000, kPositive));
+  EXPECT_TRUE(Encode(1, -1000, kPositive) >= Encode(1, -1000, kPositive));
 
-  EXPECT_TRUE(encode(1, -1000, Negative) == encode(1, -1000, Negative));
-  EXPECT_FALSE(encode(1, -1000, Negative) != encode(1, -1000, Negative));
-  EXPECT_FALSE(encode(1, -1000, Negative) < encode(1, -1000, Negative));
-  EXPECT_TRUE(encode(1, -1000, Negative) <= encode(1, -1000, Negative));
-  EXPECT_FALSE(encode(1, -1000, Negative) > encode(1, -1000, Negative));
-  EXPECT_TRUE(encode(1, -1000, Negative) >= encode(1, -1000, Negative));
+  EXPECT_TRUE(Encode(1, -1000, kNegative) == Encode(1, -1000, kNegative));
+  EXPECT_FALSE(Encode(1, -1000, kNegative) != Encode(1, -1000, kNegative));
+  EXPECT_FALSE(Encode(1, -1000, kNegative) < Encode(1, -1000, kNegative));
+  EXPECT_TRUE(Encode(1, -1000, kNegative) <= Encode(1, -1000, kNegative));
+  EXPECT_FALSE(Encode(1, -1000, kNegative) > Encode(1, -1000, kNegative));
+  EXPECT_TRUE(Encode(1, -1000, kNegative) >= Encode(1, -1000, kNegative));
 
-  EXPECT_FALSE(encode(2, -1000, Positive) == encode(1, -1000, Positive));
-  EXPECT_TRUE(encode(2, -1000, Positive) != encode(1, -1000, Positive));
-  EXPECT_FALSE(encode(2, -1000, Positive) < encode(1, -1000, Positive));
-  EXPECT_FALSE(encode(2, -1000, Positive) <= encode(1, -1000, Positive));
-  EXPECT_TRUE(encode(2, -1000, Positive) > encode(1, -1000, Positive));
-  EXPECT_TRUE(encode(2, -1000, Positive) >= encode(1, -1000, Positive));
+  EXPECT_FALSE(Encode(2, -1000, kPositive) == Encode(1, -1000, kPositive));
+  EXPECT_TRUE(Encode(2, -1000, kPositive) != Encode(1, -1000, kPositive));
+  EXPECT_FALSE(Encode(2, -1000, kPositive) < Encode(1, -1000, kPositive));
+  EXPECT_FALSE(Encode(2, -1000, kPositive) <= Encode(1, -1000, kPositive));
+  EXPECT_TRUE(Encode(2, -1000, kPositive) > Encode(1, -1000, kPositive));
+  EXPECT_TRUE(Encode(2, -1000, kPositive) >= Encode(1, -1000, kPositive));
 
-  EXPECT_FALSE(encode(2, -1000, Negative) == encode(1, -1000, Negative));
-  EXPECT_TRUE(encode(2, -1000, Negative) != encode(1, -1000, Negative));
-  EXPECT_TRUE(encode(2, -1000, Negative) < encode(1, -1000, Negative));
-  EXPECT_TRUE(encode(2, -1000, Negative) <= encode(1, -1000, Negative));
-  EXPECT_FALSE(encode(2, -1000, Negative) > encode(1, -1000, Negative));
-  EXPECT_FALSE(encode(2, -1000, Negative) >= encode(1, -1000, Negative));
+  EXPECT_FALSE(Encode(2, -1000, kNegative) == Encode(1, -1000, kNegative));
+  EXPECT_TRUE(Encode(2, -1000, kNegative) != Encode(1, -1000, kNegative));
+  EXPECT_TRUE(Encode(2, -1000, kNegative) < Encode(1, -1000, kNegative));
+  EXPECT_TRUE(Encode(2, -1000, kNegative) <= Encode(1, -1000, kNegative));
+  EXPECT_FALSE(Encode(2, -1000, kNegative) > Encode(1, -1000, kNegative));
+  EXPECT_FALSE(Encode(2, -1000, kNegative) >= Encode(1, -1000, kNegative));
 }
 
 TEST_F(DecimalTest, CompareSpecialValues) {
-  const Decimal Infinity(Decimal::infinity(Positive));
-  const Decimal MinusInfinity(Decimal::infinity(Negative));
-  const Decimal NaN(Decimal::nan());
-  const Decimal Zero(Decimal::zero(Positive));
-  const Decimal MinusZero(Decimal::zero(Negative));
-  const Decimal Ten(10);
+  const Decimal infinity(Decimal::Infinity(kPositive));
+  const Decimal minus_infinity(Decimal::Infinity(kNegative));
+  const Decimal na_n(Decimal::Nan());
+  const Decimal zero(Decimal::Zero(kPositive));
+  const Decimal minus_zero(Decimal::Zero(kNegative));
+  const Decimal ten(10);
 
-  EXPECT_TRUE(Zero == Zero);
-  EXPECT_FALSE(Zero != Zero);
-  EXPECT_FALSE(Zero < Zero);
-  EXPECT_TRUE(Zero <= Zero);
-  EXPECT_FALSE(Zero > Zero);
-  EXPECT_TRUE(Zero >= Zero);
+  EXPECT_TRUE(zero == zero);
+  EXPECT_FALSE(zero != zero);
+  EXPECT_FALSE(zero < zero);
+  EXPECT_TRUE(zero <= zero);
+  EXPECT_FALSE(zero > zero);
+  EXPECT_TRUE(zero >= zero);
 
-  EXPECT_TRUE(Zero == MinusZero);
-  EXPECT_FALSE(Zero != MinusZero);
-  EXPECT_FALSE(Zero < MinusZero);
-  EXPECT_TRUE(Zero <= MinusZero);
-  EXPECT_FALSE(Zero > MinusZero);
-  EXPECT_TRUE(Zero >= MinusZero);
+  EXPECT_TRUE(zero == minus_zero);
+  EXPECT_FALSE(zero != minus_zero);
+  EXPECT_FALSE(zero < minus_zero);
+  EXPECT_TRUE(zero <= minus_zero);
+  EXPECT_FALSE(zero > minus_zero);
+  EXPECT_TRUE(zero >= minus_zero);
 
-  EXPECT_TRUE(MinusZero == Zero);
-  EXPECT_FALSE(MinusZero != Zero);
-  EXPECT_FALSE(MinusZero < Zero);
-  EXPECT_TRUE(MinusZero <= Zero);
-  EXPECT_FALSE(MinusZero > Zero);
-  EXPECT_TRUE(MinusZero >= Zero);
+  EXPECT_TRUE(minus_zero == zero);
+  EXPECT_FALSE(minus_zero != zero);
+  EXPECT_FALSE(minus_zero < zero);
+  EXPECT_TRUE(minus_zero <= zero);
+  EXPECT_FALSE(minus_zero > zero);
+  EXPECT_TRUE(minus_zero >= zero);
 
-  EXPECT_TRUE(MinusZero == MinusZero);
-  EXPECT_FALSE(MinusZero != MinusZero);
-  EXPECT_FALSE(MinusZero < MinusZero);
-  EXPECT_TRUE(MinusZero <= MinusZero);
-  EXPECT_FALSE(MinusZero > MinusZero);
-  EXPECT_TRUE(MinusZero >= MinusZero);
+  EXPECT_TRUE(minus_zero == minus_zero);
+  EXPECT_FALSE(minus_zero != minus_zero);
+  EXPECT_FALSE(minus_zero < minus_zero);
+  EXPECT_TRUE(minus_zero <= minus_zero);
+  EXPECT_FALSE(minus_zero > minus_zero);
+  EXPECT_TRUE(minus_zero >= minus_zero);
 
-  EXPECT_TRUE(Infinity == Infinity);
-  EXPECT_FALSE(Infinity != Infinity);
-  EXPECT_FALSE(Infinity < Infinity);
-  EXPECT_TRUE(Infinity <= Infinity);
-  EXPECT_FALSE(Infinity > Infinity);
-  EXPECT_TRUE(Infinity >= Infinity);
+  EXPECT_TRUE(infinity == infinity);
+  EXPECT_FALSE(infinity != infinity);
+  EXPECT_FALSE(infinity < infinity);
+  EXPECT_TRUE(infinity <= infinity);
+  EXPECT_FALSE(infinity > infinity);
+  EXPECT_TRUE(infinity >= infinity);
 
-  EXPECT_FALSE(Infinity == Ten);
-  EXPECT_TRUE(Infinity != Ten);
-  EXPECT_FALSE(Infinity < Ten);
-  EXPECT_FALSE(Infinity <= Ten);
-  EXPECT_TRUE(Infinity > Ten);
-  EXPECT_TRUE(Infinity >= Ten);
+  EXPECT_FALSE(infinity == ten);
+  EXPECT_TRUE(infinity != ten);
+  EXPECT_FALSE(infinity < ten);
+  EXPECT_FALSE(infinity <= ten);
+  EXPECT_TRUE(infinity > ten);
+  EXPECT_TRUE(infinity >= ten);
 
-  EXPECT_FALSE(Infinity == MinusInfinity);
-  EXPECT_TRUE(Infinity != MinusInfinity);
-  EXPECT_FALSE(Infinity < MinusInfinity);
-  EXPECT_FALSE(Infinity <= MinusInfinity);
-  EXPECT_TRUE(Infinity > MinusInfinity);
-  EXPECT_TRUE(Infinity >= MinusInfinity);
+  EXPECT_FALSE(infinity == minus_infinity);
+  EXPECT_TRUE(infinity != minus_infinity);
+  EXPECT_FALSE(infinity < minus_infinity);
+  EXPECT_FALSE(infinity <= minus_infinity);
+  EXPECT_TRUE(infinity > minus_infinity);
+  EXPECT_TRUE(infinity >= minus_infinity);
 
-  EXPECT_FALSE(Infinity == NaN);
-  EXPECT_FALSE(Infinity != NaN);
-  EXPECT_FALSE(Infinity < NaN);
-  EXPECT_FALSE(Infinity <= NaN);
-  EXPECT_FALSE(Infinity > NaN);
-  EXPECT_FALSE(Infinity >= NaN);
+  EXPECT_FALSE(infinity == na_n);
+  EXPECT_FALSE(infinity != na_n);
+  EXPECT_FALSE(infinity < na_n);
+  EXPECT_FALSE(infinity <= na_n);
+  EXPECT_FALSE(infinity > na_n);
+  EXPECT_FALSE(infinity >= na_n);
 
-  EXPECT_FALSE(MinusInfinity == Infinity);
-  EXPECT_TRUE(MinusInfinity != Infinity);
-  EXPECT_TRUE(MinusInfinity < Infinity);
-  EXPECT_TRUE(MinusInfinity <= Infinity);
-  EXPECT_FALSE(MinusInfinity > Infinity);
-  EXPECT_FALSE(MinusInfinity >= Infinity);
+  EXPECT_FALSE(minus_infinity == infinity);
+  EXPECT_TRUE(minus_infinity != infinity);
+  EXPECT_TRUE(minus_infinity < infinity);
+  EXPECT_TRUE(minus_infinity <= infinity);
+  EXPECT_FALSE(minus_infinity > infinity);
+  EXPECT_FALSE(minus_infinity >= infinity);
 
-  EXPECT_FALSE(MinusInfinity == Ten);
-  EXPECT_TRUE(MinusInfinity != Ten);
-  EXPECT_TRUE(MinusInfinity < Ten);
-  EXPECT_TRUE(MinusInfinity <= Ten);
-  EXPECT_FALSE(MinusInfinity > Ten);
-  EXPECT_FALSE(MinusInfinity >= Ten);
+  EXPECT_FALSE(minus_infinity == ten);
+  EXPECT_TRUE(minus_infinity != ten);
+  EXPECT_TRUE(minus_infinity < ten);
+  EXPECT_TRUE(minus_infinity <= ten);
+  EXPECT_FALSE(minus_infinity > ten);
+  EXPECT_FALSE(minus_infinity >= ten);
 
-  EXPECT_TRUE(MinusInfinity == MinusInfinity);
-  EXPECT_FALSE(MinusInfinity != MinusInfinity);
-  EXPECT_FALSE(MinusInfinity < MinusInfinity);
-  EXPECT_TRUE(MinusInfinity <= MinusInfinity);
-  EXPECT_FALSE(MinusInfinity > MinusInfinity);
-  EXPECT_TRUE(MinusInfinity >= MinusInfinity);
+  EXPECT_TRUE(minus_infinity == minus_infinity);
+  EXPECT_FALSE(minus_infinity != minus_infinity);
+  EXPECT_FALSE(minus_infinity < minus_infinity);
+  EXPECT_TRUE(minus_infinity <= minus_infinity);
+  EXPECT_FALSE(minus_infinity > minus_infinity);
+  EXPECT_TRUE(minus_infinity >= minus_infinity);
 
-  EXPECT_FALSE(MinusInfinity == NaN);
-  EXPECT_FALSE(MinusInfinity != NaN);
-  EXPECT_FALSE(MinusInfinity < NaN);
-  EXPECT_FALSE(MinusInfinity <= NaN);
-  EXPECT_FALSE(MinusInfinity > NaN);
-  EXPECT_FALSE(MinusInfinity >= NaN);
+  EXPECT_FALSE(minus_infinity == na_n);
+  EXPECT_FALSE(minus_infinity != na_n);
+  EXPECT_FALSE(minus_infinity < na_n);
+  EXPECT_FALSE(minus_infinity <= na_n);
+  EXPECT_FALSE(minus_infinity > na_n);
+  EXPECT_FALSE(minus_infinity >= na_n);
 
-  EXPECT_FALSE(NaN == Infinity);
-  EXPECT_FALSE(NaN != Infinity);
-  EXPECT_FALSE(NaN < Infinity);
-  EXPECT_FALSE(NaN <= Infinity);
-  EXPECT_FALSE(NaN > Infinity);
-  EXPECT_FALSE(NaN >= Infinity);
+  EXPECT_FALSE(na_n == infinity);
+  EXPECT_FALSE(na_n != infinity);
+  EXPECT_FALSE(na_n < infinity);
+  EXPECT_FALSE(na_n <= infinity);
+  EXPECT_FALSE(na_n > infinity);
+  EXPECT_FALSE(na_n >= infinity);
 
-  EXPECT_FALSE(NaN == Ten);
-  EXPECT_FALSE(NaN != Ten);
-  EXPECT_FALSE(NaN < Ten);
-  EXPECT_FALSE(NaN <= Ten);
-  EXPECT_FALSE(NaN > Ten);
-  EXPECT_FALSE(NaN >= Ten);
+  EXPECT_FALSE(na_n == ten);
+  EXPECT_FALSE(na_n != ten);
+  EXPECT_FALSE(na_n < ten);
+  EXPECT_FALSE(na_n <= ten);
+  EXPECT_FALSE(na_n > ten);
+  EXPECT_FALSE(na_n >= ten);
 
-  EXPECT_FALSE(NaN == MinusInfinity);
-  EXPECT_FALSE(NaN != MinusInfinity);
-  EXPECT_FALSE(NaN < MinusInfinity);
-  EXPECT_FALSE(NaN <= MinusInfinity);
-  EXPECT_FALSE(NaN > MinusInfinity);
-  EXPECT_FALSE(NaN >= MinusInfinity);
+  EXPECT_FALSE(na_n == minus_infinity);
+  EXPECT_FALSE(na_n != minus_infinity);
+  EXPECT_FALSE(na_n < minus_infinity);
+  EXPECT_FALSE(na_n <= minus_infinity);
+  EXPECT_FALSE(na_n > minus_infinity);
+  EXPECT_FALSE(na_n >= minus_infinity);
 
-  EXPECT_TRUE(NaN == NaN);
-  EXPECT_FALSE(NaN != NaN);
-  EXPECT_FALSE(NaN < NaN);
-  EXPECT_TRUE(NaN <= NaN);
-  EXPECT_FALSE(NaN > NaN);
-  EXPECT_TRUE(NaN >= NaN);
+  EXPECT_TRUE(na_n == na_n);
+  EXPECT_FALSE(na_n != na_n);
+  EXPECT_FALSE(na_n < na_n);
+  EXPECT_TRUE(na_n <= na_n);
+  EXPECT_FALSE(na_n > na_n);
+  EXPECT_TRUE(na_n >= na_n);
 }
 
 TEST_F(DecimalTest, Constructor) {
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, Positive, encode(0, 0, Positive));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, Negative, encode(0, 0, Negative));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 0, Positive, encode(1, 0, Positive));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 0, Negative, encode(1, 0, Negative));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1022, Positive, encode(1, 1022, Positive));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1022, Negative, encode(1, 1022, Negative));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1023, Positive, encode(1, 1023, Positive));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1023, Negative, encode(1, 1023, Negative));
-  EXPECT_TRUE(encode(1, 2000, Positive).isInfinity());
-  EXPECT_TRUE(encode(1, 2000, Negative).isInfinity());
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, Positive, encode(1, -2000, Positive));
-  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, Negative, encode(1, -2000, Negative));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, kPositive, Encode(0, 0, kPositive));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, kNegative, Encode(0, 0, kNegative));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 0, kPositive, Encode(1, 0, kPositive));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 0, kNegative, Encode(1, 0, kNegative));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1022, kPositive,
+                                 Encode(1, 1022, kPositive));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1022, kNegative,
+                                 Encode(1, 1022, kNegative));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1023, kPositive,
+                                 Encode(1, 1023, kPositive));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(1u, 1023, kNegative,
+                                 Encode(1, 1023, kNegative));
+  EXPECT_TRUE(Encode(1, 2000, kPositive).IsInfinity());
+  EXPECT_TRUE(Encode(1, 2000, kNegative).IsInfinity());
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, kPositive, Encode(1, -2000, kPositive));
+  EXPECT_DECIMAL_ENCODED_DATA_EQ(0u, 0, kNegative, Encode(1, -2000, kNegative));
   EXPECT_DECIMAL_ENCODED_DATA_EQ(
-      UINT64_C(99999999999999998), 0, Positive,
-      encode(UINT64_C(99999999999999998), 0, Positive));
+      UINT64_C(99999999999999998), 0, kPositive,
+      Encode(UINT64_C(99999999999999998), 0, kPositive));
   EXPECT_DECIMAL_ENCODED_DATA_EQ(
-      UINT64_C(99999999999999998), 0, Negative,
-      encode(UINT64_C(99999999999999998), 0, Negative));
+      UINT64_C(99999999999999998), 0, kNegative,
+      Encode(UINT64_C(99999999999999998), 0, kNegative));
   EXPECT_DECIMAL_ENCODED_DATA_EQ(
-      UINT64_C(99999999999999999), 0, Positive,
-      encode(UINT64_C(99999999999999999), 0, Positive));
+      UINT64_C(99999999999999999), 0, kPositive,
+      Encode(UINT64_C(99999999999999999), 0, kPositive));
   EXPECT_DECIMAL_ENCODED_DATA_EQ(
-      UINT64_C(99999999999999999), 0, Negative,
-      encode(UINT64_C(99999999999999999), 0, Negative));
+      UINT64_C(99999999999999999), 0, kNegative,
+      Encode(UINT64_C(99999999999999999), 0, kNegative));
   EXPECT_DECIMAL_ENCODED_DATA_EQ(
-      UINT64_C(100000000000000000), 0, Positive,
-      encode(UINT64_C(100000000000000000), 0, Positive));
+      UINT64_C(100000000000000000), 0, kPositive,
+      Encode(UINT64_C(100000000000000000), 0, kPositive));
   EXPECT_DECIMAL_ENCODED_DATA_EQ(
-      UINT64_C(100000000000000000), 0, Negative,
-      encode(UINT64_C(100000000000000000), 0, Negative));
+      UINT64_C(100000000000000000), 0, kNegative,
+      Encode(UINT64_C(100000000000000000), 0, kNegative));
 }
 
 TEST_F(DecimalTest, Division) {
-  EXPECT_EQ(encode(0, 0, Positive), Decimal(0) / Decimal(1));
-  EXPECT_EQ(encode(2, 0, Negative), Decimal(2) / Decimal(-1));
-  EXPECT_EQ(encode(5, -1, Negative), Decimal(-1) / Decimal(2));
-  EXPECT_EQ(encode(99, 0, Positive), Decimal(99) / Decimal(1));
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal(0) / Decimal(1));
+  EXPECT_EQ(Encode(2, 0, kNegative), Decimal(2) / Decimal(-1));
+  EXPECT_EQ(Encode(5, -1, kNegative), Decimal(-1) / Decimal(2));
+  EXPECT_EQ(Encode(99, 0, kPositive), Decimal(99) / Decimal(1));
   EXPECT_EQ(Decimal(1), Decimal(-50) / Decimal(-50));
-  EXPECT_EQ(encode(UINT64_C(333333333333333333), -18, Positive),
+  EXPECT_EQ(Encode(UINT64_C(333333333333333333), -18, kPositive),
             Decimal(1) / Decimal(3));
-  EXPECT_EQ(encode(UINT64_C(12345678901234), -1, Positive),
-            encode(UINT64_C(12345678901234), 0, Positive) / Decimal(10));
-  EXPECT_EQ(encode(UINT64_C(500005000050000500), -18, Positive),
+  EXPECT_EQ(Encode(UINT64_C(12345678901234), -1, kPositive),
+            Encode(UINT64_C(12345678901234), 0, kPositive) / Decimal(10));
+  EXPECT_EQ(Encode(UINT64_C(500005000050000500), -18, kPositive),
             Decimal(50000) / Decimal(99999));
 }
 
 TEST_F(DecimalTest, DivisionBigExponent) {
-  EXPECT_EQ(encode(1, 1022, Positive),
-            encode(1, 1022, Positive) / encode(1, 0, Positive));
-  EXPECT_EQ(encode(1, 0, Positive),
-            encode(1, 1022, Positive) / encode(1, 1022, Positive));
-  EXPECT_EQ(Decimal::infinity(Positive),
-            encode(1, 1022, Positive) / encode(1, -1000, Positive));
+  EXPECT_EQ(Encode(1, 1022, kPositive),
+            Encode(1, 1022, kPositive) / Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(1, 0, kPositive),
+            Encode(1, 1022, kPositive) / Encode(1, 1022, kPositive));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Encode(1, 1022, kPositive) / Encode(1, -1000, kPositive));
 }
 
 TEST_F(DecimalTest, DivisionSmallExponent) {
-  EXPECT_EQ(encode(1, -1022, Positive),
-            encode(1, -1022, Positive) / encode(1, 0, Positive));
-  EXPECT_EQ(encode(1, 0, Positive),
-            encode(1, -1022, Positive) / encode(1, -1022, Positive));
+  EXPECT_EQ(Encode(1, -1022, kPositive),
+            Encode(1, -1022, kPositive) / Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(1, 0, kPositive),
+            Encode(1, -1022, kPositive) / Encode(1, -1022, kPositive));
 }
 
 TEST_F(DecimalTest, DivisionSpecialValues) {
-  const Decimal Infinity(Decimal::infinity(Positive));
-  const Decimal MinusInfinity(Decimal::infinity(Negative));
-  const Decimal NaN(Decimal::nan());
-  const Decimal Zero(Decimal::zero(Positive));
-  const Decimal MinusZero(Decimal::zero(Negative));
-  const Decimal Ten(10);
-  const Decimal MinusTen(-10);
+  const Decimal infinity(Decimal::Infinity(kPositive));
+  const Decimal minus_infinity(Decimal::Infinity(kNegative));
+  const Decimal na_n(Decimal::Nan());
+  const Decimal zero(Decimal::Zero(kPositive));
+  const Decimal minus_zero(Decimal::Zero(kNegative));
+  const Decimal ten(10);
+  const Decimal minus_ten(-10);
 
-  EXPECT_EQ(NaN, Zero / Zero);
-  EXPECT_EQ(NaN, Zero / MinusZero);
-  EXPECT_EQ(NaN, MinusZero / Zero);
-  EXPECT_EQ(NaN, MinusZero / MinusZero);
+  EXPECT_EQ(na_n, zero / zero);
+  EXPECT_EQ(na_n, zero / minus_zero);
+  EXPECT_EQ(na_n, minus_zero / zero);
+  EXPECT_EQ(na_n, minus_zero / minus_zero);
 
-  EXPECT_EQ(Infinity, Ten / Zero);
-  EXPECT_EQ(MinusInfinity, Ten / MinusZero);
-  EXPECT_EQ(MinusInfinity, MinusTen / Zero);
-  EXPECT_EQ(Infinity, MinusTen / MinusZero);
+  EXPECT_EQ(infinity, ten / zero);
+  EXPECT_EQ(minus_infinity, ten / minus_zero);
+  EXPECT_EQ(minus_infinity, minus_ten / zero);
+  EXPECT_EQ(infinity, minus_ten / minus_zero);
 
-  EXPECT_EQ(Infinity, Infinity / Zero);
-  EXPECT_EQ(MinusInfinity, Infinity / MinusZero);
-  EXPECT_EQ(MinusInfinity, MinusInfinity / Zero);
-  EXPECT_EQ(Infinity, MinusInfinity / MinusZero);
+  EXPECT_EQ(infinity, infinity / zero);
+  EXPECT_EQ(minus_infinity, infinity / minus_zero);
+  EXPECT_EQ(minus_infinity, minus_infinity / zero);
+  EXPECT_EQ(infinity, minus_infinity / minus_zero);
 
-  EXPECT_EQ(NaN, Infinity / Infinity);
-  EXPECT_EQ(NaN, Infinity / MinusInfinity);
-  EXPECT_EQ(NaN, MinusInfinity / Infinity);
-  EXPECT_EQ(NaN, MinusInfinity / MinusInfinity);
+  EXPECT_EQ(na_n, infinity / infinity);
+  EXPECT_EQ(na_n, infinity / minus_infinity);
+  EXPECT_EQ(na_n, minus_infinity / infinity);
+  EXPECT_EQ(na_n, minus_infinity / minus_infinity);
 
-  EXPECT_EQ(Zero, Ten / Infinity);
-  EXPECT_EQ(MinusZero, Ten / MinusInfinity);
-  EXPECT_EQ(MinusZero, MinusTen / Infinity);
-  EXPECT_EQ(Zero, MinusTen / MinusInfinity);
+  EXPECT_EQ(zero, ten / infinity);
+  EXPECT_EQ(minus_zero, ten / minus_infinity);
+  EXPECT_EQ(minus_zero, minus_ten / infinity);
+  EXPECT_EQ(zero, minus_ten / minus_infinity);
 
-  EXPECT_EQ(NaN, NaN / NaN);
-  EXPECT_EQ(NaN, NaN / Ten);
-  EXPECT_EQ(NaN, Ten / NaN);
+  EXPECT_EQ(na_n, na_n / na_n);
+  EXPECT_EQ(na_n, na_n / ten);
+  EXPECT_EQ(na_n, ten / na_n);
 
-  EXPECT_EQ(NaN, NaN / Infinity);
-  EXPECT_EQ(NaN, NaN / MinusInfinity);
-  EXPECT_EQ(NaN, Infinity / NaN);
-  EXPECT_EQ(NaN, MinusInfinity / NaN);
+  EXPECT_EQ(na_n, na_n / infinity);
+  EXPECT_EQ(na_n, na_n / minus_infinity);
+  EXPECT_EQ(na_n, infinity / na_n);
+  EXPECT_EQ(na_n, minus_infinity / na_n);
 }
 
 TEST_F(DecimalTest, EncodedData) {
-  EXPECT_EQ(encode(0, 0, Positive), encode(0, 0, Positive));
-  EXPECT_EQ(encode(0, 0, Negative), encode(0, 0, Negative));
+  EXPECT_EQ(Encode(0, 0, kPositive), Encode(0, 0, kPositive));
+  EXPECT_EQ(Encode(0, 0, kNegative), Encode(0, 0, kNegative));
   EXPECT_EQ(Decimal(1), Decimal(1));
-  EXPECT_EQ(encode(1, 0, Negative), encode(1, 0, Negative));
-  EXPECT_EQ(Decimal::infinity(Positive), encode(1, 2000, Positive));
-  EXPECT_EQ(Decimal::zero(Positive), encode(1, -2000, Positive));
+  EXPECT_EQ(Encode(1, 0, kNegative), Encode(1, 0, kNegative));
+  EXPECT_EQ(Decimal::Infinity(kPositive), Encode(1, 2000, kPositive));
+  EXPECT_EQ(Decimal::Zero(kPositive), Encode(1, -2000, kPositive));
 }
 
 TEST_F(DecimalTest, Floor) {
-  EXPECT_EQ(Decimal(1), Decimal(1).floor());
-  EXPECT_EQ(Decimal(0), encode(1, -10, Positive).floor());
-  EXPECT_EQ(Decimal(1), encode(11, -1, Positive).floor());
-  EXPECT_EQ(Decimal(1), encode(13, -1, Positive).floor());
-  EXPECT_EQ(Decimal(1), encode(15, -1, Positive).floor());
-  EXPECT_EQ(Decimal(1), encode(19, -1, Positive).floor());
-  EXPECT_EQ(Decimal(1), encode(193332, -5, Positive).floor());
-  EXPECT_EQ(Decimal(12), encode(12002, -3, Positive).floor());
+  EXPECT_EQ(Decimal(1), Decimal(1).Floor());
+  EXPECT_EQ(Decimal(0), Encode(1, -10, kPositive).Floor());
+  EXPECT_EQ(Decimal(1), Encode(11, -1, kPositive).Floor());
+  EXPECT_EQ(Decimal(1), Encode(13, -1, kPositive).Floor());
+  EXPECT_EQ(Decimal(1), Encode(15, -1, kPositive).Floor());
+  EXPECT_EQ(Decimal(1), Encode(19, -1, kPositive).Floor());
+  EXPECT_EQ(Decimal(1), Encode(193332, -5, kPositive).Floor());
+  EXPECT_EQ(Decimal(12), Encode(12002, -3, kPositive).Floor());
 
-  EXPECT_EQ(Decimal(-1), Decimal(-1).floor());
-  EXPECT_EQ(Decimal(-1), encode(1, -10, Negative).floor());
-  EXPECT_EQ(Decimal(-2), encode(11, -1, Negative).floor());
-  EXPECT_EQ(Decimal(-2), encode(13, -1, Negative).floor());
-  EXPECT_EQ(Decimal(-2), encode(15, -1, Negative).floor());
-  EXPECT_EQ(Decimal(-2), encode(19, -1, Negative).floor());
-  EXPECT_EQ(Decimal(-2), encode(193332, -5, Negative).floor());
-  EXPECT_EQ(Decimal(-13), encode(12002, -3, Negative).floor());
+  EXPECT_EQ(Decimal(-1), Decimal(-1).Floor());
+  EXPECT_EQ(Decimal(-1), Encode(1, -10, kNegative).Floor());
+  EXPECT_EQ(Decimal(-2), Encode(11, -1, kNegative).Floor());
+  EXPECT_EQ(Decimal(-2), Encode(13, -1, kNegative).Floor());
+  EXPECT_EQ(Decimal(-2), Encode(15, -1, kNegative).Floor());
+  EXPECT_EQ(Decimal(-2), Encode(19, -1, kNegative).Floor());
+  EXPECT_EQ(Decimal(-2), Encode(193332, -5, kNegative).Floor());
+  EXPECT_EQ(Decimal(-13), Encode(12002, -3, kNegative).Floor());
 
   // crbug.com/572769
-  EXPECT_EQ(Decimal(-1), encode(992971299197409433, -18, Negative).floor());
+  EXPECT_EQ(Decimal(-1), Encode(992971299197409433, -18, kNegative).Floor());
 }
 
 TEST_F(DecimalTest, FloorBigExponent) {
-  EXPECT_EQ(encode(1, 1000, Positive), encode(1, 1000, Positive).floor());
-  EXPECT_EQ(encode(1, 1000, Negative), encode(1, 1000, Negative).floor());
+  EXPECT_EQ(Encode(1, 1000, kPositive), Encode(1, 1000, kPositive).Floor());
+  EXPECT_EQ(Encode(1, 1000, kNegative), Encode(1, 1000, kNegative).Floor());
 }
 
 TEST_F(DecimalTest, FloorSmallExponent) {
-  EXPECT_EQ(encode(0, 0, Positive), encode(1, -1000, Positive).floor());
-  EXPECT_EQ(encode(1, 0, Negative), encode(1, -1000, Negative).floor());
+  EXPECT_EQ(Encode(0, 0, kPositive), Encode(1, -1000, kPositive).Floor());
+  EXPECT_EQ(Encode(1, 0, kNegative), Encode(1, -1000, kNegative).Floor());
 }
 
 TEST_F(DecimalTest, FloorSpecialValues) {
-  EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Positive).floor());
-  EXPECT_EQ(Decimal::infinity(Negative), Decimal::infinity(Negative).floor());
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().floor());
+  EXPECT_EQ(Decimal::Infinity(kPositive), Decimal::Infinity(kPositive).Floor());
+  EXPECT_EQ(Decimal::Infinity(kNegative), Decimal::Infinity(kNegative).Floor());
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Floor());
 }
 
 TEST_F(DecimalTest, FromDouble) {
-  EXPECT_EQ(encode(0, 0, Positive), Decimal::fromDouble(0.0));
-  EXPECT_EQ(encode(0, 0, Negative), Decimal::fromDouble(-0.0));
-  EXPECT_EQ(encode(1, 0, Positive), Decimal::fromDouble(1));
-  EXPECT_EQ(encode(1, 0, Negative), Decimal::fromDouble(-1));
-  EXPECT_EQ(encode(123, 0, Positive), Decimal::fromDouble(123));
-  EXPECT_EQ(encode(123, 0, Negative), Decimal::fromDouble(-123));
-  EXPECT_EQ(encode(1, -1, Positive), Decimal::fromDouble(0.1));
-  EXPECT_EQ(encode(1, -1, Negative), Decimal::fromDouble(-0.1));
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal::FromDouble(0.0));
+  EXPECT_EQ(Encode(0, 0, kNegative), Decimal::FromDouble(-0.0));
+  EXPECT_EQ(Encode(1, 0, kPositive), Decimal::FromDouble(1));
+  EXPECT_EQ(Encode(1, 0, kNegative), Decimal::FromDouble(-1));
+  EXPECT_EQ(Encode(123, 0, kPositive), Decimal::FromDouble(123));
+  EXPECT_EQ(Encode(123, 0, kNegative), Decimal::FromDouble(-123));
+  EXPECT_EQ(Encode(1, -1, kPositive), Decimal::FromDouble(0.1));
+  EXPECT_EQ(Encode(1, -1, kNegative), Decimal::FromDouble(-0.1));
 }
 
 TEST_F(DecimalTest, FromDoubleLimits) {
-  EXPECT_EQ(encode(UINT64_C(2220446049250313), -31, Positive),
-            Decimal::fromDouble(std::numeric_limits<double>::epsilon()));
-  EXPECT_EQ(encode(UINT64_C(2220446049250313), -31, Negative),
-            Decimal::fromDouble(-std::numeric_limits<double>::epsilon()));
-  EXPECT_EQ(encode(UINT64_C(17976931348623157), 292, Positive),
-            Decimal::fromDouble(std::numeric_limits<double>::max()));
-  EXPECT_EQ(encode(UINT64_C(17976931348623157), 292, Negative),
-            Decimal::fromDouble(-std::numeric_limits<double>::max()));
-  EXPECT_EQ(encode(UINT64_C(22250738585072014), -324, Positive),
-            Decimal::fromDouble(std::numeric_limits<double>::min()));
-  EXPECT_EQ(encode(UINT64_C(22250738585072014), -324, Negative),
-            Decimal::fromDouble(-std::numeric_limits<double>::min()));
-  EXPECT_TRUE(Decimal::fromDouble(std::numeric_limits<double>::infinity())
-                  .isInfinity());
-  EXPECT_TRUE(Decimal::fromDouble(-std::numeric_limits<double>::infinity())
-                  .isInfinity());
+  EXPECT_EQ(Encode(UINT64_C(2220446049250313), -31, kPositive),
+            Decimal::FromDouble(std::numeric_limits<double>::epsilon()));
+  EXPECT_EQ(Encode(UINT64_C(2220446049250313), -31, kNegative),
+            Decimal::FromDouble(-std::numeric_limits<double>::epsilon()));
+  EXPECT_EQ(Encode(UINT64_C(17976931348623157), 292, kPositive),
+            Decimal::FromDouble(std::numeric_limits<double>::max()));
+  EXPECT_EQ(Encode(UINT64_C(17976931348623157), 292, kNegative),
+            Decimal::FromDouble(-std::numeric_limits<double>::max()));
+  EXPECT_EQ(Encode(UINT64_C(22250738585072014), -324, kPositive),
+            Decimal::FromDouble(std::numeric_limits<double>::min()));
+  EXPECT_EQ(Encode(UINT64_C(22250738585072014), -324, kNegative),
+            Decimal::FromDouble(-std::numeric_limits<double>::min()));
+  EXPECT_TRUE(Decimal::FromDouble(std::numeric_limits<double>::infinity())
+                  .IsInfinity());
+  EXPECT_TRUE(Decimal::FromDouble(-std::numeric_limits<double>::infinity())
+                  .IsInfinity());
   EXPECT_TRUE(
-      Decimal::fromDouble(std::numeric_limits<double>::quiet_NaN()).isNaN());
+      Decimal::FromDouble(std::numeric_limits<double>::quiet_NaN()).IsNaN());
   EXPECT_TRUE(
-      Decimal::fromDouble(-std::numeric_limits<double>::quiet_NaN()).isNaN());
+      Decimal::FromDouble(-std::numeric_limits<double>::quiet_NaN()).IsNaN());
 }
 
 TEST_F(DecimalTest, FromInt32) {
-  EXPECT_EQ(encode(0, 0, Positive), Decimal(0));
-  EXPECT_EQ(encode(1, 0, Positive), Decimal(1));
-  EXPECT_EQ(encode(1, 0, Negative), Decimal(-1));
-  EXPECT_EQ(encode(100, 0, Positive), Decimal(100));
-  EXPECT_EQ(encode(100, 0, Negative), Decimal(-100));
-  EXPECT_EQ(encode(0x7FFFFFFF, 0, Positive),
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal(0));
+  EXPECT_EQ(Encode(1, 0, kPositive), Decimal(1));
+  EXPECT_EQ(Encode(1, 0, kNegative), Decimal(-1));
+  EXPECT_EQ(Encode(100, 0, kPositive), Decimal(100));
+  EXPECT_EQ(Encode(100, 0, kNegative), Decimal(-100));
+  EXPECT_EQ(Encode(0x7FFFFFFF, 0, kPositive),
             Decimal(std::numeric_limits<int32_t>::max()));
-  EXPECT_EQ(encode(0x80000000u, 0, Negative),
+  EXPECT_EQ(Encode(0x80000000u, 0, kNegative),
             Decimal(std::numeric_limits<int32_t>::min()));
 }
 
 TEST_F(DecimalTest, FromString) {
-  EXPECT_EQ(encode(0, 0, Positive), fromString("0"));
-  EXPECT_EQ(encode(0, 0, Negative), fromString("-0"));
-  EXPECT_EQ(Decimal(1), fromString("1"));
-  EXPECT_EQ(encode(1, 0, Negative), fromString("-1"));
-  EXPECT_EQ(Decimal(1), fromString("01"));
-  EXPECT_EQ(encode(3, 0, Positive), fromString("+3"));
-  EXPECT_EQ(encode(0, 3, Positive), fromString("0E3"));
-  EXPECT_EQ(encode(5, -1, Positive), fromString(".5"));
-  EXPECT_EQ(encode(100, 0, Positive), fromString("100"));
-  EXPECT_EQ(encode(100, 0, Negative), fromString("-100"));
-  EXPECT_EQ(encode(123, -2, Positive), fromString("1.23"));
-  EXPECT_EQ(encode(123, -2, Negative), fromString("-1.23"));
-  EXPECT_EQ(encode(123, 8, Positive), fromString("1.23E10"));
-  EXPECT_EQ(encode(123, 8, Negative), fromString("-1.23E10"));
-  EXPECT_EQ(encode(123, 8, Positive), fromString("1.23E+10"));
-  EXPECT_EQ(encode(123, 8, Negative), fromString("-1.23E+10"));
-  EXPECT_EQ(encode(123, -12, Positive), fromString("1.23E-10"));
-  EXPECT_EQ(encode(123, -12, Negative), fromString("-1.23E-10"));
-  EXPECT_EQ(encode(5, -7, Positive), fromString("0.0000005"));
-  EXPECT_EQ(encode(0, 0, Positive), fromString("0e9999"));
-  EXPECT_EQ(encode(123, -3, Positive), fromString("0.123"));
-  EXPECT_EQ(encode(0, -2, Positive), fromString("00.00"));
-  EXPECT_EQ(encode(1, 2, Positive), fromString("1E2"));
-  EXPECT_EQ(Decimal::infinity(Positive), fromString("1E20000"));
-  EXPECT_EQ(Decimal::zero(Positive), fromString("1E-20000"));
-  EXPECT_EQ(encode(1000, 1023, Positive), fromString("1E1026"));
-  EXPECT_EQ(Decimal::zero(Positive), fromString("1E-1026"));
-  EXPECT_EQ(Decimal::infinity(Positive), fromString("1234567890E1036"));
+  EXPECT_EQ(Encode(0, 0, kPositive), FromString("0"));
+  EXPECT_EQ(Encode(0, 0, kNegative), FromString("-0"));
+  EXPECT_EQ(Decimal(1), FromString("1"));
+  EXPECT_EQ(Encode(1, 0, kNegative), FromString("-1"));
+  EXPECT_EQ(Decimal(1), FromString("01"));
+  EXPECT_EQ(Encode(3, 0, kPositive), FromString("+3"));
+  EXPECT_EQ(Encode(0, 3, kPositive), FromString("0E3"));
+  EXPECT_EQ(Encode(5, -1, kPositive), FromString(".5"));
+  EXPECT_EQ(Encode(100, 0, kPositive), FromString("100"));
+  EXPECT_EQ(Encode(100, 0, kNegative), FromString("-100"));
+  EXPECT_EQ(Encode(123, -2, kPositive), FromString("1.23"));
+  EXPECT_EQ(Encode(123, -2, kNegative), FromString("-1.23"));
+  EXPECT_EQ(Encode(123, 8, kPositive), FromString("1.23E10"));
+  EXPECT_EQ(Encode(123, 8, kNegative), FromString("-1.23E10"));
+  EXPECT_EQ(Encode(123, 8, kPositive), FromString("1.23E+10"));
+  EXPECT_EQ(Encode(123, 8, kNegative), FromString("-1.23E+10"));
+  EXPECT_EQ(Encode(123, -12, kPositive), FromString("1.23E-10"));
+  EXPECT_EQ(Encode(123, -12, kNegative), FromString("-1.23E-10"));
+  EXPECT_EQ(Encode(5, -7, kPositive), FromString("0.0000005"));
+  EXPECT_EQ(Encode(0, 0, kPositive), FromString("0e9999"));
+  EXPECT_EQ(Encode(123, -3, kPositive), FromString("0.123"));
+  EXPECT_EQ(Encode(0, -2, kPositive), FromString("00.00"));
+  EXPECT_EQ(Encode(1, 2, kPositive), FromString("1E2"));
+  EXPECT_EQ(Decimal::Infinity(kPositive), FromString("1E20000"));
+  EXPECT_EQ(Decimal::Zero(kPositive), FromString("1E-20000"));
+  EXPECT_EQ(Encode(1000, 1023, kPositive), FromString("1E1026"));
+  EXPECT_EQ(Decimal::Zero(kPositive), FromString("1E-1026"));
+  EXPECT_EQ(Decimal::Infinity(kPositive), FromString("1234567890E1036"));
 
   // 2^1024
-  const uint64_t leadingDigitsOf2PowerOf1024 = UINT64_C(17976931348623159);
-  EXPECT_EQ(encode(leadingDigitsOf2PowerOf1024, 292, Positive),
-            fromString("1797693134862315907729305190789024733617976978942306572"
+  const uint64_t kLeadingDigitsOf2PowerOf1024 = UINT64_C(17976931348623159);
+  EXPECT_EQ(Encode(kLeadingDigitsOf2PowerOf1024, 292, kPositive),
+            FromString("1797693134862315907729305190789024733617976978942306572"
                        "7343008115773267580550096313270847732240753602112011387"
                        "9871393357658789768814416622492847430639474124377767893"
                        "4248654852763022196012460941194530829520850057688381506"
@@ -698,459 +702,460 @@ TEST_F(DecimalTest, FromString) {
 
 // These strings are look like proper number, but we don't accept them.
 TEST_F(DecimalTest, FromStringLikeNumber) {
-  EXPECT_EQ(Decimal::nan(), fromString(" 123 "));
-  EXPECT_EQ(Decimal::nan(), fromString("1,234"));
+  EXPECT_EQ(Decimal::Nan(), FromString(" 123 "));
+  EXPECT_EQ(Decimal::Nan(), FromString("1,234"));
 }
 
 // fromString doesn't support infinity and NaN.
 TEST_F(DecimalTest, FromStringSpecialValues) {
-  EXPECT_EQ(Decimal::nan(), fromString("INF"));
-  EXPECT_EQ(Decimal::nan(), fromString("Infinity"));
-  EXPECT_EQ(Decimal::nan(), fromString("infinity"));
-  EXPECT_EQ(Decimal::nan(), fromString("+Infinity"));
-  EXPECT_EQ(Decimal::nan(), fromString("+infinity"));
-  EXPECT_EQ(Decimal::nan(), fromString("-Infinity"));
-  EXPECT_EQ(Decimal::nan(), fromString("-infinity"));
-  EXPECT_EQ(Decimal::nan(), fromString("NaN"));
-  EXPECT_EQ(Decimal::nan(), fromString("nan"));
-  EXPECT_EQ(Decimal::nan(), fromString("+NaN"));
-  EXPECT_EQ(Decimal::nan(), fromString("+nan"));
-  EXPECT_EQ(Decimal::nan(), fromString("-NaN"));
-  EXPECT_EQ(Decimal::nan(), fromString("-nan"));
+  EXPECT_EQ(Decimal::Nan(), FromString("INF"));
+  EXPECT_EQ(Decimal::Nan(), FromString("Infinity"));
+  EXPECT_EQ(Decimal::Nan(), FromString("infinity"));
+  EXPECT_EQ(Decimal::Nan(), FromString("+Infinity"));
+  EXPECT_EQ(Decimal::Nan(), FromString("+infinity"));
+  EXPECT_EQ(Decimal::Nan(), FromString("-Infinity"));
+  EXPECT_EQ(Decimal::Nan(), FromString("-infinity"));
+  EXPECT_EQ(Decimal::Nan(), FromString("NaN"));
+  EXPECT_EQ(Decimal::Nan(), FromString("nan"));
+  EXPECT_EQ(Decimal::Nan(), FromString("+NaN"));
+  EXPECT_EQ(Decimal::Nan(), FromString("+nan"));
+  EXPECT_EQ(Decimal::Nan(), FromString("-NaN"));
+  EXPECT_EQ(Decimal::Nan(), FromString("-nan"));
 }
 
 TEST_F(DecimalTest, fromStringTruncated) {
-  EXPECT_EQ(Decimal::nan(), fromString("x"));
-  EXPECT_EQ(Decimal::nan(), fromString("0."));
-  EXPECT_EQ(Decimal::nan(), fromString("1x"));
+  EXPECT_EQ(Decimal::Nan(), FromString("x"));
+  EXPECT_EQ(Decimal::Nan(), FromString("0."));
+  EXPECT_EQ(Decimal::Nan(), FromString("1x"));
 
-  EXPECT_EQ(Decimal::nan(), fromString("1Ex"));
-  EXPECT_EQ(Decimal::nan(), fromString("1E2x"));
-  EXPECT_EQ(Decimal::nan(), fromString("1E+x"));
+  EXPECT_EQ(Decimal::Nan(), FromString("1Ex"));
+  EXPECT_EQ(Decimal::Nan(), FromString("1E2x"));
+  EXPECT_EQ(Decimal::Nan(), FromString("1E+x"));
 }
 
 TEST_F(DecimalTest, Multiplication) {
-  EXPECT_EQ(encode(0, 0, Positive), Decimal(0) * Decimal(0));
-  EXPECT_EQ(encode(2, 0, Negative), Decimal(2) * Decimal(-1));
-  EXPECT_EQ(encode(2, 0, Negative), Decimal(-1) * Decimal(2));
-  EXPECT_EQ(encode(99, 0, Positive), Decimal(99) * Decimal(1));
-  EXPECT_EQ(encode(2500, 0, Positive), Decimal(-50) * Decimal(-50));
-  EXPECT_EQ(encode(1, 21, Positive),
-            encode(UINT64_C(10000000000), 0, Positive) *
-                encode(UINT64_C(100000000000), 0, Positive));
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal(0) * Decimal(0));
+  EXPECT_EQ(Encode(2, 0, kNegative), Decimal(2) * Decimal(-1));
+  EXPECT_EQ(Encode(2, 0, kNegative), Decimal(-1) * Decimal(2));
+  EXPECT_EQ(Encode(99, 0, kPositive), Decimal(99) * Decimal(1));
+  EXPECT_EQ(Encode(2500, 0, kPositive), Decimal(-50) * Decimal(-50));
+  EXPECT_EQ(Encode(1, 21, kPositive),
+            Encode(UINT64_C(10000000000), 0, kPositive) *
+                Encode(UINT64_C(100000000000), 0, kPositive));
 }
 
 TEST_F(DecimalTest, MultiplicationBigExponent) {
-  EXPECT_EQ(encode(1, 1022, Positive),
-            encode(1, 1022, Positive) * encode(1, 0, Positive));
-  EXPECT_EQ(Decimal::infinity(Positive),
-            encode(1, 1022, Positive) * encode(1, 1022, Positive));
-  EXPECT_EQ(encode(1, 22, Positive),
-            encode(1, 1022, Positive) * encode(1, -1000, Positive));
+  EXPECT_EQ(Encode(1, 1022, kPositive),
+            Encode(1, 1022, kPositive) * Encode(1, 0, kPositive));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Encode(1, 1022, kPositive) * Encode(1, 1022, kPositive));
+  EXPECT_EQ(Encode(1, 22, kPositive),
+            Encode(1, 1022, kPositive) * Encode(1, -1000, kPositive));
 }
 
 TEST_F(DecimalTest, MultiplicationSmallExponent) {
-  EXPECT_EQ(encode(1, -1022, Positive),
-            encode(1, -1022, Positive) * encode(1, 0, Positive));
-  EXPECT_EQ(encode(0, 0, Positive),
-            encode(1, -1022, Positive) * encode(1, -1022, Positive));
+  EXPECT_EQ(Encode(1, -1022, kPositive),
+            Encode(1, -1022, kPositive) * Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(0, 0, kPositive),
+            Encode(1, -1022, kPositive) * Encode(1, -1022, kPositive));
 }
 
 TEST_F(DecimalTest, MultiplicationSpecialValues) {
-  const Decimal Infinity(Decimal::infinity(Positive));
-  const Decimal MinusInfinity(Decimal::infinity(Negative));
-  const Decimal NaN(Decimal::nan());
-  const Decimal Ten(10);
-  const Decimal MinusTen(-10);
-  const Decimal Zero(Decimal::zero(Positive));
-  const Decimal MinusZero(Decimal::zero(Negative));
+  const Decimal infinity(Decimal::Infinity(kPositive));
+  const Decimal minus_infinity(Decimal::Infinity(kNegative));
+  const Decimal na_n(Decimal::Nan());
+  const Decimal ten(10);
+  const Decimal minus_ten(-10);
+  const Decimal zero(Decimal::Zero(kPositive));
+  const Decimal minus_zero(Decimal::Zero(kNegative));
 
-  EXPECT_EQ(Infinity, Infinity * Infinity);
-  EXPECT_EQ(MinusInfinity, Infinity * MinusInfinity);
-  EXPECT_EQ(MinusInfinity, MinusInfinity * Infinity);
-  EXPECT_EQ(Infinity, MinusInfinity * MinusInfinity);
+  EXPECT_EQ(infinity, infinity * infinity);
+  EXPECT_EQ(minus_infinity, infinity * minus_infinity);
+  EXPECT_EQ(minus_infinity, minus_infinity * infinity);
+  EXPECT_EQ(infinity, minus_infinity * minus_infinity);
 
-  EXPECT_EQ(NaN, Infinity * Zero);
-  EXPECT_EQ(NaN, Zero * MinusInfinity);
-  EXPECT_EQ(NaN, MinusInfinity * Zero);
-  EXPECT_EQ(NaN, MinusInfinity * Zero);
+  EXPECT_EQ(na_n, infinity * zero);
+  EXPECT_EQ(na_n, zero * minus_infinity);
+  EXPECT_EQ(na_n, minus_infinity * zero);
+  EXPECT_EQ(na_n, minus_infinity * zero);
 
-  EXPECT_EQ(NaN, Infinity * MinusZero);
-  EXPECT_EQ(NaN, MinusZero * MinusInfinity);
-  EXPECT_EQ(NaN, MinusInfinity * MinusZero);
-  EXPECT_EQ(NaN, MinusInfinity * MinusZero);
+  EXPECT_EQ(na_n, infinity * minus_zero);
+  EXPECT_EQ(na_n, minus_zero * minus_infinity);
+  EXPECT_EQ(na_n, minus_infinity * minus_zero);
+  EXPECT_EQ(na_n, minus_infinity * minus_zero);
 
-  EXPECT_EQ(Infinity, Infinity * Ten);
-  EXPECT_EQ(Infinity, Ten * Infinity);
-  EXPECT_EQ(MinusInfinity, MinusInfinity * Ten);
-  EXPECT_EQ(MinusInfinity, Ten * MinusInfinity);
+  EXPECT_EQ(infinity, infinity * ten);
+  EXPECT_EQ(infinity, ten * infinity);
+  EXPECT_EQ(minus_infinity, minus_infinity * ten);
+  EXPECT_EQ(minus_infinity, ten * minus_infinity);
 
-  EXPECT_EQ(MinusInfinity, Infinity * MinusTen);
-  EXPECT_EQ(MinusInfinity, MinusTen * Infinity);
-  EXPECT_EQ(Infinity, MinusInfinity * MinusTen);
-  EXPECT_EQ(Infinity, MinusTen * MinusInfinity);
+  EXPECT_EQ(minus_infinity, infinity * minus_ten);
+  EXPECT_EQ(minus_infinity, minus_ten * infinity);
+  EXPECT_EQ(infinity, minus_infinity * minus_ten);
+  EXPECT_EQ(infinity, minus_ten * minus_infinity);
 
-  EXPECT_EQ(NaN, NaN * NaN);
-  EXPECT_EQ(NaN, NaN * Ten);
-  EXPECT_EQ(NaN, Ten * NaN);
+  EXPECT_EQ(na_n, na_n * na_n);
+  EXPECT_EQ(na_n, na_n * ten);
+  EXPECT_EQ(na_n, ten * na_n);
 
-  EXPECT_EQ(NaN, NaN * Infinity);
-  EXPECT_EQ(NaN, NaN * MinusInfinity);
-  EXPECT_EQ(NaN, Infinity * NaN);
-  EXPECT_EQ(NaN, MinusInfinity * NaN);
+  EXPECT_EQ(na_n, na_n * infinity);
+  EXPECT_EQ(na_n, na_n * minus_infinity);
+  EXPECT_EQ(na_n, infinity * na_n);
+  EXPECT_EQ(na_n, minus_infinity * na_n);
 }
 
 TEST_F(DecimalTest, Negate) {
-  EXPECT_EQ(encode(0, 0, Negative), -encode(0, 0, Positive));
-  EXPECT_EQ(encode(0, 0, Positive), -encode(0, 0, Negative));
+  EXPECT_EQ(Encode(0, 0, kNegative), -Encode(0, 0, kPositive));
+  EXPECT_EQ(Encode(0, 0, kPositive), -Encode(0, 0, kNegative));
 
-  EXPECT_EQ(encode(0, 10, Negative), -encode(0, 10, Positive));
-  EXPECT_EQ(encode(0, 10, Positive), -encode(0, 10, Negative));
+  EXPECT_EQ(Encode(0, 10, kNegative), -Encode(0, 10, kPositive));
+  EXPECT_EQ(Encode(0, 10, kPositive), -Encode(0, 10, kNegative));
 
-  EXPECT_EQ(encode(0, -10, Negative), -encode(0, -10, Positive));
-  EXPECT_EQ(encode(0, -10, Positive), -encode(0, -10, Negative));
+  EXPECT_EQ(Encode(0, -10, kNegative), -Encode(0, -10, kPositive));
+  EXPECT_EQ(Encode(0, -10, kPositive), -Encode(0, -10, kNegative));
 
-  EXPECT_EQ(encode(1, 0, Negative), -encode(1, 0, Positive));
-  EXPECT_EQ(encode(1, 0, Positive), -encode(1, 0, Negative));
+  EXPECT_EQ(Encode(1, 0, kNegative), -Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(1, 0, kPositive), -Encode(1, 0, kNegative));
 
-  EXPECT_EQ(encode(1, 10, Negative), -encode(1, 10, Positive));
-  EXPECT_EQ(encode(1, 10, Positive), -encode(1, 10, Negative));
+  EXPECT_EQ(Encode(1, 10, kNegative), -Encode(1, 10, kPositive));
+  EXPECT_EQ(Encode(1, 10, kPositive), -Encode(1, 10, kNegative));
 
-  EXPECT_EQ(encode(1, -10, Negative), -encode(1, -10, Positive));
-  EXPECT_EQ(encode(1, -10, Positive), -encode(1, -10, Negative));
+  EXPECT_EQ(Encode(1, -10, kNegative), -Encode(1, -10, kPositive));
+  EXPECT_EQ(Encode(1, -10, kPositive), -Encode(1, -10, kNegative));
 }
 
 TEST_F(DecimalTest, NegateBigExponent) {
-  EXPECT_EQ(encode(1, 1000, Negative), -encode(1, 1000, Positive));
-  EXPECT_EQ(encode(1, 1000, Positive), -encode(1, 1000, Negative));
+  EXPECT_EQ(Encode(1, 1000, kNegative), -Encode(1, 1000, kPositive));
+  EXPECT_EQ(Encode(1, 1000, kPositive), -Encode(1, 1000, kNegative));
 }
 
 TEST_F(DecimalTest, NegateSmallExponent) {
-  EXPECT_EQ(encode(1, -1000, Negative), -encode(1, -1000, Positive));
-  EXPECT_EQ(encode(1, -1000, Positive), -encode(1, -1000, Negative));
+  EXPECT_EQ(Encode(1, -1000, kNegative), -Encode(1, -1000, kPositive));
+  EXPECT_EQ(Encode(1, -1000, kPositive), -Encode(1, -1000, kNegative));
 }
 
 TEST_F(DecimalTest, NegateSpecialValues) {
-  EXPECT_EQ(Decimal::infinity(Negative), -Decimal::infinity(Positive));
-  EXPECT_EQ(Decimal::infinity(Positive), -Decimal::infinity(Negative));
-  EXPECT_EQ(Decimal::nan(), -Decimal::nan());
+  EXPECT_EQ(Decimal::Infinity(kNegative), -Decimal::Infinity(kPositive));
+  EXPECT_EQ(Decimal::Infinity(kPositive), -Decimal::Infinity(kNegative));
+  EXPECT_EQ(Decimal::Nan(), -Decimal::Nan());
 }
 
 TEST_F(DecimalTest, Predicates) {
-  EXPECT_TRUE(Decimal::zero(Positive).isFinite());
-  EXPECT_FALSE(Decimal::zero(Positive).isInfinity());
-  EXPECT_FALSE(Decimal::zero(Positive).isNaN());
-  EXPECT_TRUE(Decimal::zero(Positive).isPositive());
-  EXPECT_FALSE(Decimal::zero(Positive).isNegative());
-  EXPECT_FALSE(Decimal::zero(Positive).isSpecial());
-  EXPECT_TRUE(Decimal::zero(Positive).isZero());
+  EXPECT_TRUE(Decimal::Zero(kPositive).IsFinite());
+  EXPECT_FALSE(Decimal::Zero(kPositive).IsInfinity());
+  EXPECT_FALSE(Decimal::Zero(kPositive).IsNaN());
+  EXPECT_TRUE(Decimal::Zero(kPositive).IsPositive());
+  EXPECT_FALSE(Decimal::Zero(kPositive).IsNegative());
+  EXPECT_FALSE(Decimal::Zero(kPositive).IsSpecial());
+  EXPECT_TRUE(Decimal::Zero(kPositive).IsZero());
 
-  EXPECT_TRUE(Decimal::zero(Negative).isFinite());
-  EXPECT_FALSE(Decimal::zero(Negative).isInfinity());
-  EXPECT_FALSE(Decimal::zero(Negative).isNaN());
-  EXPECT_FALSE(Decimal::zero(Negative).isPositive());
-  EXPECT_TRUE(Decimal::zero(Negative).isNegative());
-  EXPECT_FALSE(Decimal::zero(Negative).isSpecial());
-  EXPECT_TRUE(Decimal::zero(Negative).isZero());
+  EXPECT_TRUE(Decimal::Zero(kNegative).IsFinite());
+  EXPECT_FALSE(Decimal::Zero(kNegative).IsInfinity());
+  EXPECT_FALSE(Decimal::Zero(kNegative).IsNaN());
+  EXPECT_FALSE(Decimal::Zero(kNegative).IsPositive());
+  EXPECT_TRUE(Decimal::Zero(kNegative).IsNegative());
+  EXPECT_FALSE(Decimal::Zero(kNegative).IsSpecial());
+  EXPECT_TRUE(Decimal::Zero(kNegative).IsZero());
 
-  EXPECT_TRUE(Decimal(123).isFinite());
-  EXPECT_FALSE(Decimal(123).isInfinity());
-  EXPECT_FALSE(Decimal(123).isNaN());
-  EXPECT_TRUE(Decimal(123).isPositive());
-  EXPECT_FALSE(Decimal(123).isNegative());
-  EXPECT_FALSE(Decimal(123).isSpecial());
-  EXPECT_FALSE(Decimal(123).isZero());
+  EXPECT_TRUE(Decimal(123).IsFinite());
+  EXPECT_FALSE(Decimal(123).IsInfinity());
+  EXPECT_FALSE(Decimal(123).IsNaN());
+  EXPECT_TRUE(Decimal(123).IsPositive());
+  EXPECT_FALSE(Decimal(123).IsNegative());
+  EXPECT_FALSE(Decimal(123).IsSpecial());
+  EXPECT_FALSE(Decimal(123).IsZero());
 
-  EXPECT_TRUE(Decimal(-123).isFinite());
-  EXPECT_FALSE(Decimal(-123).isInfinity());
-  EXPECT_FALSE(Decimal(-123).isNaN());
-  EXPECT_FALSE(Decimal(-123).isPositive());
-  EXPECT_TRUE(Decimal(-123).isNegative());
-  EXPECT_FALSE(Decimal(-123).isSpecial());
-  EXPECT_FALSE(Decimal(-123).isZero());
+  EXPECT_TRUE(Decimal(-123).IsFinite());
+  EXPECT_FALSE(Decimal(-123).IsInfinity());
+  EXPECT_FALSE(Decimal(-123).IsNaN());
+  EXPECT_FALSE(Decimal(-123).IsPositive());
+  EXPECT_TRUE(Decimal(-123).IsNegative());
+  EXPECT_FALSE(Decimal(-123).IsSpecial());
+  EXPECT_FALSE(Decimal(-123).IsZero());
 }
 
 TEST_F(DecimalTest, PredicatesSpecialValues) {
-  EXPECT_FALSE(Decimal::infinity(Positive).isFinite());
-  EXPECT_TRUE(Decimal::infinity(Positive).isInfinity());
-  EXPECT_FALSE(Decimal::infinity(Positive).isNaN());
-  EXPECT_TRUE(Decimal::infinity(Positive).isPositive());
-  EXPECT_FALSE(Decimal::infinity(Positive).isNegative());
-  EXPECT_TRUE(Decimal::infinity(Positive).isSpecial());
-  EXPECT_FALSE(Decimal::infinity(Positive).isZero());
+  EXPECT_FALSE(Decimal::Infinity(kPositive).IsFinite());
+  EXPECT_TRUE(Decimal::Infinity(kPositive).IsInfinity());
+  EXPECT_FALSE(Decimal::Infinity(kPositive).IsNaN());
+  EXPECT_TRUE(Decimal::Infinity(kPositive).IsPositive());
+  EXPECT_FALSE(Decimal::Infinity(kPositive).IsNegative());
+  EXPECT_TRUE(Decimal::Infinity(kPositive).IsSpecial());
+  EXPECT_FALSE(Decimal::Infinity(kPositive).IsZero());
 
-  EXPECT_FALSE(Decimal::infinity(Negative).isFinite());
-  EXPECT_TRUE(Decimal::infinity(Negative).isInfinity());
-  EXPECT_FALSE(Decimal::infinity(Negative).isNaN());
-  EXPECT_FALSE(Decimal::infinity(Negative).isPositive());
-  EXPECT_TRUE(Decimal::infinity(Negative).isNegative());
-  EXPECT_TRUE(Decimal::infinity(Negative).isSpecial());
-  EXPECT_FALSE(Decimal::infinity(Negative).isZero());
+  EXPECT_FALSE(Decimal::Infinity(kNegative).IsFinite());
+  EXPECT_TRUE(Decimal::Infinity(kNegative).IsInfinity());
+  EXPECT_FALSE(Decimal::Infinity(kNegative).IsNaN());
+  EXPECT_FALSE(Decimal::Infinity(kNegative).IsPositive());
+  EXPECT_TRUE(Decimal::Infinity(kNegative).IsNegative());
+  EXPECT_TRUE(Decimal::Infinity(kNegative).IsSpecial());
+  EXPECT_FALSE(Decimal::Infinity(kNegative).IsZero());
 
-  EXPECT_FALSE(Decimal::nan().isFinite());
-  EXPECT_FALSE(Decimal::nan().isInfinity());
-  EXPECT_TRUE(Decimal::nan().isNaN());
-  EXPECT_TRUE(Decimal::nan().isSpecial());
-  EXPECT_FALSE(Decimal::nan().isZero());
+  EXPECT_FALSE(Decimal::Nan().IsFinite());
+  EXPECT_FALSE(Decimal::Nan().IsInfinity());
+  EXPECT_TRUE(Decimal::Nan().IsNaN());
+  EXPECT_TRUE(Decimal::Nan().IsSpecial());
+  EXPECT_FALSE(Decimal::Nan().IsZero());
 }
 
 // LayoutTests/fast/forms/number/number-stepup-stepdown-from-renderer
 TEST_F(DecimalTest, RealWorldExampleNumberStepUpStepDownFromRenderer) {
-  EXPECT_DECIMAL_STREQ("10", stepDown("0", "100", "10", "19", 1));
-  EXPECT_DECIMAL_STREQ("90", stepUp("0", "99", "10", "89", 1));
+  EXPECT_DECIMAL_STREQ("10", StepDown("0", "100", "10", "19", 1));
+  EXPECT_DECIMAL_STREQ("90", StepUp("0", "99", "10", "89", 1));
   EXPECT_DECIMAL_STREQ(
-      "1", stepUp("0", "1", "0.33333333333333333", "0", 3));  // step=1/3
-  EXPECT_DECIMAL_STREQ("0.01", stepUp("0", "0.01", "0.0033333333333333333", "0",
+      "1", StepUp("0", "1", "0.33333333333333333", "0", 3));  // step=1/3
+  EXPECT_DECIMAL_STREQ("0.01", StepUp("0", "0.01", "0.0033333333333333333", "0",
                                       3));  // step=1/300
   EXPECT_DECIMAL_STREQ(
-      "1", stepUp("0", "1", "0.003921568627450980", "0", 255));  // step=1/255
-  EXPECT_DECIMAL_STREQ("1", stepUp("0", "1", "0.1", "0", 10));
+      "1", StepUp("0", "1", "0.003921568627450980", "0", 255));  // step=1/255
+  EXPECT_DECIMAL_STREQ("1", StepUp("0", "1", "0.1", "0", 10));
 }
 
 TEST_F(DecimalTest, RealWorldExampleNumberStepUpStepDownFromRendererRounding) {
-  EXPECT_DECIMAL_STREQ("5.015", stepUp("0", "100", "0.005", "5.005", 2));
-  EXPECT_DECIMAL_STREQ("5.06", stepUp("0", "100", "0.005", "5.005", 11));
-  EXPECT_DECIMAL_STREQ("5.065", stepUp("0", "100", "0.005", "5.005", 12));
+  EXPECT_DECIMAL_STREQ("5.015", StepUp("0", "100", "0.005", "5.005", 2));
+  EXPECT_DECIMAL_STREQ("5.06", StepUp("0", "100", "0.005", "5.005", 11));
+  EXPECT_DECIMAL_STREQ("5.065", StepUp("0", "100", "0.005", "5.005", 12));
 
-  EXPECT_DECIMAL_STREQ("5.015", stepUp("4", "9", "0.005", "5.005", 2));
-  EXPECT_DECIMAL_STREQ("5.06", stepUp("4", "9", "0.005", "5.005", 11));
-  EXPECT_DECIMAL_STREQ("5.065", stepUp("4", "9", "0.005", "5.005", 12));
+  EXPECT_DECIMAL_STREQ("5.015", StepUp("4", "9", "0.005", "5.005", 2));
+  EXPECT_DECIMAL_STREQ("5.06", StepUp("4", "9", "0.005", "5.005", 11));
+  EXPECT_DECIMAL_STREQ("5.065", StepUp("4", "9", "0.005", "5.005", 12));
 }
 
 TEST_F(DecimalTest, RealWorldExampleRangeStepUpStepDown) {
-  EXPECT_DECIMAL_STREQ("1e+38", stepUp("0", "1E38", "1", "1E38", 9));
-  EXPECT_DECIMAL_STREQ("1e+38", stepDown("0", "1E38", "1", "1E38", 9));
+  EXPECT_DECIMAL_STREQ("1e+38", StepUp("0", "1E38", "1", "1E38", 9));
+  EXPECT_DECIMAL_STREQ("1e+38", StepDown("0", "1E38", "1", "1E38", 9));
 }
 
 TEST_F(DecimalTest, Remainder) {
-  EXPECT_EQ(encode(21, -1, Positive), encode(21, -1, Positive).remainder(3));
-  EXPECT_EQ(Decimal(1), Decimal(10).remainder(3));
-  EXPECT_EQ(Decimal(1), Decimal(10).remainder(-3));
-  EXPECT_EQ(encode(1, 0, Negative), Decimal(-10).remainder(3));
-  EXPECT_EQ(Decimal(-1), Decimal(-10).remainder(-3));
-  EXPECT_EQ(encode(2, -1, Positive), encode(102, -1, Positive).remainder(1));
-  EXPECT_EQ(encode(1, -1, Positive),
-            Decimal(10).remainder(encode(3, -1, Positive)));
+  EXPECT_EQ(Encode(21, -1, kPositive), Encode(21, -1, kPositive).Remainder(3));
+  EXPECT_EQ(Decimal(1), Decimal(10).Remainder(3));
+  EXPECT_EQ(Decimal(1), Decimal(10).Remainder(-3));
+  EXPECT_EQ(Encode(1, 0, kNegative), Decimal(-10).Remainder(3));
+  EXPECT_EQ(Decimal(-1), Decimal(-10).Remainder(-3));
+  EXPECT_EQ(Encode(2, -1, kPositive), Encode(102, -1, kPositive).Remainder(1));
+  EXPECT_EQ(Encode(1, -1, kPositive),
+            Decimal(10).Remainder(Encode(3, -1, kPositive)));
   EXPECT_EQ(Decimal(1),
-            encode(36, -1, Positive).remainder(encode(13, -1, Positive)));
-  EXPECT_EQ(encode(1, 86, Positive),
-            (encode(1234, 100, Positive).remainder(Decimal(3))));
-  EXPECT_EQ(Decimal(500), (Decimal(500).remainder(1000)));
-  EXPECT_EQ(Decimal(-500), (Decimal(-500).remainder(1000)));
+            Encode(36, -1, kPositive).Remainder(Encode(13, -1, kPositive)));
+  EXPECT_EQ(Encode(1, 86, kPositive),
+            (Encode(1234, 100, kPositive).Remainder(Decimal(3))));
+  EXPECT_EQ(Decimal(500), (Decimal(500).Remainder(1000)));
+  EXPECT_EQ(Decimal(-500), (Decimal(-500).Remainder(1000)));
 }
 
 TEST_F(DecimalTest, RemainderBigExponent) {
-  EXPECT_EQ(encode(0, 1022, Positive),
-            encode(1, 1022, Positive).remainder(encode(1, 0, Positive)));
-  EXPECT_EQ(encode(0, 1022, Positive),
-            encode(1, 1022, Positive).remainder(encode(1, 1022, Positive)));
-  EXPECT_EQ(Decimal::infinity(Positive),
-            encode(1, 1022, Positive).remainder(encode(1, -1000, Positive)));
+  EXPECT_EQ(Encode(0, 1022, kPositive),
+            Encode(1, 1022, kPositive).Remainder(Encode(1, 0, kPositive)));
+  EXPECT_EQ(Encode(0, 1022, kPositive),
+            Encode(1, 1022, kPositive).Remainder(Encode(1, 1022, kPositive)));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Encode(1, 1022, kPositive).Remainder(Encode(1, -1000, kPositive)));
 }
 
 TEST_F(DecimalTest, RemainderSmallExponent) {
-  EXPECT_EQ(encode(1, -1022, Positive),
-            encode(1, -1022, Positive).remainder(encode(1, 0, Positive)));
-  EXPECT_EQ(encode(0, -1022, Positive),
-            encode(1, -1022, Positive).remainder(encode(1, -1022, Positive)));
+  EXPECT_EQ(Encode(1, -1022, kPositive),
+            Encode(1, -1022, kPositive).Remainder(Encode(1, 0, kPositive)));
+  EXPECT_EQ(Encode(0, -1022, kPositive),
+            Encode(1, -1022, kPositive).Remainder(Encode(1, -1022, kPositive)));
 }
 
 TEST_F(DecimalTest, RemainderSpecialValues) {
-  EXPECT_EQ(Decimal::infinity(Positive),
-            Decimal::infinity(Positive).remainder(1));
-  EXPECT_EQ(Decimal::infinity(Negative),
-            Decimal::infinity(Negative).remainder(1));
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().remainder(1));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Decimal::Infinity(kPositive).Remainder(1));
+  EXPECT_EQ(Decimal::Infinity(kNegative),
+            Decimal::Infinity(kNegative).Remainder(1));
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Remainder(1));
 
-  EXPECT_EQ(Decimal::infinity(Negative),
-            Decimal::infinity(Positive).remainder(-1));
-  EXPECT_EQ(Decimal::infinity(Positive),
-            Decimal::infinity(Negative).remainder(-1));
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().remainder(-1));
+  EXPECT_EQ(Decimal::Infinity(kNegative),
+            Decimal::Infinity(kPositive).Remainder(-1));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Decimal::Infinity(kNegative).Remainder(-1));
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Remainder(-1));
 
-  EXPECT_EQ(Decimal::infinity(Positive),
-            Decimal::infinity(Positive).remainder(3));
-  EXPECT_EQ(Decimal::infinity(Negative),
-            Decimal::infinity(Negative).remainder(3));
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().remainder(3));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Decimal::Infinity(kPositive).Remainder(3));
+  EXPECT_EQ(Decimal::Infinity(kNegative),
+            Decimal::Infinity(kNegative).Remainder(3));
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Remainder(3));
 
-  EXPECT_EQ(Decimal::infinity(Negative),
-            Decimal::infinity(Positive).remainder(-1));
-  EXPECT_EQ(Decimal::infinity(Positive),
-            Decimal::infinity(Negative).remainder(-1));
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().remainder(-1));
+  EXPECT_EQ(Decimal::Infinity(kNegative),
+            Decimal::Infinity(kPositive).Remainder(-1));
+  EXPECT_EQ(Decimal::Infinity(kPositive),
+            Decimal::Infinity(kNegative).Remainder(-1));
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Remainder(-1));
 
-  EXPECT_EQ(Decimal::nan(), Decimal(1).remainder(Decimal::infinity(Positive)));
-  EXPECT_EQ(Decimal::nan(), Decimal(1).remainder(Decimal::infinity(Negative)));
-  EXPECT_EQ(Decimal::nan(), Decimal(1).remainder(Decimal::nan()));
+  EXPECT_EQ(Decimal::Nan(), Decimal(1).Remainder(Decimal::Infinity(kPositive)));
+  EXPECT_EQ(Decimal::Nan(), Decimal(1).Remainder(Decimal::Infinity(kNegative)));
+  EXPECT_EQ(Decimal::Nan(), Decimal(1).Remainder(Decimal::Nan()));
 }
 
 TEST_F(DecimalTest, Round) {
-  EXPECT_EQ(Decimal(1), (Decimal(9) / Decimal(10)).round());
-  EXPECT_EQ(Decimal(25), (Decimal(5) / fromString("0.200")).round());
-  EXPECT_EQ(Decimal(3), (Decimal(5) / Decimal(2)).round());
-  EXPECT_EQ(Decimal(1), (Decimal(2) / Decimal(3)).round());
-  EXPECT_EQ(Decimal(3), (Decimal(10) / Decimal(3)).round());
-  EXPECT_EQ(Decimal(3), (Decimal(1) / fromString("0.3")).round());
-  EXPECT_EQ(Decimal(10), (Decimal(1) / fromString("0.1")).round());
-  EXPECT_EQ(Decimal(5), (Decimal(1) / fromString("0.2")).round());
-  EXPECT_EQ(Decimal(10), (fromString("10.2") / 1).round());
-  EXPECT_EQ(encode(1234, 100, Positive), encode(1234, 100, Positive).round());
+  EXPECT_EQ(Decimal(1), (Decimal(9) / Decimal(10)).Round());
+  EXPECT_EQ(Decimal(25), (Decimal(5) / FromString("0.200")).Round());
+  EXPECT_EQ(Decimal(3), (Decimal(5) / Decimal(2)).Round());
+  EXPECT_EQ(Decimal(1), (Decimal(2) / Decimal(3)).Round());
+  EXPECT_EQ(Decimal(3), (Decimal(10) / Decimal(3)).Round());
+  EXPECT_EQ(Decimal(3), (Decimal(1) / FromString("0.3")).Round());
+  EXPECT_EQ(Decimal(10), (Decimal(1) / FromString("0.1")).Round());
+  EXPECT_EQ(Decimal(5), (Decimal(1) / FromString("0.2")).Round());
+  EXPECT_EQ(Decimal(10), (FromString("10.2") / 1).Round());
+  EXPECT_EQ(Encode(1234, 100, kPositive), Encode(1234, 100, kPositive).Round());
 
-  EXPECT_EQ(Decimal(2), encode(190002, -5, Positive).round());
-  EXPECT_EQ(Decimal(2), encode(150002, -5, Positive).round());
-  EXPECT_EQ(Decimal(2), encode(150000, -5, Positive).round());
-  EXPECT_EQ(Decimal(12), encode(12492, -3, Positive).round());
-  EXPECT_EQ(Decimal(13), encode(12502, -3, Positive).round());
+  EXPECT_EQ(Decimal(2), Encode(190002, -5, kPositive).Round());
+  EXPECT_EQ(Decimal(2), Encode(150002, -5, kPositive).Round());
+  EXPECT_EQ(Decimal(2), Encode(150000, -5, kPositive).Round());
+  EXPECT_EQ(Decimal(12), Encode(12492, -3, kPositive).Round());
+  EXPECT_EQ(Decimal(13), Encode(12502, -3, kPositive).Round());
 
-  EXPECT_EQ(Decimal(-2), encode(190002, -5, Negative).round());
-  EXPECT_EQ(Decimal(-2), encode(150002, -5, Negative).round());
-  EXPECT_EQ(Decimal(-2), encode(150000, -5, Negative).round());
-  EXPECT_EQ(Decimal(-12), encode(12492, -3, Negative).round());
-  EXPECT_EQ(Decimal(-13), encode(12502, -3, Negative).round());
+  EXPECT_EQ(Decimal(-2), Encode(190002, -5, kNegative).Round());
+  EXPECT_EQ(Decimal(-2), Encode(150002, -5, kNegative).Round());
+  EXPECT_EQ(Decimal(-2), Encode(150000, -5, kNegative).Round());
+  EXPECT_EQ(Decimal(-12), Encode(12492, -3, kNegative).Round());
+  EXPECT_EQ(Decimal(-13), Encode(12502, -3, kNegative).Round());
 }
 
 TEST_F(DecimalTest, RoundSpecialValues) {
-  EXPECT_EQ(Decimal::infinity(Positive), Decimal::infinity(Positive).round());
-  EXPECT_EQ(Decimal::infinity(Negative), Decimal::infinity(Negative).round());
-  EXPECT_EQ(Decimal::nan(), Decimal::nan().round());
+  EXPECT_EQ(Decimal::Infinity(kPositive), Decimal::Infinity(kPositive).Round());
+  EXPECT_EQ(Decimal::Infinity(kNegative), Decimal::Infinity(kNegative).Round());
+  EXPECT_EQ(Decimal::Nan(), Decimal::Nan().Round());
 }
 
 TEST_F(DecimalTest, Subtract) {
-  EXPECT_EQ(encode(0, 0, Positive), Decimal(0) - Decimal(0));
-  EXPECT_EQ(encode(3, 0, Positive), Decimal(2) - Decimal(-1));
-  EXPECT_EQ(encode(3, 0, Negative), Decimal(-1) - Decimal(2));
-  EXPECT_EQ(encode(98, 0, Positive), Decimal(99) - Decimal(1));
-  EXPECT_EQ(encode(0, 0, Positive), Decimal(-50) - Decimal(-50));
-  EXPECT_EQ(encode(UINT64_C(1000000000000000), 35, Positive),
-            encode(1, 50, Positive) - Decimal(1));
-  EXPECT_EQ(encode(UINT64_C(1000000000000000), 35, Negative),
-            Decimal(1) - encode(1, 50, Positive));
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal(0) - Decimal(0));
+  EXPECT_EQ(Encode(3, 0, kPositive), Decimal(2) - Decimal(-1));
+  EXPECT_EQ(Encode(3, 0, kNegative), Decimal(-1) - Decimal(2));
+  EXPECT_EQ(Encode(98, 0, kPositive), Decimal(99) - Decimal(1));
+  EXPECT_EQ(Encode(0, 0, kPositive), Decimal(-50) - Decimal(-50));
+  EXPECT_EQ(Encode(UINT64_C(1000000000000000), 35, kPositive),
+            Encode(1, 50, kPositive) - Decimal(1));
+  EXPECT_EQ(Encode(UINT64_C(1000000000000000), 35, kNegative),
+            Decimal(1) - Encode(1, 50, kPositive));
 }
 
 TEST_F(DecimalTest, SubtractBigExponent) {
-  EXPECT_EQ(encode(1, 1022, Positive),
-            encode(1, 1022, Positive) - encode(1, 0, Positive));
-  EXPECT_EQ(encode(0, 0, Positive),
-            encode(1, 1022, Positive) - encode(1, 1022, Positive));
-  EXPECT_EQ(encode(1, 1022, Positive),
-            encode(1, 1022, Positive) + encode(1, -1000, Positive));
+  EXPECT_EQ(Encode(1, 1022, kPositive),
+            Encode(1, 1022, kPositive) - Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(0, 0, kPositive),
+            Encode(1, 1022, kPositive) - Encode(1, 1022, kPositive));
+  EXPECT_EQ(Encode(1, 1022, kPositive),
+            Encode(1, 1022, kPositive) + Encode(1, -1000, kPositive));
 }
 
 TEST_F(DecimalTest, SubtractSmallExponent) {
-  EXPECT_EQ(encode(UINT64_C(10000000000000000), -16, Negative),
-            encode(1, -1022, Positive) - encode(1, 0, Positive));
-  EXPECT_EQ(encode(0, 0, Positive),
-            encode(1, -1022, Positive) - encode(1, -1022, Positive));
+  EXPECT_EQ(Encode(UINT64_C(10000000000000000), -16, kNegative),
+            Encode(1, -1022, kPositive) - Encode(1, 0, kPositive));
+  EXPECT_EQ(Encode(0, 0, kPositive),
+            Encode(1, -1022, kPositive) - Encode(1, -1022, kPositive));
 }
 
 TEST_F(DecimalTest, SubtractSpecialValues) {
-  const Decimal Infinity(Decimal::infinity(Positive));
-  const Decimal MinusInfinity(Decimal::infinity(Negative));
-  const Decimal NaN(Decimal::nan());
-  const Decimal Ten(10);
+  const Decimal infinity(Decimal::Infinity(kPositive));
+  const Decimal minus_infinity(Decimal::Infinity(kNegative));
+  const Decimal na_n(Decimal::Nan());
+  const Decimal ten(10);
 
-  EXPECT_EQ(NaN, Infinity - Infinity);
-  EXPECT_EQ(Infinity, Infinity - MinusInfinity);
-  EXPECT_EQ(MinusInfinity, MinusInfinity - Infinity);
-  EXPECT_EQ(NaN, MinusInfinity - MinusInfinity);
+  EXPECT_EQ(na_n, infinity - infinity);
+  EXPECT_EQ(infinity, infinity - minus_infinity);
+  EXPECT_EQ(minus_infinity, minus_infinity - infinity);
+  EXPECT_EQ(na_n, minus_infinity - minus_infinity);
 
-  EXPECT_EQ(Infinity, Infinity - Ten);
-  EXPECT_EQ(MinusInfinity, Ten - Infinity);
-  EXPECT_EQ(MinusInfinity, MinusInfinity - Ten);
-  EXPECT_EQ(Infinity, Ten - MinusInfinity);
+  EXPECT_EQ(infinity, infinity - ten);
+  EXPECT_EQ(minus_infinity, ten - infinity);
+  EXPECT_EQ(minus_infinity, minus_infinity - ten);
+  EXPECT_EQ(infinity, ten - minus_infinity);
 
-  EXPECT_EQ(NaN, NaN - NaN);
-  EXPECT_EQ(NaN, NaN - Ten);
-  EXPECT_EQ(NaN, Ten - NaN);
+  EXPECT_EQ(na_n, na_n - na_n);
+  EXPECT_EQ(na_n, na_n - ten);
+  EXPECT_EQ(na_n, ten - na_n);
 
-  EXPECT_EQ(NaN, NaN - Infinity);
-  EXPECT_EQ(NaN, NaN - MinusInfinity);
-  EXPECT_EQ(NaN, Infinity - NaN);
-  EXPECT_EQ(NaN, MinusInfinity - NaN);
+  EXPECT_EQ(na_n, na_n - infinity);
+  EXPECT_EQ(na_n, na_n - minus_infinity);
+  EXPECT_EQ(na_n, infinity - na_n);
+  EXPECT_EQ(na_n, minus_infinity - na_n);
 }
 
 TEST_F(DecimalTest, ToDouble) {
-  EXPECT_EQ(0.0, encode(0, 0, Positive).toDouble());
-  EXPECT_EQ(-0.0, encode(0, 0, Negative).toDouble());
+  EXPECT_EQ(0.0, Encode(0, 0, kPositive).ToDouble());
+  EXPECT_EQ(-0.0, Encode(0, 0, kNegative).ToDouble());
 
-  EXPECT_EQ(1.0, encode(1, 0, Positive).toDouble());
-  EXPECT_EQ(-1.0, encode(1, 0, Negative).toDouble());
+  EXPECT_EQ(1.0, Encode(1, 0, kPositive).ToDouble());
+  EXPECT_EQ(-1.0, Encode(1, 0, kNegative).ToDouble());
 
-  EXPECT_EQ(0.1, encode(1, -1, Positive).toDouble());
-  EXPECT_EQ(-0.1, encode(1, -1, Negative).toDouble());
-  EXPECT_EQ(0.3, encode(3, -1, Positive).toDouble());
-  EXPECT_EQ(-0.3, encode(3, -1, Negative).toDouble());
-  EXPECT_EQ(0.6, encode(6, -1, Positive).toDouble());
-  EXPECT_EQ(-0.6, encode(6, -1, Negative).toDouble());
-  EXPECT_EQ(0.7, encode(7, -1, Positive).toDouble());
-  EXPECT_EQ(-0.7, encode(7, -1, Negative).toDouble());
+  EXPECT_EQ(0.1, Encode(1, -1, kPositive).ToDouble());
+  EXPECT_EQ(-0.1, Encode(1, -1, kNegative).ToDouble());
+  EXPECT_EQ(0.3, Encode(3, -1, kPositive).ToDouble());
+  EXPECT_EQ(-0.3, Encode(3, -1, kNegative).ToDouble());
+  EXPECT_EQ(0.6, Encode(6, -1, kPositive).ToDouble());
+  EXPECT_EQ(-0.6, Encode(6, -1, kNegative).ToDouble());
+  EXPECT_EQ(0.7, Encode(7, -1, kPositive).ToDouble());
+  EXPECT_EQ(-0.7, Encode(7, -1, kNegative).ToDouble());
 
-  EXPECT_EQ(0.01, encode(1, -2, Positive).toDouble());
-  EXPECT_EQ(0.001, encode(1, -3, Positive).toDouble());
-  EXPECT_EQ(0.0001, encode(1, -4, Positive).toDouble());
-  EXPECT_EQ(0.00001, encode(1, -5, Positive).toDouble());
+  EXPECT_EQ(0.01, Encode(1, -2, kPositive).ToDouble());
+  EXPECT_EQ(0.001, Encode(1, -3, kPositive).ToDouble());
+  EXPECT_EQ(0.0001, Encode(1, -4, kPositive).ToDouble());
+  EXPECT_EQ(0.00001, Encode(1, -5, kPositive).ToDouble());
 
-  EXPECT_EQ(1e+308, encode(1, 308, Positive).toDouble());
-  EXPECT_EQ(1e-307, encode(1, -307, Positive).toDouble());
+  EXPECT_EQ(1e+308, Encode(1, 308, kPositive).ToDouble());
+  EXPECT_EQ(1e-307, Encode(1, -307, kPositive).ToDouble());
 
-  EXPECT_TRUE(std::isinf(encode(1, 1000, Positive).toDouble()));
-  EXPECT_EQ(0.0, encode(1, -1000, Positive).toDouble());
+  EXPECT_TRUE(std::isinf(Encode(1, 1000, kPositive).ToDouble()));
+  EXPECT_EQ(0.0, Encode(1, -1000, kPositive).ToDouble());
 }
 
 TEST_F(DecimalTest, ToDoubleSpecialValues) {
-  EXPECT_TRUE(std::isinf(Decimal::infinity(Decimal::Positive).toDouble()));
-  EXPECT_TRUE(std::isinf(Decimal::infinity(Decimal::Negative).toDouble()));
-  EXPECT_TRUE(std::isnan(Decimal::nan().toDouble()));
+  EXPECT_TRUE(std::isinf(Decimal::Infinity(Decimal::kPositive).ToDouble()));
+  EXPECT_TRUE(std::isinf(Decimal::Infinity(Decimal::kNegative).ToDouble()));
+  EXPECT_TRUE(std::isnan(Decimal::Nan().ToDouble()));
 }
 
 TEST_F(DecimalTest, ToString) {
-  EXPECT_DECIMAL_STREQ("0", Decimal::zero(Positive));
-  EXPECT_DECIMAL_STREQ("-0", Decimal::zero(Negative));
+  EXPECT_DECIMAL_STREQ("0", Decimal::Zero(kPositive));
+  EXPECT_DECIMAL_STREQ("-0", Decimal::Zero(kNegative));
   EXPECT_DECIMAL_STREQ("1", Decimal(1));
   EXPECT_DECIMAL_STREQ("-1", Decimal(-1));
   EXPECT_DECIMAL_STREQ("1234567", Decimal(1234567));
   EXPECT_DECIMAL_STREQ("-1234567", Decimal(-1234567));
-  EXPECT_DECIMAL_STREQ("0.5", encode(5, -1, Positive));
-  EXPECT_DECIMAL_STREQ("-0.5", encode(5, -1, Negative));
-  EXPECT_DECIMAL_STREQ("12.345", encode(12345, -3, Positive));
-  EXPECT_DECIMAL_STREQ("-12.345", encode(12345, -3, Negative));
-  EXPECT_DECIMAL_STREQ("0.12345", encode(12345, -5, Positive));
-  EXPECT_DECIMAL_STREQ("-0.12345", encode(12345, -5, Negative));
-  EXPECT_DECIMAL_STREQ("50", encode(50, 0, Positive));
-  EXPECT_DECIMAL_STREQ("-50", encode(50, 0, Negative));
-  EXPECT_DECIMAL_STREQ("5e+1", encode(5, 1, Positive));
-  EXPECT_DECIMAL_STREQ("-5e+1", encode(5, 1, Negative));
-  EXPECT_DECIMAL_STREQ("5.678e+103", encode(5678, 100, Positive));
-  EXPECT_DECIMAL_STREQ("-5.678e+103", encode(5678, 100, Negative));
-  EXPECT_DECIMAL_STREQ("5.678e-97", encode(5678, -100, Positive));
-  EXPECT_DECIMAL_STREQ("-5.678e-97", encode(5678, -100, Negative));
+  EXPECT_DECIMAL_STREQ("0.5", Encode(5, -1, kPositive));
+  EXPECT_DECIMAL_STREQ("-0.5", Encode(5, -1, kNegative));
+  EXPECT_DECIMAL_STREQ("12.345", Encode(12345, -3, kPositive));
+  EXPECT_DECIMAL_STREQ("-12.345", Encode(12345, -3, kNegative));
+  EXPECT_DECIMAL_STREQ("0.12345", Encode(12345, -5, kPositive));
+  EXPECT_DECIMAL_STREQ("-0.12345", Encode(12345, -5, kNegative));
+  EXPECT_DECIMAL_STREQ("50", Encode(50, 0, kPositive));
+  EXPECT_DECIMAL_STREQ("-50", Encode(50, 0, kNegative));
+  EXPECT_DECIMAL_STREQ("5e+1", Encode(5, 1, kPositive));
+  EXPECT_DECIMAL_STREQ("-5e+1", Encode(5, 1, kNegative));
+  EXPECT_DECIMAL_STREQ("5.678e+103", Encode(5678, 100, kPositive));
+  EXPECT_DECIMAL_STREQ("-5.678e+103", Encode(5678, 100, kNegative));
+  EXPECT_DECIMAL_STREQ("5.678e-97", Encode(5678, -100, kPositive));
+  EXPECT_DECIMAL_STREQ("-5.678e-97", Encode(5678, -100, kNegative));
   EXPECT_DECIMAL_STREQ("8639999913600001",
-                       encode(UINT64_C(8639999913600001), 0, Positive));
+                       Encode(UINT64_C(8639999913600001), 0, kPositive));
   EXPECT_DECIMAL_STREQ(
       "9007199254740991",
-      encode((static_cast<uint64_t>(1) << DBL_MANT_DIG) - 1, 0, Positive));
+      Encode((static_cast<uint64_t>(1) << DBL_MANT_DIG) - 1, 0, kPositive));
   EXPECT_DECIMAL_STREQ("99999999999999999",
-                       encode(UINT64_C(99999999999999999), 0, Positive));
+                       Encode(UINT64_C(99999999999999999), 0, kPositive));
   EXPECT_DECIMAL_STREQ("9.9999999999999999e+17",
-                       encode(UINT64_C(99999999999999999), 1, Positive));
+                       Encode(UINT64_C(99999999999999999), 1, kPositive));
   EXPECT_DECIMAL_STREQ("9.9999999999999999e+18",
-                       encode(UINT64_C(99999999999999999), 2, Positive));
+                       Encode(UINT64_C(99999999999999999), 2, kPositive));
   EXPECT_DECIMAL_STREQ("1e+16",
-                       encode(UINT64_C(99999999999999999), -1, Positive));
+                       Encode(UINT64_C(99999999999999999), -1, kPositive));
   EXPECT_DECIMAL_STREQ("1000000000000000",
-                       encode(UINT64_C(99999999999999999), -2, Positive));
-  EXPECT_DECIMAL_STREQ("1", encode(UINT64_C(99999999999999999), -17, Positive));
+                       Encode(UINT64_C(99999999999999999), -2, kPositive));
+  EXPECT_DECIMAL_STREQ("1",
+                       Encode(UINT64_C(99999999999999999), -17, kPositive));
   EXPECT_DECIMAL_STREQ("0.001",
-                       encode(UINT64_C(99999999999999999), -20, Positive));
+                       Encode(UINT64_C(99999999999999999), -20, kPositive));
   EXPECT_DECIMAL_STREQ("1e-83",
-                       encode(UINT64_C(99999999999999999), -100, Positive));
+                       Encode(UINT64_C(99999999999999999), -100, kPositive));
 }
 
 TEST_F(DecimalTest, ToStringSpecialValues) {
-  EXPECT_DECIMAL_STREQ("Infinity", Decimal::infinity(Positive));
-  EXPECT_DECIMAL_STREQ("-Infinity", Decimal::infinity(Negative));
-  EXPECT_DECIMAL_STREQ("NaN", Decimal::nan());
+  EXPECT_DECIMAL_STREQ("Infinity", Decimal::Infinity(kPositive));
+  EXPECT_DECIMAL_STREQ("-Infinity", Decimal::Infinity(kNegative));
+  EXPECT_DECIMAL_STREQ("NaN", Decimal::Nan());
 }
 
 }  // namespace blink

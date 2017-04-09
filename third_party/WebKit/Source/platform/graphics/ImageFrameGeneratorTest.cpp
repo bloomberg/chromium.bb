@@ -43,11 +43,11 @@ namespace blink {
 namespace {
 
 // Helper methods to generate standard sizes.
-SkISize fullSize() {
+SkISize FullSize() {
   return SkISize::Make(100, 100);
 }
 
-SkImageInfo imageInfo() {
+SkImageInfo ImageInfo() {
   return SkImageInfo::Make(100, 100, kBGRA_8888_SkColorType,
                            kOpaque_SkAlphaType);
 }
@@ -58,206 +58,206 @@ class ImageFrameGeneratorTest : public ::testing::Test,
                                 public MockImageDecoderClient {
  public:
   void SetUp() override {
-    ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
-    m_generator =
-        ImageFrameGenerator::create(fullSize(), false, ColorBehavior::ignore());
-    m_data = SharedBuffer::create();
-    m_segmentReader = SegmentReader::createFromSharedBuffer(m_data);
-    useMockImageDecoderFactory();
-    m_decodersDestroyed = 0;
-    m_decodeRequestCount = 0;
-    m_status = ImageFrame::FrameEmpty;
-    m_frameCount = 1;
-    m_requestedClearExceptFrame = kNotFound;
+    ImageDecodingStore::Instance().SetCacheLimitInBytes(1024 * 1024);
+    generator_ =
+        ImageFrameGenerator::Create(FullSize(), false, ColorBehavior::Ignore());
+    data_ = SharedBuffer::Create();
+    segment_reader_ = SegmentReader::CreateFromSharedBuffer(data_);
+    UseMockImageDecoderFactory();
+    decoders_destroyed_ = 0;
+    decode_request_count_ = 0;
+    status_ = ImageFrame::kFrameEmpty;
+    frame_count_ = 1;
+    requested_clear_except_frame_ = kNotFound;
   }
 
-  void TearDown() override { ImageDecodingStore::instance().clear(); }
+  void TearDown() override { ImageDecodingStore::Instance().Clear(); }
 
-  void decoderBeingDestroyed() override { ++m_decodersDestroyed; }
+  void DecoderBeingDestroyed() override { ++decoders_destroyed_; }
 
-  void decodeRequested() override { ++m_decodeRequestCount; }
+  void DecodeRequested() override { ++decode_request_count_; }
 
-  ImageFrame::Status status() override {
-    ImageFrame::Status currentStatus = m_status;
-    m_status = m_nextFrameStatus;
-    return currentStatus;
+  ImageFrame::Status GetStatus() override {
+    ImageFrame::Status current_status = status_;
+    status_ = next_frame_status_;
+    return current_status;
   }
 
-  void clearCacheExceptFrameRequested(size_t clearExceptFrame) override {
-    m_requestedClearExceptFrame = clearExceptFrame;
+  void ClearCacheExceptFrameRequested(size_t clear_except_frame) override {
+    requested_clear_except_frame_ = clear_except_frame;
   };
 
-  size_t frameCount() override { return m_frameCount; }
-  int repetitionCount() const override {
-    return m_frameCount == 1 ? cAnimationNone : cAnimationLoopOnce;
+  size_t FrameCount() override { return frame_count_; }
+  int RepetitionCount() const override {
+    return frame_count_ == 1 ? kCAnimationNone : kCAnimationLoopOnce;
   }
-  float frameDuration() const override { return 0; }
+  float FrameDuration() const override { return 0; }
 
  protected:
-  void useMockImageDecoderFactory() {
-    m_generator->setImageDecoderFactory(
-        MockImageDecoderFactory::create(this, fullSize()));
+  void UseMockImageDecoderFactory() {
+    generator_->SetImageDecoderFactory(
+        MockImageDecoderFactory::Create(this, FullSize()));
   }
 
-  void addNewData() { m_data->append("g", 1u); }
+  void AddNewData() { data_->Append("g", 1u); }
 
-  void setFrameStatus(ImageFrame::Status status) {
-    m_status = m_nextFrameStatus = status;
+  void SetFrameStatus(ImageFrame::Status status) {
+    status_ = next_frame_status_ = status;
   }
-  void setNextFrameStatus(ImageFrame::Status status) {
-    m_nextFrameStatus = status;
+  void SetNextFrameStatus(ImageFrame::Status status) {
+    next_frame_status_ = status;
   }
-  void setFrameCount(size_t count) {
-    m_frameCount = count;
+  void SetFrameCount(size_t count) {
+    frame_count_ = count;
     if (count > 1) {
-      m_generator.clear();
-      m_generator = ImageFrameGenerator::create(fullSize(), true,
-                                                ColorBehavior::ignore());
-      useMockImageDecoderFactory();
+      generator_.Clear();
+      generator_ = ImageFrameGenerator::Create(FullSize(), true,
+                                               ColorBehavior::Ignore());
+      UseMockImageDecoderFactory();
     }
   }
 
-  RefPtr<SharedBuffer> m_data;
-  RefPtr<SegmentReader> m_segmentReader;
-  RefPtr<ImageFrameGenerator> m_generator;
-  int m_decodersDestroyed;
-  int m_decodeRequestCount;
-  ImageFrame::Status m_status;
-  ImageFrame::Status m_nextFrameStatus;
-  size_t m_frameCount;
-  size_t m_requestedClearExceptFrame;
+  RefPtr<SharedBuffer> data_;
+  RefPtr<SegmentReader> segment_reader_;
+  RefPtr<ImageFrameGenerator> generator_;
+  int decoders_destroyed_;
+  int decode_request_count_;
+  ImageFrame::Status status_;
+  ImageFrame::Status next_frame_status_;
+  size_t frame_count_;
+  size_t requested_clear_except_frame_;
 };
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecode) {
-  setFrameStatus(ImageFrame::FramePartial);
+  SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(1, m_decodeRequestCount);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(1, decode_request_count_);
 
-  addNewData();
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(2, m_decodeRequestCount);
-  EXPECT_EQ(0, m_decodersDestroyed);
+  AddNewData();
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(2, decode_request_count_);
+  EXPECT_EQ(0, decoders_destroyed_);
 }
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
-  setFrameStatus(ImageFrame::FramePartial);
+  SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(1, m_decodeRequestCount);
-  EXPECT_EQ(0, m_decodersDestroyed);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(1, decode_request_count_);
+  EXPECT_EQ(0, decoders_destroyed_);
 
-  setFrameStatus(ImageFrame::FrameComplete);
-  addNewData();
+  SetFrameStatus(ImageFrame::kFrameComplete);
+  AddNewData();
 
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(2, m_decodeRequestCount);
-  EXPECT_EQ(1, m_decodersDestroyed);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(2, decode_request_count_);
+  EXPECT_EQ(1, decoders_destroyed_);
 
   // Decoder created again.
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(3, m_decodeRequestCount);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(3, decode_request_count_);
 }
 
-static void decodeThreadMain(ImageFrameGenerator* generator,
-                             SegmentReader* segmentReader) {
+static void DecodeThreadMain(ImageFrameGenerator* generator,
+                             SegmentReader* segment_reader) {
   char buffer[100 * 100 * 4];
-  generator->decodeAndScale(segmentReader, false, 0, imageInfo(), buffer,
+  generator->DecodeAndScale(segment_reader, false, 0, ImageInfo(), buffer,
                             100 * 4);
 }
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
-  setFrameStatus(ImageFrame::FramePartial);
+  SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(1, m_decodeRequestCount);
-  EXPECT_EQ(0, m_decodersDestroyed);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(1, decode_request_count_);
+  EXPECT_EQ(0, decoders_destroyed_);
 
   // LocalFrame can now be decoded completely.
-  setFrameStatus(ImageFrame::FrameComplete);
-  addNewData();
+  SetFrameStatus(ImageFrame::kFrameComplete);
+  AddNewData();
   std::unique_ptr<WebThread> thread =
-      WTF::wrapUnique(Platform::current()->createThread("DecodeThread"));
-  thread->getWebTaskRunner()->postTask(
+      WTF::WrapUnique(Platform::Current()->CreateThread("DecodeThread"));
+  thread->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      crossThreadBind(&decodeThreadMain, m_generator, m_segmentReader));
+      CrossThreadBind(&DecodeThreadMain, generator_, segment_reader_));
   thread.reset();
-  EXPECT_EQ(2, m_decodeRequestCount);
-  EXPECT_EQ(1, m_decodersDestroyed);
+  EXPECT_EQ(2, decode_request_count_);
+  EXPECT_EQ(1, decoders_destroyed_);
 
   // Decoder created again.
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(3, m_decodeRequestCount);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(3, decode_request_count_);
 
-  addNewData();
+  AddNewData();
 
   // Delete generator.
-  m_generator = nullptr;
+  generator_ = nullptr;
 }
 
 TEST_F(ImageFrameGeneratorTest, frameHasAlpha) {
-  setFrameStatus(ImageFrame::FramePartial);
+  SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_TRUE(m_generator->hasAlpha(0));
-  EXPECT_EQ(1, m_decodeRequestCount);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_TRUE(generator_->HasAlpha(0));
+  EXPECT_EQ(1, decode_request_count_);
 
-  ImageDecoder* tempDecoder = 0;
-  EXPECT_TRUE(ImageDecodingStore::instance().lockDecoder(
-      m_generator.get(), fullSize(), &tempDecoder));
-  ASSERT_TRUE(tempDecoder);
-  tempDecoder->frameBufferAtIndex(0)->setHasAlpha(false);
-  ImageDecodingStore::instance().unlockDecoder(m_generator.get(), tempDecoder);
-  EXPECT_EQ(2, m_decodeRequestCount);
+  ImageDecoder* temp_decoder = 0;
+  EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
+      generator_.Get(), FullSize(), &temp_decoder));
+  ASSERT_TRUE(temp_decoder);
+  temp_decoder->FrameBufferAtIndex(0)->SetHasAlpha(false);
+  ImageDecodingStore::Instance().UnlockDecoder(generator_.Get(), temp_decoder);
+  EXPECT_EQ(2, decode_request_count_);
 
-  setFrameStatus(ImageFrame::FrameComplete);
-  m_generator->decodeAndScale(m_segmentReader.get(), false, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(3, m_decodeRequestCount);
-  EXPECT_FALSE(m_generator->hasAlpha(0));
+  SetFrameStatus(ImageFrame::kFrameComplete);
+  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(3, decode_request_count_);
+  EXPECT_FALSE(generator_->HasAlpha(0));
 }
 
 TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
-  setFrameCount(3);
-  setFrameStatus(ImageFrame::FrameComplete);
+  SetFrameCount(3);
+  SetFrameStatus(ImageFrame::kFrameComplete);
 
   char buffer[100 * 100 * 4];
-  m_generator->decodeAndScale(m_segmentReader.get(), true, 0, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(1, m_decodeRequestCount);
-  EXPECT_EQ(0, m_decodersDestroyed);
-  EXPECT_EQ(0U, m_requestedClearExceptFrame);
+  generator_->DecodeAndScale(segment_reader_.Get(), true, 0, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(1, decode_request_count_);
+  EXPECT_EQ(0, decoders_destroyed_);
+  EXPECT_EQ(0U, requested_clear_except_frame_);
 
-  setFrameStatus(ImageFrame::FrameComplete);
+  SetFrameStatus(ImageFrame::kFrameComplete);
 
-  m_generator->decodeAndScale(m_segmentReader.get(), true, 1, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(2, m_decodeRequestCount);
-  EXPECT_EQ(0, m_decodersDestroyed);
-  EXPECT_EQ(1U, m_requestedClearExceptFrame);
+  generator_->DecodeAndScale(segment_reader_.Get(), true, 1, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(2, decode_request_count_);
+  EXPECT_EQ(0, decoders_destroyed_);
+  EXPECT_EQ(1U, requested_clear_except_frame_);
 
-  setFrameStatus(ImageFrame::FrameComplete);
+  SetFrameStatus(ImageFrame::kFrameComplete);
 
   // Decoding the last frame of a multi-frame images should trigger clearing
   // all the frame data, but not destroying the decoder.  See comments in
   // ImageFrameGenerator::tryToResumeDecode().
-  m_generator->decodeAndScale(m_segmentReader.get(), true, 2, imageInfo(),
-                              buffer, 100 * 4);
-  EXPECT_EQ(3, m_decodeRequestCount);
-  EXPECT_EQ(0, m_decodersDestroyed);
-  EXPECT_EQ(kNotFound, m_requestedClearExceptFrame);
+  generator_->DecodeAndScale(segment_reader_.Get(), true, 2, ImageInfo(),
+                             buffer, 100 * 4);
+  EXPECT_EQ(3, decode_request_count_);
+  EXPECT_EQ(0, decoders_destroyed_);
+  EXPECT_EQ(kNotFound, requested_clear_except_frame_);
 }
 
 }  // namespace blink

@@ -31,22 +31,22 @@ class CORE_EXPORT CustomElementDefinitionBuilder {
 
   // Check the constructor is valid. Return false if processing
   // should not proceed.
-  virtual bool checkConstructorIntrinsics() = 0;
+  virtual bool CheckConstructorIntrinsics() = 0;
 
   // Check the constructor is not already registered in the calling
   // registry. Return false if processing should not proceed.
-  virtual bool checkConstructorNotRegistered() = 0;
+  virtual bool CheckConstructorNotRegistered() = 0;
 
   // Checking the prototype may destroy the window. Return false if
   // processing should not proceed.
-  virtual bool checkPrototype() = 0;
+  virtual bool CheckPrototype() = 0;
 
   // Cache properties for build to use. Return false if processing
   // should not proceed.
-  virtual bool rememberOriginalProperties() = 0;
+  virtual bool RememberOriginalProperties() = 0;
 
   // Produce the definition. This must produce a definition.
-  virtual CustomElementDefinition* build(const CustomElementDescriptor&) = 0;
+  virtual CustomElementDefinition* Build(const CustomElementDescriptor&) = 0;
 };
 
 }  // namespace blink

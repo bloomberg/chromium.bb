@@ -24,21 +24,21 @@
 namespace blink {
 
 SVGTextMetrics::SVGTextMetrics(unsigned length, float width, float height)
-    : m_width(width), m_height(height), m_length(length) {}
+    : width_(width), height_(height), length_(length) {}
 
 SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
     : SVGTextMetrics(1, 0, 0) {}
 
-float SVGTextMetrics::advance(FontOrientation orientation) const {
+float SVGTextMetrics::Advance(FontOrientation orientation) const {
   switch (orientation) {
-    case FontOrientation::Horizontal:
-    case FontOrientation::VerticalRotated:
-      return width();
-    case FontOrientation::VerticalUpright:
-      return height();
+    case FontOrientation::kHorizontal:
+    case FontOrientation::kVerticalRotated:
+      return Width();
+    case FontOrientation::kVerticalUpright:
+      return Height();
     default:
       NOTREACHED();
-      return width();
+      return Width();
   }
 }
 

@@ -16,25 +16,25 @@ namespace blink {
 // from that one.
 class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
  public:
-  static LayoutPagedFlowThread* createAnonymous(
+  static LayoutPagedFlowThread* CreateAnonymous(
       Document&,
-      const ComputedStyle& parentStyle);
+      const ComputedStyle& parent_style);
 
-  LayoutBlockFlow* pagedBlockFlow() const {
-    return toLayoutBlockFlow(parent());
+  LayoutBlockFlow* PagedBlockFlow() const {
+    return ToLayoutBlockFlow(Parent());
   }
 
   // Return the number of pages. Will never be less than 1.
-  int pageCount();
+  int PageCount();
 
-  bool isLayoutPagedFlowThread() const override { return true; }
-  const char* name() const override { return "LayoutPagedFlowThread"; }
-  bool needsNewWidth() const override;
-  void updateLogicalWidth() override;
-  virtual void layout();
+  bool IsLayoutPagedFlowThread() const override { return true; }
+  const char* GetName() const override { return "LayoutPagedFlowThread"; }
+  bool NeedsNewWidth() const override;
+  void UpdateLogicalWidth() override;
+  virtual void GetLayout();
 
  private:
-  bool descendantIsValidColumnSpanner(
+  bool DescendantIsValidColumnSpanner(
       LayoutObject* /*descendant*/) const override {
     return false;
   }

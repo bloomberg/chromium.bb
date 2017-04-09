@@ -12,117 +12,117 @@ namespace blink {
 // The MediaTrackConstraintsTest group tests the types declared in
 // WebKit/public/platform/WebMediaConstraints.h
 TEST(MediaTrackConstraintsTest, LongConstraint) {
-  LongConstraint rangeConstraint(nullptr);
-  rangeConstraint.setMin(5);
-  rangeConstraint.setMax(6);
-  EXPECT_TRUE(rangeConstraint.matches(5));
-  EXPECT_TRUE(rangeConstraint.matches(6));
-  EXPECT_FALSE(rangeConstraint.matches(4));
-  EXPECT_FALSE(rangeConstraint.matches(7));
-  LongConstraint exactConstraint(nullptr);
-  exactConstraint.setExact(5);
-  EXPECT_FALSE(exactConstraint.matches(4));
-  EXPECT_TRUE(exactConstraint.matches(5));
-  EXPECT_FALSE(exactConstraint.matches(6));
+  LongConstraint range_constraint(nullptr);
+  range_constraint.SetMin(5);
+  range_constraint.SetMax(6);
+  EXPECT_TRUE(range_constraint.Matches(5));
+  EXPECT_TRUE(range_constraint.Matches(6));
+  EXPECT_FALSE(range_constraint.Matches(4));
+  EXPECT_FALSE(range_constraint.Matches(7));
+  LongConstraint exact_constraint(nullptr);
+  exact_constraint.SetExact(5);
+  EXPECT_FALSE(exact_constraint.Matches(4));
+  EXPECT_TRUE(exact_constraint.Matches(5));
+  EXPECT_FALSE(exact_constraint.Matches(6));
 }
 
 TEST(MediaTrackConstraintsTest, DoubleConstraint) {
-  DoubleConstraint rangeConstraint(nullptr);
-  EXPECT_TRUE(rangeConstraint.isEmpty());
-  rangeConstraint.setMin(5.0);
-  rangeConstraint.setMax(6.5);
-  EXPECT_FALSE(rangeConstraint.isEmpty());
+  DoubleConstraint range_constraint(nullptr);
+  EXPECT_TRUE(range_constraint.IsEmpty());
+  range_constraint.SetMin(5.0);
+  range_constraint.SetMax(6.5);
+  EXPECT_FALSE(range_constraint.IsEmpty());
   // Matching within epsilon
   EXPECT_TRUE(
-      rangeConstraint.matches(5.0 - DoubleConstraint::kConstraintEpsilon / 2));
+      range_constraint.Matches(5.0 - DoubleConstraint::kConstraintEpsilon / 2));
   EXPECT_TRUE(
-      rangeConstraint.matches(6.5 + DoubleConstraint::kConstraintEpsilon / 2));
-  DoubleConstraint exactConstraint(nullptr);
-  exactConstraint.setExact(5.0);
-  EXPECT_FALSE(rangeConstraint.isEmpty());
-  EXPECT_FALSE(exactConstraint.matches(4.9));
-  EXPECT_TRUE(exactConstraint.matches(5.0));
+      range_constraint.Matches(6.5 + DoubleConstraint::kConstraintEpsilon / 2));
+  DoubleConstraint exact_constraint(nullptr);
+  exact_constraint.SetExact(5.0);
+  EXPECT_FALSE(range_constraint.IsEmpty());
+  EXPECT_FALSE(exact_constraint.Matches(4.9));
+  EXPECT_TRUE(exact_constraint.Matches(5.0));
   EXPECT_TRUE(
-      exactConstraint.matches(5.0 - DoubleConstraint::kConstraintEpsilon / 2));
+      exact_constraint.Matches(5.0 - DoubleConstraint::kConstraintEpsilon / 2));
   EXPECT_TRUE(
-      exactConstraint.matches(5.0 + DoubleConstraint::kConstraintEpsilon / 2));
-  EXPECT_FALSE(exactConstraint.matches(5.1));
+      exact_constraint.Matches(5.0 + DoubleConstraint::kConstraintEpsilon / 2));
+  EXPECT_FALSE(exact_constraint.Matches(5.1));
 }
 
 TEST(MediaTrackConstraintsTest, BooleanConstraint) {
-  BooleanConstraint boolConstraint(nullptr);
-  EXPECT_TRUE(boolConstraint.isEmpty());
-  EXPECT_TRUE(boolConstraint.matches(false));
-  EXPECT_TRUE(boolConstraint.matches(true));
-  boolConstraint.setExact(false);
-  EXPECT_FALSE(boolConstraint.isEmpty());
-  EXPECT_FALSE(boolConstraint.matches(true));
-  EXPECT_TRUE(boolConstraint.matches(false));
-  boolConstraint.setExact(true);
-  EXPECT_FALSE(boolConstraint.matches(false));
-  EXPECT_TRUE(boolConstraint.matches(true));
+  BooleanConstraint bool_constraint(nullptr);
+  EXPECT_TRUE(bool_constraint.IsEmpty());
+  EXPECT_TRUE(bool_constraint.Matches(false));
+  EXPECT_TRUE(bool_constraint.Matches(true));
+  bool_constraint.SetExact(false);
+  EXPECT_FALSE(bool_constraint.IsEmpty());
+  EXPECT_FALSE(bool_constraint.Matches(true));
+  EXPECT_TRUE(bool_constraint.Matches(false));
+  bool_constraint.SetExact(true);
+  EXPECT_FALSE(bool_constraint.Matches(false));
+  EXPECT_TRUE(bool_constraint.Matches(true));
 }
 
 TEST(MediaTrackConstraintsTest, ConstraintSetEmpty) {
-  WebMediaTrackConstraintSet theSet;
-  EXPECT_TRUE(theSet.isEmpty());
-  theSet.echoCancellation.setExact(false);
-  EXPECT_FALSE(theSet.isEmpty());
+  WebMediaTrackConstraintSet the_set;
+  EXPECT_TRUE(the_set.IsEmpty());
+  the_set.echo_cancellation.SetExact(false);
+  EXPECT_FALSE(the_set.IsEmpty());
 }
 
 TEST(MediaTrackConstraintsTest, ConstraintName) {
-  const char* theName = "name";
-  BooleanConstraint boolConstraint(theName);
-  EXPECT_EQ(theName, boolConstraint.name());
+  const char* the_name = "name";
+  BooleanConstraint bool_constraint(the_name);
+  EXPECT_EQ(the_name, bool_constraint.GetName());
 }
 
 TEST(MediaTrackConstraintsTest, MandatoryChecks) {
-  WebMediaTrackConstraintSet theSet;
-  std::string foundName;
-  EXPECT_FALSE(theSet.hasMandatory());
-  EXPECT_FALSE(theSet.hasMandatoryOutsideSet({"width"}, foundName));
-  EXPECT_FALSE(theSet.width.hasMandatory());
-  theSet.width.setMax(240);
-  EXPECT_TRUE(theSet.width.hasMandatory());
-  EXPECT_TRUE(theSet.hasMandatory());
-  EXPECT_FALSE(theSet.hasMandatoryOutsideSet({"width"}, foundName));
-  EXPECT_TRUE(theSet.hasMandatoryOutsideSet({"height"}, foundName));
-  EXPECT_EQ("width", foundName);
-  theSet.googPayloadPadding.setExact(true);
-  EXPECT_TRUE(theSet.hasMandatoryOutsideSet({"width"}, foundName));
-  EXPECT_EQ("googPayloadPadding", foundName);
+  WebMediaTrackConstraintSet the_set;
+  std::string found_name;
+  EXPECT_FALSE(the_set.HasMandatory());
+  EXPECT_FALSE(the_set.HasMandatoryOutsideSet({"width"}, found_name));
+  EXPECT_FALSE(the_set.width.HasMandatory());
+  the_set.width.SetMax(240);
+  EXPECT_TRUE(the_set.width.HasMandatory());
+  EXPECT_TRUE(the_set.HasMandatory());
+  EXPECT_FALSE(the_set.HasMandatoryOutsideSet({"width"}, found_name));
+  EXPECT_TRUE(the_set.HasMandatoryOutsideSet({"height"}, found_name));
+  EXPECT_EQ("width", found_name);
+  the_set.goog_payload_padding.SetExact(true);
+  EXPECT_TRUE(the_set.HasMandatoryOutsideSet({"width"}, found_name));
+  EXPECT_EQ("googPayloadPadding", found_name);
 }
 
 TEST(MediaTrackConstraintsTest, SetToString) {
-  WebMediaTrackConstraintSet theSet;
-  EXPECT_EQ("", theSet.toString());
-  theSet.width.setMax(240);
-  EXPECT_EQ("width: {max: 240}", theSet.toString().utf8());
-  theSet.echoCancellation.setIdeal(true);
+  WebMediaTrackConstraintSet the_set;
+  EXPECT_EQ("", the_set.ToString());
+  the_set.width.SetMax(240);
+  EXPECT_EQ("width: {max: 240}", the_set.ToString().Utf8());
+  the_set.echo_cancellation.SetIdeal(true);
   EXPECT_EQ("width: {max: 240}, echoCancellation: {ideal: true}",
-            theSet.toString().utf8());
+            the_set.ToString().Utf8());
 }
 
 TEST(MediaTrackConstraintsTest, ConstraintsToString) {
-  WebMediaConstraints theConstraints;
+  WebMediaConstraints the_constraints;
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced(static_cast<size_t>(1));
-  basic.width.setMax(240);
-  advanced[0].echoCancellation.setExact(true);
-  theConstraints.initialize(basic, advanced);
+  basic.width.SetMax(240);
+  advanced[0].echo_cancellation.SetExact(true);
+  the_constraints.Initialize(basic, advanced);
   EXPECT_EQ(
       "{width: {max: 240}, advanced: [{echoCancellation: {exact: true}}]}",
-      theConstraints.toString().utf8());
+      the_constraints.ToString().Utf8());
 
-  WebMediaConstraints nullConstraints;
-  EXPECT_EQ("", nullConstraints.toString().utf8());
+  WebMediaConstraints null_constraints;
+  EXPECT_EQ("", null_constraints.ToString().Utf8());
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebConstraintsBasic) {
   WebMediaConstraints input;
   MediaTrackConstraints output;
 
-  MediaConstraintsImpl::convertConstraints(input, output);
+  MediaConstraintsImpl::ConvertConstraints(input, output);
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
@@ -132,9 +132,9 @@ TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
 
-  basic.facingMode.setIdeal(WebVector<WebString>(&"foo", 1));
-  input.initialize(basic, advanced);
-  MediaConstraintsImpl::convertConstraints(input, output);
+  basic.facing_mode.SetIdeal(WebVector<WebString>(&"foo", 1));
+  input.Initialize(basic, advanced);
+  MediaConstraintsImpl::ConvertConstraints(input, output);
   ASSERT_TRUE(output.hasFacingMode());
   ASSERT_TRUE(output.facingMode().isString());
   EXPECT_EQ("foo", output.facingMode().getAsString());
@@ -150,14 +150,14 @@ TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
 
   WebMediaTrackConstraintSet basic;
   std::vector<WebMediaTrackConstraintSet> advanced;
-  basic.facingMode.setIdeal(buffer);
-  input.initialize(basic, advanced);
-  MediaConstraintsImpl::convertConstraints(input, output);
+  basic.facing_mode.SetIdeal(buffer);
+  input.Initialize(basic, advanced);
+  MediaConstraintsImpl::ConvertConstraints(input, output);
   ASSERT_TRUE(output.hasFacingMode());
   ASSERT_TRUE(output.facingMode().isStringSequence());
-  auto outBuffer = output.facingMode().getAsStringSequence();
-  EXPECT_EQ("foo", outBuffer[0]);
-  EXPECT_EQ("bar", outBuffer[1]);
+  auto out_buffer = output.facingMode().getAsStringSequence();
+  EXPECT_EQ("foo", out_buffer[0]);
+  EXPECT_EQ("bar", out_buffer[1]);
 }
 
 TEST(MediaTrackConstraintsTest, ConvertBlinkStringConstraint) {
@@ -166,10 +166,10 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkStringConstraint) {
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
   parameter.setString("foo");
   input.setFacingMode(parameter);
-  output = MediaConstraintsImpl::convertConstraintsToWeb(input);
-  ASSERT_TRUE(output.basic().facingMode.hasIdeal());
-  ASSERT_EQ(1U, output.basic().facingMode.ideal().size());
-  ASSERT_EQ("foo", output.basic().facingMode.ideal()[0]);
+  output = MediaConstraintsImpl::ConvertConstraintsToWeb(input);
+  ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
+  ASSERT_EQ(1U, output.Basic().facing_mode.Ideal().size());
+  ASSERT_EQ("foo", output.Basic().facing_mode.Ideal()[0]);
 }
 
 TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
@@ -177,19 +177,19 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
   WebMediaConstraints output;
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
   ConstrainDOMStringParameters subparameter;
-  StringOrStringSequence innerString;
-  innerString.setString("foo");
-  subparameter.setIdeal(innerString);
+  StringOrStringSequence inner_string;
+  inner_string.setString("foo");
+  subparameter.setIdeal(inner_string);
   parameter.setConstrainDOMStringParameters(subparameter);
   input.setFacingMode(parameter);
-  output = MediaConstraintsImpl::convertConstraintsToWeb(input);
-  ASSERT_TRUE(output.basic().facingMode.hasIdeal());
-  ASSERT_EQ(1U, output.basic().facingMode.ideal().size());
-  ASSERT_EQ("foo", output.basic().facingMode.ideal()[0]);
+  output = MediaConstraintsImpl::ConvertConstraintsToWeb(input);
+  ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
+  ASSERT_EQ(1U, output.Basic().facing_mode.Ideal().size());
+  ASSERT_EQ("foo", output.Basic().facing_mode.Ideal()[0]);
 
   // Convert this back, and see that it appears as a single string.
   MediaTrackConstraints recycled;
-  MediaConstraintsImpl::convertConstraints(output, recycled);
+  MediaConstraintsImpl::ConvertConstraints(output, recycled);
   ASSERT_TRUE(recycled.hasFacingMode());
   ASSERT_TRUE(recycled.facingMode().isString());
   ASSERT_EQ("foo", recycled.facingMode().getAsString());
@@ -204,17 +204,17 @@ TEST(MediaTrackConstraintsTest, NakedIsExactInAdvanced) {
   HeapVector<MediaTrackConstraintSet> advanced(1);
   advanced[0].setFacingMode(parameter);
   input.setAdvanced(advanced);
-  output = MediaConstraintsImpl::convertConstraintsToWeb(input);
+  output = MediaConstraintsImpl::ConvertConstraintsToWeb(input);
 
-  ASSERT_TRUE(output.basic().facingMode.hasIdeal());
-  ASSERT_FALSE(output.basic().facingMode.hasExact());
-  ASSERT_EQ(1U, output.basic().facingMode.ideal().size());
-  ASSERT_EQ("foo", output.basic().facingMode.ideal()[0]);
+  ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
+  ASSERT_FALSE(output.Basic().facing_mode.HasExact());
+  ASSERT_EQ(1U, output.Basic().facing_mode.Ideal().size());
+  ASSERT_EQ("foo", output.Basic().facing_mode.Ideal()[0]);
 
-  ASSERT_FALSE(output.advanced()[0].facingMode.hasIdeal());
-  ASSERT_TRUE(output.advanced()[0].facingMode.hasExact());
-  ASSERT_EQ(1U, output.advanced()[0].facingMode.exact().size());
-  ASSERT_EQ("foo", output.advanced()[0].facingMode.exact()[0]);
+  ASSERT_FALSE(output.Advanced()[0].facing_mode.HasIdeal());
+  ASSERT_TRUE(output.Advanced()[0].facing_mode.HasExact());
+  ASSERT_EQ(1U, output.Advanced()[0].facing_mode.Exact().size());
+  ASSERT_EQ("foo", output.Advanced()[0].facing_mode.Exact()[0]);
 }
 
 TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
@@ -224,18 +224,18 @@ TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
   WebVector<WebString> buffer(static_cast<size_t>(1u));
 
   WebMediaTrackConstraintSet basic;
-  WebMediaTrackConstraintSet advancedElement1;
-  WebMediaTrackConstraintSet advancedElement2;
+  WebMediaTrackConstraintSet advanced_element1;
+  WebMediaTrackConstraintSet advanced_element2;
   buffer[0] = "ideal";
-  basic.facingMode.setIdeal(buffer);
-  advancedElement1.facingMode.setIdeal(buffer);
+  basic.facing_mode.SetIdeal(buffer);
+  advanced_element1.facing_mode.SetIdeal(buffer);
   buffer[0] = "exact";
-  advancedElement2.facingMode.setExact(buffer);
+  advanced_element2.facing_mode.SetExact(buffer);
   std::vector<WebMediaTrackConstraintSet> advanced;
-  advanced.push_back(advancedElement1);
-  advanced.push_back(advancedElement2);
-  input.initialize(basic, advanced);
-  MediaConstraintsImpl::convertConstraints(input, output);
+  advanced.push_back(advanced_element1);
+  advanced.push_back(advanced_element2);
+  input.Initialize(basic, advanced);
+  MediaConstraintsImpl::ConvertConstraints(input, output);
   // The first element should return a ConstrainDOMStringParameters
   // with an "ideal" value containing a String value of "ideal".
   // The second element should return a ConstrainDOMStringParameters

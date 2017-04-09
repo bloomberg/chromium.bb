@@ -49,27 +49,27 @@ namespace WTF {
 
 #if OS(POSIX)
 struct PlatformMutex {
-  pthread_mutex_t m_internalMutex;
+  pthread_mutex_t internal_mutex_;
 #if DCHECK_IS_ON()
-  size_t m_recursionCount;
+  size_t recursion_count_;
 #endif
 };
 typedef pthread_cond_t PlatformCondition;
 #elif OS(WIN)
 struct PlatformMutex {
-  CRITICAL_SECTION m_internalMutex;
-  size_t m_recursionCount;
+  CRITICAL_SECTION internal_mutex_;
+  size_t recursion_count_;
 };
 struct PlatformCondition {
-  size_t m_waitersGone;
-  size_t m_waitersBlocked;
-  size_t m_waitersToUnblock;
-  HANDLE m_blockLock;
-  HANDLE m_blockQueue;
-  HANDLE m_unblockLock;
+  size_t waiters_gone_;
+  size_t waiters_blocked_;
+  size_t waiters_to_unblock_;
+  HANDLE block_lock_;
+  HANDLE block_queue_;
+  HANDLE unblock_lock_;
 
-  bool timedWait(PlatformMutex&, DWORD durationMilliseconds);
-  void signal(bool unblockAll);
+  bool TimedWait(PlatformMutex&, DWORD duration_milliseconds);
+  void Signal(bool unblock_all);
 };
 #else
 typedef void* PlatformMutex;
@@ -86,28 +86,28 @@ class WTF_EXPORT MutexBase {
   void lock();
   void unlock();
 #if DCHECK_IS_ON()
-  bool locked() { return m_mutex.m_recursionCount > 0; }
+  bool Locked() { return mutex_.recursion_count_ > 0; }
 #endif
 
  public:
-  PlatformMutex& impl() { return m_mutex; }
+  PlatformMutex& Impl() { return mutex_; }
 
  protected:
   MutexBase(bool recursive);
 
-  PlatformMutex m_mutex;
+  PlatformMutex mutex_;
 };
 
 class WTF_EXPORT Mutex : public MutexBase {
  public:
   Mutex() : MutexBase(false) {}
-  bool tryLock();
+  bool TryLock();
 };
 
 class WTF_EXPORT RecursiveMutex : public MutexBase {
  public:
   RecursiveMutex() : MutexBase(true) {}
-  bool tryLock();
+  bool TryLock();
 };
 
 typedef Locker<MutexBase> MutexLocker;
@@ -117,17 +117,17 @@ class MutexTryLocker final {
   WTF_MAKE_NONCOPYABLE(MutexTryLocker);
 
  public:
-  MutexTryLocker(Mutex& mutex) : m_mutex(mutex), m_locked(mutex.tryLock()) {}
+  MutexTryLocker(Mutex& mutex) : mutex_(mutex), locked_(mutex.TryLock()) {}
   ~MutexTryLocker() {
-    if (m_locked)
-      m_mutex.unlock();
+    if (locked_)
+      mutex_.unlock();
   }
 
-  bool locked() const { return m_locked; }
+  bool Locked() const { return locked_; }
 
  private:
-  Mutex& m_mutex;
-  bool m_locked;
+  Mutex& mutex_;
+  bool locked_;
 };
 
 class WTF_EXPORT ThreadCondition final {
@@ -138,17 +138,17 @@ class WTF_EXPORT ThreadCondition final {
   ThreadCondition();
   ~ThreadCondition();
 
-  void wait(MutexBase&);
+  void Wait(MutexBase&);
   // Returns true if the condition was signaled before absoluteTime, false if
   // the absoluteTime was reached or is in the past.
   // The absoluteTime is in seconds, starting on January 1, 1970. The time is
   // assumed to use the same time zone as WTF::currentTime().
-  bool timedWait(MutexBase&, double absoluteTime);
-  void signal();
-  void broadcast();
+  bool TimedWait(MutexBase&, double absolute_time);
+  void Signal();
+  void Broadcast();
 
  private:
-  PlatformCondition m_condition;
+  PlatformCondition condition_;
 };
 
 #if OS(WIN)
@@ -156,7 +156,7 @@ class WTF_EXPORT ThreadCondition final {
 // assumed to use the same time zone as WTF::currentTime().
 // Returns an interval in milliseconds suitable for passing to one of the Win32
 // wait functions (e.g., ::WaitForSingleObject).
-DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
+DWORD AbsoluteTimeToWaitTimeoutInterval(double absolute_time);
 #endif
 
 }  // namespace WTF
@@ -169,7 +169,7 @@ using WTF::MutexTryLocker;
 using WTF::ThreadCondition;
 
 #if OS(WIN)
-using WTF::absoluteTimeToWaitTimeoutInterval;
+using WTF::AbsoluteTimeToWaitTimeoutInterval;
 #endif
 
 #endif  // ThreadingPrimitives_h

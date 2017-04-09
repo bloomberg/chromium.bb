@@ -15,115 +15,115 @@
 namespace blink {
 
 NotificationResourcesLoader::NotificationResourcesLoader(
-    std::unique_ptr<CompletionCallback> completionCallback)
-    : m_started(false),
-      m_completionCallback(std::move(completionCallback)),
-      m_pendingRequestCount(0) {
-  DCHECK(m_completionCallback);
+    std::unique_ptr<CompletionCallback> completion_callback)
+    : started_(false),
+      completion_callback_(std::move(completion_callback)),
+      pending_request_count_(0) {
+  DCHECK(completion_callback_);
 }
 
 NotificationResourcesLoader::~NotificationResourcesLoader() {}
 
-void NotificationResourcesLoader::start(
-    ExecutionContext* executionContext,
-    const WebNotificationData& notificationData) {
-  DCHECK(!m_started);
-  m_started = true;
+void NotificationResourcesLoader::Start(
+    ExecutionContext* execution_context,
+    const WebNotificationData& notification_data) {
+  DCHECK(!started_);
+  started_ = true;
 
-  size_t numActions = notificationData.actions.size();
-  m_pendingRequestCount = 3 /* image, icon, badge */ + numActions;
+  size_t num_actions = notification_data.actions.size();
+  pending_request_count_ = 3 /* image, icon, badge */ + num_actions;
 
   // TODO(johnme): ensure image is not loaded when it will not be used.
   // TODO(mvanouwerkerk): ensure no badge is loaded when it will not be used.
-  loadImage(executionContext, NotificationImageLoader::Type::Image,
-            notificationData.image,
-            WTF::bind(&NotificationResourcesLoader::didLoadImage,
-                      wrapWeakPersistent(this)));
-  loadImage(executionContext, NotificationImageLoader::Type::Icon,
-            notificationData.icon,
-            WTF::bind(&NotificationResourcesLoader::didLoadIcon,
-                      wrapWeakPersistent(this)));
-  loadImage(executionContext, NotificationImageLoader::Type::Badge,
-            notificationData.badge,
-            WTF::bind(&NotificationResourcesLoader::didLoadBadge,
-                      wrapWeakPersistent(this)));
+  LoadImage(execution_context, NotificationImageLoader::Type::kImage,
+            notification_data.image,
+            WTF::Bind(&NotificationResourcesLoader::DidLoadImage,
+                      WrapWeakPersistent(this)));
+  LoadImage(execution_context, NotificationImageLoader::Type::kIcon,
+            notification_data.icon,
+            WTF::Bind(&NotificationResourcesLoader::DidLoadIcon,
+                      WrapWeakPersistent(this)));
+  LoadImage(execution_context, NotificationImageLoader::Type::kBadge,
+            notification_data.badge,
+            WTF::Bind(&NotificationResourcesLoader::DidLoadBadge,
+                      WrapWeakPersistent(this)));
 
-  m_actionIcons.resize(numActions);
-  for (size_t i = 0; i < numActions; i++)
-    loadImage(executionContext, NotificationImageLoader::Type::ActionIcon,
-              notificationData.actions[i].icon,
-              WTF::bind(&NotificationResourcesLoader::didLoadActionIcon,
-                        wrapWeakPersistent(this), i));
+  action_icons_.Resize(num_actions);
+  for (size_t i = 0; i < num_actions; i++)
+    LoadImage(execution_context, NotificationImageLoader::Type::kActionIcon,
+              notification_data.actions[i].icon,
+              WTF::Bind(&NotificationResourcesLoader::DidLoadActionIcon,
+                        WrapWeakPersistent(this), i));
 }
 
 std::unique_ptr<WebNotificationResources>
-NotificationResourcesLoader::getResources() const {
+NotificationResourcesLoader::GetResources() const {
   std::unique_ptr<WebNotificationResources> resources(
       new WebNotificationResources());
-  resources->image = m_image;
-  resources->icon = m_icon;
-  resources->badge = m_badge;
-  resources->actionIcons = m_actionIcons;
+  resources->image = image_;
+  resources->icon = icon_;
+  resources->badge = badge_;
+  resources->action_icons = action_icons_;
   return resources;
 }
 
-void NotificationResourcesLoader::stop() {
-  for (auto imageLoader : m_imageLoaders)
-    imageLoader->stop();
+void NotificationResourcesLoader::Stop() {
+  for (auto image_loader : image_loaders_)
+    image_loader->Stop();
 }
 
 DEFINE_TRACE(NotificationResourcesLoader) {
-  visitor->trace(m_imageLoaders);
+  visitor->Trace(image_loaders_);
 }
 
-void NotificationResourcesLoader::loadImage(
-    ExecutionContext* executionContext,
+void NotificationResourcesLoader::LoadImage(
+    ExecutionContext* execution_context,
     NotificationImageLoader::Type type,
     const KURL& url,
-    std::unique_ptr<NotificationImageLoader::ImageCallback> imageCallback) {
-  if (url.isNull() || url.isEmpty() || !url.isValid()) {
-    didFinishRequest();
+    std::unique_ptr<NotificationImageLoader::ImageCallback> image_callback) {
+  if (url.IsNull() || url.IsEmpty() || !url.IsValid()) {
+    DidFinishRequest();
     return;
   }
 
-  NotificationImageLoader* imageLoader = new NotificationImageLoader(type);
-  m_imageLoaders.push_back(imageLoader);
-  imageLoader->start(executionContext, url, std::move(imageCallback));
+  NotificationImageLoader* image_loader = new NotificationImageLoader(type);
+  image_loaders_.push_back(image_loader);
+  image_loader->Start(execution_context, url, std::move(image_callback));
 }
 
-void NotificationResourcesLoader::didLoadImage(const SkBitmap& image) {
-  m_image = NotificationImageLoader::scaleDownIfNeeded(
-      image, NotificationImageLoader::Type::Image);
-  didFinishRequest();
+void NotificationResourcesLoader::DidLoadImage(const SkBitmap& image) {
+  image_ = NotificationImageLoader::ScaleDownIfNeeded(
+      image, NotificationImageLoader::Type::kImage);
+  DidFinishRequest();
 }
 
-void NotificationResourcesLoader::didLoadIcon(const SkBitmap& image) {
-  m_icon = NotificationImageLoader::scaleDownIfNeeded(
-      image, NotificationImageLoader::Type::Icon);
-  didFinishRequest();
+void NotificationResourcesLoader::DidLoadIcon(const SkBitmap& image) {
+  icon_ = NotificationImageLoader::ScaleDownIfNeeded(
+      image, NotificationImageLoader::Type::kIcon);
+  DidFinishRequest();
 }
 
-void NotificationResourcesLoader::didLoadBadge(const SkBitmap& image) {
-  m_badge = NotificationImageLoader::scaleDownIfNeeded(
-      image, NotificationImageLoader::Type::Badge);
-  didFinishRequest();
+void NotificationResourcesLoader::DidLoadBadge(const SkBitmap& image) {
+  badge_ = NotificationImageLoader::ScaleDownIfNeeded(
+      image, NotificationImageLoader::Type::kBadge);
+  DidFinishRequest();
 }
 
-void NotificationResourcesLoader::didLoadActionIcon(size_t actionIndex,
+void NotificationResourcesLoader::DidLoadActionIcon(size_t action_index,
                                                     const SkBitmap& image) {
-  DCHECK_LT(actionIndex, m_actionIcons.size());
+  DCHECK_LT(action_index, action_icons_.size());
 
-  m_actionIcons[actionIndex] = NotificationImageLoader::scaleDownIfNeeded(
-      image, NotificationImageLoader::Type::ActionIcon);
-  didFinishRequest();
+  action_icons_[action_index] = NotificationImageLoader::ScaleDownIfNeeded(
+      image, NotificationImageLoader::Type::kActionIcon);
+  DidFinishRequest();
 }
 
-void NotificationResourcesLoader::didFinishRequest() {
-  DCHECK_GT(m_pendingRequestCount, 0);
-  m_pendingRequestCount--;
-  if (!m_pendingRequestCount) {
-    stop();
-    (*m_completionCallback)(this);
+void NotificationResourcesLoader::DidFinishRequest() {
+  DCHECK_GT(pending_request_count_, 0);
+  pending_request_count_--;
+  if (!pending_request_count_) {
+    Stop();
+    (*completion_callback_)(this);
     // The |this| pointer may have been deleted now.
   }
 }

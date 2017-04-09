@@ -39,342 +39,347 @@ namespace blink {
 
 namespace {
 
-LayoutSize contentsScrollOffset(AbstractView* abstractView) {
-  if (!abstractView || !abstractView->isLocalDOMWindow())
+LayoutSize ContentsScrollOffset(AbstractView* abstract_view) {
+  if (!abstract_view || !abstract_view->IsLocalDOMWindow())
     return LayoutSize();
-  LocalFrame* frame = toLocalDOMWindow(abstractView)->frame();
+  LocalFrame* frame = ToLocalDOMWindow(abstract_view)->GetFrame();
   if (!frame)
     return LayoutSize();
-  FrameView* frameView = frame->view();
-  if (!frameView)
+  FrameView* frame_view = frame->View();
+  if (!frame_view)
     return LayoutSize();
-  float scaleFactor = frame->pageZoomFactor();
-  return LayoutSize(frameView->scrollX() / scaleFactor,
-                    frameView->scrollY() / scaleFactor);
+  float scale_factor = frame->PageZoomFactor();
+  return LayoutSize(frame_view->ScrollX() / scale_factor,
+                    frame_view->ScrollY() / scale_factor);
 }
 
-float pageZoomFactor(const UIEvent* event) {
-  if (!event->view() || !event->view()->isLocalDOMWindow())
+float PageZoomFactor(const UIEvent* event) {
+  if (!event->view() || !event->view()->IsLocalDOMWindow())
     return 1;
-  LocalFrame* frame = toLocalDOMWindow(event->view())->frame();
+  LocalFrame* frame = ToLocalDOMWindow(event->view())->GetFrame();
   if (!frame)
     return 1;
-  return frame->pageZoomFactor();
+  return frame->PageZoomFactor();
 }
 
-const LayoutObject* findTargetLayoutObject(Node*& targetNode) {
-  LayoutObject* layoutObject = targetNode->layoutObject();
-  if (!layoutObject || !layoutObject->isSVG())
-    return layoutObject;
+const LayoutObject* FindTargetLayoutObject(Node*& target_node) {
+  LayoutObject* layout_object = target_node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsSVG())
+    return layout_object;
   // If this is an SVG node, compute the offset to the padding box of the
   // outermost SVG root (== the closest ancestor that has a CSS layout box.)
-  while (!layoutObject->isSVGRoot())
-    layoutObject = layoutObject->parent();
+  while (!layout_object->IsSVGRoot())
+    layout_object = layout_object->Parent();
   // Update the target node to point to the SVG root.
-  targetNode = layoutObject->node();
-  DCHECK(!targetNode || (targetNode->isSVGElement() &&
-                         toSVGElement(*targetNode).isOutermostSVGSVGElement()));
-  return layoutObject;
+  target_node = layout_object->GetNode();
+  DCHECK(!target_node ||
+         (target_node->IsSVGElement() &&
+          ToSVGElement(*target_node).IsOutermostSVGSVGElement()));
+  return layout_object;
 }
 
 }  // namespace
 
-MouseEvent* MouseEvent::create(ScriptState* scriptState,
+MouseEvent* MouseEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
                                const MouseEventInit& initializer) {
-  if (scriptState && scriptState->world().isIsolatedWorld())
-    UIEventWithKeyState::didCreateEventInIsolatedWorld(
+  if (script_state && script_state->World().IsIsolatedWorld())
+    UIEventWithKeyState::DidCreateEventInIsolatedWorld(
         initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(),
         initializer.metaKey());
   return new MouseEvent(type, initializer);
 }
 
-MouseEvent* MouseEvent::create(const AtomicString& eventType,
+MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                AbstractView* view,
                                const WebMouseEvent& event,
                                int detail,
-                               const String& canvasRegionId,
-                               Node* relatedTarget) {
-  bool isMouseEnterOrLeave = eventType == EventTypeNames::mouseenter ||
-                             eventType == EventTypeNames::mouseleave;
-  bool isCancelable = !isMouseEnterOrLeave;
-  bool isBubbling = !isMouseEnterOrLeave;
-  return new MouseEvent(eventType, isBubbling, isCancelable, view, event,
-                        detail, canvasRegionId, relatedTarget);
+                               const String& canvas_region_id,
+                               Node* related_target) {
+  bool is_mouse_enter_or_leave = event_type == EventTypeNames::mouseenter ||
+                                 event_type == EventTypeNames::mouseleave;
+  bool is_cancelable = !is_mouse_enter_or_leave;
+  bool is_bubbling = !is_mouse_enter_or_leave;
+  return new MouseEvent(event_type, is_bubbling, is_cancelable, view, event,
+                        detail, canvas_region_id, related_target);
 }
 
-MouseEvent* MouseEvent::create(const AtomicString& eventType,
+MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                AbstractView* view,
-                               Event* underlyingEvent,
-                               SimulatedClickCreationScope creationScope) {
-  WebInputEvent::Modifiers modifiers = WebInputEvent::NoModifiers;
-  if (UIEventWithKeyState* keyStateEvent =
-          findEventWithKeyState(underlyingEvent)) {
-    modifiers = keyStateEvent->modifiers();
+                               Event* underlying_event,
+                               SimulatedClickCreationScope creation_scope) {
+  WebInputEvent::Modifiers modifiers = WebInputEvent::kNoModifiers;
+  if (UIEventWithKeyState* key_state_event =
+          FindEventWithKeyState(underlying_event)) {
+    modifiers = key_state_event->GetModifiers();
   }
 
-  SyntheticEventType syntheticType = Positionless;
-  int screenX = 0;
-  int screenY = 0;
-  if (underlyingEvent && underlyingEvent->isMouseEvent()) {
-    syntheticType = RealOrIndistinguishable;
-    MouseEvent* mouseEvent = toMouseEvent(underlyingEvent);
-    screenX = mouseEvent->screenX();
-    screenY = mouseEvent->screenY();
+  SyntheticEventType synthetic_type = kPositionless;
+  int screen_x = 0;
+  int screen_y = 0;
+  if (underlying_event && underlying_event->IsMouseEvent()) {
+    synthetic_type = kRealOrIndistinguishable;
+    MouseEvent* mouse_event = ToMouseEvent(underlying_event);
+    screen_x = mouse_event->screenX();
+    screen_y = mouse_event->screenY();
   }
 
-  TimeTicks timestamp =
-      underlyingEvent ? underlyingEvent->platformTimeStamp() : TimeTicks::Now();
-  MouseEvent* createdEvent = new MouseEvent(
-      eventType, true, true, view, 0, screenX, screenY, 0, 0, 0, 0, modifiers,
-      0, 0, nullptr, timestamp, syntheticType, String());
+  TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
+                                         : TimeTicks::Now();
+  MouseEvent* created_event = new MouseEvent(
+      event_type, true, true, view, 0, screen_x, screen_y, 0, 0, 0, 0,
+      modifiers, 0, 0, nullptr, timestamp, synthetic_type, String());
 
-  createdEvent->setTrusted(creationScope ==
-                           SimulatedClickCreationScope::FromUserAgent);
-  createdEvent->setUnderlyingEvent(underlyingEvent);
-  if (syntheticType == RealOrIndistinguishable) {
-    MouseEvent* mouseEvent = toMouseEvent(createdEvent->underlyingEvent());
-    createdEvent->initCoordinates(mouseEvent->clientX(), mouseEvent->clientY());
+  created_event->SetTrusted(creation_scope ==
+                            SimulatedClickCreationScope::kFromUserAgent);
+  created_event->SetUnderlyingEvent(underlying_event);
+  if (synthetic_type == kRealOrIndistinguishable) {
+    MouseEvent* mouse_event = ToMouseEvent(created_event->UnderlyingEvent());
+    created_event->InitCoordinates(mouse_event->clientX(),
+                                   mouse_event->clientY());
   }
 
-  return createdEvent;
+  return created_event;
 }
 
 MouseEvent::MouseEvent()
-    : m_positionType(PositionType::Position),
-      m_hasCachedRelativePosition(false),
-      m_button(0),
-      m_buttons(0),
-      m_relatedTarget(nullptr),
-      m_syntheticEventType(RealOrIndistinguishable) {}
+    : position_type_(PositionType::kPosition),
+      has_cached_relative_position_(false),
+      button_(0),
+      buttons_(0),
+      related_target_(nullptr),
+      synthetic_event_type_(kRealOrIndistinguishable) {}
 
-MouseEvent::MouseEvent(const AtomicString& eventType,
-                       bool canBubble,
+MouseEvent::MouseEvent(const AtomicString& event_type,
+                       bool can_bubble,
                        bool cancelable,
-                       AbstractView* abstractView,
+                       AbstractView* abstract_view,
                        const WebMouseEvent& event,
                        int detail,
                        const String& region,
-                       EventTarget* relatedTarget)
+                       EventTarget* related_target)
     : UIEventWithKeyState(
-          eventType,
-          canBubble,
+          event_type,
+          can_bubble,
           cancelable,
-          abstractView,
+          abstract_view,
           detail,
-          static_cast<WebInputEvent::Modifiers>(event.modifiers()),
-          TimeTicks::FromSeconds(event.timeStampSeconds()),
-          abstractView
-              ? abstractView->getInputDeviceCapabilities()->firesTouchEvents(
-                    event.fromTouch())
+          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
+          TimeTicks::FromSeconds(event.TimeStampSeconds()),
+          abstract_view
+              ? abstract_view->GetInputDeviceCapabilities()->FiresTouchEvents(
+                    event.FromTouch())
               : nullptr),
-      m_screenLocation(event.positionInScreen().x, event.positionInScreen().y),
-      m_movementDelta(flooredIntPoint(event.movementInRootFrame())),
-      m_positionType(PositionType::Position),
-      m_button(static_cast<short>(event.button)),
-      m_buttons(webInputEventModifiersToButtons(event.modifiers())),
-      m_relatedTarget(relatedTarget),
-      m_syntheticEventType(event.fromTouch() ? FromTouch
-                                             : RealOrIndistinguishable),
-      m_region(region) {
-  IntPoint rootFrameCoordinates = flooredIntPoint(event.positionInRootFrame());
-  initCoordinatesFromRootFrame(rootFrameCoordinates.x(),
-                               rootFrameCoordinates.y());
+      screen_location_(event.PositionInScreen().x, event.PositionInScreen().y),
+      movement_delta_(FlooredIntPoint(event.MovementInRootFrame())),
+      position_type_(PositionType::kPosition),
+      button_(static_cast<short>(event.button)),
+      buttons_(WebInputEventModifiersToButtons(event.GetModifiers())),
+      related_target_(related_target),
+      synthetic_event_type_(event.FromTouch() ? kFromTouch
+                                              : kRealOrIndistinguishable),
+      region_(region) {
+  IntPoint root_frame_coordinates =
+      FlooredIntPoint(event.PositionInRootFrame());
+  InitCoordinatesFromRootFrame(root_frame_coordinates.X(),
+                               root_frame_coordinates.Y());
 }
 
-MouseEvent::MouseEvent(const AtomicString& eventType,
-                       bool canBubble,
+MouseEvent::MouseEvent(const AtomicString& event_type,
+                       bool can_bubble,
                        bool cancelable,
-                       AbstractView* abstractView,
+                       AbstractView* abstract_view,
                        int detail,
-                       int screenX,
-                       int screenY,
-                       int windowX,
-                       int windowY,
-                       int movementX,
-                       int movementY,
+                       int screen_x,
+                       int screen_y,
+                       int window_x,
+                       int window_y,
+                       int movement_x,
+                       int movement_y,
                        WebInputEvent::Modifiers modifiers,
                        short button,
                        unsigned short buttons,
-                       EventTarget* relatedTarget,
-                       TimeTicks platformTimeStamp,
-                       SyntheticEventType syntheticEventType,
+                       EventTarget* related_target,
+                       TimeTicks platform_time_stamp,
+                       SyntheticEventType synthetic_event_type,
                        const String& region)
     : UIEventWithKeyState(
-          eventType,
-          canBubble,
+          event_type,
+          can_bubble,
           cancelable,
-          abstractView,
+          abstract_view,
           detail,
           modifiers,
-          platformTimeStamp,
-          abstractView
-              ? abstractView->getInputDeviceCapabilities()->firesTouchEvents(
-                    syntheticEventType == FromTouch)
+          platform_time_stamp,
+          abstract_view
+              ? abstract_view->GetInputDeviceCapabilities()->FiresTouchEvents(
+                    synthetic_event_type == kFromTouch)
               : nullptr),
-      m_screenLocation(screenX, screenY),
-      m_movementDelta(movementX, movementY),
-      m_positionType(syntheticEventType == Positionless
-                         ? PositionType::Positionless
-                         : PositionType::Position),
-      m_button(button),
-      m_buttons(buttons),
-      m_relatedTarget(relatedTarget),
-      m_syntheticEventType(syntheticEventType),
-      m_region(region) {
-  initCoordinatesFromRootFrame(windowX, windowY);
+      screen_location_(screen_x, screen_y),
+      movement_delta_(movement_x, movement_y),
+      position_type_(synthetic_event_type == kPositionless
+                         ? PositionType::kPositionless
+                         : PositionType::kPosition),
+      button_(button),
+      buttons_(buttons),
+      related_target_(related_target),
+      synthetic_event_type_(synthetic_event_type),
+      region_(region) {
+  InitCoordinatesFromRootFrame(window_x, window_y);
 }
 
-MouseEvent::MouseEvent(const AtomicString& eventType,
+MouseEvent::MouseEvent(const AtomicString& event_type,
                        const MouseEventInit& initializer)
-    : UIEventWithKeyState(eventType, initializer),
-      m_screenLocation(
+    : UIEventWithKeyState(event_type, initializer),
+      screen_location_(
           DoublePoint(initializer.screenX(), initializer.screenY())),
-      m_movementDelta(
+      movement_delta_(
           IntPoint(initializer.movementX(), initializer.movementY())),
-      m_positionType(PositionType::Position),
-      m_button(initializer.button()),
-      m_buttons(initializer.buttons()),
-      m_relatedTarget(initializer.relatedTarget()),
-      m_syntheticEventType(RealOrIndistinguishable),
-      m_region(initializer.region()) {
-  initCoordinates(initializer.clientX(), initializer.clientY());
+      position_type_(PositionType::kPosition),
+      button_(initializer.button()),
+      buttons_(initializer.buttons()),
+      related_target_(initializer.relatedTarget()),
+      synthetic_event_type_(kRealOrIndistinguishable),
+      region_(initializer.region()) {
+  InitCoordinates(initializer.clientX(), initializer.clientY());
 }
 
-void MouseEvent::initCoordinates(const double clientX, const double clientY) {
+void MouseEvent::InitCoordinates(const double client_x, const double client_y) {
   // Set up initial values for coordinates.
   // Correct values are computed lazily, see computeRelativePosition.
-  m_clientLocation = DoublePoint(clientX, clientY);
-  m_pageLocation = m_clientLocation + DoubleSize(contentsScrollOffset(view()));
+  client_location_ = DoublePoint(client_x, client_y);
+  page_location_ = client_location_ + DoubleSize(ContentsScrollOffset(view()));
 
-  m_layerLocation = m_pageLocation;
-  m_offsetLocation = m_pageLocation;
+  layer_location_ = page_location_;
+  offset_location_ = page_location_;
 
-  computePageLocation();
-  m_hasCachedRelativePosition = false;
+  ComputePageLocation();
+  has_cached_relative_position_ = false;
 }
 
-void MouseEvent::initCoordinatesFromRootFrame(int windowX, int windowY) {
-  DoublePoint adjustedPageLocation;
-  DoubleSize scrollOffset;
+void MouseEvent::InitCoordinatesFromRootFrame(int window_x, int window_y) {
+  DoublePoint adjusted_page_location;
+  DoubleSize scroll_offset;
 
-  LocalFrame* frame = view() && view()->isLocalDOMWindow()
-                          ? toLocalDOMWindow(view())->frame()
+  LocalFrame* frame = view() && view()->IsLocalDOMWindow()
+                          ? ToLocalDOMWindow(view())->GetFrame()
                           : nullptr;
-  if (frame && hasPosition()) {
-    if (FrameView* frameView = frame->view()) {
-      adjustedPageLocation =
-          frameView->rootFrameToContents(IntPoint(windowX, windowY));
-      scrollOffset = frameView->scrollOffsetInt();
-      float scaleFactor = 1 / frame->pageZoomFactor();
-      if (scaleFactor != 1.0f) {
-        adjustedPageLocation.scale(scaleFactor, scaleFactor);
-        scrollOffset.scale(scaleFactor, scaleFactor);
+  if (frame && HasPosition()) {
+    if (FrameView* frame_view = frame->View()) {
+      adjusted_page_location =
+          frame_view->RootFrameToContents(IntPoint(window_x, window_y));
+      scroll_offset = frame_view->ScrollOffsetInt();
+      float scale_factor = 1 / frame->PageZoomFactor();
+      if (scale_factor != 1.0f) {
+        adjusted_page_location.Scale(scale_factor, scale_factor);
+        scroll_offset.Scale(scale_factor, scale_factor);
       }
     }
   }
 
-  m_clientLocation = adjustedPageLocation - scrollOffset;
-  m_pageLocation = adjustedPageLocation;
+  client_location_ = adjusted_page_location - scroll_offset;
+  page_location_ = adjusted_page_location;
 
   // Set up initial values for coordinates.
   // Correct values are computed lazily, see computeRelativePosition.
-  m_layerLocation = m_pageLocation;
-  m_offsetLocation = m_pageLocation;
+  layer_location_ = page_location_;
+  offset_location_ = page_location_;
 
-  computePageLocation();
-  m_hasCachedRelativePosition = false;
+  ComputePageLocation();
+  has_cached_relative_position_ = false;
 }
 
 MouseEvent::~MouseEvent() {}
 
-unsigned short MouseEvent::webInputEventModifiersToButtons(unsigned modifiers) {
+unsigned short MouseEvent::WebInputEventModifiersToButtons(unsigned modifiers) {
   unsigned short buttons = 0;
 
-  if (modifiers & WebInputEvent::LeftButtonDown)
-    buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Left);
-  if (modifiers & WebInputEvent::RightButtonDown) {
+  if (modifiers & WebInputEvent::kLeftButtonDown)
     buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::Right);
+        static_cast<unsigned short>(WebPointerProperties::Buttons::kLeft);
+  if (modifiers & WebInputEvent::kRightButtonDown) {
+    buttons |=
+        static_cast<unsigned short>(WebPointerProperties::Buttons::kRight);
   }
-  if (modifiers & WebInputEvent::MiddleButtonDown) {
+  if (modifiers & WebInputEvent::kMiddleButtonDown) {
     buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::Middle);
+        static_cast<unsigned short>(WebPointerProperties::Buttons::kMiddle);
   }
-  if (modifiers & WebInputEvent::BackButtonDown)
-    buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Back);
-  if (modifiers & WebInputEvent::ForwardButtonDown) {
+  if (modifiers & WebInputEvent::kBackButtonDown)
     buttons |=
-        static_cast<unsigned short>(WebPointerProperties::Buttons::Forward);
+        static_cast<unsigned short>(WebPointerProperties::Buttons::kBack);
+  if (modifiers & WebInputEvent::kForwardButtonDown) {
+    buttons |=
+        static_cast<unsigned short>(WebPointerProperties::Buttons::kForward);
   }
 
   return buttons;
 }
 
-void MouseEvent::initMouseEvent(ScriptState* scriptState,
+void MouseEvent::initMouseEvent(ScriptState* script_state,
                                 const AtomicString& type,
-                                bool canBubble,
+                                bool can_bubble,
                                 bool cancelable,
                                 AbstractView* view,
                                 int detail,
-                                int screenX,
-                                int screenY,
-                                int clientX,
-                                int clientY,
-                                bool ctrlKey,
-                                bool altKey,
-                                bool shiftKey,
-                                bool metaKey,
+                                int screen_x,
+                                int screen_y,
+                                int client_x,
+                                int client_y,
+                                bool ctrl_key,
+                                bool alt_key,
+                                bool shift_key,
+                                bool meta_key,
                                 short button,
-                                EventTarget* relatedTarget,
+                                EventTarget* related_target,
                                 unsigned short buttons) {
-  if (isBeingDispatched())
+  if (IsBeingDispatched())
     return;
 
-  if (scriptState && scriptState->world().isIsolatedWorld())
-    UIEventWithKeyState::didCreateEventInIsolatedWorld(ctrlKey, altKey,
-                                                       shiftKey, metaKey);
+  if (script_state && script_state->World().IsIsolatedWorld())
+    UIEventWithKeyState::DidCreateEventInIsolatedWorld(ctrl_key, alt_key,
+                                                       shift_key, meta_key);
 
-  initModifiers(ctrlKey, altKey, shiftKey, metaKey);
-  initMouseEventInternal(type, canBubble, cancelable, view, detail, screenX,
-                         screenY, clientX, clientY, modifiers(), button,
-                         relatedTarget, nullptr, buttons);
+  InitModifiers(ctrl_key, alt_key, shift_key, meta_key);
+  InitMouseEventInternal(type, can_bubble, cancelable, view, detail, screen_x,
+                         screen_y, client_x, client_y, GetModifiers(), button,
+                         related_target, nullptr, buttons);
 }
 
-void MouseEvent::initMouseEventInternal(
+void MouseEvent::InitMouseEventInternal(
     const AtomicString& type,
-    bool canBubble,
+    bool can_bubble,
     bool cancelable,
     AbstractView* view,
     int detail,
-    int screenX,
-    int screenY,
-    int clientX,
-    int clientY,
+    int screen_x,
+    int screen_y,
+    int client_x,
+    int client_y,
     WebInputEvent::Modifiers modifiers,
     short button,
-    EventTarget* relatedTarget,
-    InputDeviceCapabilities* sourceCapabilities,
+    EventTarget* related_target,
+    InputDeviceCapabilities* source_capabilities,
     unsigned short buttons) {
-  initUIEventInternal(type, canBubble, cancelable, relatedTarget, view, detail,
-                      sourceCapabilities);
+  InitUIEventInternal(type, can_bubble, cancelable, related_target, view,
+                      detail, source_capabilities);
 
-  m_screenLocation = IntPoint(screenX, screenY);
-  m_button = button;
-  m_buttons = buttons;
-  m_relatedTarget = relatedTarget;
-  m_modifiers = modifiers;
+  screen_location_ = IntPoint(screen_x, screen_y);
+  button_ = button;
+  buttons_ = buttons;
+  related_target_ = related_target;
+  modifiers_ = modifiers;
 
-  initCoordinates(clientX, clientY);
+  InitCoordinates(client_x, client_y);
 
   // FIXME: SyntheticEventType is not set to RealOrIndistinguishable here.
 }
 
-const AtomicString& MouseEvent::interfaceName() const {
+const AtomicString& MouseEvent::InterfaceName() const {
   return EventNames::MouseEvent;
 }
 
-bool MouseEvent::isMouseEvent() const {
+bool MouseEvent::IsMouseEvent() const {
   return true;
 }
 
@@ -384,7 +389,7 @@ int MouseEvent::which() const {
   // For the Netscape "which" property, the return values for left, middle and
   // right mouse buttons are 1, 2, 3, respectively.
   // So we must add 1.
-  return m_button + 1;
+  return button_ + 1;
 }
 
 Node* MouseEvent::toElement() const {
@@ -392,9 +397,9 @@ Node* MouseEvent::toElement() const {
   // pointer"
   if (type() == EventTypeNames::mouseout ||
       type() == EventTypeNames::mouseleave)
-    return relatedTarget() ? relatedTarget()->toNode() : nullptr;
+    return relatedTarget() ? relatedTarget()->ToNode() : nullptr;
 
-  return target() ? target()->toNode() : nullptr;
+  return target() ? target()->ToNode() : nullptr;
 }
 
 Node* MouseEvent::fromElement() const {
@@ -402,178 +407,178 @@ Node* MouseEvent::fromElement() const {
   // exiting during the event" (huh?)
   if (type() != EventTypeNames::mouseout &&
       type() != EventTypeNames::mouseleave)
-    return relatedTarget() ? relatedTarget()->toNode() : nullptr;
+    return relatedTarget() ? relatedTarget()->ToNode() : nullptr;
 
-  return target() ? target()->toNode() : nullptr;
+  return target() ? target()->ToNode() : nullptr;
 }
 
 DEFINE_TRACE(MouseEvent) {
-  visitor->trace(m_relatedTarget);
-  UIEventWithKeyState::trace(visitor);
+  visitor->Trace(related_target_);
+  UIEventWithKeyState::Trace(visitor);
 }
 
-EventDispatchMediator* MouseEvent::createMediator() {
-  return MouseEventDispatchMediator::create(this);
+EventDispatchMediator* MouseEvent::CreateMediator() {
+  return MouseEventDispatchMediator::Create(this);
 }
 
-MouseEventDispatchMediator* MouseEventDispatchMediator::create(
-    MouseEvent* mouseEvent) {
-  return new MouseEventDispatchMediator(mouseEvent);
+MouseEventDispatchMediator* MouseEventDispatchMediator::Create(
+    MouseEvent* mouse_event) {
+  return new MouseEventDispatchMediator(mouse_event);
 }
 
-MouseEventDispatchMediator::MouseEventDispatchMediator(MouseEvent* mouseEvent)
-    : EventDispatchMediator(mouseEvent) {}
+MouseEventDispatchMediator::MouseEventDispatchMediator(MouseEvent* mouse_event)
+    : EventDispatchMediator(mouse_event) {}
 
-MouseEvent& MouseEventDispatchMediator::event() const {
-  return toMouseEvent(EventDispatchMediator::event());
+MouseEvent& MouseEventDispatchMediator::Event() const {
+  return ToMouseEvent(EventDispatchMediator::GetEvent());
 }
 
-DispatchEventResult MouseEventDispatchMediator::dispatchEvent(
+DispatchEventResult MouseEventDispatchMediator::DispatchEvent(
     EventDispatcher& dispatcher) const {
-  MouseEvent& mouseEvent = event();
-  mouseEvent.eventPath().adjustForRelatedTarget(dispatcher.node(),
-                                                mouseEvent.relatedTarget());
+  MouseEvent& mouse_event = Event();
+  mouse_event.GetEventPath().AdjustForRelatedTarget(
+      dispatcher.GetNode(), mouse_event.relatedTarget());
 
-  if (!mouseEvent.isTrusted())
-    return dispatcher.dispatch();
+  if (!mouse_event.isTrusted())
+    return dispatcher.Dispatch();
 
-  if (isDisabledFormControl(&dispatcher.node()))
-    return DispatchEventResult::CanceledBeforeDispatch;
+  if (IsDisabledFormControl(&dispatcher.GetNode()))
+    return DispatchEventResult::kCanceledBeforeDispatch;
 
-  if (mouseEvent.type().isEmpty())
-    return DispatchEventResult::NotCanceled;  // Shouldn't happen.
+  if (mouse_event.type().IsEmpty())
+    return DispatchEventResult::kNotCanceled;  // Shouldn't happen.
 
-  DCHECK(!mouseEvent.target() ||
-         mouseEvent.target() != mouseEvent.relatedTarget());
+  DCHECK(!mouse_event.target() ||
+         mouse_event.target() != mouse_event.relatedTarget());
 
-  EventTarget* relatedTarget = mouseEvent.relatedTarget();
+  EventTarget* related_target = mouse_event.relatedTarget();
 
-  DispatchEventResult dispatchResult = dispatcher.dispatch();
+  DispatchEventResult dispatch_result = dispatcher.Dispatch();
 
-  if (mouseEvent.type() != EventTypeNames::click || mouseEvent.detail() != 2)
-    return dispatchResult;
+  if (mouse_event.type() != EventTypeNames::click || mouse_event.detail() != 2)
+    return dispatch_result;
 
   // Special case: If it's a double click event, we also send the dblclick
   // event. This is not part of the DOM specs, but is used for compatibility
   // with the ondblclick="" attribute. This is treated as a separate event in
   // other DOM-compliant browsers like Firefox, and so we do the same.
-  MouseEvent* doubleClickEvent = MouseEvent::create();
-  doubleClickEvent->initMouseEventInternal(
-      EventTypeNames::dblclick, mouseEvent.bubbles(), mouseEvent.cancelable(),
-      mouseEvent.view(), mouseEvent.detail(), mouseEvent.screenX(),
-      mouseEvent.screenY(), mouseEvent.clientX(), mouseEvent.clientY(),
-      mouseEvent.modifiers(), mouseEvent.button(), relatedTarget,
-      mouseEvent.sourceCapabilities(), mouseEvent.buttons());
-  doubleClickEvent->setComposed(mouseEvent.composed());
+  MouseEvent* double_click_event = MouseEvent::Create();
+  double_click_event->InitMouseEventInternal(
+      EventTypeNames::dblclick, mouse_event.bubbles(), mouse_event.cancelable(),
+      mouse_event.view(), mouse_event.detail(), mouse_event.screenX(),
+      mouse_event.screenY(), mouse_event.clientX(), mouse_event.clientY(),
+      mouse_event.GetModifiers(), mouse_event.button(), related_target,
+      mouse_event.sourceCapabilities(), mouse_event.buttons());
+  double_click_event->SetComposed(mouse_event.composed());
 
   // Inherit the trusted status from the original event.
-  doubleClickEvent->setTrusted(mouseEvent.isTrusted());
-  if (mouseEvent.defaultHandled())
-    doubleClickEvent->setDefaultHandled();
-  DispatchEventResult doubleClickDispatchResult =
-      EventDispatcher::dispatchEvent(
-          dispatcher.node(),
-          MouseEventDispatchMediator::create(doubleClickEvent));
-  if (doubleClickDispatchResult != DispatchEventResult::NotCanceled)
-    return doubleClickDispatchResult;
-  return dispatchResult;
+  double_click_event->SetTrusted(mouse_event.isTrusted());
+  if (mouse_event.DefaultHandled())
+    double_click_event->SetDefaultHandled();
+  DispatchEventResult double_click_dispatch_result =
+      EventDispatcher::DispatchEvent(
+          dispatcher.GetNode(),
+          MouseEventDispatchMediator::Create(double_click_event));
+  if (double_click_dispatch_result != DispatchEventResult::kNotCanceled)
+    return double_click_dispatch_result;
+  return dispatch_result;
 }
 
-void MouseEvent::computePageLocation() {
-  float scaleFactor = pageZoomFactor(this);
-  m_absoluteLocation = m_pageLocation.scaledBy(scaleFactor);
+void MouseEvent::ComputePageLocation() {
+  float scale_factor = PageZoomFactor(this);
+  absolute_location_ = page_location_.ScaledBy(scale_factor);
 }
 
-void MouseEvent::receivedTarget() {
-  m_hasCachedRelativePosition = false;
+void MouseEvent::ReceivedTarget() {
+  has_cached_relative_position_ = false;
 }
 
-void MouseEvent::computeRelativePosition() {
-  Node* targetNode = target() ? target()->toNode() : nullptr;
-  if (!targetNode)
+void MouseEvent::ComputeRelativePosition() {
+  Node* target_node = target() ? target()->ToNode() : nullptr;
+  if (!target_node)
     return;
 
   // Compute coordinates that are based on the target.
-  m_layerLocation = m_pageLocation;
-  m_offsetLocation = m_pageLocation;
+  layer_location_ = page_location_;
+  offset_location_ = page_location_;
 
   // Must have an updated layout tree for this math to work correctly.
-  targetNode->document().updateStyleAndLayoutIgnorePendingStylesheets();
+  target_node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Adjust offsetLocation to be relative to the target's padding box.
-  if (const LayoutObject* layoutObject = findTargetLayoutObject(targetNode)) {
-    FloatPoint localPos = layoutObject->absoluteToLocal(
-        FloatPoint(absoluteLocation()), UseTransforms);
+  if (const LayoutObject* layout_object = FindTargetLayoutObject(target_node)) {
+    FloatPoint local_pos = layout_object->AbsoluteToLocal(
+        FloatPoint(AbsoluteLocation()), kUseTransforms);
 
     // Adding this here to address crbug.com/570666. Basically we'd like to
     // find the local coordinates relative to the padding box not the border
     // box.
-    if (layoutObject->isBoxModelObject()) {
-      const LayoutBoxModelObject* layoutBox =
-          toLayoutBoxModelObject(layoutObject);
-      localPos.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
+    if (layout_object->IsBoxModelObject()) {
+      const LayoutBoxModelObject* layout_box =
+          ToLayoutBoxModelObject(layout_object);
+      local_pos.Move(-layout_box->BorderLeft(), -layout_box->BorderTop());
     }
 
-    m_offsetLocation = DoublePoint(localPos);
-    float scaleFactor = 1 / pageZoomFactor(this);
-    if (scaleFactor != 1.0f)
-      m_offsetLocation.scale(scaleFactor, scaleFactor);
+    offset_location_ = DoublePoint(local_pos);
+    float scale_factor = 1 / PageZoomFactor(this);
+    if (scale_factor != 1.0f)
+      offset_location_.Scale(scale_factor, scale_factor);
   }
 
   // Adjust layerLocation to be relative to the layer.
   // FIXME: event.layerX and event.layerY are poorly defined,
   // and probably don't always correspond to PaintLayer offsets.
   // https://bugs.webkit.org/show_bug.cgi?id=21868
-  Node* n = targetNode;
-  while (n && !n->layoutObject())
+  Node* n = target_node;
+  while (n && !n->GetLayoutObject())
     n = n->parentNode();
 
   if (n) {
     // FIXME: This logic is a wrong implementation of convertToLayerCoords.
-    for (PaintLayer* layer = n->layoutObject()->enclosingLayer(); layer;
-         layer = layer->parent()) {
-      m_layerLocation -= DoubleSize(layer->location().x().toDouble(),
-                                    layer->location().y().toDouble());
+    for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;
+         layer = layer->Parent()) {
+      layer_location_ -= DoubleSize(layer->Location().X().ToDouble(),
+                                    layer->Location().Y().ToDouble());
     }
   }
 
-  m_hasCachedRelativePosition = true;
+  has_cached_relative_position_ = true;
 }
 
 int MouseEvent::layerX() {
-  if (!m_hasCachedRelativePosition)
-    computeRelativePosition();
+  if (!has_cached_relative_position_)
+    ComputeRelativePosition();
 
   // TODO(mustaq): Remove the PointerEvent specific code when mouse has
   // fractional coordinates. See crbug.com/655786.
-  return isPointerEvent() ? m_layerLocation.x()
-                          : static_cast<int>(m_layerLocation.x());
+  return IsPointerEvent() ? layer_location_.X()
+                          : static_cast<int>(layer_location_.X());
 }
 
 int MouseEvent::layerY() {
-  if (!m_hasCachedRelativePosition)
-    computeRelativePosition();
+  if (!has_cached_relative_position_)
+    ComputeRelativePosition();
 
   // TODO(mustaq): Remove the PointerEvent specific code when mouse has
   // fractional coordinates. See crbug.com/655786.
-  return isPointerEvent() ? m_layerLocation.y()
-                          : static_cast<int>(m_layerLocation.y());
+  return IsPointerEvent() ? layer_location_.Y()
+                          : static_cast<int>(layer_location_.Y());
 }
 
 int MouseEvent::offsetX() {
-  if (!hasPosition())
+  if (!HasPosition())
     return 0;
-  if (!m_hasCachedRelativePosition)
-    computeRelativePosition();
-  return std::round(m_offsetLocation.x());
+  if (!has_cached_relative_position_)
+    ComputeRelativePosition();
+  return std::round(offset_location_.X());
 }
 
 int MouseEvent::offsetY() {
-  if (!hasPosition())
+  if (!HasPosition())
     return 0;
-  if (!m_hasCachedRelativePosition)
-    computeRelativePosition();
-  return std::round(m_offsetLocation.y());
+  if (!has_cached_relative_position_)
+    ComputeRelativePosition();
+  return std::round(offset_location_.Y());
 }
 
 }  // namespace blink

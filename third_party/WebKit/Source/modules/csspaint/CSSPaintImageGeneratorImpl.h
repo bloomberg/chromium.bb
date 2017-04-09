@@ -21,24 +21,24 @@ class Image;
 
 class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
  public:
-  static CSSPaintImageGenerator* create(const String& name,
+  static CSSPaintImageGenerator* Create(const String& name,
                                         Document&,
                                         Observer*);
   ~CSSPaintImageGeneratorImpl() override;
 
-  PassRefPtr<Image> paint(const LayoutObject&,
+  PassRefPtr<Image> Paint(const LayoutObject&,
                           const IntSize&,
                           float zoom,
                           const CSSStyleValueVector*) final;
-  const Vector<CSSPropertyID>& nativeInvalidationProperties() const final;
-  const Vector<AtomicString>& customInvalidationProperties() const final;
-  bool hasAlpha() const final;
-  const Vector<CSSSyntaxDescriptor>& inputArgumentTypes() const final;
-  bool isImageGeneratorReady() const final;
+  const Vector<CSSPropertyID>& NativeInvalidationProperties() const final;
+  const Vector<AtomicString>& CustomInvalidationProperties() const final;
+  bool HasAlpha() const final;
+  const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const final;
+  bool IsImageGeneratorReady() const final;
 
   // Should be called from the PaintWorkletGlobalScope when a javascript class
   // is registered with the same name.
-  void setDefinition(CSSPaintDefinition*);
+  void SetDefinition(CSSPaintDefinition*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -46,8 +46,8 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
   CSSPaintImageGeneratorImpl(Observer*);
   CSSPaintImageGeneratorImpl(CSSPaintDefinition*);
 
-  Member<CSSPaintDefinition> m_definition;
-  Member<Observer> m_observer;
+  Member<CSSPaintDefinition> definition_;
+  Member<Observer> observer_;
 };
 
 }  // namespace blink

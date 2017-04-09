@@ -14,37 +14,37 @@ TokenizedChunkQueue::TokenizedChunkQueue() {}
 
 TokenizedChunkQueue::~TokenizedChunkQueue() {}
 
-bool TokenizedChunkQueue::enqueue(
+bool TokenizedChunkQueue::Enqueue(
     std::unique_ptr<HTMLDocumentParser::TokenizedChunk> chunk) {
-  m_pendingTokenCount += chunk->tokens->size();
-  m_peakPendingTokenCount =
-      std::max(m_peakPendingTokenCount, m_pendingTokenCount);
+  pending_token_count_ += chunk->tokens->size();
+  peak_pending_token_count_ =
+      std::max(peak_pending_token_count_, pending_token_count_);
 
-  bool wasEmpty = m_pendingChunks.isEmpty();
-  m_pendingChunks.push_back(std::move(chunk));
-  m_peakPendingChunkCount =
-      std::max(m_peakPendingChunkCount, m_pendingChunks.size());
+  bool was_empty = pending_chunks_.IsEmpty();
+  pending_chunks_.push_back(std::move(chunk));
+  peak_pending_chunk_count_ =
+      std::max(peak_pending_chunk_count_, pending_chunks_.size());
 
-  return wasEmpty;
+  return was_empty;
 }
 
-void TokenizedChunkQueue::clear() {
-  m_pendingTokenCount = 0;
-  m_pendingChunks.clear();
+void TokenizedChunkQueue::Clear() {
+  pending_token_count_ = 0;
+  pending_chunks_.Clear();
 }
 
-void TokenizedChunkQueue::takeAll(
+void TokenizedChunkQueue::TakeAll(
     Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>& vector) {
-  DCHECK(vector.isEmpty());
-  m_pendingChunks.swap(vector);
+  DCHECK(vector.IsEmpty());
+  pending_chunks_.Swap(vector);
 }
 
-size_t TokenizedChunkQueue::peakPendingChunkCount() {
-  return m_peakPendingChunkCount;
+size_t TokenizedChunkQueue::PeakPendingChunkCount() {
+  return peak_pending_chunk_count_;
 }
 
-size_t TokenizedChunkQueue::peakPendingTokenCount() {
-  return m_peakPendingTokenCount;
+size_t TokenizedChunkQueue::PeakPendingTokenCount() {
+  return peak_pending_token_count_;
 }
 
 }  // namespace blink

@@ -21,23 +21,23 @@ class CORE_EXPORT MediaListDirective final : public CSPDirective {
   MediaListDirective(const String& name,
                      const String& value,
                      ContentSecurityPolicy*);
-  bool allows(const String& type) const;
+  bool Allows(const String& type) const;
 
   // The algorothm is described more extensively here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy.
-  bool subsumes(const HeapVector<Member<MediaListDirective>>& other) const;
+  bool Subsumes(const HeapVector<Member<MediaListDirective>>& other) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaListDirectiveTest, GetIntersect);
   FRIEND_TEST_ALL_PREFIXES(MediaListDirectiveTest, Subsumes);
 
-  void parse(const UChar* begin, const UChar* end);
+  void Parse(const UChar* begin, const UChar* end);
 
   // The algorothm is described more extensively here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy.
-  HashSet<String> getIntersect(const HashSet<String>& other) const;
+  HashSet<String> GetIntersect(const HashSet<String>& other) const;
 
-  HashSet<String> m_pluginTypes;
+  HashSet<String> plugin_types_;
 };
 
 }  // namespace blink

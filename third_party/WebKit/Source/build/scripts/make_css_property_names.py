@@ -122,7 +122,7 @@ struct Property;
 %%define class-name %(class_name)sHash
 %%define lookup-function-name findPropertyImpl
 %%define hash-function-name property_hash_function
-%%define slot-name nameOffset
+%%define slot-name name_offset
 %%define word-array-name property_word_list
 %%enum
 %%%%
@@ -133,7 +133,7 @@ struct Property;
 #pragma clang diagnostic pop
 #endif
 
-const Property* findProperty(const char* str, unsigned int len) {
+const Property* FindProperty(const char* str, unsigned int len) {
   return %(class_name)sHash::findPropertyImpl(str, len);
 }
 
@@ -149,7 +149,7 @@ const AtomicString& getPropertyNameAtomicString(CSSPropertyID id) {
   static AtomicString* propertyStrings =
       new AtomicString[lastUnresolvedCSSProperty]; // Leaked.
   AtomicString& propertyString = propertyStrings[index];
-  if (propertyString.isNull()) {
+  if (propertyString.IsNull()) {
     propertyString = AtomicString(propertyNameStringsPool +
                      propertyNameStringsOffsets[index]);
   }
@@ -158,7 +158,7 @@ const AtomicString& getPropertyNameAtomicString(CSSPropertyID id) {
 
 String getPropertyNameString(CSSPropertyID id) {
   // We share the StringImpl with the AtomicStrings.
-  return getPropertyNameAtomicString(id).getString();
+  return getPropertyNameAtomicString(id).GetString();
 }
 
 String getJSPropertyName(CSSPropertyID id) {
@@ -166,7 +166,7 @@ String getJSPropertyName(CSSPropertyID id) {
   const char* cssPropertyName = getPropertyName(id);
   const char* propertyNamePointer = cssPropertyName;
   if (!propertyNamePointer)
-    return emptyString;
+    return g_empty_string;
 
   char* resultPointer = result;
   while (char character = *propertyNamePointer++) {
@@ -175,7 +175,7 @@ String getJSPropertyName(CSSPropertyID id) {
       if (!nextCharacter)
         break;
       character = (propertyNamePointer - 2 != cssPropertyName)
-                      ? toASCIIUpper(nextCharacter) : nextCharacter;
+                      ? ToASCIIUpper(nextCharacter) : nextCharacter;
     }
     *resultPointer++ = character;
   }

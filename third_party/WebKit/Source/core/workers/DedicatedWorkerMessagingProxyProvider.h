@@ -51,14 +51,14 @@ class CORE_EXPORT DedicatedWorkerMessagingProxyProvider
   explicit DedicatedWorkerMessagingProxyProvider(Page&);
   virtual ~DedicatedWorkerMessagingProxyProvider() {}
 
-  virtual InProcessWorkerMessagingProxy* createWorkerMessagingProxy(
+  virtual InProcessWorkerMessagingProxy* CreateWorkerMessagingProxy(
       Worker*) = 0;
 
-  static DedicatedWorkerMessagingProxyProvider* from(Page&);
-  static const char* supplementName();
+  static DedicatedWorkerMessagingProxyProvider* From(Page&);
+  static const char* SupplementName();
 };
 
-CORE_EXPORT void provideDedicatedWorkerMessagingProxyProviderTo(
+CORE_EXPORT void ProvideDedicatedWorkerMessagingProxyProviderTo(
     Page&,
     DedicatedWorkerMessagingProxyProvider*);
 

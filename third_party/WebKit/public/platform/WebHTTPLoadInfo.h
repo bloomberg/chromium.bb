@@ -41,37 +41,37 @@ struct ResourceLoadInfo;
 
 class WebHTTPLoadInfo {
  public:
-  WebHTTPLoadInfo() { initialize(); }
-  ~WebHTTPLoadInfo() { reset(); }
-  WebHTTPLoadInfo(const WebHTTPLoadInfo& r) { assign(r); }
+  WebHTTPLoadInfo() { Initialize(); }
+  ~WebHTTPLoadInfo() { Reset(); }
+  WebHTTPLoadInfo(const WebHTTPLoadInfo& r) { Assign(r); }
   WebHTTPLoadInfo& operator=(const WebHTTPLoadInfo& r) {
-    assign(r);
+    Assign(r);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void initialize();
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebHTTPLoadInfo& r);
+  BLINK_PLATFORM_EXPORT void Initialize();
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebHTTPLoadInfo& r);
 
-  BLINK_PLATFORM_EXPORT int httpStatusCode() const;
-  BLINK_PLATFORM_EXPORT void setHTTPStatusCode(int);
+  BLINK_PLATFORM_EXPORT int HttpStatusCode() const;
+  BLINK_PLATFORM_EXPORT void SetHTTPStatusCode(int);
 
-  BLINK_PLATFORM_EXPORT WebString httpStatusText() const;
-  BLINK_PLATFORM_EXPORT void setHTTPStatusText(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString HttpStatusText() const;
+  BLINK_PLATFORM_EXPORT void SetHTTPStatusText(const WebString&);
 
-  BLINK_PLATFORM_EXPORT void addRequestHeader(const WebString& name,
+  BLINK_PLATFORM_EXPORT void AddRequestHeader(const WebString& name,
                                               const WebString& value);
-  BLINK_PLATFORM_EXPORT void addResponseHeader(const WebString& name,
+  BLINK_PLATFORM_EXPORT void AddResponseHeader(const WebString& name,
                                                const WebString& value);
 
-  BLINK_PLATFORM_EXPORT WebString requestHeadersText() const;
-  BLINK_PLATFORM_EXPORT void setRequestHeadersText(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString RequestHeadersText() const;
+  BLINK_PLATFORM_EXPORT void SetRequestHeadersText(const WebString&);
 
-  BLINK_PLATFORM_EXPORT WebString responseHeadersText() const;
-  BLINK_PLATFORM_EXPORT void setResponseHeadersText(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString ResponseHeadersText() const;
+  BLINK_PLATFORM_EXPORT void SetResponseHeadersText(const WebString&);
 
-  BLINK_PLATFORM_EXPORT WebString npnNegotiatedProtocol() const;
-  BLINK_PLATFORM_EXPORT void setNPNNegotiatedProtocol(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString NpnNegotiatedProtocol() const;
+  BLINK_PLATFORM_EXPORT void SetNPNNegotiatedProtocol(const WebString&);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<ResourceLoadInfo>);
@@ -79,7 +79,7 @@ class WebHTTPLoadInfo {
 #endif
 
  private:
-  WebPrivatePtr<ResourceLoadInfo> m_private;
+  WebPrivatePtr<ResourceLoadInfo> private_;
 };
 
 }  // namespace blink

@@ -22,14 +22,14 @@ class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
   ~MockWebRTCDTMFSenderHandler() override;
 
   // WebRTCDTMFSenderHandler related methods
-  void setClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
-  blink::WebString currentToneBuffer() override;
-  bool canInsertDTMF() override;
-  bool insertDTMF(const blink::WebString& tones,
+  void SetClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
+  blink::WebString CurrentToneBuffer() override;
+  bool CanInsertDTMF() override;
+  bool InsertDTMF(const blink::WebString& tones,
                   long duration,
                   long inter_tone_gap) override;
 
-  void ClearToneBuffer() { tone_buffer_.reset(); }
+  void ClearToneBuffer() { tone_buffer_.Reset(); }
 
  private:
   void PlayTone();

@@ -24,17 +24,17 @@ class CORE_EXPORT EffectInput {
 
  public:
   // TODO(alancutter): Replace Element* parameter with Document&.
-  static EffectModel* convert(Element*,
+  static EffectModel* Convert(Element*,
                               const DictionarySequenceOrDictionary&,
                               ExecutionContext*,
                               ExceptionState&);
 
  private:
-  static EffectModel* convertArrayForm(Element&,
+  static EffectModel* ConvertArrayForm(Element&,
                                        const Vector<Dictionary>& keyframes,
                                        ExecutionContext*,
                                        ExceptionState&);
-  static EffectModel* convertObjectForm(Element&,
+  static EffectModel* ConvertObjectForm(Element&,
                                         const Dictionary& keyframe,
                                         ExecutionContext*,
                                         ExceptionState&);

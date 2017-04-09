@@ -35,60 +35,60 @@
 
 namespace blink {
 
-PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::create(
+PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::Create(
     PlatformSpeechSynthesizerClient* client) {
   PlatformSpeechSynthesizer* synthesizer =
       new PlatformSpeechSynthesizer(client);
-  synthesizer->initializeVoiceList();
+  synthesizer->InitializeVoiceList();
   return synthesizer;
 }
 
 PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(
     PlatformSpeechSynthesizerClient* client)
-    : m_speechSynthesizerClient(client) {
-  m_webSpeechSynthesizerClient =
+    : speech_synthesizer_client_(client) {
+  web_speech_synthesizer_client_ =
       new WebSpeechSynthesizerClientImpl(this, client);
-  m_webSpeechSynthesizer =
-      WTF::wrapUnique(Platform::current()->createSpeechSynthesizer(
-          m_webSpeechSynthesizerClient));
+  web_speech_synthesizer_ =
+      WTF::WrapUnique(Platform::Current()->CreateSpeechSynthesizer(
+          web_speech_synthesizer_client_));
 }
 
 PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer() {}
 
-void PlatformSpeechSynthesizer::speak(
+void PlatformSpeechSynthesizer::Speak(
     PlatformSpeechSynthesisUtterance* utterance) {
-  if (m_webSpeechSynthesizer && m_webSpeechSynthesizerClient)
-    m_webSpeechSynthesizer->speak(WebSpeechSynthesisUtterance(utterance));
+  if (web_speech_synthesizer_ && web_speech_synthesizer_client_)
+    web_speech_synthesizer_->Speak(WebSpeechSynthesisUtterance(utterance));
 }
 
-void PlatformSpeechSynthesizer::pause() {
-  if (m_webSpeechSynthesizer)
-    m_webSpeechSynthesizer->pause();
+void PlatformSpeechSynthesizer::Pause() {
+  if (web_speech_synthesizer_)
+    web_speech_synthesizer_->Pause();
 }
 
-void PlatformSpeechSynthesizer::resume() {
-  if (m_webSpeechSynthesizer)
-    m_webSpeechSynthesizer->resume();
+void PlatformSpeechSynthesizer::Resume() {
+  if (web_speech_synthesizer_)
+    web_speech_synthesizer_->Resume();
 }
 
-void PlatformSpeechSynthesizer::cancel() {
-  if (m_webSpeechSynthesizer)
-    m_webSpeechSynthesizer->cancel();
+void PlatformSpeechSynthesizer::Cancel() {
+  if (web_speech_synthesizer_)
+    web_speech_synthesizer_->Cancel();
 }
 
-void PlatformSpeechSynthesizer::setVoiceList(
+void PlatformSpeechSynthesizer::SetVoiceList(
     Vector<RefPtr<PlatformSpeechSynthesisVoice>>& voices) {
-  m_voiceList = voices;
+  voice_list_ = voices;
 }
 
-void PlatformSpeechSynthesizer::initializeVoiceList() {
-  if (m_webSpeechSynthesizer)
-    m_webSpeechSynthesizer->updateVoiceList();
+void PlatformSpeechSynthesizer::InitializeVoiceList() {
+  if (web_speech_synthesizer_)
+    web_speech_synthesizer_->UpdateVoiceList();
 }
 
 DEFINE_TRACE(PlatformSpeechSynthesizer) {
-  visitor->trace(m_speechSynthesizerClient);
-  visitor->trace(m_webSpeechSynthesizerClient);
+  visitor->Trace(speech_synthesizer_client_);
+  visitor->Trace(web_speech_synthesizer_client_);
 }
 
 }  // namespace blink

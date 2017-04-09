@@ -29,103 +29,104 @@ class CORE_EXPORT PointerEventFactory {
   PointerEventFactory();
   ~PointerEventFactory();
 
-  PointerEvent* create(const AtomicString& mouseEventName,
+  PointerEvent* Create(const AtomicString& mouse_event_name,
                        const WebMouseEvent&,
                        const Vector<WebMouseEvent>&,
                        LocalDOMWindow*);
 
-  PointerEvent* create(const WebTouchPoint&,
+  PointerEvent* Create(const WebTouchPoint&,
                        const Vector<WebTouchPoint>&,
                        WebInputEvent::Modifiers,
                        LocalFrame*,
                        DOMWindow*);
 
-  PointerEvent* createPointerCancelEvent(
-      const int pointerId,
+  PointerEvent* CreatePointerCancelEvent(
+      const int pointer_id,
       const WebPointerProperties::PointerType);
 
   // For creating capture events (i.e got/lostpointercapture)
-  PointerEvent* createPointerCaptureEvent(PointerEvent*, const AtomicString&);
+  PointerEvent* CreatePointerCaptureEvent(PointerEvent*, const AtomicString&);
 
   // For creating boundary events (i.e pointerout/leave/over/enter)
-  PointerEvent* createPointerBoundaryEvent(PointerEvent*,
+  PointerEvent* CreatePointerBoundaryEvent(PointerEvent*,
                                            const AtomicString&,
                                            EventTarget*);
 
   // Clear all the existing ids.
-  void clear();
+  void Clear();
 
   // When a particular pointerId is removed, the id is considered free even
   // though there might have been other PointerEvents that were generated with
   // the same id before.
-  bool remove(const int);
+  bool Remove(const int);
 
   // Returns all ids of the given pointerType.
-  Vector<int> getPointerIdsOfType(WebPointerProperties::PointerType) const;
+  Vector<int> GetPointerIdsOfType(WebPointerProperties::PointerType) const;
 
   // Returns whether a pointer id exists and active.
-  bool isActive(const int) const;
+  bool IsActive(const int) const;
 
   // Returns whether a pointer id exists and has at least one pressed button.
-  bool isActiveButtonsState(const int) const;
+  bool IsActiveButtonsState(const int) const;
 
   // Returns the id of the pointer event corresponding to the given pointer
   // properties if exists otherwise s_invalidId.
-  int getPointerEventId(const WebPointerProperties&) const;
+  int GetPointerEventId(const WebPointerProperties&) const;
 
   // Returns pointerType of for the given pointerId if such id is active.
   // Otherwise it returns WebPointerProperties::PointerType::Unknown.
-  WebPointerProperties::PointerType getPointerType(int pointerId) const;
+  WebPointerProperties::PointerType GetPointerType(int pointer_id) const;
 
-  static const int s_mouseId;
+  static const int kMouseId;
 
  private:
   typedef WTF::UnsignedWithZeroKeyHashTraits<int> UnsignedHash;
   typedef struct IncomingId : public std::pair<int, int> {
     IncomingId() {}
-    IncomingId(WebPointerProperties::PointerType pointerType, int rawId)
-        : std::pair<int, int>(static_cast<int>(pointerType), rawId) {}
-    int pointerTypeInt() const { return first; }
-    WebPointerProperties::PointerType pointerType() const {
+    IncomingId(WebPointerProperties::PointerType pointer_type, int raw_id)
+        : std::pair<int, int>(static_cast<int>(pointer_type), raw_id) {}
+    int PointerTypeInt() const { return first; }
+    WebPointerProperties::PointerType GetPointerType() const {
       return static_cast<WebPointerProperties::PointerType>(first);
     }
-    int rawId() const { return second; }
+    int RawId() const { return second; }
   } IncomingId;
   typedef struct PointerAttributes {
-    IncomingId incomingId;
-    bool isActiveButtons;
-    PointerAttributes() : incomingId(), isActiveButtons(false) {}
-    PointerAttributes(IncomingId incomingId, unsigned isActiveButtons)
-        : incomingId(incomingId), isActiveButtons(isActiveButtons) {}
+    IncomingId incoming_id;
+    bool is_active_buttons;
+    PointerAttributes() : incoming_id(), is_active_buttons(false) {}
+    PointerAttributes(IncomingId incoming_id, unsigned is_active_buttons)
+        : incoming_id(incoming_id), is_active_buttons(is_active_buttons) {}
   } PointerAttributes;
 
-  int addIdAndActiveButtons(const IncomingId, bool isActiveButtons);
-  bool isPrimary(const int) const;
-  void setIdTypeButtons(PointerEventInit&,
+  int AddIdAndActiveButtons(const IncomingId, bool is_active_buttons);
+  bool IsPrimary(const int) const;
+  void SetIdTypeButtons(PointerEventInit&,
                         const WebPointerProperties&,
                         unsigned buttons);
-  void setEventSpecificFields(PointerEventInit&, const AtomicString& type);
+  void SetEventSpecificFields(PointerEventInit&, const AtomicString& type);
 
   // Creates pointerevents like boundary and capture events from another
   // pointerevent (i.e. up/down/move events).
-  PointerEvent* createPointerEventFrom(PointerEvent*,
+  PointerEvent* CreatePointerEventFrom(PointerEvent*,
                                        const AtomicString&,
                                        EventTarget*);
 
-  static const int s_invalidId;
+  static const int kInvalidId;
 
-  int m_currentId;
+  int current_id_;
   HashMap<IncomingId,
           int,
           WTF::PairHash<int, int>,
           WTF::PairHashTraits<UnsignedHash, UnsignedHash>>
-      m_pointerIncomingIdMapping;
+      pointer_incoming_id_mapping_;
   HashMap<int, PointerAttributes, WTF::IntHash<int>, UnsignedHash>
-      m_pointerIdMapping;
-  int m_primaryId[static_cast<int>(
-                      WebPointerProperties::PointerType::LastEntry) +
+      pointer_id_mapping_;
+  int primary_id_[static_cast<int>(
+                      WebPointerProperties::PointerType::kLastEntry) +
                   1];
-  int m_idCount[static_cast<int>(WebPointerProperties::PointerType::LastEntry) +
+  int id_count_[static_cast<int>(
+                    WebPointerProperties::PointerType::kLastEntry) +
                 1];
 };
 

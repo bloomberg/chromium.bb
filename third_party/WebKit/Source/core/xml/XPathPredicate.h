@@ -41,10 +41,10 @@ class CORE_EXPORT Number final : public Expression {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Value evaluate(EvaluationContext&) const override;
-  Value::Type resultType() const override { return Value::NumberValue; }
+  Value Evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override { return Value::kNumberValue; }
 
-  Value m_value;
+  Value value_;
 };
 
 class CORE_EXPORT StringExpression final : public Expression {
@@ -53,67 +53,67 @@ class CORE_EXPORT StringExpression final : public Expression {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Value evaluate(EvaluationContext&) const override;
-  Value::Type resultType() const override { return Value::StringValue; }
+  Value Evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override { return Value::kStringValue; }
 
-  Value m_value;
+  Value value_;
 };
 
 class Negative final : public Expression {
  private:
-  Value evaluate(EvaluationContext&) const override;
-  Value::Type resultType() const override { return Value::NumberValue; }
+  Value Evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override { return Value::kNumberValue; }
 };
 
 class NumericOp final : public Expression {
  public:
-  enum Opcode { OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod };
+  enum Opcode { kOP_Add, kOP_Sub, kOP_Mul, kOP_Div, kOP_Mod };
   NumericOp(Opcode, Expression* lhs, Expression* rhs);
 
  private:
-  Value evaluate(EvaluationContext&) const override;
-  Value::Type resultType() const override { return Value::NumberValue; }
+  Value Evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override { return Value::kNumberValue; }
 
-  Opcode m_opcode;
+  Opcode opcode_;
 };
 
 class EqTestOp final : public Expression {
  public:
   enum Opcode {
-    OpcodeEqual,
-    OpcodeNotEqual,
-    OpcodeGreaterThan,
-    OpcodeLessThan,
-    OpcodeGreaterOrEqual,
-    OpcodeLessOrEqual
+    kOpcodeEqual,
+    kOpcodeNotEqual,
+    kOpcodeGreaterThan,
+    kOpcodeLessThan,
+    kOpcodeGreaterOrEqual,
+    kOpcodeLessOrEqual
   };
   EqTestOp(Opcode, Expression* lhs, Expression* rhs);
-  Value evaluate(EvaluationContext&) const override;
+  Value Evaluate(EvaluationContext&) const override;
 
  private:
-  Value::Type resultType() const override { return Value::BooleanValue; }
-  bool compare(EvaluationContext&, const Value&, const Value&) const;
+  Value::Type ResultType() const override { return Value::kBooleanValue; }
+  bool Compare(EvaluationContext&, const Value&, const Value&) const;
 
-  Opcode m_opcode;
+  Opcode opcode_;
 };
 
 class LogicalOp final : public Expression {
  public:
-  enum Opcode { OP_And, OP_Or };
+  enum Opcode { kOP_And, kOP_Or };
   LogicalOp(Opcode, Expression* lhs, Expression* rhs);
 
  private:
-  Value::Type resultType() const override { return Value::BooleanValue; }
-  bool shortCircuitOn() const;
-  Value evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override { return Value::kBooleanValue; }
+  bool ShortCircuitOn() const;
+  Value Evaluate(EvaluationContext&) const override;
 
-  Opcode m_opcode;
+  Opcode opcode_;
 };
 
 class Union final : public Expression {
  private:
-  Value evaluate(EvaluationContext&) const override;
-  Value::Type resultType() const override { return Value::NodeSetValue; }
+  Value Evaluate(EvaluationContext&) const override;
+  Value::Type ResultType() const override { return Value::kNodeSetValue; }
 };
 
 class Predicate final : public GarbageCollected<Predicate> {
@@ -123,17 +123,17 @@ class Predicate final : public GarbageCollected<Predicate> {
   explicit Predicate(Expression*);
   DECLARE_TRACE();
 
-  bool evaluate(EvaluationContext&) const;
-  bool isContextPositionSensitive() const {
-    return m_expr->isContextPositionSensitive() ||
-           m_expr->resultType() == Value::NumberValue;
+  bool Evaluate(EvaluationContext&) const;
+  bool IsContextPositionSensitive() const {
+    return expr_->IsContextPositionSensitive() ||
+           expr_->ResultType() == Value::kNumberValue;
   }
-  bool isContextSizeSensitive() const {
-    return m_expr->isContextSizeSensitive();
+  bool IsContextSizeSensitive() const {
+    return expr_->IsContextSizeSensitive();
   }
 
  private:
-  Member<Expression> m_expr;
+  Member<Expression> expr_;
 };
 
 }  // namespace XPath

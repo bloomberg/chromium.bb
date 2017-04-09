@@ -199,17 +199,17 @@ for letter in string.ascii_lowercase:
 output_file.write("%d\n" % entity_count)
 output_file.write("""};
 
-const LChar* HTMLEntityTable::entityString(const HTMLEntityTableEntry& entry)
+const LChar* HTMLEntityTable::EntityString(const HTMLEntityTableEntry& entry)
 {
-    return staticEntityStringStorage + entry.entityOffset;
+    return staticEntityStringStorage + entry.entity_offset;
 }
 
-LChar HTMLEntityTableEntry::lastCharacter() const
+LChar HTMLEntityTableEntry::LastCharacter() const
 {
-    return HTMLEntityTable::entityString(*this)[length - 1];
+    return HTMLEntityTable::EntityString(*this)[length - 1];
 }
 
-const HTMLEntityTableEntry* HTMLEntityTable::firstEntryStartingWith(UChar c)
+const HTMLEntityTableEntry* HTMLEntityTable::FirstEntryStartingWith(UChar c)
 {
     if (c >= 'A' && c <= 'Z')
         return &staticEntityTable[uppercaseOffset[c - 'A']];
@@ -218,7 +218,7 @@ const HTMLEntityTableEntry* HTMLEntityTable::firstEntryStartingWith(UChar c)
     return 0;
 }
 
-const HTMLEntityTableEntry* HTMLEntityTable::lastEntryStartingWith(UChar c)
+const HTMLEntityTableEntry* HTMLEntityTable::LastEntryStartingWith(UChar c)
 {
     if (c >= 'A' && c <= 'Z')
         return &staticEntityTable[uppercaseOffset[c - 'A' + 1]] - 1;
@@ -227,12 +227,12 @@ const HTMLEntityTableEntry* HTMLEntityTable::lastEntryStartingWith(UChar c)
     return 0;
 }
 
-const HTMLEntityTableEntry* HTMLEntityTable::firstEntry()
+const HTMLEntityTableEntry* HTMLEntityTable::FirstEntry()
 {
     return &staticEntityTable[0];
 }
 
-const HTMLEntityTableEntry* HTMLEntityTable::lastEntry()
+const HTMLEntityTableEntry* HTMLEntityTable::LastEntry()
 {
     return &staticEntityTable[%s - 1];
 }

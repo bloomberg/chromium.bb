@@ -15,28 +15,28 @@ const struct {
   int modifiers;
   bool is_text_editing_event;
 } kTextEditingEventTestCases[] = {
-  {ui::VKEY_A, WebInputEvent::MetaKey, true},
-  {ui::VKEY_V, WebInputEvent::MetaKey, true},
-  {ui::VKEY_C, WebInputEvent::MetaKey, true},
-  {ui::VKEY_X, WebInputEvent::MetaKey, true},
-  {ui::VKEY_Z, WebInputEvent::MetaKey, true},
+    {ui::VKEY_A, WebInputEvent::kMetaKey, true},
+    {ui::VKEY_V, WebInputEvent::kMetaKey, true},
+    {ui::VKEY_C, WebInputEvent::kMetaKey, true},
+    {ui::VKEY_X, WebInputEvent::kMetaKey, true},
+    {ui::VKEY_Z, WebInputEvent::kMetaKey, true},
 
-  {ui::VKEY_A, WebInputEvent::ShiftKey, false},
-  {ui::VKEY_G, WebInputEvent::MetaKey, false},
+    {ui::VKEY_A, WebInputEvent::kShiftKey, false},
+    {ui::VKEY_G, WebInputEvent::kMetaKey, false},
 };
 
 TEST(BrowserWindowUtilsTest, TestIsTextEditingEvent) {
-  content::NativeWebKeyboardEvent event(WebInputEvent::Char,
-                                        WebInputEvent::NoModifiers,
-                                        WebInputEvent::TimeStampForTesting);
+  content::NativeWebKeyboardEvent event(WebInputEvent::kChar,
+                                        WebInputEvent::kNoModifiers,
+                                        WebInputEvent::kTimeStampForTesting);
   EXPECT_FALSE([BrowserWindowUtils isTextEditingEvent:event]);
 
   for (const auto& test : kTextEditingEventTestCases) {
     SCOPED_TRACE(base::StringPrintf("key = %c, modifiers = %d",
                  test.key_code, test.modifiers));
-    content::NativeWebKeyboardEvent event(WebInputEvent::Char, test.modifiers,
-                                          WebInputEvent::TimeStampForTesting);
-    event.windowsKeyCode = test.key_code;
+    content::NativeWebKeyboardEvent event(WebInputEvent::kChar, test.modifiers,
+                                          WebInputEvent::kTimeStampForTesting);
+    event.windows_key_code = test.key_code;
     EXPECT_EQ(test.is_text_editing_event,
               [BrowserWindowUtils isTextEditingEvent:event]);
   }

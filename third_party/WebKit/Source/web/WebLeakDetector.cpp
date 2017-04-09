@@ -52,94 +52,94 @@ class WebLeakDetectorImpl final : public WebLeakDetector {
 
  public:
   explicit WebLeakDetectorImpl(WebLeakDetectorClient* client)
-      : m_client(client),
-        m_delayedGCAndReportTimer(
-            Platform::current()->currentThread()->getWebTaskRunner(),
+      : client_(client),
+        delayed_gc_and_report_timer_(
+            Platform::Current()->CurrentThread()->GetWebTaskRunner(),
             this,
-            &WebLeakDetectorImpl::delayedGCAndReport),
-        m_delayedReportTimer(
-            Platform::current()->currentThread()->getWebTaskRunner(),
+            &WebLeakDetectorImpl::DelayedGCAndReport),
+        delayed_report_timer_(
+            Platform::Current()->CurrentThread()->GetWebTaskRunner(),
             this,
-            &WebLeakDetectorImpl::delayedReport),
-        m_numberOfGCNeeded(0) {
-    DCHECK(m_client);
+            &WebLeakDetectorImpl::DelayedReport),
+        number_of_gc_needed_(0) {
+    DCHECK(client_);
   }
 
   ~WebLeakDetectorImpl() override {}
 
-  void prepareForLeakDetection(WebFrame*) override;
-  void collectGarbageAndReport() override;
+  void PrepareForLeakDetection(WebFrame*) override;
+  void CollectGarbageAndReport() override;
 
  private:
-  void delayedGCAndReport(TimerBase*);
-  void delayedReport(TimerBase*);
+  void DelayedGCAndReport(TimerBase*);
+  void DelayedReport(TimerBase*);
 
-  WebLeakDetectorClient* m_client;
-  TaskRunnerTimer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
-  TaskRunnerTimer<WebLeakDetectorImpl> m_delayedReportTimer;
-  int m_numberOfGCNeeded;
+  WebLeakDetectorClient* client_;
+  TaskRunnerTimer<WebLeakDetectorImpl> delayed_gc_and_report_timer_;
+  TaskRunnerTimer<WebLeakDetectorImpl> delayed_report_timer_;
+  int number_of_gc_needed_;
 };
 
-void WebLeakDetectorImpl::prepareForLeakDetection(WebFrame* frame) {
+void WebLeakDetectorImpl::PrepareForLeakDetection(WebFrame* frame) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handleScope(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   // For example, calling isValidEmailAddress in EmailInputType.cpp with a
   // non-empty string creates a static ScriptRegexp value which holds a
   // V8PerContextData indirectly. This affects the number of V8PerContextData.
   // To ensure that context data is created, call ensureScriptRegexpContext
   // here.
-  V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
+  V8PerIsolateData::From(isolate)->EnsureScriptRegexpContext();
 
-  WorkerThread::terminateAndWaitForAllWorkers();
-  memoryCache()->evictResources();
+  WorkerThread::TerminateAndWaitForAllWorkers();
+  GetMemoryCache()->EvictResources();
 
   // If the spellchecker is allowed to continue issuing requests while the
   // leak detector runs, leaks may flakily be reported as the requests keep
   // their associated element (and document) alive.
   //
   // Stop the spellchecker to prevent this.
-  if (frame->isWebLocalFrame()) {
-    WebLocalFrameImpl* localFrame = toWebLocalFrameImpl(frame);
-    localFrame->frame()->spellChecker().prepareForLeakDetection();
+  if (frame->IsWebLocalFrame()) {
+    WebLocalFrameImpl* local_frame = ToWebLocalFrameImpl(frame);
+    local_frame->GetFrame()->GetSpellChecker().PrepareForLeakDetection();
   }
 
   // FIXME: HTML5 Notification should be closed because notification affects the
   // result of number of DOM objects.
 
-  V8PerIsolateData::from(isolate)->clearScriptRegexpContext();
+  V8PerIsolateData::From(isolate)->ClearScriptRegexpContext();
 }
 
-void WebLeakDetectorImpl::collectGarbageAndReport() {
-  V8GCController::collectAllGarbageForTesting(
-      V8PerIsolateData::mainThreadIsolate());
-  AbstractAnimationWorkletThread::collectAllGarbage();
+void WebLeakDetectorImpl::CollectGarbageAndReport() {
+  V8GCController::CollectAllGarbageForTesting(
+      V8PerIsolateData::MainThreadIsolate());
+  AbstractAnimationWorkletThread::CollectAllGarbage();
   // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
   // Task queue may contain delayed object destruction tasks.
   // This method is called from navigation hook inside FrameLoader,
   // so previous document is still held by the loader until the next event loop.
   // Complete all pending tasks before proceeding to gc.
-  m_numberOfGCNeeded = 2;
-  m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
+  number_of_gc_needed_ = 2;
+  delayed_gc_and_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void WebLeakDetectorImpl::delayedGCAndReport(TimerBase*) {
+void WebLeakDetectorImpl::DelayedGCAndReport(TimerBase*) {
   // We do a second and third GC here to address flakiness
   // The second GC is necessary as Resource GC may have postponed clean-up tasks
   // to next event loop.  The third GC is necessary for cleaning up Document
   // after worker object died.
 
-  V8GCController::collectAllGarbageForTesting(
-      V8PerIsolateData::mainThreadIsolate());
-  AbstractAnimationWorkletThread::collectAllGarbage();
+  V8GCController::CollectAllGarbageForTesting(
+      V8PerIsolateData::MainThreadIsolate());
+  AbstractAnimationWorkletThread::CollectAllGarbage();
   // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
   // Inspect counters on the next event loop.
-  if (--m_numberOfGCNeeded > 0) {
-    m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
-  } else if (m_numberOfGCNeeded > -1 &&
-             InProcessWorkerMessagingProxy::proxyCount()) {
+  if (--number_of_gc_needed_ > 0) {
+    delayed_gc_and_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  } else if (number_of_gc_needed_ > -1 &&
+             InProcessWorkerMessagingProxy::ProxyCount()) {
     // It is possible that all posted tasks for finalizing in-process proxy
     // objects will not have run before the final round of GCs started. If so,
     // do yet another pass, letting these tasks run and then afterwards perform
@@ -148,38 +148,38 @@ void WebLeakDetectorImpl::delayedGCAndReport(TimerBase*) {
     // TODO(sof): use proxyCount() to always decide if another GC needs to be
     // scheduled.  Some debug bots running browser unit tests disagree
     // (crbug.com/616714)
-    m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
+    delayed_gc_and_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
   } else {
-    m_delayedReportTimer.startOneShot(0, BLINK_FROM_HERE);
+    delayed_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
 }
 
-void WebLeakDetectorImpl::delayedReport(TimerBase*) {
-  DCHECK(m_client);
+void WebLeakDetectorImpl::DelayedReport(TimerBase*) {
+  DCHECK(client_);
 
   WebLeakDetectorClient::Result result;
-  result.numberOfLiveAudioNodes =
-      InstanceCounters::counterValue(InstanceCounters::AudioHandlerCounter);
-  result.numberOfLiveDocuments =
-      InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
-  result.numberOfLiveNodes =
-      InstanceCounters::counterValue(InstanceCounters::NodeCounter);
-  result.numberOfLiveLayoutObjects =
-      InstanceCounters::counterValue(InstanceCounters::LayoutObjectCounter);
-  result.numberOfLiveResources =
-      InstanceCounters::counterValue(InstanceCounters::ResourceCounter);
-  result.numberOfLiveSuspendableObjects = InstanceCounters::counterValue(
-      InstanceCounters::SuspendableObjectCounter);
-  result.numberOfLiveScriptPromises =
-      InstanceCounters::counterValue(InstanceCounters::ScriptPromiseCounter);
-  result.numberOfLiveFrames =
-      InstanceCounters::counterValue(InstanceCounters::FrameCounter);
-  result.numberOfLiveV8PerContextData =
-      InstanceCounters::counterValue(InstanceCounters::V8PerContextDataCounter);
-  result.numberOfWorkerGlobalScopes = InstanceCounters::counterValue(
-      InstanceCounters::WorkerGlobalScopeCounter);
+  result.number_of_live_audio_nodes =
+      InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter);
+  result.number_of_live_documents =
+      InstanceCounters::CounterValue(InstanceCounters::kDocumentCounter);
+  result.number_of_live_nodes =
+      InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
+  result.number_of_live_layout_objects =
+      InstanceCounters::CounterValue(InstanceCounters::kLayoutObjectCounter);
+  result.number_of_live_resources =
+      InstanceCounters::CounterValue(InstanceCounters::kResourceCounter);
+  result.number_of_live_suspendable_objects = InstanceCounters::CounterValue(
+      InstanceCounters::kSuspendableObjectCounter);
+  result.number_of_live_script_promises =
+      InstanceCounters::CounterValue(InstanceCounters::kScriptPromiseCounter);
+  result.number_of_live_frames =
+      InstanceCounters::CounterValue(InstanceCounters::kFrameCounter);
+  result.number_of_live_v8_per_context_data = InstanceCounters::CounterValue(
+      InstanceCounters::kV8PerContextDataCounter);
+  result.number_of_worker_global_scopes = InstanceCounters::CounterValue(
+      InstanceCounters::kWorkerGlobalScopeCounter);
 
-  m_client->onLeakDetectionComplete(result);
+  client_->OnLeakDetectionComplete(result);
 
 #ifndef NDEBUG
   showLiveDocumentInstances();
@@ -188,7 +188,7 @@ void WebLeakDetectorImpl::delayedReport(TimerBase*) {
 
 }  // namespace
 
-WebLeakDetector* WebLeakDetector::create(WebLeakDetectorClient* client) {
+WebLeakDetector* WebLeakDetector::Create(WebLeakDetectorClient* client) {
   return new WebLeakDetectorImpl(client);
 }
 

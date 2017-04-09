@@ -299,15 +299,15 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
   // Register WebSecurityPolicy whitelists for the chrome-extension:// scheme.
-  WebString extension_scheme(WebString::fromASCII(kExtensionScheme));
+  WebString extension_scheme(WebString::FromASCII(kExtensionScheme));
 
   // Extension resources are HTTP-like and safe to expose to the fetch API. The
   // rules for the fetch API are consistent with XHR.
-  WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI(extension_scheme);
+  WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(extension_scheme);
 
   // Extension resources, when loaded as the top-level document, should bypass
   // Blink's strict first-party origin checks.
-  WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel(
+  WebSecurityPolicy::RegisterURLSchemeAsFirstPartyWhenTopLevel(
       extension_scheme);
 
   // For extensions, we want to ensure we call the IdleHandler every so often,
@@ -574,7 +574,7 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
   // so that this also injects the stylesheet on about:blank frames that
   // are hosted in the extension process.
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      frame, frame->document().url(), true /* match_about_blank */);
+      frame, frame->GetDocument().Url(), true /* match_about_blank */);
 
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
@@ -595,7 +595,7 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
     // Blink doesn't let us define an additional user agent stylesheet, so
     // we insert the default platform app or extension stylesheet into all
     // documents that are loaded in each app or extension.
-    frame->document().insertStyleSheet(WebString::fromUTF8(stylesheet));
+    frame->GetDocument().InsertStyleSheet(WebString::FromUTF8(stylesheet));
   }
 
   // If this is an extension options page, and the extension has opted into
@@ -606,8 +606,8 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
     base::StringPiece extension_css =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_EXTENSION_CSS);
-    frame->document().insertStyleSheet(
-        WebString::fromUTF8(extension_css.data(), extension_css.length()));
+    frame->GetDocument().InsertStyleSheet(
+        WebString::FromUTF8(extension_css.data(), extension_css.length()));
   }
 
   // In testing, the document lifetime events can happen after the render
@@ -1108,8 +1108,8 @@ void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
 
   if (feature_util::ExtensionServiceWorkersEnabled()) {
     // chrome-extension: resources should be allowed to register ServiceWorkers.
-    blink::WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(
-        blink::WebString::fromUTF8(extensions::kExtensionScheme));
+    blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
+        blink::WebString::FromUTF8(extensions::kExtensionScheme));
   }
 }
 
@@ -1310,38 +1310,34 @@ void Dispatcher::UpdateOriginPermissions(const GURL& extension_url,
     for (URLPatternSet::const_iterator pattern = old_patterns.begin();
          pattern != old_patterns.end(); ++pattern) {
       if (pattern->MatchesScheme(scheme)) {
-        WebSecurityPolicy::removeOriginAccessWhitelistEntry(
-            extension_url,
-            WebString::fromUTF8(scheme),
-            WebString::fromUTF8(pattern->host()),
-            pattern->match_subdomains());
+        WebSecurityPolicy::RemoveOriginAccessWhitelistEntry(
+            extension_url, WebString::FromUTF8(scheme),
+            WebString::FromUTF8(pattern->host()), pattern->match_subdomains());
       }
     }
     // ...And add the new ones.
     for (URLPatternSet::const_iterator pattern = new_patterns.begin();
          pattern != new_patterns.end(); ++pattern) {
       if (pattern->MatchesScheme(scheme)) {
-        WebSecurityPolicy::addOriginAccessWhitelistEntry(
-            extension_url,
-            WebString::fromUTF8(scheme),
-            WebString::fromUTF8(pattern->host()),
-            pattern->match_subdomains());
+        WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+            extension_url, WebString::FromUTF8(scheme),
+            WebString::FromUTF8(pattern->host()), pattern->match_subdomains());
       }
     }
   }
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {
-  blink::WebCustomElement::addEmbedderCustomElementName("appview");
-  blink::WebCustomElement::addEmbedderCustomElementName("appviewbrowserplugin");
-  blink::WebCustomElement::addEmbedderCustomElementName("extensionoptions");
-  blink::WebCustomElement::addEmbedderCustomElementName(
+  blink::WebCustomElement::AddEmbedderCustomElementName("appview");
+  blink::WebCustomElement::AddEmbedderCustomElementName("appviewbrowserplugin");
+  blink::WebCustomElement::AddEmbedderCustomElementName("extensionoptions");
+  blink::WebCustomElement::AddEmbedderCustomElementName(
       "extensionoptionsbrowserplugin");
-  blink::WebCustomElement::addEmbedderCustomElementName("extensionview");
-  blink::WebCustomElement::addEmbedderCustomElementName(
+  blink::WebCustomElement::AddEmbedderCustomElementName("extensionview");
+  blink::WebCustomElement::AddEmbedderCustomElementName(
       "extensionviewbrowserplugin");
-  blink::WebCustomElement::addEmbedderCustomElementName("webview");
-  blink::WebCustomElement::addEmbedderCustomElementName("webviewbrowserplugin");
+  blink::WebCustomElement::AddEmbedderCustomElementName("webview");
+  blink::WebCustomElement::AddEmbedderCustomElementName("webviewbrowserplugin");
 }
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {
@@ -1394,7 +1390,7 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
     GURL url = context->url();
     // We allow about:blank pages to take on the privileges of their parents if
     // they aren't sandboxed.
-    if (web_frame && !web_frame->getSecurityOrigin().isUnique())
+    if (web_frame && !web_frame->GetSecurityOrigin().IsUnique())
       url = ScriptContext::GetEffectiveDocumentURL(web_frame, url, true);
     const ContentCapabilitiesInfo& info =
         ContentCapabilitiesInfo::Get(extension.get());

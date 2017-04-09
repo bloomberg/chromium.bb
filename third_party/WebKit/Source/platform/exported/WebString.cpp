@@ -42,149 +42,149 @@
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(WTF::LenientUTF8Conversion,
+STATIC_ASSERT_ENUM(WTF::kLenientUTF8Conversion,
                    blink::WebString::UTF8ConversionMode::kLenient);
-STATIC_ASSERT_ENUM(WTF::StrictUTF8Conversion,
+STATIC_ASSERT_ENUM(WTF::kStrictUTF8Conversion,
                    blink::WebString::UTF8ConversionMode::kStrict);
 STATIC_ASSERT_ENUM(
-    WTF::StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD,
+    WTF::kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD,
     blink::WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
 
 namespace blink {
 
-void WebString::reset() {
-  m_private.reset();
+void WebString::Reset() {
+  private_.Reset();
 }
 
-void WebString::assign(const WebString& other) {
-  assign(other.m_private.get());
+void WebString::Assign(const WebString& other) {
+  Assign(other.private_.Get());
 }
 
-void WebString::assign(const WebUChar* data, size_t length) {
-  assign(StringImpl::create8BitIfPossible(data, length).get());
+void WebString::Assign(const WebUChar* data, size_t length) {
+  Assign(StringImpl::Create8BitIfPossible(data, length).Get());
 }
 
 size_t WebString::length() const {
-  return m_private.isNull() ? 0 : m_private->length();
+  return private_.IsNull() ? 0 : private_->length();
 }
 
-bool WebString::is8Bit() const {
-  return m_private->is8Bit();
+bool WebString::Is8Bit() const {
+  return private_->Is8Bit();
 }
 
-const WebLChar* WebString::data8() const {
-  return !m_private.isNull() && is8Bit() ? m_private->characters8() : 0;
+const WebLChar* WebString::Data8() const {
+  return !private_.IsNull() && Is8Bit() ? private_->Characters8() : 0;
 }
 
-const WebUChar* WebString::data16() const {
-  return !m_private.isNull() && !is8Bit() ? m_private->characters16() : 0;
+const WebUChar* WebString::Data16() const {
+  return !private_.IsNull() && !Is8Bit() ? private_->Characters16() : 0;
 }
 
-std::string WebString::utf8(UTF8ConversionMode mode) const {
-  StringUTF8Adaptor utf8(m_private.get(),
+std::string WebString::Utf8(UTF8ConversionMode mode) const {
+  StringUTF8Adaptor utf8(private_.Get(),
                          static_cast<WTF::UTF8ConversionMode>(mode));
-  return std::string(utf8.data(), utf8.length());
+  return std::string(utf8.Data(), utf8.length());
 }
 
-WebString WebString::fromUTF8(const char* data, size_t length) {
-  return String::fromUTF8(data, length);
+WebString WebString::FromUTF8(const char* data, size_t length) {
+  return String::FromUTF8(data, length);
 }
 
-WebString WebString::fromUTF16(const base::string16& s) {
+WebString WebString::FromUTF16(const base::string16& s) {
   WebString string;
-  string.assign(s.data(), s.length());
+  string.Assign(s.data(), s.length());
   return string;
 }
 
-WebString WebString::fromUTF16(const base::NullableString16& s) {
+WebString WebString::FromUTF16(const base::NullableString16& s) {
   WebString string;
   if (s.is_null())
-    string.reset();
+    string.Reset();
   else
-    string.assign(s.string().data(), s.string().length());
+    string.Assign(s.string().data(), s.string().length());
   return string;
 }
 
-std::string WebString::latin1() const {
-  String string(m_private.get());
+std::string WebString::Latin1() const {
+  String string(private_.Get());
 
-  if (string.isEmpty())
+  if (string.IsEmpty())
     return std::string();
 
-  if (string.is8Bit())
-    return std::string(reinterpret_cast<const char*>(string.characters8()),
+  if (string.Is8Bit())
+    return std::string(reinterpret_cast<const char*>(string.Characters8()),
                        string.length());
 
-  CString latin1 = string.latin1();
-  return std::string(latin1.data(), latin1.length());
+  CString latin1 = string.Latin1();
+  return std::string(latin1.Data(), latin1.length());
 }
 
-WebString WebString::fromLatin1(const WebLChar* data, size_t length) {
+WebString WebString::FromLatin1(const WebLChar* data, size_t length) {
   return String(data, length);
 }
 
-std::string WebString::ascii() const {
-  DCHECK(containsOnlyASCII());
+std::string WebString::Ascii() const {
+  DCHECK(ContainsOnlyASCII());
 
-  if (isEmpty())
+  if (IsEmpty())
     return std::string();
 
-  if (m_private->is8Bit()) {
-    return std::string(reinterpret_cast<const char*>(m_private->characters8()),
-                       m_private->length());
+  if (private_->Is8Bit()) {
+    return std::string(reinterpret_cast<const char*>(private_->Characters8()),
+                       private_->length());
   }
 
-  return std::string(m_private->characters16(),
-                     m_private->characters16() + m_private->length());
+  return std::string(private_->Characters16(),
+                     private_->Characters16() + private_->length());
 }
 
-bool WebString::containsOnlyASCII() const {
-  return String(m_private.get()).containsOnlyASCII();
+bool WebString::ContainsOnlyASCII() const {
+  return String(private_.Get()).ContainsOnlyASCII();
 }
 
-WebString WebString::fromASCII(const std::string& s) {
+WebString WebString::FromASCII(const std::string& s) {
   DCHECK(base::IsStringASCII(s));
-  return fromLatin1(s);
+  return FromLatin1(s);
 }
 
-bool WebString::equals(const WebString& s) const {
-  return equal(m_private.get(), s.m_private.get());
+bool WebString::Equals(const WebString& s) const {
+  return Equal(private_.Get(), s.private_.Get());
 }
 
-bool WebString::equals(const char* characters, size_t length) const {
-  return equal(m_private.get(), characters, length);
+bool WebString::Equals(const char* characters, size_t length) const {
+  return Equal(private_.Get(), characters, length);
 }
 
-WebString::WebString(const WTF::String& s) : m_private(s.impl()) {}
+WebString::WebString(const WTF::String& s) : private_(s.Impl()) {}
 
 WebString& WebString::operator=(const WTF::String& s) {
-  assign(s.impl());
+  Assign(s.Impl());
   return *this;
 }
 
 WebString::operator WTF::String() const {
-  return m_private.get();
+  return private_.Get();
 }
 
 WebString::operator WTF::StringView() const {
-  return StringView(m_private.get());
+  return StringView(private_.Get());
 }
 
 WebString::WebString(const WTF::AtomicString& s) {
-  assign(s.getString());
+  Assign(s.GetString());
 }
 
 WebString& WebString::operator=(const WTF::AtomicString& s) {
-  assign(s.getString());
+  Assign(s.GetString());
   return *this;
 }
 
 WebString::operator WTF::AtomicString() const {
-  return WTF::AtomicString(m_private.get());
+  return WTF::AtomicString(private_.Get());
 }
 
-void WebString::assign(WTF::StringImpl* p) {
-  m_private = p;
+void WebString::Assign(WTF::StringImpl* p) {
+  private_ = p;
 }
 
 }  // namespace blink

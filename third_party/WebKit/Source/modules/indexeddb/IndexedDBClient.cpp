@@ -18,34 +18,34 @@ IndexedDBClient::IndexedDBClient(LocalFrame& frame)
 IndexedDBClient::IndexedDBClient(WorkerClients& clients)
     : Supplement<WorkerClients>(clients) {}
 
-IndexedDBClient* IndexedDBClient::from(ExecutionContext* context) {
-  if (context->isDocument())
-    return static_cast<IndexedDBClient*>(Supplement<LocalFrame>::from(
-        toDocument(*context).frame(), supplementName()));
+IndexedDBClient* IndexedDBClient::From(ExecutionContext* context) {
+  if (context->IsDocument())
+    return static_cast<IndexedDBClient*>(Supplement<LocalFrame>::From(
+        ToDocument(*context).GetFrame(), SupplementName()));
 
-  WorkerClients* clients = toWorkerGlobalScope(*context).clients();
+  WorkerClients* clients = ToWorkerGlobalScope(*context).Clients();
   ASSERT(clients);
   return static_cast<IndexedDBClient*>(
-      Supplement<WorkerClients>::from(clients, supplementName()));
+      Supplement<WorkerClients>::From(clients, SupplementName()));
 }
 
-const char* IndexedDBClient::supplementName() {
+const char* IndexedDBClient::SupplementName() {
   return "IndexedDBClient";
 }
 
 DEFINE_TRACE(IndexedDBClient) {
-  Supplement<LocalFrame>::trace(visitor);
-  Supplement<WorkerClients>::trace(visitor);
+  Supplement<LocalFrame>::Trace(visitor);
+  Supplement<WorkerClients>::Trace(visitor);
 }
 
-void provideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client) {
-  Supplement<LocalFrame>::provideTo(frame, IndexedDBClient::supplementName(),
+void ProvideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client) {
+  Supplement<LocalFrame>::ProvideTo(frame, IndexedDBClient::SupplementName(),
                                     client);
 }
 
-void provideIndexedDBClientToWorker(WorkerClients* clients,
+void ProvideIndexedDBClientToWorker(WorkerClients* clients,
                                     IndexedDBClient* client) {
-  clients->provideSupplement(IndexedDBClient::supplementName(), client);
+  clients->ProvideSupplement(IndexedDBClient::SupplementName(), client);
 }
 
 }  // namespace blink

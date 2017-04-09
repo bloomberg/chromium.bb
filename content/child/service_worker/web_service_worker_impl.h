@@ -43,15 +43,15 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   void OnStateChanged(blink::WebServiceWorkerState new_state);
 
   // blink::WebServiceWorker overrides.
-  void setProxy(blink::WebServiceWorkerProxy* proxy) override;
-  blink::WebServiceWorkerProxy* proxy() override;
-  blink::WebURL url() const override;
-  blink::WebServiceWorkerState state() const override;
-  void postMessage(blink::WebServiceWorkerProvider* provider,
+  void SetProxy(blink::WebServiceWorkerProxy* proxy) override;
+  blink::WebServiceWorkerProxy* Proxy() override;
+  blink::WebURL Url() const override;
+  blink::WebServiceWorkerState GetState() const override;
+  void PostMessage(blink::WebServiceWorkerProvider* provider,
                    const blink::WebString& message,
                    const blink::WebSecurityOrigin& source_origin,
                    blink::WebMessagePortChannelArray channels) override;
-  void terminate() override;
+  void Terminate() override;
 
   // Creates WebServiceWorker::Handle object that owns a reference to the given
   // WebServiceWorkerImpl object.

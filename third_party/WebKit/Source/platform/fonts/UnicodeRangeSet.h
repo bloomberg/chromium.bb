@@ -38,37 +38,37 @@ namespace blink {
 
 struct PLATFORM_EXPORT UnicodeRange final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  UnicodeRange(UChar32 from, UChar32 to) : m_from(from), m_to(to) {}
+  UnicodeRange(UChar32 from, UChar32 to) : from_(from), to_(to) {}
 
-  UChar32 from() const { return m_from; }
-  UChar32 to() const { return m_to; }
-  bool contains(UChar32 c) const { return m_from <= c && c <= m_to; }
+  UChar32 From() const { return from_; }
+  UChar32 To() const { return to_; }
+  bool Contains(UChar32 c) const { return from_ <= c && c <= to_; }
   bool operator<(const UnicodeRange& other) const {
-    return m_from < other.m_from;
+    return from_ < other.from_;
   }
-  bool operator<(UChar32 c) const { return m_to < c; }
+  bool operator<(UChar32 c) const { return to_ < c; }
   bool operator==(const UnicodeRange& other) const {
-    return other.m_from == m_from && other.m_to == m_to;
+    return other.from_ == from_ && other.to_ == to_;
   };
 
  private:
-  UChar32 m_from;
-  UChar32 m_to;
+  UChar32 from_;
+  UChar32 to_;
 };
 
 class PLATFORM_EXPORT UnicodeRangeSet : public RefCounted<UnicodeRangeSet> {
  public:
   explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
   UnicodeRangeSet(){};
-  bool contains(UChar32) const;
-  bool intersectsWith(const String&) const;
-  bool isEntireRange() const { return m_ranges.isEmpty(); }
-  size_t size() const { return m_ranges.size(); }
-  const UnicodeRange& rangeAt(size_t i) const { return m_ranges[i]; }
+  bool Contains(UChar32) const;
+  bool IntersectsWith(const String&) const;
+  bool IsEntireRange() const { return ranges_.IsEmpty(); }
+  size_t size() const { return ranges_.size(); }
+  const UnicodeRange& RangeAt(size_t i) const { return ranges_[i]; }
   bool operator==(const UnicodeRangeSet& other) const;
 
  private:
-  Vector<UnicodeRange> m_ranges;  // If empty, represents the whole code space.
+  Vector<UnicodeRange> ranges_;  // If empty, represents the whole code space.
 };
 
 }  // namespace blink

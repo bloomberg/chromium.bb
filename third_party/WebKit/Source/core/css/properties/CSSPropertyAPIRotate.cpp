@@ -16,27 +16,27 @@ const CSSValue* CSSPropertyAPIRotate::parseSingleValue(
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
   for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
     CSSValue* dimension =
-        CSSPropertyParserHelpers::consumeNumber(range, ValueRangeAll);
+        CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
     if (!dimension) {
       if (i == 0)
         break;
       return nullptr;
     }
-    list->append(*dimension);
+    list->Append(*dimension);
   }
 
-  CSSValue* rotation = CSSPropertyParserHelpers::consumeAngle(range);
+  CSSValue* rotation = CSSPropertyParserHelpers::ConsumeAngle(range);
   if (!rotation)
     return nullptr;
-  list->append(*rotation);
+  list->Append(*rotation);
 
   return list;
 }

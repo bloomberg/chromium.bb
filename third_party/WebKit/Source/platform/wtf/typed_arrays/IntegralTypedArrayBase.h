@@ -38,22 +38,22 @@ namespace WTF {
 template <typename T>
 class IntegralTypedArrayBase : public TypedArrayBase<T> {
  public:
-  void set(unsigned index, double value) {
-    if (index >= TypedArrayBase<T>::m_length)
+  void Set(unsigned index, double value) {
+    if (index >= TypedArrayBase<T>::length_)
       return;
     if (std::isnan(value))  // Clamp NaN to 0
       value = 0;
     // The double cast is necessary to get the correct wrapping
     // for out-of-range values with Int32Array and Uint32Array.
-    TypedArrayBase<T>::data()[index] =
+    TypedArrayBase<T>::Data()[index] =
         static_cast<T>(static_cast<int64_t>(value));
   }
 
  protected:
   IntegralTypedArrayBase(PassRefPtr<ArrayBuffer> buffer,
-                         unsigned byteOffset,
+                         unsigned byte_offset,
                          unsigned length)
-      : TypedArrayBase<T>(std::move(buffer), byteOffset, length) {}
+      : TypedArrayBase<T>(std::move(buffer), byte_offset, length) {}
 };
 
 }  // namespace WTF

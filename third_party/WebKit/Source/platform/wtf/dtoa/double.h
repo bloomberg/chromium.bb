@@ -67,7 +67,7 @@ class Double {
 
   // The value encoded by this Double must be strictly greater than 0.
   DiyFp AsNormalizedDiyFp() const {
-    DCHECK_GT(value(), 0.0);
+    DCHECK_GT(Value(), 0.0);
     uint64_t f = Significand();
     int e = Exponent();
 
@@ -88,15 +88,15 @@ class Double {
   // Returns the next greater double. Returns +infinity on input +infinity.
   double NextDouble() const {
     if (d64_ == kInfinity)
-      return Double(kInfinity).value();
+      return Double(kInfinity).Value();
     if (Sign() < 0 && Significand() == 0) {
       // -0.0
       return 0.0;
     }
     if (Sign() < 0) {
-      return Double(d64_ - 1).value();
+      return Double(d64_ - 1).Value();
     } else {
-      return Double(d64_ + 1).value();
+      return Double(d64_ + 1).Value();
     }
   }
 
@@ -162,29 +162,29 @@ class Double {
   // exponent as m_plus.
   // Precondition: the value encoded by this Double must be greater than 0.
   void NormalizedBoundaries(DiyFp* out_m_minus, DiyFp* out_m_plus) const {
-    DCHECK_GT(value(), 0.0);
+    DCHECK_GT(Value(), 0.0);
     DiyFp v = this->AsDiyFp();
-    bool significand_is_zero = (v.f() == kHiddenBit);
-    DiyFp m_plus = DiyFp::Normalize(DiyFp((v.f() << 1) + 1, v.e() - 1));
-    DiyFp m_minus;
-    if (significand_is_zero && v.e() != kDenormalExponent) {
+    bool significand_is_zero = (v.F() == kHiddenBit);
+    DiyFp plus = DiyFp::Normalize(DiyFp((v.F() << 1) + 1, v.E() - 1));
+    DiyFp minus;
+    if (significand_is_zero && v.E() != kDenormalExponent) {
       // The boundary is closer. Think of v = 1000e10 and v- = 9999e9.
       // Then the boundary (== (v - v-)/2) is not just at a distance of 1e9 but
       // at a distance of 1e8.
       // The only exception is for the smallest normal: the largest denormal is
       // at the same distance as its successor.
       // Note: denormals have the same exponent as the smallest normals.
-      m_minus = DiyFp((v.f() << 2) - 1, v.e() - 2);
+      minus = DiyFp((v.F() << 2) - 1, v.E() - 2);
     } else {
-      m_minus = DiyFp((v.f() << 1) - 1, v.e() - 1);
+      minus = DiyFp((v.F() << 1) - 1, v.E() - 1);
     }
-    m_minus.set_f(m_minus.f() << (m_minus.e() - m_plus.e()));
-    m_minus.set_e(m_plus.e());
-    *out_m_plus = m_plus;
-    *out_m_minus = m_minus;
+    minus.set_f(minus.F() << (minus.E() - plus.E()));
+    minus.set_e(plus.E());
+    *out_m_plus = plus;
+    *out_m_minus = minus;
   }
 
-  double value() const { return uint64_to_double(d64_); }
+  double Value() const { return uint64_to_double(d64_); }
 
   // Returns the significand size for a given order of magnitude.
   // If v = f*2^e with 2^p-1 <= f <= 2^p then p+e is v's order of magnitude.
@@ -201,9 +201,9 @@ class Double {
     return order - kDenormalExponent;
   }
 
-  static double Infinity() { return Double(kInfinity).value(); }
+  static double Infinity() { return Double(kInfinity).Value(); }
 
-  static double NaN() { return Double(kNaN).value(); }
+  static double NaN() { return Double(kNaN).Value(); }
 
  private:
   static const int kExponentBias = 0x3FF + kPhysicalSignificandSize;
@@ -215,8 +215,8 @@ class Double {
   const uint64_t d64_;
 
   static uint64_t DiyFpToUint64(DiyFp diy_fp) {
-    uint64_t significand = diy_fp.f();
-    int exponent = diy_fp.e();
+    uint64_t significand = diy_fp.F();
+    int exponent = diy_fp.E();
     while (significand > kHiddenBit + kSignificandMask) {
       significand >>= 1;
       exponent++;

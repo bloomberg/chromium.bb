@@ -35,74 +35,74 @@ UserActionElementSet::UserActionElementSet() {}
 
 UserActionElementSet::~UserActionElementSet() {}
 
-void UserActionElementSet::didDetach(Element& element) {
-  DCHECK(element.isUserActionElement());
-  clearFlags(&element, IsActiveFlag | InActiveChainFlag | IsHoveredFlag);
+void UserActionElementSet::DidDetach(Element& element) {
+  DCHECK(element.IsUserActionElement());
+  ClearFlags(&element, kIsActiveFlag | kInActiveChainFlag | kIsHoveredFlag);
 }
 
-bool UserActionElementSet::hasFlags(const Node* node, unsigned flags) const {
-  DCHECK(node->isUserActionElement() && node->isElementNode());
-  return hasFlags(toElement(node), flags);
+bool UserActionElementSet::HasFlags(const Node* node, unsigned flags) const {
+  DCHECK(node->IsUserActionElement() && node->IsElementNode());
+  return HasFlags(ToElement(node), flags);
 }
 
-void UserActionElementSet::setFlags(Node* node, unsigned flags) {
-  if (!node->isElementNode())
+void UserActionElementSet::SetFlags(Node* node, unsigned flags) {
+  if (!node->IsElementNode())
     return;
-  return setFlags(toElement(node), flags);
+  return SetFlags(ToElement(node), flags);
 }
 
-void UserActionElementSet::clearFlags(Node* node, unsigned flags) {
-  if (!node->isElementNode())
+void UserActionElementSet::ClearFlags(Node* node, unsigned flags) {
+  if (!node->IsElementNode())
     return;
-  return clearFlags(toElement(node), flags);
+  return ClearFlags(ToElement(node), flags);
 }
 
-inline bool UserActionElementSet::hasFlags(const Element* element,
+inline bool UserActionElementSet::HasFlags(const Element* element,
                                            unsigned flags) const {
-  DCHECK(element->isUserActionElement());
+  DCHECK(element->IsUserActionElement());
   ElementFlagMap::const_iterator found =
-      m_elements.find(const_cast<Element*>(element));
-  if (found == m_elements.end())
+      elements_.Find(const_cast<Element*>(element));
+  if (found == elements_.end())
     return false;
   return found->value & flags;
 }
 
-inline void UserActionElementSet::clearFlags(Element* element, unsigned flags) {
-  if (!element->isUserActionElement()) {
-    DCHECK(m_elements.end() == m_elements.find(element));
+inline void UserActionElementSet::ClearFlags(Element* element, unsigned flags) {
+  if (!element->IsUserActionElement()) {
+    DCHECK(elements_.end() == elements_.Find(element));
     return;
   }
 
-  ElementFlagMap::iterator found = m_elements.find(element);
-  if (found == m_elements.end()) {
-    element->setUserActionElement(false);
+  ElementFlagMap::iterator found = elements_.Find(element);
+  if (found == elements_.end()) {
+    element->SetUserActionElement(false);
     return;
   }
 
   unsigned updated = found->value & ~flags;
   if (!updated) {
-    element->setUserActionElement(false);
-    m_elements.erase(found);
+    element->SetUserActionElement(false);
+    elements_.erase(found);
     return;
   }
 
   found->value = updated;
 }
 
-inline void UserActionElementSet::setFlags(Element* element, unsigned flags) {
-  ElementFlagMap::iterator result = m_elements.find(element);
-  if (result != m_elements.end()) {
-    DCHECK(element->isUserActionElement());
+inline void UserActionElementSet::SetFlags(Element* element, unsigned flags) {
+  ElementFlagMap::iterator result = elements_.Find(element);
+  if (result != elements_.end()) {
+    DCHECK(element->IsUserActionElement());
     result->value |= flags;
     return;
   }
 
-  element->setUserActionElement(true);
-  m_elements.insert(element, flags);
+  element->SetUserActionElement(true);
+  elements_.insert(element, flags);
 }
 
 DEFINE_TRACE(UserActionElementSet) {
-  visitor->trace(m_elements);
+  visitor->Trace(elements_);
 }
 
 }  // namespace blink

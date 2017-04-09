@@ -75,33 +75,33 @@
 
 namespace blink {
 
-NodeFilter* toNodeFilter(v8::Local<v8::Value> callback,
-                         v8::Local<v8::Object> creationContext,
-                         ScriptState* scriptState) {
+NodeFilter* ToNodeFilter(v8::Local<v8::Value> callback,
+                         v8::Local<v8::Object> creation_context,
+                         ScriptState* script_state) {
   if (callback->IsNull())
     return nullptr;
-  NodeFilter* filter = NodeFilter::create();
+  NodeFilter* filter = NodeFilter::Create();
 
-  v8::Local<v8::Value> filterWrapper =
-      ToV8(filter, creationContext, scriptState->isolate());
-  if (filterWrapper.IsEmpty())
+  v8::Local<v8::Value> filter_wrapper =
+      ToV8(filter, creation_context, script_state->GetIsolate());
+  if (filter_wrapper.IsEmpty())
     return nullptr;
 
-  NodeFilterCondition* condition = V8NodeFilterCondition::create(
-      callback, filterWrapper.As<v8::Object>(), scriptState);
-  filter->setCondition(condition);
+  NodeFilterCondition* condition = V8NodeFilterCondition::Create(
+      callback, filter_wrapper.As<v8::Object>(), script_state);
+  filter->SetCondition(condition);
 
   return filter;
 }
 
-bool toBooleanSlow(v8::Isolate* isolate,
+bool ToBooleanSlow(v8::Isolate* isolate,
                    v8::Local<v8::Value> value,
-                   ExceptionState& exceptionState) {
+                   ExceptionState& exception_state) {
   ASSERT(!value->IsBoolean());
   v8::TryCatch block(isolate);
   bool result = false;
-  if (!v8Call(value->BooleanValue(isolate->GetCurrentContext()), result, block))
-    exceptionState.rethrowV8Exception(block.Exception());
+  if (!V8Call(value->BooleanValue(isolate->GetCurrentContext()), result, block))
+    exception_state.RethrowV8Exception(block.Exception());
   return result;
 }
 
@@ -112,21 +112,21 @@ const int64_t kJSMaxInteger =
     0x20000000000000LL -
     1;  // 2^53 - 1, maximum uniquely representable integer in ECMAScript.
 
-static double enforceRange(double x,
+static double EnforceRange(double x,
                            double minimum,
                            double maximum,
-                           const char* typeName,
-                           ExceptionState& exceptionState) {
+                           const char* type_name,
+                           ExceptionState& exception_state) {
   if (std::isnan(x) || std::isinf(x)) {
-    exceptionState.throwTypeError("Value is" +
-                                  String(std::isinf(x) ? " infinite and" : "") +
-                                  " not of type '" + String(typeName) + "'.");
+    exception_state.ThrowTypeError(
+        "Value is" + String(std::isinf(x) ? " infinite and" : "") +
+        " not of type '" + String(type_name) + "'.");
     return 0;
   }
   x = trunc(x);
   if (x < minimum || x > maximum) {
-    exceptionState.throwTypeError("Value is outside the '" + String(typeName) +
-                                  "' value range.");
+    exception_state.ThrowTypeError("Value is outside the '" +
+                                   String(type_name) + "' value range.");
     return 0;
   }
   return x;
@@ -137,397 +137,397 @@ struct IntTypeLimits {};
 
 template <>
 struct IntTypeLimits<int8_t> {
-  static const int8_t minValue = -128;
-  static const int8_t maxValue = 127;
-  static const unsigned numberOfValues = 256;  // 2^8
+  static const int8_t kMinValue = -128;
+  static const int8_t kMaxValue = 127;
+  static const unsigned kNumberOfValues = 256;  // 2^8
 };
 
 template <>
 struct IntTypeLimits<uint8_t> {
-  static const uint8_t maxValue = 255;
-  static const unsigned numberOfValues = 256;  // 2^8
+  static const uint8_t kMaxValue = 255;
+  static const unsigned kNumberOfValues = 256;  // 2^8
 };
 
 template <>
 struct IntTypeLimits<int16_t> {
-  static const short minValue = -32768;
-  static const short maxValue = 32767;
-  static const unsigned numberOfValues = 65536;  // 2^16
+  static const short kMinValue = -32768;
+  static const short kMaxValue = 32767;
+  static const unsigned kNumberOfValues = 65536;  // 2^16
 };
 
 template <>
 struct IntTypeLimits<uint16_t> {
-  static const unsigned short maxValue = 65535;
-  static const unsigned numberOfValues = 65536;  // 2^16
+  static const unsigned short kMaxValue = 65535;
+  static const unsigned kNumberOfValues = 65536;  // 2^16
 };
 
 template <typename T>
-static inline T toSmallerInt(v8::Isolate* isolate,
+static inline T ToSmallerInt(v8::Isolate* isolate,
                              v8::Local<v8::Value> value,
                              IntegerConversionConfiguration configuration,
-                             const char* typeName,
-                             ExceptionState& exceptionState) {
+                             const char* type_name,
+                             ExceptionState& exception_state) {
   typedef IntTypeLimits<T> LimitsTrait;
 
   // Fast case. The value is already a 32-bit integer in the right range.
   if (value->IsInt32()) {
     int32_t result = value.As<v8::Int32>()->Value();
-    if (result >= LimitsTrait::minValue && result <= LimitsTrait::maxValue)
+    if (result >= LimitsTrait::kMinValue && result <= LimitsTrait::kMaxValue)
       return static_cast<T>(result);
-    if (configuration == EnforceRange) {
-      exceptionState.throwTypeError("Value is outside the '" +
-                                    String(typeName) + "' value range.");
+    if (configuration == kEnforceRange) {
+      exception_state.ThrowTypeError("Value is outside the '" +
+                                     String(type_name) + "' value range.");
       return 0;
     }
-    if (configuration == Clamp)
+    if (configuration == kClamp)
       return clampTo<T>(result);
-    result %= LimitsTrait::numberOfValues;
-    return static_cast<T>(result > LimitsTrait::maxValue
-                              ? result - LimitsTrait::numberOfValues
+    result %= LimitsTrait::kNumberOfValues;
+    return static_cast<T>(result > LimitsTrait::kMaxValue
+                              ? result - LimitsTrait::kNumberOfValues
                               : result);
   }
 
-  v8::Local<v8::Number> numberObject;
+  v8::Local<v8::Number> number_object;
   if (value->IsNumber()) {
-    numberObject = value.As<v8::Number>();
+    number_object = value.As<v8::Number>();
   } else {
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject,
+    if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
                 block)) {
-      exceptionState.rethrowV8Exception(block.Exception());
+      exception_state.RethrowV8Exception(block.Exception());
       return 0;
     }
   }
-  ASSERT(!numberObject.IsEmpty());
+  ASSERT(!number_object.IsEmpty());
 
-  if (configuration == EnforceRange)
-    return enforceRange(numberObject->Value(), LimitsTrait::minValue,
-                        LimitsTrait::maxValue, typeName, exceptionState);
+  if (configuration == kEnforceRange)
+    return EnforceRange(number_object->Value(), LimitsTrait::kMinValue,
+                        LimitsTrait::kMaxValue, type_name, exception_state);
 
-  double numberValue = numberObject->Value();
-  if (std::isnan(numberValue) || !numberValue)
+  double number_value = number_object->Value();
+  if (std::isnan(number_value) || !number_value)
     return 0;
 
-  if (configuration == Clamp)
-    return clampTo<T>(numberValue);
+  if (configuration == kClamp)
+    return clampTo<T>(number_value);
 
-  if (std::isinf(numberValue))
+  if (std::isinf(number_value))
     return 0;
 
-  numberValue =
-      numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
-  numberValue = fmod(numberValue, LimitsTrait::numberOfValues);
+  number_value =
+      number_value < 0 ? -floor(fabs(number_value)) : floor(fabs(number_value));
+  number_value = fmod(number_value, LimitsTrait::kNumberOfValues);
 
-  return static_cast<T>(numberValue > LimitsTrait::maxValue
-                            ? numberValue - LimitsTrait::numberOfValues
-                            : numberValue);
+  return static_cast<T>(number_value > LimitsTrait::kMaxValue
+                            ? number_value - LimitsTrait::kNumberOfValues
+                            : number_value);
 }
 
 template <typename T>
-static inline T toSmallerUInt(v8::Isolate* isolate,
+static inline T ToSmallerUInt(v8::Isolate* isolate,
                               v8::Local<v8::Value> value,
                               IntegerConversionConfiguration configuration,
-                              const char* typeName,
-                              ExceptionState& exceptionState) {
+                              const char* type_name,
+                              ExceptionState& exception_state) {
   typedef IntTypeLimits<T> LimitsTrait;
 
   // Fast case. The value is a 32-bit signed integer - possibly positive?
   if (value->IsInt32()) {
     int32_t result = value.As<v8::Int32>()->Value();
-    if (result >= 0 && result <= LimitsTrait::maxValue)
+    if (result >= 0 && result <= LimitsTrait::kMaxValue)
       return static_cast<T>(result);
-    if (configuration == EnforceRange) {
-      exceptionState.throwTypeError("Value is outside the '" +
-                                    String(typeName) + "' value range.");
+    if (configuration == kEnforceRange) {
+      exception_state.ThrowTypeError("Value is outside the '" +
+                                     String(type_name) + "' value range.");
       return 0;
     }
-    if (configuration == Clamp)
+    if (configuration == kClamp)
       return clampTo<T>(result);
     return static_cast<T>(result);
   }
 
-  v8::Local<v8::Number> numberObject;
+  v8::Local<v8::Number> number_object;
   if (value->IsNumber()) {
-    numberObject = value.As<v8::Number>();
+    number_object = value.As<v8::Number>();
   } else {
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
-    if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject,
+    if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
                 block)) {
-      exceptionState.rethrowV8Exception(block.Exception());
+      exception_state.RethrowV8Exception(block.Exception());
       return 0;
     }
   }
-  ASSERT(!numberObject.IsEmpty());
+  ASSERT(!number_object.IsEmpty());
 
-  if (configuration == EnforceRange)
-    return enforceRange(numberObject->Value(), 0, LimitsTrait::maxValue,
-                        typeName, exceptionState);
+  if (configuration == kEnforceRange)
+    return EnforceRange(number_object->Value(), 0, LimitsTrait::kMaxValue,
+                        type_name, exception_state);
 
-  double numberValue = numberObject->Value();
+  double number_value = number_object->Value();
 
-  if (std::isnan(numberValue) || !numberValue)
+  if (std::isnan(number_value) || !number_value)
     return 0;
 
-  if (configuration == Clamp)
-    return clampTo<T>(numberValue);
+  if (configuration == kClamp)
+    return clampTo<T>(number_value);
 
-  if (std::isinf(numberValue))
+  if (std::isinf(number_value))
     return 0;
 
-  numberValue =
-      numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
-  return static_cast<T>(fmod(numberValue, LimitsTrait::numberOfValues));
+  number_value =
+      number_value < 0 ? -floor(fabs(number_value)) : floor(fabs(number_value));
+  return static_cast<T>(fmod(number_value, LimitsTrait::kNumberOfValues));
 }
 
-int8_t toInt8(v8::Isolate* isolate,
+int8_t ToInt8(v8::Isolate* isolate,
               v8::Local<v8::Value> value,
               IntegerConversionConfiguration configuration,
-              ExceptionState& exceptionState) {
-  return toSmallerInt<int8_t>(isolate, value, configuration, "byte",
-                              exceptionState);
+              ExceptionState& exception_state) {
+  return ToSmallerInt<int8_t>(isolate, value, configuration, "byte",
+                              exception_state);
 }
 
-uint8_t toUInt8(v8::Isolate* isolate,
+uint8_t ToUInt8(v8::Isolate* isolate,
                 v8::Local<v8::Value> value,
                 IntegerConversionConfiguration configuration,
-                ExceptionState& exceptionState) {
-  return toSmallerUInt<uint8_t>(isolate, value, configuration, "octet",
-                                exceptionState);
+                ExceptionState& exception_state) {
+  return ToSmallerUInt<uint8_t>(isolate, value, configuration, "octet",
+                                exception_state);
 }
 
-int16_t toInt16(v8::Isolate* isolate,
+int16_t ToInt16(v8::Isolate* isolate,
                 v8::Local<v8::Value> value,
                 IntegerConversionConfiguration configuration,
-                ExceptionState& exceptionState) {
-  return toSmallerInt<int16_t>(isolate, value, configuration, "short",
-                               exceptionState);
+                ExceptionState& exception_state) {
+  return ToSmallerInt<int16_t>(isolate, value, configuration, "short",
+                               exception_state);
 }
 
-uint16_t toUInt16(v8::Isolate* isolate,
+uint16_t ToUInt16(v8::Isolate* isolate,
                   v8::Local<v8::Value> value,
                   IntegerConversionConfiguration configuration,
-                  ExceptionState& exceptionState) {
-  return toSmallerUInt<uint16_t>(isolate, value, configuration,
-                                 "unsigned short", exceptionState);
+                  ExceptionState& exception_state) {
+  return ToSmallerUInt<uint16_t>(isolate, value, configuration,
+                                 "unsigned short", exception_state);
 }
 
-int32_t toInt32Slow(v8::Isolate* isolate,
+int32_t ToInt32Slow(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
                     IntegerConversionConfiguration configuration,
-                    ExceptionState& exceptionState) {
+                    ExceptionState& exception_state) {
   ASSERT(!value->IsInt32());
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
-  v8::Local<v8::Number> numberObject;
-  if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject,
+  v8::Local<v8::Number> number_object;
+  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
               block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
 
-  ASSERT(!numberObject.IsEmpty());
+  ASSERT(!number_object.IsEmpty());
 
-  double numberValue = numberObject->Value();
-  if (configuration == EnforceRange)
-    return enforceRange(numberValue, kMinInt32, kMaxInt32, "long",
-                        exceptionState);
+  double number_value = number_object->Value();
+  if (configuration == kEnforceRange)
+    return EnforceRange(number_value, kMinInt32, kMaxInt32, "long",
+                        exception_state);
 
-  if (std::isnan(numberValue))
+  if (std::isnan(number_value))
     return 0;
 
-  if (configuration == Clamp)
-    return clampTo<int32_t>(numberValue);
+  if (configuration == kClamp)
+    return clampTo<int32_t>(number_value);
 
-  if (std::isinf(numberValue))
+  if (std::isinf(number_value))
     return 0;
 
   int32_t result;
-  if (!v8Call(numberObject->Int32Value(isolate->GetCurrentContext()), result,
+  if (!V8Call(number_object->Int32Value(isolate->GetCurrentContext()), result,
               block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
   return result;
 }
 
-uint32_t toUInt32Slow(v8::Isolate* isolate,
+uint32_t ToUInt32Slow(v8::Isolate* isolate,
                       v8::Local<v8::Value> value,
                       IntegerConversionConfiguration configuration,
-                      ExceptionState& exceptionState) {
+                      ExceptionState& exception_state) {
   ASSERT(!value->IsUint32());
   if (value->IsInt32()) {
-    ASSERT(configuration != NormalConversion);
+    ASSERT(configuration != kNormalConversion);
     int32_t result = value.As<v8::Int32>()->Value();
     if (result >= 0)
       return result;
-    if (configuration == EnforceRange) {
-      exceptionState.throwTypeError(
+    if (configuration == kEnforceRange) {
+      exception_state.ThrowTypeError(
           "Value is outside the 'unsigned long' value range.");
       return 0;
     }
-    ASSERT(configuration == Clamp);
+    ASSERT(configuration == kClamp);
     return clampTo<uint32_t>(result);
   }
 
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
-  v8::Local<v8::Number> numberObject;
-  if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject,
+  v8::Local<v8::Number> number_object;
+  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
               block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  ASSERT(!numberObject.IsEmpty());
+  ASSERT(!number_object.IsEmpty());
 
-  if (configuration == EnforceRange)
-    return enforceRange(numberObject->Value(), 0, kMaxUInt32, "unsigned long",
-                        exceptionState);
+  if (configuration == kEnforceRange)
+    return EnforceRange(number_object->Value(), 0, kMaxUInt32, "unsigned long",
+                        exception_state);
 
-  double numberValue = numberObject->Value();
+  double number_value = number_object->Value();
 
-  if (std::isnan(numberValue))
+  if (std::isnan(number_value))
     return 0;
 
-  if (configuration == Clamp)
-    return clampTo<uint32_t>(numberValue);
+  if (configuration == kClamp)
+    return clampTo<uint32_t>(number_value);
 
-  if (std::isinf(numberValue))
+  if (std::isinf(number_value))
     return 0;
 
   uint32_t result;
-  if (!v8Call(numberObject->Uint32Value(isolate->GetCurrentContext()), result,
+  if (!V8Call(number_object->Uint32Value(isolate->GetCurrentContext()), result,
               block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
   return result;
 }
 
-int64_t toInt64Slow(v8::Isolate* isolate,
+int64_t ToInt64Slow(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
                     IntegerConversionConfiguration configuration,
-                    ExceptionState& exceptionState) {
+                    ExceptionState& exception_state) {
   ASSERT(!value->IsInt32());
 
-  v8::Local<v8::Number> numberObject;
+  v8::Local<v8::Number> number_object;
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
-  if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject,
+  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
               block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  ASSERT(!numberObject.IsEmpty());
+  ASSERT(!number_object.IsEmpty());
 
-  double numberValue = numberObject->Value();
+  double number_value = number_object->Value();
 
-  if (configuration == EnforceRange)
-    return enforceRange(numberValue, -kJSMaxInteger, kJSMaxInteger, "long long",
-                        exceptionState);
+  if (configuration == kEnforceRange)
+    return EnforceRange(number_value, -kJSMaxInteger, kJSMaxInteger,
+                        "long long", exception_state);
 
-  if (std::isnan(numberValue) || std::isinf(numberValue))
+  if (std::isnan(number_value) || std::isinf(number_value))
     return 0;
 
   // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
   unsigned long long integer;
-  doubleToInteger(numberValue, integer);
+  doubleToInteger(number_value, integer);
   return integer;
 }
 
-uint64_t toUInt64Slow(v8::Isolate* isolate,
+uint64_t ToUInt64Slow(v8::Isolate* isolate,
                       v8::Local<v8::Value> value,
                       IntegerConversionConfiguration configuration,
-                      ExceptionState& exceptionState) {
+                      ExceptionState& exception_state) {
   ASSERT(!value->IsUint32());
   if (value->IsInt32()) {
-    ASSERT(configuration != NormalConversion);
+    ASSERT(configuration != kNormalConversion);
     int32_t result = value.As<v8::Int32>()->Value();
     if (result >= 0)
       return result;
-    if (configuration == EnforceRange) {
-      exceptionState.throwTypeError(
+    if (configuration == kEnforceRange) {
+      exception_state.ThrowTypeError(
           "Value is outside the 'unsigned long long' value range.");
       return 0;
     }
-    ASSERT(configuration == Clamp);
+    ASSERT(configuration == kClamp);
     return clampTo<uint64_t>(result);
   }
 
-  v8::Local<v8::Number> numberObject;
+  v8::Local<v8::Number> number_object;
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
-  if (!v8Call(value->ToNumber(isolate->GetCurrentContext()), numberObject,
+  if (!V8Call(value->ToNumber(isolate->GetCurrentContext()), number_object,
               block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  ASSERT(!numberObject.IsEmpty());
+  ASSERT(!number_object.IsEmpty());
 
-  double numberValue = numberObject->Value();
+  double number_value = number_object->Value();
 
-  if (configuration == EnforceRange)
-    return enforceRange(numberValue, 0, kJSMaxInteger, "unsigned long long",
-                        exceptionState);
+  if (configuration == kEnforceRange)
+    return EnforceRange(number_value, 0, kJSMaxInteger, "unsigned long long",
+                        exception_state);
 
-  if (std::isnan(numberValue))
+  if (std::isnan(number_value))
     return 0;
 
-  if (configuration == Clamp)
-    return clampTo<uint64_t>(numberValue);
+  if (configuration == kClamp)
+    return clampTo<uint64_t>(number_value);
 
-  if (std::isinf(numberValue))
+  if (std::isinf(number_value))
     return 0;
 
   // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
   unsigned long long integer;
-  doubleToInteger(numberValue, integer);
+  doubleToInteger(number_value, integer);
   return integer;
 }
 
-float toRestrictedFloat(v8::Isolate* isolate,
+float ToRestrictedFloat(v8::Isolate* isolate,
                         v8::Local<v8::Value> value,
-                        ExceptionState& exceptionState) {
-  float numberValue = toFloat(isolate, value, exceptionState);
-  if (exceptionState.hadException())
+                        ExceptionState& exception_state) {
+  float number_value = ToFloat(isolate, value, exception_state);
+  if (exception_state.HadException())
     return 0;
-  if (!std::isfinite(numberValue)) {
-    exceptionState.throwTypeError("The provided float value is non-finite.");
+  if (!std::isfinite(number_value)) {
+    exception_state.ThrowTypeError("The provided float value is non-finite.");
     return 0;
   }
-  return numberValue;
+  return number_value;
 }
 
-double toDoubleSlow(v8::Isolate* isolate,
+double ToDoubleSlow(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
-                    ExceptionState& exceptionState) {
+                    ExceptionState& exception_state) {
   ASSERT(!value->IsNumber());
   v8::TryCatch block(isolate);
-  v8::Local<v8::Number> numberValue;
-  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&numberValue)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+  v8::Local<v8::Number> number_value;
+  if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&number_value)) {
+    exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  return numberValue->Value();
+  return number_value->Value();
 }
 
-double toRestrictedDouble(v8::Isolate* isolate,
+double ToRestrictedDouble(v8::Isolate* isolate,
                           v8::Local<v8::Value> value,
-                          ExceptionState& exceptionState) {
-  double numberValue = toDouble(isolate, value, exceptionState);
-  if (exceptionState.hadException())
+                          ExceptionState& exception_state) {
+  double number_value = ToDouble(isolate, value, exception_state);
+  if (exception_state.HadException())
     return 0;
-  if (!std::isfinite(numberValue)) {
-    exceptionState.throwTypeError("The provided double value is non-finite.");
+  if (!std::isfinite(number_value)) {
+    exception_state.ThrowTypeError("The provided double value is non-finite.");
     return 0;
   }
-  return numberValue;
+  return number_value;
 }
 
-String toByteString(v8::Isolate* isolate,
+String ToByteString(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
-                    ExceptionState& exceptionState) {
+                    ExceptionState& exception_state) {
   // Handle null default value.
   if (value.IsEmpty())
     return String();
@@ -537,24 +537,24 @@ String toByteString(v8::Isolate* isolate,
     return String();
 
   // 1. Let x be ToString(v)
-  v8::Local<v8::String> stringObject;
+  v8::Local<v8::String> string_object;
   if (value->IsString()) {
-    stringObject = value.As<v8::String>();
+    string_object = value.As<v8::String>();
   } else {
     v8::TryCatch block(isolate);
-    if (!v8Call(value->ToString(isolate->GetCurrentContext()), stringObject,
+    if (!V8Call(value->ToString(isolate->GetCurrentContext()), string_object,
                 block)) {
-      exceptionState.rethrowV8Exception(block.Exception());
+      exception_state.RethrowV8Exception(block.Exception());
       return String();
     }
   }
 
-  String x = toCoreString(stringObject);
+  String x = ToCoreString(string_object);
 
   // 2. If the value of any element of x is greater than 255, then throw a
   //    TypeError.
-  if (!x.containsOnlyLatin1()) {
-    exceptionState.throwTypeError("Value is not a valid ByteString.");
+  if (!x.ContainsOnlyLatin1()) {
+    exception_state.ThrowTypeError("Value is not a valid ByteString.");
     return String();
   }
 
@@ -566,13 +566,13 @@ String toByteString(v8::Isolate* isolate,
   return x;
 }
 
-static bool hasUnmatchedSurrogates(const String& string) {
+static bool HasUnmatchedSurrogates(const String& string) {
   // By definition, 8-bit strings are confined to the Latin-1 code page and
   // have no surrogates, matched or otherwise.
-  if (string.is8Bit())
+  if (string.Is8Bit())
     return false;
 
-  const UChar* characters = string.characters16();
+  const UChar* characters = string.Characters16();
   const unsigned length = string.length();
 
   for (unsigned i = 0; i < length; ++i) {
@@ -593,7 +593,7 @@ static bool hasUnmatchedSurrogates(const String& string) {
 }
 
 // Replace unmatched surrogates with REPLACEMENT CHARACTER U+FFFD.
-static String replaceUnmatchedSurrogates(const String& string) {
+static String ReplaceUnmatchedSurrogates(const String& string) {
   // This roughly implements http://heycam.github.io/webidl/#dfn-obtain-unicode
   // but since Blink strings are 16-bits internally, the output is simply
   // re-encoded to UTF-16.
@@ -602,12 +602,12 @@ static String replaceUnmatchedSurrogates(const String& string) {
   // http://www.unicode.org/versions/Unicode6.2.0/ch03.pdf#G2630
 
   // Blink-specific optimization to avoid making an unnecessary copy.
-  if (!hasUnmatchedSurrogates(string))
+  if (!HasUnmatchedSurrogates(string))
     return string;
-  ASSERT(!string.is8Bit());
+  ASSERT(!string.Is8Bit());
 
   // 1. Let S be the DOMString value.
-  const UChar* s = string.characters16();
+  const UChar* s = string.Characters16();
 
   // 2. Let n be the length of S.
   const unsigned n = string.length();
@@ -617,7 +617,7 @@ static String replaceUnmatchedSurrogates(const String& string) {
 
   // 4. Initialize U to be an empty sequence of Unicode characters.
   StringBuilder u;
-  u.reserveCapacity(n);
+  u.ReserveCapacity(n);
 
   // 5. While i < n:
   while (i < n) {
@@ -627,17 +627,17 @@ static String replaceUnmatchedSurrogates(const String& string) {
     if (U16_IS_SINGLE(c)) {
       // c < 0xD800 or c > 0xDFFF
       // Append to U the Unicode character with code point c.
-      u.append(c);
+      u.Append(c);
     } else if (U16_IS_TRAIL(c)) {
       // 0xDC00 <= c <= 0xDFFF
       // Append to U a U+FFFD REPLACEMENT CHARACTER.
-      u.append(replacementCharacter);
+      u.Append(kReplacementCharacter);
     } else {
       // 0xD800 <= c <= 0xDBFF
       ASSERT(U16_IS_LEAD(c));
       if (i == n - 1) {
         // 1. If i = n-1, then append to U a U+FFFD REPLACEMENT CHARACTER.
-        u.append(replacementCharacter);
+        u.Append(kReplacementCharacter);
       } else {
         // 2. Otherwise, i < n-1:
         ASSERT(i < n - 1);
@@ -649,13 +649,13 @@ static String replaceUnmatchedSurrogates(const String& string) {
           // ..2. Let b be d & 0x3FF.
           // ..3. Append to U the Unicode character with code point
           //      2^16+2^10*a+b.
-          u.append(U16_GET_SUPPLEMENTARY(c, d));
+          u.Append(U16_GET_SUPPLEMENTARY(c, d));
           // Blink: This is equivalent to u.append(c); u.append(d);
           ++i;
         } else {
           // 3. Otherwise, d < 0xDC00 or d > 0xDFFF. Append to U a U+FFFD
           //    REPLACEMENT CHARACTER.
-          u.append(replacementCharacter);
+          u.Append(kReplacementCharacter);
         }
       }
     }
@@ -665,24 +665,24 @@ static String replaceUnmatchedSurrogates(const String& string) {
 
   // 6. Return U.
   ASSERT(u.length() == string.length());
-  return u.toString();
+  return u.ToString();
 }
 
-String toUSVString(v8::Isolate* isolate,
+String ToUSVString(v8::Isolate* isolate,
                    v8::Local<v8::Value> value,
-                   ExceptionState& exceptionState) {
+                   ExceptionState& exception_state) {
   // http://heycam.github.io/webidl/#es-USVString
   if (value.IsEmpty())
     return String();
 
-  v8::Local<v8::String> stringObject;
+  v8::Local<v8::String> string_object;
   if (value->IsString()) {
-    stringObject = value.As<v8::String>();
+    string_object = value.As<v8::String>();
   } else {
     v8::TryCatch block(isolate);
-    if (!v8Call(value->ToString(isolate->GetCurrentContext()), stringObject,
+    if (!V8Call(value->ToString(isolate->GetCurrentContext()), string_object,
                 block)) {
-      exceptionState.rethrowV8Exception(block.Exception());
+      exception_state.RethrowV8Exception(block.Exception());
       return String();
     }
   }
@@ -690,243 +690,244 @@ String toUSVString(v8::Isolate* isolate,
   // USVString is identical to DOMString except that "convert a
   // DOMString to a sequence of Unicode characters" is used subsequently
   // when converting to an IDL value
-  String x = toCoreString(stringObject);
-  return replaceUnmatchedSurrogates(x);
+  String x = ToCoreString(string_object);
+  return ReplaceUnmatchedSurrogates(x);
 }
 
-XPathNSResolver* toXPathNSResolver(ScriptState* scriptState,
+XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,
                                    v8::Local<v8::Value> value) {
   XPathNSResolver* resolver = nullptr;
-  if (V8XPathNSResolver::hasInstance(value, scriptState->isolate()))
+  if (V8XPathNSResolver::hasInstance(value, script_state->GetIsolate()))
     resolver = V8XPathNSResolver::toImpl(v8::Local<v8::Object>::Cast(value));
   else if (value->IsObject())
     resolver =
-        V8CustomXPathNSResolver::create(scriptState, value.As<v8::Object>());
+        V8CustomXPathNSResolver::Create(script_state, value.As<v8::Object>());
   return resolver;
 }
 
-DOMWindow* toDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+DOMWindow* ToDOMWindow(v8::Isolate* isolate, v8::Local<v8::Value> value) {
   if (value.IsEmpty() || !value->IsObject())
     return 0;
 
-  v8::Local<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(
+  v8::Local<v8::Object> window_wrapper = V8Window::findInstanceInPrototypeChain(
       v8::Local<v8::Object>::Cast(value), isolate);
-  if (!windowWrapper.IsEmpty())
-    return V8Window::toImpl(windowWrapper);
+  if (!window_wrapper.IsEmpty())
+    return V8Window::toImpl(window_wrapper);
   return 0;
 }
 
-LocalDOMWindow* toLocalDOMWindow(v8::Local<v8::Context> context) {
+LocalDOMWindow* ToLocalDOMWindow(v8::Local<v8::Context> context) {
   if (context.IsEmpty())
     return 0;
-  return toLocalDOMWindow(
-      toDOMWindow(context->GetIsolate(), context->Global()));
+  return ToLocalDOMWindow(
+      ToDOMWindow(context->GetIsolate(), context->Global()));
 }
 
-LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate) {
+LocalDOMWindow* EnteredDOMWindow(v8::Isolate* isolate) {
   LocalDOMWindow* window =
-      toLocalDOMWindow(isolate->GetEnteredOrMicrotaskContext());
+      ToLocalDOMWindow(isolate->GetEnteredOrMicrotaskContext());
   DCHECK(window);
   return window;
 }
 
-LocalDOMWindow* currentDOMWindow(v8::Isolate* isolate) {
-  return toLocalDOMWindow(isolate->GetCurrentContext());
+LocalDOMWindow* CurrentDOMWindow(v8::Isolate* isolate) {
+  return ToLocalDOMWindow(isolate->GetCurrentContext());
 }
 
-ExecutionContext* toExecutionContext(v8::Local<v8::Context> context) {
+ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
   if (context.IsEmpty())
     return 0;
   v8::Local<v8::Object> global = context->Global();
-  v8::Local<v8::Object> windowWrapper =
+  v8::Local<v8::Object> window_wrapper =
       V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
-  if (!windowWrapper.IsEmpty())
-    return V8Window::toImpl(windowWrapper)->getExecutionContext();
-  v8::Local<v8::Object> workerWrapper =
+  if (!window_wrapper.IsEmpty())
+    return V8Window::toImpl(window_wrapper)->GetExecutionContext();
+  v8::Local<v8::Object> worker_wrapper =
       V8WorkerGlobalScope::findInstanceInPrototypeChain(global,
                                                         context->GetIsolate());
-  if (!workerWrapper.IsEmpty())
-    return V8WorkerGlobalScope::toImpl(workerWrapper)->getExecutionContext();
-  v8::Local<v8::Object> workletWrapper =
+  if (!worker_wrapper.IsEmpty())
+    return V8WorkerGlobalScope::toImpl(worker_wrapper)->GetExecutionContext();
+  v8::Local<v8::Object> worklet_wrapper =
       V8WorkletGlobalScope::findInstanceInPrototypeChain(global,
                                                          context->GetIsolate());
-  if (!workletWrapper.IsEmpty())
-    return V8WorkletGlobalScope::toImpl(workletWrapper);
+  if (!worklet_wrapper.IsEmpty())
+    return V8WorkletGlobalScope::toImpl(worklet_wrapper);
   // FIXME: Is this line of code reachable?
   return nullptr;
 }
 
-ExecutionContext* currentExecutionContext(v8::Isolate* isolate) {
-  return toExecutionContext(isolate->GetCurrentContext());
+ExecutionContext* CurrentExecutionContext(v8::Isolate* isolate) {
+  return ToExecutionContext(isolate->GetCurrentContext());
 }
 
-LocalFrame* toLocalFrameIfNotDetached(v8::Local<v8::Context> context) {
-  LocalDOMWindow* window = toLocalDOMWindow(context);
-  if (window && window->isCurrentlyDisplayedInFrame())
-    return window->frame();
+LocalFrame* ToLocalFrameIfNotDetached(v8::Local<v8::Context> context) {
+  LocalDOMWindow* window = ToLocalDOMWindow(context);
+  if (window && window->IsCurrentlyDisplayedInFrame())
+    return window->GetFrame();
   // We return 0 here because |context| is detached from the Frame. If we
   // did return |frame| we could get in trouble because the frame could be
   // navigated to another security origin.
   return nullptr;
 }
 
-void toFlexibleArrayBufferView(v8::Isolate* isolate,
+void ToFlexibleArrayBufferView(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                FlexibleArrayBufferView& result,
                                void* storage) {
   ASSERT(value->IsArrayBufferView());
   v8::Local<v8::ArrayBufferView> buffer = value.As<v8::ArrayBufferView>();
   if (!storage) {
-    result.setFull(V8ArrayBufferView::toImpl(buffer));
+    result.SetFull(V8ArrayBufferView::toImpl(buffer));
     return;
   }
   size_t length = buffer->ByteLength();
   buffer->CopyContents(storage, length);
-  result.setSmall(storage, length);
+  result.SetSmall(storage, length);
 }
 
-static ScriptState* toScriptStateImpl(LocalFrame* frame,
+static ScriptState* ToScriptStateImpl(LocalFrame* frame,
                                       DOMWrapperWorld& world) {
   if (!frame)
     return nullptr;
-  v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
+  v8::Local<v8::Context> context = ToV8ContextEvenIfDetached(frame, world);
   if (context.IsEmpty())
     return nullptr;
-  ScriptState* scriptState = ScriptState::from(context);
-  if (!scriptState->contextIsValid())
+  ScriptState* script_state = ScriptState::From(context);
+  if (!script_state->ContextIsValid())
     return nullptr;
-  DCHECK_EQ(frame, toLocalFrameIfNotDetached(context));
-  return scriptState;
+  DCHECK_EQ(frame, ToLocalFrameIfNotDetached(context));
+  return script_state;
 }
 
-v8::Local<v8::Context> toV8Context(ExecutionContext* context,
+v8::Local<v8::Context> ToV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
   ASSERT(context);
-  if (context->isDocument()) {
-    if (LocalFrame* frame = toDocument(context)->frame())
-      return toV8Context(frame, world);
-  } else if (context->isWorkerGlobalScope()) {
+  if (context->IsDocument()) {
+    if (LocalFrame* frame = ToDocument(context)->GetFrame())
+      return ToV8Context(frame, world);
+  } else if (context->IsWorkerGlobalScope()) {
     if (WorkerOrWorkletScriptController* script =
-            toWorkerOrWorkletGlobalScope(context)->scriptController()) {
-      if (script->getScriptState()->contextIsValid())
-        return script->getScriptState()->context();
+            ToWorkerOrWorkletGlobalScope(context)->ScriptController()) {
+      if (script->GetScriptState()->ContextIsValid())
+        return script->GetScriptState()->GetContext();
     }
   }
   return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
-  ScriptState* scriptState = toScriptStateImpl(frame, world);
-  if (!scriptState)
+v8::Local<v8::Context> ToV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
+  ScriptState* script_state = ToScriptStateImpl(frame, world);
+  if (!script_state)
     return v8::Local<v8::Context>();
-  return scriptState->context();
+  return script_state->GetContext();
 }
 
-v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame* frame,
+v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
                                                  DOMWrapperWorld& world) {
   ASSERT(frame);
-  return frame->windowProxy(world)->contextIfInitialized();
+  return frame->WindowProxy(world)->ContextIfInitialized();
 }
 
-ScriptState* toScriptState(LocalFrame* frame, DOMWrapperWorld& world) {
-  v8::HandleScope handleScope(toIsolate(frame));
-  return toScriptStateImpl(frame, world);
+ScriptState* ToScriptState(LocalFrame* frame, DOMWrapperWorld& world) {
+  v8::HandleScope handle_scope(ToIsolate(frame));
+  return ToScriptStateImpl(frame, world);
 }
 
-ScriptState* toScriptStateForMainWorld(LocalFrame* frame) {
-  return toScriptState(frame, DOMWrapperWorld::mainWorld());
+ScriptState* ToScriptStateForMainWorld(LocalFrame* frame) {
+  return ToScriptState(frame, DOMWrapperWorld::MainWorld());
 }
 
-bool isValidEnum(const String& value,
-                 const char** validValues,
+bool IsValidEnum(const String& value,
+                 const char** valid_values,
                  size_t length,
-                 const String& enumName,
-                 ExceptionState& exceptionState) {
+                 const String& enum_name,
+                 ExceptionState& exception_state) {
   for (size_t i = 0; i < length; ++i) {
     // Avoid the strlen inside String::operator== (because of the StringView).
-    if (WTF::equal(value.impl(), validValues[i]))
+    if (WTF::Equal(value.Impl(), valid_values[i]))
       return true;
   }
-  exceptionState.throwTypeError("The provided value '" + value +
-                                "' is not a valid enum value of type " +
-                                enumName + ".");
+  exception_state.ThrowTypeError("The provided value '" + value +
+                                 "' is not a valid enum value of type " +
+                                 enum_name + ".");
   return false;
 }
 
-bool isValidEnum(const Vector<String>& values,
-                 const char** validValues,
+bool IsValidEnum(const Vector<String>& values,
+                 const char** valid_values,
                  size_t length,
-                 const String& enumName,
-                 ExceptionState& exceptionState) {
+                 const String& enum_name,
+                 ExceptionState& exception_state) {
   for (auto value : values) {
-    if (!isValidEnum(value, validValues, length, enumName, exceptionState))
+    if (!IsValidEnum(value, valid_values, length, enum_name, exception_state))
       return false;
   }
   return true;
 }
 
-v8::Local<v8::Function> getBoundFunction(v8::Local<v8::Function> function) {
-  v8::Local<v8::Value> boundFunction = function->GetBoundFunction();
-  return boundFunction->IsFunction()
-             ? v8::Local<v8::Function>::Cast(boundFunction)
+v8::Local<v8::Function> GetBoundFunction(v8::Local<v8::Function> function) {
+  v8::Local<v8::Value> bound_function = function->GetBoundFunction();
+  return bound_function->IsFunction()
+             ? v8::Local<v8::Function>::Cast(bound_function)
              : function;
 }
 
-v8::Local<v8::Object> getEsIterator(v8::Isolate* isolate,
+v8::Local<v8::Object> GetEsIterator(v8::Isolate* isolate,
                                     v8::Local<v8::Object> object,
-                                    ExceptionState& exceptionState) {
+                                    ExceptionState& exception_state) {
   v8::TryCatch block(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  v8::Local<v8::Value> iteratorGetter;
+  v8::Local<v8::Value> iterator_getter;
   if (!object->Get(context, v8::Symbol::GetIterator(isolate))
-           .ToLocal(&iteratorGetter)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+           .ToLocal(&iterator_getter)) {
+    exception_state.RethrowV8Exception(block.Exception());
     return v8::Local<v8::Object>();
   }
-  if (!iteratorGetter->IsFunction()) {
-    exceptionState.throwTypeError("Iterator getter is not callable.");
+  if (!iterator_getter->IsFunction()) {
+    exception_state.ThrowTypeError("Iterator getter is not callable.");
     return v8::Local<v8::Object>();
   }
 
-  v8::Local<v8::Function> getterFunction = iteratorGetter.As<v8::Function>();
+  v8::Local<v8::Function> getter_function = iterator_getter.As<v8::Function>();
   v8::Local<v8::Value> iterator;
-  if (!V8ScriptRunner::callFunction(getterFunction, toExecutionContext(context),
-                                    object, 0, nullptr, isolate)
+  if (!V8ScriptRunner::CallFunction(getter_function,
+                                    ToExecutionContext(context), object, 0,
+                                    nullptr, isolate)
            .ToLocal(&iterator)) {
-    exceptionState.rethrowV8Exception(block.Exception());
+    exception_state.RethrowV8Exception(block.Exception());
     return v8::Local<v8::Object>();
   }
   if (!iterator->IsObject()) {
-    exceptionState.throwTypeError("Iterator is not an object.");
+    exception_state.ThrowTypeError("Iterator is not an object.");
     return v8::Local<v8::Object>();
   }
   return iterator.As<v8::Object>();
 }
 
-bool addHiddenValueToArray(v8::Isolate* isolate,
+bool AddHiddenValueToArray(v8::Isolate* isolate,
                            v8::Local<v8::Object> object,
                            v8::Local<v8::Value> value,
-                           int arrayIndex) {
+                           int array_index) {
   ASSERT(!value.IsEmpty());
-  v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
-  if (arrayValue->IsNull() || arrayValue->IsUndefined()) {
-    arrayValue = v8::Array::New(isolate);
-    object->SetInternalField(arrayIndex, arrayValue);
+  v8::Local<v8::Value> array_value = object->GetInternalField(array_index);
+  if (array_value->IsNull() || array_value->IsUndefined()) {
+    array_value = v8::Array::New(isolate);
+    object->SetInternalField(array_index, array_value);
   }
 
-  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
-  return v8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
+  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(array_value);
+  return V8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
                                                  array->Length(), value));
 }
 
-void removeHiddenValueFromArray(v8::Isolate* isolate,
+void RemoveHiddenValueFromArray(v8::Isolate* isolate,
                                 v8::Local<v8::Object> object,
                                 v8::Local<v8::Value> value,
-                                int arrayIndex) {
-  v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
-  if (!arrayValue->IsArray())
+                                int array_index) {
+  v8::Local<v8::Value> array_value = object->GetInternalField(array_index);
+  if (!array_value->IsArray())
     return;
-  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
+  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(array_value);
   for (int i = array->Length() - 1; i >= 0; --i) {
     v8::Local<v8::Value> item;
     if (!array->Get(isolate->GetCurrentContext(), i).ToLocal(&item))
@@ -938,39 +939,39 @@ void removeHiddenValueFromArray(v8::Isolate* isolate,
   }
 }
 
-void moveEventListenerToNewWrapper(v8::Isolate* isolate,
+void MoveEventListenerToNewWrapper(v8::Isolate* isolate,
                                    v8::Local<v8::Object> object,
-                                   EventListener* oldValue,
-                                   v8::Local<v8::Value> newValue,
-                                   int arrayIndex) {
-  if (oldValue) {
-    V8AbstractEventListener* oldListener =
-        V8AbstractEventListener::cast(oldValue);
-    if (oldListener) {
-      v8::Local<v8::Object> oldListenerObject =
-          oldListener->getExistingListenerObject();
-      if (!oldListenerObject.IsEmpty())
-        removeHiddenValueFromArray(isolate, object, oldListenerObject,
-                                   arrayIndex);
+                                   EventListener* old_value,
+                                   v8::Local<v8::Value> new_value,
+                                   int array_index) {
+  if (old_value) {
+    V8AbstractEventListener* old_listener =
+        V8AbstractEventListener::Cast(old_value);
+    if (old_listener) {
+      v8::Local<v8::Object> old_listener_object =
+          old_listener->GetExistingListenerObject();
+      if (!old_listener_object.IsEmpty())
+        RemoveHiddenValueFromArray(isolate, object, old_listener_object,
+                                   array_index);
     }
   }
   // Non-callable input is treated as null and ignored
-  if (newValue->IsFunction())
-    addHiddenValueToArray(isolate, object, newValue, arrayIndex);
+  if (new_value->IsFunction())
+    AddHiddenValueToArray(isolate, object, new_value, array_index);
 }
 
-v8::Isolate* toIsolate(ExecutionContext* context) {
-  if (context && context->isDocument())
-    return V8PerIsolateData::mainThreadIsolate();
+v8::Isolate* ToIsolate(ExecutionContext* context) {
+  if (context && context->IsDocument())
+    return V8PerIsolateData::MainThreadIsolate();
   return v8::Isolate::GetCurrent();
 }
 
-v8::Isolate* toIsolate(LocalFrame* frame) {
+v8::Isolate* ToIsolate(LocalFrame* frame) {
   DCHECK(frame);
-  return frame->getWindowProxyManager()->isolate();
+  return frame->GetWindowProxyManager()->GetIsolate();
 }
 
-v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value> value,
+v8::Local<v8::Value> FreezeV8Object(v8::Local<v8::Value> value,
                                     v8::Isolate* isolate) {
   value.As<v8::Object>()
       ->SetIntegrityLevel(isolate->GetCurrentContext(),
@@ -979,15 +980,15 @@ v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value> value,
   return value;
 }
 
-v8::Local<v8::Value> fromJSONString(v8::Isolate* isolate,
-                                    const String& stringifiedJSON,
-                                    ExceptionState& exceptionState) {
+v8::Local<v8::Value> FromJSONString(v8::Isolate* isolate,
+                                    const String& stringified_json,
+                                    ExceptionState& exception_state) {
   v8::Local<v8::Value> parsed;
-  v8::TryCatch tryCatch(isolate);
-  if (!v8Call(v8::JSON::Parse(isolate, v8String(isolate, stringifiedJSON)),
-              parsed, tryCatch)) {
-    if (tryCatch.HasCaught())
-      exceptionState.rethrowV8Exception(tryCatch.Exception());
+  v8::TryCatch try_catch(isolate);
+  if (!V8Call(v8::JSON::Parse(isolate, V8String(isolate, stringified_json)),
+              parsed, try_catch)) {
+    if (try_catch.HasCaught())
+      exception_state.RethrowV8Exception(try_catch.Exception());
   }
 
   return parsed;

@@ -69,74 +69,74 @@ class WebVector {
 
   ~WebVector() {}
 
-  explicit WebVector(size_t size = 0) : m_data(size) {}
+  explicit WebVector(size_t size = 0) : data_(size) {}
 
   template <typename U>
-  WebVector(const U* values, size_t size) : m_data(values, values + size) {}
+  WebVector(const U* values, size_t size) : data_(values, values + size) {}
 
-  WebVector(const WebVector<T>& other) : m_data(other.m_data) {}
+  WebVector(const WebVector<T>& other) : data_(other.data_) {}
 
   template <typename C>
-  WebVector(const C& other) : m_data(other.begin(), other.end()) {}
+  WebVector(const C& other) : data_(other.begin(), other.end()) {}
 
-  WebVector(WebVector<T>&& other) { swap(other); }
+  WebVector(WebVector<T>&& other) { Swap(other); }
 
   WebVector& operator=(const WebVector& other) {
     if (this != &other)
-      assign(other);
+      Assign(other);
     return *this;
   }
 
   WebVector& operator=(WebVector&& other) {
     if (this != &other)
-      swap(other);
+      Swap(other);
     return *this;
   }
 
   template <typename C>
   WebVector<T>& operator=(const C& other) {
     if (this != reinterpret_cast<const WebVector<T>*>(&other))
-      assign(other);
+      Assign(other);
     return *this;
   }
 
   template <typename C>
-  void assign(const C& other) {
-    m_data.assign(other.begin(), other.end());
+  void Assign(const C& other) {
+    data_.assign(other.begin(), other.end());
   }
 
   template <typename U>
-  void assign(const U* values, size_t size) {
-    m_data.assign(values, values + size);
+  void Assign(const U* values, size_t size) {
+    data_.assign(values, values + size);
   }
 
-  size_t size() const { return m_data.size(); }
-  bool empty() const { return m_data.empty(); }
+  size_t size() const { return data_.size(); }
+  bool empty() const { return data_.empty(); }
   // TODO(slangley): Remove all uses of isEmpty.
-  bool isEmpty() const { return empty(); }
+  bool IsEmpty() const { return empty(); }
 
   T& operator[](size_t i) {
-    DCHECK_LT(i, m_data.size());
-    return m_data[i];
+    DCHECK_LT(i, data_.size());
+    return data_[i];
   }
 
   const T& operator[](size_t i) const {
-    DCHECK_LT(i, m_data.size());
-    return m_data[i];
+    DCHECK_LT(i, data_.size());
+    return data_[i];
   }
 
-  T* data() { return m_data.data(); }
-  const T* data() const { return m_data.data(); }
+  T* Data() { return data_.data(); }
+  const T* Data() const { return data_.data(); }
 
-  iterator begin() { return m_data.begin(); }
-  iterator end() { return m_data.end(); }
-  const_iterator begin() const { return m_data.begin(); }
-  const_iterator end() const { return m_data.end(); }
+  iterator begin() { return data_.begin(); }
+  iterator end() { return data_.end(); }
+  const_iterator begin() const { return data_.begin(); }
+  const_iterator end() const { return data_.end(); }
 
-  void swap(WebVector<T>& other) { m_data.swap(other.m_data); }
+  void Swap(WebVector<T>& other) { data_.swap(other.data_); }
 
  private:
-  std::vector<T> m_data;
+  std::vector<T> data_;
 };
 
 }  // namespace blink

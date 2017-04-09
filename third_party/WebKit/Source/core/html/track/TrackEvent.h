@@ -40,19 +40,19 @@ class CORE_EXPORT TrackEvent final : public Event {
  public:
   ~TrackEvent() override;
 
-  static TrackEvent* create() { return new TrackEvent; }
+  static TrackEvent* Create() { return new TrackEvent; }
 
-  static TrackEvent* create(const AtomicString& type,
+  static TrackEvent* Create(const AtomicString& type,
                             const TrackEventInit& initializer) {
     return new TrackEvent(type, initializer);
   }
 
   template <typename T>
-  static TrackEvent* create(const AtomicString& type, T* track) {
+  static TrackEvent* Create(const AtomicString& type, T* track) {
     return new TrackEvent(type, track);
   }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   void track(VideoTrackOrAudioTrackOrTextTrack&);
 
@@ -63,9 +63,9 @@ class CORE_EXPORT TrackEvent final : public Event {
   TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
   template <typename T>
   TrackEvent(const AtomicString& type, T* track)
-      : Event(type, false, false), m_track(track) {}
+      : Event(type, false, false), track_(track) {}
 
-  Member<TrackBase> m_track;
+  Member<TrackBase> track_;
 };
 
 }  // namespace blink

@@ -39,12 +39,12 @@
 
 namespace blink {
 
-static inline bool canReferToParentFrameEncoding(
+static inline bool CanReferToParentFrameEncoding(
     const LocalFrame* frame,
-    const LocalFrame* parentFrame) {
-  return parentFrame &&
-         parentFrame->document()->getSecurityOrigin()->canAccess(
-             frame->document()->getSecurityOrigin());
+    const LocalFrame* parent_frame) {
+  return parent_frame &&
+         parent_frame->GetDocument()->GetSecurityOrigin()->CanAccess(
+             frame->GetDocument()->GetSecurityOrigin());
 }
 
 namespace {
@@ -54,7 +54,7 @@ struct LegacyEncoding {
   const char* encoding;
 };
 
-static const LegacyEncoding encodings[] = {
+static const LegacyEncoding kEncodings[] = {
     {"au", "windows-1252"}, {"az", "ISO-8859-9"},   {"bd", "windows-1252"},
     {"bg", "windows-1251"}, {"br", "windows-1252"}, {"ca", "windows-1252"},
     {"ch", "windows-1252"}, {"cn", "GBK"},          {"cz", "windows-1250"},
@@ -73,14 +73,14 @@ static const LegacyEncoding encodings[] = {
     {"us", "windows-1252"}, {"vn", "windows-1258"}, {"xa", "windows-1252"},
     {"xb", "windows-1257"}};
 
-static const WTF::TextEncoding getEncodingFromDomain(const KURL& url) {
+static const WTF::TextEncoding GetEncodingFromDomain(const KURL& url) {
   Vector<String> tokens;
-  url.host().split(".", tokens);
-  if (!tokens.isEmpty()) {
+  url.Host().Split(".", tokens);
+  if (!tokens.IsEmpty()) {
     auto tld = tokens.back();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(encodings); i++) {
-      if (tld == encodings[i].domain)
-        return WTF::TextEncoding(encodings[i].encoding);
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kEncodings); i++) {
+      if (tld == kEncodings[i].domain)
+        return WTF::TextEncoding(kEncodings[i].encoding);
     }
   }
   return WTF::TextEncoding();
@@ -89,44 +89,45 @@ static const WTF::TextEncoding getEncodingFromDomain(const KURL& url) {
 }  // namespace
 
 TextResourceDecoderBuilder::TextResourceDecoderBuilder(
-    const AtomicString& mimeType,
+    const AtomicString& mime_type,
     const AtomicString& encoding)
-    : m_mimeType(mimeType), m_encoding(encoding) {}
+    : mime_type_(mime_type), encoding_(encoding) {}
 
 TextResourceDecoderBuilder::~TextResourceDecoderBuilder() {}
 
 inline std::unique_ptr<TextResourceDecoder>
-TextResourceDecoderBuilder::createDecoderInstance(Document* document) {
-  const WTF::TextEncoding encodingFromDomain =
-      getEncodingFromDomain(document->url());
-  if (LocalFrame* frame = document->frame()) {
-    if (Settings* settings = frame->settings()) {
-      const WTF::TextEncoding hintEncoding =
-          encodingFromDomain.isValid() ? encodingFromDomain
-                                       : settings->getDefaultTextEncodingName();
+TextResourceDecoderBuilder::CreateDecoderInstance(Document* document) {
+  const WTF::TextEncoding encoding_from_domain =
+      GetEncodingFromDomain(document->Url());
+  if (LocalFrame* frame = document->GetFrame()) {
+    if (Settings* settings = frame->GetSettings()) {
+      const WTF::TextEncoding hint_encoding =
+          encoding_from_domain.IsValid()
+              ? encoding_from_domain
+              : settings->GetDefaultTextEncodingName();
       // Disable autodetection for XML to honor the default encoding (UTF-8) for
       // unlabelled documents.
-      if (DOMImplementation::isXMLMIMEType(m_mimeType))
-        return TextResourceDecoder::create(m_mimeType, hintEncoding);
-      return TextResourceDecoder::createWithAutoDetection(
-          m_mimeType, hintEncoding, document->url());
+      if (DOMImplementation::IsXMLMIMEType(mime_type_))
+        return TextResourceDecoder::Create(mime_type_, hint_encoding);
+      return TextResourceDecoder::CreateWithAutoDetection(
+          mime_type_, hint_encoding, document->Url());
     }
   }
 
-  return TextResourceDecoder::create(m_mimeType, encodingFromDomain);
+  return TextResourceDecoder::Create(mime_type_, encoding_from_domain);
 }
 
-inline void TextResourceDecoderBuilder::setupEncoding(
+inline void TextResourceDecoderBuilder::SetupEncoding(
     TextResourceDecoder* decoder,
     Document* document) {
-  LocalFrame* frame = document->frame();
-  LocalFrame* parentFrame = 0;
-  if (frame && frame->tree().parent() && frame->tree().parent()->isLocalFrame())
-    parentFrame = toLocalFrame(frame->tree().parent());
+  LocalFrame* frame = document->GetFrame();
+  LocalFrame* parent_frame = 0;
+  if (frame && frame->Tree().Parent() && frame->Tree().Parent()->IsLocalFrame())
+    parent_frame = ToLocalFrame(frame->Tree().Parent());
 
-  if (!m_encoding.isEmpty()) {
-    decoder->setEncoding(m_encoding.getString(),
-                         TextResourceDecoder::EncodingFromHTTPHeader);
+  if (!encoding_.IsEmpty()) {
+    decoder->SetEncoding(encoding_.GetString(),
+                         TextResourceDecoder::kEncodingFromHTTPHeader);
   }
 
   // Set the hint encoding to the parent frame encoding only if the parent and
@@ -137,27 +138,27 @@ inline void TextResourceDecoderBuilder::setupEncoding(
   // could be an attack vector.
   // FIXME: This might be too cautious for non-7bit-encodings and we may
   // consider relaxing this later after testing.
-  if (frame && canReferToParentFrameEncoding(frame, parentFrame)) {
-    if (parentFrame->document()->encodingWasDetectedHeuristically())
-      decoder->setHintEncoding(parentFrame->document()->encoding());
+  if (frame && CanReferToParentFrameEncoding(frame, parent_frame)) {
+    if (parent_frame->GetDocument()->EncodingWasDetectedHeuristically())
+      decoder->SetHintEncoding(parent_frame->GetDocument()->Encoding());
 
-    if (m_encoding.isEmpty()) {
-      decoder->setEncoding(parentFrame->document()->encoding(),
-                           TextResourceDecoder::EncodingFromParentFrame);
+    if (encoding_.IsEmpty()) {
+      decoder->SetEncoding(parent_frame->GetDocument()->Encoding(),
+                           TextResourceDecoder::kEncodingFromParentFrame);
     }
   }
 }
 
-std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(
+std::unique_ptr<TextResourceDecoder> TextResourceDecoderBuilder::BuildFor(
     Document* document) {
   std::unique_ptr<TextResourceDecoder> decoder =
-      createDecoderInstance(document);
-  setupEncoding(decoder.get(), document);
+      CreateDecoderInstance(document);
+  SetupEncoding(decoder.get(), document);
   return decoder;
 }
 
-void TextResourceDecoderBuilder::clear() {
-  m_encoding = nullAtom;
+void TextResourceDecoderBuilder::Clear() {
+  encoding_ = g_null_atom;
 }
 
 }  // namespace blink

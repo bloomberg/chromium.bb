@@ -192,7 +192,7 @@ class AutofillTest : public InProcessBrowserTest {
       // triggered by user gestures are ignored.
       content::SimulateMouseClick(
           browser()->tab_strip_model()->GetActiveWebContents(), 0,
-          blink::WebMouseEvent::Button::Left);
+          blink::WebMouseEvent::Button::kLeft);
     }
     // We may not always be expecting changes in Personal data.
     if (observer.get())

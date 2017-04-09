@@ -44,48 +44,48 @@ class SVGTransformList final
  public:
   typedef SVGTransformListTearOff TearOffType;
 
-  static SVGTransformList* create() { return new SVGTransformList(); }
+  static SVGTransformList* Create() { return new SVGTransformList(); }
 
-  static SVGTransformList* create(SVGTransformType, const String&);
+  static SVGTransformList* Create(SVGTransformType, const String&);
 
   ~SVGTransformList() override;
 
-  SVGTransform* consolidate();
+  SVGTransform* Consolidate();
 
-  bool concatenate(AffineTransform& result) const;
+  bool Concatenate(AffineTransform& result) const;
 
   // SVGPropertyBase:
-  SVGPropertyBase* cloneForAnimation(const String&) const override;
-  String valueAsString() const override;
-  SVGParsingError setValueAsString(const String&);
-  bool parse(const UChar*& ptr, const UChar* end);
-  bool parse(const LChar*& ptr, const LChar* end);
+  SVGPropertyBase* CloneForAnimation(const String&) const override;
+  String ValueAsString() const override;
+  SVGParsingError SetValueAsString(const String&);
+  bool Parse(const UChar*& ptr, const UChar* end);
+  bool Parse(const LChar*& ptr, const LChar* end);
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
-                              SVGPropertyBase* fromValue,
-                              SVGPropertyBase* toValue,
-                              SVGPropertyBase* toAtEndOfDurationValue,
+                              unsigned repeat_count,
+                              SVGPropertyBase* from_value,
+                              SVGPropertyBase* to_value,
+                              SVGPropertyBase* to_at_end_of_duration_value,
                               SVGElement*) override;
-  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-  static AnimatedPropertyType classType() { return AnimatedTransformList; }
-  AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType ClassType() { return kAnimatedTransformList; }
+  AnimatedPropertyType GetType() const override { return ClassType(); }
 
-  const CSSValue* cssValue() const;
+  const CSSValue* CssValue() const;
 
  private:
   SVGTransformList();
 
   template <typename CharType>
-  SVGParsingError parseInternal(const CharType*& ptr, const CharType* end);
+  SVGParsingError ParseInternal(const CharType*& ptr, const CharType* end);
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGTransformList);
 
-SVGTransformType parseTransformType(const String&);
+SVGTransformType ParseTransformType(const String&);
 
 }  // namespace blink
 

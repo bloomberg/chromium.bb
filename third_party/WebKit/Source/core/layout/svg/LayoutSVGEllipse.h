@@ -36,28 +36,28 @@ class LayoutSVGEllipse final : public LayoutSVGShape {
   explicit LayoutSVGEllipse(SVGGeometryElement*);
   ~LayoutSVGEllipse() override;
 
-  ShapeGeometryCodePath geometryCodePath() const override {
-    return m_usePathFallback ? PathGeometry : EllipseGeometryFastPath;
+  ShapeGeometryCodePath GeometryCodePath() const override {
+    return use_path_fallback_ ? kPathGeometry : kEllipseGeometryFastPath;
   }
 
-  const char* name() const override { return "LayoutSVGEllipse"; }
+  const char* GetName() const override { return "LayoutSVGEllipse"; }
 
  private:
-  void updateShapeFromElement() override;
-  bool isShapeEmpty() const override {
-    return m_usePathFallback ? LayoutSVGShape::isShapeEmpty()
-                             : m_fillBoundingBox.isEmpty();
+  void UpdateShapeFromElement() override;
+  bool IsShapeEmpty() const override {
+    return use_path_fallback_ ? LayoutSVGShape::IsShapeEmpty()
+                              : fill_bounding_box_.IsEmpty();
   }
-  bool shapeDependentStrokeContains(const FloatPoint&) override;
-  bool shapeDependentFillContains(const FloatPoint&,
+  bool ShapeDependentStrokeContains(const FloatPoint&) override;
+  bool ShapeDependentFillContains(const FloatPoint&,
                                   const WindRule) const override;
-  void calculateRadiiAndCenter();
-  bool hasContinuousStroke() const;
+  void CalculateRadiiAndCenter();
+  bool HasContinuousStroke() const;
 
  private:
-  FloatPoint m_center;
-  FloatSize m_radii;
-  bool m_usePathFallback;
+  FloatPoint center_;
+  FloatSize radii_;
+  bool use_path_fallback_;
 };
 
 }  // namespace blink

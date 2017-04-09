@@ -22,8 +22,8 @@ void MediaStreamSource::StopSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DoStopSource();
   if (!stop_callback_.is_null())
-    base::ResetAndReturn(&stop_callback_).Run(owner());
-  owner().setReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
+    base::ResetAndReturn(&stop_callback_).Run(Owner());
+  Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
 void MediaStreamSource::SetDeviceInfo(const StreamDeviceInfo& device_info) {

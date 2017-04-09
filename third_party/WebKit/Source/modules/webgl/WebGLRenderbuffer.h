@@ -37,38 +37,38 @@ class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLRenderbuffer() override;
 
-  static WebGLRenderbuffer* create(WebGLRenderingContextBase*);
+  static WebGLRenderbuffer* Create(WebGLRenderingContextBase*);
 
-  void setInternalFormat(GLenum internalformat) {
-    m_internalFormat = internalformat;
+  void SetInternalFormat(GLenum internalformat) {
+    internal_format_ = internalformat;
   }
-  GLenum internalFormat() const { return m_internalFormat; }
+  GLenum InternalFormat() const { return internal_format_; }
 
-  void setSize(GLsizei width, GLsizei height) {
-    m_width = width;
-    m_height = height;
+  void SetSize(GLsizei width, GLsizei height) {
+    width_ = width;
+    height_ = height;
   }
-  GLsizei width() const { return m_width; }
-  GLsizei height() const { return m_height; }
+  GLsizei Width() const { return width_; }
+  GLsizei Height() const { return height_; }
 
-  bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
+  bool HasEverBeenBound() const { return Object() && has_ever_been_bound_; }
 
-  void setHasEverBeenBound() { m_hasEverBeenBound = true; }
+  void SetHasEverBeenBound() { has_ever_been_bound_ = true; }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:
-  bool isRenderbuffer() const override { return true; }
+  bool IsRenderbuffer() const override { return true; }
 
-  GLenum m_internalFormat;
-  GLsizei m_width, m_height;
+  GLenum internal_format_;
+  GLsizei width_, height_;
 
-  bool m_hasEverBeenBound;
+  bool has_ever_been_bound_;
 };
 
 }  // namespace blink

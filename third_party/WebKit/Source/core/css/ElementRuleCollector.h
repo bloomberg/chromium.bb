@@ -46,46 +46,46 @@ class StyleRuleUsageTracker;
 // cascading order. Once Shadow DOM V0 implementation is gone, remove this
 // completely.
 using CascadeOrder = unsigned;
-const CascadeOrder ignoreCascadeOrder = 0;
+const CascadeOrder kIgnoreCascadeOrder = 0;
 
 class MatchedRule {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  MatchedRule(const RuleData* ruleData,
+  MatchedRule(const RuleData* rule_data,
               unsigned specificity,
-              CascadeOrder cascadeOrder,
-              unsigned styleSheetIndex,
-              const CSSStyleSheet* parentStyleSheet)
-      : m_ruleData(ruleData),
-        m_specificity(specificity),
-        m_parentStyleSheet(parentStyleSheet) {
-    DCHECK(m_ruleData);
-    static const unsigned BitsForPositionInRuleData = 18;
-    static const unsigned BitsForStyleSheetIndex = 32;
-    m_position = ((uint64_t)cascadeOrder
-                  << (BitsForStyleSheetIndex + BitsForPositionInRuleData)) +
-                 ((uint64_t)styleSheetIndex << BitsForPositionInRuleData) +
-                 m_ruleData->position();
+              CascadeOrder cascade_order,
+              unsigned style_sheet_index,
+              const CSSStyleSheet* parent_style_sheet)
+      : rule_data_(rule_data),
+        specificity_(specificity),
+        parent_style_sheet_(parent_style_sheet) {
+    DCHECK(rule_data_);
+    static const unsigned kBitsForPositionInRuleData = 18;
+    static const unsigned kBitsForStyleSheetIndex = 32;
+    position_ = ((uint64_t)cascade_order
+                 << (kBitsForStyleSheetIndex + kBitsForPositionInRuleData)) +
+                ((uint64_t)style_sheet_index << kBitsForPositionInRuleData) +
+                rule_data_->GetPosition();
   }
 
-  const RuleData* ruleData() const { return m_ruleData; }
-  uint64_t position() const { return m_position; }
-  unsigned specificity() const {
-    return ruleData()->specificity() + m_specificity;
+  const RuleData* GetRuleData() const { return rule_data_; }
+  uint64_t GetPosition() const { return position_; }
+  unsigned Specificity() const {
+    return GetRuleData()->Specificity() + specificity_;
   }
-  const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
-  DEFINE_INLINE_TRACE() { visitor->trace(m_parentStyleSheet); }
+  const CSSStyleSheet* ParentStyleSheet() const { return parent_style_sheet_; }
+  DEFINE_INLINE_TRACE() { visitor->Trace(parent_style_sheet_); }
 
  private:
   // TODO(Oilpan): RuleData is in the oilpan heap and this pointer
   // really should be traced. However, RuleData objects are
   // allocated inside larger TerminatedArray objects and we cannot
   // trace a raw rule data pointer at this point.
-  const RuleData* m_ruleData;
-  unsigned m_specificity;
-  uint64_t m_position;
-  Member<const CSSStyleSheet> m_parentStyleSheet;
+  const RuleData* rule_data_;
+  unsigned specificity_;
+  uint64_t position_;
+  Member<const CSSStyleSheet> parent_style_sheet_;
 };
 
 }  // namespace blink
@@ -110,80 +110,80 @@ class ElementRuleCollector {
                        ComputedStyle* = 0);
   ~ElementRuleCollector();
 
-  void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
-  void setPseudoStyleRequest(const PseudoStyleRequest& request) {
-    m_pseudoStyleRequest = request;
+  void SetMode(SelectorChecker::Mode mode) { mode_ = mode; }
+  void SetPseudoStyleRequest(const PseudoStyleRequest& request) {
+    pseudo_style_request_ = request;
   }
-  void setSameOriginOnly(bool f) { m_sameOriginOnly = f; }
+  void SetSameOriginOnly(bool f) { same_origin_only_ = f; }
 
-  void setMatchingUARules(bool matchingUARules) {
-    m_matchingUARules = matchingUARules;
+  void SetMatchingUARules(bool matching_ua_rules) {
+    matching_ua_rules_ = matching_ua_rules;
   }
-  bool hasAnyMatchingRules(RuleSet*);
+  bool HasAnyMatchingRules(RuleSet*);
 
-  const MatchResult& matchedResult() const;
-  StyleRuleList* matchedStyleRuleList();
-  CSSRuleList* matchedCSSRuleList();
+  const MatchResult& MatchedResult() const;
+  StyleRuleList* MatchedStyleRuleList();
+  CSSRuleList* MatchedCSSRuleList();
 
-  void collectMatchingRules(const MatchRequest&,
-                            CascadeOrder = ignoreCascadeOrder,
-                            bool matchingTreeBoundaryRules = false);
-  void collectMatchingShadowHostRules(const MatchRequest&,
-                                      CascadeOrder = ignoreCascadeOrder);
-  void sortAndTransferMatchedRules();
-  void clearMatchedRules();
-  void addElementStyleProperties(const StylePropertySet*,
-                                 bool isCacheable = true);
-  void finishAddingUARules() { m_result.finishAddingUARules(); }
-  void finishAddingAuthorRulesForTreeScope() {
-    m_result.finishAddingAuthorRulesForTreeScope();
+  void CollectMatchingRules(const MatchRequest&,
+                            CascadeOrder = kIgnoreCascadeOrder,
+                            bool matching_tree_boundary_rules = false);
+  void CollectMatchingShadowHostRules(const MatchRequest&,
+                                      CascadeOrder = kIgnoreCascadeOrder);
+  void SortAndTransferMatchedRules();
+  void ClearMatchedRules();
+  void AddElementStyleProperties(const StylePropertySet*,
+                                 bool is_cacheable = true);
+  void FinishAddingUARules() { result_.FinishAddingUARules(); }
+  void FinishAddingAuthorRulesForTreeScope() {
+    result_.FinishAddingAuthorRulesForTreeScope();
   }
-  void setIncludeEmptyRules(bool include) { m_includeEmptyRules = include; }
-  bool includeEmptyRules() const { return m_includeEmptyRules; }
-  bool isCollectingForPseudoElement() const {
-    return m_pseudoStyleRequest.pseudoId != PseudoIdNone;
+  void SetIncludeEmptyRules(bool include) { include_empty_rules_ = include; }
+  bool IncludeEmptyRules() const { return include_empty_rules_; }
+  bool IsCollectingForPseudoElement() const {
+    return pseudo_style_request_.pseudo_id != kPseudoIdNone;
   }
 
-  void addMatchedRulesToTracker(StyleRuleUsageTracker*) const;
+  void AddMatchedRulesToTracker(StyleRuleUsageTracker*) const;
 
  private:
   template <typename RuleDataListType>
-  void collectMatchingRulesForList(const RuleDataListType*,
+  void CollectMatchingRulesForList(const RuleDataListType*,
                                    CascadeOrder,
                                    const MatchRequest&);
 
-  void didMatchRule(const RuleData&,
+  void DidMatchRule(const RuleData&,
                     const SelectorChecker::MatchResult&,
                     CascadeOrder,
                     const MatchRequest&);
 
   template <class CSSRuleCollection>
-  CSSRule* findStyleRule(CSSRuleCollection*, StyleRule*);
-  void appendCSSOMWrapperForRule(CSSStyleSheet*, StyleRule*);
+  CSSRule* FindStyleRule(CSSRuleCollection*, StyleRule*);
+  void AppendCSSOMWrapperForRule(CSSStyleSheet*, StyleRule*);
 
-  void sortMatchedRules();
+  void SortMatchedRules();
 
-  StaticCSSRuleList* ensureRuleList();
-  StyleRuleList* ensureStyleRuleList();
+  StaticCSSRuleList* EnsureRuleList();
+  StyleRuleList* EnsureStyleRuleList();
 
  private:
-  const ElementResolveContext& m_context;
-  const SelectorFilter& m_selectorFilter;
-  RefPtr<ComputedStyle> m_style;  // FIXME: This can be mutated during matching!
+  const ElementResolveContext& context_;
+  const SelectorFilter& selector_filter_;
+  RefPtr<ComputedStyle> style_;  // FIXME: This can be mutated during matching!
 
-  PseudoStyleRequest m_pseudoStyleRequest;
-  SelectorChecker::Mode m_mode;
-  bool m_canUseFastReject;
-  bool m_sameOriginOnly;
-  bool m_matchingUARules;
-  bool m_includeEmptyRules;
+  PseudoStyleRequest pseudo_style_request_;
+  SelectorChecker::Mode mode_;
+  bool can_use_fast_reject_;
+  bool same_origin_only_;
+  bool matching_ua_rules_;
+  bool include_empty_rules_;
 
-  HeapVector<MatchedRule, 32> m_matchedRules;
+  HeapVector<MatchedRule, 32> matched_rules_;
 
   // Output.
-  Member<StaticCSSRuleList> m_cssRuleList;
-  Member<StyleRuleList> m_styleRuleList;
-  MatchResult m_result;
+  Member<StaticCSSRuleList> css_rule_list_;
+  Member<StyleRuleList> style_rule_list_;
+  MatchResult result_;
 };
 
 }  // namespace blink

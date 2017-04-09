@@ -28,14 +28,14 @@ class SVGImageElement;
 
 class SVGImageLoader final : public ImageLoader {
  public:
-  static SVGImageLoader* create(SVGImageElement* element) {
+  static SVGImageLoader* Create(SVGImageElement* element) {
     return new SVGImageLoader(element);
   }
 
  private:
   explicit SVGImageLoader(SVGImageElement*);
-  void dispatchLoadEvent() override;
-  String debugName() const override { return "SVGImageLoader"; }
+  void DispatchLoadEvent() override;
+  String DebugName() const override { return "SVGImageLoader"; }
 };
 
 }  // namespace blink

@@ -25,9 +25,9 @@ LayoutTestRenderFrameObserver::LayoutTestRenderFrameObserver(
       LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
           ->TestRunner();
-  render_frame->GetWebFrame()->setContentSettingsClient(
+  render_frame->GetWebFrame()->SetContentSettingsClient(
       test_runner->GetWebContentSettings());
-  render_frame->GetWebFrame()->setTextCheckClient(
+  render_frame->GetWebFrame()->SetTextCheckClient(
       test_runner->GetWebTextCheckClient());
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &LayoutTestRenderFrameObserver::BindRequest, base::Unretained(this)));

@@ -43,25 +43,25 @@ const char* {{enum_variable}}[] = {
 {% macro property_location(member) %}
 {% set property_location_list = [] %}
 {% if member.on_instance %}
-{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnInstance'] %}
+{% set property_location_list = property_location_list + ['V8DOMConfiguration::kOnInstance'] %}
 {% endif %}
 {% if member.on_prototype %}
-{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnPrototype'] %}
+{% set property_location_list = property_location_list + ['V8DOMConfiguration::kOnPrototype'] %}
 {% endif %}
 {% if member.on_interface %}
-{% set property_location_list = property_location_list + ['V8DOMConfiguration::OnInterface'] %}
+{% set property_location_list = property_location_list + ['V8DOMConfiguration::kOnInterface'] %}
 {% endif %}
 {{property_location_list | join(' | ')}}
 {%- endmacro %}
 
 
 {% macro check_origin_trial(member, isolate="info.GetIsolate()") -%}
-ExecutionContext* executionContext = currentExecutionContext({{isolate}});
+ExecutionContext* executionContext = CurrentExecutionContext({{isolate}});
 String errorMessage;
 if (!{{member.origin_trial_enabled_function}}(executionContext, errorMessage)) {
-  v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-  if (!errorMessage.isEmpty()) {
-    executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+  V8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
+  if (!errorMessage.IsEmpty()) {
+    executionContext->AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, errorMessage));
   }
   return;
 }

@@ -34,78 +34,79 @@ namespace blink {
 class WebMediaDeviceInfoPrivate final
     : public RefCounted<WebMediaDeviceInfoPrivate> {
  public:
-  static PassRefPtr<WebMediaDeviceInfoPrivate> create(
-      const WebString& deviceId,
+  static PassRefPtr<WebMediaDeviceInfoPrivate> Create(
+      const WebString& device_id,
       WebMediaDeviceInfo::MediaDeviceKind,
       const WebString& label,
-      const WebString& groupId);
+      const WebString& group_id);
 
-  const WebString& deviceId() const { return m_deviceId; }
-  WebMediaDeviceInfo::MediaDeviceKind kind() const { return m_kind; }
-  const WebString& label() const { return m_label; }
-  const WebString& groupId() const { return m_groupId; }
+  const WebString& DeviceId() const { return device_id_; }
+  WebMediaDeviceInfo::MediaDeviceKind Kind() const { return kind_; }
+  const WebString& Label() const { return label_; }
+  const WebString& GroupId() const { return group_id_; }
 
  private:
-  WebMediaDeviceInfoPrivate(const WebString& deviceId,
+  WebMediaDeviceInfoPrivate(const WebString& device_id,
                             WebMediaDeviceInfo::MediaDeviceKind,
                             const WebString& label,
-                            const WebString& groupId);
+                            const WebString& group_id);
 
-  WebString m_deviceId;
-  WebMediaDeviceInfo::MediaDeviceKind m_kind;
-  WebString m_label;
-  WebString m_groupId;
+  WebString device_id_;
+  WebMediaDeviceInfo::MediaDeviceKind kind_;
+  WebString label_;
+  WebString group_id_;
 };
 
-PassRefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::create(
-    const WebString& deviceId,
+PassRefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::Create(
+    const WebString& device_id,
     WebMediaDeviceInfo::MediaDeviceKind kind,
     const WebString& label,
-    const WebString& groupId) {
-  return adoptRef(
-      new WebMediaDeviceInfoPrivate(deviceId, kind, label, groupId));
+    const WebString& group_id) {
+  return AdoptRef(
+      new WebMediaDeviceInfoPrivate(device_id, kind, label, group_id));
 }
 
 WebMediaDeviceInfoPrivate::WebMediaDeviceInfoPrivate(
-    const WebString& deviceId,
+    const WebString& device_id,
     WebMediaDeviceInfo::MediaDeviceKind kind,
     const WebString& label,
-    const WebString& groupId)
-    : m_deviceId(deviceId), m_kind(kind), m_label(label), m_groupId(groupId) {}
+    const WebString& group_id)
+    : device_id_(device_id), kind_(kind), label_(label), group_id_(group_id) {}
 
-void WebMediaDeviceInfo::assign(const WebMediaDeviceInfo& other) {
-  m_private = other.m_private;
+void WebMediaDeviceInfo::Assign(const WebMediaDeviceInfo& other) {
+  private_ = other.private_;
 }
 
-void WebMediaDeviceInfo::reset() {
-  m_private.reset();
+void WebMediaDeviceInfo::Reset() {
+  private_.Reset();
 }
 
-void WebMediaDeviceInfo::initialize(const WebString& deviceId,
+void WebMediaDeviceInfo::Initialize(const WebString& device_id,
                                     WebMediaDeviceInfo::MediaDeviceKind kind,
                                     const WebString& label,
-                                    const WebString& groupId) {
-  m_private = WebMediaDeviceInfoPrivate::create(deviceId, kind, label, groupId);
+                                    const WebString& group_id) {
+  private_ =
+      WebMediaDeviceInfoPrivate::Create(device_id, kind, label, group_id);
 }
 
-WebString WebMediaDeviceInfo::deviceId() const {
-  ASSERT(!m_private.isNull());
-  return m_private->deviceId();
+WebString WebMediaDeviceInfo::DeviceId() const {
+  ASSERT(!private_.IsNull());
+  return private_->DeviceId();
 }
 
-WebMediaDeviceInfo::MediaDeviceKind WebMediaDeviceInfo::kind() const {
-  ASSERT(!m_private.isNull());
-  return m_private->kind();
+WebMediaDeviceInfo::MediaDeviceKind WebMediaDeviceInfo::Kind() const {
+  ASSERT(!private_.IsNull());
+  return private_->Kind();
 }
 
-WebString WebMediaDeviceInfo::label() const {
-  ASSERT(!m_private.isNull());
-  return m_private->label();
+WebString WebMediaDeviceInfo::Label() const {
+  ASSERT(!private_.IsNull());
+  return private_->Label();
 }
 
-WebString WebMediaDeviceInfo::groupId() const {
-  ASSERT(!m_private.isNull());
-  return m_private->groupId();
+WebString WebMediaDeviceInfo::GroupId() const {
+  ASSERT(!private_.IsNull());
+  return private_->GroupId();
 }
 
 }  // namespace blink

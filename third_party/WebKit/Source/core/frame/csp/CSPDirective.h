@@ -21,20 +21,20 @@ class CORE_EXPORT CSPDirective
   CSPDirective(const String& name,
                const String& value,
                ContentSecurityPolicy* policy)
-      : m_name(name), m_text(name + ' ' + value), m_policy(policy) {}
+      : name_(name), text_(name + ' ' + value), policy_(policy) {}
   virtual ~CSPDirective() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_policy); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(policy_); }
 
-  const String& name() const { return m_name; }
-  const String& text() const { return m_text; }
+  const String& GetName() const { return name_; }
+  const String& GetText() const { return text_; }
 
  protected:
-  ContentSecurityPolicy* policy() const { return m_policy; }
+  ContentSecurityPolicy* Policy() const { return policy_; }
 
  private:
-  String m_name;
-  String m_text;
-  Member<ContentSecurityPolicy> m_policy;
+  String name_;
+  String text_;
+  Member<ContentSecurityPolicy> policy_;
 };
 
 }  // namespace blink

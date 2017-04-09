@@ -36,7 +36,7 @@ WebKeyboardEvent CreateFakeWebKeyboardEvent(JNIEnv* env,
                                           key_code);
 
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
-      env, keydown_event, WebKeyboardEvent::KeyDown, web_modifier, 0, key_code,
+      env, keydown_event, WebKeyboardEvent::kKeyDown, web_modifier, 0, key_code,
       0, unicode_character, false);
   return web_event;
 }
@@ -72,22 +72,22 @@ TEST(WebInputEventBuilderAndroidTest, DomKeyCtrlShift) {
     // Tests DomKey without modifier.
     WebKeyboardEvent web_event =
         CreateFakeWebKeyboardEvent(env, entry.key_code, 0, entry.character);
-    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.domKey)
-        << ui::KeycodeConverter::DomKeyToKeyString(web_event.domKey);
+    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.dom_key)
+        << ui::KeycodeConverter::DomKeyToKeyString(web_event.dom_key);
 
     // Tests DomKey with Ctrl.
     web_event = CreateFakeWebKeyboardEvent(env, entry.key_code,
-                                           WebKeyboardEvent::ControlKey, 0);
-    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.domKey)
-        << ui::KeycodeConverter::DomKeyToKeyString(web_event.domKey);
+                                           WebKeyboardEvent::kControlKey, 0);
+    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.dom_key)
+        << ui::KeycodeConverter::DomKeyToKeyString(web_event.dom_key);
 
     // Tests DomKey with Ctrl and Shift.
     web_event = CreateFakeWebKeyboardEvent(
         env, entry.key_code,
-        WebKeyboardEvent::ControlKey | WebKeyboardEvent::ShiftKey, 0);
+        WebKeyboardEvent::kControlKey | WebKeyboardEvent::kShiftKey, 0);
     EXPECT_EQ(ui::DomKey::FromCharacter(entry.shift_character),
-              web_event.domKey)
-        << ui::KeycodeConverter::DomKeyToKeyString(web_event.domKey);
+              web_event.dom_key)
+        << ui::KeycodeConverter::DomKeyToKeyString(web_event.dom_key);
   }
 }
 
@@ -122,7 +122,7 @@ TEST(WebInputEventBuilderAndroidTest, DomKeyCtrlAlt) {
   for (const DomKeyTestCase& entry : table) {
     // Tests DomKey with Alt.
     WebKeyboardEvent web_event = CreateFakeWebKeyboardEvent(
-        env, entry.key_code, WebKeyboardEvent::AltKey, entry.alt_character);
+        env, entry.key_code, WebKeyboardEvent::kAltKey, entry.alt_character);
     ui::DomKey expected_alt_dom_key;
     if (entry.alt_character == 0)
       expected_alt_dom_key = ui::DomKey::FromCharacter(entry.character);
@@ -131,15 +131,15 @@ TEST(WebInputEventBuilderAndroidTest, DomKeyCtrlAlt) {
           entry.alt_character & kCombiningAccentMask);
     else
       expected_alt_dom_key = ui::DomKey::FromCharacter(entry.alt_character);
-    EXPECT_EQ(expected_alt_dom_key, web_event.domKey)
-        << ui::KeycodeConverter::DomKeyToKeyString(web_event.domKey);
+    EXPECT_EQ(expected_alt_dom_key, web_event.dom_key)
+        << ui::KeycodeConverter::DomKeyToKeyString(web_event.dom_key);
 
     // Tests DomKey with Ctrl and Alt.
     web_event = CreateFakeWebKeyboardEvent(
         env, entry.key_code,
-        WebKeyboardEvent::ControlKey | WebKeyboardEvent::AltKey, 0);
-    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.domKey)
-        << ui::KeycodeConverter::DomKeyToKeyString(web_event.domKey);
+        WebKeyboardEvent::kControlKey | WebKeyboardEvent::kAltKey, 0);
+    EXPECT_EQ(ui::DomKey::FromCharacter(entry.character), web_event.dom_key)
+        << ui::KeycodeConverter::DomKeyToKeyString(web_event.dom_key);
   }
 }
 
@@ -151,21 +151,21 @@ TEST(WebInputEventBuilderAndroidTest, LastChannelKey) {
   // AKEYCODE_LAST_CHANNEL (229) is not defined in minimum NDK.
   WebKeyboardEvent web_event =
       CreateFakeWebKeyboardEvent(env, 229, 0, 0);
-  EXPECT_EQ(229, web_event.nativeKeyCode);
-  EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windowsKeyCode);
-  EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.domCode);
-  EXPECT_EQ(ui::DomKey::MEDIA_LAST, web_event.domKey);
+  EXPECT_EQ(229, web_event.native_key_code);
+  EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windows_key_code);
+  EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.dom_code);
+  EXPECT_EQ(ui::DomKey::MEDIA_LAST, web_event.dom_key);
 }
 
 // Synthetic key event should produce DomKey::UNIDENTIFIED.
 TEST(WebInputEventBuilderAndroidTest, DomKeySyntheticEvent) {
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
-      nullptr, nullptr, WebKeyboardEvent::KeyDown, 0, 0, kCompositionKeyCode, 0,
-      0, false);
-  EXPECT_EQ(kCompositionKeyCode, web_event.nativeKeyCode);
-  EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windowsKeyCode);
-  EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.domCode);
-  EXPECT_EQ(ui::DomKey::UNIDENTIFIED, web_event.domKey);
+      nullptr, nullptr, WebKeyboardEvent::kKeyDown, 0, 0, kCompositionKeyCode,
+      0, 0, false);
+  EXPECT_EQ(kCompositionKeyCode, web_event.native_key_code);
+  EXPECT_EQ(ui::KeyboardCode::VKEY_UNKNOWN, web_event.windows_key_code);
+  EXPECT_EQ(static_cast<int>(ui::DomCode::NONE), web_event.dom_code);
+  EXPECT_EQ(ui::DomKey::UNIDENTIFIED, web_event.dom_key);
 }
 
 // Testing new Android keycode introduced in API 24.
@@ -191,6 +191,6 @@ TEST(WebInputEventBuilderAndroidTest, CutCopyPasteKey) {
   for (const auto& entry : test_cases) {
     WebKeyboardEvent web_event =
         CreateFakeWebKeyboardEvent(env, entry.key_code, 0, 0);
-    EXPECT_EQ(entry.key, web_event.domKey);
+    EXPECT_EQ(entry.key, web_event.dom_key);
   }
 }

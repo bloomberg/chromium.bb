@@ -20,28 +20,28 @@ class FrameViewAutoSizeInfo final
   WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
 
  public:
-  static FrameViewAutoSizeInfo* create(FrameView* frameView) {
-    return new FrameViewAutoSizeInfo(frameView);
+  static FrameViewAutoSizeInfo* Create(FrameView* frame_view) {
+    return new FrameViewAutoSizeInfo(frame_view);
   }
 
-  void configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
-  void autoSizeIfNeeded();
+  void ConfigureAutoSizeMode(const IntSize& min_size, const IntSize& max_size);
+  void AutoSizeIfNeeded();
 
   DECLARE_TRACE();
 
  private:
   explicit FrameViewAutoSizeInfo(FrameView*);
 
-  Member<FrameView> m_frameView;
+  Member<FrameView> frame_view_;
 
   // The lower bound on the size when autosizing.
-  IntSize m_minAutoSize;
+  IntSize min_auto_size_;
   // The upper bound on the size when autosizing.
-  IntSize m_maxAutoSize;
+  IntSize max_auto_size_;
 
-  bool m_inAutoSize;
+  bool in_auto_size_;
   // True if autosize has been run since m_shouldAutoSize was set.
-  bool m_didRunAutosize;
+  bool did_run_autosize_;
 };
 
 }  // namespace blink

@@ -10,84 +10,86 @@
 
 namespace blink {
 
-FrameLoadRequest::FrameLoadRequest(Document* originDocument)
-    : FrameLoadRequest(originDocument, ResourceRequest()) {}
+FrameLoadRequest::FrameLoadRequest(Document* origin_document)
+    : FrameLoadRequest(origin_document, ResourceRequest()) {}
 
-FrameLoadRequest::FrameLoadRequest(Document* originDocument,
-                                   const ResourceRequest& resourceRequest)
-    : FrameLoadRequest(originDocument, resourceRequest, AtomicString()) {}
+FrameLoadRequest::FrameLoadRequest(Document* origin_document,
+                                   const ResourceRequest& resource_request)
+    : FrameLoadRequest(origin_document, resource_request, AtomicString()) {}
 
-FrameLoadRequest::FrameLoadRequest(Document* originDocument,
-                                   const ResourceRequest& resourceRequest,
-                                   const AtomicString& frameName)
-    : FrameLoadRequest(originDocument,
-                       resourceRequest,
-                       frameName,
-                       CheckContentSecurityPolicy) {}
+FrameLoadRequest::FrameLoadRequest(Document* origin_document,
+                                   const ResourceRequest& resource_request,
+                                   const AtomicString& frame_name)
+    : FrameLoadRequest(origin_document,
+                       resource_request,
+                       frame_name,
+                       kCheckContentSecurityPolicy) {}
 
-FrameLoadRequest::FrameLoadRequest(Document* originDocument,
-                                   const ResourceRequest& resourceRequest,
-                                   const SubstituteData& substituteData)
-    : FrameLoadRequest(originDocument,
-                       resourceRequest,
+FrameLoadRequest::FrameLoadRequest(Document* origin_document,
+                                   const ResourceRequest& resource_request,
+                                   const SubstituteData& substitute_data)
+    : FrameLoadRequest(origin_document,
+                       resource_request,
                        AtomicString(),
-                       substituteData,
-                       CheckContentSecurityPolicy) {}
+                       substitute_data,
+                       kCheckContentSecurityPolicy) {}
 
 FrameLoadRequest::FrameLoadRequest(
-    Document* originDocument,
-    const ResourceRequest& resourceRequest,
-    const AtomicString& frameName,
-    ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
-    : FrameLoadRequest(originDocument,
-                       resourceRequest,
-                       frameName,
+    Document* origin_document,
+    const ResourceRequest& resource_request,
+    const AtomicString& frame_name,
+    ContentSecurityPolicyDisposition
+        should_check_main_world_content_security_policy)
+    : FrameLoadRequest(origin_document,
+                       resource_request,
+                       frame_name,
                        SubstituteData(),
-                       shouldCheckMainWorldContentSecurityPolicy) {}
+                       should_check_main_world_content_security_policy) {}
 
 FrameLoadRequest::FrameLoadRequest(
-    Document* originDocument,
-    const ResourceRequest& resourceRequest,
-    const AtomicString& frameName,
-    const SubstituteData& substituteData,
-    ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy)
-    : m_originDocument(originDocument),
-      m_resourceRequest(resourceRequest),
-      m_frameName(frameName),
-      m_substituteData(substituteData),
-      m_replacesCurrentItem(false),
-      m_clientRedirect(ClientRedirectPolicy::NotClientRedirect),
-      m_shouldSendReferrer(MaybeSendReferrer),
-      m_shouldSetOpener(MaybeSetOpener),
-      m_shouldCheckMainWorldContentSecurityPolicy(
-          shouldCheckMainWorldContentSecurityPolicy) {
+    Document* origin_document,
+    const ResourceRequest& resource_request,
+    const AtomicString& frame_name,
+    const SubstituteData& substitute_data,
+    ContentSecurityPolicyDisposition
+        should_check_main_world_content_security_policy)
+    : origin_document_(origin_document),
+      resource_request_(resource_request),
+      frame_name_(frame_name),
+      substitute_data_(substitute_data),
+      replaces_current_item_(false),
+      client_redirect_(ClientRedirectPolicy::kNotClientRedirect),
+      should_send_referrer_(kMaybeSendReferrer),
+      should_set_opener_(kMaybeSetOpener),
+      should_check_main_world_content_security_policy_(
+          should_check_main_world_content_security_policy) {
   // These flags are passed to a service worker which controls the page.
-  m_resourceRequest.setFetchRequestMode(
-      WebURLRequest::FetchRequestModeNavigate);
-  m_resourceRequest.setFetchCredentialsMode(
-      WebURLRequest::FetchCredentialsModeInclude);
-  m_resourceRequest.setFetchRedirectMode(
-      WebURLRequest::FetchRedirectModeManual);
+  resource_request_.SetFetchRequestMode(
+      WebURLRequest::kFetchRequestModeNavigate);
+  resource_request_.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeInclude);
+  resource_request_.SetFetchRedirectMode(
+      WebURLRequest::kFetchRedirectModeManual);
 
-  if (originDocument) {
-    m_resourceRequest.setRequestorOrigin(
-        SecurityOrigin::create(originDocument->url()));
+  if (origin_document) {
+    resource_request_.SetRequestorOrigin(
+        SecurityOrigin::Create(origin_document->Url()));
     return;
   }
 
   // If we don't have an origin document, and we're going to throw away the
   // response data regardless, set the requestor to a unique origin.
-  if (m_substituteData.isValid()) {
-    m_resourceRequest.setRequestorOrigin(SecurityOrigin::createUnique());
+  if (substitute_data_.IsValid()) {
+    resource_request_.SetRequestorOrigin(SecurityOrigin::CreateUnique());
     return;
   }
 
   // If we're dealing with a top-level request, use the origin of the requested
   // URL as the initiator.
   // TODO(mkwst): This should be `nullptr`. https://crbug.com/625969
-  if (m_resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel) {
-    m_resourceRequest.setRequestorOrigin(
-        SecurityOrigin::create(resourceRequest.url()));
+  if (resource_request_.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
+    resource_request_.SetRequestorOrigin(
+        SecurityOrigin::Create(resource_request.Url()));
     return;
   }
 }

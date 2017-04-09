@@ -21,45 +21,48 @@ class WebTouchEvent : public WebInputEvent {
   // Ash/Aura.
   enum { kTouchesLengthCap = 16 };
 
-  unsigned touchesLength;
+  unsigned touches_length;
   // List of all touches, regardless of state.
   WebTouchPoint touches[kTouchesLengthCap];
 
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
-  DispatchType dispatchType;
+  DispatchType dispatch_type;
 
   // For a single touch, this is true after the touch-point has moved beyond
   // the platform slop region. For a multitouch, this is true after any
   // touch-point has moved (by whatever amount).
-  bool movedBeyondSlopRegion;
+  bool moved_beyond_slop_region;
 
   // Whether this touch event is a touchstart or a first touchmove event per
   // scroll.
-  bool touchStartOrFirstTouchMove;
+  bool touch_start_or_first_touch_move;
 
   // A unique identifier for the touch event. Valid ids start at one and
   // increase monotonically. Zero means an unknown id.
-  uint32_t uniqueTouchEventId;
+  uint32_t unique_touch_event_id;
 
   WebTouchEvent()
-      : WebInputEvent(sizeof(WebTouchEvent)), dispatchType(Blocking) {}
+      : WebInputEvent(sizeof(WebTouchEvent)), dispatch_type(kBlocking) {}
 
-  WebTouchEvent(Type type, int modifiers, double timeStampSeconds)
-      : WebInputEvent(sizeof(WebTouchEvent), type, modifiers, timeStampSeconds),
-        dispatchType(Blocking) {}
+  WebTouchEvent(Type type, int modifiers, double time_stamp_seconds)
+      : WebInputEvent(sizeof(WebTouchEvent),
+                      type,
+                      modifiers,
+                      time_stamp_seconds),
+        dispatch_type(kBlocking) {}
 
 #if INSIDE_BLINK
 
   // Sets any scaled values to be their computed values and sets |frameScale|
   // back to 1 and |translateX|, |translateY| back to 0.
-  BLINK_PLATFORM_EXPORT WebTouchEvent flattenTransform() const;
+  BLINK_PLATFORM_EXPORT WebTouchEvent FlattenTransform() const;
 
   // Return a scaled WebTouchPoint in root frame coordinates.
   BLINK_PLATFORM_EXPORT WebTouchPoint
-  touchPointInRootFrame(unsigned touchPoint) const;
+  TouchPointInRootFrame(unsigned touch_point) const;
 
-  bool isCancelable() const { return dispatchType == Blocking; }
+  bool IsCancelable() const { return dispatch_type == kBlocking; }
 #endif
 };
 

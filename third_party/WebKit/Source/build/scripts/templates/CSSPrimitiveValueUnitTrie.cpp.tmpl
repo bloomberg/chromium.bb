@@ -16,17 +16,17 @@ CSSPrimitiveValue::UnitType cssPrimitiveValueUnitFromTrie(
   DCHECK(length);
   {% macro trie_return_statement(unit_name) %}CSSPrimitiveValue::UnitType::{{unit_name}}{% endmacro %}
   {{ trie_length_switch(length_tries, trie_return_statement, True) | indent(4) }}
-  return CSSPrimitiveValue::UnitType::Unknown;
+  return CSSPrimitiveValue::UnitType::kUnknown;
 }
 
 } // namespace
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::StringToUnitType(
     const LChar* characters8, unsigned length) {
   return cssPrimitiveValueUnitFromTrie(characters8, length);
 }
 
-CSSPrimitiveValue::UnitType CSSPrimitiveValue::stringToUnitType(
+CSSPrimitiveValue::UnitType CSSPrimitiveValue::StringToUnitType(
     const UChar* characters16, unsigned length) {
   return cssPrimitiveValueUnitFromTrie(characters16, length);
 }

@@ -31,43 +31,43 @@ class RotationViewportAnchor {
   STACK_ALLOCATED();
 
  public:
-  RotationViewportAnchor(FrameView& rootFrameView,
+  RotationViewportAnchor(FrameView& root_frame_view,
                          VisualViewport&,
-                         const FloatSize& anchorInInnerViewCoords,
+                         const FloatSize& anchor_in_inner_view_coords,
                          PageScaleConstraintsSet&);
   ~RotationViewportAnchor();
 
  private:
-  void setAnchor();
-  void restoreToAnchor();
+  void SetAnchor();
+  void RestoreToAnchor();
 
-  FloatPoint getInnerOrigin(const FloatSize& innerSize) const;
+  FloatPoint GetInnerOrigin(const FloatSize& inner_size) const;
 
-  void computeOrigins(const FloatSize& innerSize,
-                      IntPoint& mainFrameOffset,
-                      FloatPoint& visualViewportOffset) const;
-  ScrollableArea& layoutViewport() const;
+  void ComputeOrigins(const FloatSize& inner_size,
+                      IntPoint& main_frame_offset,
+                      FloatPoint& visual_viewport_offset) const;
+  ScrollableArea& LayoutViewport() const;
 
-  Member<FrameView> m_rootFrameView;
-  Member<VisualViewport> m_visualViewport;
+  Member<FrameView> root_frame_view_;
+  Member<VisualViewport> visual_viewport_;
 
-  float m_oldPageScaleFactor;
-  float m_oldMinimumPageScaleFactor;
+  float old_page_scale_factor_;
+  float old_minimum_page_scale_factor_;
 
   // Inner viewport origin in the reference frame of the document in CSS pixels
-  FloatPoint m_visualViewportInDocument;
+  FloatPoint visual_viewport_in_document_;
 
   // Inner viewport origin in the reference frame of the outer viewport
   // normalized to the outer viewport size.
-  FloatSize m_normalizedVisualViewportOffset;
+  FloatSize normalized_visual_viewport_offset_;
 
-  Member<Node> m_anchorNode;
-  LayoutRect m_anchorNodeBounds;
+  Member<Node> anchor_node_;
+  LayoutRect anchor_node_bounds_;
 
-  FloatSize m_anchorInInnerViewCoords;
-  FloatSize m_anchorInNodeCoords;
+  FloatSize anchor_in_inner_view_coords_;
+  FloatSize anchor_in_node_coords_;
 
-  PageScaleConstraintsSet& m_pageScaleConstraintsSet;
+  PageScaleConstraintsSet& page_scale_constraints_set_;
 };
 
 }  // namespace blink

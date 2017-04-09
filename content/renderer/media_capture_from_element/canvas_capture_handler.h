@@ -49,8 +49,8 @@ class CONTENT_EXPORT CanvasCaptureHandler final
       blink::WebMediaStreamTrack* track);
 
   // blink::WebCanvasCaptureHandler Implementation.
-  void sendNewFrame(const SkImage* image) override;
-  bool needsNewFrame() const override;
+  void SendNewFrame(const SkImage* image) override;
+  bool NeedsNewFrame() const override;
 
   // Functions called by media::VideoCapturerSource implementation.
   void StartVideoCapture(

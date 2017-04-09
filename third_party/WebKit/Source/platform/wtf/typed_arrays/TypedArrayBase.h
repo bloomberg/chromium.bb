@@ -37,74 +37,74 @@ class TypedArrayBase : public ArrayBufferView {
  public:
   typedef T ValueType;
 
-  T* data() const { return static_cast<T*>(baseAddress()); }
+  T* Data() const { return static_cast<T*>(BaseAddress()); }
 
-  bool set(TypedArrayBase<T>* array, unsigned offset) {
-    return setImpl(array, offset * sizeof(T));
+  bool Set(TypedArrayBase<T>* array, unsigned offset) {
+    return SetImpl(array, offset * sizeof(T));
   }
 
   // Overridden from ArrayBufferView. This must be public because of
   // rules about inheritance of members in template classes, and
   // because it is accessed via pointers to subclasses.
-  unsigned length() const { return m_length; }
+  unsigned length() const { return length_; }
 
-  unsigned byteLength() const final { return m_length * sizeof(T); }
+  unsigned ByteLength() const final { return length_ * sizeof(T); }
 
-  unsigned typeSize() const final { return sizeof(T); }
+  unsigned TypeSize() const final { return sizeof(T); }
 
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
-  T item(unsigned index) const {
-    SECURITY_DCHECK(index < TypedArrayBase<T>::m_length);
-    return TypedArrayBase<T>::data()[index];
+  T Item(unsigned index) const {
+    SECURITY_DCHECK(index < TypedArrayBase<T>::length_);
+    return TypedArrayBase<T>::Data()[index];
   }
 
  protected:
   TypedArrayBase(PassRefPtr<ArrayBuffer> buffer,
-                 unsigned byteOffset,
+                 unsigned byte_offset,
                  unsigned length)
-      : ArrayBufferView(std::move(buffer), byteOffset), m_length(length) {}
+      : ArrayBufferView(std::move(buffer), byte_offset), length_(length) {}
 
   template <class Subclass>
-  static PassRefPtr<Subclass> create(unsigned length) {
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(length, sizeof(T));
-    return create<Subclass>(buffer.release(), 0, length);
+  static PassRefPtr<Subclass> Create(unsigned length) {
+    RefPtr<ArrayBuffer> buffer = ArrayBuffer::Create(length, sizeof(T));
+    return Create<Subclass>(buffer.Release(), 0, length);
   }
 
   template <class Subclass>
-  static PassRefPtr<Subclass> create(const T* array, unsigned length) {
-    RefPtr<Subclass> a = create<Subclass>(length);
+  static PassRefPtr<Subclass> Create(const T* array, unsigned length) {
+    RefPtr<Subclass> a = Create<Subclass>(length);
     if (a)
       for (unsigned i = 0; i < length; ++i)
-        a->set(i, array[i]);
+        a->Set(i, array[i]);
     return a;
   }
 
   template <class Subclass>
-  static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer,
-                                     unsigned byteOffset,
+  static PassRefPtr<Subclass> Create(PassRefPtr<ArrayBuffer> buffer,
+                                     unsigned byte_offset,
                                      unsigned length) {
     RefPtr<ArrayBuffer> buf(std::move(buffer));
-    RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));
-    return adoptRef(new Subclass(buf.release(), byteOffset, length));
+    RELEASE_ASSERT(VerifySubRange<T>(buf, byte_offset, length));
+    return AdoptRef(new Subclass(buf.Release(), byte_offset, length));
   }
 
   template <class Subclass>
-  static PassRefPtr<Subclass> createOrNull(unsigned length) {
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::createOrNull(length, sizeof(T));
+  static PassRefPtr<Subclass> CreateOrNull(unsigned length) {
+    RefPtr<ArrayBuffer> buffer = ArrayBuffer::CreateOrNull(length, sizeof(T));
     if (!buffer)
       return nullptr;
-    return create<Subclass>(buffer.release(), 0, length);
+    return Create<Subclass>(buffer.Release(), 0, length);
   }
 
-  void neuter() final {
-    ArrayBufferView::neuter();
-    m_length = 0;
+  void Neuter() final {
+    ArrayBufferView::Neuter();
+    length_ = 0;
   }
 
   // We do not want to have to access this via a virtual function in subclasses,
   // which is why it is protected rather than private.
-  unsigned m_length;
+  unsigned length_;
 };
 
 }  // namespace WTF

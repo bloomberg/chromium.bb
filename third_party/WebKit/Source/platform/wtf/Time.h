@@ -30,63 +30,57 @@ class TimeWrapper {
   TimeWrapper() {}
 
   static TimeWrapper Now() {
-    if (WTF::getTimeFunctionForTesting()) {
-      double seconds = (WTF::getTimeFunctionForTesting())();
+    if (WTF::GetTimeFunctionForTesting()) {
+      double seconds = (WTF::GetTimeFunctionForTesting())();
       return TimeWrapper() + TimeDelta::FromSecondsD(seconds);
     }
     return TimeWrapper(WrappedTimeType::Now());
   }
 
-  int64_t ToInternalValueForTesting() const {
-    return m_value.ToInternalValue();
-  }
+  int64_t ToInternalValueForTesting() const { return value_.ToInternalValue(); }
 
   // Only use this conversion when interfacing with legacy code that represents
   // time in double. Converting to double can lead to losing information for
   // large time values.
-  double InSeconds() const {
-    return (m_value - WrappedTimeType()).InSecondsF();
-  }
+  double InSeconds() const { return (value_ - WrappedTimeType()).InSecondsF(); }
 
   static TimeWrapper FromSeconds(double seconds) {
     return WrappedTimeType() + TimeDelta::FromSecondsD(seconds);
   }
 
   TimeWrapper& operator=(TimeWrapper other) {
-    m_value = other.m_value;
+    value_ = other.value_;
     return *this;
   }
 
-  TimeDelta operator-(TimeWrapper other) const {
-    return m_value - other.m_value;
-  }
+  TimeDelta operator-(TimeWrapper other) const { return value_ - other.value_; }
 
   TimeWrapper operator+(TimeDelta delta) const {
-    return TimeWrapper(m_value + delta);
+    return TimeWrapper(value_ + delta);
   }
   TimeWrapper operator-(TimeDelta delta) const {
-    return TimeWrapper(m_value - delta);
+    return TimeWrapper(value_ - delta);
   }
 
   TimeWrapper& operator+=(TimeDelta delta) {
-    m_value += delta;
+    value_ += delta;
     return *this;
   }
   TimeWrapper& operator-=(TimeDelta delta) {
-    m_value -= delta;
+    value_ -= delta;
     return *this;
   }
 
-  bool operator==(TimeWrapper other) const { return m_value == other.m_value; }
-  bool operator!=(TimeWrapper other) const { return m_value != other.m_value; }
-  bool operator<(TimeWrapper other) const { return m_value < other.m_value; }
-  bool operator<=(TimeWrapper other) const { return m_value <= other.m_value; }
-  bool operator>(TimeWrapper other) const { return m_value > other.m_value; }
-  bool operator>=(TimeWrapper other) const { return m_value >= other.m_value; }
+  bool operator==(TimeWrapper other) const { return value_ == other.value_; }
+  bool operator!=(TimeWrapper other) const { return value_ != other.value_; }
+  bool operator<(TimeWrapper other) const { return value_ < other.value_; }
+  bool operator<=(TimeWrapper other) const { return value_ <= other.value_; }
+  bool operator>(TimeWrapper other) const { return value_ > other.value_; }
+  bool operator>=(TimeWrapper other) const { return value_ >= other.value_; }
 
  private:
-  WrappedTimeType m_value;
-  TimeWrapper(WrappedTimeType value) : m_value(value) {}
+  WrappedTimeType value_;
+  TimeWrapper(WrappedTimeType value) : value_(value) {}
 };
 
 }  // namespace internal

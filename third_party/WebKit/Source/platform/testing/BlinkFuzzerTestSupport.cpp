@@ -16,7 +16,7 @@ void InitializeBlinkFuzzTest(int* argc, char*** argv) {
   // Note: we don't tear anything down here after an iteration of the fuzzer
   // is complete, this is for efficiency. We rerun the fuzzer with the same
   // environment as the previous iteration.
-  base::AtExitManager atExit;
+  base::AtExitManager at_exit;
 
   CHECK(base::i18n::InitializeICU());
 
@@ -24,7 +24,7 @@ void InitializeBlinkFuzzTest(int* argc, char*** argv) {
 
   content::SetUpBlinkTestEnvironment();
 
-  blink::SchemeRegistry::initialize();
+  blink::SchemeRegistry::Initialize();
 }
 
 }  // namespace blink

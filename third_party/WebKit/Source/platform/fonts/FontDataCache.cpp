@@ -37,136 +37,137 @@ using namespace WTF;
 namespace blink {
 
 #if !OS(ANDROID)
-const unsigned cMaxInactiveFontData = 250;
-const unsigned cTargetInactiveFontData = 200;
+const unsigned kCMaxInactiveFontData = 250;
+const unsigned kCTargetInactiveFontData = 200;
 #else
-const unsigned cMaxInactiveFontData = 225;
-const unsigned cTargetInactiveFontData = 200;
+const unsigned kCMaxInactiveFontData = 225;
+const unsigned kCTargetInactiveFontData = 200;
 #endif
 
-PassRefPtr<SimpleFontData> FontDataCache::get(
-    const FontPlatformData* platformData,
-    ShouldRetain shouldRetain,
-    bool subpixelAscentDescent) {
-  if (!platformData)
+PassRefPtr<SimpleFontData> FontDataCache::Get(
+    const FontPlatformData* platform_data,
+    ShouldRetain should_retain,
+    bool subpixel_ascent_descent) {
+  if (!platform_data)
     return nullptr;
 
   // TODO: crbug.com/446376 - This should not happen, but we currently
   // do not have a reproduction for the crash that an empty typeface()
   // causes downstream from here.
-  if (!platformData->typeface()) {
+  if (!platform_data->Typeface()) {
     DLOG(ERROR)
         << "Empty typeface() in FontPlatformData when accessing FontDataCache.";
     return nullptr;
   }
 
-  Cache::iterator result = m_cache.find(platformData);
-  if (result == m_cache.end()) {
-    std::pair<RefPtr<SimpleFontData>, unsigned> newValue(
-        SimpleFontData::create(*platformData, nullptr, false,
-                               subpixelAscentDescent),
-        shouldRetain == Retain ? 1 : 0);
+  Cache::iterator result = cache_.Find(platform_data);
+  if (result == cache_.end()) {
+    std::pair<RefPtr<SimpleFontData>, unsigned> new_value(
+        SimpleFontData::Create(*platform_data, nullptr, false,
+                               subpixel_ascent_descent),
+        should_retain == kRetain ? 1 : 0);
     // The new SimpleFontData takes a copy of the incoming FontPlatformData
     // object. The incoming key may be temporary. So, for cache storage, take
     // the address of the newly created FontPlatformData that is copied an owned
     // by SimpleFontData.
-    m_cache.set(&newValue.first->platformData(), newValue);
-    if (shouldRetain == DoNotRetain)
-      m_inactiveFontData.insert(newValue.first);
-    return newValue.first.release();
+    cache_.Set(&new_value.first->PlatformData(), new_value);
+    if (should_retain == kDoNotRetain)
+      inactive_font_data_.insert(new_value.first);
+    return new_value.first.Release();
   }
 
-  if (!result.get()->value.second) {
-    ASSERT(m_inactiveFontData.contains(result.get()->value.first));
-    m_inactiveFontData.erase(result.get()->value.first);
+  if (!result.Get()->value.second) {
+    ASSERT(inactive_font_data_.Contains(result.Get()->value.first));
+    inactive_font_data_.erase(result.Get()->value.first);
   }
 
-  if (shouldRetain == Retain) {
-    result.get()->value.second++;
-  } else if (!result.get()->value.second) {
+  if (should_retain == kRetain) {
+    result.Get()->value.second++;
+  } else if (!result.Get()->value.second) {
     // If shouldRetain is DoNotRetain and count is 0, we want to remove the
     // fontData from m_inactiveFontData (above) and re-add here to update LRU
     // position.
-    m_inactiveFontData.insert(result.get()->value.first);
+    inactive_font_data_.insert(result.Get()->value.first);
   }
 
-  return result.get()->value.first;
+  return result.Get()->value.first;
 }
 
-bool FontDataCache::contains(const FontPlatformData* fontPlatformData) const {
-  return m_cache.contains(fontPlatformData);
+bool FontDataCache::Contains(const FontPlatformData* font_platform_data) const {
+  return cache_.Contains(font_platform_data);
 }
 
-void FontDataCache::release(const SimpleFontData* fontData) {
-  ASSERT(!fontData->isCustomFont());
+void FontDataCache::Release(const SimpleFontData* font_data) {
+  ASSERT(!font_data->IsCustomFont());
 
-  Cache::iterator it = m_cache.find(&(fontData->platformData()));
-  ASSERT(it != m_cache.end());
-  if (it == m_cache.end())
+  Cache::iterator it = cache_.Find(&(font_data->PlatformData()));
+  ASSERT(it != cache_.end());
+  if (it == cache_.end())
     return;
 
   ASSERT(it->value.second);
   if (!--it->value.second)
-    m_inactiveFontData.insert(it->value.first);
+    inactive_font_data_.insert(it->value.first);
 }
 
-void FontDataCache::markAllVerticalData() {
-  Cache::iterator end = m_cache.end();
-  for (Cache::iterator fontData = m_cache.begin(); fontData != end;
-       ++fontData) {
-    OpenTypeVerticalData* verticalData = const_cast<OpenTypeVerticalData*>(
-        fontData->value.first->verticalData());
-    if (verticalData)
-      verticalData->setInFontCache(true);
+void FontDataCache::MarkAllVerticalData() {
+  Cache::iterator end = cache_.end();
+  for (Cache::iterator font_data = cache_.begin(); font_data != end;
+       ++font_data) {
+    OpenTypeVerticalData* vertical_data = const_cast<OpenTypeVerticalData*>(
+        font_data->value.first->VerticalData());
+    if (vertical_data)
+      vertical_data->SetInFontCache(true);
   }
 }
 
-bool FontDataCache::purge(PurgeSeverity PurgeSeverity) {
-  if (PurgeSeverity == ForcePurge)
-    return purgeLeastRecentlyUsed(INT_MAX);
+bool FontDataCache::Purge(PurgeSeverity purge_severity) {
+  if (purge_severity == kForcePurge)
+    return PurgeLeastRecentlyUsed(INT_MAX);
 
-  if (m_inactiveFontData.size() > cMaxInactiveFontData)
-    return purgeLeastRecentlyUsed(m_inactiveFontData.size() -
-                                  cTargetInactiveFontData);
+  if (inactive_font_data_.size() > kCMaxInactiveFontData)
+    return PurgeLeastRecentlyUsed(inactive_font_data_.size() -
+                                  kCTargetInactiveFontData);
 
   return false;
 }
 
-bool FontDataCache::purgeLeastRecentlyUsed(int count) {
+bool FontDataCache::PurgeLeastRecentlyUsed(int count) {
   // Guard against reentry when e.g. a deleted FontData releases its small caps
   // FontData.
-  static bool isPurging;
-  if (isPurging)
+  static bool is_purging;
+  if (is_purging)
     return false;
 
-  isPurging = true;
+  is_purging = true;
 
-  Vector<RefPtr<SimpleFontData>, 20> fontDataToDelete;
-  ListHashSet<RefPtr<SimpleFontData>>::iterator end = m_inactiveFontData.end();
-  ListHashSet<RefPtr<SimpleFontData>>::iterator it = m_inactiveFontData.begin();
+  Vector<RefPtr<SimpleFontData>, 20> font_data_to_delete;
+  ListHashSet<RefPtr<SimpleFontData>>::iterator end = inactive_font_data_.end();
+  ListHashSet<RefPtr<SimpleFontData>>::iterator it =
+      inactive_font_data_.begin();
   for (int i = 0; i < count && it != end; ++it, ++i) {
-    RefPtr<SimpleFontData>& fontData = *it.get();
-    m_cache.erase(&(fontData->platformData()));
+    RefPtr<SimpleFontData>& font_data = *it.Get();
+    cache_.erase(&(font_data->PlatformData()));
     // We should not delete SimpleFontData here because deletion can modify
     // m_inactiveFontData. See http://trac.webkit.org/changeset/44011
-    fontDataToDelete.push_back(fontData);
+    font_data_to_delete.push_back(font_data);
   }
 
   if (it == end) {
     // Removed everything
-    m_inactiveFontData.clear();
+    inactive_font_data_.Clear();
   } else {
     for (int i = 0; i < count; ++i)
-      m_inactiveFontData.erase(m_inactiveFontData.begin());
+      inactive_font_data_.erase(inactive_font_data_.begin());
   }
 
-  bool didWork = fontDataToDelete.size();
+  bool did_work = font_data_to_delete.size();
 
-  fontDataToDelete.clear();
+  font_data_to_delete.Clear();
 
-  isPurging = false;
+  is_purging = false;
 
-  return didWork;
+  return did_work;
 }
 
 }  // namespace blink

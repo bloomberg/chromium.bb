@@ -34,15 +34,15 @@
 
 namespace blink {
 
-InputType* TelephoneInputType::create(HTMLInputElement& element) {
+InputType* TelephoneInputType::Create(HTMLInputElement& element) {
   return new TelephoneInputType(element);
 }
 
-void TelephoneInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypeTel);
+void TelephoneInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypeTel);
 }
 
-const AtomicString& TelephoneInputType::formControlType() const {
+const AtomicString& TelephoneInputType::FormControlType() const {
   return InputTypeNames::tel;
 }
 

@@ -16,48 +16,50 @@
 
 namespace blink {
 
-LocalFrame* SingleChildLocalFrameClient::createFrame(
+LocalFrame* SingleChildLocalFrameClient::CreateFrame(
     const FrameLoadRequest&,
     const AtomicString& name,
-    HTMLFrameOwnerElement* ownerElement) {
-  DCHECK(!m_child) << "This test helper only supports one child frame.";
+    HTMLFrameOwnerElement* owner_element) {
+  DCHECK(!child_) << "This test helper only supports one child frame.";
 
-  LocalFrame* parentFrame = ownerElement->document().frame();
-  auto* childClient = LocalFrameClientWithParent::create(parentFrame);
-  m_child = LocalFrame::create(childClient, *parentFrame->page(), ownerElement);
-  m_child->createView(IntSize(500, 500), Color::transparent);
-  m_child->init();
+  LocalFrame* parent_frame = owner_element->GetDocument().GetFrame();
+  auto* child_client = LocalFrameClientWithParent::Create(parent_frame);
+  child_ =
+      LocalFrame::Create(child_client, *parent_frame->GetPage(), owner_element);
+  child_->CreateView(IntSize(500, 500), Color::kTransparent);
+  child_->Init();
 
-  return m_child.get();
+  return child_.Get();
 }
 
-void LocalFrameClientWithParent::detached(FrameDetachType) {
-  static_cast<SingleChildLocalFrameClient*>(parent()->client())
-      ->didDetachChild();
+void LocalFrameClientWithParent::Detached(FrameDetachType) {
+  static_cast<SingleChildLocalFrameClient*>(Parent()->Client())
+      ->DidDetachChild();
 }
 
-ChromeClient& RenderingTest::chromeClient() const {
-  DEFINE_STATIC_LOCAL(EmptyChromeClient, client, (EmptyChromeClient::create()));
+ChromeClient& RenderingTest::GetChromeClient() const {
+  DEFINE_STATIC_LOCAL(EmptyChromeClient, client, (EmptyChromeClient::Create()));
   return client;
 }
 
-RenderingTest::RenderingTest(LocalFrameClient* localFrameClient)
-    : m_localFrameClient(localFrameClient) {}
+RenderingTest::RenderingTest(LocalFrameClient* local_frame_client)
+    : local_frame_client_(local_frame_client) {}
 
 void RenderingTest::SetUp() {
-  Page::PageClients pageClients;
-  fillWithEmptyClients(pageClients);
-  pageClients.chromeClient = &chromeClient();
-  m_pageHolder = DummyPageHolder::create(
-      IntSize(800, 600), &pageClients, m_localFrameClient, settingOverrider());
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  page_clients.chrome_client = &GetChromeClient();
+  page_holder_ =
+      DummyPageHolder::Create(IntSize(800, 600), &page_clients,
+                              local_frame_client_, SettingOverrider());
 
-  Settings::setMockScrollbarsEnabled(true);
+  Settings::SetMockScrollbarsEnabled(true);
   RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-  EXPECT_TRUE(ScrollbarTheme::theme().usesOverlayScrollbars());
+  EXPECT_TRUE(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
 
   // This ensures that the minimal DOM tree gets attached
   // correctly for tests that don't call setBodyInnerHTML.
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 void RenderingTest::TearDown() {
@@ -65,30 +67,31 @@ void RenderingTest::TearDown() {
   // may restore RuntimeEnabledFeatures setting during teardown, which happens
   // before our destructor getting invoked, breaking the assumption that REF
   // can't change during Blink lifetime.
-  m_pageHolder = nullptr;
+  page_holder_ = nullptr;
 
   // Clear memory cache, otherwise we can leak pruned resources.
-  memoryCache()->evictResources();
+  GetMemoryCache()->EvictResources();
 }
 
-void RenderingTest::setChildFrameHTML(const String& html) {
-  childDocument().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
-  childDocument().body()->setInnerHTML(html, ASSERT_NO_EXCEPTION);
+void RenderingTest::SetChildFrameHTML(const String& html) {
+  ChildDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  ChildDocument().body()->setInnerHTML(html, ASSERT_NO_EXCEPTION);
 }
 
-void RenderingTest::loadAhem() {
-  RefPtr<SharedBuffer> sharedBuffer =
-      testing::readFromFile(testing::webTestDataPath("Ahem.ttf"));
+void RenderingTest::LoadAhem() {
+  RefPtr<SharedBuffer> shared_buffer =
+      testing::ReadFromFile(testing::WebTestDataPath("Ahem.ttf"));
   StringOrArrayBufferOrArrayBufferView buffer =
       StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(
-          DOMArrayBuffer::create(sharedBuffer->data(), sharedBuffer->size()));
+          DOMArrayBuffer::Create(shared_buffer->Data(), shared_buffer->size()));
   FontFace* ahem =
-      FontFace::create(&document(), "Ahem", buffer, FontFaceDescriptors());
+      FontFace::Create(&GetDocument(), "Ahem", buffer, FontFaceDescriptors());
 
-  ScriptState* scriptState = toScriptStateForMainWorld(&m_pageHolder->frame());
-  DummyExceptionStateForTesting exceptionState;
-  FontFaceSet::from(document())
-      ->addForBinding(scriptState, ahem, exceptionState);
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(&page_holder_->GetFrame());
+  DummyExceptionStateForTesting exception_state;
+  FontFaceSet::From(GetDocument())
+      ->addForBinding(script_state, ahem, exception_state);
 }
 
 }  // namespace blink

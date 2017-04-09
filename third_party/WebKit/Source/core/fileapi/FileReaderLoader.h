@@ -57,43 +57,43 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
 
  public:
   enum ReadType {
-    ReadAsArrayBuffer,
-    ReadAsBinaryString,
-    ReadAsText,
-    ReadAsDataURL,
-    ReadByClient
+    kReadAsArrayBuffer,
+    kReadAsBinaryString,
+    kReadAsText,
+    kReadAsDataURL,
+    kReadByClient
   };
 
   // If client is given, do the loading asynchronously. Otherwise, load
   // synchronously.
-  static std::unique_ptr<FileReaderLoader> create(
-      ReadType readType,
+  static std::unique_ptr<FileReaderLoader> Create(
+      ReadType read_type,
       FileReaderLoaderClient* client) {
-    return WTF::wrapUnique(new FileReaderLoader(readType, client));
+    return WTF::WrapUnique(new FileReaderLoader(read_type, client));
   }
 
   ~FileReaderLoader() override;
 
-  void start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
-  void cancel();
+  void Start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+  void Cancel();
 
   // ThreadableLoaderClient
-  void didReceiveResponse(unsigned long,
+  void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didReceiveData(const char*, unsigned) override;
-  void didFinishLoading(unsigned long, double) override;
-  void didFail(const ResourceError&) override;
+  void DidReceiveData(const char*, unsigned) override;
+  void DidFinishLoading(unsigned long, double) override;
+  void DidFail(const ResourceError&) override;
 
-  DOMArrayBuffer* arrayBufferResult();
-  String stringResult();
+  DOMArrayBuffer* ArrayBufferResult();
+  String StringResult();
 
   // Returns the total bytes received. Bytes ignored by m_rawData won't be
   // counted.
   //
   // This value doesn't grow more than numeric_limits<unsigned> when
   // m_readType is not set to ReadByClient.
-  long long bytesLoaded() const { return m_bytesLoaded; }
+  long long BytesLoaded() const { return bytes_loaded_; }
 
   // Before didReceiveResponse() is called: Returns -1.
   // After didReceiveResponse() is called:
@@ -101,55 +101,55 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   //   m_response.expectedContentLength() or once didFinishLoading() is
   //   called), returns it.
   // - Otherwise, returns -1.
-  long long totalBytes() const { return m_totalBytes; }
+  long long TotalBytes() const { return total_bytes_; }
 
-  FileError::ErrorCode errorCode() const { return m_errorCode; }
+  FileError::ErrorCode GetErrorCode() const { return error_code_; }
 
-  void setEncoding(const String&);
-  void setDataType(const String& dataType) { m_dataType = dataType; }
+  void SetEncoding(const String&);
+  void SetDataType(const String& data_type) { data_type_ = data_type; }
 
  private:
   FileReaderLoader(ReadType, FileReaderLoaderClient*);
 
-  void cleanup();
+  void Cleanup();
 
-  void failed(FileError::ErrorCode);
-  void convertToText();
-  void convertToDataURL();
+  void Failed(FileError::ErrorCode);
+  void ConvertToText();
+  void ConvertToDataURL();
 
-  static FileError::ErrorCode httpStatusCodeToErrorCode(int);
+  static FileError::ErrorCode HttpStatusCodeToErrorCode(int);
 
-  ReadType m_readType;
-  FileReaderLoaderClient* m_client;
-  WTF::TextEncoding m_encoding;
-  String m_dataType;
+  ReadType read_type_;
+  FileReaderLoaderClient* client_;
+  WTF::TextEncoding encoding_;
+  String data_type_;
 
-  KURL m_urlForReading;
-  Persistent<ThreadableLoader> m_loader;
+  KURL url_for_reading_;
+  Persistent<ThreadableLoader> loader_;
 
-  std::unique_ptr<ArrayBufferBuilder> m_rawData;
-  bool m_isRawDataConverted;
+  std::unique_ptr<ArrayBufferBuilder> raw_data_;
+  bool is_raw_data_converted_;
 
-  Persistent<DOMArrayBuffer> m_arrayBufferResult;
-  String m_stringResult;
+  Persistent<DOMArrayBuffer> array_buffer_result_;
+  String string_result_;
 
   // The decoder used to decode the text data.
-  std::unique_ptr<TextResourceDecoder> m_decoder;
+  std::unique_ptr<TextResourceDecoder> decoder_;
 
-  bool m_finishedLoading;
-  long long m_bytesLoaded;
+  bool finished_loading_;
+  long long bytes_loaded_;
   // If the total size of the resource is unknown, m_totalBytes is set to -1
   // until completion of loading, and the buffer for receiving data is set to
   // dynamically grow. Otherwise, m_totalBytes is set to the total size and
   // the buffer for receiving data of m_totalBytes is allocated and never grow
   // even when extra data is appeneded.
-  long long m_totalBytes;
+  long long total_bytes_;
 
-  bool m_hasRange;
-  unsigned m_rangeStart;
-  unsigned m_rangeEnd;
+  bool has_range_;
+  unsigned range_start_;
+  unsigned range_end_;
 
-  FileError::ErrorCode m_errorCode;
+  FileError::ErrorCode error_code_;
 };
 
 }  // namespace blink

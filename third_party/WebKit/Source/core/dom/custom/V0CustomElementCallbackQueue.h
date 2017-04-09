@@ -45,35 +45,35 @@ class V0CustomElementCallbackQueue
   WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackQueue);
 
  public:
-  static V0CustomElementCallbackQueue* create(Element*);
+  static V0CustomElementCallbackQueue* Create(Element*);
 
   typedef int ElementQueueId;
-  ElementQueueId owner() const { return m_owner; }
+  ElementQueueId Owner() const { return owner_; }
 
-  void setOwner(ElementQueueId newOwner) {
+  void SetOwner(ElementQueueId new_owner) {
     // ElementCallbackQueues only migrate towards the top of the
     // processing stack.
-    DCHECK_GE(newOwner, m_owner);
-    m_owner = newOwner;
+    DCHECK_GE(new_owner, owner_);
+    owner_ = new_owner;
   }
 
-  bool processInElementQueue(ElementQueueId);
+  bool ProcessInElementQueue(ElementQueueId);
 
-  void append(V0CustomElementProcessingStep* invocation) {
-    m_queue.push_back(invocation);
+  void Append(V0CustomElementProcessingStep* invocation) {
+    queue_.push_back(invocation);
   }
-  bool inCreatedCallback() const { return m_inCreatedCallback; }
+  bool InCreatedCallback() const { return in_created_callback_; }
 
   DECLARE_TRACE();
 
  private:
   explicit V0CustomElementCallbackQueue(Element*);
 
-  Member<Element> m_element;
-  HeapVector<Member<V0CustomElementProcessingStep>> m_queue;
-  ElementQueueId m_owner;
-  size_t m_index;
-  bool m_inCreatedCallback;
+  Member<Element> element_;
+  HeapVector<Member<V0CustomElementProcessingStep>> queue_;
+  ElementQueueId owner_;
+  size_t index_;
+  bool in_created_callback_;
 };
 
 }  // namespace blink

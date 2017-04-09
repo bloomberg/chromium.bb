@@ -15,9 +15,9 @@ const CSSValue* CSSPropertyAPIAlignItems::parseSingleValue(
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
   // align-items property does not allow the 'auto' value.
-  if (CSSPropertyParserHelpers::identMatches<CSSValueAuto>(range.peek().id()))
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(range.Peek().Id()))
     return nullptr;
-  return CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(range);
+  return CSSPropertyAlignmentUtils::ConsumeSelfPositionOverflowPosition(range);
 }
 
 }  // namespace blink

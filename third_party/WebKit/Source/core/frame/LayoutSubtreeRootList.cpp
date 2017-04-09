@@ -8,34 +8,34 @@
 
 namespace blink {
 
-void LayoutSubtreeRootList::clearAndMarkContainingBlocksForLayout() {
-  for (auto& iter : unordered())
-    iter->markContainerChainForLayout(false);
-  clear();
+void LayoutSubtreeRootList::ClearAndMarkContainingBlocksForLayout() {
+  for (auto& iter : Unordered())
+    iter->MarkContainerChainForLayout(false);
+  Clear();
 }
 
-LayoutObject* LayoutSubtreeRootList::randomRoot() {
-  ASSERT(!isEmpty());
-  return *unordered().begin();
+LayoutObject* LayoutSubtreeRootList::RandomRoot() {
+  ASSERT(!IsEmpty());
+  return *Unordered().begin();
 }
 
-void LayoutSubtreeRootList::countObjectsNeedingLayoutInRoot(
+void LayoutSubtreeRootList::CountObjectsNeedingLayoutInRoot(
     const LayoutObject* object,
-    unsigned& needsLayoutObjects,
-    unsigned& totalObjects) {
-  for (const LayoutObject* o = object; o; o = o->nextInPreOrder(object)) {
-    ++totalObjects;
-    if (o->needsLayout())
-      ++needsLayoutObjects;
+    unsigned& needs_layout_objects,
+    unsigned& total_objects) {
+  for (const LayoutObject* o = object; o; o = o->NextInPreOrder(object)) {
+    ++total_objects;
+    if (o->NeedsLayout())
+      ++needs_layout_objects;
   }
 }
 
-void LayoutSubtreeRootList::countObjectsNeedingLayout(
-    unsigned& needsLayoutObjects,
-    unsigned& totalObjects) {
+void LayoutSubtreeRootList::CountObjectsNeedingLayout(
+    unsigned& needs_layout_objects,
+    unsigned& total_objects) {
   // TODO(leviw): This will double-count nested roots crbug.com/509141
-  for (auto& root : unordered())
-    countObjectsNeedingLayoutInRoot(root, needsLayoutObjects, totalObjects);
+  for (auto& root : Unordered())
+    CountObjectsNeedingLayoutInRoot(root, needs_layout_objects, total_objects);
 }
 
 }  // namespace blink

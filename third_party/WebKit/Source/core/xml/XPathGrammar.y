@@ -38,11 +38,11 @@
 
 void* yyFastMalloc(size_t size)
 {
-    return WTF::Partitions::fastMalloc(size, nullptr);
+    return WTF::Partitions::FastMalloc(size, nullptr);
 }
 
 #define YYMALLOC yyFastMalloc
-#define YYFREE WTF::Partitions::fastFree
+#define YYFREE WTF::Partitions::FastFree
 
 #define YYENABLE_NLS 0
 #define YYLTYPE_IS_TRIVIAL 1
@@ -73,7 +73,7 @@ using namespace XPath;
 
 %{
 
-static int xpathyylex(YYSTYPE* yylval) { return Parser::current()->lex(yylval); }
+static int xpathyylex(YYSTYPE* yylval) { return Parser::Current()->Lex(yylval); }
 static void xpathyyerror(void*, const char*) { }
 
 %}
@@ -121,19 +121,19 @@ static void xpathyyerror(void*, const char*) { }
 Expr:
     OrExpr
     {
-        parser->m_topExpr = $1;
+        parser->top_expr_ = $1;
     }
     ;
 
 LocationPath:
     RelativeLocationPath
     {
-        $$->setAbsolute(false);
+        $$->SetAbsolute(false);
     }
     |
     AbsoluteLocationPath
     {
-        $$->setAbsolute(true);
+        $$->SetAbsolute(true);
     }
     ;
 
@@ -151,7 +151,7 @@ AbsoluteLocationPath:
     DescendantOrSelf RelativeLocationPath
     {
         $$ = $2;
-        $$->insertFirstStep($1);
+        $$->InsertFirstStep($1);
     }
     ;
 
@@ -159,18 +159,18 @@ RelativeLocationPath:
     Step
     {
         $$ = new LocationPath;
-        $$->appendStep($1);
+        $$->AppendStep($1);
     }
     |
     RelativeLocationPath '/' Step
     {
-        $$->appendStep($3);
+        $$->AppendStep($3);
     }
     |
     RelativeLocationPath DescendantOrSelf Step
     {
-        $$->appendStep($2);
-        $$->appendStep($3);
+        $$->AppendStep($2);
+        $$->AppendStep($3);
     }
     ;
 
@@ -178,25 +178,25 @@ Step:
     NodeTest OptionalPredicateList
     {
         if ($2)
-            $$ = new Step(Step::ChildAxis, *$1, *$2);
+            $$ = new Step(Step::kChildAxis, *$1, *$2);
         else
-            $$ = new Step(Step::ChildAxis, *$1);
+            $$ = new Step(Step::kChildAxis, *$1);
     }
     |
     NAMETEST OptionalPredicateList
     {
         AtomicString localName;
         AtomicString namespaceURI;
-        if (!parser->expandQName(*$1, localName, namespaceURI)) {
-            parser->m_gotNamespaceError = true;
+        if (!parser->ExpandQName(*$1, localName, namespaceURI)) {
+            parser->got_namespace_error_ = true;
             YYABORT;
         }
 
         if ($2)
-            $$ = new Step(Step::ChildAxis, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI), *$2);
+            $$ = new Step(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI), *$2);
         else
-            $$ = new Step(Step::ChildAxis, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI));
-        parser->deleteString($1);
+            $$ = new Step(Step::kChildAxis, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI));
+        parser->DeleteString($1);
     }
     |
     AxisSpecifier NodeTest OptionalPredicateList
@@ -211,16 +211,16 @@ Step:
     {
         AtomicString localName;
         AtomicString namespaceURI;
-        if (!parser->expandQName(*$2, localName, namespaceURI)) {
-            parser->m_gotNamespaceError = true;
+        if (!parser->ExpandQName(*$2, localName, namespaceURI)) {
+            parser->got_namespace_error_ = true;
             YYABORT;
         }
 
         if ($3)
-            $$ = new Step($1, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI), *$3);
+            $$ = new Step($1, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI), *$3);
         else
-            $$ = new Step($1, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI));
-        parser->deleteString($2);
+            $$ = new Step($1, Step::NodeTest(Step::NodeTest::kNameTest, localName, namespaceURI));
+        parser->DeleteString($2);
     }
     |
     AbbreviatedStep
@@ -231,7 +231,7 @@ AxisSpecifier:
     |
     '@'
     {
-        $$ = Step::AttributeAxis;
+        $$ = Step::kAttributeAxis;
     }
     ;
 
@@ -239,26 +239,26 @@ NodeTest:
     NODETYPE '(' ')'
     {
         if (*$1 == "node")
-            $$ = new Step::NodeTest(Step::NodeTest::AnyNodeTest);
+            $$ = new Step::NodeTest(Step::NodeTest::kAnyNodeTest);
         else if (*$1 == "text")
-            $$ = new Step::NodeTest(Step::NodeTest::TextNodeTest);
+            $$ = new Step::NodeTest(Step::NodeTest::kTextNodeTest);
         else if (*$1 == "comment")
-            $$ = new Step::NodeTest(Step::NodeTest::CommentNodeTest);
+            $$ = new Step::NodeTest(Step::NodeTest::kCommentNodeTest);
 
-        parser->deleteString($1);
+        parser->DeleteString($1);
     }
     |
     PI '(' ')'
     {
-        $$ = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest);
-        parser->deleteString($1);
+        $$ = new Step::NodeTest(Step::NodeTest::kProcessingInstructionNodeTest);
+        parser->DeleteString($1);
     }
     |
     PI '(' LITERAL ')'
     {
-        $$ = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest, $3->stripWhiteSpace());
-        parser->deleteString($1);
-        parser->deleteString($3);
+        $$ = new Step::NodeTest(Step::NodeTest::kProcessingInstructionNodeTest, $3->StripWhiteSpace());
+        parser->DeleteString($1);
+        parser->DeleteString($3);
     }
     ;
 
@@ -294,19 +294,19 @@ Predicate:
 DescendantOrSelf:
     SLASHSLASH
     {
-        $$ = new Step(Step::DescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
+        $$ = new Step(Step::kDescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
     ;
 
 AbbreviatedStep:
     '.'
     {
-        $$ = new Step(Step::SelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
+        $$ = new Step(Step::kSelfAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
     |
     DOTDOT
     {
-        $$ = new Step(Step::ParentAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
+        $$ = new Step(Step::kParentAxis, Step::NodeTest(Step::NodeTest::kAnyNodeTest));
     }
     ;
 
@@ -314,7 +314,7 @@ PrimaryExpr:
     VARIABLEREFERENCE
     {
         $$ = new VariableReference(*$1);
-        parser->deleteString($1);
+        parser->DeleteString($1);
     }
     |
     '(' Expr ')'
@@ -325,13 +325,13 @@ PrimaryExpr:
     LITERAL
     {
         $$ = new StringExpression(*$1);
-        parser->deleteString($1);
+        parser->DeleteString($1);
     }
     |
     NUMBER
     {
-        $$ = new Number($1->toDouble());
-        parser->deleteString($1);
+        $$ = new Number($1->ToDouble());
+        parser->DeleteString($1);
     }
     |
     FunctionCall
@@ -340,18 +340,18 @@ PrimaryExpr:
 FunctionCall:
     FUNCTIONNAME '(' ')'
     {
-        $$ = createFunction(*$1);
+        $$ = CreateFunction(*$1);
         if (!$$)
             YYABORT;
-        parser->deleteString($1);
+        parser->DeleteString($1);
     }
     |
     FUNCTIONNAME '(' ArgumentList ')'
     {
-        $$ = createFunction(*$1, *$3);
+        $$ = CreateFunction(*$1, *$3);
         if (!$$)
             YYABORT;
-        parser->deleteString($1);
+        parser->DeleteString($1);
     }
     ;
 
@@ -378,8 +378,8 @@ UnionExpr:
     UnionExpr '|' PathExpr
     {
         $$ = new Union;
-        $$->addSubExpression($1);
-        $$->addSubExpression($3);
+        $$->AddSubExpression($1);
+        $$->AddSubExpression($3);
     }
     ;
 
@@ -393,14 +393,14 @@ PathExpr:
     |
     FilterExpr '/' RelativeLocationPath
     {
-        $3->setAbsolute(true);
+        $3->SetAbsolute(true);
         $$ = new blink::XPath::Path($1, $3);
     }
     |
     FilterExpr DescendantOrSelf RelativeLocationPath
     {
-        $3->insertFirstStep($2);
-        $3->setAbsolute(true);
+        $3->InsertFirstStep($2);
+        $3->SetAbsolute(true);
         $$ = new blink::XPath::Path($1, $3);
     }
     ;
@@ -419,7 +419,7 @@ OrExpr:
     |
     OrExpr OR AndExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_Or, $1, $3);
+        $$ = new LogicalOp(LogicalOp::kOP_Or, $1, $3);
     }
     ;
 
@@ -428,7 +428,7 @@ AndExpr:
     |
     AndExpr AND EqualityExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_And, $1, $3);
+        $$ = new LogicalOp(LogicalOp::kOP_And, $1, $3);
     }
     ;
 
@@ -455,12 +455,12 @@ AdditiveExpr:
     |
     AdditiveExpr PLUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Add, $1, $3);
+        $$ = new NumericOp(NumericOp::kOP_Add, $1, $3);
     }
     |
     AdditiveExpr MINUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Sub, $1, $3);
+        $$ = new NumericOp(NumericOp::kOP_Sub, $1, $3);
     }
     ;
 
@@ -479,7 +479,7 @@ UnaryExpr:
     MINUS UnaryExpr
     {
         $$ = new Negative;
-        $$->addSubExpression($2);
+        $$->AddSubExpression($2);
     }
     ;
 

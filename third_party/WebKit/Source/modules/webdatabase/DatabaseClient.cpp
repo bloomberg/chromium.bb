@@ -39,56 +39,56 @@
 
 namespace blink {
 
-DatabaseClient::DatabaseClient() : m_inspectorAgent(nullptr) {}
+DatabaseClient::DatabaseClient() : inspector_agent_(nullptr) {}
 
 DEFINE_TRACE(DatabaseClient) {
-  visitor->trace(m_inspectorAgent);
-  Supplement<Page>::trace(visitor);
+  visitor->Trace(inspector_agent_);
+  Supplement<Page>::Trace(visitor);
 }
 
-DatabaseClient* DatabaseClient::fromPage(Page* page) {
+DatabaseClient* DatabaseClient::FromPage(Page* page) {
   return static_cast<DatabaseClient*>(
-      Supplement<Page>::from(page, supplementName()));
+      Supplement<Page>::From(page, SupplementName()));
 }
 
-DatabaseClient* DatabaseClient::from(ExecutionContext* context) {
-  return DatabaseClient::fromPage(toDocument(context)->page());
+DatabaseClient* DatabaseClient::From(ExecutionContext* context) {
+  return DatabaseClient::FromPage(ToDocument(context)->GetPage());
 }
 
-const char* DatabaseClient::supplementName() {
+const char* DatabaseClient::SupplementName() {
   return "DatabaseClient";
 }
 
-bool DatabaseClient::allowDatabase(ExecutionContext* context,
+bool DatabaseClient::AllowDatabase(ExecutionContext* context,
                                    const String& name,
-                                   const String& displayName,
-                                   unsigned estimatedSize) {
-  DCHECK(context->isContextThread());
-  Document* document = toDocument(context);
-  DCHECK(document->frame());
-  if (document->frame()->contentSettingsClient()) {
-    return document->frame()->contentSettingsClient()->allowDatabase(
-        name, displayName, estimatedSize);
+                                   const String& display_name,
+                                   unsigned estimated_size) {
+  DCHECK(context->IsContextThread());
+  Document* document = ToDocument(context);
+  DCHECK(document->GetFrame());
+  if (document->GetFrame()->GetContentSettingsClient()) {
+    return document->GetFrame()->GetContentSettingsClient()->AllowDatabase(
+        name, display_name, estimated_size);
   }
   return true;
 }
 
-void DatabaseClient::didOpenDatabase(blink::Database* database,
+void DatabaseClient::DidOpenDatabase(blink::Database* database,
                                      const String& domain,
                                      const String& name,
                                      const String& version) {
-  if (m_inspectorAgent)
-    m_inspectorAgent->didOpenDatabase(database, domain, name, version);
+  if (inspector_agent_)
+    inspector_agent_->DidOpenDatabase(database, domain, name, version);
 }
 
-void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent) {
+void DatabaseClient::SetInspectorAgent(InspectorDatabaseAgent* agent) {
   // TODO(dgozman): we should not set agent twice, but it's happening in OOPIF
   // case.
-  m_inspectorAgent = agent;
+  inspector_agent_ = agent;
 }
 
-void provideDatabaseClientTo(Page& page, DatabaseClient* client) {
-  page.provideSupplement(DatabaseClient::supplementName(), client);
+void ProvideDatabaseClientTo(Page& page, DatabaseClient* client) {
+  page.ProvideSupplement(DatabaseClient::SupplementName(), client);
 }
 
 }  // namespace blink

@@ -20,28 +20,28 @@ class MemoryRegion {
   USING_FAST_MALLOC(MemoryRegion);
 
  public:
-  MemoryRegion(Address base, size_t size) : m_base(base), m_size(size) {
+  MemoryRegion(Address base, size_t size) : base_(base), size_(size) {
     ASSERT(size > 0);
   }
 
-  bool contains(Address addr) const {
-    return m_base <= addr && addr < (m_base + m_size);
+  bool Contains(Address addr) const {
+    return base_ <= addr && addr < (base_ + size_);
   }
 
-  bool contains(const MemoryRegion& other) const {
-    return contains(other.m_base) && contains(other.m_base + other.m_size - 1);
+  bool Contains(const MemoryRegion& other) const {
+    return Contains(other.base_) && Contains(other.base_ + other.size_ - 1);
   }
 
-  void release();
-  WARN_UNUSED_RESULT bool commit();
-  void decommit();
+  void Release();
+  WARN_UNUSED_RESULT bool Commit();
+  void Decommit();
 
-  Address base() const { return m_base; }
-  size_t size() const { return m_size; }
+  Address Base() const { return base_; }
+  size_t size() const { return size_; }
 
  private:
-  Address m_base;
-  size_t m_size;
+  Address base_;
+  size_t size_;
 };
 
 // A PageMemoryRegion represents a chunk of reserved virtual address
@@ -54,54 +54,54 @@ class PageMemoryRegion : public MemoryRegion {
  public:
   ~PageMemoryRegion();
 
-  void pageDeleted(Address);
+  void PageDeleted(Address);
 
-  void markPageUsed(Address page) {
-    ASSERT(!m_inUse[index(page)]);
-    m_inUse[index(page)] = true;
+  void MarkPageUsed(Address page) {
+    ASSERT(!in_use_[Index(page)]);
+    in_use_[Index(page)] = true;
   }
 
-  void markPageUnused(Address page) { m_inUse[index(page)] = false; }
+  void MarkPageUnused(Address page) { in_use_[Index(page)] = false; }
 
-  static PageMemoryRegion* allocateLargePage(size_t size,
-                                             RegionTree* regionTree) {
-    return allocate(size, 1, regionTree);
+  static PageMemoryRegion* AllocateLargePage(size_t size,
+                                             RegionTree* region_tree) {
+    return Allocate(size, 1, region_tree);
   }
 
-  static PageMemoryRegion* allocateNormalPages(RegionTree* regionTree) {
-    return allocate(blinkPageSize * blinkPagesPerRegion, blinkPagesPerRegion,
-                    regionTree);
+  static PageMemoryRegion* AllocateNormalPages(RegionTree* region_tree) {
+    return Allocate(kBlinkPageSize * kBlinkPagesPerRegion, kBlinkPagesPerRegion,
+                    region_tree);
   }
 
-  BasePage* pageFromAddress(Address address) {
-    ASSERT(contains(address));
-    if (!m_inUse[index(address)])
+  BasePage* PageFromAddress(Address address) {
+    ASSERT(Contains(address));
+    if (!in_use_[Index(address)])
       return nullptr;
-    if (m_isLargePage)
-      return pageFromObject(base());
-    return pageFromObject(address);
+    if (is_large_page_)
+      return PageFromObject(Base());
+    return PageFromObject(address);
   }
 
  private:
-  PageMemoryRegion(Address base, size_t, unsigned numPages, RegionTree*);
+  PageMemoryRegion(Address base, size_t, unsigned num_pages, RegionTree*);
 
-  unsigned index(Address address) const {
-    ASSERT(contains(address));
-    if (m_isLargePage)
+  unsigned Index(Address address) const {
+    ASSERT(Contains(address));
+    if (is_large_page_)
       return 0;
-    size_t offset = blinkPageAddress(address) - base();
-    ASSERT(offset % blinkPageSize == 0);
-    return offset / blinkPageSize;
+    size_t offset = BlinkPageAddress(address) - Base();
+    ASSERT(offset % kBlinkPageSize == 0);
+    return offset / kBlinkPageSize;
   }
 
-  static PageMemoryRegion* allocate(size_t, unsigned numPages, RegionTree*);
+  static PageMemoryRegion* Allocate(size_t, unsigned num_pages, RegionTree*);
 
-  const bool m_isLargePage;
+  const bool is_large_page_;
   // A thread owns a page, but not a region. Represent the in-use
   // bitmap such that thread non-interference comes for free.
-  bool m_inUse[blinkPagesPerRegion];
-  int m_numPages;
-  RegionTree* m_regionTree;
+  bool in_use_[kBlinkPagesPerRegion];
+  int num_pages_;
+  RegionTree* region_tree_;
 };
 
 // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
@@ -110,14 +110,14 @@ class RegionTree {
   USING_FAST_MALLOC(RegionTree);
 
  public:
-  RegionTree() : m_root(nullptr) {}
+  RegionTree() : root_(nullptr) {}
 
-  void add(PageMemoryRegion*);
-  void remove(PageMemoryRegion*);
-  PageMemoryRegion* lookup(Address);
+  void Add(PageMemoryRegion*);
+  void Remove(PageMemoryRegion*);
+  PageMemoryRegion* Lookup(Address);
 
  private:
-  RegionTreeNode* m_root;
+  RegionTreeNode* root_;
 };
 
 class RegionTreeNode {
@@ -125,19 +125,19 @@ class RegionTreeNode {
 
  public:
   explicit RegionTreeNode(PageMemoryRegion* region)
-      : m_region(region), m_left(nullptr), m_right(nullptr) {}
+      : region_(region), left_(nullptr), right_(nullptr) {}
 
   ~RegionTreeNode() {
-    delete m_left;
-    delete m_right;
+    delete left_;
+    delete right_;
   }
 
-  void addTo(RegionTreeNode** context);
+  void AddTo(RegionTreeNode** context);
 
  private:
-  PageMemoryRegion* m_region;
-  RegionTreeNode* m_left;
-  RegionTreeNode* m_right;
+  PageMemoryRegion* region_;
+  RegionTreeNode* left_;
+  RegionTreeNode* right_;
 
   friend RegionTree;
 };
@@ -162,12 +162,12 @@ class PageMemory {
 
  public:
   ~PageMemory() {
-    __lsan_unregister_root_region(m_writable.base(), m_writable.size());
-    m_reserved->pageDeleted(writableStart());
+    __lsan_unregister_root_region(writable_.Base(), writable_.size());
+    reserved_->PageDeleted(WritableStart());
   }
 
-  WARN_UNUSED_RESULT bool commit() {
-    m_reserved->markPageUsed(writableStart());
+  WARN_UNUSED_RESULT bool Commit() {
+    reserved_->MarkPageUsed(WritableStart());
     // Check that in-use page isn't also marked as being a non-heap page
     // by the current heap's negative cache. That cache is invalidated
     // when allocating new pages, but crbug.com/649485 suggests that
@@ -175,25 +175,25 @@ class PageMemory {
     //
     // TODO(sof): consider removing check once bug has been diagnosed
     // and addressed.
-    CHECK(!ThreadState::current()->isAddressInHeapDoesNotContainCache(
-        writableStart()));
-    return m_writable.commit();
+    CHECK(!ThreadState::Current()->IsAddressInHeapDoesNotContainCache(
+        WritableStart()));
+    return writable_.Commit();
   }
 
-  void decommit() {
-    m_reserved->markPageUnused(writableStart());
-    m_writable.decommit();
+  void Decommit() {
+    reserved_->MarkPageUnused(WritableStart());
+    writable_.Decommit();
   }
 
-  void markUnused() { m_reserved->markPageUnused(writableStart()); }
+  void MarkUnused() { reserved_->MarkPageUnused(WritableStart()); }
 
-  PageMemoryRegion* region() { return m_reserved; }
+  PageMemoryRegion* Region() { return reserved_; }
 
-  Address writableStart() { return m_writable.base(); }
+  Address WritableStart() { return writable_.Base(); }
 
-  static PageMemory* setupPageMemoryInRegion(PageMemoryRegion*,
-                                             size_t pageOffset,
-                                             size_t payloadSize);
+  static PageMemory* SetupPageMemoryInRegion(PageMemoryRegion*,
+                                             size_t page_offset,
+                                             size_t payload_size);
 
   // Allocate a virtual address space for one blink page with the
   // following layout:
@@ -203,13 +203,13 @@ class PageMemory {
   //
   // The returned page memory region will be zeroed.
   //
-  static PageMemory* allocate(size_t payloadSize, RegionTree*);
+  static PageMemory* Allocate(size_t payload_size, RegionTree*);
 
  private:
   PageMemory(PageMemoryRegion* reserved, const MemoryRegion& writable);
 
-  PageMemoryRegion* m_reserved;
-  MemoryRegion m_writable;
+  PageMemoryRegion* reserved_;
+  MemoryRegion writable_;
 };
 
 }  // namespace blink

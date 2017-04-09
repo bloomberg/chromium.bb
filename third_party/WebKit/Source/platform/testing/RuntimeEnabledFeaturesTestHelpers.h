@@ -14,18 +14,18 @@ template <bool (&getter)(), void (&setter)(bool)>
 class ScopedRuntimeEnabledFeatureForTest {
  public:
   ScopedRuntimeEnabledFeatureForTest(bool enabled)
-      : m_enabled(enabled), m_original(getter()) {
+      : enabled_(enabled), original_(getter()) {
     setter(enabled);
   }
 
   ~ScopedRuntimeEnabledFeatureForTest() {
-    CHECK_EQ(m_enabled, getter());
-    setter(m_original);
+    CHECK_EQ(enabled_, getter());
+    setter(original_);
   }
 
  private:
-  bool m_enabled;
-  bool m_original;
+  bool enabled_;
+  bool original_;
 };
 
 typedef ScopedRuntimeEnabledFeatureForTest<

@@ -260,7 +260,7 @@ void FindRequestManager::Find(int request_id,
   DCHECK_GT(request_id, current_session_id_);
 
   // If this is a new find session, clear any queued requests from last session.
-  if (!options.findNext)
+  if (!options.find_next)
     find_request_queue_ = std::queue<FindRequest>();
 
   find_request_queue_.emplace(request_id, search_text, options);
@@ -365,7 +365,7 @@ void FindRequestManager::OnFindReply(RenderFrameHost* rfh,
   // This is the final update for the current find operation.
 
   if (request_id == current_request_.id && request_id != current_session_id_) {
-    DCHECK(current_request_.options.findNext);
+    DCHECK(current_request_.options.find_next);
     DCHECK_EQ(pending_find_next_reply_, rfh);
     pending_find_next_reply_ = nullptr;
   }
@@ -538,7 +538,7 @@ void FindRequestManager::FindInternal(const FindRequest& request) {
   DCHECK_GT(request.id, current_request_.id);
   DCHECK_GT(request.id, current_session_id_);
 
-  if (request.options.findNext) {
+  if (request.options.find_next) {
     // This is a find next operation.
 
     // This implies that there is an ongoing find session with the same search
@@ -585,7 +585,7 @@ void FindRequestManager::SendFindIPC(const FindRequest& request,
   DCHECK(CheckFrame(rfh));
   DCHECK(rfh->IsRenderFrameLive());
 
-  if (request.options.findNext)
+  if (request.options.find_next)
     pending_find_next_reply_ = rfh;
   else
     pending_initial_replies_.insert(rfh);
@@ -657,7 +657,7 @@ void FindRequestManager::AddFrame(RenderFrameHost* rfh, bool force) {
 
   FindRequest request = current_request_;
   request.id = current_session_id_;
-  request.options.findNext = false;
+  request.options.find_next = false;
   request.options.force = force;
   SendFindIPC(request, rfh);
 }
@@ -705,7 +705,7 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
   // request must be sent.
 
   RenderFrameHost* target_rfh;
-  if (request_id == current_request_.id && current_request_.options.findNext) {
+  if (request_id == current_request_.id && current_request_.options.find_next) {
     // If this was a find next operation, then the active match will be in the
     // next frame with matches after this one.
     target_rfh = Traverse(rfh,
@@ -737,7 +737,7 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
   // has not yet been found.
   NotifyFindReply(request_id, false /* final_update */);
 
-  current_request_.options.findNext = true;
+  current_request_.options.find_next = true;
   SendFindIPC(current_request_, target_rfh);
 }
 

@@ -48,12 +48,12 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   void OnDestruct() override;
 
   // blink::WebSpeechRecognizer implementation.
-  void start(const blink::WebSpeechRecognitionHandle&,
+  void Start(const blink::WebSpeechRecognitionHandle&,
              const blink::WebSpeechRecognitionParams&,
              blink::WebSpeechRecognizerClient*) override;
-  void stop(const blink::WebSpeechRecognitionHandle&,
+  void Stop(const blink::WebSpeechRecognitionHandle&,
             blink::WebSpeechRecognizerClient*) override;
-  void abort(const blink::WebSpeechRecognitionHandle&,
+  void Abort(const blink::WebSpeechRecognitionHandle&,
              blink::WebSpeechRecognizerClient*) override;
 
   void OnRecognitionStarted(int request_id);

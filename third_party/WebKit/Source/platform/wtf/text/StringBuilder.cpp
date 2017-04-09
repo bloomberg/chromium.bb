@@ -33,96 +33,96 @@
 
 namespace WTF {
 
-String StringBuilder::toString() {
-  if (!m_length)
-    return emptyString;
-  if (m_string.isNull()) {
-    if (m_is8Bit)
-      m_string = String(characters8(), m_length);
+String StringBuilder::ToString() {
+  if (!length_)
+    return g_empty_string;
+  if (string_.IsNull()) {
+    if (is8_bit_)
+      string_ = String(Characters8(), length_);
     else
-      m_string = String(characters16(), m_length);
-    clearBuffer();
+      string_ = String(Characters16(), length_);
+    ClearBuffer();
   }
-  return m_string;
+  return string_;
 }
 
-AtomicString StringBuilder::toAtomicString() {
-  if (!m_length)
-    return emptyAtom;
-  if (m_string.isNull()) {
-    if (m_is8Bit)
-      m_string = AtomicString(characters8(), m_length);
+AtomicString StringBuilder::ToAtomicString() {
+  if (!length_)
+    return g_empty_atom;
+  if (string_.IsNull()) {
+    if (is8_bit_)
+      string_ = AtomicString(Characters8(), length_);
     else
-      m_string = AtomicString(characters16(), m_length);
-    clearBuffer();
+      string_ = AtomicString(Characters16(), length_);
+    ClearBuffer();
   }
-  return AtomicString(m_string);
+  return AtomicString(string_);
 }
 
-String StringBuilder::substring(unsigned start, unsigned length) const {
-  if (start >= m_length)
-    return emptyString;
-  if (!m_string.isNull())
-    return m_string.substring(start, length);
-  length = std::min(length, m_length - start);
-  if (m_is8Bit)
-    return String(characters8() + start, length);
-  return String(characters16() + start, length);
+String StringBuilder::Substring(unsigned start, unsigned length) const {
+  if (start >= length_)
+    return g_empty_string;
+  if (!string_.IsNull())
+    return string_.Substring(start, length);
+  length = std::min(length, length_ - start);
+  if (is8_bit_)
+    return String(Characters8() + start, length);
+  return String(Characters16() + start, length);
 }
 
-void StringBuilder::swap(StringBuilder& builder) {
-  std::swap(m_string, builder.m_string);
-  std::swap(m_buffer, builder.m_buffer);
-  std::swap(m_length, builder.m_length);
-  std::swap(m_is8Bit, builder.m_is8Bit);
+void StringBuilder::Swap(StringBuilder& builder) {
+  std::swap(string_, builder.string_);
+  std::swap(buffer_, builder.buffer_);
+  std::swap(length_, builder.length_);
+  std::swap(is8_bit_, builder.is8_bit_);
 }
 
-void StringBuilder::clearBuffer() {
-  if (m_is8Bit)
-    delete m_buffer8;
+void StringBuilder::ClearBuffer() {
+  if (is8_bit_)
+    delete buffer8_;
   else
-    delete m_buffer16;
-  m_buffer = nullptr;
+    delete buffer16_;
+  buffer_ = nullptr;
 }
 
-void StringBuilder::clear() {
-  clearBuffer();
-  m_string = String();
-  m_length = 0;
-  m_is8Bit = true;
+void StringBuilder::Clear() {
+  ClearBuffer();
+  string_ = String();
+  length_ = 0;
+  is8_bit_ = true;
 }
 
-unsigned StringBuilder::capacity() const {
-  if (!hasBuffer())
+unsigned StringBuilder::Capacity() const {
+  if (!HasBuffer())
     return 0;
-  if (m_is8Bit)
-    return m_buffer8->capacity();
-  return m_buffer16->capacity();
+  if (is8_bit_)
+    return buffer8_->Capacity();
+  return buffer16_->Capacity();
 }
 
-void StringBuilder::reserveCapacity(unsigned newCapacity) {
-  if (m_is8Bit)
-    ensureBuffer8(newCapacity);
+void StringBuilder::ReserveCapacity(unsigned new_capacity) {
+  if (is8_bit_)
+    EnsureBuffer8(new_capacity);
   else
-    ensureBuffer16(newCapacity);
+    EnsureBuffer16(new_capacity);
 }
 
-void StringBuilder::resize(unsigned newSize) {
-  DCHECK_LE(newSize, m_length);
-  m_string = m_string.left(newSize);
-  m_length = newSize;
-  if (hasBuffer()) {
-    if (m_is8Bit)
-      m_buffer8->resize(newSize);
+void StringBuilder::Resize(unsigned new_size) {
+  DCHECK_LE(new_size, length_);
+  string_ = string_.Left(new_size);
+  length_ = new_size;
+  if (HasBuffer()) {
+    if (is8_bit_)
+      buffer8_->Resize(new_size);
     else
-      m_buffer16->resize(newSize);
+      buffer16_->Resize(new_size);
   }
 }
 
-void StringBuilder::createBuffer8(unsigned addedSize) {
-  DCHECK(!hasBuffer());
-  DCHECK(m_is8Bit);
-  m_buffer8 = new Buffer8;
+void StringBuilder::CreateBuffer8(unsigned added_size) {
+  DCHECK(!HasBuffer());
+  DCHECK(is8_bit_);
+  buffer8_ = new Buffer8;
   // createBuffer is called right before appending addedSize more bytes. We
   // want to ensure we have enough space to fit m_string plus the added
   // size.
@@ -132,36 +132,36 @@ void StringBuilder::createBuffer8(unsigned addedSize) {
   // strings or single characters. This is a no-op if m_length == 0 since
   // initialBufferSize() is the same as the inline capacity of the vector.
   // This allows doing append(string); append('\0') without extra mallocs.
-  m_buffer8->reserveInitialCapacity(m_length +
-                                    std::max(addedSize, initialBufferSize()));
-  m_length = 0;
-  append(m_string);
-  m_string = String();
+  buffer8_->ReserveInitialCapacity(length_ +
+                                   std::max(added_size, InitialBufferSize()));
+  length_ = 0;
+  Append(string_);
+  string_ = String();
 }
 
-void StringBuilder::createBuffer16(unsigned addedSize) {
-  DCHECK(m_is8Bit || !hasBuffer());
+void StringBuilder::CreateBuffer16(unsigned added_size) {
+  DCHECK(is8_bit_ || !HasBuffer());
   Buffer8 buffer8;
-  unsigned length = m_length;
-  if (m_buffer8) {
-    m_buffer8->swap(buffer8);
-    delete m_buffer8;
+  unsigned length = length_;
+  if (buffer8_) {
+    buffer8_->Swap(buffer8);
+    delete buffer8_;
   }
-  m_buffer16 = new Buffer16;
+  buffer16_ = new Buffer16;
   // See createBuffer8's call to reserveInitialCapacity for why we do this.
-  m_buffer16->reserveInitialCapacity(m_length +
-                                     std::max(addedSize, initialBufferSize()));
-  m_is8Bit = false;
-  m_length = 0;
-  if (!buffer8.isEmpty()) {
-    append(buffer8.data(), length);
+  buffer16_->ReserveInitialCapacity(length_ +
+                                    std::max(added_size, InitialBufferSize()));
+  is8_bit_ = false;
+  length_ = 0;
+  if (!buffer8.IsEmpty()) {
+    Append(buffer8.Data(), length);
     return;
   }
-  append(m_string);
-  m_string = String();
+  Append(string_);
+  string_ = String();
 }
 
-void StringBuilder::append(const UChar* characters, unsigned length) {
+void StringBuilder::Append(const UChar* characters, unsigned length) {
   if (!length)
     return;
   DCHECK(characters);
@@ -169,65 +169,65 @@ void StringBuilder::append(const UChar* characters, unsigned length) {
   // If there's only one char we use append(UChar) instead since it will
   // check for latin1 and avoid converting to 16bit if possible.
   if (length == 1) {
-    append(*characters);
+    Append(*characters);
     return;
   }
 
-  ensureBuffer16(length);
-  m_buffer16->append(characters, length);
-  m_length += length;
+  EnsureBuffer16(length);
+  buffer16_->Append(characters, length);
+  length_ += length;
 }
 
-void StringBuilder::append(const LChar* characters, unsigned length) {
+void StringBuilder::Append(const LChar* characters, unsigned length) {
   if (!length)
     return;
   DCHECK(characters);
 
-  if (m_is8Bit) {
-    ensureBuffer8(length);
-    m_buffer8->append(characters, length);
-    m_length += length;
+  if (is8_bit_) {
+    EnsureBuffer8(length);
+    buffer8_->Append(characters, length);
+    length_ += length;
     return;
   }
 
-  ensureBuffer16(length);
-  m_buffer16->append(characters, length);
-  m_length += length;
+  EnsureBuffer16(length);
+  buffer16_->Append(characters, length);
+  length_ += length;
 }
 
 template <typename IntegerType>
-static void appendIntegerInternal(StringBuilder& builder, IntegerType input) {
+static void AppendIntegerInternal(StringBuilder& builder, IntegerType input) {
   IntegerToStringConverter<IntegerType> converter(input);
-  builder.append(converter.characters8(), converter.length());
+  builder.Append(converter.Characters8(), converter.length());
 }
 
-void StringBuilder::appendNumber(int number) {
-  appendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(int number) {
+  AppendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(unsigned number) {
-  appendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(unsigned number) {
+  AppendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(long number) {
-  appendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(long number) {
+  AppendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(unsigned long number) {
-  appendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(unsigned long number) {
+  AppendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(long long number) {
-  appendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(long long number) {
+  AppendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(unsigned long long number) {
-  appendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(unsigned long long number) {
+  AppendIntegerInternal(*this, number);
 }
 
-void StringBuilder::appendNumber(double number, unsigned precision) {
+void StringBuilder::AppendNumber(double number, unsigned precision) {
   NumberToStringBuffer buffer;
-  append(numberToFixedPrecisionString(number, precision, buffer));
+  Append(NumberToFixedPrecisionString(number, precision, buffer));
 }
 
 }  // namespace WTF

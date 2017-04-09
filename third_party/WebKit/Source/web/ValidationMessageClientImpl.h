@@ -43,34 +43,34 @@ class ValidationMessageClientImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
  public:
-  static ValidationMessageClientImpl* create(WebViewImpl&);
+  static ValidationMessageClientImpl* Create(WebViewImpl&);
   ~ValidationMessageClientImpl() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   ValidationMessageClientImpl(WebViewImpl&);
-  void checkAnchorStatus(TimerBase*);
-  FrameView* currentView();
+  void CheckAnchorStatus(TimerBase*);
+  FrameView* CurrentView();
 
-  void showValidationMessage(const Element& anchor,
+  void ShowValidationMessage(const Element& anchor,
                              const String& message,
-                             TextDirection messageDir,
-                             const String& subMessage,
-                             TextDirection subMessageDir) override;
-  void hideValidationMessage(const Element& anchor) override;
-  bool isValidationMessageVisible(const Element& anchor) override;
-  void willUnloadDocument(const Document&) override;
-  void documentDetached(const Document&) override;
-  void willBeDestroyed() override;
+                             TextDirection message_dir,
+                             const String& sub_message,
+                             TextDirection sub_message_dir) override;
+  void HideValidationMessage(const Element& anchor) override;
+  bool IsValidationMessageVisible(const Element& anchor) override;
+  void WillUnloadDocument(const Document&) override;
+  void DocumentDetached(const Document&) override;
+  void WillBeDestroyed() override;
 
-  WebViewImpl& m_webView;
-  Member<const Element> m_currentAnchor;
-  String m_message;
-  IntRect m_lastAnchorRectInScreen;
-  float m_lastPageScaleFactor;
-  double m_finishTime;
-  std::unique_ptr<TimerBase> m_timer;
+  WebViewImpl& web_view_;
+  Member<const Element> current_anchor_;
+  String message_;
+  IntRect last_anchor_rect_in_screen_;
+  float last_page_scale_factor_;
+  double finish_time_;
+  std::unique_ptr<TimerBase> timer_;
 };
 
 }  // namespace blink

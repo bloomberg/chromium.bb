@@ -18,9 +18,9 @@ class WebWorkerContentSettingsClientProxy {
  public:
   virtual ~WebWorkerContentSettingsClientProxy() {}
 
-  virtual bool requestFileSystemAccessSync() { return true; }
+  virtual bool RequestFileSystemAccessSync() { return true; }
 
-  virtual bool allowIndexedDB(const WebString& name) { return true; }
+  virtual bool AllowIndexedDB(const WebString& name) { return true; }
 };
 
 }  // namespace blink

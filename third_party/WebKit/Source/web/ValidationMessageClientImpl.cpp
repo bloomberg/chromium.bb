@@ -38,122 +38,123 @@
 
 namespace blink {
 
-ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
-    : m_webView(webView),
-      m_currentAnchor(nullptr),
-      m_lastPageScaleFactor(1),
-      m_finishTime(0) {}
+ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& web_view)
+    : web_view_(web_view),
+      current_anchor_(nullptr),
+      last_page_scale_factor_(1),
+      finish_time_(0) {}
 
-ValidationMessageClientImpl* ValidationMessageClientImpl::create(
-    WebViewImpl& webView) {
-  return new ValidationMessageClientImpl(webView);
+ValidationMessageClientImpl* ValidationMessageClientImpl::Create(
+    WebViewImpl& web_view) {
+  return new ValidationMessageClientImpl(web_view);
 }
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl() {}
 
-FrameView* ValidationMessageClientImpl::currentView() {
-  return m_currentAnchor->document().view();
+FrameView* ValidationMessageClientImpl::CurrentView() {
+  return current_anchor_->GetDocument().View();
 }
 
-void ValidationMessageClientImpl::showValidationMessage(
+void ValidationMessageClientImpl::ShowValidationMessage(
     const Element& anchor,
     const String& message,
-    TextDirection messageDir,
-    const String& subMessage,
-    TextDirection subMessageDir) {
-  if (message.isEmpty()) {
-    hideValidationMessage(anchor);
+    TextDirection message_dir,
+    const String& sub_message,
+    TextDirection sub_message_dir) {
+  if (message.IsEmpty()) {
+    HideValidationMessage(anchor);
     return;
   }
-  if (!anchor.layoutBox())
+  if (!anchor.GetLayoutBox())
     return;
-  if (m_currentAnchor)
-    hideValidationMessage(*m_currentAnchor);
-  m_currentAnchor = &anchor;
-  IntRect anchorInViewport =
-      currentView()->contentsToViewport(anchor.pixelSnappedBoundingBox());
-  m_lastAnchorRectInScreen = currentView()->getHostWindow()->viewportToScreen(
-      anchorInViewport, currentView());
-  m_lastPageScaleFactor = m_webView.pageScaleFactor();
-  m_message = message;
-  const double minimumSecondToShowValidationMessage = 5.0;
-  const double secondPerCharacter = 0.05;
-  const double statusCheckInterval = 0.1;
+  if (current_anchor_)
+    HideValidationMessage(*current_anchor_);
+  current_anchor_ = &anchor;
+  IntRect anchor_in_viewport =
+      CurrentView()->ContentsToViewport(anchor.PixelSnappedBoundingBox());
+  last_anchor_rect_in_screen_ =
+      CurrentView()->GetHostWindow()->ViewportToScreen(anchor_in_viewport,
+                                                       CurrentView());
+  last_page_scale_factor_ = web_view_.PageScaleFactor();
+  message_ = message;
+  const double kMinimumSecondToShowValidationMessage = 5.0;
+  const double kSecondPerCharacter = 0.05;
+  const double kStatusCheckInterval = 0.1;
 
-  m_webView.client()->showValidationMessage(
-      anchorInViewport, m_message, toWebTextDirection(messageDir), subMessage,
-      toWebTextDirection(subMessageDir));
+  web_view_.Client()->ShowValidationMessage(
+      anchor_in_viewport, message_, ToWebTextDirection(message_dir),
+      sub_message, ToWebTextDirection(sub_message_dir));
 
-  m_finishTime =
-      monotonicallyIncreasingTime() +
-      std::max(minimumSecondToShowValidationMessage,
-               (message.length() + subMessage.length()) * secondPerCharacter);
+  finish_time_ =
+      MonotonicallyIncreasingTime() +
+      std::max(kMinimumSecondToShowValidationMessage,
+               (message.length() + sub_message.length()) * kSecondPerCharacter);
   // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
   // or page scale change happen.
-  m_timer = WTF::makeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
-      TaskRunnerHelper::get(TaskType::UnspecedTimer, &anchor.document()), this,
-      &ValidationMessageClientImpl::checkAnchorStatus);
-  m_timer->startRepeating(statusCheckInterval, BLINK_FROM_HERE);
+  timer_ = WTF::MakeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
+      TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &anchor.GetDocument()),
+      this, &ValidationMessageClientImpl::CheckAnchorStatus);
+  timer_->StartRepeating(kStatusCheckInterval, BLINK_FROM_HERE);
 }
 
-void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor) {
-  if (!m_currentAnchor || !isValidationMessageVisible(anchor))
+void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
+  if (!current_anchor_ || !IsValidationMessageVisible(anchor))
     return;
-  m_timer = nullptr;
-  m_currentAnchor = nullptr;
-  m_message = String();
-  m_finishTime = 0;
-  m_webView.client()->hideValidationMessage();
+  timer_ = nullptr;
+  current_anchor_ = nullptr;
+  message_ = String();
+  finish_time_ = 0;
+  web_view_.Client()->HideValidationMessage();
 }
 
-bool ValidationMessageClientImpl::isValidationMessageVisible(
+bool ValidationMessageClientImpl::IsValidationMessageVisible(
     const Element& anchor) {
-  return m_currentAnchor == &anchor;
+  return current_anchor_ == &anchor;
 }
 
-void ValidationMessageClientImpl::willUnloadDocument(const Document& document) {
-  if (m_currentAnchor && m_currentAnchor->document() == document)
-    hideValidationMessage(*m_currentAnchor);
+void ValidationMessageClientImpl::WillUnloadDocument(const Document& document) {
+  if (current_anchor_ && current_anchor_->GetDocument() == document)
+    HideValidationMessage(*current_anchor_);
 }
 
-void ValidationMessageClientImpl::documentDetached(const Document& document) {
-  DCHECK(!m_currentAnchor || m_currentAnchor->document() != document)
+void ValidationMessageClientImpl::DocumentDetached(const Document& document) {
+  DCHECK(!current_anchor_ || current_anchor_->GetDocument() != document)
       << "willUnloadDocument() should be called beforehand.";
 }
 
-void ValidationMessageClientImpl::checkAnchorStatus(TimerBase*) {
-  DCHECK(m_currentAnchor);
-  if (monotonicallyIncreasingTime() >= m_finishTime || !currentView()) {
-    hideValidationMessage(*m_currentAnchor);
+void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
+  DCHECK(current_anchor_);
+  if (MonotonicallyIncreasingTime() >= finish_time_ || !CurrentView()) {
+    HideValidationMessage(*current_anchor_);
     return;
   }
 
-  IntRect newAnchorRectInViewport =
-      m_currentAnchor->visibleBoundsInVisualViewport();
-  if (newAnchorRectInViewport.isEmpty()) {
-    hideValidationMessage(*m_currentAnchor);
+  IntRect new_anchor_rect_in_viewport =
+      current_anchor_->VisibleBoundsInVisualViewport();
+  if (new_anchor_rect_in_viewport.IsEmpty()) {
+    HideValidationMessage(*current_anchor_);
     return;
   }
 
-  IntRect newAnchorRectInViewportInScreen =
-      currentView()->getHostWindow()->viewportToScreen(newAnchorRectInViewport,
-                                                       currentView());
-  if (newAnchorRectInViewportInScreen == m_lastAnchorRectInScreen &&
-      m_webView.pageScaleFactor() == m_lastPageScaleFactor)
+  IntRect new_anchor_rect_in_viewport_in_screen =
+      CurrentView()->GetHostWindow()->ViewportToScreen(
+          new_anchor_rect_in_viewport, CurrentView());
+  if (new_anchor_rect_in_viewport_in_screen == last_anchor_rect_in_screen_ &&
+      web_view_.PageScaleFactor() == last_page_scale_factor_)
     return;
-  m_lastAnchorRectInScreen = newAnchorRectInViewportInScreen;
-  m_lastPageScaleFactor = m_webView.pageScaleFactor();
-  m_webView.client()->moveValidationMessage(newAnchorRectInViewport);
+  last_anchor_rect_in_screen_ = new_anchor_rect_in_viewport_in_screen;
+  last_page_scale_factor_ = web_view_.PageScaleFactor();
+  web_view_.Client()->MoveValidationMessage(new_anchor_rect_in_viewport);
 }
 
-void ValidationMessageClientImpl::willBeDestroyed() {
-  if (m_currentAnchor)
-    hideValidationMessage(*m_currentAnchor);
+void ValidationMessageClientImpl::WillBeDestroyed() {
+  if (current_anchor_)
+    HideValidationMessage(*current_anchor_);
 }
 
 DEFINE_TRACE(ValidationMessageClientImpl) {
-  visitor->trace(m_currentAnchor);
-  ValidationMessageClient::trace(visitor);
+  visitor->Trace(current_anchor_);
+  ValidationMessageClient::Trace(visitor);
 }
 
 }  // namespace blink

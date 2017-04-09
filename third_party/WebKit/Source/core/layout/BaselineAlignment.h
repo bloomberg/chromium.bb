@@ -22,23 +22,23 @@ namespace blink {
 //   that want to align are on the same side of the alignment context).
 class BaselineGroup {
  public:
-  void update(const LayoutBox&, LayoutUnit ascent, LayoutUnit descent);
-  LayoutUnit maxAscent() const { return m_maxAscent; }
-  LayoutUnit maxDescent() const { return m_maxDescent; }
-  int size() const { return m_items.size(); }
+  void Update(const LayoutBox&, LayoutUnit ascent, LayoutUnit descent);
+  LayoutUnit MaxAscent() const { return max_ascent_; }
+  LayoutUnit MaxDescent() const { return max_descent_; }
+  int size() const { return items_.size(); }
 
  private:
   friend class BaselineContext;
-  BaselineGroup(WritingMode blockFlow, ItemPosition childPreference);
-  bool isCompatible(WritingMode, ItemPosition) const;
-  bool isOppositeBlockFlow(WritingMode blockFlow) const;
-  bool isOrthogonalBlockFlow(WritingMode blockFlow) const;
+  BaselineGroup(WritingMode block_flow, ItemPosition child_preference);
+  bool IsCompatible(WritingMode, ItemPosition) const;
+  bool IsOppositeBlockFlow(WritingMode block_flow) const;
+  bool IsOrthogonalBlockFlow(WritingMode block_flow) const;
 
-  WritingMode m_blockFlow;
-  ItemPosition m_preference;
-  LayoutUnit m_maxAscent;
-  LayoutUnit m_maxDescent;
-  HashSet<const LayoutBox*> m_items;
+  WritingMode block_flow_;
+  ItemPosition preference_;
+  LayoutUnit max_ascent_;
+  LayoutUnit max_descent_;
+  HashSet<const LayoutBox*> items_;
 };
 
 // Boxes share an alignment context along a particular axis when they
@@ -57,10 +57,10 @@ class BaselineContext {
                   ItemPosition preference,
                   LayoutUnit ascent,
                   LayoutUnit descent);
-  Vector<BaselineGroup>& sharedGroups() { return m_sharedGroups; }
-  const BaselineGroup& getSharedGroup(const LayoutBox& child,
+  Vector<BaselineGroup>& SharedGroups() { return shared_groups_; }
+  const BaselineGroup& GetSharedGroup(const LayoutBox& child,
                                       ItemPosition preference) const;
-  void updateSharedGroup(const LayoutBox& child,
+  void UpdateSharedGroup(const LayoutBox& child,
                          ItemPosition preference,
                          LayoutUnit ascent,
                          LayoutUnit descent);
@@ -68,15 +68,15 @@ class BaselineContext {
  private:
   // TODO Properly implement baseline-group compatibility
   // See https://github.com/w3c/csswg-drafts/issues/721
-  BaselineGroup& findCompatibleSharedGroup(const LayoutBox& child,
+  BaselineGroup& FindCompatibleSharedGroup(const LayoutBox& child,
                                            ItemPosition preference);
 
-  Vector<BaselineGroup> m_sharedGroups;
+  Vector<BaselineGroup> shared_groups_;
 };
 
-static inline bool isBaselinePosition(ItemPosition position) {
-  return position == ItemPositionBaseline ||
-         position == ItemPositionLastBaseline;
+static inline bool IsBaselinePosition(ItemPosition position) {
+  return position == kItemPositionBaseline ||
+         position == kItemPositionLastBaseline;
 }
 
 }  // namespace blink

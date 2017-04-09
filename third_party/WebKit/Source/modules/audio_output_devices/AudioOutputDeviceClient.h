@@ -23,19 +23,19 @@ class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
 
   // Checks that a given sink exists and has permissions to be used from the
   // origin of the current frame.
-  virtual void checkIfAudioSinkExistsAndIsAuthorized(
+  virtual void CheckIfAudioSinkExistsAndIsAuthorized(
       ExecutionContext*,
-      const WebString& sinkId,
+      const WebString& sink_id,
       std::unique_ptr<WebSetSinkIdCallbacks>) = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
   // Supplement requirements.
-  static AudioOutputDeviceClient* from(ExecutionContext*);
-  static const char* supplementName();
+  static AudioOutputDeviceClient* From(ExecutionContext*);
+  static const char* SupplementName();
 };
 
-MODULES_EXPORT void provideAudioOutputDeviceClientTo(LocalFrame&,
+MODULES_EXPORT void ProvideAudioOutputDeviceClientTo(LocalFrame&,
                                                      AudioOutputDeviceClient*);
 
 }  // namespace blink

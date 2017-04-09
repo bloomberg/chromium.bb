@@ -36,43 +36,43 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   explicit LayoutSVGResourceMasker(SVGMaskElement*);
   ~LayoutSVGResourceMasker() override;
 
-  const char* name() const override { return "LayoutSVGResourceMasker"; }
+  const char* GetName() const override { return "LayoutSVGResourceMasker"; }
 
-  void removeAllClientsFromCache(bool markForInvalidation = true) override;
-  void removeClientFromCache(LayoutObject*,
-                             bool markForInvalidation = true) override;
+  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
+  void RemoveClientFromCache(LayoutObject*,
+                             bool mark_for_invalidation = true) override;
 
-  FloatRect resourceBoundingBox(const LayoutObject*);
+  FloatRect ResourceBoundingBox(const LayoutObject*);
 
-  SVGUnitTypes::SVGUnitType maskUnits() const {
-    return toSVGMaskElement(element())
+  SVGUnitTypes::SVGUnitType MaskUnits() const {
+    return toSVGMaskElement(GetElement())
         ->maskUnits()
-        ->currentValue()
-        ->enumValue();
+        ->CurrentValue()
+        ->EnumValue();
   }
-  SVGUnitTypes::SVGUnitType maskContentUnits() const {
-    return toSVGMaskElement(element())
+  SVGUnitTypes::SVGUnitType MaskContentUnits() const {
+    return toSVGMaskElement(GetElement())
         ->maskContentUnits()
-        ->currentValue()
-        ->enumValue();
+        ->CurrentValue()
+        ->EnumValue();
   }
 
-  static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
-  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType kResourceType = kMaskerResourceType;
+  LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
-  sk_sp<const PaintRecord> createPaintRecord(AffineTransform&,
+  sk_sp<const PaintRecord> CreatePaintRecord(AffineTransform&,
                                              const FloatRect&,
                                              GraphicsContext&);
 
  private:
-  void calculateMaskContentVisualRect();
+  void CalculateMaskContentVisualRect();
 
-  sk_sp<const PaintRecord> m_cachedPaintRecord;
-  FloatRect m_maskContentBoundaries;
+  sk_sp<const PaintRecord> cached_paint_record_;
+  FloatRect mask_content_boundaries_;
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMasker,
-                                      MaskerResourceType);
+                                      kMaskerResourceType);
 
 }  // namespace blink
 

@@ -60,7 +60,7 @@ class WebScopedUserGesture {
   BLINK_EXPORT ~WebScopedUserGesture();
 
  private:
-  std::unique_ptr<UserGestureIndicator> m_indicator;
+  std::unique_ptr<UserGestureIndicator> indicator_;
 };
 
 }  // namespace blink

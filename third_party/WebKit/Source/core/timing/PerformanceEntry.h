@@ -56,16 +56,16 @@ class CORE_EXPORT PerformanceEntry
   virtual ~PerformanceEntry();
 
   enum EntryType : PerformanceEntryType {
-    Invalid = 0,
-    Navigation = 1 << 0,
-    Composite = 1 << 1,
-    Mark = 1 << 2,
-    Measure = 1 << 3,
-    Render = 1 << 4,
-    Resource = 1 << 5,
-    LongTask = 1 << 6,
-    TaskAttribution = 1 << 7,
-    Paint = 1 << 8
+    kInvalid = 0,
+    kNavigation = 1 << 0,
+    kComposite = 1 << 1,
+    kMark = 1 << 2,
+    kMeasure = 1 << 3,
+    kRender = 1 << 4,
+    kResource = 1 << 5,
+    kLongTask = 1 << 6,
+    kTaskAttribution = 1 << 7,
+    kPaint = 1 << 8
   };
 
   String name() const;
@@ -79,36 +79,36 @@ class CORE_EXPORT PerformanceEntry
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  PerformanceEntryType entryTypeEnum() const { return m_entryTypeEnum; }
+  PerformanceEntryType EntryTypeEnum() const { return entry_type_enum_; }
 
-  bool isResource() const { return m_entryTypeEnum == Resource; }
-  bool isRender() const { return m_entryTypeEnum == Render; }
-  bool isComposite() const { return m_entryTypeEnum == Composite; }
-  bool isMark() const { return m_entryTypeEnum == Mark; }
-  bool isMeasure() const { return m_entryTypeEnum == Measure; }
+  bool IsResource() const { return entry_type_enum_ == kResource; }
+  bool IsRender() const { return entry_type_enum_ == kRender; }
+  bool IsComposite() const { return entry_type_enum_ == kComposite; }
+  bool IsMark() const { return entry_type_enum_ == kMark; }
+  bool IsMeasure() const { return entry_type_enum_ == kMeasure; }
 
-  static bool startTimeCompareLessThan(PerformanceEntry* a,
+  static bool StartTimeCompareLessThan(PerformanceEntry* a,
                                        PerformanceEntry* b) {
     return a->startTime() < b->startTime();
   }
 
-  static PerformanceEntry::EntryType toEntryTypeEnum(const String& entryType);
+  static PerformanceEntry::EntryType ToEntryTypeEnum(const String& entry_type);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   PerformanceEntry(const String& name,
-                   const String& entryType,
-                   double startTime,
-                   double finishTime);
-  virtual void buildJSONValue(V8ObjectBuilder&) const;
+                   const String& entry_type,
+                   double start_time,
+                   double finish_time);
+  virtual void BuildJSONValue(V8ObjectBuilder&) const;
 
  private:
-  const String m_name;
-  const String m_entryType;
-  const double m_startTime;
-  const double m_duration;
-  const PerformanceEntryType m_entryTypeEnum;
+  const String name_;
+  const String entry_type_;
+  const double start_time_;
+  const double duration_;
+  const PerformanceEntryType entry_type_enum_;
 };
 
 }  // namespace blink

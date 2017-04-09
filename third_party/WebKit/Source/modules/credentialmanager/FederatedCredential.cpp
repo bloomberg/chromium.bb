@@ -12,48 +12,49 @@
 
 namespace blink {
 
-FederatedCredential* FederatedCredential::create(
-    WebFederatedCredential* webFederatedCredential) {
-  return new FederatedCredential(webFederatedCredential);
+FederatedCredential* FederatedCredential::Create(
+    WebFederatedCredential* web_federated_credential) {
+  return new FederatedCredential(web_federated_credential);
 }
 
-FederatedCredential* FederatedCredential::create(
+FederatedCredential* FederatedCredential::Create(
     const FederatedCredentialData& data,
-    ExceptionState& exceptionState) {
-  if (data.id().isEmpty()) {
-    exceptionState.throwTypeError("'id' must not be empty.");
+    ExceptionState& exception_state) {
+  if (data.id().IsEmpty()) {
+    exception_state.ThrowTypeError("'id' must not be empty.");
     return nullptr;
   }
-  if (data.provider().isEmpty()) {
-    exceptionState.throwTypeError("'provider' must not be empty.");
+  if (data.provider().IsEmpty()) {
+    exception_state.ThrowTypeError("'provider' must not be empty.");
     return nullptr;
   }
 
-  KURL iconURL = parseStringAsURL(data.iconURL(), exceptionState);
-  KURL providerURL = parseStringAsURL(data.provider(), exceptionState);
-  if (exceptionState.hadException())
+  KURL icon_url = ParseStringAsURL(data.iconURL(), exception_state);
+  KURL provider_url = ParseStringAsURL(data.provider(), exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  return new FederatedCredential(data.id(), providerURL, data.name(), iconURL);
+  return new FederatedCredential(data.id(), provider_url, data.name(),
+                                 icon_url);
 }
 
 FederatedCredential::FederatedCredential(
-    WebFederatedCredential* webFederatedCredential)
-    : SiteBoundCredential(webFederatedCredential->getPlatformCredential()) {}
+    WebFederatedCredential* web_federated_credential)
+    : SiteBoundCredential(web_federated_credential->GetPlatformCredential()) {}
 
 FederatedCredential::FederatedCredential(const String& id,
                                          const KURL& provider,
                                          const String& name,
                                          const KURL& icon)
     : SiteBoundCredential(
-          PlatformFederatedCredential::create(id,
-                                              SecurityOrigin::create(provider),
+          PlatformFederatedCredential::Create(id,
+                                              SecurityOrigin::Create(provider),
                                               name,
                                               icon)) {}
 
 const String FederatedCredential::provider() const {
-  return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())
-      ->provider()
-      ->toString();
+  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
+      ->Provider()
+      ->ToString();
 }
 
 }  // namespace blink

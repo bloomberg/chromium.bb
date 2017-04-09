@@ -45,15 +45,15 @@ class CrossOriginPreflightResultCacheItem {
 
  public:
   explicit CrossOriginPreflightResultCacheItem(StoredCredentials credentials)
-      : m_absoluteExpiryTime(0), m_credentials(credentials) {}
+      : absolute_expiry_time_(0), credentials_(credentials) {}
 
-  bool parse(const ResourceResponse&, String& errorDescription);
-  bool allowsCrossOriginMethod(const String&, String& errorDescription) const;
-  bool allowsCrossOriginHeaders(const HTTPHeaderMap&,
-                                String& errorDescription) const;
-  bool allowsRequest(StoredCredentials,
+  bool Parse(const ResourceResponse&, String& error_description);
+  bool AllowsCrossOriginMethod(const String&, String& error_description) const;
+  bool AllowsCrossOriginHeaders(const HTTPHeaderMap&,
+                                String& error_description) const;
+  bool AllowsRequest(StoredCredentials,
                      const String& method,
-                     const HTTPHeaderMap& requestHeaders) const;
+                     const HTTPHeaderMap& request_headers) const;
 
  private:
   typedef HashSet<String, CaseFoldingHash> HeadersSet;
@@ -61,10 +61,10 @@ class CrossOriginPreflightResultCacheItem {
   // FIXME: A better solution to holding onto the absolute expiration time might
   // be to start a timer for the expiration delta that removes this from the
   // cache when it fires.
-  double m_absoluteExpiryTime;
-  StoredCredentials m_credentials;
-  HashSet<String> m_methods;
-  HeadersSet m_headers;
+  double absolute_expiry_time_;
+  StoredCredentials credentials_;
+  HashSet<String> methods_;
+  HeadersSet headers_;
 };
 
 class CrossOriginPreflightResultCache {
@@ -72,16 +72,16 @@ class CrossOriginPreflightResultCache {
   USING_FAST_MALLOC(CrossOriginPreflightResultCache);
 
  public:
-  static CrossOriginPreflightResultCache& shared();
+  static CrossOriginPreflightResultCache& Shared();
 
-  void appendEntry(const String& origin,
+  void AppendEntry(const String& origin,
                    const KURL&,
                    std::unique_ptr<CrossOriginPreflightResultCacheItem>);
-  bool canSkipPreflight(const String& origin,
+  bool CanSkipPreflight(const String& origin,
                         const KURL&,
                         StoredCredentials,
                         const String& method,
-                        const HTTPHeaderMap& requestHeaders);
+                        const HTTPHeaderMap& request_headers);
 
  private:
   CrossOriginPreflightResultCache() {}
@@ -90,7 +90,7 @@ class CrossOriginPreflightResultCache {
                   std::unique_ptr<CrossOriginPreflightResultCacheItem>>
       CrossOriginPreflightResultHashMap;
 
-  CrossOriginPreflightResultHashMap m_preflightHashMap;
+  CrossOriginPreflightResultHashMap preflight_hash_map_;
 };
 
 }  // namespace blink

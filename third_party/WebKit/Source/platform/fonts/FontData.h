@@ -46,24 +46,24 @@ class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
 
   virtual ~FontData();
 
-  virtual const SimpleFontData* fontDataForCharacter(UChar32) const = 0;
-  virtual bool isCustomFont() const = 0;
-  virtual bool isLoading() const = 0;
+  virtual const SimpleFontData* FontDataForCharacter(UChar32) const = 0;
+  virtual bool IsCustomFont() const = 0;
+  virtual bool IsLoading() const = 0;
   // Returns whether this is a temporary font data for a custom font which is
   // not yet loaded.
-  virtual bool isLoadingFallback() const = 0;
-  virtual bool isSegmented() const = 0;
-  virtual bool shouldSkipDrawing() const = 0;
+  virtual bool IsLoadingFallback() const = 0;
+  virtual bool IsSegmented() const = 0;
+  virtual bool ShouldSkipDrawing() const = 0;
 };
 
 #define DEFINE_FONT_DATA_TYPE_CASTS(thisType, predicate)     \
   template <typename T>                                      \
-  inline thisType* to##thisType(const RefPtr<T>& fontData) { \
-    return to##thisType(fontData.get());                     \
+  inline thisType* To##thisType(const RefPtr<T>& fontData) { \
+    return To##thisType(fontData.Get());                     \
   }                                                          \
   DEFINE_TYPE_CASTS(thisType, FontData, fontData,            \
-                    fontData->isSegmented() == predicate,    \
-                    fontData.isSegmented() == predicate)
+                    fontData->IsSegmented() == predicate,    \
+                    fontData.IsSegmented() == predicate)
 
 }  // namespace blink
 

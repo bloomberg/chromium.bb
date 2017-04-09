@@ -30,15 +30,15 @@ inline SVGTSpanElement::SVGTSpanElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)
 
-LayoutObject* SVGTSpanElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGTSpanElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGTSpan(this);
 }
 
-bool SVGTSpanElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+bool SVGTSpanElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   if (parentNode() &&
       (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode()) ||
        isSVGTextPathElement(*parentNode()) || isSVGTSpanElement(*parentNode())))
-    return SVGElement::layoutObjectIsNeeded(style);
+    return SVGElement::LayoutObjectIsNeeded(style);
 
   return false;
 }

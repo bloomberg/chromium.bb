@@ -45,128 +45,128 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static const int monthDefaultStep = 1;
-static const int monthDefaultStepBase = 0;
-static const int monthStepScaleFactor = 1;
+static const int kMonthDefaultStep = 1;
+static const int kMonthDefaultStepBase = 0;
+static const int kMonthStepScaleFactor = 1;
 
-InputType* MonthInputType::create(HTMLInputElement& element) {
+InputType* MonthInputType::Create(HTMLInputElement& element) {
   return new MonthInputType(element);
 }
 
-void MonthInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypeMonth);
+void MonthInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypeMonth);
 }
 
-const AtomicString& MonthInputType::formControlType() const {
+const AtomicString& MonthInputType::FormControlType() const {
   return InputTypeNames::month;
 }
 
-double MonthInputType::valueAsDate() const {
+double MonthInputType::ValueAsDate() const {
   DateComponents date;
-  if (!parseToDateComponents(element().value(), &date))
-    return DateComponents::invalidMilliseconds();
-  double msec = date.millisecondsSinceEpoch();
+  if (!ParseToDateComponents(GetElement().value(), &date))
+    return DateComponents::InvalidMilliseconds();
+  double msec = date.MillisecondsSinceEpoch();
   DCHECK(std::isfinite(msec));
   return msec;
 }
 
-String MonthInputType::serializeWithMilliseconds(double value) const {
+String MonthInputType::SerializeWithMilliseconds(double value) const {
   DateComponents date;
-  if (!date.setMillisecondsSinceEpochForMonth(value))
+  if (!date.SetMillisecondsSinceEpochForMonth(value))
     return String();
-  return serializeWithComponents(date);
+  return SerializeWithComponents(date);
 }
 
-Decimal MonthInputType::defaultValueForStepUp() const {
+Decimal MonthInputType::DefaultValueForStepUp() const {
   DateComponents date;
-  date.setMillisecondsSinceEpochForMonth(convertToLocalTime(currentTimeMS()));
-  double months = date.monthsSinceEpoch();
+  date.SetMillisecondsSinceEpochForMonth(ConvertToLocalTime(CurrentTimeMS()));
+  double months = date.MonthsSinceEpoch();
   DCHECK(std::isfinite(months));
-  return Decimal::fromDouble(months);
+  return Decimal::FromDouble(months);
 }
 
-StepRange MonthInputType::createStepRange(
-    AnyStepHandling anyStepHandling) const {
+StepRange MonthInputType::CreateStepRange(
+    AnyStepHandling any_step_handling) const {
   DEFINE_STATIC_LOCAL(
-      const StepRange::StepDescription, stepDescription,
-      (monthDefaultStep, monthDefaultStepBase, monthStepScaleFactor,
-       StepRange::ParsedStepValueShouldBeInteger));
+      const StepRange::StepDescription, step_description,
+      (kMonthDefaultStep, kMonthDefaultStepBase, kMonthStepScaleFactor,
+       StepRange::kParsedStepValueShouldBeInteger));
 
-  return InputType::createStepRange(
-      anyStepHandling, Decimal::fromDouble(monthDefaultStepBase),
-      Decimal::fromDouble(DateComponents::minimumMonth()),
-      Decimal::fromDouble(DateComponents::maximumMonth()), stepDescription);
+  return InputType::CreateStepRange(
+      any_step_handling, Decimal::FromDouble(kMonthDefaultStepBase),
+      Decimal::FromDouble(DateComponents::MinimumMonth()),
+      Decimal::FromDouble(DateComponents::MaximumMonth()), step_description);
 }
 
-Decimal MonthInputType::parseToNumber(const String& src,
-                                      const Decimal& defaultValue) const {
+Decimal MonthInputType::ParseToNumber(const String& src,
+                                      const Decimal& default_value) const {
   DateComponents date;
-  if (!parseToDateComponents(src, &date))
-    return defaultValue;
-  double months = date.monthsSinceEpoch();
+  if (!ParseToDateComponents(src, &date))
+    return default_value;
+  double months = date.MonthsSinceEpoch();
   DCHECK(std::isfinite(months));
-  return Decimal::fromDouble(months);
+  return Decimal::FromDouble(months);
 }
 
-bool MonthInputType::parseToDateComponentsInternal(const String& string,
+bool MonthInputType::ParseToDateComponentsInternal(const String& string,
                                                    DateComponents* out) const {
   DCHECK(out);
   unsigned end;
-  return out->parseMonth(string, 0, end) && end == string.length();
+  return out->ParseMonth(string, 0, end) && end == string.length();
 }
 
-bool MonthInputType::setMillisecondToDateComponents(
+bool MonthInputType::SetMillisecondToDateComponents(
     double value,
     DateComponents* date) const {
   DCHECK(date);
-  return date->setMonthsSinceEpoch(value);
+  return date->SetMonthsSinceEpoch(value);
 }
 
-bool MonthInputType::canSetSuggestedValue() {
+bool MonthInputType::CanSetSuggestedValue() {
   return true;
 }
 
-void MonthInputType::warnIfValueIsInvalid(const String& value) const {
-  if (value != element().sanitizeValue(value))
-    addWarningToConsole(
+void MonthInputType::WarnIfValueIsInvalid(const String& value) const {
+  if (value != GetElement().SanitizeValue(value))
+    AddWarningToConsole(
         "The specified value %s does not conform to the required format.  The "
         "format is \"yyyy-MM\" where yyyy is year in four or more digits, and "
         "MM is 01-12.",
         value);
 }
 
-String MonthInputType::formatDateTimeFieldsState(
-    const DateTimeFieldsState& dateTimeFieldsState) const {
-  if (!dateTimeFieldsState.hasMonth() || !dateTimeFieldsState.hasYear())
-    return emptyString;
-  return String::format("%04u-%02u", dateTimeFieldsState.year(),
-                        dateTimeFieldsState.month());
+String MonthInputType::FormatDateTimeFieldsState(
+    const DateTimeFieldsState& date_time_fields_state) const {
+  if (!date_time_fields_state.HasMonth() || !date_time_fields_state.HasYear())
+    return g_empty_string;
+  return String::Format("%04u-%02u", date_time_fields_state.Year(),
+                        date_time_fields_state.Month());
 }
 
-void MonthInputType::setupLayoutParameters(
-    DateTimeEditElement::LayoutParameters& layoutParameters,
+void MonthInputType::SetupLayoutParameters(
+    DateTimeEditElement::LayoutParameters& layout_parameters,
     const DateComponents& date) const {
-  layoutParameters.dateTimeFormat = layoutParameters.locale.monthFormat();
-  layoutParameters.fallbackDateTimeFormat = "yyyy-MM";
-  if (!parseToDateComponents(element().fastGetAttribute(minAttr),
-                             &layoutParameters.minimum))
-    layoutParameters.minimum = DateComponents();
-  if (!parseToDateComponents(element().fastGetAttribute(maxAttr),
-                             &layoutParameters.maximum))
-    layoutParameters.maximum = DateComponents();
-  layoutParameters.placeholderForMonth = "--";
-  layoutParameters.placeholderForYear = "----";
+  layout_parameters.date_time_format = layout_parameters.locale.MonthFormat();
+  layout_parameters.fallback_date_time_format = "yyyy-MM";
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(minAttr),
+                             &layout_parameters.minimum))
+    layout_parameters.minimum = DateComponents();
+  if (!ParseToDateComponents(GetElement().FastGetAttribute(maxAttr),
+                             &layout_parameters.maximum))
+    layout_parameters.maximum = DateComponents();
+  layout_parameters.placeholder_for_month = "--";
+  layout_parameters.placeholder_for_year = "----";
 }
 
-bool MonthInputType::isValidFormat(bool hasYear,
-                                   bool hasMonth,
-                                   bool hasWeek,
-                                   bool hasDay,
-                                   bool hasAMPM,
-                                   bool hasHour,
-                                   bool hasMinute,
-                                   bool hasSecond) const {
-  return hasYear && hasMonth;
+bool MonthInputType::IsValidFormat(bool has_year,
+                                   bool has_month,
+                                   bool has_week,
+                                   bool has_day,
+                                   bool has_ampm,
+                                   bool has_hour,
+                                   bool has_minute,
+                                   bool has_second) const {
+  return has_year && has_month;
 }
 
 }  // namespace blink

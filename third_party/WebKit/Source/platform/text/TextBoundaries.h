@@ -31,22 +31,22 @@
 
 namespace blink {
 
-inline bool requiresContextForWordBoundary(UChar32 ch) {
-  return WTF::Unicode::hasLineBreakingPropertyComplexContext(ch);
+inline bool RequiresContextForWordBoundary(UChar32 ch) {
+  return WTF::Unicode::HasLineBreakingPropertyComplexContext(ch);
 }
 
-PLATFORM_EXPORT int endOfFirstWordBoundaryContext(const UChar* characters,
+PLATFORM_EXPORT int EndOfFirstWordBoundaryContext(const UChar* characters,
                                                   int length);
-PLATFORM_EXPORT int startOfLastWordBoundaryContext(const UChar* characters,
+PLATFORM_EXPORT int StartOfLastWordBoundaryContext(const UChar* characters,
                                                    int length);
 
-PLATFORM_EXPORT void findWordBoundary(const UChar*,
+PLATFORM_EXPORT void FindWordBoundary(const UChar*,
                                       int len,
                                       int position,
                                       int* start,
                                       int* end);
-PLATFORM_EXPORT int findWordEndBoundary(const UChar*, int len, int position);
-PLATFORM_EXPORT int findNextWordFromIndex(const UChar*,
+PLATFORM_EXPORT int FindWordEndBoundary(const UChar*, int len, int position);
+PLATFORM_EXPORT int FindNextWordFromIndex(const UChar*,
                                           int len,
                                           int position,
                                           bool forward);

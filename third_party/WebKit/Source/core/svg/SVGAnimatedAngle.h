@@ -43,32 +43,32 @@ class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedAngle* create(SVGElement* contextElement) {
-    return new SVGAnimatedAngle(contextElement);
+  static SVGAnimatedAngle* Create(SVGElement* context_element) {
+    return new SVGAnimatedAngle(context_element);
   }
 
   ~SVGAnimatedAngle() override;
 
-  SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() {
-    return m_orientType.get();
+  SVGAnimatedEnumeration<SVGMarkerOrientType>* OrientType() {
+    return orient_type_.Get();
   }
 
   // SVGAnimatedPropertyBase:
-  bool needsSynchronizeAttribute() override;
-  void synchronizeAttribute() override;
+  bool NeedsSynchronizeAttribute() override;
+  void SynchronizeAttribute() override;
 
-  void setAnimatedValue(SVGPropertyBase*) override;
-  void animationEnded() override;
+  void SetAnimatedValue(SVGPropertyBase*) override;
+  void AnimationEnded() override;
 
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  explicit SVGAnimatedAngle(SVGElement* contextElement);
+  explicit SVGAnimatedAngle(SVGElement* context_element);
 
  private:
-  Member<SVGAnimatedEnumeration<SVGMarkerOrientType>> m_orientType;
+  Member<SVGAnimatedEnumeration<SVGMarkerOrientType>> orient_type_;
 };
 
 }  // namespace blink

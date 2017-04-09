@@ -35,36 +35,36 @@ class CORE_EXPORT CSSValueList : public CSSValue {
   using iterator = HeapVector<Member<const CSSValue>, 4>::iterator;
   using const_iterator = HeapVector<Member<const CSSValue>, 4>::const_iterator;
 
-  static CSSValueList* createCommaSeparated() {
-    return new CSSValueList(CommaSeparator);
+  static CSSValueList* CreateCommaSeparated() {
+    return new CSSValueList(kCommaSeparator);
   }
-  static CSSValueList* createSpaceSeparated() {
-    return new CSSValueList(SpaceSeparator);
+  static CSSValueList* CreateSpaceSeparated() {
+    return new CSSValueList(kSpaceSeparator);
   }
-  static CSSValueList* createSlashSeparated() {
-    return new CSSValueList(SlashSeparator);
+  static CSSValueList* CreateSlashSeparated() {
+    return new CSSValueList(kSlashSeparator);
   }
 
-  iterator begin() { return m_values.begin(); }
-  iterator end() { return m_values.end(); }
-  const_iterator begin() const { return m_values.begin(); }
-  const_iterator end() const { return m_values.end(); }
+  iterator begin() { return values_.begin(); }
+  iterator end() { return values_.end(); }
+  const_iterator begin() const { return values_.begin(); }
+  const_iterator end() const { return values_.end(); }
 
-  size_t length() const { return m_values.size(); }
-  const CSSValue& item(size_t index) const { return *m_values[index]; }
+  size_t length() const { return values_.size(); }
+  const CSSValue& Item(size_t index) const { return *values_[index]; }
 
-  void append(const CSSValue& value) { m_values.push_back(value); }
-  bool removeAll(const CSSValue&);
-  bool hasValue(const CSSValue&) const;
-  CSSValueList* copy() const;
+  void Append(const CSSValue& value) { values_.push_back(value); }
+  bool RemoveAll(const CSSValue&);
+  bool HasValue(const CSSValue&) const;
+  CSSValueList* Copy() const;
 
-  String customCSSText() const;
-  bool equals(const CSSValueList&) const;
+  String CustomCSSText() const;
+  bool Equals(const CSSValueList&) const;
 
-  bool hasFailedOrCanceledSubresources() const;
+  bool HasFailedOrCanceledSubresources() const;
 
-  bool mayContainUrl() const;
-  void reResolveUrl(const Document&) const;
+  bool MayContainUrl() const;
+  void ReResolveUrl(const Document&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -74,10 +74,10 @@ class CORE_EXPORT CSSValueList : public CSSValue {
  private:
   explicit CSSValueList(ValueListSeparator);
 
-  HeapVector<Member<const CSSValue>, 4> m_values;
+  HeapVector<Member<const CSSValue>, 4> values_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, IsValueList());
 
 }  // namespace blink
 

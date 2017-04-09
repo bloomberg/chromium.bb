@@ -23,590 +23,604 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
-using blink::testing::runPendingTasks;
+using blink::testing::RunPendingTasks;
 
 namespace blink {
 
 class TextFinderTest : public ::testing::Test {
  protected:
   TextFinderTest() {
-    m_webViewHelper.initialize();
-    WebLocalFrameImpl& frameImpl = *m_webViewHelper.webView()->mainFrameImpl();
-    frameImpl.viewImpl()->resize(WebSize(640, 480));
-    frameImpl.viewImpl()->updateAllLifecyclePhases();
-    m_document = static_cast<Document*>(frameImpl.document());
-    m_textFinder = &frameImpl.ensureTextFinder();
+    web_view_helper_.Initialize();
+    WebLocalFrameImpl& frame_impl =
+        *web_view_helper_.WebView()->MainFrameImpl();
+    frame_impl.ViewImpl()->Resize(WebSize(640, 480));
+    frame_impl.ViewImpl()->UpdateAllLifecyclePhases();
+    document_ = static_cast<Document*>(frame_impl.GetDocument());
+    text_finder_ = &frame_impl.EnsureTextFinder();
   }
 
-  Document& document() const;
-  TextFinder& textFinder() const;
+  Document& GetDocument() const;
+  TextFinder& GetTextFinder() const;
 
-  static WebFloatRect findInPageRect(Node* startContainer,
-                                     int startOffset,
-                                     Node* endContainer,
-                                     int endOffset);
+  static WebFloatRect FindInPageRect(Node* start_container,
+                                     int start_offset,
+                                     Node* end_container,
+                                     int end_offset);
 
  private:
-  FrameTestHelpers::WebViewHelper m_webViewHelper;
-  Persistent<Document> m_document;
-  Persistent<TextFinder> m_textFinder;
+  FrameTestHelpers::WebViewHelper web_view_helper_;
+  Persistent<Document> document_;
+  Persistent<TextFinder> text_finder_;
 };
 
-Document& TextFinderTest::document() const {
-  return *m_document;
+Document& TextFinderTest::GetDocument() const {
+  return *document_;
 }
 
-TextFinder& TextFinderTest::textFinder() const {
-  return *m_textFinder;
+TextFinder& TextFinderTest::GetTextFinder() const {
+  return *text_finder_;
 }
 
-WebFloatRect TextFinderTest::findInPageRect(Node* startContainer,
-                                            int startOffset,
-                                            Node* endContainer,
-                                            int endOffset) {
-  Range* range = Range::create(startContainer->document(), startContainer,
-                               startOffset, endContainer, endOffset);
-  return WebFloatRect(findInPageRectFromRange(range));
+WebFloatRect TextFinderTest::FindInPageRect(Node* start_container,
+                                            int start_offset,
+                                            Node* end_container,
+                                            int end_offset) {
+  Range* range = Range::Create(start_container->GetDocument(), start_container,
+                               start_offset, end_container, end_offset);
+  return WebFloatRect(FindInPageRectFromRange(range));
 }
 
 TEST_F(TextFinderTest, FindTextSimple) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
-  document().updateStyleAndLayout();
-  Node* textNode = document().body()->firstChild();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout();
+  Node* text_node = GetDocument().body()->FirstChild();
 
   int identifier = 0;
-  WebString searchText(String("FindMe"));
-  WebFindOptions findOptions;  // Default.
-  bool wrapWithinFrame = true;
+  WebString search_text(String("FindMe"));
+  WebFindOptions find_options;  // Default.
+  bool wrap_within_frame = true;
 
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  Range* activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(4u, activeMatch->startOffset());
-  EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(10u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  Range* active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_node, active_match->startContainer());
+  EXPECT_EQ(4u, active_match->startOffset());
+  EXPECT_EQ(text_node, active_match->endContainer());
+  EXPECT_EQ(10u, active_match->endOffset());
 
-  findOptions.findNext = true;
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(14u, activeMatch->startOffset());
-  EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(20u, activeMatch->endOffset());
+  find_options.find_next = true;
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_node, active_match->startContainer());
+  EXPECT_EQ(14u, active_match->startOffset());
+  EXPECT_EQ(text_node, active_match->endContainer());
+  EXPECT_EQ(20u, active_match->endOffset());
 
   // Should wrap to the first match.
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(4u, activeMatch->startOffset());
-  EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(10u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_node, active_match->startContainer());
+  EXPECT_EQ(4u, active_match->startOffset());
+  EXPECT_EQ(text_node, active_match->endContainer());
+  EXPECT_EQ(10u, active_match->endOffset());
 
   // Search in the reverse order.
   identifier = 1;
-  findOptions = WebFindOptions();
-  findOptions.forward = false;
+  find_options = WebFindOptions();
+  find_options.forward = false;
 
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(14u, activeMatch->startOffset());
-  EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(20u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_node, active_match->startContainer());
+  EXPECT_EQ(14u, active_match->startOffset());
+  EXPECT_EQ(text_node, active_match->endContainer());
+  EXPECT_EQ(20u, active_match->endOffset());
 
-  findOptions.findNext = true;
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(4u, activeMatch->startOffset());
-  EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(10u, activeMatch->endOffset());
+  find_options.find_next = true;
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_node, active_match->startContainer());
+  EXPECT_EQ(4u, active_match->startOffset());
+  EXPECT_EQ(text_node, active_match->endContainer());
+  EXPECT_EQ(10u, active_match->endOffset());
 
   // Wrap to the first match (last occurence in the document).
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textNode, activeMatch->startContainer());
-  EXPECT_EQ(14u, activeMatch->startOffset());
-  EXPECT_EQ(textNode, activeMatch->endContainer());
-  EXPECT_EQ(20u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_node, active_match->startContainer());
+  EXPECT_EQ(14u, active_match->startOffset());
+  EXPECT_EQ(text_node, active_match->endContainer());
+  EXPECT_EQ(20u, active_match->endOffset());
 }
 
 TEST_F(TextFinderTest, FindTextAutosizing) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebString searchText(String("FindMe"));
-  WebFindOptions findOptions;  // Default.
-  bool wrapWithinFrame = true;
+  WebString search_text(String("FindMe"));
+  WebFindOptions find_options;  // Default.
+  bool wrap_within_frame = true;
 
   // Set viewport scale to 20 in order to simulate zoom-in
-  VisualViewport& visualViewport = document().page()->visualViewport();
-  visualViewport.setScale(20);
+  VisualViewport& visual_viewport =
+      GetDocument().GetPage()->GetVisualViewport();
+  visual_viewport.SetScale(20);
 
   // Enforce autosizing
-  document().settings()->setTextAutosizingEnabled(true);
-  document().settings()->setTextAutosizingWindowSizeOverride(IntSize(20, 20));
-  document().textAutosizer()->updatePageInfo();
-  document().updateStyleAndLayout();
+  GetDocument().GetSettings()->SetTextAutosizingEnabled(true);
+  GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
+      IntSize(20, 20));
+  GetDocument().GetTextAutosizer()->UpdatePageInfo();
+  GetDocument().UpdateStyleAndLayout();
 
   // In case of autosizing, scale _should_ change
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  ASSERT_TRUE(textFinder().activeMatch());
-  ASSERT_EQ(1, visualViewport.scale());  // in this case to 1
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  ASSERT_TRUE(GetTextFinder().ActiveMatch());
+  ASSERT_EQ(1, visual_viewport.Scale());  // in this case to 1
 
   // Disable autosizing and reset scale to 20
-  visualViewport.setScale(20);
-  document().settings()->setTextAutosizingEnabled(false);
-  document().textAutosizer()->updatePageInfo();
-  document().updateStyleAndLayout();
+  visual_viewport.SetScale(20);
+  GetDocument().GetSettings()->SetTextAutosizingEnabled(false);
+  GetDocument().GetTextAutosizer()->UpdatePageInfo();
+  GetDocument().UpdateStyleAndLayout();
 
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  ASSERT_TRUE(textFinder().activeMatch());
-  ASSERT_EQ(20, visualViewport.scale());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  ASSERT_TRUE(GetTextFinder().ActiveMatch());
+  ASSERT_EQ(20, visual_viewport.Scale());
 }
 
 TEST_F(TextFinderTest, FindTextNotFound) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebString searchText(String("Boo"));
-  WebFindOptions findOptions;  // Default.
-  bool wrapWithinFrame = true;
+  WebString search_text(String("Boo"));
+  WebFindOptions find_options;  // Default.
+  bool wrap_within_frame = true;
 
-  EXPECT_FALSE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  EXPECT_FALSE(textFinder().activeMatch());
+  EXPECT_FALSE(GetTextFinder().Find(identifier, search_text, find_options,
+                                    wrap_within_frame));
+  EXPECT_FALSE(GetTextFinder().ActiveMatch());
 }
 
 TEST_F(TextFinderTest, FindTextInShadowDOM) {
-  document().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
-  ShadowRoot* shadowRoot = document().body()->createShadowRootInternal(
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
+  ShadowRoot* shadow_root = GetDocument().body()->CreateShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML(
+  shadow_root->setInnerHTML(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
-  Node* textInBElement = document().body()->firstChild()->firstChild();
-  Node* textInIElement = document().body()->lastChild()->firstChild();
-  Node* textInUElement = shadowRoot->childNodes()->item(1)->firstChild();
-  document().updateStyleAndLayout();
+  Node* text_in_b_element = GetDocument().body()->FirstChild()->firstChild();
+  Node* text_in_i_element = GetDocument().body()->LastChild()->firstChild();
+  Node* text_in_u_element = shadow_root->childNodes()->item(1)->firstChild();
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebString searchText(String("foo"));
-  WebFindOptions findOptions;  // Default.
-  bool wrapWithinFrame = true;
+  WebString search_text(String("foo"));
+  WebFindOptions find_options;  // Default.
+  bool wrap_within_frame = true;
 
   // TextIterator currently returns the matches in the flat treeorder, so
   // in this case the matches will be returned in the order of
   // <i> -> <u> -> <b>.
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  Range* activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInIElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInIElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  Range* active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_i_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_i_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
-  findOptions.findNext = true;
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInUElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInUElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  find_options.find_next = true;
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_u_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_u_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInBElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInBElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_b_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_b_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
   // Should wrap to the first match.
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInIElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInIElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_i_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_i_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
   // Fresh search in the reverse order.
   identifier = 1;
-  findOptions = WebFindOptions();
-  findOptions.forward = false;
+  find_options = WebFindOptions();
+  find_options.forward = false;
 
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInBElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInBElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_b_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_b_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
-  findOptions.findNext = true;
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInUElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInUElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  find_options.find_next = true;
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_u_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_u_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInIElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInIElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_i_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_i_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 
   // And wrap.
-  ASSERT_TRUE(
-      textFinder().find(identifier, searchText, findOptions, wrapWithinFrame));
-  activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_EQ(textInBElement, activeMatch->startContainer());
-  EXPECT_EQ(0u, activeMatch->startOffset());
-  EXPECT_EQ(textInBElement, activeMatch->endContainer());
-  EXPECT_EQ(3u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame));
+  active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_EQ(text_in_b_element, active_match->startContainer());
+  EXPECT_EQ(0u, active_match->startOffset());
+  EXPECT_EQ(text_in_b_element, active_match->endContainer());
+  EXPECT_EQ(3u, active_match->endOffset());
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout();
 
-  Node* textNode = document().body()->firstChild();
+  Node* text_node = GetDocument().body()->FirstChild();
 
   int identifier = 0;
-  WebString searchText(String("FindMe"));
-  WebFindOptions findOptions;  // Default.
+  WebString search_text(String("FindMe"));
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
-  EXPECT_EQ(2, textFinder().totalMatchCount());
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(2u, matchRects.size());
-  EXPECT_EQ(findInPageRect(textNode, 4, textNode, 10), matchRects[0]);
-  EXPECT_EQ(findInPageRect(textNode, 14, textNode, 20), matchRects[1]);
+  EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(2u, match_rects.size());
+  EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 10), match_rects[0]);
+  EXPECT_EQ(FindInPageRect(text_node, 14, text_node, 20), match_rects[1]);
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
-  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  GetDocument().UpdateStyleAndLayout();
 
-  Node* textNode = document().body()->firstChild();
+  Node* text_node = GetDocument().body()->FirstChild();
 
   int identifier = 0;
-  WebString searchText1(String("XFindMe"));
-  WebString searchText2(String("FindMe"));
-  WebFindOptions findOptions;  // Default.
+  WebString search_text1(String("XFindMe"));
+  WebString search_text2(String("FindMe"));
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText1, findOptions);
-  textFinder().startScopingStringMatches(identifier, searchText2, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text1,
+                                            find_options);
+  GetTextFinder().StartScopingStringMatches(identifier, search_text2,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
   // Only searchText2 should be highlighted.
-  EXPECT_EQ(2, textFinder().totalMatchCount());
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(2u, matchRects.size());
-  EXPECT_EQ(findInPageRect(textNode, 4, textNode, 10), matchRects[0]);
-  EXPECT_EQ(findInPageRect(textNode, 14, textNode, 20), matchRects[1]);
+  EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(2u, match_rects.size());
+  EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 10), match_rects[0]);
+  EXPECT_EQ(FindInPageRect(text_node, 14, text_node, 20), match_rects[1]);
 }
 
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
-  document().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
-  ShadowRoot* shadowRoot = document().body()->createShadowRootInternal(
+  GetDocument().body()->setInnerHTML("<b>FOO</b><i>foo</i>");
+  ShadowRoot* shadow_root = GetDocument().body()->CreateShadowRootInternal(
       ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML(
+  shadow_root->setInnerHTML(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
-  Node* textInBElement = document().body()->firstChild()->firstChild();
-  Node* textInIElement = document().body()->lastChild()->firstChild();
-  Node* textInUElement = shadowRoot->childNodes()->item(1)->firstChild();
-  document().updateStyleAndLayout();
+  Node* text_in_b_element = GetDocument().body()->FirstChild()->firstChild();
+  Node* text_in_i_element = GetDocument().body()->LastChild()->firstChild();
+  Node* text_in_u_element = shadow_root->childNodes()->item(1)->firstChild();
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebString searchText(String("fOO"));
-  WebFindOptions findOptions;  // Default.
+  WebString search_text(String("fOO"));
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
   // TextIterator currently returns the matches in the flat tree order,
   // so in this case the matches will be returned in the order of
   // <i> -> <u> -> <b>.
-  EXPECT_EQ(3, textFinder().totalMatchCount());
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(3u, matchRects.size());
-  EXPECT_EQ(findInPageRect(textInIElement, 0, textInIElement, 3),
-            matchRects[0]);
-  EXPECT_EQ(findInPageRect(textInUElement, 0, textInUElement, 3),
-            matchRects[1]);
-  EXPECT_EQ(findInPageRect(textInBElement, 0, textInBElement, 3),
-            matchRects[2]);
+  EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(3u, match_rects.size());
+  EXPECT_EQ(FindInPageRect(text_in_i_element, 0, text_in_i_element, 3),
+            match_rects[0]);
+  EXPECT_EQ(FindInPageRect(text_in_u_element, 0, text_in_u_element, 3),
+            match_rects[1]);
+  EXPECT_EQ(FindInPageRect(text_in_b_element, 0, text_in_b_element, 3),
+            match_rects[2]);
 }
 
 TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
-  document().body()->setInnerHTML("ab ab ab ab ab");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("ab ab ab ab ab");
+  GetDocument().UpdateStyleAndLayout();
 
-  Node* textNode = document().body()->firstChild();
+  Node* text_node = GetDocument().body()->FirstChild();
 
   int identifier = 0;
-  WebString searchText(String("ab ab"));
-  WebFindOptions findOptions;  // Default.
+  WebString search_text(String("ab ab"));
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
-  EXPECT_EQ(2, textFinder().totalMatchCount());
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(2u, matchRects.size());
-  EXPECT_EQ(findInPageRect(textNode, 0, textNode, 5), matchRects[0]);
-  EXPECT_EQ(findInPageRect(textNode, 6, textNode, 11), matchRects[1]);
+  EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(2u, match_rects.size());
+  EXPECT_EQ(FindInPageRect(text_node, 0, text_node, 5), match_rects[0]);
+  EXPECT_EQ(FindInPageRect(text_node, 6, text_node, 11), match_rects[1]);
 }
 
 TEST_F(TextFinderTest, OverlappingMatches) {
-  document().body()->setInnerHTML("aababaa");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("aababaa");
+  GetDocument().UpdateStyleAndLayout();
 
-  Node* textNode = document().body()->firstChild();
+  Node* text_node = GetDocument().body()->FirstChild();
 
   int identifier = 0;
-  WebString searchText(String("aba"));
-  WebFindOptions findOptions;  // Default.
+  WebString search_text(String("aba"));
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
   // We shouldn't find overlapped matches.
-  EXPECT_EQ(1, textFinder().totalMatchCount());
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(1u, matchRects.size());
-  EXPECT_EQ(findInPageRect(textNode, 1, textNode, 4), matchRects[0]);
+  EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(1u, match_rects.size());
+  EXPECT_EQ(FindInPageRect(text_node, 1, text_node, 4), match_rects[0]);
 }
 
 TEST_F(TextFinderTest, SequentialMatches) {
-  document().body()->setInnerHTML("ababab");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("ababab");
+  GetDocument().UpdateStyleAndLayout();
 
-  Node* textNode = document().body()->firstChild();
+  Node* text_node = GetDocument().body()->FirstChild();
 
   int identifier = 0;
-  WebString searchText(String("ab"));
-  WebFindOptions findOptions;  // Default.
+  WebString search_text(String("ab"));
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
-  EXPECT_EQ(3, textFinder().totalMatchCount());
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(3u, matchRects.size());
-  EXPECT_EQ(findInPageRect(textNode, 0, textNode, 2), matchRects[0]);
-  EXPECT_EQ(findInPageRect(textNode, 2, textNode, 4), matchRects[1]);
-  EXPECT_EQ(findInPageRect(textNode, 4, textNode, 6), matchRects[2]);
+  EXPECT_EQ(3, GetTextFinder().TotalMatchCount());
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(3u, match_rects.size());
+  EXPECT_EQ(FindInPageRect(text_node, 0, text_node, 2), match_rects[0]);
+  EXPECT_EQ(FindInPageRect(text_node, 2, text_node, 4), match_rects[1]);
+  EXPECT_EQ(FindInPageRect(text_node, 4, text_node, 6), match_rects[2]);
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
-  document().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("<b>XXXXFindMeYYYY</b><i></i>");
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebString searchText(String("FindMe"));
-  WebFindOptions findOptions;  // Default.
-  bool wrapWithinFrame = true;
-  bool activeNow;
+  WebString search_text(String("FindMe"));
+  WebFindOptions find_options;  // Default.
+  bool wrap_within_frame = true;
+  bool active_now;
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
-  findOptions.findNext = true;
-  ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions,
-                                wrapWithinFrame, &activeNow));
-  EXPECT_TRUE(activeNow);
-  ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions,
-                                wrapWithinFrame, &activeNow));
-  EXPECT_TRUE(activeNow);
+  find_options.find_next = true;
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame, &active_now));
+  EXPECT_TRUE(active_now);
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame, &active_now));
+  EXPECT_TRUE(active_now);
 
   // Add new text to DOM and try FindNext.
-  Element* iElement = toElement(document().body()->lastChild());
-  ASSERT_TRUE(iElement);
-  iElement->setInnerHTML("ZZFindMe");
-  document().updateStyleAndLayout();
+  Element* i_element = ToElement(GetDocument().body()->LastChild());
+  ASSERT_TRUE(i_element);
+  i_element->setInnerHTML("ZZFindMe");
+  GetDocument().UpdateStyleAndLayout();
 
-  ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions,
-                                wrapWithinFrame, &activeNow));
-  Range* activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_FALSE(activeNow);
-  EXPECT_EQ(2u, activeMatch->startOffset());
-  EXPECT_EQ(8u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame, &active_now));
+  Range* active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_FALSE(active_now);
+  EXPECT_EQ(2u, active_match->startOffset());
+  EXPECT_EQ(8u, active_match->endOffset());
 
   // Restart full search and check that added text is found.
-  findOptions.findNext = false;
-  textFinder().resetMatchCount();
-  textFinder().cancelPendingScopingEffort();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
-  EXPECT_EQ(2, textFinder().totalMatchCount());
+  find_options.find_next = false;
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().CancelPendingScopingEffort();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
+  EXPECT_EQ(2, GetTextFinder().TotalMatchCount());
 
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(2u, matchRects.size());
-  Node* textInBElement = document().body()->firstChild()->firstChild();
-  Node* textInIElement = document().body()->lastChild()->firstChild();
-  EXPECT_EQ(findInPageRect(textInBElement, 4, textInBElement, 10),
-            matchRects[0]);
-  EXPECT_EQ(findInPageRect(textInIElement, 2, textInIElement, 8),
-            matchRects[1]);
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(2u, match_rects.size());
+  Node* text_in_b_element = GetDocument().body()->FirstChild()->firstChild();
+  Node* text_in_i_element = GetDocument().body()->LastChild()->firstChild();
+  EXPECT_EQ(FindInPageRect(text_in_b_element, 4, text_in_b_element, 10),
+            match_rects[0]);
+  EXPECT_EQ(FindInPageRect(text_in_i_element, 2, text_in_i_element, 8),
+            match_rects[1]);
 }
 
 TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
-  document().body()->setInnerHTML("<b>XXXXYYYY</b><i></i>");
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML("<b>XXXXYYYY</b><i></i>");
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebString searchText(String("FindMe"));
-  WebFindOptions findOptions;  // Default.
-  bool wrapWithinFrame = true;
-  bool activeNow = false;
+  WebString search_text(String("FindMe"));
+  WebFindOptions find_options;  // Default.
+  bool wrap_within_frame = true;
+  bool active_now = false;
 
-  textFinder().resetMatchCount();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
-  findOptions.findNext = true;
-  ASSERT_FALSE(textFinder().find(identifier, searchText, findOptions,
-                                 wrapWithinFrame, &activeNow));
-  EXPECT_FALSE(activeNow);
+  find_options.find_next = true;
+  ASSERT_FALSE(GetTextFinder().Find(identifier, search_text, find_options,
+                                    wrap_within_frame, &active_now));
+  EXPECT_FALSE(active_now);
 
   // Add new text to DOM and try FindNext.
-  Element* iElement = toElement(document().body()->lastChild());
-  ASSERT_TRUE(iElement);
-  iElement->setInnerHTML("ZZFindMe");
-  document().updateStyleAndLayout();
+  Element* i_element = ToElement(GetDocument().body()->LastChild());
+  ASSERT_TRUE(i_element);
+  i_element->setInnerHTML("ZZFindMe");
+  GetDocument().UpdateStyleAndLayout();
 
-  ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions,
-                                wrapWithinFrame, &activeNow));
-  Range* activeMatch = textFinder().activeMatch();
-  ASSERT_TRUE(activeMatch);
-  EXPECT_FALSE(activeNow);
-  EXPECT_EQ(2u, activeMatch->startOffset());
-  EXPECT_EQ(8u, activeMatch->endOffset());
+  ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, find_options,
+                                   wrap_within_frame, &active_now));
+  Range* active_match = GetTextFinder().ActiveMatch();
+  ASSERT_TRUE(active_match);
+  EXPECT_FALSE(active_now);
+  EXPECT_EQ(2u, active_match->startOffset());
+  EXPECT_EQ(8u, active_match->endOffset());
 
   // Restart full search and check that added text is found.
-  findOptions.findNext = false;
-  textFinder().resetMatchCount();
-  textFinder().cancelPendingScopingEffort();
-  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
-  EXPECT_EQ(1, textFinder().totalMatchCount());
+  find_options.find_next = false;
+  GetTextFinder().ResetMatchCount();
+  GetTextFinder().CancelPendingScopingEffort();
+  GetTextFinder().StartScopingStringMatches(identifier, search_text,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
+  EXPECT_EQ(1, GetTextFinder().TotalMatchCount());
 
-  WebVector<WebFloatRect> matchRects;
-  textFinder().findMatchRects(matchRects);
-  ASSERT_EQ(1u, matchRects.size());
-  Node* textInIElement = document().body()->lastChild()->firstChild();
-  EXPECT_EQ(findInPageRect(textInIElement, 2, textInIElement, 8),
-            matchRects[0]);
+  WebVector<WebFloatRect> match_rects;
+  GetTextFinder().FindMatchRects(match_rects);
+  ASSERT_EQ(1u, match_rects.size());
+  Node* text_in_i_element = GetDocument().body()->LastChild()->firstChild();
+  EXPECT_EQ(FindInPageRect(text_in_i_element, 2, text_in_i_element, 8),
+            match_rects[0]);
 }
 
 class TextFinderFakeTimerTest : public TextFinderTest {
  protected:
   void SetUp() override {
-    s_timeElapsed = 0.0;
-    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
+    time_elapsed_ = 0.0;
+    original_time_function_ = SetTimeFunctionsForTesting(ReturnMockTime);
   }
 
   void TearDown() override {
-    setTimeFunctionsForTesting(m_originalTimeFunction);
+    SetTimeFunctionsForTesting(original_time_function_);
   }
 
  private:
-  static double returnMockTime() {
-    s_timeElapsed += 1.0;
-    return s_timeElapsed;
+  static double ReturnMockTime() {
+    time_elapsed_ += 1.0;
+    return time_elapsed_;
   }
 
-  TimeFunction m_originalTimeFunction;
-  static double s_timeElapsed;
+  TimeFunction original_time_function_;
+  static double time_elapsed_;
 };
 
-double TextFinderFakeTimerTest::s_timeElapsed;
+double TextFinderFakeTimerTest::time_elapsed_;
 
 TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
   // Make a long string.
   String text(Vector<UChar>(100));
-  text.fill('a');
-  String searchPattern("abc");
+  text.Fill('a');
+  String search_pattern("abc");
   // Make 4 substrings "abc" in text.
-  text.insert(searchPattern, 1);
-  text.insert(searchPattern, 10);
-  text.insert(searchPattern, 50);
-  text.insert(searchPattern, 90);
+  text.insert(search_pattern, 1);
+  text.insert(search_pattern, 10);
+  text.insert(search_pattern, 50);
+  text.insert(search_pattern, 90);
 
-  document().body()->setInnerHTML(text);
-  document().updateStyleAndLayout();
+  GetDocument().body()->setInnerHTML(text);
+  GetDocument().UpdateStyleAndLayout();
 
   int identifier = 0;
-  WebFindOptions findOptions;  // Default.
+  WebFindOptions find_options;  // Default.
 
-  textFinder().resetMatchCount();
+  GetTextFinder().ResetMatchCount();
 
   // There will be only one iteration before timeout, because increment
   // of the TimeProxyPlatform timer is greater than timeout threshold.
-  textFinder().startScopingStringMatches(identifier, searchPattern,
-                                         findOptions);
-  while (textFinder().scopingInProgress())
-    runPendingTasks();
+  GetTextFinder().StartScopingStringMatches(identifier, search_pattern,
+                                            find_options);
+  while (GetTextFinder().ScopingInProgress())
+    RunPendingTasks();
 
-  EXPECT_EQ(4, textFinder().totalMatchCount());
+  EXPECT_EQ(4, GetTextFinder().TotalMatchCount());
 }
 
 }  // namespace blink

@@ -16,15 +16,15 @@ class SimDisplayItemList final : public WebDisplayItemList {
  public:
   SimDisplayItemList();
 
-  void appendDrawingItem(const WebRect&, sk_sp<const PaintRecord>) override;
+  void AppendDrawingItem(const WebRect&, sk_sp<const PaintRecord>) override;
 
-  int drawCount() const { return m_commands.size(); }
+  int DrawCount() const { return commands_.size(); }
 
-  bool contains(SimCanvas::CommandType,
-                const String& colorString = String()) const;
+  bool Contains(SimCanvas::CommandType,
+                const String& color_string = String()) const;
 
  private:
-  Vector<SimCanvas::Command> m_commands;
+  Vector<SimCanvas::Command> commands_;
 };
 
 }  // namespace blink

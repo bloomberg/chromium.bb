@@ -17,46 +17,46 @@ extern "C" void* __libc_stack_end;  // NOLINT
 
 namespace blink {
 
-static const char* s_avoidOptimization = nullptr;
+static const char* g_avoid_optimization = nullptr;
 
 // NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized
 // away, and the stack frame base register is adjusted |kSafeStackFrameSize|.
-NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy) {
-  s_avoidOptimization = dummy;
-  return StackFrameDepth::currentStackFrame();
+NEVER_INLINE static uintptr_t CurrentStackFrameBaseOnCallee(const char* dummy) {
+  g_avoid_optimization = dummy;
+  return StackFrameDepth::CurrentStackFrame();
 }
 
-uintptr_t StackFrameDepth::getFallbackStackLimit() {
+uintptr_t StackFrameDepth::GetFallbackStackLimit() {
   // Allocate an |kSafeStackFrameSize|-sized object on stack and query
   // stack frame base after it.
   char dummy[kSafeStackFrameSize];
 
   // Check that the stack frame can be used.
   dummy[sizeof(dummy) - 1] = 0;
-  return currentStackFrameBaseOnCallee(dummy);
+  return CurrentStackFrameBaseOnCallee(dummy);
 }
 
-void StackFrameDepth::enableStackLimit() {
+void StackFrameDepth::EnableStackLimit() {
   // All supported platforms will currently return a non-zero estimate,
   // except if ASan is enabled.
-  size_t stackSize = WTF::getUnderestimatedStackSize();
-  if (!stackSize) {
-    m_stackFrameLimit = getFallbackStackLimit();
+  size_t stack_size = WTF::GetUnderestimatedStackSize();
+  if (!stack_size) {
+    stack_frame_limit_ = GetFallbackStackLimit();
     return;
   }
 
   static const int kStackRoomSize = 1024;
 
-  Address stackBase = reinterpret_cast<Address>(WTF::getStackStart());
-  RELEASE_ASSERT(stackSize > static_cast<const size_t>(kStackRoomSize));
-  size_t stackRoom = stackSize - kStackRoomSize;
-  RELEASE_ASSERT(stackBase > reinterpret_cast<Address>(stackRoom));
-  m_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
+  Address stack_base = reinterpret_cast<Address>(WTF::GetStackStart());
+  RELEASE_ASSERT(stack_size > static_cast<const size_t>(kStackRoomSize));
+  size_t stack_room = stack_size - kStackRoomSize;
+  RELEASE_ASSERT(stack_base > reinterpret_cast<Address>(stack_room));
+  stack_frame_limit_ = reinterpret_cast<uintptr_t>(stack_base - stack_room);
 
   // If current stack use is already exceeding estimated limit, mark as
   // disabled.
-  if (!isSafeToRecurse())
-    disableStackLimit();
+  if (!IsSafeToRecurse())
+    DisableStackLimit();
 }
 
 }  // namespace blink

@@ -38,87 +38,87 @@ namespace WTF {
 class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
  public:
   enum ViewType {
-    TypeInt8,
-    TypeUint8,
-    TypeUint8Clamped,
-    TypeInt16,
-    TypeUint16,
-    TypeInt32,
-    TypeUint32,
-    TypeFloat32,
-    TypeFloat64,
-    TypeDataView
+    kTypeInt8,
+    kTypeUint8,
+    kTypeUint8Clamped,
+    kTypeInt16,
+    kTypeUint16,
+    kTypeInt32,
+    kTypeUint32,
+    kTypeFloat32,
+    kTypeFloat64,
+    kTypeDataView
   };
-  virtual ViewType type() const = 0;
-  const char* typeName();
+  virtual ViewType GetType() const = 0;
+  const char* TypeName();
 
-  ArrayBuffer* buffer() const { return m_buffer.get(); }
+  ArrayBuffer* Buffer() const { return buffer_.Get(); }
 
-  void* baseAddress() const {
-    DCHECK(!isShared());
-    return m_baseAddress;
+  void* BaseAddress() const {
+    DCHECK(!IsShared());
+    return base_address_;
   }
 
-  unsigned byteOffset() const { return m_byteOffset; }
+  unsigned ByteOffset() const { return byte_offset_; }
 
-  virtual unsigned byteLength() const = 0;
-  virtual unsigned typeSize() const = 0;
+  virtual unsigned ByteLength() const = 0;
+  virtual unsigned TypeSize() const = 0;
 
-  void setNeuterable(bool flag) { m_isNeuterable = flag; }
-  bool isNeuterable() const { return m_isNeuterable; }
-  bool isShared() const { return m_buffer ? m_buffer->isShared() : false; }
+  void SetNeuterable(bool flag) { is_neuterable_ = flag; }
+  bool IsNeuterable() const { return is_neuterable_; }
+  bool IsShared() const { return buffer_ ? buffer_->IsShared() : false; }
 
   virtual ~ArrayBufferView();
 
  protected:
-  ArrayBufferView(PassRefPtr<ArrayBuffer>, unsigned byteOffset);
+  ArrayBufferView(PassRefPtr<ArrayBuffer>, unsigned byte_offset);
 
-  inline bool setImpl(ArrayBufferView*, unsigned byteOffset);
+  inline bool SetImpl(ArrayBufferView*, unsigned byte_offset);
 
   // Helper to verify that a given sub-range of an ArrayBuffer is
   // within range.
   template <typename T>
-  static bool verifySubRange(PassRefPtr<ArrayBuffer> buffer,
-                             unsigned byteOffset,
-                             unsigned numElements) {
+  static bool VerifySubRange(PassRefPtr<ArrayBuffer> buffer,
+                             unsigned byte_offset,
+                             unsigned num_elements) {
     if (!buffer)
       return false;
-    if (sizeof(T) > 1 && byteOffset % sizeof(T))
+    if (sizeof(T) > 1 && byte_offset % sizeof(T))
       return false;
-    if (byteOffset > buffer->byteLength())
+    if (byte_offset > buffer->ByteLength())
       return false;
-    unsigned remainingElements =
-        (buffer->byteLength() - byteOffset) / sizeof(T);
-    if (numElements > remainingElements)
+    unsigned remaining_elements =
+        (buffer->ByteLength() - byte_offset) / sizeof(T);
+    if (num_elements > remaining_elements)
       return false;
     return true;
   }
 
-  virtual void neuter();
+  virtual void Neuter();
 
   // This is the address of the ArrayBuffer's storage, plus the byte offset.
-  void* m_baseAddress;
+  void* base_address_;
 
-  unsigned m_byteOffset : 31;
-  unsigned m_isNeuterable : 1;
+  unsigned byte_offset_ : 31;
+  unsigned is_neuterable_ : 1;
 
  private:
   friend class ArrayBuffer;
-  RefPtr<ArrayBuffer> m_buffer;
-  ArrayBufferView* m_prevView;
-  ArrayBufferView* m_nextView;
+  RefPtr<ArrayBuffer> buffer_;
+  ArrayBufferView* prev_view_;
+  ArrayBufferView* next_view_;
 };
 
-bool ArrayBufferView::setImpl(ArrayBufferView* array, unsigned byteOffset) {
-  if (byteOffset > byteLength() ||
-      byteOffset + array->byteLength() > byteLength() ||
-      byteOffset + array->byteLength() < byteOffset) {
+bool ArrayBufferView::SetImpl(ArrayBufferView* array, unsigned byte_offset) {
+  if (byte_offset > ByteLength() ||
+      byte_offset + array->ByteLength() > ByteLength() ||
+      byte_offset + array->ByteLength() < byte_offset) {
     // Out of range offset or overflow
     return false;
   }
 
-  char* base = static_cast<char*>(baseAddress());
-  memmove(base + byteOffset, array->baseAddress(), array->byteLength());
+  char* base = static_cast<char*>(BaseAddress());
+  memmove(base + byte_offset, array->BaseAddress(), array->ByteLength());
   return true;
 }
 

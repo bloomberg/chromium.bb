@@ -13,97 +13,97 @@ namespace blink {
 class VisiblePositionTest : public EditingTestBase {};
 
 TEST_F(VisiblePositionTest, ShadowV0DistributedNodes) {
-  const char* bodyContent =
+  const char* body_content =
       "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
-  const char* shadowContent =
+  const char* shadow_content =
       "<a><span id='s4'>44</span><content select=#two></content><span "
       "id='s5'>55</span><content select=#one></content><span "
       "id='s6'>66</span></a>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Element* body = document().body();
-  Element* one = body->querySelector("#one");
-  Element* two = body->querySelector("#two");
-  Element* four = shadowRoot->querySelector("#s4");
-  Element* five = shadowRoot->querySelector("#s5");
+  Element* body = GetDocument().body();
+  Element* one = body->QuerySelector("#one");
+  Element* two = body->QuerySelector("#two");
+  Element* four = shadow_root->QuerySelector("#s4");
+  Element* five = shadow_root->QuerySelector("#s5");
 
-  EXPECT_EQ(Position(one->firstChild(), 0),
-            canonicalPositionOf(Position(one, 0)));
-  EXPECT_EQ(Position(one->firstChild(), 0),
-            createVisiblePosition(Position(one, 0)).deepEquivalent());
-  EXPECT_EQ(Position(one->firstChild(), 2),
-            canonicalPositionOf(Position(two, 0)));
-  EXPECT_EQ(Position(one->firstChild(), 2),
-            createVisiblePosition(Position(two, 0)).deepEquivalent());
+  EXPECT_EQ(Position(one->FirstChild(), 0),
+            CanonicalPositionOf(Position(one, 0)));
+  EXPECT_EQ(Position(one->FirstChild(), 0),
+            CreateVisiblePosition(Position(one, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(one->FirstChild(), 2),
+            CanonicalPositionOf(Position(two, 0)));
+  EXPECT_EQ(Position(one->FirstChild(), 2),
+            CreateVisiblePosition(Position(two, 0)).DeepEquivalent());
 
-  EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
-            canonicalPositionOf(PositionInFlatTree(one, 0)));
-  EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2),
-            createVisiblePosition(PositionInFlatTree(one, 0)).deepEquivalent());
-  EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
-            canonicalPositionOf(PositionInFlatTree(two, 0)));
-  EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2),
-            createVisiblePosition(PositionInFlatTree(two, 0)).deepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(five->FirstChild(), 2),
+            CanonicalPositionOf(PositionInFlatTree(one, 0)));
+  EXPECT_EQ(PositionInFlatTree(five->FirstChild(), 2),
+            CreateVisiblePosition(PositionInFlatTree(one, 0)).DeepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(four->FirstChild(), 2),
+            CanonicalPositionOf(PositionInFlatTree(two, 0)));
+  EXPECT_EQ(PositionInFlatTree(four->FirstChild(), 2),
+            CreateVisiblePosition(PositionInFlatTree(two, 0)).DeepEquivalent());
 }
 
 #if DCHECK_IS_ON()
 
 TEST_F(VisiblePositionTest, NullIsValid) {
-  EXPECT_TRUE(VisiblePosition().isValid());
+  EXPECT_TRUE(VisiblePosition().IsValid());
 }
 
 TEST_F(VisiblePositionTest, NonNullIsValidBeforeMutation) {
-  setBodyContent("<p>one</p>");
+  SetBodyContent("<p>one</p>");
 
-  Element* paragraph = document().querySelector("p");
-  Position position(paragraph->firstChild(), 1);
-  EXPECT_TRUE(createVisiblePosition(position).isValid());
+  Element* paragraph = GetDocument().QuerySelector("p");
+  Position position(paragraph->FirstChild(), 1);
+  EXPECT_TRUE(CreateVisiblePosition(position).IsValid());
 }
 
 TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange) {
-  setBodyContent("<p>one</p>");
+  SetBodyContent("<p>one</p>");
 
-  Element* paragraph = document().querySelector("p");
-  Position position(paragraph->firstChild(), 1);
-  VisiblePosition nullVisiblePosition;
-  VisiblePosition nonNullVisiblePosition = createVisiblePosition(position);
+  Element* paragraph = GetDocument().QuerySelector("p");
+  Position position(paragraph->FirstChild(), 1);
+  VisiblePosition null_visible_position;
+  VisiblePosition non_null_visible_position = CreateVisiblePosition(position);
 
-  Element* div = document().createElement("div");
-  document().body()->appendChild(div);
+  Element* div = GetDocument().createElement("div");
+  GetDocument().body()->AppendChild(div);
 
-  EXPECT_TRUE(nullVisiblePosition.isValid());
-  EXPECT_FALSE(nonNullVisiblePosition.isValid());
+  EXPECT_TRUE(null_visible_position.IsValid());
+  EXPECT_FALSE(non_null_visible_position.IsValid());
 
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Invalid VisiblePosition can never become valid again.
-  EXPECT_FALSE(nonNullVisiblePosition.isValid());
+  EXPECT_FALSE(non_null_visible_position.IsValid());
 }
 
 TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange) {
-  setBodyContent("<div>one</div><p>two</p>");
+  SetBodyContent("<div>one</div><p>two</p>");
 
-  Element* paragraph = document().querySelector("p");
-  Element* div = document().querySelector("div");
-  Position position(paragraph->firstChild(), 1);
+  Element* paragraph = GetDocument().QuerySelector("p");
+  Element* div = GetDocument().QuerySelector("div");
+  Position position(paragraph->FirstChild(), 1);
 
-  VisiblePosition visiblePosition1 = createVisiblePosition(position);
+  VisiblePosition visible_position1 = CreateVisiblePosition(position);
   div->style()->setProperty("color", "red", "important", ASSERT_NO_EXCEPTION);
-  EXPECT_FALSE(visiblePosition1.isValid());
+  EXPECT_FALSE(visible_position1.IsValid());
 
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  VisiblePosition visiblePosition2 = createVisiblePosition(position);
+  VisiblePosition visible_position2 = CreateVisiblePosition(position);
   div->style()->setProperty("display", "none", "important",
                             ASSERT_NO_EXCEPTION);
-  EXPECT_FALSE(visiblePosition2.isValid());
+  EXPECT_FALSE(visible_position2.IsValid());
 
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Invalid VisiblePosition can never become valid again.
-  EXPECT_FALSE(visiblePosition1.isValid());
-  EXPECT_FALSE(visiblePosition2.isValid());
+  EXPECT_FALSE(visible_position1.IsValid());
+  EXPECT_FALSE(visible_position2.IsValid());
 }
 
 #endif

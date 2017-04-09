@@ -36,12 +36,12 @@ namespace blink {
 
 TEST(WebRangeTest, Empty) {
   WebRange empty1(0, 0);
-  EXPECT_FALSE(empty1.isNull());
-  EXPECT_TRUE(empty1.isEmpty());
+  EXPECT_FALSE(empty1.IsNull());
+  EXPECT_TRUE(empty1.IsEmpty());
 
   WebRange empty2(57, 0);
-  EXPECT_FALSE(empty2.isNull());
-  EXPECT_TRUE(empty2.isEmpty());
+  EXPECT_FALSE(empty2.IsNull());
+  EXPECT_TRUE(empty2.IsEmpty());
 }
 
 }  // namespace blink

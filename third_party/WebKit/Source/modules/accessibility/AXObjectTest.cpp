@@ -14,20 +14,20 @@ namespace blink {
 
 class AXObjectTest : public testing::Test {
  protected:
-  Document& document() { return m_pageHolder->document(); }
+  Document& GetDocument() { return page_holder_->GetDocument(); }
 
  private:
   void SetUp() override;
 
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 void AXObjectTest::SetUp() {
-  m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(AXObjectTest, IsARIAWidget) {
-  String testContent =
+  String test_content =
       "<body>"
       "<span id=\"plain\">plain</span><br>"
       "<span id=\"button\" role=\"button\">button</span><br>"
@@ -45,28 +45,28 @@ TEST_F(AXObjectTest, IsARIAWidget) {
       "id=\"focusable-parent\">focusable-parent</div></div><br>"
       "</body>";
 
-  document().documentElement()->setInnerHTML(testContent);
-  document().updateStyleAndLayout();
-  Element* root(document().documentElement());
-  EXPECT_FALSE(AXObject::isInsideFocusableElementOrARIAWidget(
+  GetDocument().documentElement()->setInnerHTML(test_content);
+  GetDocument().UpdateStyleAndLayout();
+  Element* root(GetDocument().documentElement());
+  EXPECT_FALSE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("plain")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-parent")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-caps")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("button-second")));
-  EXPECT_FALSE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_FALSE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("aria-bogus")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("aria-selected")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("haspopup")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable")));
-  EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(
+  EXPECT_TRUE(AXObject::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("focusable-parent")));
 }
 

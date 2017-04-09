@@ -17,42 +17,42 @@ namespace {
 
 class EmptyMutationCallback : public MutationCallback {
  public:
-  explicit EmptyMutationCallback(Document& document) : m_document(document) {}
+  explicit EmptyMutationCallback(Document& document) : document_(document) {}
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_document);
-    MutationCallback::trace(visitor);
+    visitor->Trace(document_);
+    MutationCallback::Trace(visitor);
   }
 
  private:
-  void call(const HeapVector<Member<MutationRecord>>&,
+  void Call(const HeapVector<Member<MutationRecord>>&,
             MutationObserver*) override {}
-  ExecutionContext* getExecutionContext() const override { return m_document; }
+  ExecutionContext* GetExecutionContext() const override { return document_; }
 
-  Member<Document> m_document;
+  Member<Document> document_;
 };
 }
 
 TEST(MutationObserverTest, DisconnectCrash) {
-  Persistent<Document> document = HTMLDocument::create();
-  HTMLElement* root = toHTMLElement(document->createElement("html"));
-  document->appendChild(root);
+  Persistent<Document> document = HTMLDocument::Create();
+  HTMLElement* root = ToHTMLElement(document->createElement("html"));
+  document->AppendChild(root);
   root->setInnerHTML("<head><title>\n</title></head><body></body>");
-  Node* head = root->firstChild()->firstChild();
+  Node* head = root->FirstChild()->firstChild();
   DCHECK(head);
   Persistent<MutationObserver> observer =
-      MutationObserver::create(new EmptyMutationCallback(*document));
+      MutationObserver::Create(new EmptyMutationCallback(*document));
   MutationObserverInit init;
   init.setCharacterDataOldValue(false);
   observer->observe(head, init, ASSERT_NO_EXCEPTION);
 
   head->remove();
   Persistent<MutationObserverRegistration> registration =
-      observer->m_registrations.begin()->get();
+      observer->registrations_.begin()->Get();
   // The following GC will collect |head|, but won't collect a
   // MutationObserverRegistration for |head|.
-  ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack,
-                                         BlinkGC::GCWithoutSweep,
-                                         BlinkGC::ForcedGC);
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithoutSweep,
+                                         BlinkGC::kForcedGC);
   observer->disconnect();
   // The test passes if disconnect() didn't crash.  crbug.com/657613.
 }

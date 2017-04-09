@@ -49,18 +49,18 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
   WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 
  public:
-  static PrerenderHandle* create(Document&,
+  static PrerenderHandle* Create(Document&,
                                  PrerenderClient*,
                                  const KURL&,
-                                 unsigned prerenderRelTypes);
+                                 unsigned prerender_rel_types);
 
   virtual ~PrerenderHandle();
 
-  void cancel();
-  const KURL& url() const;
+  void Cancel();
+  const KURL& Url() const;
 
   // ContextLifecycleObserver:
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
   EAGERLY_FINALIZE();
@@ -68,9 +68,9 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
  private:
   PrerenderHandle(Document&, Prerender*);
 
-  void detach();
+  void Detach();
 
-  Member<Prerender> m_prerender;
+  Member<Prerender> prerender_;
 };
 
 }  // namespace blink

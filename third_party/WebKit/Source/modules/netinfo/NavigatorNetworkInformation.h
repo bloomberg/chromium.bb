@@ -21,8 +21,8 @@ class NavigatorNetworkInformation final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
 
  public:
-  static NavigatorNetworkInformation& from(Navigator&);
-  static NavigatorNetworkInformation* toNavigatorNetworkInformation(Navigator&);
+  static NavigatorNetworkInformation& From(Navigator&);
+  static NavigatorNetworkInformation* ToNavigatorNetworkInformation(Navigator&);
   static NetworkInformation* connection(Navigator&);
 
   DECLARE_VIRTUAL_TRACE();
@@ -31,9 +31,9 @@ class NavigatorNetworkInformation final
   explicit NavigatorNetworkInformation(Navigator&);
   NetworkInformation* connection();
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<NetworkInformation> m_connection;
+  Member<NetworkInformation> connection_;
 };
 
 }  // namespace blink

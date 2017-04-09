@@ -14,57 +14,57 @@ namespace blink {
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     String tag,
     HeapVector<IconDefinition> icons,
-    long long totalDownloadSize,
+    long long total_download_size,
     String title)
-    : m_tag(tag),
-      m_icons(icons),
-      m_totalDownloadSize(totalDownloadSize),
-      m_title(title) {}
+    : tag_(tag),
+      icons_(icons),
+      total_download_size_(total_download_size),
+      title_(title) {}
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
-void BackgroundFetchRegistration::setServiceWorkerRegistration(
+void BackgroundFetchRegistration::SetServiceWorkerRegistration(
     ServiceWorkerRegistration* registration) {
-  m_registration = registration;
+  registration_ = registration;
 }
 
 String BackgroundFetchRegistration::tag() const {
-  return m_tag;
+  return tag_;
 }
 
 HeapVector<IconDefinition> BackgroundFetchRegistration::icons() const {
-  return m_icons;
+  return icons_;
 }
 
 long long BackgroundFetchRegistration::totalDownloadSize() const {
-  return m_totalDownloadSize;
+  return total_download_size_;
 }
 
 String BackgroundFetchRegistration::title() const {
-  return m_title;
+  return title_;
 }
 
-ScriptPromise BackgroundFetchRegistration::abort(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  DCHECK(m_registration);
-  BackgroundFetchBridge::from(m_registration)
-      ->abort(m_tag, WTF::bind(&BackgroundFetchRegistration::didAbort,
-                               wrapPersistent(this), wrapPersistent(resolver)));
+  DCHECK(registration_);
+  BackgroundFetchBridge::From(registration_)
+      ->Abort(tag_, WTF::Bind(&BackgroundFetchRegistration::DidAbort,
+                              WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
-void BackgroundFetchRegistration::didAbort(
+void BackgroundFetchRegistration::DidAbort(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-      resolver->resolve(true /* success */);
+      resolver->Resolve(true /* success */);
       return;
     case mojom::blink::BackgroundFetchError::INVALID_TAG:
-      resolver->resolve(false /* success */);
+      resolver->Resolve(false /* success */);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -76,8 +76,8 @@ void BackgroundFetchRegistration::didAbort(
 }
 
 DEFINE_TRACE(BackgroundFetchRegistration) {
-  visitor->trace(m_registration);
-  visitor->trace(m_icons);
+  visitor->Trace(registration_);
+  visitor->Trace(icons_);
 }
 
 }  // namespace blink

@@ -40,65 +40,66 @@
 
 namespace blink {
 
-V8CustomXPathNSResolver* V8CustomXPathNSResolver::create(
-    ScriptState* scriptState,
+V8CustomXPathNSResolver* V8CustomXPathNSResolver::Create(
+    ScriptState* script_state,
     v8::Local<v8::Object> resolver) {
-  return new V8CustomXPathNSResolver(scriptState, resolver);
+  return new V8CustomXPathNSResolver(script_state, resolver);
 }
 
-V8CustomXPathNSResolver::V8CustomXPathNSResolver(ScriptState* scriptState,
+V8CustomXPathNSResolver::V8CustomXPathNSResolver(ScriptState* script_state,
                                                  v8::Local<v8::Object> resolver)
-    : m_scriptState(scriptState), m_resolver(resolver) {}
+    : script_state_(script_state), resolver_(resolver) {}
 
 AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix) {
-  v8::Isolate* isolate = m_scriptState->isolate();
-  v8::Local<v8::Function> lookupNamespaceURIFunc;
-  v8::Local<v8::String> lookupNamespaceURIName =
-      v8AtomicString(isolate, "lookupNamespaceURI");
+  v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::Local<v8::Function> lookup_namespace_uri_func;
+  v8::Local<v8::String> lookup_namespace_uri_name =
+      V8AtomicString(isolate, "lookupNamespaceURI");
 
   // Check if the resolver has a function property named lookupNamespaceURI.
-  v8::Local<v8::Value> lookupNamespaceURI;
-  if (m_resolver->Get(m_scriptState->context(), lookupNamespaceURIName)
-          .ToLocal(&lookupNamespaceURI) &&
-      lookupNamespaceURI->IsFunction())
-    lookupNamespaceURIFunc = v8::Local<v8::Function>::Cast(lookupNamespaceURI);
+  v8::Local<v8::Value> lookup_namespace_uri;
+  if (resolver_->Get(script_state_->GetContext(), lookup_namespace_uri_name)
+          .ToLocal(&lookup_namespace_uri) &&
+      lookup_namespace_uri->IsFunction())
+    lookup_namespace_uri_func =
+        v8::Local<v8::Function>::Cast(lookup_namespace_uri);
 
-  if (lookupNamespaceURIFunc.IsEmpty() && !m_resolver->IsFunction()) {
-    LocalFrame* frame = toLocalFrameIfNotDetached(m_scriptState->context());
+  if (lookup_namespace_uri_func.IsEmpty() && !resolver_->IsFunction()) {
+    LocalFrame* frame = ToLocalFrameIfNotDetached(script_state_->GetContext());
     if (frame)
-      frame->console().addMessage(ConsoleMessage::create(
-          JSMessageSource, ErrorMessageLevel,
+      frame->Console().AddMessage(ConsoleMessage::Create(
+          kJSMessageSource, kErrorMessageLevel,
           "XPathNSResolver does not have a lookupNamespaceURI method."));
-    return nullAtom;
+    return g_null_atom;
   }
 
   // Catch exceptions from calling the namespace resolver.
-  v8::TryCatch tryCatch(isolate);
-  tryCatch.SetVerbose(true);  // Print exceptions to console.
+  v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);  // Print exceptions to console.
 
-  const int argc = 1;
-  v8::Local<v8::Value> argv[argc] = {v8String(isolate, prefix)};
+  const int kArgc = 1;
+  v8::Local<v8::Value> argv[kArgc] = {V8String(isolate, prefix)};
   v8::Local<v8::Function> function =
-      lookupNamespaceURIFunc.IsEmpty()
-          ? v8::Local<v8::Function>::Cast(m_resolver)
-          : lookupNamespaceURIFunc;
+      lookup_namespace_uri_func.IsEmpty()
+          ? v8::Local<v8::Function>::Cast(resolver_)
+          : lookup_namespace_uri_func;
 
   v8::Local<v8::Value> retval;
   // Eat exceptions from namespace resolver and return an empty string. This
   // will most likely cause NamespaceError.
-  if (!V8ScriptRunner::callFunction(
-           function, toExecutionContext(m_scriptState->context()), m_resolver,
-           argc, argv, isolate)
+  if (!V8ScriptRunner::CallFunction(
+           function, ToExecutionContext(script_state_->GetContext()), resolver_,
+           kArgc, argv, isolate)
            .ToLocal(&retval))
-    return nullAtom;
+    return g_null_atom;
 
-  TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, returnString,
-                   retval, nullAtom);
-  return returnString;
+  TOSTRING_DEFAULT(V8StringResource<kTreatNullAsNullString>, return_string,
+                   retval, g_null_atom);
+  return return_string;
 }
 
 DEFINE_TRACE(V8CustomXPathNSResolver) {
-  XPathNSResolver::trace(visitor);
+  XPathNSResolver::Trace(visitor);
 }
 
 }  // namespace blink

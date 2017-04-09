@@ -18,7 +18,7 @@ class AutoCanvasDrawListener final
   USING_GARBAGE_COLLECTED_MIXIN(AutoCanvasDrawListener);
 
  public:
-  static AutoCanvasDrawListener* create(
+  static AutoCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>);
   ~AutoCanvasDrawListener() {}
 

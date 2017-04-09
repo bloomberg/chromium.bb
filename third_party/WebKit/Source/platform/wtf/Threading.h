@@ -44,23 +44,23 @@ typedef intptr_t ThreadIdentifier;
 #endif
 
 namespace internal {
-WTF_EXPORT ThreadIdentifier currentThreadSyscall();
+WTF_EXPORT ThreadIdentifier CurrentThreadSyscall();
 }  // namespace internal
 
 // Initializes global state required by |currentThread|.
 // Needs to be called once during program execution, before |currentThread|.
-WTF_EXPORT void initializeCurrentThread();
+WTF_EXPORT void InitializeCurrentThread();
 
-WTF_EXPORT ThreadIdentifier currentThread();
+WTF_EXPORT ThreadIdentifier CurrentThread();
 
 #if DCHECK_IS_ON()
-WTF_EXPORT bool isBeforeThreadCreated();
-WTF_EXPORT void willCreateThread();
+WTF_EXPORT bool IsBeforeThreadCreated();
+WTF_EXPORT void WillCreateThread();
 #endif
 
 }  // namespace WTF
 
 using WTF::ThreadIdentifier;
-using WTF::currentThread;
+using WTF::CurrentThread;
 
 #endif  // Threading_h

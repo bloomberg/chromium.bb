@@ -27,16 +27,16 @@
 
 namespace blink {
 
-void KillRing::append(const String&) {}
+void KillRing::Append(const String&) {}
 
-void KillRing::prepend(const String&) {}
+void KillRing::Prepend(const String&) {}
 
-String KillRing::yank() {
+String KillRing::Yank() {
   return String();
 }
 
-void KillRing::startNewSequence() {}
+void KillRing::StartNewSequence() {}
 
-void KillRing::setToYankedState() {}
+void KillRing::SetToYankedState() {}
 
 }  // namespace blink

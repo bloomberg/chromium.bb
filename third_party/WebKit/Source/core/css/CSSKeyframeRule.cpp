@@ -35,40 +35,40 @@ namespace blink {
 
 CSSKeyframeRule::CSSKeyframeRule(StyleRuleKeyframe* keyframe,
                                  CSSKeyframesRule* parent)
-    : CSSRule(nullptr), m_keyframe(keyframe) {
-  setParentRule(parent);
+    : CSSRule(nullptr), keyframe_(keyframe) {
+  SetParentRule(parent);
 }
 
 CSSKeyframeRule::~CSSKeyframeRule() {}
 
-void CSSKeyframeRule::setKeyText(const String& keyText,
-                                 ExceptionState& exceptionState) {
+void CSSKeyframeRule::setKeyText(const String& key_text,
+                                 ExceptionState& exception_state) {
   CSSStyleSheet::RuleMutationScope(this);
 
-  if (!m_keyframe->setKeyText(keyText))
-    exceptionState.throwDOMException(
-        SyntaxError,
-        "The key '" + keyText + "' is invalid and cannot be parsed");
+  if (!keyframe_->SetKeyText(key_text))
+    exception_state.ThrowDOMException(
+        kSyntaxError,
+        "The key '" + key_text + "' is invalid and cannot be parsed");
 
-  toCSSKeyframesRule(parentRule())->styleChanged();
+  ToCSSKeyframesRule(parentRule())->StyleChanged();
 }
 
 CSSStyleDeclaration* CSSKeyframeRule::style() const {
-  if (!m_propertiesCSSOMWrapper)
-    m_propertiesCSSOMWrapper = KeyframeStyleRuleCSSStyleDeclaration::create(
-        m_keyframe->mutableProperties(), const_cast<CSSKeyframeRule*>(this));
-  return m_propertiesCSSOMWrapper.get();
+  if (!properties_cssom_wrapper_)
+    properties_cssom_wrapper_ = KeyframeStyleRuleCSSStyleDeclaration::Create(
+        keyframe_->MutableProperties(), const_cast<CSSKeyframeRule*>(this));
+  return properties_cssom_wrapper_.Get();
 }
 
-void CSSKeyframeRule::reattach(StyleRuleBase*) {
+void CSSKeyframeRule::Reattach(StyleRuleBase*) {
   // No need to reattach, the underlying data is shareable on mutation.
   NOTREACHED();
 }
 
 DEFINE_TRACE(CSSKeyframeRule) {
-  visitor->trace(m_keyframe);
-  visitor->trace(m_propertiesCSSOMWrapper);
-  CSSRule::trace(visitor);
+  visitor->Trace(keyframe_);
+  visitor->Trace(properties_cssom_wrapper_);
+  CSSRule::Trace(visitor);
 }
 
 }  // namespace blink

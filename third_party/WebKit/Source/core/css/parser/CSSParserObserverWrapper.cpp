@@ -8,41 +8,41 @@
 
 namespace blink {
 
-unsigned CSSParserObserverWrapper::startOffset(
+unsigned CSSParserObserverWrapper::StartOffset(
     const CSSParserTokenRange& range) {
-  return m_tokenOffsets[range.begin() - m_firstParserToken];
+  return token_offsets_[range.begin() - first_parser_token_];
 }
 
-unsigned CSSParserObserverWrapper::previousTokenStartOffset(
+unsigned CSSParserObserverWrapper::PreviousTokenStartOffset(
     const CSSParserTokenRange& range) {
-  if (range.begin() == m_firstParserToken)
+  if (range.begin() == first_parser_token_)
     return 0;
-  return m_tokenOffsets[range.begin() - m_firstParserToken - 1];
+  return token_offsets_[range.begin() - first_parser_token_ - 1];
 }
 
-unsigned CSSParserObserverWrapper::endOffset(const CSSParserTokenRange& range) {
-  return m_tokenOffsets[range.end() - m_firstParserToken];
+unsigned CSSParserObserverWrapper::EndOffset(const CSSParserTokenRange& range) {
+  return token_offsets_[range.end() - first_parser_token_];
 }
 
-void CSSParserObserverWrapper::skipCommentsBefore(
+void CSSParserObserverWrapper::SkipCommentsBefore(
     const CSSParserTokenRange& range,
-    bool leaveDirectlyBefore) {
-  unsigned startIndex = range.begin() - m_firstParserToken;
-  if (!leaveDirectlyBefore)
-    startIndex++;
-  while (m_commentIterator < m_commentOffsets.end() &&
-         m_commentIterator->tokensBefore < startIndex)
-    m_commentIterator++;
+    bool leave_directly_before) {
+  unsigned start_index = range.begin() - first_parser_token_;
+  if (!leave_directly_before)
+    start_index++;
+  while (comment_iterator_ < comment_offsets_.end() &&
+         comment_iterator_->tokens_before < start_index)
+    comment_iterator_++;
 }
 
-void CSSParserObserverWrapper::yieldCommentsBefore(
+void CSSParserObserverWrapper::YieldCommentsBefore(
     const CSSParserTokenRange& range) {
-  unsigned startIndex = range.begin() - m_firstParserToken;
-  while (m_commentIterator < m_commentOffsets.end() &&
-         m_commentIterator->tokensBefore <= startIndex) {
-    m_observer.observeComment(m_commentIterator->startOffset,
-                              m_commentIterator->endOffset);
-    m_commentIterator++;
+  unsigned start_index = range.begin() - first_parser_token_;
+  while (comment_iterator_ < comment_offsets_.end() &&
+         comment_iterator_->tokens_before <= start_index) {
+    observer_.ObserveComment(comment_iterator_->start_offset,
+                             comment_iterator_->end_offset);
+    comment_iterator_++;
   }
 }
 

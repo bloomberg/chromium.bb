@@ -11,17 +11,17 @@ WebFederatedCredential::WebFederatedCredential(
     const WebString& id,
     const WebSecurityOrigin& provider,
     const WebString& name,
-    const WebURL& iconURL)
+    const WebURL& icon_url)
     : WebCredential(
-          PlatformFederatedCredential::create(id, provider, name, iconURL)) {}
+          PlatformFederatedCredential::Create(id, provider, name, icon_url)) {}
 
-void WebFederatedCredential::assign(const WebFederatedCredential& other) {
-  m_platformCredential = other.m_platformCredential;
+void WebFederatedCredential::Assign(const WebFederatedCredential& other) {
+  platform_credential_ = other.platform_credential_;
 }
 
-WebSecurityOrigin WebFederatedCredential::provider() const {
-  return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())
-      ->provider();
+WebSecurityOrigin WebFederatedCredential::Provider() const {
+  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
+      ->Provider();
 }
 
 WebFederatedCredential::WebFederatedCredential(PlatformCredential* credential)
@@ -29,7 +29,7 @@ WebFederatedCredential::WebFederatedCredential(PlatformCredential* credential)
 
 WebFederatedCredential& WebFederatedCredential::operator=(
     PlatformCredential* credential) {
-  m_platformCredential = credential;
+  platform_credential_ = credential;
   return *this;
 }
 

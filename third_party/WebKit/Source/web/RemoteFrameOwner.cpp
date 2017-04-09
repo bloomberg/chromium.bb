@@ -12,42 +12,42 @@ namespace blink {
 
 RemoteFrameOwner::RemoteFrameOwner(
     SandboxFlags flags,
-    const WebFrameOwnerProperties& frameOwnerProperties)
-    : m_sandboxFlags(flags),
-      m_browsingContextContainerName(
-          static_cast<String>(frameOwnerProperties.name)),
-      m_scrolling(
-          static_cast<ScrollbarMode>(frameOwnerProperties.scrollingMode)),
-      m_marginWidth(frameOwnerProperties.marginWidth),
-      m_marginHeight(frameOwnerProperties.marginHeight),
-      m_allowFullscreen(frameOwnerProperties.allowFullscreen),
-      m_allowPaymentRequest(frameOwnerProperties.allowPaymentRequest),
-      m_isDisplayNone(frameOwnerProperties.isDisplayNone),
-      m_csp(frameOwnerProperties.requiredCsp) {}
+    const WebFrameOwnerProperties& frame_owner_properties)
+    : sandbox_flags_(flags),
+      browsing_context_container_name_(
+          static_cast<String>(frame_owner_properties.name)),
+      scrolling_(
+          static_cast<ScrollbarMode>(frame_owner_properties.scrolling_mode)),
+      margin_width_(frame_owner_properties.margin_width),
+      margin_height_(frame_owner_properties.margin_height),
+      allow_fullscreen_(frame_owner_properties.allow_fullscreen),
+      allow_payment_request_(frame_owner_properties.allow_payment_request),
+      is_display_none_(frame_owner_properties.is_display_none),
+      csp_(frame_owner_properties.required_csp) {}
 
 DEFINE_TRACE(RemoteFrameOwner) {
-  visitor->trace(m_frame);
-  FrameOwner::trace(visitor);
+  visitor->Trace(frame_);
+  FrameOwner::Trace(visitor);
 }
 
-void RemoteFrameOwner::setScrollingMode(
+void RemoteFrameOwner::SetScrollingMode(
     WebFrameOwnerProperties::ScrollingMode mode) {
-  m_scrolling = static_cast<ScrollbarMode>(mode);
+  scrolling_ = static_cast<ScrollbarMode>(mode);
 }
 
-void RemoteFrameOwner::setContentFrame(Frame& frame) {
-  m_frame = &frame;
+void RemoteFrameOwner::SetContentFrame(Frame& frame) {
+  frame_ = &frame;
 }
 
-void RemoteFrameOwner::clearContentFrame() {
-  DCHECK_EQ(m_frame->owner(), this);
-  m_frame = nullptr;
+void RemoteFrameOwner::ClearContentFrame() {
+  DCHECK_EQ(frame_->Owner(), this);
+  frame_ = nullptr;
 }
 
-void RemoteFrameOwner::dispatchLoad() {
-  WebLocalFrameImpl* webFrame =
-      WebLocalFrameImpl::fromFrame(toLocalFrame(*m_frame));
-  webFrame->client()->dispatchLoad();
+void RemoteFrameOwner::DispatchLoad() {
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame_));
+  web_frame->Client()->DispatchLoad();
 }
 
 }  // namespace blink

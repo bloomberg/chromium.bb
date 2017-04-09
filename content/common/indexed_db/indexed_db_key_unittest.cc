@@ -21,15 +21,15 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   keys.push_back(IndexedDBKey());
   estimates.push_back(16u);  // Overhead.
 
-  keys.push_back(IndexedDBKey(blink::WebIDBKeyTypeNull));
+  keys.push_back(IndexedDBKey(blink::kWebIDBKeyTypeNull));
   estimates.push_back(16u);
 
   double number = 3.14159;
-  keys.push_back(IndexedDBKey(number, blink::WebIDBKeyTypeNumber));
+  keys.push_back(IndexedDBKey(number, blink::kWebIDBKeyTypeNumber));
   estimates.push_back(24u);  // Overhead + sizeof(double).
 
   double date = 1370884329.0;
-  keys.push_back(IndexedDBKey(date, blink::WebIDBKeyTypeDate));
+  keys.push_back(IndexedDBKey(date, blink::kWebIDBKeyTypeDate));
   estimates.push_back(24u);  // Overhead + sizeof(double).
 
   const base::string16 string(1024, static_cast<base::char16>('X'));
@@ -41,7 +41,7 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   IndexedDBKey::KeyArray array;
   double value = 123.456;
   for (size_t i = 0; i < array_size; ++i) {
-    array.push_back(IndexedDBKey(value, blink::WebIDBKeyTypeNumber));
+    array.push_back(IndexedDBKey(value, blink::kWebIDBKeyTypeNumber));
   }
   keys.push_back(IndexedDBKey(array));
   // Overhead + array length * (Overhead + sizeof(double)).

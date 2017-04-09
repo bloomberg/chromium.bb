@@ -55,14 +55,14 @@ class BLINK_PLATFORM_EXPORT WebThread {
   class IdleTask {
    public:
     virtual ~IdleTask() {}
-    virtual void run(double deadlineSeconds) = 0;
+    virtual void Run(double deadline_seconds) = 0;
   };
 
   class BLINK_PLATFORM_EXPORT TaskObserver {
    public:
     virtual ~TaskObserver() {}
-    virtual void willProcessTask() = 0;
-    virtual void didProcessTask() = 0;
+    virtual void WillProcessTask() = 0;
+    virtual void DidProcessTask() = 0;
   };
 
   // DEPRECATED: Returns a WebTaskRunner bound to the underlying scheduler's
@@ -71,30 +71,30 @@ class BLINK_PLATFORM_EXPORT WebThread {
   // Default scheduler task queue does not give scheduler enough freedom to
   // manage task priorities and should not be used.
   // Use TaskRunnerHelper::get instead (crbug.com/624696).
-  virtual WebTaskRunner* getWebTaskRunner() { return nullptr; }
-  base::SingleThreadTaskRunner* getSingleThreadTaskRunner();
+  virtual WebTaskRunner* GetWebTaskRunner() { return nullptr; }
+  base::SingleThreadTaskRunner* GetSingleThreadTaskRunner();
 
-  virtual bool isCurrentThread() const = 0;
-  virtual PlatformThreadId threadId() const { return 0; }
+  virtual bool IsCurrentThread() const = 0;
+  virtual PlatformThreadId ThreadId() const { return 0; }
 
   // TaskObserver is an object that receives task notifications from the
   // MessageLoop
   // NOTE: TaskObserver implementation should be extremely fast!
   // This API is performance sensitive. Use only if you have a compelling
   // reason.
-  virtual void addTaskObserver(TaskObserver*) {}
-  virtual void removeTaskObserver(TaskObserver*) {}
+  virtual void AddTaskObserver(TaskObserver*) {}
+  virtual void RemoveTaskObserver(TaskObserver*) {}
 
   // TaskTimeObserver is an object that receives notifications for
   // CPU time spent in each top-level MessageLoop task.
   // NOTE: TaskTimeObserver implementation should be extremely fast!
   // This API is performance sensitive. Use only if you have a compelling
   // reason.
-  virtual void addTaskTimeObserver(scheduler::TaskTimeObserver*) {}
-  virtual void removeTaskTimeObserver(scheduler::TaskTimeObserver*) {}
+  virtual void AddTaskTimeObserver(scheduler::TaskTimeObserver*) {}
+  virtual void RemoveTaskTimeObserver(scheduler::TaskTimeObserver*) {}
 
   // Returns the scheduler associated with the thread.
-  virtual WebScheduler* scheduler() const = 0;
+  virtual WebScheduler* Scheduler() const = 0;
 
   virtual ~WebThread() {}
 };

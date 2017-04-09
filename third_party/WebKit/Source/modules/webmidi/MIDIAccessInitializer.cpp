@@ -26,51 +26,51 @@ using midi::mojom::PortState;
 using midi::mojom::Result;
 using mojom::blink::PermissionStatus;
 
-MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState,
+MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
                                              const MIDIOptions& options)
-    : ScriptPromiseResolver(scriptState), m_options(options) {}
+    : ScriptPromiseResolver(script_state), options_(options) {}
 
-void MIDIAccessInitializer::contextDestroyed(ExecutionContext*) {
-  m_permissionService.reset();
+void MIDIAccessInitializer::ContextDestroyed(ExecutionContext*) {
+  permission_service_.reset();
 }
 
-ScriptPromise MIDIAccessInitializer::start() {
-  ScriptPromise promise = this->promise();
-  m_accessor = MIDIAccessor::create(this);
+ScriptPromise MIDIAccessInitializer::Start() {
+  ScriptPromise promise = this->Promise();
+  accessor_ = MIDIAccessor::Create(this);
 
-  connectToPermissionService(getExecutionContext(),
-                             mojo::MakeRequest(&m_permissionService));
-  m_permissionService->RequestPermission(
-      createMidiPermissionDescriptor(m_options.hasSysex() && m_options.sysex()),
-      getExecutionContext()->getSecurityOrigin(),
-      UserGestureIndicator::processingUserGesture(),
-      convertToBaseCallback(WTF::bind(
-          &MIDIAccessInitializer::onPermissionsUpdated, wrapPersistent(this))));
+  ConnectToPermissionService(GetExecutionContext(),
+                             mojo::MakeRequest(&permission_service_));
+  permission_service_->RequestPermission(
+      CreateMidiPermissionDescriptor(options_.hasSysex() && options_.sysex()),
+      GetExecutionContext()->GetSecurityOrigin(),
+      UserGestureIndicator::ProcessingUserGesture(),
+      ConvertToBaseCallback(WTF::Bind(
+          &MIDIAccessInitializer::OnPermissionsUpdated, WrapPersistent(this))));
 
   return promise;
 }
 
-void MIDIAccessInitializer::didAddInputPort(const String& id,
+void MIDIAccessInitializer::DidAddInputPort(const String& id,
                                             const String& manufacturer,
                                             const String& name,
                                             const String& version,
                                             PortState state) {
-  DCHECK(m_accessor);
-  m_portDescriptors.push_back(PortDescriptor(
-      id, manufacturer, name, MIDIPort::TypeInput, version, state));
+  DCHECK(accessor_);
+  port_descriptors_.push_back(PortDescriptor(
+      id, manufacturer, name, MIDIPort::kTypeInput, version, state));
 }
 
-void MIDIAccessInitializer::didAddOutputPort(const String& id,
+void MIDIAccessInitializer::DidAddOutputPort(const String& id,
                                              const String& manufacturer,
                                              const String& name,
                                              const String& version,
                                              PortState state) {
-  DCHECK(m_accessor);
-  m_portDescriptors.push_back(PortDescriptor(
-      id, manufacturer, name, MIDIPort::TypeOutput, version, state));
+  DCHECK(accessor_);
+  port_descriptors_.push_back(PortDescriptor(
+      id, manufacturer, name, MIDIPort::kTypeOutput, version, state));
 }
 
-void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex,
+void MIDIAccessInitializer::DidSetInputPortState(unsigned port_index,
                                                  PortState state) {
   // didSetInputPortState() is not allowed to call before didStartSession()
   // is called. Once didStartSession() is called, MIDIAccessorClient methods
@@ -78,52 +78,52 @@ void MIDIAccessInitializer::didSetInputPortState(unsigned portIndex,
   NOTREACHED();
 }
 
-void MIDIAccessInitializer::didSetOutputPortState(unsigned portIndex,
+void MIDIAccessInitializer::DidSetOutputPortState(unsigned port_index,
                                                   PortState state) {
   // See comments on didSetInputPortState().
   NOTREACHED();
 }
 
-void MIDIAccessInitializer::didStartSession(Result result) {
-  DCHECK(m_accessor);
+void MIDIAccessInitializer::DidStartSession(Result result) {
+  DCHECK(accessor_);
   // We would also have AbortError and SecurityError according to the spec.
   // SecurityError is handled in onPermission(s)Updated().
   switch (result) {
     case Result::NOT_INITIALIZED:
       break;
     case Result::OK:
-      return resolve(MIDIAccess::create(
-          std::move(m_accessor), m_options.hasSysex() && m_options.sysex(),
-          m_portDescriptors, getExecutionContext()));
+      return Resolve(MIDIAccess::Create(
+          std::move(accessor_), options_.hasSysex() && options_.sysex(),
+          port_descriptors_, GetExecutionContext()));
     case Result::NOT_SUPPORTED:
-      return reject(DOMException::create(NotSupportedError));
+      return Reject(DOMException::Create(kNotSupportedError));
     case Result::INITIALIZATION_ERROR:
-      return reject(DOMException::create(
-          InvalidStateError, "Platform dependent initialization failed."));
+      return Reject(DOMException::Create(
+          kInvalidStateError, "Platform dependent initialization failed."));
   }
   NOTREACHED();
-  reject(DOMException::create(InvalidStateError,
+  Reject(DOMException::Create(kInvalidStateError,
                               "Unknown internal error occurred."));
 }
 
-ExecutionContext* MIDIAccessInitializer::getExecutionContext() const {
-  return getScriptState()->getExecutionContext();
+ExecutionContext* MIDIAccessInitializer::GetExecutionContext() const {
+  return GetScriptState()->GetExecutionContext();
 }
 
-void MIDIAccessInitializer::onPermissionsUpdated(PermissionStatus status) {
-  m_permissionService.reset();
+void MIDIAccessInitializer::OnPermissionsUpdated(PermissionStatus status) {
+  permission_service_.reset();
   if (status == PermissionStatus::GRANTED)
-    m_accessor->startSession();
+    accessor_->StartSession();
   else
-    reject(DOMException::create(SecurityError));
+    Reject(DOMException::Create(kSecurityError));
 }
 
-void MIDIAccessInitializer::onPermissionUpdated(PermissionStatus status) {
-  m_permissionService.reset();
+void MIDIAccessInitializer::OnPermissionUpdated(PermissionStatus status) {
+  permission_service_.reset();
   if (status == PermissionStatus::GRANTED)
-    m_accessor->startSession();
+    accessor_->StartSession();
   else
-    reject(DOMException::create(SecurityError));
+    Reject(DOMException::Create(kSecurityError));
 }
 
 }  // namespace blink

@@ -13,28 +13,28 @@ namespace blink {
 ScrollRecorder::ScrollRecorder(GraphicsContext& context,
                                const DisplayItemClient& client,
                                DisplayItem::Type type,
-                               const IntSize& currentOffset)
-    : m_client(client), m_beginItemType(type), m_context(context) {
+                               const IntSize& current_offset)
+    : client_(client), begin_item_type_(type), context_(context) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
-  m_context.getPaintController().createAndAppend<BeginScrollDisplayItem>(
-      m_client, m_beginItemType, currentOffset);
+  context_.GetPaintController().CreateAndAppend<BeginScrollDisplayItem>(
+      client_, begin_item_type_, current_offset);
 }
 
 ScrollRecorder::ScrollRecorder(GraphicsContext& context,
                                const DisplayItemClient& client,
                                PaintPhase phase,
-                               const IntSize& currentOffset)
+                               const IntSize& current_offset)
     : ScrollRecorder(context,
                      client,
-                     DisplayItem::paintPhaseToScrollType(phase),
-                     currentOffset) {}
+                     DisplayItem::PaintPhaseToScrollType(phase),
+                     current_offset) {}
 
 ScrollRecorder::~ScrollRecorder() {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
-  m_context.getPaintController().endItem<EndScrollDisplayItem>(
-      m_client, DisplayItem::scrollTypeToEndScrollType(m_beginItemType));
+  context_.GetPaintController().EndItem<EndScrollDisplayItem>(
+      client_, DisplayItem::ScrollTypeToEndScrollType(begin_item_type_));
 }
 
 }  // namespace blink

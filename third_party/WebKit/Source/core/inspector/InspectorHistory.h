@@ -49,38 +49,38 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
     explicit Action(const String& name);
     virtual ~Action();
     DECLARE_VIRTUAL_TRACE();
-    virtual String toString();
+    virtual String ToString();
 
-    virtual String mergeId();
-    virtual void merge(Action*);
+    virtual String MergeId();
+    virtual void Merge(Action*);
 
-    virtual bool perform(ExceptionState&) = 0;
+    virtual bool Perform(ExceptionState&) = 0;
 
-    virtual bool undo(ExceptionState&) = 0;
-    virtual bool redo(ExceptionState&) = 0;
+    virtual bool Undo(ExceptionState&) = 0;
+    virtual bool Redo(ExceptionState&) = 0;
 
-    virtual bool isNoop() { return false; }
+    virtual bool IsNoop() { return false; }
 
-    virtual bool isUndoableStateMark();
+    virtual bool IsUndoableStateMark();
 
    private:
-    String m_name;
+    String name_;
   };
 
   InspectorHistory();
   DECLARE_TRACE();
 
-  bool perform(Action*, ExceptionState&);
-  void appendPerformedAction(Action*);
-  void markUndoableState();
+  bool Perform(Action*, ExceptionState&);
+  void AppendPerformedAction(Action*);
+  void MarkUndoableState();
 
-  bool undo(ExceptionState&);
-  bool redo(ExceptionState&);
-  void reset();
+  bool Undo(ExceptionState&);
+  bool Redo(ExceptionState&);
+  void Reset();
 
  private:
-  HeapVector<Member<Action>> m_history;
-  size_t m_afterLastActionIndex;
+  HeapVector<Member<Action>> history_;
+  size_t after_last_action_index_;
 };
 
 }  // namespace blink

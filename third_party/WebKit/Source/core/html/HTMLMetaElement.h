@@ -31,11 +31,11 @@
 namespace blink {
 
 enum ViewportErrorCode {
-  UnrecognizedViewportArgumentKeyError,
-  UnrecognizedViewportArgumentValueError,
-  TruncatedViewportArgumentValueError,
-  MaximumScaleTooLargeError,
-  TargetDensityDpiUnsupported
+  kUnrecognizedViewportArgumentKeyError,
+  kUnrecognizedViewportArgumentValueError,
+  kTruncatedViewportArgumentValueError,
+  kMaximumScaleTooLargeError,
+  kTargetDensityDpiUnsupported
 };
 
 class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
@@ -44,72 +44,73 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLMetaElement);
 
-  static void getViewportDescriptionFromContentAttribute(
+  static void GetViewportDescriptionFromContentAttribute(
       const String& content,
       ViewportDescription&,
       Document*,
-      bool viewportMetaZeroValuesQuirk);
+      bool viewport_meta_zero_values_quirk);
 
   // Encoding computed from processing the http-equiv, charset and content
   // attributes.
-  WTF::TextEncoding computeEncoding() const;
+  WTF::TextEncoding ComputeEncoding() const;
 
-  const AtomicString& content() const;
-  const AtomicString& httpEquiv() const;
-  const AtomicString& name() const;
+  const AtomicString& Content() const;
+  const AtomicString& HttpEquiv() const;
+  const AtomicString& GetName() const;
 
  private:
   explicit HTMLMetaElement(Document&);
 
-  static void processViewportKeyValuePair(Document*,
-                                          bool reportWarnings,
+  static void ProcessViewportKeyValuePair(Document*,
+                                          bool report_warnings,
                                           const String& key,
                                           const String& value,
-                                          bool viewportMetaZeroValuesQuirk,
+                                          bool viewport_meta_zero_values_quirk,
                                           void* data);
-  static void parseContentAttribute(const String& content,
+  static void ParseContentAttribute(const String& content,
                                     void* data,
                                     Document*,
-                                    bool viewportMetaZeroValuesQuirk);
+                                    bool viewport_meta_zero_values_quirk);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void didNotifySubtreeInsertionsToDocument() override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void DidNotifySubtreeInsertionsToDocument() override;
 
-  static float parsePositiveNumber(Document*,
-                                   bool reportWarnings,
+  static float ParsePositiveNumber(Document*,
+                                   bool report_warnings,
                                    const String& key,
                                    const String& value,
                                    bool* ok = 0);
 
-  static Length parseViewportValueAsLength(Document*,
-                                           bool reportWarnings,
+  static Length ParseViewportValueAsLength(Document*,
+                                           bool report_warnings,
                                            const String& key,
                                            const String& value);
-  static float parseViewportValueAsZoom(Document*,
-                                        bool reportWarnings,
-                                        const String& key,
-                                        const String& value,
-                                        bool& computedValueMatchesParsedValue,
-                                        bool viewportMetaZeroValuesQuirk);
-  static bool parseViewportValueAsUserZoom(
+  static float ParseViewportValueAsZoom(
       Document*,
-      bool reportWarnings,
+      bool report_warnings,
       const String& key,
       const String& value,
-      bool& computedValueMatchesParsedValue);
-  static float parseViewportValueAsDPI(Document*,
-                                       bool reportWarnings,
+      bool& computed_value_matches_parsed_value,
+      bool viewport_meta_zero_values_quirk);
+  static bool ParseViewportValueAsUserZoom(
+      Document*,
+      bool report_warnings,
+      const String& key,
+      const String& value,
+      bool& computed_value_matches_parsed_value);
+  static float ParseViewportValueAsDPI(Document*,
+                                       bool report_warnings,
                                        const String& key,
                                        const String& value);
 
-  static void reportViewportWarning(Document*,
+  static void ReportViewportWarning(Document*,
                                     ViewportErrorCode,
                                     const String& replacement1,
                                     const String& replacement2);
 
-  void process();
-  void processViewportContentAttribute(const String& content,
+  void Process();
+  void ProcessViewportContentAttribute(const String& content,
                                        ViewportDescription::Type origin);
 };
 

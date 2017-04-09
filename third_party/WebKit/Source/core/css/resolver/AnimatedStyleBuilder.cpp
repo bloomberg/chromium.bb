@@ -64,34 +64,34 @@
 
 namespace blink {
 
-void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
+void AnimatedStyleBuilder::ApplyProperty(CSSPropertyID property,
                                          ComputedStyle& style,
                                          const AnimatableValue* value) {
-  DCHECK(CSSPropertyMetadata::isInterpolableProperty(property));
+  DCHECK(CSSPropertyMetadata::IsInterpolableProperty(property));
   switch (property) {
     case CSSPropertyOpacity:
       // Avoiding a value of 1 forces a layer to be created.
-      style.setOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0,
+      style.SetOpacity(clampTo<float>(ToAnimatableDouble(value)->ToDouble(), 0,
                                       nextafterf(1, 0)));
       return;
     case CSSPropertyTransform: {
       const TransformOperations& operations =
-          toAnimatableTransform(value)->transformOperations();
+          ToAnimatableTransform(value)->GetTransformOperations();
       // FIXME: This normalization (handling of 'none') should be performed at
       // input in AnimatableValueFactory.
       if (operations.size() == 0) {
-        style.setTransform(TransformOperations(true));
+        style.SetTransform(TransformOperations(true));
         return;
       }
-      double sourceZoom = toAnimatableTransform(value)->zoom();
-      double destinationZoom = style.effectiveZoom();
-      style.setTransform(sourceZoom == destinationZoom
+      double source_zoom = ToAnimatableTransform(value)->Zoom();
+      double destination_zoom = style.EffectiveZoom();
+      style.SetTransform(source_zoom == destination_zoom
                              ? operations
-                             : operations.zoom(destinationZoom / sourceZoom));
+                             : operations.Zoom(destination_zoom / source_zoom));
       return;
     }
     case CSSPropertyFilter:
-      style.setFilter(toAnimatableFilterOperations(value)->operations());
+      style.SetFilter(ToAnimatableFilterOperations(value)->Operations());
       return;
 
     default:

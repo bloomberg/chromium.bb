@@ -128,19 +128,20 @@ void ExclusiveAccessManager::OnTabClosing(WebContents* web_contents) {
 
 bool ExclusiveAccessManager::HandleUserKeyPress(
     const content::NativeWebKeyboardEvent& event) {
-  if (event.windowsKeyCode != ui::VKEY_ESCAPE) {
+  if (event.windows_key_code != ui::VKEY_ESCAPE) {
     OnUserInput();
     return false;
   }
 
   if (IsExperimentalKeyboardLockUIEnabled()) {
-    if (event.type() == content::NativeWebKeyboardEvent::KeyUp &&
+    if (event.GetType() == content::NativeWebKeyboardEvent::kKeyUp &&
         hold_timer_.IsRunning()) {
       // Seeing a key up event on Esc with the hold timer running cancels the
       // timer and doesn't exit. This means the user pressed Esc, but not long
       // enough to trigger an exit
       hold_timer_.Stop();
-    } else if (event.type() == content::NativeWebKeyboardEvent::RawKeyDown &&
+    } else if (event.GetType() ==
+                   content::NativeWebKeyboardEvent::kRawKeyDown &&
                !hold_timer_.IsRunning()) {
       // Seeing a key down event on Esc when the hold timer is stopped starts
       // the timer. When the timer reaches 0, the callback will trigger an exit

@@ -34,13 +34,13 @@ class CSSMediaRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSMediaRule* create(StyleRuleMedia* rule, CSSStyleSheet* sheet) {
+  static CSSMediaRule* Create(StyleRuleMedia* rule, CSSStyleSheet* sheet) {
     return new CSSMediaRule(rule, sheet);
   }
 
   ~CSSMediaRule() override;
 
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
   String cssText() const override;
   String conditionText() const override;
 
@@ -53,9 +53,9 @@ class CSSMediaRule final : public CSSConditionRule {
 
   CSSRule::Type type() const override { return kMediaRule; }
 
-  MediaQuerySet* mediaQueries() const;
+  MediaQuerySet* MediaQueries() const;
 
-  mutable Member<MediaList> m_mediaCSSOMWrapper;
+  mutable Member<MediaList> media_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, kMediaRule);

@@ -29,16 +29,15 @@ void ManifestFetcher::Start(blink::WebFrame* frame,
   callback_ = callback;
 
   blink::WebAssociatedURLLoaderOptions options;
-  options.allowCredentials = use_credentials;
-  options.crossOriginRequestPolicy = blink::WebAssociatedURLLoaderOptions::
-      CrossOriginRequestPolicyUseAccessControl;
+  options.allow_credentials = use_credentials;
+  options.cross_origin_request_policy = blink::WebAssociatedURLLoaderOptions::
+      kCrossOriginRequestPolicyUseAccessControl;
   fetcher_->SetLoaderOptions(options);
 
-  fetcher_->Start(frame,
-                  blink::WebURLRequest::RequestContextManifest,
-                  blink::WebURLRequest::FrameTypeNone,
-                  base::Bind(&ManifestFetcher::OnLoadComplete,
-                             base::Unretained(this)));
+  fetcher_->Start(
+      frame, blink::WebURLRequest::kRequestContextManifest,
+      blink::WebURLRequest::kFrameTypeNone,
+      base::Bind(&ManifestFetcher::OnLoadComplete, base::Unretained(this)));
 }
 
 void ManifestFetcher::Cancel() {

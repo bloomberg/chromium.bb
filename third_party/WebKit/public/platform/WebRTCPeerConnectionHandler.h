@@ -58,49 +58,49 @@ class WebRTCPeerConnectionHandler {
  public:
   virtual ~WebRTCPeerConnectionHandler() {}
 
-  virtual bool initialize(const WebRTCConfiguration&,
+  virtual bool Initialize(const WebRTCConfiguration&,
                           const WebMediaConstraints&) = 0;
 
-  virtual void createOffer(const WebRTCSessionDescriptionRequest&,
+  virtual void CreateOffer(const WebRTCSessionDescriptionRequest&,
                            const WebMediaConstraints&) = 0;
-  virtual void createOffer(const WebRTCSessionDescriptionRequest&,
+  virtual void CreateOffer(const WebRTCSessionDescriptionRequest&,
                            const WebRTCOfferOptions&) = 0;
-  virtual void createAnswer(const WebRTCSessionDescriptionRequest&,
+  virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                             const WebMediaConstraints&) = 0;
-  virtual void createAnswer(const WebRTCSessionDescriptionRequest&,
+  virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                             const WebRTCAnswerOptions&) = 0;
-  virtual void setLocalDescription(const WebRTCVoidRequest&,
+  virtual void SetLocalDescription(const WebRTCVoidRequest&,
                                    const WebRTCSessionDescription&) = 0;
-  virtual void setRemoteDescription(const WebRTCVoidRequest&,
+  virtual void SetRemoteDescription(const WebRTCVoidRequest&,
                                     const WebRTCSessionDescription&) = 0;
-  virtual WebRTCSessionDescription localDescription() = 0;
-  virtual WebRTCSessionDescription remoteDescription() = 0;
-  virtual WebRTCErrorType setConfiguration(const WebRTCConfiguration&) = 0;
+  virtual WebRTCSessionDescription LocalDescription() = 0;
+  virtual WebRTCSessionDescription RemoteDescription() = 0;
+  virtual WebRTCErrorType SetConfiguration(const WebRTCConfiguration&) = 0;
 
   // DEPRECATED
-  virtual bool addICECandidate(const WebRTCICECandidate&) { return false; }
+  virtual bool AddICECandidate(const WebRTCICECandidate&) { return false; }
 
-  virtual bool addICECandidate(const WebRTCVoidRequest&,
+  virtual bool AddICECandidate(const WebRTCVoidRequest&,
                                const WebRTCICECandidate&) {
     return false;
   }
-  virtual bool addStream(const WebMediaStream&, const WebMediaConstraints&) = 0;
-  virtual void removeStream(const WebMediaStream&) = 0;
-  virtual void getStats(const WebRTCStatsRequest&) = 0;
+  virtual bool AddStream(const WebMediaStream&, const WebMediaConstraints&) = 0;
+  virtual void RemoveStream(const WebMediaStream&) = 0;
+  virtual void GetStats(const WebRTCStatsRequest&) = 0;
   // Gets stats using the new stats collection API, see
   // third_party/webrtc/api/stats/.  These will replace the old stats collection
   // API when the new API has matured enough.
-  virtual void getStats(std::unique_ptr<WebRTCStatsReportCallback>) = 0;
-  virtual WebRTCDataChannelHandler* createDataChannel(
+  virtual void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) = 0;
+  virtual WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
   // Gets receivers used by the peer connection. These are wrappers referencing
   // webrtc-layer receivers, multiple |WebRTCRtpReceiver| objects referencing
   // the same webrtc-layer receiver have the same |id|.
-  virtual WebVector<std::unique_ptr<WebRTCRtpReceiver>> getReceivers() = 0;
-  virtual WebRTCDTMFSenderHandler* createDTMFSender(
+  virtual WebVector<std::unique_ptr<WebRTCRtpReceiver>> GetReceivers() = 0;
+  virtual WebRTCDTMFSenderHandler* CreateDTMFSender(
       const WebMediaStreamTrack&) = 0;
-  virtual void stop() = 0;
+  virtual void Stop() = 0;
 };
 
 }  // namespace blink

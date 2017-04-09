@@ -14,32 +14,32 @@ class RelatedEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RelatedEvent* create(const AtomicString& type,
-                              bool canBubble,
+  static RelatedEvent* Create(const AtomicString& type,
+                              bool can_bubble,
                               bool cancelable,
-                              EventTarget* relatedTarget);
-  static RelatedEvent* create(const AtomicString& eventType,
+                              EventTarget* related_target);
+  static RelatedEvent* Create(const AtomicString& event_type,
                               const RelatedEventInit&);
 
   ~RelatedEvent() override;
 
-  EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
+  EventTarget* relatedTarget() const { return related_target_.Get(); }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::RelatedEvent;
   }
-  bool isRelatedEvent() const override { return true; }
+  bool IsRelatedEvent() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   RelatedEvent(const AtomicString& type,
-               bool canBubble,
+               bool can_bubble,
                bool cancelable,
                EventTarget*);
   RelatedEvent(const AtomicString& type, const RelatedEventInit&);
 
-  Member<EventTarget> m_relatedTarget;
+  Member<EventTarget> related_target_;
 };
 
 DEFINE_EVENT_TYPE_CASTS(RelatedEvent);

@@ -23,27 +23,27 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
   WTF_MAKE_NONCOPYABLE(ProgrammaticScrollAnimator);
 
  public:
-  static ProgrammaticScrollAnimator* create(ScrollableArea* scrollableArea) {
-    return new ProgrammaticScrollAnimator(scrollableArea);
+  static ProgrammaticScrollAnimator* Create(ScrollableArea* scrollable_area) {
+    return new ProgrammaticScrollAnimator(scrollable_area);
   }
 
   virtual ~ProgrammaticScrollAnimator();
 
-  void scrollToOffsetWithoutAnimation(const ScrollOffset&);
-  void animateToOffset(const ScrollOffset&);
+  void ScrollToOffsetWithoutAnimation(const ScrollOffset&);
+  void AnimateToOffset(const ScrollOffset&);
 
   // ScrollAnimatorCompositorCoordinator implementation.
-  void resetAnimationState() override;
-  void cancelAnimation() override;
-  void takeOverCompositorAnimation() override{};
-  ScrollableArea* getScrollableArea() const override {
-    return m_scrollableArea;
+  void ResetAnimationState() override;
+  void CancelAnimation() override;
+  void TakeOverCompositorAnimation() override{};
+  ScrollableArea* GetScrollableArea() const override {
+    return scrollable_area_;
   }
-  void tickAnimation(double monotonicTime) override;
-  void updateCompositorAnimations() override;
-  void notifyCompositorAnimationFinished(int groupId) override;
-  void notifyCompositorAnimationAborted(int groupId) override{};
-  void layerForCompositedScrollingDidChange(
+  void TickAnimation(double monotonic_time) override;
+  void UpdateCompositorAnimations() override;
+  void NotifyCompositorAnimationFinished(int group_id) override;
+  void NotifyCompositorAnimationAborted(int group_id) override{};
+  void LayerForCompositedScrollingDidChange(
       CompositorAnimationTimeline*) override;
 
   DECLARE_TRACE();
@@ -51,12 +51,12 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
  private:
   explicit ProgrammaticScrollAnimator(ScrollableArea*);
 
-  void notifyOffsetChanged(const ScrollOffset&);
+  void NotifyOffsetChanged(const ScrollOffset&);
 
-  Member<ScrollableArea> m_scrollableArea;
-  std::unique_ptr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
-  ScrollOffset m_targetOffset;
-  double m_startTime;
+  Member<ScrollableArea> scrollable_area_;
+  std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
+  ScrollOffset target_offset_;
+  double start_time_;
 };
 
 }  // namespace blink

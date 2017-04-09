@@ -15,15 +15,18 @@ namespace content {
 MockWebRTCPeerConnectionHandlerClient::
 MockWebRTCPeerConnectionHandlerClient()
     : candidate_mline_index_(-1) {
-  ON_CALL(*this, didGenerateICECandidate(_)).WillByDefault(testing::Invoke(
-      this,
-      &MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker));
-  ON_CALL(*this, didAddRemoteStream(_)).WillByDefault(testing::Invoke(
-      this,
-      &MockWebRTCPeerConnectionHandlerClient::didAddRemoteStreamWorker));
-  ON_CALL(*this, didRemoveRemoteStream(_)).WillByDefault(testing::Invoke(
-      this,
-      &MockWebRTCPeerConnectionHandlerClient::didRemoveRemoteStreamWorker));
+  ON_CALL(*this, DidGenerateICECandidate(_))
+      .WillByDefault(
+          testing::Invoke(this, &MockWebRTCPeerConnectionHandlerClient::
+                                    didGenerateICECandidateWorker));
+  ON_CALL(*this, DidAddRemoteStream(_))
+      .WillByDefault(testing::Invoke(
+          this,
+          &MockWebRTCPeerConnectionHandlerClient::didAddRemoteStreamWorker));
+  ON_CALL(*this, DidRemoveRemoteStream(_))
+      .WillByDefault(testing::Invoke(
+          this,
+          &MockWebRTCPeerConnectionHandlerClient::didRemoveRemoteStreamWorker));
 }
 
 MockWebRTCPeerConnectionHandlerClient::
@@ -31,10 +34,10 @@ MockWebRTCPeerConnectionHandlerClient::
 
 void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
     const blink::WebRTCICECandidate& candidate) {
-  if (!candidate.isNull()) {
-    candidate_sdp_ = candidate.candidate().utf8();
-    candidate_mline_index_ = candidate.sdpMLineIndex();
-    candidate_mid_ = candidate.sdpMid().utf8();
+  if (!candidate.IsNull()) {
+    candidate_sdp_ = candidate.Candidate().Utf8();
+    candidate_mline_index_ = candidate.SdpMLineIndex();
+    candidate_mid_ = candidate.SdpMid().Utf8();
   } else {
     candidate_sdp_ = "";
     candidate_mline_index_ = -1;
@@ -49,7 +52,7 @@ void MockWebRTCPeerConnectionHandlerClient::didAddRemoteStreamWorker(
 
 void MockWebRTCPeerConnectionHandlerClient::didRemoveRemoteStreamWorker(
     const blink::WebMediaStream& stream_descriptor) {
-  remote_steam_.reset();
+  remote_steam_.Reset();
 }
 
 }  // namespace content

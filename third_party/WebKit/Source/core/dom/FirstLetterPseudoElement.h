@@ -39,38 +39,38 @@ class FirstLetterPseudoElement final : public PseudoElement {
   WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
 
  public:
-  static FirstLetterPseudoElement* create(Element* parent) {
+  static FirstLetterPseudoElement* Create(Element* parent) {
     return new FirstLetterPseudoElement(parent);
   }
 
   ~FirstLetterPseudoElement() override;
 
-  static LayoutObject* firstLetterTextLayoutObject(const Element&);
-  static unsigned firstLetterLength(const String&);
+  static LayoutObject* FirstLetterTextLayoutObject(const Element&);
+  static unsigned FirstLetterLength(const String&);
 
-  void setRemainingTextLayoutObject(LayoutTextFragment*);
-  LayoutTextFragment* remainingTextLayoutObject() const {
-    return m_remainingTextLayoutObject;
+  void SetRemainingTextLayoutObject(LayoutTextFragment*);
+  LayoutTextFragment* RemainingTextLayoutObject() const {
+    return remaining_text_layout_object_;
   }
 
-  void updateTextFragments();
+  void UpdateTextFragments();
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
  private:
   explicit FirstLetterPseudoElement(Element*);
 
-  void didRecalcStyle() override;
+  void DidRecalcStyle() override;
 
-  void attachFirstLetterTextLayoutObjects();
-  ComputedStyle* styleForFirstLetter(LayoutObject*);
+  void AttachFirstLetterTextLayoutObjects();
+  ComputedStyle* StyleForFirstLetter(LayoutObject*);
 
-  LayoutTextFragment* m_remainingTextLayoutObject;
+  LayoutTextFragment* remaining_text_layout_object_;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement,
-                          isFirstLetterPseudoElement());
+                          IsFirstLetterPseudoElement());
 
 }  // namespace blink
 

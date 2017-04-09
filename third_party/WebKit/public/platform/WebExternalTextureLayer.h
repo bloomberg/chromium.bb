@@ -42,25 +42,25 @@ class WebExternalTextureLayer {
  public:
   virtual ~WebExternalTextureLayer() {}
 
-  virtual WebLayer* layer() = 0;
+  virtual WebLayer* Layer() = 0;
 
   // Clears texture from the layer.
-  virtual void clearTexture() = 0;
+  virtual void ClearTexture() = 0;
 
   // Sets whether every pixel in this layer is opaque. Defaults to false.
-  virtual void setOpaque(bool) = 0;
+  virtual void SetOpaque(bool) = 0;
 
   // Sets whether this layer's texture has premultiplied alpha or not. Defaults
   // to true.
-  virtual void setPremultipliedAlpha(bool) = 0;
+  virtual void SetPremultipliedAlpha(bool) = 0;
 
   // Sets whether the texture should be blended with the background color
   // at draw time. Defaults to false.
-  virtual void setBlendBackgroundColor(bool) = 0;
+  virtual void SetBlendBackgroundColor(bool) = 0;
 
   // Sets whether this texture should use nearest neighbor interpolation as
   // opposed to bilinear. Defaults to false.
-  virtual void setNearestNeighbor(bool) = 0;
+  virtual void SetNearestNeighbor(bool) = 0;
 };
 
 }  // namespace blink

@@ -30,37 +30,38 @@ const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
 TEST(PushManagerTest, ValidSenderKey) {
   PushSubscriptionOptionsInit options;
   options.setApplicationServerKey(
-      ArrayBufferOrArrayBufferView::fromArrayBuffer(DOMArrayBuffer::create(
+      ArrayBufferOrArrayBufferView::fromArrayBuffer(DOMArrayBuffer::Create(
           kApplicationServerKey, kApplicationServerKeyLength)));
 
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
   WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::toWeb(options, exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
-  EXPECT_EQ(output.applicationServerKey.length(), kApplicationServerKeyLength);
+      PushSubscriptionOptions::ToWeb(options, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+  EXPECT_EQ(output.application_server_key.length(),
+            kApplicationServerKeyLength);
 
   // Copy the key into a size+1 buffer so that it can be treated as a null
   // terminated string for the purposes of EXPECT_EQ.
-  uint8_t senderKey[kApplicationServerKeyLength + 1];
+  uint8_t sender_key[kApplicationServerKeyLength + 1];
   for (unsigned i = 0; i < kApplicationServerKeyLength; i++)
-    senderKey[i] = kApplicationServerKey[i];
-  senderKey[kApplicationServerKeyLength] = 0x0;
-  EXPECT_EQ(reinterpret_cast<const char*>(senderKey),
-            output.applicationServerKey.latin1());
-  EXPECT_FALSE(output.applicationServerKey.isEmpty());
+    sender_key[i] = kApplicationServerKey[i];
+  sender_key[kApplicationServerKeyLength] = 0x0;
+  EXPECT_EQ(reinterpret_cast<const char*>(sender_key),
+            output.application_server_key.Latin1());
+  EXPECT_FALSE(output.application_server_key.IsEmpty());
 }
 
 TEST(PushManagerTest, InvalidSenderKeyLength) {
-  uint8_t senderKey[kMaxKeyLength + 1];
-  memset(senderKey, 0, sizeof(senderKey));
+  uint8_t sender_key[kMaxKeyLength + 1];
+  memset(sender_key, 0, sizeof(sender_key));
   PushSubscriptionOptionsInit options;
   options.setApplicationServerKey(ArrayBufferOrArrayBufferView::fromArrayBuffer(
-      DOMArrayBuffer::create(senderKey, kMaxKeyLength + 1)));
+      DOMArrayBuffer::Create(sender_key, kMaxKeyLength + 1)));
 
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
   WebPushSubscriptionOptions output =
-      PushSubscriptionOptions::toWeb(options, exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
+      PushSubscriptionOptions::ToWeb(options, exception_state);
+  EXPECT_TRUE(exception_state.HadException());
 }
 
 }  // namespace

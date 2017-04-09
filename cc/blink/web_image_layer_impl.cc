@@ -18,18 +18,18 @@ WebImageLayerImpl::WebImageLayerImpl() {
 WebImageLayerImpl::~WebImageLayerImpl() {
 }
 
-blink::WebLayer* WebImageLayerImpl::layer() {
+blink::WebLayer* WebImageLayerImpl::Layer() {
   return layer_.get();
 }
 
-void WebImageLayerImpl::setImage(const SkImage* image) {
+void WebImageLayerImpl::SetImage(const SkImage* image) {
   static_cast<cc::PictureImageLayer*>(layer_->layer())
       ->SetImage(sk_ref_sp(image));
   static_cast<WebLayerImplFixedBounds*>(layer_.get())
       ->SetFixedBounds(gfx::Size(image->width(), image->height()));
 }
 
-void WebImageLayerImpl::setNearestNeighbor(bool nearest_neighbor) {
+void WebImageLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
   static_cast<cc::PictureImageLayer*>(layer_->layer())
       ->SetNearestNeighbor(nearest_neighbor);
 }

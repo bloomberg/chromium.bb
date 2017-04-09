@@ -42,69 +42,69 @@
 
 namespace blink {
 
-DataTransferItem* DataTransferItem::create(DataTransfer* dataTransfer,
+DataTransferItem* DataTransferItem::Create(DataTransfer* data_transfer,
                                            DataObjectItem* item) {
-  return new DataTransferItem(dataTransfer, item);
+  return new DataTransferItem(data_transfer, item);
 }
 
 String DataTransferItem::kind() const {
-  DEFINE_STATIC_LOCAL(const String, kindString, ("string"));
-  DEFINE_STATIC_LOCAL(const String, kindFile, ("file"));
-  if (!m_dataTransfer->canReadTypes())
+  DEFINE_STATIC_LOCAL(const String, kind_string, ("string"));
+  DEFINE_STATIC_LOCAL(const String, kind_file, ("file"));
+  if (!data_transfer_->CanReadTypes())
     return String();
-  switch (m_item->kind()) {
-    case DataObjectItem::StringKind:
-      return kindString;
-    case DataObjectItem::FileKind:
-      return kindFile;
+  switch (item_->Kind()) {
+    case DataObjectItem::kStringKind:
+      return kind_string;
+    case DataObjectItem::kFileKind:
+      return kind_file;
   }
   ASSERT_NOT_REACHED();
   return String();
 }
 
 String DataTransferItem::type() const {
-  if (!m_dataTransfer->canReadTypes())
+  if (!data_transfer_->CanReadTypes())
     return String();
-  return m_item->type();
+  return item_->GetType();
 }
 
-static void runGetAsStringTask(ExecutionContext* context,
+static void RunGetAsStringTask(ExecutionContext* context,
                                StringCallback* callback,
                                const String& data) {
-  probe::AsyncTask asyncTask(context, callback);
+  probe::AsyncTask async_task(context, callback);
   if (context)
     callback->handleEvent(data);
 }
 
-void DataTransferItem::getAsString(ScriptState* scriptState,
+void DataTransferItem::getAsString(ScriptState* script_state,
                                    StringCallback* callback) const {
-  if (!m_dataTransfer->canReadData())
+  if (!data_transfer_->CanReadData())
     return;
-  if (!callback || m_item->kind() != DataObjectItem::StringKind)
+  if (!callback || item_->Kind() != DataObjectItem::kStringKind)
     return;
 
-  ExecutionContext* context = scriptState->getExecutionContext();
-  probe::asyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
-  TaskRunnerHelper::get(TaskType::UserInteraction, scriptState)
-      ->postTask(BLINK_FROM_HERE,
-                 WTF::bind(&runGetAsStringTask, wrapWeakPersistent(context),
-                           wrapPersistent(callback), m_item->getAsString()));
+  ExecutionContext* context = script_state->GetExecutionContext();
+  probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
+  TaskRunnerHelper::Get(TaskType::kUserInteraction, script_state)
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&RunGetAsStringTask, WrapWeakPersistent(context),
+                           WrapPersistent(callback), item_->GetAsString()));
 }
 
 File* DataTransferItem::getAsFile() const {
-  if (!m_dataTransfer->canReadData())
+  if (!data_transfer_->CanReadData())
     return nullptr;
 
-  return m_item->getAsFile();
+  return item_->GetAsFile();
 }
 
-DataTransferItem::DataTransferItem(DataTransfer* dataTransfer,
+DataTransferItem::DataTransferItem(DataTransfer* data_transfer,
                                    DataObjectItem* item)
-    : m_dataTransfer(dataTransfer), m_item(item) {}
+    : data_transfer_(data_transfer), item_(item) {}
 
 DEFINE_TRACE(DataTransferItem) {
-  visitor->trace(m_dataTransfer);
-  visitor->trace(m_item);
+  visitor->Trace(data_transfer_);
+  visitor->Trace(item_);
 }
 
 }  // namespace blink

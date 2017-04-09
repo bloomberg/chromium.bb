@@ -23,59 +23,59 @@ class ApplyBlockElementCommandTest : public EditingTestBase {};
 
 // This is a regression test for https://crbug.com/639534
 TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
-  document().head()->insertAdjacentHTML(
+  GetDocument().head()->insertAdjacentHTML(
       "afterbegin",
       "<style> .CLASS13 { -webkit-user-modify: read-write; }</style></head>",
       ASSERT_NO_EXCEPTION);
-  document().body()->insertAdjacentHTML(
+  GetDocument().body()->insertAdjacentHTML(
       "afterbegin",
       "\n<pre><var id='va' class='CLASS13'>\nC\n</var></pre><input />",
       ASSERT_NO_EXCEPTION);
-  document().body()->insertAdjacentText("beforebegin", "foo",
-                                        ASSERT_NO_EXCEPTION);
+  GetDocument().body()->insertAdjacentText("beforebegin", "foo",
+                                           ASSERT_NO_EXCEPTION);
 
-  document().body()->setContentEditable("false", ASSERT_NO_EXCEPTION);
-  document().setDesignMode("on");
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  selection().setSelection(
+  GetDocument().body()->setContentEditable("false", ASSERT_NO_EXCEPTION);
+  GetDocument().setDesignMode("on");
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(
-              Position(document().documentElement(), 1),
-              Position(document().getElementById("va")->firstChild(), 2))
-          .build());
+          .SetBaseAndExtent(
+              Position(GetDocument().documentElement(), 1),
+              Position(GetDocument().GetElementById("va")->FirstChild(), 2))
+          .Build());
 
   FormatBlockCommand* command =
-      FormatBlockCommand::create(document(), HTMLNames::footerTag);
-  command->apply();
+      FormatBlockCommand::Create(GetDocument(), HTMLNames::footerTag);
+  command->Apply();
 
   EXPECT_EQ(
       "<body contenteditable=\"false\">\n"
       "<pre><var id=\"va\" class=\"CLASS13\">\nC\n</var></pre><input></body>",
-      document().documentElement()->innerHTML());
+      GetDocument().documentElement()->innerHTML());
 }
 
 // This is a regression test for https://crbug.com/660801
 TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
-  document().head()->insertAdjacentHTML(
+  GetDocument().head()->insertAdjacentHTML(
       "afterbegin", "<style>li:first-child { visibility:visible; }</style>",
       ASSERT_NO_EXCEPTION);
-  setBodyContent("<ul style='visibility:hidden'><li>xyz</li></ul>");
-  document().setDesignMode("on");
+  SetBodyContent("<ul style='visibility:hidden'><li>xyz</li></ul>");
+  GetDocument().setDesignMode("on");
 
-  updateAllLifecyclePhases();
-  selection().setSelection(
+  UpdateAllLifecyclePhases();
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .collapse(Position(document().querySelector("li"), 0))
-          .build());
+          .Collapse(Position(GetDocument().QuerySelector("li"), 0))
+          .Build());
 
-  IndentOutdentCommand* command =
-      IndentOutdentCommand::create(document(), IndentOutdentCommand::Indent);
-  command->apply();
+  IndentOutdentCommand* command = IndentOutdentCommand::Create(
+      GetDocument(), IndentOutdentCommand::kIndent);
+  command->Apply();
 
   EXPECT_EQ(
       "<head><style>li:first-child { visibility:visible; }</style></head>"
       "<body><ul style=\"visibility:hidden\"><ul></ul><li>xyz</li></ul></body>",
-      document().documentElement()->innerHTML());
+      GetDocument().documentElement()->innerHTML());
 }
 
 }  // namespace blink

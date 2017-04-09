@@ -6,36 +6,37 @@
 
 namespace blink {
 
-v8::Local<v8::Object> v8IteratorResultValue(v8::Isolate* isolate,
+v8::Local<v8::Object> V8IteratorResultValue(v8::Isolate* isolate,
                                             bool done,
                                             v8::Local<v8::Value> value) {
   v8::Local<v8::Object> result = v8::Object::New(isolate);
   if (value.IsEmpty())
     value = v8::Undefined(isolate);
-  if (!v8CallBoolean(result->CreateDataProperty(isolate->GetCurrentContext(),
-                                                v8String(isolate, "done"),
-                                                v8Boolean(done, isolate))) ||
-      !v8CallBoolean(result->CreateDataProperty(
-          isolate->GetCurrentContext(), v8String(isolate, "value"), value)))
+  if (!V8CallBoolean(result->CreateDataProperty(isolate->GetCurrentContext(),
+                                                V8String(isolate, "done"),
+                                                V8Boolean(done, isolate))) ||
+      !V8CallBoolean(result->CreateDataProperty(
+          isolate->GetCurrentContext(), V8String(isolate, "value"), value)))
     return v8::Local<v8::Object>();
   return result;
 }
 
-v8::MaybeLocal<v8::Value> v8UnpackIteratorResult(ScriptState* scriptState,
+v8::MaybeLocal<v8::Value> V8UnpackIteratorResult(ScriptState* script_state,
                                                  v8::Local<v8::Object> result,
                                                  bool* done) {
-  v8::MaybeLocal<v8::Value> maybeValue = result->Get(
-      scriptState->context(), v8String(scriptState->isolate(), "value"));
-  if (maybeValue.IsEmpty())
-    return maybeValue;
-  v8::Local<v8::Value> doneValue;
-  if (!v8Call(result->Get(scriptState->context(),
-                          v8String(scriptState->isolate(), "done")),
-              doneValue) ||
-      !v8Call(doneValue->BooleanValue(scriptState->context()), *done)) {
+  v8::MaybeLocal<v8::Value> maybe_value =
+      result->Get(script_state->GetContext(),
+                  V8String(script_state->GetIsolate(), "value"));
+  if (maybe_value.IsEmpty())
+    return maybe_value;
+  v8::Local<v8::Value> done_value;
+  if (!V8Call(result->Get(script_state->GetContext(),
+                          V8String(script_state->GetIsolate(), "done")),
+              done_value) ||
+      !V8Call(done_value->BooleanValue(script_state->GetContext()), *done)) {
     return v8::MaybeLocal<v8::Value>();
   }
-  return maybeValue;
+  return maybe_value;
 }
 
 }  // namespace blink

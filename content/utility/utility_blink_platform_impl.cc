@@ -14,10 +14,10 @@ UtilityBlinkPlatformImpl::UtilityBlinkPlatformImpl()
 UtilityBlinkPlatformImpl::~UtilityBlinkPlatformImpl() {
 }
 
-blink::WebThread* UtilityBlinkPlatformImpl::currentThread() {
-  if (main_thread_->isCurrentThread())
+blink::WebThread* UtilityBlinkPlatformImpl::CurrentThread() {
+  if (main_thread_->IsCurrentThread())
     return main_thread_.get();
-  return BlinkPlatformImpl::currentThread();
+  return BlinkPlatformImpl::CurrentThread();
 }
 
 }  // namespace content

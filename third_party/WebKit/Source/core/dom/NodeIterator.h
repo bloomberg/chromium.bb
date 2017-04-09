@@ -41,30 +41,30 @@ class NodeIterator final : public GarbageCollected<NodeIterator>,
   USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 
  public:
-  static NodeIterator* create(Node* rootNode,
-                              unsigned whatToShow,
+  static NodeIterator* Create(Node* root_node,
+                              unsigned what_to_show,
                               NodeFilter* filter) {
-    return new NodeIterator(rootNode, whatToShow, filter);
+    return new NodeIterator(root_node, what_to_show, filter);
   }
 
   Node* nextNode(ExceptionState&);
   Node* previousNode(ExceptionState&);
   void detach();
 
-  Node* referenceNode() const { return m_referenceNode.node.get(); }
+  Node* referenceNode() const { return reference_node_.node.Get(); }
   bool pointerBeforeReferenceNode() const {
-    return m_referenceNode.isPointerBeforeNode;
+    return reference_node_.is_pointer_before_node;
   }
 
   // This function is called before any node is removed from the document tree.
-  void nodeWillBeRemoved(Node&);
+  void NodeWillBeRemoved(Node&);
 
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
-  NodeIterator(Node*, unsigned whatToShow, NodeFilter*);
+  NodeIterator(Node*, unsigned what_to_show, NodeFilter*);
 
   class NodePointer {
     DISALLOW_NEW();
@@ -73,20 +73,20 @@ class NodeIterator final : public GarbageCollected<NodeIterator>,
     NodePointer();
     NodePointer(Node*, bool);
 
-    void clear();
-    bool moveToNext(Node* root);
-    bool moveToPrevious(Node* root);
+    void Clear();
+    bool MoveToNext(Node* root);
+    bool MoveToPrevious(Node* root);
 
     Member<Node> node;
-    bool isPointerBeforeNode;
+    bool is_pointer_before_node;
 
-    DEFINE_INLINE_TRACE() { visitor->trace(node); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(node); }
   };
 
-  void updateForNodeRemoval(Node& nodeToBeRemoved, NodePointer&) const;
+  void UpdateForNodeRemoval(Node& node_to_be_removed, NodePointer&) const;
 
-  NodePointer m_referenceNode;
-  NodePointer m_candidateNode;
+  NodePointer reference_node_;
+  NodePointer candidate_node_;
 };
 
 }  // namespace blink

@@ -34,39 +34,39 @@
 
 namespace blink {
 
-void WebData::reset() {
-  m_private.reset();
+void WebData::Reset() {
+  private_.Reset();
 }
 
-void WebData::assign(const WebData& other) {
-  m_private = other.m_private;
+void WebData::Assign(const WebData& other) {
+  private_ = other.private_;
 }
 
-void WebData::assign(const char* data, size_t size) {
-  m_private = SharedBuffer::create(data, size);
+void WebData::Assign(const char* data, size_t size) {
+  private_ = SharedBuffer::Create(data, size);
 }
 
 size_t WebData::size() const {
-  if (m_private.isNull())
+  if (private_.IsNull())
     return 0;
-  return m_private->size();
+  return private_->size();
 }
 
-const char* WebData::data() const {
-  if (m_private.isNull())
+const char* WebData::Data() const {
+  if (private_.IsNull())
     return 0;
-  return m_private->data();
+  return private_->Data();
 }
 
-WebData::WebData(PassRefPtr<SharedBuffer> buffer) : m_private(buffer) {}
+WebData::WebData(PassRefPtr<SharedBuffer> buffer) : private_(buffer) {}
 
 WebData& WebData::operator=(PassRefPtr<SharedBuffer> buffer) {
-  m_private = buffer;
+  private_ = buffer;
   return *this;
 }
 
 WebData::operator PassRefPtr<SharedBuffer>() const {
-  return PassRefPtr<SharedBuffer>(m_private.get());
+  return PassRefPtr<SharedBuffer>(private_.Get());
 }
 
 }  // namespace blink

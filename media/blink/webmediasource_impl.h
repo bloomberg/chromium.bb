@@ -24,14 +24,13 @@ class MEDIA_BLINK_EXPORT WebMediaSourceImpl
   ~WebMediaSourceImpl() override;
 
   // blink::WebMediaSource implementation.
-  AddStatus addSourceBuffer(
-      const blink::WebString& type,
-      const blink::WebString& codecs,
-      blink::WebSourceBuffer** source_buffer) override;
-  double duration() override;
-  void setDuration(double duration) override;
-  void markEndOfStream(EndOfStreamStatus status) override;
-  void unmarkEndOfStream() override;
+  AddStatus AddSourceBuffer(const blink::WebString& type,
+                            const blink::WebString& codecs,
+                            blink::WebSourceBuffer** source_buffer) override;
+  double Duration() override;
+  void SetDuration(double duration) override;
+  void MarkEndOfStream(EndOfStreamStatus status) override;
+  void UnmarkEndOfStream() override;
 
  private:
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.

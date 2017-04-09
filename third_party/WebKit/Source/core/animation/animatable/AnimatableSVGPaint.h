@@ -40,40 +40,41 @@ namespace blink {
 class AnimatableSVGPaint final : public AnimatableValue {
  public:
   ~AnimatableSVGPaint() override {}
-  static PassRefPtr<AnimatableSVGPaint> create(SVGPaintType type,
-                                               SVGPaintType visitedLinkType,
+  static PassRefPtr<AnimatableSVGPaint> Create(SVGPaintType type,
+                                               SVGPaintType visited_link_type,
                                                const Color& color,
-                                               const Color& visitedLinkColor,
+                                               const Color& visited_link_color,
                                                const String& uri,
-                                               const String& visitedLinkURI) {
-    return adoptRef(new AnimatableSVGPaint(
-        type, visitedLinkType, AnimatableColor::create(color, visitedLinkColor),
-        uri, visitedLinkURI));
+                                               const String& visited_link_uri) {
+    return AdoptRef(new AnimatableSVGPaint(
+        type, visited_link_type,
+        AnimatableColor::Create(color, visited_link_color), uri,
+        visited_link_uri));
   }
 
  private:
   AnimatableSVGPaint(SVGPaintType type,
-                     SVGPaintType visitedLinkType,
+                     SVGPaintType visited_link_type,
                      PassRefPtr<AnimatableColor> color,
                      const String& uri,
-                     const String& visitedLinkURI)
-      : m_type(type),
-        m_visitedLinkType(visitedLinkType),
-        m_color(std::move(color)),
-        m_uri(uri),
-        m_visitedLinkURI(visitedLinkURI) {}
-  AnimatableType type() const override { return TypeSVGPaint; }
-  bool equalTo(const AnimatableValue*) const override;
+                     const String& visited_link_uri)
+      : type_(type),
+        visited_link_type_(visited_link_type),
+        color_(std::move(color)),
+        uri_(uri),
+        visited_link_uri_(visited_link_uri) {}
+  AnimatableType GetType() const override { return kTypeSVGPaint; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  SVGPaintType m_type;
-  SVGPaintType m_visitedLinkType;
+  SVGPaintType type_;
+  SVGPaintType visited_link_type_;
   // AnimatableColor includes a visited link color.
-  RefPtr<AnimatableColor> m_color;
-  String m_uri;
-  String m_visitedLinkURI;
+  RefPtr<AnimatableColor> color_;
+  String uri_;
+  String visited_link_uri_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGPaint, isSVGPaint());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGPaint, IsSVGPaint());
 
 }  // namespace blink
 

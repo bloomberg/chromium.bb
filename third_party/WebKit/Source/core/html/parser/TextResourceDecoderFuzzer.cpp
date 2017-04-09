@@ -11,11 +11,11 @@
 namespace blink {
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  FuzzedDataProvider fuzzedData(data, size);
-  TextResourceDecoderForFuzzing decoder(fuzzedData);
-  CString bytes = fuzzedData.ConsumeRemainingBytes();
-  decoder.decode(bytes.data(), bytes.length());
-  decoder.flush();
+  FuzzedDataProvider fuzzed_data(data, size);
+  TextResourceDecoderForFuzzing decoder(fuzzed_data);
+  CString bytes = fuzzed_data.ConsumeRemainingBytes();
+  decoder.Decode(bytes.Data(), bytes.length());
+  decoder.Flush();
   return 0;
 }
 

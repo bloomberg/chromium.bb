@@ -48,18 +48,18 @@ struct WebSize {
   int width;
   int height;
 
-  bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool IsEmpty() const { return width <= 0 || height <= 0; }
 
   WebSize() : width(0), height(0) {}
 
   WebSize(int width, int height) : width(width), height(height) {}
 
 #if INSIDE_BLINK
-  WebSize(const IntSize& s) : width(s.width()), height(s.height()) {}
+  WebSize(const IntSize& s) : width(s.Width()), height(s.Height()) {}
 
   WebSize& operator=(const IntSize& s) {
-    width = s.width();
-    height = s.height();
+    width = s.Width();
+    height = s.Height();
     return *this;
   }
 

@@ -38,41 +38,41 @@ class WebFallbackThemeEngineImpl::WebFallbackNativeTheme
 static ui::NativeTheme::Part NativeThemePart(
     WebFallbackThemeEngine::Part part) {
   switch (part) {
-    case WebFallbackThemeEngine::PartScrollbarDownArrow:
+    case WebFallbackThemeEngine::kPartScrollbarDownArrow:
       return ui::NativeTheme::kScrollbarDownArrow;
-    case WebFallbackThemeEngine::PartScrollbarLeftArrow:
+    case WebFallbackThemeEngine::kPartScrollbarLeftArrow:
       return ui::NativeTheme::kScrollbarLeftArrow;
-    case WebFallbackThemeEngine::PartScrollbarRightArrow:
+    case WebFallbackThemeEngine::kPartScrollbarRightArrow:
       return ui::NativeTheme::kScrollbarRightArrow;
-    case WebFallbackThemeEngine::PartScrollbarUpArrow:
+    case WebFallbackThemeEngine::kPartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
-    case WebFallbackThemeEngine::PartScrollbarHorizontalThumb:
+    case WebFallbackThemeEngine::kPartScrollbarHorizontalThumb:
       return ui::NativeTheme::kScrollbarHorizontalThumb;
-    case WebFallbackThemeEngine::PartScrollbarVerticalThumb:
+    case WebFallbackThemeEngine::kPartScrollbarVerticalThumb:
       return ui::NativeTheme::kScrollbarVerticalThumb;
-    case WebFallbackThemeEngine::PartScrollbarHorizontalTrack:
+    case WebFallbackThemeEngine::kPartScrollbarHorizontalTrack:
       return ui::NativeTheme::kScrollbarHorizontalTrack;
-    case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
+    case WebFallbackThemeEngine::kPartScrollbarVerticalTrack:
       return ui::NativeTheme::kScrollbarVerticalTrack;
-    case WebFallbackThemeEngine::PartScrollbarCorner:
+    case WebFallbackThemeEngine::kPartScrollbarCorner:
       return ui::NativeTheme::kScrollbarCorner;
-    case WebFallbackThemeEngine::PartCheckbox:
+    case WebFallbackThemeEngine::kPartCheckbox:
       return ui::NativeTheme::kCheckbox;
-    case WebFallbackThemeEngine::PartRadio:
+    case WebFallbackThemeEngine::kPartRadio:
       return ui::NativeTheme::kRadio;
-    case WebFallbackThemeEngine::PartButton:
+    case WebFallbackThemeEngine::kPartButton:
       return ui::NativeTheme::kPushButton;
-    case WebFallbackThemeEngine::PartTextField:
+    case WebFallbackThemeEngine::kPartTextField:
       return ui::NativeTheme::kTextField;
-    case WebFallbackThemeEngine::PartMenuList:
+    case WebFallbackThemeEngine::kPartMenuList:
       return ui::NativeTheme::kMenuList;
-    case WebFallbackThemeEngine::PartSliderTrack:
+    case WebFallbackThemeEngine::kPartSliderTrack:
       return ui::NativeTheme::kSliderTrack;
-    case WebFallbackThemeEngine::PartSliderThumb:
+    case WebFallbackThemeEngine::kPartSliderThumb:
       return ui::NativeTheme::kSliderThumb;
-    case WebFallbackThemeEngine::PartInnerSpinButton:
+    case WebFallbackThemeEngine::kPartInnerSpinButton:
       return ui::NativeTheme::kInnerSpinButton;
-    case WebFallbackThemeEngine::PartProgressBar:
+    case WebFallbackThemeEngine::kPartProgressBar:
       return ui::NativeTheme::kProgressBar;
     default:
       return ui::NativeTheme::kScrollbarDownArrow;
@@ -82,13 +82,13 @@ static ui::NativeTheme::Part NativeThemePart(
 static ui::NativeTheme::State NativeThemeState(
     WebFallbackThemeEngine::State state) {
   switch (state) {
-    case WebFallbackThemeEngine::StateDisabled:
+    case WebFallbackThemeEngine::kStateDisabled:
       return ui::NativeTheme::kDisabled;
-    case WebFallbackThemeEngine::StateHover:
+    case WebFallbackThemeEngine::kStateHover:
       return ui::NativeTheme::kHovered;
-    case WebFallbackThemeEngine::StateNormal:
+    case WebFallbackThemeEngine::kStateNormal:
       return ui::NativeTheme::kNormal;
-    case WebFallbackThemeEngine::StatePressed:
+    case WebFallbackThemeEngine::kStatePressed:
       return ui::NativeTheme::kPressed;
     default:
       return ui::NativeTheme::kDisabled;
@@ -101,82 +101,82 @@ static void GetNativeThemeExtraParams(
     const WebFallbackThemeEngine::ExtraParams* extra_params,
     ui::NativeTheme::ExtraParams* native_theme_extra_params) {
   switch (part) {
-    case WebFallbackThemeEngine::PartScrollbarHorizontalTrack:
-    case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
+    case WebFallbackThemeEngine::kPartScrollbarHorizontalTrack:
+    case WebFallbackThemeEngine::kPartScrollbarVerticalTrack:
       native_theme_extra_params->scrollbar_track.track_x =
-          extra_params->scrollbarTrack.trackX;
+          extra_params->scrollbar_track.track_x;
       native_theme_extra_params->scrollbar_track.track_y =
-          extra_params->scrollbarTrack.trackY;
+          extra_params->scrollbar_track.track_y;
       native_theme_extra_params->scrollbar_track.track_width =
-          extra_params->scrollbarTrack.trackWidth;
+          extra_params->scrollbar_track.track_width;
       native_theme_extra_params->scrollbar_track.track_height =
-          extra_params->scrollbarTrack.trackHeight;
+          extra_params->scrollbar_track.track_height;
       break;
-    case WebFallbackThemeEngine::PartCheckbox:
+    case WebFallbackThemeEngine::kPartCheckbox:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       native_theme_extra_params->button.indeterminate =
           extra_params->button.indeterminate;
       break;
-    case WebFallbackThemeEngine::PartRadio:
+    case WebFallbackThemeEngine::kPartRadio:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
-    case WebFallbackThemeEngine::PartButton:
+    case WebFallbackThemeEngine::kPartButton:
       native_theme_extra_params->button.is_default =
-          extra_params->button.isDefault;
+          extra_params->button.is_default;
       native_theme_extra_params->button.has_border =
-          extra_params->button.hasBorder;
+          extra_params->button.has_border;
       // Native buttons have a different focus style.
       native_theme_extra_params->button.is_focused = false;
       native_theme_extra_params->button.background_color =
-          extra_params->button.backgroundColor;
+          extra_params->button.background_color;
       break;
-    case WebFallbackThemeEngine::PartTextField:
+    case WebFallbackThemeEngine::kPartTextField:
       native_theme_extra_params->text_field.is_text_area =
-          extra_params->textField.isTextArea;
+          extra_params->text_field.is_text_area;
       native_theme_extra_params->text_field.is_listbox =
-          extra_params->textField.isListbox;
+          extra_params->text_field.is_listbox;
       native_theme_extra_params->text_field.background_color =
-          extra_params->textField.backgroundColor;
+          extra_params->text_field.background_color;
       break;
-    case WebFallbackThemeEngine::PartMenuList:
+    case WebFallbackThemeEngine::kPartMenuList:
       native_theme_extra_params->menu_list.has_border =
-          extra_params->menuList.hasBorder;
+          extra_params->menu_list.has_border;
       native_theme_extra_params->menu_list.has_border_radius =
-          extra_params->menuList.hasBorderRadius;
+          extra_params->menu_list.has_border_radius;
       native_theme_extra_params->menu_list.arrow_x =
-          extra_params->menuList.arrowX;
+          extra_params->menu_list.arrow_x;
       native_theme_extra_params->menu_list.arrow_y =
-          extra_params->menuList.arrowY;
+          extra_params->menu_list.arrow_y;
       native_theme_extra_params->menu_list.arrow_size =
-          extra_params->menuList.arrowSize;
+          extra_params->menu_list.arrow_size;
       native_theme_extra_params->menu_list.arrow_color =
-          extra_params->menuList.arrowColor;
+          extra_params->menu_list.arrow_color;
       native_theme_extra_params->menu_list.background_color =
-          extra_params->menuList.backgroundColor;
+          extra_params->menu_list.background_color;
       break;
-    case WebFallbackThemeEngine::PartSliderTrack:
-    case WebFallbackThemeEngine::PartSliderThumb:
+    case WebFallbackThemeEngine::kPartSliderTrack:
+    case WebFallbackThemeEngine::kPartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;
-      native_theme_extra_params->slider.in_drag = extra_params->slider.inDrag;
+      native_theme_extra_params->slider.in_drag = extra_params->slider.in_drag;
       break;
-    case WebFallbackThemeEngine::PartInnerSpinButton:
+    case WebFallbackThemeEngine::kPartInnerSpinButton:
       native_theme_extra_params->inner_spin.spin_up =
-          extra_params->innerSpin.spinUp;
+          extra_params->inner_spin.spin_up;
       native_theme_extra_params->inner_spin.read_only =
-          extra_params->innerSpin.readOnly;
+          extra_params->inner_spin.read_only;
       break;
-    case WebFallbackThemeEngine::PartProgressBar:
+    case WebFallbackThemeEngine::kPartProgressBar:
       native_theme_extra_params->progress_bar.determinate =
-          extra_params->progressBar.determinate;
+          extra_params->progress_bar.determinate;
       native_theme_extra_params->progress_bar.value_rect_x =
-          extra_params->progressBar.valueRectX;
+          extra_params->progress_bar.value_rect_x;
       native_theme_extra_params->progress_bar.value_rect_y =
-          extra_params->progressBar.valueRectY;
+          extra_params->progress_bar.value_rect_y;
       native_theme_extra_params->progress_bar.value_rect_width =
-          extra_params->progressBar.valueRectWidth;
+          extra_params->progress_bar.value_rect_width;
       native_theme_extra_params->progress_bar.value_rect_height =
-          extra_params->progressBar.valueRectHeight;
+          extra_params->progress_bar.value_rect_height;
       break;
     default:
       break;  // Parts that have no extra params get here.
@@ -188,7 +188,7 @@ WebFallbackThemeEngineImpl::WebFallbackThemeEngineImpl()
 
 WebFallbackThemeEngineImpl::~WebFallbackThemeEngineImpl() {}
 
-blink::WebSize WebFallbackThemeEngineImpl::getSize(
+blink::WebSize WebFallbackThemeEngineImpl::GetSize(
     WebFallbackThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
   return theme_->GetPartSize(NativeThemePart(part),
@@ -196,7 +196,7 @@ blink::WebSize WebFallbackThemeEngineImpl::getSize(
                              extra);
 }
 
-void WebFallbackThemeEngineImpl::paint(
+void WebFallbackThemeEngineImpl::Paint(
     blink::WebCanvas* canvas,
     WebFallbackThemeEngine::Part part,
     WebFallbackThemeEngine::State state,

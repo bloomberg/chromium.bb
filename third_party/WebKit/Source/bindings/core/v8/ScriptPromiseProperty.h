@@ -59,93 +59,93 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   ~ScriptPromiseProperty() override {}
 
   template <typename PassResolvedType>
-  void resolve(PassResolvedType);
+  void Resolve(PassResolvedType);
 
-  void resolveWithUndefined();
+  void ResolveWithUndefined();
 
   template <typename PassRejectedType>
-  void reject(PassRejectedType);
+  void Reject(PassRejectedType);
 
   // Resets this property by unregistering the Promise property from the
   // holder wrapper. Resets the internal state to Pending and clears the
   // resolved and the rejected values.
   // This method keeps the holder object and the property name.
-  void reset();
+  void Reset();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  v8::Local<v8::Object> holder(v8::Isolate*,
-                               v8::Local<v8::Object> creationContext) override;
-  v8::Local<v8::Value> resolvedValue(
+  v8::Local<v8::Object> Holder(v8::Isolate*,
+                               v8::Local<v8::Object> creation_context) override;
+  v8::Local<v8::Value> ResolvedValue(
       v8::Isolate*,
-      v8::Local<v8::Object> creationContext) override;
-  v8::Local<v8::Value> rejectedValue(
+      v8::Local<v8::Object> creation_context) override;
+  v8::Local<v8::Value> RejectedValue(
       v8::Isolate*,
-      v8::Local<v8::Object> creationContext) override;
+      v8::Local<v8::Object> creation_context) override;
 
-  HolderType m_holder;
-  ResolvedType m_resolved;
-  RejectedType m_rejected;
-  bool m_resolvedWithUndefined = false;
+  HolderType holder_;
+  ResolvedType resolved_;
+  RejectedType rejected_;
+  bool resolved_with_undefined_ = false;
 };
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 template <typename PassHolderType>
 ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::
-    ScriptPromiseProperty(ExecutionContext* executionContext,
+    ScriptPromiseProperty(ExecutionContext* execution_context,
                           PassHolderType holder,
                           Name name)
-    : ScriptPromisePropertyBase(executionContext, name), m_holder(holder) {}
+    : ScriptPromisePropertyBase(execution_context, name), holder_(holder) {}
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 template <typename PassResolvedType>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::Resolve(
     PassResolvedType value) {
-  if (getState() != Pending) {
+  if (GetState() != kPending) {
     NOTREACHED();
     return;
   }
-  CHECK(!ScriptForbiddenScope::isScriptForbidden());
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
+  CHECK(!ScriptForbiddenScope::IsScriptForbidden());
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolved = value;
-  resolveOrReject(Resolved);
+  resolved_ = value;
+  ResolveOrReject(kResolved);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::
-    resolveWithUndefined() {
-  if (getState() != Pending) {
+    ResolveWithUndefined() {
+  if (GetState() != kPending) {
     NOTREACHED();
     return;
   }
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolvedWithUndefined = true;
-  resolveOrReject(Resolved);
+  resolved_with_undefined_ = true;
+  ResolveOrReject(kResolved);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 template <typename PassRejectedType>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::Reject(
     PassRejectedType value) {
-  if (getState() != Pending) {
+  if (GetState() != kPending) {
     NOTREACHED();
     return;
   }
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
-  m_rejected = value;
-  resolveOrReject(Rejected);
+  rejected_ = value;
+  ResolveOrReject(kRejected);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Local<v8::Object>
-ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(
+ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::Holder(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> creationContext) {
-  v8::Local<v8::Value> value = ToV8(m_holder, creationContext, isolate);
+    v8::Local<v8::Object> creation_context) {
+  v8::Local<v8::Value> value = ToV8(holder_, creation_context, isolate);
   if (value.IsEmpty())
     return v8::Local<v8::Object>();
   return value.As<v8::Object>();
@@ -153,39 +153,39 @@ ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Local<v8::Value>
-ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(
+ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::ResolvedValue(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> creationContext) {
-  ASSERT(getState() == Resolved);
-  if (!m_resolvedWithUndefined)
-    return ToV8(m_resolved, creationContext, isolate);
+    v8::Local<v8::Object> creation_context) {
+  ASSERT(GetState() == kResolved);
+  if (!resolved_with_undefined_)
+    return ToV8(resolved_, creation_context, isolate);
   return v8::Undefined(isolate);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Local<v8::Value>
-ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(
+ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::RejectedValue(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> creationContext) {
-  ASSERT(getState() == Rejected);
-  return ToV8(m_rejected, creationContext, isolate);
+    v8::Local<v8::Object> creation_context) {
+  ASSERT(GetState() == kRejected);
+  return ToV8(rejected_, creation_context, isolate);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reset() {
-  resetBase();
-  m_resolved = ResolvedType();
-  m_rejected = RejectedType();
-  m_resolvedWithUndefined = false;
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::Reset() {
+  ResetBase();
+  resolved_ = ResolvedType();
+  rejected_ = RejectedType();
+  resolved_with_undefined_ = false;
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::Trace(
     Visitor* visitor) {
-  TraceIfNeeded<HolderType>::trace(visitor, m_holder);
-  TraceIfNeeded<ResolvedType>::trace(visitor, m_resolved);
-  TraceIfNeeded<RejectedType>::trace(visitor, m_rejected);
-  ScriptPromisePropertyBase::trace(visitor);
+  TraceIfNeeded<HolderType>::Trace(visitor, holder_);
+  TraceIfNeeded<ResolvedType>::Trace(visitor, resolved_);
+  TraceIfNeeded<RejectedType>::Trace(visitor, rejected_);
+  ScriptPromisePropertyBase::Trace(visitor);
 }
 
 }  // namespace blink

@@ -33,62 +33,62 @@
 namespace blink {
 
 DecodedDataDocumentParser::DecodedDataDocumentParser(Document& document)
-    : DocumentParser(&document), m_needsDecoder(true) {}
+    : DocumentParser(&document), needs_decoder_(true) {}
 
 DecodedDataDocumentParser::~DecodedDataDocumentParser() {}
 
-void DecodedDataDocumentParser::setDecoder(
+void DecodedDataDocumentParser::SetDecoder(
     std::unique_ptr<TextResourceDecoder> decoder) {
   // If the decoder is explicitly unset rather than having ownership
   // transferred away by takeDecoder(), we need to make sure it's recreated
   // next time data is appended.
-  m_needsDecoder = !decoder;
-  m_decoder = std::move(decoder);
+  needs_decoder_ = !decoder;
+  decoder_ = std::move(decoder);
 }
 
-TextResourceDecoder* DecodedDataDocumentParser::decoder() {
-  return m_decoder.get();
+TextResourceDecoder* DecodedDataDocumentParser::Decoder() {
+  return decoder_.get();
 }
 
-std::unique_ptr<TextResourceDecoder> DecodedDataDocumentParser::takeDecoder() {
-  return std::move(m_decoder);
+std::unique_ptr<TextResourceDecoder> DecodedDataDocumentParser::TakeDecoder() {
+  return std::move(decoder_);
 }
 
-void DecodedDataDocumentParser::appendBytes(const char* data, size_t length) {
+void DecodedDataDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!length)
     return;
 
   // This should be checking isStopped(), but XMLDocumentParser prematurely
   // stops parsing when handling an XSLT processing instruction and still
   // needs to receive decoded bytes.
-  if (isDetached())
+  if (IsDetached())
     return;
 
-  String decoded = m_decoder->decode(data, length);
-  updateDocument(decoded);
+  String decoded = decoder_->Decode(data, length);
+  UpdateDocument(decoded);
 }
 
-void DecodedDataDocumentParser::flush() {
+void DecodedDataDocumentParser::Flush() {
   // This should be checking isStopped(), but XMLDocumentParser prematurely
   // stops parsing when handling an XSLT processing instruction and still
   // needs to receive decoded bytes.
-  if (isDetached())
+  if (IsDetached())
     return;
 
   // null decoder indicates there is no data received.
   // We have nothing to do in that case.
-  if (!m_decoder)
+  if (!decoder_)
     return;
 
-  String remainingData = m_decoder->flush();
-  updateDocument(remainingData);
+  String remaining_data = decoder_->Flush();
+  UpdateDocument(remaining_data);
 }
 
-void DecodedDataDocumentParser::updateDocument(String& decodedData) {
-  document()->setEncodingData(DocumentEncodingData(*m_decoder.get()));
+void DecodedDataDocumentParser::UpdateDocument(String& decoded_data) {
+  GetDocument()->SetEncodingData(DocumentEncodingData(*decoder_.get()));
 
-  if (!decodedData.isEmpty())
-    append(decodedData);
+  if (!decoded_data.IsEmpty())
+    Append(decoded_data);
 }
 
 }  // namespace blink

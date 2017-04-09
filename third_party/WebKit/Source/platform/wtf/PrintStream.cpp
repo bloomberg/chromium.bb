@@ -34,68 +34,68 @@ namespace WTF {
 PrintStream::PrintStream() {}
 PrintStream::~PrintStream() {}  // Force the vtable to be in this module
 
-void PrintStream::printf(const char* format, ...) {
-  va_list argList;
-  va_start(argList, format);
-  vprintf(format, argList);
-  va_end(argList);
+void PrintStream::Printf(const char* format, ...) {
+  va_list arg_list;
+  va_start(arg_list, format);
+  Vprintf(format, arg_list);
+  va_end(arg_list);
 }
 
-void PrintStream::flush() {}
+void PrintStream::Flush() {}
 
-void printInternal(PrintStream& out, const char* string) {
-  out.printf("%s", string);
+void PrintInternal(PrintStream& out, const char* string) {
+  out.Printf("%s", string);
 }
 
-void printInternal(PrintStream& out, const CString& string) {
-  out.print(string.data());
+void PrintInternal(PrintStream& out, const CString& string) {
+  out.Print(string.Data());
 }
 
-void printInternal(PrintStream& out, const String& string) {
-  out.print(string.utf8());
+void PrintInternal(PrintStream& out, const String& string) {
+  out.Print(string.Utf8());
 }
 
-void printInternal(PrintStream& out, bool value) {
+void PrintInternal(PrintStream& out, bool value) {
   if (value)
-    out.print("true");
+    out.Print("true");
   else
-    out.print("false");
+    out.Print("false");
 }
 
-void printInternal(PrintStream& out, int value) {
-  out.printf("%d", value);
+void PrintInternal(PrintStream& out, int value) {
+  out.Printf("%d", value);
 }
 
-void printInternal(PrintStream& out, unsigned value) {
-  out.printf("%u", value);
+void PrintInternal(PrintStream& out, unsigned value) {
+  out.Printf("%u", value);
 }
 
-void printInternal(PrintStream& out, long value) {
-  out.printf("%ld", value);
+void PrintInternal(PrintStream& out, long value) {
+  out.Printf("%ld", value);
 }
 
-void printInternal(PrintStream& out, unsigned long value) {
-  out.printf("%lu", value);
+void PrintInternal(PrintStream& out, unsigned long value) {
+  out.Printf("%lu", value);
 }
 
-void printInternal(PrintStream& out, long long value) {
-  out.printf("%lld", value);
+void PrintInternal(PrintStream& out, long long value) {
+  out.Printf("%lld", value);
 }
 
-void printInternal(PrintStream& out, unsigned long long value) {
-  out.printf("%llu", value);
+void PrintInternal(PrintStream& out, unsigned long long value) {
+  out.Printf("%llu", value);
 }
 
-void printInternal(PrintStream& out, float value) {
-  out.print(static_cast<double>(value));
+void PrintInternal(PrintStream& out, float value) {
+  out.Print(static_cast<double>(value));
 }
 
-void printInternal(PrintStream& out, double value) {
-  out.printf("%lf", value);
+void PrintInternal(PrintStream& out, double value) {
+  out.Printf("%lf", value);
 }
 
-void dumpCharacter(PrintStream& out, char value) {
-  out.printf("%c", value);
+void DumpCharacter(PrintStream& out, char value) {
+  out.Printf("%c", value);
 }
 
 }  // namespace WTF

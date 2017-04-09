@@ -35,32 +35,32 @@ class PseudoStyleRequest {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum RequestType { ForRenderer, ForComputedStyle };
+  enum RequestType { kForRenderer, kForComputedStyle };
 
-  PseudoStyleRequest(PseudoId pseudoId,
+  PseudoStyleRequest(PseudoId pseudo_id,
                      LayoutScrollbar* scrollbar = 0,
-                     ScrollbarPart scrollbarPart = NoPart)
-      : pseudoId(pseudoId),
-        type(ForRenderer),
-        scrollbarPart(scrollbarPart),
+                     ScrollbarPart scrollbar_part = kNoPart)
+      : pseudo_id(pseudo_id),
+        type(kForRenderer),
+        scrollbar_part(scrollbar_part),
         scrollbar(scrollbar) {}
 
-  PseudoStyleRequest(PseudoId pseudoId, RequestType requestType)
-      : pseudoId(pseudoId),
-        type(requestType),
-        scrollbarPart(NoPart),
+  PseudoStyleRequest(PseudoId pseudo_id, RequestType request_type)
+      : pseudo_id(pseudo_id),
+        type(request_type),
+        scrollbar_part(kNoPart),
         scrollbar(nullptr) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(scrollbar); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(scrollbar); }
 
   // The spec disallows inheritance for ::backdrop.
-  bool allowsInheritance(const ComputedStyle* parentStyle) const {
-    return parentStyle && pseudoId != PseudoIdBackdrop;
+  bool AllowsInheritance(const ComputedStyle* parent_style) const {
+    return parent_style && pseudo_id != kPseudoIdBackdrop;
   }
 
-  PseudoId pseudoId;
+  PseudoId pseudo_id;
   RequestType type;
-  ScrollbarPart scrollbarPart;
+  ScrollbarPart scrollbar_part;
   Member<LayoutScrollbar> scrollbar;
 };
 

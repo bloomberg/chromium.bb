@@ -23,14 +23,14 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
  public:
   virtual ~Interpolation() {}
 
-  virtual void interpolate(int iteration, double fraction) = 0;
+  virtual void Interpolate(int iteration, double fraction) = 0;
 
-  virtual bool isInvalidatableInterpolation() const { return false; }
-  virtual bool isLegacyStyleInterpolation() const { return false; }
-  virtual bool isTransitionInterpolation() const { return false; }
+  virtual bool IsInvalidatableInterpolation() const { return false; }
+  virtual bool IsLegacyStyleInterpolation() const { return false; }
+  virtual bool IsTransitionInterpolation() const { return false; }
 
-  virtual const PropertyHandle& getProperty() const = 0;
-  virtual bool dependsOnUnderlyingValue() const { return false; }
+  virtual const PropertyHandle& GetProperty() const = 0;
+  virtual bool DependsOnUnderlyingValue() const { return false; }
 
  protected:
   Interpolation() {}

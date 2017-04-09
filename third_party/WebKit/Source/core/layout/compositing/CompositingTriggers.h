@@ -26,10 +26,10 @@
 namespace blink {
 
 enum CompositingTrigger {
-  ScrollableInnerFrameTrigger = 1 << 1,
-  OverflowScrollTrigger = 1 << 2,
-  ViewportConstrainedPositionedTrigger = 1 << 3,
-  AllCompositingTriggers = 0xFFFFFFFF,
+  kScrollableInnerFrameTrigger = 1 << 1,
+  kOverflowScrollTrigger = 1 << 2,
+  kViewportConstrainedPositionedTrigger = 1 << 3,
+  kAllCompositingTriggers = 0xFFFFFFFF,
 };
 
 typedef unsigned CompositingTriggerFlags;

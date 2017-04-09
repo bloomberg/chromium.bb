@@ -39,80 +39,82 @@ namespace blink {
 
 PagePopupController::PagePopupController(PagePopup& popup,
                                          PagePopupClient* client)
-    : m_popup(popup), m_popupClient(client) {
+    : popup_(popup), popup_client_(client) {
   ASSERT(client);
 }
 
-PagePopupController* PagePopupController::create(PagePopup& popup,
+PagePopupController* PagePopupController::Create(PagePopup& popup,
                                                  PagePopupClient* client) {
   return new PagePopupController(popup, client);
 }
 
-void PagePopupController::setValueAndClosePopup(int numValue,
-                                                const String& stringValue) {
-  if (m_popupClient)
-    m_popupClient->setValueAndClosePopup(numValue, stringValue);
+void PagePopupController::setValueAndClosePopup(int num_value,
+                                                const String& string_value) {
+  if (popup_client_)
+    popup_client_->SetValueAndClosePopup(num_value, string_value);
 }
 
 void PagePopupController::setValue(const String& value) {
-  if (m_popupClient)
-    m_popupClient->setValue(value);
+  if (popup_client_)
+    popup_client_->SetValue(value);
 }
 
 void PagePopupController::closePopup() {
-  if (m_popupClient)
-    m_popupClient->closePopup();
+  if (popup_client_)
+    popup_client_->ClosePopup();
 }
 
 void PagePopupController::selectFontsFromOwnerDocument(
-    Document* targetDocument) {
-  ASSERT(targetDocument);
-  if (m_popupClient)
-    m_popupClient->selectFontsFromOwnerDocument(*targetDocument);
+    Document* target_document) {
+  ASSERT(target_document);
+  if (popup_client_)
+    popup_client_->SelectFontsFromOwnerDocument(*target_document);
 }
 
-String PagePopupController::localizeNumberString(const String& numberString) {
-  if (m_popupClient)
-    return m_popupClient->locale().convertToLocalizedNumber(numberString);
-  return numberString;
+String PagePopupController::localizeNumberString(const String& number_string) {
+  if (popup_client_)
+    return popup_client_->GetLocale().ConvertToLocalizedNumber(number_string);
+  return number_string;
 }
 
-String PagePopupController::formatMonth(int year, int zeroBaseMonth) {
-  if (!m_popupClient)
-    return emptyString;
+String PagePopupController::formatMonth(int year, int zero_base_month) {
+  if (!popup_client_)
+    return g_empty_string;
   DateComponents date;
-  date.setMonthsSinceEpoch((year - 1970) * 12.0 + zeroBaseMonth);
-  return m_popupClient->locale().formatDateTime(date, Locale::FormatTypeMedium);
+  date.SetMonthsSinceEpoch((year - 1970) * 12.0 + zero_base_month);
+  return popup_client_->GetLocale().FormatDateTime(date,
+                                                   Locale::kFormatTypeMedium);
 }
 
-String PagePopupController::formatShortMonth(int year, int zeroBaseMonth) {
-  if (!m_popupClient)
-    return emptyString;
+String PagePopupController::formatShortMonth(int year, int zero_base_month) {
+  if (!popup_client_)
+    return g_empty_string;
   DateComponents date;
-  date.setMonthsSinceEpoch((year - 1970) * 12.0 + zeroBaseMonth);
-  return m_popupClient->locale().formatDateTime(date, Locale::FormatTypeShort);
+  date.SetMonthsSinceEpoch((year - 1970) * 12.0 + zero_base_month);
+  return popup_client_->GetLocale().FormatDateTime(date,
+                                                   Locale::kFormatTypeShort);
 }
 
 String PagePopupController::formatWeek(int year,
-                                       int weekNumber,
-                                       const String& localizedDateString) {
-  if (!m_popupClient)
-    return emptyString;
+                                       int week_number,
+                                       const String& localized_date_string) {
+  if (!popup_client_)
+    return g_empty_string;
   DateComponents week;
-  bool setWeekResult = week.setWeek(year, weekNumber);
-  DCHECK(setWeekResult);
-  String localizedWeek = m_popupClient->locale().formatDateTime(week);
-  return m_popupClient->locale().queryString(
-      WebLocalizedString::AXCalendarWeekDescription, localizedWeek,
-      localizedDateString);
+  bool set_week_result = week.SetWeek(year, week_number);
+  DCHECK(set_week_result);
+  String localized_week = popup_client_->GetLocale().FormatDateTime(week);
+  return popup_client_->GetLocale().QueryString(
+      WebLocalizedString::kAXCalendarWeekDescription, localized_week,
+      localized_date_string);
 }
 
-void PagePopupController::clearPagePopupClient() {
-  m_popupClient = nullptr;
+void PagePopupController::ClearPagePopupClient() {
+  popup_client_ = nullptr;
 }
 
 void PagePopupController::setWindowRect(int x, int y, int width, int height) {
-  m_popup.setWindowRect(IntRect(x, y, width, height));
+  popup_.SetWindowRect(IntRect(x, y, width, height));
 }
 
 }  // namespace blink

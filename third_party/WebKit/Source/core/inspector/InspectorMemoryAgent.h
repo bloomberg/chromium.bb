@@ -42,12 +42,12 @@ class CORE_EXPORT InspectorMemoryAgent final
   WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 
  public:
-  static InspectorMemoryAgent* create() { return new InspectorMemoryAgent(); }
+  static InspectorMemoryAgent* Create() { return new InspectorMemoryAgent(); }
   ~InspectorMemoryAgent() override;
 
   protocol::Response getDOMCounters(int* documents,
                                     int* nodes,
-                                    int* jsEventListeners) override;
+                                    int* js_event_listeners) override;
 
  private:
   InspectorMemoryAgent();

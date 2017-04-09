@@ -39,94 +39,94 @@
 
 namespace blink {
 
-LinkImport* LinkImport::create(HTMLLinkElement* owner) {
+LinkImport* LinkImport::Create(HTMLLinkElement* owner) {
   return new LinkImport(owner);
 }
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
-    : LinkResource(owner), m_child(nullptr) {}
+    : LinkResource(owner), child_(nullptr) {}
 
 LinkImport::~LinkImport() {}
 
-Document* LinkImport::importedDocument() const {
-  if (!m_child || !m_owner || !m_owner->isConnected())
+Document* LinkImport::ImportedDocument() const {
+  if (!child_ || !owner_ || !owner_->isConnected())
     return nullptr;
-  if (m_child->loader()->hasError())
+  if (child_->Loader()->HasError())
     return nullptr;
-  return m_child->document();
+  return child_->GetDocument();
 }
 
-void LinkImport::process() {
-  if (m_child)
+void LinkImport::Process() {
+  if (child_)
     return;
-  if (!m_owner)
+  if (!owner_)
     return;
-  if (!shouldLoadResource())
+  if (!ShouldLoadResource())
     return;
 
-  if (!m_owner->document().importsController()) {
+  if (!owner_->GetDocument().ImportsController()) {
     // The document should be the master.
-    Document& master = m_owner->document();
-    DCHECK(master.frame());
-    master.createImportsController();
+    Document& master = owner_->GetDocument();
+    DCHECK(master.GetFrame());
+    master.CreateImportsController();
   }
 
-  LinkRequestBuilder builder(m_owner);
-  if (!builder.isValid()) {
-    didFinish();
+  LinkRequestBuilder builder(owner_);
+  if (!builder.IsValid()) {
+    DidFinish();
     return;
   }
 
-  HTMLImportsController* controller = m_owner->document().importsController();
-  HTMLImportLoader* loader = m_owner->document().importLoader();
-  HTMLImport* parent = loader ? static_cast<HTMLImport*>(loader->firstImport())
-                              : static_cast<HTMLImport*>(controller->root());
-  m_child = controller->load(parent, this, builder.build(false));
-  if (!m_child) {
-    didFinish();
+  HTMLImportsController* controller = owner_->GetDocument().ImportsController();
+  HTMLImportLoader* loader = owner_->GetDocument().ImportLoader();
+  HTMLImport* parent = loader ? static_cast<HTMLImport*>(loader->FirstImport())
+                              : static_cast<HTMLImport*>(controller->Root());
+  child_ = controller->Load(parent, this, builder.Build(false));
+  if (!child_) {
+    DidFinish();
     return;
   }
 }
 
-void LinkImport::didFinish() {
-  if (!m_owner || !m_owner->isConnected())
+void LinkImport::DidFinish() {
+  if (!owner_ || !owner_->isConnected())
     return;
-  m_owner->scheduleEvent();
+  owner_->ScheduleEvent();
 }
 
-void LinkImport::importChildWasDisposed(HTMLImportChild* child) {
-  DCHECK_EQ(m_child, child);
-  m_child = nullptr;
-  m_owner = nullptr;
+void LinkImport::ImportChildWasDisposed(HTMLImportChild* child) {
+  DCHECK_EQ(child_, child);
+  child_ = nullptr;
+  owner_ = nullptr;
 }
 
-bool LinkImport::isSync() const {
-  return m_owner && !m_owner->async();
+bool LinkImport::IsSync() const {
+  return owner_ && !owner_->Async();
 }
 
-HTMLLinkElement* LinkImport::link() {
-  return m_owner;
+HTMLLinkElement* LinkImport::Link() {
+  return owner_;
 }
 
-bool LinkImport::hasLoaded() const {
-  return m_owner && m_child && m_child->hasFinishedLoading() &&
-         !m_child->loader()->hasError();
+bool LinkImport::HasLoaded() const {
+  return owner_ && child_ && child_->HasFinishedLoading() &&
+         !child_->Loader()->HasError();
 }
 
-void LinkImport::ownerInserted() {
-  if (m_child)
-    m_child->ownerInserted();
+void LinkImport::OwnerInserted() {
+  if (child_)
+    child_->OwnerInserted();
 }
 
-void LinkImport::ownerRemoved() {
-  if (m_owner)
-    m_owner->document().styleEngine().htmlImportAddedOrRemoved();
+void LinkImport::OwnerRemoved() {
+  if (owner_)
+    owner_->GetDocument().GetStyleEngine().HtmlImportAddedOrRemoved();
 }
 
 DEFINE_TRACE(LinkImport) {
-  visitor->trace(m_child);
-  HTMLImportChildClient::trace(visitor);
-  LinkResource::trace(visitor);
+  visitor->Trace(child_);
+  HTMLImportChildClient::Trace(visitor);
+  LinkResource::Trace(visitor);
 }
 
 }  // namespace blink

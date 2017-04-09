@@ -12,10 +12,10 @@ namespace blink {
 class MediaStreamTrackContentHint final {
  public:
   static String contentHint(const MediaStreamTrack& track) {
-    return track.contentHint();
+    return track.ContentHint();
   }
   static void setContentHint(MediaStreamTrack& track, const String& hint) {
-    track.setContentHint(hint);
+    track.SetContentHint(hint);
   }
 };
 

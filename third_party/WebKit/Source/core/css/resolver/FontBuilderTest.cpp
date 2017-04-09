@@ -17,15 +17,15 @@ namespace blink {
 
 class FontBuilderTest {
  public:
-  FontBuilderTest() : m_dummy(DummyPageHolder::create(IntSize(800, 600))) {
-    settings().setDefaultFontSize(16.0f);
+  FontBuilderTest() : dummy_(DummyPageHolder::Create(IntSize(800, 600))) {
+    GetSettings().SetDefaultFontSize(16.0f);
   }
 
-  Document& document() { return m_dummy->document(); }
-  Settings& settings() { return *document().settings(); }
+  Document& GetDocument() { return dummy_->GetDocument(); }
+  Settings& GetSettings() { return *GetDocument().GetSettings(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummy;
+  std::unique_ptr<DummyPageHolder> dummy_;
 };
 
 using BuilderFunc = void (*)(FontBuilder&);
@@ -33,10 +33,10 @@ using DescriptionFunc = void (*)(FontDescription&);
 
 struct FunctionPair {
   FunctionPair(DescriptionFunc base, BuilderFunc value)
-      : setBaseValue(base), setValue(value) {}
+      : set_base_value(base), set_value(value) {}
 
-  DescriptionFunc setBaseValue;
-  BuilderFunc setValue;
+  DescriptionFunc set_base_value;
+  BuilderFunc set_value;
 };
 
 class FontBuilderInitTest : public FontBuilderTest, public ::testing::Test {};
@@ -45,18 +45,18 @@ class FontBuilderAdditiveTest : public FontBuilderTest,
 };
 
 TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled) {
-  RefPtr<ComputedStyle> initial = ComputedStyle::create();
+  RefPtr<ComputedStyle> initial = ComputedStyle::Create();
 
-  FontBuilder builder(document());
-  builder.setInitial(1.0f);  // FIXME: Remove unused param.
-  builder.createFont(document().styleEngine().fontSelector(), *initial);
+  FontBuilder builder(GetDocument());
+  builder.SetInitial(1.0f);  // FIXME: Remove unused param.
+  builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(), *initial);
 
-  EXPECT_EQ(16.0f, initial->getFontDescription().computedSize());
+  EXPECT_EQ(16.0f, initial->GetFontDescription().ComputedSize());
 }
 
 TEST_F(FontBuilderInitTest, NotDirty) {
-  FontBuilder builder(document());
-  ASSERT_FALSE(builder.fontDirty());
+  FontBuilder builder(GetDocument());
+  ASSERT_FALSE(builder.FontDirty());
 }
 
 // This test verifies that when you are setting some field F via FontBuilder,
@@ -64,146 +64,147 @@ TEST_F(FontBuilderInitTest, NotDirty) {
 TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified) {
   FunctionPair funcs = GetParam();
 
-  FontDescription parentDescription;
-  funcs.setBaseValue(parentDescription);
+  FontDescription parent_description;
+  funcs.set_base_value(parent_description);
 
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
-  style->setFontDescription(parentDescription);
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetFontDescription(parent_description);
 
-  FontBuilder fontBuilder(document());
-  funcs.setValue(fontBuilder);
-  fontBuilder.createFont(document().styleEngine().fontSelector(), *style);
+  FontBuilder font_builder(GetDocument());
+  funcs.set_value(font_builder);
+  font_builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(),
+                          *style);
 
-  FontDescription outputDescription = style->getFontDescription();
+  FontDescription output_description = style->GetFontDescription();
 
   // FontBuilder should have overwritten our base value set in the parent,
   // hence the descriptions should not be equal.
-  ASSERT_NE(parentDescription, outputDescription);
+  ASSERT_NE(parent_description, output_description);
 
   // Overwrite the value set by FontBuilder with the base value, directly
   // on outputDescription.
-  funcs.setBaseValue(outputDescription);
+  funcs.set_base_value(output_description);
 
   // Now the descriptions should be equal again. If they are, we know that
   // FontBuilder did not change something it wasn't supposed to.
-  ASSERT_EQ(parentDescription, outputDescription);
+  ASSERT_EQ(parent_description, output_description);
 }
 
-static void fontWeightBase(FontDescription& d) {
-  d.setWeight(FontWeight900);
+static void FontWeightBase(FontDescription& d) {
+  d.SetWeight(kFontWeight900);
 }
-static void fontWeightValue(FontBuilder& b) {
-  b.setWeight(FontWeightNormal);
-}
-
-static void fontStretchBase(FontDescription& d) {
-  d.setStretch(FontStretchUltraExpanded);
-}
-static void fontStretchValue(FontBuilder& b) {
-  b.setStretch(FontStretchExtraCondensed);
+static void FontWeightValue(FontBuilder& b) {
+  b.SetWeight(kFontWeightNormal);
 }
 
-static void fontFamilyBase(FontDescription& d) {
-  d.setGenericFamily(FontDescription::FantasyFamily);
+static void FontStretchBase(FontDescription& d) {
+  d.SetStretch(kFontStretchUltraExpanded);
 }
-static void fontFamilyValue(FontBuilder& b) {
-  b.setFamilyDescription(
-      FontDescription::FamilyDescription(FontDescription::CursiveFamily));
-}
-
-static void fontFeatureSettingsBase(FontDescription& d) {
-  d.setFeatureSettings(nullptr);
-}
-static void fontFeatureSettingsValue(FontBuilder& b) {
-  b.setFeatureSettings(FontFeatureSettings::create());
+static void FontStretchValue(FontBuilder& b) {
+  b.SetStretch(kFontStretchExtraCondensed);
 }
 
-static void fontStyleBase(FontDescription& d) {
-  d.setStyle(FontStyleItalic);
+static void FontFamilyBase(FontDescription& d) {
+  d.SetGenericFamily(FontDescription::kFantasyFamily);
 }
-static void fontStyleValue(FontBuilder& b) {
-  b.setStyle(FontStyleNormal);
-}
-
-static void fontVariantCapsBase(FontDescription& d) {
-  d.setVariantCaps(FontDescription::SmallCaps);
-}
-static void fontVariantCapsValue(FontBuilder& b) {
-  b.setVariantCaps(FontDescription::CapsNormal);
+static void FontFamilyValue(FontBuilder& b) {
+  b.SetFamilyDescription(
+      FontDescription::FamilyDescription(FontDescription::kCursiveFamily));
 }
 
-static void fontVariantLigaturesBase(FontDescription& d) {
-  d.setVariantLigatures(FontDescription::VariantLigatures(
-      FontDescription::EnabledLigaturesState));
+static void FontFeatureSettingsBase(FontDescription& d) {
+  d.SetFeatureSettings(nullptr);
 }
-static void fontVariantLigaturesValue(FontBuilder& b) {
-  b.setVariantLigatures(FontDescription::VariantLigatures(
-      FontDescription::DisabledLigaturesState));
+static void FontFeatureSettingsValue(FontBuilder& b) {
+  b.SetFeatureSettings(FontFeatureSettings::Create());
 }
 
-static void fontVariantNumericBase(FontDescription& d) {
-  d.setVariantNumeric(FontVariantNumeric());
+static void FontStyleBase(FontDescription& d) {
+  d.SetStyle(kFontStyleItalic);
 }
-static void fontVariantNumericValue(FontBuilder& b) {
-  FontVariantNumeric variantNumeric;
-  variantNumeric.setNumericFraction(FontVariantNumeric::StackedFractions);
-  b.setVariantNumeric(variantNumeric);
+static void FontStyleValue(FontBuilder& b) {
+  b.SetStyle(kFontStyleNormal);
 }
 
-static void fontTextRenderingBase(FontDescription& d) {
-  d.setTextRendering(GeometricPrecision);
+static void FontVariantCapsBase(FontDescription& d) {
+  d.SetVariantCaps(FontDescription::kSmallCaps);
 }
-static void fontTextRenderingValue(FontBuilder& b) {
-  b.setTextRendering(OptimizeLegibility);
-}
-
-static void fontKerningBase(FontDescription& d) {
-  d.setKerning(FontDescription::NormalKerning);
-}
-static void fontKerningValue(FontBuilder& b) {
-  b.setKerning(FontDescription::NoneKerning);
+static void FontVariantCapsValue(FontBuilder& b) {
+  b.SetVariantCaps(FontDescription::kCapsNormal);
 }
 
-static void fontFontSmoothingBase(FontDescription& d) {
-  d.setFontSmoothing(Antialiased);
+static void FontVariantLigaturesBase(FontDescription& d) {
+  d.SetVariantLigatures(FontDescription::VariantLigatures(
+      FontDescription::kEnabledLigaturesState));
 }
-static void fontFontSmoothingValue(FontBuilder& b) {
-  b.setFontSmoothing(SubpixelAntialiased);
-}
-
-static void fontSizeBase(FontDescription& d) {
-  d.setSpecifiedSize(37.0f);
-  d.setComputedSize(37.0f);
-  d.setIsAbsoluteSize(true);
-  d.setKeywordSize(7);
-}
-static void fontSizeValue(FontBuilder& b) {
-  b.setSize(FontDescription::Size(20.0f, 0, false));
+static void FontVariantLigaturesValue(FontBuilder& b) {
+  b.SetVariantLigatures(FontDescription::VariantLigatures(
+      FontDescription::kDisabledLigaturesState));
 }
 
-static void fontScriptBase(FontDescription& d) {
-  d.setLocale(LayoutLocale::get("no"));
+static void FontVariantNumericBase(FontDescription& d) {
+  d.SetVariantNumeric(FontVariantNumeric());
 }
-static void fontScriptValue(FontBuilder& b) {
-  b.setLocale(LayoutLocale::get("se"));
+static void FontVariantNumericValue(FontBuilder& b) {
+  FontVariantNumeric variant_numeric;
+  variant_numeric.SetNumericFraction(FontVariantNumeric::kStackedFractions);
+  b.SetVariantNumeric(variant_numeric);
+}
+
+static void FontTextRenderingBase(FontDescription& d) {
+  d.SetTextRendering(kGeometricPrecision);
+}
+static void FontTextRenderingValue(FontBuilder& b) {
+  b.SetTextRendering(kOptimizeLegibility);
+}
+
+static void FontKerningBase(FontDescription& d) {
+  d.SetKerning(FontDescription::kNormalKerning);
+}
+static void FontKerningValue(FontBuilder& b) {
+  b.SetKerning(FontDescription::kNoneKerning);
+}
+
+static void FontFontSmoothingBase(FontDescription& d) {
+  d.SetFontSmoothing(kAntialiased);
+}
+static void FontFontSmoothingValue(FontBuilder& b) {
+  b.SetFontSmoothing(kSubpixelAntialiased);
+}
+
+static void FontSizeBase(FontDescription& d) {
+  d.SetSpecifiedSize(37.0f);
+  d.SetComputedSize(37.0f);
+  d.SetIsAbsoluteSize(true);
+  d.SetKeywordSize(7);
+}
+static void FontSizeValue(FontBuilder& b) {
+  b.SetSize(FontDescription::Size(20.0f, 0, false));
+}
+
+static void FontScriptBase(FontDescription& d) {
+  d.SetLocale(LayoutLocale::Get("no"));
+}
+static void FontScriptValue(FontBuilder& b) {
+  b.SetLocale(LayoutLocale::Get("se"));
 }
 
 INSTANTIATE_TEST_CASE_P(
     AllFields,
     FontBuilderAdditiveTest,
     ::testing::Values(
-        FunctionPair(fontWeightBase, fontWeightValue),
-        FunctionPair(fontStretchBase, fontStretchValue),
-        FunctionPair(fontFamilyBase, fontFamilyValue),
-        FunctionPair(fontFeatureSettingsBase, fontFeatureSettingsValue),
-        FunctionPair(fontStyleBase, fontStyleValue),
-        FunctionPair(fontVariantCapsBase, fontVariantCapsValue),
-        FunctionPair(fontVariantLigaturesBase, fontVariantLigaturesValue),
-        FunctionPair(fontVariantNumericBase, fontVariantNumericValue),
-        FunctionPair(fontTextRenderingBase, fontTextRenderingValue),
-        FunctionPair(fontKerningBase, fontKerningValue),
-        FunctionPair(fontFontSmoothingBase, fontFontSmoothingValue),
-        FunctionPair(fontSizeBase, fontSizeValue),
-        FunctionPair(fontScriptBase, fontScriptValue)));
+        FunctionPair(FontWeightBase, FontWeightValue),
+        FunctionPair(FontStretchBase, FontStretchValue),
+        FunctionPair(FontFamilyBase, FontFamilyValue),
+        FunctionPair(FontFeatureSettingsBase, FontFeatureSettingsValue),
+        FunctionPair(FontStyleBase, FontStyleValue),
+        FunctionPair(FontVariantCapsBase, FontVariantCapsValue),
+        FunctionPair(FontVariantLigaturesBase, FontVariantLigaturesValue),
+        FunctionPair(FontVariantNumericBase, FontVariantNumericValue),
+        FunctionPair(FontTextRenderingBase, FontTextRenderingValue),
+        FunctionPair(FontKerningBase, FontKerningValue),
+        FunctionPair(FontFontSmoothingBase, FontFontSmoothingValue),
+        FunctionPair(FontSizeBase, FontSizeValue),
+        FunctionPair(FontScriptBase, FontScriptValue)));
 
 }  // namespace blink

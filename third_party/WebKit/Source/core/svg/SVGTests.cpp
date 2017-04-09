@@ -27,54 +27,54 @@
 
 namespace blink {
 
-SVGTests::SVGTests(SVGElement* contextElement)
-    : m_requiredExtensions(
-          SVGStaticStringList::create(contextElement,
+SVGTests::SVGTests(SVGElement* context_element)
+    : required_extensions_(
+          SVGStaticStringList::Create(context_element,
                                       SVGNames::requiredExtensionsAttr)),
-      m_systemLanguage(
-          SVGStaticStringList::create(contextElement,
+      system_language_(
+          SVGStaticStringList::Create(context_element,
                                       SVGNames::systemLanguageAttr)) {
-  DCHECK(contextElement);
+  DCHECK(context_element);
 
-  contextElement->addToPropertyMap(m_requiredExtensions);
-  contextElement->addToPropertyMap(m_systemLanguage);
+  context_element->AddToPropertyMap(required_extensions_);
+  context_element->AddToPropertyMap(system_language_);
 }
 
 DEFINE_TRACE(SVGTests) {
-  visitor->trace(m_requiredExtensions);
-  visitor->trace(m_systemLanguage);
+  visitor->Trace(required_extensions_);
+  visitor->Trace(system_language_);
 }
 
 SVGStringListTearOff* SVGTests::requiredExtensions() {
-  return m_requiredExtensions->tearOff();
+  return required_extensions_->TearOff();
 }
 
 SVGStringListTearOff* SVGTests::systemLanguage() {
-  return m_systemLanguage->tearOff();
+  return system_language_->TearOff();
 }
 
-bool SVGTests::isValid() const {
-  if (m_systemLanguage->isSpecified()) {
-    bool matchFound = false;
-    for (const auto& value : m_systemLanguage->value()->values()) {
-      if (value.length() == 2 && defaultLanguage().startsWith(value)) {
-        matchFound = true;
+bool SVGTests::IsValid() const {
+  if (system_language_->IsSpecified()) {
+    bool match_found = false;
+    for (const auto& value : system_language_->Value()->Values()) {
+      if (value.length() == 2 && DefaultLanguage().StartsWith(value)) {
+        match_found = true;
         break;
       }
     }
-    if (!matchFound)
+    if (!match_found)
       return false;
   }
 
-  if (!m_requiredExtensions->value()->values().isEmpty())
+  if (!required_extensions_->Value()->Values().IsEmpty())
     return false;
 
   return true;
 }
 
-bool SVGTests::isKnownAttribute(const QualifiedName& attrName) {
-  return attrName == SVGNames::requiredExtensionsAttr ||
-         attrName == SVGNames::systemLanguageAttr;
+bool SVGTests::IsKnownAttribute(const QualifiedName& attr_name) {
+  return attr_name == SVGNames::requiredExtensionsAttr ||
+         attr_name == SVGNames::systemLanguageAttr;
 }
 
 }  // namespace blink

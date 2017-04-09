@@ -44,29 +44,31 @@ class AudioBus;
 //
 class BLINK_PLATFORM_EXPORT WebAudioBus {
  public:
-  WebAudioBus() : m_private(0) {}
-  ~WebAudioBus() { reset(); }
+  WebAudioBus() : private_(0) {}
+  ~WebAudioBus() { Reset(); }
 
   // initialize() allocates memory of the given length for the given number of
   // channels.
-  void initialize(unsigned numberOfChannels, size_t length, double sampleRate);
+  void Initialize(unsigned number_of_channels,
+                  size_t length,
+                  double sample_rate);
 
   // resizeSmaller() can only be called after initialize() with a new length <=
   // the initialization length.  The data stored in the bus will remain
   // undisturbed.
-  void resizeSmaller(size_t newLength);
+  void ResizeSmaller(size_t new_length);
 
   // reset() releases the memory allocated from initialize().
-  void reset();
+  void Reset();
 
-  unsigned numberOfChannels() const;
+  unsigned NumberOfChannels() const;
   size_t length() const;
-  double sampleRate() const;
+  double SampleRate() const;
 
-  float* channelData(unsigned channelIndex);
+  float* ChannelData(unsigned channel_index);
 
 #if INSIDE_BLINK
-  WTF::PassRefPtr<AudioBus> release();
+  WTF::PassRefPtr<AudioBus> Release();
 #endif
 
  private:
@@ -74,7 +76,7 @@ class BLINK_PLATFORM_EXPORT WebAudioBus {
   WebAudioBus(const WebAudioBus&);
   void operator=(const WebAudioBus&);
 
-  AudioBus* m_private;
+  AudioBus* private_;
 };
 
 }  // namespace blink

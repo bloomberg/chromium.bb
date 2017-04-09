@@ -33,75 +33,75 @@ class WebFrameTestClient : public blink::WebFrameClient {
   ~WebFrameTestClient() override;
 
   // WebFrameClient overrides needed by WebFrameTestProxy.
-  blink::WebColorChooser* createColorChooser(
+  blink::WebColorChooser* CreateColorChooser(
       blink::WebColorChooserClient* client,
       const blink::WebColor& initial_color,
       const blink::WebVector<blink::WebColorSuggestion>& suggestions) override;
-  void runModalAlertDialog(const blink::WebString& message) override;
-  bool runModalConfirmDialog(const blink::WebString& message) override;
-  bool runModalPromptDialog(const blink::WebString& message,
+  void RunModalAlertDialog(const blink::WebString& message) override;
+  bool RunModalConfirmDialog(const blink::WebString& message) override;
+  bool RunModalPromptDialog(const blink::WebString& message,
                             const blink::WebString& default_value,
                             blink::WebString* actual_value) override;
-  bool runModalBeforeUnloadDialog(bool is_reload) override;
-  blink::WebScreenOrientationClient* webScreenOrientationClient() override;
-  void postAccessibilityEvent(const blink::WebAXObject& object,
+  bool RunModalBeforeUnloadDialog(bool is_reload) override;
+  blink::WebScreenOrientationClient* GetWebScreenOrientationClient() override;
+  void PostAccessibilityEvent(const blink::WebAXObject& object,
                               blink::WebAXEvent event) override;
-  void didChangeSelection(bool is_selection_empty) override;
-  blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
+  void DidChangeSelection(bool is_selection_empty) override;
+  blink::WebPlugin* CreatePlugin(blink::WebLocalFrame* frame,
                                  const blink::WebPluginParams& params) override;
-  void showContextMenu(
+  void ShowContextMenu(
       const blink::WebContextMenuData& context_menu_data) override;
-  blink::WebUserMediaClient* userMediaClient() override;
-  void didAddMessageToConsole(const blink::WebConsoleMessage& message,
+  blink::WebUserMediaClient* UserMediaClient() override;
+  void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
                               const blink::WebString& source_name,
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
-  void loadURLExternally(const blink::WebURLRequest& request,
+  void LoadURLExternally(const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy,
                          const blink::WebString& suggested_name,
                          bool replaces_current_history_item) override;
-  void loadErrorPage(int reason) override;
-  void didStartProvisionalLoad(blink::WebDataSource* data_source,
+  void LoadErrorPage(int reason) override;
+  void DidStartProvisionalLoad(blink::WebDataSource* data_source,
                                blink::WebURLRequest& request) override;
-  void didReceiveServerRedirectForProvisionalLoad() override;
-  void didFailProvisionalLoad(blink::WebLocalFrame* frame,
+  void DidReceiveServerRedirectForProvisionalLoad() override;
+  void DidFailProvisionalLoad(blink::WebLocalFrame* frame,
                               const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
-  void didCommitProvisionalLoad(
+  void DidCommitProvisionalLoad(
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& history_item,
       blink::WebHistoryCommitType history_type) override;
-  void didReceiveTitle(blink::WebLocalFrame* frame,
+  void DidReceiveTitle(blink::WebLocalFrame* frame,
                        const blink::WebString& title,
                        blink::WebTextDirection direction) override;
-  void didChangeIcon(blink::WebIconURL::Type icon_type) override;
-  void didFinishDocumentLoad(blink::WebLocalFrame* frame) override;
-  void didHandleOnloadEvents() override;
-  void didFailLoad(const blink::WebURLError& error,
+  void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
+  void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  void DidHandleOnloadEvents() override;
+  void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
-  void didFinishLoad(blink::WebLocalFrame* frame) override;
-  void didNavigateWithinPage(blink::WebLocalFrame* frame,
+  void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  void DidNavigateWithinPage(blink::WebLocalFrame* frame,
                              const blink::WebHistoryItem& history_item,
                              blink::WebHistoryCommitType commit_type,
                              bool contentInitiated) override;
-  void didStartLoading(bool to_different_document) override;
-  void didStopLoading() override;
-  void didDetectXSS(const blink::WebURL& insecure_url,
+  void DidStartLoading(bool to_different_document) override;
+  void DidStopLoading() override;
+  void DidDetectXSS(const blink::WebURL& insecure_url,
                     bool did_block_entire_page) override;
-  void didDispatchPingLoader(const blink::WebURL& url) override;
-  void willSendRequest(blink::WebLocalFrame* frame,
+  void DidDispatchPingLoader(const blink::WebURL& url) override;
+  void WillSendRequest(blink::WebLocalFrame* frame,
                        blink::WebURLRequest& request) override;
-  void didReceiveResponse(const blink::WebURLResponse& response) override;
-  blink::WebNavigationPolicy decidePolicyForNavigation(
+  void DidReceiveResponse(const blink::WebURLResponse& response) override;
+  blink::WebNavigationPolicy DecidePolicyForNavigation(
       const blink::WebFrameClient::NavigationPolicyInfo& info) override;
-  void checkIfAudioSinkExistsAndIsAuthorized(
+  void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
-  void didClearWindowObject(blink::WebLocalFrame* frame) override;
-  bool runFileChooser(const blink::WebFileChooserParams& params,
+  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
+  bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion) override;
-  blink::WebEffectiveConnectionType getEffectiveConnectionType() override;
+  blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
 
  private:
   TestRunner* test_runner();

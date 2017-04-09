@@ -30,16 +30,16 @@ class CORE_EXPORT TouchEventManager
 
    public:
     DEFINE_INLINE_TRACE() {
-      visitor->trace(touchNode);
-      visitor->trace(targetFrame);
+      visitor->Trace(touch_node);
+      visitor->Trace(target_frame);
     }
 
     WebTouchPoint point;
-    Member<Node> touchNode;
-    Member<LocalFrame> targetFrame;
-    FloatPoint contentPoint;
-    FloatSize adjustedRadius;
-    bool knownTarget;
+    Member<Node> touch_node;
+    Member<LocalFrame> target_frame;
+    FloatPoint content_point;
+    FloatSize adjusted_radius;
+    bool known_target;
     String region;
   };
 
@@ -49,33 +49,33 @@ class CORE_EXPORT TouchEventManager
   // Does the hit-testing again if the original hit test result was not inside
   // capturing frame for touch events. Returns true if touch events could be
   // dispatched and otherwise returns false.
-  bool reHitTestTouchPointsIfNeeded(const WebTouchEvent&,
+  bool ReHitTestTouchPointsIfNeeded(const WebTouchEvent&,
                                     HeapVector<TouchInfo>&);
 
   // The TouchInfo array is reference just to prevent the copy. However, it
   // cannot be const as this function might change some of the properties in
   // TouchInfo objects.
-  WebInputEventResult handleTouchEvent(const WebTouchEvent&,
+  WebInputEventResult HandleTouchEvent(const WebTouchEvent&,
                                        HeapVector<TouchInfo>&);
 
   // Resets the internal state of this object.
-  void clear();
+  void Clear();
 
   // Returns whether there is any touch on the screen.
-  bool isAnyTouchActive() const;
+  bool IsAnyTouchActive() const;
 
  private:
-  void updateTargetAndRegionMapsForTouchStarts(HeapVector<TouchInfo>&);
-  void setAllPropertiesOfTouchInfos(HeapVector<TouchInfo>&);
+  void UpdateTargetAndRegionMapsForTouchStarts(HeapVector<TouchInfo>&);
+  void SetAllPropertiesOfTouchInfos(HeapVector<TouchInfo>&);
 
-  WebInputEventResult dispatchTouchEvents(const WebTouchEvent&,
+  WebInputEventResult DispatchTouchEvents(const WebTouchEvent&,
                                           const HeapVector<TouchInfo>&,
-                                          bool allTouchesReleased);
+                                          bool all_touches_released);
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |TouchEventManager::clear()|.
 
-  const Member<LocalFrame> m_frame;
+  const Member<LocalFrame> frame_;
 
   // The target of each active touch point indexed by the touch ID.
   using TouchTargetMap =
@@ -83,23 +83,23 @@ class CORE_EXPORT TouchEventManager
                   Member<Node>,
                   DefaultHash<unsigned>::Hash,
                   WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
-  TouchTargetMap m_targetForTouchID;
+  TouchTargetMap target_for_touch_id_;
   using TouchRegionMap = HashMap<unsigned,
                                  String,
                                  DefaultHash<unsigned>::Hash,
                                  WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
-  TouchRegionMap m_regionForTouchID;
+  TouchRegionMap region_for_touch_id_;
 
   // If set, the document of the active touch sequence. Unset if no touch
   // sequence active.
-  Member<Document> m_touchSequenceDocument;
+  Member<Document> touch_sequence_document_;
 
-  bool m_touchPressed;
-  bool m_suppressingTouchmovesWithinSlop;
+  bool touch_pressed_;
+  bool suppressing_touchmoves_within_slop_;
 
   // The current touch action, computed on each touch start and is
   // a union of all touches. Reset when all touches are released.
-  TouchAction m_currentTouchAction;
+  TouchAction current_touch_action_;
 };
 
 }  // namespace blink

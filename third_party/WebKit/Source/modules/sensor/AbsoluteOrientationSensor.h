@@ -13,10 +13,10 @@ class AbsoluteOrientationSensor final : public OrientationSensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AbsoluteOrientationSensor* create(ExecutionContext*,
+  static AbsoluteOrientationSensor* Create(ExecutionContext*,
                                            const SensorOptions&,
                                            ExceptionState&);
-  static AbsoluteOrientationSensor* create(ExecutionContext*, ExceptionState&);
+  static AbsoluteOrientationSensor* Create(ExecutionContext*, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
 

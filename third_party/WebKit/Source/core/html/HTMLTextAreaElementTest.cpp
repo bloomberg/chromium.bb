@@ -10,27 +10,27 @@
 namespace blink {
 
 TEST(HTMLTextAreaElementTest, SanitizeUserInputValue) {
-  UChar kLeadSurrogate = 0xD800;
-  EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue("", 0));
-  EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue("a", 0));
-  EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue("\n", 0));
+  UChar k_lead_surrogate = 0xD800;
+  EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("", 0));
+  EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("a", 0));
+  EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("\n", 0));
   StringBuilder builder;
-  builder.append(kLeadSurrogate);
-  String leadSurrogate = builder.toString();
-  EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue(leadSurrogate, 0));
+  builder.Append(k_lead_surrogate);
+  String lead_surrogate = builder.ToString();
+  EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue(lead_surrogate, 0));
 
-  EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue("", 1));
-  EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue(leadSurrogate, 1));
-  EXPECT_EQ("a", HTMLTextAreaElement::sanitizeUserInputValue("a", 1));
-  EXPECT_EQ("\n", HTMLTextAreaElement::sanitizeUserInputValue("\n", 1));
-  EXPECT_EQ("\n", HTMLTextAreaElement::sanitizeUserInputValue("\n", 2));
+  EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue("", 1));
+  EXPECT_EQ("", HTMLTextAreaElement::SanitizeUserInputValue(lead_surrogate, 1));
+  EXPECT_EQ("a", HTMLTextAreaElement::SanitizeUserInputValue("a", 1));
+  EXPECT_EQ("\n", HTMLTextAreaElement::SanitizeUserInputValue("\n", 1));
+  EXPECT_EQ("\n", HTMLTextAreaElement::SanitizeUserInputValue("\n", 2));
 
-  EXPECT_EQ("abc", HTMLTextAreaElement::sanitizeUserInputValue(
-                       String("abc") + leadSurrogate, 4));
-  EXPECT_EQ("a\ncd", HTMLTextAreaElement::sanitizeUserInputValue("a\ncdef", 4));
-  EXPECT_EQ("a\rcd", HTMLTextAreaElement::sanitizeUserInputValue("a\rcdef", 4));
+  EXPECT_EQ("abc", HTMLTextAreaElement::SanitizeUserInputValue(
+                       String("abc") + lead_surrogate, 4));
+  EXPECT_EQ("a\ncd", HTMLTextAreaElement::SanitizeUserInputValue("a\ncdef", 4));
+  EXPECT_EQ("a\rcd", HTMLTextAreaElement::SanitizeUserInputValue("a\rcdef", 4));
   EXPECT_EQ("a\r\ncd",
-            HTMLTextAreaElement::sanitizeUserInputValue("a\r\ncdef", 4));
+            HTMLTextAreaElement::SanitizeUserInputValue("a\r\ncdef", 4));
 }
 
 }  // namespace blink

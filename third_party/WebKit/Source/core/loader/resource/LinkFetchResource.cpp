@@ -9,14 +9,14 @@
 
 namespace blink {
 
-Resource* LinkFetchResource::fetch(Resource::Type type,
+Resource* LinkFetchResource::Fetch(Resource::Type type,
                                    FetchRequest& request,
                                    ResourceFetcher* fetcher) {
-  DCHECK_EQ(type, LinkPrefetch);
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  request.setRequestContext(fetcher->determineRequestContext(type));
-  return fetcher->requestResource(request, LinkResourceFactory(type));
+  DCHECK_EQ(type, kLinkPrefetch);
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  request.SetRequestContext(fetcher->DetermineRequestContext(type));
+  return fetcher->RequestResource(request, LinkResourceFactory(type));
 }
 
 LinkFetchResource::LinkFetchResource(const ResourceRequest& request,

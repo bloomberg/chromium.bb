@@ -46,52 +46,57 @@ class WebURL;
 
 class WebClipboard {
  public:
-  enum Format { FormatPlainText, FormatHTML, FormatBookmark, FormatSmartPaste };
+  enum Format {
+    kFormatPlainText,
+    kFormatHTML,
+    kFormatBookmark,
+    kFormatSmartPaste
+  };
 
   enum Buffer {
-    BufferStandard,
+    kBufferStandard,
     // Used on platforms like the X Window System that treat selection
     // as a type of clipboard.
-    BufferSelection,
+    kBufferSelection,
   };
 
   // Returns an identifier which can be used to determine whether the data
   // contained within the clipboard has changed.
-  virtual uint64_t sequenceNumber(Buffer) { return 0; }
+  virtual uint64_t SequenceNumber(Buffer) { return 0; }
 
-  virtual bool isFormatAvailable(Format, Buffer) { return false; }
+  virtual bool IsFormatAvailable(Format, Buffer) { return false; }
 
-  virtual WebVector<WebString> readAvailableTypes(Buffer,
-                                                  bool* containsFilenames) {
+  virtual WebVector<WebString> ReadAvailableTypes(Buffer,
+                                                  bool* contains_filenames) {
     return WebVector<WebString>();
   }
-  virtual WebString readPlainText(Buffer) { return WebString(); }
+  virtual WebString ReadPlainText(Buffer) { return WebString(); }
   // fragmentStart and fragmentEnd are indexes into the returned markup that
   // indicate the start and end of the fragment if the returned markup
   // contains additional context. If there is no additional context,
   // fragmentStart will be zero and fragmentEnd will be the same as the length
   // of the returned markup.
-  virtual WebString readHTML(Buffer buffer,
-                             WebURL* pageURL,
-                             unsigned* fragmentStart,
-                             unsigned* fragmentEnd) {
+  virtual WebString ReadHTML(Buffer buffer,
+                             WebURL* page_url,
+                             unsigned* fragment_start,
+                             unsigned* fragment_end) {
     return WebString();
   }
-  virtual WebString readRTF(Buffer) { return WebString(); }
-  virtual WebBlobInfo readImage(Buffer) { return WebBlobInfo(); }
-  virtual WebString readCustomData(Buffer, const WebString& type) {
+  virtual WebString ReadRTF(Buffer) { return WebString(); }
+  virtual WebBlobInfo ReadImage(Buffer) { return WebBlobInfo(); }
+  virtual WebString ReadCustomData(Buffer, const WebString& type) {
     return WebString();
   }
 
-  virtual void writePlainText(const WebString&) {}
-  virtual void writeHTML(const WebString& htmlText,
+  virtual void WritePlainText(const WebString&) {}
+  virtual void WriteHTML(const WebString& html_text,
                          const WebURL&,
-                         const WebString& plainText,
-                         bool writeSmartPaste) {}
-  virtual void writeImage(const WebImage&,
+                         const WebString& plain_text,
+                         bool write_smart_paste) {}
+  virtual void WriteImage(const WebImage&,
                           const WebURL&,
                           const WebString& title) {}
-  virtual void writeDataObject(const WebDragData&) {}
+  virtual void WriteDataObject(const WebDragData&) {}
 
  protected:
   ~WebClipboard() {}

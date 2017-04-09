@@ -17,20 +17,20 @@ class ChildFrameDisconnector {
   STACK_ALLOCATED();
 
  public:
-  enum DisconnectPolicy { RootAndDescendants, DescendantsOnly };
+  enum DisconnectPolicy { kRootAndDescendants, kDescendantsOnly };
 
-  explicit ChildFrameDisconnector(Node& root) : m_root(root) {}
+  explicit ChildFrameDisconnector(Node& root) : root_(root) {}
 
-  void disconnect(DisconnectPolicy = RootAndDescendants);
+  void Disconnect(DisconnectPolicy = kRootAndDescendants);
 
  private:
-  void collectFrameOwners(Node&);
-  void collectFrameOwners(ElementShadow&);
-  void disconnectCollectedFrameOwners();
-  Node& root() const { return *m_root; }
+  void CollectFrameOwners(Node&);
+  void CollectFrameOwners(ElementShadow&);
+  void DisconnectCollectedFrameOwners();
+  Node& Root() const { return *root_; }
 
-  HeapVector<Member<HTMLFrameOwnerElement>, 10> m_frameOwners;
-  Member<Node> m_root;
+  HeapVector<Member<HTMLFrameOwnerElement>, 10> frame_owners_;
+  Member<Node> root_;
 };
 
 }  // namespace blink

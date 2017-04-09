@@ -38,38 +38,39 @@ class CORE_EXPORT OriginTrialContext final
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
  public:
-  enum CreateMode { CreateIfNotExists, DontCreateIfNotExists };
+  enum CreateMode { kCreateIfNotExists, kDontCreateIfNotExists };
 
   OriginTrialContext(ExecutionContext&, WebTrialTokenValidator*);
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
   // Returns the OriginTrialContext for a specific ExecutionContext. If
   // |create| is false, this returns null if no OriginTrialContext exists
   // yet for the ExecutionContext.
-  static OriginTrialContext* from(ExecutionContext*,
-                                  CreateMode = CreateIfNotExists);
+  static OriginTrialContext* From(ExecutionContext*,
+                                  CreateMode = kCreateIfNotExists);
 
   // Parses an Origin-Trial header as specified in
   // https://jpchase.github.io/OriginTrials/#header into individual tokens.
   // Returns null if the header value was malformed and could not be parsed.
   // If the header does not contain any tokens, this returns an empty vector.
-  static std::unique_ptr<Vector<String>> parseHeaderValue(
-      const String& headerValue);
+  static std::unique_ptr<Vector<String>> ParseHeaderValue(
+      const String& header_value);
 
-  static void addTokensFromHeader(ExecutionContext*, const String& headerValue);
-  static void addTokens(ExecutionContext*, const Vector<String>* tokens);
+  static void AddTokensFromHeader(ExecutionContext*,
+                                  const String& header_value);
+  static void AddTokens(ExecutionContext*, const Vector<String>* tokens);
 
   // Returns the trial tokens that are active in a specific ExecutionContext.
   // Returns null if no tokens were added to the ExecutionContext.
-  static std::unique_ptr<Vector<String>> getTokens(ExecutionContext*);
+  static std::unique_ptr<Vector<String>> GetTokens(ExecutionContext*);
 
-  void addToken(const String& token);
-  void addTokens(const Vector<String>& tokens);
+  void AddToken(const String& token);
+  void AddTokens(const Vector<String>& tokens);
 
   // Returns true if the trial (and therefore the feature or features it
   // controls) should be considered enabled for the current execution context.
-  bool isTrialEnabled(const String& trialName);
+  bool IsTrialEnabled(const String& trial_name);
 
   // Installs JavaScript bindings on the relevant objects for any features which
   // should be enabled by the current set of trial tokens. This method is called
@@ -80,7 +81,7 @@ class CORE_EXPORT OriginTrialContext final
   // initialized, this method returns without doing anything. That is, it is
   // safe to call this method multiple times, even if no trials are newly
   // enabled.
-  void initializePendingFeatures();
+  void InitializePendingFeatures();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -88,12 +89,12 @@ class CORE_EXPORT OriginTrialContext final
   // Validate the trial token. If valid, the trial named in the token is
   // added to the list of enabled trials. Returns true or false to indicate if
   // the token is valid.
-  bool enableTrialFromToken(const String& token);
+  bool EnableTrialFromToken(const String& token);
 
-  Vector<String> m_tokens;
-  HashSet<String> m_enabledTrials;
-  HashSet<String> m_installedTrials;
-  WebTrialTokenValidator* m_trialTokenValidator;
+  Vector<String> tokens_;
+  HashSet<String> enabled_trials_;
+  HashSet<String> installed_trials_;
+  WebTrialTokenValidator* trial_token_validator_;
 };
 
 }  // namespace blink

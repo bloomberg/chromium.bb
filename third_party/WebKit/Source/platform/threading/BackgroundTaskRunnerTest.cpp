@@ -16,20 +16,20 @@ namespace blink {
 
 namespace {
 
-void PingPongTask(WaitableEvent* doneEvent) {
-  doneEvent->signal();
+void PingPongTask(WaitableEvent* done_event) {
+  done_event->Signal();
 }
 
 }  // namespace
 
 TEST(BackgroundTaskRunnerTest, RunOnBackgroundThread) {
-  base::test::ScopedAsyncTaskScheduler scopedAsyncTaskScheduler;
-  std::unique_ptr<WaitableEvent> doneEvent = WTF::makeUnique<WaitableEvent>();
-  BackgroundTaskRunner::postOnBackgroundThread(
+  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler;
+  std::unique_ptr<WaitableEvent> done_event = WTF::MakeUnique<WaitableEvent>();
+  BackgroundTaskRunner::PostOnBackgroundThread(
       BLINK_FROM_HERE,
-      crossThreadBind(&PingPongTask, crossThreadUnretained(doneEvent.get())));
+      CrossThreadBind(&PingPongTask, CrossThreadUnretained(done_event.get())));
   // Test passes by not hanging on the following wait().
-  doneEvent->wait();
+  done_event->Wait();
 }
 
 }  // namespace blink

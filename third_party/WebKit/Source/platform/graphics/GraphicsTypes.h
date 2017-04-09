@@ -37,153 +37,157 @@
 namespace blink {
 
 enum StrokeStyle {
-  NoStroke,
-  SolidStroke,
-  DottedStroke,
-  DashedStroke,
-  DoubleStroke,
-  WavyStroke,
+  kNoStroke,
+  kSolidStroke,
+  kDottedStroke,
+  kDashedStroke,
+  kDoubleStroke,
+  kWavyStroke,
 };
 
 enum InterpolationQuality {
-  InterpolationNone = kNone_SkFilterQuality,
-  InterpolationLow = kLow_SkFilterQuality,
-  InterpolationMedium = kMedium_SkFilterQuality,
-  InterpolationHigh = kHigh_SkFilterQuality,
+  kInterpolationNone = kNone_SkFilterQuality,
+  kInterpolationLow = kLow_SkFilterQuality,
+  kInterpolationMedium = kMedium_SkFilterQuality,
+  kInterpolationHigh = kHigh_SkFilterQuality,
 #if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
-  InterpolationDefault = InterpolationLow,
+  kInterpolationDefault = kInterpolationLow,
 #else
-  InterpolationDefault = InterpolationHigh,
+  kInterpolationDefault = kInterpolationHigh,
 #endif
 };
 
 enum CompositeOperator {
-  CompositeClear,
-  CompositeCopy,
-  CompositeSourceOver,
-  CompositeSourceIn,
-  CompositeSourceOut,
-  CompositeSourceAtop,
-  CompositeDestinationOver,
-  CompositeDestinationIn,
-  CompositeDestinationOut,
-  CompositeDestinationAtop,
-  CompositeXOR,
-  CompositePlusLighter
+  kCompositeClear,
+  kCompositeCopy,
+  kCompositeSourceOver,
+  kCompositeSourceIn,
+  kCompositeSourceOut,
+  kCompositeSourceAtop,
+  kCompositeDestinationOver,
+  kCompositeDestinationIn,
+  kCompositeDestinationOut,
+  kCompositeDestinationAtop,
+  kCompositeXOR,
+  kCompositePlusLighter
 };
 
 enum OpacityMode {
-  NonOpaque,
-  Opaque,
+  kNonOpaque,
+  kOpaque,
 };
 
 enum AccelerationHint {
-  PreferAcceleration,
+  kPreferAcceleration,
   // The PreferAccelerationAfterVisibilityChange hint suggests we should switch
   // back to acceleration in the context of the canvas becoming visible again.
-  PreferAccelerationAfterVisibilityChange,
-  PreferNoAcceleration,
+  kPreferAccelerationAfterVisibilityChange,
+  kPreferNoAcceleration,
 };
 
 enum SnapshotReason {
-  SnapshotReasonUnknown,
-  SnapshotReasonGetImageData,
-  SnapshotReasonWebGLTexImage2D,
-  SnapshotReasonWebGLTexSubImage2D,
-  SnapshotReasonWebGLTexImage3D,
-  SnapshotReasonWebGLTexSubImage3D,
-  SnapshotReasonPaint,
-  SnapshotReasonToDataURL,
-  SnapshotReasonToBlob,
-  SnapshotReasonCanvasListenerCapture,
-  SnapshotReasonDrawImage,
-  SnapshotReasonCreatePattern,
-  SnapshotReasonTransferToImageBitmap,
-  SnapshotReasonUnitTests,
-  SnapshotReasonGetCopiedImage,
-  SnapshotReasonWebGLDrawImageIntoBuffer,
-  SnapshotReasonCopyToClipboard,
-  SnapshotReasonCreateImageBitmap,
+  kSnapshotReasonUnknown,
+  kSnapshotReasonGetImageData,
+  kSnapshotReasonWebGLTexImage2D,
+  kSnapshotReasonWebGLTexSubImage2D,
+  kSnapshotReasonWebGLTexImage3D,
+  kSnapshotReasonWebGLTexSubImage3D,
+  kSnapshotReasonPaint,
+  kSnapshotReasonToDataURL,
+  kSnapshotReasonToBlob,
+  kSnapshotReasonCanvasListenerCapture,
+  kSnapshotReasonDrawImage,
+  kSnapshotReasonCreatePattern,
+  kSnapshotReasonTransferToImageBitmap,
+  kSnapshotReasonUnitTests,
+  kSnapshotReasonGetCopiedImage,
+  kSnapshotReasonWebGLDrawImageIntoBuffer,
+  kSnapshotReasonCopyToClipboard,
+  kSnapshotReasonCreateImageBitmap,
 };
 
 // Note: enum used directly for histogram, values must not change
 enum DisableDeferralReason {
-  DisableDeferralReasonUnknown =
+  kDisableDeferralReasonUnknown =
       0,  // Should not appear in production histograms
-  DisableDeferralReasonExpensiveOverdrawHeuristic = 1,
-  DisableDeferralReasonUsingTextureBackedPattern = 2,
-  DisableDeferralReasonDrawImageOfVideo = 3,
-  DisableDeferralReasonDrawImageOfAnimated2dCanvas = 4,
-  DisableDeferralReasonSubPixelTextAntiAliasingSupport = 5,
-  DisableDeferralDrawImageWithTextureBackedSourceImage = 6,
-  DisableDeferralReasonCount,
+  kDisableDeferralReasonExpensiveOverdrawHeuristic = 1,
+  kDisableDeferralReasonUsingTextureBackedPattern = 2,
+  kDisableDeferralReasonDrawImageOfVideo = 3,
+  kDisableDeferralReasonDrawImageOfAnimated2dCanvas = 4,
+  kDisableDeferralReasonSubPixelTextAntiAliasingSupport = 5,
+  kDisableDeferralDrawImageWithTextureBackedSourceImage = 6,
+  kDisableDeferralReasonCount,
 };
 
 enum FlushReason {
-  FlushReasonUnknown,
-  FlushReasonInitialClear,
-  FlushReasonDrawImageOfWebGL,
+  kFlushReasonUnknown,
+  kFlushReasonInitialClear,
+  kFlushReasonDrawImageOfWebGL,
 };
 
 enum ImageInitializationMode {
-  InitializeImagePixels,
-  DoNotInitializeImagePixels,
+  kInitializeImagePixels,
+  kDoNotInitializeImagePixels,
 };
 
 // TODO(junov): crbug.com/453113 Relocate ShadowMode to
 // CanvasRenderingContext2DState.h once GraphicsContext no longer uses it.
-enum ShadowMode { DrawShadowAndForeground, DrawShadowOnly, DrawForegroundOnly };
+enum ShadowMode {
+  kDrawShadowAndForeground,
+  kDrawShadowOnly,
+  kDrawForegroundOnly
+};
 
-enum AntiAliasingMode { NotAntiAliased, AntiAliased };
+enum AntiAliasingMode { kNotAntiAliased, kAntiAliased };
 
 enum GradientSpreadMethod {
-  SpreadMethodPad,
-  SpreadMethodReflect,
-  SpreadMethodRepeat
+  kSpreadMethodPad,
+  kSpreadMethodReflect,
+  kSpreadMethodRepeat
 };
 
 enum LineCap {
-  ButtCap = SkPaint::kButt_Cap,
-  RoundCap = SkPaint::kRound_Cap,
-  SquareCap = SkPaint::kSquare_Cap
+  kButtCap = SkPaint::kButt_Cap,
+  kRoundCap = SkPaint::kRound_Cap,
+  kSquareCap = SkPaint::kSquare_Cap
 };
 
 enum LineJoin {
-  MiterJoin = SkPaint::kMiter_Join,
-  RoundJoin = SkPaint::kRound_Join,
-  BevelJoin = SkPaint::kBevel_Join
+  kMiterJoin = SkPaint::kMiter_Join,
+  kRoundJoin = SkPaint::kRound_Join,
+  kBevelJoin = SkPaint::kBevel_Join
 };
 
-enum HorizontalAlignment { AlignLeft, AlignRight, AlignHCenter };
+enum HorizontalAlignment { kAlignLeft, kAlignRight, kAlignHCenter };
 
 enum TextBaseline {
-  AlphabeticTextBaseline,
-  TopTextBaseline,
-  MiddleTextBaseline,
-  BottomTextBaseline,
-  IdeographicTextBaseline,
-  HangingTextBaseline
+  kAlphabeticTextBaseline,
+  kTopTextBaseline,
+  kMiddleTextBaseline,
+  kBottomTextBaseline,
+  kIdeographicTextBaseline,
+  kHangingTextBaseline
 };
 
 enum TextAlign {
-  StartTextAlign,
-  EndTextAlign,
-  LeftTextAlign,
-  CenterTextAlign,
-  RightTextAlign
+  kStartTextAlign,
+  kEndTextAlign,
+  kLeftTextAlign,
+  kCenterTextAlign,
+  kRightTextAlign
 };
 
 enum TextDrawingMode {
-  TextModeFill = 1 << 0,
-  TextModeStroke = 1 << 1,
+  kTextModeFill = 1 << 0,
+  kTextModeStroke = 1 << 1,
 };
 typedef unsigned TextDrawingModeFlags;
 
 enum ColorFilter {
-  ColorFilterNone,
-  ColorFilterLuminanceToAlpha,
-  ColorFilterSRGBToLinearRGB,
-  ColorFilterLinearRGBToSRGB
+  kColorFilterNone,
+  kColorFilterLuminanceToAlpha,
+  kColorFilterSRGBToLinearRGB,
+  kColorFilterLinearRGBToSRGB
 };
 
 enum WindRule {
@@ -191,22 +195,22 @@ enum WindRule {
   RULE_EVENODD = SkPath::kEvenOdd_FillType
 };
 
-PLATFORM_EXPORT String compositeOperatorName(CompositeOperator, WebBlendMode);
-PLATFORM_EXPORT bool parseCompositeAndBlendOperator(const String&,
+PLATFORM_EXPORT String CompositeOperatorName(CompositeOperator, WebBlendMode);
+PLATFORM_EXPORT bool ParseCompositeAndBlendOperator(const String&,
                                                     CompositeOperator&,
                                                     WebBlendMode&);
 
-PLATFORM_EXPORT String lineCapName(LineCap);
-PLATFORM_EXPORT bool parseLineCap(const String&, LineCap&);
+PLATFORM_EXPORT String LineCapName(LineCap);
+PLATFORM_EXPORT bool ParseLineCap(const String&, LineCap&);
 
-PLATFORM_EXPORT String lineJoinName(LineJoin);
-PLATFORM_EXPORT bool parseLineJoin(const String&, LineJoin&);
+PLATFORM_EXPORT String LineJoinName(LineJoin);
+PLATFORM_EXPORT bool ParseLineJoin(const String&, LineJoin&);
 
-PLATFORM_EXPORT String textAlignName(TextAlign);
-PLATFORM_EXPORT bool parseTextAlign(const String&, TextAlign&);
+PLATFORM_EXPORT String TextAlignName(TextAlign);
+PLATFORM_EXPORT bool ParseTextAlign(const String&, TextAlign&);
 
-PLATFORM_EXPORT String textBaselineName(TextBaseline);
-PLATFORM_EXPORT bool parseTextBaseline(const String&, TextBaseline&);
+PLATFORM_EXPORT String TextBaselineName(TextBaseline);
+PLATFORM_EXPORT bool ParseTextBaseline(const String&, TextBaseline&);
 
 }  // namespace blink
 

@@ -47,39 +47,39 @@ class PLATFORM_EXPORT Reverb {
   WTF_MAKE_NONCOPYABLE(Reverb);
 
  public:
-  enum { MaxFrameSize = 256 };
+  enum { kMaxFrameSize = 256 };
 
   // renderSliceSize is a rendering hint, so the FFTs can be optimized to not
   // all occur at the same time (very bad when rendering on a real-time thread).
-  Reverb(AudioBus* impulseResponseBuffer,
-         size_t renderSliceSize,
-         size_t maxFFTSize,
-         bool useBackgroundThreads,
+  Reverb(AudioBus* impulse_response_buffer,
+         size_t render_slice_size,
+         size_t max_fft_size,
+         bool use_background_threads,
          bool normalize);
 
-  void process(const AudioBus* sourceBus,
-               AudioBus* destinationBus,
-               size_t framesToProcess);
-  void reset();
+  void Process(const AudioBus* source_bus,
+               AudioBus* destination_bus,
+               size_t frames_to_process);
+  void Reset();
 
-  size_t impulseResponseLength() const { return m_impulseResponseLength; }
-  size_t latencyFrames() const;
+  size_t ImpulseResponseLength() const { return impulse_response_length_; }
+  size_t LatencyFrames() const;
 
  private:
-  void initialize(AudioBus* impulseResponseBuffer,
-                  size_t renderSliceSize,
-                  size_t maxFFTSize,
-                  bool useBackgroundThreads);
+  void Initialize(AudioBus* impulse_response_buffer,
+                  size_t render_slice_size,
+                  size_t max_fft_size,
+                  bool use_background_threads);
 
-  size_t m_impulseResponseLength;
+  size_t impulse_response_length_;
   // The actual number of channels in the response.  This can be less
   // than the number of ReverbConvolver's in |m_convolvers|.
-  unsigned m_numberOfResponseChannels;
+  unsigned number_of_response_channels_;
 
-  Vector<std::unique_ptr<ReverbConvolver>> m_convolvers;
+  Vector<std::unique_ptr<ReverbConvolver>> convolvers_;
 
   // For "True" stereo processing
-  RefPtr<AudioBus> m_tempBuffer;
+  RefPtr<AudioBus> temp_buffer_;
 };
 
 }  // namespace blink

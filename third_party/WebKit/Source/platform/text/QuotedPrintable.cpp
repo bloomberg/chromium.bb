@@ -34,19 +34,19 @@
 
 namespace blink {
 
-static const size_t maximumLineLength = 76;
+static const size_t kMaximumLineLength = 76;
 
-static const char crlfLineEnding[] = "\r\n";
+static const char kCrlfLineEnding[] = "\r\n";
 
-static size_t lengthOfLineEndingAtIndex(const char* input,
-                                        size_t inputLength,
+static size_t LengthOfLineEndingAtIndex(const char* input,
+                                        size_t input_length,
                                         size_t index) {
-  SECURITY_DCHECK(index < inputLength);
+  SECURITY_DCHECK(index < input_length);
   if (input[index] == '\n')
     return 1;  // Single LF.
 
   if (input[index] == '\r') {
-    if ((index + 1) == inputLength || input[index + 1] != '\n')
+    if ((index + 1) == input_length || input[index + 1] != '\n')
       return 1;  // Single CR (Classic Mac OS).
     return 2;    // CR-LF.
   }
@@ -54,111 +54,113 @@ static size_t lengthOfLineEndingAtIndex(const char* input,
   return 0;
 }
 
-void quotedPrintableEncode(const Vector<char>& in, Vector<char>& out) {
-  quotedPrintableEncode(in.data(), in.size(), out);
+void QuotedPrintableEncode(const Vector<char>& in, Vector<char>& out) {
+  QuotedPrintableEncode(in.Data(), in.size(), out);
 }
 
-void quotedPrintableEncode(const char* input,
-                           size_t inputLength,
+void QuotedPrintableEncode(const char* input,
+                           size_t input_length,
                            Vector<char>& out) {
-  out.clear();
-  out.reserveCapacity(inputLength);
-  size_t currentLineLength = 0;
-  for (size_t i = 0; i < inputLength; ++i) {
-    bool isLastCharacter = (i == inputLength - 1);
-    char currentCharacter = input[i];
-    bool requiresEncoding = false;
+  out.Clear();
+  out.ReserveCapacity(input_length);
+  size_t current_line_length = 0;
+  for (size_t i = 0; i < input_length; ++i) {
+    bool is_last_character = (i == input_length - 1);
+    char current_character = input[i];
+    bool requires_encoding = false;
     // All non-printable ASCII characters and = require encoding.
-    if ((currentCharacter < ' ' || currentCharacter > '~' ||
-         currentCharacter == '=') &&
-        currentCharacter != '\t')
-      requiresEncoding = true;
+    if ((current_character < ' ' || current_character > '~' ||
+         current_character == '=') &&
+        current_character != '\t')
+      requires_encoding = true;
 
     // Space and tab characters have to be encoded if they appear at the end of
     // a line.
-    if (!requiresEncoding &&
-        (currentCharacter == '\t' || currentCharacter == ' ') &&
-        (isLastCharacter ||
-         lengthOfLineEndingAtIndex(input, inputLength, i + 1)))
-      requiresEncoding = true;
+    if (!requires_encoding &&
+        (current_character == '\t' || current_character == ' ') &&
+        (is_last_character ||
+         LengthOfLineEndingAtIndex(input, input_length, i + 1)))
+      requires_encoding = true;
 
     // End of line should be converted to CR-LF sequences.
-    if (!isLastCharacter) {
-      size_t lengthOfLineEnding =
-          lengthOfLineEndingAtIndex(input, inputLength, i);
-      if (lengthOfLineEnding) {
-        out.append(crlfLineEnding, strlen(crlfLineEnding));
-        currentLineLength = 0;
-        i += (lengthOfLineEnding -
+    if (!is_last_character) {
+      size_t length_of_line_ending =
+          LengthOfLineEndingAtIndex(input, input_length, i);
+      if (length_of_line_ending) {
+        out.Append(kCrlfLineEnding, strlen(kCrlfLineEnding));
+        current_line_length = 0;
+        i += (length_of_line_ending -
               1);  // -1 because we'll ++ in the for() above.
         continue;
       }
     }
 
-    size_t lengthOfEncodedCharacter = 1;
-    if (requiresEncoding)
-      lengthOfEncodedCharacter += 2;
-    if (!isLastCharacter)
-      lengthOfEncodedCharacter += 1;  // + 1 for the = (soft line break).
+    size_t length_of_encoded_character = 1;
+    if (requires_encoding)
+      length_of_encoded_character += 2;
+    if (!is_last_character)
+      length_of_encoded_character += 1;  // + 1 for the = (soft line break).
 
     // Insert a soft line break if necessary.
-    if (currentLineLength + lengthOfEncodedCharacter > maximumLineLength) {
+    if (current_line_length + length_of_encoded_character >
+        kMaximumLineLength) {
       out.push_back('=');
-      out.append(crlfLineEnding, strlen(crlfLineEnding));
-      currentLineLength = 0;
+      out.Append(kCrlfLineEnding, strlen(kCrlfLineEnding));
+      current_line_length = 0;
     }
 
     // Finally, insert the actual character(s).
-    if (requiresEncoding) {
+    if (requires_encoding) {
       out.push_back('=');
-      out.push_back(upperNibbleToASCIIHexDigit(currentCharacter));
-      out.push_back(lowerNibbleToASCIIHexDigit(currentCharacter));
-      currentLineLength += 3;
+      out.push_back(UpperNibbleToASCIIHexDigit(current_character));
+      out.push_back(LowerNibbleToASCIIHexDigit(current_character));
+      current_line_length += 3;
     } else {
-      out.push_back(currentCharacter);
-      currentLineLength++;
+      out.push_back(current_character);
+      current_line_length++;
     }
   }
 }
 
-void quotedPrintableDecode(const Vector<char>& in, Vector<char>& out) {
-  quotedPrintableDecode(in.data(), in.size(), out);
+void QuotedPrintableDecode(const Vector<char>& in, Vector<char>& out) {
+  QuotedPrintableDecode(in.Data(), in.size(), out);
 }
 
-void quotedPrintableDecode(const char* data,
-                           size_t dataLength,
+void QuotedPrintableDecode(const char* data,
+                           size_t data_length,
                            Vector<char>& out) {
-  out.clear();
-  if (!dataLength)
+  out.Clear();
+  if (!data_length)
     return;
 
-  for (size_t i = 0; i < dataLength; ++i) {
-    char currentCharacter = data[i];
-    if (currentCharacter != '=') {
-      out.push_back(currentCharacter);
+  for (size_t i = 0; i < data_length; ++i) {
+    char current_character = data[i];
+    if (current_character != '=') {
+      out.push_back(current_character);
       continue;
     }
     // We are dealing with a '=xx' sequence.
-    if (dataLength - i < 3) {
+    if (data_length - i < 3) {
       // Unfinished = sequence, append as is.
-      out.push_back(currentCharacter);
+      out.push_back(current_character);
       continue;
     }
-    char upperCharacter = data[++i];
-    char lowerCharacter = data[++i];
-    if (upperCharacter == '\r' && lowerCharacter == '\n')
+    char upper_character = data[++i];
+    char lower_character = data[++i];
+    if (upper_character == '\r' && lower_character == '\n')
       continue;
 
-    if (!isASCIIHexDigit(upperCharacter) || !isASCIIHexDigit(lowerCharacter)) {
+    if (!IsASCIIHexDigit(upper_character) ||
+        !IsASCIIHexDigit(lower_character)) {
       // Invalid sequence, = followed by non hex digits, just insert the
       // characters as is.
       out.push_back('=');
-      out.push_back(upperCharacter);
-      out.push_back(lowerCharacter);
+      out.push_back(upper_character);
+      out.push_back(lower_character);
       continue;
     }
     out.push_back(
-        static_cast<char>(toASCIIHexValue(upperCharacter, lowerCharacter)));
+        static_cast<char>(ToASCIIHexValue(upper_character, lower_character)));
   }
 }
 

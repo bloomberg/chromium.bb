@@ -16,8 +16,8 @@ class StorageClient {
  public:
   virtual ~StorageClient() {}
 
-  virtual std::unique_ptr<StorageNamespace> createSessionStorageNamespace() = 0;
-  virtual bool canAccessStorage(LocalFrame*, StorageType) const = 0;
+  virtual std::unique_ptr<StorageNamespace> CreateSessionStorageNamespace() = 0;
+  virtual bool CanAccessStorage(LocalFrame*, StorageType) const = 0;
 };
 
 }  // namespace blink

@@ -18,25 +18,25 @@ struct PairwiseInterpolationValue {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
   PairwiseInterpolationValue(
-      std::unique_ptr<InterpolableValue> startInterpolableValue,
-      std::unique_ptr<InterpolableValue> endInterpolableValue,
-      PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-      : startInterpolableValue(std::move(startInterpolableValue)),
-        endInterpolableValue(std::move(endInterpolableValue)),
-        nonInterpolableValue(std::move(nonInterpolableValue)) {}
+      std::unique_ptr<InterpolableValue> start_interpolable_value,
+      std::unique_ptr<InterpolableValue> end_interpolable_value,
+      PassRefPtr<NonInterpolableValue> non_interpolable_value = nullptr)
+      : start_interpolable_value(std::move(start_interpolable_value)),
+        end_interpolable_value(std::move(end_interpolable_value)),
+        non_interpolable_value(std::move(non_interpolable_value)) {}
 
   PairwiseInterpolationValue(std::nullptr_t) {}
 
   PairwiseInterpolationValue(PairwiseInterpolationValue&& other)
-      : startInterpolableValue(std::move(other.startInterpolableValue)),
-        endInterpolableValue(std::move(other.endInterpolableValue)),
-        nonInterpolableValue(std::move(other.nonInterpolableValue)) {}
+      : start_interpolable_value(std::move(other.start_interpolable_value)),
+        end_interpolable_value(std::move(other.end_interpolable_value)),
+        non_interpolable_value(std::move(other.non_interpolable_value)) {}
 
-  operator bool() const { return startInterpolableValue.get(); }
+  operator bool() const { return start_interpolable_value.get(); }
 
-  std::unique_ptr<InterpolableValue> startInterpolableValue;
-  std::unique_ptr<InterpolableValue> endInterpolableValue;
-  RefPtr<NonInterpolableValue> nonInterpolableValue;
+  std::unique_ptr<InterpolableValue> start_interpolable_value;
+  std::unique_ptr<InterpolableValue> end_interpolable_value;
+  RefPtr<NonInterpolableValue> non_interpolable_value;
 };
 
 }  // namespace blink

@@ -19,22 +19,22 @@ class SVGRootPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGRootPainter(const LayoutSVGRoot& layoutSVGRoot)
-      : m_layoutSVGRoot(layoutSVGRoot) {}
+  SVGRootPainter(const LayoutSVGRoot& layout_svg_root)
+      : layout_svg_root_(layout_svg_root) {}
 
-  void paintReplaced(const PaintInfo&, const LayoutPoint&);
+  void PaintReplaced(const PaintInfo&, const LayoutPoint&);
 
   // The embedded SVG document uses an unsnapped viewport box for layout, while
   // SVG root's border box ultimately gets snapped during paint. This
   // translate/scale transform is applied to compensate the difference, in
   // addition to applying the local to border box transform.
-  AffineTransform transformToPixelSnappedBorderBox(
-      const LayoutPoint& paintOffset) const;
+  AffineTransform TransformToPixelSnappedBorderBox(
+      const LayoutPoint& paint_offset) const;
 
  private:
-  IntRect pixelSnappedSize(const LayoutPoint& paintOffset) const;
+  IntRect PixelSnappedSize(const LayoutPoint& paint_offset) const;
 
-  const LayoutSVGRoot& m_layoutSVGRoot;
+  const LayoutSVGRoot& layout_svg_root_;
 };
 
 }  // namespace blink

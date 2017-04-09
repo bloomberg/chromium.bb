@@ -22,19 +22,19 @@ class CORE_EXPORT InterpolableValue {
  public:
   virtual ~InterpolableValue() {}
 
-  virtual bool isNumber() const { return false; }
-  virtual bool isBool() const { return false; }
-  virtual bool isList() const { return false; }
-  virtual bool isAnimatableValue() const { return false; }
+  virtual bool IsNumber() const { return false; }
+  virtual bool IsBool() const { return false; }
+  virtual bool IsList() const { return false; }
+  virtual bool IsAnimatableValue() const { return false; }
 
-  virtual bool equals(const InterpolableValue&) const = 0;
-  virtual std::unique_ptr<InterpolableValue> clone() const = 0;
-  virtual std::unique_ptr<InterpolableValue> cloneAndZero() const = 0;
-  virtual void scale(double scale) = 0;
-  virtual void scaleAndAdd(double scale, const InterpolableValue& other) = 0;
+  virtual bool Equals(const InterpolableValue&) const = 0;
+  virtual std::unique_ptr<InterpolableValue> Clone() const = 0;
+  virtual std::unique_ptr<InterpolableValue> CloneAndZero() const = 0;
+  virtual void Scale(double scale) = 0;
+  virtual void ScaleAndAdd(double scale, const InterpolableValue& other) = 0;
 
  private:
-  virtual void interpolate(const InterpolableValue& to,
+  virtual void Interpolate(const InterpolableValue& to,
                            const double progress,
                            InterpolableValue& result) const = 0;
 
@@ -53,30 +53,30 @@ class CORE_EXPORT InterpolableValue {
 
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
  public:
-  static std::unique_ptr<InterpolableNumber> create(double value) {
-    return WTF::wrapUnique(new InterpolableNumber(value));
+  static std::unique_ptr<InterpolableNumber> Create(double value) {
+    return WTF::WrapUnique(new InterpolableNumber(value));
   }
 
-  bool isNumber() const final { return true; }
-  double value() const { return m_value; }
-  bool equals(const InterpolableValue& other) const final;
-  std::unique_ptr<InterpolableValue> clone() const final {
-    return create(m_value);
+  bool IsNumber() const final { return true; }
+  double Value() const { return value_; }
+  bool Equals(const InterpolableValue& other) const final;
+  std::unique_ptr<InterpolableValue> Clone() const final {
+    return Create(value_);
   }
-  std::unique_ptr<InterpolableValue> cloneAndZero() const final {
-    return create(0);
+  std::unique_ptr<InterpolableValue> CloneAndZero() const final {
+    return Create(0);
   }
-  void scale(double scale) final;
-  void scaleAndAdd(double scale, const InterpolableValue& other) final;
-  void set(double value) { m_value = value; }
+  void Scale(double scale) final;
+  void ScaleAndAdd(double scale, const InterpolableValue& other) final;
+  void Set(double value) { value_ = value; }
 
  private:
-  void interpolate(const InterpolableValue& to,
+  void Interpolate(const InterpolableValue& to,
                    const double progress,
                    InterpolableValue& result) const final;
-  double m_value;
+  double value_;
 
-  explicit InterpolableNumber(double value) : m_value(value) {}
+  explicit InterpolableNumber(double value) : value_(value) {}
 };
 
 class CORE_EXPORT InterpolableList : public InterpolableValue {
@@ -89,99 +89,99 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   // has its own copy constructor. So just delete operator= here.
   InterpolableList& operator=(const InterpolableList&) = delete;
 
-  static std::unique_ptr<InterpolableList> create(
+  static std::unique_ptr<InterpolableList> Create(
       const InterpolableList& other) {
-    return WTF::wrapUnique(new InterpolableList(other));
+    return WTF::WrapUnique(new InterpolableList(other));
   }
 
-  static std::unique_ptr<InterpolableList> create(size_t size) {
-    return WTF::wrapUnique(new InterpolableList(size));
+  static std::unique_ptr<InterpolableList> Create(size_t size) {
+    return WTF::WrapUnique(new InterpolableList(size));
   }
 
-  bool isList() const final { return true; }
-  void set(size_t position, std::unique_ptr<InterpolableValue> value) {
-    m_values[position] = std::move(value);
+  bool IsList() const final { return true; }
+  void Set(size_t position, std::unique_ptr<InterpolableValue> value) {
+    values_[position] = std::move(value);
   }
-  const InterpolableValue* get(size_t position) const {
-    return m_values[position].get();
+  const InterpolableValue* Get(size_t position) const {
+    return values_[position].get();
   }
-  std::unique_ptr<InterpolableValue>& getMutable(size_t position) {
-    return m_values[position];
+  std::unique_ptr<InterpolableValue>& GetMutable(size_t position) {
+    return values_[position];
   }
-  size_t length() const { return m_values.size(); }
-  bool equals(const InterpolableValue& other) const final;
-  std::unique_ptr<InterpolableValue> clone() const final {
-    return create(*this);
+  size_t length() const { return values_.size(); }
+  bool Equals(const InterpolableValue& other) const final;
+  std::unique_ptr<InterpolableValue> Clone() const final {
+    return Create(*this);
   }
-  std::unique_ptr<InterpolableValue> cloneAndZero() const final;
-  void scale(double scale) final;
-  void scaleAndAdd(double scale, const InterpolableValue& other) final;
+  std::unique_ptr<InterpolableValue> CloneAndZero() const final;
+  void Scale(double scale) final;
+  void ScaleAndAdd(double scale, const InterpolableValue& other) final;
 
  private:
-  void interpolate(const InterpolableValue& to,
+  void Interpolate(const InterpolableValue& to,
                    const double progress,
                    InterpolableValue& result) const final;
-  explicit InterpolableList(size_t size) : m_values(size) {}
+  explicit InterpolableList(size_t size) : values_(size) {}
 
-  InterpolableList(const InterpolableList& other) : m_values(other.length()) {
+  InterpolableList(const InterpolableList& other) : values_(other.length()) {
     for (size_t i = 0; i < length(); i++)
-      set(i, other.m_values[i]->clone());
+      Set(i, other.values_[i]->Clone());
   }
 
-  Vector<std::unique_ptr<InterpolableValue>> m_values;
+  Vector<std::unique_ptr<InterpolableValue>> values_;
 };
 
 // FIXME: Remove this when we can.
 class InterpolableAnimatableValue : public InterpolableValue {
  public:
-  static std::unique_ptr<InterpolableAnimatableValue> create(
+  static std::unique_ptr<InterpolableAnimatableValue> Create(
       PassRefPtr<AnimatableValue> value) {
-    return WTF::wrapUnique(new InterpolableAnimatableValue(std::move(value)));
+    return WTF::WrapUnique(new InterpolableAnimatableValue(std::move(value)));
   }
 
-  bool isAnimatableValue() const final { return true; }
-  AnimatableValue* value() const { return m_value.get(); }
-  bool equals(const InterpolableValue&) const final {
+  bool IsAnimatableValue() const final { return true; }
+  AnimatableValue* Value() const { return value_.Get(); }
+  bool Equals(const InterpolableValue&) const final {
     NOTREACHED();
     return false;
   }
-  std::unique_ptr<InterpolableValue> clone() const final {
-    return create(m_value);
+  std::unique_ptr<InterpolableValue> Clone() const final {
+    return Create(value_);
   }
-  std::unique_ptr<InterpolableValue> cloneAndZero() const final {
+  std::unique_ptr<InterpolableValue> CloneAndZero() const final {
     NOTREACHED();
     return nullptr;
   }
-  void scale(double scale) final { NOTREACHED(); }
-  void scaleAndAdd(double scale, const InterpolableValue& other) final {
+  void Scale(double scale) final { NOTREACHED(); }
+  void ScaleAndAdd(double scale, const InterpolableValue& other) final {
     NOTREACHED();
   }
 
  private:
-  void interpolate(const InterpolableValue& to,
+  void Interpolate(const InterpolableValue& to,
                    const double progress,
                    InterpolableValue& result) const final;
-  RefPtr<AnimatableValue> m_value;
+  RefPtr<AnimatableValue> value_;
 
   InterpolableAnimatableValue(PassRefPtr<AnimatableValue> value)
-      : m_value(std::move(value)) {}
+      : value_(std::move(value)) {}
 };
 
 DEFINE_TYPE_CASTS(InterpolableNumber,
                   InterpolableValue,
                   value,
-                  value->isNumber(),
-                  value.isNumber());
+                  value->IsNumber(),
+                  value.IsNumber());
 DEFINE_TYPE_CASTS(InterpolableList,
                   InterpolableValue,
                   value,
-                  value->isList(),
-                  value.isList());
+                  value->IsList(),
+                  value.IsList());
 DEFINE_TYPE_CASTS(InterpolableAnimatableValue,
                   InterpolableValue,
                   value,
-                  value->isAnimatableValue(),
-                  value.isAnimatableValue());
+                  value->IsAnimatableValue(),
+                  value.IsAnimatableValue());
 
 }  // namespace blink
 

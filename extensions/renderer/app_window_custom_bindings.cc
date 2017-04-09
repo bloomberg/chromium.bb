@@ -53,7 +53,7 @@ void AppWindowCustomBindings::GetFrame(
   }
 
   v8::Local<v8::Value> window =
-      app_frame->GetWebFrame()->mainWorldScriptContext()->Global();
+      app_frame->GetWebFrame()->MainWorldScriptContext()->Global();
   args.GetReturnValue().Set(window);
 }
 

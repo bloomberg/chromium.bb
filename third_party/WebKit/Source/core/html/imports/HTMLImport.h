@@ -98,44 +98,44 @@ class HTMLImportLoader;
 class HTMLImport : public GarbageCollectedFinalized<HTMLImport>,
                    public TreeNode<HTMLImport> {
  public:
-  enum SyncMode { Sync = 0, Async = 1 };
+  enum SyncMode { kSync = 0, kAsync = 1 };
 
   virtual ~HTMLImport() {}
 
   // FIXME: Consider returning HTMLImportTreeRoot.
-  HTMLImport* root();
-  bool precedes(HTMLImport*);
-  bool isRoot() const { return !parent(); }
-  bool isSync() const { return SyncMode(m_sync) == Sync; }
-  bool formsCycle() const;
-  const HTMLImportState& state() const { return m_state; }
+  HTMLImport* Root();
+  bool Precedes(HTMLImport*);
+  bool IsRoot() const { return !Parent(); }
+  bool IsSync() const { return SyncMode(sync_) == kSync; }
+  bool FormsCycle() const;
+  const HTMLImportState& GetState() const { return state_; }
 
-  void appendImport(HTMLImport*);
+  void AppendImport(HTMLImport*);
 
-  virtual Document* document() const = 0;
-  virtual bool hasFinishedLoading() const = 0;
-  virtual HTMLImportLoader* loader() const { return nullptr; }
-  virtual void stateWillChange() {}
-  virtual void stateDidChange();
+  virtual Document* GetDocument() const = 0;
+  virtual bool HasFinishedLoading() const = 0;
+  virtual HTMLImportLoader* Loader() const { return nullptr; }
+  virtual void StateWillChange() {}
+  virtual void StateDidChange();
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   // Stating from most conservative state.
   // It will be corrected through state update flow.
-  explicit HTMLImport(SyncMode sync) : m_sync(sync) {}
+  explicit HTMLImport(SyncMode sync) : sync_(sync) {}
 
-  static void recalcTreeState(HTMLImport* root);
+  static void RecalcTreeState(HTMLImport* root);
 
 #if !defined(NDEBUG)
-  void show();
-  void showTree(HTMLImport* highlight, unsigned depth);
-  virtual void showThis();
+  void Show();
+  void ShowTree(HTMLImport* highlight, unsigned depth);
+  virtual void ShowThis();
 #endif
 
  private:
-  HTMLImportState m_state;
-  unsigned m_sync : 1;
+  HTMLImportState state_;
+  unsigned sync_ : 1;
 };
 
 }  // namespace blink

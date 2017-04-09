@@ -11,26 +11,26 @@
 
 namespace blink {
 
-CSSValue* CSSPropertyCounterUtils::consumeCounter(CSSParserTokenRange& range,
-                                                  int defaultValue) {
-  if (range.peek().id() == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+CSSValue* CSSPropertyCounterUtils::ConsumeCounter(CSSParserTokenRange& range,
+                                                  int default_value) {
+  if (range.Peek().Id() == CSSValueNone)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   do {
-    CSSCustomIdentValue* counterName =
-        CSSPropertyParserHelpers::consumeCustomIdent(range);
-    if (!counterName)
+    CSSCustomIdentValue* counter_name =
+        CSSPropertyParserHelpers::ConsumeCustomIdent(range);
+    if (!counter_name)
       return nullptr;
-    int value = defaultValue;
-    if (CSSPrimitiveValue* counterValue =
-            CSSPropertyParserHelpers::consumeInteger(range))
-      value = clampTo<int>(counterValue->getDoubleValue());
-    list->append(*CSSValuePair::create(
-        counterName,
-        CSSPrimitiveValue::create(value, CSSPrimitiveValue::UnitType::Integer),
-        CSSValuePair::DropIdenticalValues));
-  } while (!range.atEnd());
+    int value = default_value;
+    if (CSSPrimitiveValue* counter_value =
+            CSSPropertyParserHelpers::ConsumeInteger(range))
+      value = clampTo<int>(counter_value->GetDoubleValue());
+    list->Append(*CSSValuePair::Create(
+        counter_name,
+        CSSPrimitiveValue::Create(value, CSSPrimitiveValue::UnitType::kInteger),
+        CSSValuePair::kDropIdenticalValues));
+  } while (!range.AtEnd());
   return list;
 }
 

@@ -34,34 +34,34 @@
 namespace blink {
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0, const FloatPoint& p1)
-    : m_gradient(Gradient::createLinear(p0, p1)), m_isZeroSize(p0 == p1) {}
+    : gradient_(Gradient::CreateLinear(p0, p1)), is_zero_size_(p0 == p1) {}
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0,
                                float r0,
                                const FloatPoint& p1,
                                float r1)
-    : m_gradient(Gradient::createRadial(p0, r0, p1, r1)),
-      m_isZeroSize(p0 == p1 && r0 == r1) {}
+    : gradient_(Gradient::CreateRadial(p0, r0, p1, r1)),
+      is_zero_size_(p0 == p1 && r0 == r1) {}
 
 void CanvasGradient::addColorStop(float value,
-                                  const String& colorString,
-                                  ExceptionState& exceptionState) {
+                                  const String& color_string,
+                                  ExceptionState& exception_state) {
   if (!(value >= 0 && value <= 1.0f)) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The provided value (" + String::number(value) +
-                            ") is outside the range (0.0, 1.0).");
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The provided value (" + String::Number(value) +
+                             ") is outside the range (0.0, 1.0).");
     return;
   }
 
   Color color = 0;
-  if (!parseColorOrCurrentColor(color, colorString, 0 /*canvas*/)) {
-    exceptionState.throwDOMException(SyntaxError,
-                                     "The value provided ('" + colorString +
-                                         "') could not be parsed as a color.");
+  if (!ParseColorOrCurrentColor(color, color_string, 0 /*canvas*/)) {
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "The value provided ('" + color_string +
+                                          "') could not be parsed as a color.");
     return;
   }
 
-  m_gradient->addColorStop(value, color);
+  gradient_->AddColorStop(value, color);
 }
 
 }  // namespace blink

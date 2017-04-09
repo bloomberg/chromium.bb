@@ -40,33 +40,33 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
  public:
   explicit LayoutSVGResourcePattern(SVGPatternElement*);
 
-  const char* name() const override { return "LayoutSVGResourcePattern"; }
+  const char* GetName() const override { return "LayoutSVGResourcePattern"; }
 
-  void removeAllClientsFromCache(bool markForInvalidation = true) override;
-  void removeClientFromCache(LayoutObject*,
-                             bool markForInvalidation = true) override;
+  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
+  void RemoveClientFromCache(LayoutObject*,
+                             bool mark_for_invalidation = true) override;
 
-  SVGPaintServer preparePaintServer(const LayoutObject&) override;
+  SVGPaintServer PreparePaintServer(const LayoutObject&) override;
 
-  static const LayoutSVGResourceType s_resourceType = PatternResourceType;
-  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType kResourceType = kPatternResourceType;
+  LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
  private:
-  std::unique_ptr<PatternData> buildPatternData(const LayoutObject&);
-  sk_sp<PaintRecord> asPaintRecord(const FloatRect& tile,
+  std::unique_ptr<PatternData> BuildPatternData(const LayoutObject&);
+  sk_sp<PaintRecord> AsPaintRecord(const FloatRect& tile,
                                    const AffineTransform&) const;
-  PatternData* patternForLayoutObject(const LayoutObject&);
+  PatternData* PatternForLayoutObject(const LayoutObject&);
 
-  const LayoutSVGResourceContainer* resolveContentElement() const;
+  const LayoutSVGResourceContainer* ResolveContentElement() const;
 
-  bool m_shouldCollectPatternAttributes : 1;
-  Persistent<PatternAttributesWrapper> m_attributesWrapper;
+  bool should_collect_pattern_attributes_ : 1;
+  Persistent<PatternAttributesWrapper> attributes_wrapper_;
 
-  PatternAttributes& mutableAttributes() {
-    return m_attributesWrapper->attributes();
+  PatternAttributes& MutableAttributes() {
+    return attributes_wrapper_->Attributes();
   }
-  const PatternAttributes& attributes() const {
-    return m_attributesWrapper->attributes();
+  const PatternAttributes& Attributes() const {
+    return attributes_wrapper_->Attributes();
   }
 
   // FIXME: we can almost do away with this per-object map, but not quite: the
@@ -76,7 +76,7 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
   // same => we should be able to cache a single display list per
   // LayoutSVGResourcePattern + one Pattern(shader) for each client -- this
   // would avoid re-recording when multiple clients share the same pattern.
-  HashMap<const LayoutObject*, std::unique_ptr<PatternData>> m_patternMap;
+  HashMap<const LayoutObject*, std::unique_ptr<PatternData>> pattern_map_;
 };
 
 }  // namespace blink

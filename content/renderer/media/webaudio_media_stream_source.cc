@@ -25,7 +25,7 @@ WebAudioMediaStreamSource::~WebAudioMediaStreamSource() {
   EnsureSourceIsStopped();
 }
 
-void WebAudioMediaStreamSource::setFormat(size_t number_of_channels,
+void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
                                           float sample_rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "WebAudio media stream source changed format to: channels="
@@ -59,10 +59,10 @@ bool WebAudioMediaStreamSource::EnsureSourceIsStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (is_registered_consumer_)
     return true;
-  if (blink_source_.isNull() || !blink_source_.requiresAudioConsumer())
+  if (blink_source_.IsNull() || !blink_source_.RequiresAudioConsumer())
     return false;
   VLOG(1) << "Starting WebAudio media stream source.";
-  blink_source_.addAudioConsumer(this);
+  blink_source_.AddAudioConsumer(this);
   is_registered_consumer_ = true;
   return true;
 }
@@ -72,14 +72,14 @@ void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
   if (!is_registered_consumer_)
     return;
   is_registered_consumer_ = false;
-  DCHECK(!blink_source_.isNull());
-  blink_source_.removeAudioConsumer(this);
-  blink_source_.reset();
+  DCHECK(!blink_source_.IsNull());
+  blink_source_.RemoveAudioConsumer(this);
+  blink_source_.Reset();
   VLOG(1) << "Stopped WebAudio media stream source. Final audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 }
 
-void WebAudioMediaStreamSource::consumeAudio(
+void WebAudioMediaStreamSource::ConsumeAudio(
     const blink::WebVector<const float*>& audio_data,
     size_t number_of_frames) {
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp

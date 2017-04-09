@@ -34,24 +34,24 @@
 
 namespace blink {
 
-bool DistantLightSource::setAzimuth(float azimuth) {
-  if (m_azimuth == azimuth)
+bool DistantLightSource::SetAzimuth(float azimuth) {
+  if (azimuth_ == azimuth)
     return false;
-  m_azimuth = azimuth;
+  azimuth_ = azimuth;
   return true;
 }
 
-bool DistantLightSource::setElevation(float elevation) {
-  if (m_elevation == elevation)
+bool DistantLightSource::SetElevation(float elevation) {
+  if (elevation_ == elevation)
     return false;
-  m_elevation = elevation;
+  elevation_ = elevation;
   return true;
 }
 
-TextStream& DistantLightSource::externalRepresentation(TextStream& ts) const {
+TextStream& DistantLightSource::ExternalRepresentation(TextStream& ts) const {
   ts << "[type=DISTANT-LIGHT] ";
-  ts << "[azimuth=\"" << azimuth() << "\"]";
-  ts << "[elevation=\"" << elevation() << "\"]";
+  ts << "[azimuth=\"" << Azimuth() << "\"]";
+  ts << "[elevation=\"" << Elevation() << "\"]";
   return ts;
 }
 

@@ -9,13 +9,13 @@
 
 namespace blink {
 
-SimWebFrameClient::SimWebFrameClient(SimTest& test) : m_test(&test) {}
+SimWebFrameClient::SimWebFrameClient(SimTest& test) : test_(&test) {}
 
-void SimWebFrameClient::didAddMessageToConsole(const WebConsoleMessage& message,
-                                               const WebString& sourceName,
-                                               unsigned sourceLine,
-                                               const WebString& stackTrace) {
-  m_test->addConsoleMessage(message.text);
+void SimWebFrameClient::DidAddMessageToConsole(const WebConsoleMessage& message,
+                                               const WebString& source_name,
+                                               unsigned source_line,
+                                               const WebString& stack_trace) {
+  test_->AddConsoleMessage(message.text);
 }
 
 }  // namespace blink

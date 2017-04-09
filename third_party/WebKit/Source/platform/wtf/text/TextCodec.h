@@ -41,39 +41,39 @@ class TextEncoding;
 // not encodable in the character set.
 enum UnencodableHandling {
   // Substitutes the replacement character "?".
-  QuestionMarksForUnencodables,
+  kQuestionMarksForUnencodables,
 
   // Encodes the character as an XML entity. For example, U+06DE
   // would be "&#1758;" (0x6DE = 1758 in octal).
-  EntitiesForUnencodables,
+  kEntitiesForUnencodables,
 
   // Encodes the character as en entity as above, but escaped
   // non-alphanumeric characters. This is used in URLs.
   // For example, U+6DE would be "%26%231758%3B".
-  URLEncodedEntitiesForUnencodables,
+  kURLEncodedEntitiesForUnencodables,
 
   // Encodes the character as a CSS entity.  For example U+06DE
   // would be \06de.  See: https://www.w3.org/TR/css-syntax-3/#escaping
-  CSSEncodedEntitiesForUnencodables,
+  kCSSEncodedEntitiesForUnencodables,
 };
 
 typedef char UnencodableReplacementArray[32];
 
 enum FlushBehavior {
   // More bytes are coming, don't flush the codec.
-  DoNotFlush = 0,
+  kDoNotFlush = 0,
 
   // A fetch has hit EOF. Some codecs handle fetches differently, for compat
   // reasons.
-  FetchEOF,
+  kFetchEOF,
 
   // Do a full flush of the codec.
-  DataEOF
+  kDataEOF
 };
 
-static_assert(!DoNotFlush, "DoNotFlush should be falsy");
-static_assert(FetchEOF, "FetchEOF should be truthy");
-static_assert(DataEOF, "DataEOF should be truthy");
+static_assert(!kDoNotFlush, "DoNotFlush should be falsy");
+static_assert(kFetchEOF, "FetchEOF should be truthy");
+static_assert(kDataEOF, "DataEOF should be truthy");
 
 class WTF_EXPORT TextCodec {
   WTF_MAKE_NONCOPYABLE(TextCodec);
@@ -83,25 +83,25 @@ class WTF_EXPORT TextCodec {
   TextCodec() {}
   virtual ~TextCodec();
 
-  String decode(const char* str,
+  String Decode(const char* str,
                 size_t length,
-                FlushBehavior flush = DoNotFlush) {
+                FlushBehavior flush = kDoNotFlush) {
     bool ignored;
-    return decode(str, length, flush, false, ignored);
+    return Decode(str, length, flush, false, ignored);
   }
 
-  virtual String decode(const char*,
+  virtual String Decode(const char*,
                         size_t length,
                         FlushBehavior,
-                        bool stopOnError,
-                        bool& sawError) = 0;
-  virtual CString encode(const UChar*, size_t length, UnencodableHandling) = 0;
-  virtual CString encode(const LChar*, size_t length, UnencodableHandling) = 0;
+                        bool stop_on_error,
+                        bool& saw_error) = 0;
+  virtual CString Encode(const UChar*, size_t length, UnencodableHandling) = 0;
+  virtual CString Encode(const LChar*, size_t length, UnencodableHandling) = 0;
 
   // Fills a null-terminated string representation of the given
   // unencodable character into the given replacement buffer.
   // The length of the string (not including the null) will be returned.
-  static int getUnencodableReplacement(unsigned codePoint,
+  static int GetUnencodableReplacement(unsigned code_point,
                                        UnencodableHandling,
                                        UnencodableReplacementArray);
 };
@@ -109,10 +109,10 @@ class WTF_EXPORT TextCodec {
 typedef void (*EncodingNameRegistrar)(const char* alias, const char* name);
 
 typedef std::unique_ptr<TextCodec> (
-    *NewTextCodecFunction)(const TextEncoding&, const void* additionalData);
+    *NewTextCodecFunction)(const TextEncoding&, const void* additional_data);
 typedef void (*TextCodecRegistrar)(const char* name,
                                    NewTextCodecFunction,
-                                   const void* additionalData);
+                                   const void* additional_data);
 
 }  // namespace WTF
 

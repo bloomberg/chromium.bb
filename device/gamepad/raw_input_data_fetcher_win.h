@@ -49,13 +49,13 @@ struct RawGamepadInfo {
   uint32_t vendor_id;
   uint32_t product_id;
 
-  wchar_t id[blink::WebGamepad::idLengthCap];
+  wchar_t id[blink::WebGamepad::kIdLengthCap];
 
   uint32_t buttons_length;
-  bool buttons[blink::WebGamepad::buttonsLengthCap];
+  bool buttons[blink::WebGamepad::kButtonsLengthCap];
 
   uint32_t axes_length;
-  RawGamepadAxis axes[blink::WebGamepad::axesLengthCap];
+  RawGamepadAxis axes[blink::WebGamepad::kAxesLengthCap];
 };
 
 class RawInputDataFetcher : public GamepadDataFetcher,

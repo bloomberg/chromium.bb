@@ -24,7 +24,7 @@ void ShellRenderViewObserver::DidClearWindowObject(
     blink::WebLocalFrame* frame) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExposeInternalsForTesting)) {
-    blink::WebTestingSupport::injectInternalsObject(frame);
+    blink::WebTestingSupport::InjectInternalsObject(frame);
   }
 }
 

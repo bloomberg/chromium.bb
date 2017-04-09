@@ -19,11 +19,11 @@ namespace blink {
 
 CompositorMutatorClient::CompositorMutatorClient(
     CompositorMutator* mutator,
-    CompositorMutationsTarget* mutationsTarget)
-    : m_client(nullptr),
-      m_mutationsTarget(mutationsTarget),
-      m_mutator(mutator),
-      m_mutations(nullptr) {
+    CompositorMutationsTarget* mutations_target)
+    : client_(nullptr),
+      mutations_target_(mutations_target),
+      mutator_(mutator),
+      mutations_(nullptr) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorMutatorClient::CompositorMutatorClient");
 }
@@ -33,42 +33,43 @@ CompositorMutatorClient::~CompositorMutatorClient() {
                "CompositorMutatorClient::~CompositorMutatorClient");
 }
 
-bool CompositorMutatorClient::Mutate(base::TimeTicks monotonicTime,
-                                     cc::LayerTreeImpl* treeImpl) {
+bool CompositorMutatorClient::Mutate(base::TimeTicks monotonic_time,
+                                     cc::LayerTreeImpl* tree_impl) {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
-  double monotonicTimeNow = (monotonicTime - base::TimeTicks()).InSecondsF();
-  if (!m_mutations)
-    m_mutations = WTF::wrapUnique(new CompositorMutations);
-  CompositorMutableStateProvider compositorState(treeImpl, m_mutations.get());
-  bool shouldReinvoke = m_mutator->mutate(monotonicTimeNow, &compositorState);
-  return shouldReinvoke;
+  double monotonic_time_now = (monotonic_time - base::TimeTicks()).InSecondsF();
+  if (!mutations_)
+    mutations_ = WTF::WrapUnique(new CompositorMutations);
+  CompositorMutableStateProvider compositor_state(tree_impl, mutations_.get());
+  bool should_reinvoke =
+      mutator_->Mutate(monotonic_time_now, &compositor_state);
+  return should_reinvoke;
 }
 
 void CompositorMutatorClient::SetClient(cc::LayerTreeMutatorClient* client) {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::SetClient");
-  m_client = client;
-  setNeedsMutate();
+  client_ = client;
+  SetNeedsMutate();
 }
 
 base::Closure CompositorMutatorClient::TakeMutations() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorMutatorClient::TakeMutations");
-  if (!m_mutations)
+  if (!mutations_)
     return base::Closure();
 
-  return base::Bind(&CompositorMutationsTarget::applyMutations,
-                    base::Unretained(m_mutationsTarget),
-                    base::Owned(m_mutations.release()));
+  return base::Bind(&CompositorMutationsTarget::ApplyMutations,
+                    base::Unretained(mutations_target_),
+                    base::Owned(mutations_.release()));
 }
 
-void CompositorMutatorClient::setNeedsMutate() {
+void CompositorMutatorClient::SetNeedsMutate() {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::setNeedsMutate");
-  m_client->SetNeedsMutate();
+  client_->SetNeedsMutate();
 }
 
-void CompositorMutatorClient::setMutationsForTesting(
+void CompositorMutatorClient::SetMutationsForTesting(
     std::unique_ptr<CompositorMutations> mutations) {
-  m_mutations = std::move(mutations);
+  mutations_ = std::move(mutations);
 }
 
 }  // namespace blink

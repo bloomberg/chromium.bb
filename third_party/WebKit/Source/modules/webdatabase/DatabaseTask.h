@@ -50,72 +50,73 @@ class DatabaseTask {
  public:
   virtual ~DatabaseTask();
 
-  void run();
+  void Run();
 
-  Database* database() const { return m_database.get(); }
+  Database* GetDatabase() const { return database_.Get(); }
 
  protected:
-  DatabaseTask(Database*, WaitableEvent* completeEvent);
+  DatabaseTask(Database*, WaitableEvent* complete_event);
 
  private:
-  virtual void doPerformTask() = 0;
-  virtual void taskCancelled() {}
+  virtual void DoPerformTask() = 0;
+  virtual void TaskCancelled() {}
 
-  CrossThreadPersistent<Database> m_database;
-  WaitableEvent* m_completeEvent;
+  CrossThreadPersistent<Database> database_;
+  WaitableEvent* complete_event_;
 
 #if DCHECK_IS_ON()
-  virtual const char* debugTaskName() const = 0;
-  bool m_complete;
+  virtual const char* DebugTaskName() const = 0;
+  bool complete_;
 #endif
 };
 
 class Database::DatabaseOpenTask final : public DatabaseTask {
  public:
-  static std::unique_ptr<DatabaseOpenTask> create(Database* db,
-                                                  bool setVersionInNewDatabase,
-                                                  WaitableEvent* completeEvent,
-                                                  DatabaseError& error,
-                                                  String& errorMessage,
-                                                  bool& success) {
-    return WTF::wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase,
-                                                completeEvent, error,
-                                                errorMessage, success));
+  static std::unique_ptr<DatabaseOpenTask> Create(
+      Database* db,
+      bool set_version_in_new_database,
+      WaitableEvent* complete_event,
+      DatabaseError& error,
+      String& error_message,
+      bool& success) {
+    return WTF::WrapUnique(new DatabaseOpenTask(db, set_version_in_new_database,
+                                                complete_event, error,
+                                                error_message, success));
   }
 
  private:
   DatabaseOpenTask(Database*,
-                   bool setVersionInNewDatabase,
+                   bool set_version_in_new_database,
                    WaitableEvent*,
                    DatabaseError&,
-                   String& errorMessage,
+                   String& error_message,
                    bool& success);
 
-  void doPerformTask() override;
+  void DoPerformTask() override;
 #if DCHECK_IS_ON()
-  const char* debugTaskName() const override;
+  const char* DebugTaskName() const override;
 #endif
 
-  bool m_setVersionInNewDatabase;
-  DatabaseError& m_error;
-  String& m_errorMessage;
-  bool& m_success;
+  bool set_version_in_new_database_;
+  DatabaseError& error_;
+  String& error_message_;
+  bool& success_;
 };
 
 class Database::DatabaseCloseTask final : public DatabaseTask {
  public:
-  static std::unique_ptr<DatabaseCloseTask> create(
+  static std::unique_ptr<DatabaseCloseTask> Create(
       Database* db,
       WaitableEvent* synchronizer) {
-    return WTF::wrapUnique(new DatabaseCloseTask(db, synchronizer));
+    return WTF::WrapUnique(new DatabaseCloseTask(db, synchronizer));
   }
 
  private:
   DatabaseCloseTask(Database*, WaitableEvent*);
 
-  void doPerformTask() override;
+  void DoPerformTask() override;
 #if DCHECK_IS_ON()
-  const char* debugTaskName() const override;
+  const char* DebugTaskName() const override;
 #endif
 };
 
@@ -124,41 +125,41 @@ class Database::DatabaseTransactionTask final : public DatabaseTask {
   ~DatabaseTransactionTask() override;
 
   // Transaction task is never synchronous, so no 'synchronizer' parameter.
-  static std::unique_ptr<DatabaseTransactionTask> create(
+  static std::unique_ptr<DatabaseTransactionTask> Create(
       SQLTransactionBackend* transaction) {
-    return WTF::wrapUnique(new DatabaseTransactionTask(transaction));
+    return WTF::WrapUnique(new DatabaseTransactionTask(transaction));
   }
 
-  SQLTransactionBackend* transaction() const { return m_transaction.get(); }
+  SQLTransactionBackend* Transaction() const { return transaction_.Get(); }
 
  private:
   explicit DatabaseTransactionTask(SQLTransactionBackend*);
 
-  void doPerformTask() override;
-  void taskCancelled() override;
+  void DoPerformTask() override;
+  void TaskCancelled() override;
 #if DCHECK_IS_ON()
-  const char* debugTaskName() const override;
+  const char* DebugTaskName() const override;
 #endif
 
-  CrossThreadPersistent<SQLTransactionBackend> m_transaction;
+  CrossThreadPersistent<SQLTransactionBackend> transaction_;
 };
 
 class Database::DatabaseTableNamesTask final : public DatabaseTask {
  public:
   static std::unique_ptr<DatabaseTableNamesTask>
-  create(Database* db, WaitableEvent* synchronizer, Vector<String>& names) {
-    return WTF::wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
+  Create(Database* db, WaitableEvent* synchronizer, Vector<String>& names) {
+    return WTF::WrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
   }
 
  private:
   DatabaseTableNamesTask(Database*, WaitableEvent*, Vector<String>& names);
 
-  void doPerformTask() override;
+  void DoPerformTask() override;
 #if DCHECK_IS_ON()
-  const char* debugTaskName() const override;
+  const char* DebugTaskName() const override;
 #endif
 
-  Vector<String>& m_tableNames;
+  Vector<String>& table_names_;
 };
 
 }  // namespace blink

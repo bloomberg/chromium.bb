@@ -34,73 +34,73 @@
 
 namespace blink {
 
-DataTransferItemList* DataTransferItemList::create(DataTransfer* dataTransfer,
+DataTransferItemList* DataTransferItemList::Create(DataTransfer* data_transfer,
                                                    DataObject* list) {
-  return new DataTransferItemList(dataTransfer, list);
+  return new DataTransferItemList(data_transfer, list);
 }
 
 size_t DataTransferItemList::length() const {
-  if (!m_dataTransfer->canReadTypes())
+  if (!data_transfer_->CanReadTypes())
     return 0;
-  return m_dataObject->length();
+  return data_object_->length();
 }
 
 DataTransferItem* DataTransferItemList::item(unsigned long index) {
-  if (!m_dataTransfer->canReadTypes())
+  if (!data_transfer_->CanReadTypes())
     return nullptr;
-  DataObjectItem* item = m_dataObject->item(index);
+  DataObjectItem* item = data_object_->Item(index);
   if (!item)
     return nullptr;
 
-  return DataTransferItem::create(m_dataTransfer, item);
+  return DataTransferItem::Create(data_transfer_, item);
 }
 
 void DataTransferItemList::deleteItem(unsigned long index,
-                                      ExceptionState& exceptionState) {
-  if (!m_dataTransfer->canWriteData()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The list is not writable.");
+                                      ExceptionState& exception_state) {
+  if (!data_transfer_->CanWriteData()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "The list is not writable.");
     return;
   }
-  m_dataObject->deleteItem(index);
+  data_object_->DeleteItem(index);
 }
 
 void DataTransferItemList::clear() {
-  if (!m_dataTransfer->canWriteData())
+  if (!data_transfer_->CanWriteData())
     return;
-  m_dataObject->clearAll();
+  data_object_->ClearAll();
 }
 
 DataTransferItem* DataTransferItemList::add(const String& data,
                                             const String& type,
-                                            ExceptionState& exceptionState) {
-  if (!m_dataTransfer->canWriteData())
+                                            ExceptionState& exception_state) {
+  if (!data_transfer_->CanWriteData())
     return nullptr;
-  DataObjectItem* item = m_dataObject->add(data, type);
+  DataObjectItem* item = data_object_->Add(data, type);
   if (!item) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "An item already exists for type '" + type + "'.");
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "An item already exists for type '" + type + "'.");
     return nullptr;
   }
-  return DataTransferItem::create(m_dataTransfer, item);
+  return DataTransferItem::Create(data_transfer_, item);
 }
 
 DataTransferItem* DataTransferItemList::add(File* file) {
-  if (!m_dataTransfer->canWriteData())
+  if (!data_transfer_->CanWriteData())
     return nullptr;
-  DataObjectItem* item = m_dataObject->add(file);
+  DataObjectItem* item = data_object_->Add(file);
   if (!item)
     return nullptr;
-  return DataTransferItem::create(m_dataTransfer, item);
+  return DataTransferItem::Create(data_transfer_, item);
 }
 
-DataTransferItemList::DataTransferItemList(DataTransfer* dataTransfer,
-                                           DataObject* dataObject)
-    : m_dataTransfer(dataTransfer), m_dataObject(dataObject) {}
+DataTransferItemList::DataTransferItemList(DataTransfer* data_transfer,
+                                           DataObject* data_object)
+    : data_transfer_(data_transfer), data_object_(data_object) {}
 
 DEFINE_TRACE(DataTransferItemList) {
-  visitor->trace(m_dataTransfer);
-  visitor->trace(m_dataObject);
+  visitor->Trace(data_transfer_);
+  visitor->Trace(data_object_);
 }
 
 }  // namespace blink

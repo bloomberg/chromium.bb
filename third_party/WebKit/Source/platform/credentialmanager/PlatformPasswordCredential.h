@@ -16,23 +16,23 @@ class PLATFORM_EXPORT PlatformPasswordCredential final
   WTF_MAKE_NONCOPYABLE(PlatformPasswordCredential);
 
  public:
-  static PlatformPasswordCredential* create(const String& id,
+  static PlatformPasswordCredential* Create(const String& id,
                                             const String& password,
                                             const String& name,
-                                            const KURL& iconURL);
+                                            const KURL& icon_url);
   ~PlatformPasswordCredential() override;
 
-  const String& password() const { return m_password; }
+  const String& Password() const { return password_; }
 
-  bool isPassword() override { return true; }
+  bool IsPassword() override { return true; }
 
  private:
   PlatformPasswordCredential(const String& id,
                              const String& password,
                              const String& name,
-                             const KURL& iconURL);
+                             const KURL& icon_url);
 
-  String m_password;
+  String password_;
 };
 
 }  // namespace blink

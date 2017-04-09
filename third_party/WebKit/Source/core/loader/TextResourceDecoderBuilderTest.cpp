@@ -10,27 +10,27 @@
 
 namespace blink {
 
-static const WTF::TextEncoding defaultEncodingForURL(const char* url) {
-  std::unique_ptr<DummyPageHolder> pageHolder =
-      DummyPageHolder::create(IntSize(0, 0));
-  Document& document = pageHolder->document();
-  document.setURL(KURL(KURL(), url));
-  TextResourceDecoderBuilder decoderBuilder("text/html", nullAtom);
-  return decoderBuilder.buildFor(&document)->encoding();
+static const WTF::TextEncoding DefaultEncodingForURL(const char* url) {
+  std::unique_ptr<DummyPageHolder> page_holder =
+      DummyPageHolder::Create(IntSize(0, 0));
+  Document& document = page_holder->GetDocument();
+  document.SetURL(KURL(KURL(), url));
+  TextResourceDecoderBuilder decoder_builder("text/html", g_null_atom);
+  return decoder_builder.BuildFor(&document)->Encoding();
 }
 
 TEST(TextResourceDecoderBuilderTest, defaultEncodingComesFromTopLevelDomain) {
   EXPECT_EQ(WTF::TextEncoding("Shift_JIS"),
-            defaultEncodingForURL("http://tsubotaa.la.coocan.jp"));
+            DefaultEncodingForURL("http://tsubotaa.la.coocan.jp"));
   EXPECT_EQ(WTF::TextEncoding("windows-1251"),
-            defaultEncodingForURL("http://udarenieru.ru/index.php"));
+            DefaultEncodingForURL("http://udarenieru.ru/index.php"));
 }
 
 TEST(TextResourceDecoderBuilderTest,
      NoCountryDomainURLDefaultsToLatin1Encoding) {
   // Latin1 encoding is set in |TextResourceDecoder::defaultEncoding()|.
   EXPECT_EQ(WTF::Latin1Encoding(),
-            defaultEncodingForURL("http://arstechnica.com/about-us"));
+            DefaultEncodingForURL("http://arstechnica.com/about-us"));
 }
 
 }  // namespace blink

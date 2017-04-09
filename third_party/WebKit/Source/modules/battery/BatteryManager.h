@@ -25,18 +25,18 @@ class BatteryManager final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 
  public:
-  static BatteryManager* create(ExecutionContext*);
+  static BatteryManager* Create(ExecutionContext*);
   ~BatteryManager() override;
 
   // Returns a promise object that will be resolved with this BatteryManager.
-  ScriptPromise startRequest(ScriptState*);
+  ScriptPromise StartRequest(ScriptState*);
 
   // EventTarget implementation.
-  const WTF::AtomicString& interfaceName() const override {
+  const WTF::AtomicString& InterfaceName() const override {
     return EventTargetNames::BatteryManager;
   }
-  ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextLifecycleObserver::GetExecutionContext();
   }
 
   bool charging();
@@ -50,18 +50,18 @@ class BatteryManager final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
 
   // Inherited from PlatformEventController.
-  void didUpdateData() override;
-  void registerWithDispatcher() override;
-  void unregisterWithDispatcher() override;
-  bool hasLastData() override;
+  void DidUpdateData() override;
+  void RegisterWithDispatcher() override;
+  void UnregisterWithDispatcher() override;
+  bool HasLastData() override;
 
   // SuspendableObject implementation.
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -71,8 +71,8 @@ class BatteryManager final : public EventTargetWithInlineData,
   using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>,
                                                 Member<BatteryManager>,
                                                 Member<DOMException>>;
-  Member<BatteryProperty> m_batteryProperty;
-  BatteryStatus m_batteryStatus;
+  Member<BatteryProperty> battery_property_;
+  BatteryStatus battery_status_;
 };
 
 }  // namespace blink

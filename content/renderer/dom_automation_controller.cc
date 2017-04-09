@@ -23,9 +23,9 @@ gin::WrapperInfo DomAutomationController::kWrapperInfo = {
 // static
 void DomAutomationController::Install(RenderFrame* render_frame,
                                       blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -62,7 +62,7 @@ void DomAutomationController::DidCreateScriptContext(
     v8::Local<v8::Context> context,
     int world_id) {
   // Add the domAutomationController to isolated worlds as well.
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   if (context.IsEmpty())
     return;

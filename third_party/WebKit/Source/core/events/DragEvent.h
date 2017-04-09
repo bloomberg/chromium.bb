@@ -17,44 +17,44 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DragEvent* create() { return new DragEvent; }
+  static DragEvent* Create() { return new DragEvent; }
 
-  static DragEvent* create(DataTransfer* dataTransfer) {
-    return new DragEvent(dataTransfer);
+  static DragEvent* Create(DataTransfer* data_transfer) {
+    return new DragEvent(data_transfer);
   }
 
-  static DragEvent* create(const AtomicString& type,
-                           bool canBubble,
+  static DragEvent* Create(const AtomicString& type,
+                           bool can_bubble,
                            bool cancelable,
                            AbstractView*,
                            int detail,
-                           int screenX,
-                           int screenY,
-                           int windowX,
-                           int windowY,
-                           int movementX,
-                           int movementY,
+                           int screen_x,
+                           int screen_y,
+                           int window_x,
+                           int window_y,
+                           int movement_x,
+                           int movement_y,
                            WebInputEvent::Modifiers,
                            short button,
                            unsigned short buttons,
-                           EventTarget* relatedTarget,
-                           TimeTicks platformTimeStamp,
+                           EventTarget* related_target,
+                           TimeTicks platform_time_stamp,
                            DataTransfer*,
-                           SyntheticEventType = RealOrIndistinguishable);
+                           SyntheticEventType = kRealOrIndistinguishable);
 
-  static DragEvent* create(const AtomicString& type,
+  static DragEvent* Create(const AtomicString& type,
                            const DragEventInit& initializer) {
     return new DragEvent(type, initializer);
   }
 
   DataTransfer* getDataTransfer() const override {
-    return isDragEvent() ? m_dataTransfer.get() : nullptr;
+    return IsDragEvent() ? data_transfer_.Get() : nullptr;
   }
 
-  bool isDragEvent() const override;
-  bool isMouseEvent() const override;
+  bool IsDragEvent() const override;
+  bool IsMouseEvent() const override;
 
-  EventDispatchMediator* createMediator() override;
+  EventDispatchMediator* CreateMediator() override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -62,37 +62,37 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   DragEvent();
   DragEvent(DataTransfer*);
   DragEvent(const AtomicString& type,
-            bool canBubble,
+            bool can_bubble,
             bool cancelable,
             AbstractView*,
             int detail,
-            int screenX,
-            int screenY,
-            int windowX,
-            int windowY,
-            int movementX,
-            int movementY,
+            int screen_x,
+            int screen_y,
+            int window_x,
+            int window_y,
+            int movement_x,
+            int movement_y,
             WebInputEvent::Modifiers,
             short button,
             unsigned short buttons,
-            EventTarget* relatedTarget,
-            TimeTicks platformTimeStamp,
+            EventTarget* related_target,
+            TimeTicks platform_time_stamp,
             DataTransfer*,
             SyntheticEventType);
 
   DragEvent(const AtomicString& type, const DragEventInit&);
 
-  Member<DataTransfer> m_dataTransfer;
+  Member<DataTransfer> data_transfer_;
 };
 
 class DragEventDispatchMediator final : public EventDispatchMediator {
  public:
-  static DragEventDispatchMediator* create(DragEvent*);
+  static DragEventDispatchMediator* Create(DragEvent*);
 
  private:
   explicit DragEventDispatchMediator(DragEvent*);
-  DragEvent& event() const;
-  DispatchEventResult dispatchEvent(EventDispatcher&) const override;
+  DragEvent& Event() const;
+  DispatchEventResult DispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(DragEvent);

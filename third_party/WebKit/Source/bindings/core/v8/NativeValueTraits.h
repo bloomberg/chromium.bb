@@ -63,7 +63,7 @@ struct NativeValueTraits : public NativeValueTraitsBase<T> {
   // return type can change, but all specializations are expected to provide a
   // nativeValue() method that takes the 3 arguments below.
   static inline typename NativeValueTraitsBase<T>::ImplType
-  nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 }  // namespace blink

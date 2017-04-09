@@ -31,92 +31,92 @@
 
 namespace blink {
 
-LayoutSelection::LayoutSelection(FrameSelection& frameSelection)
-    : m_frameSelection(&frameSelection), m_hasPendingSelection(false) {}
+LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
+    : frame_selection_(&frame_selection), has_pending_selection_(false) {}
 
-const VisibleSelection& LayoutSelection::visibleSelection() const {
-  return m_frameSelection->computeVisibleSelectionInDOMTree();
+const VisibleSelection& LayoutSelection::GetVisibleSelection() const {
+  return frame_selection_->ComputeVisibleSelectionInDOMTree();
 }
 
-static bool isSelectionInDocument(
-    const VisibleSelectionInFlatTree& visibleSelection,
+static bool IsSelectionInDocument(
+    const VisibleSelectionInFlatTree& visible_selection,
     const Document& document) {
-  const PositionInFlatTree& start = visibleSelection.start();
-  if (start.isNotNull() &&
-      (!start.isConnected() || start.document() != document))
+  const PositionInFlatTree& start = visible_selection.Start();
+  if (start.IsNotNull() &&
+      (!start.IsConnected() || start.GetDocument() != document))
     return false;
-  const PositionInFlatTree& end = visibleSelection.end();
-  if (end.isNotNull() && (!end.isConnected() || end.document() != document))
+  const PositionInFlatTree& end = visible_selection.end();
+  if (end.IsNotNull() && (!end.IsConnected() || end.GetDocument() != document))
     return false;
-  const PositionInFlatTree extent = visibleSelection.extent();
-  if (extent.isNotNull() &&
-      (!extent.isConnected() || extent.document() != document))
+  const PositionInFlatTree extent = visible_selection.Extent();
+  if (extent.IsNotNull() &&
+      (!extent.IsConnected() || extent.GetDocument() != document))
     return false;
   return true;
 }
 
-SelectionInFlatTree LayoutSelection::calcVisibleSelection(
-    const VisibleSelectionInFlatTree& originalSelection) const {
-  const PositionInFlatTree& start = originalSelection.start();
-  const PositionInFlatTree& end = originalSelection.end();
-  SelectionType selectionType = originalSelection.getSelectionType();
-  const TextAffinity affinity = originalSelection.affinity();
+SelectionInFlatTree LayoutSelection::CalcVisibleSelection(
+    const VisibleSelectionInFlatTree& original_selection) const {
+  const PositionInFlatTree& start = original_selection.Start();
+  const PositionInFlatTree& end = original_selection.end();
+  SelectionType selection_type = original_selection.GetSelectionType();
+  const TextAffinity affinity = original_selection.Affinity();
 
-  bool paintBlockCursor =
-      m_frameSelection->shouldShowBlockCursor() &&
-      selectionType == SelectionType::CaretSelection &&
-      !isLogicalEndOfLine(createVisiblePosition(end, affinity));
-  if (enclosingTextControl(start.computeContainerNode())) {
+  bool paint_block_cursor =
+      frame_selection_->ShouldShowBlockCursor() &&
+      selection_type == SelectionType::kCaretSelection &&
+      !IsLogicalEndOfLine(CreateVisiblePosition(end, affinity));
+  if (EnclosingTextControl(start.ComputeContainerNode())) {
     // TODO(yosin) We should use |PositionMoveType::CodePoint| to avoid
     // ending paint at middle of character.
-    PositionInFlatTree endPosition =
-        paintBlockCursor ? nextPositionOf(originalSelection.extent(),
-                                          PositionMoveType::CodeUnit)
-                         : end;
+    PositionInFlatTree end_position =
+        paint_block_cursor ? NextPositionOf(original_selection.Extent(),
+                                            PositionMoveType::kCodeUnit)
+                           : end;
     return SelectionInFlatTree::Builder()
-        .setBaseAndExtent(start, endPosition)
-        .build();
+        .SetBaseAndExtent(start, end_position)
+        .Build();
   }
 
-  const VisiblePositionInFlatTree& visibleStart = createVisiblePosition(
-      start, selectionType == SelectionType::RangeSelection
-                 ? TextAffinity::Downstream
+  const VisiblePositionInFlatTree& visible_start = CreateVisiblePosition(
+      start, selection_type == SelectionType::kRangeSelection
+                 ? TextAffinity::kDownstream
                  : affinity);
-  if (visibleStart.isNull())
+  if (visible_start.IsNull())
     return SelectionInFlatTree();
-  if (paintBlockCursor) {
-    const VisiblePositionInFlatTree visibleExtent = nextPositionOf(
-        createVisiblePosition(end, affinity), CanSkipOverEditingBoundary);
-    if (visibleExtent.isNull())
+  if (paint_block_cursor) {
+    const VisiblePositionInFlatTree visible_extent = NextPositionOf(
+        CreateVisiblePosition(end, affinity), kCanSkipOverEditingBoundary);
+    if (visible_extent.IsNull())
       return SelectionInFlatTree();
     SelectionInFlatTree::Builder builder;
-    builder.collapse(visibleStart.toPositionWithAffinity());
-    builder.extend(visibleExtent.deepEquivalent());
-    return builder.build();
+    builder.Collapse(visible_start.ToPositionWithAffinity());
+    builder.Extend(visible_extent.DeepEquivalent());
+    return builder.Build();
   }
-  const VisiblePositionInFlatTree visibleEnd =
-      createVisiblePosition(end, selectionType == SelectionType::RangeSelection
-                                     ? TextAffinity::Upstream
-                                     : affinity);
-  if (visibleEnd.isNull())
+  const VisiblePositionInFlatTree visible_end = CreateVisiblePosition(
+      end, selection_type == SelectionType::kRangeSelection
+               ? TextAffinity::kUpstream
+               : affinity);
+  if (visible_end.IsNull())
     return SelectionInFlatTree();
   SelectionInFlatTree::Builder builder;
-  builder.collapse(visibleStart.toPositionWithAffinity());
-  builder.extend(visibleEnd.deepEquivalent());
-  return builder.build();
+  builder.Collapse(visible_start.ToPositionWithAffinity());
+  builder.Extend(visible_end.DeepEquivalent());
+  return builder.Build();
 }
 
-void LayoutSelection::commit(LayoutView& layoutView) {
-  if (!hasPendingSelection())
+void LayoutSelection::Commit(LayoutView& layout_view) {
+  if (!HasPendingSelection())
     return;
-  DCHECK(!layoutView.needsLayout());
-  m_hasPendingSelection = false;
+  DCHECK(!layout_view.NeedsLayout());
+  has_pending_selection_ = false;
 
-  const VisibleSelectionInFlatTree& originalSelection =
-      m_frameSelection->computeVisibleSelectionInFlatTree();
+  const VisibleSelectionInFlatTree& original_selection =
+      frame_selection_->ComputeVisibleSelectionInFlatTree();
 
   // Skip if pending VisibilePositions became invalid before we reach here.
-  if (!isSelectionInDocument(originalSelection, layoutView.document()))
+  if (!IsSelectionInDocument(original_selection, layout_view.GetDocument()))
     return;
 
   // Construct a new VisibleSolution, since visibleSelection() is not
@@ -124,10 +124,10 @@ void LayoutSelection::commit(LayoutView& layoutView) {
   // <https://bugs.webkit.org/show_bug.cgi?id=69563> and
   // <rdar://problem/10232866>.
   const VisibleSelectionInFlatTree& selection =
-      createVisibleSelection(calcVisibleSelection(originalSelection));
+      CreateVisibleSelection(CalcVisibleSelection(original_selection));
 
-  if (!selection.isRange()) {
-    layoutView.clearSelection();
+  if (!selection.IsRange()) {
+    layout_view.ClearSelection();
     return;
   }
 
@@ -137,34 +137,35 @@ void LayoutSelection::commit(LayoutView& layoutView) {
   // If we pass [foo, 3] as the start of the selection, the selection painting
   // code will think that content on the line containing 'foo' is selected
   // and will fill the gap before 'bar'.
-  PositionInFlatTree startPos = selection.start();
-  PositionInFlatTree candidate = mostForwardCaretPosition(startPos);
-  if (isVisuallyEquivalentCandidate(candidate))
-    startPos = candidate;
-  PositionInFlatTree endPos = selection.end();
-  candidate = mostBackwardCaretPosition(endPos);
-  if (isVisuallyEquivalentCandidate(candidate))
-    endPos = candidate;
+  PositionInFlatTree start_pos = selection.Start();
+  PositionInFlatTree candidate = MostForwardCaretPosition(start_pos);
+  if (IsVisuallyEquivalentCandidate(candidate))
+    start_pos = candidate;
+  PositionInFlatTree end_pos = selection.end();
+  candidate = MostBackwardCaretPosition(end_pos);
+  if (IsVisuallyEquivalentCandidate(candidate))
+    end_pos = candidate;
 
   // We can get into a state where the selection endpoints map to the same
   // |VisiblePosition| when a selection is deleted because we don't yet notify
   // the |FrameSelection| of text removal.
-  if (startPos.isNull() || endPos.isNull() ||
-      selection.visibleStart().deepEquivalent() ==
-          selection.visibleEnd().deepEquivalent())
+  if (start_pos.IsNull() || end_pos.IsNull() ||
+      selection.VisibleStart().DeepEquivalent() ==
+          selection.VisibleEnd().DeepEquivalent())
     return;
-  LayoutObject* startLayoutObject = startPos.anchorNode()->layoutObject();
-  LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();
-  if (!startLayoutObject || !endLayoutObject)
+  LayoutObject* start_layout_object = start_pos.AnchorNode()->GetLayoutObject();
+  LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
+  if (!start_layout_object || !end_layout_object)
     return;
-  DCHECK(layoutView == startLayoutObject->view());
-  DCHECK(layoutView == endLayoutObject->view());
-  layoutView.setSelection(startLayoutObject, startPos.computeEditingOffset(),
-                          endLayoutObject, endPos.computeEditingOffset());
+  DCHECK(layout_view == start_layout_object->View());
+  DCHECK(layout_view == end_layout_object->View());
+  layout_view.SetSelection(start_layout_object,
+                           start_pos.ComputeEditingOffset(), end_layout_object,
+                           end_pos.ComputeEditingOffset());
 }
 
 DEFINE_TRACE(LayoutSelection) {
-  visitor->trace(m_frameSelection);
+  visitor->Trace(frame_selection_);
 }
 
 }  // namespace blink

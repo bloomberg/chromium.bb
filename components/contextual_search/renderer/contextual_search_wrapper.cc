@@ -37,10 +37,10 @@ void ContextualSearchWrapper::Install(content::RenderFrame* render_frame) {
   // available, e.g. navigator.connect API. See crbug.com/541683.
   // TODO(donnd): refactor some of this boilerplate into a reusable
   // method.  This was cribbed from MemoryBenchmarkingExtension.
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
-      render_frame->GetWebFrame()->mainWorldScriptContext();
+      render_frame->GetWebFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 

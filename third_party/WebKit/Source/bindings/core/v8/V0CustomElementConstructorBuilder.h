@@ -65,31 +65,31 @@ class V0CustomElementConstructorBuilder {
   // points. These methods must be called in order. When one fails
   // (returns false), the calls must stop.
 
-  bool isFeatureAllowed() const;
-  bool validateOptions(const AtomicString& type,
-                       QualifiedName& tagName,
+  bool IsFeatureAllowed() const;
+  bool ValidateOptions(const AtomicString& type,
+                       QualifiedName& tag_name,
                        ExceptionState&);
-  V0CustomElementLifecycleCallbacks* createCallbacks();
-  bool createConstructor(Document*,
+  V0CustomElementLifecycleCallbacks* CreateCallbacks();
+  bool CreateConstructor(Document*,
                          V0CustomElementDefinition*,
                          ExceptionState&);
-  bool didRegisterDefinition() const;
+  bool DidRegisterDefinition() const;
 
   // This method collects a return value for the bindings. It is
   // safe to call this method even if the builder failed; it will
   // return an empty value.
-  ScriptValue bindingsReturnValue() const;
+  ScriptValue BindingsReturnValue() const;
 
  private:
-  bool hasValidPrototypeChainFor(const WrapperTypeInfo*) const;
-  bool prototypeIsValid(const AtomicString& type, ExceptionState&) const;
-  v8::MaybeLocal<v8::Function> retrieveCallback(const char* name);
+  bool HasValidPrototypeChainFor(const WrapperTypeInfo*) const;
+  bool PrototypeIsValid(const AtomicString& type, ExceptionState&) const;
+  v8::MaybeLocal<v8::Function> RetrieveCallback(const char* name);
 
-  RefPtr<ScriptState> m_scriptState;
-  const ElementRegistrationOptions& m_options;
-  v8::Local<v8::Object> m_prototype;
-  v8::Local<v8::Function> m_constructor;
-  Member<V8V0CustomElementLifecycleCallbacks> m_callbacks;
+  RefPtr<ScriptState> script_state_;
+  const ElementRegistrationOptions& options_;
+  v8::Local<v8::Object> prototype_;
+  v8::Local<v8::Function> constructor_;
+  Member<V8V0CustomElementLifecycleCallbacks> callbacks_;
 };
 
 }  // namespace blink

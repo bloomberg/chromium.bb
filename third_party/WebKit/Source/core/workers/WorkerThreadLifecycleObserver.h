@@ -30,18 +30,18 @@ class CORE_EXPORT WorkerThreadLifecycleObserver
     : public LifecycleObserver<WorkerThreadLifecycleContext,
                                WorkerThreadLifecycleObserver> {
  public:
-  virtual void contextDestroyed(WorkerThreadLifecycleContext*) {}
+  virtual void ContextDestroyed(WorkerThreadLifecycleContext*) {}
 
  protected:
   explicit WorkerThreadLifecycleObserver(WorkerThreadLifecycleContext*);
   virtual ~WorkerThreadLifecycleObserver();
 
-  bool wasContextDestroyedBeforeObserverCreation() const {
-    return m_wasContextDestroyedBeforeObserverCreation;
+  bool WasContextDestroyedBeforeObserverCreation() const {
+    return was_context_destroyed_before_observer_creation_;
   }
 
  private:
-  const bool m_wasContextDestroyedBeforeObserverCreation;
+  const bool was_context_destroyed_before_observer_creation_;
 };
 
 }  // namespace blink

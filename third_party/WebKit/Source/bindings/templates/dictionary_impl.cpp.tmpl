@@ -51,10 +51,10 @@ void {{cpp_class}}::{{member.null_setter_name}}() {
 
 DEFINE_TRACE({{cpp_class}}) {
   {% for member in members if member.is_traceable %}
-  visitor->trace(m_{{member.cpp_name}});
+  visitor->Trace(m_{{member.cpp_name}});
   {% endfor %}
   {% if parent_cpp_class %}
-  {{parent_cpp_class}}::trace(visitor);
+  {{parent_cpp_class}}::Trace(visitor);
   {% endif %}
 }
 

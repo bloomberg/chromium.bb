@@ -53,7 +53,7 @@ class V8DOMActivityLogger;
 class V8PerContextData;
 
 enum V8ContextEmbedderDataField {
-  v8ContextPerContextDataIndex =
+  kV8ContextPerContextDataIndex =
       static_cast<int>(gin::kPerContextDataStartIndex + gin::kEmbedderBlink),
 };
 
@@ -62,45 +62,45 @@ class CORE_EXPORT V8PerContextData final {
   WTF_MAKE_NONCOPYABLE(V8PerContextData);
 
  public:
-  static std::unique_ptr<V8PerContextData> create(v8::Local<v8::Context>);
+  static std::unique_ptr<V8PerContextData> Create(v8::Local<v8::Context>);
 
-  static V8PerContextData* from(v8::Local<v8::Context>);
+  static V8PerContextData* From(v8::Local<v8::Context>);
 
   ~V8PerContextData();
 
-  v8::Local<v8::Context> context() { return m_context.newLocal(m_isolate); }
+  v8::Local<v8::Context> GetContext() { return context_.NewLocal(isolate_); }
 
   // To create JS Wrapper objects, we create a cache of a 'boiler plate'
   // object, and then simply Clone that object each time we need a new one.
   // This is faster than going through the full object creation process.
-  v8::Local<v8::Object> createWrapperFromCache(const WrapperTypeInfo* type) {
-    v8::Local<v8::Object> boilerplate = m_wrapperBoilerplates.Get(type);
+  v8::Local<v8::Object> CreateWrapperFromCache(const WrapperTypeInfo* type) {
+    v8::Local<v8::Object> boilerplate = wrapper_boilerplates_.Get(type);
     return !boilerplate.IsEmpty() ? boilerplate->Clone()
-                                  : createWrapperFromCacheSlowCase(type);
+                                  : CreateWrapperFromCacheSlowCase(type);
   }
 
-  v8::Local<v8::Function> constructorForType(const WrapperTypeInfo* type) {
-    v8::Local<v8::Function> interfaceObject = m_constructorMap.Get(type);
-    return (!interfaceObject.IsEmpty()) ? interfaceObject
-                                        : constructorForTypeSlowCase(type);
+  v8::Local<v8::Function> ConstructorForType(const WrapperTypeInfo* type) {
+    v8::Local<v8::Function> interface_object = constructor_map_.Get(type);
+    return (!interface_object.IsEmpty()) ? interface_object
+                                         : ConstructorForTypeSlowCase(type);
   }
 
-  v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
+  v8::Local<v8::Object> PrototypeForType(const WrapperTypeInfo*);
 
   // Gets the constructor and prototype for a type, if they have already been
   // created. Returns true if they exist, and sets the existing values in
   // |prototypeObject| and |interfaceObject|. Otherwise, returns false, and the
   // values are set to empty objects (non-null).
-  bool getExistingConstructorAndPrototypeForType(
+  bool GetExistingConstructorAndPrototypeForType(
       const WrapperTypeInfo*,
-      v8::Local<v8::Object>* prototypeObject,
-      v8::Local<v8::Function>* interfaceObject);
+      v8::Local<v8::Object>* prototype_object,
+      v8::Local<v8::Function>* interface_object);
 
-  void addCustomElementBinding(std::unique_ptr<V0CustomElementBinding>);
+  void AddCustomElementBinding(std::unique_ptr<V0CustomElementBinding>);
 
-  V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
-  void setActivityLogger(V8DOMActivityLogger* activityLogger) {
-    m_activityLogger = activityLogger;
+  V8DOMActivityLogger* ActivityLogger() const { return activity_logger_; }
+  void SetActivityLogger(V8DOMActivityLogger* activity_logger) {
+    activity_logger_ = activity_logger;
   }
 
   // Garbage collected classes that use V8PerContextData to hold an instance
@@ -108,42 +108,42 @@ class CORE_EXPORT V8PerContextData final {
   // instance.
   class CORE_EXPORT Data : public GarbageCollectedMixin {};
 
-  void addData(const char* key, Data*);
-  void clearData(const char* key);
-  Data* getData(const char* key);
+  void AddData(const char* key, Data*);
+  void ClearData(const char* key);
+  Data* GetData(const char* key);
 
  private:
   V8PerContextData(v8::Local<v8::Context>);
 
-  v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
-  v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);
+  v8::Local<v8::Object> CreateWrapperFromCacheSlowCase(const WrapperTypeInfo*);
+  v8::Local<v8::Function> ConstructorForTypeSlowCase(const WrapperTypeInfo*);
 
-  v8::Isolate* m_isolate;
+  v8::Isolate* isolate_;
 
   // For each possible type of wrapper, we keep a boilerplate object.
   // The boilerplate is used to create additional wrappers of the same type.
   typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Object, v8::kNotWeak>
       WrapperBoilerplateMap;
-  WrapperBoilerplateMap m_wrapperBoilerplates;
+  WrapperBoilerplateMap wrapper_boilerplates_;
 
   typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Function, v8::kNotWeak>
       ConstructorMap;
-  ConstructorMap m_constructorMap;
+  ConstructorMap constructor_map_;
 
-  std::unique_ptr<gin::ContextHolder> m_contextHolder;
+  std::unique_ptr<gin::ContextHolder> context_holder_;
 
-  ScopedPersistent<v8::Context> m_context;
-  ScopedPersistent<v8::Value> m_errorPrototype;
+  ScopedPersistent<v8::Context> context_;
+  ScopedPersistent<v8::Value> error_prototype_;
 
   typedef Vector<std::unique_ptr<V0CustomElementBinding>>
       V0CustomElementBindingList;
-  V0CustomElementBindingList m_customElementBindings;
+  V0CustomElementBindingList custom_element_bindings_;
 
   // This is owned by a static hash map in V8DOMActivityLogger.
-  V8DOMActivityLogger* m_activityLogger;
+  V8DOMActivityLogger* activity_logger_;
 
   using DataMap = PersistentHeapHashMap<const char*, Member<Data>>;
-  DataMap m_dataMap;
+  DataMap data_map_;
 };
 
 }  // namespace blink

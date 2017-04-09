@@ -17,48 +17,48 @@ namespace blink {
 
 namespace {
 
-String extractMetadata(Element& root) {
+String ExtractMetadata(Element& root) {
   StringBuilder result;
-  result.append("[");
+  result.Append("[");
   bool multiple = false;
-  for (Element& element : ElementTraversal::descendantsOf(root)) {
-    if (element.hasTagName(HTMLNames::scriptTag) &&
+  for (Element& element : ElementTraversal::DescendantsOf(root)) {
+    if (element.HasTagName(HTMLNames::scriptTag) &&
         element.getAttribute(HTMLNames::typeAttr) == "application/ld+json") {
       if (multiple) {
-        result.append(",");
+        result.Append(",");
       }
-      result.append(element.textContent());
+      result.Append(element.textContent());
       multiple = true;
     }
   }
-  result.append("]");
-  return result.toString();
+  result.Append("]");
+  return result.ToString();
 }
 
 }  // namespace
 
-String CopylessPasteExtractor::extract(Document& document) {
+String CopylessPasteExtractor::Extract(Document& document) {
   TRACE_EVENT0("blink", "CopylessPasteExtractor::extract");
 
-  if (!document.frame() || !document.frame()->isMainFrame())
-    return emptyString;
+  if (!document.GetFrame() || !document.GetFrame()->IsMainFrame())
+    return g_empty_string;
 
-  DCHECK(document.hasFinishedParsing());
+  DCHECK(document.HasFinishedParsing());
 
   Element* html = document.documentElement();
   if (!html)
-    return emptyString;
+    return g_empty_string;
 
-  double startTime = monotonicallyIncreasingTime();
+  double start_time = MonotonicallyIncreasingTime();
 
   // Traverse the DOM tree and extract the metadata.
-  String result = extractMetadata(*html);
+  String result = ExtractMetadata(*html);
 
-  double elapsedTime = monotonicallyIncreasingTime() - startTime;
+  double elapsed_time = MonotonicallyIncreasingTime() - start_time;
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, extractionHistogram,
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, extraction_histogram,
                       ("CopylessPaste.ExtractionUs", 1, 1000000, 50));
-  extractionHistogram.count(static_cast<int>(1e6 * elapsedTime));
+  extraction_histogram.Count(static_cast<int>(1e6 * elapsed_time));
   return result;
 }
 

@@ -14,15 +14,15 @@ namespace {
 
 TEST(PresentationRequestTest, TestSingleUrlConstructor) {
   V8TestingScope scope;
-  PresentationRequest* request = PresentationRequest::create(
-      scope.getExecutionContext(), "https://example.com",
-      scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PresentationRequest* request = PresentationRequest::Create(
+      scope.GetExecutionContext(), "https://example.com",
+      scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  WTF::Vector<KURL> requestUrls = request->urls();
-  EXPECT_EQ(static_cast<size_t>(1), requestUrls.size());
-  EXPECT_TRUE(requestUrls[0].isValid());
-  EXPECT_EQ("https://example.com/", requestUrls[0].getString());
+  WTF::Vector<KURL> request_urls = request->Urls();
+  EXPECT_EQ(static_cast<size_t>(1), request_urls.size());
+  EXPECT_TRUE(request_urls[0].IsValid());
+  EXPECT_EQ("https://example.com/", request_urls[0].GetString());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructor) {
@@ -31,16 +31,16 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructor) {
   urls.push_back("https://example.com");
   urls.push_back("cast://deadbeef?param=foo");
 
-  PresentationRequest* request = PresentationRequest::create(
-      scope.getExecutionContext(), urls, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PresentationRequest* request = PresentationRequest::Create(
+      scope.GetExecutionContext(), urls, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  WTF::Vector<KURL> requestUrls = request->urls();
-  EXPECT_EQ(static_cast<size_t>(2), requestUrls.size());
-  EXPECT_TRUE(requestUrls[0].isValid());
-  EXPECT_EQ("https://example.com/", requestUrls[0].getString());
-  EXPECT_TRUE(requestUrls[1].isValid());
-  EXPECT_EQ("cast://deadbeef?param=foo", requestUrls[1].getString());
+  WTF::Vector<KURL> request_urls = request->Urls();
+  EXPECT_EQ(static_cast<size_t>(2), request_urls.size());
+  EXPECT_TRUE(request_urls[0].IsValid());
+  EXPECT_EQ("https://example.com/", request_urls[0].GetString());
+  EXPECT_TRUE(request_urls[1].IsValid());
+  EXPECT_EQ("cast://deadbeef?param=foo", request_urls[1].GetString());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidURLFamily) {
@@ -49,11 +49,11 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidURLFamily) {
   urls.push_back("https://example.com");
   urls.push_back("about://deadbeef?param=foo");
 
-  PresentationRequest::create(scope.getExecutionContext(), urls,
-                              scope.getExceptionState());
-  ASSERT_TRUE(scope.getExceptionState().hadException());
+  PresentationRequest::Create(scope.GetExecutionContext(), urls,
+                              scope.GetExceptionState());
+  ASSERT_TRUE(scope.GetExceptionState().HadException());
 
-  EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
@@ -62,46 +62,46 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
   urls.push_back("https://example.com");
   urls.push_back("");
 
-  PresentationRequest::create(scope.getExecutionContext(), urls,
-                              scope.getExceptionState());
-  EXPECT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(SyntaxError, scope.getExceptionState().code());
+  PresentationRequest::Create(scope.GetExecutionContext(), urls,
+                              scope.GetExceptionState());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
 }
 
 TEST(PresentationRequestTest, TestSingleUrlConstructorMixedContent) {
   V8TestingScope scope;
-  scope.getExecutionContext()->securityContext().setSecurityOrigin(
-      SecurityOrigin::createFromString("https://example.test"));
+  scope.GetExecutionContext()->GetSecurityContext().SetSecurityOrigin(
+      SecurityOrigin::CreateFromString("https://example.test"));
 
-  PresentationRequest::create(scope.getExecutionContext(), "http://example.com",
-                              scope.getExceptionState());
-  EXPECT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(SecurityError, scope.getExceptionState().code());
+  PresentationRequest::Create(scope.GetExecutionContext(), "http://example.com",
+                              scope.GetExceptionState());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(kSecurityError, scope.GetExceptionState().Code());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorMixedContent) {
   V8TestingScope scope;
-  scope.getExecutionContext()->securityContext().setSecurityOrigin(
-      SecurityOrigin::createFromString("https://example.test"));
+  scope.GetExecutionContext()->GetSecurityContext().SetSecurityOrigin(
+      SecurityOrigin::CreateFromString("https://example.test"));
 
   WTF::Vector<String> urls;
   urls.push_back("http://example.com");
   urls.push_back("https://example1.com");
 
-  PresentationRequest::create(scope.getExecutionContext(), urls,
-                              scope.getExceptionState());
-  EXPECT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(SecurityError, scope.getExceptionState().code());
+  PresentationRequest::Create(scope.GetExecutionContext(), urls,
+                              scope.GetExceptionState());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(kSecurityError, scope.GetExceptionState().Code());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorEmptySequence) {
   V8TestingScope scope;
   WTF::Vector<String> urls;
 
-  PresentationRequest::create(scope.getExecutionContext(), urls,
-                              scope.getExceptionState());
-  EXPECT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(NotSupportedError, scope.getExceptionState().code());
+  PresentationRequest::Create(scope.GetExecutionContext(), urls,
+                              scope.GetExceptionState());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(kNotSupportedError, scope.GetExceptionState().Code());
 }
 
 }  // anonymous namespace

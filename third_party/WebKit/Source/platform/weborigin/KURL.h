@@ -44,7 +44,7 @@ namespace blink {
 
 struct KURLHash;
 
-enum ParsedURLStringTag { ParsedURLString };
+enum ParsedURLStringTag { kParsedURLString };
 
 class PLATFORM_EXPORT KURL {
   USING_FAST_MALLOC(KURL);
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT KURL {
  public:
   // This must be called during initialization (before we create
   // other threads).
-  static void initialize();
+  static void Initialize();
 
   KURL();
   KURL(const KURL&);
@@ -66,10 +66,10 @@ class PLATFORM_EXPORT KURL {
   explicit KURL(WTF::HashTableDeletedValueType);
 
   // Creates an isolated URL object suitable for sending to another thread.
-  static KURL createIsolated(ParsedURLStringTag, const String&);
+  static KURL CreateIsolated(ParsedURLStringTag, const String&);
 
-  bool isHashTableDeletedValue() const {
-    return getString().isHashTableDeletedValue();
+  bool IsHashTableDeletedValue() const {
+    return GetString().IsHashTableDeletedValue();
   }
 
   // Resolves the relative URL with the given base URL. If provided, the
@@ -85,12 +85,12 @@ class PLATFORM_EXPORT KURL {
   // For conversions from other structures that have already parsed and
   // canonicalized the URL. The input must be exactly what KURL would have
   // done with the same input.
-  KURL(const AtomicString& canonicalString, const url::Parsed&, bool isValid);
+  KURL(const AtomicString& canonical_string, const url::Parsed&, bool is_valid);
 
   ~KURL();
 
-  String strippedForUseAsReferrer() const;
-  String strippedForUseAsHref() const;
+  String StrippedForUseAsReferrer() const;
+  String StrippedForUseAsHref() const;
 
   // FIXME: The above functions should be harmonized so that passing a
   // base of null or the empty string gives the same result as the
@@ -99,127 +99,127 @@ class PLATFORM_EXPORT KURL {
   // Makes a deep copy. Helpful only if you need to use a KURL on another
   // thread. Since the underlying StringImpl objects are immutable, there's
   // no other reason to ever prefer copy() over plain old assignment.
-  KURL copy() const;
+  KURL Copy() const;
 
-  bool isNull() const;
-  bool isEmpty() const;
-  bool isValid() const;
+  bool IsNull() const;
+  bool IsEmpty() const;
+  bool IsValid() const;
 
   // Returns true if this URL has a path. Note that "http://foo.com/" has a
   // path of "/", so this function will return true. Only invalid or
   // non-hierarchical (like "javascript:") URLs will have no path.
-  bool hasPath() const;
+  bool HasPath() const;
 
   // Returns true if you can set the host and port for the URL.
   // Non-hierarchical URLs don't have a host and port.
-  bool canSetHostOrPort() const { return isHierarchical(); }
+  bool CanSetHostOrPort() const { return IsHierarchical(); }
 
-  bool canSetPathname() const { return isHierarchical(); }
-  bool isHierarchical() const;
+  bool CanSetPathname() const { return IsHierarchical(); }
+  bool IsHierarchical() const;
 
-  const String& getString() const { return m_string; }
+  const String& GetString() const { return string_; }
 
-  String elidedString() const;
+  String ElidedString() const;
 
-  String protocol() const;
-  String host() const;
-  unsigned short port() const;
-  bool hasPort() const;
-  String user() const;
-  String pass() const;
-  String path() const;
+  String Protocol() const;
+  String Host() const;
+  unsigned short Port() const;
+  bool HasPort() const;
+  String User() const;
+  String Pass() const;
+  String GetPath() const;
   // This method handles "parameters" separated by a semicolon.
-  String lastPathComponent() const;
-  String query() const;
-  String fragmentIdentifier() const;
-  bool hasFragmentIdentifier() const;
+  String LastPathComponent() const;
+  String Query() const;
+  String FragmentIdentifier() const;
+  bool HasFragmentIdentifier() const;
 
-  String baseAsString() const;
+  String BaseAsString() const;
 
   // Returns true if the current URL's protocol is the same as the StringView
   // argument. The argument must be lower-case.
-  bool protocolIs(const StringView protocol) const;
-  bool protocolIsData() const { return protocolIs("data"); }
+  bool ProtocolIs(const StringView protocol) const;
+  bool ProtocolIsData() const { return ProtocolIs("data"); }
   // This includes at least about:blank and about:srcdoc.
-  bool protocolIsAbout() const { return protocolIs("about"); }
-  bool protocolIsJavaScript() const;
-  bool protocolIsInHTTPFamily() const;
-  bool isLocalFile() const;
-  bool isAboutBlankURL() const;   // Is exactly about:blank.
-  bool isAboutSrcdocURL() const;  // Is exactly about:srcdoc.
+  bool ProtocolIsAbout() const { return ProtocolIs("about"); }
+  bool ProtocolIsJavaScript() const;
+  bool ProtocolIsInHTTPFamily() const;
+  bool IsLocalFile() const;
+  bool IsAboutBlankURL() const;   // Is exactly about:blank.
+  bool IsAboutSrcdocURL() const;  // Is exactly about:srcdoc.
 
-  bool setProtocol(const String&);
-  void setHost(const String&);
+  bool SetProtocol(const String&);
+  void SetHost(const String&);
 
-  void removePort();
-  void setPort(unsigned short);
-  void setPort(const String&);
+  void RemovePort();
+  void SetPort(unsigned short);
+  void SetPort(const String&);
 
   // Input is like "foo.com" or "foo.com:8000".
-  void setHostAndPort(const String&);
+  void SetHostAndPort(const String&);
 
-  void setUser(const String&);
-  void setPass(const String&);
+  void SetUser(const String&);
+  void SetPass(const String&);
 
   // If you pass an empty path for HTTP or HTTPS URLs, the resulting path
   // will be "/".
-  void setPath(const String&);
+  void SetPath(const String&);
 
   // The query may begin with a question mark, or, if not, one will be added
   // for you. Setting the query to the empty string will leave a "?" in the
   // URL (with nothing after it). To clear the query, pass a null string.
-  void setQuery(const String&);
+  void SetQuery(const String&);
 
-  void setFragmentIdentifier(const String&);
-  void removeFragmentIdentifier();
+  void SetFragmentIdentifier(const String&);
+  void RemoveFragmentIdentifier();
 
-  PLATFORM_EXPORT friend bool equalIgnoringFragmentIdentifier(const KURL&,
+  PLATFORM_EXPORT friend bool EqualIgnoringFragmentIdentifier(const KURL&,
                                                               const KURL&);
 
-  unsigned hostStart() const;
-  unsigned hostEnd() const;
+  unsigned HostStart() const;
+  unsigned HostEnd() const;
 
-  unsigned pathStart() const;
-  unsigned pathEnd() const;
-  unsigned pathAfterLastSlash() const;
+  unsigned PathStart() const;
+  unsigned PathEnd() const;
+  unsigned PathAfterLastSlash() const;
 
-  operator const String&() const { return getString(); }
-  operator StringView() const { return StringView(getString()); }
+  operator const String&() const { return GetString(); }
+  operator StringView() const { return StringView(GetString()); }
 
-  const url::Parsed& parsed() const { return m_parsed; }
+  const url::Parsed& GetParsed() const { return parsed_; }
 
-  const KURL* innerURL() const { return m_innerURL.get(); }
+  const KURL* InnerURL() const { return inner_url_.get(); }
 
-  bool isSafeToSendToAnotherThread() const;
+  bool IsSafeToSendToAnotherThread() const;
 
-  bool whitespaceRemoved() const { return m_parsed.whitespace_removed; }
+  bool WhitespaceRemoved() const { return parsed_.whitespace_removed; }
 
  private:
-  void init(const KURL& base,
+  void Init(const KURL& base,
             const String& relative,
-            const WTF::TextEncoding* queryEncoding);
+            const WTF::TextEncoding* query_encoding);
 
-  StringView componentStringView(const url::Component&) const;
-  String componentString(const url::Component&) const;
-  StringView stringViewForInvalidComponent() const;
+  StringView ComponentStringView(const url::Component&) const;
+  String ComponentString(const url::Component&) const;
+  StringView StringViewForInvalidComponent() const;
 
   template <typename CHAR>
-  void replaceComponents(const url::Replacements<CHAR>&);
+  void ReplaceComponents(const url::Replacements<CHAR>&);
 
-  void initInnerURL();
-  void initProtocolMetadata();
+  void InitInnerURL();
+  void InitProtocolMetadata();
 
-  bool m_isValid;
-  bool m_protocolIsInHTTPFamily;
+  bool is_valid_;
+  bool protocol_is_in_http_family_;
 
   // Keep a separate string for the protocol to avoid copious copies for
   // protocol(). Normally this will be Atomic, except when constructed via
   // KURL::copy(), which is deep.
-  String m_protocol;
+  String protocol_;
 
-  url::Parsed m_parsed;
-  String m_string;
-  std::unique_ptr<KURL> m_innerURL;
+  url::Parsed parsed_;
+  String string_;
+  std::unique_ptr<KURL> inner_url_;
 };
 
 PLATFORM_EXPORT bool operator==(const KURL&, const KURL&);
@@ -229,10 +229,10 @@ PLATFORM_EXPORT bool operator!=(const KURL&, const KURL&);
 PLATFORM_EXPORT bool operator!=(const KURL&, const String&);
 PLATFORM_EXPORT bool operator!=(const String&, const KURL&);
 
-PLATFORM_EXPORT bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
+PLATFORM_EXPORT bool EqualIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
-PLATFORM_EXPORT const KURL& blankURL();
-PLATFORM_EXPORT const KURL& srcdocURL();
+PLATFORM_EXPORT const KURL& BlankURL();
+PLATFORM_EXPORT const KURL& SrcdocURL();
 
 // Functions to do URL operations on strings.
 // These are operations that aren't faster on a parsed URL.
@@ -240,10 +240,10 @@ PLATFORM_EXPORT const KURL& srcdocURL();
 // the string to be a valid and parsable URL.  This is especially important
 // because valid javascript URLs are not necessarily considered valid by KURL.
 
-PLATFORM_EXPORT bool protocolIs(const String& url, const char* protocol);
-PLATFORM_EXPORT bool protocolIsJavaScript(const String& url);
+PLATFORM_EXPORT bool ProtocolIs(const String& url, const char* protocol);
+PLATFORM_EXPORT bool ProtocolIsJavaScript(const String& url);
 
-PLATFORM_EXPORT bool isValidProtocol(const String&);
+PLATFORM_EXPORT bool IsValidProtocol(const String&);
 
 // Unescapes the given string using URL escaping rules, given an optional
 // encoding (defaulting to UTF-8 otherwise).
@@ -253,36 +253,36 @@ PLATFORM_EXPORT bool isValidProtocol(const String&);
 //
 // This function is also used to decode javascript: URLs and as a general
 // purpose unescaping function.
-PLATFORM_EXPORT String decodeURLEscapeSequences(const String&);
-PLATFORM_EXPORT String decodeURLEscapeSequences(const String&,
+PLATFORM_EXPORT String DecodeURLEscapeSequences(const String&);
+PLATFORM_EXPORT String DecodeURLEscapeSequences(const String&,
                                                 const WTF::TextEncoding&);
 
-PLATFORM_EXPORT String encodeWithURLEscapeSequences(const String&);
+PLATFORM_EXPORT String EncodeWithURLEscapeSequences(const String&);
 
 // Inlines.
 
 inline bool operator==(const KURL& a, const KURL& b) {
-  return a.getString() == b.getString();
+  return a.GetString() == b.GetString();
 }
 
 inline bool operator==(const KURL& a, const String& b) {
-  return a.getString() == b;
+  return a.GetString() == b;
 }
 
 inline bool operator==(const String& a, const KURL& b) {
-  return a == b.getString();
+  return a == b.GetString();
 }
 
 inline bool operator!=(const KURL& a, const KURL& b) {
-  return a.getString() != b.getString();
+  return a.GetString() != b.GetString();
 }
 
 inline bool operator!=(const KURL& a, const String& b) {
-  return a.getString() != b;
+  return a.GetString() != b;
 }
 
 inline bool operator!=(const String& a, const KURL& b) {
-  return a != b.getString();
+  return a != b.GetString();
 }
 
 }  // namespace blink

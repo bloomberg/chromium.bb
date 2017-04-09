@@ -48,40 +48,40 @@ class CORE_EXPORT MutationObserverRegistration final
     : public GarbageCollectedFinalized<MutationObserverRegistration>,
       public TraceWrapperBase {
  public:
-  static MutationObserverRegistration* create(
+  static MutationObserverRegistration* Create(
       MutationObserver&,
       Node*,
       MutationObserverOptions,
-      const HashSet<AtomicString>& attributeFilter);
+      const HashSet<AtomicString>& attribute_filter);
   ~MutationObserverRegistration();
 
-  void resetObservation(MutationObserverOptions,
-                        const HashSet<AtomicString>& attributeFilter);
-  void observedSubtreeNodeWillDetach(Node&);
-  void clearTransientRegistrations();
-  bool hasTransientRegistrations() const {
-    return m_transientRegistrationNodes &&
-           !m_transientRegistrationNodes->isEmpty();
+  void ResetObservation(MutationObserverOptions,
+                        const HashSet<AtomicString>& attribute_filter);
+  void ObservedSubtreeNodeWillDetach(Node&);
+  void ClearTransientRegistrations();
+  bool HasTransientRegistrations() const {
+    return transient_registration_nodes_ &&
+           !transient_registration_nodes_->IsEmpty();
   }
-  void unregister();
+  void Unregister();
 
-  bool shouldReceiveMutationFrom(Node&,
+  bool ShouldReceiveMutationFrom(Node&,
                                  MutationObserver::MutationType,
-                                 const QualifiedName* attributeName) const;
-  bool isSubtree() const { return m_options & MutationObserver::Subtree; }
+                                 const QualifiedName* attribute_name) const;
+  bool IsSubtree() const { return options_ & MutationObserver::kSubtree; }
 
-  MutationObserver& observer() const { return *m_observer; }
-  MutationRecordDeliveryOptions deliveryOptions() const {
-    return m_options & (MutationObserver::AttributeOldValue |
-                        MutationObserver::CharacterDataOldValue);
+  MutationObserver& Observer() const { return *observer_; }
+  MutationRecordDeliveryOptions DeliveryOptions() const {
+    return options_ & (MutationObserver::kAttributeOldValue |
+                       MutationObserver::kCharacterDataOldValue);
   }
-  MutationObserverOptions mutationTypes() const {
-    return m_options & MutationObserver::AllMutationTypes;
+  MutationObserverOptions MutationTypes() const {
+    return options_ & MutationObserver::kAllMutationTypes;
   }
 
-  void addRegistrationNodesToSet(HeapHashSet<Member<Node>>&) const;
+  void AddRegistrationNodesToSet(HeapHashSet<Member<Node>>&) const;
 
-  void dispose();
+  void Dispose();
 
   DECLARE_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -90,16 +90,16 @@ class CORE_EXPORT MutationObserverRegistration final
   MutationObserverRegistration(MutationObserver&,
                                Node*,
                                MutationObserverOptions,
-                               const HashSet<AtomicString>& attributeFilter);
+                               const HashSet<AtomicString>& attribute_filter);
 
-  TraceWrapperMember<MutationObserver> m_observer;
-  WeakMember<Node> m_registrationNode;
-  Member<Node> m_registrationNodeKeepAlive;
+  TraceWrapperMember<MutationObserver> observer_;
+  WeakMember<Node> registration_node_;
+  Member<Node> registration_node_keep_alive_;
   typedef HeapHashSet<Member<Node>> NodeHashSet;
-  Member<NodeHashSet> m_transientRegistrationNodes;
+  Member<NodeHashSet> transient_registration_nodes_;
 
-  MutationObserverOptions m_options;
-  HashSet<AtomicString> m_attributeFilter;
+  MutationObserverOptions options_;
+  HashSet<AtomicString> attribute_filter_;
 };
 
 }  // namespace blink

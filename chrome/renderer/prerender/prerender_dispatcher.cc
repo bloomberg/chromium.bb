@@ -25,11 +25,11 @@ using blink::WebPrerender;
 using blink::WebPrerenderingSupport;
 
 PrerenderDispatcher::PrerenderDispatcher() {
-  WebPrerenderingSupport::initialize(this);
+  WebPrerenderingSupport::Initialize(this);
 }
 
 PrerenderDispatcher::~PrerenderDispatcher() {
-  WebPrerenderingSupport::shutdown();
+  WebPrerenderingSupport::Shutdown();
 }
 
 bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
@@ -44,10 +44,10 @@ void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
   WebPrerender& prerender = it->second;
 
   // The prerender should only be null in unit tests.
-  if (prerender.isNull())
+  if (prerender.IsNull())
     return;
 
-  prerender.didStartPrerender();
+  prerender.DidStartPrerender();
 }
 
 void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
@@ -56,11 +56,11 @@ void PrerenderDispatcher::OnPrerenderStopLoading(int prerender_id) {
     return;
 
   WebPrerender& prerender = it->second;
-  DCHECK(!prerender.isNull())
+  DCHECK(!prerender.IsNull())
       << "OnPrerenderStopLoading shouldn't be called from a unit test, the only"
       << "context in which a WebPrerender in the dispatcher can be null.";
 
-  prerender.didSendLoadForPrerender();
+  prerender.DidSendLoadForPrerender();
 }
 
 void PrerenderDispatcher::OnPrerenderDomContentLoaded(int prerender_id) {
@@ -69,12 +69,12 @@ void PrerenderDispatcher::OnPrerenderDomContentLoaded(int prerender_id) {
     return;
 
   WebPrerender& prerender = it->second;
-  DCHECK(!prerender.isNull())
+  DCHECK(!prerender.IsNull())
       << "OnPrerenderDomContentLoaded shouldn't be called from a unit test,"
       << " the only context in which a WebPrerender in the dispatcher can be"
       << " null.";
 
-  prerender.didSendDOMContentLoadedForPrerender();
+  prerender.DidSendDOMContentLoadedForPrerender();
 }
 
 void PrerenderDispatcher::OnPrerenderAddAlias(const GURL& alias) {
@@ -98,8 +98,8 @@ void PrerenderDispatcher::OnPrerenderStop(int prerender_id) {
   WebPrerender& prerender = it->second;
 
   // The prerender should only be null in unit tests.
-  if (!prerender.isNull())
-    prerender.didStopPrerender();
+  if (!prerender.IsNull())
+    prerender.DidStopPrerender();
 
   // TODO(cbentzel): We'd also want to send the map of active prerenders when
   // creating a new render process, so the Add/Remove go relative to that.
@@ -139,7 +139,7 @@ void PrerenderDispatcher::OnRenderProcessShutdown() {
   prerenders_.clear();
 }
 
-void PrerenderDispatcher::add(const WebPrerender& prerender) {
+void PrerenderDispatcher::Add(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
   if (prerenders_.count(extra_data.prerender_id()) != 0) {
@@ -150,19 +150,19 @@ void PrerenderDispatcher::add(const WebPrerender& prerender) {
   prerenders_[extra_data.prerender_id()] = prerender;
 
   PrerenderAttributes attributes;
-  attributes.url = GURL(prerender.url());
-  attributes.rel_types = prerender.relTypes();
+  attributes.url = GURL(prerender.Url());
+  attributes.rel_types = prerender.RelTypes();
 
   content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(
       extra_data.prerender_id(), attributes,
       content::Referrer::SanitizeForRequest(
-          GURL(prerender.url()),
-          content::Referrer(blink::WebStringToGURL(prerender.referrer()),
-                            prerender.getReferrerPolicy())),
+          GURL(prerender.Url()),
+          content::Referrer(blink::WebStringToGURL(prerender.GetReferrer()),
+                            prerender.GetReferrerPolicy())),
       extra_data.size(), extra_data.render_view_route_id()));
 }
 
-void PrerenderDispatcher::cancel(const WebPrerender& prerender) {
+void PrerenderDispatcher::Cancel(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
   content::RenderThread::Get()->Send(
@@ -174,7 +174,7 @@ void PrerenderDispatcher::cancel(const WebPrerender& prerender) {
   prerenders_.erase(extra_data.prerender_id());
 }
 
-void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
+void PrerenderDispatcher::Abandon(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);
   content::RenderThread::Get()->Send(
@@ -186,7 +186,7 @@ void PrerenderDispatcher::abandon(const WebPrerender& prerender) {
   prerenders_.erase(extra_data.prerender_id());
 }
 
-void PrerenderDispatcher::prefetchFinished() {
+void PrerenderDispatcher::PrefetchFinished() {
   content::RenderThread::Get()->Send(new PrerenderHostMsg_PrefetchFinished());
 }
 

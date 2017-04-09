@@ -34,29 +34,29 @@
 
 namespace blink {
 
-inline const ComputedStyle* Node::computedStyle() const {
-  return mutableComputedStyle();
+inline const ComputedStyle* Node::GetComputedStyle() const {
+  return MutableComputedStyle();
 }
 
-inline ComputedStyle* Node::mutableComputedStyle() const {
-  if (LayoutObject* layoutObject = this->layoutObject())
-    return layoutObject->mutableStyle();
+inline ComputedStyle* Node::MutableComputedStyle() const {
+  if (LayoutObject* layout_object = this->GetLayoutObject())
+    return layout_object->MutableStyle();
 
-  if (isElementNode())
-    return toElement(this)->mutableNonLayoutObjectComputedStyle();
+  if (IsElementNode())
+    return ToElement(this)->MutableNonLayoutObjectComputedStyle();
 
   return 0;
 }
 
-inline const ComputedStyle* Node::parentComputedStyle() const {
-  if (isActiveSlotOrActiveInsertionPoint())
+inline const ComputedStyle* Node::ParentComputedStyle() const {
+  if (IsActiveSlotOrActiveInsertionPoint())
     return 0;
-  ContainerNode* parent = LayoutTreeBuilderTraversal::parent(*this);
-  return parent ? parent->computedStyle() : 0;
+  ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
+  return parent ? parent->GetComputedStyle() : 0;
 }
 
-inline const ComputedStyle& Node::computedStyleRef() const {
-  const ComputedStyle* style = computedStyle();
+inline const ComputedStyle& Node::ComputedStyleRef() const {
+  const ComputedStyle* style = GetComputedStyle();
   DCHECK(style);
   return *style;
 }

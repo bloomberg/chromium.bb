@@ -44,14 +44,14 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
     kDomKeyLocationNumpad = 0x03
   };
 
-  static KeyboardEvent* create() { return new KeyboardEvent; }
+  static KeyboardEvent* Create() { return new KeyboardEvent; }
 
-  static KeyboardEvent* create(const WebKeyboardEvent& webEvent,
-                               LocalDOMWindow* domWindow) {
-    return new KeyboardEvent(webEvent, domWindow);
+  static KeyboardEvent* Create(const WebKeyboardEvent& web_event,
+                               LocalDOMWindow* dom_window) {
+    return new KeyboardEvent(web_event, dom_window);
   }
 
-  static KeyboardEvent* create(ScriptState*,
+  static KeyboardEvent* Create(ScriptState*,
                                const AtomicString& type,
                                const KeyboardEventInit&);
 
@@ -60,32 +60,32 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
 
   void initKeyboardEvent(ScriptState*,
                          const AtomicString& type,
-                         bool canBubble,
+                         bool can_bubble,
                          bool cancelable,
                          AbstractView*,
-                         const String& keyIdentifier,
+                         const String& key_identifier,
                          unsigned location,
-                         bool ctrlKey,
-                         bool altKey,
-                         bool shiftKey,
-                         bool metaKey);
+                         bool ctrl_key,
+                         bool alt_key,
+                         bool shift_key,
+                         bool meta_key);
 
-  const String& code() const { return m_code; }
-  const String& key() const { return m_key; }
+  const String& code() const { return code_; }
+  const String& key() const { return key_; }
 
-  unsigned location() const { return m_location; }
+  unsigned location() const { return location_; }
 
-  const WebKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
+  const WebKeyboardEvent* KeyEvent() const { return key_event_.get(); }
 
   int keyCode()
       const;  // key code for keydown and keyup, character for keypress
   int charCode() const;  // character code for keypress, 0 for keydown and keyup
-  bool repeat() const { return modifiers() & WebInputEvent::IsAutoRepeat; }
+  bool repeat() const { return GetModifiers() & WebInputEvent::kIsAutoRepeat; }
 
-  const AtomicString& interfaceName() const override;
-  bool isKeyboardEvent() const override;
+  const AtomicString& InterfaceName() const override;
+  bool IsKeyboardEvent() const override;
   int which() const override;
-  bool isComposing() const { return m_isComposing; }
+  bool isComposing() const { return is_composing_; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -93,13 +93,13 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   KeyboardEvent();
   KeyboardEvent(const WebKeyboardEvent&, LocalDOMWindow*);
 
-  void initLocationModifiers(unsigned location);
+  void InitLocationModifiers(unsigned location);
 
-  std::unique_ptr<WebKeyboardEvent> m_keyEvent;
-  String m_code;
-  String m_key;
-  unsigned m_location;
-  bool m_isComposing;
+  std::unique_ptr<WebKeyboardEvent> key_event_;
+  String code_;
+  String key_;
+  unsigned location_;
+  bool is_composing_;
 };
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);

@@ -15,20 +15,20 @@
 
 namespace blink {
 
-void transformDocumentToXMLTreeView(Document& document) {
-  String scriptString = loadResourceAsASCIIString("DocumentXMLTreeViewer.js");
-  String cssString = loadResourceAsASCIIString("DocumentXMLTreeViewer.css");
+void TransformDocumentToXMLTreeView(Document& document) {
+  String script_string = LoadResourceAsASCIIString("DocumentXMLTreeViewer.js");
+  String css_string = LoadResourceAsASCIIString("DocumentXMLTreeViewer.css");
 
   HeapVector<ScriptSourceCode> sources;
-  sources.push_back(ScriptSourceCode(scriptString));
-  v8::HandleScope handleScope(V8PerIsolateData::mainThreadIsolate());
+  sources.push_back(ScriptSourceCode(script_string));
+  v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
 
-  document.frame()->script().executeScriptInIsolatedWorld(
-      DOMWrapperWorld::DocumentXMLTreeViewerWorldId, sources, nullptr);
+  document.GetFrame()->Script().ExecuteScriptInIsolatedWorld(
+      DOMWrapperWorld::kDocumentXMLTreeViewerWorldId, sources, nullptr);
 
-  Element* element = document.getElementById("xml-viewer-style");
+  Element* element = document.GetElementById("xml-viewer-style");
   if (element) {
-    element->setTextContent(cssString);
+    element->setTextContent(css_string);
   }
 }
 

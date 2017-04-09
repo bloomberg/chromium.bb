@@ -34,30 +34,30 @@ class SVGFEDropShadowElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
 
-  void setStdDeviation(float stdDeviationX, float stdDeviationY);
+  void setStdDeviation(float std_deviation_x, float std_deviation_y);
 
-  SVGAnimatedNumber* dx() { return m_dx.get(); }
-  SVGAnimatedNumber* dy() { return m_dy.get(); }
-  SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
-  SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedNumber* dx() { return dx_.Get(); }
+  SVGAnimatedNumber* dy() { return dy_.Get(); }
+  SVGAnimatedNumber* stdDeviationX() { return std_deviation_->FirstNumber(); }
+  SVGAnimatedNumber* stdDeviationY() { return std_deviation_->SecondNumber(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEDropShadowElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
-  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  static const AtomicString& stdDeviationXIdentifier();
-  static const AtomicString& stdDeviationYIdentifier();
+  static const AtomicString& StdDeviationXIdentifier();
+  static const AtomicString& StdDeviationYIdentifier();
 
-  Member<SVGAnimatedNumber> m_dx;
-  Member<SVGAnimatedNumber> m_dy;
-  Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedNumber> dx_;
+  Member<SVGAnimatedNumber> dy_;
+  Member<SVGAnimatedNumberOptionalNumber> std_deviation_;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

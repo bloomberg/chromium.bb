@@ -37,13 +37,13 @@ class CONTENT_EXPORT PepperWebSocketHost
       ppapi::host::HostMessageContext* context) override;
 
   // WebPepperSocketClient implementation.
-  void didConnect() override;
-  void didReceiveMessage(const blink::WebString& message) override;
-  void didReceiveArrayBuffer(const blink::WebArrayBuffer& binaryData) override;
-  void didReceiveMessageError() override;
-  void didUpdateBufferedAmount(unsigned long buffered_amount) override;
-  void didStartClosingHandshake() override;
-  void didClose(unsigned long unhandled_buffered_amount,
+  void DidConnect() override;
+  void DidReceiveMessage(const blink::WebString& message) override;
+  void DidReceiveArrayBuffer(const blink::WebArrayBuffer& binaryData) override;
+  void DidReceiveMessageError() override;
+  void DidUpdateBufferedAmount(unsigned long buffered_amount) override;
+  void DidStartClosingHandshake() override;
+  void DidClose(unsigned long unhandled_buffered_amount,
                 ClosingHandshakeCompletionStatus status,
                 unsigned short code,
                 const blink::WebString& reason) override;

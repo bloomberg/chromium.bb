@@ -24,17 +24,17 @@ class MODULES_EXPORT WindowAnimationWorklet final
  public:
   static AnimationWorklet* animationWorklet(LocalDOMWindow&);
 
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 
  private:
-  static WindowAnimationWorklet& from(LocalDOMWindow&);
+  static WindowAnimationWorklet& From(LocalDOMWindow&);
 
   explicit WindowAnimationWorklet(LocalDOMWindow&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<AnimationWorklet> m_animationWorklet;
+  Member<AnimationWorklet> animation_worklet_;
 };
 
 }  // namespace blink

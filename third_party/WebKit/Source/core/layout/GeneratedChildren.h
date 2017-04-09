@@ -13,20 +13,20 @@ namespace blink {
 // - the firstLetterBlock can have children in the DOM and
 // - the block doesn't have any special assumption on its text children.
 // This correctly prevents form controls from having such layoutObjects.
-static bool canHaveGeneratedChildren(const LayoutObject& layoutObject) {
+static bool CanHaveGeneratedChildren(const LayoutObject& layout_object) {
   // FIXME: LayoutMedia::layout makes assumptions about what children are
   // allowed so we can't support generated content.
-  if (layoutObject.isMedia() || layoutObject.isTextControl() ||
-      layoutObject.isMenuList())
+  if (layout_object.IsMedia() || layout_object.IsTextControl() ||
+      layout_object.IsMenuList())
     return false;
 
   // Input elements can't have generated children, but button elements can.
   // We'll write the code assuming any other button types that might emerge in
   // the future can also have children.
-  if (layoutObject.isLayoutButton())
-    return !isHTMLInputElement(*layoutObject.node());
+  if (layout_object.IsLayoutButton())
+    return !isHTMLInputElement(*layout_object.GetNode());
 
-  return layoutObject.canHaveChildren();
+  return layout_object.CanHaveChildren();
 }
 
 }  // namespace blink

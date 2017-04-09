@@ -33,34 +33,34 @@ class LayoutSVGResourceLinearGradient final : public LayoutSVGResourceGradient {
   explicit LayoutSVGResourceLinearGradient(SVGLinearGradientElement*);
   ~LayoutSVGResourceLinearGradient() override;
 
-  const char* name() const override {
+  const char* GetName() const override {
     return "LayoutSVGResourceLinearGradient";
   }
 
-  static const LayoutSVGResourceType s_resourceType =
-      LinearGradientResourceType;
-  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType kResourceType =
+      kLinearGradientResourceType;
+  LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
-  SVGUnitTypes::SVGUnitType gradientUnits() const override {
-    return attributes().gradientUnits();
+  SVGUnitTypes::SVGUnitType GradientUnits() const override {
+    return Attributes().GradientUnits();
   }
-  AffineTransform calculateGradientTransform() const override {
-    return attributes().gradientTransform();
+  AffineTransform CalculateGradientTransform() const override {
+    return Attributes().GradientTransform();
   }
-  bool collectGradientAttributes() override;
-  PassRefPtr<Gradient> buildGradient() const override;
+  bool CollectGradientAttributes() override;
+  PassRefPtr<Gradient> BuildGradient() const override;
 
-  FloatPoint startPoint(const LinearGradientAttributes&) const;
-  FloatPoint endPoint(const LinearGradientAttributes&) const;
+  FloatPoint StartPoint(const LinearGradientAttributes&) const;
+  FloatPoint EndPoint(const LinearGradientAttributes&) const;
 
  private:
-  Persistent<LinearGradientAttributesWrapper> m_attributesWrapper;
+  Persistent<LinearGradientAttributesWrapper> attributes_wrapper_;
 
-  LinearGradientAttributes& mutableAttributes() {
-    return m_attributesWrapper->attributes();
+  LinearGradientAttributes& MutableAttributes() {
+    return attributes_wrapper_->Attributes();
   }
-  const LinearGradientAttributes& attributes() const {
-    return m_attributesWrapper->attributes();
+  const LinearGradientAttributes& Attributes() const {
+    return attributes_wrapper_->Attributes();
   }
 };
 

@@ -108,10 +108,8 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
   [menu setDelegate:delegate];
   [menu setAutoenablesItems:NO];
 
-  if (params.media_type == WebContextMenuData::MediaTypeNone &&
-      !has_link &&
-      !has_selection &&
-      !params_.is_editable) {
+  if (params.media_type == WebContextMenuData::kMediaTypeNone && !has_link &&
+      !has_selection && !params_.is_editable) {
     BOOL back_menu_enabled =
         web_contents_->GetController().CanGoBack() ? YES : NO;
     MakeContextMenuItem(@"Back",
@@ -151,7 +149,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
 
   if (params_.is_editable) {
     BOOL cut_menu_enabled =
-        (params_.edit_flags & WebContextMenuData::CanCut) ? YES : NO;
+        (params_.edit_flags & WebContextMenuData::kCanCut) ? YES : NO;
     MakeContextMenuItem(@"Cut",
                         ShellContextMenuItemCutTag,
                         menu,
@@ -159,7 +157,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                         delegate);
 
     BOOL copy_menu_enabled =
-        (params_.edit_flags & WebContextMenuData::CanCopy) ? YES : NO;
+        (params_.edit_flags & WebContextMenuData::kCanCopy) ? YES : NO;
     MakeContextMenuItem(@"Copy",
                         ShellContextMenuItemCopyTag,
                         menu,
@@ -167,7 +165,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                         delegate);
 
     BOOL paste_menu_enabled =
-        (params_.edit_flags & WebContextMenuData::CanPaste) ? YES : NO;
+        (params_.edit_flags & WebContextMenuData::kCanPaste) ? YES : NO;
     MakeContextMenuItem(@"Paste",
                         ShellContextMenuItemPasteTag,
                         menu,
@@ -175,7 +173,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
                         delegate);
 
     BOOL delete_menu_enabled =
-        (params_.edit_flags & WebContextMenuData::CanDelete) ? YES : NO;
+        (params_.edit_flags & WebContextMenuData::kCanDelete) ? YES : NO;
     MakeContextMenuItem(@"Delete",
                         ShellContextMenuItemDeleteTag,
                         menu,

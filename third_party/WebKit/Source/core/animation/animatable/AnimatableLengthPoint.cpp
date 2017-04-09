@@ -32,10 +32,10 @@
 
 namespace blink {
 
-bool AnimatableLengthPoint::equalTo(const AnimatableValue* value) const {
-  const AnimatableLengthPoint* lengthPoint = toAnimatableLengthPoint(value);
-  return m_x->equals(lengthPoint->m_x.get()) &&
-         m_y->equals(lengthPoint->m_y.get());
+bool AnimatableLengthPoint::EqualTo(const AnimatableValue* value) const {
+  const AnimatableLengthPoint* length_point = ToAnimatableLengthPoint(value);
+  return x_->Equals(length_point->x_.Get()) &&
+         y_->Equals(length_point->y_.Get());
 }
 
 }  // namespace blink

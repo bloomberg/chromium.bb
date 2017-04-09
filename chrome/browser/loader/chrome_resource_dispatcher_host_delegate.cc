@@ -258,7 +258,7 @@ void AppendComponentUpdaterThrottles(
     ResourceType resource_type,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   bool is_prerendering =
-      info.GetVisibilityState() == blink::WebPageVisibilityStatePrerender;
+      info.GetVisibilityState() == blink::kWebPageVisibilityStatePrerender;
   if (is_prerendering)
     return;
 
@@ -452,7 +452,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 // TODO(lizeb,droger): Fix the issue on all platforms.
 #if !defined(OS_ANDROID)
   bool is_prerendering =
-      info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender;
+      info->GetVisibilityState() == blink::kWebPageVisibilityStatePrerender;
   if (is_prerendering) {
     // Requests with the IGNORE_LIMITS flag set (i.e., sync XHRs)
     // should remain at MAXIMUM_PRIORITY.
@@ -669,7 +669,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
+  if (info->GetVisibilityState() == blink::kWebPageVisibilityStatePrerender) {
     throttles->push_back(
         base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
   }

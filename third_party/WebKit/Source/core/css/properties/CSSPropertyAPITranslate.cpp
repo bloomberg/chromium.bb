@@ -15,24 +15,24 @@ const CSSValue* CSSPropertyAPITranslate::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValue* translate = CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context.mode(), ValueRangeAll);
+  CSSValue* translate = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, context.Mode(), kValueRangeAll);
   if (!translate)
     return nullptr;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*translate);
-  translate = CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context.mode(), ValueRangeAll);
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*translate);
+  translate = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, context.Mode(), kValueRangeAll);
   if (translate) {
-    list->append(*translate);
-    translate = CSSPropertyParserHelpers::consumeLength(range, context.mode(),
-                                                        ValueRangeAll);
+    list->Append(*translate);
+    translate = CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
+                                                        kValueRangeAll);
     if (translate)
-      list->append(*translate);
+      list->Append(*translate);
   }
 
   return list;

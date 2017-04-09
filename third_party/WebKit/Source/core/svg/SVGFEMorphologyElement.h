@@ -30,7 +30,7 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<MorphologyOperatorType>();
+GetStaticStringEntries<MorphologyOperatorType>();
 
 class SVGFEMorphologyElement final
     : public SVGFilterPrimitiveStandardAttributes {
@@ -39,11 +39,11 @@ class SVGFEMorphologyElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
 
-  SVGAnimatedNumber* radiusX() { return m_radius->firstNumber(); }
-  SVGAnimatedNumber* radiusY() { return m_radius->secondNumber(); }
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedNumber* radiusX() { return radius_->FirstNumber(); }
+  SVGAnimatedNumber* radiusY() { return radius_->SecondNumber(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
   SVGAnimatedEnumeration<MorphologyOperatorType>* svgOperator() {
-    return m_svgOperator.get();
+    return svg_operator_.Get();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -51,13 +51,13 @@ class SVGFEMorphologyElement final
  private:
   explicit SVGFEMorphologyElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumberOptionalNumber> m_radius;
-  Member<SVGAnimatedString> m_in1;
-  Member<SVGAnimatedEnumeration<MorphologyOperatorType>> m_svgOperator;
+  Member<SVGAnimatedNumberOptionalNumber> radius_;
+  Member<SVGAnimatedString> in1_;
+  Member<SVGAnimatedEnumeration<MorphologyOperatorType>> svg_operator_;
 };
 
 }  // namespace blink

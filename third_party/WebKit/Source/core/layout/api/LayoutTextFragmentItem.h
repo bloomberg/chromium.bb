@@ -14,34 +14,34 @@ class FirstLetterPseudoElement;
 
 class LayoutTextFragmentItem : public LayoutTextItem {
  public:
-  explicit LayoutTextFragmentItem(LayoutTextFragment* layoutTextFragment)
-      : LayoutTextItem(layoutTextFragment) {}
+  explicit LayoutTextFragmentItem(LayoutTextFragment* layout_text_fragment)
+      : LayoutTextItem(layout_text_fragment) {}
 
   explicit LayoutTextFragmentItem(const LayoutTextItem& item)
       : LayoutTextItem(item) {
-    SECURITY_DCHECK(!item || item.isTextFragment());
+    SECURITY_DCHECK(!item || item.IsTextFragment());
   }
 
   explicit LayoutTextFragmentItem(std::nullptr_t) : LayoutTextItem(nullptr) {}
 
   LayoutTextFragmentItem() {}
 
-  void setTextFragment(PassRefPtr<StringImpl> text,
+  void SetTextFragment(PassRefPtr<StringImpl> text,
                        unsigned start,
                        unsigned length) {
-    toTextFragment()->setTextFragment(std::move(text), start, length);
+    ToTextFragment()->SetTextFragment(std::move(text), start, length);
   }
 
-  FirstLetterPseudoElement* firstLetterPseudoElement() const {
-    return toTextFragment()->firstLetterPseudoElement();
+  FirstLetterPseudoElement* GetFirstLetterPseudoElement() const {
+    return ToTextFragment()->GetFirstLetterPseudoElement();
   }
 
  private:
-  LayoutTextFragment* toTextFragment() {
-    return toLayoutTextFragment(layoutObject());
+  LayoutTextFragment* ToTextFragment() {
+    return ToLayoutTextFragment(GetLayoutObject());
   }
-  const LayoutTextFragment* toTextFragment() const {
-    return toLayoutTextFragment(layoutObject());
+  const LayoutTextFragment* ToTextFragment() const {
+    return ToLayoutTextFragment(GetLayoutObject());
   }
 };
 

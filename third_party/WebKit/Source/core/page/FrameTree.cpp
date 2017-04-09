@@ -39,159 +39,159 @@ namespace blink {
 
 namespace {
 
-const unsigned invalidChildCount = ~0U;
+const unsigned kInvalidChildCount = ~0U;
 
 }  // namespace
 
-FrameTree::FrameTree(Frame* thisFrame)
-    : m_thisFrame(thisFrame), m_scopedChildCount(invalidChildCount) {}
+FrameTree::FrameTree(Frame* this_frame)
+    : this_frame_(this_frame), scoped_child_count_(kInvalidChildCount) {}
 
 FrameTree::~FrameTree() {}
 
-const AtomicString& FrameTree::name() const {
+const AtomicString& FrameTree::GetName() const {
   // TODO(andypaicu): remove this once we have gathered the data
-  if (m_experimentalSetNulledName) {
-    UseCounter::count(m_thisFrame.get(),
-                      UseCounter::CrossOriginMainFrameNulledNameAccessed);
+  if (experimental_set_nulled_name_) {
+    UseCounter::Count(this_frame_.Get(),
+                      UseCounter::kCrossOriginMainFrameNulledNameAccessed);
   }
-  return m_name;
+  return name_;
 }
 
 // TODO(andypaicu): remove this once we have gathered the data
-void FrameTree::experimentalSetNulledName() {
-  m_experimentalSetNulledName = true;
+void FrameTree::ExperimentalSetNulledName() {
+  experimental_set_nulled_name_ = true;
 }
 
-void FrameTree::setName(const AtomicString& name) {
+void FrameTree::SetName(const AtomicString& name) {
   // TODO(andypaicu): remove this once we have gathered the data
-  m_experimentalSetNulledName = false;
-  m_name = name;
+  experimental_set_nulled_name_ = false;
+  name_ = name;
 }
 
 DISABLE_CFI_PERF
-Frame* FrameTree::parent() const {
-  if (!m_thisFrame->client())
+Frame* FrameTree::Parent() const {
+  if (!this_frame_->Client())
     return nullptr;
-  return m_thisFrame->client()->parent();
+  return this_frame_->Client()->Parent();
 }
 
-Frame* FrameTree::top() const {
+Frame* FrameTree::Top() const {
   // FIXME: top() should never return null, so here are some hacks to deal
   // with EmptyLocalFrameClient and cases where the frame is detached
   // already...
-  if (!m_thisFrame->client())
-    return m_thisFrame;
-  Frame* candidate = m_thisFrame->client()->top();
-  return candidate ? candidate : m_thisFrame.get();
+  if (!this_frame_->Client())
+    return this_frame_;
+  Frame* candidate = this_frame_->Client()->Top();
+  return candidate ? candidate : this_frame_.Get();
 }
 
-Frame* FrameTree::nextSibling() const {
-  if (!m_thisFrame->client())
+Frame* FrameTree::NextSibling() const {
+  if (!this_frame_->Client())
     return nullptr;
-  return m_thisFrame->client()->nextSibling();
+  return this_frame_->Client()->NextSibling();
 }
 
-Frame* FrameTree::firstChild() const {
-  if (!m_thisFrame->client())
+Frame* FrameTree::FirstChild() const {
+  if (!this_frame_->Client())
     return nullptr;
-  return m_thisFrame->client()->firstChild();
+  return this_frame_->Client()->FirstChild();
 }
 
-Frame* FrameTree::scopedChild(unsigned index) const {
-  unsigned scopedIndex = 0;
-  for (Frame* child = firstChild(); child;
-       child = child->tree().nextSibling()) {
-    if (child->client()->inShadowTree())
+Frame* FrameTree::ScopedChild(unsigned index) const {
+  unsigned scoped_index = 0;
+  for (Frame* child = FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (child->Client()->InShadowTree())
       continue;
-    if (scopedIndex == index)
+    if (scoped_index == index)
       return child;
-    scopedIndex++;
+    scoped_index++;
   }
 
   return nullptr;
 }
 
-Frame* FrameTree::scopedChild(const AtomicString& name) const {
-  for (Frame* child = firstChild(); child;
-       child = child->tree().nextSibling()) {
-    if (child->client()->inShadowTree())
+Frame* FrameTree::ScopedChild(const AtomicString& name) const {
+  for (Frame* child = FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (child->Client()->InShadowTree())
       continue;
-    if (child->tree().name() == name)
+    if (child->Tree().GetName() == name)
       return child;
   }
   return nullptr;
 }
 
-unsigned FrameTree::scopedChildCount() const {
-  if (m_scopedChildCount == invalidChildCount) {
-    unsigned scopedCount = 0;
-    for (Frame* child = firstChild(); child;
-         child = child->tree().nextSibling()) {
-      if (child->client()->inShadowTree())
+unsigned FrameTree::ScopedChildCount() const {
+  if (scoped_child_count_ == kInvalidChildCount) {
+    unsigned scoped_count = 0;
+    for (Frame* child = FirstChild(); child;
+         child = child->Tree().NextSibling()) {
+      if (child->Client()->InShadowTree())
         continue;
-      scopedCount++;
+      scoped_count++;
     }
-    m_scopedChildCount = scopedCount;
+    scoped_child_count_ = scoped_count;
   }
-  return m_scopedChildCount;
+  return scoped_child_count_;
 }
 
-void FrameTree::invalidateScopedChildCount() {
-  m_scopedChildCount = invalidChildCount;
+void FrameTree::InvalidateScopedChildCount() {
+  scoped_child_count_ = kInvalidChildCount;
 }
 
-unsigned FrameTree::childCount() const {
+unsigned FrameTree::ChildCount() const {
   unsigned count = 0;
-  for (Frame* result = firstChild(); result;
-       result = result->tree().nextSibling())
+  for (Frame* result = FirstChild(); result;
+       result = result->Tree().NextSibling())
     ++count;
   return count;
 }
 
-Frame* FrameTree::find(const AtomicString& name) const {
-  if (equalIgnoringASCIICase(name, "_self") ||
-      equalIgnoringASCIICase(name, "_current") || name.isEmpty())
-    return m_thisFrame;
+Frame* FrameTree::Find(const AtomicString& name) const {
+  if (EqualIgnoringASCIICase(name, "_self") ||
+      EqualIgnoringASCIICase(name, "_current") || name.IsEmpty())
+    return this_frame_;
 
-  if (equalIgnoringASCIICase(name, "_top"))
-    return top();
+  if (EqualIgnoringASCIICase(name, "_top"))
+    return Top();
 
-  if (equalIgnoringASCIICase(name, "_parent"))
-    return parent() ? parent() : m_thisFrame.get();
+  if (EqualIgnoringASCIICase(name, "_parent"))
+    return Parent() ? Parent() : this_frame_.Get();
 
   // Since "_blank" should never be any frame's name, the following just amounts
   // to an optimization.
-  if (equalIgnoringASCIICase(name, "_blank"))
+  if (EqualIgnoringASCIICase(name, "_blank"))
     return nullptr;
 
   // Search subtree starting with this frame first.
-  for (Frame* frame = m_thisFrame; frame;
-       frame = frame->tree().traverseNext(m_thisFrame)) {
-    if (frame->tree().name() == name)
+  for (Frame* frame = this_frame_; frame;
+       frame = frame->Tree().TraverseNext(this_frame_)) {
+    if (frame->Tree().GetName() == name)
       return frame;
   }
 
   // Search the entire tree for this page next.
-  Page* page = m_thisFrame->page();
+  Page* page = this_frame_->GetPage();
 
   // The frame could have been detached from the page, so check it.
   if (!page)
     return nullptr;
 
-  for (Frame* frame = page->mainFrame(); frame;
-       frame = frame->tree().traverseNext()) {
-    if (frame->tree().name() == name)
+  for (Frame* frame = page->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->Tree().GetName() == name)
       return frame;
   }
 
   // Search the entire tree of each of the other pages in this namespace.
   // FIXME: Is random order OK?
-  for (const Page* otherPage : Page::ordinaryPages()) {
-    if (otherPage == page || otherPage->isClosing())
+  for (const Page* other_page : Page::OrdinaryPages()) {
+    if (other_page == page || other_page->IsClosing())
       continue;
-    for (Frame* frame = otherPage->mainFrame(); frame;
-         frame = frame->tree().traverseNext()) {
-      if (frame->tree().name() == name)
+    for (Frame* frame = other_page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (frame->Tree().GetName() == name)
         return frame;
     }
   }
@@ -199,14 +199,14 @@ Frame* FrameTree::find(const AtomicString& name) const {
   return nullptr;
 }
 
-bool FrameTree::isDescendantOf(const Frame* ancestor) const {
+bool FrameTree::IsDescendantOf(const Frame* ancestor) const {
   if (!ancestor)
     return false;
 
-  if (m_thisFrame->page() != ancestor->page())
+  if (this_frame_->GetPage() != ancestor->GetPage())
     return false;
 
-  for (Frame* frame = m_thisFrame; frame; frame = frame->tree().parent()) {
+  for (Frame* frame = this_frame_; frame; frame = frame->Tree().Parent()) {
     if (frame == ancestor)
       return true;
   }
@@ -214,33 +214,33 @@ bool FrameTree::isDescendantOf(const Frame* ancestor) const {
 }
 
 DISABLE_CFI_PERF
-Frame* FrameTree::traverseNext(const Frame* stayWithin) const {
-  Frame* child = firstChild();
+Frame* FrameTree::TraverseNext(const Frame* stay_within) const {
+  Frame* child = FirstChild();
   if (child) {
-    ASSERT(!stayWithin || child->tree().isDescendantOf(stayWithin));
+    ASSERT(!stay_within || child->Tree().IsDescendantOf(stay_within));
     return child;
   }
 
-  if (m_thisFrame == stayWithin)
+  if (this_frame_ == stay_within)
     return nullptr;
 
-  Frame* sibling = nextSibling();
+  Frame* sibling = NextSibling();
   if (sibling) {
-    ASSERT(!stayWithin || sibling->tree().isDescendantOf(stayWithin));
+    ASSERT(!stay_within || sibling->Tree().IsDescendantOf(stay_within));
     return sibling;
   }
 
-  Frame* frame = m_thisFrame;
-  while (!sibling && (!stayWithin || frame->tree().parent() != stayWithin)) {
-    frame = frame->tree().parent();
+  Frame* frame = this_frame_;
+  while (!sibling && (!stay_within || frame->Tree().Parent() != stay_within)) {
+    frame = frame->Tree().Parent();
     if (!frame)
       return nullptr;
-    sibling = frame->tree().nextSibling();
+    sibling = frame->Tree().NextSibling();
   }
 
   if (frame) {
-    ASSERT(!stayWithin || !sibling ||
-           sibling->tree().isDescendantOf(stayWithin));
+    ASSERT(!stay_within || !sibling ||
+           sibling->Tree().IsDescendantOf(stay_within));
     return sibling;
   }
 
@@ -248,7 +248,7 @@ Frame* FrameTree::traverseNext(const Frame* stayWithin) const {
 }
 
 DEFINE_TRACE(FrameTree) {
-  visitor->trace(m_thisFrame);
+  visitor->Trace(this_frame_);
 }
 
 }  // namespace blink
@@ -271,24 +271,25 @@ static void printFrames(const blink::Frame* frame,
   }
 
   blink::FrameView* view =
-      frame->isLocalFrame() ? toLocalFrame(frame)->view() : 0;
-  printf("Frame %p %dx%d\n", frame, view ? view->width() : 0,
-         view ? view->height() : 0);
+      frame->IsLocalFrame() ? ToLocalFrame(frame)->View() : 0;
+  printf("Frame %p %dx%d\n", frame, view ? view->Width() : 0,
+         view ? view->Height() : 0);
   printIndent(indent);
-  printf("  owner=%p\n", frame->owner());
+  printf("  owner=%p\n", frame->Owner());
   printIndent(indent);
   printf("  frameView=%p\n", view);
   printIndent(indent);
   printf("  document=%p\n",
-         frame->isLocalFrame() ? toLocalFrame(frame)->document() : 0);
+         frame->IsLocalFrame() ? ToLocalFrame(frame)->GetDocument() : 0);
   printIndent(indent);
-  printf("  uri=%s\n\n",
-         frame->isLocalFrame()
-             ? toLocalFrame(frame)->document()->url().getString().utf8().data()
-             : 0);
+  printf(
+      "  uri=%s\n\n",
+      frame->IsLocalFrame()
+          ? ToLocalFrame(frame)->GetDocument()->Url().GetString().Utf8().Data()
+          : 0);
 
-  for (blink::Frame* child = frame->tree().firstChild(); child;
-       child = child->tree().nextSibling())
+  for (blink::Frame* child = frame->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling())
     printFrames(child, targetFrame, indent + 1);
 }
 
@@ -298,7 +299,7 @@ void showFrameTree(const blink::Frame* frame) {
     return;
   }
 
-  printFrames(frame->tree().top(), frame, 0);
+  printFrames(frame->Tree().Top(), frame, 0);
 }
 
 #endif

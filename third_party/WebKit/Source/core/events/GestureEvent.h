@@ -35,21 +35,21 @@ namespace blink {
 
 class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
  public:
-  static GestureEvent* create(AbstractView*, const WebGestureEvent&);
+  static GestureEvent* Create(AbstractView*, const WebGestureEvent&);
   ~GestureEvent() override {}
 
-  bool isGestureEvent() const override;
+  bool IsGestureEvent() const override;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  const WebGestureEvent& nativeEvent() const { return m_nativeEvent; }
+  const WebGestureEvent& NativeEvent() const { return native_event_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   GestureEvent(const AtomicString&, AbstractView*, const WebGestureEvent&);
 
-  WebGestureEvent m_nativeEvent;
+  WebGestureEvent native_event_;
 };
 
 DEFINE_EVENT_TYPE_CASTS(GestureEvent);

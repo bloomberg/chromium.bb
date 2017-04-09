@@ -43,35 +43,35 @@ namespace blink {
 using namespace HTMLNames;
 
 ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(
-    ShadowRoot& shadowRoot)
-    : TreeScopeStyleSheetCollection(shadowRoot) {}
+    ShadowRoot& shadow_root)
+    : TreeScopeStyleSheetCollection(shadow_root) {}
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(
-    StyleEngine& masterEngine,
+void ShadowTreeStyleSheetCollection::CollectStyleSheets(
+    StyleEngine& master_engine,
     StyleSheetCollection& collection) {
-  for (Node* n : m_styleSheetCandidateNodes) {
+  for (Node* n : style_sheet_candidate_nodes_) {
     StyleSheetCandidate candidate(*n);
-    DCHECK(!candidate.isXSL());
+    DCHECK(!candidate.IsXSL());
 
-    StyleSheet* sheet = candidate.sheet();
+    StyleSheet* sheet = candidate.Sheet();
     if (!sheet)
       continue;
 
-    collection.appendSheetForList(sheet);
-    if (candidate.canBeActivated(nullAtom)) {
-      CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
-      collection.appendActiveStyleSheet(
-          std::make_pair(cssSheet, masterEngine.ruleSetForSheet(*cssSheet)));
+    collection.AppendSheetForList(sheet);
+    if (candidate.CanBeActivated(g_null_atom)) {
+      CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+      collection.AppendActiveStyleSheet(
+          std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
     }
   }
 }
 
-void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(
-    StyleEngine& masterEngine) {
+void ShadowTreeStyleSheetCollection::UpdateActiveStyleSheets(
+    StyleEngine& master_engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-  StyleSheetCollection* collection = StyleSheetCollection::create();
-  collectStyleSheets(masterEngine, *collection);
-  applyActiveStyleSheetChanges(*collection);
+  StyleSheetCollection* collection = StyleSheetCollection::Create();
+  CollectStyleSheets(master_engine, *collection);
+  ApplyActiveStyleSheetChanges(*collection);
 }
 
 }  // namespace blink

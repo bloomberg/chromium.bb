@@ -40,16 +40,16 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
  public:
   enum PaintingControlSetting {
     // Returns the last PaintArtifact produced.
-    PaintDefaultBehavior,
+    kPaintDefaultBehavior,
     // Paints the content to simulate the behavior of FrameView::paintTree().
-    PaintDefaultBehaviorForTest,
+    kPaintDefaultBehaviorForTest,
     // Puts the GraphicsContext in disabled mode and disables display item
     // construction in PaintController.
-    DisplayListConstructionDisabled,
-    DisplayListCachingDisabled,
-    DisplayListPaintingDisabled,
-    SubsequenceCachingDisabled,
-    PartialInvalidation
+    kDisplayListConstructionDisabled,
+    kDisplayListCachingDisabled,
+    kDisplayListPaintingDisabled,
+    kSubsequenceCachingDisabled,
+    kPartialInvalidation
   };
 
   // The paintable region is the rectangular region, within the bounds of the
@@ -57,21 +57,22 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
   // paintContents().  Calling paintContents will return a WebDisplayitemList
   // that is guaranteed valid only within this region.  In particular, this is
   // used to represent the interest rect in Blink.
-  virtual gfx::Rect paintableRegion() = 0;
+  virtual gfx::Rect PaintableRegion() = 0;
 
   // Paints the content area for the layer, typically dirty rects submitted
   // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands
   // to populate the WebDisplayItemList.
   // The |PaintingControlSetting| enum controls painting to isolate different
   // components in performance tests.
-  virtual void paintContents(WebDisplayItemList*,
-                             PaintingControlSetting = PaintDefaultBehavior) = 0;
+  virtual void PaintContents(
+      WebDisplayItemList*,
+      PaintingControlSetting = kPaintDefaultBehavior) = 0;
 
   // Returns an estimate of the current memory usage within this object,
   // excluding memory shared with painting artifacts (i.e.,
   // WebDisplayItemList). Should be invoked after paintContents, so that the
   // result includes data cached internally during painting.
-  virtual size_t approximateUnsharedMemoryUsage() const { return 0; }
+  virtual size_t ApproximateUnsharedMemoryUsage() const { return 0; }
 
  protected:
   virtual ~WebContentLayerClient() {}

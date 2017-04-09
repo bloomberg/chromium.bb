@@ -48,27 +48,28 @@ namespace {
 // counter from WTF
 // http://trac.webkit.org/browser/trunk/Source/WTF/wtf/CurrentTime.cpp?rev=152438
 
-static double lowResUTCTime() {
-  FILETIME fileTime;
-  GetSystemTimeAsFileTime(&fileTime);
+static double LowResUTCTime() {
+  FILETIME file_time;
+  GetSystemTimeAsFileTime(&file_time);
 
   // As per Windows documentation for FILETIME, copy the resulting FILETIME
   // structure to a ULARGE_INTEGER structure using memcpy (using memcpy instead
   // of direct assignment can prevent alignment faults on 64-bit Windows).
-  ULARGE_INTEGER dateTime;
-  memcpy(&dateTime, &fileTime, sizeof(dateTime));
+  ULARGE_INTEGER date_time;
+  memcpy(&date_time, &file_time, sizeof(date_time));
 
   // Number of 100 nanosecond between January 1, 1601 and January 1, 1970.
-  static const ULONGLONG epochBias = 116444736000000000ULL;
+  static const ULONGLONG kEpochBias = 116444736000000000ULL;
   // Windows file times are in 100s of nanoseconds.
-  static const double hundredsOfNanosecondsPerMillisecond = 10000;
-  return (dateTime.QuadPart - epochBias) / hundredsOfNanosecondsPerMillisecond;
+  static const double kHundredsOfNanosecondsPerMillisecond = 10000;
+  return (date_time.QuadPart - kEpochBias) /
+         kHundredsOfNanosecondsPerMillisecond;
 }
 
-static LARGE_INTEGER qpcFrequency;
-static bool syncedTime;
+static LARGE_INTEGER g_qpc_frequency;
+static bool g_synced_time;
 
-static double highResUpTime() {
+static double HighResUpTime() {
   // We use QPC, but only after sanity checking its result, due to bugs:
   // http://support.microsoft.com/kb/274323
   // http://support.microsoft.com/kb/895980
@@ -76,54 +77,55 @@ static double highResUpTime() {
   // different results on different processors due to bugs in the basic
   // input/output system (BIOS) or the hardware abstraction layer (HAL).").
 
-  static LARGE_INTEGER qpcLast;
-  static DWORD tickCountLast;
+  static LARGE_INTEGER qpc_last;
+  static DWORD tick_count_last;
   static bool inited;
 
   LARGE_INTEGER qpc;
   QueryPerformanceCounter(&qpc);
-  DWORD tickCount = GetTickCount();
+  DWORD tick_count = GetTickCount();
 
   if (inited) {
-    __int64 qpcElapsed =
-        ((qpc.QuadPart - qpcLast.QuadPart) * 1000) / qpcFrequency.QuadPart;
-    __int64 tickCountElapsed;
-    if (tickCount >= tickCountLast) {
-      tickCountElapsed = (tickCount - tickCountLast);
+    __int64 qpc_elapsed =
+        ((qpc.QuadPart - qpc_last.QuadPart) * 1000) / g_qpc_frequency.QuadPart;
+    __int64 tick_count_elapsed;
+    if (tick_count >= tick_count_last) {
+      tick_count_elapsed = (tick_count - tick_count_last);
     } else {
-      __int64 tickCountLarge = tickCount + 0x100000000I64;
-      tickCountElapsed = tickCountLarge - tickCountLast;
+      __int64 tick_count_large = tick_count + 0x100000000I64;
+      tick_count_elapsed = tick_count_large - tick_count_last;
     }
 
     // Force a re-sync if QueryPerformanceCounter differs from GetTickCount() by
     // more than 500ms. (The 500ms value is from
     // http://support.microsoft.com/kb/274323).
-    __int64 diff = tickCountElapsed - qpcElapsed;
+    __int64 diff = tick_count_elapsed - qpc_elapsed;
     if (diff > 500 || diff < -500)
-      syncedTime = false;
+      g_synced_time = false;
   } else {
     inited = true;
   }
 
-  qpcLast = qpc;
-  tickCountLast = tickCount;
+  qpc_last = qpc;
+  tick_count_last = tick_count;
 
-  return (1000.0 * qpc.QuadPart) / static_cast<double>(qpcFrequency.QuadPart);
+  return (1000.0 * qpc.QuadPart) /
+         static_cast<double>(g_qpc_frequency.QuadPart);
 }
 
-static bool qpcAvailable() {
+static bool QpcAvailable() {
   static bool available;
   static bool checked;
 
   if (checked)
     return available;
 
-  available = QueryPerformanceFrequency(&qpcFrequency);
+  available = QueryPerformanceFrequency(&g_qpc_frequency);
   checked = true;
   return available;
 }
 
-static double getCurrentTime() {
+static double GetCurrentTime() {
   // Use a combination of ftime and QueryPerformanceCounter.
   // ftime returns the information we want, but doesn't have sufficient
   // resolution.  QueryPerformanceCounter has high resolution, but is only
@@ -131,46 +133,46 @@ static double getCurrentTime() {
   // QueryPerformanceCounter initially. Later calls will use
   // QueryPerformanceCounter by itself, adding the delta to the saved ftime.  We
   // periodically re-sync to correct for drift.
-  static double syncLowResUTCTime;
-  static double syncHighResUpTime;
-  static double lastUTCTime;
+  static double sync_low_res_utc_time;
+  static double sync_high_res_up_time;
+  static double last_utc_time;
 
-  double lowResTime = lowResUTCTime();
-  if (!qpcAvailable())
-    return lowResTime * (1.0 / 1000.0);
+  double low_res_time = LowResUTCTime();
+  if (!QpcAvailable())
+    return low_res_time * (1.0 / 1000.0);
 
-  double highResTime = highResUpTime();
-  if (!syncedTime) {
+  double high_res_time = HighResUpTime();
+  if (!g_synced_time) {
     timeBeginPeriod(1);  // increase time resolution around low-res time getter
-    syncLowResUTCTime = lowResTime = lowResUTCTime();
+    sync_low_res_utc_time = low_res_time = LowResUTCTime();
     timeEndPeriod(1);  // restore time resolution
-    syncHighResUpTime = highResTime;
-    syncedTime = true;
+    sync_high_res_up_time = high_res_time;
+    g_synced_time = true;
   }
 
-  double highResElapsed = highResTime - syncHighResUpTime;
-  double utc = syncLowResUTCTime + highResElapsed;
+  double high_res_elapsed = high_res_time - sync_high_res_up_time;
+  double utc = sync_low_res_utc_time + high_res_elapsed;
 
   // Force a clock re-sync if we've drifted.
-  double lowResElapsed = lowResTime - syncLowResUTCTime;
-  const double maximumAllowedDriftMsec =
+  double low_res_elapsed = low_res_time - sync_low_res_utc_time;
+  const double kMaximumAllowedDriftMsec =
       15.625 * 2.0;  // 2x the typical low-res accuracy
-  if (fabs(highResElapsed - lowResElapsed) > maximumAllowedDriftMsec)
-    syncedTime = false;
+  if (fabs(high_res_elapsed - low_res_elapsed) > kMaximumAllowedDriftMsec)
+    g_synced_time = false;
 
   // Make sure time doesn't run backwards (only correct if the difference is < 2
   // seconds, since DST or clock changes could occur).
-  const double backwardTimeLimit = 2000.0;
-  if (utc < lastUTCTime && (lastUTCTime - utc) < backwardTimeLimit)
-    return lastUTCTime * (1.0 / 1000.0);
+  const double kBackwardTimeLimit = 2000.0;
+  if (utc < last_utc_time && (last_utc_time - utc) < kBackwardTimeLimit)
+    return last_utc_time * (1.0 / 1000.0);
 
-  lastUTCTime = utc;
+  last_utc_time = utc;
   return utc * (1.0 / 1000.0);
 }
 
 #else
 
-static double getCurrentTime() {
+static double GetCurrentTime() {
   struct timeval now;
   gettimeofday(&now, 0);
   return now.tv_sec + now.tv_usec * (1.0 / 1000000.0);
@@ -178,89 +180,89 @@ static double getCurrentTime() {
 
 #endif
 
-PassRefPtr<SharedBuffer> readFile(const char* fileName) {
-  FILE* fp = fopen(fileName, "rb");
+PassRefPtr<SharedBuffer> ReadFile(const char* file_name) {
+  FILE* fp = fopen(file_name, "rb");
   if (!fp) {
-    fprintf(stderr, "Can't open file %s\n", fileName);
+    fprintf(stderr, "Can't open file %s\n", file_name);
     exit(2);
   }
 
   sttype s;
-  stat(fileName, &s);
-  size_t fileSize = s.st_size;
+  stat(file_name, &s);
+  size_t file_size = s.st_size;
   if (s.st_size <= 0)
-    return SharedBuffer::create();
+    return SharedBuffer::Create();
 
   std::unique_ptr<unsigned char[]> buffer =
-      wrapArrayUnique(new unsigned char[fileSize]);
-  if (fileSize != fread(buffer.get(), 1, fileSize, fp)) {
-    fprintf(stderr, "Error reading file %s\n", fileName);
+      WrapArrayUnique(new unsigned char[file_size]);
+  if (file_size != fread(buffer.get(), 1, file_size, fp)) {
+    fprintf(stderr, "Error reading file %s\n", file_name);
     exit(2);
   }
 
   fclose(fp);
-  return SharedBuffer::create(buffer.get(), fileSize);
+  return SharedBuffer::Create(buffer.get(), file_size);
 }
 
-bool decodeImageData(SharedBuffer* data,
-                     bool colorCorrection,
-                     size_t packetSize) {
-  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
-      data, true, ImageDecoder::AlphaPremultiplied,
-      colorCorrection ? ColorBehavior::transformToTargetForTesting()
-                      : ColorBehavior::ignore());
-  if (!packetSize) {
-    bool allDataReceived = true;
-    decoder->setData(data, allDataReceived);
+bool DecodeImageData(SharedBuffer* data,
+                     bool color_correction,
+                     size_t packet_size) {
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
+      data, true, ImageDecoder::kAlphaPremultiplied,
+      color_correction ? ColorBehavior::TransformToTargetForTesting()
+                       : ColorBehavior::Ignore());
+  if (!packet_size) {
+    bool all_data_received = true;
+    decoder->SetData(data, all_data_received);
 
-    int frameCount = decoder->frameCount();
-    for (int i = 0; i < frameCount; ++i) {
-      if (!decoder->frameBufferAtIndex(i))
+    int frame_count = decoder->FrameCount();
+    for (int i = 0; i < frame_count; ++i) {
+      if (!decoder->FrameBufferAtIndex(i))
         return false;
     }
 
-    return !decoder->failed();
+    return !decoder->Failed();
   }
 
-  RefPtr<SharedBuffer> packetData = SharedBuffer::create();
+  RefPtr<SharedBuffer> packet_data = SharedBuffer::Create();
   size_t position = 0;
   while (true) {
     const char* packet;
-    size_t length = data->getSomeData(packet, position);
+    size_t length = data->GetSomeData(packet, position);
 
-    length = std::min(length, packetSize);
-    packetData->append(packet, length);
+    length = std::min(length, packet_size);
+    packet_data->Append(packet, length);
     position += length;
 
-    bool allDataReceived = position == data->size();
-    decoder->setData(packetData.get(), allDataReceived);
+    bool all_data_received = position == data->size();
+    decoder->SetData(packet_data.Get(), all_data_received);
 
-    int frameCount = decoder->frameCount();
-    for (int i = 0; i < frameCount; ++i) {
-      if (!decoder->frameBufferAtIndex(i))
+    int frame_count = decoder->FrameCount();
+    for (int i = 0; i < frame_count; ++i) {
+      if (!decoder->FrameBufferAtIndex(i))
         break;
     }
 
-    if (allDataReceived || decoder->failed())
+    if (all_data_received || decoder->Failed())
       break;
   }
 
-  return !decoder->failed();
+  return !decoder->Failed();
 }
 
 }  // namespace
 
-int main(int argc, char* argv[]) {
+int Main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
 
   // If the platform supports color correction, allow it to be controlled.
 
-  bool applyColorCorrection = false;
+  bool apply_color_correction = false;
 
   if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0) {
-    applyColorCorrection = (--argc, ++argv, true);
+    apply_color_correction = (--argc, ++argv, true);
     gfx::ICCProfile profile = gfx::ICCProfileForTestingColorSpin();
-    ColorBehavior::setGlobalTargetColorProfile(profile);
+    ColorBehavior::SetGlobalTargetColorProfile(profile);
   }
 
   if (argc < 2) {
@@ -285,10 +287,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  size_t packetSize = 0;
+  size_t packet_size = 0;
   if (argc >= 4) {
     char* end = 0;
-    packetSize = strtol(argv[3], &end, 10);
+    packet_size = strtol(argv[3], &end, 10);
     if (*end != '\0') {
       fprintf(stderr,
               "Third argument should be packet size. Default is "
@@ -304,36 +306,36 @@ int main(int argc, char* argv[]) {
 
   class WebPlatform : public blink::Platform {};
 
-  Platform::initialize(new WebPlatform());
+  Platform::Initialize(new WebPlatform());
 
   // Read entire file content to data, and consolidate the SharedBuffer data
   // segments into one, contiguous block of memory.
 
-  RefPtr<SharedBuffer> data = readFile(argv[1]);
-  if (!data.get() || !data->size()) {
+  RefPtr<SharedBuffer> data = ReadFile(argv[1]);
+  if (!data.Get() || !data->size()) {
     fprintf(stderr, "Error reading image data from [%s]\n", argv[1]);
     exit(2);
   }
 
-  data->data();
+  data->Data();
 
   // Warm-up: throw out the first iteration for more consistent results.
 
-  if (!decodeImageData(data.get(), applyColorCorrection, packetSize)) {
+  if (!DecodeImageData(data.Get(), apply_color_correction, packet_size)) {
     fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
     exit(3);
   }
 
   // Image decode bench for iterations.
 
-  double totalTime = 0.0;
+  double total_time = 0.0;
 
   for (size_t i = 0; i < iterations; ++i) {
-    double startTime = getCurrentTime();
+    double start_time = GetCurrentTime();
     bool decoded =
-        decodeImageData(data.get(), applyColorCorrection, packetSize);
-    double elapsedTime = getCurrentTime() - startTime;
-    totalTime += elapsedTime;
+        DecodeImageData(data.Get(), apply_color_correction, packet_size);
+    double elapsed_time = GetCurrentTime() - start_time;
+    total_time += elapsed_time;
     if (!decoded) {
       fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
       exit(3);
@@ -342,13 +344,13 @@ int main(int argc, char* argv[]) {
 
   // Results to stdout.
 
-  double averageTime = totalTime / static_cast<double>(iterations);
-  printf("%f %f\n", totalTime, averageTime);
+  double average_time = total_time / static_cast<double>(iterations);
+  printf("%f %f\n", total_time, average_time);
   return 0;
 }
 
 }  // namespace blink
 
 int main(int argc, char* argv[]) {
-  return blink::main(argc, argv);
+  return blink::Main(argc, argv);
 }

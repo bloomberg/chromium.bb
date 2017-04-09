@@ -18,7 +18,7 @@ void GetServiceWorkerRegistrationStatusResponse(
     const std::string& status_message,
     blink::WebServiceWorkerError::ErrorType* error_type,
     base::string16* message) {
-  *error_type = WebServiceWorkerError::ErrorTypeUnknown;
+  *error_type = WebServiceWorkerError::kErrorTypeUnknown;
   if (!status_message.empty())
     *message = base::UTF8ToUTF16(status_message);
   else
@@ -33,31 +33,31 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_REDUNDANT:
     case SERVICE_WORKER_ERROR_DISALLOWED:
-      *error_type = WebServiceWorkerError::ErrorTypeInstall;
+      *error_type = WebServiceWorkerError::kErrorTypeInstall;
       return;
 
     case SERVICE_WORKER_ERROR_NOT_FOUND:
-      *error_type = WebServiceWorkerError::ErrorTypeNotFound;
+      *error_type = WebServiceWorkerError::kErrorTypeNotFound;
       return;
 
     case SERVICE_WORKER_ERROR_NETWORK:
-      *error_type = WebServiceWorkerError::ErrorTypeNetwork;
+      *error_type = WebServiceWorkerError::kErrorTypeNetwork;
       return;
 
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
-      *error_type = WebServiceWorkerError::ErrorTypeScriptEvaluateFailed;
+      *error_type = WebServiceWorkerError::kErrorTypeScriptEvaluateFailed;
       return;
 
     case SERVICE_WORKER_ERROR_SECURITY:
-      *error_type = WebServiceWorkerError::ErrorTypeSecurity;
+      *error_type = WebServiceWorkerError::kErrorTypeSecurity;
       return;
 
     case SERVICE_WORKER_ERROR_TIMEOUT:
-      *error_type = WebServiceWorkerError::ErrorTypeTimeout;
+      *error_type = WebServiceWorkerError::kErrorTypeTimeout;
       return;
 
     case SERVICE_WORKER_ERROR_ABORT:
-      *error_type = WebServiceWorkerError::ErrorTypeAbort;
+      *error_type = WebServiceWorkerError::kErrorTypeAbort;
       return;
 
     case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:

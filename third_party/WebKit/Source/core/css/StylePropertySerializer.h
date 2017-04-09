@@ -39,32 +39,32 @@ class StylePropertySerializer {
  public:
   explicit StylePropertySerializer(const StylePropertySet&);
 
-  String asText() const;
-  String getPropertyValue(CSSPropertyID) const;
+  String AsText() const;
+  String GetPropertyValue(CSSPropertyID) const;
 
  private:
-  String getCommonValue(const StylePropertyShorthand&) const;
-  String getAlignmentShorthandValue(const StylePropertyShorthand&) const;
-  String borderPropertyValue() const;
-  String getLayeredShorthandValue(const StylePropertyShorthand&) const;
-  String get4Values(const StylePropertyShorthand&) const;
-  String borderSpacingValue(const StylePropertyShorthand&) const;
-  String getShorthandValue(const StylePropertyShorthand&,
+  String GetCommonValue(const StylePropertyShorthand&) const;
+  String GetAlignmentShorthandValue(const StylePropertyShorthand&) const;
+  String BorderPropertyValue() const;
+  String GetLayeredShorthandValue(const StylePropertyShorthand&) const;
+  String Get4Values(const StylePropertyShorthand&) const;
+  String BorderSpacingValue(const StylePropertyShorthand&) const;
+  String GetShorthandValue(const StylePropertyShorthand&,
                            String separator = " ") const;
-  String fontValue() const;
-  String fontVariantValue() const;
-  void appendFontLonghandValueIfNotNormal(CSSPropertyID,
+  String FontValue() const;
+  String FontVariantValue() const;
+  void AppendFontLonghandValueIfNotNormal(CSSPropertyID,
                                           StringBuilder& result) const;
-  String backgroundRepeatPropertyValue() const;
-  String getPropertyText(CSSPropertyID,
+  String BackgroundRepeatPropertyValue() const;
+  String GetPropertyText(CSSPropertyID,
                          const String& value,
-                         bool isImportant,
-                         bool isNotFirstDecl) const;
-  bool isPropertyShorthandAvailable(const StylePropertyShorthand&) const;
-  bool shorthandHasOnlyInitialOrInheritedValue(
+                         bool is_important,
+                         bool is_not_first_decl) const;
+  bool IsPropertyShorthandAvailable(const StylePropertyShorthand&) const;
+  bool ShorthandHasOnlyInitialOrInheritedValue(
       const StylePropertyShorthand&) const;
-  void appendBackgroundPropertyAsText(StringBuilder& result,
-                                      unsigned& numDecls) const;
+  void AppendBackgroundPropertyAsText(StringBuilder& result,
+                                      unsigned& num_decls) const;
 
   // This function does checks common to all shorthands, and returns:
   // - The serialization if the shorthand serializes as a css-wide keyword.
@@ -72,7 +72,7 @@ class StylePropertySerializer {
   // flag is not set consistently, or css-wide keywords are used. In these
   // cases serialization will always fail.
   // - A null string otherwise.
-  String commonShorthandChecks(const StylePropertyShorthand&) const;
+  String CommonShorthandChecks(const StylePropertyShorthand&) const;
 
   // Only StylePropertySerializer uses the following two classes.
   class PropertyValueForSerializer {
@@ -81,35 +81,35 @@ class StylePropertySerializer {
    public:
     explicit PropertyValueForSerializer(
         StylePropertySet::PropertyReference property)
-        : m_value(property.value()),
-          m_id(property.id()),
-          m_isImportant(property.isImportant()),
-          m_isInherited(property.isInherited()) {}
+        : value_(property.Value()),
+          id_(property.Id()),
+          is_important_(property.IsImportant()),
+          is_inherited_(property.IsInherited()) {}
 
     // TODO(sashab): Make this take a const CSSValue&.
     PropertyValueForSerializer(CSSPropertyID id,
                                const CSSValue* value,
-                               bool isImportant)
-        : m_value(value),
-          m_id(id),
-          m_isImportant(isImportant),
-          m_isInherited(value->isInheritedValue()) {}
+                               bool is_important)
+        : value_(value),
+          id_(id),
+          is_important_(is_important),
+          is_inherited_(value->IsInheritedValue()) {}
 
-    CSSPropertyID id() const { return m_id; }
-    const CSSValue* value() const { return m_value; }
-    bool isImportant() const { return m_isImportant; }
-    bool isInherited() const { return m_isInherited; }
-    bool isValid() const { return m_value; }
+    CSSPropertyID Id() const { return id_; }
+    const CSSValue* Value() const { return value_; }
+    bool IsImportant() const { return is_important_; }
+    bool IsInherited() const { return is_inherited_; }
+    bool IsValid() const { return value_; }
 
    private:
-    Member<const CSSValue> m_value;
-    CSSPropertyID m_id;
-    bool m_isImportant;
-    bool m_isInherited;
+    Member<const CSSValue> value_;
+    CSSPropertyID id_;
+    bool is_important_;
+    bool is_inherited_;
   };
 
-  String getCustomPropertyText(const PropertyValueForSerializer&,
-                               bool isNotFirstDecl) const;
+  String GetCustomPropertyText(const PropertyValueForSerializer&,
+                               bool is_not_first_decl) const;
 
   class StylePropertySetForSerializer final {
     DISALLOW_NEW();
@@ -117,28 +117,28 @@ class StylePropertySerializer {
    public:
     explicit StylePropertySetForSerializer(const StylePropertySet&);
 
-    unsigned propertyCount() const;
-    PropertyValueForSerializer propertyAt(unsigned index) const;
-    bool shouldProcessPropertyAt(unsigned index) const;
-    int findPropertyIndex(CSSPropertyID) const;
-    const CSSValue* getPropertyCSSValue(CSSPropertyID) const;
-    bool isDescriptorContext() const;
+    unsigned PropertyCount() const;
+    PropertyValueForSerializer PropertyAt(unsigned index) const;
+    bool ShouldProcessPropertyAt(unsigned index) const;
+    int FindPropertyIndex(CSSPropertyID) const;
+    const CSSValue* GetPropertyCSSValue(CSSPropertyID) const;
+    bool IsDescriptorContext() const;
 
     DECLARE_TRACE();
 
    private:
-    bool hasExpandedAllProperty() const {
-      return hasAllProperty() && m_needToExpandAll;
+    bool HasExpandedAllProperty() const {
+      return HasAllProperty() && need_to_expand_all_;
     }
-    bool hasAllProperty() const { return m_allIndex != -1; }
+    bool HasAllProperty() const { return all_index_ != -1; }
 
-    Member<const StylePropertySet> m_propertySet;
-    int m_allIndex;
-    std::bitset<numCSSProperties> m_longhandPropertyUsed;
-    bool m_needToExpandAll;
+    Member<const StylePropertySet> property_set_;
+    int all_index_;
+    std::bitset<numCSSProperties> longhand_property_used_;
+    bool need_to_expand_all_;
   };
 
-  const StylePropertySetForSerializer m_propertySet;
+  const StylePropertySetForSerializer property_set_;
 };
 
 }  // namespace blink

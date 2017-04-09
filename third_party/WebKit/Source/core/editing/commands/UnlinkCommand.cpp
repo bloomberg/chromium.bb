@@ -32,13 +32,13 @@ namespace blink {
 UnlinkCommand::UnlinkCommand(Document& document)
     : CompositeEditCommand(document) {}
 
-void UnlinkCommand::doApply(EditingState* editingState) {
+void UnlinkCommand::DoApply(EditingState* editing_state) {
   // FIXME: If a caret is inside a link, we should remove it, but currently we
   // don't.
-  if (!endingSelection().isNonOrphanedRange())
+  if (!EndingSelection().IsNonOrphanedRange())
     return;
 
-  removeStyledElement(HTMLAnchorElement::create(document()), editingState);
+  RemoveStyledElement(HTMLAnchorElement::Create(GetDocument()), editing_state);
 }
 
 }  // namespace blink

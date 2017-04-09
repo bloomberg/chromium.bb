@@ -30,84 +30,85 @@ namespace blink {
 
 LayoutProgress::LayoutProgress(HTMLProgressElement* element)
     : LayoutBlockFlow(element),
-      m_position(HTMLProgressElement::InvalidPosition),
-      m_animationStartTime(0),
-      m_animationRepeatInterval(0),
-      m_animationDuration(0),
-      m_animating(false),
-      m_animationTimer(
-          TaskRunnerHelper::get(TaskType::UnspecedTimer, &element->document()),
-          this,
-          &LayoutProgress::animationTimerFired) {}
+      position_(HTMLProgressElement::kInvalidPosition),
+      animation_start_time_(0),
+      animation_repeat_interval_(0),
+      animation_duration_(0),
+      animating_(false),
+      animation_timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
+                                             &element->GetDocument()),
+                       this,
+                       &LayoutProgress::AnimationTimerFired) {}
 
 LayoutProgress::~LayoutProgress() {}
 
-void LayoutProgress::willBeDestroyed() {
-  if (m_animating) {
-    m_animationTimer.stop();
-    m_animating = false;
+void LayoutProgress::WillBeDestroyed() {
+  if (animating_) {
+    animation_timer_.Stop();
+    animating_ = false;
   }
-  LayoutBlockFlow::willBeDestroyed();
+  LayoutBlockFlow::WillBeDestroyed();
 }
 
-void LayoutProgress::updateFromElement() {
-  HTMLProgressElement* element = progressElement();
-  if (m_position == element->position())
+void LayoutProgress::UpdateFromElement() {
+  HTMLProgressElement* element = ProgressElement();
+  if (position_ == element->position())
     return;
-  m_position = element->position();
+  position_ = element->position();
 
-  updateAnimationState();
-  setShouldDoFullPaintInvalidation();
-  LayoutBlockFlow::updateFromElement();
+  UpdateAnimationState();
+  SetShouldDoFullPaintInvalidation();
+  LayoutBlockFlow::UpdateFromElement();
 }
 
-double LayoutProgress::animationProgress() const {
-  return m_animating ? (fmod((currentTime() - m_animationStartTime),
-                             m_animationDuration) /
-                        m_animationDuration)
-                     : 0;
+double LayoutProgress::AnimationProgress() const {
+  return animating_ ? (fmod((CurrentTime() - animation_start_time_),
+                            animation_duration_) /
+                       animation_duration_)
+                    : 0;
 }
 
-bool LayoutProgress::isDeterminate() const {
-  return (HTMLProgressElement::IndeterminatePosition != position() &&
-          HTMLProgressElement::InvalidPosition != position());
+bool LayoutProgress::IsDeterminate() const {
+  return (HTMLProgressElement::kIndeterminatePosition != GetPosition() &&
+          HTMLProgressElement::kInvalidPosition != GetPosition());
 }
 
-bool LayoutProgress::isAnimationTimerActive() const {
-  return m_animationTimer.isActive();
+bool LayoutProgress::IsAnimationTimerActive() const {
+  return animation_timer_.IsActive();
 }
 
-bool LayoutProgress::isAnimating() const {
-  return m_animating;
+bool LayoutProgress::IsAnimating() const {
+  return animating_;
 }
 
-void LayoutProgress::animationTimerFired(TimerBase*) {
-  setShouldDoFullPaintInvalidation();
-  if (!m_animationTimer.isActive() && m_animating)
-    m_animationTimer.startOneShot(m_animationRepeatInterval, BLINK_FROM_HERE);
+void LayoutProgress::AnimationTimerFired(TimerBase*) {
+  SetShouldDoFullPaintInvalidation();
+  if (!animation_timer_.IsActive() && animating_)
+    animation_timer_.StartOneShot(animation_repeat_interval_, BLINK_FROM_HERE);
 }
 
-void LayoutProgress::updateAnimationState() {
-  m_animationDuration = LayoutTheme::theme().animationDurationForProgressBar();
-  m_animationRepeatInterval =
-      LayoutTheme::theme().animationRepeatIntervalForProgressBar();
+void LayoutProgress::UpdateAnimationState() {
+  animation_duration_ =
+      LayoutTheme::GetTheme().AnimationDurationForProgressBar();
+  animation_repeat_interval_ =
+      LayoutTheme::GetTheme().AnimationRepeatIntervalForProgressBar();
 
   bool animating =
-      !isDeterminate() && style()->hasAppearance() && m_animationDuration > 0;
-  if (animating == m_animating)
+      !IsDeterminate() && Style()->HasAppearance() && animation_duration_ > 0;
+  if (animating == animating_)
     return;
 
-  m_animating = animating;
-  if (m_animating) {
-    m_animationStartTime = currentTime();
-    m_animationTimer.startOneShot(m_animationRepeatInterval, BLINK_FROM_HERE);
+  animating_ = animating;
+  if (animating_) {
+    animation_start_time_ = CurrentTime();
+    animation_timer_.StartOneShot(animation_repeat_interval_, BLINK_FROM_HERE);
   } else {
-    m_animationTimer.stop();
+    animation_timer_.Stop();
   }
 }
 
-HTMLProgressElement* LayoutProgress::progressElement() const {
-  return toHTMLProgressElement(node());
+HTMLProgressElement* LayoutProgress::ProgressElement() const {
+  return toHTMLProgressElement(GetNode());
 }
 
 }  // namespace blink

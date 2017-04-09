@@ -26,9 +26,9 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
                  const blink::WebMediaStreamTrack& web_track);
   ~RTCRtpReceiver() override;
 
-  uintptr_t id() const override;
+  uintptr_t Id() const override;
 
-  const blink::WebMediaStreamTrack& track() const override;
+  const blink::WebMediaStreamTrack& Track() const override;
   const webrtc::MediaStreamTrackInterface& webrtc_track() const;
 
  private:

@@ -85,7 +85,7 @@ void swap(AlignedBuffer<size, alignment>& a,
 }
 
 template <uintptr_t mask>
-inline bool isAlignedTo(const void* pointer) {
+inline bool IsAlignedTo(const void* pointer) {
   return !(reinterpret_cast<uintptr_t>(pointer) & mask);
 }
 

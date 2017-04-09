@@ -37,20 +37,20 @@ namespace blink {
 
 // Space characters as defined by the CSS specification.
 // http://www.w3.org/TR/css3-syntax/#whitespace
-inline bool isCSSSpace(UChar c) {
+inline bool IsCSSSpace(UChar c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
 // http://dev.w3.org/csswg/css-syntax/#name-start-code-point
 template <typename CharacterType>
-bool isNameStartCodePoint(CharacterType c) {
-  return isASCIIAlpha(c) || c == '_' || !isASCII(c);
+bool IsNameStartCodePoint(CharacterType c) {
+  return IsASCIIAlpha(c) || c == '_' || !IsASCII(c);
 }
 
 // http://dev.w3.org/csswg/css-syntax/#name-code-point
 template <typename CharacterType>
-bool isNameCodePoint(CharacterType c) {
-  return isNameStartCodePoint(c) || isASCIIDigit(c) || c == '-';
+bool IsNameCodePoint(CharacterType c) {
+  return IsNameStartCodePoint(c) || IsASCIIDigit(c) || c == '-';
 }
 }
 

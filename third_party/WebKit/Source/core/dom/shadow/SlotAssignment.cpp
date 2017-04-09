@@ -15,171 +15,171 @@
 
 namespace blink {
 
-void SlotAssignment::didAddSlot(HTMLSlotElement& slot) {
+void SlotAssignment::DidAddSlot(HTMLSlotElement& slot) {
   // Relevant DOM Standard:
   // https://dom.spec.whatwg.org/#concept-node-insert
   // 6.4:  Run assign slotables for a tree with node's tree and a set containing
   // each inclusive descendant of node that is a slot.
 
-  ++m_slotCount;
-  m_needsCollectSlots = true;
+  ++slot_count_;
+  needs_collect_slots_ = true;
 
-  if (!m_slotMap->contains(slot.name())) {
-    m_slotMap->add(slot.name(), &slot);
+  if (!slot_map_->Contains(slot.GetName())) {
+    slot_map_->Add(slot.GetName(), &slot);
     return;
   }
 
-  HTMLSlotElement& oldActive = *findSlotByName(slot.name());
-  DCHECK_NE(oldActive, slot);
-  m_slotMap->add(slot.name(), &slot);
-  if (findSlotByName(slot.name()) == oldActive)
+  HTMLSlotElement& old_active = *FindSlotByName(slot.GetName());
+  DCHECK_NE(old_active, slot);
+  slot_map_->Add(slot.GetName(), &slot);
+  if (FindSlotByName(slot.GetName()) == old_active)
     return;
   // |oldActive| is no longer an active slot.
-  if (oldActive.findHostChildWithSameSlotName())
-    oldActive.didSlotChange(SlotChangeType::Initial);
+  if (old_active.FindHostChildWithSameSlotName())
+    old_active.DidSlotChange(SlotChangeType::kInitial);
   // TODO(hayato): We should not enqeueue a slotchange event for |oldActive|
   // if |oldActive| was inserted together with |slot|.
   // This could happen if |oldActive| and |slot| are descendants of the inserted
   // node, and |oldActive| is preceding |slot|.
 }
 
-void SlotAssignment::slotRemoved(HTMLSlotElement& slot) {
-  DCHECK_GT(m_slotCount, 0u);
-  --m_slotCount;
-  m_needsCollectSlots = true;
+void SlotAssignment::SlotRemoved(HTMLSlotElement& slot) {
+  DCHECK_GT(slot_count_, 0u);
+  --slot_count_;
+  needs_collect_slots_ = true;
 
-  DCHECK(m_slotMap->contains(slot.name()));
-  HTMLSlotElement* oldActive = findSlotByName(slot.name());
-  m_slotMap->remove(slot.name(), &slot);
-  HTMLSlotElement* newActive = findSlotByName(slot.name());
-  if (newActive && newActive != oldActive) {
+  DCHECK(slot_map_->Contains(slot.GetName()));
+  HTMLSlotElement* old_active = FindSlotByName(slot.GetName());
+  slot_map_->Remove(slot.GetName(), &slot);
+  HTMLSlotElement* new_active = FindSlotByName(slot.GetName());
+  if (new_active && new_active != old_active) {
     // |newActive| slot becomes an active slot.
-    if (newActive->findHostChildWithSameSlotName())
-      newActive->didSlotChange(SlotChangeType::Initial);
+    if (new_active->FindHostChildWithSameSlotName())
+      new_active->DidSlotChange(SlotChangeType::kInitial);
     // TODO(hayato): Prevent a false-positive slotchange.
     // This could happen if more than one slots which have the same name are
     // descendants of the removed node.
   }
 }
 
-bool SlotAssignment::findHostChildBySlotName(
-    const AtomicString& slotName) const {
+bool SlotAssignment::FindHostChildBySlotName(
+    const AtomicString& slot_name) const {
   // TODO(hayato): Avoid traversing children every time.
-  for (Node& child : NodeTraversal::childrenOf(m_owner->host())) {
-    if (!child.isSlotable())
+  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
+    if (!child.IsSlotable())
       continue;
-    if (child.slotName() == slotName)
+    if (child.SlotName() == slot_name)
       return true;
   }
   return false;
 }
 
-void SlotAssignment::slotRenamed(const AtomicString& oldSlotName,
+void SlotAssignment::SlotRenamed(const AtomicString& old_slot_name,
                                  HTMLSlotElement& slot) {
   // |slot| has already new name. Thus, we can not use
   // slot.hasAssignedNodesSynchronously.
-  bool hasAssignedNodesBefore = (findSlotByName(oldSlotName) == &slot) &&
-                                findHostChildBySlotName(oldSlotName);
+  bool has_assigned_nodes_before = (FindSlotByName(old_slot_name) == &slot) &&
+                                   FindHostChildBySlotName(old_slot_name);
 
-  m_slotMap->remove(oldSlotName, &slot);
-  m_slotMap->add(slot.name(), &slot);
+  slot_map_->Remove(old_slot_name, &slot);
+  slot_map_->Add(slot.GetName(), &slot);
 
-  bool hasAssignedNodesAfter = slot.hasAssignedNodesSlow();
+  bool has_assigned_nodes_after = slot.HasAssignedNodesSlow();
 
-  if (hasAssignedNodesBefore || hasAssignedNodesAfter)
-    slot.didSlotChange(SlotChangeType::Initial);
+  if (has_assigned_nodes_before || has_assigned_nodes_after)
+    slot.DidSlotChange(SlotChangeType::kInitial);
 }
 
-void SlotAssignment::didChangeHostChildSlotName(const AtomicString& oldValue,
-                                                const AtomicString& newValue) {
+void SlotAssignment::DidChangeHostChildSlotName(const AtomicString& old_value,
+                                                const AtomicString& new_value) {
   if (HTMLSlotElement* slot =
-          findSlotByName(HTMLSlotElement::normalizeSlotName(oldValue))) {
-    slot->didSlotChange(SlotChangeType::Initial);
-    m_owner->owner()->setNeedsDistributionRecalc();
+          FindSlotByName(HTMLSlotElement::NormalizeSlotName(old_value))) {
+    slot->DidSlotChange(SlotChangeType::kInitial);
+    owner_->Owner()->SetNeedsDistributionRecalc();
   }
   if (HTMLSlotElement* slot =
-          findSlotByName(HTMLSlotElement::normalizeSlotName(newValue))) {
-    slot->didSlotChange(SlotChangeType::Initial);
-    m_owner->owner()->setNeedsDistributionRecalc();
+          FindSlotByName(HTMLSlotElement::NormalizeSlotName(new_value))) {
+    slot->DidSlotChange(SlotChangeType::kInitial);
+    owner_->Owner()->SetNeedsDistributionRecalc();
   }
 }
 
 SlotAssignment::SlotAssignment(ShadowRoot& owner)
-    : m_slotMap(DocumentOrderedMap::create()),
-      m_owner(&owner),
-      m_needsCollectSlots(false),
-      m_slotCount(0) {
-  DCHECK(owner.isV1());
+    : slot_map_(DocumentOrderedMap::Create()),
+      owner_(&owner),
+      needs_collect_slots_(false),
+      slot_count_(0) {
+  DCHECK(owner.IsV1());
 }
 
-static void detachNotAssignedNode(Node& node) {
-  if (node.layoutObject())
-    node.lazyReattachIfAttached();
+static void DetachNotAssignedNode(Node& node) {
+  if (node.GetLayoutObject())
+    node.LazyReattachIfAttached();
 }
 
-void SlotAssignment::resolveAssignment() {
-  for (Member<HTMLSlotElement> slot : slots())
-    slot->saveAndClearDistribution();
+void SlotAssignment::ResolveAssignment() {
+  for (Member<HTMLSlotElement> slot : Slots())
+    slot->SaveAndClearDistribution();
 
-  for (Node& child : NodeTraversal::childrenOf(m_owner->host())) {
-    if (!child.isSlotable()) {
-      detachNotAssignedNode(child);
+  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
+    if (!child.IsSlotable()) {
+      DetachNotAssignedNode(child);
       continue;
     }
-    HTMLSlotElement* slot = findSlotByName(child.slotName());
+    HTMLSlotElement* slot = FindSlotByName(child.SlotName());
     if (slot)
-      slot->appendAssignedNode(child);
+      slot->AppendAssignedNode(child);
     else
-      detachNotAssignedNode(child);
+      DetachNotAssignedNode(child);
   }
 }
 
-void SlotAssignment::resolveDistribution() {
-  resolveAssignment();
-  const HeapVector<Member<HTMLSlotElement>>& slots = this->slots();
+void SlotAssignment::ResolveDistribution() {
+  ResolveAssignment();
+  const HeapVector<Member<HTMLSlotElement>>& slots = this->Slots();
 
   for (auto slot : slots)
-    slot->resolveDistributedNodes();
+    slot->ResolveDistributedNodes();
 
   // Update each slot's distribution in reverse tree order so that a child slot
   // is visited before its parent slot.
   for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot) {
-    (*slot)->updateDistributedNodesWithFallback();
-    (*slot)->lazyReattachDistributedNodesIfNeeded();
+    (*slot)->UpdateDistributedNodesWithFallback();
+    (*slot)->LazyReattachDistributedNodesIfNeeded();
   }
 }
 
-const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::slots() {
-  if (m_needsCollectSlots)
-    collectSlots();
-  return m_slots;
+const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {
+  if (needs_collect_slots_)
+    CollectSlots();
+  return slots_;
 }
 
-HTMLSlotElement* SlotAssignment::findSlot(const Node& node) {
-  return node.isSlotable() ? findSlotByName(node.slotName()) : nullptr;
+HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) {
+  return node.IsSlotable() ? FindSlotByName(node.SlotName()) : nullptr;
 }
 
-HTMLSlotElement* SlotAssignment::findSlotByName(const AtomicString& slotName) {
-  return m_slotMap->getSlotByName(slotName, m_owner.get());
+HTMLSlotElement* SlotAssignment::FindSlotByName(const AtomicString& slot_name) {
+  return slot_map_->GetSlotByName(slot_name, owner_.Get());
 }
 
-void SlotAssignment::collectSlots() {
-  DCHECK(m_needsCollectSlots);
-  m_slots.clear();
+void SlotAssignment::CollectSlots() {
+  DCHECK(needs_collect_slots_);
+  slots_.Clear();
 
-  m_slots.reserveCapacity(m_slotCount);
+  slots_.ReserveCapacity(slot_count_);
   for (HTMLSlotElement& slot :
-       Traversal<HTMLSlotElement>::descendantsOf(*m_owner)) {
-    m_slots.push_back(&slot);
+       Traversal<HTMLSlotElement>::DescendantsOf(*owner_)) {
+    slots_.push_back(&slot);
   }
-  m_needsCollectSlots = false;
-  DCHECK_EQ(m_slots.size(), m_slotCount);
+  needs_collect_slots_ = false;
+  DCHECK_EQ(slots_.size(), slot_count_);
 }
 
 DEFINE_TRACE(SlotAssignment) {
-  visitor->trace(m_slots);
-  visitor->trace(m_slotMap);
-  visitor->trace(m_owner);
+  visitor->Trace(slots_);
+  visitor->Trace(slot_map_);
+  visitor->Trace(owner_);
 }
 
 }  // namespace blink

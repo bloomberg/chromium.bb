@@ -41,48 +41,48 @@ class SimpleEditCommand;
 
 class UndoStep : public GarbageCollectedFinalized<UndoStep> {
  public:
-  static UndoStep* create(Document*,
+  static UndoStep* Create(Document*,
                           const VisibleSelection&,
                           const VisibleSelection&,
                           InputEvent::InputType);
 
-  void unapply();
-  void reapply();
-  InputEvent::InputType inputType() const;
-  void append(SimpleEditCommand*);
-  void append(UndoStep*);
+  void Unapply();
+  void Reapply();
+  InputEvent::InputType GetInputType() const;
+  void Append(SimpleEditCommand*);
+  void Append(UndoStep*);
 
-  const VisibleSelection& startingSelection() const {
-    return m_startingSelection;
+  const VisibleSelection& StartingSelection() const {
+    return starting_selection_;
   }
-  const VisibleSelection& endingSelection() const { return m_endingSelection; }
-  void setStartingSelection(const VisibleSelection&);
-  void setEndingSelection(const VisibleSelection&);
-  Element* startingRootEditableElement() const {
-    return m_startingRootEditableElement.get();
+  const VisibleSelection& EndingSelection() const { return ending_selection_; }
+  void SetStartingSelection(const VisibleSelection&);
+  void SetEndingSelection(const VisibleSelection&);
+  Element* StartingRootEditableElement() const {
+    return starting_root_editable_element_.Get();
   }
-  Element* endingRootEditableElement() const {
-    return m_endingRootEditableElement.get();
+  Element* EndingRootEditableElement() const {
+    return ending_root_editable_element_.Get();
   }
 
-  uint64_t sequenceNumber() const { return m_sequenceNumber; }
+  uint64_t SequenceNumber() const { return sequence_number_; }
 
   DECLARE_TRACE();
 
  private:
   UndoStep(Document*,
-           const VisibleSelection& startingSelection,
-           const VisibleSelection& endingSelection,
+           const VisibleSelection& starting_selection,
+           const VisibleSelection& ending_selection,
            InputEvent::InputType);
 
-  Member<Document> m_document;
-  VisibleSelection m_startingSelection;
-  VisibleSelection m_endingSelection;
-  HeapVector<Member<SimpleEditCommand>> m_commands;
-  Member<Element> m_startingRootEditableElement;
-  Member<Element> m_endingRootEditableElement;
-  InputEvent::InputType m_inputType;
-  const uint64_t m_sequenceNumber;
+  Member<Document> document_;
+  VisibleSelection starting_selection_;
+  VisibleSelection ending_selection_;
+  HeapVector<Member<SimpleEditCommand>> commands_;
+  Member<Element> starting_root_editable_element_;
+  Member<Element> ending_root_editable_element_;
+  InputEvent::InputType input_type_;
+  const uint64_t sequence_number_;
 };
 
 }  // namespace blink

@@ -36,10 +36,10 @@ class CORE_EXPORT CharacterData : public Node {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  void atomize();
-  const String& data() const { return m_data; }
+  void Atomize();
+  const String& data() const { return data_; }
   void setData(const String&);
-  unsigned length() const { return m_data.length(); }
+  unsigned length() const { return data_.length(); }
   String substringData(unsigned offset, unsigned count, ExceptionState&);
   void appendData(const String&);
   void replaceData(unsigned offset,
@@ -50,49 +50,51 @@ class CORE_EXPORT CharacterData : public Node {
   void insertData(unsigned offset, const String&, ExceptionState&);
   void deleteData(unsigned offset, unsigned count, ExceptionState&);
 
-  bool containsOnlyWhitespace() const;
+  bool ContainsOnlyWhitespace() const;
 
-  StringImpl* dataImpl() { return m_data.impl(); }
+  StringImpl* DataImpl() { return data_.Impl(); }
 
-  void parserAppendData(const String&);
+  void ParserAppendData(const String&);
 
  protected:
-  CharacterData(TreeScope& treeScope, const String& text, ConstructionType type)
-      : Node(&treeScope, type), m_data(!text.isNull() ? text : emptyString) {
-    DCHECK(type == CreateOther || type == CreateText ||
-           type == CreateEditingText);
+  CharacterData(TreeScope& tree_scope,
+                const String& text,
+                ConstructionType type)
+      : Node(&tree_scope, type), data_(!text.IsNull() ? text : g_empty_string) {
+    DCHECK(type == kCreateOther || type == kCreateText ||
+           type == kCreateEditingText);
   }
 
-  void setDataWithoutUpdate(const String& data) {
-    DCHECK(!data.isNull());
-    m_data = data;
+  void SetDataWithoutUpdate(const String& data) {
+    DCHECK(!data.IsNull());
+    data_ = data;
   }
   enum UpdateSource {
-    UpdateFromParser,
-    UpdateFromNonParser,
+    kUpdateFromParser,
+    kUpdateFromNonParser,
   };
-  void didModifyData(const String& oldValue, UpdateSource);
+  void DidModifyData(const String& old_value, UpdateSource);
 
-  String m_data;
+  String data_;
 
  private:
   String nodeValue() const final;
   void setNodeValue(const String&) final;
-  bool isCharacterDataNode() const final { return true; }
-  int maxCharacterOffset() const final;
-  void setDataAndUpdate(const String&,
-                        unsigned offsetOfReplacedData,
-                        unsigned oldLength,
-                        unsigned newLength,
-                        UpdateSource = UpdateFromNonParser);
+  bool IsCharacterDataNode() const final { return true; }
+  int MaxCharacterOffset() const final;
+  void SetDataAndUpdate(const String&,
+                        unsigned offset_of_replaced_data,
+                        unsigned old_length,
+                        unsigned new_length,
+                        UpdateSource = kUpdateFromNonParser);
 
-  bool isContainerNode() const =
+  bool IsContainerNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
-  bool isElementNode() const =
+  bool IsElementNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 };
 
-DEFINE_NODE_TYPE_CASTS(CharacterData, isCharacterDataNode());
+DEFINE_NODE_TYPE_CASTS(CharacterData, IsCharacterDataNode());
 
 }  // namespace blink
 

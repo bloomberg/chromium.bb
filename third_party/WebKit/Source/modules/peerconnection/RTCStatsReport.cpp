@@ -9,140 +9,140 @@ namespace blink {
 namespace {
 
 template <typename T>
-bool addPropertyValue(v8::Local<v8::Object>& v8Object,
+bool AddPropertyValue(v8::Local<v8::Object>& v8_object,
                       v8::Isolate* isolate,
                       T name,
                       v8::Local<v8::Value> value) {
-  return v8CallBoolean(v8Object->CreateDataProperty(
-      isolate->GetCurrentContext(), v8String(isolate, name), value));
+  return V8CallBoolean(v8_object->CreateDataProperty(
+      isolate->GetCurrentContext(), V8String(isolate, name), value));
 }
 
-bool addPropertySequenceOfBooleans(v8::Local<v8::Object>& v8Object,
+bool AddPropertySequenceOfBooleans(v8::Local<v8::Object>& v8_object,
                                    v8::Isolate* isolate,
                                    WebString name,
-                                   const WebVector<int>& webVector) {
-  v8::Local<v8::Array> v8Array = v8::Array::New(isolate, webVector.size());
-  for (size_t i = 0; i < webVector.size(); ++i) {
-    if (!v8CallBoolean(v8Array->CreateDataProperty(
+                                   const WebVector<int>& web_vector) {
+  v8::Local<v8::Array> v8_array = v8::Array::New(isolate, web_vector.size());
+  for (size_t i = 0; i < web_vector.size(); ++i) {
+    if (!V8CallBoolean(v8_array->CreateDataProperty(
             isolate->GetCurrentContext(), static_cast<uint32_t>(i),
-            v8::Boolean::New(isolate, static_cast<bool>(webVector[i])))))
+            v8::Boolean::New(isolate, static_cast<bool>(web_vector[i])))))
       return false;
   }
-  return addPropertyValue(v8Object, isolate, name, v8Array);
+  return AddPropertyValue(v8_object, isolate, name, v8_array);
 }
 
 template <typename T>
-bool addPropertySequenceOfNumbers(v8::Local<v8::Object>& v8Object,
+bool AddPropertySequenceOfNumbers(v8::Local<v8::Object>& v8_object,
                                   v8::Isolate* isolate,
                                   WebString name,
-                                  const WebVector<T>& webVector) {
-  v8::Local<v8::Array> v8Array = v8::Array::New(isolate, webVector.size());
-  for (size_t i = 0; i < webVector.size(); ++i) {
-    if (!v8CallBoolean(v8Array->CreateDataProperty(
+                                  const WebVector<T>& web_vector) {
+  v8::Local<v8::Array> v8_array = v8::Array::New(isolate, web_vector.size());
+  for (size_t i = 0; i < web_vector.size(); ++i) {
+    if (!V8CallBoolean(v8_array->CreateDataProperty(
             isolate->GetCurrentContext(), static_cast<uint32_t>(i),
-            v8::Number::New(isolate, static_cast<double>(webVector[i])))))
+            v8::Number::New(isolate, static_cast<double>(web_vector[i])))))
       return false;
   }
-  return addPropertyValue(v8Object, isolate, name, v8Array);
+  return AddPropertyValue(v8_object, isolate, name, v8_array);
 }
 
-bool addPropertySequenceOfStrings(v8::Local<v8::Object>& v8Object,
+bool AddPropertySequenceOfStrings(v8::Local<v8::Object>& v8_object,
                                   v8::Isolate* isolate,
                                   WebString name,
-                                  const WebVector<WebString>& webVector) {
-  v8::Local<v8::Array> v8Array = v8::Array::New(isolate, webVector.size());
-  for (size_t i = 0; i < webVector.size(); ++i) {
-    if (!v8CallBoolean(v8Array->CreateDataProperty(
+                                  const WebVector<WebString>& web_vector) {
+  v8::Local<v8::Array> v8_array = v8::Array::New(isolate, web_vector.size());
+  for (size_t i = 0; i < web_vector.size(); ++i) {
+    if (!V8CallBoolean(v8_array->CreateDataProperty(
             isolate->GetCurrentContext(), static_cast<uint32_t>(i),
-            v8String(isolate, webVector[i]))))
+            V8String(isolate, web_vector[i]))))
       return false;
   }
-  return addPropertyValue(v8Object, isolate, name, v8Array);
+  return AddPropertyValue(v8_object, isolate, name, v8_array);
 }
 
-v8::Local<v8::Value> webRTCStatsToValue(ScriptState* scriptState,
+v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
                                         const WebRTCStats* stats) {
-  v8::Isolate* isolate = scriptState->isolate();
-  v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Object> v8_object = v8::Object::New(isolate);
 
   bool success = true;
-  success &=
-      addPropertyValue(v8Object, isolate, "id", v8String(isolate, stats->id()));
-  success &= addPropertyValue(v8Object, isolate, "timestamp",
-                              v8::Number::New(isolate, stats->timestamp()));
-  success &= addPropertyValue(v8Object, isolate, "type",
-                              v8String(isolate, stats->type()));
-  for (size_t i = 0; i < stats->membersCount() && success; ++i) {
-    std::unique_ptr<WebRTCStatsMember> member = stats->getMember(i);
-    if (!member->isDefined())
+  success &= AddPropertyValue(v8_object, isolate, "id",
+                              V8String(isolate, stats->Id()));
+  success &= AddPropertyValue(v8_object, isolate, "timestamp",
+                              v8::Number::New(isolate, stats->Timestamp()));
+  success &= AddPropertyValue(v8_object, isolate, "type",
+                              V8String(isolate, stats->GetType()));
+  for (size_t i = 0; i < stats->MembersCount() && success; ++i) {
+    std::unique_ptr<WebRTCStatsMember> member = stats->GetMember(i);
+    if (!member->IsDefined())
       continue;
-    WebString name = member->name();
-    switch (member->type()) {
-      case WebRTCStatsMemberTypeBool:
+    WebString name = member->GetName();
+    switch (member->GetType()) {
+      case kWebRTCStatsMemberTypeBool:
         success &=
-            addPropertyValue(v8Object, isolate, name,
-                             v8::Boolean::New(isolate, member->valueBool()));
+            AddPropertyValue(v8_object, isolate, name,
+                             v8::Boolean::New(isolate, member->ValueBool()));
         break;
-      case WebRTCStatsMemberTypeInt32:
-        success &= addPropertyValue(
-            v8Object, isolate, name,
+      case kWebRTCStatsMemberTypeInt32:
+        success &= AddPropertyValue(
+            v8_object, isolate, name,
             v8::Number::New(isolate,
-                            static_cast<double>(member->valueInt32())));
+                            static_cast<double>(member->ValueInt32())));
         break;
-      case WebRTCStatsMemberTypeUint32:
-        success &= addPropertyValue(
-            v8Object, isolate, name,
+      case kWebRTCStatsMemberTypeUint32:
+        success &= AddPropertyValue(
+            v8_object, isolate, name,
             v8::Number::New(isolate,
-                            static_cast<double>(member->valueUint32())));
+                            static_cast<double>(member->ValueUint32())));
         break;
-      case WebRTCStatsMemberTypeInt64:
-        success &= addPropertyValue(
-            v8Object, isolate, name,
+      case kWebRTCStatsMemberTypeInt64:
+        success &= AddPropertyValue(
+            v8_object, isolate, name,
             v8::Number::New(isolate,
-                            static_cast<double>(member->valueInt64())));
+                            static_cast<double>(member->ValueInt64())));
         break;
-      case WebRTCStatsMemberTypeUint64:
-        success &= addPropertyValue(
-            v8Object, isolate, name,
+      case kWebRTCStatsMemberTypeUint64:
+        success &= AddPropertyValue(
+            v8_object, isolate, name,
             v8::Number::New(isolate,
-                            static_cast<double>(member->valueUint64())));
+                            static_cast<double>(member->ValueUint64())));
         break;
-      case WebRTCStatsMemberTypeDouble:
+      case kWebRTCStatsMemberTypeDouble:
         success &=
-            addPropertyValue(v8Object, isolate, name,
-                             v8::Number::New(isolate, member->valueDouble()));
+            AddPropertyValue(v8_object, isolate, name,
+                             v8::Number::New(isolate, member->ValueDouble()));
         break;
-      case WebRTCStatsMemberTypeString:
-        success &= addPropertyValue(v8Object, isolate, name,
-                                    v8String(isolate, member->valueString()));
+      case kWebRTCStatsMemberTypeString:
+        success &= AddPropertyValue(v8_object, isolate, name,
+                                    V8String(isolate, member->ValueString()));
         break;
-      case WebRTCStatsMemberTypeSequenceBool:
-        success &= addPropertySequenceOfBooleans(v8Object, isolate, name,
-                                                 member->valueSequenceBool());
+      case kWebRTCStatsMemberTypeSequenceBool:
+        success &= AddPropertySequenceOfBooleans(v8_object, isolate, name,
+                                                 member->ValueSequenceBool());
         break;
-      case WebRTCStatsMemberTypeSequenceInt32:
-        success &= addPropertySequenceOfNumbers(v8Object, isolate, name,
-                                                member->valueSequenceInt32());
+      case kWebRTCStatsMemberTypeSequenceInt32:
+        success &= AddPropertySequenceOfNumbers(v8_object, isolate, name,
+                                                member->ValueSequenceInt32());
         break;
-      case WebRTCStatsMemberTypeSequenceUint32:
-        success &= addPropertySequenceOfNumbers(v8Object, isolate, name,
-                                                member->valueSequenceUint32());
+      case kWebRTCStatsMemberTypeSequenceUint32:
+        success &= AddPropertySequenceOfNumbers(v8_object, isolate, name,
+                                                member->ValueSequenceUint32());
         break;
-      case WebRTCStatsMemberTypeSequenceInt64:
-        success &= addPropertySequenceOfNumbers(v8Object, isolate, name,
-                                                member->valueSequenceInt64());
+      case kWebRTCStatsMemberTypeSequenceInt64:
+        success &= AddPropertySequenceOfNumbers(v8_object, isolate, name,
+                                                member->ValueSequenceInt64());
         break;
-      case WebRTCStatsMemberTypeSequenceUint64:
-        success &= addPropertySequenceOfNumbers(v8Object, isolate, name,
-                                                member->valueSequenceUint64());
+      case kWebRTCStatsMemberTypeSequenceUint64:
+        success &= AddPropertySequenceOfNumbers(v8_object, isolate, name,
+                                                member->ValueSequenceUint64());
         break;
-      case WebRTCStatsMemberTypeSequenceDouble:
-        success &= addPropertySequenceOfNumbers(v8Object, isolate, name,
-                                                member->valueSequenceDouble());
+      case kWebRTCStatsMemberTypeSequenceDouble:
+        success &= AddPropertySequenceOfNumbers(v8_object, isolate, name,
+                                                member->ValueSequenceDouble());
         break;
-      case WebRTCStatsMemberTypeSequenceString:
-        success &= addPropertySequenceOfStrings(v8Object, isolate, name,
-                                                member->valueSequenceString());
+      case kWebRTCStatsMemberTypeSequenceString:
+        success &= AddPropertySequenceOfStrings(v8_object, isolate, name,
+                                                member->ValueSequenceString());
         break;
       default:
         NOTREACHED();
@@ -152,49 +152,49 @@ v8::Local<v8::Value> webRTCStatsToValue(ScriptState* scriptState,
     NOTREACHED();
     return v8::Undefined(isolate);
   }
-  return v8Object;
+  return v8_object;
 }
 
 class RTCStatsReportIterationSource final
     : public PairIterable<String, v8::Local<v8::Value>>::IterationSource {
  public:
   RTCStatsReportIterationSource(std::unique_ptr<WebRTCStatsReport> report)
-      : m_report(std::move(report)) {}
+      : report_(std::move(report)) {}
 
-  bool next(ScriptState* scriptState,
+  bool Next(ScriptState* script_state,
             String& key,
             v8::Local<v8::Value>& value,
-            ExceptionState& exceptionState) override {
-    std::unique_ptr<WebRTCStats> stats = m_report->next();
+            ExceptionState& exception_state) override {
+    std::unique_ptr<WebRTCStats> stats = report_->Next();
     if (!stats)
       return false;
-    key = stats->id();
-    value = webRTCStatsToValue(scriptState, stats.get());
+    key = stats->Id();
+    value = WebRTCStatsToValue(script_state, stats.get());
     return true;
   }
 
  private:
-  std::unique_ptr<WebRTCStatsReport> m_report;
+  std::unique_ptr<WebRTCStatsReport> report_;
 };
 
 }  // namespace
 
 RTCStatsReport::RTCStatsReport(std::unique_ptr<WebRTCStatsReport> report)
-    : m_report(std::move(report)) {}
+    : report_(std::move(report)) {}
 
 PairIterable<String, v8::Local<v8::Value>>::IterationSource*
-RTCStatsReport::startIteration(ScriptState*, ExceptionState&) {
-  return new RTCStatsReportIterationSource(m_report->copyHandle());
+RTCStatsReport::StartIteration(ScriptState*, ExceptionState&) {
+  return new RTCStatsReportIterationSource(report_->CopyHandle());
 }
 
-bool RTCStatsReport::getMapEntry(ScriptState* scriptState,
+bool RTCStatsReport::GetMapEntry(ScriptState* script_state,
                                  const String& key,
                                  v8::Local<v8::Value>& value,
                                  ExceptionState&) {
-  std::unique_ptr<WebRTCStats> stats = m_report->getStats(key);
+  std::unique_ptr<WebRTCStats> stats = report_->GetStats(key);
   if (!stats)
     return false;
-  value = webRTCStatsToValue(scriptState, stats.get());
+  value = WebRTCStatsToValue(script_state, stats.get());
   return true;
 }
 

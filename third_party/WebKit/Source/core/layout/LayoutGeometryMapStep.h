@@ -37,12 +37,12 @@ namespace blink {
 class LayoutObject;
 
 enum GeometryInfoFlag {
-  AccumulatingTransform = 1 << 0,
-  IsNonUniform =
+  kAccumulatingTransform = 1 << 0,
+  kIsNonUniform =
       1
       << 1,  // Mapping depends on the input point, e.g. because of CSS columns.
-  IsFixedPosition = 1 << 2,
-  ContainsFixedPosition = 1 << 3,
+  kIsFixedPosition = 1 << 2,
+  kContainsFixedPosition = 1 << 3,
 };
 typedef unsigned GeometryInfoFlags;
 
@@ -50,26 +50,26 @@ typedef unsigned GeometryInfoFlags;
 struct LayoutGeometryMapStep {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   LayoutGeometryMapStep(const LayoutGeometryMapStep& o)
-      : m_layoutObject(o.m_layoutObject),
-        m_offset(o.m_offset),
-        m_offsetForFixedPosition(o.m_offsetForFixedPosition),
-        m_offsetForStickyPosition(o.m_offsetForStickyPosition),
-        m_flags(o.m_flags) {
-    DCHECK(!o.m_transform);
+      : layout_object_(o.layout_object_),
+        offset_(o.offset_),
+        offset_for_fixed_position_(o.offset_for_fixed_position_),
+        offset_for_sticky_position_(o.offset_for_sticky_position_),
+        flags_(o.flags_) {
+    DCHECK(!o.transform_);
   }
-  LayoutGeometryMapStep(const LayoutObject* layoutObject,
+  LayoutGeometryMapStep(const LayoutObject* layout_object,
                         GeometryInfoFlags flags)
-      : m_layoutObject(layoutObject), m_flags(flags) {}
-  const LayoutObject* m_layoutObject;
-  LayoutSize m_offset;
+      : layout_object_(layout_object), flags_(flags) {}
+  const LayoutObject* layout_object_;
+  LayoutSize offset_;
   std::unique_ptr<TransformationMatrix>
-      m_transform;  // Includes offset if non-null.
+      transform_;  // Includes offset if non-null.
   // If m_offsetForFixedPosition could only apply to the fixed position steps,
   // we may be able to merge with m_offsetForStickyPosition and simplify
   // mapping.
-  LayoutSize m_offsetForFixedPosition;
-  LayoutSize m_offsetForStickyPosition;
-  GeometryInfoFlags m_flags;
+  LayoutSize offset_for_fixed_position_;
+  LayoutSize offset_for_sticky_position_;
+  GeometryInfoFlags flags_;
 };
 
 }  // namespace blink

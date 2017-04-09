@@ -38,18 +38,18 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLOptionElement* create(Document&);
-  static HTMLOptionElement* createForJSConstructor(Document&,
+  static HTMLOptionElement* Create(Document&);
+  static HTMLOptionElement* CreateForJSConstructor(Document&,
                                                    const String& data,
                                                    const AtomicString& value,
-                                                   bool defaultSelected,
+                                                   bool default_selected,
                                                    bool selected,
                                                    ExceptionState&);
 
   // A text to be shown to users.  The difference from |label()| is |label()|
   // returns an empty string if |label| content attribute is empty.
   // |displayLabel()| returns the value string in that case.
-  String displayLabel() const;
+  String DisplayLabel() const;
 
   // |text| IDL attribute implementations.
   String text() const;
@@ -60,63 +60,63 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   String value() const;
   void setValue(const AtomicString&);
 
-  bool selected() const;
-  void setSelected(bool);
+  bool Selected() const;
+  void SetSelected(bool);
   bool selectedForBinding() const;
   void setSelectedForBinding(bool);
 
-  HTMLDataListElement* ownerDataListElement() const;
-  HTMLSelectElement* ownerSelectElement() const;
+  HTMLDataListElement* OwnerDataListElement() const;
+  HTMLSelectElement* OwnerSelectElement() const;
 
   String label() const;
   void setLabel(const AtomicString&);
 
-  bool ownElementDisabled() const;
+  bool OwnElementDisabled() const;
 
-  bool isDisabledFormControl() const override;
-  String defaultToolTip() const override;
+  bool IsDisabledFormControl() const override;
+  String DefaultToolTip() const override;
 
-  String textIndentedToRespectGroupLabel() const;
+  String TextIndentedToRespectGroupLabel() const;
 
   // Update 'selectedness'.
-  void setSelectedState(bool);
+  void SetSelectedState(bool);
   // Update 'dirtiness'.
-  void setDirty(bool);
+  void SetDirty(bool);
 
   HTMLFormElement* form() const;
-  bool spatialNavigationFocused() const;
+  bool SpatialNavigationFocused() const;
 
-  bool isDisplayNone() const;
+  bool IsDisplayNone() const;
 
-  int listIndex() const;
+  int ListIndex() const;
 
  private:
   explicit HTMLOptionElement(Document&);
   ~HTMLOptionElement();
 
-  bool supportsFocus() const override;
-  bool matchesDefaultPseudoClass() const override;
-  bool matchesEnabledPseudoClass() const override;
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  void parseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  void accessKeyAction(bool) override;
-  void childrenChanged(const ChildrenChange&) override;
+  bool SupportsFocus() const override;
+  bool MatchesDefaultPseudoClass() const override;
+  bool MatchesEnabledPseudoClass() const override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  void AccessKeyAction(bool) override;
+  void ChildrenChanged(const ChildrenChange&) override;
   String innerText() override;
 
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
-  String collectOptionInnerText() const;
+  String CollectOptionInnerText() const;
 
-  void updateLabel();
+  void UpdateLabel();
 
   // Represents 'selectedness'.
   // https://html.spec.whatwg.org/multipage/forms.html#concept-option-selectedness
-  bool m_isSelected;
+  bool is_selected_;
   // Represents 'dirtiness'.
   // https://html.spec.whatwg.org/multipage/forms.html#concept-option-dirtiness
-  bool m_isDirty = false;
+  bool is_dirty_ = false;
 };
 
 }  // namespace blink

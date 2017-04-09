@@ -22,7 +22,7 @@ class WebImageCaptureFrameGrabber {
  public:
   virtual ~WebImageCaptureFrameGrabber() {}
 
-  virtual void grabFrame(WebMediaStreamTrack*,
+  virtual void GrabFrame(WebMediaStreamTrack*,
                          WebImageCaptureGrabFrameCallbacks*) = 0;
 };
 

@@ -8,17 +8,17 @@
 
 namespace content {
 
-using blink::WebIDBKeyPathTypeArray;
-using blink::WebIDBKeyPathTypeNull;
-using blink::WebIDBKeyPathTypeString;
+using blink::kWebIDBKeyPathTypeArray;
+using blink::kWebIDBKeyPathTypeNull;
+using blink::kWebIDBKeyPathTypeString;
 
-IndexedDBKeyPath::IndexedDBKeyPath() : type_(WebIDBKeyPathTypeNull) {}
+IndexedDBKeyPath::IndexedDBKeyPath() : type_(kWebIDBKeyPathTypeNull) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const base::string16& string)
-    : type_(WebIDBKeyPathTypeString), string_(string) {}
+    : type_(kWebIDBKeyPathTypeString), string_(string) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const std::vector<base::string16>& array)
-    : type_(WebIDBKeyPathTypeArray), array_(array) {}
+    : type_(kWebIDBKeyPathTypeArray), array_(array) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const IndexedDBKeyPath& other) = default;
 IndexedDBKeyPath::~IndexedDBKeyPath() = default;
@@ -26,12 +26,12 @@ IndexedDBKeyPath& IndexedDBKeyPath::operator=(const IndexedDBKeyPath& other) =
     default;
 
 const std::vector<base::string16>& IndexedDBKeyPath::array() const {
-  DCHECK(type_ == blink::WebIDBKeyPathTypeArray);
+  DCHECK(type_ == blink::kWebIDBKeyPathTypeArray);
   return array_;
 }
 
 const base::string16& IndexedDBKeyPath::string() const {
-  DCHECK(type_ == blink::WebIDBKeyPathTypeString);
+  DCHECK(type_ == blink::kWebIDBKeyPathTypeString);
   return string_;
 }
 
@@ -40,11 +40,11 @@ bool IndexedDBKeyPath::operator==(const IndexedDBKeyPath& other) const {
     return false;
 
   switch (type_) {
-    case WebIDBKeyPathTypeNull:
+    case kWebIDBKeyPathTypeNull:
       return true;
-    case WebIDBKeyPathTypeString:
+    case kWebIDBKeyPathTypeString:
       return string_ == other.string_;
-    case WebIDBKeyPathTypeArray:
+    case kWebIDBKeyPathTypeArray:
       return array_ == other.array_;
   }
   NOTREACHED();

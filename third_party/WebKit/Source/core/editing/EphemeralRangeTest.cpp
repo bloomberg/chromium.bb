@@ -13,38 +13,38 @@ namespace blink {
 class EphemeralRangeTest : public EditingTestBase {
  protected:
   template <typename Traversal = NodeTraversal>
-  std::string traverseRange(Range*) const;
+  std::string TraverseRange(Range*) const;
 
   template <typename Strategy>
-  std::string traverseRange(const EphemeralRangeTemplate<Strategy>&) const;
+  std::string TraverseRange(const EphemeralRangeTemplate<Strategy>&) const;
 
-  Range* getBodyRange() const;
+  Range* GetBodyRange() const;
 };
 
 template <typename Traversal>
-std::string EphemeralRangeTest::traverseRange(Range* range) const {
-  std::stringstream nodesContent;
-  for (Node* node = range->firstNode(); node != range->pastLastNode();
-       node = Traversal::next(*node)) {
-    nodesContent << "[" << *node << "]";
+std::string EphemeralRangeTest::TraverseRange(Range* range) const {
+  std::stringstream nodes_content;
+  for (Node* node = range->FirstNode(); node != range->PastLastNode();
+       node = Traversal::Next(*node)) {
+    nodes_content << "[" << *node << "]";
   }
 
-  return nodesContent.str();
+  return nodes_content.str();
 }
 
 template <typename Strategy>
-std::string EphemeralRangeTest::traverseRange(
+std::string EphemeralRangeTest::TraverseRange(
     const EphemeralRangeTemplate<Strategy>& range) const {
-  std::stringstream nodesContent;
-  for (const Node& node : range.nodes())
-    nodesContent << "[" << node << "]";
+  std::stringstream nodes_content;
+  for (const Node& node : range.Nodes())
+    nodes_content << "[" << node << "]";
 
-  return nodesContent.str();
+  return nodes_content.str();
 }
 
-Range* EphemeralRangeTest::getBodyRange() const {
-  Range* range = Range::create(document());
-  range->selectNode(document().body());
+Range* EphemeralRangeTest::GetBodyRange() const {
+  Range* range = Range::Create(GetDocument());
+  range->selectNode(GetDocument().body());
   return range;
 }
 
@@ -52,32 +52,32 @@ Range* EphemeralRangeTest::getBodyRange() const {
 // |for (Node* n = firstNode(); n != pastLastNode(); n = Traversal::next(*n))|
 // does.
 TEST_F(EphemeralRangeTest, rangeTraversalDOM) {
-  const char* bodyContent =
+  const char* body_content =
       "<p id='host'>"
       "<b id='zero'>0</b>"
       "<b id='one'>1</b>"
       "<b id='two'>22</b>"
       "<span id='three'>333</span>"
       "</p>";
-  setBodyContent(bodyContent);
+  SetBodyContent(body_content);
 
-  const std::string expectedNodes(
+  const std::string expected_nodes(
       "[BODY][P id=\"host\"][B id=\"zero\"][#text \"0\"][B id=\"one\"][#text "
       "\"1\"][B id=\"two\"][#text \"22\"][SPAN id=\"three\"][#text \"333\"]");
 
   // Check two ways to traverse.
-  EXPECT_EQ(expectedNodes, traverseRange<>(getBodyRange()));
-  EXPECT_EQ(traverseRange<>(getBodyRange()),
-            traverseRange(EphemeralRange(getBodyRange())));
+  EXPECT_EQ(expected_nodes, TraverseRange<>(GetBodyRange()));
+  EXPECT_EQ(TraverseRange<>(GetBodyRange()),
+            TraverseRange(EphemeralRange(GetBodyRange())));
 
-  EXPECT_EQ(expectedNodes, traverseRange<FlatTreeTraversal>(getBodyRange()));
-  EXPECT_EQ(traverseRange<FlatTreeTraversal>(getBodyRange()),
-            traverseRange(EphemeralRangeInFlatTree(getBodyRange())));
+  EXPECT_EQ(expected_nodes, TraverseRange<FlatTreeTraversal>(GetBodyRange()));
+  EXPECT_EQ(TraverseRange<FlatTreeTraversal>(GetBodyRange()),
+            TraverseRange(EphemeralRangeInFlatTree(GetBodyRange())));
 }
 
 // Tests that |inRange| helper will traverse the whole range with shadow DOM.
 TEST_F(EphemeralRangeTest, rangeShadowTraversal) {
-  const char* bodyContent =
+  const char* body_content =
       "<b id='zero'>0</b>"
       "<p id='host'>"
       "<b id='one'>1</b>"
@@ -85,140 +85,145 @@ TEST_F(EphemeralRangeTest, rangeShadowTraversal) {
       "<b id='three'>333</b>"
       "</p>"
       "<b id='four'>4444</b>";
-  const char* shadowContent =
+  const char* shadow_content =
       "<p id='five'>55555</p>"
       "<content select=#two></content>"
       "<content select=#one></content>"
       "<span id='six'>666666</span>"
       "<p id='seven'>7777777</p>";
-  setBodyContent(bodyContent);
-  setShadowContent(shadowContent, "host");
+  SetBodyContent(body_content);
+  SetShadowContent(shadow_content, "host");
 
-  const std::string expectedNodes(
+  const std::string expected_nodes(
       "[BODY][B id=\"zero\"][#text \"0\"][P id=\"host\"][P id=\"five\"][#text "
       "\"55555\"][B id=\"two\"][#text \"22\"][B id=\"one\"][#text \"1\"][SPAN "
       "id=\"six\"][#text \"666666\"][P id=\"seven\"][#text \"7777777\"][B "
       "id=\"four\"][#text \"4444\"]");
 
-  EXPECT_EQ(expectedNodes, traverseRange<FlatTreeTraversal>(getBodyRange()));
-  EXPECT_EQ(traverseRange<FlatTreeTraversal>(getBodyRange()),
-            traverseRange(EphemeralRangeInFlatTree(getBodyRange())));
+  EXPECT_EQ(expected_nodes, TraverseRange<FlatTreeTraversal>(GetBodyRange()));
+  EXPECT_EQ(TraverseRange<FlatTreeTraversal>(GetBodyRange()),
+            TraverseRange(EphemeralRangeInFlatTree(GetBodyRange())));
   // Node 'three' should not appear in FlatTreeTraversal.
-  EXPECT_EQ(expectedNodes.find("three") == std::string::npos, true);
+  EXPECT_EQ(expected_nodes.find("three") == std::string::npos, true);
 }
 
 // Limit a range and check that it will be traversed correctly.
 TEST_F(EphemeralRangeTest, rangeTraversalLimitedDOM) {
-  const char* bodyContent =
+  const char* body_content =
       "<p id='host'>"
       "<b id='zero'>0</b>"
       "<b id='one'>1</b>"
       "<b id='two'>22</b>"
       "<span id='three'>333</span>"
       "</p>";
-  setBodyContent(bodyContent);
+  SetBodyContent(body_content);
 
-  Range* untilB = getBodyRange();
-  untilB->setEnd(document().getElementById("one"), 0,
-                 IGNORE_EXCEPTION_FOR_TESTING);
+  Range* until_b = GetBodyRange();
+  until_b->setEnd(GetDocument().GetElementById("one"), 0,
+                  IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ("[BODY][P id=\"host\"][B id=\"zero\"][#text \"0\"][B id=\"one\"]",
-            traverseRange<>(untilB));
-  EXPECT_EQ(traverseRange<>(untilB), traverseRange(EphemeralRange(untilB)));
+            TraverseRange<>(until_b));
+  EXPECT_EQ(TraverseRange<>(until_b), TraverseRange(EphemeralRange(until_b)));
 
-  Range* fromBToSpan = getBodyRange();
-  fromBToSpan->setStart(document().getElementById("one"), 0,
-                        IGNORE_EXCEPTION_FOR_TESTING);
-  fromBToSpan->setEnd(document().getElementById("three"), 0,
-                      IGNORE_EXCEPTION_FOR_TESTING);
+  Range* from_b_to_span = GetBodyRange();
+  from_b_to_span->setStart(GetDocument().GetElementById("one"), 0,
+                           IGNORE_EXCEPTION_FOR_TESTING);
+  from_b_to_span->setEnd(GetDocument().GetElementById("three"), 0,
+                         IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ("[#text \"1\"][B id=\"two\"][#text \"22\"][SPAN id=\"three\"]",
-            traverseRange<>(fromBToSpan));
-  EXPECT_EQ(traverseRange<>(fromBToSpan),
-            traverseRange(EphemeralRange(fromBToSpan)));
+            TraverseRange<>(from_b_to_span));
+  EXPECT_EQ(TraverseRange<>(from_b_to_span),
+            TraverseRange(EphemeralRange(from_b_to_span)));
 }
 
 TEST_F(EphemeralRangeTest, rangeTraversalLimitedFlatTree) {
-  const char* bodyContent =
+  const char* body_content =
       "<b id='zero'>0</b>"
       "<p id='host'>"
       "<b id='one'>1</b>"
       "<b id='two'>22</b>"
       "</p>"
       "<b id='three'>333</b>";
-  const char* shadowContent =
+  const char* shadow_content =
       "<p id='four'>4444</p>"
       "<content select=#two></content>"
       "<content select=#one></content>"
       "<span id='five'>55555</span>"
       "<p id='six'>666666</p>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  const PositionInFlatTree startPosition(document().getElementById("one"), 0);
-  const PositionInFlatTree limitPosition(shadowRoot->getElementById("five"), 0);
-  const PositionInFlatTree endPosition(shadowRoot->getElementById("six"), 0);
-  const EphemeralRangeInFlatTree fromBToSpan(startPosition, limitPosition);
-  EXPECT_EQ("[#text \"1\"][SPAN id=\"five\"]", traverseRange(fromBToSpan));
+  const PositionInFlatTree start_position(GetDocument().GetElementById("one"),
+                                          0);
+  const PositionInFlatTree limit_position(shadow_root->GetElementById("five"),
+                                          0);
+  const PositionInFlatTree end_position(shadow_root->GetElementById("six"), 0);
+  const EphemeralRangeInFlatTree from_b_to_span(start_position, limit_position);
+  EXPECT_EQ("[#text \"1\"][SPAN id=\"five\"]", TraverseRange(from_b_to_span));
 
-  const EphemeralRangeInFlatTree fromSpanToEnd(limitPosition, endPosition);
-  EXPECT_EQ("[#text \"55555\"][P id=\"six\"]", traverseRange(fromSpanToEnd));
+  const EphemeralRangeInFlatTree from_span_to_end(limit_position, end_position);
+  EXPECT_EQ("[#text \"55555\"][P id=\"six\"]", TraverseRange(from_span_to_end));
 }
 
 TEST_F(EphemeralRangeTest, traversalEmptyRanges) {
-  const char* bodyContent =
+  const char* body_content =
       "<p id='host'>"
       "<b id='one'>1</b>"
       "</p>";
-  setBodyContent(bodyContent);
+  SetBodyContent(body_content);
 
   // Expect no iterations in loop for an empty EphemeralRange.
-  EXPECT_EQ(std::string(), traverseRange(EphemeralRange()));
+  EXPECT_EQ(std::string(), TraverseRange(EphemeralRange()));
 
-  auto iterable = EphemeralRange().nodes();
+  auto iterable = EphemeralRange().Nodes();
   // Tree iterators have only |operator !=| ATM.
   EXPECT_FALSE(iterable.begin() != iterable.end());
 
-  const EphemeralRange singlePositionRange(getBodyRange()->startPosition());
-  EXPECT_FALSE(singlePositionRange.isNull());
-  EXPECT_EQ(std::string(), traverseRange(singlePositionRange));
-  EXPECT_EQ(singlePositionRange.startPosition().nodeAsRangeFirstNode(),
-            singlePositionRange.endPosition().nodeAsRangePastLastNode());
+  const EphemeralRange single_position_range(GetBodyRange()->StartPosition());
+  EXPECT_FALSE(single_position_range.IsNull());
+  EXPECT_EQ(std::string(), TraverseRange(single_position_range));
+  EXPECT_EQ(single_position_range.StartPosition().NodeAsRangeFirstNode(),
+            single_position_range.EndPosition().NodeAsRangePastLastNode());
 }
 
 TEST_F(EphemeralRangeTest, commonAncesstorDOM) {
-  const char* bodyContent =
+  const char* body_content =
       "<p id='host'>00"
       "<b id='one'>11</b>"
       "<b id='two'>22</b>"
       "<b id='three'>33</b>"
       "</p>";
-  setBodyContent(bodyContent);
+  SetBodyContent(body_content);
 
-  const Position startPosition(document().getElementById("one"), 0);
-  const Position endPosition(document().getElementById("two"), 0);
-  const EphemeralRange range(startPosition, endPosition);
-  EXPECT_EQ(document().getElementById("host"), range.commonAncestorContainer());
+  const Position start_position(GetDocument().GetElementById("one"), 0);
+  const Position end_position(GetDocument().GetElementById("two"), 0);
+  const EphemeralRange range(start_position, end_position);
+  EXPECT_EQ(GetDocument().GetElementById("host"),
+            range.CommonAncestorContainer());
 }
 
 TEST_F(EphemeralRangeTest, commonAncesstorFlatTree) {
-  const char* bodyContent =
+  const char* body_content =
       "<b id='zero'>0</b>"
       "<p id='host'>"
       "<b id='one'>1</b>"
       "<b id='two'>22</b>"
       "</p>"
       "<b id='three'>333</b>";
-  const char* shadowContent =
+  const char* shadow_content =
       "<p id='four'>4444</p>"
       "<content select=#two></content>"
       "<content select=#one></content>"
       "<p id='five'>55555</p>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  const PositionInFlatTree startPosition(document().getElementById("one"), 0);
-  const PositionInFlatTree endPosition(shadowRoot->getElementById("five"), 0);
-  const EphemeralRangeInFlatTree range(startPosition, endPosition);
-  EXPECT_EQ(document().getElementById("host"), range.commonAncestorContainer());
+  const PositionInFlatTree start_position(GetDocument().GetElementById("one"),
+                                          0);
+  const PositionInFlatTree end_position(shadow_root->GetElementById("five"), 0);
+  const EphemeralRangeInFlatTree range(start_position, end_position);
+  EXPECT_EQ(GetDocument().GetElementById("host"),
+            range.CommonAncestorContainer());
 }
 
 }  // namespace blink

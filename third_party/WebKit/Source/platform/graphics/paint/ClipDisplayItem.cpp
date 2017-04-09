@@ -11,47 +11,47 @@
 
 namespace blink {
 
-void ClipDisplayItem::replay(GraphicsContext& context) const {
-  context.save();
+void ClipDisplayItem::Replay(GraphicsContext& context) const {
+  context.Save();
 
   // RoundedInnerRectClipper only cares about rounded-rect clips,
   // and passes an "infinite" rect clip; there is no reason to apply this clip.
   // TODO(fmalita): convert RoundedInnerRectClipper to a better suited
   //   DisplayItem so we don't have to special-case its semantics.
-  if (m_clipRect != LayoutRect::infiniteIntRect())
-    context.clipRect(m_clipRect, AntiAliased);
+  if (clip_rect_ != LayoutRect::InfiniteIntRect())
+    context.ClipRect(clip_rect_, kAntiAliased);
 
-  for (const FloatRoundedRect& roundedRect : m_roundedRectClips)
-    context.clipRoundedRect(roundedRect);
+  for (const FloatRoundedRect& rounded_rect : rounded_rect_clips_)
+    context.ClipRoundedRect(rounded_rect);
 }
 
-void ClipDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void ClipDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  WebVector<SkRRect> webRoundedRects(m_roundedRectClips.size());
-  for (size_t i = 0; i < m_roundedRectClips.size(); ++i)
-    webRoundedRects[i] = m_roundedRectClips[i];
+  WebVector<SkRRect> web_rounded_rects(rounded_rect_clips_.size());
+  for (size_t i = 0; i < rounded_rect_clips_.size(); ++i)
+    web_rounded_rects[i] = rounded_rect_clips_[i];
 
-  list->appendClipItem(m_clipRect, webRoundedRects);
+  list->AppendClipItem(clip_rect_, web_rounded_rects);
 }
 
-void EndClipDisplayItem::replay(GraphicsContext& context) const {
-  context.restore();
+void EndClipDisplayItem::Replay(GraphicsContext& context) const {
+  context.Restore();
 }
 
-void EndClipDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void EndClipDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendEndClipItem();
+  list->AppendEndClipItem();
 }
 
 #ifndef NDEBUG
-void ClipDisplayItem::dumpPropertiesAsDebugString(
-    WTF::StringBuilder& stringBuilder) const {
-  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  stringBuilder.append(WTF::String::format(
-      ", clipRect: [%d,%d,%d,%d]", m_clipRect.x(), m_clipRect.y(),
-      m_clipRect.width(), m_clipRect.height()));
+void ClipDisplayItem::DumpPropertiesAsDebugString(
+    WTF::StringBuilder& string_builder) const {
+  DisplayItem::DumpPropertiesAsDebugString(string_builder);
+  string_builder.Append(WTF::String::Format(
+      ", clipRect: [%d,%d,%d,%d]", clip_rect_.X(), clip_rect_.Y(),
+      clip_rect_.Width(), clip_rect_.Height()));
 }
 #endif
 

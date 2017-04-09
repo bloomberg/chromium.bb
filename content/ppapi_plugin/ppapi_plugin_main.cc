@@ -137,20 +137,20 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   base::StringToDouble(
       command_line.GetSwitchValueASCII(switches::kDeviceScaleFactor),
       &device_scale_factor);
-  blink::WebFontRendering::setDeviceScaleFactor(device_scale_factor);
+  blink::WebFontRendering::SetDeviceScaleFactor(device_scale_factor);
 
   int antialiasing_enabled = 1;
   base::StringToInt(
       command_line.GetSwitchValueASCII(switches::kPpapiAntialiasedTextEnabled),
       &antialiasing_enabled);
-  blink::WebFontRendering::setAntialiasedTextEnabled(
+  blink::WebFontRendering::SetAntialiasedTextEnabled(
       antialiasing_enabled ? true : false);
 
   int subpixel_rendering = 0;
   base::StringToInt(command_line.GetSwitchValueASCII(
                         switches::kPpapiSubpixelRenderingSetting),
                     &subpixel_rendering);
-  blink::WebFontRendering::setLCDTextEnabled(
+  blink::WebFontRendering::SetLCDTextEnabled(
       subpixel_rendering != gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
 #endif
 

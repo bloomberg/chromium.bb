@@ -17,75 +17,77 @@
 
 namespace blink {
 
-static const float replacementTextRoundedRectHeight = 18;
-static const float replacementTextRoundedRectLeftRightTextMargin = 6;
-static const float replacementTextRoundedRectOpacity = 0.20f;
-static const float replacementTextRoundedRectRadius = 5;
-static const float replacementTextTextOpacity = 0.55f;
+static const float kReplacementTextRoundedRectHeight = 18;
+static const float kReplacementTextRoundedRectLeftRightTextMargin = 6;
+static const float kReplacementTextRoundedRectOpacity = 0.20f;
+static const float kReplacementTextRoundedRectRadius = 5;
+static const float kReplacementTextTextOpacity = 0.55f;
 
-static Font replacementTextFont() {
-  FontDescription fontDescription;
-  LayoutTheme::theme().systemFont(CSSValueWebkitSmallControl, fontDescription);
-  fontDescription.setWeight(FontWeightBold);
-  fontDescription.setComputedSize(fontDescription.specifiedSize());
-  Font font(fontDescription);
-  font.update(nullptr);
+static Font ReplacementTextFont() {
+  FontDescription font_description;
+  LayoutTheme::GetTheme().SystemFont(CSSValueWebkitSmallControl,
+                                     font_description);
+  font_description.SetWeight(kFontWeightBold);
+  font_description.SetComputedSize(font_description.SpecifiedSize());
+  Font font(font_description);
+  font.Update(nullptr);
   return font;
 }
 
-void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo,
-                                          const LayoutPoint& paintOffset) {
-  if (!m_layoutEmbeddedObject.showsUnavailablePluginIndicator())
+void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
+                                          const LayoutPoint& paint_offset) {
+  if (!layout_embedded_object_.ShowsUnavailablePluginIndicator())
     return;
 
-  if (paintInfo.phase == PaintPhaseSelection)
+  if (paint_info.phase == kPaintPhaseSelection)
     return;
 
-  GraphicsContext& context = paintInfo.context;
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          context, m_layoutEmbeddedObject, paintInfo.phase))
+  GraphicsContext& context = paint_info.context;
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          context, layout_embedded_object_, paint_info.phase))
     return;
 
-  LayoutRect contentRect(m_layoutEmbeddedObject.contentBoxRect());
-  contentRect.moveBy(paintOffset);
-  LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutEmbeddedObject,
-                                              paintInfo.phase, contentRect);
-  GraphicsContextStateSaver stateSaver(context);
-  context.clip(pixelSnappedIntRect(contentRect));
+  LayoutRect content_rect(layout_embedded_object_.ContentBoxRect());
+  content_rect.MoveBy(paint_offset);
+  LayoutObjectDrawingRecorder drawing_recorder(context, layout_embedded_object_,
+                                               paint_info.phase, content_rect);
+  GraphicsContextStateSaver state_saver(context);
+  context.Clip(PixelSnappedIntRect(content_rect));
 
-  Font font = replacementTextFont();
-  const SimpleFontData* fontData = font.primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+  Font font = ReplacementTextFont();
+  const SimpleFontData* font_data = font.PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return;
 
-  TextRun textRun(m_layoutEmbeddedObject.unavailablePluginReplacementText());
-  FloatSize textGeometry(font.width(textRun),
-                         fontData->getFontMetrics().height());
+  TextRun text_run(layout_embedded_object_.UnavailablePluginReplacementText());
+  FloatSize text_geometry(font.Width(text_run),
+                          font_data->GetFontMetrics().Height());
 
-  LayoutRect backgroundRect(
+  LayoutRect background_rect(
       0, 0,
-      textGeometry.width() + 2 * replacementTextRoundedRectLeftRightTextMargin,
-      replacementTextRoundedRectHeight);
-  backgroundRect.move(contentRect.center() - backgroundRect.center());
-  backgroundRect = LayoutRect(pixelSnappedIntRect(backgroundRect));
-  Path roundedBackgroundRect;
-  FloatRect floatBackgroundRect(backgroundRect);
-  roundedBackgroundRect.addRoundedRect(
-      floatBackgroundRect, FloatSize(replacementTextRoundedRectRadius,
-                                     replacementTextRoundedRectRadius));
-  context.setFillColor(
-      scaleAlpha(Color::white, replacementTextRoundedRectOpacity));
-  context.fillPath(roundedBackgroundRect);
+      text_geometry.Width() +
+          2 * kReplacementTextRoundedRectLeftRightTextMargin,
+      kReplacementTextRoundedRectHeight);
+  background_rect.Move(content_rect.Center() - background_rect.Center());
+  background_rect = LayoutRect(PixelSnappedIntRect(background_rect));
+  Path rounded_background_rect;
+  FloatRect float_background_rect(background_rect);
+  rounded_background_rect.AddRoundedRect(
+      float_background_rect, FloatSize(kReplacementTextRoundedRectRadius,
+                                       kReplacementTextRoundedRectRadius));
+  context.SetFillColor(
+      ScaleAlpha(Color::kWhite, kReplacementTextRoundedRectOpacity));
+  context.FillPath(rounded_background_rect);
 
-  FloatRect textRect(FloatPoint(), textGeometry);
-  textRect.move(FloatPoint(contentRect.center()) - textRect.center());
-  TextRunPaintInfo runInfo(textRun);
-  runInfo.bounds = floatBackgroundRect;
-  context.setFillColor(scaleAlpha(Color::black, replacementTextTextOpacity));
-  context.drawBidiText(
-      font, runInfo,
-      textRect.location() + FloatSize(0, fontData->getFontMetrics().ascent()));
+  FloatRect text_rect(FloatPoint(), text_geometry);
+  text_rect.Move(FloatPoint(content_rect.Center()) - text_rect.Center());
+  TextRunPaintInfo run_info(text_run);
+  run_info.bounds = float_background_rect;
+  context.SetFillColor(ScaleAlpha(Color::kBlack, kReplacementTextTextOpacity));
+  context.DrawBidiText(font, run_info,
+                       text_rect.Location() +
+                           FloatSize(0, font_data->GetFontMetrics().Ascent()));
 }
 
 }  // namespace blink

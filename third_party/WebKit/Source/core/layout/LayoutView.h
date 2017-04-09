@@ -61,61 +61,63 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
  public:
   explicit LayoutView(Document*);
   ~LayoutView() override;
-  void willBeDestroyed() override;
+  void WillBeDestroyed() override;
 
   // hitTest() will update layout, style and compositing first while
   // hitTestNoLifecycleUpdate() does not.
-  bool hitTest(HitTestResult&);
-  bool hitTestNoLifecycleUpdate(HitTestResult&);
+  bool HitTest(HitTestResult&);
+  bool HitTestNoLifecycleUpdate(HitTestResult&);
 
   // Returns the total count of calls to HitTest, for testing.
-  unsigned hitTestCount() const { return m_hitTestCount; }
-  unsigned hitTestCacheHits() const { return m_hitTestCacheHits; }
+  unsigned HitTestCount() const { return hit_test_count_; }
+  unsigned HitTestCacheHits() const { return hit_test_cache_hits_; }
 
-  void clearHitTestCache();
+  void ClearHitTestCache();
 
-  const char* name() const override { return "LayoutView"; }
+  const char* GetName() const override { return "LayoutView"; }
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectLayoutView || LayoutBlockFlow::IsOfType(type);
   }
 
-  PaintLayerType layerTypeRequired() const override { return NormalPaintLayer; }
+  PaintLayerType LayerTypeRequired() const override {
+    return kNormalPaintLayer;
+  }
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  void layout() override;
-  void updateLogicalWidth() override;
-  void computeLogicalHeight(LayoutUnit logicalHeight,
-                            LayoutUnit logicalTop,
+  void GetLayout() override;
+  void UpdateLogicalWidth() override;
+  void ComputeLogicalHeight(LayoutUnit logical_height,
+                            LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
 
   // Based on FrameView::layoutSize, but:
   // - checks for null FrameView
   // - returns 0x0 if using printing layout
   // - scrollbar exclusion is compatible with root layer scrolling
-  IntSize layoutSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+  IntSize GetLayoutSize(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
-  int viewHeight(
-      IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const {
-    return layoutSize(scrollbarInclusion).height();
+  int ViewHeight(
+      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
+    return GetLayoutSize(scrollbar_inclusion).Height();
   }
-  int viewWidth(
-      IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const {
-    return layoutSize(scrollbarInclusion).width();
+  int ViewWidth(
+      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
+    return GetLayoutSize(scrollbar_inclusion).Width();
   }
 
-  int viewLogicalWidth(IncludeScrollbarsInRect = ExcludeScrollbars) const;
-  int viewLogicalHeight(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+  int ViewLogicalWidth(IncludeScrollbarsInRect = kExcludeScrollbars) const;
+  int ViewLogicalHeight(IncludeScrollbarsInRect = kExcludeScrollbars) const;
 
-  LayoutUnit viewLogicalHeightForPercentages() const;
+  LayoutUnit ViewLogicalHeightForPercentages() const;
 
-  float zoomFactor() const;
+  float ZoomFactor() const;
 
-  FrameView* frameView() const { return m_frameView; }
+  FrameView* GetFrameView() const { return frame_view_; }
 
   // See comments for the equivalent method on LayoutObject.
-  bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
+  bool MapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
                                       LayoutRect&,
                                       MapCoordinatesFlags mode,
                                       VisualRectFlags) const;
@@ -123,169 +125,171 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // |ancestor| can be nullptr, which will map the rect to the main frame's
   // space, even if the main frame is remote (or has intermediate remote
   // frames in the chain).
-  bool mapToVisualRectInAncestorSpaceInternal(
+  bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
       TransformState&,
       MapCoordinatesFlags,
       VisualRectFlags) const;
 
-  bool mapToVisualRectInAncestorSpaceInternal(
+  bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
       TransformState&,
-      VisualRectFlags = DefaultVisualRectFlags) const override;
-  LayoutSize offsetForFixedPosition(bool includePendingScroll = false) const;
+      VisualRectFlags = kDefaultVisualRectFlags) const override;
+  LayoutSize OffsetForFixedPosition(bool include_pending_scroll = false) const;
 
-  void invalidatePaintForViewAndCompositedLayers();
+  void InvalidatePaintForViewAndCompositedLayers();
 
-  PaintInvalidationReason invalidatePaintIfNeeded(
+  PaintInvalidationReason InvalidatePaintIfNeeded(
       const PaintInvalidationState&) override;
-  PaintInvalidationReason invalidatePaintIfNeeded(
+  PaintInvalidationReason InvalidatePaintIfNeeded(
       const PaintInvalidatorContext&) const override;
 
-  void paint(const PaintInfo&, const LayoutPoint&) const override;
-  void paintBoxDecorationBackground(const PaintInfo&,
+  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&) const override;
 
   enum SelectionPaintInvalidationMode {
-    PaintInvalidationNewXOROld,
-    PaintInvalidationNewMinusOld
+    kPaintInvalidationNewXOROld,
+    kPaintInvalidationNewMinusOld
   };
-  void setSelection(
+  void SetSelection(
       LayoutObject* start,
-      int startPos,
+      int start_pos,
       LayoutObject*,
-      int endPos,
-      SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
-  void clearSelection();
-  bool hasPendingSelection() const;
-  void commitPendingSelection();
-  IntRect selectionBounds();
-  void selectionStartEnd(int& startPos, int& endPos);
-  void invalidatePaintForSelection();
+      int end_pos,
+      SelectionPaintInvalidationMode = kPaintInvalidationNewXOROld);
+  void ClearSelection();
+  bool HasPendingSelection() const;
+  void CommitPendingSelection();
+  IntRect SelectionBounds();
+  void SelectionStartEnd(int& start_pos, int& end_pos);
+  void InvalidatePaintForSelection();
 
-  void absoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulatedOffset) const override;
-  void absoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteRects(Vector<IntRect>&,
+                     const LayoutPoint& accumulated_offset) const override;
+  void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
 
-  LayoutRect viewRect() const override;
-  LayoutRect overflowClipRect(
+  LayoutRect ViewRect() const override;
+  LayoutRect OverflowClipRect(
       const LayoutPoint& location,
       OverlayScrollbarClipBehavior =
-          IgnorePlatformOverlayScrollbarSize) const override;
+          kIgnorePlatformOverlayScrollbarSize) const override;
 
-  LayoutState* layoutState() const { return m_layoutState; }
+  LayoutState* GetLayoutState() const { return layout_state_; }
 
-  void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
+  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
-  ViewFragmentationContext* fragmentationContext() const {
-    return m_fragmentationContext.get();
+  ViewFragmentationContext* FragmentationContext() const {
+    return fragmentation_context_.get();
   }
 
-  LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
-  void setPageLogicalHeight(LayoutUnit height) { m_pageLogicalHeight = height; }
+  LayoutUnit PageLogicalHeight() const { return page_logical_height_; }
+  void SetPageLogicalHeight(LayoutUnit height) {
+    page_logical_height_ = height;
+  }
 
   // Notification that this view moved into or out of a native window.
-  void setIsInWindow(bool);
+  void SetIsInWindow(bool);
 
-  PaintLayerCompositor* compositor();
-  bool usesCompositing() const;
+  PaintLayerCompositor* Compositor();
+  bool UsesCompositing() const;
 
-  IntRect documentRect() const;
+  IntRect DocumentRect() const;
 
   // LayoutObject that paints the root background has background-images which
   // all have background-attachment: fixed.
-  bool rootBackgroundIsEntirelyFixed() const;
+  bool RootBackgroundIsEntirelyFixed() const;
 
-  IntervalArena* intervalArena();
+  IntervalArena* GetIntervalArena();
 
-  void setLayoutQuoteHead(LayoutQuote* head) { m_layoutQuoteHead = head; }
-  LayoutQuote* layoutQuoteHead() const { return m_layoutQuoteHead; }
+  void SetLayoutQuoteHead(LayoutQuote* head) { layout_quote_head_ = head; }
+  LayoutQuote* LayoutQuoteHead() const { return layout_quote_head_; }
 
   // FIXME: This is a work around because the current implementation of counters
   // requires walking the entire tree repeatedly and most pages don't actually
   // use either feature so we shouldn't take the performance hit when not
   // needed. Long term we should rewrite the counter and quotes code.
-  void addLayoutCounter() { m_layoutCounterCount++; }
-  void removeLayoutCounter() {
-    DCHECK_GT(m_layoutCounterCount, 0u);
-    m_layoutCounterCount--;
+  void AddLayoutCounter() { layout_counter_count_++; }
+  void RemoveLayoutCounter() {
+    DCHECK_GT(layout_counter_count_, 0u);
+    layout_counter_count_--;
   }
-  bool hasLayoutCounters() { return m_layoutCounterCount; }
+  bool HasLayoutCounters() { return layout_counter_count_; }
 
-  bool backgroundIsKnownToBeOpaqueInRect(
-      const LayoutRect& localRect) const override;
+  bool BackgroundIsKnownToBeOpaqueInRect(
+      const LayoutRect& local_rect) const override;
 
   // Returns the viewport size in (CSS pixels) that vh and vw units are
   // calculated from.
-  FloatSize viewportSizeForViewportUnits() const;
+  FloatSize ViewportSizeForViewportUnits() const;
 
-  void pushLayoutState(LayoutState& layoutState) {
-    m_layoutState = &layoutState;
+  void PushLayoutState(LayoutState& layout_state) {
+    layout_state_ = &layout_state;
   }
-  void popLayoutState() {
-    DCHECK(m_layoutState);
-    m_layoutState = m_layoutState->next();
+  void PopLayoutState() {
+    DCHECK(layout_state_);
+    layout_state_ = layout_state_->Next();
   }
 
-  LayoutRect visualOverflowRect() const override;
-  LayoutRect localVisualRect() const override;
+  LayoutRect VisualOverflowRect() const override;
+  LayoutRect LocalVisualRect() const override;
 
   // Invalidates paint for the entire view, including composited descendants,
   // but not including child frames.
   // It is very likely you do not want to call this method.
-  void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
+  void SetShouldDoFullPaintInvalidationForViewAndAllDescendants();
 
-  void setShouldDoFullPaintInvalidationOnResizeIfNeeded(bool widthChanged,
-                                                        bool heightChanged);
+  void SetShouldDoFullPaintInvalidationOnResizeIfNeeded(bool width_changed,
+                                                        bool height_changed);
 
   // The document scrollbar is always on the right, even in RTL. This is to
   // prevent it from moving around on navigations.
   // TODO(skobes): This is not quite the ideal behavior, see
   // http://crbug.com/250514 and http://crbug.com/249860.
-  bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override {
+  bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override {
     return false;
   }
 
   // The rootLayerScrolls setting will ultimately determine whether FrameView
   // or PaintLayerScrollableArea handle the scroll.
-  ScrollResult scroll(ScrollGranularity, const FloatSize&) override;
+  ScrollResult Scroll(ScrollGranularity, const FloatSize&) override;
 
-  LayoutRect debugRect() const override;
+  LayoutRect DebugRect() const override;
 
  private:
-  void mapLocalToAncestor(
+  void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,
       TransformState&,
-      MapCoordinatesFlags = ApplyContainerFlip) const override;
+      MapCoordinatesFlags = kApplyContainerFlip) const override;
 
-  const LayoutObject* pushMappingToContainer(
-      const LayoutBoxModelObject* ancestorToStopAt,
+  const LayoutObject* PushMappingToContainer(
+      const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const override;
-  void mapAncestorToLocal(const LayoutBoxModelObject*,
+  void MapAncestorToLocal(const LayoutBoxModelObject*,
                           TransformState&,
                           MapCoordinatesFlags) const override;
-  void computeSelfHitTestRects(Vector<LayoutRect>&,
-                               const LayoutPoint& layerOffset) const override;
+  void ComputeSelfHitTestRects(Vector<LayoutRect>&,
+                               const LayoutPoint& layer_offset) const override;
 
-  bool canHaveChildren() const override;
+  bool CanHaveChildren() const override;
 
-  void layoutContent();
+  void LayoutContent();
 #if DCHECK_IS_ON()
-  void checkLayoutState();
+  void CheckLayoutState();
 #endif
 
-  void updateFromStyle() override;
-  bool allowsOverflowClip() const override;
+  void UpdateFromStyle() override;
+  bool AllowsOverflowClip() const override;
 
-  bool shouldUsePrintingLayout() const;
+  bool ShouldUsePrintingLayout() const;
 
-  int viewLogicalWidthForBoxSizing() const;
-  int viewLogicalHeightForBoxSizing() const;
+  int ViewLogicalWidthForBoxSizing() const;
+  int ViewLogicalHeightForBoxSizing() const;
 
-  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
+  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
-  UntracedMember<FrameView> m_frameView;
+  UntracedMember<FrameView> frame_view_;
 
   // The current selection represented as 2 boundaries.
   // Selection boundaries are represented in LayoutView by a tuple
@@ -297,39 +301,39 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   //
   // Those are used for selection painting and paint invalidation upon
   // selection change.
-  LayoutObject* m_selectionStart;
-  LayoutObject* m_selectionEnd;
+  LayoutObject* selection_start_;
+  LayoutObject* selection_end_;
 
   // TODO(yosin): Clarify the meaning of these variables. editing/ passes
   // them as offsets in the DOM tree  but layout uses them as offset in the
   // layout tree.
-  int m_selectionStartPos;
-  int m_selectionEndPos;
+  int selection_start_pos_;
+  int selection_end_pos_;
 
   // The page logical height.
   // This is only used during printing to split the content into pages.
   // Outside of printing, this is 0.
-  LayoutUnit m_pageLogicalHeight;
+  LayoutUnit page_logical_height_;
 
   // LayoutState is an optimization used during layout.
   // |m_layoutState| will be nullptr outside of layout.
   //
   // See the class comment for more details.
-  LayoutState* m_layoutState;
+  LayoutState* layout_state_;
 
-  std::unique_ptr<ViewFragmentationContext> m_fragmentationContext;
-  std::unique_ptr<PaintLayerCompositor> m_compositor;
-  RefPtr<IntervalArena> m_intervalArena;
+  std::unique_ptr<ViewFragmentationContext> fragmentation_context_;
+  std::unique_ptr<PaintLayerCompositor> compositor_;
+  RefPtr<IntervalArena> interval_arena_;
 
-  LayoutQuote* m_layoutQuoteHead;
-  unsigned m_layoutCounterCount;
+  LayoutQuote* layout_quote_head_;
+  unsigned layout_counter_count_;
 
-  unsigned m_hitTestCount;
-  unsigned m_hitTestCacheHits;
-  Persistent<HitTestCache> m_hitTestCache;
+  unsigned hit_test_count_;
+  unsigned hit_test_cache_hits_;
+  Persistent<HitTestCache> hit_test_cache_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, IsLayoutView());
 
 }  // namespace blink
 

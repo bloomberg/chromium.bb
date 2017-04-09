@@ -40,24 +40,24 @@ namespace blink {
 class AnimatableClipPathOperation final : public AnimatableValue {
  public:
   ~AnimatableClipPathOperation() override {}
-  static PassRefPtr<AnimatableClipPathOperation> create(
+  static PassRefPtr<AnimatableClipPathOperation> Create(
       ClipPathOperation* operation) {
-    return adoptRef(new AnimatableClipPathOperation(operation));
+    return AdoptRef(new AnimatableClipPathOperation(operation));
   }
 
  private:
   AnimatableClipPathOperation(ClipPathOperation* operation)
-      : m_operation(operation) {
-    DCHECK(m_operation);
+      : operation_(operation) {
+    DCHECK(operation_);
   }
-  AnimatableType type() const override { return TypeClipPathOperation; }
-  bool equalTo(const AnimatableValue*) const override;
+  AnimatableType GetType() const override { return kTypeClipPathOperation; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  RefPtr<ClipPathOperation> m_operation;
+  RefPtr<ClipPathOperation> operation_;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableClipPathOperation,
-                                   isClipPathOperation());
+                                   IsClipPathOperation());
 
 }  // namespace blink
 

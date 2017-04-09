@@ -7,39 +7,39 @@
 namespace blink {
 
 SampledEffect::SampledEffect(KeyframeEffectReadOnly* effect)
-    : m_effect(effect),
-      m_sequenceNumber(effect->animation()->sequenceNumber()),
-      m_priority(effect->getPriority()) {}
+    : effect_(effect),
+      sequence_number_(effect->GetAnimation()->SequenceNumber()),
+      priority_(effect->GetPriority()) {}
 
-void SampledEffect::clear() {
-  m_effect = nullptr;
-  m_interpolations.clear();
+void SampledEffect::Clear() {
+  effect_ = nullptr;
+  interpolations_.Clear();
 }
 
-bool SampledEffect::willNeverChange() const {
-  return !m_effect || !m_effect->animation();
+bool SampledEffect::WillNeverChange() const {
+  return !effect_ || !effect_->GetAnimation();
 }
 
-void SampledEffect::removeReplacedInterpolations(
-    const HashSet<PropertyHandle>& replacedProperties) {
-  size_t newSize = 0;
-  for (auto& interpolation : m_interpolations) {
-    if (!replacedProperties.contains(interpolation->getProperty()))
-      m_interpolations[newSize++].swap(interpolation);
+void SampledEffect::RemoveReplacedInterpolations(
+    const HashSet<PropertyHandle>& replaced_properties) {
+  size_t new_size = 0;
+  for (auto& interpolation : interpolations_) {
+    if (!replaced_properties.Contains(interpolation->GetProperty()))
+      interpolations_[new_size++].Swap(interpolation);
   }
-  m_interpolations.shrink(newSize);
+  interpolations_.Shrink(new_size);
 }
 
-void SampledEffect::updateReplacedProperties(
-    HashSet<PropertyHandle>& replacedProperties) {
-  for (const auto& interpolation : m_interpolations) {
-    if (!interpolation->dependsOnUnderlyingValue())
-      replacedProperties.insert(interpolation->getProperty());
+void SampledEffect::UpdateReplacedProperties(
+    HashSet<PropertyHandle>& replaced_properties) {
+  for (const auto& interpolation : interpolations_) {
+    if (!interpolation->DependsOnUnderlyingValue())
+      replaced_properties.insert(interpolation->GetProperty());
   }
 }
 
 DEFINE_TRACE(SampledEffect) {
-  visitor->trace(m_effect);
+  visitor->Trace(effect_);
 }
 
 }  // namespace blink

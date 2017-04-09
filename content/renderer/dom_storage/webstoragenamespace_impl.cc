@@ -29,7 +29,7 @@ WebStorageNamespaceImpl::WebStorageNamespaceImpl(int64_t namespace_id)
 WebStorageNamespaceImpl::~WebStorageNamespaceImpl() {
 }
 
-WebStorageArea* WebStorageNamespaceImpl::createStorageArea(
+WebStorageArea* WebStorageNamespaceImpl::CreateStorageArea(
     const blink::WebSecurityOrigin& origin) {
   return new WebStorageAreaImpl(namespace_id_, url::Origin(origin).GetURL());
 }
@@ -42,7 +42,7 @@ WebStorageNamespace* WebStorageNamespaceImpl::copy() {
   return NULL;
 }
 
-bool WebStorageNamespaceImpl::isSameNamespace(
+bool WebStorageNamespaceImpl::IsSameNamespace(
     const WebStorageNamespace& other) const {
   const WebStorageNamespaceImpl* other_impl =
       static_cast<const WebStorageNamespaceImpl*>(&other);

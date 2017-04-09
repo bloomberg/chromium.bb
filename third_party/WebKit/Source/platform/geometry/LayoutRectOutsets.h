@@ -55,69 +55,69 @@ class PLATFORM_EXPORT LayoutRectOutsets {
                     LayoutUnit right,
                     LayoutUnit bottom,
                     LayoutUnit left)
-      : m_top(top), m_right(right), m_bottom(bottom), m_left(left) {}
+      : top_(top), right_(right), bottom_(bottom), left_(left) {}
   LayoutRectOutsets(int top, int right, int bottom, int left)
-      : m_top(LayoutUnit(top)),
-        m_right(LayoutUnit(right)),
-        m_bottom(LayoutUnit(bottom)),
-        m_left(LayoutUnit(left)) {}
+      : top_(LayoutUnit(top)),
+        right_(LayoutUnit(right)),
+        bottom_(LayoutUnit(bottom)),
+        left_(LayoutUnit(left)) {}
 
   LayoutRectOutsets(const IntRectOutsets& outsets)
-      : m_top(LayoutUnit(outsets.top())),
-        m_right(LayoutUnit(outsets.right())),
-        m_bottom(LayoutUnit(outsets.bottom())),
-        m_left(LayoutUnit(outsets.left())) {}
+      : top_(LayoutUnit(outsets.Top())),
+        right_(LayoutUnit(outsets.Right())),
+        bottom_(LayoutUnit(outsets.Bottom())),
+        left_(LayoutUnit(outsets.Left())) {}
 
   LayoutRectOutsets(const FloatRectOutsets& outsets)
-      : m_top(LayoutUnit(outsets.top())),
-        m_right(LayoutUnit(outsets.right())),
-        m_bottom(LayoutUnit(outsets.bottom())),
-        m_left(LayoutUnit(outsets.left())) {}
+      : top_(LayoutUnit(outsets.Top())),
+        right_(LayoutUnit(outsets.Right())),
+        bottom_(LayoutUnit(outsets.Bottom())),
+        left_(LayoutUnit(outsets.Left())) {}
 
-  LayoutUnit top() const { return m_top; }
-  LayoutUnit right() const { return m_right; }
-  LayoutUnit bottom() const { return m_bottom; }
-  LayoutUnit left() const { return m_left; }
+  LayoutUnit Top() const { return top_; }
+  LayoutUnit Right() const { return right_; }
+  LayoutUnit Bottom() const { return bottom_; }
+  LayoutUnit Left() const { return left_; }
 
-  void setTop(LayoutUnit value) { m_top = value; }
-  void setRight(LayoutUnit value) { m_right = value; }
-  void setBottom(LayoutUnit value) { m_bottom = value; }
-  void setLeft(LayoutUnit value) { m_left = value; }
+  void SetTop(LayoutUnit value) { top_ = value; }
+  void SetRight(LayoutUnit value) { right_ = value; }
+  void SetBottom(LayoutUnit value) { bottom_ = value; }
+  void SetLeft(LayoutUnit value) { left_ = value; }
 
-  LayoutUnit logicalTop(WritingMode) const;
-  LayoutUnit logicalBottom(WritingMode) const;
-  LayoutUnit logicalLeft(WritingMode) const;
-  LayoutUnit logicalRight(WritingMode) const;
+  LayoutUnit LogicalTop(WritingMode) const;
+  LayoutUnit LogicalBottom(WritingMode) const;
+  LayoutUnit LogicalLeft(WritingMode) const;
+  LayoutUnit LogicalRight(WritingMode) const;
 
   // Produces a new LayoutRectOutsets whose |top| is the |logicalTop| of this
   // one, and so on.
-  LayoutRectOutsets logicalOutsets(WritingMode) const;
+  LayoutRectOutsets LogicalOutsets(WritingMode) const;
 
   // The same as |logicalOutsets|, but also adjusting for flipped lines.
-  LayoutRectOutsets logicalOutsetsWithFlippedLines(WritingMode) const;
+  LayoutRectOutsets LogicalOutsetsWithFlippedLines(WritingMode) const;
 
-  LayoutUnit before(WritingMode) const;
-  LayoutUnit after(WritingMode) const;
-  LayoutUnit start(WritingMode, TextDirection) const;
+  LayoutUnit Before(WritingMode) const;
+  LayoutUnit After(WritingMode) const;
+  LayoutUnit Start(WritingMode, TextDirection) const;
   LayoutUnit end(WritingMode, TextDirection) const;
-  LayoutUnit over(WritingMode) const;
-  LayoutUnit under(WritingMode) const;
+  LayoutUnit Over(WritingMode) const;
+  LayoutUnit Under(WritingMode) const;
 
-  void setBefore(WritingMode, LayoutUnit);
-  void setAfter(WritingMode, LayoutUnit);
-  void setStart(WritingMode, TextDirection, LayoutUnit);
-  void setEnd(WritingMode, TextDirection, LayoutUnit);
+  void SetBefore(WritingMode, LayoutUnit);
+  void SetAfter(WritingMode, LayoutUnit);
+  void SetStart(WritingMode, TextDirection, LayoutUnit);
+  void SetEnd(WritingMode, TextDirection, LayoutUnit);
 
   bool operator==(const LayoutRectOutsets other) const {
-    return top() == other.top() && right() == other.right() &&
-           bottom() == other.bottom() && left() == other.left();
+    return Top() == other.Top() && Right() == other.Right() &&
+           Bottom() == other.Bottom() && Left() == other.Left();
   }
 
  private:
-  LayoutUnit m_top;
-  LayoutUnit m_right;
-  LayoutUnit m_bottom;
-  LayoutUnit m_left;
+  LayoutUnit top_;
+  LayoutUnit right_;
+  LayoutUnit bottom_;
+  LayoutUnit left_;
 };
 
 }  // namespace blink

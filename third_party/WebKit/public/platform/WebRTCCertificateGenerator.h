@@ -52,24 +52,24 @@ class WebRTCCertificateGenerator {
   // Start generating a certificate asynchronously. |observer| is invoked on the
   // same thread that called generateCertificate when the operation is
   // completed.
-  virtual void generateCertificate(
+  virtual void GenerateCertificate(
       const WebRTCKeyParams&,
       std::unique_ptr<WebRTCCertificateCallback> observer) = 0;
-  virtual void generateCertificateWithExpiration(
+  virtual void GenerateCertificateWithExpiration(
       const WebRTCKeyParams&,
-      uint64_t expiresMs,
+      uint64_t expires_ms,
       std::unique_ptr<WebRTCCertificateCallback> observer) = 0;
 
   // Determines if the parameters are supported by |generateCertificate|.
   // For example, if the number of bits of some parameter is too small or too
   // large we may want to reject it for security or performance reasons.
-  virtual bool isSupportedKeyParams(const WebRTCKeyParams&) = 0;
+  virtual bool IsSupportedKeyParams(const WebRTCKeyParams&) = 0;
 
   // Creates a certificate from the PEM strings. See also
   // |WebRTCCertificate::toPEM|.
-  virtual std::unique_ptr<WebRTCCertificate> fromPEM(
-      blink::WebString pemPrivateKey,
-      blink::WebString pemCertificate) = 0;
+  virtual std::unique_ptr<WebRTCCertificate> FromPEM(
+      blink::WebString pem_private_key,
+      blink::WebString pem_certificate) = 0;
 };
 
 }  // namespace blink

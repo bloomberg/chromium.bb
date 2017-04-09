@@ -52,22 +52,22 @@ class WebSubstringUtil {
   // Upon return, |baselinePoint| is set to the left baseline point in
   // AppKit coordinates.
   BLINK_EXPORT static NSAttributedString*
-  attributedWordAtPoint(WebFrameWidget*, WebPoint, WebPoint& baselinePoint);
+  AttributedWordAtPoint(WebFrameWidget*, WebPoint, WebPoint& baseline_point);
 
   // Returns an autoreleased NSAttributedString that is a substring of the
   // Frame at the given range, or nil on error.
   BLINK_EXPORT static NSAttributedString*
-  attributedSubstringInRange(WebLocalFrame*, size_t location, size_t length);
+  AttributedSubstringInRange(WebLocalFrame*, size_t location, size_t length);
 
   // Returns an autoreleased NSAttributedString that is a substring of the
   // Frame at the given range, or nil on error.
   // It also gets the baseline point for the given range for showing
   // dictionary lookup bubble.
-  BLINK_EXPORT static NSAttributedString* attributedSubstringInRange(
+  BLINK_EXPORT static NSAttributedString* AttributedSubstringInRange(
       WebLocalFrame*,
       size_t location,
       size_t length,
-      WebPoint* baselinePoint);
+      WebPoint* baseline_point);
 };
 
 }  // namespace blink

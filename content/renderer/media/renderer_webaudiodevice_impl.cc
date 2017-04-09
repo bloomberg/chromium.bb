@@ -57,7 +57,7 @@ int FrameIdFromCurrentContext() {
   // of the WebAudio objects might not be the actual source of the audio (e.g.,
   // an extension creates a object that is passed and used within a page).
   blink::WebLocalFrame* const web_frame =
-      blink::WebLocalFrame::frameForCurrentContext();
+      blink::WebLocalFrame::FrameForCurrentContext();
   RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
   return render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
 }
@@ -111,7 +111,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
 
   media::AudioLatency::LatencyType latency =
       AudioDeviceFactory::GetSourceLatencyType(
-          GetLatencyHintSourceType(latency_hint_.category()));
+          GetLatencyHintSourceType(latency_hint_.Category()));
 
   // Adjust output buffer size according to the latency requirement.
   switch (latency) {
@@ -149,14 +149,14 @@ RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
   DCHECK(!sink_);
 }
 
-void RendererWebAudioDeviceImpl::start() {
+void RendererWebAudioDeviceImpl::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (sink_)
     return;  // Already started.
 
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      GetLatencyHintSourceType(latency_hint_.category()), frame_id_,
+      GetLatencyHintSourceType(latency_hint_.Category()), frame_id_,
       session_id_, std::string(), security_origin_);
 
 #if defined(OS_ANDROID)
@@ -175,7 +175,7 @@ void RendererWebAudioDeviceImpl::start() {
   sink_->Play();
 }
 
-void RendererWebAudioDeviceImpl::stop() {
+void RendererWebAudioDeviceImpl::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (sink_) {
     sink_->Stop();
@@ -187,11 +187,11 @@ void RendererWebAudioDeviceImpl::stop() {
 #endif
 }
 
-double RendererWebAudioDeviceImpl::sampleRate() {
+double RendererWebAudioDeviceImpl::SampleRate() {
   return sink_params_.sample_rate();
 }
 
-int RendererWebAudioDeviceImpl::framesPerBuffer() {
+int RendererWebAudioDeviceImpl::FramesPerBuffer() {
   return sink_params_.frames_per_buffer();
 }
 
@@ -207,11 +207,11 @@ int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
   if (!delay.is_zero()) {  // Zero values are send at the first call.
     // Substruct the bus duration to get hardware delay.
     delay -=
-        media::AudioTimestampHelper::FramesToTime(dest->frames(), sampleRate());
+        media::AudioTimestampHelper::FramesToTime(dest->frames(), SampleRate());
   }
   DCHECK_GE(delay, base::TimeDelta());
 
-  client_callback_->render(
+  client_callback_->Render(
       web_audio_dest_data, dest->frames(), delay.InSecondsF(),
       (delay_timestamp - base::TimeTicks()).InSecondsF(), prior_frames_skipped);
 

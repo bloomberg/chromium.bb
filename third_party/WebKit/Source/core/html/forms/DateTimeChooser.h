@@ -44,26 +44,26 @@ class AXObject;
 struct DateTimeSuggestion {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   double value;
-  String localizedValue;
+  String localized_value;
   String label;
 };
 
 struct DateTimeChooserParameters {
   DISALLOW_NEW();
   AtomicString type;
-  IntRect anchorRectInScreen;
+  IntRect anchor_rect_in_screen;
   // Locale name for which the chooser should be localized. This
   // might be an invalid name because it comes from HTML lang
   // attributes.
   AtomicString locale;
-  double doubleValue;
+  double double_value;
   Vector<DateTimeSuggestion> suggestions;
   double minimum;
   double maximum;
   double step;
-  double stepBase;
+  double step_base;
   bool required;
-  bool isAnchorElementRTL;
+  bool is_anchor_element_rtl;
 };
 
 // For pickers like color pickers and date pickers.
@@ -72,9 +72,9 @@ class CORE_EXPORT DateTimeChooser
  public:
   virtual ~DateTimeChooser();
 
-  virtual void endChooser() = 0;
+  virtual void EndChooser() = 0;
   // Returns a root AXObject in the DateTimeChooser if it's available.
-  virtual AXObject* rootAXObject() = 0;
+  virtual AXObject* RootAXObject() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

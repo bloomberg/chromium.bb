@@ -38,33 +38,33 @@
 namespace blink {
 
 enum IconType {
-  InvalidIcon = 0,
-  Favicon = 1,
-  TouchIcon = 1 << 1,
-  TouchPrecomposedIcon = 1 << 2,
+  kInvalidIcon = 0,
+  kFavicon = 1,
+  kTouchIcon = 1 << 1,
+  kTouchPrecomposedIcon = 1 << 2,
 };
 
 struct IconURL {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  IconType m_iconType;
-  Vector<IntSize> m_sizes;
-  String m_mimeType;
-  KURL m_iconURL;
-  bool m_isDefaultIcon;
+  IconType icon_type_;
+  Vector<IntSize> sizes_;
+  String mime_type_;
+  KURL icon_url_;
+  bool is_default_icon_;
 
-  IconURL() : m_iconType(InvalidIcon), m_isDefaultIcon(false) {}
+  IconURL() : icon_type_(kInvalidIcon), is_default_icon_(false) {}
 
   IconURL(const KURL& url,
           const Vector<IntSize>& sizes,
-          const String& mimeType,
+          const String& mime_type,
           IconType type)
-      : m_iconType(type),
-        m_sizes(sizes),
-        m_mimeType(mimeType),
-        m_iconURL(url),
-        m_isDefaultIcon(false) {}
+      : icon_type_(type),
+        sizes_(sizes),
+        mime_type_(mime_type),
+        icon_url_(url),
+        is_default_icon_(false) {}
 
-  static IconURL defaultFavicon(const KURL&);
+  static IconURL DefaultFavicon(const KURL&);
 };
 
 bool operator==(const IconURL&, const IconURL&);

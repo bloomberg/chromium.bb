@@ -12,71 +12,70 @@
 
 namespace blink {
 
-StylePropertySet* CSSVariableData::propertySet() {
-  DCHECK(!m_needsVariableResolution);
-  if (!m_cachedPropertySet) {
-    m_propertySet = CSSParser::parseCustomPropertySet(m_tokens);
-    m_cachedPropertySet = true;
+StylePropertySet* CSSVariableData::PropertySet() {
+  DCHECK(!needs_variable_resolution_);
+  if (!cached_property_set_) {
+    property_set_ = CSSParser::ParseCustomPropertySet(tokens_);
+    cached_property_set_ = true;
   }
-  return m_propertySet.get();
+  return property_set_.Get();
 }
 
 template <typename CharacterType>
-void CSSVariableData::updateTokens(const CSSParserTokenRange& range) {
-  const CharacterType* currentOffset =
-      m_backingString.getCharacters<CharacterType>();
+void CSSVariableData::UpdateTokens(const CSSParserTokenRange& range) {
+  const CharacterType* current_offset =
+      backing_string_.GetCharacters<CharacterType>();
   for (const CSSParserToken& token : range) {
-    if (token.hasStringBacking()) {
-      unsigned length = token.value().length();
-      StringView string(currentOffset, length);
-      m_tokens.push_back(token.copyWithUpdatedString(string));
-      currentOffset += length;
+    if (token.HasStringBacking()) {
+      unsigned length = token.Value().length();
+      StringView string(current_offset, length);
+      tokens_.push_back(token.CopyWithUpdatedString(string));
+      current_offset += length;
     } else {
-      m_tokens.push_back(token);
+      tokens_.push_back(token);
     }
   }
-  DCHECK(currentOffset ==
-         m_backingString.getCharacters<CharacterType>() +
-             m_backingString.length());
+  DCHECK(current_offset == backing_string_.GetCharacters<CharacterType>() +
+                               backing_string_.length());
 }
 
 bool CSSVariableData::operator==(const CSSVariableData& other) const {
-  return tokens() == other.tokens();
+  return Tokens() == other.Tokens();
 }
 
-void CSSVariableData::consumeAndUpdateTokens(const CSSParserTokenRange& range) {
-  StringBuilder stringBuilder;
-  CSSParserTokenRange localRange = range;
+void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
+  StringBuilder string_builder;
+  CSSParserTokenRange local_range = range;
 
-  while (!localRange.atEnd()) {
-    CSSParserToken token = localRange.consume();
-    if (token.hasStringBacking())
-      stringBuilder.append(token.value());
+  while (!local_range.AtEnd()) {
+    CSSParserToken token = local_range.Consume();
+    if (token.HasStringBacking())
+      string_builder.Append(token.Value());
   }
-  m_backingString = stringBuilder.toString();
-  if (m_backingString.is8Bit())
-    updateTokens<LChar>(range);
+  backing_string_ = string_builder.ToString();
+  if (backing_string_.Is8Bit())
+    UpdateTokens<LChar>(range);
   else
-    updateTokens<UChar>(range);
+    UpdateTokens<UChar>(range);
 }
 
 CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
-                                 bool isAnimationTainted,
-                                 bool needsVariableResolution)
-    : m_isAnimationTainted(isAnimationTainted),
-      m_needsVariableResolution(needsVariableResolution),
-      m_cachedPropertySet(false) {
-  DCHECK(!range.atEnd());
-  consumeAndUpdateTokens(range);
+                                 bool is_animation_tainted,
+                                 bool needs_variable_resolution)
+    : is_animation_tainted_(is_animation_tainted),
+      needs_variable_resolution_(needs_variable_resolution),
+      cached_property_set_(false) {
+  DCHECK(!range.AtEnd());
+  ConsumeAndUpdateTokens(range);
 }
 
-const CSSValue* CSSVariableData::parseForSyntax(
+const CSSValue* CSSVariableData::ParseForSyntax(
     const CSSSyntaxDescriptor& syntax) const {
-  DCHECK(!needsVariableResolution());
+  DCHECK(!NeedsVariableResolution());
   // TODO(timloh): This probably needs a proper parser context for
   // relative URL resolution.
-  return syntax.parse(tokenRange(), strictCSSParserContext(),
-                      m_isAnimationTainted);
+  return syntax.Parse(TokenRange(), StrictCSSParserContext(),
+                      is_animation_tainted_);
 }
 
 }  // namespace blink

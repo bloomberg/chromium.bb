@@ -50,44 +50,44 @@
 namespace blink {
 
 enum ScrollAlignmentBehavior {
-  ScrollAlignmentNoScroll,
-  ScrollAlignmentCenter,
-  ScrollAlignmentTop,
-  ScrollAlignmentBottom,
-  ScrollAlignmentLeft,
-  ScrollAlignmentRight,
-  ScrollAlignmentClosestEdge
+  kScrollAlignmentNoScroll,
+  kScrollAlignmentCenter,
+  kScrollAlignmentTop,
+  kScrollAlignmentBottom,
+  kScrollAlignmentLeft,
+  kScrollAlignmentRight,
+  kScrollAlignmentClosestEdge
 };
 
 class LayoutRect;
 
 struct CORE_EXPORT ScrollAlignment {
   STACK_ALLOCATED();
-  static ScrollAlignmentBehavior getVisibleBehavior(const ScrollAlignment& s) {
-    return s.m_rectVisible;
+  static ScrollAlignmentBehavior GetVisibleBehavior(const ScrollAlignment& s) {
+    return s.rect_visible_;
   }
-  static ScrollAlignmentBehavior getPartialBehavior(const ScrollAlignment& s) {
-    return s.m_rectPartial;
+  static ScrollAlignmentBehavior GetPartialBehavior(const ScrollAlignment& s) {
+    return s.rect_partial_;
   }
-  static ScrollAlignmentBehavior getHiddenBehavior(const ScrollAlignment& s) {
-    return s.m_rectHidden;
+  static ScrollAlignmentBehavior GetHiddenBehavior(const ScrollAlignment& s) {
+    return s.rect_hidden_;
   }
 
   // FIXME: This function should probably go somewhere else but where?
-  static LayoutRect getRectToExpose(const LayoutRect& visibleRect,
-                                    const LayoutRect& exposeRect,
-                                    const ScrollAlignment& alignX,
-                                    const ScrollAlignment& alignY);
+  static LayoutRect GetRectToExpose(const LayoutRect& visible_rect,
+                                    const LayoutRect& expose_rect,
+                                    const ScrollAlignment& align_x,
+                                    const ScrollAlignment& align_y);
 
-  static const ScrollAlignment alignCenterIfNeeded;
-  static const ScrollAlignment alignToEdgeIfNeeded;
-  static const ScrollAlignment alignCenterAlways;
-  static const ScrollAlignment alignTopAlways;
-  static const ScrollAlignment alignBottomAlways;
+  static const ScrollAlignment kAlignCenterIfNeeded;
+  static const ScrollAlignment kAlignToEdgeIfNeeded;
+  static const ScrollAlignment kAlignCenterAlways;
+  static const ScrollAlignment kAlignTopAlways;
+  static const ScrollAlignment kAlignBottomAlways;
 
-  ScrollAlignmentBehavior m_rectVisible;
-  ScrollAlignmentBehavior m_rectHidden;
-  ScrollAlignmentBehavior m_rectPartial;
+  ScrollAlignmentBehavior rect_visible_;
+  ScrollAlignmentBehavior rect_hidden_;
+  ScrollAlignmentBehavior rect_partial_;
 };
 
 }  // namespace blink

@@ -10,90 +10,90 @@
 namespace blink {
 namespace {
 
-void increment(int* x) {
+void Increment(int* x) {
   ++*x;
 }
 
-void getIsActive(bool* isActive, TaskHandle* handle) {
-  *isActive = handle->isActive();
+void GetIsActive(bool* is_active, TaskHandle* handle) {
+  *is_active = handle->IsActive();
 }
 
 class CancellationTestHelper {
  public:
-  CancellationTestHelper() : m_weakPtrFactory(this) {}
+  CancellationTestHelper() : weak_ptr_factory_(this) {}
 
-  WeakPtr<CancellationTestHelper> createWeakPtr() {
-    return m_weakPtrFactory.createWeakPtr();
+  WeakPtr<CancellationTestHelper> CreateWeakPtr() {
+    return weak_ptr_factory_.CreateWeakPtr();
   }
 
-  void revokeWeakPtrs() { m_weakPtrFactory.revokeAll(); }
-  void incrementCounter() { ++m_counter; }
-  int counter() const { return m_counter; }
+  void RevokeWeakPtrs() { weak_ptr_factory_.RevokeAll(); }
+  void IncrementCounter() { ++counter_; }
+  int Counter() const { return counter_; }
 
  private:
-  int m_counter = 0;
-  WeakPtrFactory<CancellationTestHelper> m_weakPtrFactory;
+  int counter_ = 0;
+  WeakPtrFactory<CancellationTestHelper> weak_ptr_factory_;
 };
 
 }  // namespace
 
 TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
-  RefPtr<scheduler::FakeWebTaskRunner> taskRunner =
-      adoptRef(new scheduler::FakeWebTaskRunner);
+  RefPtr<scheduler::FakeWebTaskRunner> task_runner =
+      AdoptRef(new scheduler::FakeWebTaskRunner);
 
   // Run without cancellation.
   int count = 0;
-  TaskHandle handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+  TaskHandle handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
   EXPECT_EQ(0, count);
-  EXPECT_TRUE(handle.isActive());
-  taskRunner->runUntilIdle();
+  EXPECT_TRUE(handle.IsActive());
+  task_runner->RunUntilIdle();
   EXPECT_EQ(1, count);
-  EXPECT_FALSE(handle.isActive());
+  EXPECT_FALSE(handle.IsActive());
 
   count = 0;
-  handle = taskRunner->postDelayedCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)), 1);
+  handle = task_runner->PostDelayedCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)), 1);
   EXPECT_EQ(0, count);
-  EXPECT_TRUE(handle.isActive());
-  taskRunner->runUntilIdle();
+  EXPECT_TRUE(handle.IsActive());
+  task_runner->RunUntilIdle();
   EXPECT_EQ(1, count);
-  EXPECT_FALSE(handle.isActive());
+  EXPECT_FALSE(handle.IsActive());
 
   // Cancel a task.
   count = 0;
-  handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
-  handle.cancel();
+  handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
+  handle.Cancel();
   EXPECT_EQ(0, count);
-  EXPECT_FALSE(handle.isActive());
-  taskRunner->runUntilIdle();
+  EXPECT_FALSE(handle.IsActive());
+  task_runner->RunUntilIdle();
   EXPECT_EQ(0, count);
 
   // The task should be cancelled when the handle is dropped.
   {
     count = 0;
-    TaskHandle handle2 = taskRunner->postCancellableTask(
-        BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
-    EXPECT_TRUE(handle2.isActive());
+    TaskHandle handle2 = task_runner->PostCancellableTask(
+        BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
+    EXPECT_TRUE(handle2.IsActive());
   }
   EXPECT_EQ(0, count);
-  taskRunner->runUntilIdle();
+  task_runner->RunUntilIdle();
   EXPECT_EQ(0, count);
 
   // The task should be cancelled when another TaskHandle is assigned on it.
   count = 0;
-  handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
-  handle = taskRunner->postCancellableTask(BLINK_FROM_HERE, WTF::bind([] {}));
+  handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
+  handle = task_runner->PostCancellableTask(BLINK_FROM_HERE, WTF::Bind([] {}));
   EXPECT_EQ(0, count);
-  taskRunner->runUntilIdle();
+  task_runner->RunUntilIdle();
   EXPECT_EQ(0, count);
 
   // Self assign should be nop.
   count = 0;
-  handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+  handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
 #if COMPILER(CLANG)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-move"
@@ -103,53 +103,53 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
   handle = std::move(handle);
 #endif  // COMPILER(CLANG)
   EXPECT_EQ(0, count);
-  taskRunner->runUntilIdle();
+  task_runner->RunUntilIdle();
   EXPECT_EQ(1, count);
 
   // handle->isActive() should switch to false before the task starts running.
-  bool isActive = false;
-  handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&getIsActive, WTF::unretained(&isActive),
-                                 WTF::unretained(&handle)));
-  EXPECT_TRUE(handle.isActive());
-  taskRunner->runUntilIdle();
-  EXPECT_FALSE(isActive);
-  EXPECT_FALSE(handle.isActive());
+  bool is_active = false;
+  handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&GetIsActive, WTF::Unretained(&is_active),
+                                 WTF::Unretained(&handle)));
+  EXPECT_TRUE(handle.IsActive());
+  task_runner->RunUntilIdle();
+  EXPECT_FALSE(is_active);
+  EXPECT_FALSE(handle.IsActive());
 }
 
 TEST(WebTaskRunnerTest, CancellationCheckerTest) {
-  RefPtr<scheduler::FakeWebTaskRunner> taskRunner =
-      adoptRef(new scheduler::FakeWebTaskRunner);
+  RefPtr<scheduler::FakeWebTaskRunner> task_runner =
+      AdoptRef(new scheduler::FakeWebTaskRunner);
 
   int count = 0;
-  TaskHandle handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+  TaskHandle handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)));
   EXPECT_EQ(0, count);
 
   // TaskHandle::isActive should detect the deletion of posted task.
-  auto queue = taskRunner->takePendingTasksForTesting();
+  auto queue = task_runner->TakePendingTasksForTesting();
   ASSERT_EQ(1u, queue.size());
   EXPECT_FALSE(queue[0].first.IsCancelled());
-  EXPECT_TRUE(handle.isActive());
+  EXPECT_TRUE(handle.IsActive());
   queue.clear();
-  EXPECT_FALSE(handle.isActive());
+  EXPECT_FALSE(handle.IsActive());
   EXPECT_EQ(0, count);
 
   count = 0;
   CancellationTestHelper helper;
-  handle = taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&CancellationTestHelper::incrementCounter,
-                                 helper.createWeakPtr()));
-  EXPECT_EQ(0, helper.counter());
+  handle = task_runner->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&CancellationTestHelper::IncrementCounter,
+                                 helper.CreateWeakPtr()));
+  EXPECT_EQ(0, helper.Counter());
 
   // The cancellation of the posted task should be propagated to TaskHandle.
-  queue = taskRunner->takePendingTasksForTesting();
+  queue = task_runner->TakePendingTasksForTesting();
   ASSERT_EQ(1u, queue.size());
   EXPECT_FALSE(queue[0].first.IsCancelled());
-  EXPECT_TRUE(handle.isActive());
-  helper.revokeWeakPtrs();
+  EXPECT_TRUE(handle.IsActive());
+  helper.RevokeWeakPtrs();
   EXPECT_TRUE(queue[0].first.IsCancelled());
-  EXPECT_FALSE(handle.isActive());
+  EXPECT_FALSE(handle.IsActive());
 }
 
 }  // namespace blink

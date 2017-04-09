@@ -27,30 +27,30 @@ bool RendererPageTrackDecider::HasCommitted() {
 }
 
 bool RendererPageTrackDecider::IsHttpOrHttpsUrl() {
-  return static_cast<GURL>(document_->url()).SchemeIsHTTPOrHTTPS();
+  return static_cast<GURL>(document_->Url()).SchemeIsHTTPOrHTTPS();
 }
 
 bool RendererPageTrackDecider::IsNewTabPageUrl() {
-  return SearchBouncer::GetInstance()->IsNewTabPage(document_->url());
+  return SearchBouncer::GetInstance()->IsNewTabPage(document_->Url());
 }
 
 bool RendererPageTrackDecider::IsChromeErrorPage() {
-  return data_source_->hasUnreachableURL();
+  return data_source_->HasUnreachableURL();
 }
 
 int RendererPageTrackDecider::GetHttpStatusCode() {
-  return data_source_->response().httpStatusCode();
+  return data_source_->GetResponse().HttpStatusCode();
 }
 
 bool RendererPageTrackDecider::IsHtmlOrXhtmlPage() {
   // Ignore non-HTML documents (e.g. SVG). Note that images are treated by
   // Blink as HTML documents, so to exclude images, we must perform
   // additional mime type checking below. MHTML is tracked as HTML in blink.
-  if (!document_->isHTMLDocument() && !document_->isXHTMLDocument())
+  if (!document_->IsHTMLDocument() && !document_->IsXHTMLDocument())
     return false;
 
   // Ignore non-HTML mime types (e.g. images).
-  blink::WebString mime_type = data_source_->response().mimeType();
+  blink::WebString mime_type = data_source_->GetResponse().MimeType();
   return mime_type == "text/html" || mime_type == "application/xhtml+xml" ||
          mime_type == "multipart/related";
 }

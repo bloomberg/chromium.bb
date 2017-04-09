@@ -37,10 +37,10 @@ enum SVGStitchOptions {
   kSvgStitchtypeNostitch = 2
 };
 template <>
-const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>();
+const SVGEnumerationStringEntries& GetStaticStringEntries<SVGStitchOptions>();
 
 template <>
-const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceType>();
+const SVGEnumerationStringEntries& GetStaticStringEntries<TurbulenceType>();
 
 class SVGFETurbulenceElement final
     : public SVGFilterPrimitiveStandardAttributes {
@@ -49,32 +49,32 @@ class SVGFETurbulenceElement final
  public:
   DECLARE_NODE_FACTORY(SVGFETurbulenceElement);
 
-  SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
+  SVGAnimatedNumber* baseFrequencyX() { return base_frequency_->FirstNumber(); }
   SVGAnimatedNumber* baseFrequencyY() {
-    return m_baseFrequency->secondNumber();
+    return base_frequency_->SecondNumber();
   }
-  SVGAnimatedNumber* seed() { return m_seed.get(); }
+  SVGAnimatedNumber* seed() { return seed_.Get(); }
   SVGAnimatedEnumeration<SVGStitchOptions>* stitchTiles() {
-    return m_stitchTiles.get();
+    return stitch_tiles_.Get();
   }
-  SVGAnimatedEnumeration<TurbulenceType>* type() { return m_type.get(); }
-  SVGAnimatedInteger* numOctaves() { return m_numOctaves.get(); }
+  SVGAnimatedEnumeration<TurbulenceType>* type() { return type_.Get(); }
+  SVGAnimatedInteger* numOctaves() { return num_octaves_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFETurbulenceElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*,
-                                const QualifiedName& attrName) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*,
+                                const QualifiedName& attr_name) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
-  Member<SVGAnimatedNumber> m_seed;
-  Member<SVGAnimatedEnumeration<SVGStitchOptions>> m_stitchTiles;
-  Member<SVGAnimatedEnumeration<TurbulenceType>> m_type;
-  Member<SVGAnimatedInteger> m_numOctaves;
+  Member<SVGAnimatedNumberOptionalNumber> base_frequency_;
+  Member<SVGAnimatedNumber> seed_;
+  Member<SVGAnimatedEnumeration<SVGStitchOptions>> stitch_tiles_;
+  Member<SVGAnimatedEnumeration<TurbulenceType>> type_;
+  Member<SVGAnimatedInteger> num_octaves_;
 };
 
 }  // namespace blink

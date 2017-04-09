@@ -16,19 +16,19 @@ namespace {
 class RsaSsaImplementation : public RsaHashedAlgorithm {
  public:
   RsaSsaImplementation()
-      : RsaHashedAlgorithm(blink::WebCryptoKeyUsageVerify,
-                           blink::WebCryptoKeyUsageSign) {}
+      : RsaHashedAlgorithm(blink::kWebCryptoKeyUsageVerify,
+                           blink::kWebCryptoKeyUsageSign) {}
 
   const char* GetJwkAlgorithm(
       const blink::WebCryptoAlgorithmId hash) const override {
     switch (hash) {
-      case blink::WebCryptoAlgorithmIdSha1:
+      case blink::kWebCryptoAlgorithmIdSha1:
         return "RS1";
-      case blink::WebCryptoAlgorithmIdSha256:
+      case blink::kWebCryptoAlgorithmIdSha256:
         return "RS256";
-      case blink::WebCryptoAlgorithmIdSha384:
+      case blink::kWebCryptoAlgorithmIdSha384:
         return "RS384";
-      case blink::WebCryptoAlgorithmIdSha512:
+      case blink::kWebCryptoAlgorithmIdSha512:
         return "RS512";
       default:
         return NULL;

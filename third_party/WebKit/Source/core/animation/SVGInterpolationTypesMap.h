@@ -13,7 +13,7 @@ class SVGInterpolationTypesMap : public InterpolationTypesMap {
  public:
   SVGInterpolationTypesMap() {}
 
-  const InterpolationTypes& get(const PropertyHandle&) const final;
+  const InterpolationTypes& Get(const PropertyHandle&) const final;
 };
 
 }  // namespace blink

@@ -44,17 +44,17 @@ class V0CustomElementObserver
   virtual ~V0CustomElementObserver() {}
 
   // API for CustomElement to kick off notifications
-  static void notifyElementWasDestroyed(Element*);
+  static void NotifyElementWasDestroyed(Element*);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   V0CustomElementObserver() {}
 
-  void observe(Element*);
-  void unobserve(Element*);
+  void Observe(Element*);
+  void Unobserve(Element*);
 
-  virtual void elementWasDestroyed(Element* element) { unobserve(element); }
+  virtual void ElementWasDestroyed(Element* element) { Unobserve(element); }
 };
 
 }  // namespace blink

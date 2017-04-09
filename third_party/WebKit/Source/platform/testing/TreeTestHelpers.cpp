@@ -30,13 +30,13 @@
 namespace blink {
 namespace TreeTestHelpers {
 
-void initRandom(const int32_t seed) {
+void InitRandom(const int32_t seed) {
   srand(seed);
 }
 
-int32_t nextRandom(const int32_t maximumValue) {
+int32_t NextRandom(const int32_t maximum_value) {
   // rand_r is not available on Windows
-  return rand() % maximumValue;
+  return rand() % maximum_value;
 }
 
 }  // namespace TreeTestHelpers

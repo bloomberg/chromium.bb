@@ -33,38 +33,38 @@ namespace WTF {
 
 class TextCodecUTF8 : public TextCodec {
  public:
-  static void registerEncodingNames(EncodingNameRegistrar);
-  static void registerCodecs(TextCodecRegistrar);
+  static void RegisterEncodingNames(EncodingNameRegistrar);
+  static void RegisterCodecs(TextCodecRegistrar);
 
  protected:
-  TextCodecUTF8() : m_partialSequenceSize(0) {}
+  TextCodecUTF8() : partial_sequence_size_(0) {}
 
  private:
-  static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
+  static std::unique_ptr<TextCodec> Create(const TextEncoding&, const void*);
 
-  String decode(const char*,
+  String Decode(const char*,
                 size_t length,
                 FlushBehavior,
-                bool stopOnError,
-                bool& sawError) override;
-  CString encode(const UChar*, size_t length, UnencodableHandling) override;
-  CString encode(const LChar*, size_t length, UnencodableHandling) override;
+                bool stop_on_error,
+                bool& saw_error) override;
+  CString Encode(const UChar*, size_t length, UnencodableHandling) override;
+  CString Encode(const LChar*, size_t length, UnencodableHandling) override;
 
   template <typename CharType>
-  CString encodeCommon(const CharType* characters, size_t length);
+  CString EncodeCommon(const CharType* characters, size_t length);
 
   template <typename CharType>
-  bool handlePartialSequence(CharType*& destination,
+  bool HandlePartialSequence(CharType*& destination,
                              const uint8_t*& source,
                              const uint8_t* end,
                              bool flush,
-                             bool stopOnError,
-                             bool& sawError);
-  void handleError(UChar*& destination, bool stopOnError, bool& sawError);
-  void consumePartialSequenceByte();
+                             bool stop_on_error,
+                             bool& saw_error);
+  void HandleError(UChar*& destination, bool stop_on_error, bool& saw_error);
+  void ConsumePartialSequenceByte();
 
-  int m_partialSequenceSize;
-  uint8_t m_partialSequence[U8_MAX_LENGTH];
+  int partial_sequence_size_;
+  uint8_t partial_sequence_[U8_MAX_LENGTH];
 };
 
 }  // namespace WTF

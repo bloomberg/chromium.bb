@@ -9,65 +9,65 @@
 
 namespace blink {
 
-PassRefPtr<ScriptState> ScriptState::create(v8::Local<v8::Context> context,
+PassRefPtr<ScriptState> ScriptState::Create(v8::Local<v8::Context> context,
                                             PassRefPtr<DOMWrapperWorld> world) {
-  RefPtr<ScriptState> scriptState =
-      adoptRef(new ScriptState(context, std::move(world)));
+  RefPtr<ScriptState> script_state =
+      AdoptRef(new ScriptState(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
   // is alive.  This is deref()ed in the weak callback of the v8::Context.
-  scriptState->ref();
-  return scriptState;
+  script_state->Ref();
+  return script_state;
 }
 
-static void derefCallback(const v8::WeakCallbackInfo<ScriptState>& data) {
-  data.GetParameter()->deref();
+static void DerefCallback(const v8::WeakCallbackInfo<ScriptState>& data) {
+  data.GetParameter()->Deref();
 }
 
-static void contextCollectedCallback(
+static void ContextCollectedCallback(
     const v8::WeakCallbackInfo<ScriptState>& data) {
-  data.GetParameter()->clearContext();
-  data.SetSecondPassCallback(derefCallback);
+  data.GetParameter()->ClearContext();
+  data.SetSecondPassCallback(DerefCallback);
 }
 
 ScriptState::ScriptState(v8::Local<v8::Context> context,
                          PassRefPtr<DOMWrapperWorld> world)
-    : m_isolate(context->GetIsolate()),
-      m_context(m_isolate, context),
-      m_world(std::move(world)),
-      m_perContextData(V8PerContextData::create(context)) {
-  DCHECK(m_world);
-  m_context.setWeak(this, &contextCollectedCallback);
-  context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
+    : isolate_(context->GetIsolate()),
+      context_(isolate_, context),
+      world_(std::move(world)),
+      per_context_data_(V8PerContextData::Create(context)) {
+  DCHECK(world_);
+  context_.SetWeak(this, &ContextCollectedCallback);
+  context->SetAlignedPointerInEmbedderData(kV8ContextPerContextDataIndex, this);
 }
 
 ScriptState::~ScriptState() {
-  ASSERT(!m_perContextData);
-  ASSERT(m_context.isEmpty());
+  ASSERT(!per_context_data_);
+  ASSERT(context_.IsEmpty());
 }
 
-void ScriptState::detachGlobalObject() {
-  ASSERT(!m_context.isEmpty());
-  context()->DetachGlobal();
+void ScriptState::DetachGlobalObject() {
+  ASSERT(!context_.IsEmpty());
+  GetContext()->DetachGlobal();
 }
 
-void ScriptState::disposePerContextData() {
-  m_perContextData = nullptr;
+void ScriptState::DisposePerContextData() {
+  per_context_data_ = nullptr;
 }
 
-ScriptValue ScriptState::getFromExtrasExports(const char* name) {
-  v8::HandleScope handleScope(m_isolate);
-  v8::Local<v8::Value> v8Value;
-  if (!context()
+ScriptValue ScriptState::GetFromExtrasExports(const char* name) {
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Value> v8_value;
+  if (!GetContext()
            ->GetExtrasBindingObject()
-           ->Get(context(), v8AtomicString(isolate(), name))
-           .ToLocal(&v8Value))
+           ->Get(GetContext(), V8AtomicString(GetIsolate(), name))
+           .ToLocal(&v8_value))
     return ScriptValue();
-  return ScriptValue(this, v8Value);
+  return ScriptValue(this, v8_value);
 }
 
-ExecutionContext* ScriptState::getExecutionContext() const {
-  v8::HandleScope scope(m_isolate);
-  return toExecutionContext(context());
+ExecutionContext* ScriptState::GetExecutionContext() const {
+  v8::HandleScope scope(isolate_);
+  return ToExecutionContext(GetContext());
 }
 
 }  // namespace blink

@@ -51,22 +51,22 @@ class CORE_EXPORT FrameLoaderStateMachine {
   // CommittedFirstRealLoad and FirstLayoutDone. Otherwise, the states only go
   // down the list.
   enum State {
-    CreatingInitialEmptyDocument,
-    DisplayingInitialEmptyDocument,
-    CommittedFirstRealLoad,
-    CommittedMultipleRealLoads
+    kCreatingInitialEmptyDocument,
+    kDisplayingInitialEmptyDocument,
+    kCommittedFirstRealLoad,
+    kCommittedMultipleRealLoads
   };
 
-  bool committedFirstRealDocumentLoad() const;
-  bool creatingInitialEmptyDocument() const;
-  bool isDisplayingInitialEmptyDocument() const;
-  bool committedMultipleRealLoads() const;
-  void advanceTo(State);
+  bool CommittedFirstRealDocumentLoad() const;
+  bool CreatingInitialEmptyDocument() const;
+  bool IsDisplayingInitialEmptyDocument() const;
+  bool CommittedMultipleRealLoads() const;
+  void AdvanceTo(State);
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  State m_state;
+  State state_;
 };
 
 }  // namespace blink

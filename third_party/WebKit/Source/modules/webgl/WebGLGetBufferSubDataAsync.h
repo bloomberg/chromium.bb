@@ -16,17 +16,17 @@ class WebGLGetBufferSubDataAsync final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLGetBufferSubDataAsync* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static WebGLGetBufferSubDataAsync* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
+  WebGLExtensionName GetName() const override;
 
   ScriptPromise getBufferSubDataAsync(ScriptState*,
                                       GLenum target,
-                                      GLintptr srcByteOffset,
+                                      GLintptr src_byte_offset,
                                       DOMArrayBufferView*,
-                                      GLuint dstOffset,
+                                      GLuint dst_offset,
                                       GLuint length);
 
  private:
@@ -38,33 +38,33 @@ class WebGLGetBufferSubDataAsyncCallback
  public:
   WebGLGetBufferSubDataAsyncCallback(WebGL2RenderingContextBase*,
                                      ScriptPromiseResolver*,
-                                     void* shmReadbackResultData,
-                                     GLuint commandsIssuedQueryID,
+                                     void* shm_readback_result_data,
+                                     GLuint commands_issued_query_id,
                                      DOMArrayBufferView*,
-                                     void* destinationDataPtr,
-                                     long long destinationByteLength);
+                                     void* destination_data_ptr,
+                                     long long destination_byte_length);
 
-  void destroy();
+  void Destroy();
 
-  void resolve();
+  void Resolve();
 
   DECLARE_TRACE();
 
  private:
-  WeakMember<WebGL2RenderingContextBase> m_context;
-  Member<ScriptPromiseResolver> m_promiseResolver;
+  WeakMember<WebGL2RenderingContextBase> context_;
+  Member<ScriptPromiseResolver> promise_resolver_;
 
   // Pointer to shared memory where the gpu readback result is stored.
-  void* m_shmReadbackResultData;
+  void* shm_readback_result_data_;
   // ID of the GL query used to call this callback.
-  GLuint m_commandsIssuedQueryID;
+  GLuint commands_issued_query_id_;
 
   // ArrayBufferView returned from the promise.
-  Member<DOMArrayBufferView> m_destinationArrayBufferView;
+  Member<DOMArrayBufferView> destination_array_buffer_view_;
   // Pointer into the offset into destinationArrayBufferView.
-  void* m_destinationDataPtr;
+  void* destination_data_ptr_;
   // Size in bytes of the copy operation being performed.
-  long long m_destinationByteLength;
+  long long destination_byte_length_;
 };
 
 }  // namespace blink

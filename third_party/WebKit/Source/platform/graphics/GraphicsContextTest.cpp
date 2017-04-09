@@ -49,8 +49,8 @@ namespace blink {
 #define EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, opaqueRect)         \
   {                                                              \
     SkAutoLockPixels locker(bitmap);                             \
-    for (int y = opaqueRect.y(); y < opaqueRect.maxY(); ++y)     \
-      for (int x = opaqueRect.x(); x < opaqueRect.maxX(); ++x) { \
+    for (int y = opaqueRect.Y(); y < opaqueRect.MaxY(); ++y)     \
+      for (int x = opaqueRect.X(); x < opaqueRect.MaxX(); ++x) { \
         int alpha = *bitmap.getAddr32(x, y) >> 24;               \
         EXPECT_EQ(255, alpha);                                   \
       }                                                          \
@@ -62,7 +62,7 @@ namespace blink {
     for (int y = 0; y < bitmap.height(); ++y)                 \
       for (int x = 0; x < bitmap.width(); ++x) {              \
         int alpha = *bitmap.getAddr32(x, y) >> 24;            \
-        bool opaque = opaqueRect.contains(x, y);              \
+        bool opaque = opaqueRect.Contains(x, y);              \
         EXPECT_EQ(opaque, alpha == 255);                      \
       }                                                       \
   }
@@ -73,24 +73,24 @@ TEST(GraphicsContextTest, Recording) {
   bitmap.eraseColor(0);
   SkiaPaintCanvas canvas(bitmap);
 
-  std::unique_ptr<PaintController> paintController = PaintController::create();
-  GraphicsContext context(*paintController);
+  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  GraphicsContext context(*paint_controller);
 
   Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
   FloatRect bounds(0, 0, 100, 100);
 
-  context.beginRecording(bounds);
-  context.fillRect(FloatRect(0, 0, 50, 50), opaque, SkBlendMode::kSrcOver);
-  canvas.drawPicture(context.endRecording());
+  context.BeginRecording(bounds);
+  context.FillRect(FloatRect(0, 0, 50, 50), opaque, SkBlendMode::kSrcOver);
+  canvas.drawPicture(context.EndRecording());
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
-  context.beginRecording(bounds);
-  context.fillRect(FloatRect(0, 0, 100, 100), opaque, SkBlendMode::kSrcOver);
+  context.BeginRecording(bounds);
+  context.FillRect(FloatRect(0, 0, 100, 100), opaque, SkBlendMode::kSrcOver);
   // Make sure the opaque region was unaffected by the rect drawn during
   // recording.
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
-  canvas.drawPicture(context.endRecording());
+  canvas.drawPicture(context.EndRecording());
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 100, 100))
 }
 
@@ -104,42 +104,42 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
   FloatRect bounds(0, 0, 100, 100);
 
-  std::unique_ptr<PaintController> paintController = PaintController::create();
-  GraphicsContext context(*paintController);
-  context.beginRecording(bounds);
+  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  GraphicsContext context(*paint_controller);
+  context.BeginRecording(bounds);
 
-  context.setShouldAntialias(false);
-  context.setMiterLimit(1);
-  context.setStrokeThickness(5);
-  context.setLineCap(SquareCap);
-  context.setStrokeStyle(SolidStroke);
+  context.SetShouldAntialias(false);
+  context.SetMiterLimit(1);
+  context.SetStrokeThickness(5);
+  context.SetLineCap(kSquareCap);
+  context.SetStrokeStyle(kSolidStroke);
 
   // Make skia unable to compute fast bounds for our paths.
-  DashArray dashArray;
-  dashArray.push_back(1);
-  dashArray.push_back(0);
-  context.setLineDash(dashArray, 0);
+  DashArray dash_array;
+  dash_array.push_back(1);
+  dash_array.push_back(0);
+  context.SetLineDash(dash_array, 0);
 
   // Make the device opaque in 10,10 40x40.
-  context.fillRect(FloatRect(10, 10, 40, 40), opaque, SkBlendMode::kSrcOver);
-  canvas.drawPicture(context.endRecording());
+  context.FillRect(FloatRect(10, 10, 40, 40), opaque, SkBlendMode::kSrcOver);
+  canvas.drawPicture(context.EndRecording());
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(10, 10, 40, 40));
 
-  context.beginRecording(bounds);
+  context.BeginRecording(bounds);
   // Clip to the left edge of the opaque area.
-  context.clip(IntRect(10, 10, 10, 40));
+  context.Clip(IntRect(10, 10, 10, 40));
 
   // Draw a path that gets clipped. This should destroy the opaque area, but
   // only inside the clip.
   Path path;
-  path.moveTo(FloatPoint(10, 10));
-  path.addLineTo(FloatPoint(40, 40));
+  path.MoveTo(FloatPoint(10, 10));
+  path.AddLineTo(FloatPoint(40, 40));
   PaintFlags flags;
-  flags.setColor(alpha.rgb());
+  flags.setColor(alpha.Rgb());
   flags.setBlendMode(SkBlendMode::kSrcOut);
-  context.drawPath(path.getSkPath(), flags);
+  context.DrawPath(path.GetSkPath(), flags);
 
-  canvas.drawPicture(context.endRecording());
+  canvas.drawPicture(context.EndRecording());
   EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
 }
 

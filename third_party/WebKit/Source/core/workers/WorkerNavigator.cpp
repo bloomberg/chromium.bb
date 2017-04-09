@@ -28,17 +28,17 @@
 
 namespace blink {
 
-WorkerNavigator::WorkerNavigator(const String& userAgent)
-    : m_userAgent(userAgent) {}
+WorkerNavigator::WorkerNavigator(const String& user_agent)
+    : user_agent_(user_agent) {}
 
 WorkerNavigator::~WorkerNavigator() {}
 
 String WorkerNavigator::userAgent() const {
-  return m_userAgent;
+  return user_agent_;
 }
 
 DEFINE_TRACE(WorkerNavigator) {
-  Supplementable<WorkerNavigator>::trace(visitor);
+  Supplementable<WorkerNavigator>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -32,12 +32,12 @@
 
 namespace blink {
 
-bool AnimatableSVGPaint::equalTo(const AnimatableValue* value) const {
-  const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-  return m_type == svgPaint->m_type &&
-         m_visitedLinkType == svgPaint->m_visitedLinkType &&
-         m_color->equals(svgPaint->m_color.get()) && m_uri == svgPaint->m_uri &&
-         m_visitedLinkURI == svgPaint->m_visitedLinkURI;
+bool AnimatableSVGPaint::EqualTo(const AnimatableValue* value) const {
+  const AnimatableSVGPaint* svg_paint = ToAnimatableSVGPaint(value);
+  return type_ == svg_paint->type_ &&
+         visited_link_type_ == svg_paint->visited_link_type_ &&
+         color_->Equals(svg_paint->color_.Get()) && uri_ == svg_paint->uri_ &&
+         visited_link_uri_ == svg_paint->visited_link_uri_;
 }
 
 }  // namespace blink

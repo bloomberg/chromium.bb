@@ -10,50 +10,50 @@
 
 namespace blink {
 
-PassRefPtr<ResourceTimingInfo> ResourceTimingInfo::adopt(
+PassRefPtr<ResourceTimingInfo> ResourceTimingInfo::Adopt(
     std::unique_ptr<CrossThreadResourceTimingInfoData> data) {
-  RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(
-      AtomicString(data->m_type), data->m_initialTime, data->m_isMainResource);
-  info->m_originalTimingAllowOrigin =
-      AtomicString(data->m_originalTimingAllowOrigin);
-  info->m_loadFinishTime = data->m_loadFinishTime;
-  info->m_initialURL = data->m_initialURL.copy();
-  info->m_finalResponse = ResourceResponse(data->m_finalResponse.get());
-  for (auto& responseData : data->m_redirectChain)
-    info->m_redirectChain.push_back(ResourceResponse(responseData.get()));
-  info->m_transferSize = data->m_transferSize;
-  return info.release();
+  RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+      AtomicString(data->type_), data->initial_time_, data->is_main_resource_);
+  info->original_timing_allow_origin_ =
+      AtomicString(data->original_timing_allow_origin_);
+  info->load_finish_time_ = data->load_finish_time_;
+  info->initial_url_ = data->initial_url_.Copy();
+  info->final_response_ = ResourceResponse(data->final_response_.get());
+  for (auto& response_data : data->redirect_chain_)
+    info->redirect_chain_.push_back(ResourceResponse(response_data.get()));
+  info->transfer_size_ = data->transfer_size_;
+  return info.Release();
 }
 
 std::unique_ptr<CrossThreadResourceTimingInfoData>
-ResourceTimingInfo::copyData() const {
+ResourceTimingInfo::CopyData() const {
   std::unique_ptr<CrossThreadResourceTimingInfoData> data =
-      WTF::wrapUnique(new CrossThreadResourceTimingInfoData);
-  data->m_type = m_type.getString().isolatedCopy();
-  data->m_originalTimingAllowOrigin =
-      m_originalTimingAllowOrigin.getString().isolatedCopy();
-  data->m_initialTime = m_initialTime;
-  data->m_loadFinishTime = m_loadFinishTime;
-  data->m_initialURL = m_initialURL.copy();
-  data->m_finalResponse = m_finalResponse.copyData();
-  for (const auto& response : m_redirectChain)
-    data->m_redirectChain.push_back(response.copyData());
-  data->m_transferSize = m_transferSize;
-  data->m_isMainResource = m_isMainResource;
+      WTF::WrapUnique(new CrossThreadResourceTimingInfoData);
+  data->type_ = type_.GetString().IsolatedCopy();
+  data->original_timing_allow_origin_ =
+      original_timing_allow_origin_.GetString().IsolatedCopy();
+  data->initial_time_ = initial_time_;
+  data->load_finish_time_ = load_finish_time_;
+  data->initial_url_ = initial_url_.Copy();
+  data->final_response_ = final_response_.CopyData();
+  for (const auto& response : redirect_chain_)
+    data->redirect_chain_.push_back(response.CopyData());
+  data->transfer_size_ = transfer_size_;
+  data->is_main_resource_ = is_main_resource_;
   return data;
 }
 
-void ResourceTimingInfo::addRedirect(const ResourceResponse& redirectResponse,
-                                     bool crossOrigin) {
-  m_redirectChain.push_back(redirectResponse);
-  if (m_hasCrossOriginRedirect)
+void ResourceTimingInfo::AddRedirect(const ResourceResponse& redirect_response,
+                                     bool cross_origin) {
+  redirect_chain_.push_back(redirect_response);
+  if (has_cross_origin_redirect_)
     return;
-  if (crossOrigin) {
-    m_hasCrossOriginRedirect = true;
-    m_transferSize = 0;
+  if (cross_origin) {
+    has_cross_origin_redirect_ = true;
+    transfer_size_ = 0;
   } else {
-    DCHECK_GE(redirectResponse.encodedDataLength(), 0);
-    m_transferSize += redirectResponse.encodedDataLength();
+    DCHECK_GE(redirect_response.EncodedDataLength(), 0);
+    transfer_size_ += redirect_response.EncodedDataLength();
   }
 }
 

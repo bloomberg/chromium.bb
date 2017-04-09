@@ -35,7 +35,7 @@ class WebIDBDatabaseImplTest : public testing::Test {
  public:
   WebIDBDatabaseImplTest() {}
 
-  void TearDown() override { blink::WebHeap::collectAllGarbageForTesting(); }
+  void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
 
  private:
   TestBrowserThreadBundle thread_bundle_;
@@ -56,15 +56,15 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   const int64_t object_store_id = 2;
 
   StrictMock<MockWebIDBCallbacks> callbacks;
-  EXPECT_CALL(callbacks, onError(_)).Times(1);
+  EXPECT_CALL(callbacks, OnError(_)).Times(1);
 
   WebIDBDatabaseImpl database_impl(nullptr,
                                    base::ThreadTaskRunnerHandle::Get());
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
-  database_impl.put(transaction_id, object_store_id, value, web_blob_info,
-                    WebIDBKey::createNumber(0), blink::WebIDBPutModeAddOrUpdate,
-                    &callbacks, WebVector<long long>(),
-                    WebVector<WebVector<WebIDBKey>>());
+  database_impl.Put(transaction_id, object_store_id, value, web_blob_info,
+                    WebIDBKey::CreateNumber(0),
+                    blink::kWebIDBPutModeAddOrUpdate, &callbacks,
+                    WebVector<long long>(), WebVector<WebVector<WebIDBKey>>());
 }
 
 TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
@@ -76,20 +76,20 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   const std::vector<char> data(kMaxValueSizeForTesting - kKeySize);
   const WebData value(&data.front(), data.size());
   const WebVector<WebBlobInfo> web_blob_info;
-  const WebIDBKey key = WebIDBKey::createString(blink::WebString::fromUTF16(
+  const WebIDBKey key = WebIDBKey::CreateString(blink::WebString::FromUTF16(
       base::string16(kKeySize / sizeof(base::string16::value_type), 'x')));
 
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
 
   StrictMock<MockWebIDBCallbacks> callbacks;
-  EXPECT_CALL(callbacks, onError(_)).Times(1);
+  EXPECT_CALL(callbacks, OnError(_)).Times(1);
 
   WebIDBDatabaseImpl database_impl(nullptr,
                                    base::ThreadTaskRunnerHandle::Get());
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
-  database_impl.put(transaction_id, object_store_id, value, web_blob_info, key,
-                    blink::WebIDBPutModeAddOrUpdate, &callbacks,
+  database_impl.Put(transaction_id, object_store_id, value, web_blob_info, key,
+                    blink::kWebIDBPutModeAddOrUpdate, &callbacks,
                     WebVector<long long>(), WebVector<WebVector<WebIDBKey>>());
 }
 

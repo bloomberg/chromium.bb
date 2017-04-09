@@ -39,49 +39,49 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBOpenDBRequest* create(ScriptState*,
+  static IDBOpenDBRequest* Create(ScriptState*,
                                   IDBDatabaseCallbacks*,
-                                  int64_t transactionId,
+                                  int64_t transaction_id,
                                   int64_t version);
   ~IDBOpenDBRequest() override;
   DECLARE_VIRTUAL_TRACE();
 
-  using IDBRequest::onSuccess;
+  using IDBRequest::OnSuccess;
 
-  void onBlocked(int64_t existingVersion) override;
-  void onUpgradeNeeded(int64_t oldVersion,
+  void OnBlocked(int64_t existing_version) override;
+  void OnUpgradeNeeded(int64_t old_version,
                        std::unique_ptr<WebIDBDatabase>,
                        const IDBDatabaseMetadata&,
                        WebIDBDataLoss,
-                       String dataLossMessage) override;
-  void onSuccess(std::unique_ptr<WebIDBDatabase>,
+                       String data_loss_message) override;
+  void OnSuccess(std::unique_ptr<WebIDBDatabase>,
                  const IDBDatabaseMetadata&) override;
-  void onSuccess(int64_t oldVersion) override;
+  void OnSuccess(int64_t old_version) override;
 
   // SuspendableObject
-  void contextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed(ExecutionContext*) final;
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded);
 
  protected:
-  bool shouldEnqueueEvent() const override;
+  bool ShouldEnqueueEvent() const override;
 
   // EventTarget
-  DispatchEventResult dispatchEventInternal(Event*) override;
+  DispatchEventResult DispatchEventInternal(Event*) override;
 
  private:
   IDBOpenDBRequest(ScriptState*,
                    IDBDatabaseCallbacks*,
-                   int64_t transactionId,
+                   int64_t transaction_id,
                    int64_t version);
 
-  Member<IDBDatabaseCallbacks> m_databaseCallbacks;
-  const int64_t m_transactionId;
-  int64_t m_version;
+  Member<IDBDatabaseCallbacks> database_callbacks_;
+  const int64_t transaction_id_;
+  int64_t version_;
 };
 
 }  // namespace blink

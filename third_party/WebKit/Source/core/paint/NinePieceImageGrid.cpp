@@ -12,139 +12,139 @@
 
 namespace blink {
 
-static int computeEdgeWidth(const BorderImageLength& borderSlice,
-                            int borderSide,
-                            int imageSide,
-                            int boxExtent) {
-  if (borderSlice.isNumber())
-    return roundf(borderSlice.number() * borderSide);
-  if (borderSlice.length().isAuto())
-    return imageSide;
-  return valueForLength(borderSlice.length(), LayoutUnit(boxExtent)).round();
+static int ComputeEdgeWidth(const BorderImageLength& border_slice,
+                            int border_side,
+                            int image_side,
+                            int box_extent) {
+  if (border_slice.IsNumber())
+    return roundf(border_slice.Number() * border_side);
+  if (border_slice.length().IsAuto())
+    return image_side;
+  return ValueForLength(border_slice.length(), LayoutUnit(box_extent)).Round();
 }
 
-static int computeEdgeSlice(const Length& slice, int maximum) {
+static int ComputeEdgeSlice(const Length& slice, int maximum) {
   return std::min<int>(maximum,
-                       valueForLength(slice, LayoutUnit(maximum)).round());
+                       ValueForLength(slice, LayoutUnit(maximum)).Round());
 }
 
-NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage,
-                                       IntSize imageSize,
-                                       IntRect borderImageArea,
-                                       const IntRectOutsets& borderWidths)
-    : m_borderImageArea(borderImageArea),
-      m_imageSize(imageSize),
-      m_horizontalTileRule((Image::TileRule)ninePieceImage.horizontalRule()),
-      m_verticalTileRule((Image::TileRule)ninePieceImage.verticalRule()),
-      m_fill(ninePieceImage.fill()) {
-  m_top.slice =
-      computeEdgeSlice(ninePieceImage.imageSlices().top(), imageSize.height());
-  m_right.slice =
-      computeEdgeSlice(ninePieceImage.imageSlices().right(), imageSize.width());
-  m_bottom.slice = computeEdgeSlice(ninePieceImage.imageSlices().bottom(),
-                                    imageSize.height());
-  m_left.slice =
-      computeEdgeSlice(ninePieceImage.imageSlices().left(), imageSize.width());
+NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
+                                       IntSize image_size,
+                                       IntRect border_image_area,
+                                       const IntRectOutsets& border_widths)
+    : border_image_area_(border_image_area),
+      image_size_(image_size),
+      horizontal_tile_rule_((Image::TileRule)nine_piece_image.HorizontalRule()),
+      vertical_tile_rule_((Image::TileRule)nine_piece_image.VerticalRule()),
+      fill_(nine_piece_image.Fill()) {
+  top_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Top(),
+                                image_size.Height());
+  right_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Right(),
+                                  image_size.Width());
+  bottom_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Bottom(),
+                                   image_size.Height());
+  left_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Left(),
+                                 image_size.Width());
 
-  m_top.width =
-      computeEdgeWidth(ninePieceImage.borderSlices().top(), borderWidths.top(),
-                       m_top.slice, borderImageArea.height());
-  m_right.width = computeEdgeWidth(ninePieceImage.borderSlices().right(),
-                                   borderWidths.right(), m_right.slice,
-                                   borderImageArea.width());
-  m_bottom.width = computeEdgeWidth(ninePieceImage.borderSlices().bottom(),
-                                    borderWidths.bottom(), m_bottom.slice,
-                                    borderImageArea.height());
-  m_left.width = computeEdgeWidth(ninePieceImage.borderSlices().left(),
-                                  borderWidths.left(), m_left.slice,
-                                  borderImageArea.width());
+  top_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Top(),
+                                border_widths.Top(), top_.slice,
+                                border_image_area.Height());
+  right_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Right(),
+                                  border_widths.Right(), right_.slice,
+                                  border_image_area.Width());
+  bottom_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Bottom(),
+                                   border_widths.Bottom(), bottom_.slice,
+                                   border_image_area.Height());
+  left_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Left(),
+                                 border_widths.Left(), left_.slice,
+                                 border_image_area.Width());
 
   // The spec says: Given Lwidth as the width of the border image area, Lheight
   // as its height, and Wside as the border image width offset for the side, let
   // f = min(Lwidth/(Wleft+Wright), Lheight/(Wtop+Wbottom)). If f < 1, then all
   // W are reduced by multiplying them by f.
-  int borderSideWidth =
-      std::max(1, SaturatedAddition(m_left.width, m_right.width));
-  int borderSideHeight =
-      std::max(1, SaturatedAddition(m_top.width, m_bottom.width));
-  float borderSideScaleFactor =
-      std::min((float)borderImageArea.width() / borderSideWidth,
-               (float)borderImageArea.height() / borderSideHeight);
-  if (borderSideScaleFactor < 1) {
-    m_top.width *= borderSideScaleFactor;
-    m_right.width *= borderSideScaleFactor;
-    m_bottom.width *= borderSideScaleFactor;
-    m_left.width *= borderSideScaleFactor;
+  int border_side_width =
+      std::max(1, SaturatedAddition(left_.width, right_.width));
+  int border_side_height =
+      std::max(1, SaturatedAddition(top_.width, bottom_.width));
+  float border_side_scale_factor =
+      std::min((float)border_image_area.Width() / border_side_width,
+               (float)border_image_area.Height() / border_side_height);
+  if (border_side_scale_factor < 1) {
+    top_.width *= border_side_scale_factor;
+    right_.width *= border_side_scale_factor;
+    bottom_.width *= border_side_scale_factor;
+    left_.width *= border_side_scale_factor;
   }
 }
 
 // Given a rectangle, construct a subrectangle using offset, width and height.
 // Negative offsets are relative to the extent of the given rectangle.
-static FloatRect subrect(IntRect rect,
-                         float offsetX,
-                         float offsetY,
+static FloatRect Subrect(IntRect rect,
+                         float offset_x,
+                         float offset_y,
                          float width,
                          float height) {
-  float baseX = rect.x();
-  if (offsetX < 0)
-    baseX = rect.maxX();
+  float base_x = rect.X();
+  if (offset_x < 0)
+    base_x = rect.MaxX();
 
-  float baseY = rect.y();
-  if (offsetY < 0)
-    baseY = rect.maxY();
+  float base_y = rect.Y();
+  if (offset_y < 0)
+    base_y = rect.MaxY();
 
-  return FloatRect(baseX + offsetX, baseY + offsetY, width, height);
+  return FloatRect(base_x + offset_x, base_y + offset_y, width, height);
 }
 
-static FloatRect subrect(IntSize size,
-                         float offsetX,
-                         float offsetY,
+static FloatRect Subrect(IntSize size,
+                         float offset_x,
+                         float offset_y,
                          float width,
                          float height) {
-  return subrect(IntRect(IntPoint(), size), offsetX, offsetY, width, height);
+  return Subrect(IntRect(IntPoint(), size), offset_x, offset_y, width, height);
 }
 
-static inline void setCornerPiece(
-    NinePieceImageGrid::NinePieceDrawInfo& drawInfo,
-    bool isDrawable,
+static inline void SetCornerPiece(
+    NinePieceImageGrid::NinePieceDrawInfo& draw_info,
+    bool is_drawable,
     const FloatRect& source,
     const FloatRect& destination) {
-  drawInfo.isDrawable = isDrawable;
-  if (drawInfo.isDrawable) {
-    drawInfo.source = source;
-    drawInfo.destination = destination;
+  draw_info.is_drawable = is_drawable;
+  if (draw_info.is_drawable) {
+    draw_info.source = source;
+    draw_info.destination = destination;
   }
 }
 
-void NinePieceImageGrid::setDrawInfoCorner(NinePieceDrawInfo& drawInfo,
+void NinePieceImageGrid::SetDrawInfoCorner(NinePieceDrawInfo& draw_info,
                                            NinePiece piece) const {
   switch (piece) {
-    case TopLeftPiece:
-      setCornerPiece(
-          drawInfo, m_top.isDrawable() && m_left.isDrawable(),
-          subrect(m_imageSize, 0, 0, m_left.slice, m_top.slice),
-          subrect(m_borderImageArea, 0, 0, m_left.width, m_top.width));
+    case kTopLeftPiece:
+      SetCornerPiece(
+          draw_info, top_.IsDrawable() && left_.IsDrawable(),
+          Subrect(image_size_, 0, 0, left_.slice, top_.slice),
+          Subrect(border_image_area_, 0, 0, left_.width, top_.width));
       break;
-    case BottomLeftPiece:
-      setCornerPiece(drawInfo, m_bottom.isDrawable() && m_left.isDrawable(),
-                     subrect(m_imageSize, 0, -m_bottom.slice, m_left.slice,
-                             m_bottom.slice),
-                     subrect(m_borderImageArea, 0, -m_bottom.width,
-                             m_left.width, m_bottom.width));
+    case kBottomLeftPiece:
+      SetCornerPiece(
+          draw_info, bottom_.IsDrawable() && left_.IsDrawable(),
+          Subrect(image_size_, 0, -bottom_.slice, left_.slice, bottom_.slice),
+          Subrect(border_image_area_, 0, -bottom_.width, left_.width,
+                  bottom_.width));
       break;
-    case TopRightPiece:
-      setCornerPiece(
-          drawInfo, m_top.isDrawable() && m_right.isDrawable(),
-          subrect(m_imageSize, -m_right.slice, 0, m_right.slice, m_top.slice),
-          subrect(m_borderImageArea, -m_right.width, 0, m_right.width,
-                  m_top.width));
+    case kTopRightPiece:
+      SetCornerPiece(
+          draw_info, top_.IsDrawable() && right_.IsDrawable(),
+          Subrect(image_size_, -right_.slice, 0, right_.slice, top_.slice),
+          Subrect(border_image_area_, -right_.width, 0, right_.width,
+                  top_.width));
       break;
-    case BottomRightPiece:
-      setCornerPiece(drawInfo, m_bottom.isDrawable() && m_right.isDrawable(),
-                     subrect(m_imageSize, -m_right.slice, -m_bottom.slice,
-                             m_right.slice, m_bottom.slice),
-                     subrect(m_borderImageArea, -m_right.width, -m_bottom.width,
-                             m_right.width, m_bottom.width));
+    case kBottomRightPiece:
+      SetCornerPiece(draw_info, bottom_.IsDrawable() && right_.IsDrawable(),
+                     Subrect(image_size_, -right_.slice, -bottom_.slice,
+                             right_.slice, bottom_.slice),
+                     Subrect(border_image_area_, -right_.width, -bottom_.width,
+                             right_.width, bottom_.width));
       break;
     default:
       ASSERT_NOT_REACHED();
@@ -152,77 +152,76 @@ void NinePieceImageGrid::setDrawInfoCorner(NinePieceDrawInfo& drawInfo,
   }
 }
 
-static inline void setHorizontalEdge(
-    NinePieceImageGrid::NinePieceDrawInfo& drawInfo,
+static inline void SetHorizontalEdge(
+    NinePieceImageGrid::NinePieceDrawInfo& draw_info,
     const NinePieceImageGrid::Edge& edge,
     const FloatRect& source,
     const FloatRect& destination,
-    Image::TileRule tileRule) {
-  drawInfo.isDrawable = edge.isDrawable() && source.width() > 0;
-  if (drawInfo.isDrawable) {
-    drawInfo.source = source;
-    drawInfo.destination = destination;
-    drawInfo.tileScale = FloatSize(edge.scale(), edge.scale());
-    drawInfo.tileRule = {tileRule, Image::StretchTile};
+    Image::TileRule tile_rule) {
+  draw_info.is_drawable = edge.IsDrawable() && source.Width() > 0;
+  if (draw_info.is_drawable) {
+    draw_info.source = source;
+    draw_info.destination = destination;
+    draw_info.tile_scale = FloatSize(edge.Scale(), edge.Scale());
+    draw_info.tile_rule = {tile_rule, Image::kStretchTile};
   }
 }
 
-static inline void setVerticalEdge(
-    NinePieceImageGrid::NinePieceDrawInfo& drawInfo,
+static inline void SetVerticalEdge(
+    NinePieceImageGrid::NinePieceDrawInfo& draw_info,
     const NinePieceImageGrid::Edge& edge,
     const FloatRect& source,
     const FloatRect& destination,
-    Image::TileRule tileRule) {
-  drawInfo.isDrawable = edge.isDrawable() && source.height() > 0;
-  if (drawInfo.isDrawable) {
-    drawInfo.source = source;
-    drawInfo.destination = destination;
-    drawInfo.tileScale = FloatSize(edge.scale(), edge.scale());
-    drawInfo.tileRule = {Image::StretchTile, tileRule};
+    Image::TileRule tile_rule) {
+  draw_info.is_drawable = edge.IsDrawable() && source.Height() > 0;
+  if (draw_info.is_drawable) {
+    draw_info.source = source;
+    draw_info.destination = destination;
+    draw_info.tile_scale = FloatSize(edge.Scale(), edge.Scale());
+    draw_info.tile_rule = {Image::kStretchTile, tile_rule};
   }
 }
 
-void NinePieceImageGrid::setDrawInfoEdge(NinePieceDrawInfo& drawInfo,
+void NinePieceImageGrid::SetDrawInfoEdge(NinePieceDrawInfo& draw_info,
                                          NinePiece piece) const {
-  IntSize edgeSourceSize = m_imageSize - IntSize(m_left.slice + m_right.slice,
-                                                 m_top.slice + m_bottom.slice);
-  IntSize edgeDestinationSize =
-      m_borderImageArea.size() -
-      IntSize(m_left.width + m_right.width, m_top.width + m_bottom.width);
+  IntSize edge_source_size = image_size_ - IntSize(left_.slice + right_.slice,
+                                                   top_.slice + bottom_.slice);
+  IntSize edge_destination_size =
+      border_image_area_.size() -
+      IntSize(left_.width + right_.width, top_.width + bottom_.width);
 
   switch (piece) {
-    case LeftPiece:
-      setVerticalEdge(drawInfo, m_left,
-                      subrect(m_imageSize, 0, m_top.slice, m_left.slice,
-                              edgeSourceSize.height()),
-                      subrect(m_borderImageArea, 0, m_top.width, m_left.width,
-                              edgeDestinationSize.height()),
-                      m_verticalTileRule);
+    case kLeftPiece:
+      SetVerticalEdge(draw_info, left_,
+                      Subrect(image_size_, 0, top_.slice, left_.slice,
+                              edge_source_size.Height()),
+                      Subrect(border_image_area_, 0, top_.width, left_.width,
+                              edge_destination_size.Height()),
+                      vertical_tile_rule_);
       break;
-    case RightPiece:
-      setVerticalEdge(drawInfo, m_right,
-                      subrect(m_imageSize, -m_right.slice, m_top.slice,
-                              m_right.slice, edgeSourceSize.height()),
-                      subrect(m_borderImageArea, -m_right.width, m_top.width,
-                              m_right.width, edgeDestinationSize.height()),
-                      m_verticalTileRule);
+    case kRightPiece:
+      SetVerticalEdge(draw_info, right_,
+                      Subrect(image_size_, -right_.slice, top_.slice,
+                              right_.slice, edge_source_size.Height()),
+                      Subrect(border_image_area_, -right_.width, top_.width,
+                              right_.width, edge_destination_size.Height()),
+                      vertical_tile_rule_);
       break;
-    case TopPiece:
-      setHorizontalEdge(drawInfo, m_top,
-                        subrect(m_imageSize, m_left.slice, 0,
-                                edgeSourceSize.width(), m_top.slice),
-                        subrect(m_borderImageArea, m_left.width, 0,
-                                edgeDestinationSize.width(), m_top.width),
-                        m_horizontalTileRule);
+    case kTopPiece:
+      SetHorizontalEdge(draw_info, top_,
+                        Subrect(image_size_, left_.slice, 0,
+                                edge_source_size.Width(), top_.slice),
+                        Subrect(border_image_area_, left_.width, 0,
+                                edge_destination_size.Width(), top_.width),
+                        horizontal_tile_rule_);
       break;
-    case BottomPiece:
-      setHorizontalEdge(
-          drawInfo, m_bottom,
-          subrect(m_imageSize, m_left.slice, -m_bottom.slice,
-                  edgeSourceSize.width(), m_bottom.slice),
-          subrect(m_borderImageArea, m_left.width, -m_bottom.width,
-                  edgeDestinationSize.width(), m_bottom.width),
-          m_horizontalTileRule);
+    case kBottomPiece:
+      SetHorizontalEdge(draw_info, bottom_,
+                        Subrect(image_size_, left_.slice, -bottom_.slice,
+                                edge_source_size.Width(), bottom_.slice),
+                        Subrect(border_image_area_, left_.width, -bottom_.width,
+                                edge_destination_size.Width(), bottom_.width),
+                        horizontal_tile_rule_);
       break;
     default:
       ASSERT_NOT_REACHED();
@@ -230,82 +229,82 @@ void NinePieceImageGrid::setDrawInfoEdge(NinePieceDrawInfo& drawInfo,
   }
 }
 
-void NinePieceImageGrid::setDrawInfoMiddle(NinePieceDrawInfo& drawInfo) const {
-  IntSize sourceSize = m_imageSize - IntSize(m_left.slice + m_right.slice,
-                                             m_top.slice + m_bottom.slice);
-  IntSize destinationSize =
-      m_borderImageArea.size() -
-      IntSize(m_left.width + m_right.width, m_top.width + m_bottom.width);
+void NinePieceImageGrid::SetDrawInfoMiddle(NinePieceDrawInfo& draw_info) const {
+  IntSize source_size = image_size_ - IntSize(left_.slice + right_.slice,
+                                              top_.slice + bottom_.slice);
+  IntSize destination_size =
+      border_image_area_.size() -
+      IntSize(left_.width + right_.width, top_.width + bottom_.width);
 
-  drawInfo.isDrawable =
-      m_fill && !sourceSize.isEmpty() && !destinationSize.isEmpty();
-  if (!drawInfo.isDrawable)
+  draw_info.is_drawable =
+      fill_ && !source_size.IsEmpty() && !destination_size.IsEmpty();
+  if (!draw_info.is_drawable)
     return;
 
-  drawInfo.source = subrect(m_imageSize, m_left.slice, m_top.slice,
-                            sourceSize.width(), sourceSize.height());
-  drawInfo.destination =
-      subrect(m_borderImageArea, m_left.width, m_top.width,
-              destinationSize.width(), destinationSize.height());
+  draw_info.source = Subrect(image_size_, left_.slice, top_.slice,
+                             source_size.Width(), source_size.Height());
+  draw_info.destination =
+      Subrect(border_image_area_, left_.width, top_.width,
+              destination_size.Width(), destination_size.Height());
 
-  FloatSize middleScaleFactor(1, 1);
+  FloatSize middle_scale_factor(1, 1);
 
-  if (m_top.isDrawable())
-    middleScaleFactor.setWidth(m_top.scale());
-  else if (m_bottom.isDrawable())
-    middleScaleFactor.setWidth(m_bottom.scale());
+  if (top_.IsDrawable())
+    middle_scale_factor.SetWidth(top_.Scale());
+  else if (bottom_.IsDrawable())
+    middle_scale_factor.SetWidth(bottom_.Scale());
 
-  if (m_left.isDrawable())
-    middleScaleFactor.setHeight(m_left.scale());
-  else if (m_right.isDrawable())
-    middleScaleFactor.setHeight(m_right.scale());
+  if (left_.IsDrawable())
+    middle_scale_factor.SetHeight(left_.Scale());
+  else if (right_.IsDrawable())
+    middle_scale_factor.SetHeight(right_.Scale());
 
-  if (!sourceSize.isEmpty()) {
+  if (!source_size.IsEmpty()) {
     // For "stretch" rules, just override the scale factor and replace. We only
     // have to do this for the center tile, since sides don't even use the scale
     // factor unless they have a rule other than "stretch". The middle however
     // can have "stretch" specified in one axis but not the other, so we have to
     // correct the scale here.
-    if (m_horizontalTileRule == (Image::TileRule)StretchImageRule)
-      middleScaleFactor.setWidth((float)destinationSize.width() /
-                                 sourceSize.width());
+    if (horizontal_tile_rule_ == (Image::TileRule)kStretchImageRule)
+      middle_scale_factor.SetWidth((float)destination_size.Width() /
+                                   source_size.Width());
 
-    if (m_verticalTileRule == (Image::TileRule)StretchImageRule)
-      middleScaleFactor.setHeight((float)destinationSize.height() /
-                                  sourceSize.height());
+    if (vertical_tile_rule_ == (Image::TileRule)kStretchImageRule)
+      middle_scale_factor.SetHeight((float)destination_size.Height() /
+                                    source_size.Height());
   }
 
-  drawInfo.tileScale = middleScaleFactor;
-  drawInfo.tileRule = {m_horizontalTileRule, m_verticalTileRule};
+  draw_info.tile_scale = middle_scale_factor;
+  draw_info.tile_rule = {horizontal_tile_rule_, vertical_tile_rule_};
 }
 
-NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::getNinePieceDrawInfo(
+NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::GetNinePieceDrawInfo(
     NinePiece piece,
-    float imageScaleFactor) const {
-  DCHECK_NE(imageScaleFactor, 0);
+    float image_scale_factor) const {
+  DCHECK_NE(image_scale_factor, 0);
 
-  NinePieceDrawInfo drawInfo;
-  drawInfo.isCornerPiece = piece == TopLeftPiece || piece == TopRightPiece ||
-                           piece == BottomLeftPiece ||
-                           piece == BottomRightPiece;
+  NinePieceDrawInfo draw_info;
+  draw_info.is_corner_piece =
+      piece == kTopLeftPiece || piece == kTopRightPiece ||
+      piece == kBottomLeftPiece || piece == kBottomRightPiece;
 
-  if (drawInfo.isCornerPiece)
-    setDrawInfoCorner(drawInfo, piece);
-  else if (piece != MiddlePiece)
-    setDrawInfoEdge(drawInfo, piece);
+  if (draw_info.is_corner_piece)
+    SetDrawInfoCorner(draw_info, piece);
+  else if (piece != kMiddlePiece)
+    SetDrawInfoEdge(draw_info, piece);
   else
-    setDrawInfoMiddle(drawInfo);
+    SetDrawInfoMiddle(draw_info);
 
-  if (imageScaleFactor != 1) {
+  if (image_scale_factor != 1) {
     // The nine piece grid is computed in unscaled image coordinates but must be
     // drawn using scaled image coordinates.
-    drawInfo.source.scale(imageScaleFactor);
+    draw_info.source.Scale(image_scale_factor);
 
     // Compensate for source scaling by scaling down the individual tiles.
-    drawInfo.tileScale.scale(1 / imageScaleFactor);
+    draw_info.tile_scale.Scale(1 / image_scale_factor);
   }
 
-  return drawInfo;
+  return draw_info;
 }
 
 }  // namespace blink

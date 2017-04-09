@@ -30,81 +30,81 @@
 
 namespace blink {
 
-HTMLSourceTracker::HTMLSourceTracker() : m_isStarted(false) {}
+HTMLSourceTracker::HTMLSourceTracker() : is_started_(false) {}
 
-void HTMLSourceTracker::start(SegmentedString& currentInput,
+void HTMLSourceTracker::Start(SegmentedString& current_input,
                               HTMLTokenizer* tokenizer,
                               HTMLToken& token) {
-  if (token.type() == HTMLToken::Uninitialized && !m_isStarted) {
-    m_previousSource.clear();
-    if (needToCheckTokenizerBuffer(tokenizer) &&
-        tokenizer->numberOfBufferedCharacters())
-      m_previousSource = tokenizer->bufferedCharacters();
+  if (token.GetType() == HTMLToken::kUninitialized && !is_started_) {
+    previous_source_.Clear();
+    if (NeedToCheckTokenizerBuffer(tokenizer) &&
+        tokenizer->NumberOfBufferedCharacters())
+      previous_source_ = tokenizer->BufferedCharacters();
   } else {
-    m_previousSource.append(m_currentSource);
+    previous_source_.Append(current_source_);
   }
 
-  m_isStarted = true;
-  m_currentSource = currentInput;
-  token.setBaseOffset(m_currentSource.numberOfCharactersConsumed() -
-                      m_previousSource.length());
+  is_started_ = true;
+  current_source_ = current_input;
+  token.SetBaseOffset(current_source_.NumberOfCharactersConsumed() -
+                      previous_source_.length());
 }
 
-void HTMLSourceTracker::end(SegmentedString& currentInput,
+void HTMLSourceTracker::end(SegmentedString& current_input,
                             HTMLTokenizer* tokenizer,
                             HTMLToken& token) {
-  m_isStarted = false;
+  is_started_ = false;
 
-  m_cachedSourceForToken = String();
+  cached_source_for_token_ = String();
 
   // FIXME: This work should really be done by the HTMLTokenizer.
-  size_t numberOfBufferedCharacters = 0u;
-  if (needToCheckTokenizerBuffer(tokenizer)) {
-    numberOfBufferedCharacters = tokenizer->numberOfBufferedCharacters();
+  size_t number_of_buffered_characters = 0u;
+  if (NeedToCheckTokenizerBuffer(tokenizer)) {
+    number_of_buffered_characters = tokenizer->NumberOfBufferedCharacters();
   }
-  token.end(currentInput.numberOfCharactersConsumed() -
-            numberOfBufferedCharacters);
+  token.end(current_input.NumberOfCharactersConsumed() -
+            number_of_buffered_characters);
 }
 
-String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
-  if (!m_cachedSourceForToken.isEmpty())
-    return m_cachedSourceForToken;
+String HTMLSourceTracker::SourceForToken(const HTMLToken& token) {
+  if (!cached_source_for_token_.IsEmpty())
+    return cached_source_for_token_;
 
   size_t length;
-  if (token.type() == HTMLToken::EndOfFile) {
+  if (token.GetType() == HTMLToken::kEndOfFile) {
     // Consume the remainder of the input, omitting the null character we use to
     // mark the end of the file.
-    length = m_previousSource.length() + m_currentSource.length() - 1;
+    length = previous_source_.length() + current_source_.length() - 1;
   } else {
-    DCHECK(!token.startIndex());
-    length = static_cast<size_t>(token.endIndex() - token.startIndex());
+    DCHECK(!token.StartIndex());
+    length = static_cast<size_t>(token.EndIndex() - token.StartIndex());
   }
 
   StringBuilder source;
-  source.reserveCapacity(length);
+  source.ReserveCapacity(length);
 
   size_t i = 0;
-  for (; i < length && !m_previousSource.isEmpty(); ++i) {
-    source.append(m_previousSource.currentChar());
-    m_previousSource.advance();
+  for (; i < length && !previous_source_.IsEmpty(); ++i) {
+    source.Append(previous_source_.CurrentChar());
+    previous_source_.Advance();
   }
   for (; i < length; ++i) {
-    DCHECK(!m_currentSource.isEmpty());
-    source.append(m_currentSource.currentChar());
-    m_currentSource.advance();
+    DCHECK(!current_source_.IsEmpty());
+    source.Append(current_source_.CurrentChar());
+    current_source_.Advance();
   }
 
-  m_cachedSourceForToken = source.toString();
-  return m_cachedSourceForToken;
+  cached_source_for_token_ = source.ToString();
+  return cached_source_for_token_;
 }
 
-bool HTMLSourceTracker::needToCheckTokenizerBuffer(HTMLTokenizer* tokenizer) {
-  HTMLTokenizer::State state = tokenizer->getState();
+bool HTMLSourceTracker::NeedToCheckTokenizerBuffer(HTMLTokenizer* tokenizer) {
+  HTMLTokenizer::State state = tokenizer->GetState();
   // The temporary buffer must not be used unconditionally, because in some
   // states (e.g. ScriptDataDoubleEscapedStartState), data is appended to
   // both the temporary buffer and the token itself.
-  return state == HTMLTokenizer::DataState ||
-         HTMLTokenizer::isEndTagBufferingState(state);
+  return state == HTMLTokenizer::kDataState ||
+         HTMLTokenizer::IsEndTagBufferingState(state);
 }
 
 }  // namespace blink

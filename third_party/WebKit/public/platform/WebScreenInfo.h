@@ -41,20 +41,20 @@ namespace blink {
 struct WebScreenInfo {
   // Device scale factor. Specifies the ratio between physical and logical
   // pixels.
-  float deviceScaleFactor = 1.f;
+  float device_scale_factor = 1.f;
 
   // The ICC profile of the output display.
-  gfx::ICCProfile iccProfile;
+  gfx::ICCProfile icc_profile;
 
   // The screen depth in bits per pixel
   int depth = 0;
 
   // The bits per colour component. This assumes that the colours are balanced
   // equally.
-  int depthPerComponent = 0;
+  int depth_per_component = 0;
 
   // This can be true for black and white printers
-  bool isMonochrome = false;
+  bool is_monochrome = false;
 
   // This is set from the rcMonitor member of MONITORINFOEX, to whit:
   //   "A RECT structure that specifies the display monitor rectangle,
@@ -71,32 +71,33 @@ struct WebScreenInfo {
   //   rcMonitor contains system windows such as the task bar and side
   //   bars. Note that if the monitor is not the primary display monitor,
   //   some of the rectangle's coordinates may be negative values".
-  WebRect availableRect;
+  WebRect available_rect;
 
   // This is the orientation 'type' or 'name', as in landscape-primary or
   // portrait-secondary for examples.
   // See WebScreenOrientationType.h for the full list.
-  WebScreenOrientationType orientationType = WebScreenOrientationUndefined;
+  WebScreenOrientationType orientation_type = kWebScreenOrientationUndefined;
 
   // This is the orientation angle of the displayed content in degrees.
   // It is the opposite of the physical rotation.
-  uint16_t orientationAngle = 0;
+  uint16_t orientation_angle = 0;
 
   // This is the shape of display.
-  DisplayShape displayShape = DisplayShapeRect;
+  DisplayShape display_shape = kDisplayShapeRect;
 
   WebScreenInfo() = default;
 
   bool operator==(const WebScreenInfo& other) const {
-    return this->deviceScaleFactor == other.deviceScaleFactor &&
-           this->iccProfile == other.iccProfile && this->depth == other.depth &&
-           this->depthPerComponent == other.depthPerComponent &&
-           this->isMonochrome == other.isMonochrome &&
+    return this->device_scale_factor == other.device_scale_factor &&
+           this->icc_profile == other.icc_profile &&
+           this->depth == other.depth &&
+           this->depth_per_component == other.depth_per_component &&
+           this->is_monochrome == other.is_monochrome &&
            this->rect == other.rect &&
-           this->availableRect == other.availableRect &&
-           this->orientationType == other.orientationType &&
-           this->orientationAngle == other.orientationAngle &&
-           this->displayShape == other.displayShape;
+           this->available_rect == other.available_rect &&
+           this->orientation_type == other.orientation_type &&
+           this->orientation_angle == other.orientation_angle &&
+           this->display_shape == other.display_shape;
   }
 
   bool operator!=(const WebScreenInfo& other) const {

@@ -1668,7 +1668,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // enable_load_timing
       false,     // enable_upload_progress
       false,     // do_not_prompt_for_login
-      blink::WebReferrerPolicyDefault, blink::WebPageVisibilityStateVisible,
+      blink::kWebReferrerPolicyDefault, blink::kWebPageVisibilityStateVisible,
       context,
       false,           // report_raw_headers
       true,            // is_async

@@ -45,9 +45,9 @@ class FileEntrySync final : public EntrySync {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FileEntrySync* create(DOMFileSystemBase* fileSystem,
-                               const String& fullPath) {
-    return new FileEntrySync(fileSystem, fullPath);
+  static FileEntrySync* Create(DOMFileSystemBase* file_system,
+                               const String& full_path) {
+    return new FileEntrySync(file_system, full_path);
   }
 
   bool isFile() const override { return true; }
@@ -58,7 +58,7 @@ class FileEntrySync final : public EntrySync {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  FileEntrySync(DOMFileSystemBase*, const String& fullPath);
+  FileEntrySync(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(FileEntrySync,

@@ -29,97 +29,97 @@
 namespace blink {
 
 SVGViewSpec::SVGViewSpec()
-    : m_viewBox(SVGRect::createInvalid()),
-      m_preserveAspectRatio(SVGPreserveAspectRatio::create()),
-      m_transform(SVGTransformList::create()) {}
+    : view_box_(SVGRect::CreateInvalid()),
+      preserve_aspect_ratio_(SVGPreserveAspectRatio::Create()),
+      transform_(SVGTransformList::Create()) {}
 
 DEFINE_TRACE(SVGViewSpec) {
-  visitor->trace(m_viewBox);
-  visitor->trace(m_preserveAspectRatio);
-  visitor->trace(m_transform);
+  visitor->Trace(view_box_);
+  visitor->Trace(preserve_aspect_ratio_);
+  visitor->Trace(transform_);
 }
 
-SVGViewSpec* SVGViewSpec::createForElement(SVGSVGElement& rootElement) {
-  SVGViewSpec* viewSpec = rootElement.viewSpec();
-  if (!viewSpec)
-    viewSpec = new SVGViewSpec();
+SVGViewSpec* SVGViewSpec::CreateForElement(SVGSVGElement& root_element) {
+  SVGViewSpec* view_spec = root_element.ViewSpec();
+  if (!view_spec)
+    view_spec = new SVGViewSpec();
   else
-    viewSpec->reset();
-  viewSpec->inheritViewAttributesFromElement(rootElement);
-  return viewSpec;
+    view_spec->Reset();
+  view_spec->InheritViewAttributesFromElement(root_element);
+  return view_spec;
 }
 
-bool SVGViewSpec::parseViewSpec(const String& spec) {
-  if (spec.isEmpty())
+bool SVGViewSpec::ParseViewSpec(const String& spec) {
+  if (spec.IsEmpty())
     return false;
-  if (spec.is8Bit()) {
-    const LChar* ptr = spec.characters8();
+  if (spec.Is8Bit()) {
+    const LChar* ptr = spec.Characters8();
     const LChar* end = ptr + spec.length();
-    return parseViewSpecInternal(ptr, end);
+    return ParseViewSpecInternal(ptr, end);
   }
-  const UChar* ptr = spec.characters16();
+  const UChar* ptr = spec.Characters16();
   const UChar* end = ptr + spec.length();
-  return parseViewSpecInternal(ptr, end);
+  return ParseViewSpecInternal(ptr, end);
 }
 
-void SVGViewSpec::setViewBox(const FloatRect& rect) {
-  viewBox()->setValue(rect);
+void SVGViewSpec::SetViewBox(const FloatRect& rect) {
+  ViewBox()->SetValue(rect);
 }
 
-void SVGViewSpec::setPreserveAspectRatio(const SVGPreserveAspectRatio& other) {
-  preserveAspectRatio()->setAlign(other.align());
-  preserveAspectRatio()->setMeetOrSlice(other.meetOrSlice());
+void SVGViewSpec::SetPreserveAspectRatio(const SVGPreserveAspectRatio& other) {
+  PreserveAspectRatio()->SetAlign(other.Align());
+  PreserveAspectRatio()->SetMeetOrSlice(other.MeetOrSlice());
 }
 
-void SVGViewSpec::reset() {
-  resetZoomAndPan();
-  m_transform->clear();
-  setViewBox(FloatRect());
-  preserveAspectRatio()->setDefault();
+void SVGViewSpec::Reset() {
+  ResetZoomAndPan();
+  transform_->Clear();
+  SetViewBox(FloatRect());
+  PreserveAspectRatio()->SetDefault();
 }
 
 namespace {
 
 enum ViewSpecFunctionType {
-  Unknown,
-  PreserveAspectRatio,
-  Transform,
-  ViewBox,
-  ViewTarget,
-  ZoomAndPan,
+  kUnknown,
+  kPreserveAspectRatio,
+  kTransform,
+  kViewBox,
+  kViewTarget,
+  kZoomAndPan,
 };
 
 template <typename CharType>
-static ViewSpecFunctionType scanViewSpecFunction(const CharType*& ptr,
+static ViewSpecFunctionType ScanViewSpecFunction(const CharType*& ptr,
                                                  const CharType* end) {
   DCHECK_LT(ptr, end);
   switch (*ptr) {
     case 'v':
       if (skipToken(ptr, end, "viewBox"))
-        return ViewBox;
+        return kViewBox;
       if (skipToken(ptr, end, "viewTarget"))
-        return ViewTarget;
+        return kViewTarget;
       break;
     case 'z':
       if (skipToken(ptr, end, "zoomAndPan"))
-        return ZoomAndPan;
+        return kZoomAndPan;
       break;
     case 'p':
       if (skipToken(ptr, end, "preserveAspectRatio"))
-        return PreserveAspectRatio;
+        return kPreserveAspectRatio;
       break;
     case 't':
       if (skipToken(ptr, end, "transform"))
-        return Transform;
+        return kTransform;
       break;
   }
-  return Unknown;
+  return kUnknown;
 }
 
 }  // namespace
 
 template <typename CharType>
-bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr,
+bool SVGViewSpec::ParseViewSpecInternal(const CharType* ptr,
                                         const CharType* end) {
   if (!skipToken(ptr, end, "svgView"))
     return false;
@@ -128,41 +128,41 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr,
     return false;
 
   while (ptr < end && *ptr != ')') {
-    ViewSpecFunctionType functionType = scanViewSpecFunction(ptr, end);
-    if (functionType == Unknown)
+    ViewSpecFunctionType function_type = ScanViewSpecFunction(ptr, end);
+    if (function_type == kUnknown)
       return false;
 
     if (!skipExactly<CharType>(ptr, end, '('))
       return false;
 
-    switch (functionType) {
-      case ViewBox: {
+    switch (function_type) {
+      case kViewBox: {
         float x = 0.0f;
         float y = 0.0f;
         float width = 0.0f;
         float height = 0.0f;
-        if (!(parseNumber(ptr, end, x) && parseNumber(ptr, end, y) &&
-              parseNumber(ptr, end, width) &&
-              parseNumber(ptr, end, height, DisallowWhitespace)))
+        if (!(ParseNumber(ptr, end, x) && ParseNumber(ptr, end, y) &&
+              ParseNumber(ptr, end, width) &&
+              ParseNumber(ptr, end, height, kDisallowWhitespace)))
           return false;
-        setViewBox(FloatRect(x, y, width, height));
+        SetViewBox(FloatRect(x, y, width, height));
         break;
       }
-      case ViewTarget: {
+      case kViewTarget: {
         // Ignore arguments.
         skipUntil<CharType>(ptr, end, ')');
         break;
       }
-      case ZoomAndPan:
-        if (!parseZoomAndPan(ptr, end))
+      case kZoomAndPan:
+        if (!ParseZoomAndPan(ptr, end))
           return false;
         break;
-      case PreserveAspectRatio:
-        if (!preserveAspectRatio()->parse(ptr, end, false))
+      case kPreserveAspectRatio:
+        if (!PreserveAspectRatio()->Parse(ptr, end, false))
           return false;
         break;
-      case Transform:
-        m_transform->parse(ptr, end);
+      case kTransform:
+        transform_->Parse(ptr, end);
         break;
       default:
         NOTREACHED();

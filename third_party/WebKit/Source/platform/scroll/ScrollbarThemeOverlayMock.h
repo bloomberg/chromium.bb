@@ -38,36 +38,36 @@ namespace blink {
 class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
  public:
   ScrollbarThemeOverlayMock()
-      : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)),
-        m_delayInSeconds(0.0) {}
+      : ScrollbarThemeOverlay(3, 4, kDisallowHitTest, Color(128, 128, 128)),
+        delay_in_seconds_(0.0) {}
 
-  double overlayScrollbarFadeOutDelaySeconds() const override {
-    return m_delayInSeconds;
+  double OverlayScrollbarFadeOutDelaySeconds() const override {
+    return delay_in_seconds_;
   }
-  double overlayScrollbarFadeOutDurationSeconds() const override { return 0.0; }
+  double OverlayScrollbarFadeOutDurationSeconds() const override { return 0.0; }
 
-  void setOverlayScrollbarFadeOutDelay(double delayInSeconds) {
-    m_delayInSeconds = delayInSeconds;
+  void SetOverlayScrollbarFadeOutDelay(double delay_in_seconds) {
+    delay_in_seconds_ = delay_in_seconds;
   }
 
-  void paintThumb(GraphicsContext& gc,
+  void PaintThumb(GraphicsContext& gc,
                   const Scrollbar& scrollbar,
                   const IntRect& rect) override {
-    if (!scrollbar.enabled())
+    if (!scrollbar.Enabled())
       return;
-    ScrollbarThemeOverlay::paintThumb(gc, scrollbar, rect);
+    ScrollbarThemeOverlay::PaintThumb(gc, scrollbar, rect);
   }
 
-  bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
+  bool ShouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
                                   const WebMouseEvent& evt) override {
     return false;
   }
 
-  int minimumThumbLength(const ScrollbarThemeClient&) override { return 7; }
+  int MinimumThumbLength(const ScrollbarThemeClient&) override { return 7; }
 
  private:
-  double m_delayInSeconds;
-  bool isMockTheme() const final { return true; }
+  double delay_in_seconds_;
+  bool IsMockTheme() const final { return true; }
 };
 
 }  // namespace blink

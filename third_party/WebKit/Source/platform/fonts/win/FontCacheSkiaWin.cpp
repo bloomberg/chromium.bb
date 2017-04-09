@@ -45,119 +45,120 @@
 
 namespace blink {
 
-HashMap<String, sk_sp<SkTypeface>>* FontCache::s_sideloadedFonts = nullptr;
+HashMap<String, sk_sp<SkTypeface>>* FontCache::sideloaded_fonts_ = nullptr;
 
 // Cached system font metrics.
-AtomicString* FontCache::s_menuFontFamilyName = nullptr;
-int32_t FontCache::s_menuFontHeight = 0;
-AtomicString* FontCache::s_smallCaptionFontFamilyName = nullptr;
-int32_t FontCache::s_smallCaptionFontHeight = 0;
-AtomicString* FontCache::s_statusFontFamilyName = nullptr;
-int32_t FontCache::s_statusFontHeight = 0;
+AtomicString* FontCache::menu_font_family_name_ = nullptr;
+int32_t FontCache::menu_font_height_ = 0;
+AtomicString* FontCache::small_caption_font_family_name_ = nullptr;
+int32_t FontCache::small_caption_font_height_ = 0;
+AtomicString* FontCache::status_font_family_name_ = nullptr;
+int32_t FontCache::status_font_height_ = 0;
 
 namespace {
 
-int32_t ensureMinimumFontHeightIfNeeded(int32_t fontHeight) {
+int32_t EnsureMinimumFontHeightIfNeeded(int32_t font_height) {
   // Adjustment for codepage 936 to make the fonts more legible in Simplified
   // Chinese.  Please refer to LayoutThemeFontProviderWin.cpp for more
   // information.
-  return (fontHeight < 12.0f) && (GetACP() == 936) ? 12.0f : fontHeight;
+  return (font_height < 12.0f) && (GetACP() == 936) ? 12.0f : font_height;
 }
 
 }  // namespace
 
 // static
-void FontCache::addSideloadedFontForTesting(SkTypeface* typeface) {
-  if (!s_sideloadedFonts)
-    s_sideloadedFonts = new HashMap<String, sk_sp<SkTypeface>>;
+void FontCache::AddSideloadedFontForTesting(SkTypeface* typeface) {
+  if (!sideloaded_fonts_)
+    sideloaded_fonts_ = new HashMap<String, sk_sp<SkTypeface>>;
   SkString name;
   typeface->getFamilyName(&name);
-  s_sideloadedFonts->set(name.c_str(), sk_sp<SkTypeface>(typeface));
+  sideloaded_fonts_->Set(name.c_str(), sk_sp<SkTypeface>(typeface));
 }
 
 // static
-const AtomicString& FontCache::systemFontFamily() {
-  return menuFontFamily();
+const AtomicString& FontCache::SystemFontFamily() {
+  return MenuFontFamily();
 }
 
 // static
-void FontCache::setMenuFontMetrics(const wchar_t* familyName,
-                                   int32_t fontHeight) {
-  s_menuFontFamilyName = new AtomicString(familyName);
-  s_menuFontHeight = ensureMinimumFontHeightIfNeeded(fontHeight);
+void FontCache::SetMenuFontMetrics(const wchar_t* family_name,
+                                   int32_t font_height) {
+  menu_font_family_name_ = new AtomicString(family_name);
+  menu_font_height_ = EnsureMinimumFontHeightIfNeeded(font_height);
 }
 
 // static
-void FontCache::setSmallCaptionFontMetrics(const wchar_t* familyName,
-                                           int32_t fontHeight) {
-  s_smallCaptionFontFamilyName = new AtomicString(familyName);
-  s_smallCaptionFontHeight = ensureMinimumFontHeightIfNeeded(fontHeight);
+void FontCache::SetSmallCaptionFontMetrics(const wchar_t* family_name,
+                                           int32_t font_height) {
+  small_caption_font_family_name_ = new AtomicString(family_name);
+  small_caption_font_height_ = EnsureMinimumFontHeightIfNeeded(font_height);
 }
 
 // static
-void FontCache::setStatusFontMetrics(const wchar_t* familyName,
-                                     int32_t fontHeight) {
-  s_statusFontFamilyName = new AtomicString(familyName);
-  s_statusFontHeight = ensureMinimumFontHeightIfNeeded(fontHeight);
+void FontCache::SetStatusFontMetrics(const wchar_t* family_name,
+                                     int32_t font_height) {
+  status_font_family_name_ = new AtomicString(family_name);
+  status_font_height_ = EnsureMinimumFontHeightIfNeeded(font_height);
 }
 
-FontCache::FontCache() : m_purgePreventCount(0) {
-  m_fontManager = sk_ref_sp(s_staticFontManager);
-  if (!m_fontManager)
-    m_fontManager = SkFontMgr_New_DirectWrite();
-  ASSERT(m_fontManager.get());
+FontCache::FontCache() : purge_prevent_count_(0) {
+  font_manager_ = sk_ref_sp(static_font_manager_);
+  if (!font_manager_)
+    font_manager_ = SkFontMgr_New_DirectWrite();
+  ASSERT(font_manager_.get());
 }
 
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
-    const FontDescription& fontDescription,
+PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+    const FontDescription& font_description,
     UChar32 character,
-    const SimpleFontData* originalFontData,
-    FontFallbackPriority fallbackPriority) {
+    const SimpleFontData* original_font_data,
+    FontFallbackPriority fallback_priority) {
   // First try the specified font with standard style & weight.
-  if (fallbackPriority != FontFallbackPriority::EmojiEmoji &&
-      (fontDescription.style() == FontStyleItalic ||
-       fontDescription.weight() >= FontWeightBold)) {
-    RefPtr<SimpleFontData> fontData =
-        fallbackOnStandardFontStyle(fontDescription, character);
-    if (fontData)
-      return fontData;
+  if (fallback_priority != FontFallbackPriority::kEmojiEmoji &&
+      (font_description.Style() == kFontStyleItalic ||
+       font_description.Weight() >= kFontWeightBold)) {
+    RefPtr<SimpleFontData> font_data =
+        FallbackOnStandardFontStyle(font_description, character);
+    if (font_data)
+      return font_data;
   }
 
   UScriptCode script;
-  const wchar_t* family = getFallbackFamily(
-      character, fontDescription.genericFamily(), fontDescription.locale(),
-      &script, fallbackPriority, m_fontManager.get());
+  const wchar_t* family = GetFallbackFamily(
+      character, font_description.GenericFamily(), font_description.Locale(),
+      &script, fallback_priority, font_manager_.get());
   FontPlatformData* data = nullptr;
   if (family) {
-    FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
-    data = getFontPlatformData(fontDescription, createByFamily);
+    FontFaceCreationParams create_by_family(
+        AtomicString(family, wcslen(family)));
+    data = GetFontPlatformData(font_description, create_by_family);
   }
 
-  if ((!data || !data->fontContainsCharacter(character)) &&
-      s_useSkiaFontFallback) {
-    const char* bcp47Locale = nullptr;
-    int localeCount = 0;
+  if ((!data || !data->FontContainsCharacter(character)) &&
+      use_skia_font_fallback_) {
+    const char* bcp47_locale = nullptr;
+    int locale_count = 0;
     // If the font description has a locale, use that. Otherwise, Skia will
     // fall back on the user's default locale.
     // TODO(kulshin): extract locale fallback logic from
     //   FontCacheAndroid.cpp and share that code
-    if (fontDescription.locale()) {
-      bcp47Locale = fontDescription.locale()->localeForSkFontMgr();
-      localeCount = 1;
+    if (font_description.Locale()) {
+      bcp47_locale = font_description.Locale()->LocaleForSkFontMgr();
+      locale_count = 1;
     }
 
-    CString familyName = fontDescription.family().family().utf8();
+    CString family_name = font_description.Family().Family().Utf8();
 
-    SkTypeface* typeface = m_fontManager->matchFamilyStyleCharacter(
-        familyName.data(), fontDescription.skiaFontStyle(), &bcp47Locale,
-        localeCount, character);
+    SkTypeface* typeface = font_manager_->matchFamilyStyleCharacter(
+        family_name.Data(), font_description.SkiaFontStyle(), &bcp47_locale,
+        locale_count, character);
     if (typeface) {
-      SkString skiaFamily;
-      typeface->getFamilyName(&skiaFamily);
-      FontFaceCreationParams createByFamily(toAtomicString(skiaFamily));
-      data = getFontPlatformData(fontDescription, createByFamily);
+      SkString skia_family;
+      typeface->getFamilyName(&skia_family);
+      FontFaceCreationParams create_by_family(ToAtomicString(skia_family));
+      data = GetFontPlatformData(font_description, create_by_family);
     }
   }
 
@@ -165,7 +166,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   // large repertoire. Eventually, we need to scan all the fonts
   // on the system to have a Firefox-like coverage.
   // Make sure that all of them are lowercased.
-  const static wchar_t* const cjkFonts[] = {
+  const static wchar_t* const kCjkFonts[] = {
       L"arial unicode ms", L"ms pgothic", L"simsun", L"gulim", L"pmingliu",
       L"wenquanyi zen hei",  // Partial CJK Ext. A coverage but more widely
                              // known to Chinese users.
@@ -177,7 +178,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
       // Uniscribe for it and that code path does not go through here.
   };
 
-  const static wchar_t* const commonFonts[] = {
+  const static wchar_t* const kCommonFonts[] = {
       L"tahoma", L"arial unicode ms", L"lucida sans unicode",
       L"microsoft sans serif", L"palatino linotype",
       // Six fonts below (and code2000 at the end) are not from MS, but
@@ -186,14 +187,14 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
       L"gentiumalt", L"ms pgothic", L"simsun", L"gulim", L"pmingliu",
       L"code2000"};
 
-  const wchar_t* const* panUniFonts = nullptr;
-  int numFonts = 0;
+  const wchar_t* const* pan_uni_fonts = nullptr;
+  int num_fonts = 0;
   if (script == USCRIPT_HAN) {
-    panUniFonts = cjkFonts;
-    numFonts = WTF_ARRAY_LENGTH(cjkFonts);
+    pan_uni_fonts = kCjkFonts;
+    num_fonts = WTF_ARRAY_LENGTH(kCjkFonts);
   } else {
-    panUniFonts = commonFonts;
-    numFonts = WTF_ARRAY_LENGTH(commonFonts);
+    pan_uni_fonts = kCommonFonts;
+    num_fonts = WTF_ARRAY_LENGTH(kCommonFonts);
   }
   // Font returned from getFallbackFamily may not cover |character|
   // because it's based on script to font mapping. This problem is
@@ -201,11 +202,12 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   // warrant an additional (real coverage) check with fontCotainsCharacter.
   int i;
   for (i = 0;
-       (!data || !data->fontContainsCharacter(character)) && i < numFonts;
+       (!data || !data->FontContainsCharacter(character)) && i < num_fonts;
        ++i) {
-    family = panUniFonts[i];
-    FontFaceCreationParams createByFamily(AtomicString(family, wcslen(family)));
-    data = getFontPlatformData(fontDescription, createByFamily);
+    family = pan_uni_fonts[i];
+    FontFaceCreationParams create_by_family(
+        AtomicString(family, wcslen(family)));
+    data = GetFontPlatformData(font_description, create_by_family);
   }
 
   // When i-th font (0-base) in |panUniFonts| contains a character and
@@ -213,48 +215,49 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   // last font in the array covers the character, |i| will be numFonts.
   // So, we have to use '<=" rather than '<' to see if we found a font
   // covering the character.
-  if (i <= numFonts)
-    return fontDataFromFontPlatformData(data, DoNotRetain);
+  if (i <= num_fonts)
+    return FontDataFromFontPlatformData(data, kDoNotRetain);
 
   return nullptr;
 }
 
-static inline bool equalIgnoringCase(const AtomicString& a, const SkString& b) {
-  return equalIgnoringCase(a, toAtomicString(b));
+static inline bool EqualIgnoringCase(const AtomicString& a, const SkString& b) {
+  return EqualIgnoringCase(a, ToAtomicString(b));
 }
 
-static bool typefacesMatchesFamily(const SkTypeface* tf,
+static bool TypefacesMatchesFamily(const SkTypeface* tf,
                                    const AtomicString& family) {
-  SkTypeface::LocalizedStrings* actualFamilies = tf->createFamilyNameIterator();
-  bool matchesRequestedFamily = false;
-  SkTypeface::LocalizedString actualFamily;
+  SkTypeface::LocalizedStrings* actual_families =
+      tf->createFamilyNameIterator();
+  bool matches_requested_family = false;
+  SkTypeface::LocalizedString actual_family;
 
-  while (actualFamilies->next(&actualFamily)) {
-    if (equalIgnoringCase(family, actualFamily.fString)) {
-      matchesRequestedFamily = true;
+  while (actual_families->next(&actual_family)) {
+    if (EqualIgnoringCase(family, actual_family.fString)) {
+      matches_requested_family = true;
       break;
     }
   }
-  actualFamilies->unref();
+  actual_families->unref();
 
   // getFamilyName may return a name not returned by the
   // createFamilyNameIterator.
   // Specifically in cases where Windows substitutes the font based on the
   // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes registry
   // entries.
-  if (!matchesRequestedFamily) {
-    SkString familyName;
-    tf->getFamilyName(&familyName);
-    if (equalIgnoringCase(family, familyName))
-      matchesRequestedFamily = true;
+  if (!matches_requested_family) {
+    SkString family_name;
+    tf->getFamilyName(&family_name);
+    if (EqualIgnoringCase(family, family_name))
+      matches_requested_family = true;
   }
 
-  return matchesRequestedFamily;
+  return matches_requested_family;
 }
 
-static bool typefacesHasWeightSuffix(const AtomicString& family,
-                                     AtomicString& adjustedName,
-                                     FontWeight& variantWeight) {
+static bool TypefacesHasWeightSuffix(const AtomicString& family,
+                                     AtomicString& adjusted_name,
+                                     FontWeight& variant_weight) {
   struct FamilyWeightSuffix {
     const wchar_t* suffix;
     size_t length;
@@ -262,21 +265,27 @@ static bool typefacesHasWeightSuffix(const AtomicString& family,
   };
   // Mapping from suffix to weight from the DirectWrite documentation.
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368082.aspx
-  const static FamilyWeightSuffix variantForSuffix[] = {
-      {L" thin", 5, FontWeight100},        {L" extralight", 11, FontWeight200},
-      {L" ultralight", 11, FontWeight200}, {L" light", 6, FontWeight300},
-      {L" regular", 8, FontWeight400},     {L" medium", 7, FontWeight500},
-      {L" demibold", 9, FontWeight600},    {L" semibold", 9, FontWeight600},
-      {L" extrabold", 10, FontWeight800},  {L" ultrabold", 10, FontWeight800},
-      {L" black", 6, FontWeight900},       {L" heavy", 6, FontWeight900}};
-  size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
-  for (size_t i = 0; i < numVariants; i++) {
-    const FamilyWeightSuffix& entry = variantForSuffix[i];
-    if (family.endsWith(entry.suffix, TextCaseUnicodeInsensitive)) {
-      String familyName = family.getString();
-      familyName.truncate(family.length() - entry.length);
-      adjustedName = AtomicString(familyName);
-      variantWeight = entry.weight;
+  const static FamilyWeightSuffix kVariantForSuffix[] = {
+      {L" thin", 5, kFontWeight100},
+      {L" extralight", 11, kFontWeight200},
+      {L" ultralight", 11, kFontWeight200},
+      {L" light", 6, kFontWeight300},
+      {L" regular", 8, kFontWeight400},
+      {L" medium", 7, kFontWeight500},
+      {L" demibold", 9, kFontWeight600},
+      {L" semibold", 9, kFontWeight600},
+      {L" extrabold", 10, kFontWeight800},
+      {L" ultrabold", 10, kFontWeight800},
+      {L" black", 6, kFontWeight900},
+      {L" heavy", 6, kFontWeight900}};
+  size_t num_variants = WTF_ARRAY_LENGTH(kVariantForSuffix);
+  for (size_t i = 0; i < num_variants; i++) {
+    const FamilyWeightSuffix& entry = kVariantForSuffix[i];
+    if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {
+      String family_name = family.GetString();
+      family_name.Truncate(family.length() - entry.length);
+      adjusted_name = AtomicString(family_name);
+      variant_weight = entry.weight;
       return true;
     }
   }
@@ -284,9 +293,9 @@ static bool typefacesHasWeightSuffix(const AtomicString& family,
   return false;
 }
 
-static bool typefacesHasStretchSuffix(const AtomicString& family,
-                                      AtomicString& adjustedName,
-                                      FontStretch& variantStretch) {
+static bool TypefacesHasStretchSuffix(const AtomicString& family,
+                                      AtomicString& adjusted_name,
+                                      FontStretch& variant_stretch) {
   struct FamilyStretchSuffix {
     const wchar_t* suffix;
     size_t length;
@@ -296,24 +305,24 @@ static bool typefacesHasStretchSuffix(const AtomicString& family,
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368078.aspx
   // Also includes Narrow as a synonym for Condensed to to support Arial
   // Narrow and other fonts following the same naming scheme.
-  const static FamilyStretchSuffix variantForSuffix[] = {
-      {L" ultracondensed", 15, FontStretchUltraCondensed},
-      {L" extracondensed", 15, FontStretchExtraCondensed},
-      {L" condensed", 10, FontStretchCondensed},
-      {L" narrow", 7, FontStretchCondensed},
-      {L" semicondensed", 14, FontStretchSemiCondensed},
-      {L" semiexpanded", 13, FontStretchSemiExpanded},
-      {L" expanded", 9, FontStretchExpanded},
-      {L" extraexpanded", 14, FontStretchExtraExpanded},
-      {L" ultraexpanded", 14, FontStretchUltraExpanded}};
-  size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
-  for (size_t i = 0; i < numVariants; i++) {
-    const FamilyStretchSuffix& entry = variantForSuffix[i];
-    if (family.endsWith(entry.suffix, TextCaseUnicodeInsensitive)) {
-      String familyName = family.getString();
-      familyName.truncate(family.length() - entry.length);
-      adjustedName = AtomicString(familyName);
-      variantStretch = entry.stretch;
+  const static FamilyStretchSuffix kVariantForSuffix[] = {
+      {L" ultracondensed", 15, kFontStretchUltraCondensed},
+      {L" extracondensed", 15, kFontStretchExtraCondensed},
+      {L" condensed", 10, kFontStretchCondensed},
+      {L" narrow", 7, kFontStretchCondensed},
+      {L" semicondensed", 14, kFontStretchSemiCondensed},
+      {L" semiexpanded", 13, kFontStretchSemiExpanded},
+      {L" expanded", 9, kFontStretchExpanded},
+      {L" extraexpanded", 14, kFontStretchExtraExpanded},
+      {L" ultraexpanded", 14, kFontStretchUltraExpanded}};
+  size_t num_variants = WTF_ARRAY_LENGTH(kVariantForSuffix);
+  for (size_t i = 0; i < num_variants; i++) {
+    const FamilyStretchSuffix& entry = kVariantForSuffix[i];
+    if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {
+      String family_name = family.GetString();
+      family_name.Truncate(family.length() - entry.length);
+      adjusted_name = AtomicString(family_name);
+      variant_stretch = entry.stretch;
       return true;
     }
   }
@@ -321,22 +330,23 @@ static bool typefacesHasStretchSuffix(const AtomicString& family,
   return false;
 }
 
-std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
-    const FontDescription& fontDescription,
-    const FontFaceCreationParams& creationParams,
-    float fontSize,
-    AlternateFontName alternateFontName) {
-  ASSERT(creationParams.creationType() == CreateFontByFamily);
+std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
+    const FontDescription& font_description,
+    const FontFaceCreationParams& creation_params,
+    float font_size,
+    AlternateFontName alternate_font_name) {
+  ASSERT(creation_params.CreationType() == kCreateFontByFamily);
 
   CString name;
-  sk_sp<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
+  sk_sp<SkTypeface> tf =
+      CreateTypeface(font_description, creation_params, name);
   // Windows will always give us a valid pointer here, even if the face name
   // is non-existent. We have to double-check and see if the family name was
   // really used.
-  if (!tf || !typefacesMatchesFamily(tf.get(), creationParams.family())) {
-    AtomicString adjustedName;
-    FontWeight variantWeight;
-    FontStretch variantStretch;
+  if (!tf || !TypefacesMatchesFamily(tf.get(), creation_params.Family())) {
+    AtomicString adjusted_name;
+    FontWeight variant_weight;
+    FontStretch variant_stretch;
 
     // TODO: crbug.com/627143 LocalFontFaceSource.cpp, which implements
     // retrieving src: local() font data uses getFontData, which in turn comes
@@ -348,29 +358,29 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
     // Prevent one side effect of the suffix translation below where when
     // matching local("Roboto Regular") it tries to find the closest match even
     // though that can be a bold font in case of Roboto Bold.
-    if (alternateFontName == AlternateFontName::LocalUniqueFace) {
+    if (alternate_font_name == AlternateFontName::kLocalUniqueFace) {
       return nullptr;
     }
 
-    if (alternateFontName == AlternateFontName::LastResort) {
+    if (alternate_font_name == AlternateFontName::kLastResort) {
       if (!tf)
         return nullptr;
-    } else if (typefacesHasWeightSuffix(creationParams.family(), adjustedName,
-                                        variantWeight)) {
-      FontFaceCreationParams adjustedParams(adjustedName);
-      FontDescription adjustedFontDescription = fontDescription;
-      adjustedFontDescription.setWeight(variantWeight);
-      tf = createTypeface(adjustedFontDescription, adjustedParams, name);
-      if (!tf || !typefacesMatchesFamily(tf.get(), adjustedName))
+    } else if (TypefacesHasWeightSuffix(creation_params.Family(), adjusted_name,
+                                        variant_weight)) {
+      FontFaceCreationParams adjusted_params(adjusted_name);
+      FontDescription adjusted_font_description = font_description;
+      adjusted_font_description.SetWeight(variant_weight);
+      tf = CreateTypeface(adjusted_font_description, adjusted_params, name);
+      if (!tf || !TypefacesMatchesFamily(tf.get(), adjusted_name))
         return nullptr;
 
-    } else if (typefacesHasStretchSuffix(creationParams.family(), adjustedName,
-                                         variantStretch)) {
-      FontFaceCreationParams adjustedParams(adjustedName);
-      FontDescription adjustedFontDescription = fontDescription;
-      adjustedFontDescription.setStretch(variantStretch);
-      tf = createTypeface(adjustedFontDescription, adjustedParams, name);
-      if (!tf || !typefacesMatchesFamily(tf.get(), adjustedName))
+    } else if (TypefacesHasStretchSuffix(creation_params.Family(),
+                                         adjusted_name, variant_stretch)) {
+      FontFaceCreationParams adjusted_params(adjusted_name);
+      FontDescription adjusted_font_description = font_description;
+      adjusted_font_description.SetStretch(variant_stretch);
+      tf = CreateTypeface(adjusted_font_description, adjusted_params, name);
+      if (!tf || !TypefacesMatchesFamily(tf.get(), adjusted_name))
         return nullptr;
 
     } else {
@@ -379,15 +389,15 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
   }
 
   std::unique_ptr<FontPlatformData> result =
-      WTF::wrapUnique(new FontPlatformData(
-          tf, name.data(), fontSize,
-          (fontDescription.weight() >= FontWeight600 && !tf->isBold()) ||
-              fontDescription.isSyntheticBold(),
-          ((fontDescription.style() == FontStyleItalic ||
-            fontDescription.style() == FontStyleOblique) &&
+      WTF::WrapUnique(new FontPlatformData(
+          tf, name.Data(), font_size,
+          (font_description.Weight() >= kFontWeight600 && !tf->isBold()) ||
+              font_description.IsSyntheticBold(),
+          ((font_description.Style() == kFontStyleItalic ||
+            font_description.Style() == kFontStyleOblique) &&
            !tf->isItalic()) ||
-              fontDescription.isSyntheticItalic(),
-          fontDescription.orientation()));
+              font_description.IsSyntheticItalic(),
+          font_description.Orientation()));
 
   return result;
 }

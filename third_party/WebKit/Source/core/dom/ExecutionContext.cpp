@@ -47,167 +47,167 @@
 namespace blink {
 
 ExecutionContext::ExecutionContext()
-    : m_circularSequentialID(0),
-      m_inDispatchErrorEvent(false),
-      m_isContextSuspended(false),
-      m_isContextDestroyed(false),
-      m_windowInteractionTokens(0),
-      m_referrerPolicy(ReferrerPolicyDefault) {}
+    : circular_sequential_id_(0),
+      in_dispatch_error_event_(false),
+      is_context_suspended_(false),
+      is_context_destroyed_(false),
+      window_interaction_tokens_(0),
+      referrer_policy_(kReferrerPolicyDefault) {}
 
 ExecutionContext::~ExecutionContext() {}
 
-void ExecutionContext::suspendSuspendableObjects() {
-  DCHECK(!m_isContextSuspended);
-  notifySuspendingSuspendableObjects();
-  m_isContextSuspended = true;
+void ExecutionContext::SuspendSuspendableObjects() {
+  DCHECK(!is_context_suspended_);
+  NotifySuspendingSuspendableObjects();
+  is_context_suspended_ = true;
 }
 
-void ExecutionContext::resumeSuspendableObjects() {
-  DCHECK(m_isContextSuspended);
-  m_isContextSuspended = false;
-  notifyResumingSuspendableObjects();
+void ExecutionContext::ResumeSuspendableObjects() {
+  DCHECK(is_context_suspended_);
+  is_context_suspended_ = false;
+  NotifyResumingSuspendableObjects();
 }
 
-void ExecutionContext::notifyContextDestroyed() {
-  m_isContextDestroyed = true;
-  ContextLifecycleNotifier::notifyContextDestroyed();
+void ExecutionContext::NotifyContextDestroyed() {
+  is_context_destroyed_ = true;
+  ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
-void ExecutionContext::suspendScheduledTasks() {
-  suspendSuspendableObjects();
-  tasksWereSuspended();
+void ExecutionContext::SuspendScheduledTasks() {
+  SuspendSuspendableObjects();
+  TasksWereSuspended();
 }
 
-void ExecutionContext::resumeScheduledTasks() {
-  resumeSuspendableObjects();
-  tasksWereResumed();
+void ExecutionContext::ResumeScheduledTasks() {
+  ResumeSuspendableObjects();
+  TasksWereResumed();
 }
 
-void ExecutionContext::suspendSuspendableObjectIfNeeded(
+void ExecutionContext::SuspendSuspendableObjectIfNeeded(
     SuspendableObject* object) {
 #if DCHECK_IS_ON()
-  DCHECK(contains(object));
+  DCHECK(Contains(object));
 #endif
   // Ensure all SuspendableObjects are suspended also newly created ones.
-  if (m_isContextSuspended)
-    object->suspend();
+  if (is_context_suspended_)
+    object->Suspend();
 }
 
-bool ExecutionContext::shouldSanitizeScriptError(
-    const String& sourceURL,
-    AccessControlStatus corsStatus) {
-  if (corsStatus == OpaqueResource)
+bool ExecutionContext::ShouldSanitizeScriptError(
+    const String& source_url,
+    AccessControlStatus cors_status) {
+  if (cors_status == kOpaqueResource)
     return true;
-  const KURL& url = completeURL(sourceURL);
-  if (url.protocolIsData())
+  const KURL& url = CompleteURL(source_url);
+  if (url.ProtocolIsData())
     return false;
-  return !(getSecurityOrigin()->canRequestNoSuborigin(url) ||
-           corsStatus == SharableCrossOrigin);
+  return !(GetSecurityOrigin()->CanRequestNoSuborigin(url) ||
+           cors_status == kSharableCrossOrigin);
 }
 
-void ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent,
-                                          AccessControlStatus corsStatus) {
-  if (m_inDispatchErrorEvent) {
-    m_pendingExceptions.push_back(errorEvent);
+void ExecutionContext::DispatchErrorEvent(ErrorEvent* error_event,
+                                          AccessControlStatus cors_status) {
+  if (in_dispatch_error_event_) {
+    pending_exceptions_.push_back(error_event);
     return;
   }
 
   // First report the original exception and only then all the nested ones.
-  if (!dispatchErrorEventInternal(errorEvent, corsStatus))
-    exceptionThrown(errorEvent);
+  if (!DispatchErrorEventInternal(error_event, cors_status))
+    ExceptionThrown(error_event);
 
-  if (m_pendingExceptions.isEmpty())
+  if (pending_exceptions_.IsEmpty())
     return;
-  for (ErrorEvent* e : m_pendingExceptions)
-    exceptionThrown(e);
-  m_pendingExceptions.clear();
+  for (ErrorEvent* e : pending_exceptions_)
+    ExceptionThrown(e);
+  pending_exceptions_.Clear();
 }
 
-bool ExecutionContext::dispatchErrorEventInternal(
-    ErrorEvent* errorEvent,
-    AccessControlStatus corsStatus) {
-  EventTarget* target = errorEventTarget();
+bool ExecutionContext::DispatchErrorEventInternal(
+    ErrorEvent* error_event,
+    AccessControlStatus cors_status) {
+  EventTarget* target = ErrorEventTarget();
   if (!target)
     return false;
 
-  if (shouldSanitizeScriptError(errorEvent->filename(), corsStatus))
-    errorEvent = ErrorEvent::createSanitizedError(errorEvent->world());
+  if (ShouldSanitizeScriptError(error_event->filename(), cors_status))
+    error_event = ErrorEvent::CreateSanitizedError(error_event->World());
 
-  DCHECK(!m_inDispatchErrorEvent);
-  m_inDispatchErrorEvent = true;
-  target->dispatchEvent(errorEvent);
-  m_inDispatchErrorEvent = false;
-  return errorEvent->defaultPrevented();
+  DCHECK(!in_dispatch_error_event_);
+  in_dispatch_error_event_ = true;
+  target->DispatchEvent(error_event);
+  in_dispatch_error_event_ = false;
+  return error_event->defaultPrevented();
 }
 
-int ExecutionContext::circularSequentialID() {
-  ++m_circularSequentialID;
-  if (m_circularSequentialID > ((1U << 31) - 1U))
-    m_circularSequentialID = 1;
+int ExecutionContext::CircularSequentialID() {
+  ++circular_sequential_id_;
+  if (circular_sequential_id_ > ((1U << 31) - 1U))
+    circular_sequential_id_ = 1;
 
-  return m_circularSequentialID;
+  return circular_sequential_id_;
 }
 
-PublicURLManager& ExecutionContext::publicURLManager() {
-  if (!m_publicURLManager)
-    m_publicURLManager = PublicURLManager::create(this);
-  return *m_publicURLManager;
+PublicURLManager& ExecutionContext::GetPublicURLManager() {
+  if (!public_url_manager_)
+    public_url_manager_ = PublicURLManager::Create(this);
+  return *public_url_manager_;
 }
 
-SecurityOrigin* ExecutionContext::getSecurityOrigin() {
-  return securityContext().getSecurityOrigin();
+SecurityOrigin* ExecutionContext::GetSecurityOrigin() {
+  return GetSecurityContext().GetSecurityOrigin();
 }
 
-ContentSecurityPolicy* ExecutionContext::contentSecurityPolicy() {
-  return securityContext().contentSecurityPolicy();
+ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicy() {
+  return GetSecurityContext().GetContentSecurityPolicy();
 }
 
-const KURL& ExecutionContext::url() const {
-  return virtualURL();
+const KURL& ExecutionContext::Url() const {
+  return VirtualURL();
 }
 
-KURL ExecutionContext::completeURL(const String& url) const {
-  return virtualCompleteURL(url);
+KURL ExecutionContext::CompleteURL(const String& url) const {
+  return VirtualCompleteURL(url);
 }
 
-void ExecutionContext::allowWindowInteraction() {
-  ++m_windowInteractionTokens;
+void ExecutionContext::AllowWindowInteraction() {
+  ++window_interaction_tokens_;
 }
 
-void ExecutionContext::consumeWindowInteraction() {
-  if (m_windowInteractionTokens == 0)
+void ExecutionContext::ConsumeWindowInteraction() {
+  if (window_interaction_tokens_ == 0)
     return;
-  --m_windowInteractionTokens;
+  --window_interaction_tokens_;
 }
 
-bool ExecutionContext::isWindowInteractionAllowed() const {
-  return m_windowInteractionTokens > 0;
+bool ExecutionContext::IsWindowInteractionAllowed() const {
+  return window_interaction_tokens_ > 0;
 }
 
-bool ExecutionContext::isSecureContext(
-    const SecureContextCheck privilegeContextCheck) const {
-  String unusedErrorMessage;
-  return isSecureContext(unusedErrorMessage, privilegeContextCheck);
+bool ExecutionContext::IsSecureContext(
+    const SecureContextCheck privilege_context_check) const {
+  String unused_error_message;
+  return IsSecureContext(unused_error_message, privilege_context_check);
 }
 
-String ExecutionContext::outgoingReferrer() const {
-  return url().strippedForUseAsReferrer();
+String ExecutionContext::OutgoingReferrer() const {
+  return Url().StrippedForUseAsReferrer();
 }
 
-void ExecutionContext::parseAndSetReferrerPolicy(const String& policies,
-                                                 bool supportLegacyKeywords) {
-  ReferrerPolicy referrerPolicy;
+void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
+                                                 bool support_legacy_keywords) {
+  ReferrerPolicy referrer_policy;
 
-  if (!SecurityPolicy::referrerPolicyFromHeaderValue(
+  if (!SecurityPolicy::ReferrerPolicyFromHeaderValue(
           policies,
-          supportLegacyKeywords ? SupportReferrerPolicyLegacyKeywords
-                                : DoNotSupportReferrerPolicyLegacyKeywords,
-          &referrerPolicy)) {
-    addConsoleMessage(ConsoleMessage::create(
-        RenderingMessageSource, ErrorMessageLevel,
+          support_legacy_keywords ? kSupportReferrerPolicyLegacyKeywords
+                                  : kDoNotSupportReferrerPolicyLegacyKeywords,
+          &referrer_policy)) {
+    AddConsoleMessage(ConsoleMessage::Create(
+        kRenderingMessageSource, kErrorMessageLevel,
         "Failed to set referrer policy: The value '" + policies +
             "' is not one of " +
-            (supportLegacyKeywords
+            (support_legacy_keywords
                  ? "'always', 'default', 'never', 'origin-when-crossorigin', "
                  : "") +
             "'no-referrer', 'no-referrer-when-downgrade', 'origin', "
@@ -216,28 +216,28 @@ void ExecutionContext::parseAndSetReferrerPolicy(const String& policies,
     return;
   }
 
-  setReferrerPolicy(referrerPolicy);
+  SetReferrerPolicy(referrer_policy);
 }
 
-void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy) {
+void ExecutionContext::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
   // When a referrer policy has already been set, the latest value takes
   // precedence.
-  UseCounter::count(this, UseCounter::SetReferrerPolicy);
-  if (m_referrerPolicy != ReferrerPolicyDefault)
-    UseCounter::count(this, UseCounter::ResetReferrerPolicy);
+  UseCounter::Count(this, UseCounter::kSetReferrerPolicy);
+  if (referrer_policy_ != kReferrerPolicyDefault)
+    UseCounter::Count(this, UseCounter::kResetReferrerPolicy);
 
-  m_referrerPolicy = referrerPolicy;
+  referrer_policy_ = referrer_policy;
 }
 
-void ExecutionContext::removeURLFromMemoryCache(const KURL& url) {
-  memoryCache()->removeURLFromCache(url);
+void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
+  GetMemoryCache()->RemoveURLFromCache(url);
 }
 
 DEFINE_TRACE(ExecutionContext) {
-  visitor->trace(m_publicURLManager);
-  visitor->trace(m_pendingExceptions);
-  ContextLifecycleNotifier::trace(visitor);
-  Supplementable<ExecutionContext>::trace(visitor);
+  visitor->Trace(public_url_manager_);
+  visitor->Trace(pending_exceptions_);
+  ContextLifecycleNotifier::Trace(visitor);
+  Supplementable<ExecutionContext>::Trace(visitor);
 }
 
 }  // namespace blink

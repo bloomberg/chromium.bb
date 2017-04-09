@@ -21,9 +21,9 @@ class WebImageLayerImpl : public blink::WebImageLayer {
   ~WebImageLayerImpl() override;
 
   // blink::WebImageLayer implementation.
-  blink::WebLayer* layer() override;
-  void setImage(const SkImage* image) override;
-  void setNearestNeighbor(bool nearest_neighbor) override;
+  blink::WebLayer* Layer() override;
+  void SetImage(const SkImage* image) override;
+  void SetNearestNeighbor(bool nearest_neighbor) override;
 
  private:
   std::unique_ptr<WebLayerImpl> layer_;

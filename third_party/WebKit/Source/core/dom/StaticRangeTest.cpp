@@ -26,227 +26,231 @@ class StaticRangeTest : public testing::Test {
  protected:
   void SetUp() override;
 
-  HTMLDocument& document() const;
+  HTMLDocument& GetDocument() const;
 
  private:
-  Persistent<HTMLDocument> m_document;
+  Persistent<HTMLDocument> document_;
 };
 
 void StaticRangeTest::SetUp() {
-  m_document = HTMLDocument::create();
-  HTMLHtmlElement* html = HTMLHtmlElement::create(*m_document);
-  html->appendChild(HTMLBodyElement::create(*m_document));
-  m_document->appendChild(html);
+  document_ = HTMLDocument::Create();
+  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_);
+  html->AppendChild(HTMLBodyElement::Create(*document_));
+  document_->AppendChild(html);
 }
 
-HTMLDocument& StaticRangeTest::document() const {
-  return *m_document;
+HTMLDocument& StaticRangeTest::GetDocument() const {
+  return *document_;
 }
 
 TEST_F(StaticRangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
-  document().body()->setInnerHTML("1234");
-  Text* oldText = toText(document().body()->firstChild());
+  GetDocument().body()->setInnerHTML("1234");
+  Text* old_text = ToText(GetDocument().body()->FirstChild());
 
-  StaticRange* staticRange04 =
-      StaticRange::create(document(), oldText, 0u, oldText, 4u);
-  StaticRange* staticRange02 =
-      StaticRange::create(document(), oldText, 0u, oldText, 2u);
-  StaticRange* staticRange22 =
-      StaticRange::create(document(), oldText, 2u, oldText, 2u);
-  StaticRange* staticRange24 =
-      StaticRange::create(document(), oldText, 2u, oldText, 4u);
+  StaticRange* static_range04 =
+      StaticRange::Create(GetDocument(), old_text, 0u, old_text, 4u);
+  StaticRange* static_range02 =
+      StaticRange::Create(GetDocument(), old_text, 0u, old_text, 2u);
+  StaticRange* static_range22 =
+      StaticRange::Create(GetDocument(), old_text, 2u, old_text, 2u);
+  StaticRange* static_range24 =
+      StaticRange::Create(GetDocument(), old_text, 2u, old_text, 4u);
 
-  Range* range04 = staticRange04->toRange(ASSERT_NO_EXCEPTION);
-  Range* range02 = staticRange02->toRange(ASSERT_NO_EXCEPTION);
-  Range* range22 = staticRange22->toRange(ASSERT_NO_EXCEPTION);
-  Range* range24 = staticRange24->toRange(ASSERT_NO_EXCEPTION);
+  Range* range04 = static_range04->toRange(ASSERT_NO_EXCEPTION);
+  Range* range02 = static_range02->toRange(ASSERT_NO_EXCEPTION);
+  Range* range22 = static_range22->toRange(ASSERT_NO_EXCEPTION);
+  Range* range24 = static_range24->toRange(ASSERT_NO_EXCEPTION);
 
-  oldText->splitText(2, ASSERT_NO_EXCEPTION);
-  Text* newText = toText(oldText->nextSibling());
+  old_text->splitText(2, ASSERT_NO_EXCEPTION);
+  Text* new_text = ToText(old_text->nextSibling());
 
   // Range should mutate.
-  EXPECT_TRUE(range04->boundaryPointsValid());
-  EXPECT_EQ(oldText, range04->startContainer());
+  EXPECT_TRUE(range04->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range04->startContainer());
   EXPECT_EQ(0u, range04->startOffset());
-  EXPECT_EQ(newText, range04->endContainer());
+  EXPECT_EQ(new_text, range04->endContainer());
   EXPECT_EQ(2u, range04->endOffset());
 
-  EXPECT_TRUE(range02->boundaryPointsValid());
-  EXPECT_EQ(oldText, range02->startContainer());
+  EXPECT_TRUE(range02->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range02->startContainer());
   EXPECT_EQ(0u, range02->startOffset());
-  EXPECT_EQ(oldText, range02->endContainer());
+  EXPECT_EQ(old_text, range02->endContainer());
   EXPECT_EQ(2u, range02->endOffset());
 
   // Our implementation always moves the boundary point at the separation point
   // to the end of the original text node.
-  EXPECT_TRUE(range22->boundaryPointsValid());
-  EXPECT_EQ(oldText, range22->startContainer());
+  EXPECT_TRUE(range22->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range22->startContainer());
   EXPECT_EQ(2u, range22->startOffset());
-  EXPECT_EQ(oldText, range22->endContainer());
+  EXPECT_EQ(old_text, range22->endContainer());
   EXPECT_EQ(2u, range22->endOffset());
 
-  EXPECT_TRUE(range24->boundaryPointsValid());
-  EXPECT_EQ(oldText, range24->startContainer());
+  EXPECT_TRUE(range24->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range24->startContainer());
   EXPECT_EQ(2u, range24->startOffset());
-  EXPECT_EQ(newText, range24->endContainer());
+  EXPECT_EQ(new_text, range24->endContainer());
   EXPECT_EQ(2u, range24->endOffset());
 
   // StaticRange shouldn't mutate.
-  EXPECT_EQ(oldText, staticRange04->startContainer());
-  EXPECT_EQ(0u, staticRange04->startOffset());
-  EXPECT_EQ(oldText, staticRange04->endContainer());
-  EXPECT_EQ(4u, staticRange04->endOffset());
+  EXPECT_EQ(old_text, static_range04->startContainer());
+  EXPECT_EQ(0u, static_range04->startOffset());
+  EXPECT_EQ(old_text, static_range04->endContainer());
+  EXPECT_EQ(4u, static_range04->endOffset());
 
-  EXPECT_EQ(oldText, staticRange02->startContainer());
-  EXPECT_EQ(0u, staticRange02->startOffset());
-  EXPECT_EQ(oldText, staticRange02->endContainer());
-  EXPECT_EQ(2u, staticRange02->endOffset());
+  EXPECT_EQ(old_text, static_range02->startContainer());
+  EXPECT_EQ(0u, static_range02->startOffset());
+  EXPECT_EQ(old_text, static_range02->endContainer());
+  EXPECT_EQ(2u, static_range02->endOffset());
 
-  EXPECT_EQ(oldText, staticRange22->startContainer());
-  EXPECT_EQ(2u, staticRange22->startOffset());
-  EXPECT_EQ(oldText, staticRange22->endContainer());
-  EXPECT_EQ(2u, staticRange22->endOffset());
+  EXPECT_EQ(old_text, static_range22->startContainer());
+  EXPECT_EQ(2u, static_range22->startOffset());
+  EXPECT_EQ(old_text, static_range22->endContainer());
+  EXPECT_EQ(2u, static_range22->endOffset());
 
-  EXPECT_EQ(oldText, staticRange24->startContainer());
-  EXPECT_EQ(2u, staticRange24->startOffset());
-  EXPECT_EQ(oldText, staticRange24->endContainer());
-  EXPECT_EQ(4u, staticRange24->endOffset());
+  EXPECT_EQ(old_text, static_range24->startContainer());
+  EXPECT_EQ(2u, static_range24->startOffset());
+  EXPECT_EQ(old_text, static_range24->endContainer());
+  EXPECT_EQ(4u, static_range24->endOffset());
 }
 
 TEST_F(StaticRangeTest, SplitTextNodeRangeOutsideText) {
   V8TestingScope scope;
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<span id=\"outer\">0<span id=\"inner-left\">1</span>SPLITME<span "
       "id=\"inner-right\">2</span>3</span>");
 
-  Element* outer = document().getElementById(AtomicString::fromUTF8("outer"));
-  Element* innerLeft =
-      document().getElementById(AtomicString::fromUTF8("inner-left"));
-  Element* innerRight =
-      document().getElementById(AtomicString::fromUTF8("inner-right"));
-  Text* oldText = toText(outer->childNodes()->item(2));
+  Element* outer =
+      GetDocument().GetElementById(AtomicString::FromUTF8("outer"));
+  Element* inner_left =
+      GetDocument().GetElementById(AtomicString::FromUTF8("inner-left"));
+  Element* inner_right =
+      GetDocument().GetElementById(AtomicString::FromUTF8("inner-right"));
+  Text* old_text = ToText(outer->childNodes()->item(2));
 
-  StaticRange* staticRangeOuterOutside =
-      StaticRange::create(document(), outer, 0u, outer, 5u);
-  StaticRange* staticRangeOuterInside =
-      StaticRange::create(document(), outer, 1u, outer, 4u);
-  StaticRange* staticRangeOuterSurroundingText =
-      StaticRange::create(document(), outer, 2u, outer, 3u);
-  StaticRange* staticRangeInnerLeft =
-      StaticRange::create(document(), innerLeft, 0u, innerLeft, 1u);
-  StaticRange* staticRangeInnerRight =
-      StaticRange::create(document(), innerRight, 0u, innerRight, 1u);
-  StaticRange* staticRangeFromTextToMiddleOfElement =
-      StaticRange::create(document(), oldText, 6u, outer, 3u);
+  StaticRange* static_range_outer_outside =
+      StaticRange::Create(GetDocument(), outer, 0u, outer, 5u);
+  StaticRange* static_range_outer_inside =
+      StaticRange::Create(GetDocument(), outer, 1u, outer, 4u);
+  StaticRange* static_range_outer_surrounding_text =
+      StaticRange::Create(GetDocument(), outer, 2u, outer, 3u);
+  StaticRange* static_range_inner_left =
+      StaticRange::Create(GetDocument(), inner_left, 0u, inner_left, 1u);
+  StaticRange* static_range_inner_right =
+      StaticRange::Create(GetDocument(), inner_right, 0u, inner_right, 1u);
+  StaticRange* static_range_from_text_to_middle_of_element =
+      StaticRange::Create(GetDocument(), old_text, 6u, outer, 3u);
 
-  Range* rangeOuterOutside =
-      staticRangeOuterOutside->toRange(ASSERT_NO_EXCEPTION);
-  Range* rangeOuterInside =
-      staticRangeOuterInside->toRange(ASSERT_NO_EXCEPTION);
-  Range* rangeOuterSurroundingText =
-      staticRangeOuterSurroundingText->toRange(ASSERT_NO_EXCEPTION);
-  Range* rangeInnerLeft = staticRangeInnerLeft->toRange(ASSERT_NO_EXCEPTION);
-  Range* rangeInnerRight = staticRangeInnerRight->toRange(ASSERT_NO_EXCEPTION);
-  Range* rangeFromTextToMiddleOfElement =
-      staticRangeFromTextToMiddleOfElement->toRange(ASSERT_NO_EXCEPTION);
+  Range* range_outer_outside =
+      static_range_outer_outside->toRange(ASSERT_NO_EXCEPTION);
+  Range* range_outer_inside =
+      static_range_outer_inside->toRange(ASSERT_NO_EXCEPTION);
+  Range* range_outer_surrounding_text =
+      static_range_outer_surrounding_text->toRange(ASSERT_NO_EXCEPTION);
+  Range* range_inner_left =
+      static_range_inner_left->toRange(ASSERT_NO_EXCEPTION);
+  Range* range_inner_right =
+      static_range_inner_right->toRange(ASSERT_NO_EXCEPTION);
+  Range* range_from_text_to_middle_of_element =
+      static_range_from_text_to_middle_of_element->toRange(ASSERT_NO_EXCEPTION);
 
-  oldText->splitText(3, ASSERT_NO_EXCEPTION);
-  Text* newText = toText(oldText->nextSibling());
+  old_text->splitText(3, ASSERT_NO_EXCEPTION);
+  Text* new_text = ToText(old_text->nextSibling());
 
   // Range should mutate.
-  EXPECT_TRUE(rangeOuterOutside->boundaryPointsValid());
-  EXPECT_EQ(outer, rangeOuterOutside->startContainer());
-  EXPECT_EQ(0u, rangeOuterOutside->startOffset());
-  EXPECT_EQ(outer, rangeOuterOutside->endContainer());
+  EXPECT_TRUE(range_outer_outside->BoundaryPointsValid());
+  EXPECT_EQ(outer, range_outer_outside->startContainer());
+  EXPECT_EQ(0u, range_outer_outside->startOffset());
+  EXPECT_EQ(outer, range_outer_outside->endContainer());
   EXPECT_EQ(6u,
-            rangeOuterOutside
+            range_outer_outside
                 ->endOffset());  // Increased by 1 since a new node is inserted.
 
-  EXPECT_TRUE(rangeOuterInside->boundaryPointsValid());
-  EXPECT_EQ(outer, rangeOuterInside->startContainer());
-  EXPECT_EQ(1u, rangeOuterInside->startOffset());
-  EXPECT_EQ(outer, rangeOuterInside->endContainer());
-  EXPECT_EQ(5u, rangeOuterInside->endOffset());
+  EXPECT_TRUE(range_outer_inside->BoundaryPointsValid());
+  EXPECT_EQ(outer, range_outer_inside->startContainer());
+  EXPECT_EQ(1u, range_outer_inside->startOffset());
+  EXPECT_EQ(outer, range_outer_inside->endContainer());
+  EXPECT_EQ(5u, range_outer_inside->endOffset());
 
-  EXPECT_TRUE(rangeOuterSurroundingText->boundaryPointsValid());
-  EXPECT_EQ(outer, rangeOuterSurroundingText->startContainer());
-  EXPECT_EQ(2u, rangeOuterSurroundingText->startOffset());
-  EXPECT_EQ(outer, rangeOuterSurroundingText->endContainer());
-  EXPECT_EQ(4u, rangeOuterSurroundingText->endOffset());
+  EXPECT_TRUE(range_outer_surrounding_text->BoundaryPointsValid());
+  EXPECT_EQ(outer, range_outer_surrounding_text->startContainer());
+  EXPECT_EQ(2u, range_outer_surrounding_text->startOffset());
+  EXPECT_EQ(outer, range_outer_surrounding_text->endContainer());
+  EXPECT_EQ(4u, range_outer_surrounding_text->endOffset());
 
-  EXPECT_TRUE(rangeInnerLeft->boundaryPointsValid());
-  EXPECT_EQ(innerLeft, rangeInnerLeft->startContainer());
-  EXPECT_EQ(0u, rangeInnerLeft->startOffset());
-  EXPECT_EQ(innerLeft, rangeInnerLeft->endContainer());
-  EXPECT_EQ(1u, rangeInnerLeft->endOffset());
+  EXPECT_TRUE(range_inner_left->BoundaryPointsValid());
+  EXPECT_EQ(inner_left, range_inner_left->startContainer());
+  EXPECT_EQ(0u, range_inner_left->startOffset());
+  EXPECT_EQ(inner_left, range_inner_left->endContainer());
+  EXPECT_EQ(1u, range_inner_left->endOffset());
 
-  EXPECT_TRUE(rangeInnerRight->boundaryPointsValid());
-  EXPECT_EQ(innerRight, rangeInnerRight->startContainer());
-  EXPECT_EQ(0u, rangeInnerRight->startOffset());
-  EXPECT_EQ(innerRight, rangeInnerRight->endContainer());
-  EXPECT_EQ(1u, rangeInnerRight->endOffset());
+  EXPECT_TRUE(range_inner_right->BoundaryPointsValid());
+  EXPECT_EQ(inner_right, range_inner_right->startContainer());
+  EXPECT_EQ(0u, range_inner_right->startOffset());
+  EXPECT_EQ(inner_right, range_inner_right->endContainer());
+  EXPECT_EQ(1u, range_inner_right->endOffset());
 
-  EXPECT_TRUE(rangeFromTextToMiddleOfElement->boundaryPointsValid());
-  EXPECT_EQ(newText, rangeFromTextToMiddleOfElement->startContainer());
-  EXPECT_EQ(3u, rangeFromTextToMiddleOfElement->startOffset());
-  EXPECT_EQ(outer, rangeFromTextToMiddleOfElement->endContainer());
-  EXPECT_EQ(4u, rangeFromTextToMiddleOfElement->endOffset());
+  EXPECT_TRUE(range_from_text_to_middle_of_element->BoundaryPointsValid());
+  EXPECT_EQ(new_text, range_from_text_to_middle_of_element->startContainer());
+  EXPECT_EQ(3u, range_from_text_to_middle_of_element->startOffset());
+  EXPECT_EQ(outer, range_from_text_to_middle_of_element->endContainer());
+  EXPECT_EQ(4u, range_from_text_to_middle_of_element->endOffset());
 
   // StaticRange shouldn't mutate.
-  EXPECT_EQ(outer, staticRangeOuterOutside->startContainer());
-  EXPECT_EQ(0u, staticRangeOuterOutside->startOffset());
-  EXPECT_EQ(outer, staticRangeOuterOutside->endContainer());
-  EXPECT_EQ(5u, staticRangeOuterOutside->endOffset());
+  EXPECT_EQ(outer, static_range_outer_outside->startContainer());
+  EXPECT_EQ(0u, static_range_outer_outside->startOffset());
+  EXPECT_EQ(outer, static_range_outer_outside->endContainer());
+  EXPECT_EQ(5u, static_range_outer_outside->endOffset());
 
-  EXPECT_EQ(outer, staticRangeOuterInside->startContainer());
-  EXPECT_EQ(1u, staticRangeOuterInside->startOffset());
-  EXPECT_EQ(outer, staticRangeOuterInside->endContainer());
-  EXPECT_EQ(4u, staticRangeOuterInside->endOffset());
+  EXPECT_EQ(outer, static_range_outer_inside->startContainer());
+  EXPECT_EQ(1u, static_range_outer_inside->startOffset());
+  EXPECT_EQ(outer, static_range_outer_inside->endContainer());
+  EXPECT_EQ(4u, static_range_outer_inside->endOffset());
 
-  EXPECT_EQ(outer, staticRangeOuterSurroundingText->startContainer());
-  EXPECT_EQ(2u, staticRangeOuterSurroundingText->startOffset());
-  EXPECT_EQ(outer, staticRangeOuterSurroundingText->endContainer());
-  EXPECT_EQ(3u, staticRangeOuterSurroundingText->endOffset());
+  EXPECT_EQ(outer, static_range_outer_surrounding_text->startContainer());
+  EXPECT_EQ(2u, static_range_outer_surrounding_text->startOffset());
+  EXPECT_EQ(outer, static_range_outer_surrounding_text->endContainer());
+  EXPECT_EQ(3u, static_range_outer_surrounding_text->endOffset());
 
-  EXPECT_EQ(innerLeft, staticRangeInnerLeft->startContainer());
-  EXPECT_EQ(0u, staticRangeInnerLeft->startOffset());
-  EXPECT_EQ(innerLeft, staticRangeInnerLeft->endContainer());
-  EXPECT_EQ(1u, staticRangeInnerLeft->endOffset());
+  EXPECT_EQ(inner_left, static_range_inner_left->startContainer());
+  EXPECT_EQ(0u, static_range_inner_left->startOffset());
+  EXPECT_EQ(inner_left, static_range_inner_left->endContainer());
+  EXPECT_EQ(1u, static_range_inner_left->endOffset());
 
-  EXPECT_EQ(innerRight, staticRangeInnerRight->startContainer());
-  EXPECT_EQ(0u, staticRangeInnerRight->startOffset());
-  EXPECT_EQ(innerRight, staticRangeInnerRight->endContainer());
-  EXPECT_EQ(1u, staticRangeInnerRight->endOffset());
+  EXPECT_EQ(inner_right, static_range_inner_right->startContainer());
+  EXPECT_EQ(0u, static_range_inner_right->startOffset());
+  EXPECT_EQ(inner_right, static_range_inner_right->endContainer());
+  EXPECT_EQ(1u, static_range_inner_right->endOffset());
 
-  EXPECT_EQ(oldText, staticRangeFromTextToMiddleOfElement->startContainer());
-  EXPECT_EQ(6u, staticRangeFromTextToMiddleOfElement->startOffset());
-  EXPECT_EQ(outer, staticRangeFromTextToMiddleOfElement->endContainer());
-  EXPECT_EQ(3u, staticRangeFromTextToMiddleOfElement->endOffset());
+  EXPECT_EQ(old_text,
+            static_range_from_text_to_middle_of_element->startContainer());
+  EXPECT_EQ(6u, static_range_from_text_to_middle_of_element->startOffset());
+  EXPECT_EQ(outer, static_range_from_text_to_middle_of_element->endContainer());
+  EXPECT_EQ(3u, static_range_from_text_to_middle_of_element->endOffset());
 }
 
 TEST_F(StaticRangeTest, InvalidToRange) {
   V8TestingScope scope;
-  document().body()->setInnerHTML("1234");
-  Text* oldText = toText(document().body()->firstChild());
+  GetDocument().body()->setInnerHTML("1234");
+  Text* old_text = ToText(GetDocument().body()->FirstChild());
 
-  StaticRange* staticRange04 =
-      StaticRange::create(document(), oldText, 0u, oldText, 4u);
+  StaticRange* static_range04 =
+      StaticRange::Create(GetDocument(), old_text, 0u, old_text, 4u);
 
   // Valid StaticRange.
-  staticRange04->toRange(ASSERT_NO_EXCEPTION);
+  static_range04->toRange(ASSERT_NO_EXCEPTION);
 
-  oldText->splitText(2, ASSERT_NO_EXCEPTION);
+  old_text->splitText(2, ASSERT_NO_EXCEPTION);
   // StaticRange shouldn't mutate, endOffset() become invalid after splitText().
-  EXPECT_EQ(oldText, staticRange04->startContainer());
-  EXPECT_EQ(0u, staticRange04->startOffset());
-  EXPECT_EQ(oldText, staticRange04->endContainer());
-  EXPECT_EQ(4u, staticRange04->endOffset());
+  EXPECT_EQ(old_text, static_range04->startContainer());
+  EXPECT_EQ(0u, static_range04->startOffset());
+  EXPECT_EQ(old_text, static_range04->endContainer());
+  EXPECT_EQ(4u, static_range04->endOffset());
 
   // Invalid StaticRange.
-  DummyExceptionStateForTesting exceptionState;
-  staticRange04->toRange(exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
+  DummyExceptionStateForTesting exception_state;
+  static_range04->toRange(exception_state);
+  EXPECT_TRUE(exception_state.HadException());
 }
 
 }  // namespace blink

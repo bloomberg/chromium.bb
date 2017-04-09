@@ -43,40 +43,40 @@ class UserMediaController final
   UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
   DECLARE_VIRTUAL_TRACE();
 
-  UserMediaClient* client() const { return m_client.get(); }
+  UserMediaClient* Client() const { return client_.get(); }
 
-  void requestUserMedia(UserMediaRequest*);
-  void cancelUserMediaRequest(UserMediaRequest*);
-  void requestMediaDevices(MediaDevicesRequest*);
-  void setMediaDeviceChangeObserver(MediaDevices*);
+  void RequestUserMedia(UserMediaRequest*);
+  void CancelUserMediaRequest(UserMediaRequest*);
+  void RequestMediaDevices(MediaDevicesRequest*);
+  void SetMediaDeviceChangeObserver(MediaDevices*);
 
-  static const char* supplementName();
-  static UserMediaController* from(LocalFrame* frame) {
+  static const char* SupplementName();
+  static UserMediaController* From(LocalFrame* frame) {
     return static_cast<UserMediaController*>(
-        Supplement<LocalFrame>::from(frame, supplementName()));
+        Supplement<LocalFrame>::From(frame, SupplementName()));
   }
 
  private:
-  std::unique_ptr<UserMediaClient> m_client;
+  std::unique_ptr<UserMediaClient> client_;
 };
 
-inline void UserMediaController::requestUserMedia(UserMediaRequest* request) {
-  m_client->requestUserMedia(request);
+inline void UserMediaController::RequestUserMedia(UserMediaRequest* request) {
+  client_->RequestUserMedia(request);
 }
 
-inline void UserMediaController::cancelUserMediaRequest(
+inline void UserMediaController::CancelUserMediaRequest(
     UserMediaRequest* request) {
-  m_client->cancelUserMediaRequest(request);
+  client_->CancelUserMediaRequest(request);
 }
 
-inline void UserMediaController::requestMediaDevices(
+inline void UserMediaController::RequestMediaDevices(
     MediaDevicesRequest* request) {
-  m_client->requestMediaDevices(request);
+  client_->RequestMediaDevices(request);
 }
 
-inline void UserMediaController::setMediaDeviceChangeObserver(
+inline void UserMediaController::SetMediaDeviceChangeObserver(
     MediaDevices* observer) {
-  m_client->setMediaDeviceChangeObserver(observer);
+  client_->SetMediaDeviceChangeObserver(observer);
 }
 
 }  // namespace blink

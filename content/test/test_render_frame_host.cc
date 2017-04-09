@@ -95,8 +95,8 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   std::string frame_unique_name = base::GenerateGUID();
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
-                     blink::WebTreeScopeType::Document, frame_name,
-                     frame_unique_name, blink::WebSandboxFlags::None,
+                     blink::WebTreeScopeType::kDocument, frame_name,
+                     frame_unique_name, blink::WebSandboxFlags::kNone,
                      FrameOwnerProperties());
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
@@ -424,12 +424,12 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, has_user_gesture, false,
         REQUEST_CONTEXT_TYPE_HYPERLINK,
-        blink::WebMixedContentContextType::Blockable,
+        blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
         url::Origin());
     CommonNavigationParams common_params;
     common_params.url = url;
-    common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
+    common_params.referrer = Referrer(GURL(), blink::kWebReferrerPolicyDefault);
     common_params.transition = ui::PAGE_TRANSITION_LINK;
     common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
     OnBeginNavigation(common_params, begin_params);
@@ -522,7 +522,7 @@ void TestRenderFrameHost::SimulateWillStartRequest(
   if (!navigation_handle() || IsBrowserSideNavigationEnabled())
     return;
   navigation_handle()->CallWillStartRequestForTesting(
-      false /* is_post */, Referrer(GURL(), blink::WebReferrerPolicyDefault),
+      false /* is_post */, Referrer(GURL(), blink::kWebReferrerPolicyDefault),
       true /* user_gesture */, transition, false /* is_external_protocol */);
 }
 

@@ -8,49 +8,48 @@
 
 namespace blink {
 
-EffectPaintPropertyNode* EffectPaintPropertyNode::root() {
+EffectPaintPropertyNode* EffectPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(
       EffectPaintPropertyNode, root,
-      (EffectPaintPropertyNode::create(
-          nullptr, TransformPaintPropertyNode::root(),
-          ClipPaintPropertyNode::root(), ColorFilterNone,
+      (EffectPaintPropertyNode::Create(
+          nullptr, TransformPaintPropertyNode::Root(),
+          ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver)));
   return root;
 }
 
-FloatRect EffectPaintPropertyNode::mapRect(const FloatRect& inputRect) const {
-  FloatRect rect = inputRect;
-  rect.moveBy(-m_paintOffset);
-  FloatRect result = m_filter.mapRect(rect);
-  result.moveBy(m_paintOffset);
+FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
+  FloatRect rect = input_rect;
+  rect.MoveBy(-paint_offset_);
+  FloatRect result = filter_.MapRect(rect);
+  result.MoveBy(paint_offset_);
   return result;
 }
 
-cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
-  if (m_dummyLayer)
-    return m_dummyLayer.get();
-  m_dummyLayer = cc::Layer::Create();
-  return m_dummyLayer.get();
+cc::Layer* EffectPaintPropertyNode::EnsureDummyLayer() const {
+  if (dummy_layer_)
+    return dummy_layer_.get();
+  dummy_layer_ = cc::Layer::Create();
+  return dummy_layer_.get();
 }
 
-String EffectPaintPropertyNode::toString() const {
-  return String::format(
+String EffectPaintPropertyNode::ToString() const {
+  return String::Format(
       "parent=%p localTransformSpace=%p outputClip=%p opacity=%f filter=%s "
       "blendMode=%s directCompositingReasons=%s compositorElementId=(%d, %d) "
       "paintOffset=%s",
-      m_parent.get(), m_localTransformSpace.get(), m_outputClip.get(),
-      m_opacity, m_filter.toString().ascii().data(),
-      SkBlendMode_Name(m_blendMode),
-      compositingReasonsAsString(m_directCompositingReasons).ascii().data(),
-      m_compositorElementId.primaryId, m_compositorElementId.secondaryId,
-      m_paintOffset.toString().ascii().data());
+      parent_.Get(), local_transform_space_.Get(), output_clip_.Get(), opacity_,
+      filter_.ToString().Ascii().Data(), SkBlendMode_Name(blend_mode_),
+      CompositingReasonsAsString(direct_compositing_reasons_).Ascii().Data(),
+      compositor_element_id_.primaryId, compositor_element_id_.secondaryId,
+      paint_offset_.ToString().Ascii().Data());
 }
 
 #if DCHECK_IS_ON()
 
-String EffectPaintPropertyNode::toTreeString() const {
+String EffectPaintPropertyNode::ToTreeString() const {
   return blink::PropertyTreeStatePrinter<blink::EffectPaintPropertyNode>()
-      .pathAsString(this);
+      .PathAsString(this);
 }
 
 #endif

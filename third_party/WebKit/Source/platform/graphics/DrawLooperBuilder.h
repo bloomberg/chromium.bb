@@ -53,27 +53,27 @@ class PLATFORM_EXPORT DrawLooperBuilder final {
 
  public:
   enum ShadowTransformMode {
-    ShadowRespectsTransforms,
-    ShadowIgnoresTransforms
+    kShadowRespectsTransforms,
+    kShadowIgnoresTransforms
   };
-  enum ShadowAlphaMode { ShadowRespectsAlpha, ShadowIgnoresAlpha };
+  enum ShadowAlphaMode { kShadowRespectsAlpha, kShadowIgnoresAlpha };
 
   DrawLooperBuilder();
   ~DrawLooperBuilder();
 
   // Creates the SkDrawLooper and passes ownership to the caller. The builder
   // should not be used any more after calling this method.
-  sk_sp<SkDrawLooper> detachDrawLooper();
+  sk_sp<SkDrawLooper> DetachDrawLooper();
 
-  void addUnmodifiedContent();
-  void addShadow(const FloatSize& offset,
+  void AddUnmodifiedContent();
+  void AddShadow(const FloatSize& offset,
                  float blur,
                  const Color&,
-                 ShadowTransformMode = ShadowRespectsTransforms,
-                 ShadowAlphaMode = ShadowRespectsAlpha);
+                 ShadowTransformMode = kShadowRespectsTransforms,
+                 ShadowAlphaMode = kShadowRespectsAlpha);
 
  private:
-  SkLayerDrawLooper::Builder m_skDrawLooperBuilder;
+  SkLayerDrawLooper::Builder sk_draw_looper_builder_;
 };
 
 }  // namespace blink

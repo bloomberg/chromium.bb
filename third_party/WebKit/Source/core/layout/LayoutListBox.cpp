@@ -41,98 +41,99 @@ namespace blink {
 
 // Default size when the multiple attribute is present but size attribute is
 // absent.
-const int defaultSize = 4;
+const int kDefaultSize = 4;
 
-const int defaultPaddingBottom = 1;
+const int kDefaultPaddingBottom = 1;
 
 LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
   DCHECK(element);
-  DCHECK(element->isHTMLElement());
+  DCHECK(element->IsHTMLElement());
   DCHECK(isHTMLSelectElement(element));
 }
 
 LayoutListBox::~LayoutListBox() {}
 
-inline HTMLSelectElement* LayoutListBox::selectElement() const {
-  return toHTMLSelectElement(node());
+inline HTMLSelectElement* LayoutListBox::SelectElement() const {
+  return toHTMLSelectElement(GetNode());
 }
 
 unsigned LayoutListBox::size() const {
-  unsigned specifiedSize = selectElement()->size();
-  if (specifiedSize >= 1)
-    return specifiedSize;
+  unsigned specified_size = SelectElement()->size();
+  if (specified_size >= 1)
+    return specified_size;
 
-  return defaultSize;
+  return kDefaultSize;
 }
 
-LayoutUnit LayoutListBox::defaultItemHeight() const {
-  const SimpleFontData* fontData = style()->font().primaryFont();
-  if (!fontData)
+LayoutUnit LayoutListBox::DefaultItemHeight() const {
+  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  if (!font_data)
     return LayoutUnit();
-  return LayoutUnit(fontData->getFontMetrics().height() + defaultPaddingBottom);
+  return LayoutUnit(font_data->GetFontMetrics().Height() +
+                    kDefaultPaddingBottom);
 }
 
-LayoutUnit LayoutListBox::itemHeight() const {
-  HTMLSelectElement* select = selectElement();
+LayoutUnit LayoutListBox::ItemHeight() const {
+  HTMLSelectElement* select = SelectElement();
   if (!select)
     return LayoutUnit();
 
-  const auto& items = select->listItems();
-  if (items.isEmpty())
-    return defaultItemHeight();
+  const auto& items = select->GetListItems();
+  if (items.IsEmpty())
+    return DefaultItemHeight();
 
-  LayoutUnit maxHeight;
+  LayoutUnit max_height;
   for (Element* element : items) {
     if (isHTMLOptGroupElement(element))
-      element = &toHTMLOptGroupElement(element)->optGroupLabelElement();
-    LayoutObject* layoutObject = element->layoutObject();
-    LayoutUnit itemHeight;
-    if (layoutObject && layoutObject->isBox())
-      itemHeight = toLayoutBox(layoutObject)->size().height();
+      element = &toHTMLOptGroupElement(element)->OptGroupLabelElement();
+    LayoutObject* layout_object = element->GetLayoutObject();
+    LayoutUnit item_height;
+    if (layout_object && layout_object->IsBox())
+      item_height = ToLayoutBox(layout_object)->size().Height();
     else
-      itemHeight = defaultItemHeight();
-    maxHeight = std::max(maxHeight, itemHeight);
+      item_height = DefaultItemHeight();
+    max_height = std::max(max_height, item_height);
   }
-  return maxHeight;
+  return max_height;
 }
 
-void LayoutListBox::computeLogicalHeight(
+void LayoutListBox::ComputeLogicalHeight(
     LayoutUnit,
-    LayoutUnit logicalTop,
-    LogicalExtentComputedValues& computedValues) const {
-  LayoutUnit height = itemHeight() * size();
+    LayoutUnit logical_top,
+    LogicalExtentComputedValues& computed_values) const {
+  LayoutUnit height = ItemHeight() * size();
   // FIXME: The item height should have been added before updateLogicalHeight
   // was called to avoid this hack.
-  setIntrinsicContentLogicalHeight(height);
+  SetIntrinsicContentLogicalHeight(height);
 
-  height += borderAndPaddingHeight();
+  height += BorderAndPaddingHeight();
 
-  LayoutBox::computeLogicalHeight(height, logicalTop, computedValues);
+  LayoutBox::ComputeLogicalHeight(height, logical_top, computed_values);
 }
 
-void LayoutListBox::stopAutoscroll() {
-  HTMLSelectElement* select = selectElement();
-  if (select->isDisabledFormControl())
+void LayoutListBox::StopAutoscroll() {
+  HTMLSelectElement* select = SelectElement();
+  if (select->IsDisabledFormControl())
     return;
-  select->handleMouseRelease();
+  select->HandleMouseRelease();
 }
 
-void LayoutListBox::computeIntrinsicLogicalWidths(
-    LayoutUnit& minLogicalWidth,
-    LayoutUnit& maxLogicalWidth) const {
-  LayoutBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth,
-                                                 maxLogicalWidth);
-  if (style()->width().isPercentOrCalc())
-    minLogicalWidth = LayoutUnit();
+void LayoutListBox::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  LayoutBlockFlow::ComputeIntrinsicLogicalWidths(min_logical_width,
+                                                 max_logical_width);
+  if (Style()->Width().IsPercentOrCalc())
+    min_logical_width = LayoutUnit();
 }
 
-void LayoutListBox::scrollToRect(const LayoutRect& rect) {
-  if (hasOverflowClip()) {
-    DCHECK(layer());
-    DCHECK(layer()->getScrollableArea());
-    layer()->getScrollableArea()->scrollIntoView(
-        rect, ScrollAlignment::alignToEdgeIfNeeded,
-        ScrollAlignment::alignToEdgeIfNeeded);
+void LayoutListBox::ScrollToRect(const LayoutRect& rect) {
+  if (HasOverflowClip()) {
+    DCHECK(Layer());
+    DCHECK(Layer()->GetScrollableArea());
+    Layer()->GetScrollableArea()->ScrollIntoView(
+        rect, ScrollAlignment::kAlignToEdgeIfNeeded,
+        ScrollAlignment::kAlignToEdgeIfNeeded);
   }
 }
 

@@ -276,17 +276,19 @@ static_assert(static_cast<v8::MemoryPressureLevel>(
 
 // WebMemoryPressureLevel should correspond to base::MemoryPressureListener.
 static_assert(static_cast<blink::WebMemoryPressureLevel>(
-    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) ==
-        blink::WebMemoryPressureLevelNone,
-            "blink::WebMemoryPressureLevelNone not align");
-static_assert(static_cast<blink::WebMemoryPressureLevel>(
-    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) ==
-        blink::WebMemoryPressureLevelModerate,
-            "blink::WebMemoryPressureLevelModerate not align");
-static_assert(static_cast<blink::WebMemoryPressureLevel>(
-    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
-        blink::WebMemoryPressureLevelCritical,
-            "blink::WebMemoryPressureLevelCritical not align");
+                  base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) ==
+                  blink::kWebMemoryPressureLevelNone,
+              "blink::WebMemoryPressureLevelNone not align");
+static_assert(
+    static_cast<blink::WebMemoryPressureLevel>(
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) ==
+        blink::kWebMemoryPressureLevelModerate,
+    "blink::WebMemoryPressureLevelModerate not align");
+static_assert(
+    static_cast<blink::WebMemoryPressureLevel>(
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
+        blink::kWebMemoryPressureLevelCritical,
+    "blink::WebMemoryPressureLevelCritical not align");
 
 class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
  public:
@@ -301,7 +303,7 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
       override {
     return base::MakeUnique<blink::scheduler::CompositorWorkerScheduler>(
-        thread());
+        GetThread());
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
@@ -461,7 +463,7 @@ void RenderThreadImpl::HistogramCustomizer::SetCommonHost(
   if (host != common_host_) {
     common_host_ = host;
     common_host_histogram_suffix_ = HostToCustomHistogramSuffix(host);
-    blink::mainThreadIsolate()->SetCreateHistogramFunction(CreateHistogram);
+    blink::MainThreadIsolate()->SetCreateHistogramFunction(CreateHistogram);
   }
 }
 
@@ -615,7 +617,7 @@ void RenderThreadImpl::Init(
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // On Mac and Android Java UI, the select popups are rendered by the browser.
-  blink::WebView::setUseExternalPopupMenus(true);
+  blink::WebView::SetUseExternalPopupMenus(true);
 #endif
 
   lazy_tls.Pointer()->Set(this);
@@ -924,7 +926,7 @@ void RenderThreadImpl::Shutdown() {
 
   // Give the V8 isolate a chance to dump internal stats useful for performance
   // evaluation and debugging.
-  blink::mainThreadIsolate()->DumpAndResetStats();
+  blink::MainThreadIsolate()->DumpAndResetStats();
 
   // In a single-process mode, we cannot call _exit(0) in Shutdown() because
   // it will exit the process before the browser side is ready to exit.
@@ -962,13 +964,13 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 
   if (pumping_events) {
     renderer_scheduler_->SuspendTimerQueue();
-    WebView::willEnterModalLoop();
+    WebView::WillEnterModalLoop();
   }
 
   bool rv = ChildThreadImpl::Send(msg);
 
   if (pumping_events) {
-    WebView::didExitModalLoop();
+    WebView::DidExitModalLoop();
     renderer_scheduler_->ResumeTimerQueue();
   }
 
@@ -1092,7 +1094,7 @@ void RenderThreadImpl::InitializeCompositorThread() {
       FROM_HERE,
       base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed), false));
 #if defined(OS_LINUX)
-  ChildThreadImpl::current()->SetThreadPriority(compositor_thread_->threadId(),
+  ChildThreadImpl::current()->SetThreadPriority(compositor_thread_->ThreadId(),
                                                 base::ThreadPriority::DISPLAY);
 #endif
 
@@ -1138,9 +1140,9 @@ void RenderThreadImpl::InitializeWebKit(
 
   blink_platform_impl_.reset(new RendererBlinkPlatformImpl(
       renderer_scheduler_.get(), GetConnector()->GetWeakPtr()));
-  blink::initialize(blink_platform_impl_.get());
+  blink::Initialize(blink_platform_impl_.get());
 
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
   renderer_scheduler_->SetRAILModeObserver(this);
@@ -1220,7 +1222,7 @@ void RenderThreadImpl::InitializeWebKit(
 
   // Hook up blink's codecs so skia can call them
   SkGraphics::SetImageGeneratorFromEncodedDataFactory(
-      blink::WebImageGenerator::create);
+      blink::WebImageGenerator::Create);
 
   if (command_line.HasSwitch(switches::kMemoryMetrics)) {
     memory_observer_.reset(new MemoryObserver());
@@ -1236,18 +1238,18 @@ void RenderThreadImpl::InitializeWebKit(
 
 void RenderThreadImpl::RegisterSchemes() {
   // chrome:
-  WebString chrome_scheme(WebString::fromASCII(kChromeUIScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+  WebString chrome_scheme(WebString::FromASCII(kChromeUIScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(chrome_scheme);
+  WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_scheme);
 
   // chrome-devtools:
-  WebString devtools_scheme(WebString::fromASCII(kChromeDevToolsScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(devtools_scheme);
+  WebString devtools_scheme(WebString::FromASCII(kChromeDevToolsScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(devtools_scheme);
 
   // view-source:
-  WebString view_source_scheme(WebString::fromASCII(kViewSourceScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(view_source_scheme);
+  WebString view_source_scheme(WebString::FromASCII(kViewSourceScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(view_source_scheme);
 }
 
 void RenderThreadImpl::RecordAction(const base::UserMetricsAction& action) {
@@ -1268,7 +1270,7 @@ cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
-  WebScriptController::registerExtension(extension);
+  WebScriptController::RegisterExtension(extension);
 }
 
 void RenderThreadImpl::ScheduleIdleHandler(int64_t initial_delay_ms) {
@@ -1600,8 +1602,8 @@ bool RenderThreadImpl::IsSurfaceSynchronizationEnabled() {
 }
 
 void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
-  blink::mainThreadIsolate()->SetRAILMode(rail_mode);
-  blink::setRAILModeOnWorkerThreadIsolates(rail_mode);
+  blink::MainThreadIsolate()->SetRAILMode(rail_mode);
+  blink::SetRAILModeOnWorkerThreadIsolates(rail_mode);
 }
 
 bool RenderThreadImpl::IsMainThread() {
@@ -1729,8 +1731,9 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
 
   blink::WebMemoryStatistics blink_stats = blink::WebMemoryStatistics::Get();
   memory_metrics->partition_alloc_kb =
-      blink_stats.partitionAllocTotalAllocatedBytes / 1024;
-  memory_metrics->blink_gc_kb = blink_stats.blinkGCTotalAllocatedBytes / 1024;
+      blink_stats.partition_alloc_total_allocated_bytes / 1024;
+  memory_metrics->blink_gc_kb =
+      blink_stats.blink_gc_total_allocated_bytes / 1024;
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   struct mallinfo minfo = mallinfo();
 #if defined(USE_TCMALLOC)
@@ -1750,7 +1753,7 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
   memory_metrics->discardable_kb = discardable_usage / 1024;
 
   size_t v8_usage = 0;
-  if (v8::Isolate* isolate = blink::mainThreadIsolate()) {
+  if (v8::Isolate* isolate = blink::MainThreadIsolate()) {
     v8::HeapStatistics v8_heap_statistics;
     isolate->GetHeapStatistics(&v8_heap_statistics);
     v8_usage = v8_heap_statistics.total_heap_size();
@@ -1759,8 +1762,8 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
   // reported. We should collect memory usages of all isolates using
   // memory-infra.
   memory_metrics->v8_main_thread_isolate_mb = v8_usage / 1024 / 1024;
-  size_t total_allocated = blink_stats.partitionAllocTotalAllocatedBytes +
-                           blink_stats.blinkGCTotalAllocatedBytes +
+  size_t total_allocated = blink_stats.partition_alloc_total_allocated_bytes +
+                           blink_stats.blink_gc_total_allocated_bytes +
                            malloc_usage + v8_usage + discardable_usage;
   memory_metrics->total_allocated_mb = total_allocated / 1024 / 1024;
   memory_metrics->non_discardable_total_allocated_mb =
@@ -2148,10 +2151,10 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
     net::NetworkChangeNotifier::ConnectionType type,
     double max_bandwidth_mbps) {
   bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
-  WebNetworkStateNotifier::setOnLine(online);
+  WebNetworkStateNotifier::SetOnLine(online);
   for (auto& observer : observers_)
     observer.NetworkStateChanged(online);
-  WebNetworkStateNotifier::setWebConnection(
+  WebNetworkStateNotifier::SetWebConnection(
       NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
 }
 
@@ -2172,10 +2175,10 @@ void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
 #if defined(OS_MACOSX)
   static_cast<WebScrollbarBehaviorImpl*>(
-      blink_platform_impl_->scrollbarBehavior())
+      blink_platform_impl_->ScrollbarBehavior())
       ->set_jump_on_track_click(params->jump_on_track_click);
 
-  blink::WebScrollbarTheme::updateScrollbarsWithNSDefaults(
+  blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
       params->initial_button_delay, params->autoscroll_button_delay,
       params->preferred_scroller_style, params->redraw,
       params->button_placement);
@@ -2203,7 +2206,7 @@ void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
   // refresh temporarily to prevent each renderer process causing the list to be
   // regenerated.
   blink_platform_impl_->set_plugin_refresh_allowed(false);
-  blink::resetPluginCache(reload_pages);
+  blink::ResetPluginCache(reload_pages);
   blink_platform_impl_->set_plugin_refresh_allowed(true);
 
   for (auto& observer : observers_)
@@ -2226,7 +2229,7 @@ void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   TRACE_EVENT0("memory","RenderThreadImpl::OnMemoryPressure");
   if (blink_platform_impl_) {
-    blink::WebMemoryCoordinator::onMemoryPressure(
+    blink::WebMemoryCoordinator::OnMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
   }
   if (memory_pressure_level ==
@@ -2238,7 +2241,7 @@ void RenderThreadImpl::OnMemoryPressure(
 
 void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
   if (blink_platform_impl_) {
-    blink::WebMemoryCoordinator::onMemoryStateChange(
+    blink::WebMemoryCoordinator::OnMemoryStateChange(
         static_cast<blink::MemoryState>(state));
   }
 }
@@ -2260,7 +2263,7 @@ void RenderThreadImpl::OnPurgeMemory() {
   ReleaseFreeMemory();
   ClearMemory();
   if (blink_platform_impl_)
-    blink::WebMemoryCoordinator::onPurgeMemory();
+    blink::WebMemoryCoordinator::OnPurgeMemory();
 }
 
 void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
@@ -2347,7 +2350,7 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
-  blink_platform_impl_->sampleGamepads(*data);
+  blink_platform_impl_->SampleGamepads(*data);
 }
 
 bool RenderThreadImpl::RendererIsHidden() const {
@@ -2387,7 +2390,7 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 void RenderThreadImpl::OnRendererHidden() {
-  blink::mainThreadIsolate()->IsolateInBackgroundNotification();
+  blink::MainThreadIsolate()->IsolateInBackgroundNotification();
   // TODO(rmcilroy): Remove IdleHandler and replace it with an IdleTask
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
@@ -2396,7 +2399,7 @@ void RenderThreadImpl::OnRendererHidden() {
 }
 
 void RenderThreadImpl::OnRendererVisible() {
-  blink::mainThreadIsolate()->IsolateInForegroundNotification();
+  blink::MainThreadIsolate()->IsolateInForegroundNotification();
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
@@ -2407,7 +2410,7 @@ void RenderThreadImpl::ReleaseFreeMemory() {
   discardable_shared_memory_manager_->ReleaseFreeMemory();
 
   if (blink_platform_impl_)
-    blink::decommitFreeableMemory();
+    blink::DecommitFreeableMemory();
 }
 
 RenderThreadImpl::PendingFrameCreate::PendingFrameCreate(
@@ -2436,7 +2439,7 @@ void RenderThreadImpl::PendingFrameCreate::OnConnectionError() {
 
 void RenderThreadImpl::OnSyncMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  if (!blink::mainThreadIsolate())
+  if (!blink::MainThreadIsolate())
     return;
 
   v8::MemoryPressureLevel v8_memory_pressure_level =
@@ -2448,7 +2451,7 @@ void RenderThreadImpl::OnSyncMemoryPressure(
       v8_memory_pressure_level == v8::MemoryPressureLevel::kCritical)
     v8_memory_pressure_level = v8::MemoryPressureLevel::kModerate;
 
-  blink::mainThreadIsolate()->MemoryPressureNotification(
+  blink::MainThreadIsolate()->MemoryPressureNotification(
       v8_memory_pressure_level);
   blink::MemoryPressureNotificationToWorkerThreadIsolates(
       v8_memory_pressure_level);
@@ -2457,8 +2460,8 @@ void RenderThreadImpl::OnSyncMemoryPressure(
 // Note that this would be called only when memory_coordinator is enabled.
 // OnSyncMemoryPressure() is never called in that case.
 void RenderThreadImpl::OnTrimMemoryImmediately() {
-  if (blink::mainThreadIsolate()) {
-    blink::mainThreadIsolate()->MemoryPressureNotification(
+  if (blink::MainThreadIsolate()) {
+    blink::MainThreadIsolate()->MemoryPressureNotification(
         v8::MemoryPressureLevel::kCritical);
     blink::MemoryPressureNotificationToWorkerThreadIsolates(
         v8::MemoryPressureLevel::kCritical);

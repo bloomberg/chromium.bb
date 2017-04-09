@@ -35,15 +35,15 @@ class HTMLTableElement;
 
 class CORE_EXPORT HTMLTablePartElement : public HTMLElement {
  protected:
-  HTMLTablePartElement(const QualifiedName& tagName, Document& document)
-      : HTMLElement(tagName, document) {}
+  HTMLTablePartElement(const QualifiedName& tag_name, Document& document)
+      : HTMLElement(tag_name, document) {}
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  HTMLTableElement* findParentTable() const;
+  HTMLTableElement* FindParentTable() const;
 };
 
 }  // namespace blink

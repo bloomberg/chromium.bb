@@ -36,7 +36,7 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 
  public:
-  static HTMLStyleElement* create(Document&, bool createdByParser);
+  static HTMLStyleElement* Create(Document&, bool created_by_parser);
   ~HTMLStyleElement() override;
 
   using StyleElement::sheet;
@@ -47,33 +47,35 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  HTMLStyleElement(Document&, bool createdByParser);
+  HTMLStyleElement(Document&, bool created_by_parser);
 
   // Always call this asynchronously because this can cause synchronous
   // Document load event and JavaScript execution.
-  void dispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
+  void DispatchPendingEvent(std::unique_ptr<IncrementLoadEventDelayCount>);
 
   // overload from HTMLElement
-  void parseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void didNotifySubtreeInsertionsToDocument() override;
-  void removedFrom(ContainerNode*) override;
-  void childrenChanged(const ChildrenChange&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void DidNotifySubtreeInsertionsToDocument() override;
+  void RemovedFrom(ContainerNode*) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  void finishParsingChildren() override;
+  void FinishParsingChildren() override;
 
-  bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-  void notifyLoadedSheetAndAllCriticalSubresources(
+  bool SheetLoaded() override {
+    return StyleElement::SheetLoaded(GetDocument());
+  }
+  void NotifyLoadedSheetAndAllCriticalSubresources(
       LoadedSheetErrorStatus) override;
-  void startLoadingDynamicSheet() override {
-    StyleElement::startLoadingDynamicSheet(document());
+  void StartLoadingDynamicSheet() override {
+    StyleElement::StartLoadingDynamicSheet(GetDocument());
   }
 
   const AtomicString& media() const override;
   const AtomicString& type() const override;
 
-  bool m_firedLoad;
-  bool m_loadedSheet;
+  bool fired_load_;
+  bool loaded_sheet_;
 };
 
 }  // namespace blink

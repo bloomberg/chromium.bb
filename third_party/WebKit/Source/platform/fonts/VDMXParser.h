@@ -35,11 +35,11 @@
 #include <stdint.h>
 
 namespace blink {
-bool parseVDMX(int* ymax,
+bool ParseVDMX(int* ymax,
                int* ymin,
                const uint8_t* vdmx,
-               size_t vdmxLength,
-               unsigned targetPixelSize);
+               size_t vdmx_length,
+               unsigned target_pixel_size);
 }  // namespace blink
 
 #endif

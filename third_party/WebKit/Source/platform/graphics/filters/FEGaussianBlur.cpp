@@ -35,68 +35,68 @@ namespace blink {
 
 namespace {
 
-inline unsigned approximateBoxWidth(float s) {
+inline unsigned ApproximateBoxWidth(float s) {
   return static_cast<unsigned>(
       floorf(s * (3 / 4.f * sqrtf(twoPiFloat)) + 0.5f));
 }
 
-IntSize calculateKernelSize(const FloatSize& std) {
-  DCHECK(std.width() >= 0 && std.height() >= 0);
-  IntSize kernelSize;
-  if (std.width()) {
-    int size = std::max<unsigned>(2, approximateBoxWidth(std.width()));
-    kernelSize.setWidth(size);
+IntSize CalculateKernelSize(const FloatSize& std) {
+  DCHECK(std.Width() >= 0 && std.Height() >= 0);
+  IntSize kernel_size;
+  if (std.Width()) {
+    int size = std::max<unsigned>(2, ApproximateBoxWidth(std.Width()));
+    kernel_size.SetWidth(size);
   }
-  if (std.height()) {
-    int size = std::max<unsigned>(2, approximateBoxWidth(std.height()));
-    kernelSize.setHeight(size);
+  if (std.Height()) {
+    int size = std::max<unsigned>(2, ApproximateBoxWidth(std.Height()));
+    kernel_size.SetHeight(size);
   }
-  return kernelSize;
+  return kernel_size;
 }
 
 }
 
 FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
-    : FilterEffect(filter), m_stdX(x), m_stdY(y) {}
+    : FilterEffect(filter), std_x_(x), std_y_(y) {}
 
-FEGaussianBlur* FEGaussianBlur::create(Filter* filter, float x, float y) {
+FEGaussianBlur* FEGaussianBlur::Create(Filter* filter, float x, float y) {
   return new FEGaussianBlur(filter, x, y);
 }
 
-FloatRect FEGaussianBlur::mapEffect(const FloatSize& stdDeviation,
+FloatRect FEGaussianBlur::MapEffect(const FloatSize& std_deviation,
                                     const FloatRect& rect) {
-  IntSize kernelSize = calculateKernelSize(stdDeviation);
+  IntSize kernel_size = CalculateKernelSize(std_deviation);
   // We take the half kernel size and multiply it by three, because we run box
   // blur three times.
   FloatRect result = rect;
-  result.inflateX(3.0f * kernelSize.width() * 0.5f);
-  result.inflateY(3.0f * kernelSize.height() * 0.5f);
+  result.InflateX(3.0f * kernel_size.Width() * 0.5f);
+  result.InflateY(3.0f * kernel_size.Height() * 0.5f);
   return result;
 }
 
-FloatRect FEGaussianBlur::mapEffect(const FloatRect& rect) const {
-  FloatSize stdError(getFilter()->applyHorizontalScale(m_stdX),
-                     getFilter()->applyVerticalScale(m_stdY));
-  return mapEffect(stdError, rect);
+FloatRect FEGaussianBlur::MapEffect(const FloatRect& rect) const {
+  FloatSize std_error(GetFilter()->ApplyHorizontalScale(std_x_),
+                      GetFilter()->ApplyVerticalScale(std_y_));
+  return MapEffect(std_error, rect);
 }
 
-sk_sp<SkImageFilter> FEGaussianBlur::createImageFilter() {
+sk_sp<SkImageFilter> FEGaussianBlur::CreateImageFilter() {
   sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-  float stdX = getFilter()->applyHorizontalScale(m_stdX);
-  float stdY = getFilter()->applyVerticalScale(m_stdY);
-  SkImageFilter::CropRect rect = getCropRect();
-  return SkBlurImageFilter::Make(SkFloatToScalar(stdX), SkFloatToScalar(stdY),
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  float std_x = GetFilter()->ApplyHorizontalScale(std_x_);
+  float std_y = GetFilter()->ApplyVerticalScale(std_y_);
+  SkImageFilter::CropRect rect = GetCropRect();
+  return SkBlurImageFilter::Make(SkFloatToScalar(std_x), SkFloatToScalar(std_y),
                                  std::move(input), &rect);
 }
 
-TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts,
+TextStream& FEGaussianBlur::ExternalRepresentation(TextStream& ts,
                                                    int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[feGaussianBlur";
-  FilterEffect::externalRepresentation(ts);
-  ts << " stdDeviation=\"" << m_stdX << ", " << m_stdY << "\"]\n";
-  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  FilterEffect::ExternalRepresentation(ts);
+  ts << " stdDeviation=\"" << std_x_ << ", " << std_y_ << "\"]\n";
+  InputEffect(0)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

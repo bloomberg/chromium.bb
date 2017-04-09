@@ -44,7 +44,7 @@ class WebScriptController {
   // Registers a v8 extension to be available on webpages. Will only affect
   // v8 contexts initialized after this call. Takes ownership of the
   // v8::Extension object passed.
-  BLINK_EXPORT static void registerExtension(v8::Extension*);
+  BLINK_EXPORT static void RegisterExtension(v8::Extension*);
 
  private:
   WebScriptController();

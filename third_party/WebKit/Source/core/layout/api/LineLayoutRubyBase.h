@@ -12,12 +12,12 @@ namespace blink {
 
 class LineLayoutRubyBase : public LineLayoutBlockFlow {
  public:
-  explicit LineLayoutRubyBase(LayoutRubyBase* layoutRubyBase)
-      : LineLayoutBlockFlow(layoutRubyBase) {}
+  explicit LineLayoutRubyBase(LayoutRubyBase* layout_ruby_base)
+      : LineLayoutBlockFlow(layout_ruby_base) {}
 
   explicit LineLayoutRubyBase(const LineLayoutItem& item)
       : LineLayoutBlockFlow(item) {
-    SECURITY_DCHECK(!item || item.isRubyBase());
+    SECURITY_DCHECK(!item || item.IsRubyBase());
   }
 
   explicit LineLayoutRubyBase(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}
@@ -25,10 +25,10 @@ class LineLayoutRubyBase : public LineLayoutBlockFlow {
   LineLayoutRubyBase() {}
 
  private:
-  LayoutRubyBase* toRubyBase() { return toLayoutRubyBase(layoutObject()); }
+  LayoutRubyBase* ToRubyBase() { return ToLayoutRubyBase(GetLayoutObject()); }
 
-  const LayoutRubyBase* toRubyBase() const {
-    return toLayoutRubyBase(layoutObject());
+  const LayoutRubyBase* ToRubyBase() const {
+    return ToLayoutRubyBase(GetLayoutObject());
   }
 };
 

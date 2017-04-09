@@ -16,159 +16,159 @@
 namespace blink {
 
 IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
-                             const Vector<double> feedforwardCoef,
-                             const Vector<double> feedbackCoef)
+                             const Vector<double> feedforward_coef,
+                             const Vector<double> feedback_coef)
     : AudioNode(context) {
-  setHandler(AudioBasicProcessorHandler::create(
-      AudioHandler::NodeTypeIIRFilter, *this, context.sampleRate(),
-      WTF::wrapUnique(new IIRProcessor(context.sampleRate(), 1, feedforwardCoef,
-                                       feedbackCoef))));
+  SetHandler(AudioBasicProcessorHandler::Create(
+      AudioHandler::kNodeTypeIIRFilter, *this, context.sampleRate(),
+      WTF::WrapUnique(new IIRProcessor(context.sampleRate(), 1,
+                                       feedforward_coef, feedback_coef))));
 
   // Histogram of the IIRFilter order.  createIIRFilter ensures that the length
   // of |feedbackCoef| is in the range [1, IIRFilter::kMaxOrder + 1].  The order
   // is one less than the length of this vector.
-  DEFINE_STATIC_LOCAL(SparseHistogram, filterOrderHistogram,
+  DEFINE_STATIC_LOCAL(SparseHistogram, filter_order_histogram,
                       ("WebAudio.IIRFilterNode.Order"));
 
-  filterOrderHistogram.sample(feedbackCoef.size() - 1);
+  filter_order_histogram.Sample(feedback_coef.size() - 1);
 }
 
-IIRFilterNode* IIRFilterNode::create(BaseAudioContext& context,
-                                     const Vector<double> feedforwardCoef,
-                                     const Vector<double> feedbackCoef,
-                                     ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
+                                     const Vector<double> feedforward_coef,
+                                     const Vector<double> feedback_coef,
+                                     ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
-  if (feedbackCoef.size() == 0 ||
-      (feedbackCoef.size() > IIRFilter::kMaxOrder + 1)) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        ExceptionMessages::indexOutsideRange<size_t>(
-            "number of feedback coefficients", feedbackCoef.size(), 1,
-            ExceptionMessages::InclusiveBound, IIRFilter::kMaxOrder + 1,
-            ExceptionMessages::InclusiveBound));
+  if (feedback_coef.size() == 0 ||
+      (feedback_coef.size() > IIRFilter::kMaxOrder + 1)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange<size_t>(
+            "number of feedback coefficients", feedback_coef.size(), 1,
+            ExceptionMessages::kInclusiveBound, IIRFilter::kMaxOrder + 1,
+            ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
-  if (feedforwardCoef.size() == 0 ||
-      (feedforwardCoef.size() > IIRFilter::kMaxOrder + 1)) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        ExceptionMessages::indexOutsideRange<size_t>(
-            "number of feedforward coefficients", feedforwardCoef.size(), 1,
-            ExceptionMessages::InclusiveBound, IIRFilter::kMaxOrder + 1,
-            ExceptionMessages::InclusiveBound));
+  if (feedforward_coef.size() == 0 ||
+      (feedforward_coef.size() > IIRFilter::kMaxOrder + 1)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange<size_t>(
+            "number of feedforward coefficients", feedforward_coef.size(), 1,
+            ExceptionMessages::kInclusiveBound, IIRFilter::kMaxOrder + 1,
+            ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
-  if (feedbackCoef[0] == 0) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "First feedback coefficient cannot be zero.");
+  if (feedback_coef[0] == 0) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "First feedback coefficient cannot be zero.");
     return nullptr;
   }
 
-  bool hasNonZeroCoef = false;
+  bool has_non_zero_coef = false;
 
-  for (size_t k = 0; k < feedforwardCoef.size(); ++k) {
-    if (feedforwardCoef[k] != 0) {
-      hasNonZeroCoef = true;
+  for (size_t k = 0; k < feedforward_coef.size(); ++k) {
+    if (feedforward_coef[k] != 0) {
+      has_non_zero_coef = true;
       break;
     }
   }
 
-  if (!hasNonZeroCoef) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+  if (!has_non_zero_coef) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "At least one feedforward coefficient must be non-zero.");
     return nullptr;
   }
 
-  return new IIRFilterNode(context, feedforwardCoef, feedbackCoef);
+  return new IIRFilterNode(context, feedforward_coef, feedback_coef);
 }
 
-IIRFilterNode* IIRFilterNode::create(BaseAudioContext* context,
+IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,
                                      const IIRFilterOptions& options,
-                                     ExceptionState& exceptionState) {
+                                     ExceptionState& exception_state) {
   if (!options.hasFeedforward()) {
-    exceptionState.throwDOMException(
-        NotFoundError, "IIRFilterOptions: feedforward is required.");
+    exception_state.ThrowDOMException(
+        kNotFoundError, "IIRFilterOptions: feedforward is required.");
     return nullptr;
   }
 
   if (!options.hasFeedback()) {
-    exceptionState.throwDOMException(NotFoundError,
-                                     "IIRFilterOptions: feedback is required.");
+    exception_state.ThrowDOMException(
+        kNotFoundError, "IIRFilterOptions: feedback is required.");
     return nullptr;
   }
 
-  IIRFilterNode* node = create(*context, options.feedforward(),
-                               options.feedback(), exceptionState);
+  IIRFilterNode* node = Create(*context, options.feedforward(),
+                               options.feedback(), exception_state);
 
   if (!node)
     return nullptr;
 
-  node->handleChannelOptions(options, exceptionState);
+  node->HandleChannelOptions(options, exception_state);
 
   return node;
 }
 
 DEFINE_TRACE(IIRFilterNode) {
-  AudioNode::trace(visitor);
+  AudioNode::Trace(visitor);
 }
 
-IIRProcessor* IIRFilterNode::iirProcessor() const {
+IIRProcessor* IIRFilterNode::IirProcessor() const {
   return static_cast<IIRProcessor*>(
-      static_cast<AudioBasicProcessorHandler&>(handler()).processor());
+      static_cast<AudioBasicProcessorHandler&>(Handler()).Processor());
 }
 
-void IIRFilterNode::getFrequencyResponse(const DOMFloat32Array* frequencyHz,
-                                         DOMFloat32Array* magResponse,
-                                         DOMFloat32Array* phaseResponse,
-                                         ExceptionState& exceptionState) {
-  if (!frequencyHz) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "frequencyHz array cannot be null");
+void IIRFilterNode::getFrequencyResponse(const DOMFloat32Array* frequency_hz,
+                                         DOMFloat32Array* mag_response,
+                                         DOMFloat32Array* phase_response,
+                                         ExceptionState& exception_state) {
+  if (!frequency_hz) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "frequencyHz array cannot be null");
     return;
   }
 
-  if (!magResponse) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "magResponse array cannot be null");
+  if (!mag_response) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "magResponse array cannot be null");
     return;
   }
 
-  if (!phaseResponse) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "phaseResponse array cannot be null");
+  if (!phase_response) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "phaseResponse array cannot be null");
     return;
   }
 
-  unsigned frequencyHzLength = frequencyHz->length();
+  unsigned frequency_hz_length = frequency_hz->length();
 
-  if (magResponse->length() < frequencyHzLength) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        ExceptionMessages::indexExceedsMinimumBound(
-            "magResponse length", magResponse->length(), frequencyHzLength));
+  if (mag_response->length() < frequency_hz_length) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        ExceptionMessages::IndexExceedsMinimumBound(
+            "magResponse length", mag_response->length(), frequency_hz_length));
     return;
   }
 
-  if (phaseResponse->length() < frequencyHzLength) {
-    exceptionState.throwDOMException(
-        NotSupportedError, ExceptionMessages::indexExceedsMinimumBound(
-                               "phaseResponse length", phaseResponse->length(),
-                               frequencyHzLength));
+  if (phase_response->length() < frequency_hz_length) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, ExceptionMessages::IndexExceedsMinimumBound(
+                                "phaseResponse length",
+                                phase_response->length(), frequency_hz_length));
     return;
   }
 
-  iirProcessor()->getFrequencyResponse(frequencyHzLength, frequencyHz->data(),
-                                       magResponse->data(),
-                                       phaseResponse->data());
+  IirProcessor()->GetFrequencyResponse(
+      frequency_hz_length, frequency_hz->Data(), mag_response->Data(),
+      phase_response->Data());
 }
 
 }  // namespace blink

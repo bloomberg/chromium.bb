@@ -68,12 +68,12 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
 
     const QueuedWebInputEvent& other_event =
         static_cast<const QueuedWebInputEvent&>(other_task);
-    if (other_event.event().type() ==
-        blink::WebInputEvent::TouchScrollStarted) {
+    if (other_event.event().GetType() ==
+        blink::WebInputEvent::kTouchScrollStarted) {
       return HandleTouchScrollStartQueued();
     }
 
-    if (!event().isSameEventClass(other_event.event()))
+    if (!event().IsSameEventClass(other_event.event()))
       return FilterResult::KeepIterating;
 
     if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(other_event))
@@ -158,19 +158,19 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   FilterResult HandleTouchScrollStartQueued() {
     // A TouchScrollStart will queued after this touch move which will make all
     // previous touch moves that are queued uncancelable.
-    switch (event().type()) {
-      case blink::WebInputEvent::TouchMove: {
+    switch (event().GetType()) {
+      case blink::WebInputEvent::kTouchMove: {
         blink::WebTouchEvent& touch_event =
             static_cast<blink::WebTouchEvent&>(event());
-        if (touch_event.dispatchType ==
-            blink::WebInputEvent::DispatchType::Blocking) {
-          touch_event.dispatchType =
-              blink::WebInputEvent::DispatchType::EventNonBlocking;
+        if (touch_event.dispatch_type ==
+            blink::WebInputEvent::DispatchType::kBlocking) {
+          touch_event.dispatch_type =
+              blink::WebInputEvent::DispatchType::kEventNonBlocking;
         }
         return FilterResult::KeepIterating;
       }
-      case blink::WebInputEvent::TouchStart:
-      case blink::WebInputEvent::TouchEnd:
+      case blink::WebInputEvent::kTouchStart:
+      case blink::WebInputEvent::kTouchEnd:
         return FilterResult::StopIterating;
       default:
         return FilterResult::KeepIterating;
@@ -191,10 +191,10 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   }
 
   bool IsContinuousEvent() const {
-    switch (event().type()) {
-      case blink::WebInputEvent::MouseMove:
-      case blink::WebInputEvent::MouseWheel:
-      case blink::WebInputEvent::TouchMove:
+    switch (event().GetType()) {
+      case blink::WebInputEvent::kMouseMove:
+      case blink::WebInputEvent::kMouseWheel:
+      case blink::WebInputEvent::kTouchMove:
         return true;
       default:
         return false;
@@ -230,11 +230,11 @@ bool IsAsyncTouchMove(
     return false;
   const QueuedWebInputEvent* event =
       static_cast<const QueuedWebInputEvent*>(queued_item.get());
-  if (event->event().type() != blink::WebInputEvent::TouchMove)
+  if (event->event().GetType() != blink::WebInputEvent::kTouchMove)
     return false;
   const blink::WebTouchEvent& touch_event =
       static_cast<const blink::WebTouchEvent&>(event->event());
-  return touch_event.movedBeyondSlopRegion && !event->originallyCancelable();
+  return touch_event.moved_beyond_slop_region && !event->originallyCancelable();
 }
 
 }  // namespace
@@ -298,8 +298,8 @@ bool MainThreadEventQueue::HandleEvent(
 
   bool non_blocking = original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING ||
                       ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
-  bool is_wheel = event->type() == blink::WebInputEvent::MouseWheel;
-  bool is_touch = blink::WebInputEvent::isTouchEventType(event->type());
+  bool is_wheel = event->GetType() == blink::WebInputEvent::kMouseWheel;
+  bool is_touch = blink::WebInputEvent::IsTouchEventType(event->GetType());
   bool originally_cancelable = false;
 
   if (is_touch) {
@@ -307,45 +307,45 @@ bool MainThreadEventQueue::HandleEvent(
         static_cast<blink::WebTouchEvent*>(event.get());
 
     originally_cancelable =
-        touch_event->dispatchType == blink::WebInputEvent::Blocking;
+        touch_event->dispatch_type == blink::WebInputEvent::kBlocking;
 
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
     if (non_blocking) {
-      touch_event->dispatchType =
-          blink::WebInputEvent::ListenersNonBlockingPassive;
+      touch_event->dispatch_type =
+          blink::WebInputEvent::kListenersNonBlockingPassive;
     }
-    if (touch_event->type() == blink::WebInputEvent::TouchStart)
+    if (touch_event->GetType() == blink::WebInputEvent::kTouchStart)
       last_touch_start_forced_nonblocking_due_to_fling_ = false;
 
     if (enable_fling_passive_listener_flag_ &&
-        touch_event->touchStartOrFirstTouchMove &&
-        touch_event->dispatchType == blink::WebInputEvent::Blocking) {
+        touch_event->touch_start_or_first_touch_move &&
+        touch_event->dispatch_type == blink::WebInputEvent::kBlocking) {
       // If the touch start is forced to be passive due to fling, its following
       // touch move should also be passive.
       if (ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
           last_touch_start_forced_nonblocking_due_to_fling_) {
-        touch_event->dispatchType =
-            blink::WebInputEvent::ListenersForcedNonBlockingDueToFling;
+        touch_event->dispatch_type =
+            blink::WebInputEvent::kListenersForcedNonBlockingDueToFling;
         non_blocking = true;
         last_touch_start_forced_nonblocking_due_to_fling_ = true;
       }
     }
 
     if (enable_non_blocking_due_to_main_thread_responsiveness_flag_ &&
-        touch_event->dispatchType == blink::WebInputEvent::Blocking) {
+        touch_event->dispatch_type == blink::WebInputEvent::kBlocking) {
       bool passive_due_to_unresponsive_main =
           renderer_scheduler_->MainThreadSeemsUnresponsive(
               main_thread_responsiveness_threshold_);
       if (passive_due_to_unresponsive_main) {
-        touch_event->dispatchType = blink::WebInputEvent::
-            ListenersForcedNonBlockingDueToMainThreadResponsiveness;
+        touch_event->dispatch_type = blink::WebInputEvent::
+            kListenersForcedNonBlockingDueToMainThreadResponsiveness;
         non_blocking = true;
       }
     }
     // If the event is non-cancelable ACK it right away.
     if (!non_blocking &&
-        touch_event->dispatchType != blink::WebInputEvent::Blocking)
+        touch_event->dispatch_type != blink::WebInputEvent::kBlocking)
       non_blocking = true;
   }
 
@@ -353,12 +353,12 @@ bool MainThreadEventQueue::HandleEvent(
     blink::WebMouseWheelEvent* wheel_event =
         static_cast<blink::WebMouseWheelEvent*>(event.get());
     originally_cancelable =
-        wheel_event->dispatchType == blink::WebInputEvent::Blocking;
+        wheel_event->dispatch_type == blink::WebInputEvent::kBlocking;
     if (non_blocking) {
       // Adjust the |dispatchType| on the event since the compositor
       // determined all event listeners are passive.
-      wheel_event->dispatchType =
-          blink::WebInputEvent::ListenersNonBlockingPassive;
+      wheel_event->dispatch_type =
+          blink::WebInputEvent::kListenersNonBlockingPassive;
     }
   }
 
@@ -539,11 +539,11 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     return false;
   const QueuedWebInputEvent* event =
       static_cast<const QueuedWebInputEvent*>(item.get());
-  switch (event->event().type()) {
-    case blink::WebInputEvent::MouseMove:
-    case blink::WebInputEvent::MouseWheel:
+  switch (event->event().GetType()) {
+    case blink::WebInputEvent::kMouseMove:
+    case blink::WebInputEvent::kMouseWheel:
       return handle_raf_aligned_mouse_input_;
-    case blink::WebInputEvent::TouchMove:
+    case blink::WebInputEvent::kTouchMove:
       return handle_raf_aligned_touch_input_;
     default:
       return false;

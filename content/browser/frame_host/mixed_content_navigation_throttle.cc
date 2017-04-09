@@ -186,13 +186,14 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       handle_impl->mixed_content_context_type();
 
   if (!ShouldTreatURLSchemeAsCORSEnabled(handle_impl->GetURL()))
-    mixed_context_type = blink::WebMixedContentContextType::OptionallyBlockable;
+    mixed_context_type =
+        blink::WebMixedContentContextType::kOptionallyBlockable;
 
   bool allowed = false;
   RenderFrameHostDelegate* frame_host_delegate =
       node->current_frame_host()->delegate();
   switch (mixed_context_type) {
-    case blink::WebMixedContentContextType::OptionallyBlockable:
+    case blink::WebMixedContentContextType::kOptionallyBlockable:
       allowed = !strict_mode;
       if (allowed) {
         frame_host_delegate->PassiveInsecureContentFound(handle_impl->GetURL());
@@ -200,7 +201,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       }
       break;
 
-    case blink::WebMixedContentContextType::Blockable: {
+    case blink::WebMixedContentContextType::kBlockable: {
       // Note: from the renderer side implementation it seems like we don't need
       // to care about reporting
       // blink::UseCounter::BlockableMixedContentInSubframeBlocked because it is
@@ -226,13 +227,13 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       break;
     }
 
-    case blink::WebMixedContentContextType::ShouldBeBlockable:
+    case blink::WebMixedContentContextType::kShouldBeBlockable:
       allowed = !strict_mode;
       if (allowed)
         frame_host_delegate->DidDisplayInsecureContent();
       break;
 
-    case blink::WebMixedContentContextType::NotMixedContent:
+    case blink::WebMixedContentContextType::kNotMixedContent:
       NOTREACHED();
       break;
   };
@@ -318,7 +319,7 @@ void MixedContentNavigationThrottle::ReportBasicMixedContentFeatures(
 
   // Report any blockable content.
   if (mixed_content_context_type ==
-      blink::WebMixedContentContextType::Blockable) {
+      blink::WebMixedContentContextType::kBlockable) {
     mixed_content_features_.insert(MIXED_CONTENT_BLOCKABLE);
     return;
   }

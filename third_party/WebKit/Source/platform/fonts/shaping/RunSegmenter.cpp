@@ -15,88 +15,92 @@
 namespace blink {
 
 RunSegmenter::RunSegmenter(const UChar* buffer,
-                           unsigned bufferSize,
-                           FontOrientation runOrientation)
-    : m_bufferSize(bufferSize),
-      m_candidateRange(nullRange()),
-      m_scriptRunIterator(
-          WTF::makeUnique<ScriptRunIterator>(buffer, bufferSize)),
-      m_orientationIterator(
-          runOrientation == FontOrientation::VerticalMixed
-              ? WTF::wrapUnique(
-                    new OrientationIterator(buffer, bufferSize, runOrientation))
+                           unsigned buffer_size,
+                           FontOrientation run_orientation)
+    : buffer_size_(buffer_size),
+      candidate_range_(NullRange()),
+      script_run_iterator_(
+          WTF::MakeUnique<ScriptRunIterator>(buffer, buffer_size)),
+      orientation_iterator_(
+          run_orientation == FontOrientation::kVerticalMixed
+              ? WTF::WrapUnique(new OrientationIterator(buffer,
+                                                        buffer_size,
+                                                        run_orientation))
               : nullptr),
-      m_symbolsIterator(WTF::makeUnique<SymbolsIterator>(buffer, bufferSize)),
-      m_lastSplit(0),
-      m_scriptRunIteratorPosition(0),
-      m_orientationIteratorPosition(
-          runOrientation == FontOrientation::VerticalMixed ? 0 : m_bufferSize),
-      m_symbolsIteratorPosition(0),
-      m_atEnd(false) {}
+      symbols_iterator_(WTF::MakeUnique<SymbolsIterator>(buffer, buffer_size)),
+      last_split_(0),
+      script_run_iterator_position_(0),
+      orientation_iterator_position_(
+          run_orientation == FontOrientation::kVerticalMixed ? 0
+                                                             : buffer_size_),
+      symbols_iterator_position_(0),
+      at_end_(false) {}
 
-void RunSegmenter::consumeScriptIteratorPastLastSplit() {
-  ASSERT(m_scriptRunIterator);
-  if (m_scriptRunIteratorPosition <= m_lastSplit &&
-      m_scriptRunIteratorPosition < m_bufferSize) {
-    while (m_scriptRunIterator->consume(m_scriptRunIteratorPosition,
-                                        m_candidateRange.script)) {
-      if (m_scriptRunIteratorPosition > m_lastSplit)
+void RunSegmenter::ConsumeScriptIteratorPastLastSplit() {
+  ASSERT(script_run_iterator_);
+  if (script_run_iterator_position_ <= last_split_ &&
+      script_run_iterator_position_ < buffer_size_) {
+    while (script_run_iterator_->Consume(script_run_iterator_position_,
+                                         candidate_range_.script)) {
+      if (script_run_iterator_position_ > last_split_)
         return;
     }
   }
 }
 
-void RunSegmenter::consumeOrientationIteratorPastLastSplit() {
-  if (m_orientationIterator && m_orientationIteratorPosition <= m_lastSplit &&
-      m_orientationIteratorPosition < m_bufferSize) {
-    while (m_orientationIterator->consume(
-        &m_orientationIteratorPosition, &m_candidateRange.renderOrientation)) {
-      if (m_orientationIteratorPosition > m_lastSplit)
+void RunSegmenter::ConsumeOrientationIteratorPastLastSplit() {
+  if (orientation_iterator_ && orientation_iterator_position_ <= last_split_ &&
+      orientation_iterator_position_ < buffer_size_) {
+    while (
+        orientation_iterator_->Consume(&orientation_iterator_position_,
+                                       &candidate_range_.render_orientation)) {
+      if (orientation_iterator_position_ > last_split_)
         return;
     }
   }
 }
 
-void RunSegmenter::consumeSymbolsIteratorPastLastSplit() {
-  ASSERT(m_symbolsIterator);
-  if (m_symbolsIteratorPosition <= m_lastSplit &&
-      m_symbolsIteratorPosition < m_bufferSize) {
-    while (m_symbolsIterator->consume(&m_symbolsIteratorPosition,
-                                      &m_candidateRange.fontFallbackPriority)) {
-      if (m_symbolsIteratorPosition > m_lastSplit)
+void RunSegmenter::ConsumeSymbolsIteratorPastLastSplit() {
+  ASSERT(symbols_iterator_);
+  if (symbols_iterator_position_ <= last_split_ &&
+      symbols_iterator_position_ < buffer_size_) {
+    while (
+        symbols_iterator_->Consume(&symbols_iterator_position_,
+                                   &candidate_range_.font_fallback_priority)) {
+      if (symbols_iterator_position_ > last_split_)
         return;
     }
   }
 }
 
-bool RunSegmenter::consume(RunSegmenterRange* nextRange) {
-  if (m_atEnd || !m_bufferSize)
+bool RunSegmenter::Consume(RunSegmenterRange* next_range) {
+  if (at_end_ || !buffer_size_)
     return false;
 
-  consumeScriptIteratorPastLastSplit();
-  consumeOrientationIteratorPastLastSplit();
-  consumeSymbolsIteratorPastLastSplit();
+  ConsumeScriptIteratorPastLastSplit();
+  ConsumeOrientationIteratorPastLastSplit();
+  ConsumeSymbolsIteratorPastLastSplit();
 
-  if (m_scriptRunIteratorPosition <= m_orientationIteratorPosition &&
-      m_scriptRunIteratorPosition <= m_symbolsIteratorPosition) {
-    m_lastSplit = m_scriptRunIteratorPosition;
+  if (script_run_iterator_position_ <= orientation_iterator_position_ &&
+      script_run_iterator_position_ <= symbols_iterator_position_) {
+    last_split_ = script_run_iterator_position_;
   }
 
-  if (m_orientationIteratorPosition <= m_scriptRunIteratorPosition &&
-      m_orientationIteratorPosition <= m_symbolsIteratorPosition) {
-    m_lastSplit = m_orientationIteratorPosition;
+  if (orientation_iterator_position_ <= script_run_iterator_position_ &&
+      orientation_iterator_position_ <= symbols_iterator_position_) {
+    last_split_ = orientation_iterator_position_;
   }
 
-  if (m_symbolsIteratorPosition <= m_scriptRunIteratorPosition &&
-      m_symbolsIteratorPosition <= m_orientationIteratorPosition) {
-    m_lastSplit = m_symbolsIteratorPosition;
+  if (symbols_iterator_position_ <= script_run_iterator_position_ &&
+      symbols_iterator_position_ <= orientation_iterator_position_) {
+    last_split_ = symbols_iterator_position_;
   }
 
-  m_candidateRange.start = m_candidateRange.end;
-  m_candidateRange.end = m_lastSplit;
-  *nextRange = m_candidateRange;
+  candidate_range_.start = candidate_range_.end;
+  candidate_range_.end = last_split_;
+  *next_range = candidate_range_;
 
-  m_atEnd = m_lastSplit == m_bufferSize;
+  at_end_ = last_split_ == buffer_size_;
   return true;
 }
 

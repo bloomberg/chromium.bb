@@ -35,84 +35,84 @@ namespace blink {
 
 namespace {
 
-void domExceptionStackGetter(v8::Local<v8::Name> name,
+void DomExceptionStackGetter(v8::Local<v8::Name> name,
                              const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Value> value;
   if (info.Data()
           .As<v8::Object>()
-          ->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack"))
+          ->Get(isolate->GetCurrentContext(), V8AtomicString(isolate, "stack"))
           .ToLocal(&value))
-    v8SetReturnValue(info, value);
+    V8SetReturnValue(info, value);
 }
 
-void domExceptionStackSetter(v8::Local<v8::Name> name,
+void DomExceptionStackSetter(v8::Local<v8::Name> name,
                              v8::Local<v8::Value> value,
                              const v8::PropertyCallbackInfo<void>& info) {
   v8::Maybe<bool> unused = info.Data().As<v8::Object>()->Set(
       info.GetIsolate()->GetCurrentContext(),
-      v8AtomicString(info.GetIsolate(), "stack"), value);
+      V8AtomicString(info.GetIsolate(), "stack"), value);
   ALLOW_UNUSED_LOCAL(unused);
 }
 
 }  // namespace
 
-v8::Local<v8::Value> V8ThrowException::createDOMException(
+v8::Local<v8::Value> V8ThrowException::CreateDOMException(
     v8::Isolate* isolate,
-    ExceptionCode exceptionCode,
-    const String& sanitizedMessage,
-    const String& unsanitizedMessage) {
-  DCHECK_GT(exceptionCode, 0);
-  DCHECK(exceptionCode == SecurityError || unsanitizedMessage.isNull());
+    ExceptionCode exception_code,
+    const String& sanitized_message,
+    const String& unsanitized_message) {
+  DCHECK_GT(exception_code, 0);
+  DCHECK(exception_code == kSecurityError || unsanitized_message.IsNull());
 
   if (isolate->IsExecutionTerminating())
     return v8::Local<v8::Value>();
 
-  switch (exceptionCode) {
-    case V8Error:
-      return createError(isolate, sanitizedMessage);
-    case V8TypeError:
-      return createTypeError(isolate, sanitizedMessage);
-    case V8RangeError:
-      return createRangeError(isolate, sanitizedMessage);
-    case V8SyntaxError:
-      return createSyntaxError(isolate, sanitizedMessage);
-    case V8ReferenceError:
-      return createReferenceError(isolate, sanitizedMessage);
+  switch (exception_code) {
+    case kV8Error:
+      return CreateError(isolate, sanitized_message);
+    case kV8TypeError:
+      return CreateTypeError(isolate, sanitized_message);
+    case kV8RangeError:
+      return CreateRangeError(isolate, sanitized_message);
+    case kV8SyntaxError:
+      return CreateSyntaxError(isolate, sanitized_message);
+    case kV8ReferenceError:
+      return CreateReferenceError(isolate, sanitized_message);
   }
 
-  DOMException* domException =
-      DOMException::create(exceptionCode, sanitizedMessage, unsanitizedMessage);
-  v8::Local<v8::Object> exceptionObj =
-      ToV8(domException, isolate->GetCurrentContext()->Global(), isolate)
+  DOMException* dom_exception = DOMException::Create(
+      exception_code, sanitized_message, unsanitized_message);
+  v8::Local<v8::Object> exception_obj =
+      ToV8(dom_exception, isolate->GetCurrentContext()->Global(), isolate)
           .As<v8::Object>();
   // Attach an Error object to the DOMException. This is then lazily used to
   // get the stack value.
   v8::Local<v8::Value> error =
-      v8::Exception::Error(v8String(isolate, domException->message()));
-  exceptionObj
+      v8::Exception::Error(V8String(isolate, dom_exception->message()));
+  exception_obj
       ->SetAccessor(isolate->GetCurrentContext(),
-                    v8AtomicString(isolate, "stack"), domExceptionStackGetter,
-                    domExceptionStackSetter, error)
+                    V8AtomicString(isolate, "stack"), DomExceptionStackGetter,
+                    DomExceptionStackSetter, error)
       .ToChecked();
 
-  auto privateError = V8PrivateProperty::getDOMExceptionError(isolate);
-  privateError.set(exceptionObj, error);
+  auto private_error = V8PrivateProperty::GetDOMExceptionError(isolate);
+  private_error.Set(exception_obj, error);
 
-  return exceptionObj;
+  return exception_obj;
 }
 
 #define DEFINE_CREATE_AND_THROW_ERROR_FUNC(blinkErrorType, v8ErrorType,  \
                                            defaultMessage)               \
-  v8::Local<v8::Value> V8ThrowException::create##blinkErrorType(         \
+  v8::Local<v8::Value> V8ThrowException::Create##blinkErrorType(         \
       v8::Isolate* isolate, const String& message) {                     \
     return v8::Exception::v8ErrorType(                                   \
-        v8String(isolate, message.isNull() ? defaultMessage : message)); \
+        V8String(isolate, message.IsNull() ? defaultMessage : message)); \
   }                                                                      \
                                                                          \
-  void V8ThrowException::throw##blinkErrorType(v8::Isolate * isolate,    \
+  void V8ThrowException::Throw##blinkErrorType(v8::Isolate* isolate,     \
                                                const String& message) {  \
-    throwException(isolate, create##blinkErrorType(isolate, message));   \
+    ThrowException(isolate, Create##blinkErrorType(isolate, message));   \
   }
 
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(Error, Error, "Error")

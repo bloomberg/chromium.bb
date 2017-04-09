@@ -17,14 +17,14 @@ class TestPresentationConnection : public blink::WebPresentationConnection {
   TestPresentationConnection();
   ~TestPresentationConnection();
 
-  void bindProxy(
+  void BindProxy(
       std::unique_ptr<blink::WebPresentationConnectionProxy> proxy) override;
 
-  MOCK_METHOD1(didReceiveTextMessage, void(const blink::WebString& message));
-  MOCK_METHOD2(didReceiveBinaryMessage,
+  MOCK_METHOD1(DidReceiveTextMessage, void(const blink::WebString& message));
+  MOCK_METHOD2(DidReceiveBinaryMessage,
                void(const uint8_t* data, size_t length));
-  MOCK_METHOD1(didChangeState, void(blink::WebPresentationConnectionState));
-  MOCK_METHOD0(didClose, void());
+  MOCK_METHOD1(DidChangeState, void(blink::WebPresentationConnectionState));
+  MOCK_METHOD0(DidClose, void());
 
   blink::WebPresentationConnectionProxy* proxy();
 

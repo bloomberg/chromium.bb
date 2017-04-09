@@ -179,10 +179,10 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   WTF::Optional<LayoutUnit> clearance_offset =
-      is_new_fc_ ? WTF::nullopt : clearance_offset_;
+      is_new_fc_ ? WTF::kNullopt : clearance_offset_;
 
   if (is_in_parallel_flow) {
-    return adoptRef(new NGConstraintSpace(
+    return AdoptRef(new NGConstraintSpace(
         static_cast<NGWritingMode>(out_writing_mode),
         static_cast<TextDirection>(text_direction_), available_size,
         percentage_resolution_size, initial_containing_block_size_,
@@ -193,7 +193,7 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
         is_anonymous_, margin_strut, bfc_offset, exclusions, clearance_offset));
   }
-  return adoptRef(new NGConstraintSpace(
+  return AdoptRef(new NGConstraintSpace(
       out_writing_mode, static_cast<TextDirection>(text_direction_),
       available_size, percentage_resolution_size,
       initial_containing_block_size_, fragmentainer_space_available_,

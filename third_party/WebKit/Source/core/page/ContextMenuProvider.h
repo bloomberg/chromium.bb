@@ -44,9 +44,9 @@ class ContextMenuProvider
   virtual ~ContextMenuProvider() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  virtual void populateContextMenu(ContextMenu*) = 0;
-  virtual void contextMenuItemSelected(const ContextMenuItem*) = 0;
-  virtual void contextMenuCleared() = 0;
+  virtual void PopulateContextMenu(ContextMenu*) = 0;
+  virtual void ContextMenuItemSelected(const ContextMenuItem*) = 0;
+  virtual void ContextMenuCleared() = 0;
 };
 
 }  // namespace blink

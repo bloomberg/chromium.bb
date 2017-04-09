@@ -42,7 +42,7 @@ class PLATFORM_EXPORT FFTConvolver {
 
  public:
   // fftSize must be a power of two
-  FFTConvolver(size_t fftSize);
+  FFTConvolver(size_t fft_size);
 
   // For now, with multiple calls to Process(), framesToProcess MUST add up
   // EXACTLY to fftSize / 2
@@ -53,28 +53,28 @@ class PLATFORM_EXPORT FFTConvolver {
   // The input to output latency is equal to fftSize / 2
   //
   // Processing in-place is allowed...
-  void process(FFTFrame* fftKernel,
-               const float* sourceP,
-               float* destP,
-               size_t framesToProcess);
+  void Process(FFTFrame* fft_kernel,
+               const float* source_p,
+               float* dest_p,
+               size_t frames_to_process);
 
-  void reset();
+  void Reset();
 
-  size_t fftSize() const { return m_frame.fftSize(); }
+  size_t FftSize() const { return frame_.FftSize(); }
 
  private:
-  FFTFrame m_frame;
+  FFTFrame frame_;
 
   // Buffer input until we get fftSize / 2 samples then do an FFT
-  size_t m_readWriteIndex;
-  AudioFloatArray m_inputBuffer;
+  size_t read_write_index_;
+  AudioFloatArray input_buffer_;
 
   // Stores output which we read a little at a time
-  AudioFloatArray m_outputBuffer;
+  AudioFloatArray output_buffer_;
 
   // Saves the 2nd half of the FFT buffer, so we can do an overlap-add with the
   // 1st half of the next one
-  AudioFloatArray m_lastOverlapBuffer;
+  AudioFloatArray last_overlap_buffer_;
 };
 
 }  // namespace blink

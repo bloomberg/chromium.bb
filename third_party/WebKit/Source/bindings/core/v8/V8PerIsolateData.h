@@ -62,7 +62,7 @@ class CORE_EXPORT V8PerIsolateData {
 
    public:
     virtual ~EndOfScopeTask() {}
-    virtual void run() = 0;
+    virtual void Run() = 0;
   };
 
   // Disables the UseCounter.
@@ -75,18 +75,19 @@ class CORE_EXPORT V8PerIsolateData {
     STACK_ALLOCATED();
 
    public:
-    explicit UseCounterDisabledScope(V8PerIsolateData* perIsolateData)
-        : m_perIsolateData(perIsolateData),
-          m_originalUseCounterDisabled(m_perIsolateData->m_useCounterDisabled) {
-      m_perIsolateData->m_useCounterDisabled = true;
+    explicit UseCounterDisabledScope(V8PerIsolateData* per_isolate_data)
+        : per_isolate_data_(per_isolate_data),
+          original_use_counter_disabled_(
+              per_isolate_data_->use_counter_disabled_) {
+      per_isolate_data_->use_counter_disabled_ = true;
     }
     ~UseCounterDisabledScope() {
-      m_perIsolateData->m_useCounterDisabled = m_originalUseCounterDisabled;
+      per_isolate_data_->use_counter_disabled_ = original_use_counter_disabled_;
     }
 
    private:
-    V8PerIsolateData* m_perIsolateData;
-    const bool m_originalUseCounterDisabled;
+    V8PerIsolateData* per_isolate_data_;
+    const bool original_use_counter_disabled_;
   };
 
   // Use this class to abstract away types of members that are pointers to core/
@@ -97,52 +98,52 @@ class CORE_EXPORT V8PerIsolateData {
     virtual ~Data() = default;
   };
 
-  static v8::Isolate* initialize(WebTaskRunner*);
+  static v8::Isolate* Initialize(WebTaskRunner*);
 
-  static V8PerIsolateData* from(v8::Isolate* isolate) {
+  static V8PerIsolateData* From(v8::Isolate* isolate) {
     ASSERT(isolate);
     ASSERT(isolate->GetData(gin::kEmbedderBlink));
     return static_cast<V8PerIsolateData*>(
         isolate->GetData(gin::kEmbedderBlink));
   }
 
-  static void willBeDestroyed(v8::Isolate*);
-  static void destroy(v8::Isolate*);
-  static v8::Isolate* mainThreadIsolate();
+  static void WillBeDestroyed(v8::Isolate*);
+  static void Destroy(v8::Isolate*);
+  static v8::Isolate* MainThreadIsolate();
 
-  static void enableIdleTasks(v8::Isolate*,
+  static void EnableIdleTasks(v8::Isolate*,
                               std::unique_ptr<gin::V8IdleTaskRunner>);
 
-  v8::Isolate* isolate() { return m_isolateHolder.isolate(); }
+  v8::Isolate* GetIsolate() { return isolate_holder_.isolate(); }
 
-  StringCache* getStringCache() { return m_stringCache.get(); }
+  StringCache* GetStringCache() { return string_cache_.get(); }
 
-  v8::Persistent<v8::Value>& ensureLiveRoot();
+  v8::Persistent<v8::Value>& EnsureLiveRoot();
 
-  bool isHandlingRecursionLevelError() const {
-    return m_isHandlingRecursionLevelError;
+  bool IsHandlingRecursionLevelError() const {
+    return is_handling_recursion_level_error_;
   }
-  void setIsHandlingRecursionLevelError(bool value) {
-    m_isHandlingRecursionLevelError = value;
+  void SetIsHandlingRecursionLevelError(bool value) {
+    is_handling_recursion_level_error_ = value;
   }
 
-  bool isReportingException() const { return m_isReportingException; }
-  void setReportingException(bool value) { m_isReportingException = value; }
+  bool IsReportingException() const { return is_reporting_exception_; }
+  void SetReportingException(bool value) { is_reporting_exception_ = value; }
 
-  bool isUseCounterDisabled() const { return m_useCounterDisabled; }
+  bool IsUseCounterDisabled() const { return use_counter_disabled_; }
 
-  V8PrivateProperty* privateProperty() { return m_privateProperty.get(); }
+  V8PrivateProperty* PrivateProperty() { return private_property_.get(); }
 
   // Accessors to the cache of interface templates.
-  v8::Local<v8::FunctionTemplate> findInterfaceTemplate(const DOMWrapperWorld&,
+  v8::Local<v8::FunctionTemplate> FindInterfaceTemplate(const DOMWrapperWorld&,
                                                         const void* key);
-  void setInterfaceTemplate(const DOMWrapperWorld&,
+  void SetInterfaceTemplate(const DOMWrapperWorld&,
                             const void* key,
                             v8::Local<v8::FunctionTemplate>);
 
   // Accessor to the cache of cross-origin accessible operation's templates.
   // Created templates get automatically cached.
-  v8::Local<v8::FunctionTemplate> findOrCreateOperationTemplate(
+  v8::Local<v8::FunctionTemplate> FindOrCreateOperationTemplate(
       const DOMWrapperWorld&,
       const void* key,
       v8::FunctionCallback,
@@ -154,34 +155,34 @@ class CORE_EXPORT V8PerIsolateData {
   // yet exist, it is created from the given array of strings. Once created,
   // these live for as long as the isolate, so this is appropriate only for a
   // compile-time list of related names, such as IDL dictionary keys.
-  const v8::Eternal<v8::Name>* findOrCreateEternalNameCache(
-      const void* lookupKey,
+  const v8::Eternal<v8::Name>* FindOrCreateEternalNameCache(
+      const void* lookup_key,
       const char* const names[],
       size_t count);
 
-  bool hasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>);
-  v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*,
+  bool HasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>);
+  v8::Local<v8::Object> FindInstanceInPrototypeChain(const WrapperTypeInfo*,
                                                      v8::Local<v8::Value>);
 
-  v8::Local<v8::Context> ensureScriptRegexpContext();
-  void clearScriptRegexpContext();
+  v8::Local<v8::Context> EnsureScriptRegexpContext();
+  void ClearScriptRegexpContext();
 
   // EndOfScopeTasks are run when control is returning
   // to C++ from script, after executing a script task (e.g. callback,
   // event) or microtasks (e.g. promise). This is explicitly needed for
   // Indexed DB transactions per spec, but should in general be avoided.
-  void addEndOfScopeTask(std::unique_ptr<EndOfScopeTask>);
-  void runEndOfScopeTasks();
-  void clearEndOfScopeTasks();
+  void AddEndOfScopeTask(std::unique_ptr<EndOfScopeTask>);
+  void RunEndOfScopeTasks();
+  void ClearEndOfScopeTasks();
 
-  void setThreadDebugger(std::unique_ptr<Data>);
-  Data* threadDebugger();
+  void SetThreadDebugger(std::unique_ptr<Data>);
+  Data* ThreadDebugger();
 
   using ActiveScriptWrappableSet =
       HeapHashSet<WeakMember<ActiveScriptWrappableBase>>;
-  void addActiveScriptWrappable(ActiveScriptWrappableBase*);
-  const ActiveScriptWrappableSet* activeScriptWrappables() const {
-    return m_activeScriptWrappables.get();
+  void AddActiveScriptWrappable(ActiveScriptWrappableBase*);
+  const ActiveScriptWrappableSet* ActiveScriptWrappables() const {
+    return active_script_wrappables_.Get();
   }
 
   class CORE_EXPORT TemporaryScriptWrappableVisitorScope {
@@ -192,31 +193,31 @@ class CORE_EXPORT V8PerIsolateData {
     TemporaryScriptWrappableVisitorScope(
         v8::Isolate* isolate,
         std::unique_ptr<ScriptWrappableVisitor> visitor)
-        : m_isolate(isolate), m_savedVisitor(std::move(visitor)) {
-      swapWithV8PerIsolateDataVisitor(m_savedVisitor);
+        : isolate_(isolate), saved_visitor_(std::move(visitor)) {
+      SwapWithV8PerIsolateDataVisitor(saved_visitor_);
     }
     ~TemporaryScriptWrappableVisitorScope() {
-      swapWithV8PerIsolateDataVisitor(m_savedVisitor);
+      SwapWithV8PerIsolateDataVisitor(saved_visitor_);
     }
 
-    inline ScriptWrappableVisitor* currentVisitor() {
-      return V8PerIsolateData::from(m_isolate)->scriptWrappableVisitor();
+    inline ScriptWrappableVisitor* CurrentVisitor() {
+      return V8PerIsolateData::From(isolate_)->GetScriptWrappableVisitor();
     }
 
    private:
-    void swapWithV8PerIsolateDataVisitor(
+    void SwapWithV8PerIsolateDataVisitor(
         std::unique_ptr<ScriptWrappableVisitor>&);
 
-    v8::Isolate* m_isolate;
-    std::unique_ptr<ScriptWrappableVisitor> m_savedVisitor;
+    v8::Isolate* isolate_;
+    std::unique_ptr<ScriptWrappableVisitor> saved_visitor_;
   };
 
-  void setScriptWrappableVisitor(
+  void SetScriptWrappableVisitor(
       std::unique_ptr<ScriptWrappableVisitor> visitor) {
-    m_scriptWrappableVisitor = std::move(visitor);
+    script_wrappable_visitor_ = std::move(visitor);
   }
-  ScriptWrappableVisitor* scriptWrappableVisitor() {
-    return m_scriptWrappableVisitor.get();
+  ScriptWrappableVisitor* GetScriptWrappableVisitor() {
+    return script_wrappable_visitor_.get();
   }
 
  private:
@@ -225,48 +226,48 @@ class CORE_EXPORT V8PerIsolateData {
 
   typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate>>
       V8FunctionTemplateMap;
-  V8FunctionTemplateMap& selectInterfaceTemplateMap(const DOMWrapperWorld&);
-  V8FunctionTemplateMap& selectOperationTemplateMap(const DOMWrapperWorld&);
-  bool hasInstance(const WrapperTypeInfo* untrusted,
+  V8FunctionTemplateMap& SelectInterfaceTemplateMap(const DOMWrapperWorld&);
+  V8FunctionTemplateMap& SelectOperationTemplateMap(const DOMWrapperWorld&);
+  bool HasInstance(const WrapperTypeInfo* untrusted,
                    v8::Local<v8::Value>,
                    V8FunctionTemplateMap&);
-  v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*,
+  v8::Local<v8::Object> FindInstanceInPrototypeChain(const WrapperTypeInfo*,
                                                      v8::Local<v8::Value>,
                                                      V8FunctionTemplateMap&);
 
-  gin::IsolateHolder m_isolateHolder;
+  gin::IsolateHolder isolate_holder_;
 
   // m_interfaceTemplateMapFor{,Non}MainWorld holds function templates for
   // the inerface objects.
-  V8FunctionTemplateMap m_interfaceTemplateMapForMainWorld;
-  V8FunctionTemplateMap m_interfaceTemplateMapForNonMainWorld;
+  V8FunctionTemplateMap interface_template_map_for_main_world_;
+  V8FunctionTemplateMap interface_template_map_for_non_main_world_;
   // m_operationTemplateMapFor{,Non}MainWorld holds function templates for
   // the cross-origin accessible DOM operations.
-  V8FunctionTemplateMap m_operationTemplateMapForMainWorld;
-  V8FunctionTemplateMap m_operationTemplateMapForNonMainWorld;
+  V8FunctionTemplateMap operation_template_map_for_main_world_;
+  V8FunctionTemplateMap operation_template_map_for_non_main_world_;
 
   // Contains lists of eternal names, such as dictionary keys.
-  HashMap<const void*, Vector<v8::Eternal<v8::Name>>> m_eternalNameCache;
+  HashMap<const void*, Vector<v8::Eternal<v8::Name>>> eternal_name_cache_;
 
-  std::unique_ptr<StringCache> m_stringCache;
-  std::unique_ptr<V8PrivateProperty> m_privateProperty;
-  ScopedPersistent<v8::Value> m_liveRoot;
-  RefPtr<ScriptState> m_scriptRegexpScriptState;
+  std::unique_ptr<StringCache> string_cache_;
+  std::unique_ptr<V8PrivateProperty> private_property_;
+  ScopedPersistent<v8::Value> live_root_;
+  RefPtr<ScriptState> script_regexp_script_state_;
 
-  bool m_constructorMode;
+  bool constructor_mode_;
   friend class ConstructorMode;
 
-  bool m_useCounterDisabled;
+  bool use_counter_disabled_;
   friend class UseCounterDisabledScope;
 
-  bool m_isHandlingRecursionLevelError;
-  bool m_isReportingException;
+  bool is_handling_recursion_level_error_;
+  bool is_reporting_exception_;
 
-  Vector<std::unique_ptr<EndOfScopeTask>> m_endOfScopeTasks;
-  std::unique_ptr<Data> m_threadDebugger;
+  Vector<std::unique_ptr<EndOfScopeTask>> end_of_scope_tasks_;
+  std::unique_ptr<Data> thread_debugger_;
 
-  Persistent<ActiveScriptWrappableSet> m_activeScriptWrappables;
-  std::unique_ptr<ScriptWrappableVisitor> m_scriptWrappableVisitor;
+  Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
+  std::unique_ptr<ScriptWrappableVisitor> script_wrappable_visitor_;
 };
 
 }  // namespace blink

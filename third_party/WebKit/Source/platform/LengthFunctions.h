@@ -36,18 +36,18 @@ class LengthSize;
 
 struct LengthPoint;
 
-PLATFORM_EXPORT int intValueForLength(const Length&, int maximumValue);
-PLATFORM_EXPORT float floatValueForLength(const Length&, float maximumValue);
-PLATFORM_EXPORT LayoutUnit minimumValueForLength(const Length&,
-                                                 LayoutUnit maximumValue);
+PLATFORM_EXPORT int IntValueForLength(const Length&, int maximum_value);
+PLATFORM_EXPORT float FloatValueForLength(const Length&, float maximum_value);
+PLATFORM_EXPORT LayoutUnit MinimumValueForLength(const Length&,
+                                                 LayoutUnit maximum_value);
 PLATFORM_EXPORT LayoutUnit
-roundedMinimumValueForLength(const Length&, LayoutUnit maximumValue);
-PLATFORM_EXPORT LayoutUnit valueForLength(const Length&,
-                                          LayoutUnit maximumValue);
-PLATFORM_EXPORT FloatSize floatSizeForLengthSize(const LengthSize&,
-                                                 const FloatSize& boxSize);
-PLATFORM_EXPORT FloatPoint floatPointForLengthPoint(const LengthPoint&,
-                                                    const FloatSize& boxSize);
+RoundedMinimumValueForLength(const Length&, LayoutUnit maximum_value);
+PLATFORM_EXPORT LayoutUnit ValueForLength(const Length&,
+                                          LayoutUnit maximum_value);
+PLATFORM_EXPORT FloatSize FloatSizeForLengthSize(const LengthSize&,
+                                                 const FloatSize& box_size);
+PLATFORM_EXPORT FloatPoint FloatPointForLengthPoint(const LengthPoint&,
+                                                    const FloatSize& box_size);
 
 }  // namespace blink
 

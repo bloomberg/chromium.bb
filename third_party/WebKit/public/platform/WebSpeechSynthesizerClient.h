@@ -36,16 +36,16 @@ class WebSpeechSynthesizerClient {
  public:
   virtual ~WebSpeechSynthesizerClient() {}
 
-  virtual void setVoiceList(const WebVector<WebSpeechSynthesisVoice>&) = 0;
-  virtual void didStartSpeaking(const WebSpeechSynthesisUtterance&) = 0;
-  virtual void didPauseSpeaking(const WebSpeechSynthesisUtterance&) = 0;
-  virtual void didResumeSpeaking(const WebSpeechSynthesisUtterance&) = 0;
-  virtual void didFinishSpeaking(const WebSpeechSynthesisUtterance&) = 0;
-  virtual void speakingErrorOccurred(const WebSpeechSynthesisUtterance&) = 0;
-  virtual void wordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                         unsigned charIndex) = 0;
-  virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                             unsigned charIndex) = 0;
+  virtual void SetVoiceList(const WebVector<WebSpeechSynthesisVoice>&) = 0;
+  virtual void DidStartSpeaking(const WebSpeechSynthesisUtterance&) = 0;
+  virtual void DidPauseSpeaking(const WebSpeechSynthesisUtterance&) = 0;
+  virtual void DidResumeSpeaking(const WebSpeechSynthesisUtterance&) = 0;
+  virtual void DidFinishSpeaking(const WebSpeechSynthesisUtterance&) = 0;
+  virtual void SpeakingErrorOccurred(const WebSpeechSynthesisUtterance&) = 0;
+  virtual void WordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                         unsigned char_index) = 0;
+  virtual void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                             unsigned char_index) = 0;
 };
 
 }  // namespace blink

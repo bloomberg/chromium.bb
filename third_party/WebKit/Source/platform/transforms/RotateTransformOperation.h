@@ -33,65 +33,64 @@ namespace blink {
 
 class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
  public:
-  static PassRefPtr<RotateTransformOperation> create(double angle,
+  static PassRefPtr<RotateTransformOperation> Create(double angle,
                                                      OperationType type) {
-    return create(Rotation(FloatPoint3D(0, 0, 1), angle), type);
+    return Create(Rotation(FloatPoint3D(0, 0, 1), angle), type);
   }
 
-  static PassRefPtr<RotateTransformOperation> create(double x,
+  static PassRefPtr<RotateTransformOperation> Create(double x,
                                                      double y,
                                                      double z,
                                                      double angle,
                                                      OperationType type) {
-    return create(Rotation(FloatPoint3D(x, y, z), angle), type);
+    return Create(Rotation(FloatPoint3D(x, y, z), angle), type);
   }
 
-  static PassRefPtr<RotateTransformOperation> create(const Rotation& rotation,
+  static PassRefPtr<RotateTransformOperation> Create(const Rotation& rotation,
                                                      OperationType type) {
-    DCHECK(isMatchingOperationType(type));
-    return adoptRef(new RotateTransformOperation(rotation, type));
+    DCHECK(IsMatchingOperationType(type));
+    return AdoptRef(new RotateTransformOperation(rotation, type));
   }
 
-  double x() const { return m_rotation.axis.x(); }
-  double y() const { return m_rotation.axis.y(); }
-  double z() const { return m_rotation.axis.z(); }
-  double angle() const { return m_rotation.angle; }
-  const FloatPoint3D& axis() const { return m_rotation.axis; }
+  double X() const { return rotation_.axis.X(); }
+  double Y() const { return rotation_.axis.Y(); }
+  double Z() const { return rotation_.axis.Z(); }
+  double Angle() const { return rotation_.angle; }
+  const FloatPoint3D& Axis() const { return rotation_.axis; }
 
-  static bool getCommonAxis(const RotateTransformOperation*,
+  static bool GetCommonAxis(const RotateTransformOperation*,
                             const RotateTransformOperation*,
-                            FloatPoint3D& resultAxis,
-                            double& resultAngleA,
-                            double& resultAngleB);
+                            FloatPoint3D& result_axis,
+                            double& result_angle_a,
+                            double& result_angle_b);
 
-  virtual bool canBlendWith(const TransformOperation& other) const;
-  OperationType type() const override { return m_type; }
-  OperationType primitiveType() const final { return Rotate3D; }
+  virtual bool CanBlendWith(const TransformOperation& other) const;
+  OperationType GetType() const override { return type_; }
+  OperationType PrimitiveType() const final { return kRotate3D; }
 
-  void apply(TransformationMatrix& transform,
+  void Apply(TransformationMatrix& transform,
              const FloatSize& /*borderBoxSize*/) const override {
-    transform.rotate3d(m_rotation);
+    transform.Rotate3d(rotation_);
   }
 
-  static bool isMatchingOperationType(OperationType type) {
-    return type == Rotate || type == RotateX || type == RotateY ||
-           type == RotateZ || type == Rotate3D;
+  static bool IsMatchingOperationType(OperationType type) {
+    return type == kRotate || type == kRotateX || type == kRotateY ||
+           type == kRotateZ || type == kRotate3D;
   }
 
  protected:
   bool operator==(const TransformOperation&) const override;
 
-  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
                                        double progress,
-                                       bool blendToIdentity = false) override;
-  PassRefPtr<TransformOperation> zoom(double factor) override { return this; }
+                                       bool blend_to_identity = false) override;
+  PassRefPtr<TransformOperation> Zoom(double factor) override { return this; }
 
   RotateTransformOperation(const Rotation& rotation, OperationType type)
-      : m_rotation(rotation), m_type(type) {
-  }
+      : rotation_(rotation), type_(type) {}
 
-  const Rotation m_rotation;
-  const OperationType m_type;
+  const Rotation rotation_;
+  const OperationType type_;
 };
 
 DEFINE_TRANSFORM_TYPE_CASTS(RotateTransformOperation);
@@ -100,31 +99,31 @@ class PLATFORM_EXPORT RotateAroundOriginTransformOperation final
     : public RotateTransformOperation {
  public:
   static PassRefPtr<RotateAroundOriginTransformOperation>
-  create(double angle, double originX, double originY) {
-    return adoptRef(
-        new RotateAroundOriginTransformOperation(angle, originX, originY));
+  Create(double angle, double origin_x, double origin_y) {
+    return AdoptRef(
+        new RotateAroundOriginTransformOperation(angle, origin_x, origin_y));
   }
 
-  void apply(TransformationMatrix&, const FloatSize&) const override;
+  void Apply(TransformationMatrix&, const FloatSize&) const override;
 
-  static bool isMatchingOperationType(OperationType type) {
-    return type == RotateAroundOrigin;
+  static bool IsMatchingOperationType(OperationType type) {
+    return type == kRotateAroundOrigin;
   }
 
  private:
   RotateAroundOriginTransformOperation(double angle,
-                                       double originX,
-                                       double originY);
+                                       double origin_x,
+                                       double origin_y);
 
   bool operator==(const TransformOperation&) const override;
 
-  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
                                        double progress,
-                                       bool blendToIdentity = false) override;
-  PassRefPtr<TransformOperation> zoom(double factor) override;
+                                       bool blend_to_identity = false) override;
+  PassRefPtr<TransformOperation> Zoom(double factor) override;
 
-  double m_originX;
-  double m_originY;
+  double origin_x_;
+  double origin_y_;
 };
 
 DEFINE_TRANSFORM_TYPE_CASTS(RotateAroundOriginTransformOperation);

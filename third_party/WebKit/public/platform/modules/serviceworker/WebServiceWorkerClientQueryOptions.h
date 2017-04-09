@@ -11,11 +11,11 @@ namespace blink {
 
 struct WebServiceWorkerClientQueryOptions {
   WebServiceWorkerClientQueryOptions()
-      : clientType(WebServiceWorkerClientTypeWindow),
-        includeUncontrolled(false) {}
+      : client_type(kWebServiceWorkerClientTypeWindow),
+        include_uncontrolled(false) {}
 
-  WebServiceWorkerClientType clientType;
-  bool includeUncontrolled;
+  WebServiceWorkerClientType client_type;
+  bool include_uncontrolled;
 };
 
 }  // namespace blink

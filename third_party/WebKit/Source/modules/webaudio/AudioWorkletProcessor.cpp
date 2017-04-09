@@ -11,41 +11,41 @@ namespace blink {
 // This static factory should be called after an instance of |AudioWorkletNode|
 // gets created by user-supplied JS code in the main thread. This factory must
 // not be called by user in |AudioWorkletGlobalScope|.
-AudioWorkletProcessor* AudioWorkletProcessor::create(
-    AudioWorkletGlobalScope* globalScope,
+AudioWorkletProcessor* AudioWorkletProcessor::Create(
+    AudioWorkletGlobalScope* global_scope,
     const String& name) {
-  DCHECK(!isMainThread());
-  DCHECK(globalScope);
-  return new AudioWorkletProcessor(globalScope, name);
+  DCHECK(!IsMainThread());
+  DCHECK(global_scope);
+  return new AudioWorkletProcessor(global_scope, name);
 }
 
 AudioWorkletProcessor::AudioWorkletProcessor(
-    AudioWorkletGlobalScope* globalScope,
+    AudioWorkletGlobalScope* global_scope,
     const String& name)
-    : m_globalScope(globalScope), m_name(name) {}
+    : global_scope_(global_scope), name_(name) {}
 
 AudioWorkletProcessor::~AudioWorkletProcessor() {}
 
-void AudioWorkletProcessor::setInstance(v8::Isolate* isolate,
+void AudioWorkletProcessor::SetInstance(v8::Isolate* isolate,
                                         v8::Local<v8::Object> instance) {
-  DCHECK(m_globalScope->isContextThread());
-  m_instance.set(isolate, instance);
+  DCHECK(global_scope_->IsContextThread());
+  instance_.Set(isolate, instance);
 }
 
-v8::Local<v8::Object> AudioWorkletProcessor::instanceLocal(
+v8::Local<v8::Object> AudioWorkletProcessor::InstanceLocal(
     v8::Isolate* isolate) {
-  DCHECK(m_globalScope->isContextThread());
-  return m_instance.newLocal(isolate);
+  DCHECK(global_scope_->IsContextThread());
+  return instance_.NewLocal(isolate);
 }
 
-void AudioWorkletProcessor::process(AudioBuffer* inputBuffer,
-                                    AudioBuffer* outputBuffer) {
-  DCHECK(m_globalScope->isContextThread());
-  m_globalScope->process(this, inputBuffer, outputBuffer);
+void AudioWorkletProcessor::Process(AudioBuffer* input_buffer,
+                                    AudioBuffer* output_buffer) {
+  DCHECK(global_scope_->IsContextThread());
+  global_scope_->Process(this, input_buffer, output_buffer);
 }
 
 DEFINE_TRACE(AudioWorkletProcessor) {
-  visitor->trace(m_globalScope);
+  visitor->Trace(global_scope_);
 }
 
 }  // namespace blink

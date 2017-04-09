@@ -34,15 +34,15 @@
 namespace blink {
 
 enum WebNavigationPolicy {
-  WebNavigationPolicyIgnore,
-  WebNavigationPolicyDownload,
-  WebNavigationPolicyCurrentTab,
-  WebNavigationPolicyNewBackgroundTab,
-  WebNavigationPolicyNewForegroundTab,
-  WebNavigationPolicyNewWindow,
-  WebNavigationPolicyNewPopup,
-  WebNavigationPolicyHandledByClient,
-  WebNavigationPolicyHandledByClientForInitialHistory,
+  kWebNavigationPolicyIgnore,
+  kWebNavigationPolicyDownload,
+  kWebNavigationPolicyCurrentTab,
+  kWebNavigationPolicyNewBackgroundTab,
+  kWebNavigationPolicyNewForegroundTab,
+  kWebNavigationPolicyNewWindow,
+  kWebNavigationPolicyNewPopup,
+  kWebNavigationPolicyHandledByClient,
+  kWebNavigationPolicyHandledByClientForInitialHistory,
 };
 
 }  // namespace blink

@@ -95,13 +95,13 @@ void RuntimeCustomBindings::GetExtensionViews(
     // behavior by treating an app window's iframe as its main frame, and maybe
     // other nastiness).
     blink::WebFrame* web_frame = frame->GetWebFrame();
-    if (web_frame->top() != web_frame)
+    if (web_frame->Top() != web_frame)
       continue;
 
-    if (!blink::WebFrame::scriptCanAccess(web_frame))
+    if (!blink::WebFrame::ScriptCanAccess(web_frame))
       continue;
 
-    v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
+    v8::Local<v8::Context> context = web_frame->MainWorldScriptContext();
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
       CHECK(!window.IsEmpty());

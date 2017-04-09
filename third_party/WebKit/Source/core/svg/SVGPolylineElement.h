@@ -32,7 +32,7 @@ class SVGPolylineElement final : public SVGPolyElement {
  public:
   DECLARE_NODE_FACTORY(SVGPolylineElement);
 
-  Path asPath() const override;
+  Path AsPath() const override;
 
  private:
   explicit SVGPolylineElement(Document&);

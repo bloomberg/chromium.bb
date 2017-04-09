@@ -13,26 +13,26 @@ namespace blink {
 
 class LayoutProgressItem : public LayoutBlockItem {
  public:
-  explicit LayoutProgressItem(LayoutProgress* layoutProgress)
-      : LayoutBlockItem(layoutProgress) {}
+  explicit LayoutProgressItem(LayoutProgress* layout_progress)
+      : LayoutBlockItem(layout_progress) {}
 
   explicit LayoutProgressItem(const LayoutBlockItem& item)
       : LayoutBlockItem(item) {
-    SECURITY_DCHECK(!item || item.isProgress());
+    SECURITY_DCHECK(!item || item.IsProgress());
   }
 
   explicit LayoutProgressItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
   LayoutProgressItem() {}
 
-  bool isDeterminate() const { return toProgress()->isDeterminate(); }
+  bool IsDeterminate() const { return ToProgress()->IsDeterminate(); }
 
-  void updateFromElement() { return toProgress()->updateFromElement(); }
+  void UpdateFromElement() { return ToProgress()->UpdateFromElement(); }
 
  private:
-  LayoutProgress* toProgress() { return toLayoutProgress(layoutObject()); }
-  const LayoutProgress* toProgress() const {
-    return toLayoutProgress(layoutObject());
+  LayoutProgress* ToProgress() { return ToLayoutProgress(GetLayoutObject()); }
+  const LayoutProgress* ToProgress() const {
+    return ToLayoutProgress(GetLayoutObject());
   }
 };
 

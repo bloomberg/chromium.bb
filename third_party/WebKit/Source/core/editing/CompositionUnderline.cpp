@@ -6,18 +6,18 @@
 
 namespace blink {
 
-CompositionUnderline::CompositionUnderline(unsigned startOffset,
-                                           unsigned endOffset,
+CompositionUnderline::CompositionUnderline(unsigned start_offset,
+                                           unsigned end_offset,
                                            const Color& color,
                                            bool thick,
-                                           const Color& backgroundColor)
-    : m_color(color), m_thick(thick), m_backgroundColor(backgroundColor) {
+                                           const Color& background_color)
+    : color_(color), thick_(thick), background_color_(background_color) {
   // Sanitize offsets by ensuring a valid range corresponding to the last
   // possible position.
   // TODO(wkorman): Consider replacing with DCHECK_LT(startOffset, endOffset).
-  m_startOffset =
-      std::min(startOffset, std::numeric_limits<unsigned>::max() - 1u);
-  m_endOffset = std::max(m_startOffset + 1u, endOffset);
+  start_offset_ =
+      std::min(start_offset, std::numeric_limits<unsigned>::max() - 1u);
+  end_offset_ = std::max(start_offset_ + 1u, end_offset);
 }
 
 }  // namespace blink

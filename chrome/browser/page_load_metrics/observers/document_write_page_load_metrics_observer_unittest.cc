@@ -42,7 +42,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossiblePreload) {
 
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteEvaluator;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteEvaluator;
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
@@ -85,7 +85,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlock) {
 
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlock;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock;
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
@@ -115,8 +115,8 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::PageLoadMetadata metadata;
-  metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorDocumentWriteBlockReload;
+  metadata.behavior_flags |= blink::WebLoadingBehaviorFlag::
+      kWebLoadingBehaviorDocumentWriteBlockReload;
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
@@ -132,7 +132,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
 
   // Another metadata update should not increase reload count.
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorServiceWorkerControlled;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
   SimulateTimingAndMetadataUpdate(timing, metadata);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockReloadCount, 2);

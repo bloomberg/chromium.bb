@@ -43,26 +43,26 @@ class BaseButtonInputType : public InputType,
 
  public:
   DECLARE_VIRTUAL_TRACE();
-  using InputType::element;
+  using InputType::GetElement;
 
  protected:
   explicit BaseButtonInputType(HTMLInputElement&);
-  void valueAttributeChanged() override;
-  void createShadowSubtree() override;
+  void ValueAttributeChanged() override;
+  void CreateShadowSubtree() override;
 
  private:
-  InputTypeView* createView() override;
-  bool shouldSaveAndRestoreFormControlState() const override;
-  void appendToFormData(FormData&) const override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) const override;
-  ValueMode valueMode() const override;
-  void setValue(const String&,
+  InputTypeView* CreateView() override;
+  bool ShouldSaveAndRestoreFormControlState() const override;
+  void AppendToFormData(FormData&) const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
+  ValueMode GetValueMode() const override;
+  void SetValue(const String&,
                 bool,
                 TextFieldEventBehavior,
                 TextControlSetValueSelection) override;
-  bool matchesDefaultPseudoClass() override;
+  bool MatchesDefaultPseudoClass() override;
 
-  String displayValue() const;
+  String DisplayValue() const;
 };
 
 }  // namespace blink

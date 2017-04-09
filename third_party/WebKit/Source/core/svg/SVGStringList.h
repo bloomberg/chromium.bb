@@ -58,47 +58,47 @@ class SVGStringList final : public SVGPropertyHelper<SVGStringList> {
  public:
   typedef SVGStringListTearOff TearOffType;
 
-  static SVGStringList* create() { return new SVGStringList(); }
+  static SVGStringList* Create() { return new SVGStringList(); }
 
   ~SVGStringList() override;
 
-  const Vector<String>& values() const { return m_values; }
+  const Vector<String>& Values() const { return values_; }
 
   // SVGStringList DOM Spec implementation. These are only to be called from
   // SVGStringListTearOff:
-  unsigned long length() { return m_values.size(); }
-  void clear() { m_values.clear(); }
-  void initialize(const String&);
-  String getItem(size_t, ExceptionState&);
-  void insertItemBefore(const String&, size_t);
-  String removeItem(size_t, ExceptionState&);
-  void appendItem(const String&);
-  void replaceItem(const String&, size_t, ExceptionState&);
+  unsigned long length() { return values_.size(); }
+  void Clear() { values_.Clear(); }
+  void Initialize(const String&);
+  String GetItem(size_t, ExceptionState&);
+  void InsertItemBefore(const String&, size_t);
+  String RemoveItem(size_t, ExceptionState&);
+  void AppendItem(const String&);
+  void ReplaceItem(const String&, size_t, ExceptionState&);
 
   // SVGPropertyBase:
-  SVGParsingError setValueAsString(const String&);
-  String valueAsString() const override;
+  SVGParsingError SetValueAsString(const String&);
+  String ValueAsString() const override;
 
-  void add(SVGPropertyBase*, SVGElement*) override;
-  void calculateAnimatedValue(SVGAnimationElement*,
+  void Add(SVGPropertyBase*, SVGElement*) override;
+  void CalculateAnimatedValue(SVGAnimationElement*,
                               float percentage,
-                              unsigned repeatCount,
-                              SVGPropertyBase* fromValue,
-                              SVGPropertyBase* toValue,
-                              SVGPropertyBase* toAtEndOfDurationValue,
+                              unsigned repeat_count,
+                              SVGPropertyBase* from_value,
+                              SVGPropertyBase* to_value,
+                              SVGPropertyBase* to_at_end_of_duration_value,
                               SVGElement*) override;
-  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-  static AnimatedPropertyType classType() { return AnimatedStringList; }
+  static AnimatedPropertyType ClassType() { return kAnimatedStringList; }
 
  private:
   SVGStringList();
 
   template <typename CharType>
-  void parseInternal(const CharType*& ptr, const CharType* end);
-  bool checkIndexBound(size_t, ExceptionState&);
+  void ParseInternal(const CharType*& ptr, const CharType* end);
+  bool CheckIndexBound(size_t, ExceptionState&);
 
-  Vector<String> m_values;
+  Vector<String> values_;
 };
 
 }  // namespace blink

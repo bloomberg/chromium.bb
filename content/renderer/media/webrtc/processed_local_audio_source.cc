@@ -106,8 +106,8 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     // TODO(hta): Figure out if we should be looking at echoCancellation.
     // Previous code had googEchoCancellation only.
     const blink::BooleanConstraint& echoCancellation =
-        constraints_.basic().googEchoCancellation;
-    if (echoCancellation.hasExact() && !echoCancellation.exact()) {
+        constraints_.Basic().goog_echo_cancellation;
+    if (echoCancellation.HasExact() && !echoCancellation.Exact()) {
       StreamDeviceInfo modified_device_info(device_info());
       modified_device_info.device.input.effects &=
           ~media::AudioParameters::ECHO_CANCELLER;

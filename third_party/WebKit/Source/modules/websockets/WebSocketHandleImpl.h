@@ -43,20 +43,21 @@ class WebSocketHandleImpl : public WebSocketHandle,
   WebSocketHandleImpl();
   ~WebSocketHandleImpl() override;
 
-  void initialize(InterfaceProvider*) override;
-  void connect(const KURL&,
+  void Initialize(InterfaceProvider*) override;
+  void Connect(const KURL&,
                const Vector<String>& protocols,
                SecurityOrigin*,
-               const KURL& firstPartyForCookies,
-               const String& userAgentOverride,
+               const KURL& first_party_for_cookies,
+               const String& user_agent_override,
                WebSocketHandleClient*) override;
-  void send(bool fin, MessageType, const char* data, size_t) override;
-  void flowControl(int64_t quota) override;
-  void close(unsigned short code, const String& reason) override;
+  void Send(bool fin, MessageType, const char* data, size_t) override;
+  void FlowControl(int64_t quota) override;
+  void Close(unsigned short code, const String& reason) override;
 
  private:
-  void disconnect();
-  void onConnectionError(uint32_t customReason, const std::string& description);
+  void Disconnect();
+  void OnConnectionError(uint32_t custom_reason,
+                         const std::string& description);
 
   // mojom::blink::WebSocketClient methods:
   void OnFailChannel(const String& reason) override;
@@ -64,21 +65,21 @@ class WebSocketHandleImpl : public WebSocketHandle,
       mojom::blink::WebSocketHandshakeRequestPtr) override;
   void OnFinishOpeningHandshake(
       mojom::blink::WebSocketHandshakeResponsePtr) override;
-  void OnAddChannelResponse(const String& selectedProtocol,
+  void OnAddChannelResponse(const String& selected_protocol,
                             const String& extensions) override;
   void OnDataFrame(bool fin,
                    mojom::blink::WebSocketMessageType,
                    const Vector<uint8_t>& data) override;
   void OnFlowControl(int64_t quota) override;
-  void OnDropChannel(bool wasClean,
+  void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const String& reason) override;
   void OnClosingHandshake() override;
 
-  WebSocketHandleClient* m_client;
+  WebSocketHandleClient* client_;
 
-  mojom::blink::WebSocketPtr m_websocket;
-  mojo::Binding<mojom::blink::WebSocketClient> m_clientBinding;
+  mojom::blink::WebSocketPtr websocket_;
+  mojo::Binding<mojom::blink::WebSocketClient> client_binding_;
 };
 
 }  // namespace blink

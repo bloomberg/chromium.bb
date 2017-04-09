@@ -11,146 +11,148 @@ namespace blink {
 
 struct TestRun {
   std::string text;
-  FontFallbackPriority fontFallbackPriority;
+  FontFallbackPriority font_fallback_priority;
 };
 
 struct ExpectedRun {
   unsigned limit;
-  FontFallbackPriority fontFallbackPriority;
+  FontFallbackPriority font_fallback_priority;
 
-  ExpectedRun(unsigned theLimit, FontFallbackPriority theFontFallbackPriority)
-      : limit(theLimit), fontFallbackPriority(theFontFallbackPriority) {}
+  ExpectedRun(unsigned the_limit,
+              FontFallbackPriority the_font_fallback_priority)
+      : limit(the_limit), font_fallback_priority(the_font_fallback_priority) {}
 };
 
 class SymbolsIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<TestRun>& runs) {
-    String text(emptyString16Bit);
+    String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
-      text.append(String::fromUTF8(run.text.c_str()));
-      expect.push_back(ExpectedRun(text.length(), run.fontFallbackPriority));
+      text.Append(String::FromUTF8(run.text.c_str()));
+      expect.push_back(ExpectedRun(text.length(), run.font_fallback_priority));
     }
-    SymbolsIterator symbolsIterator(text.characters16(), text.length());
-    VerifyRuns(&symbolsIterator, expect);
+    SymbolsIterator symbols_iterator(text.Characters16(), text.length());
+    VerifyRuns(&symbols_iterator, expect);
   }
 
-  void VerifyRuns(SymbolsIterator* symbolsIterator,
+  void VerifyRuns(SymbolsIterator* symbols_iterator,
                   const Vector<ExpectedRun>& expect) {
     unsigned limit;
-    FontFallbackPriority fontFallbackPriority;
-    unsigned long runCount = 0;
-    while (symbolsIterator->consume(&limit, &fontFallbackPriority)) {
-      ASSERT_LT(runCount, expect.size());
-      ASSERT_EQ(expect[runCount].limit, limit);
-      ASSERT_EQ(expect[runCount].fontFallbackPriority, fontFallbackPriority);
-      ++runCount;
+    FontFallbackPriority font_fallback_priority;
+    unsigned long run_count = 0;
+    while (symbols_iterator->Consume(&limit, &font_fallback_priority)) {
+      ASSERT_LT(run_count, expect.size());
+      ASSERT_EQ(expect[run_count].limit, limit);
+      ASSERT_EQ(expect[run_count].font_fallback_priority,
+                font_fallback_priority);
+      ++run_count;
     }
-    ASSERT_EQ(expect.size(), runCount);
+    ASSERT_EQ(expect.size(), run_count);
   }
 };
 
 // Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                   \
-  static const TestRun runsArray[] = __VA_ARGS__; \
-  Vector<TestRun> runs;                           \
-  runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray));
+#define DECLARE_RUNSVECTOR(...)                    \
+  static const TestRun kRunsArray[] = __VA_ARGS__; \
+  Vector<TestRun> runs;                            \
+  runs.Append(kRunsArray, sizeof(kRunsArray) / sizeof(*kRunsArray));
 
 #define CHECK_RUNS(...)            \
   DECLARE_RUNSVECTOR(__VA_ARGS__); \
   CheckRuns(runs);
 
 TEST_F(SymbolsIteratorTest, Empty) {
-  String empty(emptyString16Bit);
-  SymbolsIterator symbolsIterator(empty.characters16(), empty.length());
+  String empty(g_empty_string16_bit);
+  SymbolsIterator symbols_iterator(empty.Characters16(), empty.length());
   unsigned limit = 0;
-  FontFallbackPriority symbolsFont = FontFallbackPriority::Invalid;
-  ASSERT(!symbolsIterator.consume(&limit, &symbolsFont));
+  FontFallbackPriority symbols_font = FontFallbackPriority::kInvalid;
+  ASSERT(!symbols_iterator.Consume(&limit, &symbols_font));
   ASSERT_EQ(limit, 0u);
-  ASSERT_EQ(symbolsFont, FontFallbackPriority::Invalid);
+  ASSERT_EQ(symbols_font, FontFallbackPriority::kInvalid);
 }
 
 TEST_F(SymbolsIteratorTest, Space) {
-  CHECK_RUNS({{" ", FontFallbackPriority::Text}});
+  CHECK_RUNS({{" ", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, Latin) {
-  CHECK_RUNS({{"Aa", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"Aa", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, LatinColorEmojiTextEmoji) {
-  CHECK_RUNS({{"a", FontFallbackPriority::Text},
-              {"⌚", FontFallbackPriority::EmojiEmoji},
-              {"☎", FontFallbackPriority::EmojiText}});
+  CHECK_RUNS({{"a", FontFallbackPriority::kText},
+              {"⌚", FontFallbackPriority::kEmojiEmoji},
+              {"☎", FontFallbackPriority::kEmojiText}});
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVSInMath) {
-  CHECK_RUNS({{"⊆⊇⊈\xEF\xB8\x8E⊙⊚⊚", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"⊆⊇⊈\xEF\xB8\x8E⊙⊚⊚", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVS15InText) {
-  CHECK_RUNS({{"abcdef\xEF\xB8\x8Eghji", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"abcdef\xEF\xB8\x8Eghji", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVS16InText) {
-  CHECK_RUNS({{"abcdef\xEF\xB8\x8Fghji", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"abcdef\xEF\xB8\x8Fghji", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, AllHexValuesText) {
   // Helps with detecting incorrect emoji pattern definitions which are
   // missing a \U000... prefix for example.
-  CHECK_RUNS({{"abcdef0123456789ABCDEF", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"abcdef0123456789ABCDEF", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, NumbersAndHashNormalAndEmoji) {
-  CHECK_RUNS({{"0123456789#*", FontFallbackPriority::Text},
-              {"0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣*⃣", FontFallbackPriority::EmojiEmoji},
-              {"0123456789#*", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"0123456789#*", FontFallbackPriority::kText},
+              {"0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣*⃣", FontFallbackPriority::kEmojiEmoji},
+              {"0123456789#*", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, VS16onDigits) {
-  CHECK_RUNS({{"#", FontFallbackPriority::Text},
-              {"#\uFE0F#\uFE0F\u20E3", FontFallbackPriority::EmojiEmoji},
-              {"#", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"#", FontFallbackPriority::kText},
+              {"#\uFE0F#\uFE0F\u20E3", FontFallbackPriority::kEmojiEmoji},
+              {"#", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, SingleFlag) {
-  CHECK_RUNS({{"🇺", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"🇺", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, CombiningCircle) {
-  CHECK_RUNS({{"◌́◌̀◌̈◌̂◌̄◌̊", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"◌́◌̀◌̈◌̂◌̄◌̊", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, CombiningEnclosingCircleBackslash) {
-  CHECK_RUNS({{"A⃠B⃠C⃠", FontFallbackPriority::Text},
-              {"🚷🚯🚱🔞📵🚭🚫", FontFallbackPriority::EmojiEmoji},
-              {"🎙⃠", FontFallbackPriority::EmojiText},
-              {"📸⃠🔫⃠", FontFallbackPriority::EmojiEmoji},
-              {"a⃠b⃠c⃠", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"A⃠B⃠C⃠", FontFallbackPriority::kText},
+              {"🚷🚯🚱🔞📵🚭🚫", FontFallbackPriority::kEmojiEmoji},
+              {"🎙⃠", FontFallbackPriority::kEmojiText},
+              {"📸⃠🔫⃠", FontFallbackPriority::kEmojiEmoji},
+              {"a⃠b⃠c⃠", FontFallbackPriority::kText}});
 }
 
 // TODO: Perhaps check for invalid country indicator combinations?
 
 TEST_F(SymbolsIteratorTest, FlagsVsNonFlags) {
-  CHECK_RUNS({{"🇺🇸🇸", FontFallbackPriority::EmojiEmoji},  // "US"
-              {"abc", FontFallbackPriority::Text},
-              {"🇺🇸", FontFallbackPriority::EmojiEmoji},
-              {"a🇿", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"🇺🇸🇸", FontFallbackPriority::kEmojiEmoji},  // "US"
+              {"abc", FontFallbackPriority::kText},
+              {"🇺🇸", FontFallbackPriority::kEmojiEmoji},
+              {"a🇿", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, EmojiVS15) {
   // A VS15 after the anchor must trigger text display.
-  CHECK_RUNS({{"⚓\xEF\xB8\x8E", FontFallbackPriority::EmojiText},
-              {"⛵", FontFallbackPriority::EmojiEmoji}});
+  CHECK_RUNS({{"⚓\xEF\xB8\x8E", FontFallbackPriority::kEmojiText},
+              {"⛵", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, EmojiZWSSequences) {
   CHECK_RUNS({{"👩‍👩‍👧‍👦👩‍❤️‍💋‍👨",
-               FontFallbackPriority::EmojiEmoji},
-              {"abcd", FontFallbackPriority::Text},
-              {"👩‍👩‍", FontFallbackPriority::EmojiEmoji},
-              {"efgh", FontFallbackPriority::Text}});
+               FontFallbackPriority::kEmojiEmoji},
+              {"abcd", FontFallbackPriority::kText},
+              {"👩‍👩‍", FontFallbackPriority::kEmojiEmoji},
+              {"efgh", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, AllEmojiZWSSequences) {
@@ -168,56 +170,56 @@ TEST_F(SymbolsIteratorTest, AllEmojiZWSSequences) {
         "👩‍👩‍👦👩‍👩‍👧👩‍👩‍👧‍👦👩‍👩‍👦‍👦👩‍👩‍👧‍👧👁"
         "‍"
         "🗨",
-        FontFallbackPriority::EmojiEmoji}});
+        FontFallbackPriority::kEmojiEmoji}});
   // clang-format on
 }
 
 TEST_F(SymbolsIteratorTest, ModifierPlusGender) {
-  CHECK_RUNS({{"⛹🏻‍♂", FontFallbackPriority::EmojiEmoji}});
+  CHECK_RUNS({{"⛹🏻‍♂", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, TextMemberZwjSequence) {
-  CHECK_RUNS({{"👨‍⚕", FontFallbackPriority::EmojiEmoji}});
+  CHECK_RUNS({{"👨‍⚕", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, FacepalmCartwheelShrugModifierFemale) {
   CHECK_RUNS({{"🤦‍♀🤸‍♀🤷‍♀🤷🏾‍♀",
-               FontFallbackPriority::EmojiEmoji}});
+               FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, AesculapiusMaleFemalEmoji) {
   // Emoji Data 4 has upgraded those three characters to Emoji.
-  CHECK_RUNS({{"a", FontFallbackPriority::Text},
-              {"⚕♀♂", FontFallbackPriority::EmojiText}});
+  CHECK_RUNS({{"a", FontFallbackPriority::kText},
+              {"⚕♀♂", FontFallbackPriority::kEmojiText}});
 }
 
 TEST_F(SymbolsIteratorTest, EyeSpeechBubble) {
-  CHECK_RUNS({{"👁‍🗨", FontFallbackPriority::EmojiEmoji}});
+  CHECK_RUNS({{"👁‍🗨", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, Modifier) {
-  CHECK_RUNS({{"👶🏿", FontFallbackPriority::EmojiEmoji}});
+  CHECK_RUNS({{"👶🏿", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, DingbatsMiscSymbolsModifier) {
-  CHECK_RUNS({{"⛹🏻✍🏻✊🏼", FontFallbackPriority::EmojiEmoji}});
+  CHECK_RUNS({{"⛹🏻✍🏻✊🏼", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, ExtraZWJPrefix) {
-  CHECK_RUNS({{"\xE2\x80\x8D", FontFallbackPriority::Text},
+  CHECK_RUNS({{"\xE2\x80\x8D", FontFallbackPriority::kText},
               {"\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2"
                "\x9D\xA4\xEF\xB8\x8F\xE2\x80\x8D"
                "\xF0\x9F\x92\x8B\xE2\x80\x8D\xF0\x9F\x91\xA8",
-               FontFallbackPriority::EmojiEmoji}});
+               FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, Arrows) {
-  CHECK_RUNS({{"x→←x←↑↓→", FontFallbackPriority::Text}});
+  CHECK_RUNS({{"x→←x←↑↓→", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, JudgePilot) {
   CHECK_RUNS({{"👨‍⚖️👩‍⚖️👨🏼‍⚖️👩🏼‍⚖️",
-               FontFallbackPriority::EmojiEmoji}});
+               FontFallbackPriority::kEmojiEmoji}});
 }
 
 }  // namespace blink

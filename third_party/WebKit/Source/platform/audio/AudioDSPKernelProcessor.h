@@ -52,30 +52,30 @@ class PLATFORM_EXPORT AudioDSPKernelProcessor : public AudioProcessor {
  public:
   // numberOfChannels may be later changed if object is not yet in an
   // "initialized" state
-  AudioDSPKernelProcessor(float sampleRate, unsigned numberOfChannels);
+  AudioDSPKernelProcessor(float sample_rate, unsigned number_of_channels);
 
   // Subclasses create the appropriate type of processing kernel here.
   // We'll call this to create a kernel for each channel.
-  virtual std::unique_ptr<AudioDSPKernel> createKernel() = 0;
+  virtual std::unique_ptr<AudioDSPKernel> CreateKernel() = 0;
 
   // AudioProcessor methods
-  void initialize() override;
-  void uninitialize() override;
-  void process(const AudioBus* source,
+  void Initialize() override;
+  void Uninitialize() override;
+  void Process(const AudioBus* source,
                AudioBus* destination,
-               size_t framesToProcess) override;
-  void processOnlyAudioParams(size_t framesToProcess) override;
-  void reset() override;
-  void setNumberOfChannels(unsigned) override;
-  unsigned numberOfChannels() const override { return m_numberOfChannels; }
+               size_t frames_to_process) override;
+  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+  void Reset() override;
+  void SetNumberOfChannels(unsigned) override;
+  unsigned NumberOfChannels() const override { return number_of_channels_; }
 
-  double tailTime() const override;
-  double latencyTime() const override;
+  double TailTime() const override;
+  double LatencyTime() const override;
 
  protected:
-  Vector<std::unique_ptr<AudioDSPKernel>> m_kernels;
-  mutable Mutex m_processLock;
-  bool m_hasJustReset;
+  Vector<std::unique_ptr<AudioDSPKernel>> kernels_;
+  mutable Mutex process_lock_;
+  bool has_just_reset_;
 };
 
 }  // namespace blink

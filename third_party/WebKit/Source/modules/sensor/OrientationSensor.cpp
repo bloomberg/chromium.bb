@@ -11,19 +11,23 @@ using device::mojom::blink::SensorType;
 
 namespace blink {
 
-Vector<double> OrientationSensor::quaternion(bool& isNull) {
-  m_readingDirty = false;
-  isNull = !canReturnReadings();
-  return isNull ? Vector<double>()
-                : Vector<double>({readingValueUnchecked(3),    // W
-                                  readingValueUnchecked(0),    // Vx
-                                  readingValueUnchecked(1),    // Vy
-                                  readingValueUnchecked(2)});  // Vz
+Vector<double> OrientationSensor::quaternion(bool& is_null) {
+  reading_dirty_ = false;
+  is_null = !CanReturnReadings();
+  return is_null ? Vector<double>()
+                 : Vector<double>({ReadingValueUnchecked(3),    // W
+                                   ReadingValueUnchecked(0),    // Vx
+                                   ReadingValueUnchecked(1),    // Vy
+                                   ReadingValueUnchecked(2)});  // Vz
 }
 
 template <typename T>
-void doPopulateMatrix(T* targetMatrix, double x, double y, double z, double w) {
-  auto out = targetMatrix->data();
+void DoPopulateMatrix(T* target_matrix,
+                      double x,
+                      double y,
+                      double z,
+                      double w) {
+  auto out = target_matrix->Data();
   out[0] = 1.0 - 2 * (y * y + z * z);
   out[1] = 2 * (x * y - z * w);
   out[2] = 2 * (x * z + y * w);
@@ -43,91 +47,92 @@ void doPopulateMatrix(T* targetMatrix, double x, double y, double z, double w) {
 }
 
 template <>
-void doPopulateMatrix(DOMMatrix* targetMatrix,
+void DoPopulateMatrix(DOMMatrix* target_matrix,
                       double x,
                       double y,
                       double z,
                       double w) {
-  targetMatrix->setM11(1.0 - 2 * (y * y + z * z));
-  targetMatrix->setM12(2 * (x * y - z * w));
-  targetMatrix->setM13(2 * (x * z + y * w));
-  targetMatrix->setM14(0.0);
-  targetMatrix->setM21(2 * (x * y + z * w));
-  targetMatrix->setM22(1.0 - 2 * (x * x + z * z));
-  targetMatrix->setM23(2 * y * z - 2 * x * w);
-  targetMatrix->setM24(0.0);
-  targetMatrix->setM31(2 * (x * z - y * w));
-  targetMatrix->setM32(2 * (y * z + x * w));
-  targetMatrix->setM33(1.0 - 2 * (x * x + y * y));
-  targetMatrix->setM34(0.0);
-  targetMatrix->setM41(0.0);
-  targetMatrix->setM42(0.0);
-  targetMatrix->setM43(0.0);
-  targetMatrix->setM44(1.0);
+  target_matrix->setM11(1.0 - 2 * (y * y + z * z));
+  target_matrix->setM12(2 * (x * y - z * w));
+  target_matrix->setM13(2 * (x * z + y * w));
+  target_matrix->setM14(0.0);
+  target_matrix->setM21(2 * (x * y + z * w));
+  target_matrix->setM22(1.0 - 2 * (x * x + z * z));
+  target_matrix->setM23(2 * y * z - 2 * x * w);
+  target_matrix->setM24(0.0);
+  target_matrix->setM31(2 * (x * z - y * w));
+  target_matrix->setM32(2 * (y * z + x * w));
+  target_matrix->setM33(1.0 - 2 * (x * x + y * y));
+  target_matrix->setM34(0.0);
+  target_matrix->setM41(0.0);
+  target_matrix->setM42(0.0);
+  target_matrix->setM43(0.0);
+  target_matrix->setM44(1.0);
 }
 
 template <typename T>
-bool checkBufferLength(T* buffer) {
+bool CheckBufferLength(T* buffer) {
   return buffer->length() >= 16;
 }
 
 template <>
-bool checkBufferLength(DOMMatrix*) {
+bool CheckBufferLength(DOMMatrix*) {
   return true;
 }
 
 template <typename Matrix>
-void OrientationSensor::populateMatrixInternal(Matrix* targetMatrix,
-                                               ExceptionState& exceptionState) {
-  if (!checkBufferLength(targetMatrix)) {
-    exceptionState.throwTypeError(
+void OrientationSensor::PopulateMatrixInternal(
+    Matrix* target_matrix,
+    ExceptionState& exception_state) {
+  if (!CheckBufferLength(target_matrix)) {
+    exception_state.ThrowTypeError(
         "Target buffer must have at least 16 elements.");
     return;
   }
-  if (!canReturnReadings()) {
-    exceptionState.throwDOMException(NotReadableError,
-                                     "Sensor data is not available.");
+  if (!CanReturnReadings()) {
+    exception_state.ThrowDOMException(kNotReadableError,
+                                      "Sensor data is not available.");
     return;
   }
 
-  double x = readingValueUnchecked(0);
-  double y = readingValueUnchecked(1);
-  double z = readingValueUnchecked(2);
-  double w = readingValueUnchecked(3);
+  double x = ReadingValueUnchecked(0);
+  double y = ReadingValueUnchecked(1);
+  double z = ReadingValueUnchecked(2);
+  double w = ReadingValueUnchecked(3);
 
-  doPopulateMatrix(targetMatrix, x, y, z, w);
+  DoPopulateMatrix(target_matrix, x, y, z, w);
 }
 
 void OrientationSensor::populateMatrix(
     Float32ArrayOrFloat64ArrayOrDOMMatrix& matrix,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   if (matrix.isFloat32Array())
-    populateMatrixInternal(matrix.getAsFloat32Array(), exceptionState);
+    PopulateMatrixInternal(matrix.getAsFloat32Array(), exception_state);
   else if (matrix.isFloat64Array())
-    populateMatrixInternal(matrix.getAsFloat64Array(), exceptionState);
+    PopulateMatrixInternal(matrix.getAsFloat64Array(), exception_state);
   else if (matrix.isDOMMatrix())
-    populateMatrixInternal(matrix.getAsDOMMatrix(), exceptionState);
+    PopulateMatrixInternal(matrix.getAsDOMMatrix(), exception_state);
   else
     NOTREACHED() << "Unexpected rotation matrix type.";
 }
 
 bool OrientationSensor::isReadingDirty() const {
-  return m_readingDirty || !canReturnReadings();
+  return reading_dirty_ || !CanReturnReadings();
 }
 
-OrientationSensor::OrientationSensor(ExecutionContext* executionContext,
+OrientationSensor::OrientationSensor(ExecutionContext* execution_context,
                                      const SensorOptions& options,
-                                     ExceptionState& exceptionState,
+                                     ExceptionState& exception_state,
                                      device::mojom::blink::SensorType type)
-    : Sensor(executionContext, options, exceptionState, type),
-      m_readingDirty(true) {}
+    : Sensor(execution_context, options, exception_state, type),
+      reading_dirty_(true) {}
 
-void OrientationSensor::onSensorReadingChanged() {
-  m_readingDirty = true;
+void OrientationSensor::OnSensorReadingChanged() {
+  reading_dirty_ = true;
 }
 
 DEFINE_TRACE(OrientationSensor) {
-  Sensor::trace(visitor);
+  Sensor::Trace(visitor);
 }
 
 }  // namespace blink

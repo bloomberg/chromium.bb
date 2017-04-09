@@ -48,41 +48,41 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 
  public:
   enum RepeatMode {
-    RepeatModeX = 1 << 0,
-    RepeatModeY = 1 << 1,
+    kRepeatModeX = 1 << 0,
+    kRepeatModeY = 1 << 1,
 
-    RepeatModeNone = 0,
-    RepeatModeXY = RepeatModeX | RepeatModeY
+    kRepeatModeNone = 0,
+    kRepeatModeXY = kRepeatModeX | kRepeatModeY
   };
 
-  static PassRefPtr<Pattern> createImagePattern(PassRefPtr<Image>,
-                                                RepeatMode = RepeatModeXY);
-  static PassRefPtr<Pattern> createPaintRecordPattern(
+  static PassRefPtr<Pattern> CreateImagePattern(PassRefPtr<Image>,
+                                                RepeatMode = kRepeatModeXY);
+  static PassRefPtr<Pattern> CreatePaintRecordPattern(
       sk_sp<PaintRecord>,
-      RepeatMode = RepeatModeXY);
+      RepeatMode = kRepeatModeXY);
   virtual ~Pattern();
 
-  void applyToFlags(PaintFlags&, const SkMatrix&);
+  void ApplyToFlags(PaintFlags&, const SkMatrix&);
 
-  bool isRepeatX() const { return m_repeatMode & RepeatModeX; }
-  bool isRepeatY() const { return m_repeatMode & RepeatModeY; }
-  bool isRepeatXY() const { return m_repeatMode == RepeatModeXY; }
+  bool IsRepeatX() const { return repeat_mode_ & kRepeatModeX; }
+  bool IsRepeatY() const { return repeat_mode_ & kRepeatModeY; }
+  bool IsRepeatXY() const { return repeat_mode_ == kRepeatModeXY; }
 
-  virtual bool isTextureBacked() const { return false; }
+  virtual bool IsTextureBacked() const { return false; }
 
  protected:
-  virtual sk_sp<PaintShader> createShader(const SkMatrix&) = 0;
-  virtual bool isLocalMatrixChanged(const SkMatrix&) const;
+  virtual sk_sp<PaintShader> CreateShader(const SkMatrix&) = 0;
+  virtual bool IsLocalMatrixChanged(const SkMatrix&) const;
 
-  void adjustExternalMemoryAllocated(int64_t delta);
+  void AdjustExternalMemoryAllocated(int64_t delta);
 
-  RepeatMode m_repeatMode;
+  RepeatMode repeat_mode_;
 
-  Pattern(RepeatMode, int64_t externalMemoryAllocated = 0);
-  mutable sk_sp<PaintShader> m_cachedShader;
+  Pattern(RepeatMode, int64_t external_memory_allocated = 0);
+  mutable sk_sp<PaintShader> cached_shader_;
 
  private:
-  int64_t m_externalMemoryAllocated;
+  int64_t external_memory_allocated_;
 };
 
 }  // namespace blink

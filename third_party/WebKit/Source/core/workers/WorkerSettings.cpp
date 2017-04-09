@@ -8,17 +8,17 @@ namespace blink {
 
 WorkerSettings::WorkerSettings(Settings* settings) {
   if (settings)
-    this->copyFlagValuesFromSettings(settings);
+    this->CopyFlagValuesFromSettings(settings);
   else
-    this->setDefaultValues();
+    this->SetDefaultValues();
 }
 
-void WorkerSettings::copyFlagValuesFromSettings(Settings* settings) {
-  m_disableReadingFromCanvas = settings->getDisableReadingFromCanvas();
+void WorkerSettings::CopyFlagValuesFromSettings(Settings* settings) {
+  disable_reading_from_canvas_ = settings->GetDisableReadingFromCanvas();
 }
 
-void WorkerSettings::setDefaultValues() {
-  m_disableReadingFromCanvas = false;
+void WorkerSettings::SetDefaultValues() {
+  disable_reading_from_canvas_ = false;
 }
 
 }  // namespace blink

@@ -36,47 +36,47 @@ namespace blink {
 class PLATFORM_EXPORT ResourceLoadTiming
     : public RefCounted<ResourceLoadTiming> {
  public:
-  static PassRefPtr<ResourceLoadTiming> create();
+  static PassRefPtr<ResourceLoadTiming> Create();
 
-  PassRefPtr<ResourceLoadTiming> deepCopy();
+  PassRefPtr<ResourceLoadTiming> DeepCopy();
   bool operator==(const ResourceLoadTiming&) const;
   bool operator!=(const ResourceLoadTiming&) const;
 
-  void setDnsStart(double);
-  void setRequestTime(double);
-  void setProxyStart(double);
-  void setProxyEnd(double);
-  void setDnsEnd(double);
-  void setConnectStart(double);
-  void setConnectEnd(double);
-  void setWorkerStart(double);
-  void setWorkerReady(double);
-  void setSendStart(double);
-  void setSendEnd(double);
-  void setReceiveHeadersEnd(double);
-  void setSslStart(double);
-  void setSslEnd(double);
-  void setPushStart(double);
-  void setPushEnd(double);
+  void SetDnsStart(double);
+  void SetRequestTime(double);
+  void SetProxyStart(double);
+  void SetProxyEnd(double);
+  void SetDnsEnd(double);
+  void SetConnectStart(double);
+  void SetConnectEnd(double);
+  void SetWorkerStart(double);
+  void SetWorkerReady(double);
+  void SetSendStart(double);
+  void SetSendEnd(double);
+  void SetReceiveHeadersEnd(double);
+  void SetSslStart(double);
+  void SetSslEnd(double);
+  void SetPushStart(double);
+  void SetPushEnd(double);
 
-  double dnsStart() const { return m_dnsStart; }
-  double requestTime() const { return m_requestTime; }
-  double proxyStart() const { return m_proxyStart; }
-  double proxyEnd() const { return m_proxyEnd; }
-  double dnsEnd() const { return m_dnsEnd; }
-  double connectStart() const { return m_connectStart; }
-  double connectEnd() const { return m_connectEnd; }
-  double workerStart() const { return m_workerStart; }
-  double workerReady() const { return m_workerReady; }
-  double sendStart() const { return m_sendStart; }
-  double sendEnd() const { return m_sendEnd; }
-  double receiveHeadersEnd() const { return m_receiveHeadersEnd; }
-  double sslStart() const { return m_sslStart; }
-  double sslEnd() const { return m_sslEnd; }
-  double pushStart() const { return m_pushStart; }
-  double pushEnd() const { return m_pushEnd; }
+  double DnsStart() const { return dns_start_; }
+  double RequestTime() const { return request_time_; }
+  double ProxyStart() const { return proxy_start_; }
+  double ProxyEnd() const { return proxy_end_; }
+  double DnsEnd() const { return dns_end_; }
+  double ConnectStart() const { return connect_start_; }
+  double ConnectEnd() const { return connect_end_; }
+  double WorkerStart() const { return worker_start_; }
+  double WorkerReady() const { return worker_ready_; }
+  double SendStart() const { return send_start_; }
+  double SendEnd() const { return send_end_; }
+  double ReceiveHeadersEnd() const { return receive_headers_end_; }
+  double SslStart() const { return ssl_start_; }
+  double SslEnd() const { return ssl_end_; }
+  double PushStart() const { return push_start_; }
+  double PushEnd() const { return push_end_; }
 
-  double calculateMillisecondDelta(double) const;
+  double CalculateMillisecondDelta(double) const;
 
  private:
   ResourceLoadTiming();
@@ -92,22 +92,22 @@ class PLATFORM_EXPORT ResourceLoadTiming
   //                     (m_requestTime - document monotonic reference).
 
   // All monotonicallyIncreasingTime() in seconds
-  double m_requestTime;
-  double m_proxyStart;
-  double m_proxyEnd;
-  double m_dnsStart;
-  double m_dnsEnd;
-  double m_connectStart;
-  double m_connectEnd;
-  double m_workerStart;
-  double m_workerReady;
-  double m_sendStart;
-  double m_sendEnd;
-  double m_receiveHeadersEnd;
-  double m_sslStart;
-  double m_sslEnd;
-  double m_pushStart;
-  double m_pushEnd;
+  double request_time_;
+  double proxy_start_;
+  double proxy_end_;
+  double dns_start_;
+  double dns_end_;
+  double connect_start_;
+  double connect_end_;
+  double worker_start_;
+  double worker_ready_;
+  double send_start_;
+  double send_end_;
+  double receive_headers_end_;
+  double ssl_start_;
+  double ssl_end_;
+  double push_start_;
+  double push_end_;
 };
 
 }  // namespace blink

@@ -29,7 +29,7 @@ _INIT_PARTIAL_INTERFACE = """%s
 
 namespace blink {
 
-void initPartialInterfacesInModules() {
+void InitPartialInterfacesInModules() {
 %s
 }
 

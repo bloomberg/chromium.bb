@@ -35,89 +35,87 @@ class CORE_EXPORT CSSParserSelector {
 
  public:
   CSSParserSelector();
-  explicit CSSParserSelector(const QualifiedName&, bool isImplicit = false);
+  explicit CSSParserSelector(const QualifiedName&, bool is_implicit = false);
 
-  static std::unique_ptr<CSSParserSelector> create() {
-    return WTF::wrapUnique(new CSSParserSelector);
+  static std::unique_ptr<CSSParserSelector> Create() {
+    return WTF::WrapUnique(new CSSParserSelector);
   }
-  static std::unique_ptr<CSSParserSelector> create(const QualifiedName& name,
-                                                   bool isImplicit = false) {
-    return WTF::makeUnique<CSSParserSelector>(name, isImplicit);
+  static std::unique_ptr<CSSParserSelector> Create(const QualifiedName& name,
+                                                   bool is_implicit = false) {
+    return WTF::MakeUnique<CSSParserSelector>(name, is_implicit);
   }
 
   ~CSSParserSelector();
 
-  std::unique_ptr<CSSSelector> releaseSelector() {
-    return std::move(m_selector);
+  std::unique_ptr<CSSSelector> ReleaseSelector() {
+    return std::move(selector_);
   }
 
-  CSSSelector::RelationType relation() const { return m_selector->relation(); }
-  void setValue(const AtomicString& value, bool matchLowerCase = false) {
-    m_selector->setValue(value, matchLowerCase);
+  CSSSelector::RelationType Relation() const { return selector_->Relation(); }
+  void SetValue(const AtomicString& value, bool match_lower_case = false) {
+    selector_->SetValue(value, match_lower_case);
   }
-  void setAttribute(const QualifiedName& value,
-                    CSSSelector::AttributeMatchType matchType) {
-    m_selector->setAttribute(value, matchType);
+  void SetAttribute(const QualifiedName& value,
+                    CSSSelector::AttributeMatchType match_type) {
+    selector_->SetAttribute(value, match_type);
   }
-  void setArgument(const AtomicString& value) {
-    m_selector->setArgument(value);
+  void SetArgument(const AtomicString& value) { selector_->SetArgument(value); }
+  void SetNth(int a, int b) { selector_->SetNth(a, b); }
+  void SetMatch(CSSSelector::MatchType value) { selector_->SetMatch(value); }
+  void SetRelation(CSSSelector::RelationType value) {
+    selector_->SetRelation(value);
   }
-  void setNth(int a, int b) { m_selector->setNth(a, b); }
-  void setMatch(CSSSelector::MatchType value) { m_selector->setMatch(value); }
-  void setRelation(CSSSelector::RelationType value) {
-    m_selector->setRelation(value);
+  void SetForPage() { selector_->SetForPage(); }
+  void SetRelationIsAffectedByPseudoContent() {
+    selector_->SetRelationIsAffectedByPseudoContent();
   }
-  void setForPage() { m_selector->setForPage(); }
-  void setRelationIsAffectedByPseudoContent() {
-    m_selector->setRelationIsAffectedByPseudoContent();
-  }
-  bool relationIsAffectedByPseudoContent() const {
-    return m_selector->relationIsAffectedByPseudoContent();
+  bool RelationIsAffectedByPseudoContent() const {
+    return selector_->RelationIsAffectedByPseudoContent();
   }
 
-  void updatePseudoType(const AtomicString& value,
-                        bool hasArguments = false) const {
-    m_selector->updatePseudoType(value, hasArguments);
+  void UpdatePseudoType(const AtomicString& value,
+                        bool has_arguments = false) const {
+    selector_->UpdatePseudoType(value, has_arguments);
   }
 
-  void adoptSelectorVector(
-      Vector<std::unique_ptr<CSSParserSelector>>& selectorVector);
-  void setSelectorList(std::unique_ptr<CSSSelectorList>);
+  void AdoptSelectorVector(
+      Vector<std::unique_ptr<CSSParserSelector>>& selector_vector);
+  void SetSelectorList(std::unique_ptr<CSSSelectorList>);
 
-  bool isHostPseudoSelector() const;
+  bool IsHostPseudoSelector() const;
 
-  CSSSelector::MatchType match() const { return m_selector->match(); }
-  CSSSelector::PseudoType pseudoType() const {
-    return m_selector->getPseudoType();
+  CSSSelector::MatchType Match() const { return selector_->Match(); }
+  CSSSelector::PseudoType GetPseudoType() const {
+    return selector_->GetPseudoType();
   }
-  const CSSSelectorList* selectorList() const {
-    return m_selector->selectorList();
-  }
-
-  bool needsImplicitShadowCombinatorForMatching() const {
-    return pseudoType() == CSSSelector::PseudoWebKitCustomElement ||
-           pseudoType() == CSSSelector::PseudoBlinkInternalElement ||
-           pseudoType() == CSSSelector::PseudoCue ||
-           pseudoType() == CSSSelector::PseudoPlaceholder ||
-           pseudoType() == CSSSelector::PseudoShadow ||
-           pseudoType() == CSSSelector::PseudoSlotted;
+  const CSSSelectorList* SelectorList() const {
+    return selector_->SelectorList();
   }
 
-  bool isSimple() const;
-
-  CSSParserSelector* tagHistory() const { return m_tagHistory.get(); }
-  void setTagHistory(std::unique_ptr<CSSParserSelector> selector) {
-    m_tagHistory = std::move(selector);
+  bool NeedsImplicitShadowCombinatorForMatching() const {
+    return GetPseudoType() == CSSSelector::kPseudoWebKitCustomElement ||
+           GetPseudoType() == CSSSelector::kPseudoBlinkInternalElement ||
+           GetPseudoType() == CSSSelector::kPseudoCue ||
+           GetPseudoType() == CSSSelector::kPseudoPlaceholder ||
+           GetPseudoType() == CSSSelector::kPseudoShadow ||
+           GetPseudoType() == CSSSelector::kPseudoSlotted;
   }
-  void clearTagHistory() { m_tagHistory.reset(); }
-  void appendTagHistory(CSSSelector::RelationType,
+
+  bool IsSimple() const;
+
+  CSSParserSelector* TagHistory() const { return tag_history_.get(); }
+  void SetTagHistory(std::unique_ptr<CSSParserSelector> selector) {
+    tag_history_ = std::move(selector);
+  }
+  void ClearTagHistory() { tag_history_.reset(); }
+  void AppendTagHistory(CSSSelector::RelationType,
                         std::unique_ptr<CSSParserSelector>);
-  std::unique_ptr<CSSParserSelector> releaseTagHistory();
-  void prependTagSelector(const QualifiedName&, bool tagIsImplicit = false);
+  std::unique_ptr<CSSParserSelector> ReleaseTagHistory();
+  void PrependTagSelector(const QualifiedName&, bool tag_is_implicit = false);
 
  private:
-  std::unique_ptr<CSSSelector> m_selector;
-  std::unique_ptr<CSSParserSelector> m_tagHistory;
+  std::unique_ptr<CSSSelector> selector_;
+  std::unique_ptr<CSSParserSelector> tag_history_;
 };
 
 }  // namespace blink

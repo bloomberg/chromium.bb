@@ -33,16 +33,16 @@
 
 namespace blink {
 
-void replaceNewlinesWithWindowsStyleNewlines(String& str) {
-  DEFINE_STATIC_LOCAL(String, windowsNewline, ("\r\n"));
+void ReplaceNewlinesWithWindowsStyleNewlines(String& str) {
+  DEFINE_STATIC_LOCAL(String, windows_newline, ("\r\n"));
   StringBuilder result;
   for (unsigned index = 0; index < str.length(); ++index) {
     if (str[index] != '\n' || (index > 0 && str[index - 1] == '\r'))
-      result.append(str[index]);
+      result.Append(str[index]);
     else
-      result.append(windowsNewline);
+      result.Append(windows_newline);
   }
-  str = result.toString();
+  str = result.ToString();
 }
 
 }  // namespace blink

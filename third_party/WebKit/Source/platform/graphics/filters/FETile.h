@@ -29,20 +29,20 @@ namespace blink {
 
 class PLATFORM_EXPORT FETile final : public FilterEffect {
  public:
-  static FETile* create(Filter*);
+  static FETile* Create(Filter*);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
   FETile(Filter*);
 
-  FilterEffectType getFilterEffectType() const override {
-    return FilterEffectTypeTile;
+  FilterEffectType GetFilterEffectType() const override {
+    return kFilterEffectTypeTile;
   }
 
-  FloatRect mapInputs(const FloatRect&) const final;
+  FloatRect MapInputs(const FloatRect&) const final;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 };
 
 }  // namespace blink

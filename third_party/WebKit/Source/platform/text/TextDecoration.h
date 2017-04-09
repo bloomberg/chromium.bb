@@ -34,8 +34,8 @@
 namespace blink {
 
 enum TextDecorationType {
-  TextDecorationTypeSpelling = 1 << 1,
-  TextDecorationTypeGrammar = 1 << 2,
+  kTextDecorationTypeSpelling = 1 << 1,
+  kTextDecorationTypeGrammar = 1 << 2,
 };
 }
 

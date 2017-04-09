@@ -119,7 +119,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateNotAvailableLockOnce) {
   // No ScreenOrientationDelegate.
   base::Optional<ScreenOrientationLockResult> result_1;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_1);
   EXPECT_EQ(ScreenOrientationLockResult::
                 SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE,
@@ -129,7 +129,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateNotAvailableLockOnce) {
   FakeScreenOrientationDelegate delegate(false, false);
   base::Optional<ScreenOrientationLockResult> result_2;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_2);
   EXPECT_EQ(ScreenOrientationLockResult::
                 SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE,
@@ -148,7 +148,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateLockOnce) {
 
   base::Optional<ScreenOrientationLockResult> result_1;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_1);
   // Lock request is pending.
   EXPECT_FALSE(result_1.has_value());
@@ -170,7 +170,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
   ASSERT_FALSE(contents()->IsFullscreenForCurrentTab());
   base::Optional<ScreenOrientationLockResult> result_1;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_1);
   EXPECT_EQ(ScreenOrientationLockResult::
                 SCREEN_ORIENTATION_LOCK_RESULT_ERROR_FULLSCREEN_REQUIRED,
@@ -185,7 +185,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
 
   base::Optional<ScreenOrientationLockResult> result_2;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_2);
   // Lock request is pending.
   EXPECT_FALSE(result_2.has_value());
@@ -204,7 +204,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateLockThenUnlock) {
 
   base::Optional<ScreenOrientationLockResult> result_1;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_1);
   // The lock request will be pending.
   EXPECT_FALSE(result_1.has_value());
@@ -232,7 +232,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateLockThenLock) {
 
   base::Optional<ScreenOrientationLockResult> result_1;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_1);
   // The lock request will be pending.
   EXPECT_FALSE(result_1.has_value());
@@ -242,7 +242,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateLockThenLock) {
 
   base::Optional<ScreenOrientationLockResult> result_2;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result_2);
   // The pending lock request is cancelled.
   EXPECT_EQ(ScreenOrientationLockResult::
@@ -288,7 +288,7 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenExitingFullScreen) {
 
   base::Optional<ScreenOrientationLockResult> result;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result);
   // The lock request will be pending.
   EXPECT_FALSE(result.has_value());
@@ -321,7 +321,7 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenNavigation) {
 
   base::Optional<ScreenOrientationLockResult> result;
   CallLockAndGetResult(blink::WebScreenOrientationLockType::
-                           WebScreenOrientationLockLandscapeSecondary,
+                           kWebScreenOrientationLockLandscapeSecondary,
                        &result);
   // The lock request will be pending.
   EXPECT_FALSE(result.has_value());

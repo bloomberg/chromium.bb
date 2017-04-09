@@ -32,10 +32,10 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
   ~RtcDtmfSenderHandler() override;
 
   // blink::WebRTCDTMFSenderHandler implementation.
-  void setClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
-  blink::WebString currentToneBuffer() override;
-  bool canInsertDTMF() override;
-  bool insertDTMF(const blink::WebString& tones,
+  void SetClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
+  blink::WebString CurrentToneBuffer() override;
+  bool CanInsertDTMF() override;
+  bool InsertDTMF(const blink::WebString& tones,
                   long duration,
                   long interToneGap) override;
 

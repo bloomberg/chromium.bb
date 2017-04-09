@@ -46,44 +46,44 @@ class V0CustomElementDescriptor {
 
  public:
   V0CustomElementDescriptor(const AtomicString& type,
-                            const AtomicString& namespaceURI,
-                            const AtomicString& localName)
-      : m_type(type), m_namespaceURI(namespaceURI), m_localName(localName) {}
+                            const AtomicString& namespace_uri,
+                            const AtomicString& local_name)
+      : type_(type), namespace_uri_(namespace_uri), local_name_(local_name) {}
 
   ~V0CustomElementDescriptor() {}
 
   // Specifies whether the custom element is in the HTML or SVG
   // namespace.
-  const AtomicString& namespaceURI() const { return m_namespaceURI; }
+  const AtomicString& NamespaceURI() const { return namespace_uri_; }
 
   // The tag name.
-  const AtomicString& localName() const { return m_localName; }
+  const AtomicString& LocalName() const { return local_name_; }
 
   // The name of the definition. For custom tags, this is the tag
   // name and the same as "localName". For type extensions, this is
   // the value of the "is" attribute.
-  const AtomicString& type() const { return m_type; }
+  const AtomicString& GetType() const { return type_; }
 
-  bool isTypeExtension() const { return m_type != m_localName; }
+  bool IsTypeExtension() const { return type_ != local_name_; }
 
   // Stuff for hashing.
 
   V0CustomElementDescriptor() {}
   explicit V0CustomElementDescriptor(WTF::HashTableDeletedValueType value)
-      : m_type(value) {}
-  bool isHashTableDeletedValue() const {
-    return m_type.isHashTableDeletedValue();
+      : type_(value) {}
+  bool IsHashTableDeletedValue() const {
+    return type_.IsHashTableDeletedValue();
   }
 
   bool operator==(const V0CustomElementDescriptor& other) const {
-    return m_type == other.m_type && m_localName == other.m_localName &&
-           m_namespaceURI == other.m_namespaceURI;
+    return type_ == other.type_ && local_name_ == other.local_name_ &&
+           namespace_uri_ == other.namespace_uri_;
   }
 
  private:
-  AtomicString m_type;
-  AtomicString m_namespaceURI;
-  AtomicString m_localName;
+  AtomicString type_;
+  AtomicString namespace_uri_;
+  AtomicString local_name_;
 };
 
 }  // namespace blink

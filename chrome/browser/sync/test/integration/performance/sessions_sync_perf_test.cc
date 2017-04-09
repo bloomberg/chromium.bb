@@ -68,8 +68,9 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
     chrome::SelectNumberedTab(browser, i);
     url = NextURL();
     browser->OpenURL(OpenURLParams(
-        url, content::Referrer(GURL("http://localhost"),
-                               blink::WebReferrerPolicyDefault),
+        url,
+        content::Referrer(GURL("http://localhost"),
+                          blink::kWebReferrerPolicyDefault),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false));
     urls.push_back(url);
   }

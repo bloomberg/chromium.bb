@@ -36,14 +36,14 @@ class WordMeasurement {
 
  public:
   WordMeasurement()
-      : layoutText(nullptr), width(0), startOffset(0), endOffset(0) {}
+      : layout_text(nullptr), width(0), start_offset(0), end_offset(0) {}
 
-  LineLayoutText layoutText;
+  LineLayoutText layout_text;
   float width;
-  int startOffset;
-  int endOffset;
-  HashSet<const SimpleFontData*> fallbackFonts;
-  FloatRect glyphBounds;
+  int start_offset;
+  int end_offset;
+  HashSet<const SimpleFontData*> fallback_fonts;
+  FloatRect glyph_bounds;
 };
 
 }  // namespace blink

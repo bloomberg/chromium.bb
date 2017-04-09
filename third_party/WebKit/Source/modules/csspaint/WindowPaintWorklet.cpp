@@ -13,35 +13,35 @@ namespace blink {
 WindowPaintWorklet::WindowPaintWorklet(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-const char* WindowPaintWorklet::supplementName() {
+const char* WindowPaintWorklet::SupplementName() {
   return "WindowPaintWorklet";
 }
 
 // static
-WindowPaintWorklet& WindowPaintWorklet::from(LocalDOMWindow& window) {
+WindowPaintWorklet& WindowPaintWorklet::From(LocalDOMWindow& window) {
   WindowPaintWorklet* supplement = static_cast<WindowPaintWorklet*>(
-      Supplement<LocalDOMWindow>::from(window, supplementName()));
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
     supplement = new WindowPaintWorklet(window);
-    provideTo(window, supplementName(), supplement);
+    ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 // static
 Worklet* WindowPaintWorklet::paintWorklet(LocalDOMWindow& window) {
-  return from(window).paintWorklet();
+  return From(window).paintWorklet();
 }
 
 PaintWorklet* WindowPaintWorklet::paintWorklet() {
-  if (!m_paintWorklet && supplementable()->frame())
-    m_paintWorklet = PaintWorklet::create(supplementable()->frame());
-  return m_paintWorklet.get();
+  if (!paint_worklet_ && GetSupplementable()->GetFrame())
+    paint_worklet_ = PaintWorklet::Create(GetSupplementable()->GetFrame());
+  return paint_worklet_.Get();
 }
 
 DEFINE_TRACE(WindowPaintWorklet) {
-  visitor->trace(m_paintWorklet);
-  Supplement<LocalDOMWindow>::trace(visitor);
+  visitor->Trace(paint_worklet_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 }  // namespace blink

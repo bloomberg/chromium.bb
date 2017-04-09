@@ -42,33 +42,33 @@ class CORE_EXPORT V8ThrowException {
   // Creates and returns an exception object, or returns an empty handle if
   // failed.  |unsanitizedMessage| should not be specified unless it's
   // SecurityError.
-  static v8::Local<v8::Value> createDOMException(
+  static v8::Local<v8::Value> CreateDOMException(
       v8::Isolate*,
       ExceptionCode,
-      const String& sanitizedMessage,
-      const String& unsanitizedMessage = String());
+      const String& sanitized_message,
+      const String& unsanitized_message = String());
 
-  static void throwException(v8::Isolate* isolate,
+  static void ThrowException(v8::Isolate* isolate,
                              v8::Local<v8::Value> exception) {
     if (!isolate->IsExecutionTerminating())
       isolate->ThrowException(exception);
   }
 
-  static v8::Local<v8::Value> createError(v8::Isolate*, const String& message);
-  static v8::Local<v8::Value> createRangeError(v8::Isolate*,
+  static v8::Local<v8::Value> CreateError(v8::Isolate*, const String& message);
+  static v8::Local<v8::Value> CreateRangeError(v8::Isolate*,
                                                const String& message);
-  static v8::Local<v8::Value> createReferenceError(v8::Isolate*,
+  static v8::Local<v8::Value> CreateReferenceError(v8::Isolate*,
                                                    const String& message);
-  static v8::Local<v8::Value> createSyntaxError(v8::Isolate*,
+  static v8::Local<v8::Value> CreateSyntaxError(v8::Isolate*,
                                                 const String& message);
-  static v8::Local<v8::Value> createTypeError(v8::Isolate*,
+  static v8::Local<v8::Value> CreateTypeError(v8::Isolate*,
                                               const String& message);
 
-  static void throwError(v8::Isolate*, const String& message);
-  static void throwRangeError(v8::Isolate*, const String& message);
-  static void throwReferenceError(v8::Isolate*, const String& message);
-  static void throwSyntaxError(v8::Isolate*, const String& message);
-  static void throwTypeError(v8::Isolate*, const String& message);
+  static void ThrowError(v8::Isolate*, const String& message);
+  static void ThrowRangeError(v8::Isolate*, const String& message);
+  static void ThrowReferenceError(v8::Isolate*, const String& message);
+  static void ThrowSyntaxError(v8::Isolate*, const String& message);
+  static void ThrowTypeError(v8::Isolate*, const String& message);
 };
 
 }  // namespace blink

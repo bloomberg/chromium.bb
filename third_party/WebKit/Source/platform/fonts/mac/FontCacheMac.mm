@@ -59,97 +59,100 @@
 
 namespace blink {
 
-const char* kColorEmojiFontMac = "Apple Color Emoji";
+const char* g_k_color_emoji_font_mac = "Apple Color Emoji";
 
 // static
-const AtomicString& FontCache::legacySystemFontFamily() {
-  DEFINE_STATIC_LOCAL(AtomicString, legacySystemFontFamily,
+const AtomicString& FontCache::LegacySystemFontFamily() {
+  DEFINE_STATIC_LOCAL(AtomicString, legacy_system_font_family,
                       ("BlinkMacSystemFont"));
-  return legacySystemFontFamily;
+  return legacy_system_font_family;
 }
 
-static void invalidateFontCache() {
-  if (!isMainThread()) {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, WTF::bind(&invalidateFontCache));
+static void InvalidateFontCache() {
+  if (!IsMainThread()) {
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, WTF::Bind(&InvalidateFontCache));
     return;
   }
-  FontCache::fontCache()->invalidate();
+  FontCache::GetFontCache()->Invalidate();
 }
 
-static void fontCacheRegisteredFontsChangedNotificationCallback(
+static void FontCacheRegisteredFontsChangedNotificationCallback(
     CFNotificationCenterRef,
     void* observer,
     CFStringRef name,
     const void*,
     CFDictionaryRef) {
-  DCHECK_EQ(observer, FontCache::fontCache());
+  DCHECK_EQ(observer, FontCache::GetFontCache());
   DCHECK(CFEqual(name, kCTFontManagerRegisteredFontsChangedNotification));
-  invalidateFontCache();
+  InvalidateFontCache();
 }
 
-static bool useHinting() {
+static bool UseHinting() {
   // Enable hinting when subpixel font scaling is disabled or
   // when running the set of standard non-subpixel layout tests,
   // otherwise use subpixel glyph positioning.
-  return (LayoutTestSupport::isRunningLayoutTest() &&
-          !LayoutTestSupport::isFontAntialiasingEnabledForTest());
+  return (LayoutTestSupport::IsRunningLayoutTest() &&
+          !LayoutTestSupport::IsFontAntialiasingEnabledForTest());
 }
 
-void FontCache::platformInit() {
+void FontCache::PlatformInit() {
   CFNotificationCenterAddObserver(
       CFNotificationCenterGetLocalCenter(), this,
-      fontCacheRegisteredFontsChangedNotificationCallback,
+      FontCacheRegisteredFontsChangedNotificationCallback,
       kCTFontManagerRegisteredFontsChangedNotification, 0,
       CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 
-static inline bool isAppKitFontWeightBold(NSInteger appKitFontWeight) {
-  return appKitFontWeight >= 7;
+static inline bool IsAppKitFontWeightBold(NSInteger app_kit_font_weight) {
+  return app_kit_font_weight >= 7;
 }
 
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
-    const FontDescription& fontDescription,
+PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+    const FontDescription& font_description,
     UChar32 character,
-    const SimpleFontData* fontDataToSubstitute,
-    FontFallbackPriority fallbackPriority) {
-  if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
-    RefPtr<SimpleFontData> emojiFont =
-        getFontData(fontDescription, AtomicString(kColorEmojiFontMac));
-    if (emojiFont)
-      return emojiFont;
+    const SimpleFontData* font_data_to_substitute,
+    FontFallbackPriority fallback_priority) {
+  if (fallback_priority == FontFallbackPriority::kEmojiEmoji) {
+    RefPtr<SimpleFontData> emoji_font =
+        GetFontData(font_description, AtomicString(g_k_color_emoji_font_mac));
+    if (emoji_font)
+      return emoji_font;
   }
 
   // FIXME: We should fix getFallbackFamily to take a UChar32
   // and remove this split-to-UChar16 code.
-  UChar codeUnits[2];
-  int codeUnitsLength;
+  UChar code_units[2];
+  int code_units_length;
   if (character <= 0xFFFF) {
-    codeUnits[0] = character;
-    codeUnitsLength = 1;
+    code_units[0] = character;
+    code_units_length = 1;
   } else {
-    codeUnits[0] = U16_LEAD(character);
-    codeUnits[1] = U16_TRAIL(character);
-    codeUnitsLength = 2;
+    code_units[0] = U16_LEAD(character);
+    code_units[1] = U16_TRAIL(character);
+    code_units_length = 2;
   }
 
-  const FontPlatformData& platformData = fontDataToSubstitute->platformData();
-  NSFont* nsFont = toNSFont(platformData.ctFont());
+  const FontPlatformData& platform_data =
+      font_data_to_substitute->PlatformData();
+  NSFont* ns_font = toNSFont(platform_data.CtFont());
 
-  NSString* string = [[NSString alloc] initWithCharactersNoCopy:codeUnits
-                                                         length:codeUnitsLength
-                                                   freeWhenDone:NO];
-  NSFont* substituteFont = [NSFont findFontLike:nsFont
-                                      forString:string
-                                      withRange:NSMakeRange(0, codeUnitsLength)
-                                     inLanguage:nil];
+  NSString* string =
+      [[NSString alloc] initWithCharactersNoCopy:code_units
+                                          length:code_units_length
+                                    freeWhenDone:NO];
+  NSFont* substitute_font =
+      [NSFont findFontLike:ns_font
+                 forString:string
+                 withRange:NSMakeRange(0, code_units_length)
+                inLanguage:nil];
   [string release];
 
   // FIXME: Remove this SPI usage: http://crbug.com/255122
-  if (!substituteFont && codeUnitsLength == 1)
-    substituteFont =
-        [NSFont findFontLike:nsFont forCharacter:codeUnits[0] inLanguage:nil];
-  if (!substituteFont)
+  if (!substitute_font && code_units_length == 1)
+    substitute_font =
+        [NSFont findFontLike:ns_font forCharacter:code_units[0] inLanguage:nil];
+  if (!substitute_font)
     return nullptr;
 
   // Use the family name from the AppKit-supplied substitute font, requesting
@@ -158,141 +161,145 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   // account.  But it does create the possibility that we could end up with a
   // font that doesn't actually cover the characters we need.
 
-  NSFontManager* fontManager = [NSFontManager sharedFontManager];
+  NSFontManager* font_manager = [NSFontManager sharedFontManager];
 
   NSFontTraitMask traits;
   NSInteger weight;
   CGFloat size;
 
-  if (nsFont) {
-    traits = [fontManager traitsOfFont:nsFont];
-    if (platformData.m_syntheticBold)
+  if (ns_font) {
+    traits = [font_manager traitsOfFont:ns_font];
+    if (platform_data.synthetic_bold_)
       traits |= NSBoldFontMask;
-    if (platformData.m_syntheticItalic)
+    if (platform_data.synthetic_italic_)
       traits |= NSFontItalicTrait;
-    weight = [fontManager weightOfFont:nsFont];
-    size = [nsFont pointSize];
+    weight = [font_manager weightOfFont:ns_font];
+    size = [ns_font pointSize];
   } else {
     // For custom fonts nsFont is nil.
-    traits = fontDescription.style() ? NSFontItalicTrait : 0;
-    weight = toAppKitFontWeight(fontDescription.weight());
-    size = fontDescription.computedPixelSize();
+    traits = font_description.Style() ? NSFontItalicTrait : 0;
+    weight = ToAppKitFontWeight(font_description.Weight());
+    size = font_description.ComputedPixelSize();
   }
 
-  NSFontTraitMask substituteFontTraits =
-      [fontManager traitsOfFont:substituteFont];
-  NSInteger substituteFontWeight = [fontManager weightOfFont:substituteFont];
+  NSFontTraitMask substitute_font_traits =
+      [font_manager traitsOfFont:substitute_font];
+  NSInteger substitute_font_weight =
+      [font_manager weightOfFont:substitute_font];
 
-  if (traits != substituteFontTraits || weight != substituteFontWeight ||
-      !nsFont) {
-    if (NSFont* bestVariation =
-            [fontManager fontWithFamily:[substituteFont familyName]
-                                 traits:traits
-                                 weight:weight
-                                   size:size]) {
-      if ((!nsFont ||
-           [fontManager traitsOfFont:bestVariation] != substituteFontTraits ||
-           [fontManager weightOfFont:bestVariation] != substituteFontWeight) &&
-          [[bestVariation coveredCharacterSet] longCharacterIsMember:character])
-        substituteFont = bestVariation;
+  if (traits != substitute_font_traits || weight != substitute_font_weight ||
+      !ns_font) {
+    if (NSFont* best_variation =
+            [font_manager fontWithFamily:[substitute_font familyName]
+                                  traits:traits
+                                  weight:weight
+                                    size:size]) {
+      if ((!ns_font ||
+           [font_manager traitsOfFont:best_variation] !=
+               substitute_font_traits ||
+           [font_manager weightOfFont:best_variation] !=
+               substitute_font_weight) &&
+          [[best_variation coveredCharacterSet]
+              longCharacterIsMember:character])
+        substitute_font = best_variation;
     }
   }
 
-  substituteFont =
-      useHinting() ? [substituteFont screenFont] : [substituteFont printerFont];
+  substitute_font = UseHinting() ? [substitute_font screenFont]
+                                 : [substitute_font printerFont];
 
-  substituteFontTraits = [fontManager traitsOfFont:substituteFont];
-  substituteFontWeight = [fontManager weightOfFont:substituteFont];
+  substitute_font_traits = [font_manager traitsOfFont:substitute_font];
+  substitute_font_weight = [font_manager weightOfFont:substitute_font];
 
   // TODO(eae): Remove once skia supports bold emoji. See
   // https://bugs.chromium.org/p/skia/issues/detail?id=4904
   // Bold emoji look the same as normal emoji, so syntheticBold isn't needed.
-  bool syntheticBold =
-      isAppKitFontWeightBold(weight) &&
-      !isAppKitFontWeightBold(substituteFontWeight) &&
-      ![substituteFont.familyName isEqual:@"Apple Color Emoji"];
+  bool synthetic_bold =
+      IsAppKitFontWeightBold(weight) &&
+      !IsAppKitFontWeightBold(substitute_font_weight) &&
+      ![substitute_font.familyName isEqual:@"Apple Color Emoji"];
 
-  FontPlatformData alternateFont(
-      substituteFont, platformData.size(), syntheticBold,
+  FontPlatformData alternate_font(
+      substitute_font, platform_data.size(), synthetic_bold,
       (traits & NSFontItalicTrait) &&
-          !(substituteFontTraits & NSFontItalicTrait),
-      platformData.orientation(),
+          !(substitute_font_traits & NSFontItalicTrait),
+      platform_data.Orientation(),
       nullptr);  // No variation paramaters in fallback.
 
-  return fontDataFromFontPlatformData(&alternateFont, DoNotRetain);
+  return FontDataFromFontPlatformData(&alternate_font, kDoNotRetain);
 }
 
-PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(
-    const FontDescription& fontDescription,
-    ShouldRetain shouldRetain) {
-  DEFINE_STATIC_LOCAL(AtomicString, timesStr, ("Times"));
+PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
+    const FontDescription& font_description,
+    ShouldRetain should_retain) {
+  DEFINE_STATIC_LOCAL(AtomicString, times_str, ("Times"));
 
   // FIXME: Would be even better to somehow get the user's default font here.
   // For now we'll pick the default that the user would get without changing
   // any prefs.
-  RefPtr<SimpleFontData> simpleFontData =
-      getFontData(fontDescription, timesStr, AlternateFontName::AllowAlternate,
-                  shouldRetain);
-  if (simpleFontData)
-    return simpleFontData.release();
+  RefPtr<SimpleFontData> simple_font_data =
+      GetFontData(font_description, times_str,
+                  AlternateFontName::kAllowAlternate, should_retain);
+  if (simple_font_data)
+    return simple_font_data.Release();
 
   // The Times fallback will almost always work, but in the highly unusual case
   // where the user doesn't have it, we fall back on Lucida Grande because
   // that's guaranteed to be there, according to Nathan Taylor. This is good
   // enough to avoid a crash at least.
-  DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande"));
-  return getFontData(fontDescription, lucidaGrandeStr,
-                     AlternateFontName::AllowAlternate, shouldRetain);
+  DEFINE_STATIC_LOCAL(AtomicString, lucida_grande_str, ("Lucida Grande"));
+  return GetFontData(font_description, lucida_grande_str,
+                     AlternateFontName::kAllowAlternate, should_retain);
 }
 
-std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
-    const FontDescription& fontDescription,
-    const FontFaceCreationParams& creationParams,
-    float fontSize,
+std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
+    const FontDescription& font_description,
+    const FontFaceCreationParams& creation_params,
+    float font_size,
     AlternateFontName) {
-  NSFontTraitMask traits = fontDescription.style() ? NSFontItalicTrait : 0;
-  float size = fontSize;
+  NSFontTraitMask traits = font_description.Style() ? NSFontItalicTrait : 0;
+  float size = font_size;
 
-  NSFont* nsFont = MatchNSFontFamily(creationParams.family(), traits,
-                                     fontDescription.weight(), size);
-  if (!nsFont)
+  NSFont* ns_font = MatchNSFontFamily(creation_params.Family(), traits,
+                                      font_description.Weight(), size);
+  if (!ns_font)
     return nullptr;
 
-  NSFontManager* fontManager = [NSFontManager sharedFontManager];
-  NSFontTraitMask actualTraits = 0;
-  if (fontDescription.style())
-    actualTraits = [fontManager traitsOfFont:nsFont];
-  NSInteger actualWeight = [fontManager weightOfFont:nsFont];
+  NSFontManager* font_manager = [NSFontManager sharedFontManager];
+  NSFontTraitMask actual_traits = 0;
+  if (font_description.Style())
+    actual_traits = [font_manager traitsOfFont:ns_font];
+  NSInteger actual_weight = [font_manager weightOfFont:ns_font];
 
-  NSFont* platformFont =
-      useHinting() ? [nsFont screenFont] : [nsFont printerFont];
-  NSInteger appKitWeight = toAppKitFontWeight(fontDescription.weight());
+  NSFont* platform_font =
+      UseHinting() ? [ns_font screenFont] : [ns_font printerFont];
+  NSInteger app_kit_weight = ToAppKitFontWeight(font_description.Weight());
 
   // TODO(eae): Remove once skia supports bold emoji. See
   // https://bugs.chromium.org/p/skia/issues/detail?id=4904
   // Bold emoji look the same as normal emoji, so syntheticBold isn't needed.
-  bool syntheticBold = [platformFont.familyName isEqual:@"Apple Color Emoji"]
-                           ? false
-                           : (isAppKitFontWeightBold(appKitWeight) &&
-                              !isAppKitFontWeightBold(actualWeight)) ||
-                                 fontDescription.isSyntheticBold();
+  bool synthetic_bold = [platform_font.familyName isEqual:@"Apple Color Emoji"]
+                            ? false
+                            : (IsAppKitFontWeightBold(app_kit_weight) &&
+                               !IsAppKitFontWeightBold(actual_weight)) ||
+                                  font_description.IsSyntheticBold();
 
-  bool syntheticItalic =
-      ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) ||
-      fontDescription.isSyntheticItalic();
+  bool synthetic_italic =
+      ((traits & NSFontItalicTrait) && !(actual_traits & NSFontItalicTrait)) ||
+      font_description.IsSyntheticItalic();
 
   // FontPlatformData::typeface() is null in the case of Chromium out-of-process
   // font loading failing.  Out-of-process loading occurs for registered fonts
   // stored in non-system locations.  When loading fails, we do not want to use
   // the returned FontPlatformData since it will not have a valid SkTypeface.
-  std::unique_ptr<FontPlatformData> platformData =
-      WTF::makeUnique<FontPlatformData>(
-          platformFont, size, syntheticBold, syntheticItalic,
-          fontDescription.orientation(), fontDescription.variationSettings());
-  if (!platformData->typeface()) {
+  std::unique_ptr<FontPlatformData> platform_data =
+      WTF::MakeUnique<FontPlatformData>(
+          platform_font, size, synthetic_bold, synthetic_italic,
+          font_description.Orientation(), font_description.VariationSettings());
+  if (!platform_data->Typeface()) {
     return nullptr;
   }
-  return platformData;
+  return platform_data;
 }
 
 }  // namespace blink

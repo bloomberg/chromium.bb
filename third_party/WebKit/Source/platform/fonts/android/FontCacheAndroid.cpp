@@ -39,16 +39,16 @@
 
 namespace blink {
 
-static AtomicString defaultFontFamily(SkFontMgr* fontManager) {
+static AtomicString DefaultFontFamily(SkFontMgr* font_manager) {
   // Pass nullptr to get the default typeface. The default typeface in Android
   // is "sans-serif" if exists, or the first entry in fonts.xml.
   sk_sp<SkTypeface> typeface(
-      fontManager->legacyCreateTypeface(nullptr, SkFontStyle()));
+      font_manager->legacyCreateTypeface(nullptr, SkFontStyle()));
   if (typeface) {
-    SkString familyName;
-    typeface->getFamilyName(&familyName);
-    if (familyName.size())
-      return toAtomicString(familyName);
+    SkString family_name;
+    typeface->getFamilyName(&family_name);
+    if (family_name.size())
+      return ToAtomicString(family_name);
   }
 
   // Some devices do not return the default typeface. There's not much we can
@@ -58,77 +58,78 @@ static AtomicString defaultFontFamily(SkFontMgr* fontManager) {
   return "Arial";
 }
 
-static AtomicString defaultFontFamily() {
-  if (SkFontMgr* fontManager = FontCache::fontCache()->fontManager())
-    return defaultFontFamily(fontManager);
+static AtomicString DefaultFontFamily() {
+  if (SkFontMgr* font_manager = FontCache::GetFontCache()->FontManager())
+    return DefaultFontFamily(font_manager);
   sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-  return defaultFontFamily(fm.get());
+  return DefaultFontFamily(fm.get());
 }
 
 // static
-const AtomicString& FontCache::systemFontFamily() {
-  DEFINE_STATIC_LOCAL(AtomicString, systemFontFamily, (defaultFontFamily()));
-  return systemFontFamily;
+const AtomicString& FontCache::SystemFontFamily() {
+  DEFINE_STATIC_LOCAL(AtomicString, system_font_family, (DefaultFontFamily()));
+  return system_font_family;
 }
 
 // static
-void FontCache::setSystemFontFamily(const AtomicString&) {}
+void FontCache::SetSystemFontFamily(const AtomicString&) {}
 
-PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
-    const FontDescription& fontDescription,
+PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+    const FontDescription& font_description,
     UChar32 c,
     const SimpleFontData*,
-    FontFallbackPriority fallbackPriority) {
+    FontFallbackPriority fallback_priority) {
   sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-  AtomicString familyName =
-      getFamilyNameForCharacter(fm.get(), c, fontDescription, fallbackPriority);
-  if (familyName.isEmpty())
-    return getLastResortFallbackFont(fontDescription, DoNotRetain);
-  return fontDataFromFontPlatformData(
-      getFontPlatformData(fontDescription, FontFaceCreationParams(familyName)),
-      DoNotRetain);
+  AtomicString family_name = GetFamilyNameForCharacter(
+      fm.get(), c, font_description, fallback_priority);
+  if (family_name.IsEmpty())
+    return GetLastResortFallbackFont(font_description, kDoNotRetain);
+  return FontDataFromFontPlatformData(
+      GetFontPlatformData(font_description,
+                          FontFaceCreationParams(family_name)),
+      kDoNotRetain);
 }
 
 // static
-AtomicString FontCache::getGenericFamilyNameForScript(
-    const AtomicString& familyName,
-    const FontDescription& fontDescription) {
+AtomicString FontCache::GetGenericFamilyNameForScript(
+    const AtomicString& family_name,
+    const FontDescription& font_description) {
   // If monospace, do not apply CJK hack to find i18n fonts, because
   // i18n fonts are likely not monospace. Monospace is mostly used
   // for code, but when i18n characters appear in monospace, system
   // fallback can still render the characters.
-  if (familyName == FontFamilyNames::webkit_monospace)
-    return familyName;
+  if (family_name == FontFamilyNames::webkit_monospace)
+    return family_name;
 
   // The CJK hack below should be removed, at latest when we have
   // serif and sans-serif versions of CJK fonts. Until then, limit it
   // to only when the content locale is available. crbug.com/652146
-  const LayoutLocale* contentLocale = fontDescription.locale();
-  if (!contentLocale)
-    return familyName;
+  const LayoutLocale* content_locale = font_description.Locale();
+  if (!content_locale)
+    return family_name;
 
   // This is a hack to use the preferred font for CJK scripts.
   // TODO(kojii): This logic disregards either generic family name
   // or locale. We need an API that honors both to find appropriate
   // fonts. crbug.com/642340
-  UChar32 examplerChar;
-  switch (contentLocale->script()) {
+  UChar32 exampler_char;
+  switch (content_locale->Script()) {
     case USCRIPT_SIMPLIFIED_HAN:
     case USCRIPT_TRADITIONAL_HAN:
     case USCRIPT_KATAKANA_OR_HIRAGANA:
-      examplerChar = 0x4E00;  // A common character in Japanese and Chinese.
+      exampler_char = 0x4E00;  // A common character in Japanese and Chinese.
       break;
     case USCRIPT_HANGUL:
-      examplerChar = 0xAC00;
+      exampler_char = 0xAC00;
       break;
     default:
       // For other scripts, use the default generic family mapping logic.
-      return familyName;
+      return family_name;
   }
 
   sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-  return getFamilyNameForCharacter(fm.get(), examplerChar, fontDescription,
-                                   FontFallbackPriority::Text);
+  return GetFamilyNameForCharacter(fm.get(), exampler_char, font_description,
+                                   FontFallbackPriority::kText);
 }
 
 }  // namespace blink

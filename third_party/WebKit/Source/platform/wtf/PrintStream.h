@@ -46,62 +46,62 @@ class WTF_EXPORT PrintStream {
   PrintStream();
   virtual ~PrintStream();
 
-  PRINTF_FORMAT(2, 3) void printf(const char* format, ...);
-  PRINTF_FORMAT(2, 0) virtual void vprintf(const char* format, va_list) = 0;
+  PRINTF_FORMAT(2, 3) void Printf(const char* format, ...);
+  PRINTF_FORMAT(2, 0) virtual void Vprintf(const char* format, va_list) = 0;
 
   // Typically a no-op for many subclasses of PrintStream, this is a hint that
   // the implementation should flush its buffers if it had not done so already.
-  virtual void flush();
+  virtual void Flush();
 
   template <typename T>
-  void print(const T& value) {
-    printInternal(*this, value);
+  void Print(const T& value) {
+    PrintInternal(*this, value);
   }
 
   template <typename T1, typename... RemainingTypes>
-  void print(const T1& value1, const RemainingTypes&... values) {
-    print(value1);
-    print(values...);
+  void Print(const T1& value1, const RemainingTypes&... values) {
+    Print(value1);
+    Print(values...);
   }
 };
 
-WTF_EXPORT void printInternal(PrintStream&, const char*);
-WTF_EXPORT void printInternal(PrintStream&, const CString&);
-WTF_EXPORT void printInternal(PrintStream&, const String&);
-inline void printInternal(PrintStream& out, char* value) {
-  printInternal(out, static_cast<const char*>(value));
+WTF_EXPORT void PrintInternal(PrintStream&, const char*);
+WTF_EXPORT void PrintInternal(PrintStream&, const CString&);
+WTF_EXPORT void PrintInternal(PrintStream&, const String&);
+inline void PrintInternal(PrintStream& out, char* value) {
+  PrintInternal(out, static_cast<const char*>(value));
 }
-inline void printInternal(PrintStream& out, CString& value) {
-  printInternal(out, static_cast<const CString&>(value));
+inline void PrintInternal(PrintStream& out, CString& value) {
+  PrintInternal(out, static_cast<const CString&>(value));
 }
-inline void printInternal(PrintStream& out, String& value) {
-  printInternal(out, static_cast<const String&>(value));
+inline void PrintInternal(PrintStream& out, String& value) {
+  PrintInternal(out, static_cast<const String&>(value));
 }
-WTF_EXPORT void printInternal(PrintStream&, bool);
-WTF_EXPORT void printInternal(PrintStream&, int);
-WTF_EXPORT void printInternal(PrintStream&, unsigned);
-WTF_EXPORT void printInternal(PrintStream&, long);
-WTF_EXPORT void printInternal(PrintStream&, unsigned long);
-WTF_EXPORT void printInternal(PrintStream&, long long);
-WTF_EXPORT void printInternal(PrintStream&, unsigned long long);
-WTF_EXPORT void printInternal(PrintStream&, float);
-WTF_EXPORT void printInternal(PrintStream&, double);
+WTF_EXPORT void PrintInternal(PrintStream&, bool);
+WTF_EXPORT void PrintInternal(PrintStream&, int);
+WTF_EXPORT void PrintInternal(PrintStream&, unsigned);
+WTF_EXPORT void PrintInternal(PrintStream&, long);
+WTF_EXPORT void PrintInternal(PrintStream&, unsigned long);
+WTF_EXPORT void PrintInternal(PrintStream&, long long);
+WTF_EXPORT void PrintInternal(PrintStream&, unsigned long long);
+WTF_EXPORT void PrintInternal(PrintStream&, float);
+WTF_EXPORT void PrintInternal(PrintStream&, double);
 
 template <typename T>
-void printInternal(PrintStream& out, const T& value) {
-  value.dump(out);
+void PrintInternal(PrintStream& out, const T& value) {
+  value.Dump(out);
 }
 
-#define MAKE_PRINT_ADAPTOR(Name, Type, function)                  \
-  class Name final {                                              \
-    STACK_ALLOCATED();                                            \
-                                                                  \
-   public:                                                        \
-    Name(const Type& value) : m_value(value) {}                   \
-    void dump(PrintStream& out) const { function(out, m_value); } \
-                                                                  \
-   private:                                                       \
-    Type m_value;                                                 \
+#define MAKE_PRINT_ADAPTOR(Name, Type, function)                 \
+  class Name final {                                             \
+    STACK_ALLOCATED();                                           \
+                                                                 \
+   public:                                                       \
+    Name(const Type& value) : value_(value) {}                   \
+    void Dump(PrintStream& out) const { function(out, value_); } \
+                                                                 \
+   private:                                                      \
+    Type value_;                                                 \
   }
 
 #define MAKE_PRINT_METHOD_ADAPTOR(Name, Type, method)          \
@@ -123,8 +123,8 @@ void printInternal(PrintStream& out, const T& value) {
 // Use an adaptor-based dumper for characters to avoid situations where
 // you've "compressed" an integer to a character and it ends up printing
 // as ASCII when you wanted it to print as a number.
-void dumpCharacter(PrintStream&, char);
-MAKE_PRINT_ADAPTOR(CharacterDump, char, dumpCharacter);
+void DumpCharacter(PrintStream&, char);
+MAKE_PRINT_ADAPTOR(CharacterDump, char, DumpCharacter);
 
 }  // namespace WTF
 

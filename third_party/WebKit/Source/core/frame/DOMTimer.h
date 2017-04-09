@@ -45,16 +45,16 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
  public:
   // Creates a new timer owned by the ExecutionContext, starts it and returns
   // its ID.
-  static int install(ExecutionContext*,
+  static int Install(ExecutionContext*,
                      ScheduledAction*,
                      int timeout,
-                     bool singleShot);
-  static void removeByID(ExecutionContext*, int timeoutID);
+                     bool single_shot);
+  static void RemoveByID(ExecutionContext*, int timeout_id);
 
   ~DOMTimer() override;
 
   // SuspendableObject
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // Eager finalization is needed to promptly stop this Timer object.
   // Otherwise timer events might fire at an object that's slated for
@@ -63,32 +63,32 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
 
-  void stop() override;
+  void Stop() override;
 
  private:
   friend class DOMTimerCoordinator;  // For create().
 
-  static DOMTimer* create(ExecutionContext* context,
+  static DOMTimer* Create(ExecutionContext* context,
                           ScheduledAction* action,
                           int timeout,
-                          bool singleShot,
-                          int timeoutID) {
-    return new DOMTimer(context, action, timeout, singleShot, timeoutID);
+                          bool single_shot,
+                          int timeout_id) {
+    return new DOMTimer(context, action, timeout, single_shot, timeout_id);
   }
 
   DOMTimer(ExecutionContext*,
            ScheduledAction*,
            int interval,
-           bool singleShot,
-           int timeoutID);
-  void fired() override;
+           bool single_shot,
+           int timeout_id);
+  void Fired() override;
 
-  RefPtr<WebTaskRunner> timerTaskRunner() const override;
+  RefPtr<WebTaskRunner> TimerTaskRunner() const override;
 
-  int m_timeoutID;
-  int m_nestingLevel;
-  Member<ScheduledAction> m_action;
-  RefPtr<UserGestureToken> m_userGestureToken;
+  int timeout_id_;
+  int nesting_level_;
+  Member<ScheduledAction> action_;
+  RefPtr<UserGestureToken> user_gesture_token_;
 };
 
 }  // namespace blink

@@ -14,10 +14,14 @@ namespace blink {
 
 // Structure representing the data associated with a Web Notification.
 struct WebNotificationData {
-  enum Direction { DirectionLeftToRight, DirectionRightToLeft, DirectionAuto };
+  enum Direction {
+    kDirectionLeftToRight,
+    kDirectionRightToLeft,
+    kDirectionAuto
+  };
 
   WebString title;
-  Direction direction = DirectionLeftToRight;
+  Direction direction = kDirectionLeftToRight;
   WebString lang;
   WebString body;
   WebString tag;
@@ -28,7 +32,7 @@ struct WebNotificationData {
   double timestamp = 0;
   bool renotify = false;
   bool silent = false;
-  bool requireInteraction = false;
+  bool require_interaction = false;
   WebVector<char> data;
   WebVector<WebNotificationAction> actions;
 };

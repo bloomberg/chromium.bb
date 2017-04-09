@@ -35,13 +35,13 @@ class AnimationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationEvent* create() { return new AnimationEvent; }
-  static AnimationEvent* create(const AtomicString& type,
-                                const String& animationName,
-                                double elapsedTime) {
-    return new AnimationEvent(type, animationName, elapsedTime);
+  static AnimationEvent* Create() { return new AnimationEvent; }
+  static AnimationEvent* Create(const AtomicString& type,
+                                const String& animation_name,
+                                double elapsed_time) {
+    return new AnimationEvent(type, animation_name, elapsed_time);
   }
-  static AnimationEvent* create(const AtomicString& type,
+  static AnimationEvent* Create(const AtomicString& type,
                                 const AnimationEventInit& initializer) {
     return new AnimationEvent(type, initializer);
   }
@@ -51,19 +51,19 @@ class AnimationEvent final : public Event {
   const String& animationName() const;
   double elapsedTime() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   AnimationEvent();
   AnimationEvent(const AtomicString& type,
-                 const String& animationName,
-                 double elapsedTime);
+                 const String& animation_name,
+                 double elapsed_time);
   AnimationEvent(const AtomicString&, const AnimationEventInit&);
 
-  String m_animationName;
-  double m_elapsedTime;
+  String animation_name_;
+  double elapsed_time_;
 };
 
 }  // namespace blink

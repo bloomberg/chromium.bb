@@ -20,8 +20,8 @@ struct ResourceLoaderOptions;
 // class to verify classes that consume Resource sub-classes in a simple way.
 class MockResource final : public Resource {
  public:
-  static MockResource* fetch(FetchRequest&, ResourceFetcher*);
-  static MockResource* create(const ResourceRequest&);
+  static MockResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static MockResource* Create(const ResourceRequest&);
   MockResource(const ResourceRequest&, const ResourceLoaderOptions&);
 };
 

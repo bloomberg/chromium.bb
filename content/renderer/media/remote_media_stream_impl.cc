@@ -69,7 +69,7 @@ class RemoteMediaStreamTrackAdapter
 
   blink::WebMediaStreamTrack* webkit_track() {
     DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(!webkit_track_.isNull());
+    DCHECK(!webkit_track_.IsNull());
     return &webkit_track_;
   }
 
@@ -77,7 +77,7 @@ class RemoteMediaStreamTrackAdapter
 
   bool initialized() const {
     DCHECK(main_thread_->BelongsToCurrentThread());
-    return !webkit_track_.isNull();
+    return !webkit_track_.IsNull();
   }
 
   void Initialize() {
@@ -98,14 +98,14 @@ class RemoteMediaStreamTrackAdapter
 
   void InitializeWebkitTrack(blink::WebMediaStreamSource::Type type) {
     DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(webkit_track_.isNull());
+    DCHECK(webkit_track_.IsNull());
 
-    blink::WebString webkit_track_id(blink::WebString::fromUTF8(id_));
+    blink::WebString webkit_track_id(blink::WebString::FromUTF8(id_));
     blink::WebMediaStreamSource webkit_source;
-    webkit_source.initialize(webkit_track_id, type, webkit_track_id,
+    webkit_source.Initialize(webkit_track_id, type, webkit_track_id,
                              true /* remote */);
-    webkit_track_.initialize(webkit_track_id, webkit_source);
-    DCHECK(!webkit_track_.isNull());
+    webkit_track_.Initialize(webkit_track_id, webkit_source);
+    DCHECK(!webkit_track_.IsNull());
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -147,7 +147,7 @@ class RemoteVideoTrackAdapter
     DCHECK(main_thread_->BelongsToCurrentThread());
     if (initialized()) {
       static_cast<MediaStreamRemoteVideoSource*>(
-          webkit_track()->source().getExtraData())
+          webkit_track()->Source().GetExtraData())
           ->OnSourceTerminated();
     }
   }
@@ -158,12 +158,12 @@ class RemoteVideoTrackAdapter
     DCHECK(main_thread_->BelongsToCurrentThread());
     std::unique_ptr<MediaStreamRemoteVideoSource> video_source(
         new MediaStreamRemoteVideoSource(std::move(observer)));
-    InitializeWebkitTrack(blink::WebMediaStreamSource::TypeVideo);
-    webkit_track()->source().setExtraData(video_source.get());
+    InitializeWebkitTrack(blink::WebMediaStreamSource::kTypeVideo);
+    webkit_track()->Source().SetExtraData(video_source.get());
     MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
         video_source.release(), MediaStreamVideoSource::ConstraintsCallback(),
         enabled);
-    webkit_track()->setTrackData(media_stream_track);
+    webkit_track()->SetTrackData(media_stream_track);
   }
 };
 
@@ -233,11 +233,11 @@ void RemoteAudioTrackAdapter::Unregister() {
 }
 
 void RemoteAudioTrackAdapter::InitializeWebkitAudioTrack() {
-  InitializeWebkitTrack(blink::WebMediaStreamSource::TypeAudio);
+  InitializeWebkitTrack(blink::WebMediaStreamSource::kTypeAudio);
 
   MediaStreamAudioSource* const source =
       new PeerConnectionRemoteAudioSource(observed_track().get());
-  webkit_track()->source().setExtraData(source);  // Takes ownership.
+  webkit_track()->Source().SetExtraData(source);  // Takes ownership.
   source->ConnectToTrack(*(webkit_track()));
 }
 
@@ -258,12 +258,12 @@ void RemoteAudioTrackAdapter::OnChangedOnMainThread(
 
   switch (state) {
     case webrtc::MediaStreamTrackInterface::kLive:
-      webkit_track()->source().setReadyState(
-          blink::WebMediaStreamSource::ReadyStateLive);
+      webkit_track()->Source().SetReadyState(
+          blink::WebMediaStreamSource::kReadyStateLive);
       break;
     case webrtc::MediaStreamTrackInterface::kEnded:
-      webkit_track()->source().setReadyState(
-          blink::WebMediaStreamSource::ReadyStateEnded);
+      webkit_track()->Source().SetReadyState(
+          blink::WebMediaStreamSource::kReadyStateEnded);
       break;
     default:
       NOTREACHED();
@@ -365,9 +365,9 @@ void RemoteMediaStreamImpl::InitializeOnMainThread(const std::string& label) {
     webkit_video_tracks[i] = *video_track_observers_[i]->webkit_track();
   }
 
-  webkit_stream_.initialize(blink::WebString::fromUTF8(label),
+  webkit_stream_.Initialize(blink::WebString::FromUTF8(label),
                             webkit_audio_tracks, webkit_video_tracks);
-  webkit_stream_.setExtraData(new MediaStream());
+  webkit_stream_.SetExtraData(new MediaStream());
 }
 
 void RemoteMediaStreamImpl::OnChanged(
@@ -378,8 +378,8 @@ void RemoteMediaStreamImpl::OnChanged(
   while (audio_it != audio_track_observers_.end()) {
     if (!IsTrackInVector(*audio_tracks.get(), (*audio_it)->id())) {
       (*audio_it)->Unregister();
-       webkit_stream_.removeTrack(*(*audio_it)->webkit_track());
-       audio_it = audio_track_observers_.erase(audio_it);
+      webkit_stream_.RemoveTrack(*(*audio_it)->webkit_track());
+      audio_it = audio_track_observers_.erase(audio_it);
     } else {
       ++audio_it;
     }
@@ -388,7 +388,7 @@ void RemoteMediaStreamImpl::OnChanged(
   auto video_it = video_track_observers_.begin();
   while (video_it != video_track_observers_.end()) {
     if (!IsTrackInVector(*video_tracks.get(), (*video_it)->id())) {
-      webkit_stream_.removeTrack(*(*video_it)->webkit_track());
+      webkit_stream_.RemoveTrack(*(*video_it)->webkit_track());
       video_it = video_track_observers_.erase(video_it);
     } else {
       ++video_it;
@@ -400,7 +400,7 @@ void RemoteMediaStreamImpl::OnChanged(
     if (!IsTrackInVector(audio_track_observers_, track->id())) {
       track->Initialize();
       audio_track_observers_.push_back(track);
-      webkit_stream_.addTrack(*track->webkit_track());
+      webkit_stream_.AddTrack(*track->webkit_track());
       // Set the track to null to avoid unregistering it below now that it's
       // been associated with a media stream.
       track = nullptr;
@@ -412,7 +412,7 @@ void RemoteMediaStreamImpl::OnChanged(
     if (!IsTrackInVector(video_track_observers_, track->id())) {
       track->Initialize();
       video_track_observers_.push_back(track);
-      webkit_stream_.addTrack(*track->webkit_track());
+      webkit_stream_.AddTrack(*track->webkit_track());
     }
   }
 

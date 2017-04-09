@@ -43,33 +43,33 @@ class CORE_EXPORT PointerLockController final
   WTF_MAKE_NONCOPYABLE(PointerLockController);
 
  public:
-  static PointerLockController* create(Page*);
+  static PointerLockController* Create(Page*);
 
-  void requestPointerLock(Element* target);
-  void requestPointerUnlock();
-  void elementRemoved(Element*);
-  void documentDetached(Document*);
-  bool lockPending() const;
-  Element* element() const;
+  void RequestPointerLock(Element* target);
+  void RequestPointerUnlock();
+  void ElementRemoved(Element*);
+  void DocumentDetached(Document*);
+  bool LockPending() const;
+  Element* GetElement() const;
 
-  void didAcquirePointerLock();
-  void didNotAcquirePointerLock();
-  void didLosePointerLock();
-  void dispatchLockedMouseEvent(const WebMouseEvent&,
-                                const AtomicString& eventType);
+  void DidAcquirePointerLock();
+  void DidNotAcquirePointerLock();
+  void DidLosePointerLock();
+  void DispatchLockedMouseEvent(const WebMouseEvent&,
+                                const AtomicString& event_type);
 
   DECLARE_TRACE();
 
  private:
   explicit PointerLockController(Page*);
-  void clearElement();
-  void enqueueEvent(const AtomicString& type, Element*);
-  void enqueueEvent(const AtomicString& type, Document*);
+  void ClearElement();
+  void EnqueueEvent(const AtomicString& type, Element*);
+  void EnqueueEvent(const AtomicString& type, Document*);
 
-  Member<Page> m_page;
-  bool m_lockPending;
-  Member<Element> m_element;
-  Member<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
+  Member<Page> page_;
+  bool lock_pending_;
+  Member<Element> element_;
+  Member<Document> document_of_removed_element_while_waiting_for_unlock_;
 };
 
 }  // namespace blink

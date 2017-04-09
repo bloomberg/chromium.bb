@@ -15,98 +15,98 @@ namespace blink {
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     const AtomicString& name,
     LocalFrame& frame,
-    mojom::blink::AppBannerServicePtr servicePtr,
-    mojom::blink::AppBannerEventRequest eventRequest,
+    mojom::blink::AppBannerServicePtr service_ptr,
+    mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms)
     : Event(name, false, true),
-      m_bannerService(std::move(servicePtr)),
-      m_binding(this, std::move(eventRequest)),
-      m_platforms(platforms),
-      m_userChoice(new UserChoiceProperty(frame.document(),
+      banner_service_(std::move(service_ptr)),
+      binding_(this, std::move(event_request)),
+      platforms_(platforms),
+      user_choice_(new UserChoiceProperty(frame.GetDocument(),
                                           this,
-                                          UserChoiceProperty::UserChoice)),
-      m_promptCalled(false) {
-  DCHECK(m_bannerService);
-  DCHECK(m_binding.is_bound());
-  UseCounter::count(&frame, UseCounter::BeforeInstallPromptEvent);
+                                          UserChoiceProperty::kUserChoice)),
+      prompt_called_(false) {
+  DCHECK(banner_service_);
+  DCHECK(binding_.is_bound());
+  UseCounter::Count(&frame, UseCounter::kBeforeInstallPromptEvent);
 }
 
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     const AtomicString& name,
     const BeforeInstallPromptEventInit& init)
-    : Event(name, false, true), m_binding(this), m_promptCalled(false) {
+    : Event(name, false, true), binding_(this), prompt_called_(false) {
   if (init.hasPlatforms())
-    m_platforms = init.platforms();
+    platforms_ = init.platforms();
 }
 
 BeforeInstallPromptEvent::~BeforeInstallPromptEvent() {}
 
-void BeforeInstallPromptEvent::dispose() {
-  m_bannerService.reset();
-  m_binding.Close();
+void BeforeInstallPromptEvent::Dispose() {
+  banner_service_.reset();
+  binding_.Close();
 }
 
 Vector<String> BeforeInstallPromptEvent::platforms() const {
-  return m_platforms;
+  return platforms_;
 }
 
-ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* scriptState) {
-  UseCounter::count(scriptState->getExecutionContext(),
-                    UseCounter::BeforeInstallPromptEventUserChoice);
+ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
+  UseCounter::Count(script_state->GetExecutionContext(),
+                    UseCounter::kBeforeInstallPromptEventUserChoice);
   // |m_binding| must be bound to allow the AppBannerService to resolve the
   // userChoice promise.
-  if (m_userChoice && m_binding.is_bound())
-    return m_userChoice->promise(scriptState->world());
-  return ScriptPromise::rejectWithDOMException(
-      scriptState,
-      DOMException::create(InvalidStateError,
+  if (user_choice_ && binding_.is_bound())
+    return user_choice_->Promise(script_state->World());
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      DOMException::Create(kInvalidStateError,
                            "userChoice cannot be accessed on this event."));
 }
 
-ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* scriptState) {
+ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   // |m_bannerService| must be bound to allow us to inform the AppBannerService
   // to display the banner now.
-  if (!defaultPrevented() || m_promptCalled || !m_bannerService.is_bound()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(InvalidStateError,
+  if (!defaultPrevented() || prompt_called_ || !banner_service_.is_bound()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError,
                              "The prompt() method may only be called once, "
                              "following preventDefault()."));
   }
 
-  UseCounter::count(scriptState->getExecutionContext(),
-                    UseCounter::BeforeInstallPromptEventPrompt);
+  UseCounter::Count(script_state->GetExecutionContext(),
+                    UseCounter::kBeforeInstallPromptEventPrompt);
 
-  m_promptCalled = true;
-  m_bannerService->DisplayAppBanner();
-  return ScriptPromise::castUndefined(scriptState);
+  prompt_called_ = true;
+  banner_service_->DisplayAppBanner();
+  return ScriptPromise::CastUndefined(script_state);
 }
 
-const AtomicString& BeforeInstallPromptEvent::interfaceName() const {
+const AtomicString& BeforeInstallPromptEvent::InterfaceName() const {
   return EventNames::BeforeInstallPromptEvent;
 }
 
 void BeforeInstallPromptEvent::preventDefault() {
   Event::preventDefault();
   if (target()) {
-    UseCounter::count(target()->getExecutionContext(),
-                      UseCounter::BeforeInstallPromptEventPreventDefault);
+    UseCounter::Count(target()->GetExecutionContext(),
+                      UseCounter::kBeforeInstallPromptEventPreventDefault);
   }
 }
 
 void BeforeInstallPromptEvent::BannerAccepted(const String& platform) {
-  m_userChoice->resolve(AppBannerPromptResult::create(
-      platform, AppBannerPromptResult::Outcome::Accepted));
+  user_choice_->Resolve(AppBannerPromptResult::Create(
+      platform, AppBannerPromptResult::Outcome::kAccepted));
 }
 
 void BeforeInstallPromptEvent::BannerDismissed() {
-  m_userChoice->resolve(AppBannerPromptResult::create(
-      emptyAtom, AppBannerPromptResult::Outcome::Dismissed));
+  user_choice_->Resolve(AppBannerPromptResult::Create(
+      g_empty_atom, AppBannerPromptResult::Outcome::kDismissed));
 }
 
 DEFINE_TRACE(BeforeInstallPromptEvent) {
-  visitor->trace(m_userChoice);
-  Event::trace(visitor);
+  visitor->Trace(user_choice_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

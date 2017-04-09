@@ -21,7 +21,7 @@ content::Manifest GetValidManifest() {
   manifest.name = ToNullableUTF16("foo");
   manifest.short_name = ToNullableUTF16("bar");
   manifest.start_url = GURL("http://example.com");
-  manifest.display = blink::WebDisplayModeStandalone;
+  manifest.display = blink::kWebDisplayModeStandalone;
 
   content::Manifest::Icon icon;
   icon.type = base::ASCIIToUTF16("image/png");

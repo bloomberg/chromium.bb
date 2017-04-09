@@ -16,13 +16,13 @@ class SimPage final {
   explicit SimPage();
   ~SimPage();
 
-  void setPage(Page*);
+  void SetPage(Page*);
 
-  void setFocused(bool);
-  bool isFocused() const;
+  void SetFocused(bool);
+  bool IsFocused() const;
 
  private:
-  Persistent<Page> m_page;
+  Persistent<Page> page_;
 };
 
 }  // namespace blink

@@ -9,44 +9,44 @@ namespace blink {
 // All transform caches invalidate themselves by tracking a local cache
 // generation, and invalidating their cache if their cache generation disagrees
 // with s_transformCacheGeneration.
-static unsigned s_transformCacheGeneration = 0;
+static unsigned g_transform_cache_generation = 0;
 
 GeometryMapperTransformCache::GeometryMapperTransformCache()
-    : m_cacheGeneration(s_transformCacheGeneration) {}
+    : cache_generation_(g_transform_cache_generation) {}
 
-void GeometryMapperTransformCache::clearCache() {
-  s_transformCacheGeneration++;
+void GeometryMapperTransformCache::ClearCache() {
+  g_transform_cache_generation++;
 }
 
-void GeometryMapperTransformCache::invalidateCacheIfNeeded() {
-  if (m_cacheGeneration != s_transformCacheGeneration) {
-    m_transformCache.clear();
-    m_cacheGeneration = s_transformCacheGeneration;
+void GeometryMapperTransformCache::InvalidateCacheIfNeeded() {
+  if (cache_generation_ != g_transform_cache_generation) {
+    transform_cache_.Clear();
+    cache_generation_ = g_transform_cache_generation;
   }
 }
 
-const TransformationMatrix* GeometryMapperTransformCache::getCachedTransform(
-    const TransformPaintPropertyNode* ancestorTransform) {
-  invalidateCacheIfNeeded();
-  for (const auto& entry : m_transformCache) {
-    if (entry.ancestorNode == ancestorTransform) {
-      return &entry.toAncestor;
+const TransformationMatrix* GeometryMapperTransformCache::GetCachedTransform(
+    const TransformPaintPropertyNode* ancestor_transform) {
+  InvalidateCacheIfNeeded();
+  for (const auto& entry : transform_cache_) {
+    if (entry.ancestor_node == ancestor_transform) {
+      return &entry.to_ancestor;
     }
   }
   return nullptr;
 }
 
-void GeometryMapperTransformCache::setCachedTransform(
-    const TransformPaintPropertyNode* ancestorTransform,
+void GeometryMapperTransformCache::SetCachedTransform(
+    const TransformPaintPropertyNode* ancestor_transform,
     const TransformationMatrix& matrix) {
-  invalidateCacheIfNeeded();
+  InvalidateCacheIfNeeded();
 #if DCHECK_IS_ON()
-  for (const auto& entry : m_transformCache) {
-    if (entry.ancestorNode == ancestorTransform)
+  for (const auto& entry : transform_cache_) {
+    if (entry.ancestor_node == ancestor_transform)
       DCHECK(false);  // There should be no existing entry.
   }
 #endif
-  m_transformCache.push_back(TransformCacheEntry(ancestorTransform, matrix));
+  transform_cache_.push_back(TransformCacheEntry(ancestor_transform, matrix));
 }
 
 }  // namespace blink

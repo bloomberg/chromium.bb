@@ -9,30 +9,30 @@
 namespace WTF {
 
 TEST(WTF_PtrUtilTest, canWrapUnique) {
-  auto charPtr = new char;
-  auto wrappedCharPtr = wrapUnique(charPtr);
+  auto char_ptr = new char;
+  auto wrapped_char_ptr = WrapUnique(char_ptr);
 
-  ASSERT_TRUE(wrappedCharPtr.get());
+  ASSERT_TRUE(wrapped_char_ptr.get());
 }
 
 TEST(WTF_PtrUtilTest, canWrapUniqueArray) {
-  constexpr size_t bufferSize = 20;
-  auto charArray = new char[bufferSize];
-  auto wrappedCharArray = wrapArrayUnique(charArray);
+  constexpr size_t kBufferSize = 20;
+  auto char_array = new char[kBufferSize];
+  auto wrapped_char_array = WrapArrayUnique(char_array);
 
-  ASSERT_TRUE(wrappedCharArray.get());
+  ASSERT_TRUE(wrapped_char_array.get());
 }
 
 TEST(WTF_PtrUtilTest, canMakeUnique) {
-  auto charPtr = makeUnique<char>();
+  auto char_ptr = MakeUnique<char>();
 
-  ASSERT_TRUE(charPtr.get());
+  ASSERT_TRUE(char_ptr.get());
 }
 
 TEST(WTF_PtrUtilTest, canMakeUniqueArray) {
-  constexpr size_t bufferSize = 20;
-  auto charArray = makeUnique<char[]>(bufferSize);
+  constexpr size_t kBufferSize = 20;
+  auto char_array = MakeUnique<char[]>(kBufferSize);
 
-  ASSERT_TRUE(charArray.get());
+  ASSERT_TRUE(char_array.get());
 }
 }

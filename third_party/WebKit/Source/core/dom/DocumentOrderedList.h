@@ -44,29 +44,29 @@ class DocumentOrderedList final {
  public:
   DocumentOrderedList() {}
 
-  void add(Node*);
-  void remove(const Node*);
-  bool isEmpty() const { return m_nodes.isEmpty(); }
-  void clear() { m_nodes.clear(); }
-  size_t size() const { return m_nodes.size(); }
+  void Add(Node*);
+  void Remove(const Node*);
+  bool IsEmpty() const { return nodes_.IsEmpty(); }
+  void Clear() { nodes_.Clear(); }
+  size_t size() const { return nodes_.size(); }
 
   using iterator = HeapListHashSet<Member<Node>, 32>::iterator;
   using const_iterator = HeapListHashSet<Member<Node>, 32>::const_iterator;
   using const_reverse_iterator =
       HeapListHashSet<Member<Node>, 32>::const_reverse_iterator;
 
-  iterator begin() { return m_nodes.begin(); }
-  iterator end() { return m_nodes.end(); }
-  const_iterator begin() const { return m_nodes.begin(); }
-  const_iterator end() const { return m_nodes.end(); }
+  iterator begin() { return nodes_.begin(); }
+  iterator end() { return nodes_.end(); }
+  const_iterator begin() const { return nodes_.begin(); }
+  const_iterator end() const { return nodes_.end(); }
 
-  const_reverse_iterator rbegin() const { return m_nodes.rbegin(); }
-  const_reverse_iterator rend() const { return m_nodes.rend(); }
+  const_reverse_iterator rbegin() const { return nodes_.rbegin(); }
+  const_reverse_iterator rend() const { return nodes_.rend(); }
 
   DECLARE_TRACE();
 
  private:
-  HeapListHashSet<Member<Node>, 32> m_nodes;
+  HeapListHashSet<Member<Node>, 32> nodes_;
 };
 
 }  // namespace blink

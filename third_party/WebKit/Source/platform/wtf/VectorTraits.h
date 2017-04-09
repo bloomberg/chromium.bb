@@ -31,34 +31,35 @@ namespace WTF {
 
 template <typename T>
 struct VectorTraitsBase {
-  static const bool needsDestruction = !IsTriviallyDestructible<T>::value;
+  static const bool kNeedsDestruction = !IsTriviallyDestructible<T>::value;
 
-  static const bool canInitializeWithMemset =
+  static const bool kCanInitializeWithMemset =
       IsTriviallyDefaultConstructible<T>::value;
   // true iff memset(slot, 0, size) constructs an unused slot value that is
   // valid for Oilpan to trace and if the value needs destruction, its
   // destructor can be invoked over. The zero'ed value representing an unused
   // slot in the vector's backing storage; it does not have to be equal to
   // what its constructor(s) would create, only be valid for those two uses.
-  static const bool canClearUnusedSlotsWithMemset =
+  static const bool kCanClearUnusedSlotsWithMemset =
       IsTriviallyDefaultConstructible<T>::value;
 
-  static const bool canMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
-  static const bool canCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
-  static const bool canFillWithMemset =
+  static const bool kCanMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
+  static const bool kCanCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
+  static const bool kCanFillWithMemset =
       IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
-  static const bool canCompareWithMemcmp =
+  static const bool kCanCompareWithMemcmp =
       std::is_scalar<T>::value;  // Types without padding.
 
   // Supports swapping elements using regular std::swap semantics.
-  static const bool canSwapUsingCopyOrMove = true;
+  static const bool kCanSwapUsingCopyOrMove = true;
 
   template <typename U = void>
   struct IsTraceableInCollection {
     static const bool value = IsTraceable<T>::value;
   };
   // We don't support weak handling in vectors.
-  static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections;
+  static const WeakHandlingFlag kWeakHandlingFlag =
+      kNoWeakHandlingInCollections;
 };
 
 template <typename T>
@@ -69,10 +70,10 @@ struct VectorTraits : VectorTraitsBase<T> {};
 // comparison.
 template <typename T>
 struct SimpleClassVectorTraits : VectorTraitsBase<T> {
-  static const bool canInitializeWithMemset = true;
-  static const bool canClearUnusedSlotsWithMemset = true;
-  static const bool canMoveWithMemcpy = true;
-  static const bool canCompareWithMemcmp = true;
+  static const bool kCanInitializeWithMemset = true;
+  static const bool kCanClearUnusedSlotsWithMemset = true;
+  static const bool kCanMoveWithMemcpy = true;
+  static const bool kCanCompareWithMemcmp = true;
 };
 
 // We know std::unique_ptr and RefPtr are simple enough that initializing to 0
@@ -87,19 +88,19 @@ struct VectorTraits<std::unique_ptr<P>>
   // std::unique_ptr -> std::unique_ptr has a very particular structure that
   // tricks the normal type traits into thinking that the class is "trivially
   // copyable".
-  static const bool canCopyWithMemcpy = false;
+  static const bool kCanCopyWithMemcpy = false;
 };
-static_assert(VectorTraits<RefPtr<int>>::canInitializeWithMemset,
+static_assert(VectorTraits<RefPtr<int>>::kCanInitializeWithMemset,
               "inefficient RefPtr Vector");
-static_assert(VectorTraits<RefPtr<int>>::canMoveWithMemcpy,
+static_assert(VectorTraits<RefPtr<int>>::kCanMoveWithMemcpy,
               "inefficient RefPtr Vector");
-static_assert(VectorTraits<RefPtr<int>>::canCompareWithMemcmp,
+static_assert(VectorTraits<RefPtr<int>>::kCanCompareWithMemcmp,
               "inefficient RefPtr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canInitializeWithMemset,
+static_assert(VectorTraits<std::unique_ptr<int>>::kCanInitializeWithMemset,
               "inefficient std::unique_ptr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canMoveWithMemcpy,
+static_assert(VectorTraits<std::unique_ptr<int>>::kCanMoveWithMemcpy,
               "inefficient std::unique_ptr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canCompareWithMemcmp,
+static_assert(VectorTraits<std::unique_ptr<int>>::kCanCompareWithMemcmp,
               "inefficient std::unique_ptr Vector");
 
 template <typename First, typename Second>
@@ -107,23 +108,23 @@ struct VectorTraits<std::pair<First, Second>> {
   typedef VectorTraits<First> FirstTraits;
   typedef VectorTraits<Second> SecondTraits;
 
-  static const bool needsDestruction =
-      FirstTraits::needsDestruction || SecondTraits::needsDestruction;
-  static const bool canInitializeWithMemset =
-      FirstTraits::canInitializeWithMemset &&
-      SecondTraits::canInitializeWithMemset;
-  static const bool canMoveWithMemcpy =
-      FirstTraits::canMoveWithMemcpy && SecondTraits::canMoveWithMemcpy;
-  static const bool canCopyWithMemcpy =
-      FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
-  static const bool canFillWithMemset = false;
-  static const bool canCompareWithMemcmp =
-      FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
-  static const bool canClearUnusedSlotsWithMemset =
-      FirstTraits::canClearUnusedSlotsWithMemset &&
-      SecondTraits::canClearUnusedSlotsWithMemset;
+  static const bool kNeedsDestruction =
+      FirstTraits::kNeedsDestruction || SecondTraits::kNeedsDestruction;
+  static const bool kCanInitializeWithMemset =
+      FirstTraits::kCanInitializeWithMemset &&
+      SecondTraits::kCanInitializeWithMemset;
+  static const bool kCanMoveWithMemcpy =
+      FirstTraits::kCanMoveWithMemcpy && SecondTraits::kCanMoveWithMemcpy;
+  static const bool kCanCopyWithMemcpy =
+      FirstTraits::kCanCopyWithMemcpy && SecondTraits::kCanCopyWithMemcpy;
+  static const bool kCanFillWithMemset = false;
+  static const bool kCanCompareWithMemcmp =
+      FirstTraits::kCanCompareWithMemcmp && SecondTraits::kCanCompareWithMemcmp;
+  static const bool kCanClearUnusedSlotsWithMemset =
+      FirstTraits::kCanClearUnusedSlotsWithMemset &&
+      SecondTraits::kCanClearUnusedSlotsWithMemset;
   // Supports swapping elements using regular std::swap semantics.
-  static const bool canSwapUsingCopyOrMove = true;
+  static const bool kCanSwapUsingCopyOrMove = true;
   template <typename U = void>
   struct IsTraceableInCollection {
     static const bool value =
@@ -131,7 +132,8 @@ struct VectorTraits<std::pair<First, Second>> {
         IsTraceableInCollectionTrait<SecondTraits>::value;
   };
   // We don't support weak handling in vectors.
-  static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections;
+  static const WeakHandlingFlag kWeakHandlingFlag =
+      kNoWeakHandlingInCollections;
 };
 
 }  // namespace WTF
@@ -153,9 +155,9 @@ struct VectorTraits<std::pair<First, Second>> {
                 "macro not needed");                                  \
   template <>                                                         \
   struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> {      \
-    static const bool canInitializeWithMemset = true;                 \
-    static const bool canClearUnusedSlotsWithMemset = true;           \
-    static const bool canMoveWithMemcpy = true;                       \
+    static const bool kCanInitializeWithMemset = true;                \
+    static const bool kCanClearUnusedSlotsWithMemset = true;          \
+    static const bool kCanMoveWithMemcpy = true;                      \
   };                                                                  \
   }
 
@@ -165,8 +167,8 @@ struct VectorTraits<std::pair<First, Second>> {
                 "macro not needed");                                \
   template <>                                                       \
   struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> {    \
-    static const bool canInitializeWithMemset = true;               \
-    static const bool canClearUnusedSlotsWithMemset = true;         \
+    static const bool kCanInitializeWithMemset = true;              \
+    static const bool kCanClearUnusedSlotsWithMemset = true;        \
   };                                                                \
   }
 
@@ -176,7 +178,7 @@ struct VectorTraits<std::pair<First, Second>> {
                 "macro not needed");                                \
   template <>                                                       \
   struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> {    \
-    static const bool canClearUnusedSlotsWithMemset = true;         \
+    static const bool kCanClearUnusedSlotsWithMemset = true;        \
   };                                                                \
   }
 

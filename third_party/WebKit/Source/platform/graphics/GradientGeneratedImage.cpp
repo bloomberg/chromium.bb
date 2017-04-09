@@ -31,41 +31,41 @@
 
 namespace blink {
 
-void GradientGeneratedImage::draw(PaintCanvas* canvas,
+void GradientGeneratedImage::Draw(PaintCanvas* canvas,
                                   const PaintFlags& flags,
-                                  const FloatRect& destRect,
-                                  const FloatRect& srcRect,
+                                  const FloatRect& dest_rect,
+                                  const FloatRect& src_rect,
                                   RespectImageOrientationEnum,
                                   ImageClampingMode) {
-  SkRect visibleSrcRect = srcRect;
-  if (!visibleSrcRect.intersect(
-          SkRect::MakeIWH(m_size.width(), m_size.height())))
+  SkRect visible_src_rect = src_rect;
+  if (!visible_src_rect.intersect(
+          SkRect::MakeIWH(size_.Width(), size_.Height())))
     return;
 
   const SkMatrix transform =
-      SkMatrix::MakeRectToRect(srcRect, destRect, SkMatrix::kFill_ScaleToFit);
-  SkRect visibleDestRect;
-  transform.mapRect(&visibleDestRect, visibleSrcRect);
+      SkMatrix::MakeRectToRect(src_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
+  SkRect visible_dest_rect;
+  transform.mapRect(&visible_dest_rect, visible_src_rect);
 
-  PaintFlags gradientFlags(flags);
-  m_gradient->applyToFlags(gradientFlags, transform);
-  canvas->drawRect(visibleDestRect, gradientFlags);
+  PaintFlags gradient_flags(flags);
+  gradient_->ApplyToFlags(gradient_flags, transform);
+  canvas->drawRect(visible_dest_rect, gradient_flags);
 }
 
-void GradientGeneratedImage::drawTile(GraphicsContext& context,
-                                      const FloatRect& srcRect) {
+void GradientGeneratedImage::DrawTile(GraphicsContext& context,
+                                      const FloatRect& src_rect) {
   // TODO(ccameron): This function should not ignore |context|'s color behavior.
   // https://crbug.com/672306
-  PaintFlags gradientFlags(context.fillFlags());
-  m_gradient->applyToFlags(gradientFlags, SkMatrix::I());
+  PaintFlags gradient_flags(context.FillFlags());
+  gradient_->ApplyToFlags(gradient_flags, SkMatrix::I());
 
-  context.drawRect(srcRect, gradientFlags);
+  context.DrawRect(src_rect, gradient_flags);
 }
 
-bool GradientGeneratedImage::applyShader(PaintFlags& flags,
-                                         const SkMatrix& localMatrix) {
-  DCHECK(m_gradient);
-  m_gradient->applyToFlags(flags, localMatrix);
+bool GradientGeneratedImage::ApplyShader(PaintFlags& flags,
+                                         const SkMatrix& local_matrix) {
+  DCHECK(gradient_);
+  gradient_->ApplyToFlags(flags, local_matrix);
 
   return true;
 }

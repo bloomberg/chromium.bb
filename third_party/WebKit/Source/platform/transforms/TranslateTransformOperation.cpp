@@ -23,42 +23,42 @@
 
 namespace blink {
 
-PassRefPtr<TransformOperation> TranslateTransformOperation::blend(
+PassRefPtr<TransformOperation> TranslateTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
-    bool blendToIdentity) {
-  if (from && !from->canBlendWith(*this))
+    bool blend_to_identity) {
+  if (from && !from->CanBlendWith(*this))
     return this;
 
-  const Length zeroLength(0, Fixed);
-  if (blendToIdentity) {
-    return TranslateTransformOperation::create(
-        zeroLength.blend(m_x, progress, ValueRangeAll),
-        zeroLength.blend(m_y, progress, ValueRangeAll),
-        blink::blend(m_z, 0., progress), m_type);
+  const Length zero_length(0, kFixed);
+  if (blend_to_identity) {
+    return TranslateTransformOperation::Create(
+        zero_length.Blend(x_, progress, kValueRangeAll),
+        zero_length.Blend(y_, progress, kValueRangeAll),
+        blink::Blend(z_, 0., progress), type_);
   }
 
-  const TranslateTransformOperation* fromOp =
+  const TranslateTransformOperation* from_op =
       static_cast<const TranslateTransformOperation*>(from);
-  Length fromX = fromOp ? fromOp->m_x : zeroLength;
-  Length fromY = fromOp ? fromOp->m_y : zeroLength;
-  double fromZ = fromOp ? fromOp->m_z : 0;
-  return TranslateTransformOperation::create(
-      m_x.blend(fromX, progress, ValueRangeAll),
-      m_y.blend(fromY, progress, ValueRangeAll),
-      blink::blend(fromZ, m_z, progress), m_type);
+  Length from_x = from_op ? from_op->x_ : zero_length;
+  Length from_y = from_op ? from_op->y_ : zero_length;
+  double from_z = from_op ? from_op->z_ : 0;
+  return TranslateTransformOperation::Create(
+      x_.Blend(from_x, progress, kValueRangeAll),
+      y_.Blend(from_y, progress, kValueRangeAll),
+      blink::Blend(from_z, z_, progress), type_);
 }
 
-bool TranslateTransformOperation::canBlendWith(
+bool TranslateTransformOperation::CanBlendWith(
     const TransformOperation& other) const {
-  return other.type() == Translate || other.type() == TranslateX ||
-         other.type() == TranslateY || other.type() == TranslateZ ||
-         other.type() == Translate3D;
+  return other.GetType() == kTranslate || other.GetType() == kTranslateX ||
+         other.GetType() == kTranslateY || other.GetType() == kTranslateZ ||
+         other.GetType() == kTranslate3D;
 }
 
 PassRefPtr<TranslateTransformOperation>
-TranslateTransformOperation::zoomTranslate(double factor) {
-  return create(m_x.zoom(factor), m_y.zoom(factor), m_z * factor, m_type);
+TranslateTransformOperation::ZoomTranslate(double factor) {
+  return Create(x_.Zoom(factor), y_.Zoom(factor), z_ * factor, type_);
 }
 
 }  // namespace blink

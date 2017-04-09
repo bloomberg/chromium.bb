@@ -38,57 +38,57 @@ namespace blink {
 
 namespace {
 
-inline bool isValidLengthUnit(CSSPrimitiveValue::UnitType unit) {
-  return unit == CSSPrimitiveValue::UnitType::Number ||
-         unit == CSSPrimitiveValue::UnitType::Percentage ||
-         unit == CSSPrimitiveValue::UnitType::Ems ||
-         unit == CSSPrimitiveValue::UnitType::Exs ||
-         unit == CSSPrimitiveValue::UnitType::Pixels ||
-         unit == CSSPrimitiveValue::UnitType::Centimeters ||
-         unit == CSSPrimitiveValue::UnitType::Millimeters ||
-         unit == CSSPrimitiveValue::UnitType::Inches ||
-         unit == CSSPrimitiveValue::UnitType::Points ||
-         unit == CSSPrimitiveValue::UnitType::Picas;
+inline bool IsValidLengthUnit(CSSPrimitiveValue::UnitType unit) {
+  return unit == CSSPrimitiveValue::UnitType::kNumber ||
+         unit == CSSPrimitiveValue::UnitType::kPercentage ||
+         unit == CSSPrimitiveValue::UnitType::kEms ||
+         unit == CSSPrimitiveValue::UnitType::kExs ||
+         unit == CSSPrimitiveValue::UnitType::kPixels ||
+         unit == CSSPrimitiveValue::UnitType::kCentimeters ||
+         unit == CSSPrimitiveValue::UnitType::kMillimeters ||
+         unit == CSSPrimitiveValue::UnitType::kInches ||
+         unit == CSSPrimitiveValue::UnitType::kPoints ||
+         unit == CSSPrimitiveValue::UnitType::kPicas;
 }
 
-inline bool isValidLengthUnit(unsigned short type) {
-  return isValidLengthUnit(static_cast<CSSPrimitiveValue::UnitType>(type));
+inline bool IsValidLengthUnit(unsigned short type) {
+  return IsValidLengthUnit(static_cast<CSSPrimitiveValue::UnitType>(type));
 }
 
-inline bool canResolveRelativeUnits(const SVGElement* contextElement) {
-  return contextElement && contextElement->isConnected();
+inline bool CanResolveRelativeUnits(const SVGElement* context_element) {
+  return context_element && context_element->isConnected();
 }
 
-inline CSSPrimitiveValue::UnitType toCSSUnitType(unsigned short type) {
-  DCHECK(isValidLengthUnit(type));
+inline CSSPrimitiveValue::UnitType ToCSSUnitType(unsigned short type) {
+  DCHECK(IsValidLengthUnit(type));
   if (type == SVGLengthTearOff::kSvgLengthtypeNumber)
-    return CSSPrimitiveValue::UnitType::UserUnits;
+    return CSSPrimitiveValue::UnitType::kUserUnits;
   return static_cast<CSSPrimitiveValue::UnitType>(type);
 }
 
-inline unsigned short toInterfaceConstant(CSSPrimitiveValue::UnitType type) {
+inline unsigned short ToInterfaceConstant(CSSPrimitiveValue::UnitType type) {
   switch (type) {
-    case CSSPrimitiveValue::UnitType::Unknown:
+    case CSSPrimitiveValue::UnitType::kUnknown:
       return SVGLengthTearOff::kSvgLengthtypeUnknown;
-    case CSSPrimitiveValue::UnitType::UserUnits:
+    case CSSPrimitiveValue::UnitType::kUserUnits:
       return SVGLengthTearOff::kSvgLengthtypeNumber;
-    case CSSPrimitiveValue::UnitType::Percentage:
+    case CSSPrimitiveValue::UnitType::kPercentage:
       return SVGLengthTearOff::kSvgLengthtypePercentage;
-    case CSSPrimitiveValue::UnitType::Ems:
+    case CSSPrimitiveValue::UnitType::kEms:
       return SVGLengthTearOff::kSvgLengthtypeEms;
-    case CSSPrimitiveValue::UnitType::Exs:
+    case CSSPrimitiveValue::UnitType::kExs:
       return SVGLengthTearOff::kSvgLengthtypeExs;
-    case CSSPrimitiveValue::UnitType::Pixels:
+    case CSSPrimitiveValue::UnitType::kPixels:
       return SVGLengthTearOff::kSvgLengthtypePx;
-    case CSSPrimitiveValue::UnitType::Centimeters:
+    case CSSPrimitiveValue::UnitType::kCentimeters:
       return SVGLengthTearOff::kSvgLengthtypeCm;
-    case CSSPrimitiveValue::UnitType::Millimeters:
+    case CSSPrimitiveValue::UnitType::kMillimeters:
       return SVGLengthTearOff::kSvgLengthtypeMm;
-    case CSSPrimitiveValue::UnitType::Inches:
+    case CSSPrimitiveValue::UnitType::kInches:
       return SVGLengthTearOff::kSvgLengthtypeIn;
-    case CSSPrimitiveValue::UnitType::Points:
+    case CSSPrimitiveValue::UnitType::kPoints:
       return SVGLengthTearOff::kSvgLengthtypePt;
-    case CSSPrimitiveValue::UnitType::Picas:
+    case CSSPrimitiveValue::UnitType::kPicas:
       return SVGLengthTearOff::kSvgLengthtypePc;
     default:
       return SVGLengthTearOff::kSvgLengthtypeUnknown;
@@ -97,154 +97,155 @@ inline unsigned short toInterfaceConstant(CSSPrimitiveValue::UnitType type) {
 
 }  // namespace
 
-bool SVGLengthTearOff::hasExposedLengthUnit() {
-  if (target()->isCalculated())
+bool SVGLengthTearOff::HasExposedLengthUnit() {
+  if (Target()->IsCalculated())
     return false;
 
-  CSSPrimitiveValue::UnitType unit = target()->typeWithCalcResolved();
-  return isValidLengthUnit(unit) ||
-         unit == CSSPrimitiveValue::UnitType::Unknown ||
-         unit == CSSPrimitiveValue::UnitType::UserUnits;
+  CSSPrimitiveValue::UnitType unit = Target()->TypeWithCalcResolved();
+  return IsValidLengthUnit(unit) ||
+         unit == CSSPrimitiveValue::UnitType::kUnknown ||
+         unit == CSSPrimitiveValue::UnitType::kUserUnits;
 }
 
 unsigned short SVGLengthTearOff::unitType() {
-  return hasExposedLengthUnit()
-             ? toInterfaceConstant(target()->typeWithCalcResolved())
+  return HasExposedLengthUnit()
+             ? ToInterfaceConstant(Target()->TypeWithCalcResolved())
              : kSvgLengthtypeUnknown;
 }
 
-SVGLengthMode SVGLengthTearOff::unitMode() {
-  return target()->unitMode();
+SVGLengthMode SVGLengthTearOff::UnitMode() {
+  return Target()->UnitMode();
 }
 
-float SVGLengthTearOff::value(ExceptionState& exceptionState) {
-  if (target()->isRelative() && !canResolveRelativeUnits(contextElement())) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Could not resolve relative length.");
+float SVGLengthTearOff::value(ExceptionState& exception_state) {
+  if (Target()->IsRelative() && !CanResolveRelativeUnits(contextElement())) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Could not resolve relative length.");
     return 0;
   }
-  SVGLengthContext lengthContext(contextElement());
-  return target()->value(lengthContext);
+  SVGLengthContext length_context(contextElement());
+  return Target()->Value(length_context);
 }
 
-void SVGLengthTearOff::setValue(float value, ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+void SVGLengthTearOff::setValue(float value, ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  if (target()->isRelative() && !canResolveRelativeUnits(contextElement())) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Could not resolve relative length.");
+  if (Target()->IsRelative() && !CanResolveRelativeUnits(contextElement())) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Could not resolve relative length.");
     return;
   }
-  SVGLengthContext lengthContext(contextElement());
-  if (target()->isCalculated())
-    target()->setValueAsNumber(value);
+  SVGLengthContext length_context(contextElement());
+  if (Target()->IsCalculated())
+    Target()->SetValueAsNumber(value);
   else
-    target()->setValue(value, lengthContext);
-  commitChange();
+    Target()->SetValue(value, length_context);
+  CommitChange();
 }
 
 float SVGLengthTearOff::valueInSpecifiedUnits() {
-  if (target()->isCalculated())
+  if (Target()->IsCalculated())
     return 0;
-  return target()->valueInSpecifiedUnits();
+  return Target()->ValueInSpecifiedUnits();
 }
 
 void SVGLengthTearOff::setValueInSpecifiedUnits(
     float value,
-    ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+    ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  if (target()->isCalculated())
-    target()->setValueAsNumber(value);
+  if (Target()->IsCalculated())
+    Target()->SetValueAsNumber(value);
   else
-    target()->setValueInSpecifiedUnits(value);
-  commitChange();
+    Target()->SetValueInSpecifiedUnits(value);
+  CommitChange();
 }
 
 String SVGLengthTearOff::valueAsString() {
   // TODO(shanmuga.m@samsung.com): Not all <length> properties have 0 (with no
   // unit) as the default (lacuna) value. We need to return default value
   // instead of 0.
-  return hasExposedLengthUnit() ? target()->valueAsString() : String::number(0);
+  return HasExposedLengthUnit() ? Target()->ValueAsString() : String::Number(0);
 }
 
 void SVGLengthTearOff::setValueAsString(const String& str,
-                                        ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+                                        ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  String oldValue = target()->valueAsString();
-  SVGParsingError status = target()->setValueAsString(str);
-  if (status == SVGParseStatus::NoError && !hasExposedLengthUnit()) {
-    target()->setValueAsString(oldValue);  // rollback to old value
-    status = SVGParseStatus::ParsingFailed;
+  String old_value = Target()->ValueAsString();
+  SVGParsingError status = Target()->SetValueAsString(str);
+  if (status == SVGParseStatus::kNoError && !HasExposedLengthUnit()) {
+    Target()->SetValueAsString(old_value);  // rollback to old value
+    status = SVGParseStatus::kParsingFailed;
   }
-  if (status != SVGParseStatus::NoError) {
-    exceptionState.throwDOMException(
-        SyntaxError, "The value provided ('" + str + "') is invalid.");
+  if (status != SVGParseStatus::kNoError) {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "The value provided ('" + str + "') is invalid.");
     return;
   }
-  commitChange();
+  CommitChange();
 }
 
-void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unitType,
-                                              float valueInSpecifiedUnits,
-                                              ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unit_type,
+                                              float value_in_specified_units,
+                                              ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  if (!isValidLengthUnit(unitType)) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "Cannot set value with unknown or invalid units (" +
-                               String::number(unitType) + ").");
+  if (!IsValidLengthUnit(unit_type)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "Cannot set value with unknown or invalid units (" +
+                                String::Number(unit_type) + ").");
     return;
   }
-  target()->newValueSpecifiedUnits(toCSSUnitType(unitType),
-                                   valueInSpecifiedUnits);
-  commitChange();
+  Target()->NewValueSpecifiedUnits(ToCSSUnitType(unit_type),
+                                   value_in_specified_units);
+  CommitChange();
 }
 
-void SVGLengthTearOff::convertToSpecifiedUnits(unsigned short unitType,
-                                               ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+void SVGLengthTearOff::convertToSpecifiedUnits(
+    unsigned short unit_type,
+    ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  if (!isValidLengthUnit(unitType)) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "Cannot convert to unknown or invalid units (" +
-                               String::number(unitType) + ").");
+  if (!IsValidLengthUnit(unit_type)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "Cannot convert to unknown or invalid units (" +
+                                String::Number(unit_type) + ").");
     return;
   }
-  if ((target()->isRelative() ||
-       CSSPrimitiveValue::isRelativeUnit(toCSSUnitType(unitType))) &&
-      !canResolveRelativeUnits(contextElement())) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Could not resolve relative length.");
+  if ((Target()->IsRelative() ||
+       CSSPrimitiveValue::IsRelativeUnit(ToCSSUnitType(unit_type))) &&
+      !CanResolveRelativeUnits(contextElement())) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Could not resolve relative length.");
     return;
   }
-  SVGLengthContext lengthContext(contextElement());
-  target()->convertToSpecifiedUnits(toCSSUnitType(unitType), lengthContext);
-  commitChange();
+  SVGLengthContext length_context(contextElement());
+  Target()->ConvertToSpecifiedUnits(ToCSSUnitType(unit_type), length_context);
+  CommitChange();
 }
 
 SVGLengthTearOff::SVGLengthTearOff(SVGLength* target,
-                                   SVGElement* contextElement,
-                                   PropertyIsAnimValType propertyIsAnimVal,
-                                   const QualifiedName& attributeName)
+                                   SVGElement* context_element,
+                                   PropertyIsAnimValType property_is_anim_val,
+                                   const QualifiedName& attribute_name)
     : SVGPropertyTearOff<SVGLength>(target,
-                                    contextElement,
-                                    propertyIsAnimVal,
-                                    attributeName) {}
+                                    context_element,
+                                    property_is_anim_val,
+                                    attribute_name) {}
 
 DEFINE_TRACE_WRAPPERS(SVGLengthTearOff) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink

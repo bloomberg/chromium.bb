@@ -28,35 +28,35 @@ namespace blink {
 
 inline SVGFETileElement::SVGFETileElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feTileTag, document),
-      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
-  addToPropertyMap(m_in1);
+      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
+  AddToPropertyMap(in1_);
 }
 
 DEFINE_TRACE(SVGFETileElement) {
-  visitor->trace(m_in1);
-  SVGFilterPrimitiveStandardAttributes::trace(visitor);
+  visitor->Trace(in1_);
+  SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFETileElement)
 
-void SVGFETileElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::inAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+void SVGFETileElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::inAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    Invalidate();
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
 }
 
-FilterEffect* SVGFETileElement::build(SVGFilterBuilder* filterBuilder,
+FilterEffect* SVGFETileElement::Build(SVGFilterBuilder* filter_builder,
                                       Filter* filter) {
-  FilterEffect* input1 = filterBuilder->getEffectById(
-      AtomicString(m_in1->currentValue()->value()));
+  FilterEffect* input1 = filter_builder->GetEffectById(
+      AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  FilterEffect* effect = FETile::create(filter);
-  effect->inputEffects().push_back(input1);
+  FilterEffect* effect = FETile::Create(filter);
+  effect->InputEffects().push_back(input1);
   return effect;
 }
 

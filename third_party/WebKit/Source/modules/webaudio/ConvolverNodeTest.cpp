@@ -11,18 +11,18 @@
 namespace blink {
 
 TEST(ConvolverNodeTest, ReverbLifetime) {
-  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::create();
-  OfflineAudioContext* context = OfflineAudioContext::create(
-      &page->document(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::Create();
+  OfflineAudioContext* context = OfflineAudioContext::Create(
+      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   ConvolverNode* node = context->createConvolver(ASSERT_NO_EXCEPTION);
-  ConvolverHandler& handler = node->convolverHandler();
-  EXPECT_FALSE(handler.m_reverb);
-  node->setBuffer(AudioBuffer::create(2, 1, 48000), ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(handler.m_reverb);
+  ConvolverHandler& handler = node->GetConvolverHandler();
+  EXPECT_FALSE(handler.reverb_);
+  node->setBuffer(AudioBuffer::Create(2, 1, 48000), ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(handler.reverb_);
   BaseAudioContext::AutoLocker locker(context);
-  handler.dispose();
+  handler.Dispose();
   // m_reverb should live after dispose() because an audio thread is using it.
-  EXPECT_TRUE(handler.m_reverb);
+  EXPECT_TRUE(handler.reverb_);
 }
 
 }  // namespace blink

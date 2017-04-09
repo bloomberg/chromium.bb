@@ -20,7 +20,7 @@ bool MockGrammarCheck::CheckGrammarOfString(
     const blink::WebString& text,
     std::vector<blink::WebTextCheckingResult>* results) {
   DCHECK(results);
-  base::string16 string_text = text.utf16();
+  base::string16 string_text = text.Utf16();
   if (std::find_if(string_text.begin(), string_text.end(), IsASCIIAlpha) ==
       string_text.end())
     return true;
@@ -53,7 +53,7 @@ bool MockGrammarCheck::CheckGrammarOfString(
         kGrammarErrors[i].text + strlen(kGrammarErrors[i].text));
     while ((offset = string_text.find(error, offset)) != base::string16::npos) {
       results->push_back(blink::WebTextCheckingResult(
-          blink::WebTextDecorationTypeGrammar,
+          blink::kWebTextDecorationTypeGrammar,
           offset + kGrammarErrors[i].location, kGrammarErrors[i].length));
       offset += kGrammarErrors[i].length;
     }

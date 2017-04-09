@@ -125,26 +125,26 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
   }
 
   bool handled = false;
-  switch (event.type()) {
-    case blink::WebInputEvent::GestureScrollBegin:
+  switch (event.GetType()) {
+    case blink::WebInputEvent::kGestureScrollBegin:
       refresh_effect_->OnScrollBegin();
       break;
 
-    case blink::WebInputEvent::GestureScrollUpdate: {
-      gfx::Vector2dF scroll_delta(event.data.scrollUpdate.deltaX,
-                                  event.data.scrollUpdate.deltaY);
+    case blink::WebInputEvent::kGestureScrollUpdate: {
+      gfx::Vector2dF scroll_delta(event.data.scroll_update.delta_x,
+                                  event.data.scroll_update.delta_y);
       scroll_delta.Scale(dpi_scale_);
       handled = refresh_effect_->WillHandleScrollUpdate(scroll_delta);
     } break;
 
-    case blink::WebInputEvent::GestureScrollEnd:
+    case blink::WebInputEvent::kGestureScrollEnd:
       refresh_effect_->OnScrollEnd(gfx::Vector2dF());
       break;
 
-    case blink::WebInputEvent::GestureFlingStart: {
+    case blink::WebInputEvent::kGestureFlingStart: {
       if (refresh_effect_->IsActive()) {
-        gfx::Vector2dF scroll_velocity(event.data.flingStart.velocityX,
-                                       event.data.flingStart.velocityY);
+        gfx::Vector2dF scroll_velocity(event.data.fling_start.velocity_x,
+                                       event.data.fling_start.velocity_y);
         scroll_velocity.Scale(dpi_scale_);
         refresh_effect_->OnScrollEnd(scroll_velocity);
         // TODO(jdduke): Figure out a cleaner way of suppressing a fling.
@@ -156,12 +156,12 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
         // not to zero as downstream code may not expect a zero-velocity fling.
         blink::WebGestureEvent& modified_event =
             const_cast<blink::WebGestureEvent&>(event);
-        modified_event.data.flingStart.velocityX = .01f;
-        modified_event.data.flingStart.velocityY = .01f;
+        modified_event.data.fling_start.velocity_x = .01f;
+        modified_event.data.fling_start.velocity_y = .01f;
       }
     } break;
 
-    case blink::WebInputEvent::GesturePinchBegin:
+    case blink::WebInputEvent::kGesturePinchBegin:
       refresh_effect_->ReleaseWithoutActivation();
       break;
 
@@ -180,17 +180,18 @@ void OverscrollControllerAndroid::OnGestureEventAck(
 
   // The overscroll effect requires an explicit release signal that may not be
   // sent from the renderer compositor.
-  if (event.type() == blink::WebInputEvent::GestureScrollEnd ||
-      event.type() == blink::WebInputEvent::GestureFlingStart) {
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     OnOverscrolled(DidOverscrollParams());
   }
 
-  if (event.type() == blink::WebInputEvent::GestureScrollUpdate &&
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       refresh_effect_) {
     // The effect should only be allowed if both the causal touch events go
     // unconsumed and the generated scroll events go unconsumed.
-    bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
-                    event.data.scrollUpdate.previousUpdateInSequencePrevented;
+    bool consumed =
+        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
+        event.data.scroll_update.previous_update_in_sequence_prevented;
     refresh_effect_->OnScrollUpdateAck(consumed);
   }
 }

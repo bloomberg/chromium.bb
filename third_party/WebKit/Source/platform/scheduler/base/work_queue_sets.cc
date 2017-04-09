@@ -75,7 +75,7 @@ void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
   DCHECK_LT(set_index, work_queue_heaps_.size());
   DCHECK(work_queue->heap_handle().IsValid());
   DCHECK(!work_queue_heaps_[set_index].empty()) << " set_index = " << set_index;
-  DCHECK_EQ(work_queue_heaps_[set_index].min().value, work_queue)
+  DCHECK_EQ(work_queue_heaps_[set_index].Min().value, work_queue)
       << " set_index = " << set_index;
   EnqueueOrder enqueue_order;
   if (work_queue->GetFrontTaskEnqueueOrder(&enqueue_order)) {
@@ -83,9 +83,9 @@ void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
     work_queue_heaps_[set_index].ReplaceMin({enqueue_order, work_queue});
   } else {
     // O(log n)
-    work_queue_heaps_[set_index].pop();
+    work_queue_heaps_[set_index].Pop();
     DCHECK(work_queue_heaps_[set_index].empty() ||
-           work_queue_heaps_[set_index].min().value != work_queue);
+           work_queue_heaps_[set_index].Min().value != work_queue);
   }
 }
 
@@ -104,7 +104,7 @@ bool WorkQueueSets::GetOldestQueueInSet(size_t set_index,
   DCHECK_LT(set_index, work_queue_heaps_.size());
   if (work_queue_heaps_[set_index].empty())
     return false;
-  *out_work_queue = work_queue_heaps_[set_index].min().value;
+  *out_work_queue = work_queue_heaps_[set_index].Min().value;
   return true;
 }
 
@@ -115,7 +115,7 @@ bool WorkQueueSets::GetOldestQueueAndEnqueueOrderInSet(
   DCHECK_LT(set_index, work_queue_heaps_.size());
   if (work_queue_heaps_[set_index].empty())
     return false;
-  const OldestTaskEnqueueOrder& oldest = work_queue_heaps_[set_index].min();
+  const OldestTaskEnqueueOrder& oldest = work_queue_heaps_[set_index].Min();
   *out_work_queue = oldest.value;
   *out_enqueue_order = oldest.key;
   EnqueueOrder enqueue_order;

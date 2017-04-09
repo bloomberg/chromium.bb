@@ -10,7 +10,7 @@
 namespace blink {
 
 unsigned InternalsAccessibility::numberOfLiveAXObjects(Internals&) {
-  return AXObject::numberOfLiveAXObjects();
+  return AXObject::NumberOfLiveAXObjects();
 }
 
 }  // namespace blink

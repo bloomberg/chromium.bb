@@ -40,265 +40,267 @@
 
 namespace blink {
 
-AudioBuffer* AudioBuffer::create(unsigned numberOfChannels,
-                                 size_t numberOfFrames,
-                                 float sampleRate) {
-  if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate) ||
-      numberOfChannels > BaseAudioContext::maxNumberOfChannels() ||
-      !numberOfChannels || !numberOfFrames)
+AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
+                                 size_t number_of_frames,
+                                 float sample_rate) {
+  if (!AudioUtilities::IsValidAudioBufferSampleRate(sample_rate) ||
+      number_of_channels > BaseAudioContext::MaxNumberOfChannels() ||
+      !number_of_channels || !number_of_frames)
     return nullptr;
 
   AudioBuffer* buffer =
-      new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate);
+      new AudioBuffer(number_of_channels, number_of_frames, sample_rate);
 
-  if (!buffer->createdSuccessfully(numberOfChannels))
+  if (!buffer->CreatedSuccessfully(number_of_channels))
     return nullptr;
   return buffer;
 }
 
-AudioBuffer* AudioBuffer::create(unsigned numberOfChannels,
-                                 size_t numberOfFrames,
-                                 float sampleRate,
-                                 ExceptionState& exceptionState) {
-  if (!numberOfChannels ||
-      numberOfChannels > BaseAudioContext::maxNumberOfChannels()) {
-    exceptionState.throwDOMException(
-        NotSupportedError, ExceptionMessages::indexOutsideRange(
-                               "number of channels", numberOfChannels, 1u,
-                               ExceptionMessages::InclusiveBound,
-                               BaseAudioContext::maxNumberOfChannels(),
-                               ExceptionMessages::InclusiveBound));
+AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
+                                 size_t number_of_frames,
+                                 float sample_rate,
+                                 ExceptionState& exception_state) {
+  if (!number_of_channels ||
+      number_of_channels > BaseAudioContext::MaxNumberOfChannels()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, ExceptionMessages::IndexOutsideRange(
+                                "number of channels", number_of_channels, 1u,
+                                ExceptionMessages::kInclusiveBound,
+                                BaseAudioContext::MaxNumberOfChannels(),
+                                ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
-  if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate)) {
-    exceptionState.throwDOMException(
-        NotSupportedError, ExceptionMessages::indexOutsideRange(
-                               "sample rate", sampleRate,
-                               AudioUtilities::minAudioBufferSampleRate(),
-                               ExceptionMessages::InclusiveBound,
-                               AudioUtilities::maxAudioBufferSampleRate(),
-                               ExceptionMessages::InclusiveBound));
+  if (!AudioUtilities::IsValidAudioBufferSampleRate(sample_rate)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, ExceptionMessages::IndexOutsideRange(
+                                "sample rate", sample_rate,
+                                AudioUtilities::MinAudioBufferSampleRate(),
+                                ExceptionMessages::kInclusiveBound,
+                                AudioUtilities::MaxAudioBufferSampleRate(),
+                                ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
-  if (!numberOfFrames) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        ExceptionMessages::indexExceedsMinimumBound(
-            "number of frames", numberOfFrames, static_cast<size_t>(0)));
+  if (!number_of_frames) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        ExceptionMessages::IndexExceedsMinimumBound(
+            "number of frames", number_of_frames, static_cast<size_t>(0)));
     return nullptr;
   }
 
-  AudioBuffer* audioBuffer =
-      create(numberOfChannels, numberOfFrames, sampleRate);
+  AudioBuffer* audio_buffer =
+      Create(number_of_channels, number_of_frames, sample_rate);
 
-  if (!audioBuffer) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "createBuffer(" + String::number(numberOfChannels) +
-                               ", " + String::number(numberOfFrames) + ", " +
-                               String::number(sampleRate) + ") failed.");
+  if (!audio_buffer) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "createBuffer(" +
+                                String::Number(number_of_channels) + ", " +
+                                String::Number(number_of_frames) + ", " +
+                                String::Number(sample_rate) + ") failed.");
   }
 
-  return audioBuffer;
+  return audio_buffer;
 }
 
-AudioBuffer* AudioBuffer::create(const AudioBufferOptions& options,
-                                 ExceptionState& exceptionState) {
-  return create(options.numberOfChannels(), options.length(),
-                options.sampleRate(), exceptionState);
+AudioBuffer* AudioBuffer::Create(const AudioBufferOptions& options,
+                                 ExceptionState& exception_state) {
+  return Create(options.numberOfChannels(), options.length(),
+                options.sampleRate(), exception_state);
 }
 
-AudioBuffer* AudioBuffer::createFromAudioFileData(const void* data,
-                                                  size_t dataSize,
-                                                  bool mixToMono,
-                                                  float sampleRate) {
+AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
+                                                  size_t data_size,
+                                                  bool mix_to_mono,
+                                                  float sample_rate) {
   RefPtr<AudioBus> bus =
-      createBusFromInMemoryAudioFile(data, dataSize, mixToMono, sampleRate);
+      CreateBusFromInMemoryAudioFile(data, data_size, mix_to_mono, sample_rate);
   if (bus) {
-    AudioBuffer* buffer = new AudioBuffer(bus.get());
-    if (buffer->createdSuccessfully(bus->numberOfChannels()))
+    AudioBuffer* buffer = new AudioBuffer(bus.Get());
+    if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
       return buffer;
   }
 
   return nullptr;
 }
 
-AudioBuffer* AudioBuffer::createFromAudioBus(AudioBus* bus) {
+AudioBuffer* AudioBuffer::CreateFromAudioBus(AudioBus* bus) {
   if (!bus)
     return nullptr;
   AudioBuffer* buffer = new AudioBuffer(bus);
-  if (buffer->createdSuccessfully(bus->numberOfChannels()))
+  if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
     return buffer;
   return nullptr;
 }
 
-bool AudioBuffer::createdSuccessfully(unsigned desiredNumberOfChannels) const {
-  return numberOfChannels() == desiredNumberOfChannels;
+bool AudioBuffer::CreatedSuccessfully(
+    unsigned desired_number_of_channels) const {
+  return numberOfChannels() == desired_number_of_channels;
 }
 
-DOMFloat32Array* AudioBuffer::createFloat32ArrayOrNull(size_t length) {
-  RefPtr<WTF::Float32Array> bufferView =
-      WTF::Float32Array::createOrNull(length);
-  if (!bufferView)
+DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(size_t length) {
+  RefPtr<WTF::Float32Array> buffer_view =
+      WTF::Float32Array::CreateOrNull(length);
+  if (!buffer_view)
     return nullptr;
-  return DOMFloat32Array::create(bufferView.release());
+  return DOMFloat32Array::Create(buffer_view.Release());
 }
 
-AudioBuffer::AudioBuffer(unsigned numberOfChannels,
-                         size_t numberOfFrames,
-                         float sampleRate)
-    : m_sampleRate(sampleRate), m_length(numberOfFrames) {
-  m_channels.reserveCapacity(numberOfChannels);
+AudioBuffer::AudioBuffer(unsigned number_of_channels,
+                         size_t number_of_frames,
+                         float sample_rate)
+    : sample_rate_(sample_rate), length_(number_of_frames) {
+  channels_.ReserveCapacity(number_of_channels);
 
-  for (unsigned i = 0; i < numberOfChannels; ++i) {
-    DOMFloat32Array* channelDataArray = createFloat32ArrayOrNull(m_length);
+  for (unsigned i = 0; i < number_of_channels; ++i) {
+    DOMFloat32Array* channel_data_array = CreateFloat32ArrayOrNull(length_);
     // If the channel data array could not be created, just return. The caller
     // will need to check that the desired number of channels were created.
-    if (!channelDataArray)
+    if (!channel_data_array)
       return;
 
-    channelDataArray->setNeuterable(false);
-    m_channels.push_back(channelDataArray);
+    channel_data_array->SetNeuterable(false);
+    channels_.push_back(channel_data_array);
   }
 }
 
 AudioBuffer::AudioBuffer(AudioBus* bus)
-    : m_sampleRate(bus->sampleRate()), m_length(bus->length()) {
+    : sample_rate_(bus->SampleRate()), length_(bus->length()) {
   // Copy audio data from the bus to the Float32Arrays we manage.
-  unsigned numberOfChannels = bus->numberOfChannels();
-  m_channels.reserveCapacity(numberOfChannels);
-  for (unsigned i = 0; i < numberOfChannels; ++i) {
-    DOMFloat32Array* channelDataArray = createFloat32ArrayOrNull(m_length);
+  unsigned number_of_channels = bus->NumberOfChannels();
+  channels_.ReserveCapacity(number_of_channels);
+  for (unsigned i = 0; i < number_of_channels; ++i) {
+    DOMFloat32Array* channel_data_array = CreateFloat32ArrayOrNull(length_);
     // If the channel data array could not be created, just return. The caller
     // will need to check that the desired number of channels were created.
-    if (!channelDataArray)
+    if (!channel_data_array)
       return;
 
-    channelDataArray->setNeuterable(false);
-    const float* src = bus->channel(i)->data();
-    float* dst = channelDataArray->data();
-    memmove(dst, src, m_length * sizeof(*dst));
-    m_channels.push_back(channelDataArray);
+    channel_data_array->SetNeuterable(false);
+    const float* src = bus->Channel(i)->Data();
+    float* dst = channel_data_array->Data();
+    memmove(dst, src, length_ * sizeof(*dst));
+    channels_.push_back(channel_data_array);
   }
 }
 
-DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex,
-                                             ExceptionState& exceptionState) {
-  if (channelIndex >= m_channels.size()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "channel index (" + String::number(channelIndex) +
-                            ") exceeds number of channels (" +
-                            String::number(m_channels.size()) + ")");
+DOMFloat32Array* AudioBuffer::getChannelData(unsigned channel_index,
+                                             ExceptionState& exception_state) {
+  if (channel_index >= channels_.size()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "channel index (" + String::Number(channel_index) +
+                             ") exceeds number of channels (" +
+                             String::Number(channels_.size()) + ")");
     return nullptr;
   }
 
-  return getChannelData(channelIndex);
+  return getChannelData(channel_index);
 }
 
-DOMFloat32Array* AudioBuffer::getChannelData(unsigned channelIndex) {
-  if (channelIndex >= m_channels.size())
+DOMFloat32Array* AudioBuffer::getChannelData(unsigned channel_index) {
+  if (channel_index >= channels_.size())
     return nullptr;
 
-  return m_channels[channelIndex].get();
+  return channels_[channel_index].Get();
 }
 
 void AudioBuffer::copyFromChannel(DOMFloat32Array* destination,
-                                  long channelNumber,
-                                  ExceptionState& exceptionState) {
-  return copyFromChannel(destination, channelNumber, 0, exceptionState);
+                                  long channel_number,
+                                  ExceptionState& exception_state) {
+  return copyFromChannel(destination, channel_number, 0, exception_state);
 }
 
 void AudioBuffer::copyFromChannel(DOMFloat32Array* destination,
-                                  long channelNumber,
-                                  unsigned long startInChannel,
-                                  ExceptionState& exceptionState) {
-  if (channelNumber < 0 ||
-      channelNumber >= static_cast<long>(m_channels.size())) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexOutsideRange(
-                            "channelNumber", channelNumber, 0L,
-                            ExceptionMessages::InclusiveBound,
-                            static_cast<long>(m_channels.size() - 1),
-                            ExceptionMessages::InclusiveBound));
+                                  long channel_number,
+                                  unsigned long start_in_channel,
+                                  ExceptionState& exception_state) {
+  if (channel_number < 0 ||
+      channel_number >= static_cast<long>(channels_.size())) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
+                             "channelNumber", channel_number, 0L,
+                             ExceptionMessages::kInclusiveBound,
+                             static_cast<long>(channels_.size() - 1),
+                             ExceptionMessages::kInclusiveBound));
     return;
   }
 
-  DOMFloat32Array* channelData = m_channels[channelNumber].get();
+  DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (startInChannel >= channelData->length()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexOutsideRange(
-                            "startInChannel", startInChannel, 0UL,
-                            ExceptionMessages::InclusiveBound,
-                            static_cast<unsigned long>(channelData->length()),
-                            ExceptionMessages::ExclusiveBound));
+  if (start_in_channel >= channel_data->length()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
+                             "startInChannel", start_in_channel, 0UL,
+                             ExceptionMessages::kInclusiveBound,
+                             static_cast<unsigned long>(channel_data->length()),
+                             ExceptionMessages::kExclusiveBound));
 
     return;
   }
 
-  unsigned count = channelData->length() - startInChannel;
+  unsigned count = channel_data->length() - start_in_channel;
   count = std::min(destination->length(), count);
 
-  const float* src = channelData->data();
-  float* dst = destination->data();
+  const float* src = channel_data->Data();
+  float* dst = destination->Data();
 
   DCHECK(src);
   DCHECK(dst);
 
-  memcpy(dst, src + startInChannel, count * sizeof(*src));
+  memcpy(dst, src + start_in_channel, count * sizeof(*src));
 }
 
 void AudioBuffer::copyToChannel(DOMFloat32Array* source,
-                                long channelNumber,
-                                ExceptionState& exceptionState) {
-  return copyToChannel(source, channelNumber, 0, exceptionState);
+                                long channel_number,
+                                ExceptionState& exception_state) {
+  return copyToChannel(source, channel_number, 0, exception_state);
 }
 
 void AudioBuffer::copyToChannel(DOMFloat32Array* source,
-                                long channelNumber,
-                                unsigned long startInChannel,
-                                ExceptionState& exceptionState) {
-  if (channelNumber < 0 ||
-      channelNumber >= static_cast<long>(m_channels.size())) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexOutsideRange(
-                            "channelNumber", channelNumber, 0L,
-                            ExceptionMessages::InclusiveBound,
-                            static_cast<long>(m_channels.size() - 1),
-                            ExceptionMessages::InclusiveBound));
+                                long channel_number,
+                                unsigned long start_in_channel,
+                                ExceptionState& exception_state) {
+  if (channel_number < 0 ||
+      channel_number >= static_cast<long>(channels_.size())) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
+                             "channelNumber", channel_number, 0L,
+                             ExceptionMessages::kInclusiveBound,
+                             static_cast<long>(channels_.size() - 1),
+                             ExceptionMessages::kInclusiveBound));
     return;
   }
 
-  DOMFloat32Array* channelData = m_channels[channelNumber].get();
+  DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (startInChannel >= channelData->length()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexOutsideRange(
-                            "startInChannel", startInChannel, 0UL,
-                            ExceptionMessages::InclusiveBound,
-                            static_cast<unsigned long>(channelData->length()),
-                            ExceptionMessages::ExclusiveBound));
+  if (start_in_channel >= channel_data->length()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
+                             "startInChannel", start_in_channel, 0UL,
+                             ExceptionMessages::kInclusiveBound,
+                             static_cast<unsigned long>(channel_data->length()),
+                             ExceptionMessages::kExclusiveBound));
 
     return;
   }
 
-  unsigned count = channelData->length() - startInChannel;
+  unsigned count = channel_data->length() - start_in_channel;
   count = std::min(source->length(), count);
 
-  const float* src = source->data();
-  float* dst = channelData->data();
+  const float* src = source->Data();
+  float* dst = channel_data->Data();
 
   DCHECK(src);
   DCHECK(dst);
 
-  memcpy(dst + startInChannel, src, count * sizeof(*dst));
+  memcpy(dst + start_in_channel, src, count * sizeof(*dst));
 }
 
-void AudioBuffer::zero() {
-  for (unsigned i = 0; i < m_channels.size(); ++i) {
+void AudioBuffer::Zero() {
+  for (unsigned i = 0; i < channels_.size(); ++i) {
     if (DOMFloat32Array* array = getChannelData(i)) {
-      float* data = array->data();
+      float* data = array->Data();
       memset(data, 0, length() * sizeof(*data));
     }
   }

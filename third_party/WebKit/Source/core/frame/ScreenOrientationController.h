@@ -27,9 +27,9 @@ class CORE_EXPORT ScreenOrientationController
  public:
   virtual ~ScreenOrientationController() = default;
 
-  static ScreenOrientationController* from(LocalFrame&);
+  static ScreenOrientationController* From(LocalFrame&);
 
-  virtual void notifyOrientationChanged() = 0;
+  virtual void NotifyOrientationChanged() = 0;
 
   virtual void lock(WebScreenOrientationLockType,
                     std::unique_ptr<WebLockOrientationCallback>) = 0;
@@ -39,7 +39,7 @@ class CORE_EXPORT ScreenOrientationController
   // frames might have changed the lock state so this should only be used to
   // know whether the current frame made an attempt to lock without explicitly
   // unlocking.
-  virtual bool maybeHasActiveLock() const = 0;
+  virtual bool MaybeHasActiveLock() const = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -47,10 +47,10 @@ class CORE_EXPORT ScreenOrientationController
   explicit ScreenOrientationController(LocalFrame&);
   // To be called by an ScreenOrientationController to register its
   // implementation.
-  static void provideTo(LocalFrame&, ScreenOrientationController*);
+  static void ProvideTo(LocalFrame&, ScreenOrientationController*);
 
  private:
-  static const char* supplementName();
+  static const char* SupplementName();
 };
 
 }  // namespace blink

@@ -15,12 +15,12 @@ WebThreadImplForUtilityThread::WebThreadImplForUtilityThread()
 
 WebThreadImplForUtilityThread::~WebThreadImplForUtilityThread() {}
 
-blink::WebScheduler* WebThreadImplForUtilityThread::scheduler() const {
+blink::WebScheduler* WebThreadImplForUtilityThread::Scheduler() const {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-blink::PlatformThreadId WebThreadImplForUtilityThread::threadId() const {
+blink::PlatformThreadId WebThreadImplForUtilityThread::ThreadId() const {
   return thread_id_;
 }
 

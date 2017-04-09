@@ -10,35 +10,35 @@
 
 namespace blink {
 
-CSSNamespaceRule::CSSNamespaceRule(StyleRuleNamespace* namespaceRule,
+CSSNamespaceRule::CSSNamespaceRule(StyleRuleNamespace* namespace_rule,
                                    CSSStyleSheet* parent)
-    : CSSRule(parent), m_namespaceRule(namespaceRule) {}
+    : CSSRule(parent), namespace_rule_(namespace_rule) {}
 
 CSSNamespaceRule::~CSSNamespaceRule() {}
 
 String CSSNamespaceRule::cssText() const {
   StringBuilder result;
-  result.append("@namespace ");
-  serializeIdentifier(prefix(), result);
-  if (!prefix().isEmpty())
-    result.append(' ');
-  result.append("url(");
-  result.append(serializeString(namespaceURI()));
-  result.append(");");
-  return result.toString();
+  result.Append("@namespace ");
+  SerializeIdentifier(prefix(), result);
+  if (!prefix().IsEmpty())
+    result.Append(' ');
+  result.Append("url(");
+  result.Append(SerializeString(namespaceURI()));
+  result.Append(");");
+  return result.ToString();
 }
 
 AtomicString CSSNamespaceRule::namespaceURI() const {
-  return m_namespaceRule->uri();
+  return namespace_rule_->Uri();
 }
 
 AtomicString CSSNamespaceRule::prefix() const {
-  return m_namespaceRule->prefix();
+  return namespace_rule_->Prefix();
 }
 
 DEFINE_TRACE(CSSNamespaceRule) {
-  visitor->trace(m_namespaceRule);
-  CSSRule::trace(visitor);
+  visitor->Trace(namespace_rule_);
+  CSSRule::Trace(visitor);
 }
 
 }  // namespace blink

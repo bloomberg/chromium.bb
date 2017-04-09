@@ -10,37 +10,37 @@
 namespace blink {
 
 // static
-BlobEvent* BlobEvent::create(const AtomicString& type,
+BlobEvent* BlobEvent::Create(const AtomicString& type,
                              const BlobEventInit& initializer) {
   return new BlobEvent(type, initializer);
 }
 
 // static
-BlobEvent* BlobEvent::create(const AtomicString& type,
+BlobEvent* BlobEvent::Create(const AtomicString& type,
                              Blob* blob,
                              double timecode) {
   return new BlobEvent(type, blob, timecode);
 }
 
-const AtomicString& BlobEvent::interfaceName() const {
+const AtomicString& BlobEvent::InterfaceName() const {
   return EventNames::BlobEvent;
 }
 
 DEFINE_TRACE(BlobEvent) {
-  visitor->trace(m_blob);
-  Event::trace(visitor);
+  visitor->Trace(blob_);
+  Event::Trace(visitor);
 }
 
 BlobEvent::BlobEvent(const AtomicString& type, const BlobEventInit& initializer)
     : Event(type, initializer),
-      m_blob(initializer.data()),
-      m_timecode(initializer.hasTimecode()
-                     ? initializer.timecode()
-                     : WTF::double_conversion::Double::NaN()) {}
+      blob_(initializer.data()),
+      timecode_(initializer.hasTimecode()
+                    ? initializer.timecode()
+                    : WTF::double_conversion::Double::NaN()) {}
 
 BlobEvent::BlobEvent(const AtomicString& type, Blob* blob, double timecode)
     : Event(type, false /* canBubble */, false /* cancelable */),
-      m_blob(blob),
-      m_timecode(timecode) {}
+      blob_(blob),
+      timecode_(timecode) {}
 
 }  // namespace blink

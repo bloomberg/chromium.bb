@@ -38,33 +38,33 @@ namespace blink {
 DOMWindowCrypto::DOMWindowCrypto(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-const char* DOMWindowCrypto::supplementName() {
+const char* DOMWindowCrypto::SupplementName() {
   return "DOMWindowCrypto";
 }
 
-DOMWindowCrypto& DOMWindowCrypto::from(LocalDOMWindow& window) {
+DOMWindowCrypto& DOMWindowCrypto::From(LocalDOMWindow& window) {
   DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(
-      Supplement<LocalDOMWindow>::from(window, supplementName()));
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
     supplement = new DOMWindowCrypto(window);
-    provideTo(window, supplementName(), supplement);
+    ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 Crypto* DOMWindowCrypto::crypto(LocalDOMWindow& window) {
-  return DOMWindowCrypto::from(window).crypto();
+  return DOMWindowCrypto::From(window).crypto();
 }
 
 Crypto* DOMWindowCrypto::crypto() const {
-  if (!m_crypto)
-    m_crypto = Crypto::create();
-  return m_crypto.get();
+  if (!crypto_)
+    crypto_ = Crypto::Create();
+  return crypto_.Get();
 }
 
 DEFINE_TRACE(DOMWindowCrypto) {
-  visitor->trace(m_crypto);
-  Supplement<LocalDOMWindow>::trace(visitor);
+  visitor->Trace(crypto_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -41,48 +41,48 @@ using blink::FontPlatformData;
 namespace blink {
 
 // static
-void WebFontRendering::setSkiaFontManager(sk_sp<SkFontMgr> fontMgr) {
-  FontCache::setFontManager(std::move(fontMgr));
+void WebFontRendering::SetSkiaFontManager(sk_sp<SkFontMgr> font_mgr) {
+  FontCache::SetFontManager(std::move(font_mgr));
 }
 
 // static
-void WebFontRendering::setHinting(SkPaint::Hinting hinting) {
-  FontRenderStyle::setHinting(hinting);
+void WebFontRendering::SetHinting(SkPaint::Hinting hinting) {
+  FontRenderStyle::SetHinting(hinting);
 }
 
 // static
-void WebFontRendering::setAutoHint(bool useAutoHint) {
-  FontRenderStyle::setAutoHint(useAutoHint);
+void WebFontRendering::SetAutoHint(bool use_auto_hint) {
+  FontRenderStyle::SetAutoHint(use_auto_hint);
 }
 
 // static
-void WebFontRendering::setUseBitmaps(bool useBitmaps) {
-  FontRenderStyle::setUseBitmaps(useBitmaps);
+void WebFontRendering::SetUseBitmaps(bool use_bitmaps) {
+  FontRenderStyle::SetUseBitmaps(use_bitmaps);
 }
 
 // static
-void WebFontRendering::setAntiAlias(bool useAntiAlias) {
-  FontRenderStyle::setAntiAlias(useAntiAlias);
+void WebFontRendering::SetAntiAlias(bool use_anti_alias) {
+  FontRenderStyle::SetAntiAlias(use_anti_alias);
 }
 
 // static
-void WebFontRendering::setSubpixelRendering(bool useSubpixelRendering) {
-  FontRenderStyle::setSubpixelRendering(useSubpixelRendering);
+void WebFontRendering::SetSubpixelRendering(bool use_subpixel_rendering) {
+  FontRenderStyle::SetSubpixelRendering(use_subpixel_rendering);
 }
 
 // static
-void WebFontRendering::setSubpixelPositioning(bool useSubpixelPositioning) {
-  FontDescription::setSubpixelPositioning(useSubpixelPositioning);
+void WebFontRendering::SetSubpixelPositioning(bool use_subpixel_positioning) {
+  FontDescription::SetSubpixelPositioning(use_subpixel_positioning);
 }
 
 // static
-void WebFontRendering::setDefaultFontSize(int size) {
-  LayoutThemeFontProvider::setDefaultFontSize(size);
+void WebFontRendering::SetDefaultFontSize(int size) {
+  LayoutThemeFontProvider::SetDefaultFontSize(size);
 }
 
 // static
-void WebFontRendering::setSystemFontFamily(const WebString& name) {
-  FontCache::setSystemFontFamily(name);
+void WebFontRendering::SetSystemFontFamily(const WebString& name) {
+  FontCache::SetSystemFontFamily(name);
 }
 
 }  // namespace blink

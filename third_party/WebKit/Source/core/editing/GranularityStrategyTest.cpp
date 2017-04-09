@@ -22,13 +22,13 @@
 namespace blink {
 
 #define EXPECT_EQ_SELECTED_TEXT(text) \
-  EXPECT_EQ(text, WebString(selection().selectedText()).utf8())
+  EXPECT_EQ(text, WebString(Selection().SelectedText()).Utf8())
 
-IntPoint visiblePositionToContentsPoint(const VisiblePosition& pos) {
-  IntPoint result = absoluteSelectionBoundsOf(pos).minXMaxYCorner();
+IntPoint VisiblePositionToContentsPoint(const VisiblePosition& pos) {
+  IntPoint result = AbsoluteSelectionBoundsOf(pos).MinXMaxYCorner();
   // Need to move the point at least by 1 - caret's minXMaxYCorner is not
   // evaluated to the same line as the text by hit testing.
-  result.move(0, -1);
+  result.Move(0, -1);
   return result;
 }
 
@@ -38,132 +38,132 @@ class GranularityStrategyTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
-  Document& document() const;
-  LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
-  void setSelection(const VisibleSelection&);
-  FrameSelection& selection() const;
-  Text* appendTextNode(const String& data);
-  int layoutCount() const {
-    return m_dummyPageHolder->frameView().layoutCount();
+  DummyPageHolder& GetDummyPageHolder() const { return *dummy_page_holder_; }
+  Document& GetDocument() const;
+  LocalFrame& GetFrame() const { return dummy_page_holder_->GetFrame(); }
+  void SetSelection(const VisibleSelection&);
+  FrameSelection& Selection() const;
+  Text* AppendTextNode(const String& data);
+  int LayoutCount() const {
+    return dummy_page_holder_->GetFrameView().LayoutCount();
   }
-  void setInnerHTML(const char*);
+  void SetInnerHTML(const char*);
   // Parses the text node, appending the info to m_letterPos and m_wordMiddles.
-  void parseText(Text*);
-  void parseText(const TextNodeVector&);
+  void ParseText(Text*);
+  void ParseText(const TextNodeVector&);
 
-  Text* setupTranslateZ(String);
-  Text* setupTransform(String);
-  Text* setupRotate(String);
-  void setupTextSpan(String str1,
+  Text* SetupTranslateZ(String);
+  Text* SetupTransform(String);
+  Text* SetupRotate(String);
+  void SetupTextSpan(String str1,
                      String str2,
                      String str3,
-                     size_t selBegin,
-                     size_t selEnd);
-  void setupVerticalAlign(String str1,
+                     size_t sel_begin,
+                     size_t sel_end);
+  void SetupVerticalAlign(String str1,
                           String str2,
                           String str3,
-                          size_t selBegin,
-                          size_t selEnd);
-  void setupFontSize(String str1,
+                          size_t sel_begin,
+                          size_t sel_end);
+  void SetupFontSize(String str1,
                      String str2,
                      String str3,
-                     size_t selBegin,
-                     size_t selEnd);
+                     size_t sel_begin,
+                     size_t sel_end);
 
-  void testDirectionExpand();
-  void testDirectionShrink();
-  void testDirectionSwitchSide();
+  void TestDirectionExpand();
+  void TestDirectionShrink();
+  void TestDirectionSwitchSide();
 
   // Pixel coordinates of the positions for each letter within the text being
   // tested.
-  Vector<IntPoint> m_letterPos;
+  Vector<IntPoint> letter_pos_;
   // Pixel coordinates of the middles of the words in the text being tested.
   // (y coordinate is based on y coordinates of m_letterPos)
-  Vector<IntPoint> m_wordMiddles;
+  Vector<IntPoint> word_middles_;
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<Document> m_document;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<Document> document_;
 };
 
 void GranularityStrategyTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-  m_document = &m_dummyPageHolder->document();
-  DCHECK(m_document);
-  dummyPageHolder().frame().settings()->setDefaultFontSize(12);
-  dummyPageHolder().frame().settings()->setSelectionStrategy(
-      SelectionStrategy::Direction);
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  document_ = &dummy_page_holder_->GetDocument();
+  DCHECK(document_);
+  GetDummyPageHolder().GetFrame().GetSettings()->SetDefaultFontSize(12);
+  GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
+      SelectionStrategy::kDirection);
 }
 
-Document& GranularityStrategyTest::document() const {
-  return *m_document;
+Document& GranularityStrategyTest::GetDocument() const {
+  return *document_;
 }
 
-void GranularityStrategyTest::setSelection(
-    const VisibleSelection& newSelection) {
-  m_dummyPageHolder->frame().selection().setSelection(
-      newSelection.asSelection());
+void GranularityStrategyTest::SetSelection(
+    const VisibleSelection& new_selection) {
+  dummy_page_holder_->GetFrame().Selection().SetSelection(
+      new_selection.AsSelection());
 }
 
-FrameSelection& GranularityStrategyTest::selection() const {
-  return m_dummyPageHolder->frame().selection();
+FrameSelection& GranularityStrategyTest::Selection() const {
+  return dummy_page_holder_->GetFrame().Selection();
 }
 
-Text* GranularityStrategyTest::appendTextNode(const String& data) {
-  Text* text = document().createTextNode(data);
-  document().body()->appendChild(text);
+Text* GranularityStrategyTest::AppendTextNode(const String& data) {
+  Text* text = GetDocument().createTextNode(data);
+  GetDocument().body()->AppendChild(text);
   return text;
 }
 
-void GranularityStrategyTest::setInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
-  document().view()->updateAllLifecyclePhases();
+void GranularityStrategyTest::SetInnerHTML(const char* html_content) {
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
-void GranularityStrategyTest::parseText(Text* text) {
-  TextNodeVector textNodes;
-  textNodes.push_back(text);
-  parseText(textNodes);
+void GranularityStrategyTest::ParseText(Text* text) {
+  TextNodeVector text_nodes;
+  text_nodes.push_back(text);
+  ParseText(text_nodes);
 }
 
-void GranularityStrategyTest::parseText(const TextNodeVector& textNodes) {
-  bool wordStarted = false;
-  int wordStartIndex = 0;
-  for (auto& text : textNodes) {
-    int wordStartIndexOffset = m_letterPos.size();
+void GranularityStrategyTest::ParseText(const TextNodeVector& text_nodes) {
+  bool word_started = false;
+  int word_start_index = 0;
+  for (auto& text : text_nodes) {
+    int word_start_index_offset = letter_pos_.size();
     String str = text->wholeText();
     for (size_t i = 0; i < str.length(); i++) {
-      m_letterPos.push_back(visiblePositionToContentsPoint(
-          createVisiblePosition(Position(text, i))));
+      letter_pos_.push_back(VisiblePositionToContentsPoint(
+          CreateVisiblePosition(Position(text, i))));
       char c = str[i];
-      if (isASCIIAlphanumeric(c) && !wordStarted) {
-        wordStartIndex = i + wordStartIndexOffset;
-        wordStarted = true;
-      } else if (!isASCIIAlphanumeric(c) && wordStarted) {
-        IntPoint wordMiddle((m_letterPos[wordStartIndex].x() +
-                             m_letterPos[i + wordStartIndexOffset].x()) /
-                                2,
-                            m_letterPos[wordStartIndex].y());
-        m_wordMiddles.push_back(wordMiddle);
-        wordStarted = false;
+      if (IsASCIIAlphanumeric(c) && !word_started) {
+        word_start_index = i + word_start_index_offset;
+        word_started = true;
+      } else if (!IsASCIIAlphanumeric(c) && word_started) {
+        IntPoint word_middle((letter_pos_[word_start_index].X() +
+                              letter_pos_[i + word_start_index_offset].X()) /
+                                 2,
+                             letter_pos_[word_start_index].Y());
+        word_middles_.push_back(word_middle);
+        word_started = false;
       }
     }
   }
-  if (wordStarted) {
-    const auto& lastNode = textNodes.back();
-    int xEnd = visiblePositionToContentsPoint(
-                   createVisiblePosition(
-                       Position(lastNode, lastNode->wholeText().length())))
-                   .x();
-    IntPoint wordMiddle((m_letterPos[wordStartIndex].x() + xEnd) / 2,
-                        m_letterPos[wordStartIndex].y());
-    m_wordMiddles.push_back(wordMiddle);
+  if (word_started) {
+    const auto& last_node = text_nodes.back();
+    int x_end = VisiblePositionToContentsPoint(
+                    CreateVisiblePosition(
+                        Position(last_node, last_node->wholeText().length())))
+                    .X();
+    IntPoint word_middle((letter_pos_[word_start_index].X() + x_end) / 2,
+                         letter_pos_[word_start_index].Y());
+    word_middles_.push_back(word_middle);
   }
 }
 
-Text* GranularityStrategyTest::setupTranslateZ(String str) {
-  setInnerHTML(
+Text* GranularityStrategyTest::SetupTranslateZ(String str) {
+  SetInnerHTML(
       "<html>"
       "<head>"
       "<style>"
@@ -177,18 +177,18 @@ Text* GranularityStrategyTest::setupTranslateZ(String str) {
       "</body>"
       "</html>");
 
-  Text* text = document().createTextNode(str);
-  Element* div = document().getElementById("mytext");
-  div->appendChild(text);
+  Text* text = GetDocument().createTextNode(str);
+  Element* div = GetDocument().GetElementById("mytext");
+  div->AppendChild(text);
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  parseText(text);
+  ParseText(text);
   return text;
 }
 
-Text* GranularityStrategyTest::setupTransform(String str) {
-  setInnerHTML(
+Text* GranularityStrategyTest::SetupTransform(String str) {
+  SetInnerHTML(
       "<html>"
       "<head>"
       "<style>"
@@ -202,18 +202,18 @@ Text* GranularityStrategyTest::setupTransform(String str) {
       "</body>"
       "</html>");
 
-  Text* text = document().createTextNode(str);
-  Element* div = document().getElementById("mytext");
-  div->appendChild(text);
+  Text* text = GetDocument().createTextNode(str);
+  Element* div = GetDocument().GetElementById("mytext");
+  div->AppendChild(text);
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  parseText(text);
+  ParseText(text);
   return text;
 }
 
-Text* GranularityStrategyTest::setupRotate(String str) {
-  setInnerHTML(
+Text* GranularityStrategyTest::SetupRotate(String str) {
+  SetInnerHTML(
       "<html>"
       "<head>"
       "<style>"
@@ -227,67 +227,67 @@ Text* GranularityStrategyTest::setupRotate(String str) {
       "</body>"
       "</html>");
 
-  Text* text = document().createTextNode(str);
-  Element* div = document().getElementById("mytext");
-  div->appendChild(text);
+  Text* text = GetDocument().createTextNode(str);
+  Element* div = GetDocument().GetElementById("mytext");
+  div->AppendChild(text);
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  parseText(text);
+  ParseText(text);
   return text;
 }
 
-void GranularityStrategyTest::setupTextSpan(String str1,
+void GranularityStrategyTest::SetupTextSpan(String str1,
                                             String str2,
                                             String str3,
-                                            size_t selBegin,
-                                            size_t selEnd) {
-  Text* text1 = document().createTextNode(str1);
-  Text* text2 = document().createTextNode(str2);
-  Text* text3 = document().createTextNode(str3);
-  Element* span = HTMLSpanElement::create(document());
-  Element* div = document().getElementById("mytext");
-  div->appendChild(text1);
-  div->appendChild(span);
-  span->appendChild(text2);
-  div->appendChild(text3);
+                                            size_t sel_begin,
+                                            size_t sel_end) {
+  Text* text1 = GetDocument().createTextNode(str1);
+  Text* text2 = GetDocument().createTextNode(str2);
+  Text* text3 = GetDocument().createTextNode(str3);
+  Element* span = HTMLSpanElement::Create(GetDocument());
+  Element* div = GetDocument().GetElementById("mytext");
+  div->AppendChild(text1);
+  div->AppendChild(span);
+  span->AppendChild(text2);
+  div->AppendChild(text3);
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  Vector<IntPoint> letterPos;
-  Vector<IntPoint> wordMiddlePos;
+  Vector<IntPoint> letter_pos;
+  Vector<IntPoint> word_middle_pos;
 
-  TextNodeVector textNodes;
-  textNodes.push_back(text1);
-  textNodes.push_back(text2);
-  textNodes.push_back(text3);
-  parseText(textNodes);
+  TextNodeVector text_nodes;
+  text_nodes.push_back(text1);
+  text_nodes.push_back(text2);
+  text_nodes.push_back(text3);
+  ParseText(text_nodes);
 
   Position p1;
   Position p2;
-  if (selBegin < str1.length())
-    p1 = Position(text1, selBegin);
-  else if (selBegin < str1.length() + str2.length())
-    p1 = Position(text2, selBegin - str1.length());
+  if (sel_begin < str1.length())
+    p1 = Position(text1, sel_begin);
+  else if (sel_begin < str1.length() + str2.length())
+    p1 = Position(text2, sel_begin - str1.length());
   else
-    p1 = Position(text3, selBegin - str1.length() - str2.length());
-  if (selEnd < str1.length())
-    p2 = Position(text1, selEnd);
-  else if (selEnd < str1.length() + str2.length())
-    p2 = Position(text2, selEnd - str1.length());
+    p1 = Position(text3, sel_begin - str1.length() - str2.length());
+  if (sel_end < str1.length())
+    p2 = Position(text1, sel_end);
+  else if (sel_end < str1.length() + str2.length())
+    p2 = Position(text2, sel_end - str1.length());
   else
-    p2 = Position(text3, selEnd - str1.length() - str2.length());
+    p2 = Position(text3, sel_end - str1.length() - str2.length());
 
-  selection().setSelection(
-      SelectionInDOMTree::Builder().setBaseAndExtent(p1, p2).build());
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().SetBaseAndExtent(p1, p2).Build());
 }
 
-void GranularityStrategyTest::setupVerticalAlign(String str1,
+void GranularityStrategyTest::SetupVerticalAlign(String str1,
                                                  String str2,
                                                  String str3,
-                                                 size_t selBegin,
-                                                 size_t selEnd) {
-  setInnerHTML(
+                                                 size_t sel_begin,
+                                                 size_t sel_end) {
+  SetInnerHTML(
       "<html>"
       "<head>"
       "<style>"
@@ -301,15 +301,15 @@ void GranularityStrategyTest::setupVerticalAlign(String str1,
       "</body>"
       "</html>");
 
-  setupTextSpan(str1, str2, str3, selBegin, selEnd);
+  SetupTextSpan(str1, str2, str3, sel_begin, sel_end);
 }
 
-void GranularityStrategyTest::setupFontSize(String str1,
+void GranularityStrategyTest::SetupFontSize(String str1,
                                             String str2,
                                             String str3,
-                                            size_t selBegin,
-                                            size_t selEnd) {
-  setInnerHTML(
+                                            size_t sel_begin,
+                                            size_t sel_end) {
+  SetInnerHTML(
       "<html>"
       "<head>"
       "<style>"
@@ -323,121 +323,121 @@ void GranularityStrategyTest::setupFontSize(String str1,
       "</body>"
       "</html>");
 
-  setupTextSpan(str1, str2, str3, selBegin, selEnd);
+  SetupTextSpan(str1, str2, str3, sel_begin, sel_end);
 }
 
 // Tests expanding selection on text "abcdef ghij kl mno^p|>qr stuvwi inm mnii,"
 // (^ means base, | means extent, < means start, and > means end). Text needs to
 // be laid out on a single line with no rotation.
-void GranularityStrategyTest::testDirectionExpand() {
+void GranularityStrategyTest::TestDirectionExpand() {
   // Expand selection using character granularity until the end of the word
   // is reached.
   // "abcdef ghij kl mno^pq|>r stuvwi inm  mnii,"
-  selection().moveRangeSelectionExtent(m_letterPos[20]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[20]);
   EXPECT_EQ_SELECTED_TEXT("pq");
   // Move to the same postion shouldn't change anything.
-  selection().moveRangeSelectionExtent(m_letterPos[20]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[20]);
   EXPECT_EQ_SELECTED_TEXT("pq");
   // "abcdef ghij kl mno^pqr|> stuvwi inm  mnii,"
-  selection().moveRangeSelectionExtent(m_letterPos[21]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[21]);
   EXPECT_EQ_SELECTED_TEXT("pqr");
   // Selection should stay the same until the middle of the word is passed.
   // "abcdef ghij kl mno^pqr |>stuvwi inm  mnii," -
-  selection().moveRangeSelectionExtent(m_letterPos[22]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[22]);
   EXPECT_EQ_SELECTED_TEXT("pqr ");
   // "abcdef ghij kl mno^pqr >st|uvwi inm  mnii,"
-  selection().moveRangeSelectionExtent(m_letterPos[24]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[24]);
   EXPECT_EQ_SELECTED_TEXT("pqr ");
-  IntPoint p = m_wordMiddles[4];
-  p.move(-1, 0);
-  selection().moveRangeSelectionExtent(p);
+  IntPoint p = word_middles_[4];
+  p.Move(-1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr ");
-  p.move(1, 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi");
   // Selection should stay the same until the end of the word is reached.
   // "abcdef ghij kl mno^pqr stuvw|i> inm  mnii,"
-  selection().moveRangeSelectionExtent(m_letterPos[27]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[27]);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi");
   // "abcdef ghij kl mno^pqr stuvwi|> inm  mnii,"
-  selection().moveRangeSelectionExtent(m_letterPos[28]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[28]);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi");
   // "abcdef ghij kl mno^pqr stuvwi |>inm  mnii,"
-  selection().moveRangeSelectionExtent(m_letterPos[29]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[29]);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi ");
   // Now expand slowly to the middle of word #5.
-  int y = m_letterPos[29].y();
-  for (int x = m_letterPos[29].x() + 1; x < m_wordMiddles[5].x(); x++) {
-    selection().moveRangeSelectionExtent(IntPoint(x, y));
-    selection().moveRangeSelectionExtent(IntPoint(x, y));
+  int y = letter_pos_[29].Y();
+  for (int x = letter_pos_[29].X() + 1; x < word_middles_[5].X(); x++) {
+    Selection().MoveRangeSelectionExtent(IntPoint(x, y));
+    Selection().MoveRangeSelectionExtent(IntPoint(x, y));
     EXPECT_EQ_SELECTED_TEXT("pqr stuvwi ");
   }
-  selection().moveRangeSelectionExtent(m_wordMiddles[5]);
+  Selection().MoveRangeSelectionExtent(word_middles_[5]);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi inm");
   // Jump over quickly to just before the middle of the word #6 and then
   // move over it.
-  p = m_wordMiddles[6];
-  p.move(-1, 0);
-  selection().moveRangeSelectionExtent(p);
+  p = word_middles_[6];
+  p.Move(-1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi inm ");
-  p.move(1, 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr stuvwi inm mnii");
 }
 
 // Tests shrinking selection on text "abcdef ghij kl mno^pqr|> iiinmni, abc"
 // (^ means base, | means extent, < means start, and > means end).
 // Text needs to be laid out on a single line with no rotation.
-void GranularityStrategyTest::testDirectionShrink() {
+void GranularityStrategyTest::TestDirectionShrink() {
   // Move to the middle of word #4 to it and then move back, confirming
   // that the selection end is moving with the extent. The offset between the
   // extent and the selection end will be equal to half the width of "iiinmni".
-  selection().moveRangeSelectionExtent(m_wordMiddles[4]);
+  Selection().MoveRangeSelectionExtent(word_middles_[4]);
   EXPECT_EQ_SELECTED_TEXT("pqr iiinmni");
-  IntPoint p = m_wordMiddles[4];
-  p.move(m_letterPos[28].x() - m_letterPos[29].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  IntPoint p = word_middles_[4];
+  p.Move(letter_pos_[28].X() - letter_pos_[29].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr iiinmn");
-  p.move(m_letterPos[27].x() - m_letterPos[28].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[27].X() - letter_pos_[28].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr iiinm");
-  p.move(m_letterPos[26].x() - m_letterPos[27].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[26].X() - letter_pos_[27].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr iiin");
   // Move right by the width of char 30 ('m'). Selection shouldn't change,
   // but offset should be reduced.
-  p.move(m_letterPos[27].x() - m_letterPos[26].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[27].X() - letter_pos_[26].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr iiin");
   // Move back a couple of character widths and confirm the selection still
   // updates accordingly.
-  p.move(m_letterPos[25].x() - m_letterPos[26].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[25].X() - letter_pos_[26].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr iii");
-  p.move(m_letterPos[24].x() - m_letterPos[25].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[24].X() - letter_pos_[25].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr ii");
   // "Catch up" with the handle - move the extent to where the handle is.
   // "abcdef ghij kl mno^pqr ii|>inmni, abc"
-  selection().moveRangeSelectionExtent(m_letterPos[24]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[24]);
   EXPECT_EQ_SELECTED_TEXT("pqr ii");
   // Move ahead and confirm the selection expands accordingly
   // "abcdef ghij kl mno^pqr iii|>nmni, abc"
-  selection().moveRangeSelectionExtent(m_letterPos[25]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[25]);
   EXPECT_EQ_SELECTED_TEXT("pqr iii");
 
   // Confirm we stay in character granularity if the user moves within a word.
   // "abcdef ghij kl mno^pqr |>iiinmni, abc"
-  selection().moveRangeSelectionExtent(m_letterPos[22]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[22]);
   EXPECT_EQ_SELECTED_TEXT("pqr ");
   // It's possible to get a move when position doesn't change.
   // It shouldn't affect anything.
-  p = m_letterPos[22];
-  p.move(1, 0);
-  selection().moveRangeSelectionExtent(p);
+  p = letter_pos_[22];
+  p.Move(1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("pqr ");
   // "abcdef ghij kl mno^pqr i|>iinmni, abc"
-  selection().moveRangeSelectionExtent(m_letterPos[23]);
+  Selection().MoveRangeSelectionExtent(letter_pos_[23]);
   EXPECT_EQ_SELECTED_TEXT("pqr i");
 }
 
@@ -445,333 +445,335 @@ void GranularityStrategyTest::testDirectionShrink() {
 // on text "abcd efgh ijkl mno^pqr|> iiinmni, abc"
 // (^ means base, | means extent, < means start, and > means end).
 // Text needs to be laid out on a single line with no rotation.
-void GranularityStrategyTest::testDirectionSwitchSide() {
+void GranularityStrategyTest::TestDirectionSwitchSide() {
   // Move to the middle of word #4, selecting it - this will set the offset to
   // be half the width of "iiinmni.
-  selection().moveRangeSelectionExtent(m_wordMiddles[4]);
+  Selection().MoveRangeSelectionExtent(word_middles_[4]);
   EXPECT_EQ_SELECTED_TEXT("pqr iiinmni");
   // Move back leaving only one letter selected.
-  IntPoint p = m_wordMiddles[4];
-  p.move(m_letterPos[19].x() - m_letterPos[29].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  IntPoint p = word_middles_[4];
+  p.Move(letter_pos_[19].X() - letter_pos_[29].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("p");
   // Confirm selection doesn't change if extent is positioned at base.
-  p.move(m_letterPos[18].x() - m_letterPos[19].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[18].X() - letter_pos_[19].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("p");
   // Move over to the other side of the base. Confirm the offset is preserved.
   // (i.e. the selection start stays on the right of the extent)
   // Confirm we stay in character granularity until the beginning of the word
   // is passed.
-  p.move(m_letterPos[17].x() - m_letterPos[18].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[17].X() - letter_pos_[18].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("o");
-  p.move(m_letterPos[16].x() - m_letterPos[17].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[16].X() - letter_pos_[17].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("no");
-  p.move(m_letterPos[14].x() - m_letterPos[16].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[14].X() - letter_pos_[16].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT(" mno");
   // Move to just one pixel on the right before the middle of the word #2.
   // We should switch to word granularity, so the selection shouldn't change.
-  p.move(m_wordMiddles[2].x() - m_letterPos[14].x() + 1, 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(word_middles_[2].X() - letter_pos_[14].X() + 1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT(" mno");
   // Move over the middle of the word. The word should get selected.
   // This should reduce the offset, but it should still stay greated than 0,
   // since the width of "iiinmni" is greater than the width of "ijkl".
-  p.move(-2, 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(-2, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("ijkl mno");
   // Move to just one pixel on the right of the middle of word #1.
   // The selection should now include the space between the words.
-  p.move(m_wordMiddles[1].x() - m_letterPos[10].x() + 1, 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(word_middles_[1].X() - letter_pos_[10].X() + 1, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT(" ijkl mno");
   // Move over the middle of the word. The word should get selected.
-  p.move(-2, 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(-2, 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("efgh ijkl mno");
 }
 
 // Test for the default CharacterGranularityStrategy
 TEST_F(GranularityStrategyTest, Character) {
-  dummyPageHolder().frame().settings()->setSelectionStrategy(
-      SelectionStrategy::Character);
-  dummyPageHolder().frame().settings()->setDefaultFontSize(12);
+  GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
+      SelectionStrategy::kCharacter);
+  GetDummyPageHolder().GetFrame().GetSettings()->SetDefaultFontSize(12);
   // "Foo Bar Baz,"
-  Text* text = appendTextNode("Foo Bar Baz,");
-  document().updateStyleAndLayout();
+  Text* text = AppendTextNode("Foo Bar Baz,");
+  GetDocument().UpdateStyleAndLayout();
 
   // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
   // means end).
-  selection().setSelection(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 5), Position(text, 6))
-          .build());
+          .SetBaseAndExtent(Position(text, 5), Position(text, 6))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("a");
   // "Foo B^ar B|>az,"
-  selection().moveRangeSelectionExtent(
-      visiblePositionToContentsPoint(createVisiblePosition(Position(text, 9))));
+  Selection().MoveRangeSelectionExtent(
+      VisiblePositionToContentsPoint(CreateVisiblePosition(Position(text, 9))));
   EXPECT_EQ_SELECTED_TEXT("ar B");
   // "F<|oo B^ar Baz,"
-  selection().moveRangeSelectionExtent(
-      visiblePositionToContentsPoint(createVisiblePosition(Position(text, 1))));
+  Selection().MoveRangeSelectionExtent(
+      VisiblePositionToContentsPoint(CreateVisiblePosition(Position(text, 1))));
   EXPECT_EQ_SELECTED_TEXT("oo B");
 }
 
 // DirectionGranularityStrategy strategy on rotated text should revert to the
 // same behavior as CharacterGranularityStrategy
 TEST_F(GranularityStrategyTest, DirectionRotate) {
-  Text* text = setupRotate("Foo Bar Baz,");
+  Text* text = SetupRotate("Foo Bar Baz,");
   // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
   // means end).
-  selection().setSelection(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 5), Position(text, 6))
-          .build());
+          .SetBaseAndExtent(Position(text, 5), Position(text, 6))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("a");
-  IntPoint p = m_letterPos[9];
+  IntPoint p = letter_pos_[9];
   // Need to move by one pixel, otherwise this point is not evaluated
   // to the same line as the text by hit testing.
-  p.move(1, 0);
+  p.Move(1, 0);
   // "Foo B^ar B|>az,"
-  selection().moveRangeSelectionExtent(p);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("ar B");
-  p = m_letterPos[1];
-  p.move(1, 0);
+  p = letter_pos_[1];
+  p.Move(1, 0);
   // "F<|oo B^ar Baz,"
-  selection().moveRangeSelectionExtent(p);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("oo B");
 }
 
 TEST_F(GranularityStrategyTest, DirectionExpandTranslateZ) {
-  Text* text = setupTranslateZ("abcdef ghij kl mnopqr stuvwi inm mnii,");
+  Text* text = SetupTranslateZ("abcdef ghij kl mnopqr stuvwi inm mnii,");
   // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
   // < means start, and > means end).
-  selection().setSelection(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 19))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 19))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("p");
-  testDirectionExpand();
+  TestDirectionExpand();
 }
 
 TEST_F(GranularityStrategyTest, DirectionExpandTransform) {
-  Text* text = setupTransform("abcdef ghij kl mnopqr stuvwi inm mnii,");
+  Text* text = SetupTransform("abcdef ghij kl mnopqr stuvwi inm mnii,");
   // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
   // < means start, and > means end).
-  selection().setSelection(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 19))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 19))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("p");
-  testDirectionExpand();
+  TestDirectionExpand();
 }
 
 TEST_F(GranularityStrategyTest, DirectionExpandVerticalAlign) {
   // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
   // < means start, and > means end).
-  setupVerticalAlign("abcdef ghij kl m", "nopq", "r stuvwi inm mnii,", 18, 19);
+  SetupVerticalAlign("abcdef ghij kl m", "nopq", "r stuvwi inm mnii,", 18, 19);
   EXPECT_EQ_SELECTED_TEXT("p");
-  testDirectionExpand();
+  TestDirectionExpand();
 }
 
 TEST_F(GranularityStrategyTest, DirectionExpandFontSizes) {
-  setupFontSize("abcdef ghij kl mnopqr st", "uv", "wi inm mnii,", 18, 19);
+  SetupFontSize("abcdef ghij kl mnopqr st", "uv", "wi inm mnii,", 18, 19);
   EXPECT_EQ_SELECTED_TEXT("p");
-  testDirectionExpand();
+  TestDirectionExpand();
 }
 
 TEST_F(GranularityStrategyTest, DirectionShrinkTranslateZ) {
-  Text* text = setupTranslateZ("abcdef ghij kl mnopqr iiinmni, abc");
-  selection().setSelection(
+  Text* text = SetupTranslateZ("abcdef ghij kl mnopqr iiinmni, abc");
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 21))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 21))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionShrink();
+  TestDirectionShrink();
 }
 
 TEST_F(GranularityStrategyTest, DirectionShrinkTransform) {
-  Text* text = setupTransform("abcdef ghij kl mnopqr iiinmni, abc");
-  selection().setSelection(
+  Text* text = SetupTransform("abcdef ghij kl mnopqr iiinmni, abc");
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 21))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 21))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionShrink();
+  TestDirectionShrink();
 }
 
 TEST_F(GranularityStrategyTest, DirectionShrinkVerticalAlign) {
-  setupVerticalAlign("abcdef ghij kl mnopqr ii", "inm", "ni, abc", 18, 21);
+  SetupVerticalAlign("abcdef ghij kl mnopqr ii", "inm", "ni, abc", 18, 21);
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionShrink();
+  TestDirectionShrink();
 }
 
 TEST_F(GranularityStrategyTest, DirectionShrinkFontSizes) {
-  setupFontSize("abcdef ghij kl mnopqr ii", "inm", "ni, abc", 18, 21);
+  SetupFontSize("abcdef ghij kl mnopqr ii", "inm", "ni, abc", 18, 21);
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionShrink();
+  TestDirectionShrink();
 }
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideTranslateZ) {
-  Text* text = setupTranslateZ("abcd efgh ijkl mnopqr iiinmni, abc");
-  selection().setSelection(
+  Text* text = SetupTranslateZ("abcd efgh ijkl mnopqr iiinmni, abc");
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 21))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 21))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionSwitchSide();
+  TestDirectionSwitchSide();
 }
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideTransform) {
-  Text* text = setupTransform("abcd efgh ijkl mnopqr iiinmni, abc");
-  selection().setSelection(
+  Text* text = SetupTransform("abcd efgh ijkl mnopqr iiinmni, abc");
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 21))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 21))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionSwitchSide();
+  TestDirectionSwitchSide();
 }
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideVerticalAlign) {
-  setupVerticalAlign("abcd efgh ijkl", " mnopqr", " iiinmni, abc", 18, 21);
+  SetupVerticalAlign("abcd efgh ijkl", " mnopqr", " iiinmni, abc", 18, 21);
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionSwitchSide();
+  TestDirectionSwitchSide();
 }
 
 TEST_F(GranularityStrategyTest, DirectionSwitchSideFontSizes) {
-  setupFontSize("abcd efgh i", "jk", "l mnopqr iiinmni, abc", 18, 21);
+  SetupFontSize("abcd efgh i", "jk", "l mnopqr iiinmni, abc", 18, 21);
   EXPECT_EQ_SELECTED_TEXT("pqr");
-  testDirectionSwitchSide();
+  TestDirectionSwitchSide();
 }
 
 // Tests moving extent over to the other side of the vase and immediately
 // passing the word boundary and going into word granularity.
 TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink) {
-  dummyPageHolder().frame().settings()->setDefaultFontSize(12);
+  GetDummyPageHolder().GetFrame().GetSettings()->SetDefaultFontSize(12);
   String str = "ab cd efghijkl mnopqr iiin, abc";
-  Text* text = document().createTextNode(str);
-  document().body()->appendChild(text);
-  document().updateStyleAndLayout();
-  dummyPageHolder().frame().settings()->setSelectionStrategy(
-      SelectionStrategy::Direction);
+  Text* text = GetDocument().createTextNode(str);
+  GetDocument().body()->AppendChild(text);
+  GetDocument().UpdateStyleAndLayout();
+  GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
+      SelectionStrategy::kDirection);
 
-  parseText(text);
+  ParseText(text);
 
   // "abcd efgh ijkl mno^pqr|> iiin, abc" (^ means base, | means extent, < means
   // start, and > means end).
-  selection().setSelection(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 18), Position(text, 21))
-          .build());
+          .SetBaseAndExtent(Position(text, 18), Position(text, 21))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("pqr");
   // Move to the middle of word #4 selecting it - this will set the offset to
   // be half the width of "iiin".
-  selection().moveRangeSelectionExtent(m_wordMiddles[4]);
+  Selection().MoveRangeSelectionExtent(word_middles_[4]);
   EXPECT_EQ_SELECTED_TEXT("pqr iiin");
   // Move to the middle of word #2 - extent will switch over to the other
   // side of the base, and we should enter word granularity since we pass
   // the word boundary. The offset should become negative since the width
   // of "efghjkkl" is greater than that of "iiin".
-  int offset = m_letterPos[26].x() - m_wordMiddles[4].x();
+  int offset = letter_pos_[26].X() - word_middles_[4].X();
   IntPoint p =
-      IntPoint(m_wordMiddles[2].x() - offset - 1, m_wordMiddles[2].y());
-  selection().moveRangeSelectionExtent(p);
+      IntPoint(word_middles_[2].X() - offset - 1, word_middles_[2].Y());
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("efghijkl mno");
-  p.move(m_letterPos[7].x() - m_letterPos[6].x(), 0);
-  selection().moveRangeSelectionExtent(p);
+  p.Move(letter_pos_[7].X() - letter_pos_[6].X(), 0);
+  Selection().MoveRangeSelectionExtent(p);
   EXPECT_EQ_SELECTED_TEXT("fghijkl mno");
 }
 
 // Make sure we switch to word granularity right away when starting on a
 // word boundary and extending.
 TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary) {
-  dummyPageHolder().frame().settings()->setDefaultFontSize(12);
+  GetDummyPageHolder().GetFrame().GetSettings()->SetDefaultFontSize(12);
   String str = "ab cd efghijkl mnopqr iiin, abc";
-  Text* text = document().createTextNode(str);
-  document().body()->appendChild(text);
-  document().updateStyleAndLayout();
-  dummyPageHolder().frame().settings()->setSelectionStrategy(
-      SelectionStrategy::Direction);
+  Text* text = GetDocument().createTextNode(str);
+  GetDocument().body()->AppendChild(text);
+  GetDocument().UpdateStyleAndLayout();
+  GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
+      SelectionStrategy::kDirection);
 
-  parseText(text);
+  ParseText(text);
 
   // "ab cd efghijkl ^mnopqr |>stuvwi inm," (^ means base and | means extent,
   // > means end).
-  selection().setSelection(
+  Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .setBaseAndExtent(Position(text, 15), Position(text, 22))
-          .build());
+          .SetBaseAndExtent(Position(text, 15), Position(text, 22))
+          .Build());
   EXPECT_EQ_SELECTED_TEXT("mnopqr ");
-  selection().moveRangeSelectionExtent(m_wordMiddles[4]);
+  Selection().MoveRangeSelectionExtent(word_middles_[4]);
   EXPECT_EQ_SELECTED_TEXT("mnopqr iiin");
 }
 
 // For http://crbug.com/704529
 TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
-  dummyPageHolder().frame().settings()->setSelectionStrategy(
-      SelectionStrategy::Character);
-  document().body()->setInnerHTML("<div id=host></div><div id=sample>ab</div>");
+  GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
+      SelectionStrategy::kCharacter);
+  GetDocument().body()->setInnerHTML(
+      "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
-  Element* const host = document().getElementById("host");
-  ShadowRoot* const shadowRoot =
-      host->createShadowRootInternal(ShadowRootType::Open, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML("<input type=range>");
-  Element* const sample = document().getElementById("sample");
-  document().updateStyleAndLayout();
-  const SelectionInDOMTree& selectionInDOMTree =
+  Element* const host = GetDocument().GetElementById("host");
+  ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
+      ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
+  shadow_root->setInnerHTML("<input type=range>");
+  Element* const sample = GetDocument().GetElementById("sample");
+  GetDocument().UpdateStyleAndLayout();
+  const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
-          .collapse(Position(sample->firstChild(), 2))
-          .setIsDirectional(true)
-          .setIsHandleVisible(true)
-          .build();
-  selection().setSelection(selectionInDOMTree);
+          .Collapse(Position(sample->FirstChild(), 2))
+          .SetIsDirectional(true)
+          .SetIsHandleVisible(true)
+          .Build();
+  Selection().SetSelection(selection_in_dom_tree);
 
   // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
   // null position, we verify here.
   ASSERT_EQ(Position(),
-            visiblePositionForContentsPoint(IntPoint(0, 0), &frame())
-                .deepEquivalent())
+            VisiblePositionForContentsPoint(IntPoint(0, 0), &GetFrame())
+                .DeepEquivalent())
       << "This test requires null position.";
 
   // Point to RANGE inside shadow root to get null position from
   // |visiblePositionForContentsPoint()|.
-  selection().moveRangeSelectionExtent(IntPoint(0, 0));
-  EXPECT_EQ(selectionInDOMTree, selection().selectionInDOMTree());
+  Selection().MoveRangeSelectionExtent(IntPoint(0, 0));
+  EXPECT_EQ(selection_in_dom_tree, Selection().GetSelectionInDOMTree());
 }
 
 // For http://crbug.com/704529
 TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
-  document().body()->setInnerHTML("<div id=host></div><div id=sample>ab</div>");
+  GetDocument().body()->setInnerHTML(
+      "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
-  Element* const host = document().getElementById("host");
-  ShadowRoot* const shadowRoot =
-      host->createShadowRootInternal(ShadowRootType::Open, ASSERT_NO_EXCEPTION);
-  shadowRoot->setInnerHTML("<input type=range>");
-  Element* const sample = document().getElementById("sample");
-  document().updateStyleAndLayout();
-  const SelectionInDOMTree& selectionInDOMTree =
+  Element* const host = GetDocument().GetElementById("host");
+  ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
+      ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
+  shadow_root->setInnerHTML("<input type=range>");
+  Element* const sample = GetDocument().GetElementById("sample");
+  GetDocument().UpdateStyleAndLayout();
+  const SelectionInDOMTree& selection_in_dom_tree =
       SelectionInDOMTree::Builder()
-          .collapse(Position(sample->firstChild(), 2))
-          .setIsDirectional(true)
-          .setIsHandleVisible(true)
-          .build();
-  selection().setSelection(selectionInDOMTree);
+          .Collapse(Position(sample->FirstChild(), 2))
+          .SetIsDirectional(true)
+          .SetIsHandleVisible(true)
+          .Build();
+  Selection().SetSelection(selection_in_dom_tree);
 
   // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
   // null position, we verify here.
   ASSERT_EQ(Position(),
-            visiblePositionForContentsPoint(IntPoint(0, 0), &frame())
-                .deepEquivalent())
+            VisiblePositionForContentsPoint(IntPoint(0, 0), &GetFrame())
+                .DeepEquivalent())
       << "This test requires null position.";
 
   // Point to RANGE inside shadow root to get null position from
   // |visiblePositionForContentsPoint()|.
-  selection().moveRangeSelectionExtent(IntPoint(0, 0));
+  Selection().MoveRangeSelectionExtent(IntPoint(0, 0));
 
-  EXPECT_EQ(selectionInDOMTree, selection().selectionInDOMTree());
+  EXPECT_EQ(selection_in_dom_tree, Selection().GetSelectionInDOMTree());
 }
 
 }  // namespace blink

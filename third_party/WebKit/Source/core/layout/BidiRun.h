@@ -36,32 +36,32 @@ struct BidiRun : BidiCharacterRun {
           unsigned char level,
           int start,
           int stop,
-          LineLayoutItem lineLayoutItem,
+          LineLayoutItem line_layout_item,
           WTF::Unicode::CharDirection dir,
-          WTF::Unicode::CharDirection overrideDir)
-      : BidiCharacterRun(override, level, start, stop, dir, overrideDir),
-        m_lineLayoutItem(lineLayoutItem),
-        m_box(nullptr) {
+          WTF::Unicode::CharDirection override_dir)
+      : BidiCharacterRun(override, level, start, stop, dir, override_dir),
+        line_layout_item_(line_layout_item),
+        box_(nullptr) {
     // Stored in base class to save space.
-    m_hasHyphen = false;
+    has_hyphen_ = false;
   }
 
   BidiRun(int start,
           int stop,
           unsigned char level,
-          LineLayoutItem lineLayoutItem)
+          LineLayoutItem line_layout_item)
       : BidiCharacterRun(start, stop, level),
-        m_lineLayoutItem(lineLayoutItem),
-        m_box(nullptr) {
+        line_layout_item_(line_layout_item),
+        box_(nullptr) {
     // Stored in base class to save space.
-    m_hasHyphen = false;
+    has_hyphen_ = false;
   }
 
-  BidiRun* next() { return static_cast<BidiRun*>(m_next); }
+  BidiRun* Next() { return static_cast<BidiRun*>(next_); }
 
  public:
-  LineLayoutItem m_lineLayoutItem;
-  InlineBox* m_box;
+  LineLayoutItem line_layout_item_;
+  InlineBox* box_;
 };
 
 }  // namespace blink

@@ -19,8 +19,8 @@ TEST_F(ObjectPaintInvalidatorTest,
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
-  enableCompositing();
-  setBodyInnerHTML(
+  EnableCompositing();
+  SetBodyInnerHTML(
       "<style>div { width: 10px; height: 10px; background-color: green; "
       "}</style>"
       "<div id='container' style='position: fixed'>"
@@ -42,26 +42,26 @@ TEST_F(ObjectPaintInvalidatorTest,
       "  </div>"
       "</div>");
 
-  document().view()->setTracksPaintInvalidations(true);
-  ObjectPaintInvalidator(*getLayoutObjectByElementId("container"))
-      .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          PaintInvalidationSubtree);
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  ObjectPaintInvalidator(*GetLayoutObjectByElementId("container"))
+      .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
+          kPaintInvalidationSubtree);
   std::unique_ptr<JSONArray> invalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  document().view()->setTracksPaintInvalidations(false);
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   ASSERT_EQ(4u, invalidations->size());
   String s;
-  JSONObject::cast(invalidations->at(0))->get("object")->asString(&s);
-  EXPECT_EQ(getLayoutObjectByElementId("container")->debugName(), s);
-  JSONObject::cast(invalidations->at(1))->get("object")->asString(&s);
-  EXPECT_EQ(getLayoutObjectByElementId("normal-child")->debugName(), s);
-  JSONObject::cast(invalidations->at(2))->get("object")->asString(&s);
-  EXPECT_EQ(getLayoutObjectByElementId("stacked-child")->debugName(), s);
-  JSONObject::cast(invalidations->at(3))->get("object")->asString(&s);
-  EXPECT_EQ(getLayoutObjectByElementId(
+  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
+  EXPECT_EQ(GetLayoutObjectByElementId("container")->DebugName(), s);
+  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
+  EXPECT_EQ(GetLayoutObjectByElementId("normal-child")->DebugName(), s);
+  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
+  EXPECT_EQ(GetLayoutObjectByElementId("stacked-child")->DebugName(), s);
+  JSONObject::Cast(invalidations->at(3))->Get("object")->AsString(&s);
+  EXPECT_EQ(GetLayoutObjectByElementId(
                 "stacked-child-of-composited-non-stacking-context")
-                ->debugName(),
+                ->DebugName(),
             s);
 }
 
@@ -69,8 +69,8 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
-  enableCompositing();
-  setBodyInnerHTML(
+  EnableCompositing();
+  SetBodyInnerHTML(
       "<div id='compositedContainer' style='position: relative;"
       "    will-change: transform'>"
       "  <div id='containingBlock' style='position: relative'>"
@@ -80,71 +80,73 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
       "  </div>"
       "</div>");
 
-  auto* target = getLayoutObjectByElementId("target");
-  auto* containingBlock = getLayoutObjectByElementId("containingBlock");
-  auto* containingBlockLayer = toLayoutBoxModelObject(containingBlock)->layer();
-  auto* compositedContainer = getLayoutObjectByElementId("compositedContainer");
-  auto* compositedContainerLayer =
-      toLayoutBoxModelObject(compositedContainer)->layer();
-  auto* span = getLayoutObjectByElementId("span");
-  auto* spanLayer = toLayoutBoxModelObject(span)->layer();
+  auto* target = GetLayoutObjectByElementId("target");
+  auto* containing_block = GetLayoutObjectByElementId("containingBlock");
+  auto* containing_block_layer =
+      ToLayoutBoxModelObject(containing_block)->Layer();
+  auto* composited_container =
+      GetLayoutObjectByElementId("compositedContainer");
+  auto* composited_container_layer =
+      ToLayoutBoxModelObject(composited_container)->Layer();
+  auto* span = GetLayoutObjectByElementId("span");
+  auto* span_layer = ToLayoutBoxModelObject(span)->Layer();
 
   // Thought |target| is under |span| which is a composited stacking context,
   // |span| is not the paint invalidation container of |target|.
-  EXPECT_TRUE(span->isPaintInvalidationContainer());
-  EXPECT_TRUE(span->styleRef().isStackingContext());
-  EXPECT_EQ(compositedContainer, &target->containerForPaintInvalidation());
-  EXPECT_EQ(containingBlockLayer, target->paintingLayer());
+  EXPECT_TRUE(span->IsPaintInvalidationContainer());
+  EXPECT_TRUE(span->StyleRef().IsStackingContext());
+  EXPECT_EQ(composited_container, &target->ContainerForPaintInvalidation());
+  EXPECT_EQ(containing_block_layer, target->PaintingLayer());
 
   // Traversing from target should mark needsRepaint on correct layers.
-  EXPECT_FALSE(containingBlockLayer->needsRepaint());
-  EXPECT_FALSE(compositedContainerLayer->needsRepaint());
+  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
   ObjectPaintInvalidator(*target)
-      .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          PaintInvalidationSubtree);
-  EXPECT_TRUE(containingBlockLayer->needsRepaint());
-  EXPECT_TRUE(compositedContainerLayer->needsRepaint());
-  EXPECT_FALSE(spanLayer->needsRepaint());
+      .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
+          kPaintInvalidationSubtree);
+  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(span_layer->NeedsRepaint());
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Traversing from span should mark needsRepaint on correct layers for target.
-  EXPECT_FALSE(containingBlockLayer->needsRepaint());
-  EXPECT_FALSE(compositedContainerLayer->needsRepaint());
+  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
   ObjectPaintInvalidator(*span)
-      .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          PaintInvalidationSubtree);
-  EXPECT_TRUE(containingBlockLayer->needsRepaint());
-  EXPECT_TRUE(compositedContainerLayer->needsRepaint());
-  EXPECT_TRUE(spanLayer->needsRepaint());
+      .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
+          kPaintInvalidationSubtree);
+  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
+  EXPECT_TRUE(span_layer->NeedsRepaint());
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Traversing from compositedContainer should reach target.
-  document().view()->setTracksPaintInvalidations(true);
-  EXPECT_FALSE(containingBlockLayer->needsRepaint());
-  EXPECT_FALSE(compositedContainerLayer->needsRepaint());
-  ObjectPaintInvalidator(*compositedContainer)
-      .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          PaintInvalidationSubtree);
-  EXPECT_TRUE(containingBlockLayer->needsRepaint());
-  EXPECT_TRUE(compositedContainerLayer->needsRepaint());
-  EXPECT_FALSE(spanLayer->needsRepaint());
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
+  ObjectPaintInvalidator(*composited_container)
+      .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
+          kPaintInvalidationSubtree);
+  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(span_layer->NeedsRepaint());
 
   std::unique_ptr<JSONArray> invalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  document().view()->setTracksPaintInvalidations(false);
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   ASSERT_EQ(4u, invalidations->size());
   String s;
-  JSONObject::cast(invalidations->at(0))->get("object")->asString(&s);
-  EXPECT_EQ(compositedContainer->debugName(), s);
-  JSONObject::cast(invalidations->at(1))->get("object")->asString(&s);
-  EXPECT_EQ(containingBlock->debugName(), s);
-  JSONObject::cast(invalidations->at(2))->get("object")->asString(&s);
-  EXPECT_EQ(target->debugName(), s);
+  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
+  EXPECT_EQ(composited_container->DebugName(), s);
+  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
+  EXPECT_EQ(containing_block->DebugName(), s);
+  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
+  EXPECT_EQ(target->DebugName(), s);
   // This is the text node after the span.
-  JSONObject::cast(invalidations->at(3))->get("object")->asString(&s);
+  JSONObject::Cast(invalidations->at(3))->Get("object")->AsString(&s);
   EXPECT_EQ("LayoutText #text", s);
 }
 
@@ -153,8 +155,8 @@ TEST_F(ObjectPaintInvalidatorTest,
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
-  enableCompositing();
-  setBodyInnerHTML(
+  EnableCompositing();
+  SetBodyInnerHTML(
       "<div id='compositedContainer' style='position: relative;"
       "    will-change: transform'>"
       "  <div id='containingBlock' style='position: relative; z-index: 0'>"
@@ -167,50 +169,52 @@ TEST_F(ObjectPaintInvalidatorTest,
       "  </div>"
       "</div>");
 
-  auto* target = getLayoutObjectByElementId("target");
-  auto* containingBlock = getLayoutObjectByElementId("containingBlock");
-  auto* containingBlockLayer = toLayoutBoxModelObject(containingBlock)->layer();
-  auto* compositedContainer = getLayoutObjectByElementId("compositedContainer");
-  auto* compositedContainerLayer =
-      toLayoutBoxModelObject(compositedContainer)->layer();
-  auto* span = getLayoutObjectByElementId("span");
-  auto* spanLayer = toLayoutBoxModelObject(span)->layer();
-  auto* innerSpan = getLayoutObjectByElementId("innerSpan");
-  auto* innerSpanLayer = toLayoutBoxModelObject(innerSpan)->layer();
+  auto* target = GetLayoutObjectByElementId("target");
+  auto* containing_block = GetLayoutObjectByElementId("containingBlock");
+  auto* containing_block_layer =
+      ToLayoutBoxModelObject(containing_block)->Layer();
+  auto* composited_container =
+      GetLayoutObjectByElementId("compositedContainer");
+  auto* composited_container_layer =
+      ToLayoutBoxModelObject(composited_container)->Layer();
+  auto* span = GetLayoutObjectByElementId("span");
+  auto* span_layer = ToLayoutBoxModelObject(span)->Layer();
+  auto* inner_span = GetLayoutObjectByElementId("innerSpan");
+  auto* inner_span_layer = ToLayoutBoxModelObject(inner_span)->Layer();
 
-  EXPECT_TRUE(span->isPaintInvalidationContainer());
-  EXPECT_TRUE(span->styleRef().isStackingContext());
-  EXPECT_TRUE(innerSpan->isPaintInvalidationContainer());
-  EXPECT_TRUE(innerSpan->styleRef().isStackingContext());
-  EXPECT_EQ(compositedContainer, &target->containerForPaintInvalidation());
-  EXPECT_EQ(containingBlockLayer, target->paintingLayer());
+  EXPECT_TRUE(span->IsPaintInvalidationContainer());
+  EXPECT_TRUE(span->StyleRef().IsStackingContext());
+  EXPECT_TRUE(inner_span->IsPaintInvalidationContainer());
+  EXPECT_TRUE(inner_span->StyleRef().IsStackingContext());
+  EXPECT_EQ(composited_container, &target->ContainerForPaintInvalidation());
+  EXPECT_EQ(containing_block_layer, target->PaintingLayer());
 
   // Traversing from compositedContainer should reach target.
-  document().view()->setTracksPaintInvalidations(true);
-  EXPECT_FALSE(containingBlockLayer->needsRepaint());
-  EXPECT_FALSE(compositedContainerLayer->needsRepaint());
-  ObjectPaintInvalidator(*compositedContainer)
-      .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          PaintInvalidationSubtree);
-  EXPECT_TRUE(containingBlockLayer->needsRepaint());
-  EXPECT_TRUE(compositedContainerLayer->needsRepaint());
-  EXPECT_FALSE(spanLayer->needsRepaint());
-  EXPECT_FALSE(innerSpanLayer->needsRepaint());
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
+  ObjectPaintInvalidator(*composited_container)
+      .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
+          kPaintInvalidationSubtree);
+  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(span_layer->NeedsRepaint());
+  EXPECT_FALSE(inner_span_layer->NeedsRepaint());
 
   std::unique_ptr<JSONArray> invalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  document().view()->setTracksPaintInvalidations(false);
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   ASSERT_EQ(4u, invalidations->size());
   String s;
-  JSONObject::cast(invalidations->at(0))->get("object")->asString(&s);
-  EXPECT_EQ(compositedContainer->debugName(), s);
-  JSONObject::cast(invalidations->at(1))->get("object")->asString(&s);
-  EXPECT_EQ(containingBlock->debugName(), s);
-  JSONObject::cast(invalidations->at(2))->get("object")->asString(&s);
-  EXPECT_EQ(target->debugName(), s);
+  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
+  EXPECT_EQ(composited_container->DebugName(), s);
+  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
+  EXPECT_EQ(containing_block->DebugName(), s);
+  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
+  EXPECT_EQ(target->DebugName(), s);
   // This is the text node after the span.
-  JSONObject::cast(invalidations->at(3))->get("object")->asString(&s);
+  JSONObject::Cast(invalidations->at(3))->Get("object")->AsString(&s);
   EXPECT_EQ("LayoutText #text", s);
 }
 
@@ -218,42 +222,42 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
-  enableCompositing();
-  setBodyInnerHTML(
+  EnableCompositing();
+  SetBodyInnerHTML(
       "<span id='span' style='position: relative; will-change: transform'>"
       "  <div id='target' style='position: relative; float: right'></div>"
       "</span>");
 
-  auto* target = getLayoutObjectByElementId("target");
-  auto* targetLayer = toLayoutBoxModelObject(target)->layer();
-  auto* span = getLayoutObjectByElementId("span");
-  auto* spanLayer = toLayoutBoxModelObject(span)->layer();
+  auto* target = GetLayoutObjectByElementId("target");
+  auto* target_layer = ToLayoutBoxModelObject(target)->Layer();
+  auto* span = GetLayoutObjectByElementId("span");
+  auto* span_layer = ToLayoutBoxModelObject(span)->Layer();
 
-  EXPECT_TRUE(span->isPaintInvalidationContainer());
-  EXPECT_TRUE(span->styleRef().isStackingContext());
-  EXPECT_EQ(span, &target->containerForPaintInvalidation());
-  EXPECT_EQ(targetLayer, target->paintingLayer());
+  EXPECT_TRUE(span->IsPaintInvalidationContainer());
+  EXPECT_TRUE(span->StyleRef().IsStackingContext());
+  EXPECT_EQ(span, &target->ContainerForPaintInvalidation());
+  EXPECT_EQ(target_layer, target->PaintingLayer());
 
   // Traversing from span should reach target.
-  document().view()->setTracksPaintInvalidations(true);
-  EXPECT_FALSE(spanLayer->needsRepaint());
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  EXPECT_FALSE(span_layer->NeedsRepaint());
   ObjectPaintInvalidator(*span)
-      .invalidateDisplayItemClientsIncludingNonCompositingDescendants(
-          PaintInvalidationSubtree);
-  EXPECT_TRUE(spanLayer->needsRepaint());
+      .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
+          kPaintInvalidationSubtree);
+  EXPECT_TRUE(span_layer->NeedsRepaint());
 
   std::unique_ptr<JSONArray> invalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  document().view()->setTracksPaintInvalidations(false);
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   ASSERT_EQ(3u, invalidations->size());
   String s;
-  JSONObject::cast(invalidations->at(0))->get("object")->asString(&s);
-  EXPECT_EQ(span->debugName(), s);
-  JSONObject::cast(invalidations->at(1))->get("object")->asString(&s);
+  JSONObject::Cast(invalidations->at(0))->Get("object")->AsString(&s);
+  EXPECT_EQ(span->DebugName(), s);
+  JSONObject::Cast(invalidations->at(1))->Get("object")->AsString(&s);
   EXPECT_EQ("LayoutText #text", s);
-  JSONObject::cast(invalidations->at(2))->get("object")->asString(&s);
-  EXPECT_EQ(target->debugName(), s);
+  JSONObject::Cast(invalidations->at(2))->Get("object")->AsString(&s);
+  EXPECT_EQ(target->DebugName(), s);
 }
 
 }  // namespace blink

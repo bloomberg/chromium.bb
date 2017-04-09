@@ -33,7 +33,7 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     case PIPELINE_ERROR_NETWORK:
     case PIPELINE_ERROR_READ:
     case CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR:
-      return blink::WebMediaPlayer::NetworkStateNetworkError;
+      return blink::WebMediaPlayer::kNetworkStateNetworkError;
 
     case PIPELINE_ERROR_INITIALIZATION_FAILED:
     case PIPELINE_ERROR_COULD_NOT_RENDER:
@@ -42,7 +42,7 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     case DEMUXER_ERROR_COULD_NOT_PARSE:
     case DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
     case DECODER_ERROR_NOT_SUPPORTED:
-      return blink::WebMediaPlayer::NetworkStateFormatError;
+      return blink::WebMediaPlayer::kNetworkStateFormatError;
 
     case PIPELINE_ERROR_DECODE:
     case PIPELINE_ERROR_ABORT:
@@ -50,12 +50,12 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     case CHUNK_DEMUXER_ERROR_APPEND_FAILED:
     case CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR:
     case AUDIO_RENDERER_ERROR:
-      return blink::WebMediaPlayer::NetworkStateDecodeError;
+      return blink::WebMediaPlayer::kNetworkStateDecodeError;
 
     case PIPELINE_OK:
       NOTREACHED() << "Unexpected status! " << error;
   }
-  return blink::WebMediaPlayer::NetworkStateFormatError;
+  return blink::WebMediaPlayer::kNetworkStateFormatError;
 }
 
 namespace {
@@ -93,11 +93,11 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 
 std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
   switch (load_type) {
-    case blink::WebMediaPlayer::LoadTypeURL:
+    case blink::WebMediaPlayer::kLoadTypeURL:
       return "SRC";
-    case blink::WebMediaPlayer::LoadTypeMediaSource:
+    case blink::WebMediaPlayer::kLoadTypeMediaSource:
       return "MSE";
-    case blink::WebMediaPlayer::LoadTypeMediaStream:
+    case blink::WebMediaPlayer::kLoadTypeMediaStream:
       return "MS";
   }
 
@@ -119,15 +119,15 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
 
   // Report load type, such as URL, MediaSource or MediaStream.
   UMA_HISTOGRAM_ENUMERATION("Media.LoadType", load_type,
-                            blink::WebMediaPlayer::LoadTypeMax + 1);
+                            blink::WebMediaPlayer::kLoadTypeMax + 1);
 
   // Report the origin from where the media player is created.
   media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl." +
                                             LoadTypeToString(load_type));
 
   // For MSE, also report usage by secure/insecure origin.
-  if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource) {
-    if (security_origin.isPotentiallyTrustworthy()) {
+  if (load_type == blink::WebMediaPlayer::kLoadTypeMediaSource) {
+    if (security_origin.IsPotentiallyTrustworthy()) {
       media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Secure");
     } else {
       media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Insecure");
@@ -148,13 +148,13 @@ void ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
 EmeInitDataType ConvertToEmeInitDataType(
     blink::WebEncryptedMediaInitDataType init_data_type) {
   switch (init_data_type) {
-    case blink::WebEncryptedMediaInitDataType::Webm:
+    case blink::WebEncryptedMediaInitDataType::kWebm:
       return EmeInitDataType::WEBM;
-    case blink::WebEncryptedMediaInitDataType::Cenc:
+    case blink::WebEncryptedMediaInitDataType::kCenc:
       return EmeInitDataType::CENC;
-    case blink::WebEncryptedMediaInitDataType::Keyids:
+    case blink::WebEncryptedMediaInitDataType::kKeyids:
       return EmeInitDataType::KEYIDS;
-    case blink::WebEncryptedMediaInitDataType::Unknown:
+    case blink::WebEncryptedMediaInitDataType::kUnknown:
       return EmeInitDataType::UNKNOWN;
   }
 
@@ -166,17 +166,17 @@ blink::WebEncryptedMediaInitDataType ConvertToWebInitDataType(
     EmeInitDataType init_data_type) {
   switch (init_data_type) {
     case EmeInitDataType::WEBM:
-      return blink::WebEncryptedMediaInitDataType::Webm;
+      return blink::WebEncryptedMediaInitDataType::kWebm;
     case EmeInitDataType::CENC:
-      return blink::WebEncryptedMediaInitDataType::Cenc;
+      return blink::WebEncryptedMediaInitDataType::kCenc;
     case EmeInitDataType::KEYIDS:
-      return blink::WebEncryptedMediaInitDataType::Keyids;
+      return blink::WebEncryptedMediaInitDataType::kKeyids;
     case EmeInitDataType::UNKNOWN:
-      return blink::WebEncryptedMediaInitDataType::Unknown;
+      return blink::WebEncryptedMediaInitDataType::kUnknown;
   }
 
   NOTREACHED();
-  return blink::WebEncryptedMediaInitDataType::Unknown;
+  return blink::WebEncryptedMediaInitDataType::kUnknown;
 }
 
 namespace {
@@ -216,16 +216,16 @@ void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
 
   switch (result) {
     case OUTPUT_DEVICE_STATUS_OK:
-      callback.web_callback_->onSuccess();
+      callback.web_callback_->OnSuccess();
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND:
-      callback.web_callback_->onError(blink::WebSetSinkIdError::NotFound);
+      callback.web_callback_->OnError(blink::WebSetSinkIdError::kNotFound);
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED:
-      callback.web_callback_->onError(blink::WebSetSinkIdError::NotAuthorized);
+      callback.web_callback_->OnError(blink::WebSetSinkIdError::kNotAuthorized);
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_INTERNAL:
-      callback.web_callback_->onError(blink::WebSetSinkIdError::Aborted);
+      callback.web_callback_->OnError(blink::WebSetSinkIdError::kAborted);
       break;
     default:
       NOTREACHED();

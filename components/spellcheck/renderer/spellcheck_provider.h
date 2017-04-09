@@ -74,15 +74,15 @@ class SpellCheckProvider
   void OnDestruct() override;
 
   // blink::WebTextCheckClient implementation.
-  void checkSpelling(
+  void CheckSpelling(
       const blink::WebString& text,
       int& offset,
       int& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
-  void requestCheckingOfText(
+  void RequestCheckingOfText(
       const blink::WebString& text,
       blink::WebTextCheckingCompletion* completion) override;
-  void cancelAllPendingRequests() override;
+  void CancelAllPendingRequests() override;
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnRespondSpellingService(

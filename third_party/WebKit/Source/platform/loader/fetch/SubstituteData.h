@@ -34,42 +34,42 @@
 
 namespace blink {
 
-enum SubstituteDataLoadPolicy { LoadNormally, ForceSynchronousLoad };
+enum SubstituteDataLoadPolicy { kLoadNormally, kForceSynchronousLoad };
 
 class SubstituteData {
   DISALLOW_NEW();
 
  public:
-  SubstituteData() : m_substituteDataLoadPolicy(LoadNormally) {}
+  SubstituteData() : substitute_data_load_policy_(kLoadNormally) {}
 
   SubstituteData(
       PassRefPtr<SharedBuffer> content,
-      const AtomicString& mimeType,
-      const AtomicString& textEncoding,
-      const KURL& failingURL,
-      SubstituteDataLoadPolicy substituteDataLoadPolicy = LoadNormally)
-      : m_content(std::move(content)),
-        m_mimeType(mimeType),
-        m_textEncoding(textEncoding),
-        m_failingURL(failingURL),
-        m_substituteDataLoadPolicy(substituteDataLoadPolicy) {}
+      const AtomicString& mime_type,
+      const AtomicString& text_encoding,
+      const KURL& failing_url,
+      SubstituteDataLoadPolicy substitute_data_load_policy = kLoadNormally)
+      : content_(std::move(content)),
+        mime_type_(mime_type),
+        text_encoding_(text_encoding),
+        failing_url_(failing_url),
+        substitute_data_load_policy_(substitute_data_load_policy) {}
 
-  bool isValid() const { return m_content.get(); }
+  bool IsValid() const { return content_.Get(); }
 
-  SharedBuffer* content() const { return m_content.get(); }
-  const AtomicString& mimeType() const { return m_mimeType; }
-  const AtomicString& textEncoding() const { return m_textEncoding; }
-  const KURL& failingURL() const { return m_failingURL; }
-  bool forceSynchronousLoad() const {
-    return m_substituteDataLoadPolicy == ForceSynchronousLoad;
+  SharedBuffer* Content() const { return content_.Get(); }
+  const AtomicString& MimeType() const { return mime_type_; }
+  const AtomicString& TextEncoding() const { return text_encoding_; }
+  const KURL& FailingURL() const { return failing_url_; }
+  bool ForceSynchronousLoad() const {
+    return substitute_data_load_policy_ == kForceSynchronousLoad;
   }
 
  private:
-  RefPtr<SharedBuffer> m_content;
-  AtomicString m_mimeType;
-  AtomicString m_textEncoding;
-  KURL m_failingURL;
-  SubstituteDataLoadPolicy m_substituteDataLoadPolicy;
+  RefPtr<SharedBuffer> content_;
+  AtomicString mime_type_;
+  AtomicString text_encoding_;
+  KURL failing_url_;
+  SubstituteDataLoadPolicy substitute_data_load_policy_;
 };
 
 }  // namespace blink

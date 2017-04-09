@@ -9,13 +9,13 @@ namespace blink {
 
 enum CompositingState {
   // The layer paints into its enclosing composited ancestor.
-  NotComposited = 0,
+  kNotComposited = 0,
 
-  PaintsIntoOwnBacking = 1,
+  kPaintsIntoOwnBacking = 1,
 
   // In this state, the Layer subtree paints into a backing that is shared by
   // several Layer subtrees.
-  PaintsIntoGroupedBacking = 2
+  kPaintsIntoGroupedBacking = 2
 };
 
 }  // namespace blink

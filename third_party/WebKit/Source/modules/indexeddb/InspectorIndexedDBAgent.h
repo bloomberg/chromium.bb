@@ -49,37 +49,37 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
   ~InspectorIndexedDBAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void restore() override;
-  void didCommitLoadForLocalFrame(LocalFrame*) override;
+  void Restore() override;
+  void DidCommitLoadForLocalFrame(LocalFrame*) override;
 
   // Called from the front-end.
   protocol::Response enable() override;
   protocol::Response disable() override;
   void requestDatabaseNames(
-      const String& securityOrigin,
+      const String& security_origin,
       std::unique_ptr<RequestDatabaseNamesCallback>) override;
-  void requestDatabase(const String& securityOrigin,
-                       const String& databaseName,
+  void requestDatabase(const String& security_origin,
+                       const String& database_name,
                        std::unique_ptr<RequestDatabaseCallback>) override;
-  void requestData(const String& securityOrigin,
-                   const String& databaseName,
-                   const String& objectStoreName,
-                   const String& indexName,
-                   int skipCount,
-                   int pageSize,
+  void requestData(const String& security_origin,
+                   const String& database_name,
+                   const String& object_store_name,
+                   const String& index_name,
+                   int skip_count,
+                   int page_size,
                    protocol::Maybe<protocol::IndexedDB::KeyRange>,
                    std::unique_ptr<RequestDataCallback>) override;
-  void clearObjectStore(const String& securityOrigin,
-                        const String& databaseName,
-                        const String& objectStoreName,
+  void clearObjectStore(const String& security_origin,
+                        const String& database_name,
+                        const String& object_store_name,
                         std::unique_ptr<ClearObjectStoreCallback>) override;
-  void deleteDatabase(const String& securityOrigin,
-                      const String& databaseName,
+  void deleteDatabase(const String& security_origin,
+                      const String& database_name,
                       std::unique_ptr<DeleteDatabaseCallback>) override;
 
  private:
-  Member<InspectedFrames> m_inspectedFrames;
-  v8_inspector::V8InspectorSession* m_v8Session;
+  Member<InspectedFrames> inspected_frames_;
+  v8_inspector::V8InspectorSession* v8_session_;
 };
 
 }  // namespace blink

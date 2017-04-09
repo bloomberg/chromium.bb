@@ -16,9 +16,9 @@ VisualViewportResizeEvent::VisualViewportResizeEvent()
             false)  // non-bubbling non-cancellable
 {}
 
-void VisualViewportResizeEvent::doneDispatchingEventAtCurrentTarget() {
-  UseCounter::count(currentTarget()->getExecutionContext(),
-                    UseCounter::VisualViewportResizeFired);
+void VisualViewportResizeEvent::DoneDispatchingEventAtCurrentTarget() {
+  UseCounter::Count(currentTarget()->GetExecutionContext(),
+                    UseCounter::kVisualViewportResizeFired);
 }
 
 }  // namespace blink

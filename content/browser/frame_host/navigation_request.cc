@@ -177,7 +177,8 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     // For main frame, the origin is the url currently loading.
     origin = url::Origin(url);
   } else if ((frame_tree_node->effective_sandbox_flags() &
-              blink::WebSandboxFlags::Origin) == blink::WebSandboxFlags::None) {
+              blink::WebSandboxFlags::kOrigin) ==
+             blink::WebSandboxFlags::kNone) {
     // The origin should be the origin of the root, except for sandboxed
     // frames which have a unique origin.
     origin = frame_tree_node->frame_tree()->root()->current_origin();
@@ -226,7 +227,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                             false,  // has_user_gestures
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION,
-                            blink::WebMixedContentContextType::Blockable,
+                            blink::WebMixedContentContextType::kBlockable,
                             // TODO(arthursonzogni): It can be true for form
                             // resubmission when the user reloads the page. This
                             // needs to be fixed.
@@ -706,7 +707,7 @@ void NavigationRequest::OnStartChecksComplete(
   // this frame.
   bool can_create_service_worker =
       (frame_tree_node_->pending_sandbox_flags() &
-       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
+       blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin;
   request_params_.should_create_service_worker = can_create_service_worker;
   if (can_create_service_worker) {
     ServiceWorkerContextWrapper* service_worker_context =

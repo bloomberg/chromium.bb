@@ -48,28 +48,29 @@ class CORE_EXPORT AnimationClock {
   WTF_MAKE_NONCOPYABLE(AnimationClock);
 
  public:
-  explicit AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime =
-                              WTF::monotonicallyIncreasingTime)
-      : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime),
-        m_time(0),
-        m_taskForWhichTimeWasCalculated(std::numeric_limits<unsigned>::max()) {}
+  explicit AnimationClock(WTF::TimeFunction monotonically_increasing_time =
+                              WTF::MonotonicallyIncreasingTime)
+      : monotonically_increasing_time_(monotonically_increasing_time),
+        time_(0),
+        task_for_which_time_was_calculated_(
+            std::numeric_limits<unsigned>::max()) {}
 
-  void updateTime(double time);
-  double currentTime();
-  void resetTimeForTesting(double time = 0);
-  void disableSyntheticTimeForTesting() {
-    m_monotonicallyIncreasingTime = nullptr;
+  void UpdateTime(double time);
+  double CurrentTime();
+  void ResetTimeForTesting(double time = 0);
+  void DisableSyntheticTimeForTesting() {
+    monotonically_increasing_time_ = nullptr;
   }
 
   // notifyTaskStart should be called right before the main message loop starts
   // to run the next task from the message queue.
-  static void notifyTaskStart() { ++s_currentlyRunningTask; }
+  static void NotifyTaskStart() { ++currently_running_task_; }
 
  private:
-  WTF::TimeFunction m_monotonicallyIncreasingTime;
-  double m_time;
-  unsigned m_taskForWhichTimeWasCalculated;
-  static unsigned s_currentlyRunningTask;
+  WTF::TimeFunction monotonically_increasing_time_;
+  double time_;
+  unsigned task_for_which_time_was_calculated_;
+  static unsigned currently_running_task_;
 };
 
 }  // namespace blink

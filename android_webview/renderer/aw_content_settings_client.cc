@@ -27,16 +27,16 @@ bool AllowMixedContent(const blink::WebURL& url) {
 AwContentSettingsClient::AwContentSettingsClient(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
-  render_frame->GetWebFrame()->setContentSettingsClient(this);
+  render_frame->GetWebFrame()->SetContentSettingsClient(this);
 }
 
 AwContentSettingsClient::~AwContentSettingsClient() {
 }
 
-bool AwContentSettingsClient::allowRunningInsecureContent(
-      bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebURL& url) {
+bool AwContentSettingsClient::AllowRunningInsecureContent(
+    bool enabled_per_settings,
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebURL& url) {
   return enabled_per_settings ? true : AllowMixedContent(url);
 }
 

@@ -46,16 +46,18 @@ class PagePopupController final : public GarbageCollected<PagePopupController>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PagePopupController* create(PagePopup&, PagePopupClient*);
-  void setValueAndClosePopup(int numValue, const String& stringValue);
+  static PagePopupController* Create(PagePopup&, PagePopupClient*);
+  void setValueAndClosePopup(int num_value, const String& string_value);
   void setValue(const String&);
   void closePopup();
-  void selectFontsFromOwnerDocument(Document* targetDocument);
+  void selectFontsFromOwnerDocument(Document* target_document);
   String localizeNumberString(const String&);
-  String formatMonth(int year, int zeroBaseMonth);
-  String formatShortMonth(int year, int zeroBaseMonth);
-  String formatWeek(int year, int weekNumber, const String& localizedStartDate);
-  void clearPagePopupClient();
+  String formatMonth(int year, int zero_base_month);
+  String formatShortMonth(int year, int zero_base_month);
+  String formatWeek(int year,
+                    int week_number,
+                    const String& localized_start_date);
+  void ClearPagePopupClient();
   void setWindowRect(int x, int y, int width, int height);
 
   DEFINE_INLINE_TRACE() {}
@@ -63,8 +65,8 @@ class PagePopupController final : public GarbageCollected<PagePopupController>,
  private:
   PagePopupController(PagePopup&, PagePopupClient*);
 
-  PagePopup& m_popup;
-  PagePopupClient* m_popupClient;
+  PagePopup& popup_;
+  PagePopupClient* popup_client_;
 };
 
 }  // namespace blink

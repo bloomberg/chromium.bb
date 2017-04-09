@@ -32,12 +32,12 @@
 namespace blink {
 
 enum IndexedDatabaseMethods {
-  IDBCreateObjectStoreCall,
-  IDBDeleteObjectStoreCall,
-  IDBTransactionCall,
-  IDBDeleteDatabaseCall,
-  IDBOpenCall,
-  IDBMethodsMax,
+  kIDBCreateObjectStoreCall,
+  kIDBDeleteObjectStoreCall,
+  kIDBTransactionCall,
+  kIDBDeleteDatabaseCall,
+  kIDBOpenCall,
+  kIDBMethodsMax,
 };
 
 }  // namespace blink

@@ -41,31 +41,31 @@ class ComputedStyle;
 class CORE_EXPORT CSSComputedStyleDeclaration final
     : public CSSStyleDeclaration {
  public:
-  static CSSComputedStyleDeclaration* create(
+  static CSSComputedStyleDeclaration* Create(
       Node* node,
-      bool allowVisitedStyle = false,
-      const String& pseudoElementName = String()) {
-    return new CSSComputedStyleDeclaration(node, allowVisitedStyle,
-                                           pseudoElementName);
+      bool allow_visited_style = false,
+      const String& pseudo_element_name = String()) {
+    return new CSSComputedStyleDeclaration(node, allow_visited_style,
+                                           pseudo_element_name);
   }
 
-  static const Vector<CSSPropertyID>& computableProperties();
+  static const Vector<CSSPropertyID>& ComputableProperties();
   ~CSSComputedStyleDeclaration() override;
 
-  String getPropertyValue(CSSPropertyID) const;
-  bool getPropertyPriority(CSSPropertyID) const;
+  String GetPropertyValue(CSSPropertyID) const;
+  bool GetPropertyPriority(CSSPropertyID) const;
 
-  MutableStylePropertySet* copyProperties() const;
+  MutableStylePropertySet* CopyProperties() const;
 
-  const CSSValue* getPropertyCSSValue(CSSPropertyID) const;
-  const CSSValue* getPropertyCSSValue(AtomicString customPropertyName) const;
-  std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> getVariables()
+  const CSSValue* GetPropertyCSSValue(CSSPropertyID) const;
+  const CSSValue* GetPropertyCSSValue(AtomicString custom_property_name) const;
+  std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> GetVariables()
       const;
 
-  const CSSValue* getFontSizeCSSValuePreferringKeyword() const;
-  bool isMonospaceFont() const;
+  const CSSValue* GetFontSizeCSSValuePreferringKeyword() const;
+  bool IsMonospaceFont() const;
 
-  MutableStylePropertySet* copyPropertiesInSet(
+  MutableStylePropertySet* CopyPropertiesInSet(
       const Vector<CSSPropertyID>&) const;
 
   // CSSOM functions.
@@ -75,46 +75,46 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  CSSComputedStyleDeclaration(Node*, bool allowVisitedStyle, const String&);
+  CSSComputedStyleDeclaration(Node*, bool allow_visited_style, const String&);
 
   // The styled node is either the node passed into getComputedStyle, or the
   // PseudoElement for :before and :after if they exist.
   // FIXME: This should be styledElement since in JS getComputedStyle only works
   // on Elements, but right now editing creates these for text nodes. We should
   // fix that.
-  Node* styledNode() const;
+  Node* StyledNode() const;
 
   // CSSOM functions.
   CSSRule* parentRule() const override;
-  const ComputedStyle* computeComputedStyle() const;
-  String getPropertyValue(const String& propertyName) override;
-  String getPropertyPriority(const String& propertyName) override;
-  String getPropertyShorthand(const String& propertyName) override;
-  bool isPropertyImplicit(const String& propertyName) override;
-  void setProperty(const String& propertyName,
+  const ComputedStyle* ComputeComputedStyle() const;
+  String getPropertyValue(const String& property_name) override;
+  String getPropertyPriority(const String& property_name) override;
+  String GetPropertyShorthand(const String& property_name) override;
+  bool IsPropertyImplicit(const String& property_name) override;
+  void setProperty(const String& property_name,
                    const String& value,
                    const String& priority,
                    ExceptionState&) override;
-  String removeProperty(const String& propertyName, ExceptionState&) override;
-  String cssFloat() const;
-  void setCSSFloat(const String&, ExceptionState&);
+  String removeProperty(const String& property_name, ExceptionState&) override;
+  String CssFloat() const;
+  void SetCSSFloat(const String&, ExceptionState&);
   String cssText() const override;
   void setCSSText(const String&, ExceptionState&) override;
-  const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) override;
-  const CSSValue* getPropertyCSSValueInternal(
-      AtomicString customPropertyName) override;
-  String getPropertyValueInternal(CSSPropertyID) override;
-  void setPropertyInternal(CSSPropertyID,
-                           const String& customPropertyName,
+  const CSSValue* GetPropertyCSSValueInternal(CSSPropertyID) override;
+  const CSSValue* GetPropertyCSSValueInternal(
+      AtomicString custom_property_name) override;
+  String GetPropertyValueInternal(CSSPropertyID) override;
+  void SetPropertyInternal(CSSPropertyID,
+                           const String& custom_property_name,
                            const String& value,
                            bool important,
                            ExceptionState&) override;
 
-  bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
+  bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
 
-  Member<Node> m_node;
-  PseudoId m_pseudoElementSpecifier;
-  bool m_allowVisitedStyle;
+  Member<Node> node_;
+  PseudoId pseudo_element_specifier_;
+  bool allow_visited_style_;
 };
 
 }  // namespace blink

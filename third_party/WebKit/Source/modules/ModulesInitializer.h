@@ -12,7 +12,7 @@ namespace blink {
 
 class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
  public:
-  void initialize() override;
+  void Initialize() override;
 };
 
 }  // namespace blink

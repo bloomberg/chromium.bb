@@ -51,39 +51,39 @@ class SourceLocation;
 class CORE_EXPORT FrameConsole final
     : public GarbageCollectedFinalized<FrameConsole> {
  public:
-  static FrameConsole* create(LocalFrame& frame) {
+  static FrameConsole* Create(LocalFrame& frame) {
     return new FrameConsole(frame);
   }
 
-  void addMessage(ConsoleMessage*);
-  void addMessageFromWorker(MessageLevel,
+  void AddMessage(ConsoleMessage*);
+  void AddMessageFromWorker(MessageLevel,
                             const String& message,
                             std::unique_ptr<SourceLocation>,
-                            const String& workerId);
+                            const String& worker_id);
 
   // Show the specified ConsoleMessage only if the frame haven't shown a message
   // same as ConsoleMessage::messsage().
-  void addSingletonMessage(ConsoleMessage*);
+  void AddSingletonMessage(ConsoleMessage*);
 
-  bool addMessageToStorage(ConsoleMessage*);
-  void reportMessageToClient(MessageSource,
+  bool AddMessageToStorage(ConsoleMessage*);
+  void ReportMessageToClient(MessageSource,
                              MessageLevel,
                              const String& message,
                              SourceLocation*);
 
-  void reportResourceResponseReceived(DocumentLoader*,
-                                      unsigned long requestIdentifier,
+  void ReportResourceResponseReceived(DocumentLoader*,
+                                      unsigned long request_identifier,
                                       const ResourceResponse&);
 
-  void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
+  void DidFailLoading(unsigned long request_identifier, const ResourceError&);
 
   DECLARE_TRACE();
 
  private:
   explicit FrameConsole(LocalFrame&);
 
-  Member<LocalFrame> m_frame;
-  HashSet<String> m_singletonMessages;
+  Member<LocalFrame> frame_;
+  HashSet<String> singleton_messages_;
 };
 
 }  // namespace blink

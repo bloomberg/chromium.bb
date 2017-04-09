@@ -43,22 +43,22 @@ class AXARIAGrid final : public AXTable {
   AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXARIAGrid* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXARIAGrid* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXARIAGrid() override;
 
-  bool isAriaTable() const override { return true; }
+  bool IsAriaTable() const override { return true; }
 
-  void addChildren() override;
+  void AddChildren() override;
 
  private:
   // ARIA treegrids and grids support selected rows.
-  bool supportsSelectedRows() override { return true; }
-  bool isMultiSelectable() const override { return true; }
-  bool isTableExposableThroughAccessibility() const override { return true; }
+  bool SupportsSelectedRows() override { return true; }
+  bool IsMultiSelectable() const override { return true; }
+  bool IsTableExposableThroughAccessibility() const override { return true; }
 
-  bool addTableRowChild(AXObject*,
-                        HeapHashSet<Member<AXObject>>& appendedRows,
-                        unsigned& columnCount);
+  bool AddTableRowChild(AXObject*,
+                        HeapHashSet<Member<AXObject>>& appended_rows,
+                        unsigned& column_count);
 };
 
 }  // namespace blink

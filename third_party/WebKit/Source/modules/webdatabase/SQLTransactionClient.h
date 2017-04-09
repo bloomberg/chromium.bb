@@ -46,8 +46,8 @@ class SQLTransactionClient {
 
  public:
   SQLTransactionClient() {}
-  void didCommitWriteTransaction(Database*);
-  bool didExceedQuota(Database*);
+  void DidCommitWriteTransaction(Database*);
+  bool DidExceedQuota(Database*);
 };
 
 }  // namespace blink

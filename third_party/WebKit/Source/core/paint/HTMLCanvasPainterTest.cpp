@@ -36,66 +36,66 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
 
  protected:
   void SetUp() override {
-    m_chromeClient = new StubChromeClientForSPv2();
+    chrome_client_ = new StubChromeClientForSPv2();
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = m_chromeClient.get();
-    m_pageHolder = DummyPageHolder::create(
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
+    page_holder_ = DummyPageHolder::Create(
         IntSize(800, 600), &clients, nullptr, [](Settings& settings) {
-          settings.setAcceleratedCompositingEnabled(true);
+          settings.SetAcceleratedCompositingEnabled(true);
           // LayoutHTMLCanvas doesn't exist if script is disabled.
-          settings.setScriptEnabled(true);
+          settings.SetScriptEnabled(true);
         });
-    document().view()->setParentVisible(true);
-    document().view()->setSelfVisible(true);
+    GetDocument().View()->SetParentVisible(true);
+    GetDocument().View()->SetSelfVisible(true);
   }
 
-  Document& document() { return m_pageHolder->document(); }
-  bool hasLayerAttached(const WebLayer& layer) {
-    return m_chromeClient->hasLayer(layer);
+  Document& GetDocument() { return page_holder_->GetDocument(); }
+  bool HasLayerAttached(const WebLayer& layer) {
+    return chrome_client_->HasLayer(layer);
   }
 
-  PassRefPtr<Canvas2DLayerBridge> makeCanvas2DLayerBridge(const IntSize& size) {
-    return adoptRef(new Canvas2DLayerBridge(
-        WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)), size, 0,
-        NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting,
+  PassRefPtr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(const IntSize& size) {
+    return AdoptRef(new Canvas2DLayerBridge(
+        WTF::WrapUnique(new FakeWebGraphicsContext3DProvider(&gl_)), size, 0,
+        kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
         gfx::ColorSpace::CreateSRGB(), false, kN32_SkColorType));
   }
 
  private:
-  Persistent<StubChromeClientForSPv2> m_chromeClient;
-  FakeGLES2Interface m_gl;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  Persistent<StubChromeClientForSPv2> chrome_client_;
+  FakeGLES2Interface gl_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, HTMLCanvasPainterTestForSPv2, ::testing::Bool());
 
 TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   // Insert a <canvas> and force it into accelerated mode.
-  document().body()->setInnerHTML("<canvas width=300 height=200>");
+  GetDocument().body()->setInnerHTML("<canvas width=300 height=200>");
   HTMLCanvasElement* element =
-      toHTMLCanvasElement(document().body()->firstChild());
+      toHTMLCanvasElement(GetDocument().body()->FirstChild());
   CanvasContextCreationAttributes attributes;
   attributes.setAlpha(true);
   CanvasRenderingContext* context =
-      element->getCanvasRenderingContext("2d", attributes);
+      element->GetCanvasRenderingContext("2d", attributes);
   RefPtr<Canvas2DLayerBridge> bridge =
-      makeCanvas2DLayerBridge(IntSize(300, 200));
-  element->createImageBufferUsingSurfaceForTesting(WTF::wrapUnique(
+      MakeCanvas2DLayerBridge(IntSize(300, 200));
+  element->CreateImageBufferUsingSurfaceForTesting(WTF::WrapUnique(
       new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
-  ASSERT_EQ(context, element->renderingContext());
-  ASSERT_TRUE(context->isComposited());
-  ASSERT_TRUE(element->isAccelerated());
+  ASSERT_EQ(context, element->RenderingContext());
+  ASSERT_TRUE(context->IsComposited());
+  ASSERT_TRUE(element->IsAccelerated());
 
   // Force the page to paint.
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Fetch the layer associated with the <canvas>, and check that it was
   // correctly configured in the layer tree.
-  const WebLayer* layer = context->platformLayer();
+  const WebLayer* layer = context->PlatformLayer();
   ASSERT_TRUE(layer);
-  EXPECT_TRUE(hasLayerAttached(*layer));
-  EXPECT_EQ(WebSize(300, 200), layer->bounds());
+  EXPECT_TRUE(HasLayerAttached(*layer));
+  EXPECT_EQ(WebSize(300, 200), layer->Bounds());
 }
 
 }  // namespace blink

@@ -43,7 +43,7 @@ class URLRegistry;
 class CORE_EXPORT URLRegistrable {
  public:
   virtual ~URLRegistrable() {}
-  virtual URLRegistry& registry() const = 0;
+  virtual URLRegistry& Registry() const = 0;
 };
 
 class CORE_EXPORT URLRegistry {
@@ -51,15 +51,15 @@ class CORE_EXPORT URLRegistry {
 
  public:
   virtual ~URLRegistry() {}
-  virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;
-  virtual void unregisterURL(const KURL&) = 0;
+  virtual void RegisterURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;
+  virtual void UnregisterURL(const KURL&) = 0;
 
   // These are optional APIs
-  virtual URLRegistrable* lookup(const String&) {
+  virtual URLRegistrable* Lookup(const String&) {
     NOTREACHED();
     return nullptr;
   }
-  virtual bool contains(const String&) {
+  virtual bool Contains(const String&) {
     NOTREACHED();
     return false;
   }

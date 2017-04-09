@@ -212,11 +212,12 @@ class InputEventFilterTest : public testing::Test {
 };
 
 TEST_F(InputEventFilterTest, Basic) {
-  WebMouseEvent kEvents[3] = {
-    SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 10, 10, 0),
-    SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 20, 20, 0),
-    SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseMove, 30, 30, 0)
-  };
+  WebMouseEvent kEvents[3] = {SyntheticWebMouseEventBuilder::Build(
+                                  WebMouseEvent::kMouseMove, 10, 10, 0),
+                              SyntheticWebMouseEventBuilder::Build(
+                                  WebMouseEvent::kMouseMove, 20, 20, 0),
+                              SyntheticWebMouseEventBuilder::Build(
+                                  WebMouseEvent::kMouseMove, 30, 30, 0)};
 
   AddEventsToFilter(kEvents, arraysize(kEvents));
   EXPECT_EQ(0U, ipc_sink_.message_count());
@@ -240,7 +241,7 @@ TEST_F(InputEventFilterTest, Basic) {
     WebInputEvent::Type event_type = std::get<0>(params).type;
     InputEventAckState ack_result = std::get<0>(params).state;
 
-    EXPECT_EQ(kEvents[i].type(), event_type);
+    EXPECT_EQ(kEvents[i].GetType(), event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
     const WebInputEvent* event = event_recorder_->record_at(i);
@@ -291,7 +292,7 @@ TEST_F(InputEventFilterTest, Basic) {
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
     WebInputEvent::Type event_type = std::get<0>(params).type;
     InputEventAckState ack_result = std::get<0>(params).state;
-    EXPECT_EQ(kEvents[i].type(), event_type);
+    EXPECT_EQ(kEvents[i].GetType(), event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }
 
@@ -303,9 +304,9 @@ TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
   event_recorder_->set_send_to_widget(true);
 
   WebMouseEvent mouse_down =
-      SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseDown);
+      SyntheticWebMouseEventBuilder::Build(WebMouseEvent::kMouseDown);
   WebMouseEvent mouse_up =
-      SyntheticWebMouseEventBuilder::Build(WebMouseEvent::MouseUp);
+      SyntheticWebMouseEventBuilder::Build(WebMouseEvent::kMouseUp);
 
   std::vector<IPC::Message> messages;
   messages.push_back(InputMsg_HandleInputEvent(
@@ -385,8 +386,8 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     InputEventDispatchType dispatch_type = std::get<3>(params);
 
     EXPECT_EQ(kEvents[i].size(), event->size());
-    kEvents[i].dispatchType =
-        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    kEvents[i].dispatch_type =
+        WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
@@ -403,11 +404,11 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
         static_cast<const WebMouseWheelEvent*>(std::get<0>(params));
     InputEventDispatchType dispatch_type = std::get<3>(params);
 
-    kEvents[2].dispatchType =
-        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    kEvents[2].dispatch_type =
+        WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_EQ(kEvents[2].size(), event->size());
-    EXPECT_EQ(kEvents[2].deltaX + kEvents[3].deltaX, event->deltaX);
-    EXPECT_EQ(kEvents[2].deltaY + kEvents[3].deltaY, event->deltaY);
+    EXPECT_EQ(kEvents[2].delta_x + kEvents[3].delta_x, event->delta_x);
+    EXPECT_EQ(kEvents[2].delta_y + kEvents[3].delta_y, event->delta_y);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -417,7 +418,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   SyntheticWebTouchEvent kEvents[4];
   kEvents[0].PressPoint(10, 10);
   kEvents[1].PressPoint(10, 10);
-  kEvents[1].setModifiers(1);
+  kEvents[1].SetModifiers(1);
   kEvents[1].MovePoint(0, 20, 20);
   kEvents[2].PressPoint(10, 10);
   kEvents[2].MovePoint(0, 30, 30);
@@ -446,8 +447,8 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     InputEventDispatchType dispatch_type = std::get<3>(params);
 
     EXPECT_EQ(kEvents[i].size(), event->size());
-    kEvents[i].dispatchType =
-        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    kEvents[i].dispatch_type =
+        WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
@@ -465,7 +466,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     InputEventDispatchType dispatch_type = std::get<3>(params);
 
     EXPECT_EQ(kEvents[3].size(), event->size());
-    EXPECT_EQ(1u, kEvents[3].touchesLength);
+    EXPECT_EQ(1u, kEvents[3].touches_length);
     EXPECT_EQ(kEvents[3].touches[0].position.x, event->touches[0].position.x);
     EXPECT_EQ(kEvents[3].touches[0].position.y, event->touches[0].position.y);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
@@ -503,8 +504,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     InputEventDispatchType dispatch_type = std::get<3>(params);
 
     EXPECT_EQ(kEvents[0].size(), event->size());
-    kEvents[0].dispatchType =
-        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    kEvents[0].dispatch_type =
+        WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[0], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
@@ -519,8 +520,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     InputEventDispatchType dispatch_type = std::get<3>(params);
 
     EXPECT_EQ(kEvents[1].size(), event->size());
-    kEvents[1].dispatchType =
-        WebInputEvent::DispatchType::ListenersNonBlockingPassive;
+    kEvents[1].dispatch_type =
+        WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[1], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);

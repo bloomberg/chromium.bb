@@ -31,15 +31,15 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   ~WebGraphicsContext3DProviderImpl() override;
 
   // WebGraphicsContext3DProvider implementation.
-  bool bindToCurrentThread() override;
-  gpu::gles2::GLES2Interface* contextGL() override;
-  GrContext* grContext() override;
-  gpu::Capabilities getCapabilities() override;
-  bool isSoftwareRendering() const override;
-  void setLostContextCallback(const base::Closure&) override;
-  void setErrorMessageCallback(
+  bool BindToCurrentThread() override;
+  gpu::gles2::GLES2Interface* ContextGL() override;
+  GrContext* GetGrContext() override;
+  gpu::Capabilities GetCapabilities() override;
+  bool IsSoftwareRendering() const override;
+  void SetLostContextCallback(const base::Closure&) override;
+  void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>&) override;
-  void signalQuery(uint32_t, const base::Closure&) override;
+  void SignalQuery(uint32_t, const base::Closure&) override;
 
   ui::ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();

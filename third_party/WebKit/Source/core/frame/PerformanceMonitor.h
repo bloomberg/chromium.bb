@@ -53,47 +53,47 @@ class CORE_EXPORT PerformanceMonitor final
 
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
-    virtual void reportLongTask(double startTime,
-                                double endTime,
-                                ExecutionContext* taskContext,
-                                bool hasMultipleContexts){};
-    virtual void reportLongLayout(double duration){};
-    virtual void reportGenericViolation(Violation,
+    virtual void ReportLongTask(double start_time,
+                                double end_time,
+                                ExecutionContext* task_context,
+                                bool has_multiple_contexts){};
+    virtual void ReportLongLayout(double duration){};
+    virtual void ReportGenericViolation(Violation,
                                         const String& text,
                                         double time,
                                         SourceLocation*){};
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  static void reportGenericViolation(ExecutionContext*,
+  static void ReportGenericViolation(ExecutionContext*,
                                      Violation,
                                      const String& text,
                                      double time,
                                      std::unique_ptr<SourceLocation>);
-  static double threshold(ExecutionContext*, Violation);
+  static double Threshold(ExecutionContext*, Violation);
 
   // Instrumenting methods.
-  void will(const probe::RecalculateStyle&);
-  void did(const probe::RecalculateStyle&);
+  void Will(const probe::RecalculateStyle&);
+  void Did(const probe::RecalculateStyle&);
 
-  void will(const probe::UpdateLayout&);
-  void did(const probe::UpdateLayout&);
+  void Will(const probe::UpdateLayout&);
+  void Did(const probe::UpdateLayout&);
 
-  void will(const probe::ExecuteScript&);
-  void did(const probe::ExecuteScript&);
+  void Will(const probe::ExecuteScript&);
+  void Did(const probe::ExecuteScript&);
 
-  void will(const probe::CallFunction&);
-  void did(const probe::CallFunction&);
+  void Will(const probe::CallFunction&);
+  void Did(const probe::CallFunction&);
 
-  void will(const probe::UserCallback&);
-  void did(const probe::UserCallback&);
+  void Will(const probe::UserCallback&);
+  void Did(const probe::UserCallback&);
 
-  void documentWriteFetchScript(Document*);
+  void DocumentWriteFetchScript(Document*);
 
   // Direct API for core.
-  void subscribe(Violation, double threshold, Client*);
-  void unsubscribeAll(Client*);
-  void shutdown();
+  void Subscribe(Violation, double threshold, Client*);
+  void UnsubscribeAll(Client*);
+  void Shutdown();
 
   explicit PerformanceMonitor(LocalFrame*);
   ~PerformanceMonitor();
@@ -104,48 +104,48 @@ class CORE_EXPORT PerformanceMonitor final
   friend class PerformanceMonitorTest;
   friend class PerformanceTest;
 
-  static PerformanceMonitor* monitor(const ExecutionContext*);
-  static PerformanceMonitor* instrumentingMonitor(const ExecutionContext*);
+  static PerformanceMonitor* Monitor(const ExecutionContext*);
+  static PerformanceMonitor* InstrumentingMonitor(const ExecutionContext*);
 
-  void updateInstrumentation();
+  void UpdateInstrumentation();
 
-  void innerReportGenericViolation(ExecutionContext*,
+  void InnerReportGenericViolation(ExecutionContext*,
                                    Violation,
                                    const String& text,
                                    double time,
                                    std::unique_ptr<SourceLocation>);
 
   // scheduler::TaskTimeObserver implementation
-  void willProcessTask(scheduler::TaskQueue*, double startTime) override;
-  void didProcessTask(scheduler::TaskQueue*,
-                      double startTime,
-                      double endTime) override;
-  void onBeginNestedMessageLoop() override {}
-  void willExecuteScript(ExecutionContext*);
-  void didExecuteScript();
+  void WillProcessTask(scheduler::TaskQueue*, double start_time) override;
+  void DidProcessTask(scheduler::TaskQueue*,
+                      double start_time,
+                      double end_time) override;
+  void OnBeginNestedMessageLoop() override {}
+  void WillExecuteScript(ExecutionContext*);
+  void DidExecuteScript();
 
-  std::pair<String, DOMWindow*> sanitizedAttribution(
-      const HeapHashSet<Member<Frame>>& frameContexts,
-      Frame* observerFrame);
+  std::pair<String, DOMWindow*> SanitizedAttribution(
+      const HeapHashSet<Member<Frame>>& frame_contexts,
+      Frame* observer_frame);
 
-  bool m_enabled = false;
-  double m_perTaskStyleAndLayoutTime = 0;
-  unsigned m_scriptDepth = 0;
-  unsigned m_layoutDepth = 0;
-  unsigned m_userCallbackDepth = 0;
-  const void* m_userCallback;
+  bool enabled_ = false;
+  double per_task_style_and_layout_time_ = 0;
+  unsigned script_depth_ = 0;
+  unsigned layout_depth_ = 0;
+  unsigned user_callback_depth_ = 0;
+  const void* user_callback_;
 
-  double m_thresholds[kAfterLast];
+  double thresholds_[kAfterLast];
 
-  Member<LocalFrame> m_localRoot;
-  Member<ExecutionContext> m_taskExecutionContext;
-  bool m_taskHasMultipleContexts = false;
+  Member<LocalFrame> local_root_;
+  Member<ExecutionContext> task_execution_context_;
+  bool task_has_multiple_contexts_ = false;
   using ClientThresholds = HeapHashMap<WeakMember<Client>, double>;
   HeapHashMap<Violation,
               Member<ClientThresholds>,
               typename DefaultHash<size_t>::Hash,
               WTF::UnsignedWithZeroKeyHashTraits<size_t>>
-      m_subscriptions;
+      subscriptions_;
 };
 
 }  // namespace blink

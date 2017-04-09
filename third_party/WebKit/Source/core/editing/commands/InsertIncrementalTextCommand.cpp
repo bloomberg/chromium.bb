@@ -19,148 +19,153 @@ namespace blink {
 
 namespace {
 
-size_t computeCommonPrefixLength(const String& str1, const String& str2) {
-  const size_t maxCommonPrefixLength = std::min(str1.length(), str2.length());
-  ForwardCodePointStateMachine codePointStateMachine;
+size_t ComputeCommonPrefixLength(const String& str1, const String& str2) {
+  const size_t max_common_prefix_length =
+      std::min(str1.length(), str2.length());
+  ForwardCodePointStateMachine code_point_state_machine;
   int result = 0;
-  for (size_t index = 0; index < maxCommonPrefixLength; ++index) {
+  for (size_t index = 0; index < max_common_prefix_length; ++index) {
     if (str1[index] != str2[index])
       return result;
-    codePointStateMachine.feedFollowingCodeUnit(str1[index]);
-    if (!codePointStateMachine.atCodePointBoundary())
+    code_point_state_machine.FeedFollowingCodeUnit(str1[index]);
+    if (!code_point_state_machine.AtCodePointBoundary())
       continue;
     result = index;
   }
-  return maxCommonPrefixLength;
+  return max_common_prefix_length;
 }
 
-size_t computeCommonSuffixLength(const String& str1, const String& str2) {
+size_t ComputeCommonSuffixLength(const String& str1, const String& str2) {
   const size_t length1 = str1.length();
   const size_t length2 = str2.length();
-  const size_t maxCommonSuffixLength = std::min(length1, length2);
-  for (size_t index = 0; index < maxCommonSuffixLength; ++index) {
+  const size_t max_common_suffix_length = std::min(length1, length2);
+  for (size_t index = 0; index < max_common_suffix_length; ++index) {
     if (str1[length1 - index - 1] != str2[length2 - index - 1])
       return index;
   }
-  return maxCommonSuffixLength;
+  return max_common_suffix_length;
 }
 
-size_t computeCommonGraphemeClusterPrefixLength(const Position& selectionStart,
-                                                const String& oldText,
-                                                const String& newText) {
-  const size_t commonPrefixLength = computeCommonPrefixLength(oldText, newText);
-  const int selectionOffset = selectionStart.computeOffsetInContainerNode();
-  const ContainerNode* selectionNode =
-      selectionStart.computeContainerNode()->parentNode();
+size_t ComputeCommonGraphemeClusterPrefixLength(const Position& selection_start,
+                                                const String& old_text,
+                                                const String& new_text) {
+  const size_t common_prefix_length =
+      ComputeCommonPrefixLength(old_text, new_text);
+  const int selection_offset = selection_start.ComputeOffsetInContainerNode();
+  const ContainerNode* selection_node =
+      selection_start.ComputeContainerNode()->parentNode();
 
   // For grapheme cluster, we should adjust it for grapheme boundary.
   const EphemeralRange& range =
-      PlainTextRange(0, selectionOffset + commonPrefixLength)
-          .createRange(*selectionNode);
-  if (range.isNull())
+      PlainTextRange(0, selection_offset + common_prefix_length)
+          .CreateRange(*selection_node);
+  if (range.IsNull())
     return 0;
-  const Position& position = range.endPosition();
-  const size_t diff = computeDistanceToLeftGraphemeBoundary(position);
-  DCHECK_GE(commonPrefixLength, diff);
-  return commonPrefixLength - diff;
+  const Position& position = range.EndPosition();
+  const size_t diff = ComputeDistanceToLeftGraphemeBoundary(position);
+  DCHECK_GE(common_prefix_length, diff);
+  return common_prefix_length - diff;
 }
 
-size_t computeCommonGraphemeClusterSuffixLength(const Position& selectionStart,
-                                                const String& oldText,
-                                                const String& newText) {
-  const size_t commonSuffixLength = computeCommonSuffixLength(oldText, newText);
-  const int selectionOffset = selectionStart.computeOffsetInContainerNode();
-  const ContainerNode* selectionNode =
-      selectionStart.computeContainerNode()->parentNode();
+size_t ComputeCommonGraphemeClusterSuffixLength(const Position& selection_start,
+                                                const String& old_text,
+                                                const String& new_text) {
+  const size_t common_suffix_length =
+      ComputeCommonSuffixLength(old_text, new_text);
+  const int selection_offset = selection_start.ComputeOffsetInContainerNode();
+  const ContainerNode* selection_node =
+      selection_start.ComputeContainerNode()->parentNode();
 
   // For grapheme cluster, we should adjust it for grapheme boundary.
   const EphemeralRange& range =
-      PlainTextRange(0, selectionOffset + oldText.length() - commonSuffixLength)
-          .createRange(*selectionNode);
-  if (range.isNull())
+      PlainTextRange(
+          0, selection_offset + old_text.length() - common_suffix_length)
+          .CreateRange(*selection_node);
+  if (range.IsNull())
     return 0;
-  const Position& position = range.endPosition();
-  const size_t diff = computeDistanceToRightGraphemeBoundary(position);
-  if (diff > commonSuffixLength)
+  const Position& position = range.EndPosition();
+  const size_t diff = ComputeDistanceToRightGraphemeBoundary(position);
+  if (diff > common_suffix_length)
     return 0;
-  return commonSuffixLength - diff;
+  return common_suffix_length - diff;
 }
 
-const String computeTextForInsertion(const String& newText,
-                                     const size_t commonPrefixLength,
-                                     const size_t commonSuffixLength) {
-  return newText.substring(
-      commonPrefixLength,
-      newText.length() - commonPrefixLength - commonSuffixLength);
+const String ComputeTextForInsertion(const String& new_text,
+                                     const size_t common_prefix_length,
+                                     const size_t common_suffix_length) {
+  return new_text.Substring(
+      common_prefix_length,
+      new_text.length() - common_prefix_length - common_suffix_length);
 }
 
-VisibleSelection computeSelectionForInsertion(
-    const EphemeralRange& selectionRange,
+VisibleSelection ComputeSelectionForInsertion(
+    const EphemeralRange& selection_range,
     const int offset,
     const int length,
-    const bool isDirectional) {
-  CharacterIterator charIt(selectionRange);
-  const EphemeralRange& rangeForInsertion =
-      charIt.calculateCharacterSubrange(offset, length);
+    const bool is_directional) {
+  CharacterIterator char_it(selection_range);
+  const EphemeralRange& range_for_insertion =
+      char_it.CalculateCharacterSubrange(offset, length);
   const VisibleSelection& selection =
-      createVisibleSelection(SelectionInDOMTree::Builder()
-                                 .setBaseAndExtent(rangeForInsertion)
-                                 .setIsDirectional(isDirectional)
-                                 .build());
+      CreateVisibleSelection(SelectionInDOMTree::Builder()
+                                 .SetBaseAndExtent(range_for_insertion)
+                                 .SetIsDirectional(is_directional)
+                                 .Build());
   return selection;
 }
 
 }  // anonymous namespace
 
-InsertIncrementalTextCommand* InsertIncrementalTextCommand::create(
+InsertIncrementalTextCommand* InsertIncrementalTextCommand::Create(
     Document& document,
     const String& text,
-    bool selectInsertedText,
-    RebalanceType rebalanceType) {
-  return new InsertIncrementalTextCommand(document, text, selectInsertedText,
-                                          rebalanceType);
+    bool select_inserted_text,
+    RebalanceType rebalance_type) {
+  return new InsertIncrementalTextCommand(document, text, select_inserted_text,
+                                          rebalance_type);
 }
 
 InsertIncrementalTextCommand::InsertIncrementalTextCommand(
     Document& document,
     const String& text,
-    bool selectInsertedText,
-    RebalanceType rebalanceType)
-    : InsertTextCommand(document, text, selectInsertedText, rebalanceType) {}
+    bool select_inserted_text,
+    RebalanceType rebalance_type)
+    : InsertTextCommand(document, text, select_inserted_text, rebalance_type) {}
 
-void InsertIncrementalTextCommand::doApply(EditingState* editingState) {
-  const Element* element = endingSelection().rootEditableElement();
+void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
+  const Element* element = EndingSelection().RootEditableElement();
   DCHECK(element);
 
-  const EphemeralRange selectionRange(endingSelection().start(),
-                                      endingSelection().end());
-  const String oldText = plainText(selectionRange);
-  const String& newText = m_text;
+  const EphemeralRange selection_range(EndingSelection().Start(),
+                                       EndingSelection().end());
+  const String old_text = PlainText(selection_range);
+  const String& new_text = text_;
 
-  const Position& selectionStart = endingSelection().start();
-  const size_t newTextLength = newText.length();
-  const size_t oldTextLength = oldText.length();
-  const size_t commonPrefixLength = computeCommonGraphemeClusterPrefixLength(
-      selectionStart, oldText, newText);
+  const Position& selection_start = EndingSelection().Start();
+  const size_t new_text_length = new_text.length();
+  const size_t old_text_length = old_text.length();
+  const size_t common_prefix_length = ComputeCommonGraphemeClusterPrefixLength(
+      selection_start, old_text, new_text);
   // We should ignore common prefix when finding common suffix.
-  const size_t commonSuffixLength = computeCommonGraphemeClusterSuffixLength(
-      selectionStart, oldText.right(oldTextLength - commonPrefixLength),
-      newText.right(newTextLength - commonPrefixLength));
-  DCHECK_GE(oldTextLength, commonPrefixLength + commonSuffixLength);
+  const size_t common_suffix_length = ComputeCommonGraphemeClusterSuffixLength(
+      selection_start, old_text.Right(old_text_length - common_prefix_length),
+      new_text.Right(new_text_length - common_prefix_length));
+  DCHECK_GE(old_text_length, common_prefix_length + common_suffix_length);
 
-  m_text =
-      computeTextForInsertion(m_text, commonPrefixLength, commonSuffixLength);
+  text_ = ComputeTextForInsertion(text_, common_prefix_length,
+                                  common_suffix_length);
 
-  const int offset = static_cast<int>(commonPrefixLength);
-  const int length =
-      static_cast<int>(oldTextLength - commonPrefixLength - commonSuffixLength);
-  const VisibleSelection& selectionForInsertion = computeSelectionForInsertion(
-      selectionRange, offset, length, endingSelection().isDirectional());
+  const int offset = static_cast<int>(common_prefix_length);
+  const int length = static_cast<int>(old_text_length - common_prefix_length -
+                                      common_suffix_length);
+  const VisibleSelection& selection_for_insertion =
+      ComputeSelectionForInsertion(selection_range, offset, length,
+                                   EndingSelection().IsDirectional());
 
-  setEndingSelectionWithoutValidation(selectionForInsertion.start(),
-                                      selectionForInsertion.end());
+  SetEndingSelectionWithoutValidation(selection_for_insertion.Start(),
+                                      selection_for_insertion.end());
 
-  InsertTextCommand::doApply(editingState);
+  InsertTextCommand::DoApply(editing_state);
 }
 
 }  // namespace blink

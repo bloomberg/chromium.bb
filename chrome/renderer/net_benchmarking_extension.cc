@@ -80,7 +80,7 @@ class NetBenchmarkingWrapper : public v8::Extension {
   static void ClearCache(const v8::FunctionCallbackInfo<v8::Value>& args) {
     int rv;
     GetNetBenchmarking().ClearCache(&rv);
-    WebCache::clear();
+    WebCache::Clear();
   }
 
   static void ClearHostResolverCache(

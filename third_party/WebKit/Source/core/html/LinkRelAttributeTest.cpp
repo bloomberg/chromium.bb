@@ -36,74 +36,76 @@
 
 namespace blink {
 
-static inline void testLinkRelAttribute(String value,
-                                        bool isStyleSheet,
-                                        IconType iconType,
-                                        bool isAlternate,
-                                        bool isDNSPrefetch,
-                                        bool isLinkPrerender,
-                                        bool isImport = false,
-                                        bool isPreconnect = false) {
-  LinkRelAttribute linkRelAttribute(value);
-  ASSERT_EQ(isStyleSheet, linkRelAttribute.isStyleSheet())
-      << value.utf8().data();
-  ASSERT_EQ(iconType, linkRelAttribute.getIconType()) << value.utf8().data();
-  ASSERT_EQ(isAlternate, linkRelAttribute.isAlternate()) << value.utf8().data();
-  ASSERT_EQ(isDNSPrefetch, linkRelAttribute.isDNSPrefetch())
-      << value.utf8().data();
-  ASSERT_EQ(isLinkPrerender, linkRelAttribute.isLinkPrerender())
-      << value.utf8().data();
-  ASSERT_EQ(isImport, linkRelAttribute.isImport()) << value.utf8().data();
-  ASSERT_EQ(isPreconnect, linkRelAttribute.isPreconnect())
-      << value.utf8().data();
+static inline void TestLinkRelAttribute(String value,
+                                        bool is_style_sheet,
+                                        IconType icon_type,
+                                        bool is_alternate,
+                                        bool is_dns_prefetch,
+                                        bool is_link_prerender,
+                                        bool is_import = false,
+                                        bool is_preconnect = false) {
+  LinkRelAttribute link_rel_attribute(value);
+  ASSERT_EQ(is_style_sheet, link_rel_attribute.IsStyleSheet())
+      << value.Utf8().Data();
+  ASSERT_EQ(icon_type, link_rel_attribute.GetIconType()) << value.Utf8().Data();
+  ASSERT_EQ(is_alternate, link_rel_attribute.IsAlternate())
+      << value.Utf8().Data();
+  ASSERT_EQ(is_dns_prefetch, link_rel_attribute.IsDNSPrefetch())
+      << value.Utf8().Data();
+  ASSERT_EQ(is_link_prerender, link_rel_attribute.IsLinkPrerender())
+      << value.Utf8().Data();
+  ASSERT_EQ(is_import, link_rel_attribute.IsImport()) << value.Utf8().Data();
+  ASSERT_EQ(is_preconnect, link_rel_attribute.IsPreconnect())
+      << value.Utf8().Data();
 }
 
 TEST(LinkRelAttributeTest, Constructor) {
-  testLinkRelAttribute("stylesheet", true, InvalidIcon, false, false, false);
-  testLinkRelAttribute("sTyLeShEeT", true, InvalidIcon, false, false, false);
+  TestLinkRelAttribute("stylesheet", true, kInvalidIcon, false, false, false);
+  TestLinkRelAttribute("sTyLeShEeT", true, kInvalidIcon, false, false, false);
 
-  testLinkRelAttribute("icon", false, Favicon, false, false, false);
-  testLinkRelAttribute("iCoN", false, Favicon, false, false, false);
-  testLinkRelAttribute("shortcut icon", false, Favicon, false, false, false);
-  testLinkRelAttribute("sHoRtCuT iCoN", false, Favicon, false, false, false);
+  TestLinkRelAttribute("icon", false, kFavicon, false, false, false);
+  TestLinkRelAttribute("iCoN", false, kFavicon, false, false, false);
+  TestLinkRelAttribute("shortcut icon", false, kFavicon, false, false, false);
+  TestLinkRelAttribute("sHoRtCuT iCoN", false, kFavicon, false, false, false);
 
-  testLinkRelAttribute("dns-prefetch", false, InvalidIcon, false, true, false);
-  testLinkRelAttribute("dNs-pReFeTcH", false, InvalidIcon, false, true, false);
-  testLinkRelAttribute("alternate dNs-pReFeTcH", false, InvalidIcon, true, true,
+  TestLinkRelAttribute("dns-prefetch", false, kInvalidIcon, false, true, false);
+  TestLinkRelAttribute("dNs-pReFeTcH", false, kInvalidIcon, false, true, false);
+  TestLinkRelAttribute("alternate dNs-pReFeTcH", false, kInvalidIcon, true,
+                       true, false);
+
+  TestLinkRelAttribute("apple-touch-icon", false, kTouchIcon, false, false,
+                       false);
+  TestLinkRelAttribute("aPpLe-tOuCh-IcOn", false, kTouchIcon, false, false,
+                       false);
+  TestLinkRelAttribute("apple-touch-icon-precomposed", false,
+                       kTouchPrecomposedIcon, false, false, false);
+  TestLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false,
+                       kTouchPrecomposedIcon, false, false, false);
+
+  TestLinkRelAttribute("alternate stylesheet", true, kInvalidIcon, true, false,
+                       false);
+  TestLinkRelAttribute("stylesheet alternate", true, kInvalidIcon, true, false,
+                       false);
+  TestLinkRelAttribute("aLtErNaTe sTyLeShEeT", true, kInvalidIcon, true, false,
+                       false);
+  TestLinkRelAttribute("sTyLeShEeT aLtErNaTe", true, kInvalidIcon, true, false,
                        false);
 
-  testLinkRelAttribute("apple-touch-icon", false, TouchIcon, false, false,
-                       false);
-  testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, TouchIcon, false, false,
-                       false);
-  testLinkRelAttribute("apple-touch-icon-precomposed", false,
-                       TouchPrecomposedIcon, false, false, false);
-  testLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false,
-                       TouchPrecomposedIcon, false, false, false);
-
-  testLinkRelAttribute("alternate stylesheet", true, InvalidIcon, true, false,
-                       false);
-  testLinkRelAttribute("stylesheet alternate", true, InvalidIcon, true, false,
-                       false);
-  testLinkRelAttribute("aLtErNaTe sTyLeShEeT", true, InvalidIcon, true, false,
-                       false);
-  testLinkRelAttribute("sTyLeShEeT aLtErNaTe", true, InvalidIcon, true, false,
-                       false);
-
-  testLinkRelAttribute("stylesheet icon prerender aLtErNaTe", true, Favicon,
+  TestLinkRelAttribute("stylesheet icon prerender aLtErNaTe", true, kFavicon,
                        true, false, true);
-  testLinkRelAttribute("alternate icon stylesheet", true, Favicon, true, false,
+  TestLinkRelAttribute("alternate icon stylesheet", true, kFavicon, true, false,
                        false);
 
-  testLinkRelAttribute("import", false, InvalidIcon, false, false, false, true);
-  testLinkRelAttribute("alternate import", false, InvalidIcon, true, false,
+  TestLinkRelAttribute("import", false, kInvalidIcon, false, false, false,
+                       true);
+  TestLinkRelAttribute("alternate import", false, kInvalidIcon, true, false,
                        false, true);
-  testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false,
+  TestLinkRelAttribute("stylesheet import", true, kInvalidIcon, false, false,
                        false, false);
 
-  testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false,
+  TestLinkRelAttribute("preconnect", false, kInvalidIcon, false, false, false,
                        false, true);
-  testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false,
+  TestLinkRelAttribute("pReCoNnEcT", false, kInvalidIcon, false, false, false,
                        false, true);
 }
 

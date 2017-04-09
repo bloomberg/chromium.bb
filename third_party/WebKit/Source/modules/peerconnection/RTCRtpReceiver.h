@@ -28,8 +28,8 @@ class RTCRtpReceiver final : public GarbageCollectedFinalized<RTCRtpReceiver>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  std::unique_ptr<WebRTCRtpReceiver> m_receiver;
-  Member<MediaStreamTrack> m_track;
+  std::unique_ptr<WebRTCRtpReceiver> receiver_;
+  Member<MediaStreamTrack> track_;
 };
 
 }  // namespace blink

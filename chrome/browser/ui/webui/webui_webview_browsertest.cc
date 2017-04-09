@@ -315,9 +315,9 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
   gfx::Rect container_bounds = embedder_web_contents->GetContainerBounds();
   const gfx::Point screen_pt(container_bounds.x(), container_bounds.y());
   const blink::WebDragOperationsMask drag_operation_mask =
-      static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
-                                     blink::WebDragOperationLink |
-                                     blink::WebDragOperationMove);
+      static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
+                                                blink::kWebDragOperationLink |
+                                                blink::kWebDragOperationMove);
   content::DropData dropdata;
   dropdata.did_originate_from_renderer = true;
   dropdata.url = GURL(url::kAboutBlankURL);
@@ -337,8 +337,8 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
                                   "Step1: destNode gets dragenter");
     render_view_host->GetWidget()->FilterDropData(&dropdata);
     render_view_host->GetWidget()->DragTargetDragEnter(
-        dropdata,client_pt, screen_pt, drag_operation_mask,
-        blink::WebInputEvent::LeftButtonDown);
+        dropdata, client_pt, screen_pt, drag_operation_mask,
+        blink::WebInputEvent::kLeftButtonDown);
     ASSERT_TRUE(listener.Wait());
   }
 
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
                                   "Step2: destNode gets dragover");
     render_view_host->GetWidget()->DragTargetDragOver(
         client_pt, screen_pt, drag_operation_mask,
-        blink::WebInputEvent::LeftButtonDown);
+        blink::WebInputEvent::kLeftButtonDown);
     ASSERT_TRUE(listener.Wait());
   }
 

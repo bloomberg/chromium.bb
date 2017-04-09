@@ -26,32 +26,32 @@ blink::WebOriginTrialTokenStatus TrialTokenValidator::ValidateToken(
   const OriginTrialPolicy* origin_trial_policy =
       content_client->GetOriginTrialPolicy();
   if (!origin_trial_policy)
-    return blink::WebOriginTrialTokenStatus::NotSupported;
+    return blink::WebOriginTrialTokenStatus::kNotSupported;
 
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
   base::StringPiece public_key = origin_trial_policy->GetPublicKey();
   if (public_key.empty())
-    return blink::WebOriginTrialTokenStatus::NotSupported;
+    return blink::WebOriginTrialTokenStatus::kNotSupported;
 
   blink::WebOriginTrialTokenStatus status;
   std::unique_ptr<TrialToken> trial_token =
       TrialToken::From(token, public_key, &status);
-  if (status != blink::WebOriginTrialTokenStatus::Success)
+  if (status != blink::WebOriginTrialTokenStatus::kSuccess)
     return status;
 
   status = trial_token->IsValid(origin, base::Time::Now());
-  if (status != blink::WebOriginTrialTokenStatus::Success)
+  if (status != blink::WebOriginTrialTokenStatus::kSuccess)
     return status;
 
   if (origin_trial_policy->IsFeatureDisabled(trial_token->feature_name()))
-    return blink::WebOriginTrialTokenStatus::FeatureDisabled;
+    return blink::WebOriginTrialTokenStatus::kFeatureDisabled;
 
   if (origin_trial_policy->IsTokenDisabled(trial_token->signature()))
-    return blink::WebOriginTrialTokenStatus::TokenDisabled;
+    return blink::WebOriginTrialTokenStatus::kTokenDisabled;
 
   *feature_name = trial_token->feature_name();
-  return blink::WebOriginTrialTokenStatus::Success;
+  return blink::WebOriginTrialTokenStatus::kSuccess;
 }
 
 bool TrialTokenValidator::RequestEnablesFeature(
@@ -80,7 +80,7 @@ bool TrialTokenValidator::RequestEnablesFeature(
     std::string token_feature;
     // TODO(mek): Log the validation errors to histograms?
     if (ValidateToken(token, origin, &token_feature) ==
-        blink::WebOriginTrialTokenStatus::Success)
+        blink::WebOriginTrialTokenStatus::kSuccess)
       if (token_feature == feature_name)
         return true;
   }
@@ -104,7 +104,7 @@ TrialTokenValidator::GetValidTokensFromHeaders(
   while (headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
     std::string token_feature;
     if (TrialTokenValidator::ValidateToken(token, origin, &token_feature) ==
-        blink::WebOriginTrialTokenStatus::Success) {
+        blink::WebOriginTrialTokenStatus::kSuccess) {
       (*tokens)[token_feature].push_back(token);
     }
   }
@@ -126,7 +126,7 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
     for (const std::string& token : feature.second) {
       std::string token_feature;
       if (TrialTokenValidator::ValidateToken(token, origin, &token_feature) ==
-          blink::WebOriginTrialTokenStatus::Success) {
+          blink::WebOriginTrialTokenStatus::kSuccess) {
         DCHECK_EQ(token_feature, feature.first);
         (*out_tokens)[feature.first].push_back(token);
       }

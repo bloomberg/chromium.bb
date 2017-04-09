@@ -31,113 +31,113 @@ SVGNumberList::SVGNumberList() {}
 
 SVGNumberList::~SVGNumberList() {}
 
-String SVGNumberList::valueAsString() const {
+String SVGNumberList::ValueAsString() const {
   StringBuilder builder;
 
   ConstIterator it = begin();
-  ConstIterator itEnd = end();
-  if (it != itEnd) {
-    builder.append(it->valueAsString());
+  ConstIterator it_end = end();
+  if (it != it_end) {
+    builder.Append(it->ValueAsString());
     ++it;
 
-    for (; it != itEnd; ++it) {
-      builder.append(' ');
-      builder.append(it->valueAsString());
+    for (; it != it_end; ++it) {
+      builder.Append(' ');
+      builder.Append(it->ValueAsString());
     }
   }
 
-  return builder.toString();
+  return builder.ToString();
 }
 
 template <typename CharType>
-SVGParsingError SVGNumberList::parse(const CharType*& ptr,
+SVGParsingError SVGNumberList::Parse(const CharType*& ptr,
                                      const CharType* end) {
-  const CharType* listStart = ptr;
+  const CharType* list_start = ptr;
   while (ptr < end) {
     float number = 0;
-    if (!parseNumber(ptr, end, number))
-      return SVGParsingError(SVGParseStatus::ExpectedNumber, ptr - listStart);
-    append(SVGNumber::create(number));
+    if (!ParseNumber(ptr, end, number))
+      return SVGParsingError(SVGParseStatus::kExpectedNumber, ptr - list_start);
+    Append(SVGNumber::Create(number));
   }
-  return SVGParseStatus::NoError;
+  return SVGParseStatus::kNoError;
 }
 
-SVGParsingError SVGNumberList::setValueAsString(const String& value) {
-  clear();
+SVGParsingError SVGNumberList::SetValueAsString(const String& value) {
+  Clear();
 
-  if (value.isEmpty())
-    return SVGParseStatus::NoError;
+  if (value.IsEmpty())
+    return SVGParseStatus::kNoError;
 
   // Don't call |clear()| if an error is encountered. SVG policy is to use
   // valid items before error.
   // Spec: http://www.w3.org/TR/SVG/single-page.html#implnote-ErrorProcessing
-  if (value.is8Bit()) {
-    const LChar* ptr = value.characters8();
+  if (value.Is8Bit()) {
+    const LChar* ptr = value.Characters8();
     const LChar* end = ptr + value.length();
-    return parse(ptr, end);
+    return Parse(ptr, end);
   }
-  const UChar* ptr = value.characters16();
+  const UChar* ptr = value.Characters16();
   const UChar* end = ptr + value.length();
-  return parse(ptr, end);
+  return Parse(ptr, end);
 }
 
-void SVGNumberList::add(SVGPropertyBase* other, SVGElement* contextElement) {
-  SVGNumberList* otherList = toSVGNumberList(other);
+void SVGNumberList::Add(SVGPropertyBase* other, SVGElement* context_element) {
+  SVGNumberList* other_list = ToSVGNumberList(other);
 
-  if (length() != otherList->length())
+  if (length() != other_list->length())
     return;
 
   for (size_t i = 0; i < length(); ++i)
-    at(i)->setValue(at(i)->value() + otherList->at(i)->value());
+    at(i)->SetValue(at(i)->Value() + other_list->at(i)->Value());
 }
 
-void SVGNumberList::calculateAnimatedValue(
-    SVGAnimationElement* animationElement,
+void SVGNumberList::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
     float percentage,
-    unsigned repeatCount,
-    SVGPropertyBase* fromValue,
-    SVGPropertyBase* toValue,
-    SVGPropertyBase* toAtEndOfDurationValue,
-    SVGElement* contextElement) {
-  SVGNumberList* fromList = toSVGNumberList(fromValue);
-  SVGNumberList* toList = toSVGNumberList(toValue);
-  SVGNumberList* toAtEndOfDurationList =
-      toSVGNumberList(toAtEndOfDurationValue);
+    unsigned repeat_count,
+    SVGPropertyBase* from_value,
+    SVGPropertyBase* to_value,
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement* context_element) {
+  SVGNumberList* from_list = ToSVGNumberList(from_value);
+  SVGNumberList* to_list = ToSVGNumberList(to_value);
+  SVGNumberList* to_at_end_of_duration_list =
+      ToSVGNumberList(to_at_end_of_duration_value);
 
-  size_t fromListSize = fromList->length();
-  size_t toListSize = toList->length();
-  size_t toAtEndOfDurationListSize = toAtEndOfDurationList->length();
+  size_t from_list_size = from_list->length();
+  size_t to_list_size = to_list->length();
+  size_t to_at_end_of_duration_list_size = to_at_end_of_duration_list->length();
 
-  if (!adjustFromToListValues(fromList, toList, percentage,
-                              animationElement->getAnimationMode()))
+  if (!AdjustFromToListValues(from_list, to_list, percentage,
+                              animation_element->GetAnimationMode()))
     return;
 
-  for (size_t i = 0; i < toListSize; ++i) {
-    float effectiveFrom = fromListSize ? fromList->at(i)->value() : 0;
-    float effectiveTo = toListSize ? toList->at(i)->value() : 0;
-    float effectiveToAtEnd = i < toAtEndOfDurationListSize
-                                 ? toAtEndOfDurationList->at(i)->value()
-                                 : 0;
+  for (size_t i = 0; i < to_list_size; ++i) {
+    float effective_from = from_list_size ? from_list->at(i)->Value() : 0;
+    float effective_to = to_list_size ? to_list->at(i)->Value() : 0;
+    float effective_to_at_end = i < to_at_end_of_duration_list_size
+                                    ? to_at_end_of_duration_list->at(i)->Value()
+                                    : 0;
 
-    float animated = at(i)->value();
-    animationElement->animateAdditiveNumber(percentage, repeatCount,
-                                            effectiveFrom, effectiveTo,
-                                            effectiveToAtEnd, animated);
-    at(i)->setValue(animated);
+    float animated = at(i)->Value();
+    animation_element->AnimateAdditiveNumber(percentage, repeat_count,
+                                             effective_from, effective_to,
+                                             effective_to_at_end, animated);
+    at(i)->SetValue(animated);
   }
 }
 
-float SVGNumberList::calculateDistance(SVGPropertyBase* to, SVGElement*) {
+float SVGNumberList::CalculateDistance(SVGPropertyBase* to, SVGElement*) {
   // FIXME: Distance calculation is not possible for SVGNumberList right now. We
   // need the distance for every single value.
   return -1;
 }
 
-Vector<float> SVGNumberList::toFloatVector() const {
+Vector<float> SVGNumberList::ToFloatVector() const {
   Vector<float> vec;
-  vec.reserveInitialCapacity(length());
+  vec.ReserveInitialCapacity(length());
   for (size_t i = 0; i < length(); ++i)
-    vec.uncheckedAppend(at(i)->value());
+    vec.UncheckedAppend(at(i)->Value());
   return vec;
 }
 

@@ -10,28 +10,28 @@ namespace blink {
 
 TEST(TextTrackListTest, InvalidateTrackIndexes) {
   // Create and fill the list
-  TextTrackList* list = TextTrackList::create(nullptr);
-  const size_t numTextTracks = 4;
-  TextTrack* textTracks[numTextTracks];
-  for (size_t i = 0; i < numTextTracks; ++i) {
-    textTracks[i] = TextTrack::create("subtitles", "", "");
-    list->append(textTracks[i]);
+  TextTrackList* list = TextTrackList::Create(nullptr);
+  const size_t kNumTextTracks = 4;
+  TextTrack* text_tracks[kNumTextTracks];
+  for (size_t i = 0; i < kNumTextTracks; ++i) {
+    text_tracks[i] = TextTrack::Create("subtitles", "", "");
+    list->Append(text_tracks[i]);
   }
 
   EXPECT_EQ(4u, list->length());
-  EXPECT_EQ(0, textTracks[0]->trackIndex());
-  EXPECT_EQ(1, textTracks[1]->trackIndex());
-  EXPECT_EQ(2, textTracks[2]->trackIndex());
-  EXPECT_EQ(3, textTracks[3]->trackIndex());
+  EXPECT_EQ(0, text_tracks[0]->TrackIndex());
+  EXPECT_EQ(1, text_tracks[1]->TrackIndex());
+  EXPECT_EQ(2, text_tracks[2]->TrackIndex());
+  EXPECT_EQ(3, text_tracks[3]->TrackIndex());
 
   // Remove element from the middle of the list
-  list->remove(textTracks[1]);
+  list->Remove(text_tracks[1]);
 
   EXPECT_EQ(3u, list->length());
-  EXPECT_EQ(nullptr, textTracks[1]->trackList());
-  EXPECT_EQ(0, textTracks[0]->trackIndex());
-  EXPECT_EQ(1, textTracks[2]->trackIndex());
-  EXPECT_EQ(2, textTracks[3]->trackIndex());
+  EXPECT_EQ(nullptr, text_tracks[1]->TrackList());
+  EXPECT_EQ(0, text_tracks[0]->TrackIndex());
+  EXPECT_EQ(1, text_tracks[2]->TrackIndex());
+  EXPECT_EQ(2, text_tracks[3]->TrackIndex());
 }
 
 }  // namespace blink

@@ -43,50 +43,50 @@ namespace blink {
 struct FontRenderStyle {
   DISALLOW_NEW();
   enum {
-    NoPreference = 2,
+    kNoPreference = 2,
   };
 
   FontRenderStyle()
-      : useBitmaps(0),
-        useAutoHint(0),
-        useHinting(0),
-        hintStyle(0),
-        useAntiAlias(0),
-        useSubpixelRendering(0),
-        useSubpixelPositioning(0) {}
+      : use_bitmaps(0),
+        use_auto_hint(0),
+        use_hinting(0),
+        hint_style(0),
+        use_anti_alias(0),
+        use_subpixel_rendering(0),
+        use_subpixel_positioning(0) {}
 
   bool operator==(const FontRenderStyle& a) const {
-    return useBitmaps == a.useBitmaps && useAutoHint == a.useAutoHint &&
-           useHinting == a.useHinting && hintStyle == a.hintStyle &&
-           useAntiAlias == a.useAntiAlias &&
-           useSubpixelRendering == a.useSubpixelRendering &&
-           useSubpixelPositioning == a.useSubpixelPositioning;
+    return use_bitmaps == a.use_bitmaps && use_auto_hint == a.use_auto_hint &&
+           use_hinting == a.use_hinting && hint_style == a.hint_style &&
+           use_anti_alias == a.use_anti_alias &&
+           use_subpixel_rendering == a.use_subpixel_rendering &&
+           use_subpixel_positioning == a.use_subpixel_positioning;
   }
 
-  PLATFORM_EXPORT static void setHinting(SkPaint::Hinting);
-  PLATFORM_EXPORT static void setAutoHint(bool);
-  PLATFORM_EXPORT static void setUseBitmaps(bool);
-  PLATFORM_EXPORT static void setAntiAlias(bool);
-  PLATFORM_EXPORT static void setSubpixelRendering(bool);
+  PLATFORM_EXPORT static void SetHinting(SkPaint::Hinting);
+  PLATFORM_EXPORT static void SetAutoHint(bool);
+  PLATFORM_EXPORT static void SetUseBitmaps(bool);
+  PLATFORM_EXPORT static void SetAntiAlias(bool);
+  PLATFORM_EXPORT static void SetSubpixelRendering(bool);
 
-  static FontRenderStyle querySystem(const CString& family,
-                                     float textSize,
+  static FontRenderStyle QuerySystem(const CString& family,
+                                     float text_size,
                                      SkFontStyle);
-  void applyToPaint(SkPaint&, float deviceScaleFactor) const;
+  void ApplyToPaint(SkPaint&, float device_scale_factor) const;
 
   // Each of the use* members below can take one of three values:
   //   0: off
   //   1: on
   //   NoPreference: no preference expressed
-  char useBitmaps;    // use embedded bitmap strike if possible
-  char useAutoHint;   // use 'auto' hinting (FreeType specific)
-  char useHinting;    // hint glyphs to the pixel grid
-  char hintStyle;     // level of hinting, 0..3
-  char useAntiAlias;  // antialias glyph shapes
+  char use_bitmaps;     // use embedded bitmap strike if possible
+  char use_auto_hint;   // use 'auto' hinting (FreeType specific)
+  char use_hinting;     // hint glyphs to the pixel grid
+  char hint_style;      // level of hinting, 0..3
+  char use_anti_alias;  // antialias glyph shapes
   // use subpixel rendering (partially-filled pixels)
-  char useSubpixelRendering;
+  char use_subpixel_rendering;
   // use subpixel positioning (fractional X positions for glyphs)
-  char useSubpixelPositioning;
+  char use_subpixel_positioning;
 };
 
 }  // namespace blink

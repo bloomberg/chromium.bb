@@ -38,35 +38,35 @@ namespace blink {
 class FloatPolygonTestValue {
  public:
   FloatPolygonTestValue(const float* coordinates,
-                        unsigned coordinatesLength,
-                        WindRule fillRule) {
-    ASSERT(!(coordinatesLength % 2));
+                        unsigned coordinates_length,
+                        WindRule fill_rule) {
+    ASSERT(!(coordinates_length % 2));
     std::unique_ptr<Vector<FloatPoint>> vertices =
-        WTF::wrapUnique(new Vector<FloatPoint>(coordinatesLength / 2));
-    for (unsigned i = 0; i < coordinatesLength; i += 2)
+        WTF::WrapUnique(new Vector<FloatPoint>(coordinates_length / 2));
+    for (unsigned i = 0; i < coordinates_length; i += 2)
       (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
-    m_polygon =
-        WTF::wrapUnique(new FloatPolygon(std::move(vertices), fillRule));
+    polygon_ =
+        WTF::WrapUnique(new FloatPolygon(std::move(vertices), fill_rule));
   }
 
-  const FloatPolygon& polygon() const { return *m_polygon; }
+  const FloatPolygon& Polygon() const { return *polygon_; }
 
  private:
-  std::unique_ptr<FloatPolygon> m_polygon;
+  std::unique_ptr<FloatPolygon> polygon_;
 };
 
 namespace {
 
-bool compareEdgeIndex(const FloatPolygonEdge* edge1,
+bool CompareEdgeIndex(const FloatPolygonEdge* edge1,
                       const FloatPolygonEdge* edge2) {
-  return edge1->edgeIndex() < edge2->edgeIndex();
+  return edge1->EdgeIndex() < edge2->EdgeIndex();
 }
 
 Vector<const FloatPolygonEdge*>
-sortedOverlappingEdges(const FloatPolygon& polygon, float minY, float maxY) {
+SortedOverlappingEdges(const FloatPolygon& polygon, float min_y, float max_y) {
   Vector<const FloatPolygonEdge*> result;
-  polygon.overlappingEdges(minY, maxY, result);
-  std::sort(result.begin(), result.end(), compareEdgeIndex);
+  polygon.OverlappingEdges(min_y, max_y, result);
+  std::sort(result.begin(), result.end(), CompareEdgeIndex);
   return result;
 }
 
@@ -86,94 +86,94 @@ sortedOverlappingEdges(const FloatPolygon& polygon, float minY, float maxY) {
  *                 100,200   200,200
  */
 TEST(FloatPolygonTest, basics) {
-  const float triangleCoordinates[] = {200, 100, 200, 200, 100, 200};
-  FloatPolygonTestValue triangleTestValue(
-      triangleCoordinates, SIZEOF_ARRAY(triangleCoordinates), RULE_NONZERO);
-  const FloatPolygon& triangle = triangleTestValue.polygon();
+  const float kTriangleCoordinates[] = {200, 100, 200, 200, 100, 200};
+  FloatPolygonTestValue triangle_test_value(
+      kTriangleCoordinates, SIZEOF_ARRAY(kTriangleCoordinates), RULE_NONZERO);
+  const FloatPolygon& triangle = triangle_test_value.Polygon();
 
-  EXPECT_EQ(RULE_NONZERO, triangle.fillRule());
-  EXPECT_FALSE(triangle.isEmpty());
+  EXPECT_EQ(RULE_NONZERO, triangle.FillRule());
+  EXPECT_FALSE(triangle.IsEmpty());
 
-  EXPECT_EQ(3u, triangle.numberOfVertices());
-  EXPECT_EQ(FloatPoint(200, 100), triangle.vertexAt(0));
-  EXPECT_EQ(FloatPoint(200, 200), triangle.vertexAt(1));
-  EXPECT_EQ(FloatPoint(100, 200), triangle.vertexAt(2));
+  EXPECT_EQ(3u, triangle.NumberOfVertices());
+  EXPECT_EQ(FloatPoint(200, 100), triangle.VertexAt(0));
+  EXPECT_EQ(FloatPoint(200, 200), triangle.VertexAt(1));
+  EXPECT_EQ(FloatPoint(100, 200), triangle.VertexAt(2));
 
-  EXPECT_EQ(3u, triangle.numberOfEdges());
-  EXPECT_EQ(FloatPoint(200, 100), triangle.edgeAt(0).vertex1());
-  EXPECT_EQ(FloatPoint(200, 200), triangle.edgeAt(0).vertex2());
-  EXPECT_EQ(FloatPoint(200, 200), triangle.edgeAt(1).vertex1());
-  EXPECT_EQ(FloatPoint(100, 200), triangle.edgeAt(1).vertex2());
-  EXPECT_EQ(FloatPoint(100, 200), triangle.edgeAt(2).vertex1());
-  EXPECT_EQ(FloatPoint(200, 100), triangle.edgeAt(2).vertex2());
+  EXPECT_EQ(3u, triangle.NumberOfEdges());
+  EXPECT_EQ(FloatPoint(200, 100), triangle.EdgeAt(0).Vertex1());
+  EXPECT_EQ(FloatPoint(200, 200), triangle.EdgeAt(0).Vertex2());
+  EXPECT_EQ(FloatPoint(200, 200), triangle.EdgeAt(1).Vertex1());
+  EXPECT_EQ(FloatPoint(100, 200), triangle.EdgeAt(1).Vertex2());
+  EXPECT_EQ(FloatPoint(100, 200), triangle.EdgeAt(2).Vertex1());
+  EXPECT_EQ(FloatPoint(200, 100), triangle.EdgeAt(2).Vertex2());
 
-  EXPECT_EQ(0u, triangle.edgeAt(0).vertexIndex1());
-  EXPECT_EQ(1u, triangle.edgeAt(0).vertexIndex2());
-  EXPECT_EQ(1u, triangle.edgeAt(1).vertexIndex1());
-  EXPECT_EQ(2u, triangle.edgeAt(1).vertexIndex2());
-  EXPECT_EQ(2u, triangle.edgeAt(2).vertexIndex1());
-  EXPECT_EQ(0u, triangle.edgeAt(2).vertexIndex2());
+  EXPECT_EQ(0u, triangle.EdgeAt(0).VertexIndex1());
+  EXPECT_EQ(1u, triangle.EdgeAt(0).VertexIndex2());
+  EXPECT_EQ(1u, triangle.EdgeAt(1).VertexIndex1());
+  EXPECT_EQ(2u, triangle.EdgeAt(1).VertexIndex2());
+  EXPECT_EQ(2u, triangle.EdgeAt(2).VertexIndex1());
+  EXPECT_EQ(0u, triangle.EdgeAt(2).VertexIndex2());
 
-  EXPECT_EQ(200, triangle.edgeAt(0).minX());
-  EXPECT_EQ(200, triangle.edgeAt(0).maxX());
-  EXPECT_EQ(100, triangle.edgeAt(1).minX());
-  EXPECT_EQ(200, triangle.edgeAt(1).maxX());
-  EXPECT_EQ(100, triangle.edgeAt(2).minX());
-  EXPECT_EQ(200, triangle.edgeAt(2).maxX());
+  EXPECT_EQ(200, triangle.EdgeAt(0).MinX());
+  EXPECT_EQ(200, triangle.EdgeAt(0).MaxX());
+  EXPECT_EQ(100, triangle.EdgeAt(1).MinX());
+  EXPECT_EQ(200, triangle.EdgeAt(1).MaxX());
+  EXPECT_EQ(100, triangle.EdgeAt(2).MinX());
+  EXPECT_EQ(200, triangle.EdgeAt(2).MaxX());
 
-  EXPECT_EQ(100, triangle.edgeAt(0).minY());
-  EXPECT_EQ(200, triangle.edgeAt(0).maxY());
-  EXPECT_EQ(200, triangle.edgeAt(1).minY());
-  EXPECT_EQ(200, triangle.edgeAt(1).maxY());
-  EXPECT_EQ(100, triangle.edgeAt(2).minY());
-  EXPECT_EQ(200, triangle.edgeAt(2).maxY());
+  EXPECT_EQ(100, triangle.EdgeAt(0).MinY());
+  EXPECT_EQ(200, triangle.EdgeAt(0).MaxY());
+  EXPECT_EQ(200, triangle.EdgeAt(1).MinY());
+  EXPECT_EQ(200, triangle.EdgeAt(1).MaxY());
+  EXPECT_EQ(100, triangle.EdgeAt(2).MinY());
+  EXPECT_EQ(200, triangle.EdgeAt(2).MaxY());
 
-  EXPECT_EQ(0u, triangle.edgeAt(0).edgeIndex());
-  EXPECT_EQ(1u, triangle.edgeAt(1).edgeIndex());
-  EXPECT_EQ(2u, triangle.edgeAt(2).edgeIndex());
+  EXPECT_EQ(0u, triangle.EdgeAt(0).EdgeIndex());
+  EXPECT_EQ(1u, triangle.EdgeAt(1).EdgeIndex());
+  EXPECT_EQ(2u, triangle.EdgeAt(2).EdgeIndex());
 
-  EXPECT_EQ(2u, triangle.edgeAt(0).previousEdge().edgeIndex());
-  EXPECT_EQ(1u, triangle.edgeAt(0).nextEdge().edgeIndex());
-  EXPECT_EQ(0u, triangle.edgeAt(1).previousEdge().edgeIndex());
-  EXPECT_EQ(2u, triangle.edgeAt(1).nextEdge().edgeIndex());
-  EXPECT_EQ(1u, triangle.edgeAt(2).previousEdge().edgeIndex());
-  EXPECT_EQ(0u, triangle.edgeAt(2).nextEdge().edgeIndex());
+  EXPECT_EQ(2u, triangle.EdgeAt(0).PreviousEdge().EdgeIndex());
+  EXPECT_EQ(1u, triangle.EdgeAt(0).NextEdge().EdgeIndex());
+  EXPECT_EQ(0u, triangle.EdgeAt(1).PreviousEdge().EdgeIndex());
+  EXPECT_EQ(2u, triangle.EdgeAt(1).NextEdge().EdgeIndex());
+  EXPECT_EQ(1u, triangle.EdgeAt(2).PreviousEdge().EdgeIndex());
+  EXPECT_EQ(0u, triangle.EdgeAt(2).NextEdge().EdgeIndex());
 
-  EXPECT_EQ(FloatRect(100, 100, 100, 100), triangle.boundingBox());
+  EXPECT_EQ(FloatRect(100, 100, 100, 100), triangle.BoundingBox());
 
-  Vector<const FloatPolygonEdge*> resultA =
-      sortedOverlappingEdges(triangle, 100, 200);
-  EXPECT_EQ(3u, resultA.size());
-  if (resultA.size() == 3) {
-    EXPECT_EQ(0u, resultA[0]->edgeIndex());
-    EXPECT_EQ(1u, resultA[1]->edgeIndex());
-    EXPECT_EQ(2u, resultA[2]->edgeIndex());
+  Vector<const FloatPolygonEdge*> result_a =
+      SortedOverlappingEdges(triangle, 100, 200);
+  EXPECT_EQ(3u, result_a.size());
+  if (result_a.size() == 3) {
+    EXPECT_EQ(0u, result_a[0]->EdgeIndex());
+    EXPECT_EQ(1u, result_a[1]->EdgeIndex());
+    EXPECT_EQ(2u, result_a[2]->EdgeIndex());
   }
 
-  Vector<const FloatPolygonEdge*> resultB =
-      sortedOverlappingEdges(triangle, 200, 200);
-  EXPECT_EQ(3u, resultB.size());
-  if (resultB.size() == 3) {
-    EXPECT_EQ(0u, resultB[0]->edgeIndex());
-    EXPECT_EQ(1u, resultB[1]->edgeIndex());
-    EXPECT_EQ(2u, resultB[2]->edgeIndex());
+  Vector<const FloatPolygonEdge*> result_b =
+      SortedOverlappingEdges(triangle, 200, 200);
+  EXPECT_EQ(3u, result_b.size());
+  if (result_b.size() == 3) {
+    EXPECT_EQ(0u, result_b[0]->EdgeIndex());
+    EXPECT_EQ(1u, result_b[1]->EdgeIndex());
+    EXPECT_EQ(2u, result_b[2]->EdgeIndex());
   }
 
-  Vector<const FloatPolygonEdge*> resultC =
-      sortedOverlappingEdges(triangle, 100, 150);
-  EXPECT_EQ(2u, resultC.size());
-  if (resultC.size() == 2) {
-    EXPECT_EQ(0u, resultC[0]->edgeIndex());
-    EXPECT_EQ(2u, resultC[1]->edgeIndex());
+  Vector<const FloatPolygonEdge*> result_c =
+      SortedOverlappingEdges(triangle, 100, 150);
+  EXPECT_EQ(2u, result_c.size());
+  if (result_c.size() == 2) {
+    EXPECT_EQ(0u, result_c[0]->EdgeIndex());
+    EXPECT_EQ(2u, result_c[1]->EdgeIndex());
   }
 
-  Vector<const FloatPolygonEdge*> resultD =
-      sortedOverlappingEdges(triangle, 201, 300);
-  EXPECT_EQ(0u, resultD.size());
+  Vector<const FloatPolygonEdge*> result_d =
+      SortedOverlappingEdges(triangle, 201, 300);
+  EXPECT_EQ(0u, result_d.size());
 
-  Vector<const FloatPolygonEdge*> resultE =
-      sortedOverlappingEdges(triangle, 98, 99);
-  EXPECT_EQ(0u, resultE.size());
+  Vector<const FloatPolygonEdge*> result_e =
+      SortedOverlappingEdges(triangle, 98, 99);
+  EXPECT_EQ(0u, result_e.size());
 }
 
 /**
@@ -187,20 +187,20 @@ TEST(FloatPolygonTest, basics) {
  *                 100,200   200,200
  */
 TEST(FloatPolygonTest, triangle_nonzero) {
-  const float triangleCoordinates[] = {200, 100, 200, 200, 100, 200};
-  FloatPolygonTestValue triangleTestValue(
-      triangleCoordinates, SIZEOF_ARRAY(triangleCoordinates), RULE_NONZERO);
-  const FloatPolygon& triangle = triangleTestValue.polygon();
+  const float kTriangleCoordinates[] = {200, 100, 200, 200, 100, 200};
+  FloatPolygonTestValue triangle_test_value(
+      kTriangleCoordinates, SIZEOF_ARRAY(kTriangleCoordinates), RULE_NONZERO);
+  const FloatPolygon& triangle = triangle_test_value.Polygon();
 
-  EXPECT_EQ(RULE_NONZERO, triangle.fillRule());
-  EXPECT_TRUE(triangle.contains(FloatPoint(200, 100)));
-  EXPECT_TRUE(triangle.contains(FloatPoint(200, 200)));
-  EXPECT_TRUE(triangle.contains(FloatPoint(100, 200)));
-  EXPECT_TRUE(triangle.contains(FloatPoint(150, 150)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(100, 100)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(149, 149)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(150, 200.5)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(201, 200.5)));
+  EXPECT_EQ(RULE_NONZERO, triangle.FillRule());
+  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 100)));
+  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 200)));
+  EXPECT_TRUE(triangle.Contains(FloatPoint(100, 200)));
+  EXPECT_TRUE(triangle.Contains(FloatPoint(150, 150)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(100, 100)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(149, 149)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(150, 200.5)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(201, 200.5)));
 }
 
 /**
@@ -214,48 +214,48 @@ TEST(FloatPolygonTest, triangle_nonzero) {
  *                 100,200   200,200
  */
 TEST(FloatPolygonTest, triangle_evenodd) {
-  const float triangleCoordinates[] = {200, 100, 200, 200, 100, 200};
-  FloatPolygonTestValue triangleTestValue(
-      triangleCoordinates, SIZEOF_ARRAY(triangleCoordinates), RULE_EVENODD);
-  const FloatPolygon& triangle = triangleTestValue.polygon();
+  const float kTriangleCoordinates[] = {200, 100, 200, 200, 100, 200};
+  FloatPolygonTestValue triangle_test_value(
+      kTriangleCoordinates, SIZEOF_ARRAY(kTriangleCoordinates), RULE_EVENODD);
+  const FloatPolygon& triangle = triangle_test_value.Polygon();
 
-  EXPECT_EQ(RULE_EVENODD, triangle.fillRule());
-  EXPECT_TRUE(triangle.contains(FloatPoint(200, 100)));
-  EXPECT_TRUE(triangle.contains(FloatPoint(200, 200)));
-  EXPECT_TRUE(triangle.contains(FloatPoint(100, 200)));
-  EXPECT_TRUE(triangle.contains(FloatPoint(150, 150)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(100, 100)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(149, 149)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(150, 200.5)));
-  EXPECT_FALSE(triangle.contains(FloatPoint(201, 200.5)));
+  EXPECT_EQ(RULE_EVENODD, triangle.FillRule());
+  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 100)));
+  EXPECT_TRUE(triangle.Contains(FloatPoint(200, 200)));
+  EXPECT_TRUE(triangle.Contains(FloatPoint(100, 200)));
+  EXPECT_TRUE(triangle.Contains(FloatPoint(150, 150)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(100, 100)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(149, 149)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(150, 200.5)));
+  EXPECT_FALSE(triangle.Contains(FloatPoint(201, 200.5)));
 }
 
-#define TEST_EMPTY(coordinates)                                         \
-  {                                                                     \
-    FloatPolygonTestValue emptyPolygonTestValue(                        \
-        coordinates, SIZEOF_ARRAY(coordinates), RULE_NONZERO);          \
-    const FloatPolygon& emptyPolygon = emptyPolygonTestValue.polygon(); \
-    EXPECT_TRUE(emptyPolygon.isEmpty());                                \
+#define TEST_EMPTY(coordinates)                                             \
+  {                                                                         \
+    FloatPolygonTestValue empty_polygon_test_value(                         \
+        coordinates, SIZEOF_ARRAY(coordinates), RULE_NONZERO);              \
+    const FloatPolygon& empty_polygon = empty_polygon_test_value.Polygon(); \
+    EXPECT_TRUE(empty_polygon.IsEmpty());                                   \
   }
 
 TEST(FloatPolygonTest, emptyPolygons) {
-  const float emptyCoordinates1[] = {0, 0};
-  TEST_EMPTY(emptyCoordinates1);
+  const float kEmptyCoordinates1[] = {0, 0};
+  TEST_EMPTY(kEmptyCoordinates1);
 
-  const float emptyCoordinates2[] = {0, 0, 1, 1};
-  TEST_EMPTY(emptyCoordinates2);
+  const float kEmptyCoordinates2[] = {0, 0, 1, 1};
+  TEST_EMPTY(kEmptyCoordinates2);
 
-  const float emptyCoordinates3[] = {0, 0, 1, 1, 2, 2, 3, 3};
-  TEST_EMPTY(emptyCoordinates3);
+  const float kEmptyCoordinates3[] = {0, 0, 1, 1, 2, 2, 3, 3};
+  TEST_EMPTY(kEmptyCoordinates3);
 
-  const float emptyCoordinates4[] = {0, 0, 1, 1, 2, 2, 3, 3, 1, 1};
-  TEST_EMPTY(emptyCoordinates4);
+  const float kEmptyCoordinates4[] = {0, 0, 1, 1, 2, 2, 3, 3, 1, 1};
+  TEST_EMPTY(kEmptyCoordinates4);
 
-  const float emptyCoordinates5[] = {0, 0, 0, 1, 0, 2, 0, 3, 0, 1};
-  TEST_EMPTY(emptyCoordinates5);
+  const float kEmptyCoordinates5[] = {0, 0, 0, 1, 0, 2, 0, 3, 0, 1};
+  TEST_EMPTY(kEmptyCoordinates5);
 
-  const float emptyCoordinates6[] = {0, 0, 1, 0, 2, 0, 3, 0, 1, 0};
-  TEST_EMPTY(emptyCoordinates6);
+  const float kEmptyCoordinates6[] = {0, 0, 1, 0, 2, 0, 3, 0, 1, 0};
+  TEST_EMPTY(kEmptyCoordinates6);
 }
 
 /*
@@ -270,20 +270,21 @@ TEST(FloatPolygonTest, emptyPolygons) {
  *     100,150          300,150
  */
 TEST(FloatPolygonTest, trapezoid) {
-  const float trapezoidCoordinates[] = {100, 150, 300, 150, 250, 100, 150, 100};
-  FloatPolygonTestValue trapezoidTestValue(
-      trapezoidCoordinates, SIZEOF_ARRAY(trapezoidCoordinates), RULE_EVENODD);
-  const FloatPolygon& trapezoid = trapezoidTestValue.polygon();
+  const float kTrapezoidCoordinates[] = {100, 150, 300, 150,
+                                         250, 100, 150, 100};
+  FloatPolygonTestValue trapezoid_test_value(
+      kTrapezoidCoordinates, SIZEOF_ARRAY(kTrapezoidCoordinates), RULE_EVENODD);
+  const FloatPolygon& trapezoid = trapezoid_test_value.Polygon();
 
-  EXPECT_FALSE(trapezoid.isEmpty());
-  EXPECT_EQ(4u, trapezoid.numberOfVertices());
-  EXPECT_EQ(FloatRect(100, 100, 200, 50), trapezoid.boundingBox());
+  EXPECT_FALSE(trapezoid.IsEmpty());
+  EXPECT_EQ(4u, trapezoid.NumberOfVertices());
+  EXPECT_EQ(FloatRect(100, 100, 200, 50), trapezoid.BoundingBox());
 
-  EXPECT_TRUE(trapezoid.contains(FloatPoint(150, 100)));
-  EXPECT_TRUE(trapezoid.contains(FloatPoint(150, 101)));
-  EXPECT_TRUE(trapezoid.contains(FloatPoint(200, 125)));
-  EXPECT_FALSE(trapezoid.contains(FloatPoint(149, 100)));
-  EXPECT_FALSE(trapezoid.contains(FloatPoint(301, 150)));
+  EXPECT_TRUE(trapezoid.Contains(FloatPoint(150, 100)));
+  EXPECT_TRUE(trapezoid.Contains(FloatPoint(150, 101)));
+  EXPECT_TRUE(trapezoid.Contains(FloatPoint(200, 125)));
+  EXPECT_FALSE(trapezoid.Contains(FloatPoint(149, 100)));
+  EXPECT_FALSE(trapezoid.Contains(FloatPoint(301, 150)));
 }
 
 /*
@@ -305,36 +306,36 @@ TEST(FloatPolygonTest, trapezoid) {
  *    100,250  150,250   200,250   250,250
  */
 TEST(FloatPolygonTest, rectilinear) {
-  const float hCoordinates[] = {100, 100, 150, 100, 150, 150, 200, 150,
-                                200, 100, 250, 100, 250, 250, 200, 250,
-                                200, 200, 150, 200, 150, 250, 100, 250};
-  FloatPolygonTestValue hTestValue(hCoordinates, SIZEOF_ARRAY(hCoordinates),
-                                   RULE_NONZERO);
-  const FloatPolygon& h = hTestValue.polygon();
+  const float kHCoordinates[] = {100, 100, 150, 100, 150, 150, 200, 150,
+                                 200, 100, 250, 100, 250, 250, 200, 250,
+                                 200, 200, 150, 200, 150, 250, 100, 250};
+  FloatPolygonTestValue h_test_value(kHCoordinates, SIZEOF_ARRAY(kHCoordinates),
+                                     RULE_NONZERO);
+  const FloatPolygon& h = h_test_value.Polygon();
 
-  EXPECT_FALSE(h.isEmpty());
-  EXPECT_EQ(12u, h.numberOfVertices());
-  EXPECT_EQ(FloatRect(100, 100, 150, 150), h.boundingBox());
+  EXPECT_FALSE(h.IsEmpty());
+  EXPECT_EQ(12u, h.NumberOfVertices());
+  EXPECT_EQ(FloatRect(100, 100, 150, 150), h.BoundingBox());
 
-  EXPECT_TRUE(h.contains(FloatPoint(100, 100)));
-  EXPECT_TRUE(h.contains(FloatPoint(125, 100)));
-  EXPECT_TRUE(h.contains(FloatPoint(125, 125)));
-  EXPECT_TRUE(h.contains(FloatPoint(150, 100)));
-  EXPECT_TRUE(h.contains(FloatPoint(200, 200)));
-  EXPECT_TRUE(h.contains(FloatPoint(225, 225)));
-  EXPECT_TRUE(h.contains(FloatPoint(250, 250)));
-  EXPECT_TRUE(h.contains(FloatPoint(100, 250)));
-  EXPECT_TRUE(h.contains(FloatPoint(125, 250)));
+  EXPECT_TRUE(h.Contains(FloatPoint(100, 100)));
+  EXPECT_TRUE(h.Contains(FloatPoint(125, 100)));
+  EXPECT_TRUE(h.Contains(FloatPoint(125, 125)));
+  EXPECT_TRUE(h.Contains(FloatPoint(150, 100)));
+  EXPECT_TRUE(h.Contains(FloatPoint(200, 200)));
+  EXPECT_TRUE(h.Contains(FloatPoint(225, 225)));
+  EXPECT_TRUE(h.Contains(FloatPoint(250, 250)));
+  EXPECT_TRUE(h.Contains(FloatPoint(100, 250)));
+  EXPECT_TRUE(h.Contains(FloatPoint(125, 250)));
 
-  EXPECT_FALSE(h.contains(FloatPoint(99, 100)));
-  EXPECT_FALSE(h.contains(FloatPoint(251, 100)));
-  EXPECT_FALSE(h.contains(FloatPoint(151, 100)));
-  EXPECT_FALSE(h.contains(FloatPoint(199, 100)));
-  EXPECT_FALSE(h.contains(FloatPoint(175, 125)));
-  EXPECT_FALSE(h.contains(FloatPoint(151, 250)));
-  EXPECT_FALSE(h.contains(FloatPoint(199, 250)));
-  EXPECT_FALSE(h.contains(FloatPoint(199, 250)));
-  EXPECT_FALSE(h.contains(FloatPoint(175, 225)));
+  EXPECT_FALSE(h.Contains(FloatPoint(99, 100)));
+  EXPECT_FALSE(h.Contains(FloatPoint(251, 100)));
+  EXPECT_FALSE(h.Contains(FloatPoint(151, 100)));
+  EXPECT_FALSE(h.Contains(FloatPoint(199, 100)));
+  EXPECT_FALSE(h.Contains(FloatPoint(175, 125)));
+  EXPECT_FALSE(h.Contains(FloatPoint(151, 250)));
+  EXPECT_FALSE(h.Contains(FloatPoint(199, 250)));
+  EXPECT_FALSE(h.Contains(FloatPoint(199, 250)));
+  EXPECT_FALSE(h.Contains(FloatPoint(175, 225)));
 }
 
 }  // namespace blink

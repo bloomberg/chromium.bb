@@ -23,16 +23,16 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
       new base::trace_event::TracedValue());
 
   std::unique_ptr<WebProcessMemoryDump> wpmd1(new WebProcessMemoryDump());
-  auto wmad1 = wpmd1->createMemoryAllocatorDump("1/1");
-  auto wmad2 = wpmd1->createMemoryAllocatorDump("1/2");
-  ASSERT_EQ(wmad1, wpmd1->getMemoryAllocatorDump("1/1"));
-  ASSERT_EQ(wmad2, wpmd1->getMemoryAllocatorDump("1/2"));
+  auto wmad1 = wpmd1->CreateMemoryAllocatorDump("1/1");
+  auto wmad2 = wpmd1->CreateMemoryAllocatorDump("1/2");
+  ASSERT_EQ(wmad1, wpmd1->GetMemoryAllocatorDump("1/1"));
+  ASSERT_EQ(wmad2, wpmd1->GetMemoryAllocatorDump("1/2"));
 
   std::unique_ptr<WebProcessMemoryDump> wpmd2(new WebProcessMemoryDump());
-  wpmd2->createMemoryAllocatorDump("2/1");
-  wpmd2->createMemoryAllocatorDump("2/2");
+  wpmd2->CreateMemoryAllocatorDump("2/1");
+  wpmd2->CreateMemoryAllocatorDump("2/2");
 
-  wpmd1->takeAllDumpsFrom(wpmd2.get());
+  wpmd1->TakeAllDumpsFrom(wpmd2.get());
 
   // Make sure that wpmd2 still owns its own PMD, even if empty.
   ASSERT_NE(static_cast<base::trace_event::ProcessMemoryDump*>(nullptr),
@@ -42,13 +42,13 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   ASSERT_TRUE(wpmd2->process_memory_dump()->allocator_dumps().empty());
 
   // Make sure that wpmd2 is still usable after it has been emptied.
-  auto wmad = wpmd2->createMemoryAllocatorDump("2/new");
-  wmad->addScalar("attr_name", "bytes", 42);
-  wmad->addScalarF("attr_name_2", "rate", 42.0f);
+  auto wmad = wpmd2->CreateMemoryAllocatorDump("2/new");
+  wmad->AddScalar("attr_name", "bytes", 42);
+  wmad->AddScalarF("attr_name_2", "rate", 42.0f);
   ASSERT_EQ(1u, wpmd2->process_memory_dump()->allocator_dumps().size());
   auto mad = wpmd2->process_memory_dump()->GetAllocatorDump("2/new");
   ASSERT_NE(static_cast<base::trace_event::MemoryAllocatorDump*>(nullptr), mad);
-  ASSERT_EQ(wmad, wpmd2->getMemoryAllocatorDump("2/new"));
+  ASSERT_EQ(wmad, wpmd2->GetMemoryAllocatorDump("2/new"));
 
   // Check that the attributes are propagated correctly.
   auto raw_attrs = mad->attributes_for_testing()->ToBaseValue();
@@ -85,17 +85,17 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
 
   // Check that also the WMAD wrappers got merged.
   blink::WebMemoryAllocatorDump* null_wmad = nullptr;
-  ASSERT_NE(null_wmad, wpmd1->getMemoryAllocatorDump("1/1"));
-  ASSERT_NE(null_wmad, wpmd1->getMemoryAllocatorDump("1/2"));
-  ASSERT_NE(null_wmad, wpmd1->getMemoryAllocatorDump("2/1"));
-  ASSERT_NE(null_wmad, wpmd1->getMemoryAllocatorDump("2/2"));
+  ASSERT_NE(null_wmad, wpmd1->GetMemoryAllocatorDump("1/1"));
+  ASSERT_NE(null_wmad, wpmd1->GetMemoryAllocatorDump("1/2"));
+  ASSERT_NE(null_wmad, wpmd1->GetMemoryAllocatorDump("2/1"));
+  ASSERT_NE(null_wmad, wpmd1->GetMemoryAllocatorDump("2/2"));
 
   // Check that AsValueInto() doesn't cause a crash.
   traced_value.reset(new base::trace_event::TracedValue);
   wpmd1->process_memory_dump()->AsValueInto(traced_value.get());
 
   // Check that clear() actually works.
-  wpmd1->clear();
+  wpmd1->Clear();
   ASSERT_TRUE(wpmd1->process_memory_dump()->allocator_dumps().empty());
   ASSERT_EQ(nullptr, wpmd1->process_memory_dump()->GetAllocatorDump("1/1"));
   ASSERT_EQ(nullptr, wpmd1->process_memory_dump()->GetAllocatorDump("2/1"));
@@ -107,28 +107,28 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   // Check if a WebMemoryAllocatorDump created with guid, has correct guid.
   blink::WebMemoryAllocatorDumpGuid guid =
       base::trace_event::MemoryAllocatorDumpGuid("id_1").ToUint64();
-  auto wmad3 = wpmd1->createMemoryAllocatorDump("1/3", guid);
-  ASSERT_EQ(wmad3->guid(), guid);
-  ASSERT_EQ(wmad3, wpmd1->getMemoryAllocatorDump("1/3"));
+  auto wmad3 = wpmd1->CreateMemoryAllocatorDump("1/3", guid);
+  ASSERT_EQ(wmad3->Guid(), guid);
+  ASSERT_EQ(wmad3, wpmd1->GetMemoryAllocatorDump("1/3"));
 
   // Check that AddOwnershipEdge is propagated correctly.
-  auto wmad4 = wpmd1->createMemoryAllocatorDump("1/4");
-  wpmd1->addOwnershipEdge(wmad4->guid(), guid);
+  auto wmad4 = wpmd1->CreateMemoryAllocatorDump("1/4");
+  wpmd1->AddOwnershipEdge(wmad4->Guid(), guid);
   auto allocator_dumps_edges =
       wpmd1->process_memory_dump()->allocator_dumps_edges();
   ASSERT_EQ(1u, allocator_dumps_edges.size());
-  ASSERT_EQ(wmad4->guid(), allocator_dumps_edges[0].source.ToUint64());
+  ASSERT_EQ(wmad4->Guid(), allocator_dumps_edges[0].source.ToUint64());
   ASSERT_EQ(guid, allocator_dumps_edges[0].target.ToUint64());
 
   // Check that createDumpAdapterForSkia() works.
-  auto skia_trace_memory_dump = wpmd1->createDumpAdapterForSkia("1/skia");
+  auto skia_trace_memory_dump = wpmd1->CreateDumpAdapterForSkia("1/skia");
   ASSERT_TRUE(skia_trace_memory_dump);
 
   // Check that createDiscardableMemoryAllocatorDump() works.
   base::TestDiscardableMemoryAllocator discardable_memory_allocator;
   auto discardable_memory =
       discardable_memory_allocator.AllocateLockedDiscardableMemory(1024);
-  wpmd1->createDiscardableMemoryAllocatorDump("1/discardable",
+  wpmd1->CreateDiscardableMemoryAllocatorDump("1/discardable",
                                               discardable_memory.get());
   discardable_memory->Unlock();
 

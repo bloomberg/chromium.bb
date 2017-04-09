@@ -27,91 +27,91 @@ using PublicState = BytesConsumer::PublicState;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
 
-String toString(const Vector<char>& v) {
-  return String(v.data(), v.size());
+String ToString(const Vector<char>& v) {
+  return String(v.Data(), v.size());
 }
 
 class TestThreadableLoader : public ThreadableLoader {
  public:
   ~TestThreadableLoader() override {
-    EXPECT_FALSE(m_shouldBeCancelled && !m_isCancelled)
+    EXPECT_FALSE(should_be_cancelled_ && !is_cancelled_)
         << "The loader should be cancelled but is not cancelled.";
   }
 
-  void start(const ResourceRequest& request) override { m_isStarted = true; }
+  void Start(const ResourceRequest& request) override { is_started_ = true; }
 
-  void overrideTimeout(unsigned long timeoutMilliseconds) override {
+  void OverrideTimeout(unsigned long timeout_milliseconds) override {
     ADD_FAILURE() << "overrideTimeout should not be called.";
   }
 
-  void cancel() override { m_isCancelled = true; }
+  void Cancel() override { is_cancelled_ = true; }
 
-  bool isStarted() const { return m_isStarted; }
-  bool isCancelled() const { return m_isCancelled; }
-  void setShouldBeCancelled() { m_shouldBeCancelled = true; }
+  bool IsStarted() const { return is_started_; }
+  bool IsCancelled() const { return is_cancelled_; }
+  void SetShouldBeCancelled() { should_be_cancelled_ = true; }
 
  private:
-  bool m_isStarted = false;
-  bool m_isCancelled = false;
-  bool m_shouldBeCancelled = false;
+  bool is_started_ = false;
+  bool is_cancelled_ = false;
+  bool should_be_cancelled_ = false;
 };
 
 class SyncLoadingTestThreadableLoader : public ThreadableLoader {
  public:
-  ~SyncLoadingTestThreadableLoader() override { DCHECK(!m_handle); }
+  ~SyncLoadingTestThreadableLoader() override { DCHECK(!handle_); }
 
-  void start(const ResourceRequest& request) override {
-    m_isStarted = true;
-    m_client->didReceiveResponse(0, ResourceResponse(), std::move(m_handle));
-    m_client->didFinishLoading(0, 0);
+  void Start(const ResourceRequest& request) override {
+    is_started_ = true;
+    client_->DidReceiveResponse(0, ResourceResponse(), std::move(handle_));
+    client_->DidFinishLoading(0, 0);
   }
 
-  void overrideTimeout(unsigned long timeoutMilliseconds) override {
+  void OverrideTimeout(unsigned long timeout_milliseconds) override {
     ADD_FAILURE() << "overrideTimeout should not be called.";
   }
 
-  void cancel() override { m_isCancelled = true; }
+  void Cancel() override { is_cancelled_ = true; }
 
-  bool isStarted() const { return m_isStarted; }
-  bool isCancelled() const { return m_isCancelled; }
+  bool IsStarted() const { return is_started_; }
+  bool IsCancelled() const { return is_cancelled_; }
 
-  void setClient(ThreadableLoaderClient* client) { m_client = client; }
+  void SetClient(ThreadableLoaderClient* client) { client_ = client; }
 
-  void setHandle(std::unique_ptr<WebDataConsumerHandle> handle) {
-    m_handle = std::move(handle);
+  void SetHandle(std::unique_ptr<WebDataConsumerHandle> handle) {
+    handle_ = std::move(handle);
   }
 
  private:
-  bool m_isStarted = false;
-  bool m_isCancelled = false;
-  ThreadableLoaderClient* m_client = nullptr;
-  std::unique_ptr<WebDataConsumerHandle> m_handle;
+  bool is_started_ = false;
+  bool is_cancelled_ = false;
+  ThreadableLoaderClient* client_ = nullptr;
+  std::unique_ptr<WebDataConsumerHandle> handle_;
 };
 
 class SyncErrorTestThreadableLoader : public ThreadableLoader {
  public:
   ~SyncErrorTestThreadableLoader() override {}
 
-  void start(const ResourceRequest& request) override {
-    m_isStarted = true;
-    m_client->didFail(ResourceError());
+  void Start(const ResourceRequest& request) override {
+    is_started_ = true;
+    client_->DidFail(ResourceError());
   }
 
-  void overrideTimeout(unsigned long timeoutMilliseconds) override {
+  void OverrideTimeout(unsigned long timeout_milliseconds) override {
     ADD_FAILURE() << "overrideTimeout should not be called.";
   }
 
-  void cancel() override { m_isCancelled = true; }
+  void Cancel() override { is_cancelled_ = true; }
 
-  bool isStarted() const { return m_isStarted; }
-  bool isCancelled() const { return m_isCancelled; }
+  bool IsStarted() const { return is_started_; }
+  bool IsCancelled() const { return is_cancelled_; }
 
-  void setClient(ThreadableLoaderClient* client) { m_client = client; }
+  void SetClient(ThreadableLoaderClient* client) { client_ = client; }
 
  private:
-  bool m_isStarted = false;
-  bool m_isCancelled = false;
-  ThreadableLoaderClient* m_client = nullptr;
+  bool is_started_ = false;
+  bool is_cancelled_ = false;
+  ThreadableLoaderClient* client_ = nullptr;
 };
 
 class TestClient final : public GarbageCollectedFinalized<TestClient>,
@@ -119,409 +119,409 @@ class TestClient final : public GarbageCollectedFinalized<TestClient>,
   USING_GARBAGE_COLLECTED_MIXIN(TestClient);
 
  public:
-  void onStateChange() override { ++m_numOnStateChangeCalled; }
-  int numOnStateChangeCalled() const { return m_numOnStateChangeCalled; }
+  void OnStateChange() override { ++num_on_state_change_called_; }
+  int NumOnStateChangeCalled() const { return num_on_state_change_called_; }
 
  private:
-  int m_numOnStateChangeCalled = 0;
+  int num_on_state_change_called_ = 0;
 };
 
 class BlobBytesConsumerTest : public ::testing::Test {
  public:
   BlobBytesConsumerTest()
-      : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1))) {}
+      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
 
-  Document& document() { return m_dummyPageHolder->document(); }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(BlobBytesConsumerTest, TwoPhaseRead) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
-  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::create();
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Data, "world"));
-  src->add(Command(Command::Done));
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
+  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kDone));
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
   const char* buffer = nullptr;
   size_t available = 0;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_FALSE(consumer->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize));
-  EXPECT_FALSE(consumer->drainAsFormData());
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_FALSE(consumer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize));
+  EXPECT_FALSE(consumer->DrainAsFormData());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  consumer->didReceiveResponse(0, ResourceResponse(), std::move(src));
-  consumer->didFinishLoading(0, 0);
+  consumer->DidReceiveResponse(0, ResourceResponse(), std::move(src));
+  consumer->DidFinishLoading(0, 0);
 
-  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(consumer))->run();
-  EXPECT_EQ(Result::Done, result.first);
-  EXPECT_EQ("hello, world", toString(result.second));
+  auto result = (new BytesConsumerTestUtil::TwoPhaseReader(consumer))->Run();
+  EXPECT_EQ(Result::kDone, result.first);
+  EXPECT_EQ("hello, world", ToString(result.second));
 }
 
 TEST_F(BlobBytesConsumerTest, FailLoading) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available = 0;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  int numOnStateChangeCalled = client->numOnStateChangeCalled();
-  consumer->didFail(ResourceError());
+  int num_on_state_change_called = client->NumOnStateChangeCalled();
+  consumer->DidFail(ResourceError());
 
-  EXPECT_EQ(numOnStateChangeCalled + 1, client->numOnStateChangeCalled());
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(num_on_state_change_called + 1, client->NumOnStateChangeCalled());
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(BlobBytesConsumerTest, FailLoadingAfterResponseReceived) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  int numOnStateChangeCalled = client->numOnStateChangeCalled();
-  consumer->didReceiveResponse(
+  int num_on_state_change_called = client->NumOnStateChangeCalled();
+  consumer->DidReceiveResponse(
       0, ResourceResponse(),
-      DataConsumerHandleTestUtil::createWaitingDataConsumerHandle());
-  EXPECT_EQ(numOnStateChangeCalled + 1, client->numOnStateChangeCalled());
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+      DataConsumerHandleTestUtil::CreateWaitingDataConsumerHandle());
+  EXPECT_EQ(num_on_state_change_called + 1, client->NumOnStateChangeCalled());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  consumer->didFail(ResourceError());
-  EXPECT_EQ(numOnStateChangeCalled + 2, client->numOnStateChangeCalled());
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  consumer->DidFail(ResourceError());
+  EXPECT_EQ(num_on_state_change_called + 2, client->NumOnStateChangeCalled());
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(BlobBytesConsumerTest, FailAccessControlCheck) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  int numOnStateChangeCalled = client->numOnStateChangeCalled();
-  consumer->didFailAccessControlCheck(ResourceError());
-  EXPECT_EQ(numOnStateChangeCalled + 1, client->numOnStateChangeCalled());
+  int num_on_state_change_called = client->NumOnStateChangeCalled();
+  consumer->DidFailAccessControlCheck(ResourceError());
+  EXPECT_EQ(num_on_state_change_called + 1, client->NumOnStateChangeCalled());
 
-  EXPECT_EQ(PublicState::Errored, consumer->getPublicState());
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kErrored, consumer->GetPublicState());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(BlobBytesConsumerTest, CancelBeforeStarting) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
-  consumer->cancel();
+  consumer->Cancel();
   // This should be FALSE in production, but TRUE here because we set the
   // loader before starting loading in tests.
-  EXPECT_TRUE(loader->isCancelled());
+  EXPECT_TRUE(loader->IsCancelled());
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
 }
 
 TEST_F(BlobBytesConsumerTest, CancelAfterStarting) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
 
-  consumer->cancel();
-  EXPECT_TRUE(loader->isCancelled());
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
+  consumer->Cancel();
+  EXPECT_TRUE(loader->IsCancelled());
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
 }
 
 TEST_F(BlobBytesConsumerTest, ReadLastChunkBeforeDidFinishLoadingArrives) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
-  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::create();
-  src->add(Command(Command::Data, "hello"));
-  src->add(Command(Command::Done));
+  consumer->SetClient(client);
+  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kDone));
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
 
-  consumer->didReceiveResponse(0, ResourceResponse(), std::move(src));
-  EXPECT_EQ(1, client->numOnStateChangeCalled());
-  testing::runPendingTasks();
-  EXPECT_EQ(2, client->numOnStateChangeCalled());
+  consumer->DidReceiveResponse(0, ResourceResponse(), std::move(src));
+  EXPECT_EQ(1, client->NumOnStateChangeCalled());
+  testing::RunPendingTasks();
+  EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  ASSERT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  ASSERT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(5u, available);
   EXPECT_EQ("hello", String(buffer, available));
-  ASSERT_EQ(Result::Ok, consumer->endRead(available));
+  ASSERT_EQ(Result::kOk, consumer->EndRead(available));
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  ASSERT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  ASSERT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 
-  consumer->didFinishLoading(0, 0);
-  EXPECT_EQ(3, client->numOnStateChangeCalled());
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  ASSERT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
+  consumer->DidFinishLoading(0, 0);
+  EXPECT_EQ(3, client->NumOnStateChangeCalled());
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  ASSERT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
 }
 
 TEST_F(BlobBytesConsumerTest, ReadLastChunkAfterDidFinishLoadingArrives) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
-  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::create();
-  src->add(Command(Command::Data, "hello"));
-  src->add(Command(Command::Done));
+  consumer->SetClient(client);
+  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
+  src->Add(Command(Command::kData, "hello"));
+  src->Add(Command(Command::kDone));
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_TRUE(loader->isStarted());
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
+  EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_TRUE(loader->IsStarted());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
 
-  consumer->didReceiveResponse(0, ResourceResponse(), std::move(src));
-  EXPECT_EQ(1, client->numOnStateChangeCalled());
-  testing::runPendingTasks();
-  EXPECT_EQ(2, client->numOnStateChangeCalled());
+  consumer->DidReceiveResponse(0, ResourceResponse(), std::move(src));
+  EXPECT_EQ(1, client->NumOnStateChangeCalled());
+  testing::RunPendingTasks();
+  EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
-  consumer->didFinishLoading(0, 0);
-  testing::runPendingTasks();
-  EXPECT_EQ(2, client->numOnStateChangeCalled());
+  consumer->DidFinishLoading(0, 0);
+  testing::RunPendingTasks();
+  EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  ASSERT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  ASSERT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
   ASSERT_EQ(5u, available);
   EXPECT_EQ("hello", String(buffer, available));
-  ASSERT_EQ(Result::Ok, consumer->endRead(available));
+  ASSERT_EQ(Result::kOk, consumer->EndRead(available));
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
-  EXPECT_EQ(2, client->numOnStateChangeCalled());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
+  EXPECT_EQ(2, client->NumOnStateChangeCalled());
 }
 
 TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
-  RefPtr<BlobDataHandle> result = consumer->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize);
+  RefPtr<BlobDataHandle> result = consumer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
   ASSERT_TRUE(result);
-  EXPECT_FALSE(consumer->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize));
+  EXPECT_FALSE(consumer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize));
   EXPECT_EQ(12345u, result->size());
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 }
 
 TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle_2) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), -1);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), -1);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
-  RefPtr<BlobDataHandle> result = consumer->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize);
+  RefPtr<BlobDataHandle> result = consumer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
   ASSERT_TRUE(result);
-  EXPECT_FALSE(consumer->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::AllowBlobWithInvalidSize));
+  EXPECT_FALSE(consumer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize));
   EXPECT_EQ(UINT64_MAX, result->size());
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 }
 
 TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle_3) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), -1);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), -1);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
-  EXPECT_FALSE(consumer->drainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize));
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_FALSE(consumer->DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize));
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 }
 
 TEST_F(BlobBytesConsumerTest, DrainAsFormData) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   TestThreadableLoader* loader = new TestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
 
-  EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 
-  RefPtr<EncodedFormData> result = consumer->drainAsFormData();
+  RefPtr<EncodedFormData> result = consumer->DrainAsFormData();
   ASSERT_TRUE(result);
-  ASSERT_EQ(1u, result->elements().size());
-  ASSERT_EQ(FormDataElement::encodedBlob, result->elements()[0].m_type);
-  ASSERT_TRUE(result->elements()[0].m_optionalBlobDataHandle);
-  EXPECT_EQ(12345u, result->elements()[0].m_optionalBlobDataHandle->size());
-  EXPECT_EQ(blobDataHandle->uuid(), result->elements()[0].m_blobUUID);
-  EXPECT_EQ(PublicState::Closed, consumer->getPublicState());
-  EXPECT_FALSE(loader->isStarted());
+  ASSERT_EQ(1u, result->Elements().size());
+  ASSERT_EQ(FormDataElement::kEncodedBlob, result->Elements()[0].type_);
+  ASSERT_TRUE(result->Elements()[0].optional_blob_data_handle_);
+  EXPECT_EQ(12345u, result->Elements()[0].optional_blob_data_handle_->size());
+  EXPECT_EQ(blob_data_handle->Uuid(), result->Elements()[0].blob_uuid_);
+  EXPECT_EQ(PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_FALSE(loader->IsStarted());
 }
 
 TEST_F(BlobBytesConsumerTest, LoaderShouldBeCancelled) {
   {
-    RefPtr<BlobDataHandle> blobDataHandle =
-        BlobDataHandle::create(BlobData::create(), 12345);
+    RefPtr<BlobDataHandle> blob_data_handle =
+        BlobDataHandle::Create(BlobData::Create(), 12345);
     TestThreadableLoader* loader = new TestThreadableLoader();
-    BlobBytesConsumer* consumer = BlobBytesConsumer::createForTesting(
-        &document(), blobDataHandle, loader);
+    BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+        &GetDocument(), blob_data_handle, loader);
 
     const char* buffer = nullptr;
     size_t available;
-    EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
-    EXPECT_TRUE(loader->isStarted());
-    loader->setShouldBeCancelled();
+    EXPECT_EQ(Result::kShouldWait, consumer->BeginRead(&buffer, &available));
+    EXPECT_TRUE(loader->IsStarted());
+    loader->SetShouldBeCancelled();
   }
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 TEST_F(BlobBytesConsumerTest, SyncErrorDispatch) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   SyncErrorTestThreadableLoader* loader = new SyncErrorTestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
-  loader->setClient(consumer);
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
+  loader->SetClient(consumer);
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
-  EXPECT_TRUE(loader->isStarted());
+  EXPECT_EQ(Result::kError, consumer->BeginRead(&buffer, &available));
+  EXPECT_TRUE(loader->IsStarted());
 
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
-  EXPECT_EQ(BytesConsumer::PublicState::Errored, consumer->getPublicState());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kErrored, consumer->GetPublicState());
 }
 
 TEST_F(BlobBytesConsumerTest, SyncLoading) {
-  RefPtr<BlobDataHandle> blobDataHandle =
-      BlobDataHandle::create(BlobData::create(), 12345);
+  RefPtr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(BlobData::Create(), 12345);
   SyncLoadingTestThreadableLoader* loader =
       new SyncLoadingTestThreadableLoader();
-  BlobBytesConsumer* consumer =
-      BlobBytesConsumer::createForTesting(&document(), blobDataHandle, loader);
-  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::create();
-  src->add(Command(Command::Data, "hello, "));
-  src->add(Command(Command::Wait));
-  src->add(Command(Command::Data, "world"));
-  src->add(Command(Command::Done));
-  loader->setClient(consumer);
-  loader->setHandle(std::move(src));
+  BlobBytesConsumer* consumer = BlobBytesConsumer::CreateForTesting(
+      &GetDocument(), blob_data_handle, loader);
+  std::unique_ptr<ReplayingHandle> src = ReplayingHandle::Create();
+  src->Add(Command(Command::kData, "hello, "));
+  src->Add(Command(Command::kWait));
+  src->Add(Command(Command::kData, "world"));
+  src->Add(Command(Command::kDone));
+  loader->SetClient(consumer);
+  loader->SetHandle(std::move(src));
   TestClient* client = new TestClient();
-  consumer->setClient(client);
+  consumer->SetClient(client);
 
   const char* buffer = nullptr;
   size_t available;
-  ASSERT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
-  EXPECT_TRUE(loader->isStarted());
+  ASSERT_EQ(Result::kOk, consumer->BeginRead(&buffer, &available));
+  EXPECT_TRUE(loader->IsStarted());
   ASSERT_EQ(7u, available);
   EXPECT_EQ("hello, ", String(buffer, available));
 
-  EXPECT_EQ(0, client->numOnStateChangeCalled());
-  EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting,
-            consumer->getPublicState());
+  EXPECT_EQ(0, client->NumOnStateChangeCalled());
+  EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
+            consumer->GetPublicState());
 }
 
 TEST_F(BlobBytesConsumerTest, ConstructedFromNullHandle) {
-  BlobBytesConsumer* consumer = new BlobBytesConsumer(&document(), nullptr);
+  BlobBytesConsumer* consumer = new BlobBytesConsumer(&GetDocument(), nullptr);
   const char* buffer = nullptr;
   size_t available;
-  EXPECT_EQ(BytesConsumer::PublicState::Closed, consumer->getPublicState());
-  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::PublicState::kClosed, consumer->GetPublicState());
+  EXPECT_EQ(Result::kDone, consumer->BeginRead(&buffer, &available));
 }
 
 }  // namespace

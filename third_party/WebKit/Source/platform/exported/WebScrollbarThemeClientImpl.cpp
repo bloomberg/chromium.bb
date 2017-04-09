@@ -31,166 +31,166 @@ namespace blink {
 
 WebScrollbarThemeClientImpl::WebScrollbarThemeClientImpl(
     WebScrollbar& scrollbar)
-    : m_scrollbar(scrollbar) {
-  ScrollbarTheme::theme().registerScrollbar(*this);
+    : scrollbar_(scrollbar) {
+  ScrollbarTheme::GetTheme().RegisterScrollbar(*this);
 }
 
 WebScrollbarThemeClientImpl::~WebScrollbarThemeClientImpl() {
-  ScrollbarTheme::theme().unregisterScrollbar(*this);
+  ScrollbarTheme::GetTheme().UnregisterScrollbar(*this);
 }
 
-int WebScrollbarThemeClientImpl::x() const {
-  return location().x();
+int WebScrollbarThemeClientImpl::X() const {
+  return Location().X();
 }
 
-int WebScrollbarThemeClientImpl::y() const {
-  return location().y();
+int WebScrollbarThemeClientImpl::Y() const {
+  return Location().Y();
 }
 
-int WebScrollbarThemeClientImpl::width() const {
-  return size().width();
+int WebScrollbarThemeClientImpl::Width() const {
+  return size().Width();
 }
 
-int WebScrollbarThemeClientImpl::height() const {
-  return size().height();
+int WebScrollbarThemeClientImpl::Height() const {
+  return size().Height();
 }
 
 IntSize WebScrollbarThemeClientImpl::size() const {
-  return m_scrollbar.size();
+  return scrollbar_.size();
 }
 
-IntPoint WebScrollbarThemeClientImpl::location() const {
-  return m_scrollbar.location();
+IntPoint WebScrollbarThemeClientImpl::Location() const {
+  return scrollbar_.Location();
 }
 
-FrameViewBase* WebScrollbarThemeClientImpl::parent() const {
+FrameViewBase* WebScrollbarThemeClientImpl::Parent() const {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
   return 0;
 }
 
-FrameViewBase* WebScrollbarThemeClientImpl::root() const {
+FrameViewBase* WebScrollbarThemeClientImpl::Root() const {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
   return 0;
 }
 
-void WebScrollbarThemeClientImpl::setFrameRect(const IntRect&) {
+void WebScrollbarThemeClientImpl::SetFrameRect(const IntRect&) {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
 }
 
-IntRect WebScrollbarThemeClientImpl::frameRect() const {
-  return IntRect(location(), size());
+IntRect WebScrollbarThemeClientImpl::FrameRect() const {
+  return IntRect(Location(), size());
 }
 
-void WebScrollbarThemeClientImpl::invalidate() {
+void WebScrollbarThemeClientImpl::Invalidate() {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
 }
 
-void WebScrollbarThemeClientImpl::invalidateRect(const IntRect&) {
+void WebScrollbarThemeClientImpl::InvalidateRect(const IntRect&) {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
 }
 
 ScrollbarOverlayColorTheme
-WebScrollbarThemeClientImpl::getScrollbarOverlayColorTheme() const {
+WebScrollbarThemeClientImpl::GetScrollbarOverlayColorTheme() const {
   return static_cast<ScrollbarOverlayColorTheme>(
-      m_scrollbar.scrollbarOverlayColorTheme());
+      scrollbar_.ScrollbarOverlayColorTheme());
 }
 
-void WebScrollbarThemeClientImpl::getTickmarks(
+void WebScrollbarThemeClientImpl::GetTickmarks(
     Vector<IntRect>& tickmarks) const {
-  WebVector<WebRect> webTickmarks;
-  m_scrollbar.getTickmarks(webTickmarks);
-  tickmarks.resize(webTickmarks.size());
-  for (size_t i = 0; i < webTickmarks.size(); ++i)
-    tickmarks[i] = webTickmarks[i];
+  WebVector<WebRect> web_tickmarks;
+  scrollbar_.GetTickmarks(web_tickmarks);
+  tickmarks.Resize(web_tickmarks.size());
+  for (size_t i = 0; i < web_tickmarks.size(); ++i)
+    tickmarks[i] = web_tickmarks[i];
 }
 
-bool WebScrollbarThemeClientImpl::isScrollableAreaActive() const {
-  return m_scrollbar.isScrollableAreaActive();
+bool WebScrollbarThemeClientImpl::IsScrollableAreaActive() const {
+  return scrollbar_.IsScrollableAreaActive();
 }
 
-IntPoint WebScrollbarThemeClientImpl::convertFromRootFrame(
-    const IntPoint& pointInRootFrame) const {
+IntPoint WebScrollbarThemeClientImpl::ConvertFromRootFrame(
+    const IntPoint& point_in_root_frame) const {
   // Unused by Chromium scrollbar themes.
   ASSERT_NOT_REACHED();
-  return pointInRootFrame;
+  return point_in_root_frame;
 }
 
-bool WebScrollbarThemeClientImpl::isCustomScrollbar() const {
-  return m_scrollbar.isCustomScrollbar();
+bool WebScrollbarThemeClientImpl::IsCustomScrollbar() const {
+  return scrollbar_.IsCustomScrollbar();
 }
 
-ScrollbarOrientation WebScrollbarThemeClientImpl::orientation() const {
-  return static_cast<ScrollbarOrientation>(m_scrollbar.orientation());
+ScrollbarOrientation WebScrollbarThemeClientImpl::Orientation() const {
+  return static_cast<ScrollbarOrientation>(scrollbar_.GetOrientation());
 }
 
-bool WebScrollbarThemeClientImpl::isLeftSideVerticalScrollbar() const {
-  return m_scrollbar.isLeftSideVerticalScrollbar();
+bool WebScrollbarThemeClientImpl::IsLeftSideVerticalScrollbar() const {
+  return scrollbar_.IsLeftSideVerticalScrollbar();
 }
 
-int WebScrollbarThemeClientImpl::value() const {
-  return m_scrollbar.value();
+int WebScrollbarThemeClientImpl::Value() const {
+  return scrollbar_.Value();
 }
 
-float WebScrollbarThemeClientImpl::currentPos() const {
-  return value();
+float WebScrollbarThemeClientImpl::CurrentPos() const {
+  return Value();
 }
 
-int WebScrollbarThemeClientImpl::visibleSize() const {
-  return totalSize() - maximum();
+int WebScrollbarThemeClientImpl::VisibleSize() const {
+  return TotalSize() - Maximum();
 }
 
-int WebScrollbarThemeClientImpl::totalSize() const {
-  return m_scrollbar.totalSize();
+int WebScrollbarThemeClientImpl::TotalSize() const {
+  return scrollbar_.TotalSize();
 }
 
-int WebScrollbarThemeClientImpl::maximum() const {
-  return m_scrollbar.maximum();
+int WebScrollbarThemeClientImpl::Maximum() const {
+  return scrollbar_.Maximum();
 }
 
-ScrollbarControlSize WebScrollbarThemeClientImpl::controlSize() const {
-  return static_cast<ScrollbarControlSize>(m_scrollbar.controlSize());
+ScrollbarControlSize WebScrollbarThemeClientImpl::GetControlSize() const {
+  return static_cast<ScrollbarControlSize>(scrollbar_.GetControlSize());
 }
 
-ScrollbarPart WebScrollbarThemeClientImpl::pressedPart() const {
-  return static_cast<ScrollbarPart>(m_scrollbar.pressedPart());
+ScrollbarPart WebScrollbarThemeClientImpl::PressedPart() const {
+  return static_cast<ScrollbarPart>(scrollbar_.PressedPart());
 }
 
-ScrollbarPart WebScrollbarThemeClientImpl::hoveredPart() const {
-  return static_cast<ScrollbarPart>(m_scrollbar.hoveredPart());
+ScrollbarPart WebScrollbarThemeClientImpl::HoveredPart() const {
+  return static_cast<ScrollbarPart>(scrollbar_.HoveredPart());
 }
 
-void WebScrollbarThemeClientImpl::styleChanged() {
+void WebScrollbarThemeClientImpl::StyleChanged() {
   ASSERT_NOT_REACHED();
 }
 
-void WebScrollbarThemeClientImpl::setScrollbarsHidden(bool hidden) {
+void WebScrollbarThemeClientImpl::SetScrollbarsHidden(bool hidden) {
   ASSERT_NOT_REACHED();
 }
 
-bool WebScrollbarThemeClientImpl::enabled() const {
-  return m_scrollbar.enabled();
+bool WebScrollbarThemeClientImpl::Enabled() const {
+  return scrollbar_.Enabled();
 }
 
-void WebScrollbarThemeClientImpl::setEnabled(bool) {
+void WebScrollbarThemeClientImpl::SetEnabled(bool) {
   ASSERT_NOT_REACHED();
 }
 
-bool WebScrollbarThemeClientImpl::isOverlayScrollbar() const {
-  return m_scrollbar.isOverlay();
+bool WebScrollbarThemeClientImpl::IsOverlayScrollbar() const {
+  return scrollbar_.IsOverlay();
 }
 
-float WebScrollbarThemeClientImpl::elasticOverscroll() const {
-  return m_scrollbar.elasticOverscroll();
+float WebScrollbarThemeClientImpl::ElasticOverscroll() const {
+  return scrollbar_.ElasticOverscroll();
 }
 
-void WebScrollbarThemeClientImpl::setElasticOverscroll(
-    float elasticOverscroll) {
-  return m_scrollbar.setElasticOverscroll(elasticOverscroll);
+void WebScrollbarThemeClientImpl::SetElasticOverscroll(
+    float elastic_overscroll) {
+  return scrollbar_.SetElasticOverscroll(elastic_overscroll);
 }
 
 }  // namespace blink

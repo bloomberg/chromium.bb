@@ -11,91 +11,91 @@
 
 namespace blink {
 
-WebGLQuery* WebGLQuery::create(WebGL2RenderingContextBase* ctx) {
+WebGLQuery* WebGLQuery::Create(WebGL2RenderingContextBase* ctx) {
   return new WebGLQuery(ctx);
 }
 
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
-      m_target(0),
-      m_canUpdateAvailability(false),
-      m_queryResultAvailable(false),
-      m_queryResult(0),
-      m_taskRunner(TaskRunnerHelper::get(TaskType::Unthrottled,
-                                         &ctx->canvas()->document())) {
+      target_(0),
+      can_update_availability_(false),
+      query_result_available_(false),
+      query_result_(0),
+      task_runner_(TaskRunnerHelper::Get(TaskType::kUnthrottled,
+                                         &ctx->canvas()->GetDocument())) {
   GLuint query;
-  ctx->contextGL()->GenQueriesEXT(1, &query);
-  setObject(query);
+  ctx->ContextGL()->GenQueriesEXT(1, &query);
+  SetObject(query);
 }
 
 WebGLQuery::~WebGLQuery() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLQuery::setTarget(GLenum target) {
-  ASSERT(object());
-  ASSERT(!m_target);
-  m_target = target;
+void WebGLQuery::SetTarget(GLenum target) {
+  ASSERT(Object());
+  ASSERT(!target_);
+  target_ = target;
 }
 
-void WebGLQuery::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteQueriesEXT(1, &m_object);
-  m_object = 0;
+void WebGLQuery::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteQueriesEXT(1, &object_);
+  object_ = 0;
 }
 
-void WebGLQuery::resetCachedResult() {
-  m_canUpdateAvailability = false;
-  m_queryResultAvailable = false;
-  m_queryResult = 0;
+void WebGLQuery::ResetCachedResult() {
+  can_update_availability_ = false;
+  query_result_available_ = false;
+  query_result_ = 0;
   // When this is called, the implication is that we should start
   // keeping track of whether we can update the cached availability
   // and result.
-  scheduleAllowAvailabilityUpdate();
+  ScheduleAllowAvailabilityUpdate();
 }
 
-void WebGLQuery::updateCachedResult(gpu::gles2::GLES2Interface* gl) {
-  if (m_queryResultAvailable)
+void WebGLQuery::UpdateCachedResult(gpu::gles2::GLES2Interface* gl) {
+  if (query_result_available_)
     return;
 
-  if (!m_canUpdateAvailability)
+  if (!can_update_availability_)
     return;
 
-  if (!hasTarget())
+  if (!HasTarget())
     return;
 
   // We can only update the cached result when control returns to the browser.
-  m_canUpdateAvailability = false;
+  can_update_availability_ = false;
   GLuint available = 0;
-  gl->GetQueryObjectuivEXT(object(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-  m_queryResultAvailable = !!available;
-  if (m_queryResultAvailable) {
+  gl->GetQueryObjectuivEXT(Object(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  query_result_available_ = !!available;
+  if (query_result_available_) {
     GLuint result = 0;
-    gl->GetQueryObjectuivEXT(object(), GL_QUERY_RESULT_EXT, &result);
-    m_queryResult = result;
-    m_taskHandle.cancel();
+    gl->GetQueryObjectuivEXT(Object(), GL_QUERY_RESULT_EXT, &result);
+    query_result_ = result;
+    task_handle_.Cancel();
   } else {
-    scheduleAllowAvailabilityUpdate();
+    ScheduleAllowAvailabilityUpdate();
   }
 }
 
-bool WebGLQuery::isQueryResultAvailable() {
-  return m_queryResultAvailable;
+bool WebGLQuery::IsQueryResultAvailable() {
+  return query_result_available_;
 }
 
-GLuint WebGLQuery::getQueryResult() {
-  return m_queryResult;
+GLuint WebGLQuery::GetQueryResult() {
+  return query_result_;
 }
 
-void WebGLQuery::scheduleAllowAvailabilityUpdate() {
-  if (m_taskHandle.isActive())
+void WebGLQuery::ScheduleAllowAvailabilityUpdate() {
+  if (task_handle_.IsActive())
     return;
-  m_taskHandle = m_taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&WebGLQuery::allowAvailabilityUpdate,
-                                 wrapWeakPersistent(this)));
+  task_handle_ = task_runner_->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&WebGLQuery::AllowAvailabilityUpdate,
+                                 WrapWeakPersistent(this)));
 }
 
-void WebGLQuery::allowAvailabilityUpdate() {
-  m_canUpdateAvailability = true;
+void WebGLQuery::AllowAvailabilityUpdate() {
+  can_update_availability_ = true;
 }
 
 }  // namespace blink

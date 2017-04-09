@@ -17,28 +17,28 @@ class VRPose final : public GarbageCollected<VRPose>, public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VRPose* create() { return new VRPose(); }
+  static VRPose* Create() { return new VRPose(); }
 
-  DOMFloat32Array* orientation() const { return m_orientation; }
-  DOMFloat32Array* position() const { return m_position; }
-  DOMFloat32Array* angularVelocity() const { return m_angularVelocity; }
-  DOMFloat32Array* linearVelocity() const { return m_linearVelocity; }
-  DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
-  DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
+  DOMFloat32Array* orientation() const { return orientation_; }
+  DOMFloat32Array* position() const { return position_; }
+  DOMFloat32Array* angularVelocity() const { return angular_velocity_; }
+  DOMFloat32Array* linearVelocity() const { return linear_velocity_; }
+  DOMFloat32Array* angularAcceleration() const { return angular_acceleration_; }
+  DOMFloat32Array* linearAcceleration() const { return linear_acceleration_; }
 
-  void setPose(const device::mojom::blink::VRPosePtr&);
+  void SetPose(const device::mojom::blink::VRPosePtr&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   VRPose();
 
-  Member<DOMFloat32Array> m_orientation;
-  Member<DOMFloat32Array> m_position;
-  Member<DOMFloat32Array> m_angularVelocity;
-  Member<DOMFloat32Array> m_linearVelocity;
-  Member<DOMFloat32Array> m_angularAcceleration;
-  Member<DOMFloat32Array> m_linearAcceleration;
+  Member<DOMFloat32Array> orientation_;
+  Member<DOMFloat32Array> position_;
+  Member<DOMFloat32Array> angular_velocity_;
+  Member<DOMFloat32Array> linear_velocity_;
+  Member<DOMFloat32Array> angular_acceleration_;
+  Member<DOMFloat32Array> linear_acceleration_;
 };
 
 }  // namespace blink

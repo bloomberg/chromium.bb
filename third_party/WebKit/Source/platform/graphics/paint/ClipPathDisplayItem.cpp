@@ -12,42 +12,42 @@
 
 namespace blink {
 
-void BeginClipPathDisplayItem::replay(GraphicsContext& context) const {
-  context.save();
-  context.clipPath(m_clipPath, AntiAliased);
+void BeginClipPathDisplayItem::Replay(GraphicsContext& context) const {
+  context.Save();
+  context.ClipPath(clip_path_, kAntiAliased);
 }
 
-void BeginClipPathDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void BeginClipPathDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendClipPathItem(m_clipPath, true);
+  list->AppendClipPathItem(clip_path_, true);
 }
 
-void BeginClipPathDisplayItem::analyzeForGpuRasterization(
+void BeginClipPathDisplayItem::AnalyzeForGpuRasterization(
     SkPictureGpuAnalyzer& analyzer) const {
   // Temporarily disabled (pref regressions due to GPU veto stickiness:
   // http://crbug.com/603969).
   // analyzer.analyzeClipPath(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
-void EndClipPathDisplayItem::replay(GraphicsContext& context) const {
-  context.restore();
+void EndClipPathDisplayItem::Replay(GraphicsContext& context) const {
+  context.Restore();
 }
 
-void EndClipPathDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void EndClipPathDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendEndClipPathItem();
+  list->AppendEndClipPathItem();
 }
 
 #ifndef NDEBUG
-void BeginClipPathDisplayItem::dumpPropertiesAsDebugString(
-    WTF::StringBuilder& stringBuilder) const {
-  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  stringBuilder.append(WTF::String::format(
+void BeginClipPathDisplayItem::DumpPropertiesAsDebugString(
+    WTF::StringBuilder& string_builder) const {
+  DisplayItem::DumpPropertiesAsDebugString(string_builder);
+  string_builder.Append(WTF::String::Format(
       ", pathVerbs: %d, pathPoints: %d, windRule: \"%s\"",
-      m_clipPath.countVerbs(), m_clipPath.countPoints(),
-      m_clipPath.getFillType() == SkPath::kWinding_FillType ? "nonzero"
+      clip_path_.countVerbs(), clip_path_.countPoints(),
+      clip_path_.getFillType() == SkPath::kWinding_FillType ? "nonzero"
                                                             : "evenodd"));
 }
 

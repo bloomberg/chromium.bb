@@ -9,79 +9,79 @@
 
 namespace blink {
 
-CSSAtRuleID cssAtRuleID(StringView name) {
-  if (equalIgnoringASCIICase(name, "charset"))
-    return CSSAtRuleCharset;
-  if (equalIgnoringASCIICase(name, "font-face"))
-    return CSSAtRuleFontFace;
-  if (equalIgnoringASCIICase(name, "import"))
-    return CSSAtRuleImport;
-  if (equalIgnoringASCIICase(name, "keyframes"))
-    return CSSAtRuleKeyframes;
-  if (equalIgnoringASCIICase(name, "media"))
-    return CSSAtRuleMedia;
-  if (equalIgnoringASCIICase(name, "namespace"))
-    return CSSAtRuleNamespace;
-  if (equalIgnoringASCIICase(name, "page"))
-    return CSSAtRulePage;
-  if (equalIgnoringASCIICase(name, "supports"))
-    return CSSAtRuleSupports;
-  if (equalIgnoringASCIICase(name, "viewport"))
-    return CSSAtRuleViewport;
-  if (equalIgnoringASCIICase(name, "-webkit-keyframes"))
-    return CSSAtRuleWebkitKeyframes;
-  if (equalIgnoringASCIICase(name, "apply"))
-    return CSSAtRuleApply;
-  return CSSAtRuleInvalid;
+CSSAtRuleID CssAtRuleID(StringView name) {
+  if (EqualIgnoringASCIICase(name, "charset"))
+    return kCSSAtRuleCharset;
+  if (EqualIgnoringASCIICase(name, "font-face"))
+    return kCSSAtRuleFontFace;
+  if (EqualIgnoringASCIICase(name, "import"))
+    return kCSSAtRuleImport;
+  if (EqualIgnoringASCIICase(name, "keyframes"))
+    return kCSSAtRuleKeyframes;
+  if (EqualIgnoringASCIICase(name, "media"))
+    return kCSSAtRuleMedia;
+  if (EqualIgnoringASCIICase(name, "namespace"))
+    return kCSSAtRuleNamespace;
+  if (EqualIgnoringASCIICase(name, "page"))
+    return kCSSAtRulePage;
+  if (EqualIgnoringASCIICase(name, "supports"))
+    return kCSSAtRuleSupports;
+  if (EqualIgnoringASCIICase(name, "viewport"))
+    return kCSSAtRuleViewport;
+  if (EqualIgnoringASCIICase(name, "-webkit-keyframes"))
+    return kCSSAtRuleWebkitKeyframes;
+  if (EqualIgnoringASCIICase(name, "apply"))
+    return kCSSAtRuleApply;
+  return kCSSAtRuleInvalid;
 }
 
-void countAtRule(const CSSParserContext* context, CSSAtRuleID ruleId) {
+void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
   UseCounter::Feature feature;
 
-  switch (ruleId) {
-    case CSSAtRuleCharset:
-      feature = UseCounter::CSSAtRuleCharset;
+  switch (rule_id) {
+    case kCSSAtRuleCharset:
+      feature = UseCounter::kCSSAtRuleCharset;
       break;
-    case CSSAtRuleFontFace:
-      feature = UseCounter::CSSAtRuleFontFace;
+    case kCSSAtRuleFontFace:
+      feature = UseCounter::kCSSAtRuleFontFace;
       break;
-    case CSSAtRuleImport:
-      feature = UseCounter::CSSAtRuleImport;
+    case kCSSAtRuleImport:
+      feature = UseCounter::kCSSAtRuleImport;
       break;
-    case CSSAtRuleKeyframes:
-      feature = UseCounter::CSSAtRuleKeyframes;
+    case kCSSAtRuleKeyframes:
+      feature = UseCounter::kCSSAtRuleKeyframes;
       break;
-    case CSSAtRuleMedia:
-      feature = UseCounter::CSSAtRuleMedia;
+    case kCSSAtRuleMedia:
+      feature = UseCounter::kCSSAtRuleMedia;
       break;
-    case CSSAtRuleNamespace:
-      feature = UseCounter::CSSAtRuleNamespace;
+    case kCSSAtRuleNamespace:
+      feature = UseCounter::kCSSAtRuleNamespace;
       break;
-    case CSSAtRulePage:
-      feature = UseCounter::CSSAtRulePage;
+    case kCSSAtRulePage:
+      feature = UseCounter::kCSSAtRulePage;
       break;
-    case CSSAtRuleSupports:
-      feature = UseCounter::CSSAtRuleSupports;
+    case kCSSAtRuleSupports:
+      feature = UseCounter::kCSSAtRuleSupports;
       break;
-    case CSSAtRuleViewport:
-      feature = UseCounter::CSSAtRuleViewport;
-      break;
-
-    case CSSAtRuleWebkitKeyframes:
-      feature = UseCounter::CSSAtRuleWebkitKeyframes;
+    case kCSSAtRuleViewport:
+      feature = UseCounter::kCSSAtRuleViewport;
       break;
 
-    case CSSAtRuleApply:
-      feature = UseCounter::CSSAtRuleApply;
+    case kCSSAtRuleWebkitKeyframes:
+      feature = UseCounter::kCSSAtRuleWebkitKeyframes;
       break;
 
-    case CSSAtRuleInvalid:
+    case kCSSAtRuleApply:
+      feature = UseCounter::kCSSAtRuleApply;
+      break;
+
+    case kCSSAtRuleInvalid:
     // fallthrough
     default:
       NOTREACHED();
       return;
   }
-  context->count(feature);
+  context->Count(feature);
 }
 
 }  // namespace blink

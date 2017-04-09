@@ -42,7 +42,7 @@ inline HTMLWBRElement::HTMLWBRElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLWBRElement)
 
-LayoutObject* HTMLWBRElement::createLayoutObject(const ComputedStyle& style) {
+LayoutObject* HTMLWBRElement::CreateLayoutObject(const ComputedStyle& style) {
   return new LayoutWordBreak(this);
 }
 

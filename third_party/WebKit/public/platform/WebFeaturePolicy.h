@@ -19,48 +19,48 @@ namespace blink {
 // still under development in blink behind the featurePolicyExperimentalFeatures
 // flag, see getWebFeaturePolicyFeature().
 enum class WebFeaturePolicyFeature {
-  NotFound = 0,
+  kNotFound = 0,
   // Controls access to video input devices.
-  Camera,
+  kCamera,
   // Controls whether navigator.requestMediaKeySystemAccess is allowed.
-  Eme,
+  kEme,
   // Controls whether Element.requestFullscreen is allowed.
-  Fullscreen,
+  kFullscreen,
   // Controls access to Geolocation interface.
-  Geolocation,
+  kGeolocation,
   // Controls access to audio input devices.
-  Microphone,
+  kMicrophone,
   // Controls access to requestMIDIAccess method.
-  MidiFeature,
+  kMidiFeature,
   // Controls access to PaymentRequest interface.
-  Payment,
+  kPayment,
   // Controls access to audio output devices.
-  Speaker,
+  kSpeaker,
   // Controls access to navigator.vibrate method.
-  Vibrate,
+  kVibrate,
   // Controls access to document.cookie attribute.
-  DocumentCookie,
+  kDocumentCookie,
   // Contols access to document.domain attribute.
-  DocumentDomain,
+  kDocumentDomain,
   // Controls access to document.write and document.writeln methods.
-  DocumentWrite,
+  kDocumentWrite,
   // Controls access to Notification interface.
-  Notifications,
+  kNotifications,
   // Controls access to PushManager interface.
-  Push,
+  kPush,
   // Controls whether synchronous script elements will run.
-  SyncScript,
+  kSyncScript,
   // Controls use of synchronous XMLHTTPRequest API.
-  SyncXHR,
+  kSyncXHR,
   // Controls access to RTCPeerConnection interface.
-  WebRTC,
-  LAST_FEATURE = WebRTC
+  kWebRTC,
+  LAST_FEATURE = kWebRTC
 };
 
 struct BLINK_PLATFORM_EXPORT WebParsedFeaturePolicyDeclaration {
-  WebParsedFeaturePolicyDeclaration() : matchesAllOrigins(false) {}
+  WebParsedFeaturePolicyDeclaration() : matches_all_origins(false) {}
   WebFeaturePolicyFeature feature;
-  bool matchesAllOrigins;
+  bool matches_all_origins;
   WebVector<WebSecurityOrigin> origins;
 };
 

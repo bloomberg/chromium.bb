@@ -42,32 +42,32 @@ class SVGDocumentExtensions
   explicit SVGDocumentExtensions(Document*);
   ~SVGDocumentExtensions();
 
-  void addTimeContainer(SVGSVGElement*);
-  void removeTimeContainer(SVGSVGElement*);
+  void AddTimeContainer(SVGSVGElement*);
+  void RemoveTimeContainer(SVGSVGElement*);
 
   // Records the SVG element as having a Web Animation on an SVG attribute that
   // needs applying.
-  void addWebAnimationsPendingSVGElement(SVGElement&);
+  void AddWebAnimationsPendingSVGElement(SVGElement&);
 
-  static void serviceOnAnimationFrame(Document&);
+  static void ServiceOnAnimationFrame(Document&);
 
-  void startAnimations();
-  void pauseAnimations();
-  void serviceAnimations();
+  void StartAnimations();
+  void PauseAnimations();
+  void ServiceAnimations();
 
-  void dispatchSVGLoadEventToOutermostSVGElements();
+  void DispatchSVGLoadEventToOutermostSVGElements();
 
-  SVGResourcesCache& resourcesCache() { return m_resourcesCache; }
+  SVGResourcesCache& ResourcesCache() { return resources_cache_; }
 
-  void addSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
-  void removeSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
-  bool isSVGRootWithRelativeLengthDescendents(SVGSVGElement*) const;
-  void invalidateSVGRootsWithRelativeLengthDescendents(SubtreeLayoutScope*);
+  void AddSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
+  void RemoveSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
+  bool IsSVGRootWithRelativeLengthDescendents(SVGSVGElement*) const;
+  void InvalidateSVGRootsWithRelativeLengthDescendents(SubtreeLayoutScope*);
 
-  bool zoomAndPanEnabled() const;
+  bool ZoomAndPanEnabled() const;
 
-  void startPan(const FloatPoint& start);
-  void updatePan(const FloatPoint& pos) const;
+  void StartPan(const FloatPoint& start);
+  void UpdatePan(const FloatPoint& pos) const;
 
   static SVGSVGElement* rootElement(const Document&);
   SVGSVGElement* rootElement() const;
@@ -75,16 +75,16 @@ class SVGDocumentExtensions
   DECLARE_TRACE();
 
  private:
-  Member<Document> m_document;
-  HeapHashSet<Member<SVGSVGElement>> m_timeContainers;
+  Member<Document> document_;
+  HeapHashSet<Member<SVGSVGElement>> time_containers_;
   using SVGElementSet = HeapHashSet<Member<SVGElement>>;
-  SVGElementSet m_webAnimationsPendingSVGElements;
-  SVGResourcesCache m_resourcesCache;
+  SVGElementSet web_animations_pending_svg_elements_;
+  SVGResourcesCache resources_cache_;
   // Root SVG elements with relative length descendants.
-  HeapHashSet<Member<SVGSVGElement>> m_relativeLengthSVGRoots;
-  FloatPoint m_translate;
+  HeapHashSet<Member<SVGSVGElement>> relative_length_svg_roots_;
+  FloatPoint translate_;
 #if DCHECK_IS_ON()
-  bool m_inRelativeLengthSVGRootsInvalidation = false;
+  bool in_relative_length_svg_roots_invalidation_ = false;
 #endif
 };
 

@@ -21,26 +21,26 @@ const int kBlankCharactersThreshold = 200;
 
 }  // namespace
 
-FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::from(
+FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
     Document& document) {
-  return PaintTiming::from(document).firstMeaningfulPaintDetector();
+  return PaintTiming::From(document).GetFirstMeaningfulPaintDetector();
 }
 
 FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
-    PaintTiming* paintTiming,
+    PaintTiming* paint_timing,
     Document& document)
-    : m_paintTiming(paintTiming),
-      m_network0QuietTimer(
-          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
+    : paint_timing_(paint_timing),
+      network0_quiet_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
           this,
-          &FirstMeaningfulPaintDetector::network0QuietTimerFired),
-      m_network2QuietTimer(
-          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
+          &FirstMeaningfulPaintDetector::Network0QuietTimerFired),
+      network2_quiet_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
           this,
-          &FirstMeaningfulPaintDetector::network2QuietTimerFired) {}
+          &FirstMeaningfulPaintDetector::Network2QuietTimerFired) {}
 
-Document* FirstMeaningfulPaintDetector::document() {
-  return m_paintTiming->supplementable();
+Document* FirstMeaningfulPaintDetector::GetDocument() {
+  return paint_timing_->GetSupplementable();
 }
 
 // Computes "layout significance" (http://goo.gl/rytlPL) of a layout operation.
@@ -48,183 +48,184 @@ Document* FirstMeaningfulPaintDetector::document() {
 // layout tree, weighted by page height (before and after the layout).
 // A paint after the most significance layout during page load is reported as
 // First Meaningful Paint.
-void FirstMeaningfulPaintDetector::markNextPaintAsMeaningfulIfNeeded(
+void FirstMeaningfulPaintDetector::MarkNextPaintAsMeaningfulIfNeeded(
     const LayoutObjectCounter& counter,
-    int contentsHeightBeforeLayout,
-    int contentsHeightAfterLayout,
-    int visibleHeight) {
-  if (m_network0QuietReached && m_network2QuietReached)
+    int contents_height_before_layout,
+    int contents_height_after_layout,
+    int visible_height) {
+  if (network0_quiet_reached_ && network2_quiet_reached_)
     return;
 
-  unsigned delta = counter.count() - m_prevLayoutObjectCount;
-  m_prevLayoutObjectCount = counter.count();
+  unsigned delta = counter.Count() - prev_layout_object_count_;
+  prev_layout_object_count_ = counter.Count();
 
-  if (visibleHeight == 0)
+  if (visible_height == 0)
     return;
 
-  double ratioBefore = std::max(
-      1.0, static_cast<double>(contentsHeightBeforeLayout) / visibleHeight);
-  double ratioAfter = std::max(
-      1.0, static_cast<double>(contentsHeightAfterLayout) / visibleHeight);
-  double significance = delta / ((ratioBefore + ratioAfter) / 2);
+  double ratio_before = std::max(
+      1.0, static_cast<double>(contents_height_before_layout) / visible_height);
+  double ratio_after = std::max(
+      1.0, static_cast<double>(contents_height_after_layout) / visible_height);
+  double significance = delta / ((ratio_before + ratio_after) / 2);
 
   // If the page has many blank characters, the significance value is
   // accumulated until the text become visible.
-  int approximateBlankCharacterCount =
-      FontFaceSet::approximateBlankCharacterCount(*document());
-  if (approximateBlankCharacterCount > kBlankCharactersThreshold) {
-    m_accumulatedSignificanceWhileHavingBlankText += significance;
+  int approximate_blank_character_count =
+      FontFaceSet::ApproximateBlankCharacterCount(*GetDocument());
+  if (approximate_blank_character_count > kBlankCharactersThreshold) {
+    accumulated_significance_while_having_blank_text_ += significance;
   } else {
-    significance += m_accumulatedSignificanceWhileHavingBlankText;
-    m_accumulatedSignificanceWhileHavingBlankText = 0;
-    if (significance > m_maxSignificanceSoFar) {
-      m_nextPaintIsMeaningful = true;
-      m_maxSignificanceSoFar = significance;
+    significance += accumulated_significance_while_having_blank_text_;
+    accumulated_significance_while_having_blank_text_ = 0;
+    if (significance > max_significance_so_far_) {
+      next_paint_is_meaningful_ = true;
+      max_significance_so_far_ = significance;
     }
   }
 }
 
-void FirstMeaningfulPaintDetector::notifyPaint() {
-  if (!m_nextPaintIsMeaningful)
+void FirstMeaningfulPaintDetector::NotifyPaint() {
+  if (!next_paint_is_meaningful_)
     return;
 
   // Skip document background-only paints.
-  if (m_paintTiming->firstPaint() == 0.0)
+  if (paint_timing_->FirstPaint() == 0.0)
     return;
 
-  m_provisionalFirstMeaningfulPaint = monotonicallyIncreasingTime();
-  m_nextPaintIsMeaningful = false;
+  provisional_first_meaningful_paint_ = MonotonicallyIncreasingTime();
+  next_paint_is_meaningful_ = false;
 
-  if (m_network2QuietReached)
+  if (network2_quiet_reached_)
     return;
 
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "loading", "firstMeaningfulPaintCandidate",
-      TraceEvent::toTraceTimestamp(m_provisionalFirstMeaningfulPaint), "frame",
-      document()->frame());
+      TraceEvent::ToTraceTimestamp(provisional_first_meaningful_paint_),
+      "frame", GetDocument()->GetFrame());
   // Ignore the first meaningful paint candidate as this generally is the first
   // contentful paint itself.
-  if (!m_seenFirstMeaningfulPaintCandidate) {
-    m_seenFirstMeaningfulPaintCandidate = true;
+  if (!seen_first_meaningful_paint_candidate_) {
+    seen_first_meaningful_paint_candidate_ = true;
     return;
   }
-  m_paintTiming->setFirstMeaningfulPaintCandidate(
-      m_provisionalFirstMeaningfulPaint);
+  paint_timing_->SetFirstMeaningfulPaintCandidate(
+      provisional_first_meaningful_paint_);
 }
 
-int FirstMeaningfulPaintDetector::activeConnections() {
-  DCHECK(document());
-  ResourceFetcher* fetcher = document()->fetcher();
-  return fetcher->blockingRequestCount() + fetcher->nonblockingRequestCount();
+int FirstMeaningfulPaintDetector::ActiveConnections() {
+  DCHECK(GetDocument());
+  ResourceFetcher* fetcher = GetDocument()->Fetcher();
+  return fetcher->BlockingRequestCount() + fetcher->NonblockingRequestCount();
 }
 
 // This function is called when the number of active connections is decreased.
-void FirstMeaningfulPaintDetector::checkNetworkStable() {
-  DCHECK(document());
-  if (!document()->hasFinishedParsing())
+void FirstMeaningfulPaintDetector::CheckNetworkStable() {
+  DCHECK(GetDocument());
+  if (!GetDocument()->HasFinishedParsing())
     return;
 
-  setNetworkQuietTimers(activeConnections());
+  SetNetworkQuietTimers(ActiveConnections());
 }
 
-void FirstMeaningfulPaintDetector::setNetworkQuietTimers(
-    int activeConnections) {
-  if (!m_network0QuietReached && activeConnections == 0) {
+void FirstMeaningfulPaintDetector::SetNetworkQuietTimers(
+    int active_connections) {
+  if (!network0_quiet_reached_ && active_connections == 0) {
     // This restarts 0-quiet timer if it's already running.
-    m_network0QuietTimer.startOneShot(kNetwork0QuietWindowSeconds,
-                                      BLINK_FROM_HERE);
+    network0_quiet_timer_.StartOneShot(kNetwork0QuietWindowSeconds,
+                                       BLINK_FROM_HERE);
   }
-  if (!m_network2QuietReached && activeConnections <= 2) {
+  if (!network2_quiet_reached_ && active_connections <= 2) {
     // If activeConnections < 2 and the timer is already running, current
     // 2-quiet window continues; the timer shouldn't be restarted.
-    if (activeConnections == 2 || !m_network2QuietTimer.isActive()) {
-      m_network2QuietTimer.startOneShot(kNetwork2QuietWindowSeconds,
-                                        BLINK_FROM_HERE);
+    if (active_connections == 2 || !network2_quiet_timer_.IsActive()) {
+      network2_quiet_timer_.StartOneShot(kNetwork2QuietWindowSeconds,
+                                         BLINK_FROM_HERE);
     }
   }
 }
 
-void FirstMeaningfulPaintDetector::network0QuietTimerFired(TimerBase*) {
-  if (!document() || m_network0QuietReached || activeConnections() > 0 ||
-      !m_paintTiming->firstContentfulPaint())
+void FirstMeaningfulPaintDetector::Network0QuietTimerFired(TimerBase*) {
+  if (!GetDocument() || network0_quiet_reached_ || ActiveConnections() > 0 ||
+      !paint_timing_->FirstContentfulPaint())
     return;
-  m_network0QuietReached = true;
+  network0_quiet_reached_ = true;
 
-  if (m_provisionalFirstMeaningfulPaint) {
+  if (provisional_first_meaningful_paint_) {
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
-    m_firstMeaningfulPaint0Quiet =
-        std::max(m_provisionalFirstMeaningfulPaint,
-                 m_paintTiming->firstContentfulPaint());
+    first_meaningful_paint0_quiet_ =
+        std::max(provisional_first_meaningful_paint_,
+                 paint_timing_->FirstContentfulPaint());
   }
-  reportHistograms();
+  ReportHistograms();
 }
 
-void FirstMeaningfulPaintDetector::network2QuietTimerFired(TimerBase*) {
-  if (!document() || m_network2QuietReached || activeConnections() > 2 ||
-      !m_paintTiming->firstContentfulPaint())
+void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
+  if (!GetDocument() || network2_quiet_reached_ || ActiveConnections() > 2 ||
+      !paint_timing_->FirstContentfulPaint())
     return;
-  m_network2QuietReached = true;
+  network2_quiet_reached_ = true;
 
-  if (m_provisionalFirstMeaningfulPaint) {
+  if (provisional_first_meaningful_paint_) {
     // If there's only been one contentful paint, then there won't have been
     // a meaningful paint signalled to the Scheduler, so mark one now.
     // This is a no-op if a FMPC has already been marked.
-    m_paintTiming->setFirstMeaningfulPaintCandidate(
-        m_provisionalFirstMeaningfulPaint);
+    paint_timing_->SetFirstMeaningfulPaintCandidate(
+        provisional_first_meaningful_paint_);
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
-    m_firstMeaningfulPaint2Quiet =
-        std::max(m_provisionalFirstMeaningfulPaint,
-                 m_paintTiming->firstContentfulPaint());
+    first_meaningful_paint2_quiet_ =
+        std::max(provisional_first_meaningful_paint_,
+                 paint_timing_->FirstContentfulPaint());
     // Report FirstMeaningfulPaint when the page reached network 2-quiet.
-    m_paintTiming->setFirstMeaningfulPaint(m_firstMeaningfulPaint2Quiet);
+    paint_timing_->SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_);
   }
-  reportHistograms();
+  ReportHistograms();
 }
 
-void FirstMeaningfulPaintDetector::reportHistograms() {
+void FirstMeaningfulPaintDetector::ReportHistograms() {
   // This enum backs an UMA histogram, and should be treated as append-only.
   enum HadNetworkQuiet {
-    HadNetwork0Quiet,
-    HadNetwork2Quiet,
-    HadNetworkQuietEnumMax
+    kHadNetwork0Quiet,
+    kHadNetwork2Quiet,
+    kHadNetworkQuietEnumMax
   };
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, hadNetworkQuietHistogram,
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, had_network_quiet_histogram,
                       ("PageLoad.Experimental.Renderer."
                        "FirstMeaningfulPaintDetector.HadNetworkQuiet",
-                       HadNetworkQuietEnumMax));
+                       kHadNetworkQuietEnumMax));
 
   // This enum backs an UMA histogram, and should be treated as append-only.
   enum FMPOrderingEnum {
-    FMP0QuietFirst,
-    FMP2QuietFirst,
-    FMP0QuietEqualFMP2Quiet,
-    FMPOrderingEnumMax
+    kFMP0QuietFirst,
+    kFMP2QuietFirst,
+    kFMP0QuietEqualFMP2Quiet,
+    kFMPOrderingEnumMax
   };
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, firstMeaningfulPaintOrderingHistogram,
+      EnumerationHistogram, first_meaningful_paint_ordering_histogram,
       ("PageLoad.Experimental.Renderer.FirstMeaningfulPaintDetector."
        "FirstMeaningfulPaintOrdering",
-       FMPOrderingEnumMax));
+       kFMPOrderingEnumMax));
 
-  if (m_firstMeaningfulPaint0Quiet && m_firstMeaningfulPaint2Quiet) {
+  if (first_meaningful_paint0_quiet_ && first_meaningful_paint2_quiet_) {
     int sample;
-    if (m_firstMeaningfulPaint2Quiet < m_firstMeaningfulPaint0Quiet) {
-      sample = FMP0QuietFirst;
-    } else if (m_firstMeaningfulPaint2Quiet > m_firstMeaningfulPaint0Quiet) {
-      sample = FMP2QuietFirst;
+    if (first_meaningful_paint2_quiet_ < first_meaningful_paint0_quiet_) {
+      sample = kFMP0QuietFirst;
+    } else if (first_meaningful_paint2_quiet_ >
+               first_meaningful_paint0_quiet_) {
+      sample = kFMP2QuietFirst;
     } else {
-      sample = FMP0QuietEqualFMP2Quiet;
+      sample = kFMP0QuietEqualFMP2Quiet;
     }
-    firstMeaningfulPaintOrderingHistogram.count(sample);
-  } else if (m_firstMeaningfulPaint0Quiet) {
-    hadNetworkQuietHistogram.count(HadNetwork0Quiet);
-  } else if (m_firstMeaningfulPaint2Quiet) {
-    hadNetworkQuietHistogram.count(HadNetwork2Quiet);
+    first_meaningful_paint_ordering_histogram.Count(sample);
+  } else if (first_meaningful_paint0_quiet_) {
+    had_network_quiet_histogram.Count(kHadNetwork0Quiet);
+  } else if (first_meaningful_paint2_quiet_) {
+    had_network_quiet_histogram.Count(kHadNetwork2Quiet);
   }
 }
 
 DEFINE_TRACE(FirstMeaningfulPaintDetector) {
-  visitor->trace(m_paintTiming);
+  visitor->Trace(paint_timing_);
 }
 
 }  // namespace blink

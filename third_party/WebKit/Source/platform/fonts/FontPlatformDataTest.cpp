@@ -35,37 +35,37 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::createTestFont;
+using blink::testing::CreateTestFont;
 
 namespace blink {
 
 TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning) {
   Font font =
-      createTestFont("Ahem", testing::platformTestDataPath("Ahem.woff"), 16);
-  const FontPlatformData& platformData = font.primaryFont()->platformData();
-  TypesettingFeatures features = Kerning | Ligatures;
+      CreateTestFont("Ahem", testing::PlatformTestDataPath("Ahem.woff"), 16);
+  const FontPlatformData& platform_data = font.PrimaryFont()->PlatformData();
+  TypesettingFeatures features = kKerning | kLigatures;
 
-  EXPECT_FALSE(platformData.hasSpaceInLigaturesOrKerning(features));
+  EXPECT_FALSE(platform_data.HasSpaceInLigaturesOrKerning(features));
 }
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning) {
-  Font font = createTestFont(
+  Font font = CreateTestFont(
       "AhemSpaceLigature",
-      testing::platformTestDataPath("AhemSpaceLigature.woff"), 16);
-  const FontPlatformData& platformData = font.primaryFont()->platformData();
-  TypesettingFeatures features = Kerning | Ligatures;
+      testing::PlatformTestDataPath("AhemSpaceLigature.woff"), 16);
+  const FontPlatformData& platform_data = font.PrimaryFont()->PlatformData();
+  TypesettingFeatures features = kKerning | kLigatures;
 
-  EXPECT_TRUE(platformData.hasSpaceInLigaturesOrKerning(features));
+  EXPECT_TRUE(platform_data.HasSpaceInLigaturesOrKerning(features));
 }
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasNoSpaceWithoutFontFeatures) {
-  Font font = createTestFont(
+  Font font = CreateTestFont(
       "AhemSpaceLigature",
-      testing::platformTestDataPath("AhemSpaceLigature.woff"), 16);
-  const FontPlatformData& platformData = font.primaryFont()->platformData();
+      testing::PlatformTestDataPath("AhemSpaceLigature.woff"), 16);
+  const FontPlatformData& platform_data = font.PrimaryFont()->PlatformData();
   TypesettingFeatures features = 0;
 
-  EXPECT_FALSE(platformData.hasSpaceInLigaturesOrKerning(features));
+  EXPECT_FALSE(platform_data.HasSpaceInLigaturesOrKerning(features));
 }
 
 }  // namespace blink

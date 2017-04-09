@@ -15,7 +15,7 @@ namespace {
 typedef HashMap<int, blink::OffscreenCanvasPlaceholder*> PlaceholderIdMap;
 
 PlaceholderIdMap& placeholderRegistry() {
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(PlaceholderIdMap, s_placeholderRegistry, ());
   return s_placeholderRegistry;
 }
@@ -26,7 +26,7 @@ void releaseFrameToDispatcher(
     unsigned resourceId) {
   oldImage = nullptr;  // Needed to unref'ed on the right thread
   if (dispatcher) {
-    dispatcher->reclaimResource(resourceId);
+    dispatcher->ReclaimResource(resourceId);
   }
 }
 
@@ -35,55 +35,55 @@ void releaseFrameToDispatcher(
 namespace blink {
 
 OffscreenCanvasPlaceholder::~OffscreenCanvasPlaceholder() {
-  unregisterPlaceholder();
+  UnregisterPlaceholder();
 }
 
-OffscreenCanvasPlaceholder* OffscreenCanvasPlaceholder::getPlaceholderById(
-    unsigned placeholderId) {
-  PlaceholderIdMap::iterator it = placeholderRegistry().find(placeholderId);
+OffscreenCanvasPlaceholder* OffscreenCanvasPlaceholder::GetPlaceholderById(
+    unsigned placeholder_id) {
+  PlaceholderIdMap::iterator it = placeholderRegistry().Find(placeholder_id);
   if (it == placeholderRegistry().end())
     return nullptr;
   return it->value;
 }
 
-void OffscreenCanvasPlaceholder::registerPlaceholder(unsigned placeholderId) {
-  DCHECK(!placeholderRegistry().contains(placeholderId));
-  DCHECK(!isPlaceholderRegistered());
-  placeholderRegistry().insert(placeholderId, this);
-  m_placeholderId = placeholderId;
+void OffscreenCanvasPlaceholder::RegisterPlaceholder(unsigned placeholder_id) {
+  DCHECK(!placeholderRegistry().Contains(placeholder_id));
+  DCHECK(!IsPlaceholderRegistered());
+  placeholderRegistry().insert(placeholder_id, this);
+  placeholder_id_ = placeholder_id;
 }
 
-void OffscreenCanvasPlaceholder::unregisterPlaceholder() {
-  if (!isPlaceholderRegistered())
+void OffscreenCanvasPlaceholder::UnregisterPlaceholder() {
+  if (!IsPlaceholderRegistered())
     return;
-  DCHECK(placeholderRegistry().find(m_placeholderId)->value == this);
-  placeholderRegistry().erase(m_placeholderId);
-  m_placeholderId = kNoPlaceholderId;
+  DCHECK(placeholderRegistry().Find(placeholder_id_)->value == this);
+  placeholderRegistry().erase(placeholder_id_);
+  placeholder_id_ = kNoPlaceholderId;
 }
 
-void OffscreenCanvasPlaceholder::setPlaceholderFrame(
-    RefPtr<StaticBitmapImage> newFrame,
+void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
+    RefPtr<StaticBitmapImage> new_frame,
     WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-    RefPtr<WebTaskRunner> taskRunner,
-    unsigned resourceId) {
-  DCHECK(isPlaceholderRegistered());
-  DCHECK(newFrame);
-  releasePlaceholderFrame();
-  m_placeholderFrame = std::move(newFrame);
-  m_frameDispatcher = std::move(dispatcher);
-  m_frameDispatcherTaskRunner = std::move(taskRunner);
-  m_placeholderFrameResourceId = resourceId;
+    RefPtr<WebTaskRunner> task_runner,
+    unsigned resource_id) {
+  DCHECK(IsPlaceholderRegistered());
+  DCHECK(new_frame);
+  ReleasePlaceholderFrame();
+  placeholder_frame_ = std::move(new_frame);
+  frame_dispatcher_ = std::move(dispatcher);
+  frame_dispatcher_task_runner_ = std::move(task_runner);
+  placeholder_frame_resource_id_ = resource_id;
 }
 
-void OffscreenCanvasPlaceholder::releasePlaceholderFrame() {
-  DCHECK(isPlaceholderRegistered());
-  if (m_placeholderFrame) {
-    m_placeholderFrame->transfer();
-    m_frameDispatcherTaskRunner->postTask(
+void OffscreenCanvasPlaceholder::ReleasePlaceholderFrame() {
+  DCHECK(IsPlaceholderRegistered());
+  if (placeholder_frame_) {
+    placeholder_frame_->Transfer();
+    frame_dispatcher_task_runner_->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(releaseFrameToDispatcher, std::move(m_frameDispatcher),
-                        std::move(m_placeholderFrame),
-                        m_placeholderFrameResourceId));
+        CrossThreadBind(releaseFrameToDispatcher, std::move(frame_dispatcher_),
+                        std::move(placeholder_frame_),
+                        placeholder_frame_resource_id_));
   }
 }
 

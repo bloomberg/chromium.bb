@@ -77,13 +77,13 @@ void AppBindings::GetDetails(
 }
 
 v8::Local<v8::Value> AppBindings::GetDetailsImpl(blink::WebLocalFrame* frame) {
-  v8::Isolate* isolate = frame->mainWorldScriptContext()->GetIsolate();
-  if (frame->document().getSecurityOrigin().isUnique())
+  v8::Isolate* isolate = frame->MainWorldScriptContext()->GetIsolate();
+  if (frame->GetDocument().GetSecurityOrigin().IsUnique())
     return v8::Null(isolate);
 
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
-          frame->document().url());
+          frame->GetDocument().Url());
 
   if (!extension)
     return v8::Null(isolate);
@@ -93,7 +93,7 @@ v8::Local<v8::Value> AppBindings::GetDetailsImpl(blink::WebLocalFrame* frame) {
   manifest_copy->SetString("id", extension->id());
   std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   return converter->ToV8Value(manifest_copy.get(),
-                              frame->mainWorldScriptContext());
+                              frame->MainWorldScriptContext());
 }
 
 void AppBindings::GetInstallState(
@@ -113,7 +113,7 @@ void AppBindings::GetInstallState(
   CHECK(render_frame);
 
   Send(new ExtensionHostMsg_GetAppInstallState(
-      render_frame->GetRoutingID(), context()->web_frame()->document().url(),
+      render_frame->GetRoutingID(), context()->web_frame()->GetDocument().Url(),
       GetRoutingID(), callback_id));
 }
 
@@ -122,17 +122,17 @@ void AppBindings::GetRunningState(
   // To distinguish between ready_to_run and cannot_run states, we need the app
   // from the top frame.
   blink::WebSecurityOrigin top_frame_security_origin =
-      context()->web_frame()->top()->getSecurityOrigin();
+      context()->web_frame()->Top()->GetSecurityOrigin();
   const RendererExtensionRegistry* extensions =
       RendererExtensionRegistry::Get();
 
   // The app associated with the top level frame.
   const Extension* top_app = extensions->GetHostedAppByURL(
-      GURL(top_frame_security_origin.toString().utf8()));
+      GURL(top_frame_security_origin.ToString().Utf8()));
 
   // The app associated with this frame.
   const Extension* this_app = extensions->GetHostedAppByURL(
-      context()->web_frame()->document().url());
+      context()->web_frame()->GetDocument().Url());
 
   if (!this_app || !top_app) {
     args.GetReturnValue().Set(v8::String::NewFromUtf8(

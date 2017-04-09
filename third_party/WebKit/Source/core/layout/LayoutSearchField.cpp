@@ -42,40 +42,41 @@ LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
 
 LayoutSearchField::~LayoutSearchField() {}
 
-inline Element* LayoutSearchField::searchDecorationElement() const {
-  return inputElement()->userAgentShadowRoot()->getElementById(
-      ShadowElementNames::searchDecoration());
+inline Element* LayoutSearchField::SearchDecorationElement() const {
+  return InputElement()->UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::SearchDecoration());
 }
 
-inline Element* LayoutSearchField::cancelButtonElement() const {
-  return inputElement()->userAgentShadowRoot()->getElementById(
-      ShadowElementNames::clearButton());
+inline Element* LayoutSearchField::CancelButtonElement() const {
+  return InputElement()->UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::ClearButton());
 }
 
-LayoutUnit LayoutSearchField::computeControlLogicalHeight(
-    LayoutUnit lineHeight,
-    LayoutUnit nonContentHeight) const {
-  Element* searchDecoration = searchDecorationElement();
-  if (LayoutBox* decorationLayoutObject =
-          searchDecoration ? searchDecoration->layoutBox() : 0) {
-    decorationLayoutObject->updateLogicalHeight();
-    nonContentHeight =
-        max(nonContentHeight,
-            decorationLayoutObject->borderAndPaddingLogicalHeight() +
-                decorationLayoutObject->marginLogicalHeight());
-    lineHeight = max(lineHeight, decorationLayoutObject->logicalHeight());
+LayoutUnit LayoutSearchField::ComputeControlLogicalHeight(
+    LayoutUnit line_height,
+    LayoutUnit non_content_height) const {
+  Element* search_decoration = SearchDecorationElement();
+  if (LayoutBox* decoration_layout_object =
+          search_decoration ? search_decoration->GetLayoutBox() : 0) {
+    decoration_layout_object->UpdateLogicalHeight();
+    non_content_height =
+        max(non_content_height,
+            decoration_layout_object->BorderAndPaddingLogicalHeight() +
+                decoration_layout_object->MarginLogicalHeight());
+    line_height = max(line_height, decoration_layout_object->LogicalHeight());
   }
-  Element* cancelButton = cancelButtonElement();
-  if (LayoutBox* cancelLayoutObject =
-          cancelButton ? cancelButton->layoutBox() : 0) {
-    cancelLayoutObject->updateLogicalHeight();
-    nonContentHeight = max(nonContentHeight,
-                           cancelLayoutObject->borderAndPaddingLogicalHeight() +
-                               cancelLayoutObject->marginLogicalHeight());
-    lineHeight = max(lineHeight, cancelLayoutObject->logicalHeight());
+  Element* cancel_button = CancelButtonElement();
+  if (LayoutBox* cancel_layout_object =
+          cancel_button ? cancel_button->GetLayoutBox() : 0) {
+    cancel_layout_object->UpdateLogicalHeight();
+    non_content_height =
+        max(non_content_height,
+            cancel_layout_object->BorderAndPaddingLogicalHeight() +
+                cancel_layout_object->MarginLogicalHeight());
+    line_height = max(line_height, cancel_layout_object->LogicalHeight());
   }
 
-  return lineHeight + nonContentHeight;
+  return line_height + non_content_height;
 }
 
 }  // namespace blink

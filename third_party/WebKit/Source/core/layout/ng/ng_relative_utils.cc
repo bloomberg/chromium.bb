@@ -23,14 +23,14 @@ NGLogicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
 
   Optional<LayoutUnit> left, right, top, bottom;
 
-  if (!child_style.left().isAuto())
-    left = valueForLength(child_style.left(), container_size.width);
-  if (!child_style.right().isAuto())
-    right = valueForLength(child_style.right(), container_size.width);
-  if (!child_style.top().isAuto())
-    top = valueForLength(child_style.top(), container_size.height);
-  if (!child_style.bottom().isAuto())
-    bottom = valueForLength(child_style.bottom(), container_size.height);
+  if (!child_style.Left().IsAuto())
+    left = ValueForLength(child_style.Left(), container_size.width);
+  if (!child_style.Right().IsAuto())
+    right = ValueForLength(child_style.Right(), container_size.width);
+  if (!child_style.Top().IsAuto())
+    top = ValueForLength(child_style.Top(), container_size.height);
+  if (!child_style.Bottom().IsAuto())
+    bottom = ValueForLength(child_style.Bottom(), container_size.height);
 
   // Implements confict resolution rules from spec:
   // https://www.w3.org/TR/css-position-3/#rel-pos

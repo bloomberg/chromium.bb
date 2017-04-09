@@ -35,38 +35,38 @@ namespace blink {
 
 enum WebTextInputType {
   // Input caret is not in an editable node, no input method shall be used.
-  WebTextInputTypeNone,
+  kWebTextInputTypeNone,
 
   // Input caret is in a normal editable node, any input method can be used.
-  WebTextInputTypeText,
+  kWebTextInputTypeText,
 
   // Input caret is in a specific input field, and input method may be used
   // only if it's suitable for the specific input field.
-  WebTextInputTypePassword,
-  WebTextInputTypeSearch,
-  WebTextInputTypeEmail,
-  WebTextInputTypeNumber,
-  WebTextInputTypeTelephone,
-  WebTextInputTypeURL,
+  kWebTextInputTypePassword,
+  kWebTextInputTypeSearch,
+  kWebTextInputTypeEmail,
+  kWebTextInputTypeNumber,
+  kWebTextInputTypeTelephone,
+  kWebTextInputTypeURL,
 
   // These types, though not used in IME, are used by the Android date picker.
   // TODO(dglazkov): They are technically not _text_ input types and likely
   // should be split out into a separate enum.
-  WebTextInputTypeDate,
-  WebTextInputTypeDateTime,
-  WebTextInputTypeDateTimeLocal,
-  WebTextInputTypeMonth,
-  WebTextInputTypeTime,
-  WebTextInputTypeWeek,
-  WebTextInputTypeTextArea,
+  kWebTextInputTypeDate,
+  kWebTextInputTypeDateTime,
+  kWebTextInputTypeDateTimeLocal,
+  kWebTextInputTypeMonth,
+  kWebTextInputTypeTime,
+  kWebTextInputTypeWeek,
+  kWebTextInputTypeTextArea,
 
   // Input caret is in a contenteditable node (not an INPUT field).
-  WebTextInputTypeContentEditable,
+  kWebTextInputTypeContentEditable,
 
   // The focused node is date time field. The date time field does not have
   // input caret but it is necessary to distinguish from WebTextInputTypeNone
   // for on-screen keyboard.
-  WebTextInputTypeDateTimeField,
+  kWebTextInputTypeDateTimeField,
 };
 
 // Separate on/off flags are defined so that the input mechanism can choose
@@ -76,17 +76,17 @@ enum WebTextInputType {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
 // GENERATED_JAVA_PREFIX_TO_STRIP: WebTextInputFlag
 enum WebTextInputFlags {
-  WebTextInputFlagNone = 0,
-  WebTextInputFlagAutocompleteOn = 1 << 0,
-  WebTextInputFlagAutocompleteOff = 1 << 1,
-  WebTextInputFlagAutocorrectOn = 1 << 2,
-  WebTextInputFlagAutocorrectOff = 1 << 3,
-  WebTextInputFlagSpellcheckOn = 1 << 4,
-  WebTextInputFlagSpellcheckOff = 1 << 5,
-  WebTextInputFlagAutocapitalizeNone = 1 << 6,
-  WebTextInputFlagAutocapitalizeCharacters = 1 << 7,
-  WebTextInputFlagAutocapitalizeWords = 1 << 8,
-  WebTextInputFlagAutocapitalizeSentences = 1 << 9
+  kWebTextInputFlagNone = 0,
+  kWebTextInputFlagAutocompleteOn = 1 << 0,
+  kWebTextInputFlagAutocompleteOff = 1 << 1,
+  kWebTextInputFlagAutocorrectOn = 1 << 2,
+  kWebTextInputFlagAutocorrectOff = 1 << 3,
+  kWebTextInputFlagSpellcheckOn = 1 << 4,
+  kWebTextInputFlagSpellcheckOff = 1 << 5,
+  kWebTextInputFlagAutocapitalizeNone = 1 << 6,
+  kWebTextInputFlagAutocapitalizeCharacters = 1 << 7,
+  kWebTextInputFlagAutocapitalizeWords = 1 << 8,
+  kWebTextInputFlagAutocapitalizeSentences = 1 << 9
 };
 
 }  // namespace blink

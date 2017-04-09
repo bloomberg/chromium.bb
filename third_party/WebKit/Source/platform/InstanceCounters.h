@@ -42,49 +42,49 @@ class InstanceCounters {
 
  public:
   enum CounterType {
-    AudioHandlerCounter,
-    DocumentCounter,
-    FrameCounter,
-    JSEventListenerCounter,
-    LayoutObjectCounter,
-    MediaKeySessionCounter,
-    MediaKeysCounter,
-    NodeCounter,
-    ResourceCounter,
-    ScriptPromiseCounter,
-    SuspendableObjectCounter,
-    V8PerContextDataCounter,
-    WorkerGlobalScopeCounter,
+    kAudioHandlerCounter,
+    kDocumentCounter,
+    kFrameCounter,
+    kJSEventListenerCounter,
+    kLayoutObjectCounter,
+    kMediaKeySessionCounter,
+    kMediaKeysCounter,
+    kNodeCounter,
+    kResourceCounter,
+    kScriptPromiseCounter,
+    kSuspendableObjectCounter,
+    kV8PerContextDataCounter,
+    kWorkerGlobalScopeCounter,
 
     // This value must be the last.
-    CounterTypeLength,
+    kCounterTypeLength,
   };
 
-  static inline void incrementCounter(CounterType type) {
-    DCHECK_NE(type, NodeCounter);
-    atomicIncrement(&s_counters[type]);
+  static inline void IncrementCounter(CounterType type) {
+    DCHECK_NE(type, kNodeCounter);
+    AtomicIncrement(&counters_[type]);
   }
 
-  static inline void decrementCounter(CounterType type) {
-    DCHECK_NE(type, NodeCounter);
-    atomicDecrement(&s_counters[type]);
+  static inline void DecrementCounter(CounterType type) {
+    DCHECK_NE(type, kNodeCounter);
+    AtomicDecrement(&counters_[type]);
   }
 
-  static inline void incrementNodeCounter() {
-    DCHECK(isMainThread());
-    s_nodeCounter++;
+  static inline void IncrementNodeCounter() {
+    DCHECK(IsMainThread());
+    node_counter_++;
   }
 
-  static inline void decrementNodeCounter() {
-    DCHECK(isMainThread());
-    s_nodeCounter--;
+  static inline void DecrementNodeCounter() {
+    DCHECK(IsMainThread());
+    node_counter_--;
   }
 
-  PLATFORM_EXPORT static int counterValue(CounterType);
+  PLATFORM_EXPORT static int CounterValue(CounterType);
 
  private:
-  PLATFORM_EXPORT static int s_counters[CounterTypeLength];
-  PLATFORM_EXPORT static int s_nodeCounter;
+  PLATFORM_EXPORT static int counters_[kCounterTypeLength];
+  PLATFORM_EXPORT static int node_counter_;
 };
 
 }  // namespace blink

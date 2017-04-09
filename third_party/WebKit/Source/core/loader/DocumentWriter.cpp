@@ -43,78 +43,78 @@
 
 namespace blink {
 
-DocumentWriter* DocumentWriter::create(
+DocumentWriter* DocumentWriter::Create(
     Document* document,
-    ParserSynchronizationPolicy parsingPolicy,
-    const AtomicString& mimeType,
+    ParserSynchronizationPolicy parsing_policy,
+    const AtomicString& mime_type,
     const AtomicString& encoding) {
-  return new DocumentWriter(document, parsingPolicy, mimeType, encoding);
+  return new DocumentWriter(document, parsing_policy, mime_type, encoding);
 }
 
 DocumentWriter::DocumentWriter(Document* document,
-                               ParserSynchronizationPolicy parserSyncPolicy,
-                               const AtomicString& mimeType,
+                               ParserSynchronizationPolicy parser_sync_policy,
+                               const AtomicString& mime_type,
                                const AtomicString& encoding)
-    : m_document(document),
-      m_decoderBuilder(mimeType, encoding),
+    : document_(document),
+      decoder_builder_(mime_type, encoding),
       // We grab a reference to the parser so that we'll always send data to the
       // original parser, even if the document acquires a new parser (e.g., via
       // document.open).
-      m_parser(m_document->implicitOpen(parserSyncPolicy)) {
-  if (m_document->frame()) {
-    if (FrameView* view = m_document->frame()->view())
-      view->setContentsSize(IntSize());
+      parser_(document_->ImplicitOpen(parser_sync_policy)) {
+  if (document_->GetFrame()) {
+    if (FrameView* view = document_->GetFrame()->View())
+      view->SetContentsSize(IntSize());
   }
 }
 
 DocumentWriter::~DocumentWriter() {}
 
 DEFINE_TRACE(DocumentWriter) {
-  visitor->trace(m_document);
-  visitor->trace(m_parser);
+  visitor->Trace(document_);
+  visitor->Trace(parser_);
 }
 
-void DocumentWriter::appendReplacingData(const String& source) {
-  m_document->setCompatibilityMode(Document::NoQuirksMode);
+void DocumentWriter::AppendReplacingData(const String& source) {
+  document_->SetCompatibilityMode(Document::kNoQuirksMode);
 
   // FIXME: This should call DocumentParser::appendBytes instead of append
   // to support RawDataDocumentParsers.
-  if (DocumentParser* parser = m_document->parser())
-    parser->append(source);
+  if (DocumentParser* parser = document_->Parser())
+    parser->Append(source);
 }
 
-void DocumentWriter::addData(const char* bytes, size_t length) {
-  DCHECK(m_parser);
-  if (m_parser->needsDecoder() && 0 < length) {
+void DocumentWriter::AddData(const char* bytes, size_t length) {
+  DCHECK(parser_);
+  if (parser_->NeedsDecoder() && 0 < length) {
     std::unique_ptr<TextResourceDecoder> decoder =
-        m_decoderBuilder.buildFor(m_document);
-    m_parser->setDecoder(std::move(decoder));
+        decoder_builder_.BuildFor(document_);
+    parser_->SetDecoder(std::move(decoder));
   }
   // appendBytes() can result replacing DocumentLoader::m_writer.
-  m_parser->appendBytes(bytes, length);
+  parser_->AppendBytes(bytes, length);
 }
 
 void DocumentWriter::end() {
-  DCHECK(m_document);
+  DCHECK(document_);
 
-  if (!m_parser)
+  if (!parser_)
     return;
 
-  if (m_parser->needsDecoder()) {
+  if (parser_->NeedsDecoder()) {
     std::unique_ptr<TextResourceDecoder> decoder =
-        m_decoderBuilder.buildFor(m_document);
-    m_parser->setDecoder(std::move(decoder));
+        decoder_builder_.BuildFor(document_);
+    parser_->SetDecoder(std::move(decoder));
   }
 
-  m_parser->finish();
-  m_parser = nullptr;
-  m_document = nullptr;
+  parser_->Finish();
+  parser_ = nullptr;
+  document_ = nullptr;
 }
 
-void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation() {
-  DCHECK(m_parser);
-  DCHECK(!m_parser->isStopped());
-  m_parser->setDocumentWasLoadedAsPartOfNavigation();
+void DocumentWriter::SetDocumentWasLoadedAsPartOfNavigation() {
+  DCHECK(parser_);
+  DCHECK(!parser_->IsStopped());
+  parser_->SetDocumentWasLoadedAsPartOfNavigation();
 }
 
 }  // namespace blink

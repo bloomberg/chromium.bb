@@ -39,31 +39,31 @@ CustomEvent::CustomEvent(const AtomicString& type,
 CustomEvent::~CustomEvent() {}
 
 void CustomEvent::initCustomEvent(const AtomicString& type,
-                                  bool canBubble,
+                                  bool can_bubble,
                                   bool cancelable,
                                   const ScriptValue&) {
-  initEvent(type, canBubble, cancelable);
+  initEvent(type, can_bubble, cancelable);
 }
 
 void CustomEvent::initCustomEvent(
     const AtomicString& type,
-    bool canBubble,
+    bool can_bubble,
     bool cancelable,
-    PassRefPtr<SerializedScriptValue> serializedDetail) {
-  if (isBeingDispatched())
+    PassRefPtr<SerializedScriptValue> serialized_detail) {
+  if (IsBeingDispatched())
     return;
 
-  initEvent(type, canBubble, cancelable);
+  initEvent(type, can_bubble, cancelable);
 
-  m_serializedDetail = std::move(serializedDetail);
+  serialized_detail_ = std::move(serialized_detail);
 }
 
-const AtomicString& CustomEvent::interfaceName() const {
+const AtomicString& CustomEvent::InterfaceName() const {
   return EventNames::CustomEvent;
 }
 
 DEFINE_TRACE(CustomEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

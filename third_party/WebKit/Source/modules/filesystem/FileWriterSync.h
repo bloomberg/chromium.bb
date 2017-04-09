@@ -50,7 +50,7 @@ class FileWriterSync final : public GarbageCollectedFinalized<FileWriterSync>,
   USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 
  public:
-  static FileWriterSync* create() { return new FileWriterSync(); }
+  static FileWriterSync* Create() { return new FileWriterSync(); }
   ~FileWriterSync() override;
   DECLARE_VIRTUAL_TRACE();
 
@@ -60,16 +60,16 @@ class FileWriterSync final : public GarbageCollectedFinalized<FileWriterSync>,
   void truncate(long long length, ExceptionState&);
 
   // WebFileWriterClient, via FileWriterBase
-  void didWrite(long long bytes, bool complete) override;
-  void didTruncate() override;
-  void didFail(WebFileError) override;
+  void DidWrite(long long bytes, bool complete) override;
+  void DidTruncate() override;
+  void DidFail(WebFileError) override;
 
  private:
   FileWriterSync();
-  void prepareForWrite();
+  void PrepareForWrite();
 
-  FileError::ErrorCode m_error;
-  bool m_complete;
+  FileError::ErrorCode error_;
+  bool complete_;
 };
 
 }  // namespace blink

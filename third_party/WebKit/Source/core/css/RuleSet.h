@@ -38,14 +38,14 @@
 namespace blink {
 
 enum AddRuleFlags {
-  RuleHasNoSpecialState = 0,
-  RuleHasDocumentSecurityOrigin = 1,
+  kRuleHasNoSpecialState = 0,
+  kRuleHasDocumentSecurityOrigin = 1,
 };
 
 enum PropertyWhitelistType {
-  PropertyWhitelistNone,
-  PropertyWhitelistCue,
-  PropertyWhitelistFirstLetter,
+  kPropertyWhitelistNone,
+  kPropertyWhitelistCue,
+  kPropertyWhitelistFirstLetter,
 };
 
 class CSSSelector;
@@ -56,14 +56,14 @@ class MinimalRuleData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  MinimalRuleData(StyleRule* rule, unsigned selectorIndex, AddRuleFlags flags)
-      : m_rule(rule), m_selectorIndex(selectorIndex), m_flags(flags) {}
+  MinimalRuleData(StyleRule* rule, unsigned selector_index, AddRuleFlags flags)
+      : rule_(rule), selector_index_(selector_index), flags_(flags) {}
 
   DECLARE_TRACE();
 
-  Member<StyleRule> m_rule;
-  unsigned m_selectorIndex;
-  AddRuleFlags m_flags;
+  Member<StyleRule> rule_;
+  unsigned selector_index_;
+  AddRuleFlags flags_;
 };
 
 }  // namespace blink
@@ -76,60 +76,65 @@ class CORE_EXPORT RuleData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  RuleData(StyleRule*, unsigned selectorIndex, unsigned position, AddRuleFlags);
+  RuleData(StyleRule*,
+           unsigned selector_index,
+           unsigned position,
+           AddRuleFlags);
 
-  unsigned position() const { return m_position; }
-  StyleRule* rule() const { return m_rule; }
-  const CSSSelector& selector() const {
-    return m_rule->selectorList().selectorAt(m_selectorIndex);
+  unsigned GetPosition() const { return position_; }
+  StyleRule* Rule() const { return rule_; }
+  const CSSSelector& Selector() const {
+    return rule_->SelectorList().SelectorAt(selector_index_);
   }
-  unsigned selectorIndex() const { return m_selectorIndex; }
+  unsigned SelectorIndex() const { return selector_index_; }
 
-  bool isLastInArray() const { return m_isLastInArray; }
-  void setLastInArray(bool flag) { m_isLastInArray = flag; }
+  bool IsLastInArray() const { return is_last_in_array_; }
+  void SetLastInArray(bool flag) { is_last_in_array_ = flag; }
 
-  bool containsUncommonAttributeSelector() const {
-    return m_containsUncommonAttributeSelector;
+  bool ContainsUncommonAttributeSelector() const {
+    return contains_uncommon_attribute_selector_;
   }
-  unsigned specificity() const { return m_specificity; }
-  unsigned linkMatchType() const { return m_linkMatchType; }
-  bool hasDocumentSecurityOrigin() const { return m_hasDocumentSecurityOrigin; }
-  PropertyWhitelistType propertyWhitelist(
-      bool isMatchingUARules = false) const {
-    return isMatchingUARules
-               ? PropertyWhitelistNone
-               : static_cast<PropertyWhitelistType>(m_propertyWhitelist);
+  unsigned Specificity() const { return specificity_; }
+  unsigned LinkMatchType() const { return link_match_type_; }
+  bool HasDocumentSecurityOrigin() const {
+    return has_document_security_origin_;
+  }
+  PropertyWhitelistType PropertyWhitelist(
+      bool is_matching_ua_rules = false) const {
+    return is_matching_ua_rules
+               ? kPropertyWhitelistNone
+               : static_cast<PropertyWhitelistType>(property_whitelist_);
   }
   // Try to balance between memory usage (there can be lots of RuleData objects)
   // and good filtering performance.
-  static const unsigned maximumIdentifierCount = 4;
-  const unsigned* descendantSelectorIdentifierHashes() const {
-    return m_descendantSelectorIdentifierHashes;
+  static const unsigned kMaximumIdentifierCount = 4;
+  const unsigned* DescendantSelectorIdentifierHashes() const {
+    return descendant_selector_identifier_hashes_;
   }
 
   DECLARE_TRACE();
 
  private:
-  Member<StyleRule> m_rule;
+  Member<StyleRule> rule_;
   // This number is picked fairly arbitrary. If lowered, be aware that there
   // might be sites and extensions using style rules with selector lists
   // exceeding the number of simple selectors to fit in this bitfield.
   // See https://crbug.com/312913 and https://crbug.com/704562
-  unsigned m_selectorIndex : 13;
+  unsigned selector_index_ : 13;
   // We store an array of RuleData objects in a primitive array.
-  unsigned m_isLastInArray : 1;
+  unsigned is_last_in_array_ : 1;
   // This number was picked fairly arbitrarily. We can probably lower it if we
   // need to. Some simple testing showed <100,000 RuleData's on large sites.
-  unsigned m_position : 18;
+  unsigned position_ : 18;
   // 32 bits above
-  unsigned m_specificity : 24;
-  unsigned m_containsUncommonAttributeSelector : 1;
-  unsigned m_linkMatchType : 2;  //  CSSSelector::LinkMatchMask
-  unsigned m_hasDocumentSecurityOrigin : 1;
-  unsigned m_propertyWhitelist : 2;
+  unsigned specificity_ : 24;
+  unsigned contains_uncommon_attribute_selector_ : 1;
+  unsigned link_match_type_ : 2;  //  CSSSelector::LinkMatchMask
+  unsigned has_document_security_origin_ : 1;
+  unsigned property_whitelist_ : 2;
   // 30 bits above
   // Use plain array instead of a Vector to minimize memory overhead.
-  unsigned m_descendantSelectorIdentifierHashes[maximumIdentifierCount];
+  unsigned descendant_selector_identifier_hashes_[kMaximumIdentifierCount];
 };
 
 }  // namespace blink
@@ -153,102 +158,102 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   WTF_MAKE_NONCOPYABLE(RuleSet);
 
  public:
-  static RuleSet* create() { return new RuleSet; }
+  static RuleSet* Create() { return new RuleSet; }
 
-  void addRulesFromSheet(StyleSheetContents*,
+  void AddRulesFromSheet(StyleSheetContents*,
                          const MediaQueryEvaluator&,
-                         AddRuleFlags = RuleHasNoSpecialState);
-  void addStyleRule(StyleRule*, AddRuleFlags);
-  void addRule(StyleRule*, unsigned selectorIndex, AddRuleFlags);
+                         AddRuleFlags = kRuleHasNoSpecialState);
+  void AddStyleRule(StyleRule*, AddRuleFlags);
+  void AddRule(StyleRule*, unsigned selector_index, AddRuleFlags);
 
-  const RuleFeatureSet& features() const { return m_features; }
+  const RuleFeatureSet& Features() const { return features_; }
 
-  const HeapTerminatedArray<RuleData>* idRules(const AtomicString& key) const {
-    DCHECK(!m_pendingRules);
-    return m_idRules.at(key);
+  const HeapTerminatedArray<RuleData>* IdRules(const AtomicString& key) const {
+    DCHECK(!pending_rules_);
+    return id_rules_.at(key);
   }
-  const HeapTerminatedArray<RuleData>* classRules(
+  const HeapTerminatedArray<RuleData>* ClassRules(
       const AtomicString& key) const {
-    DCHECK(!m_pendingRules);
-    return m_classRules.at(key);
+    DCHECK(!pending_rules_);
+    return class_rules_.at(key);
   }
-  const HeapTerminatedArray<RuleData>* tagRules(const AtomicString& key) const {
-    DCHECK(!m_pendingRules);
-    return m_tagRules.at(key);
+  const HeapTerminatedArray<RuleData>* TagRules(const AtomicString& key) const {
+    DCHECK(!pending_rules_);
+    return tag_rules_.at(key);
   }
-  const HeapTerminatedArray<RuleData>* shadowPseudoElementRules(
+  const HeapTerminatedArray<RuleData>* ShadowPseudoElementRules(
       const AtomicString& key) const {
-    DCHECK(!m_pendingRules);
-    return m_shadowPseudoElementRules.at(key);
+    DCHECK(!pending_rules_);
+    return shadow_pseudo_element_rules_.at(key);
   }
-  const HeapVector<RuleData>* linkPseudoClassRules() const {
-    DCHECK(!m_pendingRules);
-    return &m_linkPseudoClassRules;
+  const HeapVector<RuleData>* LinkPseudoClassRules() const {
+    DCHECK(!pending_rules_);
+    return &link_pseudo_class_rules_;
   }
-  const HeapVector<RuleData>* cuePseudoRules() const {
-    DCHECK(!m_pendingRules);
-    return &m_cuePseudoRules;
+  const HeapVector<RuleData>* CuePseudoRules() const {
+    DCHECK(!pending_rules_);
+    return &cue_pseudo_rules_;
   }
-  const HeapVector<RuleData>* focusPseudoClassRules() const {
-    DCHECK(!m_pendingRules);
-    return &m_focusPseudoClassRules;
+  const HeapVector<RuleData>* FocusPseudoClassRules() const {
+    DCHECK(!pending_rules_);
+    return &focus_pseudo_class_rules_;
   }
-  const HeapVector<RuleData>* placeholderPseudoRules() const {
-    DCHECK(!m_pendingRules);
-    return &m_placeholderPseudoRules;
+  const HeapVector<RuleData>* PlaceholderPseudoRules() const {
+    DCHECK(!pending_rules_);
+    return &placeholder_pseudo_rules_;
   }
-  const HeapVector<RuleData>* universalRules() const {
-    DCHECK(!m_pendingRules);
-    return &m_universalRules;
+  const HeapVector<RuleData>* UniversalRules() const {
+    DCHECK(!pending_rules_);
+    return &universal_rules_;
   }
-  const HeapVector<RuleData>* shadowHostRules() const {
-    DCHECK(!m_pendingRules);
-    return &m_shadowHostRules;
+  const HeapVector<RuleData>* ShadowHostRules() const {
+    DCHECK(!pending_rules_);
+    return &shadow_host_rules_;
   }
-  const HeapVector<Member<StyleRulePage>>& pageRules() const {
-    DCHECK(!m_pendingRules);
-    return m_pageRules;
+  const HeapVector<Member<StyleRulePage>>& PageRules() const {
+    DCHECK(!pending_rules_);
+    return page_rules_;
   }
-  const HeapVector<Member<StyleRuleFontFace>>& fontFaceRules() const {
-    return m_fontFaceRules;
+  const HeapVector<Member<StyleRuleFontFace>>& FontFaceRules() const {
+    return font_face_rules_;
   }
-  const HeapVector<Member<StyleRuleKeyframes>>& keyframesRules() const {
-    return m_keyframesRules;
+  const HeapVector<Member<StyleRuleKeyframes>>& KeyframesRules() const {
+    return keyframes_rules_;
   }
-  const HeapVector<MinimalRuleData>& deepCombinatorOrShadowPseudoRules() const {
-    return m_deepCombinatorOrShadowPseudoRules;
+  const HeapVector<MinimalRuleData>& DeepCombinatorOrShadowPseudoRules() const {
+    return deep_combinator_or_shadow_pseudo_rules_;
   }
-  const HeapVector<MinimalRuleData>& contentPseudoElementRules() const {
-    return m_contentPseudoElementRules;
+  const HeapVector<MinimalRuleData>& ContentPseudoElementRules() const {
+    return content_pseudo_element_rules_;
   }
-  const HeapVector<MinimalRuleData>& slottedPseudoElementRules() const {
-    return m_slottedPseudoElementRules;
+  const HeapVector<MinimalRuleData>& SlottedPseudoElementRules() const {
+    return slotted_pseudo_element_rules_;
   }
 
-  unsigned ruleCount() const { return m_ruleCount; }
+  unsigned RuleCount() const { return rule_count_; }
 
-  void compactRulesIfNeeded() {
-    if (!m_pendingRules)
+  void CompactRulesIfNeeded() {
+    if (!pending_rules_)
       return;
-    compactRules();
+    CompactRules();
   }
 
-  bool hasSlottedRules() const {
-    return !m_slottedPseudoElementRules.isEmpty();
+  bool HasSlottedRules() const {
+    return !slotted_pseudo_element_rules_.IsEmpty();
   }
 
-  bool hasV0BoundaryCrossingRules() const {
-    return !m_deepCombinatorOrShadowPseudoRules.isEmpty() ||
-           !m_contentPseudoElementRules.isEmpty();
+  bool HasV0BoundaryCrossingRules() const {
+    return !deep_combinator_or_shadow_pseudo_rules_.IsEmpty() ||
+           !content_pseudo_element_rules_.IsEmpty();
   }
 
-  bool needsFullRecalcForRuleSetInvalidation() const {
-    return m_features.needsFullRecalcForRuleSetInvalidation() ||
-           hasV0BoundaryCrossingRules();
+  bool NeedsFullRecalcForRuleSetInvalidation() const {
+    return features_.NeedsFullRecalcForRuleSetInvalidation() ||
+           HasV0BoundaryCrossingRules();
   }
 
 #ifndef NDEBUG
-  void show() const;
+  void Show() const;
 #endif
 
   DECLARE_TRACE();
@@ -259,30 +264,30 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   using CompactRuleMap =
       HeapHashMap<AtomicString, Member<HeapTerminatedArray<RuleData>>>;
 
-  RuleSet() : m_ruleCount(0) {}
+  RuleSet() : rule_count_(0) {}
 
-  void addToRuleSet(const AtomicString& key, PendingRuleMap&, const RuleData&);
-  void addPageRule(StyleRulePage*);
-  void addViewportRule(StyleRuleViewport*);
-  void addFontFaceRule(StyleRuleFontFace*);
-  void addKeyframesRule(StyleRuleKeyframes*);
+  void AddToRuleSet(const AtomicString& key, PendingRuleMap&, const RuleData&);
+  void AddPageRule(StyleRulePage*);
+  void AddViewportRule(StyleRuleViewport*);
+  void AddFontFaceRule(StyleRuleFontFace*);
+  void AddKeyframesRule(StyleRuleKeyframes*);
 
-  void addChildRules(const HeapVector<Member<StyleRuleBase>>&,
+  void AddChildRules(const HeapVector<Member<StyleRuleBase>>&,
                      const MediaQueryEvaluator& medium,
                      AddRuleFlags);
-  bool findBestRuleSetAndAdd(const CSSSelector&, RuleData&);
+  bool FindBestRuleSetAndAdd(const CSSSelector&, RuleData&);
 
-  void compactRules();
-  static void compactPendingRules(PendingRuleMap&, CompactRuleMap&);
+  void CompactRules();
+  static void CompactPendingRules(PendingRuleMap&, CompactRuleMap&);
 
   class PendingRuleMaps : public GarbageCollected<PendingRuleMaps> {
    public:
-    static PendingRuleMaps* create() { return new PendingRuleMaps; }
+    static PendingRuleMaps* Create() { return new PendingRuleMaps; }
 
-    PendingRuleMap idRules;
-    PendingRuleMap classRules;
-    PendingRuleMap tagRules;
-    PendingRuleMap shadowPseudoElementRules;
+    PendingRuleMap id_rules;
+    PendingRuleMap class_rules;
+    PendingRuleMap tag_rules;
+    PendingRuleMap shadow_pseudo_element_rules;
 
     DECLARE_TRACE();
 
@@ -290,35 +295,35 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     PendingRuleMaps() {}
   };
 
-  PendingRuleMaps* ensurePendingRules() {
-    if (!m_pendingRules)
-      m_pendingRules = PendingRuleMaps::create();
-    return m_pendingRules.get();
+  PendingRuleMaps* EnsurePendingRules() {
+    if (!pending_rules_)
+      pending_rules_ = PendingRuleMaps::Create();
+    return pending_rules_.Get();
   }
 
-  CompactRuleMap m_idRules;
-  CompactRuleMap m_classRules;
-  CompactRuleMap m_tagRules;
-  CompactRuleMap m_shadowPseudoElementRules;
-  HeapVector<RuleData> m_linkPseudoClassRules;
-  HeapVector<RuleData> m_cuePseudoRules;
-  HeapVector<RuleData> m_focusPseudoClassRules;
-  HeapVector<RuleData> m_placeholderPseudoRules;
-  HeapVector<RuleData> m_universalRules;
-  HeapVector<RuleData> m_shadowHostRules;
-  RuleFeatureSet m_features;
-  HeapVector<Member<StyleRulePage>> m_pageRules;
-  HeapVector<Member<StyleRuleFontFace>> m_fontFaceRules;
-  HeapVector<Member<StyleRuleKeyframes>> m_keyframesRules;
-  HeapVector<MinimalRuleData> m_deepCombinatorOrShadowPseudoRules;
-  HeapVector<MinimalRuleData> m_contentPseudoElementRules;
-  HeapVector<MinimalRuleData> m_slottedPseudoElementRules;
+  CompactRuleMap id_rules_;
+  CompactRuleMap class_rules_;
+  CompactRuleMap tag_rules_;
+  CompactRuleMap shadow_pseudo_element_rules_;
+  HeapVector<RuleData> link_pseudo_class_rules_;
+  HeapVector<RuleData> cue_pseudo_rules_;
+  HeapVector<RuleData> focus_pseudo_class_rules_;
+  HeapVector<RuleData> placeholder_pseudo_rules_;
+  HeapVector<RuleData> universal_rules_;
+  HeapVector<RuleData> shadow_host_rules_;
+  RuleFeatureSet features_;
+  HeapVector<Member<StyleRulePage>> page_rules_;
+  HeapVector<Member<StyleRuleFontFace>> font_face_rules_;
+  HeapVector<Member<StyleRuleKeyframes>> keyframes_rules_;
+  HeapVector<MinimalRuleData> deep_combinator_or_shadow_pseudo_rules_;
+  HeapVector<MinimalRuleData> content_pseudo_element_rules_;
+  HeapVector<MinimalRuleData> slotted_pseudo_element_rules_;
 
-  unsigned m_ruleCount;
-  Member<PendingRuleMaps> m_pendingRules;
+  unsigned rule_count_;
+  Member<PendingRuleMaps> pending_rules_;
 
 #ifndef NDEBUG
-  HeapVector<RuleData> m_allRules;
+  HeapVector<RuleData> all_rules_;
 #endif
 };
 

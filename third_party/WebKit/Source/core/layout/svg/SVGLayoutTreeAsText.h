@@ -40,18 +40,18 @@ class LayoutSVGRoot;
 class LayoutSVGText;
 
 // functions used by the main LayoutTreeAsText code
-void write(TextStream&, const LayoutSVGShape&, int indent);
-void write(TextStream&, const LayoutSVGRoot&, int indent);
-void writeSVGGradientStop(TextStream&,
+void Write(TextStream&, const LayoutSVGShape&, int indent);
+void Write(TextStream&, const LayoutSVGRoot&, int indent);
+void WriteSVGGradientStop(TextStream&,
                           const LayoutSVGGradientStop&,
                           int indent);
-void writeSVGResourceContainer(TextStream&, const LayoutObject&, int indent);
-void writeSVGContainer(TextStream&, const LayoutObject&, int indent);
-void writeSVGImage(TextStream&, const LayoutSVGImage&, int indent);
-void writeSVGInlineText(TextStream&, const LayoutSVGInlineText&, int indent);
-void writeSVGText(TextStream&, const LayoutSVGText&, int indent);
-void writeSVGInline(TextStream&, const LayoutSVGInline&, int indent);
-void writeResources(TextStream&, const LayoutObject&, int indent);
+void WriteSVGResourceContainer(TextStream&, const LayoutObject&, int indent);
+void WriteSVGContainer(TextStream&, const LayoutObject&, int indent);
+void WriteSVGImage(TextStream&, const LayoutSVGImage&, int indent);
+void WriteSVGInlineText(TextStream&, const LayoutSVGInlineText&, int indent);
+void WriteSVGText(TextStream&, const LayoutSVGText&, int indent);
+void WriteSVGInline(TextStream&, const LayoutSVGInline&, int indent);
+void WriteResources(TextStream&, const LayoutObject&, int indent);
 
 }  // namespace blink
 

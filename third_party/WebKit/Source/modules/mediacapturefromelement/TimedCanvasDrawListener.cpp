@@ -11,33 +11,33 @@ namespace blink {
 
 TimedCanvasDrawListener::TimedCanvasDrawListener(
     std::unique_ptr<WebCanvasCaptureHandler> handler,
-    double frameRate)
+    double frame_rate)
     : CanvasDrawListener(std::move(handler)),
-      m_frameInterval(1 / frameRate),
-      m_requestFrameTimer(this,
-                          &TimedCanvasDrawListener::requestFrameTimerFired) {}
+      frame_interval_(1 / frame_rate),
+      request_frame_timer_(this,
+                           &TimedCanvasDrawListener::RequestFrameTimerFired) {}
 
 TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
 
 // static
-TimedCanvasDrawListener* TimedCanvasDrawListener::create(
+TimedCanvasDrawListener* TimedCanvasDrawListener::Create(
     std::unique_ptr<WebCanvasCaptureHandler> handler,
-    double frameRate) {
+    double frame_rate) {
   TimedCanvasDrawListener* listener =
-      new TimedCanvasDrawListener(std::move(handler), frameRate);
-  listener->m_requestFrameTimer.startRepeating(listener->m_frameInterval,
-                                               BLINK_FROM_HERE);
+      new TimedCanvasDrawListener(std::move(handler), frame_rate);
+  listener->request_frame_timer_.StartRepeating(listener->frame_interval_,
+                                                BLINK_FROM_HERE);
   return listener;
 }
 
-void TimedCanvasDrawListener::sendNewFrame(sk_sp<SkImage> image) {
-  m_frameCaptureRequested = false;
-  CanvasDrawListener::sendNewFrame(std::move(image));
+void TimedCanvasDrawListener::SendNewFrame(sk_sp<SkImage> image) {
+  frame_capture_requested_ = false;
+  CanvasDrawListener::SendNewFrame(std::move(image));
 }
 
-void TimedCanvasDrawListener::requestFrameTimerFired(TimerBase*) {
+void TimedCanvasDrawListener::RequestFrameTimerFired(TimerBase*) {
   // TODO(emircan): Measure the jitter and log, see crbug.com/589974.
-  m_frameCaptureRequested = true;
+  frame_capture_requested_ = true;
 }
 
 }  // namespace blink

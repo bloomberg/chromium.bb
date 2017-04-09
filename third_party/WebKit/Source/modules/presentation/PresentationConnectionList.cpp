@@ -15,44 +15,45 @@ PresentationConnectionList::PresentationConnectionList(
     ExecutionContext* context)
     : ContextClient(context) {}
 
-const AtomicString& PresentationConnectionList::interfaceName() const {
+const AtomicString& PresentationConnectionList::InterfaceName() const {
   return EventTargetNames::PresentationConnectionList;
 }
 
 const HeapVector<Member<PresentationConnection>>&
 PresentationConnectionList::connections() const {
-  return m_connections;
+  return connections_;
 }
 
-void PresentationConnectionList::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  if (eventType == EventTypeNames::connectionavailable)
-    UseCounter::count(
-        getExecutionContext(),
-        UseCounter::PresentationRequestConnectionAvailableEventListener);
+void PresentationConnectionList::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  if (event_type == EventTypeNames::connectionavailable)
+    UseCounter::Count(
+        GetExecutionContext(),
+        UseCounter::kPresentationRequestConnectionAvailableEventListener);
 }
 
-void PresentationConnectionList::addConnection(
+void PresentationConnectionList::AddConnection(
     PresentationConnection* connection) {
-  m_connections.push_back(connection);
+  connections_.push_back(connection);
 }
 
-void PresentationConnectionList::dispatchConnectionAvailableEvent(
+void PresentationConnectionList::DispatchConnectionAvailableEvent(
     PresentationConnection* connection) {
-  dispatchEvent(PresentationConnectionAvailableEvent::create(
+  DispatchEvent(PresentationConnectionAvailableEvent::Create(
       EventTypeNames::connectionavailable, connection));
 }
 
-bool PresentationConnectionList::isEmpty() {
-  return m_connections.isEmpty();
+bool PresentationConnectionList::IsEmpty() {
+  return connections_.IsEmpty();
 }
 
 DEFINE_TRACE(PresentationConnectionList) {
-  visitor->trace(m_connections);
-  EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  visitor->Trace(connections_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

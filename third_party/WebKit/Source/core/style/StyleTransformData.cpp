@@ -27,39 +27,38 @@
 namespace blink {
 
 StyleTransformData::StyleTransformData()
-    : m_operations(ComputedStyle::initialTransform()),
-      m_origin(ComputedStyle::initialTransformOrigin()),
-      m_motion(ComputedStyle::initialOffsetAnchor(),
-               ComputedStyle::initialOffsetPosition(),
-               nullptr,
-               ComputedStyle::initialOffsetDistance(),
-               ComputedStyle::initialOffsetRotation()),
-      m_translate(ComputedStyle::initialTranslate()),
-      m_rotate(ComputedStyle::initialRotate()),
-      m_scale(ComputedStyle::initialScale()) {}
+    : operations_(ComputedStyle::InitialTransform()),
+      origin_(ComputedStyle::InitialTransformOrigin()),
+      motion_(ComputedStyle::InitialOffsetAnchor(),
+              ComputedStyle::InitialOffsetPosition(),
+              nullptr,
+              ComputedStyle::InitialOffsetDistance(),
+              ComputedStyle::InitialOffsetRotation()),
+      translate_(ComputedStyle::InitialTranslate()),
+      rotate_(ComputedStyle::InitialRotate()),
+      scale_(ComputedStyle::InitialScale()) {}
 
 StyleTransformData::StyleTransformData(const StyleTransformData& o)
     : RefCounted<StyleTransformData>(),
-      m_operations(o.m_operations),
-      m_origin(o.m_origin),
-      m_motion(o.m_motion),
-      m_translate(o.m_translate),
-      m_rotate(o.m_rotate),
-      m_scale(o.m_scale) {}
+      operations_(o.operations_),
+      origin_(o.origin_),
+      motion_(o.motion_),
+      translate_(o.translate_),
+      rotate_(o.rotate_),
+      scale_(o.scale_) {}
 
 bool StyleTransformData::operator==(const StyleTransformData& o) const {
-  return m_origin == o.m_origin && m_operations == o.m_operations &&
-         m_motion == o.m_motion &&
-         dataEquivalent<TransformOperation>(m_translate, o.m_translate) &&
-         dataEquivalent<TransformOperation>(m_rotate, o.m_rotate) &&
-         dataEquivalent<TransformOperation>(m_scale, o.m_scale);
+  return origin_ == o.origin_ && operations_ == o.operations_ &&
+         motion_ == o.motion_ &&
+         DataEquivalent<TransformOperation>(translate_, o.translate_) &&
+         DataEquivalent<TransformOperation>(rotate_, o.rotate_) &&
+         DataEquivalent<TransformOperation>(scale_, o.scale_);
 }
 
-bool StyleTransformData::has3DTransform() const {
-  return m_operations.has3DOperation() ||
-         (m_translate && m_translate->z() != 0) ||
-         (m_rotate && (m_rotate->x() != 0 || m_rotate->y() != 0)) ||
-         (m_scale && m_scale->z() != 1);
+bool StyleTransformData::Has3DTransform() const {
+  return operations_.Has3DOperation() || (translate_ && translate_->Z() != 0) ||
+         (rotate_ && (rotate_->X() != 0 || rotate_->Y() != 0)) ||
+         (scale_ && scale_->Z() != 1);
 }
 
 }  // namespace blink

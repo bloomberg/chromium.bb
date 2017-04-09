@@ -36,118 +36,119 @@ namespace blink {
 
 namespace {
 
-enum class ClipStrategy { None, Mask, Path };
+enum class ClipStrategy { kNone, kMask, kPath };
 
-ClipStrategy modifyStrategyForClipPath(const ComputedStyle& style,
+ClipStrategy ModifyStrategyForClipPath(const ComputedStyle& style,
                                        ClipStrategy strategy) {
   // If the shape in the clip-path gets clipped too then fallback to masking.
-  if (strategy != ClipStrategy::Path || !style.clipPath())
+  if (strategy != ClipStrategy::kPath || !style.ClipPath())
     return strategy;
-  return ClipStrategy::Mask;
+  return ClipStrategy::kMask;
 }
 
-ClipStrategy determineClipStrategy(const SVGGraphicsElement& element) {
-  const LayoutObject* layoutObject = element.layoutObject();
-  if (!layoutObject)
-    return ClipStrategy::None;
-  const ComputedStyle& style = layoutObject->styleRef();
-  if (style.display() == EDisplay::kNone ||
-      style.visibility() != EVisibility::kVisible)
-    return ClipStrategy::None;
-  ClipStrategy strategy = ClipStrategy::None;
+ClipStrategy DetermineClipStrategy(const SVGGraphicsElement& element) {
+  const LayoutObject* layout_object = element.GetLayoutObject();
+  if (!layout_object)
+    return ClipStrategy::kNone;
+  const ComputedStyle& style = layout_object->StyleRef();
+  if (style.Display() == EDisplay::kNone ||
+      style.Visibility() != EVisibility::kVisible)
+    return ClipStrategy::kNone;
+  ClipStrategy strategy = ClipStrategy::kNone;
   // Only shapes, paths and texts are allowed for clipping.
-  if (layoutObject->isSVGShape()) {
-    strategy = ClipStrategy::Path;
-  } else if (layoutObject->isSVGText()) {
+  if (layout_object->IsSVGShape()) {
+    strategy = ClipStrategy::kPath;
+  } else if (layout_object->IsSVGText()) {
     // Text requires masking.
-    strategy = ClipStrategy::Mask;
+    strategy = ClipStrategy::kMask;
   }
-  return modifyStrategyForClipPath(style, strategy);
+  return ModifyStrategyForClipPath(style, strategy);
 }
 
-ClipStrategy determineClipStrategy(const SVGElement& element) {
+ClipStrategy DetermineClipStrategy(const SVGElement& element) {
   // <use> within <clipPath> have a restricted content model.
   // (https://drafts.fxtf.org/css-masking-1/#ClipPathElement)
   if (isSVGUseElement(element)) {
-    const LayoutObject* useLayoutObject = element.layoutObject();
-    if (!useLayoutObject ||
-        useLayoutObject->styleRef().display() == EDisplay::kNone)
-      return ClipStrategy::None;
-    const SVGGraphicsElement* shapeElement =
-        toSVGUseElement(element).visibleTargetGraphicsElementForClipping();
-    if (!shapeElement)
-      return ClipStrategy::None;
-    ClipStrategy shapeStrategy = determineClipStrategy(*shapeElement);
-    return modifyStrategyForClipPath(useLayoutObject->styleRef(),
-                                     shapeStrategy);
+    const LayoutObject* use_layout_object = element.GetLayoutObject();
+    if (!use_layout_object ||
+        use_layout_object->StyleRef().Display() == EDisplay::kNone)
+      return ClipStrategy::kNone;
+    const SVGGraphicsElement* shape_element =
+        toSVGUseElement(element).VisibleTargetGraphicsElementForClipping();
+    if (!shape_element)
+      return ClipStrategy::kNone;
+    ClipStrategy shape_strategy = DetermineClipStrategy(*shape_element);
+    return ModifyStrategyForClipPath(use_layout_object->StyleRef(),
+                                     shape_strategy);
   }
-  if (!element.isSVGGraphicsElement())
-    return ClipStrategy::None;
-  return determineClipStrategy(toSVGGraphicsElement(element));
+  if (!element.IsSVGGraphicsElement())
+    return ClipStrategy::kNone;
+  return DetermineClipStrategy(ToSVGGraphicsElement(element));
 }
 
-bool contributesToClip(const SVGElement& element) {
-  return determineClipStrategy(element) != ClipStrategy::None;
+bool ContributesToClip(const SVGElement& element) {
+  return DetermineClipStrategy(element) != ClipStrategy::kNone;
 }
 
-void pathFromElement(const SVGElement& element, Path& clipPath) {
-  if (isSVGGeometryElement(element))
-    toSVGGeometryElement(element).toClipPath(clipPath);
+void PathFromElement(const SVGElement& element, Path& clip_path) {
+  if (IsSVGGeometryElement(element))
+    ToSVGGeometryElement(element).ToClipPath(clip_path);
   else if (isSVGUseElement(element))
-    toSVGUseElement(element).toClipPath(clipPath);
+    toSVGUseElement(element).ToClipPath(clip_path);
 }
 
 }  // namespace
 
 LayoutSVGResourceClipper::LayoutSVGResourceClipper(SVGClipPathElement* node)
-    : LayoutSVGResourceContainer(node), m_inClipExpansion(false) {}
+    : LayoutSVGResourceContainer(node), in_clip_expansion_(false) {}
 
 LayoutSVGResourceClipper::~LayoutSVGResourceClipper() {}
 
-void LayoutSVGResourceClipper::removeAllClientsFromCache(
-    bool markForInvalidation) {
-  m_clipContentPath.clear();
-  m_cachedPaintRecord.reset();
-  m_localClipBounds = FloatRect();
-  markAllClientsForInvalidation(markForInvalidation
-                                    ? LayoutAndBoundariesInvalidation
-                                    : ParentOnlyInvalidation);
+void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
+    bool mark_for_invalidation) {
+  clip_content_path_.Clear();
+  cached_paint_record_.reset();
+  local_clip_bounds_ = FloatRect();
+  MarkAllClientsForInvalidation(mark_for_invalidation
+                                    ? kLayoutAndBoundariesInvalidation
+                                    : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceClipper::removeClientFromCache(LayoutObject* client,
-                                                     bool markForInvalidation) {
+void LayoutSVGResourceClipper::RemoveClientFromCache(
+    LayoutObject* client,
+    bool mark_for_invalidation) {
   DCHECK(client);
-  markClientForInvalidation(client, markForInvalidation
-                                        ? BoundariesInvalidation
-                                        : ParentOnlyInvalidation);
+  MarkClientForInvalidation(client, mark_for_invalidation
+                                        ? kBoundariesInvalidation
+                                        : kParentOnlyInvalidation);
 }
 
-bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded() {
-  if (!m_clipContentPath.isEmpty())
+bool LayoutSVGResourceClipper::CalculateClipContentPathIfNeeded() {
+  if (!clip_content_path_.IsEmpty())
     return true;
 
   // If the current clip-path gets clipped itself, we have to fallback to
   // masking.
-  if (styleRef().clipPath())
+  if (StyleRef().ClipPath())
     return false;
 
-  unsigned opCount = 0;
-  bool usingBuilder = false;
-  SkOpBuilder clipPathBuilder;
+  unsigned op_count = 0;
+  bool using_builder = false;
+  SkOpBuilder clip_path_builder;
 
-  for (const SVGElement& childElement :
-       Traversal<SVGElement>::childrenOf(*element())) {
-    ClipStrategy strategy = determineClipStrategy(childElement);
-    if (strategy == ClipStrategy::None)
+  for (const SVGElement& child_element :
+       Traversal<SVGElement>::ChildrenOf(*GetElement())) {
+    ClipStrategy strategy = DetermineClipStrategy(child_element);
+    if (strategy == ClipStrategy::kNone)
       continue;
-    if (strategy == ClipStrategy::Mask) {
-      m_clipContentPath.clear();
+    if (strategy == ClipStrategy::kMask) {
+      clip_content_path_.Clear();
       return false;
     }
 
     // First clip shape.
-    if (m_clipContentPath.isEmpty()) {
-      pathFromElement(childElement, m_clipContentPath);
+    if (clip_content_path_.IsEmpty()) {
+      PathFromElement(child_element, clip_content_path_);
       continue;
     }
 
@@ -155,65 +156,65 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded() {
     // exhibit quadratic behavior, so we cap the number of ops to a reasonable
     // count.
     const unsigned kMaxOps = 42;
-    if (++opCount > kMaxOps) {
-      m_clipContentPath.clear();
+    if (++op_count > kMaxOps) {
+      clip_content_path_.Clear();
       return false;
     }
 
     // Second clip shape => start using the builder.
-    if (!usingBuilder) {
-      clipPathBuilder.add(m_clipContentPath.getSkPath(), kUnion_SkPathOp);
-      usingBuilder = true;
+    if (!using_builder) {
+      clip_path_builder.add(clip_content_path_.GetSkPath(), kUnion_SkPathOp);
+      using_builder = true;
     }
 
-    Path subPath;
-    pathFromElement(childElement, subPath);
+    Path sub_path;
+    PathFromElement(child_element, sub_path);
 
-    clipPathBuilder.add(subPath.getSkPath(), kUnion_SkPathOp);
+    clip_path_builder.add(sub_path.GetSkPath(), kUnion_SkPathOp);
   }
 
-  if (usingBuilder) {
-    SkPath resolvedPath;
-    clipPathBuilder.resolve(&resolvedPath);
-    m_clipContentPath = resolvedPath;
+  if (using_builder) {
+    SkPath resolved_path;
+    clip_path_builder.resolve(&resolved_path);
+    clip_content_path_ = resolved_path;
   }
 
   return true;
 }
 
-bool LayoutSVGResourceClipper::asPath(
-    const AffineTransform& animatedLocalTransform,
-    const FloatRect& referenceBox,
-    Path& clipPath) {
-  if (!calculateClipContentPathIfNeeded())
+bool LayoutSVGResourceClipper::AsPath(
+    const AffineTransform& animated_local_transform,
+    const FloatRect& reference_box,
+    Path& clip_path) {
+  if (!CalculateClipContentPathIfNeeded())
     return false;
 
-  clipPath = m_clipContentPath;
+  clip_path = clip_content_path_;
 
   // We are able to represent the clip as a path. Continue with direct clipping,
   // and transform the content to userspace if necessary.
-  if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+  if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     AffineTransform transform;
-    transform.translate(referenceBox.x(), referenceBox.y());
-    transform.scaleNonUniform(referenceBox.width(), referenceBox.height());
-    clipPath.transform(transform);
+    transform.Translate(reference_box.X(), reference_box.Y());
+    transform.ScaleNonUniform(reference_box.Width(), reference_box.Height());
+    clip_path.Transform(transform);
   }
 
   // Transform path by animatedLocalTransform.
-  clipPath.transform(animatedLocalTransform);
+  clip_path.Transform(animated_local_transform);
   return true;
 }
 
-sk_sp<const PaintRecord> LayoutSVGResourceClipper::createPaintRecord() {
-  DCHECK(frame());
-  if (m_cachedPaintRecord)
-    return m_cachedPaintRecord;
+sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {
+  DCHECK(GetFrame());
+  if (cached_paint_record_)
+    return cached_paint_record_;
 
   // Using strokeBoundingBox (instead of visualRectInLocalSVGCoordinates) to
   // avoid the intersection with local clips/mask, which may yield incorrect
   // results when mixing objectBoundingBox and userSpaceOnUse units
   // (http://crbug.com/294900).
-  FloatRect bounds = strokeBoundingBox();
+  FloatRect bounds = StrokeBoundingBox();
 
   PaintRecordBuilder builder(bounds, nullptr, nullptr);
   // Switch to a paint behavior where all children of this <clipPath> will be
@@ -222,91 +223,91 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::createPaintRecord() {
   // - masker/filter not applied when laying out the children
   // - fill is set to the initial fill paint server (solid, black)
   // - stroke is set to the initial stroke paint server (none)
-  PaintInfo info(builder.context(), LayoutRect::infiniteIntRect(),
-                 PaintPhaseForeground, GlobalPaintNormalPhase,
-                 PaintLayerPaintingRenderingClipPathAsMask |
-                     PaintLayerPaintingRenderingResourceSubtree);
+  PaintInfo info(builder.Context(), LayoutRect::InfiniteIntRect(),
+                 kPaintPhaseForeground, kGlobalPaintNormalPhase,
+                 kPaintLayerPaintingRenderingClipPathAsMask |
+                     kPaintLayerPaintingRenderingResourceSubtree);
 
-  for (const SVGElement& childElement :
-       Traversal<SVGElement>::childrenOf(*element())) {
-    if (!contributesToClip(childElement))
+  for (const SVGElement& child_element :
+       Traversal<SVGElement>::ChildrenOf(*GetElement())) {
+    if (!ContributesToClip(child_element))
       continue;
     // Use the LayoutObject of the direct child even if it is a <use>. In that
     // case, we will paint the targeted element indirectly.
-    const LayoutObject* layoutObject = childElement.layoutObject();
-    layoutObject->paint(info, IntPoint());
+    const LayoutObject* layout_object = child_element.GetLayoutObject();
+    layout_object->Paint(info, IntPoint());
   }
 
-  m_cachedPaintRecord = builder.endRecording();
-  return m_cachedPaintRecord;
+  cached_paint_record_ = builder.EndRecording();
+  return cached_paint_record_;
 }
 
-void LayoutSVGResourceClipper::calculateLocalClipBounds() {
+void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
   // This is a rough heuristic to appraise the clip size and doesn't consider
   // clip on clip.
-  for (const SVGElement& childElement :
-       Traversal<SVGElement>::childrenOf(*element())) {
-    if (!contributesToClip(childElement))
+  for (const SVGElement& child_element :
+       Traversal<SVGElement>::ChildrenOf(*GetElement())) {
+    if (!ContributesToClip(child_element))
       continue;
-    const LayoutObject* layoutObject = childElement.layoutObject();
-    m_localClipBounds.unite(layoutObject->localToSVGParentTransform().mapRect(
-        layoutObject->visualRectInLocalSVGCoordinates()));
+    const LayoutObject* layout_object = child_element.GetLayoutObject();
+    local_clip_bounds_.Unite(layout_object->LocalToSVGParentTransform().MapRect(
+        layout_object->VisualRectInLocalSVGCoordinates()));
   }
 }
 
-bool LayoutSVGResourceClipper::hitTestClipContent(
-    const FloatRect& objectBoundingBox,
-    const FloatPoint& nodeAtPoint) {
-  FloatPoint point = nodeAtPoint;
-  if (!SVGLayoutSupport::pointInClippingArea(*this, point))
+bool LayoutSVGResourceClipper::HitTestClipContent(
+    const FloatRect& object_bounding_box,
+    const FloatPoint& node_at_point) {
+  FloatPoint point = node_at_point;
+  if (!SVGLayoutSupport::PointInClippingArea(*this, point))
     return false;
 
-  if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+  if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     AffineTransform transform;
-    transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
-    transform.scaleNonUniform(objectBoundingBox.width(),
-                              objectBoundingBox.height());
-    point = transform.inverse().mapPoint(point);
+    transform.Translate(object_bounding_box.X(), object_bounding_box.Y());
+    transform.ScaleNonUniform(object_bounding_box.Width(),
+                              object_bounding_box.Height());
+    point = transform.Inverse().MapPoint(point);
   }
 
-  AffineTransform animatedLocalTransform =
-      toSVGClipPathElement(element())->calculateTransform(
-          SVGElement::IncludeMotionTransform);
-  if (!animatedLocalTransform.isInvertible())
+  AffineTransform animated_local_transform =
+      toSVGClipPathElement(GetElement())
+          ->CalculateTransform(SVGElement::kIncludeMotionTransform);
+  if (!animated_local_transform.IsInvertible())
     return false;
 
-  point = animatedLocalTransform.inverse().mapPoint(point);
+  point = animated_local_transform.Inverse().MapPoint(point);
 
-  for (const SVGElement& childElement :
-       Traversal<SVGElement>::childrenOf(*element())) {
-    if (!contributesToClip(childElement))
+  for (const SVGElement& child_element :
+       Traversal<SVGElement>::ChildrenOf(*GetElement())) {
+    if (!ContributesToClip(child_element))
       continue;
-    IntPoint hitPoint;
-    HitTestResult result(HitTestRequest::SVGClipContent, hitPoint);
-    LayoutObject* layoutObject = childElement.layoutObject();
-    if (layoutObject->nodeAtFloatPoint(result, point, HitTestForeground))
+    IntPoint hit_point;
+    HitTestResult result(HitTestRequest::kSVGClipContent, hit_point);
+    LayoutObject* layout_object = child_element.GetLayoutObject();
+    if (layout_object->NodeAtFloatPoint(result, point, kHitTestForeground))
       return true;
   }
   return false;
 }
 
-FloatRect LayoutSVGResourceClipper::resourceBoundingBox(
-    const FloatRect& referenceBox) {
+FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
+    const FloatRect& reference_box) {
   // The resource has not been layouted yet. Return the reference box.
-  if (selfNeedsLayout())
-    return referenceBox;
+  if (SelfNeedsLayout())
+    return reference_box;
 
-  if (m_localClipBounds.isEmpty())
-    calculateLocalClipBounds();
+  if (local_clip_bounds_.IsEmpty())
+    CalculateLocalClipBounds();
 
   AffineTransform transform =
-      toSVGClipPathElement(element())->calculateTransform(
-          SVGElement::IncludeMotionTransform);
-  if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    transform.translate(referenceBox.x(), referenceBox.y());
-    transform.scaleNonUniform(referenceBox.width(), referenceBox.height());
+      toSVGClipPathElement(GetElement())
+          ->CalculateTransform(SVGElement::kIncludeMotionTransform);
+  if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+    transform.Translate(reference_box.X(), reference_box.Y());
+    transform.ScaleNonUniform(reference_box.Width(), reference_box.Height());
   }
-  return transform.mapRect(m_localClipBounds);
+  return transform.MapRect(local_clip_bounds_);
 }
 
 }  // namespace blink

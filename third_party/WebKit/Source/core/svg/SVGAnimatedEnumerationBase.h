@@ -48,12 +48,12 @@ class SVGAnimatedEnumerationBase
   void setBaseVal(unsigned short, ExceptionState&);
 
  protected:
-  SVGAnimatedEnumerationBase(SVGElement* contextElement,
-                             const QualifiedName& attributeName,
-                             SVGEnumerationBase* initialValue)
-      : SVGAnimatedProperty<SVGEnumerationBase>(contextElement,
-                                                attributeName,
-                                                initialValue) {}
+  SVGAnimatedEnumerationBase(SVGElement* context_element,
+                             const QualifiedName& attribute_name,
+                             SVGEnumerationBase* initial_value)
+      : SVGAnimatedProperty<SVGEnumerationBase>(context_element,
+                                                attribute_name,
+                                                initial_value) {}
 };
 
 }  // namespace blink

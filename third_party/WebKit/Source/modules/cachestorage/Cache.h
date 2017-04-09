@@ -33,7 +33,7 @@ class MODULES_EXPORT Cache final : public GarbageCollectedFinalized<Cache>,
   WTF_MAKE_NONCOPYABLE(Cache);
 
  public:
-  static Cache* create(GlobalFetch::ScopedFetcher*,
+  static Cache* Create(GlobalFetch::ScopedFetcher*,
                        std::unique_ptr<WebServiceWorkerCache>);
 
   // From Cache.idl:
@@ -64,7 +64,7 @@ class MODULES_EXPORT Cache final : public GarbageCollectedFinalized<Cache>,
                      const CacheQueryOptions&,
                      ExceptionState&);
 
-  static WebServiceWorkerCache::QueryParams toWebQueryParams(
+  static WebServiceWorkerCache::QueryParams ToWebQueryParams(
       const CacheQueryOptions&);
 
   DECLARE_TRACE();
@@ -76,31 +76,31 @@ class MODULES_EXPORT Cache final : public GarbageCollectedFinalized<Cache>,
   friend class FetchResolvedForAdd;
   Cache(GlobalFetch::ScopedFetcher*, std::unique_ptr<WebServiceWorkerCache>);
 
-  ScriptPromise matchImpl(ScriptState*,
+  ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
                           const CacheQueryOptions&);
-  ScriptPromise matchAllImpl(ScriptState*);
-  ScriptPromise matchAllImpl(ScriptState*,
+  ScriptPromise MatchAllImpl(ScriptState*);
+  ScriptPromise MatchAllImpl(ScriptState*,
                              const Request*,
                              const CacheQueryOptions&);
-  ScriptPromise addAllImpl(ScriptState*,
+  ScriptPromise AddAllImpl(ScriptState*,
                            const HeapVector<Member<Request>>&,
                            ExceptionState&);
-  ScriptPromise deleteImpl(ScriptState*,
+  ScriptPromise DeleteImpl(ScriptState*,
                            const Request*,
                            const CacheQueryOptions&);
-  ScriptPromise putImpl(ScriptState*,
+  ScriptPromise PutImpl(ScriptState*,
                         const HeapVector<Member<Request>>&,
                         const HeapVector<Member<Response>>&);
-  ScriptPromise keysImpl(ScriptState*);
-  ScriptPromise keysImpl(ScriptState*,
+  ScriptPromise KeysImpl(ScriptState*);
+  ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
                          const CacheQueryOptions&);
 
-  WebServiceWorkerCache* webCache() const;
+  WebServiceWorkerCache* WebCache() const;
 
-  Member<GlobalFetch::ScopedFetcher> m_scopedFetcher;
-  std::unique_ptr<WebServiceWorkerCache> m_webCache;
+  Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
+  std::unique_ptr<WebServiceWorkerCache> web_cache_;
 };
 
 }  // namespace blink

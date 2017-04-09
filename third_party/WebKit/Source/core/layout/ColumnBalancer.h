@@ -17,56 +17,58 @@ namespace blink {
 class ColumnBalancer {
  protected:
   ColumnBalancer(const LayoutMultiColumnSet&,
-                 LayoutUnit logicalTopInFlowThread,
-                 LayoutUnit logicalBottomInFlowThread);
+                 LayoutUnit logical_top_in_flow_thread,
+                 LayoutUnit logical_bottom_in_flow_thread);
 
-  const LayoutMultiColumnSet& columnSet() const { return m_columnSet; }
+  const LayoutMultiColumnSet& ColumnSet() const { return column_set_; }
 
   // The flow thread portion we're examining. It may be that of the entire
   // column set, or just of a fragmentainer group.
-  const LayoutUnit logicalTopInFlowThread() const {
-    return m_logicalTopInFlowThread;
+  const LayoutUnit LogicalTopInFlowThread() const {
+    return logical_top_in_flow_thread_;
   }
-  const LayoutUnit logicalBottomInFlowThread() const {
-    return m_logicalBottomInFlowThread;
-  }
-
-  const MultiColumnFragmentainerGroup& groupAtOffset(
-      LayoutUnit offsetInFlowThread) const {
-    return m_columnSet.fragmentainerGroupAtFlowThreadOffset(
-        offsetInFlowThread, LayoutBox::AssociateWithLatterPage);
+  const LayoutUnit LogicalBottomInFlowThread() const {
+    return logical_bottom_in_flow_thread_;
   }
 
-  LayoutUnit offsetFromColumnLogicalTop(LayoutUnit offsetInFlowThread) const {
-    return offsetInFlowThread -
-           groupAtOffset(offsetInFlowThread)
-               .columnLogicalTopForOffset(offsetInFlowThread);
+  const MultiColumnFragmentainerGroup& GroupAtOffset(
+      LayoutUnit offset_in_flow_thread) const {
+    return column_set_.FragmentainerGroupAtFlowThreadOffset(
+        offset_in_flow_thread, LayoutBox::kAssociateWithLatterPage);
+  }
+
+  LayoutUnit OffsetFromColumnLogicalTop(
+      LayoutUnit offset_in_flow_thread) const {
+    return offset_in_flow_thread -
+           GroupAtOffset(offset_in_flow_thread)
+               .ColumnLogicalTopForOffset(offset_in_flow_thread);
   }
 
   // Flow thread offset for the layout object that we're currently examining.
-  LayoutUnit flowThreadOffset() const { return m_flowThreadOffset; }
+  LayoutUnit FlowThreadOffset() const { return flow_thread_offset_; }
 
   // Return true if the specified offset is at the top of a column, as long as
   // it's not the first column in the flow thread portion.
-  bool isFirstAfterBreak(LayoutUnit flowThreadOffset) const {
-    if (flowThreadOffset <= m_logicalTopInFlowThread) {
+  bool IsFirstAfterBreak(LayoutUnit flow_thread_offset) const {
+    if (flow_thread_offset <= logical_top_in_flow_thread_) {
       // The first column is either not after any break at all, or after a break
       // in a previous fragmentainer group.
       return false;
     }
-    return flowThreadOffset ==
-           groupAtOffset(flowThreadOffset)
-               .columnLogicalTopForOffset(flowThreadOffset);
+    return flow_thread_offset ==
+           GroupAtOffset(flow_thread_offset)
+               .ColumnLogicalTopForOffset(flow_thread_offset);
   }
 
-  bool isLogicalTopWithinBounds(LayoutUnit logicalTopInFlowThread) const {
-    return logicalTopInFlowThread >= m_logicalTopInFlowThread &&
-           logicalTopInFlowThread < m_logicalBottomInFlowThread;
+  bool IsLogicalTopWithinBounds(LayoutUnit logical_top_in_flow_thread) const {
+    return logical_top_in_flow_thread >= logical_top_in_flow_thread_ &&
+           logical_top_in_flow_thread < logical_bottom_in_flow_thread_;
   }
 
-  bool isLogicalBottomWithinBounds(LayoutUnit logicalBottomInFlowThread) const {
-    return logicalBottomInFlowThread > m_logicalTopInFlowThread &&
-           logicalBottomInFlowThread <= m_logicalBottomInFlowThread;
+  bool IsLogicalBottomWithinBounds(
+      LayoutUnit logical_bottom_in_flow_thread) const {
+    return logical_bottom_in_flow_thread > logical_top_in_flow_thread_ &&
+           logical_bottom_in_flow_thread <= logical_bottom_in_flow_thread_;
   }
 
   // Examine and collect column balancing data from a layout box that has been
@@ -75,35 +77,35 @@ class ColumnBalancer {
   // to the flow thread. Two hooks are provided here. The first one is called
   // right after entering and before traversing the subtree of the box, and the
   // second one right after having traversed the subtree.
-  virtual void examineBoxAfterEntering(
+  virtual void ExamineBoxAfterEntering(
       const LayoutBox&,
-      LayoutUnit childLogicalHeight,
-      EBreakBetween previousBreakAfterValue) = 0;
-  virtual void examineBoxBeforeLeaving(const LayoutBox&,
-                                       LayoutUnit childLogicalHeight) = 0;
+      LayoutUnit child_logical_height,
+      EBreakBetween previous_break_after_value) = 0;
+  virtual void ExamineBoxBeforeLeaving(const LayoutBox&,
+                                       LayoutUnit child_logical_height) = 0;
 
   // Examine and collect column balancing data from a line that has been found
   // to intersect with the flow thread portion. Does not recurse into layout
   // objects on that line.
-  virtual void examineLine(const RootInlineBox&) = 0;
+  virtual void ExamineLine(const RootInlineBox&) = 0;
 
   // Examine and collect column balancing data for everything in the flow thread
   // portion. Will trigger calls to examineBoxAfterEntering(),
   // examineBoxBeforeLeaving() and examineLine() for interesting boxes and
   // lines.
-  void traverse();
+  void Traverse();
 
  private:
-  void traverseSubtree(const LayoutBox&);
+  void TraverseSubtree(const LayoutBox&);
 
-  void traverseLines(const LayoutBlockFlow&);
-  void traverseChildren(const LayoutObject&);
+  void TraverseLines(const LayoutBlockFlow&);
+  void TraverseChildren(const LayoutObject&);
 
-  const LayoutMultiColumnSet& m_columnSet;
-  const LayoutUnit m_logicalTopInFlowThread;
-  const LayoutUnit m_logicalBottomInFlowThread;
+  const LayoutMultiColumnSet& column_set_;
+  const LayoutUnit logical_top_in_flow_thread_;
+  const LayoutUnit logical_bottom_in_flow_thread_;
 
-  LayoutUnit m_flowThreadOffset;
+  LayoutUnit flow_thread_offset_;
 };
 
 // After an initial layout pass, we know the height of the contents of a flow
@@ -119,40 +121,42 @@ class ColumnBalancer {
 class InitialColumnHeightFinder final : public ColumnBalancer {
  public:
   InitialColumnHeightFinder(const LayoutMultiColumnSet&,
-                            LayoutUnit logicalTopInFlowThread,
-                            LayoutUnit logicalBottomInFlowThread);
+                            LayoutUnit logical_top_in_flow_thread,
+                            LayoutUnit logical_bottom_in_flow_thread);
 
-  LayoutUnit initialMinimalBalancedHeight() const;
+  LayoutUnit InitialMinimalBalancedHeight() const;
 
   // Height of the tallest piece of unbreakable content. This is the minimum
   // column logical height required to avoid fragmentation where it shouldn't
   // occur (inside unbreakable content, between orphans and widows, etc.). This
   // will be used as a hint to the column balancer to help set a good initial
   // column height.
-  LayoutUnit tallestUnbreakableLogicalHeight() const {
-    return m_tallestUnbreakableLogicalHeight;
+  LayoutUnit TallestUnbreakableLogicalHeight() const {
+    return tallest_unbreakable_logical_height_;
   }
 
  private:
-  void examineBoxAfterEntering(const LayoutBox&,
-                               LayoutUnit childLogicalHeight,
-                               EBreakBetween previousBreakAfterValue);
-  void examineBoxBeforeLeaving(const LayoutBox&, LayoutUnit childLogicalHeight);
-  void examineLine(const RootInlineBox&);
+  void ExamineBoxAfterEntering(const LayoutBox&,
+                               LayoutUnit child_logical_height,
+                               EBreakBetween previous_break_after_value);
+  void ExamineBoxBeforeLeaving(const LayoutBox&,
+                               LayoutUnit child_logical_height);
+  void ExamineLine(const RootInlineBox&);
 
   // Record that there's a pagination strut that ends at the specified
   // |offsetInFlowThread|, which is an offset exactly at the top of some column.
-  void recordStrutBeforeOffset(LayoutUnit offsetInFlowThread, LayoutUnit strut);
+  void RecordStrutBeforeOffset(LayoutUnit offset_in_flow_thread,
+                               LayoutUnit strut);
 
   // Return the accumulated space used by struts at all column boundaries
   // preceding the specified flowthread offset.
-  LayoutUnit spaceUsedByStrutsAt(LayoutUnit offsetInFlowThread) const;
+  LayoutUnit SpaceUsedByStrutsAt(LayoutUnit offset_in_flow_thread) const;
 
   // Add a content run, specified by its end position. A content run is appended
   // at every forced/explicit break and at the end of the column set. The
   // content runs are used to determine where implicit/soft breaks will occur,
   // in order to calculate an initial column height.
-  void addContentRun(LayoutUnit endOffsetInFlowThread);
+  void AddContentRun(LayoutUnit end_offset_in_flow_thread);
 
   // Normally we'll just return 0 here, because in most cases we won't add more
   // content runs than used column-count. However, if we're at the initial
@@ -163,23 +167,23 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
   // be created, and when distributing implicit column breaks to calculate an
   // initial balanced height, we'll only focus on content that has any chance at
   // all to end up in the last row.
-  unsigned firstContentRunIndexInLastRow() const {
-    unsigned columnCount = columnSet().usedColumnCount();
-    if (m_contentRuns.size() <= columnCount)
+  unsigned FirstContentRunIndexInLastRow() const {
+    unsigned column_count = ColumnSet().UsedColumnCount();
+    if (content_runs_.size() <= column_count)
       return 0;
-    unsigned lastRunIndex = m_contentRuns.size() - 1;
-    return lastRunIndex / columnCount * columnCount;
+    unsigned last_run_index = content_runs_.size() - 1;
+    return last_run_index / column_count * column_count;
   }
 
   // Return the index of the content run with the currently tallest columns,
   // taking all implicit breaks assumed so far into account.
-  unsigned contentRunIndexWithTallestColumns() const;
+  unsigned ContentRunIndexWithTallestColumns() const;
 
   // Given the current list of content runs, make assumptions about where we
   // need to insert implicit breaks (if there's room for any at all; depending
   // on the number of explicit breaks), and store the results. This is needed in
   // order to balance the columns.
-  void distributeImplicitBreaks();
+  void DistributeImplicitBreaks();
 
   // A run of content without explicit (forced) breaks; i.e. a flow thread
   // portion between two explicit breaks, between flow thread start and an
@@ -192,26 +196,26 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
   // implicit break "inserted" there.
   class ContentRun {
    public:
-    ContentRun(LayoutUnit breakOffset)
-        : m_breakOffset(breakOffset), m_assumedImplicitBreaks(0) {}
+    ContentRun(LayoutUnit break_offset)
+        : break_offset_(break_offset), assumed_implicit_breaks_(0) {}
 
-    unsigned assumedImplicitBreaks() const { return m_assumedImplicitBreaks; }
-    void assumeAnotherImplicitBreak() { m_assumedImplicitBreaks++; }
-    LayoutUnit breakOffset() const { return m_breakOffset; }
+    unsigned AssumedImplicitBreaks() const { return assumed_implicit_breaks_; }
+    void AssumeAnotherImplicitBreak() { assumed_implicit_breaks_++; }
+    LayoutUnit BreakOffset() const { return break_offset_; }
 
     // Return the column height that this content run would require, considering
     // the implicit breaks assumed so far.
-    LayoutUnit columnLogicalHeight(LayoutUnit startOffset) const {
-      return LayoutUnit::fromFloatCeil(float(m_breakOffset - startOffset) /
-                                       float(m_assumedImplicitBreaks + 1));
+    LayoutUnit ColumnLogicalHeight(LayoutUnit start_offset) const {
+      return LayoutUnit::FromFloatCeil(float(break_offset_ - start_offset) /
+                                       float(assumed_implicit_breaks_ + 1));
     }
 
    private:
-    LayoutUnit m_breakOffset;  // Flow thread offset where this run ends.
-    unsigned m_assumedImplicitBreaks;  // Number of implicit breaks in this run
-                                       // assumed so far.
+    LayoutUnit break_offset_;  // Flow thread offset where this run ends.
+    unsigned assumed_implicit_breaks_;  // Number of implicit breaks in this run
+                                        // assumed so far.
   };
-  Vector<ContentRun, 32> m_contentRuns;
+  Vector<ContentRun, 32> content_runs_;
 
   // Shortest strut found at each column boundary (index 0 being the boundary
   // between the first and the second column, index 1 being the one between the
@@ -226,10 +230,10 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
   // crossing that boundary.
   //
   // [1] http://www.w3.org/TR/css3-break/#parallel-flows
-  Vector<LayoutUnit, 32> m_shortestStruts;
+  Vector<LayoutUnit, 32> shortest_struts_;
 
-  LayoutUnit m_tallestUnbreakableLogicalHeight;
-  LayoutUnit m_lastBreakSeen;
+  LayoutUnit tallest_unbreakable_logical_height_;
+  LayoutUnit last_break_seen_;
 };
 
 // If we have previously used InitialColumnHeightFinder to estimate an initial
@@ -240,36 +244,37 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
 class MinimumSpaceShortageFinder final : public ColumnBalancer {
  public:
   MinimumSpaceShortageFinder(const LayoutMultiColumnSet&,
-                             LayoutUnit logicalTopInFlowThread,
-                             LayoutUnit logicalBottomInFlowThread);
+                             LayoutUnit logical_top_in_flow_thread,
+                             LayoutUnit logical_bottom_in_flow_thread);
 
-  LayoutUnit minimumSpaceShortage() const { return m_minimumSpaceShortage; }
-  unsigned forcedBreaksCount() const { return m_forcedBreaksCount; }
+  LayoutUnit MinimumSpaceShortage() const { return minimum_space_shortage_; }
+  unsigned ForcedBreaksCount() const { return forced_breaks_count_; }
 
  private:
-  void examineBoxAfterEntering(const LayoutBox&,
-                               LayoutUnit childLogicalHeight,
-                               EBreakBetween previousBreakAfterValue);
-  void examineBoxBeforeLeaving(const LayoutBox&, LayoutUnit childLogicalHeight);
-  void examineLine(const RootInlineBox&);
+  void ExamineBoxAfterEntering(const LayoutBox&,
+                               LayoutUnit child_logical_height,
+                               EBreakBetween previous_break_after_value);
+  void ExamineBoxBeforeLeaving(const LayoutBox&,
+                               LayoutUnit child_logical_height);
+  void ExamineLine(const RootInlineBox&);
 
-  void recordSpaceShortage(LayoutUnit shortage) {
+  void RecordSpaceShortage(LayoutUnit shortage) {
     // Only positive values are interesting (and allowed) here. Zero space
     // shortage may be reported when we're at the top of a column and the
     // element has zero height.
     if (shortage > 0)
-      m_minimumSpaceShortage = std::min(m_minimumSpaceShortage, shortage);
+      minimum_space_shortage_ = std::min(minimum_space_shortage_, shortage);
   }
 
   // The smallest amout of space shortage that caused a column break.
-  LayoutUnit m_minimumSpaceShortage;
+  LayoutUnit minimum_space_shortage_;
 
   // Set when breaking before a block, and we're looking for the first
   // unbreakable descendant, in order to report correct space shortage for that
   // one.
-  LayoutUnit m_pendingStrut;
+  LayoutUnit pending_strut_;
 
-  unsigned m_forcedBreaksCount;
+  unsigned forced_breaks_count_;
 };
 
 }  // namespace blink

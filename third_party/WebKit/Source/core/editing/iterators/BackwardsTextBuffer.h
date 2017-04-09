@@ -15,11 +15,11 @@ class CORE_EXPORT BackwardsTextBuffer final : public TextBufferBase {
 
  public:
   BackwardsTextBuffer() {}
-  const UChar* data() const override;
+  const UChar* Data() const override;
 
  private:
-  UChar* calcDestination(size_t length) override;
-  void shiftData(size_t oldCapacity) override;
+  UChar* CalcDestination(size_t length) override;
+  void ShiftData(size_t old_capacity) override;
 };
 
 }  // namespace blink

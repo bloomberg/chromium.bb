@@ -51,38 +51,38 @@ class ElementAnimation {
   STATIC_ONLY(ElementAnimation);
 
  public:
-  static Animation* animate(ScriptState* scriptState,
+  static Animation* animate(ScriptState* script_state,
                             Element& element,
-                            const DictionarySequenceOrDictionary& effectInput,
+                            const DictionarySequenceOrDictionary& effect_input,
                             double duration,
-                            ExceptionState& exceptionState) {
-    EffectModel* effect = EffectInput::convert(
-        &element, effectInput, scriptState->getExecutionContext(),
-        exceptionState);
-    if (exceptionState.hadException())
+                            ExceptionState& exception_state) {
+    EffectModel* effect = EffectInput::Convert(
+        &element, effect_input, script_state->GetExecutionContext(),
+        exception_state);
+    if (exception_state.HadException())
       return nullptr;
 
     Timing timing;
-    if (!TimingInput::convert(duration, timing, exceptionState))
+    if (!TimingInput::Convert(duration, timing, exception_state))
       return nullptr;
 
     return animate(element, effect, timing);
   }
 
-  static Animation* animate(ScriptState* scriptState,
+  static Animation* animate(ScriptState* script_state,
                             Element& element,
-                            const DictionarySequenceOrDictionary& effectInput,
+                            const DictionarySequenceOrDictionary& effect_input,
                             const KeyframeEffectOptions& options,
-                            ExceptionState& exceptionState) {
-    EffectModel* effect = EffectInput::convert(
-        &element, effectInput, scriptState->getExecutionContext(),
-        exceptionState);
-    if (exceptionState.hadException())
+                            ExceptionState& exception_state) {
+    EffectModel* effect = EffectInput::Convert(
+        &element, effect_input, script_state->GetExecutionContext(),
+        exception_state);
+    if (exception_state.HadException())
       return nullptr;
 
     Timing timing;
-    if (!TimingInput::convert(options, timing, &element.document(),
-                              exceptionState))
+    if (!TimingInput::Convert(options, timing, &element.GetDocument(),
+                              exception_state))
       return nullptr;
 
     Animation* animation = animate(element, effect, timing);
@@ -90,14 +90,14 @@ class ElementAnimation {
     return animation;
   }
 
-  static Animation* animate(ScriptState* scriptState,
+  static Animation* animate(ScriptState* script_state,
                             Element& element,
-                            const DictionarySequenceOrDictionary& effectInput,
-                            ExceptionState& exceptionState) {
-    EffectModel* effect = EffectInput::convert(
-        &element, effectInput, scriptState->getExecutionContext(),
-        exceptionState);
-    if (exceptionState.hadException())
+                            const DictionarySequenceOrDictionary& effect_input,
+                            ExceptionState& exception_state) {
+    EffectModel* effect = EffectInput::Convert(
+        &element, effect_input, script_state->GetExecutionContext(),
+        exception_state);
+    if (exception_state.HadException())
       return nullptr;
     return animate(element, effect, Timing());
   }
@@ -105,23 +105,23 @@ class ElementAnimation {
   static Animation* animate(Element& element,
                             EffectModel* effect,
                             const Timing& timing) {
-    KeyframeEffect* keyframeEffect =
-        KeyframeEffect::create(&element, effect, timing);
-    return element.document().timeline().play(keyframeEffect);
+    KeyframeEffect* keyframe_effect =
+        KeyframeEffect::Create(&element, effect, timing);
+    return element.GetDocument().Timeline().Play(keyframe_effect);
   }
 
   static HeapVector<Member<Animation>> getAnimations(Element& element) {
     HeapVector<Member<Animation>> animations;
 
-    if (!element.hasAnimations())
+    if (!element.HasAnimations())
       return animations;
 
     for (const auto& animation :
-         element.document().timeline().getAnimations()) {
+         element.GetDocument().Timeline().getAnimations()) {
       DCHECK(animation->effect());
-      if (toKeyframeEffectReadOnly(animation->effect())->target() == element &&
-          (animation->effect()->isCurrent() ||
-           animation->effect()->isInEffect()))
+      if (ToKeyframeEffectReadOnly(animation->effect())->Target() == element &&
+          (animation->effect()->IsCurrent() ||
+           animation->effect()->IsInEffect()))
         animations.push_back(animation);
     }
     return animations;

@@ -52,36 +52,36 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptSourceCode(
       const String&,
       const KURL& = KURL(),
-      const TextPosition& startPosition = TextPosition::minimumPosition());
+      const TextPosition& start_position = TextPosition::MinimumPosition());
   ScriptSourceCode(ScriptStreamer*, ScriptResource*);
 
   ~ScriptSourceCode();
-  void dispose();
+  void Dispose();
   DECLARE_TRACE();
 
-  bool isEmpty() const { return m_source.isEmpty(); }
+  bool IsEmpty() const { return source_.IsEmpty(); }
 
   // The null value represents a missing script, created by the nullary
   // constructor, and differs from the empty script.
-  bool isNull() const { return m_source.isNull(); }
+  bool IsNull() const { return source_.IsNull(); }
 
-  const String& source() const { return m_source; }
-  ScriptResource* resource() const { return m_resource; }
-  const KURL& url() const;
-  int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
-  const TextPosition& startPosition() const { return m_startPosition; }
-  String sourceMapUrl() const;
+  const String& Source() const { return source_; }
+  ScriptResource* GetResource() const { return resource_; }
+  const KURL& Url() const;
+  int StartLine() const { return start_position_.line_.OneBasedInt(); }
+  const TextPosition& StartPosition() const { return start_position_; }
+  String SourceMapUrl() const;
 
-  ScriptStreamer* streamer() const { return m_streamer; }
+  ScriptStreamer* Streamer() const { return streamer_; }
 
  private:
-  void treatNullSourceAsEmpty();
+  void TreatNullSourceAsEmpty();
 
-  String m_source;
-  Member<ScriptResource> m_resource;
-  Member<ScriptStreamer> m_streamer;
-  mutable KURL m_url;
-  TextPosition m_startPosition;
+  String source_;
+  Member<ScriptResource> resource_;
+  Member<ScriptStreamer> streamer_;
+  mutable KURL url_;
+  TextPosition start_position_;
 };
 
 }  // namespace blink

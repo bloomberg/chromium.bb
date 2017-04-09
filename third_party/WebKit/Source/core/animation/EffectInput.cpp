@@ -53,28 +53,28 @@ namespace blink {
 
 namespace {
 
-bool compareKeyframes(const RefPtr<StringKeyframe>& a,
+bool CompareKeyframes(const RefPtr<StringKeyframe>& a,
                       const RefPtr<StringKeyframe>& b) {
-  return a->offset() < b->offset();
+  return a->Offset() < b->Offset();
 }
 
 // Validates the value of |offset| and throws an exception if out of range.
-bool checkOffset(double offset,
-                 double lastOffset,
-                 ExceptionState& exceptionState) {
+bool CheckOffset(double offset,
+                 double last_offset,
+                 ExceptionState& exception_state) {
   // Keyframes with offsets outside the range [0.0, 1.0] are an error.
   if (std::isnan(offset)) {
-    exceptionState.throwTypeError("Non numeric offset provided");
+    exception_state.ThrowTypeError("Non numeric offset provided");
     return false;
   }
 
   if (offset < 0 || offset > 1) {
-    exceptionState.throwTypeError("Offsets provided outside the range [0, 1]");
+    exception_state.ThrowTypeError("Offsets provided outside the range [0, 1]");
     return false;
   }
 
-  if (offset < lastOffset) {
-    exceptionState.throwTypeError(
+  if (offset < last_offset) {
+    exception_state.ThrowTypeError(
         "Keyframes with specified offsets are not sorted");
     return false;
   }
@@ -82,313 +82,317 @@ bool checkOffset(double offset,
   return true;
 }
 
-void setKeyframeValue(Element& element,
+void SetKeyframeValue(Element& element,
                       StringKeyframe& keyframe,
                       const String& property,
                       const String& value,
-                      ExecutionContext* executionContext) {
-  StyleSheetContents* styleSheetContents =
-      element.document().elementSheet().contents();
-  CSSPropertyID cssProperty =
-      AnimationInputHelpers::keyframeAttributeToCSSProperty(property,
-                                                            element.document());
-  if (cssProperty != CSSPropertyInvalid) {
-    MutableStylePropertySet::SetResult setResult =
-        cssProperty == CSSPropertyVariable
-            ? keyframe.setCSSPropertyValue(
-                  AtomicString(property), element.document().propertyRegistry(),
-                  value, styleSheetContents)
-            : keyframe.setCSSPropertyValue(cssProperty, value,
-                                           styleSheetContents);
-    if (!setResult.didParse && executionContext) {
-      Document& document = toDocument(*executionContext);
-      if (document.frame()) {
-        document.frame()->console().addMessage(ConsoleMessage::create(
-            JSMessageSource, WarningMessageLevel,
+                      ExecutionContext* execution_context) {
+  StyleSheetContents* style_sheet_contents =
+      element.GetDocument().ElementSheet().Contents();
+  CSSPropertyID css_property =
+      AnimationInputHelpers::KeyframeAttributeToCSSProperty(
+          property, element.GetDocument());
+  if (css_property != CSSPropertyInvalid) {
+    MutableStylePropertySet::SetResult set_result =
+        css_property == CSSPropertyVariable
+            ? keyframe.SetCSSPropertyValue(
+                  AtomicString(property),
+                  element.GetDocument().GetPropertyRegistry(), value,
+                  style_sheet_contents)
+            : keyframe.SetCSSPropertyValue(css_property, value,
+                                           style_sheet_contents);
+    if (!set_result.did_parse && execution_context) {
+      Document& document = ToDocument(*execution_context);
+      if (document.GetFrame()) {
+        document.GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel,
             "Invalid keyframe value for property " + property + ": " + value));
       }
     }
     return;
   }
-  cssProperty = AnimationInputHelpers::keyframeAttributeToPresentationAttribute(
-      property, element);
-  if (cssProperty != CSSPropertyInvalid) {
-    keyframe.setPresentationAttributeValue(cssProperty, value,
-                                           styleSheetContents);
+  css_property =
+      AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
+                                                                      element);
+  if (css_property != CSSPropertyInvalid) {
+    keyframe.SetPresentationAttributeValue(css_property, value,
+                                           style_sheet_contents);
     return;
   }
-  const QualifiedName* svgAttribute =
-      AnimationInputHelpers::keyframeAttributeToSVGAttribute(property, element);
-  if (svgAttribute)
-    keyframe.setSVGAttributeValue(*svgAttribute, value);
+  const QualifiedName* svg_attribute =
+      AnimationInputHelpers::KeyframeAttributeToSVGAttribute(property, element);
+  if (svg_attribute)
+    keyframe.SetSVGAttributeValue(*svg_attribute, value);
 }
 
-EffectModel* createEffectModelFromKeyframes(
+EffectModel* CreateEffectModelFromKeyframes(
     Element& element,
     const StringKeyframeVector& keyframes,
-    ExceptionState& exceptionState) {
-  StringKeyframeEffectModel* keyframeEffectModel =
-      StringKeyframeEffectModel::create(keyframes,
-                                        LinearTimingFunction::shared());
+    ExceptionState& exception_state) {
+  StringKeyframeEffectModel* keyframe_effect_model =
+      StringKeyframeEffectModel::Create(keyframes,
+                                        LinearTimingFunction::Shared());
   if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {
-    for (const auto& keyframeGroup :
-         keyframeEffectModel->getPropertySpecificKeyframeGroups()) {
-      PropertyHandle property = keyframeGroup.key;
-      if (!property.isCSSProperty())
+    for (const auto& keyframe_group :
+         keyframe_effect_model->GetPropertySpecificKeyframeGroups()) {
+      PropertyHandle property = keyframe_group.key;
+      if (!property.IsCSSProperty())
         continue;
 
-      for (const auto& keyframe : keyframeGroup.value->keyframes()) {
-        if (keyframe->isNeutral()) {
-          exceptionState.throwDOMException(
-              NotSupportedError, "Partial keyframes are not supported.");
+      for (const auto& keyframe : keyframe_group.value->Keyframes()) {
+        if (keyframe->IsNeutral()) {
+          exception_state.ThrowDOMException(
+              kNotSupportedError, "Partial keyframes are not supported.");
           return nullptr;
         }
-        if (keyframe->composite() != EffectModel::CompositeReplace) {
-          exceptionState.throwDOMException(
-              NotSupportedError, "Additive animations are not supported.");
+        if (keyframe->Composite() != EffectModel::kCompositeReplace) {
+          exception_state.ThrowDOMException(
+              kNotSupportedError, "Additive animations are not supported.");
           return nullptr;
         }
       }
     }
   }
 
-  DCHECK(!exceptionState.hadException());
-  return keyframeEffectModel;
+  DCHECK(!exception_state.HadException());
+  return keyframe_effect_model;
 }
 
-bool exhaustDictionaryIterator(DictionaryIterator& iterator,
-                               ExecutionContext* executionContext,
-                               ExceptionState& exceptionState,
+bool ExhaustDictionaryIterator(DictionaryIterator& iterator,
+                               ExecutionContext* execution_context,
+                               ExceptionState& exception_state,
                                Vector<Dictionary>& result) {
-  while (iterator.next(executionContext, exceptionState)) {
+  while (iterator.Next(execution_context, exception_state)) {
     Dictionary dictionary;
-    if (!iterator.valueAsDictionary(dictionary, exceptionState)) {
-      exceptionState.throwTypeError("Keyframes must be objects.");
+    if (!iterator.ValueAsDictionary(dictionary, exception_state)) {
+      exception_state.ThrowTypeError("Keyframes must be objects.");
       return false;
     }
     result.push_back(dictionary);
   }
-  return !exceptionState.hadException();
+  return !exception_state.HadException();
 }
 
 }  // namespace
 
 // Spec: http://w3c.github.io/web-animations/#processing-a-keyframes-argument
-EffectModel* EffectInput::convert(
+EffectModel* EffectInput::Convert(
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
-    ExecutionContext* executionContext,
-    ExceptionState& exceptionState) {
-  if (effectInput.isNull() || !element)
+    const DictionarySequenceOrDictionary& effect_input,
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
+  if (effect_input.isNull() || !element)
     return nullptr;
 
-  if (effectInput.isDictionarySequence()) {
-    return convertArrayForm(*element, effectInput.getAsDictionarySequence(),
-                            executionContext, exceptionState);
+  if (effect_input.isDictionarySequence()) {
+    return ConvertArrayForm(*element, effect_input.getAsDictionarySequence(),
+                            execution_context, exception_state);
   }
 
-  const Dictionary& dictionary = effectInput.getAsDictionary();
-  DictionaryIterator iterator = dictionary.getIterator(executionContext);
-  if (!iterator.isNull()) {
+  const Dictionary& dictionary = effect_input.getAsDictionary();
+  DictionaryIterator iterator = dictionary.GetIterator(execution_context);
+  if (!iterator.IsNull()) {
     // TODO(alancutter): Convert keyframes during iteration rather than after to
     // match spec.
-    Vector<Dictionary> keyframeDictionaries;
-    if (exhaustDictionaryIterator(iterator, executionContext, exceptionState,
-                                  keyframeDictionaries)) {
-      return convertArrayForm(*element, keyframeDictionaries, executionContext,
-                              exceptionState);
+    Vector<Dictionary> keyframe_dictionaries;
+    if (ExhaustDictionaryIterator(iterator, execution_context, exception_state,
+                                  keyframe_dictionaries)) {
+      return ConvertArrayForm(*element, keyframe_dictionaries,
+                              execution_context, exception_state);
     }
     return nullptr;
   }
 
-  return convertObjectForm(*element, dictionary, executionContext,
-                           exceptionState);
+  return ConvertObjectForm(*element, dictionary, execution_context,
+                           exception_state);
 }
 
-EffectModel* EffectInput::convertArrayForm(
+EffectModel* EffectInput::ConvertArrayForm(
     Element& element,
-    const Vector<Dictionary>& keyframeDictionaries,
-    ExecutionContext* executionContext,
-    ExceptionState& exceptionState) {
+    const Vector<Dictionary>& keyframe_dictionaries,
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
   StringKeyframeVector keyframes;
-  double lastOffset = 0;
+  double last_offset = 0;
 
-  for (const Dictionary& keyframeDictionary : keyframeDictionaries) {
-    RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
+  for (const Dictionary& keyframe_dictionary : keyframe_dictionaries) {
+    RefPtr<StringKeyframe> keyframe = StringKeyframe::Create();
 
     Nullable<double> offset;
-    if (DictionaryHelper::get(keyframeDictionary, "offset", offset) &&
-        !offset.isNull()) {
-      if (!checkOffset(offset.get(), lastOffset, exceptionState))
+    if (DictionaryHelper::Get(keyframe_dictionary, "offset", offset) &&
+        !offset.IsNull()) {
+      if (!CheckOffset(offset.Get(), last_offset, exception_state))
         return nullptr;
 
-      lastOffset = offset.get();
-      keyframe->setOffset(offset.get());
+      last_offset = offset.Get();
+      keyframe->SetOffset(offset.Get());
     }
 
-    String compositeString;
-    DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
-    if (compositeString == "add")
-      keyframe->setComposite(EffectModel::CompositeAdd);
+    String composite_string;
+    DictionaryHelper::Get(keyframe_dictionary, "composite", composite_string);
+    if (composite_string == "add")
+      keyframe->SetComposite(EffectModel::kCompositeAdd);
     // TODO(alancutter): Support "accumulate" keyframe composition.
 
-    String timingFunctionString;
-    if (DictionaryHelper::get(keyframeDictionary, "easing",
-                              timingFunctionString)) {
-      RefPtr<TimingFunction> timingFunction =
-          AnimationInputHelpers::parseTimingFunction(
-              timingFunctionString, &element.document(), exceptionState);
-      if (!timingFunction)
+    String timing_function_string;
+    if (DictionaryHelper::Get(keyframe_dictionary, "easing",
+                              timing_function_string)) {
+      RefPtr<TimingFunction> timing_function =
+          AnimationInputHelpers::ParseTimingFunction(
+              timing_function_string, &element.GetDocument(), exception_state);
+      if (!timing_function)
         return nullptr;
-      keyframe->setEasing(timingFunction);
+      keyframe->SetEasing(timing_function);
     }
 
-    const Vector<String>& keyframeProperties =
-        keyframeDictionary.getPropertyNames(exceptionState);
-    if (exceptionState.hadException())
+    const Vector<String>& keyframe_properties =
+        keyframe_dictionary.GetPropertyNames(exception_state);
+    if (exception_state.HadException())
       return nullptr;
-    for (const auto& property : keyframeProperties) {
+    for (const auto& property : keyframe_properties) {
       if (property == "offset" || property == "composite" ||
           property == "easing") {
         continue;
       }
 
       Vector<String> values;
-      if (DictionaryHelper::get(keyframeDictionary, property, values)) {
-        exceptionState.throwTypeError(
+      if (DictionaryHelper::Get(keyframe_dictionary, property, values)) {
+        exception_state.ThrowTypeError(
             "Lists of values not permitted in array-form list of keyframes");
         return nullptr;
       }
 
       String value;
-      DictionaryHelper::get(keyframeDictionary, property, value);
+      DictionaryHelper::Get(keyframe_dictionary, property, value);
 
-      setKeyframeValue(element, *keyframe.get(), property, value,
-                       executionContext);
+      SetKeyframeValue(element, *keyframe.Get(), property, value,
+                       execution_context);
     }
     keyframes.push_back(keyframe);
   }
 
-  DCHECK(!exceptionState.hadException());
+  DCHECK(!exception_state.HadException());
 
-  return createEffectModelFromKeyframes(element, keyframes, exceptionState);
+  return CreateEffectModelFromKeyframes(element, keyframes, exception_state);
 }
 
-static bool getPropertyIndexedKeyframeValues(
-    const Dictionary& keyframeDictionary,
+static bool GetPropertyIndexedKeyframeValues(
+    const Dictionary& keyframe_dictionary,
     const String& property,
-    ExecutionContext* executionContext,
-    ExceptionState& exceptionState,
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state,
     Vector<String>& result) {
-  DCHECK(result.isEmpty());
+  DCHECK(result.IsEmpty());
 
   // Array of strings.
-  if (DictionaryHelper::get(keyframeDictionary, property, result))
+  if (DictionaryHelper::Get(keyframe_dictionary, property, result))
     return true;
 
-  Dictionary valuesDictionary;
-  if (!keyframeDictionary.get(property, valuesDictionary) ||
-      valuesDictionary.isUndefinedOrNull()) {
+  Dictionary values_dictionary;
+  if (!keyframe_dictionary.Get(property, values_dictionary) ||
+      values_dictionary.IsUndefinedOrNull()) {
     // Non-object.
     String value;
-    DictionaryHelper::get(keyframeDictionary, property, value);
+    DictionaryHelper::Get(keyframe_dictionary, property, value);
     result.push_back(value);
     return true;
   }
 
-  DictionaryIterator iterator = valuesDictionary.getIterator(executionContext);
-  if (iterator.isNull()) {
+  DictionaryIterator iterator =
+      values_dictionary.GetIterator(execution_context);
+  if (iterator.IsNull()) {
     // Non-iterable object.
     String value;
-    DictionaryHelper::get(keyframeDictionary, property, value);
+    DictionaryHelper::Get(keyframe_dictionary, property, value);
     result.push_back(value);
     return true;
   }
 
   // Iterable object.
-  while (iterator.next(executionContext, exceptionState)) {
+  while (iterator.Next(execution_context, exception_state)) {
     String value;
-    if (!iterator.valueAsString(value)) {
-      exceptionState.throwTypeError("Unable to read keyframe value as string.");
+    if (!iterator.ValueAsString(value)) {
+      exception_state.ThrowTypeError(
+          "Unable to read keyframe value as string.");
       return false;
     }
     result.push_back(value);
   }
-  return !exceptionState.hadException();
+  return !exception_state.HadException();
 }
 
-EffectModel* EffectInput::convertObjectForm(
+EffectModel* EffectInput::ConvertObjectForm(
     Element& element,
-    const Dictionary& keyframeDictionary,
-    ExecutionContext* executionContext,
-    ExceptionState& exceptionState) {
+    const Dictionary& keyframe_dictionary,
+    ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
   StringKeyframeVector keyframes;
 
-  String timingFunctionString;
-  RefPtr<TimingFunction> timingFunction = nullptr;
-  if (DictionaryHelper::get(keyframeDictionary, "easing",
-                            timingFunctionString)) {
-    timingFunction = AnimationInputHelpers::parseTimingFunction(
-        timingFunctionString, &element.document(), exceptionState);
-    if (!timingFunction)
+  String timing_function_string;
+  RefPtr<TimingFunction> timing_function = nullptr;
+  if (DictionaryHelper::Get(keyframe_dictionary, "easing",
+                            timing_function_string)) {
+    timing_function = AnimationInputHelpers::ParseTimingFunction(
+        timing_function_string, &element.GetDocument(), exception_state);
+    if (!timing_function)
       return nullptr;
   }
 
   Nullable<double> offset;
-  if (DictionaryHelper::get(keyframeDictionary, "offset", offset) &&
-      !offset.isNull()) {
-    if (!checkOffset(offset.get(), 0.0, exceptionState))
+  if (DictionaryHelper::Get(keyframe_dictionary, "offset", offset) &&
+      !offset.IsNull()) {
+    if (!CheckOffset(offset.Get(), 0.0, exception_state))
       return nullptr;
   }
 
-  String compositeString;
-  DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
+  String composite_string;
+  DictionaryHelper::Get(keyframe_dictionary, "composite", composite_string);
 
-  const Vector<String>& keyframeProperties =
-      keyframeDictionary.getPropertyNames(exceptionState);
-  if (exceptionState.hadException())
+  const Vector<String>& keyframe_properties =
+      keyframe_dictionary.GetPropertyNames(exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  for (const auto& property : keyframeProperties) {
+  for (const auto& property : keyframe_properties) {
     if (property == "offset" || property == "composite" ||
         property == "easing") {
       continue;
     }
 
     Vector<String> values;
-    if (!getPropertyIndexedKeyframeValues(keyframeDictionary, property,
-                                          executionContext, exceptionState,
+    if (!GetPropertyIndexedKeyframeValues(keyframe_dictionary, property,
+                                          execution_context, exception_state,
                                           values))
       return nullptr;
 
-    size_t numKeyframes = values.size();
-    for (size_t i = 0; i < numKeyframes; ++i) {
-      RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
+    size_t num_keyframes = values.size();
+    for (size_t i = 0; i < num_keyframes; ++i) {
+      RefPtr<StringKeyframe> keyframe = StringKeyframe::Create();
 
-      if (!offset.isNull())
-        keyframe->setOffset(offset.get());
-      else if (numKeyframes == 1)
-        keyframe->setOffset(1.0);
+      if (!offset.IsNull())
+        keyframe->SetOffset(offset.Get());
+      else if (num_keyframes == 1)
+        keyframe->SetOffset(1.0);
       else
-        keyframe->setOffset(i / (numKeyframes - 1.0));
+        keyframe->SetOffset(i / (num_keyframes - 1.0));
 
-      if (timingFunction)
-        keyframe->setEasing(timingFunction);
+      if (timing_function)
+        keyframe->SetEasing(timing_function);
 
-      if (compositeString == "add")
-        keyframe->setComposite(EffectModel::CompositeAdd);
+      if (composite_string == "add")
+        keyframe->SetComposite(EffectModel::kCompositeAdd);
       // TODO(alancutter): Support "accumulate" keyframe composition.
 
-      setKeyframeValue(element, *keyframe.get(), property, values[i],
-                       executionContext);
+      SetKeyframeValue(element, *keyframe.Get(), property, values[i],
+                       execution_context);
       keyframes.push_back(keyframe);
     }
   }
 
-  std::sort(keyframes.begin(), keyframes.end(), compareKeyframes);
+  std::sort(keyframes.begin(), keyframes.end(), CompareKeyframes);
 
-  DCHECK(!exceptionState.hadException());
+  DCHECK(!exception_state.HadException());
 
-  return createEffectModelFromKeyframes(element, keyframes, exceptionState);
+  return CreateEffectModelFromKeyframes(element, keyframes, exception_state);
 }
 
 }  // namespace blink

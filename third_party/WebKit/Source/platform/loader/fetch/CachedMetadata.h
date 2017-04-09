@@ -47,48 +47,48 @@ namespace blink {
 // data type ID will reject data generated with a different byte-order.
 class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
  public:
-  static PassRefPtr<CachedMetadata> create(uint32_t dataTypeID,
+  static PassRefPtr<CachedMetadata> Create(uint32_t data_type_id,
                                            const char* data,
                                            size_t size) {
-    return adoptRef(new CachedMetadata(dataTypeID, data, size));
+    return AdoptRef(new CachedMetadata(data_type_id, data, size));
   }
 
-  static PassRefPtr<CachedMetadata> createFromSerializedData(const char* data,
+  static PassRefPtr<CachedMetadata> CreateFromSerializedData(const char* data,
                                                              size_t size) {
-    return adoptRef(new CachedMetadata(data, size));
+    return AdoptRef(new CachedMetadata(data, size));
   }
 
   ~CachedMetadata() {}
 
-  const Vector<char>& serializedData() const { return m_serializedData; }
+  const Vector<char>& SerializedData() const { return serialized_data_; }
 
-  uint32_t dataTypeID() const {
+  uint32_t DataTypeID() const {
     // We need to define a local variable to use the constant in DCHECK.
     constexpr auto kDataStart = CachedMetadata::kDataStart;
-    DCHECK_GE(m_serializedData.size(), kDataStart);
+    DCHECK_GE(serialized_data_.size(), kDataStart);
     return *reinterpret_cast_ptr<uint32_t*>(
-        const_cast<char*>(m_serializedData.data()));
+        const_cast<char*>(serialized_data_.Data()));
   }
 
-  const char* data() const {
+  const char* Data() const {
     constexpr auto kDataStart = CachedMetadata::kDataStart;
-    DCHECK_GE(m_serializedData.size(), kDataStart);
-    return m_serializedData.data() + kDataStart;
+    DCHECK_GE(serialized_data_.size(), kDataStart);
+    return serialized_data_.Data() + kDataStart;
   }
 
   size_t size() const {
     constexpr auto kDataStart = CachedMetadata::kDataStart;
-    DCHECK_GE(m_serializedData.size(), kDataStart);
-    return m_serializedData.size() - kDataStart;
+    DCHECK_GE(serialized_data_.size(), kDataStart);
+    return serialized_data_.size() - kDataStart;
   }
 
  private:
   CachedMetadata(const char* data, size_t);
-  CachedMetadata(uint32_t dataTypeID, const char* data, size_t);
+  CachedMetadata(uint32_t data_type_id, const char* data, size_t);
 
   // Since the serialization format supports random access, storing it in
   // serialized form avoids need for a copy during serialization.
-  Vector<char> m_serializedData;
+  Vector<char> serialized_data_;
 
   // |m_serializedData| consists of 32 bits type ID and and actual data.
   static constexpr size_t kDataStart = sizeof(uint32_t);

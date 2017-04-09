@@ -35,8 +35,8 @@ void RecordImmediateTaskQueueingDuration(tracked_objects::Duration duration) {
       base::TimeDelta::FromMilliseconds(duration.InMilliseconds()));
 }
 
-double MonotonicTimeInSeconds(base::TimeTicks timeTicks) {
-  return (timeTicks - base::TimeTicks()).InSecondsF();
+double MonotonicTimeInSeconds(base::TimeTicks time_ticks) {
+  return (time_ticks - base::TimeTicks()).InSecondsF();
 }
 
 // Converts a OnceClosure to a RepeatingClosure. It hits CHECK failure to run
@@ -192,7 +192,7 @@ void TaskQueueManager::OnBeginNestedMessageLoop() {
   // When a nested message loop starts, task time observers may want to ignore
   // the current task.
   for (auto& observer : task_time_observers_)
-    observer.onBeginNestedMessageLoop();
+    observer.OnBeginNestedMessageLoop();
 
   delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
 }
@@ -396,7 +396,7 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
     if (any_thread().immediate_do_work_posted_count > 0)
       return;
 
-    if (next_delay->delay() <= base::TimeDelta()) {
+    if (next_delay->Delay() <= base::TimeDelta()) {
       // If a delayed DoWork is pending then we don't need to post a
       // continuation because it should run immediately.
       if (next_delayed_do_work_ &&
@@ -409,10 +409,10 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
   }
 
   // We avoid holding |any_thread_lock_| while posting the task.
-  if (next_delay->delay() <= base::TimeDelta()) {
+  if (next_delay->Delay() <= base::TimeDelta()) {
     delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
   } else {
-    base::TimeTicks run_time = lazy_now->Now() + next_delay->delay();
+    base::TimeTicks run_time = lazy_now->Now() + next_delay->Delay();
 
     if (next_delayed_do_work_.run_time() == run_time)
       return;
@@ -422,7 +422,7 @@ void TaskQueueManager::PostDoWorkContinuationLocked(
     cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
     delegate_->PostDelayedTask(FROM_HERE,
                                cancelable_delayed_do_work_closure_.callback(),
-                               next_delay->delay());
+                               next_delay->Delay());
   }
 }
 
@@ -524,7 +524,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     if (notify_time_observers) {
       task_start_time = MonotonicTimeInSeconds(time_before_task.Now());
       for (auto& observer : task_time_observers_)
-        observer.willProcessTask(queue, task_start_time);
+        observer.WillProcessTask(queue, task_start_time);
     }
   }
 
@@ -550,7 +550,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       *time_after_task = real_time_domain()->Now();
       double task_end_time = MonotonicTimeInSeconds(*time_after_task);
       for (auto& observer : task_time_observers_)
-        observer.didProcessTask(queue, task_start_time, task_end_time);
+        observer.DidProcessTask(queue, task_start_time, task_end_time);
     }
 
     for (auto& observer : task_observers_)
@@ -617,7 +617,7 @@ bool TaskQueueManager::GetAndClearSystemIsQuiescentBit() {
   return !task_was_run;
 }
 
-const scoped_refptr<TaskQueueManagerDelegate>& TaskQueueManager::delegate()
+const scoped_refptr<TaskQueueManagerDelegate>& TaskQueueManager::Delegate()
     const {
   return delegate_;
 }
@@ -654,7 +654,7 @@ TaskQueueManager::AsValueWithSelectorResult(
   if (should_run) {
     state->SetString("selected_queue",
                      selected_work_queue->task_queue()->GetName());
-    state->SetString("work_queue_name", selected_work_queue->name());
+    state->SetString("work_queue_name", selected_work_queue->GetName());
   }
 
   state->BeginArray("time_domains");

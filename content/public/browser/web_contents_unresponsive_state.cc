@@ -8,6 +8,6 @@ namespace content {
 
 WebContentsUnresponsiveState::WebContentsUnresponsiveState()
     : outstanding_ack_count(0),
-      last_event_type(blink::WebInputEvent::Undefined) {}
+      last_event_type(blink::WebInputEvent::kUndefined) {}
 
 }  // namespace content

@@ -11,14 +11,14 @@ namespace blink {
 
 class WindowNameCollection final : public HTMLNameCollection {
  public:
-  static WindowNameCollection* create(ContainerNode& document,
+  static WindowNameCollection* Create(ContainerNode& document,
                                       CollectionType type,
                                       const AtomicString& name) {
-    DCHECK_EQ(type, WindowNamedItems);
+    DCHECK_EQ(type, kWindowNamedItems);
     return new WindowNameCollection(document, name);
   }
 
-  bool elementMatches(const Element&) const;
+  bool ElementMatches(const Element&) const;
 
  private:
   WindowNameCollection(ContainerNode& document, const AtomicString& name);
@@ -27,8 +27,8 @@ class WindowNameCollection final : public HTMLNameCollection {
 DEFINE_TYPE_CASTS(WindowNameCollection,
                   LiveNodeListBase,
                   collection,
-                  collection->type() == WindowNamedItems,
-                  collection.type() == WindowNamedItems);
+                  collection->GetType() == kWindowNamedItems,
+                  collection.GetType() == kWindowNamedItems);
 
 }  // namespace blink
 

@@ -30,25 +30,25 @@ class SVGTextMetrics {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum MetricsType { SkippedSpaceMetrics };
+  enum MetricsType { kSkippedSpaceMetrics };
 
   SVGTextMetrics(MetricsType);
   SVGTextMetrics(unsigned length, float width, float height);
 
-  bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
+  bool IsEmpty() const { return !width_ && !height_ && length_ <= 1; }
 
-  float width() const { return m_width; }
-  float height() const { return m_height; }
+  float Width() const { return width_; }
+  float Height() const { return height_; }
 
   // TODO(kojii): We should store logical width (advance) and height instead
   // of storing physical and calculate logical. crbug.com/544767
-  float advance(FontOrientation) const;
-  unsigned length() const { return m_length; }
+  float Advance(FontOrientation) const;
+  unsigned length() const { return length_; }
 
  private:
-  float m_width;
-  float m_height;
-  unsigned m_length;
+  float width_;
+  float height_;
+  unsigned length_;
 };
 
 }  // namespace blink

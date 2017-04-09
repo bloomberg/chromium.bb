@@ -32,25 +32,25 @@ namespace WTF {
 
 class TextCodecUTF16 final : public TextCodec {
  public:
-  static void registerEncodingNames(EncodingNameRegistrar);
-  static void registerCodecs(TextCodecRegistrar);
+  static void RegisterEncodingNames(EncodingNameRegistrar);
+  static void RegisterCodecs(TextCodecRegistrar);
 
-  TextCodecUTF16(bool littleEndian) : m_littleEndian(littleEndian) {}
+  TextCodecUTF16(bool little_endian) : little_endian_(little_endian) {}
 
-  String decode(const char*,
+  String Decode(const char*,
                 size_t length,
                 FlushBehavior,
-                bool stopOnError,
-                bool& sawError) override;
-  CString encode(const UChar*, size_t length, UnencodableHandling) override;
-  CString encode(const LChar*, size_t length, UnencodableHandling) override;
+                bool stop_on_error,
+                bool& saw_error) override;
+  CString Encode(const UChar*, size_t length, UnencodableHandling) override;
+  CString Encode(const LChar*, size_t length, UnencodableHandling) override;
 
  private:
-  bool m_littleEndian;
-  bool m_haveLeadByte = false;
-  unsigned char m_leadByte;
-  bool m_haveLeadSurrogate = false;
-  UChar m_leadSurrogate;
+  bool little_endian_;
+  bool have_lead_byte_ = false;
+  unsigned char lead_byte_;
+  bool have_lead_surrogate_ = false;
+  UChar lead_surrogate_;
 };
 
 }  // namespace WTF

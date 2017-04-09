@@ -12,10 +12,10 @@ namespace blink {
 // have a delegate, as their events will be fired on a Service Worker instead.
 class WebNotificationDelegate {
  public:
-  virtual void dispatchClickEvent() = 0;
-  virtual void dispatchShowEvent() = 0;
-  virtual void dispatchErrorEvent() = 0;
-  virtual void dispatchCloseEvent() = 0;
+  virtual void DispatchClickEvent() = 0;
+  virtual void DispatchShowEvent() = 0;
+  virtual void DispatchErrorEvent() = 0;
+  virtual void DispatchCloseEvent() = 0;
 };
 
 }  // namespace blink

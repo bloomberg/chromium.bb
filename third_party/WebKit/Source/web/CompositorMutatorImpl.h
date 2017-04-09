@@ -29,21 +29,21 @@ class CompositorMutatorImpl final : public CompositorMutator {
   WTF_MAKE_NONCOPYABLE(CompositorMutatorImpl);
 
  public:
-  static std::unique_ptr<CompositorMutatorClient> createClient();
-  static CompositorMutatorImpl* create();
+  static std::unique_ptr<CompositorMutatorClient> CreateClient();
+  static CompositorMutatorImpl* Create();
 
   // CompositorMutator implementation.
-  bool mutate(double monotonicTimeNow,
+  bool Mutate(double monotonic_time_now,
               CompositorMutableStateProvider*) override;
 
-  void registerCompositorAnimator(CompositorAnimator*);
-  void unregisterCompositorAnimator(CompositorAnimator*);
+  void RegisterCompositorAnimator(CompositorAnimator*);
+  void UnregisterCompositorAnimator(CompositorAnimator*);
 
-  void setNeedsMutate();
+  void SetNeedsMutate();
 
-  void setClient(CompositorMutatorClient* client) { m_client = client; }
-  CustomCompositorAnimationManager* animationManager() {
-    return m_animationManager.get();
+  void SetClient(CompositorMutatorClient* client) { client_ = client; }
+  CustomCompositorAnimationManager* AnimationManager() {
+    return animation_manager_.get();
   }
 
  private:
@@ -51,10 +51,10 @@ class CompositorMutatorImpl final : public CompositorMutator {
 
   using CompositorAnimators =
       HashSet<CrossThreadPersistent<CompositorAnimator>>;
-  CompositorAnimators m_animators;
+  CompositorAnimators animators_;
 
-  std::unique_ptr<CustomCompositorAnimationManager> m_animationManager;
-  CompositorMutatorClient* m_client;
+  std::unique_ptr<CustomCompositorAnimationManager> animation_manager_;
+  CompositorMutatorClient* client_;
 };
 
 }  // namespace blink

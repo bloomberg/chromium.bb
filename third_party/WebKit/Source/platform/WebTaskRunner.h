@@ -32,13 +32,13 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
   // cancelled or the task is run already.
   // This function is not thread safe. Call this on the thread that has posted
   // the task.
-  bool isActive() const;
+  bool IsActive() const;
 
   // Cancels the task invocation. Do nothing if the task is cancelled or run
   // already.
   // This function is not thread safe. Call this on the thread that has posted
   // the task.
-  void cancel();
+  void Cancel();
 
   TaskHandle();
   ~TaskHandle();
@@ -52,7 +52,7 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
   friend class WebTaskRunner;
 
   explicit TaskHandle(RefPtr<Runner>);
-  RefPtr<Runner> m_runner;
+  RefPtr<Runner> runner_;
 };
 
 // The blink representation of a chromium SingleThreadTaskRunner.
@@ -61,13 +61,13 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
  public:
   // Schedule a task to be run after |delayMs| on the the associated WebThread.
   // Can be called from any thread.
-  virtual void postDelayedTask(const WebTraceLocation&,
+  virtual void PostDelayedTask(const WebTraceLocation&,
                                base::OnceClosure,
-                               double delayMs) = 0;
+                               double delay_ms) = 0;
 
   // Returns true if the current thread is a thread on which a task may be run.
   // Can be called from any thread.
-  virtual bool runsTasksOnCurrentThread() = 0;
+  virtual bool RunsTasksOnCurrentThread() = 0;
 
   // ---
 
@@ -80,39 +80,39 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   // This may represent either the real time, or a virtual time depending on
   // whether or not the WebTaskRunner is associated with a virtual time domain
   // or a real time domain.
-  virtual double virtualTimeSeconds() const = 0;
+  virtual double VirtualTimeSeconds() const = 0;
 
   // Returns a microsecond resolution platform dependant time source.
   // This may represent either the real time, or a virtual time depending on
   // whether or not the WebTaskRunner is associated with a virtual time domain
   // or a real time domain.
-  virtual double monotonicallyIncreasingVirtualTimeSeconds() const = 0;
+  virtual double MonotonicallyIncreasingVirtualTimeSeconds() const = 0;
 
   // Returns the underlying task runner object.
-  virtual SingleThreadTaskRunner* toSingleThreadTaskRunner() = 0;
+  virtual SingleThreadTaskRunner* ToSingleThreadTaskRunner() = 0;
 
   // Helpers for posting bound functions as tasks.
 
   // For cross-thread posting. Can be called from any thread.
-  void postTask(const WebTraceLocation&, std::unique_ptr<CrossThreadClosure>);
-  void postDelayedTask(const WebTraceLocation&,
+  void PostTask(const WebTraceLocation&, std::unique_ptr<CrossThreadClosure>);
+  void PostDelayedTask(const WebTraceLocation&,
                        std::unique_ptr<CrossThreadClosure>,
-                       long long delayMs);
+                       long long delay_ms);
 
   // For same-thread posting. Must be called from the associated WebThread.
-  void postTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
-  void postDelayedTask(const WebTraceLocation&,
+  void PostTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
+  void PostDelayedTask(const WebTraceLocation&,
                        std::unique_ptr<WTF::Closure>,
-                       long long delayMs);
+                       long long delay_ms);
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
   WARN_UNUSED_RESULT TaskHandle
-  postCancellableTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
+  PostCancellableTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
   WARN_UNUSED_RESULT TaskHandle
-  postDelayedCancellableTask(const WebTraceLocation&,
+  PostDelayedCancellableTask(const WebTraceLocation&,
                              std::unique_ptr<WTF::Closure>,
-                             long long delayMs);
+                             long long delay_ms);
 
  protected:
   friend ThreadSafeRefCounted<WebTaskRunner>;

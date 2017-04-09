@@ -49,38 +49,38 @@ class CORE_EXPORT BufferedLineReader {
   WTF_MAKE_NONCOPYABLE(BufferedLineReader);
 
  public:
-  BufferedLineReader() : m_endOfStream(false), m_maybeSkipLF(false) {}
+  BufferedLineReader() : end_of_stream_(false), maybe_skip_lf_(false) {}
 
   // Append data to the internal buffer.
-  void append(const String& data) {
-    DCHECK(!m_endOfStream);
-    m_buffer.append(SegmentedString(data));
+  void Append(const String& data) {
+    DCHECK(!end_of_stream_);
+    buffer_.Append(SegmentedString(data));
   }
 
   // Indicate that no more data will be appended. This will cause any
   // potentially "unterminated" line to be returned from getLine.
-  void setEndOfStream() { m_endOfStream = true; }
+  void SetEndOfStream() { end_of_stream_ = true; }
 
   // Attempt to read a line from the internal buffer (fed via append).
   // If successful, true is returned and |line| is set to the line that was
   // read. If no line could be read false is returned.
-  bool getLine(String& line);
+  bool GetLine(String& line);
 
   // Returns true if EOS has been reached proper.
-  bool isAtEndOfStream() const { return m_endOfStream && m_buffer.isEmpty(); }
+  bool IsAtEndOfStream() const { return end_of_stream_ && buffer_.IsEmpty(); }
 
  private:
   // Consume the next character the buffer if it is the character |c|.
-  void scanCharacter(UChar c) {
-    DCHECK(!m_buffer.isEmpty());
-    if (m_buffer.currentChar() == c)
-      m_buffer.advance();
+  void ScanCharacter(UChar c) {
+    DCHECK(!buffer_.IsEmpty());
+    if (buffer_.CurrentChar() == c)
+      buffer_.Advance();
   }
 
-  SegmentedString m_buffer;
-  StringBuilder m_lineBuffer;
-  bool m_endOfStream;
-  bool m_maybeSkipLF;
+  SegmentedString buffer_;
+  StringBuilder line_buffer_;
+  bool end_of_stream_;
+  bool maybe_skip_lf_;
 };
 
 }  // namespace blink

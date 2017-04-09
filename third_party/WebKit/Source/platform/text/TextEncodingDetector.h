@@ -48,12 +48,12 @@ class KURL;
 // |hintUrl| is optional. You can pass nullptr.
 // |hintUserLanguage| is an optional language code like "fr", and can be
 // |nullptr.
-PLATFORM_EXPORT bool detectTextEncoding(const char* data,
+PLATFORM_EXPORT bool DetectTextEncoding(const char* data,
                                         size_t length,
-                                        const char* hintEncodingName,
-                                        const KURL& hintUrl,
-                                        const char* hintUserLanguage,
-                                        WTF::TextEncoding* detectedEncoding);
+                                        const char* hint_encoding_name,
+                                        const KURL& hint_url,
+                                        const char* hint_user_language,
+                                        WTF::TextEncoding* detected_encoding);
 
 }  // namespace blink
 

@@ -31,45 +31,47 @@ namespace blink {
 
 using namespace HTMLNames;
 
-StyleSheetList::StyleSheetList(TreeScope* treeScope) : m_treeScope(treeScope) {}
+StyleSheetList::StyleSheetList(TreeScope* tree_scope)
+    : tree_scope_(tree_scope) {}
 
 inline const HeapVector<TraceWrapperMember<StyleSheet>>&
-StyleSheetList::styleSheets() const {
-  return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
+StyleSheetList::StyleSheets() const {
+  return GetDocument()->GetStyleEngine().StyleSheetsForStyleSheetList(
+      *tree_scope_);
 }
 
 unsigned StyleSheetList::length() {
-  return styleSheets().size();
+  return StyleSheets().size();
 }
 
 StyleSheet* StyleSheetList::item(unsigned index) {
-  const HeapVector<TraceWrapperMember<StyleSheet>>& sheets = styleSheets();
-  return index < sheets.size() ? sheets[index].get() : nullptr;
+  const HeapVector<TraceWrapperMember<StyleSheet>>& sheets = StyleSheets();
+  return index < sheets.size() ? sheets[index].Get() : nullptr;
 }
 
-HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const {
+HTMLStyleElement* StyleSheetList::GetNamedItem(const AtomicString& name) const {
   // IE also supports retrieving a stylesheet by name, using the name/id of the
   // <style> tag (this is consistent with all the other collections) ### Bad
   // implementation because returns a single element (are IDs always unique?)
   // and doesn't look for name attribute. But unicity of stylesheet ids is good
   // practice anyway ;)
   // FIXME: We should figure out if we should change this or fix the spec.
-  Element* element = m_treeScope->getElementById(name);
+  Element* element = tree_scope_->GetElementById(name);
   return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : nullptr;
 }
 
-CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name) {
-  if (document())
-    UseCounter::count(*document(),
-                      UseCounter::StyleSheetListAnonymousNamedGetter);
-  HTMLStyleElement* item = getNamedItem(name);
+CSSStyleSheet* StyleSheetList::AnonymousNamedGetter(const AtomicString& name) {
+  if (GetDocument())
+    UseCounter::Count(*GetDocument(),
+                      UseCounter::kStyleSheetListAnonymousNamedGetter);
+  HTMLStyleElement* item = GetNamedItem(name);
   if (!item)
     return nullptr;
   return item->sheet();
 }
 
 DEFINE_TRACE(StyleSheetList) {
-  visitor->trace(m_treeScope);
+  visitor->Trace(tree_scope_);
 }
 
 }  // namespace blink

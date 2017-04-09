@@ -44,43 +44,43 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
   ~LayoutSVGForeignObject() override;
 
-  const char* name() const override { return "LayoutSVGForeignObject"; }
+  const char* GetName() const override { return "LayoutSVGForeignObject"; }
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&, const LayoutPoint&) const override;
 
-  void layout() override;
+  void GetLayout() override;
 
-  FloatRect objectBoundingBox() const override {
-    return FloatRect(frameRect());
+  FloatRect ObjectBoundingBox() const override {
+    return FloatRect(FrameRect());
   }
-  FloatRect strokeBoundingBox() const override { return objectBoundingBox(); }
-  FloatRect visualRectInLocalSVGCoordinates() const override {
-    return objectBoundingBox();
+  FloatRect StrokeBoundingBox() const override { return ObjectBoundingBox(); }
+  FloatRect VisualRectInLocalSVGCoordinates() const override {
+    return ObjectBoundingBox();
   }
 
-  bool nodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& pointInParent,
+  bool NodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& point_in_parent,
                         HitTestAction) override;
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGForeignObject ||
-           LayoutSVGBlock::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGForeignObject ||
+           LayoutSVGBlock::IsOfType(type);
   }
 
-  void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+  void SetNeedsTransformUpdate() override { needs_transform_update_ = true; }
 
  private:
-  LayoutUnit elementX() const;
-  LayoutUnit elementY() const;
-  LayoutUnit elementWidth() const;
-  LayoutUnit elementHeight() const;
-  void updateLogicalWidth() override;
-  void computeLogicalHeight(LayoutUnit logicalHeight,
-                            LayoutUnit logicalTop,
+  LayoutUnit ElementX() const;
+  LayoutUnit ElementY() const;
+  LayoutUnit ElementWidth() const;
+  LayoutUnit ElementHeight() const;
+  void UpdateLogicalWidth() override;
+  void ComputeLogicalHeight(LayoutUnit logical_height,
+                            LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
 
-  bool m_needsTransformUpdate;
+  bool needs_transform_update_;
 };
 
 }  // namespace blink

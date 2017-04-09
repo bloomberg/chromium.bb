@@ -47,205 +47,207 @@
 
 namespace blink {
 
-StorageArea* StorageArea::create(std::unique_ptr<WebStorageArea> storageArea,
-                                 StorageType storageType) {
-  return new StorageArea(std::move(storageArea), storageType);
+StorageArea* StorageArea::Create(std::unique_ptr<WebStorageArea> storage_area,
+                                 StorageType storage_type) {
+  return new StorageArea(std::move(storage_area), storage_type);
 }
 
-StorageArea::StorageArea(std::unique_ptr<WebStorageArea> storageArea,
-                         StorageType storageType)
-    : m_storageArea(std::move(storageArea)),
-      m_storageType(storageType),
-      m_frameUsedForCanAccessStorage(nullptr),
-      m_canAccessStorageCachedResult(false) {}
+StorageArea::StorageArea(std::unique_ptr<WebStorageArea> storage_area,
+                         StorageType storage_type)
+    : storage_area_(std::move(storage_area)),
+      storage_type_(storage_type),
+      frame_used_for_can_access_storage_(nullptr),
+      can_access_storage_cached_result_(false) {}
 
 StorageArea::~StorageArea() {}
 
 DEFINE_TRACE(StorageArea) {
-  visitor->trace(m_frameUsedForCanAccessStorage);
+  visitor->Trace(frame_used_for_can_access_storage_);
 }
 
-unsigned StorageArea::length(ExceptionState& exceptionState,
+unsigned StorageArea::length(ExceptionState& exception_state,
                              LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return 0;
   }
-  return m_storageArea->length();
+  return storage_area_->length();
 }
 
-String StorageArea::key(unsigned index,
-                        ExceptionState& exceptionState,
+String StorageArea::Key(unsigned index,
+                        ExceptionState& exception_state,
                         LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return String();
   }
-  return m_storageArea->key(index);
+  return storage_area_->Key(index);
 }
 
-String StorageArea::getItem(const String& key,
-                            ExceptionState& exceptionState,
+String StorageArea::GetItem(const String& key,
+                            ExceptionState& exception_state,
                             LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return String();
   }
-  return m_storageArea->getItem(key);
+  return storage_area_->GetItem(key);
 }
 
-void StorageArea::setItem(const String& key,
+void StorageArea::SetItem(const String& key,
                           const String& value,
-                          ExceptionState& exceptionState,
+                          ExceptionState& exception_state,
                           LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return;
   }
-  WebStorageArea::Result result = WebStorageArea::ResultOK;
-  m_storageArea->setItem(key, value, frame->document()->url(), result);
-  if (result != WebStorageArea::ResultOK)
-    exceptionState.throwDOMException(
-        QuotaExceededError,
+  WebStorageArea::Result result = WebStorageArea::kResultOK;
+  storage_area_->SetItem(key, value, frame->GetDocument()->Url(), result);
+  if (result != WebStorageArea::kResultOK)
+    exception_state.ThrowDOMException(
+        kQuotaExceededError,
         "Setting the value of '" + key + "' exceeded the quota.");
 }
 
-void StorageArea::removeItem(const String& key,
-                             ExceptionState& exceptionState,
+void StorageArea::RemoveItem(const String& key,
+                             ExceptionState& exception_state,
                              LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return;
   }
-  m_storageArea->removeItem(key, frame->document()->url());
+  storage_area_->RemoveItem(key, frame->GetDocument()->Url());
 }
 
-void StorageArea::clear(ExceptionState& exceptionState, LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+void StorageArea::Clear(ExceptionState& exception_state, LocalFrame* frame) {
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return;
   }
-  m_storageArea->clear(frame->document()->url());
+  storage_area_->Clear(frame->GetDocument()->Url());
 }
 
-bool StorageArea::contains(const String& key,
-                           ExceptionState& exceptionState,
+bool StorageArea::Contains(const String& key,
+                           ExceptionState& exception_state,
                            LocalFrame* frame) {
-  if (!canAccessStorage(frame)) {
-    exceptionState.throwSecurityError("access is denied for this document.");
+  if (!CanAccessStorage(frame)) {
+    exception_state.ThrowSecurityError("access is denied for this document.");
     return false;
   }
-  return !getItem(key, exceptionState, frame).isNull();
+  return !GetItem(key, exception_state, frame).IsNull();
 }
 
-bool StorageArea::canAccessStorage(LocalFrame* frame) {
-  if (!frame || !frame->page())
+bool StorageArea::CanAccessStorage(LocalFrame* frame) {
+  if (!frame || !frame->GetPage())
     return false;
 
   // Should the LocalFrame die before this StorageArea does,
   // that cached reference will be cleared.
-  if (m_frameUsedForCanAccessStorage == frame)
-    return m_canAccessStorageCachedResult;
+  if (frame_used_for_can_access_storage_ == frame)
+    return can_access_storage_cached_result_;
   StorageNamespaceController* controller =
-      StorageNamespaceController::from(frame->page());
+      StorageNamespaceController::From(frame->GetPage());
   if (!controller)
     return false;
   bool result =
-      controller->getStorageClient()->canAccessStorage(frame, m_storageType);
+      controller->GetStorageClient()->CanAccessStorage(frame, storage_type_);
   // Move attention to the new LocalFrame.
-  m_frameUsedForCanAccessStorage = frame;
-  m_canAccessStorageCachedResult = result;
+  frame_used_for_can_access_storage_ = frame;
+  can_access_storage_cached_result_ = result;
   return result;
 }
 
-void StorageArea::dispatchLocalStorageEvent(
+void StorageArea::DispatchLocalStorageEvent(
     const String& key,
-    const String& oldValue,
-    const String& newValue,
-    SecurityOrigin* securityOrigin,
-    const KURL& pageURL,
-    WebStorageArea* sourceAreaInstance) {
+    const String& old_value,
+    const String& new_value,
+    SecurityOrigin* security_origin,
+    const KURL& page_url,
+    WebStorageArea* source_area_instance) {
   // Iterate over all pages that have a StorageNamespaceController supplement.
-  for (Page* page : Page::ordinaryPages()) {
-    for (Frame* frame = page->mainFrame(); frame;
-         frame = frame->tree().traverseNext()) {
+  for (Page* page : Page::OrdinaryPages()) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
       // FIXME: We do not yet have a way to dispatch events to out-of-process
       // frames.
-      if (!frame->isLocalFrame())
+      if (!frame->IsLocalFrame())
         continue;
-      LocalFrame* localFrame = toLocalFrame(frame);
-      LocalDOMWindow* localWindow = localFrame->domWindow();
+      LocalFrame* local_frame = ToLocalFrame(frame);
+      LocalDOMWindow* local_window = local_frame->DomWindow();
       Storage* storage =
-          DOMWindowStorage::from(*localWindow).optionalLocalStorage();
+          DOMWindowStorage::From(*local_window).OptionalLocalStorage();
       if (storage &&
-          localFrame->document()->getSecurityOrigin()->canAccess(
-              securityOrigin) &&
-          !isEventSource(storage, sourceAreaInstance))
-        localFrame->domWindow()->enqueueWindowEvent(
-            StorageEvent::create(EventTypeNames::storage, key, oldValue,
-                                 newValue, pageURL, storage));
+          local_frame->GetDocument()->GetSecurityOrigin()->CanAccess(
+              security_origin) &&
+          !IsEventSource(storage, source_area_instance))
+        local_frame->DomWindow()->EnqueueWindowEvent(
+            StorageEvent::Create(EventTypeNames::storage, key, old_value,
+                                 new_value, page_url, storage));
     }
     if (InspectorDOMStorageAgent* agent =
-            StorageNamespaceController::from(page)->inspectorAgent())
-      agent->didDispatchDOMStorageEvent(key, oldValue, newValue, LocalStorage,
-                                        securityOrigin);
+            StorageNamespaceController::From(page)->InspectorAgent())
+      agent->DidDispatchDOMStorageEvent(key, old_value, new_value,
+                                        kLocalStorage, security_origin);
   }
 }
 
-static Page* findPageWithSessionStorageNamespace(
-    const WebStorageNamespace& sessionNamespace) {
+static Page* FindPageWithSessionStorageNamespace(
+    const WebStorageNamespace& session_namespace) {
   // Iterate over all pages that have a StorageNamespaceController supplement.
-  for (Page* page : Page::ordinaryPages()) {
-    const bool dontCreateIfMissing = false;
-    StorageNamespace* storageNamespace =
-        StorageNamespaceController::from(page)->sessionStorage(
-            dontCreateIfMissing);
-    if (storageNamespace && storageNamespace->isSameNamespace(sessionNamespace))
+  for (Page* page : Page::OrdinaryPages()) {
+    const bool kDontCreateIfMissing = false;
+    StorageNamespace* storage_namespace =
+        StorageNamespaceController::From(page)->SessionStorage(
+            kDontCreateIfMissing);
+    if (storage_namespace &&
+        storage_namespace->IsSameNamespace(session_namespace))
       return page;
   }
   return nullptr;
 }
 
-void StorageArea::dispatchSessionStorageEvent(
+void StorageArea::DispatchSessionStorageEvent(
     const String& key,
-    const String& oldValue,
-    const String& newValue,
-    SecurityOrigin* securityOrigin,
-    const KURL& pageURL,
-    const WebStorageNamespace& sessionNamespace,
-    WebStorageArea* sourceAreaInstance) {
-  Page* page = findPageWithSessionStorageNamespace(sessionNamespace);
+    const String& old_value,
+    const String& new_value,
+    SecurityOrigin* security_origin,
+    const KURL& page_url,
+    const WebStorageNamespace& session_namespace,
+    WebStorageArea* source_area_instance) {
+  Page* page = FindPageWithSessionStorageNamespace(session_namespace);
   if (!page)
     return;
 
-  for (Frame* frame = page->mainFrame(); frame;
-       frame = frame->tree().traverseNext()) {
+  for (Frame* frame = page->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
     // FIXME: We do not yet have a way to dispatch events to out-of-process
     // frames.
-    if (!frame->isLocalFrame())
+    if (!frame->IsLocalFrame())
       continue;
-    LocalFrame* localFrame = toLocalFrame(frame);
-    LocalDOMWindow* localWindow = localFrame->domWindow();
+    LocalFrame* local_frame = ToLocalFrame(frame);
+    LocalDOMWindow* local_window = local_frame->DomWindow();
     Storage* storage =
-        DOMWindowStorage::from(*localWindow).optionalSessionStorage();
+        DOMWindowStorage::From(*local_window).OptionalSessionStorage();
     if (storage &&
-        localFrame->document()->getSecurityOrigin()->canAccess(
-            securityOrigin) &&
-        !isEventSource(storage, sourceAreaInstance))
-      localFrame->domWindow()->enqueueWindowEvent(StorageEvent::create(
-          EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
+        local_frame->GetDocument()->GetSecurityOrigin()->CanAccess(
+            security_origin) &&
+        !IsEventSource(storage, source_area_instance))
+      local_frame->DomWindow()->EnqueueWindowEvent(
+          StorageEvent::Create(EventTypeNames::storage, key, old_value,
+                               new_value, page_url, storage));
   }
   if (InspectorDOMStorageAgent* agent =
-          StorageNamespaceController::from(page)->inspectorAgent())
-    agent->didDispatchDOMStorageEvent(key, oldValue, newValue, SessionStorage,
-                                      securityOrigin);
+          StorageNamespaceController::From(page)->InspectorAgent())
+    agent->DidDispatchDOMStorageEvent(key, old_value, new_value,
+                                      kSessionStorage, security_origin);
 }
 
-bool StorageArea::isEventSource(Storage* storage,
-                                WebStorageArea* sourceAreaInstance) {
+bool StorageArea::IsEventSource(Storage* storage,
+                                WebStorageArea* source_area_instance) {
   ASSERT(storage);
-  StorageArea* area = storage->area();
-  return area->m_storageArea.get() == sourceAreaInstance;
+  StorageArea* area = storage->Area();
+  return area->storage_area_.get() == source_area_instance;
 }
 
 }  // namespace blink

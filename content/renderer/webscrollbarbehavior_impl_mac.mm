@@ -10,12 +10,12 @@ WebScrollbarBehaviorImpl::WebScrollbarBehaviorImpl()
     : jump_on_track_click_(false) {
 }
 
-bool WebScrollbarBehaviorImpl::shouldCenterOnThumb(
-      blink::WebPointerProperties::Button mouseButton,
-      bool shiftKeyPressed,
-      bool altKeyPressed) {
-  return (mouseButton == blink::WebPointerProperties::Button::Left) &&
-      (jump_on_track_click_ != altKeyPressed);
+bool WebScrollbarBehaviorImpl::ShouldCenterOnThumb(
+    blink::WebPointerProperties::Button mouseButton,
+    bool shiftKeyPressed,
+    bool altKeyPressed) {
+  return (mouseButton == blink::WebPointerProperties::Button::kLeft) &&
+         (jump_on_track_click_ != altKeyPressed);
 }
 
 }  // namespace content

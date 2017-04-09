@@ -528,15 +528,15 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // which resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy(), and
   // third frame has "allow-scripts allow-same-origin".
-  EXPECT_EQ(blink::WebSandboxFlags::None, root->effective_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::All,
+  EXPECT_EQ(blink::WebSandboxFlags::kNone, root->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::kAll,
             root->child_at(0)->effective_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-                ~blink::WebSandboxFlags::AutomaticFeatures,
+  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+                ~blink::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(1)->effective_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-                ~blink::WebSandboxFlags::AutomaticFeatures &
-                ~blink::WebSandboxFlags::Origin,
+  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
+                ~blink::WebSandboxFlags::kAutomaticFeatures &
+                ~blink::WebSandboxFlags::kOrigin,
             root->child_at(2)->effective_sandbox_flags());
 
   // Sandboxed frames should set a unique origin unless they have the
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // Navigating to a different URL should not clear sandbox flags.
   GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_EQ(blink::WebSandboxFlags::All,
+  EXPECT_EQ(blink::WebSandboxFlags::kAll,
             root->child_at(0)->effective_sandbox_flags());
 }
 

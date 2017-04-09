@@ -28,49 +28,49 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
   WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
 
  public:
-  static std::unique_ptr<CompositorAnimationPlayer> create() {
-    return WTF::wrapUnique(new CompositorAnimationPlayer());
+  static std::unique_ptr<CompositorAnimationPlayer> Create() {
+    return WTF::WrapUnique(new CompositorAnimationPlayer());
   }
 
   ~CompositorAnimationPlayer();
 
-  cc::AnimationPlayer* ccAnimationPlayer() const;
+  cc::AnimationPlayer* CcAnimationPlayer() const;
 
   // An animation delegate is notified when animations are started and stopped.
   // The CompositorAnimationPlayer does not take ownership of the delegate, and
   // it is the responsibility of the client to reset the layer's delegate before
   // deleting the delegate.
-  void setAnimationDelegate(CompositorAnimationDelegate*);
+  void SetAnimationDelegate(CompositorAnimationDelegate*);
 
-  void attachElement(const CompositorElementId&);
-  void detachElement();
-  bool isElementAttached() const;
+  void AttachElement(const CompositorElementId&);
+  void DetachElement();
+  bool IsElementAttached() const;
 
-  void addAnimation(std::unique_ptr<CompositorAnimation>);
-  void removeAnimation(int animationId);
-  void pauseAnimation(int animationId, double timeOffset);
-  void abortAnimation(int animationId);
+  void AddAnimation(std::unique_ptr<CompositorAnimation>);
+  void RemoveAnimation(int animation_id);
+  void PauseAnimation(int animation_id, double time_offset);
+  void AbortAnimation(int animation_id);
 
  private:
   CompositorAnimationPlayer();
 
   // cc::AnimationDelegate implementation.
-  void NotifyAnimationStarted(base::TimeTicks monotonicTime,
+  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                               cc::TargetProperty::Type,
                               int group) override;
-  void NotifyAnimationFinished(base::TimeTicks monotonicTime,
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                cc::TargetProperty::Type,
                                int group) override;
-  void NotifyAnimationAborted(base::TimeTicks monotonicTime,
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               cc::TargetProperty::Type,
                               int group) override;
-  void NotifyAnimationTakeover(base::TimeTicks monotonicTime,
+  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                cc::TargetProperty::Type,
-                               double animationStartTime,
+                               double animation_start_time,
                                std::unique_ptr<cc::AnimationCurve>) override;
 
-  scoped_refptr<cc::AnimationPlayer> m_animationPlayer;
-  CompositorAnimationDelegate* m_delegate;
+  scoped_refptr<cc::AnimationPlayer> animation_player_;
+  CompositorAnimationDelegate* delegate_;
 };
 
 }  // namespace blink

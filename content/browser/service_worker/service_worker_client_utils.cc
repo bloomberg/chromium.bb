@@ -118,7 +118,7 @@ ServiceWorkerClientInfo GetWindowClientInfoOnUI(
       render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
                                      : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
       render_frame_host->frame_tree_node()->last_focus_time(),
-      blink::WebServiceWorkerClientTypeWindow);
+      blink::kWebServiceWorkerClientTypeWindow);
 }
 
 ServiceWorkerClientInfo FocusOnUI(int render_process_id,
@@ -202,8 +202,9 @@ void OpenWindowOnUI(
   }
 
   OpenURLParams params(
-      url, Referrer::SanitizeForRequest(
-               url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
+      url,
+      Referrer::SanitizeForRequest(
+          url, Referrer(script_url, blink::kWebReferrerPolicyDefault)),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true /* is_renderer_initiated */);
 
@@ -235,8 +236,9 @@ void NavigateClientOnUI(const GURL& url,
   int frame_tree_node_id = rfhi->frame_tree_node()->frame_tree_node_id();
 
   OpenURLParams params(
-      url, Referrer::SanitizeForRequest(
-               url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
+      url,
+      Referrer::SanitizeForRequest(
+          url, Referrer(script_url, blink::kWebReferrerPolicyDefault)),
       frame_tree_node_id, WindowOpenDisposition::CURRENT_TAB, transition,
       true /* is_renderer_initiated */);
   web_contents->OpenURL(params);
@@ -286,7 +288,7 @@ void AddWindowClient(
     ServiceWorkerProviderHost* host,
     std::vector<std::tuple<int, int, std::string>>* client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (host->client_type() != blink::WebServiceWorkerClientTypeWindow)
+  if (host->client_type() != blink::kWebServiceWorkerClientTypeWindow)
     return;
   client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
                                          host->client_uuid()));
@@ -297,14 +299,14 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
                         ServiceWorkerClients* clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blink::WebServiceWorkerClientType host_client_type = host->client_type();
-  if (host_client_type == blink::WebServiceWorkerClientTypeWindow)
+  if (host_client_type == blink::kWebServiceWorkerClientTypeWindow)
     return;
-  if (options.client_type != blink::WebServiceWorkerClientTypeAll &&
+  if (options.client_type != blink::kWebServiceWorkerClientTypeAll &&
       options.client_type != host_client_type)
     return;
 
   ServiceWorkerClientInfo client_info(
-      host->client_uuid(), blink::WebPageVisibilityStateHidden,
+      host->client_uuid(), blink::kWebPageVisibilityStateHidden,
       false,  // is_focused
       host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE, base::TimeTicks(),
       host_client_type);
@@ -381,7 +383,7 @@ void DidGetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                          const ClientsCallback& callback,
                          std::unique_ptr<ServiceWorkerClients> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (options.client_type == blink::WebServiceWorkerClientTypeAll)
+  if (options.client_type == blink::kWebServiceWorkerClientTypeAll)
     GetNonWindowClients(controller, options, clients.get());
   DidGetClients(callback, clients.get());
 }
@@ -390,8 +392,8 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
                       const ServiceWorkerClientQueryOptions& options,
                       const ClientsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(options.client_type == blink::WebServiceWorkerClientTypeWindow ||
-         options.client_type == blink::WebServiceWorkerClientTypeAll);
+  DCHECK(options.client_type == blink::kWebServiceWorkerClientTypeWindow ||
+         options.client_type == blink::kWebServiceWorkerClientTypeAll);
 
   std::vector<std::tuple<int, int, std::string>> clients_info;
   if (!options.include_uncontrolled) {
@@ -423,7 +425,7 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
 void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
                        const ClientCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(blink::WebServiceWorkerClientTypeWindow,
+  DCHECK_EQ(blink::kWebServiceWorkerClientTypeWindow,
             provider_host->client_type());
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
@@ -465,12 +467,12 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   blink::WebServiceWorkerClientType client_type = provider_host->client_type();
-  DCHECK(client_type == blink::WebServiceWorkerClientTypeWindow ||
-         client_type == blink::WebServiceWorkerClientTypeWorker ||
-         client_type == blink::WebServiceWorkerClientTypeSharedWorker)
+  DCHECK(client_type == blink::kWebServiceWorkerClientTypeWindow ||
+         client_type == blink::kWebServiceWorkerClientTypeWorker ||
+         client_type == blink::kWebServiceWorkerClientTypeSharedWorker)
       << client_type;
 
-  if (client_type == blink::WebServiceWorkerClientTypeWindow) {
+  if (client_type == blink::kWebServiceWorkerClientTypeWindow) {
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
@@ -480,7 +482,7 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   }
 
   ServiceWorkerClientInfo client_info(
-      provider_host->client_uuid(), blink::WebPageVisibilityStateHidden,
+      provider_host->client_uuid(), blink::kWebPageVisibilityStateHidden,
       false,  // is_focused
       provider_host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE,
       base::TimeTicks(), provider_host->client_type());
@@ -500,8 +502,8 @@ void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
   }
 
   // For Window clients we want to query the info on the UI thread first.
-  if (options.client_type == blink::WebServiceWorkerClientTypeWindow ||
-      options.client_type == blink::WebServiceWorkerClientTypeAll) {
+  if (options.client_type == blink::kWebServiceWorkerClientTypeWindow ||
+      options.client_type == blink::kWebServiceWorkerClientTypeAll) {
     GetWindowClients(controller, options, callback);
     return;
   }

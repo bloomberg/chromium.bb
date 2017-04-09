@@ -26,7 +26,7 @@ class CORE_EXPORT Iterator : public GarbageCollectedFinalized<Iterator>,
   virtual ScriptValue next(ScriptState*,
                            ScriptValue /* value */,
                            ExceptionState&) = 0;
-  Iterator* iterator(ScriptState*, ExceptionState&) { return this; }
+  Iterator* GetIterator(ScriptState*, ExceptionState&) { return this; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

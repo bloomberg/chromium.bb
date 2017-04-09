@@ -41,42 +41,42 @@ class AXSlider : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AXSlider);
 
  public:
-  static AXSlider* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXSlider* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXSlider() override {}
 
  protected:
   AXSlider(LayoutObject*, AXObjectCacheImpl&);
 
  private:
-  HTMLInputElement* element() const;
-  AXObject* elementAccessibilityHitTest(const IntPoint&) const final;
+  HTMLInputElement* GetElement() const;
+  AXObject* ElementAccessibilityHitTest(const IntPoint&) const final;
 
-  AccessibilityRole determineAccessibilityRole() final;
-  bool isSlider() const final { return true; }
-  bool isControl() const final { return true; }
+  AccessibilityRole DetermineAccessibilityRole() final;
+  bool IsSlider() const final { return true; }
+  bool IsControl() const final { return true; }
 
-  void addChildren() final;
+  void AddChildren() final;
 
-  bool canSetValueAttribute() const final { return true; }
+  bool CanSetValueAttribute() const final { return true; }
 
-  void setValue(const String&) final;
-  AccessibilityOrientation orientation() const final;
+  void SetValue(const String&) final;
+  AccessibilityOrientation Orientation() const final;
 };
 
 class AXSliderThumb final : public AXMockObject {
   WTF_MAKE_NONCOPYABLE(AXSliderThumb);
 
  public:
-  static AXSliderThumb* create(AXObjectCacheImpl&);
+  static AXSliderThumb* Create(AXObjectCacheImpl&);
   ~AXSliderThumb() override {}
 
-  AccessibilityRole roleValue() const override { return SliderThumbRole; }
+  AccessibilityRole RoleValue() const override { return kSliderThumbRole; }
 
  private:
   explicit AXSliderThumb(AXObjectCacheImpl&);
 
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-  LayoutObject* layoutObjectForRelativeBounds() const override;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  LayoutObject* LayoutObjectForRelativeBounds() const override;
 };
 
 }  // namespace blink

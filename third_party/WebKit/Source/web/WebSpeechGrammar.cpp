@@ -30,27 +30,27 @@
 
 namespace blink {
 
-void WebSpeechGrammar::reset() {
-  m_private.reset();
+void WebSpeechGrammar::Reset() {
+  private_.Reset();
 }
 
-void WebSpeechGrammar::assign(const WebSpeechGrammar& other) {
-  m_private = other.m_private;
+void WebSpeechGrammar::Assign(const WebSpeechGrammar& other) {
+  private_ = other.private_;
 }
 
 WebSpeechGrammar& WebSpeechGrammar::operator=(SpeechGrammar* value) {
-  m_private = value;
+  private_ = value;
   return *this;
 }
 
-WebURL WebSpeechGrammar::src() const {
-  DCHECK(m_private.get());
-  return m_private->src();
+WebURL WebSpeechGrammar::Src() const {
+  DCHECK(private_.Get());
+  return private_->src();
 }
 
-float WebSpeechGrammar::weight() const {
-  DCHECK(m_private.get());
-  return m_private->weight();
+float WebSpeechGrammar::Weight() const {
+  DCHECK(private_.Get());
+  return private_->weight();
 }
 
 }  // namespace blink

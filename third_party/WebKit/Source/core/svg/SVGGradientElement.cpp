@@ -33,136 +33,136 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGSpreadMethodType>() {
+GetStaticStringEntries<SVGSpreadMethodType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
-    entries.push_back(std::make_pair(SVGSpreadMethodPad, "pad"));
-    entries.push_back(std::make_pair(SVGSpreadMethodReflect, "reflect"));
-    entries.push_back(std::make_pair(SVGSpreadMethodRepeat, "repeat"));
+  if (entries.IsEmpty()) {
+    entries.push_back(std::make_pair(kSVGSpreadMethodPad, "pad"));
+    entries.push_back(std::make_pair(kSVGSpreadMethodReflect, "reflect"));
+    entries.push_back(std::make_pair(kSVGSpreadMethodRepeat, "repeat"));
   }
   return entries;
 }
 
-SVGGradientElement::SVGGradientElement(const QualifiedName& tagName,
+SVGGradientElement::SVGGradientElement(const QualifiedName& tag_name,
                                        Document& document)
-    : SVGElement(tagName, document),
+    : SVGElement(tag_name, document),
       SVGURIReference(this),
-      m_gradientTransform(
-          SVGAnimatedTransformList::create(this,
+      gradient_transform_(
+          SVGAnimatedTransformList::Create(this,
                                            SVGNames::gradientTransformAttr,
                                            CSSPropertyTransform)),
-      m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(
+      spread_method_(SVGAnimatedEnumeration<SVGSpreadMethodType>::Create(
           this,
           SVGNames::spreadMethodAttr,
-          SVGSpreadMethodPad)),
-      m_gradientUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
+          kSVGSpreadMethodPad)),
+      gradient_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
           SVGNames::gradientUnitsAttr,
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox)) {
-  addToPropertyMap(m_gradientTransform);
-  addToPropertyMap(m_spreadMethod);
-  addToPropertyMap(m_gradientUnits);
+  AddToPropertyMap(gradient_transform_);
+  AddToPropertyMap(spread_method_);
+  AddToPropertyMap(gradient_units_);
 }
 
 DEFINE_TRACE(SVGGradientElement) {
-  visitor->trace(m_gradientTransform);
-  visitor->trace(m_spreadMethod);
-  visitor->trace(m_gradientUnits);
-  SVGElement::trace(visitor);
-  SVGURIReference::trace(visitor);
+  visitor->Trace(gradient_transform_);
+  visitor->Trace(spread_method_);
+  visitor->Trace(gradient_units_);
+  SVGElement::Trace(visitor);
+  SVGURIReference::Trace(visitor);
 }
 
-void SVGGradientElement::collectStyleForPresentationAttribute(
+void SVGGradientElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == SVGNames::gradientTransformAttr) {
-    addPropertyToPresentationAttributeStyle(
+    AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyTransform,
-        m_gradientTransform->currentValue()->cssValue());
+        gradient_transform_->CurrentValue()->CssValue());
     return;
   }
-  SVGElement::collectStyleForPresentationAttribute(name, value, style);
+  SVGElement::CollectStyleForPresentationAttribute(name, value, style);
 }
 
-void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::gradientTransformAttr) {
-    invalidateSVGPresentationAttributeStyle();
-    setNeedsStyleRecalc(LocalStyleChange,
-                        StyleChangeReasonForTracing::fromAttribute(attrName));
+void SVGGradientElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::gradientTransformAttr) {
+    InvalidateSVGPresentationAttributeStyle();
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::FromAttribute(attr_name));
   }
 
-  if (attrName == SVGNames::gradientUnitsAttr ||
-      attrName == SVGNames::gradientTransformAttr ||
-      attrName == SVGNames::spreadMethodAttr ||
-      SVGURIReference::isKnownAttribute(attrName)) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+  if (attr_name == SVGNames::gradientUnitsAttr ||
+      attr_name == SVGNames::gradientTransformAttr ||
+      attr_name == SVGNames::spreadMethodAttr ||
+      SVGURIReference::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    LayoutSVGResourceContainer* layoutObject =
-        toLayoutSVGResourceContainer(this->layoutObject());
-    if (layoutObject)
-      layoutObject->invalidateCacheAndMarkForLayout();
+    LayoutSVGResourceContainer* layout_object =
+        ToLayoutSVGResourceContainer(this->GetLayoutObject());
+    if (layout_object)
+      layout_object->InvalidateCacheAndMarkForLayout();
 
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGGradientElement::childrenChanged(const ChildrenChange& change) {
-  SVGElement::childrenChanged(change);
+void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
+  SVGElement::ChildrenChanged(change);
 
-  if (change.byParser)
+  if (change.by_parser)
     return;
 
-  if (LayoutObject* object = layoutObject())
-    object->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::ChildChanged);
+  if (LayoutObject* object = GetLayoutObject())
+    object->SetNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::kChildChanged);
 }
 
-void SVGGradientElement::collectCommonAttributes(
+void SVGGradientElement::CollectCommonAttributes(
     GradientAttributes& attributes) const {
-  if (!attributes.hasSpreadMethod() && spreadMethod()->isSpecified())
-    attributes.setSpreadMethod(spreadMethod()->currentValue()->enumValue());
+  if (!attributes.HasSpreadMethod() && spreadMethod()->IsSpecified())
+    attributes.SetSpreadMethod(spreadMethod()->CurrentValue()->EnumValue());
 
-  if (!attributes.hasGradientUnits() && gradientUnits()->isSpecified())
-    attributes.setGradientUnits(gradientUnits()->currentValue()->enumValue());
+  if (!attributes.HasGradientUnits() && gradientUnits()->IsSpecified())
+    attributes.SetGradientUnits(gradientUnits()->CurrentValue()->EnumValue());
 
-  if (!attributes.hasGradientTransform() &&
-      hasTransform(SVGElement::ExcludeMotionTransform)) {
-    attributes.setGradientTransform(
-        calculateTransform(SVGElement::ExcludeMotionTransform));
+  if (!attributes.HasGradientTransform() &&
+      HasTransform(SVGElement::kExcludeMotionTransform)) {
+    attributes.SetGradientTransform(
+        CalculateTransform(SVGElement::kExcludeMotionTransform));
   }
 
-  if (!attributes.hasStops()) {
-    const Vector<Gradient::ColorStop>& stops(buildStops());
-    if (!stops.isEmpty())
-      attributes.setStops(stops);
+  if (!attributes.HasStops()) {
+    const Vector<Gradient::ColorStop>& stops(BuildStops());
+    if (!stops.IsEmpty())
+      attributes.SetStops(stops);
   }
 }
 
-const SVGGradientElement* SVGGradientElement::referencedElement() const {
+const SVGGradientElement* SVGGradientElement::ReferencedElement() const {
   // Respect xlink:href, take attributes from referenced element.
-  Element* referencedElement =
-      targetElementFromIRIString(hrefString(), treeScope());
-  if (!referencedElement || !isSVGGradientElement(*referencedElement))
+  Element* referenced_element =
+      TargetElementFromIRIString(HrefString(), GetTreeScope());
+  if (!referenced_element || !IsSVGGradientElement(*referenced_element))
     return nullptr;
-  return toSVGGradientElement(referencedElement);
+  return ToSVGGradientElement(referenced_element);
 }
 
-Vector<Gradient::ColorStop> SVGGradientElement::buildStops() const {
+Vector<Gradient::ColorStop> SVGGradientElement::BuildStops() const {
   Vector<Gradient::ColorStop> stops;
 
-  float previousOffset = 0.0f;
+  float previous_offset = 0.0f;
   for (const SVGStopElement& stop :
-       Traversal<SVGStopElement>::childrenOf(*this)) {
+       Traversal<SVGStopElement>::ChildrenOf(*this)) {
     // Figure out right monotonic offset.
-    float offset = stop.offset()->currentValue()->value();
-    offset = std::min(std::max(previousOffset, offset), 1.0f);
-    previousOffset = offset;
+    float offset = stop.offset()->CurrentValue()->Value();
+    offset = std::min(std::max(previous_offset, offset), 1.0f);
+    previous_offset = offset;
 
     stops.push_back(
-        Gradient::ColorStop(offset, stop.stopColorIncludingOpacity()));
+        Gradient::ColorStop(offset, stop.StopColorIncludingOpacity()));
   }
   return stops;
 }

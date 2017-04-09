@@ -30,87 +30,87 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // `::registerMediaControlsFactory()`.
   class Factory {
    public:
-    virtual MediaControls* create(HTMLMediaElement&, ShadowRoot&) = 0;
+    virtual MediaControls* Create(HTMLMediaElement&, ShadowRoot&) = 0;
   };
 
   MediaControls(HTMLMediaElement&);
   virtual ~MediaControls() = default;
 
-  HTMLMediaElement& mediaElement() const;
+  HTMLMediaElement& MediaElement() const;
 
-  virtual void show() = 0;
-  virtual void hide() = 0;
-  virtual void reset() = 0;
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
+  virtual void Reset() = 0;
 
   // Notify the media controls that the controlsList attribute has changed.
-  virtual void onControlsListUpdated() = 0;
+  virtual void OnControlsListUpdated() = 0;
 
   // TODO(mlamouri): this is temporary to notify the controls that an
   // HTMLTrackElement failed to load because there is no web exposed way to
   // be notified on the TextTrack object. See https://crbug.com/669977
-  virtual void onTrackElementFailedToLoad() = 0;
+  virtual void OnTrackElementFailedToLoad() = 0;
 
   // TODO(mlamouri): the following methods will be able to become private when
   // the controls have moved to modules/ and have access to RemotePlayback.
-  virtual void onRemotePlaybackAvailabilityChanged() = 0;
-  virtual void onRemotePlaybackConnecting() = 0;
-  virtual void onRemotePlaybackDisconnected() = 0;
+  virtual void OnRemotePlaybackAvailabilityChanged() = 0;
+  virtual void OnRemotePlaybackConnecting() = 0;
+  virtual void OnRemotePlaybackDisconnected() = 0;
 
   // TODO(mlamouri): this method is needed in order to notify the controls that
   // the attribute have changed.
-  virtual void onDisableRemotePlaybackAttributeChanged() = 0;
+  virtual void OnDisableRemotePlaybackAttributeChanged() = 0;
 
   // TODO(mlamouri): this method should be moved away from the interface to
   // become an implementation detail.
-  virtual void networkStateChanged() = 0;
+  virtual void NetworkStateChanged() = 0;
 
   // Returns the layout object for the part of the controls that should be
   // used for overlap checking during text track layout. May be null.
   // TODO(mlamouri): required by LayoutVTTCue.
-  virtual LayoutObject* panelLayoutObject() = 0;
+  virtual LayoutObject* PanelLayoutObject() = 0;
   // Returns the layout object of the media controls container. Maybe null.
   // TODO(mlamouri): required by LayoutVTTCue.
-  virtual LayoutObject* containerLayoutObject() = 0;
+  virtual LayoutObject* ContainerLayoutObject() = 0;
 
   // TODO: the following are required by other parts of the media controls
   // implementation and could be removed when the full implementation has moved
   // to modules.
-  virtual MediaControlPanelElement* panelElement() = 0;
-  virtual MediaControlTimelineElement* timelineElement() = 0;
-  virtual MediaControlCastButtonElement* castButtonElement() = 0;
-  virtual MediaControlVolumeSliderElement* volumeSliderElement() = 0;
-  virtual Document& ownerDocument() = 0;
-  virtual void onVolumeChange() = 0;
-  virtual void onFocusIn() = 0;
-  virtual void onTimeUpdate() = 0;
-  virtual void onDurationChange() = 0;
-  virtual void onPlay() = 0;
-  virtual void onPlaying() = 0;
-  virtual void onPause() = 0;
-  virtual void onTextTracksAddedOrRemoved() = 0;
-  virtual void onTextTracksChanged() = 0;
-  virtual void onError() = 0;
-  virtual void onLoadedMetadata() = 0;
-  virtual void onEnteredFullscreen() = 0;
-  virtual void onExitedFullscreen() = 0;
-  virtual void onPanelKeypress() = 0;
-  virtual void beginScrubbing() = 0;
-  virtual void endScrubbing() = 0;
-  virtual void updateCurrentTimeDisplay() = 0;
-  virtual void toggleTextTrackList() = 0;
-  virtual void showTextTrackAtIndex(unsigned indexToEnable) = 0;
-  virtual void disableShowingTextTracks() = 0;
-  virtual void enterFullscreen() = 0;
-  virtual void exitFullscreen() = 0;
-  virtual void showOverlayCastButtonIfNeeded() = 0;
-  virtual void toggleOverflowMenu() = 0;
-  virtual bool overflowMenuVisible() = 0;
-  virtual void onMediaControlsEnabledChange() = 0;
+  virtual MediaControlPanelElement* PanelElement() = 0;
+  virtual MediaControlTimelineElement* TimelineElement() = 0;
+  virtual MediaControlCastButtonElement* CastButtonElement() = 0;
+  virtual MediaControlVolumeSliderElement* VolumeSliderElement() = 0;
+  virtual Document& OwnerDocument() = 0;
+  virtual void OnVolumeChange() = 0;
+  virtual void OnFocusIn() = 0;
+  virtual void OnTimeUpdate() = 0;
+  virtual void OnDurationChange() = 0;
+  virtual void OnPlay() = 0;
+  virtual void OnPlaying() = 0;
+  virtual void OnPause() = 0;
+  virtual void OnTextTracksAddedOrRemoved() = 0;
+  virtual void OnTextTracksChanged() = 0;
+  virtual void OnError() = 0;
+  virtual void OnLoadedMetadata() = 0;
+  virtual void OnEnteredFullscreen() = 0;
+  virtual void OnExitedFullscreen() = 0;
+  virtual void OnPanelKeypress() = 0;
+  virtual void BeginScrubbing() = 0;
+  virtual void EndScrubbing() = 0;
+  virtual void UpdateCurrentTimeDisplay() = 0;
+  virtual void ToggleTextTrackList() = 0;
+  virtual void ShowTextTrackAtIndex(unsigned index_to_enable) = 0;
+  virtual void DisableShowingTextTracks() = 0;
+  virtual void EnterFullscreen() = 0;
+  virtual void ExitFullscreen() = 0;
+  virtual void ShowOverlayCastButtonIfNeeded() = 0;
+  virtual void ToggleOverflowMenu() = 0;
+  virtual bool OverflowMenuVisible() = 0;
+  virtual void OnMediaControlsEnabledChange() = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Member<HTMLMediaElement> m_mediaElement;
+  Member<HTMLMediaElement> media_element_;
 };
 
 }  // namespace blink

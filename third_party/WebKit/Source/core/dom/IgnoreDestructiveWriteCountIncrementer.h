@@ -37,20 +37,20 @@ class IgnoreDestructiveWriteCountIncrementer {
 
  public:
   explicit IgnoreDestructiveWriteCountIncrementer(Document* document)
-      : m_count(document ? &document->m_ignoreDestructiveWriteCount : 0) {
-    if (!m_count)
+      : count_(document ? &document->ignore_destructive_write_count_ : 0) {
+    if (!count_)
       return;
-    ++(*m_count);
+    ++(*count_);
   }
 
   ~IgnoreDestructiveWriteCountIncrementer() {
-    if (!m_count)
+    if (!count_)
       return;
-    --(*m_count);
+    --(*count_);
   }
 
  private:
-  unsigned* m_count;
+  unsigned* count_;
 };
 
 }  // namespace blink

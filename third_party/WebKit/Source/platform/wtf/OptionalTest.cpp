@@ -16,11 +16,11 @@ struct IntBox {
 
 class DestructionNotifier {
  public:
-  DestructionNotifier(bool& flag) : m_flag(flag) {}
-  ~DestructionNotifier() { m_flag = true; }
+  DestructionNotifier(bool& flag) : flag_(flag) {}
+  ~DestructionNotifier() { flag_ = true; }
 
  private:
-  bool& m_flag;
+  bool& flag_;
 };
 
 TEST(OptionalTest, BooleanTest) {
@@ -35,9 +35,9 @@ TEST(OptionalTest, Dereference) {
   optional.emplace(1);
   EXPECT_EQ(1, *optional);
 
-  Optional<IntBox> optionalIntbox;
-  optionalIntbox.emplace(42);
-  EXPECT_EQ(42, optionalIntbox->number);
+  Optional<IntBox> optional_intbox;
+  optional_intbox.emplace(42);
+  EXPECT_EQ(42, optional_intbox->number);
 }
 
 TEST(OptionalTest, DestructorCalled) {
@@ -45,13 +45,13 @@ TEST(OptionalTest, DestructorCalled) {
   { Optional<DestructionNotifier> optional; }
 
   // Destroying an engaged optional should call the destructor.
-  bool isDestroyed = false;
+  bool is_destroyed = false;
   {
     Optional<DestructionNotifier> optional;
-    optional.emplace(isDestroyed);
-    EXPECT_FALSE(isDestroyed);
+    optional.emplace(is_destroyed);
+    EXPECT_FALSE(is_destroyed);
   }
-  EXPECT_TRUE(isDestroyed);
+  EXPECT_TRUE(is_destroyed);
 }
 
 }  // namespace

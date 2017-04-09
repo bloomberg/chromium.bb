@@ -41,6 +41,9 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/CharacterNames.h"
 
+// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+#undef DrawText
+
 namespace blink {
 
 struct CharacterRange;
@@ -67,36 +70,36 @@ class PLATFORM_EXPORT Font {
   bool operator==(const Font& other) const;
   bool operator!=(const Font& other) const { return !(*this == other); }
 
-  const FontDescription& getFontDescription() const {
-    return m_fontDescription;
+  const FontDescription& GetFontDescription() const {
+    return font_description_;
   }
 
-  void update(FontSelector*) const;
+  void Update(FontSelector*) const;
 
   enum CustomFontNotReadyAction {
-    DoNotPaintIfFontNotReady,
-    UseFallbackIfFontNotReady
+    kDoNotPaintIfFontNotReady,
+    kUseFallbackIfFontNotReady
   };
-  bool drawText(PaintCanvas*,
+  bool DrawText(PaintCanvas*,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
-                float deviceScaleFactor,
+                float device_scale_factor,
                 const PaintFlags&) const;
-  bool drawBidiText(PaintCanvas*,
+  bool DrawBidiText(PaintCanvas*,
                     const TextRunPaintInfo&,
                     const FloatPoint&,
                     CustomFontNotReadyAction,
-                    float deviceScaleFactor,
+                    float device_scale_factor,
                     const PaintFlags&) const;
-  void drawEmphasisMarks(PaintCanvas*,
+  void DrawEmphasisMarks(PaintCanvas*,
                          const TextRunPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&,
-                         float deviceScaleFactor,
+                         float device_scale_factor,
                          const PaintFlags&) const;
 
   struct TextIntercept {
-    float m_begin, m_end;
+    float begin_, end_;
   };
 
   // Compute the text intercepts along the axis of the advance and write them
@@ -106,8 +109,8 @@ class PLATFORM_EXPORT Font {
   // a line crossing through the text, parallel to the baseline.
   // TODO(drott): crbug.com/655154 Fix this for
   // upright in vertical.
-  void getTextIntercepts(const TextRunPaintInfo&,
-                         float deviceScaleFactor,
+  void GetTextIntercepts(const TextRunPaintInfo&,
+                         float device_scale_factor,
                          const PaintFlags&,
                          const std::tuple<float, float>& bounds,
                          Vector<TextIntercept>&) const;
@@ -115,85 +118,85 @@ class PLATFORM_EXPORT Font {
   // Glyph bounds will be the minimum rect containing all glyph strokes, in
   // coordinates using (<text run x position>, <baseline position>) as the
   // origin.
-  float width(const TextRun&,
-              HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
-              FloatRect* glyphBounds = nullptr) const;
+  float Width(const TextRun&,
+              HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
+              FloatRect* glyph_bounds = nullptr) const;
 
-  int offsetForPosition(const TextRun&,
+  int OffsetForPosition(const TextRun&,
                         float position,
-                        bool includePartialGlyphs) const;
-  FloatRect selectionRectForText(const TextRun&,
+                        bool include_partial_glyphs) const;
+  FloatRect SelectionRectForText(const TextRun&,
                                  const FloatPoint&,
                                  int h,
                                  int from = 0,
                                  int to = -1,
-                                 bool accountForGlyphBounds = false) const;
-  CharacterRange getCharacterRange(const TextRun&,
+                                 bool account_for_glyph_bounds = false) const;
+  CharacterRange GetCharacterRange(const TextRun&,
                                    unsigned from,
                                    unsigned to) const;
-  Vector<CharacterRange> individualCharacterRanges(const TextRun&) const;
+  Vector<CharacterRange> IndividualCharacterRanges(const TextRun&) const;
 
   // Metrics that we query the FontFallbackList for.
-  float spaceWidth() const {
-    DCHECK(primaryFont());
-    return (primaryFont() ? primaryFont()->spaceWidth() : 0) +
-           getFontDescription().letterSpacing();
+  float SpaceWidth() const {
+    DCHECK(PrimaryFont());
+    return (PrimaryFont() ? PrimaryFont()->SpaceWidth() : 0) +
+           GetFontDescription().LetterSpacing();
   }
-  float tabWidth(const SimpleFontData*, const TabSize&, float position) const;
-  float tabWidth(const TabSize& tabSize, float position) const {
-    return tabWidth(primaryFont(), tabSize, position);
+  float TabWidth(const SimpleFontData*, const TabSize&, float position) const;
+  float TabWidth(const TabSize& tab_size, float position) const {
+    return TabWidth(PrimaryFont(), tab_size, position);
   }
 
-  int emphasisMarkAscent(const AtomicString&) const;
-  int emphasisMarkDescent(const AtomicString&) const;
-  int emphasisMarkHeight(const AtomicString&) const;
+  int EmphasisMarkAscent(const AtomicString&) const;
+  int EmphasisMarkDescent(const AtomicString&) const;
+  int EmphasisMarkHeight(const AtomicString&) const;
 
   // This may fail and return a nullptr in case the last resort font cannot be
   // loaded. This *should* not happen but in reality it does ever now and then
   // when, for whatever reason, the last resort font cannot be loaded.
-  const SimpleFontData* primaryFont() const;
-  const FontData* fontDataAt(unsigned) const;
+  const SimpleFontData* PrimaryFont() const;
+  const FontData* FontDataAt(unsigned) const;
 
   // Access the shape cache associated with this particular font object.
   // Should *not* be retained across layout calls as it may become invalid.
-  ShapeCache* shapeCache() const;
+  ShapeCache* GetShapeCache() const;
 
   // Whether the font supports shaping word by word instead of shaping the
   // full run in one go. Allows better caching for fonts where space cannot
   // participate in kerning and/or ligatures.
-  bool canShapeWordByWord() const;
+  bool CanShapeWordByWord() const;
 
-  void setCanShapeWordByWordForTesting(bool b) {
-    m_canShapeWordByWord = b;
-    m_shapeWordByWordComputed = true;
+  void SetCanShapeWordByWordForTesting(bool b) {
+    can_shape_word_by_word_ = b;
+    shape_word_by_word_computed_ = true;
   }
 
  private:
-  enum ForTextEmphasisOrNot { NotForTextEmphasis, ForTextEmphasis };
+  enum ForTextEmphasisOrNot { kNotForTextEmphasis, kForTextEmphasis };
 
-  GlyphData getEmphasisMarkGlyphData(const AtomicString&) const;
+  GlyphData GetEmphasisMarkGlyphData(const AtomicString&) const;
 
-  bool computeCanShapeWordByWord() const;
+  bool ComputeCanShapeWordByWord() const;
 
  public:
-  FontSelector* getFontSelector() const;
-  PassRefPtr<FontFallbackIterator> createFontFallbackIterator(
+  FontSelector* GetFontSelector() const;
+  PassRefPtr<FontFallbackIterator> CreateFontFallbackIterator(
       FontFallbackPriority) const;
 
-  void willUseFontData(const String& text) const;
+  void WillUseFontData(const String& text) const;
 
-  bool loadingCustomFonts() const;
-  bool isFallbackValid() const;
+  bool LoadingCustomFonts() const;
+  bool IsFallbackValid() const;
 
  private:
-  bool shouldSkipDrawing() const {
-    return m_fontFallbackList && m_fontFallbackList->shouldSkipDrawing();
+  bool ShouldSkipDrawing() const {
+    return font_fallback_list_ && font_fallback_list_->ShouldSkipDrawing();
   }
 
-  FontDescription m_fontDescription;
-  mutable RefPtr<FontFallbackList> m_fontFallbackList;
-  mutable unsigned m_canShapeWordByWord : 1;
-  mutable unsigned m_shapeWordByWordComputed : 1;
+  FontDescription font_description_;
+  mutable RefPtr<FontFallbackList> font_fallback_list_;
+  mutable unsigned can_shape_word_by_word_ : 1;
+  mutable unsigned shape_word_by_word_computed_ : 1;
 
   // For m_fontDescription & m_fontFallbackList access.
   friend class CachingWordShaper;
@@ -201,37 +204,37 @@ class PLATFORM_EXPORT Font {
 
 inline Font::~Font() {}
 
-inline const SimpleFontData* Font::primaryFont() const {
-  ASSERT(m_fontFallbackList);
-  return m_fontFallbackList->primarySimpleFontData(m_fontDescription);
+inline const SimpleFontData* Font::PrimaryFont() const {
+  ASSERT(font_fallback_list_);
+  return font_fallback_list_->PrimarySimpleFontData(font_description_);
 }
 
-inline const FontData* Font::fontDataAt(unsigned index) const {
-  ASSERT(m_fontFallbackList);
-  return m_fontFallbackList->fontDataAt(m_fontDescription, index);
+inline const FontData* Font::FontDataAt(unsigned index) const {
+  ASSERT(font_fallback_list_);
+  return font_fallback_list_->FontDataAt(font_description_, index);
 }
 
-inline FontSelector* Font::getFontSelector() const {
-  return m_fontFallbackList ? m_fontFallbackList->getFontSelector() : 0;
+inline FontSelector* Font::GetFontSelector() const {
+  return font_fallback_list_ ? font_fallback_list_->GetFontSelector() : 0;
 }
 
-inline float Font::tabWidth(const SimpleFontData* fontData,
-                            const TabSize& tabSize,
+inline float Font::TabWidth(const SimpleFontData* font_data,
+                            const TabSize& tab_size,
                             float position) const {
-  if (!fontData)
-    return getFontDescription().letterSpacing();
-  float baseTabWidth = tabSize.getPixelSize(fontData->spaceWidth());
-  if (!baseTabWidth)
-    return getFontDescription().letterSpacing();
-  float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
+  if (!font_data)
+    return GetFontDescription().LetterSpacing();
+  float base_tab_width = tab_size.GetPixelSize(font_data->SpaceWidth());
+  if (!base_tab_width)
+    return GetFontDescription().LetterSpacing();
+  float distance_to_tab_stop = base_tab_width - fmodf(position, base_tab_width);
 
   // Let the minimum width be the half of the space width so that it's always
   // recognizable.  if the distance to the next tab stop is less than that,
   // advance an additional tab stop.
-  if (distanceToTabStop < fontData->spaceWidth() / 2)
-    distanceToTabStop += baseTabWidth;
+  if (distance_to_tab_stop < font_data->SpaceWidth() / 2)
+    distance_to_tab_stop += base_tab_width;
 
-  return distanceToTabStop;
+  return distance_to_tab_stop;
 }
 
 }  // namespace blink

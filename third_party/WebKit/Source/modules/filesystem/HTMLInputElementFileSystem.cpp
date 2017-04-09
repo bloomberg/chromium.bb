@@ -45,7 +45,7 @@ namespace blink {
 
 // static
 EntryHeapVector HTMLInputElementFileSystem::webkitEntries(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     HTMLInputElement& input) {
   EntryHeapVector entries;
   FileList* files = input.files();
@@ -53,8 +53,8 @@ EntryHeapVector HTMLInputElementFileSystem::webkitEntries(
   if (!files)
     return entries;
 
-  DOMFileSystem* filesystem = DOMFileSystem::createIsolatedFileSystem(
-      scriptState->getExecutionContext(), input.droppedFileSystemId());
+  DOMFileSystem* filesystem = DOMFileSystem::CreateIsolatedFileSystem(
+      script_state->GetExecutionContext(), input.DroppedFileSystemId());
   if (!filesystem) {
     // Drag-drop isolated filesystem is not available.
     return entries;
@@ -65,16 +65,16 @@ EntryHeapVector HTMLInputElementFileSystem::webkitEntries(
 
     // FIXME: This involves synchronous file operation.
     FileMetadata metadata;
-    if (!getFileMetadata(file->path(), metadata))
+    if (!GetFileMetadata(file->GetPath(), metadata))
       continue;
 
     // The dropped entries are mapped as top-level entries in the isolated
     // filesystem.
-    String virtualPath = DOMFilePath::append("/", file->name());
-    if (metadata.type == FileMetadata::TypeDirectory)
-      entries.push_back(DirectoryEntry::create(filesystem, virtualPath));
+    String virtual_path = DOMFilePath::Append("/", file->name());
+    if (metadata.type == FileMetadata::kTypeDirectory)
+      entries.push_back(DirectoryEntry::Create(filesystem, virtual_path));
     else
-      entries.push_back(FileEntry::create(filesystem, virtualPath));
+      entries.push_back(FileEntry::Create(filesystem, virtual_path));
   }
   return entries;
 }

@@ -35,48 +35,49 @@ namespace {
 const double kNextFireIntervalInvalid = -1.0;
 }
 
-SuspendableTimer::SuspendableTimer(ExecutionContext* context, TaskType taskType)
-    : TimerBase(TaskRunnerHelper::get(taskType, context)),
+SuspendableTimer::SuspendableTimer(ExecutionContext* context,
+                                   TaskType task_type)
+    : TimerBase(TaskRunnerHelper::Get(task_type, context)),
       SuspendableObject(context),
-      m_nextFireInterval(kNextFireIntervalInvalid),
-      m_repeatInterval(0) {
+      next_fire_interval_(kNextFireIntervalInvalid),
+      repeat_interval_(0) {
   DCHECK(context);
 }
 
 SuspendableTimer::~SuspendableTimer() {}
 
-void SuspendableTimer::stop() {
-  m_nextFireInterval = kNextFireIntervalInvalid;
-  TimerBase::stop();
+void SuspendableTimer::Stop() {
+  next_fire_interval_ = kNextFireIntervalInvalid;
+  TimerBase::Stop();
 }
 
-void SuspendableTimer::contextDestroyed(ExecutionContext*) {
-  stop();
+void SuspendableTimer::ContextDestroyed(ExecutionContext*) {
+  Stop();
 }
 
-void SuspendableTimer::suspend() {
+void SuspendableTimer::Suspend() {
 #if DCHECK_IS_ON()
-  ASSERT(!m_suspended);
-  m_suspended = true;
+  ASSERT(!suspended_);
+  suspended_ = true;
 #endif
-  if (isActive()) {
-    m_nextFireInterval = nextFireInterval();
-    ASSERT(m_nextFireInterval >= 0.0);
-    m_repeatInterval = repeatInterval();
-    TimerBase::stop();
+  if (IsActive()) {
+    next_fire_interval_ = NextFireInterval();
+    ASSERT(next_fire_interval_ >= 0.0);
+    repeat_interval_ = RepeatInterval();
+    TimerBase::Stop();
   }
 }
 
-void SuspendableTimer::resume() {
+void SuspendableTimer::Resume() {
 #if DCHECK_IS_ON()
-  ASSERT(m_suspended);
-  m_suspended = false;
+  ASSERT(suspended_);
+  suspended_ = false;
 #endif
-  if (m_nextFireInterval >= 0.0) {
+  if (next_fire_interval_ >= 0.0) {
     // start() was called before, therefore location() is already set.
     // m_nextFireInterval is only set in suspend() if the Timer was active.
-    start(m_nextFireInterval, m_repeatInterval, location());
-    m_nextFireInterval = kNextFireIntervalInvalid;
+    Start(next_fire_interval_, repeat_interval_, GetLocation());
+    next_fire_interval_ = kNextFireIntervalInvalid;
   }
 }
 

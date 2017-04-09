@@ -49,56 +49,56 @@
 
 namespace blink {
 
-static WebMediaConstraints parseOptions(
+static WebMediaConstraints ParseOptions(
     ExecutionContext* context,
     const BooleanOrMediaTrackConstraints& options,
-    MediaErrorState& errorState) {
+    MediaErrorState& error_state) {
   WebMediaConstraints constraints;
 
-  Dictionary constraintsDictionary;
+  Dictionary constraints_dictionary;
   if (options.isNull()) {
     // Do nothing.
   } else if (options.isMediaTrackConstraints()) {
-    constraints = MediaConstraintsImpl::create(
-        context, options.getAsMediaTrackConstraints(), errorState);
+    constraints = MediaConstraintsImpl::Create(
+        context, options.getAsMediaTrackConstraints(), error_state);
   } else {
     DCHECK(options.isBoolean());
     if (options.getAsBoolean()) {
-      constraints = MediaConstraintsImpl::create();
+      constraints = MediaConstraintsImpl::Create();
     }
   }
 
   return constraints;
 }
 
-UserMediaRequest* UserMediaRequest::create(
+UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
     UserMediaController* controller,
     const MediaStreamConstraints& options,
-    NavigatorUserMediaSuccessCallback* successCallback,
-    NavigatorUserMediaErrorCallback* errorCallback,
-    MediaErrorState& errorState) {
+    NavigatorUserMediaSuccessCallback* success_callback,
+    NavigatorUserMediaErrorCallback* error_callback,
+    MediaErrorState& error_state) {
   WebMediaConstraints audio =
-      parseOptions(context, options.audio(), errorState);
-  if (errorState.hadException())
+      ParseOptions(context, options.audio(), error_state);
+  if (error_state.HadException())
     return nullptr;
 
   WebMediaConstraints video =
-      parseOptions(context, options.video(), errorState);
-  if (errorState.hadException())
+      ParseOptions(context, options.video(), error_state);
+  if (error_state.HadException())
     return nullptr;
 
-  if (audio.isNull() && video.isNull()) {
-    errorState.throwTypeError(
+  if (audio.IsNull() && video.IsNull()) {
+    error_state.ThrowTypeError(
         "At least one of audio and video must be requested");
     return nullptr;
   }
 
   return new UserMediaRequest(context, controller, audio, video,
-                              successCallback, errorCallback);
+                              success_callback, error_callback);
 }
 
-UserMediaRequest* UserMediaRequest::createForTesting(
+UserMediaRequest* UserMediaRequest::CreateForTesting(
     const WebMediaConstraints& audio,
     const WebMediaConstraints& video) {
   return new UserMediaRequest(nullptr, nullptr, audio, video, nullptr, nullptr);
@@ -109,132 +109,133 @@ UserMediaRequest::UserMediaRequest(
     UserMediaController* controller,
     WebMediaConstraints audio,
     WebMediaConstraints video,
-    NavigatorUserMediaSuccessCallback* successCallback,
-    NavigatorUserMediaErrorCallback* errorCallback)
+    NavigatorUserMediaSuccessCallback* success_callback,
+    NavigatorUserMediaErrorCallback* error_callback)
     : ContextLifecycleObserver(context),
-      m_audio(audio),
-      m_video(video),
-      m_controller(controller),
-      m_successCallback(successCallback),
-      m_errorCallback(errorCallback) {}
+      audio_(audio),
+      video_(video),
+      controller_(controller),
+      success_callback_(success_callback),
+      error_callback_(error_callback) {}
 
 UserMediaRequest::~UserMediaRequest() {}
 
-bool UserMediaRequest::audio() const {
-  return !m_audio.isNull();
+bool UserMediaRequest::Audio() const {
+  return !audio_.IsNull();
 }
 
-bool UserMediaRequest::video() const {
-  return !m_video.isNull();
+bool UserMediaRequest::Video() const {
+  return !video_.IsNull();
 }
 
-WebMediaConstraints UserMediaRequest::audioConstraints() const {
-  return m_audio;
+WebMediaConstraints UserMediaRequest::AudioConstraints() const {
+  return audio_;
 }
 
-WebMediaConstraints UserMediaRequest::videoConstraints() const {
-  return m_video;
+WebMediaConstraints UserMediaRequest::VideoConstraints() const {
+  return video_;
 }
 
-bool UserMediaRequest::isSecureContextUse(String& errorMessage) {
-  Document* document = ownerDocument();
+bool UserMediaRequest::IsSecureContextUse(String& error_message) {
+  Document* document = OwnerDocument();
 
-  if (document->isSecureContext(errorMessage)) {
-    UseCounter::count(document->frame(), UseCounter::GetUserMediaSecureOrigin);
-    UseCounter::countCrossOriginIframe(
-        *document, UseCounter::GetUserMediaSecureOriginIframe);
-    HostsUsingFeatures::countAnyWorld(
-        *document, HostsUsingFeatures::Feature::GetUserMediaSecureHost);
+  if (document->IsSecureContext(error_message)) {
+    UseCounter::Count(document->GetFrame(),
+                      UseCounter::kGetUserMediaSecureOrigin);
+    UseCounter::CountCrossOriginIframe(
+        *document, UseCounter::kGetUserMediaSecureOriginIframe);
+    HostsUsingFeatures::CountAnyWorld(
+        *document, HostsUsingFeatures::Feature::kGetUserMediaSecureHost);
     return true;
   }
 
   // While getUserMedia is blocked on insecure origins, we still want to
   // count attempts to use it.
-  Deprecation::countDeprecation(document->frame(),
-                                UseCounter::GetUserMediaInsecureOrigin);
-  Deprecation::countDeprecationCrossOriginIframe(
-      *document, UseCounter::GetUserMediaInsecureOriginIframe);
-  HostsUsingFeatures::countAnyWorld(
-      *document, HostsUsingFeatures::Feature::GetUserMediaInsecureHost);
+  Deprecation::CountDeprecation(document->GetFrame(),
+                                UseCounter::kGetUserMediaInsecureOrigin);
+  Deprecation::CountDeprecationCrossOriginIframe(
+      *document, UseCounter::kGetUserMediaInsecureOriginIframe);
+  HostsUsingFeatures::CountAnyWorld(
+      *document, HostsUsingFeatures::Feature::kGetUserMediaInsecureHost);
   return false;
 }
 
-Document* UserMediaRequest::ownerDocument() {
-  if (ExecutionContext* context = getExecutionContext()) {
-    return toDocument(context);
+Document* UserMediaRequest::OwnerDocument() {
+  if (ExecutionContext* context = GetExecutionContext()) {
+    return ToDocument(context);
   }
 
   return 0;
 }
 
-void UserMediaRequest::start() {
-  if (m_controller)
-    m_controller->requestUserMedia(this);
+void UserMediaRequest::Start() {
+  if (controller_)
+    controller_->RequestUserMedia(this);
 }
 
-void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor) {
-  if (!getExecutionContext())
+void UserMediaRequest::Succeed(MediaStreamDescriptor* stream_descriptor) {
+  if (!GetExecutionContext())
     return;
 
   MediaStream* stream =
-      MediaStream::create(getExecutionContext(), streamDescriptor);
+      MediaStream::Create(GetExecutionContext(), stream_descriptor);
 
-  MediaStreamTrackVector audioTracks = stream->getAudioTracks();
-  for (MediaStreamTrackVector::iterator iter = audioTracks.begin();
-       iter != audioTracks.end(); ++iter) {
-    (*iter)->component()->source()->setConstraints(m_audio);
-    (*iter)->setConstraints(m_audio);
+  MediaStreamTrackVector audio_tracks = stream->getAudioTracks();
+  for (MediaStreamTrackVector::iterator iter = audio_tracks.begin();
+       iter != audio_tracks.end(); ++iter) {
+    (*iter)->Component()->Source()->SetConstraints(audio_);
+    (*iter)->SetConstraints(audio_);
   }
 
-  MediaStreamTrackVector videoTracks = stream->getVideoTracks();
-  for (MediaStreamTrackVector::iterator iter = videoTracks.begin();
-       iter != videoTracks.end(); ++iter) {
-    (*iter)->component()->source()->setConstraints(m_video);
-    (*iter)->setConstraints(m_video);
+  MediaStreamTrackVector video_tracks = stream->getVideoTracks();
+  for (MediaStreamTrackVector::iterator iter = video_tracks.begin();
+       iter != video_tracks.end(); ++iter) {
+    (*iter)->Component()->Source()->SetConstraints(video_);
+    (*iter)->SetConstraints(video_);
   }
 
-  m_successCallback->handleEvent(stream);
+  success_callback_->handleEvent(stream);
 }
 
-void UserMediaRequest::failPermissionDenied(const String& message) {
-  if (!getExecutionContext())
+void UserMediaRequest::FailPermissionDenied(const String& message) {
+  if (!GetExecutionContext())
     return;
-  m_errorCallback->handleEvent(NavigatorUserMediaError::create(
-      NavigatorUserMediaError::NamePermissionDenied, message, String()));
+  error_callback_->handleEvent(NavigatorUserMediaError::Create(
+      NavigatorUserMediaError::kNamePermissionDenied, message, String()));
 }
 
-void UserMediaRequest::failConstraint(const String& constraintName,
+void UserMediaRequest::FailConstraint(const String& constraint_name,
                                       const String& message) {
-  DCHECK(!constraintName.isEmpty());
-  if (!getExecutionContext())
+  DCHECK(!constraint_name.IsEmpty());
+  if (!GetExecutionContext())
     return;
-  m_errorCallback->handleEvent(NavigatorUserMediaError::create(
-      NavigatorUserMediaError::NameConstraintNotSatisfied, message,
-      constraintName));
+  error_callback_->handleEvent(NavigatorUserMediaError::Create(
+      NavigatorUserMediaError::kNameConstraintNotSatisfied, message,
+      constraint_name));
 }
 
-void UserMediaRequest::failUASpecific(const String& name,
+void UserMediaRequest::FailUASpecific(const String& name,
                                       const String& message,
-                                      const String& constraintName) {
-  DCHECK(!name.isEmpty());
-  if (!getExecutionContext())
+                                      const String& constraint_name) {
+  DCHECK(!name.IsEmpty());
+  if (!GetExecutionContext())
     return;
-  m_errorCallback->handleEvent(
-      NavigatorUserMediaError::create(name, message, constraintName));
+  error_callback_->handleEvent(
+      NavigatorUserMediaError::Create(name, message, constraint_name));
 }
 
-void UserMediaRequest::contextDestroyed(ExecutionContext*) {
-  if (m_controller) {
-    m_controller->cancelUserMediaRequest(this);
-    m_controller = nullptr;
+void UserMediaRequest::ContextDestroyed(ExecutionContext*) {
+  if (controller_) {
+    controller_->CancelUserMediaRequest(this);
+    controller_ = nullptr;
   }
 }
 
 DEFINE_TRACE(UserMediaRequest) {
-  visitor->trace(m_controller);
-  visitor->trace(m_successCallback);
-  visitor->trace(m_errorCallback);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(controller_);
+  visitor->Trace(success_callback_);
+  visitor->Trace(error_callback_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

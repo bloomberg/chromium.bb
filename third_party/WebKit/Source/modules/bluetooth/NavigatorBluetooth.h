@@ -21,7 +21,7 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
  public:
   // Gets, or creates, NavigatorBluetooth supplement on Navigator.
   // See platform/Supplementable.h
-  static NavigatorBluetooth& from(Navigator&);
+  static NavigatorBluetooth& From(Navigator&);
 
   static Bluetooth* bluetooth(Navigator&);
 
@@ -32,9 +32,9 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
 
  private:
   explicit NavigatorBluetooth(Navigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<Bluetooth> m_bluetooth;
+  Member<Bluetooth> bluetooth_;
 };
 
 }  // namespace blink

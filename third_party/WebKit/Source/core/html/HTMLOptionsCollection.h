@@ -38,7 +38,7 @@ class HTMLOptionsCollection final : public HTMLCollection {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLOptionsCollection* create(ContainerNode&, CollectionType);
+  static HTMLOptionsCollection* Create(ContainerNode&, CollectionType);
 
   HTMLOptionElement* item(unsigned offset) const {
     return toHTMLOptionElement(HTMLCollection::item(offset));
@@ -54,32 +54,32 @@ class HTMLOptionsCollection final : public HTMLCollection {
 
   void setLength(unsigned, ExceptionState&);
   void namedGetter(const AtomicString& name, NodeListOrElement&);
-  bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
+  bool AnonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
 
-  bool elementMatches(const HTMLElement&) const;
+  bool ElementMatches(const HTMLElement&) const;
 
  private:
   explicit HTMLOptionsCollection(ContainerNode&);
 
-  void supportedPropertyNames(Vector<String>& names) override;
+  void SupportedPropertyNames(Vector<String>& names) override;
 };
 
 DEFINE_TYPE_CASTS(HTMLOptionsCollection,
                   LiveNodeListBase,
                   collection,
-                  collection->type() == SelectOptions,
-                  collection.type() == SelectOptions);
+                  collection->GetType() == kSelectOptions,
+                  collection.GetType() == kSelectOptions);
 
-inline bool HTMLOptionsCollection::elementMatches(
+inline bool HTMLOptionsCollection::ElementMatches(
     const HTMLElement& element) const {
   if (!isHTMLOptionElement(element))
     return false;
   Node* parent = element.parentNode();
   if (!parent)
     return false;
-  if (parent == &rootNode())
+  if (parent == &RootNode())
     return true;
-  return isHTMLOptGroupElement(*parent) && parent->parentNode() == &rootNode();
+  return isHTMLOptGroupElement(*parent) && parent->parentNode() == &RootNode();
 }
 
 }  // namespace blink

@@ -39,149 +39,150 @@ namespace blink {
 using namespace HTMLNames;
 
 AXInlineTextBox::AXInlineTextBox(
-    PassRefPtr<AbstractInlineTextBox> inlineTextBox,
-    AXObjectCacheImpl& axObjectCache)
-    : AXObject(axObjectCache), m_inlineTextBox(std::move(inlineTextBox)) {}
+    PassRefPtr<AbstractInlineTextBox> inline_text_box,
+    AXObjectCacheImpl& ax_object_cache)
+    : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
-AXInlineTextBox* AXInlineTextBox::create(
-    PassRefPtr<AbstractInlineTextBox> inlineTextBox,
-    AXObjectCacheImpl& axObjectCache) {
-  return new AXInlineTextBox(std::move(inlineTextBox), axObjectCache);
+AXInlineTextBox* AXInlineTextBox::Create(
+    PassRefPtr<AbstractInlineTextBox> inline_text_box,
+    AXObjectCacheImpl& ax_object_cache) {
+  return new AXInlineTextBox(std::move(inline_text_box), ax_object_cache);
 }
 
-void AXInlineTextBox::init() {}
+void AXInlineTextBox::Init() {}
 
-void AXInlineTextBox::detach() {
-  AXObject::detach();
-  m_inlineTextBox = nullptr;
+void AXInlineTextBox::Detach() {
+  AXObject::Detach();
+  inline_text_box_ = nullptr;
 }
 
-void AXInlineTextBox::getRelativeBounds(
-    AXObject** outContainer,
-    FloatRect& outBoundsInContainer,
-    SkMatrix44& outContainerTransform) const {
-  *outContainer = nullptr;
-  outBoundsInContainer = FloatRect();
-  outContainerTransform.setIdentity();
+void AXInlineTextBox::GetRelativeBounds(
+    AXObject** out_container,
+    FloatRect& out_bounds_in_container,
+    SkMatrix44& out_container_transform) const {
+  *out_container = nullptr;
+  out_bounds_in_container = FloatRect();
+  out_container_transform.setIdentity();
 
-  if (!m_inlineTextBox || !parentObject() || !parentObject()->getLayoutObject())
+  if (!inline_text_box_ || !ParentObject() ||
+      !ParentObject()->GetLayoutObject())
     return;
 
-  *outContainer = parentObject();
-  outBoundsInContainer = FloatRect(m_inlineTextBox->localBounds());
+  *out_container = ParentObject();
+  out_bounds_in_container = FloatRect(inline_text_box_->LocalBounds());
 
   // Subtract the local bounding box of the parent because they're
   // both in the same coordinate system.
-  LayoutObject* parentLayoutObject = parentObject()->getLayoutObject();
-  FloatRect parentBoundingBox =
-      parentLayoutObject->localBoundingBoxRectForAccessibility();
-  outBoundsInContainer.moveBy(-parentBoundingBox.location());
+  LayoutObject* parent_layout_object = ParentObject()->GetLayoutObject();
+  FloatRect parent_bounding_box =
+      parent_layout_object->LocalBoundingBoxRectForAccessibility();
+  out_bounds_in_container.MoveBy(-parent_bounding_box.Location());
 }
 
-bool AXInlineTextBox::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  AXObject* parent = parentObject();
+bool AXInlineTextBox::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  AXObject* parent = ParentObject();
   if (!parent)
     return false;
 
-  if (!parent->accessibilityIsIgnored())
+  if (!parent->AccessibilityIsIgnored())
     return false;
 
-  if (ignoredReasons)
-    parent->computeAccessibilityIsIgnored(ignoredReasons);
+  if (ignored_reasons)
+    parent->ComputeAccessibilityIsIgnored(ignored_reasons);
 
   return true;
 }
 
-void AXInlineTextBox::textCharacterOffsets(Vector<int>& offsets) const {
-  if (!m_inlineTextBox)
+void AXInlineTextBox::TextCharacterOffsets(Vector<int>& offsets) const {
+  if (!inline_text_box_)
     return;
 
-  unsigned len = m_inlineTextBox->len();
+  unsigned len = inline_text_box_->Len();
   Vector<float> widths;
-  m_inlineTextBox->characterWidths(widths);
+  inline_text_box_->CharacterWidths(widths);
   DCHECK(widths.size() == len);
-  offsets.resize(len);
+  offsets.Resize(len);
 
-  float widthSoFar = 0;
+  float width_so_far = 0;
   for (unsigned i = 0; i < len; i++) {
-    widthSoFar += widths[i];
-    offsets[i] = roundf(widthSoFar);
+    width_so_far += widths[i];
+    offsets[i] = roundf(width_so_far);
   }
 }
 
-void AXInlineTextBox::wordBoundaries(Vector<AXRange>& words) const {
-  if (!m_inlineTextBox)
+void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
+  if (!inline_text_box_)
     return;
 
-  Vector<AbstractInlineTextBox::WordBoundaries> wordBoundaries;
-  m_inlineTextBox->wordBoundaries(wordBoundaries);
-  words.resize(wordBoundaries.size());
-  for (unsigned i = 0; i < wordBoundaries.size(); i++)
+  Vector<AbstractInlineTextBox::WordBoundaries> word_boundaries;
+  inline_text_box_->GetWordBoundaries(word_boundaries);
+  words.Resize(word_boundaries.size());
+  for (unsigned i = 0; i < word_boundaries.size(); i++)
     words[i] =
-        AXRange(wordBoundaries[i].startIndex, wordBoundaries[i].endIndex);
+        AXRange(word_boundaries[i].start_index, word_boundaries[i].end_index);
 }
 
-String AXInlineTextBox::name(AXNameFrom& nameFrom,
-                             AXObject::AXObjectVector* nameObjects) const {
-  if (!m_inlineTextBox)
+String AXInlineTextBox::GetName(AXNameFrom& name_from,
+                                AXObject::AXObjectVector* name_objects) const {
+  if (!inline_text_box_)
     return String();
 
-  nameFrom = AXNameFromContents;
-  return m_inlineTextBox->text();
+  name_from = kAXNameFromContents;
+  return inline_text_box_->GetText();
 }
 
-AXObject* AXInlineTextBox::computeParent() const {
-  DCHECK(!isDetached());
-  if (!m_inlineTextBox || !m_axObjectCache)
+AXObject* AXInlineTextBox::ComputeParent() const {
+  DCHECK(!IsDetached());
+  if (!inline_text_box_ || !ax_object_cache_)
     return 0;
 
-  LineLayoutText lineLayoutText = m_inlineTextBox->getLineLayoutItem();
-  return m_axObjectCache->getOrCreate(
-      LineLayoutAPIShim::layoutObjectFrom(lineLayoutText));
+  LineLayoutText line_layout_text = inline_text_box_->GetLineLayoutItem();
+  return ax_object_cache_->GetOrCreate(
+      LineLayoutAPIShim::LayoutObjectFrom(line_layout_text));
 }
 
 // In addition to LTR and RTL direction, edit fields also support
 // top to bottom and bottom to top via the CSS writing-mode property.
-AccessibilityTextDirection AXInlineTextBox::textDirection() const {
-  if (!m_inlineTextBox)
-    return AXObject::textDirection();
+AccessibilityTextDirection AXInlineTextBox::GetTextDirection() const {
+  if (!inline_text_box_)
+    return AXObject::GetTextDirection();
 
-  switch (m_inlineTextBox->getDirection()) {
-    case AbstractInlineTextBox::LeftToRight:
-      return AccessibilityTextDirectionLTR;
-    case AbstractInlineTextBox::RightToLeft:
-      return AccessibilityTextDirectionRTL;
-    case AbstractInlineTextBox::TopToBottom:
-      return AccessibilityTextDirectionTTB;
-    case AbstractInlineTextBox::BottomToTop:
-      return AccessibilityTextDirectionBTT;
+  switch (inline_text_box_->GetDirection()) {
+    case AbstractInlineTextBox::kLeftToRight:
+      return kAccessibilityTextDirectionLTR;
+    case AbstractInlineTextBox::kRightToLeft:
+      return kAccessibilityTextDirectionRTL;
+    case AbstractInlineTextBox::kTopToBottom:
+      return kAccessibilityTextDirectionTTB;
+    case AbstractInlineTextBox::kBottomToTop:
+      return kAccessibilityTextDirectionBTT;
   }
 
-  return AXObject::textDirection();
+  return AXObject::GetTextDirection();
 }
 
-AXObject* AXInlineTextBox::nextOnLine() const {
-  RefPtr<AbstractInlineTextBox> nextOnLine = m_inlineTextBox->nextOnLine();
-  if (nextOnLine)
-    return m_axObjectCache->getOrCreate(nextOnLine.get());
+AXObject* AXInlineTextBox::NextOnLine() const {
+  RefPtr<AbstractInlineTextBox> next_on_line = inline_text_box_->NextOnLine();
+  if (next_on_line)
+    return ax_object_cache_->GetOrCreate(next_on_line.Get());
 
-  if (!m_inlineTextBox->isLast())
+  if (!inline_text_box_->IsLast())
     return 0;
 
-  return parentObject()->nextOnLine();
+  return ParentObject()->NextOnLine();
 }
 
-AXObject* AXInlineTextBox::previousOnLine() const {
-  RefPtr<AbstractInlineTextBox> previousOnLine =
-      m_inlineTextBox->previousOnLine();
-  if (previousOnLine)
-    return m_axObjectCache->getOrCreate(previousOnLine.get());
+AXObject* AXInlineTextBox::PreviousOnLine() const {
+  RefPtr<AbstractInlineTextBox> previous_on_line =
+      inline_text_box_->PreviousOnLine();
+  if (previous_on_line)
+    return ax_object_cache_->GetOrCreate(previous_on_line.Get());
 
-  if (!m_inlineTextBox->isFirst())
+  if (!inline_text_box_->IsFirst())
     return 0;
 
-  return parentObject()->previousOnLine();
+  return ParentObject()->PreviousOnLine();
 }
 
 }  // namespace blink

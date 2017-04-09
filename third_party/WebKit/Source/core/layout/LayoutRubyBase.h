@@ -40,36 +40,37 @@ class LayoutRubyRun;
 class LayoutRubyBase final : public LayoutBlockFlow {
  public:
   ~LayoutRubyBase() override;
-  static LayoutRubyBase* createAnonymous(Document*);
+  static LayoutRubyBase* CreateAnonymous(Document*);
 
-  const char* name() const override { return "LayoutRubyBase"; }
+  const char* GetName() const override { return "LayoutRubyBase"; }
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectRubyBase || LayoutBlockFlow::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectRubyBase || LayoutBlockFlow::IsOfType(type);
   }
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
  private:
   LayoutRubyBase();
 
-  ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
-  void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount,
-                                       LayoutUnit& logicalLeft,
-                                       LayoutUnit& logicalWidth) const override;
+  ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const override;
+  void AdjustInlineDirectionLineBounds(
+      unsigned expansion_opportunity_count,
+      LayoutUnit& logical_left,
+      LayoutUnit& logical_width) const override;
 
-  void moveChildren(LayoutRubyBase* toBase,
-                    LayoutObject* beforeChild = nullptr);
-  void moveInlineChildren(LayoutRubyBase* toBase,
-                          LayoutObject* beforeChild = nullptr);
-  void moveBlockChildren(LayoutRubyBase* toBase,
-                         LayoutObject* beforeChild = nullptr);
+  void MoveChildren(LayoutRubyBase* to_base,
+                    LayoutObject* before_child = nullptr);
+  void MoveInlineChildren(LayoutRubyBase* to_base,
+                          LayoutObject* before_child = nullptr);
+  void MoveBlockChildren(LayoutRubyBase* to_base,
+                         LayoutObject* before_child = nullptr);
 
   // Allow LayoutRubyRun to manipulate the children within ruby bases.
   friend class LayoutRubyRun;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyBase, isRubyBase());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyBase, IsRubyBase());
 
 }  // namespace blink
 

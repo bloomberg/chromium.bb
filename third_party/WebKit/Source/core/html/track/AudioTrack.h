@@ -19,30 +19,30 @@ class CORE_EXPORT AudioTrack final
   USING_GARBAGE_COLLECTED_MIXIN(AudioTrack);
 
  public:
-  static AudioTrack* create(const String& id,
+  static AudioTrack* Create(const String& id,
                             const AtomicString& kind,
                             const AtomicString& label,
                             const AtomicString& language,
                             bool enabled) {
-    return new AudioTrack(id, isValidKindKeyword(kind) ? kind : emptyAtom,
+    return new AudioTrack(id, IsValidKindKeyword(kind) ? kind : g_empty_atom,
                           label, language, enabled);
   }
 
   ~AudioTrack() override;
   DECLARE_VIRTUAL_TRACE();
 
-  bool enabled() const { return m_enabled; }
+  bool enabled() const { return enabled_; }
   void setEnabled(bool);
 
   // Valid kind keywords.
-  static const AtomicString& alternativeKeyword();
-  static const AtomicString& descriptionsKeyword();
-  static const AtomicString& mainKeyword();
-  static const AtomicString& mainDescriptionsKeyword();
-  static const AtomicString& translationKeyword();
-  static const AtomicString& commentaryKeyword();
+  static const AtomicString& AlternativeKeyword();
+  static const AtomicString& DescriptionsKeyword();
+  static const AtomicString& MainKeyword();
+  static const AtomicString& MainDescriptionsKeyword();
+  static const AtomicString& TranslationKeyword();
+  static const AtomicString& CommentaryKeyword();
 
-  static bool isValidKindKeyword(const String&);
+  static bool IsValidKindKeyword(const String&);
 
  private:
   AudioTrack(const String& id,
@@ -51,10 +51,10 @@ class CORE_EXPORT AudioTrack final
              const AtomicString& language,
              bool enabled);
 
-  bool m_enabled;
+  bool enabled_;
 };
 
-DEFINE_TRACK_TYPE_CASTS(AudioTrack, WebMediaPlayer::AudioTrack);
+DEFINE_TRACK_TYPE_CASTS(AudioTrack, WebMediaPlayer::kAudioTrack);
 
 }  // namespace blink
 

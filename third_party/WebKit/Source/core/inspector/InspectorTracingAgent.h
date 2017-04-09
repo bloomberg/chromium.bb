@@ -27,53 +27,53 @@ class CORE_EXPORT InspectorTracingAgent final
    public:
     virtual ~Client() {}
 
-    virtual void enableTracing(const String& categoryFilter) = 0;
-    virtual void disableTracing() = 0;
-    virtual void showReloadingBlanket() = 0;
-    virtual void hideReloadingBlanket() = 0;
+    virtual void EnableTracing(const String& category_filter) = 0;
+    virtual void DisableTracing() = 0;
+    virtual void ShowReloadingBlanket() = 0;
+    virtual void HideReloadingBlanket() = 0;
   };
 
-  static InspectorTracingAgent* create(Client* client,
-                                       InspectorWorkerAgent* workerAgent,
-                                       InspectedFrames* inspectedFrames) {
-    return new InspectorTracingAgent(client, workerAgent, inspectedFrames);
+  static InspectorTracingAgent* Create(Client* client,
+                                       InspectorWorkerAgent* worker_agent,
+                                       InspectedFrames* inspected_frames) {
+    return new InspectorTracingAgent(client, worker_agent, inspected_frames);
   }
 
   DECLARE_VIRTUAL_TRACE();
 
   // Base agent methods.
-  void restore() override;
+  void Restore() override;
   protocol::Response disable() override;
 
   // InspectorInstrumentation methods
-  void frameStartedLoading(LocalFrame*, FrameLoadType);
-  void frameStoppedLoading(LocalFrame*);
+  void FrameStartedLoading(LocalFrame*, FrameLoadType);
+  void FrameStoppedLoading(LocalFrame*);
 
   // Protocol method implementations.
   void start(protocol::Maybe<String> categories,
              protocol::Maybe<String> options,
-             protocol::Maybe<double> bufferUsageReportingInterval,
-             protocol::Maybe<String> transferMode,
+             protocol::Maybe<double> buffer_usage_reporting_interval,
+             protocol::Maybe<String> transfer_mode,
              protocol::Maybe<protocol::Tracing::TraceConfig>,
              std::unique_ptr<StartCallback>) override;
   void end(std::unique_ptr<EndCallback>) override;
 
   // Methods for other agents to use.
-  void setLayerTreeId(int);
-  void rootLayerCleared();
+  void SetLayerTreeId(int);
+  void RootLayerCleared();
 
  private:
   InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectedFrames*);
 
-  void emitMetadataEvents();
-  void innerDisable();
-  String sessionId() const;
-  bool isStarted() const;
+  void EmitMetadataEvents();
+  void InnerDisable();
+  String SessionId() const;
+  bool IsStarted() const;
 
-  int m_layerTreeId;
-  Client* m_client;
-  Member<InspectorWorkerAgent> m_workerAgent;
-  Member<InspectedFrames> m_inspectedFrames;
+  int layer_tree_id_;
+  Client* client_;
+  Member<InspectorWorkerAgent> worker_agent_;
+  Member<InspectedFrames> inspected_frames_;
 };
 
 }  // namespace blink

@@ -29,80 +29,80 @@ namespace blink {
 // DictionaryHelper::getWithUndefinedCheck.
 RequestInit::RequestInit(ExecutionContext* context,
                          const Dictionary& options,
-                         ExceptionState& exceptionState)
-    : areAnyMembersSet(false) {
-  areAnyMembersSet |= DictionaryHelper::get(options, "method", method);
-  areAnyMembersSet |= DictionaryHelper::get(options, "headers", headers);
+                         ExceptionState& exception_state)
+    : are_any_members_set(false) {
+  are_any_members_set |= DictionaryHelper::Get(options, "method", method);
+  are_any_members_set |= DictionaryHelper::Get(options, "headers", headers);
   if (!headers) {
-    Vector<Vector<String>> headersVector;
-    if (DictionaryHelper::get(options, "headers", headersVector,
-                              exceptionState)) {
-      headers = Headers::create(headersVector, exceptionState);
-      areAnyMembersSet = true;
+    Vector<Vector<String>> headers_vector;
+    if (DictionaryHelper::Get(options, "headers", headers_vector,
+                              exception_state)) {
+      headers = Headers::Create(headers_vector, exception_state);
+      are_any_members_set = true;
     } else {
-      areAnyMembersSet |=
-          DictionaryHelper::get(options, "headers", headersDictionary);
+      are_any_members_set |=
+          DictionaryHelper::Get(options, "headers", headers_dictionary);
     }
   }
-  areAnyMembersSet |= DictionaryHelper::get(options, "mode", mode);
-  areAnyMembersSet |= DictionaryHelper::get(options, "redirect", redirect);
-  AtomicString referrerString;
-  bool isReferrerStringSet = DictionaryHelper::getWithUndefinedCheck(
-      options, "referrer", referrerString);
-  areAnyMembersSet |= isReferrerStringSet;
-  areAnyMembersSet |= DictionaryHelper::get(options, "integrity", integrity);
-  AtomicString referrerPolicyString;
-  bool isReferrerPolicySet =
-      DictionaryHelper::get(options, "referrerPolicy", referrerPolicyString);
-  areAnyMembersSet |= isReferrerPolicySet;
+  are_any_members_set |= DictionaryHelper::Get(options, "mode", mode);
+  are_any_members_set |= DictionaryHelper::Get(options, "redirect", redirect);
+  AtomicString referrer_string;
+  bool is_referrer_string_set = DictionaryHelper::GetWithUndefinedCheck(
+      options, "referrer", referrer_string);
+  are_any_members_set |= is_referrer_string_set;
+  are_any_members_set |= DictionaryHelper::Get(options, "integrity", integrity);
+  AtomicString referrer_policy_string;
+  bool is_referrer_policy_set =
+      DictionaryHelper::Get(options, "referrerPolicy", referrer_policy_string);
+  are_any_members_set |= is_referrer_policy_set;
 
-  v8::Local<v8::Value> v8Body;
-  bool isBodySet = DictionaryHelper::get(options, "body", v8Body);
-  areAnyMembersSet |= isBodySet;
+  v8::Local<v8::Value> v8_body;
+  bool is_body_set = DictionaryHelper::Get(options, "body", v8_body);
+  are_any_members_set |= is_body_set;
 
-  v8::Local<v8::Value> v8Credential;
-  bool isCredentialSet =
-      DictionaryHelper::get(options, "credentials", v8Credential);
-  areAnyMembersSet |= isCredentialSet;
+  v8::Local<v8::Value> v8_credential;
+  bool is_credential_set =
+      DictionaryHelper::Get(options, "credentials", v8_credential);
+  are_any_members_set |= is_credential_set;
 
-  if (areAnyMembersSet) {
+  if (are_any_members_set) {
     // A part of the Request constructor algorithm is performed here. See
     // the comments in the Request constructor code for the detail.
 
     // We need to use "about:client" instead of |clientReferrerString|,
     // because "about:client" => |clientReferrerString| conversion is done
     // in Request::createRequestWithRequestOrString.
-    referrer = Referrer("about:client", ReferrerPolicyDefault);
-    if (isReferrerStringSet)
-      referrer.referrer = referrerString;
-    if (isReferrerPolicySet) {
-      if (referrerPolicyString == "") {
-        referrer.referrerPolicy = ReferrerPolicyDefault;
-      } else if (referrerPolicyString == "no-referrer") {
-        referrer.referrerPolicy = ReferrerPolicyNever;
-      } else if (referrerPolicyString == "no-referrer-when-downgrade") {
-        referrer.referrerPolicy = ReferrerPolicyNoReferrerWhenDowngrade;
-      } else if (referrerPolicyString == "origin") {
-        referrer.referrerPolicy = ReferrerPolicyOrigin;
-      } else if (referrerPolicyString == "origin-when-cross-origin") {
-        referrer.referrerPolicy = ReferrerPolicyOriginWhenCrossOrigin;
-      } else if (referrerPolicyString == "unsafe-url") {
-        referrer.referrerPolicy = ReferrerPolicyAlways;
-      } else if (referrerPolicyString ==
+    referrer = Referrer("about:client", kReferrerPolicyDefault);
+    if (is_referrer_string_set)
+      referrer.referrer = referrer_string;
+    if (is_referrer_policy_set) {
+      if (referrer_policy_string == "") {
+        referrer.referrer_policy = kReferrerPolicyDefault;
+      } else if (referrer_policy_string == "no-referrer") {
+        referrer.referrer_policy = kReferrerPolicyNever;
+      } else if (referrer_policy_string == "no-referrer-when-downgrade") {
+        referrer.referrer_policy = kReferrerPolicyNoReferrerWhenDowngrade;
+      } else if (referrer_policy_string == "origin") {
+        referrer.referrer_policy = kReferrerPolicyOrigin;
+      } else if (referrer_policy_string == "origin-when-cross-origin") {
+        referrer.referrer_policy = kReferrerPolicyOriginWhenCrossOrigin;
+      } else if (referrer_policy_string == "unsafe-url") {
+        referrer.referrer_policy = kReferrerPolicyAlways;
+      } else if (referrer_policy_string ==
                      "no-referrer-when-downgrade-origin-when-cross-origin" &&
                  RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
-        referrer.referrerPolicy =
-            ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+        referrer.referrer_policy =
+            kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
       } else {
-        exceptionState.throwTypeError("Invalid referrer policy");
+        exception_state.ThrowTypeError("Invalid referrer policy");
         return;
       }
     }
   }
 
-  v8::Isolate* isolate = toIsolate(context);
-  if (isCredentialSet) {
-    if (V8PasswordCredential::hasInstance(v8Credential, isolate)) {
+  v8::Isolate* isolate = ToIsolate(context);
+  if (is_credential_set) {
+    if (V8PasswordCredential::hasInstance(v8_credential, isolate)) {
       // TODO(mkwst): According to the spec, we'd serialize this once we touch
       // the network. We're serializing it here, ahead of time, because lifetime
       // issues around ResourceRequest make it pretty difficult to pass a
@@ -112,47 +112,48 @@ RequestInit::RequestInit(ExecutionContext* context,
       // behavior with this option, except that the `Content-Type` header will
       // be set early. That seems reasonable.
       PasswordCredential* credential =
-          V8PasswordCredential::toImpl(v8Credential.As<v8::Object>());
-      attachedCredential = credential->encodeFormData(contentType);
+          V8PasswordCredential::toImpl(v8_credential.As<v8::Object>());
+      attached_credential = credential->EncodeFormData(content_type);
       credentials = "password";
-    } else if (v8Credential->IsString()) {
-      credentials = toUSVString(isolate, v8Credential, exceptionState);
+    } else if (v8_credential->IsString()) {
+      credentials = ToUSVString(isolate, v8_credential, exception_state);
     }
   }
 
-  if (attachedCredential.get() || !isBodySet || v8Body->IsUndefined() ||
-      v8Body->IsNull())
+  if (attached_credential.Get() || !is_body_set || v8_body->IsUndefined() ||
+      v8_body->IsNull())
     return;
 
-  if (v8Body->IsArrayBuffer()) {
+  if (v8_body->IsArrayBuffer()) {
     body = new FormDataBytesConsumer(
-        V8ArrayBuffer::toImpl(v8Body.As<v8::Object>()));
-  } else if (v8Body->IsArrayBufferView()) {
+        V8ArrayBuffer::toImpl(v8_body.As<v8::Object>()));
+  } else if (v8_body->IsArrayBufferView()) {
     body = new FormDataBytesConsumer(
-        V8ArrayBufferView::toImpl(v8Body.As<v8::Object>()));
-  } else if (V8Blob::hasInstance(v8Body, isolate)) {
-    RefPtr<BlobDataHandle> blobDataHandle =
-        V8Blob::toImpl(v8Body.As<v8::Object>())->blobDataHandle();
-    contentType = blobDataHandle->type();
-    body = new BlobBytesConsumer(context, blobDataHandle.release());
-  } else if (V8FormData::hasInstance(v8Body, isolate)) {
-    RefPtr<EncodedFormData> formData =
-        V8FormData::toImpl(v8Body.As<v8::Object>())->encodeMultiPartFormData();
+        V8ArrayBufferView::toImpl(v8_body.As<v8::Object>()));
+  } else if (V8Blob::hasInstance(v8_body, isolate)) {
+    RefPtr<BlobDataHandle> blob_data_handle =
+        V8Blob::toImpl(v8_body.As<v8::Object>())->GetBlobDataHandle();
+    content_type = blob_data_handle->GetType();
+    body = new BlobBytesConsumer(context, blob_data_handle.Release());
+  } else if (V8FormData::hasInstance(v8_body, isolate)) {
+    RefPtr<EncodedFormData> form_data =
+        V8FormData::toImpl(v8_body.As<v8::Object>())->EncodeMultiPartFormData();
     // Here we handle formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
-    contentType = AtomicString("multipart/form-data; boundary=") +
-                  formData->boundary().data();
-    body = new FormDataBytesConsumer(context, formData.release());
-  } else if (V8URLSearchParams::hasInstance(v8Body, isolate)) {
-    RefPtr<EncodedFormData> formData =
-        V8URLSearchParams::toImpl(v8Body.As<v8::Object>())->toEncodedFormData();
-    contentType =
+    content_type = AtomicString("multipart/form-data; boundary=") +
+                   form_data->Boundary().Data();
+    body = new FormDataBytesConsumer(context, form_data.Release());
+  } else if (V8URLSearchParams::hasInstance(v8_body, isolate)) {
+    RefPtr<EncodedFormData> form_data =
+        V8URLSearchParams::toImpl(v8_body.As<v8::Object>())
+            ->ToEncodedFormData();
+    content_type =
         AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
-    body = new FormDataBytesConsumer(context, formData.release());
-  } else if (v8Body->IsString()) {
-    contentType = "text/plain;charset=UTF-8";
-    body =
-        new FormDataBytesConsumer(toUSVString(isolate, v8Body, exceptionState));
+    body = new FormDataBytesConsumer(context, form_data.Release());
+  } else if (v8_body->IsString()) {
+    content_type = "text/plain;charset=UTF-8";
+    body = new FormDataBytesConsumer(
+        ToUSVString(isolate, v8_body, exception_state));
   }
 }
 

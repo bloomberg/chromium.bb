@@ -37,7 +37,7 @@ class WebViewClient;
 
 class ExternalDateTimeChooser final : public DateTimeChooser {
  public:
-  static ExternalDateTimeChooser* create(ChromeClientImpl*,
+  static ExternalDateTimeChooser* Create(ChromeClientImpl*,
                                          WebViewClient*,
                                          DateTimeChooserClient*,
                                          const DateTimeChooserParameters&);
@@ -45,21 +45,21 @@ class ExternalDateTimeChooser final : public DateTimeChooser {
   DECLARE_VIRTUAL_TRACE();
 
   // The following functions are for DateTimeChooserCompletion.
-  void didChooseValue(const WebString&);
-  void didChooseValue(double);
-  void didCancelChooser();
+  void DidChooseValue(const WebString&);
+  void DidChooseValue(double);
+  void DidCancelChooser();
 
  private:
   ExternalDateTimeChooser(DateTimeChooserClient*);
-  bool openDateTimeChooser(ChromeClientImpl*,
+  bool OpenDateTimeChooser(ChromeClientImpl*,
                            WebViewClient*,
                            const DateTimeChooserParameters&);
 
   // DateTimeChooser function:
-  void endChooser() override;
-  AXObject* rootAXObject() override;
+  void EndChooser() override;
+  AXObject* RootAXObject() override;
 
-  Member<DateTimeChooserClient> m_client;
+  Member<DateTimeChooserClient> client_;
 };
 }
 #endif

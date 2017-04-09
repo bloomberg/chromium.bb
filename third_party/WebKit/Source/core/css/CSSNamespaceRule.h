@@ -15,7 +15,7 @@ class CSSNamespaceRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSNamespaceRule* create(StyleRuleNamespace* rule,
+  static CSSNamespaceRule* Create(StyleRuleNamespace* rule,
                                   CSSStyleSheet* sheet) {
     return new CSSNamespaceRule(rule, sheet);
   }
@@ -23,7 +23,7 @@ class CSSNamespaceRule final : public CSSRule {
   ~CSSNamespaceRule() override;
 
   String cssText() const override;
-  void reattach(StyleRuleBase*) override {}
+  void Reattach(StyleRuleBase*) override {}
 
   AtomicString namespaceURI() const;
   AtomicString prefix() const;
@@ -35,7 +35,7 @@ class CSSNamespaceRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kNamespaceRule; }
 
-  Member<StyleRuleNamespace> m_namespaceRule;
+  Member<StyleRuleNamespace> namespace_rule_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, kNamespaceRule);

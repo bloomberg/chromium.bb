@@ -45,63 +45,63 @@ class CompositorAnimationTimeline;
 class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
  public:
   explicit ScrollAnimator(ScrollableArea*,
-                          WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
+                          WTF::TimeFunction = WTF::MonotonicallyIncreasingTime);
   ~ScrollAnimator() override;
 
-  bool hasRunningAnimation() const override;
-  ScrollOffset computeDeltaToConsume(const ScrollOffset& delta) const override;
+  bool HasRunningAnimation() const override;
+  ScrollOffset ComputeDeltaToConsume(const ScrollOffset& delta) const override;
 
-  ScrollResult userScroll(ScrollGranularity,
+  ScrollResult UserScroll(ScrollGranularity,
                           const ScrollOffset& delta) override;
-  void scrollToOffsetWithoutAnimation(const ScrollOffset&) override;
-  ScrollOffset desiredTargetOffset() const override;
+  void ScrollToOffsetWithoutAnimation(const ScrollOffset&) override;
+  ScrollOffset DesiredTargetOffset() const override;
 
   // ScrollAnimatorCompositorCoordinator implementation.
-  void tickAnimation(double monotonicTime) override;
-  void cancelAnimation() override;
-  void adjustAnimationAndSetScrollOffset(const ScrollOffset&,
+  void TickAnimation(double monotonic_time) override;
+  void CancelAnimation() override;
+  void AdjustAnimationAndSetScrollOffset(const ScrollOffset&,
                                          ScrollType) override;
-  void takeOverCompositorAnimation() override;
-  void resetAnimationState() override;
-  void updateCompositorAnimations() override;
-  void notifyCompositorAnimationFinished(int groupId) override;
-  void notifyCompositorAnimationAborted(int groupId) override;
-  void layerForCompositedScrollingDidChange(
+  void TakeOverCompositorAnimation() override;
+  void ResetAnimationState() override;
+  void UpdateCompositorAnimations() override;
+  void NotifyCompositorAnimationFinished(int group_id) override;
+  void NotifyCompositorAnimationAborted(int group_id) override;
+  void LayerForCompositedScrollingDidChange(
       CompositorAnimationTimeline*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   // Returns whether or not the animation was sent to the compositor.
-  virtual bool sendAnimationToCompositor();
+  virtual bool SendAnimationToCompositor();
 
-  void notifyAnimationTakeover(double monotonicTime,
-                               double animationStartTime,
+  void NotifyAnimationTakeover(double monotonic_time,
+                               double animation_start_time,
                                std::unique_ptr<cc::AnimationCurve>) override;
 
-  std::unique_ptr<CompositorScrollOffsetAnimationCurve> m_animationCurve;
-  double m_startTime;
-  WTF::TimeFunction m_timeFunction;
+  std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
+  double start_time_;
+  WTF::TimeFunction time_function_;
 
  private:
   // Returns true if the animation was scheduled successfully. If animation
   // could not be scheduled (e.g. because the frame is detached), scrolls
   // immediately to the target and returns false.
-  bool registerAndScheduleAnimation();
+  bool RegisterAndScheduleAnimation();
 
-  void createAnimationCurve();
-  void postAnimationCleanupAndReset();
+  void CreateAnimationCurve();
+  void PostAnimationCleanupAndReset();
 
-  void addMainThreadScrollingReason();
-  void removeMainThreadScrollingReason();
+  void AddMainThreadScrollingReason();
+  void RemoveMainThreadScrollingReason();
 
   // Returns true if will animate to the given target offset. Returns false
   // only when there is no animation running and we are not starting one
   // because we are already at targetPos.
-  bool willAnimateToOffset(const ScrollOffset& targetPos);
+  bool WillAnimateToOffset(const ScrollOffset& target_pos);
 
-  ScrollOffset m_targetOffset;
-  ScrollGranularity m_lastGranularity;
+  ScrollOffset target_offset_;
+  ScrollGranularity last_granularity_;
 };
 
 }  // namespace blink

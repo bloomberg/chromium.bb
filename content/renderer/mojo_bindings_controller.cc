@@ -36,9 +36,9 @@ MojoBindingsController::~MojoBindingsController() {
 }
 
 void MojoBindingsController::CreateContextState() {
-  v8::HandleScope handle_scope(blink::mainThreadIsolate());
+  v8::HandleScope handle_scope(blink::MainThreadIsolate());
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   MojoContextStateData* data = new MojoContextStateData;
   data->state.reset(new MojoContextState(frame, context, bindings_type_));
@@ -54,9 +54,9 @@ void MojoBindingsController::DestroyContextState(
 }
 
 MojoContextState* MojoBindingsController::GetContextState() {
-  v8::HandleScope handle_scope(blink::mainThreadIsolate());
+  v8::HandleScope handle_scope(blink::MainThreadIsolate());
   v8::Local<v8::Context> context =
-      render_frame()->GetWebFrame()->mainWorldScriptContext();
+      render_frame()->GetWebFrame()->MainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   if (!context_data)
     return NULL;
@@ -76,7 +76,7 @@ void MojoBindingsController::RunScriptsAtDocumentStart() {
 }
 
 void MojoBindingsController::RunScriptsAtDocumentReady() {
-  v8::HandleScope handle_scope(blink::mainThreadIsolate());
+  v8::HandleScope handle_scope(blink::MainThreadIsolate());
   MojoContextState* state = GetContextState();
   if (state)
     state->Run();
@@ -94,8 +94,8 @@ void MojoBindingsController::DidClearWindowObject() {
   if (state && !state->module_added())
     return;
 
-  v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  DestroyContextState(render_frame()->GetWebFrame()->mainWorldScriptContext());
+  v8::HandleScope handle_scope(blink::MainThreadIsolate());
+  DestroyContextState(render_frame()->GetWebFrame()->MainWorldScriptContext());
 }
 
 void MojoBindingsController::OnDestruct() {

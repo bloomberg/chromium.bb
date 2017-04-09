@@ -36,71 +36,71 @@ class PLATFORM_EXPORT LengthBox {
  public:
   LengthBox() {}
 
-  LengthBox(LengthType t) : m_left(t), m_right(t), m_top(t), m_bottom(t) {}
+  LengthBox(LengthType t) : left_(t), right_(t), top_(t), bottom_(t) {}
 
   LengthBox(int v)
-      : m_left(Length(v, Fixed)),
-        m_right(Length(v, Fixed)),
-        m_top(Length(v, Fixed)),
-        m_bottom(Length(v, Fixed)) {}
+      : left_(Length(v, kFixed)),
+        right_(Length(v, kFixed)),
+        top_(Length(v, kFixed)),
+        bottom_(Length(v, kFixed)) {}
 
   LengthBox(const Length& t, const Length& r, const Length& b, const Length& l)
-      : m_left(l), m_right(r), m_top(t), m_bottom(b) {}
+      : left_(l), right_(r), top_(t), bottom_(b) {}
 
   LengthBox(int t, int r, int b, int l)
-      : m_left(Length(l, Fixed)),
-        m_right(Length(r, Fixed)),
-        m_top(Length(t, Fixed)),
-        m_bottom(Length(b, Fixed)) {}
+      : left_(Length(l, kFixed)),
+        right_(Length(r, kFixed)),
+        top_(Length(t, kFixed)),
+        bottom_(Length(b, kFixed)) {}
 
   // For use in ComputedStyle.h
-  static const Length& logicalLeft(WritingMode,
+  static const Length& LogicalLeft(WritingMode,
                                    const Length& left,
                                    const Length& top);
-  static const Length& logicalRight(WritingMode,
+  static const Length& LogicalRight(WritingMode,
                                     const Length& right,
                                     const Length& bottom);
-  static const Length& before(WritingMode,
+  static const Length& Before(WritingMode,
                               const Length& top,
                               const Length& left,
                               const Length& right);
-  static const Length& after(WritingMode,
+  static const Length& After(WritingMode,
                              const Length& bottom,
                              const Length& left,
                              const Length& right);
 
-  const Length& left() const { return m_left; }
-  const Length& right() const { return m_right; }
-  const Length& top() const { return m_top; }
-  const Length& bottom() const { return m_bottom; }
+  const Length& Left() const { return left_; }
+  const Length& Right() const { return right_; }
+  const Length& Top() const { return top_; }
+  const Length& Bottom() const { return bottom_; }
 
-  const Length& logicalLeft(WritingMode) const;
-  const Length& logicalRight(WritingMode) const;
+  const Length& LogicalLeft(WritingMode) const;
+  const Length& LogicalRight(WritingMode) const;
 
-  const Length& before(WritingMode) const;
-  const Length& after(WritingMode) const;
-  const Length& start(WritingMode, TextDirection) const;
+  const Length& Before(WritingMode) const;
+  const Length& After(WritingMode) const;
+  const Length& Start(WritingMode, TextDirection) const;
   const Length& end(WritingMode, TextDirection) const;
-  const Length& over(WritingMode) const;
-  const Length& under(WritingMode) const;
+  const Length& Over(WritingMode) const;
+  const Length& Under(WritingMode) const;
 
   bool operator==(const LengthBox& o) const {
-    return m_left == o.m_left && m_right == o.m_right && m_top == o.m_top &&
-           m_bottom == o.m_bottom;
+    return left_ == o.left_ && right_ == o.right_ && top_ == o.top_ &&
+           bottom_ == o.bottom_;
   }
 
   bool operator!=(const LengthBox& o) const { return !(*this == o); }
 
-  bool nonZero() const {
-    return !(m_left.isZero() && m_right.isZero() && m_top.isZero() &&
-             m_bottom.isZero());
+  bool NonZero() const {
+    return !(left_.IsZero() && right_.IsZero() && top_.IsZero() &&
+             bottom_.IsZero());
   }
 
   // Must be public for SET_VAR in ComputedStyle.h
-  Length m_left;
-  Length m_right;
-  Length m_top;
-  Length m_bottom;
+  Length left_;
+  Length right_;
+  Length top_;
+  Length bottom_;
 };
 
 }  // namespace blink

@@ -16,11 +16,11 @@ class StorageClientImpl : public StorageClient {
  public:
   explicit StorageClientImpl(WebViewImpl*);
 
-  std::unique_ptr<StorageNamespace> createSessionStorageNamespace() override;
-  bool canAccessStorage(LocalFrame*, StorageType) const override;
+  std::unique_ptr<StorageNamespace> CreateSessionStorageNamespace() override;
+  bool CanAccessStorage(LocalFrame*, StorageType) const override;
 
  private:
-  WebViewImpl* m_webView;
+  WebViewImpl* web_view_;
 };
 
 }  // namespace blink

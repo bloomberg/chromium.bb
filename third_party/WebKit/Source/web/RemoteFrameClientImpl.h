@@ -12,41 +12,41 @@ class WebRemoteFrameImpl;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
  public:
-  static RemoteFrameClientImpl* create(WebRemoteFrameImpl*);
+  static RemoteFrameClientImpl* Create(WebRemoteFrameImpl*);
 
   DECLARE_VIRTUAL_TRACE();
 
   // FrameClient overrides:
-  bool inShadowTree() const override;
-  void willBeDetached() override;
-  void detached(FrameDetachType) override;
-  Frame* opener() const override;
-  void setOpener(Frame*) override;
-  Frame* parent() const override;
-  Frame* top() const override;
-  Frame* nextSibling() const override;
-  Frame* firstChild() const override;
-  void frameFocused() const override;
+  bool InShadowTree() const override;
+  void WillBeDetached() override;
+  void Detached(FrameDetachType) override;
+  Frame* Opener() const override;
+  void SetOpener(Frame*) override;
+  Frame* Parent() const override;
+  Frame* Top() const override;
+  Frame* NextSibling() const override;
+  Frame* FirstChild() const override;
+  void FrameFocused() const override;
 
   // RemoteFrameClient overrides:
-  void navigate(const ResourceRequest&,
-                bool shouldReplaceCurrentEntry) override;
-  void reload(FrameLoadType, ClientRedirectPolicy) override;
-  unsigned backForwardLength() override;
-  void forwardPostMessage(MessageEvent*,
+  void Navigate(const ResourceRequest&,
+                bool should_replace_current_entry) override;
+  void Reload(FrameLoadType, ClientRedirectPolicy) override;
+  unsigned BackForwardLength() override;
+  void ForwardPostMessage(MessageEvent*,
                           PassRefPtr<SecurityOrigin> target,
                           LocalFrame* source) const override;
-  void frameRectsChanged(const IntRect& frameRect) override;
-  void updateRemoteViewportIntersection(const IntRect&) override;
-  void advanceFocus(WebFocusType, LocalFrame*) override;
-  void visibilityChanged(bool visible) override;
+  void FrameRectsChanged(const IntRect& frame_rect) override;
+  void UpdateRemoteViewportIntersection(const IntRect&) override;
+  void AdvanceFocus(WebFocusType, LocalFrame*) override;
+  void VisibilityChanged(bool visible) override;
 
-  WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
+  WebRemoteFrameImpl* GetWebFrame() const { return web_frame_; }
 
  private:
   explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
-  Member<WebRemoteFrameImpl> m_webFrame;
+  Member<WebRemoteFrameImpl> web_frame_;
 };
 
 }  // namespace blink

@@ -10,11 +10,12 @@
 namespace blink {
 
 struct WebMemoryStatistics {
-  size_t partitionAllocTotalAllocatedBytes;
-  size_t blinkGCTotalAllocatedBytes;
+  size_t partition_alloc_total_allocated_bytes;
+  size_t blink_gc_total_allocated_bytes;
 
   WebMemoryStatistics()
-      : partitionAllocTotalAllocatedBytes(0), blinkGCTotalAllocatedBytes(0) {}
+      : partition_alloc_total_allocated_bytes(0),
+        blink_gc_total_allocated_bytes(0) {}
 
   BLINK_EXPORT static WebMemoryStatistics Get();
 };

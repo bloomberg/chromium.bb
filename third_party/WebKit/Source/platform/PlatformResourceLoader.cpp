@@ -9,11 +9,11 @@
 
 namespace blink {
 
-String loadResourceAsASCIIString(const char* resource) {
-  const WebData& resourceData = Platform::current()->loadResource(resource);
-  String dataString(resourceData.data(), resourceData.size());
-  ASSERT(!dataString.isEmpty() && dataString.containsOnlyASCII());
-  return dataString;
+String LoadResourceAsASCIIString(const char* resource) {
+  const WebData& resource_data = Platform::Current()->LoadResource(resource);
+  String data_string(resource_data.Data(), resource_data.size());
+  ASSERT(!data_string.IsEmpty() && data_string.ContainsOnlyASCII());
+  return data_string;
 }
 
 }  // namespace blink

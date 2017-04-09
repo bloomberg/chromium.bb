@@ -122,7 +122,7 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-bool PepperURLLoaderHost::willFollowRedirect(
+bool PepperURLLoaderHost::WillFollowRedirect(
     const WebURLRequest& new_request,
     const WebURLResponse& redirect_response) {
   DCHECK(out_of_order_replies_.empty());
@@ -136,7 +136,7 @@ bool PepperURLLoaderHost::willFollowRedirect(
   return true;
 }
 
-void PepperURLLoaderHost::didSendData(
+void PepperURLLoaderHost::DidSendData(
     unsigned long long bytes_sent,
     unsigned long long total_bytes_to_be_sent) {
   // TODO(darin): Bounds check input?
@@ -145,20 +145,20 @@ void PepperURLLoaderHost::didSendData(
   UpdateProgress();
 }
 
-void PepperURLLoaderHost::didReceiveResponse(const WebURLResponse& response) {
+void PepperURLLoaderHost::DidReceiveResponse(const WebURLResponse& response) {
   // Sets -1 if the content length is unknown. Send before issuing callback.
-  total_bytes_to_be_received_ = response.expectedContentLength();
+  total_bytes_to_be_received_ = response.ExpectedContentLength();
   UpdateProgress();
 
   SaveResponse(response);
 }
 
-void PepperURLLoaderHost::didDownloadData(int data_length) {
+void PepperURLLoaderHost::DidDownloadData(int data_length) {
   bytes_received_ += data_length;
   UpdateProgress();
 }
 
-void PepperURLLoaderHost::didReceiveData(const char* data, int data_length) {
+void PepperURLLoaderHost::DidReceiveData(const char* data, int data_length) {
   // Note that |loader| will be NULL for document loads.
   bytes_received_ += data_length;
   UpdateProgress();
@@ -168,16 +168,16 @@ void PepperURLLoaderHost::didReceiveData(const char* data, int data_length) {
   SendUpdateToPlugin(std::move(message));
 }
 
-void PepperURLLoaderHost::didFinishLoading(double finish_time) {
+void PepperURLLoaderHost::DidFinishLoading(double finish_time) {
   // Note that |loader| will be NULL for document loads.
   SendUpdateToPlugin(
       base::MakeUnique<PpapiPluginMsg_URLLoader_FinishedLoading>(PP_OK));
 }
 
-void PepperURLLoaderHost::didFail(const WebURLError& error) {
+void PepperURLLoaderHost::DidFail(const WebURLError& error) {
   // Note that |loader| will be NULL for document loads.
   int32_t pp_error = PP_ERROR_FAILED;
-  if (error.domain.equals(WebString::fromUTF8(net::kErrorDomain))) {
+  if (error.domain.Equals(WebString::FromUTF8(net::kErrorDomain))) {
     // TODO(bbudge): Extend pp_errors.h to cover interesting network errors
     // from the net error domain.
     switch (error.reason) {
@@ -256,42 +256,42 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
     return PP_ERROR_FAILED;
   }
 
-  web_request.setRequestContext(WebURLRequest::RequestContextPlugin);
-  web_request.setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
+  web_request.SetRequestContext(WebURLRequest::kRequestContextPlugin);
+  web_request.SetRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
   // The requests from the plugins with private permission which can bypass same
   // origin must skip the ServiceWorker.
-  web_request.setServiceWorkerMode(
+  web_request.SetServiceWorkerMode(
       host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)
-          ? WebURLRequest::ServiceWorkerMode::None
-          : WebURLRequest::ServiceWorkerMode::All);
+          ? WebURLRequest::ServiceWorkerMode::kNone
+          : WebURLRequest::ServiceWorkerMode::kAll);
 
   WebAssociatedURLLoaderOptions options;
   if (has_universal_access_) {
-    options.allowCredentials = true;
-    options.crossOriginRequestPolicy =
-        WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyAllow;
+    options.allow_credentials = true;
+    options.cross_origin_request_policy =
+        WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow;
   } else {
     // All other HTTP requests are untrusted.
-    options.untrustedHTTP = true;
+    options.untrusted_http = true;
     if (filled_in_request_data.allow_cross_origin_requests) {
       // Allow cross-origin requests with access control. The request specifies
       // if credentials are to be sent.
-      options.allowCredentials = filled_in_request_data.allow_credentials;
-      options.crossOriginRequestPolicy = WebAssociatedURLLoaderOptions::
-          CrossOriginRequestPolicyUseAccessControl;
+      options.allow_credentials = filled_in_request_data.allow_credentials;
+      options.cross_origin_request_policy = WebAssociatedURLLoaderOptions::
+          kCrossOriginRequestPolicyUseAccessControl;
     } else {
       // Same-origin requests can always send credentials.
-      options.allowCredentials = true;
+      options.allow_credentials = true;
     }
   }
 
-  loader_.reset(frame->createAssociatedURLLoader(options));
+  loader_.reset(frame->CreateAssociatedURLLoader(options));
   if (!loader_.get())
     return PP_ERROR_FAILED;
 
   // Don't actually save the request until we know we're going to load.
   request_data_ = filled_in_request_data;
-  loader_->loadAsynchronously(web_request, this);
+  loader_->LoadAsynchronously(web_request, this);
 
   // Although the request is technically pending, this is not a "Call" message
   // so we don't return COMPLETIONPENDING.
@@ -365,7 +365,7 @@ void PepperURLLoaderHost::SendOrderedUpdateToPlugin(
 
 void PepperURLLoaderHost::Close() {
   if (loader_.get()) {
-    loader_->cancel();
+    loader_->Cancel();
   } else if (main_document_loader_) {
     // TODO(raymes): Calling WebLocalFrame::stopLoading here is incorrect as it
     // cancels all URL loaders associated with the frame. If a client has opened
@@ -374,7 +374,7 @@ void PepperURLLoaderHost::Close() {
     // crbug.com/384197.
     WebLocalFrame* frame = GetFrame();
     if (frame)
-      frame->stopLoading();
+      frame->StopLoading();
   }
 }
 
@@ -384,12 +384,12 @@ WebLocalFrame* PepperURLLoaderHost::GetFrame() {
           renderer_ppapi_host_->GetPluginInstance(pp_instance()));
   if (!instance_object || instance_object->is_deleted())
     return NULL;
-  return instance_object->GetContainer()->document().frame();
+  return instance_object->GetContainer()->GetDocument().GetFrame();
 }
 
 void PepperURLLoaderHost::SetDefersLoading(bool defers_loading) {
   if (loader_.get())
-    loader_->setDefersLoading(defers_loading);
+    loader_->SetDefersLoading(defers_loading);
 
   // TODO(brettw) bug 96770: We need a way to set the defers loading flag on
   // main document loads (when the loader_ is null).

@@ -14,35 +14,35 @@ namespace {
 
 class LayoutTextTest : public RenderingTest {
  public:
-  void setBasicBody(const char* message) {
-    setBodyInnerHTML(String::format(
+  void SetBasicBody(const char* message) {
+    SetBodyInnerHTML(String::Format(
         "<div id='target' style='font-size: 10px;'>%s</div>", message));
   }
 
-  LayoutText* getBasicText() {
-    return toLayoutText(getLayoutObjectByElementId("target")->slowFirstChild());
+  LayoutText* GetBasicText() {
+    return ToLayoutText(GetLayoutObjectByElementId("target")->SlowFirstChild());
   }
 };
 
-const char* kTacoText = "Los Compadres Taco Truck";
+const char* g_k_taco_text = "Los Compadres Taco Truck";
 
 }  // namespace
 
 TEST_F(LayoutTextTest, WidthZeroFromZeroLength) {
-  setBasicBody(kTacoText);
-  ASSERT_EQ(0, getBasicText()->width(0u, 0u, LayoutUnit(), TextDirection::kLtr,
+  SetBasicBody(g_k_taco_text);
+  ASSERT_EQ(0, GetBasicText()->Width(0u, 0u, LayoutUnit(), TextDirection::kLtr,
                                      false));
 }
 
 TEST_F(LayoutTextTest, WidthMaxFromZeroLength) {
-  setBasicBody(kTacoText);
-  ASSERT_EQ(0, getBasicText()->width(std::numeric_limits<unsigned>::max(), 0u,
+  SetBasicBody(g_k_taco_text);
+  ASSERT_EQ(0, GetBasicText()->Width(std::numeric_limits<unsigned>::max(), 0u,
                                      LayoutUnit(), TextDirection::kLtr, false));
 }
 
 TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
-  setBasicBody(kTacoText);
-  float width = getBasicText()->width(0u, std::numeric_limits<unsigned>::max(),
+  SetBasicBody(g_k_taco_text);
+  float width = GetBasicText()->Width(0u, std::numeric_limits<unsigned>::max(),
                                       LayoutUnit(), TextDirection::kLtr, false);
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
@@ -51,8 +51,8 @@ TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
 }
 
 TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
-  setBasicBody(kTacoText);
-  ASSERT_EQ(0, getBasicText()->width(std::numeric_limits<unsigned>::max(),
+  SetBasicBody(g_k_taco_text);
+  ASSERT_EQ(0, GetBasicText()->Width(std::numeric_limits<unsigned>::max(),
                                      std::numeric_limits<unsigned>::max(),
                                      LayoutUnit(), TextDirection::kLtr, false));
 }
@@ -60,7 +60,7 @@ TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
 TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
   // The test case from http://crbug.com/647820 uses a 288-length string, so for
   // posterity we follow that closely.
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div "
       "id='target'>"
       "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -72,24 +72,24 @@ TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
       "</div>");
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
-  const float width = getBasicText()->width(
+  const float width = GetBasicText()->Width(
       23u, 4294967282u, LayoutUnit(2.59375), TextDirection::kRtl, false);
   ASSERT_GE(width, 100.f);
   ASSERT_LE(width, 300.f);
 }
 
 TEST_F(LayoutTextTest, WidthFromBeyondLength) {
-  setBasicBody("x");
-  ASSERT_EQ(0u, getBasicText()->width(1u, 1u, LayoutUnit(), TextDirection::kLtr,
+  SetBasicBody("x");
+  ASSERT_EQ(0u, GetBasicText()->Width(1u, 1u, LayoutUnit(), TextDirection::kLtr,
                                       false));
 }
 
 TEST_F(LayoutTextTest, WidthLengthBeyondLength) {
-  setBasicBody("x");
+  SetBasicBody("x");
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
   const float width =
-      getBasicText()->width(0u, 2u, LayoutUnit(), TextDirection::kLtr, false);
+      GetBasicText()->Width(0u, 2u, LayoutUnit(), TextDirection::kLtr, false);
   ASSERT_GE(width, 4.f);
   ASSERT_LE(width, 20.f);
 }

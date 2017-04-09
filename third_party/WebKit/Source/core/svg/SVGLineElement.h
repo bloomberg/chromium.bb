@@ -34,26 +34,26 @@ class SVGLineElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGLineElement);
 
-  Path asPath() const override;
+  Path AsPath() const override;
 
-  SVGAnimatedLength* x1() const { return m_x1.get(); }
-  SVGAnimatedLength* y1() const { return m_y1.get(); }
-  SVGAnimatedLength* x2() const { return m_x2.get(); }
-  SVGAnimatedLength* y2() const { return m_y2.get(); }
+  SVGAnimatedLength* x1() const { return x1_.Get(); }
+  SVGAnimatedLength* y1() const { return y1_.Get(); }
+  SVGAnimatedLength* x2() const { return x2_.Get(); }
+  SVGAnimatedLength* y2() const { return y2_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGLineElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  Member<SVGAnimatedLength> m_x1;
-  Member<SVGAnimatedLength> m_y1;
-  Member<SVGAnimatedLength> m_x2;
-  Member<SVGAnimatedLength> m_y2;
+  Member<SVGAnimatedLength> x1_;
+  Member<SVGAnimatedLength> y1_;
+  Member<SVGAnimatedLength> x2_;
+  Member<SVGAnimatedLength> y2_;
 };
 
 }  // namespace blink

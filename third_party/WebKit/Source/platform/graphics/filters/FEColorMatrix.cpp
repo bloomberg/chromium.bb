@@ -35,37 +35,37 @@ static const unsigned kColorMatrixSize = 20;
 FEColorMatrix::FEColorMatrix(Filter* filter,
                              ColorMatrixType type,
                              const Vector<float>& values)
-    : FilterEffect(filter), m_type(type), m_values(values) {}
+    : FilterEffect(filter), type_(type), values_(values) {}
 
-FEColorMatrix* FEColorMatrix::create(Filter* filter,
+FEColorMatrix* FEColorMatrix::Create(Filter* filter,
                                      ColorMatrixType type,
                                      const Vector<float>& values) {
   return new FEColorMatrix(filter, type, values);
 }
 
-ColorMatrixType FEColorMatrix::type() const {
-  return m_type;
+ColorMatrixType FEColorMatrix::GetType() const {
+  return type_;
 }
 
-bool FEColorMatrix::setType(ColorMatrixType type) {
-  if (m_type == type)
+bool FEColorMatrix::SetType(ColorMatrixType type) {
+  if (type_ == type)
     return false;
-  m_type = type;
+  type_ = type;
   return true;
 }
 
-const Vector<float>& FEColorMatrix::values() const {
-  return m_values;
+const Vector<float>& FEColorMatrix::Values() const {
+  return values_;
 }
 
-bool FEColorMatrix::setValues(const Vector<float>& values) {
-  if (m_values == values)
+bool FEColorMatrix::SetValues(const Vector<float>& values) {
+  if (values_ == values)
     return false;
-  m_values = values;
+  values_ = values;
   return true;
 }
 
-static void saturateMatrix(float s, SkScalar matrix[kColorMatrixSize]) {
+static void SaturateMatrix(float s, SkScalar matrix[kColorMatrixSize]) {
   matrix[0] = 0.213f + 0.787f * s;
   matrix[1] = 0.715f - 0.715f * s;
   matrix[2] = 0.072f - 0.072f * s;
@@ -83,34 +83,34 @@ static void saturateMatrix(float s, SkScalar matrix[kColorMatrixSize]) {
   matrix[19] = 0;
 }
 
-static void hueRotateMatrix(float hue, SkScalar matrix[kColorMatrixSize]) {
-  float cosHue = cosf(hue * piFloat / 180);
-  float sinHue = sinf(hue * piFloat / 180);
-  matrix[0] = 0.213f + cosHue * 0.787f - sinHue * 0.213f;
-  matrix[1] = 0.715f - cosHue * 0.715f - sinHue * 0.715f;
-  matrix[2] = 0.072f - cosHue * 0.072f + sinHue * 0.928f;
+static void HueRotateMatrix(float hue, SkScalar matrix[kColorMatrixSize]) {
+  float cos_hue = cosf(hue * piFloat / 180);
+  float sin_hue = sinf(hue * piFloat / 180);
+  matrix[0] = 0.213f + cos_hue * 0.787f - sin_hue * 0.213f;
+  matrix[1] = 0.715f - cos_hue * 0.715f - sin_hue * 0.715f;
+  matrix[2] = 0.072f - cos_hue * 0.072f + sin_hue * 0.928f;
   matrix[3] = matrix[4] = 0;
-  matrix[5] = 0.213f - cosHue * 0.213f + sinHue * 0.143f;
-  matrix[6] = 0.715f + cosHue * 0.285f + sinHue * 0.140f;
-  matrix[7] = 0.072f - cosHue * 0.072f - sinHue * 0.283f;
+  matrix[5] = 0.213f - cos_hue * 0.213f + sin_hue * 0.143f;
+  matrix[6] = 0.715f + cos_hue * 0.285f + sin_hue * 0.140f;
+  matrix[7] = 0.072f - cos_hue * 0.072f - sin_hue * 0.283f;
   matrix[8] = matrix[9] = 0;
-  matrix[10] = 0.213f - cosHue * 0.213f - sinHue * 0.787f;
-  matrix[11] = 0.715f - cosHue * 0.715f + sinHue * 0.715f;
-  matrix[12] = 0.072f + cosHue * 0.928f + sinHue * 0.072f;
+  matrix[10] = 0.213f - cos_hue * 0.213f - sin_hue * 0.787f;
+  matrix[11] = 0.715f - cos_hue * 0.715f + sin_hue * 0.715f;
+  matrix[12] = 0.072f + cos_hue * 0.928f + sin_hue * 0.072f;
   matrix[13] = matrix[14] = 0;
   matrix[15] = matrix[16] = matrix[17] = 0;
   matrix[18] = 1;
   matrix[19] = 0;
 }
 
-static void luminanceToAlphaMatrix(SkScalar matrix[kColorMatrixSize]) {
+static void LuminanceToAlphaMatrix(SkScalar matrix[kColorMatrixSize]) {
   memset(matrix, 0, kColorMatrixSize * sizeof(SkScalar));
   matrix[15] = 0.2125f;
   matrix[16] = 0.7154f;
   matrix[17] = 0.0721f;
 }
 
-static sk_sp<SkColorFilter> createColorFilter(ColorMatrixType type,
+static sk_sp<SkColorFilter> CreateColorFilter(ColorMatrixType type,
                                               const Vector<float>& values) {
   // Use defaults if values contains too few/many values.
   SkScalar matrix[kColorMatrixSize];
@@ -132,31 +132,31 @@ static sk_sp<SkColorFilter> createColorFilter(ColorMatrixType type,
       break;
     case FECOLORMATRIX_TYPE_SATURATE:
       if (values.size() == 1)
-        saturateMatrix(values[0], matrix);
+        SaturateMatrix(values[0], matrix);
       break;
     case FECOLORMATRIX_TYPE_HUEROTATE:
       if (values.size() == 1)
-        hueRotateMatrix(values[0], matrix);
+        HueRotateMatrix(values[0], matrix);
       break;
     case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
-      luminanceToAlphaMatrix(matrix);
+      LuminanceToAlphaMatrix(matrix);
       break;
   }
   return SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
 }
 
-bool FEColorMatrix::affectsTransparentPixels() const {
+bool FEColorMatrix::AffectsTransparentPixels() const {
   // Because the input pixels are premultiplied, the only way clear pixels can
   // be painted is if the additive component for the alpha is not 0.
-  return m_type == FECOLORMATRIX_TYPE_MATRIX &&
-         m_values.size() >= kColorMatrixSize && m_values[19] > 0;
+  return type_ == FECOLORMATRIX_TYPE_MATRIX &&
+         values_.size() >= kColorMatrixSize && values_[19] > 0;
 }
 
-sk_sp<SkImageFilter> FEColorMatrix::createImageFilter() {
+sk_sp<SkImageFilter> FEColorMatrix::CreateImageFilter() {
   sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-  sk_sp<SkColorFilter> filter = createColorFilter(m_type, m_values);
-  SkImageFilter::CropRect rect = getCropRect();
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  sk_sp<SkColorFilter> filter = CreateColorFilter(type_, values_);
+  SkImageFilter::CropRect rect = GetCropRect();
   return SkColorFilterImageFilter::Make(std::move(filter), std::move(input),
                                         &rect);
 }
@@ -182,7 +182,7 @@ static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type) {
   return ts;
 }
 
-static bool valuesIsValidForType(ColorMatrixType type,
+static bool ValuesIsValidForType(ColorMatrixType type,
                                  const Vector<float>& values) {
   switch (type) {
     case FECOLORMATRIX_TYPE_MATRIX:
@@ -199,16 +199,16 @@ static bool valuesIsValidForType(ColorMatrixType type,
   return false;
 }
 
-TextStream& FEColorMatrix::externalRepresentation(TextStream& ts,
+TextStream& FEColorMatrix::ExternalRepresentation(TextStream& ts,
                                                   int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[feColorMatrix";
-  FilterEffect::externalRepresentation(ts);
-  ts << " type=\"" << m_type << "\"";
-  if (!m_values.isEmpty() && valuesIsValidForType(m_type, m_values)) {
+  FilterEffect::ExternalRepresentation(ts);
+  ts << " type=\"" << type_ << "\"";
+  if (!values_.IsEmpty() && ValuesIsValidForType(type_, values_)) {
     ts << " values=\"";
-    Vector<float>::const_iterator ptr = m_values.begin();
-    const Vector<float>::const_iterator end = m_values.end();
+    Vector<float>::const_iterator ptr = values_.begin();
+    const Vector<float>::const_iterator end = values_.end();
     while (ptr < end) {
       ts << *ptr;
       ++ptr;
@@ -218,7 +218,7 @@ TextStream& FEColorMatrix::externalRepresentation(TextStream& ts,
     ts << "\"";
   }
   ts << "]\n";
-  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  InputEffect(0)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

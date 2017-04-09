@@ -29,31 +29,31 @@
 
 namespace blink {
 
-void WebSpeechRecognitionHandle::reset() {
-  m_private.reset();
+void WebSpeechRecognitionHandle::Reset() {
+  private_.Reset();
 }
 
-void WebSpeechRecognitionHandle::assign(
+void WebSpeechRecognitionHandle::Assign(
     const WebSpeechRecognitionHandle& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
-bool WebSpeechRecognitionHandle::equals(
+bool WebSpeechRecognitionHandle::Equals(
     const WebSpeechRecognitionHandle& other) const {
-  return m_private.get() == other.m_private.get();
+  return private_.Get() == other.private_.Get();
 }
 
-bool WebSpeechRecognitionHandle::lessThan(
+bool WebSpeechRecognitionHandle::LessThan(
     const WebSpeechRecognitionHandle& other) const {
-  return m_private.get() < other.m_private.get();
+  return private_.Get() < other.private_.Get();
 }
 
 WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(
-    SpeechRecognition* speechRecognition)
-    : m_private(speechRecognition) {}
+    SpeechRecognition* speech_recognition)
+    : private_(speech_recognition) {}
 
 WebSpeechRecognitionHandle::operator SpeechRecognition*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
 }  // namespace blink

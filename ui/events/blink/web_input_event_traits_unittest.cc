@@ -25,29 +25,29 @@ using WebInputEventTraitsTest = testing::Test;
 
 // Very basic smoke test to ensure stringification doesn't explode.
 TEST_F(WebInputEventTraitsTest, ToString) {
-  WebKeyboardEvent key(WebInputEvent::RawKeyDown, WebInputEvent::NoModifiers,
-                       WebInputEvent::TimeStampForTesting);
+  WebKeyboardEvent key(WebInputEvent::kRawKeyDown, WebInputEvent::kNoModifiers,
+                       WebInputEvent::kTimeStampForTesting);
   EXPECT_FALSE(WebInputEventTraits::ToString(key).empty());
 
-  WebMouseEvent mouse(WebInputEvent::MouseMove, WebInputEvent::NoModifiers,
-                      WebInputEvent::TimeStampForTesting);
+  WebMouseEvent mouse(WebInputEvent::kMouseMove, WebInputEvent::kNoModifiers,
+                      WebInputEvent::kTimeStampForTesting);
   EXPECT_FALSE(WebInputEventTraits::ToString(mouse).empty());
 
-  WebMouseWheelEvent mouse_wheel(WebInputEvent::MouseWheel,
-                                 WebInputEvent::NoModifiers,
-                                 WebInputEvent::TimeStampForTesting);
+  WebMouseWheelEvent mouse_wheel(WebInputEvent::kMouseWheel,
+                                 WebInputEvent::kNoModifiers,
+                                 WebInputEvent::kTimeStampForTesting);
   EXPECT_FALSE(WebInputEventTraits::ToString(mouse_wheel).empty());
 
-  WebGestureEvent gesture(WebInputEvent::GesturePinchBegin,
-                          WebInputEvent::NoModifiers,
-                          WebInputEvent::TimeStampForTesting);
+  WebGestureEvent gesture(WebInputEvent::kGesturePinchBegin,
+                          WebInputEvent::kNoModifiers,
+                          WebInputEvent::kTimeStampForTesting);
   gesture.x = 1;
   gesture.y = 1;
   EXPECT_FALSE(WebInputEventTraits::ToString(gesture).empty());
 
-  WebTouchEvent touch(WebInputEvent::TouchStart, WebInputEvent::NoModifiers,
-                      WebInputEvent::TimeStampForTesting);
-  touch.touchesLength = 1;
+  WebTouchEvent touch(WebInputEvent::kTouchStart, WebInputEvent::kNoModifiers,
+                      WebInputEvent::kTimeStampForTesting);
+  touch.touches_length = 1;
   EXPECT_FALSE(WebInputEventTraits::ToString(touch).empty());
 }
 

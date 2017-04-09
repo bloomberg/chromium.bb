@@ -11,29 +11,29 @@
 namespace blink {
 
 TEST(WebDragDataTest, items) {
-  DataObject* dataObject = DataObject::create();
+  DataObject* data_object = DataObject::Create();
 
   // Native file.
-  dataObject->add(File::create("/native/path"));
+  data_object->Add(File::Create("/native/path"));
 
   // Blob file.
-  const RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
-  dataObject->add(File::create("name", 0.0, blobDataHandle));
+  const RefPtr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
+  data_object->Add(File::Create("name", 0.0, blob_data_handle));
 
   // User visible snapshot file.
   {
     FileMetadata metadata;
-    metadata.platformPath = "/native/visible/snapshot";
-    dataObject->add(
-        File::createForFileSystemFile("name", metadata, File::IsUserVisible));
+    metadata.platform_path = "/native/visible/snapshot";
+    data_object->Add(
+        File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible));
   }
 
   // Not user visible snapshot file.
   {
     FileMetadata metadata;
-    metadata.platformPath = "/native/not-visible/snapshot";
-    dataObject->add(File::createForFileSystemFile("name", metadata,
-                                                  File::IsNotUserVisible));
+    metadata.platform_path = "/native/not-visible/snapshot";
+    data_object->Add(File::CreateForFileSystemFile("name", metadata,
+                                                   File::kIsNotUserVisible));
   }
 
   // User visible file system URL file.
@@ -43,8 +43,8 @@ TEST(WebDragDataTest, items) {
     KURL url(
         ParsedURLStringTag(),
         "filesystem:http://example.com/isolated/hash/visible-non-native-file");
-    dataObject->add(
-        File::createForFileSystemFile(url, metadata, File::IsUserVisible));
+    data_object->Add(
+        File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible));
   }
 
   // Not user visible file system URL file.
@@ -54,41 +54,43 @@ TEST(WebDragDataTest, items) {
     KURL url(ParsedURLStringTag(),
              "filesystem:http://example.com/isolated/hash/"
              "not-visible-non-native-file");
-    dataObject->add(
-        File::createForFileSystemFile(url, metadata, File::IsNotUserVisible));
+    data_object->Add(
+        File::CreateForFileSystemFile(url, metadata, File::kIsNotUserVisible));
   }
 
-  WebDragData data = dataObject->toWebDragData();
-  WebVector<WebDragData::Item> items = data.items();
+  WebDragData data = data_object->ToWebDragData();
+  WebVector<WebDragData::Item> items = data.Items();
   ASSERT_EQ(6u, items.size());
 
-  EXPECT_EQ(WebDragData::Item::StorageTypeFilename, items[0].storageType);
-  EXPECT_EQ("/native/path", items[0].filenameData);
-  EXPECT_EQ("path", items[0].displayNameData);
+  EXPECT_EQ(WebDragData::Item::kStorageTypeFilename, items[0].storage_type);
+  EXPECT_EQ("/native/path", items[0].filename_data);
+  EXPECT_EQ("path", items[0].display_name_data);
 
-  EXPECT_EQ(WebDragData::Item::StorageTypeString, items[1].storageType);
-  EXPECT_EQ("text/plain", items[1].stringType);
-  EXPECT_EQ("name", items[1].stringData);
+  EXPECT_EQ(WebDragData::Item::kStorageTypeString, items[1].storage_type);
+  EXPECT_EQ("text/plain", items[1].string_type);
+  EXPECT_EQ("name", items[1].string_data);
 
-  EXPECT_EQ(WebDragData::Item::StorageTypeFilename, items[2].storageType);
-  EXPECT_EQ("/native/visible/snapshot", items[2].filenameData);
-  EXPECT_EQ("name", items[2].displayNameData);
+  EXPECT_EQ(WebDragData::Item::kStorageTypeFilename, items[2].storage_type);
+  EXPECT_EQ("/native/visible/snapshot", items[2].filename_data);
+  EXPECT_EQ("name", items[2].display_name_data);
 
-  EXPECT_EQ(WebDragData::Item::StorageTypeFilename, items[3].storageType);
-  EXPECT_EQ("/native/not-visible/snapshot", items[3].filenameData);
-  EXPECT_EQ("name", items[3].displayNameData);
+  EXPECT_EQ(WebDragData::Item::kStorageTypeFilename, items[3].storage_type);
+  EXPECT_EQ("/native/not-visible/snapshot", items[3].filename_data);
+  EXPECT_EQ("name", items[3].display_name_data);
 
-  EXPECT_EQ(WebDragData::Item::StorageTypeFileSystemFile, items[4].storageType);
+  EXPECT_EQ(WebDragData::Item::kStorageTypeFileSystemFile,
+            items[4].storage_type);
   EXPECT_EQ(
       "filesystem:http://example.com/isolated/hash/visible-non-native-file",
-      items[4].fileSystemURL);
-  EXPECT_EQ(1234, items[4].fileSystemFileSize);
+      items[4].file_system_url);
+  EXPECT_EQ(1234, items[4].file_system_file_size);
 
-  EXPECT_EQ(WebDragData::Item::StorageTypeFileSystemFile, items[5].storageType);
+  EXPECT_EQ(WebDragData::Item::kStorageTypeFileSystemFile,
+            items[5].storage_type);
   EXPECT_EQ(
       "filesystem:http://example.com/isolated/hash/not-visible-non-native-file",
-      items[5].fileSystemURL);
-  EXPECT_EQ(1234, items[5].fileSystemFileSize);
+      items[5].file_system_url);
+  EXPECT_EQ(1234, items[5].file_system_file_size);
 }
 
 }  // namespace blink

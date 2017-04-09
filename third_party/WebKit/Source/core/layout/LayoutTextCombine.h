@@ -33,43 +33,43 @@ class LayoutTextCombine final : public LayoutText {
  public:
   LayoutTextCombine(Node*, PassRefPtr<StringImpl>);
 
-  void updateFont();
-  bool isCombined() const { return m_isCombined; }
-  float combinedTextWidth(const Font& font) const {
-    return font.getFontDescription().computedSize();
+  void UpdateFont();
+  bool IsCombined() const { return is_combined_; }
+  float CombinedTextWidth(const Font& font) const {
+    return font.GetFontDescription().ComputedSize();
   }
-  const Font& originalFont() const { return parent()->style()->font(); }
-  void transformToInlineCoordinates(GraphicsContext&,
-                                    const LayoutRect& boxRect,
+  const Font& OriginalFont() const { return Parent()->Style()->GetFont(); }
+  void TransformToInlineCoordinates(GraphicsContext&,
+                                    const LayoutRect& box_rect,
                                     bool clip = false) const;
-  LayoutUnit inlineWidthForLayout() const;
+  LayoutUnit InlineWidthForLayout() const;
 
-  const char* name() const override { return "LayoutTextCombine"; }
+  const char* GetName() const override { return "LayoutTextCombine"; }
 
  private:
-  bool isCombineText() const override { return true; }
-  float width(unsigned from,
+  bool IsCombineText() const override { return true; }
+  float Width(unsigned from,
               unsigned length,
               const Font&,
-              LayoutUnit xPosition,
+              LayoutUnit x_position,
               TextDirection,
-              HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
-              FloatRect* glyphBounds = nullptr) const override;
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-  void setTextInternal(PassRefPtr<StringImpl>) override;
-  void updateIsCombined();
+              HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
+              FloatRect* glyph_bounds = nullptr) const override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void SetTextInternal(PassRefPtr<StringImpl>) override;
+  void UpdateIsCombined();
 
-  float m_combinedTextWidth;
-  float m_scaleX;
-  bool m_isCombined : 1;
-  bool m_needsFontUpdate : 1;
+  float combined_text_width_;
+  float scale_x_;
+  bool is_combined_ : 1;
+  bool needs_font_update_ : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextCombine, isCombineText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextCombine, IsCombineText());
 
-inline LayoutUnit LayoutTextCombine::inlineWidthForLayout() const {
-  DCHECK(!m_needsFontUpdate);
-  return LayoutUnit::fromFloatCeil(m_combinedTextWidth);
+inline LayoutUnit LayoutTextCombine::InlineWidthForLayout() const {
+  DCHECK(!needs_font_update_);
+  return LayoutUnit::FromFloatCeil(combined_text_width_);
 }
 
 }  // namespace blink

@@ -31,8 +31,8 @@ class TraceWrapperMember;
 // through thread-local storage to get to the thread state. This is
 // important for performance.
 enum ThreadAffinity {
-  AnyThread,
-  MainThreadOnly,
+  kAnyThread,
+  kMainThreadOnly,
 };
 
 // TODO(haraken): These forward declarations violate dependency rules.
@@ -50,13 +50,13 @@ struct DefaultThreadingTrait;
 template <typename T>
 struct DefaultThreadingTrait<T, false> {
   STATIC_ONLY(DefaultThreadingTrait);
-  static const ThreadAffinity Affinity = AnyThread;
+  static const ThreadAffinity kAffinity = kAnyThread;
 };
 
 template <typename T>
 struct DefaultThreadingTrait<T, true> {
   STATIC_ONLY(DefaultThreadingTrait);
-  static const ThreadAffinity Affinity = MainThreadOnly;
+  static const ThreadAffinity kAffinity = kMainThreadOnly;
 };
 
 class HeapAllocator;
@@ -72,7 +72,7 @@ class WeakMember;
 template <typename T>
 struct ThreadingTrait {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = DefaultThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = DefaultThreadingTrait<T>::kAffinity;
 };
 
 template <typename U>
@@ -81,75 +81,75 @@ class ThreadingTrait<const U> : public ThreadingTrait<U> {};
 template <typename T>
 struct ThreadingTrait<Member<T>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename T>
 struct ThreadingTrait<SameThreadCheckedMember<T>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::Affinity;
 };
 
 template <typename T>
 struct ThreadingTrait<TraceWrapperMember<T>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename T>
 struct ThreadingTrait<WeakMember<T>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename Key, typename Value, typename T, typename U, typename V>
 struct ThreadingTrait<HashMap<Key, Value, T, U, V, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity =
-      (ThreadingTrait<Key>::Affinity == MainThreadOnly) &&
-              (ThreadingTrait<Value>::Affinity == MainThreadOnly)
-          ? MainThreadOnly
-          : AnyThread;
+  static const ThreadAffinity kAffinity =
+      (ThreadingTrait<Key>::kAffinity == kMainThreadOnly) &&
+              (ThreadingTrait<Value>::kAffinity == kMainThreadOnly)
+          ? kMainThreadOnly
+          : kAnyThread;
 };
 
 template <typename First, typename Second>
 struct ThreadingTrait<WTF::KeyValuePair<First, Second>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity =
-      (ThreadingTrait<First>::Affinity == MainThreadOnly) &&
-              (ThreadingTrait<Second>::Affinity == MainThreadOnly)
-          ? MainThreadOnly
-          : AnyThread;
+  static const ThreadAffinity kAffinity =
+      (ThreadingTrait<First>::kAffinity == kMainThreadOnly) &&
+              (ThreadingTrait<Second>::kAffinity == kMainThreadOnly)
+          ? kMainThreadOnly
+          : kAnyThread;
 };
 
 template <typename T, typename U, typename V>
 struct ThreadingTrait<HashSet<T, U, V, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename T, size_t inlineCapacity>
 struct ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename T, typename Traits>
 struct ThreadingTrait<HeapVectorBacking<T, Traits>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::Affinity;
 };
 
 template <typename T, size_t inlineCapacity>
 struct ThreadingTrait<Deque<T, inlineCapacity, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename T, typename U, typename V>
 struct ThreadingTrait<HashCountedSet<T, U, V, HeapAllocator>> {
   STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename Table>
@@ -157,11 +157,11 @@ struct ThreadingTrait<HeapHashTableBacking<Table>> {
   STATIC_ONLY(ThreadingTrait);
   using Key = typename Table::KeyType;
   using Value = typename Table::ValueType;
-  static const ThreadAffinity Affinity =
-      (ThreadingTrait<Key>::Affinity == MainThreadOnly) &&
-              (ThreadingTrait<Value>::Affinity == MainThreadOnly)
-          ? MainThreadOnly
-          : AnyThread;
+  static const ThreadAffinity kAffinity =
+      (ThreadingTrait<Key>::Affinity == kMainThreadOnly) &&
+              (ThreadingTrait<Value>::Affinity == kMainThreadOnly)
+          ? kMainThreadOnly
+          : kAnyThread;
 };
 
 template <typename T, typename U, typename V, typename W, typename X>

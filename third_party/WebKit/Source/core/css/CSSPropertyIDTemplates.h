@@ -17,11 +17,11 @@ struct DefaultHash<blink::CSSPropertyID> {
 template <>
 struct HashTraits<blink::CSSPropertyID>
     : GenericHashTraits<blink::CSSPropertyID> {
-  static const bool emptyValueIsZero = true;
-  static void constructDeletedValue(blink::CSSPropertyID& slot, bool) {
+  static const bool kEmptyValueIsZero = true;
+  static void ConstructDeletedValue(blink::CSSPropertyID& slot, bool) {
     slot = static_cast<blink::CSSPropertyID>(blink::numCSSPropertyIDs);
   }
-  static bool isDeletedValue(blink::CSSPropertyID value) {
+  static bool IsDeletedValue(blink::CSSPropertyID value) {
     return value == blink::numCSSPropertyIDs;
   }
 };

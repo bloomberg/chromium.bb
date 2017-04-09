@@ -11,32 +11,32 @@
 
 namespace blink {
 
-uint32_t atomicStringToFourByteTag(AtomicString tag) {
+uint32_t AtomicStringToFourByteTag(AtomicString tag) {
   DCHECK_EQ(tag.length(), 4u);
   return (((tag[0]) << 24) | ((tag[1]) << 16) | ((tag[2]) << 8) | (tag[3]));
 }
 
-static inline void addToHash(unsigned& hash, unsigned key) {
+static inline void AddToHash(unsigned& hash, unsigned key) {
   hash = ((hash << 5) + hash) + key;  // Djb2
 };
 
-static inline void addFloatToHash(unsigned& hash, float value) {
-  addToHash(hash, WTF::FloatHash<float>::hash(value));
+static inline void AddFloatToHash(unsigned& hash, float value) {
+  AddToHash(hash, WTF::FloatHash<float>::GetHash(value));
 };
 
-unsigned FontVariationSettings::hash() const {
-  unsigned computedHash = size() ? 5381 : 0;
-  unsigned numFeatures = size();
-  for (unsigned i = 0; i < numFeatures; ++i) {
-    StringHasher stringHasher;
-    const AtomicString& tag = at(i).tag();
+unsigned FontVariationSettings::GetHash() const {
+  unsigned computed_hash = size() ? 5381 : 0;
+  unsigned num_features = size();
+  for (unsigned i = 0; i < num_features; ++i) {
+    StringHasher string_hasher;
+    const AtomicString& tag = at(i).Tag();
     for (unsigned j = 0; j < tag.length(); j++) {
-      stringHasher.addCharacter(tag[j]);
+      string_hasher.AddCharacter(tag[j]);
     }
-    addToHash(computedHash, stringHasher.hash());
-    addFloatToHash(computedHash, at(i).value());
+    AddToHash(computed_hash, string_hasher.GetHash());
+    AddFloatToHash(computed_hash, at(i).Value());
   }
-  return computedHash;
+  return computed_hash;
 }
 
 }  // namespace blink

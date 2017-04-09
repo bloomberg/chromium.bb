@@ -14,18 +14,18 @@ class CSSKeyframeRule;
 class KeyframeStyleRuleCSSStyleDeclaration final
     : public StyleRuleCSSStyleDeclaration {
  public:
-  static KeyframeStyleRuleCSSStyleDeclaration* create(
-      MutableStylePropertySet& propertySet,
-      CSSKeyframeRule* parentRule) {
-    return new KeyframeStyleRuleCSSStyleDeclaration(propertySet, parentRule);
+  static KeyframeStyleRuleCSSStyleDeclaration* Create(
+      MutableStylePropertySet& property_set,
+      CSSKeyframeRule* parent_rule) {
+    return new KeyframeStyleRuleCSSStyleDeclaration(property_set, parent_rule);
   }
 
  private:
   KeyframeStyleRuleCSSStyleDeclaration(MutableStylePropertySet&,
                                        CSSKeyframeRule*);
 
-  void didMutate(MutationType) override;
-  bool isKeyframeStyle() const final { return true; }
+  void DidMutate(MutationType) override;
+  bool IsKeyframeStyle() const final { return true; }
 };
 
 }  // namespace blink

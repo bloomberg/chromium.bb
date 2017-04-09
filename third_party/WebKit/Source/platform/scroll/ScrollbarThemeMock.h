@@ -34,39 +34,39 @@ namespace blink {
 // between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
  public:
-  int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
-  bool usesOverlayScrollbars() const override;
+  int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) override;
+  bool UsesOverlayScrollbars() const override;
 
  protected:
-  bool hasButtons(const ScrollbarThemeClient&) override { return false; }
-  bool hasThumb(const ScrollbarThemeClient&) override { return true; }
+  bool HasButtons(const ScrollbarThemeClient&) override { return false; }
+  bool HasThumb(const ScrollbarThemeClient&) override { return true; }
 
-  IntRect backButtonRect(const ScrollbarThemeClient&,
+  IntRect BackButtonRect(const ScrollbarThemeClient&,
                          ScrollbarPart,
                          bool /*painting*/ = false) override {
     return IntRect();
   }
-  IntRect forwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
                             ScrollbarPart,
                             bool /*painting*/ = false) override {
     return IntRect();
   }
-  IntRect trackRect(const ScrollbarThemeClient&,
+  IntRect TrackRect(const ScrollbarThemeClient&,
                     bool painting = false) override;
 
-  void paintTrackBackground(GraphicsContext&,
+  void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
                             const IntRect&) override;
-  void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
-  void paintScrollCorner(GraphicsContext&,
+  void PaintScrollCorner(GraphicsContext&,
                          const DisplayItemClient&,
-                         const IntRect& cornerRect) override;
+                         const IntRect& corner_rect) override;
 
-  int minimumThumbLength(const ScrollbarThemeClient&) override;
+  int MinimumThumbLength(const ScrollbarThemeClient&) override;
 
  private:
-  bool isMockTheme() const final { return true; }
+  bool IsMockTheme() const final { return true; }
 };
 
 }  // namespace blink

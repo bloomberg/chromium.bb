@@ -16,37 +16,37 @@
 namespace blink {
 
 FetchTestingPlatformSupport::FetchTestingPlatformSupport()
-    : m_urlLoaderMockFactory(new WebURLLoaderMockFactoryImpl(this)) {}
+    : url_loader_mock_factory_(new WebURLLoaderMockFactoryImpl(this)) {}
 
 FetchTestingPlatformSupport::~FetchTestingPlatformSupport() {
   // Shutdowns WebURLLoaderMockFactory gracefully, serving all pending requests
   // first, then flushing all registered URLs.
-  m_urlLoaderMockFactory->serveAsynchronousRequests();
-  m_urlLoaderMockFactory->unregisterAllURLsAndClearMemoryCache();
+  url_loader_mock_factory_->ServeAsynchronousRequests();
+  url_loader_mock_factory_->UnregisterAllURLsAndClearMemoryCache();
 }
 
-MockFetchContext* FetchTestingPlatformSupport::context() {
-  if (!m_context) {
-    m_context = MockFetchContext::create(
+MockFetchContext* FetchTestingPlatformSupport::Context() {
+  if (!context_) {
+    context_ = MockFetchContext::Create(
         MockFetchContext::kShouldLoadNewResource,
-        currentThread()->scheduler()->loadingTaskRunner());
+        CurrentThread()->Scheduler()->LoadingTaskRunner());
   }
-  return m_context;
+  return context_;
 }
 
-WebURLError FetchTestingPlatformSupport::cancelledError(
+WebURLError FetchTestingPlatformSupport::CancelledError(
     const WebURL& url) const {
-  return ResourceError(errorDomainBlinkInternal, -1, url.string(),
+  return ResourceError(kErrorDomainBlinkInternal, -1, url.GetString(),
                        "cancelledError for testing");
 }
 
 WebURLLoaderMockFactory*
-FetchTestingPlatformSupport::getURLLoaderMockFactory() {
-  return m_urlLoaderMockFactory.get();
+FetchTestingPlatformSupport::GetURLLoaderMockFactory() {
+  return url_loader_mock_factory_.get();
 }
 
-WebURLLoader* FetchTestingPlatformSupport::createURLLoader() {
-  return m_urlLoaderMockFactory->createURLLoader(nullptr);
+WebURLLoader* FetchTestingPlatformSupport::CreateURLLoader() {
+  return url_loader_mock_factory_->CreateURLLoader(nullptr);
 }
 
 }  // namespace blink

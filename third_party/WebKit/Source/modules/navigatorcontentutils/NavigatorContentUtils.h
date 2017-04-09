@@ -47,8 +47,8 @@ class MODULES_EXPORT NavigatorContentUtils final
  public:
   virtual ~NavigatorContentUtils();
 
-  static NavigatorContentUtils* from(Navigator&);
-  static const char* supplementName();
+  static NavigatorContentUtils* From(Navigator&);
+  static const char* SupplementName();
 
   static void registerProtocolHandler(Navigator&,
                                       const String& scheme,
@@ -64,22 +64,22 @@ class MODULES_EXPORT NavigatorContentUtils final
                                         const String& url,
                                         ExceptionState&);
 
-  static void provideTo(Navigator&, NavigatorContentUtilsClient*);
+  static void ProvideTo(Navigator&, NavigatorContentUtilsClient*);
 
   DECLARE_VIRTUAL_TRACE();
 
-  void setClientForTest(NavigatorContentUtilsClient* client) {
-    m_client = client;
+  void SetClientForTest(NavigatorContentUtilsClient* client) {
+    client_ = client;
   }
 
  private:
   NavigatorContentUtils(Navigator& navigator,
                         NavigatorContentUtilsClient* client)
-      : Supplement<Navigator>(navigator), m_client(client) {}
+      : Supplement<Navigator>(navigator), client_(client) {}
 
-  NavigatorContentUtilsClient* client() { return m_client.get(); }
+  NavigatorContentUtilsClient* Client() { return client_.Get(); }
 
-  Member<NavigatorContentUtilsClient> m_client;
+  Member<NavigatorContentUtilsClient> client_;
 };
 
 }  // namespace blink

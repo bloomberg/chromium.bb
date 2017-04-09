@@ -52,7 +52,7 @@ const unsigned GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE;
 
 namespace blink {
 
-enum SourceDrawingBuffer { FrontBuffer, BackBuffer };
+enum SourceDrawingBuffer { kFrontBuffer, kBackBuffer };
 
 }  // namespace blink
 

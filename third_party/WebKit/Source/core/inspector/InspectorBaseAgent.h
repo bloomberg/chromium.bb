@@ -49,14 +49,14 @@ class CORE_EXPORT InspectorAgent
   virtual ~InspectorAgent() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  virtual void restore() {}
-  virtual void didCommitLoadForLocalFrame(LocalFrame*) {}
-  virtual void flushPendingProtocolNotifications() {}
+  virtual void Restore() {}
+  virtual void DidCommitLoadForLocalFrame(LocalFrame*) {}
+  virtual void FlushPendingProtocolNotifications() {}
 
-  virtual void init(CoreProbeSink*,
+  virtual void Init(CoreProbeSink*,
                     protocol::UberDispatcher*,
                     protocol::DictionaryValue*) = 0;
-  virtual void dispose() = 0;
+  virtual void Dispose() = 0;
 };
 
 template <typename DomainMetainfo>
@@ -65,48 +65,48 @@ class InspectorBaseAgent : public InspectorAgent,
  public:
   ~InspectorBaseAgent() override {}
 
-  void init(CoreProbeSink* instrumentingAgents,
+  void Init(CoreProbeSink* instrumenting_agents,
             protocol::UberDispatcher* dispatcher,
             protocol::DictionaryValue* state) override {
-    m_instrumentingAgents = instrumentingAgents;
-    m_frontend.reset(
+    instrumenting_agents_ = instrumenting_agents;
+    frontend_.reset(
         new typename DomainMetainfo::FrontendClass(dispatcher->channel()));
     DomainMetainfo::DispatcherClass::wire(dispatcher, this);
 
-    m_state = state->getObject(DomainMetainfo::domainName);
-    if (!m_state) {
-      std::unique_ptr<protocol::DictionaryValue> newState =
+    state_ = state->getObject(DomainMetainfo::domainName);
+    if (!state_) {
+      std::unique_ptr<protocol::DictionaryValue> new_state =
           protocol::DictionaryValue::create();
-      m_state = newState.get();
-      state->setObject(DomainMetainfo::domainName, std::move(newState));
+      state_ = new_state.get();
+      state->setObject(DomainMetainfo::domainName, std::move(new_state));
     }
   }
 
   protocol::Response disable() override { return protocol::Response::OK(); }
 
-  void dispose() override {
+  void Dispose() override {
     disable();
-    m_frontend.reset();
-    m_state = nullptr;
-    m_instrumentingAgents = nullptr;
+    frontend_.reset();
+    state_ = nullptr;
+    instrumenting_agents_ = nullptr;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_instrumentingAgents);
-    InspectorAgent::trace(visitor);
+    visitor->Trace(instrumenting_agents_);
+    InspectorAgent::Trace(visitor);
   }
 
  protected:
   InspectorBaseAgent() {}
 
-  typename DomainMetainfo::FrontendClass* frontend() const {
-    return m_frontend.get();
+  typename DomainMetainfo::FrontendClass* GetFrontend() const {
+    return frontend_.get();
   }
-  Member<CoreProbeSink> m_instrumentingAgents;
-  protocol::DictionaryValue* m_state;
+  Member<CoreProbeSink> instrumenting_agents_;
+  protocol::DictionaryValue* state_;
 
  private:
-  std::unique_ptr<typename DomainMetainfo::FrontendClass> m_frontend;
+  std::unique_ptr<typename DomainMetainfo::FrontendClass> frontend_;
 };
 
 }  // namespace blink

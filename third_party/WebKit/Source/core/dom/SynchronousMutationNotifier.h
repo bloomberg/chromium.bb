@@ -24,18 +24,18 @@ class CORE_EXPORT SynchronousMutationNotifier
  public:
   // TODO(yosin): We will have |notifyXXX()| functions defined in
   // |SynchronousMutationObserver|.
-  void notifyChangeChildren(const ContainerNode&);
-  void notifyMergeTextNodes(const Text& mergedNode,
-                            const NodeWithIndex& nodeToBeRemovedWithIndex,
-                            unsigned oldLength);
-  void notifyMoveTreeToNewDocument(const Node&);
-  void notifySplitTextNode(const Text&);
-  void notifyUpdateCharacterData(CharacterData*,
+  void NotifyChangeChildren(const ContainerNode&);
+  void NotifyMergeTextNodes(const Text& merged_node,
+                            const NodeWithIndex& node_to_be_removed_with_index,
+                            unsigned old_length);
+  void NotifyMoveTreeToNewDocument(const Node&);
+  void NotifySplitTextNode(const Text&);
+  void NotifyUpdateCharacterData(CharacterData*,
                                  unsigned offset,
-                                 unsigned oldLength,
-                                 unsigned newLength);
-  void notifyNodeChildrenWillBeRemoved(ContainerNode&);
-  void notifyNodeWillBeRemoved(Node&);
+                                 unsigned old_length,
+                                 unsigned new_length);
+  void NotifyNodeChildrenWillBeRemoved(ContainerNode&);
+  void NotifyNodeWillBeRemoved(Node&);
 
  protected:
   SynchronousMutationNotifier();

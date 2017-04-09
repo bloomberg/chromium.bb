@@ -37,37 +37,37 @@ class LifecycleNotifier;
 template <typename Context, typename Observer>
 class LifecycleObserver : public GarbageCollectedMixin {
  public:
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_lifecycleContext); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(lifecycle_context_); }
 
-  Context* lifecycleContext() const { return m_lifecycleContext; }
+  Context* LifecycleContext() const { return lifecycle_context_; }
 
-  void clearContext() { setContext(nullptr); }
+  void ClearContext() { SetContext(nullptr); }
 
  protected:
-  explicit LifecycleObserver(Context* context) : m_lifecycleContext(nullptr) {
-    setContext(context);
+  explicit LifecycleObserver(Context* context) : lifecycle_context_(nullptr) {
+    SetContext(context);
   }
 
-  void setContext(Context*);
+  void SetContext(Context*);
 
  private:
-  WeakMember<Context> m_lifecycleContext;
+  WeakMember<Context> lifecycle_context_;
 };
 
 template <typename Context, typename Observer>
-inline void LifecycleObserver<Context, Observer>::setContext(Context* context) {
+inline void LifecycleObserver<Context, Observer>::SetContext(Context* context) {
   using Notifier = LifecycleNotifier<Context, Observer>;
 
-  if (m_lifecycleContext) {
-    static_cast<Notifier*>(m_lifecycleContext)
-        ->removeObserver(static_cast<Observer*>(this));
+  if (lifecycle_context_) {
+    static_cast<Notifier*>(lifecycle_context_)
+        ->RemoveObserver(static_cast<Observer*>(this));
   }
 
-  m_lifecycleContext = context;
+  lifecycle_context_ = context;
 
-  if (m_lifecycleContext) {
-    static_cast<Notifier*>(m_lifecycleContext)
-        ->addObserver(static_cast<Observer*>(this));
+  if (lifecycle_context_) {
+    static_cast<Notifier*>(lifecycle_context_)
+        ->AddObserver(static_cast<Observer*>(this));
   }
 }
 

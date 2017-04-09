@@ -39,156 +39,154 @@
 
 namespace blink {
 
-DataObjectItem* DataObjectItem::createFromString(const String& type,
+DataObjectItem* DataObjectItem::CreateFromString(const String& type,
                                                  const String& data) {
-  DataObjectItem* item = new DataObjectItem(StringKind, type);
-  item->m_data = data;
+  DataObjectItem* item = new DataObjectItem(kStringKind, type);
+  item->data_ = data;
   return item;
 }
 
-DataObjectItem* DataObjectItem::createFromFile(File* file) {
-  DataObjectItem* item = new DataObjectItem(FileKind, file->type());
-  item->m_file = file;
+DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
+  DataObjectItem* item = new DataObjectItem(kFileKind, file->type());
+  item->file_ = file;
   return item;
 }
 
-DataObjectItem* DataObjectItem::createFromFileWithFileSystemId(
+DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
     File* file,
-    const String& fileSystemId) {
-  DataObjectItem* item = new DataObjectItem(FileKind, file->type());
-  item->m_file = file;
-  item->m_fileSystemId = fileSystemId;
+    const String& file_system_id) {
+  DataObjectItem* item = new DataObjectItem(kFileKind, file->type());
+  item->file_ = file;
+  item->file_system_id_ = file_system_id;
   return item;
 }
 
-DataObjectItem* DataObjectItem::createFromURL(const String& url,
+DataObjectItem* DataObjectItem::CreateFromURL(const String& url,
                                               const String& title) {
-  DataObjectItem* item = new DataObjectItem(StringKind, mimeTypeTextURIList);
-  item->m_data = url;
-  item->m_title = title;
+  DataObjectItem* item = new DataObjectItem(kStringKind, kMimeTypeTextURIList);
+  item->data_ = url;
+  item->title_ = title;
   return item;
 }
 
-DataObjectItem* DataObjectItem::createFromHTML(const String& html,
-                                               const KURL& baseURL) {
-  DataObjectItem* item = new DataObjectItem(StringKind, mimeTypeTextHTML);
-  item->m_data = html;
-  item->m_baseURL = baseURL;
+DataObjectItem* DataObjectItem::CreateFromHTML(const String& html,
+                                               const KURL& base_url) {
+  DataObjectItem* item = new DataObjectItem(kStringKind, kMimeTypeTextHTML);
+  item->data_ = html;
+  item->base_url_ = base_url;
   return item;
 }
 
-DataObjectItem* DataObjectItem::createFromSharedBuffer(
+DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
     PassRefPtr<SharedBuffer> buffer,
-    const KURL& sourceURL,
-    const String& filenameExtension,
-    const AtomicString& contentDisposition) {
+    const KURL& source_url,
+    const String& filename_extension,
+    const AtomicString& content_disposition) {
   DataObjectItem* item = new DataObjectItem(
-      FileKind,
-      MIMETypeRegistry::getWellKnownMIMETypeForExtension(filenameExtension));
-  item->m_sharedBuffer = std::move(buffer);
-  item->m_filenameExtension = filenameExtension;
+      kFileKind,
+      MIMETypeRegistry::GetWellKnownMIMETypeForExtension(filename_extension));
+  item->shared_buffer_ = std::move(buffer);
+  item->filename_extension_ = filename_extension;
   // TODO(dcheng): Rename these fields to be more generically named.
-  item->m_title = contentDisposition;
-  item->m_baseURL = sourceURL;
+  item->title_ = content_disposition;
+  item->base_url_ = source_url;
   return item;
 }
 
-DataObjectItem* DataObjectItem::createFromPasteboard(const String& type,
-                                                     uint64_t sequenceNumber) {
-  if (type == mimeTypeImagePng)
-    return new DataObjectItem(FileKind, type, sequenceNumber);
-  return new DataObjectItem(StringKind, type, sequenceNumber);
+DataObjectItem* DataObjectItem::CreateFromPasteboard(const String& type,
+                                                     uint64_t sequence_number) {
+  if (type == kMimeTypeImagePng)
+    return new DataObjectItem(kFileKind, type, sequence_number);
+  return new DataObjectItem(kStringKind, type, sequence_number);
 }
 
 DataObjectItem::DataObjectItem(ItemKind kind, const String& type)
-    : m_source(InternalSource),
-      m_kind(kind),
-      m_type(type),
-      m_sequenceNumber(0) {}
+    : source_(kInternalSource), kind_(kind), type_(type), sequence_number_(0) {}
 
 DataObjectItem::DataObjectItem(ItemKind kind,
                                const String& type,
-                               uint64_t sequenceNumber)
-    : m_source(PasteboardSource),
-      m_kind(kind),
-      m_type(type),
-      m_sequenceNumber(sequenceNumber) {}
+                               uint64_t sequence_number)
+    : source_(kPasteboardSource),
+      kind_(kind),
+      type_(type),
+      sequence_number_(sequence_number) {}
 
-File* DataObjectItem::getAsFile() const {
-  if (kind() != FileKind)
+File* DataObjectItem::GetAsFile() const {
+  if (Kind() != kFileKind)
     return nullptr;
 
-  if (m_source == InternalSource) {
-    if (m_file)
-      return m_file.get();
-    ASSERT(m_sharedBuffer);
+  if (source_ == kInternalSource) {
+    if (file_)
+      return file_.Get();
+    ASSERT(shared_buffer_);
     // FIXME: This code is currently impossible--we never populate
     // m_sharedBuffer when dragging in. At some point though, we may need to
     // support correctly converting a shared buffer into a file.
     return nullptr;
   }
 
-  ASSERT(m_source == PasteboardSource);
-  if (type() == mimeTypeImagePng) {
-    WebBlobInfo blobInfo = Platform::current()->clipboard()->readImage(
-        WebClipboard::BufferStandard);
-    if (blobInfo.size() < 0)
+  ASSERT(source_ == kPasteboardSource);
+  if (GetType() == kMimeTypeImagePng) {
+    WebBlobInfo blob_info = Platform::Current()->Clipboard()->ReadImage(
+        WebClipboard::kBufferStandard);
+    if (blob_info.size() < 0)
       return nullptr;
-    return File::create("image.png", currentTimeMS(),
-                        BlobDataHandle::create(blobInfo.uuid(), blobInfo.type(),
-                                               blobInfo.size()));
+    return File::Create(
+        "image.png", CurrentTimeMS(),
+        BlobDataHandle::Create(blob_info.Uuid(), blob_info.GetType(),
+                               blob_info.size()));
   }
 
   return nullptr;
 }
 
-String DataObjectItem::getAsString() const {
-  ASSERT(m_kind == StringKind);
+String DataObjectItem::GetAsString() const {
+  ASSERT(kind_ == kStringKind);
 
-  if (m_source == InternalSource)
-    return m_data;
+  if (source_ == kInternalSource)
+    return data_;
 
-  ASSERT(m_source == PasteboardSource);
+  ASSERT(source_ == kPasteboardSource);
 
-  WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
+  WebClipboard::Buffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
   String data;
   // This is ugly but there's no real alternative.
-  if (m_type == mimeTypeTextPlain) {
-    data = Platform::current()->clipboard()->readPlainText(buffer);
-  } else if (m_type == mimeTypeTextRTF) {
-    data = Platform::current()->clipboard()->readRTF(buffer);
-  } else if (m_type == mimeTypeTextHTML) {
-    WebURL ignoredSourceURL;
+  if (type_ == kMimeTypeTextPlain) {
+    data = Platform::Current()->Clipboard()->ReadPlainText(buffer);
+  } else if (type_ == kMimeTypeTextRTF) {
+    data = Platform::Current()->Clipboard()->ReadRTF(buffer);
+  } else if (type_ == kMimeTypeTextHTML) {
+    WebURL ignored_source_url;
     unsigned ignored;
-    data = Platform::current()->clipboard()->readHTML(buffer, &ignoredSourceURL,
-                                                      &ignored, &ignored);
+    data = Platform::Current()->Clipboard()->ReadHTML(
+        buffer, &ignored_source_url, &ignored, &ignored);
   } else {
-    data = Platform::current()->clipboard()->readCustomData(buffer, m_type);
+    data = Platform::Current()->Clipboard()->ReadCustomData(buffer, type_);
   }
 
-  return Platform::current()->clipboard()->sequenceNumber(buffer) ==
-                 m_sequenceNumber
+  return Platform::Current()->Clipboard()->SequenceNumber(buffer) ==
+                 sequence_number_
              ? data
              : String();
 }
 
-bool DataObjectItem::isFilename() const {
+bool DataObjectItem::IsFilename() const {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=81261: When we properly
   // support File dragout, we'll need to make sure this works as expected for
   // DragDataChromium.
-  return m_kind == FileKind && m_file;
+  return kind_ == kFileKind && file_;
 }
 
-bool DataObjectItem::hasFileSystemId() const {
-  return m_kind == FileKind && !m_fileSystemId.isEmpty();
+bool DataObjectItem::HasFileSystemId() const {
+  return kind_ == kFileKind && !file_system_id_.IsEmpty();
 }
 
-String DataObjectItem::fileSystemId() const {
-  return m_fileSystemId;
+String DataObjectItem::FileSystemId() const {
+  return file_system_id_;
 }
 
 DEFINE_TRACE(DataObjectItem) {
-  visitor->trace(m_file);
+  visitor->Trace(file_);
 }
 
 }  // namespace blink

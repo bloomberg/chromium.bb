@@ -19,50 +19,50 @@ class UnderlyingImageListChecker : public InterpolationType::ConversionChecker {
  public:
   ~UnderlyingImageListChecker() final {}
 
-  static std::unique_ptr<UnderlyingImageListChecker> create(
+  static std::unique_ptr<UnderlyingImageListChecker> Create(
       const InterpolationValue& underlying) {
-    return WTF::wrapUnique(new UnderlyingImageListChecker(underlying));
+    return WTF::WrapUnique(new UnderlyingImageListChecker(underlying));
   }
 
  private:
   UnderlyingImageListChecker(const InterpolationValue& underlying)
-      : m_underlying(underlying.clone()) {}
+      : underlying_(underlying.Clone()) {}
 
-  bool isValid(const InterpolationEnvironment&,
+  bool IsValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
-    return ListInterpolationFunctions::equalValues(
-        m_underlying, underlying,
-        CSSImageInterpolationType::equalNonInterpolableValues);
+    return ListInterpolationFunctions::EqualValues(
+        underlying_, underlying,
+        CSSImageInterpolationType::EqualNonInterpolableValues);
   }
 
-  const InterpolationValue m_underlying;
+  const InterpolationValue underlying_;
 };
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSImageListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
-    ConversionCheckers& conversionCheckers) const {
-  conversionCheckers.push_back(UnderlyingImageListChecker::create(underlying));
-  return underlying.clone();
+    ConversionCheckers& conversion_checkers) const {
+  conversion_checkers.push_back(UnderlyingImageListChecker::Create(underlying));
+  return underlying.Clone();
 }
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertInitial(
+InterpolationValue CSSImageListInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
-    ConversionCheckers& conversionCheckers) const {
-  StyleImageList initialImageList;
-  ImageListPropertyFunctions::getInitialImageList(cssProperty(),
-                                                  initialImageList);
-  return maybeConvertStyleImageList(initialImageList);
+    ConversionCheckers& conversion_checkers) const {
+  StyleImageList initial_image_list;
+  ImageListPropertyFunctions::GetInitialImageList(CssProperty(),
+                                                  initial_image_list);
+  return MaybeConvertStyleImageList(initial_image_list);
 }
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertStyleImageList(
-    const StyleImageList& imageList) const {
-  if (imageList.size() == 0)
+InterpolationValue CSSImageListInterpolationType::MaybeConvertStyleImageList(
+    const StyleImageList& image_list) const {
+  if (image_list.size() == 0)
     return nullptr;
 
-  return ListInterpolationFunctions::createList(
-      imageList.size(), [&imageList](size_t index) {
-        return CSSImageInterpolationType::maybeConvertStyleImage(
-            imageList[index].get(), false);
+  return ListInterpolationFunctions::CreateList(
+      image_list.size(), [&image_list](size_t index) {
+        return CSSImageInterpolationType::MaybeConvertStyleImage(
+            image_list[index].Get(), false);
       });
 }
 
@@ -70,121 +70,122 @@ class InheritedImageListChecker : public InterpolationType::ConversionChecker {
  public:
   ~InheritedImageListChecker() final {}
 
-  static std::unique_ptr<InheritedImageListChecker> create(
+  static std::unique_ptr<InheritedImageListChecker> Create(
       CSSPropertyID property,
-      const StyleImageList& inheritedImageList) {
-    return WTF::wrapUnique(
-        new InheritedImageListChecker(property, inheritedImageList));
+      const StyleImageList& inherited_image_list) {
+    return WTF::WrapUnique(
+        new InheritedImageListChecker(property, inherited_image_list));
   }
 
  private:
   InheritedImageListChecker(CSSPropertyID property,
-                            const StyleImageList& inheritedImageList)
-      : m_property(property), m_inheritedImageList(inheritedImageList) {}
+                            const StyleImageList& inherited_image_list)
+      : property_(property), inherited_image_list_(inherited_image_list) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    StyleImageList inheritedImageList;
-    ImageListPropertyFunctions::getImageList(
-        m_property, *environment.state().parentStyle(), inheritedImageList);
-    return m_inheritedImageList == inheritedImageList;
+    StyleImageList inherited_image_list;
+    ImageListPropertyFunctions::GetImageList(
+        property_, *environment.GetState().ParentStyle(), inherited_image_list);
+    return inherited_image_list_ == inherited_image_list;
   }
 
-  CSSPropertyID m_property;
-  StyleImageList m_inheritedImageList;
+  CSSPropertyID property_;
+  StyleImageList inherited_image_list_;
 };
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertInherit(
+InterpolationValue CSSImageListInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  if (!state.parentStyle())
+    ConversionCheckers& conversion_checkers) const {
+  if (!state.ParentStyle())
     return nullptr;
 
-  StyleImageList inheritedImageList;
-  ImageListPropertyFunctions::getImageList(cssProperty(), *state.parentStyle(),
-                                           inheritedImageList);
-  conversionCheckers.push_back(
-      InheritedImageListChecker::create(cssProperty(), inheritedImageList));
-  return maybeConvertStyleImageList(inheritedImageList);
+  StyleImageList inherited_image_list;
+  ImageListPropertyFunctions::GetImageList(CssProperty(), *state.ParentStyle(),
+                                           inherited_image_list);
+  conversion_checkers.push_back(
+      InheritedImageListChecker::Create(CssProperty(), inherited_image_list));
+  return MaybeConvertStyleImageList(inherited_image_list);
 }
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertValue(
+InterpolationValue CSSImageListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (value.isIdentifierValue() &&
-      toCSSIdentifierValue(value).getValueID() == CSSValueNone)
+  if (value.IsIdentifierValue() &&
+      ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
     return nullptr;
 
-  CSSValueList* tempList = nullptr;
-  if (!value.isBaseValueList()) {
-    tempList = CSSValueList::createCommaSeparated();
-    tempList->append(value);
+  CSSValueList* temp_list = nullptr;
+  if (!value.IsBaseValueList()) {
+    temp_list = CSSValueList::CreateCommaSeparated();
+    temp_list->Append(value);
   }
-  const CSSValueList& valueList = tempList ? *tempList : toCSSValueList(value);
+  const CSSValueList& value_list =
+      temp_list ? *temp_list : ToCSSValueList(value);
 
-  const size_t length = valueList.length();
-  std::unique_ptr<InterpolableList> interpolableList =
-      InterpolableList::create(length);
-  Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
+  const size_t length = value_list.length();
+  std::unique_ptr<InterpolableList> interpolable_list =
+      InterpolableList::Create(length);
+  Vector<RefPtr<NonInterpolableValue>> non_interpolable_values(length);
   for (size_t i = 0; i < length; i++) {
     InterpolationValue component =
-        CSSImageInterpolationType::maybeConvertCSSValue(valueList.item(i),
+        CSSImageInterpolationType::MaybeConvertCSSValue(value_list.Item(i),
                                                         false);
     if (!component)
       return nullptr;
-    interpolableList->set(i, std::move(component.interpolableValue));
-    nonInterpolableValues[i] = std::move(component.nonInterpolableValue);
+    interpolable_list->Set(i, std::move(component.interpolable_value));
+    non_interpolable_values[i] = std::move(component.non_interpolable_value);
   }
   return InterpolationValue(
-      std::move(interpolableList),
-      NonInterpolableList::create(std::move(nonInterpolableValues)));
+      std::move(interpolable_list),
+      NonInterpolableList::Create(std::move(non_interpolable_values)));
 }
 
-PairwiseInterpolationValue CSSImageListInterpolationType::maybeMergeSingles(
+PairwiseInterpolationValue CSSImageListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  return ListInterpolationFunctions::maybeMergeSingles(
+  return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
-      CSSImageInterpolationType::staticMergeSingleConversions);
+      CSSImageInterpolationType::StaticMergeSingleConversions);
 }
 
 InterpolationValue
-CSSImageListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSImageListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  StyleImageList underlyingImageList;
-  ImageListPropertyFunctions::getImageList(cssProperty(), style,
-                                           underlyingImageList);
-  return maybeConvertStyleImageList(underlyingImageList);
+  StyleImageList underlying_image_list;
+  ImageListPropertyFunctions::GetImageList(CssProperty(), style,
+                                           underlying_image_list);
+  return MaybeConvertStyleImageList(underlying_image_list);
 }
 
-void CSSImageListInterpolationType::composite(
-    UnderlyingValueOwner& underlyingValueOwner,
-    double underlyingFraction,
+void CSSImageListInterpolationType::Composite(
+    UnderlyingValueOwner& underlying_value_owner,
+    double underlying_fraction,
     const InterpolationValue& value,
-    double interpolationFraction) const {
-  underlyingValueOwner.set(*this, value);
+    double interpolation_fraction) const {
+  underlying_value_owner.Set(*this, value);
 }
 
-void CSSImageListInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue,
+void CSSImageListInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  const InterpolableList& interpolableList =
-      toInterpolableList(interpolableValue);
-  const size_t length = interpolableList.length();
+  const InterpolableList& interpolable_list =
+      ToInterpolableList(interpolable_value);
+  const size_t length = interpolable_list.length();
   DCHECK_GT(length, 0U);
-  const NonInterpolableList& nonInterpolableList =
-      toNonInterpolableList(*nonInterpolableValue);
-  DCHECK_EQ(nonInterpolableList.length(), length);
-  StyleImageList imageList(length);
+  const NonInterpolableList& non_interpolable_list =
+      ToNonInterpolableList(*non_interpolable_value);
+  DCHECK_EQ(non_interpolable_list.length(), length);
+  StyleImageList image_list(length);
   for (size_t i = 0; i < length; i++) {
-    imageList[i] = CSSImageInterpolationType::resolveStyleImage(
-        cssProperty(), *interpolableList.get(i), nonInterpolableList.get(i),
+    image_list[i] = CSSImageInterpolationType::ResolveStyleImage(
+        CssProperty(), *interpolable_list.Get(i), non_interpolable_list.Get(i),
         state);
   }
-  ImageListPropertyFunctions::setImageList(cssProperty(), *state.style(),
-                                           imageList);
+  ImageListPropertyFunctions::SetImageList(CssProperty(), *state.Style(),
+                                           image_list);
 }
 
 }  // namespace blink

@@ -25,42 +25,43 @@ class PLATFORM_EXPORT GeometryMapperClipCache {
   GeometryMapperClipCache();
 
   struct ClipAndTransform {
-    const ClipPaintPropertyNode* ancestorClip;
-    const TransformPaintPropertyNode* ancestorTransform;
+    const ClipPaintPropertyNode* ancestor_clip;
+    const TransformPaintPropertyNode* ancestor_transform;
     bool operator==(const ClipAndTransform& other) const {
-      return ancestorClip == other.ancestorClip &&
-             ancestorTransform == other.ancestorTransform;
+      return ancestor_clip == other.ancestor_clip &&
+             ancestor_transform == other.ancestor_transform;
     }
-    ClipAndTransform(const ClipPaintPropertyNode* ancestorClipArg,
-                     const TransformPaintPropertyNode* ancestorTransformArg)
-        : ancestorClip(ancestorClipArg),
-          ancestorTransform(ancestorTransformArg) {}
+    ClipAndTransform(const ClipPaintPropertyNode* ancestor_clip_arg,
+                     const TransformPaintPropertyNode* ancestor_transform_arg)
+        : ancestor_clip(ancestor_clip_arg),
+          ancestor_transform(ancestor_transform_arg) {}
   };
 
   // Returns the clip visual rect  of the owning
   // clip of |this| in the space of |ancestors|, if there is one cached.
   // Otherwise returns null.
-  const FloatClipRect* getCachedClip(const ClipAndTransform& ancestors);
+  const FloatClipRect* GetCachedClip(const ClipAndTransform& ancestors);
   // Stores the "clip visual rect" of |this in the space of |ancestors|,
   // into a local cache.
 
-  void setCachedClip(const ClipAndTransform&, const FloatClipRect&);
+  void SetCachedClip(const ClipAndTransform&, const FloatClipRect&);
 
-  static void clearCache();
+  static void ClearCache();
 
  private:
   struct ClipCacheEntry {
-    const ClipAndTransform clipAndTransform;
-    const FloatClipRect clipRect;
-    ClipCacheEntry(const ClipAndTransform& clipAndTransformArg,
-                   const FloatClipRect& clipRectArg)
-        : clipAndTransform(clipAndTransformArg), clipRect(clipRectArg) {}
+    const ClipAndTransform clip_and_transform;
+    const FloatClipRect clip_rect;
+    ClipCacheEntry(const ClipAndTransform& clip_and_transform_arg,
+                   const FloatClipRect& clip_rect_arg)
+        : clip_and_transform(clip_and_transform_arg),
+          clip_rect(clip_rect_arg) {}
   };
 
-  void invalidateCacheIfNeeded();
+  void InvalidateCacheIfNeeded();
 
-  Vector<ClipCacheEntry> m_clipCache;
-  unsigned m_cacheGeneration;
+  Vector<ClipCacheEntry> clip_cache_;
+  unsigned cache_generation_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryMapperClipCache);
 };

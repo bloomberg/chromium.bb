@@ -39,30 +39,30 @@ namespace ArenaTestHelpers {
 // been allocated.
 class TrackedAllocator final : public PODArena::FastMallocAllocator {
  public:
-  static PassRefPtr<TrackedAllocator> create() {
-    return adoptRef(new TrackedAllocator);
+  static PassRefPtr<TrackedAllocator> Create() {
+    return AdoptRef(new TrackedAllocator);
   }
 
-  void* allocate(size_t size) override {
-    void* result = PODArena::FastMallocAllocator::allocate(size);
-    m_allocatedRegions.push_back(result);
+  void* Allocate(size_t size) override {
+    void* result = PODArena::FastMallocAllocator::Allocate(size);
+    allocated_regions_.push_back(result);
     return result;
   }
 
-  void free(void* ptr) override {
-    size_t slot = m_allocatedRegions.find(ptr);
+  void Free(void* ptr) override {
+    size_t slot = allocated_regions_.Find(ptr);
     ASSERT_NE(slot, kNotFound);
-    m_allocatedRegions.erase(slot);
-    PODArena::FastMallocAllocator::free(ptr);
+    allocated_regions_.erase(slot);
+    PODArena::FastMallocAllocator::Free(ptr);
   }
 
-  bool isEmpty() const { return !numRegions(); }
+  bool IsEmpty() const { return !NumRegions(); }
 
-  int numRegions() const { return m_allocatedRegions.size(); }
+  int NumRegions() const { return allocated_regions_.size(); }
 
  private:
   TrackedAllocator() {}
-  Vector<void*> m_allocatedRegions;
+  Vector<void*> allocated_regions_;
 };
 
 }  // namespace ArenaTestHelpers

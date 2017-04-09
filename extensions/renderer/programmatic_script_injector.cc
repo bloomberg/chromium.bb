@@ -73,12 +73,12 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
   // renderer see the provisional data source which the method below uses.
   url_ = ScriptContext::GetDataSourceURLForFrame(frame);
   if (url_.SchemeIs(url::kAboutScheme)) {
-    origin_for_about_error_ = frame->getSecurityOrigin().toString().utf8();
+    origin_for_about_error_ = frame->GetSecurityOrigin().ToString().Utf8();
   }
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      frame, frame->document().url(), params_->match_about_blank);
+      frame, frame->GetDocument().Url(), params_->match_about_blank);
   if (params_->is_web_view) {
-    if (frame->parent()) {
+    if (frame->Parent()) {
       // This is a subframe inside <webview>, so allow it.
       return PermissionsData::ACCESS_ALLOWED;
     }
@@ -104,9 +104,8 @@ std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(
   DCHECK(params_->is_javascript);
 
   return std::vector<blink::WebScriptSource>(
-      1,
-      blink::WebScriptSource(
-          blink::WebString::fromUTF8(params_->code), params_->file_url));
+      1, blink::WebScriptSource(blink::WebString::FromUTF8(params_->code),
+                                params_->file_url));
 }
 
 std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(
@@ -117,7 +116,7 @@ std::vector<blink::WebString> ProgrammaticScriptInjector::GetCssSources(
   DCHECK(!params_->is_javascript);
 
   return std::vector<blink::WebString>(
-      1, blink::WebString::fromUTF8(params_->code));
+      1, blink::WebString::FromUTF8(params_->code));
 }
 
 void ProgrammaticScriptInjector::OnInjectionComplete(

@@ -18,124 +18,126 @@
 
 namespace blink {
 
-bool PartPainter::isSelected() const {
-  SelectionState s = m_layoutPart.getSelectionState();
+bool PartPainter::IsSelected() const {
+  SelectionState s = layout_part_.GetSelectionState();
   if (s == SelectionNone)
     return false;
   if (s == SelectionInside)
     return true;
 
-  int selectionStart, selectionEnd;
-  m_layoutPart.selectionStartEnd(selectionStart, selectionEnd);
+  int selection_start, selection_end;
+  layout_part_.SelectionStartEnd(selection_start, selection_end);
   if (s == SelectionStart)
-    return selectionStart == 0;
+    return selection_start == 0;
 
-  int end = m_layoutPart.node()->hasChildren()
-                ? m_layoutPart.node()->countChildren()
+  int end = layout_part_.GetNode()->hasChildren()
+                ? layout_part_.GetNode()->CountChildren()
                 : 1;
   if (s == SelectionEnd)
-    return selectionEnd == end;
+    return selection_end == end;
   if (s == SelectionBoth)
-    return selectionStart == 0 && selectionEnd == end;
+    return selection_start == 0 && selection_end == end;
 
   DCHECK(0);
   return false;
 }
 
-void PartPainter::paint(const PaintInfo& paintInfo,
-                        const LayoutPoint& paintOffset) {
-  ObjectPainter(m_layoutPart).checkPaintOffset(paintInfo, paintOffset);
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
-  if (!ReplacedPainter(m_layoutPart)
-           .shouldPaint(paintInfo, adjustedPaintOffset))
+void PartPainter::Paint(const PaintInfo& paint_info,
+                        const LayoutPoint& paint_offset) {
+  ObjectPainter(layout_part_).CheckPaintOffset(paint_info, paint_offset);
+  LayoutPoint adjusted_paint_offset = paint_offset + layout_part_.Location();
+  if (!ReplacedPainter(layout_part_)
+           .ShouldPaint(paint_info, adjusted_paint_offset))
     return;
 
-  LayoutRect borderRect(adjustedPaintOffset, m_layoutPart.size());
+  LayoutRect border_rect(adjusted_paint_offset, layout_part_.size());
 
-  if (m_layoutPart.hasBoxDecorationBackground() &&
-      (paintInfo.phase == PaintPhaseForeground ||
-       paintInfo.phase == PaintPhaseSelection))
-    BoxPainter(m_layoutPart)
-        .paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
+  if (layout_part_.HasBoxDecorationBackground() &&
+      (paint_info.phase == kPaintPhaseForeground ||
+       paint_info.phase == kPaintPhaseSelection))
+    BoxPainter(layout_part_)
+        .PaintBoxDecorationBackground(paint_info, adjusted_paint_offset);
 
-  if (paintInfo.phase == PaintPhaseMask) {
-    BoxPainter(m_layoutPart).paintMask(paintInfo, adjustedPaintOffset);
+  if (paint_info.phase == kPaintPhaseMask) {
+    BoxPainter(layout_part_).PaintMask(paint_info, adjusted_paint_offset);
     return;
   }
 
-  if (shouldPaintSelfOutline(paintInfo.phase))
-    ObjectPainter(m_layoutPart).paintOutline(paintInfo, adjustedPaintOffset);
+  if (ShouldPaintSelfOutline(paint_info.phase))
+    ObjectPainter(layout_part_).PaintOutline(paint_info, adjusted_paint_offset);
 
-  if (paintInfo.phase != PaintPhaseForeground)
+  if (paint_info.phase != kPaintPhaseForeground)
     return;
 
-  if (m_layoutPart.pluginOrFrame()) {
+  if (layout_part_.PluginOrFrame()) {
     // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
     // the crashes we see in FrameViewBase painting are due to a destroyed
     // LayoutPart object.
-    CHECK(m_layoutPart.node());
+    CHECK(layout_part_.GetNode());
     Optional<RoundedInnerRectClipper> clipper;
-    if (m_layoutPart.style()->hasBorderRadius()) {
-      if (borderRect.isEmpty())
+    if (layout_part_.Style()->HasBorderRadius()) {
+      if (border_rect.IsEmpty())
         return;
 
-      FloatRoundedRect roundedInnerRect =
-          m_layoutPart.style()->getRoundedInnerBorderFor(
-              borderRect,
+      FloatRoundedRect rounded_inner_rect =
+          layout_part_.Style()->GetRoundedInnerBorderFor(
+              border_rect,
               LayoutRectOutsets(
-                  -(m_layoutPart.paddingTop() + m_layoutPart.borderTop()),
-                  -(m_layoutPart.paddingRight() + m_layoutPart.borderRight()),
-                  -(m_layoutPart.paddingBottom() + m_layoutPart.borderBottom()),
-                  -(m_layoutPart.paddingLeft() + m_layoutPart.borderLeft())),
+                  -(layout_part_.PaddingTop() + layout_part_.BorderTop()),
+                  -(layout_part_.PaddingRight() + layout_part_.BorderRight()),
+                  -(layout_part_.PaddingBottom() + layout_part_.BorderBottom()),
+                  -(layout_part_.PaddingLeft() + layout_part_.BorderLeft())),
               true, true);
-      clipper.emplace(m_layoutPart, paintInfo, borderRect, roundedInnerRect,
-                      ApplyToDisplayList);
+      clipper.emplace(layout_part_, paint_info, border_rect, rounded_inner_rect,
+                      kApplyToDisplayList);
     }
 
-    m_layoutPart.paintContents(paintInfo, paintOffset);
+    layout_part_.PaintContents(paint_info, paint_offset);
   }
 
   // Paint a partially transparent wash over selected FrameViewBases.
-  if (isSelected() && !paintInfo.isPrinting() &&
-      !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutPart, paintInfo.phase)) {
-    LayoutRect rect = m_layoutPart.localSelectionRect();
-    rect.moveBy(adjustedPaintOffset);
-    IntRect selectionRect = pixelSnappedIntRect(rect);
-    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutPart,
-                                                paintInfo.phase, selectionRect);
-    paintInfo.context.fillRect(selectionRect,
-                               m_layoutPart.selectionBackgroundColor());
+  if (IsSelected() && !paint_info.IsPrinting() &&
+      !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_part_, paint_info.phase)) {
+    LayoutRect rect = layout_part_.LocalSelectionRect();
+    rect.MoveBy(adjusted_paint_offset);
+    IntRect selection_rect = PixelSnappedIntRect(rect);
+    LayoutObjectDrawingRecorder drawing_recorder(
+        paint_info.context, layout_part_, paint_info.phase, selection_rect);
+    paint_info.context.FillRect(selection_rect,
+                                layout_part_.SelectionBackgroundColor());
   }
 
-  if (m_layoutPart.canResize())
-    ScrollableAreaPainter(*m_layoutPart.layer()->getScrollableArea())
-        .paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset),
-                      paintInfo.cullRect());
+  if (layout_part_.CanResize())
+    ScrollableAreaPainter(*layout_part_.Layer()->GetScrollableArea())
+        .PaintResizer(paint_info.context,
+                      RoundedIntPoint(adjusted_paint_offset),
+                      paint_info.GetCullRect());
 }
 
-void PartPainter::paintContents(const PaintInfo& paintInfo,
-                                const LayoutPoint& paintOffset) {
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
+void PartPainter::PaintContents(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset) {
+  LayoutPoint adjusted_paint_offset = paint_offset + layout_part_.Location();
 
-  FrameViewBase* frameViewBase = m_layoutPart.pluginOrFrame();
-  CHECK(frameViewBase);
+  FrameViewBase* frame_view_base = layout_part_.PluginOrFrame();
+  CHECK(frame_view_base);
 
-  IntPoint paintLocation(roundedIntPoint(
-      adjustedPaintOffset + m_layoutPart.replacedContentRect().location()));
+  IntPoint paint_location(RoundedIntPoint(
+      adjusted_paint_offset + layout_part_.ReplacedContentRect().Location()));
 
   // FrameViewBases don't support painting with a paint offset, but instead
   // offset themselves using the frame rect location. To paint FrameViewBases at
   // our desired location, we need to apply paint offset as a transform, with
   // the frame rect neutralized.
-  IntSize frameViewBasePaintOffset =
-      paintLocation - frameViewBase->frameRect().location();
+  IntSize frame_view_base_paint_offset =
+      paint_location - frame_view_base->FrameRect().Location();
   TransformRecorder transform(
-      paintInfo.context, m_layoutPart,
-      AffineTransform::translation(frameViewBasePaintOffset.width(),
-                                   frameViewBasePaintOffset.height()));
-  CullRect adjustedCullRect(paintInfo.cullRect(), -frameViewBasePaintOffset);
-  frameViewBase->paint(paintInfo.context, adjustedCullRect);
+      paint_info.context, layout_part_,
+      AffineTransform::Translation(frame_view_base_paint_offset.Width(),
+                                   frame_view_base_paint_offset.Height()));
+  CullRect adjusted_cull_rect(paint_info.GetCullRect(),
+                              -frame_view_base_paint_offset);
+  frame_view_base->Paint(paint_info.context, adjusted_cull_rect);
 }
 
 }  // namespace blink

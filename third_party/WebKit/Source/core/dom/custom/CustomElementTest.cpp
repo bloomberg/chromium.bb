@@ -18,18 +18,18 @@
 
 namespace blink {
 
-static void testIsPotentialCustomElementName(const AtomicString& str,
+static void TestIsPotentialCustomElementName(const AtomicString& str,
                                              bool expected) {
   if (expected) {
-    EXPECT_TRUE(CustomElement::isValidName(str))
+    EXPECT_TRUE(CustomElement::IsValidName(str))
         << str << " should be a valid custom element name.";
   } else {
-    EXPECT_FALSE(CustomElement::isValidName(str))
+    EXPECT_FALSE(CustomElement::IsValidName(str))
         << str << " should NOT be a valid custom element name.";
   }
 }
 
-static void testIsPotentialCustomElementNameChar(UChar32 c, bool expected) {
+static void TestIsPotentialCustomElementNameChar(UChar32 c, bool expected) {
   LChar str8[] = "a-X";
   UChar str16[] = {'a', '-', 'X', '\0', '\0'};
   AtomicString str;
@@ -42,7 +42,7 @@ static void testIsPotentialCustomElementNameChar(UChar32 c, bool expected) {
     str16[i] = 0;
     str = str16;
   }
-  testIsPotentialCustomElementName(str, expected);
+  TestIsPotentialCustomElementName(str, expected);
 }
 
 TEST(CustomElementTest, TestIsValidNamePotentialCustomElementName) {
@@ -70,7 +70,7 @@ TEST(CustomElementTest, TestIsValidNamePotentialCustomElementName) {
       {false, "a-Z"},
   };
   for (auto test : tests)
-    testIsPotentialCustomElementName(test.str, test.expected);
+    TestIsPotentialCustomElementName(test.str, test.expected);
 }
 
 TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameChar) {
@@ -98,10 +98,10 @@ TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameChar) {
       {0x10000, 0xEFFFF},
   };
   for (auto range : ranges) {
-    testIsPotentialCustomElementNameChar(range.from - 1, false);
+    TestIsPotentialCustomElementNameChar(range.from - 1, false);
     for (UChar32 c = range.from; c <= range.to; ++c)
-      testIsPotentialCustomElementNameChar(c, true);
-    testIsPotentialCustomElementNameChar(range.to + 1, false);
+      TestIsPotentialCustomElementNameChar(c, true);
+    TestIsPotentialCustomElementNameChar(range.to + 1, false);
   }
 }
 
@@ -110,8 +110,8 @@ TEST(CustomElementTest, TestIsValidNamePotentialCustomElementName8BitChar) {
   // isPotentialCustomElementNameChar, so we just test it returns
   // the same result throughout its range.
   for (UChar ch = 0x0; ch <= 0xff; ++ch) {
-    EXPECT_EQ(Character::isPotentialCustomElementName8BitChar(ch),
-              Character::isPotentialCustomElementNameChar(ch))
+    EXPECT_EQ(Character::IsPotentialCustomElementName8BitChar(ch),
+              Character::IsPotentialCustomElementNameChar(ch))
         << "isPotentialCustomElementName8BitChar must agree with "
         << "isPotentialCustomElementNameChar: 0x" << std::hex << ch;
   }
@@ -125,45 +125,45 @@ TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameCharFalse) {
   };
   for (auto range : ranges) {
     for (UChar32 c = range.from; c <= range.to; ++c)
-      testIsPotentialCustomElementNameChar(c, false);
+      TestIsPotentialCustomElementNameChar(c, false);
   }
 }
 
 TEST(CustomElementTest, TestIsValidNameHyphenContainingElementNames) {
-  EXPECT_TRUE(CustomElement::isValidName("valid-name"));
+  EXPECT_TRUE(CustomElement::IsValidName("valid-name"));
 
-  EXPECT_FALSE(CustomElement::isValidName("annotation-xml"));
-  EXPECT_FALSE(CustomElement::isValidName("color-profile"));
-  EXPECT_FALSE(CustomElement::isValidName("font-face"));
-  EXPECT_FALSE(CustomElement::isValidName("font-face-src"));
-  EXPECT_FALSE(CustomElement::isValidName("font-face-uri"));
-  EXPECT_FALSE(CustomElement::isValidName("font-face-format"));
-  EXPECT_FALSE(CustomElement::isValidName("font-face-name"));
-  EXPECT_FALSE(CustomElement::isValidName("missing-glyph"));
+  EXPECT_FALSE(CustomElement::IsValidName("annotation-xml"));
+  EXPECT_FALSE(CustomElement::IsValidName("color-profile"));
+  EXPECT_FALSE(CustomElement::IsValidName("font-face"));
+  EXPECT_FALSE(CustomElement::IsValidName("font-face-src"));
+  EXPECT_FALSE(CustomElement::IsValidName("font-face-uri"));
+  EXPECT_FALSE(CustomElement::IsValidName("font-face-format"));
+  EXPECT_FALSE(CustomElement::IsValidName("font-face-name"));
+  EXPECT_FALSE(CustomElement::IsValidName("missing-glyph"));
 }
 
 TEST(CustomElementTest, StateByParser) {
-  const char* bodyContent =
+  const char* body_content =
       "<div id=div></div>"
       "<a-a id=v1v0></a-a>"
       "<font-face id=v0></font-face>";
-  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
-  Document& document = pageHolder->document();
-  document.body()->setInnerHTML(String::fromUTF8(bodyContent));
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
+  Document& document = page_holder->GetDocument();
+  document.body()->setInnerHTML(String::FromUTF8(body_content));
 
   struct {
     const char* id;
     CustomElementState state;
     Element::V0CustomElementState v0state;
-  } parserData[] = {
-      {"div", CustomElementState::Uncustomized, Element::V0NotCustomElement},
-      {"v1v0", CustomElementState::Undefined, Element::V0WaitingForUpgrade},
-      {"v0", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade},
+  } parser_data[] = {
+      {"div", CustomElementState::kUncustomized, Element::kV0NotCustomElement},
+      {"v1v0", CustomElementState::kUndefined, Element::kV0WaitingForUpgrade},
+      {"v0", CustomElementState::kUncustomized, Element::kV0WaitingForUpgrade},
   };
-  for (const auto& data : parserData) {
-    Element* element = document.getElementById(data.id);
-    EXPECT_EQ(data.state, element->getCustomElementState()) << data.id;
-    EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.id;
+  for (const auto& data : parser_data) {
+    Element* element = document.GetElementById(data.id);
+    EXPECT_EQ(data.state, element->GetCustomElementState()) << data.id;
+    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.id;
   }
 }
 
@@ -172,60 +172,60 @@ TEST(CustomElementTest, StateByCreateElement) {
     const char* name;
     CustomElementState state;
     Element::V0CustomElementState v0state;
-  } createElementData[] = {
-      {"div", CustomElementState::Uncustomized, Element::V0NotCustomElement},
-      {"a-a", CustomElementState::Undefined, Element::V0WaitingForUpgrade},
+  } create_element_data[] = {
+      {"div", CustomElementState::kUncustomized, Element::kV0NotCustomElement},
+      {"a-a", CustomElementState::kUndefined, Element::kV0WaitingForUpgrade},
       // TODO(pdr): <font-face> should be V0NotCustomElement as per the spec,
       // but was regressed to be V0WaitingForUpgrade in
       // http://crrev.com/656913006
-      {"font-face", CustomElementState::Uncustomized,
-       Element::V0WaitingForUpgrade},
-      {"_-X", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade},
+      {"font-face", CustomElementState::kUncustomized,
+       Element::kV0WaitingForUpgrade},
+      {"_-X", CustomElementState::kUncustomized, Element::kV0WaitingForUpgrade},
   };
-  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
-  Document& document = pageHolder->document();
-  for (const auto& data : createElementData) {
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
+  Document& document = page_holder->GetDocument();
+  for (const auto& data : create_element_data) {
     Element* element = document.createElement(data.name);
-    EXPECT_EQ(data.state, element->getCustomElementState()) << data.name;
-    EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
+    EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
+    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
     element = document.createElementNS(HTMLNames::xhtmlNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
-    EXPECT_EQ(data.state, element->getCustomElementState()) << data.name;
-    EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
+    EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
+    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
     element = document.createElementNS(SVGNames::svgNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
-    EXPECT_EQ(CustomElementState::Uncustomized,
-              element->getCustomElementState())
+    EXPECT_EQ(CustomElementState::kUncustomized,
+              element->GetCustomElementState())
         << data.name;
-    EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
+    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
   }
 }
 
 TEST(CustomElementTest,
      CreateElement_TagNameCaseHandlingCreatingCustomElement) {
   // register a definition
-  std::unique_ptr<DummyPageHolder> holder(DummyPageHolder::create());
+  std::unique_ptr<DummyPageHolder> holder(DummyPageHolder::Create());
   CustomElementRegistry* registry =
-      holder->frame().domWindow()->customElements();
-  NonThrowableExceptionState shouldNotThrow;
+      holder->GetFrame().DomWindow()->customElements();
+  NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
     TestCustomElementDefinitionBuilder builder;
     registry->define("a-a", builder, ElementDefinitionOptions(),
-                     shouldNotThrow);
+                     should_not_throw);
   }
   CustomElementDefinition* definition =
-      registry->definitionFor(CustomElementDescriptor("a-a", "a-a"));
+      registry->DefinitionFor(CustomElementDescriptor("a-a", "a-a"));
   EXPECT_NE(nullptr, definition) << "a-a should be registered";
 
   // create an element with an uppercase tag name
-  Document& document = holder->document();
-  EXPECT_TRUE(document.isHTMLDocument())
+  Document& document = holder->GetDocument();
+  EXPECT_TRUE(document.IsHTMLDocument())
       << "this test requires a HTML document";
-  Element* element = document.createElement("A-A", shouldNotThrow);
-  EXPECT_EQ(definition, element->customElementDefinition());
+  Element* element = document.createElement("A-A", should_not_throw);
+  EXPECT_EQ(definition, element->GetCustomElementDefinition());
 }
 
 }  // namespace blink

@@ -28,67 +28,70 @@
 namespace blink {
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
-    GraphicsContext& graphicsContext,
-    const IntRect& dirtyRect)
-    : LocalCurrentGraphicsContext(graphicsContext.canvas(),
-                                  graphicsContext.deviceScaleFactor(),
-                                  dirtyRect) {}
+    GraphicsContext& graphics_context,
+    const IntRect& dirty_rect)
+    : LocalCurrentGraphicsContext(graphics_context.Canvas(),
+                                  graphics_context.DeviceScaleFactor(),
+                                  dirty_rect) {}
 
-static IntRect clampRect(int size, const IntRect& rect) {
-  IntRect clampedRect(rect);
-  clampedRect.setSize(IntSize(std::min(size, clampedRect.width()),
-                              std::min(size, clampedRect.height())));
-  return clampedRect;
+static IntRect ClampRect(int size, const IntRect& rect) {
+  IntRect clamped_rect(rect);
+  clamped_rect.SetSize(IntSize(std::min(size, clamped_rect.Width()),
+                               std::min(size, clamped_rect.Height())));
+  return clamped_rect;
 }
 
 static const int kMaxDirtyRectPixelSize = 10000;
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
     PaintCanvas* canvas,
-    float deviceScaleFactor,
-    const IntRect& dirtyRect)
-    : m_didSetGraphicsContext(false),
-      m_inflatedDirtyRect(ThemeMac::inflateRectForAA(dirtyRect)),
-      m_graphicsContextCanvas(canvas, m_inflatedDirtyRect, deviceScaleFactor) {
-  m_savedCanvas = canvas;
+    float device_scale_factor,
+    const IntRect& dirty_rect)
+    : did_set_graphics_context_(false),
+      inflated_dirty_rect_(ThemeMac::InflateRectForAA(dirty_rect)),
+      graphics_context_canvas_(canvas,
+                               inflated_dirty_rect_,
+                               device_scale_factor) {
+  saved_canvas_ = canvas;
   canvas->save();
 
   // Constrain the maximum size of what we paint to something reasonable. This
   // accordingly means we will not paint the entirety of truly huge native form
   // elements, which is deemed an acceptable tradeoff for this simple approach
   // to manage such an edge case.
-  if (dirtyRect.width() > kMaxDirtyRectPixelSize ||
-      dirtyRect.height() > kMaxDirtyRectPixelSize)
-    canvas->clipRect(clampRect(kMaxDirtyRectPixelSize, dirtyRect),
+  if (dirty_rect.Width() > kMaxDirtyRectPixelSize ||
+      dirty_rect.Height() > kMaxDirtyRectPixelSize)
+    canvas->clipRect(ClampRect(kMaxDirtyRectPixelSize, dirty_rect),
                      SkRegion::kIntersect_Op);
 
-  CGContextRef cgContext = this->cgContext();
-  if (cgContext == [[NSGraphicsContext currentContext] graphicsPort]) {
-    m_savedNSGraphicsContext = 0;
+  CGContextRef cg_context = this->CgContext();
+  if (cg_context == [[NSGraphicsContext currentContext] graphicsPort]) {
+    saved_ns_graphics_context_ = 0;
     return;
   }
 
-  m_savedNSGraphicsContext = [[NSGraphicsContext currentContext] retain];
-  NSGraphicsContext* newContext =
-      [NSGraphicsContext graphicsContextWithGraphicsPort:cgContext flipped:YES];
-  [NSGraphicsContext setCurrentContext:newContext];
-  m_didSetGraphicsContext = true;
+  saved_ns_graphics_context_ = [[NSGraphicsContext currentContext] retain];
+  NSGraphicsContext* new_context =
+      [NSGraphicsContext graphicsContextWithGraphicsPort:cg_context
+                                                 flipped:YES];
+  [NSGraphicsContext setCurrentContext:new_context];
+  did_set_graphics_context_ = true;
 }
 
 LocalCurrentGraphicsContext::~LocalCurrentGraphicsContext() {
-  if (m_didSetGraphicsContext) {
-    [NSGraphicsContext setCurrentContext:m_savedNSGraphicsContext];
-    [m_savedNSGraphicsContext release];
+  if (did_set_graphics_context_) {
+    [NSGraphicsContext setCurrentContext:saved_ns_graphics_context_];
+    [saved_ns_graphics_context_ release];
   }
 
-  m_savedCanvas->restore();
+  saved_canvas_->restore();
 }
 
-CGContextRef LocalCurrentGraphicsContext::cgContext() {
+CGContextRef LocalCurrentGraphicsContext::CgContext() {
   // This synchronizes the CGContext to reflect the current SkCanvas state.
   // The implementation may not return the same CGContext each time.
-  CGContextRef cgContext = m_graphicsContextCanvas.cgContext();
+  CGContextRef cg_context = graphics_context_canvas_.CgContext();
 
-  return cgContext;
+  return cg_context;
 }
 }

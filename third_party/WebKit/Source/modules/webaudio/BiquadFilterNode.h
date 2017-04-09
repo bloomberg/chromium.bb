@@ -53,8 +53,8 @@ class BiquadFilterNode final : public AudioNode {
     ALLPASS = 7
   };
 
-  static BiquadFilterNode* create(BaseAudioContext&, ExceptionState&);
-  static BiquadFilterNode* create(BaseAudioContext*,
+  static BiquadFilterNode* Create(BaseAudioContext&, ExceptionState&);
+  static BiquadFilterNode* Create(BaseAudioContext*,
                                   const BiquadFilterOptions&,
                                   ExceptionState&);
 
@@ -63,27 +63,27 @@ class BiquadFilterNode final : public AudioNode {
   String type() const;
   void setType(const String&);
 
-  AudioParam* frequency() { return m_frequency; }
-  AudioParam* q() { return m_q; }
-  AudioParam* gain() { return m_gain; }
-  AudioParam* detune() { return m_detune; }
+  AudioParam* frequency() { return frequency_; }
+  AudioParam* q() { return q_; }
+  AudioParam* gain() { return gain_; }
+  AudioParam* detune() { return detune_; }
 
   // Get the magnitude and phase response of the filter at the given
   // set of frequencies (in Hz). The phase response is in radians.
-  void getFrequencyResponse(const DOMFloat32Array* frequencyHz,
-                            DOMFloat32Array* magResponse,
-                            DOMFloat32Array* phaseResponse);
+  void getFrequencyResponse(const DOMFloat32Array* frequency_hz,
+                            DOMFloat32Array* mag_response,
+                            DOMFloat32Array* phase_response);
 
  private:
   BiquadFilterNode(BaseAudioContext&);
 
-  BiquadProcessor* getBiquadProcessor() const;
+  BiquadProcessor* GetBiquadProcessor() const;
   bool setType(unsigned);  // Returns true on success.
 
-  Member<AudioParam> m_frequency;
-  Member<AudioParam> m_q;
-  Member<AudioParam> m_gain;
-  Member<AudioParam> m_detune;
+  Member<AudioParam> frequency_;
+  Member<AudioParam> q_;
+  Member<AudioParam> gain_;
+  Member<AudioParam> detune_;
 };
 
 }  // namespace blink

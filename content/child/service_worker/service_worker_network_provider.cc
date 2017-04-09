@@ -36,9 +36,9 @@ int GetNextProviderId() {
 // Document::isSecureContextImpl for more details.
 bool IsFrameSecure(blink::WebFrame* frame) {
   while (frame) {
-    if (!frame->getSecurityOrigin().isPotentiallyTrustworthy())
+    if (!frame->GetSecurityOrigin().IsPotentiallyTrustworthy())
       return false;
-    frame = frame->parent();
+    frame = frame->Parent();
   }
   return true;
 }
@@ -52,13 +52,13 @@ class WebServiceWorkerNetworkProviderForFrame
       std::unique_ptr<ServiceWorkerNetworkProvider> provider)
       : provider_(std::move(provider)) {}
 
-  void willSendRequest(blink::WebURLRequest& request) override {
+  void WillSendRequest(blink::WebURLRequest& request) override {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.getExtraData());
+        static_cast<RequestExtraData*>(request.GetExtraData());
     if (!extra_data)
       extra_data = new RequestExtraData();
     extra_data->set_service_worker_provider_id(provider_->provider_id());
-    request.setExtraData(extra_data);
+    request.SetExtraData(extra_data);
 
     // If the provider does not have a controller at this point, the renderer
     // expects the request to never be handled by a controlling service worker,
@@ -66,21 +66,21 @@ class WebServiceWorkerNetworkProviderForFrame
     // service worker that is in the process of becoming the controller (i.e.,
     // via claim()) on the browser-side could handle the request and break
     // the assumptions of the renderer.
-    if (request.getFrameType() != blink::WebURLRequest::FrameTypeTopLevel &&
-        request.getFrameType() != blink::WebURLRequest::FrameTypeNested &&
+    if (request.GetFrameType() != blink::WebURLRequest::kFrameTypeTopLevel &&
+        request.GetFrameType() != blink::WebURLRequest::kFrameTypeNested &&
         !provider_->IsControlledByServiceWorker() &&
-        request.getServiceWorkerMode() !=
-            blink::WebURLRequest::ServiceWorkerMode::None) {
-      request.setServiceWorkerMode(
-          blink::WebURLRequest::ServiceWorkerMode::Foreign);
+        request.GetServiceWorkerMode() !=
+            blink::WebURLRequest::ServiceWorkerMode::kNone) {
+      request.SetServiceWorkerMode(
+          blink::WebURLRequest::ServiceWorkerMode::kForeign);
     }
   }
 
-  bool isControlledByServiceWorker() override {
+  bool IsControlledByServiceWorker() override {
     return provider_->IsControlledByServiceWorker();
   }
 
-  int64_t serviceWorkerID() override {
+  int64_t ServiceWorkerID() override {
     if (provider_->context() && provider_->context()->controller())
       return provider_->context()->controller()->version_id();
     return kInvalidServiceWorkerVersionId;
@@ -121,8 +121,8 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
            service_worker_provider_id == kInvalidServiceWorkerProviderId);
   } else {
     should_create_provider_for_window =
-        ((frame->effectiveSandboxFlags() & blink::WebSandboxFlags::Origin) !=
-         blink::WebSandboxFlags::Origin);
+        ((frame->EffectiveSandboxFlags() & blink::WebSandboxFlags::kOrigin) !=
+         blink::WebSandboxFlags::kOrigin);
   }
 
   // Now create the ServiceWorkerNetworkProvider (with invalid id if needed).
@@ -132,7 +132,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     // is_parent_frame_secure to the browser process, so it can determine the
     // context security when deciding whether to allow a service worker to
     // control the document.
-    const bool is_parent_frame_secure = IsFrameSecure(frame->parent());
+    const bool is_parent_frame_secure = IsFrameSecure(frame->Parent());
 
     if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
       network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(

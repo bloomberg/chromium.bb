@@ -13,96 +13,96 @@
 namespace blink {
 
 GeoNotifier::GeoNotifier(Geolocation* geolocation,
-                         PositionCallback* successCallback,
-                         PositionErrorCallback* errorCallback,
+                         PositionCallback* success_callback,
+                         PositionErrorCallback* error_callback,
                          const PositionOptions& options)
-    : m_geolocation(geolocation),
-      m_successCallback(successCallback),
-      m_errorCallback(errorCallback),
-      m_options(options),
-      m_timer(this, &GeoNotifier::timerFired),
-      m_useCachedPosition(false) {
-  DCHECK(m_geolocation);
-  DCHECK(m_successCallback);
+    : geolocation_(geolocation),
+      success_callback_(success_callback),
+      error_callback_(error_callback),
+      options_(options),
+      timer_(this, &GeoNotifier::TimerFired),
+      use_cached_position_(false) {
+  DCHECK(geolocation_);
+  DCHECK(success_callback_);
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeoutHistogram,
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_histogram,
                       ("Geolocation.Timeout", 0,
                        1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
-  timeoutHistogram.count(m_options.timeout());
+  timeout_histogram.Count(options_.timeout());
 }
 
 DEFINE_TRACE(GeoNotifier) {
-  visitor->trace(m_geolocation);
-  visitor->trace(m_successCallback);
-  visitor->trace(m_errorCallback);
-  visitor->trace(m_fatalError);
+  visitor->Trace(geolocation_);
+  visitor->Trace(success_callback_);
+  visitor->Trace(error_callback_);
+  visitor->Trace(fatal_error_);
 }
 
-void GeoNotifier::setFatalError(PositionError* error) {
+void GeoNotifier::SetFatalError(PositionError* error) {
   // If a fatal error has already been set, stick with it. This makes sure that
   // when permission is denied, this is the error reported, as required by the
   // spec.
-  if (m_fatalError)
+  if (fatal_error_)
     return;
 
-  m_fatalError = error;
+  fatal_error_ = error;
   // An existing timer may not have a zero timeout.
-  m_timer.stop();
-  m_timer.startOneShot(0, BLINK_FROM_HERE);
+  timer_.Stop();
+  timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void GeoNotifier::setUseCachedPosition() {
-  m_useCachedPosition = true;
-  m_timer.startOneShot(0, BLINK_FROM_HERE);
+void GeoNotifier::SetUseCachedPosition() {
+  use_cached_position_ = true;
+  timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void GeoNotifier::runSuccessCallback(Geoposition* position) {
-  m_successCallback->handleEvent(position);
+void GeoNotifier::RunSuccessCallback(Geoposition* position) {
+  success_callback_->handleEvent(position);
 }
 
-void GeoNotifier::runErrorCallback(PositionError* error) {
-  if (m_errorCallback)
-    m_errorCallback->handleEvent(error);
+void GeoNotifier::RunErrorCallback(PositionError* error) {
+  if (error_callback_)
+    error_callback_->handleEvent(error);
 }
 
-void GeoNotifier::startTimer() {
-  m_timer.startOneShot(m_options.timeout() / 1000.0, BLINK_FROM_HERE);
+void GeoNotifier::StartTimer() {
+  timer_.StartOneShot(options_.timeout() / 1000.0, BLINK_FROM_HERE);
 }
 
-void GeoNotifier::stopTimer() {
-  m_timer.stop();
+void GeoNotifier::StopTimer() {
+  timer_.Stop();
 }
 
-void GeoNotifier::timerFired(TimerBase*) {
-  m_timer.stop();
+void GeoNotifier::TimerFired(TimerBase*) {
+  timer_.Stop();
 
   // Test for fatal error first. This is required for the case where the
   // LocalFrame is disconnected and requests are cancelled.
-  if (m_fatalError) {
-    runErrorCallback(m_fatalError);
+  if (fatal_error_) {
+    RunErrorCallback(fatal_error_);
     // This will cause this notifier to be deleted.
-    m_geolocation->fatalErrorOccurred(this);
+    geolocation_->FatalErrorOccurred(this);
     return;
   }
 
-  if (m_useCachedPosition) {
+  if (use_cached_position_) {
     // Clear the cached position flag in case this is a watch request, which
     // will continue to run.
-    m_useCachedPosition = false;
-    m_geolocation->requestUsesCachedPosition(this);
+    use_cached_position_ = false;
+    geolocation_->RequestUsesCachedPosition(this);
     return;
   }
 
-  if (m_errorCallback)
-    m_errorCallback->handleEvent(
-        PositionError::create(PositionError::kTimeout, "Timeout expired"));
+  if (error_callback_)
+    error_callback_->handleEvent(
+        PositionError::Create(PositionError::kTimeout, "Timeout expired"));
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeoutExpiredHistogram,
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeout_expired_histogram,
                       ("Geolocation.TimeoutExpired", 0,
                        1000 * 60 * 10 /* 10 minute max */, 20 /* buckets */));
-  timeoutExpiredHistogram.count(m_options.timeout());
+  timeout_expired_histogram.Count(options_.timeout());
 
-  m_geolocation->requestTimedOut(this);
+  geolocation_->RequestTimedOut(this);
 }
 
 }  // namespace blink

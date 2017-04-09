@@ -35,208 +35,209 @@
 
 namespace blink {
 
-RawResource* RawResource::fetchSynchronously(FetchRequest& request,
+RawResource* RawResource::FetchSynchronously(FetchRequest& request,
                                              ResourceFetcher* fetcher) {
-  request.makeSynchronous();
-  return toRawResource(
-      fetcher->requestResource(request, RawResourceFactory(Resource::Raw)));
+  request.MakeSynchronous();
+  return ToRawResource(
+      fetcher->RequestResource(request, RawResourceFactory(Resource::kRaw)));
 }
 
-RawResource* RawResource::fetchImport(FetchRequest& request,
+RawResource* RawResource::FetchImport(FetchRequest& request,
                                       ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  request.setRequestContext(WebURLRequest::RequestContextImport);
-  return toRawResource(fetcher->requestResource(
-      request, RawResourceFactory(Resource::ImportResource)));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  request.SetRequestContext(WebURLRequest::kRequestContextImport);
+  return ToRawResource(fetcher->RequestResource(
+      request, RawResourceFactory(Resource::kImportResource)));
 }
 
-RawResource* RawResource::fetch(FetchRequest& request,
+RawResource* RawResource::Fetch(FetchRequest& request,
                                 ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  DCHECK_NE(request.resourceRequest().requestContext(),
-            WebURLRequest::RequestContextUnspecified);
-  return toRawResource(
-      fetcher->requestResource(request, RawResourceFactory(Resource::Raw)));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  DCHECK_NE(request.GetResourceRequest().GetRequestContext(),
+            WebURLRequest::kRequestContextUnspecified);
+  return ToRawResource(
+      fetcher->RequestResource(request, RawResourceFactory(Resource::kRaw)));
 }
 
-RawResource* RawResource::fetchMainResource(
+RawResource* RawResource::FetchMainResource(
     FetchRequest& request,
     ResourceFetcher* fetcher,
-    const SubstituteData& substituteData) {
-  DCHECK_NE(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  DCHECK(request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextForm ||
-         request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextFrame ||
-         request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextHyperlink ||
-         request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextIframe ||
-         request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextInternal ||
-         request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextLocation);
+    const SubstituteData& substitute_data) {
+  DCHECK_NE(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  DCHECK(request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextForm ||
+         request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextFrame ||
+         request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextHyperlink ||
+         request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextIframe ||
+         request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextInternal ||
+         request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextLocation);
 
-  return toRawResource(fetcher->requestResource(
-      request, RawResourceFactory(Resource::MainResource), substituteData));
+  return ToRawResource(fetcher->RequestResource(
+      request, RawResourceFactory(Resource::kMainResource), substitute_data));
 }
 
-RawResource* RawResource::fetchMedia(FetchRequest& request,
+RawResource* RawResource::FetchMedia(FetchRequest& request,
                                      ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  DCHECK(request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextAudio ||
-         request.resourceRequest().requestContext() ==
-             WebURLRequest::RequestContextVideo);
-  return toRawResource(
-      fetcher->requestResource(request, RawResourceFactory(Resource::Media)));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  DCHECK(request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextAudio ||
+         request.GetResourceRequest().GetRequestContext() ==
+             WebURLRequest::kRequestContextVideo);
+  return ToRawResource(
+      fetcher->RequestResource(request, RawResourceFactory(Resource::kMedia)));
 }
 
-RawResource* RawResource::fetchTextTrack(FetchRequest& request,
+RawResource* RawResource::FetchTextTrack(FetchRequest& request,
                                          ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  request.setRequestContext(WebURLRequest::RequestContextTrack);
-  return toRawResource(fetcher->requestResource(
-      request, RawResourceFactory(Resource::TextTrack)));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  request.SetRequestContext(WebURLRequest::kRequestContextTrack);
+  return ToRawResource(fetcher->RequestResource(
+      request, RawResourceFactory(Resource::kTextTrack)));
 }
 
-RawResource* RawResource::fetchManifest(FetchRequest& request,
+RawResource* RawResource::FetchManifest(FetchRequest& request,
                                         ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  DCHECK_EQ(request.resourceRequest().requestContext(),
-            WebURLRequest::RequestContextManifest);
-  return toRawResource(fetcher->requestResource(
-      request, RawResourceFactory(Resource::Manifest)));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  DCHECK_EQ(request.GetResourceRequest().GetRequestContext(),
+            WebURLRequest::kRequestContextManifest);
+  return ToRawResource(fetcher->RequestResource(
+      request, RawResourceFactory(Resource::kManifest)));
 }
 
-RawResource::RawResource(const ResourceRequest& resourceRequest,
+RawResource::RawResource(const ResourceRequest& resource_request,
                          Type type,
                          const ResourceLoaderOptions& options)
-    : Resource(resourceRequest, type, options) {}
+    : Resource(resource_request, type, options) {}
 
-void RawResource::appendData(const char* data, size_t length) {
-  Resource::appendData(data, length);
+void RawResource::AppendData(const char* data, size_t length) {
+  Resource::AppendData(data, length);
 
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->dataReceived(this, data, length);
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->DataReceived(this, data, length);
 }
 
-void RawResource::didAddClient(ResourceClient* c) {
+void RawResource::DidAddClient(ResourceClient* c) {
   // CHECK()/RevalidationStartForbiddenScope are for
   // https://crbug.com/640960#c24.
-  CHECK(!isCacheValidator());
-  if (!hasClient(c))
+  CHECK(!IsCacheValidator());
+  if (!HasClient(c))
     return;
-  DCHECK(RawResourceClient::isExpectedType(c));
-  RevalidationStartForbiddenScope revalidationStartForbiddenScope(this);
+  DCHECK(RawResourceClient::IsExpectedType(c));
+  RevalidationStartForbiddenScope revalidation_start_forbidden_scope(this);
   RawResourceClient* client = static_cast<RawResourceClient*>(c);
-  for (const auto& redirect : redirectChain()) {
-    ResourceRequest request(redirect.m_request);
-    client->redirectReceived(this, request, redirect.m_redirectResponse);
-    if (!hasClient(c))
+  for (const auto& redirect : RedirectChain()) {
+    ResourceRequest request(redirect.request_);
+    client->RedirectReceived(this, request, redirect.redirect_response_);
+    if (!HasClient(c))
       return;
   }
 
-  if (!response().isNull())
-    client->responseReceived(this, response(), nullptr);
-  if (!hasClient(c))
+  if (!GetResponse().IsNull())
+    client->ResponseReceived(this, GetResponse(), nullptr);
+  if (!HasClient(c))
     return;
-  if (data())
-    client->dataReceived(this, data()->data(), data()->size());
-  if (!hasClient(c))
+  if (Data())
+    client->DataReceived(this, Data()->Data(), Data()->size());
+  if (!HasClient(c))
     return;
-  Resource::didAddClient(client);
+  Resource::DidAddClient(client);
 }
 
-bool RawResource::willFollowRedirect(const ResourceRequest& newRequest,
-                                     const ResourceResponse& redirectResponse) {
-  bool follow = Resource::willFollowRedirect(newRequest, redirectResponse);
+bool RawResource::WillFollowRedirect(
+    const ResourceRequest& new_request,
+    const ResourceResponse& redirect_response) {
+  bool follow = Resource::WillFollowRedirect(new_request, redirect_response);
   // The base class method takes a const reference of a ResourceRequest and
   // returns bool just for allowing RawResource to reject redirect. It must
   // always return true.
   DCHECK(follow);
 
-  DCHECK(!redirectResponse.isNull());
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next()) {
-    if (!c->redirectReceived(this, newRequest, redirectResponse))
+  DCHECK(!redirect_response.IsNull());
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next()) {
+    if (!c->RedirectReceived(this, new_request, redirect_response))
       follow = false;
   }
 
   return follow;
 }
 
-void RawResource::willNotFollowRedirect() {
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->redirectBlocked();
+void RawResource::WillNotFollowRedirect() {
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->RedirectBlocked();
 }
 
-void RawResource::responseReceived(
+void RawResource::ResponseReceived(
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  bool isSuccessfulRevalidation =
-      isCacheValidator() && response.httpStatusCode() == 304;
-  Resource::responseReceived(response, nullptr);
+  bool is_successful_revalidation =
+      IsCacheValidator() && response.HttpStatusCode() == 304;
+  Resource::ResponseReceived(response, nullptr);
 
-  ResourceClientWalker<RawResourceClient> w(clients());
-  DCHECK(clients().size() <= 1 || !handle);
-  while (RawResourceClient* c = w.next()) {
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  DCHECK(Clients().size() <= 1 || !handle);
+  while (RawResourceClient* c = w.Next()) {
     // |handle| is cleared when passed, but it's not a problem because |handle|
     // is null when there are two or more clients, as asserted.
-    c->responseReceived(this, this->response(), std::move(handle));
+    c->ResponseReceived(this, this->GetResponse(), std::move(handle));
   }
 
   // If we successfully revalidated, we won't get appendData() calls. Forward
   // the data to clients now instead. Note: |m_data| can be null when no data is
   // appended to the original resource.
-  if (isSuccessfulRevalidation && data()) {
-    ResourceClientWalker<RawResourceClient> w(clients());
-    while (RawResourceClient* c = w.next())
-      c->dataReceived(this, data()->data(), data()->size());
+  if (is_successful_revalidation && Data()) {
+    ResourceClientWalker<RawResourceClient> w(Clients());
+    while (RawResourceClient* c = w.Next())
+      c->DataReceived(this, Data()->Data(), Data()->size());
   }
 }
 
-void RawResource::setSerializedCachedMetadata(const char* data, size_t size) {
-  Resource::setSerializedCachedMetadata(data, size);
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->setSerializedCachedMetadata(this, data, size);
+void RawResource::SetSerializedCachedMetadata(const char* data, size_t size) {
+  Resource::SetSerializedCachedMetadata(data, size);
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->SetSerializedCachedMetadata(this, data, size);
 }
 
-void RawResource::didSendData(unsigned long long bytesSent,
-                              unsigned long long totalBytesToBeSent) {
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->dataSent(this, bytesSent, totalBytesToBeSent);
+void RawResource::DidSendData(unsigned long long bytes_sent,
+                              unsigned long long total_bytes_to_be_sent) {
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->DataSent(this, bytes_sent, total_bytes_to_be_sent);
 }
 
-void RawResource::didDownloadData(int dataLength) {
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->dataDownloaded(this, dataLength);
+void RawResource::DidDownloadData(int data_length) {
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->DataDownloaded(this, data_length);
 }
 
-void RawResource::reportResourceTimingToClients(
+void RawResource::ReportResourceTimingToClients(
     const ResourceTimingInfo& info) {
-  ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->didReceiveResourceTiming(this, info);
+  ResourceClientWalker<RawResourceClient> w(Clients());
+  while (RawResourceClient* c = w.Next())
+    c->DidReceiveResourceTiming(this, info);
 }
 
-void RawResource::setDefersLoading(bool defers) {
-  if (loader())
-    loader()->setDefersLoading(defers);
+void RawResource::SetDefersLoading(bool defers) {
+  if (Loader())
+    Loader()->SetDefersLoading(defers);
 }
 
-static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName) {
+static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
   // FIXME: This list of headers that don't affect cache policy almost certainly
   // isn't complete.
   DEFINE_STATIC_LOCAL(
@@ -247,31 +248,31 @@ static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName) {
           HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
           HTTPNames::X_DevTools_Request_Id,
       }));
-  return headers.contains(headerName);
+  return headers.Contains(header_name);
 }
 
-static bool isCacheableHTTPMethod(const AtomicString& method) {
+static bool IsCacheableHTTPMethod(const AtomicString& method) {
   // Per http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.10,
   // these methods always invalidate the cache entry.
   return method != "POST" && method != "PUT" && method != "DELETE";
 }
 
-bool RawResource::canReuse(const FetchRequest& newFetchRequest) const {
-  const ResourceRequest& newRequest = newFetchRequest.resourceRequest();
+bool RawResource::CanReuse(const FetchRequest& new_fetch_request) const {
+  const ResourceRequest& new_request = new_fetch_request.GetResourceRequest();
 
-  if (getDataBufferingPolicy() == DoNotBufferData)
+  if (GetDataBufferingPolicy() == kDoNotBufferData)
     return false;
 
-  if (!isCacheableHTTPMethod(resourceRequest().httpMethod()))
+  if (!IsCacheableHTTPMethod(GetResourceRequest().HttpMethod()))
     return false;
-  if (resourceRequest().httpMethod() != newRequest.httpMethod())
-    return false;
-
-  if (resourceRequest().httpBody() != newRequest.httpBody())
+  if (GetResourceRequest().HttpMethod() != new_request.HttpMethod())
     return false;
 
-  if (resourceRequest().allowStoredCredentials() !=
-      newRequest.allowStoredCredentials())
+  if (GetResourceRequest().HttpBody() != new_request.HttpBody())
+    return false;
+
+  if (GetResourceRequest().AllowStoredCredentials() !=
+      new_request.AllowStoredCredentials())
     return false;
 
   // Ensure most headers match the existing headers before continuing. Note that
@@ -279,20 +280,20 @@ bool RawResource::canReuse(const FetchRequest& newFetchRequest) const {
   // caching. A more detailed check of caching policy will be performed later,
   // this is simply a list of headers that we might permit to be different and
   // still reuse the existing Resource.
-  const HTTPHeaderMap& newHeaders = newRequest.httpHeaderFields();
-  const HTTPHeaderMap& oldHeaders = resourceRequest().httpHeaderFields();
+  const HTTPHeaderMap& new_headers = new_request.HttpHeaderFields();
+  const HTTPHeaderMap& old_headers = GetResourceRequest().HttpHeaderFields();
 
-  for (const auto& header : newHeaders) {
-    AtomicString headerName = header.key;
-    if (!shouldIgnoreHeaderForCacheReuse(headerName) &&
-        header.value != oldHeaders.get(headerName))
+  for (const auto& header : new_headers) {
+    AtomicString header_name = header.key;
+    if (!ShouldIgnoreHeaderForCacheReuse(header_name) &&
+        header.value != old_headers.Get(header_name))
       return false;
   }
 
-  for (const auto& header : oldHeaders) {
-    AtomicString headerName = header.key;
-    if (!shouldIgnoreHeaderForCacheReuse(headerName) &&
-        header.value != newHeaders.get(headerName))
+  for (const auto& header : old_headers) {
+    AtomicString header_name = header.key;
+    if (!ShouldIgnoreHeaderForCacheReuse(header_name) &&
+        header.value != new_headers.Get(header_name))
       return false;
   }
 
@@ -300,66 +301,66 @@ bool RawResource::canReuse(const FetchRequest& newFetchRequest) const {
 }
 
 RawResourceClientStateChecker::RawResourceClientStateChecker()
-    : m_state(NotAddedAsClient) {}
+    : state_(kNotAddedAsClient) {}
 
 RawResourceClientStateChecker::~RawResourceClientStateChecker() {}
 
-NEVER_INLINE void RawResourceClientStateChecker::willAddClient() {
-  SECURITY_CHECK(m_state == NotAddedAsClient);
-  m_state = Started;
+NEVER_INLINE void RawResourceClientStateChecker::WillAddClient() {
+  SECURITY_CHECK(state_ == kNotAddedAsClient);
+  state_ = kStarted;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::willRemoveClient() {
-  SECURITY_CHECK(m_state != NotAddedAsClient);
-  m_state = NotAddedAsClient;
+NEVER_INLINE void RawResourceClientStateChecker::WillRemoveClient() {
+  SECURITY_CHECK(state_ != kNotAddedAsClient);
+  state_ = kNotAddedAsClient;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::redirectReceived() {
-  SECURITY_CHECK(m_state == Started);
+NEVER_INLINE void RawResourceClientStateChecker::RedirectReceived() {
+  SECURITY_CHECK(state_ == kStarted);
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::redirectBlocked() {
-  SECURITY_CHECK(m_state == Started);
-  m_state = RedirectBlocked;
+NEVER_INLINE void RawResourceClientStateChecker::RedirectBlocked() {
+  SECURITY_CHECK(state_ == kStarted);
+  state_ = kRedirectBlocked;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::dataSent() {
-  SECURITY_CHECK(m_state == Started);
+NEVER_INLINE void RawResourceClientStateChecker::DataSent() {
+  SECURITY_CHECK(state_ == kStarted);
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::responseReceived() {
-  SECURITY_CHECK(m_state == Started);
-  m_state = ResponseReceived;
+NEVER_INLINE void RawResourceClientStateChecker::ResponseReceived() {
+  SECURITY_CHECK(state_ == kStarted);
+  state_ = kResponseReceived;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::setSerializedCachedMetadata() {
-  SECURITY_CHECK(m_state == ResponseReceived);
-  m_state = SetSerializedCachedMetadata;
+NEVER_INLINE void RawResourceClientStateChecker::SetSerializedCachedMetadata() {
+  SECURITY_CHECK(state_ == kResponseReceived);
+  state_ = kSetSerializedCachedMetadata;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::dataReceived() {
-  SECURITY_CHECK(m_state == ResponseReceived ||
-                 m_state == SetSerializedCachedMetadata ||
-                 m_state == DataReceived);
-  m_state = DataReceived;
+NEVER_INLINE void RawResourceClientStateChecker::DataReceived() {
+  SECURITY_CHECK(state_ == kResponseReceived ||
+                 state_ == kSetSerializedCachedMetadata ||
+                 state_ == kDataReceived);
+  state_ = kDataReceived;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::dataDownloaded() {
-  SECURITY_CHECK(m_state == ResponseReceived ||
-                 m_state == SetSerializedCachedMetadata ||
-                 m_state == DataDownloaded);
-  m_state = DataDownloaded;
+NEVER_INLINE void RawResourceClientStateChecker::DataDownloaded() {
+  SECURITY_CHECK(state_ == kResponseReceived ||
+                 state_ == kSetSerializedCachedMetadata ||
+                 state_ == kDataDownloaded);
+  state_ = kDataDownloaded;
 }
 
-NEVER_INLINE void RawResourceClientStateChecker::notifyFinished(
+NEVER_INLINE void RawResourceClientStateChecker::NotifyFinished(
     Resource* resource) {
-  SECURITY_CHECK(m_state != NotAddedAsClient);
-  SECURITY_CHECK(m_state != NotifyFinished);
-  SECURITY_CHECK(resource->errorOccurred() ||
-                 (m_state == ResponseReceived ||
-                  m_state == SetSerializedCachedMetadata ||
-                  m_state == DataReceived || m_state == DataDownloaded));
-  m_state = NotifyFinished;
+  SECURITY_CHECK(state_ != kNotAddedAsClient);
+  SECURITY_CHECK(state_ != kNotifyFinished);
+  SECURITY_CHECK(resource->ErrorOccurred() ||
+                 (state_ == kResponseReceived ||
+                  state_ == kSetSerializedCachedMetadata ||
+                  state_ == kDataReceived || state_ == kDataDownloaded));
+  state_ = kNotifyFinished;
 }
 
 }  // namespace blink

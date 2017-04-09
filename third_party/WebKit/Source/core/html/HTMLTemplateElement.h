@@ -53,11 +53,11 @@ class HTMLTemplateElement final : public HTMLElement {
 
  private:
   Node* cloneNode(bool deep, ExceptionState&) override;
-  void didMoveToNewDocument(Document& oldDocument) override;
+  void DidMoveToNewDocument(Document& old_document) override;
 
   explicit HTMLTemplateElement(Document&);
 
-  mutable TraceWrapperMember<TemplateContentDocumentFragment> m_content;
+  mutable TraceWrapperMember<TemplateContentDocumentFragment> content_;
 };
 
 }  // namespace blink

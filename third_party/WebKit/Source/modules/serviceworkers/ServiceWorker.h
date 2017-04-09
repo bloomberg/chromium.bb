@@ -53,7 +53,7 @@ class MODULES_EXPORT ServiceWorker final
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 
  public:
-  static ServiceWorker* from(ExecutionContext*,
+  static ServiceWorker* From(ExecutionContext*,
                              std::unique_ptr<WebServiceWorker::Handle>);
 
   ~ServiceWorker() override;
@@ -66,36 +66,36 @@ class MODULES_EXPORT ServiceWorker final
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
-  static bool canTransferArrayBuffersAndImageBitmaps() { return false; }
+  static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
 
   String scriptURL() const;
   String state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
-  ServiceWorker* toServiceWorker() override { return this; }
+  ServiceWorker* ToServiceWorker() override { return this; }
 
   // ScriptWrappable overrides.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // WebServiceWorkerProxy overrides.
-  void dispatchStateChangeEvent() override;
+  void DispatchStateChangeEvent() override;
 
   // AbstractWorker overrides.
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  void internalsTerminate();
+  void InternalsTerminate();
 
  private:
-  static ServiceWorker* getOrCreate(ExecutionContext*,
+  static ServiceWorker* GetOrCreate(ExecutionContext*,
                                     std::unique_ptr<WebServiceWorker::Handle>);
   ServiceWorker(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
 
   // SuspendableObject overrides.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // A handle to the service worker representation in the embedder.
-  std::unique_ptr<WebServiceWorker::Handle> m_handle;
-  bool m_wasStopped;
+  std::unique_ptr<WebServiceWorker::Handle> handle_;
+  bool was_stopped_;
 };
 
 }  // namespace blink

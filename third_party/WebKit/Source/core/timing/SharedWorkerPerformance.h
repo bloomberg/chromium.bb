@@ -45,18 +45,18 @@ class SharedWorkerPerformance final
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerPerformance);
 
  public:
-  static SharedWorkerPerformance& from(SharedWorker&);
+  static SharedWorkerPerformance& From(SharedWorker&);
 
   static double workerStart(ScriptState*, SharedWorker&);
-  double getWorkerStart(ExecutionContext*, SharedWorker&) const;
+  double GetWorkerStart(ExecutionContext*, SharedWorker&) const;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<SharedWorker>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<SharedWorker>::Trace(visitor); }
 
  private:
   explicit SharedWorkerPerformance(SharedWorker&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  double m_timeOrigin;
+  double time_origin_;
 };
 
 }  // namespace blink

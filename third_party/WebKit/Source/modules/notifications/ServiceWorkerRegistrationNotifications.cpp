@@ -35,15 +35,15 @@ class NotificationArray {
  public:
   using WebType = const WebVector<WebPersistentNotificationInfo>&;
 
-  static HeapVector<Member<Notification>> take(
+  static HeapVector<Member<Notification>> Take(
       ScriptPromiseResolver* resolver,
-      const WebVector<WebPersistentNotificationInfo>& notificationInfos) {
+      const WebVector<WebPersistentNotificationInfo>& notification_infos) {
     HeapVector<Member<Notification>> notifications;
-    for (const WebPersistentNotificationInfo& notificationInfo :
-         notificationInfos)
-      notifications.push_back(Notification::create(
-          resolver->getExecutionContext(), notificationInfo.notificationId,
-          notificationInfo.data, true /* showing */));
+    for (const WebPersistentNotificationInfo& notification_info :
+         notification_infos)
+      notifications.push_back(Notification::Create(
+          resolver->GetExecutionContext(), notification_info.notification_id,
+          notification_info.data, true /* showing */));
 
     return notifications;
   }
@@ -55,146 +55,146 @@ class NotificationArray {
 }  // namespace
 
 ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     ServiceWorkerRegistration* registration)
-    : ContextLifecycleObserver(executionContext),
-      m_registration(registration) {}
+    : ContextLifecycleObserver(execution_context),
+      registration_(registration) {}
 
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     ServiceWorkerRegistration& registration,
     const String& title,
     const NotificationOptions& options,
-    ExceptionState& exceptionState) {
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
+    ExceptionState& exception_state) {
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
 
   // If context object's active worker is null, reject the promise with a
   // TypeError exception.
   if (!registration.active())
-    return ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(scriptState->isolate(),
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
                                           "No active registration available on "
                                           "the ServiceWorkerRegistration."));
 
   // If permission for notification's origin is not "granted", reject the
   // promise with a TypeError exception, and terminate these substeps.
-  if (NotificationManager::from(executionContext)
-          ->permissionStatus(executionContext) !=
+  if (NotificationManager::From(execution_context)
+          ->GetPermissionStatus(execution_context) !=
       mojom::blink::PermissionStatus::GRANTED)
-    return ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(
-            scriptState->isolate(),
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(),
             "No notification permission has been granted for this origin."));
 
   // Validate the developer-provided options to get the WebNotificationData.
-  WebNotificationData data = createWebNotificationData(executionContext, title,
-                                                       options, exceptionState);
-  if (exceptionState.hadException())
-    return exceptionState.reject(scriptState);
+  WebNotificationData data = CreateWebNotificationData(
+      execution_context, title, options, exception_state);
+  if (exception_state.HadException())
+    return exception_state.Reject(script_state);
 
   // Log number of actions developer provided in linear histogram:
   //     0    -> underflow bucket,
   //     1-16 -> distinct buckets,
   //     17+  -> overflow bucket.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, notificationCountHistogram,
+      EnumerationHistogram, notification_count_histogram,
       new EnumerationHistogram(
           "Notifications.PersistentNotificationActionCount", 17));
-  notificationCountHistogram.count(options.actions().size());
+  notification_count_histogram.Count(options.actions().size());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   std::unique_ptr<WebNotificationShowCallbacks> callbacks =
-      WTF::wrapUnique(new CallbackPromiseAdapter<void, void>(resolver));
-  ServiceWorkerRegistrationNotifications::from(executionContext, registration)
-      .prepareShow(data, std::move(callbacks));
+      WTF::WrapUnique(new CallbackPromiseAdapter<void, void>(resolver));
+  ServiceWorkerRegistrationNotifications::From(execution_context, registration)
+      .PrepareShow(data, std::move(callbacks));
 
   return promise;
 }
 
 ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     ServiceWorkerRegistration& registration,
     const GetNotificationOptions& options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   auto callbacks =
-      WTF::makeUnique<CallbackPromiseAdapter<NotificationArray, void>>(
+      WTF::MakeUnique<CallbackPromiseAdapter<NotificationArray, void>>(
           resolver);
 
-  WebNotificationManager* notificationManager =
-      Platform::current()->notificationManager();
-  DCHECK(notificationManager);
+  WebNotificationManager* notification_manager =
+      Platform::Current()->GetNotificationManager();
+  DCHECK(notification_manager);
 
-  notificationManager->getNotifications(
-      options.tag(), registration.webRegistration(), std::move(callbacks));
+  notification_manager->GetNotifications(
+      options.tag(), registration.WebRegistration(), std::move(callbacks));
   return promise;
 }
 
-void ServiceWorkerRegistrationNotifications::contextDestroyed(
+void ServiceWorkerRegistrationNotifications::ContextDestroyed(
     ExecutionContext*) {
-  for (auto loader : m_loaders)
-    loader->stop();
+  for (auto loader : loaders_)
+    loader->Stop();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationNotifications) {
-  visitor->trace(m_registration);
-  visitor->trace(m_loaders);
-  Supplement<ServiceWorkerRegistration>::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(registration_);
+  visitor->Trace(loaders_);
+  Supplement<ServiceWorkerRegistration>::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-const char* ServiceWorkerRegistrationNotifications::supplementName() {
+const char* ServiceWorkerRegistrationNotifications::SupplementName() {
   return "ServiceWorkerRegistrationNotifications";
 }
 
 ServiceWorkerRegistrationNotifications&
-ServiceWorkerRegistrationNotifications::from(
-    ExecutionContext* executionContext,
+ServiceWorkerRegistrationNotifications::From(
+    ExecutionContext* execution_context,
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationNotifications* supplement =
       static_cast<ServiceWorkerRegistrationNotifications*>(
-          Supplement<ServiceWorkerRegistration>::from(registration,
-                                                      supplementName()));
+          Supplement<ServiceWorkerRegistration>::From(registration,
+                                                      SupplementName()));
   if (!supplement) {
-    supplement = new ServiceWorkerRegistrationNotifications(executionContext,
+    supplement = new ServiceWorkerRegistrationNotifications(execution_context,
                                                             &registration);
-    provideTo(registration, supplementName(), supplement);
+    ProvideTo(registration, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-void ServiceWorkerRegistrationNotifications::prepareShow(
+void ServiceWorkerRegistrationNotifications::PrepareShow(
     const WebNotificationData& data,
     std::unique_ptr<WebNotificationShowCallbacks> callbacks) {
-  RefPtr<SecurityOrigin> origin = getExecutionContext()->getSecurityOrigin();
+  RefPtr<SecurityOrigin> origin = GetExecutionContext()->GetSecurityOrigin();
   NotificationResourcesLoader* loader = new NotificationResourcesLoader(
-      WTF::bind(&ServiceWorkerRegistrationNotifications::didLoadResources,
-                wrapWeakPersistent(this), origin.release(), data,
-                WTF::passed(std::move(callbacks))));
-  m_loaders.insert(loader);
-  loader->start(getExecutionContext(), data);
+      WTF::Bind(&ServiceWorkerRegistrationNotifications::DidLoadResources,
+                WrapWeakPersistent(this), origin.Release(), data,
+                WTF::Passed(std::move(callbacks))));
+  loaders_.insert(loader);
+  loader->Start(GetExecutionContext(), data);
 }
 
-void ServiceWorkerRegistrationNotifications::didLoadResources(
+void ServiceWorkerRegistrationNotifications::DidLoadResources(
     PassRefPtr<SecurityOrigin> origin,
     const WebNotificationData& data,
     std::unique_ptr<WebNotificationShowCallbacks> callbacks,
     NotificationResourcesLoader* loader) {
-  DCHECK(m_loaders.contains(loader));
+  DCHECK(loaders_.Contains(loader));
 
-  WebNotificationManager* notificationManager =
-      Platform::current()->notificationManager();
-  DCHECK(notificationManager);
+  WebNotificationManager* notification_manager =
+      Platform::Current()->GetNotificationManager();
+  DCHECK(notification_manager);
 
-  notificationManager->showPersistent(
-      WebSecurityOrigin(origin.get()), data, loader->getResources(),
-      m_registration->webRegistration(), std::move(callbacks));
-  m_loaders.erase(loader);
+  notification_manager->ShowPersistent(
+      WebSecurityOrigin(origin.Get()), data, loader->GetResources(),
+      registration_->WebRegistration(), std::move(callbacks));
+  loaders_.erase(loader);
 }
 
 }  // namespace blink

@@ -18,8 +18,8 @@ class CORE_EXPORT DOMNodeIds {
   STATIC_ONLY(DOMNodeIds);
 
  public:
-  static int idForNode(Node*);
-  static Node* nodeForId(int id);
+  static int IdForNode(Node*);
+  static Node* NodeForId(int id);
 };
 
 }  // namespace blink

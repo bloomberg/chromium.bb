@@ -128,14 +128,14 @@ class MockWebServiceWorkerProviderClientImpl
     dispatcher_->RemoveProviderClient(provider_id_);
   }
 
-  void setController(std::unique_ptr<blink::WebServiceWorker::Handle> handle,
+  void SetController(std::unique_ptr<blink::WebServiceWorker::Handle> handle,
                      bool shouldNotifyControllerChange) override {
     // WebPassOwnPtr cannot be owned in Chromium, so drop the handle here.
     // The destruction releases ServiceWorkerHandleReference.
     is_set_controlled_called_ = true;
   }
 
-  void dispatchMessageEvent(
+  void DispatchMessageEvent(
       std::unique_ptr<blink::WebServiceWorker::Handle> handle,
       const blink::WebString& message,
       blink::WebMessagePortChannelArray channels) override {
@@ -144,7 +144,7 @@ class MockWebServiceWorkerProviderClientImpl
     is_dispatch_message_event_called_ = true;
   }
 
-  void countFeature(uint32_t feature) override {
+  void CountFeature(uint32_t feature) override {
     used_features_.insert(feature);
   }
 
@@ -447,7 +447,7 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
       dispatcher()->GetOrCreateRegistration(info, attrs));
   EXPECT_TRUE(registration1);
   EXPECT_TRUE(ContainsRegistration(info.handle_id));
-  EXPECT_EQ(info.registration_id, registration1->registrationId());
+  EXPECT_EQ(info.registration_id, registration1->RegistrationId());
   ASSERT_EQ(4UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_IncrementRegistrationRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -495,7 +495,7 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrAdoptRegistration) {
       dispatcher()->GetOrAdoptRegistration(info, attrs));
   EXPECT_TRUE(registration1);
   EXPECT_TRUE(ContainsRegistration(info.handle_id));
-  EXPECT_EQ(info.registration_id, registration1->registrationId());
+  EXPECT_EQ(info.registration_id, registration1->RegistrationId());
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   ipc_sink()->ClearMessages();

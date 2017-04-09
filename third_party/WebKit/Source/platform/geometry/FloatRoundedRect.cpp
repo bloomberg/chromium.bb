@@ -36,235 +36,239 @@
 namespace blink {
 
 FloatRoundedRect::FloatRoundedRect(float x, float y, float width, float height)
-    : m_rect(x, y, width, height) {}
+    : rect_(x, y, width, height) {}
 
 FloatRoundedRect::FloatRoundedRect(const FloatRect& rect, const Radii& radii)
-    : m_rect(rect), m_radii(radii) {}
+    : rect_(rect), radii_(radii) {}
 
 FloatRoundedRect::FloatRoundedRect(const FloatRect& rect,
-                                   const FloatSize& topLeft,
-                                   const FloatSize& topRight,
-                                   const FloatSize& bottomLeft,
-                                   const FloatSize& bottomRight)
-    : m_rect(rect), m_radii(topLeft, topRight, bottomLeft, bottomRight) {}
+                                   const FloatSize& top_left,
+                                   const FloatSize& top_right,
+                                   const FloatSize& bottom_left,
+                                   const FloatSize& bottom_right)
+    : rect_(rect), radii_(top_left, top_right, bottom_left, bottom_right) {}
 
-bool FloatRoundedRect::Radii::isZero() const {
-  return m_topLeft.isZero() && m_topRight.isZero() && m_bottomLeft.isZero() &&
-         m_bottomRight.isZero();
+bool FloatRoundedRect::Radii::IsZero() const {
+  return top_left_.IsZero() && top_right_.IsZero() && bottom_left_.IsZero() &&
+         bottom_right_.IsZero();
 }
 
-void FloatRoundedRect::Radii::scale(float factor) {
+void FloatRoundedRect::Radii::Scale(float factor) {
   if (factor == 1)
     return;
 
   // If either radius on a corner becomes zero, reset both radii on that corner.
-  m_topLeft.scale(factor);
-  if (!m_topLeft.width() || !m_topLeft.height())
-    m_topLeft = FloatSize();
-  m_topRight.scale(factor);
-  if (!m_topRight.width() || !m_topRight.height())
-    m_topRight = FloatSize();
-  m_bottomLeft.scale(factor);
-  if (!m_bottomLeft.width() || !m_bottomLeft.height())
-    m_bottomLeft = FloatSize();
-  m_bottomRight.scale(factor);
-  if (!m_bottomRight.width() || !m_bottomRight.height())
-    m_bottomRight = FloatSize();
+  top_left_.Scale(factor);
+  if (!top_left_.Width() || !top_left_.Height())
+    top_left_ = FloatSize();
+  top_right_.Scale(factor);
+  if (!top_right_.Width() || !top_right_.Height())
+    top_right_ = FloatSize();
+  bottom_left_.Scale(factor);
+  if (!bottom_left_.Width() || !bottom_left_.Height())
+    bottom_left_ = FloatSize();
+  bottom_right_.Scale(factor);
+  if (!bottom_right_.Width() || !bottom_right_.Height())
+    bottom_right_ = FloatSize();
 }
 
-void FloatRoundedRect::Radii::scaleAndFloor(float factor) {
+void FloatRoundedRect::Radii::ScaleAndFloor(float factor) {
   if (factor == 1)
     return;
 
   // If either radius on a corner becomes zero, reset both radii on that corner.
-  m_topLeft.scaleAndFloor(factor);
-  if (!m_topLeft.width() || !m_topLeft.height())
-    m_topLeft = FloatSize();
-  m_topRight.scaleAndFloor(factor);
-  if (!m_topRight.width() || !m_topRight.height())
-    m_topRight = FloatSize();
-  m_bottomLeft.scaleAndFloor(factor);
-  if (!m_bottomLeft.width() || !m_bottomLeft.height())
-    m_bottomLeft = FloatSize();
-  m_bottomRight.scaleAndFloor(factor);
-  if (!m_bottomRight.width() || !m_bottomRight.height())
-    m_bottomRight = FloatSize();
+  top_left_.ScaleAndFloor(factor);
+  if (!top_left_.Width() || !top_left_.Height())
+    top_left_ = FloatSize();
+  top_right_.ScaleAndFloor(factor);
+  if (!top_right_.Width() || !top_right_.Height())
+    top_right_ = FloatSize();
+  bottom_left_.ScaleAndFloor(factor);
+  if (!bottom_left_.Width() || !bottom_left_.Height())
+    bottom_left_ = FloatSize();
+  bottom_right_.ScaleAndFloor(factor);
+  if (!bottom_right_.Width() || !bottom_right_.Height())
+    bottom_right_ = FloatSize();
 }
 
-void FloatRoundedRect::Radii::shrink(float topWidth,
-                                     float bottomWidth,
-                                     float leftWidth,
-                                     float rightWidth) {
-  ASSERT(topWidth >= 0 && bottomWidth >= 0 && leftWidth >= 0 &&
-         rightWidth >= 0);
+void FloatRoundedRect::Radii::Shrink(float top_width,
+                                     float bottom_width,
+                                     float left_width,
+                                     float right_width) {
+  ASSERT(top_width >= 0 && bottom_width >= 0 && left_width >= 0 &&
+         right_width >= 0);
 
-  m_topLeft.setWidth(std::max<float>(0, m_topLeft.width() - leftWidth));
-  m_topLeft.setHeight(std::max<float>(0, m_topLeft.height() - topWidth));
+  top_left_.SetWidth(std::max<float>(0, top_left_.Width() - left_width));
+  top_left_.SetHeight(std::max<float>(0, top_left_.Height() - top_width));
 
-  m_topRight.setWidth(std::max<float>(0, m_topRight.width() - rightWidth));
-  m_topRight.setHeight(std::max<float>(0, m_topRight.height() - topWidth));
+  top_right_.SetWidth(std::max<float>(0, top_right_.Width() - right_width));
+  top_right_.SetHeight(std::max<float>(0, top_right_.Height() - top_width));
 
-  m_bottomLeft.setWidth(std::max<float>(0, m_bottomLeft.width() - leftWidth));
-  m_bottomLeft.setHeight(
-      std::max<float>(0, m_bottomLeft.height() - bottomWidth));
+  bottom_left_.SetWidth(std::max<float>(0, bottom_left_.Width() - left_width));
+  bottom_left_.SetHeight(
+      std::max<float>(0, bottom_left_.Height() - bottom_width));
 
-  m_bottomRight.setWidth(
-      std::max<float>(0, m_bottomRight.width() - rightWidth));
-  m_bottomRight.setHeight(
-      std::max<float>(0, m_bottomRight.height() - bottomWidth));
+  bottom_right_.SetWidth(
+      std::max<float>(0, bottom_right_.Width() - right_width));
+  bottom_right_.SetHeight(
+      std::max<float>(0, bottom_right_.Height() - bottom_width));
 }
 
-void FloatRoundedRect::Radii::expand(float topWidth,
-                                     float bottomWidth,
-                                     float leftWidth,
-                                     float rightWidth) {
-  ASSERT(topWidth >= 0 && bottomWidth >= 0 && leftWidth >= 0 &&
-         rightWidth >= 0);
-  if (m_topLeft.width() > 0 && m_topLeft.height() > 0) {
-    m_topLeft.setWidth(m_topLeft.width() + leftWidth);
-    m_topLeft.setHeight(m_topLeft.height() + topWidth);
+void FloatRoundedRect::Radii::Expand(float top_width,
+                                     float bottom_width,
+                                     float left_width,
+                                     float right_width) {
+  ASSERT(top_width >= 0 && bottom_width >= 0 && left_width >= 0 &&
+         right_width >= 0);
+  if (top_left_.Width() > 0 && top_left_.Height() > 0) {
+    top_left_.SetWidth(top_left_.Width() + left_width);
+    top_left_.SetHeight(top_left_.Height() + top_width);
   }
-  if (m_topRight.width() > 0 && m_topRight.height() > 0) {
-    m_topRight.setWidth(m_topRight.width() + rightWidth);
-    m_topRight.setHeight(m_topRight.height() + topWidth);
+  if (top_right_.Width() > 0 && top_right_.Height() > 0) {
+    top_right_.SetWidth(top_right_.Width() + right_width);
+    top_right_.SetHeight(top_right_.Height() + top_width);
   }
-  if (m_bottomLeft.width() > 0 && m_bottomLeft.height() > 0) {
-    m_bottomLeft.setWidth(m_bottomLeft.width() + leftWidth);
-    m_bottomLeft.setHeight(m_bottomLeft.height() + bottomWidth);
+  if (bottom_left_.Width() > 0 && bottom_left_.Height() > 0) {
+    bottom_left_.SetWidth(bottom_left_.Width() + left_width);
+    bottom_left_.SetHeight(bottom_left_.Height() + bottom_width);
   }
-  if (m_bottomRight.width() > 0 && m_bottomRight.height() > 0) {
-    m_bottomRight.setWidth(m_bottomRight.width() + rightWidth);
-    m_bottomRight.setHeight(m_bottomRight.height() + bottomWidth);
+  if (bottom_right_.Width() > 0 && bottom_right_.Height() > 0) {
+    bottom_right_.SetWidth(bottom_right_.Width() + right_width);
+    bottom_right_.SetHeight(bottom_right_.Height() + bottom_width);
   }
 }
 
-static inline float cornerRectIntercept(float y, const FloatRect& cornerRect) {
-  ASSERT(cornerRect.height() > 0);
-  return cornerRect.width() *
-         sqrt(1 - (y * y) / (cornerRect.height() * cornerRect.height()));
+static inline float CornerRectIntercept(float y, const FloatRect& corner_rect) {
+  ASSERT(corner_rect.Height() > 0);
+  return corner_rect.Width() *
+         sqrt(1 - (y * y) / (corner_rect.Height() * corner_rect.Height()));
 }
 
-FloatRect FloatRoundedRect::radiusCenterRect() const {
-  FloatRectOutsets maximumRadiusInsets(
-      -std::max(m_radii.topLeft().height(), m_radii.topRight().height()),
-      -std::max(m_radii.topRight().width(), m_radii.bottomRight().width()),
-      -std::max(m_radii.bottomLeft().height(), m_radii.bottomRight().height()),
-      -std::max(m_radii.topLeft().width(), m_radii.bottomLeft().width()));
-  FloatRect centerRect(m_rect);
-  centerRect.expand(maximumRadiusInsets);
-  return centerRect;
+FloatRect FloatRoundedRect::RadiusCenterRect() const {
+  FloatRectOutsets maximum_radius_insets(
+      -std::max(radii_.TopLeft().Height(), radii_.TopRight().Height()),
+      -std::max(radii_.TopRight().Width(), radii_.BottomRight().Width()),
+      -std::max(radii_.BottomLeft().Height(), radii_.BottomRight().Height()),
+      -std::max(radii_.TopLeft().Width(), radii_.BottomLeft().Width()));
+  FloatRect center_rect(rect_);
+  center_rect.Expand(maximum_radius_insets);
+  return center_rect;
 }
 
-bool FloatRoundedRect::xInterceptsAtY(float y,
-                                      float& minXIntercept,
-                                      float& maxXIntercept) const {
-  if (y < rect().y() || y > rect().maxY())
+bool FloatRoundedRect::XInterceptsAtY(float y,
+                                      float& min_x_intercept,
+                                      float& max_x_intercept) const {
+  if (y < Rect().Y() || y > Rect().MaxY())
     return false;
 
-  if (!isRounded()) {
-    minXIntercept = rect().x();
-    maxXIntercept = rect().maxX();
+  if (!IsRounded()) {
+    min_x_intercept = Rect().X();
+    max_x_intercept = Rect().MaxX();
     return true;
   }
 
-  const FloatRect& topLeftRect = topLeftCorner();
-  const FloatRect& bottomLeftRect = bottomLeftCorner();
+  const FloatRect& top_left_rect = TopLeftCorner();
+  const FloatRect& bottom_left_rect = BottomLeftCorner();
 
-  if (!topLeftRect.isEmpty() && y >= topLeftRect.y() && y < topLeftRect.maxY())
-    minXIntercept = topLeftRect.maxX() -
-                    cornerRectIntercept(topLeftRect.maxY() - y, topLeftRect);
-  else if (!bottomLeftRect.isEmpty() && y >= bottomLeftRect.y() &&
-           y <= bottomLeftRect.maxY())
-    minXIntercept = bottomLeftRect.maxX() -
-                    cornerRectIntercept(y - bottomLeftRect.y(), bottomLeftRect);
+  if (!top_left_rect.IsEmpty() && y >= top_left_rect.Y() &&
+      y < top_left_rect.MaxY())
+    min_x_intercept =
+        top_left_rect.MaxX() -
+        CornerRectIntercept(top_left_rect.MaxY() - y, top_left_rect);
+  else if (!bottom_left_rect.IsEmpty() && y >= bottom_left_rect.Y() &&
+           y <= bottom_left_rect.MaxY())
+    min_x_intercept =
+        bottom_left_rect.MaxX() -
+        CornerRectIntercept(y - bottom_left_rect.Y(), bottom_left_rect);
   else
-    minXIntercept = m_rect.x();
+    min_x_intercept = rect_.X();
 
-  const FloatRect& topRightRect = topRightCorner();
-  const FloatRect& bottomRightRect = bottomRightCorner();
+  const FloatRect& top_right_rect = TopRightCorner();
+  const FloatRect& bottom_right_rect = BottomRightCorner();
 
-  if (!topRightRect.isEmpty() && y >= topRightRect.y() &&
-      y <= topRightRect.maxY())
-    maxXIntercept = topRightRect.x() +
-                    cornerRectIntercept(topRightRect.maxY() - y, topRightRect);
-  else if (!bottomRightRect.isEmpty() && y >= bottomRightRect.y() &&
-           y <= bottomRightRect.maxY())
-    maxXIntercept =
-        bottomRightRect.x() +
-        cornerRectIntercept(y - bottomRightRect.y(), bottomRightRect);
+  if (!top_right_rect.IsEmpty() && y >= top_right_rect.Y() &&
+      y <= top_right_rect.MaxY())
+    max_x_intercept =
+        top_right_rect.X() +
+        CornerRectIntercept(top_right_rect.MaxY() - y, top_right_rect);
+  else if (!bottom_right_rect.IsEmpty() && y >= bottom_right_rect.Y() &&
+           y <= bottom_right_rect.MaxY())
+    max_x_intercept =
+        bottom_right_rect.X() +
+        CornerRectIntercept(y - bottom_right_rect.Y(), bottom_right_rect);
   else
-    maxXIntercept = m_rect.maxX();
+    max_x_intercept = rect_.MaxX();
 
   return true;
 }
 
-void FloatRoundedRect::inflateWithRadii(int size) {
-  FloatRect old = m_rect;
+void FloatRoundedRect::InflateWithRadii(int size) {
+  FloatRect old = rect_;
 
-  m_rect.inflate(size);
+  rect_.Inflate(size);
   // Considering the inflation factor of shorter size to scale the radii seems
   // appropriate here
   float factor;
-  if (m_rect.width() < m_rect.height())
-    factor = old.width() ? (float)m_rect.width() / old.width() : int(0);
+  if (rect_.Width() < rect_.Height())
+    factor = old.Width() ? (float)rect_.Width() / old.Width() : int(0);
   else
-    factor = old.height() ? (float)m_rect.height() / old.height() : int(0);
+    factor = old.Height() ? (float)rect_.Height() / old.Height() : int(0);
 
-  m_radii.scale(factor);
+  radii_.Scale(factor);
 }
 
-bool FloatRoundedRect::intersectsQuad(const FloatQuad& quad) const {
-  if (!quad.intersectsRect(m_rect))
+bool FloatRoundedRect::IntersectsQuad(const FloatQuad& quad) const {
+  if (!quad.IntersectsRect(rect_))
     return false;
 
-  const FloatSize& topLeft = m_radii.topLeft();
-  if (!topLeft.isEmpty()) {
-    FloatRect rect(m_rect.x(), m_rect.y(), topLeft.width(), topLeft.height());
-    if (quad.intersectsRect(rect)) {
-      FloatPoint center(m_rect.x() + topLeft.width(),
-                        m_rect.y() + topLeft.height());
-      FloatSize size(topLeft.width(), topLeft.height());
-      if (!quad.intersectsEllipse(center, size))
+  const FloatSize& top_left = radii_.TopLeft();
+  if (!top_left.IsEmpty()) {
+    FloatRect rect(rect_.X(), rect_.Y(), top_left.Width(), top_left.Height());
+    if (quad.IntersectsRect(rect)) {
+      FloatPoint center(rect_.X() + top_left.Width(),
+                        rect_.Y() + top_left.Height());
+      FloatSize size(top_left.Width(), top_left.Height());
+      if (!quad.IntersectsEllipse(center, size))
         return false;
     }
   }
 
-  const FloatSize& topRight = m_radii.topRight();
-  if (!topRight.isEmpty()) {
-    FloatRect rect(m_rect.maxX() - topRight.width(), m_rect.y(),
-                   topRight.width(), topRight.height());
-    if (quad.intersectsRect(rect)) {
-      FloatPoint center(m_rect.maxX() - topRight.width(),
-                        m_rect.y() + topRight.height());
-      FloatSize size(topRight.width(), topRight.height());
-      if (!quad.intersectsEllipse(center, size))
+  const FloatSize& top_right = radii_.TopRight();
+  if (!top_right.IsEmpty()) {
+    FloatRect rect(rect_.MaxX() - top_right.Width(), rect_.Y(),
+                   top_right.Width(), top_right.Height());
+    if (quad.IntersectsRect(rect)) {
+      FloatPoint center(rect_.MaxX() - top_right.Width(),
+                        rect_.Y() + top_right.Height());
+      FloatSize size(top_right.Width(), top_right.Height());
+      if (!quad.IntersectsEllipse(center, size))
         return false;
     }
   }
 
-  const FloatSize& bottomLeft = m_radii.bottomLeft();
-  if (!bottomLeft.isEmpty()) {
-    FloatRect rect(m_rect.x(), m_rect.maxY() - bottomLeft.height(),
-                   bottomLeft.width(), bottomLeft.height());
-    if (quad.intersectsRect(rect)) {
-      FloatPoint center(m_rect.x() + bottomLeft.width(),
-                        m_rect.maxY() - bottomLeft.height());
-      FloatSize size(bottomLeft.width(), bottomLeft.height());
-      if (!quad.intersectsEllipse(center, size))
+  const FloatSize& bottom_left = radii_.BottomLeft();
+  if (!bottom_left.IsEmpty()) {
+    FloatRect rect(rect_.X(), rect_.MaxY() - bottom_left.Height(),
+                   bottom_left.Width(), bottom_left.Height());
+    if (quad.IntersectsRect(rect)) {
+      FloatPoint center(rect_.X() + bottom_left.Width(),
+                        rect_.MaxY() - bottom_left.Height());
+      FloatSize size(bottom_left.Width(), bottom_left.Height());
+      if (!quad.IntersectsEllipse(center, size))
         return false;
     }
   }
 
-  const FloatSize& bottomRight = m_radii.bottomRight();
-  if (!bottomRight.isEmpty()) {
-    FloatRect rect(m_rect.maxX() - bottomRight.width(),
-                   m_rect.maxY() - bottomRight.height(), bottomRight.width(),
-                   bottomRight.height());
-    if (quad.intersectsRect(rect)) {
-      FloatPoint center(m_rect.maxX() - bottomRight.width(),
-                        m_rect.maxY() - bottomRight.height());
-      FloatSize size(bottomRight.width(), bottomRight.height());
-      if (!quad.intersectsEllipse(center, size))
+  const FloatSize& bottom_right = radii_.BottomRight();
+  if (!bottom_right.IsEmpty()) {
+    FloatRect rect(rect_.MaxX() - bottom_right.Width(),
+                   rect_.MaxY() - bottom_right.Height(), bottom_right.Width(),
+                   bottom_right.Height());
+    if (quad.IntersectsRect(rect)) {
+      FloatPoint center(rect_.MaxX() - bottom_right.Width(),
+                        rect_.MaxY() - bottom_right.Height());
+      FloatSize size(bottom_right.Width(), bottom_right.Height());
+      if (!quad.IntersectsEllipse(center, size))
         return false;
     }
   }
@@ -272,110 +276,110 @@ bool FloatRoundedRect::intersectsQuad(const FloatQuad& quad) const {
   return true;
 }
 
-void FloatRoundedRect::Radii::includeLogicalEdges(
+void FloatRoundedRect::Radii::IncludeLogicalEdges(
     const FloatRoundedRect::Radii& edges,
-    bool isHorizontal,
-    bool includeLogicalLeftEdge,
-    bool includeLogicalRightEdge) {
-  if (includeLogicalLeftEdge) {
-    if (isHorizontal)
-      m_bottomLeft = edges.bottomLeft();
+    bool is_horizontal,
+    bool include_logical_left_edge,
+    bool include_logical_right_edge) {
+  if (include_logical_left_edge) {
+    if (is_horizontal)
+      bottom_left_ = edges.BottomLeft();
     else
-      m_topRight = edges.topRight();
-    m_topLeft = edges.topLeft();
+      top_right_ = edges.TopRight();
+    top_left_ = edges.TopLeft();
   }
 
-  if (includeLogicalRightEdge) {
-    if (isHorizontal)
-      m_topRight = edges.topRight();
+  if (include_logical_right_edge) {
+    if (is_horizontal)
+      top_right_ = edges.TopRight();
     else
-      m_bottomLeft = edges.bottomLeft();
-    m_bottomRight = edges.bottomRight();
+      bottom_left_ = edges.BottomLeft();
+    bottom_right_ = edges.BottomRight();
   }
 }
 
-float calcBorderRadiiConstraintScaleFor(const FloatRect& rect,
+float CalcBorderRadiiConstraintScaleFor(const FloatRect& rect,
                                         const FloatRoundedRect::Radii& radii) {
   float factor = 1;
-  float radiiSum;
+  float radii_sum;
 
   // top
-  radiiSum = radii.topLeft().width() +
-             radii.topRight().width();  // Casts to avoid integer overflow.
-  if (radiiSum > rect.width())
-    factor = std::min(rect.width() / radiiSum, factor);
+  radii_sum = radii.TopLeft().Width() +
+              radii.TopRight().Width();  // Casts to avoid integer overflow.
+  if (radii_sum > rect.Width())
+    factor = std::min(rect.Width() / radii_sum, factor);
 
   // bottom
-  radiiSum = radii.bottomLeft().width() + radii.bottomRight().width();
-  if (radiiSum > rect.width())
-    factor = std::min(rect.width() / radiiSum, factor);
+  radii_sum = radii.BottomLeft().Width() + radii.BottomRight().Width();
+  if (radii_sum > rect.Width())
+    factor = std::min(rect.Width() / radii_sum, factor);
 
   // left
-  radiiSum = radii.topLeft().height() + radii.bottomLeft().height();
-  if (radiiSum > rect.height())
-    factor = std::min(rect.height() / radiiSum, factor);
+  radii_sum = radii.TopLeft().Height() + radii.BottomLeft().Height();
+  if (radii_sum > rect.Height())
+    factor = std::min(rect.Height() / radii_sum, factor);
 
   // right
-  radiiSum = radii.topRight().height() + radii.bottomRight().height();
-  if (radiiSum > rect.height())
-    factor = std::min(rect.height() / radiiSum, factor);
+  radii_sum = radii.TopRight().Height() + radii.BottomRight().Height();
+  if (radii_sum > rect.Height())
+    factor = std::min(rect.Height() / radii_sum, factor);
 
   ASSERT(factor <= 1);
   return factor;
 }
 
-void FloatRoundedRect::constrainRadii() {
-  m_radii.scaleAndFloor(calcBorderRadiiConstraintScaleFor(rect(), getRadii()));
+void FloatRoundedRect::ConstrainRadii() {
+  radii_.ScaleAndFloor(CalcBorderRadiiConstraintScaleFor(Rect(), GetRadii()));
 }
 
-void FloatRoundedRect::includeLogicalEdges(const Radii& edges,
-                                           bool isHorizontal,
-                                           bool includeLogicalLeftEdge,
-                                           bool includeLogicalRightEdge) {
-  m_radii.includeLogicalEdges(edges, isHorizontal, includeLogicalLeftEdge,
-                              includeLogicalRightEdge);
+void FloatRoundedRect::IncludeLogicalEdges(const Radii& edges,
+                                           bool is_horizontal,
+                                           bool include_logical_left_edge,
+                                           bool include_logical_right_edge) {
+  radii_.IncludeLogicalEdges(edges, is_horizontal, include_logical_left_edge,
+                             include_logical_right_edge);
 }
 
-bool FloatRoundedRect::isRenderable() const {
+bool FloatRoundedRect::IsRenderable() const {
   // FIXME: remove the 0.0001 slop once this class is converted to layout units.
-  return m_radii.topLeft().width() + m_radii.topRight().width() <=
-             m_rect.width() + 0.0001 &&
-         m_radii.bottomLeft().width() + m_radii.bottomRight().width() <=
-             m_rect.width() + 0.0001 &&
-         m_radii.topLeft().height() + m_radii.bottomLeft().height() <=
-             m_rect.height() + 0.0001 &&
-         m_radii.topRight().height() + m_radii.bottomRight().height() <=
-             m_rect.height() + 0.0001;
+  return radii_.TopLeft().Width() + radii_.TopRight().Width() <=
+             rect_.Width() + 0.0001 &&
+         radii_.BottomLeft().Width() + radii_.BottomRight().Width() <=
+             rect_.Width() + 0.0001 &&
+         radii_.TopLeft().Height() + radii_.BottomLeft().Height() <=
+             rect_.Height() + 0.0001 &&
+         radii_.TopRight().Height() + radii_.BottomRight().Height() <=
+             rect_.Height() + 0.0001;
 }
 
-void FloatRoundedRect::adjustRadii() {
-  float maxRadiusWidth =
-      std::max(m_radii.topLeft().width() + m_radii.topRight().width(),
-               m_radii.bottomLeft().width() + m_radii.bottomRight().width());
-  float maxRadiusHeight =
-      std::max(m_radii.topLeft().height() + m_radii.bottomLeft().height(),
-               m_radii.topRight().height() + m_radii.bottomRight().height());
+void FloatRoundedRect::AdjustRadii() {
+  float max_radius_width =
+      std::max(radii_.TopLeft().Width() + radii_.TopRight().Width(),
+               radii_.BottomLeft().Width() + radii_.BottomRight().Width());
+  float max_radius_height =
+      std::max(radii_.TopLeft().Height() + radii_.BottomLeft().Height(),
+               radii_.TopRight().Height() + radii_.BottomRight().Height());
 
-  if (maxRadiusWidth <= 0 || maxRadiusHeight <= 0) {
-    m_radii.scale(0.0f);
+  if (max_radius_width <= 0 || max_radius_height <= 0) {
+    radii_.Scale(0.0f);
     return;
   }
-  float widthRatio = static_cast<float>(m_rect.width()) / maxRadiusWidth;
-  float heightRatio = static_cast<float>(m_rect.height()) / maxRadiusHeight;
-  m_radii.scale(widthRatio < heightRatio ? widthRatio : heightRatio);
+  float width_ratio = static_cast<float>(rect_.Width()) / max_radius_width;
+  float height_ratio = static_cast<float>(rect_.Height()) / max_radius_height;
+  radii_.Scale(width_ratio < height_ratio ? width_ratio : height_ratio);
 }
 
-String FloatRoundedRect::Radii::toString() const {
-  return String::format("tl:%s; tr:%s; bl:%s; br:%s",
-                        topLeft().toString().ascii().data(),
-                        topRight().toString().ascii().data(),
-                        bottomLeft().toString().ascii().data(),
-                        bottomRight().toString().ascii().data());
+String FloatRoundedRect::Radii::ToString() const {
+  return String::Format("tl:%s; tr:%s; bl:%s; br:%s",
+                        TopLeft().ToString().Ascii().Data(),
+                        TopRight().ToString().Ascii().Data(),
+                        BottomLeft().ToString().Ascii().Data(),
+                        BottomRight().ToString().Ascii().Data());
 }
 
-String FloatRoundedRect::toString() const {
-  return String::format("%s radii:(%s)", rect().toString().ascii().data(),
-                        getRadii().toString().ascii().data());
+String FloatRoundedRect::ToString() const {
+  return String::Format("%s radii:(%s)", Rect().ToString().Ascii().Data(),
+                        GetRadii().ToString().Ascii().Data());
 }
 
 }  // namespace blink

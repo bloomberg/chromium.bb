@@ -25,98 +25,98 @@ class PartitionAllocatorDummyVisitor {
 class WTF_EXPORT PartitionAllocator {
  public:
   typedef PartitionAllocatorDummyVisitor Visitor;
-  static const bool isGarbageCollected = false;
+  static const bool kIsGarbageCollected = false;
 
-  template<typename T>
-  static size_t maxElementCountInBackingStore() {
+  template <typename T>
+  static size_t MaxElementCountInBackingStore() {
     return base::kGenericMaxDirectMapped / sizeof(T);
   }
 
   template <typename T>
-  static size_t quantizedSize(size_t count) {
-    CHECK_LE(count, maxElementCountInBackingStore<T>());
-    return PartitionAllocActualSize(WTF::Partitions::bufferPartition(),
+  static size_t QuantizedSize(size_t count) {
+    CHECK_LE(count, MaxElementCountInBackingStore<T>());
+    return PartitionAllocActualSize(WTF::Partitions::BufferPartition(),
                                     count * sizeof(T));
   }
   template <typename T>
-  static T* allocateVectorBacking(size_t size) {
+  static T* AllocateVectorBacking(size_t size) {
     return reinterpret_cast<T*>(
-        allocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
+        AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
   }
   template <typename T>
-  static T* allocateExpandedVectorBacking(size_t size) {
+  static T* AllocateExpandedVectorBacking(size_t size) {
     return reinterpret_cast<T*>(
-        allocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
+        AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
   }
-  static void freeVectorBacking(void* address);
-  static inline bool expandVectorBacking(void*, size_t) { return false; }
-  static inline bool shrinkVectorBacking(void* address,
-                                         size_t quantizedCurrentSize,
-                                         size_t quantizedShrunkSize) {
+  static void FreeVectorBacking(void* address);
+  static inline bool ExpandVectorBacking(void*, size_t) { return false; }
+  static inline bool ShrinkVectorBacking(void* address,
+                                         size_t quantized_current_size,
+                                         size_t quantized_shrunk_size) {
     // Optimization: if we're downsizing inside the same allocator bucket,
     // we can skip reallocation.
-    return quantizedCurrentSize == quantizedShrunkSize;
+    return quantized_current_size == quantized_shrunk_size;
   }
   template <typename T>
-  static T* allocateInlineVectorBacking(size_t size) {
-    return allocateVectorBacking<T>(size);
+  static T* AllocateInlineVectorBacking(size_t size) {
+    return AllocateVectorBacking<T>(size);
   }
-  static inline void freeInlineVectorBacking(void* address) {
-    freeVectorBacking(address);
+  static inline void FreeInlineVectorBacking(void* address) {
+    FreeVectorBacking(address);
   }
-  static inline bool expandInlineVectorBacking(void*, size_t) { return false; }
-  static inline bool shrinkInlineVectorBacking(void* address,
-                                               size_t quantizedCurrentSize,
-                                               size_t quantizedShrunkSize) {
-    return shrinkVectorBacking(address, quantizedCurrentSize,
-                               quantizedShrunkSize);
+  static inline bool ExpandInlineVectorBacking(void*, size_t) { return false; }
+  static inline bool ShrinkInlineVectorBacking(void* address,
+                                               size_t quantized_current_size,
+                                               size_t quantized_shrunk_size) {
+    return ShrinkVectorBacking(address, quantized_current_size,
+                               quantized_shrunk_size);
   }
 
   template <typename T, typename HashTable>
-  static T* allocateHashTableBacking(size_t size) {
+  static T* AllocateHashTableBacking(size_t size) {
     return reinterpret_cast<T*>(
-        allocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
+        AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
   }
   template <typename T, typename HashTable>
-  static T* allocateZeroedHashTableBacking(size_t size) {
-    void* result = allocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T));
+  static T* AllocateZeroedHashTableBacking(size_t size) {
+    void* result = AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T));
     memset(result, 0, size);
     return reinterpret_cast<T*>(result);
   }
-  static void freeHashTableBacking(void* address);
+  static void FreeHashTableBacking(void* address);
 
   template <typename Return, typename Metadata>
-  static Return malloc(size_t size, const char* typeName) {
+  static Return Malloc(size_t size, const char* type_name) {
     return reinterpret_cast<Return>(
-        WTF::Partitions::fastMalloc(size, typeName));
+        WTF::Partitions::FastMalloc(size, type_name));
   }
 
-  static inline bool expandHashTableBacking(void*, size_t) { return false; }
-  static void free(void* address) { WTF::Partitions::fastFree(address); }
+  static inline bool ExpandHashTableBacking(void*, size_t) { return false; }
+  static void Free(void* address) { WTF::Partitions::FastFree(address); }
   template <typename T>
-  static void* newArray(size_t bytes) {
-    return malloc<void*, void>(bytes, WTF_HEAP_PROFILER_TYPE_NAME(T));
+  static void* NewArray(size_t bytes) {
+    return Malloc<void*, void>(bytes, WTF_HEAP_PROFILER_TYPE_NAME(T));
   }
-  static void deleteArray(void* ptr) {
-    free(ptr);  // Not the system free, the one from this class.
+  static void DeleteArray(void* ptr) {
+    Free(ptr);  // Not the system free, the one from this class.
   }
 
-  static bool isAllocationAllowed() { return true; }
+  static bool IsAllocationAllowed() { return true; }
 
-  static void enterGCForbiddenScope() {}
-  static void leaveGCForbiddenScope() {}
+  static void EnterGCForbiddenScope() {}
+  static void LeaveGCForbiddenScope() {}
 
  private:
-  static void* allocateBacking(size_t, const char* typeName);
+  static void* AllocateBacking(size_t, const char* type_name);
 };
 
 // Specializations for heap profiling, so type profiling of |char| is possible
 // even in official builds (because |char| makes up a large portion of the
 // heap.)
 template <>
-WTF_EXPORT char* PartitionAllocator::allocateVectorBacking<char>(size_t);
+WTF_EXPORT char* PartitionAllocator::AllocateVectorBacking<char>(size_t);
 template <>
-WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(
+WTF_EXPORT char* PartitionAllocator::AllocateExpandedVectorBacking<char>(
     size_t);
 
 }  // namespace WTF
@@ -124,14 +124,14 @@ WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(
 #define USE_ALLOCATOR(ClassName, Allocator)                       \
  public:                                                          \
   void* operator new(size_t size) {                               \
-    return Allocator::template malloc<void*, ClassName>(          \
+    return Allocator::template Malloc<void*, ClassName>(          \
         size, WTF_HEAP_PROFILER_TYPE_NAME(ClassName));            \
   }                                                               \
-  void operator delete(void* p) { Allocator::free(p); }           \
+  void operator delete(void* p) { Allocator::Free(p); }           \
   void* operator new[](size_t size) {                             \
-    return Allocator::template newArray<ClassName>(size);         \
+    return Allocator::template NewArray<ClassName>(size);         \
   }                                                               \
-  void operator delete[](void* p) { Allocator::deleteArray(p); }  \
+  void operator delete[](void* p) { Allocator::DeleteArray(p); }  \
   void* operator new(size_t, NotNullTag, void* location) {        \
     DCHECK(location);                                             \
     return location;                                              \

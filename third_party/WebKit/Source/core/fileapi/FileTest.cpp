@@ -10,39 +10,39 @@
 namespace blink {
 
 TEST(FileTest, nativeFile) {
-  File* const file = File::create("/native/path");
-  EXPECT_TRUE(file->hasBackingFile());
-  EXPECT_EQ("/native/path", file->path());
-  EXPECT_TRUE(file->fileSystemURL().isEmpty());
+  File* const file = File::Create("/native/path");
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ("/native/path", file->GetPath());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
 }
 
 TEST(FileTest, blobBackingFile) {
-  const RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
-  File* const file = File::create("name", 0.0, blobDataHandle);
-  EXPECT_FALSE(file->hasBackingFile());
-  EXPECT_TRUE(file->path().isEmpty());
-  EXPECT_TRUE(file->fileSystemURL().isEmpty());
+  const RefPtr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
+  File* const file = File::Create("name", 0.0, blob_data_handle);
+  EXPECT_FALSE(file->HasBackingFile());
+  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
 }
 
 TEST(FileTest, fileSystemFileWithNativeSnapshot) {
   FileMetadata metadata;
-  metadata.platformPath = "/native/snapshot";
+  metadata.platform_path = "/native/snapshot";
   File* const file =
-      File::createForFileSystemFile("name", metadata, File::IsUserVisible);
-  EXPECT_TRUE(file->hasBackingFile());
-  EXPECT_EQ("/native/snapshot", file->path());
-  EXPECT_TRUE(file->fileSystemURL().isEmpty());
+      File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible);
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ("/native/snapshot", file->GetPath());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
 }
 
 TEST(FileTest, fileSystemFileWithNativeSnapshotAndSize) {
   FileMetadata metadata;
   metadata.length = 1024ll;
-  metadata.platformPath = "/native/snapshot";
+  metadata.platform_path = "/native/snapshot";
   File* const file =
-      File::createForFileSystemFile("name", metadata, File::IsUserVisible);
-  EXPECT_TRUE(file->hasBackingFile());
-  EXPECT_EQ("/native/snapshot", file->path());
-  EXPECT_TRUE(file->fileSystemURL().isEmpty());
+      File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible);
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ("/native/snapshot", file->GetPath());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
 }
 
 TEST(FileTest, fileSystemFileWithoutNativeSnapshot) {
@@ -50,50 +50,50 @@ TEST(FileTest, fileSystemFileWithoutNativeSnapshot) {
            "filesystem:http://example.com/isolated/hash/non-native-file");
   FileMetadata metadata;
   File* const file =
-      File::createForFileSystemFile(url, metadata, File::IsUserVisible);
-  EXPECT_FALSE(file->hasBackingFile());
-  EXPECT_TRUE(file->path().isEmpty());
-  EXPECT_EQ(url, file->fileSystemURL());
+      File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible);
+  EXPECT_FALSE(file->HasBackingFile());
+  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_EQ(url, file->FileSystemURL());
 }
 
 TEST(FileTest, hsaSameSource) {
-  File* const nativeFileA1 = File::create("/native/pathA");
-  File* const nativeFileA2 = File::create("/native/pathA");
-  File* const nativeFileB = File::create("/native/pathB");
+  File* const native_file_a1 = File::Create("/native/pathA");
+  File* const native_file_a2 = File::Create("/native/pathA");
+  File* const native_file_b = File::Create("/native/pathB");
 
-  const RefPtr<BlobDataHandle> blobDataA = BlobDataHandle::create();
-  const RefPtr<BlobDataHandle> blobDataB = BlobDataHandle::create();
-  File* const blobFileA1 = File::create("name", 0.0, blobDataA);
-  File* const blobFileA2 = File::create("name", 0.0, blobDataA);
-  File* const blobFileB = File::create("name", 0.0, blobDataB);
+  const RefPtr<BlobDataHandle> blob_data_a = BlobDataHandle::Create();
+  const RefPtr<BlobDataHandle> blob_data_b = BlobDataHandle::Create();
+  File* const blob_file_a1 = File::Create("name", 0.0, blob_data_a);
+  File* const blob_file_a2 = File::Create("name", 0.0, blob_data_a);
+  File* const blob_file_b = File::Create("name", 0.0, blob_data_b);
 
-  KURL urlA(ParsedURLStringTag(),
-            "filesystem:http://example.com/isolated/hash/non-native-file-A");
-  KURL urlB(ParsedURLStringTag(),
-            "filesystem:http://example.com/isolated/hash/non-native-file-B");
+  KURL url_a(ParsedURLStringTag(),
+             "filesystem:http://example.com/isolated/hash/non-native-file-A");
+  KURL url_b(ParsedURLStringTag(),
+             "filesystem:http://example.com/isolated/hash/non-native-file-B");
   FileMetadata metadata;
-  File* const fileSystemFileA1 =
-      File::createForFileSystemFile(urlA, metadata, File::IsUserVisible);
-  File* const fileSystemFileA2 =
-      File::createForFileSystemFile(urlA, metadata, File::IsUserVisible);
-  File* const fileSystemFileB =
-      File::createForFileSystemFile(urlB, metadata, File::IsUserVisible);
+  File* const file_system_file_a1 =
+      File::CreateForFileSystemFile(url_a, metadata, File::kIsUserVisible);
+  File* const file_system_file_a2 =
+      File::CreateForFileSystemFile(url_a, metadata, File::kIsUserVisible);
+  File* const file_system_file_b =
+      File::CreateForFileSystemFile(url_b, metadata, File::kIsUserVisible);
 
-  EXPECT_FALSE(nativeFileA1->hasSameSource(*blobFileA1));
-  EXPECT_FALSE(blobFileA1->hasSameSource(*fileSystemFileA1));
-  EXPECT_FALSE(fileSystemFileA1->hasSameSource(*nativeFileA1));
+  EXPECT_FALSE(native_file_a1->HasSameSource(*blob_file_a1));
+  EXPECT_FALSE(blob_file_a1->HasSameSource(*file_system_file_a1));
+  EXPECT_FALSE(file_system_file_a1->HasSameSource(*native_file_a1));
 
-  EXPECT_TRUE(nativeFileA1->hasSameSource(*nativeFileA1));
-  EXPECT_TRUE(nativeFileA1->hasSameSource(*nativeFileA2));
-  EXPECT_FALSE(nativeFileA1->hasSameSource(*nativeFileB));
+  EXPECT_TRUE(native_file_a1->HasSameSource(*native_file_a1));
+  EXPECT_TRUE(native_file_a1->HasSameSource(*native_file_a2));
+  EXPECT_FALSE(native_file_a1->HasSameSource(*native_file_b));
 
-  EXPECT_TRUE(blobFileA1->hasSameSource(*blobFileA1));
-  EXPECT_TRUE(blobFileA1->hasSameSource(*blobFileA2));
-  EXPECT_FALSE(blobFileA1->hasSameSource(*blobFileB));
+  EXPECT_TRUE(blob_file_a1->HasSameSource(*blob_file_a1));
+  EXPECT_TRUE(blob_file_a1->HasSameSource(*blob_file_a2));
+  EXPECT_FALSE(blob_file_a1->HasSameSource(*blob_file_b));
 
-  EXPECT_TRUE(fileSystemFileA1->hasSameSource(*fileSystemFileA1));
-  EXPECT_TRUE(fileSystemFileA1->hasSameSource(*fileSystemFileA2));
-  EXPECT_FALSE(fileSystemFileA1->hasSameSource(*fileSystemFileB));
+  EXPECT_TRUE(file_system_file_a1->HasSameSource(*file_system_file_a1));
+  EXPECT_TRUE(file_system_file_a1->HasSameSource(*file_system_file_a2));
+  EXPECT_FALSE(file_system_file_a1->HasSameSource(*file_system_file_b));
 }
 
 }  // namespace blink

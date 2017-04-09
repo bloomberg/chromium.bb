@@ -40,19 +40,19 @@ namespace blink {
 class AnimatableShapeValue final : public AnimatableValue {
  public:
   ~AnimatableShapeValue() override {}
-  static PassRefPtr<AnimatableShapeValue> create(ShapeValue* shape) {
-    return adoptRef(new AnimatableShapeValue(shape));
+  static PassRefPtr<AnimatableShapeValue> Create(ShapeValue* shape) {
+    return AdoptRef(new AnimatableShapeValue(shape));
   }
 
  private:
-  AnimatableShapeValue(ShapeValue* shape) : m_shape(shape) { DCHECK(m_shape); }
-  AnimatableType type() const override { return TypeShapeValue; }
-  bool equalTo(const AnimatableValue*) const override;
+  AnimatableShapeValue(ShapeValue* shape) : shape_(shape) { DCHECK(shape_); }
+  AnimatableType GetType() const override { return kTypeShapeValue; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  Persistent<ShapeValue> m_shape;
+  Persistent<ShapeValue> shape_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, isShapeValue());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, IsShapeValue());
 
 }  // namespace blink
 

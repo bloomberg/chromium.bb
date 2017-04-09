@@ -34,81 +34,82 @@
 
 namespace blink {
 
-static const double animationFrameDelay = 1.0 / 60;
+static const double kAnimationFrameDelay = 1.0 / 60;
 
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
-    : m_image(image),
-      m_animationTimer(WTF::wrapUnique(new Timer<SVGImageChromeClient>(
+    : image_(image),
+      animation_timer_(WTF::WrapUnique(new Timer<SVGImageChromeClient>(
           this,
-          &SVGImageChromeClient::animationTimerFired))),
-      m_timelineState(Running) {}
+          &SVGImageChromeClient::AnimationTimerFired))),
+      timeline_state_(kRunning) {}
 
-SVGImageChromeClient* SVGImageChromeClient::create(SVGImage* image) {
+SVGImageChromeClient* SVGImageChromeClient::Create(SVGImage* image) {
   return new SVGImageChromeClient(image);
 }
 
-bool SVGImageChromeClient::isSVGImageChromeClient() const {
+bool SVGImageChromeClient::IsSVGImageChromeClient() const {
   return true;
 }
 
-void SVGImageChromeClient::chromeDestroyed() {
-  m_image = nullptr;
+void SVGImageChromeClient::ChromeDestroyed() {
+  image_ = nullptr;
 }
 
-void SVGImageChromeClient::invalidateRect(const IntRect& r) {
+void SVGImageChromeClient::InvalidateRect(const IntRect& r) {
   // If m_image->m_page is null, we're being destructed, don't fire
   // changedInRect() in that case.
-  if (m_image && m_image->getImageObserver() && m_image->m_page)
-    m_image->getImageObserver()->changedInRect(m_image, r);
+  if (image_ && image_->GetImageObserver() && image_->page_)
+    image_->GetImageObserver()->ChangedInRect(image_, r);
 }
 
-void SVGImageChromeClient::suspendAnimation() {
-  if (m_image->maybeAnimated()) {
-    m_timelineState = SuspendedWithAnimationPending;
+void SVGImageChromeClient::SuspendAnimation() {
+  if (image_->MaybeAnimated()) {
+    timeline_state_ = kSuspendedWithAnimationPending;
   } else {
     // Preserve SuspendedWithAnimationPending if set.
-    m_timelineState = std::max(m_timelineState, Suspended);
+    timeline_state_ = std::max(timeline_state_, kSuspended);
   }
 }
 
-void SVGImageChromeClient::resumeAnimation() {
-  bool havePendingAnimation = m_timelineState == SuspendedWithAnimationPending;
-  m_timelineState = Running;
+void SVGImageChromeClient::ResumeAnimation() {
+  bool have_pending_animation =
+      timeline_state_ == kSuspendedWithAnimationPending;
+  timeline_state_ = kRunning;
 
   // If an animation frame was pending/requested while animations were
   // suspended, schedule a new animation frame.
-  if (!havePendingAnimation)
+  if (!have_pending_animation)
     return;
-  scheduleAnimation(nullptr);
+  ScheduleAnimation(nullptr);
 }
 
-void SVGImageChromeClient::scheduleAnimation(FrameViewBase*) {
+void SVGImageChromeClient::ScheduleAnimation(FrameViewBase*) {
   // Because a single SVGImage can be shared by multiple pages, we can't key
   // our svg image layout on the page's real animation frame. Therefore, we
   // run this fake animation timer to trigger layout in SVGImages. The name,
   // "animationTimer", is to match the new requestAnimationFrame-based layout
   // approach.
-  if (m_animationTimer->isActive())
+  if (animation_timer_->IsActive())
     return;
   // Schedule the 'animation' ASAP if the image does not contain any
   // animations, but prefer a fixed, jittery, frame-delay if there're any
   // animations. Checking for pending/active animations could be more
   // stringent.
-  double fireTime = 0;
-  if (m_image->maybeAnimated()) {
-    if (m_timelineState >= Suspended)
+  double fire_time = 0;
+  if (image_->MaybeAnimated()) {
+    if (timeline_state_ >= kSuspended)
       return;
-    fireTime = animationFrameDelay;
+    fire_time = kAnimationFrameDelay;
   }
-  m_animationTimer->startOneShot(fireTime, BLINK_FROM_HERE);
+  animation_timer_->StartOneShot(fire_time, BLINK_FROM_HERE);
 }
 
-void SVGImageChromeClient::setTimer(std::unique_ptr<TimerBase> timer) {
-  m_animationTimer = std::move(timer);
+void SVGImageChromeClient::SetTimer(std::unique_ptr<TimerBase> timer) {
+  animation_timer_ = std::move(timer);
 }
 
-void SVGImageChromeClient::animationTimerFired(TimerBase*) {
-  if (!m_image)
+void SVGImageChromeClient::AnimationTimerFired(TimerBase*) {
+  if (!image_)
     return;
 
   // The SVGImageChromeClient object's lifetime is dependent on
@@ -117,10 +118,10 @@ void SVGImageChromeClient::animationTimerFired(TimerBase*) {
   //
   // TODO(Oilpan): move (SVG)Image to the Oilpan heap, and avoid
   // this explicit lifetime check.
-  if (ThreadHeap::willObjectBeLazilySwept(m_image->getImageObserver()))
+  if (ThreadHeap::WillObjectBeLazilySwept(image_->GetImageObserver()))
     return;
 
-  m_image->serviceAnimations(monotonicallyIncreasingTime());
+  image_->ServiceAnimations(MonotonicallyIncreasingTime());
 }
 
 }  // namespace blink

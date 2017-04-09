@@ -11,22 +11,22 @@
 
 namespace blink {
 
-v8::Local<v8::Value> V8PrivateProperty::Symbol::getFromMainWorld(
-    ScriptWrappable* scriptWrappable) {
-  v8::Local<v8::Object> wrapper = scriptWrappable->mainWorldWrapper(m_isolate);
-  return wrapper.IsEmpty() ? v8::Local<v8::Value>() : getOrEmpty(wrapper);
+v8::Local<v8::Value> V8PrivateProperty::Symbol::GetFromMainWorld(
+    ScriptWrappable* script_wrappable) {
+  v8::Local<v8::Object> wrapper = script_wrappable->MainWorldWrapper(isolate_);
+  return wrapper.IsEmpty() ? v8::Local<v8::Value>() : GetOrEmpty(wrapper);
 }
 
-v8::Local<v8::Private> V8PrivateProperty::createV8Private(v8::Isolate* isolate,
+v8::Local<v8::Private> V8PrivateProperty::CreateV8Private(v8::Isolate* isolate,
                                                           const char* symbol) {
-  return v8::Private::New(isolate, v8String(isolate, symbol));
+  return v8::Private::New(isolate, V8String(isolate, symbol));
 }
 
-v8::Local<v8::Private> V8PrivateProperty::createCachedV8Private(
+v8::Local<v8::Private> V8PrivateProperty::CreateCachedV8Private(
     v8::Isolate* isolate,
     const char* symbol) {
   // Use ForApi() to get the same Private symbol which is not cached in Chrome.
-  return v8::Private::ForApi(isolate, v8String(isolate, symbol));
+  return v8::Private::ForApi(isolate, V8String(isolate, symbol));
 }
 
 }  // namespace blink

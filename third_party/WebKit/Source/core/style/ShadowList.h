@@ -51,38 +51,36 @@ typedef Vector<ShadowData, 1> ShadowDataVector;
 class ShadowList : public RefCounted<ShadowList> {
  public:
   // This consumes passed in vector.
-  static PassRefPtr<ShadowList> adopt(ShadowDataVector& shadows) {
-    return adoptRef(new ShadowList(shadows));
+  static PassRefPtr<ShadowList> Adopt(ShadowDataVector& shadows) {
+    return AdoptRef(new ShadowList(shadows));
   }
-  const ShadowDataVector& shadows() const { return m_shadows; }
-  bool operator==(const ShadowList& o) const {
-    return m_shadows == o.m_shadows;
-  }
+  const ShadowDataVector& Shadows() const { return shadows_; }
+  bool operator==(const ShadowList& o) const { return shadows_ == o.shadows_; }
   bool operator!=(const ShadowList& o) const { return !(*this == o); }
 
-  static PassRefPtr<ShadowList> blend(const ShadowList* from,
+  static PassRefPtr<ShadowList> Blend(const ShadowList* from,
                                       const ShadowList* to,
                                       double progress,
-                                      const Color& currentColor);
+                                      const Color& current_color);
 
   // Outsets needed to include all shadows in this list, as well as the
   // source (i.e. no outsets will be negative).
-  FloatRectOutsets rectOutsetsIncludingOriginal() const;
+  FloatRectOutsets RectOutsetsIncludingOriginal() const;
 
-  void adjustRectForShadow(FloatRect&) const;
+  void AdjustRectForShadow(FloatRect&) const;
 
-  sk_sp<SkDrawLooper> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode,
-                                       const Color& currentColor,
-                                       bool isHorizontal = true) const;
+  sk_sp<SkDrawLooper> CreateDrawLooper(DrawLooperBuilder::ShadowAlphaMode,
+                                       const Color& current_color,
+                                       bool is_horizontal = true) const;
 
  private:
   ShadowList(ShadowDataVector& shadows) {
     // If we have no shadows, we use a null ShadowList
-    DCHECK(!shadows.isEmpty());
-    m_shadows.swap(shadows);
-    m_shadows.shrinkToFit();
+    DCHECK(!shadows.IsEmpty());
+    shadows_.Swap(shadows);
+    shadows_.ShrinkToFit();
   }
-  ShadowDataVector m_shadows;
+  ShadowDataVector shadows_;
 };
 
 }  // namespace blink

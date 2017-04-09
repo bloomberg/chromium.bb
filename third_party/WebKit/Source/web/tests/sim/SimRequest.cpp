@@ -12,72 +12,72 @@
 
 namespace blink {
 
-SimRequest::SimRequest(String url, String mimeType)
-    : m_url(url),
-      m_client(nullptr),
-      m_totalEncodedDataLength(0),
-      m_isReady(false) {
-  KURL fullUrl(ParsedURLString, url);
-  WebURLResponse response(fullUrl);
-  response.setMIMEType(mimeType);
-  response.setHTTPStatusCode(200);
-  Platform::current()->getURLLoaderMockFactory()->registerURL(fullUrl, response,
-                                                              "");
-  SimNetwork::current().addRequest(*this);
+SimRequest::SimRequest(String url, String mime_type)
+    : url_(url),
+      client_(nullptr),
+      total_encoded_data_length_(0),
+      is_ready_(false) {
+  KURL full_url(kParsedURLString, url);
+  WebURLResponse response(full_url);
+  response.SetMIMEType(mime_type);
+  response.SetHTTPStatusCode(200);
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(full_url,
+                                                              response, "");
+  SimNetwork::Current().AddRequest(*this);
 }
 
 SimRequest::~SimRequest() {
-  DCHECK(!m_isReady);
+  DCHECK(!is_ready_);
 }
 
-void SimRequest::didReceiveResponse(WebURLLoaderClient* client,
+void SimRequest::DidReceiveResponse(WebURLLoaderClient* client,
                                     const WebURLResponse& response) {
-  m_client = client;
-  m_response = response;
-  m_isReady = true;
+  client_ = client;
+  response_ = response;
+  is_ready_ = true;
 }
 
-void SimRequest::didFail(const WebURLError& error) {
-  m_error = error;
+void SimRequest::DidFail(const WebURLError& error) {
+  error_ = error;
 }
 
-void SimRequest::start() {
-  SimNetwork::current().servePendingRequests();
-  DCHECK(m_isReady);
-  m_client->didReceiveResponse(m_response);
+void SimRequest::Start() {
+  SimNetwork::Current().ServePendingRequests();
+  DCHECK(is_ready_);
+  client_->DidReceiveResponse(response_);
 }
 
-void SimRequest::write(const String& data) {
-  DCHECK(m_isReady);
-  DCHECK(!m_error.reason);
-  m_totalEncodedDataLength += data.length();
-  m_client->didReceiveData(data.utf8().data(), data.length());
+void SimRequest::Write(const String& data) {
+  DCHECK(is_ready_);
+  DCHECK(!error_.reason);
+  total_encoded_data_length_ += data.length();
+  client_->DidReceiveData(data.Utf8().Data(), data.length());
 }
 
-void SimRequest::finish() {
-  DCHECK(m_isReady);
-  if (m_error.reason) {
-    m_client->didFail(m_error, m_totalEncodedDataLength,
-                      m_totalEncodedDataLength);
+void SimRequest::Finish() {
+  DCHECK(is_ready_);
+  if (error_.reason) {
+    client_->DidFail(error_, total_encoded_data_length_,
+                     total_encoded_data_length_);
   } else {
     // TODO(esprehn): Is claiming a request time of 0 okay for tests?
-    m_client->didFinishLoading(0, m_totalEncodedDataLength,
-                               m_totalEncodedDataLength);
+    client_->DidFinishLoading(0, total_encoded_data_length_,
+                              total_encoded_data_length_);
   }
-  reset();
+  Reset();
 }
 
-void SimRequest::complete(const String& data) {
-  start();
-  if (!data.isEmpty())
-    write(data);
-  finish();
+void SimRequest::Complete(const String& data) {
+  Start();
+  if (!data.IsEmpty())
+    Write(data);
+  Finish();
 }
 
-void SimRequest::reset() {
-  m_isReady = false;
-  m_client = nullptr;
-  SimNetwork::current().removeRequest(*this);
+void SimRequest::Reset() {
+  is_ready_ = false;
+  client_ = nullptr;
+  SimNetwork::Current().RemoveRequest(*this);
 }
 
 }  // namespace blink

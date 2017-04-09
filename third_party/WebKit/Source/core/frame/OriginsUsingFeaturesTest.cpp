@@ -9,31 +9,31 @@
 namespace blink {
 
 TEST(HostsUsingFeaturesTest, countName) {
-  HostsUsingFeatures hostsUsingFeatures;
-  hostsUsingFeatures.countName(HostsUsingFeatures::Feature::EventPath,
-                               "test 1");
-  EXPECT_EQ(1u, hostsUsingFeatures.valueByName().size());
-  hostsUsingFeatures.countName(
-      HostsUsingFeatures::Feature::ElementCreateShadowRoot, "test 1");
-  EXPECT_EQ(1u, hostsUsingFeatures.valueByName().size());
-  hostsUsingFeatures.countName(HostsUsingFeatures::Feature::EventPath,
-                               "test 2");
-  EXPECT_EQ(2u, hostsUsingFeatures.valueByName().size());
+  HostsUsingFeatures hosts_using_features;
+  hosts_using_features.CountName(HostsUsingFeatures::Feature::kEventPath,
+                                 "test 1");
+  EXPECT_EQ(1u, hosts_using_features.ValueByName().size());
+  hosts_using_features.CountName(
+      HostsUsingFeatures::Feature::kElementCreateShadowRoot, "test 1");
+  EXPECT_EQ(1u, hosts_using_features.ValueByName().size());
+  hosts_using_features.CountName(HostsUsingFeatures::Feature::kEventPath,
+                                 "test 2");
+  EXPECT_EQ(2u, hosts_using_features.ValueByName().size());
 
-  EXPECT_TRUE(hostsUsingFeatures.valueByName().at("test 1").get(
-      HostsUsingFeatures::Feature::EventPath));
-  EXPECT_TRUE(hostsUsingFeatures.valueByName().at("test 1").get(
-      HostsUsingFeatures::Feature::ElementCreateShadowRoot));
-  EXPECT_FALSE(hostsUsingFeatures.valueByName().at("test 1").get(
-      HostsUsingFeatures::Feature::DocumentRegisterElement));
-  EXPECT_TRUE(hostsUsingFeatures.valueByName().at("test 2").get(
-      HostsUsingFeatures::Feature::EventPath));
-  EXPECT_FALSE(hostsUsingFeatures.valueByName().at("test 2").get(
-      HostsUsingFeatures::Feature::ElementCreateShadowRoot));
-  EXPECT_FALSE(hostsUsingFeatures.valueByName().at("test 2").get(
-      HostsUsingFeatures::Feature::DocumentRegisterElement));
+  EXPECT_TRUE(hosts_using_features.ValueByName().at("test 1").Get(
+      HostsUsingFeatures::Feature::kEventPath));
+  EXPECT_TRUE(hosts_using_features.ValueByName().at("test 1").Get(
+      HostsUsingFeatures::Feature::kElementCreateShadowRoot));
+  EXPECT_FALSE(hosts_using_features.ValueByName().at("test 1").Get(
+      HostsUsingFeatures::Feature::kDocumentRegisterElement));
+  EXPECT_TRUE(hosts_using_features.ValueByName().at("test 2").Get(
+      HostsUsingFeatures::Feature::kEventPath));
+  EXPECT_FALSE(hosts_using_features.ValueByName().at("test 2").Get(
+      HostsUsingFeatures::Feature::kElementCreateShadowRoot));
+  EXPECT_FALSE(hosts_using_features.ValueByName().at("test 2").Get(
+      HostsUsingFeatures::Feature::kDocumentRegisterElement));
 
-  hostsUsingFeatures.clear();
+  hosts_using_features.Clear();
 }
 
 }  // namespace blink

@@ -6,23 +6,23 @@
 
 namespace blink {
 
-void ModuleScript::setInstantiationError(v8::Isolate* isolate,
+void ModuleScript::SetInstantiationError(v8::Isolate* isolate,
                                          v8::Local<v8::Value> error) {
-  DCHECK_EQ(m_instantiationState, ModuleInstantiationState::Uninstantiated);
-  m_instantiationState = ModuleInstantiationState::Errored;
+  DCHECK_EQ(instantiation_state_, ModuleInstantiationState::kUninstantiated);
+  instantiation_state_ = ModuleInstantiationState::kErrored;
 
   DCHECK(!error.IsEmpty());
-  m_instantiationError.set(isolate, error);
+  instantiation_error_.Set(isolate, error);
 }
 
-void ModuleScript::setInstantiationSuccess() {
-  DCHECK_EQ(m_instantiationState, ModuleInstantiationState::Uninstantiated);
-  m_instantiationState = ModuleInstantiationState::Instantiated;
+void ModuleScript::SetInstantiationSuccess() {
+  DCHECK_EQ(instantiation_state_, ModuleInstantiationState::kUninstantiated);
+  instantiation_state_ = ModuleInstantiationState::kInstantiated;
 }
 
 DEFINE_TRACE(ModuleScript) {}
 DEFINE_TRACE_WRAPPERS(ModuleScript) {
-  visitor->traceWrappers(m_instantiationError);
+  visitor->TraceWrappers(instantiation_error_);
 }
 
 }  // namespace blink

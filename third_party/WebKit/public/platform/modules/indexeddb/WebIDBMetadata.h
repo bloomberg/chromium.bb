@@ -34,38 +34,38 @@
 namespace blink {
 
 struct WebIDBMetadata {
-  enum { NoVersion = -1 };
+  enum { kNoVersion = -1 };
   struct Index;
   struct ObjectStore;
 
   WebString name;
   long long version;
   long long id;
-  long long maxObjectStoreId;
-  WebVector<ObjectStore> objectStores;
-  WebIDBMetadata() : version(NoVersion) {}
+  long long max_object_store_id;
+  WebVector<ObjectStore> object_stores;
+  WebIDBMetadata() : version(kNoVersion) {}
 
   struct ObjectStore {
     WebString name;
-    WebIDBKeyPath keyPath;
-    bool autoIncrement;
+    WebIDBKeyPath key_path;
+    bool auto_increment;
     long long id;
-    long long maxIndexId;
+    long long max_index_id;
     WebVector<Index> indexes;
     ObjectStore()
-        : keyPath(WebIDBKeyPath::createNull()), autoIncrement(false) {}
+        : key_path(WebIDBKeyPath::CreateNull()), auto_increment(false) {}
   };
 
   struct Index {
     WebString name;
-    WebIDBKeyPath keyPath;
+    WebIDBKeyPath key_path;
     bool unique;
-    bool multiEntry;
+    bool multi_entry;
     long long id;
     Index()
-        : keyPath(WebIDBKeyPath::createNull()),
+        : key_path(WebIDBKeyPath::CreateNull()),
           unique(false),
-          multiEntry(false) {}
+          multi_entry(false) {}
   };
 };
 

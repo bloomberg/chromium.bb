@@ -13,27 +13,27 @@ namespace blink {
 // the parser to pass to a stylesheet
 class StyleRuleNamespace final : public StyleRuleBase {
  public:
-  static StyleRuleNamespace* create(AtomicString prefix, AtomicString uri) {
+  static StyleRuleNamespace* Create(AtomicString prefix, AtomicString uri) {
     return new StyleRuleNamespace(prefix, uri);
   }
 
-  StyleRuleNamespace* copy() const {
-    return new StyleRuleNamespace(m_prefix, m_uri);
+  StyleRuleNamespace* Copy() const {
+    return new StyleRuleNamespace(prefix_, uri_);
   }
 
-  AtomicString prefix() const { return m_prefix; }
-  AtomicString uri() const { return m_uri; }
+  AtomicString Prefix() const { return prefix_; }
+  AtomicString Uri() const { return uri_; }
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    StyleRuleBase::traceAfterDispatch(visitor);
+    StyleRuleBase::TraceAfterDispatch(visitor);
   }
 
  private:
   StyleRuleNamespace(AtomicString prefix, AtomicString uri)
-      : StyleRuleBase(Namespace), m_prefix(prefix), m_uri(uri) {}
+      : StyleRuleBase(kNamespace), prefix_(prefix), uri_(uri) {}
 
-  AtomicString m_prefix;
-  AtomicString m_uri;
+  AtomicString prefix_;
+  AtomicString uri_;
 };
 
 DEFINE_STYLE_RULE_TYPE_CASTS(Namespace);

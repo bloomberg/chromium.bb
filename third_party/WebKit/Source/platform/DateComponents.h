@@ -52,47 +52,47 @@ class PLATFORM_EXPORT DateComponents {
 
  public:
   DateComponents()
-      : m_millisecond(0),
-        m_second(0),
-        m_minute(0),
-        m_hour(0),
-        m_monthDay(0),
-        m_month(0),
-        m_year(0),
-        m_week(0),
-        m_type(Invalid) {}
+      : millisecond_(0),
+        second_(0),
+        minute_(0),
+        hour_(0),
+        month_day_(0),
+        month_(0),
+        year_(0),
+        week_(0),
+        type_(kInvalid) {}
 
   enum Type {
-    Invalid,
-    Date,
-    DateTime,
-    DateTimeLocal,
-    Month,
-    Time,
-    Week,
+    kInvalid,
+    kDate,
+    kDateTime,
+    kDateTimeLocal,
+    kMonth,
+    kTime,
+    kWeek,
   };
 
-  int millisecond() const { return m_millisecond; }
-  int second() const { return m_second; }
-  int minute() const { return m_minute; }
-  int hour() const { return m_hour; }
-  int monthDay() const { return m_monthDay; }
-  int weekDay() const;
-  int month() const { return m_month; }
-  int fullYear() const { return m_year; }
-  int week() const { return m_week; }
-  Type getType() const { return m_type; }
+  int Millisecond() const { return millisecond_; }
+  int Second() const { return second_; }
+  int Minute() const { return minute_; }
+  int Hour() const { return hour_; }
+  int MonthDay() const { return month_day_; }
+  int WeekDay() const;
+  int Month() const { return month_; }
+  int FullYear() const { return year_; }
+  int Week() const { return week_; }
+  Type GetType() const { return type_; }
 
   enum SecondFormat {
-    None,    // Suppress the second part and the millisecond part if they are 0.
-    Second,  // Always show the second part, and suppress the millisecond part
-             // if it is 0.
-    Millisecond  // Always show the second part and the millisecond part.
+    kNone,  // Suppress the second part and the millisecond part if they are 0.
+    kSecond,  // Always show the second part, and suppress the millisecond part
+              // if it is 0.
+    kMillisecond  // Always show the second part and the millisecond part.
   };
 
   // Returns an ISO 8601 representation for this instance.
   // The format argument is valid for DateTime, DateTimeLocal, and Time types.
-  String toString(SecondFormat format = None) const;
+  String ToString(SecondFormat format = kNone) const;
 
   // parse*() and setMillisecondsSince*() functions are initializers for an
   // DateComponents instance. If these functions return false, the instance
@@ -108,15 +108,15 @@ class PLATFORM_EXPORT DateComponents {
   // failures, and the trailing extra characters don't cause parse failures.
 
   // Sets year and month.
-  bool parseMonth(const String&, unsigned start, unsigned& end);
+  bool ParseMonth(const String&, unsigned start, unsigned& end);
   // Sets year, month and monthDay.
-  bool parseDate(const String&, unsigned start, unsigned& end);
+  bool ParseDate(const String&, unsigned start, unsigned& end);
   // Sets year and week.
-  bool parseWeek(const String&, unsigned start, unsigned& end);
+  bool ParseWeek(const String&, unsigned start, unsigned& end);
   // Sets hour, minute, second and millisecond.
-  bool parseTime(const String&, unsigned start, unsigned& end);
+  bool ParseTime(const String&, unsigned start, unsigned& end);
   // Sets year, month, monthDay, hour, minute, second and millisecond.
-  bool parseDateTimeLocal(const String&, unsigned start, unsigned& end);
+  bool ParseDateTimeLocal(const String&, unsigned start, unsigned& end);
 
   // The following setMillisecondsSinceEpochFor*() functions take
   // the number of milliseconds since 1970-01-01 00:00:00.000 UTC as
@@ -125,112 +125,112 @@ class PLATFORM_EXPORT DateComponents {
   // false if they fail.
 
   // For Date type. Updates m_year, m_month and m_monthDay.
-  bool setMillisecondsSinceEpochForDate(double ms);
+  bool SetMillisecondsSinceEpochForDate(double ms);
   // For DateTime type. Updates m_year, m_month, m_monthDay, m_hour, m_minute,
   // m_second and m_millisecond.
-  bool setMillisecondsSinceEpochForDateTime(double ms);
+  bool SetMillisecondsSinceEpochForDateTime(double ms);
   // For DateTimeLocal type. Updates m_year, m_month, m_monthDay, m_hour,
   // m_minute, m_second and m_millisecond.
-  bool setMillisecondsSinceEpochForDateTimeLocal(double ms);
+  bool SetMillisecondsSinceEpochForDateTimeLocal(double ms);
   // For Month type. Updates m_year and m_month.
-  bool setMillisecondsSinceEpochForMonth(double ms);
+  bool SetMillisecondsSinceEpochForMonth(double ms);
   // For Week type. Updates m_year and m_week.
-  bool setMillisecondsSinceEpochForWeek(double ms);
+  bool SetMillisecondsSinceEpochForWeek(double ms);
 
   // For Time type. Updates m_hour, m_minute, m_second and m_millisecond.
-  bool setMillisecondsSinceMidnight(double ms);
+  bool SetMillisecondsSinceMidnight(double ms);
 
   // Another initializer for Month type. Updates m_year and m_month.
-  bool setMonthsSinceEpoch(double months);
+  bool SetMonthsSinceEpoch(double months);
   // Another initializer for Week type. Updates m_year and m_week.
-  bool setWeek(int year, int weekNumber);
+  bool SetWeek(int year, int week_number);
 
   // Returns the number of milliseconds from 1970-01-01 00:00:00 UTC.
   // For a DateComponents initialized with parseDateTimeLocal(),
   // millisecondsSinceEpoch() returns a value for UTC timezone.
-  double millisecondsSinceEpoch() const;
+  double MillisecondsSinceEpoch() const;
   // Returns the number of months from 1970-01.
   // Do not call this for types other than Month.
-  double monthsSinceEpoch() const;
-  static inline double invalidMilliseconds() {
+  double MonthsSinceEpoch() const;
+  static inline double InvalidMilliseconds() {
     return std::numeric_limits<double>::quiet_NaN();
   }
 
   // Minimum and maxmimum limits for setMillisecondsSince*(),
   // setMonthsSinceEpoch(), millisecondsSinceEpoch(), and monthsSinceEpoch().
-  static inline double minimumDate() {
+  static inline double MinimumDate() {
     return -62135596800000.0;
   }  // 0001-01-01T00:00Z
-  static inline double minimumDateTime() {
+  static inline double MinimumDateTime() {
     return -62135596800000.0;
   }  // ditto.
-  static inline double minimumMonth() {
+  static inline double MinimumMonth() {
     return (1 - 1970) * 12.0 + 1 - 1;
   }                                                 // 0001-01
-  static inline double minimumTime() { return 0; }  // 00:00:00.000
-  static inline double minimumWeek() {
+  static inline double MinimumTime() { return 0; }  // 00:00:00.000
+  static inline double MinimumWeek() {
     return -62135596800000.0;
   }  // 0001-01-01, the first Monday of 0001.
-  static inline double maximumDate() {
+  static inline double MaximumDate() {
     return 8640000000000000.0;
   }  // 275760-09-13T00:00Z
-  static inline double maximumDateTime() {
+  static inline double MaximumDateTime() {
     return 8640000000000000.0;
   }  // ditto.
-  static inline double maximumMonth() {
+  static inline double MaximumMonth() {
     return (275760 - 1970) * 12.0 + 9 - 1;
   }                                                        // 275760-09
-  static inline double maximumTime() { return 86399999; }  // 23:59:59.999
-  static inline double maximumWeek() {
+  static inline double MaximumTime() { return 86399999; }  // 23:59:59.999
+  static inline double MaximumWeek() {
     return 8639999568000000.0;
   }  // 275760-09-08, the Monday of the week including 275760-09-13.
 
   // HTML5 uses ISO-8601 format with year >= 1. Gregorian calendar started in
   // 1582. However, we need to support 0001-01-01 in Gregorian calendar rule.
-  static inline int minimumYear() { return 1; }
+  static inline int MinimumYear() { return 1; }
   // Date in ECMAScript can't represent dates later than 275760-09-13T00:00Z.
   // So, we have the same upper limit in HTML5 date/time types.
-  static inline int maximumYear() { return 275760; }
-  static const int minimumWeekNumber;
-  static const int maximumWeekNumber;
+  static inline int MaximumYear() { return 275760; }
+  static const int kMinimumWeekNumber;
+  static const int kMaximumWeekNumber;
 
  private:
   // Returns the maximum week number in this DateComponents's year.
   // The result is either of 52 and 53.
-  int maxWeekNumberInYear() const;
-  bool parseYear(const String&, unsigned start, unsigned& end);
-  bool addDay(int);
-  bool addMinute(int);
-  bool parseTimeZone(const String&, unsigned start, unsigned& end);
+  int MaxWeekNumberInYear() const;
+  bool ParseYear(const String&, unsigned start, unsigned& end);
+  bool AddDay(int);
+  bool AddMinute(int);
+  bool ParseTimeZone(const String&, unsigned start, unsigned& end);
   // Helper for millisecondsSinceEpoch().
-  double millisecondsSinceEpochForTime() const;
+  double MillisecondsSinceEpochForTime() const;
   // Helpers for setMillisecondsSinceEpochFor*().
-  bool setMillisecondsSinceEpochForDateInternal(double ms);
-  void setMillisecondsSinceMidnightInternal(double ms);
+  bool SetMillisecondsSinceEpochForDateInternal(double ms);
+  void SetMillisecondsSinceMidnightInternal(double ms);
   // Helper for toString().
-  String toStringForTime(SecondFormat) const;
+  String ToStringForTime(SecondFormat) const;
 
   // m_weekDay values
   enum {
-    Sunday = 0,
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday,
+    kSunday = 0,
+    kMonday,
+    kTuesday,
+    kWednesday,
+    kThursday,
+    kFriday,
+    kSaturday,
   };
 
-  int m_millisecond;  // 0 - 999
-  int m_second;
-  int m_minute;
-  int m_hour;
-  int m_monthDay;  // 1 - 31
-  int m_month;     // 0:January - 11:December
-  int m_year;      //  1582 -
-  int m_week;      // 1 - 53
+  int millisecond_;  // 0 - 999
+  int second_;
+  int minute_;
+  int hour_;
+  int month_day_;  // 1 - 31
+  int month_;      // 0:January - 11:December
+  int year_;       //  1582 -
+  int week_;       // 1 - 53
 
-  Type m_type;
+  Type type_;
 };
 
 }  // namespace blink

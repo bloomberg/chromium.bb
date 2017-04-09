@@ -51,10 +51,10 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
     int tab_id,
     bool is_declarative) const {
   blink::WebSecurityOrigin top_frame_security_origin =
-      render_frame->GetWebFrame()->top()->getSecurityOrigin();
+      render_frame->GetWebFrame()->Top()->GetSecurityOrigin();
   // Only whitelisted extensions may run scripts on another extension's page.
-  if (top_frame_security_origin.protocol().utf8() == kExtensionScheme &&
-      top_frame_security_origin.host().utf8() != extension_->id() &&
+  if (top_frame_security_origin.Protocol().Utf8() == kExtensionScheme &&
+      top_frame_security_origin.Host().Utf8() != extension_->id() &&
       !PermissionsData::CanExecuteScriptEverywhere(extension_))
     return PermissionsData::ACCESS_DENIED;
 
@@ -76,7 +76,7 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
         nullptr /* ignore error */);
   }
   if (access == PermissionsData::ACCESS_WITHHELD &&
-      (tab_id == -1 || render_frame->GetWebFrame()->parent())) {
+      (tab_id == -1 || render_frame->GetWebFrame()->Parent())) {
     // Note: we don't consider ACCESS_WITHHELD for child frames or for frames
     // outside of tabs because there is nowhere to surface a request.
     // TODO(devlin): We should ask for permission somehow. crbug.com/491402.

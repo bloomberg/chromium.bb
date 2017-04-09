@@ -12,224 +12,227 @@
 
 namespace blink {
 
-DictionaryTest::DictionaryTest() : m_requiredBooleanMember(false) {}
+DictionaryTest::DictionaryTest() : required_boolean_member_(false) {}
 
 DictionaryTest::~DictionaryTest() {}
 
-void DictionaryTest::set(const InternalDictionary& testingDictionary) {
-  reset();
-  if (testingDictionary.hasLongMember())
-    m_longMember = testingDictionary.longMember();
-  if (testingDictionary.hasLongMemberWithClamp())
-    m_longMemberWithClamp = testingDictionary.longMemberWithClamp();
-  if (testingDictionary.hasLongMemberWithEnforceRange())
-    m_longMemberWithEnforceRange =
-        testingDictionary.longMemberWithEnforceRange();
-  m_longMemberWithDefault = testingDictionary.longMemberWithDefault();
-  if (testingDictionary.hasLongOrNullMember())
-    m_longOrNullMember = testingDictionary.longOrNullMember();
+void DictionaryTest::set(const InternalDictionary& testing_dictionary) {
+  Reset();
+  if (testing_dictionary.hasLongMember())
+    long_member_ = testing_dictionary.longMember();
+  if (testing_dictionary.hasLongMemberWithClamp())
+    long_member_with_clamp_ = testing_dictionary.longMemberWithClamp();
+  if (testing_dictionary.hasLongMemberWithEnforceRange())
+    long_member_with_enforce_range_ =
+        testing_dictionary.longMemberWithEnforceRange();
+  long_member_with_default_ = testing_dictionary.longMemberWithDefault();
+  if (testing_dictionary.hasLongOrNullMember())
+    long_or_null_member_ = testing_dictionary.longOrNullMember();
   // |longOrNullMemberWithDefault| has a default value but can be null, so
   // we need to check availability.
-  if (testingDictionary.hasLongOrNullMemberWithDefault())
-    m_longOrNullMemberWithDefault =
-        testingDictionary.longOrNullMemberWithDefault();
-  if (testingDictionary.hasBooleanMember())
-    m_booleanMember = testingDictionary.booleanMember();
-  if (testingDictionary.hasDoubleMember())
-    m_doubleMember = testingDictionary.doubleMember();
-  if (testingDictionary.hasUnrestrictedDoubleMember())
-    m_unrestrictedDoubleMember = testingDictionary.unrestrictedDoubleMember();
-  m_stringMember = testingDictionary.stringMember();
-  m_stringMemberWithDefault = testingDictionary.stringMemberWithDefault();
-  m_byteStringMember = testingDictionary.byteStringMember();
-  m_usvStringMember = testingDictionary.usvStringMember();
-  if (testingDictionary.hasStringSequenceMember())
-    m_stringSequenceMember = testingDictionary.stringSequenceMember();
-  m_stringSequenceMemberWithDefault =
-      testingDictionary.stringSequenceMemberWithDefault();
-  if (testingDictionary.hasStringSequenceOrNullMember())
-    m_stringSequenceOrNullMember =
-        testingDictionary.stringSequenceOrNullMember();
-  m_enumMember = testingDictionary.enumMember();
-  m_enumMemberWithDefault = testingDictionary.enumMemberWithDefault();
-  m_enumOrNullMember = testingDictionary.enumOrNullMember();
-  if (testingDictionary.hasEnumArrayMember())
-    m_enumArrayMember = testingDictionary.enumArrayMember();
-  if (testingDictionary.hasElementMember())
-    m_elementMember = testingDictionary.elementMember();
-  if (testingDictionary.hasElementOrNullMember())
-    m_elementOrNullMember = testingDictionary.elementOrNullMember();
-  m_objectMember = testingDictionary.objectMember();
-  m_objectOrNullMemberWithDefault =
-      testingDictionary.objectOrNullMemberWithDefault();
-  if (testingDictionary.hasDoubleOrStringMember())
-    m_doubleOrStringMember = testingDictionary.doubleOrStringMember();
-  if (testingDictionary.hasDoubleOrStringSequenceMember())
-    m_doubleOrStringSequenceMember =
-        testingDictionary.doubleOrStringSequenceMember();
-  m_eventTargetOrNullMember = testingDictionary.eventTargetOrNullMember();
-  if (testingDictionary.hasDictionaryMember()) {
-    NonThrowableExceptionState exceptionState;
-    m_dictionaryMemberProperties =
-        testingDictionary.dictionaryMember().getOwnPropertiesAsStringHashMap(
-            exceptionState);
+  if (testing_dictionary.hasLongOrNullMemberWithDefault())
+    long_or_null_member_with_default_ =
+        testing_dictionary.longOrNullMemberWithDefault();
+  if (testing_dictionary.hasBooleanMember())
+    boolean_member_ = testing_dictionary.booleanMember();
+  if (testing_dictionary.hasDoubleMember())
+    double_member_ = testing_dictionary.doubleMember();
+  if (testing_dictionary.hasUnrestrictedDoubleMember())
+    unrestricted_double_member_ = testing_dictionary.unrestrictedDoubleMember();
+  string_member_ = testing_dictionary.stringMember();
+  string_member_with_default_ = testing_dictionary.stringMemberWithDefault();
+  byte_string_member_ = testing_dictionary.byteStringMember();
+  usv_string_member_ = testing_dictionary.usvStringMember();
+  if (testing_dictionary.hasStringSequenceMember())
+    string_sequence_member_ = testing_dictionary.stringSequenceMember();
+  string_sequence_member_with_default_ =
+      testing_dictionary.stringSequenceMemberWithDefault();
+  if (testing_dictionary.hasStringSequenceOrNullMember())
+    string_sequence_or_null_member_ =
+        testing_dictionary.stringSequenceOrNullMember();
+  enum_member_ = testing_dictionary.enumMember();
+  enum_member_with_default_ = testing_dictionary.enumMemberWithDefault();
+  enum_or_null_member_ = testing_dictionary.enumOrNullMember();
+  if (testing_dictionary.hasEnumArrayMember())
+    enum_array_member_ = testing_dictionary.enumArrayMember();
+  if (testing_dictionary.hasElementMember())
+    element_member_ = testing_dictionary.elementMember();
+  if (testing_dictionary.hasElementOrNullMember())
+    element_or_null_member_ = testing_dictionary.elementOrNullMember();
+  object_member_ = testing_dictionary.objectMember();
+  object_or_null_member_with_default_ =
+      testing_dictionary.objectOrNullMemberWithDefault();
+  if (testing_dictionary.hasDoubleOrStringMember())
+    double_or_string_member_ = testing_dictionary.doubleOrStringMember();
+  if (testing_dictionary.hasDoubleOrStringSequenceMember())
+    double_or_string_sequence_member_ =
+        testing_dictionary.doubleOrStringSequenceMember();
+  event_target_or_null_member_ = testing_dictionary.eventTargetOrNullMember();
+  if (testing_dictionary.hasDictionaryMember()) {
+    NonThrowableExceptionState exception_state;
+    dictionary_member_properties_ =
+        testing_dictionary.dictionaryMember().GetOwnPropertiesAsStringHashMap(
+            exception_state);
   }
-  m_prefixGetMember = testingDictionary.getPrefixGetMember();
+  prefix_get_member_ = testing_dictionary.getPrefixGetMember();
 }
 
 void DictionaryTest::get(InternalDictionary& result) {
-  if (m_longMember)
-    result.setLongMember(m_longMember.get());
-  if (m_longMemberWithClamp)
-    result.setLongMemberWithClamp(m_longMemberWithClamp.get());
-  if (m_longMemberWithEnforceRange)
-    result.setLongMemberWithEnforceRange(m_longMemberWithEnforceRange.get());
-  result.setLongMemberWithDefault(m_longMemberWithDefault);
-  if (m_longOrNullMember)
-    result.setLongOrNullMember(m_longOrNullMember.get());
-  if (m_longOrNullMemberWithDefault)
-    result.setLongOrNullMemberWithDefault(m_longOrNullMemberWithDefault.get());
-  if (m_booleanMember)
-    result.setBooleanMember(m_booleanMember.get());
-  if (m_doubleMember)
-    result.setDoubleMember(m_doubleMember.get());
-  if (m_unrestrictedDoubleMember)
-    result.setUnrestrictedDoubleMember(m_unrestrictedDoubleMember.get());
-  result.setStringMember(m_stringMember);
-  result.setStringMemberWithDefault(m_stringMemberWithDefault);
-  result.setByteStringMember(m_byteStringMember);
-  result.setUsvStringMember(m_usvStringMember);
-  if (m_stringSequenceMember)
-    result.setStringSequenceMember(m_stringSequenceMember.get());
-  result.setStringSequenceMemberWithDefault(m_stringSequenceMemberWithDefault);
-  if (m_stringSequenceOrNullMember)
-    result.setStringSequenceOrNullMember(m_stringSequenceOrNullMember.get());
-  result.setEnumMember(m_enumMember);
-  result.setEnumMemberWithDefault(m_enumMemberWithDefault);
-  result.setEnumOrNullMember(m_enumOrNullMember);
-  if (m_enumArrayMember)
-    result.setEnumArrayMember(m_enumArrayMember.get());
-  if (m_elementMember)
-    result.setElementMember(m_elementMember);
-  if (m_elementOrNullMember)
-    result.setElementOrNullMember(m_elementOrNullMember);
-  result.setObjectMember(m_objectMember);
-  result.setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
-  if (!m_doubleOrStringMember.isNull())
-    result.setDoubleOrStringMember(m_doubleOrStringMember);
-  if (!m_doubleOrStringSequenceMember.isNull())
+  if (long_member_)
+    result.setLongMember(long_member_.Get());
+  if (long_member_with_clamp_)
+    result.setLongMemberWithClamp(long_member_with_clamp_.Get());
+  if (long_member_with_enforce_range_)
+    result.setLongMemberWithEnforceRange(long_member_with_enforce_range_.Get());
+  result.setLongMemberWithDefault(long_member_with_default_);
+  if (long_or_null_member_)
+    result.setLongOrNullMember(long_or_null_member_.Get());
+  if (long_or_null_member_with_default_)
+    result.setLongOrNullMemberWithDefault(
+        long_or_null_member_with_default_.Get());
+  if (boolean_member_)
+    result.setBooleanMember(boolean_member_.Get());
+  if (double_member_)
+    result.setDoubleMember(double_member_.Get());
+  if (unrestricted_double_member_)
+    result.setUnrestrictedDoubleMember(unrestricted_double_member_.Get());
+  result.setStringMember(string_member_);
+  result.setStringMemberWithDefault(string_member_with_default_);
+  result.setByteStringMember(byte_string_member_);
+  result.setUsvStringMember(usv_string_member_);
+  if (string_sequence_member_)
+    result.setStringSequenceMember(string_sequence_member_.Get());
+  result.setStringSequenceMemberWithDefault(
+      string_sequence_member_with_default_);
+  if (string_sequence_or_null_member_)
+    result.setStringSequenceOrNullMember(string_sequence_or_null_member_.Get());
+  result.setEnumMember(enum_member_);
+  result.setEnumMemberWithDefault(enum_member_with_default_);
+  result.setEnumOrNullMember(enum_or_null_member_);
+  if (enum_array_member_)
+    result.setEnumArrayMember(enum_array_member_.Get());
+  if (element_member_)
+    result.setElementMember(element_member_);
+  if (element_or_null_member_)
+    result.setElementOrNullMember(element_or_null_member_);
+  result.setObjectMember(object_member_);
+  result.setObjectOrNullMemberWithDefault(object_or_null_member_with_default_);
+  if (!double_or_string_member_.isNull())
+    result.setDoubleOrStringMember(double_or_string_member_);
+  if (!double_or_string_sequence_member_.IsNull())
     result.setDoubleOrStringSequenceMember(
-        m_doubleOrStringSequenceMember.get());
-  result.setEventTargetOrNullMember(m_eventTargetOrNullMember);
-  result.setPrefixGetMember(m_prefixGetMember);
+        double_or_string_sequence_member_.Get());
+  result.setEventTargetOrNullMember(event_target_or_null_member_);
+  result.setPrefixGetMember(prefix_get_member_);
 }
 
 ScriptValue DictionaryTest::getDictionaryMemberProperties(
-    ScriptState* scriptState) {
-  if (!m_dictionaryMemberProperties)
+    ScriptState* script_state) {
+  if (!dictionary_member_properties_)
     return ScriptValue();
-  V8ObjectBuilder builder(scriptState);
-  HashMap<String, String> properties = m_dictionaryMemberProperties.get();
+  V8ObjectBuilder builder(script_state);
+  HashMap<String, String> properties = dictionary_member_properties_.Get();
   for (HashMap<String, String>::iterator it = properties.begin();
        it != properties.end(); ++it)
-    builder.addString(it->key, it->value);
-  return builder.scriptValue();
+    builder.AddString(it->key, it->value);
+  return builder.GetScriptValue();
 }
 
 void DictionaryTest::setDerived(const InternalDictionaryDerived& derived) {
   DCHECK(derived.hasRequiredBooleanMember());
   set(derived);
   if (derived.hasDerivedStringMember())
-    m_derivedStringMember = derived.derivedStringMember();
-  m_derivedStringMemberWithDefault = derived.derivedStringMemberWithDefault();
-  m_requiredBooleanMember = derived.requiredBooleanMember();
+    derived_string_member_ = derived.derivedStringMember();
+  derived_string_member_with_default_ =
+      derived.derivedStringMemberWithDefault();
+  required_boolean_member_ = derived.requiredBooleanMember();
 }
 
 void DictionaryTest::getDerived(InternalDictionaryDerived& result) {
   get(result);
-  result.setDerivedStringMember(m_derivedStringMember);
-  result.setDerivedStringMemberWithDefault(m_derivedStringMemberWithDefault);
-  result.setRequiredBooleanMember(m_requiredBooleanMember);
+  result.setDerivedStringMember(derived_string_member_);
+  result.setDerivedStringMemberWithDefault(derived_string_member_with_default_);
+  result.setRequiredBooleanMember(required_boolean_member_);
 }
 
 void DictionaryTest::setDerivedDerived(
     const InternalDictionaryDerivedDerived& derived) {
   setDerived(derived);
   if (derived.hasDerivedDerivedStringMember())
-    m_derivedDerivedStringMember = derived.derivedDerivedStringMember();
+    derived_derived_string_member_ = derived.derivedDerivedStringMember();
 }
 
 void DictionaryTest::getDerivedDerived(
     InternalDictionaryDerivedDerived& result) {
   getDerived(result);
-  result.setDerivedDerivedStringMember(m_derivedDerivedStringMember);
+  result.setDerivedDerivedStringMember(derived_derived_string_member_);
 }
 
 String DictionaryTest::stringFromIterable(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     Dictionary iterable,
-    ExceptionState& exceptionState) const {
+    ExceptionState& exception_state) const {
   StringBuilder result;
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  DictionaryIterator iterator = iterable.getIterator(executionContext);
-  if (iterator.isNull())
-    return emptyString;
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  DictionaryIterator iterator = iterable.GetIterator(execution_context);
+  if (iterator.IsNull())
+    return g_empty_string;
 
-  bool firstLoop = true;
-  while (iterator.next(executionContext, exceptionState)) {
-    if (exceptionState.hadException())
-      return emptyString;
+  bool first_loop = true;
+  while (iterator.Next(execution_context, exception_state)) {
+    if (exception_state.HadException())
+      return g_empty_string;
 
-    if (firstLoop)
-      firstLoop = false;
+    if (first_loop)
+      first_loop = false;
     else
-      result.append(',');
+      result.Append(',');
 
     v8::Local<v8::Value> value;
-    if (v8Call(iterator.value(), value))
-      result.append(toCoreString(value->ToString()));
+    if (V8Call(iterator.GetValue(), value))
+      result.Append(ToCoreString(value->ToString()));
   }
 
-  return result.toString();
+  return result.ToString();
 }
 
-void DictionaryTest::reset() {
-  m_longMember = nullptr;
-  m_longMemberWithClamp = nullptr;
-  m_longMemberWithEnforceRange = nullptr;
-  m_longMemberWithDefault = -1;  // This value should not be returned.
-  m_longOrNullMember = nullptr;
-  m_longOrNullMemberWithDefault = nullptr;
-  m_booleanMember = nullptr;
-  m_doubleMember = nullptr;
-  m_unrestrictedDoubleMember = nullptr;
-  m_stringMember = String();
-  m_stringMemberWithDefault = String("Should not be returned");
-  m_stringSequenceMember = nullptr;
-  m_stringSequenceMemberWithDefault.fill("Should not be returned", 1);
-  m_stringSequenceOrNullMember = nullptr;
-  m_enumMember = String();
-  m_enumMemberWithDefault = String();
-  m_enumOrNullMember = String();
-  m_enumArrayMember = nullptr;
-  m_elementMember = nullptr;
-  m_elementOrNullMember = nullptr;
-  m_objectMember = ScriptValue();
-  m_objectOrNullMemberWithDefault = ScriptValue();
-  m_doubleOrStringMember = DoubleOrString();
-  m_eventTargetOrNullMember = nullptr;
-  m_derivedStringMember = String();
-  m_derivedStringMemberWithDefault = String();
-  m_requiredBooleanMember = false;
-  m_dictionaryMemberProperties = nullptr;
-  m_prefixGetMember = ScriptValue();
+void DictionaryTest::Reset() {
+  long_member_ = nullptr;
+  long_member_with_clamp_ = nullptr;
+  long_member_with_enforce_range_ = nullptr;
+  long_member_with_default_ = -1;  // This value should not be returned.
+  long_or_null_member_ = nullptr;
+  long_or_null_member_with_default_ = nullptr;
+  boolean_member_ = nullptr;
+  double_member_ = nullptr;
+  unrestricted_double_member_ = nullptr;
+  string_member_ = String();
+  string_member_with_default_ = String("Should not be returned");
+  string_sequence_member_ = nullptr;
+  string_sequence_member_with_default_.Fill("Should not be returned", 1);
+  string_sequence_or_null_member_ = nullptr;
+  enum_member_ = String();
+  enum_member_with_default_ = String();
+  enum_or_null_member_ = String();
+  enum_array_member_ = nullptr;
+  element_member_ = nullptr;
+  element_or_null_member_ = nullptr;
+  object_member_ = ScriptValue();
+  object_or_null_member_with_default_ = ScriptValue();
+  double_or_string_member_ = DoubleOrString();
+  event_target_or_null_member_ = nullptr;
+  derived_string_member_ = String();
+  derived_string_member_with_default_ = String();
+  required_boolean_member_ = false;
+  dictionary_member_properties_ = nullptr;
+  prefix_get_member_ = ScriptValue();
 }
 
 DEFINE_TRACE(DictionaryTest) {
-  visitor->trace(m_elementMember);
-  visitor->trace(m_elementOrNullMember);
-  visitor->trace(m_doubleOrStringSequenceMember);
-  visitor->trace(m_eventTargetOrNullMember);
+  visitor->Trace(element_member_);
+  visitor->Trace(element_or_null_member_);
+  visitor->Trace(double_or_string_sequence_member_);
+  visitor->Trace(event_target_or_null_member_);
 }
 
 }  // namespace blink

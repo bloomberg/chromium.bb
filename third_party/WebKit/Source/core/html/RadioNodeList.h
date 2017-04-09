@@ -36,11 +36,11 @@ class RadioNodeList final : public LiveNodeList {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RadioNodeList* create(ContainerNode& ownerNode,
+  static RadioNodeList* Create(ContainerNode& owner_node,
                                CollectionType type,
                                const AtomicString& name) {
-    DCHECK(type == RadioNodeListType || type == RadioImgNodeListType);
-    return new RadioNodeList(ownerNode, name, type);
+    DCHECK(type == kRadioNodeListType || type == kRadioImgNodeListType);
+    return new RadioNodeList(owner_node, name, type);
   }
 
   virtual ~RadioNodeList();
@@ -51,16 +51,16 @@ class RadioNodeList final : public LiveNodeList {
  private:
   RadioNodeList(ContainerNode&, const AtomicString& name, CollectionType);
 
-  bool checkElementMatchesRadioNodeListFilter(const Element&) const;
+  bool CheckElementMatchesRadioNodeListFilter(const Element&) const;
 
-  bool matchesByIdOrName(const Element&) const;
-  bool shouldOnlyMatchImgElements() const {
-    return type() == RadioImgNodeListType;
+  bool MatchesByIdOrName(const Element&) const;
+  bool ShouldOnlyMatchImgElements() const {
+    return GetType() == kRadioImgNodeListType;
   }
 
-  bool elementMatches(const Element&) const override;
+  bool ElementMatches(const Element&) const override;
 
-  AtomicString m_name;
+  AtomicString name_;
 };
 
 }  // namespace blink

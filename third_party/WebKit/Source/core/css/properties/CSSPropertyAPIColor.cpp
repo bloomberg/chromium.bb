@@ -12,7 +12,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPIColor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyParserHelpers::consumeColor(range, context.mode());
+  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
 
 }  // namespace blink

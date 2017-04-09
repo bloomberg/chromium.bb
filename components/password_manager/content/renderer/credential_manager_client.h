@@ -43,11 +43,11 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   ~CredentialManagerClient() override;
 
   // blink::WebCredentialManagerClient:
-  void dispatchStore(
+  void DispatchStore(
       const blink::WebCredential& credential,
       WebCredentialManagerClient::NotificationCallbacks* callbacks) override;
-  void dispatchRequireUserMediation(NotificationCallbacks* callbacks) override;
-  void dispatchGet(bool zero_click_only,
+  void DispatchRequireUserMediation(NotificationCallbacks* callbacks) override;
+  void DispatchGet(bool zero_click_only,
                    bool include_passwords,
                    const blink::WebVector<blink::WebURL>& federations,
                    RequestCallbacks* callbacks) override;

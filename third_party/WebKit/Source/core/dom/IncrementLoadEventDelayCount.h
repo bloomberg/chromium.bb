@@ -21,7 +21,7 @@ class IncrementLoadEventDelayCount {
   WTF_MAKE_NONCOPYABLE(IncrementLoadEventDelayCount);
 
  public:
-  static std::unique_ptr<IncrementLoadEventDelayCount> create(Document&);
+  static std::unique_ptr<IncrementLoadEventDelayCount> Create(Document&);
   ~IncrementLoadEventDelayCount();
 
   // Decrements the loadEventDelayCount and checks load event synchronously,
@@ -29,14 +29,14 @@ class IncrementLoadEventDelayCount {
   // Call this only when it is safe, e.g. at the top of an async task.
   // After calling this, |this| no longer blocks document's load event and
   // will not decrement loadEventDelayCount at destruction.
-  void clearAndCheckLoadEvent();
+  void ClearAndCheckLoadEvent();
 
   // Increments the new document's count and decrements the old count.
-  void documentChanged(Document& newDocument);
+  void DocumentChanged(Document& new_document);
 
  private:
   IncrementLoadEventDelayCount(Document&);
-  Persistent<Document> m_document;
+  Persistent<Document> document_;
 };
 }  // namespace blink
 

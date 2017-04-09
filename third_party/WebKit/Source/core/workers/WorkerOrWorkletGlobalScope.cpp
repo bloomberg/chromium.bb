@@ -16,51 +16,51 @@
 namespace blink {
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope()
-    : m_deprecationWarningBits(UseCounter::NumberOfFeatures) {}
+    : deprecation_warning_bits_(UseCounter::kNumberOfFeatures) {}
 
 WorkerOrWorkletGlobalScope::~WorkerOrWorkletGlobalScope() {}
 
-void WorkerOrWorkletGlobalScope::addDeprecationMessage(
+void WorkerOrWorkletGlobalScope::AddDeprecationMessage(
     UseCounter::Feature feature) {
-  DCHECK_NE(UseCounter::OBSOLETE_PageDestruction, feature);
-  DCHECK_GT(UseCounter::NumberOfFeatures, feature);
+  DCHECK_NE(UseCounter::kOBSOLETE_PageDestruction, feature);
+  DCHECK_GT(UseCounter::kNumberOfFeatures, feature);
 
   // For each deprecated feature, send console message at most once
   // per worker lifecycle.
-  if (m_deprecationWarningBits.quickGet(feature))
+  if (deprecation_warning_bits_.QuickGet(feature))
     return;
-  m_deprecationWarningBits.quickSet(feature);
-  DCHECK(!Deprecation::deprecationMessage(feature).isEmpty());
-  addConsoleMessage(
-      ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel,
-                             Deprecation::deprecationMessage(feature)));
+  deprecation_warning_bits_.QuickSet(feature);
+  DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());
+  AddConsoleMessage(
+      ConsoleMessage::Create(kDeprecationMessageSource, kWarningMessageLevel,
+                             Deprecation::DeprecationMessage(feature)));
 }
 
-void WorkerOrWorkletGlobalScope::postTask(
+void WorkerOrWorkletGlobalScope::PostTask(
     TaskType,
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task,
-    const String& taskNameForInstrumentation) {
-  if (!thread())
+    const String& task_name_for_instrumentation) {
+  if (!GetThread())
     return;
 
-  bool isInstrumented = !taskNameForInstrumentation.isEmpty();
-  if (isInstrumented) {
-    probe::asyncTaskScheduled(this, "Worker task", task.get());
+  bool is_instrumented = !task_name_for_instrumentation.IsEmpty();
+  if (is_instrumented) {
+    probe::AsyncTaskScheduled(this, "Worker task", task.get());
   }
 
-  thread()->postTask(
-      location, crossThreadBind(&WorkerOrWorkletGlobalScope::runTask,
-                                wrapCrossThreadWeakPersistent(this),
-                                WTF::passed(std::move(task)), isInstrumented));
+  GetThread()->PostTask(
+      location, CrossThreadBind(&WorkerOrWorkletGlobalScope::RunTask,
+                                WrapCrossThreadWeakPersistent(this),
+                                WTF::Passed(std::move(task)), is_instrumented));
 }
 
-void WorkerOrWorkletGlobalScope::runTask(
+void WorkerOrWorkletGlobalScope::RunTask(
     std::unique_ptr<ExecutionContextTask> task,
-    bool isInstrumented) {
-  DCHECK(thread()->isCurrentThread());
-  probe::AsyncTask asyncTask(this, task.get(), nullptr, isInstrumented);
-  task->performTask(this);
+    bool is_instrumented) {
+  DCHECK(GetThread()->IsCurrentThread());
+  probe::AsyncTask async_task(this, task.get(), nullptr, is_instrumented);
+  task->PerformTask(this);
 }
 
 }  // namespace blink

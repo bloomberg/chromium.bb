@@ -17,96 +17,96 @@
 namespace blink {
 namespace {
 
-PaymentCurrencyAmount toPaymentCurrencyAmount(
-    const WebPaymentCurrencyAmount& webAmount) {
+PaymentCurrencyAmount ToPaymentCurrencyAmount(
+    const WebPaymentCurrencyAmount& web_amount) {
   PaymentCurrencyAmount amount;
-  amount.setCurrency(webAmount.currency);
-  amount.setValue(webAmount.value);
-  amount.setCurrencySystem(webAmount.currencySystem);
+  amount.setCurrency(web_amount.currency);
+  amount.setValue(web_amount.value);
+  amount.setCurrencySystem(web_amount.currency_system);
   return amount;
 }
 
-PaymentItem toPaymentItem(const WebPaymentItem& webItem) {
+PaymentItem ToPaymentItem(const WebPaymentItem& web_item) {
   PaymentItem item;
-  item.setLabel(webItem.label);
-  item.setAmount(toPaymentCurrencyAmount(webItem.amount));
-  item.setPending(webItem.pending);
+  item.setLabel(web_item.label);
+  item.setAmount(ToPaymentCurrencyAmount(web_item.amount));
+  item.setPending(web_item.pending);
   return item;
 }
 
-PaymentDetailsModifier toPaymentDetailsModifier(
-    ScriptState* scriptState,
-    const WebPaymentDetailsModifier& webModifier) {
+PaymentDetailsModifier ToPaymentDetailsModifier(
+    ScriptState* script_state,
+    const WebPaymentDetailsModifier& web_modifier) {
   PaymentDetailsModifier modifier;
-  Vector<String> supportedMethods;
-  for (const auto& webMethod : webModifier.supportedMethods) {
-    supportedMethods.push_back(webMethod);
+  Vector<String> supported_methods;
+  for (const auto& web_method : web_modifier.supported_methods) {
+    supported_methods.push_back(web_method);
   }
-  modifier.setSupportedMethods(supportedMethods);
-  modifier.setTotal(toPaymentItem(webModifier.total));
-  HeapVector<PaymentItem> additionalDisplayItems;
-  for (const auto& webItem : webModifier.additionalDisplayItems) {
-    additionalDisplayItems.push_back(toPaymentItem(webItem));
+  modifier.setSupportedMethods(supported_methods);
+  modifier.setTotal(ToPaymentItem(web_modifier.total));
+  HeapVector<PaymentItem> additional_display_items;
+  for (const auto& web_item : web_modifier.additional_display_items) {
+    additional_display_items.push_back(ToPaymentItem(web_item));
   }
-  modifier.setAdditionalDisplayItems(additionalDisplayItems);
+  modifier.setAdditionalDisplayItems(additional_display_items);
   return modifier;
 }
 
-ScriptValue stringDataToScriptValue(ScriptState* scriptState,
-                                    const WebString& stringifiedData) {
-  if (!scriptState->contextIsValid())
+ScriptValue StringDataToScriptValue(ScriptState* script_state,
+                                    const WebString& stringified_data) {
+  if (!script_state->ContextIsValid())
     return ScriptValue();
 
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> v8Value;
-  if (!v8::JSON::Parse(scriptState->isolate(),
-                       v8String(scriptState->isolate(), stringifiedData))
-           .ToLocal(&v8Value)) {
+  ScriptState::Scope scope(script_state);
+  v8::Local<v8::Value> v8_value;
+  if (!v8::JSON::Parse(script_state->GetIsolate(),
+                       V8String(script_state->GetIsolate(), stringified_data))
+           .ToLocal(&v8_value)) {
     return ScriptValue();
   }
-  return ScriptValue(scriptState, v8Value);
+  return ScriptValue(script_state, v8_value);
 }
 
-PaymentMethodData toPaymentMethodData(
-    ScriptState* scriptState,
-    const WebPaymentMethodData& webMethodData) {
-  PaymentMethodData methodData;
-  Vector<String> supportedMethods;
-  for (const auto& method : webMethodData.supportedMethods) {
-    supportedMethods.push_back(method);
+PaymentMethodData ToPaymentMethodData(
+    ScriptState* script_state,
+    const WebPaymentMethodData& web_method_data) {
+  PaymentMethodData method_data;
+  Vector<String> supported_methods;
+  for (const auto& method : web_method_data.supported_methods) {
+    supported_methods.push_back(method);
   }
-  methodData.setSupportedMethods(supportedMethods);
-  methodData.setData(
-      stringDataToScriptValue(scriptState, webMethodData.stringifiedData));
-  return methodData;
+  method_data.setSupportedMethods(supported_methods);
+  method_data.setData(
+      StringDataToScriptValue(script_state, web_method_data.stringified_data));
+  return method_data;
 }
 
 }  // namespace
 
-PaymentAppRequest PaymentAppRequestConversion::toPaymentAppRequest(
-    ScriptState* scriptState,
-    const WebPaymentAppRequest& webAppRequest) {
-  DCHECK(scriptState);
+PaymentAppRequest PaymentAppRequestConversion::ToPaymentAppRequest(
+    ScriptState* script_state,
+    const WebPaymentAppRequest& web_app_request) {
+  DCHECK(script_state);
 
-  PaymentAppRequest appRequest;
-  if (!scriptState->contextIsValid())
-    return appRequest;
+  PaymentAppRequest app_request;
+  if (!script_state->ContextIsValid())
+    return app_request;
 
-  ScriptState::Scope scope(scriptState);
+  ScriptState::Scope scope(script_state);
 
-  appRequest.setOrigin(webAppRequest.origin);
-  HeapVector<PaymentMethodData> methodData;
-  for (const auto& md : webAppRequest.methodData) {
-    methodData.push_back(toPaymentMethodData(scriptState, md));
+  app_request.setOrigin(web_app_request.origin);
+  HeapVector<PaymentMethodData> method_data;
+  for (const auto& md : web_app_request.method_data) {
+    method_data.push_back(ToPaymentMethodData(script_state, md));
   }
-  appRequest.setMethodData(methodData);
-  appRequest.setTotal(toPaymentItem(webAppRequest.total));
+  app_request.setMethodData(method_data);
+  app_request.setTotal(ToPaymentItem(web_app_request.total));
   HeapVector<PaymentDetailsModifier> modifiers;
-  for (const auto& modifier : webAppRequest.modifiers) {
-    modifiers.push_back(toPaymentDetailsModifier(scriptState, modifier));
+  for (const auto& modifier : web_app_request.modifiers) {
+    modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));
   }
-  appRequest.setOptionId(webAppRequest.optionId);
-  return appRequest;
+  app_request.setOptionId(web_app_request.option_id);
+  return app_request;
 }
 
 }  // namespace blink

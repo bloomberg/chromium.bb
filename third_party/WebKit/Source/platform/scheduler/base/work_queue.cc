@@ -28,7 +28,7 @@ void WorkQueue::AsValueInto(base::trace_event::TracedValue* state) const {
 
 WorkQueue::~WorkQueue() {
   DCHECK(!work_queue_sets_) << task_queue_->GetName() << " : "
-                            << work_queue_sets_->name() << " : " << name_;
+                            << work_queue_sets_->GetName() << " : " << name_;
 }
 
 const TaskQueueImpl::Task* WorkQueue::GetFrontTask() const {
@@ -59,7 +59,7 @@ bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
   // Quick sanity check.
   DCHECK_LE(work_queue_.front().enqueue_order(),
             work_queue_.back().enqueue_order())
-      << task_queue_->GetName() << " : " << work_queue_sets_->name() << " : "
+      << task_queue_->GetName() << " : " << work_queue_sets_->GetName() << " : "
       << name_;
   *enqueue_order = work_queue_.front().enqueue_order();
   return true;
@@ -110,7 +110,7 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
     work_queue_.pop_front();
   }
 
-  TaskQueueImpl::Task pending_task = work_queue_.takeFirst();
+  TaskQueueImpl::Task pending_task = work_queue_.TakeFirst();
   // NB immediate tasks have a different pipeline to delayed ones.
   if (queue_type_ == QueueType::IMMEDIATE && work_queue_.empty()) {
     // Short-circuit the queue reload so that OnPopQueue does the right thing.

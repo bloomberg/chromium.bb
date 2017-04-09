@@ -37,143 +37,144 @@
 namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
-    : m_document(document),
-      m_taskRunner(TaskRunnerHelper::get(TaskType::Networking, document)),
-      m_numberOfInOrderScriptsWithPendingNotification(0),
-      m_isSuspended(false) {
+    : document_(document),
+      task_runner_(TaskRunnerHelper::Get(TaskType::kNetworking, document)),
+      number_of_in_order_scripts_with_pending_notification_(0),
+      is_suspended_(false) {
   DCHECK(document);
 #ifndef NDEBUG
-  m_hasEverBeenSuspended = false;
+  has_ever_been_suspended_ = false;
 #endif
 }
 
-void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader,
-                                           AsyncExecutionType executionType) {
-  DCHECK(scriptLoader);
-  m_document->incrementLoadEventDelayCount();
-  switch (executionType) {
-    case Async:
-      m_pendingAsyncScripts.insert(scriptLoader);
+void ScriptRunner::QueueScriptForExecution(ScriptLoader* script_loader,
+                                           AsyncExecutionType execution_type) {
+  DCHECK(script_loader);
+  document_->IncrementLoadEventDelayCount();
+  switch (execution_type) {
+    case kAsync:
+      pending_async_scripts_.insert(script_loader);
       break;
 
-    case InOrder:
-      m_pendingInOrderScripts.push_back(scriptLoader);
-      m_numberOfInOrderScriptsWithPendingNotification++;
+    case kInOrder:
+      pending_in_order_scripts_.push_back(script_loader);
+      number_of_in_order_scripts_with_pending_notification_++;
       break;
-    case None:
+    case kNone:
       NOTREACHED();
       break;
   }
 }
 
-void ScriptRunner::postTask(const WebTraceLocation& webTraceLocation) {
-  m_taskRunner->postTask(webTraceLocation, WTF::bind(&ScriptRunner::executeTask,
-                                                     wrapWeakPersistent(this)));
+void ScriptRunner::PostTask(const WebTraceLocation& web_trace_location) {
+  task_runner_->PostTask(
+      web_trace_location,
+      WTF::Bind(&ScriptRunner::ExecuteTask, WrapWeakPersistent(this)));
 }
 
-void ScriptRunner::suspend() {
+void ScriptRunner::Suspend() {
 #ifndef NDEBUG
-  m_hasEverBeenSuspended = true;
+  has_ever_been_suspended_ = true;
 #endif
 
-  m_isSuspended = true;
+  is_suspended_ = true;
 }
 
-void ScriptRunner::resume() {
-  DCHECK(m_isSuspended);
+void ScriptRunner::Resume() {
+  DCHECK(is_suspended_);
 
-  m_isSuspended = false;
+  is_suspended_ = false;
 
-  for (size_t i = 0; i < m_asyncScriptsToExecuteSoon.size(); ++i) {
-    postTask(BLINK_FROM_HERE);
+  for (size_t i = 0; i < async_scripts_to_execute_soon_.size(); ++i) {
+    PostTask(BLINK_FROM_HERE);
   }
-  for (size_t i = 0; i < m_inOrderScriptsToExecuteSoon.size(); ++i) {
-    postTask(BLINK_FROM_HERE);
+  for (size_t i = 0; i < in_order_scripts_to_execute_soon_.size(); ++i) {
+    PostTask(BLINK_FROM_HERE);
   }
 }
 
-void ScriptRunner::scheduleReadyInOrderScripts() {
-  while (!m_pendingInOrderScripts.isEmpty() &&
-         m_pendingInOrderScripts.front()->isReady()) {
+void ScriptRunner::ScheduleReadyInOrderScripts() {
+  while (!pending_in_order_scripts_.IsEmpty() &&
+         pending_in_order_scripts_.front()->IsReady()) {
     // A ScriptLoader that failed is responsible for cancelling itself
     // notifyScriptLoadError(); it continues this draining of ready scripts.
-    if (m_pendingInOrderScripts.front()->errorOccurred())
+    if (pending_in_order_scripts_.front()->ErrorOccurred())
       break;
-    m_inOrderScriptsToExecuteSoon.push_back(
-        m_pendingInOrderScripts.takeFirst());
-    postTask(BLINK_FROM_HERE);
+    in_order_scripts_to_execute_soon_.push_back(
+        pending_in_order_scripts_.TakeFirst());
+    PostTask(BLINK_FROM_HERE);
   }
 }
 
-void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader,
-                                     AsyncExecutionType executionType) {
-  SECURITY_CHECK(scriptLoader);
-  switch (executionType) {
-    case Async:
+void ScriptRunner::NotifyScriptReady(ScriptLoader* script_loader,
+                                     AsyncExecutionType execution_type) {
+  SECURITY_CHECK(script_loader);
+  switch (execution_type) {
+    case kAsync:
       // SECURITY_CHECK() makes us crash in a controlled way in error cases
       // where the ScriptLoader is associated with the wrong ScriptRunner
       // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
       // to detach).
-      SECURITY_CHECK(m_pendingAsyncScripts.contains(scriptLoader));
+      SECURITY_CHECK(pending_async_scripts_.Contains(script_loader));
 
-      m_pendingAsyncScripts.erase(scriptLoader);
-      m_asyncScriptsToExecuteSoon.push_back(scriptLoader);
+      pending_async_scripts_.erase(script_loader);
+      async_scripts_to_execute_soon_.push_back(script_loader);
 
-      postTask(BLINK_FROM_HERE);
-
-      break;
-
-    case InOrder:
-      SECURITY_CHECK(m_numberOfInOrderScriptsWithPendingNotification > 0);
-      m_numberOfInOrderScriptsWithPendingNotification--;
-
-      scheduleReadyInOrderScripts();
+      PostTask(BLINK_FROM_HERE);
 
       break;
-    case None:
+
+    case kInOrder:
+      SECURITY_CHECK(number_of_in_order_scripts_with_pending_notification_ > 0);
+      number_of_in_order_scripts_with_pending_notification_--;
+
+      ScheduleReadyInOrderScripts();
+
+      break;
+    case kNone:
       NOTREACHED();
       break;
   }
 }
 
-bool ScriptRunner::removePendingInOrderScript(ScriptLoader* scriptLoader) {
-  auto it = std::find(m_pendingInOrderScripts.begin(),
-                      m_pendingInOrderScripts.end(), scriptLoader);
-  if (it == m_pendingInOrderScripts.end())
+bool ScriptRunner::RemovePendingInOrderScript(ScriptLoader* script_loader) {
+  auto it = std::find(pending_in_order_scripts_.begin(),
+                      pending_in_order_scripts_.end(), script_loader);
+  if (it == pending_in_order_scripts_.end())
     return false;
-  m_pendingInOrderScripts.erase(it);
-  SECURITY_CHECK(m_numberOfInOrderScriptsWithPendingNotification > 0);
-  m_numberOfInOrderScriptsWithPendingNotification--;
+  pending_in_order_scripts_.erase(it);
+  SECURITY_CHECK(number_of_in_order_scripts_with_pending_notification_ > 0);
+  number_of_in_order_scripts_with_pending_notification_--;
   return true;
 }
 
-void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader,
-                                         AsyncExecutionType executionType) {
-  switch (executionType) {
-    case Async: {
+void ScriptRunner::NotifyScriptLoadError(ScriptLoader* script_loader,
+                                         AsyncExecutionType execution_type) {
+  switch (execution_type) {
+    case kAsync: {
       // See notifyScriptReady() comment.
-      SECURITY_CHECK(m_pendingAsyncScripts.contains(scriptLoader));
-      m_pendingAsyncScripts.erase(scriptLoader);
+      SECURITY_CHECK(pending_async_scripts_.Contains(script_loader));
+      pending_async_scripts_.erase(script_loader);
       break;
     }
-    case InOrder: {
-      SECURITY_CHECK(removePendingInOrderScript(scriptLoader));
-      scheduleReadyInOrderScripts();
+    case kInOrder: {
+      SECURITY_CHECK(RemovePendingInOrderScript(script_loader));
+      ScheduleReadyInOrderScripts();
       break;
     }
-    case None: {
+    case kNone: {
       NOTREACHED();
       break;
     }
   }
-  m_document->decrementLoadEventDelayCount();
+  document_->DecrementLoadEventDelayCount();
 }
 
-void ScriptRunner::movePendingScript(Document& oldDocument,
-                                     Document& newDocument,
-                                     ScriptLoader* scriptLoader) {
-  Document* newContextDocument = newDocument.contextDocument();
-  if (!newContextDocument) {
+void ScriptRunner::MovePendingScript(Document& old_document,
+                                     Document& new_document,
+                                     ScriptLoader* script_loader) {
+  Document* new_context_document = new_document.ContextDocument();
+  if (!new_context_document) {
     // Document's contextDocument() method will return no Document if the
     // following conditions both hold:
     //
@@ -184,67 +185,67 @@ void ScriptRunner::movePendingScript(Document& oldDocument,
     // The script element's loader is in that case moved to document() and
     // its script runner, which is the non-null Document that contextDocument()
     // would return if not detached.
-    DCHECK(!newDocument.frame());
-    newContextDocument = &newDocument;
+    DCHECK(!new_document.GetFrame());
+    new_context_document = &new_document;
   }
-  Document* oldContextDocument = oldDocument.contextDocument();
-  if (!oldContextDocument) {
-    DCHECK(!oldDocument.frame());
-    oldContextDocument = &oldDocument;
+  Document* old_context_document = old_document.ContextDocument();
+  if (!old_context_document) {
+    DCHECK(!old_document.GetFrame());
+    old_context_document = &old_document;
   }
-  if (oldContextDocument != newContextDocument)
-    oldContextDocument->scriptRunner()->movePendingScript(
-        newContextDocument->scriptRunner(), scriptLoader);
+  if (old_context_document != new_context_document)
+    old_context_document->GetScriptRunner()->MovePendingScript(
+        new_context_document->GetScriptRunner(), script_loader);
 }
 
-void ScriptRunner::movePendingScript(ScriptRunner* newRunner,
-                                     ScriptLoader* scriptLoader) {
-  auto it = m_pendingAsyncScripts.find(scriptLoader);
-  if (it != m_pendingAsyncScripts.end()) {
-    newRunner->queueScriptForExecution(scriptLoader, Async);
-    m_pendingAsyncScripts.erase(it);
-    m_document->decrementLoadEventDelayCount();
+void ScriptRunner::MovePendingScript(ScriptRunner* new_runner,
+                                     ScriptLoader* script_loader) {
+  auto it = pending_async_scripts_.Find(script_loader);
+  if (it != pending_async_scripts_.end()) {
+    new_runner->QueueScriptForExecution(script_loader, kAsync);
+    pending_async_scripts_.erase(it);
+    document_->DecrementLoadEventDelayCount();
     return;
   }
-  if (removePendingInOrderScript(scriptLoader)) {
-    newRunner->queueScriptForExecution(scriptLoader, InOrder);
-    m_document->decrementLoadEventDelayCount();
+  if (RemovePendingInOrderScript(script_loader)) {
+    new_runner->QueueScriptForExecution(script_loader, kInOrder);
+    document_->DecrementLoadEventDelayCount();
   }
 }
 
 // Returns true if task was run, and false otherwise.
-bool ScriptRunner::executeTaskFromQueue(
-    HeapDeque<Member<ScriptLoader>>* taskQueue) {
-  if (taskQueue->isEmpty())
+bool ScriptRunner::ExecuteTaskFromQueue(
+    HeapDeque<Member<ScriptLoader>>* task_queue) {
+  if (task_queue->IsEmpty())
     return false;
-  taskQueue->takeFirst()->execute();
+  task_queue->TakeFirst()->Execute();
 
-  m_document->decrementLoadEventDelayCount();
+  document_->DecrementLoadEventDelayCount();
   return true;
 }
 
-void ScriptRunner::executeTask() {
-  if (m_isSuspended)
+void ScriptRunner::ExecuteTask() {
+  if (is_suspended_)
     return;
 
-  if (executeTaskFromQueue(&m_asyncScriptsToExecuteSoon))
+  if (ExecuteTaskFromQueue(&async_scripts_to_execute_soon_))
     return;
 
-  if (executeTaskFromQueue(&m_inOrderScriptsToExecuteSoon))
+  if (ExecuteTaskFromQueue(&in_order_scripts_to_execute_soon_))
     return;
 
 #ifndef NDEBUG
   // Extra tasks should be posted only when we resume after suspending.
-  DCHECK(m_hasEverBeenSuspended);
+  DCHECK(has_ever_been_suspended_);
 #endif
 }
 
 DEFINE_TRACE(ScriptRunner) {
-  visitor->trace(m_document);
-  visitor->trace(m_pendingInOrderScripts);
-  visitor->trace(m_pendingAsyncScripts);
-  visitor->trace(m_asyncScriptsToExecuteSoon);
-  visitor->trace(m_inOrderScriptsToExecuteSoon);
+  visitor->Trace(document_);
+  visitor->Trace(pending_in_order_scripts_);
+  visitor->Trace(pending_async_scripts_);
+  visitor->Trace(async_scripts_to_execute_soon_);
+  visitor->Trace(in_order_scripts_to_execute_soon_);
 }
 
 }  // namespace blink

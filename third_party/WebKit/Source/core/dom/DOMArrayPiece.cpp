@@ -9,18 +9,19 @@
 namespace blink {
 
 DOMArrayPiece::DOMArrayPiece(
-    const ArrayBufferOrArrayBufferView& arrayBufferOrView,
+    const ArrayBufferOrArrayBufferView& array_buffer_or_view,
     InitWithUnionOption option) {
-  if (arrayBufferOrView.isArrayBuffer()) {
-    DOMArrayBuffer* arrayBuffer = arrayBufferOrView.getAsArrayBuffer();
-    initWithData(arrayBuffer->data(), arrayBuffer->byteLength());
-  } else if (arrayBufferOrView.isArrayBufferView()) {
-    DOMArrayBufferView* arrayBufferView =
-        arrayBufferOrView.getAsArrayBufferView();
-    initWithData(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
-  } else if (arrayBufferOrView.isNull() &&
-             option == AllowNullPointToNullWithZeroSize) {
-    initWithData(nullptr, 0);
+  if (array_buffer_or_view.isArrayBuffer()) {
+    DOMArrayBuffer* array_buffer = array_buffer_or_view.getAsArrayBuffer();
+    InitWithData(array_buffer->Data(), array_buffer->ByteLength());
+  } else if (array_buffer_or_view.isArrayBufferView()) {
+    DOMArrayBufferView* array_buffer_view =
+        array_buffer_or_view.getAsArrayBufferView();
+    InitWithData(array_buffer_view->BaseAddress(),
+                 array_buffer_view->byteLength());
+  } else if (array_buffer_or_view.isNull() &&
+             option == kAllowNullPointToNullWithZeroSize) {
+    InitWithData(nullptr, 0);
   }  // Otherwise, leave the obejct as null.
 }
 

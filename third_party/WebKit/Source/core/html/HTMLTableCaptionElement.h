@@ -39,7 +39,7 @@ class HTMLTableCaptionElement final : public HTMLElement {
  private:
   HTMLTableCaptionElement(Document&);
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 };

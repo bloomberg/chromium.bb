@@ -39,23 +39,23 @@ namespace blink {
 
 class CORE_EXPORT AnimatableLength final : public AnimatableValue {
  public:
-  static PassRefPtr<AnimatableLength> create(const Length& length, float zoom) {
-    return adoptRef(new AnimatableLength(length, zoom));
+  static PassRefPtr<AnimatableLength> Create(const Length& length, float zoom) {
+    return AdoptRef(new AnimatableLength(length, zoom));
   }
-  Length getLength(float zoom, ValueRange) const;
+  Length GetLength(float zoom, ValueRange) const;
 
  private:
   AnimatableLength(const Length&, float zoom);
-  AnimatableType type() const override { return TypeLength; }
-  bool equalTo(const AnimatableValue*) const override;
+  AnimatableType GetType() const override { return kTypeLength; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  double m_pixels;
-  double m_percent;
-  bool m_hasPixels;
-  bool m_hasPercent;
+  double pixels_;
+  double percent_;
+  bool has_pixels_;
+  bool has_percent_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, isLength());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, IsLength());
 
 }  // namespace blink
 

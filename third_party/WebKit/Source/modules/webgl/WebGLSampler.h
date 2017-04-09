@@ -17,15 +17,15 @@ class WebGLSampler : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLSampler() override;
 
-  static WebGLSampler* create(WebGL2RenderingContextBase*);
+  static WebGLSampler* Create(WebGL2RenderingContextBase*);
 
  protected:
   explicit WebGLSampler(WebGL2RenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:
-  bool isSampler() const override { return true; }
+  bool IsSampler() const override { return true; }
 };
 
 }  // namespace blink

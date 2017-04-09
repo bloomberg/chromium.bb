@@ -27,37 +27,37 @@
 
 namespace blink {
 
-AnimationEvent::AnimationEvent() : m_elapsedTime(0.0) {}
+AnimationEvent::AnimationEvent() : elapsed_time_(0.0) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
                                const AnimationEventInit& initializer)
     : Event(type, initializer),
-      m_animationName(initializer.animationName()),
-      m_elapsedTime(initializer.elapsedTime()) {}
+      animation_name_(initializer.animationName()),
+      elapsed_time_(initializer.elapsedTime()) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
-                               const String& animationName,
-                               double elapsedTime)
+                               const String& animation_name,
+                               double elapsed_time)
     : Event(type, true, true),
-      m_animationName(animationName),
-      m_elapsedTime(elapsedTime) {}
+      animation_name_(animation_name),
+      elapsed_time_(elapsed_time) {}
 
 AnimationEvent::~AnimationEvent() {}
 
 const String& AnimationEvent::animationName() const {
-  return m_animationName;
+  return animation_name_;
 }
 
 double AnimationEvent::elapsedTime() const {
-  return m_elapsedTime;
+  return elapsed_time_;
 }
 
-const AtomicString& AnimationEvent::interfaceName() const {
+const AtomicString& AnimationEvent::InterfaceName() const {
   return EventNames::AnimationEvent;
 }
 
 DEFINE_TRACE(AnimationEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

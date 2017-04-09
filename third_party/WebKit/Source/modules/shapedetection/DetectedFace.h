@@ -17,8 +17,8 @@ class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DetectedFace* create();
-  static DetectedFace* create(DOMRect*);
+  static DetectedFace* Create();
+  static DetectedFace* Create(DOMRect*);
 
   DOMRect* boundingBox() const;
   DECLARE_TRACE();
@@ -26,7 +26,7 @@ class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
  private:
   explicit DetectedFace(DOMRect*);
 
-  Member<DOMRect> m_boundingBox;
+  Member<DOMRect> bounding_box_;
 };
 
 }  // namespace blink

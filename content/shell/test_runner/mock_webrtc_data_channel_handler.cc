@@ -23,13 +23,13 @@ MockWebRTCDataChannelHandler::MockWebRTCDataChannelHandler(
       init_(init),
       delegate_(delegate),
       weak_factory_(this) {
-  reliable_ = (init.ordered && init.maxRetransmits == -1 &&
-               init.maxRetransmitTime == -1);
+  reliable_ = (init.ordered && init.max_retransmits == -1 &&
+               init.max_retransmit_time == -1);
 }
 
 MockWebRTCDataChannelHandler::~MockWebRTCDataChannelHandler() {}
 
-void MockWebRTCDataChannelHandler::setClient(
+void MockWebRTCDataChannelHandler::SetClient(
     WebRTCDataChannelHandlerClient* client) {
   client_ = client;
   if (client_)
@@ -38,60 +38,60 @@ void MockWebRTCDataChannelHandler::setClient(
                    weak_factory_.GetWeakPtr()));
 }
 
-blink::WebString MockWebRTCDataChannelHandler::label() {
+blink::WebString MockWebRTCDataChannelHandler::Label() {
   return label_;
 }
 
-bool MockWebRTCDataChannelHandler::isReliable() {
+bool MockWebRTCDataChannelHandler::IsReliable() {
   return reliable_;
 }
 
-bool MockWebRTCDataChannelHandler::ordered() const {
+bool MockWebRTCDataChannelHandler::Ordered() const {
   return init_.ordered;
 }
 
-unsigned short MockWebRTCDataChannelHandler::maxRetransmitTime() const {
-  return init_.maxRetransmitTime;
+unsigned short MockWebRTCDataChannelHandler::MaxRetransmitTime() const {
+  return init_.max_retransmit_time;
 }
 
-unsigned short MockWebRTCDataChannelHandler::maxRetransmits() const {
-  return init_.maxRetransmits;
+unsigned short MockWebRTCDataChannelHandler::MaxRetransmits() const {
+  return init_.max_retransmits;
 }
 
-WebString MockWebRTCDataChannelHandler::protocol() const {
+WebString MockWebRTCDataChannelHandler::Protocol() const {
   return init_.protocol;
 }
 
-bool MockWebRTCDataChannelHandler::negotiated() const {
+bool MockWebRTCDataChannelHandler::Negotiated() const {
   return init_.negotiated;
 }
 
-unsigned short MockWebRTCDataChannelHandler::id() const {
+unsigned short MockWebRTCDataChannelHandler::Id() const {
   return init_.id;
 }
 
 blink::WebRTCDataChannelHandlerClient::ReadyState
-MockWebRTCDataChannelHandler::state() const {
-  return blink::WebRTCDataChannelHandlerClient::ReadyStateConnecting;
+MockWebRTCDataChannelHandler::GetState() const {
+  return blink::WebRTCDataChannelHandlerClient::kReadyStateConnecting;
 }
 
-unsigned long MockWebRTCDataChannelHandler::bufferedAmount() {
+unsigned long MockWebRTCDataChannelHandler::BufferedAmount() {
   return 0;
 }
 
-bool MockWebRTCDataChannelHandler::sendStringData(const WebString& data) {
+bool MockWebRTCDataChannelHandler::SendStringData(const WebString& data) {
   DCHECK(client_);
-  client_->didReceiveStringData(data);
+  client_->DidReceiveStringData(data);
   return true;
 }
 
-bool MockWebRTCDataChannelHandler::sendRawData(const char* data, size_t size) {
+bool MockWebRTCDataChannelHandler::SendRawData(const char* data, size_t size) {
   DCHECK(client_);
-  client_->didReceiveRawData(data, size);
+  client_->DidReceiveRawData(data, size);
   return true;
 }
 
-void MockWebRTCDataChannelHandler::close() {
+void MockWebRTCDataChannelHandler::Close() {
   DCHECK(client_);
   delegate_->PostTask(
       base::Bind(&MockWebRTCDataChannelHandler::ReportClosedState,
@@ -99,12 +99,12 @@ void MockWebRTCDataChannelHandler::close() {
 }
 
 void MockWebRTCDataChannelHandler::ReportOpenedState() {
-  client_->didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
+  client_->DidChangeReadyState(WebRTCDataChannelHandlerClient::kReadyStateOpen);
 }
 
 void MockWebRTCDataChannelHandler::ReportClosedState() {
-  client_->didChangeReadyState(
-      WebRTCDataChannelHandlerClient::ReadyStateClosed);
+  client_->DidChangeReadyState(
+      WebRTCDataChannelHandlerClient::kReadyStateClosed);
 }
 
 }  // namespace test_runner

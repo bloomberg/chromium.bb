@@ -40,7 +40,7 @@
 
 namespace blink {
 
-MODULES_EXPORT ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
+MODULES_EXPORT ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType);
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 //
@@ -55,23 +55,23 @@ MODULES_EXPORT ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
 //    m_resolver will be leaked until the ExecutionContext is destroyed.
 class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
  public:
-  static CryptoResultImpl* create(ScriptState*);
+  static CryptoResultImpl* Create(ScriptState*);
 
   ~CryptoResultImpl();
 
-  void completeWithError(WebCryptoErrorType, const WebString&) override;
-  void completeWithBuffer(const void* bytes, unsigned bytesSize) override;
-  void completeWithJson(const char* utf8Data, unsigned length) override;
-  void completeWithBoolean(bool) override;
-  void completeWithKey(const WebCryptoKey&) override;
-  void completeWithKeyPair(const WebCryptoKey& publicKey,
-                           const WebCryptoKey& privateKey) override;
+  void CompleteWithError(WebCryptoErrorType, const WebString&) override;
+  void CompleteWithBuffer(const void* bytes, unsigned bytes_size) override;
+  void CompleteWithJson(const char* utf8_data, unsigned length) override;
+  void CompleteWithBoolean(bool) override;
+  void CompleteWithKey(const WebCryptoKey&) override;
+  void CompleteWithKeyPair(const WebCryptoKey& public_key,
+                           const WebCryptoKey& private_key) override;
 
   // If called after completion (including cancellation) will return an empty
   // ScriptPromise.
-  ScriptPromise promise();
+  ScriptPromise Promise();
 
-  WebCryptoResult result() { return WebCryptoResult(this, m_cancel.get()); }
+  WebCryptoResult Result() { return WebCryptoResult(this, cancel_.Get()); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -79,26 +79,26 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   class Resolver;
   class ResultCancel : public CryptoResultCancel {
    public:
-    static PassRefPtr<ResultCancel> create() {
-      return adoptRef(new ResultCancel);
+    static PassRefPtr<ResultCancel> Create() {
+      return AdoptRef(new ResultCancel);
     }
 
-    bool cancelled() const override;
+    bool Cancelled() const override;
 
-    void cancel();
+    void Cancel();
 
    private:
     ResultCancel();
 
-    int m_cancelled;
+    int cancelled_;
   };
 
   explicit CryptoResultImpl(ScriptState*);
 
-  void cancel();
-  void clearResolver();
+  void Cancel();
+  void ClearResolver();
 
-  Member<Resolver> m_resolver;
+  Member<Resolver> resolver_;
 
   // Separately communicate cancellation to WebCryptoResults so as to
   // allow this result object, which will be on the Oilpan heap, to be
@@ -109,7 +109,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   // check cancellation status via this result object. So, keep a separate
   // cancellation status object for the purpose, which will outlive the
   // result object and can be safely accessed by multiple threads.
-  RefPtr<ResultCancel> m_cancel;
+  RefPtr<ResultCancel> cancel_;
 };
 
 }  // namespace blink

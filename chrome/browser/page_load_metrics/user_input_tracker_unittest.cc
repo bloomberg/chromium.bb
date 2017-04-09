@@ -22,8 +22,8 @@ double ToMonotonicallyIncreasingSeconds(base::TimeTicks t) {
 
 class FakeInputEvent : public blink::WebInputEvent {
  public:
-  FakeInputEvent(blink::WebInputEvent::Type type = blink::WebInputEvent::Char,
-                 int modifiers = blink::WebInputEvent::NoModifiers)
+  FakeInputEvent(blink::WebInputEvent::Type type = blink::WebInputEvent::kChar,
+                 int modifiers = blink::WebInputEvent::kNoModifiers)
       : WebInputEvent(
             sizeof(FakeInputEvent),
             type,
@@ -77,7 +77,7 @@ TEST_F(UserInputTrackerTest, MultipleEvents) {
 
   // Make sure that the two events are monotonically increasing, and that both
   // are in the past.
-  e1.setTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
+  e1.SetTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
       e2.GetTimeStamp() - base::TimeDelta::FromMilliseconds(100)));
 
   base::TimeTicks after =
@@ -134,7 +134,7 @@ TEST_F(UserInputTrackerTest, IgnoreEventsOlderThanConsumed) {
 
   // Make sure that the two events are monotonically increasing, and that both
   // are in the past.
-  e1.setTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
+  e1.SetTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
       e2.GetTimeStamp() - base::TimeDelta::FromMilliseconds(100)));
 
   base::TimeTicks after =
@@ -167,7 +167,7 @@ TEST_F(UserInputTrackerTest, ExcludeOldEvents) {
   FakeInputEvent e1;
   FakeInputEvent e2;
   // make sure e1 is too old to be considered.
-  e1.setTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
+  e1.SetTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
       e2.GetTimeStamp() -
       base::TimeDelta::FromMilliseconds(kTooOldMilliseconds)));
 
@@ -201,7 +201,7 @@ TEST_F(UserInputTrackerTest, RateLimit) {
   // kTooManyEntries milliseconds in the past, and then synthesize one event for
   // each of kTooManyEntries after this start point. This guarantees that all
   // events are in the past.
-  e.setTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
+  e.SetTimeStampSeconds(ToMonotonicallyIncreasingSeconds(
       e.GetTimeStamp() -
       base::TimeDelta::FromMilliseconds(kTooManyEntries * 2)));
 
@@ -210,7 +210,7 @@ TEST_F(UserInputTrackerTest, RateLimit) {
   // DCHECK in OnInputEvent verifies that we don't exceed the expected capacity.
   for (size_t i = 0; i < kTooManyEntries; ++i) {
     tracker.OnInputEvent(e);
-    e.setTimeStampSeconds(e.timeStampSeconds() +
+    e.SetTimeStampSeconds(e.TimeStampSeconds() +
                           base::TimeDelta::FromMilliseconds(1).InSecondsF());
   }
 
@@ -221,7 +221,7 @@ TEST_F(UserInputTrackerTest, RateLimit) {
 
 TEST_F(UserInputTrackerTest, IgnoredEventType) {
   UserInputTracker tracker;
-  FakeInputEvent e(blink::WebInputEvent::MouseMove);
+  FakeInputEvent e(blink::WebInputEvent::kMouseMove);
   tracker.OnInputEvent(e);
   EXPECT_EQ(base::TimeTicks(), tracker.FindMostRecentUserInputEventBefore(
                                    e.GetTimeStampRounded() +
@@ -230,8 +230,8 @@ TEST_F(UserInputTrackerTest, IgnoredEventType) {
 
 TEST_F(UserInputTrackerTest, IgnoreRepeatEvents) {
   UserInputTracker tracker;
-  FakeInputEvent e(blink::WebInputEvent::Char,
-                   blink::WebInputEvent::IsAutoRepeat);
+  FakeInputEvent e(blink::WebInputEvent::kChar,
+                   blink::WebInputEvent::kIsAutoRepeat);
   tracker.OnInputEvent(e);
   EXPECT_EQ(base::TimeTicks(), tracker.FindMostRecentUserInputEventBefore(
                                    e.GetTimeStampRounded() +

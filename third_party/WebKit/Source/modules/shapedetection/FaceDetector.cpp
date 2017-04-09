@@ -15,73 +15,75 @@
 
 namespace blink {
 
-FaceDetector* FaceDetector::create(const FaceDetectorOptions& options) {
+FaceDetector* FaceDetector::Create(const FaceDetectorOptions& options) {
   return new FaceDetector(options);
 }
 
 FaceDetector::FaceDetector(const FaceDetectorOptions& options)
     : ShapeDetector() {
-  shape_detection::mojom::blink::FaceDetectorOptionsPtr faceDetectorOptions =
+  shape_detection::mojom::blink::FaceDetectorOptionsPtr face_detector_options =
       shape_detection::mojom::blink::FaceDetectorOptions::New();
-  faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
-  faceDetectorOptions->fast_mode = options.fastMode();
+  face_detector_options->max_detected_faces = options.maxDetectedFaces();
+  face_detector_options->fast_mode = options.fastMode();
   shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
-  Platform::current()->interfaceProvider()->getInterface(
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));
-  provider->CreateFaceDetection(mojo::MakeRequest(&m_faceService),
-                                std::move(faceDetectorOptions));
+  provider->CreateFaceDetection(mojo::MakeRequest(&face_service_),
+                                std::move(face_detector_options));
 
-  m_faceService.set_connection_error_handler(convertToBaseCallback(WTF::bind(
-      &FaceDetector::onFaceServiceConnectionError, wrapWeakPersistent(this))));
+  face_service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
+      &FaceDetector::OnFaceServiceConnectionError, WrapWeakPersistent(this))));
 }
 
-ScriptPromise FaceDetector::doDetect(
+ScriptPromise FaceDetector::DoDetect(
     ScriptPromiseResolver* resolver,
-    mojo::ScopedSharedBufferHandle sharedBufferHandle,
-    int imageWidth,
-    int imageHeight) {
-  ScriptPromise promise = resolver->promise();
-  if (!m_faceService) {
-    resolver->reject(DOMException::create(
-        NotSupportedError, "Face detection service unavailable."));
+    mojo::ScopedSharedBufferHandle shared_buffer_handle,
+    int image_width,
+    int image_height) {
+  ScriptPromise promise = resolver->Promise();
+  if (!face_service_) {
+    resolver->Reject(DOMException::Create(
+        kNotSupportedError, "Face detection service unavailable."));
     return promise;
   }
-  m_faceServiceRequests.insert(resolver);
-  m_faceService->Detect(std::move(sharedBufferHandle), imageWidth, imageHeight,
-                        convertToBaseCallback(WTF::bind(
-                            &FaceDetector::onDetectFaces, wrapPersistent(this),
-                            wrapPersistent(resolver))));
+  face_service_requests_.insert(resolver);
+  face_service_->Detect(std::move(shared_buffer_handle), image_width,
+                        image_height,
+                        ConvertToBaseCallback(WTF::Bind(
+                            &FaceDetector::OnDetectFaces, WrapPersistent(this),
+                            WrapPersistent(resolver))));
   return promise;
 }
 
-void FaceDetector::onDetectFaces(
+void FaceDetector::OnDetectFaces(
     ScriptPromiseResolver* resolver,
-    shape_detection::mojom::blink::FaceDetectionResultPtr faceDetectionResult) {
-  DCHECK(m_faceServiceRequests.contains(resolver));
-  m_faceServiceRequests.erase(resolver);
+    shape_detection::mojom::blink::FaceDetectionResultPtr
+        face_detection_result) {
+  DCHECK(face_service_requests_.Contains(resolver));
+  face_service_requests_.erase(resolver);
 
-  HeapVector<Member<DetectedFace>> detectedFaces;
-  for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {
-    detectedFaces.push_back(DetectedFace::create(
-        DOMRect::create(boundingBox->x, boundingBox->y, boundingBox->width,
-                        boundingBox->height)));
+  HeapVector<Member<DetectedFace>> detected_faces;
+  for (const auto& bounding_box : face_detection_result->bounding_boxes) {
+    detected_faces.push_back(DetectedFace::Create(
+        DOMRect::Create(bounding_box->x, bounding_box->y, bounding_box->width,
+                        bounding_box->height)));
   }
 
-  resolver->resolve(detectedFaces);
+  resolver->Resolve(detected_faces);
 }
 
-void FaceDetector::onFaceServiceConnectionError() {
-  for (const auto& request : m_faceServiceRequests) {
-    request->reject(DOMException::create(NotSupportedError,
+void FaceDetector::OnFaceServiceConnectionError() {
+  for (const auto& request : face_service_requests_) {
+    request->Reject(DOMException::Create(kNotSupportedError,
                                          "Face Detection not implemented."));
   }
-  m_faceServiceRequests.clear();
-  m_faceService.reset();
+  face_service_requests_.Clear();
+  face_service_.reset();
 }
 
 DEFINE_TRACE(FaceDetector) {
-  ShapeDetector::trace(visitor);
-  visitor->trace(m_faceServiceRequests);
+  ShapeDetector::Trace(visitor);
+  visitor->Trace(face_service_requests_);
 }
 
 }  // namespace blink

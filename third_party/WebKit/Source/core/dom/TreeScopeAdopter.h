@@ -37,38 +37,38 @@ class TreeScopeAdopter {
   STACK_ALLOCATED();
 
  public:
-  TreeScopeAdopter(Node& toAdopt, TreeScope& newScope);
+  TreeScopeAdopter(Node& to_adopt, TreeScope& new_scope);
 
-  void execute() const;
-  bool needsScopeChange() const { return m_oldScope != m_newScope; }
+  void Execute() const;
+  bool NeedsScopeChange() const { return old_scope_ != new_scope_; }
 
 #if DCHECK_IS_ON()
-  static void ensureDidMoveToNewDocumentWasCalled(Document&);
+  static void EnsureDidMoveToNewDocumentWasCalled(Document&);
 #else
-  static void ensureDidMoveToNewDocumentWasCalled(Document&) {}
+  static void EnsureDidMoveToNewDocumentWasCalled(Document&) {}
 #endif
 
  private:
-  void updateTreeScope(Node&) const;
-  void moveTreeToNewScope(Node&) const;
-  void moveTreeToNewDocument(Node&,
-                             Document& oldDocument,
-                             Document& newDocument) const;
-  void moveNodeToNewDocument(Node&,
-                             Document& oldDocument,
-                             Document& newDocument) const;
-  TreeScope& oldScope() const { return *m_oldScope; }
-  TreeScope& newScope() const { return *m_newScope; }
+  void UpdateTreeScope(Node&) const;
+  void MoveTreeToNewScope(Node&) const;
+  void MoveTreeToNewDocument(Node&,
+                             Document& old_document,
+                             Document& new_document) const;
+  void MoveNodeToNewDocument(Node&,
+                             Document& old_document,
+                             Document& new_document) const;
+  TreeScope& OldScope() const { return *old_scope_; }
+  TreeScope& NewScope() const { return *new_scope_; }
 
-  Member<Node> m_toAdopt;
-  Member<TreeScope> m_newScope;
-  Member<TreeScope> m_oldScope;
+  Member<Node> to_adopt_;
+  Member<TreeScope> new_scope_;
+  Member<TreeScope> old_scope_;
 };
 
-inline TreeScopeAdopter::TreeScopeAdopter(Node& toAdopt, TreeScope& newScope)
-    : m_toAdopt(toAdopt),
-      m_newScope(newScope),
-      m_oldScope(toAdopt.treeScope()) {}
+inline TreeScopeAdopter::TreeScopeAdopter(Node& to_adopt, TreeScope& new_scope)
+    : to_adopt_(to_adopt),
+      new_scope_(new_scope),
+      old_scope_(to_adopt.GetTreeScope()) {}
 
 }  // namespace blink
 

@@ -36,17 +36,17 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
   ~WebURLLoaderMockFactoryImpl() override;
 
   // WebURLLoaderMockFactory:
-  WebURLLoader* createURLLoader(WebURLLoader* default_loader) override;
-  void registerURL(const WebURL& url,
+  WebURLLoader* CreateURLLoader(WebURLLoader* default_loader) override;
+  void RegisterURL(const WebURL& url,
                    const WebURLResponse& response,
-                   const WebString& filePath = WebString()) override;
-  void registerErrorURL(const WebURL& url,
+                   const WebString& file_path = WebString()) override;
+  void RegisterErrorURL(const WebURL& url,
                         const WebURLResponse& response,
                         const WebURLError& error) override;
-  void unregisterURL(const WebURL& url) override;
-  void unregisterAllURLsAndClearMemoryCache() override;
-  void serveAsynchronousRequests() override;
-  void setLoaderDelegate(WebURLLoaderTestDelegate* delegate) override {
+  void UnregisterURL(const WebURL& url) override;
+  void UnregisterAllURLsAndClearMemoryCache() override;
+  void ServeAsynchronousRequests() override;
+  void SetLoaderDelegate(WebURLLoaderTestDelegate* delegate) override {
     delegate_ = delegate;
   }
 
@@ -100,7 +100,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
   using URLToResponseMap = HashMap<KURL, ResponseInfo>;
   URLToResponseMap url_to_response_info_;
 
-  TestingPlatformSupport* m_platform;
+  TestingPlatformSupport* platform_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactoryImpl);
 };

@@ -59,16 +59,16 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
                                                 media::PIXEL_FORMAT_I420));
     formats.push_back(media::VideoCaptureFormat(gfx::Size(320, 240), 30,
                                                 media::PIXEL_FORMAT_I420));
-    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::TypeVideo,
-                              blink::WebString::fromASCII("dummy_source_name"),
+    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                              blink::WebMediaStreamSource::kTypeVideo,
+                              blink::WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
-    webkit_source_.setExtraData(mock_source_);
+    webkit_source_.SetExtraData(mock_source_);
   }
 
   void TearDown() override {
-    webkit_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    webkit_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
  protected:
@@ -226,7 +226,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   void OnConstraintsApplied(MediaStreamSource* source,
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
-    ASSERT_EQ(source, webkit_source().getExtraData());
+    ASSERT_EQ(source, webkit_source().GetExtraData());
 
     if (result == MEDIA_DEVICE_OK) {
       ++number_of_successful_constraints_applied_;
@@ -236,10 +236,10 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
       ++number_of_failed_constraints_applied_;
     }
 
-    if (!track_to_release_.isNull()) {
+    if (!track_to_release_.IsNull()) {
       mock_source_ = nullptr;
-      webkit_source_.reset();
-      track_to_release_.reset();
+      webkit_source_.Reset();
+      track_to_release_.Reset();
     }
   }
   const base::MessageLoopForUI message_loop_;
@@ -304,8 +304,8 @@ TEST_F(MediaStreamVideoSourceTest, TwoTracksWith720AndWVGA) {
 
 TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().width.setMax(800);
-  factory.AddAdvanced().height.setMax(700);
+  factory.AddAdvanced().width.SetMax(800);
+  factory.AddAdvanced().height.SetMax(700);
 
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
@@ -349,8 +349,8 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
       640, 480, media::limits::kMaxFramesPerSecond - 2);
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
-  EXPECT_EQ(track.source().getReadyState(),
-            blink::WebMediaStreamSource::ReadyStateLive);
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -360,8 +360,8 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   run_loop.Run();
   EXPECT_EQ(muted_state, true);
 
-  EXPECT_EQ(track.source().getReadyState(),
-            blink::WebMediaStreamSource::ReadyStateMuted);
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateMuted);
 
   base::RunLoop run_loop2;
   base::Closure quit_closure2 = run_loop2.QuitClosure();
@@ -371,8 +371,8 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   run_loop2.Run();
 
   EXPECT_EQ(muted_state, false);
-  EXPECT_EQ(track.source().getReadyState(),
-            blink::WebMediaStreamSource::ReadyStateLive);
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
 
   sink.DisconnectFromTrack();
 }
@@ -399,16 +399,16 @@ class MediaStreamVideoSourceOldConstraintsTest : public ::testing::Test {
     formats.push_back(media::VideoCaptureFormat(
         gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420));
     mock_source_->SetSupportedFormats(formats);
-    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::TypeVideo,
-                              blink::WebString::fromASCII("dummy_source_name"),
+    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                              blink::WebMediaStreamSource::kTypeVideo,
+                              blink::WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
-    webkit_source_.setExtraData(mock_source_);
+    webkit_source_.SetExtraData(mock_source_);
   }
 
   void TearDown() override {
-    webkit_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    webkit_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
  protected:
@@ -566,7 +566,7 @@ class MediaStreamVideoSourceOldConstraintsTest : public ::testing::Test {
   void OnConstraintsApplied(MediaStreamSource* source,
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
-    ASSERT_EQ(source, webkit_source().getExtraData());
+    ASSERT_EQ(source, webkit_source().GetExtraData());
 
     if (result == MEDIA_DEVICE_OK) {
       ++number_of_successful_constraints_applied_;
@@ -576,10 +576,10 @@ class MediaStreamVideoSourceOldConstraintsTest : public ::testing::Test {
       ++number_of_failed_constraints_applied_;
     }
 
-    if (!track_to_release_.isNull()) {
+    if (!track_to_release_.IsNull()) {
       mock_source_ = nullptr;
-      webkit_source_.reset();
-      track_to_release_.reset();
+      webkit_source_.Reset();
+      track_to_release_.Reset();
     }
   }
   const base::MessageLoopForUI message_loop_;
@@ -598,7 +598,7 @@ class MediaStreamVideoSourceOldConstraintsTest : public ::testing::Test {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, AddTrackAndStartSource) {
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->StartMockedSource();
@@ -609,7 +609,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, AddTrackAndStartSource) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        AddTwoTracksBeforeSourceStarts) {
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
@@ -621,7 +621,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, AddTrackAfterSourceStarts) {
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->StartMockedSource();
@@ -633,7 +633,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, AddTrackAfterSourceStarts) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, AddTrackAndFailToStartSource) {
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->FailToStartMockedSource();
@@ -645,7 +645,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, AddTrackAndFailToStartSource) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        AddTwoTracksBeforeGetSupportedFormats) {
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
   blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
@@ -659,9 +659,9 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryConstraintCif5Fps) {
   MockConstraintFactory factory;
-  factory.basic().width.setMax(352);
-  factory.basic().height.setMax(288);
-  factory.basic().frameRate.setMax(5.0);
+  factory.basic().width.SetMax(352);
+  factory.basic().height.SetMax(288);
+  factory.basic().frame_rate.SetMax(5.0);
 
   CreateTrackAndStartSource(factory.CreateWebMediaConstraints(), 352, 288, 5);
 }
@@ -672,10 +672,10 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryConstraintCif5Fps) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryMinVgaOptional720P) {
   MockConstraintFactory factory;
-  factory.basic().width.setMin(640);
-  factory.basic().height.setMin(480);
-  factory.AddAdvanced().width.setMin(1280);
-  factory.AddAdvanced().aspectRatio.setMin(1280.0 / 720);
+  factory.basic().width.SetMin(640);
+  factory.basic().height.SetMin(480);
+  factory.AddAdvanced().width.SetMin(1280);
+  factory.AddAdvanced().aspect_ratio.SetMin(1280.0 / 720);
 
   CreateTrackAndStartSource(factory.CreateWebMediaConstraints(), 1280, 720, 30);
 }
@@ -686,7 +686,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryMinVgaOptional720P) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryExact720P) {
   MockConstraintFactory factory;
-  factory.basic().width.setExact(1280);
+  factory.basic().width.SetExact(1280);
   CreateTrackAndStartSource(factory.CreateWebMediaConstraints(), 1280, 720, 30);
 }
 
@@ -696,10 +696,10 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryExact720P) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryAspectRatio4To3) {
   MockConstraintFactory factory;
-  factory.basic().width.setMin(640);
-  factory.basic().height.setMin(480);
-  factory.basic().aspectRatio.setMax(640.0 / 480);
-  factory.AddAdvanced().width.setMin(1280);
+  factory.basic().width.SetMin(640);
+  factory.basic().height.SetMin(480);
+  factory.basic().aspect_ratio.SetMax(640.0 / 480);
+  factory.AddAdvanced().width.SetMin(1280);
 
   TestSourceCropFrame(1280, 720, factory.CreateWebMediaConstraints(), 960, 720);
 }
@@ -707,7 +707,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryAspectRatio4To3) {
 // Test that AddTrack succeeds if the mandatory min aspect ratio it set to 2.
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryAspectRatio2) {
   MockConstraintFactory factory;
-  factory.basic().aspectRatio.setMin(2.0);
+  factory.basic().aspect_ratio.SetMin(2.0);
 
   TestSourceCropFrame(MediaStreamVideoSource::kDefaultWidth,
                       MediaStreamVideoSource::kDefaultHeight,
@@ -719,8 +719,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MandatoryAspectRatio2) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        MinAspectRatioLargerThanMaxAspectRatio) {
   MockConstraintFactory factory;
-  factory.basic().aspectRatio.setMin(2.0);
-  factory.basic().aspectRatio.setMax(1.0);
+  factory.basic().aspect_ratio.SetMin(2.0);
+  factory.basic().aspect_ratio.SetMax(1.0);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -731,8 +731,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MinWidthLargerThanMaxWidth) {
   MockConstraintFactory factory;
-  factory.basic().width.setMin(640);
-  factory.basic().width.setMax(320);
+  factory.basic().width.SetMin(640);
+  factory.basic().width.SetMax(320);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -743,8 +743,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MinWidthLargerThanMaxWidth) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MinHeightLargerThanMaxHeight) {
   MockConstraintFactory factory;
-  factory.basic().height.setMin(480);
-  factory.basic().height.setMax(360);
+  factory.basic().height.SetMin(480);
+  factory.basic().height.SetMax(360);
 
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
@@ -757,8 +757,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MinHeightLargerThanMaxHeight) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        MinFrameRateLargerThanMaxFrameRate) {
   MockConstraintFactory factory;
-  factory.basic().frameRate.setMin(25);
-  factory.basic().frameRate.setMax(15);
+  factory.basic().frame_rate.SetMin(25);
+  factory.basic().frame_rate.SetMax(15);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -769,7 +769,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, ExactWidthNotSupported) {
   MockConstraintFactory factory;
-  factory.basic().width.setExact(12000);
+  factory.basic().width.SetExact(12000);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -780,7 +780,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, ExactWidthNotSupported) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, MinWidthNotSupported) {
   MockConstraintFactory factory;
-  factory.basic().width.setMin(12000);
+  factory.basic().width.SetMin(12000);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -808,7 +808,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        ReleaseTrackAndSourceOnFailureCallBack) {
   MockConstraintFactory factory;
-  factory.basic().width.setMin(99999);
+  factory.basic().width.SetMin(99999);
   {
     blink::WebMediaStreamTrack track =
         CreateTrack("123", factory.CreateWebMediaConstraints());
@@ -824,7 +824,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, OptionalAspectRatioTooHigh) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().aspectRatio.setMin(2.0);
+  factory.AddAdvanced().aspect_ratio.SetMin(2.0);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -848,7 +848,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, DefaultCapability) {
   mock_source()->SetSupportedFormats(formats);
 
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   CreateTrackAndStartSource(constraints, MediaStreamVideoSource::kDefaultWidth,
                             MediaStreamVideoSource::kDefaultHeight, 30);
 }
@@ -858,7 +858,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, DefaultCapability) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, InvalidMandatoryConstraint) {
   MockConstraintFactory factory;
   // Use a constraint that is only known for audio.
-  factory.basic().echoCancellation.setExact(true);
+  factory.basic().echo_cancellation.SetExact(true);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -872,7 +872,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, InvalidMandatoryConstraint) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, InvalidOptionalConstraint) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().echoCancellation.setExact(true);
+  factory.AddAdvanced().echo_cancellation.SetExact(true);
 
   CreateTrackAndStartSource(factory.CreateWebMediaConstraints(),
                             MediaStreamVideoSource::kDefaultWidth,
@@ -890,8 +890,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
                                               media::PIXEL_FORMAT_I420));
   mock_source()->SetSupportedFormats(formats);
   MockConstraintFactory factory;
-  factory.basic().width.setMax(480);
-  factory.basic().height.setMax(270);
+  factory.basic().width.SetMax(480);
+  factory.basic().height.SetMax(270);
 
   blink::WebMediaStreamTrack track = CreateTrackAndStartSource(
       factory.CreateWebMediaConstraints(), 480, 270, 30);
@@ -905,10 +905,10 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, OptionalConstraints) {
   MockConstraintFactory factory;
   // Min width of 2056 pixels can not be fulfilled.
-  factory.AddAdvanced().width.setMin(2056);
-  factory.AddAdvanced().width.setMin(641);
+  factory.AddAdvanced().width.SetMin(2056);
+  factory.AddAdvanced().width.SetMin(641);
   // Since min width is set to 641 pixels, max width 640 can not be fulfilled.
-  factory.AddAdvanced().width.setMax(640);
+  factory.AddAdvanced().width.SetMax(640);
   CreateTrackAndStartSource(factory.CreateWebMediaConstraints(), 1280, 720, 30);
 }
 
@@ -919,8 +919,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, OptionalConstraints) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        DeliverCroppedVideoFrameOptional640360) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().width.setMax(640);
-  factory.AddAdvanced().height.setMax(360);
+  factory.AddAdvanced().width.SetMax(640);
+  factory.AddAdvanced().height.SetMax(360);
   TestSourceCropFrame(640, 480, factory.CreateWebMediaConstraints(), 640, 360);
 }
 
@@ -929,8 +929,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        DeliverCroppedVideoFrameMandatory640360) {
   MockConstraintFactory factory;
-  factory.basic().width.setMax(640);
-  factory.basic().height.setMax(360);
+  factory.basic().width.SetMax(640);
+  factory.basic().height.SetMax(360);
   TestSourceCropFrame(640, 480, factory.CreateWebMediaConstraints(), 640, 360);
 }
 
@@ -939,10 +939,10 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        DeliverCroppedVideoFrameMandatory732489) {
   MockConstraintFactory factory;
-  factory.basic().width.setMax(732);
-  factory.basic().height.setMax(489);
-  factory.basic().width.setMin(732);
-  factory.basic().height.setMin(489);
+  factory.basic().width.SetMax(732);
+  factory.basic().height.SetMax(489);
+  factory.basic().width.SetMin(732);
+  factory.basic().height.SetMin(489);
   TestSourceCropFrame(1280, 720, factory.CreateWebMediaConstraints(), 732, 489);
 }
 
@@ -953,8 +953,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        DeliverCroppedVideoFrame637359) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().width.setMax(637);
-  factory.AddAdvanced().height.setMax(359);
+  factory.AddAdvanced().width.SetMax(637);
+  factory.AddAdvanced().height.SetMax(359);
   TestSourceCropFrame(640, 480, factory.CreateWebMediaConstraints(), 637, 359);
 }
 
@@ -963,10 +963,10 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        DeliverCroppedVideoFrame320320) {
   MockConstraintFactory factory;
-  factory.basic().width.setMax(320);
-  factory.basic().height.setMax(320);
-  factory.basic().height.setMin(320);
-  factory.basic().width.setMax(320);
+  factory.basic().width.SetMax(320);
+  factory.basic().height.SetMax(320);
+  factory.basic().height.SetMin(320);
+  factory.basic().width.SetMax(320);
   TestSourceCropFrame(640, 480, factory.CreateWebMediaConstraints(), 320, 320);
 }
 
@@ -975,10 +975,10 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        DeliverSmallerSizeWhenTooLargeMax) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().width.setMax(1920);
-  factory.AddAdvanced().height.setMax(1080);
-  factory.AddAdvanced().width.setMin(1280);
-  factory.AddAdvanced().height.setMin(720);
+  factory.AddAdvanced().width.SetMax(1920);
+  factory.AddAdvanced().height.SetMax(1080);
+  factory.AddAdvanced().width.SetMin(1280);
+  factory.AddAdvanced().height.SetMin(720);
   TestSourceCropFrame(1280, 720, factory.CreateWebMediaConstraints(), 1280,
                       720);
 }
@@ -986,11 +986,11 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, TwoTracksWithVGAAndWVGA) {
   MockConstraintFactory factory1;
-  factory1.AddAdvanced().width.setMax(640);
-  factory1.AddAdvanced().height.setMax(480);
+  factory1.AddAdvanced().width.SetMax(640);
+  factory1.AddAdvanced().height.SetMax(480);
 
   MockConstraintFactory factory2;
-  factory2.AddAdvanced().height.setMax(360);
+  factory2.AddAdvanced().height.SetMax(360);
 
   TestTwoTracksWithDifferentConstraints(factory1.CreateWebMediaConstraints(),
                                         factory2.CreateWebMediaConstraints(),
@@ -1001,12 +1001,12 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, TwoTracksWithVGAAndWVGA) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, TwoTracksWith720AndWVGA) {
   MockConstraintFactory factory1;
-  factory1.AddAdvanced().width.setMin(1280);
-  factory1.AddAdvanced().height.setMin(720);
+  factory1.AddAdvanced().width.SetMin(1280);
+  factory1.AddAdvanced().height.SetMin(720);
 
   MockConstraintFactory factory2;
-  factory2.basic().width.setMax(640);
-  factory2.basic().height.setMax(360);
+  factory2.basic().width.SetMax(640);
+  factory2.basic().height.SetMax(360);
 
   TestTwoTracksWithDifferentConstraints(factory1.CreateWebMediaConstraints(),
                                         factory2.CreateWebMediaConstraints(),
@@ -1017,12 +1017,12 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, TwoTracksWith720AndWVGA) {
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, TwoTracksWith720AndW700H700) {
   MockConstraintFactory factory1;
-  factory1.AddAdvanced().width.setMin(1280);
-  factory1.AddAdvanced().height.setMin(720);
+  factory1.AddAdvanced().width.SetMin(1280);
+  factory1.AddAdvanced().height.SetMin(720);
 
   MockConstraintFactory factory2;
-  factory2.basic().width.setMax(700);
-  factory2.basic().height.setMax(700);
+  factory2.basic().width.SetMax(700);
+  factory2.basic().height.SetMax(700);
 
   TestTwoTracksWithDifferentConstraints(factory1.CreateWebMediaConstraints(),
                                         factory2.CreateWebMediaConstraints(),
@@ -1034,11 +1034,11 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, TwoTracksWith720AndW700H700) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        TwoTracksWith720AndMaxAspectRatio4To3) {
   MockConstraintFactory factory1;
-  factory1.AddAdvanced().width.setMin(1280);
-  factory1.AddAdvanced().height.setMin(720);
+  factory1.AddAdvanced().width.SetMin(1280);
+  factory1.AddAdvanced().height.SetMin(720);
 
   MockConstraintFactory factory2;
-  factory2.basic().aspectRatio.setMax(640.0 / 480);
+  factory2.basic().aspect_ratio.SetMax(640.0 / 480);
 
   TestTwoTracksWithDifferentConstraints(factory1.CreateWebMediaConstraints(),
                                         factory2.CreateWebMediaConstraints(),
@@ -1050,11 +1050,11 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        TwoTracksWithVgaAndMinAspectRatio) {
   MockConstraintFactory factory1;
-  factory1.AddAdvanced().width.setMax(640);
-  factory1.AddAdvanced().height.setMax(480);
+  factory1.AddAdvanced().width.SetMax(640);
+  factory1.AddAdvanced().height.SetMax(480);
 
   MockConstraintFactory factory2;
-  factory2.basic().aspectRatio.setMin(640.0 / 360);
+  factory2.basic().aspect_ratio.SetMin(640.0 / 360);
 
   TestTwoTracksWithDifferentConstraints(factory1.CreateWebMediaConstraints(),
                                         factory2.CreateWebMediaConstraints(),
@@ -1066,8 +1066,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        TwoTracksWithSecondTrackFrameRateHigherThanFirst) {
   MockConstraintFactory factory1;
-  factory1.basic().frameRate.setMin(15);
-  factory1.basic().frameRate.setMax(15);
+  factory1.basic().frame_rate.SetMin(15);
+  factory1.basic().frame_rate.SetMax(15);
 
   blink::WebMediaStreamTrack track1 =
       CreateTrackAndStartSource(factory1.CreateWebMediaConstraints(),
@@ -1075,7 +1075,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
                                 MediaStreamVideoSource::kDefaultHeight, 15);
 
   MockConstraintFactory factory2;
-  factory2.basic().frameRate.setMin(30);
+  factory2.basic().frame_rate.SetMin(30);
   blink::WebMediaStreamTrack track2 =
       CreateTrack("123", factory2.CreateWebMediaConstraints());
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
@@ -1087,8 +1087,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 // TODO(guidou): Remove this test. http://crbug.com/706408
 TEST_F(MediaStreamVideoSourceOldConstraintsTest, SourceChangeFrameSize) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().width.setMax(800);
-  factory.AddAdvanced().height.setMax(700);
+  factory.AddAdvanced().width.SetMax(800);
+  factory.AddAdvanced().height.SetMax(700);
 
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
@@ -1132,7 +1132,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, Use0FpsSupportedFormat) {
   mock_source()->SetSupportedFormats(formats);
 
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
   mock_source()->CompleteGetSupportedFormats();
   mock_source()->StartMockedSource();
@@ -1170,8 +1170,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MutedSource) {
 
   MockMediaStreamVideoSink sink;
   sink.ConnectToTrack(track);
-  EXPECT_EQ(track.source().getReadyState(),
-            blink::WebMediaStreamSource::ReadyStateLive);
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -1181,8 +1181,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MutedSource) {
   run_loop.Run();
   EXPECT_EQ(muted_state, true);
 
-  EXPECT_EQ(track.source().getReadyState(),
-            blink::WebMediaStreamSource::ReadyStateMuted);
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateMuted);
 
   base::RunLoop run_loop2;
   base::Closure quit_closure2 = run_loop2.QuitClosure();
@@ -1192,8 +1192,8 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MutedSource) {
   run_loop2.Run();
 
   EXPECT_EQ(muted_state, false);
-  EXPECT_EQ(track.source().getReadyState(),
-            blink::WebMediaStreamSource::ReadyStateLive);
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
 
   sink.DisconnectFromTrack();
 }
@@ -1202,7 +1202,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest, MutedSource) {
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        InvalidOptionalAspectRatioIgnored) {
   MockConstraintFactory factory;
-  factory.AddAdvanced().aspectRatio.setMax(0.0);
+  factory.AddAdvanced().aspect_ratio.SetMax(0.0);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();
@@ -1214,7 +1214,7 @@ TEST_F(MediaStreamVideoSourceOldConstraintsTest,
 TEST_F(MediaStreamVideoSourceOldConstraintsTest,
        InvalidMandatoryAspectRatioFails) {
   MockConstraintFactory factory;
-  factory.basic().aspectRatio.setMax(0.0);
+  factory.basic().aspect_ratio.SetMax(0.0);
   blink::WebMediaStreamTrack track =
       CreateTrack("123", factory.CreateWebMediaConstraints());
   mock_source()->CompleteGetSupportedFormats();

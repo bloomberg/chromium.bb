@@ -42,29 +42,29 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
   WTF_MAKE_NONCOPYABLE(WebScrollbarImpl);
 
  public:
-  static std::unique_ptr<WebScrollbarImpl> create(Scrollbar* scrollbar) {
-    return WTF::wrapUnique(new WebScrollbarImpl(scrollbar));
+  static std::unique_ptr<WebScrollbarImpl> Create(Scrollbar* scrollbar) {
+    return WTF::WrapUnique(new WebScrollbarImpl(scrollbar));
   }
 
   // Implement WebScrollbar methods
-  bool isOverlay() const override;
-  int value() const override;
-  WebPoint location() const override;
+  bool IsOverlay() const override;
+  int Value() const override;
+  WebPoint Location() const override;
   WebSize size() const override;
-  bool enabled() const override;
-  int maximum() const override;
-  int totalSize() const override;
-  bool isScrollableAreaActive() const override;
-  void getTickmarks(WebVector<WebRect>& tickmarks) const override;
-  ScrollbarControlSize controlSize() const override;
-  ScrollbarPart pressedPart() const override;
-  ScrollbarPart hoveredPart() const override;
-  WebScrollbarOverlayColorTheme scrollbarOverlayColorTheme() const override;
-  bool isCustomScrollbar() const override;
-  Orientation orientation() const override;
-  bool isLeftSideVerticalScrollbar() const override;
-  float elasticOverscroll() const override;
-  void setElasticOverscroll(float) override;
+  bool Enabled() const override;
+  int Maximum() const override;
+  int TotalSize() const override;
+  bool IsScrollableAreaActive() const override;
+  void GetTickmarks(WebVector<WebRect>& tickmarks) const override;
+  ScrollbarControlSize GetControlSize() const override;
+  ScrollbarPart PressedPart() const override;
+  ScrollbarPart HoveredPart() const override;
+  WebScrollbarOverlayColorTheme ScrollbarOverlayColorTheme() const override;
+  bool IsCustomScrollbar() const override;
+  Orientation GetOrientation() const override;
+  bool IsLeftSideVerticalScrollbar() const override;
+  float ElasticOverscroll() const override;
+  void SetElasticOverscroll(float) override;
 
  private:
   explicit WebScrollbarImpl(Scrollbar*);
@@ -73,7 +73,7 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
   // checks |orientation()|.
   //
   // TODO: minimize or avoid cross-thread use, if possible.
-  CrossThreadPersistent<Scrollbar> m_scrollbar;
+  CrossThreadPersistent<Scrollbar> scrollbar_;
 };
 
 }  // namespace blink

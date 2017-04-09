@@ -37,8 +37,8 @@ class EcdhImplementation : public EcAlgorithm {
  public:
   EcdhImplementation()
       : EcAlgorithm(0,
-                    blink::WebCryptoKeyUsageDeriveKey |
-                        blink::WebCryptoKeyUsageDeriveBits) {}
+                    blink::kWebCryptoKeyUsageDeriveKey |
+                        blink::kWebCryptoKeyUsageDeriveBits) {}
 
   const char* GetJwkAlgorithm(
       const blink::WebCryptoNamedCurve curve) const override {
@@ -51,30 +51,30 @@ class EcdhImplementation : public EcAlgorithm {
                     bool has_optional_length_bits,
                     unsigned int optional_length_bits,
                     std::vector<uint8_t>* derived_bytes) const override {
-    if (base_key.type() != blink::WebCryptoKeyTypePrivate)
+    if (base_key.GetType() != blink::kWebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 
     // Verify the "publicKey" parameter. The only guarantee from Blink is that
     // it is a valid WebCryptoKey, but it could be any type.
     const blink::WebCryptoKey& public_key =
-        algorithm.ecdhKeyDeriveParams()->publicKey();
+        algorithm.EcdhKeyDeriveParams()->PublicKey();
 
-    if (public_key.type() != blink::WebCryptoKeyTypePublic)
+    if (public_key.GetType() != blink::kWebCryptoKeyTypePublic)
       return Status::ErrorEcdhPublicKeyWrongType();
 
     // Make sure it is an EC key.
-    if (!public_key.algorithm().ecParams())
+    if (!public_key.Algorithm().EcParams())
       return Status::ErrorEcdhPublicKeyWrongType();
 
     // TODO(eroman): This is not described by the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27404
-    if (public_key.algorithm().id() != blink::WebCryptoAlgorithmIdEcdh)
+    if (public_key.Algorithm().Id() != blink::kWebCryptoAlgorithmIdEcdh)
       return Status::ErrorEcdhPublicKeyWrongAlgorithm();
 
     // The public and private keys come from different key pairs, however their
     // curves must match.
-    if (public_key.algorithm().ecParams()->namedCurve() !=
-        base_key.algorithm().ecParams()->namedCurve()) {
+    if (public_key.Algorithm().EcParams()->NamedCurve() !=
+        base_key.Algorithm().EcParams()->NamedCurve()) {
       return Status::ErrorEcdhCurveMismatch();
     }
 

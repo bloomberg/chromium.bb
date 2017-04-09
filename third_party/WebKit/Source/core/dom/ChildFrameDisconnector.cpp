@@ -12,89 +12,89 @@
 namespace blink {
 
 #if DCHECK_IS_ON()
-static unsigned checkConnectedSubframeCountIsConsistent(Node&);
+static unsigned CheckConnectedSubframeCountIsConsistent(Node&);
 #endif
 
-void ChildFrameDisconnector::disconnect(DisconnectPolicy policy) {
+void ChildFrameDisconnector::Disconnect(DisconnectPolicy policy) {
 #if DCHECK_IS_ON()
-  checkConnectedSubframeCountIsConsistent(root());
+  CheckConnectedSubframeCountIsConsistent(Root());
 #endif
 
-  if (!root().connectedSubframeCount())
+  if (!Root().ConnectedSubframeCount())
     return;
 
-  if (policy == RootAndDescendants) {
-    collectFrameOwners(root());
+  if (policy == kRootAndDescendants) {
+    CollectFrameOwners(Root());
   } else {
-    for (Node* child = root().firstChild(); child; child = child->nextSibling())
-      collectFrameOwners(*child);
+    for (Node* child = Root().firstChild(); child; child = child->nextSibling())
+      CollectFrameOwners(*child);
   }
 
-  disconnectCollectedFrameOwners();
+  DisconnectCollectedFrameOwners();
 }
 
-void ChildFrameDisconnector::collectFrameOwners(Node& root) {
-  if (!root.connectedSubframeCount())
+void ChildFrameDisconnector::CollectFrameOwners(Node& root) {
+  if (!root.ConnectedSubframeCount())
     return;
 
-  if (root.isHTMLElement() && root.isFrameOwnerElement())
-    m_frameOwners.push_back(&toHTMLFrameOwnerElement(root));
+  if (root.IsHTMLElement() && root.IsFrameOwnerElement())
+    frame_owners_.push_back(&ToHTMLFrameOwnerElement(root));
 
   for (Node* child = root.firstChild(); child; child = child->nextSibling())
-    collectFrameOwners(*child);
+    CollectFrameOwners(*child);
 
-  ElementShadow* shadow = root.isElementNode() ? toElement(root).shadow() : 0;
+  ElementShadow* shadow = root.IsElementNode() ? ToElement(root).Shadow() : 0;
   if (shadow)
-    collectFrameOwners(*shadow);
+    CollectFrameOwners(*shadow);
 }
 
-void ChildFrameDisconnector::disconnectCollectedFrameOwners() {
+void ChildFrameDisconnector::DisconnectCollectedFrameOwners() {
   // Must disable frame loading in the subtree so an unload handler cannot
   // insert more frames and create loaded frames in detached subtrees.
-  SubframeLoadingDisabler disabler(root());
+  SubframeLoadingDisabler disabler(Root());
 
-  for (unsigned i = 0; i < m_frameOwners.size(); ++i) {
-    HTMLFrameOwnerElement* owner = m_frameOwners[i].get();
+  for (unsigned i = 0; i < frame_owners_.size(); ++i) {
+    HTMLFrameOwnerElement* owner = frame_owners_[i].Get();
     // Don't need to traverse up the tree for the first owner since no
     // script could have moved it.
-    if (!i || root().isShadowIncludingInclusiveAncestorOf(owner))
-      owner->disconnectContentFrame();
+    if (!i || Root().IsShadowIncludingInclusiveAncestorOf(owner))
+      owner->DisconnectContentFrame();
   }
 }
 
-void ChildFrameDisconnector::collectFrameOwners(ElementShadow& shadow) {
-  for (ShadowRoot* root = &shadow.youngestShadowRoot(); root;
-       root = root->olderShadowRoot())
-    collectFrameOwners(*root);
+void ChildFrameDisconnector::CollectFrameOwners(ElementShadow& shadow) {
+  for (ShadowRoot* root = &shadow.YoungestShadowRoot(); root;
+       root = root->OlderShadowRoot())
+    CollectFrameOwners(*root);
 }
 
 #if DCHECK_IS_ON()
-static unsigned checkConnectedSubframeCountIsConsistent(Node& node) {
+static unsigned CheckConnectedSubframeCountIsConsistent(Node& node) {
   unsigned count = 0;
 
-  if (node.isElementNode()) {
-    if (node.isFrameOwnerElement() &&
-        toHTMLFrameOwnerElement(node).contentFrame())
+  if (node.IsElementNode()) {
+    if (node.IsFrameOwnerElement() &&
+        ToHTMLFrameOwnerElement(node).ContentFrame())
       count++;
 
-    if (ElementShadow* shadow = toElement(node).shadow()) {
-      for (ShadowRoot* root = &shadow->youngestShadowRoot(); root;
-           root = root->olderShadowRoot())
-        count += checkConnectedSubframeCountIsConsistent(*root);
+    if (ElementShadow* shadow = ToElement(node).Shadow()) {
+      for (ShadowRoot* root = &shadow->YoungestShadowRoot(); root;
+           root = root->OlderShadowRoot())
+        count += CheckConnectedSubframeCountIsConsistent(*root);
     }
   }
 
   for (Node* child = node.firstChild(); child; child = child->nextSibling())
-    count += checkConnectedSubframeCountIsConsistent(*child);
+    count += CheckConnectedSubframeCountIsConsistent(*child);
 
   // If we undercount there's possibly a security bug since we'd leave frames
   // in subtrees outside the document.
-  DCHECK_GE(node.connectedSubframeCount(), count);
+  DCHECK_GE(node.ConnectedSubframeCount(), count);
 
   // If we overcount it's safe, but not optimal because it means we'll traverse
   // through the document in ChildFrameDisconnector looking for frames that have
   // already been disconnected.
-  DCHECK_EQ(node.connectedSubframeCount(), count);
+  DCHECK_EQ(node.ConnectedSubframeCount(), count);
 
   return count;
 }

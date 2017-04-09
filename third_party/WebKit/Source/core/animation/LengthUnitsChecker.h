@@ -15,52 +15,53 @@ namespace blink {
 
 class LengthUnitsChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<LengthUnitsChecker> maybeCreate(
-      CSSLengthArray&& lengthArray,
+  static std::unique_ptr<LengthUnitsChecker> MaybeCreate(
+      CSSLengthArray&& length_array,
       const StyleResolverState& state) {
     bool create = false;
-    size_t lastIndex = 0;
-    for (size_t i = 0; i < lengthArray.values.size(); i++) {
-      if (i == CSSPrimitiveValue::UnitTypePercentage ||
-          !lengthArray.typeFlags.get(i))
+    size_t last_index = 0;
+    for (size_t i = 0; i < length_array.values.size(); i++) {
+      if (i == CSSPrimitiveValue::kUnitTypePercentage ||
+          !length_array.type_flags.Get(i))
         continue;
-      lengthArray.values[i] = lengthUnit(i, state.cssToLengthConversionData());
+      length_array.values[i] = LengthUnit(i, state.CssToLengthConversionData());
       create = true;
-      lastIndex = i;
+      last_index = i;
     }
     if (!create)
       return nullptr;
-    return WTF::wrapUnique(
-        new LengthUnitsChecker(std::move(lengthArray), lastIndex));
+    return WTF::WrapUnique(
+        new LengthUnitsChecker(std::move(length_array), last_index));
   }
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    for (size_t i = 0; i <= m_lastIndex; i++) {
-      if (i == CSSPrimitiveValue::UnitTypePercentage ||
-          !m_lengthArray.typeFlags.get(i))
+    for (size_t i = 0; i <= last_index_; i++) {
+      if (i == CSSPrimitiveValue::kUnitTypePercentage ||
+          !length_array_.type_flags.Get(i))
         continue;
-      if (m_lengthArray.values[i] !=
-          lengthUnit(i, environment.state().cssToLengthConversionData()))
+      if (length_array_.values[i] !=
+          LengthUnit(i, environment.GetState().CssToLengthConversionData()))
         return false;
     }
     return true;
   }
 
-  static double lengthUnit(size_t lengthUnitType,
-                           const CSSToLengthConversionData& conversionData) {
-    return conversionData.zoomedComputedPixels(
-        1, CSSPrimitiveValue::lengthUnitTypeToUnitType(
-               static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
+  static double LengthUnit(size_t length_unit_type,
+                           const CSSToLengthConversionData& conversion_data) {
+    return conversion_data.ZoomedComputedPixels(
+        1,
+        CSSPrimitiveValue::LengthUnitTypeToUnitType(
+            static_cast<CSSPrimitiveValue::LengthUnitType>(length_unit_type)));
   }
 
  private:
-  LengthUnitsChecker(CSSPrimitiveValue::CSSLengthArray&& lengthArray,
-                     size_t lastIndex)
-      : m_lengthArray(std::move(lengthArray)), m_lastIndex(lastIndex) {}
+  LengthUnitsChecker(CSSPrimitiveValue::CSSLengthArray&& length_array,
+                     size_t last_index)
+      : length_array_(std::move(length_array)), last_index_(last_index) {}
 
-  const CSSLengthArray m_lengthArray;
-  const size_t m_lastIndex;
+  const CSSLengthArray length_array_;
+  const size_t last_index_;
 };
 
 }  // namespace blink

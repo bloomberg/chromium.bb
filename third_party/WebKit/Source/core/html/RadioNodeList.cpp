@@ -38,92 +38,92 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RadioNodeList::RadioNodeList(ContainerNode& rootNode,
+RadioNodeList::RadioNodeList(ContainerNode& root_node,
                              const AtomicString& name,
                              CollectionType type)
-    : LiveNodeList(rootNode,
+    : LiveNodeList(root_node,
                    type,
-                   InvalidateForFormControls,
-                   isHTMLFormElement(rootNode) ? NodeListRootType::TreeScope
-                                               : NodeListRootType::Node),
-      m_name(name) {}
+                   kInvalidateForFormControls,
+                   isHTMLFormElement(root_node) ? NodeListRootType::kTreeScope
+                                                : NodeListRootType::kNode),
+      name_(name) {}
 
 RadioNodeList::~RadioNodeList() {}
 
-static inline HTMLInputElement* toRadioButtonInputElement(Element& element) {
+static inline HTMLInputElement* ToRadioButtonInputElement(Element& element) {
   if (!isHTMLInputElement(element))
     return nullptr;
-  HTMLInputElement& inputElement = toHTMLInputElement(element);
-  if (inputElement.type() != InputTypeNames::radio ||
-      inputElement.value().isEmpty())
+  HTMLInputElement& input_element = toHTMLInputElement(element);
+  if (input_element.type() != InputTypeNames::radio ||
+      input_element.value().IsEmpty())
     return nullptr;
-  return &inputElement;
+  return &input_element;
 }
 
 String RadioNodeList::value() const {
-  if (shouldOnlyMatchImgElements())
+  if (ShouldOnlyMatchImgElements())
     return String();
   unsigned length = this->length();
   for (unsigned i = 0; i < length; ++i) {
-    const HTMLInputElement* inputElement = toRadioButtonInputElement(*item(i));
-    if (!inputElement || !inputElement->checked())
+    const HTMLInputElement* input_element = ToRadioButtonInputElement(*item(i));
+    if (!input_element || !input_element->checked())
       continue;
-    return inputElement->value();
+    return input_element->value();
   }
   return String();
 }
 
 void RadioNodeList::setValue(const String& value) {
-  if (shouldOnlyMatchImgElements())
+  if (ShouldOnlyMatchImgElements())
     return;
   unsigned length = this->length();
   for (unsigned i = 0; i < length; ++i) {
-    HTMLInputElement* inputElement = toRadioButtonInputElement(*item(i));
-    if (!inputElement || inputElement->value() != value)
+    HTMLInputElement* input_element = ToRadioButtonInputElement(*item(i));
+    if (!input_element || input_element->value() != value)
       continue;
-    inputElement->setChecked(true);
+    input_element->setChecked(true);
     return;
   }
 }
 
-bool RadioNodeList::matchesByIdOrName(const Element& testElement) const {
-  return testElement.getIdAttribute() == m_name ||
-         testElement.getNameAttribute() == m_name;
+bool RadioNodeList::MatchesByIdOrName(const Element& test_element) const {
+  return test_element.GetIdAttribute() == name_ ||
+         test_element.GetNameAttribute() == name_;
 }
 
-bool RadioNodeList::checkElementMatchesRadioNodeListFilter(
-    const Element& testElement) const {
-  DCHECK(!shouldOnlyMatchImgElements());
-  DCHECK(isHTMLObjectElement(testElement) ||
-         testElement.isFormControlElement());
+bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
+    const Element& test_element) const {
+  DCHECK(!ShouldOnlyMatchImgElements());
+  DCHECK(isHTMLObjectElement(test_element) ||
+         test_element.IsFormControlElement());
   if (isHTMLFormElement(ownerNode())) {
-    HTMLFormElement* formElement = toHTMLElement(testElement).formOwner();
-    if (!formElement || formElement != ownerNode())
+    HTMLFormElement* form_element = ToHTMLElement(test_element).formOwner();
+    if (!form_element || form_element != ownerNode())
       return false;
   }
 
-  return matchesByIdOrName(testElement);
+  return MatchesByIdOrName(test_element);
 }
 
-bool RadioNodeList::elementMatches(const Element& element) const {
-  if (shouldOnlyMatchImgElements()) {
+bool RadioNodeList::ElementMatches(const Element& element) const {
+  if (ShouldOnlyMatchImgElements()) {
     if (!isHTMLImageElement(element))
       return false;
 
     if (toHTMLImageElement(element).formOwner() != ownerNode())
       return false;
 
-    return matchesByIdOrName(element);
+    return MatchesByIdOrName(element);
   }
 
-  if (!isHTMLObjectElement(element) && !element.isFormControlElement())
+  if (!isHTMLObjectElement(element) && !element.IsFormControlElement())
     return false;
 
   if (isHTMLInputElement(element) &&
       toHTMLInputElement(element).type() == InputTypeNames::image)
     return false;
 
-  return checkElementMatchesRadioNodeListFilter(element);
+  return CheckElementMatchesRadioNodeListFilter(element);
 }
 
 }  // namespace blink

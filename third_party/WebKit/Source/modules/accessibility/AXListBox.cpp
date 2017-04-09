@@ -37,55 +37,55 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXListBox::AXListBox(LayoutObject* layoutObject,
-                     AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache), m_activeIndex(-1) {
-  activeIndexChanged();
+AXListBox::AXListBox(LayoutObject* layout_object,
+                     AXObjectCacheImpl& ax_object_cache)
+    : AXLayoutObject(layout_object, ax_object_cache), active_index_(-1) {
+  ActiveIndexChanged();
 }
 
 AXListBox::~AXListBox() {}
 
-AXListBox* AXListBox::create(LayoutObject* layoutObject,
-                             AXObjectCacheImpl& axObjectCache) {
-  return new AXListBox(layoutObject, axObjectCache);
+AXListBox* AXListBox::Create(LayoutObject* layout_object,
+                             AXObjectCacheImpl& ax_object_cache) {
+  return new AXListBox(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXListBox::determineAccessibilityRole() {
-  if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-    return m_ariaRole;
+AccessibilityRole AXListBox::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+    return aria_role_;
 
-  return ListBoxRole;
+  return kListBoxRole;
 }
 
-AXObject* AXListBox::activeDescendant() {
-  if (!isHTMLSelectElement(getNode()))
+AXObject* AXListBox::ActiveDescendant() {
+  if (!isHTMLSelectElement(GetNode()))
     return nullptr;
 
-  HTMLSelectElement* select = toHTMLSelectElement(getNode());
-  int activeIndex = select->activeSelectionEndListIndex();
-  if (activeIndex >= 0 && activeIndex < static_cast<int>(select->length())) {
-    HTMLOptionElement* option = select->item(m_activeIndex);
-    return axObjectCache().get(option);
+  HTMLSelectElement* select = toHTMLSelectElement(GetNode());
+  int active_index = select->ActiveSelectionEndListIndex();
+  if (active_index >= 0 && active_index < static_cast<int>(select->length())) {
+    HTMLOptionElement* option = select->item(active_index_);
+    return AxObjectCache().Get(option);
   }
 
   return nullptr;
 }
 
-void AXListBox::activeIndexChanged() {
-  if (!isHTMLSelectElement(getNode()))
+void AXListBox::ActiveIndexChanged() {
+  if (!isHTMLSelectElement(GetNode()))
     return;
 
-  HTMLSelectElement* select = toHTMLSelectElement(getNode());
-  int activeIndex = select->activeSelectionEndListIndex();
-  if (activeIndex == m_activeIndex)
+  HTMLSelectElement* select = toHTMLSelectElement(GetNode());
+  int active_index = select->ActiveSelectionEndListIndex();
+  if (active_index == active_index_)
     return;
 
-  m_activeIndex = activeIndex;
-  if (!select->isFocused())
+  active_index_ = active_index;
+  if (!select->IsFocused())
     return;
 
-  axObjectCache().postNotification(
-      this, AXObjectCacheImpl::AXActiveDescendantChanged);
+  AxObjectCache().PostNotification(
+      this, AXObjectCacheImpl::kAXActiveDescendantChanged);
 }
 
 }  // namespace blink

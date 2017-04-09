@@ -19,48 +19,48 @@ namespace blink {
 
 IDBObservation::~IDBObservation() {}
 
-ScriptValue IDBObservation::key(ScriptState* scriptState) {
-  if (!m_keyRange)
-    return ScriptValue::from(scriptState,
-                             v8::Undefined(scriptState->isolate()));
+ScriptValue IDBObservation::key(ScriptState* script_state) {
+  if (!key_range_)
+    return ScriptValue::From(script_state,
+                             v8::Undefined(script_state->GetIsolate()));
 
-  return ScriptValue::from(scriptState, m_keyRange);
+  return ScriptValue::From(script_state, key_range_);
 }
 
-ScriptValue IDBObservation::value(ScriptState* scriptState) {
-  if (!m_value)
-    return ScriptValue::from(scriptState,
-                             v8::Undefined(scriptState->isolate()));
+ScriptValue IDBObservation::value(ScriptState* script_state) {
+  if (!value_)
+    return ScriptValue::From(script_state,
+                             v8::Undefined(script_state->GetIsolate()));
 
-  return ScriptValue::from(scriptState, IDBAny::create(m_value));
+  return ScriptValue::From(script_state, IDBAny::Create(value_));
 }
 
-WebIDBOperationType IDBObservation::stringToOperationType(const String& type) {
+WebIDBOperationType IDBObservation::StringToOperationType(const String& type) {
   if (type == IndexedDBNames::add)
-    return WebIDBAdd;
+    return kWebIDBAdd;
   if (type == IndexedDBNames::put)
-    return WebIDBPut;
+    return kWebIDBPut;
   if (type == IndexedDBNames::kDelete)
-    return WebIDBDelete;
+    return kWebIDBDelete;
   if (type == IndexedDBNames::clear)
-    return WebIDBClear;
+    return kWebIDBClear;
 
   NOTREACHED();
-  return WebIDBAdd;
+  return kWebIDBAdd;
 }
 
 const String& IDBObservation::type() const {
-  switch (m_operationType) {
-    case WebIDBAdd:
+  switch (operation_type_) {
+    case kWebIDBAdd:
       return IndexedDBNames::add;
 
-    case WebIDBPut:
+    case kWebIDBPut:
       return IndexedDBNames::put;
 
-    case WebIDBDelete:
+    case kWebIDBDelete:
       return IndexedDBNames::kDelete;
 
-    case WebIDBClear:
+    case kWebIDBClear:
       return IndexedDBNames::clear;
 
     default:
@@ -69,19 +69,19 @@ const String& IDBObservation::type() const {
   }
 }
 
-IDBObservation* IDBObservation::create(const WebIDBObservation& observation,
+IDBObservation* IDBObservation::Create(const WebIDBObservation& observation,
                                        v8::Isolate* isolate) {
   return new IDBObservation(observation, isolate);
 }
 
 IDBObservation::IDBObservation(const WebIDBObservation& observation,
                                v8::Isolate* isolate)
-    : m_keyRange(observation.keyRange),
-      m_value(IDBValue::create(observation.value, isolate)),
-      m_operationType(observation.type) {}
+    : key_range_(observation.key_range),
+      value_(IDBValue::Create(observation.value, isolate)),
+      operation_type_(observation.type) {}
 
 DEFINE_TRACE(IDBObservation) {
-  visitor->trace(m_keyRange);
+  visitor->Trace(key_range_);
 }
 
 }  // namespace blink

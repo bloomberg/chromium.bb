@@ -33,46 +33,46 @@
 namespace blink {
 
 LayoutTextTrackContainer::LayoutTextTrackContainer(Element* element)
-    : LayoutBlockFlow(element), m_fontSize(0) {}
+    : LayoutBlockFlow(element), font_size_(0) {}
 
-void LayoutTextTrackContainer::layout() {
-  LayoutBlockFlow::layout();
-  if (style()->display() == EDisplay::kNone)
+void LayoutTextTrackContainer::GetLayout() {
+  LayoutBlockFlow::GetLayout();
+  if (Style()->Display() == EDisplay::kNone)
     return;
 
   DeprecatedScheduleStyleRecalcDuringLayout marker(
-      node()->document().lifecycle());
+      GetNode()->GetDocument().Lifecycle());
 
-  LayoutObject* mediaLayoutObject = parent();
-  if (!mediaLayoutObject || !mediaLayoutObject->isVideo())
+  LayoutObject* media_layout_object = Parent();
+  if (!media_layout_object || !media_layout_object->IsVideo())
     return;
-  if (updateSizes(toLayoutVideo(*mediaLayoutObject)))
-    toElement(node())->setInlineStyleProperty(
-        CSSPropertyFontSize, m_fontSize, CSSPrimitiveValue::UnitType::Pixels);
+  if (UpdateSizes(ToLayoutVideo(*media_layout_object)))
+    ToElement(GetNode())->SetInlineStyleProperty(
+        CSSPropertyFontSize, font_size_, CSSPrimitiveValue::UnitType::kPixels);
 }
 
-bool LayoutTextTrackContainer::updateSizes(
-    const LayoutVideo& videoLayoutObject) {
+bool LayoutTextTrackContainer::UpdateSizes(
+    const LayoutVideo& video_layout_object) {
   // FIXME: The video size is used to calculate the font size (a workaround
   // for lack of per-spec vh/vw support) but the whole media element is used
   // for cue rendering. This is inconsistent. See also the somewhat related
   // spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28105
-  LayoutSize videoSize = videoLayoutObject.replacedContentRect().size();
+  LayoutSize video_size = video_layout_object.ReplacedContentRect().size();
 
-  float smallestDimension =
-      std::min(videoSize.height().toFloat(), videoSize.width().toFloat());
+  float smallest_dimension =
+      std::min(video_size.Height().ToFloat(), video_size.Width().ToFloat());
 
-  float fontSize = smallestDimension * 0.05f;
+  float font_size = smallest_dimension * 0.05f;
 
   // Avoid excessive FP precision issue.
   // C11 5.2.4.2.2:9 requires assignment and cast to remove extra precision, but
   // the behavior is currently not portable. fontSize may have precision higher
   // than m_fontSize thus straight comparison can fail despite they cast to the
   // same float value.
-  volatile float& currentFontSize = m_fontSize;
-  float oldFontSize = currentFontSize;
-  currentFontSize = fontSize;
-  return currentFontSize != oldFontSize;
+  volatile float& current_font_size = font_size_;
+  float old_font_size = current_font_size;
+  current_font_size = font_size;
+  return current_font_size != old_font_size;
 }
 
 }  // namespace blink

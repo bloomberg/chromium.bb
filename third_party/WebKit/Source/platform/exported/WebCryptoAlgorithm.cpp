@@ -42,271 +42,271 @@ namespace blink {
 namespace {
 
 // A mapping from the algorithm ID to information about the algorithm.
-const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
+const WebCryptoAlgorithmInfo kAlgorithmIdToInfo[] = {
     {// Index 0
      "AES-CBC",
      {
-         WebCryptoAlgorithmParamsTypeAesCbcParams,         // Encrypt
-         WebCryptoAlgorithmParamsTypeAesCbcParams,         // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Sign
-         WebCryptoAlgorithmInfo::Undefined,                // Verify
-         WebCryptoAlgorithmInfo::Undefined,                // Digest
-         WebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
-         WebCryptoAlgorithmParamsTypeNone,                 // ImportKey
-         WebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                // DeriveBits
-         WebCryptoAlgorithmParamsTypeAesCbcParams,         // WrapKey
-         WebCryptoAlgorithmParamsTypeAesCbcParams          // UnwrapKey
+         kWebCryptoAlgorithmParamsTypeAesCbcParams,         // Encrypt
+         kWebCryptoAlgorithmParamsTypeAesCbcParams,         // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Sign
+         WebCryptoAlgorithmInfo::kUndefined,                // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                // Digest
+         kWebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
+         kWebCryptoAlgorithmParamsTypeNone,                 // ImportKey
+         kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                // DeriveBits
+         kWebCryptoAlgorithmParamsTypeAesCbcParams,         // WrapKey
+         kWebCryptoAlgorithmParamsTypeAesCbcParams          // UnwrapKey
      }},
     {// Index 1
      "HMAC",
      {
-         WebCryptoAlgorithmInfo::Undefined,             // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,             // Decrypt
-         WebCryptoAlgorithmParamsTypeNone,              // Sign
-         WebCryptoAlgorithmParamsTypeNone,              // Verify
-         WebCryptoAlgorithmInfo::Undefined,             // Digest
-         WebCryptoAlgorithmParamsTypeHmacKeyGenParams,  // GenerateKey
-         WebCryptoAlgorithmParamsTypeHmacImportParams,  // ImportKey
-         WebCryptoAlgorithmParamsTypeHmacImportParams,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,             // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,             // WrapKey
-         WebCryptoAlgorithmInfo::Undefined              // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,             // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,             // Decrypt
+         kWebCryptoAlgorithmParamsTypeNone,              // Sign
+         kWebCryptoAlgorithmParamsTypeNone,              // Verify
+         WebCryptoAlgorithmInfo::kUndefined,             // Digest
+         kWebCryptoAlgorithmParamsTypeHmacKeyGenParams,  // GenerateKey
+         kWebCryptoAlgorithmParamsTypeHmacImportParams,  // ImportKey
+         kWebCryptoAlgorithmParamsTypeHmacImportParams,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,             // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,             // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined              // UnwrapKey
      }},
     {// Index 2
      "RSASSA-PKCS1-v1_5",
      {
-         WebCryptoAlgorithmInfo::Undefined,                  // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,                  // Decrypt
-         WebCryptoAlgorithmParamsTypeNone,                   // Sign
-         WebCryptoAlgorithmParamsTypeNone,                   // Verify
-         WebCryptoAlgorithmInfo::Undefined,                  // Digest
-         WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,  // GenerateKey
-         WebCryptoAlgorithmParamsTypeRsaHashedImportParams,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,                  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,                  // WrapKey
-         WebCryptoAlgorithmInfo::Undefined                   // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,                  // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,                  // Decrypt
+         kWebCryptoAlgorithmParamsTypeNone,                   // Sign
+         kWebCryptoAlgorithmParamsTypeNone,                   // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                  // Digest
+         kWebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,  // GenerateKey
+         kWebCryptoAlgorithmParamsTypeRsaHashedImportParams,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,                  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,                  // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined                   // UnwrapKey
      }},
     {// Index 3
      "SHA-1",
      {
-         WebCryptoAlgorithmInfo::Undefined,  // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Sign
-         WebCryptoAlgorithmInfo::Undefined,  // Verify
-         WebCryptoAlgorithmParamsTypeNone,   // Digest
-         WebCryptoAlgorithmInfo::Undefined,  // GenerateKey
-         WebCryptoAlgorithmInfo::Undefined,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,  // WrapKey
-         WebCryptoAlgorithmInfo::Undefined   // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,  // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Sign
+         WebCryptoAlgorithmInfo::kUndefined,  // Verify
+         kWebCryptoAlgorithmParamsTypeNone,   // Digest
+         WebCryptoAlgorithmInfo::kUndefined,  // GenerateKey
+         WebCryptoAlgorithmInfo::kUndefined,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,  // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined   // UnwrapKey
      }},
     {// Index 4
      "SHA-256",
      {
-         WebCryptoAlgorithmInfo::Undefined,  // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Sign
-         WebCryptoAlgorithmInfo::Undefined,  // Verify
-         WebCryptoAlgorithmParamsTypeNone,   // Digest
-         WebCryptoAlgorithmInfo::Undefined,  // GenerateKey
-         WebCryptoAlgorithmInfo::Undefined,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,  // WrapKey
-         WebCryptoAlgorithmInfo::Undefined   // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,  // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Sign
+         WebCryptoAlgorithmInfo::kUndefined,  // Verify
+         kWebCryptoAlgorithmParamsTypeNone,   // Digest
+         WebCryptoAlgorithmInfo::kUndefined,  // GenerateKey
+         WebCryptoAlgorithmInfo::kUndefined,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,  // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined   // UnwrapKey
      }},
     {// Index 5
      "SHA-384",
      {
-         WebCryptoAlgorithmInfo::Undefined,  // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Sign
-         WebCryptoAlgorithmInfo::Undefined,  // Verify
-         WebCryptoAlgorithmParamsTypeNone,   // Digest
-         WebCryptoAlgorithmInfo::Undefined,  // GenerateKey
-         WebCryptoAlgorithmInfo::Undefined,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,  // WrapKey
-         WebCryptoAlgorithmInfo::Undefined   // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,  // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Sign
+         WebCryptoAlgorithmInfo::kUndefined,  // Verify
+         kWebCryptoAlgorithmParamsTypeNone,   // Digest
+         WebCryptoAlgorithmInfo::kUndefined,  // GenerateKey
+         WebCryptoAlgorithmInfo::kUndefined,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,  // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined   // UnwrapKey
      }},
     {// Index 6
      "SHA-512",
      {
-         WebCryptoAlgorithmInfo::Undefined,  // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,  // Sign
-         WebCryptoAlgorithmInfo::Undefined,  // Verify
-         WebCryptoAlgorithmParamsTypeNone,   // Digest
-         WebCryptoAlgorithmInfo::Undefined,  // GenerateKey
-         WebCryptoAlgorithmInfo::Undefined,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,  // WrapKey
-         WebCryptoAlgorithmInfo::Undefined   // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,  // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,  // Sign
+         WebCryptoAlgorithmInfo::kUndefined,  // Verify
+         kWebCryptoAlgorithmParamsTypeNone,   // Digest
+         WebCryptoAlgorithmInfo::kUndefined,  // GenerateKey
+         WebCryptoAlgorithmInfo::kUndefined,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,  // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined   // UnwrapKey
      }},
     {// Index 7
      "AES-GCM",
      {
-         WebCryptoAlgorithmParamsTypeAesGcmParams,         // Encrypt
-         WebCryptoAlgorithmParamsTypeAesGcmParams,         // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Sign
-         WebCryptoAlgorithmInfo::Undefined,                // Verify
-         WebCryptoAlgorithmInfo::Undefined,                // Digest
-         WebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
-         WebCryptoAlgorithmParamsTypeNone,                 // ImportKey
-         WebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                // DeriveBits
-         WebCryptoAlgorithmParamsTypeAesGcmParams,         // WrapKey
-         WebCryptoAlgorithmParamsTypeAesGcmParams          // UnwrapKey
+         kWebCryptoAlgorithmParamsTypeAesGcmParams,         // Encrypt
+         kWebCryptoAlgorithmParamsTypeAesGcmParams,         // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Sign
+         WebCryptoAlgorithmInfo::kUndefined,                // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                // Digest
+         kWebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
+         kWebCryptoAlgorithmParamsTypeNone,                 // ImportKey
+         kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                // DeriveBits
+         kWebCryptoAlgorithmParamsTypeAesGcmParams,         // WrapKey
+         kWebCryptoAlgorithmParamsTypeAesGcmParams          // UnwrapKey
      }},
     {// Index 8
      "RSA-OAEP",
      {
-         WebCryptoAlgorithmParamsTypeRsaOaepParams,          // Encrypt
-         WebCryptoAlgorithmParamsTypeRsaOaepParams,          // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,                  // Sign
-         WebCryptoAlgorithmInfo::Undefined,                  // Verify
-         WebCryptoAlgorithmInfo::Undefined,                  // Digest
-         WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,  // GenerateKey
-         WebCryptoAlgorithmParamsTypeRsaHashedImportParams,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,                  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                  // DeriveBits
-         WebCryptoAlgorithmParamsTypeRsaOaepParams,          // WrapKey
-         WebCryptoAlgorithmParamsTypeRsaOaepParams           // UnwrapKey
+         kWebCryptoAlgorithmParamsTypeRsaOaepParams,          // Encrypt
+         kWebCryptoAlgorithmParamsTypeRsaOaepParams,          // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,                  // Sign
+         WebCryptoAlgorithmInfo::kUndefined,                  // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                  // Digest
+         kWebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,  // GenerateKey
+         kWebCryptoAlgorithmParamsTypeRsaHashedImportParams,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,                  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                  // DeriveBits
+         kWebCryptoAlgorithmParamsTypeRsaOaepParams,          // WrapKey
+         kWebCryptoAlgorithmParamsTypeRsaOaepParams           // UnwrapKey
      }},
     {// Index 9
      "AES-CTR",
      {
-         WebCryptoAlgorithmParamsTypeAesCtrParams,         // Encrypt
-         WebCryptoAlgorithmParamsTypeAesCtrParams,         // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Sign
-         WebCryptoAlgorithmInfo::Undefined,                // Verify
-         WebCryptoAlgorithmInfo::Undefined,                // Digest
-         WebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
-         WebCryptoAlgorithmParamsTypeNone,                 // ImportKey
-         WebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                // DeriveBits
-         WebCryptoAlgorithmParamsTypeAesCtrParams,         // WrapKey
-         WebCryptoAlgorithmParamsTypeAesCtrParams          // UnwrapKey
+         kWebCryptoAlgorithmParamsTypeAesCtrParams,         // Encrypt
+         kWebCryptoAlgorithmParamsTypeAesCtrParams,         // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Sign
+         WebCryptoAlgorithmInfo::kUndefined,                // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                // Digest
+         kWebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
+         kWebCryptoAlgorithmParamsTypeNone,                 // ImportKey
+         kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                // DeriveBits
+         kWebCryptoAlgorithmParamsTypeAesCtrParams,         // WrapKey
+         kWebCryptoAlgorithmParamsTypeAesCtrParams          // UnwrapKey
      }},
     {// Index 10
      "AES-KW",
      {
-         WebCryptoAlgorithmInfo::Undefined,                // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Sign
-         WebCryptoAlgorithmInfo::Undefined,                // Verify
-         WebCryptoAlgorithmInfo::Undefined,                // Digest
-         WebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
-         WebCryptoAlgorithmParamsTypeNone,                 // ImportKey
-         WebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                // DeriveBits
-         WebCryptoAlgorithmParamsTypeNone,                 // WrapKey
-         WebCryptoAlgorithmParamsTypeNone                  // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,                // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Sign
+         WebCryptoAlgorithmInfo::kUndefined,                // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                // Digest
+         kWebCryptoAlgorithmParamsTypeAesKeyGenParams,      // GenerateKey
+         kWebCryptoAlgorithmParamsTypeNone,                 // ImportKey
+         kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams,  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                // DeriveBits
+         kWebCryptoAlgorithmParamsTypeNone,                 // WrapKey
+         kWebCryptoAlgorithmParamsTypeNone                  // UnwrapKey
      }},
     {// Index 11
      "RSA-PSS",
      {
-         WebCryptoAlgorithmInfo::Undefined,                  // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,                  // Decrypt
-         WebCryptoAlgorithmParamsTypeRsaPssParams,           // Sign
-         WebCryptoAlgorithmParamsTypeRsaPssParams,           // Verify
-         WebCryptoAlgorithmInfo::Undefined,                  // Digest
-         WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,  // GenerateKey
-         WebCryptoAlgorithmParamsTypeRsaHashedImportParams,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,                  // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,                  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,                  // WrapKey
-         WebCryptoAlgorithmInfo::Undefined                   // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,                  // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,                  // Decrypt
+         kWebCryptoAlgorithmParamsTypeRsaPssParams,           // Sign
+         kWebCryptoAlgorithmParamsTypeRsaPssParams,           // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                  // Digest
+         kWebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams,  // GenerateKey
+         kWebCryptoAlgorithmParamsTypeRsaHashedImportParams,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,                  // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,                  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,                  // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined                   // UnwrapKey
      }},
     {// Index 12
      "ECDSA",
      {
-         WebCryptoAlgorithmInfo::Undefined,              // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,              // Decrypt
-         WebCryptoAlgorithmParamsTypeEcdsaParams,        // Sign
-         WebCryptoAlgorithmParamsTypeEcdsaParams,        // Verify
-         WebCryptoAlgorithmInfo::Undefined,              // Digest
-         WebCryptoAlgorithmParamsTypeEcKeyGenParams,     // GenerateKey
-         WebCryptoAlgorithmParamsTypeEcKeyImportParams,  // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,              // GetKeyLength
-         WebCryptoAlgorithmInfo::Undefined,              // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,              // WrapKey
-         WebCryptoAlgorithmInfo::Undefined               // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,              // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,              // Decrypt
+         kWebCryptoAlgorithmParamsTypeEcdsaParams,        // Sign
+         kWebCryptoAlgorithmParamsTypeEcdsaParams,        // Verify
+         WebCryptoAlgorithmInfo::kUndefined,              // Digest
+         kWebCryptoAlgorithmParamsTypeEcKeyGenParams,     // GenerateKey
+         kWebCryptoAlgorithmParamsTypeEcKeyImportParams,  // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,              // GetKeyLength
+         WebCryptoAlgorithmInfo::kUndefined,              // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,              // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined               // UnwrapKey
      }},
     {// Index 13
      "ECDH",
      {
-         WebCryptoAlgorithmInfo::Undefined,                // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,                // Sign
-         WebCryptoAlgorithmInfo::Undefined,                // Verify
-         WebCryptoAlgorithmInfo::Undefined,                // Digest
-         WebCryptoAlgorithmParamsTypeEcKeyGenParams,       // GenerateKey
-         WebCryptoAlgorithmParamsTypeEcKeyImportParams,    // ImportKey
-         WebCryptoAlgorithmInfo::Undefined,                // GetKeyLength
-         WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,                // WrapKey
-         WebCryptoAlgorithmInfo::Undefined                 // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,                // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,                // Sign
+         WebCryptoAlgorithmInfo::kUndefined,                // Verify
+         WebCryptoAlgorithmInfo::kUndefined,                // Digest
+         kWebCryptoAlgorithmParamsTypeEcKeyGenParams,       // GenerateKey
+         kWebCryptoAlgorithmParamsTypeEcKeyImportParams,    // ImportKey
+         WebCryptoAlgorithmInfo::kUndefined,                // GetKeyLength
+         kWebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,                // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined                 // UnwrapKey
      }},
     {// Index 14
      "HKDF",
      {
-         WebCryptoAlgorithmInfo::Undefined,       // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,       // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,       // Sign
-         WebCryptoAlgorithmInfo::Undefined,       // Verify
-         WebCryptoAlgorithmInfo::Undefined,       // Digest
-         WebCryptoAlgorithmInfo::Undefined,       // GenerateKey
-         WebCryptoAlgorithmParamsTypeNone,        // ImportKey
-         WebCryptoAlgorithmParamsTypeNone,        // GetKeyLength
-         WebCryptoAlgorithmParamsTypeHkdfParams,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,       // WrapKey
-         WebCryptoAlgorithmInfo::Undefined        // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,       // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,       // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,       // Sign
+         WebCryptoAlgorithmInfo::kUndefined,       // Verify
+         WebCryptoAlgorithmInfo::kUndefined,       // Digest
+         WebCryptoAlgorithmInfo::kUndefined,       // GenerateKey
+         kWebCryptoAlgorithmParamsTypeNone,        // ImportKey
+         kWebCryptoAlgorithmParamsTypeNone,        // GetKeyLength
+         kWebCryptoAlgorithmParamsTypeHkdfParams,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,       // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined        // UnwrapKey
      }},
     {// Index 15
      "PBKDF2",
      {
-         WebCryptoAlgorithmInfo::Undefined,         // Encrypt
-         WebCryptoAlgorithmInfo::Undefined,         // Decrypt
-         WebCryptoAlgorithmInfo::Undefined,         // Sign
-         WebCryptoAlgorithmInfo::Undefined,         // Verify
-         WebCryptoAlgorithmInfo::Undefined,         // Digest
-         WebCryptoAlgorithmInfo::Undefined,         // GenerateKey
-         WebCryptoAlgorithmParamsTypeNone,          // ImportKey
-         WebCryptoAlgorithmParamsTypeNone,          // GetKeyLength
-         WebCryptoAlgorithmParamsTypePbkdf2Params,  // DeriveBits
-         WebCryptoAlgorithmInfo::Undefined,         // WrapKey
-         WebCryptoAlgorithmInfo::Undefined          // UnwrapKey
+         WebCryptoAlgorithmInfo::kUndefined,         // Encrypt
+         WebCryptoAlgorithmInfo::kUndefined,         // Decrypt
+         WebCryptoAlgorithmInfo::kUndefined,         // Sign
+         WebCryptoAlgorithmInfo::kUndefined,         // Verify
+         WebCryptoAlgorithmInfo::kUndefined,         // Digest
+         WebCryptoAlgorithmInfo::kUndefined,         // GenerateKey
+         kWebCryptoAlgorithmParamsTypeNone,          // ImportKey
+         kWebCryptoAlgorithmParamsTypeNone,          // GetKeyLength
+         kWebCryptoAlgorithmParamsTypePbkdf2Params,  // DeriveBits
+         WebCryptoAlgorithmInfo::kUndefined,         // WrapKey
+         WebCryptoAlgorithmInfo::kUndefined          // UnwrapKey
      }},
 };
 
 // Initializing the algorithmIdToInfo table above depends on knowing the enum
 // values for algorithm IDs. If those ever change, the table will need to be
 // updated.
-static_assert(WebCryptoAlgorithmIdAesCbc == 0, "AES CBC id must match");
-static_assert(WebCryptoAlgorithmIdHmac == 1, "HMAC id must match");
-static_assert(WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 == 2,
+static_assert(kWebCryptoAlgorithmIdAesCbc == 0, "AES CBC id must match");
+static_assert(kWebCryptoAlgorithmIdHmac == 1, "HMAC id must match");
+static_assert(kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5 == 2,
               "RSASSA-PKCS1-v1_5 id must match");
-static_assert(WebCryptoAlgorithmIdSha1 == 3, "SHA1 id must match");
-static_assert(WebCryptoAlgorithmIdSha256 == 4, "SHA256 id must match");
-static_assert(WebCryptoAlgorithmIdSha384 == 5, "SHA384 id must match");
-static_assert(WebCryptoAlgorithmIdSha512 == 6, "SHA512 id must match");
-static_assert(WebCryptoAlgorithmIdAesGcm == 7, "AES GCM id must match");
-static_assert(WebCryptoAlgorithmIdRsaOaep == 8, "RSA OAEP id must match");
-static_assert(WebCryptoAlgorithmIdAesCtr == 9, "AES CTR id must match");
-static_assert(WebCryptoAlgorithmIdAesKw == 10, "AESKW id must match");
-static_assert(WebCryptoAlgorithmIdRsaPss == 11, "RSA-PSS id must match");
-static_assert(WebCryptoAlgorithmIdEcdsa == 12, "ECDSA id must match");
-static_assert(WebCryptoAlgorithmIdEcdh == 13, "ECDH id must match");
-static_assert(WebCryptoAlgorithmIdHkdf == 14, "HKDF id must match");
-static_assert(WebCryptoAlgorithmIdPbkdf2 == 15, "Pbkdf2 id must match");
-static_assert(WebCryptoAlgorithmIdLast == 15, "last id must match");
-static_assert(10 == WebCryptoOperationLast,
+static_assert(kWebCryptoAlgorithmIdSha1 == 3, "SHA1 id must match");
+static_assert(kWebCryptoAlgorithmIdSha256 == 4, "SHA256 id must match");
+static_assert(kWebCryptoAlgorithmIdSha384 == 5, "SHA384 id must match");
+static_assert(kWebCryptoAlgorithmIdSha512 == 6, "SHA512 id must match");
+static_assert(kWebCryptoAlgorithmIdAesGcm == 7, "AES GCM id must match");
+static_assert(kWebCryptoAlgorithmIdRsaOaep == 8, "RSA OAEP id must match");
+static_assert(kWebCryptoAlgorithmIdAesCtr == 9, "AES CTR id must match");
+static_assert(kWebCryptoAlgorithmIdAesKw == 10, "AESKW id must match");
+static_assert(kWebCryptoAlgorithmIdRsaPss == 11, "RSA-PSS id must match");
+static_assert(kWebCryptoAlgorithmIdEcdsa == 12, "ECDSA id must match");
+static_assert(kWebCryptoAlgorithmIdEcdh == 13, "ECDH id must match");
+static_assert(kWebCryptoAlgorithmIdHkdf == 14, "HKDF id must match");
+static_assert(kWebCryptoAlgorithmIdPbkdf2 == 15, "Pbkdf2 id must match");
+static_assert(kWebCryptoAlgorithmIdLast == 15, "last id must match");
+static_assert(10 == kWebCryptoOperationLast,
               "the parameter mapping needs to be updated");
 
 }  // namespace
@@ -325,223 +325,221 @@ class WebCryptoAlgorithmPrivate
 WebCryptoAlgorithm::WebCryptoAlgorithm(
     WebCryptoAlgorithmId id,
     std::unique_ptr<WebCryptoAlgorithmParams> params)
-    : m_private(
-          adoptRef(new WebCryptoAlgorithmPrivate(id, std::move(params)))) {}
+    : private_(AdoptRef(new WebCryptoAlgorithmPrivate(id, std::move(params)))) {
+}
 
-WebCryptoAlgorithm WebCryptoAlgorithm::createNull() {
+WebCryptoAlgorithm WebCryptoAlgorithm::CreateNull() {
   return WebCryptoAlgorithm();
 }
 
-WebCryptoAlgorithm WebCryptoAlgorithm::adoptParamsAndCreate(
+WebCryptoAlgorithm WebCryptoAlgorithm::AdoptParamsAndCreate(
     WebCryptoAlgorithmId id,
     WebCryptoAlgorithmParams* params) {
-  return WebCryptoAlgorithm(id, WTF::wrapUnique(params));
+  return WebCryptoAlgorithm(id, WTF::WrapUnique(params));
 }
 
-const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::lookupAlgorithmInfo(
+const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::LookupAlgorithmInfo(
     WebCryptoAlgorithmId id) {
-  const unsigned idInt = id;
-  if (idInt >= WTF_ARRAY_LENGTH(algorithmIdToInfo))
+  const unsigned id_int = id;
+  if (id_int >= WTF_ARRAY_LENGTH(kAlgorithmIdToInfo))
     return 0;
-  return &algorithmIdToInfo[id];
+  return &kAlgorithmIdToInfo[id];
 }
 
-bool WebCryptoAlgorithm::isNull() const {
-  return m_private.isNull();
+bool WebCryptoAlgorithm::IsNull() const {
+  return private_.IsNull();
 }
 
-WebCryptoAlgorithmId WebCryptoAlgorithm::id() const {
-  ASSERT(!isNull());
-  return m_private->id;
+WebCryptoAlgorithmId WebCryptoAlgorithm::Id() const {
+  ASSERT(!IsNull());
+  return private_->id;
 }
 
-WebCryptoAlgorithmParamsType WebCryptoAlgorithm::paramsType() const {
-  ASSERT(!isNull());
-  if (!m_private->params)
-    return WebCryptoAlgorithmParamsTypeNone;
-  return m_private->params->type();
+WebCryptoAlgorithmParamsType WebCryptoAlgorithm::ParamsType() const {
+  ASSERT(!IsNull());
+  if (!private_->params)
+    return kWebCryptoAlgorithmParamsTypeNone;
+  return private_->params->GetType();
 }
 
-const WebCryptoAesCbcParams* WebCryptoAlgorithm::aesCbcParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeAesCbcParams)
-    return static_cast<WebCryptoAesCbcParams*>(m_private->params.get());
+const WebCryptoAesCbcParams* WebCryptoAlgorithm::AesCbcParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeAesCbcParams)
+    return static_cast<WebCryptoAesCbcParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoAesCtrParams* WebCryptoAlgorithm::aesCtrParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeAesCtrParams)
-    return static_cast<WebCryptoAesCtrParams*>(m_private->params.get());
+const WebCryptoAesCtrParams* WebCryptoAlgorithm::AesCtrParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeAesCtrParams)
+    return static_cast<WebCryptoAesCtrParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoAesKeyGenParams* WebCryptoAlgorithm::aesKeyGenParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeAesKeyGenParams)
-    return static_cast<WebCryptoAesKeyGenParams*>(m_private->params.get());
+const WebCryptoAesKeyGenParams* WebCryptoAlgorithm::AesKeyGenParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeAesKeyGenParams)
+    return static_cast<WebCryptoAesKeyGenParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoHmacImportParams* WebCryptoAlgorithm::hmacImportParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeHmacImportParams)
-    return static_cast<WebCryptoHmacImportParams*>(m_private->params.get());
+const WebCryptoHmacImportParams* WebCryptoAlgorithm::HmacImportParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeHmacImportParams)
+    return static_cast<WebCryptoHmacImportParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoHmacKeyGenParams* WebCryptoAlgorithm::hmacKeyGenParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeHmacKeyGenParams)
-    return static_cast<WebCryptoHmacKeyGenParams*>(m_private->params.get());
+const WebCryptoHmacKeyGenParams* WebCryptoAlgorithm::HmacKeyGenParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeHmacKeyGenParams)
+    return static_cast<WebCryptoHmacKeyGenParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoAesGcmParams* WebCryptoAlgorithm::aesGcmParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeAesGcmParams)
-    return static_cast<WebCryptoAesGcmParams*>(m_private->params.get());
+const WebCryptoAesGcmParams* WebCryptoAlgorithm::AesGcmParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeAesGcmParams)
+    return static_cast<WebCryptoAesGcmParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoRsaOaepParams* WebCryptoAlgorithm::rsaOaepParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeRsaOaepParams)
-    return static_cast<WebCryptoRsaOaepParams*>(m_private->params.get());
+const WebCryptoRsaOaepParams* WebCryptoAlgorithm::RsaOaepParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeRsaOaepParams)
+    return static_cast<WebCryptoRsaOaepParams*>(private_->params.get());
   return 0;
 }
 
 const WebCryptoRsaHashedImportParams*
-WebCryptoAlgorithm::rsaHashedImportParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeRsaHashedImportParams)
-    return static_cast<WebCryptoRsaHashedImportParams*>(
-        m_private->params.get());
+WebCryptoAlgorithm::RsaHashedImportParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeRsaHashedImportParams)
+    return static_cast<WebCryptoRsaHashedImportParams*>(private_->params.get());
   return 0;
 }
 
 const WebCryptoRsaHashedKeyGenParams*
-WebCryptoAlgorithm::rsaHashedKeyGenParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams)
-    return static_cast<WebCryptoRsaHashedKeyGenParams*>(
-        m_private->params.get());
+WebCryptoAlgorithm::RsaHashedKeyGenParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams)
+    return static_cast<WebCryptoRsaHashedKeyGenParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoRsaPssParams* WebCryptoAlgorithm::rsaPssParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeRsaPssParams)
-    return static_cast<WebCryptoRsaPssParams*>(m_private->params.get());
+const WebCryptoRsaPssParams* WebCryptoAlgorithm::RsaPssParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeRsaPssParams)
+    return static_cast<WebCryptoRsaPssParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoEcdsaParams* WebCryptoAlgorithm::ecdsaParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeEcdsaParams)
-    return static_cast<WebCryptoEcdsaParams*>(m_private->params.get());
+const WebCryptoEcdsaParams* WebCryptoAlgorithm::EcdsaParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeEcdsaParams)
+    return static_cast<WebCryptoEcdsaParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoEcKeyGenParams* WebCryptoAlgorithm::ecKeyGenParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeEcKeyGenParams)
-    return static_cast<WebCryptoEcKeyGenParams*>(m_private->params.get());
+const WebCryptoEcKeyGenParams* WebCryptoAlgorithm::EcKeyGenParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeEcKeyGenParams)
+    return static_cast<WebCryptoEcKeyGenParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoEcKeyImportParams* WebCryptoAlgorithm::ecKeyImportParams()
+const WebCryptoEcKeyImportParams* WebCryptoAlgorithm::EcKeyImportParams()
     const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeEcKeyImportParams)
-    return static_cast<WebCryptoEcKeyImportParams*>(m_private->params.get());
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeEcKeyImportParams)
+    return static_cast<WebCryptoEcKeyImportParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoEcdhKeyDeriveParams* WebCryptoAlgorithm::ecdhKeyDeriveParams()
+const WebCryptoEcdhKeyDeriveParams* WebCryptoAlgorithm::EcdhKeyDeriveParams()
     const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams)
-    return static_cast<WebCryptoEcdhKeyDeriveParams*>(m_private->params.get());
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams)
+    return static_cast<WebCryptoEcdhKeyDeriveParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoAesDerivedKeyParams* WebCryptoAlgorithm::aesDerivedKeyParams()
+const WebCryptoAesDerivedKeyParams* WebCryptoAlgorithm::AesDerivedKeyParams()
     const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeAesDerivedKeyParams)
-    return static_cast<WebCryptoAesDerivedKeyParams*>(m_private->params.get());
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams)
+    return static_cast<WebCryptoAesDerivedKeyParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoHkdfParams* WebCryptoAlgorithm::hkdfParams() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypeHkdfParams)
-    return static_cast<WebCryptoHkdfParams*>(m_private->params.get());
+const WebCryptoHkdfParams* WebCryptoAlgorithm::HkdfParams() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypeHkdfParams)
+    return static_cast<WebCryptoHkdfParams*>(private_->params.get());
   return 0;
 }
 
-const WebCryptoPbkdf2Params* WebCryptoAlgorithm::pbkdf2Params() const {
-  ASSERT(!isNull());
-  if (paramsType() == WebCryptoAlgorithmParamsTypePbkdf2Params)
-    return static_cast<WebCryptoPbkdf2Params*>(m_private->params.get());
+const WebCryptoPbkdf2Params* WebCryptoAlgorithm::Pbkdf2Params() const {
+  ASSERT(!IsNull());
+  if (ParamsType() == kWebCryptoAlgorithmParamsTypePbkdf2Params)
+    return static_cast<WebCryptoPbkdf2Params*>(private_->params.get());
   return 0;
 }
 
-bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id) {
+bool WebCryptoAlgorithm::IsHash(WebCryptoAlgorithmId id) {
   switch (id) {
-    case WebCryptoAlgorithmIdSha1:
-    case WebCryptoAlgorithmIdSha256:
-    case WebCryptoAlgorithmIdSha384:
-    case WebCryptoAlgorithmIdSha512:
+    case kWebCryptoAlgorithmIdSha1:
+    case kWebCryptoAlgorithmIdSha256:
+    case kWebCryptoAlgorithmIdSha384:
+    case kWebCryptoAlgorithmIdSha512:
       return true;
-    case WebCryptoAlgorithmIdAesCbc:
-    case WebCryptoAlgorithmIdHmac:
-    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-    case WebCryptoAlgorithmIdAesGcm:
-    case WebCryptoAlgorithmIdRsaOaep:
-    case WebCryptoAlgorithmIdAesCtr:
-    case WebCryptoAlgorithmIdAesKw:
-    case WebCryptoAlgorithmIdRsaPss:
-    case WebCryptoAlgorithmIdEcdsa:
-    case WebCryptoAlgorithmIdEcdh:
-    case WebCryptoAlgorithmIdHkdf:
-    case WebCryptoAlgorithmIdPbkdf2:
+    case kWebCryptoAlgorithmIdAesCbc:
+    case kWebCryptoAlgorithmIdHmac:
+    case kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+    case kWebCryptoAlgorithmIdAesGcm:
+    case kWebCryptoAlgorithmIdRsaOaep:
+    case kWebCryptoAlgorithmIdAesCtr:
+    case kWebCryptoAlgorithmIdAesKw:
+    case kWebCryptoAlgorithmIdRsaPss:
+    case kWebCryptoAlgorithmIdEcdsa:
+    case kWebCryptoAlgorithmIdEcdh:
+    case kWebCryptoAlgorithmIdHkdf:
+    case kWebCryptoAlgorithmIdPbkdf2:
       break;
   }
   return false;
 }
 
-bool WebCryptoAlgorithm::isKdf(WebCryptoAlgorithmId id) {
+bool WebCryptoAlgorithm::IsKdf(WebCryptoAlgorithmId id) {
   switch (id) {
-    case WebCryptoAlgorithmIdHkdf:
-    case WebCryptoAlgorithmIdPbkdf2:
+    case kWebCryptoAlgorithmIdHkdf:
+    case kWebCryptoAlgorithmIdPbkdf2:
       return true;
-    case WebCryptoAlgorithmIdSha1:
-    case WebCryptoAlgorithmIdSha256:
-    case WebCryptoAlgorithmIdSha384:
-    case WebCryptoAlgorithmIdSha512:
-    case WebCryptoAlgorithmIdAesCbc:
-    case WebCryptoAlgorithmIdHmac:
-    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-    case WebCryptoAlgorithmIdAesGcm:
-    case WebCryptoAlgorithmIdRsaOaep:
-    case WebCryptoAlgorithmIdAesCtr:
-    case WebCryptoAlgorithmIdAesKw:
-    case WebCryptoAlgorithmIdRsaPss:
-    case WebCryptoAlgorithmIdEcdsa:
-    case WebCryptoAlgorithmIdEcdh:
+    case kWebCryptoAlgorithmIdSha1:
+    case kWebCryptoAlgorithmIdSha256:
+    case kWebCryptoAlgorithmIdSha384:
+    case kWebCryptoAlgorithmIdSha512:
+    case kWebCryptoAlgorithmIdAesCbc:
+    case kWebCryptoAlgorithmIdHmac:
+    case kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+    case kWebCryptoAlgorithmIdAesGcm:
+    case kWebCryptoAlgorithmIdRsaOaep:
+    case kWebCryptoAlgorithmIdAesCtr:
+    case kWebCryptoAlgorithmIdAesKw:
+    case kWebCryptoAlgorithmIdRsaPss:
+    case kWebCryptoAlgorithmIdEcdsa:
+    case kWebCryptoAlgorithmIdEcdh:
       break;
   }
   return false;
 }
 
-void WebCryptoAlgorithm::assign(const WebCryptoAlgorithm& other) {
-  m_private = other.m_private;
+void WebCryptoAlgorithm::Assign(const WebCryptoAlgorithm& other) {
+  private_ = other.private_;
 }
 
-void WebCryptoAlgorithm::reset() {
-  m_private.reset();
+void WebCryptoAlgorithm::Reset() {
+  private_.Reset();
 }
 
 }  // namespace blink

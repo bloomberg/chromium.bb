@@ -45,7 +45,7 @@ namespace blink {
 typedef HeapHashMap<Member<Node>, Member<ChildListMutationAccumulator>>
     AccumulatorMap;
 
-static AccumulatorMap& accumulatorMap() {
+static AccumulatorMap& GetAccumulatorMap() {
   DEFINE_STATIC_LOCAL(AccumulatorMap, map, (new AccumulatorMap));
   return map;
 }
@@ -53,110 +53,111 @@ static AccumulatorMap& accumulatorMap() {
 ChildListMutationAccumulator::ChildListMutationAccumulator(
     Node* target,
     MutationObserverInterestGroup* observers)
-    : m_target(target),
-      m_lastAdded(nullptr),
-      m_observers(observers),
-      m_mutationScopes(0) {}
+    : target_(target),
+      last_added_(nullptr),
+      observers_(observers),
+      mutation_scopes_(0) {}
 
-void ChildListMutationAccumulator::leaveMutationScope() {
-  DCHECK_GT(m_mutationScopes, 0u);
-  if (!--m_mutationScopes) {
-    if (!isEmpty())
-      enqueueMutationRecord();
-    accumulatorMap().erase(m_target.get());
+void ChildListMutationAccumulator::LeaveMutationScope() {
+  DCHECK_GT(mutation_scopes_, 0u);
+  if (!--mutation_scopes_) {
+    if (!IsEmpty())
+      EnqueueMutationRecord();
+    GetAccumulatorMap().erase(target_.Get());
   }
 }
 
-ChildListMutationAccumulator* ChildListMutationAccumulator::getOrCreate(
+ChildListMutationAccumulator* ChildListMutationAccumulator::GetOrCreate(
     Node& target) {
-  AccumulatorMap::AddResult result = accumulatorMap().insert(&target, nullptr);
+  AccumulatorMap::AddResult result =
+      GetAccumulatorMap().insert(&target, nullptr);
   ChildListMutationAccumulator* accumulator;
-  if (!result.isNewEntry) {
-    accumulator = result.storedValue->value;
+  if (!result.is_new_entry) {
+    accumulator = result.stored_value->value;
   } else {
     accumulator = new ChildListMutationAccumulator(
         &target,
-        MutationObserverInterestGroup::createForChildListMutation(target));
-    result.storedValue->value = accumulator;
+        MutationObserverInterestGroup::CreateForChildListMutation(target));
+    result.stored_value->value = accumulator;
   }
   return accumulator;
 }
 
-inline bool ChildListMutationAccumulator::isAddedNodeInOrder(Node* child) {
-  return isEmpty() || (m_lastAdded == child->previousSibling() &&
-                       m_nextSibling == child->nextSibling());
+inline bool ChildListMutationAccumulator::IsAddedNodeInOrder(Node* child) {
+  return IsEmpty() || (last_added_ == child->previousSibling() &&
+                       next_sibling_ == child->nextSibling());
 }
 
-void ChildListMutationAccumulator::childAdded(Node* child) {
-  DCHECK(hasObservers());
+void ChildListMutationAccumulator::ChildAdded(Node* child) {
+  DCHECK(HasObservers());
 
-  if (!isAddedNodeInOrder(child))
-    enqueueMutationRecord();
+  if (!IsAddedNodeInOrder(child))
+    EnqueueMutationRecord();
 
-  if (isEmpty()) {
-    m_previousSibling = child->previousSibling();
-    m_nextSibling = child->nextSibling();
+  if (IsEmpty()) {
+    previous_sibling_ = child->previousSibling();
+    next_sibling_ = child->nextSibling();
   }
 
-  m_lastAdded = child;
-  m_addedNodes.push_back(child);
+  last_added_ = child;
+  added_nodes_.push_back(child);
 }
 
-inline bool ChildListMutationAccumulator::isRemovedNodeInOrder(Node* child) {
-  return isEmpty() || m_nextSibling == child;
+inline bool ChildListMutationAccumulator::IsRemovedNodeInOrder(Node* child) {
+  return IsEmpty() || next_sibling_ == child;
 }
 
-void ChildListMutationAccumulator::willRemoveChild(Node* child) {
-  DCHECK(hasObservers());
+void ChildListMutationAccumulator::WillRemoveChild(Node* child) {
+  DCHECK(HasObservers());
 
-  if (!m_addedNodes.isEmpty() || !isRemovedNodeInOrder(child))
-    enqueueMutationRecord();
+  if (!added_nodes_.IsEmpty() || !IsRemovedNodeInOrder(child))
+    EnqueueMutationRecord();
 
-  if (isEmpty()) {
-    m_previousSibling = child->previousSibling();
-    m_nextSibling = child->nextSibling();
-    m_lastAdded = child->previousSibling();
+  if (IsEmpty()) {
+    previous_sibling_ = child->previousSibling();
+    next_sibling_ = child->nextSibling();
+    last_added_ = child->previousSibling();
   } else {
-    m_nextSibling = child->nextSibling();
+    next_sibling_ = child->nextSibling();
   }
 
-  m_removedNodes.push_back(child);
+  removed_nodes_.push_back(child);
 }
 
-void ChildListMutationAccumulator::enqueueMutationRecord() {
-  DCHECK(hasObservers());
-  DCHECK(!isEmpty());
+void ChildListMutationAccumulator::EnqueueMutationRecord() {
+  DCHECK(HasObservers());
+  DCHECK(!IsEmpty());
 
-  StaticNodeList* addedNodes = StaticNodeList::adopt(m_addedNodes);
-  StaticNodeList* removedNodes = StaticNodeList::adopt(m_removedNodes);
-  MutationRecord* record = MutationRecord::createChildList(
-      m_target, addedNodes, removedNodes, m_previousSibling.release(),
-      m_nextSibling.release());
-  m_observers->enqueueMutationRecord(record);
-  m_lastAdded = nullptr;
-  DCHECK(isEmpty());
+  StaticNodeList* added_nodes = StaticNodeList::Adopt(added_nodes_);
+  StaticNodeList* removed_nodes = StaticNodeList::Adopt(removed_nodes_);
+  MutationRecord* record = MutationRecord::CreateChildList(
+      target_, added_nodes, removed_nodes, previous_sibling_.Release(),
+      next_sibling_.Release());
+  observers_->EnqueueMutationRecord(record);
+  last_added_ = nullptr;
+  DCHECK(IsEmpty());
 }
 
-bool ChildListMutationAccumulator::isEmpty() {
-  bool result = m_removedNodes.isEmpty() && m_addedNodes.isEmpty();
+bool ChildListMutationAccumulator::IsEmpty() {
+  bool result = removed_nodes_.IsEmpty() && added_nodes_.IsEmpty();
 #if DCHECK_IS_ON()
   if (result) {
-    DCHECK(!m_previousSibling);
-    DCHECK(!m_nextSibling);
-    DCHECK(!m_lastAdded);
+    DCHECK(!previous_sibling_);
+    DCHECK(!next_sibling_);
+    DCHECK(!last_added_);
   }
 #endif
   return result;
 }
 
 DEFINE_TRACE(ChildListMutationAccumulator) {
-  visitor->trace(m_target);
-  visitor->trace(m_removedNodes);
-  visitor->trace(m_addedNodes);
-  visitor->trace(m_previousSibling);
-  visitor->trace(m_nextSibling);
-  visitor->trace(m_lastAdded);
-  visitor->trace(m_observers);
+  visitor->Trace(target_);
+  visitor->Trace(removed_nodes_);
+  visitor->Trace(added_nodes_);
+  visitor->Trace(previous_sibling_);
+  visitor->Trace(next_sibling_);
+  visitor->Trace(last_added_);
+  visitor->Trace(observers_);
 }
 
 }  // namespace blink

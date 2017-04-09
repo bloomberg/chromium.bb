@@ -239,12 +239,12 @@ void AppendParams(const std::vector<base::string16>& additional_names,
   }
 
   for (size_t i = 0; i < additional_names.size(); ++i) {
-    names[existing_size + i] = WebString::fromUTF16(additional_names[i]);
-    values[existing_size + i] = WebString::fromUTF16(additional_values[i]);
+    names[existing_size + i] = WebString::FromUTF16(additional_names[i]);
+    values[existing_size + i] = WebString::FromUTF16(additional_values[i]);
   }
 
-  existing_names->swap(names);
-  existing_values->swap(values);
+  existing_names->Swap(names);
+  existing_values->Swap(values);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
@@ -436,26 +436,26 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // normal content, and should also be unable to script anything but themselves
   // (to help limit the damage that a corrupt page could cause).
   WebString chrome_search_scheme(
-      WebString::fromASCII(chrome::kChromeSearchScheme));
+      WebString::FromASCII(chrome::kChromeSearchScheme));
 
   // The Instant process can only display the content but not read it.  Other
   // processes can't display it or read it.
   if (!command_line->HasSwitch(switches::kInstantProcess))
-    WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_search_scheme);
+    WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(chrome_search_scheme);
 
   WebString dom_distiller_scheme(
-      WebString::fromASCII(dom_distiller::kDomDistillerScheme));
+      WebString::FromASCII(dom_distiller::kDomDistillerScheme));
   // TODO(nyquist): Add test to ensure this happens when the flag is set.
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dom_distiller_scheme);
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
 #if defined(OS_ANDROID)
-  WebSecurityPolicy::registerURLSchemeAsAllowedForReferrer(
-      WebString::fromUTF8(chrome::kAndroidAppScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsAllowedForReferrer(
+      WebString::FromUTF8(chrome::kAndroidAppScheme));
 #endif
 
   // chrome-search: pages should not be accessible by bookmarklets
   // or javascript: URLs typed in the omnibox.
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+  WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_search_scheme);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -464,13 +464,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   for (auto& origin : GetSecureOriginWhitelist()) {
-    WebSecurityPolicy::addOriginTrustworthyWhiteList(
-        WebSecurityOrigin::create(origin));
+    WebSecurityPolicy::AddOriginTrustworthyWhiteList(
+        WebSecurityOrigin::Create(origin));
   }
 
   for (auto& scheme : GetSchemesBypassingSecureContextCheckWhitelist()) {
-    WebSecurityPolicy::addSchemeToBypassSecureContextWhitelist(
-        WebString::fromASCII(scheme));
+    WebSecurityPolicy::AddSchemeToBypassSecureContextWhitelist(
+        WebString::FromASCII(scheme));
   }
 
 #if defined(OS_CHROMEOS)
@@ -569,7 +569,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   // TODO(xiaochengh): Use a different SpellCheckProvider for each RenderFrame.
   if (SpellCheckProvider* provider =
           SpellCheckProvider::Get(render_frame->GetRenderView())) {
-    render_frame->GetWebFrame()->setTextCheckClient(provider);
+    render_frame->GetWebFrame()->SetTextCheckClient(provider);
   }
 #endif
 }
@@ -588,7 +588,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   // TODO(xiaochengh): Remove this workaround once SpellCheckProvider becomes
   // a RenderFrameObserver.
   if (content::RenderFrame* main_frame = render_view->GetMainRenderFrame())
-    main_frame->GetWebFrame()->setTextCheckClient(provider);
+    main_frame->GetWebFrame()->SetTextCheckClient(provider);
 
   new SpellCheckPanel(render_view);
 #endif
@@ -615,7 +615,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
     WebLocalFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
-  std::string orig_mime_type = params.mimeType.utf8();
+  std::string orig_mime_type = params.mime_type.Utf8();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!ChromeExtensionsRendererClient::GetInstance()->OverrideCreatePlugin(
           render_frame, params)) {
@@ -627,7 +627,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromeViewHostMsg_GetPluginInfo_Output output;
   render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_frame->GetRoutingID(), url, frame->top()->getSecurityOrigin(),
+      render_frame->GetRoutingID(), url, frame->Top()->GetSecurityOrigin(),
       orig_mime_type, &output));
   *plugin = CreatePlugin(render_frame, frame, params, output);
 #else  // !BUILDFLAG(ENABLE_PLUGINS)
@@ -681,7 +681,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   const std::string& identifier = output.group_identifier;
   ChromeViewHostMsg_GetPluginInfo_Status status = output.status;
   GURL url(original_params.url);
-  std::string orig_mime_type = original_params.mimeType.utf8();
+  std::string orig_mime_type = original_params.mime_type.Utf8();
   ChromePluginPlaceholder* placeholder = NULL;
 
   // If the browser plugin is to be enabled, this should be handled by the
@@ -699,16 +699,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       if (info.mime_types[i].mime_type == actual_mime_type) {
         AppendParams(info.mime_types[i].additional_param_names,
                      info.mime_types[i].additional_param_values,
-                     &params.attributeNames, &params.attributeValues);
+                     &params.attribute_names, &params.attribute_values);
         break;
       }
     }
-    if (params.mimeType.isNull() && (actual_mime_type.size() > 0)) {
+    if (params.mime_type.IsNull() && (actual_mime_type.size() > 0)) {
       // Webkit might say that mime type is null while we already know the
       // actual mime type via ChromeViewHostMsg_GetPluginInfo. In that case
       // we should use what we know since WebpluginDelegateProxy does some
       // specific initializations based on this information.
-      params.mimeType = WebString::fromUTF8(actual_mime_type);
+      params.mime_type = WebString::FromUTF8(actual_mime_type);
     }
 
     ContentSettingsObserver* observer =
@@ -760,7 +760,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           if (is_nacl_mime_type || is_pnacl_mime_type) {
             // Normal NaCl/PNaCl embed. The app URL is the page URL.
             manifest_url = url;
-            app_url = frame->top()->document().url();
+            app_url = frame->Top()->GetDocument().Url();
           } else {
             // NaCl is being invoked as a content handler. Look up the NaCl
             // module using the MIME type. The app URL is the manifest URL.
@@ -785,9 +785,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               error_message =
                   "Portable Native Client must not be disabled in about:flags.";
             }
-            frame->addMessageToConsole(
-                WebConsoleMessage(WebConsoleMessage::LevelError,
-                                  error_message));
+            frame->AddMessageToConsole(WebConsoleMessage(
+                WebConsoleMessage::kLevelError, error_message));
             placeholder = create_blocked_plugin(
                 IDR_BLOCKED_PLUGIN_HTML,
 #if defined(OS_CHROMEOS)
@@ -812,7 +811,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
         PowerSaverInfo power_saver_info =
             PowerSaverInfo::Get(render_frame, power_saver_setting_on, params,
-                                info, frame->document().url());
+                                info, frame->GetDocument().Url());
         if (power_saver_info.blocked_for_background_tab || is_prerendering ||
             !power_saver_info.poster_attribute.empty() ||
             power_saver_info.power_saver_enabled) {
@@ -1013,18 +1012,15 @@ bool ChromeContentRendererClient::IsNaClAllowed(
       std::vector<base::string16> param_values;
       param_names.push_back(base::ASCIIToUTF16(dev_attribute));
       param_values.push_back(base::string16());
-      AppendParams(
-          param_names,
-          param_values,
-          &params->attributeNames,
-          &params->attributeValues);
+      AppendParams(param_names, param_values, &params->attribute_names,
+                   &params->attribute_values);
     } else {
       // If the params somehow contain '@dev', remove it.
-      size_t attribute_count = params->attributeNames.size();
+      size_t attribute_count = params->attribute_names.size();
       for (size_t i = 0; i < attribute_count; ++i) {
-        if (params->attributeNames[i].equals(dev_attribute.data(),
-                                             dev_attribute.length())) {
-          params->attributeNames[i] = WebString();
+        if (params->attribute_names[i].Equals(dev_attribute.data(),
+                                              dev_attribute.length())) {
+          params->attribute_names[i] = WebString();
         }
       }
     }
@@ -1065,11 +1061,11 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     const WebURLError& error,
     std::string* error_html,
     base::string16* error_description) {
-  const GURL failed_url = error.unreachableURL;
+  const GURL failed_url = error.unreachable_url;
 
-  bool is_post = failed_request.httpMethod().ascii() == "POST";
+  bool is_post = failed_request.HttpMethod().Ascii() == "POST";
   bool is_ignoring_cache =
-      failed_request.getCachePolicy() == WebCachePolicy::BypassingCache;
+      failed_request.GetCachePolicy() == WebCachePolicy::kBypassingCache;
   if (error_html) {
     NetErrorHelper::Get(render_frame)
         ->GetErrorHTML(error, is_post, is_ignoring_cache, error_html);
@@ -1077,7 +1073,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
-        error.domain.utf8(), error.reason, is_post);
+        error.domain.Utf8(), error.reason, is_post);
   }
 }
 
@@ -1112,7 +1108,7 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
                                              bool is_initial_navigation,
                                              bool is_server_redirect,
                                              bool* send_referrer) {
-  DCHECK(!frame->parent());
+  DCHECK(!frame->Parent());
 
   // If this is the Instant process, fork all navigations originating from the
   // renderer.  The destination page will then be bucketed back to this Instant
@@ -1170,11 +1166,11 @@ bool ChromeContentRendererClient::WillSendRequest(
   }
 #endif
 
-  if (!url.protocolIs(chrome::kChromeSearchScheme))
+  if (!url.ProtocolIs(chrome::kChromeSearchScheme))
     return false;
 
   SearchBox* search_box =
-      SearchBox::Get(content::RenderFrame::FromWebFrame(frame->localRoot()));
+      SearchBox::Get(content::RenderFrame::FromWebFrame(frame->LocalRoot()));
   if (search_box) {
     // Note: this GURL copy could be avoided if host() were added to WebURL.
     GURL gurl(url);
@@ -1223,7 +1219,7 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
   if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
     return false;
 
-  *override_state = blink::WebPageVisibilityStatePrerender;
+  *override_state = blink::kWebPageVisibilityStatePrerender;
   return true;
 }
 
@@ -1404,11 +1400,11 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
     const WebURLResponse& response,
     std::map<std::string, std::string>* properties) {
   DCHECK(properties);
-  WebString header_key(WebString::fromASCII(
+  WebString header_key(WebString::FromASCII(
       data_reduction_proxy::chrome_proxy_content_transform_header()));
-  if (!response.httpHeaderField(header_key).isNull() &&
+  if (!response.HttpHeaderField(header_key).IsNull() &&
       data_reduction_proxy::IsEmptyImagePreview(
-          response.httpHeaderField(header_key).utf8())) {
+          response.HttpHeaderField(header_key).Utf8())) {
     (*properties)[
         data_reduction_proxy::chrome_proxy_content_transform_header()] =
             data_reduction_proxy::empty_image_directive();

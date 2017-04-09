@@ -14,14 +14,14 @@ class HTMLSlotElement;
 
 class CORE_EXPORT SlotScopedTraversal {
  public:
-  static HTMLSlotElement* findScopeOwnerSlot(const Element&);
-  static Element* nearestInclusiveAncestorAssignedToSlot(const Element&);
-  static Element* next(const Element&);
-  static Element* previous(const Element&);
-  static Element* firstAssignedToSlot(HTMLSlotElement&);
-  static Element* lastAssignedToSlot(HTMLSlotElement&);
+  static HTMLSlotElement* FindScopeOwnerSlot(const Element&);
+  static Element* NearestInclusiveAncestorAssignedToSlot(const Element&);
+  static Element* Next(const Element&);
+  static Element* Previous(const Element&);
+  static Element* FirstAssignedToSlot(HTMLSlotElement&);
+  static Element* LastAssignedToSlot(HTMLSlotElement&);
 
-  static bool isSlotScoped(const Element&);
+  static bool IsSlotScoped(const Element&);
 };
 
 }  // namespace blink

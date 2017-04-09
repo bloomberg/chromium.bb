@@ -43,173 +43,173 @@ class CollectionIndexCache {
  public:
   CollectionIndexCache();
 
-  bool isEmpty(const Collection& collection) {
-    if (isCachedNodeCountValid())
-      return !cachedNodeCount();
-    if (cachedNode())
+  bool IsEmpty(const Collection& collection) {
+    if (IsCachedNodeCountValid())
+      return !CachedNodeCount();
+    if (CachedNode())
       return false;
-    return !nodeAt(collection, 0);
+    return !NodeAt(collection, 0);
   }
-  bool hasExactlyOneNode(const Collection& collection) {
-    if (isCachedNodeCountValid())
-      return cachedNodeCount() == 1;
-    if (cachedNode())
-      return !cachedNodeIndex() && !nodeAt(collection, 1);
-    return nodeAt(collection, 0) && !nodeAt(collection, 1);
+  bool HasExactlyOneNode(const Collection& collection) {
+    if (IsCachedNodeCountValid())
+      return CachedNodeCount() == 1;
+    if (CachedNode())
+      return !CachedNodeIndex() && !NodeAt(collection, 1);
+    return NodeAt(collection, 0) && !NodeAt(collection, 1);
   }
 
-  unsigned nodeCount(const Collection&);
-  NodeType* nodeAt(const Collection&, unsigned index);
+  unsigned NodeCount(const Collection&);
+  NodeType* NodeAt(const Collection&, unsigned index);
 
-  void invalidate();
+  void Invalidate();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_currentNode); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(current_node_); }
 
  protected:
-  ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
-  ALWAYS_INLINE unsigned cachedNodeIndex() const {
-    DCHECK(cachedNode());
-    return m_cachedNodeIndex;
+  ALWAYS_INLINE NodeType* CachedNode() const { return current_node_; }
+  ALWAYS_INLINE unsigned CachedNodeIndex() const {
+    DCHECK(CachedNode());
+    return cached_node_index_;
   }
-  ALWAYS_INLINE void setCachedNode(NodeType* node, unsigned index) {
+  ALWAYS_INLINE void SetCachedNode(NodeType* node, unsigned index) {
     DCHECK(node);
-    m_currentNode = node;
-    m_cachedNodeIndex = index;
+    current_node_ = node;
+    cached_node_index_ = index;
   }
 
-  ALWAYS_INLINE bool isCachedNodeCountValid() const {
-    return m_isLengthCacheValid;
+  ALWAYS_INLINE bool IsCachedNodeCountValid() const {
+    return is_length_cache_valid_;
   }
-  ALWAYS_INLINE unsigned cachedNodeCount() const { return m_cachedNodeCount; }
-  ALWAYS_INLINE void setCachedNodeCount(unsigned length) {
-    m_cachedNodeCount = length;
-    m_isLengthCacheValid = true;
+  ALWAYS_INLINE unsigned CachedNodeCount() const { return cached_node_count_; }
+  ALWAYS_INLINE void SetCachedNodeCount(unsigned length) {
+    cached_node_count_ = length;
+    is_length_cache_valid_ = true;
   }
 
  private:
-  NodeType* nodeBeforeCachedNode(const Collection&, unsigned index);
-  NodeType* nodeAfterCachedNode(const Collection&, unsigned index);
+  NodeType* NodeBeforeCachedNode(const Collection&, unsigned index);
+  NodeType* NodeAfterCachedNode(const Collection&, unsigned index);
 
-  Member<NodeType> m_currentNode;
-  unsigned m_cachedNodeCount;
-  unsigned m_cachedNodeIndex : 31;
-  unsigned m_isLengthCacheValid : 1;
+  Member<NodeType> current_node_;
+  unsigned cached_node_count_;
+  unsigned cached_node_index_ : 31;
+  unsigned is_length_cache_valid_ : 1;
 };
 
 template <typename Collection, typename NodeType>
 CollectionIndexCache<Collection, NodeType>::CollectionIndexCache()
-    : m_currentNode(nullptr),
-      m_cachedNodeCount(0),
-      m_cachedNodeIndex(0),
-      m_isLengthCacheValid(false) {}
+    : current_node_(nullptr),
+      cached_node_count_(0),
+      cached_node_index_(0),
+      is_length_cache_valid_(false) {}
 
 template <typename Collection, typename NodeType>
-void CollectionIndexCache<Collection, NodeType>::invalidate() {
-  m_currentNode = nullptr;
-  m_isLengthCacheValid = false;
+void CollectionIndexCache<Collection, NodeType>::Invalidate() {
+  current_node_ = nullptr;
+  is_length_cache_valid_ = false;
 }
 
 template <typename Collection, typename NodeType>
-inline unsigned CollectionIndexCache<Collection, NodeType>::nodeCount(
+inline unsigned CollectionIndexCache<Collection, NodeType>::NodeCount(
     const Collection& collection) {
-  if (isCachedNodeCountValid())
-    return cachedNodeCount();
+  if (IsCachedNodeCountValid())
+    return CachedNodeCount();
 
-  nodeAt(collection, UINT_MAX);
-  DCHECK(isCachedNodeCountValid());
+  NodeAt(collection, UINT_MAX);
+  DCHECK(IsCachedNodeCountValid());
 
-  return cachedNodeCount();
+  return CachedNodeCount();
 }
 
 template <typename Collection, typename NodeType>
-inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(
+inline NodeType* CollectionIndexCache<Collection, NodeType>::NodeAt(
     const Collection& collection,
     unsigned index) {
-  if (isCachedNodeCountValid() && index >= cachedNodeCount())
+  if (IsCachedNodeCountValid() && index >= CachedNodeCount())
     return nullptr;
 
-  if (cachedNode()) {
-    if (index > cachedNodeIndex())
-      return nodeAfterCachedNode(collection, index);
-    if (index < cachedNodeIndex())
-      return nodeBeforeCachedNode(collection, index);
-    return cachedNode();
+  if (CachedNode()) {
+    if (index > CachedNodeIndex())
+      return NodeAfterCachedNode(collection, index);
+    if (index < CachedNodeIndex())
+      return NodeBeforeCachedNode(collection, index);
+    return CachedNode();
   }
 
   // No valid cache yet, let's find the first matching element.
-  DCHECK(!isCachedNodeCountValid());
-  NodeType* firstNode = collection.traverseToFirst();
-  if (!firstNode) {
+  DCHECK(!IsCachedNodeCountValid());
+  NodeType* first_node = collection.TraverseToFirst();
+  if (!first_node) {
     // The collection is empty.
-    setCachedNodeCount(0);
+    SetCachedNodeCount(0);
     return nullptr;
   }
-  setCachedNode(firstNode, 0);
-  return index ? nodeAfterCachedNode(collection, index) : firstNode;
+  SetCachedNode(first_node, 0);
+  return index ? NodeAfterCachedNode(collection, index) : first_node;
 }
 
 template <typename Collection, typename NodeType>
 inline NodeType*
-CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNode(
+CollectionIndexCache<Collection, NodeType>::NodeBeforeCachedNode(
     const Collection& collection,
     unsigned index) {
-  DCHECK(cachedNode());  // Cache should be valid.
-  unsigned currentIndex = cachedNodeIndex();
-  DCHECK_GT(currentIndex, index);
+  DCHECK(CachedNode());  // Cache should be valid.
+  unsigned current_index = CachedNodeIndex();
+  DCHECK_GT(current_index, index);
 
   // Determine if we should traverse from the beginning of the collection
   // instead of the cached node.
-  bool firstIsCloser = index < currentIndex - index;
-  if (firstIsCloser || !collection.canTraverseBackward()) {
-    NodeType* firstNode = collection.traverseToFirst();
-    DCHECK(firstNode);
-    setCachedNode(firstNode, 0);
-    return index ? nodeAfterCachedNode(collection, index) : firstNode;
+  bool first_is_closer = index < current_index - index;
+  if (first_is_closer || !collection.CanTraverseBackward()) {
+    NodeType* first_node = collection.TraverseToFirst();
+    DCHECK(first_node);
+    SetCachedNode(first_node, 0);
+    return index ? NodeAfterCachedNode(collection, index) : first_node;
   }
 
   // Backward traversal from the cached node to the requested index.
-  DCHECK(collection.canTraverseBackward());
-  NodeType* currentNode =
-      collection.traverseBackwardToOffset(index, *cachedNode(), currentIndex);
-  DCHECK(currentNode);
-  setCachedNode(currentNode, currentIndex);
-  return currentNode;
+  DCHECK(collection.CanTraverseBackward());
+  NodeType* current_node =
+      collection.TraverseBackwardToOffset(index, *CachedNode(), current_index);
+  DCHECK(current_node);
+  SetCachedNode(current_node, current_index);
+  return current_node;
 }
 
 template <typename Collection, typename NodeType>
 inline NodeType*
-CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode(
+CollectionIndexCache<Collection, NodeType>::NodeAfterCachedNode(
     const Collection& collection,
     unsigned index) {
-  DCHECK(cachedNode());  // Cache should be valid.
-  unsigned currentIndex = cachedNodeIndex();
-  DCHECK_LT(currentIndex, index);
+  DCHECK(CachedNode());  // Cache should be valid.
+  unsigned current_index = CachedNodeIndex();
+  DCHECK_LT(current_index, index);
 
   // Determine if we should traverse from the end of the collection instead of
   // the cached node.
-  bool lastIsCloser = isCachedNodeCountValid() &&
-                      cachedNodeCount() - index < index - currentIndex;
-  if (lastIsCloser && collection.canTraverseBackward()) {
-    NodeType* lastItem = collection.traverseToLast();
-    DCHECK(lastItem);
-    setCachedNode(lastItem, cachedNodeCount() - 1);
-    if (index < cachedNodeCount() - 1)
-      return nodeBeforeCachedNode(collection, index);
-    return lastItem;
+  bool last_is_closer = IsCachedNodeCountValid() &&
+                        CachedNodeCount() - index < index - current_index;
+  if (last_is_closer && collection.CanTraverseBackward()) {
+    NodeType* last_item = collection.TraverseToLast();
+    DCHECK(last_item);
+    SetCachedNode(last_item, CachedNodeCount() - 1);
+    if (index < CachedNodeCount() - 1)
+      return NodeBeforeCachedNode(collection, index);
+    return last_item;
   }
 
   // Forward traversal from the cached node to the requested index.
-  NodeType* currentNode =
-      collection.traverseForwardToOffset(index, *cachedNode(), currentIndex);
-  if (!currentNode) {
+  NodeType* current_node =
+      collection.TraverseForwardToOffset(index, *CachedNode(), current_index);
+  if (!current_node) {
     // Did not find the node. On plus side, we now know the length.
-    if (isCachedNodeCountValid())
-      DCHECK_EQ(currentIndex + 1, cachedNodeCount());
-    setCachedNodeCount(currentIndex + 1);
+    if (IsCachedNodeCountValid())
+      DCHECK_EQ(current_index + 1, CachedNodeCount());
+    SetCachedNodeCount(current_index + 1);
     return nullptr;
   }
-  setCachedNode(currentNode, currentIndex);
-  return currentNode;
+  SetCachedNode(current_node, current_index);
+  return current_node;
 }
 
 }  // namespace blink

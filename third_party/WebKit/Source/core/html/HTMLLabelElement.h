@@ -35,29 +35,29 @@ class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLLabelElement* create(Document&);
+  static HTMLLabelElement* Create(Document&);
   LabelableElement* control() const;
   HTMLFormElement* form() const;
 
-  bool willRespondToMouseClickEvents() override;
+  bool WillRespondToMouseClickEvents() override;
 
  private:
   explicit HTMLLabelElement(Document&);
-  bool isInInteractiveContent(Node*) const;
+  bool IsInInteractiveContent(Node*) const;
 
-  bool isInteractiveContent() const override;
-  void accessKeyAction(bool sendMouseEvents) override;
+  bool IsInteractiveContent() const override;
+  void AccessKeyAction(bool send_mouse_events) override;
 
   // Overridden to update the hover/active state of the corresponding control.
-  void setActive(bool = true) override;
-  void setHovered(bool = true) override;
+  void SetActive(bool = true) override;
+  void SetHovered(bool = true) override;
 
   // Overridden to either click() or focus() the corresponding control.
-  void defaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event*) override;
 
   void focus(const FocusParams&) override;
 
-  bool m_processingClick;
+  bool processing_click_;
 };
 
 }  // namespace blink

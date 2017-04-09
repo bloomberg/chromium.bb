@@ -23,13 +23,13 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMPointReadOnly* create(double x, double y, double z, double w);
+  static DOMPointReadOnly* Create(double x, double y, double z, double w);
   static DOMPointReadOnly* fromPoint(const DOMPointInit&);
 
-  double x() const { return m_x; }
-  double y() const { return m_y; }
-  double z() const { return m_z; }
-  double w() const { return m_w; }
+  double x() const { return x_; }
+  double y() const { return y_; }
+  double z() const { return z_; }
+  double w() const { return w_; }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -39,10 +39,10 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
  protected:
   DOMPointReadOnly(double x, double y, double z, double w);
 
-  double m_x;
-  double m_y;
-  double m_z;
-  double m_w;
+  double x_;
+  double y_;
+  double z_;
+  double w_;
 };
 
 }  // namespace blink

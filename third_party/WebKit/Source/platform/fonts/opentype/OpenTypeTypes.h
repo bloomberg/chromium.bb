@@ -64,36 +64,36 @@ typedef UInt16 Offset;
 typedef UInt16 GlyphID;
 
 template <typename T>
-static const T* validateTable(const RefPtr<SharedBuffer>& buffer,
+static const T* ValidateTable(const RefPtr<SharedBuffer>& buffer,
                               size_t count = 1) {
   if (!buffer || buffer->size() < sizeof(T) * count)
     return 0;
-  return reinterpret_cast<const T*>(buffer->data());
+  return reinterpret_cast<const T*>(buffer->Data());
 }
 
 struct TableBase {
   DISALLOW_NEW();
 
  protected:
-  static bool isValidEnd(const SharedBuffer& buffer, const void* position) {
-    if (position < buffer.data())
+  static bool IsValidEnd(const SharedBuffer& buffer, const void* position) {
+    if (position < buffer.Data())
       return false;
-    size_t offset = reinterpret_cast<const char*>(position) - buffer.data();
+    size_t offset = reinterpret_cast<const char*>(position) - buffer.Data();
     return offset <= buffer.size();  // "<=" because end is included as valid
   }
 
   template <typename T>
-  static const T* validatePtr(const SharedBuffer& buffer,
+  static const T* ValidatePtr(const SharedBuffer& buffer,
                               const void* position) {
     const T* casted = reinterpret_cast<const T*>(position);
-    if (!isValidEnd(buffer, &casted[1]))
+    if (!IsValidEnd(buffer, &casted[1]))
       return 0;
     return casted;
   }
 
   template <typename T>
-  const T* validateOffset(const SharedBuffer& buffer, uint16_t offset) const {
-    return validatePtr<T>(buffer,
+  const T* ValidateOffset(const SharedBuffer& buffer, uint16_t offset) const {
+    return ValidatePtr<T>(buffer,
                           reinterpret_cast<const int8_t*>(this) + offset);
   }
 };

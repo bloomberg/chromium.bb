@@ -35,23 +35,23 @@ class MatchRequest {
   STACK_ALLOCATED();
 
  public:
-  MatchRequest(RuleSet* ruleSet,
+  MatchRequest(RuleSet* rule_set,
                const ContainerNode* scope = 0,
-               const CSSStyleSheet* cssSheet = 0,
-               unsigned styleSheetIndex = 0)
-      : ruleSet(ruleSet),
+               const CSSStyleSheet* css_sheet = 0,
+               unsigned style_sheet_index = 0)
+      : rule_set(rule_set),
         scope(scope),
-        styleSheet(cssSheet),
-        styleSheetIndex(styleSheetIndex) {
+        style_sheet(css_sheet),
+        style_sheet_index(style_sheet_index) {
     // Now that we're about to read from the RuleSet, we're done adding more
     // rules to the set and we should make sure it's compacted.
-    ruleSet->compactRulesIfNeeded();
+    rule_set->CompactRulesIfNeeded();
   }
 
-  Member<const RuleSet> ruleSet;
+  Member<const RuleSet> rule_set;
   Member<const ContainerNode> scope;
-  Member<const CSSStyleSheet> styleSheet;
-  const unsigned styleSheetIndex;
+  Member<const CSSStyleSheet> style_sheet;
+  const unsigned style_sheet_index;
 };
 
 }  // namespace blink

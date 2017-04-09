@@ -10,126 +10,126 @@
 
 namespace blink {
 
-const cc::FilterOperations& CompositorFilterOperations::asCcFilterOperations()
+const cc::FilterOperations& CompositorFilterOperations::AsCcFilterOperations()
     const {
-  return m_filterOperations;
+  return filter_operations_;
 }
 
-cc::FilterOperations CompositorFilterOperations::releaseCcFilterOperations() {
-  return std::move(m_filterOperations);
+cc::FilterOperations CompositorFilterOperations::ReleaseCcFilterOperations() {
+  return std::move(filter_operations_);
 }
 
-void CompositorFilterOperations::appendGrayscaleFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateGrayscaleFilter(amount));
+void CompositorFilterOperations::AppendGrayscaleFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateGrayscaleFilter(amount));
 }
 
-void CompositorFilterOperations::appendSepiaFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateSepiaFilter(amount));
+void CompositorFilterOperations::AppendSepiaFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateSepiaFilter(amount));
 }
 
-void CompositorFilterOperations::appendSaturateFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateSaturateFilter(amount));
+void CompositorFilterOperations::AppendSaturateFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateSaturateFilter(amount));
 }
 
-void CompositorFilterOperations::appendHueRotateFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateHueRotateFilter(amount));
+void CompositorFilterOperations::AppendHueRotateFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateHueRotateFilter(amount));
 }
 
-void CompositorFilterOperations::appendInvertFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateInvertFilter(amount));
+void CompositorFilterOperations::AppendInvertFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateInvertFilter(amount));
 }
 
-void CompositorFilterOperations::appendBrightnessFilter(float amount) {
-  m_filterOperations.Append(
+void CompositorFilterOperations::AppendBrightnessFilter(float amount) {
+  filter_operations_.Append(
       cc::FilterOperation::CreateBrightnessFilter(amount));
 }
 
-void CompositorFilterOperations::appendContrastFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateContrastFilter(amount));
+void CompositorFilterOperations::AppendContrastFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateContrastFilter(amount));
 }
 
-void CompositorFilterOperations::appendOpacityFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateOpacityFilter(amount));
+void CompositorFilterOperations::AppendOpacityFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateOpacityFilter(amount));
 }
 
-void CompositorFilterOperations::appendBlurFilter(float amount) {
-  m_filterOperations.Append(cc::FilterOperation::CreateBlurFilter(amount));
+void CompositorFilterOperations::AppendBlurFilter(float amount) {
+  filter_operations_.Append(cc::FilterOperation::CreateBlurFilter(amount));
 }
 
-void CompositorFilterOperations::appendDropShadowFilter(IntPoint offset,
-                                                        float stdDeviation,
+void CompositorFilterOperations::AppendDropShadowFilter(IntPoint offset,
+                                                        float std_deviation,
                                                         Color color) {
-  gfx::Point gfxOffset(offset.x(), offset.y());
-  m_filterOperations.Append(cc::FilterOperation::CreateDropShadowFilter(
-      gfxOffset, stdDeviation, color.rgb()));
+  gfx::Point gfx_offset(offset.X(), offset.Y());
+  filter_operations_.Append(cc::FilterOperation::CreateDropShadowFilter(
+      gfx_offset, std_deviation, color.Rgb()));
 }
 
-void CompositorFilterOperations::appendColorMatrixFilter(SkScalar matrix[20]) {
-  m_filterOperations.Append(
+void CompositorFilterOperations::AppendColorMatrixFilter(SkScalar matrix[20]) {
+  filter_operations_.Append(
       cc::FilterOperation::CreateColorMatrixFilter(matrix));
 }
 
-void CompositorFilterOperations::appendZoomFilter(float amount, int inset) {
-  m_filterOperations.Append(
+void CompositorFilterOperations::AppendZoomFilter(float amount, int inset) {
+  filter_operations_.Append(
       cc::FilterOperation::CreateZoomFilter(amount, inset));
 }
 
-void CompositorFilterOperations::appendSaturatingBrightnessFilter(
+void CompositorFilterOperations::AppendSaturatingBrightnessFilter(
     float amount) {
-  m_filterOperations.Append(
+  filter_operations_.Append(
       cc::FilterOperation::CreateSaturatingBrightnessFilter(amount));
 }
 
-void CompositorFilterOperations::appendReferenceFilter(
-    sk_sp<SkImageFilter> imageFilter) {
-  m_filterOperations.Append(
-      cc::FilterOperation::CreateReferenceFilter(std::move(imageFilter)));
+void CompositorFilterOperations::AppendReferenceFilter(
+    sk_sp<SkImageFilter> image_filter) {
+  filter_operations_.Append(
+      cc::FilterOperation::CreateReferenceFilter(std::move(image_filter)));
 }
 
-void CompositorFilterOperations::clear() {
-  m_filterOperations.Clear();
+void CompositorFilterOperations::Clear() {
+  filter_operations_.Clear();
 }
 
-bool CompositorFilterOperations::isEmpty() const {
-  return m_filterOperations.IsEmpty();
+bool CompositorFilterOperations::IsEmpty() const {
+  return filter_operations_.IsEmpty();
 }
 
-FloatRect CompositorFilterOperations::mapRect(
-    const FloatRect& inputRect) const {
+FloatRect CompositorFilterOperations::MapRect(
+    const FloatRect& input_rect) const {
   gfx::Rect result =
-      m_filterOperations.MapRect(enclosingIntRect(inputRect), SkMatrix::I());
+      filter_operations_.MapRect(EnclosingIntRect(input_rect), SkMatrix::I());
   return FloatRect(result.x(), result.y(), result.width(), result.height());
 }
 
-bool CompositorFilterOperations::hasFilterThatMovesPixels() const {
-  return m_filterOperations.HasFilterThatMovesPixels();
+bool CompositorFilterOperations::HasFilterThatMovesPixels() const {
+  return filter_operations_.HasFilterThatMovesPixels();
 }
 
 bool CompositorFilterOperations::operator==(
     const CompositorFilterOperations& o) const {
-  return m_filterOperations == o.m_filterOperations;
+  return filter_operations_ == o.filter_operations_;
 }
 
-bool CompositorFilterOperations::equalsIgnoringReferenceFilters(
+bool CompositorFilterOperations::EqualsIgnoringReferenceFilters(
     const CompositorFilterOperations& o) const {
-  size_t size = m_filterOperations.size();
-  if (size != o.m_filterOperations.size())
+  size_t size = filter_operations_.size();
+  if (size != o.filter_operations_.size())
     return false;
   for (size_t i = 0; i < size; ++i) {
-    const auto& operation = m_filterOperations.at(i);
+    const auto& operation = filter_operations_.at(i);
     if (operation.type() == cc::FilterOperation::REFERENCE) {
-      if (o.m_filterOperations.at(i).type() != cc::FilterOperation::REFERENCE)
+      if (o.filter_operations_.at(i).type() != cc::FilterOperation::REFERENCE)
         return false;
       continue;
     }
-    if (operation != o.m_filterOperations.at(i))
+    if (operation != o.filter_operations_.at(i))
       return false;
   }
   return true;
 }
 
-String CompositorFilterOperations::toString() const {
-  return m_filterOperations.ToString().c_str();
+String CompositorFilterOperations::ToString() const {
+  return filter_operations_.ToString().c_str();
 }
 
 }  // namespace blink

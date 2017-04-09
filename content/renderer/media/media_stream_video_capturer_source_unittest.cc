@@ -113,8 +113,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
   void TearDown() override {
-    webkit_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    webkit_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
@@ -127,12 +127,12 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         std::move(delegate));
     source_->SetDeviceInfo(device_info);
 
-    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::TypeVideo,
-                              blink::WebString::fromASCII("dummy_source_name"),
+    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                              blink::WebMediaStreamSource::kTypeVideo,
+                              blink::WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
-    webkit_source_.setExtraData(source_);
-    webkit_source_id_ = webkit_source_.id();
+    webkit_source_.SetExtraData(source_);
+    webkit_source_id_ = webkit_source_.Id();
   }
 
   MockConstraintFactory* constraint_factory() { return &constraint_factory_; }
@@ -170,7 +170,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   void OnSourceStopped(const blink::WebMediaStreamSource& source) {
     source_stopped_ = true;
-    EXPECT_EQ(source.id(), webkit_source_id_);
+    EXPECT_EQ(source.Id(), webkit_source_id_);
   }
   void OnStarted(bool result) { source_->OnRunStateChanged(result); }
 
@@ -202,12 +202,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
       std::move(delegate));
-  webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                            blink::WebMediaStreamSource::TypeVideo,
-                            blink::WebString::fromASCII("dummy_source_name"),
+  webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                            blink::WebMediaStreamSource::kTypeVideo,
+                            blink::WebString::FromASCII("dummy_source_name"),
                             false /* remote */);
-  webkit_source_.setExtraData(source_);
-  webkit_source_id_ = webkit_source_.id();
+  webkit_source_.SetExtraData(source_);
+  webkit_source_id_ = webkit_source_.Id();
 
   InSequence s;
   EXPECT_CALL(mock_delegate(), StartCapture(_, _, _));
@@ -217,16 +217,16 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
 
   OnStarted(true);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            webkit_source_.getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            webkit_source_.GetReadyState());
 
   EXPECT_FALSE(source_stopped_);
 
   EXPECT_CALL(mock_delegate(), StopCapture());
   OnStarted(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            webkit_source_.getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+            webkit_source_.GetReadyState());
   // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
   EXPECT_TRUE(source_stopped_);
 }
@@ -240,12 +240,12 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
       base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                  base::Unretained(this)),
       std::move(delegate));
-  webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                            blink::WebMediaStreamSource::TypeVideo,
-                            blink::WebString::fromASCII("dummy_source_name"),
+  webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                            blink::WebMediaStreamSource::kTypeVideo,
+                            blink::WebString::FromASCII("dummy_source_name"),
                             false /* remote */);
-  webkit_source_.setExtraData(source_);
-  webkit_source_id_ = webkit_source_.id();
+  webkit_source_.SetExtraData(source_);
+  webkit_source_id_ = webkit_source_.Id();
 
   VideoCaptureDeliverFrameCB deliver_frame_cb;
   media::VideoCapturerSource::RunningCallback running_cb;
@@ -296,8 +296,8 @@ class MediaStreamVideoCapturerSourceOldConstraintsTest : public testing::Test {
   }
 
   void TearDown() override {
-    webkit_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    webkit_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
@@ -311,12 +311,12 @@ class MediaStreamVideoCapturerSourceOldConstraintsTest : public testing::Test {
         std::move(delegate));
     source_->SetDeviceInfo(device_info);
 
-    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::TypeVideo,
-                              blink::WebString::fromASCII("dummy_source_name"),
+    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                              blink::WebMediaStreamSource::kTypeVideo,
+                              blink::WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
-    webkit_source_.setExtraData(source_);
-    webkit_source_id_ = webkit_source_.id();
+    webkit_source_.SetExtraData(source_);
+    webkit_source_id_ = webkit_source_.Id();
   }
 
   MockConstraintFactory* constraint_factory() { return &constraint_factory_; }
@@ -356,7 +356,7 @@ class MediaStreamVideoCapturerSourceOldConstraintsTest : public testing::Test {
 
   void OnSourceStopped(const blink::WebMediaStreamSource& source) {
     source_stopped_ = true;
-    EXPECT_EQ(source.id(), webkit_source_id_);
+    EXPECT_EQ(source.Id(), webkit_source_id_);
   }
   void OnStarted(bool result) { source_->OnRunStateChanged(result); }
 
@@ -438,11 +438,11 @@ TEST_F(MediaStreamVideoCapturerSourceOldConstraintsTest,
   InitWithDeviceInfo(device_info);
 
   // Specify max and min size constraints that have the same ~16:9 aspect ratio.
-  constraint_factory()->basic().width.setMax(1920);
-  constraint_factory()->basic().height.setMax(1080);
-  constraint_factory()->basic().width.setMin(854);
-  constraint_factory()->basic().height.setMin(480);
-  constraint_factory()->basic().frameRate.setMax(60.0);
+  constraint_factory()->basic().width.SetMax(1920);
+  constraint_factory()->basic().height.SetMax(1080);
+  constraint_factory()->basic().width.SetMin(854);
+  constraint_factory()->basic().height.SetMin(480);
+  constraint_factory()->basic().frame_rate.SetMax(60.0);
 
   media::VideoCaptureParams expected_params;
   expected_params.requested_format.frame_size.SetSize(1920, 1080);
@@ -471,11 +471,11 @@ TEST_F(MediaStreamVideoCapturerSourceOldConstraintsTest,
   InitWithDeviceInfo(device_info);
 
   // Specify max and min size constraints with different aspect ratios.
-  constraint_factory()->basic().width.setMax(1920);
-  constraint_factory()->basic().height.setMax(1080);
-  constraint_factory()->basic().width.setMin(0);
-  constraint_factory()->basic().height.setMin(0);
-  constraint_factory()->basic().frameRate.setMax(60.0);
+  constraint_factory()->basic().width.SetMax(1920);
+  constraint_factory()->basic().height.SetMax(1080);
+  constraint_factory()->basic().width.SetMin(0);
+  constraint_factory()->basic().height.SetMin(0);
+  constraint_factory()->basic().frame_rate.SetMax(60.0);
 
   media::VideoCaptureParams expected_params;
   expected_params.requested_format.frame_size.SetSize(1920, 1080);
@@ -505,7 +505,7 @@ TEST_F(MediaStreamVideoCapturerSourceOldConstraintsTest,
     InitWithDeviceInfo(device_info);
     constraint_factory_.Reset();
 
-    constraint_factory()->AddAdvanced().googPowerLineFrequency.setExact(
+    constraint_factory()->AddAdvanced().goog_power_line_frequency.SetExact(
         frequency);
 
     media::VideoCaptureParams expected_params;
@@ -546,12 +546,12 @@ TEST_F(MediaStreamVideoCapturerSourceOldConstraintsTest, Ended) {
           &MediaStreamVideoCapturerSourceOldConstraintsTest::OnSourceStopped,
           base::Unretained(this)),
       std::move(delegate));
-  webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                            blink::WebMediaStreamSource::TypeVideo,
-                            blink::WebString::fromASCII("dummy_source_name"),
+  webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                            blink::WebMediaStreamSource::kTypeVideo,
+                            blink::WebString::FromASCII("dummy_source_name"),
                             false /* remote */);
-  webkit_source_.setExtraData(source_);
-  webkit_source_id_ = webkit_source_.id();
+  webkit_source_.SetExtraData(source_);
+  webkit_source_id_ = webkit_source_.Id();
 
   InSequence s;
   EXPECT_CALL(mock_delegate(), GetCurrentSupportedFormats(_, _, _, _));
@@ -561,16 +561,16 @@ TEST_F(MediaStreamVideoCapturerSourceOldConstraintsTest, Ended) {
 
   OnStarted(true);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            webkit_source_.getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            webkit_source_.GetReadyState());
 
   EXPECT_FALSE(source_stopped_);
 
   EXPECT_CALL(mock_delegate(), StopCapture());
   OnStarted(false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            webkit_source_.getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+            webkit_source_.GetReadyState());
   // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
   EXPECT_TRUE(source_stopped_);
 }

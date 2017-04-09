@@ -75,83 +75,83 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
   return unicodeSet->contains(c);
 #else
 // Freezed trie tree, see CharacterDataGenerator.cpp.
-extern const int32_t serializedCharacterDataSize;
-extern const uint8_t serializedCharacterData[];
+extern const int32_t kSerializedCharacterDataSize;
+extern const uint8_t kSerializedCharacterData[];
 
-static UTrie2* createTrie() {
+static UTrie2* CreateTrie() {
   // Create a Trie from the value array.
   ICUError error;
   UTrie2* trie = utrie2_openFromSerialized(
-      UTrie2ValueBits::UTRIE2_16_VALUE_BITS, serializedCharacterData,
-      serializedCharacterDataSize, nullptr, &error);
+      UTrie2ValueBits::UTRIE2_16_VALUE_BITS, kSerializedCharacterData,
+      kSerializedCharacterDataSize, nullptr, &error);
   ASSERT(error == U_ZERO_ERROR);
   return trie;
 }
 
-static bool hasProperty(UChar32 c, CharacterProperty property) {
+static bool HasProperty(UChar32 c, CharacterProperty property) {
   static UTrie2* trie = nullptr;
   if (!trie)
-    trie = createTrie();
+    trie = CreateTrie();
   return UTRIE2_GET16(trie, c) & static_cast<CharacterPropertyType>(property);
 }
 
 #define RETURN_HAS_PROPERTY(c, name) \
-  return hasProperty(c, CharacterProperty::name);
+  return HasProperty(c, CharacterProperty::name);
 #endif
 
 // Takes a flattened list of closed intervals
 template <class T, size_t size>
-bool valueInIntervalList(const T (&intervalList)[size], const T& value) {
+bool ValueInIntervalList(const T (&interval_list)[size], const T& value) {
   const T* bound =
-      std::upper_bound(&intervalList[0], &intervalList[size], value);
-  if ((bound - intervalList) % 2 == 1)
+      std::upper_bound(&interval_list[0], &interval_list[size], value);
+  if ((bound - interval_list) % 2 == 1)
     return true;
-  return bound > intervalList && *(bound - 1) == value;
+  return bound > interval_list && *(bound - 1) == value;
 }
 
-bool Character::isUprightInMixedVertical(UChar32 character) {
-  RETURN_HAS_PROPERTY(character, isUprightInMixedVertical)
+bool Character::IsUprightInMixedVertical(UChar32 character) {
+  RETURN_HAS_PROPERTY(character, kIsUprightInMixedVertical)
 }
 
-bool Character::isCJKIdeographOrSymbol(UChar32 c) {
+bool Character::IsCJKIdeographOrSymbol(UChar32 c) {
   // Likely common case
   if (c < 0x2C7)
     return false;
 
-  RETURN_HAS_PROPERTY(c, isCJKIdeographOrSymbol)
+  RETURN_HAS_PROPERTY(c, kIsCJKIdeographOrSymbol)
 }
 
-bool Character::isPotentialCustomElementNameChar(UChar32 character) {
-  RETURN_HAS_PROPERTY(character, isPotentialCustomElementNameChar);
+bool Character::IsPotentialCustomElementNameChar(UChar32 character) {
+  RETURN_HAS_PROPERTY(character, kIsPotentialCustomElementNameChar);
 }
 
-unsigned Character::expansionOpportunityCount(const LChar* characters,
+unsigned Character::ExpansionOpportunityCount(const LChar* characters,
                                               size_t length,
                                               TextDirection direction,
-                                              bool& isAfterExpansion,
-                                              const TextJustify textJustify) {
+                                              bool& is_after_expansion,
+                                              const TextJustify text_justify) {
   unsigned count = 0;
-  if (textJustify == TextJustifyDistribute) {
-    isAfterExpansion = true;
+  if (text_justify == kTextJustifyDistribute) {
+    is_after_expansion = true;
     return length;
   }
 
   if (direction == TextDirection::kLtr) {
     for (size_t i = 0; i < length; ++i) {
-      if (treatAsSpace(characters[i])) {
+      if (TreatAsSpace(characters[i])) {
         count++;
-        isAfterExpansion = true;
+        is_after_expansion = true;
       } else {
-        isAfterExpansion = false;
+        is_after_expansion = false;
       }
     }
   } else {
     for (size_t i = length; i > 0; --i) {
-      if (treatAsSpace(characters[i - 1])) {
+      if (TreatAsSpace(characters[i - 1])) {
         count++;
-        isAfterExpansion = true;
+        is_after_expansion = true;
       } else {
-        isAfterExpansion = false;
+        is_after_expansion = false;
       }
     }
   }
@@ -159,18 +159,18 @@ unsigned Character::expansionOpportunityCount(const LChar* characters,
   return count;
 }
 
-unsigned Character::expansionOpportunityCount(const UChar* characters,
+unsigned Character::ExpansionOpportunityCount(const UChar* characters,
                                               size_t length,
                                               TextDirection direction,
-                                              bool& isAfterExpansion,
-                                              const TextJustify textJustify) {
+                                              bool& is_after_expansion,
+                                              const TextJustify text_justify) {
   unsigned count = 0;
   if (direction == TextDirection::kLtr) {
     for (size_t i = 0; i < length; ++i) {
       UChar32 character = characters[i];
-      if (treatAsSpace(character)) {
+      if (TreatAsSpace(character)) {
         count++;
-        isAfterExpansion = true;
+        is_after_expansion = true;
         continue;
       }
       if (U16_IS_LEAD(character) && i + 1 < length &&
@@ -178,82 +178,82 @@ unsigned Character::expansionOpportunityCount(const UChar* characters,
         character = U16_GET_SUPPLEMENTARY(character, characters[i + 1]);
         i++;
       }
-      if (textJustify == TextJustify::TextJustifyAuto &&
-          isCJKIdeographOrSymbol(character)) {
-        if (!isAfterExpansion)
+      if (text_justify == TextJustify::kTextJustifyAuto &&
+          IsCJKIdeographOrSymbol(character)) {
+        if (!is_after_expansion)
           count++;
         count++;
-        isAfterExpansion = true;
+        is_after_expansion = true;
         continue;
       }
-      isAfterExpansion = false;
+      is_after_expansion = false;
     }
   } else {
     for (size_t i = length; i > 0; --i) {
       UChar32 character = characters[i - 1];
-      if (treatAsSpace(character)) {
+      if (TreatAsSpace(character)) {
         count++;
-        isAfterExpansion = true;
+        is_after_expansion = true;
         continue;
       }
       if (U16_IS_TRAIL(character) && i > 1 && U16_IS_LEAD(characters[i - 2])) {
         character = U16_GET_SUPPLEMENTARY(characters[i - 2], character);
         i--;
       }
-      if (textJustify == TextJustify::TextJustifyAuto &&
-          isCJKIdeographOrSymbol(character)) {
-        if (!isAfterExpansion)
+      if (text_justify == TextJustify::kTextJustifyAuto &&
+          IsCJKIdeographOrSymbol(character)) {
+        if (!is_after_expansion)
           count++;
         count++;
-        isAfterExpansion = true;
+        is_after_expansion = true;
         continue;
       }
-      isAfterExpansion = false;
+      is_after_expansion = false;
     }
   }
   return count;
 }
 
-bool Character::canReceiveTextEmphasis(UChar32 c) {
-  CharCategory category = Unicode::category(c);
-  if (category & (Separator_Space | Separator_Line | Separator_Paragraph |
-                  Other_NotAssigned | Other_Control | Other_Format))
+bool Character::CanReceiveTextEmphasis(UChar32 c) {
+  CharCategory category = Unicode::Category(c);
+  if (category & (kSeparator_Space | kSeparator_Line | kSeparator_Paragraph |
+                  kOther_NotAssigned | kOther_Control | kOther_Format))
     return false;
 
   // Additional word-separator characters listed in CSS Text Level 3 Editor's
   // Draft 3 November 2010.
-  if (c == ethiopicWordspaceCharacter ||
-      c == aegeanWordSeparatorLineCharacter ||
-      c == aegeanWordSeparatorDotCharacter ||
-      c == ugariticWordDividerCharacter ||
-      c == tibetanMarkIntersyllabicTshegCharacter ||
-      c == tibetanMarkDelimiterTshegBstarCharacter)
+  if (c == kEthiopicWordspaceCharacter ||
+      c == kAegeanWordSeparatorLineCharacter ||
+      c == kAegeanWordSeparatorDotCharacter ||
+      c == kUgariticWordDividerCharacter ||
+      c == kTibetanMarkIntersyllabicTshegCharacter ||
+      c == kTibetanMarkDelimiterTshegBstarCharacter)
     return false;
 
   return true;
 }
 
 template <typename CharacterType>
-static inline String normalizeSpacesInternal(const CharacterType* characters,
+static inline String NormalizeSpacesInternal(const CharacterType* characters,
                                              unsigned length) {
   StringBuilder normalized;
-  normalized.reserveCapacity(length);
+  normalized.ReserveCapacity(length);
 
   for (unsigned i = 0; i < length; ++i)
-    normalized.append(Character::normalizeSpaces(characters[i]));
+    normalized.Append(Character::NormalizeSpaces(characters[i]));
 
-  return normalized.toString();
+  return normalized.ToString();
 }
 
-String Character::normalizeSpaces(const LChar* characters, unsigned length) {
-  return normalizeSpacesInternal(characters, length);
+String Character::NormalizeSpaces(const LChar* characters, unsigned length) {
+  return NormalizeSpacesInternal(characters, length);
 }
 
-String Character::normalizeSpaces(const UChar* characters, unsigned length) {
-  return normalizeSpacesInternal(characters, length);
+String Character::NormalizeSpaces(const UChar* characters, unsigned length) {
+  return NormalizeSpacesInternal(characters, length);
 }
 
-bool Character::isCommonOrInheritedScript(UChar32 character) {
+bool Character::IsCommonOrInheritedScript(UChar32 character) {
   ICUError status;
   UScriptCode script = uscript_getScript(character, &status);
   return U_SUCCESS(status) &&

@@ -38,58 +38,58 @@ namespace blink {
 
 ColorChooserUIController::ColorChooserUIController(LocalFrame* frame,
                                                    ColorChooserClient* client)
-    : m_client(client), m_frame(frame) {}
+    : client_(client), frame_(frame) {}
 
 ColorChooserUIController::~ColorChooserUIController() {
   // The client cannot be accessed when finalizing.
-  m_client = nullptr;
-  endChooser();
+  client_ = nullptr;
+  EndChooser();
 }
 
 DEFINE_TRACE(ColorChooserUIController) {
-  visitor->trace(m_frame);
-  visitor->trace(m_client);
-  ColorChooser::trace(visitor);
+  visitor->Trace(frame_);
+  visitor->Trace(client_);
+  ColorChooser::Trace(visitor);
 }
 
-void ColorChooserUIController::openUI() {
-  openColorChooser();
+void ColorChooserUIController::OpenUI() {
+  OpenColorChooser();
 }
 
-void ColorChooserUIController::setSelectedColor(const Color& color) {
-  if (m_chooser)
-    m_chooser->setSelectedColor(static_cast<WebColor>(color.rgb()));
+void ColorChooserUIController::SetSelectedColor(const Color& color) {
+  if (chooser_)
+    chooser_->SetSelectedColor(static_cast<WebColor>(color.Rgb()));
 }
 
-void ColorChooserUIController::endChooser() {
-  if (m_chooser)
-    m_chooser->endChooser();
+void ColorChooserUIController::EndChooser() {
+  if (chooser_)
+    chooser_->EndChooser();
 }
 
-AXObject* ColorChooserUIController::rootAXObject() {
+AXObject* ColorChooserUIController::RootAXObject() {
   return 0;
 }
 
-void ColorChooserUIController::didChooseColor(const WebColor& color) {
-  DCHECK(m_client);
-  m_client->didChooseColor(Color(static_cast<RGBA32>(color)));
+void ColorChooserUIController::DidChooseColor(const WebColor& color) {
+  DCHECK(client_);
+  client_->DidChooseColor(Color(static_cast<RGBA32>(color)));
 }
 
-void ColorChooserUIController::didEndChooser() {
-  m_chooser = nullptr;
-  if (m_client)
-    m_client->didEndChooser();
+void ColorChooserUIController::DidEndChooser() {
+  chooser_ = nullptr;
+  if (client_)
+    client_->DidEndChooser();
 }
 
-void ColorChooserUIController::openColorChooser() {
-  DCHECK(!m_chooser);
-  WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(m_frame);
-  WebFrameClient* webFrameClient = frame->client();
-  if (!webFrameClient)
+void ColorChooserUIController::OpenColorChooser() {
+  DCHECK(!chooser_);
+  WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(frame_);
+  WebFrameClient* web_frame_client = frame->Client();
+  if (!web_frame_client)
     return;
-  m_chooser = WTF::wrapUnique(webFrameClient->createColorChooser(
-      this, static_cast<WebColor>(m_client->currentColor().rgb()),
-      m_client->suggestions()));
+  chooser_ = WTF::WrapUnique(web_frame_client->CreateColorChooser(
+      this, static_cast<WebColor>(client_->CurrentColor().Rgb()),
+      client_->Suggestions()));
 }
 
 }  // namespace blink

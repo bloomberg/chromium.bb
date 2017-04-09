@@ -42,99 +42,99 @@ class OfflineAudioContext;
 
 class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
  public:
-  static PassRefPtr<OfflineAudioDestinationHandler> create(
+  static PassRefPtr<OfflineAudioDestinationHandler> Create(
       AudioNode&,
-      AudioBuffer* renderTarget);
+      AudioBuffer* render_target);
   ~OfflineAudioDestinationHandler() override;
 
   // AudioHandler
-  void dispose() override;
-  void initialize() override;
-  void uninitialize() override;
+  void Dispose() override;
+  void Initialize() override;
+  void Uninitialize() override;
 
-  OfflineAudioContext* context() const final;
+  OfflineAudioContext* Context() const final;
 
   // AudioDestinationHandler
-  void startRendering() override;
-  void stopRendering() override;
-  unsigned long maxChannelCount() const override;
+  void StartRendering() override;
+  void StopRendering() override;
+  unsigned long MaxChannelCount() const override;
 
   // Returns the rendering callback buffer size.  This should never be
   // called.
-  size_t callbackBufferSize() const override;
+  size_t CallbackBufferSize() const override;
 
-  double sampleRate() const override { return m_renderTarget->sampleRate(); }
-  int framesPerBuffer() const override {
+  double SampleRate() const override { return render_target_->sampleRate(); }
+  int FramesPerBuffer() const override {
     NOTREACHED();
     return 0;
   }
 
-  size_t renderQuantumFrames() const {
+  size_t RenderQuantumFrames() const {
     return AudioUtilities::kRenderQuantumFrames;
   }
 
-  WebThread* offlineRenderThread();
+  WebThread* OfflineRenderThread();
 
  private:
-  OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* renderTarget);
+  OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* render_target);
 
   // Set up the rendering and start. After setting the context up, it will
   // eventually call |doOfflineRendering|.
-  void startOfflineRendering();
+  void StartOfflineRendering();
 
   // Suspend the rendering loop and notify the main thread to resolve the
   // associated promise.
-  void suspendOfflineRendering();
+  void SuspendOfflineRendering();
 
   // Start the rendering loop.
-  void doOfflineRendering();
+  void DoOfflineRendering();
 
   // Finish the rendering loop and notify the main thread to resolve the
   // promise with the rendered buffer.
-  void finishOfflineRendering();
+  void FinishOfflineRendering();
 
   // Suspend/completion callbacks for the main thread.
-  void notifySuspend(size_t);
-  void notifyComplete();
+  void NotifySuspend(size_t);
+  void NotifyComplete();
 
   // The offline version of render() method. If the rendering needs to be
   // suspended after checking, this stops the rendering and returns true.
   // Otherwise, it returns false after rendering one quantum.
-  bool renderIfNotSuspended(AudioBus* sourceBus,
-                            AudioBus* destinationBus,
-                            size_t numberOfFrames);
+  bool RenderIfNotSuspended(AudioBus* source_bus,
+                            AudioBus* destination_bus,
+                            size_t number_of_frames);
 
   // This AudioHandler renders into this AudioBuffer.
   // This Persistent doesn't make a reference cycle including the owner
   // OfflineAudioDestinationNode. It is accessed by both audio and main thread.
-  CrossThreadPersistent<AudioBuffer> m_renderTarget;
+  CrossThreadPersistent<AudioBuffer> render_target_;
   // Temporary AudioBus for each render quantum.
-  RefPtr<AudioBus> m_renderBus;
+  RefPtr<AudioBus> render_bus_;
 
   // Rendering thread.
-  std::unique_ptr<WebThread> m_renderThread;
+  std::unique_ptr<WebThread> render_thread_;
 
   // These variables are for counting the number of frames for the current
   // progress and the remaining frames to be processed.
-  size_t m_framesProcessed;
-  size_t m_framesToProcess;
+  size_t frames_processed_;
+  size_t frames_to_process_;
 
   // This flag is necessary to distinguish the state of the context between
   // 'created' and 'suspended'. If this flag is false and the current state
   // is 'suspended', it means the context is created and have not started yet.
-  bool m_isRenderingStarted;
+  bool is_rendering_started_;
 
   // This flag indicates whether the rendering should be suspended or not.
-  bool m_shouldSuspend;
+  bool should_suspend_;
 };
 
 class OfflineAudioDestinationNode final : public AudioDestinationNode {
  public:
-  static OfflineAudioDestinationNode* create(BaseAudioContext*,
-                                             AudioBuffer* renderTarget);
+  static OfflineAudioDestinationNode* Create(BaseAudioContext*,
+                                             AudioBuffer* render_target);
 
  private:
-  OfflineAudioDestinationNode(BaseAudioContext&, AudioBuffer* renderTarget);
+  OfflineAudioDestinationNode(BaseAudioContext&, AudioBuffer* render_target);
 };
 
 }  // namespace blink

@@ -24,44 +24,44 @@ class CORE_EXPORT SubresourceIntegrity {
 
  public:
   enum IntegrityParseResult {
-    IntegrityParseValidResult,
-    IntegrityParseNoValidResult
+    kIntegrityParseValidResult,
+    kIntegrityParseNoValidResult
   };
 
   // The versions with the IntegrityMetadataSet passed as the first argument
   // assume that the integrity attribute has already been parsed, and the
   // IntegrityMetadataSet represents the result of that parsing.
-  static bool CheckSubresourceIntegrity(const String& integrityAttribute,
+  static bool CheckSubresourceIntegrity(const String& integrity_attribute,
                                         Document&,  // the embedding document
                                         const char* content,
                                         size_t,
-                                        const KURL& resourceUrl,
+                                        const KURL& resource_url,
                                         const Resource&);
   static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&,
                                         Document&,
                                         const char* content,
                                         size_t,
-                                        const KURL& resourceUrl,
+                                        const KURL& resource_url,
                                         const Resource&);
   static bool CheckSubresourceIntegrity(const String&,
                                         const char*,
                                         size_t,
-                                        const KURL& resourceUrl,
+                                        const KURL& resource_url,
                                         ExecutionContext&,
                                         WTF::String&);
   static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&,
                                         const char*,
                                         size_t,
-                                        const KURL& resourceUrl,
+                                        const KURL& resource_url,
                                         ExecutionContext&,
                                         WTF::String&);
 
   // The IntegrityMetadataSet arguments are out parameters which contain the
   // set of all valid, parsed metadata from |attribute|.
-  static IntegrityParseResult parseIntegrityAttribute(
+  static IntegrityParseResult ParseIntegrityAttribute(
       const WTF::String& attribute,
       IntegrityMetadataSet&);
-  static IntegrityParseResult parseIntegrityAttribute(
+  static IntegrityParseResult ParseIntegrityAttribute(
       const WTF::String& attribute,
       IntegrityMetadataSet&,
       ExecutionContext*);
@@ -73,16 +73,16 @@ class CORE_EXPORT SubresourceIntegrity {
   FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Prioritization);
 
   enum AlgorithmParseResult {
-    AlgorithmValid,
-    AlgorithmUnparsable,
-    AlgorithmUnknown
+    kAlgorithmValid,
+    kAlgorithmUnparsable,
+    kAlgorithmUnknown
   };
 
-  static HashAlgorithm getPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
-  static AlgorithmParseResult parseAlgorithm(const UChar*& begin,
+  static HashAlgorithm GetPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
+  static AlgorithmParseResult ParseAlgorithm(const UChar*& begin,
                                              const UChar* end,
                                              HashAlgorithm&);
-  static bool parseDigest(const UChar*& begin,
+  static bool ParseDigest(const UChar*& begin,
                           const UChar* end,
                           String& digest);
 };

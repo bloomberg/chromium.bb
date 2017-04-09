@@ -42,38 +42,38 @@ class PLATFORM_EXPORT DistanceEffect {
   DISALLOW_NEW();
 
  public:
-  enum ModelType { ModelLinear = 0, ModelInverse = 1, ModelExponential = 2 };
+  enum ModelType { kModelLinear = 0, kModelInverse = 1, kModelExponential = 2 };
 
   DistanceEffect();
 
   // Returns scalar gain for the given distance the current distance model is
   // used
-  double gain(double distance);
+  double Gain(double distance);
 
-  ModelType model() { return m_model; }
+  ModelType Model() { return model_; }
 
-  void setModel(ModelType model) { m_model = model; }
+  void SetModel(ModelType model) { model_ = model; }
 
   // Distance params
-  void setRefDistance(double refDistance) { m_refDistance = refDistance; }
-  void setMaxDistance(double maxDistance) { m_maxDistance = maxDistance; }
-  void setRolloffFactor(double rolloffFactor) {
-    m_rolloffFactor = rolloffFactor;
+  void SetRefDistance(double ref_distance) { ref_distance_ = ref_distance; }
+  void SetMaxDistance(double max_distance) { max_distance_ = max_distance; }
+  void SetRolloffFactor(double rolloff_factor) {
+    rolloff_factor_ = rolloff_factor;
   }
 
-  double refDistance() const { return m_refDistance; }
-  double maxDistance() const { return m_maxDistance; }
-  double rolloffFactor() const { return m_rolloffFactor; }
+  double RefDistance() const { return ref_distance_; }
+  double MaxDistance() const { return max_distance_; }
+  double RolloffFactor() const { return rolloff_factor_; }
 
  protected:
-  double linearGain(double distance);
-  double inverseGain(double distance);
-  double exponentialGain(double distance);
+  double LinearGain(double distance);
+  double InverseGain(double distance);
+  double ExponentialGain(double distance);
 
-  ModelType m_model;
-  double m_refDistance;
-  double m_maxDistance;
-  double m_rolloffFactor;
+  ModelType model_;
+  double ref_distance_;
+  double max_distance_;
+  double rolloff_factor_;
 };
 
 }  // namespace blink

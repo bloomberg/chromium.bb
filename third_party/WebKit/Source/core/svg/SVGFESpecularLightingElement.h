@@ -37,34 +37,34 @@ class SVGFESpecularLightingElement final
 
  public:
   DECLARE_NODE_FACTORY(SVGFESpecularLightingElement);
-  void lightElementAttributeChanged(const SVGFELightElement*,
+  void LightElementAttributeChanged(const SVGFELightElement*,
                                     const QualifiedName&);
 
-  SVGAnimatedNumber* specularConstant() { return m_specularConstant.get(); }
-  SVGAnimatedNumber* specularExponent() { return m_specularExponent.get(); }
-  SVGAnimatedNumber* surfaceScale() { return m_surfaceScale.get(); }
+  SVGAnimatedNumber* specularConstant() { return specular_constant_.Get(); }
+  SVGAnimatedNumber* specularExponent() { return specular_exponent_.Get(); }
+  SVGAnimatedNumber* surfaceScale() { return surface_scale_.Get(); }
   SVGAnimatedNumber* kernelUnitLengthX() {
-    return m_kernelUnitLength->firstNumber();
+    return kernel_unit_length_->FirstNumber();
   }
   SVGAnimatedNumber* kernelUnitLengthY() {
-    return m_kernelUnitLength->secondNumber();
+    return kernel_unit_length_->SecondNumber();
   }
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFESpecularLightingElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumber> m_specularConstant;
-  Member<SVGAnimatedNumber> m_specularExponent;
-  Member<SVGAnimatedNumber> m_surfaceScale;
-  Member<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedNumber> specular_constant_;
+  Member<SVGAnimatedNumber> specular_exponent_;
+  Member<SVGAnimatedNumber> surface_scale_;
+  Member<SVGAnimatedNumberOptionalNumber> kernel_unit_length_;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

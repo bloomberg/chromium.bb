@@ -34,7 +34,7 @@ class Text;
 
 class DeleteFromTextNodeCommand final : public SimpleEditCommand {
  public:
-  static DeleteFromTextNodeCommand* create(Text* node,
+  static DeleteFromTextNodeCommand* Create(Text* node,
                                            unsigned offset,
                                            unsigned count) {
     return new DeleteFromTextNodeCommand(node, offset, count);
@@ -45,13 +45,13 @@ class DeleteFromTextNodeCommand final : public SimpleEditCommand {
  private:
   DeleteFromTextNodeCommand(Text*, unsigned offset, unsigned count);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
 
-  Member<Text> m_node;
-  unsigned m_offset;
-  unsigned m_count;
-  String m_text;
+  Member<Text> node_;
+  unsigned offset_;
+  unsigned count_;
+  String text_;
 };
 
 }  // namespace blink

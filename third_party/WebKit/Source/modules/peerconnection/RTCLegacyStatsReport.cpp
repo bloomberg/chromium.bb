@@ -27,7 +27,7 @@
 
 namespace blink {
 
-RTCLegacyStatsReport* RTCLegacyStatsReport::create(const String& id,
+RTCLegacyStatsReport* RTCLegacyStatsReport::Create(const String& id,
                                                    const String& type,
                                                    double timestamp) {
   return new RTCLegacyStatsReport(id, type, timestamp);
@@ -36,20 +36,20 @@ RTCLegacyStatsReport* RTCLegacyStatsReport::create(const String& id,
 RTCLegacyStatsReport::RTCLegacyStatsReport(const String& id,
                                            const String& type,
                                            double timestamp)
-    : m_id(id), m_type(type), m_timestamp(timestamp) {}
+    : id_(id), type_(type), timestamp_(timestamp) {}
 
 Vector<String> RTCLegacyStatsReport::names() const {
   Vector<String> result;
-  for (HashMap<String, String>::const_iterator it = m_stats.begin();
-       it != m_stats.end(); ++it) {
+  for (HashMap<String, String>::const_iterator it = stats_.begin();
+       it != stats_.end(); ++it) {
     result.push_back(it->key);
   }
   return result;
 }
 
-void RTCLegacyStatsReport::addStatistic(const String& name,
+void RTCLegacyStatsReport::AddStatistic(const String& name,
                                         const String& value) {
-  m_stats.insert(name, value);
+  stats_.insert(name, value);
 }
 
 }  // namespace blink

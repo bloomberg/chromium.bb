@@ -72,7 +72,7 @@ ExternalPrerenderHandlerAndroid::AddPrerender(
     GURL referrer_url(ConvertJavaStringToUTF16(env, jreferrer));
     if (referrer_url.is_valid()) {
       referrer =
-          content::Referrer(referrer_url, blink::WebReferrerPolicyDefault);
+          content::Referrer(referrer_url, blink::kWebReferrerPolicyDefault);
     }
   }
 

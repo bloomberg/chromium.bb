@@ -15,19 +15,19 @@ class Image;
 
 class PLATFORM_EXPORT ImagePattern final : public Pattern {
  public:
-  static PassRefPtr<ImagePattern> create(PassRefPtr<Image>, RepeatMode);
+  static PassRefPtr<ImagePattern> Create(PassRefPtr<Image>, RepeatMode);
 
-  bool isTextureBacked() const override;
+  bool IsTextureBacked() const override;
 
  protected:
-  sk_sp<PaintShader> createShader(const SkMatrix&) override;
-  bool isLocalMatrixChanged(const SkMatrix&) const override;
+  sk_sp<PaintShader> CreateShader(const SkMatrix&) override;
+  bool IsLocalMatrixChanged(const SkMatrix&) const override;
 
  private:
   ImagePattern(PassRefPtr<Image>, RepeatMode);
-  SkMatrix m_previousLocalMatrix;
+  SkMatrix previous_local_matrix_;
 
-  sk_sp<SkImage> m_tileImage;
+  sk_sp<SkImage> tile_image_;
 };
 
 }  // namespace blink

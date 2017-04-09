@@ -24,14 +24,14 @@ static bool IsHangable(UChar ch) {
 void NGLineBreaker::BreakLines(NGInlineLayoutAlgorithm* algorithm,
                                const String& text_content,
                                unsigned current_offset) {
-  DCHECK(!text_content.isEmpty());
+  DCHECK(!text_content.IsEmpty());
   // TODO(kojii): Give the locale to LazyLineBreakIterator.
   LazyLineBreakIterator line_break_iterator(text_content);
   const unsigned end_offset = text_content.length();
   while (current_offset < end_offset) {
     // Find the next break opportunity.
     int tmp_next_breakable_offset = -1;
-    line_break_iterator.isBreakable(current_offset + 1,
+    line_break_iterator.IsBreakable(current_offset + 1,
                                     tmp_next_breakable_offset);
     current_offset =
         tmp_next_breakable_offset >= 0 ? tmp_next_breakable_offset : end_offset;

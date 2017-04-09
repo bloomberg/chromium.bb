@@ -55,51 +55,52 @@ class HTMLTreeBuilder final
   // editing code.
   // TODO(kouhei): Fix editing code to always invoke HTML parser on
   // HTMLDocument.
-  static HTMLTreeBuilder* create(HTMLDocumentParser* parser,
+  static HTMLTreeBuilder* Create(HTMLDocumentParser* parser,
                                  Document& document,
-                                 ParserContentPolicy parserContentPolicy,
+                                 ParserContentPolicy parser_content_policy,
                                  const HTMLParserOptions& options) {
-    return new HTMLTreeBuilder(parser, document, parserContentPolicy, options);
+    return new HTMLTreeBuilder(parser, document, parser_content_policy,
+                               options);
   }
-  static HTMLTreeBuilder* create(HTMLDocumentParser* parser,
+  static HTMLTreeBuilder* Create(HTMLDocumentParser* parser,
                                  DocumentFragment* fragment,
-                                 Element* contextElement,
-                                 ParserContentPolicy parserContentPolicy,
+                                 Element* context_element,
+                                 ParserContentPolicy parser_content_policy,
                                  const HTMLParserOptions& options) {
-    return new HTMLTreeBuilder(parser, fragment, contextElement,
-                               parserContentPolicy, options);
+    return new HTMLTreeBuilder(parser, fragment, context_element,
+                               parser_content_policy, options);
   }
   ~HTMLTreeBuilder();
   DECLARE_TRACE();
 
-  const HTMLElementStack* openElements() const { return m_tree.openElements(); }
+  const HTMLElementStack* OpenElements() const { return tree_.OpenElements(); }
 
-  bool isParsingFragment() const { return !!m_fragmentContext.fragment(); }
-  bool isParsingTemplateContents() const {
-    return m_tree.openElements()->hasTemplateInHTMLScope();
+  bool IsParsingFragment() const { return !!fragment_context_.Fragment(); }
+  bool IsParsingTemplateContents() const {
+    return tree_.OpenElements()->HasTemplateInHTMLScope();
   }
-  bool isParsingFragmentOrTemplateContents() const {
-    return isParsingFragment() || isParsingTemplateContents();
+  bool IsParsingFragmentOrTemplateContents() const {
+    return IsParsingFragment() || IsParsingTemplateContents();
   }
 
-  void detach();
+  void Detach();
 
-  void constructTree(AtomicHTMLToken*);
+  void ConstructTree(AtomicHTMLToken*);
 
-  bool hasParserBlockingScript() const { return !!m_scriptToProcess; }
+  bool HasParserBlockingScript() const { return !!script_to_process_; }
   // Must be called to take the parser-blocking script before calling the parser
   // again.
-  Element* takeScriptToProcess(TextPosition& scriptStartPosition);
+  Element* TakeScriptToProcess(TextPosition& script_start_position);
 
   // Done, close any open tags, etc.
-  void finished();
+  void Finished();
 
   // Synchronously flush pending text and queued tasks, possibly creating more
   // DOM nodes. Flushing pending text depends on |mode|.
-  void flush(FlushMode mode) { m_tree.flush(mode); }
+  void Flush(FlushMode mode) { tree_.Flush(mode); }
 
-  void setShouldSkipLeadingNewline(bool shouldSkip) {
-    m_shouldSkipLeadingNewline = shouldSkip;
+  void SetShouldSkipLeadingNewline(bool should_skip) {
+    should_skip_leading_newline_ = should_skip;
   }
 
  private:
@@ -107,32 +108,32 @@ class HTMLTreeBuilder final
   // Represents HTML5 "insertion mode"
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#insertion-mode
   enum InsertionMode {
-    InitialMode,
-    BeforeHTMLMode,
-    BeforeHeadMode,
-    InHeadMode,
-    InHeadNoscriptMode,
-    AfterHeadMode,
-    TemplateContentsMode,
-    InBodyMode,
-    TextMode,
-    InTableMode,
-    InTableTextMode,
-    InCaptionMode,
-    InColumnGroupMode,
-    InTableBodyMode,
-    InRowMode,
-    InCellMode,
-    InSelectMode,
-    InSelectInTableMode,
-    AfterBodyMode,
-    InFramesetMode,
-    AfterFramesetMode,
-    AfterAfterBodyMode,
-    AfterAfterFramesetMode,
+    kInitialMode,
+    kBeforeHTMLMode,
+    kBeforeHeadMode,
+    kInHeadMode,
+    kInHeadNoscriptMode,
+    kAfterHeadMode,
+    kTemplateContentsMode,
+    kInBodyMode,
+    kTextMode,
+    kInTableMode,
+    kInTableTextMode,
+    kInCaptionMode,
+    kInColumnGroupMode,
+    kInTableBodyMode,
+    kInRowMode,
+    kInCellMode,
+    kInSelectMode,
+    kInSelectInTableMode,
+    kAfterBodyMode,
+    kInFramesetMode,
+    kAfterFramesetMode,
+    kAfterAfterBodyMode,
+    kAfterAfterFramesetMode,
   };
 #ifndef DEBUG
-  static const char* toString(InsertionMode);
+  static const char* ToString(InsertionMode);
 #endif
 
   HTMLTreeBuilder(HTMLDocumentParser*,
@@ -141,82 +142,82 @@ class HTMLTreeBuilder final
                   const HTMLParserOptions&);
   HTMLTreeBuilder(HTMLDocumentParser*,
                   DocumentFragment*,
-                  Element* contextElement,
+                  Element* context_element,
                   ParserContentPolicy,
                   const HTMLParserOptions&);
 
-  void processToken(AtomicHTMLToken*);
+  void ProcessToken(AtomicHTMLToken*);
 
-  void processDoctypeToken(AtomicHTMLToken*);
-  void processStartTag(AtomicHTMLToken*);
-  void processEndTag(AtomicHTMLToken*);
-  void processComment(AtomicHTMLToken*);
-  void processCharacter(AtomicHTMLToken*);
-  void processEndOfFile(AtomicHTMLToken*);
+  void ProcessDoctypeToken(AtomicHTMLToken*);
+  void ProcessStartTag(AtomicHTMLToken*);
+  void ProcessEndTag(AtomicHTMLToken*);
+  void ProcessComment(AtomicHTMLToken*);
+  void ProcessCharacter(AtomicHTMLToken*);
+  void ProcessEndOfFile(AtomicHTMLToken*);
 
-  bool processStartTagForInHead(AtomicHTMLToken*);
-  void processStartTagForInBody(AtomicHTMLToken*);
-  void processStartTagForInTable(AtomicHTMLToken*);
-  void processEndTagForInBody(AtomicHTMLToken*);
-  void processEndTagForInTable(AtomicHTMLToken*);
-  void processEndTagForInTableBody(AtomicHTMLToken*);
-  void processEndTagForInRow(AtomicHTMLToken*);
-  void processEndTagForInCell(AtomicHTMLToken*);
+  bool ProcessStartTagForInHead(AtomicHTMLToken*);
+  void ProcessStartTagForInBody(AtomicHTMLToken*);
+  void ProcessStartTagForInTable(AtomicHTMLToken*);
+  void ProcessEndTagForInBody(AtomicHTMLToken*);
+  void ProcessEndTagForInTable(AtomicHTMLToken*);
+  void ProcessEndTagForInTableBody(AtomicHTMLToken*);
+  void ProcessEndTagForInRow(AtomicHTMLToken*);
+  void ProcessEndTagForInCell(AtomicHTMLToken*);
 
-  void processHtmlStartTagForInBody(AtomicHTMLToken*);
-  bool processBodyEndTagForInBody(AtomicHTMLToken*);
-  bool processTableEndTagForInTable();
-  bool processCaptionEndTagForInCaption();
-  bool processColgroupEndTagForInColumnGroup();
-  bool processTrEndTagForInRow();
+  void ProcessHtmlStartTagForInBody(AtomicHTMLToken*);
+  bool ProcessBodyEndTagForInBody(AtomicHTMLToken*);
+  bool ProcessTableEndTagForInTable();
+  bool ProcessCaptionEndTagForInCaption();
+  bool ProcessColgroupEndTagForInColumnGroup();
+  bool ProcessTrEndTagForInRow();
   // FIXME: This function should be inlined into its one call site or it
   // needs to assert which tokens it can be called with.
-  void processAnyOtherEndTagForInBody(AtomicHTMLToken*);
+  void ProcessAnyOtherEndTagForInBody(AtomicHTMLToken*);
 
-  void processCharacterBuffer(CharacterTokenBuffer&);
-  inline void processCharacterBufferForInBody(CharacterTokenBuffer&);
+  void ProcessCharacterBuffer(CharacterTokenBuffer&);
+  inline void ProcessCharacterBufferForInBody(CharacterTokenBuffer&);
 
-  void processFakeStartTag(
+  void ProcessFakeStartTag(
       const QualifiedName&,
       const Vector<Attribute>& attributes = Vector<Attribute>());
-  void processFakeEndTag(const QualifiedName&);
-  void processFakeEndTag(const AtomicString&);
-  void processFakePEndTagIfPInButtonScope();
+  void ProcessFakeEndTag(const QualifiedName&);
+  void ProcessFakeEndTag(const AtomicString&);
+  void ProcessFakePEndTagIfPInButtonScope();
 
-  void processGenericRCDATAStartTag(AtomicHTMLToken*);
-  void processGenericRawTextStartTag(AtomicHTMLToken*);
-  void processScriptStartTag(AtomicHTMLToken*);
+  void ProcessGenericRCDATAStartTag(AtomicHTMLToken*);
+  void ProcessGenericRawTextStartTag(AtomicHTMLToken*);
+  void ProcessScriptStartTag(AtomicHTMLToken*);
 
   // Default processing for the different insertion modes.
-  void defaultForInitial();
-  void defaultForBeforeHTML();
-  void defaultForBeforeHead();
-  void defaultForInHead();
-  void defaultForInHeadNoscript();
-  void defaultForAfterHead();
-  void defaultForInTableText();
+  void DefaultForInitial();
+  void DefaultForBeforeHTML();
+  void DefaultForBeforeHead();
+  void DefaultForInHead();
+  void DefaultForInHeadNoscript();
+  void DefaultForAfterHead();
+  void DefaultForInTableText();
 
-  inline HTMLStackItem* adjustedCurrentStackItem() const;
-  inline bool shouldProcessTokenInForeignContent(AtomicHTMLToken*);
-  void processTokenInForeignContent(AtomicHTMLToken*);
+  inline HTMLStackItem* AdjustedCurrentStackItem() const;
+  inline bool ShouldProcessTokenInForeignContent(AtomicHTMLToken*);
+  void ProcessTokenInForeignContent(AtomicHTMLToken*);
 
-  void callTheAdoptionAgency(AtomicHTMLToken*);
+  void CallTheAdoptionAgency(AtomicHTMLToken*);
 
-  void closeTheCell();
+  void CloseTheCell();
 
   template <bool shouldClose(const HTMLStackItem*)>
-  void processCloseWhenNestedTag(AtomicHTMLToken*);
+  void ProcessCloseWhenNestedTag(AtomicHTMLToken*);
 
-  void parseError(AtomicHTMLToken*);
+  void ParseError(AtomicHTMLToken*);
 
-  InsertionMode getInsertionMode() const { return m_insertionMode; }
-  void setInsertionMode(InsertionMode mode) { m_insertionMode = mode; }
+  InsertionMode GetInsertionMode() const { return insertion_mode_; }
+  void SetInsertionMode(InsertionMode mode) { insertion_mode_ = mode; }
 
-  void resetInsertionModeAppropriately();
+  void ResetInsertionModeAppropriately();
 
-  void processTemplateStartTag(AtomicHTMLToken*);
-  bool processTemplateEndTag(AtomicHTMLToken*);
-  bool processEndOfFileForInTemplateContents(AtomicHTMLToken*);
+  void ProcessTemplateStartTag(AtomicHTMLToken*);
+  bool ProcessTemplateEndTag(AtomicHTMLToken*);
+  bool ProcessEndOfFileForInTemplateContents(AtomicHTMLToken*);
 
   class FragmentParsingContext {
     WTF_MAKE_NONCOPYABLE(FragmentParsingContext);
@@ -224,58 +225,58 @@ class HTMLTreeBuilder final
 
    public:
     FragmentParsingContext() = default;
-    void init(DocumentFragment*, Element* contextElement);
+    void Init(DocumentFragment*, Element* context_element);
 
-    DocumentFragment* fragment() const { return m_fragment; }
-    Element* contextElement() const {
-      DCHECK(m_fragment);
-      return m_contextElementStackItem->element();
+    DocumentFragment* Fragment() const { return fragment_; }
+    Element* ContextElement() const {
+      DCHECK(fragment_);
+      return context_element_stack_item_->GetElement();
     }
-    HTMLStackItem* contextElementStackItem() const {
-      DCHECK(m_fragment);
-      return m_contextElementStackItem.get();
+    HTMLStackItem* ContextElementStackItem() const {
+      DCHECK(fragment_);
+      return context_element_stack_item_.Get();
     }
 
     DECLARE_TRACE();
 
    private:
-    Member<DocumentFragment> m_fragment;
-    Member<HTMLStackItem> m_contextElementStackItem;
+    Member<DocumentFragment> fragment_;
+    Member<HTMLStackItem> context_element_stack_item_;
   };
 
   // https://html.spec.whatwg.org/#frameset-ok-flag
-  bool m_framesetOk;
+  bool frameset_ok_;
 #if DCHECK_IS_ON()
-  bool m_isAttached = true;
+  bool is_attached_ = true;
 #endif
-  FragmentParsingContext m_fragmentContext;
-  HTMLConstructionSite m_tree;
+  FragmentParsingContext fragment_context_;
+  HTMLConstructionSite tree_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#insertion-mode
-  InsertionMode m_insertionMode;
+  InsertionMode insertion_mode_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#original-insertion-mode
-  InsertionMode m_originalInsertionMode;
+  InsertionMode original_insertion_mode_;
 
-  Vector<InsertionMode> m_templateInsertionModes;
+  Vector<InsertionMode> template_insertion_modes_;
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#pending-table-character-tokens
-  StringBuilder m_pendingTableCharacters;
+  StringBuilder pending_table_characters_;
 
-  bool m_shouldSkipLeadingNewline;
+  bool should_skip_leading_newline_;
 
   // We access parser because HTML5 spec requires that we be able to change the
   // state of the tokenizer from within parser actions. We also need it to track
   // the current position.
-  Member<HTMLDocumentParser> m_parser;
+  Member<HTMLDocumentParser> parser_;
 
   // <script> tag which needs processing before resuming the parser.
-  Member<Element> m_scriptToProcess;
+  Member<Element> script_to_process_;
 
   // Starting line number of the script tag needing processing.
-  TextPosition m_scriptToProcessStartPosition;
+  TextPosition script_to_process_start_position_;
 
-  HTMLParserOptions m_options;
+  HTMLParserOptions options_;
 };
 
 }  // namespace blink

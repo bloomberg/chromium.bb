@@ -39,13 +39,13 @@ inline HTMLLIElement::HTMLLIElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLLIElement)
 
-bool HTMLLIElement::isPresentationAttribute(const QualifiedName& name) const {
+bool HTMLLIElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == typeAttr)
     return true;
-  return HTMLElement::isPresentationAttribute(name);
+  return HTMLElement::IsPresentationAttribute(name);
 }
 
-CSSValueID listTypeToCSSValueID(const AtomicString& value) {
+CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
   if (value == "a")
     return CSSValueLowerAlpha;
   if (value == "A")
@@ -56,78 +56,79 @@ CSSValueID listTypeToCSSValueID(const AtomicString& value) {
     return CSSValueUpperRoman;
   if (value == "1")
     return CSSValueDecimal;
-  if (equalIgnoringCase(value, "disc"))
+  if (EqualIgnoringCase(value, "disc"))
     return CSSValueDisc;
-  if (equalIgnoringCase(value, "circle"))
+  if (EqualIgnoringCase(value, "circle"))
     return CSSValueCircle;
-  if (equalIgnoringCase(value, "square"))
+  if (EqualIgnoringCase(value, "square"))
     return CSSValueSquare;
-  if (equalIgnoringCase(value, "none"))
+  if (EqualIgnoringCase(value, "none"))
     return CSSValueNone;
   return CSSValueInvalid;
 }
 
-void HTMLLIElement::collectStyleForPresentationAttribute(
+void HTMLLIElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == typeAttr) {
-    CSSValueID typeValue = listTypeToCSSValueID(value);
-    if (typeValue != CSSValueInvalid)
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              typeValue);
+    CSSValueID type_value = ListTypeToCSSValueID(value);
+    if (type_value != CSSValueInvalid)
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+                                              type_value);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 
-void HTMLLIElement::parseAttribute(const AttributeModificationParams& params) {
+void HTMLLIElement::ParseAttribute(const AttributeModificationParams& params) {
   if (params.name == valueAttr) {
-    if (layoutObject() && layoutObject()->isListItem())
-      parseValue(params.newValue);
+    if (GetLayoutObject() && GetLayoutObject()->IsListItem())
+      ParseValue(params.new_value);
   } else {
-    HTMLElement::parseAttribute(params);
+    HTMLElement::ParseAttribute(params);
   }
 }
 
-void HTMLLIElement::attachLayoutTree(const AttachContext& context) {
-  HTMLElement::attachLayoutTree(context);
+void HTMLLIElement::AttachLayoutTree(const AttachContext& context) {
+  HTMLElement::AttachLayoutTree(context);
 
-  if (layoutObject() && layoutObject()->isListItem()) {
-    LayoutLIItem liLayoutItem = LayoutLIItem(toLayoutListItem(layoutObject()));
+  if (GetLayoutObject() && GetLayoutObject()->IsListItem()) {
+    LayoutLIItem li_layout_item =
+        LayoutLIItem(ToLayoutListItem(GetLayoutObject()));
 
-    DCHECK(!document().childNeedsDistributionRecalc());
+    DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
 
     // Find the enclosing list node.
-    Element* listNode = 0;
+    Element* list_node = 0;
     Element* current = this;
-    while (!listNode) {
-      current = LayoutTreeBuilderTraversal::parentElement(*current);
+    while (!list_node) {
+      current = LayoutTreeBuilderTraversal::ParentElement(*current);
       if (!current)
         break;
       if (isHTMLUListElement(*current) || isHTMLOListElement(*current))
-        listNode = current;
+        list_node = current;
     }
 
     // If we are not in a list, tell the layoutObject so it can position us
     // inside.  We don't want to change our style to say "inside" since that
     // would affect nested nodes.
-    if (!listNode)
-      liLayoutItem.setNotInList(true);
+    if (!list_node)
+      li_layout_item.SetNotInList(true);
 
-    parseValue(fastGetAttribute(valueAttr));
+    ParseValue(FastGetAttribute(valueAttr));
   }
 }
 
-inline void HTMLLIElement::parseValue(const AtomicString& value) {
-  DCHECK(layoutObject());
-  DCHECK(layoutObject()->isListItem());
+inline void HTMLLIElement::ParseValue(const AtomicString& value) {
+  DCHECK(GetLayoutObject());
+  DCHECK(GetLayoutObject()->IsListItem());
 
-  int requestedValue = 0;
-  if (parseHTMLInteger(value, requestedValue))
-    toLayoutListItem(layoutObject())->setExplicitValue(requestedValue);
+  int requested_value = 0;
+  if (ParseHTMLInteger(value, requested_value))
+    ToLayoutListItem(GetLayoutObject())->SetExplicitValue(requested_value);
   else
-    toLayoutListItem(layoutObject())->clearExplicitValue();
+    ToLayoutListItem(GetLayoutObject())->ClearExplicitValue();
 }
 
 }  // namespace blink

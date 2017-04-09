@@ -15,15 +15,15 @@ namespace blink {
 
 static DurationBehavior GetDurationBehavior(
     CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior
-        webDurationBehavior) {
-  switch (webDurationBehavior) {
-    case CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased:
+        web_duration_behavior) {
+  switch (web_duration_behavior) {
+    case CompositorScrollOffsetAnimationCurve::kScrollDurationDeltaBased:
       return DurationBehavior::DELTA_BASED;
 
-    case CompositorScrollOffsetAnimationCurve::ScrollDurationConstant:
+    case CompositorScrollOffsetAnimationCurve::kScrollDurationConstant:
       return DurationBehavior::CONSTANT;
 
-    case CompositorScrollOffsetAnimationCurve::ScrollDurationInverseDelta:
+    case CompositorScrollOffsetAnimationCurve::kScrollDurationInverseDelta:
       return DurationBehavior::INVERSE_DELTA;
   }
   NOTREACHED();
@@ -31,54 +31,54 @@ static DurationBehavior GetDurationBehavior(
 }
 
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
-    FloatPoint targetValue,
-    ScrollDurationBehavior durationBehavior)
-    : m_curve(cc::ScrollOffsetAnimationCurve::Create(
-          gfx::ScrollOffset(targetValue.x(), targetValue.y()),
+    FloatPoint target_value,
+    ScrollDurationBehavior duration_behavior)
+    : curve_(cc::ScrollOffsetAnimationCurve::Create(
+          gfx::ScrollOffset(target_value.X(), target_value.Y()),
           cc::CubicBezierTimingFunction::CreatePreset(
               CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
-          GetDurationBehavior(durationBehavior))) {}
+          GetDurationBehavior(duration_behavior))) {}
 
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     cc::ScrollOffsetAnimationCurve* curve)
-    : m_curve(curve->CloneToScrollOffsetAnimationCurve()) {}
+    : curve_(curve->CloneToScrollOffsetAnimationCurve()) {}
 
 CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve() {}
 
-void CompositorScrollOffsetAnimationCurve::setInitialValue(
-    FloatPoint initialValue) {
-  m_curve->SetInitialValue(
-      gfx::ScrollOffset(initialValue.x(), initialValue.y()));
+void CompositorScrollOffsetAnimationCurve::SetInitialValue(
+    FloatPoint initial_value) {
+  curve_->SetInitialValue(
+      gfx::ScrollOffset(initial_value.X(), initial_value.Y()));
 }
 
-FloatPoint CompositorScrollOffsetAnimationCurve::getValue(double time) const {
+FloatPoint CompositorScrollOffsetAnimationCurve::GetValue(double time) const {
   gfx::ScrollOffset value =
-      m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
+      curve_->GetValue(base::TimeDelta::FromSecondsD(time));
   return FloatPoint(value.x(), value.y());
 }
 
-void CompositorScrollOffsetAnimationCurve::applyAdjustment(IntSize adjustment) {
-  m_curve->ApplyAdjustment(
-      gfx::Vector2dF(adjustment.width(), adjustment.height()));
+void CompositorScrollOffsetAnimationCurve::ApplyAdjustment(IntSize adjustment) {
+  curve_->ApplyAdjustment(
+      gfx::Vector2dF(adjustment.Width(), adjustment.Height()));
 }
 
-double CompositorScrollOffsetAnimationCurve::duration() const {
-  return m_curve->Duration().InSecondsF();
+double CompositorScrollOffsetAnimationCurve::Duration() const {
+  return curve_->Duration().InSecondsF();
 }
 
-FloatPoint CompositorScrollOffsetAnimationCurve::targetValue() const {
-  gfx::ScrollOffset target = m_curve->target_value();
+FloatPoint CompositorScrollOffsetAnimationCurve::TargetValue() const {
+  gfx::ScrollOffset target = curve_->target_value();
   return FloatPoint(target.x(), target.y());
 }
 
-void CompositorScrollOffsetAnimationCurve::updateTarget(double time,
-                                                        FloatPoint newTarget) {
-  m_curve->UpdateTarget(time, gfx::ScrollOffset(newTarget.x(), newTarget.y()));
+void CompositorScrollOffsetAnimationCurve::UpdateTarget(double time,
+                                                        FloatPoint new_target) {
+  curve_->UpdateTarget(time, gfx::ScrollOffset(new_target.X(), new_target.Y()));
 }
 
 std::unique_ptr<cc::AnimationCurve>
-CompositorScrollOffsetAnimationCurve::cloneToAnimationCurve() const {
-  return m_curve->Clone();
+CompositorScrollOffsetAnimationCurve::CloneToAnimationCurve() const {
+  return curve_->Clone();
 }
 
 }  // namespace blink

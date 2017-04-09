@@ -29,24 +29,24 @@ class HTMLDetailsElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLDetailsElement* create(Document&);
-  void toggleOpen();
+  static HTMLDetailsElement* Create(Document&);
+  void ToggleOpen();
   ~HTMLDetailsElement() override;
 
-  Element* findMainSummary() const;
+  Element* FindMainSummary() const;
 
  private:
   explicit HTMLDetailsElement(Document&);
 
-  void dispatchPendingEvent();
+  void DispatchPendingEvent();
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void parseAttribute(const AttributeModificationParams&) override;
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
-  bool isInteractiveContent() const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  bool IsInteractiveContent() const override;
 
-  bool m_isOpen;
-  TaskHandle m_pendingEvent;
+  bool is_open_;
+  TaskHandle pending_event_;
 };
 
 }  // namespace blink

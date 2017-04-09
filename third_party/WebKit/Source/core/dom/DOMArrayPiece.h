@@ -29,26 +29,26 @@ class CORE_EXPORT DOMArrayPiece : public WTF::ArrayPiece {
   enum InitWithUnionOption {
     // Initialize this object as "null" when initialized with an union which
     // holds null.
-    TreatNullAsNull,
+    kTreatNullAsNull,
     // Initialize this object so this points to null pointer with zero size
     // when initialized with an union which holds null.
-    AllowNullPointToNullWithZeroSize,
+    kAllowNullPointToNullWithZeroSize,
   };
 
   DOMArrayPiece() {}
-  DOMArrayPiece(DOMArrayBuffer* buffer) : ArrayPiece(buffer->buffer()) {}
-  DOMArrayPiece(DOMArrayBufferView* view) : ArrayPiece(view->view()) {}
+  DOMArrayPiece(DOMArrayBuffer* buffer) : ArrayPiece(buffer->Buffer()) {}
+  DOMArrayPiece(DOMArrayBufferView* view) : ArrayPiece(view->View()) {}
   DOMArrayPiece(const ArrayBufferOrArrayBufferView&,
-                InitWithUnionOption = TreatNullAsNull);
+                InitWithUnionOption = kTreatNullAsNull);
 
   bool operator==(const DOMArrayBuffer& other) const {
-    return byteLength() == other.byteLength() &&
-           memcmp(data(), other.data(), byteLength()) == 0;
+    return ByteLength() == other.ByteLength() &&
+           memcmp(Data(), other.Data(), ByteLength()) == 0;
   }
 
   bool operator==(const DOMArrayBufferView& other) const {
-    return byteLength() == other.byteLength() &&
-           memcmp(data(), other.baseAddress(), byteLength()) == 0;
+    return ByteLength() == other.byteLength() &&
+           memcmp(Data(), other.BaseAddress(), ByteLength()) == 0;
   }
 };
 

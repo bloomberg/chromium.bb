@@ -67,7 +67,7 @@ class PluginInstanceThrottlerImplTest
                         bool expect_throttled,
                         int expect_change_callback_count) {
     blink::WebMouseEvent event(
-        event_type, blink::WebInputEvent::Modifiers::LeftButtonDown,
+        event_type, blink::WebInputEvent::Modifiers::kLeftButtonDown,
         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     EXPECT_EQ(expect_consumed, throttler()->ConsumeInputEvent(event));
     EXPECT_EQ(expect_throttled, throttler()->IsThrottled());
@@ -94,7 +94,7 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleAndUnthrottleByClick) {
   EXPECT_EQ(1, change_callback_calls());
 
   // MouseUp while throttled should be consumed and disengage throttling.
-  SendEventAndTest(blink::WebInputEvent::Type::MouseUp, true, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseUp, true, false, 2);
 }
 
 TEST_F(PluginInstanceThrottlerImplTest, ThrottleByKeyframe) {
@@ -137,7 +137,7 @@ TEST_F(PluginInstanceThrottlerImplTest, IgnoreThrottlingAfterMouseUp) {
 
   // MouseUp before throttling engaged should not be consumed, but should
   // prevent subsequent throttling from engaging.
-  SendEventAndTest(blink::WebInputEvent::Type::MouseUp, false, false, 0);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseUp, false, false, 0);
 
   EngageThrottle();
   EXPECT_FALSE(throttler()->IsThrottled());
@@ -177,24 +177,24 @@ TEST_F(PluginInstanceThrottlerImplTest, EventConsumption) {
   EXPECT_EQ(1, change_callback_calls());
 
   // Consume but don't unthrottle on a variety of other events.
-  SendEventAndTest(blink::WebInputEvent::Type::MouseDown, true, true, 1);
-  SendEventAndTest(blink::WebInputEvent::Type::MouseWheel, true, true, 1);
-  SendEventAndTest(blink::WebInputEvent::Type::MouseMove, true, true, 1);
-  SendEventAndTest(blink::WebInputEvent::Type::KeyDown, true, true, 1);
-  SendEventAndTest(blink::WebInputEvent::Type::KeyUp, true, true, 1);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseDown, true, true, 1);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseWheel, true, true, 1);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseMove, true, true, 1);
+  SendEventAndTest(blink::WebInputEvent::Type::kKeyDown, true, true, 1);
+  SendEventAndTest(blink::WebInputEvent::Type::kKeyUp, true, true, 1);
 
   // Consume and unthrottle on MouseUp
-  SendEventAndTest(blink::WebInputEvent::Type::MouseUp, true, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseUp, true, false, 2);
 
   // Don't consume events after unthrottle.
-  SendEventAndTest(blink::WebInputEvent::Type::MouseDown, false, false, 2);
-  SendEventAndTest(blink::WebInputEvent::Type::MouseWheel, false, false, 2);
-  SendEventAndTest(blink::WebInputEvent::Type::MouseMove, false, false, 2);
-  SendEventAndTest(blink::WebInputEvent::Type::KeyDown, false, false, 2);
-  SendEventAndTest(blink::WebInputEvent::Type::KeyUp, false, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseDown, false, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseWheel, false, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseMove, false, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kKeyDown, false, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kKeyUp, false, false, 2);
 
   // Subsequent MouseUps should also not be consumed.
-  SendEventAndTest(blink::WebInputEvent::Type::MouseUp, false, false, 2);
+  SendEventAndTest(blink::WebInputEvent::Type::kMouseUp, false, false, 2);
 }
 
 TEST_F(PluginInstanceThrottlerImplTest, ThrottleOnLeftClickOnly) {
@@ -206,17 +206,17 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleOnLeftClickOnly) {
   EXPECT_EQ(1, change_callback_calls());
 
   blink::WebMouseEvent event(
-      blink::WebInputEvent::Type::MouseUp,
-      blink::WebInputEvent::Modifiers::RightButtonDown,
+      blink::WebInputEvent::Type::kMouseUp,
+      blink::WebInputEvent::Modifiers::kRightButtonDown,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   EXPECT_FALSE(throttler()->ConsumeInputEvent(event));
   EXPECT_TRUE(throttler()->IsThrottled());
 
-  event.setModifiers(blink::WebInputEvent::Modifiers::MiddleButtonDown);
+  event.SetModifiers(blink::WebInputEvent::Modifiers::kMiddleButtonDown);
   EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
   EXPECT_TRUE(throttler()->IsThrottled());
 
-  event.setModifiers(blink::WebInputEvent::Modifiers::LeftButtonDown);
+  event.SetModifiers(blink::WebInputEvent::Modifiers::kLeftButtonDown);
   EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
   EXPECT_FALSE(throttler()->IsThrottled());
 }

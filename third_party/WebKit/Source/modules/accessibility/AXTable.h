@@ -45,53 +45,53 @@ class MODULES_EXPORT AXTable : public AXLayoutObject {
   AXTable(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXTable* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXTable* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXTable() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void init() final;
+  void Init() final;
 
-  bool isAXTable() const final;
-  bool isDataTable() const final;
+  bool IsAXTable() const final;
+  bool IsDataTable() const final;
 
-  AccessibilityRole roleValue() const final;
+  AccessibilityRole RoleValue() const final;
 
-  void addChildren() override;
-  void clearChildren() final;
+  void AddChildren() override;
+  void ClearChildren() final;
 
   // To be overridden by AXARIAGrid.
-  virtual bool isAriaTable() const { return false; }
-  virtual bool supportsSelectedRows() { return false; }
+  virtual bool IsAriaTable() const { return false; }
+  virtual bool SupportsSelectedRows() { return false; }
 
-  const AXObjectVector& columns();
-  const AXObjectVector& rows();
+  const AXObjectVector& Columns();
+  const AXObjectVector& Rows();
 
-  unsigned columnCount();
-  unsigned rowCount();
-  AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
+  unsigned ColumnCount();
+  unsigned RowCount();
+  AXTableCell* CellForColumnAndRow(unsigned column, unsigned row);
 
-  int ariaColumnCount();
-  int ariaRowCount();
+  int AriaColumnCount();
+  int AriaRowCount();
 
-  void columnHeaders(AXObjectVector&);
-  void rowHeaders(AXObjectVector&);
+  void ColumnHeaders(AXObjectVector&);
+  void RowHeaders(AXObjectVector&);
 
   // an object that contains, as children, all the objects that act as headers
-  AXObject* headerContainer();
+  AXObject* HeaderContainer();
 
  protected:
-  AXObjectVector m_rows;
-  AXObjectVector m_columns;
+  AXObjectVector rows_;
+  AXObjectVector columns_;
 
-  Member<AXObject> m_headerContainer;
-  bool m_isAXTable;
+  Member<AXObject> header_container_;
+  bool is_ax_table_;
 
-  bool hasARIARole() const;
-  virtual bool isTableExposableThroughAccessibility() const;
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
+  bool HasARIARole() const;
+  virtual bool IsTableExposableThroughAccessibility() const;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, IsAXTable());
 
 }  // namespace blink
 

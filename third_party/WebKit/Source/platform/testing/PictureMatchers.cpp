@@ -26,112 +26,113 @@ class DrawsRectangleCanvas : public SkCanvas {
  public:
   DrawsRectangleCanvas()
       : SkCanvas(800, 600),
-        m_saveCount(0),
-        m_alpha(255),
-        m_alphaSaveLayerCount(-1) {}
-  const Vector<QuadWithColor>& quadsWithColor() const { return m_quads; }
+        save_count_(0),
+        alpha_(255),
+        alpha_save_layer_count_(-1) {}
+  const Vector<QuadWithColor>& QuadsWithColor() const { return quads_; }
 
   void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
-    SkRect clippedRect(rect);
-    for (Vector<ClipAndIndex>::const_reverse_iterator clip = m_clips.rbegin();
-         clip != m_clips.rend(); clip++) {
+    SkRect clipped_rect(rect);
+    for (Vector<ClipAndIndex>::const_reverse_iterator clip = clips_.rbegin();
+         clip != clips_.rend(); clip++) {
       if (SkRect::Intersects(rect, clip->rect))
-        CHECK(clippedRect.intersect(clip->rect));
+        CHECK(clipped_rect.intersect(clip->rect));
     }
     SkPoint quad[4];
-    getTotalMatrix().mapRectToQuad(quad, clippedRect);
-    QuadWithColor quadWithColor;
-    quadWithColor.quad = FloatQuad(quad);
+    getTotalMatrix().mapRectToQuad(quad, clipped_rect);
+    QuadWithColor quad_with_color;
+    quad_with_color.quad = FloatQuad(quad);
 
-    unsigned paintAlpha = static_cast<unsigned>(paint.getAlpha());
-    SkPaint paintWithAlpha(paint);
-    paintWithAlpha.setAlpha(static_cast<U8CPU>(m_alpha * paintAlpha / 255));
-    quadWithColor.color = Color(paintWithAlpha.getColor());
-    m_quads.push_back(quadWithColor);
-    SkCanvas::onDrawRect(clippedRect, paint);
+    unsigned paint_alpha = static_cast<unsigned>(paint.getAlpha());
+    SkPaint paint_with_alpha(paint);
+    paint_with_alpha.setAlpha(static_cast<U8CPU>(alpha_ * paint_alpha / 255));
+    quad_with_color.color = Color(paint_with_alpha.getColor());
+    quads_.push_back(quad_with_color);
+    SkCanvas::onDrawRect(clipped_rect, paint);
   }
 
   SkCanvas::SaveLayerStrategy getSaveLayerStrategy(
       const SaveLayerRec& rec) override {
-    m_saveCount++;
-    unsigned layerAlpha = static_cast<unsigned>(rec.fPaint->getAlpha());
-    if (layerAlpha < 255) {
-      DCHECK_EQ(m_alphaSaveLayerCount, -1);
-      m_alphaSaveLayerCount = m_saveCount;
-      m_alpha = layerAlpha;
+    save_count_++;
+    unsigned layer_alpha = static_cast<unsigned>(rec.fPaint->getAlpha());
+    if (layer_alpha < 255) {
+      DCHECK_EQ(alpha_save_layer_count_, -1);
+      alpha_save_layer_count_ = save_count_;
+      alpha_ = layer_alpha;
     }
     return SkCanvas::getSaveLayerStrategy(rec);
   }
 
   void willSave() override {
-    m_saveCount++;
+    save_count_++;
     SkCanvas::willSave();
   }
 
   void willRestore() override {
-    DCHECK_GT(m_saveCount, 0);
-    if (m_clips.size() && m_saveCount == m_clips.back().saveCount)
-      m_clips.pop_back();
-    if (m_alphaSaveLayerCount == m_saveCount) {
-      m_alpha = 255;
-      m_alphaSaveLayerCount = -1;
+    DCHECK_GT(save_count_, 0);
+    if (clips_.size() && save_count_ == clips_.back().save_count)
+      clips_.pop_back();
+    if (alpha_save_layer_count_ == save_count_) {
+      alpha_ = 255;
+      alpha_save_layer_count_ = -1;
     }
-    m_saveCount--;
+    save_count_--;
     SkCanvas::willRestore();
   }
 
   void onClipRect(const SkRect& rect,
                   SkClipOp op,
                   ClipEdgeStyle style) override {
-    ClipAndIndex clipStruct;
-    clipStruct.rect = rect;
-    clipStruct.saveCount = m_saveCount;
-    m_clips.push_back(clipStruct);
+    ClipAndIndex clip_struct;
+    clip_struct.rect = rect;
+    clip_struct.save_count = save_count_;
+    clips_.push_back(clip_struct);
     SkCanvas::onClipRect(rect, op, style);
   }
 
   struct ClipAndIndex {
     SkRect rect;
-    int saveCount;
+    int save_count;
   };
 
  private:
-  Vector<QuadWithColor> m_quads;
-  Vector<ClipAndIndex> m_clips;
-  int m_saveCount;
-  unsigned m_alpha;
-  int m_alphaSaveLayerCount;
+  Vector<QuadWithColor> quads_;
+  Vector<ClipAndIndex> clips_;
+  int save_count_;
+  unsigned alpha_;
+  int alpha_save_layer_count_;
 };
 
 class DrawsRectanglesMatcher
     : public ::testing::MatcherInterface<const SkPicture&> {
  public:
-  DrawsRectanglesMatcher(const Vector<RectWithColor>& rectsWithColor)
-      : m_rectsWithColor(rectsWithColor) {}
+  DrawsRectanglesMatcher(const Vector<RectWithColor>& rects_with_color)
+      : rects_with_color_(rects_with_color) {}
 
   bool MatchAndExplain(
       const SkPicture& picture,
       ::testing::MatchResultListener* listener) const override {
     DrawsRectangleCanvas canvas;
     picture.playback(&canvas);
-    const auto& quads = canvas.quadsWithColor();
-    if (quads.size() != m_rectsWithColor.size()) {
+    const auto& quads = canvas.QuadsWithColor();
+    if (quads.size() != rects_with_color_.size()) {
       *listener << "which draws " << quads.size() << " quads";
       return false;
     }
 
     for (unsigned index = 0; index < quads.size(); index++) {
-      const auto& quadWithColor = quads[index];
-      const auto& rectWithColor = m_rectsWithColor[index];
+      const auto& quad_with_color = quads[index];
+      const auto& rect_with_color = rects_with_color_[index];
 
-      const FloatRect& rect = quadWithColor.quad.boundingBox();
-      if (enclosingIntRect(rect) != enclosingIntRect(rectWithColor.rect) ||
-          quadWithColor.color != rectWithColor.color) {
+      const FloatRect& rect = quad_with_color.quad.BoundingBox();
+      if (EnclosingIntRect(rect) != EnclosingIntRect(rect_with_color.rect) ||
+          quad_with_color.color != rect_with_color.color) {
         if (listener->IsInterested()) {
           *listener << "at index " << index << " which draws ";
           PrintTo(rect, listener->stream());
           *listener << " with color "
-                    << quadWithColor.color.serialized().ascii().data() << "\n";
+                    << quad_with_color.color.Serialized().Ascii().Data()
+                    << "\n";
         }
         return false;
       }
@@ -142,31 +143,31 @@ class DrawsRectanglesMatcher
 
   void DescribeTo(::std::ostream* os) const override {
     *os << "\n";
-    for (unsigned index = 0; index < m_rectsWithColor.size(); index++) {
-      const auto& rectWithColor = m_rectsWithColor[index];
+    for (unsigned index = 0; index < rects_with_color_.size(); index++) {
+      const auto& rect_with_color = rects_with_color_[index];
       *os << "at index " << index << " rect draws ";
-      PrintTo(rectWithColor.rect, os);
-      *os << " with color " << rectWithColor.color.serialized().ascii().data()
+      PrintTo(rect_with_color.rect, os);
+      *os << " with color " << rect_with_color.color.Serialized().Ascii().Data()
           << "\n";
     }
   }
 
  private:
-  const Vector<RectWithColor> m_rectsWithColor;
+  const Vector<RectWithColor> rects_with_color_;
 };
 
 }  // namespace
 
-::testing::Matcher<const SkPicture&> drawsRectangle(const FloatRect& rect,
+::testing::Matcher<const SkPicture&> DrawsRectangle(const FloatRect& rect,
                                                     Color color) {
-  Vector<RectWithColor> rectsWithColor;
-  rectsWithColor.push_back(RectWithColor(rect, color));
-  return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rectsWithColor));
+  Vector<RectWithColor> rects_with_color;
+  rects_with_color.push_back(RectWithColor(rect, color));
+  return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rects_with_color));
 }
 
-::testing::Matcher<const SkPicture&> drawsRectangles(
-    const Vector<RectWithColor>& rectsWithColor) {
-  return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rectsWithColor));
+::testing::Matcher<const SkPicture&> DrawsRectangles(
+    const Vector<RectWithColor>& rects_with_color) {
+  return ::testing::MakeMatcher(new DrawsRectanglesMatcher(rects_with_color));
 }
 
 }  // namespace blink

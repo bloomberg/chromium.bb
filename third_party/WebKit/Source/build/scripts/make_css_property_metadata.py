@@ -24,11 +24,11 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
     def generate_css_property_metadata_cpp(self):
         return {
             'properties_including_aliases': self._properties_including_aliases,
-            'switches': [('is_descriptor', 'isDescriptor'),
-                         ('is_property', 'isProperty'),
-                         ('interpolable', 'isInterpolableProperty'),
-                         ('inherited', 'isInheritedProperty'),
-                         ('supports_percentage', 'propertySupportsPercentage'),
+            'switches': [('is_descriptor', 'IsDescriptor'),
+                         ('is_property', 'IsProperty'),
+                         ('interpolable', 'IsInterpolableProperty'),
+                         ('inherited', 'IsInheritedProperty'),
+                         ('supports_percentage', 'PropertySupportsPercentage'),
                         ],
             'first_enum_value': self._first_enum_value,
         }

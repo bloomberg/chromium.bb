@@ -47,44 +47,44 @@ class CloseEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CloseEvent* create() { return new CloseEvent(); }
+  static CloseEvent* Create() { return new CloseEvent(); }
 
-  static CloseEvent* create(bool wasClean,
+  static CloseEvent* Create(bool was_clean,
                             unsigned short code,
                             const String& reason) {
-    return new CloseEvent(wasClean, code, reason);
+    return new CloseEvent(was_clean, code, reason);
   }
 
-  static CloseEvent* create(const AtomicString& type,
+  static CloseEvent* Create(const AtomicString& type,
                             const CloseEventInit& initializer) {
     return new CloseEvent(type, initializer);
   }
 
-  bool wasClean() const { return m_wasClean; }
-  unsigned short code() const { return m_code; }
-  String reason() const { return m_reason; }
+  bool wasClean() const { return was_clean_; }
+  unsigned short code() const { return code_; }
+  String reason() const { return reason_; }
 
   // Event function.
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::CloseEvent;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::Trace(visitor); }
 
  private:
-  CloseEvent() : m_wasClean(false), m_code(0) {}
+  CloseEvent() : was_clean_(false), code_(0) {}
 
-  CloseEvent(bool wasClean, int code, const String& reason)
+  CloseEvent(bool was_clean, int code, const String& reason)
       : Event(EventTypeNames::close, false, false),
-        m_wasClean(wasClean),
-        m_code(code),
-        m_reason(reason) {}
+        was_clean_(was_clean),
+        code_(code),
+        reason_(reason) {}
 
   CloseEvent(const AtomicString& type, const CloseEventInit& initializer);
 
-  bool m_wasClean;
-  unsigned short m_code;
-  String m_reason;
+  bool was_clean_;
+  unsigned short code_;
+  String reason_;
 };
 
 }  // namespace blink

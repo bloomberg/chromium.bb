@@ -14,88 +14,88 @@ namespace blink {
 
 class CORE_EXPORT TransitionKeyframe : public Keyframe {
  public:
-  static PassRefPtr<TransitionKeyframe> create(const PropertyHandle& property) {
-    return adoptRef(new TransitionKeyframe(property));
+  static PassRefPtr<TransitionKeyframe> Create(const PropertyHandle& property) {
+    return AdoptRef(new TransitionKeyframe(property));
   }
-  void setValue(std::unique_ptr<TypedInterpolationValue> value) {
-    m_value = std::move(value);
+  void SetValue(std::unique_ptr<TypedInterpolationValue> value) {
+    value_ = std::move(value);
   }
-  void setCompositorValue(RefPtr<AnimatableValue>);
-  PropertyHandleSet properties() const final;
+  void SetCompositorValue(RefPtr<AnimatableValue>);
+  PropertyHandleSet Properties() const final;
 
   class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
    public:
-    static PassRefPtr<PropertySpecificKeyframe> create(
+    static PassRefPtr<PropertySpecificKeyframe> Create(
         double offset,
         PassRefPtr<TimingFunction> easing,
         EffectModel::CompositeOperation composite,
         std::unique_ptr<TypedInterpolationValue> value,
-        RefPtr<AnimatableValue> compositorValue) {
-      return adoptRef(new PropertySpecificKeyframe(offset, std::move(easing),
-                                                   composite, std::move(value),
-                                                   std::move(compositorValue)));
+        RefPtr<AnimatableValue> compositor_value) {
+      return AdoptRef(new PropertySpecificKeyframe(
+          offset, std::move(easing), composite, std::move(value),
+          std::move(compositor_value)));
     }
 
-    PassRefPtr<AnimatableValue> getAnimatableValue() const final {
-      return m_compositorValue;
+    PassRefPtr<AnimatableValue> GetAnimatableValue() const final {
+      return compositor_value_;
     }
 
-    bool isNeutral() const final { return false; }
-    PassRefPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(
+    bool IsNeutral() const final { return false; }
+    PassRefPtr<Keyframe::PropertySpecificKeyframe> NeutralKeyframe(
         double offset,
         PassRefPtr<TimingFunction> easing) const final {
       NOTREACHED();
       return nullptr;
     }
-    PassRefPtr<Interpolation> createInterpolation(
+    PassRefPtr<Interpolation> CreateInterpolation(
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& other) const final;
 
-    bool isTransitionPropertySpecificKeyframe() const final { return true; }
+    bool IsTransitionPropertySpecificKeyframe() const final { return true; }
 
    private:
     PropertySpecificKeyframe(double offset,
                              PassRefPtr<TimingFunction> easing,
                              EffectModel::CompositeOperation composite,
                              std::unique_ptr<TypedInterpolationValue> value,
-                             RefPtr<AnimatableValue> compositorValue)
+                             RefPtr<AnimatableValue> compositor_value)
         : Keyframe::PropertySpecificKeyframe(offset,
                                              std::move(easing),
                                              composite),
-          m_value(std::move(value)),
-          m_compositorValue(std::move(compositorValue)) {}
+          value_(std::move(value)),
+          compositor_value_(std::move(compositor_value)) {}
 
-    PassRefPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(
+    PassRefPtr<Keyframe::PropertySpecificKeyframe> CloneWithOffset(
         double offset) const final {
-      return create(offset, m_easing, m_composite, m_value->clone(),
-                    m_compositorValue);
+      return Create(offset, easing_, composite_, value_->Clone(),
+                    compositor_value_);
     }
 
-    std::unique_ptr<TypedInterpolationValue> m_value;
-    RefPtr<AnimatableValue> m_compositorValue;
+    std::unique_ptr<TypedInterpolationValue> value_;
+    RefPtr<AnimatableValue> compositor_value_;
   };
 
  private:
-  TransitionKeyframe(const PropertyHandle& property) : m_property(property) {}
+  TransitionKeyframe(const PropertyHandle& property) : property_(property) {}
 
-  TransitionKeyframe(const TransitionKeyframe& copyFrom)
-      : Keyframe(copyFrom.m_offset, copyFrom.m_composite, copyFrom.m_easing),
-        m_property(copyFrom.m_property),
-        m_value(copyFrom.m_value->clone()),
-        m_compositorValue(copyFrom.m_compositorValue) {}
+  TransitionKeyframe(const TransitionKeyframe& copy_from)
+      : Keyframe(copy_from.offset_, copy_from.composite_, copy_from.easing_),
+        property_(copy_from.property_),
+        value_(copy_from.value_->Clone()),
+        compositor_value_(copy_from.compositor_value_) {}
 
-  bool isTransitionKeyframe() const final { return true; }
+  bool IsTransitionKeyframe() const final { return true; }
 
-  PassRefPtr<Keyframe> clone() const final {
-    return adoptRef(new TransitionKeyframe(*this));
+  PassRefPtr<Keyframe> Clone() const final {
+    return AdoptRef(new TransitionKeyframe(*this));
   }
 
-  PassRefPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(
+  PassRefPtr<Keyframe::PropertySpecificKeyframe> CreatePropertySpecificKeyframe(
       const PropertyHandle&) const final;
 
-  PropertyHandle m_property;
-  std::unique_ptr<TypedInterpolationValue> m_value;
-  RefPtr<AnimatableValue> m_compositorValue;
+  PropertyHandle property_;
+  std::unique_ptr<TypedInterpolationValue> value_;
+  RefPtr<AnimatableValue> compositor_value_;
 };
 
 using TransitionPropertySpecificKeyframe =
@@ -104,13 +104,13 @@ using TransitionPropertySpecificKeyframe =
 DEFINE_TYPE_CASTS(TransitionKeyframe,
                   Keyframe,
                   value,
-                  value->isTransitionKeyframe(),
-                  value.isTransitionKeyframe());
+                  value->IsTransitionKeyframe(),
+                  value.IsTransitionKeyframe());
 DEFINE_TYPE_CASTS(TransitionPropertySpecificKeyframe,
                   Keyframe::PropertySpecificKeyframe,
                   value,
-                  value->isTransitionPropertySpecificKeyframe(),
-                  value.isTransitionPropertySpecificKeyframe());
+                  value->IsTransitionPropertySpecificKeyframe(),
+                  value.IsTransitionPropertySpecificKeyframe());
 
 }  // namespace blink
 

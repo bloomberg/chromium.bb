@@ -19,17 +19,17 @@ class LineBoxListPainter {
   STACK_ALLOCATED();
 
  public:
-  LineBoxListPainter(const LineBoxList& lineBoxList)
-      : m_lineBoxList(lineBoxList) {}
+  LineBoxListPainter(const LineBoxList& line_box_list)
+      : line_box_list_(line_box_list) {}
 
-  void paint(const LayoutBoxModelObject&,
+  void Paint(const LayoutBoxModelObject&,
              const PaintInfo&,
              const LayoutPoint&) const;
 
-  void invalidateLineBoxPaintOffsets(const PaintInfo&) const;
+  void InvalidateLineBoxPaintOffsets(const PaintInfo&) const;
 
  private:
-  const LineBoxList& m_lineBoxList;
+  const LineBoxList& line_box_list_;
 };
 
 }  // namespace blink

@@ -49,10 +49,10 @@ class AudioIOCallback {
   // render() is called periodically to get the next render quantum of audio
   // into destinationBus.  Optional audio input is given in sourceBus (if it's
   // not 0).
-  virtual void render(AudioBus* sourceBus,
-                      AudioBus* destinationBus,
-                      size_t framesToProcess,
-                      const AudioIOPosition& outputPosition) = 0;
+  virtual void Render(AudioBus* source_bus,
+                      AudioBus* destination_bus,
+                      size_t frames_to_process,
+                      const AudioIOPosition& output_position) = 0;
 
   virtual ~AudioIOCallback() {}
 };

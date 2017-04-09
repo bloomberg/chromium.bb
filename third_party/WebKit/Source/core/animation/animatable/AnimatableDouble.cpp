@@ -35,15 +35,15 @@
 
 namespace blink {
 
-PassRefPtr<AnimatableValue> AnimatableDouble::interpolateTo(
+PassRefPtr<AnimatableValue> AnimatableDouble::InterpolateTo(
     const AnimatableValue* value,
     double fraction) const {
-  const AnimatableDouble* other = toAnimatableDouble(value);
-  return AnimatableDouble::create(blend(m_number, other->m_number, fraction));
+  const AnimatableDouble* other = ToAnimatableDouble(value);
+  return AnimatableDouble::Create(Blend(number_, other->number_, fraction));
 }
 
-bool AnimatableDouble::equalTo(const AnimatableValue* value) const {
-  return m_number == toAnimatableDouble(value)->m_number;
+bool AnimatableDouble::EqualTo(const AnimatableValue* value) const {
+  return number_ == ToAnimatableDouble(value)->number_;
 }
 
 }  // namespace blink

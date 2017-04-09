@@ -30,16 +30,16 @@
 namespace blink {
 
 StyleEngineContext::StyleEngineContext()
-    : m_addedPendingSheetBeforeBody(false) {}
+    : added_pending_sheet_before_body_(false) {}
 
-void StyleEngineContext::addingPendingSheet(const Document& document) {
+void StyleEngineContext::AddingPendingSheet(const Document& document) {
   // If the sheet was ever added before the body then all references to it are
   // treated as before-body.
-  if (!m_addedPendingSheetBeforeBody) {
-    m_addedPendingSheetBeforeBody = !document.body();
-    if (!m_addedPendingSheetBeforeBody)
-      UseCounter::count(document,
-                        UseCounter::PendingStylesheetAddedAfterBodyStarted);
+  if (!added_pending_sheet_before_body_) {
+    added_pending_sheet_before_body_ = !document.body();
+    if (!added_pending_sheet_before_body_)
+      UseCounter::Count(document,
+                        UseCounter::kPendingStylesheetAddedAfterBodyStarted);
   }
 }
 

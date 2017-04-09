@@ -52,43 +52,43 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   WebPepperSocketImpl(const WebDocument&, WebPepperSocketClient*);
   ~WebPepperSocketImpl() override;
 
-  bool isNull() const { return !m_private; }
+  bool IsNull() const { return !private_; }
 
-  BinaryType binaryType() const override;
-  bool setBinaryType(BinaryType) override;
-  void connect(const WebURL&, const WebString& protocol) override;
-  WebString subprotocol() override;
-  WebString extensions() override;
-  bool sendText(const WebString&) override;
-  bool sendArrayBuffer(const WebArrayBuffer&) override;
-  unsigned long bufferedAmount() const override;
-  void close(int code, const WebString& reason) override;
-  void fail(const WebString& reason) override;
-  void disconnect() override;
+  BinaryType GetBinaryType() const override;
+  bool SetBinaryType(BinaryType) override;
+  void Connect(const WebURL&, const WebString& protocol) override;
+  WebString Subprotocol() override;
+  WebString Extensions() override;
+  bool SendText(const WebString&) override;
+  bool SendArrayBuffer(const WebArrayBuffer&) override;
+  unsigned long BufferedAmount() const override;
+  void Close(int code, const WebString& reason) override;
+  void Fail(const WebString& reason) override;
+  void Disconnect() override;
 
   // WebSocketChannelClient methods proxied by
   // WebPepperSocketChannelClientProxy.
-  void didConnect(const String& subprotocol, const String& extensions);
-  void didReceiveTextMessage(const String& payload);
-  void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload);
-  void didError();
-  void didConsumeBufferedAmount(unsigned long consumed);
-  void didStartClosingHandshake();
-  void didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus,
+  void DidConnect(const String& subprotocol, const String& extensions);
+  void DidReceiveTextMessage(const String& payload);
+  void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload);
+  void DidError();
+  void DidConsumeBufferedAmount(unsigned long consumed);
+  void DidStartClosingHandshake();
+  void DidClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus,
                 unsigned short code,
                 const String& reason);
 
  private:
-  Persistent<WebSocketChannel> m_private;
-  WebPepperSocketClient* m_client;
-  Persistent<WebPepperSocketChannelClientProxy> m_channelProxy;
-  BinaryType m_binaryType;
-  WebString m_subprotocol;
-  WebString m_extensions;
-  bool m_isClosingOrClosed;
+  Persistent<WebSocketChannel> private_;
+  WebPepperSocketClient* client_;
+  Persistent<WebPepperSocketChannelClientProxy> channel_proxy_;
+  BinaryType binary_type_;
+  WebString subprotocol_;
+  WebString extensions_;
+  bool is_closing_or_closed_;
   // m_bufferedAmount includes m_bufferedAmountAfterClose.
-  unsigned long m_bufferedAmount;
-  unsigned long m_bufferedAmountAfterClose;
+  unsigned long buffered_amount_;
+  unsigned long buffered_amount_after_close_;
 };
 
 }  // namespace blink

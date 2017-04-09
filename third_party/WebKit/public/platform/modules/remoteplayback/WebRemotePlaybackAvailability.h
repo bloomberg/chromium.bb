@@ -12,25 +12,25 @@ namespace blink {
 // Various states for the remote playback availability.
 enum class WebRemotePlaybackAvailability {
   // The availability is unknown.
-  Unknown,
+  kUnknown,
 
   // The media source is not supported by the browser - device availability
   // monitoring is unnecessary.
-  SourceNotSupported,
+  kSourceNotSupported,
 
   // The media source is compatible with some supported device types but
   // no devices were found.
-  DeviceNotAvailable,
+  kDeviceNotAvailable,
 
   // There're available devices but the current media source is not compatible
   // with any of those.
-  SourceNotCompatible,
+  kSourceNotCompatible,
 
   // There're available remote playback devices and the media source is
   // compatible with at least one of them.
-  DeviceAvailable,
+  kDeviceAvailable,
 
-  Last = DeviceAvailable
+  kLast = kDeviceAvailable
 };
 
 }  // namespace blink

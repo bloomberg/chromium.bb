@@ -19,17 +19,17 @@ namespace blink {
 class MediaKeyStatusMap::MapEntry final
     : public GarbageCollectedFinalized<MediaKeyStatusMap::MapEntry> {
  public:
-  static MapEntry* create(WebData keyId, const String& status) {
-    return new MapEntry(keyId, status);
+  static MapEntry* Create(WebData key_id, const String& status) {
+    return new MapEntry(key_id, status);
   }
 
   virtual ~MapEntry() {}
 
-  DOMArrayBuffer* keyId() const { return m_keyId.get(); }
+  DOMArrayBuffer* KeyId() const { return key_id_.Get(); }
 
-  const String& status() const { return m_status; }
+  const String& Status() const { return status_; }
 
-  static bool compareLessThan(MapEntry* a, MapEntry* b) {
+  static bool CompareLessThan(MapEntry* a, MapEntry* b) {
     // Compare the keyIds of 2 different MapEntries. Assume that |a| and |b|
     // are not null, but the keyId() may be. KeyIds are compared byte
     // by byte.
@@ -41,30 +41,30 @@ class MediaKeyStatusMap::MapEntry final
     //      null        null         == (false)
     //      null      not-null       <  (true)
     //    not-null      null         >  (false)
-    if (!a->keyId() || !b->keyId())
-      return b->keyId();
+    if (!a->KeyId() || !b->KeyId())
+      return b->KeyId();
 
     // Compare the bytes.
     int result =
-        memcmp(a->keyId()->data(), b->keyId()->data(),
-               std::min(a->keyId()->byteLength(), b->keyId()->byteLength()));
+        memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
+               std::min(a->KeyId()->ByteLength(), b->KeyId()->ByteLength()));
     if (result != 0)
       return result < 0;
 
     // KeyIds are equal to the shared length, so the shorter string is <.
-    DCHECK_NE(a->keyId()->byteLength(), b->keyId()->byteLength());
-    return a->keyId()->byteLength() < b->keyId()->byteLength();
+    DCHECK_NE(a->KeyId()->ByteLength(), b->KeyId()->ByteLength());
+    return a->KeyId()->ByteLength() < b->KeyId()->ByteLength();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_keyId); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(key_id_); }
 
  private:
-  MapEntry(WebData keyId, const String& status)
-      : m_keyId(DOMArrayBuffer::create(keyId.data(), keyId.size())),
-        m_status(status) {}
+  MapEntry(WebData key_id, const String& status)
+      : key_id_(DOMArrayBuffer::Create(key_id.Data(), key_id.size())),
+        status_(status) {}
 
-  const Member<DOMArrayBuffer> m_keyId;
-  const String m_status;
+  const Member<DOMArrayBuffer> key_id_;
+  const String status_;
 };
 
 // Represents an Iterator that loops through the set of MapEntrys.
@@ -72,58 +72,58 @@ class MapIterationSource final
     : public PairIterable<ArrayBufferOrArrayBufferView,
                           String>::IterationSource {
  public:
-  MapIterationSource(MediaKeyStatusMap* map) : m_map(map), m_current(0) {}
+  MapIterationSource(MediaKeyStatusMap* map) : map_(map), current_(0) {}
 
-  bool next(ScriptState* scriptState,
+  bool Next(ScriptState* script_state,
             ArrayBufferOrArrayBufferView& key,
             String& value,
             ExceptionState&) override {
     // This simply advances an index and returns the next value if any,
     // so if the iterated object is mutated values may be skipped.
-    if (m_current >= m_map->size())
+    if (current_ >= map_->size())
       return false;
 
-    const auto& entry = m_map->at(m_current++);
-    key.setArrayBuffer(entry.keyId());
-    value = entry.status();
+    const auto& entry = map_->at(current_++);
+    key.setArrayBuffer(entry.KeyId());
+    value = entry.Status();
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_map);
-    PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::trace(
+    visitor->Trace(map_);
+    PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::Trace(
         visitor);
   }
 
  private:
   // m_map is stored just for keeping it alive. It needs to be kept
   // alive while JavaScript holds the iterator to it.
-  const Member<const MediaKeyStatusMap> m_map;
-  size_t m_current;
+  const Member<const MediaKeyStatusMap> map_;
+  size_t current_;
 };
 
-void MediaKeyStatusMap::clear() {
-  m_entries.clear();
+void MediaKeyStatusMap::Clear() {
+  entries_.Clear();
 }
 
-void MediaKeyStatusMap::addEntry(WebData keyId, const String& status) {
+void MediaKeyStatusMap::AddEntry(WebData key_id, const String& status) {
   // Insert new entry into sorted list.
-  MapEntry* entry = MapEntry::create(keyId, status);
+  MapEntry* entry = MapEntry::Create(key_id, status);
   size_t index = 0;
-  while (index < m_entries.size() &&
-         MapEntry::compareLessThan(m_entries[index], entry))
+  while (index < entries_.size() &&
+         MapEntry::CompareLessThan(entries_[index], entry))
     ++index;
-  m_entries.insert(index, entry);
+  entries_.insert(index, entry);
 }
 
 const MediaKeyStatusMap::MapEntry& MediaKeyStatusMap::at(size_t index) const {
-  DCHECK_LT(index, m_entries.size());
-  return *m_entries.at(index);
+  DCHECK_LT(index, entries_.size());
+  return *entries_.at(index);
 }
 
-size_t MediaKeyStatusMap::indexOf(const DOMArrayPiece& key) const {
-  for (size_t index = 0; index < m_entries.size(); ++index) {
-    const auto& current = m_entries.at(index)->keyId();
+size_t MediaKeyStatusMap::IndexOf(const DOMArrayPiece& key) const {
+  for (size_t index = 0; index < entries_.size(); ++index) {
+    const auto& current = entries_.at(index)->KeyId();
     if (key == *current)
       return index;
   }
@@ -133,26 +133,26 @@ size_t MediaKeyStatusMap::indexOf(const DOMArrayPiece& key) const {
   return std::numeric_limits<size_t>::max();
 }
 
-bool MediaKeyStatusMap::has(const ArrayBufferOrArrayBufferView& keyId) {
-  size_t index = indexOf(keyId);
-  return index < m_entries.size();
+bool MediaKeyStatusMap::has(const ArrayBufferOrArrayBufferView& key_id) {
+  size_t index = IndexOf(key_id);
+  return index < entries_.size();
 }
 
-ScriptValue MediaKeyStatusMap::get(ScriptState* scriptState,
-                                   const ArrayBufferOrArrayBufferView& keyId) {
-  size_t index = indexOf(keyId);
-  if (index >= m_entries.size())
-    return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
-  return ScriptValue::from(scriptState, at(index).status());
+ScriptValue MediaKeyStatusMap::get(ScriptState* script_state,
+                                   const ArrayBufferOrArrayBufferView& key_id) {
+  size_t index = IndexOf(key_id);
+  if (index >= entries_.size())
+    return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
+  return ScriptValue::From(script_state, at(index).Status());
 }
 
 PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource*
-MediaKeyStatusMap::startIteration(ScriptState*, ExceptionState&) {
+MediaKeyStatusMap::StartIteration(ScriptState*, ExceptionState&) {
   return new MapIterationSource(this);
 }
 
 DEFINE_TRACE(MediaKeyStatusMap) {
-  visitor->trace(m_entries);
+  visitor->Trace(entries_);
 }
 
 }  // namespace blink

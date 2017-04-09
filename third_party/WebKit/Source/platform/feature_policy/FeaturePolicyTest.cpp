@@ -16,7 +16,7 @@ namespace blink {
 
 namespace {
 
-const char* kValidPolicies[] = {
+const char* g_k_valid_policies[] = {
     "{\"vibrate\": []}",
     "{\"vibrate\": [\"self\"]}",
     "{\"vibrate\": [\"*\"]}",
@@ -26,7 +26,7 @@ const char* kValidPolicies[] = {
     "{\"fullscreen\": [\"" ORIGIN_A "\"], \"payment\": [\"self\"]}",
     "{\"fullscreen\": [\"" ORIGIN_A "\"]}, {\"payment\": [\"self\"]}"};
 
-const char* kInvalidPolicies[] = {
+const char* g_k_invalid_policies[] = {
     "Not A JSON literal",
     "\"Not a JSON object\"",
     "[\"Also\", \"Not a JSON object\"]",
@@ -43,25 +43,25 @@ class FeaturePolicyTest : public ::testing::Test {
   ~FeaturePolicyTest() {
   }
 
-  RefPtr<SecurityOrigin> m_originA = SecurityOrigin::createFromString(ORIGIN_A);
-  RefPtr<SecurityOrigin> m_originB = SecurityOrigin::createFromString(ORIGIN_B);
-  RefPtr<SecurityOrigin> m_originC = SecurityOrigin::createFromString(ORIGIN_C);
+  RefPtr<SecurityOrigin> origin_a_ = SecurityOrigin::CreateFromString(ORIGIN_A);
+  RefPtr<SecurityOrigin> origin_b_ = SecurityOrigin::CreateFromString(ORIGIN_B);
+  RefPtr<SecurityOrigin> origin_c_ = SecurityOrigin::CreateFromString(ORIGIN_C);
 };
 
 TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   Vector<String> messages;
-  for (const char* policyString : kValidPolicies) {
-    messages.clear();
-    parseFeaturePolicy(policyString, m_originA.get(), &messages);
+  for (const char* policy_string : g_k_valid_policies) {
+    messages.Clear();
+    ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages);
     EXPECT_EQ(0UL, messages.size());
   }
 }
 
 TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   Vector<String> messages;
-  for (const char* policyString : kInvalidPolicies) {
-    messages.clear();
-    parseFeaturePolicy(policyString, m_originA.get(), &messages);
+  for (const char* policy_string : g_k_invalid_policies) {
+    messages.Clear();
+    ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages);
     EXPECT_NE(0UL, messages.size());
   }
 }
@@ -70,77 +70,77 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   Vector<String> messages;
 
   // Empty policy.
-  WebParsedFeaturePolicy parsedPolicy =
-      parseFeaturePolicy("{}", m_originA.get(), &messages);
-  EXPECT_EQ(0UL, parsedPolicy.size());
+  WebParsedFeaturePolicy parsed_policy =
+      ParseFeaturePolicy("{}", origin_a_.Get(), &messages);
+  EXPECT_EQ(0UL, parsed_policy.size());
 
   // Simple policy with "self".
-  parsedPolicy = parseFeaturePolicy("{\"vibrate\": [\"self\"]}",
-                                    m_originA.get(), &messages);
-  EXPECT_EQ(1UL, parsedPolicy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, parsedPolicy[0].feature);
-  EXPECT_FALSE(parsedPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(1UL, parsedPolicy[0].origins.size());
-  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[0].origins[0].get()));
+  parsed_policy = ParseFeaturePolicy("{\"vibrate\": [\"self\"]}",
+                                     origin_a_.Get(), &messages);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[0].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[0].origins[0].Get()));
 
   // Simple policy with *.
-  parsedPolicy =
-      parseFeaturePolicy("{\"vibrate\": [\"*\"]}", m_originA.get(), &messages);
-  EXPECT_EQ(1UL, parsedPolicy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, parsedPolicy[0].feature);
-  EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
+  parsed_policy =
+      ParseFeaturePolicy("{\"vibrate\": [\"*\"]}", origin_a_.Get(), &messages);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_EQ(0UL, parsed_policy[0].origins.size());
 
   // Complicated policy.
-  parsedPolicy = parseFeaturePolicy(
+  parsed_policy = ParseFeaturePolicy(
       "{\"vibrate\": [\"*\"], "
       "\"fullscreen\": [\"https://example.net\", \"https://example.org\"], "
       "\"payment\": [\"self\"]}",
-      m_originA.get(), &messages);
-  EXPECT_EQ(3UL, parsedPolicy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, parsedPolicy[0].feature);
-  EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::Fullscreen, parsedPolicy[1].feature);
-  EXPECT_FALSE(parsedPolicy[1].matchesAllOrigins);
-  EXPECT_EQ(2UL, parsedPolicy[1].origins.size());
-  EXPECT_TRUE(m_originB->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[1].origins[0].get()));
-  EXPECT_TRUE(m_originC->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[1].origins[1].get()));
-  EXPECT_EQ(WebFeaturePolicyFeature::Payment, parsedPolicy[2].feature);
-  EXPECT_FALSE(parsedPolicy[2].matchesAllOrigins);
-  EXPECT_EQ(1UL, parsedPolicy[2].origins.size());
-  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
-      parsedPolicy[2].origins[0].get()));
+      origin_a_.Get(), &messages);
+  EXPECT_EQ(3UL, parsed_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_EQ(0UL, parsed_policy[0].origins.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_EQ(2UL, parsed_policy[1].origins.size());
+  EXPECT_TRUE(origin_b_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[1].origins[0].Get()));
+  EXPECT_TRUE(origin_c_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[1].origins[1].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[2].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[2].origins[0].Get()));
 }
 
 TEST_F(FeaturePolicyTest, ParseEmptyContainerPolicy) {
-  WebParsedFeaturePolicy containerPolicy =
-      getContainerPolicyFromAllowedFeatures(
-          std::vector<WebFeaturePolicyFeature>({}), m_originA.get());
-  EXPECT_EQ(0UL, containerPolicy.size());
+  WebParsedFeaturePolicy container_policy =
+      GetContainerPolicyFromAllowedFeatures(
+          std::vector<WebFeaturePolicyFeature>({}), origin_a_.Get());
+  EXPECT_EQ(0UL, container_policy.size());
 }
 
 TEST_F(FeaturePolicyTest, ParseContainerPolicy) {
-  WebParsedFeaturePolicy containerPolicy =
-      getContainerPolicyFromAllowedFeatures(
+  WebParsedFeaturePolicy container_policy =
+      GetContainerPolicyFromAllowedFeatures(
           std::vector<WebFeaturePolicyFeature>(
-              {WebFeaturePolicyFeature::Vibrate,
-               WebFeaturePolicyFeature::Payment}),
-          m_originA.get());
-  EXPECT_EQ(2UL, containerPolicy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, containerPolicy[0].feature);
-  EXPECT_FALSE(containerPolicy[0].matchesAllOrigins);
-  EXPECT_EQ(1UL, containerPolicy[0].origins.size());
-  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
-      containerPolicy[0].origins[0].get()));
-  EXPECT_EQ(WebFeaturePolicyFeature::Payment, containerPolicy[1].feature);
-  EXPECT_FALSE(containerPolicy[1].matchesAllOrigins);
-  EXPECT_EQ(1UL, containerPolicy[1].origins.size());
-  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
-      containerPolicy[1].origins[0].get()));
+              {WebFeaturePolicyFeature::kVibrate,
+               WebFeaturePolicyFeature::kPayment}),
+          origin_a_.Get());
+  EXPECT_EQ(2UL, container_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, container_policy[0].feature);
+  EXPECT_FALSE(container_policy[0].matches_all_origins);
+  EXPECT_EQ(1UL, container_policy[0].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      container_policy[0].origins[0].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[1].feature);
+  EXPECT_FALSE(container_policy[1].matches_all_origins);
+  EXPECT_EQ(1UL, container_policy[1].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      container_policy[1].origins[0].Get()));
 }
 
 }  // namespace blink

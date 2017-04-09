@@ -97,8 +97,7 @@ NexeLoadManager::NexeLoadManager(
   SetLastError("");
   HistogramEnumerateOsArch(GetSandboxArch());
   if (plugin_instance_) {
-    plugin_base_url_ =
-        plugin_instance_->GetContainer()->document().url();
+    plugin_base_url_ = plugin_instance_->GetContainer()->GetDocument().Url();
   }
 }
 

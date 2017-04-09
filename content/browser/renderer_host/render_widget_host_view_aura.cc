@@ -1022,38 +1022,38 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
 
   // The TouchScrollStarted event is generated & consumed downstream from the
   // TouchEventQueue. So we don't expect an ACK up here.
-  DCHECK(touch.event.type() != blink::WebInputEvent::TouchScrollStarted);
+  DCHECK(touch.event.GetType() != blink::WebInputEvent::kTouchScrollStarted);
 
   ui::EventResult result = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
                                ? ui::ER_HANDLED
                                : ui::ER_UNHANDLED;
 
   blink::WebTouchPoint::State required_state;
-  switch (touch.event.type()) {
-    case blink::WebInputEvent::TouchStart:
-      required_state = blink::WebTouchPoint::StatePressed;
+  switch (touch.event.GetType()) {
+    case blink::WebInputEvent::kTouchStart:
+      required_state = blink::WebTouchPoint::kStatePressed;
       break;
-    case blink::WebInputEvent::TouchEnd:
-      required_state = blink::WebTouchPoint::StateReleased;
+    case blink::WebInputEvent::kTouchEnd:
+      required_state = blink::WebTouchPoint::kStateReleased;
       break;
-    case blink::WebInputEvent::TouchMove:
-      required_state = blink::WebTouchPoint::StateMoved;
+    case blink::WebInputEvent::kTouchMove:
+      required_state = blink::WebTouchPoint::kStateMoved;
       break;
-    case blink::WebInputEvent::TouchCancel:
-      required_state = blink::WebTouchPoint::StateCancelled;
+    case blink::WebInputEvent::kTouchCancel:
+      required_state = blink::WebTouchPoint::kStateCancelled;
       break;
     default:
-      required_state = blink::WebTouchPoint::StateUndefined;
+      required_state = blink::WebTouchPoint::kStateUndefined;
       NOTREACHED();
       break;
   }
 
   // Only send acks for one changed touch point.
   bool sent_ack = false;
-  for (size_t i = 0; i < touch.event.touchesLength; ++i) {
+  for (size_t i = 0; i < touch.event.touches_length; ++i) {
     if (touch.event.touches[i].state == required_state) {
       DCHECK(!sent_ack);
-      host->dispatcher()->ProcessedTouchEvent(touch.event.uniqueTouchEventId,
+      host->dispatcher()->ProcessedTouchEvent(touch.event.unique_touch_event_id,
                                               window_, result);
       sent_ack = true;
     }
@@ -1069,14 +1069,14 @@ RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
 InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   bool consumed = false;
-  if (input_event.type() == WebInputEvent::GestureFlingStart) {
+  if (input_event.GetType() == WebInputEvent::kGestureFlingStart) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
     // touchpad scroll has ended, and should not be forwarded to the renderer.
-    if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad &&
-        !gesture_event.data.flingStart.velocityX &&
-        !gesture_event.data.flingStart.velocityY) {
+    if (gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
+        !gesture_event.data.fling_start.velocity_x &&
+        !gesture_event.data.fling_start.velocity_y) {
       consumed = true;
     }
   }
@@ -1085,11 +1085,11 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
     consumed |= overscroll_controller_->WillHandleEvent(input_event);
 
   // Touch events should always propagate to the renderer.
-  if (WebTouchEvent::isTouchEventType(input_event.type()))
+  if (WebTouchEvent::IsTouchEventType(input_event.GetType()))
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
   if (consumed &&
-      input_event.type() == blink::WebInputEvent::GestureFlingStart) {
+      input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     // Here we indicate that there was no consumer for this event, as
     // otherwise the fling animation system will try to run an animation
     // and will also expect a notification when the fling ends. Since
@@ -1416,8 +1416,8 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 
   GetTextInputManager()->GetActiveWidget()->UpdateTextDirection(
       direction == base::i18n::RIGHT_TO_LEFT
-          ? blink::WebTextDirectionRightToLeft
-          : blink::WebTextDirectionLeftToRight);
+          ? blink::kWebTextDirectionRightToLeft
+          : blink::kWebTextDirectionLeftToRight);
   GetTextInputManager()->GetActiveWidget()->NotifyTextDirection();
   return true;
 }
@@ -1513,7 +1513,7 @@ bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
 }
 
 bool RenderWidgetHostViewAura::CanFocus() {
-  return popup_type_ == blink::WebPopupTypeNone;
+  return popup_type_ == blink::kWebPopupTypeNone;
 }
 
 void RenderWidgetHostViewAura::OnCaptureLost() {
@@ -2021,7 +2021,7 @@ void RenderWidgetHostViewAura::Shutdown() {
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {
-  return popup_type_ == blink::WebPopupTypePage;
+  return popup_type_ == blink::kWebPopupTypePage;
 }
 
 bool RenderWidgetHostViewAura::NeedsMouseCapture() {

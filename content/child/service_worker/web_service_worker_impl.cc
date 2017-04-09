@@ -35,7 +35,7 @@ class HandleImpl : public blink::WebServiceWorker::Handle {
       : worker_(worker) {}
   ~HandleImpl() override {}
 
-  blink::WebServiceWorker* serviceWorker() override { return worker_.get(); }
+  blink::WebServiceWorker* ServiceWorker() override { return worker_.get(); }
 
  private:
   scoped_refptr<WebServiceWorkerImpl> worker_;
@@ -66,40 +66,38 @@ void WebServiceWorkerImpl::OnStateChanged(
   // TODO(nhiroki): This is a quick fix for http://crbug.com/507110
   DCHECK(proxy_);
   if (proxy_)
-    proxy_->dispatchStateChangeEvent();
+    proxy_->DispatchStateChangeEvent();
 }
 
-void WebServiceWorkerImpl::setProxy(blink::WebServiceWorkerProxy* proxy) {
+void WebServiceWorkerImpl::SetProxy(blink::WebServiceWorkerProxy* proxy) {
   proxy_ = proxy;
 }
 
-blink::WebServiceWorkerProxy* WebServiceWorkerImpl::proxy() {
+blink::WebServiceWorkerProxy* WebServiceWorkerImpl::Proxy() {
   return proxy_;
 }
 
-blink::WebURL WebServiceWorkerImpl::url() const {
+blink::WebURL WebServiceWorkerImpl::Url() const {
   return handle_ref_->url();
 }
 
-blink::WebServiceWorkerState WebServiceWorkerImpl::state() const {
+blink::WebServiceWorkerState WebServiceWorkerImpl::GetState() const {
   return state_;
 }
 
-void WebServiceWorkerImpl::postMessage(
+void WebServiceWorkerImpl::PostMessage(
     blink::WebServiceWorkerProvider* provider,
     const WebString& message,
     const WebSecurityOrigin& source_origin,
     WebMessagePortChannelArray channels) {
-  thread_safe_sender_->Send(
-      new ServiceWorkerHostMsg_PostMessageToWorker(
-          handle_ref_->handle_id(),
-          static_cast<WebServiceWorkerProviderImpl*>(provider)->provider_id(),
-          message.utf16(),
-          url::Origin(source_origin),
-          WebMessagePortChannelImpl::ExtractMessagePorts(std::move(channels))));
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
+      handle_ref_->handle_id(),
+      static_cast<WebServiceWorkerProviderImpl*>(provider)->provider_id(),
+      message.Utf16(), url::Origin(source_origin),
+      WebMessagePortChannelImpl::ExtractMessagePorts(std::move(channels))));
 }
 
-void WebServiceWorkerImpl::terminate() {
+void WebServiceWorkerImpl::Terminate() {
   thread_safe_sender_->Send(
       new ServiceWorkerHostMsg_TerminateWorker(handle_ref_->handle_id()));
 }

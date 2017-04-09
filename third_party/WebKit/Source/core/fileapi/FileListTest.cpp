@@ -9,29 +9,29 @@
 namespace blink {
 
 TEST(FileListTest, pathsForUserVisibleFiles) {
-  FileList* const fileList = FileList::create();
+  FileList* const file_list = FileList::Create();
 
   // Native file.
-  fileList->append(File::create("/native/path"));
+  file_list->Append(File::Create("/native/path"));
 
   // Blob file.
-  const RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
-  fileList->append(File::create("name", 0.0, blobDataHandle));
+  const RefPtr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
+  file_list->Append(File::Create("name", 0.0, blob_data_handle));
 
   // User visible snapshot file.
   {
     FileMetadata metadata;
-    metadata.platformPath = "/native/visible/snapshot";
-    fileList->append(
-        File::createForFileSystemFile("name", metadata, File::IsUserVisible));
+    metadata.platform_path = "/native/visible/snapshot";
+    file_list->Append(
+        File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible));
   }
 
   // Not user visible snapshot file.
   {
     FileMetadata metadata;
-    metadata.platformPath = "/native/not-visible/snapshot";
-    fileList->append(File::createForFileSystemFile("name", metadata,
-                                                   File::IsNotUserVisible));
+    metadata.platform_path = "/native/not-visible/snapshot";
+    file_list->Append(File::CreateForFileSystemFile("name", metadata,
+                                                    File::kIsNotUserVisible));
   }
 
   // User visible file system URL file.
@@ -39,8 +39,8 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
     KURL url(
         ParsedURLStringTag(),
         "filesystem:http://example.com/isolated/hash/visible-non-native-file");
-    fileList->append(File::createForFileSystemFile(url, FileMetadata(),
-                                                   File::IsUserVisible));
+    file_list->Append(File::CreateForFileSystemFile(url, FileMetadata(),
+                                                    File::kIsUserVisible));
   }
 
   // Not user visible file system URL file.
@@ -48,11 +48,11 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
     KURL url(ParsedURLStringTag(),
              "filesystem:http://example.com/isolated/hash/"
              "not-visible-non-native-file");
-    fileList->append(File::createForFileSystemFile(url, FileMetadata(),
-                                                   File::IsNotUserVisible));
+    file_list->Append(File::CreateForFileSystemFile(url, FileMetadata(),
+                                                    File::kIsNotUserVisible));
   }
 
-  Vector<String> paths = fileList->pathsForUserVisibleFiles();
+  Vector<String> paths = file_list->PathsForUserVisibleFiles();
 
   ASSERT_EQ(3u, paths.size());
   EXPECT_EQ("/native/path", paths[0]);

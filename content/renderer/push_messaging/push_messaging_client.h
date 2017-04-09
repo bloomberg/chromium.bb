@@ -41,7 +41,7 @@ class PushMessagingClient : public RenderFrameObserver,
   void OnDestruct() override;
 
   // WebPushClient implementation.
-  void subscribe(
+  void Subscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) override;

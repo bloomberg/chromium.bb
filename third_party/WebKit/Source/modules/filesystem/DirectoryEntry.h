@@ -49,9 +49,9 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DirectoryEntry* create(DOMFileSystemBase* fileSystem,
-                                const String& fullPath) {
-    return new DirectoryEntry(fileSystem, fullPath);
+  static DirectoryEntry* Create(DOMFileSystemBase* file_system,
+                                const String& full_path) {
+    return new DirectoryEntry(file_system, full_path);
   }
   bool isDirectory() const override { return true; }
 
@@ -64,13 +64,13 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
                     const FileSystemFlags&,
                     EntryCallback* = nullptr,
                     ErrorCallback* = nullptr);
-  void removeRecursively(VoidCallback* successCallback = nullptr,
+  void removeRecursively(VoidCallback* success_callback = nullptr,
                          ErrorCallback* = nullptr) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  DirectoryEntry(DOMFileSystemBase*, const String& fullPath);
+  DirectoryEntry(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntry,

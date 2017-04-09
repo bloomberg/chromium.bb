@@ -318,8 +318,8 @@ VideoTrackRecorder::VideoTrackRecorder(
       paused_before_init_(false),
       weak_ptr_factory_(this) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DCHECK(!track_.isNull());
-  DCHECK(track_.getTrackData());
+  DCHECK(!track_.IsNull());
+  DCHECK(track_.GetTrackData());
 
   initialize_encoder_callback_ = base::Bind(
       &VideoTrackRecorder::InitializeEncoder, weak_ptr_factory_.GetWeakPtr(),
@@ -336,7 +336,7 @@ VideoTrackRecorder::VideoTrackRecorder(
 VideoTrackRecorder::~VideoTrackRecorder() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   MediaStreamVideoSink::DisconnectFromTrack();
-  track_.reset();
+  track_.Reset();
 }
 
 void VideoTrackRecorder::Pause() {

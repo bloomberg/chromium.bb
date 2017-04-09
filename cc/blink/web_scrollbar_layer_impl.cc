@@ -23,8 +23,8 @@ namespace {
 
 cc::ScrollbarOrientation ConvertOrientation(
     blink::WebScrollbar::Orientation orientation) {
-  return orientation == blink::WebScrollbar::Horizontal ? cc::HORIZONTAL
-                                                        : cc::VERTICAL;
+  return orientation == blink::WebScrollbar::kHorizontal ? cc::HORIZONTAL
+                                                         : cc::VERTICAL;
 }
 
 }  // namespace
@@ -63,11 +63,11 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {
 }
 
-blink::WebLayer* WebScrollbarLayerImpl::layer() {
+blink::WebLayer* WebScrollbarLayerImpl::Layer() {
   return layer_.get();
 }
 
-void WebScrollbarLayerImpl::setScrollLayer(blink::WebLayer* layer) {
+void WebScrollbarLayerImpl::SetScrollLayer(blink::WebLayer* layer) {
   cc::Layer* scroll_layer =
       layer ? static_cast<WebLayerImpl*>(layer)->layer() : 0;
   layer_->layer()->ToScrollbarLayer()->SetScrollLayer(

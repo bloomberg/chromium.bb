@@ -191,26 +191,26 @@ rtc::Optional<bool> ConstraintToOptional(
 
 template <typename ConstraintType>
 bool ConstraintHasMax(const ConstraintType& constraint) {
-  return constraint.hasMax() || constraint.hasExact();
+  return constraint.HasMax() || constraint.HasExact();
 }
 
 template <typename ConstraintType>
 bool ConstraintHasMin(const ConstraintType& constraint) {
-  return constraint.hasMin() || constraint.hasExact();
+  return constraint.HasMin() || constraint.HasExact();
 }
 
 template <typename ConstraintType>
 auto ConstraintMax(const ConstraintType& constraint)
-    -> decltype(constraint.max()) {
+    -> decltype(constraint.Max()) {
   DCHECK(ConstraintHasMax(constraint));
-  return constraint.hasExact() ? constraint.exact() : constraint.max();
+  return constraint.HasExact() ? constraint.Exact() : constraint.Max();
 }
 
 template <typename ConstraintType>
 auto ConstraintMin(const ConstraintType& constraint)
-    -> decltype(constraint.min()) {
+    -> decltype(constraint.Min()) {
   DCHECK(ConstraintHasMin(constraint));
-  return constraint.hasExact() ? constraint.exact() : constraint.min();
+  return constraint.HasExact() ? constraint.Exact() : constraint.Min();
 }
 
 // This function selects track settings from a set of candidate resolutions and

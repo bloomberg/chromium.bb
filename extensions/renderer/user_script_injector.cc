@@ -70,7 +70,7 @@ GreasemonkeyApiJsString::GreasemonkeyApiJsString() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GREASEMONKEY_API_JS);
   source_ =
-      blink::WebString::fromUTF8(source_piece.data(), source_piece.length());
+      blink::WebString::FromUTF8(source_piece.data(), source_piece.length());
 }
 
 blink::WebScriptSource GreasemonkeyApiJsString::GetSource() const {
@@ -172,8 +172,8 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
 
   if (script_->consumer_instance_type() ==
           UserScript::ConsumerInstanceType::WEBVIEW) {
-    int routing_id = content::RenderView::FromWebView(web_frame->top()->view())
-                        ->GetRoutingID();
+    int routing_id = content::RenderView::FromWebView(web_frame->Top()->View())
+                         ->GetRoutingID();
 
     RoutingInfoKey key(routing_id, script_->id());
 
@@ -199,7 +199,7 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
   }
 
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      web_frame, web_frame->document().url(), script_->match_about_blank());
+      web_frame, web_frame->GetDocument().Url(), script_->match_about_blank());
 
   return injection_host->CanExecuteOnFrame(
       effective_document_url,

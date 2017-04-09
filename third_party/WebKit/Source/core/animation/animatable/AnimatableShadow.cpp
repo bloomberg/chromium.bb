@@ -32,10 +32,10 @@
 
 namespace blink {
 
-bool AnimatableShadow::equalTo(const AnimatableValue* value) const {
-  const ShadowList* shadowList = toAnimatableShadow(value)->m_shadowList.get();
-  return m_shadowList == shadowList ||
-         (m_shadowList && shadowList && *m_shadowList == *shadowList);
+bool AnimatableShadow::EqualTo(const AnimatableValue* value) const {
+  const ShadowList* shadow_list = ToAnimatableShadow(value)->shadow_list_.Get();
+  return shadow_list_ == shadow_list ||
+         (shadow_list_ && shadow_list && *shadow_list_ == *shadow_list);
 }
 
 }  // namespace blink

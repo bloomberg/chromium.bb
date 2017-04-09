@@ -26,127 +26,129 @@ class CORE_EXPORT PaintLayerPainter {
   STACK_ALLOCATED();
 
  public:
-  enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
+  enum FragmentPolicy { kAllowMultipleFragments, kForceSingleFragment };
 
-  PaintLayerPainter(PaintLayer& paintLayer) : m_paintLayer(paintLayer) {}
+  PaintLayerPainter(PaintLayer& paint_layer) : paint_layer_(paint_layer) {}
 
   // The paint() method paints the layers that intersect the damage rect from
   // back to front.  paint() assumes that the caller will clip to the bounds of
   // damageRect if necessary.
-  void paint(GraphicsContext&,
-             const LayoutRect& damageRect,
-             const GlobalPaintFlags = GlobalPaintNormalPhase,
+  void Paint(GraphicsContext&,
+             const LayoutRect& damage_rect,
+             const GlobalPaintFlags = kGlobalPaintNormalPhase,
              PaintLayerFlags = 0);
   // paint() assumes that the caller will clip to the bounds of the painting
   // dirty if necessary.
-  PaintResult paint(GraphicsContext&,
+  PaintResult Paint(GraphicsContext&,
                     const PaintLayerPaintingInfo&,
                     PaintLayerFlags);
   // paintLayerContents() assumes that the caller will clip to the bounds of the
   // painting dirty rect if necessary.
-  PaintResult paintLayerContents(GraphicsContext&,
+  PaintResult PaintLayerContents(GraphicsContext&,
                                  const PaintLayerPaintingInfo&,
                                  PaintLayerFlags,
-                                 FragmentPolicy = AllowMultipleFragments);
+                                 FragmentPolicy = kAllowMultipleFragments);
 
-  void paintOverlayScrollbars(GraphicsContext&,
-                              const LayoutRect& damageRect,
+  void PaintOverlayScrollbars(GraphicsContext&,
+                              const LayoutRect& damage_rect,
                               const GlobalPaintFlags);
 
  private:
-  enum ClipState { HasNotClipped, HasClipped };
+  enum ClipState { kHasNotClipped, kHasClipped };
 
-  inline bool isFixedPositionObjectInPagedMedia();
+  inline bool IsFixedPositionObjectInPagedMedia();
 
   // "For paged media, boxes with fixed positions are repeated on every page."
   // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
   // Repeats singleFragmentIgnoredPagination of the fixed-position object in
   // each page, with paginationOffset and layerBounds adjusted for each page.
   // TODO(wangxianzhu): Fold this into PaintLayer::collectFragments().
-  void repeatFixedPositionObjectInPages(
-      const PaintLayerFragment& singleFragmentIgnoredPagination,
+  void RepeatFixedPositionObjectInPages(
+      const PaintLayerFragment& single_fragment_ignored_pagination,
       const PaintLayerPaintingInfo&,
       PaintLayerFragments&);
 
-  PaintResult paintLayerContentsCompositingAllPhases(
+  PaintResult PaintLayerContentsCompositingAllPhases(
       GraphicsContext&,
       const PaintLayerPaintingInfo&,
       PaintLayerFlags,
-      FragmentPolicy = AllowMultipleFragments);
-  PaintResult paintLayerWithTransform(GraphicsContext&,
+      FragmentPolicy = kAllowMultipleFragments);
+  PaintResult PaintLayerWithTransform(GraphicsContext&,
                                       const PaintLayerPaintingInfo&,
                                       PaintLayerFlags);
-  PaintResult paintFragmentByApplyingTransform(
+  PaintResult PaintFragmentByApplyingTransform(
       GraphicsContext&,
       const PaintLayerPaintingInfo&,
       PaintLayerFlags,
-      const LayoutPoint& fragmentTranslation);
+      const LayoutPoint& fragment_translation);
 
-  PaintResult paintChildren(unsigned childrenToVisit,
+  PaintResult PaintChildren(unsigned children_to_visit,
                             GraphicsContext&,
                             const PaintLayerPaintingInfo&,
                             PaintLayerFlags);
-  bool atLeastOneFragmentIntersectsDamageRect(
+  bool AtLeastOneFragmentIntersectsDamageRect(
       PaintLayerFragments&,
       const PaintLayerPaintingInfo&,
       PaintLayerFlags,
-      const LayoutPoint& offsetFromRoot);
-  void paintFragmentWithPhase(PaintPhase,
+      const LayoutPoint& offset_from_root);
+  void PaintFragmentWithPhase(PaintPhase,
                               const PaintLayerFragment&,
                               GraphicsContext&,
                               const ClipRect&,
                               const PaintLayerPaintingInfo&,
                               PaintLayerFlags,
                               ClipState);
-  void paintBackgroundForFragments(const PaintLayerFragments&,
-                                   GraphicsContext&,
-                                   const LayoutRect& transparencyPaintDirtyRect,
-                                   const PaintLayerPaintingInfo&,
-                                   PaintLayerFlags);
-  void paintForegroundForFragments(const PaintLayerFragments&,
-                                   GraphicsContext&,
-                                   const LayoutRect& transparencyPaintDirtyRect,
-                                   const PaintLayerPaintingInfo&,
-                                   bool selectionOnly,
-                                   PaintLayerFlags);
-  void paintForegroundForFragmentsWithPhase(PaintPhase,
+  void PaintBackgroundForFragments(
+      const PaintLayerFragments&,
+      GraphicsContext&,
+      const LayoutRect& transparency_paint_dirty_rect,
+      const PaintLayerPaintingInfo&,
+      PaintLayerFlags);
+  void PaintForegroundForFragments(
+      const PaintLayerFragments&,
+      GraphicsContext&,
+      const LayoutRect& transparency_paint_dirty_rect,
+      const PaintLayerPaintingInfo&,
+      bool selection_only,
+      PaintLayerFlags);
+  void PaintForegroundForFragmentsWithPhase(PaintPhase,
                                             const PaintLayerFragments&,
                                             GraphicsContext&,
                                             const PaintLayerPaintingInfo&,
                                             PaintLayerFlags,
                                             ClipState);
-  void paintSelfOutlineForFragments(const PaintLayerFragments&,
+  void PaintSelfOutlineForFragments(const PaintLayerFragments&,
                                     GraphicsContext&,
                                     const PaintLayerPaintingInfo&,
                                     PaintLayerFlags);
-  void paintOverflowControlsForFragments(const PaintLayerFragments&,
+  void PaintOverflowControlsForFragments(const PaintLayerFragments&,
                                          GraphicsContext&,
                                          const PaintLayerPaintingInfo&,
                                          PaintLayerFlags);
-  void paintMaskForFragments(const PaintLayerFragments&,
+  void PaintMaskForFragments(const PaintLayerFragments&,
                              GraphicsContext&,
                              const PaintLayerPaintingInfo&,
                              PaintLayerFlags);
-  void paintChildClippingMaskForFragments(const PaintLayerFragments&,
+  void PaintChildClippingMaskForFragments(const PaintLayerFragments&,
                                           GraphicsContext&,
                                           const PaintLayerPaintingInfo&,
                                           PaintLayerFlags);
 
-  void fillMaskingFragment(GraphicsContext&, const ClipRect&);
+  void FillMaskingFragment(GraphicsContext&, const ClipRect&);
 
-  static bool needsToClip(const PaintLayerPaintingInfo& localPaintingInfo,
+  static bool NeedsToClip(const PaintLayerPaintingInfo& local_painting_info,
                           const ClipRect&);
 
   // Returns whether this layer should be painted during sofware painting (i.e.,
   // not via calls from CompositedLayerMapping to draw into composited layers).
-  bool shouldPaintLayerInSoftwareMode(const GlobalPaintFlags,
-                                      PaintLayerFlags paintFlags);
+  bool ShouldPaintLayerInSoftwareMode(const GlobalPaintFlags,
+                                      PaintLayerFlags paint_flags);
 
   // Returns true if the painted output of this PaintLayer and its children is
   // invisible and therefore can't impact painted output.
-  bool paintedOutputInvisible(const PaintLayerPaintingInfo&);
+  bool PaintedOutputInvisible(const PaintLayerPaintingInfo&);
 
-  PaintLayer& m_paintLayer;
+  PaintLayer& paint_layer_;
 
   FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest, DontPaintWithTinyOpacity);
   FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,

@@ -40,37 +40,37 @@
 
 namespace blink {
 
-void PrintTo(const CSSLengthArray& lengthArray, ::std::ostream* os) {
-  for (double x : lengthArray.values)
+void PrintTo(const CSSLengthArray& length_array, ::std::ostream* os) {
+  for (double x : length_array.values)
     *os << x << ' ';
 }
 
 namespace {
 
-void testAccumulatePixelsAndPercent(
-    const CSSToLengthConversionData& conversionData,
+void TestAccumulatePixelsAndPercent(
+    const CSSToLengthConversionData& conversion_data,
     CSSCalcExpressionNode* expression,
-    float expectedPixels,
-    float expectedPercent) {
+    float expected_pixels,
+    float expected_percent) {
   PixelsAndPercent value(0, 0);
-  expression->accumulatePixelsAndPercent(conversionData, value);
-  EXPECT_EQ(expectedPixels, value.pixels);
-  EXPECT_EQ(expectedPercent, value.percent);
+  expression->AccumulatePixelsAndPercent(conversion_data, value);
+  EXPECT_EQ(expected_pixels, value.pixels);
+  EXPECT_EQ(expected_percent, value.percent);
 }
 
-CSSLengthArray& setLengthArray(CSSLengthArray& lengthArray, String text) {
-  for (double& x : lengthArray.values)
+CSSLengthArray& SetLengthArray(CSSLengthArray& length_array, String text) {
+  for (double& x : length_array.values)
     x = 0;
-  MutableStylePropertySet* propertySet =
-      MutableStylePropertySet::create(HTMLQuirksMode);
-  propertySet->setProperty(CSSPropertyLeft, text);
-  toCSSPrimitiveValue(propertySet->getPropertyCSSValue(CSSPropertyLeft))
-      ->accumulateLengthArray(lengthArray);
-  return lengthArray;
+  MutableStylePropertySet* property_set =
+      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  property_set->SetProperty(CSSPropertyLeft, text);
+  ToCSSPrimitiveValue(property_set->GetPropertyCSSValue(CSSPropertyLeft))
+      ->AccumulateLengthArray(length_array);
+  return length_array;
 }
 
-bool lengthArraysEqual(CSSLengthArray& a, CSSLengthArray& b) {
-  for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; ++i) {
+bool LengthArraysEqual(CSSLengthArray& a, CSSLengthArray& b) {
+  for (size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i) {
     if (a.values.at(i) != b.values.at(i))
       return false;
   }
@@ -78,142 +78,145 @@ bool lengthArraysEqual(CSSLengthArray& a, CSSLengthArray& b) {
 }
 
 TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
-  style->setEffectiveZoom(5);
-  CSSToLengthConversionData conversionData(style.get(), style.get(),
-                                           LayoutViewItem(nullptr),
-                                           style->effectiveZoom());
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetEffectiveZoom(5);
+  CSSToLengthConversionData conversion_data(style.Get(), style.Get(),
+                                            LayoutViewItem(nullptr),
+                                            style->EffectiveZoom());
 
-  testAccumulatePixelsAndPercent(
-      conversionData,
-      CSSCalcValue::createExpressionNode(
-          CSSPrimitiveValue::create(10, CSSPrimitiveValue::UnitType::Pixels),
+  TestAccumulatePixelsAndPercent(
+      conversion_data,
+      CSSCalcValue::CreateExpressionNode(
+          CSSPrimitiveValue::Create(10, CSSPrimitiveValue::UnitType::kPixels),
           true),
       50, 0);
 
-  testAccumulatePixelsAndPercent(
-      conversionData, CSSCalcValue::createExpressionNode(
-                          CSSCalcValue::createExpressionNode(
-                              CSSPrimitiveValue::create(
-                                  10, CSSPrimitiveValue::UnitType::Pixels),
-                              true),
-                          CSSCalcValue::createExpressionNode(
-                              CSSPrimitiveValue::create(
-                                  20, CSSPrimitiveValue::UnitType::Pixels),
-                              true),
-                          CalcAdd),
+  TestAccumulatePixelsAndPercent(
+      conversion_data,
+      CSSCalcValue::CreateExpressionNode(
+          CSSCalcValue::CreateExpressionNode(
+              CSSPrimitiveValue::Create(10,
+                                        CSSPrimitiveValue::UnitType::kPixels),
+              true),
+          CSSCalcValue::CreateExpressionNode(
+              CSSPrimitiveValue::Create(20,
+                                        CSSPrimitiveValue::UnitType::kPixels),
+              true),
+          kCalcAdd),
       150, 0);
 
-  testAccumulatePixelsAndPercent(
-      conversionData,
-      CSSCalcValue::createExpressionNode(
-          CSSCalcValue::createExpressionNode(
-              CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Inches),
+  TestAccumulatePixelsAndPercent(
+      conversion_data,
+      CSSCalcValue::CreateExpressionNode(
+          CSSCalcValue::CreateExpressionNode(
+              CSSPrimitiveValue::Create(1,
+                                        CSSPrimitiveValue::UnitType::kInches),
               true),
-          CSSCalcValue::createExpressionNode(
-              CSSPrimitiveValue::create(2, CSSPrimitiveValue::UnitType::Number),
+          CSSCalcValue::CreateExpressionNode(
+              CSSPrimitiveValue::Create(2,
+                                        CSSPrimitiveValue::UnitType::kNumber),
               true),
-          CalcMultiply),
+          kCalcMultiply),
       960, 0);
 
-  testAccumulatePixelsAndPercent(
-      conversionData,
-      CSSCalcValue::createExpressionNode(
-          CSSCalcValue::createExpressionNode(
-              CSSCalcValue::createExpressionNode(
-                  CSSPrimitiveValue::create(
-                      50, CSSPrimitiveValue::UnitType::Pixels),
+  TestAccumulatePixelsAndPercent(
+      conversion_data,
+      CSSCalcValue::CreateExpressionNode(
+          CSSCalcValue::CreateExpressionNode(
+              CSSCalcValue::CreateExpressionNode(
+                  CSSPrimitiveValue::Create(
+                      50, CSSPrimitiveValue::UnitType::kPixels),
                   true),
-              CSSCalcValue::createExpressionNode(
-                  CSSPrimitiveValue::create(
-                      0.25, CSSPrimitiveValue::UnitType::Number),
+              CSSCalcValue::CreateExpressionNode(
+                  CSSPrimitiveValue::Create(
+                      0.25, CSSPrimitiveValue::UnitType::kNumber),
                   false),
-              CalcMultiply),
-          CSSCalcValue::createExpressionNode(
-              CSSCalcValue::createExpressionNode(
-                  CSSPrimitiveValue::create(
-                      20, CSSPrimitiveValue::UnitType::Pixels),
+              kCalcMultiply),
+          CSSCalcValue::CreateExpressionNode(
+              CSSCalcValue::CreateExpressionNode(
+                  CSSPrimitiveValue::Create(
+                      20, CSSPrimitiveValue::UnitType::kPixels),
                   true),
-              CSSCalcValue::createExpressionNode(
-                  CSSPrimitiveValue::create(
-                      40, CSSPrimitiveValue::UnitType::Percentage),
+              CSSCalcValue::CreateExpressionNode(
+                  CSSPrimitiveValue::Create(
+                      40, CSSPrimitiveValue::UnitType::kPercentage),
                   false),
-              CalcSubtract),
-          CalcSubtract),
+              kCalcSubtract),
+          kCalcSubtract),
       -37.5, 40);
 }
 
 TEST(CSSCalculationValue, RefCount) {
   RefPtr<CalculationValue> calc =
-      CalculationValue::create(PixelsAndPercent(1, 2), ValueRangeAll);
-  Length lengthA(calc);
-  EXPECT_EQ(calc->refCount(), 2);
+      CalculationValue::Create(PixelsAndPercent(1, 2), kValueRangeAll);
+  Length length_a(calc);
+  EXPECT_EQ(calc->RefCount(), 2);
 
-  Length lengthB;
-  lengthB = lengthA;
-  EXPECT_EQ(calc->refCount(), 3);
+  Length length_b;
+  length_b = length_a;
+  EXPECT_EQ(calc->RefCount(), 3);
 
-  Length lengthC(calc);
-  lengthC = lengthA;
-  EXPECT_EQ(calc->refCount(), 4);
+  Length length_c(calc);
+  length_c = length_a;
+  EXPECT_EQ(calc->RefCount(), 4);
 
-  Length lengthD(
-      CalculationValue::create(PixelsAndPercent(1, 2), ValueRangeAll));
-  lengthD = lengthA;
-  EXPECT_EQ(calc->refCount(), 5);
+  Length length_d(
+      CalculationValue::Create(PixelsAndPercent(1, 2), kValueRangeAll));
+  length_d = length_a;
+  EXPECT_EQ(calc->RefCount(), 5);
 }
 
 TEST(CSSCalculationValue, RefCountLeak) {
   RefPtr<CalculationValue> calc =
-      CalculationValue::create(PixelsAndPercent(1, 2), ValueRangeAll);
-  Length lengthA(calc);
+      CalculationValue::Create(PixelsAndPercent(1, 2), kValueRangeAll);
+  Length length_a(calc);
 
-  Length lengthB = lengthA;
+  Length length_b = length_a;
   for (int i = 0; i < 100; ++i)
-    lengthB = lengthA;
-  EXPECT_EQ(calc->refCount(), 3);
+    length_b = length_a;
+  EXPECT_EQ(calc->RefCount(), 3);
 
-  Length lengthC(lengthA);
+  Length length_c(length_a);
   for (int i = 0; i < 100; ++i)
-    lengthC = lengthA;
-  EXPECT_EQ(calc->refCount(), 4);
+    length_c = length_a;
+  EXPECT_EQ(calc->RefCount(), 4);
 
-  Length lengthD(calc);
+  Length length_d(calc);
   for (int i = 0; i < 100; ++i)
-    lengthD = lengthA;
-  EXPECT_EQ(calc->refCount(), 5);
+    length_d = length_a;
+  EXPECT_EQ(calc->RefCount(), 5);
 
-  lengthD = Length();
-  EXPECT_EQ(calc->refCount(), 4);
+  length_d = Length();
+  EXPECT_EQ(calc->RefCount(), 4);
 }
 
 TEST(CSSCalculationValue, AddToLengthUnitValues) {
   CSSLengthArray expectation, actual;
-  EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "0")));
+  EXPECT_TRUE(LengthArraysEqual(expectation, SetLengthArray(actual, "0")));
 
-  expectation.values.at(CSSPrimitiveValue::UnitTypePixels) = 10;
-  EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "10px")));
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePixels) = 10;
+  EXPECT_TRUE(LengthArraysEqual(expectation, SetLengthArray(actual, "10px")));
 
-  expectation.values.at(CSSPrimitiveValue::UnitTypePixels) = 0;
-  expectation.values.at(CSSPrimitiveValue::UnitTypePercentage) = 20;
-  EXPECT_TRUE(lengthArraysEqual(expectation, setLengthArray(actual, "20%")));
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePixels) = 0;
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePercentage) = 20;
+  EXPECT_TRUE(LengthArraysEqual(expectation, SetLengthArray(actual, "20%")));
 
-  expectation.values.at(CSSPrimitiveValue::UnitTypePixels) = 30;
-  expectation.values.at(CSSPrimitiveValue::UnitTypePercentage) = -40;
-  EXPECT_TRUE(lengthArraysEqual(expectation,
-                                setLengthArray(actual, "calc(30px - 40%)")));
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePixels) = 30;
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePercentage) = -40;
+  EXPECT_TRUE(LengthArraysEqual(expectation,
+                                SetLengthArray(actual, "calc(30px - 40%)")));
 
-  expectation.values.at(CSSPrimitiveValue::UnitTypePixels) = 90;
-  expectation.values.at(CSSPrimitiveValue::UnitTypePercentage) = 10;
-  EXPECT_TRUE(lengthArraysEqual(
-      expectation, setLengthArray(actual, "calc(1in + 10% - 6px)")));
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePixels) = 90;
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePercentage) = 10;
+  EXPECT_TRUE(LengthArraysEqual(
+      expectation, SetLengthArray(actual, "calc(1in + 10% - 6px)")));
 
-  expectation.values.at(CSSPrimitiveValue::UnitTypePixels) = 15;
-  expectation.values.at(CSSPrimitiveValue::UnitTypeFontSize) = 20;
-  expectation.values.at(CSSPrimitiveValue::UnitTypePercentage) = -40;
-  EXPECT_TRUE(lengthArraysEqual(
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePixels) = 15;
+  expectation.values.at(CSSPrimitiveValue::kUnitTypeFontSize) = 20;
+  expectation.values.at(CSSPrimitiveValue::kUnitTypePercentage) = -40;
+  EXPECT_TRUE(LengthArraysEqual(
       expectation,
-      setLengthArray(
+      SetLengthArray(
           actual, "calc((1 * 2) * (5px + 20em / 2) - 80% / (3 - 1) + 5px)")));
 }
 

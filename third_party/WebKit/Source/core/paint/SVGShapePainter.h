@@ -22,22 +22,22 @@ class SVGShapePainter {
   STACK_ALLOCATED();
 
  public:
-  SVGShapePainter(const LayoutSVGShape& layoutSVGShape)
-      : m_layoutSVGShape(layoutSVGShape) {}
+  SVGShapePainter(const LayoutSVGShape& layout_svg_shape)
+      : layout_svg_shape_(layout_svg_shape) {}
 
-  void paint(const PaintInfo&);
+  void Paint(const PaintInfo&);
 
  private:
-  void fillShape(GraphicsContext&, const PaintFlags&, SkPath::FillType);
-  void strokeShape(GraphicsContext&, const PaintFlags&);
+  void FillShape(GraphicsContext&, const PaintFlags&, SkPath::FillType);
+  void StrokeShape(GraphicsContext&, const PaintFlags&);
 
-  void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
-  void paintMarker(const PaintInfo&,
+  void PaintMarkers(const PaintInfo&, const FloatRect& bounding_box);
+  void PaintMarker(const PaintInfo&,
                    const LayoutSVGResourceMarker&,
                    const MarkerPosition&,
-                   float strokeWidth);
+                   float stroke_width);
 
-  const LayoutSVGShape& m_layoutSVGShape;
+  const LayoutSVGShape& layout_svg_shape_;
 };
 
 }  // namespace blink

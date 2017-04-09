@@ -54,48 +54,49 @@ class PLATFORM_EXPORT ReverbConvolverStage {
   // renderPhase is useful to know so that we can manipulate the pre versus post
   // delay so that stages will perform their heavy work (FFT processing) on
   // different slices to balance the load in a real-time thread.
-  ReverbConvolverStage(const float* impulseResponse,
-                       size_t responseLength,
-                       size_t reverbTotalLatency,
-                       size_t stageOffset,
-                       size_t stageLength,
-                       size_t fftSize,
-                       size_t renderPhase,
-                       size_t renderSliceSize,
+  ReverbConvolverStage(const float* impulse_response,
+                       size_t response_length,
+                       size_t reverb_total_latency,
+                       size_t stage_offset,
+                       size_t stage_length,
+                       size_t fft_size,
+                       size_t render_phase,
+                       size_t render_slice_size,
                        ReverbAccumulationBuffer*,
-                       bool directMode = false);
+                       bool direct_mode = false);
 
   // WARNING: framesToProcess must be such that it evenly divides the delay
   // buffer size (stage_offset).
-  void process(const float* source, size_t framesToProcess);
+  void Process(const float* source, size_t frames_to_process);
 
-  void processInBackground(ReverbConvolver* convolver, size_t framesToProcess);
+  void ProcessInBackground(ReverbConvolver* convolver,
+                           size_t frames_to_process);
 
-  void reset();
+  void Reset();
 
   // Useful for background processing
-  int inputReadIndex() const { return m_inputReadIndex; }
+  int InputReadIndex() const { return input_read_index_; }
 
  private:
-  std::unique_ptr<FFTFrame> m_fftKernel;
-  std::unique_ptr<FFTConvolver> m_fftConvolver;
+  std::unique_ptr<FFTFrame> fft_kernel_;
+  std::unique_ptr<FFTConvolver> fft_convolver_;
 
-  AudioFloatArray m_preDelayBuffer;
+  AudioFloatArray pre_delay_buffer_;
 
-  ReverbAccumulationBuffer* m_accumulationBuffer;
-  int m_accumulationReadIndex;
-  int m_inputReadIndex;
+  ReverbAccumulationBuffer* accumulation_buffer_;
+  int accumulation_read_index_;
+  int input_read_index_;
 
-  size_t m_preDelayLength;
-  size_t m_postDelayLength;
-  size_t m_preReadWriteIndex;
-  size_t m_framesProcessed;
+  size_t pre_delay_length_;
+  size_t post_delay_length_;
+  size_t pre_read_write_index_;
+  size_t frames_processed_;
 
-  AudioFloatArray m_temporaryBuffer;
+  AudioFloatArray temporary_buffer_;
 
-  bool m_directMode;
-  std::unique_ptr<AudioFloatArray> m_directKernel;
-  std::unique_ptr<DirectConvolver> m_directConvolver;
+  bool direct_mode_;
+  std::unique_ptr<AudioFloatArray> direct_kernel_;
+  std::unique_ptr<DirectConvolver> direct_convolver_;
 };
 
 }  // namespace blink

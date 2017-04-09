@@ -45,15 +45,15 @@ class DocumentEncodingData {
   DocumentEncodingData();
   explicit DocumentEncodingData(const TextResourceDecoder&);
 
-  const WTF::TextEncoding& encoding() const { return m_encoding; }
-  void setEncoding(const WTF::TextEncoding&);
-  bool wasDetectedHeuristically() const { return m_wasDetectedHeuristically; }
-  bool sawDecodingError() const { return m_sawDecodingError; }
+  const WTF::TextEncoding& Encoding() const { return encoding_; }
+  void SetEncoding(const WTF::TextEncoding&);
+  bool WasDetectedHeuristically() const { return was_detected_heuristically_; }
+  bool SawDecodingError() const { return saw_decoding_error_; }
 
  private:
-  WTF::TextEncoding m_encoding;
-  bool m_wasDetectedHeuristically;
-  bool m_sawDecodingError;
+  WTF::TextEncoding encoding_;
+  bool was_detected_heuristically_;
+  bool saw_decoding_error_;
 };
 
 template <>
@@ -62,9 +62,9 @@ struct CrossThreadCopier<DocumentEncodingData>
 
 inline bool operator!=(const DocumentEncodingData& a,
                        const DocumentEncodingData& b) {
-  return a.encoding() != b.encoding() ||
-         a.wasDetectedHeuristically() != b.wasDetectedHeuristically() ||
-         a.sawDecodingError() != b.sawDecodingError();
+  return a.Encoding() != b.Encoding() ||
+         a.WasDetectedHeuristically() != b.WasDetectedHeuristically() ||
+         a.SawDecodingError() != b.SawDecodingError();
 }
 
 }  // namespace blink

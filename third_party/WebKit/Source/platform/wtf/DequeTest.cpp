@@ -35,13 +35,13 @@ namespace WTF {
 namespace {
 
 TEST(DequeTest, Basic) {
-  Deque<int> intDeque;
-  EXPECT_TRUE(intDeque.isEmpty());
-  EXPECT_EQ(0ul, intDeque.size());
+  Deque<int> int_deque;
+  EXPECT_TRUE(int_deque.IsEmpty());
+  EXPECT_EQ(0ul, int_deque.size());
 }
 
 template <size_t inlineCapacity>
-void checkNumberSequence(Deque<int, inlineCapacity>& deque,
+void CheckNumberSequence(Deque<int, inlineCapacity>& deque,
                          int from,
                          int to,
                          bool increment) {
@@ -67,7 +67,7 @@ void checkNumberSequence(Deque<int, inlineCapacity>& deque,
 }
 
 template <size_t inlineCapacity>
-void checkNumberSequenceReverse(Deque<int, inlineCapacity>& deque,
+void CheckNumberSequenceReverse(Deque<int, inlineCapacity>& deque,
                                 int from,
                                 int to,
                                 bool increment) {
@@ -93,174 +93,174 @@ void checkNumberSequenceReverse(Deque<int, inlineCapacity>& deque,
 }
 
 template <size_t inlineCapacity>
-void reverseTest() {
-  Deque<int, inlineCapacity> intDeque;
-  intDeque.push_back(10);
-  intDeque.push_back(11);
-  intDeque.push_back(12);
-  intDeque.push_back(13);
+void ReverseTest() {
+  Deque<int, inlineCapacity> int_deque;
+  int_deque.push_back(10);
+  int_deque.push_back(11);
+  int_deque.push_back(12);
+  int_deque.push_back(13);
 
-  checkNumberSequence(intDeque, 10, 13, true);
-  checkNumberSequence(intDeque, 13, 10, false);
-  checkNumberSequenceReverse(intDeque, 13, 10, true);
-  checkNumberSequenceReverse(intDeque, 10, 13, false);
+  CheckNumberSequence(int_deque, 10, 13, true);
+  CheckNumberSequence(int_deque, 13, 10, false);
+  CheckNumberSequenceReverse(int_deque, 13, 10, true);
+  CheckNumberSequenceReverse(int_deque, 10, 13, false);
 
-  intDeque.push_back(14);
-  intDeque.push_back(15);
-  EXPECT_EQ(10, intDeque.takeFirst());
-  EXPECT_EQ(15, intDeque.takeLast());
-  checkNumberSequence(intDeque, 11, 14, true);
-  checkNumberSequence(intDeque, 14, 11, false);
-  checkNumberSequenceReverse(intDeque, 14, 11, true);
-  checkNumberSequenceReverse(intDeque, 11, 14, false);
+  int_deque.push_back(14);
+  int_deque.push_back(15);
+  EXPECT_EQ(10, int_deque.TakeFirst());
+  EXPECT_EQ(15, int_deque.TakeLast());
+  CheckNumberSequence(int_deque, 11, 14, true);
+  CheckNumberSequence(int_deque, 14, 11, false);
+  CheckNumberSequenceReverse(int_deque, 14, 11, true);
+  CheckNumberSequenceReverse(int_deque, 11, 14, false);
 
   for (int i = 15; i < 200; ++i)
-    intDeque.push_back(i);
-  checkNumberSequence(intDeque, 11, 199, true);
-  checkNumberSequence(intDeque, 199, 11, false);
-  checkNumberSequenceReverse(intDeque, 199, 11, true);
-  checkNumberSequenceReverse(intDeque, 11, 199, false);
+    int_deque.push_back(i);
+  CheckNumberSequence(int_deque, 11, 199, true);
+  CheckNumberSequence(int_deque, 199, 11, false);
+  CheckNumberSequenceReverse(int_deque, 199, 11, true);
+  CheckNumberSequenceReverse(int_deque, 11, 199, false);
 
   for (int i = 0; i < 180; ++i) {
-    EXPECT_EQ(i + 11, intDeque[0]);
-    EXPECT_EQ(i + 11, intDeque.takeFirst());
+    EXPECT_EQ(i + 11, int_deque[0]);
+    EXPECT_EQ(i + 11, int_deque.TakeFirst());
   }
-  checkNumberSequence(intDeque, 191, 199, true);
-  checkNumberSequence(intDeque, 199, 191, false);
-  checkNumberSequenceReverse(intDeque, 199, 191, true);
-  checkNumberSequenceReverse(intDeque, 191, 199, false);
+  CheckNumberSequence(int_deque, 191, 199, true);
+  CheckNumberSequence(int_deque, 199, 191, false);
+  CheckNumberSequenceReverse(int_deque, 199, 191, true);
+  CheckNumberSequenceReverse(int_deque, 191, 199, false);
 
-  Deque<int, inlineCapacity> intDeque2;
-  swap(intDeque, intDeque2);
+  Deque<int, inlineCapacity> int_deque2;
+  swap(int_deque, int_deque2);
 
-  checkNumberSequence(intDeque2, 191, 199, true);
-  checkNumberSequence(intDeque2, 199, 191, false);
-  checkNumberSequenceReverse(intDeque2, 199, 191, true);
-  checkNumberSequenceReverse(intDeque2, 191, 199, false);
+  CheckNumberSequence(int_deque2, 191, 199, true);
+  CheckNumberSequence(int_deque2, 199, 191, false);
+  CheckNumberSequenceReverse(int_deque2, 199, 191, true);
+  CheckNumberSequenceReverse(int_deque2, 191, 199, false);
 
-  intDeque.swap(intDeque2);
+  int_deque.Swap(int_deque2);
 
-  checkNumberSequence(intDeque, 191, 199, true);
-  checkNumberSequence(intDeque, 199, 191, false);
-  checkNumberSequenceReverse(intDeque, 199, 191, true);
-  checkNumberSequenceReverse(intDeque, 191, 199, false);
+  CheckNumberSequence(int_deque, 191, 199, true);
+  CheckNumberSequence(int_deque, 199, 191, false);
+  CheckNumberSequenceReverse(int_deque, 199, 191, true);
+  CheckNumberSequenceReverse(int_deque, 191, 199, false);
 
-  intDeque.swap(intDeque2);
+  int_deque.Swap(int_deque2);
 
-  checkNumberSequence(intDeque2, 191, 199, true);
-  checkNumberSequence(intDeque2, 199, 191, false);
-  checkNumberSequenceReverse(intDeque2, 199, 191, true);
-  checkNumberSequenceReverse(intDeque2, 191, 199, false);
+  CheckNumberSequence(int_deque2, 191, 199, true);
+  CheckNumberSequence(int_deque2, 199, 191, false);
+  CheckNumberSequenceReverse(int_deque2, 199, 191, true);
+  CheckNumberSequenceReverse(int_deque2, 191, 199, false);
 }
 
 TEST(DequeTest, Reverse) {
-  reverseTest<0>();
-  reverseTest<2>();
+  ReverseTest<0>();
+  ReverseTest<2>();
 }
 
 class DestructCounter {
  public:
-  explicit DestructCounter(int i, int* destructNumber)
-      : m_i(i), m_destructNumber(destructNumber) {}
+  explicit DestructCounter(int i, int* destruct_number)
+      : i_(i), destruct_number_(destruct_number) {}
 
-  ~DestructCounter() { ++(*m_destructNumber); }
-  int get() const { return m_i; }
+  ~DestructCounter() { ++(*destruct_number_); }
+  int Get() const { return i_; }
 
  private:
-  int m_i;
-  int* m_destructNumber;
+  int i_;
+  int* destruct_number_;
 };
 
 template <typename OwnPtrDeque>
-void ownPtrTest() {
-  int destructNumber = 0;
+void OwnPtrTest() {
+  int destruct_number = 0;
   OwnPtrDeque deque;
-  deque.push_back(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
-  deque.push_back(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
+  deque.push_back(WTF::WrapUnique(new DestructCounter(0, &destruct_number)));
+  deque.push_back(WTF::WrapUnique(new DestructCounter(1, &destruct_number)));
   EXPECT_EQ(2u, deque.size());
 
   std::unique_ptr<DestructCounter>& counter0 = deque.front();
-  EXPECT_EQ(0, counter0->get());
-  int counter1 = deque.back()->get();
+  EXPECT_EQ(0, counter0->Get());
+  int counter1 = deque.back()->Get();
   EXPECT_EQ(1, counter1);
-  EXPECT_EQ(0, destructNumber);
+  EXPECT_EQ(0, destruct_number);
 
   size_t index = 0;
   for (auto iter = deque.begin(); iter != deque.end(); ++iter) {
-    std::unique_ptr<DestructCounter>& refCounter = *iter;
-    EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
-    EXPECT_EQ(index, static_cast<size_t>((*refCounter).get()));
+    std::unique_ptr<DestructCounter>& ref_counter = *iter;
+    EXPECT_EQ(index, static_cast<size_t>(ref_counter->Get()));
+    EXPECT_EQ(index, static_cast<size_t>((*ref_counter).Get()));
     index++;
   }
-  EXPECT_EQ(0, destructNumber);
+  EXPECT_EQ(0, destruct_number);
 
   auto it = deque.begin();
   for (index = 0; index < deque.size(); ++index) {
-    std::unique_ptr<DestructCounter>& refCounter = *it;
-    EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
+    std::unique_ptr<DestructCounter>& ref_counter = *it;
+    EXPECT_EQ(index, static_cast<size_t>(ref_counter->Get()));
     index++;
     ++it;
   }
-  EXPECT_EQ(0, destructNumber);
+  EXPECT_EQ(0, destruct_number);
 
-  EXPECT_EQ(0, deque.front()->get());
+  EXPECT_EQ(0, deque.front()->Get());
   deque.pop_front();
-  EXPECT_EQ(1, deque.front()->get());
+  EXPECT_EQ(1, deque.front()->Get());
   EXPECT_EQ(1u, deque.size());
-  EXPECT_EQ(1, destructNumber);
+  EXPECT_EQ(1, destruct_number);
 
-  std::unique_ptr<DestructCounter> ownCounter1 = std::move(deque.front());
+  std::unique_ptr<DestructCounter> own_counter1 = std::move(deque.front());
   deque.pop_front();
-  EXPECT_EQ(counter1, ownCounter1->get());
+  EXPECT_EQ(counter1, own_counter1->Get());
   EXPECT_EQ(0u, deque.size());
-  EXPECT_EQ(1, destructNumber);
+  EXPECT_EQ(1, destruct_number);
 
-  ownCounter1.reset();
-  EXPECT_EQ(2, destructNumber);
+  own_counter1.reset();
+  EXPECT_EQ(2, destruct_number);
 
   size_t count = 1025;
-  destructNumber = 0;
+  destruct_number = 0;
   for (size_t i = 0; i < count; ++i)
-    deque.push_front(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
+    deque.push_front(WTF::WrapUnique(new DestructCounter(i, &destruct_number)));
 
   // Deque relocation must not destruct std::unique_ptr element.
-  EXPECT_EQ(0, destructNumber);
+  EXPECT_EQ(0, destruct_number);
   EXPECT_EQ(count, deque.size());
 
-  OwnPtrDeque copyDeque;
-  deque.swap(copyDeque);
-  EXPECT_EQ(0, destructNumber);
-  EXPECT_EQ(count, copyDeque.size());
+  OwnPtrDeque copy_deque;
+  deque.Swap(copy_deque);
+  EXPECT_EQ(0, destruct_number);
+  EXPECT_EQ(count, copy_deque.size());
   EXPECT_EQ(0u, deque.size());
 
-  copyDeque.clear();
-  EXPECT_EQ(count, static_cast<size_t>(destructNumber));
+  copy_deque.Clear();
+  EXPECT_EQ(count, static_cast<size_t>(destruct_number));
 }
 
 TEST(DequeTest, OwnPtr) {
-  ownPtrTest<Deque<std::unique_ptr<DestructCounter>>>();
-  ownPtrTest<Deque<std::unique_ptr<DestructCounter>, 2>>();
+  OwnPtrTest<Deque<std::unique_ptr<DestructCounter>>>();
+  OwnPtrTest<Deque<std::unique_ptr<DestructCounter>, 2>>();
 }
 
 class MoveOnly {
  public:
-  explicit MoveOnly(int i = 0) : m_i(i) {}
+  explicit MoveOnly(int i = 0) : i_(i) {}
 
-  MoveOnly(MoveOnly&& other) : m_i(other.m_i) { other.m_i = 0; }
+  MoveOnly(MoveOnly&& other) : i_(other.i_) { other.i_ = 0; }
 
   MoveOnly& operator=(MoveOnly&& other) {
     if (this != &other) {
-      m_i = other.m_i;
-      other.m_i = 0;
+      i_ = other.i_;
+      other.i_ = 0;
     }
     return *this;
   }
 
-  int value() const { return m_i; }
+  int Value() const { return i_; }
 
  private:
   WTF_MAKE_NONCOPYABLE(MoveOnly);
-  int m_i;
+  int i_;
 };
 
 TEST(DequeTest, MoveOnlyType) {
@@ -269,128 +269,127 @@ TEST(DequeTest, MoveOnlyType) {
   deque.push_back(MoveOnly(2));
   EXPECT_EQ(2u, deque.size());
 
-  ASSERT_EQ(1, deque.front().value());
-  ASSERT_EQ(2, deque.back().value());
+  ASSERT_EQ(1, deque.front().Value());
+  ASSERT_EQ(2, deque.back().Value());
 
-  MoveOnly oldFirst = deque.takeFirst();
-  ASSERT_EQ(1, oldFirst.value());
+  MoveOnly old_first = deque.TakeFirst();
+  ASSERT_EQ(1, old_first.Value());
   EXPECT_EQ(1u, deque.size());
 
-  Deque<MoveOnly> otherDeque;
-  deque.swap(otherDeque);
-  EXPECT_EQ(1u, otherDeque.size());
+  Deque<MoveOnly> other_deque;
+  deque.Swap(other_deque);
+  EXPECT_EQ(1u, other_deque.size());
   EXPECT_EQ(0u, deque.size());
 }
 
 // WrappedInt class will fail if it was memmoved or memcpyed.
-HashSet<void*> constructedWrappedInts;
+HashSet<void*> g_constructed_wrapped_ints;
 
 class WrappedInt {
  public:
-  WrappedInt(int i = 0) : m_originalThisPtr(this), m_i(i) {
-    constructedWrappedInts.insert(this);
+  WrappedInt(int i = 0) : original_this_ptr_(this), i_(i) {
+    g_constructed_wrapped_ints.insert(this);
   }
 
-  WrappedInt(const WrappedInt& other)
-      : m_originalThisPtr(this), m_i(other.m_i) {
-    constructedWrappedInts.insert(this);
+  WrappedInt(const WrappedInt& other) : original_this_ptr_(this), i_(other.i_) {
+    g_constructed_wrapped_ints.insert(this);
   }
 
   WrappedInt& operator=(const WrappedInt& other) {
-    m_i = other.m_i;
+    i_ = other.i_;
     return *this;
   }
 
   ~WrappedInt() {
-    EXPECT_EQ(m_originalThisPtr, this);
-    EXPECT_TRUE(constructedWrappedInts.contains(this));
-    constructedWrappedInts.erase(this);
+    EXPECT_EQ(original_this_ptr_, this);
+    EXPECT_TRUE(g_constructed_wrapped_ints.Contains(this));
+    g_constructed_wrapped_ints.erase(this);
   }
 
-  int get() const { return m_i; }
+  int Get() const { return i_; }
 
  private:
-  void* m_originalThisPtr;
-  int m_i;
+  void* original_this_ptr_;
+  int i_;
 };
 
 template <size_t inlineCapacity>
-void swapWithOrWithoutInlineCapacity() {
-  Deque<WrappedInt, inlineCapacity> dequeA;
-  dequeA.push_back(WrappedInt(1));
-  Deque<WrappedInt, inlineCapacity> dequeB;
-  dequeB.push_back(WrappedInt(2));
+void SwapWithOrWithoutInlineCapacity() {
+  Deque<WrappedInt, inlineCapacity> deque_a;
+  deque_a.push_back(WrappedInt(1));
+  Deque<WrappedInt, inlineCapacity> deque_b;
+  deque_b.push_back(WrappedInt(2));
 
-  ASSERT_EQ(dequeA.size(), dequeB.size());
-  dequeA.swap(dequeB);
+  ASSERT_EQ(deque_a.size(), deque_b.size());
+  deque_a.Swap(deque_b);
 
-  ASSERT_EQ(1u, dequeA.size());
-  EXPECT_EQ(2, dequeA.front().get());
-  ASSERT_EQ(1u, dequeB.size());
-  EXPECT_EQ(1, dequeB.front().get());
+  ASSERT_EQ(1u, deque_a.size());
+  EXPECT_EQ(2, deque_a.front().Get());
+  ASSERT_EQ(1u, deque_b.size());
+  EXPECT_EQ(1, deque_b.front().Get());
 
-  dequeA.push_back(WrappedInt(3));
+  deque_a.push_back(WrappedInt(3));
 
-  ASSERT_GT(dequeA.size(), dequeB.size());
-  dequeA.swap(dequeB);
+  ASSERT_GT(deque_a.size(), deque_b.size());
+  deque_a.Swap(deque_b);
 
-  ASSERT_EQ(1u, dequeA.size());
-  EXPECT_EQ(1, dequeA.front().get());
-  ASSERT_EQ(2u, dequeB.size());
-  EXPECT_EQ(2, dequeB.front().get());
+  ASSERT_EQ(1u, deque_a.size());
+  EXPECT_EQ(1, deque_a.front().Get());
+  ASSERT_EQ(2u, deque_b.size());
+  EXPECT_EQ(2, deque_b.front().Get());
 
-  ASSERT_LT(dequeA.size(), dequeB.size());
-  dequeA.swap(dequeB);
+  ASSERT_LT(deque_a.size(), deque_b.size());
+  deque_a.Swap(deque_b);
 
-  ASSERT_EQ(2u, dequeA.size());
-  EXPECT_EQ(2, dequeA.front().get());
-  ASSERT_EQ(1u, dequeB.size());
-  EXPECT_EQ(1, dequeB.front().get());
+  ASSERT_EQ(2u, deque_a.size());
+  EXPECT_EQ(2, deque_a.front().Get());
+  ASSERT_EQ(1u, deque_b.size());
+  EXPECT_EQ(1, deque_b.front().Get());
 
-  dequeA.push_back(WrappedInt(4));
-  dequeA.swap(dequeB);
+  deque_a.push_back(WrappedInt(4));
+  deque_a.Swap(deque_b);
 
-  ASSERT_EQ(1u, dequeA.size());
-  EXPECT_EQ(1, dequeA.front().get());
-  ASSERT_EQ(3u, dequeB.size());
-  EXPECT_EQ(2, dequeB.front().get());
+  ASSERT_EQ(1u, deque_a.size());
+  EXPECT_EQ(1, deque_a.front().Get());
+  ASSERT_EQ(3u, deque_b.size());
+  EXPECT_EQ(2, deque_b.front().Get());
 
-  dequeB.swap(dequeA);
+  deque_b.Swap(deque_a);
 }
 
 TEST(DequeTest, SwapWithOrWithoutInlineCapacity) {
-  swapWithOrWithoutInlineCapacity<0>();
-  swapWithOrWithoutInlineCapacity<2>();
+  SwapWithOrWithoutInlineCapacity<0>();
+  SwapWithOrWithoutInlineCapacity<2>();
 }
 
 class LivenessCounter {
  public:
-  void ref() { s_live++; }
-  void deref() { s_live--; }
+  void Ref() { live_++; }
+  void Deref() { live_--; }
 
-  static unsigned s_live;
+  static unsigned live_;
 };
 
-unsigned LivenessCounter::s_live = 0;
+unsigned LivenessCounter::live_ = 0;
 
 // Filter a few numbers out to improve the running speed of the tests. The
 // test has nested loops, and removing even numbers from 4 and up from the
 // loops makes it run 10 times faster.
-bool interestingNumber(int i) {
+bool InterestingNumber(int i) {
   return i < 4 || (i & 1);
 }
 
 template <size_t inlineCapacity>
-void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
-  LivenessCounter::s_live = 0;
+void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
+  LivenessCounter::live_ = 0;
   LivenessCounter counter;
-  EXPECT_EQ(0u, LivenessCounter::s_live);
+  EXPECT_EQ(0u, LivenessCounter::live_);
 
   Deque<RefPtr<LivenessCounter>, inlineCapacity> deque;
   Deque<RefPtr<LivenessCounter>, inlineCapacity> deque2;
   deque.push_back(&counter);
   deque2.push_back(&counter);
-  EXPECT_EQ(2u, LivenessCounter::s_live);
+  EXPECT_EQ(2u, LivenessCounter::live_);
 
   // Add various numbers of elements to deques, then remove various numbers
   // of elements from the head. This creates in-use ranges in the backing
@@ -398,44 +397,44 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
   // in which the in-use ranges of the inline buffers can overlap when we
   // call swap().
   for (unsigned i = 0; i < 12; i++) {
-    if (!interestingNumber(i))
+    if (!InterestingNumber(i))
       continue;
     for (unsigned j = i; j < 12; j++) {
-      if (!interestingNumber(j))
+      if (!InterestingNumber(j))
         continue;
-      deque.clear();
-      deque2.clear();
-      EXPECT_EQ(0u, LivenessCounter::s_live);
+      deque.Clear();
+      deque2.Clear();
+      EXPECT_EQ(0u, LivenessCounter::live_);
       for (unsigned k = 0; k < j; k++)
         deque.push_back(&counter);
-      EXPECT_EQ(j, LivenessCounter::s_live);
+      EXPECT_EQ(j, LivenessCounter::live_);
       EXPECT_EQ(j, deque.size());
       for (unsigned k = 0; k < i; k++)
         deque.pop_front();
 
-      EXPECT_EQ(j - i, LivenessCounter::s_live);
+      EXPECT_EQ(j - i, LivenessCounter::live_);
       EXPECT_EQ(j - i, deque.size());
-      deque.swap(deque2);
-      EXPECT_EQ(j - i, LivenessCounter::s_live);
+      deque.Swap(deque2);
+      EXPECT_EQ(j - i, LivenessCounter::live_);
       EXPECT_EQ(0u, deque.size());
       EXPECT_EQ(j - i, deque2.size());
-      deque.swap(deque2);
-      EXPECT_EQ(j - i, LivenessCounter::s_live);
+      deque.Swap(deque2);
+      EXPECT_EQ(j - i, LivenessCounter::live_);
 
       deque2.push_back(&counter);
       deque2.push_back(&counter);
       deque2.push_back(&counter);
 
       for (unsigned k = 0; k < 12; k++) {
-        EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
+        EXPECT_EQ(3 + j - i, LivenessCounter::live_);
         EXPECT_EQ(j - i, deque.size());
         EXPECT_EQ(3u, deque2.size());
-        deque.swap(deque2);
-        EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
+        deque.Swap(deque2);
+        EXPECT_EQ(3 + j - i, LivenessCounter::live_);
         EXPECT_EQ(j - i, deque2.size());
         EXPECT_EQ(3u, deque.size());
-        deque.swap(deque2);
-        EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
+        deque.Swap(deque2);
+        EXPECT_EQ(3 + j - i, LivenessCounter::live_);
         EXPECT_EQ(j - i, deque.size());
         EXPECT_EQ(3u, deque2.size());
 
@@ -447,13 +446,13 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
 }
 
 TEST(DequeTest, SwapWithConstructorsAndDestructors) {
-  testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
-  testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<4>();
-  testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<9>();
+  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
+  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<4>();
+  TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<9>();
 }
 
 template <size_t inlineCapacity>
-void testValuesMovedAndSwappedWithInlineCapacity() {
+void TestValuesMovedAndSwappedWithInlineCapacity() {
   Deque<unsigned, inlineCapacity> deque;
   Deque<unsigned, inlineCapacity> deque2;
 
@@ -463,19 +462,19 @@ void testValuesMovedAndSwappedWithInlineCapacity() {
   // in which the in-use ranges of the inline buffers can overlap when we
   // call swap().
   for (unsigned pad = 0; pad < 12; pad++) {
-    if (!interestingNumber(pad))
+    if (!InterestingNumber(pad))
       continue;
     for (unsigned pad2 = 0; pad2 < 12; pad2++) {
-      if (!interestingNumber(pad2))
+      if (!InterestingNumber(pad2))
         continue;
       for (unsigned size = 0; size < 12; size++) {
-        if (!interestingNumber(size))
+        if (!InterestingNumber(size))
           continue;
         for (unsigned size2 = 0; size2 < 12; size2++) {
-          if (!interestingNumber(size2))
+          if (!InterestingNumber(size2))
             continue;
-          deque.clear();
-          deque2.clear();
+          deque.Clear();
+          deque2.Clear();
           for (unsigned i = 0; i < pad; i++)
             deque.push_back(103);
           for (unsigned i = 0; i < pad2; i++)
@@ -485,16 +484,16 @@ void testValuesMovedAndSwappedWithInlineCapacity() {
           for (unsigned i = 0; i < size2; i++)
             deque2.push_back(i + 42);
           for (unsigned i = 0; i < pad; i++)
-            EXPECT_EQ(103u, deque.takeFirst());
+            EXPECT_EQ(103u, deque.TakeFirst());
           for (unsigned i = 0; i < pad2; i++)
-            EXPECT_EQ(888u, deque2.takeFirst());
+            EXPECT_EQ(888u, deque2.TakeFirst());
           EXPECT_EQ(size, deque.size());
           EXPECT_EQ(size2, deque2.size());
-          deque.swap(deque2);
+          deque.Swap(deque2);
           for (unsigned i = 0; i < size; i++)
-            EXPECT_EQ(i, deque2.takeFirst());
+            EXPECT_EQ(i, deque2.TakeFirst());
           for (unsigned i = 0; i < size2; i++)
-            EXPECT_EQ(i + 42, deque.takeFirst());
+            EXPECT_EQ(i + 42, deque.TakeFirst());
         }
       }
     }
@@ -502,9 +501,9 @@ void testValuesMovedAndSwappedWithInlineCapacity() {
 }
 
 TEST(DequeTest, ValuesMovedAndSwappedWithInlineCapacity) {
-  testValuesMovedAndSwappedWithInlineCapacity<0>();
-  testValuesMovedAndSwappedWithInlineCapacity<4>();
-  testValuesMovedAndSwappedWithInlineCapacity<9>();
+  TestValuesMovedAndSwappedWithInlineCapacity<0>();
+  TestValuesMovedAndSwappedWithInlineCapacity<4>();
+  TestValuesMovedAndSwappedWithInlineCapacity<9>();
 }
 
 TEST(DequeTest, UniquePtr) {
@@ -520,9 +519,9 @@ TEST(DequeTest, UniquePtr) {
   EXPECT_EQ(1, *deque[2]);
   EXPECT_EQ(2, *deque[3]);
 
-  Pointer first(deque.takeFirst());
+  Pointer first(deque.TakeFirst());
   EXPECT_EQ(-2, *first);
-  Pointer last(deque.takeLast());
+  Pointer last(deque.TakeLast());
   EXPECT_EQ(2, *last);
 
   EXPECT_EQ(2u, deque.size());
@@ -535,25 +534,25 @@ TEST(DequeTest, UniquePtr) {
   ASSERT_EQ(1u, deque.size());
   EXPECT_EQ(24, *deque[0]);
 
-  deque.clear();
+  deque.Clear();
 }
 
 class CountCopy final {
  public:
-  explicit CountCopy(int* counter = nullptr) : m_counter(counter) {}
-  CountCopy(const CountCopy& other) : m_counter(other.m_counter) {
-    if (m_counter)
-      ++*m_counter;
+  explicit CountCopy(int* counter = nullptr) : counter_(counter) {}
+  CountCopy(const CountCopy& other) : counter_(other.counter_) {
+    if (counter_)
+      ++*counter_;
   }
   CountCopy& operator=(const CountCopy& other) {
-    m_counter = other.m_counter;
-    if (m_counter)
-      ++*m_counter;
+    counter_ = other.counter_;
+    if (counter_)
+      ++*counter_;
     return *this;
   }
 
  private:
-  int* m_counter;
+  int* counter_;
 };
 
 TEST(DequeTest, MoveShouldNotMakeCopy) {
@@ -571,7 +570,7 @@ TEST(DequeTest, MoveShouldNotMakeCopy) {
   EXPECT_EQ(0, counter);
 
   counter = 0;
-  Deque<CountCopy, 1> yetAnother(std::move(deque));  // Move construction.
+  Deque<CountCopy, 1> yet_another(std::move(deque));  // Move construction.
   EXPECT_EQ(0, counter);
 }
 

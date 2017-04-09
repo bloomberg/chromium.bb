@@ -17,28 +17,28 @@ class USBIsochronousOutTransferPacket final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBIsochronousOutTransferPacket* create(const String& status) {
+  static USBIsochronousOutTransferPacket* Create(const String& status) {
     return new USBIsochronousOutTransferPacket(status, 0);
   }
 
-  static USBIsochronousOutTransferPacket* create(const String& status,
-                                                 unsigned bytesWritten) {
-    return new USBIsochronousOutTransferPacket(status, bytesWritten);
+  static USBIsochronousOutTransferPacket* Create(const String& status,
+                                                 unsigned bytes_written) {
+    return new USBIsochronousOutTransferPacket(status, bytes_written);
   }
 
-  USBIsochronousOutTransferPacket(const String& status, unsigned bytesWritten)
-      : m_status(status), m_bytesWritten(bytesWritten) {}
+  USBIsochronousOutTransferPacket(const String& status, unsigned bytes_written)
+      : status_(status), bytes_written_(bytes_written) {}
 
   virtual ~USBIsochronousOutTransferPacket() {}
 
-  String status() const { return m_status; }
-  unsigned bytesWritten() const { return m_bytesWritten; }
+  String status() const { return status_; }
+  unsigned bytesWritten() const { return bytes_written_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  const String m_status;
-  const unsigned m_bytesWritten;
+  const String status_;
+  const unsigned bytes_written_;
 };
 
 }  // namespace blink

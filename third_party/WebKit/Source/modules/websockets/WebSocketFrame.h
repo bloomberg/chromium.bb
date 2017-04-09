@@ -39,41 +39,41 @@ struct WebSocketFrame {
   STACK_ALLOCATED();
   // RFC6455 opcodes.
   enum OpCode {
-    OpCodeContinuation = 0x0,
-    OpCodeText = 0x1,
-    OpCodeBinary = 0x2,
-    OpCodeClose = 0x8,
-    OpCodePing = 0x9,
-    OpCodePong = 0xA,
-    OpCodeInvalid = 0x10
+    kOpCodeContinuation = 0x0,
+    kOpCodeText = 0x1,
+    kOpCodeBinary = 0x2,
+    kOpCodeClose = 0x8,
+    kOpCodePing = 0x9,
+    kOpCodePong = 0xA,
+    kOpCodeInvalid = 0x10
   };
 
   // Flags for the constructor.
   // This is not the bitmasks for frame composition / decomposition.
   enum {
-    EmptyFlags = 0,
-    Final = 1,
-    Reserved1 = 2,
-    Compress = 2,
-    Reserved2 = 4,
-    Reserved3 = 8,
-    Masked = 16,
+    kEmptyFlags = 0,
+    kFinal = 1,
+    kReserved1 = 2,
+    kCompress = 2,
+    kReserved2 = 4,
+    kReserved3 = 8,
+    kMasked = 16,
   };
   typedef unsigned Flags;
   // The Flags parameter shall be a combination of above flags.
   WebSocketFrame(OpCode,
                  const char* payload,
-                 size_t payloadLength,
-                 Flags = EmptyFlags);
+                 size_t payload_length,
+                 Flags = kEmptyFlags);
 
-  OpCode opCode;
+  OpCode op_code;
   bool final;
   bool compress;
   bool reserved2;
   bool reserved3;
   bool masked;
   const char* payload;
-  size_t payloadLength;
+  size_t payload_length;
 };
 
 }  // namespace blink

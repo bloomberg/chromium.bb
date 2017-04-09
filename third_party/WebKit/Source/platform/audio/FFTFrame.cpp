@@ -40,68 +40,68 @@
 
 namespace blink {
 
-void FFTFrame::doPaddedFFT(const float* data, size_t dataSize) {
+void FFTFrame::DoPaddedFFT(const float* data, size_t data_size) {
   // Zero-pad the impulse response
-  AudioFloatArray paddedResponse(fftSize());  // zero-initialized
-  paddedResponse.copyToRange(data, 0, dataSize);
+  AudioFloatArray padded_response(FftSize());  // zero-initialized
+  padded_response.CopyToRange(data, 0, data_size);
 
   // Get the frequency-domain version of padded response
-  doFFT(paddedResponse.data());
+  DoFFT(padded_response.Data());
 }
 
-std::unique_ptr<FFTFrame> FFTFrame::createInterpolatedFrame(
+std::unique_ptr<FFTFrame> FFTFrame::CreateInterpolatedFrame(
     const FFTFrame& frame1,
     const FFTFrame& frame2,
     double x) {
-  std::unique_ptr<FFTFrame> newFrame =
-      WTF::wrapUnique(new FFTFrame(frame1.fftSize()));
+  std::unique_ptr<FFTFrame> new_frame =
+      WTF::WrapUnique(new FFTFrame(frame1.FftSize()));
 
-  newFrame->interpolateFrequencyComponents(frame1, frame2, x);
+  new_frame->InterpolateFrequencyComponents(frame1, frame2, x);
 
   // In the time-domain, the 2nd half of the response must be zero, to avoid
   // circular convolution aliasing...
-  int fftSize = newFrame->fftSize();
-  AudioFloatArray buffer(fftSize);
-  newFrame->doInverseFFT(buffer.data());
-  buffer.zeroRange(fftSize / 2, fftSize);
+  int fft_size = new_frame->FftSize();
+  AudioFloatArray buffer(fft_size);
+  new_frame->DoInverseFFT(buffer.Data());
+  buffer.ZeroRange(fft_size / 2, fft_size);
 
   // Put back into frequency domain.
-  newFrame->doFFT(buffer.data());
+  new_frame->DoFFT(buffer.Data());
 
-  return newFrame;
+  return new_frame;
 }
 
-void FFTFrame::interpolateFrequencyComponents(const FFTFrame& frame1,
+void FFTFrame::InterpolateFrequencyComponents(const FFTFrame& frame1,
                                               const FFTFrame& frame2,
                                               double interp) {
   // FIXME : with some work, this method could be optimized
 
-  float* realP = realData();
-  float* imagP = imagData();
+  float* real_p = RealData();
+  float* imag_p = ImagData();
 
-  const float* realP1 = frame1.realData();
-  const float* imagP1 = frame1.imagData();
-  const float* realP2 = frame2.realData();
-  const float* imagP2 = frame2.imagData();
+  const float* real_p1 = frame1.RealData();
+  const float* imag_p1 = frame1.ImagData();
+  const float* real_p2 = frame2.RealData();
+  const float* imag_p2 = frame2.ImagData();
 
-  m_FFTSize = frame1.fftSize();
-  m_log2FFTSize = frame1.log2FFTSize();
+  fft_size_ = frame1.FftSize();
+  log2fft_size_ = frame1.Log2FFTSize();
 
   double s1base = (1.0 - interp);
   double s2base = interp;
 
-  double phaseAccum = 0.0;
-  double lastPhase1 = 0.0;
-  double lastPhase2 = 0.0;
+  double phase_accum = 0.0;
+  double last_phase1 = 0.0;
+  double last_phase2 = 0.0;
 
-  realP[0] = static_cast<float>(s1base * realP1[0] + s2base * realP2[0]);
-  imagP[0] = static_cast<float>(s1base * imagP1[0] + s2base * imagP2[0]);
+  real_p[0] = static_cast<float>(s1base * real_p1[0] + s2base * real_p2[0]);
+  imag_p[0] = static_cast<float>(s1base * imag_p1[0] + s2base * imag_p2[0]);
 
-  int n = m_FFTSize / 2;
+  int n = fft_size_ / 2;
 
   for (int i = 1; i < n; ++i) {
-    std::complex<double> c1(realP1[i], imagP1[i]);
-    std::complex<double> c2(realP2[i], imagP2[i]);
+    std::complex<double> c1(real_p1[i], imag_p1[i]);
+    std::complex<double> c2(real_p2[i], imag_p2[i]);
 
     double mag1 = abs(c1);
     double mag2 = abs(c2);
@@ -134,140 +134,141 @@ void FFTFrame::interpolateFrequencyComponents(const FFTFrame& frame1,
     double phase1 = arg(c1);
     double phase2 = arg(c2);
 
-    double deltaPhase1 = phase1 - lastPhase1;
-    double deltaPhase2 = phase2 - lastPhase2;
-    lastPhase1 = phase1;
-    lastPhase2 = phase2;
+    double delta_phase1 = phase1 - last_phase1;
+    double delta_phase2 = phase2 - last_phase2;
+    last_phase1 = phase1;
+    last_phase2 = phase2;
 
     // Unwrap phase deltas
-    if (deltaPhase1 > piDouble)
-      deltaPhase1 -= twoPiDouble;
-    if (deltaPhase1 < -piDouble)
-      deltaPhase1 += twoPiDouble;
-    if (deltaPhase2 > piDouble)
-      deltaPhase2 -= twoPiDouble;
-    if (deltaPhase2 < -piDouble)
-      deltaPhase2 += twoPiDouble;
+    if (delta_phase1 > piDouble)
+      delta_phase1 -= twoPiDouble;
+    if (delta_phase1 < -piDouble)
+      delta_phase1 += twoPiDouble;
+    if (delta_phase2 > piDouble)
+      delta_phase2 -= twoPiDouble;
+    if (delta_phase2 < -piDouble)
+      delta_phase2 += twoPiDouble;
 
     // Blend group-delays
-    double deltaPhaseBlend;
+    double delta_phase_blend;
 
-    if (deltaPhase1 - deltaPhase2 > piDouble)
-      deltaPhaseBlend = s1 * deltaPhase1 + s2 * (twoPiDouble + deltaPhase2);
-    else if (deltaPhase2 - deltaPhase1 > piDouble)
-      deltaPhaseBlend = s1 * (twoPiDouble + deltaPhase1) + s2 * deltaPhase2;
+    if (delta_phase1 - delta_phase2 > piDouble)
+      delta_phase_blend = s1 * delta_phase1 + s2 * (twoPiDouble + delta_phase2);
+    else if (delta_phase2 - delta_phase1 > piDouble)
+      delta_phase_blend = s1 * (twoPiDouble + delta_phase1) + s2 * delta_phase2;
     else
-      deltaPhaseBlend = s1 * deltaPhase1 + s2 * deltaPhase2;
+      delta_phase_blend = s1 * delta_phase1 + s2 * delta_phase2;
 
-    phaseAccum += deltaPhaseBlend;
+    phase_accum += delta_phase_blend;
 
     // Unwrap
-    if (phaseAccum > piDouble)
-      phaseAccum -= twoPiDouble;
-    if (phaseAccum < -piDouble)
-      phaseAccum += twoPiDouble;
+    if (phase_accum > piDouble)
+      phase_accum -= twoPiDouble;
+    if (phase_accum < -piDouble)
+      phase_accum += twoPiDouble;
 
-    std::complex<double> c = std::polar(mag, phaseAccum);
+    std::complex<double> c = std::polar(mag, phase_accum);
 
-    realP[i] = static_cast<float>(c.real());
-    imagP[i] = static_cast<float>(c.imag());
+    real_p[i] = static_cast<float>(c.real());
+    imag_p[i] = static_cast<float>(c.imag());
   }
 }
 
-double FFTFrame::extractAverageGroupDelay() {
-  float* realP = realData();
-  float* imagP = imagData();
+double FFTFrame::ExtractAverageGroupDelay() {
+  float* real_p = RealData();
+  float* imag_p = ImagData();
 
-  double aveSum = 0.0;
-  double weightSum = 0.0;
-  double lastPhase = 0.0;
+  double ave_sum = 0.0;
+  double weight_sum = 0.0;
+  double last_phase = 0.0;
 
-  int halfSize = fftSize() / 2;
+  int half_size = FftSize() / 2;
 
-  const double samplePhaseDelay =
-      (twoPiDouble) / static_cast<double>(fftSize());
+  const double sample_phase_delay =
+      (twoPiDouble) / static_cast<double>(FftSize());
 
   // Calculate weighted average group delay
-  for (int i = 0; i < halfSize; i++) {
-    std::complex<double> c(realP[i], imagP[i]);
+  for (int i = 0; i < half_size; i++) {
+    std::complex<double> c(real_p[i], imag_p[i]);
     double mag = abs(c);
     double phase = arg(c);
 
-    double deltaPhase = phase - lastPhase;
-    lastPhase = phase;
+    double delta_phase = phase - last_phase;
+    last_phase = phase;
 
     // Unwrap
-    if (deltaPhase < -piDouble)
-      deltaPhase += twoPiDouble;
-    if (deltaPhase > piDouble)
-      deltaPhase -= twoPiDouble;
+    if (delta_phase < -piDouble)
+      delta_phase += twoPiDouble;
+    if (delta_phase > piDouble)
+      delta_phase -= twoPiDouble;
 
-    aveSum += mag * deltaPhase;
-    weightSum += mag;
+    ave_sum += mag * delta_phase;
+    weight_sum += mag;
   }
 
   // Note how we invert the phase delta wrt frequency since this is how group
   // delay is defined
-  double ave = aveSum / weightSum;
-  double aveSampleDelay = -ave / samplePhaseDelay;
+  double ave = ave_sum / weight_sum;
+  double ave_sample_delay = -ave / sample_phase_delay;
 
   // Leave 20 sample headroom (for leading edge of impulse)
-  if (aveSampleDelay > 20.0)
-    aveSampleDelay -= 20.0;
+  if (ave_sample_delay > 20.0)
+    ave_sample_delay -= 20.0;
 
   // Remove average group delay (minus 20 samples for headroom)
-  addConstantGroupDelay(-aveSampleDelay);
+  AddConstantGroupDelay(-ave_sample_delay);
 
   // Remove DC offset
-  realP[0] = 0.0f;
+  real_p[0] = 0.0f;
 
-  return aveSampleDelay;
+  return ave_sample_delay;
 }
 
-void FFTFrame::addConstantGroupDelay(double sampleFrameDelay) {
-  int halfSize = fftSize() / 2;
+void FFTFrame::AddConstantGroupDelay(double sample_frame_delay) {
+  int half_size = FftSize() / 2;
 
-  float* realP = realData();
-  float* imagP = imagData();
+  float* real_p = RealData();
+  float* imag_p = ImagData();
 
-  const double samplePhaseDelay =
-      (twoPiDouble) / static_cast<double>(fftSize());
+  const double sample_phase_delay =
+      (twoPiDouble) / static_cast<double>(FftSize());
 
-  double phaseAdj = -sampleFrameDelay * samplePhaseDelay;
+  double phase_adj = -sample_frame_delay * sample_phase_delay;
 
   // Add constant group delay
-  for (int i = 1; i < halfSize; i++) {
-    std::complex<double> c(realP[i], imagP[i]);
+  for (int i = 1; i < half_size; i++) {
+    std::complex<double> c(real_p[i], imag_p[i]);
     double mag = abs(c);
     double phase = arg(c);
 
-    phase += i * phaseAdj;
+    phase += i * phase_adj;
 
     std::complex<double> c2 = std::polar(mag, phase);
 
-    realP[i] = static_cast<float>(c2.real());
-    imagP[i] = static_cast<float>(c2.imag());
+    real_p[i] = static_cast<float>(c2.real());
+    imag_p[i] = static_cast<float>(c2.imag());
   }
 }
 
-void FFTFrame::multiply(const FFTFrame& frame) {
+void FFTFrame::Multiply(const FFTFrame& frame) {
   FFTFrame& frame1 = *this;
   FFTFrame& frame2 = const_cast<FFTFrame&>(frame);
 
-  float* realP1 = frame1.realData();
-  float* imagP1 = frame1.imagData();
-  const float* realP2 = frame2.realData();
-  const float* imagP2 = frame2.imagData();
+  float* real_p1 = frame1.RealData();
+  float* imag_p1 = frame1.ImagData();
+  const float* real_p2 = frame2.RealData();
+  const float* imag_p2 = frame2.ImagData();
 
-  unsigned halfSize = fftSize() / 2;
-  float real0 = realP1[0];
-  float imag0 = imagP1[0];
+  unsigned half_size = FftSize() / 2;
+  float real0 = real_p1[0];
+  float imag0 = imag_p1[0];
 
-  VectorMath::zvmul(realP1, imagP1, realP2, imagP2, realP1, imagP1, halfSize);
+  VectorMath::Zvmul(real_p1, imag_p1, real_p2, imag_p2, real_p1, imag_p1,
+                    half_size);
 
   // Multiply the packed DC/nyquist component
-  realP1[0] = real0 * realP2[0];
-  imagP1[0] = imag0 * imagP2[0];
+  real_p1[0] = real0 * real_p2[0];
+  imag_p1[0] = imag0 * imag_p2[0];
 }
 
 }  // namespace blink

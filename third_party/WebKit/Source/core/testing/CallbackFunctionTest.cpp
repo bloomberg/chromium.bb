@@ -18,13 +18,13 @@ DEFINE_TRACE(CallbackFunctionTest) {}
 String CallbackFunctionTest::testCallback(TestCallback* callback,
                                           const String& message1,
                                           const String& message2,
-                                          ExceptionState& exceptionState) {
-  ScriptWrappable* scriptWrappable;
-  String returnValue;
+                                          ExceptionState& exception_state) {
+  ScriptWrappable* script_wrappable;
+  String return_value;
 
-  if (callback->call(scriptWrappable = nullptr, message1, message2,
-                     returnValue)) {
-    return String("SUCCESS: ") + returnValue;
+  if (callback->call(script_wrappable = nullptr, message1, message2,
+                     return_value)) {
+    return String("SUCCESS: ") + return_value;
   }
   return String("Error!");
 }
@@ -33,25 +33,25 @@ String CallbackFunctionTest::testNullableCallback(
     TestCallback* callback,
     const String& message1,
     const String& message2,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   if (!callback)
     return String("Empty callback");
-  return testCallback(callback, message1, message2, exceptionState);
+  return testCallback(callback, message1, message2, exception_state);
 }
 
 void CallbackFunctionTest::testInterfaceCallback(
     TestInterfaceCallback* callback,
-    HTMLDivElement* divElement,
-    ExceptionState& exceptionState) {
-  ScriptWrappable* scriptWrappable;
+    HTMLDivElement* div_element,
+    ExceptionState& exception_state) {
+  ScriptWrappable* script_wrappable;
 
-  callback->call(scriptWrappable = nullptr, divElement);
+  callback->call(script_wrappable = nullptr, div_element);
   return;
 }
 
 void CallbackFunctionTest::testReceiverObjectCallback(
     TestReceiverObjectCallback* callback,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   callback->call(this);
   return;
 }
@@ -59,10 +59,10 @@ void CallbackFunctionTest::testReceiverObjectCallback(
 Vector<String> CallbackFunctionTest::testSequenceCallback(
     TestSequenceCallback* callback,
     const Vector<int>& numbers,
-    ExceptionState& exceptionState) {
-  Vector<String> returnValue;
-  if (callback->call(nullptr, numbers, returnValue)) {
-    return returnValue;
+    ExceptionState& exception_state) {
+  Vector<String> return_value;
+  if (callback->call(nullptr, numbers, return_value)) {
+    return return_value;
   }
   return Vector<String>();
 }

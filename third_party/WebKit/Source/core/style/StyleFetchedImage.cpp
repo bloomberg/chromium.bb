@@ -34,112 +34,112 @@ namespace blink {
 StyleFetchedImage::StyleFetchedImage(ImageResourceContent* image,
                                      const Document& document,
                                      const KURL& url)
-    : m_image(image), m_document(&document), m_url(url) {
-  m_isImageResource = true;
-  m_image->addObserver(this);
+    : image_(image), document_(&document), url_(url) {
+  is_image_resource_ = true;
+  image_->AddObserver(this);
   // ResourceFetcher is not determined from StyleFetchedImage and it is
   // impossible to send a request for refetching.
-  m_image->setNotRefetchableDataFromDiskCache();
+  image_->SetNotRefetchableDataFromDiskCache();
 }
 
 StyleFetchedImage::~StyleFetchedImage() {}
 
-void StyleFetchedImage::dispose() {
-  m_image->removeObserver(this);
-  m_image = nullptr;
+void StyleFetchedImage::Dispose() {
+  image_->RemoveObserver(this);
+  image_ = nullptr;
 }
 
-WrappedImagePtr StyleFetchedImage::data() const {
-  return m_image.get();
+WrappedImagePtr StyleFetchedImage::Data() const {
+  return image_.Get();
 }
 
-ImageResourceContent* StyleFetchedImage::cachedImage() const {
-  return m_image.get();
+ImageResourceContent* StyleFetchedImage::CachedImage() const {
+  return image_.Get();
 }
 
-CSSValue* StyleFetchedImage::cssValue() const {
-  return CSSImageValue::create(m_url, const_cast<StyleFetchedImage*>(this));
+CSSValue* StyleFetchedImage::CssValue() const {
+  return CSSImageValue::Create(url_, const_cast<StyleFetchedImage*>(this));
 }
 
-CSSValue* StyleFetchedImage::computedCSSValue() const {
-  return cssValue();
+CSSValue* StyleFetchedImage::ComputedCSSValue() const {
+  return CssValue();
 }
 
-bool StyleFetchedImage::canRender() const {
-  return !m_image->errorOccurred() && !m_image->getImage()->isNull();
+bool StyleFetchedImage::CanRender() const {
+  return !image_->ErrorOccurred() && !image_->GetImage()->IsNull();
 }
 
-bool StyleFetchedImage::isLoaded() const {
-  return m_image->isLoaded();
+bool StyleFetchedImage::IsLoaded() const {
+  return image_->IsLoaded();
 }
 
-bool StyleFetchedImage::errorOccurred() const {
-  return m_image->errorOccurred();
+bool StyleFetchedImage::ErrorOccurred() const {
+  return image_->ErrorOccurred();
 }
 
-LayoutSize StyleFetchedImage::imageSize(
+LayoutSize StyleFetchedImage::ImageSize(
     const LayoutObject&,
     float multiplier,
-    const LayoutSize& defaultObjectSize) const {
-  if (m_image->getImage() && m_image->getImage()->isSVGImage())
-    return imageSizeForSVGImage(toSVGImage(m_image->getImage()), multiplier,
-                                defaultObjectSize);
+    const LayoutSize& default_object_size) const {
+  if (image_->GetImage() && image_->GetImage()->IsSVGImage())
+    return ImageSizeForSVGImage(ToSVGImage(image_->GetImage()), multiplier,
+                                default_object_size);
 
   // Image orientation should only be respected for content images,
   // not decorative images such as StyleImage (backgrounds,
   // border-image, etc.)
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  return m_image->imageSize(DoNotRespectImageOrientation, multiplier);
+  return image_->ImageSize(kDoNotRespectImageOrientation, multiplier);
 }
 
-bool StyleFetchedImage::imageHasRelativeSize() const {
-  return m_image->imageHasRelativeSize();
+bool StyleFetchedImage::ImageHasRelativeSize() const {
+  return image_->ImageHasRelativeSize();
 }
 
-bool StyleFetchedImage::usesImageContainerSize() const {
-  return m_image->usesImageContainerSize();
+bool StyleFetchedImage::UsesImageContainerSize() const {
+  return image_->UsesImageContainerSize();
 }
 
-void StyleFetchedImage::addClient(LayoutObject* layoutObject) {
-  m_image->addObserver(layoutObject);
+void StyleFetchedImage::AddClient(LayoutObject* layout_object) {
+  image_->AddObserver(layout_object);
 }
 
-void StyleFetchedImage::removeClient(LayoutObject* layoutObject) {
-  m_image->removeObserver(layoutObject);
+void StyleFetchedImage::RemoveClient(LayoutObject* layout_object) {
+  image_->RemoveObserver(layout_object);
 }
 
-void StyleFetchedImage::imageNotifyFinished(ImageResourceContent*) {
-  if (m_document && m_image && m_image->getImage() &&
-      m_image->getImage()->isSVGImage())
-    toSVGImage(m_image->getImage())->updateUseCounters(*m_document);
+void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
+  if (document_ && image_ && image_->GetImage() &&
+      image_->GetImage()->IsSVGImage())
+    ToSVGImage(image_->GetImage())->UpdateUseCounters(*document_);
   // Oilpan: do not prolong the Document's lifetime.
-  m_document.clear();
+  document_.Clear();
 }
 
-PassRefPtr<Image> StyleFetchedImage::image(const LayoutObject&,
-                                           const IntSize& containerSize,
-                                           float zoom) const {
-  if (!m_image->getImage()->isSVGImage())
-    return m_image->getImage();
+PassRefPtr<Image> StyleFetchedImage::GetImage(const LayoutObject&,
+                                              const IntSize& container_size,
+                                              float zoom) const {
+  if (!image_->GetImage()->IsSVGImage())
+    return image_->GetImage();
 
-  return SVGImageForContainer::create(toSVGImage(m_image->getImage()),
-                                      containerSize, zoom, m_url);
+  return SVGImageForContainer::Create(ToSVGImage(image_->GetImage()),
+                                      container_size, zoom, url_);
 }
 
-bool StyleFetchedImage::knownToBeOpaque(
-    const LayoutObject& layoutObject) const {
+bool StyleFetchedImage::KnownToBeOpaque(
+    const LayoutObject& layout_object) const {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
-               InspectorPaintImageEvent::data(&layoutObject, *m_image.get()));
-  return m_image->getImage()->currentFrameKnownToBeOpaque(
-      Image::PreCacheMetadata);
+               InspectorPaintImageEvent::Data(&layout_object, *image_.Get()));
+  return image_->GetImage()->CurrentFrameKnownToBeOpaque(
+      Image::kPreCacheMetadata);
 }
 
 DEFINE_TRACE(StyleFetchedImage) {
-  visitor->trace(m_image);
-  visitor->trace(m_document);
-  StyleImage::trace(visitor);
+  visitor->Trace(image_);
+  visitor->Trace(document_);
+  StyleImage::Trace(visitor);
 }
 
 }  // namespace blink

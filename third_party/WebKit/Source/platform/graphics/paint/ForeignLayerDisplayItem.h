@@ -34,29 +34,29 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
                           const IntSize& bounds);
   ~ForeignLayerDisplayItem();
 
-  cc::Layer* layer() const { return m_layer.get(); }
-  const FloatPoint& location() const { return m_location; }
-  const IntSize& bounds() const { return m_bounds; }
+  cc::Layer* GetLayer() const { return layer_.get(); }
+  const FloatPoint& Location() const { return location_; }
+  const IntSize& Bounds() const { return bounds_; }
 
   // DisplayItem
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
-  bool drawsContent() const override;
-  bool equals(const DisplayItem&) const override;
+  bool DrawsContent() const override;
+  bool Equals(const DisplayItem&) const override;
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(StringBuilder&) const override;
+  void DumpPropertiesAsDebugString(StringBuilder&) const override;
 #endif
 
  private:
-  scoped_refptr<cc::Layer> m_layer;
-  FloatPoint m_location;
-  IntSize m_bounds;
+  scoped_refptr<cc::Layer> layer_;
+  FloatPoint location_;
+  IntSize bounds_;
 };
 
 // Records a foreign layer into a GraphicsContext.
 // Use this where you would use a recorder class.
-PLATFORM_EXPORT void recordForeignLayer(GraphicsContext&,
+PLATFORM_EXPORT void RecordForeignLayer(GraphicsContext&,
                                         const DisplayItemClient&,
                                         DisplayItem::Type,
                                         WebLayer*,

@@ -35,17 +35,17 @@ class CORE_EXPORT HTMLBRElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLBRElement);
 
-  bool canContainRangeEndPoint() const override { return false; }
+  bool CanContainRangeEndPoint() const override { return false; }
 
  private:
   explicit HTMLBRElement(Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
 }  // namespace blink

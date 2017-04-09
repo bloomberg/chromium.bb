@@ -36,80 +36,81 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
   ~LayoutSVGContainer() override;
 
   // If you have a LayoutSVGContainer, use firstChild or lastChild instead.
-  void slowFirstChild() const = delete;
-  void slowLastChild() const = delete;
+  void SlowFirstChild() const = delete;
+  void SlowLastChild() const = delete;
 
-  LayoutObject* firstChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->firstChild();
+  LayoutObject* FirstChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->FirstChild();
   }
-  LayoutObject* lastChild() const {
-    DCHECK_EQ(children(), virtualChildren());
-    return children()->lastChild();
+  LayoutObject* LastChild() const {
+    DCHECK_EQ(Children(), VirtualChildren());
+    return Children()->LastChild();
   }
 
-  void paint(const PaintInfo&, const LayoutPoint&) const override;
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-  void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
-  bool didScreenScaleFactorChange() const {
-    return m_didScreenScaleFactorChange;
+  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void SetNeedsBoundariesUpdate() final { needs_boundaries_update_ = true; }
+  bool DidScreenScaleFactorChange() const {
+    return did_screen_scale_factor_change_;
   }
-  bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
+  bool IsObjectBoundingBoxValid() const { return object_bounding_box_valid_; }
 
-  bool selfWillPaint() const;
+  bool SelfWillPaint() const;
 
-  bool hasNonIsolatedBlendingDescendants() const final;
+  bool HasNonIsolatedBlendingDescendants() const final;
 
-  const char* name() const override { return "LayoutSVGContainer"; }
+  const char* GetName() const override { return "LayoutSVGContainer"; }
 
-  FloatRect objectBoundingBox() const final { return m_objectBoundingBox; }
+  FloatRect ObjectBoundingBox() const final { return object_bounding_box_; }
 
  protected:
-  LayoutObjectChildList* virtualChildren() final { return children(); }
-  const LayoutObjectChildList* virtualChildren() const final {
-    return children();
+  LayoutObjectChildList* VirtualChildren() final { return Children(); }
+  const LayoutObjectChildList* VirtualChildren() const final {
+    return Children();
   }
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGContainer ||
-           LayoutSVGModelObject::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGContainer ||
+           LayoutSVGModelObject::IsOfType(type);
   }
-  void layout() override;
+  void GetLayout() override;
 
-  void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) final;
-  void removeChild(LayoutObject*) final;
-  void addOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additionalOffset,
+  void AddChild(LayoutObject* child,
+                LayoutObject* before_child = nullptr) final;
+  void RemoveChild(LayoutObject*) final;
+  void AddOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additional_offset,
                        IncludeBlockVisualOverflowOrNot) const final;
 
-  FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
+  FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
 
-  bool nodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& pointInParent,
+  bool NodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& point_in_parent,
                         HitTestAction) override;
 
   // Called during layout to update the local transform.
-  virtual SVGTransformChange calculateLocalTransform();
+  virtual SVGTransformChange CalculateLocalTransform();
 
-  void updateCachedBoundaries();
+  void UpdateCachedBoundaries();
 
-  void descendantIsolationRequirementsChanged(DescendantIsolationState) final;
+  void DescendantIsolationRequirementsChanged(DescendantIsolationState) final;
 
  private:
-  const LayoutObjectChildList* children() const { return &m_children; }
-  LayoutObjectChildList* children() { return &m_children; }
+  const LayoutObjectChildList* Children() const { return &children_; }
+  LayoutObjectChildList* Children() { return &children_; }
 
-  LayoutObjectChildList m_children;
-  FloatRect m_objectBoundingBox;
-  FloatRect m_strokeBoundingBox;
-  bool m_objectBoundingBoxValid;
-  bool m_needsBoundariesUpdate : 1;
-  bool m_didScreenScaleFactorChange : 1;
-  mutable bool m_hasNonIsolatedBlendingDescendants : 1;
-  mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
+  LayoutObjectChildList children_;
+  FloatRect object_bounding_box_;
+  FloatRect stroke_bounding_box_;
+  bool object_bounding_box_valid_;
+  bool needs_boundaries_update_ : 1;
+  bool did_screen_scale_factor_change_ : 1;
+  mutable bool has_non_isolated_blending_descendants_ : 1;
+  mutable bool has_non_isolated_blending_descendants_dirty_ : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGContainer, isSVGContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGContainer, IsSVGContainer());
 
 }  // namespace blink
 

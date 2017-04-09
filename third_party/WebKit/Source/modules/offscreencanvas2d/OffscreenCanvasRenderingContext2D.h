@@ -25,15 +25,15 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     Factory() {}
     ~Factory() override {}
 
-    CanvasRenderingContext* create(
-        ScriptState* scriptState,
+    CanvasRenderingContext* Create(
+        ScriptState* script_state,
         OffscreenCanvas* canvas,
         const CanvasContextCreationAttributes& attrs) override {
-      return new OffscreenCanvasRenderingContext2D(scriptState, canvas, attrs);
+      return new OffscreenCanvasRenderingContext2D(script_state, canvas, attrs);
     }
 
-    CanvasRenderingContext::ContextType getContextType() const override {
-      return CanvasRenderingContext::Context2d;
+    CanvasRenderingContext::ContextType GetContextType() const override {
+      return CanvasRenderingContext::kContext2d;
     }
   };
 
@@ -41,55 +41,55 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
-  ContextType getContextType() const override { return Context2d; }
-  bool is2d() const override { return true; }
-  bool isComposited() const override { return false; }
-  bool isAccelerated() const override;
-  void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
-  void setIsHidden(bool) final { NOTREACHED(); }
-  void stop() final { NOTREACHED(); }
-  void setCanvasGetContextResult(RenderingContext&) final {}
+  ContextType GetContextType() const override { return kContext2d; }
+  bool Is2d() const override { return true; }
+  bool IsComposited() const override { return false; }
+  bool IsAccelerated() const override;
+  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
+  void SetIsHidden(bool) final { NOTREACHED(); }
+  void Stop() final { NOTREACHED(); }
+  void SetCanvasGetContextResult(RenderingContext&) final {}
   void clearRect(double x, double y, double width, double height) override {
     BaseRenderingContext2D::clearRect(x, y, width, height);
   }
-  PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final;
-  ImageData* toImageData(SnapshotReason) override;
-  void reset() override;
+  PassRefPtr<Image> GetImage(AccelerationHint, SnapshotReason) const final;
+  ImageData* ToImageData(SnapshotReason) override;
+  void Reset() override;
 
   // BaseRenderingContext2D implementation
-  bool originClean() const final;
-  void setOriginTainted() final;
-  bool wouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final;
+  bool OriginClean() const final;
+  void SetOriginTainted() final;
+  bool WouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final;
 
-  int width() const final;
-  int height() const final;
+  int Width() const final;
+  int Height() const final;
 
-  bool hasImageBuffer() const final;
-  ImageBuffer* imageBuffer() const final;
+  bool HasImageBuffer() const final;
+  ImageBuffer* GetImageBuffer() const final;
 
-  bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
+  bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  PaintCanvas* drawingCanvas() const final;
-  PaintCanvas* existingDrawingCanvas() const final;
-  void disableDeferral(DisableDeferralReason) final;
+  PaintCanvas* DrawingCanvas() const final;
+  PaintCanvas* ExistingDrawingCanvas() const final;
+  void DisableDeferral(DisableDeferralReason) final;
 
-  AffineTransform baseTransform() const final;
-  void didDraw(const SkIRect& dirtyRect) final;  // overrides
-                                                 // BaseRenderingContext2D and
-                                                 // CanvasRenderingContext
+  AffineTransform BaseTransform() const final;
+  void DidDraw(const SkIRect& dirty_rect) final;  // overrides
+                                                  // BaseRenderingContext2D and
+                                                  // CanvasRenderingContext
 
-  bool stateHasFilter() final;
-  sk_sp<SkImageFilter> stateGetFilter() final;
-  void snapshotStateForFilter() final {}
+  bool StateHasFilter() final;
+  sk_sp<SkImageFilter> StateGetFilter() final;
+  void SnapshotStateForFilter() final {}
 
-  void validateStateStack() const final;
+  void ValidateStateStack() const final;
 
-  bool hasAlpha() const final { return creationAttributes().alpha(); }
+  bool HasAlpha() const final { return CreationAttributes().alpha(); }
   bool isContextLost() const override;
 
-  ImageBitmap* transferToImageBitmap(ScriptState*) final;
+  ImageBitmap* TransferToImageBitmap(ScriptState*) final;
 
-  ColorBehavior drawImageColorBehavior() const final;
+  ColorBehavior DrawImageColorBehavior() const final;
 
  protected:
   OffscreenCanvasRenderingContext2D(
@@ -99,19 +99,19 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  bool m_needsMatrixClipRestore = false;
-  std::unique_ptr<ImageBuffer> m_imageBuffer;
+  bool needs_matrix_clip_restore_ = false;
+  std::unique_ptr<ImageBuffer> image_buffer_;
 
-  bool isPaintable() const final;
+  bool IsPaintable() const final;
 
-  RefPtr<StaticBitmapImage> transferToStaticBitmapImage();
+  RefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
 };
 
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D,
                   CanvasRenderingContext,
                   context,
-                  context->is2d() && context->offscreenCanvas(),
-                  context.is2d() && context.offscreenCanvas());
+                  context->Is2d() && context->offscreenCanvas(),
+                  context.Is2d() && context.offscreenCanvas());
 
 }  // namespace blink
 

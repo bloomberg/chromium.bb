@@ -28,35 +28,35 @@
 
 namespace blink {
 
-WebGLUniformLocation* WebGLUniformLocation::create(WebGLProgram* program,
+WebGLUniformLocation* WebGLUniformLocation::Create(WebGLProgram* program,
                                                    GLint location) {
   return new WebGLUniformLocation(program, location);
 }
 
 WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program,
                                            GLint location)
-    : m_program(program), m_location(location) {
-  ASSERT(m_program);
-  m_linkCount = m_program->linkCount();
+    : program_(program), location_(location) {
+  ASSERT(program_);
+  link_count_ = program_->LinkCount();
 }
 
-WebGLProgram* WebGLUniformLocation::program() const {
+WebGLProgram* WebGLUniformLocation::Program() const {
   // If the program has been linked again, then this UniformLocation is no
   // longer valid.
-  if (m_program->linkCount() != m_linkCount)
+  if (program_->LinkCount() != link_count_)
     return 0;
-  return m_program;
+  return program_;
 }
 
-GLint WebGLUniformLocation::location() const {
+GLint WebGLUniformLocation::Location() const {
   // If the program has been linked again, then this UniformLocation is no
   // longer valid.
-  ASSERT(m_program->linkCount() == m_linkCount);
-  return m_location;
+  ASSERT(program_->LinkCount() == link_count_);
+  return location_;
 }
 
 DEFINE_TRACE(WebGLUniformLocation) {
-  visitor->trace(m_program);
+  visitor->Trace(program_);
 }
 
 }  // namespace blink

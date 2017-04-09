@@ -30,8 +30,8 @@
 
 namespace blink {
 
-bool ClipRect::intersects(const HitTestLocation& hitTestLocation) const {
-  return hitTestLocation.intersects(m_rect);
+bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
+  return hit_test_location.Intersects(rect_);
 }
 
 }  // namespace blink

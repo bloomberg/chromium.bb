@@ -46,110 +46,113 @@
 
 namespace blink {
 
-static const LayoutBlock* enclosingScrollableAncestor(
-    const LayoutObject* layoutObject) {
-  DCHECK(!layoutObject->isLayoutView());
+static const LayoutBlock* EnclosingScrollableAncestor(
+    const LayoutObject* layout_object) {
+  DCHECK(!layout_object->IsLayoutView());
 
   // Trace up the containingBlocks until we reach either the layoutObject view
   // or a scrollable object.
-  const LayoutBlock* container = layoutObject->containingBlock();
-  while (!container->hasOverflowClip() && !container->isLayoutView())
-    container = container->containingBlock();
+  const LayoutBlock* container = layout_object->ContainingBlock();
+  while (!container->HasOverflowClip() && !container->IsLayoutView())
+    container = container->ContainingBlock();
   return container;
 }
 
-static FloatRect toNormalizedRect(const FloatRect& absoluteRect,
-                                  const LayoutObject* layoutObject,
+static FloatRect ToNormalizedRect(const FloatRect& absolute_rect,
+                                  const LayoutObject* layout_object,
                                   const LayoutBlock* container) {
-  DCHECK(layoutObject);
+  DCHECK(layout_object);
 
-  DCHECK(container || layoutObject->isLayoutView());
+  DCHECK(container || layout_object->IsLayoutView());
   if (!container)
     return FloatRect();
 
   // We want to normalize by the max layout overflow size instead of only the
   // visible bounding box.  Quads and their enclosing bounding boxes need to be
   // used in order to keep results transform-friendly.
-  FloatPoint scrolledOrigin;
+  FloatPoint scrolled_origin;
 
   // For overflow:scroll we need to get where the actual origin is independently
   // of the scroll.
-  if (container->hasOverflowClip())
-    scrolledOrigin = -IntPoint(container->scrolledContentOffset());
+  if (container->HasOverflowClip())
+    scrolled_origin = -IntPoint(container->ScrolledContentOffset());
 
-  FloatRect overflowRect(scrolledOrigin,
-                         FloatSize(container->maxLayoutOverflow()));
-  FloatRect containerRect =
-      container->localToAbsoluteQuad(FloatQuad(overflowRect))
-          .enclosingBoundingBox();
+  FloatRect overflow_rect(scrolled_origin,
+                          FloatSize(container->MaxLayoutOverflow()));
+  FloatRect container_rect =
+      container->LocalToAbsoluteQuad(FloatQuad(overflow_rect))
+          .EnclosingBoundingBox();
 
-  if (containerRect.isEmpty())
+  if (container_rect.IsEmpty())
     return FloatRect();
 
   // Make the coordinates relative to the container enclosing bounding box.
   // Since we work with rects enclosing quad unions this is still
   // transform-friendly.
-  FloatRect normalizedRect = absoluteRect;
-  normalizedRect.moveBy(-containerRect.location());
+  FloatRect normalized_rect = absolute_rect;
+  normalized_rect.MoveBy(-container_rect.Location());
 
   // Fixed positions do not make sense in this coordinate system, but need to
   // leave consistent tickmarks.  So, use their position when the view is not
   // scrolled, like an absolute position.
-  if (layoutObject->style()->position() == EPosition::kFixed &&
-      container->isLayoutView()) {
-    normalizedRect.move(
-        -toLayoutView(container)->frameView()->getScrollOffset());
+  if (layout_object->Style()->GetPosition() == EPosition::kFixed &&
+      container->IsLayoutView()) {
+    normalized_rect.Move(
+        -ToLayoutView(container)->GetFrameView()->GetScrollOffset());
   }
 
-  normalizedRect.scale(1 / containerRect.width(), 1 / containerRect.height());
-  return normalizedRect;
+  normalized_rect.Scale(1 / container_rect.Width(),
+                        1 / container_rect.Height());
+  return normalized_rect;
 }
 
-FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect,
-                                         const LayoutObject* baseLayoutObject) {
-  if (!baseLayoutObject || inputRect.isEmpty())
+FloatRect FindInPageRectFromAbsoluteRect(
+    const FloatRect& input_rect,
+    const LayoutObject* base_layout_object) {
+  if (!base_layout_object || input_rect.IsEmpty())
     return FloatRect();
 
   // Normalize the input rect to its container block.
-  const LayoutBlock* baseContainer =
-      enclosingScrollableAncestor(baseLayoutObject);
-  FloatRect normalizedRect =
-      toNormalizedRect(inputRect, baseLayoutObject, baseContainer);
+  const LayoutBlock* base_container =
+      EnclosingScrollableAncestor(base_layout_object);
+  FloatRect normalized_rect =
+      ToNormalizedRect(input_rect, base_layout_object, base_container);
 
   // Go up across frames.
-  for (const LayoutBox* layoutObject = baseContainer; layoutObject;) {
+  for (const LayoutBox* layout_object = base_container; layout_object;) {
     // Go up the layout tree until we reach the root of the current frame (the
     // LayoutView).
-    while (!layoutObject->isLayoutView()) {
-      const LayoutBlock* container = enclosingScrollableAncestor(layoutObject);
+    while (!layout_object->IsLayoutView()) {
+      const LayoutBlock* container = EnclosingScrollableAncestor(layout_object);
 
       // Compose the normalized rects.
-      FloatRect normalizedBoxRect = toNormalizedRect(
-          layoutObject->absoluteBoundingBoxRect(), layoutObject, container);
-      normalizedRect.scale(normalizedBoxRect.width(),
-                           normalizedBoxRect.height());
-      normalizedRect.moveBy(normalizedBoxRect.location());
+      FloatRect normalized_box_rect = ToNormalizedRect(
+          layout_object->AbsoluteBoundingBoxRect(), layout_object, container);
+      normalized_rect.Scale(normalized_box_rect.Width(),
+                            normalized_box_rect.Height());
+      normalized_rect.MoveBy(normalized_box_rect.Location());
 
-      layoutObject = container;
+      layout_object = container;
     }
 
-    DCHECK(layoutObject->isLayoutView());
+    DCHECK(layout_object->IsLayoutView());
 
     // Jump to the layoutObject owning the frame, if any.
-    layoutObject =
-        layoutObject->frame() ? layoutObject->frame()->ownerLayoutObject() : 0;
+    layout_object = layout_object->GetFrame()
+                        ? layout_object->GetFrame()->OwnerLayoutObject()
+                        : 0;
   }
 
-  return normalizedRect;
+  return normalized_rect;
 }
 
-FloatRect findInPageRectFromRange(Range* range) {
-  if (!range || !range->firstNode())
+FloatRect FindInPageRectFromRange(Range* range) {
+  if (!range || !range->FirstNode())
     return FloatRect();
 
-  return findInPageRectFromAbsoluteRect(
-      LayoutObject::absoluteBoundingBoxRectForRange(range),
-      range->firstNode()->layoutObject());
+  return FindInPageRectFromAbsoluteRect(
+      LayoutObject::AbsoluteBoundingBoxRectForRange(range),
+      range->FirstNode()->GetLayoutObject());
 }
 
 }  // namespace blink

@@ -35,51 +35,51 @@ namespace blink {
 // TODO(flackr): Combine with WebLayerPositionConstraint.
 struct WebLayerStickyPositionConstraint {
   // True if the layer is sticky.
-  bool isSticky : 1;
+  bool is_sticky : 1;
 
   // For each edge, true if the layer should stick to that edge of its
   // ancestor scroller (or the viewport).
-  bool isAnchoredLeft : 1;
-  bool isAnchoredRight : 1;
-  bool isAnchoredTop : 1;
-  bool isAnchoredBottom : 1;
+  bool is_anchored_left : 1;
+  bool is_anchored_right : 1;
+  bool is_anchored_top : 1;
+  bool is_anchored_bottom : 1;
 
   // For each edge, when the anchored bit above is set this gives the distance
   // to keep the element from that edge of the ancestor scroller or viewport.
-  float leftOffset;
-  float rightOffset;
-  float topOffset;
-  float bottomOffset;
+  float left_offset;
+  float right_offset;
+  float top_offset;
+  float bottom_offset;
 
   // This is the layout position of the sticky element before it has been
   // shifted relative to the enclosing composited layer.
-  WebPoint parentRelativeStickyBoxOffset;
+  WebPoint parent_relative_sticky_box_offset;
 
   // The layout rectangle of the sticky element before it has been shifted
   // to stick.
-  WebRect scrollContainerRelativeStickyBoxRect;
+  WebRect scroll_container_relative_sticky_box_rect;
 
   // The layout rectangle of the containing block edges which this sticky
   // element should not be shifted beyond.
-  WebRect scrollContainerRelativeContainingBlockRect;
+  WebRect scroll_container_relative_containing_block_rect;
 
   // The nearest ancestor sticky layers that affect the sticky box constraint
   // rect and the containing block constraint rect respectively.
-  int nearestLayerShiftingStickyBox;
-  int nearestLayerShiftingContainingBlock;
+  int nearest_layer_shifting_sticky_box;
+  int nearest_layer_shifting_containing_block;
 
   WebLayerStickyPositionConstraint()
-      : isSticky(false),
-        isAnchoredLeft(false),
-        isAnchoredRight(false),
-        isAnchoredTop(false),
-        isAnchoredBottom(false),
-        leftOffset(0.f),
-        rightOffset(0.f),
-        topOffset(0.f),
-        bottomOffset(0.f),
-        nearestLayerShiftingStickyBox(WebLayer::kInvalidLayerId),
-        nearestLayerShiftingContainingBlock(WebLayer::kInvalidLayerId) {}
+      : is_sticky(false),
+        is_anchored_left(false),
+        is_anchored_right(false),
+        is_anchored_top(false),
+        is_anchored_bottom(false),
+        left_offset(0.f),
+        right_offset(0.f),
+        top_offset(0.f),
+        bottom_offset(0.f),
+        nearest_layer_shifting_sticky_box(WebLayer::kInvalidLayerId),
+        nearest_layer_shifting_containing_block(WebLayer::kInvalidLayerId) {}
 };
 
 }  // namespace blink

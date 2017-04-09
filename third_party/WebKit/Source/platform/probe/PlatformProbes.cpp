@@ -7,21 +7,21 @@
 namespace blink {
 namespace probe {
 
-double ProbeBase::captureStartTime() const {
-  if (!m_startTime)
-    m_startTime = monotonicallyIncreasingTime();
-  return m_startTime;
+double ProbeBase::CaptureStartTime() const {
+  if (!start_time_)
+    start_time_ = MonotonicallyIncreasingTime();
+  return start_time_;
 }
 
-double ProbeBase::captureEndTime() const {
-  if (!m_endTime)
-    m_endTime = monotonicallyIncreasingTime();
-  return m_endTime;
+double ProbeBase::CaptureEndTime() const {
+  if (!end_time_)
+    end_time_ = MonotonicallyIncreasingTime();
+  return end_time_;
 }
 
-double ProbeBase::duration() const {
-  DCHECK(m_startTime);
-  return captureEndTime() - m_startTime;
+double ProbeBase::Duration() const {
+  DCHECK(start_time_);
+  return CaptureEndTime() - start_time_;
 }
 
 }  // namespace probe

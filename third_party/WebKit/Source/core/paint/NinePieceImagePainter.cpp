@@ -17,31 +17,31 @@
 namespace blink {
 
 NinePieceImagePainter::NinePieceImagePainter(
-    const LayoutBoxModelObject& layoutObject)
-    : m_layoutObject(layoutObject) {}
+    const LayoutBoxModelObject& layout_object)
+    : layout_object_(layout_object) {}
 
-bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext,
+bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
                                   const LayoutRect& rect,
                                   const ComputedStyle& style,
-                                  const NinePieceImage& ninePieceImage,
+                                  const NinePieceImage& nine_piece_image,
                                   SkBlendMode op) const {
-  StyleImage* styleImage = ninePieceImage.image();
-  if (!styleImage)
+  StyleImage* style_image = nine_piece_image.GetImage();
+  if (!style_image)
     return false;
 
-  if (!styleImage->isLoaded())
+  if (!style_image->IsLoaded())
     return true;  // Never paint a nine-piece image incrementally, but don't
                   // paint the fallback borders either.
 
-  if (!styleImage->canRender())
+  if (!style_image->CanRender())
     return false;
 
   // FIXME: border-image is broken with full page zooming when tiling has to
   // happen, since the tiling function doesn't have any understanding of the
   // zoom that is in effect on the tile.
-  LayoutRect rectWithOutsets = rect;
-  rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
-  LayoutRect borderImageRect = rectWithOutsets;
+  LayoutRect rect_with_outsets = rect;
+  rect_with_outsets.Expand(style.ImageOutsets(nine_piece_image));
+  LayoutRect border_image_rect = rect_with_outsets;
 
   // NinePieceImage returns the image slices without effective zoom applied and
   // thus we compute the nine piece grid on top of the image in unzoomed
@@ -53,47 +53,48 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext,
   // is one. For generated images, the actual image data (gradient stops, etc.)
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
-  IntSize imageSize = roundedIntSize(
-      styleImage->imageSize(m_layoutObject, 1, borderImageRect.size()));
+  IntSize image_size = RoundedIntSize(
+      style_image->ImageSize(layout_object_, 1, border_image_rect.size()));
 
-  IntRectOutsets borderWidths(style.borderTopWidth(), style.borderRightWidth(),
-                              style.borderBottomWidth(),
-                              style.borderLeftWidth());
-  NinePieceImageGrid grid(ninePieceImage, imageSize,
-                          pixelSnappedIntRect(borderImageRect), borderWidths);
+  IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
+                               style.BorderBottomWidth(),
+                               style.BorderLeftWidth());
+  NinePieceImageGrid grid(nine_piece_image, image_size,
+                          PixelSnappedIntRect(border_image_rect),
+                          border_widths);
 
   RefPtr<Image> image =
-      styleImage->image(m_layoutObject, imageSize, style.effectiveZoom());
+      style_image->GetImage(layout_object_, image_size, style.EffectiveZoom());
 
-  InterpolationQuality interpolationQuality =
-      BoxPainter::chooseInterpolationQuality(m_layoutObject, image.get(), 0,
-                                             rectWithOutsets.size());
-  InterpolationQuality previousInterpolationQuality =
-      graphicsContext.imageInterpolationQuality();
-  graphicsContext.setImageInterpolationQuality(interpolationQuality);
+  InterpolationQuality interpolation_quality =
+      BoxPainter::ChooseInterpolationQuality(layout_object_, image.Get(), 0,
+                                             rect_with_outsets.size());
+  InterpolationQuality previous_interpolation_quality =
+      graphics_context.ImageInterpolationQuality();
+  graphics_context.SetImageInterpolationQuality(interpolation_quality);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
-               InspectorPaintImageEvent::data(m_layoutObject, *styleImage));
+               InspectorPaintImageEvent::Data(layout_object_, *style_image));
 
-  for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
-    NinePieceImageGrid::NinePieceDrawInfo drawInfo =
-        grid.getNinePieceDrawInfo(piece, styleImage->imageScaleFactor());
+  for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
+    NinePieceImageGrid::NinePieceDrawInfo draw_info =
+        grid.GetNinePieceDrawInfo(piece, style_image->ImageScaleFactor());
 
-    if (drawInfo.isDrawable) {
-      if (drawInfo.isCornerPiece) {
-        graphicsContext.drawImage(image.get(), drawInfo.destination,
-                                  &drawInfo.source, op);
+    if (draw_info.is_drawable) {
+      if (draw_info.is_corner_piece) {
+        graphics_context.DrawImage(image.Get(), draw_info.destination,
+                                   &draw_info.source, op);
       } else {
-        graphicsContext.drawTiledImage(image.get(), drawInfo.destination,
-                                       drawInfo.source, drawInfo.tileScale,
-                                       drawInfo.tileRule.horizontal,
-                                       drawInfo.tileRule.vertical, op);
+        graphics_context.DrawTiledImage(image.Get(), draw_info.destination,
+                                        draw_info.source, draw_info.tile_scale,
+                                        draw_info.tile_rule.horizontal,
+                                        draw_info.tile_rule.vertical, op);
       }
     }
   }
 
-  graphicsContext.setImageInterpolationQuality(previousInterpolationQuality);
+  graphics_context.SetImageInterpolationQuality(previous_interpolation_quality);
   return true;
 }
 

@@ -20,7 +20,7 @@ class NavigatorCredentials final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorCredentials);
 
  public:
-  static NavigatorCredentials& from(Navigator&);
+  static NavigatorCredentials& From(Navigator&);
   // NavigatorCredentials.idl
   static CredentialsContainer* credentials(Navigator&);
 
@@ -30,9 +30,9 @@ class NavigatorCredentials final
   explicit NavigatorCredentials(Navigator&);
   CredentialsContainer* credentials();
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<CredentialsContainer> m_credentialsContainer;
+  Member<CredentialsContainer> credentials_container_;
 };
 
 }  // namespace blink

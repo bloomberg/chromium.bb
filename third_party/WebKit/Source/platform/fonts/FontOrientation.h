@@ -32,48 +32,48 @@ namespace blink {
 
 enum class FontOrientation {
   // Horizontal; i.e., writing-mode: horizontal-tb
-  Horizontal = 0,
+  kHorizontal = 0,
   // Baseline is vertical but use rotated horizontal typography;
   // i.e., writing-mode: vertical-*; text-orientation: sideways-*
-  VerticalRotated = 1,
+  kVerticalRotated = 1,
   // Vertical with upright CJK and rotated non-CJK;
   // i.e., writing-mode: vertical-*, text-orientation: mixed
-  VerticalMixed = 2,
+  kVerticalMixed = 2,
   // Vertical with all upright;
   // i.e., writing-mode: vertical-*, text-orientation: upright
-  VerticalUpright = 3,
+  kVerticalUpright = 3,
 
-  BitCount = 2,
+  kBitCount = 2,
 
-  AnyUprightMask = 2,
+  kAnyUprightMask = 2,
 };
 
 inline bool operator&(FontOrientation value, FontOrientation mask) {
   return static_cast<unsigned>(value) & static_cast<unsigned>(mask);
 }
-inline bool isVerticalAnyUpright(FontOrientation orientation) {
-  return orientation & FontOrientation::AnyUprightMask;
+inline bool IsVerticalAnyUpright(FontOrientation orientation) {
+  return orientation & FontOrientation::kAnyUprightMask;
 }
-inline bool isVerticalNonCJKUpright(FontOrientation orientation) {
-  return orientation == FontOrientation::VerticalUpright;
+inline bool IsVerticalNonCJKUpright(FontOrientation orientation) {
+  return orientation == FontOrientation::kVerticalUpright;
 }
-inline bool isVerticalUpright(FontOrientation orientation, UChar32 character) {
-  return orientation == FontOrientation::VerticalUpright ||
-         (orientation == FontOrientation::VerticalMixed &&
-          Character::isUprightInMixedVertical(character));
+inline bool IsVerticalUpright(FontOrientation orientation, UChar32 character) {
+  return orientation == FontOrientation::kVerticalUpright ||
+         (orientation == FontOrientation::kVerticalMixed &&
+          Character::IsUprightInMixedVertical(character));
 }
-inline bool isVerticalBaseline(FontOrientation orientation) {
-  return orientation != FontOrientation::Horizontal;
+inline bool IsVerticalBaseline(FontOrientation orientation) {
+  return orientation != FontOrientation::kHorizontal;
 }
 
-inline FontOrientation adjustOrientationForCharacterInMixedVertical(
+inline FontOrientation AdjustOrientationForCharacterInMixedVertical(
     FontOrientation orientation,
     UChar32 character) {
-  if (orientation != FontOrientation::VerticalMixed)
+  if (orientation != FontOrientation::kVerticalMixed)
     return orientation;
-  return Character::isUprightInMixedVertical(character)
-             ? FontOrientation::VerticalUpright
-             : FontOrientation::VerticalRotated;
+  return Character::IsUprightInMixedVertical(character)
+             ? FontOrientation::kVerticalUpright
+             : FontOrientation::kVerticalRotated;
 }
 
 }  // namespace blink

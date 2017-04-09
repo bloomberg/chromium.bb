@@ -12,27 +12,27 @@ namespace blink {
 
 class LineLayoutListMarker : public LineLayoutBox {
  public:
-  explicit LineLayoutListMarker(LayoutListMarker* layoutListMarker)
-      : LineLayoutBox(layoutListMarker) {}
+  explicit LineLayoutListMarker(LayoutListMarker* layout_list_marker)
+      : LineLayoutBox(layout_list_marker) {}
 
   explicit LineLayoutListMarker(const LineLayoutItem& item)
       : LineLayoutBox(item) {
-    SECURITY_DCHECK(!item || item.isListMarker());
+    SECURITY_DCHECK(!item || item.IsListMarker());
   }
 
   explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) {}
 
   LineLayoutListMarker() {}
 
-  bool isInside() const { return toListMarker()->isInside(); }
+  bool IsInside() const { return ToListMarker()->IsInside(); }
 
  private:
-  LayoutListMarker* toListMarker() {
-    return toLayoutListMarker(layoutObject());
+  LayoutListMarker* ToListMarker() {
+    return ToLayoutListMarker(GetLayoutObject());
   }
 
-  const LayoutListMarker* toListMarker() const {
-    return toLayoutListMarker(layoutObject());
+  const LayoutListMarker* ToListMarker() const {
+    return ToLayoutListMarker(GetLayoutObject());
   }
 };
 

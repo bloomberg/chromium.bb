@@ -17,31 +17,31 @@ class SVGLengthListInterpolationType : public SVGInterpolationType {
  public:
   SVGLengthListInterpolationType(const QualifiedName& attribute)
       : SVGInterpolationType(attribute),
-        m_unitMode(SVGLength::lengthModeForAnimatedLengthAttribute(attribute)),
-        m_negativeValuesForbidden(
-            SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(
+        unit_mode_(SVGLength::LengthModeForAnimatedLengthAttribute(attribute)),
+        negative_values_forbidden_(
+            SVGLength::NegativeValuesForbiddenForAnimatedLengthAttribute(
                 attribute)) {}
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertSVGValue(
-      const SVGPropertyBase& svgValue) const final;
-  PairwiseInterpolationValue maybeMergeSingles(
+  InterpolationValue MaybeConvertSVGValue(
+      const SVGPropertyBase& svg_value) const final;
+  PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;
-  void composite(UnderlyingValueOwner&,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner&,
+                 double underlying_fraction,
                  const InterpolationValue&,
-                 double interpolationFraction) const final;
-  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+                 double interpolation_fraction) const final;
+  SVGPropertyBase* AppliedSVGValue(const InterpolableValue&,
                                    const NonInterpolableValue*) const final;
-  void apply(const InterpolableValue&,
+  void Apply(const InterpolableValue&,
              const NonInterpolableValue*,
              InterpolationEnvironment&) const final;
 
-  const SVGLengthMode m_unitMode;
-  const bool m_negativeValuesForbidden;
+  const SVGLengthMode unit_mode_;
+  const bool negative_values_forbidden_;
 };
 
 }  // namespace blink

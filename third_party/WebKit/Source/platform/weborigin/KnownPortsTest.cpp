@@ -13,7 +13,7 @@ TEST(KnownPortsTest, IsDefaultPortForProtocol) {
   struct TestCase {
     const unsigned short port;
     const char* protocol;
-    const bool isKnown;
+    const bool is_known;
   } inputs[] = {
       // Known ones.
       {80, "http", true},
@@ -36,8 +36,8 @@ TEST(KnownPortsTest, IsDefaultPortForProtocol) {
   };
 
   for (const TestCase& test : inputs) {
-    bool result = isDefaultPortForProtocol(test.port, test.protocol);
-    EXPECT_EQ(test.isKnown, result);
+    bool result = IsDefaultPortForProtocol(test.port, test.protocol);
+    EXPECT_EQ(test.is_known, result);
   }
 }
 
@@ -62,13 +62,13 @@ TEST(KnownPortsTest, DefaultPortForProtocol) {
   };
 
   for (const TestCase& test : inputs)
-    EXPECT_EQ(test.port, defaultPortForProtocol(test.protocol));
+    EXPECT_EQ(test.port, DefaultPortForProtocol(test.protocol));
 }
 
 TEST(KnownPortsTest, IsPortAllowedForScheme) {
   struct TestCase {
     const char* url;
-    const bool isAllowed;
+    const bool is_allowed;
   } inputs[] = {
       // Allowed ones.
       {"http://example.com", true},
@@ -84,8 +84,8 @@ TEST(KnownPortsTest, IsPortAllowedForScheme) {
   };
 
   for (const TestCase& test : inputs)
-    EXPECT_EQ(test.isAllowed,
-              isPortAllowedForScheme(KURL(ParsedURLString, test.url)));
+    EXPECT_EQ(test.is_allowed,
+              IsPortAllowedForScheme(KURL(kParsedURLString, test.url)));
 }
 
 }  // namespace blink

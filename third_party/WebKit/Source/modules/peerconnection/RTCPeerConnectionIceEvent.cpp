@@ -29,43 +29,43 @@
 
 namespace blink {
 
-RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::create(
-    bool canBubble,
+RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
+    bool can_bubble,
     bool cancelable,
     RTCIceCandidate* candidate) {
-  return new RTCPeerConnectionIceEvent(canBubble, cancelable, candidate);
+  return new RTCPeerConnectionIceEvent(can_bubble, cancelable, candidate);
 }
 
-RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::create(
+RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::Create(
     const AtomicString& type,
     const RTCPeerConnectionIceEventInit& initializer) {
   return new RTCPeerConnectionIceEvent(type, initializer);
 }
 
-RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(bool canBubble,
+RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(bool can_bubble,
                                                      bool cancelable,
                                                      RTCIceCandidate* candidate)
-    : Event(EventTypeNames::icecandidate, canBubble, cancelable),
-      m_candidate(candidate) {}
+    : Event(EventTypeNames::icecandidate, can_bubble, cancelable),
+      candidate_(candidate) {}
 
 RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(
     const AtomicString& type,
     const RTCPeerConnectionIceEventInit& initializer)
-    : Event(type, initializer), m_candidate(initializer.candidate()) {}
+    : Event(type, initializer), candidate_(initializer.candidate()) {}
 
 RTCPeerConnectionIceEvent::~RTCPeerConnectionIceEvent() {}
 
 RTCIceCandidate* RTCPeerConnectionIceEvent::candidate() const {
-  return m_candidate.get();
+  return candidate_.Get();
 }
 
-const AtomicString& RTCPeerConnectionIceEvent::interfaceName() const {
+const AtomicString& RTCPeerConnectionIceEvent::InterfaceName() const {
   return EventNames::RTCPeerConnectionIceEvent;
 }
 
 DEFINE_TRACE(RTCPeerConnectionIceEvent) {
-  visitor->trace(m_candidate);
-  Event::trace(visitor);
+  visitor->Trace(candidate_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

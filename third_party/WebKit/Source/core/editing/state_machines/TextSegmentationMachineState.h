@@ -12,14 +12,14 @@ namespace blink {
 
 enum class TextSegmentationMachineState {
   // Indicates the state machine is in invalid state.
-  Invalid,
+  kInvalid,
   // Indicates the state machine needs more code units to transit the state.
-  NeedMoreCodeUnit,
+  kNeedMoreCodeUnit,
   // Indicates the state machine needs following code units to transit the
   // state.
-  NeedFollowingCodeUnit,
+  kNeedFollowingCodeUnit,
   // Indicates the state machine found a boundary.
-  Finished,
+  kFinished,
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&,

@@ -30,13 +30,13 @@
 
 namespace blink {
 
-void enableSecureTextInput() {
+void EnableSecureTextInput() {
   if (IsSecureEventInputEnabled())
     return;
   EnableSecureEventInput();
 }
 
-void disableSecureTextInput() {
+void DisableSecureTextInput() {
   if (!IsSecureEventInputEnabled())
     return;
   DisableSecureEventInput();

@@ -12,63 +12,63 @@
 
 namespace blink {
 
-USBInterface* USBInterface::create(const USBConfiguration* configuration,
-                                   size_t interfaceIndex) {
-  return new USBInterface(configuration->device(), configuration->index(),
-                          interfaceIndex);
+USBInterface* USBInterface::Create(const USBConfiguration* configuration,
+                                   size_t interface_index) {
+  return new USBInterface(configuration->Device(), configuration->Index(),
+                          interface_index);
 }
 
-USBInterface* USBInterface::create(const USBConfiguration* configuration,
-                                   size_t interfaceNumber,
-                                   ExceptionState& exceptionState) {
-  const auto& interfaces = configuration->info().interfaces;
+USBInterface* USBInterface::Create(const USBConfiguration* configuration,
+                                   size_t interface_number,
+                                   ExceptionState& exception_state) {
+  const auto& interfaces = configuration->Info().interfaces;
   for (size_t i = 0; i < interfaces.size(); ++i) {
-    if (interfaces[i]->interface_number == interfaceNumber)
-      return new USBInterface(configuration->device(), configuration->index(),
+    if (interfaces[i]->interface_number == interface_number)
+      return new USBInterface(configuration->Device(), configuration->Index(),
                               i);
   }
-  exceptionState.throwRangeError("Invalid interface index.");
+  exception_state.ThrowRangeError("Invalid interface index.");
   return nullptr;
 }
 
 USBInterface::USBInterface(const USBDevice* device,
-                           size_t configurationIndex,
-                           size_t interfaceIndex)
-    : m_device(device),
-      m_configurationIndex(configurationIndex),
-      m_interfaceIndex(interfaceIndex) {
-  ASSERT(m_configurationIndex < m_device->info().configurations.size());
+                           size_t configuration_index,
+                           size_t interface_index)
+    : device_(device),
+      configuration_index_(configuration_index),
+      interface_index_(interface_index) {
+  ASSERT(configuration_index_ < device_->Info().configurations.size());
   ASSERT(
-      m_interfaceIndex <
-      m_device->info().configurations[m_configurationIndex]->interfaces.size());
+      interface_index_ <
+      device_->Info().configurations[configuration_index_]->interfaces.size());
 }
 
-const device::usb::blink::InterfaceInfo& USBInterface::info() const {
-  return *m_device->info()
-              .configurations[m_configurationIndex]
-              ->interfaces[m_interfaceIndex];
+const device::usb::blink::InterfaceInfo& USBInterface::Info() const {
+  return *device_->Info()
+              .configurations[configuration_index_]
+              ->interfaces[interface_index_];
 }
 
 USBAlternateInterface* USBInterface::alternate() const {
-  if (m_device->isInterfaceClaimed(m_configurationIndex, m_interfaceIndex))
-    return USBAlternateInterface::create(
-        this, m_device->selectedAlternateInterface(m_interfaceIndex));
+  if (device_->IsInterfaceClaimed(configuration_index_, interface_index_))
+    return USBAlternateInterface::Create(
+        this, device_->SelectedAlternateInterface(interface_index_));
   return nullptr;
 }
 
 HeapVector<Member<USBAlternateInterface>> USBInterface::alternates() const {
   HeapVector<Member<USBAlternateInterface>> alternates;
-  for (size_t i = 0; i < info().alternates.size(); ++i)
-    alternates.push_back(USBAlternateInterface::create(this, i));
+  for (size_t i = 0; i < Info().alternates.size(); ++i)
+    alternates.push_back(USBAlternateInterface::Create(this, i));
   return alternates;
 }
 
 bool USBInterface::claimed() const {
-  return m_device->isInterfaceClaimed(m_configurationIndex, m_interfaceIndex);
+  return device_->IsInterfaceClaimed(configuration_index_, interface_index_);
 }
 
 DEFINE_TRACE(USBInterface) {
-  visitor->trace(m_device);
+  visitor->Trace(device_);
 }
 
 }  // namespace blink

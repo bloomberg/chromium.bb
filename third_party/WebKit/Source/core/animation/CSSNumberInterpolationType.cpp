@@ -14,101 +14,101 @@ namespace blink {
 
 class InheritedNumberChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<InheritedNumberChecker> create(CSSPropertyID property,
+  static std::unique_ptr<InheritedNumberChecker> Create(CSSPropertyID property,
                                                         double number) {
-    return WTF::wrapUnique(new InheritedNumberChecker(property, number));
+    return WTF::WrapUnique(new InheritedNumberChecker(property, number));
   }
 
  private:
   InheritedNumberChecker(CSSPropertyID property, double number)
-      : m_property(property), m_number(number) {}
+      : property_(property), number_(number) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    double parentNumber;
-    if (!NumberPropertyFunctions::getNumber(
-            m_property, *environment.state().parentStyle(), parentNumber))
+    double parent_number;
+    if (!NumberPropertyFunctions::GetNumber(
+            property_, *environment.GetState().ParentStyle(), parent_number))
       return false;
-    return parentNumber == m_number;
+    return parent_number == number_;
   }
 
-  const CSSPropertyID m_property;
-  const double m_number;
+  const CSSPropertyID property_;
+  const double number_;
 };
 
-const CSSValue* CSSNumberInterpolationType::createCSSValue(
+const CSSValue* CSSNumberInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return CSSPrimitiveValue::create(toInterpolableNumber(value).value(),
-                                   CSSPrimitiveValue::UnitType::Number);
+  return CSSPrimitiveValue::Create(ToInterpolableNumber(value).Value(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
-InterpolationValue CSSNumberInterpolationType::createNumberValue(
+InterpolationValue CSSNumberInterpolationType::CreateNumberValue(
     double number) const {
-  return InterpolationValue(InterpolableNumber::create(number));
+  return InterpolationValue(InterpolableNumber::Create(number));
 }
 
-InterpolationValue CSSNumberInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSNumberInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return createNumberValue(0);
+  return CreateNumberValue(0);
 }
 
-InterpolationValue CSSNumberInterpolationType::maybeConvertInitial(
+InterpolationValue CSSNumberInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
-    ConversionCheckers& conversionCheckers) const {
-  double initialNumber;
-  if (!NumberPropertyFunctions::getInitialNumber(cssProperty(), initialNumber))
+    ConversionCheckers& conversion_checkers) const {
+  double initial_number;
+  if (!NumberPropertyFunctions::GetInitialNumber(CssProperty(), initial_number))
     return nullptr;
-  return createNumberValue(initialNumber);
+  return CreateNumberValue(initial_number);
 }
 
-InterpolationValue CSSNumberInterpolationType::maybeConvertInherit(
+InterpolationValue CSSNumberInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  if (!state.parentStyle())
+    ConversionCheckers& conversion_checkers) const {
+  if (!state.ParentStyle())
     return nullptr;
-  double inheritedNumber;
-  if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.parentStyle(),
-                                          inheritedNumber))
+  double inherited_number;
+  if (!NumberPropertyFunctions::GetNumber(CssProperty(), *state.ParentStyle(),
+                                          inherited_number))
     return nullptr;
-  conversionCheckers.push_back(
-      InheritedNumberChecker::create(cssProperty(), inheritedNumber));
-  return createNumberValue(inheritedNumber);
+  conversion_checkers.push_back(
+      InheritedNumberChecker::Create(CssProperty(), inherited_number));
+  return CreateNumberValue(inherited_number);
 }
 
-InterpolationValue CSSNumberInterpolationType::maybeConvertValue(
+InterpolationValue CSSNumberInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isNumber())
+  if (!value.IsPrimitiveValue() || !ToCSSPrimitiveValue(value).IsNumber())
     return nullptr;
-  return createNumberValue(toCSSPrimitiveValue(value).getDoubleValue());
+  return CreateNumberValue(ToCSSPrimitiveValue(value).GetDoubleValue());
 }
 
 InterpolationValue
-CSSNumberInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSNumberInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  double underlyingNumber;
-  if (!NumberPropertyFunctions::getNumber(cssProperty(), style,
-                                          underlyingNumber))
+  double underlying_number;
+  if (!NumberPropertyFunctions::GetNumber(CssProperty(), style,
+                                          underlying_number))
     return nullptr;
-  return createNumberValue(underlyingNumber);
+  return CreateNumberValue(underlying_number);
 }
 
-void CSSNumberInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
+void CSSNumberInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*,
     StyleResolverState& state) const {
-  double clampedNumber = NumberPropertyFunctions::clampNumber(
-      cssProperty(), toInterpolableNumber(interpolableValue).value());
-  if (!NumberPropertyFunctions::setNumber(cssProperty(), *state.style(),
-                                          clampedNumber))
-    StyleBuilder::applyProperty(
-        cssProperty(), state,
-        *CSSPrimitiveValue::create(clampedNumber,
-                                   CSSPrimitiveValue::UnitType::Number));
+  double clamped_number = NumberPropertyFunctions::ClampNumber(
+      CssProperty(), ToInterpolableNumber(interpolable_value).Value());
+  if (!NumberPropertyFunctions::SetNumber(CssProperty(), *state.Style(),
+                                          clamped_number))
+    StyleBuilder::ApplyProperty(
+        CssProperty(), state,
+        *CSSPrimitiveValue::Create(clamped_number,
+                                   CSSPrimitiveValue::UnitType::kNumber));
 }
 
 }  // namespace blink

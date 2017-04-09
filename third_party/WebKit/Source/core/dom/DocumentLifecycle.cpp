@@ -39,322 +39,323 @@
 
 namespace blink {
 
-static DocumentLifecycle::DeprecatedTransition* s_deprecatedTransitionStack = 0;
+static DocumentLifecycle::DeprecatedTransition* g_deprecated_transition_stack =
+    0;
 
 // TODO(skyostil): Come up with a better way to store cross-frame lifecycle
 // related data to avoid this being a global setting.
-static unsigned s_allowThrottlingCount = 0;
+static unsigned g_allow_throttling_count = 0;
 
 DocumentLifecycle::Scope::Scope(DocumentLifecycle& lifecycle,
-                                LifecycleState finalState)
-    : m_lifecycle(lifecycle), m_finalState(finalState) {}
+                                LifecycleState final_state)
+    : lifecycle_(lifecycle), final_state_(final_state) {}
 
 DocumentLifecycle::Scope::~Scope() {
-  m_lifecycle.advanceTo(m_finalState);
+  lifecycle_.AdvanceTo(final_state_);
 }
 
 DocumentLifecycle::DeprecatedTransition::DeprecatedTransition(
     LifecycleState from,
     LifecycleState to)
-    : m_previous(s_deprecatedTransitionStack), m_from(from), m_to(to) {
-  s_deprecatedTransitionStack = this;
+    : previous_(g_deprecated_transition_stack), from_(from), to_(to) {
+  g_deprecated_transition_stack = this;
 }
 
 DocumentLifecycle::DeprecatedTransition::~DeprecatedTransition() {
-  s_deprecatedTransitionStack = m_previous;
+  g_deprecated_transition_stack = previous_;
 }
 
 DocumentLifecycle::AllowThrottlingScope::AllowThrottlingScope(
     DocumentLifecycle& lifecycle) {
-  s_allowThrottlingCount++;
+  g_allow_throttling_count++;
 }
 
 DocumentLifecycle::AllowThrottlingScope::~AllowThrottlingScope() {
-  DCHECK_GT(s_allowThrottlingCount, 0u);
-  s_allowThrottlingCount--;
+  DCHECK_GT(g_allow_throttling_count, 0u);
+  g_allow_throttling_count--;
 }
 
 DocumentLifecycle::DisallowThrottlingScope::DisallowThrottlingScope(
     DocumentLifecycle& lifecycle) {
-  m_savedCount = s_allowThrottlingCount;
-  s_allowThrottlingCount = 0;
+  saved_count_ = g_allow_throttling_count;
+  g_allow_throttling_count = 0;
 }
 
 DocumentLifecycle::DisallowThrottlingScope::~DisallowThrottlingScope() {
-  s_allowThrottlingCount = m_savedCount;
+  g_allow_throttling_count = saved_count_;
 }
 
 DocumentLifecycle::DocumentLifecycle()
-    : m_state(Uninitialized), m_detachCount(0), m_disallowTransitionCount(0) {}
+    : state_(kUninitialized), detach_count_(0), disallow_transition_count_(0) {}
 
 DocumentLifecycle::~DocumentLifecycle() {}
 
 #if DCHECK_IS_ON()
 
-bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const {
-  if (stateTransitionDisallowed())
+bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
+  if (StateTransitionDisallowed())
     return false;
 
   // We can stop from anywhere.
-  if (nextState == Stopping)
+  if (next_state == kStopping)
     return true;
 
-  switch (m_state) {
-    case Uninitialized:
-      return nextState == Inactive;
-    case Inactive:
-      if (nextState == StyleClean)
+  switch (state_) {
+    case kUninitialized:
+      return next_state == kInactive;
+    case kInactive:
+      if (next_state == kStyleClean)
         return true;
       break;
-    case VisualUpdatePending:
-      if (nextState == InPreLayout)
+    case kVisualUpdatePending:
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
-      if (nextState == InPerformLayout)
+      if (next_state == kInPerformLayout)
         return true;
       break;
-    case InStyleRecalc:
-      return nextState == StyleClean;
-    case StyleClean:
+    case kInStyleRecalc:
+      return next_state == kStyleClean;
+    case kStyleClean:
       // We can synchronously recalc style.
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
       // We can notify layout objects that subtrees changed.
-      if (nextState == InLayoutSubtreeChange)
+      if (next_state == kInLayoutSubtreeChange)
         return true;
       // We can synchronously perform layout.
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == InPerformLayout)
+      if (next_state == kInPerformLayout)
         return true;
       // We can redundant arrive in the style clean state.
-      if (nextState == StyleClean)
+      if (next_state == kStyleClean)
         return true;
-      if (nextState == LayoutClean)
+      if (next_state == kLayoutClean)
         return true;
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InCompositingUpdate)
+          next_state == kInCompositingUpdate)
         return true;
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InPrePaint)
+          next_state == kInPrePaint)
         return true;
       break;
-    case InLayoutSubtreeChange:
-      return nextState == LayoutSubtreeChangeClean;
-    case LayoutSubtreeChangeClean:
+    case kInLayoutSubtreeChange:
+      return next_state == kLayoutSubtreeChangeClean;
+    case kLayoutSubtreeChangeClean:
       // We can synchronously recalc style.
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
       // We can synchronously perform layout.
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == InPerformLayout)
+      if (next_state == kInPerformLayout)
         return true;
       // Can move back to style clean.
-      if (nextState == StyleClean)
+      if (next_state == kStyleClean)
         return true;
-      if (nextState == LayoutClean)
+      if (next_state == kLayoutClean)
         return true;
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InCompositingUpdate)
+          next_state == kInCompositingUpdate)
         return true;
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InPrePaint)
+          next_state == kInPrePaint)
         return true;
       break;
-    case InPreLayout:
-      if (nextState == InStyleRecalc)
+    case kInPreLayout:
+      if (next_state == kInStyleRecalc)
         return true;
-      if (nextState == StyleClean)
+      if (next_state == kStyleClean)
         return true;
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
       break;
-    case InPerformLayout:
-      return nextState == AfterPerformLayout;
-    case AfterPerformLayout:
+    case kInPerformLayout:
+      return next_state == kAfterPerformLayout;
+    case kAfterPerformLayout:
       // We can synchronously recompute layout in AfterPerformLayout.
       // FIXME: Ideally, we would unnest this recursion into a loop.
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == LayoutClean)
+      if (next_state == kLayoutClean)
         return true;
       break;
-    case LayoutClean:
+    case kLayoutClean:
       // We can synchronously recalc style.
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
       // We can synchronously perform layout.
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == InPerformLayout)
+      if (next_state == kInPerformLayout)
         return true;
       // We can redundantly arrive in the layout clean state. This situation
       // can happen when we call layout recursively and we unwind the stack.
-      if (nextState == LayoutClean)
+      if (next_state == kLayoutClean)
         return true;
-      if (nextState == StyleClean)
+      if (next_state == kStyleClean)
         return true;
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InCompositingUpdate)
+          next_state == kInCompositingUpdate)
         return true;
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InPrePaint)
+          next_state == kInPrePaint)
         return true;
       break;
-    case InCompositingUpdate:
+    case kInCompositingUpdate:
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-      return nextState == CompositingClean;
-    case CompositingClean:
+      return next_state == kCompositingClean;
+    case kCompositingClean:
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == InCompositingUpdate)
+      if (next_state == kInCompositingUpdate)
         return true;
       if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-        if (nextState == InPrePaint)
+        if (next_state == kInPrePaint)
           return true;
-      } else if (nextState == InPaintInvalidation) {
+      } else if (next_state == kInPaintInvalidation) {
         return true;
       }
       break;
-    case InPaintInvalidation:
+    case kInPaintInvalidation:
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-      return nextState == PaintInvalidationClean;
-    case PaintInvalidationClean:
+      return next_state == kPaintInvalidationClean;
+    case kPaintInvalidationClean:
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
-      if (nextState == InCompositingUpdate)
+      if (next_state == kInCompositingUpdate)
         return true;
-      if (nextState == InPrePaint)
+      if (next_state == kInPrePaint)
         return true;
       break;
-    case InPrePaint:
-      if (nextState == PrePaintClean)
+    case kInPrePaint:
+      if (next_state == kPrePaintClean)
         return true;
       break;
-    case PrePaintClean:
-      if (nextState == InPaint)
+    case kPrePaintClean:
+      if (next_state == kInPaint)
         return true;
-      if (nextState == InStyleRecalc)
+      if (next_state == kInStyleRecalc)
         return true;
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InCompositingUpdate)
+          next_state == kInCompositingUpdate)
         return true;
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InPrePaint)
+          next_state == kInPrePaint)
         return true;
       break;
-    case InPaint:
-      if (nextState == PaintClean)
+    case kInPaint:
+      if (next_state == kPaintClean)
         return true;
       break;
-    case PaintClean:
-      if (nextState == InStyleRecalc)
+    case kPaintClean:
+      if (next_state == kInStyleRecalc)
         return true;
-      if (nextState == InPreLayout)
+      if (next_state == kInPreLayout)
         return true;
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InCompositingUpdate)
+          next_state == kInCompositingUpdate)
         return true;
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-          nextState == InPrePaint)
+          next_state == kInPrePaint)
         return true;
       break;
-    case Stopping:
-      return nextState == Stopped;
-    case Stopped:
+    case kStopping:
+      return next_state == kStopped;
+    case kStopped:
       return false;
   }
   return false;
 }
 
-bool DocumentLifecycle::canRewindTo(LifecycleState nextState) const {
-  if (stateTransitionDisallowed())
+bool DocumentLifecycle::CanRewindTo(LifecycleState next_state) const {
+  if (StateTransitionDisallowed())
     return false;
 
   // This transition is bogus, but we've whitelisted it anyway.
-  if (s_deprecatedTransitionStack &&
-      m_state == s_deprecatedTransitionStack->from() &&
-      nextState == s_deprecatedTransitionStack->to())
+  if (g_deprecated_transition_stack &&
+      state_ == g_deprecated_transition_stack->From() &&
+      next_state == g_deprecated_transition_stack->To())
     return true;
-  return m_state == StyleClean || m_state == LayoutSubtreeChangeClean ||
-         m_state == AfterPerformLayout || m_state == LayoutClean ||
-         m_state == CompositingClean || m_state == PaintInvalidationClean ||
-         m_state == PrePaintClean || m_state == PaintClean;
+  return state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
+         state_ == kAfterPerformLayout || state_ == kLayoutClean ||
+         state_ == kCompositingClean || state_ == kPaintInvalidationClean ||
+         state_ == kPrePaintClean || state_ == kPaintClean;
 }
 
 #define DEBUG_STRING_CASE(StateName) \
   case DocumentLifecycle::StateName: \
     return #StateName
 
-static WTF::String stateAsDebugString(
+static WTF::String StateAsDebugString(
     const DocumentLifecycle::LifecycleState& state) {
   switch (state) {
-    DEBUG_STRING_CASE(Uninitialized);
-    DEBUG_STRING_CASE(Inactive);
-    DEBUG_STRING_CASE(VisualUpdatePending);
-    DEBUG_STRING_CASE(InStyleRecalc);
-    DEBUG_STRING_CASE(StyleClean);
-    DEBUG_STRING_CASE(InLayoutSubtreeChange);
-    DEBUG_STRING_CASE(LayoutSubtreeChangeClean);
-    DEBUG_STRING_CASE(InPreLayout);
-    DEBUG_STRING_CASE(InPerformLayout);
-    DEBUG_STRING_CASE(AfterPerformLayout);
-    DEBUG_STRING_CASE(LayoutClean);
-    DEBUG_STRING_CASE(InCompositingUpdate);
-    DEBUG_STRING_CASE(CompositingClean);
-    DEBUG_STRING_CASE(InPaintInvalidation);
-    DEBUG_STRING_CASE(PaintInvalidationClean);
-    DEBUG_STRING_CASE(InPrePaint);
-    DEBUG_STRING_CASE(PrePaintClean);
-    DEBUG_STRING_CASE(InPaint);
-    DEBUG_STRING_CASE(PaintClean);
-    DEBUG_STRING_CASE(Stopping);
-    DEBUG_STRING_CASE(Stopped);
+    DEBUG_STRING_CASE(kUninitialized);
+    DEBUG_STRING_CASE(kInactive);
+    DEBUG_STRING_CASE(kVisualUpdatePending);
+    DEBUG_STRING_CASE(kInStyleRecalc);
+    DEBUG_STRING_CASE(kStyleClean);
+    DEBUG_STRING_CASE(kInLayoutSubtreeChange);
+    DEBUG_STRING_CASE(kLayoutSubtreeChangeClean);
+    DEBUG_STRING_CASE(kInPreLayout);
+    DEBUG_STRING_CASE(kInPerformLayout);
+    DEBUG_STRING_CASE(kAfterPerformLayout);
+    DEBUG_STRING_CASE(kLayoutClean);
+    DEBUG_STRING_CASE(kInCompositingUpdate);
+    DEBUG_STRING_CASE(kCompositingClean);
+    DEBUG_STRING_CASE(kInPaintInvalidation);
+    DEBUG_STRING_CASE(kPaintInvalidationClean);
+    DEBUG_STRING_CASE(kInPrePaint);
+    DEBUG_STRING_CASE(kPrePaintClean);
+    DEBUG_STRING_CASE(kInPaint);
+    DEBUG_STRING_CASE(kPaintClean);
+    DEBUG_STRING_CASE(kStopping);
+    DEBUG_STRING_CASE(kStopped);
   }
 
   NOTREACHED();
   return "Unknown";
 }
 
-WTF::String DocumentLifecycle::toString() const {
-  return stateAsDebugString(m_state);
+WTF::String DocumentLifecycle::ToString() const {
+  return StateAsDebugString(state_);
 }
 #endif
 
-void DocumentLifecycle::advanceTo(LifecycleState nextState) {
+void DocumentLifecycle::AdvanceTo(LifecycleState next_state) {
 #if DCHECK_IS_ON()
-  DCHECK(canAdvanceTo(nextState)) << "Cannot advance document lifecycle from "
-                                  << stateAsDebugString(m_state) << " to "
-                                  << stateAsDebugString(nextState) << ".";
+  DCHECK(CanAdvanceTo(next_state))
+      << "Cannot advance document lifecycle from " << StateAsDebugString(state_)
+      << " to " << StateAsDebugString(next_state) << ".";
 #endif
-  m_state = nextState;
+  state_ = next_state;
 }
 
-void DocumentLifecycle::ensureStateAtMost(LifecycleState state) {
-  DCHECK(state == VisualUpdatePending || state == StyleClean ||
-         state == LayoutClean);
-  if (m_state <= state)
+void DocumentLifecycle::EnsureStateAtMost(LifecycleState state) {
+  DCHECK(state == kVisualUpdatePending || state == kStyleClean ||
+         state == kLayoutClean);
+  if (state_ <= state)
     return;
 #if DCHECK_IS_ON()
-  DCHECK(canRewindTo(state)) << "Cannot rewind document lifecycle from "
-                             << stateAsDebugString(m_state) << " to "
-                             << stateAsDebugString(state) << ".";
+  DCHECK(CanRewindTo(state))
+      << "Cannot rewind document lifecycle from " << StateAsDebugString(state_)
+      << " to " << StateAsDebugString(state) << ".";
 #endif
-  m_state = state;
+  state_ = state;
 }
 
-bool DocumentLifecycle::throttlingAllowed() const {
-  return s_allowThrottlingCount;
+bool DocumentLifecycle::ThrottlingAllowed() const {
+  return g_allow_throttling_count;
 }
 
 }  // namespace blink

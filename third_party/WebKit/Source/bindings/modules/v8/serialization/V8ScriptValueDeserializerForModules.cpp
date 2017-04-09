@@ -16,37 +16,38 @@
 
 namespace blink {
 
-ScriptWrappable* V8ScriptValueDeserializerForModules::readDOMObject(
+ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
     SerializationTag tag) {
   // Give the core/ implementation a chance to try first.
   // If it didn't recognize the kind of wrapper, try the modules types.
   if (ScriptWrappable* wrappable =
-          V8ScriptValueDeserializer::readDOMObject(tag))
+          V8ScriptValueDeserializer::ReadDOMObject(tag))
     return wrappable;
 
   switch (tag) {
-    case CryptoKeyTag:
-      return readCryptoKey();
-    case DOMFileSystemTag: {
-      uint32_t rawType;
+    case kCryptoKeyTag:
+      return ReadCryptoKey();
+    case kDOMFileSystemTag: {
+      uint32_t raw_type;
       String name;
-      String rootURL;
-      if (!readUint32(&rawType) || rawType > FileSystemTypeLast ||
-          !readUTF8String(&name) || !readUTF8String(&rootURL))
+      String root_url;
+      if (!ReadUint32(&raw_type) || raw_type > kFileSystemTypeLast ||
+          !ReadUTF8String(&name) || !ReadUTF8String(&root_url))
         return nullptr;
-      return DOMFileSystem::create(getScriptState()->getExecutionContext(),
-                                   name, static_cast<FileSystemType>(rawType),
-                                   KURL(ParsedURLString, rootURL));
+      return DOMFileSystem::Create(GetScriptState()->GetExecutionContext(),
+                                   name, static_cast<FileSystemType>(raw_type),
+                                   KURL(kParsedURLString, root_url));
     }
-    case RTCCertificateTag: {
-      String pemPrivateKey;
-      String pemCertificate;
-      if (!readUTF8String(&pemPrivateKey) || !readUTF8String(&pemCertificate))
+    case kRTCCertificateTag: {
+      String pem_private_key;
+      String pem_certificate;
+      if (!ReadUTF8String(&pem_private_key) ||
+          !ReadUTF8String(&pem_certificate))
         return nullptr;
-      std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator(
-          Platform::current()->createRTCCertificateGenerator());
+      std::unique_ptr<WebRTCCertificateGenerator> certificate_generator(
+          Platform::Current()->CreateRTCCertificateGenerator());
       std::unique_ptr<WebRTCCertificate> certificate =
-          certificateGenerator->fromPEM(pemPrivateKey, pemCertificate);
+          certificate_generator->FromPEM(pem_private_key, pem_certificate);
       if (!certificate)
         return nullptr;
       return new RTCCertificate(std::move(certificate));
@@ -59,226 +60,230 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::readDOMObject(
 
 namespace {
 
-bool algorithmIdFromWireFormat(uint32_t rawId, WebCryptoAlgorithmId* id) {
-  switch (static_cast<CryptoKeyAlgorithmTag>(rawId)) {
-    case AesCbcTag:
-      *id = WebCryptoAlgorithmIdAesCbc;
+bool AlgorithmIdFromWireFormat(uint32_t raw_id, WebCryptoAlgorithmId* id) {
+  switch (static_cast<CryptoKeyAlgorithmTag>(raw_id)) {
+    case kAesCbcTag:
+      *id = kWebCryptoAlgorithmIdAesCbc;
       return true;
-    case HmacTag:
-      *id = WebCryptoAlgorithmIdHmac;
+    case kHmacTag:
+      *id = kWebCryptoAlgorithmIdHmac;
       return true;
-    case RsaSsaPkcs1v1_5Tag:
-      *id = WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+    case kRsaSsaPkcs1v1_5Tag:
+      *id = kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
       return true;
-    case Sha1Tag:
-      *id = WebCryptoAlgorithmIdSha1;
+    case kSha1Tag:
+      *id = kWebCryptoAlgorithmIdSha1;
       return true;
-    case Sha256Tag:
-      *id = WebCryptoAlgorithmIdSha256;
+    case kSha256Tag:
+      *id = kWebCryptoAlgorithmIdSha256;
       return true;
-    case Sha384Tag:
-      *id = WebCryptoAlgorithmIdSha384;
+    case kSha384Tag:
+      *id = kWebCryptoAlgorithmIdSha384;
       return true;
-    case Sha512Tag:
-      *id = WebCryptoAlgorithmIdSha512;
+    case kSha512Tag:
+      *id = kWebCryptoAlgorithmIdSha512;
       return true;
-    case AesGcmTag:
-      *id = WebCryptoAlgorithmIdAesGcm;
+    case kAesGcmTag:
+      *id = kWebCryptoAlgorithmIdAesGcm;
       return true;
-    case RsaOaepTag:
-      *id = WebCryptoAlgorithmIdRsaOaep;
+    case kRsaOaepTag:
+      *id = kWebCryptoAlgorithmIdRsaOaep;
       return true;
-    case AesCtrTag:
-      *id = WebCryptoAlgorithmIdAesCtr;
+    case kAesCtrTag:
+      *id = kWebCryptoAlgorithmIdAesCtr;
       return true;
-    case AesKwTag:
-      *id = WebCryptoAlgorithmIdAesKw;
+    case kAesKwTag:
+      *id = kWebCryptoAlgorithmIdAesKw;
       return true;
-    case RsaPssTag:
-      *id = WebCryptoAlgorithmIdRsaPss;
+    case kRsaPssTag:
+      *id = kWebCryptoAlgorithmIdRsaPss;
       return true;
-    case EcdsaTag:
-      *id = WebCryptoAlgorithmIdEcdsa;
+    case kEcdsaTag:
+      *id = kWebCryptoAlgorithmIdEcdsa;
       return true;
-    case EcdhTag:
-      *id = WebCryptoAlgorithmIdEcdh;
+    case kEcdhTag:
+      *id = kWebCryptoAlgorithmIdEcdh;
       return true;
-    case HkdfTag:
-      *id = WebCryptoAlgorithmIdHkdf;
+    case kHkdfTag:
+      *id = kWebCryptoAlgorithmIdHkdf;
       return true;
-    case Pbkdf2Tag:
-      *id = WebCryptoAlgorithmIdPbkdf2;
-      return true;
-  }
-  return false;
-}
-
-bool asymmetricKeyTypeFromWireFormat(uint32_t rawKeyType,
-                                     WebCryptoKeyType* keyType) {
-  switch (static_cast<AsymmetricCryptoKeyType>(rawKeyType)) {
-    case PublicKeyType:
-      *keyType = WebCryptoKeyTypePublic;
-      return true;
-    case PrivateKeyType:
-      *keyType = WebCryptoKeyTypePrivate;
+    case kPbkdf2Tag:
+      *id = kWebCryptoAlgorithmIdPbkdf2;
       return true;
   }
   return false;
 }
 
-bool namedCurveFromWireFormat(uint32_t rawNamedCurve,
-                              WebCryptoNamedCurve* namedCurve) {
-  switch (static_cast<NamedCurveTag>(rawNamedCurve)) {
-    case P256Tag:
-      *namedCurve = WebCryptoNamedCurveP256;
+bool AsymmetricKeyTypeFromWireFormat(uint32_t raw_key_type,
+                                     WebCryptoKeyType* key_type) {
+  switch (static_cast<AsymmetricCryptoKeyType>(raw_key_type)) {
+    case kPublicKeyType:
+      *key_type = kWebCryptoKeyTypePublic;
       return true;
-    case P384Tag:
-      *namedCurve = WebCryptoNamedCurveP384;
-      return true;
-    case P521Tag:
-      *namedCurve = WebCryptoNamedCurveP521;
+    case kPrivateKeyType:
+      *key_type = kWebCryptoKeyTypePrivate;
       return true;
   }
   return false;
 }
 
-bool keyUsagesFromWireFormat(uint32_t rawUsages,
+bool NamedCurveFromWireFormat(uint32_t raw_named_curve,
+                              WebCryptoNamedCurve* named_curve) {
+  switch (static_cast<NamedCurveTag>(raw_named_curve)) {
+    case kP256Tag:
+      *named_curve = kWebCryptoNamedCurveP256;
+      return true;
+    case kP384Tag:
+      *named_curve = kWebCryptoNamedCurveP384;
+      return true;
+    case kP521Tag:
+      *named_curve = kWebCryptoNamedCurveP521;
+      return true;
+  }
+  return false;
+}
+
+bool KeyUsagesFromWireFormat(uint32_t raw_usages,
                              WebCryptoKeyUsageMask* usages,
                              bool* extractable) {
   // Reminder to update this when adding new key usages.
-  static_assert(EndOfWebCryptoKeyUsage == (1 << 7) + 1,
+  static_assert(kEndOfWebCryptoKeyUsage == (1 << 7) + 1,
                 "update required when adding new key usages");
-  const uint32_t allPossibleUsages =
-      ExtractableUsage | EncryptUsage | DecryptUsage | SignUsage | VerifyUsage |
-      DeriveKeyUsage | WrapKeyUsage | UnwrapKeyUsage | DeriveBitsUsage;
-  if (rawUsages & ~allPossibleUsages)
+  const uint32_t kAllPossibleUsages =
+      kExtractableUsage | kEncryptUsage | kDecryptUsage | kSignUsage |
+      kVerifyUsage | kDeriveKeyUsage | kWrapKeyUsage | kUnwrapKeyUsage |
+      kDeriveBitsUsage;
+  if (raw_usages & ~kAllPossibleUsages)
     return false;
 
   *usages = 0;
-  *extractable = rawUsages & ExtractableUsage;
-  if (rawUsages & EncryptUsage)
-    *usages |= WebCryptoKeyUsageEncrypt;
-  if (rawUsages & DecryptUsage)
-    *usages |= WebCryptoKeyUsageDecrypt;
-  if (rawUsages & SignUsage)
-    *usages |= WebCryptoKeyUsageSign;
-  if (rawUsages & VerifyUsage)
-    *usages |= WebCryptoKeyUsageVerify;
-  if (rawUsages & DeriveKeyUsage)
-    *usages |= WebCryptoKeyUsageDeriveKey;
-  if (rawUsages & WrapKeyUsage)
-    *usages |= WebCryptoKeyUsageWrapKey;
-  if (rawUsages & UnwrapKeyUsage)
-    *usages |= WebCryptoKeyUsageUnwrapKey;
-  if (rawUsages & DeriveBitsUsage)
-    *usages |= WebCryptoKeyUsageDeriveBits;
+  *extractable = raw_usages & kExtractableUsage;
+  if (raw_usages & kEncryptUsage)
+    *usages |= kWebCryptoKeyUsageEncrypt;
+  if (raw_usages & kDecryptUsage)
+    *usages |= kWebCryptoKeyUsageDecrypt;
+  if (raw_usages & kSignUsage)
+    *usages |= kWebCryptoKeyUsageSign;
+  if (raw_usages & kVerifyUsage)
+    *usages |= kWebCryptoKeyUsageVerify;
+  if (raw_usages & kDeriveKeyUsage)
+    *usages |= kWebCryptoKeyUsageDeriveKey;
+  if (raw_usages & kWrapKeyUsage)
+    *usages |= kWebCryptoKeyUsageWrapKey;
+  if (raw_usages & kUnwrapKeyUsage)
+    *usages |= kWebCryptoKeyUsageUnwrapKey;
+  if (raw_usages & kDeriveBitsUsage)
+    *usages |= kWebCryptoKeyUsageDeriveBits;
   return true;
 }
 
 }  // namespace
 
-CryptoKey* V8ScriptValueDeserializerForModules::readCryptoKey() {
+CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
   // Read params.
-  uint8_t rawKeyType;
-  if (!readOneByte(&rawKeyType))
+  uint8_t raw_key_type;
+  if (!ReadOneByte(&raw_key_type))
     return nullptr;
   WebCryptoKeyAlgorithm algorithm;
-  WebCryptoKeyType keyType = WebCryptoKeyTypeSecret;
-  switch (rawKeyType) {
-    case AesKeyTag: {
-      uint32_t rawId;
+  WebCryptoKeyType key_type = kWebCryptoKeyTypeSecret;
+  switch (raw_key_type) {
+    case kAesKeyTag: {
+      uint32_t raw_id;
       WebCryptoAlgorithmId id;
-      uint32_t lengthBytes;
-      if (!readUint32(&rawId) || !algorithmIdFromWireFormat(rawId, &id) ||
-          !readUint32(&lengthBytes) ||
-          lengthBytes > std::numeric_limits<unsigned short>::max() / 8u)
+      uint32_t length_bytes;
+      if (!ReadUint32(&raw_id) || !AlgorithmIdFromWireFormat(raw_id, &id) ||
+          !ReadUint32(&length_bytes) ||
+          length_bytes > std::numeric_limits<unsigned short>::max() / 8u)
         return nullptr;
-      algorithm = WebCryptoKeyAlgorithm::createAes(id, lengthBytes * 8);
-      keyType = WebCryptoKeyTypeSecret;
+      algorithm = WebCryptoKeyAlgorithm::CreateAes(id, length_bytes * 8);
+      key_type = kWebCryptoKeyTypeSecret;
       break;
     }
-    case HmacKeyTag: {
-      uint32_t lengthBytes;
-      uint32_t rawHash;
+    case kHmacKeyTag: {
+      uint32_t length_bytes;
+      uint32_t raw_hash;
       WebCryptoAlgorithmId hash;
-      if (!readUint32(&lengthBytes) ||
-          lengthBytes > std::numeric_limits<unsigned>::max() / 8 ||
-          !readUint32(&rawHash) || !algorithmIdFromWireFormat(rawHash, &hash))
+      if (!ReadUint32(&length_bytes) ||
+          length_bytes > std::numeric_limits<unsigned>::max() / 8 ||
+          !ReadUint32(&raw_hash) || !AlgorithmIdFromWireFormat(raw_hash, &hash))
         return nullptr;
-      algorithm = WebCryptoKeyAlgorithm::createHmac(hash, lengthBytes * 8);
-      keyType = WebCryptoKeyTypeSecret;
+      algorithm = WebCryptoKeyAlgorithm::CreateHmac(hash, length_bytes * 8);
+      key_type = kWebCryptoKeyTypeSecret;
       break;
     }
-    case RsaHashedKeyTag: {
-      uint32_t rawId;
+    case kRsaHashedKeyTag: {
+      uint32_t raw_id;
       WebCryptoAlgorithmId id;
-      uint32_t rawKeyType;
-      uint32_t modulusLengthBits;
-      uint32_t publicExponentSize;
-      const void* publicExponentBytes;
-      uint32_t rawHash;
+      uint32_t raw_key_type;
+      uint32_t modulus_length_bits;
+      uint32_t public_exponent_size;
+      const void* public_exponent_bytes;
+      uint32_t raw_hash;
       WebCryptoAlgorithmId hash;
-      if (!readUint32(&rawId) || !algorithmIdFromWireFormat(rawId, &id) ||
-          !readUint32(&rawKeyType) ||
-          !asymmetricKeyTypeFromWireFormat(rawKeyType, &keyType) ||
-          !readUint32(&modulusLengthBits) || !readUint32(&publicExponentSize) ||
-          !readRawBytes(publicExponentSize, &publicExponentBytes) ||
-          !readUint32(&rawHash) || !algorithmIdFromWireFormat(rawHash, &hash))
+      if (!ReadUint32(&raw_id) || !AlgorithmIdFromWireFormat(raw_id, &id) ||
+          !ReadUint32(&raw_key_type) ||
+          !AsymmetricKeyTypeFromWireFormat(raw_key_type, &key_type) ||
+          !ReadUint32(&modulus_length_bits) ||
+          !ReadUint32(&public_exponent_size) ||
+          !ReadRawBytes(public_exponent_size, &public_exponent_bytes) ||
+          !ReadUint32(&raw_hash) || !AlgorithmIdFromWireFormat(raw_hash, &hash))
         return nullptr;
-      algorithm = WebCryptoKeyAlgorithm::createRsaHashed(
-          id, modulusLengthBits,
-          reinterpret_cast<const unsigned char*>(publicExponentBytes),
-          publicExponentSize, hash);
+      algorithm = WebCryptoKeyAlgorithm::CreateRsaHashed(
+          id, modulus_length_bits,
+          reinterpret_cast<const unsigned char*>(public_exponent_bytes),
+          public_exponent_size, hash);
       break;
     }
-    case EcKeyTag: {
-      uint32_t rawId;
+    case kEcKeyTag: {
+      uint32_t raw_id;
       WebCryptoAlgorithmId id;
-      uint32_t rawKeyType;
-      uint32_t rawNamedCurve;
-      WebCryptoNamedCurve namedCurve;
-      if (!readUint32(&rawId) || !algorithmIdFromWireFormat(rawId, &id) ||
-          !readUint32(&rawKeyType) ||
-          !asymmetricKeyTypeFromWireFormat(rawKeyType, &keyType) ||
-          !readUint32(&rawNamedCurve) ||
-          !namedCurveFromWireFormat(rawNamedCurve, &namedCurve))
+      uint32_t raw_key_type;
+      uint32_t raw_named_curve;
+      WebCryptoNamedCurve named_curve;
+      if (!ReadUint32(&raw_id) || !AlgorithmIdFromWireFormat(raw_id, &id) ||
+          !ReadUint32(&raw_key_type) ||
+          !AsymmetricKeyTypeFromWireFormat(raw_key_type, &key_type) ||
+          !ReadUint32(&raw_named_curve) ||
+          !NamedCurveFromWireFormat(raw_named_curve, &named_curve))
         return nullptr;
-      algorithm = WebCryptoKeyAlgorithm::createEc(id, namedCurve);
+      algorithm = WebCryptoKeyAlgorithm::CreateEc(id, named_curve);
       break;
     }
-    case NoParamsKeyTag: {
-      uint32_t rawId;
+    case kNoParamsKeyTag: {
+      uint32_t raw_id;
       WebCryptoAlgorithmId id;
-      if (!readUint32(&rawId) || !algorithmIdFromWireFormat(rawId, &id))
+      if (!ReadUint32(&raw_id) || !AlgorithmIdFromWireFormat(raw_id, &id))
         return nullptr;
-      algorithm = WebCryptoKeyAlgorithm::createWithoutParams(id);
+      algorithm = WebCryptoKeyAlgorithm::CreateWithoutParams(id);
       break;
     }
   }
-  if (algorithm.isNull())
+  if (algorithm.IsNull())
     return nullptr;
 
   // Read key usages.
-  uint32_t rawUsages;
+  uint32_t raw_usages;
   WebCryptoKeyUsageMask usages;
   bool extractable;
-  if (!readUint32(&rawUsages) ||
-      !keyUsagesFromWireFormat(rawUsages, &usages, &extractable))
+  if (!ReadUint32(&raw_usages) ||
+      !KeyUsagesFromWireFormat(raw_usages, &usages, &extractable))
     return nullptr;
 
   // Read key data.
-  uint32_t keyDataLength;
-  const void* keyData;
-  if (!readUint32(&keyDataLength) || !readRawBytes(keyDataLength, &keyData))
+  uint32_t key_data_length;
+  const void* key_data;
+  if (!ReadUint32(&key_data_length) ||
+      !ReadRawBytes(key_data_length, &key_data))
     return nullptr;
 
-  WebCryptoKey key = WebCryptoKey::createNull();
-  if (!Platform::current()->crypto()->deserializeKeyForClone(
-          algorithm, keyType, extractable, usages,
-          reinterpret_cast<const unsigned char*>(keyData), keyDataLength, key))
+  WebCryptoKey key = WebCryptoKey::CreateNull();
+  if (!Platform::Current()->Crypto()->DeserializeKeyForClone(
+          algorithm, key_type, extractable, usages,
+          reinterpret_cast<const unsigned char*>(key_data), key_data_length,
+          key))
     return nullptr;
 
-  return CryptoKey::create(key);
+  return CryptoKey::Create(key);
 }
 
 }  // namespace blink

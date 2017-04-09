@@ -444,9 +444,9 @@ class CacheStorageCacheTest : public testing::Test {
       std::unique_ptr<ServiceWorkerHeaderList> cors_exposed_header_names) {
     return ServiceWorkerResponse(
         base::MakeUnique<std::vector<GURL>>(1, GURL(url)), 200, "OK",
-        blink::WebServiceWorkerResponseTypeDefault, std::move(headers),
+        blink::kWebServiceWorkerResponseTypeDefault, std::move(headers),
         blob_uuid, blob_size, GURL() /* stream_url */,
-        blink::WebServiceWorkerResponseErrorUnknown, base::Time::Now(),
+        blink::kWebServiceWorkerResponseErrorUnknown, base::Time::Now(),
         false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,
         std::move(cors_exposed_header_names));
@@ -1410,11 +1410,11 @@ TEST_P(CacheStorageCacheTestP, QuickStressBody) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutResponseType) {
-  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeBasic));
-  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeCORS));
-  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeDefault));
-  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeError));
-  EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeOpaque));
+  EXPECT_TRUE(TestResponseType(blink::kWebServiceWorkerResponseTypeBasic));
+  EXPECT_TRUE(TestResponseType(blink::kWebServiceWorkerResponseTypeCORS));
+  EXPECT_TRUE(TestResponseType(blink::kWebServiceWorkerResponseTypeDefault));
+  EXPECT_TRUE(TestResponseType(blink::kWebServiceWorkerResponseTypeError));
+  EXPECT_TRUE(TestResponseType(blink::kWebServiceWorkerResponseTypeOpaque));
 }
 
 TEST_P(CacheStorageCacheTestP, WriteSideData) {
@@ -1519,9 +1519,9 @@ TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
   // headers so that it can quickly lookup vary headers.
   ServiceWorkerResponse response(
       base::MakeUnique<std::vector<GURL>>(), 200, "OK",
-      blink::WebServiceWorkerResponseTypeDefault,
+      blink::kWebServiceWorkerResponseTypeDefault,
       base::MakeUnique<ServiceWorkerHeaderMap>(), "", 0, GURL(),
-      blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+      blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
       false /* is_in_cache_storage */,
       std::string() /* cache_storage_cache_name */,
       base::MakeUnique<

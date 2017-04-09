@@ -39,160 +39,161 @@ namespace blink {
 namespace {
 
 template <typename Interface>
-Vector<Interface> isolatedCopy(const Vector<Interface>& src) {
+Vector<Interface> IsolatedCopy(const Vector<Interface>& src) {
   Vector<Interface> result;
-  result.reserveCapacity(src.size());
+  result.ReserveCapacity(src.size());
   for (const auto& timestamp : src) {
-    result.push_back(timestamp.isolatedCopy());
+    result.push_back(timestamp.IsolatedCopy());
   }
   return result;
 }
 
-static const char cacheControlHeader[] = "cache-control";
-static const char pragmaHeader[] = "pragma";
+static const char kCacheControlHeader[] = "cache-control";
+static const char kPragmaHeader[] = "pragma";
 
 }  // namespace
 
 ResourceResponse::SignedCertificateTimestamp::SignedCertificateTimestamp(
     const blink::WebURLResponse::SignedCertificateTimestamp& sct)
-    : m_status(sct.status),
-      m_origin(sct.origin),
-      m_logDescription(sct.logDescription),
-      m_logId(sct.logId),
-      m_timestamp(sct.timestamp),
-      m_hashAlgorithm(sct.hashAlgorithm),
-      m_signatureAlgorithm(sct.signatureAlgorithm),
-      m_signatureData(sct.signatureData) {}
+    : status_(sct.status),
+      origin_(sct.origin),
+      log_description_(sct.log_description),
+      log_id_(sct.log_id),
+      timestamp_(sct.timestamp),
+      hash_algorithm_(sct.hash_algorithm),
+      signature_algorithm_(sct.signature_algorithm),
+      signature_data_(sct.signature_data) {}
 
 ResourceResponse::SignedCertificateTimestamp
-ResourceResponse::SignedCertificateTimestamp::isolatedCopy() const {
+ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
   return SignedCertificateTimestamp(
-      m_status.isolatedCopy(), m_origin.isolatedCopy(),
-      m_logDescription.isolatedCopy(), m_logId.isolatedCopy(), m_timestamp,
-      m_hashAlgorithm.isolatedCopy(), m_signatureAlgorithm.isolatedCopy(),
-      m_signatureData.isolatedCopy());
+      status_.IsolatedCopy(), origin_.IsolatedCopy(),
+      log_description_.IsolatedCopy(), log_id_.IsolatedCopy(), timestamp_,
+      hash_algorithm_.IsolatedCopy(), signature_algorithm_.IsolatedCopy(),
+      signature_data_.IsolatedCopy());
 }
 
 ResourceResponse::ResourceResponse()
-    : m_expectedContentLength(0),
-      m_httpStatusCode(0),
-      m_wasCached(false),
-      m_connectionID(0),
-      m_connectionReused(false),
-      m_isNull(true),
-      m_haveParsedAgeHeader(false),
-      m_haveParsedDateHeader(false),
-      m_haveParsedExpiresHeader(false),
-      m_haveParsedLastModifiedHeader(false),
-      m_age(0.0),
-      m_date(0.0),
-      m_expires(0.0),
-      m_lastModified(0.0),
-      m_hasMajorCertificateErrors(false),
-      m_securityStyle(SecurityStyleUnknown),
-      m_httpVersion(HTTPVersionUnknown),
-      m_appCacheID(0),
-      m_wasFetchedViaSPDY(false),
-      m_wasFetchedViaProxy(false),
-      m_wasFetchedViaServiceWorker(false),
-      m_wasFetchedViaForeignFetch(false),
-      m_wasFallbackRequiredByServiceWorker(false),
-      m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault),
-      m_didServiceWorkerNavigationPreload(false),
-      m_responseTime(0),
-      m_remotePort(0),
-      m_encodedDataLength(0),
-      m_encodedBodyLength(0),
-      m_decodedBodyLength(0) {}
+    : expected_content_length_(0),
+      http_status_code_(0),
+      was_cached_(false),
+      connection_id_(0),
+      connection_reused_(false),
+      is_null_(true),
+      have_parsed_age_header_(false),
+      have_parsed_date_header_(false),
+      have_parsed_expires_header_(false),
+      have_parsed_last_modified_header_(false),
+      age_(0.0),
+      date_(0.0),
+      expires_(0.0),
+      last_modified_(0.0),
+      has_major_certificate_errors_(false),
+      security_style_(kSecurityStyleUnknown),
+      http_version_(kHTTPVersionUnknown),
+      app_cache_id_(0),
+      was_fetched_via_spdy_(false),
+      was_fetched_via_proxy_(false),
+      was_fetched_via_service_worker_(false),
+      was_fetched_via_foreign_fetch_(false),
+      was_fallback_required_by_service_worker_(false),
+      service_worker_response_type_(kWebServiceWorkerResponseTypeDefault),
+      did_service_worker_navigation_preload_(false),
+      response_time_(0),
+      remote_port_(0),
+      encoded_data_length_(0),
+      encoded_body_length_(0),
+      decoded_body_length_(0) {}
 
 ResourceResponse::ResourceResponse(const KURL& url,
-                                   const AtomicString& mimeType,
-                                   long long expectedLength,
-                                   const AtomicString& textEncodingName)
-    : m_url(url),
-      m_mimeType(mimeType),
-      m_expectedContentLength(expectedLength),
-      m_textEncodingName(textEncodingName),
-      m_httpStatusCode(0),
-      m_wasCached(false),
-      m_connectionID(0),
-      m_connectionReused(false),
-      m_isNull(false),
-      m_haveParsedAgeHeader(false),
-      m_haveParsedDateHeader(false),
-      m_haveParsedExpiresHeader(false),
-      m_haveParsedLastModifiedHeader(false),
-      m_age(0.0),
-      m_date(0.0),
-      m_expires(0.0),
-      m_lastModified(0.0),
-      m_hasMajorCertificateErrors(false),
-      m_securityStyle(SecurityStyleUnknown),
-      m_httpVersion(HTTPVersionUnknown),
-      m_appCacheID(0),
-      m_wasFetchedViaSPDY(false),
-      m_wasFetchedViaProxy(false),
-      m_wasFetchedViaServiceWorker(false),
-      m_wasFetchedViaForeignFetch(false),
-      m_wasFallbackRequiredByServiceWorker(false),
-      m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault),
-      m_didServiceWorkerNavigationPreload(false),
-      m_responseTime(0),
-      m_remotePort(0),
-      m_encodedDataLength(0),
-      m_encodedBodyLength(0),
-      m_decodedBodyLength(0) {}
+                                   const AtomicString& mime_type,
+                                   long long expected_length,
+                                   const AtomicString& text_encoding_name)
+    : url_(url),
+      mime_type_(mime_type),
+      expected_content_length_(expected_length),
+      text_encoding_name_(text_encoding_name),
+      http_status_code_(0),
+      was_cached_(false),
+      connection_id_(0),
+      connection_reused_(false),
+      is_null_(false),
+      have_parsed_age_header_(false),
+      have_parsed_date_header_(false),
+      have_parsed_expires_header_(false),
+      have_parsed_last_modified_header_(false),
+      age_(0.0),
+      date_(0.0),
+      expires_(0.0),
+      last_modified_(0.0),
+      has_major_certificate_errors_(false),
+      security_style_(kSecurityStyleUnknown),
+      http_version_(kHTTPVersionUnknown),
+      app_cache_id_(0),
+      was_fetched_via_spdy_(false),
+      was_fetched_via_proxy_(false),
+      was_fetched_via_service_worker_(false),
+      was_fetched_via_foreign_fetch_(false),
+      was_fallback_required_by_service_worker_(false),
+      service_worker_response_type_(kWebServiceWorkerResponseTypeDefault),
+      did_service_worker_navigation_preload_(false),
+      response_time_(0),
+      remote_port_(0),
+      encoded_data_length_(0),
+      encoded_body_length_(0),
+      decoded_body_length_(0) {}
 
 ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     : ResourceResponse() {
-  setURL(data->m_url);
-  setMimeType(AtomicString(data->m_mimeType));
-  setExpectedContentLength(data->m_expectedContentLength);
-  setTextEncodingName(AtomicString(data->m_textEncodingName));
+  SetURL(data->url_);
+  SetMimeType(AtomicString(data->mime_type_));
+  SetExpectedContentLength(data->expected_content_length_);
+  SetTextEncodingName(AtomicString(data->text_encoding_name_));
 
-  setHTTPStatusCode(data->m_httpStatusCode);
-  setHTTPStatusText(AtomicString(data->m_httpStatusText));
+  SetHTTPStatusCode(data->http_status_code_);
+  SetHTTPStatusText(AtomicString(data->http_status_text_));
 
-  m_httpHeaderFields.adopt(std::move(data->m_httpHeaders));
-  setResourceLoadTiming(data->m_resourceLoadTiming.release());
-  m_hasMajorCertificateErrors = data->m_hasMajorCertificateErrors;
-  m_securityStyle = data->m_securityStyle;
-  m_securityDetails.protocol = data->m_securityDetails.protocol;
-  m_securityDetails.cipher = data->m_securityDetails.cipher;
-  m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
-  m_securityDetails.keyExchangeGroup = data->m_securityDetails.keyExchangeGroup;
-  m_securityDetails.mac = data->m_securityDetails.mac;
-  m_securityDetails.subjectName = data->m_securityDetails.subjectName;
-  m_securityDetails.sanList = data->m_securityDetails.sanList;
-  m_securityDetails.issuer = data->m_securityDetails.issuer;
-  m_securityDetails.validFrom = data->m_securityDetails.validFrom;
-  m_securityDetails.validTo = data->m_securityDetails.validTo;
-  for (auto& cert : data->m_certificate)
-    m_securityDetails.certificate.push_back(AtomicString(cert));
-  m_securityDetails.sctList = data->m_securityDetails.sctList;
-  m_httpVersion = data->m_httpVersion;
-  m_appCacheID = data->m_appCacheID;
-  m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
-  m_multipartBoundary = data->m_multipartBoundary;
-  m_wasFetchedViaSPDY = data->m_wasFetchedViaSPDY;
-  m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
-  m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
-  m_wasFetchedViaForeignFetch = data->m_wasFetchedViaForeignFetch;
-  m_wasFallbackRequiredByServiceWorker =
-      data->m_wasFallbackRequiredByServiceWorker;
-  m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
-  m_urlListViaServiceWorker = data->m_urlListViaServiceWorker;
-  m_cacheStorageCacheName = data->m_cacheStorageCacheName;
-  m_didServiceWorkerNavigationPreload =
-      data->m_didServiceWorkerNavigationPreload;
-  m_responseTime = data->m_responseTime;
-  m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
-  m_remotePort = data->m_remotePort;
-  m_encodedDataLength = data->m_encodedDataLength;
-  m_encodedBodyLength = data->m_encodedBodyLength;
-  m_decodedBodyLength = data->m_decodedBodyLength;
-  m_downloadedFilePath = data->m_downloadedFilePath;
-  m_downloadedFileHandle = data->m_downloadedFileHandle;
+  http_header_fields_.Adopt(std::move(data->http_headers_));
+  SetResourceLoadTiming(data->resource_load_timing_.Release());
+  has_major_certificate_errors_ = data->has_major_certificate_errors_;
+  security_style_ = data->security_style_;
+  security_details_.protocol = data->security_details_.protocol;
+  security_details_.cipher = data->security_details_.cipher;
+  security_details_.key_exchange = data->security_details_.key_exchange;
+  security_details_.key_exchange_group =
+      data->security_details_.key_exchange_group;
+  security_details_.mac = data->security_details_.mac;
+  security_details_.subject_name = data->security_details_.subject_name;
+  security_details_.san_list = data->security_details_.san_list;
+  security_details_.issuer = data->security_details_.issuer;
+  security_details_.valid_from = data->security_details_.valid_from;
+  security_details_.valid_to = data->security_details_.valid_to;
+  for (auto& cert : data->certificate_)
+    security_details_.certificate.push_back(AtomicString(cert));
+  security_details_.sct_list = data->security_details_.sct_list;
+  http_version_ = data->http_version_;
+  app_cache_id_ = data->app_cache_id_;
+  app_cache_manifest_url_ = data->app_cache_manifest_url_.Copy();
+  multipart_boundary_ = data->multipart_boundary_;
+  was_fetched_via_spdy_ = data->was_fetched_via_spdy_;
+  was_fetched_via_proxy_ = data->was_fetched_via_proxy_;
+  was_fetched_via_service_worker_ = data->was_fetched_via_service_worker_;
+  was_fetched_via_foreign_fetch_ = data->was_fetched_via_foreign_fetch_;
+  was_fallback_required_by_service_worker_ =
+      data->was_fallback_required_by_service_worker_;
+  service_worker_response_type_ = data->service_worker_response_type_;
+  url_list_via_service_worker_ = data->url_list_via_service_worker_;
+  cache_storage_cache_name_ = data->cache_storage_cache_name_;
+  did_service_worker_navigation_preload_ =
+      data->did_service_worker_navigation_preload_;
+  response_time_ = data->response_time_;
+  remote_ip_address_ = AtomicString(data->remote_ip_address_);
+  remote_port_ = data->remote_port_;
+  encoded_data_length_ = data->encoded_data_length_;
+  encoded_body_length_ = data->encoded_body_length_;
+  decoded_body_length_ = data->decoded_body_length_;
+  downloaded_file_path_ = data->downloaded_file_path_;
+  downloaded_file_handle_ = data->downloaded_file_handle_;
 
   // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
   // whatever values may be present in the opaque m_extraData structure.
@@ -202,64 +203,65 @@ ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
     default;
 
-std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
+std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
     const {
   std::unique_ptr<CrossThreadResourceResponseData> data =
-      WTF::wrapUnique(new CrossThreadResourceResponseData);
-  data->m_url = url().copy();
-  data->m_mimeType = mimeType().getString().isolatedCopy();
-  data->m_expectedContentLength = expectedContentLength();
-  data->m_textEncodingName = textEncodingName().getString().isolatedCopy();
-  data->m_httpStatusCode = httpStatusCode();
-  data->m_httpStatusText = httpStatusText().getString().isolatedCopy();
-  data->m_httpHeaders = httpHeaderFields().copyData();
-  if (m_resourceLoadTiming)
-    data->m_resourceLoadTiming = m_resourceLoadTiming->deepCopy();
-  data->m_hasMajorCertificateErrors = m_hasMajorCertificateErrors;
-  data->m_securityStyle = m_securityStyle;
-  data->m_securityDetails.protocol = m_securityDetails.protocol.isolatedCopy();
-  data->m_securityDetails.cipher = m_securityDetails.cipher.isolatedCopy();
-  data->m_securityDetails.keyExchange =
-      m_securityDetails.keyExchange.isolatedCopy();
-  data->m_securityDetails.keyExchangeGroup =
-      m_securityDetails.keyExchangeGroup.isolatedCopy();
-  data->m_securityDetails.mac = m_securityDetails.mac.isolatedCopy();
-  data->m_securityDetails.subjectName =
-      m_securityDetails.subjectName.isolatedCopy();
-  data->m_securityDetails.sanList = isolatedCopy(m_securityDetails.sanList);
-  data->m_securityDetails.issuer = m_securityDetails.issuer.isolatedCopy();
-  data->m_securityDetails.validFrom = m_securityDetails.validFrom;
-  data->m_securityDetails.validTo = m_securityDetails.validTo;
-  for (auto& cert : m_securityDetails.certificate)
-    data->m_certificate.push_back(cert.getString().isolatedCopy());
-  data->m_securityDetails.sctList = isolatedCopy(m_securityDetails.sctList);
-  data->m_httpVersion = m_httpVersion;
-  data->m_appCacheID = m_appCacheID;
-  data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
-  data->m_multipartBoundary = m_multipartBoundary;
-  data->m_wasFetchedViaSPDY = m_wasFetchedViaSPDY;
-  data->m_wasFetchedViaProxy = m_wasFetchedViaProxy;
-  data->m_wasFetchedViaServiceWorker = m_wasFetchedViaServiceWorker;
-  data->m_wasFetchedViaForeignFetch = m_wasFetchedViaForeignFetch;
-  data->m_wasFallbackRequiredByServiceWorker =
-      m_wasFallbackRequiredByServiceWorker;
-  data->m_serviceWorkerResponseType = m_serviceWorkerResponseType;
-  data->m_urlListViaServiceWorker.resize(m_urlListViaServiceWorker.size());
-  std::transform(m_urlListViaServiceWorker.begin(),
-                 m_urlListViaServiceWorker.end(),
-                 data->m_urlListViaServiceWorker.begin(),
-                 [](const KURL& url) { return url.copy(); });
-  data->m_cacheStorageCacheName = cacheStorageCacheName().isolatedCopy();
-  data->m_didServiceWorkerNavigationPreload =
-      m_didServiceWorkerNavigationPreload;
-  data->m_responseTime = m_responseTime;
-  data->m_remoteIPAddress = m_remoteIPAddress.getString().isolatedCopy();
-  data->m_remotePort = m_remotePort;
-  data->m_encodedDataLength = m_encodedDataLength;
-  data->m_encodedBodyLength = m_encodedBodyLength;
-  data->m_decodedBodyLength = m_decodedBodyLength;
-  data->m_downloadedFilePath = m_downloadedFilePath.isolatedCopy();
-  data->m_downloadedFileHandle = m_downloadedFileHandle;
+      WTF::WrapUnique(new CrossThreadResourceResponseData);
+  data->url_ = Url().Copy();
+  data->mime_type_ = MimeType().GetString().IsolatedCopy();
+  data->expected_content_length_ = ExpectedContentLength();
+  data->text_encoding_name_ = TextEncodingName().GetString().IsolatedCopy();
+  data->http_status_code_ = HttpStatusCode();
+  data->http_status_text_ = HttpStatusText().GetString().IsolatedCopy();
+  data->http_headers_ = HttpHeaderFields().CopyData();
+  if (resource_load_timing_)
+    data->resource_load_timing_ = resource_load_timing_->DeepCopy();
+  data->has_major_certificate_errors_ = has_major_certificate_errors_;
+  data->security_style_ = security_style_;
+  data->security_details_.protocol = security_details_.protocol.IsolatedCopy();
+  data->security_details_.cipher = security_details_.cipher.IsolatedCopy();
+  data->security_details_.key_exchange =
+      security_details_.key_exchange.IsolatedCopy();
+  data->security_details_.key_exchange_group =
+      security_details_.key_exchange_group.IsolatedCopy();
+  data->security_details_.mac = security_details_.mac.IsolatedCopy();
+  data->security_details_.subject_name =
+      security_details_.subject_name.IsolatedCopy();
+  data->security_details_.san_list = IsolatedCopy(security_details_.san_list);
+  data->security_details_.issuer = security_details_.issuer.IsolatedCopy();
+  data->security_details_.valid_from = security_details_.valid_from;
+  data->security_details_.valid_to = security_details_.valid_to;
+  for (auto& cert : security_details_.certificate)
+    data->certificate_.push_back(cert.GetString().IsolatedCopy());
+  data->security_details_.sct_list = IsolatedCopy(security_details_.sct_list);
+  data->http_version_ = http_version_;
+  data->app_cache_id_ = app_cache_id_;
+  data->app_cache_manifest_url_ = app_cache_manifest_url_.Copy();
+  data->multipart_boundary_ = multipart_boundary_;
+  data->was_fetched_via_spdy_ = was_fetched_via_spdy_;
+  data->was_fetched_via_proxy_ = was_fetched_via_proxy_;
+  data->was_fetched_via_service_worker_ = was_fetched_via_service_worker_;
+  data->was_fetched_via_foreign_fetch_ = was_fetched_via_foreign_fetch_;
+  data->was_fallback_required_by_service_worker_ =
+      was_fallback_required_by_service_worker_;
+  data->service_worker_response_type_ = service_worker_response_type_;
+  data->url_list_via_service_worker_.Resize(
+      url_list_via_service_worker_.size());
+  std::transform(url_list_via_service_worker_.begin(),
+                 url_list_via_service_worker_.end(),
+                 data->url_list_via_service_worker_.begin(),
+                 [](const KURL& url) { return url.Copy(); });
+  data->cache_storage_cache_name_ = CacheStorageCacheName().IsolatedCopy();
+  data->did_service_worker_navigation_preload_ =
+      did_service_worker_navigation_preload_;
+  data->response_time_ = response_time_;
+  data->remote_ip_address_ = remote_ip_address_.GetString().IsolatedCopy();
+  data->remote_port_ = remote_port_;
+  data->encoded_data_length_ = encoded_data_length_;
+  data->encoded_body_length_ = encoded_body_length_;
+  data->decoded_body_length_ = decoded_body_length_;
+  data->downloaded_file_path_ = downloaded_file_path_.IsolatedCopy();
+  data->downloaded_file_handle_ = downloaded_file_handle_;
 
   // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
   // whatever values may be present in the opaque m_extraData structure.
@@ -267,366 +269,367 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   return data;
 }
 
-bool ResourceResponse::isHTTP() const {
-  return m_url.protocolIsInHTTPFamily();
+bool ResourceResponse::IsHTTP() const {
+  return url_.ProtocolIsInHTTPFamily();
 }
 
-const KURL& ResourceResponse::url() const {
-  return m_url;
+const KURL& ResourceResponse::Url() const {
+  return url_;
 }
 
-void ResourceResponse::setURL(const KURL& url) {
-  m_isNull = false;
+void ResourceResponse::SetURL(const KURL& url) {
+  is_null_ = false;
 
-  m_url = url;
+  url_ = url;
 }
 
-const AtomicString& ResourceResponse::mimeType() const {
-  return m_mimeType;
+const AtomicString& ResourceResponse::MimeType() const {
+  return mime_type_;
 }
 
-void ResourceResponse::setMimeType(const AtomicString& mimeType) {
-  m_isNull = false;
+void ResourceResponse::SetMimeType(const AtomicString& mime_type) {
+  is_null_ = false;
 
   // FIXME: MIME type is determined by HTTP Content-Type header. We should
   // update the header, so that it doesn't disagree with m_mimeType.
-  m_mimeType = mimeType;
+  mime_type_ = mime_type;
 }
 
-long long ResourceResponse::expectedContentLength() const {
-  return m_expectedContentLength;
+long long ResourceResponse::ExpectedContentLength() const {
+  return expected_content_length_;
 }
 
-void ResourceResponse::setExpectedContentLength(
-    long long expectedContentLength) {
-  m_isNull = false;
+void ResourceResponse::SetExpectedContentLength(
+    long long expected_content_length) {
+  is_null_ = false;
 
   // FIXME: Content length is determined by HTTP Content-Length header. We
   // should update the header, so that it doesn't disagree with
   // m_expectedContentLength.
-  m_expectedContentLength = expectedContentLength;
+  expected_content_length_ = expected_content_length;
 }
 
-const AtomicString& ResourceResponse::textEncodingName() const {
-  return m_textEncodingName;
+const AtomicString& ResourceResponse::TextEncodingName() const {
+  return text_encoding_name_;
 }
 
-void ResourceResponse::setTextEncodingName(const AtomicString& encodingName) {
-  m_isNull = false;
+void ResourceResponse::SetTextEncodingName(const AtomicString& encoding_name) {
+  is_null_ = false;
 
   // FIXME: Text encoding is determined by HTTP Content-Type header. We should
   // update the header, so that it doesn't disagree with m_textEncodingName.
-  m_textEncodingName = encodingName;
+  text_encoding_name_ = encoding_name;
 }
 
-int ResourceResponse::httpStatusCode() const {
-  return m_httpStatusCode;
+int ResourceResponse::HttpStatusCode() const {
+  return http_status_code_;
 }
 
-void ResourceResponse::setHTTPStatusCode(int statusCode) {
-  m_httpStatusCode = statusCode;
+void ResourceResponse::SetHTTPStatusCode(int status_code) {
+  http_status_code_ = status_code;
 }
 
-const AtomicString& ResourceResponse::httpStatusText() const {
-  return m_httpStatusText;
+const AtomicString& ResourceResponse::HttpStatusText() const {
+  return http_status_text_;
 }
 
-void ResourceResponse::setHTTPStatusText(const AtomicString& statusText) {
-  m_httpStatusText = statusText;
+void ResourceResponse::SetHTTPStatusText(const AtomicString& status_text) {
+  http_status_text_ = status_text;
 }
 
-const AtomicString& ResourceResponse::httpHeaderField(
+const AtomicString& ResourceResponse::HttpHeaderField(
     const AtomicString& name) const {
-  return m_httpHeaderFields.get(name);
+  return http_header_fields_.Get(name);
 }
 
-void ResourceResponse::updateHeaderParsedState(const AtomicString& name) {
-  static const char ageHeader[] = "age";
-  static const char dateHeader[] = "date";
-  static const char expiresHeader[] = "expires";
-  static const char lastModifiedHeader[] = "last-modified";
+void ResourceResponse::UpdateHeaderParsedState(const AtomicString& name) {
+  static const char kAgeHeader[] = "age";
+  static const char kDateHeader[] = "date";
+  static const char kExpiresHeader[] = "expires";
+  static const char kLastModifiedHeader[] = "last-modified";
 
-  if (equalIgnoringCase(name, ageHeader))
-    m_haveParsedAgeHeader = false;
-  else if (equalIgnoringCase(name, cacheControlHeader) ||
-           equalIgnoringCase(name, pragmaHeader))
-    m_cacheControlHeader = CacheControlHeader();
-  else if (equalIgnoringCase(name, dateHeader))
-    m_haveParsedDateHeader = false;
-  else if (equalIgnoringCase(name, expiresHeader))
-    m_haveParsedExpiresHeader = false;
-  else if (equalIgnoringCase(name, lastModifiedHeader))
-    m_haveParsedLastModifiedHeader = false;
+  if (EqualIgnoringCase(name, kAgeHeader))
+    have_parsed_age_header_ = false;
+  else if (EqualIgnoringCase(name, kCacheControlHeader) ||
+           EqualIgnoringCase(name, kPragmaHeader))
+    cache_control_header_ = CacheControlHeader();
+  else if (EqualIgnoringCase(name, kDateHeader))
+    have_parsed_date_header_ = false;
+  else if (EqualIgnoringCase(name, kExpiresHeader))
+    have_parsed_expires_header_ = false;
+  else if (EqualIgnoringCase(name, kLastModifiedHeader))
+    have_parsed_last_modified_header_ = false;
 }
 
-void ResourceResponse::setSecurityDetails(
+void ResourceResponse::SetSecurityDetails(
     const String& protocol,
-    const String& keyExchange,
-    const String& keyExchangeGroup,
+    const String& key_exchange,
+    const String& key_exchange_group,
     const String& cipher,
     const String& mac,
-    const String& subjectName,
-    const Vector<String>& sanList,
+    const String& subject_name,
+    const Vector<String>& san_list,
     const String& issuer,
-    time_t validFrom,
-    time_t validTo,
+    time_t valid_from,
+    time_t valid_to,
     const Vector<AtomicString>& certificate,
-    const SignedCertificateTimestampList& sctList) {
-  m_securityDetails.protocol = protocol;
-  m_securityDetails.keyExchange = keyExchange;
-  m_securityDetails.keyExchangeGroup = keyExchangeGroup;
-  m_securityDetails.cipher = cipher;
-  m_securityDetails.mac = mac;
-  m_securityDetails.subjectName = subjectName;
-  m_securityDetails.sanList = sanList;
-  m_securityDetails.issuer = issuer;
-  m_securityDetails.validFrom = validFrom;
-  m_securityDetails.validTo = validTo;
-  m_securityDetails.certificate = certificate;
-  m_securityDetails.sctList = sctList;
+    const SignedCertificateTimestampList& sct_list) {
+  security_details_.protocol = protocol;
+  security_details_.key_exchange = key_exchange;
+  security_details_.key_exchange_group = key_exchange_group;
+  security_details_.cipher = cipher;
+  security_details_.mac = mac;
+  security_details_.subject_name = subject_name;
+  security_details_.san_list = san_list;
+  security_details_.issuer = issuer;
+  security_details_.valid_from = valid_from;
+  security_details_.valid_to = valid_to;
+  security_details_.certificate = certificate;
+  security_details_.sct_list = sct_list;
 }
 
-void ResourceResponse::setHTTPHeaderField(const AtomicString& name,
+void ResourceResponse::SetHTTPHeaderField(const AtomicString& name,
                                           const AtomicString& value) {
-  updateHeaderParsedState(name);
+  UpdateHeaderParsedState(name);
 
-  m_httpHeaderFields.set(name, value);
+  http_header_fields_.Set(name, value);
 }
 
-void ResourceResponse::addHTTPHeaderField(const AtomicString& name,
+void ResourceResponse::AddHTTPHeaderField(const AtomicString& name,
                                           const AtomicString& value) {
-  updateHeaderParsedState(name);
+  UpdateHeaderParsedState(name);
 
-  HTTPHeaderMap::AddResult result = m_httpHeaderFields.add(name, value);
-  if (!result.isNewEntry)
-    result.storedValue->value = result.storedValue->value + ", " + value;
+  HTTPHeaderMap::AddResult result = http_header_fields_.Add(name, value);
+  if (!result.is_new_entry)
+    result.stored_value->value = result.stored_value->value + ", " + value;
 }
 
-void ResourceResponse::clearHTTPHeaderField(const AtomicString& name) {
-  m_httpHeaderFields.remove(name);
+void ResourceResponse::ClearHTTPHeaderField(const AtomicString& name) {
+  http_header_fields_.Remove(name);
 }
 
-const HTTPHeaderMap& ResourceResponse::httpHeaderFields() const {
-  return m_httpHeaderFields;
+const HTTPHeaderMap& ResourceResponse::HttpHeaderFields() const {
+  return http_header_fields_;
 }
 
-bool ResourceResponse::cacheControlContainsNoCache() const {
-  if (!m_cacheControlHeader.parsed) {
-    m_cacheControlHeader =
-        parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeader),
-                                    m_httpHeaderFields.get(pragmaHeader));
+bool ResourceResponse::CacheControlContainsNoCache() const {
+  if (!cache_control_header_.parsed) {
+    cache_control_header_ = ParseCacheControlDirectives(
+        http_header_fields_.Get(kCacheControlHeader),
+        http_header_fields_.Get(kPragmaHeader));
   }
-  return m_cacheControlHeader.containsNoCache;
+  return cache_control_header_.contains_no_cache;
 }
 
-bool ResourceResponse::cacheControlContainsNoStore() const {
-  if (!m_cacheControlHeader.parsed) {
-    m_cacheControlHeader =
-        parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeader),
-                                    m_httpHeaderFields.get(pragmaHeader));
+bool ResourceResponse::CacheControlContainsNoStore() const {
+  if (!cache_control_header_.parsed) {
+    cache_control_header_ = ParseCacheControlDirectives(
+        http_header_fields_.Get(kCacheControlHeader),
+        http_header_fields_.Get(kPragmaHeader));
   }
-  return m_cacheControlHeader.containsNoStore;
+  return cache_control_header_.contains_no_store;
 }
 
-bool ResourceResponse::cacheControlContainsMustRevalidate() const {
-  if (!m_cacheControlHeader.parsed) {
-    m_cacheControlHeader =
-        parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeader),
-                                    m_httpHeaderFields.get(pragmaHeader));
+bool ResourceResponse::CacheControlContainsMustRevalidate() const {
+  if (!cache_control_header_.parsed) {
+    cache_control_header_ = ParseCacheControlDirectives(
+        http_header_fields_.Get(kCacheControlHeader),
+        http_header_fields_.Get(kPragmaHeader));
   }
-  return m_cacheControlHeader.containsMustRevalidate;
+  return cache_control_header_.contains_must_revalidate;
 }
 
-bool ResourceResponse::hasCacheValidatorFields() const {
-  static const char lastModifiedHeader[] = "last-modified";
-  static const char eTagHeader[] = "etag";
-  return !m_httpHeaderFields.get(lastModifiedHeader).isEmpty() ||
-         !m_httpHeaderFields.get(eTagHeader).isEmpty();
+bool ResourceResponse::HasCacheValidatorFields() const {
+  static const char kLastModifiedHeader[] = "last-modified";
+  static const char kETagHeader[] = "etag";
+  return !http_header_fields_.Get(kLastModifiedHeader).IsEmpty() ||
+         !http_header_fields_.Get(kETagHeader).IsEmpty();
 }
 
-double ResourceResponse::cacheControlMaxAge() const {
-  if (!m_cacheControlHeader.parsed) {
-    m_cacheControlHeader =
-        parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeader),
-                                    m_httpHeaderFields.get(pragmaHeader));
+double ResourceResponse::CacheControlMaxAge() const {
+  if (!cache_control_header_.parsed) {
+    cache_control_header_ = ParseCacheControlDirectives(
+        http_header_fields_.Get(kCacheControlHeader),
+        http_header_fields_.Get(kPragmaHeader));
   }
-  return m_cacheControlHeader.maxAge;
+  return cache_control_header_.max_age;
 }
 
-static double parseDateValueInHeader(const HTTPHeaderMap& headers,
-                                     const AtomicString& headerName) {
-  const AtomicString& headerValue = headers.get(headerName);
-  if (headerValue.isEmpty())
+static double ParseDateValueInHeader(const HTTPHeaderMap& headers,
+                                     const AtomicString& header_name) {
+  const AtomicString& header_value = headers.Get(header_name);
+  if (header_value.IsEmpty())
     return std::numeric_limits<double>::quiet_NaN();
   // This handles all date formats required by RFC2616:
   // Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
   // Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
   // Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
-  double dateInMilliseconds = parseDate(headerValue);
-  if (!std::isfinite(dateInMilliseconds))
+  double date_in_milliseconds = ParseDate(header_value);
+  if (!std::isfinite(date_in_milliseconds))
     return std::numeric_limits<double>::quiet_NaN();
-  return dateInMilliseconds / 1000;
+  return date_in_milliseconds / 1000;
 }
 
-double ResourceResponse::date() const {
-  if (!m_haveParsedDateHeader) {
-    static const char headerName[] = "date";
-    m_date = parseDateValueInHeader(m_httpHeaderFields, headerName);
-    m_haveParsedDateHeader = true;
+double ResourceResponse::Date() const {
+  if (!have_parsed_date_header_) {
+    static const char kHeaderName[] = "date";
+    date_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
+    have_parsed_date_header_ = true;
   }
-  return m_date;
+  return date_;
 }
 
-double ResourceResponse::age() const {
-  if (!m_haveParsedAgeHeader) {
-    static const char headerName[] = "age";
-    const AtomicString& headerValue = m_httpHeaderFields.get(headerName);
+double ResourceResponse::Age() const {
+  if (!have_parsed_age_header_) {
+    static const char kHeaderName[] = "age";
+    const AtomicString& header_value = http_header_fields_.Get(kHeaderName);
     bool ok;
-    m_age = headerValue.toDouble(&ok);
+    age_ = header_value.ToDouble(&ok);
     if (!ok)
-      m_age = std::numeric_limits<double>::quiet_NaN();
-    m_haveParsedAgeHeader = true;
+      age_ = std::numeric_limits<double>::quiet_NaN();
+    have_parsed_age_header_ = true;
   }
-  return m_age;
+  return age_;
 }
 
-double ResourceResponse::expires() const {
-  if (!m_haveParsedExpiresHeader) {
-    static const char headerName[] = "expires";
-    m_expires = parseDateValueInHeader(m_httpHeaderFields, headerName);
-    m_haveParsedExpiresHeader = true;
+double ResourceResponse::Expires() const {
+  if (!have_parsed_expires_header_) {
+    static const char kHeaderName[] = "expires";
+    expires_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
+    have_parsed_expires_header_ = true;
   }
-  return m_expires;
+  return expires_;
 }
 
-double ResourceResponse::lastModified() const {
-  if (!m_haveParsedLastModifiedHeader) {
-    static const char headerName[] = "last-modified";
-    m_lastModified = parseDateValueInHeader(m_httpHeaderFields, headerName);
-    m_haveParsedLastModifiedHeader = true;
+double ResourceResponse::LastModified() const {
+  if (!have_parsed_last_modified_header_) {
+    static const char kHeaderName[] = "last-modified";
+    last_modified_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
+    have_parsed_last_modified_header_ = true;
   }
-  return m_lastModified;
+  return last_modified_;
 }
 
-bool ResourceResponse::isAttachment() const {
-  static const char attachmentString[] = "attachment";
-  String value = m_httpHeaderFields.get(HTTPNames::Content_Disposition);
-  size_t loc = value.find(';');
+bool ResourceResponse::IsAttachment() const {
+  static const char kAttachmentString[] = "attachment";
+  String value = http_header_fields_.Get(HTTPNames::Content_Disposition);
+  size_t loc = value.Find(';');
   if (loc != kNotFound)
-    value = value.left(loc);
-  value = value.stripWhiteSpace();
-  return equalIgnoringCase(value, attachmentString);
+    value = value.Left(loc);
+  value = value.StripWhiteSpace();
+  return EqualIgnoringCase(value, kAttachmentString);
 }
 
-AtomicString ResourceResponse::httpContentType() const {
-  return extractMIMETypeFromMediaType(
-      httpHeaderField(HTTPNames::Content_Type).lower());
+AtomicString ResourceResponse::HttpContentType() const {
+  return ExtractMIMETypeFromMediaType(
+      HttpHeaderField(HTTPNames::Content_Type).Lower());
 }
 
-bool ResourceResponse::wasCached() const {
-  return m_wasCached;
+bool ResourceResponse::WasCached() const {
+  return was_cached_;
 }
 
-void ResourceResponse::setWasCached(bool value) {
-  m_wasCached = value;
+void ResourceResponse::SetWasCached(bool value) {
+  was_cached_ = value;
 }
 
-bool ResourceResponse::connectionReused() const {
-  return m_connectionReused;
+bool ResourceResponse::ConnectionReused() const {
+  return connection_reused_;
 }
 
-void ResourceResponse::setConnectionReused(bool connectionReused) {
-  m_connectionReused = connectionReused;
+void ResourceResponse::SetConnectionReused(bool connection_reused) {
+  connection_reused_ = connection_reused;
 }
 
-unsigned ResourceResponse::connectionID() const {
-  return m_connectionID;
+unsigned ResourceResponse::ConnectionID() const {
+  return connection_id_;
 }
 
-void ResourceResponse::setConnectionID(unsigned connectionID) {
-  m_connectionID = connectionID;
+void ResourceResponse::SetConnectionID(unsigned connection_id) {
+  connection_id_ = connection_id;
 }
 
-ResourceLoadTiming* ResourceResponse::resourceLoadTiming() const {
-  return m_resourceLoadTiming.get();
+ResourceLoadTiming* ResourceResponse::GetResourceLoadTiming() const {
+  return resource_load_timing_.Get();
 }
 
-void ResourceResponse::setResourceLoadTiming(
-    PassRefPtr<ResourceLoadTiming> resourceLoadTiming) {
-  m_resourceLoadTiming = std::move(resourceLoadTiming);
+void ResourceResponse::SetResourceLoadTiming(
+    PassRefPtr<ResourceLoadTiming> resource_load_timing) {
+  resource_load_timing_ = std::move(resource_load_timing);
 }
 
-PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const {
-  return m_resourceLoadInfo.get();
+PassRefPtr<ResourceLoadInfo> ResourceResponse::GetResourceLoadInfo() const {
+  return resource_load_info_.Get();
 }
 
-void ResourceResponse::setResourceLoadInfo(
-    PassRefPtr<ResourceLoadInfo> loadInfo) {
-  m_resourceLoadInfo = std::move(loadInfo);
+void ResourceResponse::SetResourceLoadInfo(
+    PassRefPtr<ResourceLoadInfo> load_info) {
+  resource_load_info_ = std::move(load_info);
 }
 
-KURL ResourceResponse::originalURLViaServiceWorker() const {
-  if (m_urlListViaServiceWorker.isEmpty())
+KURL ResourceResponse::OriginalURLViaServiceWorker() const {
+  if (url_list_via_service_worker_.IsEmpty())
     return KURL();
-  return m_urlListViaServiceWorker.back();
+  return url_list_via_service_worker_.back();
 }
 
-void ResourceResponse::setEncodedDataLength(long long value) {
-  m_encodedDataLength = value;
+void ResourceResponse::SetEncodedDataLength(long long value) {
+  encoded_data_length_ = value;
 }
 
-void ResourceResponse::addToEncodedBodyLength(long long value) {
-  m_encodedBodyLength += value;
+void ResourceResponse::AddToEncodedBodyLength(long long value) {
+  encoded_body_length_ += value;
 }
 
-void ResourceResponse::addToDecodedBodyLength(long long value) {
-  m_decodedBodyLength += value;
+void ResourceResponse::AddToDecodedBodyLength(long long value) {
+  decoded_body_length_ += value;
 }
 
-void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath) {
-  m_downloadedFilePath = downloadedFilePath;
-  if (m_downloadedFilePath.isEmpty()) {
-    m_downloadedFileHandle.clear();
+void ResourceResponse::SetDownloadedFilePath(
+    const String& downloaded_file_path) {
+  downloaded_file_path_ = downloaded_file_path;
+  if (downloaded_file_path_.IsEmpty()) {
+    downloaded_file_handle_.Clear();
     return;
   }
   // TODO(dmurph): Investigate whether we need the mimeType on this blob.
-  std::unique_ptr<BlobData> blobData =
-      BlobData::createForFileWithUnknownSize(m_downloadedFilePath);
-  blobData->detachFromCurrentThread();
-  m_downloadedFileHandle = BlobDataHandle::create(std::move(blobData), -1);
+  std::unique_ptr<BlobData> blob_data =
+      BlobData::CreateForFileWithUnknownSize(downloaded_file_path_);
+  blob_data->DetachFromCurrentThread();
+  downloaded_file_handle_ = BlobDataHandle::Create(std::move(blob_data), -1);
 }
 
-void ResourceResponse::appendRedirectResponse(
+void ResourceResponse::AppendRedirectResponse(
     const ResourceResponse& response) {
-  m_redirectResponses.push_back(response);
+  redirect_responses_.push_back(response);
 }
 
-bool ResourceResponse::compare(const ResourceResponse& a,
+bool ResourceResponse::Compare(const ResourceResponse& a,
                                const ResourceResponse& b) {
-  if (a.isNull() != b.isNull())
+  if (a.IsNull() != b.IsNull())
     return false;
-  if (a.url() != b.url())
+  if (a.Url() != b.Url())
     return false;
-  if (a.mimeType() != b.mimeType())
+  if (a.MimeType() != b.MimeType())
     return false;
-  if (a.expectedContentLength() != b.expectedContentLength())
+  if (a.ExpectedContentLength() != b.ExpectedContentLength())
     return false;
-  if (a.textEncodingName() != b.textEncodingName())
+  if (a.TextEncodingName() != b.TextEncodingName())
     return false;
-  if (a.httpStatusCode() != b.httpStatusCode())
+  if (a.HttpStatusCode() != b.HttpStatusCode())
     return false;
-  if (a.httpStatusText() != b.httpStatusText())
+  if (a.HttpStatusText() != b.HttpStatusText())
     return false;
-  if (a.httpHeaderFields() != b.httpHeaderFields())
+  if (a.HttpHeaderFields() != b.HttpHeaderFields())
     return false;
-  if (a.resourceLoadTiming() && b.resourceLoadTiming() &&
-      *a.resourceLoadTiming() == *b.resourceLoadTiming())
+  if (a.GetResourceLoadTiming() && b.GetResourceLoadTiming() &&
+      *a.GetResourceLoadTiming() == *b.GetResourceLoadTiming())
     return true;
-  if (a.resourceLoadTiming() != b.resourceLoadTiming())
+  if (a.GetResourceLoadTiming() != b.GetResourceLoadTiming())
     return false;
-  if (a.encodedBodyLength() != b.encodedBodyLength())
+  if (a.EncodedBodyLength() != b.EncodedBodyLength())
     return false;
-  if (a.decodedBodyLength() != b.decodedBodyLength())
+  if (a.DecodedBodyLength() != b.DecodedBodyLength())
     return false;
   return true;
 }

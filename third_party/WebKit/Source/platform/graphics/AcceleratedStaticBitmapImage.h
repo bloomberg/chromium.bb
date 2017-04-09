@@ -24,62 +24,64 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   ~AcceleratedStaticBitmapImage() override;
   // SkImage with a texture backing that is assumed to be from the shared
   // context of the current thread.
-  static PassRefPtr<AcceleratedStaticBitmapImage> createFromSharedContextImage(
+  static PassRefPtr<AcceleratedStaticBitmapImage> CreateFromSharedContextImage(
       sk_sp<SkImage>);
   // Can specify the GrContext that created the texture backing. Ideally all
   // callers would use this option. The |mailbox| is a name for the texture
   // backing, allowing other contexts to use the same backing.
-  static PassRefPtr<AcceleratedStaticBitmapImage> createFromWebGLContextImage(
+  static PassRefPtr<AcceleratedStaticBitmapImage> CreateFromWebGLContextImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
-      unsigned textureId,
+      unsigned texture_id,
       WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      IntSize mailboxSize);
+      IntSize mailbox_size);
 
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
+  bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize size() const override;
-  sk_sp<SkImage> imageForCurrentFrame() override;
-  bool isTextureBacked() const override { return true; }
+  sk_sp<SkImage> ImageForCurrentFrame() override;
+  bool IsTextureBacked() const override { return true; }
 
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
-            const FloatRect& dstRect,
-            const FloatRect& srcRect,
+            const FloatRect& dst_rect,
+            const FloatRect& src_rect,
             RespectImageOrientationEnum,
             ImageClampingMode) override;
 
-  void copyToTexture(WebGraphicsContext3DProvider*,
-                     GLuint destTextureId,
-                     GLenum destInternalFormat,
-                     GLenum destType,
-                     bool flipY) override;
+  void CopyToTexture(WebGraphicsContext3DProvider*,
+                     GLuint dest_texture_id,
+                     GLenum dest_internal_format,
+                     GLenum dest_type,
+                     bool flip_y) override;
 
-  bool hasMailbox() final { return m_textureHolder->isMailboxTextureHolder(); }
+  bool HasMailbox() final { return texture_holder_->IsMailboxTextureHolder(); }
   // To be called on sender thread before performing a transfer
-  void transfer() final;
+  void Transfer() final;
 
-  void ensureMailbox() final;
-  gpu::Mailbox mailbox() final { return m_textureHolder->mailbox(); }
-  gpu::SyncToken syncToken() final { return m_textureHolder->syncToken(); }
-  void updateSyncToken(gpu::SyncToken) final;
+  void EnsureMailbox() final;
+  gpu::Mailbox GetMailbox() final { return texture_holder_->GetMailbox(); }
+  gpu::SyncToken GetSyncToken() final {
+    return texture_holder_->GetSyncToken();
+  }
+  void UpdateSyncToken(gpu::SyncToken) final;
 
  private:
   AcceleratedStaticBitmapImage(sk_sp<SkImage>);
   AcceleratedStaticBitmapImage(const gpu::Mailbox&,
                                const gpu::SyncToken&,
-                               unsigned textureId,
+                               unsigned texture_id,
                                WeakPtr<WebGraphicsContext3DProviderWrapper>,
-                               IntSize mailboxSize);
+                               IntSize mailbox_size);
 
-  void createImageFromMailboxIfNeeded();
-  void checkThread();
-  void waitSyncTokenIfNeeded();
-  bool isValid();
+  void CreateImageFromMailboxIfNeeded();
+  void CheckThread();
+  void WaitSyncTokenIfNeeded();
+  bool IsValid();
 
-  std::unique_ptr<TextureHolder> m_textureHolder;
+  std::unique_ptr<TextureHolder> texture_holder_;
 
-  base::ThreadChecker m_threadChecker;
-  bool m_detachThreadAtNextCheck = false;
+  base::ThreadChecker thread_checker_;
+  bool detach_thread_at_next_check_ = false;
 };
 
 }  // namespace blink

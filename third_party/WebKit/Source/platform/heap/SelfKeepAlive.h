@@ -48,25 +48,25 @@ class SelfKeepAlive final {
  public:
   SelfKeepAlive() {}
 
-  explicit SelfKeepAlive(Self* self) { assign(self); }
+  explicit SelfKeepAlive(Self* self) { Assign(self); }
 
   SelfKeepAlive& operator=(Self* self) {
-    assign(self);
+    Assign(self);
     return *this;
   }
 
-  void clear() { m_keepAlive.clear(); }
+  void Clear() { keep_alive_.Clear(); }
 
-  explicit operator bool() const { return m_keepAlive; }
+  explicit operator bool() const { return keep_alive_; }
 
  private:
-  void assign(Self* self) {
-    ASSERT(!m_keepAlive || m_keepAlive.get() == self);
-    m_keepAlive = self;
+  void Assign(Self* self) {
+    ASSERT(!keep_alive_ || keep_alive_.Get() == self);
+    keep_alive_ = self;
   }
 
   GC_PLUGIN_IGNORE("420515")
-  Persistent<Self> m_keepAlive;
+  Persistent<Self> keep_alive_;
 };
 
 }  // namespace blink

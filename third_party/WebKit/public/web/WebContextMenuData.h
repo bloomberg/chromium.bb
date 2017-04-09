@@ -48,156 +48,156 @@ namespace blink {
 struct WebContextMenuData {
   enum MediaType {
     // No special node is in context.
-    MediaTypeNone,
+    kMediaTypeNone,
     // An image node is selected.
-    MediaTypeImage,
+    kMediaTypeImage,
     // A video node is selected.
-    MediaTypeVideo,
+    kMediaTypeVideo,
     // An audio node is selected.
-    MediaTypeAudio,
+    kMediaTypeAudio,
     // A canvas node is selected.
-    MediaTypeCanvas,
+    kMediaTypeCanvas,
     // A file node is selected.
-    MediaTypeFile,
+    kMediaTypeFile,
     // A plugin node is selected.
-    MediaTypePlugin,
-    MediaTypeLast = MediaTypePlugin
+    kMediaTypePlugin,
+    kMediaTypeLast = kMediaTypePlugin
   };
   // The type of media the context menu is being invoked on.
-  MediaType mediaType;
+  MediaType media_type;
 
   // The x and y position of the mouse pointer (relative to the webview).
-  WebPoint mousePosition;
+  WebPoint mouse_position;
 
   // The absolute URL of the link that is in context.
-  WebURL linkURL;
+  WebURL link_url;
 
   // The absolute URL of the image/video/audio that is in context.
-  WebURL srcURL;
+  WebURL src_url;
 
   // Whether the image in context is a null.
-  bool hasImageContents;
+  bool has_image_contents;
 
   // If |media_type| is MediaTypeImage and |has_image_contents| is true, then
   // this contains the image's WebURLResponse.
-  WebURLResponse imageResponse;
+  WebURLResponse image_response;
 
   // The absolute URL of the page in context.
-  WebURL pageURL;
+  WebURL page_url;
 
   // The absolute keyword search URL including the %s search tag when the
   // "Add as search engine..." option is clicked (left empty if not used).
-  WebURL keywordURL;
+  WebURL keyword_url;
 
   // The absolute URL of the subframe in context.
-  WebURL frameURL;
+  WebURL frame_url;
 
   // The encoding for the frame in context.
-  WebString frameEncoding;
+  WebString frame_encoding;
 
   // History state of the subframe in context.
-  WebHistoryItem frameHistoryItem;
+  WebHistoryItem frame_history_item;
 
   enum MediaFlags {
-    MediaNone = 0x0,
-    MediaInError = 0x1,
-    MediaPaused = 0x2,
-    MediaMuted = 0x4,
-    MediaLoop = 0x8,
-    MediaCanSave = 0x10,
-    MediaHasAudio = 0x20,
-    MediaCanToggleControls = 0x40,
-    MediaControls = 0x80,
-    MediaCanPrint = 0x100,
-    MediaCanRotate = 0x200,
+    kMediaNone = 0x0,
+    kMediaInError = 0x1,
+    kMediaPaused = 0x2,
+    kMediaMuted = 0x4,
+    kMediaLoop = 0x8,
+    kMediaCanSave = 0x10,
+    kMediaHasAudio = 0x20,
+    kMediaCanToggleControls = 0x40,
+    kMediaControls = 0x80,
+    kMediaCanPrint = 0x100,
+    kMediaCanRotate = 0x200,
   };
 
   // Extra attributes describing media elements.
-  int mediaFlags;
+  int media_flags;
 
   // The text of the link that is in the context.
-  WebString linkText;
+  WebString link_text;
 
   // The raw text of the selection in context.
-  WebString selectedText;
+  WebString selected_text;
 
   // Title attribute or alt attribute (if title is not available) of the
   // selection in context.
-  WebString titleText;
+  WebString title_text;
 
   // Whether spell checking is enabled.
-  bool isSpellCheckingEnabled;
+  bool is_spell_checking_enabled;
 
   // Suggested filename for saving file.
-  WebString suggestedFilename;
+  WebString suggested_filename;
 
   // The editable (possibily) misspelled word.
-  WebString misspelledWord;
+  WebString misspelled_word;
 
   // If misspelledWord is not empty, holds suggestions from the dictionary.
-  WebVector<WebString> dictionarySuggestions;
+  WebVector<WebString> dictionary_suggestions;
 
   // Whether context is editable.
-  bool isEditable;
+  bool is_editable;
 
   enum InputFieldType {
     // Not an input field.
-    InputFieldTypeNone,
+    kInputFieldTypeNone,
     // type = text, tel, search, number, email, url
-    InputFieldTypePlainText,
+    kInputFieldTypePlainText,
     // type = password
-    InputFieldTypePassword,
+    kInputFieldTypePassword,
     // type = <etc.>
-    InputFieldTypeOther,
-    InputFieldTypeLast = InputFieldTypeOther
+    kInputFieldTypeOther,
+    kInputFieldTypeLast = kInputFieldTypeOther
   };
 
   // If this node is an input field, the type of that field.
-  InputFieldType inputFieldType;
+  InputFieldType input_field_type;
 
   enum CheckableMenuItemFlags {
-    CheckableMenuItemDisabled = 0x0,
-    CheckableMenuItemEnabled = 0x1,
-    CheckableMenuItemChecked = 0x2,
+    kCheckableMenuItemDisabled = 0x0,
+    kCheckableMenuItemEnabled = 0x1,
+    kCheckableMenuItemChecked = 0x2,
   };
 
   // Writing direction menu items - values are unions of
   // CheckableMenuItemFlags.
-  int writingDirectionDefault;
-  int writingDirectionLeftToRight;
-  int writingDirectionRightToLeft;
+  int writing_direction_default;
+  int writing_direction_left_to_right;
+  int writing_direction_right_to_left;
 
   enum EditFlags {
-    CanDoNone = 0x0,
-    CanUndo = 0x1,
-    CanRedo = 0x2,
-    CanCut = 0x4,
-    CanCopy = 0x8,
-    CanPaste = 0x10,
-    CanDelete = 0x20,
-    CanSelectAll = 0x40,
-    CanTranslate = 0x80,
+    kCanDoNone = 0x0,
+    kCanUndo = 0x1,
+    kCanRedo = 0x2,
+    kCanCut = 0x4,
+    kCanCopy = 0x8,
+    kCanPaste = 0x10,
+    kCanDelete = 0x20,
+    kCanSelectAll = 0x40,
+    kCanTranslate = 0x80,
   };
 
   // Which edit operations are available in the context.
-  int editFlags;
+  int edit_flags;
 
   // The referrer policy applicable to this context.
-  WebReferrerPolicy referrerPolicy;
+  WebReferrerPolicy referrer_policy;
 
   // Custom context menu items provided by the WebCore internals.
-  WebVector<WebMenuItemInfo> customItems;
+  WebVector<WebMenuItemInfo> custom_items;
 
   WebContextMenuData()
-      : mediaType(MediaTypeNone),
-        hasImageContents(true),
-        mediaFlags(MediaNone),
-        isSpellCheckingEnabled(false),
-        isEditable(false),
-        writingDirectionDefault(CheckableMenuItemDisabled),
-        writingDirectionLeftToRight(CheckableMenuItemEnabled),
-        writingDirectionRightToLeft(CheckableMenuItemEnabled),
-        editFlags(0) {}
+      : media_type(kMediaTypeNone),
+        has_image_contents(true),
+        media_flags(kMediaNone),
+        is_spell_checking_enabled(false),
+        is_editable(false),
+        writing_direction_default(kCheckableMenuItemDisabled),
+        writing_direction_left_to_right(kCheckableMenuItemEnabled),
+        writing_direction_right_to_left(kCheckableMenuItemEnabled),
+        edit_flags(0) {}
 };
 
 }  // namespace blink

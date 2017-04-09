@@ -35,7 +35,7 @@
 
 namespace blink {
 
-PLATFORM_EXPORT unsigned long createUniqueIdentifier();
+PLATFORM_EXPORT unsigned long CreateUniqueIdentifier();
 }
 
 #endif  // UniqueIdentifier_h

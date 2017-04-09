@@ -42,58 +42,58 @@ class MediaControlsPainter {
   STATIC_ONLY(MediaControlsPainter);
 
  public:
-  static bool paintMediaMuteButton(const LayoutObject&,
+  static bool PaintMediaMuteButton(const LayoutObject&,
                                    const PaintInfo&,
                                    const IntRect&);
-  static bool paintMediaPlayButton(const LayoutObject&,
+  static bool PaintMediaPlayButton(const LayoutObject&,
                                    const PaintInfo&,
                                    const IntRect&);
-  static bool paintMediaToggleClosedCaptionsButton(const LayoutObject&,
+  static bool PaintMediaToggleClosedCaptionsButton(const LayoutObject&,
                                                    const PaintInfo&,
                                                    const IntRect&);
-  static bool paintMediaSlider(const LayoutObject&,
+  static bool PaintMediaSlider(const LayoutObject&,
                                const PaintInfo&,
                                const IntRect&);
-  static bool paintMediaSliderThumb(const LayoutObject&,
+  static bool PaintMediaSliderThumb(const LayoutObject&,
                                     const PaintInfo&,
                                     const IntRect&);
-  static bool paintMediaVolumeSlider(const LayoutObject&,
+  static bool PaintMediaVolumeSlider(const LayoutObject&,
                                      const PaintInfo&,
                                      const IntRect&);
-  static bool paintMediaVolumeSliderThumb(const LayoutObject&,
+  static bool PaintMediaVolumeSliderThumb(const LayoutObject&,
                                           const PaintInfo&,
                                           const IntRect&);
-  static bool paintMediaFullscreenButton(const LayoutObject&,
+  static bool PaintMediaFullscreenButton(const LayoutObject&,
                                          const PaintInfo&,
                                          const IntRect&);
-  static bool paintMediaOverlayPlayButton(const LayoutObject&,
+  static bool PaintMediaOverlayPlayButton(const LayoutObject&,
                                           const PaintInfo&,
                                           const IntRect&);
-  static bool paintMediaCastButton(const LayoutObject&,
+  static bool PaintMediaCastButton(const LayoutObject&,
                                    const PaintInfo&,
                                    const IntRect&);
-  static bool paintMediaTrackSelectionCheckmark(const LayoutObject&,
+  static bool PaintMediaTrackSelectionCheckmark(const LayoutObject&,
                                                 const PaintInfo&,
                                                 const IntRect&);
-  static bool paintMediaClosedCaptionsIcon(const LayoutObject&,
+  static bool PaintMediaClosedCaptionsIcon(const LayoutObject&,
                                            const PaintInfo&,
                                            const IntRect&);
-  static bool paintMediaSubtitlesIcon(const LayoutObject&,
+  static bool PaintMediaSubtitlesIcon(const LayoutObject&,
                                       const PaintInfo&,
                                       const IntRect&);
-  static bool paintMediaOverflowMenu(const LayoutObject&,
+  static bool PaintMediaOverflowMenu(const LayoutObject&,
                                      const PaintInfo&,
                                      const IntRect&);
-  static bool paintMediaDownloadIcon(const LayoutObject&,
+  static bool PaintMediaDownloadIcon(const LayoutObject&,
                                      const PaintInfo&,
                                      const IntRect&);
-  static void adjustMediaSliderThumbSize(ComputedStyle&);
+  static void AdjustMediaSliderThumbSize(ComputedStyle&);
 
  private:
-  static void adjustMediaSliderThumbPaintSize(const IntRect&,
+  static void AdjustMediaSliderThumbPaintSize(const IntRect&,
                                               const ComputedStyle&,
-                                              IntRect& rectOut);
-  static void paintMediaSliderInternal(const LayoutObject&,
+                                              IntRect& rect_out);
+  static void PaintMediaSliderInternal(const LayoutObject&,
                                        const PaintInfo&,
                                        const IntRect&);
 };

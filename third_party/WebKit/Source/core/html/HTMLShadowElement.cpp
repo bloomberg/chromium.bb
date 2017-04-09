@@ -42,44 +42,44 @@ class Document;
 
 inline HTMLShadowElement::HTMLShadowElement(Document& document)
     : InsertionPoint(HTMLNames::shadowTag, document) {
-  UseCounter::count(document, UseCounter::HTMLShadowElement);
+  UseCounter::Count(document, UseCounter::kHTMLShadowElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLShadowElement)
 
 HTMLShadowElement::~HTMLShadowElement() {}
 
-ShadowRoot* HTMLShadowElement::olderShadowRoot() {
-  ShadowRoot* containingRoot = containingShadowRoot();
-  if (!containingRoot)
+ShadowRoot* HTMLShadowElement::OlderShadowRoot() {
+  ShadowRoot* containing_root = ContainingShadowRoot();
+  if (!containing_root)
     return nullptr;
 
-  updateDistribution();
+  UpdateDistribution();
 
-  ShadowRoot* older = containingRoot->olderShadowRoot();
-  if (!older || !older->isOpenOrV0() ||
-      older->shadowInsertionPointOfYoungerShadowRoot() != this)
+  ShadowRoot* older = containing_root->OlderShadowRoot();
+  if (!older || !older->IsOpenOrV0() ||
+      older->ShadowInsertionPointOfYoungerShadowRoot() != this)
     return nullptr;
 
-  DCHECK(older->isOpenOrV0());
+  DCHECK(older->IsOpenOrV0());
   return older;
 }
 
-Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  if (insertionPoint->isConnected()) {
+Node::InsertionNotificationRequest HTMLShadowElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  if (insertion_point->isConnected()) {
     // Warn if trying to reproject between user agent and author shadows.
-    ShadowRoot* root = containingShadowRoot();
-    if (root && root->olderShadowRoot() &&
-        root->type() != root->olderShadowRoot()->type()) {
+    ShadowRoot* root = ContainingShadowRoot();
+    if (root && root->OlderShadowRoot() &&
+        root->GetType() != root->OlderShadowRoot()->GetType()) {
       String message =
-          String::format("<shadow> doesn't work for %s element host.",
-                         root->host().tagName().utf8().data());
-      document().addConsoleMessage(ConsoleMessage::create(
-          RenderingMessageSource, WarningMessageLevel, message));
+          String::Format("<shadow> doesn't work for %s element host.",
+                         root->host().tagName().Utf8().Data());
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kRenderingMessageSource, kWarningMessageLevel, message));
     }
   }
-  return InsertionPoint::insertedInto(insertionPoint);
+  return InsertionPoint::InsertedInto(insertion_point);
 }
 
 }  // namespace blink

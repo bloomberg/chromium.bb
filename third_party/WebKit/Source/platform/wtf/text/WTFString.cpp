@@ -44,21 +44,21 @@ using namespace Unicode;
 
 namespace {
 
-Vector<char> asciiDebug(StringImpl* impl) {
+Vector<char> AsciiDebug(StringImpl* impl) {
   if (!impl)
-    return asciiDebug(String("[null]").impl());
+    return AsciiDebug(String("[null]").Impl());
 
   Vector<char> buffer;
   for (unsigned i = 0; i < impl->length(); ++i) {
     UChar ch = (*impl)[i];
-    if (isASCIIPrintable(ch)) {
+    if (IsASCIIPrintable(ch)) {
       if (ch == '\\')
         buffer.push_back('\\');
       buffer.push_back(static_cast<char>(ch));
     } else {
       buffer.push_back('\\');
       buffer.push_back('u');
-      HexNumber::appendUnsignedAsHexFixedSize(ch, buffer, 4);
+      HexNumber::AppendUnsignedAsHexFixedSize(ch, buffer, 4);
     }
   }
   buffer.push_back('\0');
@@ -69,30 +69,30 @@ Vector<char> asciiDebug(StringImpl* impl) {
 
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)
-    : m_impl(characters ? StringImpl::create(characters, length) : nullptr) {}
+    : impl_(characters ? StringImpl::Create(characters, length) : nullptr) {}
 
 // Construct a string with UTF-16 data, from a null-terminated source.
 String::String(const UChar* str) {
   if (!str)
     return;
-  m_impl = StringImpl::create(str, lengthOfNullTerminatedString(str));
+  impl_ = StringImpl::Create(str, LengthOfNullTerminatedString(str));
 }
 
 // Construct a string with latin1 data.
 String::String(const LChar* characters, unsigned length)
-    : m_impl(characters ? StringImpl::create(characters, length) : nullptr) {}
+    : impl_(characters ? StringImpl::Create(characters, length) : nullptr) {}
 
 String::String(const char* characters, unsigned length)
-    : m_impl(characters ? StringImpl::create(
-                              reinterpret_cast<const LChar*>(characters),
-                              length)
-                        : nullptr) {}
+    : impl_(characters
+                ? StringImpl::Create(reinterpret_cast<const LChar*>(characters),
+                                     length)
+                : nullptr) {}
 
-void String::append(const StringView& string) {
-  if (string.isEmpty())
+void String::Append(const StringView& string) {
+  if (string.IsEmpty())
     return;
-  if (!m_impl) {
-    m_impl = string.toString().releaseImpl();
+  if (!impl_) {
+    impl_ = string.ToString().ReleaseImpl();
     return;
   }
 
@@ -101,243 +101,243 @@ void String::append(const StringView& string) {
   // case where exactly one String is pointing at this StringImpl, but even
   // then it's going to require a call into the allocator every single time.
 
-  if (m_impl->is8Bit() && string.is8Bit()) {
+  if (impl_->Is8Bit() && string.Is8Bit()) {
     LChar* data;
     RELEASE_ASSERT(string.length() <=
-                   std::numeric_limits<unsigned>::max() - m_impl->length());
-    RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(
-        m_impl->length() + string.length(), data);
-    memcpy(data, m_impl->characters8(), m_impl->length() * sizeof(LChar));
-    memcpy(data + m_impl->length(), string.characters8(),
+                   std::numeric_limits<unsigned>::max() - impl_->length());
+    RefPtr<StringImpl> new_impl = StringImpl::CreateUninitialized(
+        impl_->length() + string.length(), data);
+    memcpy(data, impl_->Characters8(), impl_->length() * sizeof(LChar));
+    memcpy(data + impl_->length(), string.Characters8(),
            string.length() * sizeof(LChar));
-    m_impl = newImpl.release();
+    impl_ = new_impl.Release();
     return;
   }
 
   UChar* data;
   RELEASE_ASSERT(string.length() <=
-                 std::numeric_limits<unsigned>::max() - m_impl->length());
-  RefPtr<StringImpl> newImpl =
-      StringImpl::createUninitialized(m_impl->length() + string.length(), data);
+                 std::numeric_limits<unsigned>::max() - impl_->length());
+  RefPtr<StringImpl> new_impl =
+      StringImpl::CreateUninitialized(impl_->length() + string.length(), data);
 
-  if (m_impl->is8Bit())
-    StringImpl::copyChars(data, m_impl->characters8(), m_impl->length());
+  if (impl_->Is8Bit())
+    StringImpl::CopyChars(data, impl_->Characters8(), impl_->length());
   else
-    StringImpl::copyChars(data, m_impl->characters16(), m_impl->length());
+    StringImpl::CopyChars(data, impl_->Characters16(), impl_->length());
 
-  if (string.is8Bit())
-    StringImpl::copyChars(data + m_impl->length(), string.characters8(),
+  if (string.Is8Bit())
+    StringImpl::CopyChars(data + impl_->length(), string.Characters8(),
                           string.length());
   else
-    StringImpl::copyChars(data + m_impl->length(), string.characters16(),
+    StringImpl::CopyChars(data + impl_->length(), string.Characters16(),
                           string.length());
 
-  m_impl = newImpl.release();
+  impl_ = new_impl.Release();
 }
 
 template <typename CharacterType>
-inline void String::appendInternal(CharacterType c) {
+inline void String::AppendInternal(CharacterType c) {
   // FIXME: This is extremely inefficient. So much so that we might want to
   // take this out of String's API. We can make it better by optimizing the
   // case where exactly one String is pointing at this StringImpl, but even
   // then it's going to require a call into the allocator every single time.
-  if (!m_impl) {
-    m_impl = StringImpl::create(&c, 1);
+  if (!impl_) {
+    impl_ = StringImpl::Create(&c, 1);
     return;
   }
 
   // FIXME: We should be able to create an 8 bit string via this code path.
   UChar* data;
-  RELEASE_ASSERT(m_impl->length() < std::numeric_limits<unsigned>::max());
-  RefPtr<StringImpl> newImpl =
-      StringImpl::createUninitialized(m_impl->length() + 1, data);
-  if (m_impl->is8Bit())
-    StringImpl::copyChars(data, m_impl->characters8(), m_impl->length());
+  RELEASE_ASSERT(impl_->length() < std::numeric_limits<unsigned>::max());
+  RefPtr<StringImpl> new_impl =
+      StringImpl::CreateUninitialized(impl_->length() + 1, data);
+  if (impl_->Is8Bit())
+    StringImpl::CopyChars(data, impl_->Characters8(), impl_->length());
   else
-    StringImpl::copyChars(data, m_impl->characters16(), m_impl->length());
-  data[m_impl->length()] = c;
-  m_impl = newImpl.release();
+    StringImpl::CopyChars(data, impl_->Characters16(), impl_->length());
+  data[impl_->length()] = c;
+  impl_ = new_impl.Release();
 }
 
-void String::append(LChar c) {
-  appendInternal(c);
+void String::Append(LChar c) {
+  AppendInternal(c);
 }
 
-void String::append(UChar c) {
-  appendInternal(c);
+void String::Append(UChar c) {
+  AppendInternal(c);
 }
 
-int codePointCompare(const String& a, const String& b) {
-  return codePointCompare(a.impl(), b.impl());
+int CodePointCompare(const String& a, const String& b) {
+  return CodePointCompare(a.Impl(), b.Impl());
 }
 
-int codePointCompareIgnoringASCIICase(const String& a, const char* b) {
-  return codePointCompareIgnoringASCIICase(a.impl(),
+int CodePointCompareIgnoringASCIICase(const String& a, const char* b) {
+  return CodePointCompareIgnoringASCIICase(a.Impl(),
                                            reinterpret_cast<const LChar*>(b));
 }
 
 template <typename CharType>
-PassRefPtr<StringImpl> insertInternal(PassRefPtr<StringImpl> impl,
-                                      const CharType* charactersToInsert,
-                                      unsigned lengthToInsert,
+PassRefPtr<StringImpl> InsertInternal(PassRefPtr<StringImpl> impl,
+                                      const CharType* characters_to_insert,
+                                      unsigned length_to_insert,
                                       unsigned position) {
-  if (!lengthToInsert)
+  if (!length_to_insert)
     return impl;
 
-  DCHECK(charactersToInsert);
+  DCHECK(characters_to_insert);
   UChar* data;  // FIXME: We should be able to create an 8 bit string here.
-  RELEASE_ASSERT(lengthToInsert <=
+  RELEASE_ASSERT(length_to_insert <=
                  std::numeric_limits<unsigned>::max() - impl->length());
-  RefPtr<StringImpl> newImpl =
-      StringImpl::createUninitialized(impl->length() + lengthToInsert, data);
+  RefPtr<StringImpl> new_impl =
+      StringImpl::CreateUninitialized(impl->length() + length_to_insert, data);
 
-  if (impl->is8Bit())
-    StringImpl::copyChars(data, impl->characters8(), position);
+  if (impl->Is8Bit())
+    StringImpl::CopyChars(data, impl->Characters8(), position);
   else
-    StringImpl::copyChars(data, impl->characters16(), position);
+    StringImpl::CopyChars(data, impl->Characters16(), position);
 
-  StringImpl::copyChars(data + position, charactersToInsert, lengthToInsert);
+  StringImpl::CopyChars(data + position, characters_to_insert,
+                        length_to_insert);
 
-  if (impl->is8Bit())
-    StringImpl::copyChars(data + position + lengthToInsert,
-                          impl->characters8() + position,
+  if (impl->Is8Bit())
+    StringImpl::CopyChars(data + position + length_to_insert,
+                          impl->Characters8() + position,
                           impl->length() - position);
   else
-    StringImpl::copyChars(data + position + lengthToInsert,
-                          impl->characters16() + position,
+    StringImpl::CopyChars(data + position + length_to_insert,
+                          impl->Characters16() + position,
                           impl->length() - position);
 
-  return newImpl.release();
+  return new_impl.Release();
 }
 
 void String::insert(const StringView& string, unsigned position) {
-  if (string.isEmpty()) {
-    if (string.isNull())
+  if (string.IsEmpty()) {
+    if (string.IsNull())
       return;
-    if (isNull())
-      m_impl = string.toString().releaseImpl();
+    if (IsNull())
+      impl_ = string.ToString().ReleaseImpl();
     return;
   }
 
   if (position >= length()) {
-    if (string.is8Bit())
-      append(string);
+    if (string.Is8Bit())
+      Append(string);
     else
-      append(string);
+      Append(string);
     return;
   }
 
-  DCHECK(m_impl);
-  if (string.is8Bit())
-    m_impl = insertInternal(m_impl.release(), string.characters8(),
-                            string.length(), position);
+  DCHECK(impl_);
+  if (string.Is8Bit())
+    impl_ = InsertInternal(impl_.Release(), string.Characters8(),
+                           string.length(), position);
   else
-    m_impl = insertInternal(m_impl.release(), string.characters16(),
-                            string.length(), position);
+    impl_ = InsertInternal(impl_.Release(), string.Characters16(),
+                           string.length(), position);
 }
 
-UChar32 String::characterStartingAt(unsigned i) const {
-  if (!m_impl || i >= m_impl->length())
+UChar32 String::CharacterStartingAt(unsigned i) const {
+  if (!impl_ || i >= impl_->length())
     return 0;
-  return m_impl->characterStartingAt(i);
+  return impl_->CharacterStartingAt(i);
 }
 
-void String::ensure16Bit() {
-  if (isNull())
+void String::Ensure16Bit() {
+  if (IsNull())
     return;
-  if (!is8Bit())
+  if (!Is8Bit())
     return;
   if (unsigned length = this->length())
-    m_impl =
-        make16BitFrom8BitSource(m_impl->characters8(), length).releaseImpl();
+    impl_ = Make16BitFrom8BitSource(impl_->Characters8(), length).ReleaseImpl();
   else
-    m_impl = StringImpl::empty16Bit;
+    impl_ = StringImpl::empty16_bit_;
 }
 
-void String::truncate(unsigned length) {
-  if (m_impl)
-    m_impl = m_impl->truncate(length);
+void String::Truncate(unsigned length) {
+  if (impl_)
+    impl_ = impl_->Truncate(length);
 }
 
-void String::remove(unsigned start, unsigned lengthToRemove) {
-  if (m_impl)
-    m_impl = m_impl->remove(start, lengthToRemove);
+void String::Remove(unsigned start, unsigned length_to_remove) {
+  if (impl_)
+    impl_ = impl_->Remove(start, length_to_remove);
 }
 
-String String::substring(unsigned pos, unsigned len) const {
-  if (!m_impl)
+String String::Substring(unsigned pos, unsigned len) const {
+  if (!impl_)
     return String();
-  return m_impl->substring(pos, len);
+  return impl_->Substring(pos, len);
 }
 
-String String::lower() const {
-  if (!m_impl)
+String String::Lower() const {
+  if (!impl_)
     return String();
-  return m_impl->lower();
+  return impl_->Lower();
 }
 
-String String::upper() const {
-  if (!m_impl)
+String String::Upper() const {
+  if (!impl_)
     return String();
-  return m_impl->upper();
+  return impl_->Upper();
 }
 
-String String::lower(const AtomicString& localeIdentifier) const {
-  if (!m_impl)
+String String::Lower(const AtomicString& locale_identifier) const {
+  if (!impl_)
     return String();
-  return m_impl->lower(localeIdentifier);
+  return impl_->Lower(locale_identifier);
 }
 
-String String::upper(const AtomicString& localeIdentifier) const {
-  if (!m_impl)
+String String::Upper(const AtomicString& locale_identifier) const {
+  if (!impl_)
     return String();
-  return m_impl->upper(localeIdentifier);
+  return impl_->Upper(locale_identifier);
 }
 
-String String::upperASCII() const {
-  if (!m_impl)
+String String::UpperASCII() const {
+  if (!impl_)
     return String();
-  return m_impl->upperASCII();
+  return impl_->UpperASCII();
 }
 
-String String::stripWhiteSpace() const {
-  if (!m_impl)
+String String::StripWhiteSpace() const {
+  if (!impl_)
     return String();
-  return m_impl->stripWhiteSpace();
+  return impl_->StripWhiteSpace();
 }
 
-String String::stripWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace) const {
-  if (!m_impl)
+String String::StripWhiteSpace(IsWhiteSpaceFunctionPtr is_white_space) const {
+  if (!impl_)
     return String();
-  return m_impl->stripWhiteSpace(isWhiteSpace);
+  return impl_->StripWhiteSpace(is_white_space);
 }
 
-String String::simplifyWhiteSpace(StripBehavior stripBehavior) const {
-  if (!m_impl)
+String String::SimplifyWhiteSpace(StripBehavior strip_behavior) const {
+  if (!impl_)
     return String();
-  return m_impl->simplifyWhiteSpace(stripBehavior);
+  return impl_->SimplifyWhiteSpace(strip_behavior);
 }
 
-String String::simplifyWhiteSpace(IsWhiteSpaceFunctionPtr isWhiteSpace,
-                                  StripBehavior stripBehavior) const {
-  if (!m_impl)
+String String::SimplifyWhiteSpace(IsWhiteSpaceFunctionPtr is_white_space,
+                                  StripBehavior strip_behavior) const {
+  if (!impl_)
     return String();
-  return m_impl->simplifyWhiteSpace(isWhiteSpace, stripBehavior);
+  return impl_->SimplifyWhiteSpace(is_white_space, strip_behavior);
 }
 
-String String::removeCharacters(CharacterMatchFunctionPtr findMatch) const {
-  if (!m_impl)
+String String::RemoveCharacters(CharacterMatchFunctionPtr find_match) const {
+  if (!impl_)
     return String();
-  return m_impl->removeCharacters(findMatch);
+  return impl_->RemoveCharacters(find_match);
 }
 
-String String::foldCase() const {
-  if (!m_impl)
+String String::FoldCase() const {
+  if (!impl_)
     return String();
-  return m_impl->foldCase();
+  return impl_->FoldCase();
 }
 
-String String::format(const char* format, ...) {
+String String::Format(const char* format, ...) {
   va_list args;
 
   // TODO(esprehn): base uses 1024, maybe we should use a bigger size too.
@@ -345,7 +345,7 @@ String String::format(const char* format, ...) {
   Vector<char, kDefaultSize> buffer(kDefaultSize);
 
   va_start(args, format);
-  int length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
+  int length = base::vsnprintf(buffer.Data(), buffer.size(), format, args);
   va_end(args);
 
   // TODO(esprehn): This can only happen if there's an encoding error, what's
@@ -357,7 +357,7 @@ String String::format(const char* format, ...) {
   if (static_cast<unsigned>(length) >= buffer.size()) {
     // vsnprintf doesn't include the NUL terminator in the length so we need to
     // add space for it when growing.
-    buffer.grow(length + 1);
+    buffer.Grow(length + 1);
 
     // We need to call va_end() and then va_start() each time we use args, as
     // the contents of args is undefined after the call to vsnprintf according
@@ -366,230 +366,231 @@ String String::format(const char* format, ...) {
     // Not calling va_end/va_start here happens to work on lots of systems, but
     // fails e.g. on 64bit Linux.
     va_start(args, format);
-    length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
+    length = base::vsnprintf(buffer.Data(), buffer.size(), format, args);
     va_end(args);
   }
 
   CHECK_LT(static_cast<unsigned>(length), buffer.size());
-  return String(reinterpret_cast<const LChar*>(buffer.data()), length);
+  return String(reinterpret_cast<const LChar*>(buffer.Data()), length);
 }
 
 template <typename IntegerType>
-static String integerToString(IntegerType input) {
+static String IntegerToString(IntegerType input) {
   IntegerToStringConverter<IntegerType> converter(input);
-  return StringImpl::create(converter.characters8(), converter.length());
+  return StringImpl::Create(converter.Characters8(), converter.length());
 }
 
-String String::number(int number) {
-  return integerToString(number);
+String String::Number(int number) {
+  return IntegerToString(number);
 }
 
-String String::number(unsigned number) {
-  return integerToString(number);
+String String::Number(unsigned number) {
+  return IntegerToString(number);
 }
 
-String String::number(long number) {
-  return integerToString(number);
+String String::Number(long number) {
+  return IntegerToString(number);
 }
 
-String String::number(unsigned long number) {
-  return integerToString(number);
+String String::Number(unsigned long number) {
+  return IntegerToString(number);
 }
 
-String String::number(long long number) {
-  return integerToString(number);
+String String::Number(long long number) {
+  return IntegerToString(number);
 }
 
-String String::number(unsigned long long number) {
-  return integerToString(number);
+String String::Number(unsigned long long number) {
+  return IntegerToString(number);
 }
 
-String String::number(double number, unsigned precision) {
+String String::Number(double number, unsigned precision) {
   NumberToStringBuffer buffer;
-  return String(numberToFixedPrecisionString(number, precision, buffer));
+  return String(NumberToFixedPrecisionString(number, precision, buffer));
 }
 
-String String::numberToStringECMAScript(double number) {
+String String::NumberToStringECMAScript(double number) {
   NumberToStringBuffer buffer;
-  return String(numberToString(number, buffer));
+  return String(NumberToString(number, buffer));
 }
 
-String String::numberToStringFixedWidth(double number, unsigned decimalPlaces) {
+String String::NumberToStringFixedWidth(double number,
+                                        unsigned decimal_places) {
   NumberToStringBuffer buffer;
-  return String(numberToFixedWidthString(number, decimalPlaces, buffer));
+  return String(NumberToFixedWidthString(number, decimal_places, buffer));
 }
 
-int String::toIntStrict(bool* ok, int base) const {
-  if (!m_impl) {
+int String::ToIntStrict(bool* ok, int base) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toIntStrict(ok, base);
+  return impl_->ToIntStrict(ok, base);
 }
 
-unsigned String::toUIntStrict(bool* ok, int base) const {
-  if (!m_impl) {
+unsigned String::ToUIntStrict(bool* ok, int base) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toUIntStrict(ok, base);
+  return impl_->ToUIntStrict(ok, base);
 }
 
-int64_t String::toInt64Strict(bool* ok, int base) const {
-  if (!m_impl) {
+int64_t String::ToInt64Strict(bool* ok, int base) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toInt64Strict(ok, base);
+  return impl_->ToInt64Strict(ok, base);
 }
 
-uint64_t String::toUInt64Strict(bool* ok, int base) const {
-  if (!m_impl) {
+uint64_t String::ToUInt64Strict(bool* ok, int base) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toUInt64Strict(ok, base);
+  return impl_->ToUInt64Strict(ok, base);
 }
 
-int String::toInt(bool* ok) const {
-  if (!m_impl) {
+int String::ToInt(bool* ok) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toInt(ok);
+  return impl_->ToInt(ok);
 }
 
-unsigned String::toUInt(bool* ok) const {
-  if (!m_impl) {
+unsigned String::ToUInt(bool* ok) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toUInt(ok);
+  return impl_->ToUInt(ok);
 }
 
-int64_t String::toInt64(bool* ok) const {
-  if (!m_impl) {
+int64_t String::ToInt64(bool* ok) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toInt64(ok);
+  return impl_->ToInt64(ok);
 }
 
-uint64_t String::toUInt64(bool* ok) const {
-  if (!m_impl) {
+uint64_t String::ToUInt64(bool* ok) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0;
   }
-  return m_impl->toUInt64(ok);
+  return impl_->ToUInt64(ok);
 }
 
-double String::toDouble(bool* ok) const {
-  if (!m_impl) {
+double String::ToDouble(bool* ok) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0.0;
   }
-  return m_impl->toDouble(ok);
+  return impl_->ToDouble(ok);
 }
 
-float String::toFloat(bool* ok) const {
-  if (!m_impl) {
+float String::ToFloat(bool* ok) const {
+  if (!impl_) {
     if (ok)
       *ok = false;
     return 0.0f;
   }
-  return m_impl->toFloat(ok);
+  return impl_->ToFloat(ok);
 }
 
-String String::isolatedCopy() const {
-  if (!m_impl)
+String String::IsolatedCopy() const {
+  if (!impl_)
     return String();
-  return m_impl->isolatedCopy();
+  return impl_->IsolatedCopy();
 }
 
-bool String::isSafeToSendToAnotherThread() const {
-  return !m_impl || m_impl->isSafeToSendToAnotherThread();
+bool String::IsSafeToSendToAnotherThread() const {
+  return !impl_ || impl_->IsSafeToSendToAnotherThread();
 }
 
-void String::split(const StringView& separator,
-                   bool allowEmptyEntries,
+void String::Split(const StringView& separator,
+                   bool allow_empty_entries,
                    Vector<String>& result) const {
-  result.clear();
+  result.Clear();
 
-  unsigned startPos = 0;
-  size_t endPos;
-  while ((endPos = find(separator, startPos)) != kNotFound) {
-    if (allowEmptyEntries || startPos != endPos)
-      result.push_back(substring(startPos, endPos - startPos));
-    startPos = endPos + separator.length();
+  unsigned start_pos = 0;
+  size_t end_pos;
+  while ((end_pos = Find(separator, start_pos)) != kNotFound) {
+    if (allow_empty_entries || start_pos != end_pos)
+      result.push_back(Substring(start_pos, end_pos - start_pos));
+    start_pos = end_pos + separator.length();
   }
-  if (allowEmptyEntries || startPos != length())
-    result.push_back(substring(startPos));
+  if (allow_empty_entries || start_pos != length())
+    result.push_back(Substring(start_pos));
 }
 
-void String::split(UChar separator,
-                   bool allowEmptyEntries,
+void String::Split(UChar separator,
+                   bool allow_empty_entries,
                    Vector<String>& result) const {
-  result.clear();
+  result.Clear();
 
-  unsigned startPos = 0;
-  size_t endPos;
-  while ((endPos = find(separator, startPos)) != kNotFound) {
-    if (allowEmptyEntries || startPos != endPos)
-      result.push_back(substring(startPos, endPos - startPos));
-    startPos = endPos + 1;
+  unsigned start_pos = 0;
+  size_t end_pos;
+  while ((end_pos = Find(separator, start_pos)) != kNotFound) {
+    if (allow_empty_entries || start_pos != end_pos)
+      result.push_back(Substring(start_pos, end_pos - start_pos));
+    start_pos = end_pos + 1;
   }
-  if (allowEmptyEntries || startPos != length())
-    result.push_back(substring(startPos));
+  if (allow_empty_entries || start_pos != length())
+    result.push_back(Substring(start_pos));
 }
 
-CString String::ascii() const {
+CString String::Ascii() const {
   // Printable ASCII characters 32..127 and the null character are
   // preserved, characters outside of this range are converted to '?'.
 
   unsigned length = this->length();
   if (!length) {
-    char* characterBuffer;
-    return CString::createUninitialized(length, characterBuffer);
+    char* character_buffer;
+    return CString::CreateUninitialized(length, character_buffer);
   }
 
-  if (this->is8Bit()) {
-    const LChar* characters = this->characters8();
+  if (this->Is8Bit()) {
+    const LChar* characters = this->Characters8();
 
-    char* characterBuffer;
-    CString result = CString::createUninitialized(length, characterBuffer);
+    char* character_buffer;
+    CString result = CString::CreateUninitialized(length, character_buffer);
 
     for (unsigned i = 0; i < length; ++i) {
       LChar ch = characters[i];
-      characterBuffer[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : ch;
+      character_buffer[i] = ch && (ch < 0x20 || ch > 0x7f) ? '?' : ch;
     }
 
     return result;
   }
 
-  const UChar* characters = this->characters16();
+  const UChar* characters = this->Characters16();
 
-  char* characterBuffer;
-  CString result = CString::createUninitialized(length, characterBuffer);
+  char* character_buffer;
+  CString result = CString::CreateUninitialized(length, character_buffer);
 
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
-    characterBuffer[i] =
+    character_buffer[i] =
         ch && (ch < 0x20 || ch > 0x7f) ? '?' : static_cast<char>(ch);
   }
 
   return result;
 }
 
-CString String::latin1() const {
+CString String::Latin1() const {
   // Basic Latin1 (ISO) encoding - Unicode characters 0..255 are
   // preserved, characters outside of this range are converted to '?'.
 
@@ -598,17 +599,17 @@ CString String::latin1() const {
   if (!length)
     return CString("", 0);
 
-  if (is8Bit())
-    return CString(reinterpret_cast<const char*>(this->characters8()), length);
+  if (Is8Bit())
+    return CString(reinterpret_cast<const char*>(this->Characters8()), length);
 
-  const UChar* characters = this->characters16();
+  const UChar* characters = this->Characters16();
 
-  char* characterBuffer;
-  CString result = CString::createUninitialized(length, characterBuffer);
+  char* character_buffer;
+  CString result = CString::CreateUninitialized(length, character_buffer);
 
   for (unsigned i = 0; i < length; ++i) {
     UChar ch = characters[i];
-    characterBuffer[i] = ch > 0xff ? '?' : static_cast<char>(ch);
+    character_buffer[i] = ch > 0xff ? '?' : static_cast<char>(ch);
   }
 
   return result;
@@ -616,14 +617,14 @@ CString String::latin1() const {
 
 // Helper to write a three-byte UTF-8 code point to the buffer, caller must
 // check room is available.
-static inline void putUTF8Triple(char*& buffer, UChar ch) {
+static inline void PutUTF8Triple(char*& buffer, UChar ch) {
   DCHECK_GE(ch, 0x0800);
   *buffer++ = static_cast<char>(((ch >> 12) & 0x0F) | 0xE0);
   *buffer++ = static_cast<char>(((ch >> 6) & 0x3F) | 0x80);
   *buffer++ = static_cast<char>((ch & 0x3F) | 0x80);
 }
 
-CString String::utf8(UTF8ConversionMode mode) const {
+CString String::Utf8(UTF8ConversionMode mode) const {
   unsigned length = this->length();
 
   if (!length)
@@ -641,148 +642,148 @@ CString String::utf8(UTF8ConversionMode mode) const {
   //    buffer without reallocing (say, 1.5 x length).
   if (length > std::numeric_limits<unsigned>::max() / 3)
     return CString();
-  Vector<char, 1024> bufferVector(length * 3);
+  Vector<char, 1024> buffer_vector(length * 3);
 
-  char* buffer = bufferVector.data();
+  char* buffer = buffer_vector.Data();
 
-  if (is8Bit()) {
-    const LChar* characters = this->characters8();
+  if (Is8Bit()) {
+    const LChar* characters = this->Characters8();
 
     ConversionResult result =
-        convertLatin1ToUTF8(&characters, characters + length, &buffer,
-                            buffer + bufferVector.size());
+        ConvertLatin1ToUTF8(&characters, characters + length, &buffer,
+                            buffer + buffer_vector.size());
     // (length * 3) should be sufficient for any conversion
-    DCHECK_NE(result, targetExhausted);
+    DCHECK_NE(result, kTargetExhausted);
   } else {
-    const UChar* characters = this->characters16();
+    const UChar* characters = this->Characters16();
 
-    if (mode == StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD) {
-      const UChar* charactersEnd = characters + length;
-      char* bufferEnd = buffer + bufferVector.size();
-      while (characters < charactersEnd) {
+    if (mode == kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD) {
+      const UChar* characters_end = characters + length;
+      char* buffer_end = buffer + buffer_vector.size();
+      while (characters < characters_end) {
         // Use strict conversion to detect unpaired surrogates.
-        ConversionResult result = convertUTF16ToUTF8(&characters, charactersEnd,
-                                                     &buffer, bufferEnd, true);
-        DCHECK_NE(result, targetExhausted);
+        ConversionResult result = ConvertUTF16ToUTF8(
+            &characters, characters_end, &buffer, buffer_end, true);
+        DCHECK_NE(result, kTargetExhausted);
         // Conversion fails when there is an unpaired surrogate.  Put
         // replacement character (U+FFFD) instead of the unpaired
         // surrogate.
-        if (result != conversionOK) {
+        if (result != kConversionOK) {
           DCHECK_LE(0xD800, *characters);
           DCHECK_LE(*characters, 0xDFFF);
           // There should be room left, since one UChar hasn't been
           // converted.
-          DCHECK_LE(buffer + 3, bufferEnd);
-          putUTF8Triple(buffer, replacementCharacter);
+          DCHECK_LE(buffer + 3, buffer_end);
+          PutUTF8Triple(buffer, kReplacementCharacter);
           ++characters;
         }
       }
     } else {
-      bool strict = mode == StrictUTF8Conversion;
+      bool strict = mode == kStrictUTF8Conversion;
       ConversionResult result =
-          convertUTF16ToUTF8(&characters, characters + length, &buffer,
-                             buffer + bufferVector.size(), strict);
+          ConvertUTF16ToUTF8(&characters, characters + length, &buffer,
+                             buffer + buffer_vector.size(), strict);
       // (length * 3) should be sufficient for any conversion
-      DCHECK_NE(result, targetExhausted);
+      DCHECK_NE(result, kTargetExhausted);
 
       // Only produced from strict conversion.
-      if (result == sourceIllegal) {
+      if (result == kSourceIllegal) {
         DCHECK(strict);
         return CString();
       }
 
       // Check for an unconverted high surrogate.
-      if (result == sourceExhausted) {
+      if (result == kSourceExhausted) {
         if (strict)
           return CString();
         // This should be one unpaired high surrogate. Treat it the same
         // was as an unpaired high surrogate would have been handled in
         // the middle of a string with non-strict conversion - which is
         // to say, simply encode it to UTF-8.
-        DCHECK_EQ(characters + 1, this->characters16() + length);
+        DCHECK_EQ(characters + 1, this->Characters16() + length);
         DCHECK_GE(*characters, 0xD800);
         DCHECK_LE(*characters, 0xDBFF);
         // There should be room left, since one UChar hasn't been
         // converted.
-        DCHECK_LE(buffer + 3, buffer + bufferVector.size());
-        putUTF8Triple(buffer, *characters);
+        DCHECK_LE(buffer + 3, buffer + buffer_vector.size());
+        PutUTF8Triple(buffer, *characters);
       }
     }
   }
 
-  return CString(bufferVector.data(), buffer - bufferVector.data());
+  return CString(buffer_vector.Data(), buffer - buffer_vector.Data());
 }
 
-String String::make8BitFrom16BitSource(const UChar* source, size_t length) {
+String String::Make8BitFrom16BitSource(const UChar* source, size_t length) {
   if (!length)
-    return emptyString;
+    return g_empty_string;
 
   LChar* destination;
-  String result = String::createUninitialized(length, destination);
+  String result = String::CreateUninitialized(length, destination);
 
-  copyLCharsFromUCharSource(destination, source, length);
+  CopyLCharsFromUCharSource(destination, source, length);
 
   return result;
 }
 
-String String::make16BitFrom8BitSource(const LChar* source, size_t length) {
+String String::Make16BitFrom8BitSource(const LChar* source, size_t length) {
   if (!length)
-    return emptyString16Bit;
+    return g_empty_string16_bit;
 
   UChar* destination;
-  String result = String::createUninitialized(length, destination);
+  String result = String::CreateUninitialized(length, destination);
 
-  StringImpl::copyChars(destination, source, length);
+  StringImpl::CopyChars(destination, source, length);
 
   return result;
 }
 
-String String::fromUTF8(const LChar* stringStart, size_t length) {
+String String::FromUTF8(const LChar* string_start, size_t length) {
   RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
 
-  if (!stringStart)
+  if (!string_start)
     return String();
 
   if (!length)
-    return emptyString;
+    return g_empty_string;
 
-  if (charactersAreAllASCII(stringStart, length))
-    return StringImpl::create(stringStart, length);
+  if (CharactersAreAllASCII(string_start, length))
+    return StringImpl::Create(string_start, length);
 
   Vector<UChar, 1024> buffer(length);
-  UChar* bufferStart = buffer.data();
+  UChar* buffer_start = buffer.Data();
 
-  UChar* bufferCurrent = bufferStart;
-  const char* stringCurrent = reinterpret_cast<const char*>(stringStart);
-  if (convertUTF8ToUTF16(
-          &stringCurrent, reinterpret_cast<const char*>(stringStart + length),
-          &bufferCurrent, bufferCurrent + buffer.size()) != conversionOK)
+  UChar* buffer_current = buffer_start;
+  const char* string_current = reinterpret_cast<const char*>(string_start);
+  if (ConvertUTF8ToUTF16(
+          &string_current, reinterpret_cast<const char*>(string_start + length),
+          &buffer_current, buffer_current + buffer.size()) != kConversionOK)
     return String();
 
-  unsigned utf16Length = bufferCurrent - bufferStart;
-  DCHECK_LT(utf16Length, length);
-  return StringImpl::create(bufferStart, utf16Length);
+  unsigned utf16_length = buffer_current - buffer_start;
+  DCHECK_LT(utf16_length, length);
+  return StringImpl::Create(buffer_start, utf16_length);
 }
 
-String String::fromUTF8(const LChar* string) {
+String String::FromUTF8(const LChar* string) {
   if (!string)
     return String();
-  return fromUTF8(string, strlen(reinterpret_cast<const char*>(string)));
+  return FromUTF8(string, strlen(reinterpret_cast<const char*>(string)));
 }
 
-String String::fromUTF8(const CString& s) {
-  return fromUTF8(s.data());
+String String::FromUTF8(const CString& s) {
+  return FromUTF8(s.Data());
 }
 
-String String::fromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
-  String utf8 = fromUTF8(string, size);
+String String::FromUTF8WithLatin1Fallback(const LChar* string, size_t size) {
+  String utf8 = FromUTF8(string, size);
   if (!utf8)
     return String(string, size);
   return utf8;
 }
 
 std::ostream& operator<<(std::ostream& out, const String& string) {
-  if (string.isNull())
+  if (string.IsNull())
     return out << "<null>";
 
   out << '"';
@@ -806,7 +807,7 @@ std::ostream& operator<<(std::ostream& out, const String& string) {
         out << "\\\\";
         break;
       default:
-        if (isASCIIPrintable(character)) {
+        if (IsASCIIPrintable(character)) {
           out << static_cast<char>(character);
         } else {
           // Print "\uXXXX" for control or non-ASCII characters.
@@ -824,8 +825,8 @@ std::ostream& operator<<(std::ostream& out, const String& string) {
 }
 
 #ifndef NDEBUG
-void String::show() const {
-  dataLogF("%s\n", asciiDebug(impl()).data());
+void String::Show() const {
+  DataLogF("%s\n", AsciiDebug(Impl()).Data());
 }
 #endif
 

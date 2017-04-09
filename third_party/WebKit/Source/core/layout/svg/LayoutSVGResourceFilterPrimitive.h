@@ -33,28 +33,29 @@ namespace blink {
 
 class LayoutSVGResourceFilterPrimitive final : public LayoutSVGHiddenContainer {
  public:
-  explicit LayoutSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
-      : LayoutSVGHiddenContainer(filterPrimitiveElement) {}
+  explicit LayoutSVGResourceFilterPrimitive(
+      SVGElement* filter_primitive_element)
+      : LayoutSVGHiddenContainer(filter_primitive_element) {}
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override {
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override {
     return false;
   }
 
-  void styleDidChange(StyleDifference, const ComputedStyle*) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle*) override;
 
-  const char* name() const override {
+  const char* GetName() const override {
     return "LayoutSVGResourceFilterPrimitive";
   }
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGResourceFilterPrimitive ||
-           LayoutSVGHiddenContainer::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGResourceFilterPrimitive ||
+           LayoutSVGHiddenContainer::IsOfType(type);
   }
 
-  inline void primitiveAttributeChanged(const QualifiedName& attribute) {
-    LayoutObject* filter = parent();
-    if (!filter || !filter->isSVGResourceFilter())
+  inline void PrimitiveAttributeChanged(const QualifiedName& attribute) {
+    LayoutObject* filter = Parent();
+    if (!filter || !filter->IsSVGResourceFilter())
       return;
-    toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this,
+    ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(this,
                                                                  attribute);
   }
 };

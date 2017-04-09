@@ -20,32 +20,32 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
  public:
   MockWebIDBCallbacks();
   ~MockWebIDBCallbacks();
-  MOCK_METHOD1(onError, void(const blink::WebIDBDatabaseError&));
-  MOCK_METHOD3(onSuccess,
+  MOCK_METHOD1(OnError, void(const blink::WebIDBDatabaseError&));
+  MOCK_METHOD3(OnSuccess,
                void(const blink::WebIDBKey& key,
                     const blink::WebIDBKey& primaryKey,
                     const blink::WebIDBValue& value));
-  MOCK_METHOD1(onSuccess, void(const blink::WebVector<blink::WebString>&));
-  MOCK_METHOD4(onSuccess,
+  MOCK_METHOD1(OnSuccess, void(const blink::WebVector<blink::WebString>&));
+  MOCK_METHOD4(OnSuccess,
                void(blink::WebIDBCursor*,
                     const blink::WebIDBKey&,
                     const blink::WebIDBKey& primaryKey,
                     const blink::WebIDBValue&));
-  MOCK_METHOD2(onSuccess,
+  MOCK_METHOD2(OnSuccess,
                void(blink::WebIDBDatabase*, const blink::WebIDBMetadata&));
-  MOCK_METHOD1(onSuccess, void(const blink::WebIDBKey&));
-  MOCK_METHOD1(onSuccess, void(const blink::WebIDBValue&));
-  MOCK_METHOD1(onSuccess, void(const blink::WebVector<blink::WebIDBValue>&));
-  MOCK_METHOD1(onSuccess, void(long long));
-  MOCK_METHOD0(onSuccess, void());
-  MOCK_METHOD1(onBlocked, void(long long oldVersion));
-  MOCK_METHOD5(onUpgradeNeeded,
+  MOCK_METHOD1(OnSuccess, void(const blink::WebIDBKey&));
+  MOCK_METHOD1(OnSuccess, void(const blink::WebIDBValue&));
+  MOCK_METHOD1(OnSuccess, void(const blink::WebVector<blink::WebIDBValue>&));
+  MOCK_METHOD1(OnSuccess, void(long long));
+  MOCK_METHOD0(OnSuccess, void());
+  MOCK_METHOD1(OnBlocked, void(long long oldVersion));
+  MOCK_METHOD5(OnUpgradeNeeded,
                void(long long oldVersion,
                     blink::WebIDBDatabase*,
                     const blink::WebIDBMetadata&,
                     unsigned short dataLoss,
                     blink::WebString dataLossMessage));
-  MOCK_METHOD0(detach, void());
+  MOCK_METHOD0(Detach, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebIDBCallbacks);

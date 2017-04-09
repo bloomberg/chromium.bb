@@ -13,30 +13,30 @@ namespace blink {
 
 PushPermissionStatusCallbacks::PushPermissionStatusCallbacks(
     ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {}
+    : resolver_(resolver) {}
 
 PushPermissionStatusCallbacks::~PushPermissionStatusCallbacks() {}
 
-void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus status) {
-  m_resolver->resolve(permissionString(status));
+void PushPermissionStatusCallbacks::OnSuccess(WebPushPermissionStatus status) {
+  resolver_->Resolve(PermissionString(status));
 }
 
-void PushPermissionStatusCallbacks::onError(const WebPushError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void PushPermissionStatusCallbacks::OnError(const WebPushError& error) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->reject(PushError::take(m_resolver.get(), error));
+  resolver_->Reject(PushError::Take(resolver_.Get(), error));
 }
 
 // static
-String PushPermissionStatusCallbacks::permissionString(
+String PushPermissionStatusCallbacks::PermissionString(
     WebPushPermissionStatus status) {
   switch (status) {
-    case WebPushPermissionStatusGranted:
+    case kWebPushPermissionStatusGranted:
       return "granted";
-    case WebPushPermissionStatusDenied:
+    case kWebPushPermissionStatusDenied:
       return "denied";
-    case WebPushPermissionStatusPrompt:
+    case kWebPushPermissionStatusPrompt:
       return "prompt";
   }
 

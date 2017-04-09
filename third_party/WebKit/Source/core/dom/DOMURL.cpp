@@ -39,78 +39,78 @@ namespace blink {
 
 DOMURL::DOMURL(const String& url,
                const KURL& base,
-               ExceptionState& exceptionState) {
-  if (!base.isValid()) {
-    exceptionState.throwTypeError("Invalid base URL");
+               ExceptionState& exception_state) {
+  if (!base.IsValid()) {
+    exception_state.ThrowTypeError("Invalid base URL");
     return;
   }
 
-  m_url = KURL(base, url);
-  if (!m_url.isValid())
-    exceptionState.throwTypeError("Invalid URL");
+  url_ = KURL(base, url);
+  if (!url_.IsValid())
+    exception_state.ThrowTypeError("Invalid URL");
 }
 
 DOMURL::~DOMURL() {}
 
 DEFINE_TRACE(DOMURL) {
-  visitor->trace(m_searchParams);
+  visitor->Trace(search_params_);
 }
 
-void DOMURL::setInput(const String& value) {
-  KURL url(blankURL(), value);
-  if (url.isValid()) {
-    m_url = url;
-    m_input = String();
+void DOMURL::SetInput(const String& value) {
+  KURL url(BlankURL(), value);
+  if (url.IsValid()) {
+    url_ = url;
+    input_ = String();
   } else {
-    m_url = KURL();
-    m_input = value;
+    url_ = KURL();
+    input_ = value;
   }
-  update();
+  Update();
 }
 
 void DOMURL::setSearch(const String& value) {
   DOMURLUtils::setSearch(value);
-  if (!value.isEmpty() && value[0] == '?')
-    updateSearchParams(value.substring(1));
+  if (!value.IsEmpty() && value[0] == '?')
+    UpdateSearchParams(value.Substring(1));
   else
-    updateSearchParams(value);
+    UpdateSearchParams(value);
 }
 
-String DOMURL::createPublicURL(ExecutionContext* executionContext,
+String DOMURL::CreatePublicURL(ExecutionContext* execution_context,
                                URLRegistrable* registrable,
                                const String& uuid) {
-  return executionContext->publicURLManager().registerURL(executionContext,
-                                                          registrable, uuid);
+  return execution_context->GetPublicURLManager().RegisterURL(
+      execution_context, registrable, uuid);
 }
 
-void DOMURL::revokeObjectUUID(ExecutionContext* executionContext,
+void DOMURL::RevokeObjectUUID(ExecutionContext* execution_context,
                               const String& uuid) {
-  if (!executionContext)
+  if (!execution_context)
     return;
 
-  executionContext->publicURLManager().revoke(uuid);
+  execution_context->GetPublicURLManager().Revoke(uuid);
 }
 
 URLSearchParams* DOMURL::searchParams() {
-  if (!m_searchParams)
-    m_searchParams = URLSearchParams::create(url().query(), this);
+  if (!search_params_)
+    search_params_ = URLSearchParams::Create(Url().Query(), this);
 
-  return m_searchParams;
+  return search_params_;
 }
 
-void DOMURL::update() {
-  updateSearchParams(url().query());
+void DOMURL::Update() {
+  UpdateSearchParams(Url().Query());
 }
 
-void DOMURL::updateSearchParams(const String& queryString) {
-  if (!m_searchParams)
+void DOMURL::UpdateSearchParams(const String& query_string) {
+  if (!search_params_)
     return;
 
-  AutoReset<bool> scope(&m_isInUpdate, true);
+  AutoReset<bool> scope(&is_in_update_, true);
 #if DCHECK_IS_ON()
-  DCHECK_EQ(m_searchParams->urlObject(), this);
+  DCHECK_EQ(search_params_->UrlObject(), this);
 #endif
-  m_searchParams->setInput(queryString);
+  search_params_->SetInput(query_string);
 }
 
 }  // namespace blink

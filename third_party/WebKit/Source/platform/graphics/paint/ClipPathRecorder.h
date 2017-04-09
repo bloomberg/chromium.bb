@@ -23,8 +23,8 @@ class PLATFORM_EXPORT ClipPathRecorder {
   ~ClipPathRecorder();
 
  private:
-  GraphicsContext& m_context;
-  const DisplayItemClient& m_client;
+  GraphicsContext& context_;
+  const DisplayItemClient& client_;
 };
 
 }  // namespace blink

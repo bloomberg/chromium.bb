@@ -104,16 +104,16 @@ blink::WebPushPermissionStatus ToPushPermission(
     ContentSetting content_setting) {
   switch (content_setting) {
     case CONTENT_SETTING_ALLOW:
-      return blink::WebPushPermissionStatusGranted;
+      return blink::kWebPushPermissionStatusGranted;
     case CONTENT_SETTING_BLOCK:
-      return blink::WebPushPermissionStatusDenied;
+      return blink::kWebPushPermissionStatusDenied;
     case CONTENT_SETTING_ASK:
-      return blink::WebPushPermissionStatusPrompt;
+      return blink::kWebPushPermissionStatusPrompt;
     default:
       break;
   }
   NOTREACHED();
-  return blink::WebPushPermissionStatusDenied;
+  return blink::kWebPushPermissionStatusDenied;
 }
 
 void UnregisterCallbackToClosure(const base::Closure& closure,
@@ -502,7 +502,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   blink::WebPushPermissionStatus permission_status =
       GetPermissionStatus(requesting_origin, options.user_visible_only);
 
-  if (permission_status != blink::WebPushPermissionStatusGranted) {
+  if (permission_status != blink::kWebPushPermissionStatusGranted) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
@@ -516,7 +516,7 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
     const GURL& origin,
     bool user_visible) {
   if (!user_visible)
-    return blink::WebPushPermissionStatusDenied;
+    return blink::kWebPushPermissionStatusDenied;
 
   // Because the Push API is tied to Service Workers, many usages of the API
   // won't have an embedding origin at all. Only consider the requesting
@@ -995,7 +995,7 @@ std::string PushMessagingServiceImpl::NormalizeSenderInfo(
 // if the permission was previously granted and not revoked.
 bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
   return GetPermissionStatus(origin, true /* user_visible */) ==
-         blink::WebPushPermissionStatusGranted;
+         blink::kWebPushPermissionStatusGranted;
 }
 
 void PushMessagingServiceImpl::GetEncryptionInfoForAppId(

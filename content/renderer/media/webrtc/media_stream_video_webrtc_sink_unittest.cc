@@ -27,7 +27,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
     registry_.Init("stream URL");
     registry_.AddVideoTrack("test video track");
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
+    registry_.test_stream().VideoTracks(video_tracks);
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -37,7 +37,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
     registry_.Init("stream URL");
     registry_.AddVideoTrack("test video track", constraints);
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
+    registry_.test_stream().VideoTracks(video_tracks);
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -48,7 +48,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
     registry_.AddVideoTrack("test video track", VideoTrackAdapterSettings(),
                             noise_reduction, false, 0.0);
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
+    registry_.test_stream().VideoTracks(video_tracks);
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -94,7 +94,7 @@ class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
     registry_.Init("stream URL");
     registry_.AddVideoTrack("test video track");
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
+    registry_.test_stream().VideoTracks(video_tracks);
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -104,7 +104,7 @@ class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
     registry_.Init("stream URL");
     registry_.AddVideoTrack("test video track", constraints);
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
+    registry_.test_stream().VideoTracks(video_tracks);
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -115,7 +115,7 @@ class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
     registry_.AddVideoTrack("test video track", VideoTrackAdapterSettings(),
                             noise_reduction, false, 0.0);
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
+    registry_.test_stream().VideoTracks(video_tracks);
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -137,7 +137,7 @@ class MediaStreamVideoWebRtcSinkOldConstraintsTest : public ::testing::Test {
 TEST_F(MediaStreamVideoWebRtcSinkOldConstraintsTest,
        NoiseReductionDefaultsToNotSet) {
   blink::WebMediaConstraints constraints;
-  constraints.initialize();
+  constraints.Initialize();
   SetVideoTrack(constraints);
   MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
   EXPECT_TRUE(my_sink.webrtc_video_track());
@@ -147,7 +147,7 @@ TEST_F(MediaStreamVideoWebRtcSinkOldConstraintsTest,
 TEST_F(MediaStreamVideoWebRtcSinkOldConstraintsTest,
        NoiseReductionConstraintPassThrough) {
   MockConstraintFactory factory;
-  factory.basic().googNoiseReduction.setExact(true);
+  factory.basic().goog_noise_reduction.SetExact(true);
   SetVideoTrack(factory.CreateWebMediaConstraints());
   MediaStreamVideoWebRtcSink my_sink(track_, &dependency_factory_);
   EXPECT_TRUE(my_sink.SourceNeedsDenoisingForTesting());

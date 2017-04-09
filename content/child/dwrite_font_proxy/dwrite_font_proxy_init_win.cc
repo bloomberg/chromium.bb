@@ -72,7 +72,7 @@ void InitializeDWriteFontProxy() {
 
   sk_sp<SkFontMgr> skia_font_manager = SkFontMgr_New_DirectWrite(
       factory.Get(), g_font_collection.Get(), font_fallback.Get());
-  blink::WebFontRendering::setSkiaFontManager(skia_font_manager);
+  blink::WebFontRendering::SetSkiaFontManager(skia_font_manager);
 
   SetDefaultSkiaFactory(std::move(skia_font_manager));
 
@@ -86,7 +86,7 @@ void InitializeDWriteFontProxy() {
   bool fallback_available = font_fallback.Get() != nullptr;
   DCHECK_EQ(fallback_available,
     base::win::GetVersion() > base::win::VERSION_WIN8);
-  blink::WebFontRendering::setUseSkiaFontFallback(fallback_available);
+  blink::WebFontRendering::SetUseSkiaFontFallback(fallback_available);
 }
 
 void UninitializeDWriteFontProxy() {

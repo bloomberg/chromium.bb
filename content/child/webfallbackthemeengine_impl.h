@@ -20,8 +20,8 @@ class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
   ~WebFallbackThemeEngineImpl();
 
   // WebFallbackThemeEngine methods:
-  blink::WebSize getSize(blink::WebFallbackThemeEngine::Part) override;
-  void paint(
+  blink::WebSize GetSize(blink::WebFallbackThemeEngine::Part) override;
+  void Paint(
       blink::WebCanvas* canvas,
       blink::WebFallbackThemeEngine::Part part,
       blink::WebFallbackThemeEngine::State state,

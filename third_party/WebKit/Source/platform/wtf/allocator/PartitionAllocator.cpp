@@ -9,27 +9,27 @@
 
 namespace WTF {
 
-void* PartitionAllocator::allocateBacking(size_t size, const char* typeName) {
-  return Partitions::bufferMalloc(size, typeName);
+void* PartitionAllocator::AllocateBacking(size_t size, const char* type_name) {
+  return Partitions::BufferMalloc(size, type_name);
 }
 
-void PartitionAllocator::freeVectorBacking(void* address) {
-  Partitions::bufferFree(address);
+void PartitionAllocator::FreeVectorBacking(void* address) {
+  Partitions::BufferFree(address);
 }
 
-void PartitionAllocator::freeHashTableBacking(void* address) {
-  Partitions::bufferFree(address);
+void PartitionAllocator::FreeHashTableBacking(void* address) {
+  Partitions::BufferFree(address);
 }
 
 template <>
-char* PartitionAllocator::allocateVectorBacking<char>(size_t size) {
+char* PartitionAllocator::AllocateVectorBacking<char>(size_t size) {
   return reinterpret_cast<char*>(
-      allocateBacking(size, "PartitionAllocator::allocateVectorBacking<char>"));
+      AllocateBacking(size, "PartitionAllocator::allocateVectorBacking<char>"));
 }
 
 template <>
-char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t size) {
-  return reinterpret_cast<char*>(allocateBacking(
+char* PartitionAllocator::AllocateExpandedVectorBacking<char>(size_t size) {
+  return reinterpret_cast<char*>(AllocateBacking(
       size, "PartitionAllocator::allocateExpandedVectorBacking<char>"));
 }
 

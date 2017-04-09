@@ -20,20 +20,20 @@ namespace blink {
 
 namespace {
 
-void paintSingleRectangleOutline(const PaintInfo& paintInfo,
+void PaintSingleRectangleOutline(const PaintInfo& paint_info,
                                  const IntRect& rect,
                                  const ComputedStyle& style,
                                  const Color& color) {
-  DCHECK(!style.outlineStyleIsAuto());
+  DCHECK(!style.OutlineStyleIsAuto());
 
   LayoutRect inner(rect);
-  inner.inflate(style.outlineOffset());
+  inner.Inflate(style.OutlineOffset());
   LayoutRect outer(inner);
-  outer.inflate(style.outlineWidth());
-  const BorderEdge commonEdgeInfo(style.outlineWidth(), color,
-                                  style.outlineStyle());
-  BoxBorderPainter(style, outer, inner, commonEdgeInfo)
-      .paintBorder(paintInfo, outer);
+  outer.Inflate(style.OutlineWidth());
+  const BorderEdge common_edge_info(style.OutlineWidth(), color,
+                                    style.OutlineStyle());
+  BoxBorderPainter(style, outer, inner, common_edge_info)
+      .PaintBorder(paint_info, outer);
 }
 
 struct OutlineEdgeInfo {
@@ -45,7 +45,7 @@ struct OutlineEdgeInfo {
 };
 
 // Adjust length of edges if needed. Returns the width of the joint.
-int adjustJoint(int outlineWidth,
+int AdjustJoint(int outline_width,
                 OutlineEdgeInfo& edge1,
                 OutlineEdgeInfo& edge2) {
   // A clockwise joint:
@@ -56,47 +56,47 @@ int adjustJoint(int outlineWidth,
   // - needs to increase the edge length to include the joint;
   // - needs a negative adjacent joint width (required by drawLineForBoxSide).
   switch (edge1.side) {
-    case BSTop:
+    case kBSTop:
       switch (edge2.side) {
-        case BSRight:  // Clockwise
-          return outlineWidth;
-        case BSLeft:  // Counterclockwise
-          edge1.x2 += outlineWidth;
-          edge2.y2 += outlineWidth;
-          return -outlineWidth;
+        case kBSRight:  // Clockwise
+          return outline_width;
+        case kBSLeft:  // Counterclockwise
+          edge1.x2 += outline_width;
+          edge2.y2 += outline_width;
+          return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
-    case BSRight:
+    case kBSRight:
       switch (edge2.side) {
-        case BSBottom:  // Clockwise
-          return outlineWidth;
-        case BSTop:  // Counterclockwise
-          edge1.y2 += outlineWidth;
-          edge2.x1 -= outlineWidth;
-          return -outlineWidth;
+        case kBSBottom:  // Clockwise
+          return outline_width;
+        case kBSTop:  // Counterclockwise
+          edge1.y2 += outline_width;
+          edge2.x1 -= outline_width;
+          return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
-    case BSBottom:
+    case kBSBottom:
       switch (edge2.side) {
-        case BSLeft:  // Clockwise
-          return outlineWidth;
-        case BSRight:  // Counterclockwise
-          edge1.x1 -= outlineWidth;
-          edge2.y1 -= outlineWidth;
-          return -outlineWidth;
+        case kBSLeft:  // Clockwise
+          return outline_width;
+        case kBSRight:  // Counterclockwise
+          edge1.x1 -= outline_width;
+          edge2.y1 -= outline_width;
+          return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
-    case BSLeft:
+    case kBSLeft:
       switch (edge2.side) {
-        case BSTop:  // Clockwise
-          return outlineWidth;
-        case BSBottom:  // Counterclockwise
-          edge1.y1 -= outlineWidth;
-          edge2.x2 += outlineWidth;
-          return -outlineWidth;
+        case kBSTop:  // Clockwise
+          return outline_width;
+        case kBSBottom:  // Counterclockwise
+          edge1.y1 -= outline_width;
+          edge2.x2 += outline_width;
+          return -outline_width;
         default:  // Same side or no joint.
           return 0;
       }
@@ -106,19 +106,19 @@ int adjustJoint(int outlineWidth,
   }
 }
 
-void paintComplexOutline(GraphicsContext& graphicsContext,
+void PaintComplexOutline(GraphicsContext& graphics_context,
                          const Vector<IntRect> rects,
                          const ComputedStyle& style,
                          const Color& color) {
-  DCHECK(!style.outlineStyleIsAuto());
+  DCHECK(!style.OutlineStyleIsAuto());
 
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
-  int width = style.outlineWidth();
-  int outset = style.outlineOffset() + style.outlineWidth();
+  int width = style.OutlineWidth();
+  int outset = style.OutlineOffset() + style.OutlineWidth();
   for (auto& r : rects) {
     IntRect rect = r;
-    rect.inflate(outset);
+    rect.Inflate(outset);
     region.op(rect, SkRegion::kUnion_Op);
   }
   SkPath path;
@@ -135,7 +135,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
     if (verb != SkPath::kLine_Verb)
       continue;
 
-    edges.grow(++count);
+    edges.Grow(++count);
     OutlineEdgeInfo& edge = edges.back();
     edge.x1 = SkScalarTruncToInt(points[0].x());
     edge.y1 = SkScalarTruncToInt(points[0].y());
@@ -144,21 +144,21 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
     if (edge.x1 == edge.x2) {
       if (edge.y1 < edge.y2) {
         edge.x1 -= width;
-        edge.side = BSRight;
+        edge.side = kBSRight;
       } else {
         std::swap(edge.y1, edge.y2);
         edge.x2 += width;
-        edge.side = BSLeft;
+        edge.side = kBSLeft;
       }
     } else {
       DCHECK(edge.y1 == edge.y2);
       if (edge.x1 < edge.x2) {
         edge.y2 += width;
-        edge.side = BSTop;
+        edge.side = kBSTop;
       } else {
         std::swap(edge.x1, edge.x2);
         edge.y1 -= width;
-        edge.side = BSBottom;
+        edge.side = kBSBottom;
       }
     }
   }
@@ -166,41 +166,42 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
   if (!count)
     return;
 
-  Color outlineColor = color;
-  bool useTransparencyLayer = color.hasAlpha();
-  if (useTransparencyLayer) {
-    graphicsContext.beginLayer(static_cast<float>(color.alpha()) / 255);
-    outlineColor =
-        Color(outlineColor.red(), outlineColor.green(), outlineColor.blue());
+  Color outline_color = color;
+  bool use_transparency_layer = color.HasAlpha();
+  if (use_transparency_layer) {
+    graphics_context.BeginLayer(static_cast<float>(color.Alpha()) / 255);
+    outline_color =
+        Color(outline_color.Red(), outline_color.Green(), outline_color.Blue());
   }
 
   DCHECK(count >= 4 && edges.size() == count);
-  int firstAdjacentWidth = adjustJoint(width, edges.back(), edges.front());
+  int first_adjacent_width = AdjustJoint(width, edges.back(), edges.front());
 
   // The width of the angled part of starting and ending joint of the current
   // edge.
-  int adjacentWidthStart = firstAdjacentWidth;
-  int adjacentWidthEnd;
+  int adjacent_width_start = first_adjacent_width;
+  int adjacent_width_end;
   for (size_t i = 0; i < count; ++i) {
     OutlineEdgeInfo& edge = edges[i];
-    adjacentWidthEnd = i == count - 1 ? firstAdjacentWidth
-                                      : adjustJoint(width, edge, edges[i + 1]);
-    int adjacentWidth1 = adjacentWidthStart;
-    int adjacentWidth2 = adjacentWidthEnd;
-    if (edge.side == BSLeft || edge.side == BSBottom)
-      std::swap(adjacentWidth1, adjacentWidth2);
-    ObjectPainter::drawLineForBoxSide(graphicsContext, edge.x1, edge.y1,
-                                      edge.x2, edge.y2, edge.side, outlineColor,
-                                      style.outlineStyle(), adjacentWidth1,
-                                      adjacentWidth2, false);
-    adjacentWidthStart = adjacentWidthEnd;
+    adjacent_width_end = i == count - 1
+                             ? first_adjacent_width
+                             : AdjustJoint(width, edge, edges[i + 1]);
+    int adjacent_width1 = adjacent_width_start;
+    int adjacent_width2 = adjacent_width_end;
+    if (edge.side == kBSLeft || edge.side == kBSBottom)
+      std::swap(adjacent_width1, adjacent_width2);
+    ObjectPainter::DrawLineForBoxSide(graphics_context, edge.x1, edge.y1,
+                                      edge.x2, edge.y2, edge.side,
+                                      outline_color, style.OutlineStyle(),
+                                      adjacent_width1, adjacent_width2, false);
+    adjacent_width_start = adjacent_width_end;
   }
 
-  if (useTransparencyLayer)
-    graphicsContext.endLayer();
+  if (use_transparency_layer)
+    graphics_context.EndLayer();
 }
 
-void fillQuad(GraphicsContext& context,
+void FillQuad(GraphicsContext& context,
               const FloatPoint quad[],
               const Color& color,
               bool antialias) {
@@ -209,136 +210,137 @@ void fillQuad(GraphicsContext& context,
   path.lineTo(quad[1]);
   path.lineTo(quad[2]);
   path.lineTo(quad[3]);
-  PaintFlags flags(context.fillFlags());
+  PaintFlags flags(context.FillFlags());
   flags.setAntiAlias(antialias);
-  flags.setColor(color.rgb());
+  flags.setColor(color.Rgb());
 
-  context.drawPath(path, flags);
+  context.DrawPath(path, flags);
 }
 
 }  // namespace
 
-void ObjectPainter::paintOutline(const PaintInfo& paintInfo,
-                                 const LayoutPoint& paintOffset) {
-  DCHECK(shouldPaintSelfOutline(paintInfo.phase));
+void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
+                                 const LayoutPoint& paint_offset) {
+  DCHECK(ShouldPaintSelfOutline(paint_info.phase));
 
-  const ComputedStyle& styleToUse = m_layoutObject.styleRef();
-  if (!styleToUse.hasOutline() ||
-      styleToUse.visibility() != EVisibility::kVisible)
+  const ComputedStyle& style_to_use = layout_object_.StyleRef();
+  if (!style_to_use.HasOutline() ||
+      style_to_use.Visibility() != EVisibility::kVisible)
     return;
 
   // Only paint the focus ring by hand if the theme isn't able to draw the focus
   // ring.
-  if (styleToUse.outlineStyleIsAuto() &&
-      !LayoutTheme::theme().shouldDrawDefaultFocusRing(m_layoutObject))
+  if (style_to_use.OutlineStyleIsAuto() &&
+      !LayoutTheme::GetTheme().ShouldDrawDefaultFocusRing(layout_object_))
     return;
 
-  Vector<LayoutRect> outlineRects;
-  m_layoutObject.addOutlineRects(
-      outlineRects, paintOffset,
-      m_layoutObject.outlineRectsShouldIncludeBlockVisualOverflow());
-  if (outlineRects.isEmpty())
+  Vector<LayoutRect> outline_rects;
+  layout_object_.AddOutlineRects(
+      outline_rects, paint_offset,
+      layout_object_.OutlineRectsShouldIncludeBlockVisualOverflow());
+  if (outline_rects.IsEmpty())
     return;
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutObject, paintInfo.phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_object_, paint_info.phase))
     return;
 
   // The result rects are in coordinates of m_layoutObject's border box.
   // Block flipping is not applied yet if !m_layoutObject.isBox().
-  if (!m_layoutObject.isBox() &&
-      m_layoutObject.styleRef().isFlippedBlocksWritingMode()) {
-    LayoutBlock* container = m_layoutObject.containingBlock();
+  if (!layout_object_.IsBox() &&
+      layout_object_.StyleRef().IsFlippedBlocksWritingMode()) {
+    LayoutBlock* container = layout_object_.ContainingBlock();
     if (container) {
-      m_layoutObject.localToAncestorRects(outlineRects, container, -paintOffset,
-                                          paintOffset);
-      if (outlineRects.isEmpty())
+      layout_object_.LocalToAncestorRects(outline_rects, container,
+                                          -paint_offset, paint_offset);
+      if (outline_rects.IsEmpty())
         return;
     }
   }
 
-  Vector<IntRect> pixelSnappedOutlineRects;
-  for (auto& r : outlineRects)
-    pixelSnappedOutlineRects.push_back(pixelSnappedIntRect(r));
+  Vector<IntRect> pixel_snapped_outline_rects;
+  for (auto& r : outline_rects)
+    pixel_snapped_outline_rects.push_back(PixelSnappedIntRect(r));
 
-  IntRect unitedOutlineRect = unionRectEvenIfEmpty(pixelSnappedOutlineRects);
-  IntRect bounds = unitedOutlineRect;
-  bounds.inflate(m_layoutObject.styleRef().outlineOutsetExtent());
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject,
-                                       paintInfo.phase, bounds);
+  IntRect united_outline_rect =
+      UnionRectEvenIfEmpty(pixel_snapped_outline_rects);
+  IntRect bounds = united_outline_rect;
+  bounds.Inflate(layout_object_.StyleRef().OutlineOutsetExtent());
+  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_object_,
+                                       paint_info.phase, bounds);
 
   Color color =
-      m_layoutObject.resolveColor(styleToUse, CSSPropertyOutlineColor);
-  if (styleToUse.outlineStyleIsAuto()) {
-    paintInfo.context.drawFocusRing(
-        pixelSnappedOutlineRects,
-        styleToUse.getOutlineStrokeWidthForFocusRing(),
-        styleToUse.outlineOffset(), color);
+      layout_object_.ResolveColor(style_to_use, CSSPropertyOutlineColor);
+  if (style_to_use.OutlineStyleIsAuto()) {
+    paint_info.context.DrawFocusRing(
+        pixel_snapped_outline_rects,
+        style_to_use.GetOutlineStrokeWidthForFocusRing(),
+        style_to_use.OutlineOffset(), color);
     return;
   }
 
-  if (unitedOutlineRect == pixelSnappedOutlineRects[0]) {
-    paintSingleRectangleOutline(paintInfo, unitedOutlineRect, styleToUse,
+  if (united_outline_rect == pixel_snapped_outline_rects[0]) {
+    PaintSingleRectangleOutline(paint_info, united_outline_rect, style_to_use,
                                 color);
     return;
   }
-  paintComplexOutline(paintInfo.context, pixelSnappedOutlineRects, styleToUse,
-                      color);
+  PaintComplexOutline(paint_info.context, pixel_snapped_outline_rects,
+                      style_to_use, color);
 }
 
-void ObjectPainter::paintInlineChildrenOutlines(
-    const PaintInfo& paintInfo,
-    const LayoutPoint& paintOffset) {
-  DCHECK(shouldPaintDescendantOutlines(paintInfo.phase));
+void ObjectPainter::PaintInlineChildrenOutlines(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) {
+  DCHECK(ShouldPaintDescendantOutlines(paint_info.phase));
 
-  PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
-  for (LayoutObject* child = m_layoutObject.slowFirstChild(); child;
-       child = child->nextSibling()) {
-    if (child->isLayoutInline() &&
-        !toLayoutInline(child)->hasSelfPaintingLayer())
-      child->paint(paintInfoForDescendants, paintOffset);
+  PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
+  for (LayoutObject* child = layout_object_.SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (child->IsLayoutInline() &&
+        !ToLayoutInline(child)->HasSelfPaintingLayer())
+      child->Paint(paint_info_for_descendants, paint_offset);
   }
 }
 
-void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo,
-                                          const LayoutPoint& paintOffset) {
-  DCHECK(paintInfo.isPrinting());
-  if (m_layoutObject.isElementContinuation() || !m_layoutObject.node() ||
-      !m_layoutObject.node()->isLink() ||
-      m_layoutObject.styleRef().visibility() != EVisibility::kVisible)
+void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
+                                          const LayoutPoint& paint_offset) {
+  DCHECK(paint_info.IsPrinting());
+  if (layout_object_.IsElementContinuation() || !layout_object_.GetNode() ||
+      !layout_object_.GetNode()->IsLink() ||
+      layout_object_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  KURL url = toElement(m_layoutObject.node())->hrefURL();
-  if (!url.isValid())
+  KURL url = ToElement(layout_object_.GetNode())->HrefURL();
+  if (!url.IsValid())
     return;
 
-  Vector<LayoutRect> visualOverflowRects;
-  m_layoutObject.addElementVisualOverflowRects(visualOverflowRects,
-                                               paintOffset);
-  IntRect rect = pixelSnappedIntRect(unionRect(visualOverflowRects));
-  if (rect.isEmpty())
+  Vector<LayoutRect> visual_overflow_rects;
+  layout_object_.AddElementVisualOverflowRects(visual_overflow_rects,
+                                               paint_offset);
+  IntRect rect = PixelSnappedIntRect(UnionRect(visual_overflow_rects));
+  if (rect.IsEmpty())
     return;
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutObject,
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_object_,
           DisplayItem::kPrintedContentPDFURLRect))
     return;
 
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutObject,
+  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_object_,
                                        DisplayItem::kPrintedContentPDFURLRect,
                                        rect);
-  if (url.hasFragmentIdentifier() &&
-      equalIgnoringFragmentIdentifier(url,
-                                      m_layoutObject.document().baseURL())) {
-    String fragmentName = url.fragmentIdentifier();
-    if (m_layoutObject.document().findAnchor(fragmentName))
-      paintInfo.context.setURLFragmentForRect(fragmentName, rect);
+  if (url.HasFragmentIdentifier() &&
+      EqualIgnoringFragmentIdentifier(url,
+                                      layout_object_.GetDocument().BaseURL())) {
+    String fragment_name = url.FragmentIdentifier();
+    if (layout_object_.GetDocument().FindAnchor(fragment_name))
+      paint_info.context.SetURLFragmentForRect(fragment_name, rect);
     return;
   }
-  paintInfo.context.setURLForRect(url, rect);
+  paint_info.context.SetURLForRect(url, rect);
 }
 
-void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext,
+void ObjectPainter::DrawLineForBoxSide(GraphicsContext& graphics_context,
                                        float x1,
                                        float y1,
                                        float x2,
@@ -346,12 +348,12 @@ void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext,
                                        BoxSide side,
                                        Color color,
                                        EBorderStyle style,
-                                       int adjacentWidth1,
-                                       int adjacentWidth2,
+                                       int adjacent_width1,
+                                       int adjacent_width2,
                                        bool antialias) {
   float thickness;
   float length;
-  if (side == BSTop || side == BSBottom) {
+  if (side == kBSTop || side == kBSBottom) {
     thickness = y2 - y1;
     length = x2 - x1;
   } else {
@@ -365,46 +367,47 @@ void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext,
   if (length <= 0 || thickness <= 0)
     return;
 
-  if (style == BorderStyleDouble && thickness < 3)
-    style = BorderStyleSolid;
+  if (style == kBorderStyleDouble && thickness < 3)
+    style = kBorderStyleSolid;
 
   switch (style) {
-    case BorderStyleNone:
-    case BorderStyleHidden:
+    case kBorderStyleNone:
+    case kBorderStyleHidden:
       return;
-    case BorderStyleDotted:
-    case BorderStyleDashed:
-      drawDashedOrDottedBoxSide(graphicsContext, x1, y1, x2, y2, side, color,
+    case kBorderStyleDotted:
+    case kBorderStyleDashed:
+      DrawDashedOrDottedBoxSide(graphics_context, x1, y1, x2, y2, side, color,
                                 thickness, style, antialias);
       break;
-    case BorderStyleDouble:
-      drawDoubleBoxSide(graphicsContext, x1, y1, x2, y2, length, side, color,
-                        thickness, adjacentWidth1, adjacentWidth2, antialias);
+    case kBorderStyleDouble:
+      DrawDoubleBoxSide(graphics_context, x1, y1, x2, y2, length, side, color,
+                        thickness, adjacent_width1, adjacent_width2, antialias);
       break;
-    case BorderStyleRidge:
-    case BorderStyleGroove:
-      drawRidgeOrGrooveBoxSide(graphicsContext, x1, y1, x2, y2, side, color,
-                               style, adjacentWidth1, adjacentWidth2,
+    case kBorderStyleRidge:
+    case kBorderStyleGroove:
+      DrawRidgeOrGrooveBoxSide(graphics_context, x1, y1, x2, y2, side, color,
+                               style, adjacent_width1, adjacent_width2,
                                antialias);
       break;
-    case BorderStyleInset:
+    case kBorderStyleInset:
       // FIXME: Maybe we should lighten the colors on one side like Firefox.
       // https://bugs.webkit.org/show_bug.cgi?id=58608
-      if (side == BSTop || side == BSLeft)
-        color = color.dark();
+      if (side == kBSTop || side == kBSLeft)
+        color = color.Dark();
     // fall through
-    case BorderStyleOutset:
-      if (style == BorderStyleOutset && (side == BSBottom || side == BSRight))
-        color = color.dark();
+    case kBorderStyleOutset:
+      if (style == kBorderStyleOutset &&
+          (side == kBSBottom || side == kBSRight))
+        color = color.Dark();
     // fall through
-    case BorderStyleSolid:
-      drawSolidBoxSide(graphicsContext, x1, y1, x2, y2, side, color,
-                       adjacentWidth1, adjacentWidth2, antialias);
+    case kBorderStyleSolid:
+      DrawSolidBoxSide(graphics_context, x1, y1, x2, y2, side, color,
+                       adjacent_width1, adjacent_width2, antialias);
       break;
   }
 }
 
-void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext,
+void ObjectPainter::DrawDashedOrDottedBoxSide(GraphicsContext& graphics_context,
                                               int x1,
                                               int y1,
                                               int x2,
@@ -416,30 +419,30 @@ void ObjectPainter::drawDashedOrDottedBoxSide(GraphicsContext& graphicsContext,
                                               bool antialias) {
   DCHECK_GT(thickness, 0);
 
-  GraphicsContextStateSaver stateSaver(graphicsContext);
-  graphicsContext.setShouldAntialias(antialias);
-  graphicsContext.setStrokeColor(color);
-  graphicsContext.setStrokeThickness(thickness);
-  graphicsContext.setStrokeStyle(style == BorderStyleDashed ? DashedStroke
-                                                            : DottedStroke);
+  GraphicsContextStateSaver state_saver(graphics_context);
+  graphics_context.SetShouldAntialias(antialias);
+  graphics_context.SetStrokeColor(color);
+  graphics_context.SetStrokeThickness(thickness);
+  graphics_context.SetStrokeStyle(style == kBorderStyleDashed ? kDashedStroke
+                                                              : kDottedStroke);
 
   switch (side) {
-    case BSBottom:
-    case BSTop: {
-      int midY = y1 + thickness / 2;
-      graphicsContext.drawLine(IntPoint(x1, midY), IntPoint(x2, midY));
+    case kBSBottom:
+    case kBSTop: {
+      int mid_y = y1 + thickness / 2;
+      graphics_context.DrawLine(IntPoint(x1, mid_y), IntPoint(x2, mid_y));
       break;
     }
-    case BSRight:
-    case BSLeft: {
-      int midX = x1 + thickness / 2;
-      graphicsContext.drawLine(IntPoint(midX, y1), IntPoint(midX, y2));
+    case kBSRight:
+    case kBSLeft: {
+      int mid_x = x1 + thickness / 2;
+      graphics_context.DrawLine(IntPoint(mid_x, y1), IntPoint(mid_x, y2));
       break;
     }
   }
 }
 
-void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
+void ObjectPainter::DrawDoubleBoxSide(GraphicsContext& graphics_context,
                                       int x1,
                                       int y1,
                                       int x2,
@@ -448,100 +451,104 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext& graphicsContext,
                                       BoxSide side,
                                       Color color,
                                       float thickness,
-                                      int adjacentWidth1,
-                                      int adjacentWidth2,
+                                      int adjacent_width1,
+                                      int adjacent_width2,
                                       bool antialias) {
-  int thirdOfThickness = (thickness + 1) / 3;
-  DCHECK_GT(thirdOfThickness, 0);
+  int third_of_thickness = (thickness + 1) / 3;
+  DCHECK_GT(third_of_thickness, 0);
 
-  if (!adjacentWidth1 && !adjacentWidth2) {
-    StrokeStyle oldStrokeStyle = graphicsContext.getStrokeStyle();
-    graphicsContext.setStrokeStyle(NoStroke);
-    graphicsContext.setFillColor(color);
+  if (!adjacent_width1 && !adjacent_width2) {
+    StrokeStyle old_stroke_style = graphics_context.GetStrokeStyle();
+    graphics_context.SetStrokeStyle(kNoStroke);
+    graphics_context.SetFillColor(color);
 
-    bool wasAntialiased = graphicsContext.shouldAntialias();
-    graphicsContext.setShouldAntialias(antialias);
+    bool was_antialiased = graphics_context.ShouldAntialias();
+    graphics_context.SetShouldAntialias(antialias);
 
     switch (side) {
-      case BSTop:
-      case BSBottom:
-        graphicsContext.drawRect(IntRect(x1, y1, length, thirdOfThickness));
-        graphicsContext.drawRect(
-            IntRect(x1, y2 - thirdOfThickness, length, thirdOfThickness));
+      case kBSTop:
+      case kBSBottom:
+        graphics_context.DrawRect(IntRect(x1, y1, length, third_of_thickness));
+        graphics_context.DrawRect(
+            IntRect(x1, y2 - third_of_thickness, length, third_of_thickness));
         break;
-      case BSLeft:
-      case BSRight:
-        graphicsContext.drawRect(IntRect(x1, y1, thirdOfThickness, length));
-        graphicsContext.drawRect(
-            IntRect(x2 - thirdOfThickness, y1, thirdOfThickness, length));
+      case kBSLeft:
+      case kBSRight:
+        graphics_context.DrawRect(IntRect(x1, y1, third_of_thickness, length));
+        graphics_context.DrawRect(
+            IntRect(x2 - third_of_thickness, y1, third_of_thickness, length));
         break;
     }
 
-    graphicsContext.setShouldAntialias(wasAntialiased);
-    graphicsContext.setStrokeStyle(oldStrokeStyle);
+    graphics_context.SetShouldAntialias(was_antialiased);
+    graphics_context.SetStrokeStyle(old_stroke_style);
     return;
   }
 
-  int adjacent1BigThird =
-      ((adjacentWidth1 > 0) ? adjacentWidth1 + 1 : adjacentWidth1 - 1) / 3;
-  int adjacent2BigThird =
-      ((adjacentWidth2 > 0) ? adjacentWidth2 + 1 : adjacentWidth2 - 1) / 3;
+  int adjacent1_big_third =
+      ((adjacent_width1 > 0) ? adjacent_width1 + 1 : adjacent_width1 - 1) / 3;
+  int adjacent2_big_third =
+      ((adjacent_width2 > 0) ? adjacent_width2 + 1 : adjacent_width2 - 1) / 3;
 
   switch (side) {
-    case BSTop:
-      drawLineForBoxSide(graphicsContext,
-                         x1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0), y1,
-                         x2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0),
-                         y1 + thirdOfThickness, side, color, BorderStyleSolid,
-                         adjacent1BigThird, adjacent2BigThird, antialias);
-      drawLineForBoxSide(
-          graphicsContext, x1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
-          y2 - thirdOfThickness, x2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
-          y2, side, color, BorderStyleSolid, adjacent1BigThird,
-          adjacent2BigThird, antialias);
+    case kBSTop:
+      DrawLineForBoxSide(
+          graphics_context, x1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
+          y1, x2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0),
+          y1 + third_of_thickness, side, color, kBorderStyleSolid,
+          adjacent1_big_third, adjacent2_big_third, antialias);
+      DrawLineForBoxSide(graphics_context,
+                         x1 + std::max((adjacent_width1 * 2 + 1) / 3, 0),
+                         y2 - third_of_thickness,
+                         x2 - std::max((adjacent_width2 * 2 + 1) / 3, 0), y2,
+                         side, color, kBorderStyleSolid, adjacent1_big_third,
+                         adjacent2_big_third, antialias);
       break;
-    case BSLeft:
-      drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
-          x1 + thirdOfThickness,
-          y2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), side, color,
-          BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
-      drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness,
-                         y1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0), x2,
-                         y2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0), side,
-                         color, BorderStyleSolid, adjacent1BigThird,
-                         adjacent2BigThird, antialias);
+    case kBSLeft:
+      DrawLineForBoxSide(graphics_context, x1,
+                         y1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
+                         x1 + third_of_thickness,
+                         y2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0), side,
+                         color, kBorderStyleSolid, adjacent1_big_third,
+                         adjacent2_big_third, antialias);
+      DrawLineForBoxSide(graphics_context, x2 - third_of_thickness,
+                         y1 + std::max((adjacent_width1 * 2 + 1) / 3, 0), x2,
+                         y2 - std::max((adjacent_width2 * 2 + 1) / 3, 0), side,
+                         color, kBorderStyleSolid, adjacent1_big_third,
+                         adjacent2_big_third, antialias);
       break;
-    case BSBottom:
-      drawLineForBoxSide(graphicsContext,
-                         x1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0), y1,
-                         x2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
-                         y1 + thirdOfThickness, side, color, BorderStyleSolid,
-                         adjacent1BigThird, adjacent2BigThird, antialias);
-      drawLineForBoxSide(
-          graphicsContext, x1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0),
-          y2 - thirdOfThickness,
-          x2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), y2, side, color,
-          BorderStyleSolid, adjacent1BigThird, adjacent2BigThird, antialias);
+    case kBSBottom:
+      DrawLineForBoxSide(
+          graphics_context, x1 + std::max((adjacent_width1 * 2 + 1) / 3, 0), y1,
+          x2 - std::max((adjacent_width2 * 2 + 1) / 3, 0),
+          y1 + third_of_thickness, side, color, kBorderStyleSolid,
+          adjacent1_big_third, adjacent2_big_third, antialias);
+      DrawLineForBoxSide(graphics_context,
+                         x1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0),
+                         y2 - third_of_thickness,
+                         x2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0), y2,
+                         side, color, kBorderStyleSolid, adjacent1_big_third,
+                         adjacent2_big_third, antialias);
       break;
-    case BSRight:
-      drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max((adjacentWidth1 * 2 + 1) / 3, 0),
-          x1 + thirdOfThickness, y2 - std::max((adjacentWidth2 * 2 + 1) / 3, 0),
-          side, color, BorderStyleSolid, adjacent1BigThird, adjacent2BigThird,
-          antialias);
-      drawLineForBoxSide(graphicsContext, x2 - thirdOfThickness,
-                         y1 + std::max((-adjacentWidth1 * 2 + 1) / 3, 0), x2,
-                         y2 - std::max((-adjacentWidth2 * 2 + 1) / 3, 0), side,
-                         color, BorderStyleSolid, adjacent1BigThird,
-                         adjacent2BigThird, antialias);
+    case kBSRight:
+      DrawLineForBoxSide(graphics_context, x1,
+                         y1 + std::max((adjacent_width1 * 2 + 1) / 3, 0),
+                         x1 + third_of_thickness,
+                         y2 - std::max((adjacent_width2 * 2 + 1) / 3, 0), side,
+                         color, kBorderStyleSolid, adjacent1_big_third,
+                         adjacent2_big_third, antialias);
+      DrawLineForBoxSide(graphics_context, x2 - third_of_thickness,
+                         y1 + std::max((-adjacent_width1 * 2 + 1) / 3, 0), x2,
+                         y2 - std::max((-adjacent_width2 * 2 + 1) / 3, 0), side,
+                         color, kBorderStyleSolid, adjacent1_big_third,
+                         adjacent2_big_third, antialias);
       break;
     default:
       break;
   }
 }
 
-void ObjectPainter::drawRidgeOrGrooveBoxSide(GraphicsContext& graphicsContext,
+void ObjectPainter::DrawRidgeOrGrooveBoxSide(GraphicsContext& graphics_context,
                                              int x1,
                                              int y1,
                                              int x2,
@@ -549,167 +556,169 @@ void ObjectPainter::drawRidgeOrGrooveBoxSide(GraphicsContext& graphicsContext,
                                              BoxSide side,
                                              Color color,
                                              EBorderStyle style,
-                                             int adjacentWidth1,
-                                             int adjacentWidth2,
+                                             int adjacent_width1,
+                                             int adjacent_width2,
                                              bool antialias) {
   EBorderStyle s1;
   EBorderStyle s2;
-  if (style == BorderStyleGroove) {
-    s1 = BorderStyleInset;
-    s2 = BorderStyleOutset;
+  if (style == kBorderStyleGroove) {
+    s1 = kBorderStyleInset;
+    s2 = kBorderStyleOutset;
   } else {
-    s1 = BorderStyleOutset;
-    s2 = BorderStyleInset;
+    s1 = kBorderStyleOutset;
+    s2 = kBorderStyleInset;
   }
 
-  int adjacent1BigHalf =
-      ((adjacentWidth1 > 0) ? adjacentWidth1 + 1 : adjacentWidth1 - 1) / 2;
-  int adjacent2BigHalf =
-      ((adjacentWidth2 > 0) ? adjacentWidth2 + 1 : adjacentWidth2 - 1) / 2;
+  int adjacent1_big_half =
+      ((adjacent_width1 > 0) ? adjacent_width1 + 1 : adjacent_width1 - 1) / 2;
+  int adjacent2_big_half =
+      ((adjacent_width2 > 0) ? adjacent_width2 + 1 : adjacent_width2 - 1) / 2;
 
   switch (side) {
-    case BSTop:
-      drawLineForBoxSide(graphicsContext, x1 + std::max(-adjacentWidth1, 0) / 2,
-                         y1, x2 - std::max(-adjacentWidth2, 0) / 2,
-                         (y1 + y2 + 1) / 2, side, color, s1, adjacent1BigHalf,
-                         adjacent2BigHalf, antialias);
-      drawLineForBoxSide(
-          graphicsContext, x1 + std::max(adjacentWidth1 + 1, 0) / 2,
-          (y1 + y2 + 1) / 2, x2 - std::max(adjacentWidth2 + 1, 0) / 2, y2, side,
-          color, s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+    case kBSTop:
+      DrawLineForBoxSide(
+          graphics_context, x1 + std::max(-adjacent_width1, 0) / 2, y1,
+          x2 - std::max(-adjacent_width2, 0) / 2, (y1 + y2 + 1) / 2, side,
+          color, s1, adjacent1_big_half, adjacent2_big_half, antialias);
+      DrawLineForBoxSide(
+          graphics_context, x1 + std::max(adjacent_width1 + 1, 0) / 2,
+          (y1 + y2 + 1) / 2, x2 - std::max(adjacent_width2 + 1, 0) / 2, y2,
+          side, color, s2, adjacent_width1 / 2, adjacent_width2 / 2, antialias);
       break;
-    case BSLeft:
-      drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max(-adjacentWidth1, 0) / 2,
-          (x1 + x2 + 1) / 2, y2 - std::max(-adjacentWidth2, 0) / 2, side, color,
-          s1, adjacent1BigHalf, adjacent2BigHalf, antialias);
-      drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2,
-                         y1 + std::max(adjacentWidth1 + 1, 0) / 2, x2,
-                         y2 - std::max(adjacentWidth2 + 1, 0) / 2, side, color,
-                         s2, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+    case kBSLeft:
+      DrawLineForBoxSide(
+          graphics_context, x1, y1 + std::max(-adjacent_width1, 0) / 2,
+          (x1 + x2 + 1) / 2, y2 - std::max(-adjacent_width2, 0) / 2, side,
+          color, s1, adjacent1_big_half, adjacent2_big_half, antialias);
+      DrawLineForBoxSide(graphics_context, (x1 + x2 + 1) / 2,
+                         y1 + std::max(adjacent_width1 + 1, 0) / 2, x2,
+                         y2 - std::max(adjacent_width2 + 1, 0) / 2, side, color,
+                         s2, adjacent_width1 / 2, adjacent_width2 / 2,
+                         antialias);
       break;
-    case BSBottom:
-      drawLineForBoxSide(graphicsContext, x1 + std::max(adjacentWidth1, 0) / 2,
-                         y1, x2 - std::max(adjacentWidth2, 0) / 2,
-                         (y1 + y2 + 1) / 2, side, color, s2, adjacent1BigHalf,
-                         adjacent2BigHalf, antialias);
-      drawLineForBoxSide(
-          graphicsContext, x1 + std::max(-adjacentWidth1 + 1, 0) / 2,
-          (y1 + y2 + 1) / 2, x2 - std::max(-adjacentWidth2 + 1, 0) / 2, y2,
-          side, color, s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+    case kBSBottom:
+      DrawLineForBoxSide(
+          graphics_context, x1 + std::max(adjacent_width1, 0) / 2, y1,
+          x2 - std::max(adjacent_width2, 0) / 2, (y1 + y2 + 1) / 2, side, color,
+          s2, adjacent1_big_half, adjacent2_big_half, antialias);
+      DrawLineForBoxSide(
+          graphics_context, x1 + std::max(-adjacent_width1 + 1, 0) / 2,
+          (y1 + y2 + 1) / 2, x2 - std::max(-adjacent_width2 + 1, 0) / 2, y2,
+          side, color, s1, adjacent_width1 / 2, adjacent_width2 / 2, antialias);
       break;
-    case BSRight:
-      drawLineForBoxSide(
-          graphicsContext, x1, y1 + std::max(adjacentWidth1, 0) / 2,
-          (x1 + x2 + 1) / 2, y2 - std::max(adjacentWidth2, 0) / 2, side, color,
-          s2, adjacent1BigHalf, adjacent2BigHalf, antialias);
-      drawLineForBoxSide(graphicsContext, (x1 + x2 + 1) / 2,
-                         y1 + std::max(-adjacentWidth1 + 1, 0) / 2, x2,
-                         y2 - std::max(-adjacentWidth2 + 1, 0) / 2, side, color,
-                         s1, adjacentWidth1 / 2, adjacentWidth2 / 2, antialias);
+    case kBSRight:
+      DrawLineForBoxSide(
+          graphics_context, x1, y1 + std::max(adjacent_width1, 0) / 2,
+          (x1 + x2 + 1) / 2, y2 - std::max(adjacent_width2, 0) / 2, side, color,
+          s2, adjacent1_big_half, adjacent2_big_half, antialias);
+      DrawLineForBoxSide(graphics_context, (x1 + x2 + 1) / 2,
+                         y1 + std::max(-adjacent_width1 + 1, 0) / 2, x2,
+                         y2 - std::max(-adjacent_width2 + 1, 0) / 2, side,
+                         color, s1, adjacent_width1 / 2, adjacent_width2 / 2,
+                         antialias);
       break;
   }
 }
 
-void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext,
+void ObjectPainter::DrawSolidBoxSide(GraphicsContext& graphics_context,
                                      int x1,
                                      int y1,
                                      int x2,
                                      int y2,
                                      BoxSide side,
                                      Color color,
-                                     int adjacentWidth1,
-                                     int adjacentWidth2,
+                                     int adjacent_width1,
+                                     int adjacent_width2,
                                      bool antialias) {
   DCHECK_GE(x2, x1);
   DCHECK_GE(y2, y1);
 
-  if (!adjacentWidth1 && !adjacentWidth2) {
+  if (!adjacent_width1 && !adjacent_width2) {
     // Tweak antialiasing to match the behavior of fillQuad();
     // this matters for rects in transformed contexts.
-    bool wasAntialiased = graphicsContext.shouldAntialias();
-    if (antialias != wasAntialiased)
-      graphicsContext.setShouldAntialias(antialias);
-    graphicsContext.fillRect(IntRect(x1, y1, x2 - x1, y2 - y1), color);
-    if (antialias != wasAntialiased)
-      graphicsContext.setShouldAntialias(wasAntialiased);
+    bool was_antialiased = graphics_context.ShouldAntialias();
+    if (antialias != was_antialiased)
+      graphics_context.SetShouldAntialias(antialias);
+    graphics_context.FillRect(IntRect(x1, y1, x2 - x1, y2 - y1), color);
+    if (antialias != was_antialiased)
+      graphics_context.SetShouldAntialias(was_antialiased);
     return;
   }
 
   FloatPoint quad[4];
   switch (side) {
-    case BSTop:
-      quad[0] = FloatPoint(x1 + std::max(-adjacentWidth1, 0), y1);
-      quad[1] = FloatPoint(x1 + std::max(adjacentWidth1, 0), y2);
-      quad[2] = FloatPoint(x2 - std::max(adjacentWidth2, 0), y2);
-      quad[3] = FloatPoint(x2 - std::max(-adjacentWidth2, 0), y1);
+    case kBSTop:
+      quad[0] = FloatPoint(x1 + std::max(-adjacent_width1, 0), y1);
+      quad[1] = FloatPoint(x1 + std::max(adjacent_width1, 0), y2);
+      quad[2] = FloatPoint(x2 - std::max(adjacent_width2, 0), y2);
+      quad[3] = FloatPoint(x2 - std::max(-adjacent_width2, 0), y1);
       break;
-    case BSBottom:
-      quad[0] = FloatPoint(x1 + std::max(adjacentWidth1, 0), y1);
-      quad[1] = FloatPoint(x1 + std::max(-adjacentWidth1, 0), y2);
-      quad[2] = FloatPoint(x2 - std::max(-adjacentWidth2, 0), y2);
-      quad[3] = FloatPoint(x2 - std::max(adjacentWidth2, 0), y1);
+    case kBSBottom:
+      quad[0] = FloatPoint(x1 + std::max(adjacent_width1, 0), y1);
+      quad[1] = FloatPoint(x1 + std::max(-adjacent_width1, 0), y2);
+      quad[2] = FloatPoint(x2 - std::max(-adjacent_width2, 0), y2);
+      quad[3] = FloatPoint(x2 - std::max(adjacent_width2, 0), y1);
       break;
-    case BSLeft:
-      quad[0] = FloatPoint(x1, y1 + std::max(-adjacentWidth1, 0));
-      quad[1] = FloatPoint(x1, y2 - std::max(-adjacentWidth2, 0));
-      quad[2] = FloatPoint(x2, y2 - std::max(adjacentWidth2, 0));
-      quad[3] = FloatPoint(x2, y1 + std::max(adjacentWidth1, 0));
+    case kBSLeft:
+      quad[0] = FloatPoint(x1, y1 + std::max(-adjacent_width1, 0));
+      quad[1] = FloatPoint(x1, y2 - std::max(-adjacent_width2, 0));
+      quad[2] = FloatPoint(x2, y2 - std::max(adjacent_width2, 0));
+      quad[3] = FloatPoint(x2, y1 + std::max(adjacent_width1, 0));
       break;
-    case BSRight:
-      quad[0] = FloatPoint(x1, y1 + std::max(adjacentWidth1, 0));
-      quad[1] = FloatPoint(x1, y2 - std::max(adjacentWidth2, 0));
-      quad[2] = FloatPoint(x2, y2 - std::max(-adjacentWidth2, 0));
-      quad[3] = FloatPoint(x2, y1 + std::max(-adjacentWidth1, 0));
+    case kBSRight:
+      quad[0] = FloatPoint(x1, y1 + std::max(adjacent_width1, 0));
+      quad[1] = FloatPoint(x1, y2 - std::max(adjacent_width2, 0));
+      quad[2] = FloatPoint(x2, y2 - std::max(-adjacent_width2, 0));
+      quad[3] = FloatPoint(x2, y1 + std::max(-adjacent_width1, 0));
       break;
   }
 
-  fillQuad(graphicsContext, quad, color, antialias);
+  FillQuad(graphics_context, quad, color, antialias);
 }
 
-void ObjectPainter::paintAllPhasesAtomically(const PaintInfo& paintInfo,
-                                             const LayoutPoint& paintOffset) {
+void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info,
+                                             const LayoutPoint& paint_offset) {
   // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that
   // they will paint for selection and text clip respectively. We don't need
   // complete painting for these phases.
-  if (paintInfo.phase == PaintPhaseSelection ||
-      paintInfo.phase == PaintPhaseTextClip) {
-    m_layoutObject.paint(paintInfo, paintOffset);
+  if (paint_info.phase == kPaintPhaseSelection ||
+      paint_info.phase == kPaintPhaseTextClip) {
+    layout_object_.Paint(paint_info, paint_offset);
     return;
   }
 
-  if (paintInfo.phase != PaintPhaseForeground)
+  if (paint_info.phase != kPaintPhaseForeground)
     return;
 
-  PaintInfo info(paintInfo);
-  info.phase = PaintPhaseBlockBackground;
-  m_layoutObject.paint(info, paintOffset);
-  info.phase = PaintPhaseFloat;
-  m_layoutObject.paint(info, paintOffset);
-  info.phase = PaintPhaseForeground;
-  m_layoutObject.paint(info, paintOffset);
-  info.phase = PaintPhaseOutline;
-  m_layoutObject.paint(info, paintOffset);
+  PaintInfo info(paint_info);
+  info.phase = kPaintPhaseBlockBackground;
+  layout_object_.Paint(info, paint_offset);
+  info.phase = kPaintPhaseFloat;
+  layout_object_.Paint(info, paint_offset);
+  info.phase = kPaintPhaseForeground;
+  layout_object_.Paint(info, paint_offset);
+  info.phase = kPaintPhaseOutline;
+  layout_object_.Paint(info, paint_offset);
 }
 
 #if DCHECK_IS_ON()
-void ObjectPainter::doCheckPaintOffset(const PaintInfo& paintInfo,
-                                       const LayoutPoint& paintOffset) {
+void ObjectPainter::DoCheckPaintOffset(const PaintInfo& paint_info,
+                                       const LayoutPoint& paint_offset) {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   // TODO(pdr): Let painter and paint property tree builder generate the same
   // paint offset for LayoutScrollbarPart. crbug.com/664249.
-  if (m_layoutObject.isLayoutScrollbarPart())
+  if (layout_object_.IsLayoutScrollbarPart())
     return;
 
-  LayoutPoint adjustedPaintOffset = paintOffset;
-  if (m_layoutObject.isBox())
-    adjustedPaintOffset += toLayoutBox(m_layoutObject).location();
-  DCHECK(m_layoutObject.paintOffset() == adjustedPaintOffset)
-      << " Paint offset mismatch: " << m_layoutObject.debugName()
+  LayoutPoint adjusted_paint_offset = paint_offset;
+  if (layout_object_.IsBox())
+    adjusted_paint_offset += ToLayoutBox(layout_object_).Location();
+  DCHECK(layout_object_.PaintOffset() == adjusted_paint_offset)
+      << " Paint offset mismatch: " << layout_object_.DebugName()
       << " from PaintPropertyTreeBuilder: "
-      << m_layoutObject.paintOffset().toString()
-      << " from painter: " << adjustedPaintOffset.toString();
+      << layout_object_.PaintOffset().ToString()
+      << " from painter: " << adjusted_paint_offset.ToString();
 }
 #endif
 

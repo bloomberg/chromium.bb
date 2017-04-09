@@ -8,8 +8,8 @@
 namespace blink {
 
 enum class SecurityViolationReportingPolicy {
-  SuppressReporting,
-  Report,
+  kSuppressReporting,
+  kReport,
 };
 
 }  // namespace blink

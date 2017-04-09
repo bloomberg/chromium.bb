@@ -27,7 +27,7 @@ struct CONTENT_EXPORT MHTMLGenerationParams {
   // cause the generator to fail or silently ignore resources if the
   // Cache-Control header is used.
   blink::WebFrameSerializerCacheControlPolicy cache_control_policy =
-      blink::WebFrameSerializerCacheControlPolicy::None;
+      blink::WebFrameSerializerCacheControlPolicy::kNone;
 
   // Removes popups that could obstruct the user's view of normal content.
   bool remove_popup_overlay = false;

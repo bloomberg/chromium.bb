@@ -56,20 +56,19 @@ class CONTENT_EXPORT WebURLLoaderImpl
       blink::WebURLRequest::ServiceWorkerMode service_worker_mode);
 
   // WebURLLoader methods:
-  void loadSynchronously(const blink::WebURLRequest& request,
+  void LoadSynchronously(const blink::WebURLRequest& request,
                          blink::WebURLResponse& response,
                          blink::WebURLError& error,
                          blink::WebData& data,
                          int64_t& encoded_data_length,
                          int64_t& encoded_body_length) override;
-  void loadAsynchronously(
-      const blink::WebURLRequest& request,
-      blink::WebURLLoaderClient* client) override;
-  void cancel() override;
-  void setDefersLoading(bool value) override;
-  void didChangePriority(blink::WebURLRequest::Priority new_priority,
+  void LoadAsynchronously(const blink::WebURLRequest& request,
+                          blink::WebURLLoaderClient* client) override;
+  void Cancel() override;
+  void SetDefersLoading(bool value) override;
+  void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
-  void setLoadingTaskRunner(
+  void SetLoadingTaskRunner(
       base::SingleThreadTaskRunner* loading_task_runner) override;
 
  private:

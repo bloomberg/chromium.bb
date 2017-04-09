@@ -38,50 +38,50 @@ class StyleImage;
 
 class CSSImageSetValue : public CSSValueList {
  public:
-  static CSSImageSetValue* create() { return new CSSImageSetValue(); }
+  static CSSImageSetValue* Create() { return new CSSImageSetValue(); }
   ~CSSImageSetValue();
 
-  bool isCachePending(float deviceScaleFactor) const;
-  StyleImage* cachedImage(float deviceScaleFactor) const;
-  StyleImage* cacheImage(
+  bool IsCachePending(float device_scale_factor) const;
+  StyleImage* CachedImage(float device_scale_factor) const;
+  StyleImage* CacheImage(
       const Document&,
-      float deviceScaleFactor,
-      CrossOriginAttributeValue = CrossOriginAttributeNotSet);
+      float device_scale_factor,
+      CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
   struct ImageWithScale {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    String imageURL;
+    String image_url;
     Referrer referrer;
-    float scaleFactor;
+    float scale_factor;
   };
 
-  CSSImageSetValue* valueWithURLsMadeAbsolute();
+  CSSImageSetValue* ValueWithURLsMadeAbsolute();
 
-  bool hasFailedOrCanceledSubresources() const;
+  bool HasFailedOrCanceledSubresources() const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  protected:
-  ImageWithScale bestImageForScaleFactor(float scaleFactor);
+  ImageWithScale BestImageForScaleFactor(float scale_factor);
 
  private:
   CSSImageSetValue();
 
-  void fillImageSet();
-  static inline bool compareByScaleFactor(ImageWithScale first,
+  void FillImageSet();
+  static inline bool CompareByScaleFactor(ImageWithScale first,
                                           ImageWithScale second) {
-    return first.scaleFactor < second.scaleFactor;
+    return first.scale_factor < second.scale_factor;
   }
 
-  float m_cachedScaleFactor;
-  Member<StyleImage> m_cachedImage;
+  float cached_scale_factor_;
+  Member<StyleImage> cached_image_;
 
-  Vector<ImageWithScale> m_imagesInSet;
+  Vector<ImageWithScale> images_in_set_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageSetValue, isImageSetValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageSetValue, IsImageSetValue());
 
 }  // namespace blink
 

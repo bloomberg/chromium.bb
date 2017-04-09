@@ -39,39 +39,39 @@ class StyleResolverState;
 class CachedMatchedProperties final
     : public GarbageCollectedFinalized<CachedMatchedProperties> {
  public:
-  HeapVector<MatchedProperties> matchedProperties;
-  RefPtr<ComputedStyle> computedStyle;
-  RefPtr<ComputedStyle> parentComputedStyle;
+  HeapVector<MatchedProperties> matched_properties;
+  RefPtr<ComputedStyle> computed_style;
+  RefPtr<ComputedStyle> parent_computed_style;
 
-  void set(const ComputedStyle&,
-           const ComputedStyle& parentStyle,
+  void Set(const ComputedStyle&,
+           const ComputedStyle& parent_style,
            const MatchedPropertiesVector&);
-  void clear();
-  DEFINE_INLINE_TRACE() { visitor->trace(matchedProperties); }
+  void Clear();
+  DEFINE_INLINE_TRACE() { visitor->Trace(matched_properties); }
 };
 
 // Specialize the HashTraits for CachedMatchedProperties to check for dead
 // entries in the MatchedPropertiesCache.
 struct CachedMatchedPropertiesHashTraits
     : HashTraits<Member<CachedMatchedProperties>> {
-  static const WTF::WeakHandlingFlag weakHandlingFlag =
-      WTF::WeakHandlingInCollections;
+  static const WTF::WeakHandlingFlag kWeakHandlingFlag =
+      WTF::kWeakHandlingInCollections;
 
   template <typename VisitorDispatcher>
-  static bool traceInCollection(
+  static bool TraceInCollection(
       VisitorDispatcher visitor,
-      Member<CachedMatchedProperties>& cachedProperties,
+      Member<CachedMatchedProperties>& cached_properties,
       WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
     // Only honor the cache's weakness semantics if the collection is traced
     // with WeakPointersActWeak. Otherwise just trace the cachedProperties
     // strongly, ie. call trace on it.
-    if (cachedProperties && strongify == WTF::WeakPointersActWeak) {
+    if (cached_properties && strongify == WTF::kWeakPointersActWeak) {
       // A given cache entry is only kept alive if none of the MatchedProperties
       // in the CachedMatchedProperties value contain a dead "properties" field.
       // If there is a dead field the entire cache entry is removed.
-      for (const auto& matchedProperties :
-           cachedProperties->matchedProperties) {
-        if (!ThreadHeap::isHeapObjectAlive(matchedProperties.properties)) {
+      for (const auto& matched_properties :
+           cached_properties->matched_properties) {
+        if (!ThreadHeap::IsHeapObjectAlive(matched_properties.properties)) {
           // For now report the cache entry as dead. This might not
           // be the final result if in a subsequent call for this entry,
           // the "properties" field has been marked via another path.
@@ -84,8 +84,8 @@ struct CachedMatchedPropertiesHashTraits
     // FIXME: traceInCollection is also called from WeakProcessing to check if
     // the entry is dead.  Avoid calling trace in that case by only calling
     // trace when cachedProperties is not yet marked.
-    if (!ThreadHeap::isHeapObjectAlive(cachedProperties))
-      visitor->trace(cachedProperties);
+    if (!ThreadHeap::IsHeapObjectAlive(cached_properties))
+      visitor->Trace(cached_properties);
     return false;
   }
 };
@@ -96,20 +96,20 @@ class MatchedPropertiesCache {
 
  public:
   MatchedPropertiesCache();
-  ~MatchedPropertiesCache() { DCHECK(m_cache.isEmpty()); }
+  ~MatchedPropertiesCache() { DCHECK(cache_.IsEmpty()); }
 
-  const CachedMatchedProperties* find(unsigned hash,
+  const CachedMatchedProperties* Find(unsigned hash,
                                       const StyleResolverState&,
                                       const MatchedPropertiesVector&);
-  void add(const ComputedStyle&,
-           const ComputedStyle& parentStyle,
+  void Add(const ComputedStyle&,
+           const ComputedStyle& parent_style,
            unsigned hash,
            const MatchedPropertiesVector&);
 
-  void clear();
-  void clearViewportDependent();
+  void Clear();
+  void ClearViewportDependent();
 
-  static bool isCacheable(const StyleResolverState&);
+  static bool IsCacheable(const StyleResolverState&);
 
   DECLARE_TRACE();
 
@@ -119,7 +119,7 @@ class MatchedPropertiesCache {
                             DefaultHash<unsigned>::Hash,
                             HashTraits<unsigned>,
                             CachedMatchedPropertiesHashTraits>;
-  Cache m_cache;
+  Cache cache_;
 };
 
 }  // namespace blink

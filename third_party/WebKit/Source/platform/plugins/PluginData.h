@@ -52,32 +52,32 @@ class PLATFORM_EXPORT PluginData : public RefCounted<PluginData> {
   WTF_MAKE_NONCOPYABLE(PluginData);
 
  public:
-  static PassRefPtr<PluginData> create(SecurityOrigin* mainFrameOrigin) {
-    return adoptRef(new PluginData(mainFrameOrigin));
+  static PassRefPtr<PluginData> Create(SecurityOrigin* main_frame_origin) {
+    return AdoptRef(new PluginData(main_frame_origin));
   }
 
-  const Vector<PluginInfo>& plugins() const { return m_plugins; }
-  const Vector<MimeClassInfo>& mimes() const { return m_mimes; }
-  const Vector<size_t>& mimePluginIndices() const {
-    return m_mimePluginIndices;
+  const Vector<PluginInfo>& Plugins() const { return plugins_; }
+  const Vector<MimeClassInfo>& Mimes() const { return mimes_; }
+  const Vector<size_t>& MimePluginIndices() const {
+    return mime_plugin_indices_;
   }
-  const SecurityOrigin* origin() const { return m_mainFrameOrigin.get(); }
+  const SecurityOrigin* Origin() const { return main_frame_origin_.Get(); }
 
-  bool supportsMimeType(const String& mimeType) const;
-  String pluginNameForMimeType(const String& mimeType) const;
+  bool SupportsMimeType(const String& mime_type) const;
+  String PluginNameForMimeType(const String& mime_type) const;
 
   // refreshBrowserSidePluginCache doesn't update existent instances of
   // PluginData.
-  static void refreshBrowserSidePluginCache();
+  static void RefreshBrowserSidePluginCache();
 
  private:
-  explicit PluginData(SecurityOrigin* mainFrameOrigin);
-  const PluginInfo* pluginInfoForMimeType(const String& mimeType) const;
+  explicit PluginData(SecurityOrigin* main_frame_origin);
+  const PluginInfo* PluginInfoForMimeType(const String& mime_type) const;
 
-  Vector<PluginInfo> m_plugins;
-  Vector<MimeClassInfo> m_mimes;
-  Vector<size_t> m_mimePluginIndices;
-  RefPtr<SecurityOrigin> m_mainFrameOrigin;
+  Vector<PluginInfo> plugins_;
+  Vector<MimeClassInfo> mimes_;
+  Vector<size_t> mime_plugin_indices_;
+  RefPtr<SecurityOrigin> main_frame_origin_;
 };
 
 }  // namespace blink

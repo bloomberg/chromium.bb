@@ -63,91 +63,94 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   virtual ~ServiceWorkerGlobalScopeClient() {}
 
   // Called from ServiceWorkerClients.
-  virtual void getClient(const WebString&,
+  virtual void GetClient(const WebString&,
                          std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void getClients(
+  virtual void GetClients(
       const WebServiceWorkerClientQueryOptions&,
       std::unique_ptr<WebServiceWorkerClientsCallbacks>) = 0;
-  virtual void openWindow(const WebURL&,
+  virtual void OpenWindow(const WebURL&,
                           std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void setCachedMetadata(const WebURL&, const char*, size_t) = 0;
-  virtual void clearCachedMetadata(const WebURL&) = 0;
+  virtual void SetCachedMetadata(const WebURL&, const char*, size_t) = 0;
+  virtual void ClearCachedMetadata(const WebURL&) = 0;
 
-  virtual WebURL scope() const = 0;
+  virtual WebURL Scope() const = 0;
 
-  virtual void didHandleActivateEvent(int eventID,
+  virtual void DidHandleActivateEvent(int event_id,
                                       WebServiceWorkerEventResult,
-                                      double eventDispatchTime) = 0;
-  virtual void didHandleBackgroundFetchAbortEvent(int eventID,
-                                                  WebServiceWorkerEventResult,
-                                                  double eventDispatchTime) = 0;
-  virtual void didHandleBackgroundFetchClickEvent(int eventID,
-                                                  WebServiceWorkerEventResult,
-                                                  double eventDispatchTime) = 0;
-  virtual void didHandleBackgroundFetchFailEvent(int eventID,
-                                                 WebServiceWorkerEventResult,
-                                                 double eventDispatchTime) = 0;
-  virtual void didHandleBackgroundFetchedEvent(int eventID,
+                                      double event_dispatch_time) = 0;
+  virtual void DidHandleBackgroundFetchAbortEvent(
+      int event_id,
+      WebServiceWorkerEventResult,
+      double event_dispatch_time) = 0;
+  virtual void DidHandleBackgroundFetchClickEvent(
+      int event_id,
+      WebServiceWorkerEventResult,
+      double event_dispatch_time) = 0;
+  virtual void DidHandleBackgroundFetchFailEvent(
+      int event_id,
+      WebServiceWorkerEventResult,
+      double event_dispatch_time) = 0;
+  virtual void DidHandleBackgroundFetchedEvent(int event_id,
                                                WebServiceWorkerEventResult,
-                                               double eventDispatchTime) = 0;
-  virtual void didHandleExtendableMessageEvent(int eventID,
+                                               double event_dispatch_time) = 0;
+  virtual void DidHandleExtendableMessageEvent(int event_id,
                                                WebServiceWorkerEventResult,
-                                               double eventDispatchTime) = 0;
+                                               double event_dispatch_time) = 0;
   // Calling respondToFetchEvent without response means no response was
   // provided by the service worker in the fetch events, so fallback to native.
-  virtual void respondToFetchEvent(int fetchEventID,
-                                   double eventDispatchTime) = 0;
-  virtual void respondToFetchEvent(int fetchEventID,
+  virtual void RespondToFetchEvent(int fetch_event_id,
+                                   double event_dispatch_time) = 0;
+  virtual void RespondToFetchEvent(int fetch_event_id,
                                    const WebServiceWorkerResponse&,
-                                   double eventDispatchTime) = 0;
-  virtual void respondToPaymentRequestEvent(int eventID,
+                                   double event_dispatch_time) = 0;
+  virtual void RespondToPaymentRequestEvent(int event_id,
                                             const WebPaymentAppResponse&,
-                                            double eventDispatchTime) = 0;
-  virtual void didHandleFetchEvent(int fetchEventID,
+                                            double event_dispatch_time) = 0;
+  virtual void DidHandleFetchEvent(int fetch_event_id,
                                    WebServiceWorkerEventResult,
-                                   double eventDispatchTime) = 0;
-  virtual void didHandleInstallEvent(int installEventID,
+                                   double event_dispatch_time) = 0;
+  virtual void DidHandleInstallEvent(int install_event_id,
                                      WebServiceWorkerEventResult,
-                                     double eventDispatchTime) = 0;
-  virtual void didHandleNotificationClickEvent(int eventID,
+                                     double event_dispatch_time) = 0;
+  virtual void DidHandleNotificationClickEvent(int event_id,
                                                WebServiceWorkerEventResult,
-                                               double eventDispatchTime) = 0;
-  virtual void didHandleNotificationCloseEvent(int eventID,
+                                               double event_dispatch_time) = 0;
+  virtual void DidHandleNotificationCloseEvent(int event_id,
                                                WebServiceWorkerEventResult,
-                                               double eventDispatchTime) = 0;
-  virtual void didHandlePushEvent(int pushEventID,
+                                               double event_dispatch_time) = 0;
+  virtual void DidHandlePushEvent(int push_event_id,
                                   WebServiceWorkerEventResult,
-                                  double eventDispatchTime) = 0;
-  virtual void didHandleSyncEvent(int syncEventID,
+                                  double event_dispatch_time) = 0;
+  virtual void DidHandleSyncEvent(int sync_event_id,
                                   WebServiceWorkerEventResult,
-                                  double eventDispatchTime) = 0;
-  virtual void didHandlePaymentRequestEvent(int paymentRequestEventID,
+                                  double event_dispatch_time) = 0;
+  virtual void DidHandlePaymentRequestEvent(int payment_request_event_id,
                                             WebServiceWorkerEventResult,
-                                            double eventDispatchTime) = 0;
-  virtual void postMessageToClient(const WebString& clientUUID,
+                                            double event_dispatch_time) = 0;
+  virtual void PostMessageToClient(const WebString& client_uuid,
                                    const WebString& message,
                                    WebMessagePortChannelArray) = 0;
-  virtual void skipWaiting(
+  virtual void SkipWaiting(
       std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) = 0;
-  virtual void claim(
+  virtual void Claim(
       std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) = 0;
-  virtual void focus(const WebString& clientUUID,
+  virtual void Focus(const WebString& client_uuid,
                      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void navigate(const WebString& clientUUID,
+  virtual void Navigate(const WebString& client_uuid,
                         const WebURL&,
                         std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void registerForeignFetchScopes(
-      const WebVector<WebURL>& subScopes,
+  virtual void RegisterForeignFetchScopes(
+      const WebVector<WebURL>& sub_scopes,
       const WebVector<WebSecurityOrigin>&) = 0;
 
-  static const char* supplementName();
-  static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);
+  static const char* SupplementName();
+  static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);
 
  protected:
   ServiceWorkerGlobalScopeClient() {}
 };
 
-MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(
+MODULES_EXPORT void ProvideServiceWorkerGlobalScopeClientToWorker(
     WorkerClients*,
     ServiceWorkerGlobalScopeClient*);
 

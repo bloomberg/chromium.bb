@@ -47,7 +47,7 @@ class CORE_EXPORT TraceWrapperBase {
 
  public:
   TraceWrapperBase() = default;
-  virtual bool isScriptWrappable() const { return false; }
+  virtual bool IsScriptWrappable() const { return false; }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS(){};
 };
@@ -64,10 +64,10 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
  public:
   ScriptWrappable() {}
 
-  bool isScriptWrappable() const override { return true; }
+  bool IsScriptWrappable() const override { return true; }
 
   template <typename T>
-  T* toImpl() {
+  T* ToImpl() {
     // All ScriptWrappables are managed by the Blink GC heap; check that
     // |T| is a garbage collected type.
     static_assert(
@@ -90,48 +90,48 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
   // Returns the WrapperTypeInfo of the instance.
   //
   // This method must be overridden by DEFINE_WRAPPERTYPEINFO macro.
-  virtual const WrapperTypeInfo* wrapperTypeInfo() const = 0;
+  virtual const WrapperTypeInfo* GetWrapperTypeInfo() const = 0;
 
   // Creates and returns a new wrapper object.
-  virtual v8::Local<v8::Object> wrap(v8::Isolate*,
-                                     v8::Local<v8::Object> creationContext);
+  virtual v8::Local<v8::Object> Wrap(v8::Isolate*,
+                                     v8::Local<v8::Object> creation_context);
 
   // Associates the instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns the wrapper already associated
   // or |wrapper| if not yet associated.
   // The caller should always use the returned value rather than |wrapper|.
-  WARN_UNUSED_RESULT virtual v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT virtual v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper);
 
   // Returns true if the instance needs to be kept alive even when the
   // instance is unreachable from JavaScript.
-  virtual bool hasPendingActivity() const { return false; }
+  virtual bool HasPendingActivity() const { return false; }
 
   // Associates this instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns true if the given wrapper is
   // associated with this instance, or false if this instance is already
   // associated with a wrapper.  In the latter case, |wrapper| will be updated
   // to the existing wrapper.
-  WARN_UNUSED_RESULT bool setWrapper(v8::Isolate* isolate,
-                                     const WrapperTypeInfo* wrapperTypeInfo,
+  WARN_UNUSED_RESULT bool SetWrapper(v8::Isolate* isolate,
+                                     const WrapperTypeInfo* wrapper_type_info,
                                      v8::Local<v8::Object>& wrapper) {
     ASSERT(!wrapper.IsEmpty());
-    if (UNLIKELY(containsWrapper())) {
-      wrapper = mainWorldWrapper(isolate);
+    if (UNLIKELY(ContainsWrapper())) {
+      wrapper = MainWorldWrapper(isolate);
       return false;
     }
-    m_mainWorldWrapper.Reset(isolate, wrapper);
-    wrapperTypeInfo->configureWrapper(&m_mainWorldWrapper);
-    m_mainWorldWrapper.SetWeak();
-    ASSERT(containsWrapper());
-    ScriptWrappableVisitor::writeBarrier(&m_mainWorldWrapper);
+    main_world_wrapper_.Reset(isolate, wrapper);
+    wrapper_type_info->ConfigureWrapper(&main_world_wrapper_);
+    main_world_wrapper_.SetWeak();
+    ASSERT(ContainsWrapper());
+    ScriptWrappableVisitor::WriteBarrier(&main_world_wrapper_);
     return true;
   }
 
-  bool isEqualTo(const v8::Local<v8::Object>& other) const {
-    return m_mainWorldWrapper == other;
+  bool IsEqualTo(const v8::Local<v8::Object>& other) const {
+    return main_world_wrapper_ == other;
   }
 
   // Provides a way to convert Node* to ScriptWrappable* without including
@@ -149,19 +149,19 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
   //
   // The definition of fromNode is placed in Node.h because we'd like to
   // inline calls to fromNode as much as possible.
-  static ScriptWrappable* fromNode(Node*);
+  static ScriptWrappable* FromNode(Node*);
 
-  bool setReturnValue(v8::ReturnValue<v8::Value> returnValue) {
-    returnValue.Set(m_mainWorldWrapper);
-    return containsWrapper();
+  bool SetReturnValue(v8::ReturnValue<v8::Value> return_value) {
+    return_value.Set(main_world_wrapper_);
+    return ContainsWrapper();
   }
 
-  bool containsWrapper() const { return !m_mainWorldWrapper.IsEmpty(); }
+  bool ContainsWrapper() const { return !main_world_wrapper_.IsEmpty(); }
 
   //  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
   //  wrapper in the main world. To mark wrappers in all worlds call
   //  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
-  void markWrapper(const WrapperVisitor*) const;
+  void MarkWrapper(const WrapperVisitor*) const;
 
  private:
   // These classes are exceptionally allowed to use mainWorldWrapper().
@@ -170,18 +170,18 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
   friend class V8HiddenValue;
   friend class V8PrivateProperty;
 
-  v8::Local<v8::Object> mainWorldWrapper(v8::Isolate* isolate) const {
-    return v8::Local<v8::Object>::New(isolate, m_mainWorldWrapper);
+  v8::Local<v8::Object> MainWorldWrapper(v8::Isolate* isolate) const {
+    return v8::Local<v8::Object>::New(isolate, main_world_wrapper_);
   }
 
   // Only use when really necessary, i.e., when passing over this
   // ScriptWrappable's reference to V8. Should only be needed by GC
   // infrastructure.
-  const v8::Persistent<v8::Object>* rawMainWorldWrapper() const {
-    return &m_mainWorldWrapper;
+  const v8::Persistent<v8::Object>* RawMainWorldWrapper() const {
+    return &main_world_wrapper_;
   }
 
-  v8::Persistent<v8::Object> m_mainWorldWrapper;
+  v8::Persistent<v8::Object> main_world_wrapper_;
 };
 
 // Defines 'wrapperTypeInfo' virtual method which returns the WrapperTypeInfo of
@@ -191,14 +191,14 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
 // All the derived classes of ScriptWrappable, regardless of directly or
 // indirectly, must write this macro in the class definition as long as the
 // class has a corresponding .idl file.
-#define DEFINE_WRAPPERTYPEINFO()                            \
- public:                                                    \
-  const WrapperTypeInfo* wrapperTypeInfo() const override { \
-    return &s_wrapperTypeInfo;                              \
-  }                                                         \
-                                                            \
- private:                                                   \
-  static const WrapperTypeInfo& s_wrapperTypeInfo
+#define DEFINE_WRAPPERTYPEINFO()                               \
+ public:                                                       \
+  const WrapperTypeInfo* GetWrapperTypeInfo() const override { \
+    return &wrapper_type_info_;                                \
+  }                                                            \
+                                                               \
+ private:                                                      \
+  static const WrapperTypeInfo& wrapper_type_info_
 
 // Declares 'wrapperTypeInfo' method without definition.
 //
@@ -210,11 +210,11 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
 // after instantiation". So we cannot define X's s_wrapperTypeInfo in generated
 // code by using specialization. Instead, we need to implement wrapperTypeInfo
 // in X's cpp code, and instantiate X, i.e. "template class X;".
-#define DECLARE_WRAPPERTYPEINFO()                          \
- public:                                                   \
-  const WrapperTypeInfo* wrapperTypeInfo() const override; \
-                                                           \
- private:                                                  \
+#define DECLARE_WRAPPERTYPEINFO()                             \
+ public:                                                      \
+  const WrapperTypeInfo* GetWrapperTypeInfo() const override; \
+                                                              \
+ private:                                                     \
   typedef void end_of_define_wrappertypeinfo_not_reached_t
 
 }  // namespace blink

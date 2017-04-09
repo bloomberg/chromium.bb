@@ -20,7 +20,7 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
   WTF_MAKE_NONCOPYABLE(NavigatorBudget);
 
  public:
-  static NavigatorBudget& from(Navigator&);
+  static NavigatorBudget& From(Navigator&);
 
   static BudgetService* budget(Navigator&);
   BudgetService* budget();
@@ -29,9 +29,9 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
 
  private:
   explicit NavigatorBudget(Navigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<BudgetService> m_budget;
+  Member<BudgetService> budget_;
 };
 
 }  // namespace blink

@@ -9,29 +9,29 @@
 
 namespace blink {
 
-Vector<size_t, 8> Hyphenation::hyphenLocations(const StringView& text) const {
-  Vector<size_t, 8> hyphenLocations;
-  size_t hyphenLocation = text.length();
-  if (hyphenLocation <= minimumSuffixLength)
-    return hyphenLocations;
-  hyphenLocation -= minimumSuffixLength;
+Vector<size_t, 8> Hyphenation::HyphenLocations(const StringView& text) const {
+  Vector<size_t, 8> hyphen_locations;
+  size_t hyphen_location = text.length();
+  if (hyphen_location <= kMinimumSuffixLength)
+    return hyphen_locations;
+  hyphen_location -= kMinimumSuffixLength;
 
-  while ((hyphenLocation = lastHyphenLocation(text, hyphenLocation)) >=
-         minimumPrefixLength)
-    hyphenLocations.push_back(hyphenLocation);
+  while ((hyphen_location = LastHyphenLocation(text, hyphen_location)) >=
+         kMinimumPrefixLength)
+    hyphen_locations.push_back(hyphen_location);
 
-  return hyphenLocations;
+  return hyphen_locations;
 }
 
-int Hyphenation::minimumPrefixWidth(const Font& font) {
+int Hyphenation::MinimumPrefixWidth(const Font& font) {
   // If the maximum width available for the prefix before the hyphen is small,
   // then it is very unlikely that an hyphenation opportunity exists, so do not
   // bother to look for it.  These are heuristic numbers for performance added
   // in http://wkb.ug/45606
-  const int minimumPrefixWidthNumerator = 5;
-  const int minimumPrefixWidthDenominator = 4;
-  return font.getFontDescription().computedPixelSize() *
-         minimumPrefixWidthNumerator / minimumPrefixWidthDenominator;
+  const int kMinimumPrefixWidthNumerator = 5;
+  const int kMinimumPrefixWidthDenominator = 4;
+  return font.GetFontDescription().ComputedPixelSize() *
+         kMinimumPrefixWidthNumerator / kMinimumPrefixWidthDenominator;
 }
 
 }  // namespace blink

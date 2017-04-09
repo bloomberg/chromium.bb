@@ -12,13 +12,13 @@ static NEVER_INLINE void ICUOutOfMemory() {
   OOM_CRASH();
 }
 
-void ICUError::handleFailure() {
-  switch (m_error) {
+void ICUError::HandleFailure() {
+  switch (error_) {
     case U_MEMORY_ALLOCATION_ERROR:
       ICUOutOfMemory();
       break;
     case U_ILLEGAL_ARGUMENT_ERROR:
-      CHECK(false) << m_error;
+      CHECK(false) << error_;
       break;
     default:
       break;

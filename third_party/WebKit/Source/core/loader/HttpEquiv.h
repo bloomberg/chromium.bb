@@ -25,26 +25,26 @@ class HttpEquiv {
   STATIC_ONLY(HttpEquiv);
 
  public:
-  static void process(Document&,
+  static void Process(Document&,
                       const AtomicString& equiv,
                       const AtomicString& content,
-                      bool inDocumentHeadElement,
+                      bool in_document_head_element,
                       Element*);
 
  private:
-  static void processHttpEquivDefaultStyle(Document&,
+  static void ProcessHttpEquivDefaultStyle(Document&,
                                            const AtomicString& content);
-  static void processHttpEquivRefresh(Document&,
+  static void ProcessHttpEquivRefresh(Document&,
                                       const AtomicString& content,
                                       Element*);
-  static void processHttpEquivSetCookie(Document&,
+  static void ProcessHttpEquivSetCookie(Document&,
                                         const AtomicString& content,
                                         Element*);
-  static void processHttpEquivContentSecurityPolicy(
+  static void ProcessHttpEquivContentSecurityPolicy(
       Document&,
       const AtomicString& equiv,
       const AtomicString& content);
-  static void processHttpEquivAcceptCH(Document&, const AtomicString& content);
+  static void ProcessHttpEquivAcceptCH(Document&, const AtomicString& content);
 };
 
 }  // namespace blink

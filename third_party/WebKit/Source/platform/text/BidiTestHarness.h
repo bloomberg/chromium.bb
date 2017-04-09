@@ -257,13 +257,13 @@ void Harness<Runner>::parse(std::istream& bidiTestFile) {
       }
 
       if (paragraphDirectionMask & DirectionAutoLTR)
-        m_runner.runTest(testString, reorder, levels, DirectionAutoLTR,
+        m_runner.RunTest(testString, reorder, levels, DirectionAutoLTR,
                          originalLine, lineNumber);
       if (paragraphDirectionMask & DirectionLTR)
-        m_runner.runTest(testString, reorder, levels, DirectionLTR,
+        m_runner.RunTest(testString, reorder, levels, DirectionLTR,
                          originalLine, lineNumber);
       if (paragraphDirectionMask & DirectionRTL)
-        m_runner.runTest(testString, reorder, levels, DirectionRTL,
+        m_runner.RunTest(testString, reorder, levels, DirectionRTL,
                          originalLine, lineNumber);
     }
   }
@@ -401,7 +401,7 @@ void CharacterHarness<Runner>::parse(std::istream& bidiTestFile) {
       continue;
     }
 
-    m_runner.runTest(testString, visualOrdering, levels, paragraphDirection,
+    m_runner.RunTest(testString, visualOrdering, levels, paragraphDirection,
                      originalLine, lineNumber);
   }
 }

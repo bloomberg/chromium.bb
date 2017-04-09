@@ -38,67 +38,68 @@ struct ExpectedTextRunSize {
   float float2;
   float float3;
   uint32_t bitfields : 10;
-  TabSize tabSize;
+  TabSize tab_size;
 };
 
 static_assert(sizeof(TextRun) == sizeof(ExpectedTextRunSize),
               "TextRun should have expected size");
 
-void TextRun::setText(const String& string) {
-  m_len = string.length();
-  if (!m_len) {
-    m_data.characters8 = 0;
-    m_is8Bit = true;
+void TextRun::SetText(const String& string) {
+  len_ = string.length();
+  if (!len_) {
+    data_.characters8 = 0;
+    is8_bit_ = true;
     return;
   }
-  m_is8Bit = string.is8Bit();
-  if (m_is8Bit)
-    m_data.characters8 = string.characters8();
+  is8_bit_ = string.Is8Bit();
+  if (is8_bit_)
+    data_.characters8 = string.Characters8();
   else
-    m_data.characters16 = string.characters16();
+    data_.characters16 = string.Characters16();
 }
 
-std::unique_ptr<UChar[]> TextRun::normalizedUTF16(
-    unsigned* resultLength) const {
+std::unique_ptr<UChar[]> TextRun::NormalizedUTF16(
+    unsigned* result_length) const {
   const UChar* source;
-  String stringFor8BitRun;
-  if (is8Bit()) {
-    stringFor8BitRun = String::make16BitFrom8BitSource(characters8(), length());
-    source = stringFor8BitRun.characters16();
+  String string_for8_bit_run;
+  if (Is8Bit()) {
+    string_for8_bit_run =
+        String::Make16BitFrom8BitSource(Characters8(), length());
+    source = string_for8_bit_run.Characters16();
   } else {
-    source = characters16();
+    source = Characters16();
   }
 
-  UChar* buffer = new UChar[m_len + 1];
-  *resultLength = 0;
+  UChar* buffer = new UChar[len_ + 1];
+  *result_length = 0;
 
   bool error = false;
   unsigned position = 0;
-  while (position < m_len) {
+  while (position < len_) {
     UChar32 character;
-    U16_NEXT(source, position, m_len, character);
+    U16_NEXT(source, position, len_, character);
     // Don't normalize tabs as they are not treated as spaces for word-end.
-    if (normalizeSpace() &&
-        Character::isNormalizedCanvasSpaceCharacter(character)) {
-      character = spaceCharacter;
-    } else if (Character::treatAsSpace(character) &&
-               character != noBreakSpaceCharacter) {
-      character = spaceCharacter;
+    if (NormalizeSpace() &&
+        Character::IsNormalizedCanvasSpaceCharacter(character)) {
+      character = kSpaceCharacter;
+    } else if (Character::TreatAsSpace(character) &&
+               character != kNoBreakSpaceCharacter) {
+      character = kSpaceCharacter;
     } else if (!RuntimeEnabledFeatures::
                    renderUnicodeControlCharactersEnabled() &&
-               Character::legacyTreatAsZeroWidthSpaceInComplexScript(
+               Character::LegacyTreatAsZeroWidthSpaceInComplexScript(
                    character)) {
-      character = zeroWidthSpaceCharacter;
-    } else if (Character::treatAsZeroWidthSpaceInComplexScript(character)) {
-      character = zeroWidthSpaceCharacter;
+      character = kZeroWidthSpaceCharacter;
+    } else if (Character::TreatAsZeroWidthSpaceInComplexScript(character)) {
+      character = kZeroWidthSpaceCharacter;
     }
 
-    U16_APPEND(buffer, *resultLength, m_len, character, error);
+    U16_APPEND(buffer, *result_length, len_, character, error);
     DCHECK(!error);
   }
 
-  DCHECK(*resultLength <= m_len);
-  return wrapArrayUnique(buffer);
+  DCHECK(*result_length <= len_);
+  return WrapArrayUnique(buffer);
 }
 
 }  // namespace blink

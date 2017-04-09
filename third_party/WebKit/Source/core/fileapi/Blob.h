@@ -57,91 +57,93 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Blob* create(ExecutionContext*, ExceptionState&) {
-    return new Blob(BlobDataHandle::create());
+  static Blob* Create(ExecutionContext*, ExceptionState&) {
+    return new Blob(BlobDataHandle::Create());
   }
 
-  static Blob* create(
+  static Blob* Create(
       ExecutionContext*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&,
       const BlobPropertyBag&,
       ExceptionState&);
 
-  static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle) {
-    return new Blob(std::move(blobDataHandle));
+  static Blob* Create(PassRefPtr<BlobDataHandle> blob_data_handle) {
+    return new Blob(std::move(blob_data_handle));
   }
 
-  static Blob* create(const unsigned char* data,
+  static Blob* Create(const unsigned char* data,
                       size_t bytes,
-                      const String& contentType);
+                      const String& content_type);
 
   ~Blob() override;
 
-  virtual unsigned long long size() const { return m_blobDataHandle->size(); }
+  virtual unsigned long long size() const { return blob_data_handle_->size(); }
   virtual Blob* slice(long long start,
                       long long end,
-                      const String& contentType,
+                      const String& content_type,
                       ExceptionState&) const;
 
   // To allow ExceptionState to be passed in last, manually enumerate the
   // optional argument overloads.
-  Blob* slice(ExceptionState& exceptionState) const {
+  Blob* slice(ExceptionState& exception_state) const {
     return slice(0, std::numeric_limits<long long>::max(), String(),
-                 exceptionState);
+                 exception_state);
   }
-  Blob* slice(long long start, ExceptionState& exceptionState) const {
+  Blob* slice(long long start, ExceptionState& exception_state) const {
     return slice(start, std::numeric_limits<long long>::max(), String(),
-                 exceptionState);
+                 exception_state);
   }
   Blob* slice(long long start,
               long long end,
-              ExceptionState& exceptionState) const {
-    return slice(start, end, String(), exceptionState);
+              ExceptionState& exception_state) const {
+    return slice(start, end, String(), exception_state);
   }
 
   virtual void close(ScriptState*, ExceptionState&);
 
-  String type() const { return m_blobDataHandle->type(); }
-  String uuid() const { return m_blobDataHandle->uuid(); }
-  PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
+  String type() const { return blob_data_handle_->GetType(); }
+  String Uuid() const { return blob_data_handle_->Uuid(); }
+  PassRefPtr<BlobDataHandle> GetBlobDataHandle() const {
+    return blob_data_handle_;
+  }
   // True for all File instances, including the user-built ones.
-  virtual bool isFile() const { return false; }
+  virtual bool IsFile() const { return false; }
   // Only true for File instances that are backed by platform files.
-  virtual bool hasBackingFile() const { return false; }
-  bool isClosed() const { return m_isClosed; }
+  virtual bool HasBackingFile() const { return false; }
+  bool isClosed() const { return is_closed_; }
 
   // Used by the JavaScript Blob and File constructors.
-  virtual void appendTo(BlobData&) const;
+  virtual void AppendTo(BlobData&) const;
 
   // URLRegistrable to support PublicURLs.
-  URLRegistry& registry() const final;
+  URLRegistry& Registry() const final;
 
   // ImageBitmapSource implementation
-  bool isBlob() const override { return true; }
+  bool IsBlob() const override { return true; }
 
   DEFINE_INLINE_TRACE() {}
 
  protected:
   explicit Blob(PassRefPtr<BlobDataHandle>);
 
-  static void populateBlobData(
+  static void PopulateBlobData(
       BlobData*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts,
-      bool normalizeLineEndingsToNative);
-  static void clampSliceOffsets(long long size,
+      bool normalize_line_endings_to_native);
+  static void ClampSliceOffsets(long long size,
                                 long long& start,
                                 long long& end);
 
   // Called by the Blob and File constructors when processing the 'type'
   // option per the FileAPI standard. Returns "" if |type| contains any
   // character outside U+0020...U+007E, or |type| ASCII-lowercased otherwise.
-  static String normalizeType(const String& type);
+  static String NormalizeType(const String& type);
 
  private:
   Blob();
 
-  RefPtr<BlobDataHandle> m_blobDataHandle;
-  bool m_isClosed;
+  RefPtr<BlobDataHandle> blob_data_handle_;
+  bool is_closed_;
 };
 
 }  // namespace blink

@@ -38,12 +38,12 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
 
   const std::string& buffer() const { return buffer_; }
 
-  void visitHeader(const WebString& name, const WebString& value) override {
+  void VisitHeader(const WebString& name, const WebString& value) override {
     if (!buffer_.empty())
       buffer_.append("\n");
-    buffer_.append(name.utf8());
+    buffer_.append(name.Utf8());
     buffer_.append(": ");
-    buffer_.append(value.utf8());
+    buffer_.append(value.Utf8());
   }
 
  private:
@@ -80,20 +80,20 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
                             const WebURLResponse& response,
                             const DataFromWebURLResponseCallback& callback) {
   ppapi::URLResponseInfoData data;
-  data.url = response.url().string().utf8();
-  data.status_code = response.httpStatusCode();
-  data.status_text = response.httpStatusText().utf8();
+  data.url = response.Url().GetString().Utf8();
+  data.status_code = response.HttpStatusCode();
+  data.status_text = response.HttpStatusText().Utf8();
   if (IsRedirect(data.status_code)) {
     data.redirect_url =
-        response.httpHeaderField(WebString::fromUTF8("Location")).utf8();
+        response.HttpHeaderField(WebString::FromUTF8("Location")).Utf8();
   }
 
   HeaderFlattener flattener;
-  response.visitHTTPHeaderFields(&flattener);
+  response.VisitHTTPHeaderFields(&flattener);
   data.headers = flattener.buffer();
 
-  WebString file_path = response.downloadFilePath();
-  if (!file_path.isEmpty()) {
+  WebString file_path = response.DownloadFilePath();
+  if (!file_path.IsEmpty()) {
     base::FilePath external_path = blink::WebStringToFilePath(file_path);
     // TODO(teravest): Write a utility function to create resource hosts in the
     // renderer and browser.

@@ -42,135 +42,134 @@ class ScopedScrollbarPainter {
   ScopedScrollbarPainter(WebScrollbarThemePainter* painter,
                          WebCanvas* canvas,
                          const WebRect& rect)
-      : m_intRect(IntRect(IntPoint(), IntSize(rect.width, rect.height))),
-        m_builder(m_intRect),
-        m_canvas(canvas),
-        m_rect(rect) {
-    m_builder.context().setDeviceScaleFactor(painter->deviceScaleFactor());
+      : int_rect_(IntRect(IntPoint(), IntSize(rect.width, rect.height))),
+        builder_(int_rect_),
+        canvas_(canvas),
+        rect_(rect) {
+    builder_.Context().SetDeviceScaleFactor(painter->DeviceScaleFactor());
   }
-  GraphicsContext& context() { return m_builder.context(); }
-  const IntRect& rect() const { return m_intRect; }
+  GraphicsContext& Context() { return builder_.Context(); }
+  const IntRect& Rect() const { return int_rect_; }
 
   ~ScopedScrollbarPainter() {
-    m_canvas->save();
-    m_canvas->translate(m_rect.x, m_rect.y);
-    m_canvas->PlaybackPaintRecord(m_builder.endRecording());
-    m_canvas->restore();
+    canvas_->save();
+    canvas_->translate(rect_.x, rect_.y);
+    canvas_->PlaybackPaintRecord(builder_.EndRecording());
+    canvas_->restore();
   }
 
  protected:
-  IntRect m_intRect;
-  PaintRecordBuilder m_builder;
-  WebCanvas* m_canvas;
-  const WebRect& m_rect;
+  IntRect int_rect_;
+  PaintRecordBuilder builder_;
+  WebCanvas* canvas_;
+  const WebRect& rect_;
 };
 
-void WebScrollbarThemePainter::assign(const WebScrollbarThemePainter& painter) {
+void WebScrollbarThemePainter::Assign(const WebScrollbarThemePainter& painter) {
   // This is a pointer to a static object, so no ownership transferral.
-  m_theme = painter.m_theme;
-  m_scrollbar = painter.m_scrollbar;
-  m_deviceScaleFactor = painter.m_deviceScaleFactor;
+  theme_ = painter.theme_;
+  scrollbar_ = painter.scrollbar_;
+  device_scale_factor_ = painter.device_scale_factor_;
 }
 
-void WebScrollbarThemePainter::reset() {
-  m_scrollbar = nullptr;
+void WebScrollbarThemePainter::Reset() {
+  scrollbar_ = nullptr;
 }
 
-void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintScrollbarBackground(WebCanvas* canvas,
                                                         const WebRect& rect) {
   SkRect clip = SkRect::MakeXYWH(rect.x, rect.y, rect.width, rect.height);
   canvas->clipRect(clip);
 
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintScrollbarBackground(painter.context(), *m_scrollbar);
+  theme_->PaintScrollbarBackground(painter.Context(), *scrollbar_);
 }
 
-void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintTrackBackground(WebCanvas* canvas,
                                                     const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintTrackBackground(painter.context(), *m_scrollbar,
-                                painter.rect());
-  if (!m_theme->shouldRepaintAllPartsOnInvalidation())
-    m_scrollbar->clearTrackNeedsRepaint();
+  theme_->PaintTrackBackground(painter.Context(), *scrollbar_, painter.Rect());
+  if (!theme_->ShouldRepaintAllPartsOnInvalidation())
+    scrollbar_->ClearTrackNeedsRepaint();
 }
 
-void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintBackTrackPart(WebCanvas* canvas,
                                                   const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintTrackPiece(painter.context(), *m_scrollbar, painter.rect(),
-                           BackTrackPart);
+  theme_->PaintTrackPiece(painter.Context(), *scrollbar_, painter.Rect(),
+                          kBackTrackPart);
 }
 
-void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintForwardTrackPart(WebCanvas* canvas,
                                                      const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintTrackPiece(painter.context(), *m_scrollbar, painter.rect(),
-                           ForwardTrackPart);
+  theme_->PaintTrackPiece(painter.Context(), *scrollbar_, painter.Rect(),
+                          kForwardTrackPart);
 }
 
-void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintBackButtonStart(WebCanvas* canvas,
                                                     const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintButton(painter.context(), *m_scrollbar, painter.rect(),
-                       BackButtonStartPart);
+  theme_->PaintButton(painter.Context(), *scrollbar_, painter.Rect(),
+                      kBackButtonStartPart);
 }
 
-void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintBackButtonEnd(WebCanvas* canvas,
                                                   const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintButton(painter.context(), *m_scrollbar, painter.rect(),
-                       BackButtonEndPart);
+  theme_->PaintButton(painter.Context(), *scrollbar_, painter.Rect(),
+                      kBackButtonEndPart);
 }
 
-void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintForwardButtonStart(WebCanvas* canvas,
                                                        const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintButton(painter.context(), *m_scrollbar, painter.rect(),
-                       ForwardButtonStartPart);
+  theme_->PaintButton(painter.Context(), *scrollbar_, painter.Rect(),
+                      kForwardButtonStartPart);
 }
 
-void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintForwardButtonEnd(WebCanvas* canvas,
                                                      const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintButton(painter.context(), *m_scrollbar, painter.rect(),
-                       ForwardButtonEndPart);
+  theme_->PaintButton(painter.Context(), *scrollbar_, painter.Rect(),
+                      kForwardButtonEndPart);
 }
 
-void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintTickmarks(WebCanvas* canvas,
                                               const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintTickmarks(painter.context(), *m_scrollbar, painter.rect());
+  theme_->PaintTickmarks(painter.Context(), *scrollbar_, painter.Rect());
 }
 
-void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas,
+void WebScrollbarThemePainter::PaintThumb(WebCanvas* canvas,
                                           const WebRect& rect) {
   ScopedScrollbarPainter painter(this, canvas, rect);
-  m_theme->paintThumb(painter.context(), *m_scrollbar, painter.rect());
-  if (!m_theme->shouldRepaintAllPartsOnInvalidation())
-    m_scrollbar->clearThumbNeedsRepaint();
+  theme_->PaintThumb(painter.Context(), *scrollbar_, painter.Rect());
+  if (!theme_->ShouldRepaintAllPartsOnInvalidation())
+    scrollbar_->ClearThumbNeedsRepaint();
 }
 
 WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme& theme,
                                                    Scrollbar& scrollbar,
-                                                   float deviceScaleFactor)
-    : m_theme(&theme),
-      m_scrollbar(&scrollbar),
-      m_deviceScaleFactor(deviceScaleFactor) {}
+                                                   float device_scale_factor)
+    : theme_(&theme),
+      scrollbar_(&scrollbar),
+      device_scale_factor_(device_scale_factor) {}
 
-float WebScrollbarThemePainter::thumbOpacity() const {
-  return m_theme->thumbOpacity(*m_scrollbar);
+float WebScrollbarThemePainter::ThumbOpacity() const {
+  return theme_->ThumbOpacity(*scrollbar_);
 }
 
-bool WebScrollbarThemePainter::trackNeedsRepaint() const {
-  return m_scrollbar->trackNeedsRepaint();
+bool WebScrollbarThemePainter::TrackNeedsRepaint() const {
+  return scrollbar_->TrackNeedsRepaint();
 }
 
-bool WebScrollbarThemePainter::thumbNeedsRepaint() const {
-  return m_scrollbar->thumbNeedsRepaint();
+bool WebScrollbarThemePainter::ThumbNeedsRepaint() const {
+  return scrollbar_->ThumbNeedsRepaint();
 }
 
-bool WebScrollbarThemePainter::usesNinePatchThumbResource() const {
-  return m_theme->usesNinePatchThumbResource();
+bool WebScrollbarThemePainter::UsesNinePatchThumbResource() const {
+  return theme_->UsesNinePatchThumbResource();
 }
 
 }  // namespace blink

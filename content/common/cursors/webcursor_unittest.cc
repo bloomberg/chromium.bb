@@ -24,7 +24,7 @@ TEST(WebCursorTest, OKCursorSerialization) {
   // This is a valid custom cursor.
   base::Pickle ok_custom_pickle;
   // Type and hotspots.
-  ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  ok_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   ok_custom_pickle.WriteInt(0);
   ok_custom_pickle.WriteInt(0);
   // X & Y
@@ -46,7 +46,7 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   // This custom cursor has not been send with enough data.
   base::Pickle short_custom_pickle;
   // Type and hotspots.
-  short_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  short_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   short_custom_pickle.WriteInt(0);
   short_custom_pickle.WriteInt(0);
   // X & Y
@@ -63,7 +63,7 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   // This custom cursor has enough data but is too big.
   base::Pickle large_custom_pickle;
   // Type and hotspots.
-  large_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  large_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   large_custom_pickle.WriteInt(0);
   large_custom_pickle.WriteInt(0);
   // X & Y
@@ -82,7 +82,7 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   // This custom cursor uses negative lengths.
   base::Pickle neg_custom_pickle;
   // Type and hotspots.
-  neg_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  neg_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   neg_custom_pickle.WriteInt(0);
   neg_custom_pickle.WriteInt(0);
   // X & Y
@@ -101,7 +101,7 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   // This custom cursor uses zero scale.
   base::Pickle scale_zero_custom_pickle;
   // Type and hotspots.
-  scale_zero_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  scale_zero_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   scale_zero_custom_pickle.WriteInt(0);
   scale_zero_custom_pickle.WriteInt(0);
   // X & Y
@@ -120,7 +120,7 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   // This custom cursor uses tiny scale.
   base::Pickle scale_tiny_custom_pickle;
   // Type and hotspots.
-  scale_tiny_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  scale_tiny_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   scale_tiny_custom_pickle.WriteInt(0);
   scale_tiny_custom_pickle.WriteInt(0);
   // X & Y
@@ -142,7 +142,7 @@ TEST(WebCursorTest, ClampHotspot) {
   // This is a valid custom cursor.
   base::Pickle ok_custom_pickle;
   // Type and hotspots.
-  ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  ok_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   // Hotspot is invalid --- outside the bounds of the image.
   ok_custom_pickle.WriteInt(5);
   ok_custom_pickle.WriteInt(5);
@@ -176,7 +176,7 @@ TEST(WebCursorTest, ClampHotspot) {
 TEST(WebCursorTest, EmptyImage) {
   WebCursor custom_cursor;
   base::Pickle broken_cursor_pickle;
-  broken_cursor_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  broken_cursor_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   // Hotspot is at origin
   broken_cursor_pickle.WriteInt(0);
   broken_cursor_pickle.WriteInt(0);
@@ -201,7 +201,7 @@ TEST(WebCursorTest, Scale2) {
   // This is a valid custom cursor.
   base::Pickle ok_custom_pickle;
   // Type and hotspots.
-  ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  ok_custom_pickle.WriteInt(WebCursorInfo::kTypeCustom);
   ok_custom_pickle.WriteInt(0);
   ok_custom_pickle.WriteInt(0);
   // X & Y
@@ -225,7 +225,7 @@ TEST(WebCursorTest, AlphaConversion) {
   SkAutoLockPixels bitmap_lock(bitmap);
   *bitmap.getAddr32(0, 0) = testColor;
   WebCursor::CursorInfo cursor_info;
-  cursor_info.type = WebCursorInfo::TypeCustom;
+  cursor_info.type = WebCursorInfo::kTypeCustom;
   cursor_info.custom_image = bitmap;
   cursor_info.image_scale_factor = 1;
   WebCursor custom_cursor;
@@ -282,7 +282,7 @@ TEST(WebCursorTest, CursorScaleFactor) {
 
 TEST(WebCursorTest, UnscaledImageCopy) {
   WebCursor::CursorInfo info;
-  info.type = WebCursorInfo::TypeCustom;
+  info.type = WebCursorInfo::kTypeCustom;
   info.hotspot = gfx::Point(0, 1);
 
   SkImageInfo image_info = SkImageInfo::MakeN32(2, 2, kUnpremul_SkAlphaType);
@@ -326,7 +326,7 @@ void ScaleCursor(float scale_factor, int hotspot_x, int hotspot_y) {
   display.set_device_scale_factor(scale_factor);
 
   WebCursor::CursorInfo info;
-  info.type = WebCursorInfo::TypeCustom;
+  info.type = WebCursorInfo::kTypeCustom;
   info.hotspot = gfx::Point(hotspot_x, hotspot_y);
 
   info.custom_image = SkBitmap();

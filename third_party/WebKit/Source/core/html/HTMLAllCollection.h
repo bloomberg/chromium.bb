@@ -36,10 +36,10 @@ class HTMLAllCollection final : public HTMLCollection {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLAllCollection* create(ContainerNode&, CollectionType);
+  static HTMLAllCollection* Create(ContainerNode&, CollectionType);
   ~HTMLAllCollection() override;
 
-  Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
+  Element* NamedItemWithIndex(const AtomicString& name, unsigned index) const;
   void namedGetter(const AtomicString& name, NodeListOrElement&);
 
  private:
@@ -49,8 +49,8 @@ class HTMLAllCollection final : public HTMLCollection {
 DEFINE_TYPE_CASTS(HTMLAllCollection,
                   LiveNodeListBase,
                   collection,
-                  collection->type() == DocAll,
-                  collection.type() == DocAll);
+                  collection->GetType() == kDocAll,
+                  collection.GetType() == kDocAll);
 
 }  // namespace blink
 

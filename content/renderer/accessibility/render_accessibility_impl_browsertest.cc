@@ -125,8 +125,8 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   // If we post another event but the tree doesn't change,
   // we should only send 1 node to the browser.
   sink_->ClearMessages();
-  WebDocument document = view()->GetWebView()->mainFrame()->document();
-  WebAXObject root_obj = document.accessibilityObject();
+  WebDocument document = view()->GetWebView()->MainFrame()->GetDocument();
+  WebAXObject root_obj = document.AccessibilityObject();
   accessibility->HandleAXEvent(
       root_obj,
       ui::AX_EVENT_LAYOUT_COMPLETE);
@@ -136,15 +136,15 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
     // Make sure it's the root object that was updated.
     AccessibilityHostMsg_EventParams event;
     GetLastAccEvent(&event);
-    EXPECT_EQ(root_obj.axID(), event.update.nodes[0].id);
+    EXPECT_EQ(root_obj.AxID(), event.update.nodes[0].id);
   }
 
   // If we reload the page and send a event, we should send
   // all 4 nodes to the browser. Also double-check that we didn't
   // leak any of the old BrowserTreeNodes.
   LoadHTML(html.c_str());
-  document = view()->GetWebView()->mainFrame()->document();
-  root_obj = document.accessibilityObject();
+  document = view()->GetWebView()->MainFrame()->GetDocument();
+  root_obj = document.AccessibilityObject();
   sink_->ClearMessages();
   accessibility->HandleAXEvent(
       root_obj,
@@ -156,10 +156,10 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   // the root, the whole tree should be updated because we know
   // the browser doesn't have the root element.
   LoadHTML(html.c_str());
-  document = view()->GetWebView()->mainFrame()->document();
-  root_obj = document.accessibilityObject();
+  document = view()->GetWebView()->MainFrame()->GetDocument();
+  root_obj = document.AccessibilityObject();
   sink_->ClearMessages();
-  const WebAXObject& first_child = root_obj.childAt(0);
+  const WebAXObject& first_child = root_obj.ChildAt(0);
   accessibility->HandleAXEvent(
       first_child,
       ui::AX_EVENT_LIVE_REGION_CHANGED);
@@ -187,11 +187,11 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
-  WebDocument document = view()->GetWebView()->mainFrame()->document();
-  WebAXObject root_obj = document.accessibilityObject();
-  WebAXObject node_a = root_obj.childAt(0);
-  WebAXObject node_b = node_a.childAt(0);
-  WebAXObject node_c = node_b.childAt(0);
+  WebDocument document = view()->GetWebView()->MainFrame()->GetDocument();
+  WebAXObject root_obj = document.AccessibilityObject();
+  WebAXObject node_a = root_obj.ChildAt(0);
+  WebAXObject node_b = node_a.ChildAt(0);
+  WebAXObject node_c = node_b.ChildAt(0);
 
   // Hide node 'B' ('C' stays visible).
   ExecuteJavaScriptForTests(
@@ -212,9 +212,9 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
 
   // RenderAccessibilityImpl notices that 'C' is being reparented,
   // so it clears the subtree rooted at 'A', then updates 'A' and then 'C'.
-  EXPECT_EQ(node_a.axID(), event.update.node_id_to_clear);
-  EXPECT_EQ(node_a.axID(), event.update.nodes[0].id);
-  EXPECT_EQ(node_c.axID(), event.update.nodes[1].id);
+  EXPECT_EQ(node_a.AxID(), event.update.node_id_to_clear);
+  EXPECT_EQ(node_a.AxID(), event.update.nodes[0].id);
+  EXPECT_EQ(node_c.AxID(), event.update.nodes[1].id);
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
@@ -245,11 +245,11 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   ExecuteJavaScriptForTests("document.getElementById('B').offsetLeft;");
 
   sink_->ClearMessages();
-  WebDocument document = view()->GetWebView()->mainFrame()->document();
-  WebAXObject root_obj = document.accessibilityObject();
-  WebAXObject node_a = root_obj.childAt(0);
-  WebAXObject node_b = node_a.childAt(0);
-  WebAXObject node_c = node_b.childAt(0);
+  WebDocument document = view()->GetWebView()->MainFrame()->GetDocument();
+  WebAXObject root_obj = document.AccessibilityObject();
+  WebAXObject node_a = root_obj.ChildAt(0);
+  WebAXObject node_b = node_a.ChildAt(0);
+  WebAXObject node_c = node_b.ChildAt(0);
 
   accessibility->HandleAXEvent(
       node_a,
@@ -260,10 +260,10 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   GetLastAccEvent(&event);
 
   ASSERT_EQ(3U, event.update.nodes.size());
-  EXPECT_EQ(node_a.axID(), event.update.node_id_to_clear);
-  EXPECT_EQ(node_a.axID(), event.update.nodes[0].id);
-  EXPECT_EQ(node_b.axID(), event.update.nodes[1].id);
-  EXPECT_EQ(node_c.axID(), event.update.nodes[2].id);
+  EXPECT_EQ(node_a.AxID(), event.update.node_id_to_clear);
+  EXPECT_EQ(node_a.AxID(), event.update.nodes[0].id);
+  EXPECT_EQ(node_b.AxID(), event.update.nodes[1].id);
+  EXPECT_EQ(node_c.AxID(), event.update.nodes[2].id);
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 }
 

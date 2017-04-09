@@ -43,37 +43,37 @@ using ExpressionHeapVector = HeapVector<Member<MediaQueryExp>>;
 
 class CORE_EXPORT MediaQuery : public GarbageCollectedFinalized<MediaQuery> {
  public:
-  enum RestrictorType { Only, Not, None };
+  enum RestrictorType { kOnly, kNot, kNone };
 
-  static MediaQuery* create(RestrictorType,
-                            String mediaType,
+  static MediaQuery* Create(RestrictorType,
+                            String media_type,
                             ExpressionHeapVector);
-  static MediaQuery* createNotAll();
+  static MediaQuery* CreateNotAll();
 
   ~MediaQuery();
 
-  RestrictorType restrictor() const { return m_restrictor; }
-  const ExpressionHeapVector& expressions() const { return m_expressions; }
-  const String& mediaType() const { return m_mediaType; }
+  RestrictorType Restrictor() const { return restrictor_; }
+  const ExpressionHeapVector& Expressions() const { return expressions_; }
+  const String& MediaType() const { return media_type_; }
   bool operator==(const MediaQuery& other) const;
-  String cssText() const;
+  String CssText() const;
 
-  MediaQuery* copy() const { return new MediaQuery(*this); }
+  MediaQuery* Copy() const { return new MediaQuery(*this); }
 
   DECLARE_TRACE();
 
  private:
-  MediaQuery(RestrictorType, String mediaType, ExpressionHeapVector);
+  MediaQuery(RestrictorType, String media_type, ExpressionHeapVector);
   MediaQuery(const MediaQuery&);
 
   MediaQuery& operator=(const MediaQuery&) = delete;
 
-  RestrictorType m_restrictor;
-  String m_mediaType;
-  ExpressionHeapVector m_expressions;
-  String m_serializationCache;
+  RestrictorType restrictor_;
+  String media_type_;
+  ExpressionHeapVector expressions_;
+  String serialization_cache_;
 
-  String serialize() const;
+  String Serialize() const;
 };
 
 }  // namespace blink

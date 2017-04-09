@@ -13,33 +13,33 @@ class CSSRotateInterpolationType : public CSSInterpolationType {
  public:
   CSSRotateInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK_EQ(cssProperty(), CSSPropertyRotate);
+    DCHECK_EQ(CssProperty(), CSSPropertyRotate);
   }
 
-  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
-  PairwiseInterpolationValue maybeMergeSingles(
+  PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;
-  void composite(UnderlyingValueOwner&,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner&,
+                 double underlying_fraction,
                  const InterpolationValue&,
-                 double interpolationFraction) const final;
-  void applyStandardPropertyValue(const InterpolableValue&,
+                 double interpolation_fraction) const final;
+  void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertValue(const CSSValue&,
+  InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
-  void additiveKeyframeHook(InterpolationValue&) const final;
+  void AdditiveKeyframeHook(InterpolationValue&) const final;
 };
 
 }  // namespace blink

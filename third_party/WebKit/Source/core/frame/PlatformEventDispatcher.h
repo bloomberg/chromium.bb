@@ -14,25 +14,25 @@ class PlatformEventController;
 
 class CORE_EXPORT PlatformEventDispatcher : public GarbageCollectedMixin {
  public:
-  void addController(PlatformEventController*);
-  void removeController(PlatformEventController*);
+  void AddController(PlatformEventController*);
+  void RemoveController(PlatformEventController*);
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   PlatformEventDispatcher();
 
-  void notifyControllers();
+  void NotifyControllers();
 
-  virtual void startListening() = 0;
-  virtual void stopListening() = 0;
+  virtual void StartListening() = 0;
+  virtual void StopListening() = 0;
 
  private:
-  void purgeControllers();
+  void PurgeControllers();
 
-  HeapHashSet<WeakMember<PlatformEventController>> m_controllers;
-  bool m_isDispatching;
-  bool m_isListening;
+  HeapHashSet<WeakMember<PlatformEventController>> controllers_;
+  bool is_dispatching_;
+  bool is_listening_;
 };
 
 }  // namespace blink

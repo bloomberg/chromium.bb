@@ -15,125 +15,126 @@ namespace blink {
 
 class AnimationAnimationInputHelpersTest : public ::testing::Test {
  public:
-  CSSPropertyID keyframeAttributeToCSSProperty(const String& property) {
-    return AnimationInputHelpers::keyframeAttributeToCSSProperty(property,
+  CSSPropertyID KeyframeAttributeToCSSProperty(const String& property) {
+    return AnimationInputHelpers::KeyframeAttributeToCSSProperty(property,
                                                                  *document);
   }
 
-  PassRefPtr<TimingFunction> parseTimingFunction(
+  PassRefPtr<TimingFunction> ParseTimingFunction(
       const String& string,
-      ExceptionState& exceptionState) {
-    return AnimationInputHelpers::parseTimingFunction(string, document,
-                                                      exceptionState);
+      ExceptionState& exception_state) {
+    return AnimationInputHelpers::ParseTimingFunction(string, document,
+                                                      exception_state);
   }
 
-  void timingFunctionRoundTrips(const String& string,
-                                ExceptionState& exceptionState) {
-    ASSERT_FALSE(exceptionState.hadException());
-    RefPtr<TimingFunction> timingFunction =
-        parseTimingFunction(string, exceptionState);
-    EXPECT_FALSE(exceptionState.hadException());
-    EXPECT_NE(nullptr, timingFunction);
-    EXPECT_EQ(string, timingFunction->toString());
-    exceptionState.clearException();
+  void TimingFunctionRoundTrips(const String& string,
+                                ExceptionState& exception_state) {
+    ASSERT_FALSE(exception_state.HadException());
+    RefPtr<TimingFunction> timing_function =
+        ParseTimingFunction(string, exception_state);
+    EXPECT_FALSE(exception_state.HadException());
+    EXPECT_NE(nullptr, timing_function);
+    EXPECT_EQ(string, timing_function->ToString());
+    exception_state.ClearException();
   }
 
-  void timingFunctionThrows(const String& string,
-                            ExceptionState& exceptionState) {
-    ASSERT_FALSE(exceptionState.hadException());
-    RefPtr<TimingFunction> timingFunction =
-        parseTimingFunction(string, exceptionState);
-    EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(V8TypeError, exceptionState.code());
-    exceptionState.clearException();
+  void TimingFunctionThrows(const String& string,
+                            ExceptionState& exception_state) {
+    ASSERT_FALSE(exception_state.HadException());
+    RefPtr<TimingFunction> timing_function =
+        ParseTimingFunction(string, exception_state);
+    EXPECT_TRUE(exception_state.HadException());
+    EXPECT_EQ(kV8TypeError, exception_state.Code());
+    exception_state.ClearException();
   }
 
  protected:
   void SetUp() override {
-    pageHolder = DummyPageHolder::create();
-    document = &pageHolder->document();
+    page_holder = DummyPageHolder::Create();
+    document = &page_holder->GetDocument();
   }
 
   void TearDown() override {
-    document.release();
-    ThreadState::current()->collectAllGarbage();
+    document.Release();
+    ThreadState::Current()->CollectAllGarbage();
   }
 
-  std::unique_ptr<DummyPageHolder> pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Document> document;
 };
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes) {
   EXPECT_EQ(CSSPropertyLineHeight,
-            keyframeAttributeToCSSProperty("lineHeight"));
+            KeyframeAttributeToCSSProperty("lineHeight"));
   EXPECT_EQ(CSSPropertyBorderTopWidth,
-            keyframeAttributeToCSSProperty("borderTopWidth"));
-  EXPECT_EQ(CSSPropertyWidth, keyframeAttributeToCSSProperty("width"));
-  EXPECT_EQ(CSSPropertyFloat, keyframeAttributeToCSSProperty("float"));
-  EXPECT_EQ(CSSPropertyFloat, keyframeAttributeToCSSProperty("cssFloat"));
-  EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("--"));
-  EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("---"));
-  EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("--x"));
+            KeyframeAttributeToCSSProperty("borderTopWidth"));
+  EXPECT_EQ(CSSPropertyWidth, KeyframeAttributeToCSSProperty("width"));
+  EXPECT_EQ(CSSPropertyFloat, KeyframeAttributeToCSSProperty("float"));
+  EXPECT_EQ(CSSPropertyFloat, KeyframeAttributeToCSSProperty("cssFloat"));
+  EXPECT_EQ(CSSPropertyVariable, KeyframeAttributeToCSSProperty("--"));
+  EXPECT_EQ(CSSPropertyVariable, KeyframeAttributeToCSSProperty("---"));
+  EXPECT_EQ(CSSPropertyVariable, KeyframeAttributeToCSSProperty("--x"));
   EXPECT_EQ(CSSPropertyVariable,
-            keyframeAttributeToCSSProperty("--webkit-custom-property"));
+            KeyframeAttributeToCSSProperty("--webkit-custom-property"));
 
-  EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty(""));
-  EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("-"));
-  EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("line-height"));
+  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty(""));
+  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty("-"));
+  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty("line-height"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("border-topWidth"));
-  EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("Width"));
+            KeyframeAttributeToCSSProperty("border-topWidth"));
+  EXPECT_EQ(CSSPropertyInvalid, KeyframeAttributeToCSSProperty("Width"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("-epub-text-transform"));
+            KeyframeAttributeToCSSProperty("-epub-text-transform"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("EpubTextTransform"));
+            KeyframeAttributeToCSSProperty("EpubTextTransform"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("-internal-marquee-repetition"));
+            KeyframeAttributeToCSSProperty("-internal-marquee-repetition"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("InternalMarqueeRepetition"));
+            KeyframeAttributeToCSSProperty("InternalMarqueeRepetition"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("-webkit-filter"));
+            KeyframeAttributeToCSSProperty("-webkit-filter"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("-webkit-transform"));
+            KeyframeAttributeToCSSProperty("-webkit-transform"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("webkitTransform"));
+            KeyframeAttributeToCSSProperty("webkitTransform"));
   EXPECT_EQ(CSSPropertyInvalid,
-            keyframeAttributeToCSSProperty("WebkitTransform"));
+            KeyframeAttributeToCSSProperty("WebkitTransform"));
 }
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
-  DummyExceptionStateForTesting exceptionState;
-  timingFunctionThrows("", exceptionState);
-  timingFunctionThrows("initial", exceptionState);
-  timingFunctionThrows("inherit", exceptionState);
-  timingFunctionThrows("unset", exceptionState);
+  DummyExceptionStateForTesting exception_state;
+  TimingFunctionThrows("", exception_state);
+  TimingFunctionThrows("initial", exception_state);
+  TimingFunctionThrows("inherit", exception_state);
+  TimingFunctionThrows("unset", exception_state);
 
-  timingFunctionRoundTrips("ease", exceptionState);
-  timingFunctionRoundTrips("linear", exceptionState);
-  timingFunctionRoundTrips("ease-in", exceptionState);
-  timingFunctionRoundTrips("ease-out", exceptionState);
-  timingFunctionRoundTrips("ease-in-out", exceptionState);
-  timingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)", exceptionState);
+  TimingFunctionRoundTrips("ease", exception_state);
+  TimingFunctionRoundTrips("linear", exception_state);
+  TimingFunctionRoundTrips("ease-in", exception_state);
+  TimingFunctionRoundTrips("ease-out", exception_state);
+  TimingFunctionRoundTrips("ease-in-out", exception_state);
+  TimingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)", exception_state);
 
   EXPECT_EQ("steps(1, start)",
-            parseTimingFunction("step-start", exceptionState)->toString());
+            ParseTimingFunction("step-start", exception_state)->ToString());
   EXPECT_EQ("steps(1, middle)",
-            parseTimingFunction("step-middle", exceptionState)->toString());
+            ParseTimingFunction("step-middle", exception_state)->ToString());
   EXPECT_EQ("steps(1)",
-            parseTimingFunction("step-end", exceptionState)->toString());
-  EXPECT_EQ("steps(3, start)",
-            parseTimingFunction("steps(3, start)", exceptionState)->toString());
+            ParseTimingFunction("step-end", exception_state)->ToString());
+  EXPECT_EQ(
+      "steps(3, start)",
+      ParseTimingFunction("steps(3, start)", exception_state)->ToString());
   EXPECT_EQ(
       "steps(3, middle)",
-      parseTimingFunction("steps(3, middle)", exceptionState)->toString());
+      ParseTimingFunction("steps(3, middle)", exception_state)->ToString());
   EXPECT_EQ("steps(3)",
-            parseTimingFunction("steps(3, end)", exceptionState)->toString());
+            ParseTimingFunction("steps(3, end)", exception_state)->ToString());
   EXPECT_EQ("steps(3)",
-            parseTimingFunction("steps(3)", exceptionState)->toString());
+            ParseTimingFunction("steps(3)", exception_state)->ToString());
 
-  timingFunctionThrows("steps(3, nowhere)", exceptionState);
-  timingFunctionThrows("steps(-3, end)", exceptionState);
-  timingFunctionThrows("cubic-bezier(0.1, 0, 4, 0.4)", exceptionState);
+  TimingFunctionThrows("steps(3, nowhere)", exception_state);
+  TimingFunctionThrows("steps(-3, end)", exception_state);
+  TimingFunctionThrows("cubic-bezier(0.1, 0, 4, 0.4)", exception_state);
 }
 
 }  // namespace blink

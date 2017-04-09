@@ -19,57 +19,60 @@ namespace blink {
 
 class CSSLazyParsingTest : public testing::Test {
  public:
-  bool hasParsedProperties(StyleRule* rule) {
-    return rule->hasParsedProperties();
+  bool HasParsedProperties(StyleRule* rule) {
+    return rule->HasParsedProperties();
   }
 
-  StyleRule* ruleAt(StyleSheetContents* sheet, size_t index) {
-    return toStyleRule(sheet->childRules()[index]);
+  StyleRule* RuleAt(StyleSheetContents* sheet, size_t index) {
+    return ToStyleRule(sheet->ChildRules()[index]);
   }
 
  protected:
-  HistogramTester m_histogramTester;
-  Persistent<StyleSheetContents> m_cachedContents;
+  HistogramTester histogram_tester_;
+  Persistent<StyleSheetContents> cached_contents_;
 };
 
 TEST_F(CSSLazyParsingTest, Simple) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  String sheetText = "body { background-color: red; }";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
-  StyleRule* rule = ruleAt(styleSheet, 0);
-  EXPECT_FALSE(hasParsedProperties(rule));
-  rule->properties();
-  EXPECT_TRUE(hasParsedProperties(rule));
+  String sheet_text = "body { background-color: red; }";
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
+  StyleRule* rule = RuleAt(style_sheet, 0);
+  EXPECT_FALSE(HasParsedProperties(rule));
+  rule->Properties();
+  EXPECT_TRUE(HasParsedProperties(rule));
 }
 
 // Avoiding lazy parsing for trivially empty blocks helps us perform the
 // shouldConsiderForMatchingRules optimization.
 TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  String sheetText = "body {  }";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
-  StyleRule* rule = ruleAt(styleSheet, 0);
-  EXPECT_TRUE(hasParsedProperties(rule));
+  String sheet_text = "body {  }";
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
+  StyleRule* rule = RuleAt(style_sheet, 0);
+  EXPECT_TRUE(HasParsedProperties(rule));
   EXPECT_FALSE(
-      rule->shouldConsiderForMatchingRules(false /* includeEmptyRules */));
+      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 }
 
 // Avoid parsing rules with ::before or ::after to avoid causing
 // collectFeatures() when we trigger parsing for attr();
 TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  String sheetText =
+  String sheet_text =
       "p::before { content: 'foo' } p .class::after { content: 'bar' } ";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
 
-  EXPECT_TRUE(hasParsedProperties(ruleAt(styleSheet, 0)));
-  EXPECT_TRUE(hasParsedProperties(ruleAt(styleSheet, 1)));
+  EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 0)));
+  EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 1)));
 }
 
 // Test for crbug.com/664115 where |shouldConsiderForMatchingRules| would flip
@@ -77,160 +80,166 @@ TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
 // dangerous API because callers will expect the set of matching rules to be
 // identical if the stylesheet is not mutated.
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  String sheetText = "p::first-letter { ,badness, } ";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
+  String sheet_text = "p::first-letter { ,badness, } ";
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
 
-  StyleRule* rule = ruleAt(styleSheet, 0);
-  EXPECT_FALSE(hasParsedProperties(rule));
+  StyleRule* rule = RuleAt(style_sheet, 0);
+  EXPECT_FALSE(HasParsedProperties(rule));
   EXPECT_TRUE(
-      rule->shouldConsiderForMatchingRules(false /* includeEmptyRules */));
+      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 
   // Parse the rule.
-  rule->properties();
+  rule->Properties();
 
   // Now, we should still consider this for matching rules even if it is empty.
-  EXPECT_TRUE(hasParsedProperties(rule));
+  EXPECT_TRUE(HasParsedProperties(rule));
   EXPECT_TRUE(
-      rule->shouldConsiderForMatchingRules(false /* includeEmptyRules */));
+      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 }
 
 // Test the same thing as above, with a property that does not get lazy parsed,
 // to ensure that we perform the optimization where possible.
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  String sheetText = "p::before { ,badness, } ";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
+  String sheet_text = "p::before { ,badness, } ";
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
 
-  StyleRule* rule = ruleAt(styleSheet, 0);
-  EXPECT_TRUE(hasParsedProperties(rule));
+  StyleRule* rule = RuleAt(style_sheet, 0);
+  EXPECT_TRUE(HasParsedProperties(rule));
   EXPECT_FALSE(
-      rule->shouldConsiderForMatchingRules(false /* includeEmptyRules */));
+      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 }
 
 // Regression test for crbug.com/660290 where we change the underlying owning
 // document from the StyleSheetContents without changing the UseCounter. This
 // test ensures that the new UseCounter is used when doing new parsing work.
 TEST_F(CSSLazyParsingTest, ChangeDocuments) {
-  std::unique_ptr<DummyPageHolder> dummyHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  CSSParserContext* context = CSSParserContext::create(
-      HTMLStandardMode, CSSParserContext::DynamicProfile,
-      &dummyHolder->document());
-  m_cachedContents = StyleSheetContents::create(context);
+  std::unique_ptr<DummyPageHolder> dummy_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, CSSParserContext::kDynamicProfile,
+      &dummy_holder->GetDocument());
+  cached_contents_ = StyleSheetContents::Create(context);
   {
     CSSStyleSheet* sheet =
-        CSSStyleSheet::create(m_cachedContents, dummyHolder->document());
+        CSSStyleSheet::Create(cached_contents_, dummy_holder->GetDocument());
     DCHECK(sheet);
 
-    String sheetText = "body { background-color: red; } p { color: orange;  }";
-    CSSParser::parseSheet(context, m_cachedContents, sheetText,
+    String sheet_text = "body { background-color: red; } p { color: orange;  }";
+    CSSParser::ParseSheet(context, cached_contents_, sheet_text,
                           true /* lazy parse */);
 
     // Parse the first property set with the first document as owner.
-    StyleRule* rule = ruleAt(m_cachedContents, 0);
-    EXPECT_FALSE(hasParsedProperties(rule));
-    rule->properties();
-    EXPECT_TRUE(hasParsedProperties(rule));
+    StyleRule* rule = RuleAt(cached_contents_, 0);
+    EXPECT_FALSE(HasParsedProperties(rule));
+    rule->Properties();
+    EXPECT_TRUE(HasParsedProperties(rule));
 
-    EXPECT_EQ(&dummyHolder->document(),
-              m_cachedContents->singleOwnerDocument());
-    UseCounter& useCounter1 = dummyHolder->document().page()->useCounter();
-    EXPECT_TRUE(useCounter1.isCounted(CSSPropertyBackgroundColor));
-    EXPECT_FALSE(useCounter1.isCounted(CSSPropertyColor));
+    EXPECT_EQ(&dummy_holder->GetDocument(),
+              cached_contents_->SingleOwnerDocument());
+    UseCounter& use_counter1 =
+        dummy_holder->GetDocument().GetPage()->GetUseCounter();
+    EXPECT_TRUE(use_counter1.IsCounted(CSSPropertyBackgroundColor));
+    EXPECT_FALSE(use_counter1.IsCounted(CSSPropertyColor));
 
     // Change owner document.
-    m_cachedContents->unregisterClient(sheet);
-    dummyHolder.reset();
+    cached_contents_->UnregisterClient(sheet);
+    dummy_holder.reset();
   }
   // Ensure no stack references to oilpan objects.
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 
-  std::unique_ptr<DummyPageHolder> dummyHolder2 =
-      DummyPageHolder::create(IntSize(500, 500));
+  std::unique_ptr<DummyPageHolder> dummy_holder2 =
+      DummyPageHolder::Create(IntSize(500, 500));
   CSSStyleSheet* sheet2 =
-      CSSStyleSheet::create(m_cachedContents, dummyHolder2->document());
+      CSSStyleSheet::Create(cached_contents_, dummy_holder2->GetDocument());
 
-  EXPECT_EQ(&dummyHolder2->document(), m_cachedContents->singleOwnerDocument());
+  EXPECT_EQ(&dummy_holder2->GetDocument(),
+            cached_contents_->SingleOwnerDocument());
 
   // Parse the second property set with the second document as owner.
-  StyleRule* rule2 = ruleAt(m_cachedContents, 1);
-  EXPECT_FALSE(hasParsedProperties(rule2));
-  rule2->properties();
-  EXPECT_TRUE(hasParsedProperties(rule2));
+  StyleRule* rule2 = RuleAt(cached_contents_, 1);
+  EXPECT_FALSE(HasParsedProperties(rule2));
+  rule2->Properties();
+  EXPECT_TRUE(HasParsedProperties(rule2));
 
-  UseCounter& useCounter2 = dummyHolder2->document().page()->useCounter();
+  UseCounter& use_counter2 =
+      dummy_holder2->GetDocument().GetPage()->GetUseCounter();
   EXPECT_TRUE(sheet2);
-  EXPECT_TRUE(useCounter2.isCounted(CSSPropertyColor));
-  EXPECT_FALSE(useCounter2.isCounted(CSSPropertyBackgroundColor));
+  EXPECT_TRUE(use_counter2.IsCounted(CSSPropertyColor));
+  EXPECT_FALSE(use_counter2.IsCounted(CSSPropertyBackgroundColor));
 }
 
 TEST_F(CSSLazyParsingTest, SimpleRuleUsagePercent) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  std::string usageMetric = "Style.LazyUsage.Percent";
-  std::string totalRulesMetric = "Style.TotalLazyRules";
-  std::string totalRulesFullUsageMetric = "Style.TotalLazyRules.FullUsage";
-  m_histogramTester.expectTotalCount(usageMetric, 0);
+  std::string usage_metric = "Style.LazyUsage.Percent";
+  std::string total_rules_metric = "Style.TotalLazyRules";
+  std::string total_rules_full_usage_metric = "Style.TotalLazyRules.FullUsage";
+  histogram_tester_.ExpectTotalCount(usage_metric, 0);
 
-  String sheetText =
+  String sheet_text =
       "body { background-color: red; }"
       "p { color: blue; }"
       "a { color: yellow; }"
       "#id { color: blue; }"
       "div { color: grey; }";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
 
-  m_histogramTester.expectTotalCount(totalRulesMetric, 1);
-  m_histogramTester.expectUniqueSample(totalRulesMetric, 5, 1);
-
-  // Only log the full usage metric when all the rules have been actually
-  // parsed.
-  m_histogramTester.expectTotalCount(totalRulesFullUsageMetric, 0);
-
-  m_histogramTester.expectTotalCount(usageMetric, 1);
-  m_histogramTester.expectUniqueSample(usageMetric,
-                                       CSSLazyParsingState::UsageGe0, 1);
-
-  ruleAt(styleSheet, 0)->properties();
-  m_histogramTester.expectTotalCount(usageMetric, 2);
-  m_histogramTester.expectBucketCount(usageMetric,
-                                      CSSLazyParsingState::UsageGt10, 1);
-
-  ruleAt(styleSheet, 1)->properties();
-  m_histogramTester.expectTotalCount(usageMetric, 3);
-  m_histogramTester.expectBucketCount(usageMetric,
-                                      CSSLazyParsingState::UsageGt25, 1);
-
-  ruleAt(styleSheet, 2)->properties();
-  m_histogramTester.expectTotalCount(usageMetric, 4);
-  m_histogramTester.expectBucketCount(usageMetric,
-                                      CSSLazyParsingState::UsageGt50, 1);
-
-  ruleAt(styleSheet, 3)->properties();
-  m_histogramTester.expectTotalCount(usageMetric, 5);
-  m_histogramTester.expectBucketCount(usageMetric,
-                                      CSSLazyParsingState::UsageGt75, 1);
+  histogram_tester_.ExpectTotalCount(total_rules_metric, 1);
+  histogram_tester_.ExpectUniqueSample(total_rules_metric, 5, 1);
 
   // Only log the full usage metric when all the rules have been actually
   // parsed.
-  m_histogramTester.expectTotalCount(totalRulesFullUsageMetric, 0);
+  histogram_tester_.ExpectTotalCount(total_rules_full_usage_metric, 0);
+
+  histogram_tester_.ExpectTotalCount(usage_metric, 1);
+  histogram_tester_.ExpectUniqueSample(usage_metric,
+                                       CSSLazyParsingState::kUsageGe0, 1);
+
+  RuleAt(style_sheet, 0)->Properties();
+  histogram_tester_.ExpectTotalCount(usage_metric, 2);
+  histogram_tester_.ExpectBucketCount(usage_metric,
+                                      CSSLazyParsingState::kUsageGt10, 1);
+
+  RuleAt(style_sheet, 1)->Properties();
+  histogram_tester_.ExpectTotalCount(usage_metric, 3);
+  histogram_tester_.ExpectBucketCount(usage_metric,
+                                      CSSLazyParsingState::kUsageGt25, 1);
+
+  RuleAt(style_sheet, 2)->Properties();
+  histogram_tester_.ExpectTotalCount(usage_metric, 4);
+  histogram_tester_.ExpectBucketCount(usage_metric,
+                                      CSSLazyParsingState::kUsageGt50, 1);
+
+  RuleAt(style_sheet, 3)->Properties();
+  histogram_tester_.ExpectTotalCount(usage_metric, 5);
+  histogram_tester_.ExpectBucketCount(usage_metric,
+                                      CSSLazyParsingState::kUsageGt75, 1);
+
+  // Only log the full usage metric when all the rules have been actually
+  // parsed.
+  histogram_tester_.ExpectTotalCount(total_rules_full_usage_metric, 0);
 
   // Parsing the last rule bumps both Gt90 and All buckets.
-  ruleAt(styleSheet, 4)->properties();
-  m_histogramTester.expectTotalCount(usageMetric, 7);
-  m_histogramTester.expectBucketCount(usageMetric,
-                                      CSSLazyParsingState::UsageGt90, 1);
-  m_histogramTester.expectBucketCount(usageMetric,
-                                      CSSLazyParsingState::UsageAll, 1);
+  RuleAt(style_sheet, 4)->Properties();
+  histogram_tester_.ExpectTotalCount(usage_metric, 7);
+  histogram_tester_.ExpectBucketCount(usage_metric,
+                                      CSSLazyParsingState::kUsageGt90, 1);
+  histogram_tester_.ExpectBucketCount(usage_metric,
+                                      CSSLazyParsingState::kUsageAll, 1);
 
-  m_histogramTester.expectTotalCount(totalRulesFullUsageMetric, 1);
-  m_histogramTester.expectUniqueSample(totalRulesFullUsageMetric, 5, 1);
+  histogram_tester_.ExpectTotalCount(total_rules_full_usage_metric, 1);
+  histogram_tester_.ExpectUniqueSample(total_rules_full_usage_metric, 5, 1);
 }
 
 }  // namespace blink

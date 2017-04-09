@@ -32,33 +32,33 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLEmbedElement* create(Document&, bool createdByParser = false);
+  static HTMLEmbedElement* Create(Document&, bool created_by_parser = false);
 
-  bool isExposed() const;
+  bool IsExposed() const;
 
  private:
-  HTMLEmbedElement(Document&, bool createdByParser);
+  HTMLEmbedElement(Document&, bool created_by_parser);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 
-  bool isURLAttribute(const Attribute&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
 
-  LayoutPart* existingLayoutPart() const override;
+  LayoutPart* ExistingLayoutPart() const override;
 
-  void updatePluginInternal() override;
+  void UpdatePluginInternal() override;
 
-  void parametersForPlugin(Vector<String>& paramNames,
-                           Vector<String>& paramValues);
+  void ParametersForPlugin(Vector<String>& param_names,
+                           Vector<String>& param_values);
 
-  bool shouldRegisterAsNamedItem() const override { return true; }
-  bool isInteractiveContent() const override;
+  bool ShouldRegisterAsNamedItem() const override { return true; }
+  bool IsInteractiveContent() const override;
 };
 
 }  // namespace blink

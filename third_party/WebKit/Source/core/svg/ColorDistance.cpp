@@ -23,18 +23,19 @@
 
 namespace blink {
 
-Color ColorDistance::addColors(const Color& first, const Color& second) {
-  return Color(first.red() + second.red(), first.green() + second.green(),
-               first.blue() + second.blue());
+Color ColorDistance::AddColors(const Color& first, const Color& second) {
+  return Color(first.Red() + second.Red(), first.Green() + second.Green(),
+               first.Blue() + second.Blue());
 }
 
-float ColorDistance::distance(const Color& fromColor, const Color& toColor) {
-  int redDiff = toColor.red() - fromColor.red();
-  int greenDiff = toColor.green() - fromColor.green();
-  int blueDiff = toColor.blue() - fromColor.blue();
+float ColorDistance::Distance(const Color& from_color, const Color& to_color) {
+  int red_diff = to_color.Red() - from_color.Red();
+  int green_diff = to_color.Green() - from_color.Green();
+  int blue_diff = to_color.Blue() - from_color.Blue();
 
   // This is just a simple distance calculation, not respecting color spaces
-  return sqrtf(redDiff * redDiff + blueDiff * blueDiff + greenDiff * greenDiff);
+  return sqrtf(red_diff * red_diff + blue_diff * blue_diff +
+               green_diff * green_diff);
 }
 
 }  // namespace blink

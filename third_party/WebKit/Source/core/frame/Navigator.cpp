@@ -56,50 +56,51 @@ String Navigator::vendorSub() const {
 
 String Navigator::userAgent() const {
   // If the frame is already detached it no longer has a meaningful useragent.
-  if (!frame() || !frame()->page())
+  if (!GetFrame() || !GetFrame()->GetPage())
     return String();
 
-  return frame()->loader().userAgent();
+  return GetFrame()->Loader().UserAgent();
 }
 
 bool Navigator::cookieEnabled() const {
-  if (!frame())
+  if (!GetFrame())
     return false;
 
-  Settings* settings = frame()->settings();
-  if (!settings || !settings->getCookieEnabled())
+  Settings* settings = GetFrame()->GetSettings();
+  if (!settings || !settings->GetCookieEnabled())
     return false;
 
-  return cookiesEnabled(frame()->document());
+  return CookiesEnabled(GetFrame()->GetDocument());
 }
 
 Vector<String> Navigator::languages() {
   Vector<String> languages;
 
-  if (!frame() || !frame()->page()) {
-    languages.push_back(defaultLanguage());
+  if (!GetFrame() || !GetFrame()->GetPage()) {
+    languages.push_back(DefaultLanguage());
     return languages;
   }
 
-  String acceptLanguages = frame()->page()->chromeClient().acceptLanguages();
-  acceptLanguages.split(',', languages);
+  String accept_languages =
+      GetFrame()->GetPage()->GetChromeClient().AcceptLanguages();
+  accept_languages.Split(',', languages);
 
   // Sanitizing tokens. We could do that more extensively but we should assume
   // that the accept languages are already sane and support BCP47. It is
   // likely a waste of time to make sure the tokens matches that spec here.
   for (size_t i = 0; i < languages.size(); ++i) {
     String& token = languages[i];
-    token = token.stripWhiteSpace();
+    token = token.StripWhiteSpace();
     if (token.length() >= 3 && token[2] == '_')
-      token.replace(2, 1, "-");
+      token.Replace(2, 1, "-");
   }
 
   return languages;
 }
 
 DEFINE_TRACE(Navigator) {
-  DOMWindowClient::trace(visitor);
-  Supplementable<Navigator>::trace(visitor);
+  DOMWindowClient::Trace(visitor);
+  Supplementable<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

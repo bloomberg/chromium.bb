@@ -7,7 +7,7 @@
 namespace content {
 
 SyntheticPenDriver::SyntheticPenDriver() : SyntheticMouseDriver() {
-  mouse_event_.pointerType = blink::WebPointerProperties::PointerType::Pen;
+  mouse_event_.pointer_type = blink::WebPointerProperties::PointerType::kPen;
 }
 
 SyntheticPenDriver::~SyntheticPenDriver() {}

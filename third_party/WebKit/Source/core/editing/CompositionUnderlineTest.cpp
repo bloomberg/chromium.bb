@@ -9,63 +9,63 @@
 namespace blink {
 namespace {
 
-CompositionUnderline createCompositionUnderline(unsigned startOffset,
-                                                unsigned endOffset) {
-  return CompositionUnderline(startOffset, endOffset, Color::transparent, false,
-                              Color::transparent);
+CompositionUnderline CreateCompositionUnderline(unsigned start_offset,
+                                                unsigned end_offset) {
+  return CompositionUnderline(start_offset, end_offset, Color::kTransparent,
+                              false, Color::kTransparent);
 }
 
 TEST(CompositionUnderlineTest, OneChar) {
-  CompositionUnderline underline = createCompositionUnderline(0, 1);
-  EXPECT_EQ(0u, underline.startOffset());
-  EXPECT_EQ(1u, underline.endOffset());
+  CompositionUnderline underline = CreateCompositionUnderline(0, 1);
+  EXPECT_EQ(0u, underline.StartOffset());
+  EXPECT_EQ(1u, underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, MultiChar) {
-  CompositionUnderline underline = createCompositionUnderline(0, 5);
-  EXPECT_EQ(0u, underline.startOffset());
-  EXPECT_EQ(5u, underline.endOffset());
+  CompositionUnderline underline = CreateCompositionUnderline(0, 5);
+  EXPECT_EQ(0u, underline.StartOffset());
+  EXPECT_EQ(5u, underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, ZeroLength) {
-  CompositionUnderline underline = createCompositionUnderline(0, 0);
-  EXPECT_EQ(0u, underline.startOffset());
-  EXPECT_EQ(1u, underline.endOffset());
+  CompositionUnderline underline = CreateCompositionUnderline(0, 0);
+  EXPECT_EQ(0u, underline.StartOffset());
+  EXPECT_EQ(1u, underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, ZeroLengthNonZeroStart) {
-  CompositionUnderline underline = createCompositionUnderline(3, 3);
-  EXPECT_EQ(3u, underline.startOffset());
-  EXPECT_EQ(4u, underline.endOffset());
+  CompositionUnderline underline = CreateCompositionUnderline(3, 3);
+  EXPECT_EQ(3u, underline.StartOffset());
+  EXPECT_EQ(4u, underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, EndBeforeStart) {
-  CompositionUnderline underline = createCompositionUnderline(1, 0);
-  EXPECT_EQ(1u, underline.startOffset());
-  EXPECT_EQ(2u, underline.endOffset());
+  CompositionUnderline underline = CreateCompositionUnderline(1, 0);
+  EXPECT_EQ(1u, underline.StartOffset());
+  EXPECT_EQ(2u, underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, LastChar) {
   CompositionUnderline underline =
-      createCompositionUnderline(std::numeric_limits<unsigned>::max() - 1,
+      CreateCompositionUnderline(std::numeric_limits<unsigned>::max() - 1,
                                  std::numeric_limits<unsigned>::max());
-  EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1, underline.startOffset());
-  EXPECT_EQ(std::numeric_limits<unsigned>::max(), underline.endOffset());
+  EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1, underline.StartOffset());
+  EXPECT_EQ(std::numeric_limits<unsigned>::max(), underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, LastCharEndBeforeStart) {
   CompositionUnderline underline =
-      createCompositionUnderline(std::numeric_limits<unsigned>::max(),
+      CreateCompositionUnderline(std::numeric_limits<unsigned>::max(),
                                  std::numeric_limits<unsigned>::max() - 1);
-  EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1, underline.startOffset());
-  EXPECT_EQ(std::numeric_limits<unsigned>::max(), underline.endOffset());
+  EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1, underline.StartOffset());
+  EXPECT_EQ(std::numeric_limits<unsigned>::max(), underline.EndOffset());
 }
 
 TEST(CompositionUnderlineTest, LastCharEndBeforeStartZeroEnd) {
   CompositionUnderline underline =
-      createCompositionUnderline(std::numeric_limits<unsigned>::max(), 0);
-  EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1, underline.startOffset());
-  EXPECT_EQ(std::numeric_limits<unsigned>::max(), underline.endOffset());
+      CreateCompositionUnderline(std::numeric_limits<unsigned>::max(), 0);
+  EXPECT_EQ(std::numeric_limits<unsigned>::max() - 1, underline.StartOffset());
+  EXPECT_EQ(std::numeric_limits<unsigned>::max(), underline.EndOffset());
 }
 
 }  // namespace

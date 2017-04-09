@@ -38,17 +38,17 @@ struct BidiIsolatedRun {
   BidiIsolatedRun(LineLayoutItem object,
                   unsigned position,
                   LineLayoutItem& root,
-                  BidiRun& runToReplace,
+                  BidiRun& run_to_replace,
                   unsigned char level)
       : object(object),
         root(root),
-        runToReplace(runToReplace),
+        run_to_replace(run_to_replace),
         position(position),
         level(level) {}
 
   LineLayoutItem object;
   LineLayoutItem root;
-  BidiRun& runToReplace;
+  BidiRun& run_to_replace;
   unsigned position;
   unsigned char level;
 };
@@ -61,179 +61,183 @@ class InlineIterator {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum IncrementRule { FastIncrementInIsolatedLayout, FastIncrementInTextNode };
+  enum IncrementRule {
+    kFastIncrementInIsolatedLayout,
+    kFastIncrementInTextNode
+  };
 
   InlineIterator()
-      : m_root(nullptr),
-        m_lineLayoutItem(nullptr),
-        m_nextBreakablePosition(-1),
-        m_pos(0) {}
+      : root_(nullptr),
+        line_layout_item_(nullptr),
+        next_breakable_position_(-1),
+        pos_(0) {}
 
   InlineIterator(LineLayoutItem root, LineLayoutItem o, unsigned p)
-      : m_root(root),
-        m_lineLayoutItem(o),
-        m_nextBreakablePosition(-1),
-        m_pos(p) {}
+      : root_(root),
+        line_layout_item_(o),
+        next_breakable_position_(-1),
+        pos_(p) {}
 
-  void clear() { moveTo(0, 0); }
+  void Clear() { MoveTo(0, 0); }
 
-  void moveToStartOf(LineLayoutItem object) { moveTo(object, 0); }
+  void MoveToStartOf(LineLayoutItem object) { MoveTo(object, 0); }
 
-  void moveTo(LineLayoutItem object, unsigned offset, int nextBreak = -1) {
-    m_lineLayoutItem = object;
-    m_pos = offset;
-    m_nextBreakablePosition = nextBreak;
+  void MoveTo(LineLayoutItem object, unsigned offset, int next_break = -1) {
+    line_layout_item_ = object;
+    pos_ = offset;
+    next_breakable_position_ = next_break;
   }
 
-  LineLayoutItem getLineLayoutItem() const { return m_lineLayoutItem; }
-  void setLineLayoutItem(LineLayoutItem lineLayoutItem) {
-    m_lineLayoutItem = lineLayoutItem;
+  LineLayoutItem GetLineLayoutItem() const { return line_layout_item_; }
+  void SetLineLayoutItem(LineLayoutItem line_layout_item) {
+    line_layout_item_ = line_layout_item;
   }
 
-  int nextBreakablePosition() const { return m_nextBreakablePosition; }
-  void setNextBreakablePosition(int position) {
-    m_nextBreakablePosition = position;
+  int NextBreakablePosition() const { return next_breakable_position_; }
+  void SetNextBreakablePosition(int position) {
+    next_breakable_position_ = position;
   }
 
-  unsigned offset() const { return m_pos; }
-  void setOffset(unsigned position) { m_pos = position; }
-  LineLayoutItem root() const { return m_root; }
+  unsigned Offset() const { return pos_; }
+  void SetOffset(unsigned position) { pos_ = position; }
+  LineLayoutItem Root() const { return root_; }
 
-  void fastIncrementInTextNode();
-  void increment(InlineBidiResolver* = nullptr,
-                 IncrementRule = FastIncrementInTextNode);
-  bool atEnd() const;
+  void FastIncrementInTextNode();
+  void Increment(InlineBidiResolver* = nullptr,
+                 IncrementRule = kFastIncrementInTextNode);
+  bool AtEnd() const;
 
-  inline bool atTextParagraphSeparator() const {
-    return m_lineLayoutItem && m_lineLayoutItem.preservesNewline() &&
-           m_lineLayoutItem.isText() &&
-           LineLayoutText(m_lineLayoutItem).textLength() &&
-           !LineLayoutText(m_lineLayoutItem).isWordBreak() &&
-           LineLayoutText(m_lineLayoutItem).characterAt(m_pos) == '\n';
+  inline bool AtTextParagraphSeparator() const {
+    return line_layout_item_ && line_layout_item_.PreservesNewline() &&
+           line_layout_item_.IsText() &&
+           LineLayoutText(line_layout_item_).TextLength() &&
+           !LineLayoutText(line_layout_item_).IsWordBreak() &&
+           LineLayoutText(line_layout_item_).CharacterAt(pos_) == '\n';
   }
 
-  inline bool atParagraphSeparator() const {
-    return (m_lineLayoutItem && m_lineLayoutItem.isBR()) ||
-           atTextParagraphSeparator();
+  inline bool AtParagraphSeparator() const {
+    return (line_layout_item_ && line_layout_item_.IsBR()) ||
+           AtTextParagraphSeparator();
   }
 
-  UChar characterAt(unsigned) const;
-  UChar current() const;
-  UChar previousInSameNode() const;
-  UChar32 codepointAt(unsigned) const;
-  UChar32 currentCodepoint() const;
-  ALWAYS_INLINE WTF::Unicode::CharDirection direction() const;
+  UChar CharacterAt(unsigned) const;
+  UChar Current() const;
+  UChar PreviousInSameNode() const;
+  UChar32 CodepointAt(unsigned) const;
+  UChar32 CurrentCodepoint() const;
+  ALWAYS_INLINE WTF::Unicode::CharDirection Direction() const;
 
  private:
-  LineLayoutItem m_root;
-  LineLayoutItem m_lineLayoutItem;
+  LineLayoutItem root_;
+  LineLayoutItem line_layout_item_;
 
-  int m_nextBreakablePosition;
-  unsigned m_pos;
+  int next_breakable_position_;
+  unsigned pos_;
 };
 
 inline bool operator==(const InlineIterator& it1, const InlineIterator& it2) {
-  return it1.offset() == it2.offset() &&
-         it1.getLineLayoutItem() == it2.getLineLayoutItem();
+  return it1.Offset() == it2.Offset() &&
+         it1.GetLineLayoutItem() == it2.GetLineLayoutItem();
 }
 
 inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2) {
-  return it1.offset() != it2.offset() ||
-         it1.getLineLayoutItem() != it2.getLineLayoutItem();
+  return it1.Offset() != it2.Offset() ||
+         it1.GetLineLayoutItem() != it2.GetLineLayoutItem();
 }
 
-static inline WTF::Unicode::CharDirection embedCharFromDirection(
+static inline WTF::Unicode::CharDirection EmbedCharFromDirection(
     TextDirection dir,
-    UnicodeBidi unicodeBidi) {
+    UnicodeBidi unicode_bidi) {
   using namespace WTF::Unicode;
-  if (unicodeBidi == UnicodeBidi::kEmbed) {
-    return dir == TextDirection::kRtl ? RightToLeftEmbedding
-                                      : LeftToRightEmbedding;
+  if (unicode_bidi == UnicodeBidi::kEmbed) {
+    return dir == TextDirection::kRtl ? kRightToLeftEmbedding
+                                      : kLeftToRightEmbedding;
   }
-  return dir == TextDirection::kRtl ? RightToLeftOverride : LeftToRightOverride;
+  return dir == TextDirection::kRtl ? kRightToLeftOverride
+                                    : kLeftToRightOverride;
 }
 
-static inline bool treatAsIsolated(const ComputedStyle& style) {
-  return isIsolated(style.getUnicodeBidi()) &&
-         style.rtlOrdering() == EOrder::kLogical;
+static inline bool TreatAsIsolated(const ComputedStyle& style) {
+  return IsIsolated(style.GetUnicodeBidi()) &&
+         style.RtlOrdering() == EOrder::kLogical;
 }
 
 template <class Observer>
-static inline void notifyObserverEnteredObject(Observer* observer,
+static inline void NotifyObserverEnteredObject(Observer* observer,
                                                LineLayoutItem object) {
-  if (!observer || !object || !object.isLayoutInline())
+  if (!observer || !object || !object.IsLayoutInline())
     return;
 
-  const ComputedStyle& style = object.styleRef();
-  UnicodeBidi unicodeBidi = style.getUnicodeBidi();
-  if (unicodeBidi == UnicodeBidi::kNormal) {
+  const ComputedStyle& style = object.StyleRef();
+  UnicodeBidi unicode_bidi = style.GetUnicodeBidi();
+  if (unicode_bidi == UnicodeBidi::kNormal) {
     // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi
     // "The element does not open an additional level of embedding with respect
     // to the bidirectional algorithm."
     // Thus we ignore any possible dir= attribute on the span.
     return;
   }
-  if (treatAsIsolated(style)) {
+  if (TreatAsIsolated(style)) {
     // Make sure that explicit embeddings are committed before we enter the
     // isolated content.
-    observer->commitExplicitEmbedding(observer->runs());
-    observer->enterIsolate();
+    observer->CommitExplicitEmbedding(observer->Runs());
+    observer->EnterIsolate();
     // Embedding/Override characters implied by dir= will be handled when
     // we process the isolated span, not when laying out the "parent" run.
     return;
   }
 
-  if (!observer->inIsolate())
-    observer->embed(embedCharFromDirection(style.direction(), unicodeBidi),
-                    FromStyleOrDOM);
+  if (!observer->InIsolate())
+    observer->Embed(EmbedCharFromDirection(style.Direction(), unicode_bidi),
+                    kFromStyleOrDOM);
 }
 
 template <class Observer>
-static inline void notifyObserverWillExitObject(Observer* observer,
+static inline void NotifyObserverWillExitObject(Observer* observer,
                                                 LineLayoutItem object) {
-  if (!observer || !object || !object.isLayoutInline())
+  if (!observer || !object || !object.IsLayoutInline())
     return;
 
-  UnicodeBidi unicodeBidi = object.style()->getUnicodeBidi();
-  if (unicodeBidi == UnicodeBidi::kNormal)
+  UnicodeBidi unicode_bidi = object.Style()->GetUnicodeBidi();
+  if (unicode_bidi == UnicodeBidi::kNormal)
     return;  // Nothing to do for unicode-bidi: normal
-  if (treatAsIsolated(object.styleRef())) {
-    observer->exitIsolate();
+  if (TreatAsIsolated(object.StyleRef())) {
+    observer->ExitIsolate();
     return;
   }
 
   // Otherwise we pop any embed/override character we added when we opened this
   // tag.
-  if (!observer->inIsolate())
-    observer->embed(WTF::Unicode::PopDirectionalFormat, FromStyleOrDOM);
+  if (!observer->InIsolate())
+    observer->Embed(WTF::Unicode::kPopDirectionalFormat, kFromStyleOrDOM);
 }
 
-static inline bool isIteratorTarget(LineLayoutItem object) {
+static inline bool IsIteratorTarget(LineLayoutItem object) {
   // The iterator will of course return 0, but its not an expected argument to
   // this function.
   DCHECK(object);
-  return object.isText() || object.isFloating() ||
-         object.isOutOfFlowPositioned() || object.isAtomicInlineLevel();
+  return object.IsText() || object.IsFloating() ||
+         object.IsOutOfFlowPositioned() || object.IsAtomicInlineLevel();
 }
 
 // This enum is only used for bidiNextShared()
 enum EmptyInlineBehavior {
-  SkipEmptyInlines,
-  IncludeEmptyInlines,
+  kSkipEmptyInlines,
+  kIncludeEmptyInlines,
 };
 
-static bool isEmptyInline(LineLayoutItem object) {
-  if (!object.isLayoutInline())
+static bool IsEmptyInline(LineLayoutItem object) {
+  if (!object.IsLayoutInline())
     return false;
 
-  for (LineLayoutItem curr = LineLayoutInline(object).firstChild(); curr;
-       curr = curr.nextSibling()) {
-    if (curr.isFloatingOrOutOfFlowPositioned())
+  for (LineLayoutItem curr = LineLayoutInline(object).FirstChild(); curr;
+       curr = curr.NextSibling()) {
+    if (curr.IsFloatingOrOutOfFlowPositioned())
       continue;
-    if (curr.isText() && LineLayoutText(curr).isAllCollapsibleWhitespace())
+    if (curr.IsText() && LineLayoutText(curr).IsAllCollapsibleWhitespace())
       continue;
 
-    if (!isEmptyInline(curr))
+    if (!IsEmptyInline(curr))
       return false;
   }
   return true;
@@ -244,23 +248,23 @@ static bool isEmptyInline(LineLayoutItem object) {
 // a bidi resolver as it enters/exits inlines (so it can push/pop embedding
 // levels).
 template <class Observer>
-static inline LineLayoutItem bidiNextShared(
+static inline LineLayoutItem BidiNextShared(
     LineLayoutItem root,
     LineLayoutItem current,
     Observer* observer = 0,
-    EmptyInlineBehavior emptyInlineBehavior = SkipEmptyInlines,
-    bool* endOfInlinePtr = nullptr) {
+    EmptyInlineBehavior empty_inline_behavior = kSkipEmptyInlines,
+    bool* end_of_inline_ptr = nullptr) {
   LineLayoutItem next = nullptr;
   // oldEndOfInline denotes if when we last stopped iterating if we were at the
   // end of an inline.
-  bool oldEndOfInline = endOfInlinePtr ? *endOfInlinePtr : false;
-  bool endOfInline = false;
+  bool old_end_of_inline = end_of_inline_ptr ? *end_of_inline_ptr : false;
+  bool end_of_inline = false;
 
   while (current) {
     next = 0;
-    if (!oldEndOfInline && !isIteratorTarget(current)) {
-      next = current.slowFirstChild();
-      notifyObserverEnteredObject(observer, next);
+    if (!old_end_of_inline && !IsIteratorTarget(current)) {
+      next = current.SlowFirstChild();
+      NotifyObserverEnteredObject(observer, next);
     }
 
     // We hit this when either current has no children, or when current is not a
@@ -268,27 +272,27 @@ static inline LineLayoutItem bidiNextShared(
     if (!next) {
       // If it is a layoutObject we care about, and we're doing our inline-walk,
       // return it.
-      if (emptyInlineBehavior == IncludeEmptyInlines && !oldEndOfInline &&
-          current.isLayoutInline()) {
+      if (empty_inline_behavior == kIncludeEmptyInlines && !old_end_of_inline &&
+          current.IsLayoutInline()) {
         next = current;
-        endOfInline = true;
+        end_of_inline = true;
         break;
       }
 
       while (current && current != root) {
-        notifyObserverWillExitObject(observer, current);
+        NotifyObserverWillExitObject(observer, current);
 
-        next = current.nextSibling();
+        next = current.NextSibling();
         if (next) {
-          notifyObserverEnteredObject(observer, next);
+          NotifyObserverEnteredObject(observer, next);
           break;
         }
 
-        current = current.parent();
-        if (emptyInlineBehavior == IncludeEmptyInlines && current &&
-            current != root && current.isLayoutInline()) {
+        current = current.Parent();
+        if (empty_inline_behavior == kIncludeEmptyInlines && current &&
+            current != root && current.IsLayoutInline()) {
           next = current;
-          endOfInline = true;
+          end_of_inline = true;
           break;
         }
       }
@@ -297,22 +301,22 @@ static inline LineLayoutItem bidiNextShared(
     if (!next)
       break;
 
-    if (isIteratorTarget(next) ||
-        ((emptyInlineBehavior == IncludeEmptyInlines ||
-          isEmptyInline(next))  // Always return EMPTY inlines.
-         && next.isLayoutInline()))
+    if (IsIteratorTarget(next) ||
+        ((empty_inline_behavior == kIncludeEmptyInlines ||
+          IsEmptyInline(next))  // Always return EMPTY inlines.
+         && next.IsLayoutInline()))
       break;
     current = next;
   }
 
-  if (endOfInlinePtr)
-    *endOfInlinePtr = endOfInline;
+  if (end_of_inline_ptr)
+    *end_of_inline_ptr = end_of_inline;
 
   return next;
 }
 
 template <class Observer>
-static inline LineLayoutItem bidiNextSkippingEmptyInlines(
+static inline LineLayoutItem BidiNextSkippingEmptyInlines(
     LineLayoutItem root,
     LineLayoutItem current,
     Observer* observer) {
@@ -326,22 +330,22 @@ static inline LineLayoutItem bidiNextSkippingEmptyInlines(
   // LayoutInline has content, it will advance past the start of the LayoutLine
   // and try to return one of its children. The SkipEmptyInlines callers never
   // care about endOfInlinePtr.
-  return bidiNextShared(root, current, observer, SkipEmptyInlines);
+  return BidiNextShared(root, current, observer, kSkipEmptyInlines);
 }
 
 // This makes callers cleaner as they don't have to specify a type for the
 // observer when not providing one.
-static inline LineLayoutItem bidiNextSkippingEmptyInlines(
+static inline LineLayoutItem BidiNextSkippingEmptyInlines(
     LineLayoutItem root,
     LineLayoutItem current) {
   InlineBidiResolver* observer = nullptr;
-  return bidiNextSkippingEmptyInlines(root, current, observer);
+  return BidiNextSkippingEmptyInlines(root, current, observer);
 }
 
-static inline LineLayoutItem bidiNextIncludingEmptyInlines(
+static inline LineLayoutItem BidiNextIncludingEmptyInlines(
     LineLayoutItem root,
     LineLayoutItem current,
-    bool* endOfInlinePtr = nullptr) {
+    bool* end_of_inline_ptr = nullptr) {
   // TODO(rhogan): Rename this caller. It's used for quick and dirty walks of
   // inline children by InlineWalker, which isn't interested in the contents of
   // inlines. Use cases include dirtying objects or simplified layout that
@@ -353,57 +357,57 @@ static inline LineLayoutItem bidiNextIncludingEmptyInlines(
   // isIteratorTarget it will return the enclosing LayoutInline.
   InlineBidiResolver* observer =
       nullptr;  // Callers who include empty inlines, never use an observer.
-  return bidiNextShared(root, current, observer, IncludeEmptyInlines,
-                        endOfInlinePtr);
+  return BidiNextShared(root, current, observer, kIncludeEmptyInlines,
+                        end_of_inline_ptr);
 }
 
-static inline LineLayoutItem bidiFirstSkippingEmptyInlines(
+static inline LineLayoutItem BidiFirstSkippingEmptyInlines(
     LineLayoutBlockFlow root,
     BidiRunList<BidiRun>& runs,
     InlineBidiResolver* resolver = nullptr) {
-  LineLayoutItem o = root.firstChild();
+  LineLayoutItem o = root.FirstChild();
   if (!o)
     return nullptr;
 
-  if (o.isLayoutInline()) {
-    notifyObserverEnteredObject(resolver, o);
-    if (!isEmptyInline(o)) {
-      o = bidiNextSkippingEmptyInlines(root, o, resolver);
+  if (o.IsLayoutInline()) {
+    NotifyObserverEnteredObject(resolver, o);
+    if (!IsEmptyInline(o)) {
+      o = BidiNextSkippingEmptyInlines(root, o, resolver);
     } else {
       // Never skip empty inlines.
       if (resolver)
-        resolver->commitExplicitEmbedding(runs);
+        resolver->CommitExplicitEmbedding(runs);
       return o;
     }
   }
 
   // FIXME: Unify this with the bidiNext call above.
-  if (o && !isIteratorTarget(o))
-    o = bidiNextSkippingEmptyInlines(root, o, resolver);
+  if (o && !IsIteratorTarget(o))
+    o = BidiNextSkippingEmptyInlines(root, o, resolver);
 
   if (resolver)
-    resolver->commitExplicitEmbedding(runs);
+    resolver->CommitExplicitEmbedding(runs);
   return o;
 }
 
 // FIXME: This method needs to be renamed when bidiNext finds a good name.
-static inline LineLayoutItem bidiFirstIncludingEmptyInlines(
+static inline LineLayoutItem BidiFirstIncludingEmptyInlines(
     LineLayoutBlockFlow root) {
-  LineLayoutItem o = root.firstChild();
+  LineLayoutItem o = root.FirstChild();
   // If either there are no children to walk, or the first one is correct
   // then just return it.
-  if (!o || o.isLayoutInline() || isIteratorTarget(o))
+  if (!o || o.IsLayoutInline() || IsIteratorTarget(o))
     return o;
 
-  return bidiNextIncludingEmptyInlines(root, o);
+  return BidiNextIncludingEmptyInlines(root, o);
 }
 
-inline void InlineIterator::fastIncrementInTextNode() {
-  DCHECK(m_lineLayoutItem);
-  DCHECK(m_lineLayoutItem.isText());
-  DCHECK_LE(m_pos, LineLayoutText(m_lineLayoutItem).textLength());
-  if (m_pos < INT_MAX)
-    m_pos++;
+inline void InlineIterator::FastIncrementInTextNode() {
+  DCHECK(line_layout_item_);
+  DCHECK(line_layout_item_.IsText());
+  DCHECK_LE(pos_, LineLayoutText(line_layout_item_).TextLength());
+  if (pos_ < INT_MAX)
+    pos_++;
 }
 
 // FIXME: This is used by LayoutBlockFlow for simplified layout, and has nothing
@@ -413,178 +417,179 @@ class InlineWalker {
 
  public:
   InlineWalker(LineLayoutBlockFlow root)
-      : m_root(root), m_current(nullptr), m_atEndOfInline(false) {
+      : root_(root), current_(nullptr), at_end_of_inline_(false) {
     // FIXME: This class should be taught how to do the SkipEmptyInlines
     // codepath as well.
-    m_current = bidiFirstIncludingEmptyInlines(m_root);
+    current_ = BidiFirstIncludingEmptyInlines(root_);
   }
 
-  LineLayoutBlockFlow root() { return m_root; }
-  LineLayoutItem current() { return m_current; }
+  LineLayoutBlockFlow Root() { return root_; }
+  LineLayoutItem Current() { return current_; }
 
-  bool atEndOfInline() { return m_atEndOfInline; }
-  bool atEnd() const { return !m_current; }
+  bool AtEndOfInline() { return at_end_of_inline_; }
+  bool AtEnd() const { return !current_; }
 
-  LineLayoutItem advance() {
+  LineLayoutItem Advance() {
     // FIXME: Support SkipEmptyInlines and observer parameters.
-    m_current =
-        bidiNextIncludingEmptyInlines(m_root, m_current, &m_atEndOfInline);
-    return m_current;
+    current_ =
+        BidiNextIncludingEmptyInlines(root_, current_, &at_end_of_inline_);
+    return current_;
   }
 
  private:
-  LineLayoutBlockFlow m_root;
-  LineLayoutItem m_current;
-  bool m_atEndOfInline;
+  LineLayoutBlockFlow root_;
+  LineLayoutItem current_;
+  bool at_end_of_inline_;
 };
 
-static inline bool endOfLineHasIsolatedObjectAncestor(
-    const InlineIterator& isolatedIterator,
-    const InlineIterator& ancestorItertor) {
-  if (!isolatedIterator.getLineLayoutItem() ||
-      !treatAsIsolated(isolatedIterator.getLineLayoutItem().styleRef()))
+static inline bool EndOfLineHasIsolatedObjectAncestor(
+    const InlineIterator& isolated_iterator,
+    const InlineIterator& ancestor_itertor) {
+  if (!isolated_iterator.GetLineLayoutItem() ||
+      !TreatAsIsolated(isolated_iterator.GetLineLayoutItem().StyleRef()))
     return false;
 
-  LineLayoutItem innerIsolatedObject = isolatedIterator.getLineLayoutItem();
-  while (innerIsolatedObject &&
-         innerIsolatedObject != isolatedIterator.root()) {
-    if (innerIsolatedObject == ancestorItertor.getLineLayoutItem())
+  LineLayoutItem inner_isolated_object = isolated_iterator.GetLineLayoutItem();
+  while (inner_isolated_object &&
+         inner_isolated_object != isolated_iterator.Root()) {
+    if (inner_isolated_object == ancestor_itertor.GetLineLayoutItem())
       return true;
-    innerIsolatedObject = innerIsolatedObject.parent();
+    inner_isolated_object = inner_isolated_object.Parent();
   }
   return false;
 }
 
-inline void InlineIterator::increment(InlineBidiResolver* resolver,
+inline void InlineIterator::Increment(InlineBidiResolver* resolver,
                                       IncrementRule rule) {
-  if (!m_lineLayoutItem)
+  if (!line_layout_item_)
     return;
 
-  if (rule == FastIncrementInIsolatedLayout && resolver &&
-      resolver->inIsolate() &&
-      !endOfLineHasIsolatedObjectAncestor(resolver->endOfLine(),
-                                          resolver->position())) {
-    moveTo(bidiNextSkippingEmptyInlines(m_root, m_lineLayoutItem, resolver), 0);
+  if (rule == kFastIncrementInIsolatedLayout && resolver &&
+      resolver->InIsolate() &&
+      !EndOfLineHasIsolatedObjectAncestor(resolver->EndOfLine(),
+                                          resolver->GetPosition())) {
+    MoveTo(BidiNextSkippingEmptyInlines(root_, line_layout_item_, resolver), 0);
     return;
   }
 
-  if (m_lineLayoutItem.isText()) {
-    fastIncrementInTextNode();
-    if (m_pos < LineLayoutText(m_lineLayoutItem).textLength())
+  if (line_layout_item_.IsText()) {
+    FastIncrementInTextNode();
+    if (pos_ < LineLayoutText(line_layout_item_).TextLength())
       return;
   }
   // bidiNext can return 0, so use moveTo instead of moveToStartOf
-  moveTo(bidiNextSkippingEmptyInlines(m_root, m_lineLayoutItem, resolver), 0);
+  MoveTo(BidiNextSkippingEmptyInlines(root_, line_layout_item_, resolver), 0);
 }
 
-inline bool InlineIterator::atEnd() const {
-  return !m_lineLayoutItem;
+inline bool InlineIterator::AtEnd() const {
+  return !line_layout_item_;
 }
 
-inline UChar InlineIterator::characterAt(unsigned index) const {
-  if (!m_lineLayoutItem || !m_lineLayoutItem.isText())
+inline UChar InlineIterator::CharacterAt(unsigned index) const {
+  if (!line_layout_item_ || !line_layout_item_.IsText())
     return 0;
 
-  return LineLayoutText(m_lineLayoutItem).characterAt(index);
+  return LineLayoutText(line_layout_item_).CharacterAt(index);
 }
 
-inline UChar InlineIterator::current() const {
-  return characterAt(m_pos);
+inline UChar InlineIterator::Current() const {
+  return CharacterAt(pos_);
 }
 
-inline UChar InlineIterator::previousInSameNode() const {
-  if (!m_pos)
+inline UChar InlineIterator::PreviousInSameNode() const {
+  if (!pos_)
     return 0;
 
-  return characterAt(m_pos - 1);
+  return CharacterAt(pos_ - 1);
 }
 
-inline UChar32 InlineIterator::codepointAt(unsigned index) const {
-  if (!m_lineLayoutItem || !m_lineLayoutItem.isText())
+inline UChar32 InlineIterator::CodepointAt(unsigned index) const {
+  if (!line_layout_item_ || !line_layout_item_.IsText())
     return 0;
-  return LineLayoutText(m_lineLayoutItem).codepointAt(index);
+  return LineLayoutText(line_layout_item_).CodepointAt(index);
 }
 
-inline UChar32 InlineIterator::currentCodepoint() const {
-  return codepointAt(m_pos);
+inline UChar32 InlineIterator::CurrentCodepoint() const {
+  return CodepointAt(pos_);
 }
 
-ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::direction() const {
-  if (UChar32 c = currentCodepoint())
-    return WTF::Unicode::direction(c);
+ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::Direction() const {
+  if (UChar32 c = CurrentCodepoint())
+    return WTF::Unicode::Direction(c);
 
-  if (m_lineLayoutItem && m_lineLayoutItem.isListMarker())
-    return m_lineLayoutItem.style()->isLeftToRightDirection()
-               ? WTF::Unicode::LeftToRight
-               : WTF::Unicode::RightToLeft;
+  if (line_layout_item_ && line_layout_item_.IsListMarker())
+    return line_layout_item_.Style()->IsLeftToRightDirection()
+               ? WTF::Unicode::kLeftToRight
+               : WTF::Unicode::kRightToLeft;
 
-  return WTF::Unicode::OtherNeutral;
+  return WTF::Unicode::kOtherNeutral;
 }
 
 template <>
-inline void InlineBidiResolver::increment() {
-  m_current.increment(this, InlineIterator::FastIncrementInIsolatedLayout);
+inline void InlineBidiResolver::Increment() {
+  current_.Increment(this, InlineIterator::kFastIncrementInIsolatedLayout);
 }
 
 template <>
-inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end) {
-  bool inEndOfLine =
-      m_current == end || m_current.atEnd() ||
-      (inIsolate() && m_current.getLineLayoutItem() == end.getLineLayoutItem());
-  if (inIsolate() && inEndOfLine) {
-    m_current.moveTo(m_current.getLineLayoutItem(), end.offset(),
-                     m_current.nextBreakablePosition());
-    m_last = m_current;
-    updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
+inline bool InlineBidiResolver::IsEndOfLine(const InlineIterator& end) {
+  bool in_end_of_line =
+      current_ == end || current_.AtEnd() ||
+      (InIsolate() && current_.GetLineLayoutItem() == end.GetLineLayoutItem());
+  if (InIsolate() && in_end_of_line) {
+    current_.MoveTo(current_.GetLineLayoutItem(), end.Offset(),
+                    current_.NextBreakablePosition());
+    last_ = current_;
+    UpdateStatusLastFromCurrentDirection(WTF::Unicode::kOtherNeutral);
   }
-  return inEndOfLine;
+  return in_end_of_line;
 }
 
-static inline bool isCollapsibleSpace(UChar character,
-                                      LineLayoutText layoutText) {
-  if (character == ' ' || character == '\t' || character == softHyphenCharacter)
+static inline bool IsCollapsibleSpace(UChar character,
+                                      LineLayoutText layout_text) {
+  if (character == ' ' || character == '\t' ||
+      character == kSoftHyphenCharacter)
     return true;
   if (character == '\n')
-    return !layoutText.style()->preserveNewline();
+    return !layout_text.Style()->PreserveNewline();
   return false;
 }
 
 template <typename CharacterType>
-static inline int findFirstTrailingSpace(LineLayoutText lastText,
+static inline int FindFirstTrailingSpace(LineLayoutText last_text,
                                          const CharacterType* characters,
                                          int start,
                                          int stop) {
-  int firstSpace = stop;
-  while (firstSpace > start) {
-    UChar current = characters[firstSpace - 1];
-    if (!isCollapsibleSpace(current, lastText))
+  int first_space = stop;
+  while (first_space > start) {
+    UChar current = characters[first_space - 1];
+    if (!IsCollapsibleSpace(current, last_text))
       break;
-    firstSpace--;
+    first_space--;
   }
 
-  return firstSpace;
+  return first_space;
 }
 
 template <>
-inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run) {
+inline int InlineBidiResolver::FindFirstTrailingSpaceAtRun(BidiRun* run) {
   DCHECK(run);
-  LineLayoutItem lastObject = LineLayoutItem(run->m_lineLayoutItem);
-  if (!lastObject.isText())
-    return run->m_stop;
+  LineLayoutItem last_object = LineLayoutItem(run->line_layout_item_);
+  if (!last_object.IsText())
+    return run->stop_;
 
-  LineLayoutText lastText(lastObject);
-  int firstSpace;
-  if (lastText.is8Bit())
-    firstSpace = findFirstTrailingSpace(lastText, lastText.characters8(),
-                                        run->start(), run->stop());
+  LineLayoutText last_text(last_object);
+  int first_space;
+  if (last_text.Is8Bit())
+    first_space = FindFirstTrailingSpace(last_text, last_text.Characters8(),
+                                         run->Start(), run->Stop());
   else
-    firstSpace = findFirstTrailingSpace(lastText, lastText.characters16(),
-                                        run->start(), run->stop());
-  return firstSpace;
+    first_space = FindFirstTrailingSpace(last_text, last_text.Characters16(),
+                                         run->Start(), run->Stop());
+  return first_space;
 }
 
 template <>
-inline BidiRun* InlineBidiResolver::addTrailingRun(
+inline BidiRun* InlineBidiResolver::AddTrailingRun(
     BidiRunList<BidiRun>& runs,
     int start,
     int stop,
@@ -592,121 +597,121 @@ inline BidiRun* InlineBidiResolver::addTrailingRun(
     BidiContext* context,
     TextDirection direction) const {
   DCHECK(context);
-  BidiRun* newTrailingRun = new BidiRun(
-      context->override(), context->level(), start, stop, run->m_lineLayoutItem,
-      WTF::Unicode::OtherNeutral, context->dir());
+  BidiRun* new_trailing_run = new BidiRun(
+      context->Override(), context->Level(), start, stop,
+      run->line_layout_item_, WTF::Unicode::kOtherNeutral, context->Dir());
   if (direction == TextDirection::kLtr)
-    runs.addRun(newTrailingRun);
+    runs.AddRun(new_trailing_run);
   else
-    runs.prependRun(newTrailingRun);
+    runs.PrependRun(new_trailing_run);
 
-  return newTrailingRun;
+  return new_trailing_run;
 }
 
 template <>
-inline bool InlineBidiResolver::needsTrailingSpace(BidiRunList<BidiRun>& runs) {
-  if (m_needsTrailingSpace)
+inline bool InlineBidiResolver::NeedsTrailingSpace(BidiRunList<BidiRun>& runs) {
+  if (needs_trailing_space_)
     return true;
   const ComputedStyle& style =
-      runs.logicallyLastRun()->m_lineLayoutItem.styleRef();
-  if (style.breakOnlyAfterWhiteSpace() && style.autoWrap())
+      runs.LogicallyLastRun()->line_layout_item_.StyleRef();
+  if (style.BreakOnlyAfterWhiteSpace() && style.AutoWrap())
     return true;
   return false;
 }
 
-static inline bool isIsolatedInline(LineLayoutItem object) {
+static inline bool IsIsolatedInline(LineLayoutItem object) {
   DCHECK(object);
-  return object.isLayoutInline() && treatAsIsolated(object.styleRef());
+  return object.IsLayoutInline() && TreatAsIsolated(object.StyleRef());
 }
 
-static inline LineLayoutItem highestContainingIsolateWithinRoot(
+static inline LineLayoutItem HighestContainingIsolateWithinRoot(
     LineLayoutItem object,
     LineLayoutItem root) {
   DCHECK(object);
-  LineLayoutItem containingIsolateObj(nullptr);
+  LineLayoutItem containing_isolate_obj(nullptr);
   while (object && object != root) {
-    if (isIsolatedInline(object))
-      containingIsolateObj = LineLayoutItem(object);
+    if (IsIsolatedInline(object))
+      containing_isolate_obj = LineLayoutItem(object);
 
-    object = object.parent();
+    object = object.Parent();
     DCHECK(object);
   }
-  return containingIsolateObj;
+  return containing_isolate_obj;
 }
 
-static inline unsigned numberOfIsolateAncestors(const InlineIterator& iter) {
-  LineLayoutItem object = iter.getLineLayoutItem();
+static inline unsigned NumberOfIsolateAncestors(const InlineIterator& iter) {
+  LineLayoutItem object = iter.GetLineLayoutItem();
   if (!object)
     return 0;
   unsigned count = 0;
-  while (object && object != iter.root()) {
-    if (isIsolatedInline(object))
+  while (object && object != iter.Root()) {
+    if (IsIsolatedInline(object))
       count++;
-    object = object.parent();
+    object = object.Parent();
   }
   return count;
 }
 
 // FIXME: This belongs on InlineBidiResolver, except it's a template
 // specialization of BidiResolver which knows nothing about LayoutObjects.
-static inline BidiRun* addPlaceholderRunForIsolatedInline(
+static inline BidiRun* AddPlaceholderRunForIsolatedInline(
     InlineBidiResolver& resolver,
     LineLayoutItem obj,
     unsigned pos,
     LineLayoutItem root) {
   DCHECK(obj);
-  BidiRun* isolatedRun =
-      new BidiRun(resolver.context()->override(), resolver.context()->level(),
-                  pos, pos, obj, resolver.dir(), resolver.context()->dir());
-  resolver.runs().addRun(isolatedRun);
+  BidiRun* isolated_run =
+      new BidiRun(resolver.Context()->Override(), resolver.Context()->Level(),
+                  pos, pos, obj, resolver.Dir(), resolver.Context()->Dir());
+  resolver.Runs().AddRun(isolated_run);
   // FIXME: isolatedRuns() could be a hash of object->run and then we could
   // cheaply ASSERT here that we didn't create multiple objects for the same
   // inline.
-  resolver.isolatedRuns().push_back(BidiIsolatedRun(
-      obj, pos, root, *isolatedRun, resolver.context()->level()));
-  return isolatedRun;
+  resolver.IsolatedRuns().push_back(BidiIsolatedRun(
+      obj, pos, root, *isolated_run, resolver.Context()->Level()));
+  return isolated_run;
 }
 
-static inline BidiRun* createRun(int start,
+static inline BidiRun* CreateRun(int start,
                                  int end,
                                  LineLayoutItem obj,
                                  InlineBidiResolver& resolver) {
-  return new BidiRun(resolver.context()->override(),
-                     resolver.context()->level(), start, end, obj,
-                     resolver.dir(), resolver.context()->dir());
+  return new BidiRun(resolver.Context()->Override(),
+                     resolver.Context()->Level(), start, end, obj,
+                     resolver.Dir(), resolver.Context()->Dir());
 }
 
-enum AppendRunBehavior { AppendingFakeRun, AppendingRunsForObject };
+enum AppendRunBehavior { kAppendingFakeRun, kAppendingRunsForObject };
 
 class IsolateTracker {
   STACK_ALLOCATED();
 
  public:
   explicit IsolateTracker(BidiRunList<BidiRun>& runs,
-                          unsigned nestedIsolateCount)
-      : m_nestedIsolateCount(nestedIsolateCount),
-        m_haveAddedFakeRunForRootIsolate(false),
-        m_runs(runs) {}
+                          unsigned nested_isolate_count)
+      : nested_isolate_count_(nested_isolate_count),
+        have_added_fake_run_for_root_isolate_(false),
+        runs_(runs) {}
 
-  void setMidpointStateForRootIsolate(const LineMidpointState& midpointState) {
-    m_midpointStateForRootIsolate = midpointState;
+  void SetMidpointStateForRootIsolate(const LineMidpointState& midpoint_state) {
+    midpoint_state_for_root_isolate_ = midpoint_state;
   }
 
-  void enterIsolate() { m_nestedIsolateCount++; }
-  void exitIsolate() {
-    DCHECK_GE(m_nestedIsolateCount, 1u);
-    m_nestedIsolateCount--;
-    if (!inIsolate())
-      m_haveAddedFakeRunForRootIsolate = false;
+  void EnterIsolate() { nested_isolate_count_++; }
+  void ExitIsolate() {
+    DCHECK_GE(nested_isolate_count_, 1u);
+    nested_isolate_count_--;
+    if (!InIsolate())
+      have_added_fake_run_for_root_isolate_ = false;
   }
-  bool inIsolate() const { return m_nestedIsolateCount; }
+  bool InIsolate() const { return nested_isolate_count_; }
 
   // We don't care if we encounter bidi directional overrides.
-  void embed(WTF::Unicode::CharDirection, BidiEmbeddingSource) {}
-  void commitExplicitEmbedding(BidiRunList<BidiRun>&) {}
-  BidiRunList<BidiRun>& runs() { return m_runs; }
+  void Embed(WTF::Unicode::CharDirection, BidiEmbeddingSource) {}
+  void CommitExplicitEmbedding(BidiRunList<BidiRun>&) {}
+  BidiRunList<BidiRun>& Runs() { return runs_; }
 
-  void addFakeRunIfNecessary(LineLayoutItem obj,
+  void AddFakeRunIfNecessary(LineLayoutItem obj,
                              unsigned pos,
                              unsigned end,
                              LineLayoutItem root,
@@ -716,14 +721,14 @@ class IsolateTracker {
     // isolated span so we just ignore subsequent calls.
     // We also avoid creating a fake run until we hit a child that warrants one,
     // e.g. we skip floats.
-    if (LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
+    if (LayoutBlockFlow::ShouldSkipCreatingRunsForObject(obj))
       return;
-    if (!m_haveAddedFakeRunForRootIsolate) {
+    if (!have_added_fake_run_for_root_isolate_) {
       BidiRun* run =
-          addPlaceholderRunForIsolatedInline(resolver, obj, pos, root);
-      resolver.setMidpointStateForIsolatedRun(*run,
-                                              m_midpointStateForRootIsolate);
-      m_haveAddedFakeRunForRootIsolate = true;
+          AddPlaceholderRunForIsolatedInline(resolver, obj, pos, root);
+      resolver.SetMidpointStateForIsolatedRun(*run,
+                                              midpoint_state_for_root_isolate_);
+      have_added_fake_run_for_root_isolate_ = true;
     }
     // obj and pos together denote a single position in the inline, from which
     // the parsing of the isolate will start.
@@ -733,13 +738,13 @@ class IsolateTracker {
   }
 
  private:
-  unsigned m_nestedIsolateCount;
-  bool m_haveAddedFakeRunForRootIsolate;
-  LineMidpointState m_midpointStateForRootIsolate;
-  BidiRunList<BidiRun>& m_runs;
+  unsigned nested_isolate_count_;
+  bool have_added_fake_run_for_root_isolate_;
+  LineMidpointState midpoint_state_for_root_isolate_;
+  BidiRunList<BidiRun>& runs_;
 };
 
-static void inline appendRunObjectIfNecessary(LineLayoutItem obj,
+static void inline AppendRunObjectIfNecessary(LineLayoutItem obj,
                                               unsigned start,
                                               unsigned end,
                                               LineLayoutItem root,
@@ -748,26 +753,26 @@ static void inline appendRunObjectIfNecessary(LineLayoutItem obj,
                                               IsolateTracker& tracker) {
   // Trailing space code creates empty BidiRun objects, start == end, so
   // that case needs to be handled specifically.
-  bool addEmptyRun = (end == start);
+  bool add_empty_run = (end == start);
 
   // Append BidiRun objects, at most 64K chars at a time, until all
   // text between |start| and |end| is represented.
-  while (end > start || addEmptyRun) {
-    addEmptyRun = false;
-    const int limit =
+  while (end > start || add_empty_run) {
+    add_empty_run = false;
+    const int kLimit =
         USHRT_MAX;  // InlineTextBox stores text length as unsigned short.
-    unsigned limitedEnd = end;
-    if (end - start > limit)
-      limitedEnd = start + limit;
-    if (behavior == AppendingFakeRun)
-      tracker.addFakeRunIfNecessary(obj, start, limitedEnd, root, resolver);
+    unsigned limited_end = end;
+    if (end - start > kLimit)
+      limited_end = start + kLimit;
+    if (behavior == kAppendingFakeRun)
+      tracker.AddFakeRunIfNecessary(obj, start, limited_end, root, resolver);
     else
-      resolver.runs().addRun(createRun(start, limitedEnd, obj, resolver));
-    start = limitedEnd;
+      resolver.Runs().AddRun(CreateRun(start, limited_end, obj, resolver));
+    start = limited_end;
   }
 }
 
-static void adjustMidpointsAndAppendRunsForObjectIfNeeded(
+static void AdjustMidpointsAndAppendRunsForObjectIfNeeded(
     LineLayoutItem obj,
     unsigned start,
     unsigned end,
@@ -775,49 +780,49 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(
     InlineBidiResolver& resolver,
     AppendRunBehavior behavior,
     IsolateTracker& tracker) {
-  if (start > end || LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
+  if (start > end || LayoutBlockFlow::ShouldSkipCreatingRunsForObject(obj))
     return;
 
   for (;;) {
-    LineMidpointState& lineMidpointState = resolver.midpointState();
-    bool haveNextMidpoint = (lineMidpointState.currentMidpoint() <
-                             lineMidpointState.numMidpoints());
-    InlineIterator nextMidpoint;
-    if (haveNextMidpoint)
-      nextMidpoint =
-          lineMidpointState.midpoints()[lineMidpointState.currentMidpoint()];
-    if (lineMidpointState.betweenMidpoints()) {
-      if (!(haveNextMidpoint && nextMidpoint.getLineLayoutItem() == obj))
+    LineMidpointState& line_midpoint_state = resolver.GetMidpointState();
+    bool have_next_midpoint = (line_midpoint_state.CurrentMidpoint() <
+                               line_midpoint_state.NumMidpoints());
+    InlineIterator next_midpoint;
+    if (have_next_midpoint)
+      next_midpoint = line_midpoint_state
+                          .Midpoints()[line_midpoint_state.CurrentMidpoint()];
+    if (line_midpoint_state.BetweenMidpoints()) {
+      if (!(have_next_midpoint && next_midpoint.GetLineLayoutItem() == obj))
         return;
       // This is a new start point. Stop ignoring objects and
       // adjust our start.
-      lineMidpointState.setBetweenMidpoints(false);
-      start = nextMidpoint.offset();
-      lineMidpointState.incrementCurrentMidpoint();
+      line_midpoint_state.SetBetweenMidpoints(false);
+      start = next_midpoint.Offset();
+      line_midpoint_state.IncrementCurrentMidpoint();
       if (start < end)
         continue;
     } else {
-      if (!haveNextMidpoint || (obj != nextMidpoint.getLineLayoutItem())) {
-        appendRunObjectIfNecessary(obj, start, end, root, resolver, behavior,
+      if (!have_next_midpoint || (obj != next_midpoint.GetLineLayoutItem())) {
+        AppendRunObjectIfNecessary(obj, start, end, root, resolver, behavior,
                                    tracker);
         return;
       }
 
       // An end midpoint has been encountered within our object. We
       // need to go ahead and append a run with our endpoint.
-      if (nextMidpoint.offset() + 1 <= end) {
-        lineMidpointState.setBetweenMidpoints(true);
-        lineMidpointState.incrementCurrentMidpoint();
+      if (next_midpoint.Offset() + 1 <= end) {
+        line_midpoint_state.SetBetweenMidpoints(true);
+        line_midpoint_state.IncrementCurrentMidpoint();
         // UINT_MAX means stop at the object and don't include any of it.
-        if (nextMidpoint.offset() != UINT_MAX) {
-          if (nextMidpoint.offset() + 1 > start)
-            appendRunObjectIfNecessary(obj, start, nextMidpoint.offset() + 1,
+        if (next_midpoint.Offset() != UINT_MAX) {
+          if (next_midpoint.Offset() + 1 > start)
+            AppendRunObjectIfNecessary(obj, start, next_midpoint.Offset() + 1,
                                        root, resolver, behavior, tracker);
-          start = nextMidpoint.offset() + 1;
+          start = next_midpoint.Offset() + 1;
           continue;
         }
       } else {
-        appendRunObjectIfNecessary(obj, start, end, root, resolver, behavior,
+        AppendRunObjectIfNecessary(obj, start, end, root, resolver, behavior,
                                    tracker);
       }
     }
@@ -825,79 +830,78 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(
   }
 }
 
-static inline void addFakeRunIfNecessary(LineLayoutItem obj,
+static inline void AddFakeRunIfNecessary(LineLayoutItem obj,
                                          unsigned start,
                                          unsigned end,
                                          LineLayoutItem root,
                                          InlineBidiResolver& resolver,
                                          IsolateTracker& tracker) {
-  tracker.setMidpointStateForRootIsolate(resolver.midpointState());
-  adjustMidpointsAndAppendRunsForObjectIfNeeded(
-      obj, start, obj.length(), root, resolver, AppendingFakeRun, tracker);
+  tracker.SetMidpointStateForRootIsolate(resolver.GetMidpointState());
+  AdjustMidpointsAndAppendRunsForObjectIfNeeded(
+      obj, start, obj.length(), root, resolver, kAppendingFakeRun, tracker);
 }
 
 template <>
-inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs) {
-  if (!m_emptyRun && !m_eor.atEnd() && !m_reachedEndOfLine) {
+inline void InlineBidiResolver::AppendRun(BidiRunList<BidiRun>& runs) {
+  if (!empty_run_ && !eor_.AtEnd() && !reached_end_of_line_) {
     // Keep track of when we enter/leave "unicode-bidi: isolate" inlines.
     // Initialize our state depending on if we're starting in the middle of such
     // an inline.
     // FIXME: Could this initialize from this->inIsolate() instead of walking up
     // the layout tree?
-    IsolateTracker isolateTracker(runs, numberOfIsolateAncestors(m_sor));
-    int start = m_sor.offset();
-    LineLayoutItem obj = m_sor.getLineLayoutItem();
-    while (obj && obj != m_eor.getLineLayoutItem() &&
-           obj != m_endOfRunAtEndOfLine.getLineLayoutItem()) {
-      if (isolateTracker.inIsolate())
-        addFakeRunIfNecessary(obj, start, obj.length(), m_sor.root(), *this,
-                              isolateTracker);
+    IsolateTracker isolate_tracker(runs, NumberOfIsolateAncestors(sor_));
+    int start = sor_.Offset();
+    LineLayoutItem obj = sor_.GetLineLayoutItem();
+    while (obj && obj != eor_.GetLineLayoutItem() &&
+           obj != end_of_run_at_end_of_line_.GetLineLayoutItem()) {
+      if (isolate_tracker.InIsolate())
+        AddFakeRunIfNecessary(obj, start, obj.length(), sor_.Root(), *this,
+                              isolate_tracker);
       else
-        adjustMidpointsAndAppendRunsForObjectIfNeeded(
-            obj, start, obj.length(), m_sor.root(), *this,
-            AppendingRunsForObject, isolateTracker);
+        AdjustMidpointsAndAppendRunsForObjectIfNeeded(
+            obj, start, obj.length(), sor_.Root(), *this,
+            kAppendingRunsForObject, isolate_tracker);
       // FIXME: start/obj should be an InlineIterator instead of two separate
       // variables.
       start = 0;
-      obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
+      obj = BidiNextSkippingEmptyInlines(sor_.Root(), obj, &isolate_tracker);
     }
-    bool isEndOfLine =
-        obj == m_endOfLine.getLineLayoutItem() && !m_endOfLine.offset();
-    if (obj && !isEndOfLine) {
-      unsigned pos =
-          obj == m_eor.getLineLayoutItem() ? m_eor.offset() : INT_MAX;
-      if (obj == m_endOfRunAtEndOfLine.getLineLayoutItem() &&
-          m_endOfRunAtEndOfLine.offset() <= pos) {
-        m_reachedEndOfLine = true;
-        pos = m_endOfRunAtEndOfLine.offset();
+    bool is_end_of_line =
+        obj == end_of_line_.GetLineLayoutItem() && !end_of_line_.Offset();
+    if (obj && !is_end_of_line) {
+      unsigned pos = obj == eor_.GetLineLayoutItem() ? eor_.Offset() : INT_MAX;
+      if (obj == end_of_run_at_end_of_line_.GetLineLayoutItem() &&
+          end_of_run_at_end_of_line_.Offset() <= pos) {
+        reached_end_of_line_ = true;
+        pos = end_of_run_at_end_of_line_.Offset();
       }
       // It's OK to add runs for zero-length LayoutObjects, just don't make the
       // run larger than it should be
       int end = obj.length() ? pos + 1 : 0;
-      if (isolateTracker.inIsolate())
-        addFakeRunIfNecessary(obj, start, end, m_sor.root(), *this,
-                              isolateTracker);
+      if (isolate_tracker.InIsolate())
+        AddFakeRunIfNecessary(obj, start, end, sor_.Root(), *this,
+                              isolate_tracker);
       else
-        adjustMidpointsAndAppendRunsForObjectIfNeeded(
-            obj, start, end, m_sor.root(), *this, AppendingRunsForObject,
-            isolateTracker);
+        AdjustMidpointsAndAppendRunsForObjectIfNeeded(
+            obj, start, end, sor_.Root(), *this, kAppendingRunsForObject,
+            isolate_tracker);
     }
 
-    if (isEndOfLine)
-      m_reachedEndOfLine = true;
+    if (is_end_of_line)
+      reached_end_of_line_ = true;
     // If isolateTrack is inIsolate, the next |start of run| can not be the
     // current isolated layoutObject.
-    if (isolateTracker.inIsolate())
-      m_eor.moveTo(
-          bidiNextSkippingEmptyInlines(m_eor.root(), m_eor.getLineLayoutItem()),
+    if (isolate_tracker.InIsolate())
+      eor_.MoveTo(
+          BidiNextSkippingEmptyInlines(eor_.Root(), eor_.GetLineLayoutItem()),
           0);
     else
-      m_eor.increment();
-    m_sor = m_eor;
+      eor_.Increment();
+    sor_ = eor_;
   }
 
-  m_direction = WTF::Unicode::OtherNeutral;
-  m_status.eor = WTF::Unicode::OtherNeutral;
+  direction_ = WTF::Unicode::kOtherNeutral;
+  status_.eor = WTF::Unicode::kOtherNeutral;
 }
 
 }  // namespace blink

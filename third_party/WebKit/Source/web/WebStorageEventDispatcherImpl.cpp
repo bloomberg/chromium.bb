@@ -38,31 +38,31 @@
 
 namespace blink {
 
-void WebStorageEventDispatcher::dispatchLocalStorageEvent(
+void WebStorageEventDispatcher::DispatchLocalStorageEvent(
     const WebString& key,
-    const WebString& oldValue,
-    const WebString& newValue,
+    const WebString& old_value,
+    const WebString& new_value,
     const WebURL& origin,
-    const WebURL& pageURL,
-    WebStorageArea* sourceAreaInstance) {
-  RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
-  StorageArea::dispatchLocalStorageEvent(key, oldValue, newValue,
-                                         securityOrigin.get(), pageURL,
-                                         sourceAreaInstance);
+    const WebURL& page_url,
+    WebStorageArea* source_area_instance) {
+  RefPtr<SecurityOrigin> security_origin = SecurityOrigin::Create(origin);
+  StorageArea::DispatchLocalStorageEvent(key, old_value, new_value,
+                                         security_origin.Get(), page_url,
+                                         source_area_instance);
 }
 
-void WebStorageEventDispatcher::dispatchSessionStorageEvent(
+void WebStorageEventDispatcher::DispatchSessionStorageEvent(
     const WebString& key,
-    const WebString& oldValue,
-    const WebString& newValue,
+    const WebString& old_value,
+    const WebString& new_value,
     const WebURL& origin,
-    const WebURL& pageURL,
-    const WebStorageNamespace& sessionNamespace,
-    WebStorageArea* sourceAreaInstance) {
-  RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
-  StorageArea::dispatchSessionStorageEvent(
-      key, oldValue, newValue, securityOrigin.get(), pageURL, sessionNamespace,
-      sourceAreaInstance);
+    const WebURL& page_url,
+    const WebStorageNamespace& session_namespace,
+    WebStorageArea* source_area_instance) {
+  RefPtr<SecurityOrigin> security_origin = SecurityOrigin::Create(origin);
+  StorageArea::DispatchSessionStorageEvent(
+      key, old_value, new_value, security_origin.Get(), page_url,
+      session_namespace, source_area_instance);
 }
 
 }  // namespace blink

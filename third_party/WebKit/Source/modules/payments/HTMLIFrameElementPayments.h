@@ -20,19 +20,19 @@ class HTMLIFrameElementPayments final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementPayments);
 
  public:
-  static bool fastHasAttribute(const QualifiedName&, const HTMLIFrameElement&);
-  static void setBooleanAttribute(const QualifiedName&,
+  static bool FastHasAttribute(const QualifiedName&, const HTMLIFrameElement&);
+  static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLIFrameElement&,
                                   bool);
-  static HTMLIFrameElementPayments& from(HTMLIFrameElement&);
-  static bool allowPaymentRequest(HTMLIFrameElement&);
+  static HTMLIFrameElementPayments& From(HTMLIFrameElement&);
+  static bool AllowPaymentRequest(HTMLIFrameElement&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   HTMLIFrameElementPayments();
 
-  static const char* supplementName();
+  static const char* SupplementName();
 };
 
 }  // namespace blink

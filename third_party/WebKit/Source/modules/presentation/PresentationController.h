@@ -32,77 +32,77 @@ class MODULES_EXPORT PresentationController final
  public:
   ~PresentationController() override;
 
-  static PresentationController* create(LocalFrame&, WebPresentationClient*);
+  static PresentationController* Create(LocalFrame&, WebPresentationClient*);
 
-  static const char* supplementName();
-  static PresentationController* from(LocalFrame&);
+  static const char* SupplementName();
+  static PresentationController* From(LocalFrame&);
 
-  static void provideTo(LocalFrame&, WebPresentationClient*);
+  static void ProvideTo(LocalFrame&, WebPresentationClient*);
 
-  WebPresentationClient* client();
+  WebPresentationClient* Client();
 
   // Implementation of Supplement.
   DECLARE_VIRTUAL_TRACE();
 
   // Implementation of WebPresentationController.
-  WebPresentationConnection* didStartDefaultPresentation(
+  WebPresentationConnection* DidStartDefaultPresentation(
       const WebPresentationInfo&) override;
-  void didChangeConnectionState(const WebPresentationInfo&,
+  void DidChangeConnectionState(const WebPresentationInfo&,
                                 WebPresentationConnectionState) override;
-  void didCloseConnection(const WebPresentationInfo&,
+  void DidCloseConnection(const WebPresentationInfo&,
                           WebPresentationConnectionCloseReason,
                           const WebString& message) override;
-  void didReceiveConnectionTextMessage(const WebPresentationInfo&,
+  void DidReceiveConnectionTextMessage(const WebPresentationInfo&,
                                        const WebString&) override;
-  void didReceiveConnectionBinaryMessage(const WebPresentationInfo&,
+  void DidReceiveConnectionBinaryMessage(const WebPresentationInfo&,
                                          const uint8_t* data,
                                          size_t length) override;
 
   // Called by the Presentation object to advertize itself to the controller.
   // The Presentation object is kept as a WeakMember in order to avoid keeping
   // it alive when it is no longer in the tree.
-  void setPresentation(Presentation*);
+  void SetPresentation(Presentation*);
 
   // Called by the Presentation object when the default request is updated
   // in order to notify the client about the change of default presentation
   // url.
-  void setDefaultRequestUrl(const WTF::Vector<KURL>&);
+  void SetDefaultRequestUrl(const WTF::Vector<KURL>&);
 
   // Handling of running connections.
-  void registerConnection(PresentationConnection*);
+  void RegisterConnection(PresentationConnection*);
 
   // Return a connection in |m_connections| with id equals to |presentationId|,
   // url equals to one of |presentationUrls|, and state is not terminated.
   // Return null if such a connection does not exist.
-  PresentationConnection* findExistingConnection(
-      const blink::WebVector<blink::WebURL>& presentationUrls,
-      const blink::WebString& presentationId);
+  PresentationConnection* FindExistingConnection(
+      const blink::WebVector<blink::WebURL>& presentation_urls,
+      const blink::WebString& presentation_id);
 
  private:
   PresentationController(LocalFrame&, WebPresentationClient*);
 
   // Implementation of ContextLifecycleObserver.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // Return the connection associated with the given |connectionClient| or
   // null if it doesn't exist.
-  PresentationConnection* findConnection(const WebPresentationInfo&);
+  PresentationConnection* FindConnection(const WebPresentationInfo&);
 
   // The WebPresentationClient which allows communicating with the embedder.
   // It is not owned by the PresentationController but the controller will
   // set it to null when the LocalFrame will be detached at which point the
   // client can't be used.
-  WebPresentationClient* m_client;
+  WebPresentationClient* client_;
 
   // Default PresentationRequest used by the embedder.
   // Member<PresentationRequest> m_defaultRequest;
-  WeakMember<Presentation> m_presentation;
+  WeakMember<Presentation> presentation_;
 
   // The presentation connections associated with that frame.
   // TODO(mlamouri): the PresentationController will keep any created
   // connections alive until the frame is detached. These should be weak ptr
   // so that the connection can be GC'd.
-  HeapHashSet<Member<PresentationConnection>> m_connections;
+  HeapHashSet<Member<PresentationConnection>> connections_;
 };
 
 }  // namespace blink

@@ -42,20 +42,20 @@ class PLATFORM_EXPORT WebSocketHandshakeResponse final {
   WebSocketHandshakeResponse();
   ~WebSocketHandshakeResponse();
 
-  int statusCode() const;
-  void setStatusCode(int);
-  const String& statusText() const;
-  void setStatusText(const String&);
-  const HTTPHeaderMap& headerFields() const;
-  void addHeaderField(const AtomicString& name, const AtomicString& value);
-  const String& headersText() const { return m_headersText; }
-  void setHeadersText(const String& text) { m_headersText = text; }
+  int StatusCode() const;
+  void SetStatusCode(int);
+  const String& StatusText() const;
+  void SetStatusText(const String&);
+  const HTTPHeaderMap& HeaderFields() const;
+  void AddHeaderField(const AtomicString& name, const AtomicString& value);
+  const String& HeadersText() const { return headers_text_; }
+  void SetHeadersText(const String& text) { headers_text_ = text; }
 
  private:
-  int m_statusCode;
-  String m_statusText;
-  HTTPHeaderMap m_headerFields;
-  String m_headersText;
+  int status_code_;
+  String status_text_;
+  HTTPHeaderMap header_fields_;
+  String headers_text_;
 };
 
 }  // namespace blink

@@ -27,13 +27,13 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     blink::WebMediaStreamSource audio_source;
-    audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
-                            blink::WebMediaStreamSource::TypeAudio,
-                            blink::WebString::fromUTF8("dummy_source_name"),
+    audio_source.Initialize(blink::WebString::FromUTF8("dummy_source_id"),
+                            blink::WebMediaStreamSource::kTypeAudio,
+                            blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
-    blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
+    blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
                             audio_source);
-    blink_track_.setTrackData(new MediaStreamAudioTrack(true));
+    blink_track_.SetTrackData(new MediaStreamAudioTrack(true));
     source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
@@ -41,8 +41,8 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
 
   void TearDown() override {
     source_provider_.reset();
-    blink_track_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_track_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   media::AudioParameters source_params_;
@@ -66,7 +66,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   // Enable the |source_provider_| by asking for data. This will inject
   // source_params_.frames_per_buffer() of zero into the resampler since there
   // no available data in the FIFO.
-  source_provider_->provideInput(audio_data, sink_params_.frames_per_buffer());
+  source_provider_->ProvideInput(audio_data, sink_params_.frames_per_buffer());
   EXPECT_EQ(0, sink_bus_->channel(0)[0]);
 
   // Create a source AudioBus with channel data filled with non-zero values.
@@ -88,7 +88,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
        i < source_params_.frames_per_buffer();
        i += sink_params_.frames_per_buffer()) {
     sink_bus_->Zero();
-    source_provider_->provideInput(audio_data,
+    source_provider_->ProvideInput(audio_data,
                                    sink_params_.frames_per_buffer());
     EXPECT_DOUBLE_EQ(0.0, sink_bus_->channel(0)[0]);
     EXPECT_DOUBLE_EQ(0.0, sink_bus_->channel(1)[0]);
@@ -105,7 +105,7 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   for (int i = 0; i < source_params_.frames_per_buffer();
        i += sink_params_.frames_per_buffer()) {
     sink_bus_->Zero();
-    source_provider_->provideInput(audio_data,
+    source_provider_->ProvideInput(audio_data,
                                    sink_params_.frames_per_buffer());
     EXPECT_NEAR(0.5f, sink_bus_->channel(0)[0], 0.001f);
     EXPECT_NEAR(0.5f, sink_bus_->channel(1)[0], 0.001f);

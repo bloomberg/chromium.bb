@@ -46,9 +46,9 @@ bool GetAccountCreationPasswordFields(
     std::vector<blink::WebInputElement>* passwords) {
   for (size_t i = 0; i < control_elements.size(); i++) {
     const blink::WebInputElement* input_element =
-        toWebInputElement(&control_elements[i]);
-    if (input_element && input_element->isTextField()) {
-      if (input_element->isPasswordField())
+        ToWebInputElement(&control_elements[i]);
+    if (input_element && input_element->IsTextField()) {
+      if (input_element->IsPasswordField())
         passwords->push_back(*input_element);
     }
   }
@@ -84,7 +84,7 @@ std::vector<blink::WebInputElement> FindPasswordElementsForGeneration(
        iter != all_password_elements.end(); ++iter) {
     const blink::WebInputElement& input = *iter;
     FieldSignature signature = CalculateFieldSignatureByNameAndType(
-        input.nameForAutofill().utf16(), input.formControlType().utf8());
+        input.NameForAutofill().Utf16(), input.FormControlType().Utf8());
     if (signature == generation_data.field_signature)
       generation_field_iter = iter;
     else if (generation_data.confirmation_field_signature &&
@@ -109,7 +109,7 @@ void CopyElementValueToOtherInputElements(
     std::vector<blink::WebInputElement>* elements) {
   for (blink::WebInputElement& it : *elements) {
     if (*element != it) {
-      it.setAutofillValue(element->value());
+      it.SetAutofillValue(element->Value());
     }
   }
 }
@@ -158,7 +158,7 @@ void PasswordGenerationAgent::BindRequest(
 
 void PasswordGenerationAgent::DidFinishDocumentLoad() {
   // Update stats for main frame navigation.
-  if (!render_frame()->GetWebFrame()->parent()) {
+  if (!render_frame()->GetWebFrame()->Parent()) {
     // In every navigation, the IPC message sent by the password autofill
     // manager to query whether the current form is blacklisted or not happens
     // when the document load finishes, so we need to clear previous states
@@ -169,7 +169,7 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
     // each frame.
     not_blacklisted_password_form_origins_.clear();
     generation_enabled_forms_.clear();
-    generation_element_.reset();
+    generation_element_.Reset();
     possible_account_creation_forms_.clear();
 
     // Log statistics after navigation so that we only log once per page.
@@ -250,9 +250,9 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
     return;
 
   blink::WebVector<blink::WebFormElement> forms;
-  render_frame()->GetWebFrame()->document().forms(forms);
+  render_frame()->GetWebFrame()->GetDocument().Forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
-    if (forms[i].isNull())
+    if (forms[i].IsNull())
       continue;
 
     // If we can't get a valid PasswordForm, we skip this form because the
@@ -293,12 +293,11 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
 bool PasswordGenerationAgent::ShouldAnalyzeDocument() {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
-  if (!render_frame() ||
-      !render_frame()
-           ->GetWebFrame()
-           ->document()
-           .getSecurityOrigin()
-           .canAccessPasswordManager()) {
+  if (!render_frame() || !render_frame()
+                              ->GetWebFrame()
+                              ->GetDocument()
+                              .GetSecurityOrigin()
+                              .CanAccessPasswordManager()) {
     LogMessage(Logger::STRING_GENERATION_RENDERER_NO_PASSWORD_MANAGER_ACCESS);
     return false;
   }
@@ -318,12 +317,12 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
       password_generation::PASSWORD_ACCEPTED);
   LogMessage(Logger::STRING_GENERATION_RENDERER_GENERATED_PASSWORD_ACCEPTED);
   for (auto& password_element : generation_form_data_->password_elements) {
-    password_element.setAutofillValue(blink::WebString::fromUTF16(password));
+    password_element.SetAutofillValue(blink::WebString::FromUTF16(password));
     // setAutofillValue() above may have resulted in JavaScript closing the
     // frame.
     if (!render_frame())
       return;
-    password_element.setAutofilled(true);
+    password_element.SetAutofilled(true);
     // Needed to notify password_autofill_agent that the content of the field
     // has changed. Without this we will overwrite the generated
     // password with an Autofilled password when saving.
@@ -331,7 +330,7 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
     password_agent_->UpdateStateForTextChange(password_element);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
-    render_frame()->GetRenderView()->GetWebView()->advanceFocus(false);
+    render_frame()->GetRenderView()->GetWebView()->AdvanceFocus(false);
   }
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form) {
@@ -341,13 +340,13 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
 
 std::unique_ptr<PasswordForm>
 PasswordGenerationAgent::CreatePasswordFormToPresave() {
-  DCHECK(!generation_element_.isNull());
+  DCHECK(!generation_element_.IsNull());
   // Since the form for presaving should match a form in the browser, create it
   // with the same algorithm (to match html attributes, action, etc.), but
   // change username and password values.
   std::unique_ptr<PasswordForm> password_form;
-  if (!generation_element_.form().isNull()) {
-    password_form = CreatePasswordFormFromWebForm(generation_element_.form(),
+  if (!generation_element_.Form().IsNull()) {
+    password_form = CreatePasswordFormFromWebForm(generation_element_.Form(),
                                                   nullptr, nullptr);
   } else {
     password_form = CreatePasswordFormFromUnownedInputElements(
@@ -357,7 +356,7 @@ PasswordGenerationAgent::CreatePasswordFormToPresave() {
     // TODO(kolos): when we are good in username detection, save username
     // as well.
     password_form->username_value = base::string16();
-    password_form->password_value = generation_element_.value().utf16();
+    password_form->password_value = generation_element_.Value().Utf16();
   }
 
   return password_form;
@@ -423,7 +422,7 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
     generation_form_data_.reset(new AccountCreationFormData(
         possible_form_data.form, std::move(password_elements)));
     generation_element_ = generation_form_data_->password_elements[0];
-    generation_element_.setAttribute("aria-autocomplete", "list");
+    generation_element_.SetAttribute("aria-autocomplete", "list");
     password_generation::LogPasswordGenerationEvent(
         password_generation::GENERATION_AVAILABLE);
     possible_account_creation_forms_.clear();
@@ -435,27 +434,27 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
 
 bool PasswordGenerationAgent::FocusedNodeHasChanged(
     const blink::WebNode& node) {
-  if (!generation_element_.isNull())
-    generation_element_.setShouldRevealPassword(false);
+  if (!generation_element_.IsNull())
+    generation_element_.SetShouldRevealPassword(false);
 
-  if (node.isNull() || !node.isElementNode())
+  if (node.IsNull() || !node.IsElementNode())
     return false;
 
-  const blink::WebElement web_element = node.toConst<blink::WebElement>();
-  if (!web_element.document().frame())
+  const blink::WebElement web_element = node.ToConst<blink::WebElement>();
+  if (!web_element.GetDocument().GetFrame())
     return false;
 
-  const blink::WebInputElement* element = toWebInputElement(&web_element);
-  if (element && element->isPasswordField())
+  const blink::WebInputElement* element = ToWebInputElement(&web_element);
+  if (element && element->IsPasswordField())
     last_focused_password_element_ = *element;
   if (!element || *element != generation_element_)
     return false;
 
   if (password_is_generated_) {
-    if (generation_element_.value().isEmpty()) {
+    if (generation_element_.Value().IsEmpty()) {
       PasswordNoLongerGenerated();
     } else {
-      generation_element_.setShouldRevealPassword(true);
+      generation_element_.SetShouldRevealPassword(true);
       ShowEditingPopup();
     }
     return true;
@@ -464,9 +463,8 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   // Assume that if the password field has less than kMaximumOfferSize
   // characters then the user is not finished typing their password and display
   // the password suggestion.
-  if (!element->isReadOnly() &&
-      element->isEnabled() &&
-      element->value().length() <= kMaximumOfferSize) {
+  if (!element->IsReadOnly() && element->IsEnabled() &&
+      element->Value().length() <= kMaximumOfferSize) {
     ShowGenerationPopup();
     return true;
   }
@@ -479,7 +477,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
   if (element != generation_element_)
     return false;
 
-  if (element.value().isEmpty()) {
+  if (element.Value().IsEmpty()) {
     if (password_is_generated_) {
       // User generated a password and then deleted it.
       PasswordNoLongerGenerated();
@@ -496,7 +494,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     if (presaved_form) {
       GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
     }
-  } else if (element.value().length() > kMaximumOfferSize) {
+  } else if (element.Value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
     HidePopup();
   } else {
@@ -516,8 +514,8 @@ void PasswordGenerationAgent::ShowGenerationPopup() {
   GetPasswordManagerClient()->ShowPasswordGenerationPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(
           generation_element_),
-      generation_element_.maxLength(),
-      generation_element_.nameForAutofill().utf16(), is_manually_triggered_,
+      generation_element_.MaxLength(),
+      generation_element_.NameForAutofill().Utf16(), is_manually_triggered_,
       *generation_form_data_->form);
   generation_popup_shown_ = true;
 }
@@ -539,10 +537,10 @@ void PasswordGenerationAgent::HidePopup() {
 void PasswordGenerationAgent::PasswordNoLongerGenerated() {
   // Do not treat the password as generated, either here or in the browser.
   password_is_generated_ = false;
-  generation_element_.setShouldRevealPassword(false);
+  generation_element_.SetShouldRevealPassword(false);
   for (blink::WebInputElement& password :
        generation_form_data_->password_elements)
-    password.setAutofilled(false);
+    password.SetAutofilled(false);
   password_generation::LogPasswordGenerationEvent(
       password_generation::PASSWORD_DELETED);
   CopyElementValueToOtherInputElements(
@@ -553,24 +551,24 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
 }
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
-  if (last_focused_password_element_.isNull() || !render_frame())
+  if (last_focused_password_element_.IsNull() || !render_frame())
     return;
 
-  blink::WebFormElement form = last_focused_password_element_.form();
+  blink::WebFormElement form = last_focused_password_element_.Form();
   std::unique_ptr<PasswordForm> password_form;
   std::vector<blink::WebFormControlElement> control_elements;
-  if (!form.isNull()) {
+  if (!form.IsNull()) {
     password_form = CreatePasswordFormFromWebForm(form, nullptr, nullptr);
     control_elements = form_util::ExtractAutofillableElementsInForm(form);
   } else {
     const blink::WebFrame& frame = *render_frame()->GetWebFrame();
-    blink::WebDocument doc = frame.document();
-    if (doc.isNull())
+    blink::WebDocument doc = frame.GetDocument();
+    if (doc.IsNull())
       return;
     password_form =
         CreatePasswordFormFromUnownedInputElements(frame, nullptr, nullptr);
     control_elements =
-        form_util::GetUnownedFormFieldElements(doc.all(), nullptr);
+        form_util::GetUnownedFormFieldElements(doc.All(), nullptr);
   }
 
   if (!password_form)
@@ -584,8 +582,8 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
       PasswordFormGenerationData(
           0, /* form_signature */
           CalculateFieldSignatureByNameAndType(
-              last_focused_password_element_.nameForAutofill().utf16(),
-              last_focused_password_element_.formControlType().utf8())));
+              last_focused_password_element_.NameForAutofill().Utf16(),
+              last_focused_password_element_.FormControlType().Utf8())));
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
   is_manually_triggered_ = true;

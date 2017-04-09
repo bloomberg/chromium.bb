@@ -12,37 +12,37 @@ namespace blink {
 
 class ImagePropertyFunctions {
  public:
-  static const StyleImage* getInitialStyleImage(CSSPropertyID) {
+  static const StyleImage* GetInitialStyleImage(CSSPropertyID) {
     return nullptr;
   }
 
-  static const StyleImage* getStyleImage(CSSPropertyID property,
+  static const StyleImage* GetStyleImage(CSSPropertyID property,
                                          const ComputedStyle& style) {
     switch (property) {
       case CSSPropertyBorderImageSource:
-        return style.borderImageSource();
+        return style.BorderImageSource();
       case CSSPropertyListStyleImage:
-        return style.listStyleImage();
+        return style.ListStyleImage();
       case CSSPropertyWebkitMaskBoxImageSource:
-        return style.maskBoxImageSource();
+        return style.MaskBoxImageSource();
       default:
         NOTREACHED();
         return nullptr;
     }
   }
 
-  static void setStyleImage(CSSPropertyID property,
+  static void SetStyleImage(CSSPropertyID property,
                             ComputedStyle& style,
                             StyleImage* image) {
     switch (property) {
       case CSSPropertyBorderImageSource:
-        style.setBorderImageSource(image);
+        style.SetBorderImageSource(image);
         break;
       case CSSPropertyListStyleImage:
-        style.setListStyleImage(image);
+        style.SetListStyleImage(image);
         break;
       case CSSPropertyWebkitMaskBoxImageSource:
-        style.setMaskBoxImageSource(image);
+        style.SetMaskBoxImageSource(image);
         break;
       default:
         NOTREACHED();

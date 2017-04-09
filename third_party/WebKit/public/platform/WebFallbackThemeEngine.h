@@ -44,110 +44,110 @@ class WebFallbackThemeEngine {
   // The UI part which is being accessed.
   enum Part {
     // ScrollbarTheme parts
-    PartScrollbarDownArrow,
-    PartScrollbarLeftArrow,
-    PartScrollbarRightArrow,
-    PartScrollbarUpArrow,
-    PartScrollbarHorizontalThumb,
-    PartScrollbarVerticalThumb,
-    PartScrollbarHorizontalTrack,
-    PartScrollbarVerticalTrack,
-    PartScrollbarCorner,
+    kPartScrollbarDownArrow,
+    kPartScrollbarLeftArrow,
+    kPartScrollbarRightArrow,
+    kPartScrollbarUpArrow,
+    kPartScrollbarHorizontalThumb,
+    kPartScrollbarVerticalThumb,
+    kPartScrollbarHorizontalTrack,
+    kPartScrollbarVerticalTrack,
+    kPartScrollbarCorner,
 
     // LayoutTheme parts
-    PartCheckbox,
-    PartRadio,
-    PartButton,
-    PartTextField,
-    PartMenuList,
-    PartSliderTrack,
-    PartSliderThumb,
-    PartInnerSpinButton,
-    PartProgressBar
+    kPartCheckbox,
+    kPartRadio,
+    kPartButton,
+    kPartTextField,
+    kPartMenuList,
+    kPartSliderTrack,
+    kPartSliderThumb,
+    kPartInnerSpinButton,
+    kPartProgressBar
   };
 
   // The current state of the associated Part.
   enum State {
-    StateDisabled,
-    StateHover,
-    StateNormal,
-    StatePressed,
+    kStateDisabled,
+    kStateHover,
+    kStateNormal,
+    kStatePressed,
   };
 
   // Extra parameters for drawing the PartScrollbarHorizontalTrack and
   // PartScrollbarVerticalTrack.
   struct ScrollbarTrackExtraParams {
     // The bounds of the entire track, as opposed to the part being painted.
-    int trackX;
-    int trackY;
-    int trackWidth;
-    int trackHeight;
+    int track_x;
+    int track_y;
+    int track_width;
+    int track_height;
   };
 
   // Extra parameters for PartCheckbox, PartPushButton and PartRadio.
   struct ButtonExtraParams {
     bool checked;
     bool indeterminate;  // Whether the button state is indeterminate.
-    bool isDefault;      // Whether the button is default button.
-    bool hasBorder;
-    WebColor backgroundColor;
+    bool is_default;     // Whether the button is default button.
+    bool has_border;
+    WebColor background_color;
   };
 
   // Extra parameters for PartTextField
   struct TextFieldExtraParams {
-    bool isTextArea;
-    bool isListbox;
-    WebColor backgroundColor;
+    bool is_text_area;
+    bool is_listbox;
+    WebColor background_color;
   };
 
   // Extra parameters for PartMenuList
   struct MenuListExtraParams {
-    bool hasBorder;
-    bool hasBorderRadius;
-    int arrowX;
-    int arrowY;
-    int arrowSize;
-    WebColor arrowColor;
-    WebColor backgroundColor;
+    bool has_border;
+    bool has_border_radius;
+    int arrow_x;
+    int arrow_y;
+    int arrow_size;
+    WebColor arrow_color;
+    WebColor background_color;
   };
 
   // Extra parameters for PartSliderTrack and PartSliderThumb
   struct SliderExtraParams {
     bool vertical;
-    bool inDrag;
+    bool in_drag;
   };
 
   // Extra parameters for PartInnerSpinButton
   struct InnerSpinButtonExtraParams {
-    bool spinUp;
-    bool readOnly;
+    bool spin_up;
+    bool read_only;
   };
 
   // Extra parameters for PartProgressBar
   struct ProgressBarExtraParams {
     bool determinate;
-    int valueRectX;
-    int valueRectY;
-    int valueRectWidth;
-    int valueRectHeight;
+    int value_rect_x;
+    int value_rect_y;
+    int value_rect_width;
+    int value_rect_height;
   };
 
   union ExtraParams {
-    ScrollbarTrackExtraParams scrollbarTrack;
+    ScrollbarTrackExtraParams scrollbar_track;
     ButtonExtraParams button;
-    TextFieldExtraParams textField;
-    MenuListExtraParams menuList;
+    TextFieldExtraParams text_field;
+    MenuListExtraParams menu_list;
     SliderExtraParams slider;
-    InnerSpinButtonExtraParams innerSpin;
-    ProgressBarExtraParams progressBar;
+    InnerSpinButtonExtraParams inner_spin;
+    ProgressBarExtraParams progress_bar;
   };
 
   // Gets the size of the given theme part. For variable sized items
   // like vertical scrollbar thumbs, the width will be the required width of
   // the track while the height will be the minimum height.
-  virtual WebSize getSize(Part) { return WebSize(); }
+  virtual WebSize GetSize(Part) { return WebSize(); }
   // Paint the given the given theme part.
-  virtual void paint(WebCanvas*,
+  virtual void Paint(WebCanvas*,
                      Part,
                      State,
                      const WebRect&,

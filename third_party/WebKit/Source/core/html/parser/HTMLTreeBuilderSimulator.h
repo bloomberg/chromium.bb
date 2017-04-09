@@ -40,28 +40,34 @@ class CORE_EXPORT HTMLTreeBuilderSimulator {
   USING_FAST_MALLOC(HTMLTreeBuilderSimulator);
 
  private:
-  enum Namespace { HTML, SVG, MathML };
+  enum Namespace { HTML, SVG, kMathML };
 
  public:
-  enum SimulatedToken { ScriptStart, ScriptEnd, Link, StyleEnd, OtherToken };
+  enum SimulatedToken {
+    kScriptStart,
+    kScriptEnd,
+    kLink,
+    kStyleEnd,
+    kOtherToken
+  };
 
   typedef Vector<Namespace, 1> State;
 
   explicit HTMLTreeBuilderSimulator(const HTMLParserOptions&);
 
-  static State stateFor(HTMLTreeBuilder*);
+  static State StateFor(HTMLTreeBuilder*);
 
-  const State& state() const { return m_namespaceStack; }
-  void setState(const State& state) { m_namespaceStack = state; }
+  const State& GetState() const { return namespace_stack_; }
+  void SetState(const State& state) { namespace_stack_ = state; }
 
-  SimulatedToken simulate(const CompactHTMLToken&, HTMLTokenizer*);
+  SimulatedToken Simulate(const CompactHTMLToken&, HTMLTokenizer*);
 
  private:
-  bool inForeignContent() const { return m_namespaceStack.back() != HTML; }
+  bool InForeignContent() const { return namespace_stack_.back() != HTML; }
 
-  HTMLParserOptions m_options;
-  State m_namespaceStack;
-  bool m_inSelectInsertionMode;
+  HTMLParserOptions options_;
+  State namespace_stack_;
+  bool in_select_insertion_mode_;
 };
 
 }  // namespace blink

@@ -712,7 +712,7 @@ void ServiceWorkerVersion::ReportError(ServiceWorkerStatusCode status,
 }
 
 void ServiceWorkerVersion::ReportForceUpdateToDevTools() {
-  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::LevelWarning,
+  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::kLevelWarning,
                                         kForceUpdateInfoMessage);
 }
 
@@ -1240,7 +1240,8 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
     // possibly due to timing issue or bad message.
     return;
   }
-  if (provider_host->client_type() != blink::WebServiceWorkerClientTypeWindow) {
+  if (provider_host->client_type() !=
+      blink::kWebServiceWorkerClientTypeWindow) {
     // focus() should be called only for WindowClient. This may happen due to
     // bad message.
     return;
@@ -1351,7 +1352,7 @@ void ServiceWorkerVersion::DidSkipWaiting(int request_id) {
 void ServiceWorkerVersion::OnClaimClients(int request_id) {
   if (status_ != ACTIVATING && status_ != ACTIVATED) {
     embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
-        request_id, blink::WebServiceWorkerError::ErrorTypeState,
+        request_id, blink::WebServiceWorkerError::kErrorTypeState,
         base::ASCIIToUTF16(kClaimClientsStateErrorMesage)));
     return;
   }
@@ -1366,7 +1367,7 @@ void ServiceWorkerVersion::OnClaimClients(int request_id) {
   }
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_ClaimClientsError(
-      request_id, blink::WebServiceWorkerError::ErrorTypeAbort,
+      request_id, blink::WebServiceWorkerError::kErrorTypeAbort,
       base::ASCIIToUTF16(kClaimClientsShutdownErrorMesage)));
 }
 
@@ -1646,7 +1647,7 @@ void ServiceWorkerVersion::OnPingTimeout() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
   // TODO(falken): Change the error code to SERVICE_WORKER_ERROR_TIMEOUT.
-  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::LevelVerbose,
+  embedded_worker_->AddMessageToConsole(blink::WebConsoleMessage::kLevelVerbose,
                                         kNotRespondingErrorMesage);
   StopWorkerIfIdle();
 }

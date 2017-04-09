@@ -21,50 +21,50 @@
 
 namespace blink {
 
-PathSegmentData SVGPathByteStreamSource::parseSegment() {
-  DCHECK(hasMoreData());
+PathSegmentData SVGPathByteStreamSource::ParseSegment() {
+  DCHECK(HasMoreData());
   PathSegmentData segment;
-  segment.command = static_cast<SVGPathSegType>(readSVGSegmentType());
+  segment.command = static_cast<SVGPathSegType>(ReadSVGSegmentType());
 
   switch (segment.command) {
-    case PathSegCurveToCubicRel:
-    case PathSegCurveToCubicAbs:
-      segment.point1 = readFloatPoint();
+    case kPathSegCurveToCubicRel:
+    case kPathSegCurveToCubicAbs:
+      segment.point1 = ReadFloatPoint();
     /* fall through */
-    case PathSegCurveToCubicSmoothRel:
-    case PathSegCurveToCubicSmoothAbs:
-      segment.point2 = readFloatPoint();
+    case kPathSegCurveToCubicSmoothRel:
+    case kPathSegCurveToCubicSmoothAbs:
+      segment.point2 = ReadFloatPoint();
     /* fall through */
-    case PathSegMoveToRel:
-    case PathSegMoveToAbs:
-    case PathSegLineToRel:
-    case PathSegLineToAbs:
-    case PathSegCurveToQuadraticSmoothRel:
-    case PathSegCurveToQuadraticSmoothAbs:
-      segment.targetPoint = readFloatPoint();
+    case kPathSegMoveToRel:
+    case kPathSegMoveToAbs:
+    case kPathSegLineToRel:
+    case kPathSegLineToAbs:
+    case kPathSegCurveToQuadraticSmoothRel:
+    case kPathSegCurveToQuadraticSmoothAbs:
+      segment.target_point = ReadFloatPoint();
       break;
-    case PathSegLineToHorizontalRel:
-    case PathSegLineToHorizontalAbs:
-      segment.targetPoint.setX(readFloat());
+    case kPathSegLineToHorizontalRel:
+    case kPathSegLineToHorizontalAbs:
+      segment.target_point.SetX(ReadFloat());
       break;
-    case PathSegLineToVerticalRel:
-    case PathSegLineToVerticalAbs:
-      segment.targetPoint.setY(readFloat());
+    case kPathSegLineToVerticalRel:
+    case kPathSegLineToVerticalAbs:
+      segment.target_point.SetY(ReadFloat());
       break;
-    case PathSegClosePath:
+    case kPathSegClosePath:
       break;
-    case PathSegCurveToQuadraticRel:
-    case PathSegCurveToQuadraticAbs:
-      segment.point1 = readFloatPoint();
-      segment.targetPoint = readFloatPoint();
+    case kPathSegCurveToQuadraticRel:
+    case kPathSegCurveToQuadraticAbs:
+      segment.point1 = ReadFloatPoint();
+      segment.target_point = ReadFloatPoint();
       break;
-    case PathSegArcRel:
-    case PathSegArcAbs: {
-      segment.arcRadii() = readFloatPoint();
-      segment.setArcAngle(readFloat());
-      segment.arcLarge = readFlag();
-      segment.arcSweep = readFlag();
-      segment.targetPoint = readFloatPoint();
+    case kPathSegArcRel:
+    case kPathSegArcAbs: {
+      segment.ArcRadii() = ReadFloatPoint();
+      segment.SetArcAngle(ReadFloat());
+      segment.arc_large = ReadFlag();
+      segment.arc_sweep = ReadFlag();
+      segment.target_point = ReadFloatPoint();
       break;
     }
     default:

@@ -13,34 +13,34 @@
 
 namespace blink {
 
-std::unique_ptr<CompositorWorkerThread> CompositorWorkerThread::create(
-    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    InProcessWorkerObjectProxy& workerObjectProxy,
-    double timeOrigin) {
+std::unique_ptr<CompositorWorkerThread> CompositorWorkerThread::Create(
+    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    InProcessWorkerObjectProxy& worker_object_proxy,
+    double time_origin) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorWorkerThread::create");
-  ASSERT(isMainThread());
-  return WTF::wrapUnique(new CompositorWorkerThread(
-      std::move(workerLoaderProxy), workerObjectProxy, timeOrigin));
+  ASSERT(IsMainThread());
+  return WTF::WrapUnique(new CompositorWorkerThread(
+      std::move(worker_loader_proxy), worker_object_proxy, time_origin));
 }
 
 CompositorWorkerThread::CompositorWorkerThread(
-    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
-    InProcessWorkerObjectProxy& workerObjectProxy,
-    double timeOrigin)
-    : AbstractAnimationWorkletThread(std::move(workerLoaderProxy),
-                                     workerObjectProxy),
-      m_workerObjectProxy(workerObjectProxy),
-      m_timeOrigin(timeOrigin) {}
+    PassRefPtr<WorkerLoaderProxy> worker_loader_proxy,
+    InProcessWorkerObjectProxy& worker_object_proxy,
+    double time_origin)
+    : AbstractAnimationWorkletThread(std::move(worker_loader_proxy),
+                                     worker_object_proxy),
+      worker_object_proxy_(worker_object_proxy),
+      time_origin_(time_origin) {}
 
 CompositorWorkerThread::~CompositorWorkerThread() {}
 
-WorkerOrWorkletGlobalScope* CompositorWorkerThread::createWorkerGlobalScope(
-    std::unique_ptr<WorkerThreadStartupData> startupData) {
+WorkerOrWorkletGlobalScope* CompositorWorkerThread::CreateWorkerGlobalScope(
+    std::unique_ptr<WorkerThreadStartupData> startup_data) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "CompositorWorkerThread::createWorkerGlobalScope");
-  return CompositorWorkerGlobalScope::create(this, std::move(startupData),
-                                             m_timeOrigin);
+  return CompositorWorkerGlobalScope::Create(this, std::move(startup_data),
+                                             time_origin_);
 }
 
 }  // namespace blink

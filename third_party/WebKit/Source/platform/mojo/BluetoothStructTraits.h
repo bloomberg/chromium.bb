@@ -27,7 +27,7 @@ struct StructTraits<bluetooth::mojom::UUIDDataView, WTF::String> {
 
   static bool Read(bluetooth::mojom::UUIDDataView, WTF::String* output);
 
-  static bool IsNull(const WTF::String& input) { return input.isNull(); }
+  static bool IsNull(const WTF::String& input) { return input.IsNull(); }
 
   static void SetToNull(WTF::String* output);
 };

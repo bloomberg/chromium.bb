@@ -44,15 +44,15 @@ class CORE_EXPORT Pasteboard {
   USING_FAST_MALLOC(Pasteboard);
 
  public:
-  enum SmartReplaceOption { CanSmartReplace, CannotSmartReplace };
+  enum SmartReplaceOption { kCanSmartReplace, kCannotSmartReplace };
 
-  static Pasteboard* generalPasteboard();
-  void writePlainText(const String&, SmartReplaceOption);
-  void writeImage(Image*, const KURL&, const String& title);
-  void writeDataObject(DataObject*);
-  bool canSmartReplace();
-  bool isHTMLAvailable();
-  String plainText();
+  static Pasteboard* GeneralPasteboard();
+  void WritePlainText(const String&, SmartReplaceOption);
+  void WriteImage(Image*, const KURL&, const String& title);
+  void WriteDataObject(DataObject*);
+  bool CanSmartReplace();
+  bool IsHTMLAvailable();
+  String PlainText();
 
   // If no data is read, an empty string will be returned and all out parameters
   // will be cleared.  If applicable, the page URL will be assigned to the KURL
@@ -60,22 +60,22 @@ class CORE_EXPORT Pasteboard {
   // markup that indicate the start and end of the returned markup. If there is
   // no additional context, fragmentStart will be zero and fragmentEnd will be
   // the same as the length of the markup.
-  String readHTML(KURL&, unsigned& fragmentStart, unsigned& fragmentEnd);
+  String ReadHTML(KURL&, unsigned& fragment_start, unsigned& fragment_end);
 
-  void writeHTML(const String& markup,
-                 const KURL& documentURL,
-                 const String& plainText,
-                 bool canSmartCopyOrDelete);
+  void WriteHTML(const String& markup,
+                 const KURL& document_url,
+                 const String& plain_text,
+                 bool can_smart_copy_or_delete);
 
-  bool isSelectionMode() const;
-  void setSelectionMode(bool);
+  bool IsSelectionMode() const;
+  void SetSelectionMode(bool);
 
-  WebClipboard::Buffer buffer() const { return m_buffer; }
+  WebClipboard::Buffer GetBuffer() const { return buffer_; }
 
  private:
   Pasteboard();
 
-  WebClipboard::Buffer m_buffer;
+  WebClipboard::Buffer buffer_;
 };
 
 }  // namespace blink

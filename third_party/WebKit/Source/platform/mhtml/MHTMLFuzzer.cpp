@@ -14,11 +14,11 @@ namespace blink {
 
 // Fuzzer for blink::MHTMLParser.
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  MHTMLParser mhtmlParser(SharedBuffer::create(data, size));
-  HeapVector<Member<ArchiveResource>> mhtmlArchives =
-      mhtmlParser.parseArchive();
-  mhtmlArchives.clear();
-  ThreadState::current()->collectAllGarbage();
+  MHTMLParser mhtml_parser(SharedBuffer::Create(data, size));
+  HeapVector<Member<ArchiveResource>> mhtml_archives =
+      mhtml_parser.ParseArchive();
+  mhtml_archives.Clear();
+  ThreadState::Current()->CollectAllGarbage();
 
   return 0;
 }

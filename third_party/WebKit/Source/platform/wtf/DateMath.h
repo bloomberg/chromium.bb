@@ -50,11 +50,12 @@
 
 namespace WTF {
 
-WTF_EXPORT void initializeDates();
+WTF_EXPORT void InitializeDates();
 
 // Not really math related, but this is currently the only shared place to put
 // these.
-WTF_EXPORT double parseDateFromNullTerminatedCharacters(const char* dateString);
+WTF_EXPORT double ParseDateFromNullTerminatedCharacters(
+    const char* date_string);
 // dayOfWeek: [0, 6] 0 being Monday
 // day: [1, 31]
 // month: [0, 11]
@@ -63,59 +64,59 @@ WTF_EXPORT double parseDateFromNullTerminatedCharacters(const char* dateString);
 // minutes: [0, 59]
 // seconds: [0, 59]
 // utcOffset: [-720,720].
-WTF_EXPORT String makeRFC2822DateString(unsigned dayOfWeek,
+WTF_EXPORT String MakeRFC2822DateString(unsigned day_of_week,
                                         unsigned day,
                                         unsigned month,
                                         unsigned year,
                                         unsigned hours,
                                         unsigned minutes,
                                         unsigned seconds,
-                                        int utcOffset);
+                                        int utc_offset);
 
-const char weekdayName[7][4] = {"Mon", "Tue", "Wed", "Thu",
-                                "Fri", "Sat", "Sun"};
-const char monthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-const char* const monthFullName[12] = {
+const char kWeekdayName[7][4] = {"Mon", "Tue", "Wed", "Thu",
+                                 "Fri", "Sat", "Sun"};
+const char kMonthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+const char* const kMonthFullName[12] = {
     "January", "February", "March",     "April",   "May",      "June",
     "July",    "August",   "September", "October", "November", "December"};
 
-const double minutesPerHour = 60.0;
-const double secondsPerMinute = 60.0;
-const double msPerSecond = 1000.0;
-const double msPerMinute = 60.0 * 1000.0;
-const double msPerHour = 60.0 * 60.0 * 1000.0;
-const double msPerDay = 24.0 * 60.0 * 60.0 * 1000.0;
+const double kMinutesPerHour = 60.0;
+const double kSecondsPerMinute = 60.0;
+const double kMsPerSecond = 1000.0;
+const double kMsPerMinute = 60.0 * 1000.0;
+const double kMsPerHour = 60.0 * 60.0 * 1000.0;
+const double kMsPerDay = 24.0 * 60.0 * 60.0 * 1000.0;
 
-WTF_EXPORT bool isLeapYear(int year);
+WTF_EXPORT bool IsLeapYear(int year);
 
 // Returns the number of days from 1970-01-01 to the specified date.
-WTF_EXPORT double dateToDaysFrom1970(int year, int month, int day);
-WTF_EXPORT int msToYear(double ms);
-WTF_EXPORT int dayInYear(int year, int month, int day);
-WTF_EXPORT int dayInYear(double ms, int year);
-WTF_EXPORT int monthFromDayInYear(int dayInYear, bool leapYear);
-WTF_EXPORT int dayInMonthFromDayInYear(int dayInYear, bool leapYear);
+WTF_EXPORT double DateToDaysFrom1970(int year, int month, int day);
+WTF_EXPORT int MsToYear(double ms);
+WTF_EXPORT int DayInYear(int year, int month, int day);
+WTF_EXPORT int DayInYear(double ms, int year);
+WTF_EXPORT int MonthFromDayInYear(int day_in_year, bool leap_year);
+WTF_EXPORT int DayInMonthFromDayInYear(int day_in_year, bool leap_year);
 
 // Returns milliseconds with UTC and DST.
-WTF_EXPORT double convertToLocalTime(double ms);
+WTF_EXPORT double ConvertToLocalTime(double ms);
 
 }  // namespace WTF
 
-using WTF::isLeapYear;
-using WTF::dateToDaysFrom1970;
-using WTF::dayInMonthFromDayInYear;
-using WTF::dayInYear;
-using WTF::minutesPerHour;
-using WTF::monthFromDayInYear;
-using WTF::msPerDay;
-using WTF::msPerHour;
-using WTF::msPerMinute;
-using WTF::msPerSecond;
-using WTF::msToYear;
-using WTF::secondsPerMinute;
-using WTF::parseDateFromNullTerminatedCharacters;
-using WTF::makeRFC2822DateString;
-using WTF::convertToLocalTime;
+using WTF::IsLeapYear;
+using WTF::DateToDaysFrom1970;
+using WTF::DayInMonthFromDayInYear;
+using WTF::DayInYear;
+using WTF::kMinutesPerHour;
+using WTF::MonthFromDayInYear;
+using WTF::kMsPerDay;
+using WTF::kMsPerHour;
+using WTF::kMsPerMinute;
+using WTF::kMsPerSecond;
+using WTF::MsToYear;
+using WTF::kSecondsPerMinute;
+using WTF::ParseDateFromNullTerminatedCharacters;
+using WTF::MakeRFC2822DateString;
+using WTF::ConvertToLocalTime;
 
 #endif  // DateMath_h

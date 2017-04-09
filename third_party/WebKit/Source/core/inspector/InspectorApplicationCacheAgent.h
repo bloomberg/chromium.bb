@@ -42,51 +42,51 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
   WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
 
  public:
-  static InspectorApplicationCacheAgent* create(
-      InspectedFrames* inspectedFrames) {
-    return new InspectorApplicationCacheAgent(inspectedFrames);
+  static InspectorApplicationCacheAgent* Create(
+      InspectedFrames* inspected_frames) {
+    return new InspectorApplicationCacheAgent(inspected_frames);
   }
   ~InspectorApplicationCacheAgent() override {}
   DECLARE_VIRTUAL_TRACE();
 
   // InspectorBaseAgent
-  void restore() override;
+  void Restore() override;
   protocol::Response disable() override;
 
   // InspectorInstrumentation API
-  void updateApplicationCacheStatus(LocalFrame*);
-  void networkStateChanged(LocalFrame*, bool online);
+  void UpdateApplicationCacheStatus(LocalFrame*);
+  void NetworkStateChanged(LocalFrame*, bool online);
 
   // ApplicationCache API for frontend
   protocol::Response getFramesWithManifests(
       std::unique_ptr<
           protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
-          frameIds) override;
+          frame_ids) override;
   protocol::Response enable() override;
-  protocol::Response getManifestForFrame(const String& frameId,
-                                         String* manifestURL) override;
+  protocol::Response getManifestForFrame(const String& frame_id,
+                                         String* manifest_url) override;
   protocol::Response getApplicationCacheForFrame(
-      const String& frameId,
+      const String& frame_id,
       std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*) override;
 
  private:
   explicit InspectorApplicationCacheAgent(InspectedFrames*);
 
   std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
-  buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&,
+  BuildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&,
                                  const ApplicationCacheHost::CacheInfo&);
   std::unique_ptr<
       protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
-  buildArrayForApplicationCacheResources(
+  BuildArrayForApplicationCacheResources(
       const ApplicationCacheHost::ResourceInfoList&);
   std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource>
-  buildObjectForApplicationCacheResource(
+  BuildObjectForApplicationCacheResource(
       const ApplicationCacheHost::ResourceInfo&);
 
-  protocol::Response assertFrameWithDocumentLoader(String frameId,
+  protocol::Response AssertFrameWithDocumentLoader(String frame_id,
                                                    DocumentLoader*&);
 
-  Member<InspectedFrames> m_inspectedFrames;
+  Member<InspectedFrames> inspected_frames_;
 };
 
 }  // namespace blink

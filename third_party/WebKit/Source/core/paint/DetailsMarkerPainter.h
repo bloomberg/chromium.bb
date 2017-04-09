@@ -18,16 +18,16 @@ class DetailsMarkerPainter {
   STACK_ALLOCATED();
 
  public:
-  DetailsMarkerPainter(const LayoutDetailsMarker& layoutDetailsMarker)
-      : m_layoutDetailsMarker(layoutDetailsMarker) {}
+  DetailsMarkerPainter(const LayoutDetailsMarker& layout_details_marker)
+      : layout_details_marker_(layout_details_marker) {}
 
-  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  Path getCanonicalPath() const;
-  Path getPath(const LayoutPoint& origin) const;
+  Path GetCanonicalPath() const;
+  Path GetPath(const LayoutPoint& origin) const;
 
-  const LayoutDetailsMarker& m_layoutDetailsMarker;
+  const LayoutDetailsMarker& layout_details_marker_;
 };
 
 }  // namespace blink

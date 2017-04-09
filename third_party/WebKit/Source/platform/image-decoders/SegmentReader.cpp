@@ -23,28 +23,28 @@ class SharedBufferSegmentReader final : public SegmentReader {
  public:
   SharedBufferSegmentReader(PassRefPtr<SharedBuffer>);
   size_t size() const override;
-  size_t getSomeData(const char*& data, size_t position) const override;
-  sk_sp<SkData> getAsSkData() const override;
+  size_t GetSomeData(const char*& data, size_t position) const override;
+  sk_sp<SkData> GetAsSkData() const override;
 
  private:
-  RefPtr<SharedBuffer> m_sharedBuffer;
+  RefPtr<SharedBuffer> shared_buffer_;
 };
 
 SharedBufferSegmentReader::SharedBufferSegmentReader(
     PassRefPtr<SharedBuffer> buffer)
-    : m_sharedBuffer(std::move(buffer)) {}
+    : shared_buffer_(std::move(buffer)) {}
 
 size_t SharedBufferSegmentReader::size() const {
-  return m_sharedBuffer->size();
+  return shared_buffer_->size();
 }
 
-size_t SharedBufferSegmentReader::getSomeData(const char*& data,
+size_t SharedBufferSegmentReader::GetSomeData(const char*& data,
                                               size_t position) const {
-  return m_sharedBuffer->getSomeData(data, position);
+  return shared_buffer_->GetSomeData(data, position);
 }
 
-sk_sp<SkData> SharedBufferSegmentReader::getAsSkData() const {
-  return m_sharedBuffer->getAsSkData();
+sk_sp<SkData> SharedBufferSegmentReader::GetAsSkData() const {
+  return shared_buffer_->GetAsSkData();
 }
 
 // DataSegmentReader -----------------------------------------------------------
@@ -56,31 +56,31 @@ class DataSegmentReader final : public SegmentReader {
  public:
   DataSegmentReader(sk_sp<SkData>);
   size_t size() const override;
-  size_t getSomeData(const char*& data, size_t position) const override;
-  sk_sp<SkData> getAsSkData() const override;
+  size_t GetSomeData(const char*& data, size_t position) const override;
+  sk_sp<SkData> GetAsSkData() const override;
 
  private:
-  sk_sp<SkData> m_data;
+  sk_sp<SkData> data_;
 };
 
 DataSegmentReader::DataSegmentReader(sk_sp<SkData> data)
-    : m_data(std::move(data)) {}
+    : data_(std::move(data)) {}
 
 size_t DataSegmentReader::size() const {
-  return m_data->size();
+  return data_->size();
 }
 
-size_t DataSegmentReader::getSomeData(const char*& data,
+size_t DataSegmentReader::GetSomeData(const char*& data,
                                       size_t position) const {
-  if (position >= m_data->size())
+  if (position >= data_->size())
     return 0;
 
-  data = reinterpret_cast<const char*>(m_data->bytes() + position);
-  return m_data->size() - position;
+  data = reinterpret_cast<const char*>(data_->bytes() + position);
+  return data_->size() - position;
 }
 
-sk_sp<SkData> DataSegmentReader::getAsSkData() const {
-  return m_data;
+sk_sp<SkData> DataSegmentReader::GetAsSkData() const {
+  return data_;
 }
 
 // ROBufferSegmentReader -------------------------------------------------------
@@ -92,56 +92,56 @@ class ROBufferSegmentReader final : public SegmentReader {
   ROBufferSegmentReader(sk_sp<SkROBuffer>);
 
   size_t size() const override;
-  size_t getSomeData(const char*& data, size_t position) const override;
-  sk_sp<SkData> getAsSkData() const override;
+  size_t GetSomeData(const char*& data, size_t position) const override;
+  sk_sp<SkData> GetAsSkData() const override;
 
  private:
-  sk_sp<SkROBuffer> m_roBuffer;
+  sk_sp<SkROBuffer> ro_buffer_;
   // Protects access to mutable fields.
-  mutable Mutex m_readMutex;
+  mutable Mutex read_mutex_;
   // Position of the first char in the current block of m_iter.
-  mutable size_t m_positionOfBlock;
-  mutable SkROBuffer::Iter m_iter;
+  mutable size_t position_of_block_;
+  mutable SkROBuffer::Iter iter_;
 };
 
 ROBufferSegmentReader::ROBufferSegmentReader(sk_sp<SkROBuffer> buffer)
-    : m_roBuffer(std::move(buffer)),
-      m_positionOfBlock(0),
-      m_iter(m_roBuffer.get()) {}
+    : ro_buffer_(std::move(buffer)),
+      position_of_block_(0),
+      iter_(ro_buffer_.get()) {}
 
 size_t ROBufferSegmentReader::size() const {
-  return m_roBuffer ? m_roBuffer->size() : 0;
+  return ro_buffer_ ? ro_buffer_->size() : 0;
 }
 
-size_t ROBufferSegmentReader::getSomeData(const char*& data,
+size_t ROBufferSegmentReader::GetSomeData(const char*& data,
                                           size_t position) const {
-  if (!m_roBuffer)
+  if (!ro_buffer_)
     return 0;
 
-  MutexLocker lock(m_readMutex);
+  MutexLocker lock(read_mutex_);
 
-  if (position < m_positionOfBlock) {
+  if (position < position_of_block_) {
     // SkROBuffer::Iter only iterates forwards. Start from the beginning.
-    m_iter.reset(m_roBuffer.get());
-    m_positionOfBlock = 0;
+    iter_.reset(ro_buffer_.get());
+    position_of_block_ = 0;
   }
 
-  for (size_t sizeOfBlock = m_iter.size(); sizeOfBlock != 0;
-       m_positionOfBlock += sizeOfBlock, sizeOfBlock = m_iter.size()) {
-    DCHECK_LE(m_positionOfBlock, position);
+  for (size_t size_of_block = iter_.size(); size_of_block != 0;
+       position_of_block_ += size_of_block, size_of_block = iter_.size()) {
+    DCHECK_LE(position_of_block_, position);
 
-    if (m_positionOfBlock + sizeOfBlock > position) {
+    if (position_of_block_ + size_of_block > position) {
       // |position| is in this block.
-      const size_t positionInBlock = position - m_positionOfBlock;
-      data = static_cast<const char*>(m_iter.data()) + positionInBlock;
-      return sizeOfBlock - positionInBlock;
+      const size_t position_in_block = position - position_of_block_;
+      data = static_cast<const char*>(iter_.data()) + position_in_block;
+      return size_of_block - position_in_block;
     }
 
     // Move to next block.
-    if (!m_iter.next()) {
+    if (!iter_.next()) {
       // Reset to the beginning, so future calls can succeed.
-      m_iter.reset(m_roBuffer.get());
-      m_positionOfBlock = 0;
+      iter_.reset(ro_buffer_.get());
+      position_of_block_ = 0;
       return 0;
     }
   }
@@ -149,27 +149,27 @@ size_t ROBufferSegmentReader::getSomeData(const char*& data,
   return 0;
 }
 
-static void unrefROBuffer(const void* ptr, void* context) {
+static void UnrefROBuffer(const void* ptr, void* context) {
   static_cast<SkROBuffer*>(context)->unref();
 }
 
-sk_sp<SkData> ROBufferSegmentReader::getAsSkData() const {
-  if (!m_roBuffer)
+sk_sp<SkData> ROBufferSegmentReader::GetAsSkData() const {
+  if (!ro_buffer_)
     return nullptr;
 
   // Check to see if the data is already contiguous.
-  SkROBuffer::Iter iter(m_roBuffer.get());
-  const bool multipleBlocks = iter.next();
-  iter.reset(m_roBuffer.get());
+  SkROBuffer::Iter iter(ro_buffer_.get());
+  const bool multiple_blocks = iter.next();
+  iter.reset(ro_buffer_.get());
 
-  if (!multipleBlocks) {
+  if (!multiple_blocks) {
     // Contiguous data. No need to copy.
-    m_roBuffer->ref();
-    return SkData::MakeWithProc(iter.data(), iter.size(), &unrefROBuffer,
-                                m_roBuffer.get());
+    ro_buffer_->ref();
+    return SkData::MakeWithProc(iter.data(), iter.size(), &UnrefROBuffer,
+                                ro_buffer_.get());
   }
 
-  sk_sp<SkData> data = SkData::MakeUninitialized(m_roBuffer->size());
+  sk_sp<SkData> data = SkData::MakeUninitialized(ro_buffer_->size());
   char* dst = static_cast<char*>(data->writable_data());
   do {
     size_t size = iter.size();
@@ -181,18 +181,18 @@ sk_sp<SkData> ROBufferSegmentReader::getAsSkData() const {
 
 // SegmentReader ---------------------------------------------------------------
 
-PassRefPtr<SegmentReader> SegmentReader::createFromSharedBuffer(
+PassRefPtr<SegmentReader> SegmentReader::CreateFromSharedBuffer(
     PassRefPtr<SharedBuffer> buffer) {
-  return adoptRef(new SharedBufferSegmentReader(std::move(buffer)));
+  return AdoptRef(new SharedBufferSegmentReader(std::move(buffer)));
 }
 
-PassRefPtr<SegmentReader> SegmentReader::createFromSkData(sk_sp<SkData> data) {
-  return adoptRef(new DataSegmentReader(std::move(data)));
+PassRefPtr<SegmentReader> SegmentReader::CreateFromSkData(sk_sp<SkData> data) {
+  return AdoptRef(new DataSegmentReader(std::move(data)));
 }
 
-PassRefPtr<SegmentReader> SegmentReader::createFromSkROBuffer(
+PassRefPtr<SegmentReader> SegmentReader::CreateFromSkROBuffer(
     sk_sp<SkROBuffer> buffer) {
-  return adoptRef(new ROBufferSegmentReader(std::move(buffer)));
+  return AdoptRef(new ROBufferSegmentReader(std::move(buffer)));
 }
 
 }  // namespace blink

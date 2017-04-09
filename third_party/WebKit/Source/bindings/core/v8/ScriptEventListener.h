@@ -44,25 +44,25 @@ class Node;
 class QualifiedName;
 class SourceLocation;
 
-V8LazyEventListener* createAttributeEventListener(
+V8LazyEventListener* CreateAttributeEventListener(
     Node*,
     const QualifiedName&,
     const AtomicString& value,
-    const AtomicString& eventParameterName);
-V8LazyEventListener* createAttributeEventListener(
+    const AtomicString& event_parameter_name);
+V8LazyEventListener* CreateAttributeEventListener(
     LocalFrame*,
     const QualifiedName&,
     const AtomicString& value,
-    const AtomicString& eventParameterName);
-v8::Local<v8::Object> eventListenerHandler(ExecutionContext*, EventListener*);
-v8::Local<v8::Function> eventListenerEffectiveFunction(
+    const AtomicString& event_parameter_name);
+v8::Local<v8::Object> EventListenerHandler(ExecutionContext*, EventListener*);
+v8::Local<v8::Function> EventListenerEffectiveFunction(
     v8::Isolate*,
     v8::Local<v8::Object> handler);
-void getFunctionLocation(v8::Local<v8::Function>,
-                         String& scriptId,
-                         int& lineNumber,
-                         int& columnNumber);
-std::unique_ptr<SourceLocation> getFunctionLocation(ExecutionContext*,
+void GetFunctionLocation(v8::Local<v8::Function>,
+                         String& script_id,
+                         int& line_number,
+                         int& column_number);
+std::unique_ptr<SourceLocation> GetFunctionLocation(ExecutionContext*,
                                                     EventListener*);
 
 }  // namespace blink

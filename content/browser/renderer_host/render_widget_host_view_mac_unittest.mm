@@ -91,7 +91,8 @@
 
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
-  if (!consumed && event.type() == blink::WebInputEvent::GestureScrollUpdate)
+  if (!consumed &&
+      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate)
     unhandledWheelEventReceived_ = true;
 }
 
@@ -118,7 +119,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     const blink::WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
-    result += blink::WebInputEvent::GetName(event->type());
+    result += blink::WebInputEvent::GetName(event->GetType());
   }
   process->sink().ClearMessages();
   return result;
@@ -134,9 +135,9 @@ blink::WebPointerProperties::PointerType GetInputMessagePointerTypes(
     InputMsg_HandleInputEvent::Param params;
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
     const blink::WebInputEvent* event = std::get<0>(params);
-    if (blink::WebInputEvent::isMouseEventType(event->type())) {
+    if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
       pointer_type =
-          static_cast<const blink::WebMouseEvent*>(event)->pointerType;
+          static_cast<const blink::WebMouseEvent*>(event)->pointer_type;
     }
   }
   process->sink().ClearMessages();
@@ -556,7 +557,7 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   NSRange actual_range;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
   params.anchor_rect = params.focus_rect = caret_rect;
-  params.anchor_dir = params.focus_dir = blink::WebTextDirectionLeftToRight;
+  params.anchor_dir = params.focus_dir = blink::kWebTextDirectionLeftToRight;
   rwhv_mac_->SelectionBoundsChanged(params);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
         caret_range.ToNSRange(),
@@ -1033,7 +1034,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
 
   // Send an ACK for the first wheel event, so that the queue will be flushed.
   InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD,
-                    blink::WebInputEvent::MouseWheel,
+                    blink::WebInputEvent::kMouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   std::unique_ptr<IPC::Message> response(
       new InputHostMsg_HandleInputEvent_ACK(0, ack));
@@ -1078,7 +1079,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithEraserType) {
                                kCGEventMouseSubtypeTabletPoint);
   [view->cocoa_view() mouseEvent:event];
   ASSERT_EQ(1U, process_host->sink().message_count());
-  EXPECT_EQ(blink::WebPointerProperties::PointerType::Eraser,
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kEraser,
             GetInputMessagePointerTypes(process_host));
 
   // Clean up.
@@ -1113,7 +1114,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenType) {
                                kCGEventMouseSubtypeTabletPoint);
   [view->cocoa_view() mouseEvent:event];
   ASSERT_EQ(1U, process_host->sink().message_count());
-  EXPECT_EQ(blink::WebPointerProperties::PointerType::Pen,
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             GetInputMessagePointerTypes(process_host));
 
   // Clean up.
@@ -1141,7 +1142,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {
                                kCGEventMouseSubtypeDefault);
   [view->cocoa_view() mouseEvent:event];
   ASSERT_EQ(1U, process_host->sink().message_count());
-  EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kMouse,
             GetInputMessagePointerTypes(process_host));
 
   // Clean up.
@@ -1177,7 +1178,7 @@ TEST_F(RenderWidgetHostViewMacTest,
 
   // Indicate that the wheel event was unhandled.
   InputEventAck unhandled_ack(InputEventAckSource::COMPOSITOR_THREAD,
-                              blink::WebInputEvent::MouseWheel,
+                              blink::WebInputEvent::kMouseWheel,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
@@ -1186,7 +1187,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   process_host->sink().ClearMessages();
 
   InputEventAck unhandled_scroll_ack(InputEventAckSource::COMPOSITOR_THREAD,
-                                     blink::WebInputEvent::GestureScrollUpdate,
+                                     blink::WebInputEvent::kGestureScrollUpdate,
                                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   std::unique_ptr<IPC::Message> scroll_response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_scroll_ack));
@@ -1329,7 +1330,7 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
     IPC::WebInputEventPointer ipc_event = std::get<0>(data);
     const blink::WebGestureEvent* gesture_event =
         static_cast<const blink::WebGestureEvent*>(ipc_event);
-    return gesture_event->data.pinchUpdate.zoomDisabled;
+    return gesture_event->data.pinch_update.zoom_disabled;
   }
 
   MockRenderProcessHost* process_host_;
@@ -1354,7 +1355,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
 
   // We'll use this IPC message to ack events.
   InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD,
-                    blink::WebInputEvent::GesturePinchUpdate,
+                    blink::WebInputEvent::kGesturePinchUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   std::unique_ptr<IPC::Message> response(
       new InputHostMsg_HandleInputEvent_ACK(0, ack));

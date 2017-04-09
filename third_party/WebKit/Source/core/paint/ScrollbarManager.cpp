@@ -6,21 +6,21 @@
 
 namespace blink {
 
-ScrollbarManager::ScrollbarManager(ScrollableArea& scrollableArea)
-    : m_scrollableArea(&scrollableArea),
-      m_hBarIsAttached(0),
-      m_vBarIsAttached(0) {}
+ScrollbarManager::ScrollbarManager(ScrollableArea& scrollable_area)
+    : scrollable_area_(&scrollable_area),
+      h_bar_is_attached_(0),
+      v_bar_is_attached_(0) {}
 
 DEFINE_TRACE(ScrollbarManager) {
-  visitor->trace(m_scrollableArea);
-  visitor->trace(m_hBar);
-  visitor->trace(m_vBar);
+  visitor->Trace(scrollable_area_);
+  visitor->Trace(h_bar_);
+  visitor->Trace(v_bar_);
 }
 
-void ScrollbarManager::dispose() {
-  m_hBarIsAttached = m_vBarIsAttached = 0;
-  destroyScrollbar(HorizontalScrollbar);
-  destroyScrollbar(VerticalScrollbar);
+void ScrollbarManager::Dispose() {
+  h_bar_is_attached_ = v_bar_is_attached_ = 0;
+  DestroyScrollbar(kHorizontalScrollbar);
+  DestroyScrollbar(kVerticalScrollbar);
 }
 
 }  // namespace blink

@@ -32,7 +32,7 @@ namespace blink {
 
 class MergeIdenticalElementsCommand final : public SimpleEditCommand {
  public:
-  static MergeIdenticalElementsCommand* create(Element* element1,
+  static MergeIdenticalElementsCommand* Create(Element* element1,
                                                Element* element2) {
     return new MergeIdenticalElementsCommand(element1, element2);
   }
@@ -42,12 +42,12 @@ class MergeIdenticalElementsCommand final : public SimpleEditCommand {
  private:
   MergeIdenticalElementsCommand(Element*, Element*);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
 
-  Member<Element> m_element1;
-  Member<Element> m_element2;
-  Member<Node> m_atChild;
+  Member<Element> element1_;
+  Member<Element> element2_;
+  Member<Node> at_child_;
 };
 
 }  // namespace blink

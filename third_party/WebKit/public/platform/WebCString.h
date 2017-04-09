@@ -57,67 +57,67 @@ class WebString;
 //
 class WebCString {
  public:
-  ~WebCString() { reset(); }
+  ~WebCString() { Reset(); }
 
   WebCString() {}
 
-  WebCString(const char* data, size_t len) { assign(data, len); }
+  WebCString(const char* data, size_t len) { Assign(data, len); }
 
-  WebCString(const WebCString& s) { assign(s); }
+  WebCString(const WebCString& s) { Assign(s); }
 
   WebCString& operator=(const WebCString& s) {
-    assign(s);
+    Assign(s);
     return *this;
   }
 
   // Returns 0 if both strings are equals, a value greater than zero if the
   // first character that does not match has a greater value in this string
   // than in |other|, or a value less than zero to indicate the opposite.
-  BLINK_PLATFORM_EXPORT int compare(const WebCString& other) const;
+  BLINK_PLATFORM_EXPORT int Compare(const WebCString& other) const;
 
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebCString&);
-  BLINK_PLATFORM_EXPORT void assign(const char* data, size_t len);
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebCString&);
+  BLINK_PLATFORM_EXPORT void Assign(const char* data, size_t len);
 
   BLINK_PLATFORM_EXPORT size_t length() const;
-  BLINK_PLATFORM_EXPORT const char* data() const;
+  BLINK_PLATFORM_EXPORT const char* Data() const;
 
-  bool isEmpty() const { return !length(); }
-  bool isNull() const { return m_private.isNull(); }
+  bool IsEmpty() const { return !length(); }
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT WebString utf16() const;
+  BLINK_PLATFORM_EXPORT WebString Utf16() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebCString(const WTF::CString&);
   BLINK_PLATFORM_EXPORT WebCString& operator=(const WTF::CString&);
   BLINK_PLATFORM_EXPORT operator WTF::CString() const;
 #else
-  WebCString(const std::string& s) { assign(s.data(), s.length()); }
+  WebCString(const std::string& s) { Assign(s.data(), s.length()); }
 
   WebCString& operator=(const std::string& s) {
-    assign(s.data(), s.length());
+    Assign(s.data(), s.length());
     return *this;
   }
 #endif
 #if !INSIDE_BLINK || defined(UNIT_TEST)
   operator std::string() const {
     size_t len = length();
-    return len ? std::string(data(), len) : std::string();
+    return len ? std::string(Data(), len) : std::string();
   }
 
   template <class UTF16String>
-  static WebCString fromUTF16(const UTF16String& s) {
-    return fromUTF16(s.data(), s.length());
+  static WebCString FromUTF16(const UTF16String& s) {
+    return FromUTF16(s.Data(), s.length());
   }
 #endif
 
  private:
-  BLINK_PLATFORM_EXPORT void assign(WTF::CStringImpl*);
-  WebPrivatePtr<WTF::CStringImpl> m_private;
+  BLINK_PLATFORM_EXPORT void Assign(WTF::CStringImpl*);
+  WebPrivatePtr<WTF::CStringImpl> private_;
 };
 
 inline bool operator<(const WebCString& a, const WebCString& b) {
-  return a.compare(b) < 0;
+  return a.Compare(b) < 0;
 }
 
 }  // namespace blink

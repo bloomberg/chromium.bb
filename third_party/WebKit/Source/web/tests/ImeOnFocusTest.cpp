@@ -15,139 +15,143 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 
-using blink::FrameTestHelpers::loadFrame;
-using blink::testing::runPendingTasks;
-using blink::URLTestHelpers::registerMockedURLLoadFromBase;
+using blink::FrameTestHelpers::LoadFrame;
+using blink::testing::RunPendingTasks;
+using blink::URLTestHelpers::RegisterMockedURLLoadFromBase;
 
 namespace blink {
 
 class ImeRequestTrackingWebViewClient
     : public FrameTestHelpers::TestWebWidgetClient {
  public:
-  ImeRequestTrackingWebViewClient() : m_virtualKeyboardRequestCount(0) {}
+  ImeRequestTrackingWebViewClient() : virtual_keyboard_request_count_(0) {}
 
   // WebWidgetClient methods
-  void showVirtualKeyboardOnElementFocus() override {
-    ++m_virtualKeyboardRequestCount;
+  void ShowVirtualKeyboardOnElementFocus() override {
+    ++virtual_keyboard_request_count_;
   }
 
   // Local methds
-  void reset() { m_virtualKeyboardRequestCount = 0; }
+  void Reset() { virtual_keyboard_request_count_ = 0; }
 
-  int virtualKeyboardRequestCount() { return m_virtualKeyboardRequestCount; }
+  int VirtualKeyboardRequestCount() { return virtual_keyboard_request_count_; }
 
  private:
-  int m_virtualKeyboardRequestCount;
+  int virtual_keyboard_request_count_;
 };
 
 class ImeOnFocusTest : public ::testing::Test {
  public:
-  ImeOnFocusTest() : m_baseURL("http://www.test.com/") {}
+  ImeOnFocusTest() : base_url_("http://www.test.com/") {}
 
   void TearDown() override {
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
  protected:
-  void sendGestureTap(WebView*, IntPoint);
-  void focus(const AtomicString& element);
-  void runImeOnFocusTest(std::string fileName,
+  void SendGestureTap(WebView*, IntPoint);
+  void Focus(const AtomicString& element);
+  void RunImeOnFocusTest(std::string file_name,
                          int,
-                         IntPoint tapPoint = IntPoint(-1, -1),
-                         const AtomicString& focusElement = nullAtom,
+                         IntPoint tap_point = IntPoint(-1, -1),
+                         const AtomicString& focus_element = g_null_atom,
                          std::string frame = "");
 
-  std::string m_baseURL;
-  FrameTestHelpers::WebViewHelper m_webViewHelper;
-  Persistent<Document> m_document;
+  std::string base_url_;
+  FrameTestHelpers::WebViewHelper web_view_helper_;
+  Persistent<Document> document_;
 };
 
-void ImeOnFocusTest::sendGestureTap(WebView* webView, IntPoint clientPoint) {
-  WebGestureEvent webGestureEvent(WebInputEvent::GestureTap,
-                                  WebInputEvent::NoModifiers,
-                                  WebInputEvent::TimeStampForTesting);
+void ImeOnFocusTest::SendGestureTap(WebView* web_view, IntPoint client_point) {
+  WebGestureEvent web_gesture_event(WebInputEvent::kGestureTap,
+                                    WebInputEvent::kNoModifiers,
+                                    WebInputEvent::kTimeStampForTesting);
   // GestureTap is only ever from touch screens.
-  webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
-  webGestureEvent.x = clientPoint.x();
-  webGestureEvent.y = clientPoint.y();
-  webGestureEvent.globalX = clientPoint.x();
-  webGestureEvent.globalY = clientPoint.y();
-  webGestureEvent.data.tap.tapCount = 1;
-  webGestureEvent.data.tap.width = 10;
-  webGestureEvent.data.tap.height = 10;
+  web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
+  web_gesture_event.x = client_point.X();
+  web_gesture_event.y = client_point.Y();
+  web_gesture_event.global_x = client_point.X();
+  web_gesture_event.global_y = client_point.Y();
+  web_gesture_event.data.tap.tap_count = 1;
+  web_gesture_event.data.tap.width = 10;
+  web_gesture_event.data.tap.height = 10;
 
-  webView->handleInputEvent(WebCoalescedInputEvent(webGestureEvent));
-  runPendingTasks();
+  web_view->HandleInputEvent(WebCoalescedInputEvent(web_gesture_event));
+  RunPendingTasks();
 }
 
-void ImeOnFocusTest::focus(const AtomicString& element) {
-  m_document->body()->getElementById(element)->focus();
+void ImeOnFocusTest::Focus(const AtomicString& element) {
+  document_->body()->getElementById(element)->focus();
 }
 
-void ImeOnFocusTest::runImeOnFocusTest(std::string fileName,
-                                       int expectedVirtualKeyboardRequestCount,
-                                       IntPoint tapPoint,
-                                       const AtomicString& focusElement,
-                                       std::string frame) {
+void ImeOnFocusTest::RunImeOnFocusTest(
+    std::string file_name,
+    int expected_virtual_keyboard_request_count,
+    IntPoint tap_point,
+    const AtomicString& focus_element,
+    std::string frame) {
   ImeRequestTrackingWebViewClient client;
-  registerMockedURLLoadFromBase(WebString::fromUTF8(m_baseURL),
-                                testing::webTestDataPath(),
-                                WebString::fromUTF8(fileName));
-  WebViewImpl* webView = m_webViewHelper.initialize(true, 0, nullptr, &client);
-  webView->resize(WebSize(800, 1200));
-  loadFrame(webView->mainFrame(), m_baseURL + fileName);
-  m_document =
-      m_webViewHelper.webView()->mainFrameImpl()->document().unwrap<Document>();
+  RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
+                                testing::WebTestDataPath(),
+                                WebString::FromUTF8(file_name));
+  WebViewImpl* web_view =
+      web_view_helper_.Initialize(true, 0, nullptr, &client);
+  web_view->Resize(WebSize(800, 1200));
+  LoadFrame(web_view->MainFrame(), base_url_ + file_name);
+  document_ = web_view_helper_.WebView()
+                  ->MainFrameImpl()
+                  ->GetDocument()
+                  .Unwrap<Document>();
 
-  if (!focusElement.isNull())
-    focus(focusElement);
-  EXPECT_EQ(0, client.virtualKeyboardRequestCount());
+  if (!focus_element.IsNull())
+    Focus(focus_element);
+  EXPECT_EQ(0, client.VirtualKeyboardRequestCount());
 
-  if (tapPoint.x() >= 0 && tapPoint.y() >= 0)
-    sendGestureTap(webView, tapPoint);
+  if (tap_point.X() >= 0 && tap_point.Y() >= 0)
+    SendGestureTap(web_view, tap_point);
 
   if (!frame.empty()) {
-    registerMockedURLLoadFromBase(WebString::fromUTF8(m_baseURL),
-                                  testing::webTestDataPath(),
-                                  WebString::fromUTF8(frame));
-    WebFrame* childFrame = webView->mainFrame()->firstChild();
-    loadFrame(childFrame, m_baseURL + frame);
+    RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
+                                  testing::WebTestDataPath(),
+                                  WebString::FromUTF8(frame));
+    WebFrame* child_frame = web_view->MainFrame()->FirstChild();
+    LoadFrame(child_frame, base_url_ + frame);
   }
 
-  if (!focusElement.isNull())
-    focus(focusElement);
-  EXPECT_EQ(expectedVirtualKeyboardRequestCount,
-            client.virtualKeyboardRequestCount());
+  if (!focus_element.IsNull())
+    Focus(focus_element);
+  EXPECT_EQ(expected_virtual_keyboard_request_count,
+            client.VirtualKeyboardRequestCount());
 
-  m_webViewHelper.reset();
+  web_view_helper_.Reset();
 }
 
 TEST_F(ImeOnFocusTest, OnLoad) {
-  runImeOnFocusTest("ime-on-focus-on-load.html", 0);
+  RunImeOnFocusTest("ime-on-focus-on-load.html", 0);
 }
 
 TEST_F(ImeOnFocusTest, OnAutofocus) {
-  runImeOnFocusTest("ime-on-focus-on-autofocus.html", 0);
+  RunImeOnFocusTest("ime-on-focus-on-autofocus.html", 0);
 }
 
 TEST_F(ImeOnFocusTest, OnUserGesture) {
-  runImeOnFocusTest("ime-on-focus-on-user-gesture.html", 1, IntPoint(50, 50));
+  RunImeOnFocusTest("ime-on-focus-on-user-gesture.html", 1, IntPoint(50, 50));
 }
 
 TEST_F(ImeOnFocusTest, AfterFirstGesture) {
-  runImeOnFocusTest("ime-on-focus-after-first-gesture.html", 1,
+  RunImeOnFocusTest("ime-on-focus-after-first-gesture.html", 1,
                     IntPoint(50, 50), "input");
 }
 
 TEST_F(ImeOnFocusTest, AfterNavigationWithinPage) {
-  runImeOnFocusTest("ime-on-focus-after-navigation-within-page.html", 1,
+  RunImeOnFocusTest("ime-on-focus-after-navigation-within-page.html", 1,
                     IntPoint(50, 50), "input");
 }
 
 TEST_F(ImeOnFocusTest, AfterFrameLoadOnGesture) {
-  runImeOnFocusTest("ime-on-focus-after-frame-load-on-gesture.html", 1,
+  RunImeOnFocusTest("ime-on-focus-after-frame-load-on-gesture.html", 1,
                     IntPoint(50, 50), "input", "frame.html");
 }
 

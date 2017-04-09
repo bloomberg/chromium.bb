@@ -8,8 +8,8 @@
 
 namespace blink {
 
-void LinkPreloadResourceClient::triggerEvents(const Resource* resource) {
-  if (m_loader)
-    m_loader->triggerEvents(resource);
+void LinkPreloadResourceClient::TriggerEvents(const Resource* resource) {
+  if (loader_)
+    loader_->TriggerEvents(resource);
 }
 }

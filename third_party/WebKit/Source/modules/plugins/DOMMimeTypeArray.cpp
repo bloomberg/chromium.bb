@@ -31,42 +31,42 @@ namespace blink {
 DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame) : ContextClient(frame) {}
 
 DEFINE_TRACE(DOMMimeTypeArray) {
-  ContextClient::trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 unsigned DOMMimeTypeArray::length() const {
-  PluginData* data = getPluginData();
+  PluginData* data = GetPluginData();
   if (!data)
     return 0;
-  return data->mimes().size();
+  return data->Mimes().size();
 }
 
 DOMMimeType* DOMMimeTypeArray::item(unsigned index) {
-  PluginData* data = getPluginData();
+  PluginData* data = GetPluginData();
   if (!data)
     return nullptr;
-  const Vector<MimeClassInfo>& mimes = data->mimes();
+  const Vector<MimeClassInfo>& mimes = data->Mimes();
   if (index >= mimes.size())
     return nullptr;
-  return DOMMimeType::create(data, frame(), index);
+  return DOMMimeType::Create(data, GetFrame(), index);
 }
 
-DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& propertyName) {
-  PluginData* data = getPluginData();
+DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& property_name) {
+  PluginData* data = GetPluginData();
   if (!data)
     return nullptr;
-  const Vector<MimeClassInfo>& mimes = data->mimes();
+  const Vector<MimeClassInfo>& mimes = data->Mimes();
   for (unsigned i = 0; i < mimes.size(); ++i) {
-    if (mimes[i].type == propertyName)
-      return DOMMimeType::create(data, frame(), i);
+    if (mimes[i].type == property_name)
+      return DOMMimeType::Create(data, GetFrame(), i);
   }
   return nullptr;
 }
 
-PluginData* DOMMimeTypeArray::getPluginData() const {
-  if (!frame())
+PluginData* DOMMimeTypeArray::GetPluginData() const {
+  if (!GetFrame())
     return nullptr;
-  return frame()->pluginData();
+  return GetFrame()->GetPluginData();
 }
 
 }  // namespace blink

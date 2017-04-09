@@ -13,97 +13,98 @@ namespace blink {
 
 namespace {
 
-bool hasSelectorForIdInShadow(Element* host, const AtomicString& id) {
+bool HasSelectorForIdInShadow(Element* host, const AtomicString& id) {
   DCHECK(host);
-  return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForId(id);
+  return host->Shadow()->V0().EnsureSelectFeatureSet().HasSelectorForId(id);
 }
 
-bool hasSelectorForClassInShadow(Element* host, const AtomicString& className) {
+bool HasSelectorForClassInShadow(Element* host,
+                                 const AtomicString& class_name) {
   DCHECK(host);
-  return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForClass(
-      className);
+  return host->Shadow()->V0().EnsureSelectFeatureSet().HasSelectorForClass(
+      class_name);
 }
 
-bool hasSelectorForAttributeInShadow(Element* host,
-                                     const AtomicString& attributeName) {
+bool HasSelectorForAttributeInShadow(Element* host,
+                                     const AtomicString& attribute_name) {
   DCHECK(host);
-  return host->shadow()->v0().ensureSelectFeatureSet().hasSelectorForAttribute(
-      attributeName);
+  return host->Shadow()->V0().EnsureSelectFeatureSet().HasSelectorForAttribute(
+      attribute_name);
 }
 
 class ShadowDOMVTest : public SimTest {};
 
 TEST_F(ShadowDOMVTest, FeatureSetId) {
-  loadURL("about:blank");
-  auto* host = document().createElement("div");
-  auto* content = document().createElement("content");
+  LoadURL("about:blank");
+  auto* host = GetDocument().createElement("div");
+  auto* content = GetDocument().createElement("content");
   content->setAttribute("select", "#foo");
-  host->createShadowRoot()->appendChild(content);
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "host"));
+  host->createShadowRoot()->AppendChild(content);
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "host"));
   content->setAttribute("select", "#bar");
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "foo"));
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "foo"));
   content->setAttribute("select", "");
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "foo"));
 }
 
 TEST_F(ShadowDOMVTest, FeatureSetClassName) {
-  loadURL("about:blank");
-  auto* host = document().createElement("div");
-  auto* content = document().createElement("content");
+  LoadURL("about:blank");
+  auto* host = GetDocument().createElement("div");
+  auto* content = GetDocument().createElement("content");
   content->setAttribute("select", ".foo");
-  host->createShadowRoot()->appendChild(content);
-  EXPECT_TRUE(hasSelectorForClassInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "host"));
+  host->createShadowRoot()->AppendChild(content);
+  EXPECT_TRUE(HasSelectorForClassInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "host"));
   content->setAttribute("select", ".bar");
-  EXPECT_TRUE(hasSelectorForClassInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "foo"));
+  EXPECT_TRUE(HasSelectorForClassInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "foo"));
   content->setAttribute("select", "");
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "foo"));
 }
 
 TEST_F(ShadowDOMVTest, FeatureSetAttributeName) {
-  loadURL("about:blank");
-  auto* host = document().createElement("div");
-  auto* content = document().createElement("content");
+  LoadURL("about:blank");
+  auto* host = GetDocument().createElement("div");
+  auto* content = GetDocument().createElement("content");
   content->setAttribute("select", "div[foo]");
-  host->createShadowRoot()->appendChild(content);
-  EXPECT_TRUE(hasSelectorForAttributeInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "host"));
+  host->createShadowRoot()->AppendChild(content);
+  EXPECT_TRUE(HasSelectorForAttributeInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "host"));
   content->setAttribute("select", "div[bar]");
-  EXPECT_TRUE(hasSelectorForAttributeInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "foo"));
+  EXPECT_TRUE(HasSelectorForAttributeInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "foo"));
   content->setAttribute("select", "");
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "foo"));
 }
 
 TEST_F(ShadowDOMVTest, FeatureSetMultipleSelectors) {
-  loadURL("about:blank");
-  auto* host = document().createElement("div");
-  auto* content = document().createElement("content");
+  LoadURL("about:blank");
+  auto* host = GetDocument().createElement("div");
+  auto* content = GetDocument().createElement("content");
   content->setAttribute("select", "#foo,.bar,div[baz]");
-  host->createShadowRoot()->appendChild(content);
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "baz"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "foo"));
-  EXPECT_TRUE(hasSelectorForClassInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "baz"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "bar"));
-  EXPECT_TRUE(hasSelectorForAttributeInShadow(host, "baz"));
+  host->createShadowRoot()->AppendChild(content);
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "baz"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "foo"));
+  EXPECT_TRUE(HasSelectorForClassInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "baz"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "bar"));
+  EXPECT_TRUE(HasSelectorForAttributeInShadow(host, "baz"));
 }
 
 TEST_F(ShadowDOMVTest, FeatureSetSubtree) {
-  loadURL("about:blank");
-  auto* host = document().createElement("div");
+  LoadURL("about:blank");
+  auto* host = GetDocument().createElement("div");
   host->createShadowRoot()->setInnerHTML(
       "<div>"
       "  <div></div>"
@@ -112,30 +113,30 @@ TEST_F(ShadowDOMVTest, FeatureSetSubtree) {
       "    <content select='div[foo=piyo]'></content>"
       "  </div>"
       "</div>");
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForClassInShadow(host, "foo"));
-  EXPECT_TRUE(hasSelectorForAttributeInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForAttributeInShadow(host, "piyo"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForClassInShadow(host, "foo"));
+  EXPECT_TRUE(HasSelectorForAttributeInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForAttributeInShadow(host, "piyo"));
 }
 
 TEST_F(ShadowDOMVTest, FeatureSetMultipleShadowRoots) {
-  loadURL("about:blank");
-  auto* host = document().createElement("div");
-  auto* hostShadow = host->createShadowRoot();
-  hostShadow->setInnerHTML("<content select='#foo'></content>");
-  auto* child = document().createElement("div");
-  auto* childRoot = child->createShadowRoot();
-  auto* childContent = document().createElement("content");
-  childContent->setAttribute("select", "#bar");
-  childRoot->appendChild(childContent);
-  hostShadow->appendChild(child);
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "foo"));
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "bar"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "baz"));
-  childContent->setAttribute("select", "#baz");
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "foo"));
-  EXPECT_FALSE(hasSelectorForIdInShadow(host, "bar"));
-  EXPECT_TRUE(hasSelectorForIdInShadow(host, "baz"));
+  LoadURL("about:blank");
+  auto* host = GetDocument().createElement("div");
+  auto* host_shadow = host->createShadowRoot();
+  host_shadow->setInnerHTML("<content select='#foo'></content>");
+  auto* child = GetDocument().createElement("div");
+  auto* child_root = child->createShadowRoot();
+  auto* child_content = GetDocument().createElement("content");
+  child_content->setAttribute("select", "#bar");
+  child_root->AppendChild(child_content);
+  host_shadow->AppendChild(child);
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "foo"));
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "bar"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "baz"));
+  child_content->setAttribute("select", "#baz");
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "foo"));
+  EXPECT_FALSE(HasSelectorForIdInShadow(host, "bar"));
+  EXPECT_TRUE(HasSelectorForIdInShadow(host, "baz"));
 }
 
 }  // namespace

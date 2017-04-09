@@ -290,7 +290,7 @@ AudioTrackRecorder::AudioTrackRecorder(
                                 bits_per_second)),
       encoder_thread_("AudioEncoderThread") {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DCHECK(!track_.isNull());
+  DCHECK(!track_.IsNull());
   DCHECK(MediaStreamAudioTrack::From(track_));
 
   // Start the |encoder_thread_|. From this point on, |encoder_| should work

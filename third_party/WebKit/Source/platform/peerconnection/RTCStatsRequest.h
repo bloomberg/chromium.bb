@@ -44,10 +44,10 @@ class RTCStatsRequest : public GarbageCollectedFinalized<RTCStatsRequest> {
  public:
   virtual ~RTCStatsRequest() {}
 
-  virtual RTCStatsResponseBase* createResponse() = 0;
-  virtual bool hasSelector() = 0;
-  virtual MediaStreamComponent* component() = 0;
-  virtual void requestSucceeded(RTCStatsResponseBase*) = 0;
+  virtual RTCStatsResponseBase* CreateResponse() = 0;
+  virtual bool HasSelector() = 0;
+  virtual MediaStreamComponent* Component() = 0;
+  virtual void RequestSucceeded(RTCStatsResponseBase*) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

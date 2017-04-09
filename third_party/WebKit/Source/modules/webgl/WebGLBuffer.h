@@ -36,26 +36,26 @@ class WebGLBuffer final : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLBuffer() override;
 
-  static WebGLBuffer* create(WebGLRenderingContextBase*);
+  static WebGLBuffer* Create(WebGLRenderingContextBase*);
 
-  GLenum getInitialTarget() const { return m_initialTarget; }
-  void setInitialTarget(GLenum);
+  GLenum GetInitialTarget() const { return initial_target_; }
+  void SetInitialTarget(GLenum);
 
-  bool hasEverBeenBound() const { return object() && m_initialTarget; }
+  bool HasEverBeenBound() const { return Object() && initial_target_; }
 
-  void setSize(long long size) { m_size = size; }
-  long long getSize() const { return m_size; }
+  void SetSize(long long size) { size_ = size; }
+  long long GetSize() const { return size_; }
 
  protected:
   explicit WebGLBuffer(WebGLRenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:
-  bool isBuffer() const override { return true; }
+  bool IsBuffer() const override { return true; }
 
-  GLenum m_initialTarget;
-  long long m_size;
+  GLenum initial_target_;
+  long long size_;
 };
 
 }  // namespace blink

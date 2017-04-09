@@ -38,25 +38,25 @@ class SpeechRecognition;
 // recognition events.
 class WebSpeechRecognitionHandle {
  public:
-  ~WebSpeechRecognitionHandle() { reset(); }
+  ~WebSpeechRecognitionHandle() { Reset(); }
   WebSpeechRecognitionHandle() {}
 
   WebSpeechRecognitionHandle(const WebSpeechRecognitionHandle& other) {
-    assign(other);
+    Assign(other);
   }
   WebSpeechRecognitionHandle& operator=(
       const WebSpeechRecognitionHandle& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebSpeechRecognitionHandle&);
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebSpeechRecognitionHandle&);
 
   // Comparison functions are provided so that WebSpeechRecognitionHandle
   // objects can be stored in a hash map.
-  BLINK_EXPORT bool equals(const WebSpeechRecognitionHandle&) const;
-  BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
+  BLINK_EXPORT bool Equals(const WebSpeechRecognitionHandle&) const;
+  BLINK_EXPORT bool LessThan(const WebSpeechRecognitionHandle&) const;
 
 #if BLINK_IMPLEMENTATION
   WebSpeechRecognitionHandle(SpeechRecognition*);
@@ -64,12 +64,12 @@ class WebSpeechRecognitionHandle {
 #endif
 
  private:
-  WebPrivatePtr<SpeechRecognition> m_private;
+  WebPrivatePtr<SpeechRecognition> private_;
 };
 
 inline bool operator==(const WebSpeechRecognitionHandle& a,
                        const WebSpeechRecognitionHandle& b) {
-  return a.equals(b);
+  return a.Equals(b);
 }
 
 inline bool operator!=(const WebSpeechRecognitionHandle& a,
@@ -79,7 +79,7 @@ inline bool operator!=(const WebSpeechRecognitionHandle& a,
 
 inline bool operator<(const WebSpeechRecognitionHandle& a,
                       const WebSpeechRecognitionHandle& b) {
-  return a.lessThan(b);
+  return a.LessThan(b);
 }
 
 }  // namespace blink

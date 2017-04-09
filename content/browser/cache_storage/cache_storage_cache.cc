@@ -77,36 +77,36 @@ blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
     proto::CacheResponse::ResponseType response_type) {
   switch (response_type) {
     case proto::CacheResponse::BASIC_TYPE:
-      return blink::WebServiceWorkerResponseTypeBasic;
+      return blink::kWebServiceWorkerResponseTypeBasic;
     case proto::CacheResponse::CORS_TYPE:
-      return blink::WebServiceWorkerResponseTypeCORS;
+      return blink::kWebServiceWorkerResponseTypeCORS;
     case proto::CacheResponse::DEFAULT_TYPE:
-      return blink::WebServiceWorkerResponseTypeDefault;
+      return blink::kWebServiceWorkerResponseTypeDefault;
     case proto::CacheResponse::ERROR_TYPE:
-      return blink::WebServiceWorkerResponseTypeError;
+      return blink::kWebServiceWorkerResponseTypeError;
     case proto::CacheResponse::OPAQUE_TYPE:
-      return blink::WebServiceWorkerResponseTypeOpaque;
+      return blink::kWebServiceWorkerResponseTypeOpaque;
     case proto::CacheResponse::OPAQUE_REDIRECT_TYPE:
-      return blink::WebServiceWorkerResponseTypeOpaqueRedirect;
+      return blink::kWebServiceWorkerResponseTypeOpaqueRedirect;
   }
   NOTREACHED();
-  return blink::WebServiceWorkerResponseTypeOpaque;
+  return blink::kWebServiceWorkerResponseTypeOpaque;
 }
 
 proto::CacheResponse::ResponseType WebResponseTypeToProtoResponseType(
     blink::WebServiceWorkerResponseType response_type) {
   switch (response_type) {
-    case blink::WebServiceWorkerResponseTypeBasic:
+    case blink::kWebServiceWorkerResponseTypeBasic:
       return proto::CacheResponse::BASIC_TYPE;
-    case blink::WebServiceWorkerResponseTypeCORS:
+    case blink::kWebServiceWorkerResponseTypeCORS:
       return proto::CacheResponse::CORS_TYPE;
-    case blink::WebServiceWorkerResponseTypeDefault:
+    case blink::kWebServiceWorkerResponseTypeDefault:
       return proto::CacheResponse::DEFAULT_TYPE;
-    case blink::WebServiceWorkerResponseTypeError:
+    case blink::kWebServiceWorkerResponseTypeError:
       return proto::CacheResponse::ERROR_TYPE;
-    case blink::WebServiceWorkerResponseTypeOpaque:
+    case blink::kWebServiceWorkerResponseTypeOpaque:
       return proto::CacheResponse::OPAQUE_TYPE;
-    case blink::WebServiceWorkerResponseTypeOpaqueRedirect:
+    case blink::kWebServiceWorkerResponseTypeOpaqueRedirect:
       return proto::CacheResponse::OPAQUE_REDIRECT_TYPE;
   }
   NOTREACHED();
@@ -241,7 +241,7 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
       metadata.response().status_text(),
       ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
       std::move(headers), "", 0, GURL(),
-      blink::WebServiceWorkerResponseErrorUnknown,
+      blink::kWebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       true /* is_in_cache_storage */, cache_name,
       base::MakeUnique<ServiceWorkerHeaderList>(
@@ -1021,7 +1021,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   DCHECK(operation.response.stream_url.is_empty());
   // We don't support the body of redirect response.
   DCHECK(!(operation.response.response_type ==
-               blink::WebServiceWorkerResponseTypeOpaqueRedirect &&
+               blink::kWebServiceWorkerResponseTypeOpaqueRedirect &&
            operation.response.blob_size));
 
   std::unique_ptr<ServiceWorkerResponse> response =
@@ -1044,7 +1044,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   UMA_HISTOGRAM_ENUMERATION(
       "ServiceWorkerCache.Cache.AllWritesResponseType",
       operation.response.response_type,
-      blink::WebServiceWorkerResponseType::WebServiceWorkerResponseTypeLast +
+      blink::WebServiceWorkerResponseType::kWebServiceWorkerResponseTypeLast +
           1);
 
   std::unique_ptr<PutContext> put_context(new PutContext(

@@ -57,65 +57,65 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
 
-  SecurityOrigin* getSecurityOrigin() const { return m_securityOrigin.get(); }
-  ContentSecurityPolicy* contentSecurityPolicy() const {
-    return m_contentSecurityPolicy.get();
+  SecurityOrigin* GetSecurityOrigin() const { return security_origin_.Get(); }
+  ContentSecurityPolicy* GetContentSecurityPolicy() const {
+    return content_security_policy_.Get();
   }
 
   // Explicitly override the security origin for this security context.
   // Note: It is dangerous to change the security origin of a script context
   //       that already contains content.
-  void setSecurityOrigin(PassRefPtr<SecurityOrigin>);
-  virtual void didUpdateSecurityOrigin() = 0;
+  void SetSecurityOrigin(PassRefPtr<SecurityOrigin>);
+  virtual void DidUpdateSecurityOrigin() = 0;
 
-  SandboxFlags getSandboxFlags() const { return m_sandboxFlags; }
-  bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
-  virtual void enforceSandboxFlags(SandboxFlags mask);
+  SandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
+  bool IsSandboxed(SandboxFlags mask) const { return sandbox_flags_ & mask; }
+  virtual void EnforceSandboxFlags(SandboxFlags mask);
 
-  void setAddressSpace(WebAddressSpace space) { m_addressSpace = space; }
-  WebAddressSpace addressSpace() const { return m_addressSpace; }
+  void SetAddressSpace(WebAddressSpace space) { address_space_ = space; }
+  WebAddressSpace AddressSpace() const { return address_space_; }
   String addressSpaceForBindings() const;
 
-  void addInsecureNavigationUpgrade(unsigned hashedHost) {
-    m_insecureNavigationsToUpgrade.insert(hashedHost);
+  void AddInsecureNavigationUpgrade(unsigned hashed_host) {
+    insecure_navigations_to_upgrade_.insert(hashed_host);
   }
-  InsecureNavigationsSet* insecureNavigationsToUpgrade() {
-    return &m_insecureNavigationsToUpgrade;
-  }
-
-  virtual void setInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
-    m_insecureRequestPolicy = policy;
-  }
-  WebInsecureRequestPolicy getInsecureRequestPolicy() const {
-    return m_insecureRequestPolicy;
+  InsecureNavigationsSet* InsecureNavigationsToUpgrade() {
+    return &insecure_navigations_to_upgrade_;
   }
 
-  void enforceSuborigin(const Suborigin&);
+  virtual void SetInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
+    insecure_request_policy_ = policy;
+  }
+  WebInsecureRequestPolicy GetInsecureRequestPolicy() const {
+    return insecure_request_policy_;
+  }
 
-  WebFeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
-  void initializeFeaturePolicy(const WebParsedFeaturePolicy& parsedHeader,
-                               const WebParsedFeaturePolicy& containerPolicy,
-                               const WebFeaturePolicy* parentFeaturePolicy);
-  void updateFeaturePolicyOrigin();
+  void EnforceSuborigin(const Suborigin&);
+
+  WebFeaturePolicy* GetFeaturePolicy() const { return feature_policy_.get(); }
+  void InitializeFeaturePolicy(const WebParsedFeaturePolicy& parsed_header,
+                               const WebParsedFeaturePolicy& container_policy,
+                               const WebFeaturePolicy* parent_feature_policy);
+  void UpdateFeaturePolicyOrigin();
 
  protected:
   SecurityContext();
   virtual ~SecurityContext();
 
-  void setContentSecurityPolicy(ContentSecurityPolicy*);
+  void SetContentSecurityPolicy(ContentSecurityPolicy*);
 
-  void applySandboxFlags(SandboxFlags mask);
+  void ApplySandboxFlags(SandboxFlags mask);
 
  private:
-  RefPtr<SecurityOrigin> m_securityOrigin;
-  Member<ContentSecurityPolicy> m_contentSecurityPolicy;
-  std::unique_ptr<WebFeaturePolicy> m_featurePolicy;
+  RefPtr<SecurityOrigin> security_origin_;
+  Member<ContentSecurityPolicy> content_security_policy_;
+  std::unique_ptr<WebFeaturePolicy> feature_policy_;
 
-  SandboxFlags m_sandboxFlags;
+  SandboxFlags sandbox_flags_;
 
-  WebAddressSpace m_addressSpace;
-  WebInsecureRequestPolicy m_insecureRequestPolicy;
-  InsecureNavigationsSet m_insecureNavigationsToUpgrade;
+  WebAddressSpace address_space_;
+  WebInsecureRequestPolicy insecure_request_policy_;
+  InsecureNavigationsSet insecure_navigations_to_upgrade_;
 };
 
 }  // namespace blink

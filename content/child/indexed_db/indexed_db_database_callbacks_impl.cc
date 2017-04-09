@@ -31,9 +31,9 @@ void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
                         int64_t transaction_id,
                         int32_t code,
                         const base::string16& message) {
-  callbacks->onAbort(
+  callbacks->OnAbort(
       transaction_id,
-      blink::WebIDBDatabaseError(code, blink::WebString::fromUTF16(message)));
+      blink::WebIDBDatabaseError(code, blink::WebString::FromUTF16(message)));
 }
 
 void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
@@ -41,9 +41,9 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
   std::vector<blink::WebIDBObservation> web_observations;
   for (const auto& observation : changes->observations) {
     blink::WebIDBObservation web_observation;
-    web_observation.objectStoreId = observation->object_store_id;
+    web_observation.object_store_id = observation->object_store_id;
     web_observation.type = observation->type;
-    web_observation.keyRange =
+    web_observation.key_range =
         WebIDBKeyRangeBuilder::Build(observation->key_range);
     if (observation->value) {
       IndexedDBCallbacksImpl::ConvertValue(observation->value,
@@ -63,7 +63,7 @@ void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
     }
   }
 
-  callbacks->onChanges(changes->observation_index_map, web_observations,
+  callbacks->OnChanges(changes->observation_index_map, web_observations,
                        observer_transactions);
 }
 
@@ -84,7 +84,7 @@ IndexedDBDatabaseCallbacksImpl::~IndexedDBDatabaseCallbacksImpl() {
 
 void IndexedDBDatabaseCallbacksImpl::ForcedClose() {
   callback_runner_->PostTask(FROM_HERE,
-                             base::Bind(&WebIDBDatabaseCallbacks::onForcedClose,
+                             base::Bind(&WebIDBDatabaseCallbacks::OnForcedClose,
                                         base::Unretained(callbacks_)));
 }
 
@@ -92,7 +92,7 @@ void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
                                                    int64_t new_version) {
   callback_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebIDBDatabaseCallbacks::onVersionChange,
+      base::Bind(&WebIDBDatabaseCallbacks::OnVersionChange,
                  base::Unretained(callbacks_), old_version, new_version));
 }
 
@@ -108,7 +108,7 @@ void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
 
 void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebIDBDatabaseCallbacks::onComplete,
+      FROM_HERE, base::Bind(&WebIDBDatabaseCallbacks::OnComplete,
                             base::Unretained(callbacks_), transaction_id));
 }
 

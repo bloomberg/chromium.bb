@@ -32,9 +32,9 @@
 
 namespace blink {
 
-bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const {
-  const ShapeValue* shape = toAnimatableShapeValue(value)->m_shape.get();
-  return m_shape == shape || (m_shape && shape && *m_shape == *shape);
+bool AnimatableShapeValue::EqualTo(const AnimatableValue* value) const {
+  const ShapeValue* shape = ToAnimatableShapeValue(value)->shape_.Get();
+  return shape_ == shape || (shape_ && shape && *shape_ == *shape);
 }
 
 }  // namespace blink

@@ -48,212 +48,212 @@ struct WebCursorInfo;
 // Handles window-level notifications from core on behalf of a WebView.
 class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
  public:
-  static ChromeClientImpl* create(WebViewImpl*);
+  static ChromeClientImpl* Create(WebViewImpl*);
   ~ChromeClientImpl() override;
 
-  void* webView() const override;
+  void* WebView() const override;
 
   // ChromeClient methods:
-  void chromeDestroyed() override;
-  void setWindowRect(const IntRect&, LocalFrame&) override;
-  IntRect rootWindowRect() override;
-  IntRect pageRect() override;
-  void focus() override;
-  bool canTakeFocus(WebFocusType) override;
-  void takeFocus(WebFocusType) override;
-  void focusedNodeChanged(Node* fromNode, Node* toNode) override;
-  void beginLifecycleUpdates() override;
-  bool hadFormInteraction() const override;
-  void startDragging(LocalFrame*,
+  void ChromeDestroyed() override;
+  void SetWindowRect(const IntRect&, LocalFrame&) override;
+  IntRect RootWindowRect() override;
+  IntRect PageRect() override;
+  void Focus() override;
+  bool CanTakeFocus(WebFocusType) override;
+  void TakeFocus(WebFocusType) override;
+  void FocusedNodeChanged(Node* from_node, Node* to_node) override;
+  void BeginLifecycleUpdates() override;
+  bool HadFormInteraction() const override;
+  void StartDragging(LocalFrame*,
                      const WebDragData&,
                      WebDragOperationsMask,
-                     const WebImage& dragImage,
-                     const WebPoint& dragImageOffset) override;
-  bool acceptsLoadDrops() const override;
-  Page* createWindow(LocalFrame*,
+                     const WebImage& drag_image,
+                     const WebPoint& drag_image_offset) override;
+  bool AcceptsLoadDrops() const override;
+  Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
                      const WindowFeatures&,
                      NavigationPolicy) override;
-  void show(NavigationPolicy) override;
-  void didOverscroll(const FloatSize& overscrollDelta,
-                     const FloatSize& accumulatedOverscroll,
-                     const FloatPoint& positionInViewport,
-                     const FloatSize& velocityInViewport) override;
-  void setToolbarsVisible(bool) override;
-  bool toolbarsVisible() override;
-  void setStatusbarVisible(bool) override;
-  bool statusbarVisible() override;
-  void setScrollbarsVisible(bool) override;
-  bool scrollbarsVisible() override;
-  void setMenubarVisible(bool) override;
-  bool menubarVisible() override;
-  void setResizable(bool) override;
-  bool shouldReportDetailedMessageForSource(LocalFrame&,
+  void Show(NavigationPolicy) override;
+  void DidOverscroll(const FloatSize& overscroll_delta,
+                     const FloatSize& accumulated_overscroll,
+                     const FloatPoint& position_in_viewport,
+                     const FloatSize& velocity_in_viewport) override;
+  void SetToolbarsVisible(bool) override;
+  bool ToolbarsVisible() override;
+  void SetStatusbarVisible(bool) override;
+  bool StatusbarVisible() override;
+  void SetScrollbarsVisible(bool) override;
+  bool ScrollbarsVisible() override;
+  void SetMenubarVisible(bool) override;
+  bool MenubarVisible() override;
+  void SetResizable(bool) override;
+  bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
-  void addMessageToConsole(LocalFrame*,
+  void AddMessageToConsole(LocalFrame*,
                            MessageSource,
                            MessageLevel,
                            const String& message,
-                           unsigned lineNumber,
-                           const String& sourceID,
-                           const String& stackTrace) override;
-  bool canOpenBeforeUnloadConfirmPanel() override;
-  bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*,
-                                            bool isReload) override;
-  void closeWindowSoon() override;
-  bool openJavaScriptAlertDelegate(LocalFrame*, const String&) override;
-  bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) override;
-  bool openJavaScriptPromptDelegate(LocalFrame*,
+                           unsigned line_number,
+                           const String& source_id,
+                           const String& stack_trace) override;
+  bool CanOpenBeforeUnloadConfirmPanel() override;
+  bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*,
+                                            bool is_reload) override;
+  void CloseWindowSoon() override;
+  bool OpenJavaScriptAlertDelegate(LocalFrame*, const String&) override;
+  bool OpenJavaScriptConfirmDelegate(LocalFrame*, const String&) override;
+  bool OpenJavaScriptPromptDelegate(LocalFrame*,
                                     const String& message,
-                                    const String& defaultValue,
+                                    const String& default_value,
                                     String& result) override;
-  void setStatusbarText(const String& message) override;
-  bool tabsToLinks() override;
-  void invalidateRect(const IntRect&) override;
-  void scheduleAnimation(FrameViewBase*) override;
-  IntRect viewportToScreen(const IntRect&, const FrameViewBase*) const override;
-  float windowToViewportScalar(const float) const override;
-  WebScreenInfo screenInfo() const override;
-  WTF::Optional<IntRect> visibleContentRectForPainting() const override;
-  void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
-  void pageScaleFactorChanged() const override;
-  float clampPageScaleFactorToLimits(float scale) const override;
-  void mainFrameScrollOffsetChanged() const override;
-  void layoutUpdated(LocalFrame*) const override;
-  void showMouseOverURL(const HitTestResult&) override;
-  void setToolTip(LocalFrame&, const String&, TextDirection) override;
-  void dispatchViewportPropertiesDidChange(
+  void SetStatusbarText(const String& message) override;
+  bool TabsToLinks() override;
+  void InvalidateRect(const IntRect&) override;
+  void ScheduleAnimation(FrameViewBase*) override;
+  IntRect ViewportToScreen(const IntRect&, const FrameViewBase*) const override;
+  float WindowToViewportScalar(const float) const override;
+  WebScreenInfo GetScreenInfo() const override;
+  WTF::Optional<IntRect> VisibleContentRectForPainting() const override;
+  void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
+  void PageScaleFactorChanged() const override;
+  float ClampPageScaleFactorToLimits(float scale) const override;
+  void MainFrameScrollOffsetChanged() const override;
+  void LayoutUpdated(LocalFrame*) const override;
+  void ShowMouseOverURL(const HitTestResult&) override;
+  void SetToolTip(LocalFrame&, const String&, TextDirection) override;
+  void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const override;
-  void printDelegate(LocalFrame*) override;
-  void annotatedRegionsChanged() override;
-  ColorChooser* openColorChooser(LocalFrame*,
+  void PrintDelegate(LocalFrame*) override;
+  void AnnotatedRegionsChanged() override;
+  ColorChooser* OpenColorChooser(LocalFrame*,
                                  ColorChooserClient*,
                                  const Color&) override;
-  DateTimeChooser* openDateTimeChooser(
+  DateTimeChooser* OpenDateTimeChooser(
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) override;
-  void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
-  void enumerateChosenDirectory(FileChooser*) override;
-  void setCursor(const Cursor&, LocalFrame*) override;
-  Cursor lastSetCursorForTesting() const override;
+  void OpenFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
+  void EnumerateChosenDirectory(FileChooser*) override;
+  void SetCursor(const Cursor&, LocalFrame*) override;
+  Cursor LastSetCursorForTesting() const override;
   // The client keeps track of which touch/mousewheel event types have handlers,
   // and if they do, whether the handlers are passive and/or blocking. This
   // allows the client to know which optimizations can be used for the
   // associated event classes.
-  void setEventListenerProperties(LocalFrame*,
+  void SetEventListenerProperties(LocalFrame*,
                                   WebEventListenerClass,
                                   WebEventListenerProperties) override;
-  WebEventListenerProperties eventListenerProperties(
+  WebEventListenerProperties EventListenerProperties(
       LocalFrame*,
       WebEventListenerClass) const override;
-  void updateEventRectsForSubframeIfNecessary(LocalFrame*);
+  void UpdateEventRectsForSubframeIfNecessary(LocalFrame*);
   // Informs client about the existence of handlers for scroll events so
   // appropriate scroll optimizations can be chosen.
-  void setHasScrollEventHandlers(LocalFrame*, bool hasEventHandlers) override;
-  void setTouchAction(LocalFrame*, TouchAction) override;
+  void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;
+  void SetTouchAction(LocalFrame*, TouchAction) override;
 
-  void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
+  void AttachRootGraphicsLayer(GraphicsLayer*, LocalFrame* local_root) override;
 
-  void attachRootLayer(WebLayer*, LocalFrame* localRoot) override;
+  void AttachRootLayer(WebLayer*, LocalFrame* local_root) override;
 
-  void attachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+  void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                          LocalFrame*) override;
-  void detachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+  void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                          LocalFrame*) override;
 
-  void enterFullscreen(LocalFrame&) override;
-  void exitFullscreen(LocalFrame&) override;
-  void fullscreenElementChanged(Element*, Element*) override;
+  void EnterFullscreen(LocalFrame&) override;
+  void ExitFullscreen(LocalFrame&) override;
+  void FullscreenElementChanged(Element*, Element*) override;
 
-  void clearCompositedSelection(LocalFrame*) override;
-  void updateCompositedSelection(LocalFrame*,
+  void ClearCompositedSelection(LocalFrame*) override;
+  void UpdateCompositedSelection(LocalFrame*,
                                  const CompositedSelection&) override;
 
   // ChromeClient methods:
-  void postAccessibilityNotification(AXObject*,
+  void PostAccessibilityNotification(AXObject*,
                                      AXObjectCache::AXNotification) override;
-  String acceptLanguages() override;
+  String AcceptLanguages() override;
 
   // ChromeClientImpl:
-  void setCursorForPlugin(const WebCursorInfo&, LocalFrame*);
-  void setNewWindowNavigationPolicy(WebNavigationPolicy);
-  void setCursorOverridden(bool);
+  void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*);
+  void SetNewWindowNavigationPolicy(WebNavigationPolicy);
+  void SetCursorOverridden(bool);
 
-  bool hasOpenedPopup() const override;
-  PopupMenu* openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
-  PagePopup* openPagePopup(PagePopupClient*);
-  void closePagePopup(PagePopup*);
-  DOMWindow* pagePopupWindowForTesting() const override;
+  bool HasOpenedPopup() const override;
+  PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) override;
+  PagePopup* OpenPagePopup(PagePopupClient*);
+  void ClosePagePopup(PagePopup*);
+  DOMWindow* PagePopupWindowForTesting() const override;
 
-  bool shouldOpenModalDialogDuringPageDismissal(
+  bool ShouldOpenModalDialogDuringPageDismissal(
       LocalFrame&,
       DialogType,
-      const String& dialogMessage,
+      const String& dialog_message,
       Document::PageDismissalType) const override;
 
-  bool requestPointerLock(LocalFrame*) override;
-  void requestPointerUnlock(LocalFrame*) override;
+  bool RequestPointerLock(LocalFrame*) override;
+  void RequestPointerUnlock(LocalFrame*) override;
 
   // AutofillClient pass throughs:
-  void didAssociateFormControlsAfterLoad(LocalFrame*) override;
-  void handleKeyboardEventOnTextField(HTMLInputElement&,
+  void DidAssociateFormControlsAfterLoad(LocalFrame*) override;
+  void HandleKeyboardEventOnTextField(HTMLInputElement&,
                                       KeyboardEvent&) override;
-  void didChangeValueInTextField(HTMLFormControlElement&) override;
-  void didEndEditingOnTextField(HTMLInputElement&) override;
-  void openTextDataListChooser(HTMLInputElement&) override;
-  void textFieldDataListChanged(HTMLInputElement&) override;
-  void ajaxSucceeded(LocalFrame*) override;
+  void DidChangeValueInTextField(HTMLFormControlElement&) override;
+  void DidEndEditingOnTextField(HTMLInputElement&) override;
+  void OpenTextDataListChooser(HTMLInputElement&) override;
+  void TextFieldDataListChanged(HTMLInputElement&) override;
+  void AjaxSucceeded(LocalFrame*) override;
 
-  void showVirtualKeyboardOnElementFocus(LocalFrame&) override;
+  void ShowVirtualKeyboardOnElementFocus(LocalFrame&) override;
 
-  void registerViewportLayers() const override;
+  void RegisterViewportLayers() const override;
 
-  void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) override;
-  void onMouseDown(Node*) override;
-  void didUpdateBrowserControls() const override;
+  void ShowUnhandledTapUIIfNeeded(IntPoint, Node*, bool) override;
+  void OnMouseDown(Node*) override;
+  void DidUpdateBrowserControls() const override;
 
-  CompositorWorkerProxyClient* createCompositorWorkerProxyClient(
+  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(
       LocalFrame*) override;
-  AnimationWorkletProxyClient* createAnimationWorkletProxyClient(
+  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient(
       LocalFrame*) override;
 
-  FloatSize elasticOverscroll() const override;
+  FloatSize ElasticOverscroll() const override;
 
-  void didObserveNonGetFetchFromScript() const override;
+  void DidObserveNonGetFetchFromScript() const override;
 
-  std::unique_ptr<WebFrameScheduler> createFrameScheduler(
+  std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext*) override;
 
-  double lastFrameTimeMonotonic() const override;
+  double LastFrameTimeMonotonic() const override;
 
-  void notifyPopupOpeningObservers() const;
+  void NotifyPopupOpeningObservers() const;
 
-  void installSupplements(LocalFrame&) override;
+  void InstallSupplements(LocalFrame&) override;
 
-  WebLayerTreeView* getWebLayerTreeView(LocalFrame*) override;
+  WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) override;
 
  private:
   explicit ChromeClientImpl(WebViewImpl*);
 
-  bool isChromeClientImpl() const override { return true; }
-  void registerPopupOpeningObserver(PopupOpeningObserver*) override;
-  void unregisterPopupOpeningObserver(PopupOpeningObserver*) override;
+  bool IsChromeClientImpl() const override { return true; }
+  void RegisterPopupOpeningObserver(PopupOpeningObserver*) override;
+  void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override;
 
-  void setCursor(const WebCursorInfo&, LocalFrame*);
+  void SetCursor(const WebCursorInfo&, LocalFrame*);
 
-  WebViewImpl* m_webView;  // Weak pointer.
-  WindowFeatures m_windowFeatures;
-  Vector<PopupOpeningObserver*> m_popupOpeningObservers;
-  Cursor m_lastSetMouseCursorForTesting;
-  bool m_cursorOverridden;
-  bool m_didRequestNonEmptyToolTip;
+  WebViewImpl* web_view_;  // Weak pointer.
+  WindowFeatures window_features_;
+  Vector<PopupOpeningObserver*> popup_opening_observers_;
+  Cursor last_set_mouse_cursor_for_testing_;
+  bool cursor_overridden_;
+  bool did_request_non_empty_tool_tip_;
 };
 
 DEFINE_TYPE_CASTS(ChromeClientImpl,
                   ChromeClient,
                   client,
-                  client->isChromeClientImpl(),
-                  client.isChromeClientImpl());
+                  client->IsChromeClientImpl(),
+                  client.IsChromeClientImpl());
 
 }  // namespace blink
 

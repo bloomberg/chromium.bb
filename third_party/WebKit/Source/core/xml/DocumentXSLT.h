@@ -20,35 +20,35 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
 
  public:
-  Document* transformSourceDocument() {
-    return m_transformSourceDocument.get();
+  Document* TransformSourceDocument() {
+    return transform_source_document_.Get();
   }
 
-  void setTransformSourceDocument(Document* document) {
+  void SetTransformSourceDocument(Document* document) {
     DCHECK(document);
-    m_transformSourceDocument = document;
+    transform_source_document_ = document;
   }
 
-  static DocumentXSLT& from(Document&);
-  static const char* supplementName();
+  static DocumentXSLT& From(Document&);
+  static const char* SupplementName();
 
   // The following static methods don't use any instance of DocumentXSLT.
   // They are just using DocumentXSLT namespace.
-  static void applyXSLTransform(Document&, ProcessingInstruction*);
-  static ProcessingInstruction* findXSLStyleSheet(Document&);
-  static bool processingInstructionInsertedIntoDocument(Document&,
+  static void ApplyXSLTransform(Document&, ProcessingInstruction*);
+  static ProcessingInstruction* FindXSLStyleSheet(Document&);
+  static bool ProcessingInstructionInsertedIntoDocument(Document&,
                                                         ProcessingInstruction*);
-  static bool processingInstructionRemovedFromDocument(Document&,
+  static bool ProcessingInstructionRemovedFromDocument(Document&,
                                                        ProcessingInstruction*);
-  static bool sheetLoaded(Document&, ProcessingInstruction*);
-  static bool hasTransformSourceDocument(Document&);
+  static bool SheetLoaded(Document&, ProcessingInstruction*);
+  static bool HasTransformSourceDocument(Document&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit DocumentXSLT(Document&);
 
-  Member<Document> m_transformSourceDocument;
+  Member<Document> transform_source_document_;
 };
 
 }  // namespace blink

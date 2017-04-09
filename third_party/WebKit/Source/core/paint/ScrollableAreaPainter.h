@@ -21,25 +21,25 @@ class ScrollableAreaPainter {
 
  public:
   explicit ScrollableAreaPainter(
-      PaintLayerScrollableArea& paintLayerScrollableArea)
-      : m_scrollableArea(&paintLayerScrollableArea) {}
+      PaintLayerScrollableArea& paint_layer_scrollable_area)
+      : scrollable_area_(&paint_layer_scrollable_area) {}
 
-  void paintResizer(GraphicsContext&,
-                    const IntPoint& paintOffset,
+  void PaintResizer(GraphicsContext&,
+                    const IntPoint& paint_offset,
                     const CullRect&);
-  void paintOverflowControls(GraphicsContext&,
-                             const IntPoint& paintOffset,
+  void PaintOverflowControls(GraphicsContext&,
+                             const IntPoint& paint_offset,
                              const CullRect&,
-                             bool paintingOverlayControls);
-  void paintScrollCorner(GraphicsContext&, const IntPoint&, const CullRect&);
+                             bool painting_overlay_controls);
+  void PaintScrollCorner(GraphicsContext&, const IntPoint&, const CullRect&);
 
  private:
-  void drawPlatformResizerImage(GraphicsContext&, IntRect resizerCornerRect);
-  bool overflowControlsIntersectRect(const CullRect&) const;
+  void DrawPlatformResizerImage(GraphicsContext&, IntRect resizer_corner_rect);
+  bool OverflowControlsIntersectRect(const CullRect&) const;
 
-  PaintLayerScrollableArea& getScrollableArea() const;
+  PaintLayerScrollableArea& GetScrollableArea() const;
 
-  Member<PaintLayerScrollableArea> m_scrollableArea;
+  Member<PaintLayerScrollableArea> scrollable_area_;
 };
 
 }  // namespace blink

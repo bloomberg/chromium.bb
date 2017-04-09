@@ -10,9 +10,9 @@ namespace blink {
 
 std::ostream& operator<<(std::ostream& ostream, TextAffinity affinity) {
   switch (affinity) {
-    case TextAffinity::Downstream:
+    case TextAffinity::kDownstream:
       return ostream << "TextAffinity::Downstream";
-    case TextAffinity::Upstream:
+    case TextAffinity::kUpstream:
       return ostream << "TextAffinity::Upstream";
   }
   return ostream << "TextAffinity(" << static_cast<int>(affinity) << ')';

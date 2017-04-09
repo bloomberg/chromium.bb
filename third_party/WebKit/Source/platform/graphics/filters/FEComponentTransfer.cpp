@@ -37,133 +37,134 @@ typedef void (*TransferType)(unsigned char*, const ComponentTransferFunction&);
 
 FEComponentTransfer::FEComponentTransfer(
     Filter* filter,
-    const ComponentTransferFunction& redFunc,
-    const ComponentTransferFunction& greenFunc,
-    const ComponentTransferFunction& blueFunc,
-    const ComponentTransferFunction& alphaFunc)
+    const ComponentTransferFunction& red_func,
+    const ComponentTransferFunction& green_func,
+    const ComponentTransferFunction& blue_func,
+    const ComponentTransferFunction& alpha_func)
     : FilterEffect(filter),
-      m_redFunc(redFunc),
-      m_greenFunc(greenFunc),
-      m_blueFunc(blueFunc),
-      m_alphaFunc(alphaFunc) {}
+      red_func_(red_func),
+      green_func_(green_func),
+      blue_func_(blue_func),
+      alpha_func_(alpha_func) {}
 
-FEComponentTransfer* FEComponentTransfer::create(
+FEComponentTransfer* FEComponentTransfer::Create(
     Filter* filter,
-    const ComponentTransferFunction& redFunc,
-    const ComponentTransferFunction& greenFunc,
-    const ComponentTransferFunction& blueFunc,
-    const ComponentTransferFunction& alphaFunc) {
-  return new FEComponentTransfer(filter, redFunc, greenFunc, blueFunc,
-                                 alphaFunc);
+    const ComponentTransferFunction& red_func,
+    const ComponentTransferFunction& green_func,
+    const ComponentTransferFunction& blue_func,
+    const ComponentTransferFunction& alpha_func) {
+  return new FEComponentTransfer(filter, red_func, green_func, blue_func,
+                                 alpha_func);
 }
 
-static void identity(unsigned char*, const ComponentTransferFunction&) {}
+static void Identity(unsigned char*, const ComponentTransferFunction&) {}
 
-static void table(unsigned char* values,
-                  const ComponentTransferFunction& transferFunction) {
-  const Vector<float>& tableValues = transferFunction.tableValues;
-  unsigned n = tableValues.size();
+static void Table(unsigned char* values,
+                  const ComponentTransferFunction& transfer_function) {
+  const Vector<float>& table_values = transfer_function.table_values;
+  unsigned n = table_values.size();
   if (n < 1)
     return;
   for (unsigned i = 0; i < 256; ++i) {
     double c = i / 255.0;
     unsigned k = static_cast<unsigned>(c * (n - 1));
-    double v1 = tableValues[k];
-    double v2 = tableValues[std::min((k + 1), (n - 1))];
+    double v1 = table_values[k];
+    double v2 = table_values[std::min((k + 1), (n - 1))];
     double val = 255.0 * (v1 + (c * (n - 1) - k) * (v2 - v1));
     val = clampTo(val, 0.0, 255.0);
     values[i] = static_cast<unsigned char>(val);
   }
 }
 
-static void discrete(unsigned char* values,
-                     const ComponentTransferFunction& transferFunction) {
-  const Vector<float>& tableValues = transferFunction.tableValues;
-  unsigned n = tableValues.size();
+static void Discrete(unsigned char* values,
+                     const ComponentTransferFunction& transfer_function) {
+  const Vector<float>& table_values = transfer_function.table_values;
+  unsigned n = table_values.size();
   if (n < 1)
     return;
   for (unsigned i = 0; i < 256; ++i) {
     unsigned k = static_cast<unsigned>((i * n) / 255.0);
     k = std::min(k, n - 1);
-    double val = 255 * tableValues[k];
+    double val = 255 * table_values[k];
     val = clampTo(val, 0.0, 255.0);
     values[i] = static_cast<unsigned char>(val);
   }
 }
 
-static void linear(unsigned char* values,
-                   const ComponentTransferFunction& transferFunction) {
+static void Linear(unsigned char* values,
+                   const ComponentTransferFunction& transfer_function) {
   for (unsigned i = 0; i < 256; ++i) {
-    double val = transferFunction.slope * i + 255 * transferFunction.intercept;
-    val = clampTo(val, 0.0, 255.0);
-    values[i] = static_cast<unsigned char>(val);
-  }
-}
-
-static void gamma(unsigned char* values,
-                  const ComponentTransferFunction& transferFunction) {
-  for (unsigned i = 0; i < 256; ++i) {
-    double exponent = transferFunction.exponent;
     double val =
-        255.0 * (transferFunction.amplitude * pow((i / 255.0), exponent) +
-                 transferFunction.offset);
+        transfer_function.slope * i + 255 * transfer_function.intercept;
     val = clampTo(val, 0.0, 255.0);
     values[i] = static_cast<unsigned char>(val);
   }
 }
 
-bool FEComponentTransfer::affectsTransparentPixels() const {
+static void Gamma(unsigned char* values,
+                  const ComponentTransferFunction& transfer_function) {
+  for (unsigned i = 0; i < 256; ++i) {
+    double exponent = transfer_function.exponent;
+    double val =
+        255.0 * (transfer_function.amplitude * pow((i / 255.0), exponent) +
+                 transfer_function.offset);
+    val = clampTo(val, 0.0, 255.0);
+    values[i] = static_cast<unsigned char>(val);
+  }
+}
+
+bool FEComponentTransfer::AffectsTransparentPixels() const {
   double intercept = 0;
-  switch (m_alphaFunc.type) {
+  switch (alpha_func_.type) {
     case FECOMPONENTTRANSFER_TYPE_UNKNOWN:
     case FECOMPONENTTRANSFER_TYPE_IDENTITY:
       break;
     case FECOMPONENTTRANSFER_TYPE_TABLE:
     case FECOMPONENTTRANSFER_TYPE_DISCRETE:
-      if (m_alphaFunc.tableValues.size() > 0)
-        intercept = m_alphaFunc.tableValues[0];
+      if (alpha_func_.table_values.size() > 0)
+        intercept = alpha_func_.table_values[0];
       break;
     case FECOMPONENTTRANSFER_TYPE_LINEAR:
-      intercept = m_alphaFunc.intercept;
+      intercept = alpha_func_.intercept;
       break;
     case FECOMPONENTTRANSFER_TYPE_GAMMA:
-      intercept = m_alphaFunc.offset;
+      intercept = alpha_func_.offset;
       break;
   }
   return 255 * intercept >= 1;
 }
 
-sk_sp<SkImageFilter> FEComponentTransfer::createImageFilter() {
+sk_sp<SkImageFilter> FEComponentTransfer::CreateImageFilter() {
   sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
 
-  unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
-  getValues(rValues, gValues, bValues, aValues);
+  unsigned char r_values[256], g_values[256], b_values[256], a_values[256];
+  GetValues(r_values, g_values, b_values, a_values);
 
-  SkImageFilter::CropRect cropRect = getCropRect();
-  sk_sp<SkColorFilter> colorFilter =
-      SkTableColorFilter::MakeARGB(aValues, rValues, gValues, bValues);
-  return SkColorFilterImageFilter::Make(std::move(colorFilter),
-                                        std::move(input), &cropRect);
+  SkImageFilter::CropRect crop_rect = GetCropRect();
+  sk_sp<SkColorFilter> color_filter =
+      SkTableColorFilter::MakeARGB(a_values, r_values, g_values, b_values);
+  return SkColorFilterImageFilter::Make(std::move(color_filter),
+                                        std::move(input), &crop_rect);
 }
 
-void FEComponentTransfer::getValues(unsigned char rValues[256],
-                                    unsigned char gValues[256],
-                                    unsigned char bValues[256],
-                                    unsigned char aValues[256]) {
+void FEComponentTransfer::GetValues(unsigned char r_values[256],
+                                    unsigned char g_values[256],
+                                    unsigned char b_values[256],
+                                    unsigned char a_values[256]) {
   for (unsigned i = 0; i < 256; ++i)
-    rValues[i] = gValues[i] = bValues[i] = aValues[i] = i;
-  unsigned char* tables[] = {rValues, gValues, bValues, aValues};
-  ComponentTransferFunction transferFunction[] = {m_redFunc, m_greenFunc,
-                                                  m_blueFunc, m_alphaFunc};
-  TransferType callEffect[] = {identity, identity, table,
-                               discrete, linear,   gamma};
+    r_values[i] = g_values[i] = b_values[i] = a_values[i] = i;
+  unsigned char* tables[] = {r_values, g_values, b_values, a_values};
+  ComponentTransferFunction transfer_function[] = {red_func_, green_func_,
+                                                   blue_func_, alpha_func_};
+  TransferType call_effect[] = {Identity, Identity, Table,
+                                Discrete, Linear,   Gamma};
 
   for (unsigned channel = 0; channel < 4; channel++) {
-    SECURITY_DCHECK(static_cast<size_t>(transferFunction[channel].type) <
-                    WTF_ARRAY_LENGTH(callEffect));
-    (*callEffect[transferFunction[channel].type])(tables[channel],
-                                                  transferFunction[channel]);
+    SECURITY_DCHECK(static_cast<size_t>(transfer_function[channel].type) <
+                    WTF_ARRAY_LENGTH(call_effect));
+    (*call_effect[transfer_function[channel].type])(tables[channel],
+                                                    transfer_function[channel]);
   }
 }
 
@@ -201,21 +202,21 @@ static TextStream& operator<<(TextStream& ts,
   return ts;
 }
 
-TextStream& FEComponentTransfer::externalRepresentation(TextStream& ts,
+TextStream& FEComponentTransfer::ExternalRepresentation(TextStream& ts,
                                                         int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[feComponentTransfer";
-  FilterEffect::externalRepresentation(ts);
+  FilterEffect::ExternalRepresentation(ts);
   ts << " \n";
-  writeIndent(ts, indent + 2);
-  ts << "{red: " << m_redFunc << "}\n";
-  writeIndent(ts, indent + 2);
-  ts << "{green: " << m_greenFunc << "}\n";
-  writeIndent(ts, indent + 2);
-  ts << "{blue: " << m_blueFunc << "}\n";
-  writeIndent(ts, indent + 2);
-  ts << "{alpha: " << m_alphaFunc << "}]\n";
-  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  WriteIndent(ts, indent + 2);
+  ts << "{red: " << red_func_ << "}\n";
+  WriteIndent(ts, indent + 2);
+  ts << "{green: " << green_func_ << "}\n";
+  WriteIndent(ts, indent + 2);
+  ts << "{blue: " << blue_func_ << "}\n";
+  WriteIndent(ts, indent + 2);
+  ts << "{alpha: " << alpha_func_ << "}]\n";
+  InputEffect(0)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

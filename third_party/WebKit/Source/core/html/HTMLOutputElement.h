@@ -42,7 +42,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
 
  public:
-  static HTMLOutputElement* create(Document&);
+  static HTMLOutputElement* Create(Document&);
   ~HTMLOutputElement() override;
 
   bool willValidate() const override { return false; }
@@ -51,32 +51,32 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
   void setValue(const String&);
   String defaultValue() const;
   void setDefaultValue(const String&);
-  void setFor(const AtomicString&);
+  void SetFor(const AtomicString&);
   DOMTokenList* htmlFor() const;
 
-  bool canContainRangeEndPoint() const override { return false; }
+  bool CanContainRangeEndPoint() const override { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit HTMLOutputElement(Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  const AtomicString& formControlType() const override;
-  bool isDisabledFormControl() const override;
-  bool matchesEnabledPseudoClass() const override;
-  bool isEnumeratable() const override { return true; }
-  bool supportLabels() const override { return true; }
-  bool supportsFocus() const override;
-  void childrenChanged(const ChildrenChange&) override;
-  void resetImpl() override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  const AtomicString& FormControlType() const override;
+  bool IsDisabledFormControl() const override;
+  bool MatchesEnabledPseudoClass() const override;
+  bool IsEnumeratable() const override { return true; }
+  bool SupportLabels() const override { return true; }
+  bool SupportsFocus() const override;
+  void ChildrenChanged(const ChildrenChange&) override;
+  void ResetImpl() override;
   int tabIndex() const override;
 
-  void valueWasSet() final;
+  void ValueWasSet() final;
 
-  bool m_isDefaultValueMode;
-  String m_defaultValue;
-  Member<DOMTokenList> m_tokens;
+  bool is_default_value_mode_;
+  String default_value_;
+  Member<DOMTokenList> tokens_;
 };
 
 }  // namespace blink

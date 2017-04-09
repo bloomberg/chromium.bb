@@ -1303,9 +1303,9 @@ bool Browser::PreHandleGestureEvent(content::WebContents* source,
                                     const blink::WebGestureEvent& event) {
   // Disable pinch zooming in undocked dev tools window due to poor UX.
   if (app_name() == DevToolsWindow::kDevToolsApp)
-    return event.type() == blink::WebGestureEvent::GesturePinchBegin ||
-           event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
-           event.type() == blink::WebGestureEvent::GesturePinchEnd;
+    return event.GetType() == blink::WebGestureEvent::kGesturePinchBegin ||
+           event.GetType() == blink::WebGestureEvent::kGesturePinchUpdate ||
+           event.GetType() == blink::WebGestureEvent::kGesturePinchEnd;
 
   return false;
 }
@@ -1315,7 +1315,7 @@ bool Browser::CanDragEnter(content::WebContents* source,
                            blink::WebDragOperationsMask operations_allowed) {
   // Disallow drag-and-drop navigation for Settings windows which do not support
   // external navigation.
-  if ((operations_allowed & blink::WebDragOperationLink) &&
+  if ((operations_allowed & blink::kWebDragOperationLink) &&
       chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(this)) {
     return false;
   }
@@ -1775,12 +1775,12 @@ bool Browser::IsFullscreenForTabOrPending(
 blink::WebDisplayMode Browser::GetDisplayMode(
     const WebContents* web_contents) const {
   if (window_->IsFullscreen())
-    return blink::WebDisplayModeFullscreen;
+    return blink::kWebDisplayModeFullscreen;
 
   if (is_type_popup())
-    return blink::WebDisplayModeStandalone;
+    return blink::kWebDisplayModeStandalone;
 
-  return blink::WebDisplayModeBrowser;
+  return blink::kWebDisplayModeBrowser;
 }
 
 void Browser::RegisterProtocolHandler(WebContents* web_contents,

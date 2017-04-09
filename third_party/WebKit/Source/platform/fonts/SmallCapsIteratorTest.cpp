@@ -16,101 +16,101 @@ struct TestRun {
 
 struct ExpectedRun {
   unsigned limit;
-  SmallCapsIterator::SmallCapsBehavior smallCapsBehavior;
+  SmallCapsIterator::SmallCapsBehavior small_caps_behavior;
 
-  ExpectedRun(unsigned theLimit,
-              SmallCapsIterator::SmallCapsBehavior theSmallCapsBehavior)
-      : limit(theLimit), smallCapsBehavior(theSmallCapsBehavior) {}
+  ExpectedRun(unsigned the_limit,
+              SmallCapsIterator::SmallCapsBehavior the_small_caps_behavior)
+      : limit(the_limit), small_caps_behavior(the_small_caps_behavior) {}
 };
 
 class SmallCapsIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<TestRun>& runs) {
-    String text(emptyString16Bit);
+    String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
-      text.append(String::fromUTF8(run.text.c_str()));
+      text.Append(String::FromUTF8(run.text.c_str()));
       expect.push_back(ExpectedRun(text.length(), run.code));
     }
-    SmallCapsIterator smallCapsIterator(text.characters16(), text.length());
-    VerifyRuns(&smallCapsIterator, expect);
+    SmallCapsIterator small_caps_iterator(text.Characters16(), text.length());
+    VerifyRuns(&small_caps_iterator, expect);
   }
 
-  void VerifyRuns(SmallCapsIterator* smallCapsIterator,
+  void VerifyRuns(SmallCapsIterator* small_caps_iterator,
                   const Vector<ExpectedRun>& expect) {
     unsigned limit;
-    SmallCapsIterator::SmallCapsBehavior smallCapsBehavior;
-    unsigned long runCount = 0;
-    while (smallCapsIterator->consume(&limit, &smallCapsBehavior)) {
-      ASSERT_LT(runCount, expect.size());
-      ASSERT_EQ(expect[runCount].limit, limit);
-      ASSERT_EQ(expect[runCount].smallCapsBehavior, smallCapsBehavior);
-      ++runCount;
+    SmallCapsIterator::SmallCapsBehavior small_caps_behavior;
+    unsigned long run_count = 0;
+    while (small_caps_iterator->Consume(&limit, &small_caps_behavior)) {
+      ASSERT_LT(run_count, expect.size());
+      ASSERT_EQ(expect[run_count].limit, limit);
+      ASSERT_EQ(expect[run_count].small_caps_behavior, small_caps_behavior);
+      ++run_count;
     }
-    ASSERT_EQ(expect.size(), runCount);
+    ASSERT_EQ(expect.size(), run_count);
   }
 };
 
 // Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                   \
-  static const TestRun runsArray[] = __VA_ARGS__; \
-  Vector<TestRun> runs;                           \
-  runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray));
+#define DECLARE_RUNSVECTOR(...)                    \
+  static const TestRun kRunsArray[] = __VA_ARGS__; \
+  Vector<TestRun> runs;                            \
+  runs.Append(kRunsArray, sizeof(kRunsArray) / sizeof(*kRunsArray));
 
 #define CHECK_RUNS(...)            \
   DECLARE_RUNSVECTOR(__VA_ARGS__); \
   CheckRuns(runs);
 
 TEST_F(SmallCapsIteratorTest, Empty) {
-  String empty(emptyString16Bit);
-  SmallCapsIterator smallCapsIterator(empty.characters16(), empty.length());
+  String empty(g_empty_string16_bit);
+  SmallCapsIterator small_caps_iterator(empty.Characters16(), empty.length());
   unsigned limit = 0;
-  SmallCapsIterator::SmallCapsBehavior smallCapsBehavior =
-      SmallCapsIterator::SmallCapsInvalid;
-  ASSERT(!smallCapsIterator.consume(&limit, &smallCapsBehavior));
+  SmallCapsIterator::SmallCapsBehavior small_caps_behavior =
+      SmallCapsIterator::kSmallCapsInvalid;
+  ASSERT(!small_caps_iterator.Consume(&limit, &small_caps_behavior));
   ASSERT_EQ(limit, 0u);
-  ASSERT_EQ(smallCapsBehavior, SmallCapsIterator::SmallCapsInvalid);
+  ASSERT_EQ(small_caps_behavior, SmallCapsIterator::kSmallCapsInvalid);
 }
 
 TEST_F(SmallCapsIteratorTest, UppercaseA) {
-  CHECK_RUNS({{"A", SmallCapsIterator::SmallCapsSameCase}});
+  CHECK_RUNS({{"A", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, LowercaseA) {
-  CHECK_RUNS({{"a", SmallCapsIterator::SmallCapsUppercaseNeeded}});
+  CHECK_RUNS({{"a", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 TEST_F(SmallCapsIteratorTest, UppercaseLowercaseA) {
-  CHECK_RUNS({{"A", SmallCapsIterator::SmallCapsSameCase},
-              {"a", SmallCapsIterator::SmallCapsUppercaseNeeded}});
+  CHECK_RUNS({{"A", SmallCapsIterator::kSmallCapsSameCase},
+              {"a", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 TEST_F(SmallCapsIteratorTest, UppercasePunctuationMixed) {
-  CHECK_RUNS({{"AAA??", SmallCapsIterator::SmallCapsSameCase}});
+  CHECK_RUNS({{"AAA??", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, LowercasePunctuationMixed) {
-  CHECK_RUNS({{"aaa", SmallCapsIterator::SmallCapsUppercaseNeeded},
-              {"===", SmallCapsIterator::SmallCapsSameCase}});
+  CHECK_RUNS({{"aaa", SmallCapsIterator::kSmallCapsUppercaseNeeded},
+              {"===", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, LowercasePunctuationInterleaved) {
-  CHECK_RUNS({{"aaa", SmallCapsIterator::SmallCapsUppercaseNeeded},
-              {"===", SmallCapsIterator::SmallCapsSameCase},
-              {"bbb", SmallCapsIterator::SmallCapsUppercaseNeeded}});
+  CHECK_RUNS({{"aaa", SmallCapsIterator::kSmallCapsUppercaseNeeded},
+              {"===", SmallCapsIterator::kSmallCapsSameCase},
+              {"bbb", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 TEST_F(SmallCapsIteratorTest, Japanese) {
-  CHECK_RUNS({{"ほへと", SmallCapsIterator::SmallCapsSameCase}});
+  CHECK_RUNS({{"ほへと", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, Armenian) {
-  CHECK_RUNS({{"աբգդ", SmallCapsIterator::SmallCapsUppercaseNeeded},
-              {"ԵԶԷԸ", SmallCapsIterator::SmallCapsSameCase}});
+  CHECK_RUNS({{"աբգդ", SmallCapsIterator::kSmallCapsUppercaseNeeded},
+              {"ԵԶԷԸ", SmallCapsIterator::kSmallCapsSameCase}});
 }
 
 TEST_F(SmallCapsIteratorTest, CombiningCharacterSequence) {
-  CHECK_RUNS({{"èü", SmallCapsIterator::SmallCapsUppercaseNeeded}});
+  CHECK_RUNS({{"èü", SmallCapsIterator::kSmallCapsUppercaseNeeded}});
 }
 
 }  // namespace blink

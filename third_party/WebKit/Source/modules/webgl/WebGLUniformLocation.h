@@ -38,11 +38,11 @@ class WebGLUniformLocation final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLUniformLocation* create(WebGLProgram*, GLint location);
+  static WebGLUniformLocation* Create(WebGLProgram*, GLint location);
 
-  WebGLProgram* program() const;
+  WebGLProgram* Program() const;
 
-  GLint location() const;
+  GLint Location() const;
 
   DECLARE_TRACE();
 
@@ -50,9 +50,9 @@ class WebGLUniformLocation final
   WebGLUniformLocation(WebGLProgram*, GLint location);
 
  private:
-  Member<WebGLProgram> m_program;
-  GLint m_location;
-  unsigned m_linkCount;
+  Member<WebGLProgram> program_;
+  GLint location_;
+  unsigned link_count_;
 };
 
 }  // namespace blink

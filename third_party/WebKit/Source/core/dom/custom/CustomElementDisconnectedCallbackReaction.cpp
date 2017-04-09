@@ -12,11 +12,11 @@ CustomElementDisconnectedCallbackReaction::
     CustomElementDisconnectedCallbackReaction(
         CustomElementDefinition* definition)
     : CustomElementReaction(definition) {
-  DCHECK(definition->hasDisconnectedCallback());
+  DCHECK(definition->HasDisconnectedCallback());
 }
 
-void CustomElementDisconnectedCallbackReaction::invoke(Element* element) {
-  m_definition->runDisconnectedCallback(element);
+void CustomElementDisconnectedCallbackReaction::Invoke(Element* element) {
+  definition_->RunDisconnectedCallback(element);
 }
 
 }  // namespace blink

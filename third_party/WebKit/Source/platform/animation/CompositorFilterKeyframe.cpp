@@ -12,25 +12,25 @@ namespace blink {
 CompositorFilterKeyframe::CompositorFilterKeyframe(
     double time,
     CompositorFilterOperations value,
-    const TimingFunction& timingFunction)
-    : m_filterKeyframe(
+    const TimingFunction& timing_function)
+    : filter_keyframe_(
           cc::FilterKeyframe::Create(base::TimeDelta::FromSecondsD(time),
-                                     value.releaseCcFilterOperations(),
-                                     timingFunction.cloneToCC())) {}
+                                     value.ReleaseCcFilterOperations(),
+                                     timing_function.CloneToCC())) {}
 
 CompositorFilterKeyframe::~CompositorFilterKeyframe() {}
 
-double CompositorFilterKeyframe::time() const {
-  return m_filterKeyframe->Time().InSecondsF();
+double CompositorFilterKeyframe::Time() const {
+  return filter_keyframe_->Time().InSecondsF();
 }
 
-const cc::TimingFunction* CompositorFilterKeyframe::ccTimingFunction() const {
-  return m_filterKeyframe->timing_function();
+const cc::TimingFunction* CompositorFilterKeyframe::CcTimingFunction() const {
+  return filter_keyframe_->timing_function();
 }
 
-std::unique_ptr<cc::FilterKeyframe> CompositorFilterKeyframe::cloneToCC()
+std::unique_ptr<cc::FilterKeyframe> CompositorFilterKeyframe::CloneToCC()
     const {
-  return m_filterKeyframe->Clone();
+  return filter_keyframe_->Clone();
 }
 
 }  // namespace blink

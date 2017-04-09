@@ -40,24 +40,24 @@ namespace blink {
 //     Darwin/MacOS/Android (and then abusing the terminology);
 //  4) EditingAndroidBehavior comprises Android builds.
 // 99) MacEditingBehavior is used a fallback.
-static EditingBehaviorType editingBehaviorTypeForPlatform() {
+static EditingBehaviorType EditingBehaviorTypeForPlatform() {
   return
 #if OS(MACOSX)
-      EditingMacBehavior
+      kEditingMacBehavior
 #elif OS(WIN)
-      EditingWindowsBehavior
+      kEditingWindowsBehavior
 #elif OS(ANDROID)
-      EditingAndroidBehavior
+      kEditingAndroidBehavior
 #else  // Rest of the UNIX-like systems
-      EditingUnixBehavior
+      kEditingUnixBehavior
 #endif
       ;
 }
 
 #if OS(WIN)
-static const bool defaultSelectTrailingWhitespaceEnabled = true;
+static const bool kDefaultSelectTrailingWhitespaceEnabled = true;
 #else
-static const bool defaultSelectTrailingWhitespaceEnabled = false;
+static const bool kDefaultSelectTrailingWhitespaceEnabled = false;
 #endif
 
 Settings::Settings()
@@ -65,50 +65,51 @@ Settings::Settings()
     : m_textAutosizingWindowSizeOverride(320, 480),
       m_textAutosizingEnabled(true)
 #else
-    : m_textAutosizingEnabled(false)
+    : text_autosizing_enabled_(false)
 #endif
           SETTINGS_INITIALIZER_LIST {
 }
 
-std::unique_ptr<Settings> Settings::create() {
-  return WTF::wrapUnique(new Settings);
+std::unique_ptr<Settings> Settings::Create() {
+  return WTF::WrapUnique(new Settings);
 }
 
 SETTINGS_SETTER_BODIES
 
-void Settings::setDelegate(SettingsDelegate* delegate) {
-  m_delegate = delegate;
+void Settings::SetDelegate(SettingsDelegate* delegate) {
+  delegate_ = delegate;
 }
 
-void Settings::invalidate(SettingsDelegate::ChangeType changeType) {
-  if (m_delegate)
-    m_delegate->settingsChanged(changeType);
+void Settings::Invalidate(SettingsDelegate::ChangeType change_type) {
+  if (delegate_)
+    delegate_->SettingsChanged(change_type);
 }
 
-void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled) {
-  if (m_textAutosizingEnabled == textAutosizingEnabled)
+void Settings::SetTextAutosizingEnabled(bool text_autosizing_enabled) {
+  if (text_autosizing_enabled_ == text_autosizing_enabled)
     return;
 
-  m_textAutosizingEnabled = textAutosizingEnabled;
-  invalidate(SettingsDelegate::TextAutosizingChange);
+  text_autosizing_enabled_ = text_autosizing_enabled;
+  Invalidate(SettingsDelegate::kTextAutosizingChange);
 }
 
 // FIXME: Move to Settings.in once make_settings can understand IntSize.
-void Settings::setTextAutosizingWindowSizeOverride(
-    const IntSize& textAutosizingWindowSizeOverride) {
-  if (m_textAutosizingWindowSizeOverride == textAutosizingWindowSizeOverride)
+void Settings::SetTextAutosizingWindowSizeOverride(
+    const IntSize& text_autosizing_window_size_override) {
+  if (text_autosizing_window_size_override_ ==
+      text_autosizing_window_size_override)
     return;
 
-  m_textAutosizingWindowSizeOverride = textAutosizingWindowSizeOverride;
-  invalidate(SettingsDelegate::TextAutosizingChange);
+  text_autosizing_window_size_override_ = text_autosizing_window_size_override;
+  Invalidate(SettingsDelegate::kTextAutosizingChange);
 }
 
-void Settings::setMockScrollbarsEnabled(bool flag) {
-  ScrollbarTheme::setMockScrollbarsEnabled(flag);
+void Settings::SetMockScrollbarsEnabled(bool flag) {
+  ScrollbarTheme::SetMockScrollbarsEnabled(flag);
 }
 
-bool Settings::mockScrollbarsEnabled() {
-  return ScrollbarTheme::mockScrollbarsEnabled();
+bool Settings::MockScrollbarsEnabled() {
+  return ScrollbarTheme::MockScrollbarsEnabled();
 }
 
 }  // namespace blink

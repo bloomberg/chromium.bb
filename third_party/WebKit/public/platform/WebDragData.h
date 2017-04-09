@@ -50,96 +50,96 @@ class WebDragData {
     enum StorageType {
       // String data with an associated MIME type. Depending on the MIME type,
       // there may be optional metadata attributes as well.
-      StorageTypeString,
+      kStorageTypeString,
       // Stores the name of one file being dragged into the renderer.
-      StorageTypeFilename,
+      kStorageTypeFilename,
       // An image being dragged out of the renderer. Contains a buffer holding
       // the image data as well as the suggested name for saving the image to.
-      StorageTypeBinaryData,
+      kStorageTypeBinaryData,
       // Stores the filesystem URL of one file being dragged into the renderer.
-      StorageTypeFileSystemFile,
+      kStorageTypeFileSystemFile,
     };
 
-    StorageType storageType;
+    StorageType storage_type;
 
     // TODO(dcheng): This should probably be a union.
     // Only valid when storageType == StorageTypeString.
-    WebString stringType;
-    WebString stringData;
+    WebString string_type;
+    WebString string_data;
 
     // Title associated with a link when stringType == "text/uri-list".
     WebString title;
 
     // Only valid when stringType == "text/html". Stores the base URL for the
     // contained markup.
-    WebURL baseURL;
+    WebURL base_url;
 
     // Only valid when storageType == StorageTypeFilename.
-    WebString filenameData;
-    WebString displayNameData;
+    WebString filename_data;
+    WebString display_name_data;
 
     // Only valid when storageType == StorageTypeBinaryData.
-    WebData binaryData;
-    WebURL binaryDataSourceURL;
-    WebString binaryDataFilenameExtension;
-    WebString binaryDataContentDisposition;
+    WebData binary_data;
+    WebURL binary_data_source_url;
+    WebString binary_data_filename_extension;
+    WebString binary_data_content_disposition;
 
     // Only valid when storageType == StorageTypeFileSystemFile.
-    WebURL fileSystemURL;
-    long long fileSystemFileSize;
-    WebString fileSystemId;
+    WebURL file_system_url;
+    long long file_system_file_size;
+    WebString file_system_id;
   };
 
-  WebDragData() : m_valid(false), m_modifierKeyState(0) {}
+  WebDragData() : valid_(false), modifier_key_state_(0) {}
 
   WebDragData(const WebDragData& object)
-      : m_valid(object.m_valid),
-        m_itemList(object.m_itemList),
-        m_modifierKeyState(object.m_modifierKeyState),
-        m_filesystemId(object.m_filesystemId) {}
+      : valid_(object.valid_),
+        item_list_(object.item_list_),
+        modifier_key_state_(object.modifier_key_state_),
+        filesystem_id_(object.filesystem_id_) {}
 
   WebDragData& operator=(const WebDragData& object) {
-    m_valid = object.m_valid;
-    m_itemList = object.m_itemList;
-    m_modifierKeyState = object.m_modifierKeyState;
-    m_filesystemId = object.m_filesystemId;
+    valid_ = object.valid_;
+    item_list_ = object.item_list_;
+    modifier_key_state_ = object.modifier_key_state_;
+    filesystem_id_ = object.filesystem_id_;
     return *this;
   }
 
   ~WebDragData() {}
 
-  WebVector<Item> items() const { return m_itemList; }
+  WebVector<Item> Items() const { return item_list_; }
 
-  BLINK_PLATFORM_EXPORT void setItems(WebVector<Item> itemList);
+  BLINK_PLATFORM_EXPORT void SetItems(WebVector<Item> item_list);
   // FIXME: setItems is slow because setItems copies WebVector.
   // Instead, use swapItems.
-  void swapItems(WebVector<Item>& itemList) { m_itemList.swap(itemList); }
+  void SwapItems(WebVector<Item>& item_list) { item_list_.Swap(item_list); }
 
-  void initialize() { m_valid = true; }
-  bool isNull() const { return !m_valid; }
-  void reset() {
-    m_itemList = WebVector<Item>();
-    m_valid = false;
+  void Initialize() { valid_ = true; }
+  bool IsNull() const { return !valid_; }
+  void Reset() {
+    item_list_ = WebVector<Item>();
+    valid_ = false;
   }
 
-  BLINK_PLATFORM_EXPORT void addItem(const Item&);
+  BLINK_PLATFORM_EXPORT void AddItem(const Item&);
 
-  WebString filesystemId() const { return m_filesystemId; }
+  WebString FilesystemId() const { return filesystem_id_; }
 
-  void setFilesystemId(const WebString& filesystemId) {
+  void SetFilesystemId(const WebString& filesystem_id) {
     // The ID is an opaque string, given by and validated by chromium port.
-    m_filesystemId = filesystemId;
+    filesystem_id_ = filesystem_id;
   }
 
-  int modifierKeyState() const { return m_modifierKeyState; }
+  int ModifierKeyState() const { return modifier_key_state_; }
 
-  void setModifierKeyState(int state) { m_modifierKeyState = state; }
+  void SetModifierKeyState(int state) { modifier_key_state_ = state; }
 
  private:
-  bool m_valid;
-  WebVector<Item> m_itemList;
-  int m_modifierKeyState;  // State of Shift/Ctrl/Alt/Meta keys.
-  WebString m_filesystemId;
+  bool valid_;
+  WebVector<Item> item_list_;
+  int modifier_key_state_;  // State of Shift/Ctrl/Alt/Meta keys.
+  WebString filesystem_id_;
 };
 
 }  // namespace blink

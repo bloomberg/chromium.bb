@@ -32,7 +32,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
  public:
   PerformanceNavigationTiming(LocalFrame*,
                               ResourceTimingInfo*,
-                              double timeOrigin);
+                              double time_origin);
 
   // Attributes inheritted from PerformanceEntry.
   DOMHighResTimeStamp duration() const override;
@@ -60,28 +60,28 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  void buildJSONValue(V8ObjectBuilder&) const override;
+  void BuildJSONValue(V8ObjectBuilder&) const override;
 
  private:
   ~PerformanceNavigationTiming() override;
 
-  static AtomicString getNavigationType(NavigationType, const Document*);
+  static AtomicString GetNavigationType(NavigationType, const Document*);
 
-  const DocumentTiming* documentTiming() const;
-  DocumentLoader* documentLoader() const;
-  DocumentLoadTiming* documentLoadTiming() const;
+  const DocumentTiming* GetDocumentTiming() const;
+  DocumentLoader* GetDocumentLoader() const;
+  DocumentLoadTiming* GetDocumentLoadTiming() const;
 
-  virtual ResourceLoadTiming* resourceLoadTiming() const;
-  virtual bool allowTimingDetails() const;
-  virtual bool didReuseConnection() const;
-  virtual unsigned long long getTransferSize() const;
-  virtual unsigned long long getEncodedBodySize() const;
-  virtual unsigned long long getDecodedBodySize() const;
+  virtual ResourceLoadTiming* GetResourceLoadTiming() const;
+  virtual bool AllowTimingDetails() const;
+  virtual bool DidReuseConnection() const;
+  virtual unsigned long long GetTransferSize() const;
+  virtual unsigned long long GetEncodedBodySize() const;
+  virtual unsigned long long GetDecodedBodySize() const;
 
-  bool getAllowRedirectDetails() const;
+  bool GetAllowRedirectDetails() const;
 
-  double m_timeOrigin;
-  RefPtr<ResourceTimingInfo> m_resourceTimingInfo;
+  double time_origin_;
+  RefPtr<ResourceTimingInfo> resource_timing_info_;
 };
 }  // namespace blink
 

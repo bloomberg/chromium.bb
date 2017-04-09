@@ -12,35 +12,35 @@
 
 namespace blink {
 
-bool CSSOMTypes::propertyCanTake(CSSPropertyID id,
+bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
                                  const CSSStyleValue& styleValue) {
   // Shortcut special case.
-  if (styleValue.type() == CSSStyleValue::SimpleLengthType ||
-      styleValue.type() == CSSStyleValue::CalcLengthType) {
-    if (toCSSLengthValue(styleValue).containsPercent() &&
-        !CSSPropertyMetadata::propertySupportsPercentage(id)) {
+  if (styleValue.GetType() == CSSStyleValue::kSimpleLengthType ||
+      styleValue.GetType() == CSSStyleValue::kCalcLengthType) {
+    if (ToCSSLengthValue(styleValue).ContainsPercent() &&
+        !CSSPropertyMetadata::PropertySupportsPercentage(id)) {
       return false;
     }
-  } else if (styleValue.type() == CSSStyleValue::KeywordType) {
+  } else if (styleValue.GetType() == CSSStyleValue::kKeywordType) {
     // Keywords are also handled differently.
-    return CSSOMKeywords::validKeywordForProperty(
-        id, toCSSKeywordValue(styleValue));
-  } else if (styleValue.type() == CSSStyleValue::Unknown) {
+    return CSSOMKeywords::ValidKeywordForProperty(
+        id, ToCSSKeywordValue(styleValue));
+  } else if (styleValue.GetType() == CSSStyleValue::kUnknown) {
     // The check happens later in this case.
     return true;
   }
 
-  return CSSOMTypes::propertyCanTakeType(id, styleValue.type());
+  return CSSOMTypes::PropertyCanTakeType(id, styleValue.GetType());
 }
 
-bool CSSOMTypes::propertyCanTakeType(CSSPropertyID id,
+bool CSSOMTypes::PropertyCanTakeType(CSSPropertyID id,
                                      CSSStyleValue::StyleValueType type) {
   switch (id) {
     {% for property_id, property in properties.items() if property.typedom_types %}
     case {{property_id}}:
       return (
           {% for type in property.typedom_types %}
-          {{ "|| " if not loop.first }}type == CSSStyleValue::{{type}}Type
+          {{ "|| " if not loop.first }}type == CSSStyleValue::k{{type}}Type
           {% endfor %}
       );
     {% endfor %}

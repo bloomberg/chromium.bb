@@ -35,20 +35,21 @@ class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
  public:
-  static XSLStyleSheetResource* fetchSynchronously(FetchRequest&,
+  static XSLStyleSheetResource* FetchSynchronously(FetchRequest&,
                                                    ResourceFetcher*);
-  static XSLStyleSheetResource* fetch(FetchRequest&, ResourceFetcher*);
+  static XSLStyleSheetResource* Fetch(FetchRequest&, ResourceFetcher*);
 
-  const String& sheet() const { return m_sheet; }
+  const String& Sheet() const { return sheet_; }
 
-  void didAddClient(ResourceClient*) override;
+  void DidAddClient(ResourceClient*) override;
 
  private:
   class XSLStyleSheetResourceFactory : public ResourceFactory {
    public:
-    XSLStyleSheetResourceFactory() : ResourceFactory(Resource::XSLStyleSheet) {}
+    XSLStyleSheetResourceFactory()
+        : ResourceFactory(Resource::kXSLStyleSheet) {}
 
-    Resource* create(const ResourceRequest& request,
+    Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options,
                      const String& charset) const override {
       return new XSLStyleSheetResource(request, options, charset);
@@ -58,9 +59,9 @@ class XSLStyleSheetResource final : public StyleSheetResource {
                         const ResourceLoaderOptions&,
                         const String& charset);
 
-  void checkNotify() override;
+  void CheckNotify() override;
 
-  String m_sheet;
+  String sheet_;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(XSLStyleSheet);

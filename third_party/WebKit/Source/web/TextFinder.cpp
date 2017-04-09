@@ -59,288 +59,292 @@
 namespace blink {
 
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
-    : m_range(range), m_ordinal(ordinal) {}
+    : range_(range), ordinal_(ordinal) {}
 
 DEFINE_TRACE(TextFinder::FindMatch) {
-  visitor->trace(m_range);
+  visitor->Trace(range_);
 }
 
 class TextFinder::DeferredScopeStringMatches
     : public GarbageCollectedFinalized<TextFinder::DeferredScopeStringMatches> {
  public:
-  static DeferredScopeStringMatches* create(TextFinder* textFinder,
+  static DeferredScopeStringMatches* Create(TextFinder* text_finder,
                                             int identifier,
-                                            const WebString& searchText,
+                                            const WebString& search_text,
                                             const WebFindOptions& options) {
-    return new DeferredScopeStringMatches(textFinder, identifier, searchText,
+    return new DeferredScopeStringMatches(text_finder, identifier, search_text,
                                           options);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_textFinder); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(text_finder_); }
 
-  void dispose() { m_timer.stop(); }
+  void Dispose() { timer_.Stop(); }
 
  private:
-  DeferredScopeStringMatches(TextFinder* textFinder,
+  DeferredScopeStringMatches(TextFinder* text_finder,
                              int identifier,
-                             const WebString& searchText,
+                             const WebString& search_text,
                              const WebFindOptions& options)
-      : m_timer(TaskRunnerHelper::get(TaskType::UnspecedTimer,
-                                      textFinder->ownerFrame().frame()),
-                this,
-                &DeferredScopeStringMatches::doTimeout),
-        m_textFinder(textFinder),
-        m_identifier(identifier),
-        m_searchText(searchText),
-        m_options(options) {
-    m_timer.startOneShot(0.0, BLINK_FROM_HERE);
+      : timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
+                                     text_finder->OwnerFrame().GetFrame()),
+               this,
+               &DeferredScopeStringMatches::DoTimeout),
+        text_finder_(text_finder),
+        identifier_(identifier),
+        search_text_(search_text),
+        options_(options) {
+    timer_.StartOneShot(0.0, BLINK_FROM_HERE);
   }
 
-  void doTimeout(TimerBase*) {
-    m_textFinder->resumeScopingStringMatches(m_identifier, m_searchText,
-                                             m_options);
+  void DoTimeout(TimerBase*) {
+    text_finder_->ResumeScopingStringMatches(identifier_, search_text_,
+                                             options_);
   }
 
-  TaskRunnerTimer<DeferredScopeStringMatches> m_timer;
-  Member<TextFinder> m_textFinder;
-  const int m_identifier;
-  const WebString m_searchText;
-  const WebFindOptions m_options;
+  TaskRunnerTimer<DeferredScopeStringMatches> timer_;
+  Member<TextFinder> text_finder_;
+  const int identifier_;
+  const WebString search_text_;
+  const WebFindOptions options_;
 };
 
-bool TextFinder::find(int identifier,
-                      const WebString& searchText,
+bool TextFinder::Find(int identifier,
+                      const WebString& search_text,
                       const WebFindOptions& options,
-                      bool wrapWithinFrame,
-                      bool* activeNow) {
-  if (!options.findNext)
-    unmarkAllTextMatches();
+                      bool wrap_within_frame,
+                      bool* active_now) {
+  if (!options.find_next)
+    UnmarkAllTextMatches();
   else
-    setMarkerActive(m_activeMatch.get(), false);
+    SetMarkerActive(active_match_.Get(), false);
 
-  if (m_activeMatch &&
-      &m_activeMatch->ownerDocument() != ownerFrame().frame()->document())
-    m_activeMatch = nullptr;
+  if (active_match_ &&
+      &active_match_->OwnerDocument() != OwnerFrame().GetFrame()->GetDocument())
+    active_match_ = nullptr;
 
   // If the user has selected something since the last Find operation we want
   // to start from there. Otherwise, we start searching from where the last Find
   // operation left off (either a Find or a FindNext operation).
-  VisibleSelection selection(ownerFrame()
-                                 .frame()
-                                 ->selection()
-                                 .computeVisibleSelectionInDOMTreeDeprecated());
-  bool activeSelection = !selection.isNone();
-  if (activeSelection) {
-    m_activeMatch = createRange(firstEphemeralRangeOf(selection));
-    ownerFrame().frame()->selection().clear();
+  VisibleSelection selection(OwnerFrame()
+                                 .GetFrame()
+                                 ->Selection()
+                                 .ComputeVisibleSelectionInDOMTreeDeprecated());
+  bool active_selection = !selection.IsNone();
+  if (active_selection) {
+    active_match_ = CreateRange(FirstEphemeralRangeOf(selection));
+    OwnerFrame().GetFrame()->Selection().Clear();
   }
 
-  DCHECK(ownerFrame().frame());
-  DCHECK(ownerFrame().frame()->view());
-  const FindOptions findOptions =
-      (options.forward ? 0 : Backwards) |
-      (options.matchCase ? 0 : CaseInsensitive) |
-      (wrapWithinFrame ? WrapAround : 0) |
-      (options.wordStart ? AtWordStarts : 0) |
-      (options.medialCapitalAsWordStart ? TreatMedialCapitalAsWordStart : 0) |
-      (options.findNext ? 0 : StartInSelection);
-  m_activeMatch = ownerFrame().frame()->editor().findStringAndScrollToVisible(
-      searchText, m_activeMatch.get(), findOptions);
+  DCHECK(OwnerFrame().GetFrame());
+  DCHECK(OwnerFrame().GetFrame()->View());
+  const FindOptions find_options =
+      (options.forward ? 0 : kBackwards) |
+      (options.match_case ? 0 : kCaseInsensitive) |
+      (wrap_within_frame ? kWrapAround : 0) |
+      (options.word_start ? kAtWordStarts : 0) |
+      (options.medial_capital_as_word_start ? kTreatMedialCapitalAsWordStart
+                                            : 0) |
+      (options.find_next ? 0 : kStartInSelection);
+  active_match_ =
+      OwnerFrame().GetFrame()->GetEditor().FindStringAndScrollToVisible(
+          search_text, active_match_.Get(), find_options);
 
-  if (!m_activeMatch) {
+  if (!active_match_) {
     // If we're finding next the next active match might not be in the current
     // frame.  In this case we don't want to clear the matches cache.
-    if (!options.findNext)
-      clearFindMatchesCache();
+    if (!options.find_next)
+      ClearFindMatchesCache();
 
-    ownerFrame().frameView()->invalidatePaintForTickmarks();
+    OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
     return false;
   }
 
   // If the user is browsing a page with autosizing, adjust the zoom to the
   // column where the next hit has been found. Doing this when autosizing is
   // not set will result in a zoom reset on small devices.
-  if (ownerFrame()
-          .frame()
-          ->document()
-          ->textAutosizer()
-          ->pageNeedsAutosizing()) {
-    ownerFrame().viewImpl()->zoomToFindInPageRect(
-        ownerFrame().frameView()->contentsToRootFrame(
-            enclosingIntRect(LayoutObject::absoluteBoundingBoxRectForRange(
-                m_activeMatch.get()))));
+  if (OwnerFrame()
+          .GetFrame()
+          ->GetDocument()
+          ->GetTextAutosizer()
+          ->PageNeedsAutosizing()) {
+    OwnerFrame().ViewImpl()->ZoomToFindInPageRect(
+        OwnerFrame().GetFrameView()->ContentsToRootFrame(
+            EnclosingIntRect(LayoutObject::AbsoluteBoundingBoxRectForRange(
+                active_match_.Get()))));
   }
 
-  bool wasActiveFrame = m_currentActiveMatchFrame;
-  m_currentActiveMatchFrame = true;
+  bool was_active_frame = current_active_match_frame_;
+  current_active_match_frame_ = true;
 
-  bool isActive = setMarkerActive(m_activeMatch.get(), true);
-  if (activeNow)
-    *activeNow = isActive;
+  bool is_active = SetMarkerActive(active_match_.Get(), true);
+  if (active_now)
+    *active_now = is_active;
 
   // Make sure no node is focused. See http://crbug.com/38700.
-  ownerFrame().frame()->document()->clearFocusedElement();
+  OwnerFrame().GetFrame()->GetDocument()->ClearFocusedElement();
 
   // Set this frame as focused.
-  ownerFrame().viewImpl()->setFocusedFrame(&ownerFrame());
+  OwnerFrame().ViewImpl()->SetFocusedFrame(&OwnerFrame());
 
-  if (!options.findNext || activeSelection || !isActive) {
+  if (!options.find_next || active_selection || !is_active) {
     // This is either an initial Find operation, a Find-next from a new
     // start point due to a selection, or new matches were found during
     // Find-next due to DOM alteration (that couldn't be set as active), so
     // we set the flag to ask the scoping effort to find the active rect for
     // us and report it back to the UI.
-    m_locatingActiveRect = true;
+    locating_active_rect_ = true;
   } else {
-    if (!wasActiveFrame) {
+    if (!was_active_frame) {
       if (options.forward)
-        m_activeMatchIndex = 0;
+        active_match_index_ = 0;
       else
-        m_activeMatchIndex = m_lastMatchCount - 1;
+        active_match_index_ = last_match_count_ - 1;
     } else {
       if (options.forward)
-        ++m_activeMatchIndex;
+        ++active_match_index_;
       else
-        --m_activeMatchIndex;
+        --active_match_index_;
 
-      if (m_activeMatchIndex + 1 > m_lastMatchCount)
-        m_activeMatchIndex = 0;
-      else if (m_activeMatchIndex < 0)
-        m_activeMatchIndex = m_lastMatchCount - 1;
+      if (active_match_index_ + 1 > last_match_count_)
+        active_match_index_ = 0;
+      else if (active_match_index_ < 0)
+        active_match_index_ = last_match_count_ - 1;
     }
-    WebRect selectionRect = ownerFrame().frameView()->contentsToRootFrame(
-        m_activeMatch->boundingBox());
-    reportFindInPageSelection(selectionRect, m_activeMatchIndex + 1,
+    WebRect selection_rect = OwnerFrame().GetFrameView()->ContentsToRootFrame(
+        active_match_->BoundingBox());
+    ReportFindInPageSelection(selection_rect, active_match_index_ + 1,
                               identifier);
   }
 
   // We found something, so the result of the previous scoping may be outdated.
-  m_lastFindRequestCompletedWithNoMatches = false;
+  last_find_request_completed_with_no_matches_ = false;
 
   return true;
 }
 
-void TextFinder::clearActiveFindMatch() {
-  m_currentActiveMatchFrame = false;
-  setMarkerActive(m_activeMatch.get(), false);
-  resetActiveMatch();
+void TextFinder::ClearActiveFindMatch() {
+  current_active_match_frame_ = false;
+  SetMarkerActive(active_match_.Get(), false);
+  ResetActiveMatch();
 }
 
-void TextFinder::stopFindingAndClearSelection() {
-  cancelPendingScopingEffort();
+void TextFinder::StopFindingAndClearSelection() {
+  CancelPendingScopingEffort();
 
   // Remove all markers for matches found and turn off the highlighting.
-  ownerFrame().frame()->document()->markers().removeMarkers(
-      DocumentMarker::TextMatch);
-  ownerFrame().frame()->editor().setMarkedTextMatchesAreHighlighted(false);
-  clearFindMatchesCache();
-  resetActiveMatch();
+  OwnerFrame().GetFrame()->GetDocument()->Markers().RemoveMarkers(
+      DocumentMarker::kTextMatch);
+  OwnerFrame().GetFrame()->GetEditor().SetMarkedTextMatchesAreHighlighted(
+      false);
+  ClearFindMatchesCache();
+  ResetActiveMatch();
 
   // Let the frame know that we don't want tickmarks anymore.
-  ownerFrame().frameView()->invalidatePaintForTickmarks();
+  OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
 }
 
-void TextFinder::reportFindInPageResultToAccessibility(int identifier) {
-  if (!m_activeMatch)
+void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
+  if (!active_match_)
     return;
 
-  AXObjectCacheImpl* axObjectCache = toAXObjectCacheImpl(
-      ownerFrame().frame()->document()->existingAXObjectCache());
-  if (!axObjectCache)
+  AXObjectCacheImpl* ax_object_cache = ToAXObjectCacheImpl(
+      OwnerFrame().GetFrame()->GetDocument()->ExistingAXObjectCache());
+  if (!ax_object_cache)
     return;
 
-  AXObject* startObject = axObjectCache->get(m_activeMatch->startContainer());
-  AXObject* endObject = axObjectCache->get(m_activeMatch->endContainer());
-  if (!startObject || !endObject)
+  AXObject* start_object =
+      ax_object_cache->Get(active_match_->startContainer());
+  AXObject* end_object = ax_object_cache->Get(active_match_->endContainer());
+  if (!start_object || !end_object)
     return;
 
   // Notify the client of new text marker data.
-  axObjectCache->postNotification(
-      startObject, AXObjectCache::AXNotification::AXChildrenChanged);
-  if (startObject != endObject)
-    axObjectCache->postNotification(
-        endObject, AXObjectCache::AXNotification::AXChildrenChanged);
+  ax_object_cache->PostNotification(
+      start_object, AXObjectCache::AXNotification::kAXChildrenChanged);
+  if (start_object != end_object)
+    ax_object_cache->PostNotification(
+        end_object, AXObjectCache::AXNotification::kAXChildrenChanged);
 
-  if (ownerFrame().client()) {
-    ownerFrame().client()->handleAccessibilityFindInPageResult(
-        identifier, m_activeMatchIndex + 1, WebAXObject(startObject),
-        m_activeMatch->startOffset(), WebAXObject(endObject),
-        m_activeMatch->endOffset());
+  if (OwnerFrame().Client()) {
+    OwnerFrame().Client()->HandleAccessibilityFindInPageResult(
+        identifier, active_match_index_ + 1, WebAXObject(start_object),
+        active_match_->startOffset(), WebAXObject(end_object),
+        active_match_->endOffset());
   }
 }
 
-void TextFinder::startScopingStringMatches(int identifier,
-                                           const WebString& searchText,
+void TextFinder::StartScopingStringMatches(int identifier,
+                                           const WebString& search_text,
                                            const WebFindOptions& options) {
-  cancelPendingScopingEffort();
+  CancelPendingScopingEffort();
 
   // This is a brand new search, so we need to reset everything.
   // Scoping is just about to begin.
-  m_scopingInProgress = true;
+  scoping_in_progress_ = true;
 
   // Need to keep the current identifier locally in order to finish the
   // request in case the frame is detached during the process.
-  m_findRequestIdentifier = identifier;
+  find_request_identifier_ = identifier;
 
   // Clear highlighting for this frame.
-  unmarkAllTextMatches();
+  UnmarkAllTextMatches();
 
   // Clear the tickmarks and results cache.
-  clearFindMatchesCache();
+  ClearFindMatchesCache();
 
   // Clear the total match count and increment markers version.
-  resetMatchCount();
+  ResetMatchCount();
 
   // Clear the counters from last operation.
-  m_lastMatchCount = 0;
-  m_nextInvalidateAfter = 0;
-  m_resumeScopingFromRange = nullptr;
+  last_match_count_ = 0;
+  next_invalidate_after_ = 0;
+  resume_scoping_from_range_ = nullptr;
 
   // The view might be null on detached frames.
-  LocalFrame* frame = ownerFrame().frame();
-  if (frame && frame->page())
-    m_frameScoping = true;
+  LocalFrame* frame = OwnerFrame().GetFrame();
+  if (frame && frame->GetPage())
+    frame_scoping_ = true;
 
   // Now, defer scoping until later to allow find operation to finish quickly.
-  scopeStringMatchesSoon(identifier, searchText, options);
+  ScopeStringMatchesSoon(identifier, search_text, options);
 }
 
-void TextFinder::scopeStringMatches(int identifier,
-                                    const WebString& searchText,
+void TextFinder::ScopeStringMatches(int identifier,
+                                    const WebString& search_text,
                                     const WebFindOptions& options) {
-  if (!shouldScopeMatches(searchText, options)) {
-    finishCurrentScopingEffort(identifier);
+  if (!ShouldScopeMatches(search_text, options)) {
+    FinishCurrentScopingEffort(identifier);
     return;
   }
 
-  PositionInFlatTree searchStart =
-      PositionInFlatTree::firstPositionInNode(ownerFrame().frame()->document());
-  PositionInFlatTree searchEnd =
-      PositionInFlatTree::lastPositionInNode(ownerFrame().frame()->document());
-  DCHECK_EQ(searchStart.document(), searchEnd.document());
+  PositionInFlatTree search_start = PositionInFlatTree::FirstPositionInNode(
+      OwnerFrame().GetFrame()->GetDocument());
+  PositionInFlatTree search_end = PositionInFlatTree::LastPositionInNode(
+      OwnerFrame().GetFrame()->GetDocument());
+  DCHECK_EQ(search_start.GetDocument(), search_end.GetDocument());
 
-  if (m_resumeScopingFromRange) {
+  if (resume_scoping_from_range_) {
     // This is a continuation of a scoping operation that timed out and didn't
     // complete last time around, so we should start from where we left off.
-    DCHECK(m_resumeScopingFromRange->collapsed());
-    searchStart = fromPositionInDOMTree<EditingInFlatTreeStrategy>(
-        m_resumeScopingFromRange->endPosition());
-    if (searchStart.document() != searchEnd.document())
+    DCHECK(resume_scoping_from_range_->collapsed());
+    search_start = FromPositionInDOMTree<EditingInFlatTreeStrategy>(
+        resume_scoping_from_range_->EndPosition());
+    if (search_start.GetDocument() != search_end.GetDocument())
       return;
   }
 
   // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
-  searchStart.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  search_start.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // This timeout controls how long we scope before releasing control. This
   // value does not prevent us from running for longer than this, but it is
   // periodically checked to see if we have exceeded our allocated time.
-  const double maxScopingDuration = 0.1;  // seconds
+  const double kMaxScopingDuration = 0.1;  // seconds
 
-  int matchCount = 0;
-  bool timedOut = false;
-  double startTime = currentTime();
+  int match_count = 0;
+  bool timed_out = false;
+  double start_time = CurrentTime();
   do {
     // Find next occurrence of the search string.
     // FIXME: (http://crbug.com/6818) This WebKit operation may run for longer
@@ -348,416 +352,418 @@ void TextFinder::scopeStringMatches(int identifier,
     // written. We may need to rewrite it with interruptibility in mind, or
     // find an alternative.
     const EphemeralRangeInFlatTree result =
-        findPlainText(EphemeralRangeInFlatTree(searchStart, searchEnd),
-                      searchText, options.matchCase ? 0 : CaseInsensitive);
-    if (result.isCollapsed()) {
+        FindPlainText(EphemeralRangeInFlatTree(search_start, search_end),
+                      search_text, options.match_case ? 0 : kCaseInsensitive);
+    if (result.IsCollapsed()) {
       // Not found.
       break;
     }
-    Range* resultRange = Range::create(
-        result.document(), toPositionInDOMTree(result.startPosition()),
-        toPositionInDOMTree(result.endPosition()));
-    if (resultRange->collapsed()) {
+    Range* result_range = Range::Create(
+        result.GetDocument(), ToPositionInDOMTree(result.StartPosition()),
+        ToPositionInDOMTree(result.EndPosition()));
+    if (result_range->collapsed()) {
       // resultRange will be collapsed if the matched text spans over multiple
       // TreeScopes.  FIXME: Show such matches to users.
-      searchStart = result.endPosition();
+      search_start = result.EndPosition();
       continue;
     }
 
-    ++matchCount;
+    ++match_count;
 
     // Catch a special case where Find found something but doesn't know what
     // the bounding box for it is. In this case we set the first match we find
     // as the active rect.
-    IntRect resultBounds = resultRange->boundingBox();
-    IntRect activeSelectionRect;
-    if (m_locatingActiveRect) {
-      activeSelectionRect =
-          m_activeMatch.get() ? m_activeMatch->boundingBox() : resultBounds;
+    IntRect result_bounds = result_range->BoundingBox();
+    IntRect active_selection_rect;
+    if (locating_active_rect_) {
+      active_selection_rect =
+          active_match_.Get() ? active_match_->BoundingBox() : result_bounds;
     }
 
     // If the Find function found a match it will have stored where the
     // match was found in m_activeSelectionRect on the current frame. If we
     // find this rect during scoping it means we have found the active
     // tickmark.
-    bool foundActiveMatch = false;
-    if (m_locatingActiveRect && (activeSelectionRect == resultBounds)) {
+    bool found_active_match = false;
+    if (locating_active_rect_ && (active_selection_rect == result_bounds)) {
       // We have found the active tickmark frame.
-      m_currentActiveMatchFrame = true;
-      foundActiveMatch = true;
+      current_active_match_frame_ = true;
+      found_active_match = true;
       // We also know which tickmark is active now.
-      m_activeMatchIndex = m_totalMatchCount + matchCount - 1;
+      active_match_index_ = total_match_count_ + match_count - 1;
       // To stop looking for the active tickmark, we set this flag.
-      m_locatingActiveRect = false;
+      locating_active_rect_ = false;
 
       // Notify browser of new location for the selected rectangle.
-      reportFindInPageSelection(
-          ownerFrame().frameView()->contentsToRootFrame(resultBounds),
-          m_activeMatchIndex + 1, identifier);
+      ReportFindInPageSelection(
+          OwnerFrame().GetFrameView()->ContentsToRootFrame(result_bounds),
+          active_match_index_ + 1, identifier);
     }
 
-    ownerFrame().frame()->document()->markers().addTextMatchMarker(
-        EphemeralRange(resultRange),
-        foundActiveMatch ? DocumentMarker::MatchStatus::kActive
-                         : DocumentMarker::MatchStatus::kInactive);
+    OwnerFrame().GetFrame()->GetDocument()->Markers().AddTextMatchMarker(
+        EphemeralRange(result_range),
+        found_active_match ? DocumentMarker::MatchStatus::kActive
+                           : DocumentMarker::MatchStatus::kInactive);
 
-    m_findMatchesCache.push_back(
-        FindMatch(resultRange, m_lastMatchCount + matchCount));
+    find_matches_cache_.push_back(
+        FindMatch(result_range, last_match_count_ + match_count));
 
     // Set the new start for the search range to be the end of the previous
     // result range. There is no need to use a VisiblePosition here,
     // since findPlainText will use a TextIterator to go over the visible
     // text nodes.
-    searchStart = result.endPosition();
+    search_start = result.EndPosition();
 
-    m_resumeScopingFromRange = Range::create(
-        result.document(), toPositionInDOMTree(result.endPosition()),
-        toPositionInDOMTree(result.endPosition()));
-    timedOut = (currentTime() - startTime) >= maxScopingDuration;
-  } while (!timedOut);
+    resume_scoping_from_range_ = Range::Create(
+        result.GetDocument(), ToPositionInDOMTree(result.EndPosition()),
+        ToPositionInDOMTree(result.EndPosition()));
+    timed_out = (CurrentTime() - start_time) >= kMaxScopingDuration;
+  } while (!timed_out);
 
   // Remember what we search for last time, so we can skip searching if more
   // letters are added to the search string (and last outcome was 0).
-  m_lastSearchString = searchText;
+  last_search_string_ = search_text;
 
-  if (matchCount > 0) {
-    ownerFrame().frame()->editor().setMarkedTextMatchesAreHighlighted(true);
+  if (match_count > 0) {
+    OwnerFrame().GetFrame()->GetEditor().SetMarkedTextMatchesAreHighlighted(
+        true);
 
-    m_lastMatchCount += matchCount;
+    last_match_count_ += match_count;
 
     // Let the frame know how many matches we found during this pass.
-    ownerFrame().increaseMatchCount(matchCount, identifier);
+    OwnerFrame().IncreaseMatchCount(match_count, identifier);
   }
 
-  if (timedOut) {
+  if (timed_out) {
     // If we found anything during this pass, we should redraw. However, we
     // don't want to spam too much if the page is extremely long, so if we
     // reach a certain point we start throttling the redraw requests.
-    if (matchCount > 0)
-      invalidateIfNecessary();
+    if (match_count > 0)
+      InvalidateIfNecessary();
 
     // Scoping effort ran out of time, lets ask for another time-slice.
-    scopeStringMatchesSoon(identifier, searchText, options);
+    ScopeStringMatchesSoon(identifier, search_text, options);
     return;                         // Done for now, resume work later.
   }
 
-  finishCurrentScopingEffort(identifier);
+  FinishCurrentScopingEffort(identifier);
 }
 
-void TextFinder::flushCurrentScopingEffort(int identifier) {
-  if (!ownerFrame().frame() || !ownerFrame().frame()->page())
+void TextFinder::FlushCurrentScopingEffort(int identifier) {
+  if (!OwnerFrame().GetFrame() || !OwnerFrame().GetFrame()->GetPage())
     return;
 
-  m_frameScoping = false;
-  ownerFrame().increaseMatchCount(0, identifier);
+  frame_scoping_ = false;
+  OwnerFrame().IncreaseMatchCount(0, identifier);
 }
 
-void TextFinder::finishCurrentScopingEffort(int identifier) {
-  if (!m_totalMatchCount)
-    ownerFrame().frame()->selection().clear();
+void TextFinder::FinishCurrentScopingEffort(int identifier) {
+  if (!total_match_count_)
+    OwnerFrame().GetFrame()->Selection().Clear();
 
-  flushCurrentScopingEffort(identifier);
+  FlushCurrentScopingEffort(identifier);
 
-  m_scopingInProgress = false;
-  m_lastFindRequestCompletedWithNoMatches = !m_lastMatchCount;
+  scoping_in_progress_ = false;
+  last_find_request_completed_with_no_matches_ = !last_match_count_;
 
   // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
-  ownerFrame().frameView()->invalidatePaintForTickmarks();
+  OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
 }
 
-void TextFinder::cancelPendingScopingEffort() {
-  if (m_deferredScopingWork) {
-    m_deferredScopingWork->dispose();
-    m_deferredScopingWork.clear();
+void TextFinder::CancelPendingScopingEffort() {
+  if (deferred_scoping_work_) {
+    deferred_scoping_work_->Dispose();
+    deferred_scoping_work_.Clear();
   }
 
-  m_activeMatchIndex = -1;
+  active_match_index_ = -1;
 
   // Last request didn't complete.
-  if (m_scopingInProgress)
-    m_lastFindRequestCompletedWithNoMatches = false;
+  if (scoping_in_progress_)
+    last_find_request_completed_with_no_matches_ = false;
 
-  m_scopingInProgress = false;
+  scoping_in_progress_ = false;
 }
 
-void TextFinder::increaseMatchCount(int identifier, int count) {
+void TextFinder::IncreaseMatchCount(int identifier, int count) {
   if (count)
-    ++m_findMatchMarkersVersion;
+    ++find_match_markers_version_;
 
-  m_totalMatchCount += count;
+  total_match_count_ += count;
 
   // Update the UI with the latest findings.
-  if (ownerFrame().client())
-    ownerFrame().client()->reportFindInPageMatchCount(
-        identifier, m_totalMatchCount, !m_frameScoping || !m_totalMatchCount);
+  if (OwnerFrame().Client())
+    OwnerFrame().Client()->ReportFindInPageMatchCount(
+        identifier, total_match_count_, !frame_scoping_ || !total_match_count_);
 }
 
-void TextFinder::reportFindInPageSelection(const WebRect& selectionRect,
-                                           int activeMatchOrdinal,
+void TextFinder::ReportFindInPageSelection(const WebRect& selection_rect,
+                                           int active_match_ordinal,
                                            int identifier) {
   // Update the UI with the latest selection rect.
-  if (ownerFrame().client())
-    ownerFrame().client()->reportFindInPageSelection(
-        identifier, activeMatchOrdinal, selectionRect);
+  if (OwnerFrame().Client())
+    OwnerFrame().Client()->ReportFindInPageSelection(
+        identifier, active_match_ordinal, selection_rect);
 
   // Update accessibility too, so if the user commits to this query
   // we can move accessibility focus to this result.
-  reportFindInPageResultToAccessibility(identifier);
+  ReportFindInPageResultToAccessibility(identifier);
 }
 
-void TextFinder::resetMatchCount() {
-  if (m_totalMatchCount > 0)
-    ++m_findMatchMarkersVersion;
+void TextFinder::ResetMatchCount() {
+  if (total_match_count_ > 0)
+    ++find_match_markers_version_;
 
-  m_totalMatchCount = 0;
-  m_frameScoping = false;
+  total_match_count_ = 0;
+  frame_scoping_ = false;
 }
 
-void TextFinder::clearFindMatchesCache() {
-  if (!m_findMatchesCache.isEmpty())
-    ++m_findMatchMarkersVersion;
+void TextFinder::ClearFindMatchesCache() {
+  if (!find_matches_cache_.IsEmpty())
+    ++find_match_markers_version_;
 
-  m_findMatchesCache.clear();
-  m_findMatchRectsAreValid = false;
+  find_matches_cache_.Clear();
+  find_match_rects_are_valid_ = false;
 }
 
-void TextFinder::updateFindMatchRects() {
-  IntSize currentContentsSize = ownerFrame().contentsSize();
-  if (m_contentsSizeForCurrentFindMatchRects != currentContentsSize) {
-    m_contentsSizeForCurrentFindMatchRects = currentContentsSize;
-    m_findMatchRectsAreValid = false;
+void TextFinder::UpdateFindMatchRects() {
+  IntSize current_contents_size = OwnerFrame().ContentsSize();
+  if (contents_size_for_current_find_match_rects_ != current_contents_size) {
+    contents_size_for_current_find_match_rects_ = current_contents_size;
+    find_match_rects_are_valid_ = false;
   }
 
-  size_t deadMatches = 0;
-  for (FindMatch& match : m_findMatchesCache) {
-    if (!match.m_range->boundaryPointsValid() ||
-        !match.m_range->startContainer()->isConnected())
-      match.m_rect = FloatRect();
-    else if (!m_findMatchRectsAreValid)
-      match.m_rect = findInPageRectFromRange(match.m_range.get());
+  size_t dead_matches = 0;
+  for (FindMatch& match : find_matches_cache_) {
+    if (!match.range_->BoundaryPointsValid() ||
+        !match.range_->startContainer()->isConnected())
+      match.rect_ = FloatRect();
+    else if (!find_match_rects_are_valid_)
+      match.rect_ = FindInPageRectFromRange(match.range_.Get());
 
-    if (match.m_rect.isEmpty())
-      ++deadMatches;
+    if (match.rect_.IsEmpty())
+      ++dead_matches;
   }
 
   // Remove any invalid matches from the cache.
-  if (deadMatches) {
-    HeapVector<FindMatch> filteredMatches;
-    filteredMatches.reserveCapacity(m_findMatchesCache.size() - deadMatches);
+  if (dead_matches) {
+    HeapVector<FindMatch> filtered_matches;
+    filtered_matches.ReserveCapacity(find_matches_cache_.size() - dead_matches);
 
-    for (const FindMatch& match : m_findMatchesCache) {
-      if (!match.m_rect.isEmpty())
-        filteredMatches.push_back(match);
+    for (const FindMatch& match : find_matches_cache_) {
+      if (!match.rect_.IsEmpty())
+        filtered_matches.push_back(match);
     }
 
-    m_findMatchesCache.swap(filteredMatches);
+    find_matches_cache_.Swap(filtered_matches);
   }
 
   // Invalidate the rects in child frames. Will be updated later during
   // traversal.
-  if (!m_findMatchRectsAreValid)
-    for (WebFrame* child = ownerFrame().firstChild(); child;
-         child = child->nextSibling())
-      toWebLocalFrameImpl(child)->ensureTextFinder().m_findMatchRectsAreValid =
-          false;
+  if (!find_match_rects_are_valid_)
+    for (WebFrame* child = OwnerFrame().FirstChild(); child;
+         child = child->NextSibling())
+      ToWebLocalFrameImpl(child)
+          ->EnsureTextFinder()
+          .find_match_rects_are_valid_ = false;
 
-  m_findMatchRectsAreValid = true;
+  find_match_rects_are_valid_ = true;
 }
 
-WebFloatRect TextFinder::activeFindMatchRect() {
-  if (!m_currentActiveMatchFrame || !m_activeMatch)
+WebFloatRect TextFinder::ActiveFindMatchRect() {
+  if (!current_active_match_frame_ || !active_match_)
     return WebFloatRect();
 
-  return WebFloatRect(findInPageRectFromRange(activeMatch()));
+  return WebFloatRect(FindInPageRectFromRange(ActiveMatch()));
 }
 
-void TextFinder::findMatchRects(WebVector<WebFloatRect>& outputRects) {
-  updateFindMatchRects();
+void TextFinder::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
+  UpdateFindMatchRects();
 
-  Vector<WebFloatRect> matchRects;
-  matchRects.reserveCapacity(matchRects.size() + m_findMatchesCache.size());
-  for (const FindMatch& match : m_findMatchesCache) {
-    DCHECK(!match.m_rect.isEmpty());
-    matchRects.push_back(match.m_rect);
+  Vector<WebFloatRect> match_rects;
+  match_rects.ReserveCapacity(match_rects.size() + find_matches_cache_.size());
+  for (const FindMatch& match : find_matches_cache_) {
+    DCHECK(!match.rect_.IsEmpty());
+    match_rects.push_back(match.rect_);
   }
 
-  outputRects = matchRects;
+  output_rects = match_rects;
 }
 
-int TextFinder::selectNearestFindMatch(const WebFloatPoint& point,
-                                       WebRect* selectionRect) {
-  int index = nearestFindMatch(point, nullptr);
+int TextFinder::SelectNearestFindMatch(const WebFloatPoint& point,
+                                       WebRect* selection_rect) {
+  int index = NearestFindMatch(point, nullptr);
   if (index != -1)
-    return selectFindMatch(static_cast<unsigned>(index), selectionRect);
+    return SelectFindMatch(static_cast<unsigned>(index), selection_rect);
 
   return -1;
 }
 
-int TextFinder::nearestFindMatch(const FloatPoint& point,
-                                 float* distanceSquared) {
-  updateFindMatchRects();
+int TextFinder::NearestFindMatch(const FloatPoint& point,
+                                 float* distance_squared) {
+  UpdateFindMatchRects();
 
   int nearest = -1;
-  float nearestDistanceSquared = FLT_MAX;
-  for (size_t i = 0; i < m_findMatchesCache.size(); ++i) {
-    DCHECK(!m_findMatchesCache[i].m_rect.isEmpty());
-    FloatSize offset = point - m_findMatchesCache[i].m_rect.center();
-    float width = offset.width();
-    float height = offset.height();
-    float currentDistanceSquared = width * width + height * height;
-    if (currentDistanceSquared < nearestDistanceSquared) {
+  float nearest_distance_squared = FLT_MAX;
+  for (size_t i = 0; i < find_matches_cache_.size(); ++i) {
+    DCHECK(!find_matches_cache_[i].rect_.IsEmpty());
+    FloatSize offset = point - find_matches_cache_[i].rect_.Center();
+    float width = offset.Width();
+    float height = offset.Height();
+    float current_distance_squared = width * width + height * height;
+    if (current_distance_squared < nearest_distance_squared) {
       nearest = i;
-      nearestDistanceSquared = currentDistanceSquared;
+      nearest_distance_squared = current_distance_squared;
     }
   }
 
-  if (distanceSquared)
-    *distanceSquared = nearestDistanceSquared;
+  if (distance_squared)
+    *distance_squared = nearest_distance_squared;
 
   return nearest;
 }
 
-int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect) {
-  SECURITY_DCHECK(index < m_findMatchesCache.size());
+int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
+  SECURITY_DCHECK(index < find_matches_cache_.size());
 
-  Range* range = m_findMatchesCache[index].m_range;
-  if (!range->boundaryPointsValid() || !range->startContainer()->isConnected())
+  Range* range = find_matches_cache_[index].range_;
+  if (!range->BoundaryPointsValid() || !range->startContainer()->isConnected())
     return -1;
 
   // Check if the match is already selected.
-  if (!m_currentActiveMatchFrame || !m_activeMatch ||
-      !areRangesEqual(m_activeMatch.get(), range)) {
-    m_activeMatchIndex = m_findMatchesCache[index].m_ordinal - 1;
+  if (!current_active_match_frame_ || !active_match_ ||
+      !AreRangesEqual(active_match_.Get(), range)) {
+    active_match_index_ = find_matches_cache_[index].ordinal_ - 1;
 
     // Set this frame as the active frame (the one with the active highlight).
-    m_currentActiveMatchFrame = true;
-    ownerFrame().viewImpl()->setFocusedFrame(&ownerFrame());
+    current_active_match_frame_ = true;
+    OwnerFrame().ViewImpl()->SetFocusedFrame(&OwnerFrame());
 
-    if (m_activeMatch)
-      setMarkerActive(m_activeMatch.get(), false);
-    m_activeMatch = range;
-    setMarkerActive(m_activeMatch.get(), true);
+    if (active_match_)
+      SetMarkerActive(active_match_.Get(), false);
+    active_match_ = range;
+    SetMarkerActive(active_match_.Get(), true);
 
     // Clear any user selection, to make sure Find Next continues on from the
     // match we just activated.
-    ownerFrame().frame()->selection().clear();
+    OwnerFrame().GetFrame()->Selection().Clear();
 
     // Make sure no node is focused. See http://crbug.com/38700.
-    ownerFrame().frame()->document()->clearFocusedElement();
+    OwnerFrame().GetFrame()->GetDocument()->ClearFocusedElement();
   }
 
-  IntRect activeMatchRect;
-  IntRect activeMatchBoundingBox = enclosingIntRect(
-      LayoutObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()));
+  IntRect active_match_rect;
+  IntRect active_match_bounding_box = EnclosingIntRect(
+      LayoutObject::AbsoluteBoundingBoxRectForRange(active_match_.Get()));
 
-  if (!activeMatchBoundingBox.isEmpty()) {
-    if (m_activeMatch->firstNode() &&
-        m_activeMatch->firstNode()->layoutObject()) {
-      m_activeMatch->firstNode()->layoutObject()->scrollRectToVisible(
-          LayoutRect(activeMatchBoundingBox),
-          ScrollAlignment::alignCenterIfNeeded,
-          ScrollAlignment::alignCenterIfNeeded, UserScroll);
+  if (!active_match_bounding_box.IsEmpty()) {
+    if (active_match_->FirstNode() &&
+        active_match_->FirstNode()->GetLayoutObject()) {
+      active_match_->FirstNode()->GetLayoutObject()->ScrollRectToVisible(
+          LayoutRect(active_match_bounding_box),
+          ScrollAlignment::kAlignCenterIfNeeded,
+          ScrollAlignment::kAlignCenterIfNeeded, kUserScroll);
     }
 
     // Zoom to the active match.
-    activeMatchRect =
-        ownerFrame().frameView()->contentsToRootFrame(activeMatchBoundingBox);
-    ownerFrame().viewImpl()->zoomToFindInPageRect(activeMatchRect);
+    active_match_rect = OwnerFrame().GetFrameView()->ContentsToRootFrame(
+        active_match_bounding_box);
+    OwnerFrame().ViewImpl()->ZoomToFindInPageRect(active_match_rect);
   }
 
-  if (selectionRect)
-    *selectionRect = activeMatchRect;
+  if (selection_rect)
+    *selection_rect = active_match_rect;
 
-  return m_activeMatchIndex + 1;
+  return active_match_index_ + 1;
 }
 
-TextFinder* TextFinder::create(WebLocalFrameImpl& ownerFrame) {
-  return new TextFinder(ownerFrame);
+TextFinder* TextFinder::Create(WebLocalFrameImpl& owner_frame) {
+  return new TextFinder(owner_frame);
 }
 
-TextFinder::TextFinder(WebLocalFrameImpl& ownerFrame)
-    : m_ownerFrame(&ownerFrame),
-      m_currentActiveMatchFrame(false),
-      m_activeMatchIndex(-1),
-      m_resumeScopingFromRange(nullptr),
-      m_lastMatchCount(-1),
-      m_totalMatchCount(-1),
-      m_frameScoping(false),
-      m_findRequestIdentifier(-1),
-      m_nextInvalidateAfter(0),
-      m_findMatchMarkersVersion(0),
-      m_locatingActiveRect(false),
-      m_scopingInProgress(false),
-      m_lastFindRequestCompletedWithNoMatches(false),
-      m_findMatchRectsAreValid(false) {}
+TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
+    : owner_frame_(&owner_frame),
+      current_active_match_frame_(false),
+      active_match_index_(-1),
+      resume_scoping_from_range_(nullptr),
+      last_match_count_(-1),
+      total_match_count_(-1),
+      frame_scoping_(false),
+      find_request_identifier_(-1),
+      next_invalidate_after_(0),
+      find_match_markers_version_(0),
+      locating_active_rect_(false),
+      scoping_in_progress_(false),
+      last_find_request_completed_with_no_matches_(false),
+      find_match_rects_are_valid_(false) {}
 
 TextFinder::~TextFinder() {}
 
-bool TextFinder::setMarkerActive(Range* range, bool active) {
+bool TextFinder::SetMarkerActive(Range* range, bool active) {
   if (!range || range->collapsed())
     return false;
-  return ownerFrame().frame()->document()->markers().setMarkersActive(
+  return OwnerFrame().GetFrame()->GetDocument()->Markers().SetMarkersActive(
       EphemeralRange(range), active);
 }
 
-void TextFinder::unmarkAllTextMatches() {
-  LocalFrame* frame = ownerFrame().frame();
-  if (frame && frame->page() &&
-      frame->editor().markedTextMatchesAreHighlighted())
-    frame->document()->markers().removeMarkers(DocumentMarker::TextMatch);
+void TextFinder::UnmarkAllTextMatches() {
+  LocalFrame* frame = OwnerFrame().GetFrame();
+  if (frame && frame->GetPage() &&
+      frame->GetEditor().MarkedTextMatchesAreHighlighted())
+    frame->GetDocument()->Markers().RemoveMarkers(DocumentMarker::kTextMatch);
 }
 
-bool TextFinder::shouldScopeMatches(const String& searchText,
+bool TextFinder::ShouldScopeMatches(const String& search_text,
                                     const WebFindOptions& options) {
   // Don't scope if we can't find a frame or a view.
   // The user may have closed the tab/application, so abort.
-  LocalFrame* frame = ownerFrame().frame();
-  if (!frame || !frame->view() || !frame->page())
+  LocalFrame* frame = OwnerFrame().GetFrame();
+  if (!frame || !frame->View() || !frame->GetPage())
     return false;
 
-  DCHECK(frame->document());
-  DCHECK(frame->view());
+  DCHECK(frame->GetDocument());
+  DCHECK(frame->View());
 
   if (options.force)
     return true;
 
-  if (!ownerFrame().hasVisibleContent())
+  if (!OwnerFrame().HasVisibleContent())
     return false;
 
   // If the frame completed the scoping operation and found 0 matches the last
   // time it was searched, then we don't have to search it again if the user is
   // just adding to the search string or sending the same search string again.
-  if (m_lastFindRequestCompletedWithNoMatches &&
-      !m_lastSearchString.isEmpty()) {
+  if (last_find_request_completed_with_no_matches_ &&
+      !last_search_string_.IsEmpty()) {
     // Check to see if the search string prefixes match.
-    String previousSearchPrefix =
-        searchText.substring(0, m_lastSearchString.length());
+    String previous_search_prefix =
+        search_text.Substring(0, last_search_string_.length());
 
-    if (previousSearchPrefix == m_lastSearchString)
+    if (previous_search_prefix == last_search_string_)
       return false;  // Don't search this frame, it will be fruitless.
   }
 
   return true;
 }
 
-void TextFinder::scopeStringMatchesSoon(int identifier,
-                                        const WebString& searchText,
+void TextFinder::ScopeStringMatchesSoon(int identifier,
+                                        const WebString& search_text,
                                         const WebFindOptions& options) {
-  DCHECK_EQ(m_deferredScopingWork, nullptr);
-  m_deferredScopingWork =
-      DeferredScopeStringMatches::create(this, identifier, searchText, options);
+  DCHECK_EQ(deferred_scoping_work_, nullptr);
+  deferred_scoping_work_ = DeferredScopeStringMatches::Create(
+      this, identifier, search_text, options);
 }
 
-void TextFinder::resumeScopingStringMatches(int identifier,
-                                            const WebString& searchText,
+void TextFinder::ResumeScopingStringMatches(int identifier,
+                                            const WebString& search_text,
                                             const WebFindOptions& options) {
-  m_deferredScopingWork.clear();
+  deferred_scoping_work_.Clear();
 
-  scopeStringMatches(identifier, searchText, options);
+  ScopeStringMatches(identifier, search_text, options);
 }
 
-void TextFinder::invalidateIfNecessary() {
-  if (m_lastMatchCount <= m_nextInvalidateAfter)
+void TextFinder::InvalidateIfNecessary() {
+  if (last_match_count_ <= next_invalidate_after_)
     return;
 
   // FIXME: (http://crbug.com/6819) Optimize the drawing of the tickmarks and
@@ -767,24 +773,24 @@ void TextFinder::invalidateIfNecessary() {
   // Basically, up until the first 500 matches there is no throttle.
   // After the first 500 matches, we set set the milestone further and
   // further out (750, 1125, 1688, 2K, 3K).
-  static const int startSlowingDownAfter = 500;
-  static const int slowdown = 750;
+  static const int kStartSlowingDownAfter = 500;
+  static const int kSlowdown = 750;
 
-  int i = m_lastMatchCount / startSlowingDownAfter;
-  m_nextInvalidateAfter += i * slowdown;
-  ownerFrame().frameView()->invalidatePaintForTickmarks();
+  int i = last_match_count_ / kStartSlowingDownAfter;
+  next_invalidate_after_ += i * kSlowdown;
+  OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
 }
 
-void TextFinder::flushCurrentScoping() {
-  flushCurrentScopingEffort(m_findRequestIdentifier);
+void TextFinder::FlushCurrentScoping() {
+  FlushCurrentScopingEffort(find_request_identifier_);
 }
 
 DEFINE_TRACE(TextFinder) {
-  visitor->trace(m_ownerFrame);
-  visitor->trace(m_activeMatch);
-  visitor->trace(m_resumeScopingFromRange);
-  visitor->trace(m_deferredScopingWork);
-  visitor->trace(m_findMatchesCache);
+  visitor->Trace(owner_frame_);
+  visitor->Trace(active_match_);
+  visitor->Trace(resume_scoping_from_range_);
+  visitor->Trace(deferred_scoping_work_);
+  visitor->Trace(find_matches_cache_);
 }
 
 }  // namespace blink

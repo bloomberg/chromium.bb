@@ -45,140 +45,140 @@ class AudioNodeOutput final {
  public:
   // It's OK to pass 0 for numberOfChannels in which case
   // setNumberOfChannels() must be called later on.
-  static std::unique_ptr<AudioNodeOutput> create(AudioHandler*,
-                                                 unsigned numberOfChannels);
-  void dispose();
+  static std::unique_ptr<AudioNodeOutput> Create(AudioHandler*,
+                                                 unsigned number_of_channels);
+  void Dispose();
 
   // Causes our AudioNode to process if it hasn't already for this render
   // quantum.  It returns the bus containing the processed audio for this
   // output, returning inPlaceBus if in-place processing was possible.  Called
   // from context's audio thread.
-  AudioBus* pull(AudioBus* inPlaceBus, size_t framesToProcess);
+  AudioBus* Pull(AudioBus* in_place_bus, size_t frames_to_process);
 
   // bus() will contain the rendered audio after pull() is called for each
   // rendering time quantum.
   // Called from context's audio thread.
-  AudioBus* bus() const;
+  AudioBus* Bus() const;
 
   // renderingFanOutCount() is the number of AudioNodeInputs that we're
   // connected to during rendering.  Unlike fanOutCount() it will not change
   // during the course of a render quantum.
-  unsigned renderingFanOutCount() const;
+  unsigned RenderingFanOutCount() const;
 
   // Must be called with the context's graph lock.
-  void disconnectAll();
+  void DisconnectAll();
 
   // Disconnect a specific input or AudioParam.
-  void disconnectInput(AudioNodeInput&);
-  void disconnectAudioParam(AudioParamHandler&);
+  void DisconnectInput(AudioNodeInput&);
+  void DisconnectAudioParam(AudioParamHandler&);
 
-  void setNumberOfChannels(unsigned);
-  unsigned numberOfChannels() const { return m_numberOfChannels; }
-  bool isChannelCountKnown() const { return numberOfChannels() > 0; }
+  void SetNumberOfChannels(unsigned);
+  unsigned NumberOfChannels() const { return number_of_channels_; }
+  bool IsChannelCountKnown() const { return NumberOfChannels() > 0; }
 
-  bool isConnected() { return fanOutCount() > 0 || paramFanOutCount() > 0; }
+  bool IsConnected() { return FanOutCount() > 0 || ParamFanOutCount() > 0; }
 
   // Probe if the output node is connected with a certain input or AudioParam
-  bool isConnectedToInput(AudioNodeInput&);
-  bool isConnectedToAudioParam(AudioParamHandler&);
+  bool IsConnectedToInput(AudioNodeInput&);
+  bool IsConnectedToAudioParam(AudioParamHandler&);
 
   // Disable/Enable happens when there are still JavaScript references to a
   // node, but it has otherwise "finished" its work.  For example, when a note
   // has finished playing.  It is kept around, because it may be played again at
   // a later time.  They must be called with the context's graph lock.
-  void disable();
-  void enable();
+  void Disable();
+  void Enable();
 
   // updateRenderingState() is called in the audio thread at the start or end of
   // the render quantum to handle any recent changes to the graph state.
   // It must be called with the context's graph lock.
-  void updateRenderingState();
+  void UpdateRenderingState();
 
  private:
-  AudioNodeOutput(AudioHandler*, unsigned numberOfChannels);
+  AudioNodeOutput(AudioHandler*, unsigned number_of_channels);
   // Can be called from any thread.
-  AudioHandler& handler() const { return m_handler; }
-  DeferredTaskHandler& deferredTaskHandler() const {
-    return m_handler.context()->deferredTaskHandler();
+  AudioHandler& Handler() const { return handler_; }
+  DeferredTaskHandler& GetDeferredTaskHandler() const {
+    return handler_.Context()->GetDeferredTaskHandler();
   }
 
   // This reference is safe because the AudioHandler owns this AudioNodeOutput
   // object.
-  AudioHandler& m_handler;
+  AudioHandler& handler_;
 
   friend class AudioNodeInput;
   friend class AudioParamHandler;
 
   // These are called from AudioNodeInput.
   // They must be called with the context's graph lock.
-  void addInput(AudioNodeInput&);
-  void removeInput(AudioNodeInput&);
-  void addParam(AudioParamHandler&);
-  void removeParam(AudioParamHandler&);
+  void AddInput(AudioNodeInput&);
+  void RemoveInput(AudioNodeInput&);
+  void AddParam(AudioParamHandler&);
+  void RemoveParam(AudioParamHandler&);
 
   // fanOutCount() is the number of AudioNodeInputs that we're connected to.
   // This method should not be called in audio thread rendering code, instead
   // renderingFanOutCount() should be used.
   // It must be called with the context's graph lock.
-  unsigned fanOutCount();
+  unsigned FanOutCount();
 
   // Similar to fanOutCount(), paramFanOutCount() is the number of AudioParams
   // that we're connected to.  This method should not be called in audio thread
   // rendering code, instead renderingParamFanOutCount() should be used.
   // It must be called with the context's graph lock.
-  unsigned paramFanOutCount();
+  unsigned ParamFanOutCount();
 
   // Must be called with the context's graph lock.
-  void disconnectAllInputs();
-  void disconnectAllParams();
+  void DisconnectAllInputs();
+  void DisconnectAllParams();
 
   // updateInternalBus() updates m_internalBus appropriately for the number of
   // channels.  It is called in the constructor or in the audio thread with the
   // context's graph lock.
-  void updateInternalBus();
+  void UpdateInternalBus();
 
   // Announce to any nodes we're connected to that we changed our channel count
   // for its input.
   // It must be called in the audio thread with the context's graph lock.
-  void propagateChannelCount();
+  void PropagateChannelCount();
 
   // updateNumberOfChannels() is called in the audio thread at the start or end
   // of the render quantum to pick up channel changes.
   // It must be called with the context's graph lock.
-  void updateNumberOfChannels();
+  void UpdateNumberOfChannels();
 
   // m_numberOfChannels will only be changed in the audio thread.
   // The main thread sets m_desiredNumberOfChannels which will later get picked
   // up in the audio thread in updateNumberOfChannels().
-  unsigned m_numberOfChannels;
-  unsigned m_desiredNumberOfChannels;
+  unsigned number_of_channels_;
+  unsigned desired_number_of_channels_;
 
   // m_internalBus and m_inPlaceBus must only be changed in the audio thread
   // with the context's graph lock (or constructor).
-  RefPtr<AudioBus> m_internalBus;
-  RefPtr<AudioBus> m_inPlaceBus;
+  RefPtr<AudioBus> internal_bus_;
+  RefPtr<AudioBus> in_place_bus_;
   // If m_isInPlace is true, use m_inPlaceBus as the valid AudioBus; If false,
   // use the default m_internalBus.
-  bool m_isInPlace;
+  bool is_in_place_;
 
   // This HashSet holds connection references. We must call
   // AudioNode::makeConnection when we add an AudioNodeInput to this, and must
   // call AudioNode::breakConnection() when we remove an AudioNodeInput from
   // this.
-  HashSet<AudioNodeInput*> m_inputs;
-  bool m_isEnabled;
+  HashSet<AudioNodeInput*> inputs_;
+  bool is_enabled_;
 
-  bool m_didCallDispose;
+  bool did_call_dispose_;
 
   // For the purposes of rendering, keeps track of the number of inputs and
   // AudioParams we're connected to.  These value should only be changed at the
   // very start or end of the rendering quantum.
-  unsigned m_renderingFanOutCount;
-  unsigned m_renderingParamFanOutCount;
+  unsigned rendering_fan_out_count_;
+  unsigned rendering_param_fan_out_count_;
 
   // This collection of raw pointers is safe because they are retained by
   // AudioParam objects retained by m_connectedParams of the owner AudioNode.
-  HashSet<AudioParamHandler*> m_params;
+  HashSet<AudioParamHandler*> params_;
 };
 
 }  // namespace blink

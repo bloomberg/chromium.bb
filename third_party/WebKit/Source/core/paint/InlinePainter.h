@@ -19,13 +19,13 @@ class InlinePainter {
   STACK_ALLOCATED();
 
  public:
-  InlinePainter(const LayoutInline& layoutInline)
-      : m_layoutInline(layoutInline) {}
+  InlinePainter(const LayoutInline& layout_inline)
+      : layout_inline_(layout_inline) {}
 
-  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  const LayoutInline& m_layoutInline;
+  const LayoutInline& layout_inline_;
 };
 
 }  // namespace blink

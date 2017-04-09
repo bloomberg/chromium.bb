@@ -30,10 +30,10 @@
 
 namespace blink {
 
-FloatSize::FloatSize(const CGSize& s) : m_width(s.width), m_height(s.height) {}
+FloatSize::FloatSize(const CGSize& s) : width_(s.width), height_(s.height) {}
 
 FloatSize::operator CGSize() const {
-  return CGSizeMake(m_width, m_height);
+  return CGSizeMake(width_, height_);
 }
 
 }  // namespace blink

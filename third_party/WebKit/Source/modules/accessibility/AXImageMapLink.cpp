@@ -40,91 +40,91 @@ namespace blink {
 using namespace HTMLNames;
 
 AXImageMapLink::AXImageMapLink(HTMLAreaElement* area,
-                               AXObjectCacheImpl& axObjectCache)
-    : AXNodeObject(area, axObjectCache) {}
+                               AXObjectCacheImpl& ax_object_cache)
+    : AXNodeObject(area, ax_object_cache) {}
 
 AXImageMapLink::~AXImageMapLink() {}
 
-AXImageMapLink* AXImageMapLink::create(HTMLAreaElement* area,
-                                       AXObjectCacheImpl& axObjectCache) {
-  return new AXImageMapLink(area, axObjectCache);
+AXImageMapLink* AXImageMapLink::Create(HTMLAreaElement* area,
+                                       AXObjectCacheImpl& ax_object_cache) {
+  return new AXImageMapLink(area, ax_object_cache);
 }
 
-HTMLMapElement* AXImageMapLink::mapElement() const {
-  HTMLAreaElement* area = areaElement();
+HTMLMapElement* AXImageMapLink::MapElement() const {
+  HTMLAreaElement* area = AreaElement();
   if (!area)
     return nullptr;
-  return Traversal<HTMLMapElement>::firstAncestor(*area);
+  return Traversal<HTMLMapElement>::FirstAncestor(*area);
 }
 
-AXObject* AXImageMapLink::computeParent() const {
-  DCHECK(!isDetached());
-  if (m_parent)
-    return m_parent;
+AXObject* AXImageMapLink::ComputeParent() const {
+  DCHECK(!IsDetached());
+  if (parent_)
+    return parent_;
 
-  if (!mapElement())
+  if (!MapElement())
     return nullptr;
 
-  return axObjectCache().getOrCreate(mapElement()->layoutObject());
+  return AxObjectCache().GetOrCreate(MapElement()->GetLayoutObject());
 }
 
-AccessibilityRole AXImageMapLink::roleValue() const {
-  const AtomicString& ariaRole =
-      getAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
-  if (!ariaRole.isEmpty())
-    return AXObject::ariaRoleToWebCoreRole(ariaRole);
+AccessibilityRole AXImageMapLink::RoleValue() const {
+  const AtomicString& aria_role =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
+  if (!aria_role.IsEmpty())
+    return AXObject::AriaRoleToWebCoreRole(aria_role);
 
-  return LinkRole;
+  return kLinkRole;
 }
 
-bool AXImageMapLink::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  return accessibilityIsIgnoredByDefault(ignoredReasons);
+bool AXImageMapLink::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
-Element* AXImageMapLink::actionElement() const {
-  return anchorElement();
+Element* AXImageMapLink::ActionElement() const {
+  return AnchorElement();
 }
 
-Element* AXImageMapLink::anchorElement() const {
-  return getNode() ? toElement(getNode()) : nullptr;
+Element* AXImageMapLink::AnchorElement() const {
+  return GetNode() ? ToElement(GetNode()) : nullptr;
 }
 
-KURL AXImageMapLink::url() const {
-  if (!areaElement())
+KURL AXImageMapLink::Url() const {
+  if (!AreaElement())
     return KURL();
 
-  return areaElement()->href();
+  return AreaElement()->Href();
 }
 
-void AXImageMapLink::getRelativeBounds(
-    AXObject** outContainer,
-    FloatRect& outBoundsInContainer,
-    SkMatrix44& outContainerTransform) const {
-  *outContainer = nullptr;
-  outBoundsInContainer = FloatRect();
-  outContainerTransform.setIdentity();
+void AXImageMapLink::GetRelativeBounds(
+    AXObject** out_container,
+    FloatRect& out_bounds_in_container,
+    SkMatrix44& out_container_transform) const {
+  *out_container = nullptr;
+  out_bounds_in_container = FloatRect();
+  out_container_transform.setIdentity();
 
-  HTMLAreaElement* area = areaElement();
-  HTMLMapElement* map = mapElement();
+  HTMLAreaElement* area = AreaElement();
+  HTMLMapElement* map = MapElement();
   if (!area || !map)
     return;
 
-  LayoutObject* layoutObject;
-  if (m_parent && m_parent->isAXLayoutObject())
-    layoutObject = toAXLayoutObject(m_parent)->getLayoutObject();
+  LayoutObject* layout_object;
+  if (parent_ && parent_->IsAXLayoutObject())
+    layout_object = ToAXLayoutObject(parent_)->GetLayoutObject();
   else
-    layoutObject = map->layoutObject();
+    layout_object = map->GetLayoutObject();
 
-  if (!layoutObject)
+  if (!layout_object)
     return;
 
-  outBoundsInContainer = area->getPath(layoutObject).boundingRect();
-  *outContainer = axObjectCache().getOrCreate(layoutObject);
+  out_bounds_in_container = area->GetPath(layout_object).BoundingRect();
+  *out_container = AxObjectCache().GetOrCreate(layout_object);
 }
 
 DEFINE_TRACE(AXImageMapLink) {
-  AXNodeObject::trace(visitor);
+  AXNodeObject::Trace(visitor);
 }
 
 }  // namespace blink

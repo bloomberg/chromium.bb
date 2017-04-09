@@ -102,16 +102,16 @@ blink::WebSecurityStyle GetSecurityStyleForResource(
     const GURL& url,
     net::CertStatus cert_status) {
   if (!url.SchemeIsCryptographic())
-    return blink::WebSecurityStyleNeutral;
+    return blink::kWebSecurityStyleNeutral;
 
   // Minor errors don't lower the security style to
   // WebSecurityStyleAuthenticationBroken.
   if (net::IsCertStatusError(cert_status) &&
       !net::IsCertStatusMinorError(cert_status)) {
-    return blink::WebSecurityStyleInsecure;
+    return blink::kWebSecurityStyleInsecure;
   }
 
-  return blink::WebSecurityStyleSecure;
+  return blink::kWebSecurityStyleSecure;
 }
 
 // Converts timing data from |load_timing| to the format used by WebKit.
@@ -120,54 +120,52 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
   DCHECK(!load_timing.request_start.is_null());
 
   const TimeTicks kNullTicks;
-  url_timing->initialize();
-  url_timing->setRequestTime(
+  url_timing->Initialize();
+  url_timing->SetRequestTime(
       (load_timing.request_start - kNullTicks).InSecondsF());
-  url_timing->setProxyStart(
+  url_timing->SetProxyStart(
       (load_timing.proxy_resolve_start - kNullTicks).InSecondsF());
-  url_timing->setProxyEnd(
+  url_timing->SetProxyEnd(
       (load_timing.proxy_resolve_end - kNullTicks).InSecondsF());
-  url_timing->setDNSStart(
+  url_timing->SetDNSStart(
       (load_timing.connect_timing.dns_start - kNullTicks).InSecondsF());
-  url_timing->setDNSEnd(
+  url_timing->SetDNSEnd(
       (load_timing.connect_timing.dns_end - kNullTicks).InSecondsF());
-  url_timing->setConnectStart(
+  url_timing->SetConnectStart(
       (load_timing.connect_timing.connect_start - kNullTicks).InSecondsF());
-  url_timing->setConnectEnd(
+  url_timing->SetConnectEnd(
       (load_timing.connect_timing.connect_end - kNullTicks).InSecondsF());
-  url_timing->setSSLStart(
+  url_timing->SetSSLStart(
       (load_timing.connect_timing.ssl_start - kNullTicks).InSecondsF());
-  url_timing->setSSLEnd(
+  url_timing->SetSSLEnd(
       (load_timing.connect_timing.ssl_end - kNullTicks).InSecondsF());
-  url_timing->setSendStart(
-      (load_timing.send_start - kNullTicks).InSecondsF());
-  url_timing->setSendEnd(
-      (load_timing.send_end - kNullTicks).InSecondsF());
-  url_timing->setReceiveHeadersEnd(
+  url_timing->SetSendStart((load_timing.send_start - kNullTicks).InSecondsF());
+  url_timing->SetSendEnd((load_timing.send_end - kNullTicks).InSecondsF());
+  url_timing->SetReceiveHeadersEnd(
       (load_timing.receive_headers_end - kNullTicks).InSecondsF());
-  url_timing->setPushStart((load_timing.push_start - kNullTicks).InSecondsF());
-  url_timing->setPushEnd((load_timing.push_end - kNullTicks).InSecondsF());
+  url_timing->SetPushStart((load_timing.push_start - kNullTicks).InSecondsF());
+  url_timing->SetPushEnd((load_timing.push_end - kNullTicks).InSecondsF());
 }
 
 net::RequestPriority ConvertWebKitPriorityToNetPriority(
     const WebURLRequest::Priority& priority) {
   switch (priority) {
-    case WebURLRequest::PriorityVeryHigh:
+    case WebURLRequest::kPriorityVeryHigh:
       return net::HIGHEST;
 
-    case WebURLRequest::PriorityHigh:
+    case WebURLRequest::kPriorityHigh:
       return net::MEDIUM;
 
-    case WebURLRequest::PriorityMedium:
+    case WebURLRequest::kPriorityMedium:
       return net::LOW;
 
-    case WebURLRequest::PriorityLow:
+    case WebURLRequest::kPriorityLow:
       return net::LOWEST;
 
-    case WebURLRequest::PriorityVeryLow:
+    case WebURLRequest::kPriorityVeryLow:
       return net::IDLE;
 
-    case WebURLRequest::PriorityUnresolved:
+    case WebURLRequest::kPriorityUnresolved:
     default:
       NOTREACHED();
       return net::LOW;
@@ -178,25 +176,25 @@ blink::WebReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
     net::URLRequest::ReferrerPolicy net_policy) {
   switch (net_policy) {
     case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
-      return blink::WebReferrerPolicyNoReferrerWhenDowngrade;
+      return blink::kWebReferrerPolicyNoReferrerWhenDowngrade;
     case net::URLRequest::
         REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
       return blink::
-          WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+          kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
-      return blink::WebReferrerPolicyOriginWhenCrossOrigin;
+      return blink::kWebReferrerPolicyOriginWhenCrossOrigin;
     case net::URLRequest::NEVER_CLEAR_REFERRER:
-      return blink::WebReferrerPolicyAlways;
+      return blink::kWebReferrerPolicyAlways;
     case net::URLRequest::ORIGIN:
-      return blink::WebReferrerPolicyOrigin;
+      return blink::kWebReferrerPolicyOrigin;
     case net::URLRequest::NO_REFERRER:
-      return blink::WebReferrerPolicyNever;
+      return blink::kWebReferrerPolicyNever;
     case net::URLRequest::MAX_REFERRER_POLICY:
       NOTREACHED();
-      return blink::WebReferrerPolicyDefault;
+      return blink::kWebReferrerPolicyDefault;
   }
   NOTREACHED();
-  return blink::WebReferrerPolicyDefault;
+  return blink::kWebReferrerPolicyDefault;
 }
 
 // Extracts info from a data scheme URL |url| into |info| and |data|. Returns
@@ -235,18 +233,18 @@ int GetInfoFromDataURL(const GURL& url,
 blink::WebURLResponse::SignedCertificateTimestamp NetSCTToBlinkSCT(
     const net::SignedCertificateTimestampAndStatus& sct_and_status) {
   return blink::WebURLResponse::SignedCertificateTimestamp(
-      WebString::fromASCII(net::ct::StatusToString(sct_and_status.status)),
-      WebString::fromASCII(net::ct::OriginToString(sct_and_status.sct->origin)),
-      WebString::fromUTF8(sct_and_status.sct->log_description),
-      WebString::fromASCII(
+      WebString::FromASCII(net::ct::StatusToString(sct_and_status.status)),
+      WebString::FromASCII(net::ct::OriginToString(sct_and_status.sct->origin)),
+      WebString::FromUTF8(sct_and_status.sct->log_description),
+      WebString::FromASCII(
           base::HexEncode(sct_and_status.sct->log_id.c_str(),
                           sct_and_status.sct->log_id.length())),
       sct_and_status.sct->timestamp.ToJavaTime(),
-      WebString::fromASCII(net::ct::HashAlgorithmToString(
+      WebString::FromASCII(net::ct::HashAlgorithmToString(
           sct_and_status.sct->signature.hash_algorithm)),
-      WebString::fromASCII(net::ct::SignatureAlgorithmToString(
+      WebString::FromASCII(net::ct::SignatureAlgorithmToString(
           sct_and_status.sct->signature.signature_algorithm)),
-      WebString::fromASCII(base::HexEncode(
+      WebString::FromASCII(base::HexEncode(
           sct_and_status.sct->signature.signature_data.c_str(),
           sct_and_status.sct->signature.signature_data.length())));
 }
@@ -256,11 +254,11 @@ void SetSecurityStyleAndDetails(const GURL& url,
                                 WebURLResponse* response,
                                 bool report_security_info) {
   if (!report_security_info) {
-    response->setSecurityStyle(blink::WebSecurityStyleUnknown);
+    response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
   }
   if (!url.SchemeIsCryptographic()) {
-    response->setSecurityStyle(blink::WebSecurityStyleNeutral);
+    response->SetSecurityStyle(blink::kWebSecurityStyleNeutral);
     return;
   }
 
@@ -268,7 +266,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
   // security info (such as a certificate) attached. Use WebSecurityStyleUnknown
   // in this case where there isn't enough information to be useful.
   if (info.certificate.empty()) {
-    response->setSecurityStyle(blink::WebSecurityStyleUnknown);
+    response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
   }
 
@@ -306,7 +304,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  response->setSecurityStyle(
+  response->SetSecurityStyle(
       GetSecurityStyleForResource(url, info.cert_status));
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
@@ -323,30 +321,28 @@ void SetSecurityStyleAndDetails(const GURL& url,
       &san);
   if (!rv) {
     NOTREACHED();
-    response->setSecurityStyle(blink::WebSecurityStyleUnknown);
+    response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
   }
 
   blink::WebVector<blink::WebString> web_san(san.size());
   std::transform(
-      san.begin(),
-      san.end(), web_san.begin(),
-      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+      san.begin(), san.end(), web_san.begin(),
+      [](const std::string& h) { return blink::WebString::FromLatin1(h); });
 
   blink::WebVector<blink::WebString> web_cert(info.certificate.size());
   std::transform(
-      info.certificate.begin(),
-      info.certificate.end(), web_cert.begin(),
-      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+      info.certificate.begin(), info.certificate.end(), web_cert.begin(),
+      [](const std::string& h) { return blink::WebString::FromLatin1(h); });
 
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
-      WebString::fromASCII(protocol), WebString::fromASCII(key_exchange),
-      WebString::fromASCII(key_exchange_group), WebString::fromASCII(cipher),
-      WebString::fromASCII(mac), WebString::fromUTF8(subject), web_san,
-      WebString::fromUTF8(issuer), valid_start.ToDoubleT(),
+      WebString::FromASCII(protocol), WebString::FromASCII(key_exchange),
+      WebString::FromASCII(key_exchange_group), WebString::FromASCII(cipher),
+      WebString::FromASCII(mac), WebString::FromUTF8(subject), web_san,
+      WebString::FromUTF8(issuer), valid_start.ToDoubleT(),
       valid_expiry.ToDoubleT(), web_cert, sct_list);
 
-  response->setSecurityDetails(webSecurityDetails);
+  response->SetSecurityDetails(webSecurityDetails);
 }
 
 }  // namespace
@@ -509,7 +505,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                       SyncLoadResponse* sync_load_response) {
   DCHECK(request_id_ == -1);
   request_ = request;  // Save the request.
-  GURL url = request.url();
+  GURL url = request.Url();
 
   if (CanHandleDataURLRequestLocally()) {
     if (sync_load_response) {
@@ -525,9 +521,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     return;
   }
 
-  if (request.getExtraData()) {
+  if (request.GetExtraData()) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.getExtraData());
+        static_cast<RequestExtraData*>(request.GetExtraData());
     stream_override_ = extra_data->TakeStreamOverrideOwnership();
   }
 
@@ -537,11 +533,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // tests load HTML directly through a data url which will be handled by the
   // block above.
   DCHECK(!IsBrowserSideNavigationEnabled() || stream_override_.get() ||
-         request.getFrameType() == WebURLRequest::FrameTypeNone);
+         request.GetFrameType() == WebURLRequest::kFrameTypeNone);
 
   GURL referrer_url(
-      request.httpHeaderField(WebString::fromASCII("Referer")).latin1());
-  const std::string& method = request.httpMethod().latin1();
+      request.HttpHeaderField(WebString::FromASCII("Referer")).Latin1());
+  const std::string& method = request.HttpMethod().Latin1();
 
   // TODO(brettw) this should take parameter encoding into account when
   // creating the GURLs.
@@ -553,26 +549,26 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   resource_request->method = method;
   resource_request->url = url;
-  resource_request->first_party_for_cookies = request.firstPartyForCookies();
+  resource_request->first_party_for_cookies = request.FirstPartyForCookies();
   resource_request->request_initiator =
-      request.requestorOrigin().isNull()
+      request.RequestorOrigin().IsNull()
           ? base::Optional<url::Origin>()
-          : base::Optional<url::Origin>(request.requestorOrigin());
+          : base::Optional<url::Origin>(request.RequestorOrigin());
   resource_request->referrer = referrer_url;
 
-  resource_request->referrer_policy = request.getReferrerPolicy();
+  resource_request->referrer_policy = request.GetReferrerPolicy();
 
   resource_request->headers = GetWebURLRequestHeaders(request);
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
   // origin_pid only needs to be non-zero if the request originates outside
   // the render process, so we can use requestorProcessID even for requests
   // from in-process plugins.
-  resource_request->origin_pid = request.requestorProcessID();
+  resource_request->origin_pid = request.RequestorProcessID();
   resource_request->resource_type = WebURLRequestToResourceType(request);
   resource_request->priority =
-      ConvertWebKitPriorityToNetPriority(request.getPriority());
-  resource_request->appcache_host_id = request.appCacheHostID();
-  resource_request->should_reset_appcache = request.shouldResetAppCache();
+      ConvertWebKitPriorityToNetPriority(request.GetPriority());
+  resource_request->appcache_host_id = request.AppCacheHostID();
+  resource_request->should_reset_appcache = request.ShouldResetAppCache();
   resource_request->service_worker_mode =
       GetServiceWorkerModeForWebURLRequest(request);
   resource_request->fetch_request_mode =
@@ -590,18 +586,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetRequestContextFrameTypeForWebURLRequest(request);
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
-  resource_request->download_to_file = request.downloadToFile();
-  resource_request->has_user_gesture = request.hasUserGesture();
+  resource_request->download_to_file = request.DownloadToFile();
+  resource_request->has_user_gesture = request.HasUserGesture();
   resource_request->enable_load_timing = true;
-  resource_request->enable_upload_progress = request.reportUploadProgress();
-  if (request.getRequestContext() ==
-          WebURLRequest::RequestContextXMLHttpRequest &&
+  resource_request->enable_upload_progress = request.ReportUploadProgress();
+  if (request.GetRequestContext() ==
+          WebURLRequest::kRequestContextXMLHttpRequest &&
       (url.has_username() || url.has_password())) {
     resource_request->do_not_prompt_for_login = true;
   }
-  resource_request->report_raw_headers = request.reportRawHeaders();
+  resource_request->report_raw_headers = request.ReportRawHeaders();
   resource_request->previews_state =
-      static_cast<PreviewsState>(request.getPreviewsState());
+      static_cast<PreviewsState>(request.GetPreviewsState());
 
   // PlzNavigate: during navigation, the renderer should request a stream which
   // contains the body of the response. The network request has already been
@@ -609,7 +605,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (stream_override_.get()) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
-    DCHECK_NE(WebURLRequest::FrameTypeNone, request.getFrameType());
+    DCHECK_NE(WebURLRequest::kFrameTypeNone, request.GetFrameType());
     resource_request->resource_body_stream_url = stream_override_->stream_url;
   }
 
@@ -625,8 +621,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
 
   const RequestExtraData empty_extra_data;
   const RequestExtraData* extra_data;
-  if (request.getExtraData())
-    extra_data = static_cast<RequestExtraData*>(request.getExtraData());
+  if (request.GetExtraData())
+    extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
   else
     extra_data = &empty_extra_data;
   extra_data->CopyToResourceRequest(resource_request.get());
@@ -634,18 +630,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
     resource_dispatcher_->StartSync(
-        std::move(resource_request), request.requestorID(), sync_load_response,
-        request.getLoadingIPCType(), url_loader_factory_);
+        std::move(resource_request), request.RequestorID(), sync_load_response,
+        request.GetLoadingIPCType(), url_loader_factory_);
     return;
   }
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
-      std::move(resource_request), request.requestorID(), task_runner_,
+      std::move(resource_request), request.RequestorID(), task_runner_,
       extra_data->frame_origin(),
       base::MakeUnique<WebURLLoaderImpl::RequestPeerImpl>(this),
-      request.getLoadingIPCType(), url_loader_factory_);
+      request.GetLoadingIPCType(), url_loader_factory_);
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -659,7 +655,7 @@ void WebURLLoaderImpl::Context::SetTaskRunner(
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
                                                  uint64_t size) {
   if (client_)
-    client_->didSendData(position, size);
+    client_->DidSendData(position, size);
 }
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
@@ -673,23 +669,23 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
-  PopulateURLResponse(request_.url(), info, &response,
-                      request_.reportRawHeaders());
+  PopulateURLResponse(request_.Url(), info, &response,
+                      request_.ReportRawHeaders());
 
   WebURLRequest new_request = PopulateURLRequestForRedirect(
       request_, redirect_info,
       info.was_fetched_via_service_worker
-          ? blink::WebURLRequest::ServiceWorkerMode::All
-          : blink::WebURLRequest::ServiceWorkerMode::None);
+          ? blink::WebURLRequest::ServiceWorkerMode::kAll
+          : blink::WebURLRequest::ServiceWorkerMode::kNone);
 
-  bool follow = client_->willFollowRedirect(new_request, response);
+  bool follow = client_->WillFollowRedirect(new_request, response);
   if (!follow) {
     request_ = WebURLRequest();
 
     return false;
   }
 
-  DCHECK(WebURL(redirect_info.new_url) == new_request.url());
+  DCHECK(WebURL(redirect_info.new_url) == new_request.Url());
 
   request_ = new_request;
 
@@ -697,7 +693,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   // net::URLRequest in the browser. Assert that Blink didn't try to change it
   // to something else.
   DCHECK_EQ(redirect_info.new_first_party_for_cookies.spec(),
-            request_.firstPartyForCookies().string().utf8());
+            request_.FirstPartyForCookies().GetString().Utf8());
   return true;
 }
 
@@ -735,18 +731,18 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   }
 
   WebURLResponse response;
-  GURL url(request_.url());
-  PopulateURLResponse(url, info, &response, request_.reportRawHeaders());
+  GURL url(request_.Url());
+  PopulateURLResponse(url, info, &response, request_.ReportRawHeaders());
 
   bool show_raw_listing = false;
   if (info.mime_type == "text/vnd.chromium.ftp-dir") {
     if (url.query_piece() == "raw") {
       // Set the MIME type to plain text to prevent any active content.
-      response.setMIMEType("text/plain");
+      response.SetMIMEType("text/plain");
       show_raw_listing = true;
     } else {
       // We're going to produce a parsed listing in HTML.
-      response.setMIMEType("text/html");
+      response.SetMIMEType("text/html");
     }
   }
   if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
@@ -760,10 +756,10 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
                                     &had_charset, &boundary);
     base::TrimString(boundary, " \"", &boundary);
-    response.setMultipartBoundary(boundary.data(), boundary.size());
+    response.SetMultipartBoundary(boundary.data(), boundary.size());
   }
 
-  if (request_.useStreamOnResponse()) {
+  if (request_.UseStreamOnResponse()) {
     SharedMemoryDataConsumerHandle::BackpressureMode mode =
         SharedMemoryDataConsumerHandle::kDoNotApplyBackpressure;
     if (info.headers &&
@@ -780,11 +776,11 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     // will break if one of the following happens:
     //  1) The body data transfer is done (with or without an error).
     //  2) |read_handle| (and its reader) is detached.
-    client_->didReceiveResponse(response, std::move(read_handle));
+    client_->DidReceiveResponse(response, std::move(read_handle));
     // TODO(yhirano): Support ftp listening and multipart
     return;
   } else {
-    client_->didReceiveResponse(response);
+    client_->DidReceiveResponse(response);
   }
 
   // We may have been cancelled after didReceiveResponse, which would leave us
@@ -802,7 +798,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 void WebURLLoaderImpl::Context::OnDownloadedData(int len,
                                                  int encoded_data_length) {
   if (client_)
-    client_->didDownloadData(len, encoded_data_length);
+    client_->DidDownloadData(len, encoded_data_length);
 }
 
 void WebURLLoaderImpl::Context::OnReceivedData(
@@ -823,9 +819,9 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   } else {
     // We dispatch the data even when |useStreamOnResponse()| is set, in order
     // to make Devtools work.
-    client_->didReceiveData(payload, data_length);
+    client_->DidReceiveData(payload, data_length);
 
-    if (request_.useStreamOnResponse()) {
+    if (request_.UseStreamOnResponse()) {
       // We don't support ftp_listening_delegate_ for now.
       // TODO(yhirano): Support ftp listening.
       body_stream_writer_->AddData(std::move(data));
@@ -834,7 +830,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(
 }
 
 void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
-  client_->didReceiveTransferSizeUpdate(transfer_size_diff);
+  client_->DidReceiveTransferSizeUpdate(transfer_size_diff);
 }
 
 void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
@@ -844,7 +840,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
   TRACE_EVENT_WITH_FLOW0(
       "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  client_->didReceiveCachedMetadata(data, len);
+  client_->DidReceiveCachedMetadata(data, len);
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
@@ -869,7 +865,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (error_code != net::OK) {
-      client_->didFail(CreateWebURLError(request_.url(), stale_copy_in_cache,
+      client_->DidFail(CreateWebURLError(request_.Url(), stale_copy_in_cache,
                                          error_code, was_ignored_by_handler),
                        total_transfer_size, encoded_body_size);
     } else {
@@ -879,7 +875,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         total_transfer_size += stream_override_->total_transfer_size_delta;
       }
 
-      client_->didFinishLoading((completion_time - TimeTicks()).InSecondsF(),
+      client_->DidFinishLoading((completion_time - TimeTicks()).InSecondsF(),
                                 total_transfer_size, encoded_body_size);
     }
   }
@@ -905,7 +901,7 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   }
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
-    client_->didFail(CreateWebURLError(request_.url(), false, net::ERR_ABORTED),
+    client_->DidFail(CreateWebURLError(request_.Url(), false, net::ERR_ABORTED),
                      WebURLLoaderClient::kUnknownEncodedDataLength, 0);
   }
 
@@ -914,17 +910,17 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
 }
 
 bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
-  if (!request_.url().protocolIs(url::kDataScheme))
+  if (!request_.Url().ProtocolIs(url::kDataScheme))
     return false;
 
   // The fast paths for data URL, Start() and HandleDataURL(), don't support
   // the downloadToFile option.
-  if (request_.downloadToFile())
+  if (request_.DownloadToFile())
     return false;
 
   // Data url requests from object tags may need to be intercepted as streams
   // and so need to be sent to the browser.
-  if (request_.getRequestContext() == WebURLRequest::RequestContextObject)
+  if (request_.GetRequestContext() == WebURLRequest::kRequestContextObject)
     return false;
 
   // Optimize for the case where we can handle a data URL locally.  We must
@@ -940,18 +936,18 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
   // need to be loaded locally.
   // For PlzNavigate, navigation requests were already checked in the browser.
   if (resource_dispatcher_ &&
-      request_.getFrameType() == WebURLRequest::FrameTypeTopLevel) {
+      request_.GetFrameType() == WebURLRequest::kFrameTypeTopLevel) {
     if (!IsBrowserSideNavigationEnabled())
       return false;
   }
 #endif
 
-  if (request_.getFrameType() != WebURLRequest::FrameTypeTopLevel &&
-      request_.getFrameType() != WebURLRequest::FrameTypeNested)
+  if (request_.GetFrameType() != WebURLRequest::kFrameTypeTopLevel &&
+      request_.GetFrameType() != WebURLRequest::kFrameTypeNested)
     return true;
 
   std::string mime_type, unused_charset;
-  if (net::DataURL::Parse(request_.url(), &mime_type, &unused_charset, NULL) &&
+  if (net::DataURL::Parse(request_.Url(), &mime_type, &unused_charset, NULL) &&
       mime_util::IsSupportedMimeType(mime_type))
     return true;
 
@@ -968,7 +964,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   ResourceResponseInfo info;
   std::string data;
 
-  int error_code = GetInfoFromDataURL(request_.url(), &info, &data);
+  int error_code = GetInfoFromDataURL(request_.Url(), &info, &data);
 
   if (error_code == net::OK) {
     OnReceivedResponse(info);
@@ -1043,57 +1039,58 @@ WebURLLoaderImpl::WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
     : context_(new Context(this, resource_dispatcher, url_loader_factory)) {}
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
-  cancel();
+  Cancel();
 }
 
 void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
                                            const ResourceResponseInfo& info,
                                            WebURLResponse* response,
                                            bool report_security_info) {
-  response->setURL(url);
-  response->setResponseTime(info.response_time.ToInternalValue());
-  response->setMIMEType(WebString::fromUTF8(info.mime_type));
-  response->setTextEncodingName(WebString::fromUTF8(info.charset));
-  response->setExpectedContentLength(info.content_length);
-  response->setHasMajorCertificateErrors(info.has_major_certificate_errors);
-  response->setAppCacheID(info.appcache_id);
-  response->setAppCacheManifestURL(info.appcache_manifest_url);
-  response->setWasCached(!info.load_timing.request_start_time.is_null() &&
-      info.response_time < info.load_timing.request_start_time);
-  response->setRemoteIPAddress(
-      WebString::fromUTF8(info.socket_address.HostForURL()));
-  response->setRemotePort(info.socket_address.port());
-  response->setConnectionID(info.load_timing.socket_log_id);
-  response->setConnectionReused(info.load_timing.socket_reused);
-  response->setDownloadFilePath(
+  response->SetURL(url);
+  response->SetResponseTime(info.response_time.ToInternalValue());
+  response->SetMIMEType(WebString::FromUTF8(info.mime_type));
+  response->SetTextEncodingName(WebString::FromUTF8(info.charset));
+  response->SetExpectedContentLength(info.content_length);
+  response->SetHasMajorCertificateErrors(info.has_major_certificate_errors);
+  response->SetAppCacheID(info.appcache_id);
+  response->SetAppCacheManifestURL(info.appcache_manifest_url);
+  response->SetWasCached(!info.load_timing.request_start_time.is_null() &&
+                         info.response_time <
+                             info.load_timing.request_start_time);
+  response->SetRemoteIPAddress(
+      WebString::FromUTF8(info.socket_address.HostForURL()));
+  response->SetRemotePort(info.socket_address.port());
+  response->SetConnectionID(info.load_timing.socket_log_id);
+  response->SetConnectionReused(info.load_timing.socket_reused);
+  response->SetDownloadFilePath(
       blink::FilePathToWebString(info.download_file_path));
-  response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
-  response->setWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
-  response->setWasFetchedViaForeignFetch(info.was_fetched_via_foreign_fetch);
-  response->setWasFallbackRequiredByServiceWorker(
+  response->SetWasFetchedViaSPDY(info.was_fetched_via_spdy);
+  response->SetWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
+  response->SetWasFetchedViaForeignFetch(info.was_fetched_via_foreign_fetch);
+  response->SetWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
-  response->setServiceWorkerResponseType(info.response_type_via_service_worker);
-  response->setURLListViaServiceWorker(info.url_list_via_service_worker);
-  response->setCacheStorageCacheName(
+  response->SetServiceWorkerResponseType(info.response_type_via_service_worker);
+  response->SetURLListViaServiceWorker(info.url_list_via_service_worker);
+  response->SetCacheStorageCacheName(
       info.is_in_cache_storage
-          ? blink::WebString::fromUTF8(info.cache_storage_cache_name)
+          ? blink::WebString::FromUTF8(info.cache_storage_cache_name)
           : blink::WebString());
   blink::WebVector<blink::WebString> cors_exposed_header_names(
       info.cors_exposed_header_names.size());
   std::transform(
       info.cors_exposed_header_names.begin(),
       info.cors_exposed_header_names.end(), cors_exposed_header_names.begin(),
-      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
-  response->setCorsExposedHeaderNames(cors_exposed_header_names);
-  response->setDidServiceWorkerNavigationPreload(
+      [](const std::string& h) { return blink::WebString::FromLatin1(h); });
+  response->SetCorsExposedHeaderNames(cors_exposed_header_names);
+  response->SetDidServiceWorkerNavigationPreload(
       info.did_service_worker_navigation_preload);
-  response->setEncodedDataLength(info.encoded_data_length);
+  response->SetEncodedDataLength(info.encoded_data_length);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
   WebURLResponseExtraDataImpl* extra_data =
       new WebURLResponseExtraDataImpl(info.alpn_negotiated_protocol);
-  response->setExtraData(extra_data);
+  response->SetExtraData(extra_data);
   extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
   extra_data->set_was_alpn_negotiated(info.was_alpn_negotiated);
   extra_data->set_was_alternate_protocol_available(
@@ -1109,66 +1106,66 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     WebURLLoadTiming timing;
     PopulateURLLoadTiming(info.load_timing, &timing);
     const TimeTicks kNullTicks;
-    timing.setWorkerStart(
+    timing.SetWorkerStart(
         (info.service_worker_start_time - kNullTicks).InSecondsF());
-    timing.setWorkerReady(
+    timing.SetWorkerReady(
         (info.service_worker_ready_time - kNullTicks).InSecondsF());
-    response->setLoadTiming(timing);
+    response->SetLoadTiming(timing);
   }
 
   if (info.devtools_info.get()) {
     WebHTTPLoadInfo load_info;
 
-    load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
-    load_info.setHTTPStatusText(WebString::fromLatin1(
-        info.devtools_info->http_status_text));
+    load_info.SetHTTPStatusCode(info.devtools_info->http_status_code);
+    load_info.SetHTTPStatusText(
+        WebString::FromLatin1(info.devtools_info->http_status_text));
 
-    load_info.setRequestHeadersText(WebString::fromLatin1(
-        info.devtools_info->request_headers_text));
-    load_info.setResponseHeadersText(WebString::fromLatin1(
-        info.devtools_info->response_headers_text));
+    load_info.SetRequestHeadersText(
+        WebString::FromLatin1(info.devtools_info->request_headers_text));
+    load_info.SetResponseHeadersText(
+        WebString::FromLatin1(info.devtools_info->response_headers_text));
     const HeadersVector& request_headers = info.devtools_info->request_headers;
     for (HeadersVector::const_iterator it = request_headers.begin();
          it != request_headers.end(); ++it) {
-      load_info.addRequestHeader(WebString::fromLatin1(it->first),
-          WebString::fromLatin1(it->second));
+      load_info.AddRequestHeader(WebString::FromLatin1(it->first),
+                                 WebString::FromLatin1(it->second));
     }
     const HeadersVector& response_headers =
         info.devtools_info->response_headers;
     for (HeadersVector::const_iterator it = response_headers.begin();
          it != response_headers.end(); ++it) {
-      load_info.addResponseHeader(WebString::fromLatin1(it->first),
-          WebString::fromLatin1(it->second));
+      load_info.AddResponseHeader(WebString::FromLatin1(it->first),
+                                  WebString::FromLatin1(it->second));
     }
-    load_info.setNPNNegotiatedProtocol(
-        WebString::fromLatin1(info.alpn_negotiated_protocol));
-    response->setHTTPLoadInfo(load_info);
+    load_info.SetNPNNegotiatedProtocol(
+        WebString::FromLatin1(info.alpn_negotiated_protocol));
+    response->SetHTTPLoadInfo(load_info);
   }
 
   const net::HttpResponseHeaders* headers = info.headers.get();
   if (!headers)
     return;
 
-  WebURLResponse::HTTPVersion version = WebURLResponse::HTTPVersionUnknown;
+  WebURLResponse::HTTPVersion version = WebURLResponse::kHTTPVersionUnknown;
   if (headers->GetHttpVersion() == net::HttpVersion(0, 9))
-    version = WebURLResponse::HTTPVersion_0_9;
+    version = WebURLResponse::kHTTPVersion_0_9;
   else if (headers->GetHttpVersion() == net::HttpVersion(1, 0))
-    version = WebURLResponse::HTTPVersion_1_0;
+    version = WebURLResponse::kHTTPVersion_1_0;
   else if (headers->GetHttpVersion() == net::HttpVersion(1, 1))
-    version = WebURLResponse::HTTPVersion_1_1;
+    version = WebURLResponse::kHTTPVersion_1_1;
   else if (headers->GetHttpVersion() == net::HttpVersion(2, 0))
-    version = WebURLResponse::HTTPVersion_2_0;
-  response->setHTTPVersion(version);
-  response->setHTTPStatusCode(headers->response_code());
-  response->setHTTPStatusText(WebString::fromLatin1(headers->GetStatusText()));
+    version = WebURLResponse::kHTTPVersion_2_0;
+  response->SetHTTPVersion(version);
+  response->SetHTTPStatusCode(headers->response_code());
+  response->SetHTTPStatusText(WebString::FromLatin1(headers->GetStatusText()));
 
   // Build up the header map.
   size_t iter = 0;
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->addHTTPHeaderField(WebString::fromLatin1(name),
-                                 WebString::fromLatin1(value));
+    response->AddHTTPHeaderField(WebString::FromLatin1(name),
+                                 WebString::FromLatin1(value));
   }
 }
 
@@ -1179,34 +1176,34 @@ WebURLRequest WebURLLoaderImpl::PopulateURLRequestForRedirect(
   // TODO(darin): We lack sufficient information to construct the actual
   // request that resulted from the redirect.
   WebURLRequest new_request(redirect_info.new_url);
-  new_request.setFirstPartyForCookies(
+  new_request.SetFirstPartyForCookies(
       redirect_info.new_first_party_for_cookies);
-  new_request.setDownloadToFile(request.downloadToFile());
-  new_request.setUseStreamOnResponse(request.useStreamOnResponse());
-  new_request.setRequestContext(request.getRequestContext());
-  new_request.setFrameType(request.getFrameType());
-  new_request.setServiceWorkerMode(service_worker_mode);
-  new_request.setShouldResetAppCache(request.shouldResetAppCache());
-  new_request.setFetchRequestMode(request.getFetchRequestMode());
-  new_request.setFetchCredentialsMode(request.getFetchCredentialsMode());
+  new_request.SetDownloadToFile(request.DownloadToFile());
+  new_request.SetUseStreamOnResponse(request.UseStreamOnResponse());
+  new_request.SetRequestContext(request.GetRequestContext());
+  new_request.SetFrameType(request.GetFrameType());
+  new_request.SetServiceWorkerMode(service_worker_mode);
+  new_request.SetShouldResetAppCache(request.ShouldResetAppCache());
+  new_request.SetFetchRequestMode(request.GetFetchRequestMode());
+  new_request.SetFetchCredentialsMode(request.GetFetchCredentialsMode());
 
-  new_request.setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
-                               NetReferrerPolicyToBlinkReferrerPolicy(
-                                   redirect_info.new_referrer_policy));
-  new_request.setPriority(request.getPriority());
+  new_request.SetHTTPReferrer(WebString::FromUTF8(redirect_info.new_referrer),
+                              NetReferrerPolicyToBlinkReferrerPolicy(
+                                  redirect_info.new_referrer_policy));
+  new_request.SetPriority(request.GetPriority());
 
-  std::string old_method = request.httpMethod().utf8();
-  new_request.setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
+  std::string old_method = request.HttpMethod().Utf8();
+  new_request.SetHTTPMethod(WebString::FromUTF8(redirect_info.new_method));
   if (redirect_info.new_method == old_method)
-    new_request.setHTTPBody(request.httpBody());
+    new_request.SetHTTPBody(request.HttpBody());
 
-  new_request.setCheckForBrowserSideNavigation(
-      request.checkForBrowserSideNavigation());
+  new_request.SetCheckForBrowserSideNavigation(
+      request.CheckForBrowserSideNavigation());
 
   return new_request;
 }
 
-void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
+void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
                                          WebURLError& error,
                                          WebData& data,
@@ -1222,23 +1219,23 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
   // status code or status text.
   int error_code = sync_load_response.error_code;
   if (error_code != net::OK) {
-    response.setURL(final_url);
-    error.domain = WebString::fromASCII(net::kErrorDomain);
+    response.SetURL(final_url);
+    error.domain = WebString::FromASCII(net::kErrorDomain);
     error.reason = error_code;
-    error.unreachableURL = final_url;
+    error.unreachable_url = final_url;
     return;
   }
 
   PopulateURLResponse(final_url, sync_load_response, &response,
-                      request.reportRawHeaders());
-  response.addToDecodedBodyLength(sync_load_response.data.size());
+                      request.ReportRawHeaders());
+  response.AddToDecodedBodyLength(sync_load_response.data.size());
   encoded_data_length = sync_load_response.encoded_data_length;
   encoded_body_length = sync_load_response.encoded_body_length;
 
-  data.assign(sync_load_response.data.data(), sync_load_response.data.size());
+  data.Assign(sync_load_response.data.data(), sync_load_response.data.size());
 }
 
-void WebURLLoaderImpl::loadAsynchronously(const WebURLRequest& request,
+void WebURLLoaderImpl::LoadAsynchronously(const WebURLRequest& request,
                                           WebURLLoaderClient* client) {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::loadAsynchronously",
                          this, TRACE_EVENT_FLAG_FLOW_OUT);
@@ -1248,20 +1245,20 @@ void WebURLLoaderImpl::loadAsynchronously(const WebURLRequest& request,
   context_->Start(request, NULL);
 }
 
-void WebURLLoaderImpl::cancel() {
+void WebURLLoaderImpl::Cancel() {
   context_->Cancel();
 }
 
-void WebURLLoaderImpl::setDefersLoading(bool value) {
+void WebURLLoaderImpl::SetDefersLoading(bool value) {
   context_->SetDefersLoading(value);
 }
 
-void WebURLLoaderImpl::didChangePriority(WebURLRequest::Priority new_priority,
+void WebURLLoaderImpl::DidChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {
   context_->DidChangePriority(new_priority, intra_priority_value);
 }
 
-void WebURLLoaderImpl::setLoadingTaskRunner(
+void WebURLLoaderImpl::SetLoadingTaskRunner(
     base::SingleThreadTaskRunner* loading_task_runner) {
   context_->SetTaskRunner(loading_task_runner);
 }

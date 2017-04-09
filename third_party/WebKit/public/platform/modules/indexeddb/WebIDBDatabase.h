@@ -46,104 +46,104 @@ class WebIDBDatabase {
  public:
   virtual ~WebIDBDatabase() {}
 
-  virtual void createObjectStore(long long transactionId,
-                                 long long objectStoreId,
+  virtual void CreateObjectStore(long long transaction_id,
+                                 long long object_store_id,
                                  const WebString& name,
                                  const WebIDBKeyPath&,
-                                 bool autoIncrement) = 0;
-  virtual void deleteObjectStore(long long transactionId,
-                                 long long objectStoreId) = 0;
-  virtual void renameObjectStore(long long transactionId,
-                                 long long objectStoreId,
+                                 bool auto_increment) = 0;
+  virtual void DeleteObjectStore(long long transaction_id,
+                                 long long object_store_id) = 0;
+  virtual void RenameObjectStore(long long transaction_id,
+                                 long long object_store_id,
                                  const WebString& name) = 0;
-  virtual void createTransaction(long long id,
+  virtual void CreateTransaction(long long id,
                                  const WebVector<long long>& scope,
                                  WebIDBTransactionMode) = 0;
-  virtual void close() = 0;
-  virtual void versionChangeIgnored() = 0;
+  virtual void Close() = 0;
+  virtual void VersionChangeIgnored() = 0;
 
-  virtual void abort(long long transactionId) = 0;
-  virtual void commit(long long transactionId) = 0;
+  virtual void Abort(long long transaction_id) = 0;
+  virtual void Commit(long long transaction_id) = 0;
 
-  virtual void createIndex(long long transactionId,
-                           long long objectStoreId,
-                           long long indexId,
+  virtual void CreateIndex(long long transaction_id,
+                           long long object_store_id,
+                           long long index_id,
                            const WebString& name,
                            const WebIDBKeyPath&,
                            bool unique,
-                           bool multiEntry) = 0;
-  virtual void deleteIndex(long long transactionId,
-                           long long objectStoreId,
-                           long long indexId) = 0;
-  virtual void renameIndex(long long transactionId,
-                           long long objectStoreId,
-                           long long indexId,
-                           const WebString& newName) = 0;
+                           bool multi_entry) = 0;
+  virtual void DeleteIndex(long long transaction_id,
+                           long long object_store_id,
+                           long long index_id) = 0;
+  virtual void RenameIndex(long long transaction_id,
+                           long long object_store_id,
+                           long long index_id,
+                           const WebString& new_name) = 0;
 
-  static const long long minimumIndexId = 30;
+  static const long long kMinimumIndexId = 30;
 
   typedef WebVector<WebIDBKey> WebIndexKeys;
 
-  virtual void addObserver(
-      long long transactionId,
-      int32_t observerId,
-      bool includeTransaction,
-      bool noRecords,
+  virtual void AddObserver(
+      long long transaction_id,
+      int32_t observer_id,
+      bool include_transaction,
+      bool no_records,
       bool values,
-      const std::bitset<WebIDBOperationTypeCount>& operationTypes) = 0;
-  virtual void removeObservers(
-      const WebVector<int32_t>& observerIdsToRemove) = 0;
-  virtual void get(long long transactionId,
-                   long long objectStoreId,
-                   long long indexId,
+      const std::bitset<kWebIDBOperationTypeCount>& operation_types) = 0;
+  virtual void RemoveObservers(
+      const WebVector<int32_t>& observer_ids_to_remove) = 0;
+  virtual void Get(long long transaction_id,
+                   long long object_store_id,
+                   long long index_id,
                    const WebIDBKeyRange&,
-                   bool keyOnly,
+                   bool key_only,
                    WebIDBCallbacks*) = 0;
-  virtual void getAll(long long transactionId,
-                      long long objectStoreId,
-                      long long indexId,
+  virtual void GetAll(long long transaction_id,
+                      long long object_store_id,
+                      long long index_id,
                       const WebIDBKeyRange&,
-                      long long maxCount,
-                      bool keyOnly,
+                      long long max_count,
+                      bool key_only,
                       WebIDBCallbacks*) = 0;
-  virtual void put(long long transactionId,
-                   long long objectStoreId,
+  virtual void Put(long long transaction_id,
+                   long long object_store_id,
                    const WebData& value,
                    const WebVector<WebBlobInfo>&,
                    const WebIDBKey&,
                    WebIDBPutMode,
                    WebIDBCallbacks*,
-                   const WebVector<long long>& indexIds,
+                   const WebVector<long long>& index_ids,
                    const WebVector<WebIndexKeys>&) = 0;
-  virtual void setIndexKeys(long long transactionId,
-                            long long objectStoreId,
+  virtual void SetIndexKeys(long long transaction_id,
+                            long long object_store_id,
                             const WebIDBKey&,
-                            const WebVector<long long>& indexIds,
+                            const WebVector<long long>& index_ids,
                             const WebVector<WebIndexKeys>&) = 0;
-  virtual void setIndexesReady(long long transactionId,
-                               long long objectStoreId,
-                               const WebVector<long long>& indexIds) = 0;
-  virtual void openCursor(long long transactionId,
-                          long long objectStoreId,
-                          long long indexId,
+  virtual void SetIndexesReady(long long transaction_id,
+                               long long object_store_id,
+                               const WebVector<long long>& index_ids) = 0;
+  virtual void OpenCursor(long long transaction_id,
+                          long long object_store_id,
+                          long long index_id,
                           const WebIDBKeyRange&,
                           WebIDBCursorDirection,
-                          bool keyOnly,
+                          bool key_only,
                           WebIDBTaskType,
                           WebIDBCallbacks*) = 0;
-  virtual void count(long long transactionId,
-                     long long objectStoreId,
-                     long long indexId,
+  virtual void Count(long long transaction_id,
+                     long long object_store_id,
+                     long long index_id,
                      const WebIDBKeyRange&,
                      WebIDBCallbacks*) = 0;
-  virtual void deleteRange(long long transactionId,
-                           long long objectStoreId,
+  virtual void DeleteRange(long long transaction_id,
+                           long long object_store_id,
                            const WebIDBKeyRange&,
                            WebIDBCallbacks*) = 0;
-  virtual void clear(long long transactionId,
-                     long long objectStoreId,
+  virtual void Clear(long long transaction_id,
+                     long long object_store_id,
                      WebIDBCallbacks*) = 0;
-  virtual void ackReceivedBlobs(const WebVector<WebString>& uuids) = 0;
+  virtual void AckReceivedBlobs(const WebVector<WebString>& uuids) = 0;
 
  protected:
   WebIDBDatabase() {}

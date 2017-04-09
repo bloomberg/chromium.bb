@@ -25,11 +25,11 @@ class MODULES_EXPORT PaymentInstruments final
  public:
   PaymentInstruments();
 
-  ScriptPromise deleteInstrument(const String& instrumentKey);
-  ScriptPromise get(const String& instrumentKey);
+  ScriptPromise deleteInstrument(const String& instrument_key);
+  ScriptPromise get(const String& instrument_key);
   ScriptPromise keys();
-  ScriptPromise has(const String& instrumentKey);
-  ScriptPromise set(const String& instrumentKey,
+  ScriptPromise has(const String& instrument_key);
+  ScriptPromise set(const String& instrument_key,
                     const PaymentInstrument& details);
 
   DECLARE_TRACE();

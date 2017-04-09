@@ -48,10 +48,10 @@ class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RTCIceCandidate* create(ExecutionContext*,
+  static RTCIceCandidate* Create(ExecutionContext*,
                                  const RTCIceCandidateInit&,
                                  ExceptionState&);
-  static RTCIceCandidate* create(WebRTCICECandidate);
+  static RTCIceCandidate* Create(WebRTCICECandidate);
 
   String candidate() const;
   void setCandidate(String);
@@ -62,14 +62,14 @@ class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>,
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  WebRTCICECandidate webCandidate() const;
+  WebRTCICECandidate WebCandidate() const;
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   explicit RTCIceCandidate(WebRTCICECandidate);
 
-  WebRTCICECandidate m_webCandidate;
+  WebRTCICECandidate web_candidate_;
 };
 
 }  // namespace blink

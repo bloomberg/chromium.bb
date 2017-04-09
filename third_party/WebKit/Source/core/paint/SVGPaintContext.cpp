@@ -35,229 +35,232 @@
 namespace blink {
 
 SVGPaintContext::~SVGPaintContext() {
-  if (m_filter) {
-    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object));
-    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object)
-               ->filter() == m_filter);
-    DCHECK(m_filterRecordingContext);
-    SVGFilterPainter(*m_filter).finishEffect(m_object,
-                                             *m_filterRecordingContext);
+  if (filter_) {
+    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(&object_));
+    DCHECK(
+        SVGResourcesCache::CachedResourcesForLayoutObject(&object_)->Filter() ==
+        filter_);
+    DCHECK(filter_recording_context_);
+    SVGFilterPainter(*filter_).FinishEffect(object_,
+                                            *filter_recording_context_);
 
     // Reset the paint info after the filter effect has been completed.
-    m_filterPaintInfo = nullptr;
+    filter_paint_info_ = nullptr;
   }
 
-  if (m_masker) {
-    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object));
-    DCHECK(SVGResourcesCache::cachedResourcesForLayoutObject(&m_object)
-               ->masker() == m_masker);
-    SVGMaskPainter(*m_masker).finishEffect(m_object, paintInfo().context);
+  if (masker_) {
+    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(&object_));
+    DCHECK(
+        SVGResourcesCache::CachedResourcesForLayoutObject(&object_)->Masker() ==
+        masker_);
+    SVGMaskPainter(*masker_).FinishEffect(object_, GetPaintInfo().context);
   }
 }
 
-bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
+bool SVGPaintContext::ApplyClipMaskAndFilterIfNecessary() {
 #if DCHECK_IS_ON()
-  DCHECK(!m_applyClipMaskAndFilterIfNecessaryCalled);
-  m_applyClipMaskAndFilterIfNecessaryCalled = true;
+  DCHECK(!apply_clip_mask_and_filter_if_necessary_called_);
+  apply_clip_mask_and_filter_if_necessary_called_ = true;
 #endif
   // In SPv2 we should early exit once the paint property state has been
   // applied, because all meta (non-drawing) display items are ignored in
   // SPv2. However we can't simply omit them because there are still
   // non-composited painting (e.g. SVG filters in particular) that rely on
   // these meta display items.
-  applyPaintPropertyState();
+  ApplyPaintPropertyState();
 
   // When rendering clip paths as masks, only geometric operations should be
   // included so skip non-geometric operations such as compositing, masking, and
   // filtering.
-  if (paintInfo().isRenderingClipPathAsMaskImage()) {
-    DCHECK(!m_object.isSVGRoot());
-    applyClipIfNecessary();
+  if (GetPaintInfo().IsRenderingClipPathAsMaskImage()) {
+    DCHECK(!object_.IsSVGRoot());
+    ApplyClipIfNecessary();
     return true;
   }
 
-  bool isSVGRoot = m_object.isSVGRoot();
+  bool is_svg_root = object_.IsSVGRoot();
 
   // Layer takes care of root opacity and blend mode.
-  if (isSVGRoot) {
-    DCHECK(!(m_object.isTransparent() || m_object.styleRef().hasBlendMode()) ||
-           m_object.hasLayer());
+  if (is_svg_root) {
+    DCHECK(!(object_.IsTransparent() || object_.StyleRef().HasBlendMode()) ||
+           object_.HasLayer());
   } else {
-    applyCompositingIfNecessary();
+    ApplyCompositingIfNecessary();
   }
 
-  if (isSVGRoot) {
-    DCHECK(!m_object.styleRef().clipPath() || m_object.hasLayer());
+  if (is_svg_root) {
+    DCHECK(!object_.StyleRef().ClipPath() || object_.HasLayer());
   } else {
-    applyClipIfNecessary();
+    ApplyClipIfNecessary();
   }
 
   SVGResources* resources =
-      SVGResourcesCache::cachedResourcesForLayoutObject(&m_object);
+      SVGResourcesCache::CachedResourcesForLayoutObject(&object_);
 
-  if (!applyMaskIfNecessary(resources))
+  if (!ApplyMaskIfNecessary(resources))
     return false;
 
-  if (isSVGRoot) {
-    DCHECK(!m_object.styleRef().hasFilter() || m_object.hasLayer());
-  } else if (!applyFilterIfNecessary(resources)) {
+  if (is_svg_root) {
+    DCHECK(!object_.StyleRef().HasFilter() || object_.HasLayer());
+  } else if (!ApplyFilterIfNecessary(resources)) {
     return false;
   }
 
-  if (!isIsolationInstalled() &&
-      SVGLayoutSupport::isIsolationRequired(&m_object)) {
-    m_compositingRecorder = WTF::wrapUnique(new CompositingRecorder(
-        paintInfo().context, m_object, SkBlendMode::kSrcOver, 1));
+  if (!IsIsolationInstalled() &&
+      SVGLayoutSupport::IsIsolationRequired(&object_)) {
+    compositing_recorder_ = WTF::WrapUnique(new CompositingRecorder(
+        GetPaintInfo().context, object_, SkBlendMode::kSrcOver, 1));
   }
 
   return true;
 }
 
-void SVGPaintContext::applyPaintPropertyState() {
+void SVGPaintContext::ApplyPaintPropertyState() {
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
   // SVGRoot works like normal CSS replaced element and its effects are
   // applied as stacking context effect by PaintLayerPainter.
-  if (m_object.isSVGRoot())
+  if (object_.IsSVGRoot())
     return;
 
-  const auto* paintProperties = m_object.paintProperties();
+  const auto* paint_properties = object_.PaintProperties();
   const EffectPaintPropertyNode* effect =
-      paintProperties ? paintProperties->effect() : nullptr;
+      paint_properties ? paint_properties->Effect() : nullptr;
   if (!effect)
     return;
 
-  auto& paintController = paintInfo().context.getPaintController();
+  auto& paint_controller = GetPaintInfo().context.GetPaintController();
   PaintChunkProperties properties(
-      paintController.currentPaintChunkProperties());
-  properties.propertyTreeState.setEffect(effect);
-  m_scopedPaintChunkProperties.emplace(paintController, m_object, properties);
+      paint_controller.CurrentPaintChunkProperties());
+  properties.property_tree_state.SetEffect(effect);
+  scoped_paint_chunk_properties_.emplace(paint_controller, object_, properties);
 }
 
-void SVGPaintContext::applyCompositingIfNecessary() {
-  DCHECK(!paintInfo().isRenderingClipPathAsMaskImage());
+void SVGPaintContext::ApplyCompositingIfNecessary() {
+  DCHECK(!GetPaintInfo().IsRenderingClipPathAsMaskImage());
 
-  const ComputedStyle& style = m_object.styleRef();
-  float opacity = style.opacity();
-  WebBlendMode blendMode = style.hasBlendMode() && m_object.isBlendingAllowed()
-                               ? style.blendMode()
-                               : WebBlendModeNormal;
-  if (opacity < 1 || blendMode != WebBlendModeNormal) {
-    const FloatRect compositingBounds =
-        m_object.visualRectInLocalSVGCoordinates();
-    m_compositingRecorder = WTF::wrapUnique(new CompositingRecorder(
-        paintInfo().context, m_object,
-        WebCoreCompositeToSkiaComposite(CompositeSourceOver, blendMode),
-        opacity, &compositingBounds));
+  const ComputedStyle& style = object_.StyleRef();
+  float opacity = style.Opacity();
+  WebBlendMode blend_mode = style.HasBlendMode() && object_.IsBlendingAllowed()
+                                ? style.BlendMode()
+                                : kWebBlendModeNormal;
+  if (opacity < 1 || blend_mode != kWebBlendModeNormal) {
+    const FloatRect compositing_bounds =
+        object_.VisualRectInLocalSVGCoordinates();
+    compositing_recorder_ = WTF::WrapUnique(new CompositingRecorder(
+        GetPaintInfo().context, object_,
+        WebCoreCompositeToSkiaComposite(kCompositeSourceOver, blend_mode),
+        opacity, &compositing_bounds));
   }
 }
 
-void SVGPaintContext::applyClipIfNecessary() {
-  ClipPathOperation* clipPathOperation = m_object.styleRef().clipPath();
-  if (!clipPathOperation)
+void SVGPaintContext::ApplyClipIfNecessary() {
+  ClipPathOperation* clip_path_operation = object_.StyleRef().ClipPath();
+  if (!clip_path_operation)
     return;
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    m_clipPathClipper.emplace(paintInfo().context, *clipPathOperation, m_object,
-                              m_object.objectBoundingBox(), FloatPoint());
+    clip_path_clipper_.emplace(GetPaintInfo().context, *clip_path_operation,
+                               object_, object_.ObjectBoundingBox(),
+                               FloatPoint());
   }
 }
 
-bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources) {
+bool SVGPaintContext::ApplyMaskIfNecessary(SVGResources* resources) {
   if (LayoutSVGResourceMasker* masker =
-          resources ? resources->masker() : nullptr) {
-    if (!SVGMaskPainter(*masker).prepareEffect(m_object, paintInfo().context))
+          resources ? resources->Masker() : nullptr) {
+    if (!SVGMaskPainter(*masker).PrepareEffect(object_, GetPaintInfo().context))
       return false;
-    m_masker = masker;
+    masker_ = masker;
   }
   return true;
 }
 
-static bool hasReferenceFilterOnly(const ComputedStyle& style) {
-  if (!style.hasFilter())
+static bool HasReferenceFilterOnly(const ComputedStyle& style) {
+  if (!style.HasFilter())
     return false;
-  const FilterOperations& operations = style.filter();
+  const FilterOperations& operations = style.Filter();
   if (operations.size() != 1)
     return false;
-  return operations.at(0)->type() == FilterOperation::REFERENCE;
+  return operations.at(0)->GetType() == FilterOperation::REFERENCE;
 }
 
-bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources) {
+bool SVGPaintContext::ApplyFilterIfNecessary(SVGResources* resources) {
   if (!resources)
-    return !hasReferenceFilterOnly(m_object.styleRef());
+    return !HasReferenceFilterOnly(object_.StyleRef());
 
-  LayoutSVGResourceFilter* filter = resources->filter();
+  LayoutSVGResourceFilter* filter = resources->Filter();
   if (!filter)
     return true;
-  m_filterRecordingContext =
-      WTF::wrapUnique(new SVGFilterRecordingContext(paintInfo().context));
-  m_filter = filter;
-  GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(
-      m_object, *m_filterRecordingContext);
-  if (!filterContext)
+  filter_recording_context_ =
+      WTF::WrapUnique(new SVGFilterRecordingContext(GetPaintInfo().context));
+  filter_ = filter;
+  GraphicsContext* filter_context = SVGFilterPainter(*filter).PrepareEffect(
+      object_, *filter_recording_context_);
+  if (!filter_context)
     return false;
 
   // Because the filter needs to cache its contents we replace the context
   // during filtering with the filter's context.
-  m_filterPaintInfo =
-      WTF::wrapUnique(new PaintInfo(*filterContext, m_paintInfo));
+  filter_paint_info_ =
+      WTF::WrapUnique(new PaintInfo(*filter_context, paint_info_));
 
   // Because we cache the filter contents and do not invalidate on paint
   // invalidation rect changes, we need to paint the entire filter region
   // so elements outside the initial paint (due to scrolling, etc) paint.
-  m_filterPaintInfo->m_cullRect.m_rect = LayoutRect::infiniteIntRect();
+  filter_paint_info_->cull_rect_.rect_ = LayoutRect::InfiniteIntRect();
   return true;
 }
 
-bool SVGPaintContext::isIsolationInstalled() const {
-  if (m_compositingRecorder)
+bool SVGPaintContext::IsIsolationInstalled() const {
+  if (compositing_recorder_)
     return true;
-  if (m_masker || m_filter)
+  if (masker_ || filter_)
     return true;
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_clipPathClipper &&
-      m_clipPathClipper->usingMask())
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && clip_path_clipper_ &&
+      clip_path_clipper_->UsingMask())
     return true;
   return false;
 }
 
-void SVGPaintContext::paintResourceSubtree(GraphicsContext& context,
+void SVGPaintContext::PaintResourceSubtree(GraphicsContext& context,
                                            const LayoutObject* item) {
   DCHECK(item);
-  DCHECK(!item->needsLayout());
+  DCHECK(!item->NeedsLayout());
 
-  PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground,
-                 GlobalPaintNormalPhase,
-                 PaintLayerPaintingRenderingResourceSubtree);
-  item->paint(info, IntPoint());
+  PaintInfo info(context, LayoutRect::InfiniteIntRect(), kPaintPhaseForeground,
+                 kGlobalPaintNormalPhase,
+                 kPaintLayerPaintingRenderingResourceSubtree);
+  item->Paint(info, IntPoint());
 }
 
-bool SVGPaintContext::paintForLayoutObject(
-    const PaintInfo& paintInfo,
+bool SVGPaintContext::PaintForLayoutObject(
+    const PaintInfo& paint_info,
     const ComputedStyle& style,
-    const LayoutObject& layoutObject,
-    LayoutSVGResourceMode resourceMode,
+    const LayoutObject& layout_object,
+    LayoutSVGResourceMode resource_mode,
     PaintFlags& flags,
-    const AffineTransform* additionalPaintServerTransform) {
-  if (paintInfo.isRenderingClipPathAsMaskImage()) {
-    if (resourceMode == ApplyToStrokeMode)
+    const AffineTransform* additional_paint_server_transform) {
+  if (paint_info.IsRenderingClipPathAsMaskImage()) {
+    if (resource_mode == kApplyToStrokeMode)
       return false;
-    flags.setColor(SVGComputedStyle::initialFillPaintColor().rgb());
+    flags.setColor(SVGComputedStyle::InitialFillPaintColor().Rgb());
     flags.setShader(nullptr);
     return true;
   }
 
-  SVGPaintServer paintServer =
-      SVGPaintServer::requestForLayoutObject(layoutObject, style, resourceMode);
-  if (!paintServer.isValid())
+  SVGPaintServer paint_server = SVGPaintServer::RequestForLayoutObject(
+      layout_object, style, resource_mode);
+  if (!paint_server.IsValid())
     return false;
 
-  if (additionalPaintServerTransform && paintServer.isTransformDependent())
-    paintServer.prependTransform(*additionalPaintServerTransform);
+  if (additional_paint_server_transform && paint_server.IsTransformDependent())
+    paint_server.PrependTransform(*additional_paint_server_transform);
 
-  const SVGComputedStyle& svgStyle = style.svgStyle();
-  float alpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity()
-                                                : svgStyle.strokeOpacity();
-  paintServer.applyToPaintFlags(flags, alpha);
+  const SVGComputedStyle& svg_style = style.SvgStyle();
+  float alpha = resource_mode == kApplyToFillMode ? svg_style.FillOpacity()
+                                                  : svg_style.StrokeOpacity();
+  paint_server.ApplyToPaintFlags(flags, alpha);
 
   // We always set filter quality to 'low' here. This value will only have an
   // effect for patterns, which are SkPictures, so using high-order filter
@@ -274,7 +277,7 @@ bool SVGPaintContext::paintForLayoutObject(
   // something down the flags pipe may want to farther tweak the color
   // filter, which could yield incorrect results. (Consider just using
   // saveLayer() w/ this color filter explicitly instead.)
-  flags.setColorFilter(sk_ref_sp(paintInfo.context.getColorFilter()));
+  flags.setColorFilter(sk_ref_sp(paint_info.context.GetColorFilter()));
   return true;
 }
 

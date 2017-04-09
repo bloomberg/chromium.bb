@@ -41,50 +41,50 @@ namespace blink {
 
 AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
     const IntSize& size,
-    OpacityMode opacityMode,
-    sk_sp<SkColorSpace> colorSpace,
-    SkColorType colorType)
-    : ImageBufferSurface(size, opacityMode, colorSpace, colorType) {
-  if (!SharedGpuContext::isValid())
+    OpacityMode opacity_mode,
+    sk_sp<SkColorSpace> color_space,
+    SkColorType color_type)
+    : ImageBufferSurface(size, opacity_mode, color_space, color_type) {
+  if (!SharedGpuContext::IsValid())
     return;
-  GrContext* grContext = SharedGpuContext::gr();
-  m_contextId = SharedGpuContext::contextId();
-  CHECK(grContext);
+  GrContext* gr_context = SharedGpuContext::Gr();
+  context_id_ = SharedGpuContext::ContextId();
+  CHECK(gr_context);
 
-  SkAlphaType alphaType =
-      (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType,
-                                       alphaType, colorSpace);
-  SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-  m_surface = SkSurface::MakeRenderTarget(
-      grContext, SkBudgeted::kYes, info, 0 /* sampleCount */,
-      Opaque == opacityMode ? nullptr : &disableLCDProps);
-  if (!m_surface)
+  SkAlphaType alpha_type =
+      (kOpaque == opacity_mode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  SkImageInfo info = SkImageInfo::Make(size.Width(), size.Height(), color_type,
+                                       alpha_type, color_space);
+  SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
+  surface_ = SkSurface::MakeRenderTarget(
+      gr_context, SkBudgeted::kYes, info, 0 /* sampleCount */,
+      kOpaque == opacity_mode ? nullptr : &disable_lcd_props);
+  if (!surface_)
     return;
 
-  m_canvas = WTF::wrapUnique(new SkiaPaintCanvas(m_surface->getCanvas()));
-  clear();
+  canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
+  Clear();
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  m_canvas->save();
+  canvas_->save();
 }
 
-bool AcceleratedImageBufferSurface::isValid() const {
-  return m_surface && SharedGpuContext::isValid() &&
-         m_contextId == SharedGpuContext::contextId();
+bool AcceleratedImageBufferSurface::IsValid() const {
+  return surface_ && SharedGpuContext::IsValid() &&
+         context_id_ == SharedGpuContext::ContextId();
 }
 
-sk_sp<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint,
+sk_sp<SkImage> AcceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint,
                                                                SnapshotReason) {
-  return m_surface->makeImageSnapshot();
+  return surface_->makeImageSnapshot();
 }
 
-GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite() {
-  if (!m_surface)
+GLuint AcceleratedImageBufferSurface::GetBackingTextureHandleForOverwrite() {
+  if (!surface_)
     return 0;
   return skia::GrBackendObjectToGrGLTextureInfo(
-             m_surface->getTextureHandle(
+             surface_->getTextureHandle(
                  SkSurface::kDiscardWrite_TextureHandleAccess))
       ->fID;
 }

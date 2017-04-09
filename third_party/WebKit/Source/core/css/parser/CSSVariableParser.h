@@ -18,19 +18,19 @@ class CSSVariableReferenceValue;
 
 class CORE_EXPORT CSSVariableParser {
  public:
-  static bool containsValidVariableReferences(CSSParserTokenRange);
+  static bool ContainsValidVariableReferences(CSSParserTokenRange);
 
-  static CSSCustomPropertyDeclaration* parseDeclarationValue(
+  static CSSCustomPropertyDeclaration* ParseDeclarationValue(
       const AtomicString&,
       CSSParserTokenRange,
-      bool isAnimationTainted);
-  static CSSVariableReferenceValue* parseRegisteredPropertyValue(
+      bool is_animation_tainted);
+  static CSSVariableReferenceValue* ParseRegisteredPropertyValue(
       CSSParserTokenRange,
-      bool requireVarReference,
-      bool isAnimationTainted);
+      bool require_var_reference,
+      bool is_animation_tainted);
 
-  static bool isValidVariableName(const CSSParserToken&);
-  static bool isValidVariableName(const String&);
+  static bool IsValidVariableName(const CSSParserToken&);
+  static bool IsValidVariableName(const String&);
 };
 
 }  // namespace blink

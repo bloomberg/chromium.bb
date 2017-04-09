@@ -48,21 +48,21 @@ class PODIntervalSearchAdapter {
   typedef PODInterval<T, UserData> IntervalType;
 
   PODIntervalSearchAdapter(Vector<IntervalType>& result,
-                           const T& lowValue,
-                           const T& highValue)
-      : m_result(result), m_lowValue(lowValue), m_highValue(highValue) {}
+                           const T& low_value,
+                           const T& high_value)
+      : result_(result), low_value_(low_value), high_value_(high_value) {}
 
-  const T& lowValue() const { return m_lowValue; }
-  const T& highValue() const { return m_highValue; }
-  void collectIfNeeded(const IntervalType& data) const {
-    if (data.overlaps(m_lowValue, m_highValue))
-      m_result.push_back(data);
+  const T& LowValue() const { return low_value_; }
+  const T& HighValue() const { return high_value_; }
+  void CollectIfNeeded(const IntervalType& data) const {
+    if (data.Overlaps(low_value_, high_value_))
+      result_.push_back(data);
   }
 
  private:
-  Vector<IntervalType>& m_result;
-  T m_lowValue;
-  T m_highValue;
+  Vector<IntervalType>& result_;
+  T low_value_;
+  T high_value_;
 };
 
 // An interval tree, which is a form of augmented red-black tree. It
@@ -78,75 +78,75 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
   typedef PODInterval<T, UserData> IntervalType;
   typedef PODIntervalSearchAdapter<T, UserData> IntervalSearchAdapterType;
 
-  PODIntervalTree(UninitializedTreeEnum unitializedTree)
-      : PODRedBlackTree<IntervalType>(unitializedTree) {
-    init();
+  PODIntervalTree(UninitializedTreeEnum unitialized_tree)
+      : PODRedBlackTree<IntervalType>(unitialized_tree) {
+    Init();
   }
 
-  PODIntervalTree() : PODRedBlackTree<IntervalType>() { init(); }
+  PODIntervalTree() : PODRedBlackTree<IntervalType>() { Init(); }
 
   explicit PODIntervalTree(PassRefPtr<PODArena> arena)
       : PODRedBlackTree<IntervalType>(arena) {
-    init();
+    Init();
   }
 
   // Returns all intervals in the tree which overlap the given query
   // interval. The returned intervals are sorted by increasing low
   // endpoint.
-  Vector<IntervalType> allOverlaps(const IntervalType& interval) const {
+  Vector<IntervalType> AllOverlaps(const IntervalType& interval) const {
     Vector<IntervalType> result;
-    allOverlaps(interval, result);
+    AllOverlaps(interval, result);
     return result;
   }
 
   // Returns all intervals in the tree which overlap the given query
   // interval. The returned intervals are sorted by increasing low
   // endpoint.
-  void allOverlaps(const IntervalType& interval,
+  void AllOverlaps(const IntervalType& interval,
                    Vector<IntervalType>& result) const {
     // Explicit dereference of "this" required because of
     // inheritance rules in template classes.
-    IntervalSearchAdapterType adapter(result, interval.low(), interval.high());
-    searchForOverlapsFrom<IntervalSearchAdapterType>(this->root(), adapter);
+    IntervalSearchAdapterType adapter(result, interval.Low(), interval.High());
+    SearchForOverlapsFrom<IntervalSearchAdapterType>(this->Root(), adapter);
   }
 
   template <class AdapterType>
-  void allOverlapsWithAdapter(AdapterType& adapter) const {
+  void AllOverlapsWithAdapter(AdapterType& adapter) const {
     // Explicit dereference of "this" required because of
     // inheritance rules in template classes.
-    searchForOverlapsFrom<AdapterType>(this->root(), adapter);
+    SearchForOverlapsFrom<AdapterType>(this->Root(), adapter);
   }
 
   // Helper to create interval objects.
-  static IntervalType createInterval(const T& low,
+  static IntervalType CreateInterval(const T& low,
                                      const T& high,
                                      const UserData data = nullptr) {
     return IntervalType(low, high, data);
   }
 
-  bool checkInvariants() const override {
-    if (!PODRedBlackTree<IntervalType>::checkInvariants())
+  bool CheckInvariants() const override {
+    if (!PODRedBlackTree<IntervalType>::CheckInvariants())
       return false;
-    if (!this->root())
+    if (!this->Root())
       return true;
-    return checkInvariantsFromNode(this->root(), 0);
+    return CheckInvariantsFromNode(this->Root(), 0);
   }
 
  private:
   typedef typename PODRedBlackTree<IntervalType>::Node IntervalNode;
 
   // Initializes the tree.
-  void init() {
+  void Init() {
     // Explicit dereference of "this" required because of
     // inheritance rules in template classes.
-    this->setNeedsFullOrderingComparisons(true);
+    this->SetNeedsFullOrderingComparisons(true);
   }
 
   // Starting from the given node, adds all overlaps with the given
   // interval to the result vector. The intervals are sorted by
   // increasing low endpoint.
   template <class AdapterType>
-  DISABLE_CFI_PERF void searchForOverlapsFrom(IntervalNode* node,
+  DISABLE_CFI_PERF void SearchForOverlapsFrom(IntervalNode* node,
                                               AdapterType& adapter) const {
     if (!node)
       return;
@@ -155,89 +155,90 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
     // traversal produces results sorted as desired.
 
     // See whether we need to traverse the left subtree.
-    IntervalNode* left = node->left();
+    IntervalNode* left = node->Left();
     if (left
         // This is phrased this way to avoid the need for operator
         // <= on type T.
-        && !(left->data().maxHigh() < adapter.lowValue()))
-      searchForOverlapsFrom<AdapterType>(left, adapter);
+        && !(left->Data().MaxHigh() < adapter.LowValue()))
+      SearchForOverlapsFrom<AdapterType>(left, adapter);
 
     // Check for overlap with current node.
-    adapter.collectIfNeeded(node->data());
+    adapter.CollectIfNeeded(node->Data());
 
     // See whether we need to traverse the right subtree.
     // This is phrased this way to avoid the need for operator <=
     // on type T.
-    if (!(adapter.highValue() < node->data().low()))
-      searchForOverlapsFrom<AdapterType>(node->right(), adapter);
+    if (!(adapter.HighValue() < node->Data().Low()))
+      SearchForOverlapsFrom<AdapterType>(node->Right(), adapter);
   }
 
-  bool updateNode(IntervalNode* node) override {
+  bool UpdateNode(IntervalNode* node) override {
     // Would use const T&, but need to reassign this reference in this
     // function.
-    const T* curMax = &node->data().high();
-    IntervalNode* left = node->left();
+    const T* cur_max = &node->Data().High();
+    IntervalNode* left = node->Left();
     if (left) {
-      if (*curMax < left->data().maxHigh())
-        curMax = &left->data().maxHigh();
+      if (*cur_max < left->Data().MaxHigh())
+        cur_max = &left->Data().MaxHigh();
     }
-    IntervalNode* right = node->right();
+    IntervalNode* right = node->Right();
     if (right) {
-      if (*curMax < right->data().maxHigh())
-        curMax = &right->data().maxHigh();
+      if (*cur_max < right->Data().MaxHigh())
+        cur_max = &right->Data().MaxHigh();
     }
     // This is phrased like this to avoid needing operator!= on type T.
-    if (!(*curMax == node->data().maxHigh())) {
-      node->data().setMaxHigh(*curMax);
+    if (!(*cur_max == node->Data().MaxHigh())) {
+      node->Data().SetMaxHigh(*cur_max);
       return true;
     }
     return false;
   }
 
-  bool checkInvariantsFromNode(IntervalNode* node, T* currentMaxValue) const {
+  bool CheckInvariantsFromNode(IntervalNode* node, T* current_max_value) const {
     // These assignments are only done in order to avoid requiring
     // a default constructor on type T.
-    T leftMaxValue(node->data().maxHigh());
-    T rightMaxValue(node->data().maxHigh());
-    IntervalNode* left = node->left();
-    IntervalNode* right = node->right();
+    T left_max_value(node->Data().MaxHigh());
+    T right_max_value(node->Data().MaxHigh());
+    IntervalNode* left = node->Left();
+    IntervalNode* right = node->Right();
     if (left) {
-      if (!checkInvariantsFromNode(left, &leftMaxValue))
+      if (!CheckInvariantsFromNode(left, &left_max_value))
         return false;
     }
     if (right) {
-      if (!checkInvariantsFromNode(right, &rightMaxValue))
+      if (!CheckInvariantsFromNode(right, &right_max_value))
         return false;
     }
     if (!left && !right) {
       // Base case.
-      if (currentMaxValue)
-        *currentMaxValue = node->data().high();
-      return (node->data().high() == node->data().maxHigh());
+      if (current_max_value)
+        *current_max_value = node->Data().High();
+      return (node->Data().High() == node->Data().MaxHigh());
     }
-    T localMaxValue(node->data().maxHigh());
+    T local_max_value(node->Data().MaxHigh());
     if (!left || !right) {
       if (left)
-        localMaxValue = leftMaxValue;
+        local_max_value = left_max_value;
       else
-        localMaxValue = rightMaxValue;
+        local_max_value = right_max_value;
     } else {
-      localMaxValue =
-          (leftMaxValue < rightMaxValue) ? rightMaxValue : leftMaxValue;
+      local_max_value =
+          (left_max_value < right_max_value) ? right_max_value : left_max_value;
     }
-    if (localMaxValue < node->data().high())
-      localMaxValue = node->data().high();
-    if (!(localMaxValue == node->data().maxHigh())) {
+    if (local_max_value < node->Data().High())
+      local_max_value = node->Data().High();
+    if (!(local_max_value == node->Data().MaxHigh())) {
 #ifndef NDEBUG
-      String localMaxValueString = ValueToString<T>::toString(localMaxValue);
+      String local_max_value_string =
+          ValueToString<T>::ToString(local_max_value);
       DLOG(ERROR) << "PODIntervalTree verification failed at node " << node
-                  << ": localMaxValue=" << localMaxValueString
-                  << " and data=" << node->data().toString();
+                  << ": localMaxValue=" << local_max_value_string
+                  << " and data=" << node->Data().ToString();
 #endif
       return false;
     }
-    if (currentMaxValue)
-      *currentMaxValue = localMaxValue;
+    if (current_max_value)
+      *current_max_value = local_max_value;
     return true;
   }
 };
@@ -246,8 +247,8 @@ class PODIntervalTree final : public PODRedBlackTree<PODInterval<T, UserData>> {
 // Support for printing PODIntervals at the PODRedBlackTree level.
 template <class T, class UserData>
 struct ValueToString<PODInterval<T, UserData>> {
-  static String toString(const PODInterval<T, UserData>& interval) {
-    return interval.toString();
+  static String ToString(const PODInterval<T, UserData>& interval) {
+    return interval.ToString();
   }
 };
 #endif

@@ -142,7 +142,7 @@ bool GetOrCreateV8Value(v8::Local<v8::Context> context,
       }
       HostArrayBufferVar* host_buffer =
           static_cast<HostArrayBufferVar*>(buffer);
-      *result = blink::WebArrayBufferConverter::toV8Value(
+      *result = blink::WebArrayBufferConverter::ToV8Value(
           &host_buffer->webkit_buffer(), context->Global(), isolate);
       break;
     }
@@ -241,7 +241,7 @@ bool GetOrCreateVar(v8::Local<v8::Value> val,
     // 4) If the object can be converted to a resource, return the ResourceVar.
     // 5) Otherwise return a DictionaryVar.
     std::unique_ptr<blink::WebArrayBuffer> web_array_buffer(
-        blink::WebArrayBufferConverter::createFromV8Value(val, isolate));
+        blink::WebArrayBufferConverter::CreateFromV8Value(val, isolate));
     if (web_array_buffer.get()) {
       scoped_refptr<HostArrayBufferVar> buffer_var(
           new HostArrayBufferVar(*web_array_buffer));

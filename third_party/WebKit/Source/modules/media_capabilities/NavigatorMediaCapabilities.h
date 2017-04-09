@@ -27,11 +27,11 @@ class NavigatorMediaCapabilities final
  private:
   explicit NavigatorMediaCapabilities(Navigator&);
 
-  static NavigatorMediaCapabilities& from(Navigator&);
-  static const char* supplementName();
+  static NavigatorMediaCapabilities& From(Navigator&);
+  static const char* SupplementName();
 
   // The MediaCapabilities instance of this Navigator.
-  Member<MediaCapabilities> m_capabilities;
+  Member<MediaCapabilities> capabilities_;
 };
 
 }  // namespace blink

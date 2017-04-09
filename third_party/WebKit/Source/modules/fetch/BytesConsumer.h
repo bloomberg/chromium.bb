@@ -28,32 +28,32 @@ class MODULES_EXPORT BytesConsumer
     : public GarbageCollectedFinalized<BytesConsumer> {
  public:
   enum class Result {
-    Ok,
-    ShouldWait,
-    Done,
-    Error,
+    kOk,
+    kShouldWait,
+    kDone,
+    kError,
   };
   // Readable and Waiting are indistinguishable from BytesConsumer users.
   enum class PublicState {
-    ReadableOrWaiting,
-    Closed,
-    Errored,
+    kReadableOrWaiting,
+    kClosed,
+    kErrored,
   };
   enum class BlobSizePolicy {
     // The returned blob must have a valid size (i.e. != kuint64max).
-    DisallowBlobWithInvalidSize,
+    kDisallowBlobWithInvalidSize,
     // The returned blob can have an invalid size.
-    AllowBlobWithInvalidSize
+    kAllowBlobWithInvalidSize
   };
   class MODULES_EXPORT Error {
    public:
     Error() {}
-    explicit Error(const String& message) : m_message(message) {}
-    const String& message() const { return m_message; }
-    bool operator==(const Error& e) const { return e.m_message == m_message; }
+    explicit Error(const String& message) : message_(message) {}
+    const String& Message() const { return message_; }
+    bool operator==(const Error& e) const { return e.message_ == message_; }
 
    private:
-    String m_message;
+    String message_;
   };
   // Client gets notification from the associated ByteConsumer.
   class MODULES_EXPORT Client : public GarbageCollectedMixin {
@@ -70,7 +70,7 @@ class MODULES_EXPORT BytesConsumer
     // public methods called by a user. For example, when a user reads
     // data by |read| and the state changes from waiting to readable, this
     // function will not be called.
-    virtual void onStateChange() = 0;
+    virtual void OnStateChange() = 0;
   };
 
   virtual ~BytesConsumer() {}
@@ -89,7 +89,7 @@ class MODULES_EXPORT BytesConsumer
   //
   // |*buffer| will be set to null and |*available| will be set to 0 if not
   // readable.
-  virtual Result beginRead(const char** buffer,
+  virtual Result BeginRead(const char** buffer,
                            size_t* available) WARN_UNUSED_RESULT = 0;
 
   // Ends a two-phase read.
@@ -97,7 +97,7 @@ class MODULES_EXPORT BytesConsumer
   // Returns Ok when the consumer stays readable or waiting.
   // Returns Done when it's closed.
   // Returns Error when it's errored.
-  virtual Result endRead(size_t readSize) WARN_UNUSED_RESULT = 0;
+  virtual Result EndRead(size_t read_size) WARN_UNUSED_RESULT = 0;
 
   // Drains the data as a BlobDataHandle.
   // When this function returns a non-null value, the returned blob handle
@@ -108,8 +108,8 @@ class MODULES_EXPORT BytesConsumer
   // When |policy| is DisallowBlobWithInvalidSize, this function doesn't
   // return a non-null blob handle with unspecified size.
   // The type of the returned blob handle may not be meaningful.
-  virtual PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(
-      BlobSizePolicy = BlobSizePolicy::DisallowBlobWithInvalidSize) {
+  virtual PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(
+      BlobSizePolicy = BlobSizePolicy::kDisallowBlobWithInvalidSize) {
     return nullptr;
   }
 
@@ -121,45 +121,45 @@ class MODULES_EXPORT BytesConsumer
   // When this function returns null value, this function does nothing.
   // This function returns a non-null form data when the handle is made
   // from an EncodedFormData-convertible value.
-  virtual PassRefPtr<EncodedFormData> drainAsFormData() { return nullptr; }
+  virtual PassRefPtr<EncodedFormData> DrainAsFormData() { return nullptr; }
 
   // Sets a client. This can be called only when no client is set. When
   // this object is already closed or errored, this function does nothing.
-  virtual void setClient(Client*) = 0;
+  virtual void SetClient(Client*) = 0;
   // Clears the set client.
   // A client will be implicitly cleared when this object gets closed or
   // errored (after the state change itself is notified).
-  virtual void clearClient() = 0;
+  virtual void ClearClient() = 0;
 
   // Cancels this ByteConsumer. This function does nothing when |this| is
   // already closed or errored. Otherwise, this object becomes closed.
   // This function cannot be called in a two-phase read.
-  virtual void cancel() = 0;
+  virtual void Cancel() = 0;
 
   // Returns the current state.
-  virtual PublicState getPublicState() const = 0;
+  virtual PublicState GetPublicState() const = 0;
 
   // Returns the associated error of this object. This function can be called
   // only when errored.
-  virtual Error getError() const = 0;
+  virtual Error GetError() const = 0;
 
   // Each implementation should return a string that represents the
   // implementation for debug purpose.
-  virtual String debugName() const = 0;
+  virtual String DebugName() const = 0;
 
   // Creates two BytesConsumer both of which represent the data sequence that
   // would be read from |src| and store them to |*dest1| and |*dest2|.
   // |src| must not have a client when called.
-  static void tee(ExecutionContext*,
+  static void Tee(ExecutionContext*,
                   BytesConsumer* src,
                   BytesConsumer** dest1,
                   BytesConsumer** dest2);
 
   // Returns a BytesConsumer whose state is Closed.
-  static BytesConsumer* createClosed();
+  static BytesConsumer* CreateClosed();
 
   // Returns a BytesConsumer whose state is Errored.
-  static BytesConsumer* createErrored(const Error&);
+  static BytesConsumer* CreateErrored(const Error&);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
@@ -167,24 +167,24 @@ class MODULES_EXPORT BytesConsumer
   // This InternalState directly corresponds to the states in the class
   // comments. This enum is defined here for subclasses.
   enum class InternalState {
-    Readable,
-    Waiting,
-    Closed,
-    Errored,
+    kReadable,
+    kWaiting,
+    kClosed,
+    kErrored,
   };
 
-  static PublicState getPublicStateFromInternalState(InternalState state) {
+  static PublicState GetPublicStateFromInternalState(InternalState state) {
     switch (state) {
-      case InternalState::Readable:
-      case InternalState::Waiting:
-        return PublicState::ReadableOrWaiting;
-      case InternalState::Closed:
-        return PublicState::Closed;
-      case InternalState::Errored:
-        return PublicState::Errored;
+      case InternalState::kReadable:
+      case InternalState::kWaiting:
+        return PublicState::kReadableOrWaiting;
+      case InternalState::kClosed:
+        return PublicState::kClosed;
+      case InternalState::kErrored:
+        return PublicState::kErrored;
     }
     NOTREACHED();
-    return PublicState::ReadableOrWaiting;
+    return PublicState::kReadableOrWaiting;
   }
 };
 

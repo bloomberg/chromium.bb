@@ -14,47 +14,47 @@ const char kNoDownload[] = "nodownload";
 const char kNoFullscreen[] = "nofullscreen";
 const char kNoRemotePlayback[] = "noremoteplayback";
 
-const char* kSupportedTokens[] = {kNoDownload, kNoFullscreen,
-                                  kNoRemotePlayback};
+const char* g_k_supported_tokens[] = {kNoDownload, kNoFullscreen,
+                                      kNoRemotePlayback};
 
 }  // namespace
 
 HTMLMediaElementControlsList::HTMLMediaElementControlsList(
     HTMLMediaElement* element)
-    : DOMTokenList(this), m_element(element) {}
+    : DOMTokenList(this), element_(element) {}
 
 HTMLMediaElementControlsList::~HTMLMediaElementControlsList() = default;
 
 DEFINE_TRACE(HTMLMediaElementControlsList) {
-  visitor->trace(m_element);
-  DOMTokenList::trace(visitor);
-  DOMTokenListObserver::trace(visitor);
+  visitor->Trace(element_);
+  DOMTokenList::Trace(visitor);
+  DOMTokenListObserver::Trace(visitor);
 }
 
-bool HTMLMediaElementControlsList::validateTokenValue(
-    const AtomicString& tokenValue,
+bool HTMLMediaElementControlsList::ValidateTokenValue(
+    const AtomicString& token_value,
     ExceptionState&) const {
-  for (const char* supportedToken : kSupportedTokens) {
-    if (tokenValue == supportedToken)
+  for (const char* supported_token : g_k_supported_tokens) {
+    if (token_value == supported_token)
       return true;
   }
   return false;
 }
 
-void HTMLMediaElementControlsList::valueWasSet() {
-  m_element->controlsListValueWasSet();
+void HTMLMediaElementControlsList::ValueWasSet() {
+  element_->ControlsListValueWasSet();
 }
 
-bool HTMLMediaElementControlsList::shouldHideDownload() const {
-  return tokens().contains(kNoDownload);
+bool HTMLMediaElementControlsList::ShouldHideDownload() const {
+  return Tokens().Contains(kNoDownload);
 }
 
-bool HTMLMediaElementControlsList::shouldHideFullscreen() const {
-  return tokens().contains(kNoFullscreen);
+bool HTMLMediaElementControlsList::ShouldHideFullscreen() const {
+  return Tokens().Contains(kNoFullscreen);
 }
 
-bool HTMLMediaElementControlsList::shouldHideRemotePlayback() const {
-  return tokens().contains(kNoRemotePlayback);
+bool HTMLMediaElementControlsList::ShouldHideRemotePlayback() const {
+  return Tokens().Contains(kNoRemotePlayback);
 }
 
 }  // namespace blink

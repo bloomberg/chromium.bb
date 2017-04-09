@@ -15,22 +15,22 @@ using State = IdleSpellCheckCallback::State;
 
 class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
  protected:
-  IdleSpellCheckCallback& idleChecker() {
-    return frame().spellChecker().idleSpellCheckCallback();
+  IdleSpellCheckCallback& IdleChecker() {
+    return GetFrame().GetSpellChecker().GetIdleSpellCheckCallback();
   }
 
-  void transitTo(State state) {
+  void TransitTo(State state) {
     switch (state) {
       case State::kInactive:
-        idleChecker().deactivate();
+        IdleChecker().Deactivate();
         break;
       case State::kHotModeRequested:
-        idleChecker().setNeedsInvocation();
+        IdleChecker().SetNeedsInvocation();
         break;
       case State::kColdModeTimerStarted:
         break;
       case State::kColdModeRequested:
-        idleChecker().skipColdModeTimerForTesting();
+        IdleChecker().SkipColdModeTimerForTesting();
         break;
       case State::kInHotModeInvocation:
       case State::kInColdModeInvocation:
@@ -45,125 +45,125 @@ TEST_F(IdleSpellCheckCallbackTest, Initialization) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  EXPECT_EQ(State::kColdModeTimerStarted, idleChecker().state());
+  EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenInactive) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kInactive);
-  idleChecker().setNeedsInvocation();
-  EXPECT_EQ(State::kHotModeRequested, idleChecker().state());
-  EXPECT_NE(-1, idleChecker().idleCallbackHandle());
+  TransitTo(State::kInactive);
+  IdleChecker().SetNeedsInvocation();
+  EXPECT_EQ(State::kHotModeRequested, IdleChecker().GetState());
+  EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenHotModeRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kHotModeRequested);
-  int handle = idleChecker().idleCallbackHandle();
-  idleChecker().setNeedsInvocation();
-  EXPECT_EQ(State::kHotModeRequested, idleChecker().state());
-  EXPECT_EQ(handle, idleChecker().idleCallbackHandle());
-  EXPECT_NE(-1, idleChecker().idleCallbackHandle());
+  TransitTo(State::kHotModeRequested);
+  int handle = IdleChecker().IdleCallbackHandle();
+  IdleChecker().SetNeedsInvocation();
+  EXPECT_EQ(State::kHotModeRequested, IdleChecker().GetState());
+  EXPECT_EQ(handle, IdleChecker().IdleCallbackHandle());
+  EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeTimerStarted);
-  idleChecker().setNeedsInvocation();
-  EXPECT_EQ(State::kHotModeRequested, idleChecker().state());
-  EXPECT_NE(-1, idleChecker().idleCallbackHandle());
+  TransitTo(State::kColdModeTimerStarted);
+  IdleChecker().SetNeedsInvocation();
+  EXPECT_EQ(State::kHotModeRequested, IdleChecker().GetState());
+  EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeRequested);
-  int handle = idleChecker().idleCallbackHandle();
-  idleChecker().setNeedsInvocation();
-  EXPECT_EQ(State::kHotModeRequested, idleChecker().state());
-  EXPECT_NE(handle, idleChecker().idleCallbackHandle());
-  EXPECT_NE(-1, idleChecker().idleCallbackHandle());
+  TransitTo(State::kColdModeRequested);
+  int handle = IdleChecker().IdleCallbackHandle();
+  IdleChecker().SetNeedsInvocation();
+  EXPECT_EQ(State::kHotModeRequested, IdleChecker().GetState());
+  EXPECT_NE(handle, IdleChecker().IdleCallbackHandle());
+  EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kHotModeRequested);
-  idleChecker().forceInvocationForTesting();
-  EXPECT_EQ(State::kColdModeTimerStarted, idleChecker().state());
+  TransitTo(State::kHotModeRequested);
+  IdleChecker().ForceInvocationForTesting();
+  EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeTimerStarted);
-  idleChecker().skipColdModeTimerForTesting();
-  EXPECT_EQ(State::kColdModeRequested, idleChecker().state());
-  EXPECT_NE(-1, idleChecker().idleCallbackHandle());
+  TransitTo(State::kColdModeTimerStarted);
+  IdleChecker().SkipColdModeTimerForTesting();
+  EXPECT_EQ(State::kColdModeRequested, IdleChecker().GetState());
+  EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeRequested);
-  idleChecker().setNeedsMoreColdModeInvocationForTesting();
-  idleChecker().forceInvocationForTesting();
-  EXPECT_EQ(State::kColdModeTimerStarted, idleChecker().state());
+  TransitTo(State::kColdModeRequested);
+  IdleChecker().SetNeedsMoreColdModeInvocationForTesting();
+  IdleChecker().ForceInvocationForTesting();
+  EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, ColdModeToInactive) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeRequested);
-  idleChecker().forceInvocationForTesting();
-  EXPECT_EQ(State::kInactive, idleChecker().state());
+  TransitTo(State::kColdModeRequested);
+  IdleChecker().ForceInvocationForTesting();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenInactive) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kInactive);
-  document().shutdown();
-  EXPECT_EQ(State::kInactive, idleChecker().state());
+  TransitTo(State::kInactive);
+  GetDocument().Shutdown();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenHotModeRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kHotModeRequested);
-  document().shutdown();
-  EXPECT_EQ(State::kInactive, idleChecker().state());
+  TransitTo(State::kHotModeRequested);
+  GetDocument().Shutdown();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeTimerStarted);
-  document().shutdown();
-  EXPECT_EQ(State::kInactive, idleChecker().state());
+  TransitTo(State::kColdModeTimerStarted);
+  GetDocument().Shutdown();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeRequested) {
   if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
     return;
 
-  transitTo(State::kColdModeRequested);
-  document().shutdown();
-  EXPECT_EQ(State::kInactive, idleChecker().state());
+  TransitTo(State::kColdModeRequested);
+  GetDocument().Shutdown();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
 }  // namespace blink

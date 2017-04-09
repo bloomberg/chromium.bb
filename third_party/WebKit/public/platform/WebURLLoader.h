@@ -55,40 +55,40 @@ class WebURLLoader {
   // Load the request synchronously, returning results directly to the
   // caller upon completion.  There is no mechanism to interrupt a
   // synchronous load!!
-  virtual void loadSynchronously(const WebURLRequest&,
+  virtual void LoadSynchronously(const WebURLRequest&,
                                  WebURLResponse&,
                                  WebURLError&,
                                  WebData&,
-                                 int64_t& encodedDataLength,
-                                 int64_t& encodedBodyLength) = 0;
+                                 int64_t& encoded_data_length,
+                                 int64_t& encoded_body_length) = 0;
 
   // Load the request asynchronously, sending notifications to the given
   // client.  The client will receive no further notifications if the
   // loader is disposed before it completes its work.
-  virtual void loadAsynchronously(const WebURLRequest&,
+  virtual void LoadAsynchronously(const WebURLRequest&,
                                   WebURLLoaderClient*) = 0;
 
   // Cancels an asynchronous load.  This will appear as a load error to
   // the client.
-  virtual void cancel() = 0;
+  virtual void Cancel() = 0;
 
   // Suspends/resumes an asynchronous load.
-  virtual void setDefersLoading(bool) = 0;
+  virtual void SetDefersLoading(bool) = 0;
 
   // Notifies the loader that the priority of a WebURLRequest has changed from
   // its previous value. For example, a preload request starts with low
   // priority, but may increase when the resource is needed for rendering.
-  virtual void didChangePriority(WebURLRequest::Priority newPriority) {}
-  virtual void didChangePriority(WebURLRequest::Priority newPriority,
-                                 int intraPriorityValue) {
-    didChangePriority(newPriority);
+  virtual void DidChangePriority(WebURLRequest::Priority new_priority) {}
+  virtual void DidChangePriority(WebURLRequest::Priority new_priority,
+                                 int intra_priority_value) {
+    DidChangePriority(new_priority);
   }
 
   // Sets the task runner for which any loading tasks should be posted on.
   // Use WebTaskRunner version when it's called from core or module directory,
   // since we don't directly expose base to them.
-  BLINK_PLATFORM_EXPORT void setLoadingTaskRunner(WebTaskRunner*);
-  virtual void setLoadingTaskRunner(base::SingleThreadTaskRunner*) = 0;
+  BLINK_PLATFORM_EXPORT void SetLoadingTaskRunner(WebTaskRunner*);
+  virtual void SetLoadingTaskRunner(base::SingleThreadTaskRunner*) = 0;
 };
 
 }  // namespace blink

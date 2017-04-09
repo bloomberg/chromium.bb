@@ -19,8 +19,8 @@ class MODULES_EXPORT DetectedText final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DetectedText* create();
-  static DetectedText* create(String, DOMRect*);
+  static DetectedText* Create();
+  static DetectedText* Create(String, DOMRect*);
 
   const String& rawValue() const;
   DOMRect* boundingBox() const;
@@ -29,8 +29,8 @@ class MODULES_EXPORT DetectedText final
  private:
   DetectedText(String, DOMRect*);
 
-  const String m_rawValue;
-  const Member<DOMRect> m_boundingBox;
+  const String raw_value_;
+  const Member<DOMRect> bounding_box_;
 };
 
 }  // namespace blink

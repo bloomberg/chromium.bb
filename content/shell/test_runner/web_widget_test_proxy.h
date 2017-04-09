@@ -95,39 +95,39 @@ class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
   explicit WebWidgetTestProxy(Args... args) : Base(args...) {}
 
   // WebWidgetClient implementation.
-  blink::WebScreenInfo screenInfo() override {
-    blink::WebScreenInfo info = Base::screenInfo();
-    blink::WebScreenInfo test_info = widget_test_client()->screenInfo();
-    if (test_info.orientationType != blink::WebScreenOrientationUndefined) {
-      info.orientationType = test_info.orientationType;
-      info.orientationAngle = test_info.orientationAngle;
+  blink::WebScreenInfo GetScreenInfo() override {
+    blink::WebScreenInfo info = Base::GetScreenInfo();
+    blink::WebScreenInfo test_info = widget_test_client()->GetScreenInfo();
+    if (test_info.orientation_type != blink::kWebScreenOrientationUndefined) {
+      info.orientation_type = test_info.orientation_type;
+      info.orientation_angle = test_info.orientation_angle;
     }
     return info;
   }
-  void scheduleAnimation() override {
-    Base::scheduleAnimation();
-    widget_test_client()->scheduleAnimation();
+  void ScheduleAnimation() override {
+    Base::ScheduleAnimation();
+    widget_test_client()->ScheduleAnimation();
   }
-  bool requestPointerLock() override {
-    return widget_test_client()->requestPointerLock();
+  bool RequestPointerLock() override {
+    return widget_test_client()->RequestPointerLock();
   }
-  void requestPointerUnlock() override {
-    widget_test_client()->requestPointerUnlock();
+  void RequestPointerUnlock() override {
+    widget_test_client()->RequestPointerUnlock();
   }
-  bool isPointerLocked() override {
-    return widget_test_client()->isPointerLocked();
+  bool IsPointerLocked() override {
+    return widget_test_client()->IsPointerLocked();
   }
-  void setToolTipText(const blink::WebString& text,
+  void SetToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override {
-    Base::setToolTipText(text, hint);
-    widget_test_client()->setToolTipText(text, hint);
+    Base::SetToolTipText(text, hint);
+    widget_test_client()->SetToolTipText(text, hint);
   }
-  void startDragging(blink::WebReferrerPolicy policy,
+  void StartDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const blink::WebImage& image,
                      const blink::WebPoint& point) override {
-    widget_test_client()->startDragging(policy, data, mask, image, point);
+    widget_test_client()->StartDragging(policy, data, mask, image, point);
     // Don't forward this call to Base because we don't want to do a real
     // drag-and-drop.
   }

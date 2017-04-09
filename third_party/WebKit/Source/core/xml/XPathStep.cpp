@@ -38,25 +38,25 @@
 namespace blink {
 namespace XPath {
 
-Step::Step(Axis axis, const NodeTest& nodeTest)
-    : m_axis(axis), m_nodeTest(new NodeTest(nodeTest)) {}
+Step::Step(Axis axis, const NodeTest& node_test)
+    : axis_(axis), node_test_(new NodeTest(node_test)) {}
 
 Step::Step(Axis axis,
-           const NodeTest& nodeTest,
+           const NodeTest& node_test,
            HeapVector<Member<Predicate>>& predicates)
-    : m_axis(axis), m_nodeTest(new NodeTest(nodeTest)) {
-  m_predicates.swap(predicates);
+    : axis_(axis), node_test_(new NodeTest(node_test)) {
+  predicates_.Swap(predicates);
 }
 
 Step::~Step() {}
 
 DEFINE_TRACE(Step) {
-  visitor->trace(m_nodeTest);
-  visitor->trace(m_predicates);
-  ParseNode::trace(visitor);
+  visitor->Trace(node_test_);
+  visitor->Trace(predicates_);
+  ParseNode::Trace(visitor);
 }
 
-void Step::optimize() {
+void Step::Optimize() {
   // Evaluate predicates as part of node test if possible to avoid building
   // unnecessary NodeSets.
   // E.g., there is no need to build a set of all "foo" nodes to evaluate
@@ -64,92 +64,93 @@ void Step::optimize() {
   // This optimization can be applied to predicates that are not context node
   // list sensitive, or to first predicate that is only context position
   // sensitive, e.g. foo[position() mod 2 = 0].
-  HeapVector<Member<Predicate>> remainingPredicates;
-  for (const auto& predicate : m_predicates) {
-    if ((!predicate->isContextPositionSensitive() ||
-         nodeTest().mergedPredicates().isEmpty()) &&
-        !predicate->isContextSizeSensitive() && remainingPredicates.isEmpty()) {
-      nodeTest().mergedPredicates().push_back(predicate);
+  HeapVector<Member<Predicate>> remaining_predicates;
+  for (const auto& predicate : predicates_) {
+    if ((!predicate->IsContextPositionSensitive() ||
+         GetNodeTest().MergedPredicates().IsEmpty()) &&
+        !predicate->IsContextSizeSensitive() &&
+        remaining_predicates.IsEmpty()) {
+      GetNodeTest().MergedPredicates().push_back(predicate);
     } else {
-      remainingPredicates.push_back(predicate);
+      remaining_predicates.push_back(predicate);
     }
   }
-  swap(remainingPredicates, m_predicates);
+  swap(remaining_predicates, predicates_);
 }
 
-bool optimizeStepPair(Step* first, Step* second) {
-  if (first->m_axis == Step::DescendantOrSelfAxis &&
-      first->nodeTest().getKind() == Step::NodeTest::AnyNodeTest &&
-      !first->m_predicates.size() &&
-      !first->nodeTest().mergedPredicates().size()) {
-    DCHECK(first->nodeTest().data().isEmpty());
-    DCHECK(first->nodeTest().namespaceURI().isEmpty());
+bool OptimizeStepPair(Step* first, Step* second) {
+  if (first->axis_ == Step::kDescendantOrSelfAxis &&
+      first->GetNodeTest().GetKind() == Step::NodeTest::kAnyNodeTest &&
+      !first->predicates_.size() &&
+      !first->GetNodeTest().MergedPredicates().size()) {
+    DCHECK(first->GetNodeTest().Data().IsEmpty());
+    DCHECK(first->GetNodeTest().NamespaceURI().IsEmpty());
 
     // Optimize the common case of "//" AKA
     // /descendant-or-self::node()/child::NodeTest to /descendant::NodeTest.
-    if (second->m_axis == Step::ChildAxis &&
-        second->predicatesAreContextListInsensitive()) {
-      first->m_axis = Step::DescendantAxis;
-      first->nodeTest() = Step::NodeTest(second->nodeTest().getKind(),
-                                         second->nodeTest().data(),
-                                         second->nodeTest().namespaceURI());
-      swap(second->nodeTest().mergedPredicates(),
-           first->nodeTest().mergedPredicates());
-      swap(second->m_predicates, first->m_predicates);
-      first->optimize();
+    if (second->axis_ == Step::kChildAxis &&
+        second->PredicatesAreContextListInsensitive()) {
+      first->axis_ = Step::kDescendantAxis;
+      first->GetNodeTest() = Step::NodeTest(
+          second->GetNodeTest().GetKind(), second->GetNodeTest().Data(),
+          second->GetNodeTest().NamespaceURI());
+      swap(second->GetNodeTest().MergedPredicates(),
+           first->GetNodeTest().MergedPredicates());
+      swap(second->predicates_, first->predicates_);
+      first->Optimize();
       return true;
     }
   }
   return false;
 }
 
-bool Step::predicatesAreContextListInsensitive() const {
-  for (const auto& predicate : m_predicates) {
-    if (predicate->isContextPositionSensitive() ||
-        predicate->isContextSizeSensitive())
+bool Step::PredicatesAreContextListInsensitive() const {
+  for (const auto& predicate : predicates_) {
+    if (predicate->IsContextPositionSensitive() ||
+        predicate->IsContextSizeSensitive())
       return false;
   }
 
-  for (const auto& predicate : nodeTest().mergedPredicates()) {
-    if (predicate->isContextPositionSensitive() ||
-        predicate->isContextSizeSensitive())
+  for (const auto& predicate : GetNodeTest().MergedPredicates()) {
+    if (predicate->IsContextPositionSensitive() ||
+        predicate->IsContextSizeSensitive())
       return false;
   }
 
   return true;
 }
 
-void Step::evaluate(EvaluationContext& evaluationContext,
+void Step::Evaluate(EvaluationContext& evaluation_context,
                     Node* context,
                     NodeSet& nodes) const {
-  evaluationContext.position = 0;
+  evaluation_context.position = 0;
 
-  nodesInAxis(evaluationContext, context, nodes);
+  NodesInAxis(evaluation_context, context, nodes);
 
   // Check predicates that couldn't be merged into node test.
-  for (const auto& predicate : m_predicates) {
-    NodeSet* newNodes = NodeSet::create();
-    if (!nodes.isSorted())
-      newNodes->markSorted(false);
+  for (const auto& predicate : predicates_) {
+    NodeSet* new_nodes = NodeSet::Create();
+    if (!nodes.IsSorted())
+      new_nodes->MarkSorted(false);
 
     for (unsigned j = 0; j < nodes.size(); j++) {
       Node* node = nodes[j];
 
-      evaluationContext.node = node;
-      evaluationContext.size = nodes.size();
-      evaluationContext.position = j + 1;
-      if (predicate->evaluate(evaluationContext))
-        newNodes->append(node);
+      evaluation_context.node = node;
+      evaluation_context.size = nodes.size();
+      evaluation_context.position = j + 1;
+      if (predicate->Evaluate(evaluation_context))
+        new_nodes->Append(node);
     }
 
-    nodes.swap(*newNodes);
+    nodes.Swap(*new_nodes);
   }
 }
 
 #if DCHECK_IS_ON()
-static inline Node::NodeType primaryNodeType(Step::Axis axis) {
+static inline Node::NodeType PrimaryNodeType(Step::Axis axis) {
   switch (axis) {
-    case Step::AttributeAxis:
+    case Step::kAttributeAxis:
       return Node::kAttributeNode;
     default:
       return Node::kElementNode;
@@ -158,94 +159,97 @@ static inline Node::NodeType primaryNodeType(Step::Axis axis) {
 #endif
 
 // Evaluate NodeTest without considering merged predicates.
-static inline bool nodeMatchesBasicTest(Node* node,
+static inline bool NodeMatchesBasicTest(Node* node,
                                         Step::Axis axis,
-                                        const Step::NodeTest& nodeTest) {
-  switch (nodeTest.getKind()) {
-    case Step::NodeTest::TextNodeTest: {
+                                        const Step::NodeTest& node_test) {
+  switch (node_test.GetKind()) {
+    case Step::NodeTest::kTextNodeTest: {
       Node::NodeType type = node->getNodeType();
       return type == Node::kTextNode || type == Node::kCdataSectionNode;
     }
-    case Step::NodeTest::CommentNodeTest:
+    case Step::NodeTest::kCommentNodeTest:
       return node->getNodeType() == Node::kCommentNode;
-    case Step::NodeTest::ProcessingInstructionNodeTest: {
-      const AtomicString& name = nodeTest.data();
+    case Step::NodeTest::kProcessingInstructionNodeTest: {
+      const AtomicString& name = node_test.Data();
       return node->getNodeType() == Node::kProcessingInstructionNode &&
-             (name.isEmpty() || node->nodeName() == name);
+             (name.IsEmpty() || node->nodeName() == name);
     }
-    case Step::NodeTest::AnyNodeTest:
+    case Step::NodeTest::kAnyNodeTest:
       return true;
-    case Step::NodeTest::NameTest: {
-      const AtomicString& name = nodeTest.data();
-      const AtomicString& namespaceURI = nodeTest.namespaceURI();
+    case Step::NodeTest::kNameTest: {
+      const AtomicString& name = node_test.Data();
+      const AtomicString& namespace_uri = node_test.NamespaceURI();
 
-      if (axis == Step::AttributeAxis) {
-        Attr* attr = toAttr(node);
+      if (axis == Step::kAttributeAxis) {
+        Attr* attr = ToAttr(node);
 
         // In XPath land, namespace nodes are not accessible on the
         // attribute axis.
         if (attr->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
           return false;
 
-        if (name == starAtom)
-          return namespaceURI.isEmpty() || attr->namespaceURI() == namespaceURI;
+        if (name == g_star_atom)
+          return namespace_uri.IsEmpty() ||
+                 attr->namespaceURI() == namespace_uri;
 
         return attr->localName() == name &&
-               attr->namespaceURI() == namespaceURI;
+               attr->namespaceURI() == namespace_uri;
       }
 
       // Node test on the namespace axis is not implemented yet, the caller
       // has a check for it.
-      DCHECK_NE(Step::NamespaceAxis, axis);
+      DCHECK_NE(Step::kNamespaceAxis, axis);
 
 // For other axes, the principal node type is element.
 #if DCHECK_IS_ON()
-      DCHECK_EQ(Node::kElementNode, primaryNodeType(axis));
+      DCHECK_EQ(Node::kElementNode, PrimaryNodeType(axis));
 #endif
-      if (!node->isElementNode())
+      if (!node->IsElementNode())
         return false;
-      Element& element = toElement(*node);
+      Element& element = ToElement(*node);
 
-      if (name == starAtom)
-        return namespaceURI.isEmpty() || namespaceURI == element.namespaceURI();
+      if (name == g_star_atom)
+        return namespace_uri.IsEmpty() ||
+               namespace_uri == element.namespaceURI();
 
-      if (element.document().isHTMLDocument()) {
-        if (element.isHTMLElement()) {
+      if (element.GetDocument().IsHTMLDocument()) {
+        if (element.IsHTMLElement()) {
           // Paths without namespaces should match HTML elements in HTML
           // documents despite those having an XHTML namespace. Names are
           // compared case-insensitively.
-          return equalIgnoringCase(element.localName(), name) &&
-                 (namespaceURI.isNull() ||
-                  namespaceURI == element.namespaceURI());
+          return EqualIgnoringCase(element.localName(), name) &&
+                 (namespace_uri.IsNull() ||
+                  namespace_uri == element.namespaceURI());
         }
         // An expression without any prefix shouldn't match no-namespace
         // nodes (because HTML5 says so).
-        return element.hasLocalName(name) &&
-               namespaceURI == element.namespaceURI() && !namespaceURI.isNull();
+        return element.HasLocalName(name) &&
+               namespace_uri == element.namespaceURI() &&
+               !namespace_uri.IsNull();
       }
-      return element.hasLocalName(name) &&
-             namespaceURI == element.namespaceURI();
+      return element.HasLocalName(name) &&
+             namespace_uri == element.namespaceURI();
     }
   }
   NOTREACHED();
   return false;
 }
 
-static inline bool nodeMatches(EvaluationContext& evaluationContext,
+static inline bool NodeMatches(EvaluationContext& evaluation_context,
                                Node* node,
                                Step::Axis axis,
-                               const Step::NodeTest& nodeTest) {
-  if (!nodeMatchesBasicTest(node, axis, nodeTest))
+                               const Step::NodeTest& node_test) {
+  if (!NodeMatchesBasicTest(node, axis, node_test))
     return false;
 
   // Only the first merged predicate may depend on position.
-  ++evaluationContext.position;
+  ++evaluation_context.position;
 
-  for (const auto& predicate : nodeTest.mergedPredicates()) {
-    evaluationContext.node = node;
+  for (const auto& predicate : node_test.MergedPredicates()) {
+    evaluation_context.node = node;
     // No need to set context size - we only get here when evaluating
     // predicates that do not depend on it.
-    if (!predicate->evaluate(evaluationContext))
+    if (!predicate->Evaluate(evaluation_context))
       return false;
   }
 
@@ -254,188 +258,197 @@ static inline bool nodeMatches(EvaluationContext& evaluationContext,
 
 // Result nodes are ordered in axis order. Node test (including merged
 // predicates) is applied.
-void Step::nodesInAxis(EvaluationContext& evaluationContext,
+void Step::NodesInAxis(EvaluationContext& evaluation_context,
                        Node* context,
                        NodeSet& nodes) const {
-  DCHECK(nodes.isEmpty());
-  switch (m_axis) {
-    case ChildAxis:
+  DCHECK(nodes.IsEmpty());
+  switch (axis_) {
+    case kChildAxis:
       // In XPath model, attribute nodes do not have children.
-      if (context->isAttributeNode())
+      if (context->IsAttributeNode())
         return;
 
       for (Node* n = context->firstChild(); n; n = n->nextSibling()) {
-        if (nodeMatches(evaluationContext, n, ChildAxis, nodeTest()))
-          nodes.append(n);
+        if (NodeMatches(evaluation_context, n, kChildAxis, GetNodeTest()))
+          nodes.Append(n);
       }
       return;
 
-    case DescendantAxis:
+    case kDescendantAxis:
       // In XPath model, attribute nodes do not have children.
-      if (context->isAttributeNode())
+      if (context->IsAttributeNode())
         return;
 
-      for (Node& n : NodeTraversal::descendantsOf(*context)) {
-        if (nodeMatches(evaluationContext, &n, DescendantAxis, nodeTest()))
-          nodes.append(&n);
+      for (Node& n : NodeTraversal::DescendantsOf(*context)) {
+        if (NodeMatches(evaluation_context, &n, kDescendantAxis, GetNodeTest()))
+          nodes.Append(&n);
       }
       return;
 
-    case ParentAxis:
-      if (context->isAttributeNode()) {
-        Element* n = toAttr(context)->ownerElement();
-        if (nodeMatches(evaluationContext, n, ParentAxis, nodeTest()))
-          nodes.append(n);
+    case kParentAxis:
+      if (context->IsAttributeNode()) {
+        Element* n = ToAttr(context)->ownerElement();
+        if (NodeMatches(evaluation_context, n, kParentAxis, GetNodeTest()))
+          nodes.Append(n);
       } else {
         ContainerNode* n = context->parentNode();
-        if (n && nodeMatches(evaluationContext, n, ParentAxis, nodeTest()))
-          nodes.append(n);
+        if (n && NodeMatches(evaluation_context, n, kParentAxis, GetNodeTest()))
+          nodes.Append(n);
       }
       return;
 
-    case AncestorAxis: {
+    case kAncestorAxis: {
       Node* n = context;
-      if (context->isAttributeNode()) {
-        n = toAttr(context)->ownerElement();
-        if (nodeMatches(evaluationContext, n, AncestorAxis, nodeTest()))
-          nodes.append(n);
+      if (context->IsAttributeNode()) {
+        n = ToAttr(context)->ownerElement();
+        if (NodeMatches(evaluation_context, n, kAncestorAxis, GetNodeTest()))
+          nodes.Append(n);
       }
       for (n = n->parentNode(); n; n = n->parentNode()) {
-        if (nodeMatches(evaluationContext, n, AncestorAxis, nodeTest()))
-          nodes.append(n);
+        if (NodeMatches(evaluation_context, n, kAncestorAxis, GetNodeTest()))
+          nodes.Append(n);
       }
-      nodes.markSorted(false);
+      nodes.MarkSorted(false);
       return;
     }
 
-    case FollowingSiblingAxis:
+    case kFollowingSiblingAxis:
       if (context->getNodeType() == Node::kAttributeNode)
         return;
 
       for (Node* n = context->nextSibling(); n; n = n->nextSibling()) {
-        if (nodeMatches(evaluationContext, n, FollowingSiblingAxis, nodeTest()))
-          nodes.append(n);
+        if (NodeMatches(evaluation_context, n, kFollowingSiblingAxis,
+                        GetNodeTest()))
+          nodes.Append(n);
       }
       return;
 
-    case PrecedingSiblingAxis:
+    case kPrecedingSiblingAxis:
       if (context->getNodeType() == Node::kAttributeNode)
         return;
 
       for (Node* n = context->previousSibling(); n; n = n->previousSibling()) {
-        if (nodeMatches(evaluationContext, n, PrecedingSiblingAxis, nodeTest()))
-          nodes.append(n);
+        if (NodeMatches(evaluation_context, n, kPrecedingSiblingAxis,
+                        GetNodeTest()))
+          nodes.Append(n);
       }
-      nodes.markSorted(false);
+      nodes.MarkSorted(false);
       return;
 
-    case FollowingAxis:
-      if (context->isAttributeNode()) {
+    case kFollowingAxis:
+      if (context->IsAttributeNode()) {
         for (Node& p :
-             NodeTraversal::startsAfter(*toAttr(context)->ownerElement())) {
-          if (nodeMatches(evaluationContext, &p, FollowingAxis, nodeTest()))
-            nodes.append(&p);
+             NodeTraversal::StartsAfter(*ToAttr(context)->ownerElement())) {
+          if (NodeMatches(evaluation_context, &p, kFollowingAxis,
+                          GetNodeTest()))
+            nodes.Append(&p);
         }
       } else {
-        for (Node* p = context; !isRootDomNode(p); p = p->parentNode()) {
+        for (Node* p = context; !IsRootDomNode(p); p = p->parentNode()) {
           for (Node* n = p->nextSibling(); n; n = n->nextSibling()) {
-            if (nodeMatches(evaluationContext, n, FollowingAxis, nodeTest()))
-              nodes.append(n);
-            for (Node& c : NodeTraversal::descendantsOf(*n)) {
-              if (nodeMatches(evaluationContext, &c, FollowingAxis, nodeTest()))
-                nodes.append(&c);
+            if (NodeMatches(evaluation_context, n, kFollowingAxis,
+                            GetNodeTest()))
+              nodes.Append(n);
+            for (Node& c : NodeTraversal::DescendantsOf(*n)) {
+              if (NodeMatches(evaluation_context, &c, kFollowingAxis,
+                              GetNodeTest()))
+                nodes.Append(&c);
             }
           }
         }
       }
       return;
 
-    case PrecedingAxis: {
-      if (context->isAttributeNode())
-        context = toAttr(context)->ownerElement();
+    case kPrecedingAxis: {
+      if (context->IsAttributeNode())
+        context = ToAttr(context)->ownerElement();
 
       Node* n = context;
       while (ContainerNode* parent = n->parentNode()) {
-        for (n = NodeTraversal::previous(*n); n != parent;
-             n = NodeTraversal::previous(*n)) {
-          if (nodeMatches(evaluationContext, n, PrecedingAxis, nodeTest()))
-            nodes.append(n);
+        for (n = NodeTraversal::Previous(*n); n != parent;
+             n = NodeTraversal::Previous(*n)) {
+          if (NodeMatches(evaluation_context, n, kPrecedingAxis, GetNodeTest()))
+            nodes.Append(n);
         }
         n = parent;
       }
-      nodes.markSorted(false);
+      nodes.MarkSorted(false);
       return;
     }
 
-    case AttributeAxis: {
-      if (!context->isElementNode())
+    case kAttributeAxis: {
+      if (!context->IsElementNode())
         return;
 
-      Element* contextElement = toElement(context);
+      Element* context_element = ToElement(context);
       // Avoid lazily creating attribute nodes for attributes that we do not
       // need anyway.
-      if (nodeTest().getKind() == NodeTest::NameTest &&
-          nodeTest().data() != starAtom) {
-        Attr* attr = contextElement->getAttributeNodeNS(
-            nodeTest().namespaceURI(), nodeTest().data());
+      if (GetNodeTest().GetKind() == NodeTest::kNameTest &&
+          GetNodeTest().Data() != g_star_atom) {
+        Attr* attr = context_element->getAttributeNodeNS(
+            GetNodeTest().NamespaceURI(), GetNodeTest().Data());
         // In XPath land, namespace nodes are not accessible on the attribute
         // axis.
         if (attr && attr->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
           // Still need to check merged predicates.
-          if (nodeMatches(evaluationContext, attr, AttributeAxis, nodeTest()))
-            nodes.append(attr);
+          if (NodeMatches(evaluation_context, attr, kAttributeAxis,
+                          GetNodeTest()))
+            nodes.Append(attr);
         }
         return;
       }
 
-      AttributeCollection attributes = contextElement->attributes();
+      AttributeCollection attributes = context_element->Attributes();
       for (auto& attribute : attributes) {
-        Attr* attr = contextElement->ensureAttr(attribute.name());
-        if (nodeMatches(evaluationContext, attr, AttributeAxis, nodeTest()))
-          nodes.append(attr);
+        Attr* attr = context_element->EnsureAttr(attribute.GetName());
+        if (NodeMatches(evaluation_context, attr, kAttributeAxis,
+                        GetNodeTest()))
+          nodes.Append(attr);
       }
       return;
     }
 
-    case NamespaceAxis:
+    case kNamespaceAxis:
       // XPath namespace nodes are not implemented.
       return;
 
-    case SelfAxis:
-      if (nodeMatches(evaluationContext, context, SelfAxis, nodeTest()))
-        nodes.append(context);
+    case kSelfAxis:
+      if (NodeMatches(evaluation_context, context, kSelfAxis, GetNodeTest()))
+        nodes.Append(context);
       return;
 
-    case DescendantOrSelfAxis:
-      if (nodeMatches(evaluationContext, context, DescendantOrSelfAxis,
-                      nodeTest()))
-        nodes.append(context);
+    case kDescendantOrSelfAxis:
+      if (NodeMatches(evaluation_context, context, kDescendantOrSelfAxis,
+                      GetNodeTest()))
+        nodes.Append(context);
       // In XPath model, attribute nodes do not have children.
-      if (context->isAttributeNode())
+      if (context->IsAttributeNode())
         return;
 
-      for (Node& n : NodeTraversal::descendantsOf(*context)) {
-        if (nodeMatches(evaluationContext, &n, DescendantOrSelfAxis,
-                        nodeTest()))
-          nodes.append(&n);
+      for (Node& n : NodeTraversal::DescendantsOf(*context)) {
+        if (NodeMatches(evaluation_context, &n, kDescendantOrSelfAxis,
+                        GetNodeTest()))
+          nodes.Append(&n);
       }
       return;
 
-    case AncestorOrSelfAxis: {
-      if (nodeMatches(evaluationContext, context, AncestorOrSelfAxis,
-                      nodeTest()))
-        nodes.append(context);
+    case kAncestorOrSelfAxis: {
+      if (NodeMatches(evaluation_context, context, kAncestorOrSelfAxis,
+                      GetNodeTest()))
+        nodes.Append(context);
       Node* n = context;
-      if (context->isAttributeNode()) {
-        n = toAttr(context)->ownerElement();
-        if (nodeMatches(evaluationContext, n, AncestorOrSelfAxis, nodeTest()))
-          nodes.append(n);
+      if (context->IsAttributeNode()) {
+        n = ToAttr(context)->ownerElement();
+        if (NodeMatches(evaluation_context, n, kAncestorOrSelfAxis,
+                        GetNodeTest()))
+          nodes.Append(n);
       }
       for (n = n->parentNode(); n; n = n->parentNode()) {
-        if (nodeMatches(evaluationContext, n, AncestorOrSelfAxis, nodeTest()))
-          nodes.append(n);
+        if (NodeMatches(evaluation_context, n, kAncestorOrSelfAxis,
+                        GetNodeTest()))
+          nodes.Append(n);
       }
-      nodes.markSorted(false);
+      nodes.MarkSorted(false);
       return;
     }
   }

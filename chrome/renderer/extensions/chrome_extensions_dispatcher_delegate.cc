@@ -74,9 +74,9 @@ void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
   // conservative.
   if (extensions::Manifest::IsComponentLocation(extension->location()) &&
       is_extension_active) {
-    blink::WebSecurityPolicy::addOriginAccessWhitelistEntry(
-        extension->url(), blink::WebString::fromUTF8(content::kChromeUIScheme),
-        blink::WebString::fromUTF8(chrome::kChromeUIThemeHost), false);
+    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+        extension->url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
+        blink::WebString::FromUTF8(chrome::kChromeUIThemeHost), false);
   }
 
   // TODO(jstritar): We should try to remove this special case. Also, these
@@ -85,11 +85,9 @@ void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
   if (is_extension_active &&
       extension->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kManagement)) {
-    blink::WebSecurityPolicy::addOriginAccessWhitelistEntry(
-        extension->url(),
-        blink::WebString::fromUTF8(content::kChromeUIScheme),
-        blink::WebString::fromUTF8(chrome::kChromeUIExtensionIconHost),
-        false);
+    blink::WebSecurityPolicy::AddOriginAccessWhitelistEntry(
+        extension->url(), blink::WebString::FromUTF8(content::kChromeUIScheme),
+        blink::WebString::FromUTF8(chrome::kChromeUIExtensionIconHost), false);
   }
 }
 

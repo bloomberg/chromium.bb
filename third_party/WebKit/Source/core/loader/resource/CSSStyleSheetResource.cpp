@@ -39,131 +39,131 @@
 
 namespace blink {
 
-CSSStyleSheetResource* CSSStyleSheetResource::fetch(FetchRequest& request,
+CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchRequest& request,
                                                     ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.resourceRequest().frameType(),
-            WebURLRequest::FrameTypeNone);
-  request.setRequestContext(WebURLRequest::RequestContextStyle);
-  CSSStyleSheetResource* resource = toCSSStyleSheetResource(
-      fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
+  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+            WebURLRequest::kFrameTypeNone);
+  request.SetRequestContext(WebURLRequest::kRequestContextStyle);
+  CSSStyleSheetResource* resource = ToCSSStyleSheetResource(
+      fetcher->RequestResource(request, CSSStyleSheetResourceFactory()));
   // TODO(kouhei): Dedupe this logic w/ ScriptResource::fetch
-  if (resource && !request.integrityMetadata().isEmpty())
-    resource->setIntegrityMetadata(request.integrityMetadata());
+  if (resource && !request.IntegrityMetadata().IsEmpty())
+    resource->SetIntegrityMetadata(request.IntegrityMetadata());
   return resource;
 }
 
-CSSStyleSheetResource* CSSStyleSheetResource::createForTest(
+CSSStyleSheetResource* CSSStyleSheetResource::CreateForTest(
     const ResourceRequest& request,
     const String& charset) {
   return new CSSStyleSheetResource(request, ResourceLoaderOptions(), charset);
 }
 
 CSSStyleSheetResource::CSSStyleSheetResource(
-    const ResourceRequest& resourceRequest,
+    const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
     const String& charset)
-    : StyleSheetResource(resourceRequest,
-                         CSSStyleSheet,
+    : StyleSheetResource(resource_request,
+                         kCSSStyleSheet,
                          options,
                          "text/css",
                          charset),
-      m_didNotifyFirstData(false) {}
+      did_notify_first_data_(false) {}
 
 CSSStyleSheetResource::~CSSStyleSheetResource() {}
 
-void CSSStyleSheetResource::setParsedStyleSheetCache(
-    StyleSheetContents* newSheet) {
-  if (m_parsedStyleSheetCache)
-    m_parsedStyleSheetCache->clearReferencedFromResource();
-  m_parsedStyleSheetCache = newSheet;
-  if (m_parsedStyleSheetCache)
-    m_parsedStyleSheetCache->setReferencedFromResource(this);
+void CSSStyleSheetResource::SetParsedStyleSheetCache(
+    StyleSheetContents* new_sheet) {
+  if (parsed_style_sheet_cache_)
+    parsed_style_sheet_cache_->ClearReferencedFromResource();
+  parsed_style_sheet_cache_ = new_sheet;
+  if (parsed_style_sheet_cache_)
+    parsed_style_sheet_cache_->SetReferencedFromResource(this);
 
   // Updates the decoded size to take parsed stylesheet cache into account.
-  updateDecodedSize();
+  UpdateDecodedSize();
 }
 
 DEFINE_TRACE(CSSStyleSheetResource) {
-  visitor->trace(m_parsedStyleSheetCache);
-  StyleSheetResource::trace(visitor);
+  visitor->Trace(parsed_style_sheet_cache_);
+  StyleSheetResource::Trace(visitor);
 }
 
-void CSSStyleSheetResource::didAddClient(ResourceClient* c) {
-  DCHECK(StyleSheetResourceClient::isExpectedType(c));
+void CSSStyleSheetResource::DidAddClient(ResourceClient* c) {
+  DCHECK(StyleSheetResourceClient::IsExpectedType(c));
   // Resource::didAddClient() must be before setCSSStyleSheet(), because
   // setCSSStyleSheet() may cause scripts to be executed, which could destroy
   // 'c' if it is an instance of HTMLLinkElement. see the comment of
   // HTMLLinkElement::setCSSStyleSheet.
-  Resource::didAddClient(c);
+  Resource::DidAddClient(c);
 
-  if (hasClient(c) && m_didNotifyFirstData)
-    static_cast<StyleSheetResourceClient*>(c)->didAppendFirstData(this);
+  if (HasClient(c) && did_notify_first_data_)
+    static_cast<StyleSheetResourceClient*>(c)->DidAppendFirstData(this);
 
   // |c| might be removed in didAppendFirstData, so ensure it is still a client.
-  if (hasClient(c) && !isLoading()) {
-    ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
-    String referrerPolicyHeader =
-        response().httpHeaderField(HTTPNames::Referrer_Policy);
-    if (!referrerPolicyHeader.isNull()) {
-      SecurityPolicy::referrerPolicyFromHeaderValue(
-          referrerPolicyHeader, DoNotSupportReferrerPolicyLegacyKeywords,
-          &referrerPolicy);
+  if (HasClient(c) && !IsLoading()) {
+    ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+    String referrer_policy_header =
+        GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
+    if (!referrer_policy_header.IsNull()) {
+      SecurityPolicy::ReferrerPolicyFromHeaderValue(
+          referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
+          &referrer_policy);
     }
-    static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(
-        resourceRequest().url(), response().url(), referrerPolicy, encoding(),
-        this);
+    static_cast<StyleSheetResourceClient*>(c)->SetCSSStyleSheet(
+        GetResourceRequest().Url(), GetResponse().Url(), referrer_policy,
+        Encoding(), this);
   }
 }
 
-const String CSSStyleSheetResource::sheetText(
-    MIMETypeCheck mimeTypeCheck) const {
-  if (!canUseSheet(mimeTypeCheck))
+const String CSSStyleSheetResource::SheetText(
+    MIMETypeCheck mime_type_check) const {
+  if (!CanUseSheet(mime_type_check))
     return String();
 
   // Use cached decoded sheet text when available
-  if (!m_decodedSheetText.isNull()) {
+  if (!decoded_sheet_text_.IsNull()) {
     // We should have the decoded sheet text cached when the resource is fully
     // loaded.
-    DCHECK_EQ(getStatus(), ResourceStatus::Cached);
+    DCHECK_EQ(GetStatus(), ResourceStatus::kCached);
 
-    return m_decodedSheetText;
+    return decoded_sheet_text_;
   }
 
-  if (!data() || data()->isEmpty())
+  if (!Data() || Data()->IsEmpty())
     return String();
 
-  return decodedText();
+  return DecodedText();
 }
 
-void CSSStyleSheetResource::appendData(const char* data, size_t length) {
-  Resource::appendData(data, length);
-  if (m_didNotifyFirstData)
+void CSSStyleSheetResource::AppendData(const char* data, size_t length) {
+  Resource::AppendData(data, length);
+  if (did_notify_first_data_)
     return;
-  ResourceClientWalker<StyleSheetResourceClient> w(clients());
-  while (StyleSheetResourceClient* c = w.next())
-    c->didAppendFirstData(this);
-  m_didNotifyFirstData = true;
+  ResourceClientWalker<StyleSheetResourceClient> w(Clients());
+  while (StyleSheetResourceClient* c = w.Next())
+    c->DidAppendFirstData(this);
+  did_notify_first_data_ = true;
 }
 
-void CSSStyleSheetResource::checkNotify() {
+void CSSStyleSheetResource::CheckNotify() {
   // Decode the data to find out the encoding and cache the decoded sheet text.
-  if (data())
-    setDecodedSheetText(decodedText());
+  if (Data())
+    SetDecodedSheetText(DecodedText());
 
-  ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
-  String referrerPolicyHeader =
-      response().httpHeaderField(HTTPNames::Referrer_Policy);
-  if (!referrerPolicyHeader.isNull()) {
-    SecurityPolicy::referrerPolicyFromHeaderValue(
-        referrerPolicyHeader, DoNotSupportReferrerPolicyLegacyKeywords,
-        &referrerPolicy);
+  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+  String referrer_policy_header =
+      GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
+  if (!referrer_policy_header.IsNull()) {
+    SecurityPolicy::ReferrerPolicyFromHeaderValue(
+        referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
+        &referrer_policy);
   }
 
-  ResourceClientWalker<StyleSheetResourceClient> w(clients());
-  while (StyleSheetResourceClient* c = w.next()) {
-    markClientFinished(c);
-    c->setCSSStyleSheet(resourceRequest().url(), response().url(),
-                        referrerPolicy, encoding(), this);
+  ResourceClientWalker<StyleSheetResourceClient> w(Clients());
+  while (StyleSheetResourceClient* c = w.Next()) {
+    MarkClientFinished(c);
+    c->SetCSSStyleSheet(GetResourceRequest().Url(), GetResponse().Url(),
+                        referrer_policy, Encoding(), this);
   }
 
   // Clear raw bytes as now we have the full decoded sheet text.
@@ -171,23 +171,23 @@ void CSSStyleSheetResource::checkNotify() {
   // as SubresourceIntegrity checks require raw bytes.
   // Note that LinkStyle::setCSSStyleSheet can be called from didAddClient too,
   // but is safe as we should have a cached ResourceIntegrityDisposition.
-  clearData();
+  ClearData();
 }
 
-void CSSStyleSheetResource::destroyDecodedDataIfPossible() {
-  if (!m_parsedStyleSheetCache)
+void CSSStyleSheetResource::DestroyDecodedDataIfPossible() {
+  if (!parsed_style_sheet_cache_)
     return;
 
-  setParsedStyleSheetCache(nullptr);
+  SetParsedStyleSheetCache(nullptr);
 }
 
-void CSSStyleSheetResource::destroyDecodedDataForFailedRevalidation() {
-  setDecodedSheetText(String());
-  destroyDecodedDataIfPossible();
+void CSSStyleSheetResource::DestroyDecodedDataForFailedRevalidation() {
+  SetDecodedSheetText(String());
+  DestroyDecodedDataIfPossible();
 }
 
-bool CSSStyleSheetResource::canUseSheet(MIMETypeCheck mimeTypeCheck) const {
-  if (errorOccurred())
+bool CSSStyleSheetResource::CanUseSheet(MIMETypeCheck mime_type_check) const {
+  if (ErrorOccurred())
     return false;
 
   // This check exactly matches Firefox. Note that we grab the Content-Type
@@ -197,57 +197,58 @@ bool CSSStyleSheetResource::canUseSheet(MIMETypeCheck mimeTypeCheck) const {
   //
   // This code defaults to allowing the stylesheet for non-HTTP protocols so
   // folks can use standards mode for local HTML documents.
-  if (mimeTypeCheck == MIMETypeCheck::Lax)
+  if (mime_type_check == MIMETypeCheck::kLax)
     return true;
-  AtomicString contentType = httpContentType();
-  return contentType.isEmpty() || equalIgnoringCase(contentType, "text/css") ||
-         equalIgnoringCase(contentType, "application/x-unknown-content-type");
+  AtomicString content_type = HttpContentType();
+  return content_type.IsEmpty() ||
+         EqualIgnoringCase(content_type, "text/css") ||
+         EqualIgnoringCase(content_type, "application/x-unknown-content-type");
 }
 
-StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(
+StyleSheetContents* CSSStyleSheetResource::RestoreParsedStyleSheet(
     const CSSParserContext* context) {
-  if (!m_parsedStyleSheetCache)
+  if (!parsed_style_sheet_cache_)
     return nullptr;
-  if (m_parsedStyleSheetCache->hasFailedOrCanceledSubresources()) {
-    setParsedStyleSheetCache(nullptr);
+  if (parsed_style_sheet_cache_->HasFailedOrCanceledSubresources()) {
+    SetParsedStyleSheetCache(nullptr);
     return nullptr;
   }
 
-  DCHECK(m_parsedStyleSheetCache->isCacheableForResource());
-  DCHECK(m_parsedStyleSheetCache->isReferencedFromResource());
+  DCHECK(parsed_style_sheet_cache_->IsCacheableForResource());
+  DCHECK(parsed_style_sheet_cache_->IsReferencedFromResource());
 
   // Contexts must be identical so we know we would get the same exact result if
   // we parsed again.
-  if (*m_parsedStyleSheetCache->parserContext() != *context)
+  if (*parsed_style_sheet_cache_->ParserContext() != *context)
     return nullptr;
 
-  return m_parsedStyleSheetCache;
+  return parsed_style_sheet_cache_;
 }
 
-void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet) {
+void CSSStyleSheetResource::SaveParsedStyleSheet(StyleSheetContents* sheet) {
   DCHECK(sheet);
-  DCHECK(sheet->isCacheableForResource());
+  DCHECK(sheet->IsCacheableForResource());
 
-  if (!memoryCache()->contains(this)) {
+  if (!GetMemoryCache()->Contains(this)) {
     // This stylesheet resource did conflict with another resource and was not
     // added to the cache.
-    setParsedStyleSheetCache(nullptr);
+    SetParsedStyleSheetCache(nullptr);
     return;
   }
-  setParsedStyleSheetCache(sheet);
+  SetParsedStyleSheetCache(sheet);
 }
 
-void CSSStyleSheetResource::setDecodedSheetText(
-    const String& decodedSheetText) {
-  m_decodedSheetText = decodedSheetText;
-  updateDecodedSize();
+void CSSStyleSheetResource::SetDecodedSheetText(
+    const String& decoded_sheet_text) {
+  decoded_sheet_text_ = decoded_sheet_text;
+  UpdateDecodedSize();
 }
 
-void CSSStyleSheetResource::updateDecodedSize() {
-  size_t decodedSize = m_decodedSheetText.charactersSizeInBytes();
-  if (m_parsedStyleSheetCache)
-    decodedSize += m_parsedStyleSheetCache->estimatedSizeInBytes();
-  setDecodedSize(decodedSize);
+void CSSStyleSheetResource::UpdateDecodedSize() {
+  size_t decoded_size = decoded_sheet_text_.CharactersSizeInBytes();
+  if (parsed_style_sheet_cache_)
+    decoded_size += parsed_style_sheet_cache_->EstimatedSizeInBytes();
+  SetDecodedSize(decoded_size);
 }
 
 }  // namespace blink

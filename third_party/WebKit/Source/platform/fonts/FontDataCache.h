@@ -42,18 +42,18 @@ class SimpleFontData;
 
 struct FontDataCacheKeyHash {
   STATIC_ONLY(FontDataCacheKeyHash);
-  static unsigned hash(const FontPlatformData* platformData) {
-    return platformData->hash();
+  static unsigned GetHash(const FontPlatformData* platform_data) {
+    return platform_data->GetHash();
   }
 
-  static bool equal(const FontPlatformData* a, const FontPlatformData* b) {
-    const FontPlatformData* emptyValue =
+  static bool Equal(const FontPlatformData* a, const FontPlatformData* b) {
+    const FontPlatformData* empty_value =
         reinterpret_cast<FontPlatformData*>(-1);
 
-    if (a == emptyValue)
-      return b == emptyValue;
-    if (b == emptyValue)
-      return a == emptyValue;
+    if (a == empty_value)
+      return b == empty_value;
+    if (b == empty_value)
+      return a == empty_value;
 
     if (!a || !b)
       return a == b;
@@ -63,7 +63,7 @@ struct FontDataCacheKeyHash {
     return *a == *b;
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 class FontDataCache {
@@ -73,30 +73,30 @@ class FontDataCache {
  public:
   FontDataCache() {}
 
-  PassRefPtr<SimpleFontData> get(const FontPlatformData*,
-                                 ShouldRetain = Retain,
+  PassRefPtr<SimpleFontData> Get(const FontPlatformData*,
+                                 ShouldRetain = kRetain,
                                  bool = false);
-  bool contains(const FontPlatformData*) const;
-  void release(const SimpleFontData*);
+  bool Contains(const FontPlatformData*) const;
+  void Release(const SimpleFontData*);
 
   // This is used by FontVerticalDataCache to mark all items with vertical data
   // that are currently in cache as "in cache", which is later used to sweep the
   // FontVerticalDataCache.
-  void markAllVerticalData();
+  void MarkAllVerticalData();
 
   // Purges items in FontDataCache according to provided severity.
   // Returns true if any removal of cache items actually occurred.
-  bool purge(PurgeSeverity);
+  bool Purge(PurgeSeverity);
 
  private:
-  bool purgeLeastRecentlyUsed(int count);
+  bool PurgeLeastRecentlyUsed(int count);
 
   typedef HashMap<const FontPlatformData*,
                   std::pair<RefPtr<SimpleFontData>, unsigned>,
                   FontDataCacheKeyHash>
       Cache;
-  Cache m_cache;
-  ListHashSet<RefPtr<SimpleFontData>> m_inactiveFontData;
+  Cache cache_;
+  ListHashSet<RefPtr<SimpleFontData>> inactive_font_data_;
 };
 
 }  // namespace blink

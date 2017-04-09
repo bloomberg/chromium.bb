@@ -36,7 +36,7 @@ class NodeFilterCondition
     : public GarbageCollectedFinalized<NodeFilterCondition> {
  public:
   virtual ~NodeFilterCondition() {}
-  virtual unsigned acceptNode(Node*, ExceptionState&) const = 0;
+  virtual unsigned AcceptNode(Node*, ExceptionState&) const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

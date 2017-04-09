@@ -37,23 +37,23 @@ namespace blink {
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleSurroundData : public RefCounted<StyleSurroundData> {
  public:
-  static PassRefPtr<StyleSurroundData> create() {
-    return adoptRef(new StyleSurroundData);
+  static PassRefPtr<StyleSurroundData> Create() {
+    return AdoptRef(new StyleSurroundData);
   }
-  PassRefPtr<StyleSurroundData> copy() const {
-    return adoptRef(new StyleSurroundData(*this));
+  PassRefPtr<StyleSurroundData> Copy() const {
+    return AdoptRef(new StyleSurroundData(*this));
   }
 
   bool operator==(const StyleSurroundData&) const;
   bool operator!=(const StyleSurroundData& o) const { return !(*this == o); }
 
-  Length m_left;
-  Length m_right;
-  Length m_top;
-  Length m_bottom;
-  LengthBox m_margin;
-  LengthBox m_padding;
-  BorderData m_border;
+  Length left_;
+  Length right_;
+  Length top_;
+  Length bottom_;
+  LengthBox margin_;
+  LengthBox padding_;
+  BorderData border_;
 
  private:
   StyleSurroundData();

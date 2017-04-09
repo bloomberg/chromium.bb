@@ -18,12 +18,12 @@ class MODULES_EXPORT InstallationServiceImpl final
  public:
   explicit InstallationServiceImpl(LocalFrame&);
 
-  static void create(LocalFrame*, mojom::blink::InstallationServiceRequest);
+  static void Create(LocalFrame*, mojom::blink::InstallationServiceRequest);
 
   void OnInstall() override;
 
  private:
-  WeakPersistent<LocalFrame> m_frame;
+  WeakPersistent<LocalFrame> frame_;
 };
 
 }  // namespace blink

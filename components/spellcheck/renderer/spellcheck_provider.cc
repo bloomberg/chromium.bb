@@ -29,10 +29,12 @@ using blink::WebTextCheckingResult;
 using blink::WebTextDecorationType;
 using blink::WebVector;
 
-static_assert(int(blink::WebTextDecorationTypeSpelling) ==
-              int(SpellCheckResult::SPELLING), "mismatching enums");
-static_assert(int(blink::WebTextDecorationTypeGrammar) ==
-              int(SpellCheckResult::GRAMMAR), "mismatching enums");
+static_assert(int(blink::kWebTextDecorationTypeSpelling) ==
+                  int(SpellCheckResult::SPELLING),
+              "mismatching enums");
+static_assert(int(blink::kWebTextDecorationTypeGrammar) ==
+                  int(SpellCheckResult::GRAMMAR),
+              "mismatching enums");
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
@@ -54,7 +56,7 @@ void SpellCheckProvider::RequestTextChecking(
     WebTextCheckingCompletion* completion) {
   // Ignore invalid requests.
   if (text.empty() || !HasWordCharacters(text, 0)) {
-    completion->didCancelCheckingText();
+    completion->DidCancelCheckingText();
     return;
   }
 
@@ -65,7 +67,7 @@ void SpellCheckProvider::RequestTextChecking(
   // Send this text to a browser. A browser checks the user profile and send
   // this text to the Spelling service only if a user enables this feature.
   last_request_.clear();
-  last_results_.assign(blink::WebVector<blink::WebTextCheckingResult>());
+  last_results_.Assign(blink::WebVector<blink::WebTextCheckingResult>());
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Text check (unified request for grammar and spell check) is only
@@ -98,22 +100,23 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  WebLocalFrame* frame = render_view()->GetWebView()->focusedFrame();
-  WebElement element = frame->document().isNull() ? WebElement() :
-      frame->document().focusedElement();
-  bool enabled = !element.isNull() && element.isEditable();
-  bool checked = enabled && frame->isSpellCheckingEnabled();
+  WebLocalFrame* frame = render_view()->GetWebView()->FocusedFrame();
+  WebElement element = frame->GetDocument().IsNull()
+                           ? WebElement()
+                           : frame->GetDocument().FocusedElement();
+  bool enabled = !element.IsNull() && element.IsEditable();
+  bool checked = enabled && frame->IsSpellCheckingEnabled();
 
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
 #endif  // USE_BROWSER_SPELLCHECKER
 }
 
-void SpellCheckProvider::checkSpelling(
+void SpellCheckProvider::CheckSpelling(
     const WebString& text,
     int& offset,
     int& length,
     WebVector<WebString>* optional_suggestions) {
-  base::string16 word = text.utf16();
+  base::string16 word = text.Utf16();
   std::vector<base::string16> suggestions;
   const int kWordStart = 0;
   spellcheck_->SpellCheckWord(
@@ -123,7 +126,7 @@ void SpellCheckProvider::checkSpelling(
     WebVector<WebString> web_suggestions(suggestions.size());
     std::transform(
         suggestions.begin(), suggestions.end(), web_suggestions.begin(),
-        [](const base::string16& s) { return WebString::fromUTF16(s); });
+        [](const base::string16& s) { return WebString::FromUTF16(s); });
     *optional_suggestions = web_suggestions;
     UMA_HISTOGRAM_COUNTS("SpellCheck.api.check.suggestions", word.size());
   } else {
@@ -134,17 +137,17 @@ void SpellCheckProvider::checkSpelling(
   }
 }
 
-void SpellCheckProvider::requestCheckingOfText(
+void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
-  RequestTextChecking(text.utf16(), completion);
+  RequestTextChecking(text.Utf16(), completion);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
-void SpellCheckProvider::cancelAllPendingRequests() {
+void SpellCheckProvider::CancelAllPendingRequests() {
   for (WebTextCheckCompletions::iterator iter(&text_check_completions_);
        !iter.IsAtEnd(); iter.Advance()) {
-    iter.GetCurrentValue()->didCancelCheckingText();
+    iter.GetCurrentValue()->DidCancelCheckingText();
   }
   text_check_completions_.Clear();
 }
@@ -175,11 +178,11 @@ void SpellCheckProvider::OnRespondSpellingService(
                                          line,
                                          results,
                                          &textcheck_results);
-  completion->didFinishCheckingText(textcheck_results);
+  completion->DidFinishCheckingText(textcheck_results);
 
   // Cache the request and the converted results.
   last_request_ = line;
-  last_results_.swap(textcheck_results);
+  last_results_.Swap(textcheck_results);
 }
 #endif
 
@@ -216,11 +219,11 @@ void SpellCheckProvider::OnRespondTextCheck(
                                          line,
                                          results,
                                          &textcheck_results);
-  completion->didFinishCheckingText(textcheck_results);
+  completion->DidFinishCheckingText(textcheck_results);
 
   // Cache the request and the converted results.
   last_request_ = line;
-  last_results_.swap(textcheck_results);
+  last_results_.Swap(textcheck_results);
 }
 #endif
 
@@ -228,15 +231,15 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
   if (!render_view()->GetWebView())
     return;
 
-  WebLocalFrame* frame = render_view()->GetWebView()->focusedFrame();
+  WebLocalFrame* frame = render_view()->GetWebView()->FocusedFrame();
   // TODO(yabinh): The null check should be unnecessary.
   // See crbug.com/625068
   if (!frame)
     return;
 
-  frame->enableSpellChecking(enable);
+  frame->EnableSpellChecking(enable);
   if (!enable)
-    frame->removeSpellingMarkers();
+    frame->RemoveSpellingMarkers();
 }
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
@@ -256,7 +259,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
   if (text_length >= last_length &&
       !request.compare(0, last_length, last_request_)) {
     if (text_length == last_length || !HasWordCharacters(text, last_length)) {
-      completion->didFinishCheckingText(last_results_);
+      completion->DidFinishCheckingText(last_results_);
       return true;
     }
   }
@@ -272,9 +275,9 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
       if (start <= text_length && end <= text_length)
         ++result_size;
     }
-    blink::WebVector<blink::WebTextCheckingResult> results(last_results_.data(),
+    blink::WebVector<blink::WebTextCheckingResult> results(last_results_.Data(),
                                                            result_size);
-    completion->didFinishCheckingText(results);
+    completion->DidFinishCheckingText(results);
     return true;
   }
 

@@ -45,29 +45,29 @@ class MODULES_EXPORT EntryBase : public GarbageCollectedFinalized<EntryBase> {
  public:
   virtual ~EntryBase();
 
-  DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
+  DOMFileSystemBase* filesystem() const { return file_system_.Get(); }
 
   virtual bool isFile() const { return false; }
   virtual bool isDirectory() const { return false; }
 
-  const String& fullPath() const { return m_fullPath; }
-  const String& name() const { return m_name; }
+  const String& fullPath() const { return full_path_; }
+  const String& name() const { return name_; }
 
   String toURL() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  EntryBase(DOMFileSystemBase*, const String& fullPath);
+  EntryBase(DOMFileSystemBase*, const String& full_path);
   friend class EntrySync;
 
-  Member<DOMFileSystemBase> m_fileSystem;
+  Member<DOMFileSystemBase> file_system_;
 
   // This is a virtual path.
-  const String m_fullPath;
-  const String m_name;
+  const String full_path_;
+  const String name_;
 
-  mutable String m_cachedURL;
+  mutable String cached_url_;
 };
 
 }  // namespace blink

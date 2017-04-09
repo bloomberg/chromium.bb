@@ -29,19 +29,19 @@ class MockScriptData : public ScriptData {
  public:
   ~MockScriptData() override {}
 
-  static const MockScriptData* instance() {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const MockScriptData, mockScriptData,
+  static const MockScriptData* Instance() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(const MockScriptData, mock_script_data,
                                     (new MockScriptData()));
 
-    return &mockScriptData;
+    return &mock_script_data;
   }
 
-  void getScripts(UChar32 ch, Vector<UScriptCode>& dst) const override {
+  void GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const override {
     ASSERT(ch >= kMockCharMin);
     ASSERT(ch < kMockCharLimit);
 
     int code = ch - kMockCharMin;
-    dst.clear();
+    dst.Clear();
     switch (code & kCodeSpecialMask) {
       case kCodeSpecialCommon:
         dst.push_back(USCRIPT_COMMON);
@@ -52,13 +52,13 @@ class MockScriptData : public ScriptData {
       default:
         break;
     }
-    int listBits = kTable[code & kCodeListIndexMask];
-    if (dst.isEmpty() && listBits == 0) {
+    int list_bits = kTable[code & kCodeListIndexMask];
+    if (dst.IsEmpty() && list_bits == 0) {
       dst.push_back(USCRIPT_UNKNOWN);
       return;
     }
-    while (listBits) {
-      switch (listBits & kListMask) {
+    while (list_bits) {
+      switch (list_bits & kListMask) {
         case 0:
           break;
         case kLatin:
@@ -71,31 +71,31 @@ class MockScriptData : public ScriptData {
           dst.push_back(USCRIPT_GREEK);
           break;
       }
-      listBits >>= kListShift;
+      list_bits >>= kListShift;
     }
   }
 
-  UChar32 getPairedBracket(UChar32 ch) const override {
-    switch (getPairedBracketType(ch)) {
-      case PairedBracketType::BracketTypeClose:
+  UChar32 GetPairedBracket(UChar32 ch) const override {
+    switch (GetPairedBracketType(ch)) {
+      case PairedBracketType::kBracketTypeClose:
         return ch - kBracketDelta;
-      case PairedBracketType::BracketTypeOpen:
+      case PairedBracketType::kBracketTypeOpen:
         return ch + kBracketDelta;
       default:
         return ch;
     }
   }
 
-  PairedBracketType getPairedBracketType(UChar32 ch) const override {
+  PairedBracketType GetPairedBracketType(UChar32 ch) const override {
     ASSERT(ch >= kMockCharMin && ch < kMockCharLimit);
     int code = ch - kMockCharMin;
     if ((code & kCodeBracketBit) == 0) {
-      return PairedBracketType::BracketTypeNone;
+      return PairedBracketType::kBracketTypeNone;
     }
     if (code & kCodeBracketCloseBit) {
-      return PairedBracketType::BracketTypeClose;
+      return PairedBracketType::kBracketTypeClose;
     }
-    return PairedBracketType::BracketTypeOpen;
+    return PairedBracketType::kBracketTypeOpen;
   }
 
   static int TableLookup(int value) {
@@ -109,14 +109,14 @@ class MockScriptData : public ScriptData {
   }
 
   static String ToTestString(const std::string& input) {
-    String result(emptyString16Bit);
-    bool inSet = false;
+    String result(g_empty_string16_bit);
+    bool in_set = false;
     int seen = 0;
     int code = 0;
     int list = 0;
-    int currentShift = 0;
+    int current_shift = 0;
     for (char c : input) {
-      if (inSet) {
+      if (in_set) {
         switch (c) {
           case '(':
             ASSERT(seen == 0);
@@ -151,27 +151,27 @@ class MockScriptData : public ScriptData {
             break;
           case 'l':
             ASSERT((seen & kSawLatin) == 0);
-            ASSERT(currentShift < 3);
+            ASSERT(current_shift < 3);
             seen |= kSawLatin;
-            list |= kLatin << (2 * currentShift++);
+            list |= kLatin << (2 * current_shift++);
             break;
           case 'h':
             ASSERT((seen & kSawHan) == 0);
-            ASSERT(currentShift < 3);
+            ASSERT(current_shift < 3);
             seen |= kSawHan;
-            list |= kHan << (2 * currentShift++);
+            list |= kHan << (2 * current_shift++);
             break;
           case 'g':
             ASSERT((seen & kSawGreek) == 0);
-            ASSERT(currentShift < 3);
+            ASSERT(current_shift < 3);
             seen |= kSawGreek;
-            list |= kGreek << (2 * currentShift++);
+            list |= kGreek << (2 * current_shift++);
             break;
           case '>':
             ASSERT(seen != 0);
             code |= TableLookup(list);
-            result.append(static_cast<UChar>(kMockCharMin + code));
-            inSet = false;
+            result.Append(static_cast<UChar>(kMockCharMin + code));
+            in_set = false;
             break;
           default:
             DLOG(ERROR) << "Illegal mock string set char: '" << c << "'";
@@ -185,8 +185,8 @@ class MockScriptData : public ScriptData {
           seen = 0;
           code = 0;
           list = 0;
-          currentShift = 0;
-          inSet = true;
+          current_shift = 0;
+          in_set = true;
           break;
         case '(':
           code = kCodeBracketBit | kCodeSpecialCommon;
@@ -222,8 +222,8 @@ class MockScriptData : public ScriptData {
         default:
           DLOG(ERROR) << "Illegal mock string set char: '" << c << "'";
       }
-      if (!inSet) {
-        result.append(static_cast<UChar>(kMockCharMin + code));
+      if (!in_set) {
+        result.Append(static_cast<UChar>(kMockCharMin + code));
       }
     }
     return result;
@@ -288,61 +288,61 @@ const int MockScriptData::kTable[] = {
 class ScriptRunIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<TestRun>& runs) {
-    String text(emptyString16Bit);
+    String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
-      text.append(String::fromUTF8(run.text.c_str()));
+      text.Append(String::FromUTF8(run.text.c_str()));
       expect.push_back(ExpectedRun(text.length(), run.code));
     }
-    ScriptRunIterator scriptRunIterator(text.characters16(), text.length());
-    VerifyRuns(&scriptRunIterator, expect);
+    ScriptRunIterator script_run_iterator(text.Characters16(), text.length());
+    VerifyRuns(&script_run_iterator, expect);
   }
 
   // FIXME crbug.com/527329 - CheckMockRuns should be replaced by finding
   // suitable equivalent real codepoint sequences instead.
   void CheckMockRuns(const Vector<TestRun>& runs) {
-    String text(emptyString16Bit);
+    String text(g_empty_string16_bit);
     Vector<ExpectedRun> expect;
     for (const TestRun& run : runs) {
-      text.append(MockScriptData::ToTestString(run.text));
+      text.Append(MockScriptData::ToTestString(run.text));
       expect.push_back(ExpectedRun(text.length(), run.code));
     }
 
-    ScriptRunIterator scriptRunIterator(text.characters16(), text.length(),
-                                        MockScriptData::instance());
-    VerifyRuns(&scriptRunIterator, expect);
+    ScriptRunIterator script_run_iterator(text.Characters16(), text.length(),
+                                          MockScriptData::Instance());
+    VerifyRuns(&script_run_iterator, expect);
   }
 
-  void VerifyRuns(ScriptRunIterator* scriptRunIterator,
+  void VerifyRuns(ScriptRunIterator* script_run_iterator,
                   const Vector<ExpectedRun>& expect) {
     unsigned limit;
     UScriptCode code;
-    unsigned long runCount = 0;
-    while (scriptRunIterator->consume(limit, code)) {
-      ASSERT_LT(runCount, expect.size());
-      ASSERT_EQ(expect[runCount].limit, limit);
-      ASSERT_EQ(expect[runCount].code, code);
-      ++runCount;
+    unsigned long run_count = 0;
+    while (script_run_iterator->Consume(limit, code)) {
+      ASSERT_LT(run_count, expect.size());
+      ASSERT_EQ(expect[run_count].limit, limit);
+      ASSERT_EQ(expect[run_count].code, code);
+      ++run_count;
     }
-    ASSERT_EQ(expect.size(), runCount);
+    ASSERT_EQ(expect.size(), run_count);
   }
 };
 
 TEST_F(ScriptRunIteratorTest, Empty) {
-  String empty(emptyString16Bit);
-  ScriptRunIterator scriptRunIterator(empty.characters16(), empty.length());
+  String empty(g_empty_string16_bit);
+  ScriptRunIterator script_run_iterator(empty.Characters16(), empty.length());
   unsigned limit = 0;
   UScriptCode code = USCRIPT_INVALID_CODE;
-  ASSERT(!scriptRunIterator.consume(limit, code));
+  ASSERT(!script_run_iterator.Consume(limit, code));
   ASSERT_EQ(limit, 0u);
   ASSERT_EQ(code, USCRIPT_INVALID_CODE);
 }
 
 // Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_RUNSVECTOR(...)                   \
-  static const TestRun runsArray[] = __VA_ARGS__; \
-  Vector<TestRun> runs;                           \
-  runs.append(runsArray, sizeof(runsArray) / sizeof(*runsArray));
+#define DECLARE_RUNSVECTOR(...)                    \
+  static const TestRun kRunsArray[] = __VA_ARGS__; \
+  Vector<TestRun> runs;                            \
+  runs.Append(kRunsArray, sizeof(kRunsArray) / sizeof(*kRunsArray));
 
 #define CHECK_RUNS(...)            \
   DECLARE_RUNSVECTOR(__VA_ARGS__); \
@@ -618,61 +618,61 @@ TEST_F(ScriptRunIteratorTest, CommonMalayalam) {
 class ScriptRunIteratorICUDataTest : public testing::Test {
  public:
   ScriptRunIteratorICUDataTest()
-      : m_maxExtensions(0), m_maxExtensionsCodepoint(0xffff) {
-    int maxExtensions = 0;
-    UChar32 m_maxExtensionscp = 0;
+      : max_extensions_(0), max_extensions_codepoint_(0xffff) {
+    int max_extensions = 0;
+    UChar32 max_extensionscp = 0;
     for (UChar32 cp = 0; cp < 0x11000; ++cp) {
       UErrorCode status = U_ZERO_ERROR;
       int count = uscript_getScriptExtensions(cp, 0, 0, &status);
-      if (count > maxExtensions) {
-        maxExtensions = count;
-        m_maxExtensionscp = cp;
+      if (count > max_extensions) {
+        max_extensions = count;
+        max_extensionscp = cp;
       }
     }
-    m_maxExtensions = maxExtensions;
-    m_maxExtensionsCodepoint = m_maxExtensionscp;
+    max_extensions_ = max_extensions;
+    max_extensions_codepoint_ = max_extensionscp;
   }
 
  protected:
-  UChar32 GetACharWithMaxExtensions(int* numExtensions) {
-    if (numExtensions) {
-      *numExtensions = m_maxExtensions;
+  UChar32 GetACharWithMaxExtensions(int* num_extensions) {
+    if (num_extensions) {
+      *num_extensions = max_extensions_;
     }
-    return m_maxExtensionsCodepoint;
+    return max_extensions_codepoint_;
   }
 
  private:
-  int m_maxExtensions;
-  UChar32 m_maxExtensionsCodepoint;
+  int max_extensions_;
+  UChar32 max_extensions_codepoint_;
 };
 
 // Validate that ICU never returns more than our maximum expected number of
 // script extensions.
 TEST_F(ScriptRunIteratorICUDataTest, ValidateICUMaxScriptExtensions) {
-  int maxExtensions;
-  UChar32 cp = GetACharWithMaxExtensions(&maxExtensions);
-  ASSERT_LE(maxExtensions, ScriptData::kMaxScriptCount) << "char " << std::hex
-                                                        << cp << std::dec;
+  int max_extensions;
+  UChar32 cp = GetACharWithMaxExtensions(&max_extensions);
+  ASSERT_LE(max_extensions, ScriptData::kMaxScriptCount)
+      << "char " << std::hex << cp << std::dec;
 }
 
 // Check that ICUScriptData returns all of a character's scripts.
 // This only checks one likely character, but doesn't check all cases.
 TEST_F(ScriptRunIteratorICUDataTest, ICUDataGetScriptsReturnsAllExtensions) {
-  int maxExtensions;
-  UChar32 cp = GetACharWithMaxExtensions(&maxExtensions);
+  int max_extensions;
+  UChar32 cp = GetACharWithMaxExtensions(&max_extensions);
   Vector<UScriptCode> extensions;
-  ICUScriptData::instance()->getScripts(cp, extensions);
+  ICUScriptData::Instance()->GetScripts(cp, extensions);
 
   // It's possible that GetScripts adds the primary script to the list of
   // extensions, resulting in one more script than the raw extension count.
-  ASSERT_GE(static_cast<int>(extensions.size()), maxExtensions)
+  ASSERT_GE(static_cast<int>(extensions.size()), max_extensions)
       << "char " << std::hex << cp << std::dec;
 }
 
 TEST_F(ScriptRunIteratorICUDataTest, CommonHaveNoMoreThanOneExtension) {
   Vector<UScriptCode> extensions;
   for (UChar32 cp = 0; cp < 0x110000; ++cp) {
-    ICUScriptData::instance()->getScripts(cp, extensions);
+    ICUScriptData::Instance()->GetScripts(cp, extensions);
     UScriptCode primary = extensions.at(0);
     if (primary == USCRIPT_COMMON) {
       ASSERT_LE(extensions.size(), 2ul) << "cp: " << std::hex << cp << std::dec;

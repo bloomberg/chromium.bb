@@ -91,7 +91,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorServiceWorkerControlled;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
   histogram_tester().ExpectTotalCount(
@@ -134,7 +134,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
 
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorServiceWorkerControlled;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingAndMetadataUpdate(timing, metadata);
@@ -173,7 +173,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, InboxSite) {
   NavigateAndCommit(GURL(kInboxTestUrl));
   page_load_metrics::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorServiceWorkerControlled;
+      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
   histogram_tester().ExpectTotalCount(

@@ -24,15 +24,15 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   void Shutdown();
 
   // BlinkPlatformImpl methods:
-  blink::WebThread* currentThread() override;
-  blink::WebClipboard* clipboard() override;
-  blink::WebFileUtilities* fileUtilities() override;
-  blink::WebSandboxSupport* sandboxSupport() override;
+  blink::WebThread* CurrentThread() override;
+  blink::WebClipboard* Clipboard() override;
+  blink::WebFileUtilities* GetFileUtilities() override;
+  blink::WebSandboxSupport* GetSandboxSupport() override;
   virtual bool sandboxEnabled();
-  unsigned long long visitedLinkHash(const char* canonicalURL,
+  unsigned long long VisitedLinkHash(const char* canonicalURL,
                                      size_t length) override;
-  bool isLinkVisited(unsigned long long linkHash) override;
-  void createMessageChannel(
+  bool IsLinkVisited(unsigned long long linkHash) override;
+  void CreateMessageChannel(
       std::unique_ptr<blink::WebMessagePortChannel>* channel1,
       std::unique_ptr<blink::WebMessagePortChannel>* channel2) override;
   virtual void setCookies(const blink::WebURL& url,
@@ -41,19 +41,19 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual blink::WebString cookies(
       const blink::WebURL& url,
       const blink::WebURL& first_party_for_cookies);
-  blink::WebString defaultLocale() override;
-  blink::WebThemeEngine* themeEngine() override;
-  blink::WebURLLoader* createURLLoader() override;
-  void getPluginList(bool refresh,
+  blink::WebString DefaultLocale() override;
+  blink::WebThemeEngine* ThemeEngine() override;
+  blink::WebURLLoader* CreateURLLoader() override;
+  void GetPluginList(bool refresh,
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder*) override;
-  blink::WebData loadResource(const char* name) override;
-  blink::WebStorageNamespace* createLocalStorageNamespace() override;
+  blink::WebData LoadResource(const char* name) override;
+  blink::WebStorageNamespace* CreateLocalStorageNamespace() override;
   virtual void dispatchStorageEvent(const blink::WebString& key,
       const blink::WebString& oldValue, const blink::WebString& newValue,
       const blink::WebString& origin, const blink::WebURL& url,
       bool isLocalStorage);
-  int databaseDeleteFile(const blink::WebString& vfs_file_name,
+  int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
 
  private:

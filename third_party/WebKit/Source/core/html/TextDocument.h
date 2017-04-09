@@ -31,7 +31,7 @@ namespace blink {
 
 class TextDocument final : public HTMLDocument {
  public:
-  static TextDocument* create(
+  static TextDocument* Create(
       const DocumentInit& initializer = DocumentInit()) {
     return new TextDocument(initializer);
   }
@@ -39,7 +39,7 @@ class TextDocument final : public HTMLDocument {
  private:
   TextDocument(const DocumentInit&);
 
-  DocumentParser* createParser() override;
+  DocumentParser* CreateParser() override;
 };
 
 }  // namespace blink

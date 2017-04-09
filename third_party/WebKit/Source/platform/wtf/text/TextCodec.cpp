@@ -32,27 +32,27 @@ namespace WTF {
 
 TextCodec::~TextCodec() {}
 
-int TextCodec::getUnencodableReplacement(
-    unsigned codePoint,
+int TextCodec::GetUnencodableReplacement(
+    unsigned code_point,
     UnencodableHandling handling,
     UnencodableReplacementArray replacement) {
   switch (handling) {
-    case QuestionMarksForUnencodables:
+    case kQuestionMarksForUnencodables:
       replacement[0] = '?';
       replacement[1] = 0;
       return 1;
-    case EntitiesForUnencodables:
+    case kEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray), "&#%u;",
-               codePoint);
+               code_point);
       return static_cast<int>(strlen(replacement));
-    case URLEncodedEntitiesForUnencodables:
+    case kURLEncodedEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray),
-               "%%26%%23%u%%3B", codePoint);
+               "%%26%%23%u%%3B", code_point);
       return static_cast<int>(strlen(replacement));
 
-    case CSSEncodedEntitiesForUnencodables:
+    case kCSSEncodedEntitiesForUnencodables:
       snprintf(replacement, sizeof(UnencodableReplacementArray), "\\%x ",
-               codePoint);
+               code_point);
       return static_cast<int>(strlen(replacement));
   }
   NOTREACHED();

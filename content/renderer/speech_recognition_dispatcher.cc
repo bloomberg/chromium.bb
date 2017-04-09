@@ -71,7 +71,7 @@ void SpeechRecognitionDispatcher::OnDestruct() {
   delete this;
 }
 
-void SpeechRecognitionDispatcher::start(
+void SpeechRecognitionDispatcher::Start(
     const WebSpeechRecognitionHandle& handle,
     const WebSpeechRecognitionParams& params,
     WebSpeechRecognizerClient* recognizer_client) {
@@ -79,18 +79,17 @@ void SpeechRecognitionDispatcher::start(
   recognizer_client_ = recognizer_client;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  const blink::WebMediaStreamTrack track = params.audioTrack();
-  if (!track.isNull()) {
+  const blink::WebMediaStreamTrack track = params.AudioTrack();
+  if (!track.IsNull()) {
     // Check if this type of track is allowed by implemented policy.
     if (SpeechRecognitionAudioSink::IsSupportedTrack(track)) {
-      audio_track_.assign(track);
+      audio_track_.Assign(track);
     } else {
-      audio_track_.reset();
+      audio_track_.Reset();
       // Notify user that the track used is not supported.
-      recognizer_client_->didReceiveError(
-          handle,
-          WebString("Provided audioTrack is not supported."),
-          WebSpeechRecognizerClient::AudioCaptureError);
+      recognizer_client_->DidReceiveError(
+          handle, WebString("Provided audioTrack is not supported."),
+          WebSpeechRecognizerClient::kAudioCaptureError);
 
       return;
     }
@@ -102,22 +101,21 @@ void SpeechRecognitionDispatcher::start(
 #endif
 
   SpeechRecognitionHostMsg_StartRequest_Params msg_params;
-  for (size_t i = 0; i < params.grammars().size(); ++i) {
-    const WebSpeechGrammar& grammar = params.grammars()[i];
-    msg_params.grammars.push_back(
-        SpeechRecognitionGrammar(grammar.src().string().utf8(),
-                                 grammar.weight()));
+  for (size_t i = 0; i < params.Grammars().size(); ++i) {
+    const WebSpeechGrammar& grammar = params.Grammars()[i];
+    msg_params.grammars.push_back(SpeechRecognitionGrammar(
+        grammar.Src().GetString().Utf8(), grammar.Weight()));
   }
-  msg_params.language = params.language().utf8();
-  msg_params.max_hypotheses = static_cast<uint32_t>(params.maxAlternatives());
-  msg_params.continuous = params.continuous();
-  msg_params.interim_results = params.interimResults();
-  msg_params.origin_url = params.origin().toString().utf8();
+  msg_params.language = params.Language().Utf8();
+  msg_params.max_hypotheses = static_cast<uint32_t>(params.MaxAlternatives());
+  msg_params.continuous = params.Continuous();
+  msg_params.interim_results = params.InterimResults();
+  msg_params.origin_url = params.Origin().ToString().Utf8();
   msg_params.render_view_id = routing_id();
   msg_params.request_id = GetOrCreateIDForHandle(handle);
 #if BUILDFLAG(ENABLE_WEBRTC)
   // Fall back to default input when the track is not allowed.
-  msg_params.using_audio_track = !audio_track_.isNull();
+  msg_params.using_audio_track = !audio_track_.IsNull();
 #else
   msg_params.using_audio_track = false;
 #endif
@@ -125,7 +123,7 @@ void SpeechRecognitionDispatcher::start(
   Send(new SpeechRecognitionHostMsg_StartRequest(msg_params));
 }
 
-void SpeechRecognitionDispatcher::stop(
+void SpeechRecognitionDispatcher::Stop(
     const WebSpeechRecognitionHandle& handle,
     WebSpeechRecognizerClient* recognizer_client) {
   ResetAudioSink();
@@ -136,7 +134,7 @@ void SpeechRecognitionDispatcher::stop(
       routing_id(), GetOrCreateIDForHandle(handle)));
 }
 
-void SpeechRecognitionDispatcher::abort(
+void SpeechRecognitionDispatcher::Abort(
     const WebSpeechRecognitionHandle& handle,
     WebSpeechRecognizerClient* recognizer_client) {
   ResetAudioSink();
@@ -148,23 +146,23 @@ void SpeechRecognitionDispatcher::abort(
 }
 
 void SpeechRecognitionDispatcher::OnRecognitionStarted(int request_id) {
-  recognizer_client_->didStart(GetHandleFromID(request_id));
+  recognizer_client_->DidStart(GetHandleFromID(request_id));
 }
 
 void SpeechRecognitionDispatcher::OnAudioStarted(int request_id) {
-  recognizer_client_->didStartAudio(GetHandleFromID(request_id));
+  recognizer_client_->DidStartAudio(GetHandleFromID(request_id));
 }
 
 void SpeechRecognitionDispatcher::OnSoundStarted(int request_id) {
-  recognizer_client_->didStartSound(GetHandleFromID(request_id));
+  recognizer_client_->DidStartSound(GetHandleFromID(request_id));
 }
 
 void SpeechRecognitionDispatcher::OnSoundEnded(int request_id) {
-  recognizer_client_->didEndSound(GetHandleFromID(request_id));
+  recognizer_client_->DidEndSound(GetHandleFromID(request_id));
 }
 
 void SpeechRecognitionDispatcher::OnAudioEnded(int request_id) {
-  recognizer_client_->didEndAudio(GetHandleFromID(request_id));
+  recognizer_client_->DidEndAudio(GetHandleFromID(request_id));
 }
 
 static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
@@ -172,39 +170,39 @@ static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
   switch (e) {
     case SPEECH_RECOGNITION_ERROR_NONE:
       NOTREACHED();
-      return WebSpeechRecognizerClient::OtherError;
+      return WebSpeechRecognizerClient::kOtherError;
     case SPEECH_RECOGNITION_ERROR_NO_SPEECH:
-      return WebSpeechRecognizerClient::NoSpeechError;
+      return WebSpeechRecognizerClient::kNoSpeechError;
     case SPEECH_RECOGNITION_ERROR_ABORTED:
-      return WebSpeechRecognizerClient::AbortedError;
+      return WebSpeechRecognizerClient::kAbortedError;
     case SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE:
-      return WebSpeechRecognizerClient::AudioCaptureError;
+      return WebSpeechRecognizerClient::kAudioCaptureError;
     case SPEECH_RECOGNITION_ERROR_NETWORK:
-      return WebSpeechRecognizerClient::NetworkError;
+      return WebSpeechRecognizerClient::kNetworkError;
     case SPEECH_RECOGNITION_ERROR_NOT_ALLOWED:
-      return WebSpeechRecognizerClient::NotAllowedError;
+      return WebSpeechRecognizerClient::kNotAllowedError;
     case SPEECH_RECOGNITION_ERROR_SERVICE_NOT_ALLOWED:
-      return WebSpeechRecognizerClient::ServiceNotAllowedError;
+      return WebSpeechRecognizerClient::kServiceNotAllowedError;
     case SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
-      return WebSpeechRecognizerClient::BadGrammarError;
+      return WebSpeechRecognizerClient::kBadGrammarError;
     case SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED:
-      return WebSpeechRecognizerClient::LanguageNotSupportedError;
+      return WebSpeechRecognizerClient::kLanguageNotSupportedError;
     case SPEECH_RECOGNITION_ERROR_NO_MATCH:
       NOTREACHED();
-      return WebSpeechRecognizerClient::OtherError;
+      return WebSpeechRecognizerClient::kOtherError;
   }
   NOTREACHED();
-  return WebSpeechRecognizerClient::OtherError;
+  return WebSpeechRecognizerClient::kOtherError;
 }
 
 void SpeechRecognitionDispatcher::OnErrorOccurred(
     int request_id, const SpeechRecognitionError& error) {
   if (error.code == SPEECH_RECOGNITION_ERROR_NO_MATCH) {
-    recognizer_client_->didReceiveNoMatch(GetHandleFromID(request_id),
+    recognizer_client_->DidReceiveNoMatch(GetHandleFromID(request_id),
                                           WebSpeechRecognitionResult());
   } else {
     ResetAudioSink();
-    recognizer_client_->didReceiveError(
+    recognizer_client_->DidReceiveError(
         GetHandleFromID(request_id),
         WebString(),  // TODO(primiano): message?
         WebKitErrorCode(error.code));
@@ -225,7 +223,7 @@ void SpeechRecognitionDispatcher::OnRecognitionEnded(int request_id) {
     // and we don't want to delete the handle from the map after that happens.
     handle_map_.erase(request_id);
     ResetAudioSink();
-    recognizer_client_->didEnd(handle);
+    recognizer_client_->DidEnd(handle);
   }
 }
 
@@ -252,14 +250,14 @@ void SpeechRecognitionDispatcher::OnResultsRetrieved(
     WebVector<WebString> transcripts(num_hypotheses);
     WebVector<float> confidences(num_hypotheses);
     for (size_t i = 0; i < num_hypotheses; ++i) {
-      transcripts[i] = WebString::fromUTF16(result.hypotheses[i].utterance);
+      transcripts[i] = WebString::FromUTF16(result.hypotheses[i].utterance);
       confidences[i] = static_cast<float>(result.hypotheses[i].confidence);
     }
-    webkit_result->assign(transcripts, confidences, !result.is_provisional);
+    webkit_result->Assign(transcripts, confidences, !result.is_provisional);
   }
 
-  recognizer_client_->didReceiveResults(
-      GetHandleFromID(request_id), final, provisional);
+  recognizer_client_->DidReceiveResults(GetHandleFromID(request_id), final,
+                                        provisional);
 }
 
 void SpeechRecognitionDispatcher::OnAudioReceiverReady(
@@ -269,7 +267,7 @@ void SpeechRecognitionDispatcher::OnAudioReceiverReady(
     const base::SyncSocket::TransitDescriptor descriptor) {
 #if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(!speech_audio_sink_.get());
-  if (audio_track_.isNull()) {
+  if (audio_track_.IsNull()) {
     ResetAudioSink();
     return;
   }
@@ -292,7 +290,7 @@ int SpeechRecognitionDispatcher::GetOrCreateIDForHandle(
   for (HandleMap::iterator iter = handle_map_.begin();
       iter != handle_map_.end();
       ++iter) {
-    if (iter->second.equals(handle))
+    if (iter->second.Equals(handle))
       return iter->first;
   }
   // If no existing mapping found, create a new one.
@@ -307,7 +305,7 @@ bool SpeechRecognitionDispatcher::HandleExists(
   for (HandleMap::iterator iter = handle_map_.begin();
       iter != handle_map_.end();
       ++iter) {
-    if (iter->second.equals(handle))
+    if (iter->second.Equals(handle))
       return true;
   }
   return false;

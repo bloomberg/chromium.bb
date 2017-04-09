@@ -12,100 +12,100 @@ namespace blink {
 class ImageDecoder;
 class SharedBuffer;
 
-const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
+const char kDecodersTestingDir[] = "Source/platform/image-decoders/testing";
 
 using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
 using DecoderCreatorWithAlpha =
     std::unique_ptr<ImageDecoder> (*)(ImageDecoder::AlphaOption);
 
-PassRefPtr<SharedBuffer> readFile(const char* fileName);
-PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName);
-unsigned hashBitmap(const SkBitmap&);
-void createDecodingBaseline(DecoderCreator,
+PassRefPtr<SharedBuffer> ReadFile(const char* file_name);
+PassRefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name);
+unsigned HashBitmap(const SkBitmap&);
+void CreateDecodingBaseline(DecoderCreator,
                             SharedBuffer*,
-                            Vector<unsigned>* baselineHashes);
+                            Vector<unsigned>* baseline_hashes);
 
-void testByteByByteDecode(DecoderCreator createDecoder,
+void TestByteByByteDecode(DecoderCreator create_decoder,
                           SharedBuffer* data,
-                          size_t expectedFrameCount,
-                          int expectedRepetitionCount);
-void testByteByByteDecode(DecoderCreator createDecoder,
+                          size_t expected_frame_count,
+                          int expected_repetition_count);
+void TestByteByByteDecode(DecoderCreator create_decoder,
                           const char* file,
-                          size_t expectedFrameCount,
-                          int expectedRepetitionCount);
-void testByteByByteDecode(DecoderCreator createDecoder,
+                          size_t expected_frame_count,
+                          int expected_repetition_count);
+void TestByteByByteDecode(DecoderCreator create_decoder,
                           const char* dir,
                           const char* file,
-                          size_t expectedFrameCount,
-                          int expectedRepetitionCount);
+                          size_t expected_frame_count,
+                          int expected_repetition_count);
 
-void testMergeBuffer(DecoderCreator createDecoder, const char* file);
-void testMergeBuffer(DecoderCreator createDecoder,
+void TestMergeBuffer(DecoderCreator create_decoder, const char* file);
+void TestMergeBuffer(DecoderCreator create_decoder,
                      const char* dir,
                      const char* file);
 
 // |skippingStep| is used to randomize the decoding order. For images with
 // a small number of frames (e.g. < 10), this value should be smaller, on the
 // order of (number of frames) / 2.
-void testRandomFrameDecode(DecoderCreator,
+void TestRandomFrameDecode(DecoderCreator,
                            const char* file,
-                           size_t skippingStep = 5);
-void testRandomFrameDecode(DecoderCreator,
+                           size_t skipping_step = 5);
+void TestRandomFrameDecode(DecoderCreator,
                            const char* dir,
                            const char* file,
-                           size_t skippingStep = 5);
+                           size_t skipping_step = 5);
 
 // |skippingStep| is used to randomize the decoding order. For images with
 // a small number of frames (e.g. < 10), this value should be smaller, on the
 // order of (number of frames) / 2.
-void testRandomDecodeAfterClearFrameBufferCache(DecoderCreator,
+void TestRandomDecodeAfterClearFrameBufferCache(DecoderCreator,
                                                 const char* file,
-                                                size_t skippingStep = 5);
-void testRandomDecodeAfterClearFrameBufferCache(DecoderCreator,
+                                                size_t skipping_step = 5);
+void TestRandomDecodeAfterClearFrameBufferCache(DecoderCreator,
                                                 const char* dir,
                                                 const char* file,
-                                                size_t skippingStep = 5);
+                                                size_t skipping_step = 5);
 
-void testDecodeAfterReallocatingData(DecoderCreator, const char* file);
-void testDecodeAfterReallocatingData(DecoderCreator,
+void TestDecodeAfterReallocatingData(DecoderCreator, const char* file);
+void TestDecodeAfterReallocatingData(DecoderCreator,
                                      const char* dir,
                                      const char* file);
-void testByteByByteSizeAvailable(DecoderCreator,
+void TestByteByByteSizeAvailable(DecoderCreator,
                                  const char* file,
-                                 size_t frameOffset,
-                                 bool hasColorSpace,
-                                 int expectedRepetitionCount);
-void testByteByByteSizeAvailable(DecoderCreator,
+                                 size_t frame_offset,
+                                 bool has_color_space,
+                                 int expected_repetition_count);
+void TestByteByByteSizeAvailable(DecoderCreator,
                                  const char* dir,
                                  const char* file,
-                                 size_t frameOffset,
-                                 bool hasColorSpace,
-                                 int expectedRepetitionCount);
+                                 size_t frame_offset,
+                                 bool has_color_space,
+                                 int expected_repetition_count);
 
 // Data is provided in chunks of length |increment| to the decoder. This value
 // can be increased to reduce processing time.
-void testProgressiveDecoding(DecoderCreator,
+void TestProgressiveDecoding(DecoderCreator,
                              const char* file,
                              size_t increment = 1);
-void testProgressiveDecoding(DecoderCreator,
+void TestProgressiveDecoding(DecoderCreator,
                              const char* dir,
                              const char* file,
                              size_t increment = 1);
 
-void testUpdateRequiredPreviousFrameAfterFirstDecode(DecoderCreator,
+void TestUpdateRequiredPreviousFrameAfterFirstDecode(DecoderCreator,
                                                      const char* dir,
                                                      const char* file);
-void testUpdateRequiredPreviousFrameAfterFirstDecode(DecoderCreator,
+void TestUpdateRequiredPreviousFrameAfterFirstDecode(DecoderCreator,
                                                      const char* file);
 
-void testResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
+void TestResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
                                                        const char* dir,
                                                        const char* file);
-void testResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
+void TestResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
                                                        const char* file);
 
 // Verifies that result of alpha blending is similar for AlphaPremultiplied and
 // AlphaNotPremultiplied cases.
-void testAlphaBlending(DecoderCreatorWithAlpha, const char*);
+void TestAlphaBlending(DecoderCreatorWithAlpha, const char*);
 
 }  // namespace blink

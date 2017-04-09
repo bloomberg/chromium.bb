@@ -42,16 +42,16 @@ class DocumentXPathEvaluator final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 
  public:
-  static DocumentXPathEvaluator& from(Document&);
+  static DocumentXPathEvaluator& From(Document&);
 
   static XPathExpression* createExpression(Document&,
                                            const String& expression,
                                            XPathNSResolver*,
                                            ExceptionState&);
-  static XPathNSResolver* createNSResolver(Document&, Node* nodeResolver);
+  static XPathNSResolver* createNSResolver(Document&, Node* node_resolver);
   static XPathResult* evaluate(Document&,
                                const String& expression,
-                               Node* contextNode,
+                               Node* context_node,
                                XPathNSResolver*,
                                unsigned short type,
                                const ScriptValue&,
@@ -62,9 +62,9 @@ class DocumentXPathEvaluator final
  private:
   explicit DocumentXPathEvaluator(Document&);
 
-  static const char* supplementName() { return "DocumentXPathEvaluator"; }
+  static const char* SupplementName() { return "DocumentXPathEvaluator"; }
 
-  Member<XPathEvaluator> m_xpathEvaluator;
+  Member<XPathEvaluator> xpath_evaluator_;
 };
 
 }  // namespace blink

@@ -32,31 +32,31 @@ class CORE_EXPORT UnderlyingSourceBase
   virtual ~UnderlyingSourceBase() {}
 
   ScriptPromise startWrapper(ScriptState*, ScriptValue stream);
-  virtual ScriptPromise start(ScriptState*);
+  virtual ScriptPromise Start(ScriptState*);
 
   virtual ScriptPromise pull(ScriptState*);
 
   ScriptPromise cancelWrapper(ScriptState*, ScriptValue reason);
-  virtual ScriptPromise cancel(ScriptState*, ScriptValue reason);
+  virtual ScriptPromise Cancel(ScriptState*, ScriptValue reason);
 
   void notifyLockAcquired();
   void notifyLockReleased();
 
   // ScriptWrappable
-  bool hasPendingActivity() const;
+  bool HasPendingActivity() const;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
  protected:
-  explicit UnderlyingSourceBase(ScriptState* scriptState)
-      : ContextLifecycleObserver(scriptState->getExecutionContext()) {}
+  explicit UnderlyingSourceBase(ScriptState* script_state)
+      : ContextLifecycleObserver(script_state->GetExecutionContext()) {}
 
-  ReadableStreamController* controller() const { return m_controller; }
+  ReadableStreamController* Controller() const { return controller_; }
 
  private:
-  Member<ReadableStreamController> m_controller;
-  bool m_isStreamLocked = false;
+  Member<ReadableStreamController> controller_;
+  bool is_stream_locked_ = false;
 };
 
 }  // namespace blink

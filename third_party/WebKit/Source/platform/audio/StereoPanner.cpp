@@ -17,163 +17,165 @@ namespace blink {
 // Implement equal-power panning algorithm for mono or stereo input.
 // See: http://webaudio.github.io/web-audio-api/#panning-algorithm
 
-std::unique_ptr<StereoPanner> StereoPanner::create(float sampleRate) {
-  return WTF::wrapUnique(new StereoPanner(sampleRate));
+std::unique_ptr<StereoPanner> StereoPanner::Create(float sample_rate) {
+  return WTF::WrapUnique(new StereoPanner(sample_rate));
 }
 
-StereoPanner::StereoPanner(float sampleRate)
-    : m_isFirstRender(true), m_pan(0.0) {
+StereoPanner::StereoPanner(float sample_rate)
+    : is_first_render_(true), pan_(0.0) {
   // Convert smoothing time (50ms) to a per-sample time value.
-  m_smoothingConstant = AudioUtilities::discreteTimeConstantForSampleRate(
-      SmoothingTimeConstant, sampleRate);
+  smoothing_constant_ = AudioUtilities::DiscreteTimeConstantForSampleRate(
+      SmoothingTimeConstant, sample_rate);
 }
 
-void StereoPanner::panWithSampleAccurateValues(const AudioBus* inputBus,
-                                               AudioBus* outputBus,
-                                               const float* panValues,
-                                               size_t framesToProcess) {
-  bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
-                                  inputBus->numberOfChannels() == 2) &&
-                     framesToProcess <= inputBus->length();
-  DCHECK(isInputSafe);
-  if (!isInputSafe)
+void StereoPanner::PanWithSampleAccurateValues(const AudioBus* input_bus,
+                                               AudioBus* output_bus,
+                                               const float* pan_values,
+                                               size_t frames_to_process) {
+  bool is_input_safe = input_bus &&
+                       (input_bus->NumberOfChannels() == 1 ||
+                        input_bus->NumberOfChannels() == 2) &&
+                       frames_to_process <= input_bus->length();
+  DCHECK(is_input_safe);
+  if (!is_input_safe)
     return;
 
-  unsigned numberOfInputChannels = inputBus->numberOfChannels();
+  unsigned number_of_input_channels = input_bus->NumberOfChannels();
 
-  bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
-                      framesToProcess <= outputBus->length();
-  DCHECK(isOutputSafe);
-  if (!isOutputSafe)
+  bool is_output_safe = output_bus && output_bus->NumberOfChannels() == 2 &&
+                        frames_to_process <= output_bus->length();
+  DCHECK(is_output_safe);
+  if (!is_output_safe)
     return;
 
-  const float* sourceL = inputBus->channel(0)->data();
-  const float* sourceR =
-      numberOfInputChannels > 1 ? inputBus->channel(1)->data() : sourceL;
-  float* destinationL =
-      outputBus->channelByType(AudioBus::ChannelLeft)->mutableData();
-  float* destinationR =
-      outputBus->channelByType(AudioBus::ChannelRight)->mutableData();
+  const float* source_l = input_bus->Channel(0)->Data();
+  const float* source_r =
+      number_of_input_channels > 1 ? input_bus->Channel(1)->Data() : source_l;
+  float* destination_l =
+      output_bus->ChannelByType(AudioBus::kChannelLeft)->MutableData();
+  float* destination_r =
+      output_bus->ChannelByType(AudioBus::kChannelRight)->MutableData();
 
-  if (!sourceL || !sourceR || !destinationL || !destinationR)
+  if (!source_l || !source_r || !destination_l || !destination_r)
     return;
 
-  double gainL, gainR, panRadian;
+  double gain_l, gain_r, pan_radian;
 
-  int n = framesToProcess;
+  int n = frames_to_process;
 
-  if (numberOfInputChannels == 1) {  // For mono source case.
+  if (number_of_input_channels == 1) {  // For mono source case.
     while (n--) {
-      float inputL = *sourceL++;
-      m_pan = clampTo(*panValues++, -1.0, 1.0);
+      float input_l = *source_l++;
+      pan_ = clampTo(*pan_values++, -1.0, 1.0);
       // Pan from left to right [-1; 1] will be normalized as [0; 1].
-      panRadian = (m_pan * 0.5 + 0.5) * piOverTwoDouble;
-      gainL = std::cos(panRadian);
-      gainR = std::sin(panRadian);
-      *destinationL++ = static_cast<float>(inputL * gainL);
-      *destinationR++ = static_cast<float>(inputL * gainR);
+      pan_radian = (pan_ * 0.5 + 0.5) * piOverTwoDouble;
+      gain_l = std::cos(pan_radian);
+      gain_r = std::sin(pan_radian);
+      *destination_l++ = static_cast<float>(input_l * gain_l);
+      *destination_r++ = static_cast<float>(input_l * gain_r);
     }
   } else {  // For stereo source case.
     while (n--) {
-      float inputL = *sourceL++;
-      float inputR = *sourceR++;
-      m_pan = clampTo(*panValues++, -1.0, 1.0);
+      float input_l = *source_l++;
+      float input_r = *source_r++;
+      pan_ = clampTo(*pan_values++, -1.0, 1.0);
       // Normalize [-1; 0] to [0; 1]. Do nothing when [0; 1].
-      panRadian = (m_pan <= 0 ? m_pan + 1 : m_pan) * piOverTwoDouble;
-      gainL = std::cos(panRadian);
-      gainR = std::sin(panRadian);
-      if (m_pan <= 0) {
-        *destinationL++ = static_cast<float>(inputL + inputR * gainL);
-        *destinationR++ = static_cast<float>(inputR * gainR);
+      pan_radian = (pan_ <= 0 ? pan_ + 1 : pan_) * piOverTwoDouble;
+      gain_l = std::cos(pan_radian);
+      gain_r = std::sin(pan_radian);
+      if (pan_ <= 0) {
+        *destination_l++ = static_cast<float>(input_l + input_r * gain_l);
+        *destination_r++ = static_cast<float>(input_r * gain_r);
       } else {
-        *destinationL++ = static_cast<float>(inputL * gainL);
-        *destinationR++ = static_cast<float>(inputR + inputL * gainR);
+        *destination_l++ = static_cast<float>(input_l * gain_l);
+        *destination_r++ = static_cast<float>(input_r + input_l * gain_r);
       }
     }
   }
 }
 
-void StereoPanner::panToTargetValue(const AudioBus* inputBus,
-                                    AudioBus* outputBus,
-                                    float panValue,
-                                    size_t framesToProcess) {
-  bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
-                                  inputBus->numberOfChannels() == 2) &&
-                     framesToProcess <= inputBus->length();
-  DCHECK(isInputSafe);
-  if (!isInputSafe)
+void StereoPanner::PanToTargetValue(const AudioBus* input_bus,
+                                    AudioBus* output_bus,
+                                    float pan_value,
+                                    size_t frames_to_process) {
+  bool is_input_safe = input_bus &&
+                       (input_bus->NumberOfChannels() == 1 ||
+                        input_bus->NumberOfChannels() == 2) &&
+                       frames_to_process <= input_bus->length();
+  DCHECK(is_input_safe);
+  if (!is_input_safe)
     return;
 
-  unsigned numberOfInputChannels = inputBus->numberOfChannels();
+  unsigned number_of_input_channels = input_bus->NumberOfChannels();
 
-  bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
-                      framesToProcess <= outputBus->length();
-  DCHECK(isOutputSafe);
-  if (!isOutputSafe)
+  bool is_output_safe = output_bus && output_bus->NumberOfChannels() == 2 &&
+                        frames_to_process <= output_bus->length();
+  DCHECK(is_output_safe);
+  if (!is_output_safe)
     return;
 
-  const float* sourceL = inputBus->channel(0)->data();
-  const float* sourceR =
-      numberOfInputChannels > 1 ? inputBus->channel(1)->data() : sourceL;
-  float* destinationL =
-      outputBus->channelByType(AudioBus::ChannelLeft)->mutableData();
-  float* destinationR =
-      outputBus->channelByType(AudioBus::ChannelRight)->mutableData();
+  const float* source_l = input_bus->Channel(0)->Data();
+  const float* source_r =
+      number_of_input_channels > 1 ? input_bus->Channel(1)->Data() : source_l;
+  float* destination_l =
+      output_bus->ChannelByType(AudioBus::kChannelLeft)->MutableData();
+  float* destination_r =
+      output_bus->ChannelByType(AudioBus::kChannelRight)->MutableData();
 
-  if (!sourceL || !sourceR || !destinationL || !destinationR)
+  if (!source_l || !source_r || !destination_l || !destination_r)
     return;
 
-  float targetPan = clampTo(panValue, -1.0, 1.0);
+  float target_pan = clampTo(pan_value, -1.0, 1.0);
 
   // Don't de-zipper on first render call.
-  if (m_isFirstRender) {
-    m_isFirstRender = false;
-    m_pan = targetPan;
+  if (is_first_render_) {
+    is_first_render_ = false;
+    pan_ = target_pan;
   }
 
-  double gainL, gainR, panRadian;
-  const double smoothingConstant = m_smoothingConstant;
+  double gain_l, gain_r, pan_radian;
+  const double smoothing_constant = smoothing_constant_;
 
-  int n = framesToProcess;
+  int n = frames_to_process;
 
-  if (numberOfInputChannels == 1) {  // For mono source case.
+  if (number_of_input_channels == 1) {  // For mono source case.
     while (n--) {
-      float inputL = *sourceL++;
-      m_pan += (targetPan - m_pan) * smoothingConstant;
+      float input_l = *source_l++;
+      pan_ += (target_pan - pan_) * smoothing_constant;
 
       // Pan from left to right [-1; 1] will be normalized as [0; 1].
-      panRadian = (m_pan * 0.5 + 0.5) * piOverTwoDouble;
+      pan_radian = (pan_ * 0.5 + 0.5) * piOverTwoDouble;
 
-      gainL = std::cos(panRadian);
-      gainR = std::sin(panRadian);
-      *destinationL++ = static_cast<float>(inputL * gainL);
-      *destinationR++ = static_cast<float>(inputL * gainR);
+      gain_l = std::cos(pan_radian);
+      gain_r = std::sin(pan_radian);
+      *destination_l++ = static_cast<float>(input_l * gain_l);
+      *destination_r++ = static_cast<float>(input_l * gain_r);
     }
   } else {  // For stereo source case.
     while (n--) {
-      float inputL = *sourceL++;
-      float inputR = *sourceR++;
-      m_pan += (targetPan - m_pan) * smoothingConstant;
+      float input_l = *source_l++;
+      float input_r = *source_r++;
+      pan_ += (target_pan - pan_) * smoothing_constant;
 
       // Normalize [-1; 0] to [0; 1] for the left pan position (<= 0), and
       // do nothing when [0; 1].
-      panRadian = (m_pan <= 0 ? m_pan + 1 : m_pan) * piOverTwoDouble;
+      pan_radian = (pan_ <= 0 ? pan_ + 1 : pan_) * piOverTwoDouble;
 
-      gainL = std::cos(panRadian);
-      gainR = std::sin(panRadian);
+      gain_l = std::cos(pan_radian);
+      gain_r = std::sin(pan_radian);
 
       // The pan value should be checked every sample when de-zippering.
       // See crbug.com/470559.
-      if (m_pan <= 0) {
+      if (pan_ <= 0) {
         // When [-1; 0], keep left channel intact and equal-power pan the
         // right channel only.
-        *destinationL++ = static_cast<float>(inputL + inputR * gainL);
-        *destinationR++ = static_cast<float>(inputR * gainR);
+        *destination_l++ = static_cast<float>(input_l + input_r * gain_l);
+        *destination_r++ = static_cast<float>(input_r * gain_r);
       } else {
         // When [0; 1], keep right channel intact and equal-power pan the
         // left channel only.
-        *destinationL++ = static_cast<float>(inputL * gainL);
-        *destinationR++ = static_cast<float>(inputR + inputL * gainR);
+        *destination_l++ = static_cast<float>(input_l * gain_l);
+        *destination_r++ = static_cast<float>(input_r + input_l * gain_r);
       }
     }
   }

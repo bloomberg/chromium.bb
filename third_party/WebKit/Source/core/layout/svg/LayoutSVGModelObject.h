@@ -45,58 +45,62 @@ class LayoutSVGModelObject : public LayoutObject {
  public:
   explicit LayoutSVGModelObject(SVGElement*);
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  LayoutRect absoluteVisualRect() const override;
-  FloatRect visualRectInLocalSVGCoordinates() const override {
-    return m_localVisualRect;
+  LayoutRect AbsoluteVisualRect() const override;
+  FloatRect VisualRectInLocalSVGCoordinates() const override {
+    return local_visual_rect_;
   }
 
-  void absoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulatedOffset) const final;
-  void absoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteRects(Vector<IntRect>&,
+                     const LayoutPoint& accumulated_offset) const final;
+  void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
-  FloatRect localBoundingBoxRectForAccessibility() const final;
+  FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
-  void mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
-                          TransformState&,
-                          MapCoordinatesFlags = ApplyContainerFlip) const final;
-  void mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
-                          TransformState&,
-                          MapCoordinatesFlags = ApplyContainerFlip) const final;
-  const LayoutObject* pushMappingToContainer(
-      const LayoutBoxModelObject* ancestorToStopAt,
+  void MapLocalToAncestor(
+      const LayoutBoxModelObject* ancestor,
+      TransformState&,
+      MapCoordinatesFlags = kApplyContainerFlip) const final;
+  void MapAncestorToLocal(
+      const LayoutBoxModelObject* ancestor,
+      TransformState&,
+      MapCoordinatesFlags = kApplyContainerFlip) const final;
+  const LayoutObject* PushMappingToContainer(
+      const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const final;
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void computeLayerHitTestRects(LayerHitTestRects&) const final;
+  void ComputeLayerHitTestRects(LayerHitTestRects&) const final;
 
-  SVGElement* element() const { return toSVGElement(LayoutObject::node()); }
+  SVGElement* GetElement() const {
+    return ToSVGElement(LayoutObject::GetNode());
+  }
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVG || LayoutObject::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVG || LayoutObject::IsOfType(type);
   }
 
  protected:
-  void addLayerHitTestRects(LayerHitTestRects&,
-                            const PaintLayer* currentCompositedLayer,
-                            const LayoutPoint& layerOffset,
-                            const LayoutRect& containerRect) const final;
-  void willBeDestroyed() override;
+  void AddLayerHitTestRects(LayerHitTestRects&,
+                            const PaintLayer* current_composited_layer,
+                            const LayoutPoint& layer_offset,
+                            const LayoutRect& container_rect) const final;
+  void WillBeDestroyed() override;
 
  private:
   // LayoutSVGModelObject subclasses should use element() instead.
-  void node() const = delete;
+  void GetNode() const = delete;
 
   // This method should never be called, SVG uses a different nodeAtPoint method
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
-  IntRect absoluteElementBoundingBoxRect() const final;
+  IntRect AbsoluteElementBoundingBoxRect() const final;
 
  protected:
-  FloatRect m_localVisualRect;
+  FloatRect local_visual_rect_;
 };
 
 }  // namespace blink

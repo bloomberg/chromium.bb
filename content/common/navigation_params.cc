@@ -106,7 +106,7 @@ BeginNavigationParams::BeginNavigationParams()
       has_user_gesture(false),
       skip_service_worker(false),
       request_context_type(REQUEST_CONTEXT_TYPE_LOCATION),
-      mixed_content_context_type(blink::WebMixedContentContextType::Blockable),
+      mixed_content_context_type(blink::WebMixedContentContextType::kBlockable),
       is_form_submission(false) {}
 
 BeginNavigationParams::BeginNavigationParams(

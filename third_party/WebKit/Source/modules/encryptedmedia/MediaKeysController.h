@@ -20,24 +20,24 @@ class MODULES_EXPORT MediaKeysController final
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
 
  public:
-  WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*);
+  WebEncryptedMediaClient* EncryptedMediaClient(ExecutionContext*);
 
-  static void provideMediaKeysTo(Page&, MediaKeysClient*);
-  static MediaKeysController* from(Page* page) {
+  static void ProvideMediaKeysTo(Page&, MediaKeysClient*);
+  static MediaKeysController* From(Page* page) {
     return static_cast<MediaKeysController*>(
-        Supplement<Page>::from(page, supplementName()));
+        Supplement<Page>::From(page, SupplementName()));
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::Trace(visitor); }
 
  private:
   explicit MediaKeysController(MediaKeysClient*);
-  static const char* supplementName();
+  static const char* SupplementName();
 
   // Raw reference to the client implementation, which is currently owned
   // by the WebView. Its lifetime extends past any m_client accesses.
   // It is not on the Oilpan heap.
-  MediaKeysClient* m_client;
+  MediaKeysClient* client_;
 };
 
 }  // namespace blink

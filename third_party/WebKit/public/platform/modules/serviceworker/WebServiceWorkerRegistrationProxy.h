@@ -19,11 +19,11 @@ class WebServiceWorkerRegistrationProxy {
   // Notifies that the registration entered the installation process.
   // The installing worker should be accessible via
   // WebServiceWorkerRegistration.installing.
-  virtual void dispatchUpdateFoundEvent() = 0;
+  virtual void DispatchUpdateFoundEvent() = 0;
 
-  virtual void setInstalling(std::unique_ptr<WebServiceWorker::Handle>) = 0;
-  virtual void setWaiting(std::unique_ptr<WebServiceWorker::Handle>) = 0;
-  virtual void setActive(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void SetInstalling(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void SetWaiting(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void SetActive(std::unique_ptr<WebServiceWorker::Handle>) = 0;
 
  protected:
   virtual ~WebServiceWorkerRegistrationProxy() {}

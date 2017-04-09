@@ -38,36 +38,36 @@ class TextRunIterator {
   DISALLOW_NEW();
 
  public:
-  TextRunIterator() : m_textRun(0), m_offset(0), m_length(0) {}
+  TextRunIterator() : text_run_(0), offset_(0), length_(0) {}
 
-  TextRunIterator(const TextRun* textRun, unsigned offset)
-      : m_textRun(textRun), m_offset(offset), m_length(m_textRun->length()) {}
+  TextRunIterator(const TextRun* text_run, unsigned offset)
+      : text_run_(text_run), offset_(offset), length_(text_run_->length()) {}
 
   TextRunIterator(const TextRunIterator& other)
-      : m_textRun(other.m_textRun),
-        m_offset(other.m_offset),
-        m_length(m_textRun->length()) {}
+      : text_run_(other.text_run_),
+        offset_(other.offset_),
+        length_(text_run_->length()) {}
 
-  unsigned offset() const { return m_offset; }
-  void increment() { m_offset++; }
-  bool atEnd() const { return m_offset >= m_length; }
-  UChar current() const { return (*m_textRun)[m_offset]; }
-  WTF::Unicode::CharDirection direction() const {
-    return atEnd() ? WTF::Unicode::OtherNeutral
-                   : WTF::Unicode::direction(current());
+  unsigned Offset() const { return offset_; }
+  void Increment() { offset_++; }
+  bool AtEnd() const { return offset_ >= length_; }
+  UChar Current() const { return (*text_run_)[offset_]; }
+  WTF::Unicode::CharDirection Direction() const {
+    return AtEnd() ? WTF::Unicode::kOtherNeutral
+                   : WTF::Unicode::Direction(Current());
   }
-  bool atParagraphSeparator() const { return current() == '\n'; }
+  bool AtParagraphSeparator() const { return Current() == '\n'; }
 
   bool operator==(const TextRunIterator& other) {
-    return m_offset == other.m_offset && m_textRun == other.m_textRun;
+    return offset_ == other.offset_ && text_run_ == other.text_run_;
   }
 
   bool operator!=(const TextRunIterator& other) { return !operator==(other); }
 
  private:
-  const TextRun* m_textRun;
-  unsigned m_offset;
-  unsigned m_length;
+  const TextRun* text_run_;
+  unsigned offset_;
+  unsigned length_;
 };
 
 }  // namespace blink

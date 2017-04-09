@@ -21,18 +21,18 @@ class USBInterface : public GarbageCollected<USBInterface>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBInterface* create(const USBConfiguration*, size_t interfaceIndex);
-  static USBInterface* create(const USBConfiguration*,
-                              size_t interfaceNumber,
+  static USBInterface* Create(const USBConfiguration*, size_t interface_index);
+  static USBInterface* Create(const USBConfiguration*,
+                              size_t interface_number,
                               ExceptionState&);
 
   USBInterface(const USBDevice*,
-               size_t configurationIndex,
-               size_t interfaceIndex);
+               size_t configuration_index,
+               size_t interface_index);
 
-  const device::usb::blink::InterfaceInfo& info() const;
+  const device::usb::blink::InterfaceInfo& Info() const;
 
-  uint8_t interfaceNumber() const { return info().interface_number; }
+  uint8_t interfaceNumber() const { return Info().interface_number; }
   USBAlternateInterface* alternate() const;
   HeapVector<Member<USBAlternateInterface>> alternates() const;
   bool claimed() const;
@@ -40,9 +40,9 @@ class USBInterface : public GarbageCollected<USBInterface>,
   DECLARE_TRACE();
 
  private:
-  Member<const USBDevice> m_device;
-  const size_t m_configurationIndex;
-  const size_t m_interfaceIndex;
+  Member<const USBDevice> device_;
+  const size_t configuration_index_;
+  const size_t interface_index_;
 };
 
 }  // namespace blink

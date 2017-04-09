@@ -47,37 +47,37 @@ class DatabaseManager {
   USING_FAST_MALLOC(DatabaseManager);
 
  public:
-  static DatabaseManager& manager();
+  static DatabaseManager& Manager();
 
   // These 2 methods are for DatabaseContext (un)registration, and should only
   // be called by the DatabaseContext constructor and destructor.
-  void registerDatabaseContext(DatabaseContext*);
-  void unregisterDatabaseContext(DatabaseContext*);
+  void RegisterDatabaseContext(DatabaseContext*);
+  void UnregisterDatabaseContext(DatabaseContext*);
 
 #if DCHECK_IS_ON()
-  void didConstructDatabaseContext();
-  void didDestructDatabaseContext();
+  void DidConstructDatabaseContext();
+  void DidDestructDatabaseContext();
 #else
-  void didConstructDatabaseContext() {}
-  void didDestructDatabaseContext() {}
+  void DidConstructDatabaseContext() {}
+  void DidDestructDatabaseContext() {}
 #endif
 
-  static void throwExceptionForDatabaseError(DatabaseError,
-                                             const String& errorMessage,
+  static void ThrowExceptionForDatabaseError(DatabaseError,
+                                             const String& error_message,
                                              ExceptionState&);
 
-  Database* openDatabase(ExecutionContext*,
+  Database* OpenDatabase(ExecutionContext*,
                          const String& name,
-                         const String& expectedVersion,
-                         const String& displayName,
-                         unsigned estimatedSize,
+                         const String& expected_version,
+                         const String& display_name,
+                         unsigned estimated_size,
                          DatabaseCallback*,
                          DatabaseError&,
-                         String& errorMessage);
+                         String& error_message);
 
-  String fullPathForDatabase(SecurityOrigin*,
+  String FullPathForDatabase(SecurityOrigin*,
                              const String& name,
-                             bool createIfDoesNotExist = true);
+                             bool create_if_does_not_exist = true);
 
  private:
   DatabaseManager();
@@ -85,21 +85,21 @@ class DatabaseManager {
 
   // This gets a DatabaseContext for the specified ExecutionContext.
   // If one doesn't already exist, it will create a new one.
-  DatabaseContext* databaseContextFor(ExecutionContext*);
+  DatabaseContext* DatabaseContextFor(ExecutionContext*);
   // This gets a DatabaseContext for the specified ExecutionContext if
   // it already exist previously. Otherwise, it returns 0.
-  DatabaseContext* existingDatabaseContextFor(ExecutionContext*);
+  DatabaseContext* ExistingDatabaseContextFor(ExecutionContext*);
 
-  Database* openDatabaseInternal(ExecutionContext*,
+  Database* OpenDatabaseInternal(ExecutionContext*,
                                  const String& name,
-                                 const String& expectedVersion,
-                                 const String& displayName,
-                                 unsigned estimatedSize,
-                                 bool setVersionInNewDatabase,
+                                 const String& expected_version,
+                                 const String& display_name,
+                                 unsigned estimated_size,
+                                 bool set_version_in_new_database,
                                  DatabaseError&,
-                                 String& errorMessage);
+                                 String& error_message);
 
-  static void logErrorMessage(ExecutionContext*, const String& message);
+  static void LogErrorMessage(ExecutionContext*, const String& message);
 
   // m_contextMap can have two or more entries even though we don't support
   // Web SQL on workers because single Blink process can have multiple main
@@ -107,10 +107,10 @@ class DatabaseManager {
   typedef PersistentHeapHashMap<Member<ExecutionContext>,
                                 Member<DatabaseContext>>
       ContextMap;
-  ContextMap m_contextMap;
+  ContextMap context_map_;
 #if DCHECK_IS_ON()
-  int m_databaseContextRegisteredCount = 0;
-  int m_databaseContextInstanceCount = 0;
+  int database_context_registered_count_ = 0;
+  int database_context_instance_count_ = 0;
 #endif
 };
 

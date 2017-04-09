@@ -46,139 +46,139 @@ class CORE_EXPORT ExceptionMessages {
 
  public:
   enum BoundType {
-    InclusiveBound,
-    ExclusiveBound,
+    kInclusiveBound,
+    kExclusiveBound,
   };
 
-  static String argumentNullOrIncorrectType(int argumentIndex,
-                                            const String& expectedType);
-  static String constructorNotCallableAsFunction(const char* type);
+  static String ArgumentNullOrIncorrectType(int argument_index,
+                                            const String& expected_type);
+  static String ConstructorNotCallableAsFunction(const char* type);
 
-  static String failedToConstruct(const char* type, const String& detail);
-  static String failedToEnumerate(const char* type, const String& detail);
-  static String failedToExecute(const char* method,
+  static String FailedToConstruct(const char* type, const String& detail);
+  static String FailedToEnumerate(const char* type, const String& detail);
+  static String FailedToExecute(const char* method,
                                 const char* type,
                                 const String& detail);
-  static String failedToGet(const char* property,
+  static String FailedToGet(const char* property,
                             const char* type,
                             const String& detail);
-  static String failedToSet(const char* property,
+  static String FailedToSet(const char* property,
                             const char* type,
                             const String& detail);
-  static String failedToDelete(const char* property,
+  static String FailedToDelete(const char* property,
                                const char* type,
                                const String& detail);
-  static String failedToGetIndexed(const char* type, const String& detail);
-  static String failedToSetIndexed(const char* type, const String& detail);
-  static String failedToDeleteIndexed(const char* type, const String& detail);
+  static String FailedToGetIndexed(const char* type, const String& detail);
+  static String FailedToSetIndexed(const char* type, const String& detail);
+  static String FailedToDeleteIndexed(const char* type, const String& detail);
 
   template <typename NumType>
-  static String formatNumber(NumType number) {
-    return formatFiniteNumber(number);
+  static String FormatNumber(NumType number) {
+    return FormatFiniteNumber(number);
   }
 
-  static String incorrectPropertyType(const String& property,
+  static String IncorrectPropertyType(const String& property,
                                       const String& detail);
 
   template <typename NumberType>
-  static String indexExceedsMaximumBound(const char* name,
+  static String IndexExceedsMaximumBound(const char* name,
                                          NumberType given,
                                          NumberType bound) {
     bool eq = given == bound;
     StringBuilder result;
-    result.append("The ");
-    result.append(name);
-    result.append(" provided (");
-    result.append(formatNumber(given));
-    result.append(") is greater than ");
-    result.append(eq ? "or equal to " : "");
-    result.append("the maximum bound (");
-    result.append(formatNumber(bound));
-    result.append(").");
-    return result.toString();
+    result.Append("The ");
+    result.Append(name);
+    result.Append(" provided (");
+    result.Append(FormatNumber(given));
+    result.Append(") is greater than ");
+    result.Append(eq ? "or equal to " : "");
+    result.Append("the maximum bound (");
+    result.Append(FormatNumber(bound));
+    result.Append(").");
+    return result.ToString();
   }
 
   template <typename NumberType>
-  static String indexExceedsMinimumBound(const char* name,
+  static String IndexExceedsMinimumBound(const char* name,
                                          NumberType given,
                                          NumberType bound) {
     bool eq = given == bound;
     StringBuilder result;
-    result.append("The ");
-    result.append(name);
-    result.append(" provided (");
-    result.append(formatNumber(given));
-    result.append(") is less than ");
-    result.append(eq ? "or equal to " : "");
-    result.append("the minimum bound (");
-    result.append(formatNumber(bound));
-    result.append(").");
-    return result.toString();
+    result.Append("The ");
+    result.Append(name);
+    result.Append(" provided (");
+    result.Append(FormatNumber(given));
+    result.Append(") is less than ");
+    result.Append(eq ? "or equal to " : "");
+    result.Append("the minimum bound (");
+    result.Append(FormatNumber(bound));
+    result.Append(").");
+    return result.ToString();
   }
 
   template <typename NumberType>
-  static String indexOutsideRange(const char* name,
+  static String IndexOutsideRange(const char* name,
                                   NumberType given,
-                                  NumberType lowerBound,
-                                  BoundType lowerType,
-                                  NumberType upperBound,
-                                  BoundType upperType) {
+                                  NumberType lower_bound,
+                                  BoundType lower_type,
+                                  NumberType upper_bound,
+                                  BoundType upper_type) {
     StringBuilder result;
-    result.append("The ");
-    result.append(name);
-    result.append(" provided (");
-    result.append(formatNumber(given));
-    result.append(") is outside the range ");
-    result.append(lowerType == ExclusiveBound ? '(' : '[');
-    result.append(formatNumber(lowerBound));
-    result.append(", ");
-    result.append(formatNumber(upperBound));
-    result.append(upperType == ExclusiveBound ? ')' : ']');
-    result.append('.');
-    return result.toString();
+    result.Append("The ");
+    result.Append(name);
+    result.Append(" provided (");
+    result.Append(FormatNumber(given));
+    result.Append(") is outside the range ");
+    result.Append(lower_type == kExclusiveBound ? '(' : '[');
+    result.Append(FormatNumber(lower_bound));
+    result.Append(", ");
+    result.Append(FormatNumber(upper_bound));
+    result.Append(upper_type == kExclusiveBound ? ')' : ']');
+    result.Append('.');
+    return result.ToString();
   }
 
-  static String invalidArity(const char* expected, unsigned provided);
+  static String InvalidArity(const char* expected, unsigned provided);
 
   // If  > 0, the argument index that failed type check (1-indexed.)
   // If == 0, a (non-argument) value (e.g., a setter) failed the same check.
-  static String notAnArrayTypeArgumentOrValue(int argumentIndex);
-  static String notASequenceTypeProperty(const String& propertyName);
-  static String notAFiniteNumber(double value,
+  static String NotAnArrayTypeArgumentOrValue(int argument_index);
+  static String NotASequenceTypeProperty(const String& property_name);
+  static String NotAFiniteNumber(double value,
                                  const char* name = "value provided");
-  static String notAFiniteNumber(const Decimal& value,
+  static String NotAFiniteNumber(const Decimal& value,
                                  const char* name = "value provided");
 
-  static String notEnoughArguments(unsigned expected, unsigned provided);
+  static String NotEnoughArguments(unsigned expected, unsigned provided);
 
-  static String readOnly(const char* detail = 0);
+  static String ReadOnly(const char* detail = 0);
 
  private:
   template <typename NumType>
-  static String formatFiniteNumber(NumType number) {
+  static String FormatFiniteNumber(NumType number) {
     if (number > 1e20 || number < -1e20)
-      return String::format("%e", 1.0 * number);
-    return String::number(number);
+      return String::Format("%e", 1.0 * number);
+    return String::Number(number);
   }
 
   template <typename NumType>
-  static String formatPotentiallyNonFiniteNumber(NumType number) {
+  static String FormatPotentiallyNonFiniteNumber(NumType number) {
     if (std::isnan(number))
       return "NaN";
     if (std::isinf(number))
       return number > 0 ? "Infinity" : "-Infinity";
     if (number > 1e20 || number < -1e20)
-      return String::format("%e", number);
-    return String::number(number);
+      return String::Format("%e", number);
+    return String::Number(number);
   }
 
-  static String ordinalNumber(int number);
+  static String OrdinalNumber(int number);
 };
 
 template <>
-String ExceptionMessages::formatNumber<float>(float number);
+String ExceptionMessages::FormatNumber<float>(float number);
 template <>
-String ExceptionMessages::formatNumber<double>(double number);
+String ExceptionMessages::FormatNumber<double>(double number);
 
 }  // namespace blink
 

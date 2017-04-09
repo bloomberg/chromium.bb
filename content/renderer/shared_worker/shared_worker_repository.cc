@@ -16,7 +16,7 @@ SharedWorkerRepository::SharedWorkerRepository(RenderFrameImpl* render_frame)
 
 SharedWorkerRepository::~SharedWorkerRepository() = default;
 
-void SharedWorkerRepository::connect(
+void SharedWorkerRepository::Connect(
     const blink::WebURL& url,
     const blink::WebString& name,
     DocumentID document_id,
@@ -30,8 +30,8 @@ void SharedWorkerRepository::connect(
 
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
-  params.name = name.utf16();
-  params.content_security_policy = content_security_policy.utf16();
+  params.name = name.Utf16();
+  params.content_security_policy = content_security_policy.Utf16();
   params.security_policy_type = security_policy_type;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame_->GetRoutingID();
@@ -43,7 +43,7 @@ void SharedWorkerRepository::connect(
   new WebSharedWorkerProxy(std::move(listener), params, std::move(channel));
 }
 
-void SharedWorkerRepository::documentDetached(DocumentID document) {
+void SharedWorkerRepository::DocumentDetached(DocumentID document) {
   std::set<DocumentID>::iterator iter = documents_with_workers_.find(document);
   if (iter != documents_with_workers_.end()) {
     // Notify the browser process that the document has shut down.

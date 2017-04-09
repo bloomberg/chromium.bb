@@ -16,8 +16,8 @@ ScriptInjectionCallback::ScriptInjectionCallback(
 ScriptInjectionCallback::~ScriptInjectionCallback() {
 }
 
-void ScriptInjectionCallback::completed(
-    const blink::WebVector<v8::Local<v8::Value> >& result) {
+void ScriptInjectionCallback::Completed(
+    const blink::WebVector<v8::Local<v8::Value>>& result) {
   std::vector<v8::Local<v8::Value>> stl_result(result.begin(), result.end());
   injection_completed_callback_.Run(stl_result);
   delete this;

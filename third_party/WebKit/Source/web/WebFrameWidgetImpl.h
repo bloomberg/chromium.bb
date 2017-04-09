@@ -69,92 +69,92 @@ class WebFrameWidgetImpl final
       public WebFrameWidgetBase,
       public PageWidgetEventHandler {
  public:
-  static WebFrameWidgetImpl* create(WebWidgetClient*, WebLocalFrame*);
+  static WebFrameWidgetImpl* Create(WebWidgetClient*, WebLocalFrame*);
 
   ~WebFrameWidgetImpl();
 
   // WebWidget functions:
-  void close() override;
+  void Close() override;
   WebSize size() override;
-  void resize(const WebSize&) override;
-  void resizeVisualViewport(const WebSize&) override;
-  void didEnterFullscreen() override;
-  void didExitFullscreen() override;
-  void setSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void beginFrame(double lastFrameTimeMonotonic) override;
-  void updateAllLifecyclePhases() override;
-  void paint(WebCanvas*, const WebRect&) override;
-  void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
-  void compositeAndReadbackAsync(
+  void Resize(const WebSize&) override;
+  void ResizeVisualViewport(const WebSize&) override;
+  void DidEnterFullscreen() override;
+  void DidExitFullscreen() override;
+  void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
+  void BeginFrame(double last_frame_time_monotonic) override;
+  void UpdateAllLifecyclePhases() override;
+  void Paint(WebCanvas*, const WebRect&) override;
+  void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
+  void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
-  void themeChanged() override;
-  WebInputEventResult handleInputEvent(const WebCoalescedInputEvent&) override;
-  void setCursorVisibilityState(bool isVisible) override;
-  bool hasTouchEventHandlersAt(const WebPoint&) override;
+  void ThemeChanged() override;
+  WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
+  void SetCursorVisibilityState(bool is_visible) override;
+  bool HasTouchEventHandlersAt(const WebPoint&) override;
 
-  void applyViewportDeltas(const WebFloatSize& visualViewportDelta,
-                           const WebFloatSize& mainFrameDelta,
-                           const WebFloatSize& elasticOverscrollDelta,
-                           float pageScaleDelta,
-                           float browserControlsDelta) override;
-  void mouseCaptureLost() override;
-  void setFocus(bool enable) override;
-  WebRange compositionRange() override;
-  WebColor backgroundColor() const override;
-  bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool selectionTextDirection(WebTextDirection& start,
+  void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
+                           const WebFloatSize& main_frame_delta,
+                           const WebFloatSize& elastic_overscroll_delta,
+                           float page_scale_delta,
+                           float browser_controls_delta) override;
+  void MouseCaptureLost() override;
+  void SetFocus(bool enable) override;
+  WebRange CompositionRange() override;
+  WebColor BackgroundColor() const override;
+  bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
+  bool SelectionTextDirection(WebTextDirection& start,
                               WebTextDirection& end) const override;
-  bool isSelectionAnchorFirst() const override;
-  WebRange caretOrSelectionRange() override;
-  void setTextDirection(WebTextDirection) override;
-  bool isAcceleratedCompositingActive() const override;
-  void willCloseLayerTreeView() override;
-  bool getCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
-  void setRemoteViewportIntersection(const WebRect&) override;
+  bool IsSelectionAnchorFirst() const override;
+  WebRange CaretOrSelectionRange() override;
+  void SetTextDirection(WebTextDirection) override;
+  bool IsAcceleratedCompositingActive() const override;
+  void WillCloseLayerTreeView() override;
+  bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
+  void SetRemoteViewportIntersection(const WebRect&) override;
 
   // WebFrameWidget implementation.
-  WebLocalFrameImpl* localRoot() const override { return m_localRoot; }
-  void setVisibilityState(WebPageVisibilityState) override;
-  void setBackgroundColorOverride(WebColor) override;
-  void clearBackgroundColorOverride() override;
-  void setBaseBackgroundColorOverride(WebColor) override;
-  void clearBaseBackgroundColorOverride() override;
-  void setBaseBackgroundColor(WebColor) override;
-  WebInputMethodControllerImpl* getActiveWebInputMethodController()
+  WebLocalFrameImpl* LocalRoot() const override { return local_root_; }
+  void SetVisibilityState(WebPageVisibilityState) override;
+  void SetBackgroundColorOverride(WebColor) override;
+  void ClearBackgroundColorOverride() override;
+  void SetBaseBackgroundColorOverride(WebColor) override;
+  void ClearBaseBackgroundColorOverride() override;
+  void SetBaseBackgroundColor(WebColor) override;
+  WebInputMethodControllerImpl* GetActiveWebInputMethodController()
       const override;
 
-  Frame* focusedCoreFrame() const;
+  Frame* FocusedCoreFrame() const;
 
   // Returns the currently focused Element or null if no element has focus.
-  Element* focusedElement() const;
+  Element* FocusedElement() const;
 
-  PaintLayerCompositor* compositor() const;
+  PaintLayerCompositor* Compositor() const;
 
   // WebFrameWidgetBase overrides:
-  bool forSubframe() const override { return true; }
-  void scheduleAnimation() override;
-  CompositorWorkerProxyClient* createCompositorWorkerProxyClient() override;
-  AnimationWorkletProxyClient* createAnimationWorkletProxyClient() override;
+  bool ForSubframe() const override { return true; }
+  void ScheduleAnimation() override;
+  CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() override;
+  AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() override;
 
-  WebWidgetClient* client() const override { return m_client; }
-  void setRootGraphicsLayer(GraphicsLayer*) override;
-  void setRootLayer(WebLayer*) override;
-  WebLayerTreeView* getLayerTreeView() const override;
-  CompositorAnimationHost* animationHost() const override;
-  HitTestResult coreHitTestResultAt(const WebPoint&) override;
+  WebWidgetClient* Client() const override { return client_; }
+  void SetRootGraphicsLayer(GraphicsLayer*) override;
+  void SetRootLayer(WebLayer*) override;
+  WebLayerTreeView* GetLayerTreeView() const override;
+  CompositorAnimationHost* AnimationHost() const override;
+  HitTestResult CoreHitTestResultAt(const WebPoint&) override;
 
   // Exposed for the purpose of overriding device metrics.
-  void sendResizeEventAndRepaint();
+  void SendResizeEventAndRepaint();
 
-  void updateMainFrameLayoutSize();
+  void UpdateMainFrameLayoutSize();
 
   // Event related methods:
-  void mouseContextMenu(const WebMouseEvent&);
+  void MouseContextMenu(const WebMouseEvent&);
 
-  WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
-  GraphicsLayer* rootGraphicsLayer() const { return m_rootGraphicsLayer; };
+  WebLayerTreeView* LayerTreeView() const { return layer_tree_view_; }
+  GraphicsLayer* RootGraphicsLayer() const { return root_graphics_layer_; };
 
-  Color baseBackgroundColor() const;
+  Color BaseBackgroundColor() const;
 
   DECLARE_TRACE();
 
@@ -164,89 +164,89 @@ class WebFrameWidgetImpl final
   explicit WebFrameWidgetImpl(WebWidgetClient*, WebLocalFrame*);
 
   // Perform a hit test for a point relative to the root frame of the page.
-  HitTestResult hitTestResultForRootFramePos(const IntPoint& posInRootFrame);
+  HitTestResult HitTestResultForRootFramePos(const IntPoint& pos_in_root_frame);
 
-  void initializeLayerTreeView();
+  void InitializeLayerTreeView();
 
-  void setIsAcceleratedCompositingActive(bool);
-  void updateLayerTreeViewport();
-  void updateLayerTreeBackgroundColor();
-  void updateLayerTreeDeviceScaleFactor();
-  void updateBaseBackgroundColor();
+  void SetIsAcceleratedCompositingActive(bool);
+  void UpdateLayerTreeViewport();
+  void UpdateLayerTreeBackgroundColor();
+  void UpdateLayerTreeDeviceScaleFactor();
+  void UpdateBaseBackgroundColor();
 
   // PageWidgetEventHandler functions
-  void handleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
-  void handleMouseDown(LocalFrame&, const WebMouseEvent&) override;
-  void handleMouseUp(LocalFrame&, const WebMouseEvent&) override;
-  WebInputEventResult handleMouseWheel(LocalFrame&,
+  void HandleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
+  void HandleMouseDown(LocalFrame&, const WebMouseEvent&) override;
+  void HandleMouseUp(LocalFrame&, const WebMouseEvent&) override;
+  WebInputEventResult HandleMouseWheel(LocalFrame&,
                                        const WebMouseWheelEvent&) override;
-  WebInputEventResult handleGestureEvent(const WebGestureEvent&) override;
-  WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) override;
-  WebInputEventResult handleCharEvent(const WebKeyboardEvent&) override;
+  WebInputEventResult HandleGestureEvent(const WebGestureEvent&) override;
+  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
+  WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
-  InspectorOverlay* inspectorOverlay();
+  InspectorOverlay* GetInspectorOverlay();
 
   // This method returns the focused frame belonging to this WebWidget, that
   // is, a focused frame with the same local root as the one corresponding
   // to this widget. It will return nullptr if no frame is focused or, the
   // focused frame has a different local root.
-  LocalFrame* focusedLocalFrameInWidget() const;
+  LocalFrame* FocusedLocalFrameInWidget() const;
 
-  WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*) const;
+  WebPlugin* FocusedPluginIfInputMethodSupported(LocalFrame*) const;
 
-  LocalFrame* focusedLocalFrameAvailableForIme() const;
+  LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
-  CompositorMutatorImpl& mutator();
+  CompositorMutatorImpl& Mutator();
 
-  WebWidgetClient* m_client;
+  WebWidgetClient* client_;
 
   // WebFrameWidget is associated with a subtree of the frame tree,
   // corresponding to a maximal connected tree of LocalFrames. This member
   // points to the root of that subtree.
-  Member<WebLocalFrameImpl> m_localRoot;
+  Member<WebLocalFrameImpl> local_root_;
 
-  WebSize m_size;
+  WebSize size_;
 
   // If set, the (plugin) node which has mouse capture.
-  Member<Node> m_mouseCaptureNode;
-  RefPtr<UserGestureToken> m_mouseCaptureGestureToken;
+  Member<Node> mouse_capture_node_;
+  RefPtr<UserGestureToken> mouse_capture_gesture_token_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread. The LayerTreeHostImpl is indirectly owned by this
   // class so this pointer should be valid until this class is destructed.
-  CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
+  CrossThreadPersistent<CompositorMutatorImpl> mutator_;
 
-  WebLayerTreeView* m_layerTreeView;
-  WebLayer* m_rootLayer;
-  GraphicsLayer* m_rootGraphicsLayer;
-  std::unique_ptr<CompositorAnimationHost> m_animationHost;
-  bool m_isAcceleratedCompositingActive;
-  bool m_layerTreeViewClosed;
+  WebLayerTreeView* layer_tree_view_;
+  WebLayer* root_layer_;
+  GraphicsLayer* root_graphics_layer_;
+  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  bool is_accelerated_compositing_active_;
+  bool layer_tree_view_closed_;
 
-  bool m_suppressNextKeypressEvent;
+  bool suppress_next_keypress_event_;
 
-  bool m_backgroundColorOverrideEnabled;
-  WebColor m_backgroundColorOverride;
-  bool m_baseBackgroundColorOverrideEnabled;
-  WebColor m_baseBackgroundColorOverride;
+  bool background_color_override_enabled_;
+  WebColor background_color_override_;
+  bool base_background_color_override_enabled_;
+  WebColor base_background_color_override_;
 
   // TODO(ekaramad): Can we remove this and make sure IME events are not called
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
-  bool m_imeAcceptEvents;
+  bool ime_accept_events_;
 
-  static const WebInputEvent* m_currentInputEvent;
+  static const WebInputEvent* current_input_event_;
 
-  WebColor m_baseBackgroundColor;
+  WebColor base_background_color_;
 
-  SelfKeepAlive<WebFrameWidgetImpl> m_selfKeepAlive;
+  SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };
 
 DEFINE_TYPE_CASTS(WebFrameWidgetImpl,
                   WebFrameWidgetBase,
                   widget,
-                  widget->forSubframe(),
-                  widget.forSubframe());
+                  widget->ForSubframe(),
+                  widget.ForSubframe());
 
 }  // namespace blink
 

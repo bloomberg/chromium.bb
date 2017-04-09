@@ -15,7 +15,7 @@ namespace blink {
 
 class CSPSourceTest : public ::testing::Test {
  public:
-  CSPSourceTest() : csp(ContentSecurityPolicy::create()) {}
+  CSPSourceTest() : csp(ContentSecurityPolicy::Create()) {}
 
  protected:
   Persistent<ContentSecurityPolicy> csp;
@@ -26,117 +26,117 @@ class CSPSourceTest : public ::testing::Test {
     // port is 0 if it was not specified so the default port for a given scheme
     // will be used.
     const int port;
-    CSPSource::WildcardDisposition hostWildcard;
-    CSPSource::WildcardDisposition portWildcard;
+    CSPSource::WildcardDisposition host_wildcard;
+    CSPSource::WildcardDisposition port_wildcard;
   };
 
-  bool equalSources(const Source& a, const Source& b) {
+  bool EqualSources(const Source& a, const Source& b) {
     return a.scheme == b.scheme && a.host == b.host && a.port == b.port &&
-           a.path == b.path && a.hostWildcard == b.hostWildcard &&
-           a.portWildcard == b.portWildcard;
+           a.path == b.path && a.host_wildcard == b.host_wildcard &&
+           a.port_wildcard == b.port_wildcard;
   }
 };
 
 TEST_F(CSPSourceTest, BasicMatching) {
   KURL base;
-  CSPSource source(csp.get(), "http", "example.com", 8000, "/foo/",
-                   CSPSource::NoWildcard, CSPSource::NoWildcard);
+  CSPSource source(csp.Get(), "http", "example.com", 8000, "/foo/",
+                   CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/foo/")));
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/foo/bar")));
-  EXPECT_TRUE(source.matches(KURL(base, "HTTP://EXAMPLE.com:8000/foo/BAR")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://example.com:8000/foo/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://example.com:8000/foo/bar")));
+  EXPECT_TRUE(source.Matches(KURL(base, "HTTP://EXAMPLE.com:8000/foo/BAR")));
 
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8000/bar/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8000/bar/")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/bar/")));
-  EXPECT_FALSE(source.matches(KURL(base, "HTTP://example.com:8000/FOO/bar")));
-  EXPECT_FALSE(source.matches(KURL(base, "HTTP://example.com:8000/FOO/BAR")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:8000/bar/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "https://example.com:8000/bar/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:9000/bar/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "HTTP://example.com:8000/FOO/bar")));
+  EXPECT_FALSE(source.Matches(KURL(base, "HTTP://example.com:8000/FOO/BAR")));
 }
 
 TEST_F(CSPSourceTest, BasicPathMatching) {
   KURL base;
-  CSPSource A(csp.get(), "http", "example.com", 8000, "/",
-              CSPSource::NoWildcard, CSPSource::NoWildcard);
+  CSPSource a(csp.Get(), "http", "example.com", 8000, "/",
+              CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000")));
-  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000/")));
-  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000/foo/bar")));
+  EXPECT_TRUE(a.Matches(KURL(base, "http://example.com:8000")));
+  EXPECT_TRUE(a.Matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_TRUE(a.Matches(KURL(base, "http://example.com:8000/foo/bar")));
 
-  EXPECT_FALSE(A.matches(KURL(base, "http://example.com:8000path")));
-  EXPECT_FALSE(A.matches(KURL(base, "http://example.com:9000/")));
+  EXPECT_FALSE(a.Matches(KURL(base, "http://example.com:8000path")));
+  EXPECT_FALSE(a.Matches(KURL(base, "http://example.com:9000/")));
 
-  CSPSource B(csp.get(), "http", "example.com", 8000, "", CSPSource::NoWildcard,
-              CSPSource::NoWildcard);
-  EXPECT_TRUE(B.matches(KURL(base, "http://example.com:8000")));
-  EXPECT_TRUE(B.matches(KURL(base, "http://example.com:8000/")));
-  EXPECT_TRUE(A.matches(KURL(base, "http://example.com:8000/foo/bar")));
+  CSPSource b(csp.Get(), "http", "example.com", 8000, "",
+              CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+  EXPECT_TRUE(b.Matches(KURL(base, "http://example.com:8000")));
+  EXPECT_TRUE(b.Matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_TRUE(a.Matches(KURL(base, "http://example.com:8000/foo/bar")));
 
-  EXPECT_FALSE(B.matches(KURL(base, "http://example.com:8000path")));
-  EXPECT_FALSE(B.matches(KURL(base, "http://example.com:9000/")));
+  EXPECT_FALSE(b.Matches(KURL(base, "http://example.com:8000path")));
+  EXPECT_FALSE(b.Matches(KURL(base, "http://example.com:9000/")));
 }
 
 TEST_F(CSPSourceTest, WildcardMatching) {
   KURL base;
-  CSPSource source(csp.get(), "http", "example.com", 0, "/",
-                   CSPSource::HasWildcard, CSPSource::HasWildcard);
+  CSPSource source(csp.Get(), "http", "example.com", 0, "/",
+                   CSPSource::kHasWildcard, CSPSource::kHasWildcard);
 
-  EXPECT_TRUE(source.matches(KURL(base, "http://foo.example.com:8000/")));
-  EXPECT_TRUE(source.matches(KURL(base, "http://foo.example.com:8000/foo")));
-  EXPECT_TRUE(source.matches(KURL(base, "http://foo.example.com:9000/foo/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://foo.example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://foo.example.com:8000/foo")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://foo.example.com:9000/foo/")));
   EXPECT_TRUE(
-      source.matches(KURL(base, "HTTP://FOO.EXAMPLE.com:8000/foo/BAR")));
+      source.Matches(KURL(base, "HTTP://FOO.EXAMPLE.com:8000/foo/BAR")));
 
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8000/")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8000/foo")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/foo/")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.foo.com:8000/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://example.foo.com:8000/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8000/bar/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:8000/foo")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:9000/foo/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.foo.com:8000/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "https://example.foo.com:8000/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "https://example.com:8000/bar/")));
 }
 
 TEST_F(CSPSourceTest, RedirectMatching) {
   KURL base;
-  CSPSource source(csp.get(), "http", "example.com", 8000, "/bar/",
-                   CSPSource::NoWildcard, CSPSource::NoWildcard);
+  CSPSource source(csp.Get(), "http", "example.com", 8000, "/bar/",
+                   CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
   EXPECT_TRUE(
-      source.matches(KURL(base, "http://example.com:8000/"),
-                     ResourceRequest::RedirectStatus::FollowedRedirect));
+      source.Matches(KURL(base, "http://example.com:8000/"),
+                     ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_TRUE(
-      source.matches(KURL(base, "http://example.com:8000/foo"),
-                     ResourceRequest::RedirectStatus::FollowedRedirect));
+      source.Matches(KURL(base, "http://example.com:8000/foo"),
+                     ResourceRequest::RedirectStatus::kFollowedRedirect));
   // Should not allow upgrade of port or scheme without upgrading both
   EXPECT_FALSE(
-      source.matches(KURL(base, "https://example.com:8000/foo"),
-                     ResourceRequest::RedirectStatus::FollowedRedirect));
+      source.Matches(KURL(base, "https://example.com:8000/foo"),
+                     ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_FALSE(
-      source.matches(KURL(base, "http://not-example.com:8000/foo"),
-                     ResourceRequest::RedirectStatus::FollowedRedirect));
-  EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/foo/"),
-                              ResourceRequest::RedirectStatus::NoRedirect));
+      source.Matches(KURL(base, "http://not-example.com:8000/foo"),
+                     ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:9000/foo/"),
+                              ResourceRequest::RedirectStatus::kNoRedirect));
 }
 
 TEST_F(CSPSourceTest, InsecureSchemeMatchesSecureScheme) {
   KURL base;
-  CSPSource source(csp.get(), "http", "", 0, "/", CSPSource::NoWildcard,
-                   CSPSource::HasWildcard);
+  CSPSource source(csp.Get(), "http", "", 0, "/", CSPSource::kNoWildcard,
+                   CSPSource::kHasWildcard);
 
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/")));
-  EXPECT_TRUE(source.matches(KURL(base, "https://example.com:8000/")));
-  EXPECT_TRUE(source.matches(KURL(base, "http://not-example.com:8000/")));
-  EXPECT_TRUE(source.matches(KURL(base, "https://not-example.com:8000/")));
-  EXPECT_FALSE(source.matches(KURL(base, "ftp://example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "https://example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://not-example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "https://not-example.com:8000/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "ftp://example.com:8000/")));
 }
 
 TEST_F(CSPSourceTest, InsecureHostSchemeMatchesSecureScheme) {
   KURL base;
-  CSPSource source(csp.get(), "http", "example.com", 0, "/",
-                   CSPSource::NoWildcard, CSPSource::HasWildcard);
+  CSPSource source(csp.Get(), "http", "example.com", 0, "/",
+                   CSPSource::kNoWildcard, CSPSource::kHasWildcard);
 
-  EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/")));
-  EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:8000/")));
-  EXPECT_TRUE(source.matches(KURL(base, "https://example.com:8000/")));
-  EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "http://example.com:8000/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "http://not-example.com:8000/")));
+  EXPECT_TRUE(source.Matches(KURL(base, "https://example.com:8000/")));
+  EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com:8000/")));
 }
 
 TEST_F(CSPSourceTest, SchemeIsEmpty) {
@@ -144,56 +144,56 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 
   // Self scheme is http.
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
-    csp->setupSelf(*SecurityOrigin::createFromString("http://a.com/"));
-    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_TRUE(source.matches(KURL(base, "http://a.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "https://a.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "http-so://a.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "https-so://a.com")));
-    EXPECT_FALSE(source.matches(KURL(base, "ftp://a.com")));
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    csp->SetupSelf(*SecurityOrigin::CreateFromString("http://a.com/"));
+    CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http-so://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https-so://a.com")));
+    EXPECT_FALSE(source.Matches(KURL(base, "ftp://a.com")));
   }
 
   // Self scheme is https.
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
-    csp->setupSelf(*SecurityOrigin::createFromString("https://a.com/"));
-    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "https://a.com")));
-    EXPECT_FALSE(source.matches(KURL(base, "http-so://a.com")));
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    csp->SetupSelf(*SecurityOrigin::CreateFromString("https://a.com/"));
+    CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_FALSE(source.Matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://a.com")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http-so://a.com")));
     // TODO(jochen): Maybe it should return false?
-    EXPECT_TRUE(source.matches(KURL(base, "https-so://a.com")));
-    EXPECT_FALSE(source.matches(KURL(base, "ftp://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https-so://a.com")));
+    EXPECT_FALSE(source.Matches(KURL(base, "ftp://a.com")));
   }
 
   // Self scheme is not in the http familly.
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
-    csp->setupSelf(*SecurityOrigin::createFromString("ftp://a.com/"));
-    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "ftp://a.com")));
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    csp->SetupSelf(*SecurityOrigin::CreateFromString("ftp://a.com/"));
+    CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_FALSE(source.Matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "ftp://a.com")));
   }
 
   // Self scheme is unique
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
-    csp->setupSelf(
-        *SecurityOrigin::createFromString("non-standard-scheme://a.com/"));
-    CSPSource source(csp.get(), "", "a.com", 0, "/", CSPSource::NoWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    csp->SetupSelf(
+        *SecurityOrigin::CreateFromString("non-standard-scheme://a.com/"));
+    CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_FALSE(source.Matches(KURL(base, "http://a.com")));
 
     // The reason matching fails is because the host is parsed as "" when
     // using a non standard scheme even though it should be parsed as "a.com"
     // After adding it to the list of standard schemes it now gets parsed
     // correctly. This does not matter in practice though because there is
     // no way to render/load anything like "non-standard-scheme://a.com"
-    EXPECT_FALSE(source.matches(KURL(base, "non-standard-scheme://a.com")));
+    EXPECT_FALSE(source.Matches(KURL(base, "non-standard-scheme://a.com")));
   }
 }
 
@@ -202,92 +202,92 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
 
   // source scheme is "http"
   {
-    CSPSource source(csp.get(), "http", "example.com", 80, "/",
-                     CSPSource::NoWildcard, CSPSource::NoWildcard);
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:80/")));
+    CSPSource source(csp.Get(), "http", "example.com", 80, "/",
+                     CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://example.com/")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://example.com:80/")));
 
     // Should not allow scheme upgrades unless both port and scheme are upgraded
-    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:443/")));
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com/")));
-    EXPECT_FALSE(source.matches(KURL(base, "https://example.com:80/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:443/")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://example.com/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "https://example.com:80/")));
 
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443/")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://example.com:443/")));
 
-    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8443/")));
-    EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8443/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:8443/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "https://example.com:8443/")));
 
-    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com/")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:80/")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:443/")));
-    EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com/")));
-    EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:80/")));
-    EXPECT_FALSE(source.matches(KURL(base, "https://not-example.com:443/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://not-example.com/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://not-example.com:80/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://not-example.com:443/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com:80/")));
+    EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com:443/")));
   }
 
   // source scheme is empty
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
-    csp->setupSelf(*SecurityOrigin::createFromString("http://example.com"));
-    CSPSource source(csp.get(), "", "example.com", 80, "/",
-                     CSPSource::NoWildcard, CSPSource::NoWildcard);
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com/")));
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443")));
+    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    csp->SetupSelf(*SecurityOrigin::CreateFromString("http://example.com"));
+    CSPSource source(csp.Get(), "", "example.com", 80, "/",
+                     CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://example.com/")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://example.com:443")));
     // Should not allow upgrade of port or scheme without upgrading both
-    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:443")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:443")));
   }
 
   // source port is empty
   {
-    CSPSource source(csp.get(), "http", "example.com", 0, "/",
-                     CSPSource::NoWildcard, CSPSource::NoWildcard);
+    CSPSource source(csp.Get(), "http", "example.com", 0, "/",
+                     CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:443")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://example.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://example.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "https://example.com:443")));
     // Should not allow upgrade of port or scheme without upgrading both
-    EXPECT_FALSE(source.matches(KURL(base, "https://example.com:80")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:443")));
+    EXPECT_FALSE(source.Matches(KURL(base, "https://example.com:80")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://example.com:443")));
   }
 }
 
 TEST_F(CSPSourceTest, HostMatches) {
   KURL base;
-  Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::create());
-  csp->setupSelf(*SecurityOrigin::createFromString("http://a.com"));
+  Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+  csp->SetupSelf(*SecurityOrigin::CreateFromString("http://a.com"));
 
   // Host is * (source-expression = "http://*")
   {
-    CSPSource source(csp.get(), "http", "", 0, "", CSPSource::HasWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_TRUE(source.matches(KURL(base, "http://a.com")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://.")));
+    CSPSource source(csp.Get(), "http", "", 0, "", CSPSource::kHasWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://a.com")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://.")));
   }
 
   // Host is *.foo.bar
   {
-    CSPSource source(csp.get(), "", "foo.bar", 0, "", CSPSource::HasWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_FALSE(source.matches(KURL(base, "http://a.com")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://bar")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://foo.bar")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://o.bar")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://*.foo.bar")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://sub.foo.bar")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://sub.sub.foo.bar")));
+    CSPSource source(csp.Get(), "", "foo.bar", 0, "", CSPSource::kHasWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_FALSE(source.Matches(KURL(base, "http://a.com")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://o.bar")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://*.foo.bar")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://sub.foo.bar")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://sub.sub.foo.bar")));
     // Please see http://crbug.com/692505
-    EXPECT_TRUE(source.matches(KURL(base, "http://.foo.bar")));
+    EXPECT_TRUE(source.Matches(KURL(base, "http://.foo.bar")));
   }
 
   // Host is exact.
   {
-    CSPSource source(csp.get(), "", "foo.bar", 0, "", CSPSource::NoWildcard,
-                     CSPSource::NoWildcard);
-    EXPECT_TRUE(source.matches(KURL(base, "http://foo.bar")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://sub.foo.bar")));
-    EXPECT_FALSE(source.matches(KURL(base, "http://bar")));
+    CSPSource source(csp.Get(), "", "foo.bar", 0, "", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://sub.foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://bar")));
     // Please see http://crbug.com/692505
-    EXPECT_FALSE(source.matches(KURL(base, "http://.foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://.foo.bar")));
   }
 }
 
@@ -312,16 +312,16 @@ TEST_F(CSPSourceTest, DoesNotSubsume) {
   };
   for (const auto& test : cases) {
     CSPSource* returned = new CSPSource(
-        csp.get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
     CSPSource* required = new CSPSource(
-        csp.get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    EXPECT_FALSE(required->subsumes(returned));
+    EXPECT_FALSE(required->Subsumes(returned));
     // Verify the same test with a and b swapped.
-    EXPECT_FALSE(required->subsumes(returned));
+    EXPECT_FALSE(required->Subsumes(returned));
   }
 }
 
@@ -335,7 +335,7 @@ TEST_F(CSPSourceTest, Subsumes) {
     const Source a;
     const Source b;
     bool expected;
-    bool expectedWhenSwapped;
+    bool expected_when_swapped;
   } cases[] = {
       // Equal signals
       {{"http", "/", 0}, {"http", "/", 0}, true, true},
@@ -368,43 +368,43 @@ TEST_F(CSPSourceTest, Subsumes) {
 
   for (const auto& test : cases) {
     CSPSource* returned = new CSPSource(
-        csp.get(), test.a.scheme, "example.com", test.a.port, test.a.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.a.scheme, "example.com", test.a.port, test.a.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
     CSPSource* required = new CSPSource(
-        csp.get(), test.b.scheme, "example.com", test.b.port, test.b.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.b.scheme, "example.com", test.b.port, test.b.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    EXPECT_EQ(required->subsumes(returned), test.expected);
+    EXPECT_EQ(required->Subsumes(returned), test.expected);
     // Verify the same test with a and b swapped.
-    EXPECT_EQ(returned->subsumes(required), test.expectedWhenSwapped);
+    EXPECT_EQ(returned->Subsumes(required), test.expected_when_swapped);
   }
 
   // When returned CSP has a wildcard but the required csp doesn't, then it is
   // not subsumed.
   for (const auto& test : cases) {
     CSPSource* returned = new CSPSource(
-        csp.get(), test.a.scheme, "example.com", test.a.port, test.a.path,
-        CSPSource::HasWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.a.scheme, "example.com", test.a.port, test.a.path,
+        CSPSource::kHasWildcard, CSPSource::kNoWildcard);
     CSPSource* required = new CSPSource(
-        csp.get(), test.b.scheme, "example.com", test.b.port, test.b.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.b.scheme, "example.com", test.b.port, test.b.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    EXPECT_FALSE(required->subsumes(returned));
+    EXPECT_FALSE(required->Subsumes(returned));
 
     // If required csp also allows a wildcard in host, then the answer should be
     // as expected.
     CSPSource* required2 = new CSPSource(
-        csp.get(), test.b.scheme, "example.com", test.b.port, test.b.path,
-        CSPSource::HasWildcard, CSPSource::NoWildcard);
-    EXPECT_EQ(required2->subsumes(returned), test.expected);
+        csp.Get(), test.b.scheme, "example.com", test.b.port, test.b.path,
+        CSPSource::kHasWildcard, CSPSource::kNoWildcard);
+    EXPECT_EQ(required2->Subsumes(returned), test.expected);
   }
 }
 
 TEST_F(CSPSourceTest, WildcardsSubsumes) {
   struct Wildcards {
-    CSPSource::WildcardDisposition hostDispotion;
-    CSPSource::WildcardDisposition portDispotion;
+    CSPSource::WildcardDisposition host_dispotion;
+    CSPSource::WildcardDisposition port_dispotion;
   };
   struct TestCase {
     const Wildcards a;
@@ -412,53 +412,53 @@ TEST_F(CSPSourceTest, WildcardsSubsumes) {
     bool expected;
   } cases[] = {
       // One out of four possible wildcards.
-      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
-       {CSPSource::NoWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kNoWildcard},
        false},
-      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
-       {CSPSource::NoWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kNoWildcard},
        false},
-      {{CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kHasWildcard},
        true},
-      {{CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kNoWildcard},
        true},
       // Two out of four possible wildcards.
-      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
-       {CSPSource::NoWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kNoWildcard},
        false},
-      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
-       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kNoWildcard},
        true},
-      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
-       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kHasWildcard},
        false},
-      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
-       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kNoWildcard},
        false},
-      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
-       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kHasWildcard},
        true},
-      {{CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kHasWildcard},
        true},
       // Three out of four possible wildcards.
-      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
-       {CSPSource::HasWildcard, CSPSource::NoWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kNoWildcard},
        false},
-      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
-       {CSPSource::NoWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kNoWildcard, CSPSource::kHasWildcard},
        false},
-      {{CSPSource::HasWildcard, CSPSource::NoWildcard},
-       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kNoWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kHasWildcard},
        true},
-      {{CSPSource::NoWildcard, CSPSource::HasWildcard},
-       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kNoWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kHasWildcard},
        true},
       // Four out of four possible wildcards.
-      {{CSPSource::HasWildcard, CSPSource::HasWildcard},
-       {CSPSource::HasWildcard, CSPSource::HasWildcard},
+      {{CSPSource::kHasWildcard, CSPSource::kHasWildcard},
+       {CSPSource::kHasWildcard, CSPSource::kHasWildcard},
        true},
   };
 
@@ -466,26 +466,26 @@ TEST_F(CSPSourceTest, WildcardsSubsumes) {
   // has a more specific path.
   for (const auto& test : cases) {
     CSPSource* returned =
-        new CSPSource(csp.get(), "http", "example.com", 0, "/",
-                      test.a.hostDispotion, test.a.portDispotion);
+        new CSPSource(csp.Get(), "http", "example.com", 0, "/",
+                      test.a.host_dispotion, test.a.port_dispotion);
     CSPSource* required =
-        new CSPSource(csp.get(), "http", "example.com", 0, "/",
-                      test.b.hostDispotion, test.b.portDispotion);
-    EXPECT_EQ(required->subsumes(returned), test.expected);
+        new CSPSource(csp.Get(), "http", "example.com", 0, "/",
+                      test.b.host_dispotion, test.b.port_dispotion);
+    EXPECT_EQ(required->Subsumes(returned), test.expected);
 
     // Wildcards should not matter when required csp is stricter than returned
     // csp.
     CSPSource* required2 =
-        new CSPSource(csp.get(), "https", "example.com", 0, "/",
-                      test.b.hostDispotion, test.b.portDispotion);
-    EXPECT_FALSE(required2->subsumes(returned));
+        new CSPSource(csp.Get(), "https", "example.com", 0, "/",
+                      test.b.host_dispotion, test.b.port_dispotion);
+    EXPECT_FALSE(required2->Subsumes(returned));
   }
 }
 
 TEST_F(CSPSourceTest, SchemesOnlySubsumes) {
   struct TestCase {
-    String aScheme;
-    String bScheme;
+    String a_scheme;
+    String b_scheme;
     bool expected;
   } cases[] = {
       // HTTP
@@ -506,12 +506,12 @@ TEST_F(CSPSourceTest, SchemesOnlySubsumes) {
 
   for (const auto& test : cases) {
     CSPSource* returned =
-        new CSPSource(csp.get(), test.aScheme, "example.com", 0, "/",
-                      CSPSource::NoWildcard, CSPSource::NoWildcard);
+        new CSPSource(csp.Get(), test.a_scheme, "example.com", 0, "/",
+                      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
     CSPSource* required =
-        new CSPSource(csp.get(), test.bScheme, "example.com", 0, "/",
-                      CSPSource::NoWildcard, CSPSource::NoWildcard);
-    EXPECT_EQ(required->subsumes(returned), test.expected);
+        new CSPSource(csp.Get(), test.b_scheme, "example.com", 0, "/",
+                      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+    EXPECT_EQ(required->Subsumes(returned), test.expected);
   }
 }
 
@@ -525,7 +525,7 @@ TEST_F(CSPSourceTest, IsSimilar) {
   struct TestCase {
     const Source a;
     const Source b;
-    bool isSimilar;
+    bool is_similar;
   } cases[] = {
       // Similar
       {{"http", "example.com", "/", 0}, {"http", "example.com", "/", 0}, true},
@@ -609,16 +609,16 @@ TEST_F(CSPSourceTest, IsSimilar) {
 
   for (const auto& test : cases) {
     CSPSource* returned = new CSPSource(
-        csp.get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
     CSPSource* required = new CSPSource(
-        csp.get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard);
+        csp.Get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    EXPECT_EQ(returned->isSimilar(required), test.isSimilar);
+    EXPECT_EQ(returned->IsSimilar(required), test.is_similar);
     // Verify the same test with a and b swapped.
-    EXPECT_EQ(required->isSimilar(returned), test.isSimilar);
+    EXPECT_EQ(required->IsSimilar(returned), test.is_similar);
   }
 }
 
@@ -630,8 +630,8 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
     const char* path;
   };
   struct TestCase {
-    const Source sourceB;
-    String schemeA;
+    const Source source_b;
+    String scheme_a;
     bool expected;
   } cases[] = {
       // Subsumed.
@@ -650,70 +650,70 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
       {{"http", "second-example.com", 0, "/"}, "https", false},
   };
 
-  CSPSource* noWildcards =
-      new CSPSource(csp.get(), "http", "example.com", 0, "/",
-                    CSPSource::NoWildcard, CSPSource::NoWildcard);
-  CSPSource* hostWildcard =
-      new CSPSource(csp.get(), "http", "third-example.com", 0, "/",
-                    CSPSource::HasWildcard, CSPSource::NoWildcard);
-  CSPSource* portWildcard =
-      new CSPSource(csp.get(), "http", "third-example.com", 0, "/",
-                    CSPSource::NoWildcard, CSPSource::HasWildcard);
-  CSPSource* bothWildcards =
-      new CSPSource(csp.get(), "http", "third-example.com", 0, "/",
-                    CSPSource::HasWildcard, CSPSource::HasWildcard);
-  CSPSource* httpOnly =
-      new CSPSource(csp.get(), "http", "", 0, "", CSPSource::NoWildcard,
-                    CSPSource::NoWildcard);
-  CSPSource* httpsOnly =
-      new CSPSource(csp.get(), "https", "", 0, "", CSPSource::NoWildcard,
-                    CSPSource::NoWildcard);
+  CSPSource* no_wildcards =
+      new CSPSource(csp.Get(), "http", "example.com", 0, "/",
+                    CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+  CSPSource* host_wildcard =
+      new CSPSource(csp.Get(), "http", "third-example.com", 0, "/",
+                    CSPSource::kHasWildcard, CSPSource::kNoWildcard);
+  CSPSource* port_wildcard =
+      new CSPSource(csp.Get(), "http", "third-example.com", 0, "/",
+                    CSPSource::kNoWildcard, CSPSource::kHasWildcard);
+  CSPSource* both_wildcards =
+      new CSPSource(csp.Get(), "http", "third-example.com", 0, "/",
+                    CSPSource::kHasWildcard, CSPSource::kHasWildcard);
+  CSPSource* http_only =
+      new CSPSource(csp.Get(), "http", "", 0, "", CSPSource::kNoWildcard,
+                    CSPSource::kNoWildcard);
+  CSPSource* https_only =
+      new CSPSource(csp.Get(), "https", "", 0, "", CSPSource::kNoWildcard,
+                    CSPSource::kNoWildcard);
 
   for (const auto& test : cases) {
     // Setup default vectors.
-    HeapVector<Member<CSPSource>> listA;
-    HeapVector<Member<CSPSource>> listB;
-    listB.push_back(noWildcards);
+    HeapVector<Member<CSPSource>> list_a;
+    HeapVector<Member<CSPSource>> list_b;
+    list_b.push_back(no_wildcards);
     // Empty `listA` implies `none` is allowed.
-    EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
+    EXPECT_FALSE(CSPSource::FirstSubsumesSecond(list_a, list_b));
 
-    listA.push_back(noWildcards);
+    list_a.push_back(no_wildcards);
     // Add CSPSources based on the current test.
-    listB.push_back(new CSPSource(
-        csp.get(), test.sourceB.scheme, test.sourceB.host, 0, test.sourceB.path,
-        CSPSource::NoWildcard, CSPSource::NoWildcard));
-    listA.push_back(new CSPSource(csp.get(), test.schemeA, "second-example.com",
-                                  0, "/", CSPSource::NoWildcard,
-                                  CSPSource::NoWildcard));
+    list_b.push_back(new CSPSource(
+        csp.Get(), test.source_b.scheme, test.source_b.host, 0,
+        test.source_b.path, CSPSource::kNoWildcard, CSPSource::kNoWildcard));
+    list_a.push_back(
+        new CSPSource(csp.Get(), test.scheme_a, "second-example.com", 0, "/",
+                      CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     // listB contains: ["http://example.com/", test.listB]
     // listA contains: ["http://example.com/",
     // test.schemeA + "://second-example.com/"]
-    EXPECT_EQ(test.expected, CSPSource::firstSubsumesSecond(listA, listB));
+    EXPECT_EQ(test.expected, CSPSource::FirstSubsumesSecond(list_a, list_b));
 
     // If we add another source to `listB` with a host wildcard,
     // then the result should definitely be false.
-    listB.push_back(hostWildcard);
+    list_b.push_back(host_wildcard);
 
     // If we add another source to `listA` with a port wildcard,
     // it does not make `listB` to be subsumed under `listA`.
-    listB.push_back(portWildcard);
-    EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
+    list_b.push_back(port_wildcard);
+    EXPECT_FALSE(CSPSource::FirstSubsumesSecond(list_a, list_b));
 
     // If however we add another source to `listA` with both wildcards,
     // that CSPSource is subsumed, so the answer should be as expected
     // before.
-    listA.push_back(bothWildcards);
-    EXPECT_EQ(test.expected, CSPSource::firstSubsumesSecond(listA, listB));
+    list_a.push_back(both_wildcards);
+    EXPECT_EQ(test.expected, CSPSource::FirstSubsumesSecond(list_a, list_b));
 
     // If we add a scheme-source expression of 'https' to `listB`, then it
     // should not be subsumed.
-    listB.push_back(httpsOnly);
-    EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
+    list_b.push_back(https_only);
+    EXPECT_FALSE(CSPSource::FirstSubsumesSecond(list_a, list_b));
 
     // If we add a scheme-source expression of 'http' to `listA`, then it should
     // subsume all current epxression in `listB`.
-    listA.push_back(httpOnly);
-    EXPECT_TRUE(CSPSource::firstSubsumesSecond(listA, listB));
+    list_a.push_back(http_only);
+    EXPECT_TRUE(CSPSource::FirstSubsumesSecond(list_a, list_b));
   }
 }
 
@@ -723,119 +723,119 @@ TEST_F(CSPSourceTest, Intersect) {
     const Source b;
     const Source normalized;
   } cases[] = {
-      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"ws", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"wss", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"wss", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"ws", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"wss", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"wss", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
       // Wildcards
-      {{"http", "example.com", "/", 0, CSPSource::HasWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/", 0, CSPSource::HasWildcard,
-        CSPSource::HasWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/", 0, CSPSource::HasWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::HasWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kHasWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kHasWildcard,
+        CSPSource::kHasWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kHasWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kHasWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
       // Ports
-      {{"http", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"https", "example.com", "/", 443, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"https", "example.com", "/", 443, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"https", "example.com", "/", 443, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"https", "example.com", "/", 443, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"https", "example.com", "/", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"https", "example.com", "/", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"https", "example.com", "/", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"https", "example.com", "/", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
       // Paths
-      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/1.html", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/1.html", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/a/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/a/b/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "example.com", "/a/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/a/b/1.html", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/a/b/1.html", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/1.html", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/1.html", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/a/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/a/b/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "example.com", "/a/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/a/b/1.html", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/a/b/1.html", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
       // Mixed
-      {{"http", "example.com", "/1.html", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/1.html", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
+      {{"http", "example.com", "/1.html", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/1.html", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
   };
 
   for (const auto& test : cases) {
-    CSPSource* A =
-        new CSPSource(csp.get(), test.a.scheme, test.a.host, test.a.port,
-                      test.a.path, test.a.hostWildcard, test.a.portWildcard);
-    CSPSource* B =
-        new CSPSource(csp.get(), test.b.scheme, test.b.host, test.b.port,
-                      test.b.path, test.b.hostWildcard, test.b.portWildcard);
+    CSPSource* a =
+        new CSPSource(csp.Get(), test.a.scheme, test.a.host, test.a.port,
+                      test.a.path, test.a.host_wildcard, test.a.port_wildcard);
+    CSPSource* b =
+        new CSPSource(csp.Get(), test.b.scheme, test.b.host, test.b.port,
+                      test.b.path, test.b.host_wildcard, test.b.port_wildcard);
 
-    CSPSource* normalized = A->intersect(B);
-    Source intersectAB = {
-        normalized->m_scheme,       normalized->m_host,
-        normalized->m_path,         normalized->m_port,
-        normalized->m_hostWildcard, normalized->m_portWildcard};
-    EXPECT_TRUE(equalSources(intersectAB, test.normalized));
+    CSPSource* normalized = a->Intersect(b);
+    Source intersect_ab = {
+        normalized->scheme_,        normalized->host_,
+        normalized->path_,          normalized->port_,
+        normalized->host_wildcard_, normalized->port_wildcard_};
+    EXPECT_TRUE(EqualSources(intersect_ab, test.normalized));
 
     // Verify the same test with A and B swapped. The result should be
     // identical.
-    normalized = B->intersect(A);
-    Source intersectBA = {
-        normalized->m_scheme,       normalized->m_host,
-        normalized->m_path,         normalized->m_port,
-        normalized->m_hostWildcard, normalized->m_portWildcard};
-    EXPECT_TRUE(equalSources(intersectBA, test.normalized));
+    normalized = b->Intersect(a);
+    Source intersect_ba = {
+        normalized->scheme_,        normalized->host_,
+        normalized->path_,          normalized->port_,
+        normalized->host_wildcard_, normalized->port_wildcard_};
+    EXPECT_TRUE(EqualSources(intersect_ba, test.normalized));
   }
 }
 
@@ -846,73 +846,73 @@ TEST_F(CSPSourceTest, IntersectSchemesOnly) {
     const Source normalized;
   } cases[] = {
       // Both sources are schemes only.
-      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard}},
-      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard}},
-      {{"ws", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"wss", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"wss", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard}},
+      {{"http", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard}},
+      {{"http", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"https", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"https", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard}},
+      {{"ws", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"wss", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"wss", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard}},
       // One source is a scheme only and the other one has no wildcards.
-      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"http", "example.com", "/", 0, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"http", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"https", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"https", "example.com", "/", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
-      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "example.com", "/page.html", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard},
-       {"https", "example.com", "/page.html", 80, CSPSource::NoWildcard,
-        CSPSource::NoWildcard}},
+      {{"http", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"http", "example.com", "/", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"http", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"https", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"https", "example.com", "/", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
+      {{"https", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard}},
       // One source is a scheme only and the other has one or two wildcards.
-      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "example.com", "/page.html", 80, CSPSource::HasWildcard,
-        CSPSource::NoWildcard},
-       {"https", "example.com", "/page.html", 80, CSPSource::HasWildcard,
-        CSPSource::NoWildcard}},
-      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "example.com", "/page.html", 80, CSPSource::NoWildcard,
-        CSPSource::HasWildcard},
-       {"https", "example.com", "/page.html", 80, CSPSource::NoWildcard,
-        CSPSource::HasWildcard}},
-      {{"https", "", "", 0, CSPSource::NoWildcard, CSPSource::NoWildcard},
-       {"http", "example.com", "/page.html", 80, CSPSource::HasWildcard,
-        CSPSource::HasWildcard},
-       {"https", "example.com", "/page.html", 80, CSPSource::HasWildcard,
-        CSPSource::HasWildcard}},
+      {{"https", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::kHasWildcard,
+        CSPSource::kNoWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::kHasWildcard,
+        CSPSource::kNoWildcard}},
+      {{"https", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::kNoWildcard,
+        CSPSource::kHasWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::kNoWildcard,
+        CSPSource::kHasWildcard}},
+      {{"https", "", "", 0, CSPSource::kNoWildcard, CSPSource::kNoWildcard},
+       {"http", "example.com", "/page.html", 80, CSPSource::kHasWildcard,
+        CSPSource::kHasWildcard},
+       {"https", "example.com", "/page.html", 80, CSPSource::kHasWildcard,
+        CSPSource::kHasWildcard}},
   };
 
   for (const auto& test : cases) {
-    CSPSource* A =
-        new CSPSource(csp.get(), test.a.scheme, test.a.host, test.a.port,
-                      test.a.path, test.a.hostWildcard, test.a.portWildcard);
+    CSPSource* a =
+        new CSPSource(csp.Get(), test.a.scheme, test.a.host, test.a.port,
+                      test.a.path, test.a.host_wildcard, test.a.port_wildcard);
 
-    CSPSource* B =
-        new CSPSource(csp.get(), test.b.scheme, test.b.host, test.b.port,
-                      test.b.path, test.b.hostWildcard, test.b.portWildcard);
+    CSPSource* b =
+        new CSPSource(csp.Get(), test.b.scheme, test.b.host, test.b.port,
+                      test.b.path, test.b.host_wildcard, test.b.port_wildcard);
 
-    CSPSource* normalized = A->intersect(B);
-    Source intersectAB = {
-        normalized->m_scheme,       normalized->m_host,
-        normalized->m_path,         normalized->m_port,
-        normalized->m_hostWildcard, normalized->m_portWildcard};
-    EXPECT_TRUE(equalSources(intersectAB, test.normalized));
+    CSPSource* normalized = a->Intersect(b);
+    Source intersect_ab = {
+        normalized->scheme_,        normalized->host_,
+        normalized->path_,          normalized->port_,
+        normalized->host_wildcard_, normalized->port_wildcard_};
+    EXPECT_TRUE(EqualSources(intersect_ab, test.normalized));
 
     // Verify the same test with A and B swapped. The result should be
     // identical.
-    normalized = B->intersect(A);
-    Source intersectBA = {
-        normalized->m_scheme,       normalized->m_host,
-        normalized->m_path,         normalized->m_port,
-        normalized->m_hostWildcard, normalized->m_portWildcard};
-    EXPECT_TRUE(equalSources(intersectBA, test.normalized));
+    normalized = b->Intersect(a);
+    Source intersect_ba = {
+        normalized->scheme_,        normalized->host_,
+        normalized->path_,          normalized->port_,
+        normalized->host_wildcard_, normalized->port_wildcard_};
+    EXPECT_TRUE(EqualSources(intersect_ba, test.normalized));
   }
 }
 

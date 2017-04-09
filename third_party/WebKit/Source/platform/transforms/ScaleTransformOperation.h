@@ -32,60 +32,60 @@ namespace blink {
 class PLATFORM_EXPORT ScaleTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<ScaleTransformOperation> create(double sx,
+  static PassRefPtr<ScaleTransformOperation> Create(double sx,
                                                     double sy,
                                                     OperationType type) {
-    return adoptRef(new ScaleTransformOperation(sx, sy, 1, type));
+    return AdoptRef(new ScaleTransformOperation(sx, sy, 1, type));
   }
 
-  static PassRefPtr<ScaleTransformOperation> create(double sx,
+  static PassRefPtr<ScaleTransformOperation> Create(double sx,
                                                     double sy,
                                                     double sz,
                                                     OperationType type) {
-    return adoptRef(new ScaleTransformOperation(sx, sy, sz, type));
+    return AdoptRef(new ScaleTransformOperation(sx, sy, sz, type));
   }
 
-  double x() const { return m_x; }
-  double y() const { return m_y; }
-  double z() const { return m_z; }
+  double X() const { return x_; }
+  double Y() const { return y_; }
+  double Z() const { return z_; }
 
-  virtual bool canBlendWith(const TransformOperation& other) const;
+  virtual bool CanBlendWith(const TransformOperation& other) const;
 
-  void apply(TransformationMatrix& transform, const FloatSize&) const override {
-    transform.scale3d(m_x, m_y, m_z);
+  void Apply(TransformationMatrix& transform, const FloatSize&) const override {
+    transform.Scale3d(x_, y_, z_);
   }
-  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
                                        double progress,
-                                       bool blendToIdentity = false) override;
+                                       bool blend_to_identity = false) override;
 
-  static bool isMatchingOperationType(OperationType type) {
-    return type == Scale || type == ScaleX || type == ScaleY ||
-           type == ScaleZ || type == Scale3D;
+  static bool IsMatchingOperationType(OperationType type) {
+    return type == kScale || type == kScaleX || type == kScaleY ||
+           type == kScaleZ || type == kScale3D;
   }
 
  private:
-  OperationType type() const override { return m_type; }
-  OperationType primitiveType() const final { return Scale3D; }
+  OperationType GetType() const override { return type_; }
+  OperationType PrimitiveType() const final { return kScale3D; }
 
   bool operator==(const TransformOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const ScaleTransformOperation* s =
         static_cast<const ScaleTransformOperation*>(&o);
-    return m_x == s->m_x && m_y == s->m_y && m_z == s->m_z;
+    return x_ == s->x_ && y_ == s->y_ && z_ == s->z_;
   }
 
-  PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
+  PassRefPtr<TransformOperation> Zoom(double factor) final { return this; }
 
   ScaleTransformOperation(double sx, double sy, double sz, OperationType type)
-      : m_x(sx), m_y(sy), m_z(sz), m_type(type) {
-    ASSERT(isMatchingOperationType(type));
+      : x_(sx), y_(sy), z_(sz), type_(type) {
+    ASSERT(IsMatchingOperationType(type));
   }
 
-  double m_x;
-  double m_y;
-  double m_z;
-  OperationType m_type;
+  double x_;
+  double y_;
+  double z_;
+  OperationType type_;
 };
 
 DEFINE_TRANSFORM_TYPE_CASTS(ScaleTransformOperation);

@@ -31,42 +31,42 @@
 namespace blink {
 
 ArrayValue& ArrayValue::operator=(const ArrayValue& other) {
-  m_array = other.m_array;
-  m_isolate = other.m_isolate;
+  array_ = other.array_;
+  isolate_ = other.isolate_;
   return *this;
 }
 
-bool ArrayValue::isUndefinedOrNull() const {
-  return blink::isUndefinedOrNull(m_array);
+bool ArrayValue::IsUndefinedOrNull() const {
+  return blink::IsUndefinedOrNull(array_);
 }
 
 bool ArrayValue::length(size_t& length) const {
-  if (isUndefinedOrNull())
+  if (IsUndefinedOrNull())
     return false;
 
-  length = m_array->Length();
+  length = array_->Length();
   return true;
 }
 
-bool ArrayValue::get(size_t index, Dictionary& value) const {
-  if (isUndefinedOrNull())
+bool ArrayValue::Get(size_t index, Dictionary& value) const {
+  if (IsUndefinedOrNull())
     return false;
 
-  if (index >= m_array->Length())
+  if (index >= array_->Length())
     return false;
 
-  DCHECK(m_isolate);
-  DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> indexedValue;
-  if (!m_array->Get(m_isolate->GetCurrentContext(), index)
-           .ToLocal(&indexedValue) ||
-      !indexedValue->IsObject())
+  DCHECK(isolate_);
+  DCHECK_EQ(isolate_, v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> indexed_value;
+  if (!array_->Get(isolate_->GetCurrentContext(), index)
+           .ToLocal(&indexed_value) ||
+      !indexed_value->IsObject())
     return false;
 
   // TODO(bashi,yukishiino): Should rethrow the exception.
   // http://crbug.com/666661
-  DummyExceptionStateForTesting exceptionState;
-  value = Dictionary(m_isolate, indexedValue, exceptionState);
+  DummyExceptionStateForTesting exception_state;
+  value = Dictionary(isolate_, indexed_value, exception_state);
   return true;
 }
 

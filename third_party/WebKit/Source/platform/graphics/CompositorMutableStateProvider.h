@@ -25,12 +25,12 @@ class PLATFORM_EXPORT CompositorMutableStateProvider {
   CompositorMutableStateProvider(cc::LayerTreeImpl*, CompositorMutations*);
   ~CompositorMutableStateProvider();
 
-  std::unique_ptr<CompositorMutableState> getMutableStateFor(
-      uint64_t elementId);
+  std::unique_ptr<CompositorMutableState> GetMutableStateFor(
+      uint64_t element_id);
 
  private:
-  cc::LayerTreeImpl* m_tree;
-  CompositorMutations* m_mutations;
+  cc::LayerTreeImpl* tree_;
+  CompositorMutations* mutations_;
 };
 
 }  // namespace blink

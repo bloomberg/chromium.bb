@@ -43,161 +43,164 @@
 namespace blink {
 
 V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
-    : m_isolate(context->GetIsolate()),
-      m_wrapperBoilerplates(m_isolate),
-      m_constructorMap(m_isolate),
-      m_contextHolder(WTF::makeUnique<gin::ContextHolder>(m_isolate)),
-      m_context(m_isolate, context),
-      m_activityLogger(nullptr) {
-  m_contextHolder->SetContext(context);
+    : isolate_(context->GetIsolate()),
+      wrapper_boilerplates_(isolate_),
+      constructor_map_(isolate_),
+      context_holder_(WTF::MakeUnique<gin::ContextHolder>(isolate_)),
+      context_(isolate_, context),
+      activity_logger_(nullptr) {
+  context_holder_->SetContext(context);
 
-  v8::Context::Scope contextScope(context);
-  ASSERT(m_errorPrototype.isEmpty());
-  v8::Local<v8::Value> objectValue =
+  v8::Context::Scope context_scope(context);
+  ASSERT(error_prototype_.IsEmpty());
+  v8::Local<v8::Value> object_value =
       context->Global()
-          ->Get(context, v8AtomicString(m_isolate, "Error"))
+          ->Get(context, V8AtomicString(isolate_, "Error"))
           .ToLocalChecked();
-  v8::Local<v8::Value> prototypeValue =
-      objectValue.As<v8::Object>()
-          ->Get(context, v8AtomicString(m_isolate, "prototype"))
+  v8::Local<v8::Value> prototype_value =
+      object_value.As<v8::Object>()
+          ->Get(context, V8AtomicString(isolate_, "prototype"))
           .ToLocalChecked();
-  m_errorPrototype.set(m_isolate, prototypeValue);
+  error_prototype_.Set(isolate_, prototype_value);
 
-  if (isMainThread())
-    InstanceCounters::incrementCounter(
-        InstanceCounters::V8PerContextDataCounter);
+  if (IsMainThread())
+    InstanceCounters::IncrementCounter(
+        InstanceCounters::kV8PerContextDataCounter);
 }
 
 V8PerContextData::~V8PerContextData() {
-  if (isMainThread())
-    InstanceCounters::decrementCounter(
-        InstanceCounters::V8PerContextDataCounter);
+  if (IsMainThread())
+    InstanceCounters::DecrementCounter(
+        InstanceCounters::kV8PerContextDataCounter);
 }
 
-std::unique_ptr<V8PerContextData> V8PerContextData::create(
+std::unique_ptr<V8PerContextData> V8PerContextData::Create(
     v8::Local<v8::Context> context) {
-  return WTF::wrapUnique(new V8PerContextData(context));
+  return WTF::WrapUnique(new V8PerContextData(context));
 }
 
-V8PerContextData* V8PerContextData::from(v8::Local<v8::Context> context) {
-  return ScriptState::from(context)->perContextData();
+V8PerContextData* V8PerContextData::From(v8::Local<v8::Context> context) {
+  return ScriptState::From(context)->PerContextData();
 }
 
-v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(
+v8::Local<v8::Object> V8PerContextData::CreateWrapperFromCacheSlowCase(
     const WrapperTypeInfo* type) {
-  ASSERT(!m_errorPrototype.isEmpty());
+  ASSERT(!error_prototype_.IsEmpty());
 
-  v8::Context::Scope scope(context());
-  v8::Local<v8::Function> interfaceObject = constructorForType(type);
-  if (interfaceObject.IsEmpty())
+  v8::Context::Scope scope(GetContext());
+  v8::Local<v8::Function> interface_object = ConstructorForType(type);
+  if (interface_object.IsEmpty())
     return v8::Local<v8::Object>();
-  v8::Local<v8::Object> instanceTemplate;
-  if (!V8ObjectConstructor::newInstance(m_isolate, interfaceObject)
-           .ToLocal(&instanceTemplate))
+  v8::Local<v8::Object> instance_template;
+  if (!V8ObjectConstructor::NewInstance(isolate_, interface_object)
+           .ToLocal(&instance_template))
     return v8::Local<v8::Object>();
-  m_wrapperBoilerplates.Set(type, instanceTemplate);
-  return instanceTemplate->Clone();
+  wrapper_boilerplates_.Set(type, instance_template);
+  return instance_template->Clone();
 }
 
-v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(
+v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
     const WrapperTypeInfo* type) {
-  ASSERT(!m_errorPrototype.isEmpty());
+  ASSERT(!error_prototype_.IsEmpty());
 
-  v8::Local<v8::Context> currentContext = context();
-  v8::Context::Scope scope(currentContext);
-  const DOMWrapperWorld& world = DOMWrapperWorld::world(currentContext);
+  v8::Local<v8::Context> current_context = GetContext();
+  v8::Context::Scope scope(current_context);
+  const DOMWrapperWorld& world = DOMWrapperWorld::World(current_context);
   // We shouldn't reach this point for the types that are implemented in v8 such
   // as typed arrays and hence don't have domTemplateFunction.
-  ASSERT(type->domTemplateFunction);
-  v8::Local<v8::FunctionTemplate> interfaceTemplate =
-      type->domTemplate(m_isolate, world);
+  ASSERT(type->dom_template_function);
+  v8::Local<v8::FunctionTemplate> interface_template =
+      type->domTemplate(isolate_, world);
   // Getting the function might fail if we're running out of stack or memory.
-  v8::Local<v8::Function> interfaceObject;
-  if (!interfaceTemplate->GetFunction(currentContext).ToLocal(&interfaceObject))
+  v8::Local<v8::Function> interface_object;
+  if (!interface_template->GetFunction(current_context)
+           .ToLocal(&interface_object))
     return v8::Local<v8::Function>();
 
-  if (type->parentClass) {
-    v8::Local<v8::Object> prototypeTemplate =
-        constructorForType(type->parentClass);
-    if (prototypeTemplate.IsEmpty())
+  if (type->parent_class) {
+    v8::Local<v8::Object> prototype_template =
+        ConstructorForType(type->parent_class);
+    if (prototype_template.IsEmpty())
       return v8::Local<v8::Function>();
-    if (!v8CallBoolean(
-            interfaceObject->SetPrototype(currentContext, prototypeTemplate)))
+    if (!V8CallBoolean(interface_object->SetPrototype(current_context,
+                                                      prototype_template)))
       return v8::Local<v8::Function>();
   }
 
-  v8::Local<v8::Value> prototypeValue;
-  if (!interfaceObject
-           ->Get(currentContext, v8AtomicString(m_isolate, "prototype"))
-           .ToLocal(&prototypeValue) ||
-      !prototypeValue->IsObject())
+  v8::Local<v8::Value> prototype_value;
+  if (!interface_object
+           ->Get(current_context, V8AtomicString(isolate_, "prototype"))
+           .ToLocal(&prototype_value) ||
+      !prototype_value->IsObject())
     return v8::Local<v8::Function>();
-  v8::Local<v8::Object> prototypeObject = prototypeValue.As<v8::Object>();
-  if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount &&
-      type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
-    prototypeObject->SetAlignedPointerInInternalField(
-        v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-  type->preparePrototypeAndInterfaceObject(currentContext, world,
-                                           prototypeObject, interfaceObject,
-                                           interfaceTemplate);
-  if (type->wrapperTypePrototype ==
-      WrapperTypeInfo::WrapperTypeExceptionPrototype) {
-    if (!v8CallBoolean(prototypeObject->SetPrototype(
-            currentContext, m_errorPrototype.newLocal(m_isolate))))
+  v8::Local<v8::Object> prototype_object = prototype_value.As<v8::Object>();
+  if (prototype_object->InternalFieldCount() ==
+          kV8PrototypeInternalFieldcount &&
+      type->wrapper_type_prototype ==
+          WrapperTypeInfo::kWrapperTypeObjectPrototype)
+    prototype_object->SetAlignedPointerInInternalField(
+        kV8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
+  type->PreparePrototypeAndInterfaceObject(current_context, world,
+                                           prototype_object, interface_object,
+                                           interface_template);
+  if (type->wrapper_type_prototype ==
+      WrapperTypeInfo::kWrapperTypeExceptionPrototype) {
+    if (!V8CallBoolean(prototype_object->SetPrototype(
+            current_context, error_prototype_.NewLocal(isolate_))))
       return v8::Local<v8::Function>();
   }
 
   // Origin Trials
-  installConditionalFeatures(type, ScriptState::from(currentContext),
-                             prototypeObject, interfaceObject);
+  InstallConditionalFeatures(type, ScriptState::From(current_context),
+                             prototype_object, interface_object);
 
-  m_constructorMap.Set(type, interfaceObject);
+  constructor_map_.Set(type, interface_object);
 
-  return interfaceObject;
+  return interface_object;
 }
 
-v8::Local<v8::Object> V8PerContextData::prototypeForType(
+v8::Local<v8::Object> V8PerContextData::PrototypeForType(
     const WrapperTypeInfo* type) {
-  v8::Local<v8::Object> constructor = constructorForType(type);
+  v8::Local<v8::Object> constructor = ConstructorForType(type);
   if (constructor.IsEmpty())
     return v8::Local<v8::Object>();
-  v8::Local<v8::Value> prototypeValue;
-  if (!constructor->Get(context(), v8String(m_isolate, "prototype"))
-           .ToLocal(&prototypeValue) ||
-      !prototypeValue->IsObject())
+  v8::Local<v8::Value> prototype_value;
+  if (!constructor->Get(GetContext(), V8String(isolate_, "prototype"))
+           .ToLocal(&prototype_value) ||
+      !prototype_value->IsObject())
     return v8::Local<v8::Object>();
-  return prototypeValue.As<v8::Object>();
+  return prototype_value.As<v8::Object>();
 }
 
-bool V8PerContextData::getExistingConstructorAndPrototypeForType(
+bool V8PerContextData::GetExistingConstructorAndPrototypeForType(
     const WrapperTypeInfo* type,
-    v8::Local<v8::Object>* prototypeObject,
-    v8::Local<v8::Function>* interfaceObject) {
-  *interfaceObject = m_constructorMap.Get(type);
-  if (interfaceObject->IsEmpty()) {
-    *prototypeObject = v8::Local<v8::Object>();
+    v8::Local<v8::Object>* prototype_object,
+    v8::Local<v8::Function>* interface_object) {
+  *interface_object = constructor_map_.Get(type);
+  if (interface_object->IsEmpty()) {
+    *prototype_object = v8::Local<v8::Object>();
     return false;
   }
-  *prototypeObject = prototypeForType(type);
-  DCHECK(!prototypeObject->IsEmpty());
+  *prototype_object = PrototypeForType(type);
+  DCHECK(!prototype_object->IsEmpty());
   return true;
 }
 
-void V8PerContextData::addCustomElementBinding(
+void V8PerContextData::AddCustomElementBinding(
     std::unique_ptr<V0CustomElementBinding> binding) {
-  m_customElementBindings.push_back(std::move(binding));
+  custom_element_bindings_.push_back(std::move(binding));
 }
 
-void V8PerContextData::addData(const char* key, Data* data) {
-  m_dataMap.set(key, data);
+void V8PerContextData::AddData(const char* key, Data* data) {
+  data_map_.Set(key, data);
 }
 
-void V8PerContextData::clearData(const char* key) {
-  m_dataMap.erase(key);
+void V8PerContextData::ClearData(const char* key) {
+  data_map_.erase(key);
 }
 
-V8PerContextData::Data* V8PerContextData::getData(const char* key) {
-  return m_dataMap.at(key);
+V8PerContextData::Data* V8PerContextData::GetData(const char* key) {
+  return data_map_.at(key);
 }
 
 }  // namespace blink

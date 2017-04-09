@@ -47,24 +47,24 @@ class CORE_EXPORT V0CustomElementProcessingStack
     STACK_ALLOCATED();
 
    public:
-    CallbackDeliveryScope() : m_savedElementQueueStart(s_elementQueueStart) {
-      s_elementQueueStart = s_elementQueueEnd;
+    CallbackDeliveryScope() : saved_element_queue_start_(element_queue_start_) {
+      element_queue_start_ = element_queue_end_;
     }
 
     ~CallbackDeliveryScope() {
-      if (s_elementQueueStart != s_elementQueueEnd)
-        processElementQueueAndPop();
-      s_elementQueueStart = m_savedElementQueueStart;
+      if (element_queue_start_ != element_queue_end_)
+        ProcessElementQueueAndPop();
+      element_queue_start_ = saved_element_queue_start_;
     }
 
    private:
-    size_t m_savedElementQueueStart;
+    size_t saved_element_queue_start_;
   };
 
-  static bool inCallbackDeliveryScope() { return s_elementQueueStart; }
+  static bool InCallbackDeliveryScope() { return element_queue_start_; }
 
-  static V0CustomElementProcessingStack& instance();
-  void enqueue(V0CustomElementCallbackQueue*);
+  static V0CustomElementProcessingStack& Instance();
+  void Enqueue(V0CustomElementCallbackQueue*);
 
   DECLARE_TRACE();
 
@@ -77,30 +77,30 @@ class CORE_EXPORT V0CustomElementProcessingStack
     // crash.
     V0CustomElementCallbackQueue* sentinel = 0;
     for (size_t i = 0; i < kNumSentinels; i++)
-      m_flattenedProcessingStack.push_back(sentinel);
-    DCHECK_EQ(s_elementQueueEnd, m_flattenedProcessingStack.size());
+      flattened_processing_stack_.push_back(sentinel);
+    DCHECK_EQ(element_queue_end_, flattened_processing_stack_.size());
   }
 
   // The start of the element queue on the top of the processing
   // stack. An offset into instance().m_flattenedProcessingStack.
-  static size_t s_elementQueueStart;
+  static size_t element_queue_start_;
 
   // The end of the element queue on the top of the processing
   // stack. A cache of instance().m_flattenedProcessingStack.size().
-  static size_t s_elementQueueEnd;
+  static size_t element_queue_end_;
 
-  static V0CustomElementCallbackQueue::ElementQueueId currentElementQueue() {
-    return V0CustomElementCallbackQueue::ElementQueueId(s_elementQueueStart);
+  static V0CustomElementCallbackQueue::ElementQueueId CurrentElementQueue() {
+    return V0CustomElementCallbackQueue::ElementQueueId(element_queue_start_);
   }
 
-  static void processElementQueueAndPop();
-  void processElementQueueAndPop(size_t start, size_t end);
+  static void ProcessElementQueueAndPop();
+  void ProcessElementQueueAndPop(size_t start, size_t end);
 
   // The processing stack, flattened. Element queues lower in the
   // stack appear toward the head of the vector. The first element
   // is a null sentinel value.
   static const size_t kNumSentinels = 1;
-  HeapVector<Member<V0CustomElementCallbackQueue>> m_flattenedProcessingStack;
+  HeapVector<Member<V0CustomElementCallbackQueue>> flattened_processing_stack_;
 };
 
 }  // namespace blink

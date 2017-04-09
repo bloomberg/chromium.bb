@@ -33,68 +33,71 @@ class HitTestRequest {
 
  public:
   enum RequestType {
-    ReadOnly = 1 << 1,
-    Active = 1 << 2,
-    Move = 1 << 3,
-    Release = 1 << 4,
-    IgnoreClipping = 1 << 5,
-    SVGClipContent = 1 << 6,
-    TouchEvent = 1 << 7,
-    AllowChildFrameContent = 1 << 8,
-    ChildFrameHitTest = 1 << 9,
-    IgnorePointerEventsNone = 1 << 10,
+    kReadOnly = 1 << 1,
+    kActive = 1 << 2,
+    kMove = 1 << 3,
+    kRelease = 1 << 4,
+    kIgnoreClipping = 1 << 5,
+    kSVGClipContent = 1 << 6,
+    kTouchEvent = 1 << 7,
+    kAllowChildFrameContent = 1 << 8,
+    kChildFrameHitTest = 1 << 9,
+    kIgnorePointerEventsNone = 1 << 10,
     // Collect a list of nodes instead of just one.
     // (This is for elementsFromPoint and rect-based tests).
-    ListBased = 1 << 11,
+    kListBased = 1 << 11,
     // When using list-based testing, this flag causes us to continue hit
     // testing after a hit has been found.
-    PenetratingList = 1 << 12,
-    AvoidCache = 1 << 13,
+    kPenetratingList = 1 << 12,
+    kAvoidCache = 1 << 13,
   };
 
   typedef unsigned HitTestRequestType;
 
-  HitTestRequest(HitTestRequestType requestType) : m_requestType(requestType) {
+  HitTestRequest(HitTestRequestType request_type)
+      : request_type_(request_type) {
     // Penetrating lists should also be list-based.
-    DCHECK(!(requestType & PenetratingList) || (requestType & ListBased));
+    DCHECK(!(request_type & kPenetratingList) || (request_type & kListBased));
   }
 
-  bool readOnly() const { return m_requestType & ReadOnly; }
-  bool active() const { return m_requestType & Active; }
-  bool move() const { return m_requestType & Move; }
-  bool release() const { return m_requestType & Release; }
-  bool ignoreClipping() const { return m_requestType & IgnoreClipping; }
-  bool svgClipContent() const { return m_requestType & SVGClipContent; }
-  bool touchEvent() const { return m_requestType & TouchEvent; }
-  bool allowsChildFrameContent() const {
-    return m_requestType & AllowChildFrameContent;
+  bool ReadOnly() const { return request_type_ & kReadOnly; }
+  bool Active() const { return request_type_ & kActive; }
+  bool Move() const { return request_type_ & kMove; }
+  bool Release() const { return request_type_ & kRelease; }
+  bool IgnoreClipping() const { return request_type_ & kIgnoreClipping; }
+  bool SvgClipContent() const { return request_type_ & kSVGClipContent; }
+  bool TouchEvent() const { return request_type_ & kTouchEvent; }
+  bool AllowsChildFrameContent() const {
+    return request_type_ & kAllowChildFrameContent;
   }
-  bool isChildFrameHitTest() const { return m_requestType & ChildFrameHitTest; }
-  bool ignorePointerEventsNone() const {
-    return m_requestType & IgnorePointerEventsNone;
+  bool IsChildFrameHitTest() const {
+    return request_type_ & kChildFrameHitTest;
   }
-  bool listBased() const { return m_requestType & ListBased; }
-  bool penetratingList() const { return m_requestType & PenetratingList; }
-  bool avoidCache() const { return m_requestType & AvoidCache; }
+  bool IgnorePointerEventsNone() const {
+    return request_type_ & kIgnorePointerEventsNone;
+  }
+  bool ListBased() const { return request_type_ & kListBased; }
+  bool PenetratingList() const { return request_type_ & kPenetratingList; }
+  bool AvoidCache() const { return request_type_ & kAvoidCache; }
 
   // Convenience functions
-  bool touchMove() const { return move() && touchEvent(); }
+  bool TouchMove() const { return Move() && TouchEvent(); }
 
-  HitTestRequestType type() const { return m_requestType; }
+  HitTestRequestType GetType() const { return request_type_; }
 
   // The Cacheability bits don't affect hit testing computation.
   // TODO(dtapuska): These bits really shouldn't be fields on the HitTestRequest
   // as they don't influence the result; but rather are hints on the output as
   // to what to do. Perhaps move these fields to another enum?
-  static const HitTestRequestType CacheabilityBits =
-      ReadOnly | Active | Move | Release | TouchEvent;
-  bool equalForCacheability(const HitTestRequest& value) const {
-    return (m_requestType | CacheabilityBits) ==
-           (value.m_requestType | CacheabilityBits);
+  static const HitTestRequestType kCacheabilityBits =
+      kReadOnly | kActive | kMove | kRelease | kTouchEvent;
+  bool EqualForCacheability(const HitTestRequest& value) const {
+    return (request_type_ | kCacheabilityBits) ==
+           (value.request_type_ | kCacheabilityBits);
   }
 
  private:
-  HitTestRequestType m_requestType;
+  HitTestRequestType request_type_;
 };
 
 }  // namespace blink

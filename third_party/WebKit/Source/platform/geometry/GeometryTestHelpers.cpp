@@ -10,25 +10,25 @@
 namespace blink {
 namespace GeometryTest {
 
-bool ApproximatelyEqual(float a, float b, float testEpsilon) {
-  float absA = ::fabs(a);
-  float absB = ::fabs(b);
-  float absErr = ::fabs(a - b);
+bool ApproximatelyEqual(float a, float b, float test_epsilon) {
+  float abs_a = ::fabs(a);
+  float abs_b = ::fabs(b);
+  float abs_err = ::fabs(a - b);
   if (a == b)
     return true;
 
-  if (a == 0 || b == 0 || absErr < std::numeric_limits<float>::min())
-    return absErr < (testEpsilon * std::numeric_limits<float>::min());
+  if (a == 0 || b == 0 || abs_err < std::numeric_limits<float>::min())
+    return abs_err < (test_epsilon * std::numeric_limits<float>::min());
 
-  return ((absErr / (absA + absB)) < testEpsilon);
+  return ((abs_err / (abs_a + abs_b)) < test_epsilon);
 }
 
 ::testing::AssertionResult AssertAlmostEqual(const char* actual_expr,
                                              const char* expected_expr,
                                              float actual,
                                              float expected,
-                                             float testEpsilon) {
-  if (!ApproximatelyEqual(actual, expected, testEpsilon)) {
+                                             float test_epsilon) {
+  if (!ApproximatelyEqual(actual, expected, test_epsilon)) {
     return ::testing::AssertionFailure()
            << "       Value of:" << actual_expr << std::endl
            << "         Actual:" << ::testing::PrintToString(actual)

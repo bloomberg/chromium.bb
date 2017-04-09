@@ -32,45 +32,45 @@ namespace blink {
 
 using namespace cssvalue;
 
-CSSValuePool& cssValuePool() {
+CSSValuePool& CssValuePool() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      ThreadSpecific<Persistent<CSSValuePool>>, threadSpecificPool,
+      ThreadSpecific<Persistent<CSSValuePool>>, thread_specific_pool,
       new ThreadSpecific<Persistent<CSSValuePool>>());
-  Persistent<CSSValuePool>& poolHandle = *threadSpecificPool;
-  if (!poolHandle) {
-    poolHandle = new CSSValuePool;
-    poolHandle.registerAsStaticReference();
+  Persistent<CSSValuePool>& pool_handle = *thread_specific_pool;
+  if (!pool_handle) {
+    pool_handle = new CSSValuePool;
+    pool_handle.RegisterAsStaticReference();
   }
-  return *poolHandle;
+  return *pool_handle;
 }
 
 CSSValuePool::CSSValuePool()
-    : m_inheritedValue(new CSSInheritedValue),
-      m_initialValue(new CSSInitialValue()),
-      m_unsetValue(new CSSUnsetValue),
-      m_colorTransparent(new CSSColorValue(Color::transparent)),
-      m_colorWhite(new CSSColorValue(Color::white)),
-      m_colorBlack(new CSSColorValue(Color::black)) {
-  m_identifierValueCache.resize(numCSSValueKeywords);
-  m_pixelValueCache.resize(maximumCacheableIntegerValue + 1);
-  m_percentValueCache.resize(maximumCacheableIntegerValue + 1);
-  m_numberValueCache.resize(maximumCacheableIntegerValue + 1);
+    : inherited_value_(new CSSInheritedValue),
+      initial_value_(new CSSInitialValue()),
+      unset_value_(new CSSUnsetValue),
+      color_transparent_(new CSSColorValue(Color::kTransparent)),
+      color_white_(new CSSColorValue(Color::kWhite)),
+      color_black_(new CSSColorValue(Color::kBlack)) {
+  identifier_value_cache_.Resize(numCSSValueKeywords);
+  pixel_value_cache_.Resize(kMaximumCacheableIntegerValue + 1);
+  percent_value_cache_.Resize(kMaximumCacheableIntegerValue + 1);
+  number_value_cache_.Resize(kMaximumCacheableIntegerValue + 1);
 }
 
 DEFINE_TRACE(CSSValuePool) {
-  visitor->trace(m_inheritedValue);
-  visitor->trace(m_initialValue);
-  visitor->trace(m_unsetValue);
-  visitor->trace(m_colorTransparent);
-  visitor->trace(m_colorWhite);
-  visitor->trace(m_colorBlack);
-  visitor->trace(m_identifierValueCache);
-  visitor->trace(m_pixelValueCache);
-  visitor->trace(m_percentValueCache);
-  visitor->trace(m_numberValueCache);
-  visitor->trace(m_colorValueCache);
-  visitor->trace(m_fontFaceValueCache);
-  visitor->trace(m_fontFamilyValueCache);
+  visitor->Trace(inherited_value_);
+  visitor->Trace(initial_value_);
+  visitor->Trace(unset_value_);
+  visitor->Trace(color_transparent_);
+  visitor->Trace(color_white_);
+  visitor->Trace(color_black_);
+  visitor->Trace(identifier_value_cache_);
+  visitor->Trace(pixel_value_cache_);
+  visitor->Trace(percent_value_cache_);
+  visitor->Trace(number_value_cache_);
+  visitor->Trace(color_value_cache_);
+  visitor->Trace(font_face_value_cache_);
+  visitor->Trace(font_family_value_cache_);
 }
 
 }  // namespace blink

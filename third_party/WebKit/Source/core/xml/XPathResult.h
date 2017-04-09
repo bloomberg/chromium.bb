@@ -60,12 +60,12 @@ class XPathResult final : public GarbageCollected<XPathResult>,
     kFirstOrderedNodeType = 9
   };
 
-  static XPathResult* create(XPath::EvaluationContext& context,
+  static XPathResult* Create(XPath::EvaluationContext& context,
                              const XPath::Value& value) {
     return new XPathResult(context, value);
   }
 
-  void convertTo(unsigned short type, ExceptionState&);
+  void ConvertTo(unsigned short type, ExceptionState&);
 
   unsigned short resultType() const;
 
@@ -79,21 +79,21 @@ class XPathResult final : public GarbageCollected<XPathResult>,
   Node* iterateNext(ExceptionState&);
   Node* snapshotItem(unsigned index, ExceptionState&);
 
-  const XPath::Value& value() const { return m_value; }
+  const XPath::Value& GetValue() const { return value_; }
 
   DECLARE_TRACE();
 
  private:
   XPathResult(XPath::EvaluationContext&, const XPath::Value&);
-  XPath::NodeSet& nodeSet() { return *m_nodeSet; }
+  XPath::NodeSet& GetNodeSet() { return *node_set_; }
 
-  XPath::Value m_value;
-  unsigned m_nodeSetPosition;
+  XPath::Value value_;
+  unsigned node_set_position_;
   Member<XPath::NodeSet>
-      m_nodeSet;  // FIXME: why duplicate the node set stored in m_value?
-  unsigned short m_resultType;
-  Member<Document> m_document;
-  uint64_t m_domTreeVersion;
+      node_set_;  // FIXME: why duplicate the node set stored in m_value?
+  unsigned short result_type_;
+  Member<Document> document_;
+  uint64_t dom_tree_version_;
 };
 
 }  // namespace blink

@@ -41,30 +41,30 @@ class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Pattern::RepeatMode parseRepetitionType(const String&,
+  static Pattern::RepeatMode ParseRepetitionType(const String&,
                                                  ExceptionState&);
 
-  static CanvasPattern* create(PassRefPtr<Image> image,
+  static CanvasPattern* Create(PassRefPtr<Image> image,
                                Pattern::RepeatMode repeat,
-                               bool originClean) {
-    return new CanvasPattern(std::move(image), repeat, originClean);
+                               bool origin_clean) {
+    return new CanvasPattern(std::move(image), repeat, origin_clean);
   }
 
-  Pattern* getPattern() const { return m_pattern.get(); }
-  const AffineTransform& getTransform() const { return m_patternTransform; }
+  Pattern* GetPattern() const { return pattern_.Get(); }
+  const AffineTransform& GetTransform() const { return pattern_transform_; }
 
-  bool originClean() const { return m_originClean; }
+  bool OriginClean() const { return origin_clean_; }
 
   DEFINE_INLINE_TRACE() {}
 
   void setTransform(SVGMatrixTearOff*);
 
  private:
-  CanvasPattern(PassRefPtr<Image>, Pattern::RepeatMode, bool originClean);
+  CanvasPattern(PassRefPtr<Image>, Pattern::RepeatMode, bool origin_clean);
 
-  RefPtr<Pattern> m_pattern;
-  AffineTransform m_patternTransform;
-  bool m_originClean;
+  RefPtr<Pattern> pattern_;
+  AffineTransform pattern_transform_;
+  bool origin_clean_;
 };
 
 }  // namespace blink

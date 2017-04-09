@@ -33,28 +33,28 @@ const StylePropertyShorthand& animationShorthandForParsing() {
   // bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=14790
   // And in the spec (editor's draft) at:
   // http://dev.w3.org/csswg/css3-animations/#animation-shorthand-property
-  static const CSSPropertyID animationPropertiesForParsing[] = {
+  static const CSSPropertyID kAnimationPropertiesForParsing[] = {
       CSSPropertyAnimationDuration,  CSSPropertyAnimationTimingFunction,
       CSSPropertyAnimationDelay,     CSSPropertyAnimationIterationCount,
       CSSPropertyAnimationDirection, CSSPropertyAnimationFillMode,
       CSSPropertyAnimationPlayState, CSSPropertyAnimationName};
   DEFINE_STATIC_LOCAL(StylePropertyShorthand,
-                      webkitAnimationLonghandsForParsing,
-                      (CSSPropertyAnimation, animationPropertiesForParsing,
-                       WTF_ARRAY_LENGTH(animationPropertiesForParsing)));
-  return webkitAnimationLonghandsForParsing;
+                      webkit_animation_longhands_for_parsing,
+                      (CSSPropertyAnimation, kAnimationPropertiesForParsing,
+                       WTF_ARRAY_LENGTH(kAnimationPropertiesForParsing)));
+  return webkit_animation_longhands_for_parsing;
 }
 
 // Similar to animations, we have property after timing-function and delay after
 // duration
 const StylePropertyShorthand& transitionShorthandForParsing() {
-  static const CSSPropertyID transitionProperties[] = {
+  static const CSSPropertyID kTransitionProperties[] = {
       CSSPropertyTransitionDuration, CSSPropertyTransitionTimingFunction,
       CSSPropertyTransitionDelay, CSSPropertyTransitionProperty};
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, transitionLonghands,
-                      (CSSPropertyTransition, transitionProperties,
-                       WTF_ARRAY_LENGTH(transitionProperties)));
-  return transitionLonghands;
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, transition_longhands,
+                      (CSSPropertyTransition, kTransitionProperties,
+                       WTF_ARRAY_LENGTH(kTransitionProperties)));
+  return transition_longhands;
 }
 
 bool isShorthandProperty(CSSPropertyID id) {
@@ -62,10 +62,10 @@ bool isShorthandProperty(CSSPropertyID id) {
 }
 
 unsigned indexOfShorthandForLonghand(
-    CSSPropertyID shorthandID,
+    CSSPropertyID shorthand_id,
     const Vector<StylePropertyShorthand, 4>& shorthands) {
   for (unsigned i = 0; i < shorthands.size(); ++i) {
-    if (shorthands.at(i).id() == shorthandID)
+    if (shorthands.at(i).id() == shorthand_id)
       return i;
   }
   NOTREACHED();

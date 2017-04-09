@@ -21,10 +21,10 @@ bool IsScrollEndEffectEnabled() {
 }
 
 bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
-  DCHECK(blink::WebInputEvent::isGestureEventType(event.type()));
+  DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()));
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
-  return gesture.sourceDevice == blink::WebGestureDeviceTouchpad;
+  return gesture.source_device == blink::kWebGestureDeviceTouchpad;
 }
 
 }  // namespace
@@ -43,31 +43,31 @@ OverscrollController::~OverscrollController() {
 
 bool OverscrollController::ShouldProcessEvent(
     const blink::WebInputEvent& event) {
-  switch (event.type()) {
-    case blink::WebInputEvent::MouseWheel:
+  switch (event.GetType()) {
+    case blink::WebInputEvent::kMouseWheel:
       return false;
-    case blink::WebInputEvent::GestureScrollBegin:
-    case blink::WebInputEvent::GestureScrollUpdate:
-    case blink::WebInputEvent::GestureScrollEnd: {
+    case blink::WebInputEvent::kGestureScrollBegin:
+    case blink::WebInputEvent::kGestureScrollUpdate:
+    case blink::WebInputEvent::kGestureScrollEnd: {
       const blink::WebGestureEvent& gesture =
           static_cast<const blink::WebGestureEvent&>(event);
       blink::WebGestureEvent::ScrollUnits scrollUnits;
-      switch (event.type()) {
-        case blink::WebInputEvent::GestureScrollBegin:
-          scrollUnits = gesture.data.scrollBegin.deltaHintUnits;
+      switch (event.GetType()) {
+        case blink::WebInputEvent::kGestureScrollBegin:
+          scrollUnits = gesture.data.scroll_begin.delta_hint_units;
           break;
-        case blink::WebInputEvent::GestureScrollUpdate:
-          scrollUnits = gesture.data.scrollUpdate.deltaUnits;
+        case blink::WebInputEvent::kGestureScrollUpdate:
+          scrollUnits = gesture.data.scroll_update.delta_units;
           break;
-        case blink::WebInputEvent::GestureScrollEnd:
-          scrollUnits = gesture.data.scrollEnd.deltaUnits;
+        case blink::WebInputEvent::kGestureScrollEnd:
+          scrollUnits = gesture.data.scroll_end.delta_units;
           break;
         default:
-          scrollUnits = blink::WebGestureEvent::Pixels;
+          scrollUnits = blink::WebGestureEvent::kPixels;
           break;
       }
 
-      return scrollUnits == blink::WebGestureEvent::PrecisePixels;
+      return scrollUnits == blink::WebGestureEvent::kPrecisePixels;
     }
     default:
       break;
@@ -82,31 +82,31 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   bool reset_scroll_state = false;
   if (scroll_state_ != STATE_UNKNOWN ||
       overscroll_delta_x_ || overscroll_delta_y_) {
-    switch (event.type()) {
-      case blink::WebInputEvent::GestureScrollEnd:
+    switch (event.GetType()) {
+      case blink::WebInputEvent::kGestureScrollEnd:
         // Avoid resetting the state on GestureScrollEnd generated
         // from the touchpad since it is sent based on a timeout.
         reset_scroll_state = !IsGestureEventFromTouchpad(event);
         break;
 
-      case blink::WebInputEvent::GestureFlingStart:
+      case blink::WebInputEvent::kGestureFlingStart:
         reset_scroll_state = true;
         break;
 
-      case blink::WebInputEvent::MouseWheel: {
+      case blink::WebInputEvent::kMouseWheel: {
         const blink::WebMouseWheelEvent& wheel =
             static_cast<const blink::WebMouseWheelEvent&>(event);
-        if (!wheel.hasPreciseScrollingDeltas ||
-            wheel.phase == blink::WebMouseWheelEvent::PhaseEnded ||
-            wheel.phase == blink::WebMouseWheelEvent::PhaseCancelled) {
+        if (!wheel.has_precise_scrolling_deltas ||
+            wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded ||
+            wheel.phase == blink::WebMouseWheelEvent::kPhaseCancelled) {
           reset_scroll_state = true;
         }
         break;
       }
 
       default:
-        if (blink::WebInputEvent::isMouseEventType(event.type()) ||
-            blink::WebInputEvent::isKeyboardEventType(event.type())) {
+        if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
+            blink::WebInputEvent::IsKeyboardEventType(event.GetType())) {
           reset_scroll_state = true;
         }
         break;
@@ -152,8 +152,8 @@ void OverscrollController::ReceivedEventACK(const blink::WebInputEvent& event,
     // has been scrolled, then there is not going to be an overscroll gesture,
     // until the current scroll ends, and a new scroll gesture starts.
     if (scroll_state_ == STATE_UNKNOWN &&
-        (event.type() == blink::WebInputEvent::MouseWheel ||
-         event.type() == blink::WebInputEvent::GestureScrollUpdate)) {
+        (event.GetType() == blink::WebInputEvent::kMouseWheel ||
+         event.GetType() == blink::WebInputEvent::kGestureScrollUpdate)) {
       scroll_state_ = STATE_CONTENT_SCROLLING;
     }
     return;
@@ -164,8 +164,8 @@ void OverscrollController::ReceivedEventACK(const blink::WebInputEvent& event,
 void OverscrollController::DiscardingGestureEvent(
     const blink::WebGestureEvent& gesture) {
   if (scroll_state_ != STATE_UNKNOWN &&
-      (gesture.type() == blink::WebInputEvent::GestureScrollEnd ||
-       gesture.type() == blink::WebInputEvent::GestureFlingStart)) {
+      (gesture.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+       gesture.GetType() == blink::WebInputEvent::kGestureFlingStart)) {
     scroll_state_ = STATE_UNKNOWN;
   }
 }
@@ -189,15 +189,15 @@ bool OverscrollController::DispatchEventCompletesAction (
 
   // Complete the overscroll gesture if there was a mouse move or a scroll-end
   // after the threshold.
-  if (event.type() != blink::WebInputEvent::MouseMove &&
-      event.type() != blink::WebInputEvent::GestureScrollEnd &&
-      event.type() != blink::WebInputEvent::GestureFlingStart)
+  if (event.GetType() != blink::WebInputEvent::kMouseMove &&
+      event.GetType() != blink::WebInputEvent::kGestureScrollEnd &&
+      event.GetType() != blink::WebInputEvent::kGestureFlingStart)
     return false;
 
   // Avoid completing the action on GestureScrollEnd generated
   // from the touchpad since it is sent based on a timeout not
   // when the user has stopped interacting.
-  if (event.type() == blink::WebInputEvent::GestureScrollEnd &&
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
       IsGestureEventFromTouchpad(event))
     return false;
 
@@ -208,25 +208,25 @@ bool OverscrollController::DispatchEventCompletesAction (
   if (bounds.IsEmpty())
     return false;
 
-  if (event.type() == blink::WebInputEvent::GestureFlingStart) {
+  if (event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
     // Check to see if the fling is in the same direction of the overscroll.
     const blink::WebGestureEvent gesture =
         static_cast<const blink::WebGestureEvent&>(event);
     switch (overscroll_mode_) {
       case OVERSCROLL_EAST:
-        if (gesture.data.flingStart.velocityX < 0)
+        if (gesture.data.fling_start.velocity_x < 0)
           return false;
         break;
       case OVERSCROLL_WEST:
-        if (gesture.data.flingStart.velocityX > 0)
+        if (gesture.data.fling_start.velocity_x > 0)
           return false;
         break;
       case OVERSCROLL_NORTH:
-        if (gesture.data.flingStart.velocityY > 0)
+        if (gesture.data.fling_start.velocity_y > 0)
           return false;
         break;
       case OVERSCROLL_SOUTH:
-        if (gesture.data.flingStart.velocityY < 0)
+        if (gesture.data.fling_start.velocity_y < 0)
           return false;
         break;
       case OVERSCROLL_NONE:
@@ -249,60 +249,61 @@ bool OverscrollController::DispatchEventCompletesAction (
 
 bool OverscrollController::DispatchEventResetsState(
     const blink::WebInputEvent& event) const {
-  switch (event.type()) {
-    case blink::WebInputEvent::MouseWheel: {
+  switch (event.GetType()) {
+    case blink::WebInputEvent::kMouseWheel: {
       // Only wheel events with precise deltas (i.e. from trackpad) contribute
       // to the overscroll gesture.
       const blink::WebMouseWheelEvent& wheel =
           static_cast<const blink::WebMouseWheelEvent&>(event);
-      return !wheel.hasPreciseScrollingDeltas;
+      return !wheel.has_precise_scrolling_deltas;
     }
 
     // Avoid resetting overscroll on GestureScrollBegin/End generated
     // from the touchpad since it is sent based on a timeout.
-    case blink::WebInputEvent::GestureScrollBegin:
-    case blink::WebInputEvent::GestureScrollEnd:
+    case blink::WebInputEvent::kGestureScrollBegin:
+    case blink::WebInputEvent::kGestureScrollEnd:
       return !IsGestureEventFromTouchpad(event);
 
-    case blink::WebInputEvent::GestureScrollUpdate:
-    case blink::WebInputEvent::GestureFlingCancel:
+    case blink::WebInputEvent::kGestureScrollUpdate:
+    case blink::WebInputEvent::kGestureFlingCancel:
       return false;
 
     default:
       // Touch events can arrive during an overscroll gesture initiated by
       // touch-scrolling. These events should not reset the overscroll state.
-      return !blink::WebInputEvent::isTouchEventType(event.type());
+      return !blink::WebInputEvent::IsTouchEventType(event.GetType());
   }
 }
 
 bool OverscrollController::ProcessEventForOverscroll(
     const blink::WebInputEvent& event) {
   bool event_processed = false;
-  switch (event.type()) {
-    case blink::WebInputEvent::MouseWheel: {
+  switch (event.GetType()) {
+    case blink::WebInputEvent::kMouseWheel: {
       const blink::WebMouseWheelEvent& wheel =
           static_cast<const blink::WebMouseWheelEvent&>(event);
-      if (!wheel.hasPreciseScrollingDeltas)
+      if (!wheel.has_precise_scrolling_deltas)
         break;
       event_processed =
-          ProcessOverscroll(wheel.deltaX * wheel.accelerationRatioX,
-                            wheel.deltaY * wheel.accelerationRatioY, true);
+          ProcessOverscroll(wheel.delta_x * wheel.acceleration_ratio_x,
+                            wheel.delta_y * wheel.acceleration_ratio_y, true);
       break;
     }
-    case blink::WebInputEvent::GestureScrollUpdate: {
+    case blink::WebInputEvent::kGestureScrollUpdate: {
       const blink::WebGestureEvent& gesture =
           static_cast<const blink::WebGestureEvent&>(event);
       event_processed = ProcessOverscroll(
-          gesture.data.scrollUpdate.deltaX, gesture.data.scrollUpdate.deltaY,
-          gesture.sourceDevice == blink::WebGestureDeviceTouchpad);
+          gesture.data.scroll_update.delta_x,
+          gesture.data.scroll_update.delta_y,
+          gesture.source_device == blink::kWebGestureDeviceTouchpad);
       break;
     }
-    case blink::WebInputEvent::GestureFlingStart: {
+    case blink::WebInputEvent::kGestureFlingStart: {
       const float kFlingVelocityThreshold = 1100.f;
       const blink::WebGestureEvent& gesture =
           static_cast<const blink::WebGestureEvent&>(event);
-      float velocity_x = gesture.data.flingStart.velocityX;
-      float velocity_y = gesture.data.flingStart.velocityY;
+      float velocity_x = gesture.data.fling_start.velocity_x;
+      float velocity_y = gesture.data.fling_start.velocity_y;
       if (fabs(velocity_x) > kFlingVelocityThreshold) {
         if ((overscroll_mode_ == OVERSCROLL_WEST && velocity_x < 0) ||
             (overscroll_mode_ == OVERSCROLL_EAST && velocity_x > 0)) {
@@ -325,9 +326,9 @@ bool OverscrollController::ProcessEventForOverscroll(
     }
 
     default:
-      DCHECK(blink::WebInputEvent::isGestureEventType(event.type()) ||
-             blink::WebInputEvent::isTouchEventType(event.type()))
-          << "Received unexpected event: " << event.type();
+      DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()) ||
+             blink::WebInputEvent::IsTouchEventType(event.GetType()))
+          << "Received unexpected event: " << event.GetType();
   }
   return event_processed;
 }

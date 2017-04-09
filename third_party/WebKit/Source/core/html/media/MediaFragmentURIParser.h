@@ -40,34 +40,34 @@ class MediaFragmentURIParser final {
  public:
   MediaFragmentURIParser(const KURL&);
 
-  double startTime();
-  double endTime();
+  double StartTime();
+  double EndTime();
 
  private:
-  void parseFragments();
+  void ParseFragments();
 
   enum TimeFormat {
-    None,
-    Invalid,
-    NormalPlayTime,
-    SMPTETimeCode,
-    WallClockTimeCode
+    kNone,
+    kInvalid,
+    kNormalPlayTime,
+    kSMPTETimeCode,
+    kWallClockTimeCode
   };
-  void parseTimeFragment();
-  bool parseNPTFragment(const LChar*,
+  void ParseTimeFragment();
+  bool ParseNPTFragment(const LChar*,
                         unsigned length,
-                        double& startTime,
-                        double& endTime);
-  bool parseNPTTime(const LChar*,
+                        double& start_time,
+                        double& end_time);
+  bool ParseNPTTime(const LChar*,
                     unsigned length,
                     unsigned& offset,
                     double& time);
 
-  KURL m_url;
-  TimeFormat m_timeFormat;
-  double m_startTime;
-  double m_endTime;
-  Vector<std::pair<String, String>> m_fragments;
+  KURL url_;
+  TimeFormat time_format_;
+  double start_time_;
+  double end_time_;
+  Vector<std::pair<String, String>> fragments_;
 };
 
 }  // namespace blink

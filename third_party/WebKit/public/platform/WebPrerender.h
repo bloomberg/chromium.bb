@@ -44,8 +44,8 @@ class Prerender;
 // WebPrerenderRelType is a bitfield since multiple rel attributes can be set on
 // the same prerender.
 enum WebPrerenderRelType {
-  PrerenderRelTypePrerender = 0x1,
-  PrerenderRelTypeNext = 0x2,
+  kPrerenderRelTypePrerender = 0x1,
+  kPrerenderRelTypeNext = 0x2,
 };
 
 class WebPrerender {
@@ -55,39 +55,39 @@ class WebPrerender {
     virtual ~ExtraData() {}
   };
 
-  ~WebPrerender() { reset(); }
+  ~WebPrerender() { Reset(); }
   WebPrerender() {}
-  WebPrerender(const WebPrerender& other) { assign(other); }
+  WebPrerender(const WebPrerender& other) { Assign(other); }
   WebPrerender& operator=(const WebPrerender& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT explicit WebPrerender(Prerender*);
 
-  BLINK_PLATFORM_EXPORT const Prerender* toPrerender() const;
+  BLINK_PLATFORM_EXPORT const Prerender* ToPrerender() const;
 #endif
 
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebPrerender&);
-  BLINK_PLATFORM_EXPORT bool isNull() const;
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebPrerender&);
+  BLINK_PLATFORM_EXPORT bool IsNull() const;
 
-  BLINK_PLATFORM_EXPORT WebURL url() const;
-  BLINK_PLATFORM_EXPORT WebString referrer() const;
-  BLINK_PLATFORM_EXPORT unsigned relTypes() const;
-  BLINK_PLATFORM_EXPORT WebReferrerPolicy getReferrerPolicy() const;
+  BLINK_PLATFORM_EXPORT WebURL Url() const;
+  BLINK_PLATFORM_EXPORT WebString GetReferrer() const;
+  BLINK_PLATFORM_EXPORT unsigned RelTypes() const;
+  BLINK_PLATFORM_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
 
-  BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
-  BLINK_PLATFORM_EXPORT const ExtraData* getExtraData() const;
+  BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
+  BLINK_PLATFORM_EXPORT const ExtraData* GetExtraData() const;
 
-  BLINK_PLATFORM_EXPORT void didStartPrerender();
-  BLINK_PLATFORM_EXPORT void didStopPrerender();
-  BLINK_PLATFORM_EXPORT void didSendLoadForPrerender();
-  BLINK_PLATFORM_EXPORT void didSendDOMContentLoadedForPrerender();
+  BLINK_PLATFORM_EXPORT void DidStartPrerender();
+  BLINK_PLATFORM_EXPORT void DidStopPrerender();
+  BLINK_PLATFORM_EXPORT void DidSendLoadForPrerender();
+  BLINK_PLATFORM_EXPORT void DidSendDOMContentLoadedForPrerender();
 
  private:
-  WebPrivatePtr<Prerender> m_private;
+  WebPrivatePtr<Prerender> private_;
 };
 
 }  // namespace blink

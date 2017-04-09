@@ -9,11 +9,11 @@ namespace blink {
 
 typedef double DOMHighResTimeStamp;
 
-inline DOMHighResTimeStamp convertSecondsToDOMHighResTimeStamp(double seconds) {
+inline DOMHighResTimeStamp ConvertSecondsToDOMHighResTimeStamp(double seconds) {
   return static_cast<DOMHighResTimeStamp>(seconds * 1000.0);
 }
 
-inline double convertDOMHighResTimeStampToSeconds(
+inline double ConvertDOMHighResTimeStampToSeconds(
     DOMHighResTimeStamp milliseconds) {
   return milliseconds / 1000.0;
 }

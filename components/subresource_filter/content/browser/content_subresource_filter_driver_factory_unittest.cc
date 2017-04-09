@@ -724,9 +724,9 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {
   } kTestCases[] = {
       {content::Referrer(), ui::PAGE_TRANSITION_LINK,
        ActivationDecision::ACTIVATED},
-      {content::Referrer(GURL(kUrlA), blink::WebReferrerPolicyDefault),
+      {content::Referrer(GURL(kUrlA), blink::kWebReferrerPolicyDefault),
        ui::PAGE_TRANSITION_LINK, ActivationDecision::ACTIVATED},
-      {content::Referrer(GURL(kExampleUrl), blink::WebReferrerPolicyDefault),
+      {content::Referrer(GURL(kExampleUrl), blink::kWebReferrerPolicyDefault),
        ui::PAGE_TRANSITION_LINK, ActivationDecision::URL_WHITELISTED},
       {content::Referrer(), ui::PAGE_TRANSITION_RELOAD,
        ActivationDecision::URL_WHITELISTED}};

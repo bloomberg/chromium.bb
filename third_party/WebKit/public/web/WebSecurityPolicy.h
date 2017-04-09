@@ -46,57 +46,57 @@ class WebSecurityPolicy {
   // that pages cannot display these URLs unless they are from the same
   // scheme. For example, pages in other origin cannot create iframes or
   // hyperlinks to URLs with the scheme.
-  BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
+  BLINK_EXPORT static void RegisterURLSchemeAsDisplayIsolated(const WebString&);
 
   // Registers a URL scheme that can register a ServiceWorker.
-  BLINK_EXPORT static void registerURLSchemeAsAllowingServiceWorkers(
+  BLINK_EXPORT static void RegisterURLSchemeAsAllowingServiceWorkers(
       const WebString&);
 
   // Registers an HTTP-like URL scheme that supports the Fetch API.
-  BLINK_EXPORT static void registerURLSchemeAsSupportingFetchAPI(
+  BLINK_EXPORT static void RegisterURLSchemeAsSupportingFetchAPI(
       const WebString&);
 
   // Registers a URL scheme which will always be considered the first-party when
   // loaded in a top-level context.
-  BLINK_EXPORT static void registerURLSchemeAsFirstPartyWhenTopLevel(
+  BLINK_EXPORT static void RegisterURLSchemeAsFirstPartyWhenTopLevel(
       const WebString&);
 
   // Support for whitelisting access to origins beyond the same-origin policy.
-  BLINK_EXPORT static void addOriginAccessWhitelistEntry(
-      const WebURL& sourceOrigin,
-      const WebString& destinationProtocol,
-      const WebString& destinationHost,
-      bool allowDestinationSubdomains);
-  BLINK_EXPORT static void removeOriginAccessWhitelistEntry(
-      const WebURL& sourceOrigin,
-      const WebString& destinationProtocol,
-      const WebString& destinationHost,
-      bool allowDestinationSubdomains);
-  BLINK_EXPORT static void resetOriginAccessWhitelists();
+  BLINK_EXPORT static void AddOriginAccessWhitelistEntry(
+      const WebURL& source_origin,
+      const WebString& destination_protocol,
+      const WebString& destination_host,
+      bool allow_destination_subdomains);
+  BLINK_EXPORT static void RemoveOriginAccessWhitelistEntry(
+      const WebURL& source_origin,
+      const WebString& destination_protocol,
+      const WebString& destination_host,
+      bool allow_destination_subdomains);
+  BLINK_EXPORT static void ResetOriginAccessWhitelists();
 
   // Support for whitelisting origins to treat them as trustworthy.
-  BLINK_EXPORT static void addOriginTrustworthyWhiteList(
+  BLINK_EXPORT static void AddOriginTrustworthyWhiteList(
       const WebSecurityOrigin&);
 
   // Support for whitelisting schemes as bypassing secure context checks.
-  BLINK_EXPORT static void addSchemeToBypassSecureContextWhitelist(
+  BLINK_EXPORT static void AddSchemeToBypassSecureContextWhitelist(
       const WebString&);
 
   // Returns the referrer modified according to the referrer policy for a
   // navigation to a given URL. If the referrer returned is empty, the
   // referrer header should be omitted.
-  BLINK_EXPORT static WebString generateReferrerHeader(
+  BLINK_EXPORT static WebString GenerateReferrerHeader(
       WebReferrerPolicy,
       const WebURL&,
       const WebString& referrer);
 
   // Registers an URL scheme to not allow manipulation of the loaded page
   // by bookmarklets or javascript: URLs typed in the omnibox.
-  BLINK_EXPORT static void registerURLSchemeAsNotAllowingJavascriptURLs(
+  BLINK_EXPORT static void RegisterURLSchemeAsNotAllowingJavascriptURLs(
       const WebString&);
 
   // Registers an URL scheme as allowed in referrers.
-  BLINK_EXPORT static void registerURLSchemeAsAllowedForReferrer(
+  BLINK_EXPORT static void RegisterURLSchemeAsAllowedForReferrer(
       const WebString&);
 
  private:

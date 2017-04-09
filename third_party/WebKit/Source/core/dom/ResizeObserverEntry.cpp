@@ -11,15 +11,15 @@
 namespace blink {
 
 ResizeObserverEntry::ResizeObserverEntry(Element* target,
-                                         const LayoutRect& contentRect)
-    : m_target(target) {
-  m_contentRect = ClientRect::create(FloatRect(
-      FloatPoint(contentRect.location()), FloatSize(contentRect.size())));
+                                         const LayoutRect& content_rect)
+    : target_(target) {
+  content_rect_ = ClientRect::Create(FloatRect(
+      FloatPoint(content_rect.Location()), FloatSize(content_rect.size())));
 }
 
 DEFINE_TRACE(ResizeObserverEntry) {
-  visitor->trace(m_target);
-  visitor->trace(m_contentRect);
+  visitor->Trace(target_);
+  visitor->Trace(content_rect_);
 }
 
 }  // namespace blink

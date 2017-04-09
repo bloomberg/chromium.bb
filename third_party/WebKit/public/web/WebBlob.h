@@ -55,30 +55,30 @@ class Blob;
 
 class WebBlob {
  public:
-  ~WebBlob() { reset(); }
+  ~WebBlob() { Reset(); }
 
   WebBlob() {}
-  WebBlob(const WebBlob& b) { assign(b); }
+  WebBlob(const WebBlob& b) { Assign(b); }
   WebBlob& operator=(const WebBlob& b) {
-    assign(b);
+    Assign(b);
     return *this;
   }
 
-  BLINK_EXPORT static WebBlob createFromUUID(const WebString& uuid,
+  BLINK_EXPORT static WebBlob CreateFromUUID(const WebString& uuid,
                                              const WebString& type,
                                              long long size);
-  BLINK_EXPORT static WebBlob createFromFile(const WebString& path,
+  BLINK_EXPORT static WebBlob CreateFromFile(const WebString& path,
                                              long long size);
-  BLINK_EXPORT static WebBlob fromV8Value(v8::Local<v8::Value>);
+  BLINK_EXPORT static WebBlob FromV8Value(v8::Local<v8::Value>);
 
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebBlob&);
-  BLINK_EXPORT WebString uuid();
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebBlob&);
+  BLINK_EXPORT WebString Uuid();
 
-  bool isNull() const { return m_private.isNull(); }
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_EXPORT v8::Local<v8::Value> toV8Value(
-      v8::Local<v8::Object> creationContext,
+  BLINK_EXPORT v8::Local<v8::Value> ToV8Value(
+      v8::Local<v8::Object> creation_context,
       v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
@@ -87,7 +87,7 @@ class WebBlob {
 #endif
 
  protected:
-  WebPrivatePtr<Blob> m_private;
+  WebPrivatePtr<Blob> private_;
 };
 
 }  // namespace blink

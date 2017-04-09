@@ -15,12 +15,12 @@ namespace blink {
 
 class StyleNonInheritedVariables {
  public:
-  static std::unique_ptr<StyleNonInheritedVariables> create() {
-    return WTF::wrapUnique(new StyleNonInheritedVariables);
+  static std::unique_ptr<StyleNonInheritedVariables> Create() {
+    return WTF::WrapUnique(new StyleNonInheritedVariables);
   }
 
-  std::unique_ptr<StyleNonInheritedVariables> copy() {
-    return WTF::wrapUnique(new StyleNonInheritedVariables(*this));
+  std::unique_ptr<StyleNonInheritedVariables> Copy() {
+    return WTF::WrapUnique(new StyleNonInheritedVariables(*this));
   }
 
   bool operator==(const StyleNonInheritedVariables& other) const;
@@ -28,16 +28,16 @@ class StyleNonInheritedVariables {
     return !(*this == other);
   }
 
-  void setVariable(const AtomicString& name,
+  void SetVariable(const AtomicString& name,
                    PassRefPtr<CSSVariableData> value) {
-    m_data.set(name, std::move(value));
+    data_.Set(name, std::move(value));
   }
-  CSSVariableData* getVariable(const AtomicString& name) const;
-  void removeVariable(const AtomicString&);
+  CSSVariableData* GetVariable(const AtomicString& name) const;
+  void RemoveVariable(const AtomicString&);
 
-  void setRegisteredVariable(const AtomicString&, const CSSValue*);
-  const CSSValue* registeredVariable(const AtomicString& name) const {
-    return m_registeredData.at(name);
+  void SetRegisteredVariable(const AtomicString&, const CSSValue*);
+  const CSSValue* RegisteredVariable(const AtomicString& name) const {
+    return registered_data_.at(name);
   }
 
  private:
@@ -46,8 +46,8 @@ class StyleNonInheritedVariables {
 
   friend class CSSVariableResolver;
 
-  HashMap<AtomicString, RefPtr<CSSVariableData>> m_data;
-  HashMap<AtomicString, Persistent<CSSValue>> m_registeredData;
+  HashMap<AtomicString, RefPtr<CSSVariableData>> data_;
+  HashMap<AtomicString, Persistent<CSSValue>> registered_data_;
 };
 
 }  // namespace blink

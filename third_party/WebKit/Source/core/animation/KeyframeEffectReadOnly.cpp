@@ -24,70 +24,73 @@
 
 namespace blink {
 
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
     Element* target,
     EffectModel* model,
     const Timing& timing,
     Priority priority,
-    EventDelegate* eventDelegate) {
+    EventDelegate* event_delegate) {
   return new KeyframeEffectReadOnly(target, model, timing, priority,
-                                    eventDelegate);
+                                    event_delegate);
 }
 
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
-    ExecutionContext* executionContext,
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
+    ExecutionContext* execution_context,
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
+    const DictionarySequenceOrDictionary& effect_input,
     double duration,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
-    UseCounter::count(
-        element->document(),
-        UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+    UseCounter::Count(
+        element->GetDocument(),
+        UseCounter::kAnimationConstructorKeyframeListEffectObjectTiming);
   }
   Timing timing;
-  if (!TimingInput::convert(duration, timing, exceptionState))
+  if (!TimingInput::Convert(duration, timing, exception_state))
     return nullptr;
-  return create(element, EffectInput::convert(element, effectInput,
-                                              executionContext, exceptionState),
+  return Create(element,
+                EffectInput::Convert(element, effect_input, execution_context,
+                                     exception_state),
                 timing);
 }
 
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
-    ExecutionContext* executionContext,
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
+    ExecutionContext* execution_context,
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
-    const KeyframeEffectOptions& timingInput,
-    ExceptionState& exceptionState) {
+    const DictionarySequenceOrDictionary& effect_input,
+    const KeyframeEffectOptions& timing_input,
+    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
-    UseCounter::count(
-        element->document(),
-        UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+    UseCounter::Count(
+        element->GetDocument(),
+        UseCounter::kAnimationConstructorKeyframeListEffectObjectTiming);
   }
   Timing timing;
-  Document* document = element ? &element->document() : nullptr;
-  if (!TimingInput::convert(timingInput, timing, document, exceptionState))
+  Document* document = element ? &element->GetDocument() : nullptr;
+  if (!TimingInput::Convert(timing_input, timing, document, exception_state))
     return nullptr;
-  return create(element, EffectInput::convert(element, effectInput,
-                                              executionContext, exceptionState),
+  return Create(element,
+                EffectInput::Convert(element, effect_input, execution_context,
+                                     exception_state),
                 timing);
 }
 
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
-    ExecutionContext* executionContext,
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
+    ExecutionContext* execution_context,
     Element* element,
-    const DictionarySequenceOrDictionary& effectInput,
-    ExceptionState& exceptionState) {
+    const DictionarySequenceOrDictionary& effect_input,
+    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
-    UseCounter::count(
-        element->document(),
-        UseCounter::AnimationConstructorKeyframeListEffectNoTiming);
+    UseCounter::Count(
+        element->GetDocument(),
+        UseCounter::kAnimationConstructorKeyframeListEffectNoTiming);
   }
-  return create(element, EffectInput::convert(element, effectInput,
-                                              executionContext, exceptionState),
+  return Create(element,
+                EffectInput::Convert(element, effect_input, execution_context,
+                                     exception_state),
                 Timing());
 }
 
@@ -95,107 +98,107 @@ KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target,
                                                EffectModel* model,
                                                const Timing& timing,
                                                Priority priority,
-                                               EventDelegate* eventDelegate)
-    : AnimationEffectReadOnly(timing, eventDelegate),
-      m_target(target),
-      m_model(model),
-      m_sampledEffect(nullptr),
-      m_priority(priority) {}
+                                               EventDelegate* event_delegate)
+    : AnimationEffectReadOnly(timing, event_delegate),
+      target_(target),
+      model_(model),
+      sampled_effect_(nullptr),
+      priority_(priority) {}
 
-void KeyframeEffectReadOnly::attach(Animation* animation) {
-  if (m_target) {
-    m_target->ensureElementAnimations().animations().insert(animation);
-    m_target->setNeedsAnimationStyleRecalc();
+void KeyframeEffectReadOnly::Attach(Animation* animation) {
+  if (target_) {
+    target_->EnsureElementAnimations().Animations().insert(animation);
+    target_->SetNeedsAnimationStyleRecalc();
     if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
-        m_target->isSVGElement())
-      toSVGElement(m_target)->setWebAnimationsPending();
+        target_->IsSVGElement())
+      ToSVGElement(target_)->SetWebAnimationsPending();
   }
-  AnimationEffectReadOnly::attach(animation);
+  AnimationEffectReadOnly::Attach(animation);
 }
 
-void KeyframeEffectReadOnly::detach() {
-  if (m_target)
-    m_target->elementAnimations()->animations().erase(animation());
-  if (m_sampledEffect)
-    clearEffects();
-  AnimationEffectReadOnly::detach();
+void KeyframeEffectReadOnly::Detach() {
+  if (target_)
+    target_->GetElementAnimations()->Animations().erase(GetAnimation());
+  if (sampled_effect_)
+    ClearEffects();
+  AnimationEffectReadOnly::Detach();
 }
 
-void KeyframeEffectReadOnly::specifiedTimingChanged() {
-  if (animation()) {
+void KeyframeEffectReadOnly::SpecifiedTimingChanged() {
+  if (GetAnimation()) {
     // FIXME: Needs to consider groups when added.
-    DCHECK_EQ(animation()->effect(), this);
-    animation()->setCompositorPending(true);
+    DCHECK_EQ(GetAnimation()->effect(), this);
+    GetAnimation()->SetCompositorPending(true);
   }
 }
 
-static EffectStack& ensureEffectStack(Element* element) {
-  return element->ensureElementAnimations().effectStack();
+static EffectStack& EnsureEffectStack(Element* element) {
+  return element->EnsureElementAnimations().GetEffectStack();
 }
 
-bool KeyframeEffectReadOnly::hasMultipleTransformProperties() const {
-  if (!m_target->computedStyle())
+bool KeyframeEffectReadOnly::HasMultipleTransformProperties() const {
+  if (!target_->GetComputedStyle())
     return false;
 
-  unsigned transformPropertyCount = 0;
-  if (m_target->computedStyle()->hasTransformOperations())
-    transformPropertyCount++;
-  if (m_target->computedStyle()->rotate())
-    transformPropertyCount++;
-  if (m_target->computedStyle()->scale())
-    transformPropertyCount++;
-  if (m_target->computedStyle()->translate())
-    transformPropertyCount++;
-  return transformPropertyCount > 1;
+  unsigned transform_property_count = 0;
+  if (target_->GetComputedStyle()->HasTransformOperations())
+    transform_property_count++;
+  if (target_->GetComputedStyle()->Rotate())
+    transform_property_count++;
+  if (target_->GetComputedStyle()->Scale())
+    transform_property_count++;
+  if (target_->GetComputedStyle()->Translate())
+    transform_property_count++;
+  return transform_property_count > 1;
 }
 
 // Returns true if transform, translate, rotate or scale is composited
 // and a motion path or other transform properties
 // has been introduced on the element
-bool KeyframeEffectReadOnly::hasIncompatibleStyle() {
-  if (!m_target->computedStyle())
+bool KeyframeEffectReadOnly::HasIncompatibleStyle() {
+  if (!target_->GetComputedStyle())
     return false;
 
-  bool affectsTransform =
-      animation()->affects(*m_target, CSSPropertyTransform) ||
-      animation()->affects(*m_target, CSSPropertyScale) ||
-      animation()->affects(*m_target, CSSPropertyRotate) ||
-      animation()->affects(*m_target, CSSPropertyTranslate);
+  bool affects_transform =
+      GetAnimation()->Affects(*target_, CSSPropertyTransform) ||
+      GetAnimation()->Affects(*target_, CSSPropertyScale) ||
+      GetAnimation()->Affects(*target_, CSSPropertyRotate) ||
+      GetAnimation()->Affects(*target_, CSSPropertyTranslate);
 
-  if (animation()->hasActiveAnimationsOnCompositor()) {
-    if (m_target->computedStyle()->hasOffset() && affectsTransform)
+  if (GetAnimation()->HasActiveAnimationsOnCompositor()) {
+    if (target_->GetComputedStyle()->HasOffset() && affects_transform)
       return true;
-    return hasMultipleTransformProperties();
+    return HasMultipleTransformProperties();
   }
 
   return false;
 }
 
-void KeyframeEffectReadOnly::applyEffects() {
-  DCHECK(isInEffect());
-  DCHECK(animation());
-  if (!m_target || !m_model)
+void KeyframeEffectReadOnly::ApplyEffects() {
+  DCHECK(IsInEffect());
+  DCHECK(GetAnimation());
+  if (!target_ || !model_)
     return;
 
-  if (hasIncompatibleStyle())
-    animation()->cancelAnimationOnCompositor();
+  if (HasIncompatibleStyle())
+    GetAnimation()->CancelAnimationOnCompositor();
 
-  double iteration = currentIteration();
+  double iteration = CurrentIteration();
   DCHECK_GE(iteration, 0);
   bool changed = false;
-  if (m_sampledEffect) {
-    changed = m_model->sample(clampTo<int>(iteration, 0), progress(),
-                              iterationDuration(),
-                              m_sampledEffect->mutableInterpolations());
+  if (sampled_effect_) {
+    changed = model_->Sample(clampTo<int>(iteration, 0), Progress(),
+                             IterationDuration(),
+                             sampled_effect_->MutableInterpolations());
   } else {
     Vector<RefPtr<Interpolation>> interpolations;
-    m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(),
-                    interpolations);
-    if (!interpolations.isEmpty()) {
-      SampledEffect* sampledEffect = SampledEffect::create(this);
-      sampledEffect->mutableInterpolations().swap(interpolations);
-      m_sampledEffect = sampledEffect;
-      ensureEffectStack(m_target).add(sampledEffect);
+    model_->Sample(clampTo<int>(iteration, 0), Progress(), IterationDuration(),
+                   interpolations);
+    if (!interpolations.IsEmpty()) {
+      SampledEffect* sampled_effect = SampledEffect::Create(this);
+      sampled_effect->MutableInterpolations().Swap(interpolations);
+      sampled_effect_ = sampled_effect;
+      EnsureEffectStack(target_).Add(sampled_effect);
       changed = true;
     } else {
       return;
@@ -203,177 +206,180 @@ void KeyframeEffectReadOnly::applyEffects() {
   }
 
   if (changed) {
-    m_target->setNeedsAnimationStyleRecalc();
+    target_->SetNeedsAnimationStyleRecalc();
     if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
-        m_target->isSVGElement())
-      toSVGElement(*m_target).setWebAnimationsPending();
+        target_->IsSVGElement())
+      ToSVGElement(*target_).SetWebAnimationsPending();
   }
 }
 
-void KeyframeEffectReadOnly::clearEffects() {
-  DCHECK(animation());
-  DCHECK(m_sampledEffect);
+void KeyframeEffectReadOnly::ClearEffects() {
+  DCHECK(GetAnimation());
+  DCHECK(sampled_effect_);
 
-  m_sampledEffect->clear();
-  m_sampledEffect = nullptr;
-  restartAnimationOnCompositor();
-  m_target->setNeedsAnimationStyleRecalc();
+  sampled_effect_->Clear();
+  sampled_effect_ = nullptr;
+  RestartAnimationOnCompositor();
+  target_->SetNeedsAnimationStyleRecalc();
   if (RuntimeEnabledFeatures::webAnimationsSVGEnabled() &&
-      m_target->isSVGElement())
-    toSVGElement(*m_target).clearWebAnimatedAttributes();
-  invalidate();
+      target_->IsSVGElement())
+    ToSVGElement(*target_).ClearWebAnimatedAttributes();
+  Invalidate();
 }
 
-void KeyframeEffectReadOnly::updateChildrenAndEffects() const {
-  if (!m_model)
+void KeyframeEffectReadOnly::UpdateChildrenAndEffects() const {
+  if (!model_)
     return;
-  DCHECK(animation());
-  if (isInEffect() && !animation()->effectSuppressed())
-    const_cast<KeyframeEffectReadOnly*>(this)->applyEffects();
-  else if (m_sampledEffect)
-    const_cast<KeyframeEffectReadOnly*>(this)->clearEffects();
+  DCHECK(GetAnimation());
+  if (IsInEffect() && !GetAnimation()->EffectSuppressed())
+    const_cast<KeyframeEffectReadOnly*>(this)->ApplyEffects();
+  else if (sampled_effect_)
+    const_cast<KeyframeEffectReadOnly*>(this)->ClearEffects();
 }
 
-double KeyframeEffectReadOnly::calculateTimeToEffectChange(
+double KeyframeEffectReadOnly::CalculateTimeToEffectChange(
     bool forwards,
-    double localTime,
-    double timeToNextIteration) const {
-  const double startTime = specifiedTiming().startDelay;
-  const double endTimeMinusEndDelay = startTime + activeDurationInternal();
-  const double endTime = endTimeMinusEndDelay + specifiedTiming().endDelay;
-  const double afterTime = std::min(endTimeMinusEndDelay, endTime);
+    double local_time,
+    double time_to_next_iteration) const {
+  const double start_time = SpecifiedTiming().start_delay;
+  const double end_time_minus_end_delay = start_time + ActiveDurationInternal();
+  const double end_time =
+      end_time_minus_end_delay + SpecifiedTiming().end_delay;
+  const double after_time = std::min(end_time_minus_end_delay, end_time);
 
-  switch (getPhase()) {
-    case PhaseNone:
+  switch (GetPhase()) {
+    case kPhaseNone:
       return std::numeric_limits<double>::infinity();
-    case PhaseBefore:
-      DCHECK_GE(startTime, localTime);
-      return forwards ? startTime - localTime
+    case kPhaseBefore:
+      DCHECK_GE(start_time, local_time);
+      return forwards ? start_time - local_time
                       : std::numeric_limits<double>::infinity();
-    case PhaseActive:
+    case kPhaseActive:
       if (forwards) {
         // Need service to apply fill / fire events.
-        const double timeToEnd = afterTime - localTime;
-        if (requiresIterationEvents()) {
-          return std::min(timeToEnd, timeToNextIteration);
+        const double time_to_end = after_time - local_time;
+        if (RequiresIterationEvents()) {
+          return std::min(time_to_end, time_to_next_iteration);
         }
-        return timeToEnd;
+        return time_to_end;
       }
       return 0;
-    case PhaseAfter:
-      DCHECK_GE(localTime, afterTime);
+    case kPhaseAfter:
+      DCHECK_GE(local_time, after_time);
       // If this KeyframeEffect is still in effect then it will need to update
       // when its parent goes out of effect. We have no way of knowing when
       // that will be, however, so the parent will need to supply it.
       return forwards ? std::numeric_limits<double>::infinity()
-                      : localTime - afterTime;
+                      : local_time - after_time;
     default:
       NOTREACHED();
       return std::numeric_limits<double>::infinity();
   }
 }
 
-void KeyframeEffectReadOnly::notifySampledEffectRemovedFromEffectStack() {
-  m_sampledEffect = nullptr;
+void KeyframeEffectReadOnly::NotifySampledEffectRemovedFromEffectStack() {
+  sampled_effect_ = nullptr;
 }
 
-bool KeyframeEffectReadOnly::isCandidateForAnimationOnCompositor(
-    double animationPlaybackRate) const {
+bool KeyframeEffectReadOnly::IsCandidateForAnimationOnCompositor(
+    double animation_playback_rate) const {
   // Do not put transforms on compositor if more than one of them are defined
   // in computed style because they need to be explicitly ordered
-  if (!model() || !m_target ||
-      (m_target->computedStyle() && m_target->computedStyle()->hasOffset()) ||
-      hasMultipleTransformProperties())
+  if (!Model() || !target_ ||
+      (target_->GetComputedStyle() &&
+       target_->GetComputedStyle()->HasOffset()) ||
+      HasMultipleTransformProperties())
     return false;
 
-  return CompositorAnimations::isCandidateForAnimationOnCompositor(
-      specifiedTiming(), *m_target, animation(), *model(),
-      animationPlaybackRate);
+  return CompositorAnimations::IsCandidateForAnimationOnCompositor(
+      SpecifiedTiming(), *target_, GetAnimation(), *Model(),
+      animation_playback_rate);
 }
 
-bool KeyframeEffectReadOnly::maybeStartAnimationOnCompositor(
+bool KeyframeEffectReadOnly::MaybeStartAnimationOnCompositor(
     int group,
-    double startTime,
-    double currentTime,
-    double animationPlaybackRate) {
-  DCHECK(!hasActiveAnimationsOnCompositor());
-  if (!isCandidateForAnimationOnCompositor(animationPlaybackRate))
+    double start_time,
+    double current_time,
+    double animation_playback_rate) {
+  DCHECK(!HasActiveAnimationsOnCompositor());
+  if (!IsCandidateForAnimationOnCompositor(animation_playback_rate))
     return false;
-  if (!CompositorAnimations::canStartAnimationOnCompositor(*m_target))
+  if (!CompositorAnimations::CanStartAnimationOnCompositor(*target_))
     return false;
-  CompositorAnimations::startAnimationOnCompositor(
-      *m_target, group, startTime, currentTime, specifiedTiming(), *animation(),
-      *model(), m_compositorAnimationIds, animationPlaybackRate);
-  DCHECK(!m_compositorAnimationIds.isEmpty());
+  CompositorAnimations::StartAnimationOnCompositor(
+      *target_, group, start_time, current_time, SpecifiedTiming(),
+      *GetAnimation(), *Model(), compositor_animation_ids_,
+      animation_playback_rate);
+  DCHECK(!compositor_animation_ids_.IsEmpty());
   return true;
 }
 
-bool KeyframeEffectReadOnly::hasActiveAnimationsOnCompositor() const {
-  return !m_compositorAnimationIds.isEmpty();
+bool KeyframeEffectReadOnly::HasActiveAnimationsOnCompositor() const {
+  return !compositor_animation_ids_.IsEmpty();
 }
 
-bool KeyframeEffectReadOnly::hasActiveAnimationsOnCompositor(
+bool KeyframeEffectReadOnly::HasActiveAnimationsOnCompositor(
     const PropertyHandle& property) const {
-  return hasActiveAnimationsOnCompositor() && affects(property);
+  return HasActiveAnimationsOnCompositor() && Affects(property);
 }
 
-bool KeyframeEffectReadOnly::affects(const PropertyHandle& property) const {
-  return m_model && m_model->affects(property);
+bool KeyframeEffectReadOnly::Affects(const PropertyHandle& property) const {
+  return model_ && model_->Affects(property);
 }
 
-bool KeyframeEffectReadOnly::cancelAnimationOnCompositor() {
+bool KeyframeEffectReadOnly::CancelAnimationOnCompositor() {
   // FIXME: cancelAnimationOnCompositor is called from withins style recalc.
   // This queries compositingState, which is not necessarily up to date.
   // https://code.google.com/p/chromium/issues/detail?id=339847
   DisableCompositingQueryAsserts disabler;
-  if (!hasActiveAnimationsOnCompositor())
+  if (!HasActiveAnimationsOnCompositor())
     return false;
-  if (!m_target || !m_target->layoutObject())
+  if (!target_ || !target_->GetLayoutObject())
     return false;
-  DCHECK(animation());
-  for (const auto& compositorAnimationId : m_compositorAnimationIds) {
-    CompositorAnimations::cancelAnimationOnCompositor(*m_target, *animation(),
-                                                      compositorAnimationId);
+  DCHECK(GetAnimation());
+  for (const auto& compositor_animation_id : compositor_animation_ids_) {
+    CompositorAnimations::CancelAnimationOnCompositor(*target_, *GetAnimation(),
+                                                      compositor_animation_id);
   }
-  m_compositorAnimationIds.clear();
+  compositor_animation_ids_.Clear();
   return true;
 }
 
-void KeyframeEffectReadOnly::restartAnimationOnCompositor() {
-  if (cancelAnimationOnCompositor())
-    animation()->setCompositorPending(true);
+void KeyframeEffectReadOnly::RestartAnimationOnCompositor() {
+  if (CancelAnimationOnCompositor())
+    GetAnimation()->SetCompositorPending(true);
 }
 
-void KeyframeEffectReadOnly::cancelIncompatibleAnimationsOnCompositor() {
-  if (m_target && animation() && model()) {
-    CompositorAnimations::cancelIncompatibleAnimationsOnCompositor(
-        *m_target, *animation(), *model());
+void KeyframeEffectReadOnly::CancelIncompatibleAnimationsOnCompositor() {
+  if (target_ && GetAnimation() && Model()) {
+    CompositorAnimations::CancelIncompatibleAnimationsOnCompositor(
+        *target_, *GetAnimation(), *Model());
   }
 }
 
-void KeyframeEffectReadOnly::pauseAnimationForTestingOnCompositor(
-    double pauseTime) {
-  DCHECK(hasActiveAnimationsOnCompositor());
-  if (!m_target || !m_target->layoutObject())
+void KeyframeEffectReadOnly::PauseAnimationForTestingOnCompositor(
+    double pause_time) {
+  DCHECK(HasActiveAnimationsOnCompositor());
+  if (!target_ || !target_->GetLayoutObject())
     return;
-  DCHECK(animation());
-  for (const auto& compositorAnimationId : m_compositorAnimationIds) {
-    CompositorAnimations::pauseAnimationForTestingOnCompositor(
-        *m_target, *animation(), compositorAnimationId, pauseTime);
+  DCHECK(GetAnimation());
+  for (const auto& compositor_animation_id : compositor_animation_ids_) {
+    CompositorAnimations::PauseAnimationForTestingOnCompositor(
+        *target_, *GetAnimation(), compositor_animation_id, pause_time);
   }
 }
 
-void KeyframeEffectReadOnly::attachCompositedLayers() {
-  DCHECK(m_target);
-  DCHECK(animation());
-  CompositorAnimations::attachCompositedLayers(*m_target, *animation());
+void KeyframeEffectReadOnly::AttachCompositedLayers() {
+  DCHECK(target_);
+  DCHECK(GetAnimation());
+  CompositorAnimations::AttachCompositedLayers(*target_, *GetAnimation());
 }
 
 DEFINE_TRACE(KeyframeEffectReadOnly) {
-  visitor->trace(m_target);
-  visitor->trace(m_model);
-  visitor->trace(m_sampledEffect);
-  AnimationEffectReadOnly::trace(visitor);
+  visitor->Trace(target_);
+  visitor->Trace(model_);
+  visitor->Trace(sampled_effect_);
+  AnimationEffectReadOnly::Trace(visitor);
 }
 
 }  // namespace blink

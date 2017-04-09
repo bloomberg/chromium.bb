@@ -29,9 +29,9 @@ class MediaElementEventListener final : public EventListener {
 
  public:
   MediaElementEventListener(HTMLMediaElement* element, MediaStream* stream)
-      : EventListener(CPPEventListenerType),
-        m_mediaElement(element),
-        m_mediaStream(stream) {}
+      : EventListener(kCPPEventListenerType),
+        media_element_(element),
+        media_stream_(stream) {}
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -42,59 +42,59 @@ class MediaElementEventListener final : public EventListener {
     return this == &other;
   }
 
-  Member<HTMLMediaElement> m_mediaElement;
-  Member<MediaStream> m_mediaStream;
+  Member<HTMLMediaElement> media_element_;
+  Member<MediaStream> media_stream_;
 };
 
 void MediaElementEventListener::handleEvent(ExecutionContext* context,
                                             Event* event) {
   DVLOG(2) << __func__ << " " << event->type();
-  DCHECK(m_mediaStream);
+  DCHECK(media_stream_);
 
   if (event->type() == EventTypeNames::ended) {
-    MediaStreamTrackVector tracks = m_mediaStream->getTracks();
+    MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
       track->stopTrack(ASSERT_NO_EXCEPTION);
-      m_mediaStream->removeTrackByComponent(track->component());
+      media_stream_->RemoveTrackByComponent(track->Component());
     }
 
-    m_mediaStream->streamEnded();
+    media_stream_->StreamEnded();
     return;
   }
   if (event->type() != EventTypeNames::loadedmetadata)
     return;
 
-  WebMediaStream webStream;
-  webStream.initialize(WebVector<WebMediaStreamTrack>(),
-                       WebVector<WebMediaStreamTrack>());
+  WebMediaStream web_stream;
+  web_stream.Initialize(WebVector<WebMediaStreamTrack>(),
+                        WebVector<WebMediaStreamTrack>());
 
-  if (m_mediaElement->hasVideo()) {
-    Platform::current()->createHTMLVideoElementCapturer(
-        &webStream, m_mediaElement->webMediaPlayer());
+  if (media_element_->HasVideo()) {
+    Platform::Current()->CreateHTMLVideoElementCapturer(
+        &web_stream, media_element_->GetWebMediaPlayer());
   }
-  if (m_mediaElement->hasAudio()) {
-    Platform::current()->createHTMLAudioElementCapturer(
-        &webStream, m_mediaElement->webMediaPlayer());
+  if (media_element_->HasAudio()) {
+    Platform::Current()->CreateHTMLAudioElementCapturer(
+        &web_stream, media_element_->GetWebMediaPlayer());
   }
 
-  WebVector<WebMediaStreamTrack> videoTracks;
-  webStream.videoTracks(videoTracks);
-  for (const auto& track : videoTracks)
-    m_mediaStream->addTrackByComponent(track);
+  WebVector<WebMediaStreamTrack> video_tracks;
+  web_stream.VideoTracks(video_tracks);
+  for (const auto& track : video_tracks)
+    media_stream_->AddTrackByComponent(track);
 
-  WebVector<WebMediaStreamTrack> audioTracks;
-  webStream.audioTracks(audioTracks);
-  for (const auto& track : audioTracks)
-    m_mediaStream->addTrackByComponent(track);
+  WebVector<WebMediaStreamTrack> audio_tracks;
+  web_stream.AudioTracks(audio_tracks);
+  for (const auto& track : audio_tracks)
+    media_stream_->AddTrackByComponent(track);
 
-  DVLOG(2) << "#videotracks: " << videoTracks.size()
-           << " #audiotracks: " << audioTracks.size();
+  DVLOG(2) << "#videotracks: " << video_tracks.size()
+           << " #audiotracks: " << audio_tracks.size();
 }
 
 DEFINE_TRACE(MediaElementEventListener) {
-  visitor->trace(m_mediaElement);
-  visitor->trace(m_mediaStream);
-  EventListener::trace(visitor);
+  visitor->Trace(media_element_);
+  visitor->Trace(media_stream_);
+  EventListener::Trace(visitor);
 }
 
 }  // anonymous namespace
@@ -102,44 +102,44 @@ DEFINE_TRACE(MediaElementEventListener) {
 // static
 MediaStream* HTMLMediaElementCapture::captureStream(
     HTMLMediaElement& element,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   // Avoid capturing from EME-protected Media Elements.
   if (HTMLMediaElementEncryptedMedia::mediaKeys(element)) {
     // This exception is not defined in the spec, see
     // https://github.com/w3c/mediacapture-fromelement/issues/20.
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Stream capture not supported with EME");
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Stream capture not supported with EME");
     return nullptr;
   }
 
-  WebMediaStream webStream;
-  webStream.initialize(WebVector<WebMediaStreamTrack>(),
-                       WebVector<WebMediaStreamTrack>());
+  WebMediaStream web_stream;
+  web_stream.Initialize(WebVector<WebMediaStreamTrack>(),
+                        WebVector<WebMediaStreamTrack>());
 
   // create() duplicates the MediaStreamTracks inside |webStream|.
   MediaStream* stream =
-      MediaStream::create(element.getExecutionContext(), webStream);
+      MediaStream::Create(element.GetExecutionContext(), web_stream);
 
   EventListener* listener = new MediaElementEventListener(&element, stream);
   element.addEventListener(EventTypeNames::loadedmetadata, listener, false);
   element.addEventListener(EventTypeNames::ended, listener, false);
 
   // If |element| is actually playing a MediaStream, just clone it.
-  if (!element.currentSrc().isNull() &&
-      HTMLMediaElement::isMediaStreamURL(element.currentSrc().getString())) {
-    return MediaStream::create(
-        element.getExecutionContext(),
-        MediaStreamRegistry::registry().lookupMediaStreamDescriptor(
-            element.currentSrc().getString()));
+  if (!element.currentSrc().IsNull() &&
+      HTMLMediaElement::IsMediaStreamURL(element.currentSrc().GetString())) {
+    return MediaStream::Create(
+        element.GetExecutionContext(),
+        MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
+            element.currentSrc().GetString()));
   }
 
-  if (element.hasVideo()) {
-    Platform::current()->createHTMLVideoElementCapturer(
-        &webStream, element.webMediaPlayer());
+  if (element.HasVideo()) {
+    Platform::Current()->CreateHTMLVideoElementCapturer(
+        &web_stream, element.GetWebMediaPlayer());
   }
-  if (element.hasAudio()) {
-    Platform::current()->createHTMLAudioElementCapturer(
-        &webStream, element.webMediaPlayer());
+  if (element.HasAudio()) {
+    Platform::Current()->CreateHTMLAudioElementCapturer(
+        &web_stream, element.GetWebMediaPlayer());
   }
 
   // If element.currentSrc().isNull() then |stream| will have no tracks, those

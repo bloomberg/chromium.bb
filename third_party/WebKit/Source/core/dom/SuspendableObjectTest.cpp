@@ -47,63 +47,63 @@ class MockSuspendableObject final
   explicit MockSuspendableObject(ExecutionContext* context)
       : SuspendableObject(context) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SuspendableObject::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { SuspendableObject::Trace(visitor); }
 
-  MOCK_METHOD0(suspend, void());
-  MOCK_METHOD0(resume, void());
-  MOCK_METHOD1(contextDestroyed, void(ExecutionContext*));
+  MOCK_METHOD0(Suspend, void());
+  MOCK_METHOD0(Resume, void());
+  MOCK_METHOD1(ContextDestroyed, void(ExecutionContext*));
 };
 
 class SuspendableObjectTest : public ::testing::Test {
  protected:
   SuspendableObjectTest();
 
-  Document& srcDocument() const { return m_srcPageHolder->document(); }
-  Document& destDocument() const { return m_destPageHolder->document(); }
-  MockSuspendableObject& suspendableObject() { return *m_suspendableObject; }
+  Document& SrcDocument() const { return src_page_holder_->GetDocument(); }
+  Document& DestDocument() const { return dest_page_holder_->GetDocument(); }
+  MockSuspendableObject& SuspendableObject() { return *suspendable_object_; }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_srcPageHolder;
-  std::unique_ptr<DummyPageHolder> m_destPageHolder;
-  Persistent<MockSuspendableObject> m_suspendableObject;
+  std::unique_ptr<DummyPageHolder> src_page_holder_;
+  std::unique_ptr<DummyPageHolder> dest_page_holder_;
+  Persistent<MockSuspendableObject> suspendable_object_;
 };
 
 SuspendableObjectTest::SuspendableObjectTest()
-    : m_srcPageHolder(DummyPageHolder::create(IntSize(800, 600))),
-      m_destPageHolder(DummyPageHolder::create(IntSize(800, 600))),
-      m_suspendableObject(
-          new MockSuspendableObject(&m_srcPageHolder->document())) {
-  m_suspendableObject->suspendIfNeeded();
+    : src_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
+      dest_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
+      suspendable_object_(
+          new MockSuspendableObject(&src_page_holder_->GetDocument())) {
+  suspendable_object_->SuspendIfNeeded();
 }
 
 TEST_F(SuspendableObjectTest, NewContextObserved) {
-  unsigned initialSrcCount = srcDocument().suspendableObjectCount();
-  unsigned initialDestCount = destDocument().suspendableObjectCount();
+  unsigned initial_src_count = SrcDocument().SuspendableObjectCount();
+  unsigned initial_dest_count = DestDocument().SuspendableObjectCount();
 
-  EXPECT_CALL(suspendableObject(), resume());
-  suspendableObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(SuspendableObject(), Resume());
+  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
 
-  EXPECT_EQ(initialSrcCount - 1, srcDocument().suspendableObjectCount());
-  EXPECT_EQ(initialDestCount + 1, destDocument().suspendableObjectCount());
+  EXPECT_EQ(initial_src_count - 1, SrcDocument().SuspendableObjectCount());
+  EXPECT_EQ(initial_dest_count + 1, DestDocument().SuspendableObjectCount());
 }
 
 TEST_F(SuspendableObjectTest, MoveToActiveDocument) {
-  EXPECT_CALL(suspendableObject(), resume());
-  suspendableObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(SuspendableObject(), Resume());
+  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
 }
 
 TEST_F(SuspendableObjectTest, MoveToSuspendedDocument) {
-  destDocument().suspendScheduledTasks();
+  DestDocument().SuspendScheduledTasks();
 
-  EXPECT_CALL(suspendableObject(), suspend());
-  suspendableObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(SuspendableObject(), Suspend());
+  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
 }
 
 TEST_F(SuspendableObjectTest, MoveToStoppedDocument) {
-  destDocument().shutdown();
+  DestDocument().Shutdown();
 
-  EXPECT_CALL(suspendableObject(), contextDestroyed(&destDocument()));
-  suspendableObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(SuspendableObject(), ContextDestroyed(&DestDocument()));
+  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
 }
 
 }  // namespace blink

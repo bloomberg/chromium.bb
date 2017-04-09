@@ -13,53 +13,53 @@ namespace {
 const char kPerContextDataKey[] = "Modulator";
 }  // namespace
 
-Modulator* Modulator::from(ScriptState* scriptState) {
-  if (!scriptState)
+Modulator* Modulator::From(ScriptState* script_state) {
+  if (!script_state)
     return nullptr;
-  V8PerContextData* perContextData = scriptState->perContextData();
-  if (!perContextData)
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  if (!per_context_data)
     return nullptr;
-  return static_cast<Modulator*>(perContextData->getData(kPerContextDataKey));
+  return static_cast<Modulator*>(per_context_data->GetData(kPerContextDataKey));
 }
 
 Modulator::~Modulator() {}
 
-void Modulator::setModulator(ScriptState* scriptState, Modulator* modulator) {
-  DCHECK(scriptState);
-  V8PerContextData* perContextData = scriptState->perContextData();
-  DCHECK(perContextData);
-  perContextData->addData(kPerContextDataKey, modulator);
+void Modulator::SetModulator(ScriptState* script_state, Modulator* modulator) {
+  DCHECK(script_state);
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  DCHECK(per_context_data);
+  per_context_data->AddData(kPerContextDataKey, modulator);
 }
 
-void Modulator::clearModulator(ScriptState* scriptState) {
-  DCHECK(scriptState);
-  V8PerContextData* perContextData = scriptState->perContextData();
-  DCHECK(perContextData);
-  perContextData->clearData(kPerContextDataKey);
+void Modulator::ClearModulator(ScriptState* script_state) {
+  DCHECK(script_state);
+  V8PerContextData* per_context_data = script_state->PerContextData();
+  DCHECK(per_context_data);
+  per_context_data->ClearData(kPerContextDataKey);
 }
 
-KURL Modulator::resolveModuleSpecifier(const String& moduleRequest,
-                                       const KURL& baseURL) {
+KURL Modulator::ResolveModuleSpecifier(const String& module_request,
+                                       const KURL& base_url) {
   // Step 1. Apply the URL parser to specifier. If the result is not failure,
   // return the result.
-  KURL url(KURL(), moduleRequest);
-  if (url.isValid())
+  KURL url(KURL(), module_request);
+  if (url.IsValid())
     return url;
 
   // Step 2. If specifier does not start with the character U+002F SOLIDUS (/),
   // the two-character sequence U+002E FULL STOP, U+002F SOLIDUS (./), or the
   // three-character sequence U+002E FULL STOP, U+002E FULL STOP, U+002F SOLIDUS
   // (../), return failure and abort these steps.
-  if (!moduleRequest.startsWith("/") && !moduleRequest.startsWith("./") &&
-      !moduleRequest.startsWith("../"))
+  if (!module_request.StartsWith("/") && !module_request.StartsWith("./") &&
+      !module_request.StartsWith("../"))
     return KURL();
 
   // Step 3. Return the result of applying the URL parser to specifier with
   // script's base URL as the base URL.
-  DCHECK(baseURL.isValid());
-  KURL absoluteURL(baseURL, moduleRequest);
-  if (absoluteURL.isValid())
-    return absoluteURL;
+  DCHECK(base_url.IsValid());
+  KURL absolute_url(base_url, module_request);
+  if (absolute_url.IsValid())
+    return absolute_url;
 
   return KURL();
 }

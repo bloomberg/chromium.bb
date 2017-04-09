@@ -32,90 +32,90 @@ namespace blink {
 FilterOperations::FilterOperations() {}
 
 DEFINE_TRACE(FilterOperations) {
-  visitor->trace(m_operations);
+  visitor->Trace(operations_);
 }
 
 FilterOperations& FilterOperations::operator=(const FilterOperations& other) {
-  m_operations = other.m_operations;
+  operations_ = other.operations_;
   return *this;
 }
 
 bool FilterOperations::operator==(const FilterOperations& o) const {
-  if (m_operations.size() != o.m_operations.size())
+  if (operations_.size() != o.operations_.size())
     return false;
 
-  unsigned s = m_operations.size();
+  unsigned s = operations_.size();
   for (unsigned i = 0; i < s; i++) {
-    if (*m_operations[i] != *o.m_operations[i])
+    if (*operations_[i] != *o.operations_[i])
       return false;
   }
 
   return true;
 }
 
-bool FilterOperations::canInterpolateWith(const FilterOperations& other) const {
-  for (size_t i = 0; i < operations().size(); ++i) {
-    if (!FilterOperation::canInterpolate(operations()[i]->type()))
+bool FilterOperations::CanInterpolateWith(const FilterOperations& other) const {
+  for (size_t i = 0; i < Operations().size(); ++i) {
+    if (!FilterOperation::CanInterpolate(Operations()[i]->GetType()))
       return false;
   }
 
-  for (size_t i = 0; i < other.operations().size(); ++i) {
-    if (!FilterOperation::canInterpolate(other.operations()[i]->type()))
+  for (size_t i = 0; i < other.Operations().size(); ++i) {
+    if (!FilterOperation::CanInterpolate(other.Operations()[i]->GetType()))
       return false;
   }
 
-  size_t commonSize = std::min(operations().size(), other.operations().size());
-  for (size_t i = 0; i < commonSize; ++i) {
-    if (!operations()[i]->isSameType(*other.operations()[i]))
+  size_t common_size = std::min(Operations().size(), other.Operations().size());
+  for (size_t i = 0; i < common_size; ++i) {
+    if (!Operations()[i]->IsSameType(*other.Operations()[i]))
       return false;
   }
   return true;
 }
 
-bool FilterOperations::hasReferenceFilter() const {
-  for (size_t i = 0; i < m_operations.size(); ++i) {
-    if (m_operations.at(i)->type() == FilterOperation::REFERENCE)
+bool FilterOperations::HasReferenceFilter() const {
+  for (size_t i = 0; i < operations_.size(); ++i) {
+    if (operations_.at(i)->GetType() == FilterOperation::REFERENCE)
       return true;
   }
   return false;
 }
 
-FloatRect FilterOperations::mapRect(const FloatRect& rect) const {
-  auto accumulateMappedRect = [](const FloatRect& rect,
-                                 const Member<FilterOperation>& op) {
-    return op->mapRect(rect);
+FloatRect FilterOperations::MapRect(const FloatRect& rect) const {
+  auto accumulate_mapped_rect = [](const FloatRect& rect,
+                                   const Member<FilterOperation>& op) {
+    return op->MapRect(rect);
   };
-  return std::accumulate(m_operations.begin(), m_operations.end(), rect,
-                         accumulateMappedRect);
+  return std::accumulate(operations_.begin(), operations_.end(), rect,
+                         accumulate_mapped_rect);
 }
 
-bool FilterOperations::hasFilterThatAffectsOpacity() const {
-  for (size_t i = 0; i < m_operations.size(); ++i) {
-    if (m_operations[i]->affectsOpacity())
+bool FilterOperations::HasFilterThatAffectsOpacity() const {
+  for (size_t i = 0; i < operations_.size(); ++i) {
+    if (operations_[i]->AffectsOpacity())
       return true;
   }
   return false;
 }
 
-bool FilterOperations::hasFilterThatMovesPixels() const {
-  for (size_t i = 0; i < m_operations.size(); ++i) {
-    if (m_operations[i]->movesPixels())
+bool FilterOperations::HasFilterThatMovesPixels() const {
+  for (size_t i = 0; i < operations_.size(); ++i) {
+    if (operations_[i]->MovesPixels())
       return true;
   }
   return false;
 }
 
-void FilterOperations::addClient(SVGResourceClient* client) const {
-  for (FilterOperation* operation : m_operations) {
-    if (operation->type() == FilterOperation::REFERENCE)
-      toReferenceFilterOperation(*operation).addClient(client);
+void FilterOperations::AddClient(SVGResourceClient* client) const {
+  for (FilterOperation* operation : operations_) {
+    if (operation->GetType() == FilterOperation::REFERENCE)
+      ToReferenceFilterOperation(*operation).AddClient(client);
   }
 }
 
-void FilterOperations::removeClient(SVGResourceClient* client) const {
-  for (FilterOperation* operation : m_operations) {
-    if (operation->type() == FilterOperation::REFERENCE)
-      toReferenceFilterOperation(*operation).removeClient(client);
+void FilterOperations::RemoveClient(SVGResourceClient* client) const {
+  for (FilterOperation* operation : operations_) {
+    if (operation->GetType() == FilterOperation::REFERENCE)
+      ToReferenceFilterOperation(*operation).RemoveClient(client);
   }
 }
 

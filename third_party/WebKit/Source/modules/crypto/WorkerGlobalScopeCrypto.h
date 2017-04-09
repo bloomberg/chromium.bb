@@ -46,7 +46,7 @@ class WorkerGlobalScopeCrypto final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeCrypto);
 
  public:
-  static WorkerGlobalScopeCrypto& from(Supplementable<WorkerGlobalScope>&);
+  static WorkerGlobalScopeCrypto& From(Supplementable<WorkerGlobalScope>&);
   static Crypto* crypto(Supplementable<WorkerGlobalScope>&);
   Crypto* crypto() const;
 
@@ -54,9 +54,9 @@ class WorkerGlobalScopeCrypto final
 
  private:
   WorkerGlobalScopeCrypto();
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  mutable Member<Crypto> m_crypto;
+  mutable Member<Crypto> crypto_;
 };
 
 }  // namespace blink

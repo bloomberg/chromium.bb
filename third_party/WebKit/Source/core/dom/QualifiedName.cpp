@@ -44,32 +44,32 @@ static_assert(sizeof(QualifiedName::QualifiedNameImpl) ==
 using QualifiedNameCache =
     HashSet<QualifiedName::QualifiedNameImpl*, QualifiedNameHash>;
 
-static QualifiedNameCache& qualifiedNameCache() {
+static QualifiedNameCache& GetQualifiedNameCache() {
   // This code is lockless and thus assumes it all runs on one thread!
-  DCHECK(isMainThread());
-  static QualifiedNameCache* gNameCache = new QualifiedNameCache;
-  return *gNameCache;
+  DCHECK(IsMainThread());
+  static QualifiedNameCache* g_name_cache = new QualifiedNameCache;
+  return *g_name_cache;
 }
 
 struct QNameComponentsTranslator {
-  static unsigned hash(const QualifiedNameData& data) {
-    return hashComponents(data.m_components);
+  static unsigned GetHash(const QualifiedNameData& data) {
+    return HashComponents(data.components_);
   }
-  static bool equal(QualifiedName::QualifiedNameImpl* name,
+  static bool Equal(QualifiedName::QualifiedNameImpl* name,
                     const QualifiedNameData& data) {
-    return data.m_components.m_prefix == name->m_prefix.impl() &&
-           data.m_components.m_localName == name->m_localName.impl() &&
-           data.m_components.m_namespace == name->m_namespace.impl();
+    return data.components_.prefix_ == name->prefix_.Impl() &&
+           data.components_.local_name_ == name->local_name_.Impl() &&
+           data.components_.namespace_ == name->namespace_.Impl();
   }
-  static void translate(QualifiedName::QualifiedNameImpl*& location,
+  static void Translate(QualifiedName::QualifiedNameImpl*& location,
                         const QualifiedNameData& data,
                         unsigned) {
-    const QualifiedNameComponents& components = data.m_components;
-    location = QualifiedName::QualifiedNameImpl::create(
-                   AtomicString(components.m_prefix),
-                   AtomicString(components.m_localName),
-                   AtomicString(components.m_namespace), data.m_isStatic)
-                   .leakRef();
+    const QualifiedNameComponents& components = data.components_;
+    location = QualifiedName::QualifiedNameImpl::Create(
+                   AtomicString(components.prefix_),
+                   AtomicString(components.local_name_),
+                   AtomicString(components.namespace_), data.is_static_)
+                   .LeakRef();
   }
 };
 
@@ -77,71 +77,75 @@ QualifiedName::QualifiedName(const AtomicString& p,
                              const AtomicString& l,
                              const AtomicString& n) {
   QualifiedNameData data = {
-      {p.impl(), l.impl(), n.isEmpty() ? nullAtom.impl() : n.impl()}, false};
-  QualifiedNameCache::AddResult addResult =
-      qualifiedNameCache().addWithTranslator<QNameComponentsTranslator>(data);
-  m_impl = addResult.isNewEntry ? adoptRef(*addResult.storedValue)
-                                : *addResult.storedValue;
+      {p.Impl(), l.Impl(), n.IsEmpty() ? g_null_atom.Impl() : n.Impl()}, false};
+  QualifiedNameCache::AddResult add_result =
+      GetQualifiedNameCache().AddWithTranslator<QNameComponentsTranslator>(
+          data);
+  impl_ = add_result.is_new_entry ? AdoptRef(*add_result.stored_value)
+                                  : *add_result.stored_value;
 }
 
 QualifiedName::QualifiedName(const AtomicString& p,
                              const AtomicString& l,
                              const AtomicString& n,
-                             bool isStatic) {
-  QualifiedNameData data = {{p.impl(), l.impl(), n.impl()}, isStatic};
-  QualifiedNameCache::AddResult addResult =
-      qualifiedNameCache().addWithTranslator<QNameComponentsTranslator>(data);
-  m_impl = addResult.isNewEntry ? adoptRef(*addResult.storedValue)
-                                : *addResult.storedValue;
+                             bool is_static) {
+  QualifiedNameData data = {{p.Impl(), l.Impl(), n.Impl()}, is_static};
+  QualifiedNameCache::AddResult add_result =
+      GetQualifiedNameCache().AddWithTranslator<QNameComponentsTranslator>(
+          data);
+  impl_ = add_result.is_new_entry ? AdoptRef(*add_result.stored_value)
+                                  : *add_result.stored_value;
 }
 
 QualifiedName::~QualifiedName() {}
 
 QualifiedName::QualifiedNameImpl::~QualifiedNameImpl() {
-  qualifiedNameCache().erase(this);
+  GetQualifiedNameCache().erase(this);
 }
 
-String QualifiedName::toString() const {
-  String local = localName();
-  if (hasPrefix())
-    return prefix().getString() + ":" + local;
+String QualifiedName::ToString() const {
+  String local = LocalName();
+  if (HasPrefix())
+    return Prefix().GetString() + ":" + local;
   return local;
 }
 
 // Global init routines
-DEFINE_GLOBAL(QualifiedName, anyName);
-DEFINE_GLOBAL(QualifiedName, nullName);
+DEFINE_GLOBAL(QualifiedName, g_any_name);
+DEFINE_GLOBAL(QualifiedName, g_null_name);
 
-void QualifiedName::initAndReserveCapacityForSize(unsigned size) {
-  DCHECK(starAtom.impl());
-  qualifiedNameCache().reserveCapacityForSize(size +
-                                              2 /*starAtom and nullAtom */);
-  new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom, true);
-  new ((void*)&nullName) QualifiedName(nullAtom, nullAtom, nullAtom, true);
+void QualifiedName::InitAndReserveCapacityForSize(unsigned size) {
+  DCHECK(g_star_atom.Impl());
+  GetQualifiedNameCache().ReserveCapacityForSize(size +
+                                                 2 /*starAtom and nullAtom */);
+  new ((void*)&g_any_name)
+      QualifiedName(g_null_atom, g_star_atom, g_star_atom, true);
+  new ((void*)&g_null_name)
+      QualifiedName(g_null_atom, g_null_atom, g_null_atom, true);
 }
 
-const AtomicString& QualifiedName::localNameUpper() const {
-  if (!m_impl->m_localNameUpper)
-    m_impl->m_localNameUpper = m_impl->m_localName.upperASCII();
-  return m_impl->m_localNameUpper;
+const AtomicString& QualifiedName::LocalNameUpper() const {
+  if (!impl_->local_name_upper_)
+    impl_->local_name_upper_ = impl_->local_name_.UpperASCII();
+  return impl_->local_name_upper_;
 }
 
-unsigned QualifiedName::QualifiedNameImpl::computeHash() const {
-  QualifiedNameComponents components = {m_prefix.impl(), m_localName.impl(),
-                                        m_namespace.impl()};
-  return hashComponents(components);
+unsigned QualifiedName::QualifiedNameImpl::ComputeHash() const {
+  QualifiedNameComponents components = {prefix_.Impl(), local_name_.Impl(),
+                                        namespace_.Impl()};
+  return HashComponents(components);
 }
 
-void QualifiedName::createStatic(void* targetAddress,
+void QualifiedName::CreateStatic(void* target_address,
                                  StringImpl* name,
-                                 const AtomicString& nameNamespace) {
-  new (targetAddress)
-      QualifiedName(nullAtom, AtomicString(name), nameNamespace, true);
+                                 const AtomicString& name_namespace) {
+  new (target_address)
+      QualifiedName(g_null_atom, AtomicString(name), name_namespace, true);
 }
 
-void QualifiedName::createStatic(void* targetAddress, StringImpl* name) {
-  new (targetAddress)
-      QualifiedName(nullAtom, AtomicString(name), nullAtom, true);
+void QualifiedName::CreateStatic(void* target_address, StringImpl* name) {
+  new (target_address)
+      QualifiedName(g_null_atom, AtomicString(name), g_null_atom, true);
 }
 
 }  // namespace blink

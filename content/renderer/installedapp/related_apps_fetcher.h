@@ -24,7 +24,7 @@ class CONTENT_EXPORT RelatedAppsFetcher
   ~RelatedAppsFetcher() override;
 
   // blink::WebRelatedAppsFetcher overrides:
-  void getManifestRelatedApplications(
+  void GetManifestRelatedApplications(
       std::unique_ptr<blink::WebCallbacks<
           const blink::WebVector<blink::WebRelatedApplication>&,
           void>> callbacks) override;

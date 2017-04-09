@@ -75,28 +75,28 @@ class SVGPreserveAspectRatioTearOff final
     kSvgMeetorsliceSlice = SVGPreserveAspectRatio::kSvgMeetorsliceSlice
   };
 
-  static SVGPreserveAspectRatioTearOff* create(
+  static SVGPreserveAspectRatioTearOff* Create(
       SVGPreserveAspectRatio* target,
-      SVGElement* contextElement,
-      PropertyIsAnimValType propertyIsAnimVal,
-      const QualifiedName& attributeName = QualifiedName::null()) {
-    return new SVGPreserveAspectRatioTearOff(target, contextElement,
-                                             propertyIsAnimVal, attributeName);
+      SVGElement* context_element,
+      PropertyIsAnimValType property_is_anim_val,
+      const QualifiedName& attribute_name = QualifiedName::Null()) {
+    return new SVGPreserveAspectRatioTearOff(
+        target, context_element, property_is_anim_val, attribute_name);
   }
 
   void setAlign(unsigned short, ExceptionState&);
-  unsigned short align() { return target()->align(); }
+  unsigned short align() { return Target()->Align(); }
   void setMeetOrSlice(unsigned short, ExceptionState&);
-  unsigned short meetOrSlice() { return target()->meetOrSlice(); }
+  unsigned short meetOrSlice() { return Target()->MeetOrSlice(); }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   SVGPreserveAspectRatioTearOff(
       SVGPreserveAspectRatio*,
-      SVGElement* contextElement,
+      SVGElement* context_element,
       PropertyIsAnimValType,
-      const QualifiedName& attributeName = QualifiedName::null());
+      const QualifiedName& attribute_name = QualifiedName::Null());
 };
 
 }  // namespace blink

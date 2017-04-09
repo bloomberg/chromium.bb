@@ -11,91 +11,91 @@
 namespace blink {
 
 TEST(StyleSheetContentsTest, InsertMediaRule) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
 
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-  styleSheet->parseString("@namespace ns url(test);");
-  EXPECT_EQ(1U, styleSheet->ruleCount());
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  style_sheet->ParseString("@namespace ns url(test);");
+  EXPECT_EQ(1U, style_sheet->RuleCount());
 
-  styleSheet->setMutable();
-  styleSheet->wrapperInsertRule(
-      CSSParser::parseRule(context, styleSheet,
+  style_sheet->SetMutable();
+  style_sheet->WrapperInsertRule(
+      CSSParser::ParseRule(context, style_sheet,
                            "@media all { div { color: pink } }"),
       0);
-  EXPECT_EQ(1U, styleSheet->ruleCount());
-  EXPECT_TRUE(styleSheet->hasMediaQueries());
+  EXPECT_EQ(1U, style_sheet->RuleCount());
+  EXPECT_TRUE(style_sheet->HasMediaQueries());
 
-  styleSheet->wrapperInsertRule(
-      CSSParser::parseRule(context, styleSheet,
+  style_sheet->WrapperInsertRule(
+      CSSParser::ParseRule(context, style_sheet,
                            "@media all { div { color: green } }"),
       1);
-  EXPECT_EQ(2U, styleSheet->ruleCount());
-  EXPECT_TRUE(styleSheet->hasMediaQueries());
+  EXPECT_EQ(2U, style_sheet->RuleCount());
+  EXPECT_TRUE(style_sheet->HasMediaQueries());
 }
 
 TEST(StyleSheetContentsTest, InsertFontFaceRule) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
 
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-  styleSheet->parseString("@namespace ns url(test);");
-  EXPECT_EQ(1U, styleSheet->ruleCount());
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  style_sheet->ParseString("@namespace ns url(test);");
+  EXPECT_EQ(1U, style_sheet->RuleCount());
 
-  styleSheet->setMutable();
-  styleSheet->wrapperInsertRule(
-      CSSParser::parseRule(context, styleSheet,
+  style_sheet->SetMutable();
+  style_sheet->WrapperInsertRule(
+      CSSParser::ParseRule(context, style_sheet,
                            "@font-face { font-family: a }"),
       0);
-  EXPECT_EQ(1U, styleSheet->ruleCount());
-  EXPECT_TRUE(styleSheet->hasFontFaceRule());
+  EXPECT_EQ(1U, style_sheet->RuleCount());
+  EXPECT_TRUE(style_sheet->HasFontFaceRule());
 
-  styleSheet->wrapperInsertRule(
-      CSSParser::parseRule(context, styleSheet,
+  style_sheet->WrapperInsertRule(
+      CSSParser::ParseRule(context, style_sheet,
                            "@font-face { font-family: b }"),
       1);
-  EXPECT_EQ(2U, styleSheet->ruleCount());
-  EXPECT_TRUE(styleSheet->hasFontFaceRule());
+  EXPECT_EQ(2U, style_sheet->RuleCount());
+  EXPECT_TRUE(style_sheet->HasFontFaceRule());
 }
 
 TEST(StyleSheetContentsTest, HasViewportRule) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
 
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-  styleSheet->parseString("@viewport { width: 200px}");
-  EXPECT_EQ(1U, styleSheet->ruleCount());
-  EXPECT_TRUE(styleSheet->hasViewportRule());
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  style_sheet->ParseString("@viewport { width: 200px}");
+  EXPECT_EQ(1U, style_sheet->RuleCount());
+  EXPECT_TRUE(style_sheet->HasViewportRule());
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
 
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-  styleSheet->parseString("body { color: pink }");
-  EXPECT_EQ(1U, styleSheet->ruleCount());
-  EXPECT_FALSE(styleSheet->hasViewportRule());
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  style_sheet->ParseString("body { color: pink }");
+  EXPECT_EQ(1U, style_sheet->RuleCount());
+  EXPECT_FALSE(style_sheet->HasViewportRule());
 
-  styleSheet->setMutable();
-  styleSheet->wrapperInsertRule(
-      CSSParser::parseRule(context, styleSheet, "@viewport { width: 200px }"),
+  style_sheet->SetMutable();
+  style_sheet->WrapperInsertRule(
+      CSSParser::ParseRule(context, style_sheet, "@viewport { width: 200px }"),
       0);
-  EXPECT_EQ(2U, styleSheet->ruleCount());
-  EXPECT_TRUE(styleSheet->hasViewportRule());
+  EXPECT_EQ(2U, style_sheet->RuleCount());
+  EXPECT_TRUE(style_sheet->HasViewportRule());
 }
 
 TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertionIntoMediaRule) {
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
 
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-  styleSheet->parseString("@media {}");
-  ASSERT_EQ(1U, styleSheet->ruleCount());
-  EXPECT_FALSE(styleSheet->hasViewportRule());
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  style_sheet->ParseString("@media {}");
+  ASSERT_EQ(1U, style_sheet->RuleCount());
+  EXPECT_FALSE(style_sheet->HasViewportRule());
 
-  StyleRuleMedia* mediaRule = toStyleRuleMedia(styleSheet->ruleAt(0));
-  styleSheet->setMutable();
-  mediaRule->wrapperInsertRule(
+  StyleRuleMedia* media_rule = ToStyleRuleMedia(style_sheet->RuleAt(0));
+  style_sheet->SetMutable();
+  media_rule->WrapperInsertRule(
       0,
-      CSSParser::parseRule(context, styleSheet, "@viewport { width: 200px }"));
-  EXPECT_EQ(1U, mediaRule->childRules().size());
-  EXPECT_TRUE(styleSheet->hasViewportRule());
+      CSSParser::ParseRule(context, style_sheet, "@viewport { width: 200px }"));
+  EXPECT_EQ(1U, media_rule->ChildRules().size());
+  EXPECT_TRUE(style_sheet->HasViewportRule());
 }
 
 }  // namespace blink

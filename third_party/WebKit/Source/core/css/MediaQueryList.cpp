@@ -27,7 +27,7 @@
 
 namespace blink {
 
-MediaQueryList* MediaQueryList::create(ExecutionContext* context,
+MediaQueryList* MediaQueryList::Create(ExecutionContext* context,
                                        MediaQueryMatcher* matcher,
                                        MediaQuerySet* media) {
   return new MediaQueryList(context, matcher, media);
@@ -37,18 +37,18 @@ MediaQueryList::MediaQueryList(ExecutionContext* context,
                                MediaQueryMatcher* matcher,
                                MediaQuerySet* media)
     : ContextLifecycleObserver(context),
-      m_matcher(matcher),
-      m_media(media),
-      m_matchesDirty(true),
-      m_matches(false) {
-  m_matcher->addMediaQueryList(this);
-  updateMatches();
+      matcher_(matcher),
+      media_(media),
+      matches_dirty_(true),
+      matches_(false) {
+  matcher_->AddMediaQueryList(this);
+  UpdateMatches();
 }
 
 MediaQueryList::~MediaQueryList() {}
 
 String MediaQueryList::media() const {
-  return m_media->mediaText();
+  return media_->MediaText();
 }
 
 void MediaQueryList::addDeprecatedListener(EventListener* listener) {
@@ -65,69 +65,69 @@ void MediaQueryList::removeDeprecatedListener(EventListener* listener) {
   removeEventListener(EventTypeNames::change, listener, false);
 }
 
-void MediaQueryList::addListener(MediaQueryListListener* listener) {
+void MediaQueryList::AddListener(MediaQueryListListener* listener) {
   if (!listener)
     return;
 
-  m_listeners.insert(listener);
+  listeners_.insert(listener);
 }
 
-void MediaQueryList::removeListener(MediaQueryListListener* listener) {
+void MediaQueryList::RemoveListener(MediaQueryListListener* listener) {
   if (!listener)
     return;
 
-  m_listeners.erase(listener);
+  listeners_.erase(listener);
 }
 
-bool MediaQueryList::hasPendingActivity() const {
-  return getExecutionContext() &&
-         (m_listeners.size() || hasEventListeners(EventTypeNames::change));
+bool MediaQueryList::HasPendingActivity() const {
+  return GetExecutionContext() &&
+         (listeners_.size() || HasEventListeners(EventTypeNames::change));
 }
 
-void MediaQueryList::contextDestroyed(ExecutionContext*) {
-  m_listeners.clear();
-  removeAllEventListeners();
+void MediaQueryList::ContextDestroyed(ExecutionContext*) {
+  listeners_.Clear();
+  RemoveAllEventListeners();
 }
 
-bool MediaQueryList::mediaFeaturesChanged(
-    HeapVector<Member<MediaQueryListListener>>* listenersToNotify) {
-  m_matchesDirty = true;
-  if (!updateMatches())
+bool MediaQueryList::MediaFeaturesChanged(
+    HeapVector<Member<MediaQueryListListener>>* listeners_to_notify) {
+  matches_dirty_ = true;
+  if (!UpdateMatches())
     return false;
-  for (const auto& listener : m_listeners) {
-    listenersToNotify->push_back(listener);
+  for (const auto& listener : listeners_) {
+    listeners_to_notify->push_back(listener);
   }
-  return hasEventListeners(EventTypeNames::change);
+  return HasEventListeners(EventTypeNames::change);
 }
 
-bool MediaQueryList::updateMatches() {
-  m_matchesDirty = false;
-  if (m_matches != m_matcher->evaluate(m_media.get())) {
-    m_matches = !m_matches;
+bool MediaQueryList::UpdateMatches() {
+  matches_dirty_ = false;
+  if (matches_ != matcher_->Evaluate(media_.Get())) {
+    matches_ = !matches_;
     return true;
   }
   return false;
 }
 
 bool MediaQueryList::matches() {
-  updateMatches();
-  return m_matches;
+  UpdateMatches();
+  return matches_;
 }
 
 DEFINE_TRACE(MediaQueryList) {
-  visitor->trace(m_matcher);
-  visitor->trace(m_media);
-  visitor->trace(m_listeners);
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(matcher_);
+  visitor->Trace(media_);
+  visitor->Trace(listeners_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-const AtomicString& MediaQueryList::interfaceName() const {
+const AtomicString& MediaQueryList::InterfaceName() const {
   return EventTargetNames::MediaQueryList;
 }
 
-ExecutionContext* MediaQueryList::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
+ExecutionContext* MediaQueryList::GetExecutionContext() const {
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 }  // namespace blink

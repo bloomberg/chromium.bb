@@ -30,45 +30,45 @@ namespace blink {
 
 inline SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(SVGNames::titleTag, document),
-      m_ignoreTitleUpdatesWhenChildrenChange(false) {}
+      ignore_title_updates_when_children_change_(false) {}
 
 DEFINE_NODE_FACTORY(SVGTitleElement)
 
-Node::InsertionNotificationRequest SVGTitleElement::insertedInto(
-    ContainerNode* rootParent) {
-  SVGElement::insertedInto(rootParent);
-  if (!rootParent->isConnected())
-    return InsertionDone;
-  if (hasChildren() && document().isSVGDocument())
-    document().setTitleElement(this);
-  return InsertionDone;
+Node::InsertionNotificationRequest SVGTitleElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGElement::InsertedInto(root_parent);
+  if (!root_parent->isConnected())
+    return kInsertionDone;
+  if (HasChildren() && GetDocument().IsSVGDocument())
+    GetDocument().SetTitleElement(this);
+  return kInsertionDone;
 }
 
-void SVGTitleElement::removedFrom(ContainerNode* rootParent) {
-  SVGElement::removedFrom(rootParent);
-  if (rootParent->isConnected() && document().isSVGDocument())
-    document().removeTitle(this);
+void SVGTitleElement::RemovedFrom(ContainerNode* root_parent) {
+  SVGElement::RemovedFrom(root_parent);
+  if (root_parent->isConnected() && GetDocument().IsSVGDocument())
+    GetDocument().RemoveTitle(this);
 }
 
-void SVGTitleElement::childrenChanged(const ChildrenChange& change) {
-  SVGElement::childrenChanged(change);
-  if (isConnected() && document().isSVGDocument() &&
-      !m_ignoreTitleUpdatesWhenChildrenChange)
-    document().setTitleElement(this);
+void SVGTitleElement::ChildrenChanged(const ChildrenChange& change) {
+  SVGElement::ChildrenChanged(change);
+  if (isConnected() && GetDocument().IsSVGDocument() &&
+      !ignore_title_updates_when_children_change_)
+    GetDocument().SetTitleElement(this);
 }
 
-void SVGTitleElement::setText(const String& value) {
+void SVGTitleElement::SetText(const String& value) {
   ChildListMutationScope mutation(*this);
 
   {
     // Avoid calling Document::setTitleElement() during intermediate steps.
-    AutoReset<bool> inhibitTitleUpdateScope(
-        &m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
-    removeChildren(OmitSubtreeModifiedEvent);
+    AutoReset<bool> inhibit_title_update_scope(
+        &ignore_title_updates_when_children_change_, !value.IsEmpty());
+    RemoveChildren(kOmitSubtreeModifiedEvent);
   }
 
-  if (!value.isEmpty()) {
-    appendChild(document().createTextNode(value.impl()),
+  if (!value.IsEmpty()) {
+    AppendChild(GetDocument().createTextNode(value.Impl()),
                 IGNORE_EXCEPTION_FOR_TESTING);
   }
 }

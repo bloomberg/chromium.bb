@@ -14,16 +14,16 @@ class WebGLCompressedTextureASTC final : public WebGLExtension {
 
  public:
   typedef struct {
-    int CompressType;
-    int blockWidth;
-    int blockHeight;
+    int compress_type;
+    int block_width;
+    int block_height;
   } BlockSizeCompressASTC;
 
-  static WebGLCompressedTextureASTC* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static WebGLCompressedTextureASTC* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
+  WebGLExtensionName GetName() const override;
   static const BlockSizeCompressASTC kBlockSizeCompressASTC[];
 
  private:

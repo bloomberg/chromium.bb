@@ -39,88 +39,89 @@
 
 namespace blink {
 
-SurroundingText::SurroundingText(const Range& range, unsigned maxLength)
-    : m_startOffsetInContent(0), m_endOffsetInContent(0) {
-  initialize(range.startPosition(), range.endPosition(), maxLength);
+SurroundingText::SurroundingText(const Range& range, unsigned max_length)
+    : start_offset_in_content_(0), end_offset_in_content_(0) {
+  Initialize(range.StartPosition(), range.EndPosition(), max_length);
 }
 
-SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
-    : m_startOffsetInContent(0), m_endOffsetInContent(0) {
-  initialize(position, position, maxLength);
+SurroundingText::SurroundingText(const Position& position, unsigned max_length)
+    : start_offset_in_content_(0), end_offset_in_content_(0) {
+  Initialize(position, position, max_length);
 }
 
-void SurroundingText::initialize(const Position& startPosition,
-                                 const Position& endPosition,
-                                 unsigned maxLength) {
-  DCHECK_EQ(startPosition.document(), endPosition.document());
+void SurroundingText::Initialize(const Position& start_position,
+                                 const Position& end_position,
+                                 unsigned max_length) {
+  DCHECK_EQ(start_position.GetDocument(), end_position.GetDocument());
 
-  const unsigned halfMaxLength = maxLength / 2;
+  const unsigned half_max_length = max_length / 2;
 
-  Document* document = startPosition.document();
+  Document* document = start_position.GetDocument();
   // The position will have no document if it is null (as in no position).
   if (!document || !document->documentElement())
     return;
-  DCHECK(!document->needsLayoutTreeUpdate());
+  DCHECK(!document->NeedsLayoutTreeUpdate());
 
   // The forward range starts at the selection end and ends at the document's
   // end. It will then be updated to only contain the text in the text in the
   // right range around the selection.
-  CharacterIterator forwardIterator(
-      endPosition, Position::lastPositionInNode(document->documentElement())
-                       .parentAnchoredEquivalent(),
-      TextIteratorBehavior::Builder().setStopsOnFormControls(true).build());
+  CharacterIterator forward_iterator(
+      end_position,
+      Position::LastPositionInNode(document->documentElement())
+          .ParentAnchoredEquivalent(),
+      TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   // FIXME: why do we stop going trough the text if we were not able to select
   // something on the right?
-  if (!forwardIterator.atEnd())
-    forwardIterator.advance(maxLength - halfMaxLength);
+  if (!forward_iterator.AtEnd())
+    forward_iterator.Advance(max_length - half_max_length);
 
-  EphemeralRange forwardRange = forwardIterator.range();
-  if (forwardRange.isNull() ||
-      !Range::create(*document, endPosition, forwardRange.startPosition())
-           ->text()
+  EphemeralRange forward_range = forward_iterator.Range();
+  if (forward_range.IsNull() ||
+      !Range::Create(*document, end_position, forward_range.StartPosition())
+           ->GetText()
            .length())
     return;
 
   // Same as with the forward range but with the backward range. The range
   // starts at the document's start and ends at the selection start and will
   // be updated.
-  BackwardsCharacterIterator backwardsIterator(
-      Position::firstPositionInNode(document->documentElement())
-          .parentAnchoredEquivalent(),
-      startPosition,
-      TextIteratorBehavior::Builder().setStopsOnFormControls(true).build());
-  if (!backwardsIterator.atEnd())
-    backwardsIterator.advance(halfMaxLength);
+  BackwardsCharacterIterator backwards_iterator(
+      Position::FirstPositionInNode(document->documentElement())
+          .ParentAnchoredEquivalent(),
+      start_position,
+      TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
+  if (!backwards_iterator.AtEnd())
+    backwards_iterator.Advance(half_max_length);
 
-  m_startOffsetInContent =
-      Range::create(*document, backwardsIterator.endPosition(), startPosition)
-          ->text()
+  start_offset_in_content_ =
+      Range::Create(*document, backwards_iterator.EndPosition(), start_position)
+          ->GetText()
           .length();
-  m_endOffsetInContent =
-      Range::create(*document, backwardsIterator.endPosition(), endPosition)
-          ->text()
+  end_offset_in_content_ =
+      Range::Create(*document, backwards_iterator.EndPosition(), end_position)
+          ->GetText()
           .length();
-  m_contentRange = Range::create(*document, backwardsIterator.endPosition(),
-                                 forwardRange.startPosition());
-  DCHECK(m_contentRange);
+  content_range_ = Range::Create(*document, backwards_iterator.EndPosition(),
+                                 forward_range.StartPosition());
+  DCHECK(content_range_);
 }
 
-String SurroundingText::content() const {
-  if (m_contentRange) {
+String SurroundingText::Content() const {
+  if (content_range_) {
     // SurroundingText is created with clean layout and must not be stored
     // through DOM or style changes, so layout must still be clean here.
-    DCHECK(!m_contentRange->ownerDocument().needsLayoutTreeUpdate());
-    return m_contentRange->text();
+    DCHECK(!content_range_->OwnerDocument().NeedsLayoutTreeUpdate());
+    return content_range_->GetText();
   }
   return String();
 }
 
-unsigned SurroundingText::startOffsetInContent() const {
-  return m_startOffsetInContent;
+unsigned SurroundingText::StartOffsetInContent() const {
+  return start_offset_in_content_;
 }
 
-unsigned SurroundingText::endOffsetInContent() const {
-  return m_endOffsetInContent;
+unsigned SurroundingText::EndOffsetInContent() const {
+  return end_offset_in_content_;
 }
 
 }  // namespace blink

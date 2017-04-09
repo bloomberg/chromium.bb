@@ -14,25 +14,25 @@ namespace blink {
 
 class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
  public:
-  static PassRefPtr<PaintGeneratedImage> create(sk_sp<PaintRecord> record,
+  static PassRefPtr<PaintGeneratedImage> Create(sk_sp<PaintRecord> record,
                                                 const IntSize& size) {
-    return adoptRef(new PaintGeneratedImage(std::move(record), size));
+    return AdoptRef(new PaintGeneratedImage(std::move(record), size));
   }
   ~PaintGeneratedImage() override {}
 
  protected:
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
             ImageClampingMode) override;
-  void drawTile(GraphicsContext&, const FloatRect&) final;
+  void DrawTile(GraphicsContext&, const FloatRect&) final;
 
   PaintGeneratedImage(sk_sp<PaintRecord> record, const IntSize& size)
-      : GeneratedImage(size), m_record(std::move(record)) {}
+      : GeneratedImage(size), record_(std::move(record)) {}
 
-  sk_sp<PaintRecord> m_record;
+  sk_sp<PaintRecord> record_;
 };
 
 }  // namespace blink

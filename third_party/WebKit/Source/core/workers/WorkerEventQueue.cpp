@@ -33,65 +33,65 @@
 
 namespace blink {
 
-WorkerEventQueue* WorkerEventQueue::create(
-    WorkerGlobalScope* workerGlobalScope) {
-  return new WorkerEventQueue(workerGlobalScope);
+WorkerEventQueue* WorkerEventQueue::Create(
+    WorkerGlobalScope* worker_global_scope) {
+  return new WorkerEventQueue(worker_global_scope);
 }
 
-WorkerEventQueue::WorkerEventQueue(WorkerGlobalScope* workerGlobalScope)
-    : m_workerGlobalScope(workerGlobalScope), m_isClosed(false) {}
+WorkerEventQueue::WorkerEventQueue(WorkerGlobalScope* worker_global_scope)
+    : worker_global_scope_(worker_global_scope), is_closed_(false) {}
 
 WorkerEventQueue::~WorkerEventQueue() {
-  DCHECK(m_pendingEvents.isEmpty());
+  DCHECK(pending_events_.IsEmpty());
 }
 
 DEFINE_TRACE(WorkerEventQueue) {
-  visitor->trace(m_workerGlobalScope);
-  visitor->trace(m_pendingEvents);
-  EventQueue::trace(visitor);
+  visitor->Trace(worker_global_scope_);
+  visitor->Trace(pending_events_);
+  EventQueue::Trace(visitor);
 }
 
-bool WorkerEventQueue::enqueueEvent(Event* event) {
-  if (m_isClosed)
+bool WorkerEventQueue::EnqueueEvent(Event* event) {
+  if (is_closed_)
     return false;
-  probe::asyncTaskScheduled(event->target()->getExecutionContext(),
+  probe::AsyncTaskScheduled(event->target()->GetExecutionContext(),
                             event->type(), event);
-  m_pendingEvents.insert(event);
-  m_workerGlobalScope->thread()->postTask(
+  pending_events_.insert(event);
+  worker_global_scope_->GetThread()->PostTask(
       BLINK_FROM_HERE,
-      WTF::bind(&WorkerEventQueue::dispatchEvent, wrapPersistent(this),
-                wrapWeakPersistent(event)));
+      WTF::Bind(&WorkerEventQueue::DispatchEvent, WrapPersistent(this),
+                WrapWeakPersistent(event)));
   return true;
 }
 
-bool WorkerEventQueue::cancelEvent(Event* event) {
-  if (!removeEvent(event))
+bool WorkerEventQueue::CancelEvent(Event* event) {
+  if (!RemoveEvent(event))
     return false;
-  probe::asyncTaskCanceled(event->target()->getExecutionContext(), event);
+  probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
   return true;
 }
 
-void WorkerEventQueue::close() {
-  m_isClosed = true;
-  for (const auto& event : m_pendingEvents)
-    probe::asyncTaskCanceled(event->target()->getExecutionContext(), event);
-  m_pendingEvents.clear();
+void WorkerEventQueue::Close() {
+  is_closed_ = true;
+  for (const auto& event : pending_events_)
+    probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
+  pending_events_.Clear();
 }
 
-bool WorkerEventQueue::removeEvent(Event* event) {
-  auto found = m_pendingEvents.find(event);
-  if (found == m_pendingEvents.end())
+bool WorkerEventQueue::RemoveEvent(Event* event) {
+  auto found = pending_events_.Find(event);
+  if (found == pending_events_.end())
     return false;
-  m_pendingEvents.erase(found);
+  pending_events_.erase(found);
   return true;
 }
 
-void WorkerEventQueue::dispatchEvent(Event* event) {
-  if (!event || !removeEvent(event))
+void WorkerEventQueue::DispatchEvent(Event* event) {
+  if (!event || !RemoveEvent(event))
     return;
 
-  probe::AsyncTask asyncTask(m_workerGlobalScope, event);
-  event->target()->dispatchEvent(event);
+  probe::AsyncTask async_task(worker_global_scope_, event);
+  event->target()->DispatchEvent(event);
 }
 
 }  // namespace blink

@@ -38,14 +38,14 @@ namespace blink {
 class HTMLParserReentryPermit final
     : public RefCounted<HTMLParserReentryPermit> {
  public:
-  static PassRefPtr<HTMLParserReentryPermit> create();
+  static PassRefPtr<HTMLParserReentryPermit> Create();
   ~HTMLParserReentryPermit() = default;
 
-  unsigned scriptNestingLevel() const { return m_scriptNestingLevel; }
-  bool parserPauseFlag() const { return m_parserPauseFlag; }
-  void pause() {
-    CHECK(m_scriptNestingLevel);
-    m_parserPauseFlag = true;
+  unsigned ScriptNestingLevel() const { return script_nesting_level_; }
+  bool ParserPauseFlag() const { return parser_pause_flag_; }
+  void Pause() {
+    CHECK(script_nesting_level_);
+    parser_pause_flag_ = true;
   }
 
   class ScriptNestingLevelIncrementer final {
@@ -53,25 +53,25 @@ class HTMLParserReentryPermit final
 
    public:
     explicit ScriptNestingLevelIncrementer(HTMLParserReentryPermit* permit)
-        : m_permit(permit) {
-      m_permit->m_scriptNestingLevel++;
+        : permit_(permit) {
+      permit_->script_nesting_level_++;
     }
 
     ScriptNestingLevelIncrementer(ScriptNestingLevelIncrementer&&) = default;
 
     ~ScriptNestingLevelIncrementer() {
-      m_permit->m_scriptNestingLevel--;
-      if (!m_permit->m_scriptNestingLevel)
-        m_permit->m_parserPauseFlag = false;
+      permit_->script_nesting_level_--;
+      if (!permit_->script_nesting_level_)
+        permit_->parser_pause_flag_ = false;
     }
 
    private:
-    HTMLParserReentryPermit* m_permit;
+    HTMLParserReentryPermit* permit_;
 
     DISALLOW_COPY_AND_ASSIGN(ScriptNestingLevelIncrementer);
   };
 
-  ScriptNestingLevelIncrementer incrementScriptNestingLevel() {
+  ScriptNestingLevelIncrementer IncrementScriptNestingLevel() {
     return ScriptNestingLevelIncrementer(this);
   }
 
@@ -79,10 +79,10 @@ class HTMLParserReentryPermit final
   HTMLParserReentryPermit();
 
   // https://html.spec.whatwg.org/#script-nesting-level
-  unsigned m_scriptNestingLevel;
+  unsigned script_nesting_level_;
 
   // https://html.spec.whatwg.org/#parser-pause-flag
-  bool m_parserPauseFlag;
+  bool parser_pause_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLParserReentryPermit);
 };

@@ -21,21 +21,21 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
   WTF_MAKE_NONCOPYABLE(CompositorAnimationTimeline);
 
  public:
-  static std::unique_ptr<CompositorAnimationTimeline> create() {
-    return WTF::wrapUnique(new CompositorAnimationTimeline());
+  static std::unique_ptr<CompositorAnimationTimeline> Create() {
+    return WTF::WrapUnique(new CompositorAnimationTimeline());
   }
 
   ~CompositorAnimationTimeline();
 
-  cc::AnimationTimeline* animationTimeline() const;
+  cc::AnimationTimeline* GetAnimationTimeline() const;
 
-  void playerAttached(const CompositorAnimationPlayerClient&);
-  void playerDestroyed(const CompositorAnimationPlayerClient&);
+  void PlayerAttached(const CompositorAnimationPlayerClient&);
+  void PlayerDestroyed(const CompositorAnimationPlayerClient&);
 
  private:
   CompositorAnimationTimeline();
 
-  scoped_refptr<cc::AnimationTimeline> m_animationTimeline;
+  scoped_refptr<cc::AnimationTimeline> animation_timeline_;
 };
 
 }  // namespace blink

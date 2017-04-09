@@ -29,8 +29,8 @@
 
 namespace blink {
 
-ScrollbarTheme& ScrollbarTheme::nativeTheme() {
-  return ScrollbarThemeOverlay::mobileTheme();
+ScrollbarTheme& ScrollbarTheme::NativeTheme() {
+  return ScrollbarThemeOverlay::MobileTheme();
 }
 
 }  // namespace blink

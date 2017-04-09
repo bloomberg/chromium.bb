@@ -35,14 +35,14 @@ namespace blink {
 struct GradientAttributes;
 
 enum SVGSpreadMethodType {
-  SVGSpreadMethodUnknown = 0,
-  SVGSpreadMethodPad,
-  SVGSpreadMethodReflect,
-  SVGSpreadMethodRepeat
+  kSVGSpreadMethodUnknown = 0,
+  kSVGSpreadMethodPad,
+  kSVGSpreadMethodReflect,
+  kSVGSpreadMethodRepeat
 };
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGSpreadMethodType>();
+GetStaticStringEntries<SVGSpreadMethodType>();
 
 class SVGGradientElement : public SVGElement, public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();
@@ -50,17 +50,17 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
 
  public:
   SVGAnimatedTransformList* gradientTransform() const {
-    return m_gradientTransform.get();
+    return gradient_transform_.Get();
   }
   SVGAnimatedEnumeration<SVGSpreadMethodType>* spreadMethod() const {
-    return m_spreadMethod.get();
+    return spread_method_.Get();
   }
   SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* gradientUnits() const {
-    return m_gradientUnits.get();
+    return gradient_units_.Get();
   }
 
-  const SVGGradientElement* referencedElement() const;
-  void collectCommonAttributes(GradientAttributes&) const;
+  const SVGGradientElement* ReferencedElement() const;
+  void CollectCommonAttributes(GradientAttributes&) const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -69,27 +69,27 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
 
   using VisitedSet = HeapHashSet<Member<const SVGGradientElement>>;
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
  private:
-  bool needsPendingResourceHandling() const final { return false; }
+  bool NeedsPendingResourceHandling() const final { return false; }
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  void childrenChanged(const ChildrenChange&) final;
+  void ChildrenChanged(const ChildrenChange&) final;
 
-  Vector<Gradient::ColorStop> buildStops() const;
+  Vector<Gradient::ColorStop> BuildStops() const;
 
-  Member<SVGAnimatedTransformList> m_gradientTransform;
-  Member<SVGAnimatedEnumeration<SVGSpreadMethodType>> m_spreadMethod;
-  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_gradientUnits;
+  Member<SVGAnimatedTransformList> gradient_transform_;
+  Member<SVGAnimatedEnumeration<SVGSpreadMethodType>> spread_method_;
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> gradient_units_;
 };
 
-inline bool isSVGGradientElement(const SVGElement& element) {
-  return element.hasTagName(SVGNames::radialGradientTag) ||
-         element.hasTagName(SVGNames::linearGradientTag);
+inline bool IsSVGGradientElement(const SVGElement& element) {
+  return element.HasTagName(SVGNames::radialGradientTag) ||
+         element.HasTagName(SVGNames::linearGradientTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);

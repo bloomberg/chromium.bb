@@ -29,12 +29,12 @@ class WebTaskRunner;
 // module map.
 class SingleModuleClient : public GarbageCollectedMixin {
  public:
-  virtual void notifyModuleLoadFinished(ModuleScript*) = 0;
+  virtual void NotifyModuleLoadFinished(ModuleScript*) = 0;
 };
 
 // spec: "top-level module fetch flag"
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-is-top-level
-enum class ModuleGraphLevel { TopLevelModuleFetch, DependentModuleFetch };
+enum class ModuleGraphLevel { kTopLevelModuleFetch, kDependentModuleFetch };
 
 // A Modulator is an interface for "environment settings object" concept for
 // module scripts.
@@ -46,25 +46,25 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   USING_GARBAGE_COLLECTED_MIXIN(Modulator);
 
  public:
-  static Modulator* from(ScriptState*);
+  static Modulator* From(ScriptState*);
   virtual ~Modulator();
 
-  static void setModulator(ScriptState*, Modulator*);
-  static void clearModulator(ScriptState*);
+  static void SetModulator(ScriptState*, Modulator*);
+  static void ClearModulator(ScriptState*);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  virtual ScriptModuleResolver* scriptModuleResolver() = 0;
-  virtual WebTaskRunner* taskRunner() = 0;
-  virtual ReferrerPolicy referrerPolicy() = 0;
-  virtual SecurityOrigin* securityOrigin() = 0;
+  virtual ScriptModuleResolver* GetScriptModuleResolver() = 0;
+  virtual WebTaskRunner* TaskRunner() = 0;
+  virtual ReferrerPolicy GetReferrerPolicy() = 0;
+  virtual SecurityOrigin* GetSecurityOrigin() = 0;
 
   // https://html.spec.whatwg.org/#resolve-a-module-specifier
-  static KURL resolveModuleSpecifier(const String& moduleRequest,
-                                     const KURL& baseURL);
+  static KURL ResolveModuleSpecifier(const String& module_request,
+                                     const KURL& base_url);
 
-  virtual ScriptModule compileModule(const String& script,
-                                     const String& urlStr,
+  virtual ScriptModule CompileModule(const String& script,
+                                     const String& url_str,
                                      AccessControlStatus) = 0;
 
  private:
@@ -74,7 +74,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // This is triggered from fetchSingle() implementation (which is in ModuleMap)
   // if the cached entry doesn't exist.
   // The client can be notified either synchronously or asynchronously.
-  virtual void fetchNewSingleModule(const ModuleScriptFetchRequest&,
+  virtual void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                                     ModuleGraphLevel,
                                     ModuleScriptLoaderClient*) = 0;
 };

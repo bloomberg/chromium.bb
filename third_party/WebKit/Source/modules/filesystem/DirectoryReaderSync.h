@@ -48,20 +48,20 @@ class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DirectoryReaderSync* create(DOMFileSystemBase* fileSystem,
-                                     const String& fullPath) {
-    return new DirectoryReaderSync(fileSystem, fullPath);
+  static DirectoryReaderSync* Create(DOMFileSystemBase* file_system,
+                                     const String& full_path) {
+    return new DirectoryReaderSync(file_system, full_path);
   }
 
   ~DirectoryReaderSync() override;
 
   EntrySyncHeapVector readEntries(ExceptionState&);
 
-  void addEntries(const EntrySyncHeapVector& entries) {
-    m_entries.appendVector(entries);
+  void AddEntries(const EntrySyncHeapVector& entries) {
+    entries_.AppendVector(entries);
   }
 
-  void setError(FileError::ErrorCode code) { m_errorCode = code; }
+  void SetError(FileError::ErrorCode code) { error_code_ = code; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -69,11 +69,11 @@ class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
   class EntriesCallbackHelper;
   class ErrorCallbackHelper;
 
-  DirectoryReaderSync(DOMFileSystemBase*, const String& fullPath);
+  DirectoryReaderSync(DOMFileSystemBase*, const String& full_path);
 
-  int m_callbacksId;
-  EntrySyncHeapVector m_entries;
-  FileError::ErrorCode m_errorCode;
+  int callbacks_id_;
+  EntrySyncHeapVector entries_;
+  FileError::ErrorCode error_code_;
 };
 
 }  // namespace blink

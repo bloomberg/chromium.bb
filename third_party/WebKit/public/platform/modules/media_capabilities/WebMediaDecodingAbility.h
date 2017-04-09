@@ -14,7 +14,7 @@ namespace blink {
 struct WebMediaDecodingAbility {
   bool supported = false;
   bool smooth = false;
-  bool powerEfficient = false;
+  bool power_efficient = false;
 };
 
 using WebMediaCapabilitiesQueryCallbacks =

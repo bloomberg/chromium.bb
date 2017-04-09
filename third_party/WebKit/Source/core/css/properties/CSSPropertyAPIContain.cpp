@@ -14,23 +14,23 @@ namespace blink {
 const CSSValue* CSSPropertyAPIContain::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValueID id = range.peek().id();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (id == CSSValueStrict || id == CSSValueContent) {
-    list->append(*CSSPropertyParserHelpers::consumeIdent(range));
+    list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
     return list;
   }
   while (true) {
-    CSSIdentifierValue* ident = CSSPropertyParserHelpers::consumeIdent<
+    CSSIdentifierValue* ident = CSSPropertyParserHelpers::ConsumeIdent<
         CSSValuePaint, CSSValueLayout, CSSValueStyle, CSSValueSize>(range);
     if (!ident)
       break;
-    if (list->hasValue(*ident))
+    if (list->HasValue(*ident))
       return nullptr;
-    list->append(*ident);
+    list->Append(*ident);
   }
 
   if (!list->length())

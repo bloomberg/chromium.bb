@@ -31,11 +31,11 @@ class TestCustomElementDefinitionBuilder
 
  public:
   TestCustomElementDefinitionBuilder() {}
-  bool checkConstructorIntrinsics() override { return true; }
-  bool checkConstructorNotRegistered() override { return true; }
-  bool checkPrototype() override { return true; }
-  bool rememberOriginalProperties() override { return true; }
-  CustomElementDefinition* build(const CustomElementDescriptor&) override;
+  bool CheckConstructorIntrinsics() override { return true; }
+  bool CheckConstructorNotRegistered() override { return true; }
+  bool CheckPrototype() override { return true; }
+  bool RememberOriginalProperties() override { return true; }
+  CustomElementDefinition* Build(const CustomElementDescriptor&) override;
 };
 
 class TestCustomElementDefinition : public CustomElementDefinition {
@@ -46,47 +46,48 @@ class TestCustomElementDefinition : public CustomElementDefinition {
       : CustomElementDefinition(descriptor) {}
 
   TestCustomElementDefinition(const CustomElementDescriptor& descriptor,
-                              const HashSet<AtomicString>& observedAttributes)
-      : CustomElementDefinition(descriptor, observedAttributes) {}
+                              const HashSet<AtomicString>& observed_attributes)
+      : CustomElementDefinition(descriptor, observed_attributes) {}
 
   ~TestCustomElementDefinition() override = default;
 
-  ScriptValue getConstructorForScript() override { return ScriptValue(); }
+  ScriptValue GetConstructorForScript() override { return ScriptValue(); }
 
-  bool runConstructor(Element* element) override {
-    if (constructionStack().isEmpty() || constructionStack().back() != element)
+  bool RunConstructor(Element* element) override {
+    if (GetConstructionStack().IsEmpty() ||
+        GetConstructionStack().back() != element)
       return false;
-    constructionStack().back().clear();
+    GetConstructionStack().back().Clear();
     return true;
   }
 
-  HTMLElement* createElementSync(Document& document,
+  HTMLElement* CreateElementSync(Document& document,
                                  const QualifiedName&) override {
-    return createElementForConstructor(document);
+    return CreateElementForConstructor(document);
   }
 
-  bool hasConnectedCallback() const override { return false; }
-  bool hasDisconnectedCallback() const override { return false; }
-  bool hasAdoptedCallback() const override { return false; }
+  bool HasConnectedCallback() const override { return false; }
+  bool HasDisconnectedCallback() const override { return false; }
+  bool HasAdoptedCallback() const override { return false; }
 
-  void runConnectedCallback(Element*) override {
+  void RunConnectedCallback(Element*) override {
     NOTREACHED() << "definition does not have connected callback";
   }
 
-  void runDisconnectedCallback(Element*) override {
+  void RunDisconnectedCallback(Element*) override {
     NOTREACHED() << "definition does not have disconnected callback";
   }
 
-  void runAdoptedCallback(Element*,
-                          Document* oldOwner,
-                          Document* newOwner) override {
+  void RunAdoptedCallback(Element*,
+                          Document* old_owner,
+                          Document* new_owner) override {
     NOTREACHED() << "definition does not have adopted callback";
   }
 
-  void runAttributeChangedCallback(Element*,
+  void RunAttributeChangedCallback(Element*,
                                    const QualifiedName&,
-                                   const AtomicString& oldValue,
-                                   const AtomicString& newValue) override {
+                                   const AtomicString& old_value,
+                                   const AtomicString& new_value) override {
     NOTREACHED() << "definition does not have attribute changed callback";
   }
 };
@@ -94,46 +95,46 @@ class TestCustomElementDefinition : public CustomElementDefinition {
 class CreateElement {
   STACK_ALLOCATED()
  public:
-  CreateElement(const AtomicString& localName)
-      : m_namespaceURI(HTMLNames::xhtmlNamespaceURI), m_localName(localName) {}
+  CreateElement(const AtomicString& local_name)
+      : namespace_uri_(HTMLNames::xhtmlNamespaceURI), local_name_(local_name) {}
 
-  CreateElement& inDocument(Document* document) {
-    m_document = document;
+  CreateElement& InDocument(Document* document) {
+    document_ = document;
     return *this;
   }
 
-  CreateElement& inNamespace(const AtomicString& uri) {
-    m_namespaceURI = uri;
+  CreateElement& InNamespace(const AtomicString& uri) {
+    namespace_uri_ = uri;
     return *this;
   }
 
-  CreateElement& withId(const AtomicString& id) {
-    m_attributes.push_back(std::make_pair(HTMLNames::idAttr, id));
+  CreateElement& WithId(const AtomicString& id) {
+    attributes_.push_back(std::make_pair(HTMLNames::idAttr, id));
     return *this;
   }
 
-  CreateElement& withIsAttribute(const AtomicString& value) {
-    m_attributes.push_back(std::make_pair(HTMLNames::isAttr, value));
+  CreateElement& WithIsAttribute(const AtomicString& value) {
+    attributes_.push_back(std::make_pair(HTMLNames::isAttr, value));
     return *this;
   }
 
   operator Element*() const {
-    Document* document = m_document.get();
+    Document* document = document_.Get();
     if (!document)
-      document = HTMLDocument::create();
-    NonThrowableExceptionState noExceptions;
+      document = HTMLDocument::Create();
+    NonThrowableExceptionState no_exceptions;
     Element* element =
-        document->createElementNS(m_namespaceURI, m_localName, noExceptions);
-    for (const auto& attribute : m_attributes)
+        document->createElementNS(namespace_uri_, local_name_, no_exceptions);
+    for (const auto& attribute : attributes_)
       element->setAttribute(attribute.first, attribute.second);
     return element;
   }
 
  private:
-  Member<Document> m_document;
-  AtomicString m_namespaceURI;
-  AtomicString m_localName;
-  std::vector<std::pair<QualifiedName, AtomicString>> m_attributes;
+  Member<Document> document_;
+  AtomicString namespace_uri_;
+  AtomicString local_name_;
+  std::vector<std::pair<QualifiedName, AtomicString>> attributes_;
 };
 
 }  // namespace blink

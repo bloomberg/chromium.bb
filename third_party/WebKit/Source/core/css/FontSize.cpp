@@ -36,17 +36,17 @@
 
 namespace blink {
 
-float FontSize::getComputedSizeFromSpecifiedSize(
+float FontSize::GetComputedSizeFromSpecifiedSize(
     const Document* document,
-    float zoomFactor,
-    bool isAbsoluteSize,
-    float specifiedSize,
-    ApplyMinimumFontSize applyMinimumFontSize) {
+    float zoom_factor,
+    bool is_absolute_size,
+    float specified_size,
+    ApplyMinimumFontSize apply_minimum_font_size) {
   // Text with a 0px font size should not be visible and therefore needs to be
   // exempt from minimum font size rules. Acid3 relies on this for pixel-perfect
   // rendering. This is also compatible with other browsers that have minimum
   // font size settings (e.g. Firefox).
-  if (fabsf(specifiedSize) < std::numeric_limits<float>::epsilon())
+  if (fabsf(specified_size) < std::numeric_limits<float>::epsilon())
     return 0.0f;
 
   // We support two types of minimum font size. The first is a hard override
@@ -61,42 +61,42 @@ float FontSize::getComputedSizeFromSpecifiedSize(
   // explicit pixel size that is smaller, since sites will mis-render otherwise
   // (e.g., http://www.gamespot.com with a 9px minimum).
 
-  Settings* settings = document->settings();
+  Settings* settings = document->GetSettings();
   if (!settings)
     return 1.0f;
 
-  float zoomedSize = specifiedSize * zoomFactor;
-  if (applyMinimumFontSize) {
-    int minSize = settings->getMinimumFontSize();
-    int minLogicalSize = settings->getMinimumLogicalFontSize();
+  float zoomed_size = specified_size * zoom_factor;
+  if (apply_minimum_font_size) {
+    int min_size = settings->GetMinimumFontSize();
+    int min_logical_size = settings->GetMinimumLogicalFontSize();
 
     // Apply the hard minimum first. We only apply the hard minimum if after
     // zooming we're still too small.
-    if (zoomedSize < minSize)
-      zoomedSize = minSize;
+    if (zoomed_size < min_size)
+      zoomed_size = min_size;
 
     // Now apply the "smart minimum." This minimum is also only applied if we're
     // still too small after zooming. The font size must either be relative to
     // the user default or the original size must have been acceptable. In other
     // words, we only apply the smart minimum whenever we're positive doing so
     // won't disrupt the layout.
-    if (zoomedSize < minLogicalSize &&
-        (specifiedSize >= minLogicalSize || !isAbsoluteSize))
-      zoomedSize = minLogicalSize;
+    if (zoomed_size < min_logical_size &&
+        (specified_size >= min_logical_size || !is_absolute_size))
+      zoomed_size = min_logical_size;
   }
   // Also clamp to a reasonable maximum to prevent insane font sizes from
   // causing crashes on various platforms (I'm looking at you, Windows.)
-  return std::min(maximumAllowedFontSize, zoomedSize);
+  return std::min(kMaximumAllowedFontSize, zoomed_size);
 }
 
-const int fontSizeTableMax = 16;
-const int fontSizeTableMin = 9;
-const int totalKeywords = 8;
+const int kFontSizeTableMax = 16;
+const int kFontSizeTableMin = 9;
+const int kTotalKeywords = 8;
 
 // WinIE/Nav4 table for font sizes. Designed to match the legacy font mapping
 // system of HTML.
-static const int quirksFontSizeTable[fontSizeTableMax - fontSizeTableMin +
-                                     1][totalKeywords] = {
+static const int kQuirksFontSizeTable[kFontSizeTableMax - kFontSizeTableMin +
+                                      1][kTotalKeywords] = {
     {9, 9, 9, 9, 11, 14, 18, 28},   {9, 9, 9, 10, 12, 15, 20, 31},
     {9, 9, 9, 11, 13, 17, 22, 34},  {9, 9, 10, 12, 14, 18, 24, 37},
     {9, 9, 10, 13, 16, 20, 26, 40},  // fixed font default (13)
@@ -109,8 +109,8 @@ static const int quirksFontSizeTable[fontSizeTableMax - fontSizeTableMin +
 //                      user pref
 
 // Strict mode table matches MacIE and Mozilla's settings exactly.
-static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin +
-                                     1][totalKeywords] = {
+static const int kStrictFontSizeTable[kFontSizeTableMax - kFontSizeTableMin +
+                                      1][kTotalKeywords] = {
     {9, 9, 9, 9, 11, 14, 18, 27},    {9, 9, 9, 10, 12, 15, 20, 30},
     {9, 9, 10, 11, 13, 17, 22, 33},  {9, 9, 10, 12, 14, 18, 24, 36},
     {9, 10, 12, 13, 16, 20, 26, 39},  // fixed font default (13)
@@ -124,75 +124,76 @@ static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin +
 
 // For values outside the range of the table, we use Todd Fahrner's suggested
 // scale factors for each keyword value.
-static const float fontSizeFactors[totalKeywords] = {0.60f, 0.75f, 0.89f, 1.0f,
-                                                     1.2f,  1.5f,  2.0f,  3.0f};
+static const float kFontSizeFactors[kTotalKeywords] = {
+    0.60f, 0.75f, 0.89f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f};
 
-static int inline rowFromMediumFontSizeInRange(const Settings* settings,
-                                               bool quirksMode,
-                                               bool isMonospace,
-                                               int& mediumSize) {
-  mediumSize = isMonospace ? settings->getDefaultFixedFontSize()
-                           : settings->getDefaultFontSize();
-  if (mediumSize >= fontSizeTableMin && mediumSize <= fontSizeTableMax)
-    return mediumSize - fontSizeTableMin;
+static int inline RowFromMediumFontSizeInRange(const Settings* settings,
+                                               bool quirks_mode,
+                                               bool is_monospace,
+                                               int& medium_size) {
+  medium_size = is_monospace ? settings->GetDefaultFixedFontSize()
+                             : settings->GetDefaultFontSize();
+  if (medium_size >= kFontSizeTableMin && medium_size <= kFontSizeTableMax)
+    return medium_size - kFontSizeTableMin;
   return -1;
 }
 
-float FontSize::fontSizeForKeyword(const Document* document,
+float FontSize::FontSizeForKeyword(const Document* document,
                                    unsigned keyword,
-                                   bool isMonospace) {
+                                   bool is_monospace) {
   DCHECK_GE(keyword, 1u);
   DCHECK_LE(keyword, 8u);
-  const Settings* settings = document->settings();
+  const Settings* settings = document->GetSettings();
   if (!settings)
     return 1.0f;
 
-  bool quirksMode = document->inQuirksMode();
-  int mediumSize = 0;
-  int row = rowFromMediumFontSizeInRange(settings, quirksMode, isMonospace,
-                                         mediumSize);
+  bool quirks_mode = document->InQuirksMode();
+  int medium_size = 0;
+  int row = RowFromMediumFontSizeInRange(settings, quirks_mode, is_monospace,
+                                         medium_size);
   if (row >= 0) {
     int col = (keyword - 1);
-    return quirksMode ? quirksFontSizeTable[row][col]
-                      : strictFontSizeTable[row][col];
+    return quirks_mode ? kQuirksFontSizeTable[row][col]
+                       : kStrictFontSizeTable[row][col];
   }
 
   // Value is outside the range of the table. Apply the scale factor instead.
-  float minLogicalSize = std::max(settings->getMinimumLogicalFontSize(), 1);
-  return std::max(fontSizeFactors[keyword - 1] * mediumSize, minLogicalSize);
+  float min_logical_size = std::max(settings->GetMinimumLogicalFontSize(), 1);
+  return std::max(kFontSizeFactors[keyword - 1] * medium_size,
+                  min_logical_size);
 }
 
 template <typename T>
-static int findNearestLegacyFontSize(int pixelFontSize,
+static int FindNearestLegacyFontSize(int pixel_font_size,
                                      const T* table,
                                      int multiplier) {
   // Ignore table[0] because xx-small does not correspond to any legacy font
   // size.
-  for (int i = 1; i < totalKeywords - 1; i++) {
-    if (pixelFontSize * 2 < (table[i] + table[i + 1]) * multiplier)
+  for (int i = 1; i < kTotalKeywords - 1; i++) {
+    if (pixel_font_size * 2 < (table[i] + table[i + 1]) * multiplier)
       return i;
   }
-  return totalKeywords - 1;
+  return kTotalKeywords - 1;
 }
 
-int FontSize::legacyFontSize(const Document* document,
-                             int pixelFontSize,
-                             bool isMonospace) {
-  const Settings* settings = document->settings();
+int FontSize::LegacyFontSize(const Document* document,
+                             int pixel_font_size,
+                             bool is_monospace) {
+  const Settings* settings = document->GetSettings();
   if (!settings)
     return 1;
 
-  bool quirksMode = document->inQuirksMode();
-  int mediumSize = 0;
-  int row = rowFromMediumFontSizeInRange(settings, quirksMode, isMonospace,
-                                         mediumSize);
+  bool quirks_mode = document->InQuirksMode();
+  int medium_size = 0;
+  int row = RowFromMediumFontSizeInRange(settings, quirks_mode, is_monospace,
+                                         medium_size);
   if (row >= 0)
-    return findNearestLegacyFontSize<int>(
-        pixelFontSize,
-        quirksMode ? quirksFontSizeTable[row] : strictFontSizeTable[row], 1);
+    return FindNearestLegacyFontSize<int>(
+        pixel_font_size,
+        quirks_mode ? kQuirksFontSizeTable[row] : kStrictFontSizeTable[row], 1);
 
-  return findNearestLegacyFontSize<float>(pixelFontSize, fontSizeFactors,
-                                          mediumSize);
+  return FindNearestLegacyFontSize<float>(pixel_font_size, kFontSizeFactors,
+                                          medium_size);
 }
 
 }  // namespace blink

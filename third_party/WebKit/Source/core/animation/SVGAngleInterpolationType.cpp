@@ -10,26 +10,26 @@
 
 namespace blink {
 
-InterpolationValue SVGAngleInterpolationType::maybeConvertNeutral(
+InterpolationValue SVGAngleInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::create(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
-InterpolationValue SVGAngleInterpolationType::maybeConvertSVGValue(
-    const SVGPropertyBase& svgValue) const {
-  if (toSVGAngle(svgValue).orientType()->enumValue() != SVGMarkerOrientAngle)
+InterpolationValue SVGAngleInterpolationType::MaybeConvertSVGValue(
+    const SVGPropertyBase& svg_value) const {
+  if (ToSVGAngle(svg_value).OrientType()->EnumValue() != kSVGMarkerOrientAngle)
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::create(toSVGAngle(svgValue).value()));
+      InterpolableNumber::Create(ToSVGAngle(svg_value).Value()));
 }
 
-SVGPropertyBase* SVGAngleInterpolationType::appliedSVGValue(
-    const InterpolableValue& interpolableValue,
+SVGPropertyBase* SVGAngleInterpolationType::AppliedSVGValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  double doubleValue = toInterpolableNumber(interpolableValue).value();
-  SVGAngle* result = SVGAngle::create();
-  result->newValueSpecifiedUnits(SVGAngle::kSvgAngletypeDeg, doubleValue);
+  double double_value = ToInterpolableNumber(interpolable_value).Value();
+  SVGAngle* result = SVGAngle::Create();
+  result->NewValueSpecifiedUnits(SVGAngle::kSvgAngletypeDeg, double_value);
   return result;
 }
 

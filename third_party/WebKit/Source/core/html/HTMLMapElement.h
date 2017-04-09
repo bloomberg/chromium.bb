@@ -37,23 +37,23 @@ class CORE_EXPORT HTMLMapElement final : public HTMLElement {
   DECLARE_NODE_FACTORY(HTMLMapElement);
   ~HTMLMapElement() override;
 
-  const AtomicString& getName() const { return m_name; }
+  const AtomicString& GetName() const { return name_; }
 
-  HTMLAreaElement* areaForPoint(const LayoutPoint&,
-                                const LayoutObject* containerObject);
+  HTMLAreaElement* AreaForPoint(const LayoutPoint&,
+                                const LayoutObject* container_object);
 
-  HTMLImageElement* imageElement();
+  HTMLImageElement* ImageElement();
   HTMLCollection* areas();
 
  private:
   explicit HTMLMapElement(Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
-  AtomicString m_name;
+  AtomicString name_;
 };
 
 }  // namespace blink

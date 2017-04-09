@@ -48,24 +48,24 @@ class StyledMarkupSerializer final {
                          EAnnotateForInterchange,
                          const PositionTemplate<Strategy>& start,
                          const PositionTemplate<Strategy>& end,
-                         Node* highestNodeToBeSerialized,
+                         Node* highest_node_to_be_serialized,
                          ConvertBlocksToInlines);
 
-  String createMarkup();
+  String CreateMarkup();
 
  private:
-  bool shouldAnnotate() const {
-    return m_shouldAnnotate == AnnotateForInterchange;
+  bool ShouldAnnotate() const {
+    return should_annotate_ == kAnnotateForInterchange;
   }
 
-  const PositionTemplate<Strategy> m_start;
-  const PositionTemplate<Strategy> m_end;
-  const EAbsoluteURLs m_shouldResolveURLs;
-  const EAnnotateForInterchange m_shouldAnnotate;
-  const Member<Node> m_highestNodeToBeSerialized;
-  const ConvertBlocksToInlines m_convertBlocksToInlines;
-  Member<Node> m_lastClosed;
-  Member<EditingStyle> m_wrappingStyle;
+  const PositionTemplate<Strategy> start_;
+  const PositionTemplate<Strategy> end_;
+  const EAbsoluteURLs should_resolve_ur_ls_;
+  const EAnnotateForInterchange should_annotate_;
+  const Member<Node> highest_node_to_be_serialized_;
+  const ConvertBlocksToInlines convert_blocks_to_inlines_;
+  Member<Node> last_closed_;
+  Member<EditingStyle> wrapping_style_;
 };
 
 extern template class StyledMarkupSerializer<EditingStrategy>;

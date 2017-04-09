@@ -2784,7 +2784,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // But whenever the ctrl modifier is applied zoom can be increased or
   // decreased. Except on MacOS where we never want to adjust zoom
   // with mousewheel.
-  modifiers = WebInputEvent::ControlKey;
+  modifiers = WebInputEvent::kControlKey;
   event =
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 1, modifiers, false);
   bool handled = contents()->HandleWheelEvent(event);
@@ -2797,8 +2797,8 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 #endif
 
-  modifiers = WebInputEvent::ControlKey | WebInputEvent::ShiftKey |
-      WebInputEvent::AltKey;
+  modifiers = WebInputEvent::kControlKey | WebInputEvent::kShiftKey |
+              WebInputEvent::kAltKey;
   event =
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, 2, -5, modifiers, false);
   handled = contents()->HandleWheelEvent(event);
@@ -2820,7 +2820,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // Events containing precise scrolling deltas also shouldn't result in the
   // zoom being adjusted, to avoid accidental adjustments caused by
   // two-finger-scrolling on a touchpad.
-  modifiers = WebInputEvent::ControlKey;
+  modifiers = WebInputEvent::kControlKey;
   event =
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, 0, 5, modifiers, true);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
@@ -3066,7 +3066,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   {
     NavigationController::LoadURLParams load_params(bar_url);
     load_params.referrer =
-        Referrer(GURL("http://referrer"), blink::WebReferrerPolicyDefault);
+        Referrer(GURL("http://referrer"), blink::kWebReferrerPolicyDefault);
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
     load_params.extra_headers = "content-type: text/plain";
     load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;

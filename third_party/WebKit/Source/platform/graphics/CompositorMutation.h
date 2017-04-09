@@ -14,47 +14,47 @@ namespace blink {
 
 class CompositorMutation {
  public:
-  void setOpacity(float opacity) {
-    m_mutatedFlags |= CompositorMutableProperty::kOpacity;
-    m_opacity = opacity;
+  void SetOpacity(float opacity) {
+    mutated_flags_ |= CompositorMutableProperty::kOpacity;
+    opacity_ = opacity;
   }
-  void setScrollLeft(float scrollLeft) {
-    m_mutatedFlags |= CompositorMutableProperty::kScrollLeft;
-    m_scrollLeft = scrollLeft;
+  void SetScrollLeft(float scroll_left) {
+    mutated_flags_ |= CompositorMutableProperty::kScrollLeft;
+    scroll_left_ = scroll_left;
   }
-  void setScrollTop(float scrollTop) {
-    m_mutatedFlags |= CompositorMutableProperty::kScrollTop;
-    m_scrollTop = scrollTop;
+  void SetScrollTop(float scroll_top) {
+    mutated_flags_ |= CompositorMutableProperty::kScrollTop;
+    scroll_top_ = scroll_top;
   }
-  void setTransform(const SkMatrix44& transform) {
-    m_mutatedFlags |= CompositorMutableProperty::kTransform;
-    m_transform = transform;
-  }
-
-  bool isOpacityMutated() const {
-    return m_mutatedFlags & CompositorMutableProperty::kOpacity;
-  }
-  bool isScrollLeftMutated() const {
-    return m_mutatedFlags & CompositorMutableProperty::kScrollLeft;
-  }
-  bool isScrollTopMutated() const {
-    return m_mutatedFlags & CompositorMutableProperty::kScrollTop;
-  }
-  bool isTransformMutated() const {
-    return m_mutatedFlags & CompositorMutableProperty::kTransform;
+  void SetTransform(const SkMatrix44& transform) {
+    mutated_flags_ |= CompositorMutableProperty::kTransform;
+    transform_ = transform;
   }
 
-  float opacity() const { return m_opacity; }
-  float scrollLeft() const { return m_scrollLeft; }
-  float scrollTop() const { return m_scrollTop; }
-  SkMatrix44 transform() const { return m_transform; }
+  bool IsOpacityMutated() const {
+    return mutated_flags_ & CompositorMutableProperty::kOpacity;
+  }
+  bool IsScrollLeftMutated() const {
+    return mutated_flags_ & CompositorMutableProperty::kScrollLeft;
+  }
+  bool IsScrollTopMutated() const {
+    return mutated_flags_ & CompositorMutableProperty::kScrollTop;
+  }
+  bool IsTransformMutated() const {
+    return mutated_flags_ & CompositorMutableProperty::kTransform;
+  }
+
+  float Opacity() const { return opacity_; }
+  float ScrollLeft() const { return scroll_left_; }
+  float ScrollTop() const { return scroll_top_; }
+  SkMatrix44 Transform() const { return transform_; }
 
  private:
-  uint32_t m_mutatedFlags = 0;
-  float m_opacity = 0;
-  float m_scrollLeft = 0;
-  float m_scrollTop = 0;
-  SkMatrix44 m_transform;
+  uint32_t mutated_flags_ = 0;
+  float opacity_ = 0;
+  float scroll_left_ = 0;
+  float scroll_top_ = 0;
+  SkMatrix44 transform_;
 };
 
 struct CompositorMutations {

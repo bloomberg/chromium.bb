@@ -29,60 +29,60 @@ namespace blink {
 struct GradientAttributes {
   DISALLOW_NEW();
   GradientAttributes()
-      : m_spreadMethod(SVGSpreadMethodPad),
-        m_gradientUnits(SVGUnitTypes::kSvgUnitTypeObjectboundingbox),
-        m_spreadMethodSet(false),
-        m_gradientUnitsSet(false),
-        m_gradientTransformSet(false),
-        m_stopsSet(false) {}
+      : spread_method_(kSVGSpreadMethodPad),
+        gradient_units_(SVGUnitTypes::kSvgUnitTypeObjectboundingbox),
+        spread_method_set_(false),
+        gradient_units_set_(false),
+        gradient_transform_set_(false),
+        stops_set_(false) {}
 
-  SVGSpreadMethodType spreadMethod() const {
-    return static_cast<SVGSpreadMethodType>(m_spreadMethod);
+  SVGSpreadMethodType SpreadMethod() const {
+    return static_cast<SVGSpreadMethodType>(spread_method_);
   }
-  SVGUnitTypes::SVGUnitType gradientUnits() const {
-    return static_cast<SVGUnitTypes::SVGUnitType>(m_gradientUnits);
+  SVGUnitTypes::SVGUnitType GradientUnits() const {
+    return static_cast<SVGUnitTypes::SVGUnitType>(gradient_units_);
   }
-  AffineTransform gradientTransform() const { return m_gradientTransform; }
-  const Vector<Gradient::ColorStop>& stops() const { return m_stops; }
+  AffineTransform GradientTransform() const { return gradient_transform_; }
+  const Vector<Gradient::ColorStop>& Stops() const { return stops_; }
 
-  void setSpreadMethod(SVGSpreadMethodType value) {
-    m_spreadMethod = value;
-    m_spreadMethodSet = true;
-  }
-
-  void setGradientUnits(SVGUnitTypes::SVGUnitType unitType) {
-    m_gradientUnits = unitType;
-    m_gradientUnitsSet = true;
+  void SetSpreadMethod(SVGSpreadMethodType value) {
+    spread_method_ = value;
+    spread_method_set_ = true;
   }
 
-  void setGradientTransform(const AffineTransform& value) {
-    m_gradientTransform = value;
-    m_gradientTransformSet = true;
+  void SetGradientUnits(SVGUnitTypes::SVGUnitType unit_type) {
+    gradient_units_ = unit_type;
+    gradient_units_set_ = true;
   }
 
-  void setStops(const Vector<Gradient::ColorStop>& value) {
-    m_stops = value;
-    m_stopsSet = true;
+  void SetGradientTransform(const AffineTransform& value) {
+    gradient_transform_ = value;
+    gradient_transform_set_ = true;
   }
 
-  bool hasSpreadMethod() const { return m_spreadMethodSet; }
-  bool hasGradientUnits() const { return m_gradientUnitsSet; }
-  bool hasGradientTransform() const { return m_gradientTransformSet; }
-  bool hasStops() const { return m_stopsSet; }
+  void SetStops(const Vector<Gradient::ColorStop>& value) {
+    stops_ = value;
+    stops_set_ = true;
+  }
+
+  bool HasSpreadMethod() const { return spread_method_set_; }
+  bool HasGradientUnits() const { return gradient_units_set_; }
+  bool HasGradientTransform() const { return gradient_transform_set_; }
+  bool HasStops() const { return stops_set_; }
 
  private:
   // Properties
-  AffineTransform m_gradientTransform;
-  Vector<Gradient::ColorStop> m_stops;
+  AffineTransform gradient_transform_;
+  Vector<Gradient::ColorStop> stops_;
 
-  unsigned m_spreadMethod : 2;
-  unsigned m_gradientUnits : 2;
+  unsigned spread_method_ : 2;
+  unsigned gradient_units_ : 2;
 
   // Property states
-  unsigned m_spreadMethodSet : 1;
-  unsigned m_gradientUnitsSet : 1;
-  unsigned m_gradientTransformSet : 1;
-  unsigned m_stopsSet : 1;
+  unsigned spread_method_set_ : 1;
+  unsigned gradient_units_set_ : 1;
+  unsigned gradient_transform_set_ : 1;
+  unsigned stops_set_ : 1;
 };
 
 struct SameSizeAsGradientAttributes {

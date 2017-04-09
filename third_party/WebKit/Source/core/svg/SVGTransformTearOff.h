@@ -55,21 +55,21 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>,
     kSvgTransformSkewy = blink::kSvgTransformSkewy,
   };
 
-  static SVGTransformTearOff* create(
+  static SVGTransformTearOff* Create(
       SVGTransform* target,
-      SVGElement* contextElement,
-      PropertyIsAnimValType propertyIsAnimVal,
-      const QualifiedName& attributeName = QualifiedName::null()) {
-    return new SVGTransformTearOff(target, contextElement, propertyIsAnimVal,
-                                   attributeName);
+      SVGElement* context_element,
+      PropertyIsAnimValType property_is_anim_val,
+      const QualifiedName& attribute_name = QualifiedName::Null()) {
+    return new SVGTransformTearOff(target, context_element,
+                                   property_is_anim_val, attribute_name);
   }
-  static SVGTransformTearOff* create(SVGMatrixTearOff*);
+  static SVGTransformTearOff* Create(SVGMatrixTearOff*);
 
   ~SVGTransformTearOff() override;
 
-  unsigned short transformType() { return target()->transformType(); }
+  unsigned short transformType() { return Target()->TransformType(); }
   SVGMatrixTearOff* matrix();
-  float angle() { return target()->angle(); }
+  float angle() { return Target()->Angle(); }
 
   void setMatrix(SVGMatrixTearOff*, ExceptionState&);
   void setTranslate(float tx, float ty, ExceptionState&);
@@ -84,11 +84,11 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>,
 
  private:
   SVGTransformTearOff(SVGTransform*,
-                      SVGElement* contextElement,
+                      SVGElement* context_element,
                       PropertyIsAnimValType,
-                      const QualifiedName& attributeName);
+                      const QualifiedName& attribute_name);
 
-  Member<SVGMatrixTearOff> m_matrixTearoff;
+  Member<SVGMatrixTearOff> matrix_tearoff_;
 };
 
 }  // namespace blink

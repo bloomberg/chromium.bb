@@ -40,36 +40,36 @@ class PLATFORM_EXPORT FormDataEncoder {
   // method replaces the following characters with a CRLF pair:
   // - a CR not followed by an LF
   // - an LF not preceded by a CR
-  enum Mode { NormalizeCRLF, DoNotNormalizeCRLF };
+  enum Mode { kNormalizeCRLF, kDoNotNormalizeCRLF };
 
-  static WTF::TextEncoding encodingFromAcceptCharset(
-      const String& acceptCharset,
-      const WTF::TextEncoding& fallbackEncoding);
+  static WTF::TextEncoding EncodingFromAcceptCharset(
+      const String& accept_charset,
+      const WTF::TextEncoding& fallback_encoding);
 
   // Helper functions used by HTMLFormElement for multi-part form data
-  static Vector<char> generateUniqueBoundaryString();
-  static void beginMultiPartHeader(Vector<char>&,
+  static Vector<char> GenerateUniqueBoundaryString();
+  static void BeginMultiPartHeader(Vector<char>&,
                                    const CString& boundary,
                                    const CString& name);
-  static void addBoundaryToMultiPartHeader(Vector<char>&,
+  static void AddBoundaryToMultiPartHeader(Vector<char>&,
                                            const CString& boundary,
-                                           bool isLastBoundary = false);
-  static void addFilenameToMultiPartHeader(Vector<char>&,
+                                           bool is_last_boundary = false);
+  static void AddFilenameToMultiPartHeader(Vector<char>&,
                                            const WTF::TextEncoding&,
                                            const String& filename);
-  static void addContentTypeToMultiPartHeader(Vector<char>&,
-                                              const CString& mimeType);
-  static void finishMultiPartHeader(Vector<char>&);
+  static void AddContentTypeToMultiPartHeader(Vector<char>&,
+                                              const CString& mime_type);
+  static void FinishMultiPartHeader(Vector<char>&);
 
   // Helper functions used by HTMLFormElement for non multi-part form data. Mode
   // argument is not used for TextPlain type.
-  static void addKeyValuePairAsFormData(
+  static void AddKeyValuePairAsFormData(
       Vector<char>&,
       const CString& key,
       const CString& value,
-      EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded,
-      Mode = NormalizeCRLF);
-  static void encodeStringAsFormData(Vector<char>&, const CString&, Mode);
+      EncodedFormData::EncodingType = EncodedFormData::kFormURLEncoded,
+      Mode = kNormalizeCRLF);
+  static void EncodeStringAsFormData(Vector<char>&, const CString&, Mode);
 };
 
 }  // namespace blink

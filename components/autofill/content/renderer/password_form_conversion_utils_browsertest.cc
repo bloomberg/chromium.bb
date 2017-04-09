@@ -194,14 +194,14 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     LoadWebFormFromHTML(html, &form);
 
     WebVector<WebFormControlElement> control_elements;
-    form.getFormControlElements(control_elements);
+    form.GetFormControlElements(control_elements);
     FieldValueAndPropertiesMaskMap user_input;
     for (size_t i = 0; i < control_elements.size(); ++i) {
-      WebInputElement* input_element = toWebInputElement(&control_elements[i]);
-      if (input_element->hasAttribute("set-activated-submit"))
-        input_element->setActivatedSubmit(true);
+      WebInputElement* input_element = ToWebInputElement(&control_elements[i]);
+      if (input_element->HasAttribute("set-activated-submit"))
+        input_element->SetActivatedSubmit(true);
       if (with_user_input) {
-        const base::string16 element_value = input_element->value().utf16();
+        const base::string16 element_value = input_element->Value().Utf16();
         user_input[control_elements[i]] =
             std::make_pair(base::MakeUnique<base::string16>(element_value), 0U);
       }
@@ -246,7 +246,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     ASSERT_NE(nullptr, frame);
 
     WebVector<WebFormElement> forms;
-    frame->document().forms(forms);
+    frame->GetDocument().Forms(forms);
     ASSERT_EQ(1U, forms.size());
 
     *form = forms[0];
@@ -1394,7 +1394,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
     LoadWebFormFromHTML(html, &form);
     std::vector<WebFormControlElement> control_elements;
     WebVector<blink::WebFormControlElement> web_control_elements;
-    form.getFormControlElements(web_control_elements);
+    form.GetFormControlElements(web_control_elements);
     control_elements.assign(web_control_elements.begin(),
                             web_control_elements.end());
     EXPECT_EQ(test_case.expected_form_is_reauth,

@@ -29,8 +29,8 @@
 
 namespace WTF {
 
-inline bool HashTraits<String>::isEmptyValue(const String& value) {
-  return value.isNull();
+inline bool HashTraits<String>::IsEmptyValue(const String& value) {
+  return value.IsNull();
 }
 
 // The hash() functions on StringHash and CaseFoldingHash do not support null
@@ -44,93 +44,98 @@ inline bool HashTraits<String>::isEmptyValue(const String& value) {
 
 struct StringHash {
   STATIC_ONLY(StringHash);
-  static unsigned hash(StringImpl* key) { return key->hash(); }
-  static inline bool equal(const StringImpl* a, const StringImpl* b) {
-    return equalNonNull(a, b);
+  static unsigned GetHash(StringImpl* key) { return key->GetHash(); }
+  static inline bool Equal(const StringImpl* a, const StringImpl* b) {
+    return EqualNonNull(a, b);
   }
 
-  static unsigned hash(const RefPtr<StringImpl>& key) { return key->hash(); }
-  static bool equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
-    return equal(a.get(), b.get());
+  static unsigned GetHash(const RefPtr<StringImpl>& key) {
+    return key->GetHash();
+  }
+  static bool Equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
+    return Equal(a.Get(), b.Get());
   }
 
-  static unsigned hash(const String& key) { return key.impl()->hash(); }
-  static bool equal(const String& a, const String& b) {
-    return equal(a.impl(), b.impl());
+  static unsigned GetHash(const String& key) { return key.Impl()->GetHash(); }
+  static bool Equal(const String& a, const String& b) {
+    return Equal(a.Impl(), b.Impl());
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
 class CaseFoldingHash {
   STATIC_ONLY(CaseFoldingHash);
 
  public:
-  static unsigned hash(const UChar* data, unsigned length) {
-    return StringHasher::computeHashAndMaskTop8Bits<UChar, foldCase<UChar>>(
+  static unsigned GetHash(const UChar* data, unsigned length) {
+    return StringHasher::ComputeHashAndMaskTop8Bits<UChar, FoldCase<UChar>>(
         data, length);
   }
 
-  static unsigned hash(StringImpl* str) {
-    if (str->is8Bit())
-      return hash(str->characters8(), str->length());
-    return hash(str->characters16(), str->length());
+  static unsigned GetHash(StringImpl* str) {
+    if (str->Is8Bit())
+      return GetHash(str->Characters8(), str->length());
+    return GetHash(str->Characters16(), str->length());
   }
 
-  static unsigned hash(const LChar* data, unsigned length) {
-    return StringHasher::computeHashAndMaskTop8Bits<LChar, foldCase<LChar>>(
+  static unsigned GetHash(const LChar* data, unsigned length) {
+    return StringHasher::ComputeHashAndMaskTop8Bits<LChar, FoldCase<LChar>>(
         data, length);
   }
 
-  static inline unsigned hash(const char* data, unsigned length) {
-    return CaseFoldingHash::hash(reinterpret_cast<const LChar*>(data), length);
+  static inline unsigned GetHash(const char* data, unsigned length) {
+    return CaseFoldingHash::GetHash(reinterpret_cast<const LChar*>(data),
+                                    length);
   }
 
-  static inline unsigned hash(const char* data) {
-    return CaseFoldingHash::hash(reinterpret_cast<const LChar*>(data),
-                                 strlen(data));
+  static inline unsigned GetHash(const char* data) {
+    return CaseFoldingHash::GetHash(reinterpret_cast<const LChar*>(data),
+                                    strlen(data));
   }
 
-  static inline bool equal(const StringImpl* a, const StringImpl* b) {
+  static inline bool Equal(const StringImpl* a, const StringImpl* b) {
     DCHECK(a);
     DCHECK(b);
     // Save one branch inside each StringView by derefing the StringImpl,
     // and another branch inside the compare function by skipping the null
     // checks.
-    return equalIgnoringCaseAndNullity(*a, *b);
+    return EqualIgnoringCaseAndNullity(*a, *b);
   }
 
-  static unsigned hash(const RefPtr<StringImpl>& key) {
-    return hash(key.get());
+  static unsigned GetHash(const RefPtr<StringImpl>& key) {
+    return GetHash(key.Get());
   }
 
-  static bool equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
-    return equal(a.get(), b.get());
+  static bool Equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
+    return Equal(a.Get(), b.Get());
   }
 
-  static unsigned hash(const String& key) { return hash(key.impl()); }
-  static unsigned hash(const AtomicString& key) { return hash(key.impl()); }
-  static bool equal(const String& a, const String& b) {
-    return equal(a.impl(), b.impl());
+  static unsigned GetHash(const String& key) { return GetHash(key.Impl()); }
+  static unsigned GetHash(const AtomicString& key) {
+    return GetHash(key.Impl());
   }
-  static bool equal(const AtomicString& a, const AtomicString& b) {
-    return (a == b) || equal(a.impl(), b.impl());
+  static bool Equal(const String& a, const String& b) {
+    return Equal(a.Impl(), b.Impl());
+  }
+  static bool Equal(const AtomicString& a, const AtomicString& b) {
+    return (a == b) || Equal(a.Impl(), b.Impl());
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safe_to_compare_to_empty_or_deleted = false;
 
  private:
   // Private so no one uses this in the belief that it will return the
   // correctly-folded code point in all cases (see comment below).
   template <typename T>
-  static inline UChar foldCase(T ch) {
+  static inline UChar FoldCase(T ch) {
     if (std::is_same<T, LChar>::value)
-      return StringImpl::latin1CaseFoldTable[ch];
+      return StringImpl::kLatin1CaseFoldTable[ch];
     // It's possible for WTF::Unicode::foldCase() to return a 32-bit value
     // that's not representable as a UChar.  However, since this is rare and
     // deterministic, and the result of this is merely used for hashing, go
     // ahead and clamp the value.
-    return static_cast<UChar>(WTF::Unicode::foldCase(ch));
+    return static_cast<UChar>(WTF::Unicode::FoldCase(ch));
   }
 };
 
@@ -139,18 +144,18 @@ class CaseFoldingHash {
 // but all our current uses of it are for strings.
 struct AlreadyHashed : IntHash<unsigned> {
   STATIC_ONLY(AlreadyHashed);
-  static unsigned hash(unsigned key) { return key; }
+  static unsigned GetHash(unsigned key) { return key; }
 
   // To use a hash value as a key for a hash table, we need to eliminate the
   // "deleted" value, which is negative one. That could be done by changing
   // the string hash function to never generate negative one, but this works
   // and is still relatively efficient.
-  static unsigned avoidDeletedValue(unsigned hash) {
+  static unsigned AvoidDeletedValue(unsigned hash) {
     DCHECK(hash);
-    unsigned newHash = hash | (!(hash + 1) << 31);
-    DCHECK(newHash);
-    DCHECK_NE(newHash, 0xFFFFFFFF);
-    return newHash;
+    unsigned new_hash = hash | (!(hash + 1) << 31);
+    DCHECK(new_hash);
+    DCHECK_NE(new_hash, 0xFFFFFFFF);
+    return new_hash;
   }
 };
 

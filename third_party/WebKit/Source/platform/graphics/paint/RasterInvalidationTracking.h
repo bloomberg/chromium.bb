@@ -23,10 +23,10 @@ struct RasterInvalidationInfo {
   // This is for comparison only. Don't dereference because the client may have
   // died.
   const DisplayItemClient* client;
-  String clientDebugName;
+  String client_debug_name;
   IntRect rect;
   PaintInvalidationReason reason;
-  RasterInvalidationInfo() : reason(PaintInvalidationFull) {}
+  RasterInvalidationInfo() : reason(kPaintInvalidationFull) {}
 };
 
 inline bool operator==(const RasterInvalidationInfo& a,
@@ -38,44 +38,44 @@ struct UnderPaintInvalidation {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   int x;
   int y;
-  SkColor oldPixel;
-  SkColor newPixel;
+  SkColor old_pixel;
+  SkColor new_pixel;
 };
 
 struct PLATFORM_EXPORT RasterInvalidationTracking {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  Vector<RasterInvalidationInfo> trackedRasterInvalidations;
-  sk_sp<PaintRecord> lastPaintedRecord;
-  IntRect lastInterestRect;
-  Region rasterInvalidationRegionSinceLastPaint;
-  Vector<UnderPaintInvalidation> underPaintInvalidations;
+  Vector<RasterInvalidationInfo> tracked_raster_invalidations;
+  sk_sp<PaintRecord> last_painted_record;
+  IntRect last_interest_rect;
+  Region raster_invalidation_region_since_last_paint;
+  Vector<UnderPaintInvalidation> under_paint_invalidations;
 
-  void asJSON(JSONObject*);
+  void AsJSON(JSONObject*);
 };
 
 template <class TargetClass>
 class PLATFORM_EXPORT RasterInvalidationTrackingMap {
  public:
-  void asJSON(TargetClass* key, JSONObject* json) {
-    auto it = m_invalidationTrackingMap.find(key);
-    if (it != m_invalidationTrackingMap.end())
-      it->value.asJSON(json);
+  void AsJSON(TargetClass* key, JSONObject* json) {
+    auto it = invalidation_tracking_map_.Find(key);
+    if (it != invalidation_tracking_map_.end())
+      it->value.AsJSON(json);
   }
 
-  void remove(TargetClass* key) {
-    auto it = m_invalidationTrackingMap.find(key);
-    if (it != m_invalidationTrackingMap.end())
-      m_invalidationTrackingMap.erase(it);
+  void Remove(TargetClass* key) {
+    auto it = invalidation_tracking_map_.Find(key);
+    if (it != invalidation_tracking_map_.end())
+      invalidation_tracking_map_.erase(it);
   }
 
-  RasterInvalidationTracking& add(TargetClass* key) {
-    return m_invalidationTrackingMap.insert(key, RasterInvalidationTracking())
-        .storedValue->value;
+  RasterInvalidationTracking& Add(TargetClass* key) {
+    return invalidation_tracking_map_.insert(key, RasterInvalidationTracking())
+        .stored_value->value;
   }
 
-  RasterInvalidationTracking* find(TargetClass* key) {
-    auto it = m_invalidationTrackingMap.find(key);
-    if (it == m_invalidationTrackingMap.end())
+  RasterInvalidationTracking* Find(TargetClass* key) {
+    auto it = invalidation_tracking_map_.Find(key);
+    if (it == invalidation_tracking_map_.end())
       return nullptr;
     return &it->value;
   }
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT RasterInvalidationTrackingMap {
  private:
   typedef HashMap<TargetClass*, RasterInvalidationTracking>
       InvalidationTrackingMap;
-  InvalidationTrackingMap m_invalidationTrackingMap;
+  InvalidationTrackingMap invalidation_tracking_map_;
 };
 
 }  // namespace blink

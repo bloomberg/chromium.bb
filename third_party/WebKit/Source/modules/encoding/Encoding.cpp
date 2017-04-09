@@ -8,7 +8,7 @@ namespace blink {
 
 namespace Encoding {
 
-bool isASCIIWhiteSpace(UChar c) {
+bool IsASCIIWhiteSpace(UChar c) {
   // From Encoding Standard:
   // "The ASCII whitespace are code points U+0009, U+000A, U+000C, U+000D, and
   // U+0020."

@@ -11,82 +11,82 @@
 
 namespace blink {
 
-HTMLImportTreeRoot* HTMLImportTreeRoot::create(Document* document) {
+HTMLImportTreeRoot* HTMLImportTreeRoot::Create(Document* document) {
   return new HTMLImportTreeRoot(document);
 }
 
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
-    : HTMLImport(HTMLImport::Sync),
-      m_document(document),
-      m_recalcTimer(
-          TaskRunnerHelper::get(TaskType::UnspecedTimer, document->frame()),
+    : HTMLImport(HTMLImport::kSync),
+      document_(document),
+      recalc_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document->GetFrame()),
           this,
-          &HTMLImportTreeRoot::recalcTimerFired) {
-  scheduleRecalcState();  // This recomputes initial state.
+          &HTMLImportTreeRoot::RecalcTimerFired) {
+  ScheduleRecalcState();  // This recomputes initial state.
 }
 
 HTMLImportTreeRoot::~HTMLImportTreeRoot() {}
 
-void HTMLImportTreeRoot::dispose() {
-  for (const auto& importChild : m_imports)
-    importChild->dispose();
-  m_imports.clear();
-  m_document = nullptr;
-  m_recalcTimer.stop();
+void HTMLImportTreeRoot::Dispose() {
+  for (const auto& import_child : imports_)
+    import_child->Dispose();
+  imports_.Clear();
+  document_ = nullptr;
+  recalc_timer_.Stop();
 }
 
-Document* HTMLImportTreeRoot::document() const {
-  return m_document;
+Document* HTMLImportTreeRoot::GetDocument() const {
+  return document_;
 }
 
-bool HTMLImportTreeRoot::hasFinishedLoading() const {
-  return !m_document->parsing() &&
-         m_document->styleEngine().haveScriptBlockingStylesheetsLoaded();
+bool HTMLImportTreeRoot::HasFinishedLoading() const {
+  return !document_->Parsing() &&
+         document_->GetStyleEngine().HaveScriptBlockingStylesheetsLoaded();
 }
 
-void HTMLImportTreeRoot::stateWillChange() {
-  scheduleRecalcState();
+void HTMLImportTreeRoot::StateWillChange() {
+  ScheduleRecalcState();
 }
 
-void HTMLImportTreeRoot::stateDidChange() {
-  HTMLImport::stateDidChange();
+void HTMLImportTreeRoot::StateDidChange() {
+  HTMLImport::StateDidChange();
 
-  if (!state().isReady())
+  if (!GetState().IsReady())
     return;
-  if (LocalFrame* frame = m_document->frame())
-    frame->loader().checkCompleted();
+  if (LocalFrame* frame = document_->GetFrame())
+    frame->Loader().CheckCompleted();
 }
 
-void HTMLImportTreeRoot::scheduleRecalcState() {
-  DCHECK(m_document);
-  if (m_recalcTimer.isActive() || !m_document->isActive())
+void HTMLImportTreeRoot::ScheduleRecalcState() {
+  DCHECK(document_);
+  if (recalc_timer_.IsActive() || !document_->IsActive())
     return;
-  m_recalcTimer.startOneShot(0, BLINK_FROM_HERE);
+  recalc_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-HTMLImportChild* HTMLImportTreeRoot::add(HTMLImportChild* child) {
-  m_imports.push_back(child);
-  return m_imports.back().get();
+HTMLImportChild* HTMLImportTreeRoot::Add(HTMLImportChild* child) {
+  imports_.push_back(child);
+  return imports_.back().Get();
 }
 
-HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const {
-  for (const auto& candidate : m_imports) {
-    if (equalIgnoringFragmentIdentifier(candidate->url(), url))
+HTMLImportChild* HTMLImportTreeRoot::Find(const KURL& url) const {
+  for (const auto& candidate : imports_) {
+    if (EqualIgnoringFragmentIdentifier(candidate->Url(), url))
       return candidate;
   }
 
   return nullptr;
 }
 
-void HTMLImportTreeRoot::recalcTimerFired(TimerBase*) {
-  DCHECK(m_document);
-  HTMLImport::recalcTreeState(this);
+void HTMLImportTreeRoot::RecalcTimerFired(TimerBase*) {
+  DCHECK(document_);
+  HTMLImport::RecalcTreeState(this);
 }
 
 DEFINE_TRACE(HTMLImportTreeRoot) {
-  visitor->trace(m_document);
-  visitor->trace(m_imports);
-  HTMLImport::trace(visitor);
+  visitor->Trace(document_);
+  visitor->Trace(imports_);
+  HTMLImport::Trace(visitor);
 }
 
 }  // namespace blink

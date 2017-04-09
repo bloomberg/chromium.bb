@@ -13,21 +13,22 @@ namespace blink {
 const CSSValue* CSSPropertyAPITransformOrigin::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValue* resultX = nullptr;
-  CSSValue* resultY = nullptr;
-  if (CSSPropertyParserHelpers::consumeOneOrTwoValuedPosition(
-          range, context.mode(),
-          CSSPropertyParserHelpers::UnitlessQuirk::Forbid, resultX, resultY)) {
-    CSSValueList* list = CSSValueList::createSpaceSeparated();
-    list->append(*resultX);
-    list->append(*resultY);
-    CSSValue* resultZ = CSSPropertyParserHelpers::consumeLength(
-        range, context.mode(), ValueRangeAll);
-    if (!resultZ) {
-      resultZ =
-          CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
+  CSSValue* result_x = nullptr;
+  CSSValue* result_y = nullptr;
+  if (CSSPropertyParserHelpers::ConsumeOneOrTwoValuedPosition(
+          range, context.Mode(),
+          CSSPropertyParserHelpers::UnitlessQuirk::kForbid, result_x,
+          result_y)) {
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    list->Append(*result_x);
+    list->Append(*result_y);
+    CSSValue* result_z = CSSPropertyParserHelpers::ConsumeLength(
+        range, context.Mode(), kValueRangeAll);
+    if (!result_z) {
+      result_z =
+          CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
     }
-    list->append(*resultZ);
+    list->Append(*result_z);
     return list;
   }
   return nullptr;

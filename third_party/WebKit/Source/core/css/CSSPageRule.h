@@ -36,14 +36,14 @@ class CORE_EXPORT CSSPageRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSPageRule* create(StyleRulePage* rule, CSSStyleSheet* sheet) {
+  static CSSPageRule* Create(StyleRulePage* rule, CSSStyleSheet* sheet) {
     return new CSSPageRule(rule, sheet);
   }
 
   ~CSSPageRule() override;
 
   String cssText() const override;
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
 
   CSSStyleDeclaration* style() const;
 
@@ -57,8 +57,8 @@ class CORE_EXPORT CSSPageRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kPageRule; }
 
-  Member<StyleRulePage> m_pageRule;
-  mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  Member<StyleRulePage> page_rule_;
+  mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSPageRule, kPageRule);

@@ -32,38 +32,40 @@ using namespace HTMLNames;
 LayoutDetailsMarker::LayoutDetailsMarker(Element* element)
     : LayoutBlockFlow(element) {}
 
-LayoutDetailsMarker::Orientation LayoutDetailsMarker::getOrientation() const {
-  switch (style()->getWritingMode()) {
+LayoutDetailsMarker::Orientation LayoutDetailsMarker::GetOrientation() const {
+  switch (Style()->GetWritingMode()) {
     case WritingMode::kHorizontalTb:
-      if (style()->isLeftToRightDirection())
-        return isOpen() ? Down : Right;
-      return isOpen() ? Down : Left;
+      if (Style()->IsLeftToRightDirection())
+        return IsOpen() ? kDown : kRight;
+      return IsOpen() ? kDown : kLeft;
     case WritingMode::kVerticalRl:
-      if (style()->isLeftToRightDirection())
-        return isOpen() ? Left : Down;
-      return isOpen() ? Left : Up;
+      if (Style()->IsLeftToRightDirection())
+        return IsOpen() ? kLeft : kDown;
+      return IsOpen() ? kLeft : kUp;
     case WritingMode::kVerticalLr:
-      if (style()->isLeftToRightDirection())
-        return isOpen() ? Right : Down;
-      return isOpen() ? Right : Up;
+      if (Style()->IsLeftToRightDirection())
+        return IsOpen() ? kRight : kDown;
+      return IsOpen() ? kRight : kUp;
   }
   NOTREACHED();
-  return Right;
+  return kRight;
 }
 
-void LayoutDetailsMarker::paint(const PaintInfo& paintInfo,
-                                const LayoutPoint& paintOffset) const {
-  DetailsMarkerPainter(*this).paint(paintInfo, paintOffset);
+void LayoutDetailsMarker::Paint(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset) const {
+  DetailsMarkerPainter(*this).Paint(paint_info, paint_offset);
 }
 
-bool LayoutDetailsMarker::isOpen() const {
-  for (LayoutObject* layoutObject = parent(); layoutObject;
-       layoutObject = layoutObject->parent()) {
-    if (!layoutObject->node())
+bool LayoutDetailsMarker::IsOpen() const {
+  for (LayoutObject* layout_object = Parent(); layout_object;
+       layout_object = layout_object->Parent()) {
+    if (!layout_object->GetNode())
       continue;
-    if (isHTMLDetailsElement(*layoutObject->node()))
-      return !toElement(layoutObject->node())->getAttribute(openAttr).isNull();
-    if (isHTMLInputElement(*layoutObject->node()))
+    if (isHTMLDetailsElement(*layout_object->GetNode()))
+      return !ToElement(layout_object->GetNode())
+                  ->getAttribute(openAttr)
+                  .IsNull();
+    if (isHTMLInputElement(*layout_object->GetNode()))
       return true;
   }
 

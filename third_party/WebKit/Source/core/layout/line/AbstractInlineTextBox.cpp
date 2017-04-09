@@ -37,106 +37,108 @@
 namespace blink {
 
 AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap*
-    AbstractInlineTextBox::gAbstractInlineTextBoxMap = nullptr;
+    AbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::getOrCreate(
-    LineLayoutText lineLayoutText,
-    InlineTextBox* inlineTextBox) {
-  if (!inlineTextBox)
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
+    LineLayoutText line_layout_text,
+    InlineTextBox* inline_text_box) {
+  if (!inline_text_box)
     return nullptr;
 
-  if (!gAbstractInlineTextBoxMap)
-    gAbstractInlineTextBoxMap = new InlineToAbstractInlineTextBoxHashMap();
+  if (!g_abstract_inline_text_box_map_)
+    g_abstract_inline_text_box_map_ =
+        new InlineToAbstractInlineTextBoxHashMap();
 
   InlineToAbstractInlineTextBoxHashMap::const_iterator it =
-      gAbstractInlineTextBoxMap->find(inlineTextBox);
-  if (it != gAbstractInlineTextBoxMap->end())
+      g_abstract_inline_text_box_map_->Find(inline_text_box);
+  if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
 
   RefPtr<AbstractInlineTextBox> obj =
-      adoptRef(new AbstractInlineTextBox(lineLayoutText, inlineTextBox));
-  gAbstractInlineTextBoxMap->set(inlineTextBox, obj);
+      AdoptRef(new AbstractInlineTextBox(line_layout_text, inline_text_box));
+  g_abstract_inline_text_box_map_->Set(inline_text_box, obj);
   return obj;
 }
 
-void AbstractInlineTextBox::willDestroy(InlineTextBox* inlineTextBox) {
-  if (!gAbstractInlineTextBoxMap)
+void AbstractInlineTextBox::WillDestroy(InlineTextBox* inline_text_box) {
+  if (!g_abstract_inline_text_box_map_)
     return;
 
   InlineToAbstractInlineTextBoxHashMap::const_iterator it =
-      gAbstractInlineTextBoxMap->find(inlineTextBox);
-  if (it != gAbstractInlineTextBoxMap->end()) {
-    it->value->detach();
-    gAbstractInlineTextBoxMap->erase(inlineTextBox);
+      g_abstract_inline_text_box_map_->Find(inline_text_box);
+  if (it != g_abstract_inline_text_box_map_->end()) {
+    it->value->Detach();
+    g_abstract_inline_text_box_map_->erase(inline_text_box);
   }
 }
 
 AbstractInlineTextBox::~AbstractInlineTextBox() {
-  DCHECK(!m_lineLayoutItem);
-  DCHECK(!m_inlineTextBox);
+  DCHECK(!line_layout_item_);
+  DCHECK(!inline_text_box_);
 }
 
-void AbstractInlineTextBox::detach() {
-  if (Node* node = m_lineLayoutItem.node()) {
-    if (AXObjectCache* cache = node->document().existingAXObjectCache())
-      cache->remove(this);
+void AbstractInlineTextBox::Detach() {
+  if (Node* node = line_layout_item_.GetNode()) {
+    if (AXObjectCache* cache = node->GetDocument().ExistingAXObjectCache())
+      cache->Remove(this);
   }
 
-  m_lineLayoutItem = LineLayoutText(nullptr);
-  m_inlineTextBox = nullptr;
+  line_layout_item_ = LineLayoutText(nullptr);
+  inline_text_box_ = nullptr;
 }
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextInlineTextBox()
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox()
     const {
-  DCHECK(!m_inlineTextBox ||
-         !m_inlineTextBox->getLineLayoutItem().needsLayout());
-  if (!m_inlineTextBox)
+  DCHECK(!inline_text_box_ ||
+         !inline_text_box_->GetLineLayoutItem().NeedsLayout());
+  if (!inline_text_box_)
     return nullptr;
 
-  return getOrCreate(m_lineLayoutItem, m_inlineTextBox->nextTextBox());
+  return GetOrCreate(line_layout_item_, inline_text_box_->NextTextBox());
 }
 
-LayoutRect AbstractInlineTextBox::localBounds() const {
-  if (!m_inlineTextBox || !m_lineLayoutItem)
+LayoutRect AbstractInlineTextBox::LocalBounds() const {
+  if (!inline_text_box_ || !line_layout_item_)
     return LayoutRect();
 
-  return m_inlineTextBox->frameRect();
+  return inline_text_box_->FrameRect();
 }
 
-unsigned AbstractInlineTextBox::len() const {
-  if (!m_inlineTextBox)
+unsigned AbstractInlineTextBox::Len() const {
+  if (!inline_text_box_)
     return 0;
 
-  return m_inlineTextBox->len();
+  return inline_text_box_->Len();
 }
 
-AbstractInlineTextBox::Direction AbstractInlineTextBox::getDirection() const {
-  if (!m_inlineTextBox || !m_lineLayoutItem)
-    return LeftToRight;
+AbstractInlineTextBox::Direction AbstractInlineTextBox::GetDirection() const {
+  if (!inline_text_box_ || !line_layout_item_)
+    return kLeftToRight;
 
-  if (m_lineLayoutItem.style()->isHorizontalWritingMode()) {
-    return (m_inlineTextBox->direction() == TextDirection::kRtl ? RightToLeft
-                                                                : LeftToRight);
+  if (line_layout_item_.Style()->IsHorizontalWritingMode()) {
+    return (inline_text_box_->Direction() == TextDirection::kRtl
+                ? kRightToLeft
+                : kLeftToRight);
   }
-  return (m_inlineTextBox->direction() == TextDirection::kRtl ? BottomToTop
-                                                              : TopToBottom);
+  return (inline_text_box_->Direction() == TextDirection::kRtl ? kBottomToTop
+                                                               : kTopToBottom);
 }
 
-void AbstractInlineTextBox::characterWidths(Vector<float>& widths) const {
-  if (!m_inlineTextBox)
+void AbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
+  if (!inline_text_box_)
     return;
 
-  m_inlineTextBox->characterWidths(widths);
+  inline_text_box_->CharacterWidths(widths);
 }
 
-void AbstractInlineTextBox::wordBoundaries(
+void AbstractInlineTextBox::GetWordBoundaries(
     Vector<WordBoundaries>& words) const {
-  if (!m_inlineTextBox)
+  if (!inline_text_box_)
     return;
 
-  String text = this->text();
+  String text = this->GetText();
   int len = text.length();
-  TextBreakIterator* iterator = wordBreakIterator(text, 0, len);
+  TextBreakIterator* iterator = WordBreakIterator(text, 0, len);
 
   // FIXME: When http://crbug.com/411764 is fixed, replace this with an ASSERT.
   if (!iterator)
@@ -145,77 +147,77 @@ void AbstractInlineTextBox::wordBoundaries(
   int pos = iterator->first();
   while (pos >= 0 && pos < len) {
     int next = iterator->next();
-    if (isWordTextBreak(iterator))
+    if (IsWordTextBreak(iterator))
       words.push_back(WordBoundaries(pos, next));
     pos = next;
   }
 }
 
-String AbstractInlineTextBox::text() const {
-  if (!m_inlineTextBox || !m_lineLayoutItem)
+String AbstractInlineTextBox::GetText() const {
+  if (!inline_text_box_ || !line_layout_item_)
     return String();
 
-  unsigned start = m_inlineTextBox->start();
-  unsigned len = m_inlineTextBox->len();
-  if (Node* node = m_lineLayoutItem.node()) {
-    if (node->isTextNode()) {
-      return plainText(
+  unsigned start = inline_text_box_->Start();
+  unsigned len = inline_text_box_->Len();
+  if (Node* node = line_layout_item_.GetNode()) {
+    if (node->IsTextNode()) {
+      return PlainText(
           EphemeralRange(Position(node, start), Position(node, start + len)),
-          TextIteratorBehavior::ignoresStyleVisibilityBehavior());
+          TextIteratorBehavior::IgnoresStyleVisibilityBehavior());
     }
-    return plainText(
-        EphemeralRange(Position(node, PositionAnchorType::BeforeAnchor),
-                       Position(node, PositionAnchorType::AfterAnchor)),
-        TextIteratorBehavior::ignoresStyleVisibilityBehavior());
+    return PlainText(
+        EphemeralRange(Position(node, PositionAnchorType::kBeforeAnchor),
+                       Position(node, PositionAnchorType::kAfterAnchor)),
+        TextIteratorBehavior::IgnoresStyleVisibilityBehavior());
   }
 
-  String result = m_lineLayoutItem.text()
-                      .substring(start, len)
-                      .simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
-  if (m_inlineTextBox->nextTextBox() &&
-      m_inlineTextBox->nextTextBox()->start() > m_inlineTextBox->end() &&
-      result.length() && !result.right(1).containsOnlyWhitespace())
+  String result = line_layout_item_.GetText()
+                      .Substring(start, len)
+                      .SimplifyWhiteSpace(WTF::kDoNotStripWhiteSpace);
+  if (inline_text_box_->NextTextBox() &&
+      inline_text_box_->NextTextBox()->Start() > inline_text_box_->end() &&
+      result.length() && !result.Right(1).ContainsOnlyWhitespace())
     return result + " ";
   return result;
 }
 
-bool AbstractInlineTextBox::isFirst() const {
-  DCHECK(!m_inlineTextBox ||
-         !m_inlineTextBox->getLineLayoutItem().needsLayout());
-  return !m_inlineTextBox || !m_inlineTextBox->prevTextBox();
+bool AbstractInlineTextBox::IsFirst() const {
+  DCHECK(!inline_text_box_ ||
+         !inline_text_box_->GetLineLayoutItem().NeedsLayout());
+  return !inline_text_box_ || !inline_text_box_->PrevTextBox();
 }
 
-bool AbstractInlineTextBox::isLast() const {
-  DCHECK(!m_inlineTextBox ||
-         !m_inlineTextBox->getLineLayoutItem().needsLayout());
-  return !m_inlineTextBox || !m_inlineTextBox->nextTextBox();
+bool AbstractInlineTextBox::IsLast() const {
+  DCHECK(!inline_text_box_ ||
+         !inline_text_box_->GetLineLayoutItem().NeedsLayout());
+  return !inline_text_box_ || !inline_text_box_->NextTextBox();
 }
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextOnLine() const {
-  DCHECK(!m_inlineTextBox ||
-         !m_inlineTextBox->getLineLayoutItem().needsLayout());
-  if (!m_inlineTextBox)
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
+  DCHECK(!inline_text_box_ ||
+         !inline_text_box_->GetLineLayoutItem().NeedsLayout());
+  if (!inline_text_box_)
     return nullptr;
 
-  InlineBox* next = m_inlineTextBox->nextOnLine();
-  if (next && next->isInlineTextBox())
-    return getOrCreate(toInlineTextBox(next)->getLineLayoutItem(),
-                       toInlineTextBox(next));
+  InlineBox* next = inline_text_box_->NextOnLine();
+  if (next && next->IsInlineTextBox())
+    return GetOrCreate(ToInlineTextBox(next)->GetLineLayoutItem(),
+                       ToInlineTextBox(next));
 
   return nullptr;
 }
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::previousOnLine()
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::PreviousOnLine()
     const {
-  DCHECK(!m_inlineTextBox ||
-         !m_inlineTextBox->getLineLayoutItem().needsLayout());
-  if (!m_inlineTextBox)
+  DCHECK(!inline_text_box_ ||
+         !inline_text_box_->GetLineLayoutItem().NeedsLayout());
+  if (!inline_text_box_)
     return nullptr;
 
-  InlineBox* previous = m_inlineTextBox->prevOnLine();
-  if (previous && previous->isInlineTextBox())
-    return getOrCreate(toInlineTextBox(previous)->getLineLayoutItem(),
-                       toInlineTextBox(previous));
+  InlineBox* previous = inline_text_box_->PrevOnLine();
+  if (previous && previous->IsInlineTextBox())
+    return GetOrCreate(ToInlineTextBox(previous)->GetLineLayoutItem(),
+                       ToInlineTextBox(previous));
 
   return nullptr;
 }

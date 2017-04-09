@@ -48,24 +48,24 @@ class WebFileChooserCompletion {
 
     // The display name of the file that is to be exposed as File.name in
     // the DOM layer. If it is empty the base part of the |path| is used.
-    WebString displayName;
+    WebString display_name;
 
     // File system URL.
-    WebURL fileSystemURL;
+    WebURL file_system_url;
 
     // Metadata of non-native file.
     // 0 is Unix epoch, unit is sec.
-    double modificationTime;
+    double modification_time;
     long long length;
-    bool isDirectory;
+    bool is_directory;
 
-    SelectedFileInfo() : modificationTime(0), length(0), isDirectory(false) {}
+    SelectedFileInfo() : modification_time(0), length(0), is_directory(false) {}
   };
 
   // Called with zero or more file names. Zero-length vector means that
   // the user cancelled or that file choosing failed. The callback instance
   // is destroyed when this method is called.
-  virtual void didChooseFile(const WebVector<WebString>& fileNames) = 0;
+  virtual void DidChooseFile(const WebVector<WebString>& file_names) = 0;
 
   // Called with zero or more files, given as a vector of SelectedFileInfo.
   // Zero-length vector means that the user cancelled or that file
@@ -73,7 +73,7 @@ class WebFileChooserCompletion {
   // is called.
   // FIXME: Deprecate either one of the didChooseFile (and rename it to
   // didChooseFile*s*).
-  virtual void didChooseFile(const WebVector<SelectedFileInfo>&) {}
+  virtual void DidChooseFile(const WebVector<SelectedFileInfo>&) {}
 
  protected:
   virtual ~WebFileChooserCompletion() {}

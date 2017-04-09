@@ -13,58 +13,58 @@
 namespace blink {
 
 MediaControlsMediaEventListener::MediaControlsMediaEventListener(
-    MediaControls* mediaControls)
-    : EventListener(CPPEventListenerType), m_mediaControls(mediaControls) {
-  if (mediaElement().isConnected())
-    attach();
+    MediaControls* media_controls)
+    : EventListener(kCPPEventListenerType), media_controls_(media_controls) {
+  if (MediaElement().isConnected())
+    Attach();
 }
 
-void MediaControlsMediaEventListener::attach() {
-  DCHECK(mediaElement().isConnected());
+void MediaControlsMediaEventListener::Attach() {
+  DCHECK(MediaElement().isConnected());
 
-  mediaElement().addEventListener(EventTypeNames::volumechange, this, false);
-  mediaElement().addEventListener(EventTypeNames::focusin, this, false);
-  mediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
-  mediaElement().addEventListener(EventTypeNames::play, this, false);
-  mediaElement().addEventListener(EventTypeNames::playing, this, false);
-  mediaElement().addEventListener(EventTypeNames::pause, this, false);
-  mediaElement().addEventListener(EventTypeNames::durationchange, this, false);
-  mediaElement().addEventListener(EventTypeNames::error, this, false);
-  mediaElement().addEventListener(EventTypeNames::loadedmetadata, this, false);
+  MediaElement().addEventListener(EventTypeNames::volumechange, this, false);
+  MediaElement().addEventListener(EventTypeNames::focusin, this, false);
+  MediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
+  MediaElement().addEventListener(EventTypeNames::play, this, false);
+  MediaElement().addEventListener(EventTypeNames::playing, this, false);
+  MediaElement().addEventListener(EventTypeNames::pause, this, false);
+  MediaElement().addEventListener(EventTypeNames::durationchange, this, false);
+  MediaElement().addEventListener(EventTypeNames::error, this, false);
+  MediaElement().addEventListener(EventTypeNames::loadedmetadata, this, false);
 
   // Listen to two different fullscreen events in order to make sure the new and
   // old APIs are handled.
-  mediaElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
+  MediaElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
                                   false);
-  m_mediaControls->ownerDocument().addEventListener(
+  media_controls_->OwnerDocument().addEventListener(
       EventTypeNames::fullscreenchange, this, false);
 
   // TextTracks events.
-  TextTrackList* textTracks = mediaElement().textTracks();
-  textTracks->addEventListener(EventTypeNames::addtrack, this, false);
-  textTracks->addEventListener(EventTypeNames::change, this, false);
-  textTracks->addEventListener(EventTypeNames::removetrack, this, false);
+  TextTrackList* text_tracks = MediaElement().textTracks();
+  text_tracks->addEventListener(EventTypeNames::addtrack, this, false);
+  text_tracks->addEventListener(EventTypeNames::change, this, false);
+  text_tracks->addEventListener(EventTypeNames::removetrack, this, false);
 
   // Keypress events.
-  if (m_mediaControls->panelElement()) {
-    m_mediaControls->panelElement()->addEventListener(EventTypeNames::keypress,
+  if (media_controls_->PanelElement()) {
+    media_controls_->PanelElement()->addEventListener(EventTypeNames::keypress,
                                                       this, false);
   }
 }
 
-void MediaControlsMediaEventListener::detach() {
-  DCHECK(!mediaElement().isConnected());
+void MediaControlsMediaEventListener::Detach() {
+  DCHECK(!MediaElement().isConnected());
 
-  m_mediaControls->ownerDocument().removeEventListener(
+  media_controls_->OwnerDocument().removeEventListener(
       EventTypeNames::fullscreenchange, this, false);
 
-  TextTrackList* textTracks = mediaElement().textTracks();
-  textTracks->removeEventListener(EventTypeNames::addtrack, this, false);
-  textTracks->removeEventListener(EventTypeNames::change, this, false);
-  textTracks->removeEventListener(EventTypeNames::removetrack, this, false);
+  TextTrackList* text_tracks = MediaElement().textTracks();
+  text_tracks->removeEventListener(EventTypeNames::addtrack, this, false);
+  text_tracks->removeEventListener(EventTypeNames::change, this, false);
+  text_tracks->removeEventListener(EventTypeNames::removetrack, this, false);
 
-  if (m_mediaControls->panelElement()) {
-    m_mediaControls->panelElement()->removeEventListener(
+  if (media_controls_->PanelElement()) {
+    media_controls_->PanelElement()->removeEventListener(
         EventTypeNames::keypress, this, false);
   }
 }
@@ -74,75 +74,75 @@ bool MediaControlsMediaEventListener::operator==(
   return this == &other;
 }
 
-HTMLMediaElement& MediaControlsMediaEventListener::mediaElement() {
-  return m_mediaControls->mediaElement();
+HTMLMediaElement& MediaControlsMediaEventListener::MediaElement() {
+  return media_controls_->MediaElement();
 }
 
 void MediaControlsMediaEventListener::handleEvent(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     Event* event) {
   if (event->type() == EventTypeNames::volumechange) {
-    m_mediaControls->onVolumeChange();
+    media_controls_->OnVolumeChange();
     return;
   }
   if (event->type() == EventTypeNames::focusin) {
-    m_mediaControls->onFocusIn();
+    media_controls_->OnFocusIn();
     return;
   }
   if (event->type() == EventTypeNames::timeupdate) {
-    m_mediaControls->onTimeUpdate();
+    media_controls_->OnTimeUpdate();
     return;
   }
   if (event->type() == EventTypeNames::durationchange) {
-    m_mediaControls->onDurationChange();
+    media_controls_->OnDurationChange();
     return;
   }
   if (event->type() == EventTypeNames::play) {
-    m_mediaControls->onPlay();
+    media_controls_->OnPlay();
     return;
   }
   if (event->type() == EventTypeNames::playing) {
-    m_mediaControls->onPlaying();
+    media_controls_->OnPlaying();
     return;
   }
   if (event->type() == EventTypeNames::pause) {
-    m_mediaControls->onPause();
+    media_controls_->OnPause();
     return;
   }
   if (event->type() == EventTypeNames::error) {
-    m_mediaControls->onError();
+    media_controls_->OnError();
     return;
   }
   if (event->type() == EventTypeNames::loadedmetadata) {
-    m_mediaControls->onLoadedMetadata();
+    media_controls_->OnLoadedMetadata();
     return;
   }
 
   // Fullscreen handling.
   if (event->type() == EventTypeNames::fullscreenchange ||
       event->type() == EventTypeNames::webkitfullscreenchange) {
-    if (mediaElement().isFullscreen())
-      m_mediaControls->onEnteredFullscreen();
+    if (MediaElement().IsFullscreen())
+      media_controls_->OnEnteredFullscreen();
     else
-      m_mediaControls->onExitedFullscreen();
+      media_controls_->OnExitedFullscreen();
     return;
   }
 
   // TextTracks events.
   if (event->type() == EventTypeNames::addtrack ||
       event->type() == EventTypeNames::removetrack) {
-    m_mediaControls->onTextTracksAddedOrRemoved();
+    media_controls_->OnTextTracksAddedOrRemoved();
     return;
   }
   if (event->type() == EventTypeNames::change) {
-    m_mediaControls->onTextTracksChanged();
+    media_controls_->OnTextTracksChanged();
     return;
   }
 
   // Keypress events.
   if (event->type() == EventTypeNames::keypress) {
-    if (event->currentTarget() == m_mediaControls->panelElement())
-      m_mediaControls->onPanelKeypress();
+    if (event->currentTarget() == media_controls_->PanelElement())
+      media_controls_->OnPanelKeypress();
     return;
   }
 
@@ -150,8 +150,8 @@ void MediaControlsMediaEventListener::handleEvent(
 }
 
 DEFINE_TRACE(MediaControlsMediaEventListener) {
-  EventListener::trace(visitor);
-  visitor->trace(m_mediaControls);
+  EventListener::Trace(visitor);
+  visitor->Trace(media_controls_);
 }
 
 }  // namespace blink

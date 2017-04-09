@@ -39,112 +39,113 @@ namespace blink {
 struct SameSizeAsElementData
     : public GarbageCollectedFinalized<SameSizeAsElementData> {
   unsigned bitfield;
-  Member<void*> willbeMember;
+  Member<void*> willbe_member;
   void* pointers[2];
 };
 
 static_assert(sizeof(ElementData) == sizeof(SameSizeAsElementData),
               "ElementData should stay small");
 
-static size_t sizeForShareableElementDataWithAttributeCount(unsigned count) {
+static size_t SizeForShareableElementDataWithAttributeCount(unsigned count) {
   return sizeof(ShareableElementData) + sizeof(Attribute) * count;
 }
 
 ElementData::ElementData()
-    : m_isUnique(true),
-      m_arraySize(0),
-      m_presentationAttributeStyleIsDirty(false),
-      m_styleAttributeIsDirty(false),
-      m_animatedSVGAttributesAreDirty(false) {}
+    : is_unique_(true),
+      array_size_(0),
+      presentation_attribute_style_is_dirty_(false),
+      style_attribute_is_dirty_(false),
+      animated_svg_attributes_are_dirty_(false) {}
 
-ElementData::ElementData(unsigned arraySize)
-    : m_isUnique(false),
-      m_arraySize(arraySize),
-      m_presentationAttributeStyleIsDirty(false),
-      m_styleAttributeIsDirty(false),
-      m_animatedSVGAttributesAreDirty(false) {}
+ElementData::ElementData(unsigned array_size)
+    : is_unique_(false),
+      array_size_(array_size),
+      presentation_attribute_style_is_dirty_(false),
+      style_attribute_is_dirty_(false),
+      animated_svg_attributes_are_dirty_(false) {}
 
-ElementData::ElementData(const ElementData& other, bool isUnique)
-    : m_isUnique(isUnique),
-      m_arraySize(isUnique ? 0 : other.attributes().size()),
-      m_presentationAttributeStyleIsDirty(
-          other.m_presentationAttributeStyleIsDirty),
-      m_styleAttributeIsDirty(other.m_styleAttributeIsDirty),
-      m_animatedSVGAttributesAreDirty(other.m_animatedSVGAttributesAreDirty),
-      m_classNames(other.m_classNames),
-      m_idForStyleResolution(other.m_idForStyleResolution) {
+ElementData::ElementData(const ElementData& other, bool is_unique)
+    : is_unique_(is_unique),
+      array_size_(is_unique ? 0 : other.Attributes().size()),
+      presentation_attribute_style_is_dirty_(
+          other.presentation_attribute_style_is_dirty_),
+      style_attribute_is_dirty_(other.style_attribute_is_dirty_),
+      animated_svg_attributes_are_dirty_(
+          other.animated_svg_attributes_are_dirty_),
+      class_names_(other.class_names_),
+      id_for_style_resolution_(other.id_for_style_resolution_) {
   // NOTE: The inline style is copied by the subclass copy constructor since we
   // don't know what to do with it here.
 }
 
-void ElementData::finalizeGarbageCollectedObject() {
-  if (m_isUnique)
-    toUniqueElementData(this)->~UniqueElementData();
+void ElementData::FinalizeGarbageCollectedObject() {
+  if (is_unique_)
+    ToUniqueElementData(this)->~UniqueElementData();
   else
-    toShareableElementData(this)->~ShareableElementData();
+    ToShareableElementData(this)->~ShareableElementData();
 }
 
-UniqueElementData* ElementData::makeUniqueCopy() const {
-  if (isUnique())
-    return new UniqueElementData(toUniqueElementData(*this));
-  return new UniqueElementData(toShareableElementData(*this));
+UniqueElementData* ElementData::MakeUniqueCopy() const {
+  if (IsUnique())
+    return new UniqueElementData(ToUniqueElementData(*this));
+  return new UniqueElementData(ToShareableElementData(*this));
 }
 
-bool ElementData::isEquivalent(const ElementData* other) const {
-  AttributeCollection attributes = this->attributes();
+bool ElementData::IsEquivalent(const ElementData* other) const {
+  AttributeCollection attributes = this->Attributes();
   if (!other)
-    return attributes.isEmpty();
+    return attributes.IsEmpty();
 
-  AttributeCollection otherAttributes = other->attributes();
-  if (attributes.size() != otherAttributes.size())
+  AttributeCollection other_attributes = other->Attributes();
+  if (attributes.size() != other_attributes.size())
     return false;
 
   for (const Attribute& attribute : attributes) {
-    const Attribute* otherAttr = otherAttributes.find(attribute.name());
-    if (!otherAttr || attribute.value() != otherAttr->value())
+    const Attribute* other_attr = other_attributes.Find(attribute.GetName());
+    if (!other_attr || attribute.Value() != other_attr->Value())
       return false;
   }
   return true;
 }
 
 DEFINE_TRACE(ElementData) {
-  if (m_isUnique)
-    toUniqueElementData(this)->traceAfterDispatch(visitor);
+  if (is_unique_)
+    ToUniqueElementData(this)->TraceAfterDispatch(visitor);
   else
-    toShareableElementData(this)->traceAfterDispatch(visitor);
+    ToShareableElementData(this)->TraceAfterDispatch(visitor);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(ElementData) {
-  visitor->trace(m_inlineStyle);
+  visitor->Trace(inline_style_);
 }
 
 ShareableElementData::ShareableElementData(const Vector<Attribute>& attributes)
     : ElementData(attributes.size()) {
-  for (unsigned i = 0; i < m_arraySize; ++i)
-    new (&m_attributeArray[i]) Attribute(attributes[i]);
+  for (unsigned i = 0; i < array_size_; ++i)
+    new (&attribute_array_[i]) Attribute(attributes[i]);
 }
 
 ShareableElementData::~ShareableElementData() {
-  for (unsigned i = 0; i < m_arraySize; ++i)
-    m_attributeArray[i].~Attribute();
+  for (unsigned i = 0; i < array_size_; ++i)
+    attribute_array_[i].~Attribute();
 }
 
 ShareableElementData::ShareableElementData(const UniqueElementData& other)
     : ElementData(other, false) {
-  DCHECK(!other.m_presentationAttributeStyle);
+  DCHECK(!other.presentation_attribute_style_);
 
-  if (other.m_inlineStyle) {
-    m_inlineStyle = other.m_inlineStyle->immutableCopyIfNeeded();
+  if (other.inline_style_) {
+    inline_style_ = other.inline_style_->ImmutableCopyIfNeeded();
   }
 
-  for (unsigned i = 0; i < m_arraySize; ++i)
-    new (&m_attributeArray[i]) Attribute(other.m_attributeVector.at(i));
+  for (unsigned i = 0; i < array_size_; ++i)
+    new (&attribute_array_[i]) Attribute(other.attribute_vector_.at(i));
 }
 
-ShareableElementData* ShareableElementData::createWithAttributes(
+ShareableElementData* ShareableElementData::CreateWithAttributes(
     const Vector<Attribute>& attributes) {
-  void* slot = ThreadHeap::allocate<ElementData>(
-      sizeForShareableElementDataWithAttributeCount(attributes.size()));
+  void* slot = ThreadHeap::Allocate<ElementData>(
+      SizeForShareableElementDataWithAttributeCount(attributes.size()));
   return new (slot) ShareableElementData(attributes);
 }
 
@@ -152,38 +153,38 @@ UniqueElementData::UniqueElementData() {}
 
 UniqueElementData::UniqueElementData(const UniqueElementData& other)
     : ElementData(other, true),
-      m_presentationAttributeStyle(other.m_presentationAttributeStyle),
-      m_attributeVector(other.m_attributeVector) {
-  m_inlineStyle =
-      other.m_inlineStyle ? other.m_inlineStyle->mutableCopy() : nullptr;
+      presentation_attribute_style_(other.presentation_attribute_style_),
+      attribute_vector_(other.attribute_vector_) {
+  inline_style_ =
+      other.inline_style_ ? other.inline_style_->MutableCopy() : nullptr;
 }
 
 UniqueElementData::UniqueElementData(const ShareableElementData& other)
     : ElementData(other, true) {
   // An ShareableElementData should never have a mutable inline StylePropertySet
   // attached.
-  DCHECK(!other.m_inlineStyle || !other.m_inlineStyle->isMutable());
-  m_inlineStyle = other.m_inlineStyle;
+  DCHECK(!other.inline_style_ || !other.inline_style_->IsMutable());
+  inline_style_ = other.inline_style_;
 
-  unsigned length = other.attributes().size();
-  m_attributeVector.reserveCapacity(length);
+  unsigned length = other.Attributes().size();
+  attribute_vector_.ReserveCapacity(length);
   for (unsigned i = 0; i < length; ++i)
-    m_attributeVector.uncheckedAppend(other.m_attributeArray[i]);
+    attribute_vector_.UncheckedAppend(other.attribute_array_[i]);
 }
 
-UniqueElementData* UniqueElementData::create() {
+UniqueElementData* UniqueElementData::Create() {
   return new UniqueElementData;
 }
 
-ShareableElementData* UniqueElementData::makeShareableCopy() const {
-  void* slot = ThreadHeap::allocate<ElementData>(
-      sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
+ShareableElementData* UniqueElementData::MakeShareableCopy() const {
+  void* slot = ThreadHeap::Allocate<ElementData>(
+      SizeForShareableElementDataWithAttributeCount(attribute_vector_.size()));
   return new (slot) ShareableElementData(*this);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(UniqueElementData) {
-  visitor->trace(m_presentationAttributeStyle);
-  ElementData::traceAfterDispatch(visitor);
+  visitor->Trace(presentation_attribute_style_);
+  ElementData::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

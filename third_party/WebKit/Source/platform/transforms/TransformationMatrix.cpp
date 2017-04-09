@@ -88,7 +88,7 @@ namespace blink {
 typedef double Vector4[4];
 typedef double Vector3[3];
 
-const double SmallNumber = 1.e-8;
+const double kSmallNumber = 1.e-8;
 
 // inverse(original_matrix, inverse_matrix)
 //
@@ -102,7 +102,7 @@ const double SmallNumber = 1.e-8;
 //
 //  calculate the determinant of a 2x2 matrix.
 
-static double determinant2x2(double a, double b, double c, double d) {
+static double Determinant2x2(double a, double b, double c, double d) {
   return a * d - b * c;
 }
 
@@ -115,7 +115,7 @@ static double determinant2x2(double a, double b, double c, double d) {
 //      | a2,  b2,  c2 |
 //      | a3,  b3,  c3 |
 
-static double determinant3x3(double a1,
+static double Determinant3x3(double a1,
                              double a2,
                              double a3,
                              double b1,
@@ -124,16 +124,16 @@ static double determinant3x3(double a1,
                              double c1,
                              double c2,
                              double c3) {
-  return a1 * determinant2x2(b2, b3, c2, c3) -
-         b1 * determinant2x2(a2, a3, c2, c3) +
-         c1 * determinant2x2(a2, a3, b2, b3);
+  return a1 * Determinant2x2(b2, b3, c2, c3) -
+         b1 * Determinant2x2(a2, a3, c2, c3) +
+         c1 * Determinant2x2(a2, a3, b2, b3);
 }
 
 //  double = determinant4x4(matrix)
 //
 //  calculate the determinant of a 4x4 matrix.
 
-static double determinant4x4(const TransformationMatrix::Matrix4& m) {
+static double Determinant4x4(const TransformationMatrix::Matrix4& m) {
   // Assign to individual variable names to aid selecting
   // correct elements
 
@@ -157,10 +157,10 @@ static double determinant4x4(const TransformationMatrix::Matrix4& m) {
   double c4 = m[3][2];
   double d4 = m[3][3];
 
-  return a1 * determinant3x3(b2, b3, b4, c2, c3, c4, d2, d3, d4) -
-         b1 * determinant3x3(a2, a3, a4, c2, c3, c4, d2, d3, d4) +
-         c1 * determinant3x3(a2, a3, a4, b2, b3, b4, d2, d3, d4) -
-         d1 * determinant3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
+  return a1 * Determinant3x3(b2, b3, b4, c2, c3, c4, d2, d3, d4) -
+         b1 * Determinant3x3(a2, a3, a4, c2, c3, c4, d2, d3, d4) +
+         c1 * Determinant3x3(a2, a3, a4, b2, b3, b4, d2, d3, d4) -
+         d1 * Determinant3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
 }
 
 #if !CPU(ARM64) && !HAVE(MIPS_MSA_INTRINSICS)
@@ -180,7 +180,7 @@ static double determinant4x4(const TransformationMatrix::Matrix4& m) {
 //  The matrix B = (b  ) is the adjoint of A
 //                   ij
 
-static inline void adjoint(const TransformationMatrix::Matrix4& matrix,
+static inline void Adjoint(const TransformationMatrix::Matrix4& matrix,
                            TransformationMatrix::Matrix4& result) {
   // Assign to individual variable names to aid
   // selecting correct values
@@ -205,37 +205,37 @@ static inline void adjoint(const TransformationMatrix::Matrix4& matrix,
   double d4 = matrix[3][3];
 
   // Row column labeling reversed since we transpose rows & columns
-  result[0][0] = determinant3x3(b2, b3, b4, c2, c3, c4, d2, d3, d4);
-  result[1][0] = -determinant3x3(a2, a3, a4, c2, c3, c4, d2, d3, d4);
-  result[2][0] = determinant3x3(a2, a3, a4, b2, b3, b4, d2, d3, d4);
-  result[3][0] = -determinant3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
+  result[0][0] = Determinant3x3(b2, b3, b4, c2, c3, c4, d2, d3, d4);
+  result[1][0] = -Determinant3x3(a2, a3, a4, c2, c3, c4, d2, d3, d4);
+  result[2][0] = Determinant3x3(a2, a3, a4, b2, b3, b4, d2, d3, d4);
+  result[3][0] = -Determinant3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
 
-  result[0][1] = -determinant3x3(b1, b3, b4, c1, c3, c4, d1, d3, d4);
-  result[1][1] = determinant3x3(a1, a3, a4, c1, c3, c4, d1, d3, d4);
-  result[2][1] = -determinant3x3(a1, a3, a4, b1, b3, b4, d1, d3, d4);
-  result[3][1] = determinant3x3(a1, a3, a4, b1, b3, b4, c1, c3, c4);
+  result[0][1] = -Determinant3x3(b1, b3, b4, c1, c3, c4, d1, d3, d4);
+  result[1][1] = Determinant3x3(a1, a3, a4, c1, c3, c4, d1, d3, d4);
+  result[2][1] = -Determinant3x3(a1, a3, a4, b1, b3, b4, d1, d3, d4);
+  result[3][1] = Determinant3x3(a1, a3, a4, b1, b3, b4, c1, c3, c4);
 
-  result[0][2] = determinant3x3(b1, b2, b4, c1, c2, c4, d1, d2, d4);
-  result[1][2] = -determinant3x3(a1, a2, a4, c1, c2, c4, d1, d2, d4);
-  result[2][2] = determinant3x3(a1, a2, a4, b1, b2, b4, d1, d2, d4);
-  result[3][2] = -determinant3x3(a1, a2, a4, b1, b2, b4, c1, c2, c4);
+  result[0][2] = Determinant3x3(b1, b2, b4, c1, c2, c4, d1, d2, d4);
+  result[1][2] = -Determinant3x3(a1, a2, a4, c1, c2, c4, d1, d2, d4);
+  result[2][2] = Determinant3x3(a1, a2, a4, b1, b2, b4, d1, d2, d4);
+  result[3][2] = -Determinant3x3(a1, a2, a4, b1, b2, b4, c1, c2, c4);
 
-  result[0][3] = -determinant3x3(b1, b2, b3, c1, c2, c3, d1, d2, d3);
-  result[1][3] = determinant3x3(a1, a2, a3, c1, c2, c3, d1, d2, d3);
-  result[2][3] = -determinant3x3(a1, a2, a3, b1, b2, b3, d1, d2, d3);
-  result[3][3] = determinant3x3(a1, a2, a3, b1, b2, b3, c1, c2, c3);
+  result[0][3] = -Determinant3x3(b1, b2, b3, c1, c2, c3, d1, d2, d3);
+  result[1][3] = Determinant3x3(a1, a2, a3, c1, c2, c3, d1, d2, d3);
+  result[2][3] = -Determinant3x3(a1, a2, a3, b1, b2, b3, d1, d2, d3);
+  result[3][3] = Determinant3x3(a1, a2, a3, b1, b2, b3, c1, c2, c3);
 }
 #endif
 
 // Returns false if the matrix is not invertible
-static bool inverse(const TransformationMatrix::Matrix4& matrix,
+static bool Inverse(const TransformationMatrix::Matrix4& matrix,
                     TransformationMatrix::Matrix4& result) {
   // Calculate the 4x4 determinant
   // If the determinant is zero,
   // then the inverse matrix is not unique.
-  double det = determinant4x4(matrix);
+  double det = Determinant4x4(matrix);
 
-  if (fabs(det) < SmallNumber)
+  if (fabs(det) < kSmallNumber)
     return false;
 
 #if CPU(ARM64)
@@ -495,7 +495,7 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
   result[3][3] = tmp3[0];
 #else
   // Calculate the adjoint matrix
-  adjoint(matrix, result);
+  Adjoint(matrix, result);
 
   double rdet = 1 / det;
 
@@ -513,7 +513,7 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
 // From Graphics Gems: unmatrix.c
 
 // Transpose rotation portion of matrix a, return b
-static void transposeMatrix4(const TransformationMatrix::Matrix4& a,
+static void TransposeMatrix4(const TransformationMatrix::Matrix4& a,
                              TransformationMatrix::Matrix4& b) {
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
@@ -521,7 +521,7 @@ static void transposeMatrix4(const TransformationMatrix::Matrix4& a,
 }
 
 // Multiply a homogeneous point by a matrix and return the transformed point
-static void v4MulPointByMatrix(const Vector4 p,
+static void V4MulPointByMatrix(const Vector4 p,
                                const TransformationMatrix::Matrix4& m,
                                Vector4 result) {
   result[0] =
@@ -534,27 +534,27 @@ static void v4MulPointByMatrix(const Vector4 p,
       (p[0] * m[0][3]) + (p[1] * m[1][3]) + (p[2] * m[2][3]) + (p[3] * m[3][3]);
 }
 
-static double v3Length(Vector3 a) {
+static double V3Length(Vector3 a) {
   return std::sqrt((a[0] * a[0]) + (a[1] * a[1]) + (a[2] * a[2]));
 }
 
-static void v3Scale(Vector3 v, double desiredLength) {
-  double len = v3Length(v);
+static void V3Scale(Vector3 v, double desired_length) {
+  double len = V3Length(v);
   if (len != 0) {
-    double l = desiredLength / len;
+    double l = desired_length / len;
     v[0] *= l;
     v[1] *= l;
     v[2] *= l;
   }
 }
 
-static double v3Dot(const Vector3 a, const Vector3 b) {
+static double V3Dot(const Vector3 a, const Vector3 b) {
   return (a[0] * b[0]) + (a[1] * b[1]) + (a[2] * b[2]);
 }
 
 // Make a linear combination of two vectors and return the result.
 // result = (a * ascl) + (b * bscl)
-static void v3Combine(const Vector3 a,
+static void V3Combine(const Vector3 a,
                       const Vector3 b,
                       Vector3 result,
                       double ascl,
@@ -565,126 +565,127 @@ static void v3Combine(const Vector3 a,
 }
 
 // Return the cross product result = a cross b */
-static void v3Cross(const Vector3 a, const Vector3 b, Vector3 result) {
+static void V3Cross(const Vector3 a, const Vector3 b, Vector3 result) {
   result[0] = (a[1] * b[2]) - (a[2] * b[1]);
   result[1] = (a[2] * b[0]) - (a[0] * b[2]);
   result[2] = (a[0] * b[1]) - (a[1] * b[0]);
 }
 
-static bool decompose(const TransformationMatrix::Matrix4& mat,
+static bool Decompose(const TransformationMatrix::Matrix4& mat,
                       TransformationMatrix::DecomposedType& result) {
-  TransformationMatrix::Matrix4 localMatrix;
-  memcpy(localMatrix, mat, sizeof(TransformationMatrix::Matrix4));
+  TransformationMatrix::Matrix4 local_matrix;
+  memcpy(local_matrix, mat, sizeof(TransformationMatrix::Matrix4));
 
   // Normalize the matrix.
-  if (localMatrix[3][3] == 0)
+  if (local_matrix[3][3] == 0)
     return false;
 
   int i, j;
   for (i = 0; i < 4; i++)
     for (j = 0; j < 4; j++)
-      localMatrix[i][j] /= localMatrix[3][3];
+      local_matrix[i][j] /= local_matrix[3][3];
 
   // perspectiveMatrix is used to solve for perspective, but it also provides
   // an easy way to test for singularity of the upper 3x3 component.
-  TransformationMatrix::Matrix4 perspectiveMatrix;
-  memcpy(perspectiveMatrix, localMatrix, sizeof(TransformationMatrix::Matrix4));
+  TransformationMatrix::Matrix4 perspective_matrix;
+  memcpy(perspective_matrix, local_matrix,
+         sizeof(TransformationMatrix::Matrix4));
   for (i = 0; i < 3; i++)
-    perspectiveMatrix[i][3] = 0;
-  perspectiveMatrix[3][3] = 1;
+    perspective_matrix[i][3] = 0;
+  perspective_matrix[3][3] = 1;
 
-  if (determinant4x4(perspectiveMatrix) == 0)
+  if (Determinant4x4(perspective_matrix) == 0)
     return false;
 
   // First, isolate perspective.  This is the messiest.
-  if (localMatrix[0][3] != 0 || localMatrix[1][3] != 0 ||
-      localMatrix[2][3] != 0) {
+  if (local_matrix[0][3] != 0 || local_matrix[1][3] != 0 ||
+      local_matrix[2][3] != 0) {
     // rightHandSide is the right hand side of the equation.
-    Vector4 rightHandSide;
-    rightHandSide[0] = localMatrix[0][3];
-    rightHandSide[1] = localMatrix[1][3];
-    rightHandSide[2] = localMatrix[2][3];
-    rightHandSide[3] = localMatrix[3][3];
+    Vector4 right_hand_side;
+    right_hand_side[0] = local_matrix[0][3];
+    right_hand_side[1] = local_matrix[1][3];
+    right_hand_side[2] = local_matrix[2][3];
+    right_hand_side[3] = local_matrix[3][3];
 
     // Solve the equation by inverting perspectiveMatrix and multiplying
     // rightHandSide by the inverse.  (This is the easiest way, not
     // necessarily the best.)
-    TransformationMatrix::Matrix4 inversePerspectiveMatrix,
-        transposedInversePerspectiveMatrix;
-    if (!inverse(perspectiveMatrix, inversePerspectiveMatrix))
+    TransformationMatrix::Matrix4 inverse_perspective_matrix,
+        transposed_inverse_perspective_matrix;
+    if (!Inverse(perspective_matrix, inverse_perspective_matrix))
       return false;
-    transposeMatrix4(inversePerspectiveMatrix,
-                     transposedInversePerspectiveMatrix);
+    TransposeMatrix4(inverse_perspective_matrix,
+                     transposed_inverse_perspective_matrix);
 
-    Vector4 perspectivePoint;
-    v4MulPointByMatrix(rightHandSide, transposedInversePerspectiveMatrix,
-                       perspectivePoint);
+    Vector4 perspective_point;
+    V4MulPointByMatrix(right_hand_side, transposed_inverse_perspective_matrix,
+                       perspective_point);
 
-    result.perspectiveX = perspectivePoint[0];
-    result.perspectiveY = perspectivePoint[1];
-    result.perspectiveZ = perspectivePoint[2];
-    result.perspectiveW = perspectivePoint[3];
+    result.perspective_x = perspective_point[0];
+    result.perspective_y = perspective_point[1];
+    result.perspective_z = perspective_point[2];
+    result.perspective_w = perspective_point[3];
 
     // Clear the perspective partition
-    localMatrix[0][3] = localMatrix[1][3] = localMatrix[2][3] = 0;
-    localMatrix[3][3] = 1;
+    local_matrix[0][3] = local_matrix[1][3] = local_matrix[2][3] = 0;
+    local_matrix[3][3] = 1;
   } else {
     // No perspective.
-    result.perspectiveX = result.perspectiveY = result.perspectiveZ = 0;
-    result.perspectiveW = 1;
+    result.perspective_x = result.perspective_y = result.perspective_z = 0;
+    result.perspective_w = 1;
   }
 
   // Next take care of translation (easy).
-  result.translateX = localMatrix[3][0];
-  localMatrix[3][0] = 0;
-  result.translateY = localMatrix[3][1];
-  localMatrix[3][1] = 0;
-  result.translateZ = localMatrix[3][2];
-  localMatrix[3][2] = 0;
+  result.translate_x = local_matrix[3][0];
+  local_matrix[3][0] = 0;
+  result.translate_y = local_matrix[3][1];
+  local_matrix[3][1] = 0;
+  result.translate_z = local_matrix[3][2];
+  local_matrix[3][2] = 0;
 
   // Vector4 type and functions need to be added to the common set.
   Vector3 row[3], pdum3;
 
   // Now get scale and shear.
   for (i = 0; i < 3; i++) {
-    row[i][0] = localMatrix[i][0];
-    row[i][1] = localMatrix[i][1];
-    row[i][2] = localMatrix[i][2];
+    row[i][0] = local_matrix[i][0];
+    row[i][1] = local_matrix[i][1];
+    row[i][2] = local_matrix[i][2];
   }
 
   // Compute X scale factor and normalize first row.
-  result.scaleX = v3Length(row[0]);
-  v3Scale(row[0], 1.0);
+  result.scale_x = V3Length(row[0]);
+  V3Scale(row[0], 1.0);
 
   // Compute XY shear factor and make 2nd row orthogonal to 1st.
-  result.skewXY = v3Dot(row[0], row[1]);
-  v3Combine(row[1], row[0], row[1], 1.0, -result.skewXY);
+  result.skew_xy = V3Dot(row[0], row[1]);
+  V3Combine(row[1], row[0], row[1], 1.0, -result.skew_xy);
 
   // Now, compute Y scale and normalize 2nd row.
-  result.scaleY = v3Length(row[1]);
-  v3Scale(row[1], 1.0);
-  result.skewXY /= result.scaleY;
+  result.scale_y = V3Length(row[1]);
+  V3Scale(row[1], 1.0);
+  result.skew_xy /= result.scale_y;
 
   // Compute XZ and YZ shears, orthogonalize 3rd row.
-  result.skewXZ = v3Dot(row[0], row[2]);
-  v3Combine(row[2], row[0], row[2], 1.0, -result.skewXZ);
-  result.skewYZ = v3Dot(row[1], row[2]);
-  v3Combine(row[2], row[1], row[2], 1.0, -result.skewYZ);
+  result.skew_xz = V3Dot(row[0], row[2]);
+  V3Combine(row[2], row[0], row[2], 1.0, -result.skew_xz);
+  result.skew_yz = V3Dot(row[1], row[2]);
+  V3Combine(row[2], row[1], row[2], 1.0, -result.skew_yz);
 
   // Next, get Z scale and normalize 3rd row.
-  result.scaleZ = v3Length(row[2]);
-  v3Scale(row[2], 1.0);
-  result.skewXZ /= result.scaleZ;
-  result.skewYZ /= result.scaleZ;
+  result.scale_z = V3Length(row[2]);
+  V3Scale(row[2], 1.0);
+  result.skew_xz /= result.scale_z;
+  result.skew_yz /= result.scale_z;
 
   // At this point, the matrix (in rows[]) is orthonormal.
   // Check for a coordinate system flip.  If the determinant
   // is -1, then negate the matrix and the scaling factors.
-  v3Cross(row[1], row[2], pdum3);
-  if (v3Dot(row[0], pdum3) < 0) {
-    result.scaleX *= -1;
-    result.scaleY *= -1;
-    result.scaleZ *= -1;
+  V3Cross(row[1], row[2], pdum3);
+  if (V3Dot(row[0], pdum3) < 0) {
+    result.scale_x *= -1;
+    result.scale_y *= -1;
+    result.scale_z *= -1;
 
     for (i = 0; i < 3; i++) {
       row[i][0] *= -1;
@@ -740,17 +741,17 @@ static bool decompose(const TransformationMatrix::Matrix4& mat,
     w = (row[1][0] - row[0][1]) / s;
   }
 
-  result.quaternionX = x;
-  result.quaternionY = y;
-  result.quaternionZ = z;
-  result.quaternionW = w;
+  result.quaternion_x = x;
+  result.quaternion_y = y;
+  result.quaternion_z = z;
+  result.quaternion_w = w;
 
   return true;
 }
 
 // Perform a spherical linear interpolation between the two
 // passed quaternions with 0 <= t <= 1
-static void slerp(double qa[4], const double qb[4], double t) {
+static void Slerp(double qa[4], const double qb[4], double t) {
   double ax, ay, az, aw;
   double bx, by, bz, bw;
   double cx, cy, cz, cw;
@@ -769,8 +770,8 @@ static void slerp(double qa[4], const double qb[4], double t) {
 
   product = clampTo(product, -1.0, 1.0);
 
-  const double epsilon = 1e-5;
-  if (std::abs(product - 1.0) < epsilon) {
+  const double kEpsilon = 1e-5;
+  if (std::abs(product - 1.0) < kEpsilon) {
     // Result is qa, so just return
     return;
   }
@@ -796,15 +797,15 @@ static void slerp(double qa[4], const double qb[4], double t) {
 // End of Supporting Math Functions
 
 TransformationMatrix::TransformationMatrix(const AffineTransform& t) {
-  checkAlignment();
-  setMatrix(t.a(), t.b(), t.c(), t.d(), t.e(), t.f());
+  CheckAlignment();
+  SetMatrix(t.A(), t.B(), t.C(), t.D(), t.E(), t.F());
 }
 
-TransformationMatrix& TransformationMatrix::scale(double s) {
-  return scaleNonUniform(s, s);
+TransformationMatrix& TransformationMatrix::Scale(double s) {
+  return ScaleNonUniform(s, s);
 }
 
-FloatPoint TransformationMatrix::projectPoint(const FloatPoint& p,
+FloatPoint TransformationMatrix::ProjectPoint(const FloatPoint& p,
                                               bool* clamped) const {
   // This is basically raytracing. We have a point in the destination
   // plane with z=0, and we cast a ray parallel to the z-axis from that
@@ -821,109 +822,111 @@ FloatPoint TransformationMatrix::projectPoint(const FloatPoint& p,
   if (clamped)
     *clamped = false;
 
-  if (m33() == 0) {
+  if (M33() == 0) {
     // In this case, the projection plane is parallel to the ray we are trying
     // to trace, and there is no well-defined value for the projection.
     return FloatPoint();
   }
 
-  double x = p.x();
-  double y = p.y();
-  double z = -(m13() * x + m23() * y + m43()) / m33();
+  double x = p.X();
+  double y = p.Y();
+  double z = -(M13() * x + M23() * y + M43()) / M33();
 
   // FIXME: use multVecMatrix()
-  double outX = x * m11() + y * m21() + z * m31() + m41();
-  double outY = x * m12() + y * m22() + z * m32() + m42();
+  double out_x = x * M11() + y * M21() + z * M31() + M41();
+  double out_y = x * M12() + y * M22() + z * M32() + M42();
 
-  double w = x * m14() + y * m24() + z * m34() + m44();
+  double w = x * M14() + y * M24() + z * M34() + M44();
   if (w <= 0) {
     // Using int max causes overflow when other code uses the projected point.
     // To represent infinity yet reduce the risk of overflow, we use a large but
     // not-too-large number here when clamping.
-    const int largeNumber = 100000000 / kFixedPointDenominator;
-    outX = copysign(largeNumber, outX);
-    outY = copysign(largeNumber, outY);
+    const int kLargeNumber = 100000000 / kFixedPointDenominator;
+    out_x = copysign(kLargeNumber, out_x);
+    out_y = copysign(kLargeNumber, out_y);
     if (clamped)
       *clamped = true;
   } else if (w != 1) {
-    outX /= w;
-    outY /= w;
+    out_x /= w;
+    out_y /= w;
   }
 
-  return FloatPoint(static_cast<float>(outX), static_cast<float>(outY));
+  return FloatPoint(static_cast<float>(out_x), static_cast<float>(out_y));
 }
 
-FloatQuad TransformationMatrix::projectQuad(const FloatQuad& q,
+FloatQuad TransformationMatrix::ProjectQuad(const FloatQuad& q,
                                             bool* clamped) const {
-  FloatQuad projectedQuad;
+  FloatQuad projected_quad;
 
   bool clamped1 = false;
   bool clamped2 = false;
   bool clamped3 = false;
   bool clamped4 = false;
 
-  projectedQuad.setP1(projectPoint(q.p1(), &clamped1));
-  projectedQuad.setP2(projectPoint(q.p2(), &clamped2));
-  projectedQuad.setP3(projectPoint(q.p3(), &clamped3));
-  projectedQuad.setP4(projectPoint(q.p4(), &clamped4));
+  projected_quad.SetP1(ProjectPoint(q.P1(), &clamped1));
+  projected_quad.SetP2(ProjectPoint(q.P2(), &clamped2));
+  projected_quad.SetP3(ProjectPoint(q.P3(), &clamped3));
+  projected_quad.SetP4(ProjectPoint(q.P4(), &clamped4));
 
   if (clamped)
     *clamped = clamped1 || clamped2 || clamped3 || clamped4;
 
   // If all points on the quad had w < 0, then the entire quad would not be
   // visible to the projected surface.
-  bool everythingWasClipped = clamped1 && clamped2 && clamped3 && clamped4;
-  if (everythingWasClipped)
+  bool everything_was_clipped = clamped1 && clamped2 && clamped3 && clamped4;
+  if (everything_was_clipped)
     return FloatQuad();
 
-  return projectedQuad;
+  return projected_quad;
 }
 
-static float clampEdgeValue(float f) {
+static float ClampEdgeValue(float f) {
   ASSERT(!std::isnan(f));
-  return clampTo(f, (-LayoutUnit::max() / 2).toFloat(),
-                 (LayoutUnit::max() / 2).toFloat());
+  return clampTo(f, (-LayoutUnit::Max() / 2).ToFloat(),
+                 (LayoutUnit::Max() / 2).ToFloat());
 }
 
-LayoutRect TransformationMatrix::clampedBoundsOfProjectedQuad(
+LayoutRect TransformationMatrix::ClampedBoundsOfProjectedQuad(
     const FloatQuad& q) const {
-  FloatRect mappedQuadBounds = projectQuad(q).boundingBox();
+  FloatRect mapped_quad_bounds = ProjectQuad(q).BoundingBox();
 
-  float left = clampEdgeValue(floorf(mappedQuadBounds.x()));
-  float top = clampEdgeValue(floorf(mappedQuadBounds.y()));
+  float left = ClampEdgeValue(floorf(mapped_quad_bounds.X()));
+  float top = ClampEdgeValue(floorf(mapped_quad_bounds.Y()));
 
   float right;
-  if (std::isinf(mappedQuadBounds.x()) && std::isinf(mappedQuadBounds.width()))
-    right = (LayoutUnit::max() / 2).toFloat();
+  if (std::isinf(mapped_quad_bounds.X()) &&
+      std::isinf(mapped_quad_bounds.Width()))
+    right = (LayoutUnit::Max() / 2).ToFloat();
   else
-    right = clampEdgeValue(ceilf(mappedQuadBounds.maxX()));
+    right = ClampEdgeValue(ceilf(mapped_quad_bounds.MaxX()));
 
   float bottom;
-  if (std::isinf(mappedQuadBounds.y()) && std::isinf(mappedQuadBounds.height()))
-    bottom = (LayoutUnit::max() / 2).toFloat();
+  if (std::isinf(mapped_quad_bounds.Y()) &&
+      std::isinf(mapped_quad_bounds.Height()))
+    bottom = (LayoutUnit::Max() / 2).ToFloat();
   else
-    bottom = clampEdgeValue(ceilf(mappedQuadBounds.maxY()));
+    bottom = ClampEdgeValue(ceilf(mapped_quad_bounds.MaxY()));
 
-  return LayoutRect(LayoutUnit::clamp(left), LayoutUnit::clamp(top),
-                    LayoutUnit::clamp(right - left),
-                    LayoutUnit::clamp(bottom - top));
+  return LayoutRect(LayoutUnit::Clamp(left), LayoutUnit::Clamp(top),
+                    LayoutUnit::Clamp(right - left),
+                    LayoutUnit::Clamp(bottom - top));
 }
 
-void TransformationMatrix::transformBox(FloatBox& box) const {
+void TransformationMatrix::TransformBox(FloatBox& box) const {
   FloatBox bounds;
-  bool firstPoint = true;
+  bool first_point = true;
   for (size_t i = 0; i < 2; ++i) {
     for (size_t j = 0; j < 2; ++j) {
       for (size_t k = 0; k < 2; ++k) {
-        FloatPoint3D point(box.x(), box.y(), box.z());
+        FloatPoint3D point(box.X(), box.Y(), box.Z());
         point +=
-            FloatPoint3D(i * box.width(), j * box.height(), k * box.depth());
-        point = mapPoint(point);
-        if (firstPoint) {
-          bounds.setOrigin(point);
-          firstPoint = false;
+            FloatPoint3D(i * box.Width(), j * box.Height(), k * box.Depth());
+        point = MapPoint(point);
+        if (first_point) {
+          bounds.SetOrigin(point);
+          first_point = false;
         } else {
-          bounds.expandTo(point);
+          bounds.ExpandTo(point);
         }
       }
     }
@@ -931,99 +934,99 @@ void TransformationMatrix::transformBox(FloatBox& box) const {
   box = bounds;
 }
 
-FloatPoint TransformationMatrix::mapPoint(const FloatPoint& p) const {
-  if (isIdentityOrTranslation())
-    return FloatPoint(p.x() + static_cast<float>(m_matrix[3][0]),
-                      p.y() + static_cast<float>(m_matrix[3][1]));
+FloatPoint TransformationMatrix::MapPoint(const FloatPoint& p) const {
+  if (IsIdentityOrTranslation())
+    return FloatPoint(p.X() + static_cast<float>(matrix_[3][0]),
+                      p.Y() + static_cast<float>(matrix_[3][1]));
 
-  return internalMapPoint(p);
+  return InternalMapPoint(p);
 }
 
-FloatPoint3D TransformationMatrix::mapPoint(const FloatPoint3D& p) const {
-  if (isIdentityOrTranslation())
-    return FloatPoint3D(p.x() + static_cast<float>(m_matrix[3][0]),
-                        p.y() + static_cast<float>(m_matrix[3][1]),
-                        p.z() + static_cast<float>(m_matrix[3][2]));
+FloatPoint3D TransformationMatrix::MapPoint(const FloatPoint3D& p) const {
+  if (IsIdentityOrTranslation())
+    return FloatPoint3D(p.X() + static_cast<float>(matrix_[3][0]),
+                        p.Y() + static_cast<float>(matrix_[3][1]),
+                        p.Z() + static_cast<float>(matrix_[3][2]));
 
-  return internalMapPoint(p);
+  return InternalMapPoint(p);
 }
 
-IntRect TransformationMatrix::mapRect(const IntRect& rect) const {
-  return enclosingIntRect(mapRect(FloatRect(rect)));
+IntRect TransformationMatrix::MapRect(const IntRect& rect) const {
+  return EnclosingIntRect(MapRect(FloatRect(rect)));
 }
 
-LayoutRect TransformationMatrix::mapRect(const LayoutRect& r) const {
-  return enclosingLayoutRect(mapRect(FloatRect(r)));
+LayoutRect TransformationMatrix::MapRect(const LayoutRect& r) const {
+  return EnclosingLayoutRect(MapRect(FloatRect(r)));
 }
 
-FloatRect TransformationMatrix::mapRect(const FloatRect& r) const {
-  if (isIdentityOrTranslation()) {
-    FloatRect mappedRect(r);
-    mappedRect.move(static_cast<float>(m_matrix[3][0]),
-                    static_cast<float>(m_matrix[3][1]));
-    return mappedRect;
+FloatRect TransformationMatrix::MapRect(const FloatRect& r) const {
+  if (IsIdentityOrTranslation()) {
+    FloatRect mapped_rect(r);
+    mapped_rect.Move(static_cast<float>(matrix_[3][0]),
+                     static_cast<float>(matrix_[3][1]));
+    return mapped_rect;
   }
 
   FloatQuad result;
 
-  float maxX = r.maxX();
-  float maxY = r.maxY();
-  result.setP1(internalMapPoint(FloatPoint(r.x(), r.y())));
-  result.setP2(internalMapPoint(FloatPoint(maxX, r.y())));
-  result.setP3(internalMapPoint(FloatPoint(maxX, maxY)));
-  result.setP4(internalMapPoint(FloatPoint(r.x(), maxY)));
+  float max_x = r.MaxX();
+  float max_y = r.MaxY();
+  result.SetP1(InternalMapPoint(FloatPoint(r.X(), r.Y())));
+  result.SetP2(InternalMapPoint(FloatPoint(max_x, r.Y())));
+  result.SetP3(InternalMapPoint(FloatPoint(max_x, max_y)));
+  result.SetP4(InternalMapPoint(FloatPoint(r.X(), max_y)));
 
-  return result.boundingBox();
+  return result.BoundingBox();
 }
 
-FloatQuad TransformationMatrix::mapQuad(const FloatQuad& q) const {
-  if (isIdentityOrTranslation()) {
-    FloatQuad mappedQuad(q);
-    mappedQuad.move(static_cast<float>(m_matrix[3][0]),
-                    static_cast<float>(m_matrix[3][1]));
-    return mappedQuad;
+FloatQuad TransformationMatrix::MapQuad(const FloatQuad& q) const {
+  if (IsIdentityOrTranslation()) {
+    FloatQuad mapped_quad(q);
+    mapped_quad.Move(static_cast<float>(matrix_[3][0]),
+                     static_cast<float>(matrix_[3][1]));
+    return mapped_quad;
   }
 
   FloatQuad result;
-  result.setP1(internalMapPoint(q.p1()));
-  result.setP2(internalMapPoint(q.p2()));
-  result.setP3(internalMapPoint(q.p3()));
-  result.setP4(internalMapPoint(q.p4()));
+  result.SetP1(InternalMapPoint(q.P1()));
+  result.SetP2(InternalMapPoint(q.P2()));
+  result.SetP3(InternalMapPoint(q.P3()));
+  result.SetP4(InternalMapPoint(q.P4()));
   return result;
 }
 
-TransformationMatrix& TransformationMatrix::scaleNonUniform(double sx,
+TransformationMatrix& TransformationMatrix::ScaleNonUniform(double sx,
                                                             double sy) {
-  m_matrix[0][0] *= sx;
-  m_matrix[0][1] *= sx;
-  m_matrix[0][2] *= sx;
-  m_matrix[0][3] *= sx;
+  matrix_[0][0] *= sx;
+  matrix_[0][1] *= sx;
+  matrix_[0][2] *= sx;
+  matrix_[0][3] *= sx;
 
-  m_matrix[1][0] *= sy;
-  m_matrix[1][1] *= sy;
-  m_matrix[1][2] *= sy;
-  m_matrix[1][3] *= sy;
+  matrix_[1][0] *= sy;
+  matrix_[1][1] *= sy;
+  matrix_[1][2] *= sy;
+  matrix_[1][3] *= sy;
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::scale3d(double sx,
+TransformationMatrix& TransformationMatrix::Scale3d(double sx,
                                                     double sy,
                                                     double sz) {
-  scaleNonUniform(sx, sy);
+  ScaleNonUniform(sx, sy);
 
-  m_matrix[2][0] *= sz;
-  m_matrix[2][1] *= sz;
-  m_matrix[2][2] *= sz;
-  m_matrix[2][3] *= sz;
+  matrix_[2][0] *= sz;
+  matrix_[2][1] *= sz;
+  matrix_[2][2] *= sz;
+  matrix_[2][3] *= sz;
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::rotate3d(const Rotation& rotation) {
-  return rotate3d(rotation.axis.x(), rotation.axis.y(), rotation.axis.z(),
+TransformationMatrix& TransformationMatrix::Rotate3d(const Rotation& rotation) {
+  return Rotate3d(rotation.axis.X(), rotation.axis.Y(), rotation.axis.Z(),
                   rotation.angle);
 }
 
-TransformationMatrix& TransformationMatrix::rotate3d(double x,
+TransformationMatrix& TransformationMatrix::Rotate3d(double x,
                                                      double y,
                                                      double z,
                                                      double angle) {
@@ -1042,51 +1045,51 @@ TransformationMatrix& TransformationMatrix::rotate3d(double x,
   // Angles are in degrees. Switch to radians.
   angle = deg2rad(angle);
 
-  double sinTheta = std::sin(angle);
-  double cosTheta = std::cos(angle);
+  double sin_theta = std::sin(angle);
+  double cos_theta = std::cos(angle);
 
   TransformationMatrix mat;
 
   // Optimize cases where the axis is along a major axis
   if (x == 1.0 && y == 0.0 && z == 0.0) {
-    mat.m_matrix[0][0] = 1.0;
-    mat.m_matrix[0][1] = 0.0;
-    mat.m_matrix[0][2] = 0.0;
-    mat.m_matrix[1][0] = 0.0;
-    mat.m_matrix[1][1] = cosTheta;
-    mat.m_matrix[1][2] = sinTheta;
-    mat.m_matrix[2][0] = 0.0;
-    mat.m_matrix[2][1] = -sinTheta;
-    mat.m_matrix[2][2] = cosTheta;
-    mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-    mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-    mat.m_matrix[3][3] = 1.0;
+    mat.matrix_[0][0] = 1.0;
+    mat.matrix_[0][1] = 0.0;
+    mat.matrix_[0][2] = 0.0;
+    mat.matrix_[1][0] = 0.0;
+    mat.matrix_[1][1] = cos_theta;
+    mat.matrix_[1][2] = sin_theta;
+    mat.matrix_[2][0] = 0.0;
+    mat.matrix_[2][1] = -sin_theta;
+    mat.matrix_[2][2] = cos_theta;
+    mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+    mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+    mat.matrix_[3][3] = 1.0;
   } else if (x == 0.0 && y == 1.0 && z == 0.0) {
-    mat.m_matrix[0][0] = cosTheta;
-    mat.m_matrix[0][1] = 0.0;
-    mat.m_matrix[0][2] = -sinTheta;
-    mat.m_matrix[1][0] = 0.0;
-    mat.m_matrix[1][1] = 1.0;
-    mat.m_matrix[1][2] = 0.0;
-    mat.m_matrix[2][0] = sinTheta;
-    mat.m_matrix[2][1] = 0.0;
-    mat.m_matrix[2][2] = cosTheta;
-    mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-    mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-    mat.m_matrix[3][3] = 1.0;
+    mat.matrix_[0][0] = cos_theta;
+    mat.matrix_[0][1] = 0.0;
+    mat.matrix_[0][2] = -sin_theta;
+    mat.matrix_[1][0] = 0.0;
+    mat.matrix_[1][1] = 1.0;
+    mat.matrix_[1][2] = 0.0;
+    mat.matrix_[2][0] = sin_theta;
+    mat.matrix_[2][1] = 0.0;
+    mat.matrix_[2][2] = cos_theta;
+    mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+    mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+    mat.matrix_[3][3] = 1.0;
   } else if (x == 0.0 && y == 0.0 && z == 1.0) {
-    mat.m_matrix[0][0] = cosTheta;
-    mat.m_matrix[0][1] = sinTheta;
-    mat.m_matrix[0][2] = 0.0;
-    mat.m_matrix[1][0] = -sinTheta;
-    mat.m_matrix[1][1] = cosTheta;
-    mat.m_matrix[1][2] = 0.0;
-    mat.m_matrix[2][0] = 0.0;
-    mat.m_matrix[2][1] = 0.0;
-    mat.m_matrix[2][2] = 1.0;
-    mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-    mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-    mat.m_matrix[3][3] = 1.0;
+    mat.matrix_[0][0] = cos_theta;
+    mat.matrix_[0][1] = sin_theta;
+    mat.matrix_[0][2] = 0.0;
+    mat.matrix_[1][0] = -sin_theta;
+    mat.matrix_[1][1] = cos_theta;
+    mat.matrix_[1][2] = 0.0;
+    mat.matrix_[2][0] = 0.0;
+    mat.matrix_[2][1] = 0.0;
+    mat.matrix_[2][2] = 1.0;
+    mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+    mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+    mat.matrix_[3][3] = 1.0;
   } else {
     // This case is the rotation about an arbitrary unit vector.
     //
@@ -1096,25 +1099,25 @@ TransformationMatrix& TransformationMatrix::rotate3d(double x,
     // An alternate resource with the same matrix:
     // http://www.fastgraph.com/makegames/3drotation/
     //
-    double oneMinusCosTheta = 1 - cosTheta;
-    mat.m_matrix[0][0] = cosTheta + x * x * oneMinusCosTheta;
-    mat.m_matrix[0][1] = y * x * oneMinusCosTheta + z * sinTheta;
-    mat.m_matrix[0][2] = z * x * oneMinusCosTheta - y * sinTheta;
-    mat.m_matrix[1][0] = x * y * oneMinusCosTheta - z * sinTheta;
-    mat.m_matrix[1][1] = cosTheta + y * y * oneMinusCosTheta;
-    mat.m_matrix[1][2] = z * y * oneMinusCosTheta + x * sinTheta;
-    mat.m_matrix[2][0] = x * z * oneMinusCosTheta + y * sinTheta;
-    mat.m_matrix[2][1] = y * z * oneMinusCosTheta - x * sinTheta;
-    mat.m_matrix[2][2] = cosTheta + z * z * oneMinusCosTheta;
-    mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-    mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-    mat.m_matrix[3][3] = 1.0;
+    double one_minus_cos_theta = 1 - cos_theta;
+    mat.matrix_[0][0] = cos_theta + x * x * one_minus_cos_theta;
+    mat.matrix_[0][1] = y * x * one_minus_cos_theta + z * sin_theta;
+    mat.matrix_[0][2] = z * x * one_minus_cos_theta - y * sin_theta;
+    mat.matrix_[1][0] = x * y * one_minus_cos_theta - z * sin_theta;
+    mat.matrix_[1][1] = cos_theta + y * y * one_minus_cos_theta;
+    mat.matrix_[1][2] = z * y * one_minus_cos_theta + x * sin_theta;
+    mat.matrix_[2][0] = x * z * one_minus_cos_theta + y * sin_theta;
+    mat.matrix_[2][1] = y * z * one_minus_cos_theta - x * sin_theta;
+    mat.matrix_[2][2] = cos_theta + z * z * one_minus_cos_theta;
+    mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+    mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+    mat.matrix_[3][3] = 1.0;
   }
-  multiply(mat);
+  Multiply(mat);
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::rotate3d(double rx,
+TransformationMatrix& TransformationMatrix::Rotate3d(double rx,
                                                      double ry,
                                                      double rz) {
   // Angles are in degrees. Switch to radians.
@@ -1124,157 +1127,153 @@ TransformationMatrix& TransformationMatrix::rotate3d(double rx,
 
   TransformationMatrix mat;
 
-  double sinTheta = std::sin(rz);
-  double cosTheta = std::cos(rz);
+  double sin_theta = std::sin(rz);
+  double cos_theta = std::cos(rz);
 
-  mat.m_matrix[0][0] = cosTheta;
-  mat.m_matrix[0][1] = sinTheta;
-  mat.m_matrix[0][2] = 0.0;
-  mat.m_matrix[1][0] = -sinTheta;
-  mat.m_matrix[1][1] = cosTheta;
-  mat.m_matrix[1][2] = 0.0;
-  mat.m_matrix[2][0] = 0.0;
-  mat.m_matrix[2][1] = 0.0;
-  mat.m_matrix[2][2] = 1.0;
-  mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-  mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-  mat.m_matrix[3][3] = 1.0;
+  mat.matrix_[0][0] = cos_theta;
+  mat.matrix_[0][1] = sin_theta;
+  mat.matrix_[0][2] = 0.0;
+  mat.matrix_[1][0] = -sin_theta;
+  mat.matrix_[1][1] = cos_theta;
+  mat.matrix_[1][2] = 0.0;
+  mat.matrix_[2][0] = 0.0;
+  mat.matrix_[2][1] = 0.0;
+  mat.matrix_[2][2] = 1.0;
+  mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+  mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+  mat.matrix_[3][3] = 1.0;
 
   TransformationMatrix rmat(mat);
 
-  sinTheta = std::sin(ry);
-  cosTheta = std::cos(ry);
+  sin_theta = std::sin(ry);
+  cos_theta = std::cos(ry);
 
-  mat.m_matrix[0][0] = cosTheta;
-  mat.m_matrix[0][1] = 0.0;
-  mat.m_matrix[0][2] = -sinTheta;
-  mat.m_matrix[1][0] = 0.0;
-  mat.m_matrix[1][1] = 1.0;
-  mat.m_matrix[1][2] = 0.0;
-  mat.m_matrix[2][0] = sinTheta;
-  mat.m_matrix[2][1] = 0.0;
-  mat.m_matrix[2][2] = cosTheta;
-  mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-  mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-  mat.m_matrix[3][3] = 1.0;
+  mat.matrix_[0][0] = cos_theta;
+  mat.matrix_[0][1] = 0.0;
+  mat.matrix_[0][2] = -sin_theta;
+  mat.matrix_[1][0] = 0.0;
+  mat.matrix_[1][1] = 1.0;
+  mat.matrix_[1][2] = 0.0;
+  mat.matrix_[2][0] = sin_theta;
+  mat.matrix_[2][1] = 0.0;
+  mat.matrix_[2][2] = cos_theta;
+  mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+  mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+  mat.matrix_[3][3] = 1.0;
 
-  rmat.multiply(mat);
+  rmat.Multiply(mat);
 
-  sinTheta = std::sin(rx);
-  cosTheta = std::cos(rx);
+  sin_theta = std::sin(rx);
+  cos_theta = std::cos(rx);
 
-  mat.m_matrix[0][0] = 1.0;
-  mat.m_matrix[0][1] = 0.0;
-  mat.m_matrix[0][2] = 0.0;
-  mat.m_matrix[1][0] = 0.0;
-  mat.m_matrix[1][1] = cosTheta;
-  mat.m_matrix[1][2] = sinTheta;
-  mat.m_matrix[2][0] = 0.0;
-  mat.m_matrix[2][1] = -sinTheta;
-  mat.m_matrix[2][2] = cosTheta;
-  mat.m_matrix[0][3] = mat.m_matrix[1][3] = mat.m_matrix[2][3] = 0.0;
-  mat.m_matrix[3][0] = mat.m_matrix[3][1] = mat.m_matrix[3][2] = 0.0;
-  mat.m_matrix[3][3] = 1.0;
+  mat.matrix_[0][0] = 1.0;
+  mat.matrix_[0][1] = 0.0;
+  mat.matrix_[0][2] = 0.0;
+  mat.matrix_[1][0] = 0.0;
+  mat.matrix_[1][1] = cos_theta;
+  mat.matrix_[1][2] = sin_theta;
+  mat.matrix_[2][0] = 0.0;
+  mat.matrix_[2][1] = -sin_theta;
+  mat.matrix_[2][2] = cos_theta;
+  mat.matrix_[0][3] = mat.matrix_[1][3] = mat.matrix_[2][3] = 0.0;
+  mat.matrix_[3][0] = mat.matrix_[3][1] = mat.matrix_[3][2] = 0.0;
+  mat.matrix_[3][3] = 1.0;
 
-  rmat.multiply(mat);
+  rmat.Multiply(mat);
 
-  multiply(rmat);
+  Multiply(rmat);
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::translate(double tx, double ty) {
-  m_matrix[3][0] += tx * m_matrix[0][0] + ty * m_matrix[1][0];
-  m_matrix[3][1] += tx * m_matrix[0][1] + ty * m_matrix[1][1];
-  m_matrix[3][2] += tx * m_matrix[0][2] + ty * m_matrix[1][2];
-  m_matrix[3][3] += tx * m_matrix[0][3] + ty * m_matrix[1][3];
+TransformationMatrix& TransformationMatrix::Translate(double tx, double ty) {
+  matrix_[3][0] += tx * matrix_[0][0] + ty * matrix_[1][0];
+  matrix_[3][1] += tx * matrix_[0][1] + ty * matrix_[1][1];
+  matrix_[3][2] += tx * matrix_[0][2] + ty * matrix_[1][2];
+  matrix_[3][3] += tx * matrix_[0][3] + ty * matrix_[1][3];
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::translate3d(double tx,
+TransformationMatrix& TransformationMatrix::Translate3d(double tx,
                                                         double ty,
                                                         double tz) {
-  m_matrix[3][0] +=
-      tx * m_matrix[0][0] + ty * m_matrix[1][0] + tz * m_matrix[2][0];
-  m_matrix[3][1] +=
-      tx * m_matrix[0][1] + ty * m_matrix[1][1] + tz * m_matrix[2][1];
-  m_matrix[3][2] +=
-      tx * m_matrix[0][2] + ty * m_matrix[1][2] + tz * m_matrix[2][2];
-  m_matrix[3][3] +=
-      tx * m_matrix[0][3] + ty * m_matrix[1][3] + tz * m_matrix[2][3];
+  matrix_[3][0] += tx * matrix_[0][0] + ty * matrix_[1][0] + tz * matrix_[2][0];
+  matrix_[3][1] += tx * matrix_[0][1] + ty * matrix_[1][1] + tz * matrix_[2][1];
+  matrix_[3][2] += tx * matrix_[0][2] + ty * matrix_[1][2] + tz * matrix_[2][2];
+  matrix_[3][3] += tx * matrix_[0][3] + ty * matrix_[1][3] + tz * matrix_[2][3];
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::translateRight(double tx,
+TransformationMatrix& TransformationMatrix::TranslateRight(double tx,
                                                            double ty) {
   if (tx != 0) {
-    m_matrix[0][0] += m_matrix[0][3] * tx;
-    m_matrix[1][0] += m_matrix[1][3] * tx;
-    m_matrix[2][0] += m_matrix[2][3] * tx;
-    m_matrix[3][0] += m_matrix[3][3] * tx;
+    matrix_[0][0] += matrix_[0][3] * tx;
+    matrix_[1][0] += matrix_[1][3] * tx;
+    matrix_[2][0] += matrix_[2][3] * tx;
+    matrix_[3][0] += matrix_[3][3] * tx;
   }
 
   if (ty != 0) {
-    m_matrix[0][1] += m_matrix[0][3] * ty;
-    m_matrix[1][1] += m_matrix[1][3] * ty;
-    m_matrix[2][1] += m_matrix[2][3] * ty;
-    m_matrix[3][1] += m_matrix[3][3] * ty;
+    matrix_[0][1] += matrix_[0][3] * ty;
+    matrix_[1][1] += matrix_[1][3] * ty;
+    matrix_[2][1] += matrix_[2][3] * ty;
+    matrix_[3][1] += matrix_[3][3] * ty;
   }
 
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::translateRight3d(double tx,
+TransformationMatrix& TransformationMatrix::TranslateRight3d(double tx,
                                                              double ty,
                                                              double tz) {
-  translateRight(tx, ty);
+  TranslateRight(tx, ty);
   if (tz != 0) {
-    m_matrix[0][2] += m_matrix[0][3] * tz;
-    m_matrix[1][2] += m_matrix[1][3] * tz;
-    m_matrix[2][2] += m_matrix[2][3] * tz;
-    m_matrix[3][2] += m_matrix[3][3] * tz;
+    matrix_[0][2] += matrix_[0][3] * tz;
+    matrix_[1][2] += matrix_[1][3] * tz;
+    matrix_[2][2] += matrix_[2][3] * tz;
+    matrix_[3][2] += matrix_[3][3] * tz;
   }
 
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::skew(double sx, double sy) {
+TransformationMatrix& TransformationMatrix::Skew(double sx, double sy) {
   // angles are in degrees. Switch to radians
   sx = deg2rad(sx);
   sy = deg2rad(sy);
 
   TransformationMatrix mat;
-  mat.m_matrix[0][1] =
+  mat.matrix_[0][1] =
       std::tan(sy);  // note that the y shear goes in the first row
-  mat.m_matrix[1][0] = std::tan(sx);  // and the x shear in the second row
+  mat.matrix_[1][0] = std::tan(sx);  // and the x shear in the second row
 
-  multiply(mat);
+  Multiply(mat);
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::applyPerspective(double p) {
+TransformationMatrix& TransformationMatrix::ApplyPerspective(double p) {
   TransformationMatrix mat;
   if (p != 0)
-    mat.m_matrix[2][3] = -1 / p;
+    mat.matrix_[2][3] = -1 / p;
 
-  multiply(mat);
+  Multiply(mat);
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::applyTransformOrigin(double x,
+TransformationMatrix& TransformationMatrix::ApplyTransformOrigin(double x,
                                                                  double y,
                                                                  double z) {
-  translateRight3d(x, y, z);
-  translate3d(-x, -y, -z);
+  TranslateRight3d(x, y, z);
+  Translate3d(-x, -y, -z);
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::zoom(double zoomFactor) {
-  m_matrix[0][3] /= zoomFactor;
-  m_matrix[1][3] /= zoomFactor;
-  m_matrix[2][3] /= zoomFactor;
-  m_matrix[3][0] *= zoomFactor;
-  m_matrix[3][1] *= zoomFactor;
-  m_matrix[3][2] *= zoomFactor;
+TransformationMatrix& TransformationMatrix::Zoom(double zoom_factor) {
+  matrix_[0][3] /= zoom_factor;
+  matrix_[1][3] /= zoom_factor;
+  matrix_[2][3] /= zoom_factor;
+  matrix_[3][0] *= zoom_factor;
+  matrix_[3][1] *= zoom_factor;
+  matrix_[3][2] *= zoom_factor;
   return *this;
 }
 
@@ -1287,7 +1286,7 @@ TransformationMatrix& TransformationMatrix::zoom(double zoomFactor) {
 // m_matrix[a][b] is matrix element row b, col a.
 // FIXME: As of 2016-05-04, the ARM64 branch is NOT triggered by tests on the CQ
 // bots, see crbug.com/477892 and crbug.com/584508.
-TransformationMatrix& TransformationMatrix::multiply(
+TransformationMatrix& TransformationMatrix::Multiply(
     const TransformationMatrix& mat) {
 #if CPU(ARM64)
   double* rightMatrix = &(m_matrix[0][0]);
@@ -1440,503 +1439,487 @@ TransformationMatrix& TransformationMatrix::multiply(
 #elif defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
   // x86_64 has 16 XMM registers which is enough to do the multiplication fully
   // in registers.
-  __m128d matrixBlockA = _mm_load_pd(&(m_matrix[0][0]));
-  __m128d matrixBlockC = _mm_load_pd(&(m_matrix[1][0]));
-  __m128d matrixBlockE = _mm_load_pd(&(m_matrix[2][0]));
-  __m128d matrixBlockG = _mm_load_pd(&(m_matrix[3][0]));
+  __m128d matrix_block_a = _mm_load_pd(&(matrix_[0][0]));
+  __m128d matrix_block_c = _mm_load_pd(&(matrix_[1][0]));
+  __m128d matrix_block_e = _mm_load_pd(&(matrix_[2][0]));
+  __m128d matrix_block_g = _mm_load_pd(&(matrix_[3][0]));
 
   // First row.
-  __m128d otherMatrixFirstParam = _mm_set1_pd(mat.m_matrix[0][0]);
-  __m128d otherMatrixSecondParam = _mm_set1_pd(mat.m_matrix[0][1]);
-  __m128d otherMatrixThirdParam = _mm_set1_pd(mat.m_matrix[0][2]);
-  __m128d otherMatrixFourthParam = _mm_set1_pd(mat.m_matrix[0][3]);
+  __m128d other_matrix_first_param = _mm_set1_pd(mat.matrix_[0][0]);
+  __m128d other_matrix_second_param = _mm_set1_pd(mat.matrix_[0][1]);
+  __m128d other_matrix_third_param = _mm_set1_pd(mat.matrix_[0][2]);
+  __m128d other_matrix_fourth_param = _mm_set1_pd(mat.matrix_[0][3]);
 
   // output00 and output01.
-  __m128d accumulator = _mm_mul_pd(matrixBlockA, otherMatrixFirstParam);
-  __m128d temp1 = _mm_mul_pd(matrixBlockC, otherMatrixSecondParam);
-  __m128d temp2 = _mm_mul_pd(matrixBlockE, otherMatrixThirdParam);
-  __m128d temp3 = _mm_mul_pd(matrixBlockG, otherMatrixFourthParam);
+  __m128d accumulator = _mm_mul_pd(matrix_block_a, other_matrix_first_param);
+  __m128d temp1 = _mm_mul_pd(matrix_block_c, other_matrix_second_param);
+  __m128d temp2 = _mm_mul_pd(matrix_block_e, other_matrix_third_param);
+  __m128d temp3 = _mm_mul_pd(matrix_block_g, other_matrix_fourth_param);
 
-  __m128d matrixBlockB = _mm_load_pd(&(m_matrix[0][2]));
-  __m128d matrixBlockD = _mm_load_pd(&(m_matrix[1][2]));
-  __m128d matrixBlockF = _mm_load_pd(&(m_matrix[2][2]));
-  __m128d matrixBlockH = _mm_load_pd(&(m_matrix[3][2]));
+  __m128d matrix_block_b = _mm_load_pd(&(matrix_[0][2]));
+  __m128d matrix_block_d = _mm_load_pd(&(matrix_[1][2]));
+  __m128d matrix_block_f = _mm_load_pd(&(matrix_[2][2]));
+  __m128d matrix_block_h = _mm_load_pd(&(matrix_[3][2]));
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[0][0], accumulator);
+  _mm_store_pd(&matrix_[0][0], accumulator);
 
   // output02 and output03.
-  accumulator = _mm_mul_pd(matrixBlockB, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockD, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockF, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockH, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_d, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_f, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_h, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[0][2], accumulator);
+  _mm_store_pd(&matrix_[0][2], accumulator);
 
   // Second row.
-  otherMatrixFirstParam = _mm_set1_pd(mat.m_matrix[1][0]);
-  otherMatrixSecondParam = _mm_set1_pd(mat.m_matrix[1][1]);
-  otherMatrixThirdParam = _mm_set1_pd(mat.m_matrix[1][2]);
-  otherMatrixFourthParam = _mm_set1_pd(mat.m_matrix[1][3]);
+  other_matrix_first_param = _mm_set1_pd(mat.matrix_[1][0]);
+  other_matrix_second_param = _mm_set1_pd(mat.matrix_[1][1]);
+  other_matrix_third_param = _mm_set1_pd(mat.matrix_[1][2]);
+  other_matrix_fourth_param = _mm_set1_pd(mat.matrix_[1][3]);
 
   // output10 and output11.
-  accumulator = _mm_mul_pd(matrixBlockA, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockC, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockE, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockG, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_a, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_c, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_e, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_g, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[1][0], accumulator);
+  _mm_store_pd(&matrix_[1][0], accumulator);
 
   // output12 and output13.
-  accumulator = _mm_mul_pd(matrixBlockB, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockD, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockF, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockH, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_d, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_f, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_h, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[1][2], accumulator);
+  _mm_store_pd(&matrix_[1][2], accumulator);
 
   // Third row.
-  otherMatrixFirstParam = _mm_set1_pd(mat.m_matrix[2][0]);
-  otherMatrixSecondParam = _mm_set1_pd(mat.m_matrix[2][1]);
-  otherMatrixThirdParam = _mm_set1_pd(mat.m_matrix[2][2]);
-  otherMatrixFourthParam = _mm_set1_pd(mat.m_matrix[2][3]);
+  other_matrix_first_param = _mm_set1_pd(mat.matrix_[2][0]);
+  other_matrix_second_param = _mm_set1_pd(mat.matrix_[2][1]);
+  other_matrix_third_param = _mm_set1_pd(mat.matrix_[2][2]);
+  other_matrix_fourth_param = _mm_set1_pd(mat.matrix_[2][3]);
 
   // output20 and output21.
-  accumulator = _mm_mul_pd(matrixBlockA, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockC, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockE, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockG, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_a, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_c, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_e, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_g, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[2][0], accumulator);
+  _mm_store_pd(&matrix_[2][0], accumulator);
 
   // output22 and output23.
-  accumulator = _mm_mul_pd(matrixBlockB, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockD, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockF, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockH, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_d, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_f, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_h, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[2][2], accumulator);
+  _mm_store_pd(&matrix_[2][2], accumulator);
 
   // Fourth row.
-  otherMatrixFirstParam = _mm_set1_pd(mat.m_matrix[3][0]);
-  otherMatrixSecondParam = _mm_set1_pd(mat.m_matrix[3][1]);
-  otherMatrixThirdParam = _mm_set1_pd(mat.m_matrix[3][2]);
-  otherMatrixFourthParam = _mm_set1_pd(mat.m_matrix[3][3]);
+  other_matrix_first_param = _mm_set1_pd(mat.matrix_[3][0]);
+  other_matrix_second_param = _mm_set1_pd(mat.matrix_[3][1]);
+  other_matrix_third_param = _mm_set1_pd(mat.matrix_[3][2]);
+  other_matrix_fourth_param = _mm_set1_pd(mat.matrix_[3][3]);
 
   // output30 and output31.
-  accumulator = _mm_mul_pd(matrixBlockA, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockC, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockE, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockG, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_a, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_c, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_e, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_g, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[3][0], accumulator);
+  _mm_store_pd(&matrix_[3][0], accumulator);
 
   // output32 and output33.
-  accumulator = _mm_mul_pd(matrixBlockB, otherMatrixFirstParam);
-  temp1 = _mm_mul_pd(matrixBlockD, otherMatrixSecondParam);
-  temp2 = _mm_mul_pd(matrixBlockF, otherMatrixThirdParam);
-  temp3 = _mm_mul_pd(matrixBlockH, otherMatrixFourthParam);
+  accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
+  temp1 = _mm_mul_pd(matrix_block_d, other_matrix_second_param);
+  temp2 = _mm_mul_pd(matrix_block_f, other_matrix_third_param);
+  temp3 = _mm_mul_pd(matrix_block_h, other_matrix_fourth_param);
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&m_matrix[3][2], accumulator);
+  _mm_store_pd(&matrix_[3][2], accumulator);
 #else
   Matrix4 tmp;
 
-  tmp[0][0] = (mat.m_matrix[0][0] * m_matrix[0][0] +
-               mat.m_matrix[0][1] * m_matrix[1][0] +
-               mat.m_matrix[0][2] * m_matrix[2][0] +
-               mat.m_matrix[0][3] * m_matrix[3][0]);
-  tmp[0][1] = (mat.m_matrix[0][0] * m_matrix[0][1] +
-               mat.m_matrix[0][1] * m_matrix[1][1] +
-               mat.m_matrix[0][2] * m_matrix[2][1] +
-               mat.m_matrix[0][3] * m_matrix[3][1]);
-  tmp[0][2] = (mat.m_matrix[0][0] * m_matrix[0][2] +
-               mat.m_matrix[0][1] * m_matrix[1][2] +
-               mat.m_matrix[0][2] * m_matrix[2][2] +
-               mat.m_matrix[0][3] * m_matrix[3][2]);
-  tmp[0][3] = (mat.m_matrix[0][0] * m_matrix[0][3] +
-               mat.m_matrix[0][1] * m_matrix[1][3] +
-               mat.m_matrix[0][2] * m_matrix[2][3] +
-               mat.m_matrix[0][3] * m_matrix[3][3]);
+  tmp[0][0] =
+      (mat.matrix_[0][0] * matrix_[0][0] + mat.matrix_[0][1] * matrix_[1][0] +
+       mat.matrix_[0][2] * matrix_[2][0] + mat.matrix_[0][3] * matrix_[3][0]);
+  tmp[0][1] =
+      (mat.matrix_[0][0] * matrix_[0][1] + mat.matrix_[0][1] * matrix_[1][1] +
+       mat.matrix_[0][2] * matrix_[2][1] + mat.matrix_[0][3] * matrix_[3][1]);
+  tmp[0][2] =
+      (mat.matrix_[0][0] * matrix_[0][2] + mat.matrix_[0][1] * matrix_[1][2] +
+       mat.matrix_[0][2] * matrix_[2][2] + mat.matrix_[0][3] * matrix_[3][2]);
+  tmp[0][3] =
+      (mat.matrix_[0][0] * matrix_[0][3] + mat.matrix_[0][1] * matrix_[1][3] +
+       mat.matrix_[0][2] * matrix_[2][3] + mat.matrix_[0][3] * matrix_[3][3]);
 
-  tmp[1][0] = (mat.m_matrix[1][0] * m_matrix[0][0] +
-               mat.m_matrix[1][1] * m_matrix[1][0] +
-               mat.m_matrix[1][2] * m_matrix[2][0] +
-               mat.m_matrix[1][3] * m_matrix[3][0]);
-  tmp[1][1] = (mat.m_matrix[1][0] * m_matrix[0][1] +
-               mat.m_matrix[1][1] * m_matrix[1][1] +
-               mat.m_matrix[1][2] * m_matrix[2][1] +
-               mat.m_matrix[1][3] * m_matrix[3][1]);
-  tmp[1][2] = (mat.m_matrix[1][0] * m_matrix[0][2] +
-               mat.m_matrix[1][1] * m_matrix[1][2] +
-               mat.m_matrix[1][2] * m_matrix[2][2] +
-               mat.m_matrix[1][3] * m_matrix[3][2]);
-  tmp[1][3] = (mat.m_matrix[1][0] * m_matrix[0][3] +
-               mat.m_matrix[1][1] * m_matrix[1][3] +
-               mat.m_matrix[1][2] * m_matrix[2][3] +
-               mat.m_matrix[1][3] * m_matrix[3][3]);
+  tmp[1][0] =
+      (mat.matrix_[1][0] * matrix_[0][0] + mat.matrix_[1][1] * matrix_[1][0] +
+       mat.matrix_[1][2] * matrix_[2][0] + mat.matrix_[1][3] * matrix_[3][0]);
+  tmp[1][1] =
+      (mat.matrix_[1][0] * matrix_[0][1] + mat.matrix_[1][1] * matrix_[1][1] +
+       mat.matrix_[1][2] * matrix_[2][1] + mat.matrix_[1][3] * matrix_[3][1]);
+  tmp[1][2] =
+      (mat.matrix_[1][0] * matrix_[0][2] + mat.matrix_[1][1] * matrix_[1][2] +
+       mat.matrix_[1][2] * matrix_[2][2] + mat.matrix_[1][3] * matrix_[3][2]);
+  tmp[1][3] =
+      (mat.matrix_[1][0] * matrix_[0][3] + mat.matrix_[1][1] * matrix_[1][3] +
+       mat.matrix_[1][2] * matrix_[2][3] + mat.matrix_[1][3] * matrix_[3][3]);
 
-  tmp[2][0] = (mat.m_matrix[2][0] * m_matrix[0][0] +
-               mat.m_matrix[2][1] * m_matrix[1][0] +
-               mat.m_matrix[2][2] * m_matrix[2][0] +
-               mat.m_matrix[2][3] * m_matrix[3][0]);
-  tmp[2][1] = (mat.m_matrix[2][0] * m_matrix[0][1] +
-               mat.m_matrix[2][1] * m_matrix[1][1] +
-               mat.m_matrix[2][2] * m_matrix[2][1] +
-               mat.m_matrix[2][3] * m_matrix[3][1]);
-  tmp[2][2] = (mat.m_matrix[2][0] * m_matrix[0][2] +
-               mat.m_matrix[2][1] * m_matrix[1][2] +
-               mat.m_matrix[2][2] * m_matrix[2][2] +
-               mat.m_matrix[2][3] * m_matrix[3][2]);
-  tmp[2][3] = (mat.m_matrix[2][0] * m_matrix[0][3] +
-               mat.m_matrix[2][1] * m_matrix[1][3] +
-               mat.m_matrix[2][2] * m_matrix[2][3] +
-               mat.m_matrix[2][3] * m_matrix[3][3]);
+  tmp[2][0] =
+      (mat.matrix_[2][0] * matrix_[0][0] + mat.matrix_[2][1] * matrix_[1][0] +
+       mat.matrix_[2][2] * matrix_[2][0] + mat.matrix_[2][3] * matrix_[3][0]);
+  tmp[2][1] =
+      (mat.matrix_[2][0] * matrix_[0][1] + mat.matrix_[2][1] * matrix_[1][1] +
+       mat.matrix_[2][2] * matrix_[2][1] + mat.matrix_[2][3] * matrix_[3][1]);
+  tmp[2][2] =
+      (mat.matrix_[2][0] * matrix_[0][2] + mat.matrix_[2][1] * matrix_[1][2] +
+       mat.matrix_[2][2] * matrix_[2][2] + mat.matrix_[2][3] * matrix_[3][2]);
+  tmp[2][3] =
+      (mat.matrix_[2][0] * matrix_[0][3] + mat.matrix_[2][1] * matrix_[1][3] +
+       mat.matrix_[2][2] * matrix_[2][3] + mat.matrix_[2][3] * matrix_[3][3]);
 
-  tmp[3][0] = (mat.m_matrix[3][0] * m_matrix[0][0] +
-               mat.m_matrix[3][1] * m_matrix[1][0] +
-               mat.m_matrix[3][2] * m_matrix[2][0] +
-               mat.m_matrix[3][3] * m_matrix[3][0]);
-  tmp[3][1] = (mat.m_matrix[3][0] * m_matrix[0][1] +
-               mat.m_matrix[3][1] * m_matrix[1][1] +
-               mat.m_matrix[3][2] * m_matrix[2][1] +
-               mat.m_matrix[3][3] * m_matrix[3][1]);
-  tmp[3][2] = (mat.m_matrix[3][0] * m_matrix[0][2] +
-               mat.m_matrix[3][1] * m_matrix[1][2] +
-               mat.m_matrix[3][2] * m_matrix[2][2] +
-               mat.m_matrix[3][3] * m_matrix[3][2]);
-  tmp[3][3] = (mat.m_matrix[3][0] * m_matrix[0][3] +
-               mat.m_matrix[3][1] * m_matrix[1][3] +
-               mat.m_matrix[3][2] * m_matrix[2][3] +
-               mat.m_matrix[3][3] * m_matrix[3][3]);
+  tmp[3][0] =
+      (mat.matrix_[3][0] * matrix_[0][0] + mat.matrix_[3][1] * matrix_[1][0] +
+       mat.matrix_[3][2] * matrix_[2][0] + mat.matrix_[3][3] * matrix_[3][0]);
+  tmp[3][1] =
+      (mat.matrix_[3][0] * matrix_[0][1] + mat.matrix_[3][1] * matrix_[1][1] +
+       mat.matrix_[3][2] * matrix_[2][1] + mat.matrix_[3][3] * matrix_[3][1]);
+  tmp[3][2] =
+      (mat.matrix_[3][0] * matrix_[0][2] + mat.matrix_[3][1] * matrix_[1][2] +
+       mat.matrix_[3][2] * matrix_[2][2] + mat.matrix_[3][3] * matrix_[3][2]);
+  tmp[3][3] =
+      (mat.matrix_[3][0] * matrix_[0][3] + mat.matrix_[3][1] * matrix_[1][3] +
+       mat.matrix_[3][2] * matrix_[2][3] + mat.matrix_[3][3] * matrix_[3][3]);
 
-  setMatrix(tmp);
+  SetMatrix(tmp);
 #endif
   return *this;
 }
 
-void TransformationMatrix::multVecMatrix(double x,
+void TransformationMatrix::MultVecMatrix(double x,
                                          double y,
-                                         double& resultX,
-                                         double& resultY) const {
-  resultX = m_matrix[3][0] + x * m_matrix[0][0] + y * m_matrix[1][0];
-  resultY = m_matrix[3][1] + x * m_matrix[0][1] + y * m_matrix[1][1];
-  double w = m_matrix[3][3] + x * m_matrix[0][3] + y * m_matrix[1][3];
+                                         double& result_x,
+                                         double& result_y) const {
+  result_x = matrix_[3][0] + x * matrix_[0][0] + y * matrix_[1][0];
+  result_y = matrix_[3][1] + x * matrix_[0][1] + y * matrix_[1][1];
+  double w = matrix_[3][3] + x * matrix_[0][3] + y * matrix_[1][3];
   if (w != 1 && w != 0) {
-    resultX /= w;
-    resultY /= w;
+    result_x /= w;
+    result_y /= w;
   }
 }
 
-void TransformationMatrix::multVecMatrix(double x,
+void TransformationMatrix::MultVecMatrix(double x,
                                          double y,
                                          double z,
-                                         double& resultX,
-                                         double& resultY,
-                                         double& resultZ) const {
-  resultX = m_matrix[3][0] + x * m_matrix[0][0] + y * m_matrix[1][0] +
-            z * m_matrix[2][0];
-  resultY = m_matrix[3][1] + x * m_matrix[0][1] + y * m_matrix[1][1] +
-            z * m_matrix[2][1];
-  resultZ = m_matrix[3][2] + x * m_matrix[0][2] + y * m_matrix[1][2] +
-            z * m_matrix[2][2];
-  double w = m_matrix[3][3] + x * m_matrix[0][3] + y * m_matrix[1][3] +
-             z * m_matrix[2][3];
+                                         double& result_x,
+                                         double& result_y,
+                                         double& result_z) const {
+  result_x =
+      matrix_[3][0] + x * matrix_[0][0] + y * matrix_[1][0] + z * matrix_[2][0];
+  result_y =
+      matrix_[3][1] + x * matrix_[0][1] + y * matrix_[1][1] + z * matrix_[2][1];
+  result_z =
+      matrix_[3][2] + x * matrix_[0][2] + y * matrix_[1][2] + z * matrix_[2][2];
+  double w =
+      matrix_[3][3] + x * matrix_[0][3] + y * matrix_[1][3] + z * matrix_[2][3];
   if (w != 1 && w != 0) {
-    resultX /= w;
-    resultY /= w;
-    resultZ /= w;
+    result_x /= w;
+    result_y /= w;
+    result_z /= w;
   }
 }
 
-bool TransformationMatrix::isInvertible() const {
-  if (isIdentityOrTranslation())
+bool TransformationMatrix::IsInvertible() const {
+  if (IsIdentityOrTranslation())
     return true;
 
-  double det = blink::determinant4x4(m_matrix);
+  double det = blink::Determinant4x4(matrix_);
 
-  if (fabs(det) < SmallNumber)
+  if (fabs(det) < kSmallNumber)
     return false;
 
   return true;
 }
 
-TransformationMatrix TransformationMatrix::inverse() const {
-  if (isIdentityOrTranslation()) {
+TransformationMatrix TransformationMatrix::Inverse() const {
+  if (IsIdentityOrTranslation()) {
     // identity matrix
-    if (m_matrix[3][0] == 0 && m_matrix[3][1] == 0 && m_matrix[3][2] == 0)
+    if (matrix_[3][0] == 0 && matrix_[3][1] == 0 && matrix_[3][2] == 0)
       return TransformationMatrix();
 
     // translation
     return TransformationMatrix(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
-                                -m_matrix[3][0], -m_matrix[3][1],
-                                -m_matrix[3][2], 1);
+                                -matrix_[3][0], -matrix_[3][1], -matrix_[3][2],
+                                1);
   }
 
-  TransformationMatrix invMat;
-  bool inverted = blink::inverse(m_matrix, invMat.m_matrix);
+  TransformationMatrix inv_mat;
+  bool inverted = blink::Inverse(matrix_, inv_mat.matrix_);
   if (!inverted)
     return TransformationMatrix();
 
-  return invMat;
+  return inv_mat;
 }
 
-void TransformationMatrix::makeAffine() {
-  m_matrix[0][2] = 0;
-  m_matrix[0][3] = 0;
+void TransformationMatrix::MakeAffine() {
+  matrix_[0][2] = 0;
+  matrix_[0][3] = 0;
 
-  m_matrix[1][2] = 0;
-  m_matrix[1][3] = 0;
+  matrix_[1][2] = 0;
+  matrix_[1][3] = 0;
 
-  m_matrix[2][0] = 0;
-  m_matrix[2][1] = 0;
-  m_matrix[2][2] = 1;
-  m_matrix[2][3] = 0;
+  matrix_[2][0] = 0;
+  matrix_[2][1] = 0;
+  matrix_[2][2] = 1;
+  matrix_[2][3] = 0;
 
-  m_matrix[3][2] = 0;
-  m_matrix[3][3] = 1;
+  matrix_[3][2] = 0;
+  matrix_[3][3] = 1;
 }
 
-AffineTransform TransformationMatrix::toAffineTransform() const {
-  return AffineTransform(m_matrix[0][0], m_matrix[0][1], m_matrix[1][0],
-                         m_matrix[1][1], m_matrix[3][0], m_matrix[3][1]);
+AffineTransform TransformationMatrix::ToAffineTransform() const {
+  return AffineTransform(matrix_[0][0], matrix_[0][1], matrix_[1][0],
+                         matrix_[1][1], matrix_[3][0], matrix_[3][1]);
 }
 
-void TransformationMatrix::flattenTo2d() {
-  m_matrix[2][0] = 0;
-  m_matrix[2][1] = 0;
-  m_matrix[0][2] = 0;
-  m_matrix[1][2] = 0;
-  m_matrix[2][2] = 1;
-  m_matrix[3][2] = 0;
-  m_matrix[2][3] = 0;
+void TransformationMatrix::FlattenTo2d() {
+  matrix_[2][0] = 0;
+  matrix_[2][1] = 0;
+  matrix_[0][2] = 0;
+  matrix_[1][2] = 0;
+  matrix_[2][2] = 1;
+  matrix_[3][2] = 0;
+  matrix_[2][3] = 0;
 }
 
-static inline void blendFloat(double& from, double to, double progress) {
+static inline void BlendFloat(double& from, double to, double progress) {
   if (from != to)
     from = from + (to - from) * progress;
 }
 
-void TransformationMatrix::blend(const TransformationMatrix& from,
+void TransformationMatrix::Blend(const TransformationMatrix& from,
                                  double progress) {
-  if (from.isIdentity() && isIdentity())
+  if (from.IsIdentity() && IsIdentity())
     return;
 
   // decompose
-  DecomposedType fromDecomp;
-  DecomposedType toDecomp;
-  if (!from.decompose(fromDecomp) || !decompose(toDecomp)) {
+  DecomposedType from_decomp;
+  DecomposedType to_decomp;
+  if (!from.Decompose(from_decomp) || !Decompose(to_decomp)) {
     if (progress < 0.5)
       *this = from;
     return;
   }
 
   // interpolate
-  blendFloat(fromDecomp.scaleX, toDecomp.scaleX, progress);
-  blendFloat(fromDecomp.scaleY, toDecomp.scaleY, progress);
-  blendFloat(fromDecomp.scaleZ, toDecomp.scaleZ, progress);
-  blendFloat(fromDecomp.skewXY, toDecomp.skewXY, progress);
-  blendFloat(fromDecomp.skewXZ, toDecomp.skewXZ, progress);
-  blendFloat(fromDecomp.skewYZ, toDecomp.skewYZ, progress);
-  blendFloat(fromDecomp.translateX, toDecomp.translateX, progress);
-  blendFloat(fromDecomp.translateY, toDecomp.translateY, progress);
-  blendFloat(fromDecomp.translateZ, toDecomp.translateZ, progress);
-  blendFloat(fromDecomp.perspectiveX, toDecomp.perspectiveX, progress);
-  blendFloat(fromDecomp.perspectiveY, toDecomp.perspectiveY, progress);
-  blendFloat(fromDecomp.perspectiveZ, toDecomp.perspectiveZ, progress);
-  blendFloat(fromDecomp.perspectiveW, toDecomp.perspectiveW, progress);
+  BlendFloat(from_decomp.scale_x, to_decomp.scale_x, progress);
+  BlendFloat(from_decomp.scale_y, to_decomp.scale_y, progress);
+  BlendFloat(from_decomp.scale_z, to_decomp.scale_z, progress);
+  BlendFloat(from_decomp.skew_xy, to_decomp.skew_xy, progress);
+  BlendFloat(from_decomp.skew_xz, to_decomp.skew_xz, progress);
+  BlendFloat(from_decomp.skew_yz, to_decomp.skew_yz, progress);
+  BlendFloat(from_decomp.translate_x, to_decomp.translate_x, progress);
+  BlendFloat(from_decomp.translate_y, to_decomp.translate_y, progress);
+  BlendFloat(from_decomp.translate_z, to_decomp.translate_z, progress);
+  BlendFloat(from_decomp.perspective_x, to_decomp.perspective_x, progress);
+  BlendFloat(from_decomp.perspective_y, to_decomp.perspective_y, progress);
+  BlendFloat(from_decomp.perspective_z, to_decomp.perspective_z, progress);
+  BlendFloat(from_decomp.perspective_w, to_decomp.perspective_w, progress);
 
-  slerp(&fromDecomp.quaternionX, &toDecomp.quaternionX, progress);
+  Slerp(&from_decomp.quaternion_x, &to_decomp.quaternion_x, progress);
 
   // recompose
-  recompose(fromDecomp);
+  Recompose(from_decomp);
 }
 
-bool TransformationMatrix::decompose(DecomposedType& decomp) const {
-  if (isIdentity()) {
+bool TransformationMatrix::Decompose(DecomposedType& decomp) const {
+  if (IsIdentity()) {
     memset(&decomp, 0, sizeof(decomp));
-    decomp.perspectiveW = 1;
-    decomp.scaleX = 1;
-    decomp.scaleY = 1;
-    decomp.scaleZ = 1;
+    decomp.perspective_w = 1;
+    decomp.scale_x = 1;
+    decomp.scale_y = 1;
+    decomp.scale_z = 1;
   }
 
-  if (!blink::decompose(m_matrix, decomp))
+  if (!blink::Decompose(matrix_, decomp))
     return false;
   return true;
 }
 
-void TransformationMatrix::recompose(const DecomposedType& decomp) {
-  makeIdentity();
+void TransformationMatrix::Recompose(const DecomposedType& decomp) {
+  MakeIdentity();
 
   // first apply perspective
-  m_matrix[0][3] = decomp.perspectiveX;
-  m_matrix[1][3] = decomp.perspectiveY;
-  m_matrix[2][3] = decomp.perspectiveZ;
-  m_matrix[3][3] = decomp.perspectiveW;
+  matrix_[0][3] = decomp.perspective_x;
+  matrix_[1][3] = decomp.perspective_y;
+  matrix_[2][3] = decomp.perspective_z;
+  matrix_[3][3] = decomp.perspective_w;
 
   // now translate
-  translate3d(decomp.translateX, decomp.translateY, decomp.translateZ);
+  Translate3d(decomp.translate_x, decomp.translate_y, decomp.translate_z);
 
   // apply rotation
-  double xx = decomp.quaternionX * decomp.quaternionX;
-  double xy = decomp.quaternionX * decomp.quaternionY;
-  double xz = decomp.quaternionX * decomp.quaternionZ;
-  double xw = decomp.quaternionX * decomp.quaternionW;
-  double yy = decomp.quaternionY * decomp.quaternionY;
-  double yz = decomp.quaternionY * decomp.quaternionZ;
-  double yw = decomp.quaternionY * decomp.quaternionW;
-  double zz = decomp.quaternionZ * decomp.quaternionZ;
-  double zw = decomp.quaternionZ * decomp.quaternionW;
+  double xx = decomp.quaternion_x * decomp.quaternion_x;
+  double xy = decomp.quaternion_x * decomp.quaternion_y;
+  double xz = decomp.quaternion_x * decomp.quaternion_z;
+  double xw = decomp.quaternion_x * decomp.quaternion_w;
+  double yy = decomp.quaternion_y * decomp.quaternion_y;
+  double yz = decomp.quaternion_y * decomp.quaternion_z;
+  double yw = decomp.quaternion_y * decomp.quaternion_w;
+  double zz = decomp.quaternion_z * decomp.quaternion_z;
+  double zw = decomp.quaternion_z * decomp.quaternion_w;
 
   // Construct a composite rotation matrix from the quaternion values
-  TransformationMatrix rotationMatrix(
+  TransformationMatrix rotation_matrix(
       1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw), 0, 2 * (xy + zw),
       1 - 2 * (xx + zz), 2 * (yz - xw), 0, 2 * (xz - yw), 2 * (yz + xw),
       1 - 2 * (xx + yy), 0, 0, 0, 0, 1);
 
-  multiply(rotationMatrix);
+  Multiply(rotation_matrix);
 
   // now apply skew
-  if (decomp.skewYZ) {
+  if (decomp.skew_yz) {
     TransformationMatrix tmp;
-    tmp.setM32(decomp.skewYZ);
-    multiply(tmp);
+    tmp.SetM32(decomp.skew_yz);
+    Multiply(tmp);
   }
 
-  if (decomp.skewXZ) {
+  if (decomp.skew_xz) {
     TransformationMatrix tmp;
-    tmp.setM31(decomp.skewXZ);
-    multiply(tmp);
+    tmp.SetM31(decomp.skew_xz);
+    Multiply(tmp);
   }
 
-  if (decomp.skewXY) {
+  if (decomp.skew_xy) {
     TransformationMatrix tmp;
-    tmp.setM21(decomp.skewXY);
-    multiply(tmp);
+    tmp.SetM21(decomp.skew_xy);
+    Multiply(tmp);
   }
 
   // finally, apply scale
-  scale3d(decomp.scaleX, decomp.scaleY, decomp.scaleZ);
+  Scale3d(decomp.scale_x, decomp.scale_y, decomp.scale_z);
 }
 
-bool TransformationMatrix::isIntegerTranslation() const {
-  if (!isIdentityOrTranslation())
+bool TransformationMatrix::IsIntegerTranslation() const {
+  if (!IsIdentityOrTranslation())
     return false;
 
   // Check for translate Z.
-  if (m_matrix[3][2])
+  if (matrix_[3][2])
     return false;
 
   // Check for non-integer translate X/Y.
-  if (static_cast<int>(m_matrix[3][0]) != m_matrix[3][0] ||
-      static_cast<int>(m_matrix[3][1]) != m_matrix[3][1])
+  if (static_cast<int>(matrix_[3][0]) != matrix_[3][0] ||
+      static_cast<int>(matrix_[3][1]) != matrix_[3][1])
     return false;
 
   return true;
 }
 
-FloatSize TransformationMatrix::to2DTranslation() const {
-  ASSERT(isIdentityOr2DTranslation());
-  return FloatSize(m_matrix[3][0], m_matrix[3][1]);
+FloatSize TransformationMatrix::To2DTranslation() const {
+  ASSERT(IsIdentityOr2DTranslation());
+  return FloatSize(matrix_[3][0], matrix_[3][1]);
 }
 
-void TransformationMatrix::toColumnMajorFloatArray(FloatMatrix4& result) const {
-  result[0] = m11();
-  result[1] = m12();
-  result[2] = m13();
-  result[3] = m14();
-  result[4] = m21();
-  result[5] = m22();
-  result[6] = m23();
-  result[7] = m24();
-  result[8] = m31();
-  result[9] = m32();
-  result[10] = m33();
-  result[11] = m34();
-  result[12] = m41();
-  result[13] = m42();
-  result[14] = m43();
-  result[15] = m44();
+void TransformationMatrix::ToColumnMajorFloatArray(FloatMatrix4& result) const {
+  result[0] = M11();
+  result[1] = M12();
+  result[2] = M13();
+  result[3] = M14();
+  result[4] = M21();
+  result[5] = M22();
+  result[6] = M23();
+  result[7] = M24();
+  result[8] = M31();
+  result[9] = M32();
+  result[10] = M33();
+  result[11] = M34();
+  result[12] = M41();
+  result[13] = M42();
+  result[14] = M43();
+  result[15] = M44();
 }
 
-SkMatrix44 TransformationMatrix::toSkMatrix44(
+SkMatrix44 TransformationMatrix::ToSkMatrix44(
     const TransformationMatrix& matrix) {
   SkMatrix44 ret(SkMatrix44::kUninitialized_Constructor);
-  ret.setDouble(0, 0, matrix.m11());
-  ret.setDouble(0, 1, matrix.m21());
-  ret.setDouble(0, 2, matrix.m31());
-  ret.setDouble(0, 3, matrix.m41());
-  ret.setDouble(1, 0, matrix.m12());
-  ret.setDouble(1, 1, matrix.m22());
-  ret.setDouble(1, 2, matrix.m32());
-  ret.setDouble(1, 3, matrix.m42());
-  ret.setDouble(2, 0, matrix.m13());
-  ret.setDouble(2, 1, matrix.m23());
-  ret.setDouble(2, 2, matrix.m33());
-  ret.setDouble(2, 3, matrix.m43());
-  ret.setDouble(3, 0, matrix.m14());
-  ret.setDouble(3, 1, matrix.m24());
-  ret.setDouble(3, 2, matrix.m34());
-  ret.setDouble(3, 3, matrix.m44());
+  ret.setDouble(0, 0, matrix.M11());
+  ret.setDouble(0, 1, matrix.M21());
+  ret.setDouble(0, 2, matrix.M31());
+  ret.setDouble(0, 3, matrix.M41());
+  ret.setDouble(1, 0, matrix.M12());
+  ret.setDouble(1, 1, matrix.M22());
+  ret.setDouble(1, 2, matrix.M32());
+  ret.setDouble(1, 3, matrix.M42());
+  ret.setDouble(2, 0, matrix.M13());
+  ret.setDouble(2, 1, matrix.M23());
+  ret.setDouble(2, 2, matrix.M33());
+  ret.setDouble(2, 3, matrix.M43());
+  ret.setDouble(3, 0, matrix.M14());
+  ret.setDouble(3, 1, matrix.M24());
+  ret.setDouble(3, 2, matrix.M34());
+  ret.setDouble(3, 3, matrix.M44());
   return ret;
 }
 
-String TransformationMatrix::toString(bool asMatrix) const {
-  if (asMatrix) {
+String TransformationMatrix::ToString(bool as_matrix) const {
+  if (as_matrix) {
     // Return as a matrix in row-major order.
-    return String::format(
+    return String::Format(
         "[%lg,%lg,%lg,%lg,\n%lg,%lg,%lg,%lg,\n%lg,%lg,%lg,%lg,\n%lg,%lg,%lg,%"
         "lg]",
-        m11(), m21(), m31(), m41(), m12(), m22(), m32(), m42(), m13(), m23(),
-        m33(), m43(), m14(), m24(), m34(), m44());
+        M11(), M21(), M31(), M41(), M12(), M22(), M32(), M42(), M13(), M23(),
+        M33(), M43(), M14(), M24(), M34(), M44());
   }
 
   TransformationMatrix::DecomposedType decomposition;
-  if (!decompose(decomposition))
-    return toString(true) + " (degenerate)";
+  if (!Decompose(decomposition))
+    return ToString(true) + " (degenerate)";
 
-  if (isIdentityOrTranslation()) {
-    if (decomposition.translateX == 0 && decomposition.translateY == 0 &&
-        decomposition.translateZ == 0)
+  if (IsIdentityOrTranslation()) {
+    if (decomposition.translate_x == 0 && decomposition.translate_y == 0 &&
+        decomposition.translate_z == 0)
       return "identity";
-    return String::format("translation(%lg,%lg,%lg)", decomposition.translateX,
-                          decomposition.translateY, decomposition.translateZ);
+    return String::Format("translation(%lg,%lg,%lg)", decomposition.translate_x,
+                          decomposition.translate_y, decomposition.translate_z);
   }
 
-  return String::format(
+  return String::Format(
       "translation(%lg,%lg,%lg), scale(%lg,%lg,%lg), skew(%lg,%lg,%lg), "
       "quaternion(%lg,%lg,%lg,%lg), perspective(%lg,%lg,%lg,%lg)",
-      decomposition.translateX, decomposition.translateY,
-      decomposition.translateZ, decomposition.scaleX, decomposition.scaleY,
-      decomposition.scaleZ, decomposition.skewXY, decomposition.skewXZ,
-      decomposition.skewYZ, decomposition.quaternionX,
-      decomposition.quaternionY, decomposition.quaternionZ,
-      decomposition.quaternionW, decomposition.perspectiveX,
-      decomposition.perspectiveY, decomposition.perspectiveZ,
-      decomposition.perspectiveW);
+      decomposition.translate_x, decomposition.translate_y,
+      decomposition.translate_z, decomposition.scale_x, decomposition.scale_y,
+      decomposition.scale_z, decomposition.skew_xy, decomposition.skew_xz,
+      decomposition.skew_yz, decomposition.quaternion_x,
+      decomposition.quaternion_y, decomposition.quaternion_z,
+      decomposition.quaternion_w, decomposition.perspective_x,
+      decomposition.perspective_y, decomposition.perspective_z,
+      decomposition.perspective_w);
 }
 
 }  // namespace blink

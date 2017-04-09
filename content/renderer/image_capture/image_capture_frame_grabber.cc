@@ -23,7 +23,7 @@ using blink::WebImageCaptureGrabFrameCallbacks;
 namespace {
 
 void OnError(std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks) {
-  callbacks->onError();
+  callbacks->OnError();
 }
 
 }  // anonymous namespace
@@ -114,18 +114,18 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void ImageCaptureFrameGrabber::grabFrame(
+void ImageCaptureFrameGrabber::GrabFrame(
     blink::WebMediaStreamTrack* track,
     WebImageCaptureGrabFrameCallbacks* callbacks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!!callbacks);
 
-  DCHECK(track && !track->isNull() && track->getTrackData());
-  DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track->source().getType());
+  DCHECK(track && !track->IsNull() && track->GetTrackData());
+  DCHECK_EQ(blink::WebMediaStreamSource::kTypeVideo, track->Source().GetType());
 
   if (frame_grab_in_progress_) {
     // Reject grabFrame()s too close back to back.
-    callbacks->onError();
+    callbacks->OnError();
     return;
   }
 
@@ -156,9 +156,9 @@ void ImageCaptureFrameGrabber::OnSkImage(
   MediaStreamVideoSink::DisconnectFromTrack();
   frame_grab_in_progress_ = false;
   if (image)
-    callbacks.PassCallbacks()->onSuccess(image);
+    callbacks.PassCallbacks()->OnSuccess(image);
   else
-    callbacks.PassCallbacks()->onError();
+    callbacks.PassCallbacks()->OnError();
 }
 
 }  // namespace content

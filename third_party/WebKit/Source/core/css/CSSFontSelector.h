@@ -43,56 +43,56 @@ class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
  public:
-  static CSSFontSelector* create(Document* document) {
+  static CSSFontSelector* Create(Document* document) {
     return new CSSFontSelector(document);
   }
   ~CSSFontSelector() override;
 
-  unsigned version() const override { return m_fontFaceCache.version(); }
+  unsigned Version() const override { return font_face_cache_.Version(); }
 
-  PassRefPtr<FontData> getFontData(const FontDescription&,
+  PassRefPtr<FontData> GetFontData(const FontDescription&,
                                    const AtomicString&) override;
-  void willUseFontData(const FontDescription&,
+  void WillUseFontData(const FontDescription&,
                        const AtomicString& family,
                        const String& text) override;
-  void willUseRange(const FontDescription&,
-                    const AtomicString& familyName,
+  void WillUseRange(const FontDescription&,
+                    const AtomicString& family_name,
                     const FontDataForRangeSet&) override;
-  bool isPlatformFamilyMatchAvailable(const FontDescription&,
+  bool IsPlatformFamilyMatchAvailable(const FontDescription&,
                                       const AtomicString& family);
 
-  void fontFaceInvalidated();
+  void FontFaceInvalidated();
 
   // FontCacheClient implementation
-  void fontCacheInvalidated() override;
+  void FontCacheInvalidated() override;
 
-  void registerForInvalidationCallbacks(CSSFontSelectorClient*);
-  void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
+  void RegisterForInvalidationCallbacks(CSSFontSelectorClient*);
+  void UnregisterForInvalidationCallbacks(CSSFontSelectorClient*);
 
-  Document* document() const { return m_document; }
-  FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
+  Document* GetDocument() const { return document_; }
+  FontFaceCache* GetFontFaceCache() { return &font_face_cache_; }
 
-  const GenericFontFamilySettings& genericFontFamilySettings() const {
-    return m_genericFontFamilySettings;
+  const GenericFontFamilySettings& GetGenericFontFamilySettings() const {
+    return generic_font_family_settings_;
   }
-  void updateGenericFontFamilySettings(Document&);
+  void UpdateGenericFontFamilySettings(Document&);
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit CSSFontSelector(Document*);
 
-  void dispatchInvalidationCallbacks();
+  void DispatchInvalidationCallbacks();
 
  private:
   // TODO(Oilpan): Ideally this should just be a traced Member but that will
   // currently leak because ComputedStyle and its data are not on the heap.
   // See crbug.com/383860 for details.
-  WeakMember<Document> m_document;
+  WeakMember<Document> document_;
   // FIXME: Move to Document or StyleEngine.
-  FontFaceCache m_fontFaceCache;
-  HeapHashSet<WeakMember<CSSFontSelectorClient>> m_clients;
-  GenericFontFamilySettings m_genericFontFamilySettings;
+  FontFaceCache font_face_cache_;
+  HeapHashSet<WeakMember<CSSFontSelectorClient>> clients_;
+  GenericFontFamilySettings generic_font_family_settings_;
 };
 
 }  // namespace blink

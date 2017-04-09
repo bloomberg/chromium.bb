@@ -65,14 +65,14 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
-  DCHECK(!web_stream.isNull());
+  DCHECK(!web_stream.IsNull());
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoRenderer stream:"
-           << web_stream.id().utf8();
+           << web_stream.Id().Utf8();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream.videoTracks(video_tracks);
-  if (video_tracks.isEmpty() ||
+  web_stream.VideoTracks(video_tracks);
+  if (video_tracks.IsEmpty() ||
       !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
     return NULL;
   }
@@ -88,14 +88,14 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     int render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  DCHECK(!web_stream.isNull());
+  DCHECK(!web_stream.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream.audioTracks(audio_tracks);
-  if (audio_tracks.isEmpty())
+  web_stream.AudioTracks(audio_tracks);
+  if (audio_tracks.IsEmpty())
     return NULL;
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetAudioRenderer stream:"
-           << web_stream.id().utf8();
+           << web_stream.Id().Utf8();
 
   // TODO(tommi): We need to fix the data flow so that
   // it works the same way for all track implementations, local, remote or what

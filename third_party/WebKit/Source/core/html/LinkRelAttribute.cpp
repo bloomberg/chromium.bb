@@ -34,60 +34,60 @@
 namespace blink {
 
 LinkRelAttribute::LinkRelAttribute(const String& rel)
-    : m_iconType(InvalidIcon),
-      m_isStyleSheet(false),
-      m_isAlternate(false),
-      m_isDNSPrefetch(false),
-      m_isPreconnect(false),
-      m_isLinkPrefetch(false),
-      m_isLinkPreload(false),
-      m_isLinkPrerender(false),
-      m_isLinkNext(false),
-      m_isImport(false),
-      m_isManifest(false),
-      m_isServiceWorker(false) {
-  if (rel.isEmpty())
+    : icon_type_(kInvalidIcon),
+      is_style_sheet_(false),
+      is_alternate_(false),
+      is_dns_prefetch_(false),
+      is_preconnect_(false),
+      is_link_prefetch_(false),
+      is_link_preload_(false),
+      is_link_prerender_(false),
+      is_link_next_(false),
+      is_import_(false),
+      is_manifest_(false),
+      is_service_worker_(false) {
+  if (rel.IsEmpty())
     return;
-  String relCopy = rel;
-  relCopy.replace('\n', ' ');
+  String rel_copy = rel;
+  rel_copy.Replace('\n', ' ');
   Vector<String> list;
-  relCopy.split(' ', list);
-  for (const String& linkType : list) {
-    if (equalIgnoringCase(linkType, "stylesheet")) {
-      if (!m_isImport)
-        m_isStyleSheet = true;
-    } else if (equalIgnoringCase(linkType, "import")) {
-      if (!m_isStyleSheet)
-        m_isImport = true;
-    } else if (equalIgnoringCase(linkType, "alternate")) {
-      m_isAlternate = true;
-    } else if (equalIgnoringCase(linkType, "icon")) {
+  rel_copy.Split(' ', list);
+  for (const String& link_type : list) {
+    if (EqualIgnoringCase(link_type, "stylesheet")) {
+      if (!is_import_)
+        is_style_sheet_ = true;
+    } else if (EqualIgnoringCase(link_type, "import")) {
+      if (!is_style_sheet_)
+        is_import_ = true;
+    } else if (EqualIgnoringCase(link_type, "alternate")) {
+      is_alternate_ = true;
+    } else if (EqualIgnoringCase(link_type, "icon")) {
       // This also allows "shortcut icon" since we just ignore the non-standard
       // "shortcut" token.
       // FIXME: This doesn't really follow the spec that requires "shortcut
       // icon" to be the entire string
       // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
-      m_iconType = Favicon;
-    } else if (equalIgnoringCase(linkType, "prefetch")) {
-      m_isLinkPrefetch = true;
-    } else if (equalIgnoringCase(linkType, "dns-prefetch")) {
-      m_isDNSPrefetch = true;
-    } else if (equalIgnoringCase(linkType, "preconnect")) {
-      m_isPreconnect = true;
-    } else if (equalIgnoringCase(linkType, "preload")) {
-      m_isLinkPreload = true;
-    } else if (equalIgnoringCase(linkType, "prerender")) {
-      m_isLinkPrerender = true;
-    } else if (equalIgnoringCase(linkType, "next")) {
-      m_isLinkNext = true;
-    } else if (equalIgnoringCase(linkType, "apple-touch-icon")) {
-      m_iconType = TouchIcon;
-    } else if (equalIgnoringCase(linkType, "apple-touch-icon-precomposed")) {
-      m_iconType = TouchPrecomposedIcon;
-    } else if (equalIgnoringCase(linkType, "manifest")) {
-      m_isManifest = true;
-    } else if (equalIgnoringCase(linkType, "serviceworker")) {
-      m_isServiceWorker = true;
+      icon_type_ = kFavicon;
+    } else if (EqualIgnoringCase(link_type, "prefetch")) {
+      is_link_prefetch_ = true;
+    } else if (EqualIgnoringCase(link_type, "dns-prefetch")) {
+      is_dns_prefetch_ = true;
+    } else if (EqualIgnoringCase(link_type, "preconnect")) {
+      is_preconnect_ = true;
+    } else if (EqualIgnoringCase(link_type, "preload")) {
+      is_link_preload_ = true;
+    } else if (EqualIgnoringCase(link_type, "prerender")) {
+      is_link_prerender_ = true;
+    } else if (EqualIgnoringCase(link_type, "next")) {
+      is_link_next_ = true;
+    } else if (EqualIgnoringCase(link_type, "apple-touch-icon")) {
+      icon_type_ = kTouchIcon;
+    } else if (EqualIgnoringCase(link_type, "apple-touch-icon-precomposed")) {
+      icon_type_ = kTouchPrecomposedIcon;
+    } else if (EqualIgnoringCase(link_type, "manifest")) {
+      is_manifest_ = true;
+    } else if (EqualIgnoringCase(link_type, "serviceworker")) {
+      is_service_worker_ = true;
     }
     // Adding or removing a value here requires you to update
     // RelList::supportedTokens()

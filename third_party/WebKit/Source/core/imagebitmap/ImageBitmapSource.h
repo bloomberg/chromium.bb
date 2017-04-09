@@ -21,16 +21,16 @@ class ImageBitmapOptions;
 
 class CORE_EXPORT ImageBitmapSource {
  public:
-  virtual IntSize bitmapSourceSize() const { return IntSize(); }
-  virtual ScriptPromise createImageBitmap(ScriptState*,
+  virtual IntSize BitmapSourceSize() const { return IntSize(); }
+  virtual ScriptPromise CreateImageBitmap(ScriptState*,
                                           EventTarget&,
                                           Optional<IntRect>,
                                           const ImageBitmapOptions&,
                                           ExceptionState&);
 
-  virtual bool isBlob() const { return false; }
+  virtual bool IsBlob() const { return false; }
 
-  static ScriptPromise fulfillImageBitmap(ScriptState*, ImageBitmap*);
+  static ScriptPromise FulfillImageBitmap(ScriptState*, ImageBitmap*);
 
  protected:
   virtual ~ImageBitmapSource() {}

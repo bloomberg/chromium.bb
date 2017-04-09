@@ -224,10 +224,10 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
   SpeechRecognitionAudioSinkTest() {}
 
   ~SpeechRecognitionAudioSinkTest() {
-    blink_source_.reset();
-    blink_track_.reset();
+    blink_source_.Reset();
+    blink_track_.Reset();
     speech_audio_sink_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   // Initializes the producer and consumer with specified audio parameters.
@@ -256,7 +256,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
 
     // Prepare the track and audio source.
     PrepareBlinkTrackOfType(MEDIA_DEVICE_AUDIO_CAPTURE, &blink_track_);
-    blink_source_ = blink_track_.source();
+    blink_source_ = blink_track_.Source();
     static_cast<TestDrivenAudioSource*>(
         MediaStreamAudioSource::From(blink_source_))->SetFormat(source_params_);
 
@@ -289,16 +289,16 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
   void PrepareBlinkTrackOfType(const MediaStreamType device_type,
                                blink::WebMediaStreamTrack* blink_track) {
     blink::WebMediaStreamSource blink_source;
-    blink_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
-                            blink::WebMediaStreamSource::TypeAudio,
-                            blink::WebString::fromUTF8("dummy_source_name"),
+    blink_source.Initialize(blink::WebString::FromUTF8("dummy_source_id"),
+                            blink::WebMediaStreamSource::kTypeAudio,
+                            blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
     TestDrivenAudioSource* const audio_source = new TestDrivenAudioSource();
     audio_source->SetDeviceInfo(
         StreamDeviceInfo(device_type, "Mock device", "mock_device_id"));
-    blink_source.setExtraData(audio_source);  // Takes ownership.
+    blink_source.SetExtraData(audio_source);  // Takes ownership.
 
-    blink_track->initialize(blink::WebString::fromUTF8("dummy_track"),
+    blink_track->Initialize(blink::WebString::FromUTF8("dummy_track"),
                             blink_source);
     ASSERT_TRUE(audio_source->ConnectToTrack(*blink_track));
   }

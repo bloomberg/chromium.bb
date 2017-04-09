@@ -63,9 +63,8 @@ HtmlVideoElementCapturerSource::GetPreferredFormats() {
   // TODO(mcasas): Add getRate() to WMPlayer and/or fix the spec to allow users
   // to specify it.
   const media::VideoCaptureFormat format(
-      web_media_player_->naturalSize(),
-      MediaStreamVideoSource::kDefaultFrameRate,
-      media::PIXEL_FORMAT_I420);
+      web_media_player_->NaturalSize(),
+      MediaStreamVideoSource::kDefaultFrameRate, media::PIXEL_FORMAT_I420);
   media::VideoCaptureFormats formats;
   formats.push_back(format);
   return formats;
@@ -81,11 +80,11 @@ void HtmlVideoElementCapturerSource::StartCapture(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   running_callback_ = running_callback;
-  if (!web_media_player_ || !web_media_player_->hasVideo()) {
+  if (!web_media_player_ || !web_media_player_->HasVideo()) {
     running_callback_.Run(false);
     return;
   }
-  const blink::WebSize resolution = web_media_player_->naturalSize();
+  const blink::WebSize resolution = web_media_player_->NaturalSize();
   if (!bitmap_.tryAllocPixels(
           SkImageInfo::MakeN32Premul(resolution.width, resolution.height))) {
     running_callback_.Run(false);
@@ -123,12 +122,12 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     return;
 
   const base::TimeTicks current_time = base::TimeTicks::Now();
-  const blink::WebSize resolution = web_media_player_->naturalSize();
+  const blink::WebSize resolution = web_media_player_->NaturalSize();
 
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
-  web_media_player_->paint(
+  web_media_player_->Paint(
       canvas_.get(), blink::WebRect(0, 0, resolution.width, resolution.height),
       flags);
   DCHECK_NE(kUnknown_SkColorType, canvas_->imageInfo().colorType());

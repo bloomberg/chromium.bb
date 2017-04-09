@@ -12,28 +12,28 @@
 namespace blink {
 
 CompositorTransformAnimationCurve::CompositorTransformAnimationCurve()
-    : m_curve(cc::KeyframedTransformAnimationCurve::Create()) {}
+    : curve_(cc::KeyframedTransformAnimationCurve::Create()) {}
 
 CompositorTransformAnimationCurve::~CompositorTransformAnimationCurve() {}
 
-void CompositorTransformAnimationCurve::addKeyframe(
+void CompositorTransformAnimationCurve::AddKeyframe(
     const CompositorTransformKeyframe& keyframe) {
-  m_curve->AddKeyframe(keyframe.cloneToCC());
+  curve_->AddKeyframe(keyframe.CloneToCC());
 }
 
-void CompositorTransformAnimationCurve::setTimingFunction(
-    const TimingFunction& timingFunction) {
-  m_curve->SetTimingFunction(timingFunction.cloneToCC());
+void CompositorTransformAnimationCurve::SetTimingFunction(
+    const TimingFunction& timing_function) {
+  curve_->SetTimingFunction(timing_function.CloneToCC());
 }
 
-void CompositorTransformAnimationCurve::setScaledDuration(
-    double scaledDuration) {
-  m_curve->set_scaled_duration(scaledDuration);
+void CompositorTransformAnimationCurve::SetScaledDuration(
+    double scaled_duration) {
+  curve_->set_scaled_duration(scaled_duration);
 }
 
 std::unique_ptr<cc::AnimationCurve>
-CompositorTransformAnimationCurve::cloneToAnimationCurve() const {
-  return m_curve->Clone();
+CompositorTransformAnimationCurve::CloneToAnimationCurve() const {
+  return curve_->Clone();
 }
 
 }  // namespace blink

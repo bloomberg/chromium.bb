@@ -19,7 +19,7 @@ typedef struct {
 } ANPlusBTestCase;
 
 TEST(CSSSelectorParserTest, ValidANPlusB) {
-  ANPlusBTestCase testCases[] = {
+  ANPlusBTestCase test_cases[] = {
       {"odd", 2, 1},
       {"OdD", 2, 1},
       {"even", 2, 0},
@@ -71,16 +71,16 @@ TEST(CSSSelectorParserTest, ValidANPlusB) {
       {"-N - 88", -1, -88},
   };
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase.input);
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case.input);
 
     std::pair<int, int> ab;
-    CSSTokenizer tokenizer(testCase.input);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
+    CSSTokenizer tokenizer(test_case.input);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    bool passed = CSSSelectorParser::ConsumeANPlusB(range, ab);
     EXPECT_TRUE(passed);
-    EXPECT_EQ(ab.first, testCase.a);
-    EXPECT_EQ(ab.second, testCase.b);
+    EXPECT_EQ(ab.first, test_case.a);
+    EXPECT_EQ(ab.second, test_case.b);
   }
 }
 
@@ -88,82 +88,82 @@ TEST(CSSSelectorParserTest, InvalidANPlusB) {
   // Some of these have token range prefixes which are valid <an+b> and could
   // in theory be valid in consumeANPlusB, but this behaviour isn't needed
   // anywhere and not implemented.
-  const char* testCases[] = {
+  const char* test_cases[] = {
       " odd",     "+ n",     "3m+4",  "12n--34",  "12n- -34",
       "12n- +34", "23n-+43", "10n 5", "10n + +5", "10n + -5",
   };
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase);
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
 
     std::pair<int, int> ab;
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    bool passed = CSSSelectorParser::ConsumeANPlusB(range, ab);
     EXPECT_FALSE(passed);
   }
 }
 
 TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
-  const char* testCases[][2] = {{"::shadow", "::shadow"},
-                                {".a::shadow", ".a::shadow"},
-                                {"::content", "::content"},
-                                {".a::content", ".a::content"},
-                                {"::content.a", "::content.a"},
-                                {"::content.a.b", "::content.a.b"},
-                                {".a::content.b", ".a::content.b"},
-                                {"::content:not(#id)", "::content:not(#id)"}};
+  const char* test_cases[][2] = {{"::shadow", "::shadow"},
+                                 {".a::shadow", ".a::shadow"},
+                                 {"::content", "::content"},
+                                 {".a::content", ".a::content"},
+                                 {"::content.a", "::content.a"},
+                                 {"::content.a.b", "::content.a.b"},
+                                 {".a::content.b", ".a::content.b"},
+                                 {"::content:not(#id)", "::content:not(#id)"}};
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase[0]);
-    CSSTokenizer tokenizer(testCase[0]);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(HTMLStandardMode), nullptr);
-    EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case[0]);
+    CSSTokenizer tokenizer(test_case[0]);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().Data());
   }
 }
 
 TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
-  const char* testCases[] = {":not(::before)",
-                             ":not(::content)",
-                             ":not(::shadow)",
-                             ":host(::before)",
-                             ":host(::content)",
-                             ":host(::shadow)",
-                             ":host-context(::before)",
-                             ":host-context(::content)",
-                             ":host-context(::shadow)",
-                             ":-webkit-any(::after, ::before)",
-                             ":-webkit-any(::content, span)",
-                             ":-webkit-any(div, ::shadow)"};
+  const char* test_cases[] = {":not(::before)",
+                              ":not(::content)",
+                              ":not(::shadow)",
+                              ":host(::before)",
+                              ":host(::content)",
+                              ":host(::shadow)",
+                              ":host-context(::before)",
+                              ":host-context(::content)",
+                              ":host-context(::shadow)",
+                              ":-webkit-any(::after, ::before)",
+                              ":-webkit-any(::content, span)",
+                              ":-webkit-any(div, ::shadow)"};
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(HTMLStandardMode), nullptr);
-    EXPECT_FALSE(list.isValid());
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, ValidSimpleAfterPseudoElementInCompound) {
-  const char* testCases[] = {
+  const char* test_cases[] = {
       "::-webkit-volume-slider:hover", "::selection:window-inactive",
       "::-webkit-scrollbar:disabled", "::-webkit-volume-slider:not(:hover)",
       "::-webkit-scrollbar:not(:horizontal)"};
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(HTMLStandardMode), nullptr);
-    EXPECT_TRUE(list.isValid());
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_TRUE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
-  const char* testCases[] = {
+  const char* test_cases[] = {
       "::before#id",
       "::after:hover",
       ".class::content::before",
@@ -176,75 +176,75 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
       "video::-webkit-media-text-track-region-container.scrolling",
       "div ::before.a"};
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(HTMLStandardMode), nullptr);
-    EXPECT_FALSE(list.isValid());
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
   // See crbug.com/578131
-  const char* testCases[] = {
+  const char* test_cases[] = {
       "video::-webkit-media-text-track-region-container.scrolling",
       "input[type=\"range\" i]::-webkit-media-slider-container > div"};
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(UASheetMode), nullptr);
-    EXPECT_TRUE(list.isValid());
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kUASheetMode), nullptr);
+    EXPECT_TRUE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
-  const char* testCases[] = {"::content *", "::shadow *",
-                             "::content div::before",
-                             "::shadow ::first-letter"};
+  const char* test_cases[] = {"::content *", "::shadow *",
+                              "::content div::before",
+                              "::shadow ::first-letter"};
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(HTMLStandardMode), nullptr);
-    EXPECT_TRUE(list.isValid());
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_TRUE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound) {
-  const char* testCases[] = {"::-webkit-volume-slider *", "::before *",
-                             "::-webkit-scrollbar *", "::cue *",
-                             "::selection *"};
+  const char* test_cases[] = {"::-webkit-volume-slider *", "::before *",
+                              "::-webkit-scrollbar *", "::cue *",
+                              "::selection *"};
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(
-        range, CSSParserContext::create(HTMLStandardMode), nullptr);
-    EXPECT_FALSE(list.isValid());
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
+    CSSSelectorList list = CSSSelectorParser::ParseSelector(
+        range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
-  const char* testCases[] = {"ns|div", "div ns|div", "div ns|div "};
+  const char* test_cases[] = {"ns|div", "div ns|div", "div ns|div "};
 
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* sheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto testCase : testCases) {
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
+  for (auto test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list =
-        CSSSelectorParser::parseSelector(range, context, sheet);
-    EXPECT_FALSE(list.isValid());
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, SerializedUniversal) {
-  const char* testCases[][2] = {
+  const char* test_cases[][2] = {
       {"*::-webkit-volume-slider", "::-webkit-volume-slider"},
       {"*::cue(i)", "::cue(i)"},
       {"*::shadow", "::shadow"},
@@ -260,90 +260,90 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
       {"ns|*::cue(i)", "ns|*::cue(i)"},
       {"ns|*::shadow", "ns|*::shadow"}};
 
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* sheet = StyleSheetContents::create(context);
-  sheet->parserAddNamespace("ns", "http://ns.org");
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  sheet->ParserAddNamespace("ns", "http://ns.org");
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase[0]);
-    CSSTokenizer tokenizer(testCase[0]);
-    CSSParserTokenRange range = tokenizer.tokenRange();
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case[0]);
+    CSSTokenizer tokenizer(test_case[0]);
+    CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list =
-        CSSSelectorParser::parseSelector(range, context, sheet);
-    EXPECT_TRUE(list.isValid());
-    EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_TRUE(list.IsValid());
+    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().Data());
   }
 }
 
 TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInDynamicProfile) {
-  const char* testCases[] = {"div >>>> span", "div >>> span", "div >> span"};
+  const char* test_cases[] = {"div >>>> span", "div >>> span", "div >> span"};
 
-  CSSParserContext* context = CSSParserContext::create(
-      HTMLStandardMode, CSSParserContext::DynamicProfile);
-  StyleSheetContents* sheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, CSSParserContext::kDynamicProfile);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase);
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list =
-        CSSSelectorParser::parseSelector(range, context, sheet);
-    EXPECT_FALSE(list.isValid());
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInStaticProfile) {
-  const char* testCases[] = {"div >>>> span", "div >> span", "div >> > span",
-                             "div > >> span", "div > > > span"};
+  const char* test_cases[] = {"div >>>> span", "div >> span", "div >> > span",
+                              "div > >> span", "div > > > span"};
 
-  CSSParserContext* context = CSSParserContext::create(
-      HTMLStandardMode, CSSParserContext::StaticProfile);
-  StyleSheetContents* sheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, CSSParserContext::kStaticProfile);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase);
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list =
-        CSSSelectorParser::parseSelector(range, context, sheet);
-    EXPECT_FALSE(list.isValid());
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 
 TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
-  const char* testCases[][2] = {{"div >>> span", "div >>> span"},
-                                {"div >>/**/> span", "div >>> span"},
-                                {"div >/**/>> span", "div >>> span"},
-                                {"div >/**/>/**/> span", "div >>> span"}};
+  const char* test_cases[][2] = {{"div >>> span", "div >>> span"},
+                                 {"div >>/**/> span", "div >>> span"},
+                                 {"div >/**/>> span", "div >>> span"},
+                                 {"div >/**/>/**/> span", "div >>> span"}};
 
-  CSSParserContext* context = CSSParserContext::create(
-      HTMLStandardMode, CSSParserContext::StaticProfile);
-  StyleSheetContents* sheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, CSSParserContext::kStaticProfile);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase[0]);
-    CSSTokenizer tokenizer(testCase[0]);
-    CSSParserTokenRange range = tokenizer.tokenRange();
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case[0]);
+    CSSTokenizer tokenizer(test_case[0]);
+    CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list =
-        CSSSelectorParser::parseSelector(range, context, sheet);
-    EXPECT_TRUE(list.isValid());
-    EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_TRUE(list.IsValid());
+    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().Data());
   }
 }
 
 TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
-  const char* testCases[] = {"[*]", "[*|*]"};
+  const char* test_cases[] = {"[*]", "[*|*]"};
 
-  CSSParserContext* context = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* sheet = StyleSheetContents::create(context);
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
 
-  for (auto testCase : testCases) {
-    SCOPED_TRACE(testCase);
-    CSSTokenizer tokenizer(testCase);
-    CSSParserTokenRange range = tokenizer.tokenRange();
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    CSSParserTokenRange range = tokenizer.TokenRange();
     CSSSelectorList list =
-        CSSSelectorParser::parseSelector(range, context, sheet);
-    EXPECT_FALSE(list.isValid());
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
   }
 }
 

@@ -39,24 +39,24 @@ class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMError* create(const String& name) { return new DOMError(name); }
-  static DOMError* create(const String& name, const String& message) {
+  static DOMError* Create(const String& name) { return new DOMError(name); }
+  static DOMError* Create(const String& name, const String& message) {
     return new DOMError(name, message);
   }
 
-  static DOMError* create(ExceptionCode ec) {
-    return new DOMError(DOMException::getErrorName(ec),
-                        DOMException::getErrorMessage(ec));
+  static DOMError* Create(ExceptionCode ec) {
+    return new DOMError(DOMException::GetErrorName(ec),
+                        DOMException::GetErrorMessage(ec));
   }
 
-  static DOMError* create(ExceptionCode ec, const String& message) {
-    return new DOMError(DOMException::getErrorName(ec), message);
+  static DOMError* Create(ExceptionCode ec, const String& message) {
+    return new DOMError(DOMException::GetErrorName(ec), message);
   }
 
   virtual ~DOMError();
 
-  const String& name() const { return m_name; }
-  const String& message() const { return m_message; }
+  const String& name() const { return name_; }
+  const String& message() const { return message_; }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -65,8 +65,8 @@ class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>,
   DOMError(const String& name, const String& message);
 
  private:
-  const String m_name;
-  const String m_message;
+  const String name_;
+  const String message_;
 };
 
 }  // namespace blink

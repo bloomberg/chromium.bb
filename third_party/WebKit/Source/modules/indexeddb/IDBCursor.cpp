@@ -48,7 +48,7 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBCursor* IDBCursor::create(std::unique_ptr<WebIDBCursor> backend,
+IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
                              WebIDBCursorDirection direction,
                              IDBRequest* request,
                              IDBAny* source,
@@ -62,255 +62,263 @@ IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
                      IDBRequest* request,
                      IDBAny* source,
                      IDBTransaction* transaction)
-    : m_backend(std::move(backend)),
-      m_request(request),
-      m_direction(direction),
-      m_source(source),
-      m_transaction(transaction) {
-  DCHECK(m_backend);
-  DCHECK(m_request);
-  DCHECK(m_source->getType() == IDBAny::IDBObjectStoreType ||
-         m_source->getType() == IDBAny::IDBIndexType);
-  DCHECK(m_transaction);
+    : backend_(std::move(backend)),
+      request_(request),
+      direction_(direction),
+      source_(source),
+      transaction_(transaction) {
+  DCHECK(backend_);
+  DCHECK(request_);
+  DCHECK(source_->GetType() == IDBAny::kIDBObjectStoreType ||
+         source_->GetType() == IDBAny::kIDBIndexType);
+  DCHECK(transaction_);
 }
 
 IDBCursor::~IDBCursor() {}
 
 DEFINE_TRACE(IDBCursor) {
-  visitor->trace(m_request);
-  visitor->trace(m_source);
-  visitor->trace(m_transaction);
-  visitor->trace(m_key);
-  visitor->trace(m_primaryKey);
+  visitor->Trace(request_);
+  visitor->Trace(source_);
+  visitor->Trace(transaction_);
+  visitor->Trace(key_);
+  visitor->Trace(primary_key_);
 }
 
 // Keep the request's wrapper alive as long as the cursor's wrapper is alive,
 // so that the same script object is seen each time the cursor is used.
-v8::Local<v8::Object> IDBCursor::associateWithWrapper(
+v8::Local<v8::Object> IDBCursor::AssociateWithWrapper(
     v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapperType,
+    const WrapperTypeInfo* wrapper_type,
     v8::Local<v8::Object> wrapper) {
   wrapper =
-      ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
+      ScriptWrappable::AssociateWithWrapper(isolate, wrapper_type, wrapper);
   if (!wrapper.IsEmpty()) {
-    V8PrivateProperty::getIDBCursorRequest(isolate).set(
-        wrapper, ToV8(m_request.get(), wrapper, isolate));
+    V8PrivateProperty::GetIDBCursorRequest(isolate).Set(
+        wrapper, ToV8(request_.Get(), wrapper, isolate));
   }
   return wrapper;
 }
 
-IDBRequest* IDBCursor::update(ScriptState* scriptState,
+IDBRequest* IDBCursor::update(ScriptState* script_state,
                               const ScriptValue& value,
-                              ExceptionState& exceptionState) {
+                              ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::update");
 
-  if (m_transaction->isFinished() || m_transaction->isFinishing()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return nullptr;
   }
-  if (!m_transaction->isActive()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+  if (!transaction_->IsActive()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
     return nullptr;
   }
-  if (m_transaction->isReadOnly()) {
-    exceptionState.throwDOMException(
-        ReadOnlyError,
+  if (transaction_->IsReadOnly()) {
+    exception_state.ThrowDOMException(
+        kReadOnlyError,
         "The record may not be updated inside a read-only transaction.");
     return nullptr;
   }
-  if (isDeleted()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::sourceDeletedErrorMessage);
+  if (IsDeleted()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kSourceDeletedErrorMessage);
     return nullptr;
   }
-  if (!m_gotValue) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::noValueErrorMessage);
+  if (!got_value_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kNoValueErrorMessage);
     return nullptr;
   }
-  if (isKeyCursor()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::isKeyCursorErrorMessage);
+  if (IsKeyCursor()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kIsKeyCursorErrorMessage);
     return nullptr;
   }
 
-  IDBObjectStore* objectStore = effectiveObjectStore();
-  return objectStore->put(scriptState, WebIDBPutModeCursorUpdate,
-                          IDBAny::create(this), value, m_primaryKey,
-                          exceptionState);
+  IDBObjectStore* object_store = EffectiveObjectStore();
+  return object_store->put(script_state, kWebIDBPutModeCursorUpdate,
+                           IDBAny::Create(this), value, primary_key_,
+                           exception_state);
 }
 
-void IDBCursor::advance(unsigned count, ExceptionState& exceptionState) {
+void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::advance");
   if (!count) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "A count argument with value 0 (zero) was supplied, must be greater "
         "than 0.");
     return;
   }
-  if (m_transaction->isFinished() || m_transaction->isFinishing()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return;
   }
-  if (!m_transaction->isActive()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+  if (!transaction_->IsActive()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
     return;
   }
-  if (isDeleted()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::sourceDeletedErrorMessage);
+  if (IsDeleted()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kSourceDeletedErrorMessage);
     return;
   }
-  if (!m_gotValue) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::noValueErrorMessage);
+  if (!got_value_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kNoValueErrorMessage);
     return;
   }
 
-  m_request->setPendingCursor(this);
-  m_gotValue = false;
-  m_backend->advance(count, m_request->createWebCallbacks().release());
+  request_->SetPendingCursor(this);
+  got_value_ = false;
+  backend_->Advance(count, request_->CreateWebCallbacks().release());
 }
 
-void IDBCursor::continueFunction(ScriptState* scriptState,
-                                 const ScriptValue& keyValue,
-                                 ExceptionState& exceptionState) {
+void IDBCursor::continueFunction(ScriptState* script_state,
+                                 const ScriptValue& key_value,
+                                 ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continue");
 
-  if (m_transaction->isFinished() || m_transaction->isFinishing()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return;
   }
-  if (!m_transaction->isActive()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+  if (!transaction_->IsActive()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
     return;
   }
-  if (!m_gotValue) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::noValueErrorMessage);
+  if (!got_value_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kNoValueErrorMessage);
     return;
   }
-  if (isDeleted()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::sourceDeletedErrorMessage);
+  if (IsDeleted()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kSourceDeletedErrorMessage);
     return;
   }
 
-  IDBKey* key = keyValue.isUndefined() || keyValue.isNull()
+  IDBKey* key = key_value.IsUndefined() || key_value.IsNull()
                     ? nullptr
-                    : ScriptValue::to<IDBKey*>(scriptState->isolate(), keyValue,
-                                               exceptionState);
-  if (exceptionState.hadException())
+                    : ScriptValue::To<IDBKey*>(script_state->GetIsolate(),
+                                               key_value, exception_state);
+  if (exception_state.HadException())
     return;
-  if (key && !key->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (key && !key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return;
   }
-  continueFunction(key, nullptr, exceptionState);
+  continueFunction(key, nullptr, exception_state);
 }
 
-void IDBCursor::continuePrimaryKey(ScriptState* scriptState,
-                                   const ScriptValue& keyValue,
-                                   const ScriptValue& primaryKeyValue,
-                                   ExceptionState& exceptionState) {
+void IDBCursor::continuePrimaryKey(ScriptState* script_state,
+                                   const ScriptValue& key_value,
+                                   const ScriptValue& primary_key_value,
+                                   ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continuePrimaryKey");
 
-  if (m_transaction->isFinished() || m_transaction->isFinishing()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return;
   }
-  if (!m_transaction->isActive()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-    return;
-  }
-
-  if (isDeleted()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::sourceDeletedErrorMessage);
+  if (!transaction_->IsActive()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
     return;
   }
 
-  if (m_source->getType() != IDBAny::IDBIndexType) {
-    exceptionState.throwDOMException(InvalidAccessError,
-                                     "The cursor's source is not an index.");
+  if (IsDeleted()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kSourceDeletedErrorMessage);
     return;
   }
 
-  if (m_direction != WebIDBCursorDirectionNext &&
-      m_direction != WebIDBCursorDirectionPrev) {
-    exceptionState.throwDOMException(
-        InvalidAccessError, "The cursor's direction is not 'next' or 'prev'.");
+  if (source_->GetType() != IDBAny::kIDBIndexType) {
+    exception_state.ThrowDOMException(kInvalidAccessError,
+                                      "The cursor's source is not an index.");
     return;
   }
 
-  if (!m_gotValue) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::noValueErrorMessage);
+  if (direction_ != kWebIDBCursorDirectionNext &&
+      direction_ != kWebIDBCursorDirectionPrev) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError, "The cursor's direction is not 'next' or 'prev'.");
     return;
   }
 
-  IDBKey* key = ScriptValue::to<IDBKey*>(scriptState->isolate(), keyValue,
-                                         exceptionState);
-  if (exceptionState.hadException())
-    return;
-  if (!key->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!got_value_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kNoValueErrorMessage);
     return;
   }
 
-  IDBKey* primaryKey = ScriptValue::to<IDBKey*>(
-      scriptState->isolate(), primaryKeyValue, exceptionState);
-  if (exceptionState.hadException())
+  IDBKey* key = ScriptValue::To<IDBKey*>(script_state->GetIsolate(), key_value,
+                                         exception_state);
+  if (exception_state.HadException())
     return;
-  if (!primaryKey->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return;
   }
 
-  continueFunction(key, primaryKey, exceptionState);
+  IDBKey* primary_key = ScriptValue::To<IDBKey*>(
+      script_state->GetIsolate(), primary_key_value, exception_state);
+  if (exception_state.HadException())
+    return;
+  if (!primary_key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
+    return;
+  }
+
+  continueFunction(key, primary_key, exception_state);
 }
 
 void IDBCursor::continueFunction(IDBKey* key,
-                                 IDBKey* primaryKey,
-                                 ExceptionState& exceptionState) {
-  DCHECK(m_transaction->isActive());
-  DCHECK(m_gotValue);
-  DCHECK(!isDeleted());
-  DCHECK(!primaryKey || (key && primaryKey));
+                                 IDBKey* primary_key,
+                                 ExceptionState& exception_state) {
+  DCHECK(transaction_->IsActive());
+  DCHECK(got_value_);
+  DCHECK(!IsDeleted());
+  DCHECK(!primary_key || (key && primary_key));
 
   if (key) {
-    DCHECK(m_key);
-    if (m_direction == WebIDBCursorDirectionNext ||
-        m_direction == WebIDBCursorDirectionNextNoDuplicate) {
+    DCHECK(key_);
+    if (direction_ == kWebIDBCursorDirectionNext ||
+        direction_ == kWebIDBCursorDirectionNextNoDuplicate) {
       const bool ok =
-          m_key->isLessThan(key) || (primaryKey && m_key->isEqual(key) &&
-                                     m_primaryKey->isLessThan(primaryKey));
+          key_->IsLessThan(key) || (primary_key && key_->IsEqual(key) &&
+                                    primary_key_->IsLessThan(primary_key));
       if (!ok) {
-        exceptionState.throwDOMException(
-            DataError,
+        exception_state.ThrowDOMException(
+            kDataError,
             "The parameter is less than or equal to this cursor's position.");
         return;
       }
 
     } else {
-      const bool ok = key->isLessThan(m_key.get()) ||
-                      (primaryKey && key->isEqual(m_key.get()) &&
-                       primaryKey->isLessThan(m_primaryKey.get()));
+      const bool ok = key->IsLessThan(key_.Get()) ||
+                      (primary_key && key->IsEqual(key_.Get()) &&
+                       primary_key->IsLessThan(primary_key_.Get()));
       if (!ok) {
-        exceptionState.throwDOMException(DataError,
-                                         "The parameter is greater than or "
-                                         "equal to this cursor's position.");
+        exception_state.ThrowDOMException(kDataError,
+                                          "The parameter is greater than or "
+                                          "equal to this cursor's position.");
         return;
       }
     }
@@ -319,168 +327,170 @@ void IDBCursor::continueFunction(IDBKey* key,
   // FIXME: We're not using the context from when continue was called, which
   // means the callback will be on the original context openCursor was called
   // on. Is this right?
-  m_request->setPendingCursor(this);
-  m_gotValue = false;
-  m_backend->continueFunction(key, primaryKey,
-                              m_request->createWebCallbacks().release());
+  request_->SetPendingCursor(this);
+  got_value_ = false;
+  backend_->ContinueFunction(key, primary_key,
+                             request_->CreateWebCallbacks().release());
 }
 
-IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState,
-                                      ExceptionState& exceptionState) {
+IDBRequest* IDBCursor::deleteFunction(ScriptState* script_state,
+                                      ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::delete");
-  if (m_transaction->isFinished() || m_transaction->isFinishing()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return nullptr;
   }
-  if (!m_transaction->isActive()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+  if (!transaction_->IsActive()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
     return nullptr;
   }
-  if (m_transaction->isReadOnly()) {
-    exceptionState.throwDOMException(
-        ReadOnlyError,
+  if (transaction_->IsReadOnly()) {
+    exception_state.ThrowDOMException(
+        kReadOnlyError,
         "The record may not be deleted inside a read-only transaction.");
     return nullptr;
   }
-  if (isDeleted()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::sourceDeletedErrorMessage);
+  if (IsDeleted()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kSourceDeletedErrorMessage);
     return nullptr;
   }
-  if (!m_gotValue) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::noValueErrorMessage);
+  if (!got_value_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kNoValueErrorMessage);
     return nullptr;
   }
-  if (isKeyCursor()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::isKeyCursorErrorMessage);
+  if (IsKeyCursor()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kIsKeyCursorErrorMessage);
     return nullptr;
   }
-  if (!m_transaction->backendDB()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::databaseClosedErrorMessage);
+  if (!transaction_->BackendDB()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kDatabaseClosedErrorMessage);
     return nullptr;
   }
 
-  IDBKeyRange* keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
-  DCHECK(!exceptionState.hadException());
+  IDBKeyRange* key_range = IDBKeyRange::only(primary_key_, exception_state);
+  DCHECK(!exception_state.HadException());
 
-  IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this),
-                                           m_transaction.get());
-  m_transaction->backendDB()->deleteRange(
-      m_transaction->id(), effectiveObjectStore()->id(), keyRange,
-      request->createWebCallbacks().release());
+  IDBRequest* request = IDBRequest::Create(script_state, IDBAny::Create(this),
+                                           transaction_.Get());
+  transaction_->BackendDB()->DeleteRange(
+      transaction_->Id(), EffectiveObjectStore()->Id(), key_range,
+      request->CreateWebCallbacks().release());
   return request;
 }
 
-void IDBCursor::postSuccessHandlerCallback() {
-  if (m_backend)
-    m_backend->postSuccessHandlerCallback();
+void IDBCursor::PostSuccessHandlerCallback() {
+  if (backend_)
+    backend_->PostSuccessHandlerCallback();
 }
 
-void IDBCursor::close() {
-  m_value.clear();
-  m_request.clear();
-  m_backend.reset();
+void IDBCursor::Close() {
+  value_.Clear();
+  request_.Clear();
+  backend_.reset();
 }
 
-ScriptValue IDBCursor::key(ScriptState* scriptState) {
-  m_keyDirty = false;
-  return ScriptValue::from(scriptState, m_key);
+ScriptValue IDBCursor::key(ScriptState* script_state) {
+  key_dirty_ = false;
+  return ScriptValue::From(script_state, key_);
 }
 
-ScriptValue IDBCursor::primaryKey(ScriptState* scriptState) {
-  m_primaryKeyDirty = false;
-  return ScriptValue::from(scriptState, m_primaryKey);
+ScriptValue IDBCursor::primaryKey(ScriptState* script_state) {
+  primary_key_dirty_ = false;
+  return ScriptValue::From(script_state, primary_key_);
 }
 
-ScriptValue IDBCursor::value(ScriptState* scriptState) {
-  DCHECK(isCursorWithValue());
+ScriptValue IDBCursor::value(ScriptState* script_state) {
+  DCHECK(IsCursorWithValue());
 
-  IDBObjectStore* objectStore = effectiveObjectStore();
+  IDBObjectStore* object_store = EffectiveObjectStore();
   IDBAny* value;
-  if (!m_value) {
-    value = IDBAny::createUndefined();
-  } else if (objectStore->autoIncrement() &&
-             !objectStore->idbKeyPath().isNull()) {
-    RefPtr<IDBValue> idbValue = IDBValue::create(m_value.get(), m_primaryKey,
-                                                 objectStore->idbKeyPath());
+  if (!value_) {
+    value = IDBAny::CreateUndefined();
+  } else if (object_store->autoIncrement() &&
+             !object_store->IdbKeyPath().IsNull()) {
+    RefPtr<IDBValue> idb_value = IDBValue::Create(value_.Get(), primary_key_,
+                                                  object_store->IdbKeyPath());
 #if DCHECK_IS_ON()
-    assertPrimaryKeyValidOrInjectable(scriptState, idbValue.get());
+    AssertPrimaryKeyValidOrInjectable(script_state, idb_value.Get());
 #endif  // DCHECK_IS_ON()
-    value = IDBAny::create(idbValue.release());
+    value = IDBAny::Create(idb_value.Release());
   } else {
-    value = IDBAny::create(m_value);
+    value = IDBAny::Create(value_);
   }
 
-  m_valueDirty = false;
-  ScriptValue scriptValue = ScriptValue::from(scriptState, value);
-  return scriptValue;
+  value_dirty_ = false;
+  ScriptValue script_value = ScriptValue::From(script_state, value);
+  return script_value;
 }
 
-ScriptValue IDBCursor::source(ScriptState* scriptState) const {
-  return ScriptValue::from(scriptState, m_source);
+ScriptValue IDBCursor::source(ScriptState* script_state) const {
+  return ScriptValue::From(script_state, source_);
 }
 
-void IDBCursor::setValueReady(IDBKey* key,
-                              IDBKey* primaryKey,
+void IDBCursor::SetValueReady(IDBKey* key,
+                              IDBKey* primary_key,
                               PassRefPtr<IDBValue> value) {
-  m_key = key;
-  m_keyDirty = true;
+  key_ = key;
+  key_dirty_ = true;
 
-  m_primaryKey = primaryKey;
-  m_primaryKeyDirty = true;
+  primary_key_ = primary_key;
+  primary_key_dirty_ = true;
 
-  if (isCursorWithValue()) {
-    m_value = std::move(value);
-    m_valueDirty = true;
+  if (IsCursorWithValue()) {
+    value_ = std::move(value);
+    value_dirty_ = true;
   }
 
-  m_gotValue = true;
+  got_value_ = true;
 }
 
-IDBObjectStore* IDBCursor::effectiveObjectStore() const {
-  if (m_source->getType() == IDBAny::IDBObjectStoreType)
-    return m_source->idbObjectStore();
-  return m_source->idbIndex()->objectStore();
+IDBObjectStore* IDBCursor::EffectiveObjectStore() const {
+  if (source_->GetType() == IDBAny::kIDBObjectStoreType)
+    return source_->IdbObjectStore();
+  return source_->IdbIndex()->objectStore();
 }
 
-bool IDBCursor::isDeleted() const {
-  if (m_source->getType() == IDBAny::IDBObjectStoreType)
-    return m_source->idbObjectStore()->isDeleted();
-  return m_source->idbIndex()->isDeleted();
+bool IDBCursor::IsDeleted() const {
+  if (source_->GetType() == IDBAny::kIDBObjectStoreType)
+    return source_->IdbObjectStore()->IsDeleted();
+  return source_->IdbIndex()->IsDeleted();
 }
 
-WebIDBCursorDirection IDBCursor::stringToDirection(
-    const String& directionString) {
-  if (directionString == IndexedDBNames::next)
-    return WebIDBCursorDirectionNext;
-  if (directionString == IndexedDBNames::nextunique)
-    return WebIDBCursorDirectionNextNoDuplicate;
-  if (directionString == IndexedDBNames::prev)
-    return WebIDBCursorDirectionPrev;
-  if (directionString == IndexedDBNames::prevunique)
-    return WebIDBCursorDirectionPrevNoDuplicate;
+WebIDBCursorDirection IDBCursor::StringToDirection(
+    const String& direction_string) {
+  if (direction_string == IndexedDBNames::next)
+    return kWebIDBCursorDirectionNext;
+  if (direction_string == IndexedDBNames::nextunique)
+    return kWebIDBCursorDirectionNextNoDuplicate;
+  if (direction_string == IndexedDBNames::prev)
+    return kWebIDBCursorDirectionPrev;
+  if (direction_string == IndexedDBNames::prevunique)
+    return kWebIDBCursorDirectionPrevNoDuplicate;
 
   NOTREACHED();
-  return WebIDBCursorDirectionNext;
+  return kWebIDBCursorDirectionNext;
 }
 
 const String& IDBCursor::direction() const {
-  switch (m_direction) {
-    case WebIDBCursorDirectionNext:
+  switch (direction_) {
+    case kWebIDBCursorDirectionNext:
       return IndexedDBNames::next;
 
-    case WebIDBCursorDirectionNextNoDuplicate:
+    case kWebIDBCursorDirectionNextNoDuplicate:
       return IndexedDBNames::nextunique;
 
-    case WebIDBCursorDirectionPrev:
+    case kWebIDBCursorDirectionPrev:
       return IndexedDBNames::prev;
 
-    case WebIDBCursorDirectionPrevNoDuplicate:
+    case kWebIDBCursorDirectionPrevNoDuplicate:
       return IndexedDBNames::prevunique;
 
     default:

@@ -43,26 +43,26 @@ class FilterData final : public GarbageCollected<FilterData> {
    *     RecordingContentCycleDetected     PaintingFilterCycle
    */
   enum FilterDataState {
-    Initial,
-    RecordingContent,
-    RecordingContentCycleDetected,
-    ReadyToPaint,
-    PaintingFilter,
-    PaintingFilterCycleDetected
+    kInitial,
+    kRecordingContent,
+    kRecordingContentCycleDetected,
+    kReadyToPaint,
+    kPaintingFilter,
+    kPaintingFilterCycleDetected
   };
 
-  static FilterData* create() { return new FilterData(); }
+  static FilterData* Create() { return new FilterData(); }
 
-  void dispose();
+  void Dispose();
 
   DECLARE_TRACE();
 
-  Member<FilterEffect> lastEffect;
-  Member<SVGFilterGraphNodeMap> nodeMap;
-  FilterDataState m_state;
+  Member<FilterEffect> last_effect;
+  Member<SVGFilterGraphNodeMap> node_map;
+  FilterDataState state_;
 
  private:
-  FilterData() : m_state(Initial) {}
+  FilterData() : state_(kInitial) {}
 };
 
 class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
@@ -70,47 +70,47 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   explicit LayoutSVGResourceFilter(SVGFilterElement*);
   ~LayoutSVGResourceFilter() override;
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  const char* name() const override { return "LayoutSVGResourceFilter"; }
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGResourceFilter ||
-           LayoutSVGResourceContainer::isOfType(type);
+  const char* GetName() const override { return "LayoutSVGResourceFilter"; }
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGResourceFilter ||
+           LayoutSVGResourceContainer::IsOfType(type);
   }
 
-  void removeAllClientsFromCache(bool markForInvalidation = true) override;
-  void removeClientFromCache(LayoutObject*,
-                             bool markForInvalidation = true) override;
+  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
+  void RemoveClientFromCache(LayoutObject*,
+                             bool mark_for_invalidation = true) override;
 
-  FloatRect resourceBoundingBox(const LayoutObject*);
+  FloatRect ResourceBoundingBox(const LayoutObject*);
 
-  SVGUnitTypes::SVGUnitType filterUnits() const;
-  SVGUnitTypes::SVGUnitType primitiveUnits() const;
+  SVGUnitTypes::SVGUnitType FilterUnits() const;
+  SVGUnitTypes::SVGUnitType PrimitiveUnits() const;
 
-  void primitiveAttributeChanged(LayoutObject*, const QualifiedName&);
+  void PrimitiveAttributeChanged(LayoutObject*, const QualifiedName&);
 
-  static const LayoutSVGResourceType s_resourceType = FilterResourceType;
-  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType kResourceType = kFilterResourceType;
+  LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
-  FilterData* getFilterDataForLayoutObject(const LayoutObject* object) {
-    return m_filter.at(const_cast<LayoutObject*>(object));
+  FilterData* GetFilterDataForLayoutObject(const LayoutObject* object) {
+    return filter_.at(const_cast<LayoutObject*>(object));
   }
-  void setFilterDataForLayoutObject(LayoutObject* object,
-                                    FilterData* filterData) {
-    m_filter.set(object, filterData);
+  void SetFilterDataForLayoutObject(LayoutObject* object,
+                                    FilterData* filter_data) {
+    filter_.Set(object, filter_data);
   }
 
  protected:
-  void willBeDestroyed() override;
+  void WillBeDestroyed() override;
 
  private:
-  void disposeFilterMap();
+  void DisposeFilterMap();
 
   using FilterMap = PersistentHeapHashMap<LayoutObject*, Member<FilterData>>;
-  FilterMap m_filter;
+  FilterMap filter_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, isSVGResourceFilter());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, IsSVGResourceFilter());
 
 }  // namespace blink
 

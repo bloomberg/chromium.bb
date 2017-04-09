@@ -36,44 +36,44 @@ class LayoutEmbeddedObject final : public LayoutPart {
   ~LayoutEmbeddedObject() override;
 
   enum PluginAvailability {
-    PluginAvailable,
-    PluginMissing,
-    PluginBlockedByContentSecurityPolicy,
+    kPluginAvailable,
+    kPluginMissing,
+    kPluginBlockedByContentSecurityPolicy,
   };
-  void setPluginAvailability(PluginAvailability);
-  bool showsUnavailablePluginIndicator() const;
+  void SetPluginAvailability(PluginAvailability);
+  bool ShowsUnavailablePluginIndicator() const;
 
-  const char* name() const override { return "LayoutEmbeddedObject"; }
+  const char* GetName() const override { return "LayoutEmbeddedObject"; }
 
-  const String& unavailablePluginReplacementText() const {
-    return m_unavailablePluginReplacementText;
+  const String& UnavailablePluginReplacementText() const {
+    return unavailable_plugin_replacement_text_;
   }
 
  private:
-  void paintContents(const PaintInfo&, const LayoutPoint&) const final;
-  void paintReplaced(const PaintInfo&, const LayoutPoint&) const final;
-  void paint(const PaintInfo&, const LayoutPoint&) const final;
-  PaintInvalidationReason invalidatePaintIfNeeded(
+  void PaintContents(const PaintInfo&, const LayoutPoint&) const final;
+  void PaintReplaced(const PaintInfo&, const LayoutPoint&) const final;
+  void Paint(const PaintInfo&, const LayoutPoint&) const final;
+  PaintInvalidationReason InvalidatePaintIfNeeded(
       const PaintInvalidatorContext&) const final;
 
-  void layout() final;
+  void GetLayout() final;
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectEmbeddedObject || LayoutPart::IsOfType(type);
   }
-  LayoutReplaced* embeddedReplacedContent() const final;
+  LayoutReplaced* EmbeddedReplacedContent() const final;
 
-  PaintLayerType layerTypeRequired() const final;
+  PaintLayerType LayerTypeRequired() const final;
 
-  ScrollResult scroll(ScrollGranularity, const FloatSize&) final;
+  ScrollResult Scroll(ScrollGranularity, const FloatSize&) final;
 
-  CompositingReasons additionalCompositingReasons() const override;
+  CompositingReasons AdditionalCompositingReasons() const override;
 
-  PluginAvailability m_pluginAvailability = PluginAvailable;
-  String m_unavailablePluginReplacementText;
+  PluginAvailability plugin_availability_ = kPluginAvailable;
+  String unavailable_plugin_replacement_text_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutEmbeddedObject, isEmbeddedObject());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutEmbeddedObject, IsEmbeddedObject());
 
 }  // namespace blink
 

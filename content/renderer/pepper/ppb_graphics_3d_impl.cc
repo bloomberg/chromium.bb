@@ -282,12 +282,12 @@ void PPB_Graphics3D_Impl::OnGpuControlErrorMessage(const char* message,
       HostGlobals::Get()->GetInstance(pp_instance())->container();
   if (!container)
     return;
-  WebLocalFrame* frame = container->document().frame();
+  WebLocalFrame* frame = container->GetDocument().GetFrame();
   if (!frame)
     return;
   WebConsoleMessage console_message = WebConsoleMessage(
-      WebConsoleMessage::LevelError, WebString::fromUTF8(message));
-  frame->addMessageToConsole(console_message);
+      WebConsoleMessage::kLevelError, WebString::FromUTF8(message));
+  frame->AddMessageToConsole(console_message);
 }
 
 void PPB_Graphics3D_Impl::OnGpuControlLostContext() {

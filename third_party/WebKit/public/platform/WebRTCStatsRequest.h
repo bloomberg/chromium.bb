@@ -65,36 +65,36 @@ class WebRTCStatsResponse;
 class WebRTCStatsRequest {
  public:
   WebRTCStatsRequest() {}
-  WebRTCStatsRequest(const WebRTCStatsRequest& other) { assign(other); }
-  ~WebRTCStatsRequest() { reset(); }
+  WebRTCStatsRequest(const WebRTCStatsRequest& other) { Assign(other); }
+  ~WebRTCStatsRequest() { Reset(); }
 
   WebRTCStatsRequest& operator=(const WebRTCStatsRequest& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebRTCStatsRequest&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebRTCStatsRequest&);
 
-  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void Reset();
 
   // This function returns true if a selector argument was given to getStats.
-  BLINK_PLATFORM_EXPORT bool hasSelector() const;
+  BLINK_PLATFORM_EXPORT bool HasSelector() const;
 
   // The component() accessor give the information
   // required to look up a MediaStreamTrack implementation.
   // It is only useful to call it when hasSelector() returns true.
-  BLINK_PLATFORM_EXPORT const WebMediaStreamTrack component() const;
+  BLINK_PLATFORM_EXPORT const WebMediaStreamTrack Component() const;
 
-  BLINK_PLATFORM_EXPORT void requestSucceeded(const WebRTCStatsResponse&) const;
+  BLINK_PLATFORM_EXPORT void RequestSucceeded(const WebRTCStatsResponse&) const;
 
-  BLINK_PLATFORM_EXPORT WebRTCStatsResponse createResponse() const;
+  BLINK_PLATFORM_EXPORT WebRTCStatsResponse CreateResponse() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCStatsRequest(RTCStatsRequest*);
 #endif
 
  private:
-  WebPrivatePtr<RTCStatsRequest, WebPrivatePtrDestructionCrossThread> m_private;
+  WebPrivatePtr<RTCStatsRequest, kWebPrivatePtrDestructionCrossThread> private_;
 };
 
 }  // namespace blink

@@ -30,15 +30,15 @@ namespace blink {
 
 TextDocument::TextDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer) {
-  setCompatibilityMode(QuirksMode);
-  lockCompatibilityMode();
-  UseCounter::count(*this, UseCounter::TextDocument);
-  if (!isInMainFrame())
-    UseCounter::count(*this, UseCounter::TextDocumentInFrame);
+  SetCompatibilityMode(kQuirksMode);
+  LockCompatibilityMode();
+  UseCounter::Count(*this, UseCounter::kTextDocument);
+  if (!IsInMainFrame())
+    UseCounter::Count(*this, UseCounter::kTextDocumentInFrame);
 }
 
-DocumentParser* TextDocument::createParser() {
-  return TextDocumentParser::create(*this, getParserSynchronizationPolicy());
+DocumentParser* TextDocument::CreateParser() {
+  return TextDocumentParser::Create(*this, GetParserSynchronizationPolicy());
 }
 
 }  // namespace blink

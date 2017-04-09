@@ -50,8 +50,8 @@ class CORE_EXPORT BindingSecurity {
 
  public:
   enum class ErrorReportOption {
-    DoNotReport,
-    Report,
+    kDoNotReport,
+    kReport,
   };
 
   // Check if the caller (|accessingWindow|) is allowed to access the JS
@@ -64,22 +64,22 @@ class CORE_EXPORT BindingSecurity {
   // EventTarget, or Location.
   //
   // DOMWindow
-  static bool shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const DOMWindow* target,
                                   ExceptionState&);
-  static bool shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const DOMWindow* target,
                                   ErrorReportOption);
   // EventTarget (as the parent of DOMWindow)
-  static bool shouldAllowAccessTo(
-      const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(
+      const LocalDOMWindow* accessing_window,
       const EventTarget* target,
       ExceptionState&);  // NOLINT(readability/parameter_name)
   // Location
-  static bool shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const Location* target,
                                   ExceptionState&);
-  static bool shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const Location* target,
                                   ErrorReportOption);
 
@@ -94,29 +94,29 @@ class CORE_EXPORT BindingSecurity {
   // it's not null.
   //
   // Node
-  static bool shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const Node* target,
                                   ExceptionState&);
-  static bool shouldAllowAccessTo(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessTo(const LocalDOMWindow* accessing_window,
                                   const Node* target,
                                   ErrorReportOption);
 
   // These overloads should be used only when checking a general access from
   // one context to another context.  For access to a receiver object or
   // returned object, you should use the above overloads.
-  static bool shouldAllowAccessToFrame(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessToFrame(const LocalDOMWindow* accessing_window,
                                        const Frame* target,
                                        ExceptionState&);
-  static bool shouldAllowAccessToFrame(const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessToFrame(const LocalDOMWindow* accessing_window,
                                        const Frame* target,
                                        ErrorReportOption);
   // This overload must be used only for detached windows.
-  static bool shouldAllowAccessToDetachedWindow(
-      const LocalDOMWindow* accessingWindow,
+  static bool ShouldAllowAccessToDetachedWindow(
+      const LocalDOMWindow* accessing_window,
       const DOMWindow* target,
       ExceptionState&);
 
-  static void failedAccessCheckFor(v8::Isolate*, const Frame* target);
+  static void FailedAccessCheckFor(v8::Isolate*, const Frame* target);
 
  private:
   // Returns true if |accessingWindow| is allowed named access to |targetWindow|
@@ -130,8 +130,8 @@ class CORE_EXPORT BindingSecurity {
   //
   // This function should be only used from V8Window::namedPropertyGetterCustom.
   friend class V8Window;
-  static bool shouldAllowNamedAccessTo(const DOMWindow* accessingWindow,
-                                       const DOMWindow* targetWindow);
+  static bool ShouldAllowNamedAccessTo(const DOMWindow* accessing_window,
+                                       const DOMWindow* target_window);
 };
 
 }  // namespace blink

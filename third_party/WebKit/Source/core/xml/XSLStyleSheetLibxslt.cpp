@@ -35,112 +35,112 @@
 
 namespace blink {
 
-XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule,
-                             const String& originalURL,
-                             const KURL& finalURL)
-    : m_ownerNode(nullptr),
-      m_originalURL(originalURL),
-      m_finalURL(finalURL),
-      m_isDisabled(false),
-      m_embedded(false),
+XSLStyleSheet::XSLStyleSheet(XSLImportRule* parent_rule,
+                             const String& original_url,
+                             const KURL& final_url)
+    : owner_node_(nullptr),
+      original_url_(original_url),
+      final_url_(final_url),
+      is_disabled_(false),
+      embedded_(false),
       // Child sheets get marked as processed when the libxslt engine has
       // finally seen them.
-      m_processed(false),
-      m_stylesheetDoc(0),
-      m_stylesheetDocTaken(false),
-      m_compilationFailed(false),
-      m_parentStyleSheet(parentRule ? parentRule->parentStyleSheet() : 0),
-      m_ownerDocument(nullptr) {}
+      processed_(false),
+      stylesheet_doc_(0),
+      stylesheet_doc_taken_(false),
+      compilation_failed_(false),
+      parent_style_sheet_(parent_rule ? parent_rule->ParentStyleSheet() : 0),
+      owner_document_(nullptr) {}
 
-XSLStyleSheet::XSLStyleSheet(Node* parentNode,
-                             const String& originalURL,
-                             const KURL& finalURL,
+XSLStyleSheet::XSLStyleSheet(Node* parent_node,
+                             const String& original_url,
+                             const KURL& final_url,
                              bool embedded)
-    : m_ownerNode(parentNode),
-      m_originalURL(originalURL),
-      m_finalURL(finalURL),
-      m_isDisabled(false),
-      m_embedded(embedded),
-      m_processed(true),  // The root sheet starts off processed.
-      m_stylesheetDoc(0),
-      m_stylesheetDocTaken(false),
-      m_compilationFailed(false),
-      m_parentStyleSheet(nullptr),
-      m_ownerDocument(nullptr) {}
+    : owner_node_(parent_node),
+      original_url_(original_url),
+      final_url_(final_url),
+      is_disabled_(false),
+      embedded_(embedded),
+      processed_(true),  // The root sheet starts off processed.
+      stylesheet_doc_(0),
+      stylesheet_doc_taken_(false),
+      compilation_failed_(false),
+      parent_style_sheet_(nullptr),
+      owner_document_(nullptr) {}
 
-XSLStyleSheet::XSLStyleSheet(Document* ownerDocument,
-                             Node* styleSheetRootNode,
-                             const String& originalURL,
-                             const KURL& finalURL,
+XSLStyleSheet::XSLStyleSheet(Document* owner_document,
+                             Node* style_sheet_root_node,
+                             const String& original_url,
+                             const KURL& final_url,
                              bool embedded)
-    : m_ownerNode(styleSheetRootNode),
-      m_originalURL(originalURL),
-      m_finalURL(finalURL),
-      m_isDisabled(false),
-      m_embedded(embedded),
-      m_processed(true),  // The root sheet starts off processed.
-      m_stylesheetDoc(0),
-      m_stylesheetDocTaken(false),
-      m_compilationFailed(false),
-      m_parentStyleSheet(nullptr),
-      m_ownerDocument(ownerDocument) {}
+    : owner_node_(style_sheet_root_node),
+      original_url_(original_url),
+      final_url_(final_url),
+      is_disabled_(false),
+      embedded_(embedded),
+      processed_(true),  // The root sheet starts off processed.
+      stylesheet_doc_(0),
+      stylesheet_doc_taken_(false),
+      compilation_failed_(false),
+      parent_style_sheet_(nullptr),
+      owner_document_(owner_document) {}
 
 XSLStyleSheet::~XSLStyleSheet() {
-  if (!m_stylesheetDocTaken)
-    xmlFreeDoc(m_stylesheetDoc);
+  if (!stylesheet_doc_taken_)
+    xmlFreeDoc(stylesheet_doc_);
 }
 
-bool XSLStyleSheet::isLoading() const {
-  for (unsigned i = 0; i < m_children.size(); ++i) {
-    if (m_children.at(i)->isLoading())
+bool XSLStyleSheet::IsLoading() const {
+  for (unsigned i = 0; i < children_.size(); ++i) {
+    if (children_.at(i)->IsLoading())
       return true;
   }
   return false;
 }
 
-void XSLStyleSheet::checkLoaded() {
-  if (isLoading())
+void XSLStyleSheet::CheckLoaded() {
+  if (IsLoading())
     return;
-  if (XSLStyleSheet* styleSheet = parentStyleSheet())
-    styleSheet->checkLoaded();
+  if (XSLStyleSheet* style_sheet = parentStyleSheet())
+    style_sheet->CheckLoaded();
   if (ownerNode())
-    ownerNode()->sheetLoaded();
+    ownerNode()->SheetLoaded();
 }
 
-xmlDocPtr XSLStyleSheet::document() {
-  if (m_embedded && ownerDocument() && ownerDocument()->transformSource())
-    return (xmlDocPtr)ownerDocument()->transformSource()->platformSource();
-  return m_stylesheetDoc;
+xmlDocPtr XSLStyleSheet::GetDocument() {
+  if (embedded_ && OwnerDocument() && OwnerDocument()->GetTransformSource())
+    return (xmlDocPtr)OwnerDocument()->GetTransformSource()->PlatformSource();
+  return stylesheet_doc_;
 }
 
-void XSLStyleSheet::clearDocuments() {
-  m_stylesheetDoc = 0;
-  for (unsigned i = 0; i < m_children.size(); ++i) {
-    XSLImportRule* import = m_children.at(i).get();
-    if (import->styleSheet())
-      import->styleSheet()->clearDocuments();
+void XSLStyleSheet::ClearDocuments() {
+  stylesheet_doc_ = 0;
+  for (unsigned i = 0; i < children_.size(); ++i) {
+    XSLImportRule* import = children_.at(i).Get();
+    if (import->GetStyleSheet())
+      import->GetStyleSheet()->ClearDocuments();
   }
 }
 
-bool XSLStyleSheet::parseString(const String& source) {
+bool XSLStyleSheet::ParseString(const String& source) {
   // Parse in a single chunk into an xmlDocPtr
-  if (!m_stylesheetDocTaken)
-    xmlFreeDoc(m_stylesheetDoc);
-  m_stylesheetDocTaken = false;
+  if (!stylesheet_doc_taken_)
+    xmlFreeDoc(stylesheet_doc_);
+  stylesheet_doc_taken_ = false;
 
   FrameConsole* console = nullptr;
-  if (LocalFrame* frame = ownerDocument()->frame())
-    console = &frame->console();
+  if (LocalFrame* frame = OwnerDocument()->GetFrame())
+    console = &frame->Console();
 
-  XMLDocumentParserScope scope(ownerDocument(), XSLTProcessor::genericErrorFunc,
-                               XSLTProcessor::parseErrorFunc, console);
+  XMLDocumentParserScope scope(OwnerDocument(), XSLTProcessor::GenericErrorFunc,
+                               XSLTProcessor::ParseErrorFunc, console);
   XMLParserInput input(source);
 
-  xmlParserCtxtPtr ctxt = xmlCreateMemoryParserCtxt(input.data(), input.size());
+  xmlParserCtxtPtr ctxt = xmlCreateMemoryParserCtxt(input.Data(), input.size());
   if (!ctxt)
     return 0;
 
-  if (m_parentStyleSheet) {
+  if (parent_style_sheet_) {
     // The XSL transform may leave the newly-transformed document
     // with references to the symbol dictionaries of the style sheet
     // and any of its children. XML document disposal can corrupt memory
@@ -148,58 +148,59 @@ bool XSLStyleSheet::parseString(const String& source) {
     // ensure that all child stylesheets use the same dictionaries as their
     // parents.
     xmlDictFree(ctxt->dict);
-    ctxt->dict = m_parentStyleSheet->m_stylesheetDoc->dict;
+    ctxt->dict = parent_style_sheet_->stylesheet_doc_->dict;
     xmlDictReference(ctxt->dict);
   }
 
-  m_stylesheetDoc = xmlCtxtReadMemory(
-      ctxt, input.data(), input.size(), finalURL().getString().utf8().data(),
-      input.encoding(), XML_PARSE_NOENT | XML_PARSE_DTDATTR |
+  stylesheet_doc_ =
+      xmlCtxtReadMemory(ctxt, input.Data(), input.size(),
+                        FinalURL().GetString().Utf8().Data(), input.Encoding(),
+                        XML_PARSE_NOENT | XML_PARSE_DTDATTR |
                             XML_PARSE_NOWARNING | XML_PARSE_NOCDATA);
 
   xmlFreeParserCtxt(ctxt);
-  loadChildSheets();
-  return m_stylesheetDoc;
+  LoadChildSheets();
+  return stylesheet_doc_;
 }
 
-void XSLStyleSheet::loadChildSheets() {
-  if (!document())
+void XSLStyleSheet::LoadChildSheets() {
+  if (!GetDocument())
     return;
 
-  xmlNodePtr stylesheetRoot = document()->children;
+  xmlNodePtr stylesheet_root = GetDocument()->children;
 
   // Top level children may include other things such as DTD nodes, we ignore
   // those.
-  while (stylesheetRoot && stylesheetRoot->type != XML_ELEMENT_NODE)
-    stylesheetRoot = stylesheetRoot->next;
+  while (stylesheet_root && stylesheet_root->type != XML_ELEMENT_NODE)
+    stylesheet_root = stylesheet_root->next;
 
-  if (m_embedded) {
+  if (embedded_) {
     // We have to locate (by ID) the appropriate embedded stylesheet
     // element, so that we can walk the import/include list.
-    xmlAttrPtr idNode = xmlGetID(
-        document(), (const xmlChar*)(finalURL().getString().utf8().data()));
-    if (!idNode)
+    xmlAttrPtr id_node = xmlGetID(
+        GetDocument(), (const xmlChar*)(FinalURL().GetString().Utf8().Data()));
+    if (!id_node)
       return;
-    stylesheetRoot = idNode->parent;
+    stylesheet_root = id_node->parent;
   } else {
     // FIXME: Need to handle an external URI with a # in it. This is a
     // pretty minor edge case, so we'll deal with it later.
   }
 
-  if (stylesheetRoot) {
+  if (stylesheet_root) {
     // Walk the children of the root element and look for import/include
     // elements. Imports must occur first.
-    xmlNodePtr curr = stylesheetRoot->children;
+    xmlNodePtr curr = stylesheet_root->children;
     while (curr) {
       if (curr->type != XML_ELEMENT_NODE) {
         curr = curr->next;
         continue;
       }
       if (IS_XSLT_ELEM(curr) && IS_XSLT_NAME(curr, "import")) {
-        xmlChar* uriRef =
+        xmlChar* uri_ref =
             xsltGetNsProp(curr, (const xmlChar*)"href", XSLT_NAMESPACE);
-        loadChildSheet(String::fromUTF8((const char*)uriRef));
-        xmlFree(uriRef);
+        LoadChildSheet(String::FromUTF8((const char*)uri_ref));
+        xmlFree(uri_ref);
       } else {
         break;
       }
@@ -210,89 +211,90 @@ void XSLStyleSheet::loadChildSheets() {
     while (curr) {
       if (curr->type == XML_ELEMENT_NODE && IS_XSLT_ELEM(curr) &&
           IS_XSLT_NAME(curr, "include")) {
-        xmlChar* uriRef =
+        xmlChar* uri_ref =
             xsltGetNsProp(curr, (const xmlChar*)"href", XSLT_NAMESPACE);
-        loadChildSheet(String::fromUTF8((const char*)uriRef));
-        xmlFree(uriRef);
+        LoadChildSheet(String::FromUTF8((const char*)uri_ref));
+        xmlFree(uri_ref);
       }
       curr = curr->next;
     }
   }
 }
 
-void XSLStyleSheet::loadChildSheet(const String& href) {
-  XSLImportRule* childRule = XSLImportRule::create(this, href);
-  m_children.push_back(childRule);
-  childRule->loadSheet();
+void XSLStyleSheet::LoadChildSheet(const String& href) {
+  XSLImportRule* child_rule = XSLImportRule::Create(this, href);
+  children_.push_back(child_rule);
+  child_rule->LoadSheet();
 }
 
-xsltStylesheetPtr XSLStyleSheet::compileStyleSheet() {
+xsltStylesheetPtr XSLStyleSheet::CompileStyleSheet() {
   // FIXME: Hook up error reporting for the stylesheet compilation process.
-  if (m_embedded)
-    return xsltLoadStylesheetPI(document());
+  if (embedded_)
+    return xsltLoadStylesheetPI(GetDocument());
 
   // Certain libxslt versions are corrupting the xmlDoc on compilation
   // failures - hence attempting to recompile after a failure is unsafe.
-  if (m_compilationFailed)
+  if (compilation_failed_)
     return 0;
 
   // xsltParseStylesheetDoc makes the document part of the stylesheet
   // so we have to release our pointer to it.
-  DCHECK(!m_stylesheetDocTaken);
-  xsltStylesheetPtr result = xsltParseStylesheetDoc(m_stylesheetDoc);
+  DCHECK(!stylesheet_doc_taken_);
+  xsltStylesheetPtr result = xsltParseStylesheetDoc(stylesheet_doc_);
   if (result)
-    m_stylesheetDocTaken = true;
+    stylesheet_doc_taken_ = true;
   else
-    m_compilationFailed = true;
+    compilation_failed_ = true;
   return result;
 }
 
-void XSLStyleSheet::setParentStyleSheet(XSLStyleSheet* parent) {
-  m_parentStyleSheet = parent;
+void XSLStyleSheet::SetParentStyleSheet(XSLStyleSheet* parent) {
+  parent_style_sheet_ = parent;
 }
 
-Document* XSLStyleSheet::ownerDocument() {
-  for (XSLStyleSheet* styleSheet = this; styleSheet;
-       styleSheet = styleSheet->parentStyleSheet()) {
-    if (styleSheet->m_ownerDocument)
-      return styleSheet->m_ownerDocument.get();
-    Node* node = styleSheet->ownerNode();
+Document* XSLStyleSheet::OwnerDocument() {
+  for (XSLStyleSheet* style_sheet = this; style_sheet;
+       style_sheet = style_sheet->parentStyleSheet()) {
+    if (style_sheet->owner_document_)
+      return style_sheet->owner_document_.Get();
+    Node* node = style_sheet->ownerNode();
     if (node)
-      return &node->document();
+      return &node->GetDocument();
   }
   return nullptr;
 }
 
-xmlDocPtr XSLStyleSheet::locateStylesheetSubResource(xmlDocPtr parentDoc,
+xmlDocPtr XSLStyleSheet::LocateStylesheetSubResource(xmlDocPtr parent_doc,
                                                      const xmlChar* uri) {
-  bool matchedParent = (parentDoc == document());
-  for (unsigned i = 0; i < m_children.size(); ++i) {
-    XSLImportRule* import = m_children.at(i).get();
-    XSLStyleSheet* child = import->styleSheet();
+  bool matched_parent = (parent_doc == GetDocument());
+  for (unsigned i = 0; i < children_.size(); ++i) {
+    XSLImportRule* import = children_.at(i).Get();
+    XSLStyleSheet* child = import->GetStyleSheet();
     if (!child)
       continue;
-    if (matchedParent) {
-      if (child->processed())
+    if (matched_parent) {
+      if (child->Processed())
         continue;  // libxslt has been given this sheet already.
 
       // Check the URI of the child stylesheet against the doc URI.
       // In order to ensure that libxml canonicalized both URLs, we get
       // the original href string from the import rule and canonicalize it
       // using libxml before comparing it with the URI argument.
-      CString importHref = import->href().utf8();
-      xmlChar* base = xmlNodeGetBase(parentDoc, (xmlNodePtr)parentDoc);
-      xmlChar* childURI = xmlBuildURI((const xmlChar*)importHref.data(), base);
-      bool equalURIs = xmlStrEqual(uri, childURI);
+      CString import_href = import->Href().Utf8();
+      xmlChar* base = xmlNodeGetBase(parent_doc, (xmlNodePtr)parent_doc);
+      xmlChar* child_uri =
+          xmlBuildURI((const xmlChar*)import_href.Data(), base);
+      bool equal_ur_is = xmlStrEqual(uri, child_uri);
       xmlFree(base);
-      xmlFree(childURI);
-      if (equalURIs) {
-        child->markAsProcessed();
-        return child->document();
+      xmlFree(child_uri);
+      if (equal_ur_is) {
+        child->MarkAsProcessed();
+        return child->GetDocument();
       }
       continue;
     }
     xmlDocPtr result =
-        import->styleSheet()->locateStylesheetSubResource(parentDoc, uri);
+        import->GetStyleSheet()->LocateStylesheetSubResource(parent_doc, uri);
     if (result)
       return result;
   }
@@ -300,19 +302,19 @@ xmlDocPtr XSLStyleSheet::locateStylesheetSubResource(xmlDocPtr parentDoc,
   return 0;
 }
 
-void XSLStyleSheet::markAsProcessed() {
-  DCHECK(!m_processed);
-  DCHECK(!m_stylesheetDocTaken);
-  m_processed = true;
-  m_stylesheetDocTaken = true;
+void XSLStyleSheet::MarkAsProcessed() {
+  DCHECK(!processed_);
+  DCHECK(!stylesheet_doc_taken_);
+  processed_ = true;
+  stylesheet_doc_taken_ = true;
 }
 
 DEFINE_TRACE(XSLStyleSheet) {
-  visitor->trace(m_ownerNode);
-  visitor->trace(m_children);
-  visitor->trace(m_parentStyleSheet);
-  visitor->trace(m_ownerDocument);
-  StyleSheet::trace(visitor);
+  visitor->Trace(owner_node_);
+  visitor->Trace(children_);
+  visitor->Trace(parent_style_sheet_);
+  visitor->Trace(owner_document_);
+  StyleSheet::Trace(visitor);
 }
 
 }  // namespace blink

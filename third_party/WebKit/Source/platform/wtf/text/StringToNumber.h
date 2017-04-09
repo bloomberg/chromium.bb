@@ -11,68 +11,68 @@
 namespace WTF {
 
 // string -> int.
-WTF_EXPORT int charactersToIntStrict(const LChar*,
+WTF_EXPORT int CharactersToIntStrict(const LChar*,
                                      size_t,
                                      bool* ok = 0,
                                      int base = 10);
-WTF_EXPORT int charactersToIntStrict(const UChar*,
+WTF_EXPORT int CharactersToIntStrict(const UChar*,
                                      size_t,
                                      bool* ok = 0,
                                      int base = 10);
-WTF_EXPORT int charactersToInt(const LChar*,
+WTF_EXPORT int CharactersToInt(const LChar*,
                                size_t,
                                bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT int charactersToInt(const UChar*,
+WTF_EXPORT int CharactersToInt(const UChar*,
                                size_t,
                                bool* ok = 0);  // ignores trailing garbage
 
 // string -> unsigned.
-WTF_EXPORT unsigned charactersToUIntStrict(const LChar*,
+WTF_EXPORT unsigned CharactersToUIntStrict(const LChar*,
                                            size_t,
                                            bool* ok = 0,
                                            int base = 10);
-WTF_EXPORT unsigned charactersToUIntStrict(const UChar*,
+WTF_EXPORT unsigned CharactersToUIntStrict(const UChar*,
                                            size_t,
                                            bool* ok = 0,
                                            int base = 10);
-WTF_EXPORT unsigned charactersToUInt(const LChar*,
+WTF_EXPORT unsigned CharactersToUInt(const LChar*,
                                      size_t,
                                      bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT unsigned charactersToUInt(const UChar*,
+WTF_EXPORT unsigned CharactersToUInt(const UChar*,
                                      size_t,
                                      bool* ok = 0);  // ignores trailing garbage
 
 // string -> int64_t.
-WTF_EXPORT int64_t charactersToInt64Strict(const LChar*,
+WTF_EXPORT int64_t CharactersToInt64Strict(const LChar*,
                                            size_t,
                                            bool* ok = 0,
                                            int base = 10);
-WTF_EXPORT int64_t charactersToInt64Strict(const UChar*,
+WTF_EXPORT int64_t CharactersToInt64Strict(const UChar*,
                                            size_t,
                                            bool* ok = 0,
                                            int base = 10);
-WTF_EXPORT int64_t charactersToInt64(const LChar*,
+WTF_EXPORT int64_t CharactersToInt64(const LChar*,
                                      size_t,
                                      bool* ok = 0);  // ignores trailing garbage
-WTF_EXPORT int64_t charactersToInt64(const UChar*,
+WTF_EXPORT int64_t CharactersToInt64(const UChar*,
                                      size_t,
                                      bool* ok = 0);  // ignores trailing garbage
 
 // string -> uint64_t.
-WTF_EXPORT uint64_t charactersToUInt64Strict(const LChar*,
+WTF_EXPORT uint64_t CharactersToUInt64Strict(const LChar*,
                                              size_t,
                                              bool* ok = 0,
                                              int base = 10);
-WTF_EXPORT uint64_t charactersToUInt64Strict(const UChar*,
+WTF_EXPORT uint64_t CharactersToUInt64Strict(const UChar*,
                                              size_t,
                                              bool* ok = 0,
                                              int base = 10);
 WTF_EXPORT uint64_t
-charactersToUInt64(const LChar*,
+CharactersToUInt64(const LChar*,
                    size_t,
                    bool* ok = 0);  // ignores trailing garbage
 WTF_EXPORT uint64_t
-charactersToUInt64(const UChar*,
+CharactersToUInt64(const UChar*,
                    size_t,
                    bool* ok = 0);  // ignores trailing garbage
 
@@ -82,32 +82,32 @@ charactersToUInt64(const UChar*,
 // consistent with the above functions instead.
 //
 // string -> double.
-WTF_EXPORT double charactersToDouble(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT double charactersToDouble(const UChar*, size_t, bool* ok = 0);
-WTF_EXPORT double charactersToDouble(const LChar*,
+WTF_EXPORT double CharactersToDouble(const LChar*, size_t, bool* ok = 0);
+WTF_EXPORT double CharactersToDouble(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT double CharactersToDouble(const LChar*,
                                      size_t,
-                                     size_t& parsedLength);
-WTF_EXPORT double charactersToDouble(const UChar*,
+                                     size_t& parsed_length);
+WTF_EXPORT double CharactersToDouble(const UChar*,
                                      size_t,
-                                     size_t& parsedLength);
+                                     size_t& parsed_length);
 
 // string -> float.
-WTF_EXPORT float charactersToFloat(const LChar*, size_t, bool* ok = 0);
-WTF_EXPORT float charactersToFloat(const UChar*, size_t, bool* ok = 0);
-WTF_EXPORT float charactersToFloat(const LChar*, size_t, size_t& parsedLength);
-WTF_EXPORT float charactersToFloat(const UChar*, size_t, size_t& parsedLength);
+WTF_EXPORT float CharactersToFloat(const LChar*, size_t, bool* ok = 0);
+WTF_EXPORT float CharactersToFloat(const UChar*, size_t, bool* ok = 0);
+WTF_EXPORT float CharactersToFloat(const LChar*, size_t, size_t& parsed_length);
+WTF_EXPORT float CharactersToFloat(const UChar*, size_t, size_t& parsed_length);
 
 }  // namespace WTF
 
-using WTF::charactersToIntStrict;
-using WTF::charactersToUIntStrict;
-using WTF::charactersToInt64Strict;
-using WTF::charactersToUInt64Strict;
-using WTF::charactersToInt;
-using WTF::charactersToUInt;
-using WTF::charactersToInt64;
-using WTF::charactersToUInt64;
-using WTF::charactersToDouble;
-using WTF::charactersToFloat;
+using WTF::CharactersToIntStrict;
+using WTF::CharactersToUIntStrict;
+using WTF::CharactersToInt64Strict;
+using WTF::CharactersToUInt64Strict;
+using WTF::CharactersToInt;
+using WTF::CharactersToUInt;
+using WTF::CharactersToInt64;
+using WTF::CharactersToUInt64;
+using WTF::CharactersToDouble;
+using WTF::CharactersToFloat;
 
 #endif

@@ -26,144 +26,146 @@
 namespace blink {
 
 HitTestLocation::HitTestLocation()
-    : m_isRectBased(false), m_isRectilinear(true) {}
+    : is_rect_based_(false), is_rectilinear_(true) {}
 
 HitTestLocation::HitTestLocation(const LayoutPoint& point)
-    : m_point(point),
-      m_boundingBox(rectForPoint(point, 0, 0, 0, 0)),
-      m_transformedPoint(point),
-      m_transformedRect(m_boundingBox),
-      m_isRectBased(false),
-      m_isRectilinear(true) {}
+    : point_(point),
+      bounding_box_(RectForPoint(point, 0, 0, 0, 0)),
+      transformed_point_(point),
+      transformed_rect_(bounding_box_),
+      is_rect_based_(false),
+      is_rectilinear_(true) {}
 
 HitTestLocation::HitTestLocation(const FloatPoint& point)
-    : m_point(flooredLayoutPoint(point)),
-      m_boundingBox(rectForPoint(m_point, 0, 0, 0, 0)),
-      m_transformedPoint(point),
-      m_transformedRect(m_boundingBox),
-      m_isRectBased(false),
-      m_isRectilinear(true) {}
+    : point_(FlooredLayoutPoint(point)),
+      bounding_box_(RectForPoint(point_, 0, 0, 0, 0)),
+      transformed_point_(point),
+      transformed_rect_(bounding_box_),
+      is_rect_based_(false),
+      is_rectilinear_(true) {}
 
 HitTestLocation::HitTestLocation(const FloatPoint& point, const FloatQuad& quad)
-    : m_transformedPoint(point), m_transformedRect(quad), m_isRectBased(true) {
-  m_point = flooredLayoutPoint(point);
-  m_boundingBox = enclosingIntRect(quad.boundingBox());
-  m_isRectilinear = quad.isRectilinear();
+    : transformed_point_(point), transformed_rect_(quad), is_rect_based_(true) {
+  point_ = FlooredLayoutPoint(point);
+  bounding_box_ = EnclosingIntRect(quad.BoundingBox());
+  is_rectilinear_ = quad.IsRectilinear();
 }
 
-HitTestLocation::HitTestLocation(const LayoutPoint& centerPoint,
-                                 unsigned topPadding,
-                                 unsigned rightPadding,
-                                 unsigned bottomPadding,
-                                 unsigned leftPadding)
-    : m_point(centerPoint),
-      m_boundingBox(rectForPoint(centerPoint,
-                                 topPadding,
-                                 rightPadding,
-                                 bottomPadding,
-                                 leftPadding)),
-      m_transformedPoint(centerPoint),
-      m_isRectBased(topPadding || rightPadding || bottomPadding || leftPadding),
-      m_isRectilinear(true) {
-  m_transformedRect = FloatQuad(m_boundingBox);
+HitTestLocation::HitTestLocation(const LayoutPoint& center_point,
+                                 unsigned top_padding,
+                                 unsigned right_padding,
+                                 unsigned bottom_padding,
+                                 unsigned left_padding)
+    : point_(center_point),
+      bounding_box_(RectForPoint(center_point,
+                                 top_padding,
+                                 right_padding,
+                                 bottom_padding,
+                                 left_padding)),
+      transformed_point_(center_point),
+      is_rect_based_(top_padding || right_padding || bottom_padding ||
+                     left_padding),
+      is_rectilinear_(true) {
+  transformed_rect_ = FloatQuad(bounding_box_);
 }
 
 HitTestLocation::HitTestLocation(const HitTestLocation& other,
                                  const LayoutSize& offset)
-    : m_point(other.m_point),
-      m_boundingBox(other.m_boundingBox),
-      m_transformedPoint(other.m_transformedPoint),
-      m_transformedRect(other.m_transformedRect),
-      m_isRectBased(other.m_isRectBased),
-      m_isRectilinear(other.m_isRectilinear) {
-  move(offset);
+    : point_(other.point_),
+      bounding_box_(other.bounding_box_),
+      transformed_point_(other.transformed_point_),
+      transformed_rect_(other.transformed_rect_),
+      is_rect_based_(other.is_rect_based_),
+      is_rectilinear_(other.is_rectilinear_) {
+  Move(offset);
 }
 
 HitTestLocation::HitTestLocation(const HitTestLocation& other)
-    : m_point(other.m_point),
-      m_boundingBox(other.m_boundingBox),
-      m_transformedPoint(other.m_transformedPoint),
-      m_transformedRect(other.m_transformedRect),
-      m_isRectBased(other.m_isRectBased),
-      m_isRectilinear(other.m_isRectilinear) {}
+    : point_(other.point_),
+      bounding_box_(other.bounding_box_),
+      transformed_point_(other.transformed_point_),
+      transformed_rect_(other.transformed_rect_),
+      is_rect_based_(other.is_rect_based_),
+      is_rectilinear_(other.is_rectilinear_) {}
 
 HitTestLocation::~HitTestLocation() {}
 
 HitTestLocation& HitTestLocation::operator=(const HitTestLocation& other) {
-  m_point = other.m_point;
-  m_boundingBox = other.m_boundingBox;
-  m_transformedPoint = other.m_transformedPoint;
-  m_transformedRect = other.m_transformedRect;
-  m_isRectBased = other.m_isRectBased;
-  m_isRectilinear = other.m_isRectilinear;
+  point_ = other.point_;
+  bounding_box_ = other.bounding_box_;
+  transformed_point_ = other.transformed_point_;
+  transformed_rect_ = other.transformed_rect_;
+  is_rect_based_ = other.is_rect_based_;
+  is_rectilinear_ = other.is_rectilinear_;
 
   return *this;
 }
 
-void HitTestLocation::move(const LayoutSize& offset) {
-  m_point.move(offset);
-  m_transformedPoint.move(offset);
-  m_transformedRect.move(offset);
-  m_boundingBox = enclosingIntRect(m_transformedRect.boundingBox());
+void HitTestLocation::Move(const LayoutSize& offset) {
+  point_.Move(offset);
+  transformed_point_.Move(offset);
+  transformed_rect_.Move(offset);
+  bounding_box_ = EnclosingIntRect(transformed_rect_.BoundingBox());
 }
 
 template <typename RectType>
-bool HitTestLocation::intersectsRect(const RectType& rect,
-                                     const RectType& boundingBox) const {
+bool HitTestLocation::IntersectsRect(const RectType& rect,
+                                     const RectType& bounding_box) const {
   // FIXME: When the hit test is not rect based we should use
   // rect.contains(m_point).
   // That does change some corner case tests though.
 
   // First check if rect even intersects our bounding box.
-  if (!rect.intersects(boundingBox))
+  if (!rect.Intersects(bounding_box))
     return false;
 
   // If the transformed rect is rectilinear the bounding box intersection was
   // accurate.
-  if (m_isRectilinear)
+  if (is_rectilinear_)
     return true;
 
   // If rect fully contains our bounding box, we are also sure of an
   // intersection.
-  if (rect.contains(boundingBox))
+  if (rect.Contains(bounding_box))
     return true;
 
   // Otherwise we need to do a slower quad based intersection test.
-  return m_transformedRect.intersectsRect(FloatRect(rect));
+  return transformed_rect_.IntersectsRect(FloatRect(rect));
 }
 
-bool HitTestLocation::intersects(const LayoutRect& rect) const {
-  return intersectsRect(rect, LayoutRect(m_boundingBox));
+bool HitTestLocation::Intersects(const LayoutRect& rect) const {
+  return IntersectsRect(rect, LayoutRect(bounding_box_));
 }
 
-bool HitTestLocation::intersects(const FloatRect& rect) const {
-  return intersectsRect(rect, FloatRect(m_boundingBox));
+bool HitTestLocation::Intersects(const FloatRect& rect) const {
+  return IntersectsRect(rect, FloatRect(bounding_box_));
 }
 
-bool HitTestLocation::intersects(const FloatRoundedRect& rect) const {
-  return rect.intersectsQuad(m_transformedRect);
+bool HitTestLocation::Intersects(const FloatRoundedRect& rect) const {
+  return rect.IntersectsQuad(transformed_rect_);
 }
 
-bool HitTestLocation::containsPoint(const FloatPoint& point) const {
-  return m_transformedRect.containsPoint(point);
+bool HitTestLocation::ContainsPoint(const FloatPoint& point) const {
+  return transformed_rect_.ContainsPoint(point);
 }
 
-IntRect HitTestLocation::rectForPoint(const LayoutPoint& point,
-                                      unsigned topPadding,
-                                      unsigned rightPadding,
-                                      unsigned bottomPadding,
-                                      unsigned leftPadding) {
-  IntPoint actualPoint(flooredIntPoint(point));
-  actualPoint -= IntSize(leftPadding, topPadding);
+IntRect HitTestLocation::RectForPoint(const LayoutPoint& point,
+                                      unsigned top_padding,
+                                      unsigned right_padding,
+                                      unsigned bottom_padding,
+                                      unsigned left_padding) {
+  IntPoint actual_point(FlooredIntPoint(point));
+  actual_point -= IntSize(left_padding, top_padding);
 
-  IntSize actualPadding(leftPadding + rightPadding, topPadding + bottomPadding);
+  IntSize actual_padding(left_padding + right_padding,
+                         top_padding + bottom_padding);
   // As IntRect is left inclusive and right exclusive (seeing
   // IntRect::contains(x, y)), adding "1".
   // FIXME: Remove this once non-rect based hit-detection stops using
   // IntRect:intersects.
-  actualPadding += IntSize(1, 1);
+  actual_padding += IntSize(1, 1);
 
-  return IntRect(actualPoint, actualPadding);
+  return IntRect(actual_point, actual_padding);
 }
 
 }  // namespace blink

@@ -11,15 +11,15 @@ namespace blink {
 const CSSValue* CSSPropertyAPIWebkitLineClamp::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().type() != PercentageToken &&
-      range.peek().type() != NumberToken)
+  if (range.Peek().GetType() != kPercentageToken &&
+      range.Peek().GetType() != kNumberToken)
     return nullptr;
-  CSSPrimitiveValue* clampValue =
-      CSSPropertyParserHelpers::consumePercent(range, ValueRangeNonNegative);
-  if (clampValue)
-    return clampValue;
+  CSSPrimitiveValue* clamp_value =
+      CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
+  if (clamp_value)
+    return clamp_value;
   // When specifying number of lines, don't allow 0 as a valid value.
-  return CSSPropertyParserHelpers::consumePositiveInteger(range);
+  return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
 }
 
 }  // namespace blink

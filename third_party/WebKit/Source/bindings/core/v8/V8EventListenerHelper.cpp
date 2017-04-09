@@ -36,22 +36,22 @@
 
 namespace blink {
 
-EventListener* V8EventListenerHelper::getEventListener(
-    ScriptState* scriptState,
+EventListener* V8EventListenerHelper::GetEventListener(
+    ScriptState* script_state,
     v8::Local<v8::Value> value,
-    bool isAttribute,
+    bool is_attribute,
     ListenerLookupType lookup) {
-  if (lookup == ListenerFindOnly) {
+  if (lookup == kListenerFindOnly) {
     // Used by EventTarget::removeEventListener, specifically
     // EventTargetV8Internal::removeEventListenerMethod
-    DCHECK(!isAttribute);
-    return V8EventListenerHelper::existingEventListener(value, scriptState);
+    DCHECK(!is_attribute);
+    return V8EventListenerHelper::ExistingEventListener(value, script_state);
   }
-  if (toLocalDOMWindow(scriptState->context()))
-    return V8EventListenerHelper::ensureEventListener<V8EventListener>(
-        value, isAttribute, scriptState);
-  return V8EventListenerHelper::ensureEventListener<
-      V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState);
+  if (ToLocalDOMWindow(script_state->GetContext()))
+    return V8EventListenerHelper::EnsureEventListener<V8EventListener>(
+        value, is_attribute, script_state);
+  return V8EventListenerHelper::EnsureEventListener<
+      V8WorkerGlobalScopeEventListener>(value, is_attribute, script_state);
 }
 
 }  // namespace blink

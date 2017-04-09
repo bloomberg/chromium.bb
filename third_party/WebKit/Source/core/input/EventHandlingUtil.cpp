@@ -14,24 +14,25 @@
 namespace blink {
 namespace EventHandlingUtil {
 
-HitTestResult hitTestResultInFrame(LocalFrame* frame,
-                                   const LayoutPoint& point,
-                                   HitTestRequest::HitTestRequestType hitType) {
-  HitTestResult result(HitTestRequest(hitType), point);
+HitTestResult HitTestResultInFrame(
+    LocalFrame* frame,
+    const LayoutPoint& point,
+    HitTestRequest::HitTestRequestType hit_type) {
+  HitTestResult result(HitTestRequest(hit_type), point);
 
-  if (!frame || frame->contentLayoutItem().isNull())
+  if (!frame || frame->ContentLayoutItem().IsNull())
     return result;
-  if (frame->view()) {
-    IntRect rect = frame->view()->visibleContentRect(IncludeScrollbars);
-    if (!rect.contains(roundedIntPoint(point)))
+  if (frame->View()) {
+    IntRect rect = frame->View()->VisibleContentRect(kIncludeScrollbars);
+    if (!rect.Contains(RoundedIntPoint(point)))
       return result;
   }
-  frame->contentLayoutItem().hitTest(result);
+  frame->ContentLayoutItem().HitTest(result);
   return result;
 }
 
-WebInputEventResult mergeEventResult(WebInputEventResult resultA,
-                                     WebInputEventResult resultB) {
+WebInputEventResult MergeEventResult(WebInputEventResult result_a,
+                                     WebInputEventResult result_b) {
   // The ordering of the enumeration is specific. There are times that
   // multiple events fire and we need to combine them into a single
   // result code. The enumeration is based on the level of consumption that
@@ -39,85 +40,87 @@ WebInputEventResult mergeEventResult(WebInputEventResult resultA,
   // numbers first. Examples of merged results are:
   // (HandledApplication, HandledSystem) -> HandledSystem
   // (NotHandled, HandledApplication) -> HandledApplication
-  static_assert(static_cast<int>(WebInputEventResult::NotHandled) == 0,
+  static_assert(static_cast<int>(WebInputEventResult::kNotHandled) == 0,
                 "WebInputEventResult not ordered");
-  static_assert(static_cast<int>(WebInputEventResult::HandledSuppressed) <
-                    static_cast<int>(WebInputEventResult::HandledApplication),
+  static_assert(static_cast<int>(WebInputEventResult::kHandledSuppressed) <
+                    static_cast<int>(WebInputEventResult::kHandledApplication),
                 "WebInputEventResult not ordered");
-  static_assert(static_cast<int>(WebInputEventResult::HandledApplication) <
-                    static_cast<int>(WebInputEventResult::HandledSystem),
+  static_assert(static_cast<int>(WebInputEventResult::kHandledApplication) <
+                    static_cast<int>(WebInputEventResult::kHandledSystem),
                 "WebInputEventResult not ordered");
   return static_cast<WebInputEventResult>(
-      max(static_cast<int>(resultA), static_cast<int>(resultB)));
+      max(static_cast<int>(result_a), static_cast<int>(result_b)));
 }
 
-WebInputEventResult toWebInputEventResult(DispatchEventResult result) {
+WebInputEventResult ToWebInputEventResult(DispatchEventResult result) {
   switch (result) {
-    case DispatchEventResult::NotCanceled:
-      return WebInputEventResult::NotHandled;
-    case DispatchEventResult::CanceledByEventHandler:
-      return WebInputEventResult::HandledApplication;
-    case DispatchEventResult::CanceledByDefaultEventHandler:
-      return WebInputEventResult::HandledSystem;
-    case DispatchEventResult::CanceledBeforeDispatch:
-      return WebInputEventResult::HandledSuppressed;
+    case DispatchEventResult::kNotCanceled:
+      return WebInputEventResult::kNotHandled;
+    case DispatchEventResult::kCanceledByEventHandler:
+      return WebInputEventResult::kHandledApplication;
+    case DispatchEventResult::kCanceledByDefaultEventHandler:
+      return WebInputEventResult::kHandledSystem;
+    case DispatchEventResult::kCanceledBeforeDispatch:
+      return WebInputEventResult::kHandledSuppressed;
     default:
       NOTREACHED();
-      return WebInputEventResult::HandledSystem;
+      return WebInputEventResult::kHandledSystem;
   }
 }
 
-PaintLayer* layerForNode(Node* node) {
+PaintLayer* LayerForNode(Node* node) {
   if (!node)
     return nullptr;
 
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
     return nullptr;
 
-  PaintLayer* layer = layoutObject->enclosingLayer();
+  PaintLayer* layer = layout_object->EnclosingLayer();
   if (!layer)
     return nullptr;
 
   return layer;
 }
 
-ScrollableArea* associatedScrollableArea(const PaintLayer* layer) {
-  if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
-    if (scrollableArea->scrollsOverflow())
-      return scrollableArea;
+ScrollableArea* AssociatedScrollableArea(const PaintLayer* layer) {
+  if (PaintLayerScrollableArea* scrollable_area = layer->GetScrollableArea()) {
+    if (scrollable_area->ScrollsOverflow())
+      return scrollable_area;
   }
 
   return nullptr;
 }
 
-ContainerNode* parentForClickEvent(const Node& node) {
+ContainerNode* ParentForClickEvent(const Node& node) {
   // IE doesn't dispatch click events for mousedown/mouseup events across form
   // controls.
-  if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
+  if (node.IsHTMLElement() && ToHTMLElement(node).IsInteractiveContent())
     return nullptr;
 
-  return FlatTreeTraversal::parent(node);
+  return FlatTreeTraversal::Parent(node);
 }
 
-LayoutPoint contentPointFromRootFrame(LocalFrame* frame,
-                                      const IntPoint& pointInRootFrame) {
-  FrameView* view = frame->view();
+LayoutPoint ContentPointFromRootFrame(LocalFrame* frame,
+                                      const IntPoint& point_in_root_frame) {
+  FrameView* view = frame->View();
   // FIXME: Is it really OK to use the wrong coordinates here when view is 0?
   // Historically the code would just crash; this is clearly no worse than that.
-  return view ? view->rootFrameToContents(pointInRootFrame) : pointInRootFrame;
+  return view ? view->RootFrameToContents(point_in_root_frame)
+              : point_in_root_frame;
 }
 
-MouseEventWithHitTestResults performMouseEventHitTest(
+MouseEventWithHitTestResults PerformMouseEventHitTest(
     LocalFrame* frame,
     const HitTestRequest& request,
     const WebMouseEvent& mev) {
   DCHECK(frame);
-  DCHECK(frame->document());
+  DCHECK(frame->GetDocument());
 
-  return frame->document()->performMouseEventHitTest(
-      request, contentPointFromRootFrame(
-                   frame, flooredIntPoint(mev.positionInRootFrame())),
+  return frame->GetDocument()->PerformMouseEventHitTest(
+      request,
+      ContentPointFromRootFrame(frame,
+                                FlooredIntPoint(mev.PositionInRootFrame())),
       mev);
 }
 

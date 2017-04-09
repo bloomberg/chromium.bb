@@ -38,38 +38,38 @@
 namespace blink {
 
 TEST(SecurityPolicyTest, EmptyReferrerForUnauthorizedScheme) {
-  const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
-  EXPECT_TRUE(
-      String() ==
-      SecurityPolicy::generateReferrer(ReferrerPolicyAlways, exampleHttpUrl,
-                                       String::fromUTF8("chrome://somepage/"))
-          .referrer);
+  const KURL example_http_url = KURL(kParsedURLString, "http://example.com/");
+  EXPECT_TRUE(String() == SecurityPolicy::GenerateReferrer(
+                              kReferrerPolicyAlways, example_http_url,
+                              String::FromUTF8("chrome://somepage/"))
+                              .referrer);
 }
 
 TEST(SecurityPolicyTest, GenerateReferrerRespectsReferrerSchemesRegistry) {
-  const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
-  const String foobarURL = String::fromUTF8("foobar://somepage/");
-  const String foobarScheme = String::fromUTF8("foobar");
+  const KURL example_http_url = KURL(kParsedURLString, "http://example.com/");
+  const String foobar_url = String::FromUTF8("foobar://somepage/");
+  const String foobar_scheme = String::FromUTF8("foobar");
 
-  EXPECT_EQ(String(), SecurityPolicy::generateReferrer(
-                          ReferrerPolicyAlways, exampleHttpUrl, foobarURL)
+  EXPECT_EQ(String(), SecurityPolicy::GenerateReferrer(
+                          kReferrerPolicyAlways, example_http_url, foobar_url)
                           .referrer);
-  SchemeRegistry::registerURLSchemeAsAllowedForReferrer(foobarScheme);
-  EXPECT_EQ(foobarURL, SecurityPolicy::generateReferrer(
-                           ReferrerPolicyAlways, exampleHttpUrl, foobarURL)
-                           .referrer);
-  SchemeRegistry::removeURLSchemeAsAllowedForReferrer(foobarScheme);
+  SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(foobar_scheme);
+  EXPECT_EQ(foobar_url, SecurityPolicy::GenerateReferrer(
+                            kReferrerPolicyAlways, example_http_url, foobar_url)
+                            .referrer);
+  SchemeRegistry::RemoveURLSchemeAsAllowedForReferrer(foobar_scheme);
 }
 
 TEST(SecurityPolicyTest, ShouldHideReferrerRespectsReferrerSchemesRegistry) {
-  const KURL exampleHttpUrl = KURL(ParsedURLString, "http://example.com/");
-  const KURL foobarURL = KURL(KURL(), "foobar://somepage/");
-  const String foobarScheme = String::fromUTF8("foobar");
+  const KURL example_http_url = KURL(kParsedURLString, "http://example.com/");
+  const KURL foobar_url = KURL(KURL(), "foobar://somepage/");
+  const String foobar_scheme = String::FromUTF8("foobar");
 
-  EXPECT_TRUE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarURL));
-  SchemeRegistry::registerURLSchemeAsAllowedForReferrer(foobarScheme);
-  EXPECT_FALSE(SecurityPolicy::shouldHideReferrer(exampleHttpUrl, foobarURL));
-  SchemeRegistry::removeURLSchemeAsAllowedForReferrer(foobarScheme);
+  EXPECT_TRUE(SecurityPolicy::ShouldHideReferrer(example_http_url, foobar_url));
+  SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(foobar_scheme);
+  EXPECT_FALSE(
+      SecurityPolicy::ShouldHideReferrer(example_http_url, foobar_url));
+  SchemeRegistry::RemoveURLSchemeAsAllowedForReferrer(foobar_scheme);
 }
 
 TEST(SecurityPolicyTest, GenerateReferrer) {
@@ -80,127 +80,128 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
     const char* expected;
   };
 
-  const char insecureURLA[] = "http://a.test/path/to/file.html";
-  const char insecureURLB[] = "http://b.test/path/to/file.html";
-  const char insecureOriginA[] = "http://a.test/";
+  const char kInsecureURLA[] = "http://a.test/path/to/file.html";
+  const char kInsecureURLB[] = "http://b.test/path/to/file.html";
+  const char kInsecureOriginA[] = "http://a.test/";
 
-  const char secureURLA[] = "https://a.test/path/to/file.html";
-  const char secureURLB[] = "https://b.test/path/to/file.html";
-  const char secureOriginA[] = "https://a.test/";
+  const char kSecureURLA[] = "https://a.test/path/to/file.html";
+  const char kSecureURLB[] = "https://b.test/path/to/file.html";
+  const char kSecureOriginA[] = "https://a.test/";
 
-  const char blobURL[] =
+  const char kBlobURL[] =
       "blob:http://a.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde";
-  const char filesystemURL[] = "filesystem:http://a.test/path/t/file.html";
+  const char kFilesystemURL[] = "filesystem:http://a.test/path/t/file.html";
 
   TestCase inputs[] = {
       // HTTP -> HTTP: Same Origin
-      {ReferrerPolicyAlways, insecureURLA, insecureURLA, insecureURLA},
-      {ReferrerPolicyDefault, insecureURLA, insecureURLA, insecureURLA},
-      {ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, insecureURLA,
-       insecureURLA},
-      {ReferrerPolicyNever, insecureURLA, insecureURLA, 0},
-      {ReferrerPolicyOrigin, insecureURLA, insecureURLA, insecureOriginA},
-      {ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, insecureURLA,
-       insecureURLA},
+      {kReferrerPolicyAlways, kInsecureURLA, kInsecureURLA, kInsecureURLA},
+      {kReferrerPolicyDefault, kInsecureURLA, kInsecureURLA, kInsecureURLA},
+      {kReferrerPolicyNoReferrerWhenDowngrade, kInsecureURLA, kInsecureURLA,
+       kInsecureURLA},
+      {kReferrerPolicyNever, kInsecureURLA, kInsecureURLA, 0},
+      {kReferrerPolicyOrigin, kInsecureURLA, kInsecureURLA, kInsecureOriginA},
+      {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLA,
+       kInsecureURLA},
 
       // HTTP -> HTTP: Cross Origin
-      {ReferrerPolicyAlways, insecureURLA, insecureURLB, insecureURLA},
-      {ReferrerPolicyDefault, insecureURLA, insecureURLB, insecureURLA},
-      {ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, insecureURLB,
-       insecureURLA},
-      {ReferrerPolicyNever, insecureURLA, insecureURLB, 0},
-      {ReferrerPolicyOrigin, insecureURLA, insecureURLB, insecureOriginA},
-      {ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, insecureURLB,
-       insecureOriginA},
+      {kReferrerPolicyAlways, kInsecureURLA, kInsecureURLB, kInsecureURLA},
+      {kReferrerPolicyDefault, kInsecureURLA, kInsecureURLB, kInsecureURLA},
+      {kReferrerPolicyNoReferrerWhenDowngrade, kInsecureURLA, kInsecureURLB,
+       kInsecureURLA},
+      {kReferrerPolicyNever, kInsecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyOrigin, kInsecureURLA, kInsecureURLB, kInsecureOriginA},
+      {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLB,
+       kInsecureOriginA},
 
       // HTTPS -> HTTPS: Same Origin
-      {ReferrerPolicyAlways, secureURLA, secureURLA, secureURLA},
-      {ReferrerPolicyDefault, secureURLA, secureURLA, secureURLA},
-      {ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, secureURLA,
-       secureURLA},
-      {ReferrerPolicyNever, secureURLA, secureURLA, 0},
-      {ReferrerPolicyOrigin, secureURLA, secureURLA, secureOriginA},
-      {ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLA, secureURLA},
+      {kReferrerPolicyAlways, kSecureURLA, kSecureURLA, kSecureURLA},
+      {kReferrerPolicyDefault, kSecureURLA, kSecureURLA, kSecureURLA},
+      {kReferrerPolicyNoReferrerWhenDowngrade, kSecureURLA, kSecureURLA,
+       kSecureURLA},
+      {kReferrerPolicyNever, kSecureURLA, kSecureURLA, 0},
+      {kReferrerPolicyOrigin, kSecureURLA, kSecureURLA, kSecureOriginA},
+      {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLA,
+       kSecureURLA},
 
       // HTTPS -> HTTPS: Cross Origin
-      {ReferrerPolicyAlways, secureURLA, secureURLB, secureURLA},
-      {ReferrerPolicyDefault, secureURLA, secureURLB, secureURLA},
-      {ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, secureURLB,
-       secureURLA},
-      {ReferrerPolicyNever, secureURLA, secureURLB, 0},
-      {ReferrerPolicyOrigin, secureURLA, secureURLB, secureOriginA},
-      {ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB,
-       secureOriginA},
+      {kReferrerPolicyAlways, kSecureURLA, kSecureURLB, kSecureURLA},
+      {kReferrerPolicyDefault, kSecureURLA, kSecureURLB, kSecureURLA},
+      {kReferrerPolicyNoReferrerWhenDowngrade, kSecureURLA, kSecureURLB,
+       kSecureURLA},
+      {kReferrerPolicyNever, kSecureURLA, kSecureURLB, 0},
+      {kReferrerPolicyOrigin, kSecureURLA, kSecureURLB, kSecureOriginA},
+      {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
+       kSecureOriginA},
 
       // HTTP -> HTTPS
-      {ReferrerPolicyAlways, insecureURLA, secureURLB, insecureURLA},
-      {ReferrerPolicyDefault, insecureURLA, secureURLB, insecureURLA},
-      {ReferrerPolicyNoReferrerWhenDowngrade, insecureURLA, secureURLB,
-       insecureURLA},
-      {ReferrerPolicyNever, insecureURLA, secureURLB, 0},
-      {ReferrerPolicyOrigin, insecureURLA, secureURLB, insecureOriginA},
-      {ReferrerPolicyOriginWhenCrossOrigin, insecureURLA, secureURLB,
-       insecureOriginA},
+      {kReferrerPolicyAlways, kInsecureURLA, kSecureURLB, kInsecureURLA},
+      {kReferrerPolicyDefault, kInsecureURLA, kSecureURLB, kInsecureURLA},
+      {kReferrerPolicyNoReferrerWhenDowngrade, kInsecureURLA, kSecureURLB,
+       kInsecureURLA},
+      {kReferrerPolicyNever, kInsecureURLA, kSecureURLB, 0},
+      {kReferrerPolicyOrigin, kInsecureURLA, kSecureURLB, kInsecureOriginA},
+      {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kSecureURLB,
+       kInsecureOriginA},
 
       // HTTPS -> HTTP
-      {ReferrerPolicyAlways, secureURLA, insecureURLB, secureURLA},
-      {ReferrerPolicyDefault, secureURLA, insecureURLB, 0},
-      {ReferrerPolicyNoReferrerWhenDowngrade, secureURLA, insecureURLB, 0},
-      {ReferrerPolicyNever, secureURLA, insecureURLB, 0},
-      {ReferrerPolicyOrigin, secureURLA, insecureURLB, secureOriginA},
-      {ReferrerPolicyOriginWhenCrossOrigin, secureURLA, secureURLB,
-       secureOriginA},
+      {kReferrerPolicyAlways, kSecureURLA, kInsecureURLB, kSecureURLA},
+      {kReferrerPolicyDefault, kSecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyNoReferrerWhenDowngrade, kSecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyNever, kSecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyOrigin, kSecureURLA, kInsecureURLB, kSecureOriginA},
+      {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
+       kSecureOriginA},
 
       // blob and filesystem URL handling
-      {ReferrerPolicyAlways, insecureURLA, blobURL, 0},
-      {ReferrerPolicyAlways, blobURL, insecureURLA, 0},
-      {ReferrerPolicyAlways, insecureURLA, filesystemURL, 0},
-      {ReferrerPolicyAlways, filesystemURL, insecureURLA, 0},
+      {kReferrerPolicyAlways, kInsecureURLA, kBlobURL, 0},
+      {kReferrerPolicyAlways, kBlobURL, kInsecureURLA, 0},
+      {kReferrerPolicyAlways, kInsecureURLA, kFilesystemURL, 0},
+      {kReferrerPolicyAlways, kFilesystemURL, kInsecureURLA, 0},
   };
 
   for (TestCase test : inputs) {
-    KURL destination(ParsedURLString, test.destination);
-    Referrer result = SecurityPolicy::generateReferrer(
-        test.policy, destination, String::fromUTF8(test.referrer));
+    KURL destination(kParsedURLString, test.destination);
+    Referrer result = SecurityPolicy::GenerateReferrer(
+        test.policy, destination, String::FromUTF8(test.referrer));
     if (test.expected) {
-      EXPECT_EQ(String::fromUTF8(test.expected), result.referrer)
+      EXPECT_EQ(String::FromUTF8(test.expected), result.referrer)
           << "'" << test.referrer << "' to '" << test.destination
           << "' should have been '" << test.expected << "': was '"
-          << result.referrer.utf8().data() << "'.";
+          << result.referrer.Utf8().Data() << "'.";
     } else {
-      EXPECT_TRUE(result.referrer.isEmpty())
+      EXPECT_TRUE(result.referrer.IsEmpty())
           << "'" << test.referrer << "' to '" << test.destination
-          << "' should have been empty: was '" << result.referrer.utf8().data()
+          << "' should have been empty: was '" << result.referrer.Utf8().Data()
           << "'.";
     }
-    EXPECT_EQ(test.policy == ReferrerPolicyDefault
-                  ? ReferrerPolicyNoReferrerWhenDowngrade
+    EXPECT_EQ(test.policy == kReferrerPolicyDefault
+                  ? kReferrerPolicyNoReferrerWhenDowngrade
                   : test.policy,
-              result.referrerPolicy);
+              result.referrer_policy);
   }
 }
 
 TEST(SecurityPolicyTest, TrustworthyWhiteList) {
-  const char* insecureURLs[] = {
+  const char* insecure_ur_ls[] = {
       "http://a.test/path/to/file.html", "http://b.test/path/to/file.html",
       "blob:http://c.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
       "filesystem:http://d.test/path/t/file.html",
   };
 
-  for (const char* url : insecureURLs) {
-    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(url);
-    EXPECT_FALSE(origin->isPotentiallyTrustworthy());
-    SecurityPolicy::addOriginTrustworthyWhiteList(origin);
-    EXPECT_TRUE(origin->isPotentiallyTrustworthy());
+  for (const char* url : insecure_ur_ls) {
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::CreateFromString(url);
+    EXPECT_FALSE(origin->IsPotentiallyTrustworthy());
+    SecurityPolicy::AddOriginTrustworthyWhiteList(origin);
+    EXPECT_TRUE(origin->IsPotentiallyTrustworthy());
   }
 
   // Tests that adding URLs that have inner-urls to the whitelist
   // takes effect on the origins of the inner-urls (and vice versa).
   struct TestCase {
     const char* url;
-    const char* anotherUrlInOrigin;
+    const char* another_url_in_origin;
   };
-  TestCase insecureURLsWithInnerOrigin[] = {
+  TestCase insecure_ur_ls_with_inner_origin[] = {
       {"blob:http://e.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
        "http://e.test/foo.html"},
       {"filesystem:http://f.test/path/t/file.html", "http://f.test/bar.html"},
@@ -208,17 +209,17 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
        "blob:http://g.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde"},
       {"http://h.test/bar.html", "filesystem:http://h.test/path/t/file.html"},
   };
-  for (const TestCase& test : insecureURLsWithInnerOrigin) {
+  for (const TestCase& test : insecure_ur_ls_with_inner_origin) {
     // Actually origins of both URLs should be same.
-    RefPtr<SecurityOrigin> origin1 = SecurityOrigin::createFromString(test.url);
+    RefPtr<SecurityOrigin> origin1 = SecurityOrigin::CreateFromString(test.url);
     RefPtr<SecurityOrigin> origin2 =
-        SecurityOrigin::createFromString(test.anotherUrlInOrigin);
+        SecurityOrigin::CreateFromString(test.another_url_in_origin);
 
-    EXPECT_FALSE(origin1->isPotentiallyTrustworthy());
-    EXPECT_FALSE(origin2->isPotentiallyTrustworthy());
-    SecurityPolicy::addOriginTrustworthyWhiteList(origin1);
-    EXPECT_TRUE(origin1->isPotentiallyTrustworthy());
-    EXPECT_TRUE(origin2->isPotentiallyTrustworthy());
+    EXPECT_FALSE(origin1->IsPotentiallyTrustworthy());
+    EXPECT_FALSE(origin2->IsPotentiallyTrustworthy());
+    SecurityPolicy::AddOriginTrustworthyWhiteList(origin1);
+    EXPECT_TRUE(origin1->IsPotentiallyTrustworthy());
+    EXPECT_TRUE(origin2->IsPotentiallyTrustworthy());
   }
 }
 

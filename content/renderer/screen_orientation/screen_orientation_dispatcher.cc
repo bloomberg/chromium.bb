@@ -33,19 +33,19 @@ void ScreenOrientationDispatcher::OnLockOrientationResult(
 
   switch (result) {
     case ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS:
-      callback->onSuccess();
+      callback->OnSuccess();
       break;
     case ScreenOrientationLockResult::
         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE:
-      callback->onError(blink::WebLockOrientationErrorNotAvailable);
+      callback->OnError(blink::kWebLockOrientationErrorNotAvailable);
       break;
     case ScreenOrientationLockResult::
         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_FULLSCREEN_REQUIRED:
-      callback->onError(blink::WebLockOrientationErrorFullscreenRequired);
+      callback->OnError(blink::kWebLockOrientationErrorFullscreenRequired);
       break;
     case ScreenOrientationLockResult::
         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED:
-      callback->onError(blink::WebLockOrientationErrorCanceled);
+      callback->OnError(blink::kWebLockOrientationErrorCanceled);
       break;
     default:
       NOTREACHED();
@@ -58,12 +58,13 @@ void ScreenOrientationDispatcher::OnLockOrientationResult(
 void ScreenOrientationDispatcher::CancelPendingLocks() {
   for (CallbackMap::Iterator<blink::WebLockOrientationCallback>
        iterator(&pending_callbacks_); !iterator.IsAtEnd(); iterator.Advance()) {
-    iterator.GetCurrentValue()->onError(blink::WebLockOrientationErrorCanceled);
+    iterator.GetCurrentValue()->OnError(
+        blink::kWebLockOrientationErrorCanceled);
     pending_callbacks_.Remove(iterator.GetCurrentKey());
   }
 }
 
-void ScreenOrientationDispatcher::lockOrientation(
+void ScreenOrientationDispatcher::LockOrientation(
     blink::WebScreenOrientationLockType orientation,
     std::unique_ptr<blink::WebLockOrientationCallback> callback) {
   CancelPendingLocks();
@@ -76,7 +77,7 @@ void ScreenOrientationDispatcher::lockOrientation(
                  base::Unretained(this), request_id));
 }
 
-void ScreenOrientationDispatcher::unlockOrientation() {
+void ScreenOrientationDispatcher::UnlockOrientation() {
   CancelPendingLocks();
   EnsureScreenOrientationService();
   screen_orientation_->UnlockOrientation();

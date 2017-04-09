@@ -34,64 +34,65 @@
 
 namespace blink {
 
-void LayoutObjectChildList::destroyLeftoverChildren() {
-  while (firstChild()) {
+void LayoutObjectChildList::DestroyLeftoverChildren() {
+  while (FirstChild()) {
     // List markers are owned by their enclosing list and so don't get destroyed
     // by this container.
-    if (firstChild()->isListMarker()) {
-      firstChild()->remove();
+    if (FirstChild()->IsListMarker()) {
+      FirstChild()->Remove();
       continue;
     }
 
     // Destroy any anonymous children remaining in the layout tree, as well as
     // implicit (shadow) DOM elements like those used in the engine-based text
     // fields.
-    if (firstChild()->node())
-      firstChild()->node()->setLayoutObject(nullptr);
-    firstChild()->destroy();
+    if (FirstChild()->GetNode())
+      FirstChild()->GetNode()->SetLayoutObject(nullptr);
+    FirstChild()->Destroy();
   }
 }
 
-LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner,
-                                                     LayoutObject* oldChild,
-                                                     bool notifyLayoutObject) {
-  DCHECK_EQ(oldChild->parent(), owner);
-  DCHECK_EQ(this, owner->virtualChildren());
+LayoutObject* LayoutObjectChildList::RemoveChildNode(
+    LayoutObject* owner,
+    LayoutObject* old_child,
+    bool notify_layout_object) {
+  DCHECK_EQ(old_child->Parent(), owner);
+  DCHECK_EQ(this, owner->VirtualChildren());
 
-  if (oldChild->isFloatingOrOutOfFlowPositioned())
-    toLayoutBox(oldChild)->removeFloatingOrPositionedChildFromBlockLists();
+  if (old_child->IsFloatingOrOutOfFlowPositioned())
+    ToLayoutBox(old_child)->RemoveFloatingOrPositionedChildFromBlockLists();
 
-  if (!owner->documentBeingDestroyed()) {
+  if (!owner->DocumentBeingDestroyed()) {
     // So that we'll get the appropriate dirty bit set (either that a normal
     // flow child got yanked or that a positioned child got yanked). We also
     // issue paint invalidations, so that the area exposed when the child
     // disappears gets paint invalidated properly.
-    if (notifyLayoutObject && oldChild->everHadLayout())
-      oldChild->setNeedsLayoutAndPrefWidthsRecalc(
-          LayoutInvalidationReason::RemovedFromLayout);
-    invalidatePaintOnRemoval(*oldChild);
+    if (notify_layout_object && old_child->EverHadLayout())
+      old_child->SetNeedsLayoutAndPrefWidthsRecalc(
+          LayoutInvalidationReason::kRemovedFromLayout);
+    InvalidatePaintOnRemoval(*old_child);
   }
 
   // If we have a line box wrapper, delete it.
-  if (oldChild->isBox())
-    toLayoutBox(oldChild)->deleteLineBoxWrapper();
+  if (old_child->IsBox())
+    ToLayoutBox(old_child)->DeleteLineBoxWrapper();
 
-  if (!owner->documentBeingDestroyed()) {
+  if (!owner->DocumentBeingDestroyed()) {
     // If oldChild is the start or end of the selection, then clear the
     // selection to avoid problems of invalid pointers.
     // FIXME: The FrameSelection should be responsible for this when it
     // is notified of DOM mutations.
-    if (oldChild->isSelectionBorder())
-      owner->view()->clearSelection();
+    if (old_child->IsSelectionBorder())
+      owner->View()->ClearSelection();
 
-    owner->notifyOfSubtreeChange();
+    owner->NotifyOfSubtreeChange();
 
-    if (notifyLayoutObject) {
-      LayoutCounter::layoutObjectSubtreeWillBeDetached(oldChild);
-      oldChild->willBeRemovedFromTree();
-    } else if (oldChild->isBox() &&
-               toLayoutBox(oldChild)->isOrthogonalWritingModeRoot()) {
-      toLayoutBox(oldChild)->unmarkOrthogonalWritingModeRoot();
+    if (notify_layout_object) {
+      LayoutCounter::LayoutObjectSubtreeWillBeDetached(old_child);
+      old_child->WillBeRemovedFromTree();
+    } else if (old_child->IsBox() &&
+               ToLayoutBox(old_child)->IsOrthogonalWritingModeRoot()) {
+      ToLayoutBox(old_child)->UnmarkOrthogonalWritingModeRoot();
     }
   }
 
@@ -101,111 +102,112 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner,
   // dirty the tree's structure and the code running here would force an
   // untimely rebuilding, leaving |oldChild| dangling.
 
-  if (oldChild->previousSibling())
-    oldChild->previousSibling()->setNextSibling(oldChild->nextSibling());
-  if (oldChild->nextSibling())
-    oldChild->nextSibling()->setPreviousSibling(oldChild->previousSibling());
+  if (old_child->PreviousSibling())
+    old_child->PreviousSibling()->SetNextSibling(old_child->NextSibling());
+  if (old_child->NextSibling())
+    old_child->NextSibling()->SetPreviousSibling(old_child->PreviousSibling());
 
-  if (firstChild() == oldChild)
-    m_firstChild = oldChild->nextSibling();
-  if (lastChild() == oldChild)
-    m_lastChild = oldChild->previousSibling();
+  if (FirstChild() == old_child)
+    first_child_ = old_child->NextSibling();
+  if (LastChild() == old_child)
+    last_child_ = old_child->PreviousSibling();
 
-  oldChild->setPreviousSibling(nullptr);
-  oldChild->setNextSibling(nullptr);
-  oldChild->setParent(nullptr);
+  old_child->SetPreviousSibling(nullptr);
+  old_child->SetNextSibling(nullptr);
+  old_child->SetParent(nullptr);
 
-  oldChild->registerSubtreeChangeListenerOnDescendants(
-      oldChild->consumesSubtreeChangeNotification());
+  old_child->RegisterSubtreeChangeListenerOnDescendants(
+      old_child->ConsumesSubtreeChangeNotification());
 
-  if (AXObjectCache* cache = owner->document().existingAXObjectCache())
-    cache->childrenChanged(owner);
+  if (AXObjectCache* cache = owner->GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(owner);
 
-  return oldChild;
+  return old_child;
 }
 
 DISABLE_CFI_PERF
-void LayoutObjectChildList::insertChildNode(LayoutObject* owner,
-                                            LayoutObject* newChild,
-                                            LayoutObject* beforeChild,
-                                            bool notifyLayoutObject) {
-  DCHECK(!newChild->parent());
-  DCHECK_EQ(this, owner->virtualChildren());
-  DCHECK(!owner->isLayoutBlockFlow() ||
-         (!newChild->isTableSection() && !newChild->isTableRow() &&
-          !newChild->isTableCell()));
+void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
+                                            LayoutObject* new_child,
+                                            LayoutObject* before_child,
+                                            bool notify_layout_object) {
+  DCHECK(!new_child->Parent());
+  DCHECK_EQ(this, owner->VirtualChildren());
+  DCHECK(!owner->IsLayoutBlockFlow() ||
+         (!new_child->IsTableSection() && !new_child->IsTableRow() &&
+          !new_child->IsTableCell()));
 
-  while (beforeChild && beforeChild->parent() && beforeChild->parent() != owner)
-    beforeChild = beforeChild->parent();
+  while (before_child && before_child->Parent() &&
+         before_child->Parent() != owner)
+    before_child = before_child->Parent();
 
   // This should never happen, but if it does prevent layout tree corruption
   // where child->parent() ends up being owner but
   // child->nextSibling()->parent() is not owner.
-  if (beforeChild && beforeChild->parent() != owner) {
+  if (before_child && before_child->Parent() != owner) {
     NOTREACHED();
     return;
   }
 
-  newChild->setParent(owner);
+  new_child->SetParent(owner);
 
-  if (firstChild() == beforeChild)
-    m_firstChild = newChild;
+  if (FirstChild() == before_child)
+    first_child_ = new_child;
 
-  if (beforeChild) {
-    LayoutObject* previousSibling = beforeChild->previousSibling();
-    if (previousSibling)
-      previousSibling->setNextSibling(newChild);
-    newChild->setPreviousSibling(previousSibling);
-    newChild->setNextSibling(beforeChild);
-    beforeChild->setPreviousSibling(newChild);
+  if (before_child) {
+    LayoutObject* previous_sibling = before_child->PreviousSibling();
+    if (previous_sibling)
+      previous_sibling->SetNextSibling(new_child);
+    new_child->SetPreviousSibling(previous_sibling);
+    new_child->SetNextSibling(before_child);
+    before_child->SetPreviousSibling(new_child);
   } else {
-    if (lastChild())
-      lastChild()->setNextSibling(newChild);
-    newChild->setPreviousSibling(lastChild());
-    m_lastChild = newChild;
+    if (LastChild())
+      LastChild()->SetNextSibling(new_child);
+    new_child->SetPreviousSibling(LastChild());
+    last_child_ = new_child;
   }
 
-  if (!owner->documentBeingDestroyed() && notifyLayoutObject) {
-    newChild->insertedIntoTree();
-    LayoutCounter::layoutObjectSubtreeAttached(newChild);
+  if (!owner->DocumentBeingDestroyed() && notify_layout_object) {
+    new_child->InsertedIntoTree();
+    LayoutCounter::LayoutObjectSubtreeAttached(new_child);
   }
 
   // Propagate the need to notify ancestors down into any
   // child nodes.
-  if (owner->hasSubtreeChangeListenerRegistered())
-    newChild->registerSubtreeChangeListenerOnDescendants(true);
+  if (owner->HasSubtreeChangeListenerRegistered())
+    new_child->RegisterSubtreeChangeListenerOnDescendants(true);
 
   // If the inserted node is currently marked as needing to notify children then
   // we have to propagate that mark up the tree.
-  if (newChild->wasNotifiedOfSubtreeChange())
-    owner->notifyAncestorsOfSubtreeChange();
+  if (new_child->WasNotifiedOfSubtreeChange())
+    owner->NotifyAncestorsOfSubtreeChange();
 
-  newChild->setNeedsLayoutAndPrefWidthsRecalc(
-      LayoutInvalidationReason::AddedToLayout);
-  newChild->setShouldDoFullPaintInvalidation(
-      PaintInvalidationLayoutObjectInsertion);
-  newChild->setSubtreeNeedsPaintPropertyUpdate();
-  if (!owner->normalChildNeedsLayout())
-    owner->setChildNeedsLayout();  // We may supply the static position for an
+  new_child->SetNeedsLayoutAndPrefWidthsRecalc(
+      LayoutInvalidationReason::kAddedToLayout);
+  new_child->SetShouldDoFullPaintInvalidation(
+      kPaintInvalidationLayoutObjectInsertion);
+  new_child->SetSubtreeNeedsPaintPropertyUpdate();
+  if (!owner->NormalChildNeedsLayout())
+    owner->SetChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.
 
-  if (!owner->documentBeingDestroyed())
-    owner->notifyOfSubtreeChange();
+  if (!owner->DocumentBeingDestroyed())
+    owner->NotifyOfSubtreeChange();
 
-  if (AXObjectCache* cache = owner->document().axObjectCache())
-    cache->childrenChanged(owner);
+  if (AXObjectCache* cache = owner->GetDocument().AxObjectCache())
+    cache->ChildrenChanged(owner);
 }
 
-void LayoutObjectChildList::invalidatePaintOnRemoval(LayoutObject& oldChild) {
-  if (!oldChild.isRooted())
+void LayoutObjectChildList::InvalidatePaintOnRemoval(LayoutObject& old_child) {
+  if (!old_child.IsRooted())
     return;
-  if (oldChild.isBody())
-    oldChild.view()->setShouldDoFullPaintInvalidation();
-  ObjectPaintInvalidator paintInvalidator(oldChild);
-  paintInvalidator.slowSetPaintingLayerNeedsRepaint();
-  paintInvalidator.invalidatePaintOfPreviousVisualRect(
-      oldChild.containerForPaintInvalidation(),
-      PaintInvalidationLayoutObjectRemoval);
+  if (old_child.IsBody())
+    old_child.View()->SetShouldDoFullPaintInvalidation();
+  ObjectPaintInvalidator paint_invalidator(old_child);
+  paint_invalidator.SlowSetPaintingLayerNeedsRepaint();
+  paint_invalidator.InvalidatePaintOfPreviousVisualRect(
+      old_child.ContainerForPaintInvalidation(),
+      kPaintInvalidationLayoutObjectRemoval);
 }
 
 }  // namespace blink

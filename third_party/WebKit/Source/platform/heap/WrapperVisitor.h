@@ -38,7 +38,7 @@ class TraceWrapperMember;
  *     };
  */
 #define DECLARE_TRACE_WRAPPERS() \
-  void traceWrappers(const WrapperVisitor* visitor) const
+  void TraceWrappers(const WrapperVisitor* visitor) const
 
 /**
  * Declares virtual traceWrappers method. It is used in ScriptWrappable, can be
@@ -59,24 +59,24 @@ class TraceWrapperMember;
  *     }
  */
 #define DEFINE_TRACE_WRAPPERS(T) \
-  void T::traceWrappers(const WrapperVisitor* visitor) const
+  void T::TraceWrappers(const WrapperVisitor* visitor) const
 
 #define DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH() \
-  void traceWrappersAfterDispatch(const WrapperVisitor*) const
+  void TraceWrappersAfterDispatch(const WrapperVisitor*) const
 
 #define DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(T) \
-  void T::traceWrappersAfterDispatch(const WrapperVisitor* visitor) const
+  void T::TraceWrappersAfterDispatch(const WrapperVisitor* visitor) const
 
 #define DEFINE_INLINE_TRACE_WRAPPERS() DECLARE_TRACE_WRAPPERS()
 #define DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() DECLARE_VIRTUAL_TRACE_WRAPPERS()
 
-#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)        \
-  template <>                                             \
-  inline void TraceTrait<ClassName>::traceMarkedWrapper(  \
-      const WrapperVisitor* visitor, const void* t) {     \
-    const ClassName* traceable = ToWrapperTracingType(t); \
-    DCHECK(heapObjectHeader(t)->isWrapperHeaderMarked()); \
-    traceable->traceWrappers(visitor);                    \
+#define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)           \
+  template <>                                                \
+  inline void TraceTrait<ClassName>::TraceMarkedWrapper(     \
+      const WrapperVisitor* visitor, const void* t) {        \
+    const ClassName* traceable = ToWrapperTracingType(t);    \
+    DCHECK(GetHeapObjectHeader(t)->IsWrapperHeaderMarked()); \
+    traceable->TraceWrappers(visitor);                       \
   }
 
 // ###########################################################################
@@ -86,23 +86,24 @@ class PLATFORM_EXPORT WrapperVisitor {
 
  public:
   template <typename T>
-  static NOINLINE void missedWriteBarrier() {
+  static NOINLINE void MissedWriteBarrier() {
     NOTREACHED();
   }
 
   template <typename T>
-  void traceWrappers(const T* traceable) const {
+  void TraceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
 
     if (!traceable) {
       return;
     }
 
-    if (TraceTrait<T>::heapObjectHeader(traceable)->isWrapperHeaderMarked()) {
+    if (TraceTrait<T>::GetHeapObjectHeader(traceable)
+            ->IsWrapperHeaderMarked()) {
       return;
     }
 
-    markAndPushToMarkingDeque(traceable);
+    MarkAndPushToMarkingDeque(traceable);
   }
 
   /**
@@ -113,8 +114,8 @@ class PLATFORM_EXPORT WrapperVisitor {
    * Member and |traceWrappersWithManualWriteBarrier()|. See below.
    */
   template <typename T>
-  void traceWrappers(const TraceWrapperMember<T>& t) const {
-    traceWrappers(t.get());
+  void TraceWrappers(const TraceWrapperMember<T>& t) const {
+    TraceWrappers(t.Get());
   }
 
   /**
@@ -125,47 +126,47 @@ class PLATFORM_EXPORT WrapperVisitor {
    * prematurely.
    */
   template <typename T>
-  void traceWrappersWithManualWriteBarrier(const Member<T>& t) const {
-    traceWrappers(t.get());
+  void TraceWrappersWithManualWriteBarrier(const Member<T>& t) const {
+    TraceWrappers(t.Get());
   }
   template <typename T>
-  void traceWrappersWithManualWriteBarrier(const WeakMember<T>& t) const {
-    traceWrappers(t.get());
+  void TraceWrappersWithManualWriteBarrier(const WeakMember<T>& t) const {
+    TraceWrappers(t.Get());
   }
   template <typename T>
-  void traceWrappersWithManualWriteBarrier(const T* traceable) const {
-    traceWrappers(traceable);
+  void TraceWrappersWithManualWriteBarrier(const T* traceable) const {
+    TraceWrappers(traceable);
   }
 
-  virtual void traceWrappers(
+  virtual void TraceWrappers(
       const TraceWrapperV8Reference<v8::Value>&) const = 0;
-  virtual void markWrapper(const v8::PersistentBase<v8::Value>*) const = 0;
+  virtual void MarkWrapper(const v8::PersistentBase<v8::Value>*) const = 0;
 
-  virtual void dispatchTraceWrappers(const TraceWrapperBase*) const = 0;
+  virtual void DispatchTraceWrappers(const TraceWrapperBase*) const = 0;
 
-  virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
+  virtual bool MarkWrapperHeader(HeapObjectHeader*) const = 0;
 
-  virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
-  void markWrappersInAllWorlds(const TraceWrapperBase*) const {
+  virtual void MarkWrappersInAllWorlds(const ScriptWrappable*) const = 0;
+  void MarkWrappersInAllWorlds(const TraceWrapperBase*) const {
     // TraceWrapperBase cannot point to V8 and thus doesn't need to
     // mark wrappers.
   }
 
   template <typename T>
-  ALWAYS_INLINE void markAndPushToMarkingDeque(const T* traceable) const {
-    if (pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
-                           TraceTrait<T>::heapObjectHeader,
-                           WrapperVisitor::missedWriteBarrier<T>, traceable)) {
-      TraceTrait<T>::markWrapperNoTracing(this, traceable);
+  ALWAYS_INLINE void MarkAndPushToMarkingDeque(const T* traceable) const {
+    if (PushToMarkingDeque(TraceTrait<T>::TraceMarkedWrapper,
+                           TraceTrait<T>::GetHeapObjectHeader,
+                           WrapperVisitor::MissedWriteBarrier<T>, traceable)) {
+      TraceTrait<T>::MarkWrapperNoTracing(this, traceable);
     }
   }
 
  protected:
   // Returns true if pushing to the marking deque was successful.
-  virtual bool pushToMarkingDeque(
-      void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
-      HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
-      void (*missedWriteBarrierCallback)(void),
+  virtual bool PushToMarkingDeque(
+      void (*trace_wrappers_callback)(const WrapperVisitor*, const void*),
+      HeapObjectHeader* (*heap_object_header_callback)(const void*),
+      void (*missed_write_barrier_callback)(void),
       const void*) const = 0;
 };
 

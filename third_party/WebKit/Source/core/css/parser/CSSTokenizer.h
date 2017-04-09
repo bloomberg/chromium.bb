@@ -29,83 +29,83 @@ class CORE_EXPORT CSSTokenizer {
   CSSTokenizer(const String&);
   CSSTokenizer(const String&, CSSParserObserverWrapper&);  // For the inspector
 
-  CSSParserTokenRange tokenRange();
-  unsigned tokenCount();
+  CSSParserTokenRange TokenRange();
+  unsigned TokenCount();
 
-  Vector<String> takeEscapedStrings() { return std::move(m_stringPool); }
+  Vector<String> TakeEscapedStrings() { return std::move(string_pool_); }
 
  private:
-  CSSParserToken nextToken();
+  CSSParserToken NextToken();
 
-  UChar consume();
-  void reconsume(UChar);
+  UChar Consume();
+  void Reconsume(UChar);
 
-  CSSParserToken consumeNumericToken();
-  CSSParserToken consumeIdentLikeToken();
-  CSSParserToken consumeNumber();
-  CSSParserToken consumeStringTokenUntil(UChar);
-  CSSParserToken consumeUnicodeRange();
-  CSSParserToken consumeUrlToken();
+  CSSParserToken ConsumeNumericToken();
+  CSSParserToken ConsumeIdentLikeToken();
+  CSSParserToken ConsumeNumber();
+  CSSParserToken ConsumeStringTokenUntil(UChar);
+  CSSParserToken ConsumeUnicodeRange();
+  CSSParserToken ConsumeUrlToken();
 
-  void consumeBadUrlRemnants();
-  void consumeSingleWhitespaceIfNext();
-  void consumeUntilCommentEndFound();
+  void ConsumeBadUrlRemnants();
+  void ConsumeSingleWhitespaceIfNext();
+  void ConsumeUntilCommentEndFound();
 
-  bool consumeIfNext(UChar);
-  StringView consumeName();
-  UChar32 consumeEscape();
+  bool ConsumeIfNext(UChar);
+  StringView ConsumeName();
+  UChar32 ConsumeEscape();
 
-  bool nextTwoCharsAreValidEscape();
-  bool nextCharsAreNumber(UChar);
-  bool nextCharsAreNumber();
-  bool nextCharsAreIdentifier(UChar);
-  bool nextCharsAreIdentifier();
+  bool NextTwoCharsAreValidEscape();
+  bool NextCharsAreNumber(UChar);
+  bool NextCharsAreNumber();
+  bool NextCharsAreIdentifier(UChar);
+  bool NextCharsAreIdentifier();
 
-  CSSParserToken blockStart(CSSParserTokenType);
-  CSSParserToken blockStart(CSSParserTokenType blockType,
+  CSSParserToken BlockStart(CSSParserTokenType);
+  CSSParserToken BlockStart(CSSParserTokenType block_type,
                             CSSParserTokenType,
                             StringView);
-  CSSParserToken blockEnd(CSSParserTokenType, CSSParserTokenType startType);
+  CSSParserToken BlockEnd(CSSParserTokenType, CSSParserTokenType start_type);
 
-  CSSParserToken whiteSpace(UChar);
-  CSSParserToken leftParenthesis(UChar);
-  CSSParserToken rightParenthesis(UChar);
-  CSSParserToken leftBracket(UChar);
-  CSSParserToken rightBracket(UChar);
-  CSSParserToken leftBrace(UChar);
-  CSSParserToken rightBrace(UChar);
-  CSSParserToken plusOrFullStop(UChar);
-  CSSParserToken comma(UChar);
-  CSSParserToken hyphenMinus(UChar);
-  CSSParserToken asterisk(UChar);
-  CSSParserToken lessThan(UChar);
-  CSSParserToken solidus(UChar);
-  CSSParserToken colon(UChar);
-  CSSParserToken semiColon(UChar);
-  CSSParserToken hash(UChar);
-  CSSParserToken circumflexAccent(UChar);
-  CSSParserToken dollarSign(UChar);
-  CSSParserToken verticalLine(UChar);
-  CSSParserToken tilde(UChar);
-  CSSParserToken commercialAt(UChar);
-  CSSParserToken reverseSolidus(UChar);
-  CSSParserToken asciiDigit(UChar);
-  CSSParserToken letterU(UChar);
-  CSSParserToken nameStart(UChar);
-  CSSParserToken stringStart(UChar);
-  CSSParserToken endOfFile(UChar);
+  CSSParserToken WhiteSpace(UChar);
+  CSSParserToken LeftParenthesis(UChar);
+  CSSParserToken RightParenthesis(UChar);
+  CSSParserToken LeftBracket(UChar);
+  CSSParserToken RightBracket(UChar);
+  CSSParserToken LeftBrace(UChar);
+  CSSParserToken RightBrace(UChar);
+  CSSParserToken PlusOrFullStop(UChar);
+  CSSParserToken Comma(UChar);
+  CSSParserToken HyphenMinus(UChar);
+  CSSParserToken Asterisk(UChar);
+  CSSParserToken LessThan(UChar);
+  CSSParserToken Solidus(UChar);
+  CSSParserToken Colon(UChar);
+  CSSParserToken SemiColon(UChar);
+  CSSParserToken Hash(UChar);
+  CSSParserToken CircumflexAccent(UChar);
+  CSSParserToken DollarSign(UChar);
+  CSSParserToken VerticalLine(UChar);
+  CSSParserToken Tilde(UChar);
+  CSSParserToken CommercialAt(UChar);
+  CSSParserToken ReverseSolidus(UChar);
+  CSSParserToken AsciiDigit(UChar);
+  CSSParserToken LetterU(UChar);
+  CSSParserToken NameStart(UChar);
+  CSSParserToken StringStart(UChar);
+  CSSParserToken EndOfFile(UChar);
 
-  StringView registerString(const String&);
+  StringView RegisterString(const String&);
 
   using CodePoint = CSSParserToken (CSSTokenizer::*)(UChar);
-  static const CodePoint codePoints[];
+  static const CodePoint kCodePoints[];
 
-  CSSTokenizerInputStream m_input;
-  Vector<CSSParserTokenType, 8> m_blockStack;
+  CSSTokenizerInputStream input_;
+  Vector<CSSParserTokenType, 8> block_stack_;
 
-  Vector<CSSParserToken, 32> m_tokens;
+  Vector<CSSParserToken, 32> tokens_;
   // We only allocate strings when escapes are used.
-  Vector<String> m_stringPool;
+  Vector<String> string_pool_;
 };
 
 }  // namespace blink

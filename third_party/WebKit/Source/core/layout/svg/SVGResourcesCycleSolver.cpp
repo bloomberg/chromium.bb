@@ -32,11 +32,11 @@
 
 namespace blink {
 
-SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* layoutObject,
+SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* layout_object,
                                                  SVGResources* resources)
-    : m_layoutObject(layoutObject), m_resources(resources) {
-  DCHECK(m_layoutObject);
-  DCHECK(m_resources);
+    : layout_object_(layout_object), resources_(resources) {
+  DCHECK(layout_object_);
+  DCHECK(resources_);
 }
 
 SVGResourcesCycleSolver::~SVGResourcesCycleSolver() {}
@@ -44,117 +44,117 @@ SVGResourcesCycleSolver::~SVGResourcesCycleSolver() {}
 struct ActiveFrame {
   typedef SVGResourcesCycleSolver::ResourceSet ResourceSet;
 
-  ActiveFrame(ResourceSet& activeSet, LayoutSVGResourceContainer* resource)
-      : m_activeSet(activeSet), m_resource(resource) {
-    m_activeSet.insert(m_resource);
+  ActiveFrame(ResourceSet& active_set, LayoutSVGResourceContainer* resource)
+      : active_set_(active_set), resource_(resource) {
+    active_set_.insert(resource_);
   }
-  ~ActiveFrame() { m_activeSet.erase(m_resource); }
+  ~ActiveFrame() { active_set_.erase(resource_); }
 
-  ResourceSet& m_activeSet;
-  LayoutSVGResourceContainer* m_resource;
+  ResourceSet& active_set_;
+  LayoutSVGResourceContainer* resource_;
 };
 
-bool SVGResourcesCycleSolver::resourceContainsCycles(
+bool SVGResourcesCycleSolver::ResourceContainsCycles(
     LayoutSVGResourceContainer* resource) {
   // If we've traversed this sub-graph before and no cycles were observed, then
   // reuse that result.
-  if (m_dagCache.contains(resource))
+  if (dag_cache_.Contains(resource))
     return false;
 
-  ActiveFrame frame(m_activeResources, resource);
+  ActiveFrame frame(active_resources_, resource);
 
   LayoutObject* node = resource;
   while (node) {
     // Skip subtrees which are themselves resources. (They will be
     // processed - if needed - when they are actually referenced.)
-    if (node != resource && node->isSVGResourceContainer()) {
-      node = node->nextInPreOrderAfterChildren(resource);
+    if (node != resource && node->IsSVGResourceContainer()) {
+      node = node->NextInPreOrderAfterChildren(resource);
       continue;
     }
-    if (SVGResources* nodeResources =
-            SVGResourcesCache::cachedResourcesForLayoutObject(node)) {
+    if (SVGResources* node_resources =
+            SVGResourcesCache::CachedResourcesForLayoutObject(node)) {
       // Fetch all the resources referenced by |node|.
-      ResourceSet nodeSet;
-      nodeResources->buildSetOfResources(nodeSet);
+      ResourceSet node_set;
+      node_resources->BuildSetOfResources(node_set);
 
       // Iterate resources referenced by |node|.
-      for (auto* node : nodeSet) {
-        if (m_activeResources.contains(node) || resourceContainsCycles(node))
+      for (auto* node : node_set) {
+        if (active_resources_.Contains(node) || ResourceContainsCycles(node))
           return true;
       }
     }
-    node = node->nextInPreOrder(resource);
+    node = node->NextInPreOrder(resource);
   }
 
   // No cycles found in (or from) this resource. Add it to the "DAG cache".
-  m_dagCache.insert(resource);
+  dag_cache_.insert(resource);
   return false;
 }
 
-void SVGResourcesCycleSolver::resolveCycles() {
-  DCHECK(m_activeResources.isEmpty());
+void SVGResourcesCycleSolver::ResolveCycles() {
+  DCHECK(active_resources_.IsEmpty());
 
   // If the starting LayoutObject is a resource container itself, then add it
   // to the active set (to break direct self-references.)
-  if (m_layoutObject->isSVGResourceContainer())
-    m_activeResources.insert(toLayoutSVGResourceContainer(m_layoutObject));
+  if (layout_object_->IsSVGResourceContainer())
+    active_resources_.insert(ToLayoutSVGResourceContainer(layout_object_));
 
-  ResourceSet localResources;
-  m_resources->buildSetOfResources(localResources);
+  ResourceSet local_resources;
+  resources_->BuildSetOfResources(local_resources);
 
   // This performs a depth-first search for a back-edge in all the
   // (potentially disjoint) graphs formed by the resources referenced by
   // |m_layoutObject|.
-  for (auto* localResource : localResources) {
-    if (m_activeResources.contains(localResource) ||
-        resourceContainsCycles(localResource))
-      breakCycle(localResource);
+  for (auto* local_resource : local_resources) {
+    if (active_resources_.Contains(local_resource) ||
+        ResourceContainsCycles(local_resource))
+      BreakCycle(local_resource);
   }
 
-  m_activeResources.clear();
+  active_resources_.Clear();
 }
 
-void SVGResourcesCycleSolver::breakCycle(
-    LayoutSVGResourceContainer* resourceLeadingToCycle) {
-  DCHECK(resourceLeadingToCycle);
-  if (resourceLeadingToCycle == m_resources->linkedResource()) {
-    m_resources->resetLinkedResource();
+void SVGResourcesCycleSolver::BreakCycle(
+    LayoutSVGResourceContainer* resource_leading_to_cycle) {
+  DCHECK(resource_leading_to_cycle);
+  if (resource_leading_to_cycle == resources_->LinkedResource()) {
+    resources_->ResetLinkedResource();
     return;
   }
 
-  switch (resourceLeadingToCycle->resourceType()) {
-    case MaskerResourceType:
-      DCHECK_EQ(resourceLeadingToCycle, m_resources->masker());
-      m_resources->resetMasker();
+  switch (resource_leading_to_cycle->ResourceType()) {
+    case kMaskerResourceType:
+      DCHECK_EQ(resource_leading_to_cycle, resources_->Masker());
+      resources_->ResetMasker();
       break;
-    case MarkerResourceType:
-      DCHECK(resourceLeadingToCycle == m_resources->markerStart() ||
-             resourceLeadingToCycle == m_resources->markerMid() ||
-             resourceLeadingToCycle == m_resources->markerEnd());
-      if (m_resources->markerStart() == resourceLeadingToCycle)
-        m_resources->resetMarkerStart();
-      if (m_resources->markerMid() == resourceLeadingToCycle)
-        m_resources->resetMarkerMid();
-      if (m_resources->markerEnd() == resourceLeadingToCycle)
-        m_resources->resetMarkerEnd();
+    case kMarkerResourceType:
+      DCHECK(resource_leading_to_cycle == resources_->MarkerStart() ||
+             resource_leading_to_cycle == resources_->MarkerMid() ||
+             resource_leading_to_cycle == resources_->MarkerEnd());
+      if (resources_->MarkerStart() == resource_leading_to_cycle)
+        resources_->ResetMarkerStart();
+      if (resources_->MarkerMid() == resource_leading_to_cycle)
+        resources_->ResetMarkerMid();
+      if (resources_->MarkerEnd() == resource_leading_to_cycle)
+        resources_->ResetMarkerEnd();
       break;
-    case PatternResourceType:
-    case LinearGradientResourceType:
-    case RadialGradientResourceType:
-      DCHECK(resourceLeadingToCycle == m_resources->fill() ||
-             resourceLeadingToCycle == m_resources->stroke());
-      if (m_resources->fill() == resourceLeadingToCycle)
-        m_resources->resetFill();
-      if (m_resources->stroke() == resourceLeadingToCycle)
-        m_resources->resetStroke();
+    case kPatternResourceType:
+    case kLinearGradientResourceType:
+    case kRadialGradientResourceType:
+      DCHECK(resource_leading_to_cycle == resources_->Fill() ||
+             resource_leading_to_cycle == resources_->Stroke());
+      if (resources_->Fill() == resource_leading_to_cycle)
+        resources_->ResetFill();
+      if (resources_->Stroke() == resource_leading_to_cycle)
+        resources_->ResetStroke();
       break;
-    case FilterResourceType:
-      DCHECK_EQ(resourceLeadingToCycle, m_resources->filter());
-      m_resources->resetFilter();
+    case kFilterResourceType:
+      DCHECK_EQ(resource_leading_to_cycle, resources_->Filter());
+      resources_->ResetFilter();
       break;
-    case ClipperResourceType:
-      DCHECK_EQ(resourceLeadingToCycle, m_resources->clipper());
-      m_resources->resetClipper();
+    case kClipperResourceType:
+      DCHECK_EQ(resource_leading_to_cycle, resources_->Clipper());
+      resources_->ResetClipper();
       break;
     default:
       NOTREACHED();

@@ -43,7 +43,7 @@ class StyleMedia final : public GarbageCollected<StyleMedia>,
   USING_GARBAGE_COLLECTED_MIXIN(StyleMedia);
 
  public:
-  static StyleMedia* create(LocalFrame* frame) { return new StyleMedia(frame); }
+  static StyleMedia* Create(LocalFrame* frame) { return new StyleMedia(frame); }
 
   AtomicString type() const;
   bool matchMedium(const String&) const;

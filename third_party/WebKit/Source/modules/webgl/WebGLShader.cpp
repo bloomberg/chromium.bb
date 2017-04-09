@@ -30,22 +30,22 @@
 
 namespace blink {
 
-WebGLShader* WebGLShader::create(WebGLRenderingContextBase* ctx, GLenum type) {
+WebGLShader* WebGLShader::Create(WebGLRenderingContextBase* ctx, GLenum type) {
   return new WebGLShader(ctx, type);
 }
 
 WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
-    : WebGLSharedPlatform3DObject(ctx), m_type(type), m_source("") {
-  setObject(ctx->contextGL()->CreateShader(type));
+    : WebGLSharedPlatform3DObject(ctx), type_(type), source_("") {
+  SetObject(ctx->ContextGL()->CreateShader(type));
 }
 
 WebGLShader::~WebGLShader() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLShader::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteShader(m_object);
-  m_object = 0;
+void WebGLShader::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteShader(object_);
+  object_ = 0;
 }
 
 }  // namespace blink

@@ -26,10 +26,10 @@ class CONTENT_EXPORT RTCCertificate
   ~RTCCertificate() override;
 
   // blink::WebRTCCertificate implementation.
-  std::unique_ptr<blink::WebRTCCertificate> shallowCopy() const override;
-  uint64_t expires() const override;
-  blink::WebRTCCertificatePEM toPEM() const override;
-  bool equals(const blink::WebRTCCertificate& other) const override;
+  std::unique_ptr<blink::WebRTCCertificate> ShallowCopy() const override;
+  uint64_t Expires() const override;
+  blink::WebRTCCertificatePEM ToPEM() const override;
+  bool Equals(const blink::WebRTCCertificate& other) const override;
 
   const rtc::scoped_refptr<rtc::RTCCertificate>& rtcCertificate() const;
 

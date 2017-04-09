@@ -34,54 +34,54 @@ namespace blink {
 
 // static
 std::unique_ptr<WebIDBDatabaseCallbacksImpl>
-WebIDBDatabaseCallbacksImpl::create(IDBDatabaseCallbacks* callbacks) {
-  return WTF::wrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
+WebIDBDatabaseCallbacksImpl::Create(IDBDatabaseCallbacks* callbacks) {
+  return WTF::WrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
 }
 
 WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(
     IDBDatabaseCallbacks* callbacks)
-    : m_callbacks(callbacks) {}
+    : callbacks_(callbacks) {}
 
 WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl() {
-  if (m_callbacks)
-    m_callbacks->webCallbacksDestroyed();
+  if (callbacks_)
+    callbacks_->WebCallbacksDestroyed();
 }
 
-void WebIDBDatabaseCallbacksImpl::onForcedClose() {
-  if (m_callbacks)
-    m_callbacks->onForcedClose();
+void WebIDBDatabaseCallbacksImpl::OnForcedClose() {
+  if (callbacks_)
+    callbacks_->OnForcedClose();
 }
 
-void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion,
-                                                  long long newVersion) {
-  if (m_callbacks)
-    m_callbacks->onVersionChange(oldVersion, newVersion);
+void WebIDBDatabaseCallbacksImpl::OnVersionChange(long long old_version,
+                                                  long long new_version) {
+  if (callbacks_)
+    callbacks_->OnVersionChange(old_version, new_version);
 }
 
-void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId,
+void WebIDBDatabaseCallbacksImpl::OnAbort(long long transaction_id,
                                           const WebIDBDatabaseError& error) {
-  if (m_callbacks) {
-    m_callbacks->onAbort(transactionId,
-                         DOMException::create(error.code(), error.message()));
+  if (callbacks_) {
+    callbacks_->OnAbort(transaction_id,
+                        DOMException::Create(error.Code(), error.Message()));
   }
 }
 
-void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId) {
-  if (m_callbacks)
-    m_callbacks->onComplete(transactionId);
+void WebIDBDatabaseCallbacksImpl::OnComplete(long long transaction_id) {
+  if (callbacks_)
+    callbacks_->OnComplete(transaction_id);
 }
 
-void WebIDBDatabaseCallbacksImpl::onChanges(
+void WebIDBDatabaseCallbacksImpl::OnChanges(
     const std::unordered_map<int32_t, std::vector<int32_t>>&
         observation_index_map,
     const WebVector<WebIDBObservation>& observations,
     const IDBDatabaseCallbacks::TransactionMap& transactions) {
-  if (m_callbacks)
-    m_callbacks->onChanges(observation_index_map, observations, transactions);
+  if (callbacks_)
+    callbacks_->OnChanges(observation_index_map, observations, transactions);
 }
 
-void WebIDBDatabaseCallbacksImpl::detach() {
-  m_callbacks.clear();
+void WebIDBDatabaseCallbacksImpl::Detach() {
+  callbacks_.Clear();
 }
 
 }  // namespace blink

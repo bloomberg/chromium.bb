@@ -172,16 +172,16 @@ class SubresourceFilterAgentTest : public ::testing::Test {
       blink::WebDocumentSubresourceFilter::LoadPolicy expected_policy) {
     blink::WebURL url = GURL(url_spec);
     blink::WebURLRequest::RequestContext request_context =
-        blink::WebURLRequest::RequestContextImage;
+        blink::WebURLRequest::kRequestContextImage;
     blink::WebDocumentSubresourceFilter::LoadPolicy actual_policy =
-        agent()->filter()->getLoadPolicy(url, request_context);
+        agent()->filter()->GetLoadPolicy(url, request_context);
     EXPECT_EQ(expected_policy, actual_policy);
 
     // If the load policy indicated the load was filtered, simulate a filtered
     // load callback. In production, this will be called in FrameFetchContext,
     // but we simulate the call here.
     if (actual_policy == blink::WebDocumentSubresourceFilter::kDisallow)
-      agent()->filter()->reportDisallowedLoad();
+      agent()->filter()->ReportDisallowedLoad();
   }
 
   SubresourceFilterAgentUnderTest* agent() { return agent_.get(); }
@@ -501,7 +501,7 @@ TEST_F(SubresourceFilterAgentTest,
   // to the agent, nor should it cause a crash.
   ExpectNoSignalAboutFirstSubresourceDisallowed();
 
-  filter->reportDisallowedLoad();
+  filter->ReportDisallowedLoad();
 }
 
 }  // namespace subresource_filter

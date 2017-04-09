@@ -15,108 +15,110 @@ namespace blink {
 
 class FilteredComputedStylePropertyMapTest : public ::testing::Test {
  public:
-  FilteredComputedStylePropertyMapTest() : m_page(DummyPageHolder::create()) {
-    m_declaration = CSSComputedStyleDeclaration::create(
-        m_page->document().documentElement());
+  FilteredComputedStylePropertyMapTest() : page_(DummyPageHolder::Create()) {
+    declaration_ = CSSComputedStyleDeclaration::Create(
+        page_->GetDocument().documentElement());
   }
 
-  CSSComputedStyleDeclaration* declaration() const {
-    return m_declaration.get();
+  CSSComputedStyleDeclaration* Declaration() const {
+    return declaration_.Get();
   }
-  Node* pageNode() { return m_page->document().documentElement(); }
+  Node* PageNode() { return page_->GetDocument().documentElement(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_page;
-  Persistent<CSSComputedStyleDeclaration> m_declaration;
+  std::unique_ptr<DummyPageHolder> page_;
+  Persistent<CSSComputedStyleDeclaration> declaration_;
 };
 
 TEST_F(FilteredComputedStylePropertyMapTest, GetProperties) {
-  Vector<CSSPropertyID> nativeProperties(
+  Vector<CSSPropertyID> native_properties(
       {CSSPropertyColor, CSSPropertyAlignItems});
-  Vector<CSSPropertyID> emptyNativeProperties;
-  Vector<AtomicString> customProperties({"--foo", "--bar"});
-  Vector<AtomicString> emptyCustomProperties;
+  Vector<CSSPropertyID> empty_native_properties;
+  Vector<AtomicString> custom_properties({"--foo", "--bar"});
+  Vector<AtomicString> empty_custom_properties;
 
   FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::create(declaration(), nativeProperties,
-                                               customProperties, pageNode());
-  EXPECT_TRUE(map->getProperties().contains("color"));
-  EXPECT_TRUE(map->getProperties().contains("align-items"));
-  EXPECT_TRUE(map->getProperties().contains("--foo"));
-  EXPECT_TRUE(map->getProperties().contains("--bar"));
+      FilteredComputedStylePropertyMap::Create(Declaration(), native_properties,
+                                               custom_properties, PageNode());
+  EXPECT_TRUE(map->getProperties().Contains("color"));
+  EXPECT_TRUE(map->getProperties().Contains("align-items"));
+  EXPECT_TRUE(map->getProperties().Contains("--foo"));
+  EXPECT_TRUE(map->getProperties().Contains("--bar"));
 
-  map = FilteredComputedStylePropertyMap::create(
-      declaration(), nativeProperties, emptyCustomProperties, pageNode());
-  EXPECT_TRUE(map->getProperties().contains("color"));
-  EXPECT_TRUE(map->getProperties().contains("align-items"));
+  map = FilteredComputedStylePropertyMap::Create(
+      Declaration(), native_properties, empty_custom_properties, PageNode());
+  EXPECT_TRUE(map->getProperties().Contains("color"));
+  EXPECT_TRUE(map->getProperties().Contains("align-items"));
 
-  map = FilteredComputedStylePropertyMap::create(
-      declaration(), emptyNativeProperties, customProperties, pageNode());
-  EXPECT_TRUE(map->getProperties().contains("--foo"));
-  EXPECT_TRUE(map->getProperties().contains("--bar"));
+  map = FilteredComputedStylePropertyMap::Create(
+      Declaration(), empty_native_properties, custom_properties, PageNode());
+  EXPECT_TRUE(map->getProperties().Contains("--foo"));
+  EXPECT_TRUE(map->getProperties().Contains("--bar"));
 }
 
 TEST_F(FilteredComputedStylePropertyMapTest, NativePropertyAccessors) {
-  Vector<CSSPropertyID> nativeProperties(
+  Vector<CSSPropertyID> native_properties(
       {CSSPropertyColor, CSSPropertyAlignItems});
-  Vector<AtomicString> emptyCustomProperties;
+  Vector<AtomicString> empty_custom_properties;
   FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::create(
-          declaration(), nativeProperties, emptyCustomProperties, pageNode());
+      FilteredComputedStylePropertyMap::Create(Declaration(), native_properties,
+                                               empty_custom_properties,
+                                               PageNode());
 
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
 
-  map->get("color", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  map->get("color", exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->has("color", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  map->has("color", exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->getAll("color", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  map->getAll("color", exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->get("align-contents", exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
-  exceptionState.clearException();
+  map->get("align-contents", exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 
-  map->has("align-contents", exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
-  exceptionState.clearException();
+  map->has("align-contents", exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 
-  map->getAll("align-contents", exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
-  exceptionState.clearException();
+  map->getAll("align-contents", exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 }
 
 TEST_F(FilteredComputedStylePropertyMapTest, CustomPropertyAccessors) {
-  Vector<CSSPropertyID> emptyNativeProperties;
-  Vector<AtomicString> customProperties({"--foo", "--bar"});
+  Vector<CSSPropertyID> empty_native_properties;
+  Vector<AtomicString> custom_properties({"--foo", "--bar"});
   FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::create(
-          declaration(), emptyNativeProperties, customProperties, pageNode());
+      FilteredComputedStylePropertyMap::Create(Declaration(),
+                                               empty_native_properties,
+                                               custom_properties, PageNode());
 
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
 
-  map->get("--foo", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  map->get("--foo", exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->has("--foo", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  map->has("--foo", exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->getAll("--foo", exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  map->getAll("--foo", exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
-  map->get("--quix", exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
-  exceptionState.clearException();
+  map->get("--quix", exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 
-  map->has("--quix", exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
-  exceptionState.clearException();
+  map->has("--quix", exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 
-  map->getAll("--quix", exceptionState);
-  EXPECT_TRUE(exceptionState.hadException());
-  exceptionState.clearException();
+  map->getAll("--quix", exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  exception_state.ClearException();
 }
 
 }  // namespace blink

@@ -16,14 +16,14 @@ class StyleSharingDepthScope final {
 
  public:
   explicit StyleSharingDepthScope(Node& parent)
-      : m_resolver(parent.document().styleResolver()) {
-    m_resolver->increaseStyleSharingDepth();
+      : resolver_(parent.GetDocument().GetStyleResolver()) {
+    resolver_->IncreaseStyleSharingDepth();
   }
 
-  ~StyleSharingDepthScope() { m_resolver->decreaseStyleSharingDepth(); }
+  ~StyleSharingDepthScope() { resolver_->DecreaseStyleSharingDepth(); }
 
  private:
-  Member<StyleResolver> m_resolver;
+  Member<StyleResolver> resolver_;
 };
 
 }  // namespace blink

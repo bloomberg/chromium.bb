@@ -25,23 +25,23 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
 
  public:
   enum Guard {
-    ImmutableGuard,
-    RequestGuard,
-    RequestNoCORSGuard,
-    ResponseGuard,
-    NoneGuard
+    kImmutableGuard,
+    kRequestGuard,
+    kRequestNoCORSGuard,
+    kResponseGuard,
+    kNoneGuard
   };
 
-  static Headers* create();
-  static Headers* create(ExceptionState&);
-  static Headers* create(const Headers*, ExceptionState&);
-  static Headers* create(const Vector<Vector<String>>&, ExceptionState&);
-  static Headers* create(const Dictionary&, ExceptionState&);
+  static Headers* Create();
+  static Headers* Create(ExceptionState&);
+  static Headers* Create(const Headers*, ExceptionState&);
+  static Headers* Create(const Vector<Vector<String>>&, ExceptionState&);
+  static Headers* Create(const Dictionary&, ExceptionState&);
 
   // Shares the FetchHeaderList. Called when creating a Request or Response.
-  static Headers* create(FetchHeaderList*);
+  static Headers* Create(FetchHeaderList*);
 
-  Headers* clone() const;
+  Headers* Clone() const;
 
   // Headers.idl implementation.
   void append(const String& name, const String& value, ExceptionState&);
@@ -51,15 +51,15 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
   bool has(const String& key, ExceptionState&);
   void set(const String& key, const String& value, ExceptionState&);
 
-  void setGuard(Guard guard) { m_guard = guard; }
-  Guard getGuard() const { return m_guard; }
+  void SetGuard(Guard guard) { guard_ = guard; }
+  Guard GetGuard() const { return guard_; }
 
   // These methods should only be called when size() would return 0.
-  void fillWith(const Headers*, ExceptionState&);
-  void fillWith(const Vector<Vector<String>>&, ExceptionState&);
-  void fillWith(const Dictionary&, ExceptionState&);
+  void FillWith(const Headers*, ExceptionState&);
+  void FillWith(const Vector<Vector<String>>&, ExceptionState&);
+  void FillWith(const Dictionary&, ExceptionState&);
 
-  FetchHeaderList* headerList() const { return m_headerList; }
+  FetchHeaderList* HeaderList() const { return header_list_; }
   DECLARE_TRACE();
 
  private:
@@ -67,10 +67,10 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
   // Shares the FetchHeaderList. Called when creating a Request or Response.
   explicit Headers(FetchHeaderList*);
 
-  Member<FetchHeaderList> m_headerList;
-  Guard m_guard;
+  Member<FetchHeaderList> header_list_;
+  Guard guard_;
 
-  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+  IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 };
 
 }  // namespace blink

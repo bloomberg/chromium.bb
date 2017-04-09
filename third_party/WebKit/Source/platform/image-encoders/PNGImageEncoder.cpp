@@ -39,17 +39,17 @@
 namespace blink {
 
 PNGImageEncoderState::~PNGImageEncoderState() {
-  png_destroy_write_struct(&m_png, &m_info);
+  png_destroy_write_struct(&png_, &info_);
 }
 
-static void writeOutput(png_structp png, png_bytep data, png_size_t size) {
-  static_cast<Vector<unsigned char>*>(png_get_io_ptr(png))->append(data, size);
+static void WriteOutput(png_structp png, png_bytep data, png_size_t size) {
+  static_cast<Vector<unsigned char>*>(png_get_io_ptr(png))->Append(data, size);
 }
 
-std::unique_ptr<PNGImageEncoderState> PNGImageEncoderState::create(
-    const IntSize& imageSize,
+std::unique_ptr<PNGImageEncoderState> PNGImageEncoderState::Create(
+    const IntSize& image_size,
     Vector<unsigned char>* output) {
-  if (imageSize.width() <= 0 || imageSize.height() <= 0)
+  if (image_size.Width() <= 0 || image_size.Height() <= 0)
     return nullptr;
 
   png_struct* png = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
@@ -81,48 +81,48 @@ std::unique_ptr<PNGImageEncoderState> PNGImageEncoderState::create(
   // the filter computations.
   png_set_filter(png, PNG_FILTER_TYPE_BASE, PNG_FILTER_SUB);
 
-  png_set_write_fn(png, output, writeOutput, 0);
-  png_set_IHDR(png, info, imageSize.width(), imageSize.height(), 8,
+  png_set_write_fn(png, output, WriteOutput, 0);
+  png_set_IHDR(png, info, image_size.Width(), image_size.Height(), 8,
                PNG_COLOR_TYPE_RGB_ALPHA, 0, 0, 0);
   png_write_info(png, info);
 
-  return WTF::wrapUnique(new PNGImageEncoderState(png, info));
+  return WTF::WrapUnique(new PNGImageEncoderState(png, info));
 }
 
-void PNGImageEncoder::writeOneRowToPng(unsigned char* pixels,
-                                       PNGImageEncoderState* encoderState) {
-  png_write_row(encoderState->png(), pixels);
+void PNGImageEncoder::WriteOneRowToPng(unsigned char* pixels,
+                                       PNGImageEncoderState* encoder_state) {
+  png_write_row(encoder_state->Png(), pixels);
 }
 
-void PNGImageEncoder::finalizePng(PNGImageEncoderState* encoderState) {
-  png_write_end(encoderState->png(), encoderState->info());
+void PNGImageEncoder::FinalizePng(PNGImageEncoderState* encoder_state) {
+  png_write_end(encoder_state->Png(), encoder_state->Info());
 }
 
-static bool encodePixels(const IntSize& imageSize,
-                         const unsigned char* inputPixels,
+static bool EncodePixels(const IntSize& image_size,
+                         const unsigned char* input_pixels,
                          Vector<unsigned char>* output) {
-  std::unique_ptr<PNGImageEncoderState> encoderState =
-      PNGImageEncoderState::create(imageSize, output);
-  if (!encoderState.get())
+  std::unique_ptr<PNGImageEncoderState> encoder_state =
+      PNGImageEncoderState::Create(image_size, output);
+  if (!encoder_state.get())
     return false;
 
-  unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
-  const size_t pixelRowStride = imageSize.width() * 4;
-  for (int y = 0; y < imageSize.height(); ++y) {
-    PNGImageEncoder::writeOneRowToPng(pixels, encoderState.get());
-    pixels += pixelRowStride;
+  unsigned char* pixels = const_cast<unsigned char*>(input_pixels);
+  const size_t pixel_row_stride = image_size.Width() * 4;
+  for (int y = 0; y < image_size.Height(); ++y) {
+    PNGImageEncoder::WriteOneRowToPng(pixels, encoder_state.get());
+    pixels += pixel_row_stride;
   }
 
-  PNGImageEncoder::finalizePng(encoderState.get());
+  PNGImageEncoder::FinalizePng(encoder_state.get());
   return true;
 }
 
-bool PNGImageEncoder::encode(const ImageDataBuffer& imageData,
+bool PNGImageEncoder::Encode(const ImageDataBuffer& image_data,
                              Vector<unsigned char>* output) {
-  if (!imageData.pixels())
+  if (!image_data.Pixels())
     return false;
 
-  return encodePixels(imageData.size(), imageData.pixels(), output);
+  return EncodePixels(image_data.size(), image_data.Pixels(), output);
 }
 
 }  // namespace blink

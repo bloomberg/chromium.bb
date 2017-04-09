@@ -15,32 +15,32 @@ class CSSLengthListInterpolationType : public CSSInterpolationType {
  public:
   CSSLengthListInterpolationType(PropertyHandle);
 
-  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
-  void composite(UnderlyingValueOwner&,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner&,
+                 double underlying_fraction,
                  const InterpolationValue&,
-                 double interpolationFraction) const final;
-  void applyStandardPropertyValue(const InterpolableValue&,
+                 double interpolation_fraction) const final;
+  void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  virtual InterpolationValue maybeConvertValue(const CSSValue&,
+  virtual InterpolationValue MaybeConvertValue(const CSSValue&,
                                                const StyleResolverState*,
                                                ConversionCheckers&) const;
 
-  PairwiseInterpolationValue maybeMergeSingles(
+  PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;
 
-  const ValueRange m_valueRange;
+  const ValueRange value_range_;
 };
 
 }  // namespace blink

@@ -41,59 +41,59 @@
 
 namespace blink {
 
-EntrySync* EntrySync::create(EntryBase* entry) {
+EntrySync* EntrySync::Create(EntryBase* entry) {
   if (entry->isFile())
-    return FileEntrySync::create(entry->m_fileSystem, entry->m_fullPath);
-  return DirectoryEntrySync::create(entry->m_fileSystem, entry->m_fullPath);
+    return FileEntrySync::Create(entry->file_system_, entry->full_path_);
+  return DirectoryEntrySync::Create(entry->file_system_, entry->full_path_);
 }
 
-Metadata* EntrySync::getMetadata(ExceptionState& exceptionState) {
-  MetadataSyncCallbackHelper* helper = MetadataSyncCallbackHelper::create();
-  m_fileSystem->getMetadata(this, helper->getSuccessCallback(),
-                            helper->getErrorCallback(),
-                            DOMFileSystemBase::Synchronous);
-  return helper->getResult(exceptionState);
+Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
+  MetadataSyncCallbackHelper* helper = MetadataSyncCallbackHelper::Create();
+  file_system_->GetMetadata(this, helper->GetSuccessCallback(),
+                            helper->GetErrorCallback(),
+                            DOMFileSystemBase::kSynchronous);
+  return helper->GetResult(exception_state);
 }
 
 EntrySync* EntrySync::moveTo(DirectoryEntrySync* parent,
                              const String& name,
-                             ExceptionState& exceptionState) const {
-  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::create();
-  m_fileSystem->move(this, parent, name, helper->getSuccessCallback(),
-                     helper->getErrorCallback(),
-                     DOMFileSystemBase::Synchronous);
-  return helper->getResult(exceptionState);
+                             ExceptionState& exception_state) const {
+  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::Create();
+  file_system_->Move(this, parent, name, helper->GetSuccessCallback(),
+                     helper->GetErrorCallback(),
+                     DOMFileSystemBase::kSynchronous);
+  return helper->GetResult(exception_state);
 }
 
 EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
                              const String& name,
-                             ExceptionState& exceptionState) const {
-  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::create();
-  m_fileSystem->copy(this, parent, name, helper->getSuccessCallback(),
-                     helper->getErrorCallback(),
-                     DOMFileSystemBase::Synchronous);
-  return helper->getResult(exceptionState);
+                             ExceptionState& exception_state) const {
+  EntrySyncCallbackHelper* helper = EntrySyncCallbackHelper::Create();
+  file_system_->Copy(this, parent, name, helper->GetSuccessCallback(),
+                     helper->GetErrorCallback(),
+                     DOMFileSystemBase::kSynchronous);
+  return helper->GetResult(exception_state);
 }
 
-void EntrySync::remove(ExceptionState& exceptionState) const {
-  VoidSyncCallbackHelper* helper = VoidSyncCallbackHelper::create();
-  m_fileSystem->remove(this, helper->getSuccessCallback(),
-                       helper->getErrorCallback(),
-                       DOMFileSystemBase::Synchronous);
-  helper->getResult(exceptionState);
+void EntrySync::remove(ExceptionState& exception_state) const {
+  VoidSyncCallbackHelper* helper = VoidSyncCallbackHelper::Create();
+  file_system_->Remove(this, helper->GetSuccessCallback(),
+                       helper->GetErrorCallback(),
+                       DOMFileSystemBase::kSynchronous);
+  helper->GetResult(exception_state);
 }
 
 EntrySync* EntrySync::getParent() const {
   // Sync verion of getParent doesn't throw exceptions.
-  String parentPath = DOMFilePath::getDirectory(fullPath());
-  return DirectoryEntrySync::create(m_fileSystem, parentPath);
+  String parent_path = DOMFilePath::GetDirectory(fullPath());
+  return DirectoryEntrySync::Create(file_system_, parent_path);
 }
 
-EntrySync::EntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
-    : EntryBase(fileSystem, fullPath) {}
+EntrySync::EntrySync(DOMFileSystemBase* file_system, const String& full_path)
+    : EntryBase(file_system, full_path) {}
 
 DEFINE_TRACE(EntrySync) {
-  EntryBase::trace(visitor);
+  EntryBase::Trace(visitor);
 }
 
 }  // namespace blink

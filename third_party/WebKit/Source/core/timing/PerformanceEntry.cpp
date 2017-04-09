@@ -36,67 +36,68 @@
 namespace blink {
 
 PerformanceEntry::PerformanceEntry(const String& name,
-                                   const String& entryType,
-                                   double startTime,
-                                   double finishTime)
-    : m_name(name),
-      m_entryType(entryType),
-      m_startTime(startTime),
-      m_duration(finishTime - startTime),
-      m_entryTypeEnum(toEntryTypeEnum(entryType)) {}
+                                   const String& entry_type,
+                                   double start_time,
+                                   double finish_time)
+    : name_(name),
+      entry_type_(entry_type),
+      start_time_(start_time),
+      duration_(finish_time - start_time),
+      entry_type_enum_(ToEntryTypeEnum(entry_type)) {}
 
 PerformanceEntry::~PerformanceEntry() {}
 
 String PerformanceEntry::name() const {
-  return m_name;
+  return name_;
 }
 
 String PerformanceEntry::entryType() const {
-  return m_entryType;
+  return entry_type_;
 }
 
 DOMHighResTimeStamp PerformanceEntry::startTime() const {
-  return m_startTime;
+  return start_time_;
 }
 
 DOMHighResTimeStamp PerformanceEntry::duration() const {
-  return m_duration;
+  return duration_;
 }
 
-PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(
-    const String& entryType) {
-  if (entryType == "composite")
-    return Composite;
-  if (entryType == "longtask")
-    return LongTask;
-  if (entryType == "mark")
-    return Mark;
-  if (entryType == "measure")
-    return Measure;
-  if (entryType == "render")
-    return Render;
-  if (entryType == "resource")
-    return Resource;
-  if (entryType == "navigation")
-    return Navigation;
-  if (entryType == "taskattribution")
-    return TaskAttribution;
-  if (entryType == "paint")
-    return Paint;
-  return Invalid;
+PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
+    const String& entry_type) {
+  if (entry_type == "composite")
+    return kComposite;
+  if (entry_type == "longtask")
+    return kLongTask;
+  if (entry_type == "mark")
+    return kMark;
+  if (entry_type == "measure")
+    return kMeasure;
+  if (entry_type == "render")
+    return kRender;
+  if (entry_type == "resource")
+    return kResource;
+  if (entry_type == "navigation")
+    return kNavigation;
+  if (entry_type == "taskattribution")
+    return kTaskAttribution;
+  if (entry_type == "paint")
+    return kPaint;
+  return kInvalid;
 }
 
-ScriptValue PerformanceEntry::toJSONForBinding(ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  buildJSONValue(result);
-  return result.scriptValue();
+ScriptValue PerformanceEntry::toJSONForBinding(
+    ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  BuildJSONValue(result);
+  return result.GetScriptValue();
 }
 
-void PerformanceEntry::buildJSONValue(V8ObjectBuilder& builder) const {
-  builder.addString("name", name());
-  builder.addString("entryType", entryType());
-  builder.addNumber("startTime", startTime());
-  builder.addNumber("duration", duration());
+void PerformanceEntry::BuildJSONValue(V8ObjectBuilder& builder) const {
+  builder.AddString("name", name());
+  builder.AddString("entryType", entryType());
+  builder.AddNumber("startTime", startTime());
+  builder.AddNumber("duration", duration());
 }
 
 }  // namespace blink

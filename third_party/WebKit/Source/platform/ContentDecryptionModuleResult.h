@@ -20,16 +20,16 @@ class ContentDecryptionModuleResult
  public:
   virtual ~ContentDecryptionModuleResult() {}
 
-  virtual void complete() = 0;
-  virtual void completeWithContentDecryptionModule(
+  virtual void Complete() = 0;
+  virtual void CompleteWithContentDecryptionModule(
       WebContentDecryptionModule*) = 0;
-  virtual void completeWithSession(
+  virtual void CompleteWithSession(
       WebContentDecryptionModuleResult::SessionStatus) = 0;
-  virtual void completeWithError(WebContentDecryptionModuleException,
-                                 unsigned long systemCode,
+  virtual void CompleteWithError(WebContentDecryptionModuleException,
+                                 unsigned long system_code,
                                  const WebString&) = 0;
 
-  WebContentDecryptionModuleResult result() {
+  WebContentDecryptionModuleResult Result() {
     return WebContentDecryptionModuleResult(this);
   }
 

@@ -35,50 +35,50 @@ namespace blink {
 
 // NSColor calls don't throw, so no need to block Cocoa exceptions in this file
 
-NSColor* nsColor(const Color& color) {
-  RGBA32 c = color.rgb();
+NSColor* NsColor(const Color& color) {
+  RGBA32 c = color.Rgb();
   switch (c) {
     case 0: {
       // Need this to avoid returning nil because cachedRGBAValues will default
       // to 0.
       DEFINE_STATIC_LOCAL(
-          RetainPtr<NSColor>, clearColor,
+          RetainPtr<NSColor>, clear_color,
           ([NSColor colorWithDeviceRed:0 green:0 blue:0 alpha:0]));
-      return clearColor.get();
+      return clear_color.Get();
     }
-    case Color::black: {
+    case Color::kBlack: {
       DEFINE_STATIC_LOCAL(
-          RetainPtr<NSColor>, blackColor,
+          RetainPtr<NSColor>, black_color,
           ([NSColor colorWithDeviceRed:0 green:0 blue:0 alpha:1]));
-      return blackColor.get();
+      return black_color.Get();
     }
-    case Color::white: {
+    case Color::kWhite: {
       DEFINE_STATIC_LOCAL(
-          RetainPtr<NSColor>, whiteColor,
+          RetainPtr<NSColor>, white_color,
           ([NSColor colorWithDeviceRed:1 green:1 blue:1 alpha:1]));
-      return whiteColor.get();
+      return white_color.Get();
     }
     default: {
-      const int cacheSize = 32;
-      static unsigned cachedRGBAValues[cacheSize];
-      static RetainPtr<NSColor>* cachedColors =
-          new RetainPtr<NSColor>[ cacheSize ];
+      const int kCacheSize = 32;
+      static unsigned cached_rgba_values[kCacheSize];
+      static RetainPtr<NSColor>* cached_colors =
+          new RetainPtr<NSColor>[kCacheSize];
 
-      for (int i = 0; i != cacheSize; ++i) {
-        if (cachedRGBAValues[i] == c)
-          return cachedColors[i].get();
+      for (int i = 0; i != kCacheSize; ++i) {
+        if (cached_rgba_values[i] == c)
+          return cached_colors[i].Get();
       }
 
       NSColor* result = [NSColor
-          colorWithDeviceRed:static_cast<CGFloat>(color.red()) / 255
-                       green:static_cast<CGFloat>(color.green()) / 255
-                        blue:static_cast<CGFloat>(color.blue()) / 255
-                       alpha:static_cast<CGFloat>(color.alpha()) / 255];
+          colorWithDeviceRed:static_cast<CGFloat>(color.Red()) / 255
+                       green:static_cast<CGFloat>(color.Green()) / 255
+                        blue:static_cast<CGFloat>(color.Blue()) / 255
+                       alpha:static_cast<CGFloat>(color.Alpha()) / 255];
 
       static int cursor;
-      cachedRGBAValues[cursor] = c;
-      cachedColors[cursor] = result;
-      if (++cursor == cacheSize)
+      cached_rgba_values[cursor] = c;
+      cached_colors[cursor] = result;
+      if (++cursor == kCacheSize)
         cursor = 0;
       return result;
     }

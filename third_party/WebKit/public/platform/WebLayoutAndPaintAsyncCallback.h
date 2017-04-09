@@ -9,7 +9,7 @@ namespace blink {
 
 class WebLayoutAndPaintAsyncCallback {
  public:
-  virtual void didLayoutAndPaint() = 0;
+  virtual void DidLayoutAndPaint() = 0;
 };
 
 }  // namespace blink

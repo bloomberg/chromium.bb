@@ -25,40 +25,42 @@ class FormDataBytesConsumer final : public BytesConsumer {
   MODULES_EXPORT FormDataBytesConsumer(const void* data, size_t);
   MODULES_EXPORT FormDataBytesConsumer(ExecutionContext*,
                                        PassRefPtr<EncodedFormData>);
-  MODULES_EXPORT static FormDataBytesConsumer* createForTesting(
-      ExecutionContext* executionContext,
-      PassRefPtr<EncodedFormData> formData,
+  MODULES_EXPORT static FormDataBytesConsumer* CreateForTesting(
+      ExecutionContext* execution_context,
+      PassRefPtr<EncodedFormData> form_data,
       BytesConsumer* consumer) {
-    return new FormDataBytesConsumer(executionContext, std::move(formData),
+    return new FormDataBytesConsumer(execution_context, std::move(form_data),
                                      consumer);
   }
 
   // BytesConsumer implementation
-  Result beginRead(const char** buffer, size_t* available) override {
-    return m_impl->beginRead(buffer, available);
+  Result BeginRead(const char** buffer, size_t* available) override {
+    return impl_->BeginRead(buffer, available);
   }
-  Result endRead(size_t readSize) override { return m_impl->endRead(readSize); }
-  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(
+  Result EndRead(size_t read_size) override {
+    return impl_->EndRead(read_size);
+  }
+  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(
       BlobSizePolicy policy) override {
-    return m_impl->drainAsBlobDataHandle(policy);
+    return impl_->DrainAsBlobDataHandle(policy);
   }
-  PassRefPtr<EncodedFormData> drainAsFormData() override {
-    return m_impl->drainAsFormData();
+  PassRefPtr<EncodedFormData> DrainAsFormData() override {
+    return impl_->DrainAsFormData();
   }
-  void setClient(BytesConsumer::Client* client) override {
-    m_impl->setClient(client);
+  void SetClient(BytesConsumer::Client* client) override {
+    impl_->SetClient(client);
   }
-  void clearClient() override { m_impl->clearClient(); }
-  void cancel() override { m_impl->cancel(); }
-  PublicState getPublicState() const override {
-    return m_impl->getPublicState();
+  void ClearClient() override { impl_->ClearClient(); }
+  void Cancel() override { impl_->Cancel(); }
+  PublicState GetPublicState() const override {
+    return impl_->GetPublicState();
   }
-  Error getError() const override { return m_impl->getError(); }
-  String debugName() const override { return m_impl->debugName(); }
+  Error GetError() const override { return impl_->GetError(); }
+  String DebugName() const override { return impl_->DebugName(); }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_impl);
-    BytesConsumer::trace(visitor);
+    visitor->Trace(impl_);
+    BytesConsumer::Trace(visitor);
   }
 
  private:
@@ -66,7 +68,7 @@ class FormDataBytesConsumer final : public BytesConsumer {
                                        PassRefPtr<EncodedFormData>,
                                        BytesConsumer*);
 
-  const Member<BytesConsumer> m_impl;
+  const Member<BytesConsumer> impl_;
 };
 
 }  // namespace blink

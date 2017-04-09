@@ -32,7 +32,7 @@ namespace blink {
 
 class WebGestureCurveTarget {
  public:
-  virtual bool scrollBy(const WebFloatSize& delta,
+  virtual bool ScrollBy(const WebFloatSize& delta,
                         const WebFloatSize& velocity) = 0;
 
  protected:

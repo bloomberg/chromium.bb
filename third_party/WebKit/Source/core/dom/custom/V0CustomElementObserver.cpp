@@ -39,26 +39,26 @@ namespace blink {
 typedef HeapHashMap<WeakMember<Element>, Member<V0CustomElementObserver>>
     ElementObserverMap;
 
-static ElementObserverMap& elementObservers() {
+static ElementObserverMap& ElementObservers() {
   DEFINE_STATIC_LOCAL(ElementObserverMap, map, (new ElementObserverMap));
   return map;
 }
 
-void V0CustomElementObserver::notifyElementWasDestroyed(Element* element) {
-  ElementObserverMap::iterator it = elementObservers().find(element);
-  if (it == elementObservers().end())
+void V0CustomElementObserver::NotifyElementWasDestroyed(Element* element) {
+  ElementObserverMap::iterator it = ElementObservers().Find(element);
+  if (it == ElementObservers().end())
     return;
-  it->value->elementWasDestroyed(element);
+  it->value->ElementWasDestroyed(element);
 }
 
-void V0CustomElementObserver::observe(Element* element) {
+void V0CustomElementObserver::Observe(Element* element) {
   ElementObserverMap::AddResult result =
-      elementObservers().insert(element, this);
-  DCHECK(result.isNewEntry);
+      ElementObservers().insert(element, this);
+  DCHECK(result.is_new_entry);
 }
 
-void V0CustomElementObserver::unobserve(Element* element) {
-  V0CustomElementObserver* observer = elementObservers().take(element);
+void V0CustomElementObserver::Unobserve(Element* element) {
+  V0CustomElementObserver* observer = ElementObservers().Take(element);
   DCHECK_EQ(observer, this);
 }
 

@@ -38,36 +38,36 @@ class WebMediaDeviceInfoPrivate;
 class WebMediaDeviceInfo {
  public:
   enum MediaDeviceKind {
-    MediaDeviceKindAudioInput,
-    MediaDeviceKindAudioOutput,
-    MediaDeviceKindVideoInput
+    kMediaDeviceKindAudioInput,
+    kMediaDeviceKindAudioOutput,
+    kMediaDeviceKindVideoInput
   };
 
   WebMediaDeviceInfo() {}
-  WebMediaDeviceInfo(const WebMediaDeviceInfo& other) { assign(other); }
-  ~WebMediaDeviceInfo() { reset(); }
+  WebMediaDeviceInfo(const WebMediaDeviceInfo& other) { Assign(other); }
+  ~WebMediaDeviceInfo() { Reset(); }
 
   WebMediaDeviceInfo& operator=(const WebMediaDeviceInfo& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebMediaDeviceInfo&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebMediaDeviceInfo&);
 
-  BLINK_PLATFORM_EXPORT void initialize(const WebString& deviceId,
+  BLINK_PLATFORM_EXPORT void Initialize(const WebString& device_id,
                                         MediaDeviceKind,
                                         const WebString& label,
-                                        const WebString& groupId);
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+                                        const WebString& group_id);
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT WebString deviceId() const;
-  BLINK_PLATFORM_EXPORT MediaDeviceKind kind() const;
-  BLINK_PLATFORM_EXPORT WebString label() const;
-  BLINK_PLATFORM_EXPORT WebString groupId() const;
+  BLINK_PLATFORM_EXPORT WebString DeviceId() const;
+  BLINK_PLATFORM_EXPORT MediaDeviceKind Kind() const;
+  BLINK_PLATFORM_EXPORT WebString Label() const;
+  BLINK_PLATFORM_EXPORT WebString GroupId() const;
 
  private:
-  WebPrivatePtr<WebMediaDeviceInfoPrivate> m_private;
+  WebPrivatePtr<WebMediaDeviceInfoPrivate> private_;
 };
 
 }  // namespace blink

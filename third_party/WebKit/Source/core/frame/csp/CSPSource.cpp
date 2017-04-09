@@ -18,250 +18,258 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
                      const String& host,
                      int port,
                      const String& path,
-                     WildcardDisposition hostWildcard,
-                     WildcardDisposition portWildcard)
-    : m_policy(policy),
-      m_scheme(scheme.lower()),
-      m_host(host),
-      m_port(port),
-      m_path(path),
-      m_hostWildcard(hostWildcard),
-      m_portWildcard(portWildcard) {}
+                     WildcardDisposition host_wildcard,
+                     WildcardDisposition port_wildcard)
+    : policy_(policy),
+      scheme_(scheme.Lower()),
+      host_(host),
+      port_(port),
+      path_(path),
+      host_wildcard_(host_wildcard),
+      port_wildcard_(port_wildcard) {}
 
-bool CSPSource::matches(const KURL& url,
-                        ResourceRequest::RedirectStatus redirectStatus) const {
-  SchemeMatchingResult schemesMatch = schemeMatches(url.protocol());
-  if (schemesMatch == SchemeMatchingResult::NotMatching)
+bool CSPSource::Matches(const KURL& url,
+                        ResourceRequest::RedirectStatus redirect_status) const {
+  SchemeMatchingResult schemes_match = SchemeMatches(url.Protocol());
+  if (schemes_match == SchemeMatchingResult::kNotMatching)
     return false;
-  if (isSchemeOnly())
+  if (IsSchemeOnly())
     return true;
-  bool pathsMatch = (redirectStatus == RedirectStatus::FollowedRedirect) ||
-                    pathMatches(url.path());
-  PortMatchingResult portsMatch = portMatches(url.port(), url.protocol());
+  bool paths_match = (redirect_status == RedirectStatus::kFollowedRedirect) ||
+                     PathMatches(url.GetPath());
+  PortMatchingResult ports_match = PortMatches(url.Port(), url.Protocol());
 
   // if either the scheme or the port would require an upgrade (e.g. from http
   // to https) then check that both of them can upgrade to ensure that we don't
   // run into situations where we only upgrade the port but not the scheme or
   // viceversa
-  if ((requiresUpgrade(schemesMatch) || (requiresUpgrade(portsMatch))) &&
-      (!canUpgrade(schemesMatch) || !canUpgrade(portsMatch))) {
+  if ((RequiresUpgrade(schemes_match) || (RequiresUpgrade(ports_match))) &&
+      (!CanUpgrade(schemes_match) || !CanUpgrade(ports_match))) {
     return false;
   }
 
-  return hostMatches(url.host()) && portsMatch != PortMatchingResult::NotMatching && pathsMatch;
+  return HostMatches(url.Host()) &&
+         ports_match != PortMatchingResult::kNotMatching && paths_match;
 }
 
-CSPSource::SchemeMatchingResult CSPSource::schemeMatches(
+CSPSource::SchemeMatchingResult CSPSource::SchemeMatches(
     const String& protocol) const {
-  DCHECK_EQ(protocol, protocol.lower());
+  DCHECK_EQ(protocol, protocol.Lower());
   const String& scheme =
-      (m_scheme.isEmpty() ? m_policy->getSelfProtocol() : m_scheme);
+      (scheme_.IsEmpty() ? policy_->GetSelfProtocol() : scheme_);
 
   if (scheme == protocol)
-    return SchemeMatchingResult::MatchingExact;
+    return SchemeMatchingResult::kMatchingExact;
 
   if ((scheme == "http" && protocol == "https") ||
       (scheme == "http" && protocol == "https-so") ||
       (scheme == "ws" && protocol == "wss")) {
-    return SchemeMatchingResult::MatchingUpgrade;
+    return SchemeMatchingResult::kMatchingUpgrade;
   }
 
   if ((scheme == "http" && protocol == "http-so") ||
       (scheme == "https" && protocol == "https-so")) {
-    return SchemeMatchingResult::MatchingExact;
+    return SchemeMatchingResult::kMatchingExact;
   }
 
-  return SchemeMatchingResult::NotMatching;
+  return SchemeMatchingResult::kNotMatching;
 }
 
-bool CSPSource::hostMatches(const String& host) const {
-  Document* document = m_policy->document();
+bool CSPSource::HostMatches(const String& host) const {
+  Document* document = policy_->GetDocument();
   bool match;
 
-  bool equalHosts = m_host == host;
-  if (m_hostWildcard == HasWildcard) {
-    if (m_host.isEmpty()) {
+  bool equal_hosts = host_ == host;
+  if (host_wildcard_ == kHasWildcard) {
+    if (host_.IsEmpty()) {
       // host-part = "*"
       match = true;
     } else {
       // host-part = "*." 1*host-char *( "." 1*host-char )
-      match = host.endsWith(String("." + m_host), TextCaseUnicodeInsensitive);
+      match = host.EndsWith(String("." + host_), kTextCaseUnicodeInsensitive);
     }
 
     // Chrome used to, incorrectly, match *.x.y to x.y. This was fixed, but
     // the following count measures when a match fails that would have
     // passed the old, incorrect style, in case a lot of sites were
     // relying on that behavior.
-    if (document && equalHosts)
-      UseCounter::count(*document,
-                        UseCounter::CSPSourceWildcardWouldMatchExactHost);
+    if (document && equal_hosts)
+      UseCounter::Count(*document,
+                        UseCounter::kCSPSourceWildcardWouldMatchExactHost);
   } else {
     // host-part = 1*host-char *( "." 1*host-char )
-    match = equalHosts;
+    match = equal_hosts;
   }
 
   return match;
 }
 
-bool CSPSource::pathMatches(const String& urlPath) const {
-  if (m_path.isEmpty() || (m_path == "/" && urlPath.isEmpty()))
+bool CSPSource::PathMatches(const String& url_path) const {
+  if (path_.IsEmpty() || (path_ == "/" && url_path.IsEmpty()))
     return true;
 
-  String path = decodeURLEscapeSequences(urlPath);
+  String path = DecodeURLEscapeSequences(url_path);
 
-  if (m_path.endsWith("/"))
-    return path.startsWith(m_path);
+  if (path_.EndsWith("/"))
+    return path.StartsWith(path_);
 
-  return path == m_path;
+  return path == path_;
 }
 
-CSPSource::PortMatchingResult CSPSource::portMatches(
+CSPSource::PortMatchingResult CSPSource::PortMatches(
     int port,
     const String& protocol) const {
-  if (m_portWildcard == HasWildcard)
-    return PortMatchingResult::MatchingWildcard;
+  if (port_wildcard_ == kHasWildcard)
+    return PortMatchingResult::kMatchingWildcard;
 
-  if (port == m_port) {
+  if (port == port_) {
     if (port == 0)
-      return PortMatchingResult::MatchingWildcard;
-    return PortMatchingResult::MatchingExact;
+      return PortMatchingResult::kMatchingWildcard;
+    return PortMatchingResult::kMatchingExact;
   }
 
-  bool isSchemeHttp;  // needed for detecting an upgrade when the port is 0
-  isSchemeHttp = m_scheme.isEmpty() ? m_policy->protocolEqualsSelf("http")
-                                    : equalIgnoringCase("http", m_scheme);
+  bool is_scheme_http;  // needed for detecting an upgrade when the port is 0
+  is_scheme_http = scheme_.IsEmpty() ? policy_->ProtocolEqualsSelf("http")
+                                     : EqualIgnoringCase("http", scheme_);
 
-  if ((m_port == 80 || (m_port == 0 && isSchemeHttp)) &&
-      (port == 443 || (port == 0 && defaultPortForProtocol(protocol) == 443)))
-    return PortMatchingResult::MatchingUpgrade;
+  if ((port_ == 80 || (port_ == 0 && is_scheme_http)) &&
+      (port == 443 || (port == 0 && DefaultPortForProtocol(protocol) == 443)))
+    return PortMatchingResult::kMatchingUpgrade;
 
   if (!port) {
-    if (isDefaultPortForProtocol(m_port, protocol))
-      return PortMatchingResult::MatchingExact;
+    if (IsDefaultPortForProtocol(port_, protocol))
+      return PortMatchingResult::kMatchingExact;
 
-    return PortMatchingResult::NotMatching;
+    return PortMatchingResult::kNotMatching;
   }
 
-  if (!m_port) {
-    if (isDefaultPortForProtocol(port, protocol))
-      return PortMatchingResult::MatchingExact;
+  if (!port_) {
+    if (IsDefaultPortForProtocol(port, protocol))
+      return PortMatchingResult::kMatchingExact;
 
-    return PortMatchingResult::NotMatching;
+    return PortMatchingResult::kNotMatching;
   }
 
-  return PortMatchingResult::NotMatching;
+  return PortMatchingResult::kNotMatching;
 }
 
-bool CSPSource::subsumes(CSPSource* other) const {
-  if (schemeMatches(other->m_scheme) == SchemeMatchingResult::NotMatching)
+bool CSPSource::Subsumes(CSPSource* other) const {
+  if (SchemeMatches(other->scheme_) == SchemeMatchingResult::kNotMatching)
     return false;
 
-  if (other->isSchemeOnly() || isSchemeOnly())
-    return isSchemeOnly();
+  if (other->IsSchemeOnly() || IsSchemeOnly())
+    return IsSchemeOnly();
 
-  if ((m_hostWildcard == NoWildcard && other->m_hostWildcard == HasWildcard) ||
-      (m_portWildcard == NoWildcard && other->m_portWildcard == HasWildcard)) {
+  if ((host_wildcard_ == kNoWildcard &&
+       other->host_wildcard_ == kHasWildcard) ||
+      (port_wildcard_ == kNoWildcard &&
+       other->port_wildcard_ == kHasWildcard)) {
     return false;
   }
 
-  bool hostSubsumes = (m_host == other->m_host || hostMatches(other->m_host));
-  bool portSubsumes = (m_portWildcard == HasWildcard) ||
-      portMatches(other->m_port, other->m_scheme) != PortMatchingResult::NotMatching;
-  bool pathSubsumes = pathMatches(other->m_path);
-  return hostSubsumes && portSubsumes && pathSubsumes;
+  bool host_subsumes = (host_ == other->host_ || HostMatches(other->host_));
+  bool port_subsumes = (port_wildcard_ == kHasWildcard) ||
+                       PortMatches(other->port_, other->scheme_) !=
+                           PortMatchingResult::kNotMatching;
+  bool path_subsumes = PathMatches(other->path_);
+  return host_subsumes && port_subsumes && path_subsumes;
 }
 
-bool CSPSource::isSimilar(CSPSource* other) const {
-  bool schemesMatch =
-      schemeMatches(other->m_scheme) != SchemeMatchingResult::NotMatching
-      || other->schemeMatches(m_scheme) != SchemeMatchingResult::NotMatching;
-  if (!schemesMatch || isSchemeOnly() || other->isSchemeOnly())
-    return schemesMatch;
-  bool hostsMatch = (m_host == other->m_host) || hostMatches(other->m_host) ||
-                    other->hostMatches(m_host);
-  bool portsMatch = (other->m_portWildcard == HasWildcard) ||
-      portMatches(other->m_port, other->m_scheme) != PortMatchingResult::NotMatching ||
-      other->portMatches(m_port, m_scheme) != PortMatchingResult::NotMatching;
-  bool pathsMatch = pathMatches(other->m_path) || other->pathMatches(m_path);
-  if (hostsMatch && portsMatch && pathsMatch)
+bool CSPSource::IsSimilar(CSPSource* other) const {
+  bool schemes_match =
+      SchemeMatches(other->scheme_) != SchemeMatchingResult::kNotMatching ||
+      other->SchemeMatches(scheme_) != SchemeMatchingResult::kNotMatching;
+  if (!schemes_match || IsSchemeOnly() || other->IsSchemeOnly())
+    return schemes_match;
+  bool hosts_match = (host_ == other->host_) || HostMatches(other->host_) ||
+                     other->HostMatches(host_);
+  bool ports_match =
+      (other->port_wildcard_ == kHasWildcard) ||
+      PortMatches(other->port_, other->scheme_) !=
+          PortMatchingResult::kNotMatching ||
+      other->PortMatches(port_, scheme_) != PortMatchingResult::kNotMatching;
+  bool paths_match = PathMatches(other->path_) || other->PathMatches(path_);
+  if (hosts_match && ports_match && paths_match)
     return true;
 
   return false;
 }
 
-CSPSource* CSPSource::intersect(CSPSource* other) const {
-  if (!isSimilar(other))
+CSPSource* CSPSource::Intersect(CSPSource* other) const {
+  if (!IsSimilar(other))
     return nullptr;
 
-  String scheme = other->schemeMatches(m_scheme) != SchemeMatchingResult::NotMatching ? m_scheme : other->m_scheme;
-  if (isSchemeOnly() || other->isSchemeOnly()) {
-    const CSPSource* stricter = isSchemeOnly() ? other : this;
-    return new CSPSource(m_policy, scheme, stricter->m_host, stricter->m_port,
-                         stricter->m_path, stricter->m_hostWildcard,
-                         stricter->m_portWildcard);
+  String scheme =
+      other->SchemeMatches(scheme_) != SchemeMatchingResult::kNotMatching
+          ? scheme_
+          : other->scheme_;
+  if (IsSchemeOnly() || other->IsSchemeOnly()) {
+    const CSPSource* stricter = IsSchemeOnly() ? other : this;
+    return new CSPSource(policy_, scheme, stricter->host_, stricter->port_,
+                         stricter->path_, stricter->host_wildcard_,
+                         stricter->port_wildcard_);
   }
 
-  String host = m_hostWildcard == NoWildcard ? m_host : other->m_host;
+  String host = host_wildcard_ == kNoWildcard ? host_ : other->host_;
   // Since sources are similar and paths match, pick the longer one.
-  String path =
-      m_path.length() > other->m_path.length() ? m_path : other->m_path;
+  String path = path_.length() > other->path_.length() ? path_ : other->path_;
   // Choose this port if the other port is empty, has wildcard or is a port for
   // a less secure scheme such as "http" whereas scheme of this is "https", in
   // which case the lengths would differ.
-  int port = (other->m_portWildcard == HasWildcard || !other->m_port ||
-              m_scheme.length() > other->m_scheme.length())
-                 ? m_port
-                 : other->m_port;
-  WildcardDisposition hostWildcard =
-      (m_hostWildcard == HasWildcard) ? other->m_hostWildcard : m_hostWildcard;
-  WildcardDisposition portWildcard =
-      (m_portWildcard == HasWildcard) ? other->m_portWildcard : m_portWildcard;
-  return new CSPSource(m_policy, scheme, host, port, path, hostWildcard,
-                       portWildcard);
+  int port = (other->port_wildcard_ == kHasWildcard || !other->port_ ||
+              scheme_.length() > other->scheme_.length())
+                 ? port_
+                 : other->port_;
+  WildcardDisposition host_wildcard =
+      (host_wildcard_ == kHasWildcard) ? other->host_wildcard_ : host_wildcard_;
+  WildcardDisposition port_wildcard =
+      (port_wildcard_ == kHasWildcard) ? other->port_wildcard_ : port_wildcard_;
+  return new CSPSource(policy_, scheme, host, port, path, host_wildcard,
+                       port_wildcard);
 }
 
-bool CSPSource::isSchemeOnly() const {
-  return m_host.isEmpty() && (m_hostWildcard == NoWildcard);
+bool CSPSource::IsSchemeOnly() const {
+  return host_.IsEmpty() && (host_wildcard_ == kNoWildcard);
 }
 
-bool CSPSource::firstSubsumesSecond(
-    const HeapVector<Member<CSPSource>>& listA,
-    const HeapVector<Member<CSPSource>>& listB) {
+bool CSPSource::FirstSubsumesSecond(
+    const HeapVector<Member<CSPSource>>& list_a,
+    const HeapVector<Member<CSPSource>>& list_b) {
   // Empty vector of CSPSources has an effect of 'none'.
-  if (!listA.size() || !listB.size())
-    return !listB.size();
+  if (!list_a.size() || !list_b.size())
+    return !list_b.size();
 
   // Walk through all the items in |listB|, ensuring that each is subsumed by at
   // least one item in |listA|. If any item in |listB| is not subsumed, return
   // false.
-  for (const auto& sourceB : listB) {
-    bool foundMatch = false;
-    for (const auto& sourceA : listA) {
-      if ((foundMatch = sourceA->subsumes(sourceB)))
+  for (const auto& source_b : list_b) {
+    bool found_match = false;
+    for (const auto& source_a : list_a) {
+      if ((found_match = source_a->Subsumes(source_b)))
         break;
     }
-    if (!foundMatch)
+    if (!found_match)
       return false;
   }
   return true;
 }
 
 WebContentSecurityPolicySourceExpression
-CSPSource::exposeForNavigationalChecks() const {
-  WebContentSecurityPolicySourceExpression sourceExpression;
-  sourceExpression.scheme = m_scheme;
-  sourceExpression.host = m_host;
-  sourceExpression.isHostWildcard =
-      static_cast<WebWildcardDisposition>(m_hostWildcard);
-  sourceExpression.port = m_port;
-  sourceExpression.isPortWildcard =
-      static_cast<WebWildcardDisposition>(m_portWildcard);
-  sourceExpression.path = m_path;
-  return sourceExpression;
+CSPSource::ExposeForNavigationalChecks() const {
+  WebContentSecurityPolicySourceExpression source_expression;
+  source_expression.scheme = scheme_;
+  source_expression.host = host_;
+  source_expression.is_host_wildcard =
+      static_cast<WebWildcardDisposition>(host_wildcard_);
+  source_expression.port = port_;
+  source_expression.is_port_wildcard =
+      static_cast<WebWildcardDisposition>(port_wildcard_);
+  source_expression.path = path_;
+  return source_expression;
 }
 
 DEFINE_TRACE(CSPSource) {
-  visitor->trace(m_policy);
+  visitor->Trace(policy_);
 }
 
 }  // namespace blink

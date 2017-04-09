@@ -416,8 +416,9 @@ blink::WebDisplayMode Shell::GetDisplayMode(
  // TODO : should return blink::WebDisplayModeFullscreen wherever user puts
  // a browser window into fullscreen (not only in case of renderer-initiated
  // fullscreen mode): crbug.com/476874.
- return IsFullscreenForTabOrPending(web_contents) ?
-     blink::WebDisplayModeFullscreen : blink::WebDisplayModeBrowser;
+ return IsFullscreenForTabOrPending(web_contents)
+            ? blink::kWebDisplayModeFullscreen
+            : blink::kWebDisplayModeBrowser;
 }
 
 void Shell::RequestToLockMouse(WebContents* web_contents,

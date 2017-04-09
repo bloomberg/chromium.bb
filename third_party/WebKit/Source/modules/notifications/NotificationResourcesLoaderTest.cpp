@@ -38,237 +38,239 @@ constexpr char kIcon3000x2000[] = "3000x2000.png";
 class NotificationResourcesLoaderTest : public ::testing::Test {
  public:
   NotificationResourcesLoaderTest()
-      : m_page(DummyPageHolder::create()),
-        m_loader(new NotificationResourcesLoader(
-            bind(&NotificationResourcesLoaderTest::didFetchResources,
-                 WTF::unretained(this)))) {}
+      : page_(DummyPageHolder::Create()),
+        loader_(new NotificationResourcesLoader(
+            Bind(&NotificationResourcesLoaderTest::DidFetchResources,
+                 WTF::Unretained(this)))) {}
 
   ~NotificationResourcesLoaderTest() override {
-    m_loader->stop();
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
+    loader_->Stop();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
  protected:
-  ExecutionContext* executionContext() const { return &m_page->document(); }
+  ExecutionContext* GetExecutionContext() const {
+    return &page_->GetDocument();
+  }
 
-  NotificationResourcesLoader* loader() const { return m_loader.get(); }
+  NotificationResourcesLoader* Loader() const { return loader_.Get(); }
 
-  WebNotificationResources* resources() const { return m_resources.get(); }
+  WebNotificationResources* Resources() const { return resources_.get(); }
 
-  void didFetchResources(NotificationResourcesLoader* loader) {
-    m_resources = loader->getResources();
+  void DidFetchResources(NotificationResourcesLoader* loader) {
+    resources_ = loader->GetResources();
   }
 
   // Registers a mocked url. When fetched, |fileName| will be loaded from the
   // test data directory.
-  WebURL registerMockedURL(const String& fileName) {
-    WebURL registeredUrl = URLTestHelpers::registerMockedURLLoadFromBase(
-        kBaseUrl, testing::webTestDataPath(kBaseDir), fileName, "image/png");
-    return registeredUrl;
+  WebURL RegisterMockedURL(const String& file_name) {
+    WebURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
+        kBaseUrl, testing::WebTestDataPath(kBaseDir), file_name, "image/png");
+    return registered_url;
   }
 
   // Registers a mocked url that will fail to be fetched, with a 404 error.
-  WebURL registerMockedErrorURL(const String& fileName) {
-    WebURL url(KURL(ParsedURLString, kBaseUrl + fileName));
-    URLTestHelpers::registerMockedErrorURLLoad(url);
+  WebURL RegisterMockedErrorURL(const String& file_name) {
+    WebURL url(KURL(kParsedURLString, kBaseUrl + file_name));
+    URLTestHelpers::RegisterMockedErrorURLLoad(url);
     return url;
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_page;
-  Persistent<NotificationResourcesLoader> m_loader;
-  std::unique_ptr<WebNotificationResources> m_resources;
+  std::unique_ptr<DummyPageHolder> page_;
+  Persistent<NotificationResourcesLoader> loader_;
+  std::unique_ptr<WebNotificationResources> resources_;
 };
 
 TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
-  WebNotificationData notificationData;
-  notificationData.image = registerMockedURL(kIcon500x500);
-  notificationData.icon = registerMockedURL(kIcon100x100);
-  notificationData.badge = registerMockedURL(kIcon48x48);
-  notificationData.actions =
+  WebNotificationData notification_data;
+  notification_data.image = RegisterMockedURL(kIcon500x500);
+  notification_data.icon = RegisterMockedURL(kIcon100x100);
+  notification_data.badge = RegisterMockedURL(kIcon48x48);
+  notification_data.actions =
       WebVector<WebNotificationAction>(static_cast<size_t>(2));
-  notificationData.actions[0].icon = registerMockedURL(kIcon110x110);
-  notificationData.actions[1].icon = registerMockedURL(kIcon120x120);
+  notification_data.actions[0].icon = RegisterMockedURL(kIcon110x110);
+  notification_data.actions[1].icon = RegisterMockedURL(kIcon120x120);
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
-  ASSERT_FALSE(resources()->image.drawsNothing());
-  ASSERT_EQ(500, resources()->image.width());
-  ASSERT_EQ(500, resources()->image.height());
+  ASSERT_FALSE(Resources()->image.drawsNothing());
+  ASSERT_EQ(500, Resources()->image.width());
+  ASSERT_EQ(500, Resources()->image.height());
 
-  ASSERT_FALSE(resources()->icon.drawsNothing());
-  ASSERT_EQ(100, resources()->icon.width());
+  ASSERT_FALSE(Resources()->icon.drawsNothing());
+  ASSERT_EQ(100, Resources()->icon.width());
 
-  ASSERT_FALSE(resources()->badge.drawsNothing());
-  ASSERT_EQ(48, resources()->badge.width());
+  ASSERT_FALSE(Resources()->badge.drawsNothing());
+  ASSERT_EQ(48, Resources()->badge.width());
 
-  ASSERT_EQ(2u, resources()->actionIcons.size());
-  ASSERT_FALSE(resources()->actionIcons[0].drawsNothing());
-  ASSERT_EQ(110, resources()->actionIcons[0].width());
-  ASSERT_FALSE(resources()->actionIcons[1].drawsNothing());
-  ASSERT_EQ(120, resources()->actionIcons[1].width());
+  ASSERT_EQ(2u, Resources()->action_icons.size());
+  ASSERT_FALSE(Resources()->action_icons[0].drawsNothing());
+  ASSERT_EQ(110, Resources()->action_icons[0].width());
+  ASSERT_FALSE(Resources()->action_icons[1].drawsNothing());
+  ASSERT_EQ(120, Resources()->action_icons[1].width());
 }
 
 TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
-  WebNotificationData notificationData;
-  notificationData.icon = registerMockedURL(kIcon500x500);
-  notificationData.badge = notificationData.icon;
-  notificationData.actions =
+  WebNotificationData notification_data;
+  notification_data.icon = RegisterMockedURL(kIcon500x500);
+  notification_data.badge = notification_data.icon;
+  notification_data.actions =
       WebVector<WebNotificationAction>(static_cast<size_t>(1));
-  notificationData.actions[0].icon = notificationData.icon;
+  notification_data.actions[0].icon = notification_data.icon;
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
-  ASSERT_FALSE(resources()->icon.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxIconSizePx, resources()->icon.width());
-  ASSERT_EQ(kWebNotificationMaxIconSizePx, resources()->icon.height());
+  ASSERT_FALSE(Resources()->icon.drawsNothing());
+  ASSERT_EQ(kWebNotificationMaxIconSizePx, Resources()->icon.width());
+  ASSERT_EQ(kWebNotificationMaxIconSizePx, Resources()->icon.height());
 
-  ASSERT_FALSE(resources()->badge.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxBadgeSizePx, resources()->badge.width());
-  ASSERT_EQ(kWebNotificationMaxBadgeSizePx, resources()->badge.height());
+  ASSERT_FALSE(Resources()->badge.drawsNothing());
+  ASSERT_EQ(kWebNotificationMaxBadgeSizePx, Resources()->badge.width());
+  ASSERT_EQ(kWebNotificationMaxBadgeSizePx, Resources()->badge.height());
 
-  ASSERT_EQ(1u, resources()->actionIcons.size());
-  ASSERT_FALSE(resources()->actionIcons[0].drawsNothing());
+  ASSERT_EQ(1u, Resources()->action_icons.size());
+  ASSERT_FALSE(Resources()->action_icons[0].drawsNothing());
   ASSERT_EQ(kWebNotificationMaxActionIconSizePx,
-            resources()->actionIcons[0].width());
+            Resources()->action_icons[0].width());
   ASSERT_EQ(kWebNotificationMaxActionIconSizePx,
-            resources()->actionIcons[0].height());
+            Resources()->action_icons[0].height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
-  WebNotificationData notificationData;
-  notificationData.image = registerMockedURL(kIcon3000x1000);
+  WebNotificationData notification_data;
+  notification_data.image = RegisterMockedURL(kIcon3000x1000);
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
-  ASSERT_FALSE(resources()->image.drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxImageWidthPx, resources()->image.width());
-  ASSERT_EQ(kWebNotificationMaxImageWidthPx / 3, resources()->image.height());
+  ASSERT_FALSE(Resources()->image.drawsNothing());
+  ASSERT_EQ(kWebNotificationMaxImageWidthPx, Resources()->image.width());
+  ASSERT_EQ(kWebNotificationMaxImageWidthPx / 3, Resources()->image.height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
-  WebNotificationData notificationData;
-  notificationData.image = registerMockedURL(kIcon3000x2000);
+  WebNotificationData notification_data;
+  notification_data.image = RegisterMockedURL(kIcon3000x2000);
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
-  ASSERT_FALSE(resources()->image.drawsNothing());
+  ASSERT_FALSE(Resources()->image.drawsNothing());
   ASSERT_EQ(kWebNotificationMaxImageHeightPx * 3 / 2,
-            resources()->image.width());
-  ASSERT_EQ(kWebNotificationMaxImageHeightPx, resources()->image.height());
+            Resources()->image.width());
+  ASSERT_EQ(kWebNotificationMaxImageHeightPx, Resources()->image.height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {
-  WebNotificationData notificationData;
+  WebNotificationData notification_data;
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
-  ASSERT_TRUE(resources()->image.drawsNothing());
-  ASSERT_TRUE(resources()->icon.drawsNothing());
-  ASSERT_TRUE(resources()->badge.drawsNothing());
-  ASSERT_EQ(0u, resources()->actionIcons.size());
+  ASSERT_TRUE(Resources()->image.drawsNothing());
+  ASSERT_TRUE(Resources()->icon.drawsNothing());
+  ASSERT_TRUE(Resources()->badge.drawsNothing());
+  ASSERT_EQ(0u, Resources()->action_icons.size());
 }
 
 TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
-  WebNotificationData notificationData;
-  notificationData.image = notificationData.icon;
-  notificationData.icon = registerMockedErrorURL(kIcon100x100);
-  notificationData.badge = notificationData.icon;
-  notificationData.actions =
+  WebNotificationData notification_data;
+  notification_data.image = notification_data.icon;
+  notification_data.icon = RegisterMockedErrorURL(kIcon100x100);
+  notification_data.badge = notification_data.icon;
+  notification_data.actions =
       WebVector<WebNotificationAction>(static_cast<size_t>(1));
-  notificationData.actions[0].icon = notificationData.icon;
+  notification_data.actions[0].icon = notification_data.icon;
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
   // The test received resources but they are all empty. This ensures that a
   // notification can still be shown even if the images fail to load.
-  ASSERT_TRUE(resources()->image.drawsNothing());
-  ASSERT_TRUE(resources()->icon.drawsNothing());
-  ASSERT_TRUE(resources()->badge.drawsNothing());
-  ASSERT_EQ(1u, resources()->actionIcons.size());
-  ASSERT_TRUE(resources()->actionIcons[0].drawsNothing());
+  ASSERT_TRUE(Resources()->image.drawsNothing());
+  ASSERT_TRUE(Resources()->icon.drawsNothing());
+  ASSERT_TRUE(Resources()->badge.drawsNothing());
+  ASSERT_EQ(1u, Resources()->action_icons.size());
+  ASSERT_TRUE(Resources()->action_icons[0].drawsNothing());
 }
 
 TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
-  WebNotificationData notificationData;
-  notificationData.icon = registerMockedURL(kIcon100x100);
-  notificationData.badge = registerMockedErrorURL(kIcon48x48);
+  WebNotificationData notification_data;
+  notification_data.icon = RegisterMockedURL(kIcon100x100);
+  notification_data.badge = RegisterMockedErrorURL(kIcon48x48);
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Start(GetExecutionContext(), notification_data);
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
-  ASSERT_TRUE(resources());
+  ASSERT_TRUE(Resources());
 
   // The test received resources even though one image failed to load. This
   // ensures that a notification can still be shown, though slightly degraded.
-  ASSERT_TRUE(resources()->image.drawsNothing());
-  ASSERT_FALSE(resources()->icon.drawsNothing());
-  ASSERT_EQ(100, resources()->icon.width());
-  ASSERT_TRUE(resources()->badge.drawsNothing());
-  ASSERT_EQ(0u, resources()->actionIcons.size());
+  ASSERT_TRUE(Resources()->image.drawsNothing());
+  ASSERT_FALSE(Resources()->icon.drawsNothing());
+  ASSERT_EQ(100, Resources()->icon.width());
+  ASSERT_TRUE(Resources()->badge.drawsNothing());
+  ASSERT_EQ(0u, Resources()->action_icons.size());
 }
 
 TEST_F(NotificationResourcesLoaderTest, StopYieldsNoResources) {
-  WebNotificationData notificationData;
-  notificationData.image = registerMockedURL(kIcon500x500);
-  notificationData.icon = registerMockedURL(kIcon100x100);
-  notificationData.badge = registerMockedURL(kIcon48x48);
-  notificationData.actions =
+  WebNotificationData notification_data;
+  notification_data.image = RegisterMockedURL(kIcon500x500);
+  notification_data.icon = RegisterMockedURL(kIcon100x100);
+  notification_data.badge = RegisterMockedURL(kIcon48x48);
+  notification_data.actions =
       WebVector<WebNotificationAction>(static_cast<size_t>(2));
-  notificationData.actions[0].icon = registerMockedURL(kIcon110x110);
-  notificationData.actions[1].icon = registerMockedURL(kIcon120x120);
+  notification_data.actions[0].icon = RegisterMockedURL(kIcon110x110);
+  notification_data.actions[1].icon = RegisterMockedURL(kIcon120x120);
 
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
-  loader()->start(executionContext(), notificationData);
+  Loader()->Start(GetExecutionContext(), notification_data);
 
   // Check that starting the loader did not synchronously fail, providing
   // empty resources. The requests should be pending now.
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 
   // The loader would stop e.g. when the execution context is destroyed or
   // when the loader is about to be destroyed, as a pre-finalizer.
-  loader()->stop();
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Loader()->Stop();
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   // Loading should have been cancelled when |stop| was called so no resources
   // should have been received by the test even though
   // |serveAsynchronousRequests| was called.
-  ASSERT_FALSE(resources());
+  ASSERT_FALSE(Resources());
 }
 
 }  // namespace

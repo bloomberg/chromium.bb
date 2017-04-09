@@ -29,11 +29,11 @@
 namespace blink {
 
 DocumentFragment::DocumentFragment(Document* document,
-                                   ConstructionType constructionType)
-    : ContainerNode(document, constructionType) {}
+                                   ConstructionType construction_type)
+    : ContainerNode(document, construction_type) {}
 
-DocumentFragment* DocumentFragment::create(Document& document) {
-  return new DocumentFragment(&document, Node::CreateDocumentFragment);
+DocumentFragment* DocumentFragment::Create(Document& document) {
+  return new DocumentFragment(&document, Node::kCreateDocumentFragment);
 }
 
 String DocumentFragment::nodeName() const {
@@ -44,7 +44,7 @@ Node::NodeType DocumentFragment::getNodeType() const {
   return kDocumentFragmentNode;
 }
 
-bool DocumentFragment::childTypeAllowed(NodeType type) const {
+bool DocumentFragment::ChildTypeAllowed(NodeType type) const {
   switch (type) {
     case kElementNode:
     case kProcessingInstructionNode:
@@ -58,24 +58,24 @@ bool DocumentFragment::childTypeAllowed(NodeType type) const {
 }
 
 Node* DocumentFragment::cloneNode(bool deep, ExceptionState&) {
-  DocumentFragment* clone = create(document());
+  DocumentFragment* clone = Create(GetDocument());
   if (deep)
-    cloneChildNodes(clone);
+    CloneChildNodes(clone);
   return clone;
 }
 
-void DocumentFragment::parseHTML(const String& source,
-                                 Element* contextElement,
-                                 ParserContentPolicy parserContentPolicy) {
-  HTMLDocumentParser::parseDocumentFragment(source, this, contextElement,
-                                            parserContentPolicy);
+void DocumentFragment::ParseHTML(const String& source,
+                                 Element* context_element,
+                                 ParserContentPolicy parser_content_policy) {
+  HTMLDocumentParser::ParseDocumentFragment(source, this, context_element,
+                                            parser_content_policy);
 }
 
-bool DocumentFragment::parseXML(const String& source,
-                                Element* contextElement,
-                                ParserContentPolicy parserContentPolicy) {
-  return XMLDocumentParser::parseDocumentFragment(source, this, contextElement,
-                                                  parserContentPolicy);
+bool DocumentFragment::ParseXML(const String& source,
+                                Element* context_element,
+                                ParserContentPolicy parser_content_policy) {
+  return XMLDocumentParser::ParseDocumentFragment(source, this, context_element,
+                                                  parser_content_policy);
 }
 
 }  // namespace blink

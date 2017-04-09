@@ -14,7 +14,7 @@ class WebString;
 
 class WebCSSParser {
  public:
-  BLINK_EXPORT static bool parseColor(WebColor*, const WebString&);
+  BLINK_EXPORT static bool ParseColor(WebColor*, const WebString&);
 };
 
 }  // namespace blink

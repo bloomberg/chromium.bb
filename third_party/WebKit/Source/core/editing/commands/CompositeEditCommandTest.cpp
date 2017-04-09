@@ -18,29 +18,31 @@ class SampleCommand final : public CompositeEditCommand {
  public:
   SampleCommand(Document&);
 
-  void insertNodeBefore(
-      Node*,
-      Node* refChild,
-      EditingState*,
-      ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
+  void InsertNodeBefore(Node*,
+                        Node* ref_child,
+                        EditingState*,
+                        ShouldAssumeContentIsAlwaysEditable =
+                            kDoNotAssumeContentIsAlwaysEditable);
 
   // CompositeEditCommand member implementations
-  void doApply(EditingState*) final {}
-  InputEvent::InputType inputType() const final {
-    return InputEvent::InputType::None;
+  void DoApply(EditingState*) final {}
+  InputEvent::InputType GetInputType() const final {
+    return InputEvent::InputType::kNone;
   }
 };
 
 SampleCommand::SampleCommand(Document& document)
     : CompositeEditCommand(document) {}
 
-void SampleCommand::insertNodeBefore(
-    Node* insertChild,
-    Node* refChild,
-    EditingState* editingState,
-    ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable) {
-  CompositeEditCommand::insertNodeBefore(insertChild, refChild, editingState,
-                                         shouldAssumeContentIsAlwaysEditable);
+void SampleCommand::InsertNodeBefore(
+    Node* insert_child,
+    Node* ref_child,
+    EditingState* editing_state,
+    ShouldAssumeContentIsAlwaysEditable
+        should_assume_content_is_always_editable) {
+  CompositeEditCommand::InsertNodeBefore(
+      insert_child, ref_child, editing_state,
+      should_assume_content_is_always_editable);
 }
 
 }  // namespace
@@ -48,55 +50,55 @@ void SampleCommand::insertNodeBefore(
 class CompositeEditCommandTest : public EditingTestBase {};
 
 TEST_F(CompositeEditCommandTest, insertNodeBefore) {
-  setBodyContent("<div contenteditable><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(document());
-  Node* insertChild = document().createTextNode("foo");
-  Element* refChild = document().querySelector("b");
-  Element* div = document().querySelector("div");
+  SetBodyContent("<div contenteditable><b></b></div>");
+  SampleCommand& sample = *new SampleCommand(GetDocument());
+  Node* insert_child = GetDocument().createTextNode("foo");
+  Element* ref_child = GetDocument().QuerySelector("b");
+  Element* div = GetDocument().QuerySelector("div");
 
-  EditingState editingState;
-  sample.insertNodeBefore(insertChild, refChild, &editingState);
-  EXPECT_FALSE(editingState.isAborted());
+  EditingState editing_state;
+  sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
+  EXPECT_FALSE(editing_state.IsAborted());
   EXPECT_EQ("foo<b></b>", div->innerHTML());
 }
 
 TEST_F(CompositeEditCommandTest, insertNodeBeforeInUneditable) {
-  setBodyContent("<div><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(document());
-  Node* insertChild = document().createTextNode("foo");
-  Element* refChild = document().querySelector("b");
+  SetBodyContent("<div><b></b></div>");
+  SampleCommand& sample = *new SampleCommand(GetDocument());
+  Node* insert_child = GetDocument().createTextNode("foo");
+  Element* ref_child = GetDocument().QuerySelector("b");
 
-  EditingState editingState;
-  sample.insertNodeBefore(insertChild, refChild, &editingState);
-  EXPECT_TRUE(editingState.isAborted());
+  EditingState editing_state;
+  sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
+  EXPECT_TRUE(editing_state.IsAborted());
 }
 
 TEST_F(CompositeEditCommandTest, insertNodeBeforeDisconnectedNode) {
-  setBodyContent("<div><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(document());
-  Node* insertChild = document().createTextNode("foo");
-  Element* refChild = document().querySelector("b");
-  Element* div = document().querySelector("div");
+  SetBodyContent("<div><b></b></div>");
+  SampleCommand& sample = *new SampleCommand(GetDocument());
+  Node* insert_child = GetDocument().createTextNode("foo");
+  Element* ref_child = GetDocument().QuerySelector("b");
+  Element* div = GetDocument().QuerySelector("div");
   div->remove();
 
-  EditingState editingState;
-  sample.insertNodeBefore(insertChild, refChild, &editingState);
-  EXPECT_FALSE(editingState.isAborted());
+  EditingState editing_state;
+  sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
+  EXPECT_FALSE(editing_state.IsAborted());
   EXPECT_EQ("<b></b>", div->innerHTML())
       << "InsertNodeBeforeCommand does nothing for disconnected node";
 }
 
 TEST_F(CompositeEditCommandTest, insertNodeBeforeWithDirtyLayoutTree) {
-  setBodyContent("<div><b></b></div>");
-  SampleCommand& sample = *new SampleCommand(document());
-  Node* insertChild = document().createTextNode("foo");
-  Element* refChild = document().querySelector("b");
-  Element* div = document().querySelector("div");
+  SetBodyContent("<div><b></b></div>");
+  SampleCommand& sample = *new SampleCommand(GetDocument());
+  Node* insert_child = GetDocument().createTextNode("foo");
+  Element* ref_child = GetDocument().QuerySelector("b");
+  Element* div = GetDocument().QuerySelector("div");
   div->setAttribute(HTMLNames::contenteditableAttr, "true");
 
-  EditingState editingState;
-  sample.insertNodeBefore(insertChild, refChild, &editingState);
-  EXPECT_FALSE(editingState.isAborted());
+  EditingState editing_state;
+  sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
+  EXPECT_FALSE(editing_state.IsAborted());
   EXPECT_EQ("foo<b></b>", div->innerHTML());
 }
 

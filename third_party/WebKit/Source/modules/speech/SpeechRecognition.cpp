@@ -36,140 +36,141 @@
 
 namespace blink {
 
-SpeechRecognition* SpeechRecognition::create(ExecutionContext* context) {
-  ASSERT(context && context->isDocument());
-  Document* document = toDocument(context);
+SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
+  ASSERT(context && context->IsDocument());
+  Document* document = ToDocument(context);
   ASSERT(document);
-  return new SpeechRecognition(document->page(), context);
+  return new SpeechRecognition(document->GetPage(), context);
 }
 
-void SpeechRecognition::start(ExceptionState& exceptionState) {
-  if (!m_controller)
+void SpeechRecognition::start(ExceptionState& exception_state) {
+  if (!controller_)
     return;
 
-  if (m_started) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "recognition has already started.");
+  if (started_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "recognition has already started.");
     return;
   }
 
-  m_finalResults.clear();
-  m_controller->start(this, m_grammars, m_lang, m_continuous, m_interimResults,
-                      m_maxAlternatives, m_audioTrack);
-  m_started = true;
+  final_results_.Clear();
+  controller_->Start(this, grammars_, lang_, continuous_, interim_results_,
+                     max_alternatives_, audio_track_);
+  started_ = true;
 }
 
 void SpeechRecognition::stopFunction() {
-  if (!m_controller)
+  if (!controller_)
     return;
 
-  if (m_started && !m_stopping) {
-    m_stopping = true;
-    m_controller->stop(this);
+  if (started_ && !stopping_) {
+    stopping_ = true;
+    controller_->Stop(this);
   }
 }
 
 void SpeechRecognition::abort() {
-  if (!m_controller)
+  if (!controller_)
     return;
 
-  if (m_started && !m_stopping) {
-    m_stopping = true;
-    m_controller->abort(this);
+  if (started_ && !stopping_) {
+    stopping_ = true;
+    controller_->Abort(this);
   }
 }
 
-void SpeechRecognition::didStartAudio() {
-  dispatchEvent(Event::create(EventTypeNames::audiostart));
+void SpeechRecognition::DidStartAudio() {
+  DispatchEvent(Event::Create(EventTypeNames::audiostart));
 }
 
-void SpeechRecognition::didStartSound() {
-  dispatchEvent(Event::create(EventTypeNames::soundstart));
+void SpeechRecognition::DidStartSound() {
+  DispatchEvent(Event::Create(EventTypeNames::soundstart));
 }
 
-void SpeechRecognition::didStartSpeech() {
-  dispatchEvent(Event::create(EventTypeNames::speechstart));
+void SpeechRecognition::DidStartSpeech() {
+  DispatchEvent(Event::Create(EventTypeNames::speechstart));
 }
 
-void SpeechRecognition::didEndSpeech() {
-  dispatchEvent(Event::create(EventTypeNames::speechend));
+void SpeechRecognition::DidEndSpeech() {
+  DispatchEvent(Event::Create(EventTypeNames::speechend));
 }
 
-void SpeechRecognition::didEndSound() {
-  dispatchEvent(Event::create(EventTypeNames::soundend));
+void SpeechRecognition::DidEndSound() {
+  DispatchEvent(Event::Create(EventTypeNames::soundend));
 }
 
-void SpeechRecognition::didEndAudio() {
-  dispatchEvent(Event::create(EventTypeNames::audioend));
+void SpeechRecognition::DidEndAudio() {
+  DispatchEvent(Event::Create(EventTypeNames::audioend));
 }
 
-void SpeechRecognition::didReceiveResults(
-    const HeapVector<Member<SpeechRecognitionResult>>& newFinalResults,
-    const HeapVector<Member<SpeechRecognitionResult>>& currentInterimResults) {
-  size_t resultIndex = m_finalResults.size();
+void SpeechRecognition::DidReceiveResults(
+    const HeapVector<Member<SpeechRecognitionResult>>& new_final_results,
+    const HeapVector<Member<SpeechRecognitionResult>>&
+        current_interim_results) {
+  size_t result_index = final_results_.size();
 
-  for (size_t i = 0; i < newFinalResults.size(); ++i)
-    m_finalResults.push_back(newFinalResults[i]);
+  for (size_t i = 0; i < new_final_results.size(); ++i)
+    final_results_.push_back(new_final_results[i]);
 
-  HeapVector<Member<SpeechRecognitionResult>> results = m_finalResults;
-  for (size_t i = 0; i < currentInterimResults.size(); ++i)
-    results.push_back(currentInterimResults[i]);
+  HeapVector<Member<SpeechRecognitionResult>> results = final_results_;
+  for (size_t i = 0; i < current_interim_results.size(); ++i)
+    results.push_back(current_interim_results[i]);
 
-  dispatchEvent(SpeechRecognitionEvent::createResult(resultIndex, results));
+  DispatchEvent(SpeechRecognitionEvent::CreateResult(result_index, results));
 }
 
-void SpeechRecognition::didReceiveNoMatch(SpeechRecognitionResult* result) {
-  dispatchEvent(SpeechRecognitionEvent::createNoMatch(result));
+void SpeechRecognition::DidReceiveNoMatch(SpeechRecognitionResult* result) {
+  DispatchEvent(SpeechRecognitionEvent::CreateNoMatch(result));
 }
 
-void SpeechRecognition::didReceiveError(SpeechRecognitionError* error) {
-  dispatchEvent(error);
-  m_started = false;
+void SpeechRecognition::DidReceiveError(SpeechRecognitionError* error) {
+  DispatchEvent(error);
+  started_ = false;
 }
 
-void SpeechRecognition::didStart() {
-  dispatchEvent(Event::create(EventTypeNames::start));
+void SpeechRecognition::DidStart() {
+  DispatchEvent(Event::Create(EventTypeNames::start));
 }
 
-void SpeechRecognition::didEnd() {
-  m_started = false;
-  m_stopping = false;
+void SpeechRecognition::DidEnd() {
+  started_ = false;
+  stopping_ = false;
   // If m_controller is null, this is being aborted from the ExecutionContext
   // being detached, so don't dispatch an event.
-  if (m_controller)
-    dispatchEvent(Event::create(EventTypeNames::end));
+  if (controller_)
+    DispatchEvent(Event::Create(EventTypeNames::end));
 }
 
-const AtomicString& SpeechRecognition::interfaceName() const {
+const AtomicString& SpeechRecognition::InterfaceName() const {
   return EventTargetNames::SpeechRecognition;
 }
 
-ExecutionContext* SpeechRecognition::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
+ExecutionContext* SpeechRecognition::GetExecutionContext() const {
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void SpeechRecognition::contextDestroyed(ExecutionContext*) {
-  m_controller = nullptr;
-  if (hasPendingActivity())
+void SpeechRecognition::ContextDestroyed(ExecutionContext*) {
+  controller_ = nullptr;
+  if (HasPendingActivity())
     abort();
 }
 
-bool SpeechRecognition::hasPendingActivity() const {
-  return m_started;
+bool SpeechRecognition::HasPendingActivity() const {
+  return started_;
 }
 
 SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
     : ContextLifecycleObserver(context),
-      m_grammars(SpeechGrammarList::create()),  // FIXME: The spec is not clear
-                                                // on the default value for the
-                                                // grammars attribute.
-      m_audioTrack(nullptr),
-      m_continuous(false),
-      m_interimResults(false),
-      m_maxAlternatives(1),
-      m_controller(SpeechRecognitionController::from(page)),
-      m_started(false),
-      m_stopping(false) {
+      grammars_(SpeechGrammarList::Create()),  // FIXME: The spec is not clear
+                                               // on the default value for the
+                                               // grammars attribute.
+      audio_track_(nullptr),
+      continuous_(false),
+      interim_results_(false),
+      max_alternatives_(1),
+      controller_(SpeechRecognitionController::From(page)),
+      started_(false),
+      stopping_(false) {
   // FIXME: Need to hook up with Page to get notified when the visibility
   // changes.
 }
@@ -177,12 +178,12 @@ SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
 SpeechRecognition::~SpeechRecognition() {}
 
 DEFINE_TRACE(SpeechRecognition) {
-  visitor->trace(m_grammars);
-  visitor->trace(m_audioTrack);
-  visitor->trace(m_controller);
-  visitor->trace(m_finalResults);
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(grammars_);
+  visitor->Trace(audio_track_);
+  visitor->Trace(controller_);
+  visitor->Trace(final_results_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

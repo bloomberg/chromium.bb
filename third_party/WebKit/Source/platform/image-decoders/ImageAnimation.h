@@ -42,9 +42,9 @@ namespace blink {
 //     non-negative loop counts identically.
 //   * By making the other two constants negative, we avoid conflicts with any
 //     real loop count values.
-const int cAnimationLoopOnce = 0;
-const int cAnimationLoopInfinite = -1;
-const int cAnimationNone = -2;
+const int kCAnimationLoopOnce = 0;
+const int kCAnimationLoopInfinite = -1;
+const int kCAnimationNone = -2;
 
 }  // namespace blink
 

@@ -63,126 +63,128 @@ namespace blink {
 
 namespace {
 
-String getFrameAttribute(HTMLFrameOwnerElement* frameOwner,
-                         const QualifiedName& attrName,
+String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
+                         const QualifiedName& attr_name,
                          bool truncate) {
-  String attrValue;
-  if (frameOwner->hasAttribute(attrName)) {
-    attrValue = frameOwner->getAttribute(attrName);
-    if (truncate && attrValue.length() > 100)
-      attrValue = attrValue.substring(0, 100);  // Truncate to 100 chars
+  String attr_value;
+  if (frame_owner->hasAttribute(attr_name)) {
+    attr_value = frame_owner->getAttribute(attr_name);
+    if (truncate && attr_value.length() > 100)
+      attr_value = attr_value.Substring(0, 100);  // Truncate to 100 chars
   }
-  return attrValue;
+  return attr_value;
 }
 
-const char* sameOriginAttribution(Frame* observerFrame, Frame* culpritFrame) {
-  if (observerFrame == culpritFrame)
+const char* SameOriginAttribution(Frame* observer_frame, Frame* culprit_frame) {
+  if (observer_frame == culprit_frame)
     return kSameOriginSelfAttribution;
-  if (observerFrame->tree().isDescendantOf(culpritFrame))
+  if (observer_frame->Tree().IsDescendantOf(culprit_frame))
     return kSameOriginAncestorAttribution;
-  if (culpritFrame->tree().isDescendantOf(observerFrame))
+  if (culprit_frame->Tree().IsDescendantOf(observer_frame))
     return kSameOriginDescendantAttribution;
   return kSameOriginAttribution;
 }
 
 }  // namespace
 
-static double toTimeOrigin(LocalFrame* frame) {
+static double ToTimeOrigin(LocalFrame* frame) {
   if (!frame)
     return 0.0;
 
-  Document* document = frame->document();
+  Document* document = frame->GetDocument();
   if (!document)
     return 0.0;
 
-  DocumentLoader* loader = document->loader();
+  DocumentLoader* loader = document->Loader();
   if (!loader)
     return 0.0;
 
-  return loader->timing().referenceMonotonicTime();
+  return loader->GetTiming().ReferenceMonotonicTime();
 }
 
 Performance::Performance(LocalFrame* frame)
     : PerformanceBase(
-          toTimeOrigin(frame),
-          TaskRunnerHelper::get(TaskType::PerformanceTimeline, frame)),
+          ToTimeOrigin(frame),
+          TaskRunnerHelper::Get(TaskType::kPerformanceTimeline, frame)),
       DOMWindowClient(frame) {}
 
 Performance::~Performance() {
 }
 
-ExecutionContext* Performance::getExecutionContext() const {
-  if (!frame())
+ExecutionContext* Performance::GetExecutionContext() const {
+  if (!GetFrame())
     return nullptr;
-  return frame()->document();
+  return GetFrame()->GetDocument();
 }
 
 MemoryInfo* Performance::memory() {
-  return MemoryInfo::create();
+  return MemoryInfo::Create();
 }
 
 PerformanceNavigation* Performance::navigation() const {
-  if (!m_navigation)
-    m_navigation = PerformanceNavigation::create(frame());
+  if (!navigation_)
+    navigation_ = PerformanceNavigation::Create(GetFrame());
 
-  return m_navigation.get();
+  return navigation_.Get();
 }
 
 PerformanceTiming* Performance::timing() const {
-  if (!m_timing)
-    m_timing = PerformanceTiming::create(frame());
+  if (!timing_)
+    timing_ = PerformanceTiming::Create(GetFrame());
 
-  return m_timing.get();
+  return timing_.Get();
 }
 
-PerformanceNavigationTiming* Performance::createNavigationTimingInstance() {
+PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
   if (!RuntimeEnabledFeatures::performanceNavigationTiming2Enabled())
     return nullptr;
-  if (!frame())
+  if (!GetFrame())
     return nullptr;
-  const DocumentLoader* documentLoader = frame()->loader().documentLoader();
-  DCHECK(documentLoader);
-  ResourceTimingInfo* info = documentLoader->getNavigationTimingInfo();
+  const DocumentLoader* document_loader =
+      GetFrame()->Loader().GetDocumentLoader();
+  DCHECK(document_loader);
+  ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
   if (!info)
     return nullptr;
-  return new PerformanceNavigationTiming(frame(), info, timeOrigin());
+  return new PerformanceNavigationTiming(GetFrame(), info, TimeOrigin());
 }
 
-void Performance::updateLongTaskInstrumentation() {
-  DCHECK(frame());
-  if (!frame()->document())
+void Performance::UpdateLongTaskInstrumentation() {
+  DCHECK(GetFrame());
+  if (!GetFrame()->GetDocument())
     return;
 
-  if (hasObserverFor(PerformanceEntry::LongTask)) {
-    UseCounter::count(frame()->localFrameRoot(), UseCounter::LongTaskObserver);
-    frame()->performanceMonitor()->subscribe(PerformanceMonitor::kLongTask,
-                                             kLongTaskThreshold, this);
+  if (HasObserverFor(PerformanceEntry::kLongTask)) {
+    UseCounter::Count(GetFrame()->LocalFrameRoot(),
+                      UseCounter::kLongTaskObserver);
+    GetFrame()->GetPerformanceMonitor()->Subscribe(
+        PerformanceMonitor::kLongTask, kLongTaskThreshold, this);
   } else {
-    frame()->performanceMonitor()->unsubscribeAll(this);
+    GetFrame()->GetPerformanceMonitor()->UnsubscribeAll(this);
   }
 }
 
-ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  result.add("timing", timing()->toJSONForBinding(scriptState));
-  result.add("navigation", navigation()->toJSONForBinding(scriptState));
-  return result.scriptValue();
+ScriptValue Performance::toJSONForBinding(ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  result.Add("timing", timing()->toJSONForBinding(script_state));
+  result.Add("navigation", navigation()->toJSONForBinding(script_state));
+  return result.GetScriptValue();
 }
 
 DEFINE_TRACE(Performance) {
-  visitor->trace(m_navigation);
-  visitor->trace(m_timing);
-  PerformanceBase::trace(visitor);
-  PerformanceMonitor::Client::trace(visitor);
-  DOMWindowClient::trace(visitor);
+  visitor->Trace(navigation_);
+  visitor->Trace(timing_);
+  PerformanceBase::Trace(visitor);
+  PerformanceMonitor::Client::Trace(visitor);
+  DOMWindowClient::Trace(visitor);
 }
 
-static bool canAccessOrigin(Frame* frame1, Frame* frame2) {
-  SecurityOrigin* securityOrigin1 =
-      frame1->securityContext()->getSecurityOrigin();
-  SecurityOrigin* securityOrigin2 =
-      frame2->securityContext()->getSecurityOrigin();
-  return securityOrigin1->canAccess(securityOrigin2);
+static bool CanAccessOrigin(Frame* frame1, Frame* frame2) {
+  SecurityOrigin* security_origin1 =
+      frame1->GetSecurityContext()->GetSecurityOrigin();
+  SecurityOrigin* security_origin2 =
+      frame2->GetSecurityContext()->GetSecurityOrigin();
+  return security_origin1->CanAccess(security_origin2);
 }
 
 /**
@@ -190,73 +192,74 @@ static bool canAccessOrigin(Frame* frame1, Frame* frame2) {
  * See detailed Security doc here: http://bit.ly/2duD3F7
  */
 // static
-std::pair<String, DOMWindow*> Performance::sanitizedAttribution(
-    ExecutionContext* taskContext,
-    bool hasMultipleContexts,
-    LocalFrame* observerFrame) {
-  if (hasMultipleContexts) {
+std::pair<String, DOMWindow*> Performance::SanitizedAttribution(
+    ExecutionContext* task_context,
+    bool has_multiple_contexts,
+    LocalFrame* observer_frame) {
+  if (has_multiple_contexts) {
     // Unable to attribute, multiple script execution contents were involved.
     return std::make_pair(kAmbiguousAttribution, nullptr);
   }
 
-  if (!taskContext || !taskContext->isDocument() ||
-      !toDocument(taskContext)->frame()) {
+  if (!task_context || !task_context->IsDocument() ||
+      !ToDocument(task_context)->GetFrame()) {
     // Unable to attribute as no script was involved.
     return std::make_pair(kUnknownAttribution, nullptr);
   }
 
   // Exactly one culprit location, attribute based on origin boundary.
-  Frame* culpritFrame = toDocument(taskContext)->frame();
-  DCHECK(culpritFrame);
-  if (canAccessOrigin(observerFrame, culpritFrame)) {
+  Frame* culprit_frame = ToDocument(task_context)->GetFrame();
+  DCHECK(culprit_frame);
+  if (CanAccessOrigin(observer_frame, culprit_frame)) {
     // From accessible frames or same origin, return culprit location URL.
-    return std::make_pair(sameOriginAttribution(observerFrame, culpritFrame),
-                          culpritFrame->domWindow());
+    return std::make_pair(SameOriginAttribution(observer_frame, culprit_frame),
+                          culprit_frame->DomWindow());
   }
   // For cross-origin, if the culprit is the descendant or ancestor of
   // observer then indicate the *closest* cross-origin frame between
   // the observer and the culprit, in the corresponding direction.
-  if (culpritFrame->tree().isDescendantOf(observerFrame)) {
+  if (culprit_frame->Tree().IsDescendantOf(observer_frame)) {
     // If the culprit is a descendant of the observer, then walk up the tree
     // from culprit to observer, and report the *last* cross-origin (from
     // observer) frame.  If no intermediate cross-origin frame is found, then
     // report the culprit directly.
-    Frame* lastCrossOriginFrame = culpritFrame;
-    for (Frame* frame = culpritFrame; frame != observerFrame;
-         frame = frame->tree().parent()) {
-      if (!canAccessOrigin(observerFrame, frame)) {
-        lastCrossOriginFrame = frame;
+    Frame* last_cross_origin_frame = culprit_frame;
+    for (Frame* frame = culprit_frame; frame != observer_frame;
+         frame = frame->Tree().Parent()) {
+      if (!CanAccessOrigin(observer_frame, frame)) {
+        last_cross_origin_frame = frame;
       }
     }
     return std::make_pair(kCrossOriginDescendantAttribution,
-                          lastCrossOriginFrame->domWindow());
+                          last_cross_origin_frame->DomWindow());
   }
-  if (observerFrame->tree().isDescendantOf(culpritFrame)) {
+  if (observer_frame->Tree().IsDescendantOf(culprit_frame)) {
     return std::make_pair(kCrossOriginAncestorAttribution, nullptr);
   }
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
-void Performance::reportLongTask(double startTime,
-                                 double endTime,
-                                 ExecutionContext* taskContext,
-                                 bool hasMultipleContexts) {
-  if (!frame())
+void Performance::ReportLongTask(double start_time,
+                                 double end_time,
+                                 ExecutionContext* task_context,
+                                 bool has_multiple_contexts) {
+  if (!GetFrame())
     return;
-  std::pair<String, DOMWindow*> attribution = Performance::sanitizedAttribution(
-      taskContext, hasMultipleContexts, frame());
-  DOMWindow* culpritDomWindow = attribution.second;
-  if (!culpritDomWindow || !culpritDomWindow->frame() ||
-      !culpritDomWindow->frame()->deprecatedLocalOwner()) {
-    addLongTaskTiming(startTime, endTime, attribution.first, emptyString,
-                      emptyString, emptyString);
+  std::pair<String, DOMWindow*> attribution = Performance::SanitizedAttribution(
+      task_context, has_multiple_contexts, GetFrame());
+  DOMWindow* culprit_dom_window = attribution.second;
+  if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
+      !culprit_dom_window->GetFrame()->DeprecatedLocalOwner()) {
+    AddLongTaskTiming(start_time, end_time, attribution.first, g_empty_string,
+                      g_empty_string, g_empty_string);
   } else {
-    HTMLFrameOwnerElement* frameOwner =
-        culpritDomWindow->frame()->deprecatedLocalOwner();
-    addLongTaskTiming(startTime, endTime, attribution.first,
-                      getFrameAttribute(frameOwner, HTMLNames::srcAttr, false),
-                      getFrameAttribute(frameOwner, HTMLNames::idAttr, false),
-                      getFrameAttribute(frameOwner, HTMLNames::nameAttr, true));
+    HTMLFrameOwnerElement* frame_owner =
+        culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
+    AddLongTaskTiming(
+        start_time, end_time, attribution.first,
+        GetFrameAttribute(frame_owner, HTMLNames::srcAttr, false),
+        GetFrameAttribute(frame_owner, HTMLNames::idAttr, false),
+        GetFrameAttribute(frame_owner, HTMLNames::nameAttr, true));
   }
 }
 

@@ -22,54 +22,56 @@ class RemoteFrameOwner final
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
 
  public:
-  static RemoteFrameOwner* create(
+  static RemoteFrameOwner* Create(
       SandboxFlags flags,
-      const WebFrameOwnerProperties& frameOwnerProperties) {
-    return new RemoteFrameOwner(flags, frameOwnerProperties);
+      const WebFrameOwnerProperties& frame_owner_properties) {
+    return new RemoteFrameOwner(flags, frame_owner_properties);
   }
 
   // FrameOwner overrides:
-  Frame* contentFrame() const override { return m_frame.get(); }
-  void setContentFrame(Frame&) override;
-  void clearContentFrame() override;
-  SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
-  void setSandboxFlags(SandboxFlags flags) { m_sandboxFlags = flags; }
-  void dispatchLoad() override;
+  Frame* ContentFrame() const override { return frame_.Get(); }
+  void SetContentFrame(Frame&) override;
+  void ClearContentFrame() override;
+  SandboxFlags GetSandboxFlags() const override { return sandbox_flags_; }
+  void SetSandboxFlags(SandboxFlags flags) { sandbox_flags_ = flags; }
+  void DispatchLoad() override;
   // TODO(dcheng): Implement.
-  bool canRenderFallbackContent() const override { return false; }
-  void renderFallbackContent() override {}
+  bool CanRenderFallbackContent() const override { return false; }
+  void RenderFallbackContent() override {}
 
-  AtomicString browsingContextContainerName() const override {
-    return m_browsingContextContainerName;
+  AtomicString BrowsingContextContainerName() const override {
+    return browsing_context_container_name_;
   }
-  ScrollbarMode scrollingMode() const override { return m_scrolling; }
-  int marginWidth() const override { return m_marginWidth; }
-  int marginHeight() const override { return m_marginHeight; }
-  bool allowFullscreen() const override { return m_allowFullscreen; }
-  bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
-  bool isDisplayNone() const override { return m_isDisplayNone; }
-  AtomicString csp() const override { return m_csp; }
-  const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override {
-    return m_allowedFeatures;
+  ScrollbarMode ScrollingMode() const override { return scrolling_; }
+  int MarginWidth() const override { return margin_width_; }
+  int MarginHeight() const override { return margin_height_; }
+  bool AllowFullscreen() const override { return allow_fullscreen_; }
+  bool AllowPaymentRequest() const override { return allow_payment_request_; }
+  bool IsDisplayNone() const override { return is_display_none_; }
+  AtomicString Csp() const override { return csp_; }
+  const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override {
+    return allowed_features_;
   }
 
-  void setBrowsingContextContainerName(const WebString& name) {
-    m_browsingContextContainerName = name;
+  void SetBrowsingContextContainerName(const WebString& name) {
+    browsing_context_container_name_ = name;
   }
-  void setScrollingMode(WebFrameOwnerProperties::ScrollingMode);
-  void setMarginWidth(int marginWidth) { m_marginWidth = marginWidth; }
-  void setMarginHeight(int marginHeight) { m_marginHeight = marginHeight; }
-  void setAllowFullscreen(bool allowFullscreen) {
-    m_allowFullscreen = allowFullscreen;
+  void SetScrollingMode(WebFrameOwnerProperties::ScrollingMode);
+  void SetMarginWidth(int margin_width) { margin_width_ = margin_width; }
+  void SetMarginHeight(int margin_height) { margin_height_ = margin_height; }
+  void SetAllowFullscreen(bool allow_fullscreen) {
+    allow_fullscreen_ = allow_fullscreen;
   }
-  void setAllowPaymentRequest(bool allowPaymentRequest) {
-    m_allowPaymentRequest = allowPaymentRequest;
+  void SetAllowPaymentRequest(bool allow_payment_request) {
+    allow_payment_request_ = allow_payment_request;
   }
-  void setIsDisplayNone(bool isDisplayNone) { m_isDisplayNone = isDisplayNone; }
-  void setCsp(const WebString& csp) { m_csp = csp; }
-  void setAllowedFeatures(
-      const WebVector<WebFeaturePolicyFeature>& allowedFeatures) {
-    m_allowedFeatures = allowedFeatures;
+  void SetIsDisplayNone(bool is_display_none) {
+    is_display_none_ = is_display_none;
+  }
+  void SetCsp(const WebString& csp) { csp_ = csp; }
+  void SetAllowedFeatures(
+      const WebVector<WebFeaturePolicyFeature>& allowed_features) {
+    allowed_features_ = allowed_features;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -79,27 +81,27 @@ class RemoteFrameOwner final
 
   // Intentionally private to prevent redundant checks when the type is
   // already HTMLFrameOwnerElement.
-  bool isLocal() const override { return false; }
-  bool isRemote() const override { return true; }
+  bool IsLocal() const override { return false; }
+  bool IsRemote() const override { return true; }
 
-  Member<Frame> m_frame;
-  SandboxFlags m_sandboxFlags;
-  AtomicString m_browsingContextContainerName;
-  ScrollbarMode m_scrolling;
-  int m_marginWidth;
-  int m_marginHeight;
-  bool m_allowFullscreen;
-  bool m_allowPaymentRequest;
-  bool m_isDisplayNone;
-  WebString m_csp;
-  WebVector<WebFeaturePolicyFeature> m_allowedFeatures;
+  Member<Frame> frame_;
+  SandboxFlags sandbox_flags_;
+  AtomicString browsing_context_container_name_;
+  ScrollbarMode scrolling_;
+  int margin_width_;
+  int margin_height_;
+  bool allow_fullscreen_;
+  bool allow_payment_request_;
+  bool is_display_none_;
+  WebString csp_;
+  WebVector<WebFeaturePolicyFeature> allowed_features_;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameOwner,
                   FrameOwner,
                   owner,
-                  owner->isRemote(),
-                  owner.isRemote());
+                  owner->IsRemote(),
+                  owner.IsRemote());
 
 }  // namespace blink
 

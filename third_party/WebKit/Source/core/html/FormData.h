@@ -55,11 +55,11 @@ class CORE_EXPORT FormData final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FormData* create(HTMLFormElement* form = 0) {
+  static FormData* Create(HTMLFormElement* form = 0) {
     return new FormData(form);
   }
 
-  static FormData* create(const WTF::TextEncoding& encoding) {
+  static FormData* Create(const WTF::TextEncoding& encoding) {
     return new FormData(encoding);
   }
   DECLARE_TRACE();
@@ -79,28 +79,28 @@ class CORE_EXPORT FormData final
 
   // Internal functions.
 
-  const WTF::TextEncoding& encoding() const { return m_encoding; }
+  const WTF::TextEncoding& Encoding() const { return encoding_; }
   class Entry;
-  const HeapVector<Member<const Entry>>& entries() const { return m_entries; }
-  size_t size() const { return m_entries.size(); }
+  const HeapVector<Member<const Entry>>& Entries() const { return entries_; }
+  size_t size() const { return entries_.size(); }
   void append(const String& name, int value);
   void append(const String& name, Blob*, const String& filename = String());
-  String decode(const CString& data) const;
+  String Decode(const CString& data) const;
 
-  PassRefPtr<EncodedFormData> encodeFormData(
-      EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded);
-  PassRefPtr<EncodedFormData> encodeMultiPartFormData();
+  PassRefPtr<EncodedFormData> EncodeFormData(
+      EncodedFormData::EncodingType = EncodedFormData::kFormURLEncoded);
+  PassRefPtr<EncodedFormData> EncodeMultiPartFormData();
 
  private:
   explicit FormData(const WTF::TextEncoding&);
   explicit FormData(HTMLFormElement*);
-  void setEntry(const Entry*);
-  CString encodeAndNormalize(const String& key) const;
-  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+  void SetEntry(const Entry*);
+  CString EncodeAndNormalize(const String& key) const;
+  IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
-  WTF::TextEncoding m_encoding;
+  WTF::TextEncoding encoding_;
   // Entry pointers in m_entries never be nullptr.
-  HeapVector<Member<const Entry>> m_entries;
+  HeapVector<Member<const Entry>> entries_;
 };
 
 // Represents entry, which is a pair of a name and a value.
@@ -109,24 +109,24 @@ class CORE_EXPORT FormData final
 class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
  public:
   Entry(const CString& name, const CString& value)
-      : m_name(name), m_value(value) {}
+      : name_(name), value_(value) {}
   Entry(const CString& name, Blob* blob, const String& filename)
-      : m_name(name), m_blob(blob), m_filename(filename) {}
+      : name_(name), blob_(blob), filename_(filename) {}
   DECLARE_TRACE();
 
-  bool isString() const { return !m_blob; }
-  bool isFile() const { return m_blob; }
-  const CString& name() const { return m_name; }
-  const CString& value() const { return m_value; }
-  Blob* blob() const { return m_blob.get(); }
-  File* file() const;
-  const String& filename() const { return m_filename; }
+  bool IsString() const { return !blob_; }
+  bool isFile() const { return blob_; }
+  const CString& name() const { return name_; }
+  const CString& Value() const { return value_; }
+  Blob* GetBlob() const { return blob_.Get(); }
+  File* GetFile() const;
+  const String& Filename() const { return filename_; }
 
  private:
-  const CString m_name;
-  const CString m_value;
-  const Member<Blob> m_blob;
-  const String m_filename;
+  const CString name_;
+  const CString value_;
+  const Member<Blob> blob_;
+  const String filename_;
 };
 
 }  // namespace blink

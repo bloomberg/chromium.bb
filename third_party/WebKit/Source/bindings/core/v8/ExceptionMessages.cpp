@@ -35,124 +35,125 @@
 
 namespace blink {
 
-String ExceptionMessages::failedToConstruct(const char* type,
+String ExceptionMessages::FailedToConstruct(const char* type,
                                             const String& detail) {
   return "Failed to construct '" + String(type) +
-         (!detail.isEmpty() ? String("': " + detail) : String("'"));
+         (!detail.IsEmpty() ? String("': " + detail) : String("'"));
 }
 
-String ExceptionMessages::failedToEnumerate(const char* type,
+String ExceptionMessages::FailedToEnumerate(const char* type,
                                             const String& detail) {
   return "Failed to enumerate the properties of '" + String(type) +
-         (!detail.isEmpty() ? String("': " + detail) : String("'"));
+         (!detail.IsEmpty() ? String("': " + detail) : String("'"));
 }
 
-String ExceptionMessages::failedToExecute(const char* method,
+String ExceptionMessages::FailedToExecute(const char* method,
                                           const char* type,
                                           const String& detail) {
   return "Failed to execute '" + String(method) + "' on '" + String(type) +
-         (!detail.isEmpty() ? String("': " + detail) : String("'"));
+         (!detail.IsEmpty() ? String("': " + detail) : String("'"));
 }
 
-String ExceptionMessages::failedToGet(const char* property,
+String ExceptionMessages::FailedToGet(const char* property,
                                       const char* type,
                                       const String& detail) {
   return "Failed to read the '" + String(property) + "' property from '" +
          String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToSet(const char* property,
+String ExceptionMessages::FailedToSet(const char* property,
                                       const char* type,
                                       const String& detail) {
   return "Failed to set the '" + String(property) + "' property on '" +
          String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToDelete(const char* property,
+String ExceptionMessages::FailedToDelete(const char* property,
                                          const char* type,
                                          const String& detail) {
   return "Failed to delete the '" + String(property) + "' property from '" +
          String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToGetIndexed(const char* type,
+String ExceptionMessages::FailedToGetIndexed(const char* type,
                                              const String& detail) {
   return "Failed to read an indexed property from '" + String(type) + "': " +
          detail;
 }
 
-String ExceptionMessages::failedToSetIndexed(const char* type,
+String ExceptionMessages::FailedToSetIndexed(const char* type,
                                              const String& detail) {
   return "Failed to set an indexed property on '" + String(type) + "': " +
          detail;
 }
 
-String ExceptionMessages::failedToDeleteIndexed(const char* type,
+String ExceptionMessages::FailedToDeleteIndexed(const char* type,
                                                 const String& detail) {
   return "Failed to delete an indexed property from '" + String(type) + "': " +
          detail;
 }
 
-String ExceptionMessages::constructorNotCallableAsFunction(const char* type) {
-  return failedToConstruct(type,
+String ExceptionMessages::ConstructorNotCallableAsFunction(const char* type) {
+  return FailedToConstruct(type,
                            "Please use the 'new' operator, this DOM object "
                            "constructor cannot be called as a function.");
 }
 
-String ExceptionMessages::incorrectPropertyType(const String& property,
+String ExceptionMessages::IncorrectPropertyType(const String& property,
                                                 const String& detail) {
   return "The '" + property + "' property " + detail;
 }
 
-String ExceptionMessages::invalidArity(const char* expected,
+String ExceptionMessages::InvalidArity(const char* expected,
                                        unsigned provided) {
   return "Valid arities are: " + String(expected) + ", but " +
-         String::number(provided) + " arguments provided.";
+         String::Number(provided) + " arguments provided.";
 }
 
-String ExceptionMessages::argumentNullOrIncorrectType(
-    int argumentIndex,
-    const String& expectedType) {
-  return "The " + ordinalNumber(argumentIndex) +
-         " argument provided is either null, or an invalid " + expectedType +
+String ExceptionMessages::ArgumentNullOrIncorrectType(
+    int argument_index,
+    const String& expected_type) {
+  return "The " + OrdinalNumber(argument_index) +
+         " argument provided is either null, or an invalid " + expected_type +
          " object.";
 }
 
-String ExceptionMessages::notAnArrayTypeArgumentOrValue(int argumentIndex) {
+String ExceptionMessages::NotAnArrayTypeArgumentOrValue(int argument_index) {
   String kind;
-  if (argumentIndex)  // method argument
-    kind = ordinalNumber(argumentIndex) + " argument";
+  if (argument_index)  // method argument
+    kind = OrdinalNumber(argument_index) + " argument";
   else  // value, e.g. attribute setter
     kind = "value provided";
   return "The " + kind +
          " is neither an array, nor does it have indexed properties.";
 }
 
-String ExceptionMessages::notASequenceTypeProperty(const String& propertyName) {
-  return "'" + propertyName +
+String ExceptionMessages::NotASequenceTypeProperty(
+    const String& property_name) {
+  return "'" + property_name +
          "' property is neither an array, nor does it have indexed properties.";
 }
 
-String ExceptionMessages::notEnoughArguments(unsigned expected,
+String ExceptionMessages::NotEnoughArguments(unsigned expected,
                                              unsigned provided) {
-  return String::number(expected) + " argument" + (expected > 1 ? "s" : "") +
-         " required, but only " + String::number(provided) + " present.";
+  return String::Number(expected) + " argument" + (expected > 1 ? "s" : "") +
+         " required, but only " + String::Number(provided) + " present.";
 }
 
-String ExceptionMessages::notAFiniteNumber(double value, const char* name) {
+String ExceptionMessages::NotAFiniteNumber(double value, const char* name) {
   ASSERT(!std::isfinite(value));
-  return String::format("The %s is %s.", name,
+  return String::Format("The %s is %s.", name,
                         std::isinf(value) ? "infinite" : "not a number");
 }
 
-String ExceptionMessages::notAFiniteNumber(const Decimal& value,
+String ExceptionMessages::NotAFiniteNumber(const Decimal& value,
                                            const char* name) {
-  ASSERT(!value.isFinite());
-  return String::format("The %s is %s.", name,
-                        value.isInfinity() ? "infinite" : "not a number");
+  ASSERT(!value.IsFinite());
+  return String::Format("The %s is %s.", name,
+                        value.IsInfinity() ? "infinite" : "not a number");
 }
 
-String ExceptionMessages::ordinalNumber(int number) {
+String ExceptionMessages::OrdinalNumber(int number) {
   String suffix("th");
   switch (number % 10) {
     case 1:
@@ -168,24 +169,24 @@ String ExceptionMessages::ordinalNumber(int number) {
         suffix = "rd";
       break;
   }
-  return String::number(number) + suffix;
+  return String::Number(number) + suffix;
 }
 
-String ExceptionMessages::readOnly(const char* detail) {
-  DEFINE_STATIC_LOCAL(String, readOnly, ("This object is read-only."));
+String ExceptionMessages::ReadOnly(const char* detail) {
+  DEFINE_STATIC_LOCAL(String, read_only, ("This object is read-only."));
   return detail
-             ? String::format("This object is read-only, because %s.", detail)
-             : readOnly;
+             ? String::Format("This object is read-only, because %s.", detail)
+             : read_only;
 }
 
 template <>
-CORE_EXPORT String ExceptionMessages::formatNumber<float>(float number) {
-  return formatPotentiallyNonFiniteNumber(number);
+CORE_EXPORT String ExceptionMessages::FormatNumber<float>(float number) {
+  return FormatPotentiallyNonFiniteNumber(number);
 }
 
 template <>
-CORE_EXPORT String ExceptionMessages::formatNumber<double>(double number) {
-  return formatPotentiallyNonFiniteNumber(number);
+CORE_EXPORT String ExceptionMessages::FormatNumber<double>(double number) {
+  return FormatPotentiallyNonFiniteNumber(number);
 }
 
 }  // namespace blink

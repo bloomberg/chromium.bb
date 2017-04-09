@@ -41,10 +41,10 @@ class FloatPoint;
 class StyleResolverState;
 class ComputedStyle;
 
-CSSValue* valueForBasicShape(const ComputedStyle&, const BasicShape*);
-PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&,
+CSSValue* ValueForBasicShape(const ComputedStyle&, const BasicShape*);
+PassRefPtr<BasicShape> BasicShapeForValue(const StyleResolverState&,
                                           const CSSValue&);
-FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate&,
+FloatPoint FloatPointForCenterCoordinate(const BasicShapeCenterCoordinate&,
                                          const BasicShapeCenterCoordinate&,
                                          FloatSize);
 

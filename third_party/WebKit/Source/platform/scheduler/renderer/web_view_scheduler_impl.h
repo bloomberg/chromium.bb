@@ -41,20 +41,20 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   ~WebViewSchedulerImpl() override;
 
   // WebViewScheduler implementation:
-  void setPageVisible(bool page_visible) override;
-  std::unique_ptr<WebFrameScheduler> createFrameScheduler(
+  void SetPageVisible(bool page_visible) override;
+  std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext* blame_context) override;
-  void enableVirtualTime() override;
-  void disableVirtualTimeForTesting() override;
-  bool virtualTimeAllowedToAdvance() const override;
-  void setVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
-  void audioStateChanged(bool is_audio_playing) override;
-  bool hasActiveConnectionForTest() const override;
+  void EnableVirtualTime() override;
+  void DisableVirtualTimeForTesting() override;
+  bool VirtualTimeAllowedToAdvance() const override;
+  void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy) override;
+  void AudioStateChanged(bool is_audio_playing) override;
+  bool HasActiveConnectionForTest() const override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
 
-  std::unique_ptr<WebFrameSchedulerImpl> createWebFrameSchedulerImpl(
+  std::unique_ptr<WebFrameSchedulerImpl> CreateWebFrameSchedulerImpl(
       base::trace_event::BlameContext* blame_context);
 
   void DidStartLoading(unsigned long identifier);
@@ -76,7 +76,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   CPUTimeBudgetPool* BackgroundCPUTimeBudgetPool();
   void MaybeInitializeBackgroundCPUTimeBudgetPool();
 
-  void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
+  void SetAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
   void ApplyVirtualTimePolicyForLoading();
   void ApplyVirtualTimePolicyToTimers();
 

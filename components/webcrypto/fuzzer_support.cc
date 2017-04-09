@@ -23,7 +23,7 @@ class InitOnce : NON_EXPORTED_BASE(public blink::Platform) {
  public:
   InitOnce() {
     base::CommandLine::Init(0, nullptr);
-    blink::Platform::initialize(this);
+    blink::Platform::Initialize(this);
   }
   ~InitOnce() override {}
 };
@@ -37,17 +37,17 @@ void EnsureInitialized() {
 blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id) {
-  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+  DCHECK(blink::WebCryptoAlgorithm::IsHash(hash_id));
+  return blink::WebCryptoAlgorithm::AdoptParamsAndCreate(
       id,
       new blink::WebCryptoRsaHashedImportParams(
-          blink::WebCryptoAlgorithm::adoptParamsAndCreate(hash_id, nullptr)));
+          blink::WebCryptoAlgorithm::AdoptParamsAndCreate(hash_id, nullptr)));
 }
 
 blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoNamedCurve named_curve) {
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+  return blink::WebCryptoAlgorithm::AdoptParamsAndCreate(
       id, new blink::WebCryptoEcKeyImportParams(named_curve));
 }
 
@@ -58,26 +58,26 @@ blink::WebCryptoKeyUsageMask GetCompatibleKeyUsages(
   // SPKI format implies import of a public key, whereas PKCS8 implies import
   // of a private key. Pick usages that are compatible with a signature
   // algorithm.
-  return format == blink::WebCryptoKeyFormatSpki
-             ? blink::WebCryptoKeyUsageVerify
-             : blink::WebCryptoKeyUsageSign;
+  return format == blink::kWebCryptoKeyFormatSpki
+             ? blink::kWebCryptoKeyUsageVerify
+             : blink::kWebCryptoKeyUsageSign;
 }
 
 void ImportEcKeyFromDerFuzzData(const uint8_t* data,
                                 size_t size,
                                 blink::WebCryptoKeyFormat format) {
-  DCHECK(format == blink::WebCryptoKeyFormatSpki ||
-         format == blink::WebCryptoKeyFormatPkcs8);
+  DCHECK(format == blink::kWebCryptoKeyFormatSpki ||
+         format == blink::kWebCryptoKeyFormatPkcs8);
   EnsureInitialized();
 
   // There are 3 possible EC named curves. Fix this parameter. It shouldn't
   // matter based on the current implementation for PKCS8 or SPKI. But it
   // will have an impact when parsing JWK format.
-  blink::WebCryptoNamedCurve curve = blink::WebCryptoNamedCurveP384;
+  blink::WebCryptoNamedCurve curve = blink::kWebCryptoNamedCurveP384;
 
   // Always use ECDSA as the algorithm. Shouldn't make much difference for
   // non-JWK formats.
-  blink::WebCryptoAlgorithmId algorithm_id = blink::WebCryptoAlgorithmIdEcdsa;
+  blink::WebCryptoAlgorithmId algorithm_id = blink::kWebCryptoAlgorithmIdEcdsa;
 
   // Use key usages that are compatible with the chosen algorithm and key type.
   blink::WebCryptoKeyUsageMask usages = GetCompatibleKeyUsages(format);
@@ -111,25 +111,25 @@ void ImportEcKeyFromRawFuzzData(const uint8_t* data, size_t size) {
 
   switch (curve_index % 3) {
     case 0:
-      curve = blink::WebCryptoNamedCurveP256;
+      curve = blink::kWebCryptoNamedCurveP256;
       break;
     case 1:
-      curve = blink::WebCryptoNamedCurveP384;
+      curve = blink::kWebCryptoNamedCurveP384;
       break;
     default:
-      curve = blink::WebCryptoNamedCurveP521;
+      curve = blink::kWebCryptoNamedCurveP521;
       break;
   }
 
   // Always use ECDSA as the algorithm. Shouldn't make an difference for import.
-  blink::WebCryptoAlgorithmId algorithm_id = blink::WebCryptoAlgorithmIdEcdsa;
+  blink::WebCryptoAlgorithmId algorithm_id = blink::kWebCryptoAlgorithmIdEcdsa;
 
   // Use key usages that are compatible with the chosen algorithm and key type.
-  blink::WebCryptoKeyUsageMask usages = blink::WebCryptoKeyUsageVerify;
+  blink::WebCryptoKeyUsageMask usages = blink::kWebCryptoKeyUsageVerify;
 
   blink::WebCryptoKey key;
   webcrypto::Status status = webcrypto::ImportKey(
-      blink::WebCryptoKeyFormatRaw,
+      blink::kWebCryptoKeyFormatRaw,
       webcrypto::CryptoData(data, base::checked_cast<uint32_t>(size)),
       CreateEcImportAlgorithm(algorithm_id, curve), true, usages, &key);
 
@@ -144,19 +144,19 @@ void ImportEcKeyFromRawFuzzData(const uint8_t* data, size_t size) {
 void ImportRsaKeyFromDerFuzzData(const uint8_t* data,
                                  size_t size,
                                  blink::WebCryptoKeyFormat format) {
-  DCHECK(format == blink::WebCryptoKeyFormatSpki ||
-         format == blink::WebCryptoKeyFormatPkcs8);
+  DCHECK(format == blink::kWebCryptoKeyFormatSpki ||
+         format == blink::kWebCryptoKeyFormatPkcs8);
   EnsureInitialized();
 
   // There are several possible hash functions. Fix this parameter. It shouldn't
   // matter based on the current implementation for PKCS8 or SPKI. But it
   // will have an impact when parsing JWK format.
-  blink::WebCryptoAlgorithmId hash_id = blink::WebCryptoAlgorithmIdSha256;
+  blink::WebCryptoAlgorithmId hash_id = blink::kWebCryptoAlgorithmIdSha256;
 
   // Always use RSA-SSA PKCS#1 as the algorithm. Shouldn't make much difference
   // for non-JWK formats.
   blink::WebCryptoAlgorithmId algorithm_id =
-      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+      blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
 
   // Use key usages that are compatible with the chosen algorithm and key type.
   blink::WebCryptoKeyUsageMask usages = GetCompatibleKeyUsages(format);

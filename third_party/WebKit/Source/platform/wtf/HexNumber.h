@@ -26,8 +26,8 @@ namespace WTF {
 
 namespace Internal {
 
-const LChar lowerHexDigits[17] = "0123456789abcdef";
-const LChar upperHexDigits[17] = "0123456789ABCDEF";
+const LChar kLowerHexDigits[17] = "0123456789abcdef";
+const LChar kUpperHexDigits[17] = "0123456789ABCDEF";
 
 }  // namespace Internal
 
@@ -35,72 +35,72 @@ class HexNumber final {
   STATIC_ONLY(HexNumber);
 
  public:
-  enum HexConversionMode { Lowercase, Uppercase };
+  enum HexConversionMode { kLowercase, kUppercase };
 
   template <typename T>
-  static inline void appendByteAsHex(unsigned char byte,
+  static inline void AppendByteAsHex(unsigned char byte,
                                      T& destination,
-                                     HexConversionMode mode = Uppercase) {
-    const LChar* hexDigits = hexDigitsForMode(mode);
-    destination.append(hexDigits[byte >> 4]);
-    destination.append(hexDigits[byte & 0xF]);
+                                     HexConversionMode mode = kUppercase) {
+    const LChar* hex_digits = HexDigitsForMode(mode);
+    destination.Append(hex_digits[byte >> 4]);
+    destination.Append(hex_digits[byte & 0xF]);
   }
 
-  static inline void appendByteAsHex(unsigned char byte,
+  static inline void AppendByteAsHex(unsigned char byte,
                                      Vector<LChar>& destination,
-                                     HexConversionMode mode = Uppercase) {
-    const LChar* hexDigits = hexDigitsForMode(mode);
-    destination.push_back(hexDigits[byte >> 4]);
-    destination.push_back(hexDigits[byte & 0xF]);
+                                     HexConversionMode mode = kUppercase) {
+    const LChar* hex_digits = HexDigitsForMode(mode);
+    destination.push_back(hex_digits[byte >> 4]);
+    destination.push_back(hex_digits[byte & 0xF]);
   }
 
-  static inline void appendByteAsHex(unsigned char byte,
+  static inline void AppendByteAsHex(unsigned char byte,
                                      Vector<char>& destination,
-                                     HexConversionMode mode = Uppercase) {
-    const LChar* hexDigits = hexDigitsForMode(mode);
-    destination.push_back(hexDigits[byte >> 4]);
-    destination.push_back(hexDigits[byte & 0xF]);
+                                     HexConversionMode mode = kUppercase) {
+    const LChar* hex_digits = HexDigitsForMode(mode);
+    destination.push_back(hex_digits[byte >> 4]);
+    destination.push_back(hex_digits[byte & 0xF]);
   }
 
   template <typename T>
-  static inline void appendUnsignedAsHex(unsigned number,
+  static inline void AppendUnsignedAsHex(unsigned number,
                                          T& destination,
-                                         HexConversionMode mode = Uppercase) {
-    const LChar* hexDigits = hexDigitsForMode(mode);
+                                         HexConversionMode mode = kUppercase) {
+    const LChar* hex_digits = HexDigitsForMode(mode);
     Vector<LChar, 8> result;
     do {
-      result.push_front(hexDigits[number % 16]);
+      result.push_front(hex_digits[number % 16]);
       number >>= 4;
     } while (number > 0);
 
-    destination.append(result.data(), result.size());
+    destination.Append(result.Data(), result.size());
   }
 
   // Same as appendUnsignedAsHex, but using exactly 'desiredDigits' for the
   // conversion.
   template <typename T>
-  static inline void appendUnsignedAsHexFixedSize(
+  static inline void AppendUnsignedAsHexFixedSize(
       unsigned number,
       T& destination,
-      unsigned desiredDigits,
-      HexConversionMode mode = Uppercase) {
-    DCHECK(desiredDigits);
+      unsigned desired_digits,
+      HexConversionMode mode = kUppercase) {
+    DCHECK(desired_digits);
 
-    const LChar* hexDigits = hexDigitsForMode(mode);
+    const LChar* hex_digits = HexDigitsForMode(mode);
     Vector<LChar, 8> result;
     do {
-      result.push_front(hexDigits[number % 16]);
+      result.push_front(hex_digits[number % 16]);
       number >>= 4;
-    } while (result.size() < desiredDigits);
+    } while (result.size() < desired_digits);
 
-    DCHECK_EQ(result.size(), desiredDigits);
-    destination.append(result.data(), result.size());
+    DCHECK_EQ(result.size(), desired_digits);
+    destination.Append(result.Data(), result.size());
   }
 
  private:
-  static inline const LChar* hexDigitsForMode(HexConversionMode mode) {
-    return mode == Lowercase ? Internal::lowerHexDigits
-                             : Internal::upperHexDigits;
+  static inline const LChar* HexDigitsForMode(HexConversionMode mode) {
+    return mode == kLowercase ? Internal::kLowerHexDigits
+                              : Internal::kUpperHexDigits;
   }
 };
 

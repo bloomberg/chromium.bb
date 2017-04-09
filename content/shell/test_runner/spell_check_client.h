@@ -41,15 +41,15 @@ class SpellCheckClient : public blink::WebTextCheckClient {
   void Reset();
 
   // blink::WebSpellCheckClient implementation.
-  void checkSpelling(
+  void CheckSpelling(
       const blink::WebString& text,
       int& offset,
       int& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
-  void requestCheckingOfText(
+  void RequestCheckingOfText(
       const blink::WebString& text,
       blink::WebTextCheckingCompletion* completion) override;
-  void cancelAllPendingRequests() override;
+  void CancelAllPendingRequests() override;
 
  private:
   void FinishLastTextCheck();

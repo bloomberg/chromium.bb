@@ -24,7 +24,7 @@ class CONTENT_EXPORT IndexedDBKeyPath {
   ~IndexedDBKeyPath();
   IndexedDBKeyPath& operator=(const IndexedDBKeyPath& other);
 
-  bool IsNull() const { return type_ == blink::WebIDBKeyPathTypeNull; }
+  bool IsNull() const { return type_ == blink::kWebIDBKeyPathTypeNull; }
   bool operator==(const IndexedDBKeyPath& other) const;
 
   blink::WebIDBKeyPathType type() const { return type_; }

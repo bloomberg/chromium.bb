@@ -23,14 +23,14 @@ class PLATFORM_EXPORT CompositorFloatKeyframe : public CompositorKeyframe {
   ~CompositorFloatKeyframe() override;
 
   // CompositorKeyframe implementation.
-  double time() const override;
-  const cc::TimingFunction* ccTimingFunction() const override;
+  double Time() const override;
+  const cc::TimingFunction* CcTimingFunction() const override;
 
-  float value() { return m_floatKeyframe->Value(); }
-  std::unique_ptr<cc::FloatKeyframe> cloneToCC() const;
+  float Value() { return float_keyframe_->Value(); }
+  std::unique_ptr<cc::FloatKeyframe> CloneToCC() const;
 
  private:
-  std::unique_ptr<cc::FloatKeyframe> m_floatKeyframe;
+  std::unique_ptr<cc::FloatKeyframe> float_keyframe_;
 };
 
 }  // namespace blink

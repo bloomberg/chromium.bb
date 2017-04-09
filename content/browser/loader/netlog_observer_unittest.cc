@@ -67,31 +67,31 @@ class NetLogObserverTest : public testing::Test {
     requester_info_ = ResourceRequesterInfo::CreateForRendererTesting(1);
     ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
         requester_info_,
-        0,                                     // route_id
-        -1,                                    // frame_tree_node_id
-        0,                                     // origin_pid
-        0,                                     // request_id
-        0,                                     // render_frame_id
-        false,                                 // is_main_frame
-        false,                                 // parent_is_main_frame
-        RESOURCE_TYPE_IMAGE,                   // resource_type
-        ui::PAGE_TRANSITION_LINK,              // transition_type
-        false,                                 // should_replace_current_entry
-        false,                                 // is_download
-        false,                                 // is_stream
-        false,                                 // allow_download
-        false,                                 // has_user_gesture
-        false,                                 // enable load timing
-        false,                                 // enable upload progress
-        false,                                 // do_not_prompt_for_login
-        blink::WebReferrerPolicyDefault,       // referrer_policy
-        blink::WebPageVisibilityStateVisible,  // visibility_state
-        resource_context_.get(),               // context
-        true,                                  // report_raw_headers
-        true,                                  // is_async
-        PREVIEWS_OFF,                          // previews_state
-        nullptr,                               // body
-        false);                                // initiated_in_secure_context
+        0,                                      // route_id
+        -1,                                     // frame_tree_node_id
+        0,                                      // origin_pid
+        0,                                      // request_id
+        0,                                      // render_frame_id
+        false,                                  // is_main_frame
+        false,                                  // parent_is_main_frame
+        RESOURCE_TYPE_IMAGE,                    // resource_type
+        ui::PAGE_TRANSITION_LINK,               // transition_type
+        false,                                  // should_replace_current_entry
+        false,                                  // is_download
+        false,                                  // is_stream
+        false,                                  // allow_download
+        false,                                  // has_user_gesture
+        false,                                  // enable load timing
+        false,                                  // enable upload progress
+        false,                                  // do_not_prompt_for_login
+        blink::kWebReferrerPolicyDefault,       // referrer_policy
+        blink::kWebPageVisibilityStateVisible,  // visibility_state
+        resource_context_.get(),                // context
+        true,                                   // report_raw_headers
+        true,                                   // is_async
+        PREVIEWS_OFF,                           // previews_state
+        nullptr,                                // body
+        false);                                 // initiated_in_secure_context
     info->AssociateWithRequest(request_.get());
     std::string method = "GET";
     GURL url(kDefaultURL);

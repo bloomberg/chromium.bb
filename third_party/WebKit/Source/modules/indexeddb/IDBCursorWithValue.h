@@ -42,7 +42,7 @@ class IDBCursorWithValue final : public IDBCursor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBCursorWithValue* create(std::unique_ptr<WebIDBCursor>,
+  static IDBCursorWithValue* Create(std::unique_ptr<WebIDBCursor>,
                                     WebIDBCursorDirection,
                                     IDBRequest*,
                                     IDBAny* source,
@@ -53,8 +53,8 @@ class IDBCursorWithValue final : public IDBCursor {
   // (but not exposed via its IDL). This is to make the implementation more
   // simple while matching what the spec says.
 
-  bool isKeyCursor() const override { return false; }
-  bool isCursorWithValue() const override { return true; }
+  bool IsKeyCursor() const override { return false; }
+  bool IsCursorWithValue() const override { return true; }
 
  private:
   IDBCursorWithValue(std::unique_ptr<WebIDBCursor>,
@@ -67,8 +67,8 @@ class IDBCursorWithValue final : public IDBCursor {
 DEFINE_TYPE_CASTS(IDBCursorWithValue,
                   IDBCursor,
                   cursor,
-                  cursor->isCursorWithValue(),
-                  cursor.isCursorWithValue());
+                  cursor->IsCursorWithValue(),
+                  cursor.IsCursorWithValue());
 
 }  // namespace blink
 

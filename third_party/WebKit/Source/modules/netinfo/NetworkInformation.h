@@ -24,25 +24,25 @@ class NetworkInformation final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NetworkInformation* create(ExecutionContext*);
+  static NetworkInformation* Create(ExecutionContext*);
   ~NetworkInformation() override;
 
   String type() const;
   double downlinkMax() const;
 
   // NetworkStateObserver overrides.
-  void connectionChange(WebConnectionType, double downlinkMaxMbps) override;
+  void ConnectionChange(WebConnectionType, double downlink_max_mbps) override;
 
   // EventTarget overrides.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
-  void removeAllEventListeners() override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+  void RemoveAllEventListeners() override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -51,27 +51,27 @@ class NetworkInformation final
 
  protected:
   // EventTarget overrides.
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) final;
-  void removedEventListener(const AtomicString& eventType,
+  void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) final;
 
  private:
   explicit NetworkInformation(ExecutionContext*);
-  void startObserving();
-  void stopObserving();
+  void StartObserving();
+  void StopObserving();
 
   // Touched only on context thread.
-  WebConnectionType m_type;
+  WebConnectionType type_;
 
   // Touched only on context thread.
-  double m_downlinkMaxMbps;
+  double downlink_max_mbps_;
 
   // Whether this object is listening for events from NetworkStateNotifier.
-  bool m_observing;
+  bool observing_;
 
   // Whether ContextLifecycleObserver::contextDestroyed has been called.
-  bool m_contextStopped;
+  bool context_stopped_;
 };
 
 }  // namespace blink

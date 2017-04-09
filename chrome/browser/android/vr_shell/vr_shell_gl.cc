@@ -112,10 +112,10 @@ std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(WebInputEvent::Type type,
                                                      float x,
                                                      float y) {
   std::unique_ptr<blink::WebMouseEvent> mouse_event(new blink::WebMouseEvent(
-      type, blink::WebInputEvent::NoModifiers, timestamp));
-  mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
-  mouse_event->setPositionInWidget(x, y);
-  mouse_event->clickCount = 1;
+      type, blink::WebInputEvent::kNoModifiers, timestamp));
+  mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+  mouse_event->SetPositionInWidget(x, y);
+  mouse_event->click_count = 1;
 
   return mouse_event;
 }
@@ -477,9 +477,9 @@ void VrShellGl::HandleControllerInput(const gvr::Vec3f& forward_vector) {
             gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
       touch_pending_ = false;
       std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent(
-          WebInputEvent::GestureTapDown, WebInputEvent::NoModifiers,
+          WebInputEvent::kGestureTapDown, WebInputEvent::kNoModifiers,
           (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF()));
-      gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
+      gesture->source_device = blink::kWebGestureDeviceTouchpad;
       gesture->x = 0;
       gesture->y = 0;
       SendGesture(InputTarget::CONTENT, std::move(gesture));
@@ -632,13 +632,14 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
                                    int pixel_y) {
   std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
       controller_->DetectGestures();
-  double timestamp = gesture_list.front()->timeStampSeconds();
+  double timestamp = gesture_list.front()->TimeStampSeconds();
 
   if (touch_pending_) {
     touch_pending_ = false;
-    std::unique_ptr<WebGestureEvent> event(new WebGestureEvent(
-        WebInputEvent::GestureTapDown, WebInputEvent::NoModifiers, timestamp));
-    event->sourceDevice = blink::WebGestureDeviceTouchpad;
+    std::unique_ptr<WebGestureEvent> event(
+        new WebGestureEvent(WebInputEvent::kGestureTapDown,
+                            WebInputEvent::kNoModifiers, timestamp));
+    event->source_device = blink::kWebGestureDeviceTouchpad;
     event->x = pixel_x;
     event->y = pixel_y;
     gesture_list.push_back(std::move(event));
@@ -649,34 +650,34 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
     gesture->y = pixel_y;
     auto movableGesture = base::MakeUnique<WebGestureEvent>(*gesture);
 
-    switch (gesture->type()) {
+    switch (gesture->GetType()) {
       // Once the user starts scrolling send all the scroll events to this
       // element until the scrolling stops.
-      case WebInputEvent::GestureScrollBegin:
+      case WebInputEvent::kGestureScrollBegin:
         current_scroll_target = input_target;
         if (current_scroll_target != InputTarget::NONE) {
           SendGesture(current_scroll_target, std::move(movableGesture));
         }
         break;
-      case WebInputEvent::GestureScrollEnd:
+      case WebInputEvent::kGestureScrollEnd:
         if (current_scroll_target != InputTarget::NONE) {
           SendGesture(current_scroll_target, std::move(movableGesture));
         }
         current_scroll_target = InputTarget::NONE;
         break;
-      case WebInputEvent::GestureScrollUpdate:
-      case WebInputEvent::GestureFlingCancel:
-      case WebInputEvent::GestureFlingStart:
+      case WebInputEvent::kGestureScrollUpdate:
+      case WebInputEvent::kGestureFlingCancel:
+      case WebInputEvent::kGestureFlingStart:
         if (current_scroll_target != InputTarget::NONE) {
           SendGesture(current_scroll_target, std::move(movableGesture));
         }
         break;
-      case WebInputEvent::GestureTapDown:
+      case WebInputEvent::kGestureTapDown:
         if (input_target != InputTarget::NONE) {
           SendGesture(input_target, std::move(movableGesture));
         }
         break;
-      case WebInputEvent::Undefined:
+      case WebInputEvent::kUndefined:
         break;
       default:
         NOTREACHED();
@@ -688,12 +689,12 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
   if (new_target && current_input_target_ != InputTarget::NONE) {
     // Send a move event indicating that the pointer moved off of an element.
     SendGesture(current_input_target_,
-                MakeMouseEvent(WebInputEvent::MouseLeave, timestamp, 0, 0));
+                MakeMouseEvent(WebInputEvent::kMouseLeave, timestamp, 0, 0));
   }
   current_input_target_ = input_target;
   if (current_input_target_ != InputTarget::NONE) {
     WebInputEvent::Type type =
-        new_target ? WebInputEvent::MouseEnter : WebInputEvent::MouseMove;
+        new_target ? WebInputEvent::kMouseEnter : WebInputEvent::kMouseMove;
     SendGesture(input_target,
                 MakeMouseEvent(type, timestamp, pixel_x, pixel_y));
   }

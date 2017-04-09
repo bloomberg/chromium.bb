@@ -58,269 +58,269 @@ namespace {
 
 // This enum is used to record histograms. Do not reorder.
 enum VideoPersistenceControlsType {
-  VideoPersistenceControlsTypeNative = 0,
-  VideoPersistenceControlsTypeCustom,
-  VideoPersistenceControlsTypeCount
+  kVideoPersistenceControlsTypeNative = 0,
+  kVideoPersistenceControlsTypeCustom,
+  kVideoPersistenceControlsTypeCount
 };
 
 }  // anonymous namespace
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(videoTag, document) {
-  if (document.settings()) {
-    m_defaultPosterURL =
-        AtomicString(document.settings()->getDefaultVideoPosterURL());
+  if (document.GetSettings()) {
+    default_poster_url_ =
+        AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
   }
 
   if (RuntimeEnabledFeatures::videoFullscreenDetectionEnabled()) {
-    m_customControlsFullscreenDetector =
+    custom_controls_fullscreen_detector_ =
         new MediaCustomControlsFullscreenDetector(*this);
   }
 }
 
-HTMLVideoElement* HTMLVideoElement::create(Document& document) {
+HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
   HTMLVideoElement* video = new HTMLVideoElement(document);
-  video->ensureUserAgentShadowRoot();
-  video->suspendIfNeeded();
+  video->EnsureUserAgentShadowRoot();
+  video->SuspendIfNeeded();
   return video;
 }
 
 DEFINE_TRACE(HTMLVideoElement) {
-  visitor->trace(m_imageLoader);
-  visitor->trace(m_customControlsFullscreenDetector);
-  HTMLMediaElement::trace(visitor);
+  visitor->Trace(image_loader_);
+  visitor->Trace(custom_controls_fullscreen_detector_);
+  HTMLMediaElement::Trace(visitor);
 }
 
-Node::InsertionNotificationRequest HTMLVideoElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  if (insertionPoint->isConnected() && m_customControlsFullscreenDetector)
-    m_customControlsFullscreenDetector->attach();
+Node::InsertionNotificationRequest HTMLVideoElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  if (insertion_point->isConnected() && custom_controls_fullscreen_detector_)
+    custom_controls_fullscreen_detector_->Attach();
 
-  return HTMLMediaElement::insertedInto(insertionPoint);
+  return HTMLMediaElement::InsertedInto(insertion_point);
 }
 
-void HTMLVideoElement::removedFrom(ContainerNode* insertionPoint) {
-  HTMLMediaElement::removedFrom(insertionPoint);
+void HTMLVideoElement::RemovedFrom(ContainerNode* insertion_point) {
+  HTMLMediaElement::RemovedFrom(insertion_point);
 
-  if (m_customControlsFullscreenDetector)
-    m_customControlsFullscreenDetector->detach();
+  if (custom_controls_fullscreen_detector_)
+    custom_controls_fullscreen_detector_->Detach();
 
-  onBecamePersistentVideo(false);
+  OnBecamePersistentVideo(false);
 }
 
-void HTMLVideoElement::contextDestroyed(ExecutionContext* context) {
-  if (m_customControlsFullscreenDetector)
-    m_customControlsFullscreenDetector->contextDestroyed();
+void HTMLVideoElement::ContextDestroyed(ExecutionContext* context) {
+  if (custom_controls_fullscreen_detector_)
+    custom_controls_fullscreen_detector_->ContextDestroyed();
 
-  HTMLMediaElement::contextDestroyed(context);
+  HTMLMediaElement::ContextDestroyed(context);
 }
 
-bool HTMLVideoElement::layoutObjectIsNeeded(const ComputedStyle& style) {
-  return HTMLElement::layoutObjectIsNeeded(style);
+bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+  return HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLVideoElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutVideo(this);
 }
 
-void HTMLVideoElement::attachLayoutTree(const AttachContext& context) {
-  HTMLMediaElement::attachLayoutTree(context);
+void HTMLVideoElement::AttachLayoutTree(const AttachContext& context) {
+  HTMLMediaElement::AttachLayoutTree(context);
 
-  updateDisplayState();
-  if (shouldDisplayPosterImage()) {
-    if (!m_imageLoader)
-      m_imageLoader = HTMLImageLoader::create(this);
-    m_imageLoader->updateFromElement();
-    if (layoutObject())
-      toLayoutImage(layoutObject())
-          ->imageResource()
-          ->setImageResource(m_imageLoader->image());
+  UpdateDisplayState();
+  if (ShouldDisplayPosterImage()) {
+    if (!image_loader_)
+      image_loader_ = HTMLImageLoader::Create(this);
+    image_loader_->UpdateFromElement();
+    if (GetLayoutObject())
+      ToLayoutImage(GetLayoutObject())
+          ->ImageResource()
+          ->SetImageResource(image_loader_->GetImage());
   }
 }
 
-void HTMLVideoElement::collectStyleForPresentationAttribute(
+void HTMLVideoElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == widthAttr)
-    addHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   else if (name == heightAttr)
-    addHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   else
-    HTMLMediaElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLMediaElement::CollectStyleForPresentationAttribute(name, value, style);
 }
 
-bool HTMLVideoElement::isPresentationAttribute(
+bool HTMLVideoElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == widthAttr || name == heightAttr)
     return true;
-  return HTMLMediaElement::isPresentationAttribute(name);
+  return HTMLMediaElement::IsPresentationAttribute(name);
 }
 
-void HTMLVideoElement::parseAttribute(
+void HTMLVideoElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == posterAttr) {
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
-    if (getDisplayMode() < Video || !hasAvailableVideoFrame()) {
+    if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
       // Force a poster recalc by setting m_displayMode to Unknown directly
       // before calling updateDisplayState.
-      HTMLMediaElement::setDisplayMode(Unknown);
-      updateDisplayState();
+      HTMLMediaElement::SetDisplayMode(kUnknown);
+      UpdateDisplayState();
     }
-    if (!posterImageURL().isEmpty()) {
-      if (!m_imageLoader)
-        m_imageLoader = HTMLImageLoader::create(this);
-      m_imageLoader->updateFromElement(ImageLoader::UpdateIgnorePreviousError);
+    if (!PosterImageURL().IsEmpty()) {
+      if (!image_loader_)
+        image_loader_ = HTMLImageLoader::Create(this);
+      image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
-      if (layoutObject())
-        toLayoutImage(layoutObject())->imageResource()->setImageResource(0);
+      if (GetLayoutObject())
+        ToLayoutImage(GetLayoutObject())->ImageResource()->SetImageResource(0);
     }
     // Notify the player when the poster image URL changes.
-    if (webMediaPlayer())
-      webMediaPlayer()->setPoster(posterImageURL());
+    if (GetWebMediaPlayer())
+      GetWebMediaPlayer()->SetPoster(PosterImageURL());
   } else {
-    HTMLMediaElement::parseAttribute(params);
+    HTMLMediaElement::ParseAttribute(params);
   }
 }
 
 unsigned HTMLVideoElement::videoWidth() const {
-  if (!webMediaPlayer())
+  if (!GetWebMediaPlayer())
     return 0;
-  return webMediaPlayer()->naturalSize().width;
+  return GetWebMediaPlayer()->NaturalSize().width;
 }
 
 unsigned HTMLVideoElement::videoHeight() const {
-  if (!webMediaPlayer())
+  if (!GetWebMediaPlayer())
     return 0;
-  return webMediaPlayer()->naturalSize().height;
+  return GetWebMediaPlayer()->NaturalSize().height;
 }
 
-bool HTMLVideoElement::isURLAttribute(const Attribute& attribute) const {
-  return attribute.name() == posterAttr ||
-         HTMLMediaElement::isURLAttribute(attribute);
+bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
+  return attribute.GetName() == posterAttr ||
+         HTMLMediaElement::IsURLAttribute(attribute);
 }
 
-const AtomicString HTMLVideoElement::imageSourceURL() const {
+const AtomicString HTMLVideoElement::ImageSourceURL() const {
   const AtomicString& url = getAttribute(posterAttr);
-  if (!stripLeadingAndTrailingHTMLSpaces(url).isEmpty())
+  if (!StripLeadingAndTrailingHTMLSpaces(url).IsEmpty())
     return url;
-  return m_defaultPosterURL;
+  return default_poster_url_;
 }
 
-void HTMLVideoElement::setDisplayMode(DisplayMode mode) {
-  DisplayMode oldMode = getDisplayMode();
-  KURL poster = posterImageURL();
+void HTMLVideoElement::SetDisplayMode(DisplayMode mode) {
+  DisplayMode old_mode = GetDisplayMode();
+  KURL poster = PosterImageURL();
 
-  if (!poster.isEmpty()) {
+  if (!poster.IsEmpty()) {
     // We have a poster path, but only show it until the user triggers display
     // by playing or seeking and the media engine has something to display.
     // Don't show the poster if there is a seek operation or the video has
     // restarted because of loop attribute
-    if (mode == Video && oldMode == Poster && !hasAvailableVideoFrame())
+    if (mode == kVideo && old_mode == kPoster && !HasAvailableVideoFrame())
       return;
   }
 
-  HTMLMediaElement::setDisplayMode(mode);
+  HTMLMediaElement::SetDisplayMode(mode);
 
-  if (layoutObject() && getDisplayMode() != oldMode)
-    layoutObject()->updateFromElement();
+  if (GetLayoutObject() && GetDisplayMode() != old_mode)
+    GetLayoutObject()->UpdateFromElement();
 }
 
 // TODO(zqzhang): this callback could be used to hide native controls instead of
 // using a settings. See `HTMLMediaElement::onMediaControlsEnabledChange`.
-void HTMLVideoElement::onBecamePersistentVideo(bool value) {
+void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
   if (value) {
     // Record the type of video. If it is already fullscreen, it is a video with
     // native controls, otherwise it is assumed to be with custom controls.
     // This is only recorded when entering this mode.
     DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                         ("Media.VideoPersistence.ControlsType",
-                         VideoPersistenceControlsTypeCount));
-    if (isFullscreen())
-      histogram.count(VideoPersistenceControlsTypeNative);
+                         kVideoPersistenceControlsTypeCount));
+    if (IsFullscreen())
+      histogram.Count(kVideoPersistenceControlsTypeNative);
     else
-      histogram.count(VideoPersistenceControlsTypeCustom);
+      histogram.Count(kVideoPersistenceControlsTypeCustom);
 
-    Element* fullscreenElement =
-        Fullscreen::currentFullScreenElementFrom(document());
+    Element* fullscreen_element =
+        Fullscreen::CurrentFullScreenElementFrom(GetDocument());
     // Only set the video in persistent mode if it is not using native controls
     // and is currently fullscreen.
-    if (!fullscreenElement || isFullscreen())
+    if (!fullscreen_element || IsFullscreen())
       return;
 
-    m_isPersistent = true;
-    pseudoStateChanged(CSSSelector::PseudoVideoPersistent);
+    is_persistent_ = true;
+    PseudoStateChanged(CSSSelector::kPseudoVideoPersistent);
 
     // The video is also marked as containing a persistent video to simplify the
     // internal CSS logic.
-    for (Element* element = this; element && element != fullscreenElement;
-         element = element->parentOrShadowHostElement()) {
-      element->setContainsPersistentVideo(true);
+    for (Element* element = this; element && element != fullscreen_element;
+         element = element->ParentOrShadowHostElement()) {
+      element->SetContainsPersistentVideo(true);
     }
-    fullscreenElement->setContainsPersistentVideo(true);
+    fullscreen_element->SetContainsPersistentVideo(true);
   } else {
-    if (!m_isPersistent)
+    if (!is_persistent_)
       return;
 
-    m_isPersistent = false;
-    pseudoStateChanged(CSSSelector::PseudoVideoPersistent);
+    is_persistent_ = false;
+    PseudoStateChanged(CSSSelector::kPseudoVideoPersistent);
 
-    Element* fullscreenElement =
-        Fullscreen::currentFullScreenElementFrom(document());
+    Element* fullscreen_element =
+        Fullscreen::CurrentFullScreenElementFrom(GetDocument());
     // If the page is no longer fullscreen, the full tree will have to be
     // traversed to make sure things are cleaned up.
-    for (Element* element = this; element && element != fullscreenElement;
-         element = element->parentOrShadowHostElement()) {
-      element->setContainsPersistentVideo(false);
+    for (Element* element = this; element && element != fullscreen_element;
+         element = element->ParentOrShadowHostElement()) {
+      element->SetContainsPersistentVideo(false);
     }
-    if (fullscreenElement)
-      fullscreenElement->setContainsPersistentVideo(false);
+    if (fullscreen_element)
+      fullscreen_element->SetContainsPersistentVideo(false);
   }
 }
 
-bool HTMLVideoElement::isPersistent() const {
-  return m_isPersistent;
+bool HTMLVideoElement::IsPersistent() const {
+  return is_persistent_;
 }
 
-void HTMLVideoElement::updateDisplayState() {
-  if (posterImageURL().isEmpty())
-    setDisplayMode(Video);
-  else if (getDisplayMode() < Poster)
-    setDisplayMode(Poster);
+void HTMLVideoElement::UpdateDisplayState() {
+  if (PosterImageURL().IsEmpty())
+    SetDisplayMode(kVideo);
+  else if (GetDisplayMode() < kPoster)
+    SetDisplayMode(kPoster);
 }
 
-void HTMLVideoElement::paintCurrentFrame(PaintCanvas* canvas,
-                                         const IntRect& destRect,
+void HTMLVideoElement::PaintCurrentFrame(PaintCanvas* canvas,
+                                         const IntRect& dest_rect,
                                          const PaintFlags* flags) const {
-  if (!webMediaPlayer())
+  if (!GetWebMediaPlayer())
     return;
 
-  PaintFlags mediaFlags;
+  PaintFlags media_flags;
   if (flags) {
-    mediaFlags = *flags;
+    media_flags = *flags;
   } else {
-    mediaFlags.setAlpha(0xFF);
-    mediaFlags.setFilterQuality(kLow_SkFilterQuality);
+    media_flags.setAlpha(0xFF);
+    media_flags.setFilterQuality(kLow_SkFilterQuality);
   }
 
-  webMediaPlayer()->paint(canvas, destRect, mediaFlags);
+  GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags);
 }
 
-bool HTMLVideoElement::copyVideoTextureToPlatformTexture(
+bool HTMLVideoElement::CopyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     GLuint texture,
-    bool premultiplyAlpha,
-    bool flipY) {
-  if (!webMediaPlayer())
+    bool premultiply_alpha,
+    bool flip_y) {
+  if (!GetWebMediaPlayer())
     return false;
 
-  return webMediaPlayer()->copyVideoTextureToPlatformTexture(
-      gl, texture, premultiplyAlpha, flipY);
+  return GetWebMediaPlayer()->CopyVideoTextureToPlatformTexture(
+      gl, texture, premultiply_alpha, flip_y);
 }
 
-bool HTMLVideoElement::texImageImpl(
-    WebMediaPlayer::TexImageFunctionID functionID,
+bool HTMLVideoElement::TexImageImpl(
+    WebMediaPlayer::TexImageFunctionID function_id,
     GLenum target,
     gpu::gles2::GLES2Interface* gl,
     GLint level,
@@ -330,152 +330,154 @@ bool HTMLVideoElement::texImageImpl(
     GLint xoffset,
     GLint yoffset,
     GLint zoffset,
-    bool flipY,
-    bool premultiplyAlpha) {
-  if (!webMediaPlayer())
+    bool flip_y,
+    bool premultiply_alpha) {
+  if (!GetWebMediaPlayer())
     return false;
-  return webMediaPlayer()->texImageImpl(
-      functionID, target, gl, level, internalformat, format, type, xoffset,
-      yoffset, zoffset, flipY, premultiplyAlpha);
+  return GetWebMediaPlayer()->TexImageImpl(
+      function_id, target, gl, level, internalformat, format, type, xoffset,
+      yoffset, zoffset, flip_y, premultiply_alpha);
 }
 
-bool HTMLVideoElement::hasAvailableVideoFrame() const {
-  if (!webMediaPlayer())
+bool HTMLVideoElement::HasAvailableVideoFrame() const {
+  if (!GetWebMediaPlayer())
     return false;
 
-  return webMediaPlayer()->hasVideo() &&
-         webMediaPlayer()->getReadyState() >=
-             WebMediaPlayer::ReadyStateHaveCurrentData;
+  return GetWebMediaPlayer()->HasVideo() &&
+         GetWebMediaPlayer()->GetReadyState() >=
+             WebMediaPlayer::kReadyStateHaveCurrentData;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen() {
-  if (!isFullscreen())
-    Fullscreen::requestFullscreen(*this, Fullscreen::RequestType::Prefixed);
+  if (!IsFullscreen())
+    Fullscreen::RequestFullscreen(*this, Fullscreen::RequestType::kPrefixed);
 }
 
 void HTMLVideoElement::webkitExitFullscreen() {
-  if (isFullscreen())
-    Fullscreen::exitFullscreen(document());
+  if (IsFullscreen())
+    Fullscreen::ExitFullscreen(GetDocument());
 }
 
 bool HTMLVideoElement::webkitSupportsFullscreen() {
-  return Fullscreen::fullscreenEnabled(document());
+  return Fullscreen::FullscreenEnabled(GetDocument());
 }
 
 bool HTMLVideoElement::webkitDisplayingFullscreen() {
-  return isFullscreen();
+  return IsFullscreen();
 }
 
-bool HTMLVideoElement::usesOverlayFullscreenVideo() const {
+bool HTMLVideoElement::UsesOverlayFullscreenVideo() const {
   if (RuntimeEnabledFeatures::forceOverlayFullscreenVideoEnabled())
     return true;
 
-  return webMediaPlayer() && webMediaPlayer()->supportsOverlayFullscreenVideo();
+  return GetWebMediaPlayer() &&
+         GetWebMediaPlayer()->SupportsOverlayFullscreenVideo();
 }
 
-void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument) {
-  if (m_imageLoader)
-    m_imageLoader->elementDidMoveToNewDocument();
+void HTMLVideoElement::DidMoveToNewDocument(Document& old_document) {
+  if (image_loader_)
+    image_loader_->ElementDidMoveToNewDocument();
 
-  HTMLMediaElement::didMoveToNewDocument(oldDocument);
+  HTMLMediaElement::DidMoveToNewDocument(old_document);
 }
 
 unsigned HTMLVideoElement::webkitDecodedFrameCount() const {
-  if (!webMediaPlayer())
+  if (!GetWebMediaPlayer())
     return 0;
 
-  return webMediaPlayer()->decodedFrameCount();
+  return GetWebMediaPlayer()->DecodedFrameCount();
 }
 
 unsigned HTMLVideoElement::webkitDroppedFrameCount() const {
-  if (!webMediaPlayer())
+  if (!GetWebMediaPlayer())
     return 0;
 
-  return webMediaPlayer()->droppedFrameCount();
+  return GetWebMediaPlayer()->DroppedFrameCount();
 }
 
-KURL HTMLVideoElement::posterImageURL() const {
-  String url = stripLeadingAndTrailingHTMLSpaces(imageSourceURL());
-  if (url.isEmpty())
+KURL HTMLVideoElement::PosterImageURL() const {
+  String url = StripLeadingAndTrailingHTMLSpaces(ImageSourceURL());
+  if (url.IsEmpty())
     return KURL();
-  return document().completeURL(url);
+  return GetDocument().CompleteURL(url);
 }
 
-PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(
+PassRefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
     const FloatSize&) const {
-  if (!hasAvailableVideoFrame()) {
-    *status = InvalidSourceImageStatus;
+  if (!HasAvailableVideoFrame()) {
+    *status = kInvalidSourceImageStatus;
     return nullptr;
   }
 
-  IntSize intrinsicSize(videoWidth(), videoHeight());
+  IntSize intrinsic_size(videoWidth(), videoHeight());
   // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint
   // argument here?
-  std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(intrinsicSize);
-  if (!imageBuffer) {
-    *status = InvalidSourceImageStatus;
+  std::unique_ptr<ImageBuffer> image_buffer =
+      ImageBuffer::Create(intrinsic_size);
+  if (!image_buffer) {
+    *status = kInvalidSourceImageStatus;
     return nullptr;
   }
 
-  paintCurrentFrame(imageBuffer->canvas(),
-                    IntRect(IntPoint(0, 0), intrinsicSize), nullptr);
-  RefPtr<Image> snapshot = imageBuffer->newImageSnapshot();
+  PaintCurrentFrame(image_buffer->Canvas(),
+                    IntRect(IntPoint(0, 0), intrinsic_size), nullptr);
+  RefPtr<Image> snapshot = image_buffer->NewImageSnapshot();
   if (!snapshot) {
-    *status = InvalidSourceImageStatus;
+    *status = kInvalidSourceImageStatus;
     return nullptr;
   }
 
-  *status = NormalSourceImageStatus;
-  return snapshot.release();
+  *status = kNormalSourceImageStatus;
+  return snapshot.Release();
 }
 
-bool HTMLVideoElement::wouldTaintOrigin(
-    SecurityOrigin* destinationSecurityOrigin) const {
-  return !isMediaDataCORSSameOrigin(destinationSecurityOrigin);
+bool HTMLVideoElement::WouldTaintOrigin(
+    SecurityOrigin* destination_security_origin) const {
+  return !IsMediaDataCORSSameOrigin(destination_security_origin);
 }
 
-FloatSize HTMLVideoElement::elementSize(const FloatSize&) const {
+FloatSize HTMLVideoElement::ElementSize(const FloatSize&) const {
   return FloatSize(videoWidth(), videoHeight());
 }
 
-IntSize HTMLVideoElement::bitmapSourceSize() const {
+IntSize HTMLVideoElement::BitmapSourceSize() const {
   return IntSize(videoWidth(), videoHeight());
 }
 
-ScriptPromise HTMLVideoElement::createImageBitmap(
-    ScriptState* scriptState,
-    EventTarget& eventTarget,
-    Optional<IntRect> cropRect,
+ScriptPromise HTMLVideoElement::CreateImageBitmap(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    Optional<IntRect> crop_rect,
     const ImageBitmapOptions& options,
-    ExceptionState& exceptionState) {
-  DCHECK(eventTarget.toLocalDOMWindow());
+    ExceptionState& exception_state) {
+  DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "The provided element has not retrieved data.");
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "The provided element has not retrieved data.");
     return ScriptPromise();
   }
   if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "The provided element's player has no current data.");
     return ScriptPromise();
   }
-  if ((cropRect &&
-       !ImageBitmap::isSourceSizeValid(cropRect->width(), cropRect->height(),
-                                       exceptionState)) ||
-      !ImageBitmap::isSourceSizeValid(bitmapSourceSize().width(),
-                                      bitmapSourceSize().height(),
-                                      exceptionState))
+  if ((crop_rect &&
+       !ImageBitmap::IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
+                                       exception_state)) ||
+      !ImageBitmap::IsSourceSizeValid(BitmapSourceSize().Width(),
+                                      BitmapSourceSize().Height(),
+                                      exception_state))
     return ScriptPromise();
-  if (!ImageBitmap::isResizeOptionValid(options, exceptionState))
+  if (!ImageBitmap::IsResizeOptionValid(options, exception_state))
     return ScriptPromise();
-  return ImageBitmapSource::fulfillImageBitmap(
-      scriptState,
-      ImageBitmap::create(this, cropRect,
-                          eventTarget.toLocalDOMWindow()->document(), options));
+  return ImageBitmapSource::FulfillImageBitmap(
+      script_state, ImageBitmap::Create(
+                        this, crop_rect,
+                        event_target.ToLocalDOMWindow()->document(), options));
 }
 
 }  // namespace blink

@@ -36,27 +36,27 @@ class HTMLTableColElement final : public HTMLTablePartElement {
  public:
   DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement);
 
-  unsigned span() const { return m_span; }
+  unsigned span() const { return span_; }
   void setSpan(unsigned);
 
-  const AtomicString& width() const;
+  const AtomicString& Width() const;
 
  private:
-  HTMLTableColElement(const QualifiedName& tagName, Document&);
+  HTMLTableColElement(const QualifiedName& tag_name, Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  const StylePropertySet* additionalPresentationAttributeStyle() override;
+  const StylePropertySet* AdditionalPresentationAttributeStyle() override;
 
-  unsigned m_span;
+  unsigned span_;
 };
 
-inline bool isHTMLTableColElement(const HTMLElement& element) {
-  return element.hasTagName(HTMLNames::colTag) ||
-         element.hasTagName(HTMLNames::colgroupTag);
+inline bool IsHTMLTableColElement(const HTMLElement& element) {
+  return element.HasTagName(HTMLNames::colTag) ||
+         element.HasTagName(HTMLNames::colgroupTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableColElement);

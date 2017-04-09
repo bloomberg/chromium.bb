@@ -92,7 +92,7 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
   // delivered to the sinks instead of the content of |audio_bus|.
   void OnData(const media::AudioBus& audio_bus, base::TimeTicks reference_time);
 
-  void getSettings(blink::WebMediaStreamTrack::Settings& settings) override;
+  void GetSettings(blink::WebMediaStreamTrack::Settings& settings) override;
 
  private:
   // In debug builds, check that all methods that could cause object graph

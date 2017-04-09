@@ -39,16 +39,16 @@
 
 namespace blink {
 
-TextDecoder* TextDecoder::create(const String& label,
+TextDecoder* TextDecoder::Create(const String& label,
                                  const TextDecoderOptions& options,
-                                 ExceptionState& exceptionState) {
+                                 ExceptionState& exception_state) {
   WTF::TextEncoding encoding(
-      label.stripWhiteSpace(&Encoding::isASCIIWhiteSpace));
+      label.StripWhiteSpace(&Encoding::IsASCIIWhiteSpace));
   // The replacement encoding is not valid, but the Encoding API also
   // rejects aliases of the replacement encoding.
-  if (!encoding.isValid() || !strcasecmp(encoding.name(), "replacement")) {
-    exceptionState.throwRangeError("The encoding label provided ('" + label +
-                                   "') is invalid.");
+  if (!encoding.IsValid() || !strcasecmp(encoding.GetName(), "replacement")) {
+    exception_state.ThrowRangeError("The encoding label provided ('" + label +
+                                    "') is invalid.");
     return 0;
   }
 
@@ -57,17 +57,17 @@ TextDecoder* TextDecoder::create(const String& label,
 
 TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,
                          bool fatal,
-                         bool ignoreBOM)
-    : m_encoding(encoding),
-      m_codec(newTextCodec(encoding)),
-      m_fatal(fatal),
-      m_ignoreBOM(ignoreBOM),
-      m_bomSeen(false) {}
+                         bool ignore_bom)
+    : encoding_(encoding),
+      codec_(NewTextCodec(encoding)),
+      fatal_(fatal),
+      ignore_bom_(ignore_bom),
+      bom_seen_(false) {}
 
 TextDecoder::~TextDecoder() {}
 
 String TextDecoder::encoding() const {
-  String name = String(m_encoding.name()).lower();
+  String name = String(encoding_.GetName()).Lower();
   // Where possible, encoding aliases should be handled by changes to Chromium's
   // ICU or Blink's WTF.  The same codec is used, but WTF maintains a different
   // name/identity for these.
@@ -78,52 +78,53 @@ String TextDecoder::encoding() const {
 
 String TextDecoder::decode(const BufferSource& input,
                            const TextDecodeOptions& options,
-                           ExceptionState& exceptionState) {
+                           ExceptionState& exception_state) {
   ASSERT(!input.isNull());
   if (input.isArrayBufferView()) {
     const char* start =
-        static_cast<const char*>(input.getAsArrayBufferView()->baseAddress());
+        static_cast<const char*>(input.getAsArrayBufferView()->BaseAddress());
     size_t length = input.getAsArrayBufferView()->byteLength();
-    return decode(start, length, options, exceptionState);
+    return decode(start, length, options, exception_state);
   }
   ASSERT(input.isArrayBuffer());
   const char* start =
-      static_cast<const char*>(input.getAsArrayBuffer()->data());
-  size_t length = input.getAsArrayBuffer()->byteLength();
-  return decode(start, length, options, exceptionState);
+      static_cast<const char*>(input.getAsArrayBuffer()->Data());
+  size_t length = input.getAsArrayBuffer()->ByteLength();
+  return decode(start, length, options, exception_state);
 }
 
 String TextDecoder::decode(const char* start,
                            size_t length,
                            const TextDecodeOptions& options,
-                           ExceptionState& exceptionState) {
-  WTF::FlushBehavior flush = options.stream() ? WTF::DoNotFlush : WTF::DataEOF;
+                           ExceptionState& exception_state) {
+  WTF::FlushBehavior flush =
+      options.stream() ? WTF::kDoNotFlush : WTF::kDataEOF;
 
-  bool sawError = false;
-  String s = m_codec->decode(start, length, flush, m_fatal, sawError);
+  bool saw_error = false;
+  String s = codec_->Decode(start, length, flush, fatal_, saw_error);
 
-  if (m_fatal && sawError) {
-    exceptionState.throwTypeError("The encoded data was not valid.");
+  if (fatal_ && saw_error) {
+    exception_state.ThrowTypeError("The encoded data was not valid.");
     return String();
   }
 
-  if (!m_ignoreBOM && !m_bomSeen && !s.isEmpty()) {
-    m_bomSeen = true;
-    String name(m_encoding.name());
+  if (!ignore_bom_ && !bom_seen_ && !s.IsEmpty()) {
+    bom_seen_ = true;
+    String name(encoding_.GetName());
     if ((name == "UTF-8" || name == "UTF-16LE" || name == "UTF-16BE") &&
         s[0] == 0xFEFF)
-      s.remove(0);
+      s.Remove(0);
   }
 
   if (flush)
-    m_bomSeen = false;
+    bom_seen_ = false;
 
   return s;
 }
 
-String TextDecoder::decode(ExceptionState& exceptionState) {
+String TextDecoder::decode(ExceptionState& exception_state) {
   TextDecodeOptions options;
-  return decode(nullptr, 0, options, exceptionState);
+  return decode(nullptr, 0, options, exception_state);
 }
 
 }  // namespace blink

@@ -44,13 +44,13 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static inline UChar toLowerCase(UChar cc) {
-  DCHECK(isASCIIUpper(cc));
-  const int lowerCaseOffset = 0x20;
-  return cc + lowerCaseOffset;
+static inline UChar ToLowerCase(UChar cc) {
+  DCHECK(IsASCIIUpper(cc));
+  const int kLowerCaseOffset = 0x20;
+  return cc + kLowerCaseOffset;
 }
 
-static inline bool vectorEqualsString(const Vector<LChar, 32>& vector,
+static inline bool VectorEqualsString(const Vector<LChar, 32>& vector,
                                       const String& string) {
   if (vector.size() != string.length())
     return false;
@@ -58,7 +58,7 @@ static inline bool vectorEqualsString(const Vector<LChar, 32>& vector,
   if (!string.length())
     return true;
 
-  return equal(string.impl(), vector.data(), vector.size());
+  return Equal(string.Impl(), vector.Data(), vector.size());
 }
 
 #define HTML_BEGIN_STATE(stateName) BEGIN_STATE(HTMLTokenizer, stateName)
@@ -67,1447 +67,1448 @@ static inline bool vectorEqualsString(const Vector<LChar, 32>& vector,
 #define HTML_SWITCH_TO(stateName) SWITCH_TO(HTMLTokenizer, stateName)
 
 HTMLTokenizer::HTMLTokenizer(const HTMLParserOptions& options)
-    : m_inputStreamPreprocessor(this), m_options(options) {
-  reset();
+    : input_stream_preprocessor_(this), options_(options) {
+  Reset();
 }
 
 HTMLTokenizer::~HTMLTokenizer() {}
 
-void HTMLTokenizer::reset() {
-  m_state = HTMLTokenizer::DataState;
-  m_token = 0;
-  m_forceNullCharacterReplacement = false;
-  m_shouldAllowCDATA = false;
-  m_additionalAllowedCharacter = '\0';
+void HTMLTokenizer::Reset() {
+  state_ = HTMLTokenizer::kDataState;
+  token_ = 0;
+  force_null_character_replacement_ = false;
+  should_allow_cdata_ = false;
+  additional_allowed_character_ = '\0';
 }
 
-inline bool HTMLTokenizer::processEntity(SegmentedString& source) {
-  bool notEnoughCharacters = false;
-  DecodedHTMLEntity decodedEntity;
-  bool success = consumeHTMLEntity(source, decodedEntity, notEnoughCharacters);
-  if (notEnoughCharacters)
+inline bool HTMLTokenizer::ProcessEntity(SegmentedString& source) {
+  bool not_enough_characters = false;
+  DecodedHTMLEntity decoded_entity;
+  bool success =
+      ConsumeHTMLEntity(source, decoded_entity, not_enough_characters);
+  if (not_enough_characters)
     return false;
   if (!success) {
-    DCHECK(decodedEntity.isEmpty());
-    bufferCharacter('&');
+    DCHECK(decoded_entity.IsEmpty());
+    BufferCharacter('&');
   } else {
-    for (unsigned i = 0; i < decodedEntity.length; ++i)
-      bufferCharacter(decodedEntity.data[i]);
+    for (unsigned i = 0; i < decoded_entity.length; ++i)
+      BufferCharacter(decoded_entity.data[i]);
   }
   return true;
 }
 
-bool HTMLTokenizer::flushBufferedEndTag(SegmentedString& source) {
-  DCHECK(m_token->type() == HTMLToken::Character ||
-         m_token->type() == HTMLToken::Uninitialized);
-  source.advanceAndUpdateLineNumber();
-  if (m_token->type() == HTMLToken::Character)
+bool HTMLTokenizer::FlushBufferedEndTag(SegmentedString& source) {
+  DCHECK(token_->GetType() == HTMLToken::kCharacter ||
+         token_->GetType() == HTMLToken::kUninitialized);
+  source.AdvanceAndUpdateLineNumber();
+  if (token_->GetType() == HTMLToken::kCharacter)
     return true;
-  m_token->beginEndTag(m_bufferedEndTagName);
-  m_bufferedEndTagName.clear();
-  m_appropriateEndTagName.clear();
-  m_temporaryBuffer.clear();
+  token_->BeginEndTag(buffered_end_tag_name_);
+  buffered_end_tag_name_.Clear();
+  appropriate_end_tag_name_.Clear();
+  temporary_buffer_.Clear();
   return false;
 }
 
-#define FLUSH_AND_ADVANCE_TO(stateName)                              \
-  do {                                                               \
-    m_state = HTMLTokenizer::stateName;                              \
-    if (flushBufferedEndTag(source))                                 \
-      return true;                                                   \
-    if (source.isEmpty() || !m_inputStreamPreprocessor.peek(source)) \
-      return haveBufferedCharacterToken();                           \
-    cc = m_inputStreamPreprocessor.nextInputCharacter();             \
-    goto stateName;                                                  \
+#define FLUSH_AND_ADVANCE_TO(stateName)                               \
+  do {                                                                \
+    state_ = HTMLTokenizer::stateName;                                \
+    if (FlushBufferedEndTag(source))                                  \
+      return true;                                                    \
+    if (source.IsEmpty() || !input_stream_preprocessor_.Peek(source)) \
+      return HaveBufferedCharacterToken();                            \
+    cc = input_stream_preprocessor_.NextInputCharacter();             \
+    goto stateName;                                                   \
   } while (false)
 
-bool HTMLTokenizer::flushEmitAndResumeIn(SegmentedString& source,
+bool HTMLTokenizer::FlushEmitAndResumeIn(SegmentedString& source,
                                          HTMLTokenizer::State state) {
-  m_state = state;
-  flushBufferedEndTag(source);
+  state_ = state;
+  FlushBufferedEndTag(source);
   return true;
 }
 
-bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
+bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
   // If we have a token in progress, then we're supposed to be called back
   // with the same token so we can finish it.
-  DCHECK(!m_token || m_token == &token ||
-         token.type() == HTMLToken::Uninitialized);
-  m_token = &token;
+  DCHECK(!token_ || token_ == &token ||
+         token.GetType() == HTMLToken::kUninitialized);
+  token_ = &token;
 
-  if (!m_bufferedEndTagName.isEmpty() && !isEndTagBufferingState(m_state)) {
+  if (!buffered_end_tag_name_.IsEmpty() && !IsEndTagBufferingState(state_)) {
     // FIXME: This should call flushBufferedEndTag().
     // We started an end tag during our last iteration.
-    m_token->beginEndTag(m_bufferedEndTagName);
-    m_bufferedEndTagName.clear();
-    m_appropriateEndTagName.clear();
-    m_temporaryBuffer.clear();
-    if (m_state == HTMLTokenizer::DataState) {
+    token_->BeginEndTag(buffered_end_tag_name_);
+    buffered_end_tag_name_.Clear();
+    appropriate_end_tag_name_.Clear();
+    temporary_buffer_.Clear();
+    if (state_ == HTMLTokenizer::kDataState) {
       // We're back in the data state, so we must be done with the tag.
       return true;
     }
   }
 
-  if (source.isEmpty() || !m_inputStreamPreprocessor.peek(source))
-    return haveBufferedCharacterToken();
-  UChar cc = m_inputStreamPreprocessor.nextInputCharacter();
+  if (source.IsEmpty() || !input_stream_preprocessor_.Peek(source))
+    return HaveBufferedCharacterToken();
+  UChar cc = input_stream_preprocessor_.NextInputCharacter();
 
   // Source: http://www.whatwg.org/specs/web-apps/current-work/#tokenisation0
-  switch (m_state) {
-    HTML_BEGIN_STATE(DataState) {
+  switch (state_) {
+    HTML_BEGIN_STATE(kDataState) {
       if (cc == '&')
-        HTML_ADVANCE_TO(CharacterReferenceInDataState);
+        HTML_ADVANCE_TO(kCharacterReferenceInDataState);
       else if (cc == '<') {
-        if (m_token->type() == HTMLToken::Character) {
+        if (token_->GetType() == HTMLToken::kCharacter) {
           // We have a bunch of character tokens queued up that we
           // are emitting lazily here.
           return true;
         }
-        HTML_ADVANCE_TO(TagOpenState);
+        HTML_ADVANCE_TO(kTagOpenState);
       } else if (cc == kEndOfFileMarker)
-        return emitEndOfFile(source);
+        return EmitEndOfFile(source);
       else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(DataState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kDataState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CharacterReferenceInDataState) {
-      if (!processEntity(source))
-        return haveBufferedCharacterToken();
-      HTML_SWITCH_TO(DataState);
+    HTML_BEGIN_STATE(kCharacterReferenceInDataState) {
+      if (!ProcessEntity(source))
+        return HaveBufferedCharacterToken();
+      HTML_SWITCH_TO(kDataState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RCDATAState) {
+    HTML_BEGIN_STATE(kRCDATAState) {
       if (cc == '&')
-        HTML_ADVANCE_TO(CharacterReferenceInRCDATAState);
+        HTML_ADVANCE_TO(kCharacterReferenceInRCDATAState);
       else if (cc == '<')
-        HTML_ADVANCE_TO(RCDATALessThanSignState);
+        HTML_ADVANCE_TO(kRCDATALessThanSignState);
       else if (cc == kEndOfFileMarker)
-        return emitEndOfFile(source);
+        return EmitEndOfFile(source);
       else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(RCDATAState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kRCDATAState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CharacterReferenceInRCDATAState) {
-      if (!processEntity(source))
-        return haveBufferedCharacterToken();
-      HTML_SWITCH_TO(RCDATAState);
+    HTML_BEGIN_STATE(kCharacterReferenceInRCDATAState) {
+      if (!ProcessEntity(source))
+        return HaveBufferedCharacterToken();
+      HTML_SWITCH_TO(kRCDATAState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RAWTEXTState) {
+    HTML_BEGIN_STATE(kRAWTEXTState) {
       if (cc == '<')
-        HTML_ADVANCE_TO(RAWTEXTLessThanSignState);
+        HTML_ADVANCE_TO(kRAWTEXTLessThanSignState);
       else if (cc == kEndOfFileMarker)
-        return emitEndOfFile(source);
+        return EmitEndOfFile(source);
       else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(RAWTEXTState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kRAWTEXTState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataState) {
+    HTML_BEGIN_STATE(kScriptDataState) {
       if (cc == '<')
-        HTML_ADVANCE_TO(ScriptDataLessThanSignState);
+        HTML_ADVANCE_TO(kScriptDataLessThanSignState);
       else if (cc == kEndOfFileMarker)
-        return emitEndOfFile(source);
+        return EmitEndOfFile(source);
       else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(PLAINTEXTState) {
+    HTML_BEGIN_STATE(kPLAINTEXTState) {
       if (cc == kEndOfFileMarker)
-        return emitEndOfFile(source);
-      bufferCharacter(cc);
-      HTML_ADVANCE_TO(PLAINTEXTState);
+        return EmitEndOfFile(source);
+      BufferCharacter(cc);
+      HTML_ADVANCE_TO(kPLAINTEXTState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(TagOpenState) {
+    HTML_BEGIN_STATE(kTagOpenState) {
       if (cc == '!')
-        HTML_ADVANCE_TO(MarkupDeclarationOpenState);
+        HTML_ADVANCE_TO(kMarkupDeclarationOpenState);
       else if (cc == '/')
-        HTML_ADVANCE_TO(EndTagOpenState);
-      else if (isASCIIUpper(cc)) {
-        m_token->beginStartTag(toLowerCase(cc));
-        HTML_ADVANCE_TO(TagNameState);
-      } else if (isASCIILower(cc)) {
-        m_token->beginStartTag(cc);
-        HTML_ADVANCE_TO(TagNameState);
+        HTML_ADVANCE_TO(kEndTagOpenState);
+      else if (IsASCIIUpper(cc)) {
+        token_->BeginStartTag(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kTagNameState);
+      } else if (IsASCIILower(cc)) {
+        token_->BeginStartTag(cc);
+        HTML_ADVANCE_TO(kTagNameState);
       } else if (cc == '?') {
-        parseError();
+        ParseError();
         // The spec consumes the current character before switching
         // to the bogus comment state, but it's easier to implement
         // if we reconsume the current character.
-        HTML_RECONSUME_IN(BogusCommentState);
+        HTML_RECONSUME_IN(kBogusCommentState);
       } else {
-        parseError();
-        bufferCharacter('<');
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        BufferCharacter('<');
+        HTML_RECONSUME_IN(kDataState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(EndTagOpenState) {
-      if (isASCIIUpper(cc)) {
-        m_token->beginEndTag(static_cast<LChar>(toLowerCase(cc)));
-        m_appropriateEndTagName.clear();
-        HTML_ADVANCE_TO(TagNameState);
-      } else if (isASCIILower(cc)) {
-        m_token->beginEndTag(static_cast<LChar>(cc));
-        m_appropriateEndTagName.clear();
-        HTML_ADVANCE_TO(TagNameState);
+    HTML_BEGIN_STATE(kEndTagOpenState) {
+      if (IsASCIIUpper(cc)) {
+        token_->BeginEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        appropriate_end_tag_name_.Clear();
+        HTML_ADVANCE_TO(kTagNameState);
+      } else if (IsASCIILower(cc)) {
+        token_->BeginEndTag(static_cast<LChar>(cc));
+        appropriate_end_tag_name_.Clear();
+        HTML_ADVANCE_TO(kTagNameState);
       } else if (cc == '>') {
-        parseError();
-        HTML_ADVANCE_TO(DataState);
+        ParseError();
+        HTML_ADVANCE_TO(kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        bufferCharacter('<');
-        bufferCharacter('/');
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        BufferCharacter('<');
+        BufferCharacter('/');
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        parseError();
-        HTML_RECONSUME_IN(BogusCommentState);
+        ParseError();
+        HTML_RECONSUME_IN(kBogusCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(TagNameState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeAttributeNameState);
+    HTML_BEGIN_STATE(kTagNameState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeAttributeNameState);
       else if (cc == '/')
-        HTML_ADVANCE_TO(SelfClosingStartTagState);
+        HTML_ADVANCE_TO(kSelfClosingStartTagState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
-      else if (isASCIIUpper(cc)) {
-        m_token->appendToName(toLowerCase(cc));
-        HTML_ADVANCE_TO(TagNameState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
+      else if (IsASCIIUpper(cc)) {
+        token_->AppendToName(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kTagNameState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        m_token->appendToName(cc);
-        HTML_ADVANCE_TO(TagNameState);
+        token_->AppendToName(cc);
+        HTML_ADVANCE_TO(kTagNameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RCDATALessThanSignState) {
+    HTML_BEGIN_STATE(kRCDATALessThanSignState) {
       if (cc == '/') {
-        m_temporaryBuffer.clear();
-        DCHECK(m_bufferedEndTagName.isEmpty());
-        HTML_ADVANCE_TO(RCDATAEndTagOpenState);
+        temporary_buffer_.Clear();
+        DCHECK(buffered_end_tag_name_.IsEmpty());
+        HTML_ADVANCE_TO(kRCDATAEndTagOpenState);
       } else {
-        bufferCharacter('<');
-        HTML_RECONSUME_IN(RCDATAState);
+        BufferCharacter('<');
+        HTML_RECONSUME_IN(kRCDATAState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RCDATAEndTagOpenState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(RCDATAEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(RCDATAEndTagNameState);
+    HTML_BEGIN_STATE(kRCDATAEndTagOpenState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kRCDATAEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kRCDATAEndTagNameState);
       } else {
-        bufferCharacter('<');
-        bufferCharacter('/');
-        HTML_RECONSUME_IN(RCDATAState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        HTML_RECONSUME_IN(kRCDATAState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RCDATAEndTagNameState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(RCDATAEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(RCDATAEndTagNameState);
+    HTML_BEGIN_STATE(kRCDATAEndTagNameState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kRCDATAEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kRCDATAEndTagNameState);
       } else {
-        if (isTokenizerWhitespace(cc)) {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
+        if (IsTokenizerWhitespace(cc)) {
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kBeforeAttributeNameState);
           }
         } else if (cc == '/') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kSelfClosingStartTagState);
           }
         } else if (cc == '>') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            return FlushEmitAndResumeIn(source, HTMLTokenizer::kDataState);
           }
         }
-        bufferCharacter('<');
-        bufferCharacter('/');
-        m_token->appendToCharacter(m_temporaryBuffer);
-        m_bufferedEndTagName.clear();
-        m_temporaryBuffer.clear();
-        HTML_RECONSUME_IN(RCDATAState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        token_->AppendToCharacter(temporary_buffer_);
+        buffered_end_tag_name_.Clear();
+        temporary_buffer_.Clear();
+        HTML_RECONSUME_IN(kRCDATAState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RAWTEXTLessThanSignState) {
+    HTML_BEGIN_STATE(kRAWTEXTLessThanSignState) {
       if (cc == '/') {
-        m_temporaryBuffer.clear();
-        DCHECK(m_bufferedEndTagName.isEmpty());
-        HTML_ADVANCE_TO(RAWTEXTEndTagOpenState);
+        temporary_buffer_.Clear();
+        DCHECK(buffered_end_tag_name_.IsEmpty());
+        HTML_ADVANCE_TO(kRAWTEXTEndTagOpenState);
       } else {
-        bufferCharacter('<');
-        HTML_RECONSUME_IN(RAWTEXTState);
+        BufferCharacter('<');
+        HTML_RECONSUME_IN(kRAWTEXTState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RAWTEXTEndTagOpenState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
+    HTML_BEGIN_STATE(kRAWTEXTEndTagOpenState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kRAWTEXTEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kRAWTEXTEndTagNameState);
       } else {
-        bufferCharacter('<');
-        bufferCharacter('/');
-        HTML_RECONSUME_IN(RAWTEXTState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        HTML_RECONSUME_IN(kRAWTEXTState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(RAWTEXTEndTagNameState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
+    HTML_BEGIN_STATE(kRAWTEXTEndTagNameState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kRAWTEXTEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kRAWTEXTEndTagNameState);
       } else {
-        if (isTokenizerWhitespace(cc)) {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
+        if (IsTokenizerWhitespace(cc)) {
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kBeforeAttributeNameState);
           }
         } else if (cc == '/') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kSelfClosingStartTagState);
           }
         } else if (cc == '>') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            return FlushEmitAndResumeIn(source, HTMLTokenizer::kDataState);
           }
         }
-        bufferCharacter('<');
-        bufferCharacter('/');
-        m_token->appendToCharacter(m_temporaryBuffer);
-        m_bufferedEndTagName.clear();
-        m_temporaryBuffer.clear();
-        HTML_RECONSUME_IN(RAWTEXTState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        token_->AppendToCharacter(temporary_buffer_);
+        buffered_end_tag_name_.Clear();
+        temporary_buffer_.Clear();
+        HTML_RECONSUME_IN(kRAWTEXTState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataLessThanSignState) {
+    HTML_BEGIN_STATE(kScriptDataLessThanSignState) {
       if (cc == '/') {
-        m_temporaryBuffer.clear();
-        DCHECK(m_bufferedEndTagName.isEmpty());
-        HTML_ADVANCE_TO(ScriptDataEndTagOpenState);
+        temporary_buffer_.Clear();
+        DCHECK(buffered_end_tag_name_.IsEmpty());
+        HTML_ADVANCE_TO(kScriptDataEndTagOpenState);
       } else if (cc == '!') {
-        bufferCharacter('<');
-        bufferCharacter('!');
-        HTML_ADVANCE_TO(ScriptDataEscapeStartState);
+        BufferCharacter('<');
+        BufferCharacter('!');
+        HTML_ADVANCE_TO(kScriptDataEscapeStartState);
       } else {
-        bufferCharacter('<');
-        HTML_RECONSUME_IN(ScriptDataState);
+        BufferCharacter('<');
+        HTML_RECONSUME_IN(kScriptDataState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEndTagOpenState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(ScriptDataEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataEndTagNameState);
+    HTML_BEGIN_STATE(kScriptDataEndTagOpenState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kScriptDataEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataEndTagNameState);
       } else {
-        bufferCharacter('<');
-        bufferCharacter('/');
-        HTML_RECONSUME_IN(ScriptDataState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        HTML_RECONSUME_IN(kScriptDataState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEndTagNameState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(ScriptDataEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataEndTagNameState);
+    HTML_BEGIN_STATE(kScriptDataEndTagNameState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kScriptDataEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataEndTagNameState);
       } else {
-        if (isTokenizerWhitespace(cc)) {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
+        if (IsTokenizerWhitespace(cc)) {
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kBeforeAttributeNameState);
           }
         } else if (cc == '/') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kSelfClosingStartTagState);
           }
         } else if (cc == '>') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            return FlushEmitAndResumeIn(source, HTMLTokenizer::kDataState);
           }
         }
-        bufferCharacter('<');
-        bufferCharacter('/');
-        m_token->appendToCharacter(m_temporaryBuffer);
-        m_bufferedEndTagName.clear();
-        m_temporaryBuffer.clear();
-        HTML_RECONSUME_IN(ScriptDataState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        token_->AppendToCharacter(temporary_buffer_);
+        buffered_end_tag_name_.Clear();
+        temporary_buffer_.Clear();
+        HTML_RECONSUME_IN(kScriptDataState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapeStartState) {
+    HTML_BEGIN_STATE(kScriptDataEscapeStartState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapeStartDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapeStartDashState);
       } else
-        HTML_RECONSUME_IN(ScriptDataState);
+        HTML_RECONSUME_IN(kScriptDataState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapeStartDashState) {
+    HTML_BEGIN_STATE(kScriptDataEscapeStartDashState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedDashDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedDashDashState);
       } else
-        HTML_RECONSUME_IN(ScriptDataState);
+        HTML_RECONSUME_IN(kScriptDataState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapedState) {
+    HTML_BEGIN_STATE(kScriptDataEscapedState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedDashState);
       } else if (cc == '<')
-        HTML_ADVANCE_TO(ScriptDataEscapedLessThanSignState);
+        HTML_ADVANCE_TO(kScriptDataEscapedLessThanSignState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapedDashState) {
+    HTML_BEGIN_STATE(kScriptDataEscapedDashState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedDashDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedDashDashState);
       } else if (cc == '<')
-        HTML_ADVANCE_TO(ScriptDataEscapedLessThanSignState);
+        HTML_ADVANCE_TO(kScriptDataEscapedLessThanSignState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapedDashDashState) {
+    HTML_BEGIN_STATE(kScriptDataEscapedDashDashState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedDashDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedDashDashState);
       } else if (cc == '<')
-        HTML_ADVANCE_TO(ScriptDataEscapedLessThanSignState);
+        HTML_ADVANCE_TO(kScriptDataEscapedLessThanSignState);
       else if (cc == '>') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataEscapedState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapedLessThanSignState) {
+    HTML_BEGIN_STATE(kScriptDataEscapedLessThanSignState) {
       if (cc == '/') {
-        m_temporaryBuffer.clear();
-        DCHECK(m_bufferedEndTagName.isEmpty());
-        HTML_ADVANCE_TO(ScriptDataEscapedEndTagOpenState);
-      } else if (isASCIIUpper(cc)) {
-        bufferCharacter('<');
-        bufferCharacter(cc);
-        m_temporaryBuffer.clear();
-        m_temporaryBuffer.push_back(toLowerCase(cc));
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
-      } else if (isASCIILower(cc)) {
-        bufferCharacter('<');
-        bufferCharacter(cc);
-        m_temporaryBuffer.clear();
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
+        temporary_buffer_.Clear();
+        DCHECK(buffered_end_tag_name_.IsEmpty());
+        HTML_ADVANCE_TO(kScriptDataEscapedEndTagOpenState);
+      } else if (IsASCIIUpper(cc)) {
+        BufferCharacter('<');
+        BufferCharacter(cc);
+        temporary_buffer_.Clear();
+        temporary_buffer_.push_back(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeStartState);
+      } else if (IsASCIILower(cc)) {
+        BufferCharacter('<');
+        BufferCharacter(cc);
+        temporary_buffer_.Clear();
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeStartState);
       } else {
-        bufferCharacter('<');
-        HTML_RECONSUME_IN(ScriptDataEscapedState);
+        BufferCharacter('<');
+        HTML_RECONSUME_IN(kScriptDataEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapedEndTagOpenState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
+    HTML_BEGIN_STATE(kScriptDataEscapedEndTagOpenState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kScriptDataEscapedEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataEscapedEndTagNameState);
       } else {
-        bufferCharacter('<');
-        bufferCharacter('/');
-        HTML_RECONSUME_IN(ScriptDataEscapedState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        HTML_RECONSUME_IN(kScriptDataEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataEscapedEndTagNameState) {
-      if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
-        HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
-      } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        addToPossibleEndTag(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
+    HTML_BEGIN_STATE(kScriptDataEscapedEndTagNameState) {
+      if (IsASCIIUpper(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(ToLowerCase(cc)));
+        HTML_ADVANCE_TO(kScriptDataEscapedEndTagNameState);
+      } else if (IsASCIILower(cc)) {
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        AddToPossibleEndTag(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataEscapedEndTagNameState);
       } else {
-        if (isTokenizerWhitespace(cc)) {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
+        if (IsTokenizerWhitespace(cc)) {
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kBeforeAttributeNameState);
           }
         } else if (cc == '/') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            FLUSH_AND_ADVANCE_TO(kSelfClosingStartTagState);
           }
         } else if (cc == '>') {
-          if (isAppropriateEndTag()) {
-            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-            return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
+          if (IsAppropriateEndTag()) {
+            temporary_buffer_.push_back(static_cast<LChar>(cc));
+            return FlushEmitAndResumeIn(source, HTMLTokenizer::kDataState);
           }
         }
-        bufferCharacter('<');
-        bufferCharacter('/');
-        m_token->appendToCharacter(m_temporaryBuffer);
-        m_bufferedEndTagName.clear();
-        m_temporaryBuffer.clear();
-        HTML_RECONSUME_IN(ScriptDataEscapedState);
+        BufferCharacter('<');
+        BufferCharacter('/');
+        token_->AppendToCharacter(temporary_buffer_);
+        buffered_end_tag_name_.Clear();
+        temporary_buffer_.Clear();
+        HTML_RECONSUME_IN(kScriptDataEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataDoubleEscapeStartState) {
-      if (isTokenizerWhitespace(cc) || cc == '/' || cc == '>') {
-        bufferCharacter(cc);
-        if (temporaryBufferIs(scriptTag.localName()))
-          HTML_ADVANCE_TO(ScriptDataDoubleEscapedState);
+    HTML_BEGIN_STATE(kScriptDataDoubleEscapeStartState) {
+      if (IsTokenizerWhitespace(cc) || cc == '/' || cc == '>') {
+        BufferCharacter(cc);
+        if (TemporaryBufferIs(scriptTag.LocalName()))
+          HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
         else
-          HTML_ADVANCE_TO(ScriptDataEscapedState);
-      } else if (isASCIIUpper(cc)) {
-        bufferCharacter(cc);
-        m_temporaryBuffer.push_back(toLowerCase(cc));
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
-      } else if (isASCIILower(cc)) {
-        bufferCharacter(cc);
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
+          HTML_ADVANCE_TO(kScriptDataEscapedState);
+      } else if (IsASCIIUpper(cc)) {
+        BufferCharacter(cc);
+        temporary_buffer_.push_back(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeStartState);
+      } else if (IsASCIILower(cc)) {
+        BufferCharacter(cc);
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeStartState);
       } else
-        HTML_RECONSUME_IN(ScriptDataEscapedState);
+        HTML_RECONSUME_IN(kScriptDataEscapedState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataDoubleEscapedState) {
+    HTML_BEGIN_STATE(kScriptDataDoubleEscapedState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedDashState);
       } else if (cc == '<') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedLessThanSignState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedLessThanSignState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataDoubleEscapedDashState) {
+    HTML_BEGIN_STATE(kScriptDataDoubleEscapedDashState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedDashDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedDashDashState);
       } else if (cc == '<') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedLessThanSignState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedLessThanSignState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataDoubleEscapedDashDashState) {
+    HTML_BEGIN_STATE(kScriptDataDoubleEscapedDashDashState) {
       if (cc == '-') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedDashDashState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedDashDashState);
       } else if (cc == '<') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedLessThanSignState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedLessThanSignState);
       } else if (cc == '>') {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapedState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataDoubleEscapedLessThanSignState) {
+    HTML_BEGIN_STATE(kScriptDataDoubleEscapedLessThanSignState) {
       if (cc == '/') {
-        bufferCharacter(cc);
-        m_temporaryBuffer.clear();
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeEndState);
+        BufferCharacter(cc);
+        temporary_buffer_.Clear();
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeEndState);
       } else
-        HTML_RECONSUME_IN(ScriptDataDoubleEscapedState);
+        HTML_RECONSUME_IN(kScriptDataDoubleEscapedState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ScriptDataDoubleEscapeEndState) {
-      if (isTokenizerWhitespace(cc) || cc == '/' || cc == '>') {
-        bufferCharacter(cc);
-        if (temporaryBufferIs(scriptTag.localName()))
-          HTML_ADVANCE_TO(ScriptDataEscapedState);
+    HTML_BEGIN_STATE(kScriptDataDoubleEscapeEndState) {
+      if (IsTokenizerWhitespace(cc) || cc == '/' || cc == '>') {
+        BufferCharacter(cc);
+        if (TemporaryBufferIs(scriptTag.LocalName()))
+          HTML_ADVANCE_TO(kScriptDataEscapedState);
         else
-          HTML_ADVANCE_TO(ScriptDataDoubleEscapedState);
-      } else if (isASCIIUpper(cc)) {
-        bufferCharacter(cc);
-        m_temporaryBuffer.push_back(toLowerCase(cc));
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeEndState);
-      } else if (isASCIILower(cc)) {
-        bufferCharacter(cc);
-        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
-        HTML_ADVANCE_TO(ScriptDataDoubleEscapeEndState);
+          HTML_ADVANCE_TO(kScriptDataDoubleEscapedState);
+      } else if (IsASCIIUpper(cc)) {
+        BufferCharacter(cc);
+        temporary_buffer_.push_back(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeEndState);
+      } else if (IsASCIILower(cc)) {
+        BufferCharacter(cc);
+        temporary_buffer_.push_back(static_cast<LChar>(cc));
+        HTML_ADVANCE_TO(kScriptDataDoubleEscapeEndState);
       } else
-        HTML_RECONSUME_IN(ScriptDataDoubleEscapedState);
+        HTML_RECONSUME_IN(kScriptDataDoubleEscapedState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BeforeAttributeNameState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeAttributeNameState);
+    HTML_BEGIN_STATE(kBeforeAttributeNameState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeAttributeNameState);
       else if (cc == '/')
-        HTML_ADVANCE_TO(SelfClosingStartTagState);
+        HTML_ADVANCE_TO(kSelfClosingStartTagState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
-      else if (isASCIIUpper(cc)) {
-        m_token->addNewAttribute();
-        m_token->beginAttributeName(source.numberOfCharactersConsumed());
-        m_token->appendToAttributeName(toLowerCase(cc));
-        HTML_ADVANCE_TO(AttributeNameState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
+      else if (IsASCIIUpper(cc)) {
+        token_->AddNewAttribute();
+        token_->BeginAttributeName(source.NumberOfCharactersConsumed());
+        token_->AppendToAttributeName(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kAttributeNameState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
         if (cc == '"' || cc == '\'' || cc == '<' || cc == '=')
-          parseError();
-        m_token->addNewAttribute();
-        m_token->beginAttributeName(source.numberOfCharactersConsumed());
-        m_token->appendToAttributeName(cc);
-        HTML_ADVANCE_TO(AttributeNameState);
+          ParseError();
+        token_->AddNewAttribute();
+        token_->BeginAttributeName(source.NumberOfCharactersConsumed());
+        token_->AppendToAttributeName(cc);
+        HTML_ADVANCE_TO(kAttributeNameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AttributeNameState) {
-      if (isTokenizerWhitespace(cc)) {
-        m_token->endAttributeName(source.numberOfCharactersConsumed());
-        HTML_ADVANCE_TO(AfterAttributeNameState);
+    HTML_BEGIN_STATE(kAttributeNameState) {
+      if (IsTokenizerWhitespace(cc)) {
+        token_->EndAttributeName(source.NumberOfCharactersConsumed());
+        HTML_ADVANCE_TO(kAfterAttributeNameState);
       } else if (cc == '/') {
-        m_token->endAttributeName(source.numberOfCharactersConsumed());
-        HTML_ADVANCE_TO(SelfClosingStartTagState);
+        token_->EndAttributeName(source.NumberOfCharactersConsumed());
+        HTML_ADVANCE_TO(kSelfClosingStartTagState);
       } else if (cc == '=') {
-        m_token->endAttributeName(source.numberOfCharactersConsumed());
-        HTML_ADVANCE_TO(BeforeAttributeValueState);
+        token_->EndAttributeName(source.NumberOfCharactersConsumed());
+        HTML_ADVANCE_TO(kBeforeAttributeValueState);
       } else if (cc == '>') {
-        m_token->endAttributeName(source.numberOfCharactersConsumed());
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
-      } else if (isASCIIUpper(cc)) {
-        m_token->appendToAttributeName(toLowerCase(cc));
-        HTML_ADVANCE_TO(AttributeNameState);
+        token_->EndAttributeName(source.NumberOfCharactersConsumed());
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
+      } else if (IsASCIIUpper(cc)) {
+        token_->AppendToAttributeName(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kAttributeNameState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->endAttributeName(source.numberOfCharactersConsumed());
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        token_->EndAttributeName(source.NumberOfCharactersConsumed());
+        HTML_RECONSUME_IN(kDataState);
       } else {
         if (cc == '"' || cc == '\'' || cc == '<' || cc == '=')
-          parseError();
-        m_token->appendToAttributeName(cc);
-        HTML_ADVANCE_TO(AttributeNameState);
+          ParseError();
+        token_->AppendToAttributeName(cc);
+        HTML_ADVANCE_TO(kAttributeNameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterAttributeNameState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(AfterAttributeNameState);
+    HTML_BEGIN_STATE(kAfterAttributeNameState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kAfterAttributeNameState);
       else if (cc == '/')
-        HTML_ADVANCE_TO(SelfClosingStartTagState);
+        HTML_ADVANCE_TO(kSelfClosingStartTagState);
       else if (cc == '=')
-        HTML_ADVANCE_TO(BeforeAttributeValueState);
+        HTML_ADVANCE_TO(kBeforeAttributeValueState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
-      else if (isASCIIUpper(cc)) {
-        m_token->addNewAttribute();
-        m_token->beginAttributeName(source.numberOfCharactersConsumed());
-        m_token->appendToAttributeName(toLowerCase(cc));
-        HTML_ADVANCE_TO(AttributeNameState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
+      else if (IsASCIIUpper(cc)) {
+        token_->AddNewAttribute();
+        token_->BeginAttributeName(source.NumberOfCharactersConsumed());
+        token_->AppendToAttributeName(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kAttributeNameState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
         if (cc == '"' || cc == '\'' || cc == '<')
-          parseError();
-        m_token->addNewAttribute();
-        m_token->beginAttributeName(source.numberOfCharactersConsumed());
-        m_token->appendToAttributeName(cc);
-        HTML_ADVANCE_TO(AttributeNameState);
+          ParseError();
+        token_->AddNewAttribute();
+        token_->BeginAttributeName(source.NumberOfCharactersConsumed());
+        token_->AppendToAttributeName(cc);
+        HTML_ADVANCE_TO(kAttributeNameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BeforeAttributeValueState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeAttributeValueState);
+    HTML_BEGIN_STATE(kBeforeAttributeValueState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeAttributeValueState);
       else if (cc == '"') {
-        m_token->beginAttributeValue(source.numberOfCharactersConsumed() + 1);
-        HTML_ADVANCE_TO(AttributeValueDoubleQuotedState);
+        token_->BeginAttributeValue(source.NumberOfCharactersConsumed() + 1);
+        HTML_ADVANCE_TO(kAttributeValueDoubleQuotedState);
       } else if (cc == '&') {
-        m_token->beginAttributeValue(source.numberOfCharactersConsumed());
-        HTML_RECONSUME_IN(AttributeValueUnquotedState);
+        token_->BeginAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_RECONSUME_IN(kAttributeValueUnquotedState);
       } else if (cc == '\'') {
-        m_token->beginAttributeValue(source.numberOfCharactersConsumed() + 1);
-        HTML_ADVANCE_TO(AttributeValueSingleQuotedState);
+        token_->BeginAttributeValue(source.NumberOfCharactersConsumed() + 1);
+        HTML_ADVANCE_TO(kAttributeValueSingleQuotedState);
       } else if (cc == '>') {
-        parseError();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
         if (cc == '<' || cc == '=' || cc == '`')
-          parseError();
-        m_token->beginAttributeValue(source.numberOfCharactersConsumed());
-        m_token->appendToAttributeValue(cc);
-        HTML_ADVANCE_TO(AttributeValueUnquotedState);
+          ParseError();
+        token_->BeginAttributeValue(source.NumberOfCharactersConsumed());
+        token_->AppendToAttributeValue(cc);
+        HTML_ADVANCE_TO(kAttributeValueUnquotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AttributeValueDoubleQuotedState) {
+    HTML_BEGIN_STATE(kAttributeValueDoubleQuotedState) {
       if (cc == '"') {
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        HTML_ADVANCE_TO(AfterAttributeValueQuotedState);
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_ADVANCE_TO(kAfterAttributeValueQuotedState);
       } else if (cc == '&') {
-        m_additionalAllowedCharacter = '"';
-        HTML_ADVANCE_TO(CharacterReferenceInAttributeValueState);
+        additional_allowed_character_ = '"';
+        HTML_ADVANCE_TO(kCharacterReferenceInAttributeValueState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        m_token->appendToAttributeValue(cc);
-        HTML_ADVANCE_TO(AttributeValueDoubleQuotedState);
+        token_->AppendToAttributeValue(cc);
+        HTML_ADVANCE_TO(kAttributeValueDoubleQuotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AttributeValueSingleQuotedState) {
+    HTML_BEGIN_STATE(kAttributeValueSingleQuotedState) {
       if (cc == '\'') {
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        HTML_ADVANCE_TO(AfterAttributeValueQuotedState);
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_ADVANCE_TO(kAfterAttributeValueQuotedState);
       } else if (cc == '&') {
-        m_additionalAllowedCharacter = '\'';
-        HTML_ADVANCE_TO(CharacterReferenceInAttributeValueState);
+        additional_allowed_character_ = '\'';
+        HTML_ADVANCE_TO(kCharacterReferenceInAttributeValueState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        m_token->appendToAttributeValue(cc);
-        HTML_ADVANCE_TO(AttributeValueSingleQuotedState);
+        token_->AppendToAttributeValue(cc);
+        HTML_ADVANCE_TO(kAttributeValueSingleQuotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AttributeValueUnquotedState) {
-      if (isTokenizerWhitespace(cc)) {
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        HTML_ADVANCE_TO(BeforeAttributeNameState);
+    HTML_BEGIN_STATE(kAttributeValueUnquotedState) {
+      if (IsTokenizerWhitespace(cc)) {
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_ADVANCE_TO(kBeforeAttributeNameState);
       } else if (cc == '&') {
-        m_additionalAllowedCharacter = '>';
-        HTML_ADVANCE_TO(CharacterReferenceInAttributeValueState);
+        additional_allowed_character_ = '>';
+        HTML_ADVANCE_TO(kCharacterReferenceInAttributeValueState);
       } else if (cc == '>') {
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->endAttributeValue(source.numberOfCharactersConsumed());
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        token_->EndAttributeValue(source.NumberOfCharactersConsumed());
+        HTML_RECONSUME_IN(kDataState);
       } else {
         if (cc == '"' || cc == '\'' || cc == '<' || cc == '=' || cc == '`')
-          parseError();
-        m_token->appendToAttributeValue(cc);
-        HTML_ADVANCE_TO(AttributeValueUnquotedState);
+          ParseError();
+        token_->AppendToAttributeValue(cc);
+        HTML_ADVANCE_TO(kAttributeValueUnquotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CharacterReferenceInAttributeValueState) {
-      bool notEnoughCharacters = false;
-      DecodedHTMLEntity decodedEntity;
+    HTML_BEGIN_STATE(kCharacterReferenceInAttributeValueState) {
+      bool not_enough_characters = false;
+      DecodedHTMLEntity decoded_entity;
       bool success =
-          consumeHTMLEntity(source, decodedEntity, notEnoughCharacters,
-                            m_additionalAllowedCharacter);
-      if (notEnoughCharacters)
-        return haveBufferedCharacterToken();
+          ConsumeHTMLEntity(source, decoded_entity, not_enough_characters,
+                            additional_allowed_character_);
+      if (not_enough_characters)
+        return HaveBufferedCharacterToken();
       if (!success) {
-        DCHECK(decodedEntity.isEmpty());
-        m_token->appendToAttributeValue('&');
+        DCHECK(decoded_entity.IsEmpty());
+        token_->AppendToAttributeValue('&');
       } else {
-        for (unsigned i = 0; i < decodedEntity.length; ++i)
-          m_token->appendToAttributeValue(decodedEntity.data[i]);
+        for (unsigned i = 0; i < decoded_entity.length; ++i)
+          token_->AppendToAttributeValue(decoded_entity.data[i]);
       }
       // We're supposed to switch back to the attribute value state that
       // we were in when we were switched into this state. Rather than
       // keeping track of this explictly, we observe that the previous
       // state can be determined by m_additionalAllowedCharacter.
-      if (m_additionalAllowedCharacter == '"')
-        HTML_SWITCH_TO(AttributeValueDoubleQuotedState);
-      else if (m_additionalAllowedCharacter == '\'')
-        HTML_SWITCH_TO(AttributeValueSingleQuotedState);
-      else if (m_additionalAllowedCharacter == '>')
-        HTML_SWITCH_TO(AttributeValueUnquotedState);
+      if (additional_allowed_character_ == '"')
+        HTML_SWITCH_TO(kAttributeValueDoubleQuotedState);
+      else if (additional_allowed_character_ == '\'')
+        HTML_SWITCH_TO(kAttributeValueSingleQuotedState);
+      else if (additional_allowed_character_ == '>')
+        HTML_SWITCH_TO(kAttributeValueUnquotedState);
       else
         NOTREACHED();
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterAttributeValueQuotedState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeAttributeNameState);
+    HTML_BEGIN_STATE(kAfterAttributeValueQuotedState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeAttributeNameState);
       else if (cc == '/')
-        HTML_ADVANCE_TO(SelfClosingStartTagState);
+        HTML_ADVANCE_TO(kSelfClosingStartTagState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        parseError();
-        HTML_RECONSUME_IN(BeforeAttributeNameState);
+        ParseError();
+        HTML_RECONSUME_IN(kBeforeAttributeNameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(SelfClosingStartTagState) {
+    HTML_BEGIN_STATE(kSelfClosingStartTagState) {
       if (cc == '>') {
-        m_token->setSelfClosing();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        token_->SetSelfClosing();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        HTML_RECONSUME_IN(DataState);
+        ParseError();
+        HTML_RECONSUME_IN(kDataState);
       } else {
-        parseError();
-        HTML_RECONSUME_IN(BeforeAttributeNameState);
+        ParseError();
+        HTML_RECONSUME_IN(kBeforeAttributeNameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BogusCommentState) {
-      m_token->beginComment();
-      HTML_RECONSUME_IN(ContinueBogusCommentState);
+    HTML_BEGIN_STATE(kBogusCommentState) {
+      token_->BeginComment();
+      HTML_RECONSUME_IN(kContinueBogusCommentState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(ContinueBogusCommentState) {
+    HTML_BEGIN_STATE(kContinueBogusCommentState) {
       if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == kEndOfFileMarker)
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       else {
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(ContinueBogusCommentState);
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kContinueBogusCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(MarkupDeclarationOpenState) {
+    HTML_BEGIN_STATE(kMarkupDeclarationOpenState) {
       if (cc == '-') {
         SegmentedString::LookAheadResult result =
-            source.lookAhead(HTMLTokenizerNames::dashDash);
-        if (result == SegmentedString::DidMatch) {
-          source.advanceAndASSERT('-');
-          source.advanceAndASSERT('-');
-          m_token->beginComment();
-          HTML_SWITCH_TO(CommentStartState);
-        } else if (result == SegmentedString::NotEnoughCharacters)
-          return haveBufferedCharacterToken();
+            source.LookAhead(HTMLTokenizerNames::dashDash);
+        if (result == SegmentedString::kDidMatch) {
+          source.AdvanceAndASSERT('-');
+          source.AdvanceAndASSERT('-');
+          token_->BeginComment();
+          HTML_SWITCH_TO(kCommentStartState);
+        } else if (result == SegmentedString::kNotEnoughCharacters)
+          return HaveBufferedCharacterToken();
       } else if (cc == 'D' || cc == 'd') {
         SegmentedString::LookAheadResult result =
-            source.lookAheadIgnoringCase(HTMLTokenizerNames::doctype);
-        if (result == SegmentedString::DidMatch) {
-          advanceStringAndASSERTIgnoringCase(source, "doctype");
-          HTML_SWITCH_TO(DOCTYPEState);
-        } else if (result == SegmentedString::NotEnoughCharacters)
-          return haveBufferedCharacterToken();
-      } else if (cc == '[' && shouldAllowCDATA()) {
+            source.LookAheadIgnoringCase(HTMLTokenizerNames::doctype);
+        if (result == SegmentedString::kDidMatch) {
+          AdvanceStringAndASSERTIgnoringCase(source, "doctype");
+          HTML_SWITCH_TO(kDOCTYPEState);
+        } else if (result == SegmentedString::kNotEnoughCharacters)
+          return HaveBufferedCharacterToken();
+      } else if (cc == '[' && ShouldAllowCDATA()) {
         SegmentedString::LookAheadResult result =
-            source.lookAhead(HTMLTokenizerNames::cdata);
-        if (result == SegmentedString::DidMatch) {
-          advanceStringAndASSERT(source, "[CDATA[");
-          HTML_SWITCH_TO(CDATASectionState);
-        } else if (result == SegmentedString::NotEnoughCharacters)
-          return haveBufferedCharacterToken();
+            source.LookAhead(HTMLTokenizerNames::cdata);
+        if (result == SegmentedString::kDidMatch) {
+          AdvanceStringAndASSERT(source, "[CDATA[");
+          HTML_SWITCH_TO(kCDATASectionState);
+        } else if (result == SegmentedString::kNotEnoughCharacters)
+          return HaveBufferedCharacterToken();
       }
-      parseError();
-      HTML_RECONSUME_IN(BogusCommentState);
+      ParseError();
+      HTML_RECONSUME_IN(kBogusCommentState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CommentStartState) {
+    HTML_BEGIN_STATE(kCommentStartState) {
       if (cc == '-')
-        HTML_ADVANCE_TO(CommentStartDashState);
+        HTML_ADVANCE_TO(kCommentStartDashState);
       else if (cc == '>') {
-        parseError();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(CommentState);
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CommentStartDashState) {
+    HTML_BEGIN_STATE(kCommentStartDashState) {
       if (cc == '-')
-        HTML_ADVANCE_TO(CommentEndState);
+        HTML_ADVANCE_TO(kCommentEndState);
       else if (cc == '>') {
-        parseError();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToComment('-');
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(CommentState);
+        token_->AppendToComment('-');
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CommentState) {
+    HTML_BEGIN_STATE(kCommentState) {
       if (cc == '-')
-        HTML_ADVANCE_TO(CommentEndDashState);
+        HTML_ADVANCE_TO(kCommentEndDashState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(CommentState);
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CommentEndDashState) {
+    HTML_BEGIN_STATE(kCommentEndDashState) {
       if (cc == '-')
-        HTML_ADVANCE_TO(CommentEndState);
+        HTML_ADVANCE_TO(kCommentEndState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToComment('-');
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(CommentState);
+        token_->AppendToComment('-');
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CommentEndState) {
+    HTML_BEGIN_STATE(kCommentEndState) {
       if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == '!') {
-        parseError();
-        HTML_ADVANCE_TO(CommentEndBangState);
+        ParseError();
+        HTML_ADVANCE_TO(kCommentEndBangState);
       } else if (cc == '-') {
-        parseError();
-        m_token->appendToComment('-');
-        HTML_ADVANCE_TO(CommentEndState);
+        ParseError();
+        token_->AppendToComment('-');
+        HTML_ADVANCE_TO(kCommentEndState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->appendToComment('-');
-        m_token->appendToComment('-');
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(CommentState);
+        ParseError();
+        token_->AppendToComment('-');
+        token_->AppendToComment('-');
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CommentEndBangState) {
+    HTML_BEGIN_STATE(kCommentEndBangState) {
       if (cc == '-') {
-        m_token->appendToComment('-');
-        m_token->appendToComment('-');
-        m_token->appendToComment('!');
-        HTML_ADVANCE_TO(CommentEndDashState);
+        token_->AppendToComment('-');
+        token_->AppendToComment('-');
+        token_->AppendToComment('!');
+        HTML_ADVANCE_TO(kCommentEndDashState);
       } else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToComment('-');
-        m_token->appendToComment('-');
-        m_token->appendToComment('!');
-        m_token->appendToComment(cc);
-        HTML_ADVANCE_TO(CommentState);
+        token_->AppendToComment('-');
+        token_->AppendToComment('-');
+        token_->AppendToComment('!');
+        token_->AppendToComment(cc);
+        HTML_ADVANCE_TO(kCommentState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(DOCTYPEState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeDOCTYPENameState);
+    HTML_BEGIN_STATE(kDOCTYPEState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeDOCTYPENameState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->beginDOCTYPE();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->BeginDOCTYPE();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        HTML_RECONSUME_IN(BeforeDOCTYPENameState);
+        ParseError();
+        HTML_RECONSUME_IN(kBeforeDOCTYPENameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BeforeDOCTYPENameState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeDOCTYPENameState);
-      else if (isASCIIUpper(cc)) {
-        m_token->beginDOCTYPE(toLowerCase(cc));
-        HTML_ADVANCE_TO(DOCTYPENameState);
+    HTML_BEGIN_STATE(kBeforeDOCTYPENameState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeDOCTYPENameState);
+      else if (IsASCIIUpper(cc)) {
+        token_->BeginDOCTYPE(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kDOCTYPENameState);
       } else if (cc == '>') {
-        parseError();
-        m_token->beginDOCTYPE();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->BeginDOCTYPE();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->beginDOCTYPE();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->BeginDOCTYPE();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->beginDOCTYPE(cc);
-        HTML_ADVANCE_TO(DOCTYPENameState);
+        token_->BeginDOCTYPE(cc);
+        HTML_ADVANCE_TO(kDOCTYPENameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(DOCTYPENameState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(AfterDOCTYPENameState);
+    HTML_BEGIN_STATE(kDOCTYPENameState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kAfterDOCTYPENameState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
-      else if (isASCIIUpper(cc)) {
-        m_token->appendToName(toLowerCase(cc));
-        HTML_ADVANCE_TO(DOCTYPENameState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
+      else if (IsASCIIUpper(cc)) {
+        token_->AppendToName(ToLowerCase(cc));
+        HTML_ADVANCE_TO(kDOCTYPENameState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToName(cc);
-        HTML_ADVANCE_TO(DOCTYPENameState);
+        token_->AppendToName(cc);
+        HTML_ADVANCE_TO(kDOCTYPENameState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterDOCTYPENameState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(AfterDOCTYPENameState);
+    HTML_BEGIN_STATE(kAfterDOCTYPENameState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kAfterDOCTYPENameState);
       if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
         if (cc == 'P' || cc == 'p') {
           SegmentedString::LookAheadResult result =
-              source.lookAheadIgnoringCase(HTMLTokenizerNames::publicString);
-          if (result == SegmentedString::DidMatch) {
-            advanceStringAndASSERTIgnoringCase(source, "public");
-            HTML_SWITCH_TO(AfterDOCTYPEPublicKeywordState);
-          } else if (result == SegmentedString::NotEnoughCharacters)
-            return haveBufferedCharacterToken();
+              source.LookAheadIgnoringCase(HTMLTokenizerNames::publicString);
+          if (result == SegmentedString::kDidMatch) {
+            AdvanceStringAndASSERTIgnoringCase(source, "public");
+            HTML_SWITCH_TO(kAfterDOCTYPEPublicKeywordState);
+          } else if (result == SegmentedString::kNotEnoughCharacters)
+            return HaveBufferedCharacterToken();
         } else if (cc == 'S' || cc == 's') {
           SegmentedString::LookAheadResult result =
-              source.lookAheadIgnoringCase(HTMLTokenizerNames::system);
-          if (result == SegmentedString::DidMatch) {
-            advanceStringAndASSERTIgnoringCase(source, "system");
-            HTML_SWITCH_TO(AfterDOCTYPESystemKeywordState);
-          } else if (result == SegmentedString::NotEnoughCharacters)
-            return haveBufferedCharacterToken();
+              source.LookAheadIgnoringCase(HTMLTokenizerNames::system);
+          if (result == SegmentedString::kDidMatch) {
+            AdvanceStringAndASSERTIgnoringCase(source, "system");
+            HTML_SWITCH_TO(kAfterDOCTYPESystemKeywordState);
+          } else if (result == SegmentedString::kNotEnoughCharacters)
+            return HaveBufferedCharacterToken();
         }
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterDOCTYPEPublicKeywordState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeDOCTYPEPublicIdentifierState);
+    HTML_BEGIN_STATE(kAfterDOCTYPEPublicKeywordState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeDOCTYPEPublicIdentifierState);
       else if (cc == '"') {
-        parseError();
-        m_token->setPublicIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPEPublicIdentifierDoubleQuotedState);
+        ParseError();
+        token_->SetPublicIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPEPublicIdentifierDoubleQuotedState);
       } else if (cc == '\'') {
-        parseError();
-        m_token->setPublicIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPEPublicIdentifierSingleQuotedState);
+        ParseError();
+        token_->SetPublicIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPEPublicIdentifierSingleQuotedState);
       } else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BeforeDOCTYPEPublicIdentifierState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeDOCTYPEPublicIdentifierState);
+    HTML_BEGIN_STATE(kBeforeDOCTYPEPublicIdentifierState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeDOCTYPEPublicIdentifierState);
       else if (cc == '"') {
-        m_token->setPublicIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPEPublicIdentifierDoubleQuotedState);
+        token_->SetPublicIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPEPublicIdentifierDoubleQuotedState);
       } else if (cc == '\'') {
-        m_token->setPublicIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPEPublicIdentifierSingleQuotedState);
+        token_->SetPublicIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPEPublicIdentifierSingleQuotedState);
       } else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(DOCTYPEPublicIdentifierDoubleQuotedState) {
+    HTML_BEGIN_STATE(kDOCTYPEPublicIdentifierDoubleQuotedState) {
       if (cc == '"')
-        HTML_ADVANCE_TO(AfterDOCTYPEPublicIdentifierState);
+        HTML_ADVANCE_TO(kAfterDOCTYPEPublicIdentifierState);
       else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToPublicIdentifier(cc);
-        HTML_ADVANCE_TO(DOCTYPEPublicIdentifierDoubleQuotedState);
+        token_->AppendToPublicIdentifier(cc);
+        HTML_ADVANCE_TO(kDOCTYPEPublicIdentifierDoubleQuotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(DOCTYPEPublicIdentifierSingleQuotedState) {
+    HTML_BEGIN_STATE(kDOCTYPEPublicIdentifierSingleQuotedState) {
       if (cc == '\'')
-        HTML_ADVANCE_TO(AfterDOCTYPEPublicIdentifierState);
+        HTML_ADVANCE_TO(kAfterDOCTYPEPublicIdentifierState);
       else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToPublicIdentifier(cc);
-        HTML_ADVANCE_TO(DOCTYPEPublicIdentifierSingleQuotedState);
+        token_->AppendToPublicIdentifier(cc);
+        HTML_ADVANCE_TO(kDOCTYPEPublicIdentifierSingleQuotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterDOCTYPEPublicIdentifierState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BetweenDOCTYPEPublicAndSystemIdentifiersState);
+    HTML_BEGIN_STATE(kAfterDOCTYPEPublicIdentifierState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBetweenDOCTYPEPublicAndSystemIdentifiersState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == '"') {
-        parseError();
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierDoubleQuotedState);
+        ParseError();
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierDoubleQuotedState);
       } else if (cc == '\'') {
-        parseError();
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierSingleQuotedState);
+        ParseError();
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierSingleQuotedState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BetweenDOCTYPEPublicAndSystemIdentifiersState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BetweenDOCTYPEPublicAndSystemIdentifiersState);
+    HTML_BEGIN_STATE(kBetweenDOCTYPEPublicAndSystemIdentifiersState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBetweenDOCTYPEPublicAndSystemIdentifiersState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == '"') {
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierDoubleQuotedState);
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierDoubleQuotedState);
       } else if (cc == '\'') {
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierSingleQuotedState);
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierSingleQuotedState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterDOCTYPESystemKeywordState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeDOCTYPESystemIdentifierState);
+    HTML_BEGIN_STATE(kAfterDOCTYPESystemKeywordState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeDOCTYPESystemIdentifierState);
       else if (cc == '"') {
-        parseError();
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierDoubleQuotedState);
+        ParseError();
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierDoubleQuotedState);
       } else if (cc == '\'') {
-        parseError();
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierSingleQuotedState);
+        ParseError();
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierSingleQuotedState);
       } else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BeforeDOCTYPESystemIdentifierState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(BeforeDOCTYPESystemIdentifierState);
+    HTML_BEGIN_STATE(kBeforeDOCTYPESystemIdentifierState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kBeforeDOCTYPESystemIdentifierState);
       if (cc == '"') {
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierDoubleQuotedState);
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierDoubleQuotedState);
       } else if (cc == '\'') {
-        m_token->setSystemIdentifierToEmptyString();
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierSingleQuotedState);
+        token_->SetSystemIdentifierToEmptyString();
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierSingleQuotedState);
       } else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        m_token->setForceQuirks();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        token_->SetForceQuirks();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(DOCTYPESystemIdentifierDoubleQuotedState) {
+    HTML_BEGIN_STATE(kDOCTYPESystemIdentifierDoubleQuotedState) {
       if (cc == '"')
-        HTML_ADVANCE_TO(AfterDOCTYPESystemIdentifierState);
+        HTML_ADVANCE_TO(kAfterDOCTYPESystemIdentifierState);
       else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToSystemIdentifier(cc);
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierDoubleQuotedState);
+        token_->AppendToSystemIdentifier(cc);
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierDoubleQuotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(DOCTYPESystemIdentifierSingleQuotedState) {
+    HTML_BEGIN_STATE(kDOCTYPESystemIdentifierSingleQuotedState) {
       if (cc == '\'')
-        HTML_ADVANCE_TO(AfterDOCTYPESystemIdentifierState);
+        HTML_ADVANCE_TO(kAfterDOCTYPESystemIdentifierState);
       else if (cc == '>') {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       } else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        m_token->appendToSystemIdentifier(cc);
-        HTML_ADVANCE_TO(DOCTYPESystemIdentifierSingleQuotedState);
+        token_->AppendToSystemIdentifier(cc);
+        HTML_ADVANCE_TO(kDOCTYPESystemIdentifierSingleQuotedState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(AfterDOCTYPESystemIdentifierState) {
-      if (isTokenizerWhitespace(cc))
-        HTML_ADVANCE_TO(AfterDOCTYPESystemIdentifierState);
+    HTML_BEGIN_STATE(kAfterDOCTYPESystemIdentifierState) {
+      if (IsTokenizerWhitespace(cc))
+        HTML_ADVANCE_TO(kAfterDOCTYPESystemIdentifierState);
       else if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == kEndOfFileMarker) {
-        parseError();
-        m_token->setForceQuirks();
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
+        ParseError();
+        token_->SetForceQuirks();
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
       } else {
-        parseError();
-        HTML_ADVANCE_TO(BogusDOCTYPEState);
+        ParseError();
+        HTML_ADVANCE_TO(kBogusDOCTYPEState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(BogusDOCTYPEState) {
+    HTML_BEGIN_STATE(kBogusDOCTYPEState) {
       if (cc == '>')
-        return emitAndResumeIn(source, HTMLTokenizer::DataState);
+        return EmitAndResumeIn(source, HTMLTokenizer::kDataState);
       else if (cc == kEndOfFileMarker)
-        return emitAndReconsumeIn(source, HTMLTokenizer::DataState);
-      HTML_ADVANCE_TO(BogusDOCTYPEState);
+        return EmitAndReconsumeIn(source, HTMLTokenizer::kDataState);
+      HTML_ADVANCE_TO(kBogusDOCTYPEState);
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CDATASectionState) {
+    HTML_BEGIN_STATE(kCDATASectionState) {
       if (cc == ']')
-        HTML_ADVANCE_TO(CDATASectionBracketState);
+        HTML_ADVANCE_TO(kCDATASectionBracketState);
       else if (cc == kEndOfFileMarker)
-        HTML_RECONSUME_IN(DataState);
+        HTML_RECONSUME_IN(kDataState);
       else {
-        bufferCharacter(cc);
-        HTML_ADVANCE_TO(CDATASectionState);
+        BufferCharacter(cc);
+        HTML_ADVANCE_TO(kCDATASectionState);
       }
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CDATASectionBracketState) {
+    HTML_BEGIN_STATE(kCDATASectionBracketState) {
       if (cc == ']')
-        HTML_ADVANCE_TO(CDATASectionEndState);
+        HTML_ADVANCE_TO(kCDATASectionEndState);
       else {
-        bufferCharacter(']');
-        HTML_RECONSUME_IN(CDATASectionState);
+        BufferCharacter(']');
+        HTML_RECONSUME_IN(kCDATASectionState);
       }
     }
 
-    HTML_BEGIN_STATE(CDATASectionEndState) {
+    HTML_BEGIN_STATE(kCDATASectionEndState) {
       if (cc == ']') {
-        bufferCharacter(']');
-        HTML_ADVANCE_TO(CDATASectionEndState);
+        BufferCharacter(']');
+        HTML_ADVANCE_TO(kCDATASectionEndState);
       } else if (cc == '>') {
-        HTML_ADVANCE_TO(DataState);
+        HTML_ADVANCE_TO(kDataState);
       } else {
-        bufferCharacter(']');
-        bufferCharacter(']');
-        HTML_RECONSUME_IN(CDATASectionState);
+        BufferCharacter(']');
+        BufferCharacter(']');
+        HTML_RECONSUME_IN(kCDATASectionState);
       }
     }
     END_STATE()
@@ -1517,57 +1518,58 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
   return false;
 }
 
-String HTMLTokenizer::bufferedCharacters() const {
+String HTMLTokenizer::BufferedCharacters() const {
   // FIXME: Add an assert about m_state.
   StringBuilder characters;
-  characters.reserveCapacity(numberOfBufferedCharacters());
-  characters.append('<');
-  characters.append('/');
-  characters.append(m_temporaryBuffer.data(), m_temporaryBuffer.size());
-  return characters.toString();
+  characters.ReserveCapacity(NumberOfBufferedCharacters());
+  characters.Append('<');
+  characters.Append('/');
+  characters.Append(temporary_buffer_.Data(), temporary_buffer_.size());
+  return characters.ToString();
 }
 
-void HTMLTokenizer::updateStateFor(const String& tagName) {
-  if (threadSafeMatch(tagName, textareaTag) ||
-      threadSafeMatch(tagName, titleTag))
-    setState(HTMLTokenizer::RCDATAState);
-  else if (threadSafeMatch(tagName, plaintextTag))
-    setState(HTMLTokenizer::PLAINTEXTState);
-  else if (threadSafeMatch(tagName, scriptTag))
-    setState(HTMLTokenizer::ScriptDataState);
-  else if (threadSafeMatch(tagName, styleTag) ||
-           threadSafeMatch(tagName, iframeTag) ||
-           threadSafeMatch(tagName, xmpTag) ||
-           (threadSafeMatch(tagName, noembedTag) && m_options.pluginsEnabled) ||
-           threadSafeMatch(tagName, noframesTag) ||
-           (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled))
-    setState(HTMLTokenizer::RAWTEXTState);
+void HTMLTokenizer::UpdateStateFor(const String& tag_name) {
+  if (ThreadSafeMatch(tag_name, textareaTag) ||
+      ThreadSafeMatch(tag_name, titleTag))
+    SetState(HTMLTokenizer::kRCDATAState);
+  else if (ThreadSafeMatch(tag_name, plaintextTag))
+    SetState(HTMLTokenizer::kPLAINTEXTState);
+  else if (ThreadSafeMatch(tag_name, scriptTag))
+    SetState(HTMLTokenizer::kScriptDataState);
+  else if (ThreadSafeMatch(tag_name, styleTag) ||
+           ThreadSafeMatch(tag_name, iframeTag) ||
+           ThreadSafeMatch(tag_name, xmpTag) ||
+           (ThreadSafeMatch(tag_name, noembedTag) &&
+            options_.plugins_enabled) ||
+           ThreadSafeMatch(tag_name, noframesTag) ||
+           (ThreadSafeMatch(tag_name, noscriptTag) && options_.script_enabled))
+    SetState(HTMLTokenizer::kRAWTEXTState);
 }
 
-inline bool HTMLTokenizer::temporaryBufferIs(const String& expectedString) {
-  return vectorEqualsString(m_temporaryBuffer, expectedString);
+inline bool HTMLTokenizer::TemporaryBufferIs(const String& expected_string) {
+  return VectorEqualsString(temporary_buffer_, expected_string);
 }
 
-inline void HTMLTokenizer::addToPossibleEndTag(LChar cc) {
-  DCHECK(isEndTagBufferingState(m_state));
-  m_bufferedEndTagName.push_back(cc);
+inline void HTMLTokenizer::AddToPossibleEndTag(LChar cc) {
+  DCHECK(IsEndTagBufferingState(state_));
+  buffered_end_tag_name_.push_back(cc);
 }
 
-inline bool HTMLTokenizer::isAppropriateEndTag() {
-  if (m_bufferedEndTagName.size() != m_appropriateEndTagName.size())
+inline bool HTMLTokenizer::IsAppropriateEndTag() {
+  if (buffered_end_tag_name_.size() != appropriate_end_tag_name_.size())
     return false;
 
-  size_t numCharacters = m_bufferedEndTagName.size();
+  size_t num_characters = buffered_end_tag_name_.size();
 
-  for (size_t i = 0; i < numCharacters; i++) {
-    if (m_bufferedEndTagName[i] != m_appropriateEndTagName[i])
+  for (size_t i = 0; i < num_characters; i++) {
+    if (buffered_end_tag_name_[i] != appropriate_end_tag_name_[i])
       return false;
   }
 
   return true;
 }
 
-inline void HTMLTokenizer::parseError() {
+inline void HTMLTokenizer::ParseError() {
 #if DCHECK_IS_ON()
   DVLOG(1) << "Not implemented.";
 #endif

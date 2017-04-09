@@ -50,7 +50,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   class PLATFORM_EXPORT Observer : public GarbageCollectedMixin {
    public:
     virtual ~Observer() {}
-    virtual void sourceChangedState() = 0;
+    virtual void SourceChangedState() = 0;
   };
 
   class ExtraData {
@@ -60,50 +60,50 @@ class PLATFORM_EXPORT MediaStreamSource final
     virtual ~ExtraData() {}
   };
 
-  enum StreamType { TypeAudio, TypeVideo };
+  enum StreamType { kTypeAudio, kTypeVideo };
 
   enum ReadyState {
-    ReadyStateLive = 0,
-    ReadyStateMuted = 1,
-    ReadyStateEnded = 2
+    kReadyStateLive = 0,
+    kReadyStateMuted = 1,
+    kReadyStateEnded = 2
   };
 
-  static MediaStreamSource* create(const String& id,
+  static MediaStreamSource* Create(const String& id,
                                    StreamType,
                                    const String& name,
                                    bool remote,
-                                   ReadyState = ReadyStateLive,
-                                   bool requiresConsumer = false);
+                                   ReadyState = kReadyStateLive,
+                                   bool requires_consumer = false);
 
-  const String& id() const { return m_id; }
-  StreamType type() const { return m_type; }
-  const String& name() const { return m_name; }
-  bool remote() const { return m_remote; }
+  const String& Id() const { return id_; }
+  StreamType GetType() const { return type_; }
+  const String& GetName() const { return name_; }
+  bool Remote() const { return remote_; }
 
-  void setReadyState(ReadyState);
-  ReadyState getReadyState() const { return m_readyState; }
+  void SetReadyState(ReadyState);
+  ReadyState GetReadyState() const { return ready_state_; }
 
-  void addObserver(Observer*);
+  void AddObserver(Observer*);
 
-  ExtraData* getExtraData() const { return m_extraData.get(); }
-  void setExtraData(std::unique_ptr<ExtraData> extraData) {
-    m_extraData = std::move(extraData);
+  ExtraData* GetExtraData() const { return extra_data_.get(); }
+  void SetExtraData(std::unique_ptr<ExtraData> extra_data) {
+    extra_data_ = std::move(extra_data);
   }
 
-  void setConstraints(WebMediaConstraints constraints) {
-    m_constraints = constraints;
+  void SetConstraints(WebMediaConstraints constraints) {
+    constraints_ = constraints;
   }
-  WebMediaConstraints constraints() { return m_constraints; }
-  void getSettings(WebMediaStreamTrack::Settings&);
+  WebMediaConstraints Constraints() { return constraints_; }
+  void GetSettings(WebMediaStreamTrack::Settings&);
 
-  void setAudioFormat(size_t numberOfChannels, float sampleRate);
-  void consumeAudio(AudioBus*, size_t numberOfFrames);
+  void SetAudioFormat(size_t number_of_channels, float sample_rate);
+  void ConsumeAudio(AudioBus*, size_t number_of_frames);
 
-  bool requiresAudioConsumer() const { return m_requiresConsumer; }
-  void addAudioConsumer(AudioDestinationConsumer*);
-  bool removeAudioConsumer(AudioDestinationConsumer*);
-  const HashSet<AudioDestinationConsumer*>& audioConsumers() {
-    return m_audioConsumers;
+  bool RequiresAudioConsumer() const { return requires_consumer_; }
+  void AddAudioConsumer(AudioDestinationConsumer*);
+  bool RemoveAudioConsumer(AudioDestinationConsumer*);
+  const HashSet<AudioDestinationConsumer*>& AudioConsumers() {
+    return audio_consumers_;
   }
 
   // |m_extraData| may hold pointers to GC objects, and it may touch them in
@@ -118,19 +118,19 @@ class PLATFORM_EXPORT MediaStreamSource final
                     const String& name,
                     bool remote,
                     ReadyState,
-                    bool requiresConsumer);
+                    bool requires_consumer);
 
-  String m_id;
-  StreamType m_type;
-  String m_name;
-  bool m_remote;
-  ReadyState m_readyState;
-  bool m_requiresConsumer;
-  HeapHashSet<WeakMember<Observer>> m_observers;
-  Mutex m_audioConsumersLock;
-  HashSet<AudioDestinationConsumer*> m_audioConsumers;
-  std::unique_ptr<ExtraData> m_extraData;
-  WebMediaConstraints m_constraints;
+  String id_;
+  StreamType type_;
+  String name_;
+  bool remote_;
+  ReadyState ready_state_;
+  bool requires_consumer_;
+  HeapHashSet<WeakMember<Observer>> observers_;
+  Mutex audio_consumers_lock_;
+  HashSet<AudioDestinationConsumer*> audio_consumers_;
+  std::unique_ptr<ExtraData> extra_data_;
+  WebMediaConstraints constraints_;
 };
 
 typedef HeapVector<Member<MediaStreamSource>> MediaStreamSourceVector;

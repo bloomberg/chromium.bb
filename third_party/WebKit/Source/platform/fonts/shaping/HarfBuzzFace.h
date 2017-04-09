@@ -51,27 +51,27 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
 
  public:
-  static PassRefPtr<HarfBuzzFace> create(FontPlatformData* platformData,
-                                         uint64_t uniqueID) {
-    return adoptRef(new HarfBuzzFace(platformData, uniqueID));
+  static PassRefPtr<HarfBuzzFace> Create(FontPlatformData* platform_data,
+                                         uint64_t unique_id) {
+    return AdoptRef(new HarfBuzzFace(platform_data, unique_id));
   }
   ~HarfBuzzFace();
 
   // In order to support the restricting effect of unicode-range optionally a
   // range restriction can be passed in, which will restrict which glyphs we
   // return in the harfBuzzGetGlyph function.
-  hb_font_t* getScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
+  hb_font_t* GetScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
 
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);
 
-  hb_face_t* createFace();
-  void prepareHarfBuzzFontData();
+  hb_face_t* CreateFace();
+  void PrepareHarfBuzzFontData();
 
-  FontPlatformData* m_platformData;
-  uint64_t m_uniqueID;
-  hb_font_t* m_unscaledFont;
-  HarfBuzzFontData* m_harfBuzzFontData;
+  FontPlatformData* platform_data_;
+  uint64_t unique_id_;
+  hb_font_t* unscaled_font_;
+  HarfBuzzFontData* harf_buzz_font_data_;
 };
 
 }  // namespace blink

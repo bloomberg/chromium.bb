@@ -52,73 +52,73 @@ class WebMediaStreamSource {
  public:
   class ExtraData {
    public:
-    ExtraData() : m_owner(0) {}
+    ExtraData() : owner_(0) {}
     virtual ~ExtraData() {}
 
-    BLINK_PLATFORM_EXPORT WebMediaStreamSource owner();
+    BLINK_PLATFORM_EXPORT WebMediaStreamSource Owner();
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT void setOwner(MediaStreamSource*);
+    BLINK_PLATFORM_EXPORT void SetOwner(MediaStreamSource*);
 #endif
 
    private:
 #if INSIDE_BLINK
     GC_PLUGIN_IGNORE("http://crbug.com/409526")
 #endif
-    MediaStreamSource* m_owner;
+    MediaStreamSource* owner_;
   };
 
-  enum Type { TypeAudio, TypeVideo };
+  enum Type { kTypeAudio, kTypeVideo };
 
   enum ReadyState {
-    ReadyStateLive = 0,
-    ReadyStateMuted = 1,
-    ReadyStateEnded = 2
+    kReadyStateLive = 0,
+    kReadyStateMuted = 1,
+    kReadyStateEnded = 2
   };
 
   WebMediaStreamSource() {}
-  WebMediaStreamSource(const WebMediaStreamSource& other) { assign(other); }
-  ~WebMediaStreamSource() { reset(); }
+  WebMediaStreamSource(const WebMediaStreamSource& other) { Assign(other); }
+  ~WebMediaStreamSource() { Reset(); }
 
   WebMediaStreamSource& operator=(const WebMediaStreamSource& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamSource&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebMediaStreamSource&);
 
-  BLINK_PLATFORM_EXPORT void initialize(const WebString& id,
+  BLINK_PLATFORM_EXPORT void Initialize(const WebString& id,
                                         Type,
                                         const WebString& name);  // DEPRECATED
-  BLINK_PLATFORM_EXPORT void initialize(const WebString& id,
+  BLINK_PLATFORM_EXPORT void Initialize(const WebString& id,
                                         Type,
                                         const WebString& name,
                                         bool remote);
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT WebString id() const;
-  BLINK_PLATFORM_EXPORT Type getType() const;
-  BLINK_PLATFORM_EXPORT WebString name() const;
-  BLINK_PLATFORM_EXPORT bool remote() const;
+  BLINK_PLATFORM_EXPORT WebString Id() const;
+  BLINK_PLATFORM_EXPORT Type GetType() const;
+  BLINK_PLATFORM_EXPORT WebString GetName() const;
+  BLINK_PLATFORM_EXPORT bool Remote() const;
 
-  BLINK_PLATFORM_EXPORT void setReadyState(ReadyState);
-  BLINK_PLATFORM_EXPORT ReadyState getReadyState() const;
+  BLINK_PLATFORM_EXPORT void SetReadyState(ReadyState);
+  BLINK_PLATFORM_EXPORT ReadyState GetReadyState() const;
 
   // Extra data associated with this object.
   // If non-null, the extra data pointer will be deleted when the object is
   // destroyed.  Setting the extra data pointer will cause any existing non-null
   // extra data pointer to be deleted.
-  BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
-  BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
+  BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
+  BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
 
-  BLINK_PLATFORM_EXPORT WebMediaConstraints constraints();
+  BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints();
 
   // Only used if if this is a WebAudio source.
   // The WebAudioDestinationConsumer is not owned, and has to be disposed of
   // separately after calling removeAudioConsumer.
-  BLINK_PLATFORM_EXPORT bool requiresAudioConsumer() const;
-  BLINK_PLATFORM_EXPORT void addAudioConsumer(WebAudioDestinationConsumer*);
-  BLINK_PLATFORM_EXPORT bool removeAudioConsumer(WebAudioDestinationConsumer*);
+  BLINK_PLATFORM_EXPORT bool RequiresAudioConsumer() const;
+  BLINK_PLATFORM_EXPORT void AddAudioConsumer(WebAudioDestinationConsumer*);
+  BLINK_PLATFORM_EXPORT bool RemoveAudioConsumer(WebAudioDestinationConsumer*);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebMediaStreamSource(MediaStreamSource*);
@@ -128,7 +128,7 @@ class WebMediaStreamSource {
 #endif
 
  private:
-  WebPrivatePtr<MediaStreamSource> m_private;
+  WebPrivatePtr<MediaStreamSource> private_;
 };
 
 }  // namespace blink

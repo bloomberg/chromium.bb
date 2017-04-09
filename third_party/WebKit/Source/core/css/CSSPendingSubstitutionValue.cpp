@@ -7,11 +7,11 @@
 namespace blink {
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSPendingSubstitutionValue) {
-  CSSValue::traceAfterDispatch(visitor);
-  visitor->trace(m_shorthandValue);
+  CSSValue::TraceAfterDispatch(visitor);
+  visitor->Trace(shorthand_value_);
 }
 
-String CSSPendingSubstitutionValue::customCSSText() const {
+String CSSPendingSubstitutionValue::CustomCSSText() const {
   return "";
 }
 

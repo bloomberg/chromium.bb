@@ -18,19 +18,19 @@ class KURL;
 class NavigatorContentUtilsClientMock final
     : public NavigatorContentUtilsClient {
  public:
-  static NavigatorContentUtilsClientMock* create() {
+  static NavigatorContentUtilsClientMock* Create() {
     return new NavigatorContentUtilsClientMock;
   }
 
   ~NavigatorContentUtilsClientMock() override {}
 
-  virtual void registerProtocolHandler(const String& scheme,
+  virtual void RegisterProtocolHandler(const String& scheme,
                                        const KURL&,
                                        const String& title);
 
-  virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme,
+  virtual CustomHandlersState IsProtocolHandlerRegistered(const String& scheme,
                                                           const KURL&);
-  virtual void unregisterProtocolHandler(const String& scheme, const KURL&);
+  virtual void UnregisterProtocolHandler(const String& scheme, const KURL&);
 
  private:
   NavigatorContentUtilsClientMock() {}
@@ -42,7 +42,7 @@ class NavigatorContentUtilsClientMock final
   } ProtocolInfo;
 
   typedef HashMap<String, ProtocolInfo> RegisteredProtocolMap;
-  RegisteredProtocolMap m_protocolMap;
+  RegisteredProtocolMap protocol_map_;
 };
 
 }  // namespace blink

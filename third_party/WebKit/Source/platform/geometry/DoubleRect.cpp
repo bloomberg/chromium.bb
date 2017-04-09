@@ -12,44 +12,44 @@
 namespace blink {
 
 DoubleRect::DoubleRect(const IntRect& r)
-    : m_location(r.location()), m_size(r.size()) {}
+    : location_(r.Location()), size_(r.size()) {}
 
 DoubleRect::DoubleRect(const FloatRect& r)
-    : m_location(r.location()), m_size(r.size()) {}
+    : location_(r.Location()), size_(r.size()) {}
 
 DoubleRect::DoubleRect(const LayoutRect& r)
-    : m_location(r.location()), m_size(r.size()) {}
+    : location_(r.Location()), size_(r.size()) {}
 
-IntRect enclosingIntRect(const DoubleRect& rect) {
-  IntPoint location = flooredIntPoint(rect.minXMinYCorner());
-  IntPoint maxPoint = ceiledIntPoint(rect.maxXMaxYCorner());
+IntRect EnclosingIntRect(const DoubleRect& rect) {
+  IntPoint location = FlooredIntPoint(rect.MinXMinYCorner());
+  IntPoint max_point = CeiledIntPoint(rect.MaxXMaxYCorner());
 
-  return IntRect(location, maxPoint - location);
+  return IntRect(location, max_point - location);
 }
 
-IntRect enclosedIntRect(const DoubleRect& rect) {
-  IntPoint location = ceiledIntPoint(rect.minXMinYCorner());
-  IntPoint maxPoint = flooredIntPoint(rect.maxXMaxYCorner());
-  IntSize size = maxPoint - location;
-  size.clampNegativeToZero();
+IntRect EnclosedIntRect(const DoubleRect& rect) {
+  IntPoint location = CeiledIntPoint(rect.MinXMinYCorner());
+  IntPoint max_point = FlooredIntPoint(rect.MaxXMaxYCorner());
+  IntSize size = max_point - location;
+  size.ClampNegativeToZero();
 
   return IntRect(location, size);
 }
 
-IntRect roundedIntRect(const DoubleRect& rect) {
-  return IntRect(roundedIntPoint(rect.location()), roundedIntSize(rect.size()));
+IntRect RoundedIntRect(const DoubleRect& rect) {
+  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.size()));
 }
 
-void DoubleRect::scale(float sx, float sy) {
-  m_location.setX(x() * sx);
-  m_location.setY(y() * sy);
-  m_size.setWidth(width() * sx);
-  m_size.setHeight(height() * sy);
+void DoubleRect::Scale(float sx, float sy) {
+  location_.SetX(X() * sx);
+  location_.SetY(Y() * sy);
+  size_.SetWidth(Width() * sx);
+  size_.SetHeight(Height() * sy);
 }
 
-String DoubleRect::toString() const {
-  return String::format("%s %s", location().toString().ascii().data(),
-                        size().toString().ascii().data());
+String DoubleRect::ToString() const {
+  return String::Format("%s %s", Location().ToString().Ascii().Data(),
+                        size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

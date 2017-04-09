@@ -21,7 +21,7 @@ class KURL;
 class CORE_EXPORT WorkerInspectorProxy final
     : public GarbageCollectedFinalized<WorkerInspectorProxy> {
  public:
-  static WorkerInspectorProxy* create();
+  static WorkerInspectorProxy* Create();
 
   ~WorkerInspectorProxy();
   DECLARE_TRACE();
@@ -29,39 +29,39 @@ class CORE_EXPORT WorkerInspectorProxy final
   class CORE_EXPORT PageInspector {
    public:
     virtual ~PageInspector() {}
-    virtual void dispatchMessageFromWorker(WorkerInspectorProxy*,
+    virtual void DispatchMessageFromWorker(WorkerInspectorProxy*,
                                            const String&) = 0;
   };
 
-  WorkerThreadStartMode workerStartMode(Document*);
-  void workerThreadCreated(Document*, WorkerThread*, const KURL&);
-  void workerThreadTerminated();
-  void dispatchMessageFromWorker(const String&);
-  void addConsoleMessageFromWorker(MessageLevel,
+  WorkerThreadStartMode WorkerStartMode(Document*);
+  void WorkerThreadCreated(Document*, WorkerThread*, const KURL&);
+  void WorkerThreadTerminated();
+  void DispatchMessageFromWorker(const String&);
+  void AddConsoleMessageFromWorker(MessageLevel,
                                    const String& message,
                                    std::unique_ptr<SourceLocation>);
 
-  void connectToInspector(PageInspector*);
-  void disconnectFromInspector(PageInspector*);
-  void sendMessageToInspector(const String&);
-  void writeTimelineStartedEvent(const String& sessionId);
+  void ConnectToInspector(PageInspector*);
+  void DisconnectFromInspector(PageInspector*);
+  void SendMessageToInspector(const String&);
+  void WriteTimelineStartedEvent(const String& session_id);
 
-  const String& url() { return m_url; }
-  Document* getDocument() { return m_document; }
-  const String& inspectorId();
+  const String& Url() { return url_; }
+  Document* GetDocument() { return document_; }
+  const String& InspectorId();
 
   using WorkerInspectorProxySet =
       PersistentHeapHashSet<WeakMember<WorkerInspectorProxy>>;
-  static const WorkerInspectorProxySet& allProxies();
+  static const WorkerInspectorProxySet& AllProxies();
 
  private:
   WorkerInspectorProxy();
 
-  WorkerThread* m_workerThread;
-  Member<Document> m_document;
-  PageInspector* m_pageInspector;
-  String m_url;
-  String m_inspectorId;
+  WorkerThread* worker_thread_;
+  Member<Document> document_;
+  PageInspector* page_inspector_;
+  String url_;
+  String inspector_id_;
 };
 
 }  // namespace blink

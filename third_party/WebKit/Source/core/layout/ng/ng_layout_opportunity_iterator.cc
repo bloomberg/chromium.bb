@@ -16,28 +16,28 @@ void AppendNodeToString(const NGLayoutOpportunityTreeNode* node,
                         unsigned indent = 0) {
   DCHECK(string_builder);
   if (!node) {
-    string_builder->append("'null'\n");
+    string_builder->Append("'null'\n");
     return;
   }
 
-  string_builder->append(node->ToString());
-  string_builder->append("\n");
+  string_builder->Append(node->ToString());
+  string_builder->Append("\n");
 
   StringBuilder indent_builder;
   for (unsigned i = 0; i < indent; i++)
-    indent_builder.append("\t");
+    indent_builder.Append("\t");
 
   if (node->IsLeafNode())
     return;
 
-  string_builder->append(indent_builder.toString());
-  string_builder->append("Left:\t");
+  string_builder->Append(indent_builder.ToString());
+  string_builder->Append("Left:\t");
   AppendNodeToString(node->left.get(), string_builder, indent + 2);
-  string_builder->append(indent_builder.toString());
-  string_builder->append("Right:\t");
+  string_builder->Append(indent_builder.ToString());
+  string_builder->Append("Right:\t");
   AppendNodeToString(node->right.get(), string_builder, indent + 2);
-  string_builder->append(indent_builder.toString());
-  string_builder->append("Bottom:\t");
+  string_builder->Append(indent_builder.ToString());
+  string_builder->Append("Bottom:\t");
   AppendNodeToString(node->bottom.get(), string_builder, indent + 2);
 }
 
@@ -201,7 +201,7 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
   if (!exclusion->rect.IsContained(node->opportunity))
     return;
 
-  if (node->exclusions.isEmpty()) {
+  if (node->exclusions.IsEmpty()) {
     SplitNGLayoutOpportunityTreeNode(exclusion->rect, node);
 
     NGLayoutOpportunity top_layout_opp =
@@ -210,11 +210,11 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
       opportunities.push_back(top_layout_opp);
 
     node->exclusions.push_back(exclusion);
-    node->combined_exclusion = WTF::makeUnique<NGExclusion>(*exclusion);
+    node->combined_exclusion = WTF::MakeUnique<NGExclusion>(*exclusion);
     return;
   }
 
-  DCHECK(!node->exclusions.isEmpty());
+  DCHECK(!node->exclusions.IsEmpty());
 
   if (node->combined_exclusion->MaybeCombineWith(*exclusion)) {
     SplitNGLayoutOpportunityTreeNode(node->combined_exclusion->rect, node);
@@ -319,9 +319,9 @@ const NGLayoutOpportunity NGLayoutOpportunityIterator::Next() {
 #ifndef NDEBUG
 void NGLayoutOpportunityIterator::ShowLayoutOpportunityTree() const {
   StringBuilder string_builder;
-  string_builder.append("\n.:: LayoutOpportunity Tree ::.\n\nRoot Node: ");
+  string_builder.Append("\n.:: LayoutOpportunity Tree ::.\n\nRoot Node: ");
   AppendNodeToString(opportunity_tree_root_.get(), &string_builder);
-  fprintf(stderr, "%s\n", string_builder.toString().utf8().data());
+  fprintf(stderr, "%s\n", string_builder.ToString().Utf8().Data());
 }
 #endif
 

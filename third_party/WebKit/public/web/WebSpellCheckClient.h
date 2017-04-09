@@ -39,13 +39,13 @@ namespace blink {
 class WebSpellCheckClient {
  public:
   // Show or hide the spelling UI.
-  virtual void showSpellingUI(bool show) {}
+  virtual void ShowSpellingUI(bool show) {}
 
   // Returns true if the spelling UI is showing.
-  virtual bool isShowingSpellingUI() { return false; }
+  virtual bool IsShowingSpellingUI() { return false; }
 
   // Update the spelling UI with the given word.
-  virtual void updateSpellingUIWithMisspelledWord(const WebString& word) {}
+  virtual void UpdateSpellingUIWithMisspelledWord(const WebString& word) {}
 
  protected:
   virtual ~WebSpellCheckClient() {}

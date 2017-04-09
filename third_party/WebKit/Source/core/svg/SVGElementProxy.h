@@ -68,30 +68,30 @@ class SVGElementProxy : public GarbageCollectedFinalized<SVGElementProxy> {
  public:
   // Create a proxy to an element in the same document. (See also
   // SVGURLReferenceResolver and the definition of 'local url'.)
-  static SVGElementProxy* create(const AtomicString& id) {
+  static SVGElementProxy* Create(const AtomicString& id) {
     return new SVGElementProxy(id);
   }
 
   // Create a proxy to an element in a different document (indicated by |url|.)
-  static SVGElementProxy* create(const String& url, const AtomicString& id) {
+  static SVGElementProxy* Create(const String& url, const AtomicString& id) {
     return new SVGElementProxy(url, id);
   }
   virtual ~SVGElementProxy();
 
-  void addClient(SVGResourceClient*);
-  void removeClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient*);
+  void RemoveClient(SVGResourceClient*);
 
   // Resolve a potentially external document reference.
-  void resolve(Document&);
+  void Resolve(Document&);
 
   // Returns the proxied element, or null if the proxy is invalid.
-  SVGElement* findElement(TreeScope&);
+  SVGElement* FindElement(TreeScope&);
 
   // Notify the proxy that the structure of the subtree rooted at the proxied
   // element has mutated. This should generally only be called via a proxy set.
-  void contentChanged(TreeScope&);
+  void ContentChanged(TreeScope&);
 
-  const AtomicString& id() const { return m_id; }
+  const AtomicString& Id() const { return id_; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -99,19 +99,19 @@ class SVGElementProxy : public GarbageCollectedFinalized<SVGElementProxy> {
   explicit SVGElementProxy(const AtomicString&);
   SVGElementProxy(const String&, const AtomicString&);
 
-  TreeScope* treeScopeForLookup(TreeScope&) const;
+  TreeScope* TreeScopeForLookup(TreeScope&) const;
 
   class IdObserver;
 
-  HeapHashMap<Member<SVGResourceClient>, Member<IdObserver>> m_clients;
-  HeapHashMap<Member<TreeScope>, Member<IdObserver>> m_observers;
-  Member<DocumentResource> m_document;
-  AtomicString m_id;
+  HeapHashMap<Member<SVGResourceClient>, Member<IdObserver>> clients_;
+  HeapHashMap<Member<TreeScope>, Member<IdObserver>> observers_;
+  Member<DocumentResource> document_;
+  AtomicString id_;
   // URL for resolving references to external resource documents. Contains an
   // absolute URL to the resource to load. Cleared when a load has been
   // initiated. Ignored if m_isLocal is true.
-  String m_url;
-  bool m_isLocal;
+  String url_;
+  bool is_local_;
 };
 
 // Collection of SVGElementProxys. This is hosted by elements that can be
@@ -119,18 +119,18 @@ class SVGElementProxy : public GarbageCollectedFinalized<SVGElementProxy> {
 // for dealing with the many-to-one structure of SVGElementProxy.
 class SVGElementProxySet : public GarbageCollected<SVGElementProxySet> {
  public:
-  void add(SVGElementProxy&);
-  bool isEmpty() const;
+  void Add(SVGElementProxy&);
+  bool IsEmpty() const;
 
   // Notify proxy clients that the (content of the) proxied element has
   // changed.
-  void notifyContentChanged(TreeScope&);
+  void NotifyContentChanged(TreeScope&);
 
   DECLARE_TRACE();
 
  private:
   using ProxySet = HeapHashSet<WeakMember<SVGElementProxy>>;
-  ProxySet m_elementProxies;
+  ProxySet element_proxies_;
 };
 
 }  // namespace blink

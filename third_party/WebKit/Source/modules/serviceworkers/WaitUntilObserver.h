@@ -23,38 +23,38 @@ class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollectedFinalized<WaitUntilObserver> {
  public:
   enum EventType {
-    Activate,
-    Fetch,
-    Install,
-    Message,
-    NotificationClick,
-    NotificationClose,
-    PaymentRequest,
-    Push,
-    Sync,
-    BackgroundFetchAbort,
-    BackgroundFetchClick,
-    BackgroundFetchFail,
-    BackgroundFetched
+    kActivate,
+    kFetch,
+    kInstall,
+    kMessage,
+    kNotificationClick,
+    kNotificationClose,
+    kPaymentRequest,
+    kPush,
+    kSync,
+    kBackgroundFetchAbort,
+    kBackgroundFetchClick,
+    kBackgroundFetchFail,
+    kBackgroundFetched
   };
 
-  static WaitUntilObserver* create(ExecutionContext*, EventType, int eventID);
+  static WaitUntilObserver* Create(ExecutionContext*, EventType, int event_id);
 
   // Must be called before and after dispatching the event.
-  void willDispatchEvent();
-  void didDispatchEvent(bool errorOccurred);
+  void WillDispatchEvent();
+  void DidDispatchEvent(bool error_occurred);
 
   // Observes the promise and delays calling the continuation until
   // the given promise is resolved or rejected.
-  void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
+  void WaitUntil(ScriptState*, ScriptPromise, ExceptionState&);
 
   // These methods can be called when the lifecycle of ExtendableEvent
   // observed by this WaitUntilObserver should be extended by other reason
   // than ExtendableEvent.waitUntil.
   // Note: There is no need to call decrementPendingActivity() after the context
   // is being destroyed.
-  void incrementPendingActivity();
-  void decrementPendingActivity();
+  void IncrementPendingActivity();
+  void DecrementPendingActivity();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -62,20 +62,20 @@ class MODULES_EXPORT WaitUntilObserver final
   friend class InternalsServiceWorker;
   class ThenFunction;
 
-  WaitUntilObserver(ExecutionContext*, EventType, int eventID);
+  WaitUntilObserver(ExecutionContext*, EventType, int event_id);
 
-  void reportError(const ScriptValue&);
+  void ReportError(const ScriptValue&);
 
-  void consumeWindowInteraction(TimerBase*);
+  void ConsumeWindowInteraction(TimerBase*);
 
-  Member<ExecutionContext> m_executionContext;
-  EventType m_type;
-  int m_eventID;
-  int m_pendingActivity = 0;
-  bool m_hasError = false;
-  bool m_eventDispatched = false;
-  double m_eventDispatchTime = 0;
-  TaskRunnerTimer<WaitUntilObserver> m_consumeWindowInteractionTimer;
+  Member<ExecutionContext> execution_context_;
+  EventType type_;
+  int event_id_;
+  int pending_activity_ = 0;
+  bool has_error_ = false;
+  bool event_dispatched_ = false;
+  double event_dispatch_time_ = 0;
+  TaskRunnerTimer<WaitUntilObserver> consume_window_interaction_timer_;
 };
 
 }  // namespace blink

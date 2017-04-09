@@ -19,18 +19,18 @@ class CompositorProxiedPropertySet final {
   USING_FAST_MALLOC(CompositorProxiedPropertySet);
 
  public:
-  static std::unique_ptr<CompositorProxiedPropertySet> create();
+  static std::unique_ptr<CompositorProxiedPropertySet> Create();
   virtual ~CompositorProxiedPropertySet();
 
-  bool isEmpty() const;
-  void increment(uint32_t mutableProperties);
-  void decrement(uint32_t mutableProperties);
-  uint32_t proxiedProperties() const;
+  bool IsEmpty() const;
+  void Increment(uint32_t mutable_properties);
+  void Decrement(uint32_t mutable_properties);
+  uint32_t ProxiedProperties() const;
 
  private:
   CompositorProxiedPropertySet();
 
-  unsigned short m_counts[CompositorMutableProperty::kNumProperties];
+  unsigned short counts_[CompositorMutableProperty::kNumProperties];
 };
 
 }  // namespace blink

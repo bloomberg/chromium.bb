@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PLATFORM_EXPORT String loadResourceAsASCIIString(const char* resource);
+PLATFORM_EXPORT String LoadResourceAsASCIIString(const char* resource);
 
 }  // namespace blink
 

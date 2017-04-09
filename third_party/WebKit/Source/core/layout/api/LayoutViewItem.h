@@ -14,84 +14,84 @@ class PaintLayerCompositor;
 
 class LayoutViewItem : public LayoutBlockItem {
  public:
-  explicit LayoutViewItem(LayoutView* layoutView)
-      : LayoutBlockItem(layoutView) {}
+  explicit LayoutViewItem(LayoutView* layout_view)
+      : LayoutBlockItem(layout_view) {}
 
   explicit LayoutViewItem(const LayoutBlockItem& item) : LayoutBlockItem(item) {
-    SECURITY_DCHECK(!item || item.isLayoutView());
+    SECURITY_DCHECK(!item || item.IsLayoutView());
   }
 
   explicit LayoutViewItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
   LayoutViewItem() {}
 
-  bool usesCompositing() const { return toView()->usesCompositing(); }
+  bool UsesCompositing() const { return ToView()->UsesCompositing(); }
 
-  PaintLayerCompositor* compositor() { return toView()->compositor(); }
+  PaintLayerCompositor* Compositor() { return ToView()->Compositor(); }
 
-  bool hasPendingSelection() const { return toView()->hasPendingSelection(); }
+  bool HasPendingSelection() const { return ToView()->HasPendingSelection(); }
 
-  IntRect documentRect() const { return toView()->documentRect(); }
+  IntRect DocumentRect() const { return ToView()->DocumentRect(); }
 
-  LayoutRect viewRect() const { return toView()->viewRect(); }
+  LayoutRect ViewRect() const { return ToView()->ViewRect(); }
 
-  IntSize layoutSize(
-      IncludeScrollbarsInRect scrollbars = ExcludeScrollbars) const {
-    return toView()->layoutSize(scrollbars);
+  IntSize GetLayoutSize(
+      IncludeScrollbarsInRect scrollbars = kExcludeScrollbars) const {
+    return ToView()->GetLayoutSize(scrollbars);
   }
 
-  LayoutRect overflowClipRect(const LayoutPoint& location) const {
-    return toView()->overflowClipRect(location);
+  LayoutRect OverflowClipRect(const LayoutPoint& location) const {
+    return ToView()->OverflowClipRect(location);
   }
 
-  void clearSelection() { return toView()->clearSelection(); }
+  void ClearSelection() { return ToView()->ClearSelection(); }
 
-  bool hitTest(HitTestResult& result) { return toView()->hitTest(result); }
+  bool HitTest(HitTestResult& result) { return ToView()->HitTest(result); }
 
-  bool hitTestNoLifecycleUpdate(HitTestResult& result) {
-    return toView()->hitTestNoLifecycleUpdate(result);
+  bool HitTestNoLifecycleUpdate(HitTestResult& result) {
+    return ToView()->HitTestNoLifecycleUpdate(result);
   }
 
-  IntRect selectionBounds() { return toView()->selectionBounds(); }
+  IntRect SelectionBounds() { return ToView()->SelectionBounds(); }
 
-  void invalidatePaintForSelection() {
-    return toView()->invalidatePaintForSelection();
+  void InvalidatePaintForSelection() {
+    return ToView()->InvalidatePaintForSelection();
   }
 
   //    bool hitTest(HitTestResult&);
   //    bool hitTestNoLifecycleUpdate(HitTestResult&);
 
-  unsigned hitTestCount() const { return toView()->hitTestCount(); }
+  unsigned HitTestCount() const { return ToView()->HitTestCount(); }
 
-  unsigned hitTestCacheHits() const { return toView()->hitTestCacheHits(); }
+  unsigned HitTestCacheHits() const { return ToView()->HitTestCacheHits(); }
 
-  void clearHitTestCache() { toView()->clearHitTestCache(); }
+  void ClearHitTestCache() { ToView()->ClearHitTestCache(); }
 
-  void invalidatePaintForViewAndCompositedLayers() {
-    toView()->invalidatePaintForViewAndCompositedLayers();
+  void InvalidatePaintForViewAndCompositedLayers() {
+    ToView()->InvalidatePaintForViewAndCompositedLayers();
   }
 
-  int viewHeight(
-      IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const {
-    return toView()->viewHeight(scrollbarInclusion);
+  int ViewHeight(
+      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
+    return ToView()->ViewHeight(scrollbar_inclusion);
   }
 
-  int viewWidth(
-      IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const {
-    return toView()->viewWidth(scrollbarInclusion);
+  int ViewWidth(
+      IncludeScrollbarsInRect scrollbar_inclusion = kExcludeScrollbars) const {
+    return ToView()->ViewWidth(scrollbar_inclusion);
   }
 
-  FloatSize viewportSizeForViewportUnits() const {
-    return toView()->viewportSizeForViewportUnits();
+  FloatSize ViewportSizeForViewportUnits() const {
+    return ToView()->ViewportSizeForViewportUnits();
   }
 
  private:
-  LayoutView* toView() { return toLayoutView(layoutObject()); }
-  const LayoutView* toView() const { return toLayoutView(layoutObject()); }
+  LayoutView* ToView() { return ToLayoutView(GetLayoutObject()); }
+  const LayoutView* ToView() const { return ToLayoutView(GetLayoutObject()); }
 };
 
-inline LayoutViewItem LayoutItem::view() const {
-  return LayoutViewItem(m_layoutObject->view());
+inline LayoutViewItem LayoutItem::View() const {
+  return LayoutViewItem(layout_object_->View());
 }
 
 }  // namespace blink

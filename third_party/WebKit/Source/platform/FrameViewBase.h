@@ -52,85 +52,85 @@ class PLATFORM_EXPORT FrameViewBase
   FrameViewBase();
   virtual ~FrameViewBase();
 
-  int x() const { return frameRect().x(); }
-  int y() const { return frameRect().y(); }
-  int width() const { return frameRect().width(); }
-  int height() const { return frameRect().height(); }
-  IntSize size() const { return frameRect().size(); }
-  IntPoint location() const { return frameRect().location(); }
+  int X() const { return FrameRect().X(); }
+  int Y() const { return FrameRect().Y(); }
+  int Width() const { return FrameRect().Width(); }
+  int Height() const { return FrameRect().Height(); }
+  IntSize size() const { return FrameRect().size(); }
+  IntPoint Location() const { return FrameRect().Location(); }
 
-  virtual void setFrameRect(const IntRect& frameRect) {
-    m_frameRect = frameRect;
+  virtual void SetFrameRect(const IntRect& frame_rect) {
+    frame_rect_ = frame_rect;
   }
-  const IntRect& frameRect() const { return m_frameRect; }
-  IntRect boundsRect() const { return IntRect(0, 0, width(), height()); }
+  const IntRect& FrameRect() const { return frame_rect_; }
+  IntRect BoundsRect() const { return IntRect(0, 0, Width(), Height()); }
 
-  void resize(int w, int h) { setFrameRect(IntRect(x(), y(), w, h)); }
-  void resize(const IntSize& s) { setFrameRect(IntRect(location(), s)); }
+  void Resize(int w, int h) { SetFrameRect(IntRect(X(), Y(), w, h)); }
+  void Resize(const IntSize& s) { SetFrameRect(IntRect(Location(), s)); }
 
-  virtual void paint(GraphicsContext&, const CullRect&) const {}
-  void invalidate() { invalidateRect(boundsRect()); }
-  virtual void invalidateRect(const IntRect&) = 0;
+  virtual void Paint(GraphicsContext&, const CullRect&) const {}
+  void Invalidate() { InvalidateRect(BoundsRect()); }
+  virtual void InvalidateRect(const IntRect&) = 0;
 
-  virtual void show() {}
-  virtual void hide() {}
-  bool isSelfVisible() const {
-    return m_selfVisible;
+  virtual void Show() {}
+  virtual void Hide() {}
+  bool IsSelfVisible() const {
+    return self_visible_;
   }  // Whether or not we have been explicitly marked as visible or not.
-  bool isParentVisible() const {
-    return m_parentVisible;
+  bool IsParentVisible() const {
+    return parent_visible_;
   }  // Whether or not our parent is visible.
-  bool isVisible() const {
-    return m_selfVisible && m_parentVisible;
+  bool IsVisible() const {
+    return self_visible_ && parent_visible_;
   }  // Whether or not we are actually visible.
-  virtual void setParentVisible(bool visible) { m_parentVisible = visible; }
-  void setSelfVisible(bool v) { m_selfVisible = v; }
+  virtual void SetParentVisible(bool visible) { parent_visible_ = visible; }
+  void SetSelfVisible(bool v) { self_visible_ = v; }
 
-  virtual bool isFrameView() const { return false; }
-  virtual bool isRemoteFrameView() const { return false; }
-  virtual bool isPluginView() const { return false; }
-  virtual bool isPluginContainer() const { return false; }
-  virtual bool isScrollbar() const { return false; }
+  virtual bool IsFrameView() const { return false; }
+  virtual bool IsRemoteFrameView() const { return false; }
+  virtual bool IsPluginView() const { return false; }
+  virtual bool IsPluginContainer() const { return false; }
+  virtual bool IsScrollbar() const { return false; }
 
-  virtual void setParent(FrameViewBase*);
-  FrameViewBase* parent() const { return m_parent; }
-  FrameViewBase* root() const;
+  virtual void SetParent(FrameViewBase*);
+  FrameViewBase* Parent() const { return parent_; }
+  FrameViewBase* Root() const;
 
-  virtual void handleEvent(Event*) {}
+  virtual void HandleEvent(Event*) {}
 
-  IntRect convertToRootFrame(const IntRect&) const;
-  IntRect convertFromRootFrame(const IntRect&) const;
+  IntRect ConvertToRootFrame(const IntRect&) const;
+  IntRect ConvertFromRootFrame(const IntRect&) const;
 
-  IntPoint convertToRootFrame(const IntPoint&) const;
-  IntPoint convertFromRootFrame(const IntPoint&) const;
-  FloatPoint convertFromRootFrame(const FloatPoint&) const;
+  IntPoint ConvertToRootFrame(const IntPoint&) const;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const;
+  FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
 
-  virtual void frameRectsChanged() {}
+  virtual void FrameRectsChanged() {}
 
-  virtual void geometryMayHaveChanged() {}
+  virtual void GeometryMayHaveChanged() {}
 
-  virtual IntRect convertToContainingFrameViewBase(const IntRect&) const;
-  virtual IntRect convertFromContainingFrameViewBase(const IntRect&) const;
-  virtual IntPoint convertToContainingFrameViewBase(const IntPoint&) const;
-  virtual IntPoint convertFromContainingFrameViewBase(const IntPoint&) const;
+  virtual IntRect ConvertToContainingFrameViewBase(const IntRect&) const;
+  virtual IntRect ConvertFromContainingFrameViewBase(const IntRect&) const;
+  virtual IntPoint ConvertToContainingFrameViewBase(const IntPoint&) const;
+  virtual IntPoint ConvertFromContainingFrameViewBase(const IntPoint&) const;
 
   // Virtual methods to convert points to/from child frameviewbases.
-  virtual IntPoint convertChildToSelf(const FrameViewBase*,
+  virtual IntPoint ConvertChildToSelf(const FrameViewBase*,
                                       const IntPoint&) const;
-  virtual IntPoint convertSelfToChild(const FrameViewBase*,
+  virtual IntPoint ConvertSelfToChild(const FrameViewBase*,
                                       const IntPoint&) const;
 
   // Notifies this frameviewbase that it will no longer be receiving events.
-  virtual void eventListenersRemoved() {}
+  virtual void EventListenersRemoved() {}
 
   DECLARE_VIRTUAL_TRACE();
-  virtual void dispose() {}
+  virtual void Dispose() {}
 
  private:
-  Member<FrameViewBase> m_parent;
-  IntRect m_frameRect;
-  bool m_selfVisible;
-  bool m_parentVisible;
+  Member<FrameViewBase> parent_;
+  IntRect frame_rect_;
+  bool self_visible_;
+  bool parent_visible_;
 };
 
 }  // namespace blink

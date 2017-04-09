@@ -22,8 +22,8 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
 
   // Two |WebRTCRtpReceiver|s referencing the same WebRTC-layer receiver have
   // the same |id|.
-  virtual uintptr_t id() const = 0;
-  virtual const WebMediaStreamTrack& track() const = 0;
+  virtual uintptr_t Id() const = 0;
+  virtual const WebMediaStreamTrack& Track() const = 0;
 };
 
 }  // namespace blink

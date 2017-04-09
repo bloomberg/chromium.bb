@@ -28,35 +28,35 @@ class PLATFORM_EXPORT DrawingRecorder final {
   WTF_MAKE_NONCOPYABLE(DrawingRecorder);
 
  public:
-  static bool useCachedDrawingIfPossible(GraphicsContext& context,
+  static bool UseCachedDrawingIfPossible(GraphicsContext& context,
                                          const DisplayItemClient& client,
                                          DisplayItem::Type type) {
-    return context.getPaintController().useCachedDrawingIfPossible(client,
+    return context.GetPaintController().UseCachedDrawingIfPossible(client,
                                                                    type);
   }
 
   DrawingRecorder(GraphicsContext&,
                   const DisplayItemClient&,
                   DisplayItem::Type,
-                  const FloatRect& cullRect);
+                  const FloatRect& cull_rect);
   ~DrawingRecorder();
 
-  void setKnownToBeOpaque() {
+  void SetKnownToBeOpaque() {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    m_knownToBeOpaque = true;
+    known_to_be_opaque_ = true;
   }
 
  private:
-  GraphicsContext& m_context;
-  const DisplayItemClient& m_displayItemClient;
-  const DisplayItem::Type m_displayItemType;
+  GraphicsContext& context_;
+  const DisplayItemClient& display_item_client_;
+  const DisplayItem::Type display_item_type_;
 
   // True if there are no transparent areas. Only used for SlimmingPaintV2.
-  bool m_knownToBeOpaque;
+  bool known_to_be_opaque_;
 
 #if DCHECK_IS_ON()
   // Ensures the list size does not change during the recorder's scope.
-  size_t m_initialDisplayItemListSize;
+  size_t initial_display_item_list_size_;
 #endif
 };
 
@@ -69,7 +69,7 @@ class DisableListModificationCheck {
   DisableListModificationCheck();
 
  private:
-  AutoReset<bool> m_disabler;
+  AutoReset<bool> disabler_;
 };
 #endif  // DCHECK_IS_ON()
 

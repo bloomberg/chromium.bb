@@ -20,10 +20,10 @@ class SpellCheckTestBase : public EditingTestBase {
    public:
     virtual ~DummySpellCheckerClient() {}
 
-    bool isSpellCheckingEnabled() override { return true; }
+    bool IsSpellCheckingEnabled() override { return true; }
   };
 
-  std::unique_ptr<DummySpellCheckerClient> m_spellCheckerClient;
+  std::unique_ptr<DummySpellCheckerClient> spell_checker_client_;
 };
 
 }  // namespace blink

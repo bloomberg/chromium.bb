@@ -28,69 +28,70 @@ namespace blink {
 class CustomElementRegistryTest : public ::testing::Test {
  protected:
   void SetUp() {
-    m_page.reset(DummyPageHolder::create(IntSize(1, 1)).release());
+    page_.reset(DummyPageHolder::Create(IntSize(1, 1)).release());
   }
 
-  void TearDown() { m_page = nullptr; }
+  void TearDown() { page_ = nullptr; }
 
-  Document& document() { return m_page->document(); }
+  Document& GetDocument() { return page_->GetDocument(); }
 
-  CustomElementRegistry& registry() {
-    return *m_page->frame().domWindow()->customElements();
+  CustomElementRegistry& Registry() {
+    return *page_->GetFrame().DomWindow()->customElements();
   }
 
-  ScriptState* scriptState() {
-    return toScriptStateForMainWorld(&m_page->frame());
+  ScriptState* GetScriptState() {
+    return ToScriptStateForMainWorld(&page_->GetFrame());
   }
 
-  void collectCandidates(const CustomElementDescriptor& desc,
+  void CollectCandidates(const CustomElementDescriptor& desc,
                          HeapVector<Member<Element>>* elements) {
-    registry().collectCandidates(desc, elements);
+    Registry().CollectCandidates(desc, elements);
   }
 
-  ShadowRoot* attachShadowTo(Element* element) {
-    NonThrowableExceptionState noExceptions;
-    ShadowRootInit shadowRootInit;
-    shadowRootInit.setMode("open");
-    return element->attachShadow(scriptState(), shadowRootInit, noExceptions);
+  ShadowRoot* AttachShadowTo(Element* element) {
+    NonThrowableExceptionState no_exceptions;
+    ShadowRootInit shadow_root_init;
+    shadow_root_init.setMode("open");
+    return element->attachShadow(GetScriptState(), shadow_root_init,
+                                 no_exceptions);
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_page;
+  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(CustomElementRegistryTest,
        collectCandidates_shouldNotIncludeElementsRemovedFromDocument) {
-  Element* element = CreateElement("a-a").inDocument(&document());
-  registry().addCandidate(element);
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  Registry().AddCandidate(element);
 
   HeapVector<Member<Element>> elements;
-  collectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
+  CollectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
 
-  EXPECT_TRUE(elements.isEmpty())
+  EXPECT_TRUE(elements.IsEmpty())
       << "no candidates should have been found, but we have "
       << elements.size();
-  EXPECT_FALSE(elements.contains(element))
+  EXPECT_FALSE(elements.Contains(element))
       << "the out-of-document candidate should not have been found";
 }
 
 TEST_F(CustomElementRegistryTest,
        collectCandidates_shouldNotIncludeElementsInDifferentDocument) {
-  Element* element = CreateElement("a-a").inDocument(&document());
-  registry().addCandidate(element);
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  Registry().AddCandidate(element);
 
-  Document* otherDocument = HTMLDocument::create();
-  otherDocument->appendChild(element);
-  EXPECT_EQ(otherDocument, element->ownerDocument())
+  Document* other_document = HTMLDocument::Create();
+  other_document->AppendChild(element);
+  EXPECT_EQ(other_document, element->ownerDocument())
       << "sanity: another document should have adopted an element on append";
 
   HeapVector<Member<Element>> elements;
-  collectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
+  CollectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
 
-  EXPECT_TRUE(elements.isEmpty())
+  EXPECT_TRUE(elements.IsEmpty())
       << "no candidates should have been found, but we have "
       << elements.size();
-  EXPECT_FALSE(elements.contains(element))
+  EXPECT_FALSE(elements.Contains(element))
       << "the adopted-away candidate should not have been found";
 }
 
@@ -99,67 +100,67 @@ TEST_F(CustomElementRegistryTest,
   CustomElementDescriptor descriptor("hello-world", "hello-world");
 
   // Does not match: namespace is not HTML
-  Element* elementA = CreateElement("hello-world")
-                          .inDocument(&document())
-                          .inNamespace("data:text/date,1981-03-10");
+  Element* element_a = CreateElement("hello-world")
+                           .InDocument(&GetDocument())
+                           .InNamespace("data:text/date,1981-03-10");
   // Matches
-  Element* elementB = CreateElement("hello-world").inDocument(&document());
+  Element* element_b = CreateElement("hello-world").InDocument(&GetDocument());
   // Does not match: local name is not hello-world
-  Element* elementC = CreateElement("button")
-                          .inDocument(&document())
-                          .withIsAttribute("hello-world");
-  document().documentElement()->appendChild(elementA);
-  elementA->appendChild(elementB);
-  elementA->appendChild(elementC);
+  Element* element_c = CreateElement("button")
+                           .InDocument(&GetDocument())
+                           .WithIsAttribute("hello-world");
+  GetDocument().documentElement()->AppendChild(element_a);
+  element_a->AppendChild(element_b);
+  element_a->AppendChild(element_c);
 
-  registry().addCandidate(elementA);
-  registry().addCandidate(elementB);
-  registry().addCandidate(elementC);
+  Registry().AddCandidate(element_a);
+  Registry().AddCandidate(element_b);
+  Registry().AddCandidate(element_c);
 
   HeapVector<Member<Element>> elements;
-  collectCandidates(descriptor, &elements);
+  CollectCandidates(descriptor, &elements);
 
   EXPECT_EQ(1u, elements.size())
       << "only one candidates should have been found";
-  EXPECT_EQ(elementB, elements[0])
+  EXPECT_EQ(element_b, elements[0])
       << "the matching element should have been found";
 }
 
 TEST_F(CustomElementRegistryTest, collectCandidates_oneCandidate) {
-  Element* element = CreateElement("a-a").inDocument(&document());
-  registry().addCandidate(element);
-  document().documentElement()->appendChild(element);
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  Registry().AddCandidate(element);
+  GetDocument().documentElement()->AppendChild(element);
 
   HeapVector<Member<Element>> elements;
-  collectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
+  CollectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
 
   EXPECT_EQ(1u, elements.size())
       << "exactly one candidate should have been found";
-  EXPECT_TRUE(elements.contains(element))
+  EXPECT_TRUE(elements.Contains(element))
       << "the candidate should be the element that was added";
 }
 
 TEST_F(CustomElementRegistryTest, collectCandidates_shouldBeInDocumentOrder) {
   CreateElement factory = CreateElement("a-a");
-  factory.inDocument(&document());
-  Element* elementA = factory.withId("a");
-  Element* elementB = factory.withId("b");
-  Element* elementC = factory.withId("c");
+  factory.InDocument(&GetDocument());
+  Element* element_a = factory.WithId("a");
+  Element* element_b = factory.WithId("b");
+  Element* element_c = factory.WithId("c");
 
-  registry().addCandidate(elementB);
-  registry().addCandidate(elementA);
-  registry().addCandidate(elementC);
+  Registry().AddCandidate(element_b);
+  Registry().AddCandidate(element_a);
+  Registry().AddCandidate(element_c);
 
-  document().documentElement()->appendChild(elementA);
-  elementA->appendChild(elementB);
-  document().documentElement()->appendChild(elementC);
+  GetDocument().documentElement()->AppendChild(element_a);
+  element_a->AppendChild(element_b);
+  GetDocument().documentElement()->AppendChild(element_c);
 
   HeapVector<Member<Element>> elements;
-  collectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
+  CollectCandidates(CustomElementDescriptor("a-a", "a-a"), &elements);
 
-  EXPECT_EQ(elementA, elements[0].get());
-  EXPECT_EQ(elementB, elements[1].get());
-  EXPECT_EQ(elementC, elements[2].get());
+  EXPECT_EQ(element_a, elements[0].Get());
+  EXPECT_EQ(element_b, elements[1].Get());
+  EXPECT_EQ(element_c, elements[2].Get());
 }
 
 // Classes which use trace macros cannot be local because of the
@@ -172,88 +173,88 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
       : TestCustomElementDefinition(
             descriptor,
             {
-                "attr1", "attr2", HTMLNames::contenteditableAttr.localName(),
+                "attr1", "attr2", HTMLNames::contenteditableAttr.LocalName(),
             }) {}
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    TestCustomElementDefinition::trace(visitor);
-    visitor->trace(m_element);
-    visitor->trace(m_adopted);
+    TestCustomElementDefinition::Trace(visitor);
+    visitor->Trace(element_);
+    visitor->Trace(adopted_);
   }
 
   // TODO(dominicc): Make this class collect a vector of what's
   // upgraded; it will be useful in more tests.
-  Member<Element> m_element;
+  Member<Element> element_;
   enum MethodType {
-    Constructor,
-    ConnectedCallback,
-    DisconnectedCallback,
-    AdoptedCallback,
-    AttributeChangedCallback,
+    kConstructor,
+    kConnectedCallback,
+    kDisconnectedCallback,
+    kAdoptedCallback,
+    kAttributeChangedCallback,
   };
-  Vector<MethodType> m_logs;
+  Vector<MethodType> logs_;
 
   struct AttributeChanged {
     QualifiedName name;
-    AtomicString oldValue;
-    AtomicString newValue;
+    AtomicString old_value;
+    AtomicString new_value;
   };
-  Vector<AttributeChanged> m_attributeChanged;
+  Vector<AttributeChanged> attribute_changed_;
 
   struct Adopted : public GarbageCollected<Adopted> {
-    Adopted(Document* oldOwner, Document* newOwner)
-        : m_oldOwner(oldOwner), m_newOwner(newOwner) {}
+    Adopted(Document* old_owner, Document* new_owner)
+        : old_owner_(old_owner), new_owner_(new_owner) {}
 
-    Member<Document> m_oldOwner;
-    Member<Document> m_newOwner;
+    Member<Document> old_owner_;
+    Member<Document> new_owner_;
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_oldOwner);
-      visitor->trace(m_newOwner);
+      visitor->Trace(old_owner_);
+      visitor->Trace(new_owner_);
     }
   };
-  HeapVector<Member<Adopted>> m_adopted;
+  HeapVector<Member<Adopted>> adopted_;
 
-  void clear() {
-    m_logs.clear();
-    m_attributeChanged.clear();
+  void Clear() {
+    logs_.Clear();
+    attribute_changed_.Clear();
   }
 
-  bool runConstructor(Element* element) override {
-    m_logs.push_back(Constructor);
-    m_element = element;
-    return TestCustomElementDefinition::runConstructor(element);
+  bool RunConstructor(Element* element) override {
+    logs_.push_back(kConstructor);
+    element_ = element;
+    return TestCustomElementDefinition::RunConstructor(element);
   }
 
-  bool hasConnectedCallback() const override { return true; }
-  bool hasDisconnectedCallback() const override { return true; }
-  bool hasAdoptedCallback() const override { return true; }
+  bool HasConnectedCallback() const override { return true; }
+  bool HasDisconnectedCallback() const override { return true; }
+  bool HasAdoptedCallback() const override { return true; }
 
-  void runConnectedCallback(Element* element) override {
-    m_logs.push_back(ConnectedCallback);
-    EXPECT_EQ(element, m_element);
+  void RunConnectedCallback(Element* element) override {
+    logs_.push_back(kConnectedCallback);
+    EXPECT_EQ(element, element_);
   }
 
-  void runDisconnectedCallback(Element* element) override {
-    m_logs.push_back(DisconnectedCallback);
-    EXPECT_EQ(element, m_element);
+  void RunDisconnectedCallback(Element* element) override {
+    logs_.push_back(kDisconnectedCallback);
+    EXPECT_EQ(element, element_);
   }
 
-  void runAdoptedCallback(Element* element,
-                          Document* oldOwner,
-                          Document* newOwner) override {
-    m_logs.push_back(AdoptedCallback);
-    EXPECT_EQ(element, m_element);
-    m_adopted.push_back(new Adopted(oldOwner, newOwner));
+  void RunAdoptedCallback(Element* element,
+                          Document* old_owner,
+                          Document* new_owner) override {
+    logs_.push_back(kAdoptedCallback);
+    EXPECT_EQ(element, element_);
+    adopted_.push_back(new Adopted(old_owner, new_owner));
   }
 
-  void runAttributeChangedCallback(Element* element,
+  void RunAttributeChangedCallback(Element* element,
                                    const QualifiedName& name,
-                                   const AtomicString& oldValue,
-                                   const AtomicString& newValue) override {
-    m_logs.push_back(AttributeChangedCallback);
-    EXPECT_EQ(element, m_element);
-    m_attributeChanged.push_back(AttributeChanged{name, oldValue, newValue});
+                                   const AtomicString& old_value,
+                                   const AtomicString& new_value) override {
+    logs_.push_back(kAttributeChangedCallback);
+    EXPECT_EQ(element, element_);
+    attribute_changed_.push_back(AttributeChanged{name, old_value, new_value});
   }
 };
 
@@ -264,181 +265,182 @@ class LogUpgradeBuilder final : public TestCustomElementDefinitionBuilder {
  public:
   LogUpgradeBuilder() {}
 
-  CustomElementDefinition* build(
+  CustomElementDefinition* Build(
       const CustomElementDescriptor& descriptor) override {
     return new LogUpgradeDefinition(descriptor);
   }
 };
 
 TEST_F(CustomElementRegistryTest, define_upgradesInDocumentElements) {
-  ScriptForbiddenScope doNotRelyOnScript;
+  ScriptForbiddenScope do_not_rely_on_script;
 
-  Element* element = CreateElement("a-a").inDocument(&document());
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
   element->setAttribute(
-      QualifiedName(nullAtom, "attr1", HTMLNames::xhtmlNamespaceURI), "v1");
-  element->setBooleanAttribute(HTMLNames::contenteditableAttr, true);
-  document().documentElement()->appendChild(element);
+      QualifiedName(g_null_atom, "attr1", HTMLNames::xhtmlNamespaceURI), "v1");
+  element->SetBooleanAttribute(HTMLNames::contenteditableAttr, true);
+  GetDocument().documentElement()->AppendChild(element);
 
   LogUpgradeBuilder builder;
-  NonThrowableExceptionState shouldNotThrow;
+  NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementDefinitionOptions(),
-                      shouldNotThrow);
+    Registry().define("a-a", builder, ElementDefinitionOptions(),
+                      should_not_throw);
   }
   LogUpgradeDefinition* definition =
-      static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
-  EXPECT_EQ(LogUpgradeDefinition::Constructor, definition->m_logs[0])
+      static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
+  EXPECT_EQ(LogUpgradeDefinition::kConstructor, definition->logs_[0])
       << "defining the element should have 'upgraded' the existing element";
-  EXPECT_EQ(element, definition->m_element)
+  EXPECT_EQ(element, definition->element_)
       << "the existing a-a element should have been upgraded";
 
-  EXPECT_EQ(LogUpgradeDefinition::AttributeChangedCallback,
-            definition->m_logs[1])
+  EXPECT_EQ(LogUpgradeDefinition::kAttributeChangedCallback,
+            definition->logs_[1])
       << "Upgrade should invoke attributeChangedCallback for all attributes";
-  EXPECT_EQ("attr1", definition->m_attributeChanged[0].name);
-  EXPECT_EQ(nullAtom, definition->m_attributeChanged[0].oldValue);
-  EXPECT_EQ("v1", definition->m_attributeChanged[0].newValue);
+  EXPECT_EQ("attr1", definition->attribute_changed_[0].name);
+  EXPECT_EQ(g_null_atom, definition->attribute_changed_[0].old_value);
+  EXPECT_EQ("v1", definition->attribute_changed_[0].new_value);
 
-  EXPECT_EQ(LogUpgradeDefinition::AttributeChangedCallback,
-            definition->m_logs[2])
+  EXPECT_EQ(LogUpgradeDefinition::kAttributeChangedCallback,
+            definition->logs_[2])
       << "Upgrade should invoke attributeChangedCallback for all attributes";
-  EXPECT_EQ("contenteditable", definition->m_attributeChanged[1].name);
-  EXPECT_EQ(nullAtom, definition->m_attributeChanged[1].oldValue);
-  EXPECT_EQ(emptyAtom, definition->m_attributeChanged[1].newValue);
-  EXPECT_EQ(2u, definition->m_attributeChanged.size())
+  EXPECT_EQ("contenteditable", definition->attribute_changed_[1].name);
+  EXPECT_EQ(g_null_atom, definition->attribute_changed_[1].old_value);
+  EXPECT_EQ(g_empty_atom, definition->attribute_changed_[1].new_value);
+  EXPECT_EQ(2u, definition->attribute_changed_.size())
       << "Upgrade should invoke attributeChangedCallback for all attributes";
 
-  EXPECT_EQ(LogUpgradeDefinition::ConnectedCallback, definition->m_logs[3])
+  EXPECT_EQ(LogUpgradeDefinition::kConnectedCallback, definition->logs_[3])
       << "upgrade should invoke connectedCallback";
 
-  EXPECT_EQ(4u, definition->m_logs.size())
+  EXPECT_EQ(4u, definition->logs_.size())
       << "upgrade should not invoke other callbacks";
 }
 
 TEST_F(CustomElementRegistryTest, attributeChangedCallback) {
-  ScriptForbiddenScope doNotRelyOnScript;
+  ScriptForbiddenScope do_not_rely_on_script;
 
-  Element* element = CreateElement("a-a").inDocument(&document());
-  document().documentElement()->appendChild(element);
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  GetDocument().documentElement()->AppendChild(element);
 
   LogUpgradeBuilder builder;
-  NonThrowableExceptionState shouldNotThrow;
+  NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementDefinitionOptions(),
-                      shouldNotThrow);
+    Registry().define("a-a", builder, ElementDefinitionOptions(),
+                      should_not_throw);
   }
   LogUpgradeDefinition* definition =
-      static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
+      static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
 
-  definition->clear();
+  definition->Clear();
   {
     CEReactionsScope reactions;
     element->setAttribute(
-        QualifiedName(nullAtom, "attr2", HTMLNames::xhtmlNamespaceURI), "v2");
+        QualifiedName(g_null_atom, "attr2", HTMLNames::xhtmlNamespaceURI),
+        "v2");
   }
-  EXPECT_EQ(LogUpgradeDefinition::AttributeChangedCallback,
-            definition->m_logs[0])
+  EXPECT_EQ(LogUpgradeDefinition::kAttributeChangedCallback,
+            definition->logs_[0])
       << "Adding an attribute should invoke attributeChangedCallback";
-  EXPECT_EQ(1u, definition->m_attributeChanged.size())
+  EXPECT_EQ(1u, definition->attribute_changed_.size())
       << "Adding an attribute should invoke attributeChangedCallback";
-  EXPECT_EQ("attr2", definition->m_attributeChanged[0].name);
-  EXPECT_EQ(nullAtom, definition->m_attributeChanged[0].oldValue);
-  EXPECT_EQ("v2", definition->m_attributeChanged[0].newValue);
+  EXPECT_EQ("attr2", definition->attribute_changed_[0].name);
+  EXPECT_EQ(g_null_atom, definition->attribute_changed_[0].old_value);
+  EXPECT_EQ("v2", definition->attribute_changed_[0].new_value);
 
-  EXPECT_EQ(1u, definition->m_logs.size())
+  EXPECT_EQ(1u, definition->logs_.size())
       << "upgrade should not invoke other callbacks";
 }
 
 TEST_F(CustomElementRegistryTest, disconnectedCallback) {
-  ScriptForbiddenScope doNotRelyOnScript;
+  ScriptForbiddenScope do_not_rely_on_script;
 
-  Element* element = CreateElement("a-a").inDocument(&document());
-  document().documentElement()->appendChild(element);
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  GetDocument().documentElement()->AppendChild(element);
 
   LogUpgradeBuilder builder;
-  NonThrowableExceptionState shouldNotThrow;
+  NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementDefinitionOptions(),
-                      shouldNotThrow);
+    Registry().define("a-a", builder, ElementDefinitionOptions(),
+                      should_not_throw);
   }
   LogUpgradeDefinition* definition =
-      static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
+      static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
 
-  definition->clear();
+  definition->Clear();
   {
     CEReactionsScope reactions;
-    element->remove(shouldNotThrow);
+    element->remove(should_not_throw);
   }
-  EXPECT_EQ(LogUpgradeDefinition::DisconnectedCallback, definition->m_logs[0])
+  EXPECT_EQ(LogUpgradeDefinition::kDisconnectedCallback, definition->logs_[0])
       << "remove() should invoke disconnectedCallback";
 
-  EXPECT_EQ(1u, definition->m_logs.size())
+  EXPECT_EQ(1u, definition->logs_.size())
       << "remove() should not invoke other callbacks";
 }
 
 TEST_F(CustomElementRegistryTest, adoptedCallback) {
-  ScriptForbiddenScope doNotRelyOnScript;
+  ScriptForbiddenScope do_not_rely_on_script;
 
-  Element* element = CreateElement("a-a").inDocument(&document());
-  document().documentElement()->appendChild(element);
+  Element* element = CreateElement("a-a").InDocument(&GetDocument());
+  GetDocument().documentElement()->AppendChild(element);
 
   LogUpgradeBuilder builder;
-  NonThrowableExceptionState shouldNotThrow;
+  NonThrowableExceptionState should_not_throw;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementDefinitionOptions(),
-                      shouldNotThrow);
+    Registry().define("a-a", builder, ElementDefinitionOptions(),
+                      should_not_throw);
   }
   LogUpgradeDefinition* definition =
-      static_cast<LogUpgradeDefinition*>(registry().definitionForName("a-a"));
+      static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
 
-  definition->clear();
-  Document* otherDocument = HTMLDocument::create();
+  definition->Clear();
+  Document* other_document = HTMLDocument::Create();
   {
     CEReactionsScope reactions;
-    otherDocument->adoptNode(element, ASSERT_NO_EXCEPTION);
+    other_document->adoptNode(element, ASSERT_NO_EXCEPTION);
   }
-  EXPECT_EQ(LogUpgradeDefinition::DisconnectedCallback, definition->m_logs[0])
+  EXPECT_EQ(LogUpgradeDefinition::kDisconnectedCallback, definition->logs_[0])
       << "adoptNode() should invoke disconnectedCallback";
 
-  EXPECT_EQ(LogUpgradeDefinition::AdoptedCallback, definition->m_logs[1])
+  EXPECT_EQ(LogUpgradeDefinition::kAdoptedCallback, definition->logs_[1])
       << "adoptNode() should invoke adoptedCallback";
 
-  EXPECT_EQ(&document(), definition->m_adopted[0]->m_oldOwner.get())
+  EXPECT_EQ(&GetDocument(), definition->adopted_[0]->old_owner_.Get())
       << "adoptedCallback should have been passed the old owner document";
-  EXPECT_EQ(otherDocument, definition->m_adopted[0]->m_newOwner.get())
+  EXPECT_EQ(other_document, definition->adopted_[0]->new_owner_.Get())
       << "adoptedCallback should have been passed the new owner document";
 
-  EXPECT_EQ(2u, definition->m_logs.size())
+  EXPECT_EQ(2u, definition->logs_.size())
       << "adoptNode() should not invoke other callbacks";
 }
 
 TEST_F(CustomElementRegistryTest, lookupCustomElementDefinition) {
-  NonThrowableExceptionState shouldNotThrow;
+  NonThrowableExceptionState should_not_throw;
   TestCustomElementDefinitionBuilder builder;
-  CustomElementDefinition* definitionA = registry().define(
-      "a-a", builder, ElementDefinitionOptions(), shouldNotThrow);
+  CustomElementDefinition* definition_a = Registry().define(
+      "a-a", builder, ElementDefinitionOptions(), should_not_throw);
   ElementDefinitionOptions options;
   options.setExtends("div");
-  CustomElementDefinition* definitionB =
-      registry().define("b-b", builder, options, shouldNotThrow);
+  CustomElementDefinition* definition_b =
+      Registry().define("b-b", builder, options, should_not_throw);
   // look up defined autonomous custom element
-  CustomElementDefinition* definition = registry().definitionFor(
+  CustomElementDefinition* definition = Registry().DefinitionFor(
       CustomElementDescriptor(CustomElementDescriptor("a-a", "a-a")));
   EXPECT_NE(nullptr, definition) << "a-a, a-a should be registered";
-  EXPECT_EQ(definitionA, definition);
+  EXPECT_EQ(definition_a, definition);
   // look up undefined autonomous custom element
-  definition = registry().definitionFor(CustomElementDescriptor("a-a", "div"));
+  definition = Registry().DefinitionFor(CustomElementDescriptor("a-a", "div"));
   EXPECT_EQ(nullptr, definition) << "a-a, div should not be registered";
   // look up defined customized built-in element
-  definition = registry().definitionFor(CustomElementDescriptor("b-b", "div"));
+  definition = Registry().DefinitionFor(CustomElementDescriptor("b-b", "div"));
   EXPECT_NE(nullptr, definition) << "b-b, div should be registered";
-  EXPECT_EQ(definitionB, definition);
+  EXPECT_EQ(definition_b, definition);
   // look up undefined customized built-in element
-  definition = registry().definitionFor(CustomElementDescriptor("a-a", "div"));
+  definition = Registry().DefinitionFor(CustomElementDescriptor("a-a", "div"));
   EXPECT_EQ(nullptr, definition) << "a-a, div should not be registered";
 }
 

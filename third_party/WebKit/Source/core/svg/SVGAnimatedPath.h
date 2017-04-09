@@ -40,14 +40,15 @@ class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
  public:
   ~SVGAnimatedPath() override;
 
-  static SVGAnimatedPath* create(
-      SVGElement* contextElement,
-      const QualifiedName& attributeName,
-      CSSPropertyID cssPropertyId = CSSPropertyInvalid) {
-    return new SVGAnimatedPath(contextElement, attributeName, cssPropertyId);
+  static SVGAnimatedPath* Create(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+    return new SVGAnimatedPath(context_element, attribute_name,
+                               css_property_id);
   }
 
-  const CSSValue* cssValue() const;
+  const CSSValue* CssValue() const;
 
  protected:
   SVGAnimatedPath(SVGElement*,

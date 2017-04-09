@@ -46,20 +46,16 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
     bool is_directory = file_def->Get(v8::String::NewFromUtf8(
         args.GetIsolate(), "fileIsDirectory"))->ToBoolean()->Value();
     blink::WebDOMFileSystem::EntryType entry_type =
-        is_directory ? blink::WebDOMFileSystem::EntryTypeDirectory
-                     : blink::WebDOMFileSystem::EntryTypeFile;
+        is_directory ? blink::WebDOMFileSystem::kEntryTypeDirectory
+                     : blink::WebDOMFileSystem::kEntryTypeFile;
     blink::WebLocalFrame* webframe =
-        blink::WebLocalFrame::frameForContext(context->v8_context());
+        blink::WebLocalFrame::FrameForContext(context->v8_context());
     args.GetReturnValue().Set(
-        blink::WebDOMFileSystem::create(
-            webframe,
-            blink::WebFileSystemTypeExternal,
-            blink::WebString::fromUTF8(file_system_name),
-            file_system_root)
-            .createV8Entry(blink::WebString::fromUTF8(file_full_path),
-                           entry_type,
-                           args.Holder(),
-                           args.GetIsolate()));
+        blink::WebDOMFileSystem::Create(
+            webframe, blink::kWebFileSystemTypeExternal,
+            blink::WebString::FromUTF8(file_system_name), file_system_root)
+            .CreateV8Entry(blink::WebString::FromUTF8(file_full_path),
+                           entry_type, args.Holder(), args.GetIsolate()));
 #endif
 }
 

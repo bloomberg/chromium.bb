@@ -45,36 +45,40 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
   explicit WaveShaperDSPKernel(WaveShaperProcessor*);
 
   // AudioDSPKernel
-  void process(const float* source,
+  void Process(const float* source,
                float* dest,
-               size_t framesToProcess) override;
-  void reset() override;
-  double tailTime() const override { return 0; }
-  double latencyTime() const override;
+               size_t frames_to_process) override;
+  void Reset() override;
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override;
 
   // Oversampling requires more resources, so let's only allocate them if
   // needed.
-  void lazyInitializeOversampling();
+  void LazyInitializeOversampling();
 
  protected:
   // Apply the shaping curve.
-  void processCurve(const float* source, float* dest, size_t framesToProcess);
+  void ProcessCurve(const float* source, float* dest, size_t frames_to_process);
 
   // Use up-sampling, process at the higher sample-rate, then down-sample.
-  void processCurve2x(const float* source, float* dest, size_t framesToProcess);
-  void processCurve4x(const float* source, float* dest, size_t framesToProcess);
+  void ProcessCurve2x(const float* source,
+                      float* dest,
+                      size_t frames_to_process);
+  void ProcessCurve4x(const float* source,
+                      float* dest,
+                      size_t frames_to_process);
 
-  WaveShaperProcessor* getWaveShaperProcessor() {
-    return static_cast<WaveShaperProcessor*>(processor());
+  WaveShaperProcessor* GetWaveShaperProcessor() {
+    return static_cast<WaveShaperProcessor*>(Processor());
   }
 
   // Oversampling.
-  std::unique_ptr<AudioFloatArray> m_tempBuffer;
-  std::unique_ptr<AudioFloatArray> m_tempBuffer2;
-  std::unique_ptr<UpSampler> m_upSampler;
-  std::unique_ptr<DownSampler> m_downSampler;
-  std::unique_ptr<UpSampler> m_upSampler2;
-  std::unique_ptr<DownSampler> m_downSampler2;
+  std::unique_ptr<AudioFloatArray> temp_buffer_;
+  std::unique_ptr<AudioFloatArray> temp_buffer2_;
+  std::unique_ptr<UpSampler> up_sampler_;
+  std::unique_ptr<DownSampler> down_sampler_;
+  std::unique_ptr<UpSampler> up_sampler2_;
+  std::unique_ptr<DownSampler> down_sampler2_;
 };
 
 }  // namespace blink

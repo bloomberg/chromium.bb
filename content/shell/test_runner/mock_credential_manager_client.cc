@@ -12,7 +12,7 @@
 namespace test_runner {
 
 MockCredentialManagerClient::MockCredentialManagerClient()
-    : error_(blink::WebCredentialManagerNoError) {}
+    : error_(blink::kWebCredentialManagerNoError) {}
 
 MockCredentialManagerClient::~MockCredentialManagerClient() {}
 
@@ -23,37 +23,37 @@ void MockCredentialManagerClient::SetResponse(
 
 void MockCredentialManagerClient::SetError(const std::string& error) {
   if (error == "pending")
-    error_ = blink::WebCredentialManagerPendingRequestError;
+    error_ = blink::kWebCredentialManagerPendingRequestError;
   if (error == "disabled")
-    error_ = blink::WebCredentialManagerDisabledError;
+    error_ = blink::kWebCredentialManagerDisabledError;
   if (error == "unknown")
-    error_ = blink::WebCredentialManagerUnknownError;
+    error_ = blink::kWebCredentialManagerUnknownError;
   if (error.empty())
-    error_ = blink::WebCredentialManagerNoError;
+    error_ = blink::kWebCredentialManagerNoError;
 }
 
-void MockCredentialManagerClient::dispatchStore(
+void MockCredentialManagerClient::DispatchStore(
     const blink::WebCredential&,
     blink::WebCredentialManagerClient::NotificationCallbacks* callbacks) {
-  callbacks->onSuccess();
+  callbacks->OnSuccess();
   delete callbacks;
 }
 
-void MockCredentialManagerClient::dispatchRequireUserMediation(
+void MockCredentialManagerClient::DispatchRequireUserMediation(
     NotificationCallbacks* callbacks) {
-  callbacks->onSuccess();
+  callbacks->OnSuccess();
   delete callbacks;
 }
 
-void MockCredentialManagerClient::dispatchGet(
+void MockCredentialManagerClient::DispatchGet(
     bool zero_click_only,
     bool include_passwords,
     const blink::WebVector<blink::WebURL>& federations,
     RequestCallbacks* callbacks) {
-  if (error_ != blink::WebCredentialManagerNoError)
-    callbacks->onError(error_);
+  if (error_ != blink::kWebCredentialManagerNoError)
+    callbacks->OnError(error_);
   else
-    callbacks->onSuccess(std::move(credential_));
+    callbacks->OnSuccess(std::move(credential_));
   delete callbacks;
 }
 

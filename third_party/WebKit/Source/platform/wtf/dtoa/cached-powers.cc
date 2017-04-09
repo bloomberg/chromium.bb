@@ -142,11 +142,15 @@ namespace double_conversion {
     static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
 
     // Check that the static constants match the values in kCachedPowers.
-    static void validateStaticConstants() {
-        ASSERT(kCachedPowersOffset == -kCachedPowers[0].decimal_exponent);
-        ASSERT(PowersOfTenCache::kDecimalExponentDistance == (kCachedPowers[1].decimal_exponent - kCachedPowers[0].decimal_exponent));
-        ASSERT(PowersOfTenCache::kMinDecimalExponent == kCachedPowers[0].decimal_exponent);
-        ASSERT(PowersOfTenCache::kMaxDecimalExponent == kCachedPowers[kCachedPowersLength - 1].decimal_exponent);
+    static void ValidateStaticConstants() {
+      ASSERT(kCachedPowersOffset == -kCachedPowers[0].decimal_exponent);
+      ASSERT(PowersOfTenCache::kDecimalExponentDistance ==
+             (kCachedPowers[1].decimal_exponent -
+              kCachedPowers[0].decimal_exponent));
+      ASSERT(PowersOfTenCache::kMinDecimalExponent ==
+             kCachedPowers[0].decimal_exponent);
+      ASSERT(PowersOfTenCache::kMaxDecimalExponent ==
+             kCachedPowers[kCachedPowersLength - 1].decimal_exponent);
     }
 #endif
 
@@ -156,7 +160,7 @@ namespace double_conversion {
                                                                 DiyFp* power,
                                                                 int* decimal_exponent) {
 #if DCHECK_IS_ON()
-      validateStaticConstants();
+      ValidateStaticConstants();
 #endif
       const int kQ = DiyFp::kSignificandSize;
       double k = ceil((min_exponent + kQ - 1) * kD_1_LOG2_10);
@@ -178,7 +182,7 @@ namespace double_conversion {
         ASSERT(kMinDecimalExponent <= requested_exponent);
         ASSERT(requested_exponent < kMaxDecimalExponent + kDecimalExponentDistance);
 #if DCHECK_IS_ON()
-        validateStaticConstants();
+        ValidateStaticConstants();
 #endif
         int index =
         (requested_exponent + kCachedPowersOffset) / kDecimalExponentDistance;

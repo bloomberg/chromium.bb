@@ -38,11 +38,11 @@ const char kAction2IconUrl[] = "https://example.com/action_icon_2.png";
 
 TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   blink::WebNotificationData web_data;
-  web_data.title = blink::WebString::fromUTF8(kNotificationTitle);
-  web_data.direction = blink::WebNotificationData::DirectionLeftToRight;
-  web_data.lang = blink::WebString::fromUTF8(kNotificationLang);
-  web_data.body = blink::WebString::fromUTF8(kNotificationBody);
-  web_data.tag = blink::WebString::fromUTF8(kNotificationTag);
+  web_data.title = blink::WebString::FromUTF8(kNotificationTitle);
+  web_data.direction = blink::WebNotificationData::kDirectionLeftToRight;
+  web_data.lang = blink::WebString::FromUTF8(kNotificationLang);
+  web_data.body = blink::WebString::FromUTF8(kNotificationBody);
+  web_data.tag = blink::WebString::FromUTF8(kNotificationTag);
   web_data.image = blink::WebURL(GURL(kNotificationImageUrl));
   web_data.icon = blink::WebURL(GURL(kNotificationIconUrl));
   web_data.badge = blink::WebURL(GURL(kNotificationBadgeUrl));
@@ -51,21 +51,21 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   web_data.timestamp = kNotificationTimestamp;
   web_data.renotify = true;
   web_data.silent = true;
-  web_data.requireInteraction = true;
+  web_data.require_interaction = true;
   web_data.data =
       blink::WebVector<char>(kNotificationData, arraysize(kNotificationData));
 
   web_data.actions =
       blink::WebVector<blink::WebNotificationAction>(static_cast<size_t>(2));
-  web_data.actions[0].type = blink::WebNotificationAction::Button;
-  web_data.actions[0].action = blink::WebString::fromUTF8(kAction1Name);
-  web_data.actions[0].title = blink::WebString::fromUTF8(kAction1Title);
+  web_data.actions[0].type = blink::WebNotificationAction::kButton;
+  web_data.actions[0].action = blink::WebString::FromUTF8(kAction1Name);
+  web_data.actions[0].title = blink::WebString::FromUTF8(kAction1Title);
   web_data.actions[0].icon = blink::WebURL(GURL(kAction1IconUrl));
   web_data.actions[0].placeholder =
-      blink::WebString::fromUTF8(kAction1Placeholder);
-  web_data.actions[1].type = blink::WebNotificationAction::Text;
-  web_data.actions[1].action = blink::WebString::fromUTF8(kAction2Name);
-  web_data.actions[1].title = blink::WebString::fromUTF8(kAction2Title);
+      blink::WebString::FromUTF8(kAction1Placeholder);
+  web_data.actions[1].type = blink::WebNotificationAction::kText;
+  web_data.actions[1].action = blink::WebString::FromUTF8(kAction2Name);
+  web_data.actions[1].title = blink::WebString::FromUTF8(kAction2Title);
   web_data.actions[1].icon = blink::WebURL(GURL(kAction2IconUrl));
   web_data.actions[1].placeholder = blink::WebString();
 
@@ -145,14 +145,14 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
 
   blink::WebNotificationData web_data = ToWebNotificationData(platform_data);
   EXPECT_EQ(kNotificationTitle, web_data.title);
-  EXPECT_EQ(blink::WebNotificationData::DirectionLeftToRight,
+  EXPECT_EQ(blink::WebNotificationData::kDirectionLeftToRight,
             web_data.direction);
   EXPECT_EQ(kNotificationLang, web_data.lang);
   EXPECT_EQ(kNotificationBody, web_data.body);
   EXPECT_EQ(kNotificationTag, web_data.tag);
-  EXPECT_EQ(kNotificationImageUrl, web_data.image.string());
-  EXPECT_EQ(kNotificationIconUrl, web_data.icon.string());
-  EXPECT_EQ(kNotificationBadgeUrl, web_data.badge.string());
+  EXPECT_EQ(kNotificationImageUrl, web_data.image.GetString());
+  EXPECT_EQ(kNotificationIconUrl, web_data.icon.GetString());
+  EXPECT_EQ(kNotificationBadgeUrl, web_data.badge.GetString());
 
   ASSERT_EQ(vibration_pattern.size(), web_data.vibrate.size());
   for (size_t i = 0; i < vibration_pattern.size(); ++i)
@@ -161,34 +161,34 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   EXPECT_DOUBLE_EQ(kNotificationTimestamp, web_data.timestamp);
   EXPECT_TRUE(web_data.renotify);
   EXPECT_TRUE(web_data.silent);
-  EXPECT_TRUE(web_data.requireInteraction);
+  EXPECT_TRUE(web_data.require_interaction);
 
   ASSERT_EQ(developer_data.size(), web_data.data.size());
   for (size_t i = 0; i < developer_data.size(); ++i)
     EXPECT_EQ(developer_data[i], web_data.data[i]);
 
   ASSERT_EQ(platform_data.actions.size(), web_data.actions.size());
-  EXPECT_EQ(blink::WebNotificationAction::Button, web_data.actions[0].type);
+  EXPECT_EQ(blink::WebNotificationAction::kButton, web_data.actions[0].type);
   EXPECT_EQ(kAction1Name, web_data.actions[0].action);
   EXPECT_EQ(kAction1Title, web_data.actions[0].title);
-  EXPECT_EQ(kAction1IconUrl, web_data.actions[0].icon.string());
+  EXPECT_EQ(kAction1IconUrl, web_data.actions[0].icon.GetString());
   EXPECT_EQ(kAction1Placeholder, web_data.actions[0].placeholder);
-  EXPECT_EQ(blink::WebNotificationAction::Text, web_data.actions[1].type);
+  EXPECT_EQ(blink::WebNotificationAction::kText, web_data.actions[1].type);
   EXPECT_EQ(kAction2Name, web_data.actions[1].action);
   EXPECT_EQ(kAction2Title, web_data.actions[1].title);
-  EXPECT_EQ(kAction2IconUrl, web_data.actions[1].icon.string());
-  EXPECT_TRUE(web_data.actions[1].placeholder.isNull());
+  EXPECT_EQ(kAction2IconUrl, web_data.actions[1].icon.GetString());
+  EXPECT_TRUE(web_data.actions[1].placeholder.IsNull());
 }
 
 TEST(NotificationDataConversionsTest, NotificationDataDirectionality) {
   std::map<blink::WebNotificationData::Direction,
            PlatformNotificationData::Direction> mappings;
 
-  mappings[blink::WebNotificationData::DirectionLeftToRight] =
+  mappings[blink::WebNotificationData::kDirectionLeftToRight] =
       PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
-  mappings[blink::WebNotificationData::DirectionRightToLeft] =
+  mappings[blink::WebNotificationData::kDirectionRightToLeft] =
       PlatformNotificationData::DIRECTION_RIGHT_TO_LEFT;
-  mappings[blink::WebNotificationData::DirectionAuto] =
+  mappings[blink::WebNotificationData::kDirectionAuto] =
       PlatformNotificationData::DIRECTION_AUTO;
 
   for (const auto& pair : mappings) {

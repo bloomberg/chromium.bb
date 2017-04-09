@@ -17,9 +17,9 @@ class PLATFORM_EXPORT ClientHintsPreferences {
  public:
   class Context {
    public:
-    virtual void countClientHintsDPR() = 0;
-    virtual void countClientHintsResourceWidth() = 0;
-    virtual void countClientHintsViewportWidth() = 0;
+    virtual void CountClientHintsDPR() = 0;
+    virtual void CountClientHintsResourceWidth() = 0;
+    virtual void CountClientHintsViewportWidth() = 0;
 
    protected:
     virtual ~Context() {}
@@ -27,26 +27,26 @@ class PLATFORM_EXPORT ClientHintsPreferences {
 
   ClientHintsPreferences();
 
-  void updateFrom(const ClientHintsPreferences&);
-  void updateFromAcceptClientHintsHeader(const String& headerValue, Context*);
+  void UpdateFrom(const ClientHintsPreferences&);
+  void UpdateFromAcceptClientHintsHeader(const String& header_value, Context*);
 
-  bool shouldSendDPR() const { return m_shouldSendDPR; }
-  void setShouldSendDPR(bool should) { m_shouldSendDPR = should; }
+  bool ShouldSendDPR() const { return should_send_dpr_; }
+  void SetShouldSendDPR(bool should) { should_send_dpr_ = should; }
 
-  bool shouldSendResourceWidth() const { return m_shouldSendResourceWidth; }
-  void setShouldSendResourceWidth(bool should) {
-    m_shouldSendResourceWidth = should;
+  bool ShouldSendResourceWidth() const { return should_send_resource_width_; }
+  void SetShouldSendResourceWidth(bool should) {
+    should_send_resource_width_ = should;
   }
 
-  bool shouldSendViewportWidth() const { return m_shouldSendViewportWidth; }
-  void setShouldSendViewportWidth(bool should) {
-    m_shouldSendViewportWidth = should;
+  bool ShouldSendViewportWidth() const { return should_send_viewport_width_; }
+  void SetShouldSendViewportWidth(bool should) {
+    should_send_viewport_width_ = should;
   }
 
  private:
-  bool m_shouldSendDPR;
-  bool m_shouldSendResourceWidth;
-  bool m_shouldSendViewportWidth;
+  bool should_send_dpr_;
+  bool should_send_resource_width_;
+  bool should_send_viewport_width_;
 };
 
 }  // namespace blink

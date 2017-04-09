@@ -40,123 +40,124 @@ namespace blink {
 
 class WebSecurityOriginPrivate : public SecurityOrigin {};
 
-WebSecurityOrigin WebSecurityOrigin::createFromString(const WebString& origin) {
-  return WebSecurityOrigin(SecurityOrigin::createFromString(origin));
+WebSecurityOrigin WebSecurityOrigin::CreateFromString(const WebString& origin) {
+  return WebSecurityOrigin(SecurityOrigin::CreateFromString(origin));
 }
 
-WebSecurityOrigin WebSecurityOrigin::create(const WebURL& url) {
-  return WebSecurityOrigin(SecurityOrigin::create(url));
+WebSecurityOrigin WebSecurityOrigin::Create(const WebURL& url) {
+  return WebSecurityOrigin(SecurityOrigin::Create(url));
 }
 
-WebSecurityOrigin WebSecurityOrigin::createFromTupleWithSuborigin(
+WebSecurityOrigin WebSecurityOrigin::CreateFromTupleWithSuborigin(
     const WebString& protocol,
     const WebString& host,
     int port,
     const WebString& suborigin) {
   return WebSecurityOrigin(
-      SecurityOrigin::create(protocol, host, port, suborigin));
+      SecurityOrigin::Create(protocol, host, port, suborigin));
 }
 
-WebSecurityOrigin WebSecurityOrigin::createUnique() {
-  return WebSecurityOrigin(SecurityOrigin::createUnique());
+WebSecurityOrigin WebSecurityOrigin::CreateUnique() {
+  return WebSecurityOrigin(SecurityOrigin::CreateUnique());
 }
 
-void WebSecurityOrigin::reset() {
-  assign(0);
+void WebSecurityOrigin::Reset() {
+  Assign(0);
 }
 
-void WebSecurityOrigin::assign(const WebSecurityOrigin& other) {
+void WebSecurityOrigin::Assign(const WebSecurityOrigin& other) {
   WebSecurityOriginPrivate* p =
-      const_cast<WebSecurityOriginPrivate*>(other.m_private);
+      const_cast<WebSecurityOriginPrivate*>(other.private_);
   if (p)
-    p->ref();
-  assign(p);
+    p->Ref();
+  Assign(p);
 }
 
-WebString WebSecurityOrigin::protocol() const {
-  DCHECK(m_private);
-  return m_private->protocol();
+WebString WebSecurityOrigin::Protocol() const {
+  DCHECK(private_);
+  return private_->Protocol();
 }
 
-WebString WebSecurityOrigin::host() const {
-  DCHECK(m_private);
-  return m_private->host();
+WebString WebSecurityOrigin::Host() const {
+  DCHECK(private_);
+  return private_->Host();
 }
 
-unsigned short WebSecurityOrigin::port() const {
-  DCHECK(m_private);
-  return m_private->port();
+unsigned short WebSecurityOrigin::Port() const {
+  DCHECK(private_);
+  return private_->Port();
 }
 
-unsigned short WebSecurityOrigin::effectivePort() const {
-  DCHECK(m_private);
-  return m_private->effectivePort();
+unsigned short WebSecurityOrigin::EffectivePort() const {
+  DCHECK(private_);
+  return private_->EffectivePort();
 }
 
-WebString WebSecurityOrigin::suborigin() const {
-  DCHECK(m_private);
-  return m_private->hasSuborigin() ? WebString(m_private->suborigin()->name())
-                                   : WebString();
+WebString WebSecurityOrigin::Suborigin() const {
+  DCHECK(private_);
+  return private_->HasSuborigin()
+             ? WebString(private_->GetSuborigin()->GetName())
+             : WebString();
 }
 
-bool WebSecurityOrigin::isUnique() const {
-  DCHECK(m_private);
-  return m_private->isUnique();
+bool WebSecurityOrigin::IsUnique() const {
+  DCHECK(private_);
+  return private_->IsUnique();
 }
 
-bool WebSecurityOrigin::canAccess(const WebSecurityOrigin& other) const {
-  DCHECK(m_private);
-  DCHECK(other.m_private);
-  return m_private->canAccess(other.m_private);
+bool WebSecurityOrigin::CanAccess(const WebSecurityOrigin& other) const {
+  DCHECK(private_);
+  DCHECK(other.private_);
+  return private_->CanAccess(other.private_);
 }
 
-bool WebSecurityOrigin::canRequest(const WebURL& url) const {
-  DCHECK(m_private);
-  return m_private->canRequest(url);
+bool WebSecurityOrigin::CanRequest(const WebURL& url) const {
+  DCHECK(private_);
+  return private_->CanRequest(url);
 }
 
-bool WebSecurityOrigin::isPotentiallyTrustworthy() const {
-  DCHECK(m_private);
-  return m_private->isPotentiallyTrustworthy();
+bool WebSecurityOrigin::IsPotentiallyTrustworthy() const {
+  DCHECK(private_);
+  return private_->IsPotentiallyTrustworthy();
 }
 
-WebString WebSecurityOrigin::toString() const {
-  DCHECK(m_private);
-  return m_private->toString();
+WebString WebSecurityOrigin::ToString() const {
+  DCHECK(private_);
+  return private_->ToString();
 }
 
-bool WebSecurityOrigin::canAccessPasswordManager() const {
-  DCHECK(m_private);
-  return m_private->canAccessPasswordManager();
+bool WebSecurityOrigin::CanAccessPasswordManager() const {
+  DCHECK(private_);
+  return private_->CanAccessPasswordManager();
 }
 
 WebSecurityOrigin::WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin> origin)
-    : m_private(static_cast<WebSecurityOriginPrivate*>(origin.leakRef())) {}
+    : private_(static_cast<WebSecurityOriginPrivate*>(origin.LeakRef())) {}
 
 WebSecurityOrigin& WebSecurityOrigin::operator=(
     WTF::PassRefPtr<SecurityOrigin> origin) {
-  assign(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()));
+  Assign(static_cast<WebSecurityOriginPrivate*>(origin.LeakRef()));
   return *this;
 }
 
 WebSecurityOrigin::operator WTF::PassRefPtr<SecurityOrigin>() const {
   return PassRefPtr<SecurityOrigin>(
-      const_cast<WebSecurityOriginPrivate*>(m_private));
+      const_cast<WebSecurityOriginPrivate*>(private_));
 }
 
-SecurityOrigin* WebSecurityOrigin::get() const {
-  return m_private;
+SecurityOrigin* WebSecurityOrigin::Get() const {
+  return private_;
 }
 
-void WebSecurityOrigin::assign(WebSecurityOriginPrivate* p) {
+void WebSecurityOrigin::Assign(WebSecurityOriginPrivate* p) {
   // p is already ref'd for us by the caller
-  if (m_private)
-    m_private->deref();
-  m_private = p;
+  if (private_)
+    private_->Deref();
+  private_ = p;
 }
 
-void WebSecurityOrigin::grantLoadLocalResources() const {
-  get()->grantLoadLocalResources();
+void WebSecurityOrigin::GrantLoadLocalResources() const {
+  Get()->GrantLoadLocalResources();
 }
 
 }  // namespace blink

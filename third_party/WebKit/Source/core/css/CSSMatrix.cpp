@@ -42,81 +42,81 @@
 
 namespace blink {
 
-CSSMatrix* CSSMatrix::create(ExecutionContext* executionContext,
+CSSMatrix* CSSMatrix::Create(ExecutionContext* execution_context,
                              const String& s,
-                             ExceptionState& exceptionState) {
-  UseCounter::count(executionContext, UseCounter::WebKitCSSMatrix);
-  if (!s.isEmpty()) {
-    UseCounter::count(executionContext,
-                      UseCounter::WebkitCSSMatrixConstructFromString);
+                             ExceptionState& exception_state) {
+  UseCounter::Count(execution_context, UseCounter::kWebKitCSSMatrix);
+  if (!s.IsEmpty()) {
+    UseCounter::Count(execution_context,
+                      UseCounter::kWebkitCSSMatrixConstructFromString);
   }
-  return new CSSMatrix(s, exceptionState);
+  return new CSSMatrix(s, exception_state);
 }
 
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
-    : m_matrix(TransformationMatrix::create(m)) {}
+    : matrix_(TransformationMatrix::Create(m)) {}
 
-CSSMatrix::CSSMatrix(const String& s, ExceptionState& exceptionState)
-    : m_matrix(TransformationMatrix::create()) {
-  setMatrixValue(s, exceptionState);
+CSSMatrix::CSSMatrix(const String& s, ExceptionState& exception_state)
+    : matrix_(TransformationMatrix::Create()) {
+  setMatrixValue(s, exception_state);
 }
 
-static inline PassRefPtr<ComputedStyle> createInitialStyle() {
-  RefPtr<ComputedStyle> initialStyle = ComputedStyle::create();
-  initialStyle->font().update(nullptr);
-  return initialStyle;
+static inline PassRefPtr<ComputedStyle> CreateInitialStyle() {
+  RefPtr<ComputedStyle> initial_style = ComputedStyle::Create();
+  initial_style->GetFont().Update(nullptr);
+  return initial_style;
 }
 
 void CSSMatrix::setMatrixValue(const String& string,
-                               ExceptionState& exceptionState) {
-  if (string.isEmpty())
+                               ExceptionState& exception_state) {
+  if (string.IsEmpty())
     return;
 
   if (const CSSValue* value =
-          CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
+          CSSParser::ParseSingleValue(CSSPropertyTransform, string)) {
     // Check for a "none" transform. In these cases we can use the default
     // identity matrix.
-    if (value->isIdentifierValue() &&
-        (toCSSIdentifierValue(value))->getValueID() == CSSValueNone)
+    if (value->IsIdentifierValue() &&
+        (ToCSSIdentifierValue(value))->GetValueID() == CSSValueNone)
       return;
 
-    DEFINE_STATIC_REF(ComputedStyle, initialStyle, createInitialStyle());
+    DEFINE_STATIC_REF(ComputedStyle, initial_style, CreateInitialStyle());
     TransformOperations operations =
-        TransformBuilder::createTransformOperations(
-            *value, CSSToLengthConversionData(initialStyle, initialStyle,
+        TransformBuilder::CreateTransformOperations(
+            *value, CSSToLengthConversionData(initial_style, initial_style,
                                               LayoutViewItem(nullptr), 1.0f));
 
     // Convert transform operations to a TransformationMatrix. This can fail
     // if a param has a percentage ('%')
-    if (operations.dependsOnBoxSize())
-      exceptionState.throwDOMException(SyntaxError,
-                                       "The transformation depends on the box "
-                                       "size, which is not supported.");
-    m_matrix = TransformationMatrix::create();
-    operations.apply(FloatSize(0, 0), *m_matrix);
+    if (operations.DependsOnBoxSize())
+      exception_state.ThrowDOMException(kSyntaxError,
+                                        "The transformation depends on the box "
+                                        "size, which is not supported.");
+    matrix_ = TransformationMatrix::Create();
+    operations.Apply(FloatSize(0, 0), *matrix_);
   } else {  // There is something there but parsing failed.
-    exceptionState.throwDOMException(SyntaxError,
-                                     "Failed to parse '" + string + "'.");
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "Failed to parse '" + string + "'.");
   }
 }
 
 // Perform a concatenation of the matrices (this * secondMatrix)
-CSSMatrix* CSSMatrix::multiply(CSSMatrix* secondMatrix) const {
-  if (!secondMatrix)
+CSSMatrix* CSSMatrix::multiply(CSSMatrix* second_matrix) const {
+  if (!second_matrix)
     return nullptr;
 
-  return CSSMatrix::create(
-      TransformationMatrix(*m_matrix).multiply(*secondMatrix->m_matrix));
+  return CSSMatrix::Create(
+      TransformationMatrix(*matrix_).Multiply(*second_matrix->matrix_));
 }
 
-CSSMatrix* CSSMatrix::inverse(ExceptionState& exceptionState) const {
-  if (!m_matrix->isInvertible()) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "The matrix is not invertable.");
+CSSMatrix* CSSMatrix::inverse(ExceptionState& exception_state) const {
+  if (!matrix_->IsInvertible()) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "The matrix is not invertable.");
     return nullptr;
   }
 
-  return CSSMatrix::create(m_matrix->inverse());
+  return CSSMatrix::Create(matrix_->Inverse());
 }
 
 CSSMatrix* CSSMatrix::translate(double x, double y, double z) const {
@@ -126,37 +126,38 @@ CSSMatrix* CSSMatrix::translate(double x, double y, double z) const {
     y = 0;
   if (std::isnan(z))
     z = 0;
-  return CSSMatrix::create(
-      TransformationMatrix(*m_matrix).translate3d(x, y, z));
+  return CSSMatrix::Create(TransformationMatrix(*matrix_).Translate3d(x, y, z));
 }
 
-CSSMatrix* CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const {
-  if (std::isnan(scaleX))
-    scaleX = 1;
-  if (std::isnan(scaleY))
-    scaleY = scaleX;
-  if (std::isnan(scaleZ))
-    scaleZ = 1;
-  return CSSMatrix::create(
-      TransformationMatrix(*m_matrix).scale3d(scaleX, scaleY, scaleZ));
+CSSMatrix* CSSMatrix::scale(double scale_x,
+                            double scale_y,
+                            double scale_z) const {
+  if (std::isnan(scale_x))
+    scale_x = 1;
+  if (std::isnan(scale_y))
+    scale_y = scale_x;
+  if (std::isnan(scale_z))
+    scale_z = 1;
+  return CSSMatrix::Create(
+      TransformationMatrix(*matrix_).Scale3d(scale_x, scale_y, scale_z));
 }
 
-CSSMatrix* CSSMatrix::rotate(double rotX, double rotY, double rotZ) const {
-  if (std::isnan(rotX))
-    rotX = 0;
+CSSMatrix* CSSMatrix::rotate(double rot_x, double rot_y, double rot_z) const {
+  if (std::isnan(rot_x))
+    rot_x = 0;
 
-  if (std::isnan(rotY) && std::isnan(rotZ)) {
-    rotZ = rotX;
-    rotX = 0;
-    rotY = 0;
+  if (std::isnan(rot_y) && std::isnan(rot_z)) {
+    rot_z = rot_x;
+    rot_x = 0;
+    rot_y = 0;
   }
 
-  if (std::isnan(rotY))
-    rotY = 0;
-  if (std::isnan(rotZ))
-    rotZ = 0;
-  return CSSMatrix::create(
-      TransformationMatrix(*m_matrix).rotate3d(rotX, rotY, rotZ));
+  if (std::isnan(rot_y))
+    rot_y = 0;
+  if (std::isnan(rot_z))
+    rot_z = 0;
+  return CSSMatrix::Create(
+      TransformationMatrix(*matrix_).Rotate3d(rot_x, rot_y, rot_z));
 }
 
 CSSMatrix* CSSMatrix::rotateAxisAngle(double x,
@@ -173,36 +174,36 @@ CSSMatrix* CSSMatrix::rotateAxisAngle(double x,
     angle = 0;
   if (!x && !y && !z)
     z = 1;
-  return CSSMatrix::create(
-      TransformationMatrix(*m_matrix).rotate3d(x, y, z, angle));
+  return CSSMatrix::Create(
+      TransformationMatrix(*matrix_).Rotate3d(x, y, z, angle));
 }
 
 CSSMatrix* CSSMatrix::skewX(double angle) const {
   if (std::isnan(angle))
     angle = 0;
-  return CSSMatrix::create(TransformationMatrix(*m_matrix).skewX(angle));
+  return CSSMatrix::Create(TransformationMatrix(*matrix_).SkewX(angle));
 }
 
 CSSMatrix* CSSMatrix::skewY(double angle) const {
   if (std::isnan(angle))
     angle = 0;
-  return CSSMatrix::create(TransformationMatrix(*m_matrix).skewY(angle));
+  return CSSMatrix::Create(TransformationMatrix(*matrix_).SkewY(angle));
 }
 
 String CSSMatrix::toString() const {
   // FIXME - Need to ensure valid CSS floating point values
   // (https://bugs.webkit.org/show_bug.cgi?id=20674)
-  if (m_matrix->isAffine())
-    return String::format("matrix(%f, %f, %f, %f, %f, %f)", m_matrix->a(),
-                          m_matrix->b(), m_matrix->c(), m_matrix->d(),
-                          m_matrix->e(), m_matrix->f());
-  return String::format(
+  if (matrix_->IsAffine())
+    return String::Format("matrix(%f, %f, %f, %f, %f, %f)", matrix_->A(),
+                          matrix_->B(), matrix_->C(), matrix_->D(),
+                          matrix_->E(), matrix_->F());
+  return String::Format(
       "matrix3d(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, "
       "%f)",
-      m_matrix->m11(), m_matrix->m12(), m_matrix->m13(), m_matrix->m14(),
-      m_matrix->m21(), m_matrix->m22(), m_matrix->m23(), m_matrix->m24(),
-      m_matrix->m31(), m_matrix->m32(), m_matrix->m33(), m_matrix->m34(),
-      m_matrix->m41(), m_matrix->m42(), m_matrix->m43(), m_matrix->m44());
+      matrix_->M11(), matrix_->M12(), matrix_->M13(), matrix_->M14(),
+      matrix_->M21(), matrix_->M22(), matrix_->M23(), matrix_->M24(),
+      matrix_->M31(), matrix_->M32(), matrix_->M33(), matrix_->M34(),
+      matrix_->M41(), matrix_->M42(), matrix_->M43(), matrix_->M44());
 }
 
 }  // namespace blink

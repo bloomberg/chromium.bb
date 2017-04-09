@@ -869,9 +869,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, TapGestureWithCtrlKey) {
       content::NotificationService::AllSources());
 
 #if defined(OS_MACOSX)
-  unsigned modifiers = blink::WebInputEvent::MetaKey;
+  unsigned modifiers = blink::WebInputEvent::kMetaKey;
 #else
-  unsigned modifiers = blink::WebInputEvent::ControlKey;
+  unsigned modifiers = blink::WebInputEvent::kControlKey;
 #endif
   content::SimulateTapWithModifiersAt(tab, modifiers, gfx::Point(350, 250));
 

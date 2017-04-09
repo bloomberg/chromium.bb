@@ -35,86 +35,86 @@ namespace blink {
 
 using namespace VectorMath;
 
-void AudioChannel::resizeSmaller(size_t newLength) {
-  DCHECK_LE(newLength, m_length);
-  if (newLength <= m_length)
-    m_length = newLength;
+void AudioChannel::ResizeSmaller(size_t new_length) {
+  DCHECK_LE(new_length, length_);
+  if (new_length <= length_)
+    length_ = new_length;
 }
 
-void AudioChannel::scale(float scale) {
-  if (isSilent())
+void AudioChannel::Scale(float scale) {
+  if (IsSilent())
     return;
 
-  vsmul(data(), 1, &scale, mutableData(), 1, length());
+  Vsmul(Data(), 1, &scale, MutableData(), 1, length());
 }
 
-void AudioChannel::copyFrom(const AudioChannel* sourceChannel) {
-  bool isSafe = (sourceChannel && sourceChannel->length() >= length());
-  DCHECK(isSafe);
-  if (!isSafe)
+void AudioChannel::CopyFrom(const AudioChannel* source_channel) {
+  bool is_safe = (source_channel && source_channel->length() >= length());
+  DCHECK(is_safe);
+  if (!is_safe)
     return;
 
-  if (sourceChannel->isSilent()) {
-    zero();
+  if (source_channel->IsSilent()) {
+    Zero();
     return;
   }
-  memcpy(mutableData(), sourceChannel->data(), sizeof(float) * length());
+  memcpy(MutableData(), source_channel->Data(), sizeof(float) * length());
 }
 
-void AudioChannel::copyFromRange(const AudioChannel* sourceChannel,
-                                 unsigned startFrame,
-                                 unsigned endFrame) {
+void AudioChannel::CopyFromRange(const AudioChannel* source_channel,
+                                 unsigned start_frame,
+                                 unsigned end_frame) {
   // Check that range is safe for reading from sourceChannel.
-  bool isRangeSafe = sourceChannel && startFrame < endFrame &&
-                     endFrame <= sourceChannel->length();
-  DCHECK(isRangeSafe);
-  if (!isRangeSafe)
+  bool is_range_safe = source_channel && start_frame < end_frame &&
+                       end_frame <= source_channel->length();
+  DCHECK(is_range_safe);
+  if (!is_range_safe)
     return;
 
-  if (sourceChannel->isSilent() && isSilent())
+  if (source_channel->IsSilent() && IsSilent())
     return;
 
   // Check that this channel has enough space.
-  size_t rangeLength = endFrame - startFrame;
-  bool isRangeLengthSafe = rangeLength <= length();
-  DCHECK(isRangeLengthSafe);
-  if (!isRangeLengthSafe)
+  size_t range_length = end_frame - start_frame;
+  bool is_range_length_safe = range_length <= length();
+  DCHECK(is_range_length_safe);
+  if (!is_range_length_safe)
     return;
 
-  const float* source = sourceChannel->data();
-  float* destination = mutableData();
+  const float* source = source_channel->Data();
+  float* destination = MutableData();
 
-  if (sourceChannel->isSilent()) {
-    if (rangeLength == length())
-      zero();
+  if (source_channel->IsSilent()) {
+    if (range_length == length())
+      Zero();
     else
-      memset(destination, 0, sizeof(float) * rangeLength);
+      memset(destination, 0, sizeof(float) * range_length);
   } else
-    memcpy(destination, source + startFrame, sizeof(float) * rangeLength);
+    memcpy(destination, source + start_frame, sizeof(float) * range_length);
 }
 
-void AudioChannel::sumFrom(const AudioChannel* sourceChannel) {
-  bool isSafe = sourceChannel && sourceChannel->length() >= length();
-  DCHECK(isSafe);
-  if (!isSafe)
+void AudioChannel::SumFrom(const AudioChannel* source_channel) {
+  bool is_safe = source_channel && source_channel->length() >= length();
+  DCHECK(is_safe);
+  if (!is_safe)
     return;
 
-  if (sourceChannel->isSilent())
+  if (source_channel->IsSilent())
     return;
 
-  if (isSilent())
-    copyFrom(sourceChannel);
+  if (IsSilent())
+    CopyFrom(source_channel);
   else
-    vadd(data(), 1, sourceChannel->data(), 1, mutableData(), 1, length());
+    Vadd(Data(), 1, source_channel->Data(), 1, MutableData(), 1, length());
 }
 
-float AudioChannel::maxAbsValue() const {
-  if (isSilent())
+float AudioChannel::MaxAbsValue() const {
+  if (IsSilent())
     return 0;
 
   float max = 0;
 
-  vmaxmgv(data(), 1, &max, length());
+  Vmaxmgv(Data(), 1, &max, length());
 
   return max;
 }

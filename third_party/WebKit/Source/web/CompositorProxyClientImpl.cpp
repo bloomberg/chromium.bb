@@ -9,20 +9,20 @@
 namespace blink {
 
 DEFINE_TRACE(CompositorProxyClientImpl) {
-  visitor->trace(m_proxies);
-  CompositorProxyClient::trace(visitor);
+  visitor->Trace(proxies_);
+  CompositorProxyClient::Trace(visitor);
 }
 
-void CompositorProxyClientImpl::registerCompositorProxy(
+void CompositorProxyClientImpl::RegisterCompositorProxy(
     CompositorProxy* proxy) {
-  DCHECK(!isMainThread());
-  m_proxies.insert(proxy);
+  DCHECK(!IsMainThread());
+  proxies_.insert(proxy);
 }
 
-void CompositorProxyClientImpl::unregisterCompositorProxy(
+void CompositorProxyClientImpl::UnregisterCompositorProxy(
     CompositorProxy* proxy) {
-  DCHECK(!isMainThread());
-  m_proxies.erase(proxy);
+  DCHECK(!IsMainThread());
+  proxies_.erase(proxy);
 }
 
 }  // namespace blink

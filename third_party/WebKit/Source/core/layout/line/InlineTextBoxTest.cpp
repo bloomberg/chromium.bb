@@ -14,71 +14,71 @@ class InlineTextBoxTest : public RenderingTest {};
 class TestInlineTextBox : public InlineTextBox {
  public:
   TestInlineTextBox(LineLayoutItem item) : InlineTextBox(item, 0, 0) {
-    setHasVirtualLogicalHeight();
+    SetHasVirtualLogicalHeight();
   }
 
-  static TestInlineTextBox* create(Document& document, const String& string) {
+  static TestInlineTextBox* Create(Document& document, const String& string) {
     Text* node = document.createTextNode(string);
-    LayoutText* text = new LayoutText(node, string.impl());
-    text->setStyle(ComputedStyle::create());
+    LayoutText* text = new LayoutText(node, string.Impl());
+    text->SetStyle(ComputedStyle::Create());
     return new TestInlineTextBox(LineLayoutItem(text));
   }
 
-  LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+  LayoutUnit VirtualLogicalHeight() const override { return logical_height_; }
 
-  void setLogicalFrameRect(const LayoutRect& rect) {
-    setX(rect.x());
-    setY(rect.y());
-    setLogicalWidth(rect.width());
-    m_logicalHeight = rect.height();
+  void SetLogicalFrameRect(const LayoutRect& rect) {
+    SetX(rect.X());
+    SetY(rect.Y());
+    SetLogicalWidth(rect.Width());
+    logical_height_ = rect.Height();
   }
 
  private:
-  LayoutUnit m_logicalHeight;
+  LayoutUnit logical_height_;
 };
 
-static void moveAndTest(InlineTextBox* box,
+static void MoveAndTest(InlineTextBox* box,
                         const LayoutSize& move,
                         LayoutRect& frame,
                         LayoutRect& overflow) {
-  box->move(move);
-  frame.move(move);
-  overflow.move(move);
-  ASSERT_EQ(frame, box->logicalFrameRect());
-  ASSERT_EQ(overflow, box->logicalOverflowRect());
+  box->Move(move);
+  frame.Move(move);
+  overflow.Move(move);
+  ASSERT_EQ(frame, box->LogicalFrameRect());
+  ASSERT_EQ(overflow, box->LogicalOverflowRect());
 }
 
 TEST_F(InlineTextBoxTest, LogicalOverflowRect) {
   // Setup a TestInlineTextBox.
-  TestInlineTextBox* box = TestInlineTextBox::create(document(), "");
+  TestInlineTextBox* box = TestInlineTextBox::Create(GetDocument(), "");
 
   // Initially, logicalOverflowRect() should be the same as logicalFrameRect().
   LayoutRect frame(5, 20, 100, 200);
   LayoutRect overflow = frame;
-  box->setLogicalFrameRect(frame);
-  ASSERT_EQ(frame, box->logicalFrameRect());
-  ASSERT_EQ(overflow, box->logicalOverflowRect());
+  box->SetLogicalFrameRect(frame);
+  ASSERT_EQ(frame, box->LogicalFrameRect());
+  ASSERT_EQ(overflow, box->LogicalOverflowRect());
 
   // Ensure it's movable and the rects are correct.
   LayoutSize move(10, 10);
-  moveAndTest(box, move, frame, overflow);
+  MoveAndTest(box, move, frame, overflow);
 
   // Ensure clearKnownToHaveNoOverflow() doesn't change either rects.
-  box->clearKnownToHaveNoOverflow();
-  ASSERT_EQ(frame, box->logicalFrameRect());
-  ASSERT_EQ(overflow, box->logicalOverflowRect());
+  box->ClearKnownToHaveNoOverflow();
+  ASSERT_EQ(frame, box->LogicalFrameRect());
+  ASSERT_EQ(overflow, box->LogicalOverflowRect());
 
   // Ensure it's still movable correctly when !knownToHaveNoOverflow().
-  moveAndTest(box, move, frame, overflow);
+  MoveAndTest(box, move, frame, overflow);
 
   // Let it have different logicalOverflowRect() than logicalFrameRect().
-  overflow.expand(LayoutSize(10, 10));
-  box->setLogicalOverflowRect(overflow);
-  ASSERT_EQ(frame, box->logicalFrameRect());
-  ASSERT_EQ(overflow, box->logicalOverflowRect());
+  overflow.Expand(LayoutSize(10, 10));
+  box->SetLogicalOverflowRect(overflow);
+  ASSERT_EQ(frame, box->LogicalFrameRect());
+  ASSERT_EQ(overflow, box->LogicalOverflowRect());
 
   // Ensure it's still movable correctly.
-  moveAndTest(box, move, frame, overflow);
+  MoveAndTest(box, move, frame, overflow);
 }
 
 }  // namespace blink

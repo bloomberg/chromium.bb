@@ -41,29 +41,30 @@ class ErrorEvent;
 
 class V8ErrorHandler final : public V8EventListener {
  public:
-  static V8ErrorHandler* create(v8::Local<v8::Object> listener,
-                                bool isInline,
-                                ScriptState* scriptState) {
-    V8ErrorHandler* eventListener = new V8ErrorHandler(isInline, scriptState);
-    eventListener->setListenerObject(listener);
-    return eventListener;
+  static V8ErrorHandler* Create(v8::Local<v8::Object> listener,
+                                bool is_inline,
+                                ScriptState* script_state) {
+    V8ErrorHandler* event_listener =
+        new V8ErrorHandler(is_inline, script_state);
+    event_listener->SetListenerObject(listener);
+    return event_listener;
   }
-  static void storeExceptionOnErrorEventWrapper(
+  static void StoreExceptionOnErrorEventWrapper(
       ScriptState*,
       ErrorEvent*,
       v8::Local<v8::Value>,
-      v8::Local<v8::Object> creationContext);
-  static v8::Local<v8::Value> loadExceptionFromErrorEventWrapper(
+      v8::Local<v8::Object> creation_context);
+  static v8::Local<v8::Value> LoadExceptionFromErrorEventWrapper(
       ScriptState*,
       ErrorEvent*,
-      v8::Local<v8::Object> creationContext);
+      v8::Local<v8::Object> creation_context);
 
  private:
-  V8ErrorHandler(bool isInline, ScriptState*);
-  v8::Local<v8::Value> callListenerFunction(ScriptState*,
+  V8ErrorHandler(bool is_inline, ScriptState*);
+  v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
                                             Event*) override;
-  bool shouldPreventDefault(v8::Local<v8::Value> returnValue) override;
+  bool ShouldPreventDefault(v8::Local<v8::Value> return_value) override;
 };
 
 }  // namespace blink

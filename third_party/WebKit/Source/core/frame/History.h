@@ -50,7 +50,7 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   USING_GARBAGE_COLLECTED_MIXIN(History);
 
  public:
-  static History* create(LocalFrame* frame) { return new History(frame); }
+  static History* Create(LocalFrame* frame) { return new History(frame); }
 
   unsigned length() const;
   SerializedScriptValue* state();
@@ -67,16 +67,16 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   void replaceState(PassRefPtr<SerializedScriptValue> data,
                     const String& title,
                     const String& url,
-                    ExceptionState& exceptionState) {
-    stateObjectAdded(std::move(data), title, url, scrollRestorationInternal(),
-                     FrameLoadTypeReplaceCurrentItem, exceptionState);
+                    ExceptionState& exception_state) {
+    StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
+                     kFrameLoadTypeReplaceCurrentItem, exception_state);
   }
 
   void setScrollRestoration(const String& value);
   String scrollRestoration();
 
   bool stateChanged() const;
-  bool isSameAsCurrentState(SerializedScriptValue*) const;
+  bool IsSameAsCurrentState(SerializedScriptValue*) const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -87,22 +87,22 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
 
   explicit History(LocalFrame*);
 
-  static bool canChangeToUrl(const KURL&,
+  static bool CanChangeToUrl(const KURL&,
                              SecurityOrigin*,
-                             const KURL& documentURL);
+                             const KURL& document_url);
 
-  KURL urlForState(const String& url);
+  KURL UrlForState(const String& url);
 
-  void stateObjectAdded(PassRefPtr<SerializedScriptValue>,
+  void StateObjectAdded(PassRefPtr<SerializedScriptValue>,
                         const String& title,
                         const String& url,
                         HistoryScrollRestorationType,
                         FrameLoadType,
                         ExceptionState&);
-  SerializedScriptValue* stateInternal() const;
-  HistoryScrollRestorationType scrollRestorationInternal() const;
+  SerializedScriptValue* StateInternal() const;
+  HistoryScrollRestorationType ScrollRestorationInternal() const;
 
-  RefPtr<SerializedScriptValue> m_lastStateObjectRequested;
+  RefPtr<SerializedScriptValue> last_state_object_requested_;
 };
 
 }  // namespace blink

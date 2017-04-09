@@ -38,7 +38,7 @@ const char* const kLegalVideoConstraints[] = {"width",
 
 // Returns true if |constraint| has mandatory constraints.
 bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
-  return constraints.basic().hasMandatory();
+  return constraints.Basic().HasMandatory();
 }
 
 // Retrieve the desired max width and height from |constraints|. If not set,
@@ -51,33 +51,33 @@ void GetDesiredMaxWidthAndHeight(const blink::WebMediaConstraints& constraints,
   *desired_width = std::numeric_limits<int>::max();
   *desired_height = std::numeric_limits<int>::max();
 
-  const auto& basic_constraints = constraints.basic();
+  const auto& basic_constraints = constraints.Basic();
 
-  if (basic_constraints.width.hasMax() || basic_constraints.height.hasMax() ||
-      basic_constraints.width.hasExact() ||
-      basic_constraints.height.hasExact()) {
-    if (basic_constraints.width.hasMax())
-      *desired_width = basic_constraints.width.max();
-    if (basic_constraints.height.hasMax())
-      *desired_height = basic_constraints.height.max();
+  if (basic_constraints.width.HasMax() || basic_constraints.height.HasMax() ||
+      basic_constraints.width.HasExact() ||
+      basic_constraints.height.HasExact()) {
+    if (basic_constraints.width.HasMax())
+      *desired_width = basic_constraints.width.Max();
+    if (basic_constraints.height.HasMax())
+      *desired_height = basic_constraints.height.Max();
     // Exact constraints override max constraints if both are specified.
     // Specifying both in the same structure is meaningless.
-    if (basic_constraints.width.hasExact())
-      *desired_width = basic_constraints.width.exact();
-    if (basic_constraints.height.hasExact())
-      *desired_height = basic_constraints.height.exact();
+    if (basic_constraints.width.HasExact())
+      *desired_width = basic_constraints.width.Exact();
+    if (basic_constraints.height.HasExact())
+      *desired_height = basic_constraints.height.Exact();
     return;
   }
 
-  for (const auto& constraint_set : constraints.advanced()) {
-    if (constraint_set.width.hasMax())
-      *desired_width = constraint_set.width.max();
-    if (constraint_set.height.hasMax())
-      *desired_height = constraint_set.height.max();
-    if (constraint_set.width.hasExact())
-      *desired_width = constraint_set.width.exact();
-    if (constraint_set.height.hasExact())
-      *desired_height = constraint_set.height.exact();
+  for (const auto& constraint_set : constraints.Advanced()) {
+    if (constraint_set.width.HasMax())
+      *desired_width = constraint_set.width.Max();
+    if (constraint_set.height.HasMax())
+      *desired_height = constraint_set.height.Max();
+    if (constraint_set.width.HasExact())
+      *desired_width = constraint_set.width.Exact();
+    if (constraint_set.height.HasExact())
+      *desired_height = constraint_set.height.Exact();
   }
 }
 
@@ -93,30 +93,30 @@ void GetDesiredMinAndMaxAspectRatio(
   *min_aspect_ratio = 0;
   *max_aspect_ratio = std::numeric_limits<double>::max();
 
-  if (constraints.basic().aspectRatio.hasMin() ||
-      constraints.basic().aspectRatio.hasMax()) {
-    if (constraints.basic().aspectRatio.hasMin())
-      *min_aspect_ratio = constraints.basic().aspectRatio.min();
-    if (constraints.basic().aspectRatio.hasMax())
-      *max_aspect_ratio = constraints.basic().aspectRatio.max();
+  if (constraints.Basic().aspect_ratio.HasMin() ||
+      constraints.Basic().aspect_ratio.HasMax()) {
+    if (constraints.Basic().aspect_ratio.HasMin())
+      *min_aspect_ratio = constraints.Basic().aspect_ratio.Min();
+    if (constraints.Basic().aspect_ratio.HasMax())
+      *max_aspect_ratio = constraints.Basic().aspect_ratio.Max();
     return;
     // Note - the code will ignore attempts at successive refinement
     // of the aspect ratio with advanced constraint. This may be wrong.
   }
   // Note - the code below will potentially pick min and max from different
   // constraint sets, some of which might have been ignored.
-  for (const auto& constraint_set : constraints.advanced()) {
-    if (constraint_set.aspectRatio.hasMin()) {
-      *min_aspect_ratio = constraint_set.aspectRatio.min();
+  for (const auto& constraint_set : constraints.Advanced()) {
+    if (constraint_set.aspect_ratio.HasMin()) {
+      *min_aspect_ratio = constraint_set.aspect_ratio.Min();
       break;
     }
   }
-  for (const auto& constraint_set : constraints.advanced()) {
+  for (const auto& constraint_set : constraints.Advanced()) {
     // Advanced constraint sets with max aspect ratio 0 are unsatisfiable and
     // must be ignored.
-    if (constraint_set.aspectRatio.hasMax() &&
-        constraint_set.aspectRatio.max() > 0) {
-      *max_aspect_ratio = constraint_set.aspectRatio.max();
+    if (constraint_set.aspect_ratio.HasMax() &&
+        constraint_set.aspect_ratio.Max() > 0) {
+      *max_aspect_ratio = constraint_set.aspect_ratio.Max();
       break;
     }
   }
@@ -136,33 +136,33 @@ bool UpdateFormatForConstraints(
   // The width and height are matched based on cropping occuring later:
   // min width/height has to be >= the size of the frame (no upscale).
   // max width/height just has to be > 0 (we can crop anything too large).
-  if ((constraints.width.hasMin() &&
-       constraints.width.min() > format->frame_size.width()) ||
-      (constraints.width.hasMax() && constraints.width.max() <= 0) ||
-      (constraints.width.hasExact() &&
-       constraints.width.exact() > format->frame_size.width())) {
-    *failing_constraint_name = constraints.width.name();
-  } else if ((constraints.height.hasMin() &&
-              constraints.height.min() > format->frame_size.height()) ||
-             (constraints.height.hasMax() && constraints.height.max() <= 0) ||
-             (constraints.height.hasExact() &&
-              constraints.height.exact() > format->frame_size.height())) {
-    *failing_constraint_name = constraints.height.name();
-  } else if (constraints.videoKind.hasExact() &&
-             !constraints.videoKind.matches(GetVideoKindForFormat(*format))) {
-    *failing_constraint_name = constraints.videoKind.name();
-  } else if (!constraints.frameRate.matches(format->frame_rate)) {
-    if (constraints.frameRate.hasMax()) {
-      const double value = constraints.frameRate.max();
+  if ((constraints.width.HasMin() &&
+       constraints.width.Min() > format->frame_size.width()) ||
+      (constraints.width.HasMax() && constraints.width.Max() <= 0) ||
+      (constraints.width.HasExact() &&
+       constraints.width.Exact() > format->frame_size.width())) {
+    *failing_constraint_name = constraints.width.GetName();
+  } else if ((constraints.height.HasMin() &&
+              constraints.height.Min() > format->frame_size.height()) ||
+             (constraints.height.HasMax() && constraints.height.Max() <= 0) ||
+             (constraints.height.HasExact() &&
+              constraints.height.Exact() > format->frame_size.height())) {
+    *failing_constraint_name = constraints.height.GetName();
+  } else if (constraints.video_kind.HasExact() &&
+             !constraints.video_kind.Matches(GetVideoKindForFormat(*format))) {
+    *failing_constraint_name = constraints.video_kind.GetName();
+  } else if (!constraints.frame_rate.Matches(format->frame_rate)) {
+    if (constraints.frame_rate.HasMax()) {
+      const double value = constraints.frame_rate.Max();
       // TODO(hta): Check if handling of max = 0.0 is relevant.
       // (old handling was to set rate to 1.0 if 0.0 was specified)
-      if (constraints.frameRate.matches(value)) {
+      if (constraints.frame_rate.Matches(value)) {
         format->frame_rate =
             (format->frame_rate > value) ? value : format->frame_rate;
         return true;
       }
     }
-    *failing_constraint_name = constraints.frameRate.name();
+    *failing_constraint_name = constraints.frame_rate.GetName();
   } else {
     return true;
   }
@@ -201,22 +201,22 @@ media::VideoCaptureFormats FilterFormats(
     const blink::WebMediaConstraints& constraints,
     const media::VideoCaptureFormats& supported_formats,
     std::string* unsatisfied_constraint) {
-  if (constraints.isNull())
+  if (constraints.IsNull())
     return supported_formats;
 
-  const auto& basic = constraints.basic();
+  const auto& basic = constraints.Basic();
 
   // Do some checks that won't be done when filtering candidates.
 
-  if (basic.width.hasMin() && basic.width.hasMax() &&
-      basic.width.min() > basic.width.max()) {
-    *unsatisfied_constraint = basic.width.name();
+  if (basic.width.HasMin() && basic.width.HasMax() &&
+      basic.width.Min() > basic.width.Max()) {
+    *unsatisfied_constraint = basic.width.GetName();
     return media::VideoCaptureFormats();
   }
 
-  if (basic.height.hasMin() && basic.height.hasMax() &&
-      basic.height.min() > basic.height.max()) {
-    *unsatisfied_constraint = basic.height.name();
+  if (basic.height.HasMin() && basic.height.HasMax() &&
+      basic.height.Min() > basic.height.Max()) {
+    *unsatisfied_constraint = basic.height.GetName();
     return media::VideoCaptureFormats();
   }
 
@@ -229,7 +229,7 @@ media::VideoCaptureFormats FilterFormats(
   if (min_aspect_ratio > max_aspect_ratio || max_aspect_ratio < 0.05f) {
     DLOG(WARNING) << "Wrong requested aspect ratio: min " << min_aspect_ratio
                   << " max " << max_aspect_ratio;
-    *unsatisfied_constraint = basic.aspectRatio.name();
+    *unsatisfied_constraint = basic.aspect_ratio.GetName();
     return media::VideoCaptureFormats();
   }
 
@@ -238,7 +238,7 @@ media::VideoCaptureFormats FilterFormats(
       &kLegalVideoConstraints[sizeof(kLegalVideoConstraints) /
                               sizeof(kLegalVideoConstraints[0])]);
   std::string failing_name;
-  if (basic.hasMandatoryOutsideSet(temp, failing_name)) {
+  if (basic.HasMandatoryOutsideSet(temp, failing_name)) {
     *unsatisfied_constraint = failing_name;
     return media::VideoCaptureFormats();
   }
@@ -255,7 +255,7 @@ media::VideoCaptureFormats FilterFormats(
   // But if a constraint produce zero candidates, the constraint is ignored and
   // the next constraint is tested.
   // http://w3c.github.io/mediacapture-main/getusermedia.html#dfn-selectsettings
-  for (const auto& constraint_set : constraints.advanced()) {
+  for (const auto& constraint_set : constraints.Advanced()) {
     media::VideoCaptureFormats current_candidates = candidates;
     std::string unsatisfied_constraint;
     FilterFormatsByConstraints(constraint_set, &current_candidates,
@@ -319,11 +319,11 @@ bool IsOldVideoConstraints() {
 // static
 MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
     const blink::WebMediaStreamSource& source) {
-  if (source.isNull() ||
-      source.getType() != blink::WebMediaStreamSource::TypeVideo) {
+  if (source.IsNull() ||
+      source.GetType() != blink::WebMediaStreamSource::kTypeVideo) {
     return nullptr;
   }
-  return static_cast<MediaStreamVideoSource*>(source.getExtraData());
+  return static_cast<MediaStreamVideoSource*>(source.GetExtraData());
 }
 
 MediaStreamVideoSource::MediaStreamVideoSource()
@@ -343,7 +343,7 @@ void MediaStreamVideoSource::AddTrackLegacy(
     const ConstraintsCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsOldVideoConstraints());
-  DCHECK(!constraints.isNull());
+  DCHECK(!constraints.IsNull());
   DCHECK(std::find(tracks_.begin(), tracks_.end(), track) == tracks_.end());
   tracks_.push_back(track);
   secure_tracker_.Add(track, true);
@@ -357,16 +357,16 @@ void MediaStreamVideoSource::AddTrackLegacy(
       // and width to decide on the resolution.
       // NOTE: Optional constraints are deliberately ignored.
       int max_requested_width = 0;
-      if (constraints.basic().width.hasMax())
-        max_requested_width = constraints.basic().width.max();
+      if (constraints.Basic().width.HasMax())
+        max_requested_width = constraints.Basic().width.Max();
 
       int max_requested_height = 0;
-      if (constraints.basic().height.hasMax())
-        max_requested_height = constraints.basic().height.max();
+      if (constraints.Basic().height.HasMax())
+        max_requested_height = constraints.Basic().height.Max();
 
       double max_requested_frame_rate = kDefaultFrameRate;
-      if (constraints.basic().frameRate.hasMax())
-        max_requested_frame_rate = constraints.basic().frameRate.max();
+      if (constraints.Basic().frame_rate.HasMax())
+        max_requested_frame_rate = constraints.Basic().frame_rate.Max();
 
       state_ = RETRIEVING_CAPABILITIES;
       GetCurrentSupportedFormats(
@@ -507,7 +507,7 @@ void MediaStreamVideoSource::DoStopSource() {
   track_adapter_->StopFrameMonitoring();
   StopSourceImpl();
   state_ = ENDED;
-  SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
+  SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
 void MediaStreamVideoSource::OnSupportedFormats(
@@ -521,7 +521,7 @@ void MediaStreamVideoSource::OnSupportedFormats(
   if (!FindBestFormatWithConstraints(supported_formats_,
                                      &current_format_,
                                      &fulfilled_constraints)) {
-    SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
+    SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
     DVLOG(3) << "OnSupportedFormats failed to find an usable format";
     // This object can be deleted after calling FinalizeAddTrack. See comment
     // in the header file.
@@ -586,7 +586,7 @@ void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
   if (result == MEDIA_DEVICE_OK) {
     DCHECK_EQ(STARTING, state_);
     state_ = STARTED;
-    SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
+    SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
     double frame_rate =
         GetCurrentFormat() ? GetCurrentFormat()->frame_rate : 0.0;
     track_adapter_->StartFrameMonitoring(
@@ -638,8 +638,8 @@ void MediaStreamVideoSource::FinalizeAddTrackLegacy() {
       double max_frame_rate = 0.0f;
       // Note: Optional and ideal constraints are ignored; this is
       // purely a hard max limit.
-      if (track.constraints.basic().frameRate.hasMax())
-        max_frame_rate = track.constraints.basic().frameRate.max();
+      if (track.constraints.Basic().frame_rate.HasMax())
+        max_frame_rate = track.constraints.Basic().frame_rate.Max();
 
       track_adapter_->AddTrack(
           track.track, track.frame_callback,
@@ -658,7 +658,7 @@ void MediaStreamVideoSource::FinalizeAddTrackLegacy() {
 
     if (!track.callback.is_null())
       track.callback.Run(this, result,
-                         blink::WebString::fromUTF8(unsatisfied_constraint));
+                         blink::WebString::FromUTF8(unsatisfied_constraint));
   }
 }
 
@@ -699,8 +699,8 @@ void MediaStreamVideoSource::SetReadyState(
     blink::WebMediaStreamSource::ReadyState state) {
   DVLOG(3) << "MediaStreamVideoSource::SetReadyState state " << state;
   DCHECK(CalledOnValidThread());
-  if (!owner().isNull())
-    owner().setReadyState(state);
+  if (!Owner().IsNull())
+    Owner().SetReadyState(state);
   for (auto* track : tracks_)
     track->OnReadyStateChanged(state);
 }
@@ -708,10 +708,10 @@ void MediaStreamVideoSource::SetReadyState(
 void MediaStreamVideoSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamVideoSource::SetMutedState state=" << muted_state;
   DCHECK(CalledOnValidThread());
-  if (!owner().isNull()) {
-    owner().setReadyState(muted_state
-        ? blink::WebMediaStreamSource::ReadyStateMuted
-        : blink::WebMediaStreamSource::ReadyStateLive);
+  if (!Owner().IsNull()) {
+    Owner().SetReadyState(muted_state
+                              ? blink::WebMediaStreamSource::kReadyStateMuted
+                              : blink::WebMediaStreamSource::kReadyStateLive);
   }
 }
 

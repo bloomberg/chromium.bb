@@ -19,23 +19,23 @@
 namespace blink {
 class SVGImageTest : public ::testing::Test {
  public:
-  SVGImage& image() { return *m_image; }
+  SVGImage& GetImage() { return *image_; }
 
-  void load(const char* data, bool shouldPause) {
-    m_observer = new PauseControlImageObserver(shouldPause);
-    m_image = SVGImage::create(m_observer);
-    m_image->setData(SharedBuffer::create(data, strlen(data)), true);
+  void Load(const char* data, bool should_pause) {
+    observer_ = new PauseControlImageObserver(should_pause);
+    image_ = SVGImage::Create(observer_);
+    image_->SetData(SharedBuffer::Create(data, strlen(data)), true);
   }
 
-  void pumpFrame() {
-    Image* image = m_image.get();
-    std::unique_ptr<SkCanvas> nullCanvas = SkMakeNullCanvas();
-    SkiaPaintCanvas canvas(nullCanvas.get());
+  void PumpFrame() {
+    Image* image = image_.Get();
+    std::unique_ptr<SkCanvas> null_canvas = SkMakeNullCanvas();
+    SkiaPaintCanvas canvas(null_canvas.get());
     PaintFlags flags;
-    FloatRect dummyRect(0, 0, 100, 100);
-    image->draw(&canvas, flags, dummyRect, dummyRect,
-                DoNotRespectImageOrientation,
-                Image::DoNotClampImageToSourceRect);
+    FloatRect dummy_rect(0, 0, 100, 100);
+    image->Draw(&canvas, flags, dummy_rect, dummy_rect,
+                kDoNotRespectImageOrientation,
+                Image::kDoNotClampImageToSourceRect);
   }
 
  private:
@@ -45,22 +45,23 @@ class SVGImageTest : public ::testing::Test {
     USING_GARBAGE_COLLECTED_MIXIN(PauseControlImageObserver);
 
    public:
-    PauseControlImageObserver(bool shouldPause) : m_shouldPause(shouldPause) {}
+    PauseControlImageObserver(bool should_pause)
+        : should_pause_(should_pause) {}
 
-    void decodedSizeChangedTo(const Image*, size_t newSize) override {}
+    void DecodedSizeChangedTo(const Image*, size_t new_size) override {}
 
-    bool shouldPauseAnimation(const Image*) override { return m_shouldPause; }
-    void animationAdvanced(const Image*) override {}
+    bool ShouldPauseAnimation(const Image*) override { return should_pause_; }
+    void AnimationAdvanced(const Image*) override {}
 
-    void changedInRect(const Image*, const IntRect&) override {}
+    void ChangedInRect(const Image*, const IntRect&) override {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { ImageObserver::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { ImageObserver::Trace(visitor); }
 
    private:
-    bool m_shouldPause;
+    bool should_pause_;
   };
-  Persistent<PauseControlImageObserver> m_observer;
-  RefPtr<SVGImage> m_image;
+  Persistent<PauseControlImageObserver> observer_;
+  RefPtr<SVGImage> image_;
 };
 
 const char kAnimatedDocument[] =
@@ -82,64 +83,64 @@ const char kAnimatedDocument[] =
     "</svg>";
 
 TEST_F(SVGImageTest, TimelineSuspendAndResume) {
-  const bool shouldPause = true;
-  load(kAnimatedDocument, shouldPause);
-  SVGImageChromeClient& chromeClient = image().chromeClientForTesting();
+  const bool kShouldPause = true;
+  Load(kAnimatedDocument, kShouldPause);
+  SVGImageChromeClient& chrome_client = GetImage().ChromeClientForTesting();
   Timer<SVGImageChromeClient>* timer = new Timer<SVGImageChromeClient>(
-      &chromeClient, &SVGImageChromeClient::animationTimerFired);
-  chromeClient.setTimer(WTF::wrapUnique(timer));
+      &chrome_client, &SVGImageChromeClient::AnimationTimerFired);
+  chrome_client.SetTimer(WTF::WrapUnique(timer));
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
-  pumpFrame();
-  EXPECT_TRUE(image().maybeAnimated());
-  EXPECT_TRUE(timer->isActive());
+  PumpFrame();
+  EXPECT_TRUE(GetImage().MaybeAnimated());
+  EXPECT_TRUE(timer->IsActive());
 
   // Fire the timer/trigger a frame update. Since the observer always returns
   // true for shouldPauseAnimation, this will result in the timeline being
   // suspended.
   // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so
   // we can avoid computations like this.
-  testing::runDelayedTasks(1.0 + timer->nextFireInterval() * 1000.0);
-  EXPECT_TRUE(chromeClient.isSuspended());
-  EXPECT_FALSE(timer->isActive());
+  testing::RunDelayedTasks(1.0 + timer->NextFireInterval() * 1000.0);
+  EXPECT_TRUE(chrome_client.IsSuspended());
+  EXPECT_FALSE(timer->IsActive());
 
   // Simulate a draw. This should resume the animation again.
-  pumpFrame();
-  EXPECT_TRUE(timer->isActive());
-  EXPECT_FALSE(chromeClient.isSuspended());
+  PumpFrame();
+  EXPECT_TRUE(timer->IsActive());
+  EXPECT_FALSE(chrome_client.IsSuspended());
 }
 
 TEST_F(SVGImageTest, ResetAnimation) {
-  const bool shouldPause = false;
-  load(kAnimatedDocument, shouldPause);
-  SVGImageChromeClient& chromeClient = image().chromeClientForTesting();
+  const bool kShouldPause = false;
+  Load(kAnimatedDocument, kShouldPause);
+  SVGImageChromeClient& chrome_client = GetImage().ChromeClientForTesting();
   Timer<SVGImageChromeClient>* timer = new Timer<SVGImageChromeClient>(
-      &chromeClient, &SVGImageChromeClient::animationTimerFired);
-  chromeClient.setTimer(WTF::wrapUnique(timer));
+      &chrome_client, &SVGImageChromeClient::AnimationTimerFired);
+  chrome_client.SetTimer(WTF::WrapUnique(timer));
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
-  pumpFrame();
-  EXPECT_TRUE(image().maybeAnimated());
-  EXPECT_TRUE(timer->isActive());
+  PumpFrame();
+  EXPECT_TRUE(GetImage().MaybeAnimated());
+  EXPECT_TRUE(timer->IsActive());
 
   // Reset the animation. This will suspend the timeline but not cancel the
   // timer.
-  image().resetAnimation();
-  EXPECT_TRUE(chromeClient.isSuspended());
-  EXPECT_TRUE(timer->isActive());
+  GetImage().ResetAnimation();
+  EXPECT_TRUE(chrome_client.IsSuspended());
+  EXPECT_TRUE(timer->IsActive());
 
   // Fire the timer/trigger a frame update. The timeline will remain
   // suspended and no frame will be scheduled.
   // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so
   // we can avoid computations like this.
-  testing::runDelayedTasks(1.0 + timer->nextFireInterval() * 1000.0);
-  EXPECT_TRUE(chromeClient.isSuspended());
-  EXPECT_FALSE(timer->isActive());
+  testing::RunDelayedTasks(1.0 + timer->NextFireInterval() * 1000.0);
+  EXPECT_TRUE(chrome_client.IsSuspended());
+  EXPECT_FALSE(timer->IsActive());
 
   // Simulate a draw. This should resume the animation again.
-  pumpFrame();
-  EXPECT_FALSE(chromeClient.isSuspended());
-  EXPECT_TRUE(timer->isActive());
+  PumpFrame();
+  EXPECT_FALSE(chrome_client.IsSuspended());
+  EXPECT_TRUE(timer->IsActive());
 }
 
 }  // namespace blink

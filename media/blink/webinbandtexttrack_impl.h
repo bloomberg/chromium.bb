@@ -19,14 +19,14 @@ class WebInbandTextTrackImpl : public blink::WebInbandTextTrack {
                          const blink::WebString& id);
   ~WebInbandTextTrackImpl() override;
 
-  void setClient(blink::WebInbandTextTrackClient* client) override;
-  blink::WebInbandTextTrackClient* client() override;
+  void SetClient(blink::WebInbandTextTrackClient* client) override;
+  blink::WebInbandTextTrackClient* Client() override;
 
-  Kind kind() const override;
+  Kind GetKind() const override;
 
-  blink::WebString label() const override;
-  blink::WebString language() const override;
-  blink::WebString id() const override;
+  blink::WebString Label() const override;
+  blink::WebString Language() const override;
+  blink::WebString Id() const override;
 
  private:
   blink::WebInbandTextTrackClient* client_;

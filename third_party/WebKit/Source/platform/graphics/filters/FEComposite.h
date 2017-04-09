@@ -41,33 +41,33 @@ enum CompositeOperationType {
 
 class PLATFORM_EXPORT FEComposite final : public FilterEffect {
  public:
-  static FEComposite* create(Filter*,
+  static FEComposite* Create(Filter*,
                              const CompositeOperationType&,
                              float,
                              float,
                              float,
                              float);
 
-  CompositeOperationType operation() const;
-  bool setOperation(CompositeOperationType);
+  CompositeOperationType Operation() const;
+  bool SetOperation(CompositeOperationType);
 
-  float k1() const;
-  bool setK1(float);
+  float K1() const;
+  bool SetK1(float);
 
-  float k2() const;
-  bool setK2(float);
+  float K2() const;
+  bool SetK2(float);
 
-  float k3() const;
-  bool setK3(float);
+  float K3() const;
+  bool SetK3(float);
 
-  float k4() const;
-  bool setK4(float);
+  float K4() const;
+  bool SetK4(float);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  protected:
-  bool mayProduceInvalidPreMultipliedPixels() override {
-    return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC;
+  bool MayProduceInvalidPreMultipliedPixels() override {
+    return type_ == FECOMPOSITE_OPERATOR_ARITHMETIC;
   }
 
  private:
@@ -78,20 +78,20 @@ class PLATFORM_EXPORT FEComposite final : public FilterEffect {
               float,
               float);
 
-  FloatRect mapInputs(const FloatRect&) const override;
+  FloatRect MapInputs(const FloatRect&) const override;
 
-  bool affectsTransparentPixels() const override;
+  bool AffectsTransparentPixels() const override;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
-  sk_sp<SkImageFilter> createImageFilterWithoutValidation() override;
-  sk_sp<SkImageFilter> createImageFilterInternal(
-      bool requiresPMColorValidation);
+  sk_sp<SkImageFilter> CreateImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilterWithoutValidation() override;
+  sk_sp<SkImageFilter> CreateImageFilterInternal(
+      bool requires_pm_color_validation);
 
-  CompositeOperationType m_type;
-  float m_k1;
-  float m_k2;
-  float m_k3;
-  float m_k4;
+  CompositeOperationType type_;
+  float k1_;
+  float k2_;
+  float k3_;
+  float k4_;
 };
 
 }  // namespace blink

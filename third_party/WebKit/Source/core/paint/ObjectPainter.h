@@ -22,15 +22,15 @@ class ObjectPainter {
   STACK_ALLOCATED();
 
  public:
-  ObjectPainter(const LayoutObject& layoutObject)
-      : m_layoutObject(layoutObject) {}
+  ObjectPainter(const LayoutObject& layout_object)
+      : layout_object_(layout_object) {}
 
-  void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
-  void paintInlineChildrenOutlines(const PaintInfo&,
-                                   const LayoutPoint& paintOffset);
-  void addPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paintOffset);
+  void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintInlineChildrenOutlines(const PaintInfo&,
+                                   const LayoutPoint& paint_offset);
+  void AddPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paint_offset);
 
-  static void drawLineForBoxSide(GraphicsContext&,
+  static void DrawLineForBoxSide(GraphicsContext&,
                                  float x1,
                                  float y1,
                                  float x2,
@@ -57,26 +57,26 @@ class ObjectPainter {
   // PaintPhaseForeground), normal paint (for PaintPhaseSelection and
   // PaintPhaseTextClip) or nothing (other paint phases) according to
   // paintInfo.phase.
-  void paintAllPhasesAtomically(const PaintInfo&,
-                                const LayoutPoint& paintOffset);
+  void PaintAllPhasesAtomically(const PaintInfo&,
+                                const LayoutPoint& paint_offset);
 
   // When SlimmingPaintInvalidation is enabled, we compute paint offsets during
   // the pre-paint tree walk (PrePaintTreeWalk). This check verifies that the
   // paint offset computed during pre-paint matches the actual paint offset
   // during paint.
-  void checkPaintOffset(const PaintInfo& paintInfo,
-                        const LayoutPoint& paintOffset) {
+  void CheckPaintOffset(const PaintInfo& paint_info,
+                        const LayoutPoint& paint_offset) {
 #if DCHECK_IS_ON()
     // For now this works for SPv2 (implying SlimmingPaintInvalidation) only,
     // but not SlimmingPaintInvalidation on SPv1 because of complexities of
     // paint invalidation containers in SPv1.
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-      doCheckPaintOffset(paintInfo, paintOffset);
+      DoCheckPaintOffset(paint_info, paint_offset);
 #endif
   }
 
  private:
-  static void drawDashedOrDottedBoxSide(GraphicsContext&,
+  static void DrawDashedOrDottedBoxSide(GraphicsContext&,
                                         int x1,
                                         int y1,
                                         int x2,
@@ -86,7 +86,7 @@ class ObjectPainter {
                                         int thickness,
                                         EBorderStyle,
                                         bool antialias);
-  static void drawDoubleBoxSide(GraphicsContext&,
+  static void DrawDoubleBoxSide(GraphicsContext&,
                                 int x1,
                                 int y1,
                                 int x2,
@@ -95,10 +95,10 @@ class ObjectPainter {
                                 BoxSide,
                                 Color,
                                 float thickness,
-                                int adjacentWidth1,
-                                int adjacentWidth2,
+                                int adjacent_width1,
+                                int adjacent_width2,
                                 bool antialias);
-  static void drawRidgeOrGrooveBoxSide(GraphicsContext&,
+  static void DrawRidgeOrGrooveBoxSide(GraphicsContext&,
                                        int x1,
                                        int y1,
                                        int x2,
@@ -106,25 +106,25 @@ class ObjectPainter {
                                        BoxSide,
                                        Color,
                                        EBorderStyle,
-                                       int adjacentWidth1,
-                                       int adjacentWidth2,
+                                       int adjacent_width1,
+                                       int adjacent_width2,
                                        bool antialias);
-  static void drawSolidBoxSide(GraphicsContext&,
+  static void DrawSolidBoxSide(GraphicsContext&,
                                int x1,
                                int y1,
                                int x2,
                                int y2,
                                BoxSide,
                                Color,
-                               int adjacentWidth1,
-                               int adjacentWidth2,
+                               int adjacent_width1,
+                               int adjacent_width2,
                                bool antialias);
 
 #if DCHECK_IS_ON()
-  void doCheckPaintOffset(const PaintInfo&, const LayoutPoint& paintOffset);
+  void DoCheckPaintOffset(const PaintInfo&, const LayoutPoint& paint_offset);
 #endif
 
-  const LayoutObject& m_layoutObject;
+  const LayoutObject& layout_object_;
 };
 
 }  // namespace blink

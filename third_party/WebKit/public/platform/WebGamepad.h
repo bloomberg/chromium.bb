@@ -42,41 +42,41 @@ class WebGamepadButton {
 
 class WebGamepadVector {
  public:
-  WebGamepadVector() : notNull(false) {}
+  WebGamepadVector() : not_null(false) {}
 
-  bool notNull;
+  bool not_null;
   float x, y, z;
 };
 
 class WebGamepadQuaternion {
  public:
-  WebGamepadQuaternion() : notNull(false) {}
+  WebGamepadQuaternion() : not_null(false) {}
 
-  bool notNull;
+  bool not_null;
   float x, y, z, w;
 };
 
 class WebGamepadPose {
  public:
-  WebGamepadPose() : notNull(false) {}
+  WebGamepadPose() : not_null(false) {}
 
-  bool notNull;
+  bool not_null;
 
-  bool hasOrientation;
-  bool hasPosition;
+  bool has_orientation;
+  bool has_position;
 
   WebGamepadQuaternion orientation;
   WebGamepadVector position;
-  WebGamepadVector angularVelocity;
-  WebGamepadVector linearVelocity;
-  WebGamepadVector angularAcceleration;
-  WebGamepadVector linearAcceleration;
+  WebGamepadVector angular_velocity;
+  WebGamepadVector linear_velocity;
+  WebGamepadVector angular_acceleration;
+  WebGamepadVector linear_acceleration;
 };
 
 enum WebGamepadHand {
-  GamepadHandNone = 0,
-  GamepadHandLeft = 1,
-  GamepadHandRight = 2
+  kGamepadHandNone = 0,
+  kGamepadHandLeft = 1,
+  kGamepadHandRight = 2
 };
 
 // This structure is intentionally POD and fixed size so that it can be shared
@@ -84,17 +84,17 @@ enum WebGamepadHand {
 // also WebGamepads.h.
 class WebGamepad {
  public:
-  static const size_t idLengthCap = 128;
-  static const size_t mappingLengthCap = 16;
-  static const size_t axesLengthCap = 16;
-  static const size_t buttonsLengthCap = 32;
+  static const size_t kIdLengthCap = 128;
+  static const size_t kMappingLengthCap = 16;
+  static const size_t kAxesLengthCap = 16;
+  static const size_t kButtonsLengthCap = 32;
 
   WebGamepad()
       : connected(false),
         timestamp(0),
-        axesLength(0),
-        buttonsLength(0),
-        displayId(0) {
+        axes_length(0),
+        buttons_length(0),
+        display_id(0) {
     id[0] = 0;
     mapping[0] = 0;
   }
@@ -103,32 +103,32 @@ class WebGamepad {
   bool connected;
 
   // Device identifier (based on manufacturer, model, etc.).
-  WebUChar id[idLengthCap];
+  WebUChar id[kIdLengthCap];
 
   // Monotonically increasing value referring to when the data were last
   // updated.
   unsigned long long timestamp;
 
   // Number of valid entries in the axes array.
-  unsigned axesLength;
+  unsigned axes_length;
 
   // Normalized values representing axes, in the range [-1..1].
-  double axes[axesLengthCap];
+  double axes[kAxesLengthCap];
 
   // Number of valid entries in the buttons array.
-  unsigned buttonsLength;
+  unsigned buttons_length;
 
   // Button states
-  WebGamepadButton buttons[buttonsLengthCap];
+  WebGamepadButton buttons[kButtonsLengthCap];
 
   // Mapping type (for example "standard")
-  WebUChar mapping[mappingLengthCap];
+  WebUChar mapping[kMappingLengthCap];
 
   WebGamepadPose pose;
 
   WebGamepadHand hand;
 
-  unsigned displayId;
+  unsigned display_id;
 };
 
 #pragma pack(pop)

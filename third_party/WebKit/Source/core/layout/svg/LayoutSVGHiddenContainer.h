@@ -32,31 +32,31 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
  public:
   explicit LayoutSVGHiddenContainer(SVGElement*);
 
-  const char* name() const override { return "LayoutSVGHiddenContainer"; }
+  const char* GetName() const override { return "LayoutSVGHiddenContainer"; }
 
  protected:
-  void layout() override;
+  void GetLayout() override;
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGHiddenContainer ||
-           LayoutSVGContainer::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGHiddenContainer ||
+           LayoutSVGContainer::IsOfType(type);
   }
 
  private:
   // LayoutSVGHiddenContainer paints nothing.
-  void paint(const PaintInfo&, const LayoutPoint&) const final {}
-  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
+  void Paint(const PaintInfo&, const LayoutPoint&) const final {}
+  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
     return true;
   }
-  LayoutRect absoluteVisualRect() const final { return LayoutRect(); }
-  FloatRect visualRectInLocalSVGCoordinates() const final {
+  LayoutRect AbsoluteVisualRect() const final { return LayoutRect(); }
+  FloatRect VisualRectInLocalSVGCoordinates() const final {
     return FloatRect();
   }
-  void absoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final {}
 
-  bool nodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& pointInParent,
+  bool NodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& point_in_parent,
                         HitTestAction) final;
 };
 }  // namespace blink

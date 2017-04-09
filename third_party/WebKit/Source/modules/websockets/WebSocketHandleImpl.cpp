@@ -25,167 +25,168 @@ const uint16_t kAbnormalShutdownOpCode = 1006;
 }  // namespace
 
 WebSocketHandleImpl::WebSocketHandleImpl()
-    : m_client(nullptr), m_clientBinding(this) {
+    : client_(nullptr), client_binding_(this) {
   NETWORK_DVLOG(1) << this << " created";
 }
 
 WebSocketHandleImpl::~WebSocketHandleImpl() {
   NETWORK_DVLOG(1) << this << " deleted";
 
-  if (m_websocket)
-    m_websocket->StartClosingHandshake(kAbnormalShutdownOpCode, emptyString);
+  if (websocket_)
+    websocket_->StartClosingHandshake(kAbnormalShutdownOpCode, g_empty_string);
 }
 
-void WebSocketHandleImpl::initialize(InterfaceProvider* interfaceProvider) {
+void WebSocketHandleImpl::Initialize(InterfaceProvider* interface_provider) {
   NETWORK_DVLOG(1) << this << " initialize(...)";
 
-  DCHECK(!m_websocket);
-  interfaceProvider->getInterface(mojo::MakeRequest(&m_websocket));
+  DCHECK(!websocket_);
+  interface_provider->GetInterface(mojo::MakeRequest(&websocket_));
 
-  m_websocket.set_connection_error_with_reason_handler(
-      convertToBaseCallback(WTF::bind(&WebSocketHandleImpl::onConnectionError,
-                                      WTF::unretained(this))));
+  websocket_.set_connection_error_with_reason_handler(
+      ConvertToBaseCallback(WTF::Bind(&WebSocketHandleImpl::OnConnectionError,
+                                      WTF::Unretained(this))));
 }
 
-void WebSocketHandleImpl::connect(const KURL& url,
+void WebSocketHandleImpl::Connect(const KURL& url,
                                   const Vector<String>& protocols,
                                   SecurityOrigin* origin,
-                                  const KURL& firstPartyForCookies,
-                                  const String& userAgentOverride,
+                                  const KURL& first_party_for_cookies,
+                                  const String& user_agent_override,
                                   WebSocketHandleClient* client) {
-  DCHECK(m_websocket);
+  DCHECK(websocket_);
 
-  NETWORK_DVLOG(1) << this << " connect(" << url.getString() << ", "
-                   << origin->toString() << ")";
+  NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ", "
+                   << origin->ToString() << ")";
 
-  DCHECK(!m_client);
+  DCHECK(!client_);
   DCHECK(client);
-  m_client = client;
+  client_ = client;
 
-  m_websocket->AddChannelRequest(
-      url, protocols, origin, firstPartyForCookies,
-      userAgentOverride.isNull() ? emptyString : userAgentOverride,
-      m_clientBinding.CreateInterfacePtrAndBind(
-          Platform::current()
-              ->currentThread()
-              ->scheduler()
-              ->loadingTaskRunner()
-              ->toSingleThreadTaskRunner()));
+  websocket_->AddChannelRequest(
+      url, protocols, origin, first_party_for_cookies,
+      user_agent_override.IsNull() ? g_empty_string : user_agent_override,
+      client_binding_.CreateInterfacePtrAndBind(
+          Platform::Current()
+              ->CurrentThread()
+              ->Scheduler()
+              ->LoadingTaskRunner()
+              ->ToSingleThreadTaskRunner()));
 }
 
-void WebSocketHandleImpl::send(bool fin,
+void WebSocketHandleImpl::Send(bool fin,
                                WebSocketHandle::MessageType type,
                                const char* data,
                                size_t size) {
-  DCHECK(m_websocket);
+  DCHECK(websocket_);
 
-  mojom::blink::WebSocketMessageType typeToPass;
+  mojom::blink::WebSocketMessageType type_to_pass;
   switch (type) {
-    case WebSocketHandle::MessageTypeContinuation:
-      typeToPass = mojom::blink::WebSocketMessageType::CONTINUATION;
+    case WebSocketHandle::kMessageTypeContinuation:
+      type_to_pass = mojom::blink::WebSocketMessageType::CONTINUATION;
       break;
-    case WebSocketHandle::MessageTypeText:
-      typeToPass = mojom::blink::WebSocketMessageType::TEXT;
+    case WebSocketHandle::kMessageTypeText:
+      type_to_pass = mojom::blink::WebSocketMessageType::TEXT;
       break;
-    case WebSocketHandle::MessageTypeBinary:
-      typeToPass = mojom::blink::WebSocketMessageType::BINARY;
+    case WebSocketHandle::kMessageTypeBinary:
+      type_to_pass = mojom::blink::WebSocketMessageType::BINARY;
       break;
     default:
       NOTREACHED();
       return;
   }
 
-  NETWORK_DVLOG(1) << this << " send(" << fin << ", " << typeToPass << ", "
+  NETWORK_DVLOG(1) << this << " send(" << fin << ", " << type_to_pass << ", "
                    << "(data size = " << size << "))";
 
   // TODO(darin): Avoid this copy.
-  Vector<uint8_t> dataToPass(size);
-  std::copy(data, data + size, dataToPass.begin());
+  Vector<uint8_t> data_to_pass(size);
+  std::copy(data, data + size, data_to_pass.begin());
 
-  m_websocket->SendFrame(fin, typeToPass, dataToPass);
+  websocket_->SendFrame(fin, type_to_pass, data_to_pass);
 }
 
-void WebSocketHandleImpl::flowControl(int64_t quota) {
-  DCHECK(m_websocket);
+void WebSocketHandleImpl::FlowControl(int64_t quota) {
+  DCHECK(websocket_);
 
   NETWORK_DVLOG(1) << this << " flowControl(" << quota << ")";
 
-  m_websocket->SendFlowControl(quota);
+  websocket_->SendFlowControl(quota);
 }
 
-void WebSocketHandleImpl::close(unsigned short code, const String& reason) {
-  DCHECK(m_websocket);
+void WebSocketHandleImpl::Close(unsigned short code, const String& reason) {
+  DCHECK(websocket_);
 
   NETWORK_DVLOG(1) << this << " close(" << code << ", " << reason << ")";
 
-  m_websocket->StartClosingHandshake(code,
-                                     reason.isNull() ? emptyString : reason);
+  websocket_->StartClosingHandshake(code,
+                                    reason.IsNull() ? g_empty_string : reason);
 }
 
-void WebSocketHandleImpl::disconnect() {
-  m_websocket.reset();
-  m_client = nullptr;
+void WebSocketHandleImpl::Disconnect() {
+  websocket_.reset();
+  client_ = nullptr;
 }
 
-void WebSocketHandleImpl::onConnectionError(uint32_t customReason,
+void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
                                             const std::string& description) {
   // Our connection to the WebSocket was dropped. This could be due to
   // exceeding the maximum number of concurrent websockets from this process.
-  String failureMessage;
-  if (customReason == mojom::blink::WebSocket::kInsufficientResources) {
-    failureMessage = description.empty() ? "Insufficient resources"
-                                         : String::fromUTF8(description.c_str(),
-                                                            description.size());
+  String failure_message;
+  if (custom_reason == mojom::blink::WebSocket::kInsufficientResources) {
+    failure_message =
+        description.empty()
+            ? "Insufficient resources"
+            : String::FromUTF8(description.c_str(), description.size());
   } else {
     DCHECK(description.empty());
-    failureMessage = "Unspecified reason";
+    failure_message = "Unspecified reason";
   }
-  OnFailChannel(failureMessage);
+  OnFailChannel(failure_message);
 }
 
 void WebSocketHandleImpl::OnFailChannel(const String& message) {
   NETWORK_DVLOG(1) << this << " OnFailChannel(" << message << ")";
 
-  WebSocketHandleClient* client = m_client;
-  disconnect();
+  WebSocketHandleClient* client = client_;
+  Disconnect();
   if (!client)
     return;
 
-  client->didFail(this, message);
+  client->DidFail(this, message);
   // |this| can be deleted here.
 }
 
 void WebSocketHandleImpl::OnStartOpeningHandshake(
     mojom::blink::WebSocketHandshakeRequestPtr request) {
   NETWORK_DVLOG(1) << this << " OnStartOpeningHandshake("
-                   << request->url.getString() << ")";
+                   << request->url.GetString() << ")";
 
-  RefPtr<WebSocketHandshakeRequest> requestToPass =
-      WebSocketHandshakeRequest::create(request->url);
+  RefPtr<WebSocketHandshakeRequest> request_to_pass =
+      WebSocketHandshakeRequest::Create(request->url);
   for (size_t i = 0; i < request->headers.size(); ++i) {
     const mojom::blink::HttpHeaderPtr& header = request->headers[i];
-    requestToPass->addHeaderField(AtomicString(header->name),
-                                  AtomicString(header->value));
+    request_to_pass->AddHeaderField(AtomicString(header->name),
+                                    AtomicString(header->value));
   }
-  requestToPass->setHeadersText(request->headers_text);
-  m_client->didStartOpeningHandshake(this, requestToPass);
+  request_to_pass->SetHeadersText(request->headers_text);
+  client_->DidStartOpeningHandshake(this, request_to_pass);
 }
 
 void WebSocketHandleImpl::OnFinishOpeningHandshake(
     mojom::blink::WebSocketHandshakeResponsePtr response) {
   NETWORK_DVLOG(1) << this << " OnFinishOpeningHandshake("
-                   << response->url.getString() << ")";
+                   << response->url.GetString() << ")";
 
-  WebSocketHandshakeResponse responseToPass;
-  responseToPass.setStatusCode(response->status_code);
-  responseToPass.setStatusText(response->status_text);
+  WebSocketHandshakeResponse response_to_pass;
+  response_to_pass.SetStatusCode(response->status_code);
+  response_to_pass.SetStatusText(response->status_text);
   for (size_t i = 0; i < response->headers.size(); ++i) {
     const mojom::blink::HttpHeaderPtr& header = response->headers[i];
-    responseToPass.addHeaderField(AtomicString(header->name),
-                                  AtomicString(header->value));
+    response_to_pass.AddHeaderField(AtomicString(header->name),
+                                    AtomicString(header->value));
   }
-  responseToPass.setHeadersText(response->headers_text);
-  m_client->didFinishOpeningHandshake(this, &responseToPass);
+  response_to_pass.SetHeadersText(response->headers_text);
+  client_->DidFinishOpeningHandshake(this, &response_to_pass);
 }
 
 void WebSocketHandleImpl::OnAddChannelResponse(const String& protocol,
@@ -193,10 +194,10 @@ void WebSocketHandleImpl::OnAddChannelResponse(const String& protocol,
   NETWORK_DVLOG(1) << this << " OnAddChannelResponse(" << protocol << ", "
                    << extensions << ")";
 
-  if (!m_client)
+  if (!client_)
     return;
 
-  m_client->didConnect(this, protocol, extensions);
+  client_->DidConnect(this, protocol, extensions);
   // |this| can be deleted here.
 }
 
@@ -205,58 +206,58 @@ void WebSocketHandleImpl::OnDataFrame(bool fin,
                                       const Vector<uint8_t>& data) {
   NETWORK_DVLOG(1) << this << " OnDataFrame(" << fin << ", " << type << ", "
                    << "(data size = " << data.size() << "))";
-  if (!m_client)
+  if (!client_)
     return;
 
-  WebSocketHandle::MessageType typeToPass =
-      WebSocketHandle::MessageTypeContinuation;
+  WebSocketHandle::MessageType type_to_pass =
+      WebSocketHandle::kMessageTypeContinuation;
   switch (type) {
     case mojom::blink::WebSocketMessageType::CONTINUATION:
-      typeToPass = WebSocketHandle::MessageTypeContinuation;
+      type_to_pass = WebSocketHandle::kMessageTypeContinuation;
       break;
     case mojom::blink::WebSocketMessageType::TEXT:
-      typeToPass = WebSocketHandle::MessageTypeText;
+      type_to_pass = WebSocketHandle::kMessageTypeText;
       break;
     case mojom::blink::WebSocketMessageType::BINARY:
-      typeToPass = WebSocketHandle::MessageTypeBinary;
+      type_to_pass = WebSocketHandle::kMessageTypeBinary;
       break;
   }
-  const char* dataToPass =
-      reinterpret_cast<const char*>(data.isEmpty() ? nullptr : &data[0]);
-  m_client->didReceiveData(this, fin, typeToPass, dataToPass, data.size());
+  const char* data_to_pass =
+      reinterpret_cast<const char*>(data.IsEmpty() ? nullptr : &data[0]);
+  client_->DidReceiveData(this, fin, type_to_pass, data_to_pass, data.size());
   // |this| can be deleted here.
 }
 
 void WebSocketHandleImpl::OnFlowControl(int64_t quota) {
   NETWORK_DVLOG(1) << this << " OnFlowControl(" << quota << ")";
-  if (!m_client)
+  if (!client_)
     return;
 
-  m_client->didReceiveFlowControl(this, quota);
+  client_->DidReceiveFlowControl(this, quota);
   // |this| can be deleted here.
 }
 
-void WebSocketHandleImpl::OnDropChannel(bool wasClean,
+void WebSocketHandleImpl::OnDropChannel(bool was_clean,
                                         uint16_t code,
                                         const String& reason) {
-  NETWORK_DVLOG(1) << this << " OnDropChannel(" << wasClean << ", " << code
+  NETWORK_DVLOG(1) << this << " OnDropChannel(" << was_clean << ", " << code
                    << ", " << reason << ")";
 
-  WebSocketHandleClient* client = m_client;
-  disconnect();
+  WebSocketHandleClient* client = client_;
+  Disconnect();
   if (!client)
     return;
 
-  client->didClose(this, wasClean, code, reason);
+  client->DidClose(this, was_clean, code, reason);
   // |this| can be deleted here.
 }
 
 void WebSocketHandleImpl::OnClosingHandshake() {
   NETWORK_DVLOG(1) << this << " OnClosingHandshake()";
-  if (!m_client)
+  if (!client_)
     return;
 
-  m_client->didStartClosingHandshake(this);
+  client_->DidStartClosingHandshake(this);
   // |this| can be deleted here.
 }
 

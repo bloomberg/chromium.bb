@@ -27,7 +27,7 @@ class CallbackFunctionTest final
  public:
   DECLARE_TRACE();
 
-  static CallbackFunctionTest* create() { return new CallbackFunctionTest(); }
+  static CallbackFunctionTest* Create() { return new CallbackFunctionTest(); }
 
   String testCallback(TestCallback*,
                       const String&,

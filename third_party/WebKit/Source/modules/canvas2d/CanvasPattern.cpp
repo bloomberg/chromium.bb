@@ -31,37 +31,37 @@
 
 namespace blink {
 
-Pattern::RepeatMode CanvasPattern::parseRepetitionType(
+Pattern::RepeatMode CanvasPattern::ParseRepetitionType(
     const String& type,
-    ExceptionState& exceptionState) {
-  if (type.isEmpty() || type == "repeat")
-    return Pattern::RepeatModeXY;
+    ExceptionState& exception_state) {
+  if (type.IsEmpty() || type == "repeat")
+    return Pattern::kRepeatModeXY;
 
   if (type == "no-repeat")
-    return Pattern::RepeatModeNone;
+    return Pattern::kRepeatModeNone;
 
   if (type == "repeat-x")
-    return Pattern::RepeatModeX;
+    return Pattern::kRepeatModeX;
 
   if (type == "repeat-y")
-    return Pattern::RepeatModeY;
+    return Pattern::kRepeatModeY;
 
-  exceptionState.throwDOMException(
-      SyntaxError,
+  exception_state.ThrowDOMException(
+      kSyntaxError,
       "The provided type ('" + type +
           "') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'.");
-  return Pattern::RepeatModeNone;
+  return Pattern::kRepeatModeNone;
 }
 
 CanvasPattern::CanvasPattern(PassRefPtr<Image> image,
                              Pattern::RepeatMode repeat,
-                             bool originClean)
-    : m_pattern(Pattern::createImagePattern(std::move(image), repeat)),
-      m_originClean(originClean) {}
+                             bool origin_clean)
+    : pattern_(Pattern::CreateImagePattern(std::move(image), repeat)),
+      origin_clean_(origin_clean) {}
 
 void CanvasPattern::setTransform(SVGMatrixTearOff* transform) {
-  m_patternTransform =
-      transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0);
+  pattern_transform_ =
+      transform ? transform->Value() : AffineTransform(1, 0, 0, 1, 0, 0);
 }
 
 }  // namespace blink

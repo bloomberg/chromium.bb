@@ -28,15 +28,15 @@ class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
   static String sinkId(HTMLMediaElement&);
   static ScriptPromise setSinkId(ScriptState*,
                                  HTMLMediaElement&,
-                                 const String& sinkId);
-  static HTMLMediaElementAudioOutputDevice& from(HTMLMediaElement&);
+                                 const String& sink_id);
+  static HTMLMediaElementAudioOutputDevice& From(HTMLMediaElement&);
   void setSinkId(const String&);
 
  private:
   HTMLMediaElementAudioOutputDevice();
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  String m_sinkId;
+  String sink_id_;
 };
 
 }  // namespace blink

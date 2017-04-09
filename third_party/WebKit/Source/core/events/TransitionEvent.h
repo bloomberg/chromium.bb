@@ -36,14 +36,15 @@ class TransitionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TransitionEvent* create() { return new TransitionEvent; }
-  static TransitionEvent* create(const AtomicString& type,
-                                 const String& propertyName,
-                                 double elapsedTime,
-                                 const String& pseudoElement) {
-    return new TransitionEvent(type, propertyName, elapsedTime, pseudoElement);
+  static TransitionEvent* Create() { return new TransitionEvent; }
+  static TransitionEvent* Create(const AtomicString& type,
+                                 const String& property_name,
+                                 double elapsed_time,
+                                 const String& pseudo_element) {
+    return new TransitionEvent(type, property_name, elapsed_time,
+                               pseudo_element);
   }
-  static TransitionEvent* create(const AtomicString& type,
+  static TransitionEvent* Create(const AtomicString& type,
                                  const TransitionEventInit& initializer) {
     return new TransitionEvent(type, initializer);
   }
@@ -54,22 +55,22 @@ class TransitionEvent final : public Event {
   double elapsedTime() const;
   const String& pseudoElement() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   TransitionEvent();
   TransitionEvent(const AtomicString& type,
-                  const String& propertyName,
-                  double elapsedTime,
-                  const String& pseudoElement);
+                  const String& property_name,
+                  double elapsed_time,
+                  const String& pseudo_element);
   TransitionEvent(const AtomicString& type,
                   const TransitionEventInit& initializer);
 
-  String m_propertyName;
-  double m_elapsedTime;
-  String m_pseudoElement;
+  String property_name_;
+  double elapsed_time_;
+  String pseudo_element_;
 };
 
 }  // namespace blink

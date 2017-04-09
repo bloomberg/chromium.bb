@@ -8,28 +8,28 @@
 
 namespace blink {
 
-InterpolationValue CSSTimeInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSTimeInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::create(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
-InterpolationValue CSSTimeInterpolationType::maybeConvertValue(
+InterpolationValue CSSTimeInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isTime())
+  if (!value.IsPrimitiveValue() || !ToCSSPrimitiveValue(value).IsTime())
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::create(toCSSPrimitiveValue(value).computeSeconds()));
+      InterpolableNumber::Create(ToCSSPrimitiveValue(value).ComputeSeconds()));
 }
 
-const CSSValue* CSSTimeInterpolationType::createCSSValue(
+const CSSValue* CSSTimeInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return CSSPrimitiveValue::create(toInterpolableNumber(value).value(),
-                                   CSSPrimitiveValue::UnitType::Seconds);
+  return CSSPrimitiveValue::Create(ToInterpolableNumber(value).Value(),
+                                   CSSPrimitiveValue::UnitType::kSeconds);
 }
 
 }  // namespace blink

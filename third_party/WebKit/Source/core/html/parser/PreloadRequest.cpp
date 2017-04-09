@@ -14,72 +14,72 @@
 
 namespace blink {
 
-bool PreloadRequest::isSafeToSendToAnotherThread() const {
-  return m_initiatorName.isSafeToSendToAnotherThread() &&
-         m_charset.isSafeToSendToAnotherThread() &&
-         m_resourceURL.isSafeToSendToAnotherThread() &&
-         m_baseURL.isSafeToSendToAnotherThread();
+bool PreloadRequest::IsSafeToSendToAnotherThread() const {
+  return initiator_name_.IsSafeToSendToAnotherThread() &&
+         charset_.IsSafeToSendToAnotherThread() &&
+         resource_url_.IsSafeToSendToAnotherThread() &&
+         base_url_.IsSafeToSendToAnotherThread();
 }
 
-KURL PreloadRequest::completeURL(Document* document) {
-  if (!m_baseURL.isEmpty())
-    return document->completeURLWithOverride(m_resourceURL, m_baseURL);
-  return document->completeURL(m_resourceURL);
+KURL PreloadRequest::CompleteURL(Document* document) {
+  if (!base_url_.IsEmpty())
+    return document->CompleteURLWithOverride(resource_url_, base_url_);
+  return document->CompleteURL(resource_url_);
 }
 
-Resource* PreloadRequest::start(Document* document) {
-  DCHECK(isMainThread());
+Resource* PreloadRequest::Start(Document* document) {
+  DCHECK(IsMainThread());
 
-  FetchInitiatorInfo initiatorInfo;
-  initiatorInfo.name = AtomicString(m_initiatorName);
-  initiatorInfo.position = m_initiatorPosition;
+  FetchInitiatorInfo initiator_info;
+  initiator_info.name = AtomicString(initiator_name_);
+  initiator_info.position = initiator_position_;
 
-  const KURL& url = completeURL(document);
+  const KURL& url = CompleteURL(document);
   // Data URLs are filtered out in the preload scanner.
-  DCHECK(!url.protocolIsData());
+  DCHECK(!url.ProtocolIsData());
 
-  ResourceRequest resourceRequest(url);
-  resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-      m_referrerPolicy, url,
-      m_resourceType == Resource::CSSStyleSheet
-          ? m_baseURL.strippedForUseAsReferrer()
-          : document->outgoingReferrer()));
-  resourceRequest.setRequestContext(
-      ResourceFetcher::determineRequestContext(m_resourceType, false));
+  ResourceRequest resource_request(url);
+  resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+      referrer_policy_, url,
+      resource_type_ == Resource::kCSSStyleSheet
+          ? base_url_.StrippedForUseAsReferrer()
+          : document->OutgoingReferrer()));
+  resource_request.SetRequestContext(
+      ResourceFetcher::DetermineRequestContext(resource_type_, false));
 
-  FetchRequest request(resourceRequest, initiatorInfo);
+  FetchRequest request(resource_request, initiator_info);
 
-  if (m_resourceType == Resource::ImportResource) {
-    SecurityOrigin* securityOrigin =
-        document->contextDocument()->getSecurityOrigin();
-    request.setCrossOriginAccessControl(securityOrigin,
-                                        CrossOriginAttributeAnonymous);
+  if (resource_type_ == Resource::kImportResource) {
+    SecurityOrigin* security_origin =
+        document->ContextDocument()->GetSecurityOrigin();
+    request.SetCrossOriginAccessControl(security_origin,
+                                        kCrossOriginAttributeAnonymous);
   }
 
-  if (m_crossOrigin != CrossOriginAttributeNotSet) {
-    request.setCrossOriginAccessControl(document->getSecurityOrigin(),
-                                        m_crossOrigin);
+  if (cross_origin_ != kCrossOriginAttributeNotSet) {
+    request.SetCrossOriginAccessControl(document->GetSecurityOrigin(),
+                                        cross_origin_);
   }
 
-  request.setDefer(m_defer);
-  request.setResourceWidth(m_resourceWidth);
-  request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);
-  request.setIntegrityMetadata(m_integrityMetadata);
-  request.setContentSecurityPolicyNonce(m_nonce);
-  request.setParserDisposition(ParserInserted);
+  request.SetDefer(defer_);
+  request.SetResourceWidth(resource_width_);
+  request.GetClientHintsPreferences().UpdateFrom(client_hints_preferences_);
+  request.SetIntegrityMetadata(integrity_metadata_);
+  request.SetContentSecurityPolicyNonce(nonce_);
+  request.SetParserDisposition(kParserInserted);
 
-  if (m_requestType == RequestTypeLinkRelPreload)
-    request.setLinkPreload(true);
+  if (request_type_ == kRequestTypeLinkRelPreload)
+    request.SetLinkPreload(true);
 
-  if (m_resourceType == Resource::Script ||
-      m_resourceType == Resource::CSSStyleSheet ||
-      m_resourceType == Resource::ImportResource) {
-    request.setCharset(
-        m_charset.isEmpty() ? document->characterSet().getString() : m_charset);
+  if (resource_type_ == Resource::kScript ||
+      resource_type_ == Resource::kCSSStyleSheet ||
+      resource_type_ == Resource::kImportResource) {
+    request.SetCharset(charset_.IsEmpty() ? document->characterSet().GetString()
+                                          : charset_);
   }
-  request.setSpeculativePreload(true, m_discoveryTime);
+  request.SetSpeculativePreload(true, discovery_time_);
 
-  return document->loader()->startPreload(m_resourceType, request);
+  return document->Loader()->StartPreload(resource_type_, request);
 }
 
 }  // namespace blink

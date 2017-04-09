@@ -34,44 +34,44 @@
 
 namespace blink {
 
-String SVGBoolean::valueAsString() const {
-  return m_value ? "true" : "false";
+String SVGBoolean::ValueAsString() const {
+  return value_ ? "true" : "false";
 }
 
-SVGParsingError SVGBoolean::setValueAsString(const String& value) {
+SVGParsingError SVGBoolean::SetValueAsString(const String& value) {
   if (value == "true") {
-    m_value = true;
-    return SVGParseStatus::NoError;
+    value_ = true;
+    return SVGParseStatus::kNoError;
   }
   if (value == "false") {
-    m_value = false;
-    return SVGParseStatus::NoError;
+    value_ = false;
+    return SVGParseStatus::kNoError;
   }
-  return SVGParseStatus::ExpectedBoolean;
+  return SVGParseStatus::kExpectedBoolean;
 }
 
-void SVGBoolean::add(SVGPropertyBase*, SVGElement*) {
+void SVGBoolean::Add(SVGPropertyBase*, SVGElement*) {
   NOTREACHED();
 }
 
-void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement,
+void SVGBoolean::CalculateAnimatedValue(SVGAnimationElement* animation_element,
                                         float percentage,
-                                        unsigned repeatCount,
+                                        unsigned repeat_count,
                                         SVGPropertyBase* from,
                                         SVGPropertyBase* to,
                                         SVGPropertyBase*,
                                         SVGElement*) {
-  DCHECK(animationElement);
-  bool fromBoolean = animationElement->getAnimationMode() == ToAnimation
-                         ? m_value
-                         : toSVGBoolean(from)->value();
-  bool toBoolean = toSVGBoolean(to)->value();
+  DCHECK(animation_element);
+  bool from_boolean = animation_element->GetAnimationMode() == kToAnimation
+                          ? value_
+                          : ToSVGBoolean(from)->Value();
+  bool to_boolean = ToSVGBoolean(to)->Value();
 
-  animationElement->animateDiscreteType<bool>(percentage, fromBoolean,
-                                              toBoolean, m_value);
+  animation_element->AnimateDiscreteType<bool>(percentage, from_boolean,
+                                               to_boolean, value_);
 }
 
-float SVGBoolean::calculateDistance(SVGPropertyBase*, SVGElement*) {
+float SVGBoolean::CalculateDistance(SVGPropertyBase*, SVGElement*) {
   // No paced animations for boolean.
   return -1;
 }

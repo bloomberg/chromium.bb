@@ -11,7 +11,7 @@
 
 namespace blink {
 
-RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::create(
+RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::Create(
     RTCPeerConnection* requester,
     ScriptPromiseResolver* resolver) {
   return new RTCVoidRequestPromiseImpl(requester, resolver);
@@ -20,47 +20,47 @@ RTCVoidRequestPromiseImpl* RTCVoidRequestPromiseImpl::create(
 RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(
     RTCPeerConnection* requester,
     ScriptPromiseResolver* resolver)
-    : m_requester(requester), m_resolver(resolver) {
-  DCHECK(m_requester);
-  DCHECK(m_resolver);
+    : requester_(requester), resolver_(resolver) {
+  DCHECK(requester_);
+  DCHECK(resolver_);
 }
 
 RTCVoidRequestPromiseImpl::~RTCVoidRequestPromiseImpl() {}
 
-void RTCVoidRequestPromiseImpl::requestSucceeded() {
-  if (m_requester && m_requester->shouldFireDefaultCallbacks()) {
-    m_resolver->resolve();
+void RTCVoidRequestPromiseImpl::RequestSucceeded() {
+  if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
+    resolver_->Resolve();
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.
-    m_resolver->detach();
+    resolver_->Detach();
   }
 
-  clear();
+  Clear();
 }
 
-void RTCVoidRequestPromiseImpl::requestFailed(const String& error) {
-  if (m_requester && m_requester->shouldFireDefaultCallbacks()) {
+void RTCVoidRequestPromiseImpl::RequestFailed(const String& error) {
+  if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
     // TODO(guidou): The error code should come from the content layer. See
     // crbug.com/589455
-    m_resolver->reject(DOMException::create(OperationError, error));
+    resolver_->Reject(DOMException::Create(kOperationError, error));
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.
-    m_resolver->detach();
+    resolver_->Detach();
   }
 
-  clear();
+  Clear();
 }
 
-void RTCVoidRequestPromiseImpl::clear() {
-  m_requester.clear();
+void RTCVoidRequestPromiseImpl::Clear() {
+  requester_.Clear();
 }
 
 DEFINE_TRACE(RTCVoidRequestPromiseImpl) {
-  visitor->trace(m_resolver);
-  visitor->trace(m_requester);
-  RTCVoidRequest::trace(visitor);
+  visitor->Trace(resolver_);
+  visitor->Trace(requester_);
+  RTCVoidRequest::Trace(visitor);
 }
 
 }  // namespace blink

@@ -12,11 +12,11 @@ namespace blink {
 
 enum ImageAnimationPolicy {
   // Animate the image (the default).
-  ImageAnimationPolicyAllowed,
+  kImageAnimationPolicyAllowed,
   // Animate image just once.
-  ImageAnimationPolicyAnimateOnce,
+  kImageAnimationPolicyAnimateOnce,
   // Show the first frame and do not animate.
-  ImageAnimationPolicyNoAnimation
+  kImageAnimationPolicyNoAnimation
 };
 
 }  // namespace blink

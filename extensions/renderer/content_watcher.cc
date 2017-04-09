@@ -30,7 +30,7 @@ void ContentWatcher::OnWatchPages(
   bool changed = new_css_selectors.size() != css_selectors_.size();
   for (size_t i = 0; i < new_css_selectors.size(); ++i) {
     new_css_selectors[i] =
-        blink::WebString::fromUTF8(new_css_selectors_utf8[i]);
+        blink::WebString::FromUTF8(new_css_selectors_utf8[i]);
     if (!changed && new_css_selectors[i] != css_selectors_[i])
       changed = true;
   }
@@ -38,7 +38,7 @@ void ContentWatcher::OnWatchPages(
   if (!changed)
     return;
 
-  css_selectors_.swap(new_css_selectors);
+  css_selectors_.Swap(new_css_selectors);
 
   // Tell each frame's document about the new set of watched selectors. These
   // will trigger calls to DidMatchCSS after Blink has a chance to apply the new
@@ -50,11 +50,12 @@ void ContentWatcher::OnWatchPages(
     bool Visit(content::RenderView* view) override {
       // TODO(dcheng): This should be rewritten to be frame-oriented. It
       // probably breaks declarative content for OOPI.
-      for (blink::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
-           frame = frame->traverseNext()) {
-        if (frame->isWebRemoteFrame())
+      for (blink::WebFrame* frame = view->GetWebView()->MainFrame(); frame;
+           frame = frame->TraverseNext()) {
+        if (frame->IsWebRemoteFrame())
           continue;
-        frame->toWebLocalFrame()->document().watchCSSSelectors(css_selectors_);
+        frame->ToWebLocalFrame()->GetDocument().WatchCSSSelectors(
+            css_selectors_);
       }
 
       return true;  // Continue visiting.
@@ -67,7 +68,7 @@ void ContentWatcher::OnWatchPages(
 }
 
 void ContentWatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
-  frame->document().watchCSSSelectors(css_selectors_);
+  frame->GetDocument().WatchCSSSelectors(css_selectors_);
 }
 
 void ContentWatcher::DidMatchCSS(
@@ -76,9 +77,9 @@ void ContentWatcher::DidMatchCSS(
     const WebVector<WebString>& stopped_matching_selectors) {
   std::set<std::string>& frame_selectors = matching_selectors_[frame];
   for (size_t i = 0; i < stopped_matching_selectors.size(); ++i)
-    frame_selectors.erase(stopped_matching_selectors[i].utf8());
+    frame_selectors.erase(stopped_matching_selectors[i].Utf8());
   for (size_t i = 0; i < newly_matching_selectors.size(); ++i)
-    frame_selectors.insert(newly_matching_selectors[i].utf8());
+    frame_selectors.insert(newly_matching_selectors[i].Utf8());
 
   if (frame_selectors.empty())
     matching_selectors_.erase(frame);
@@ -88,11 +89,11 @@ void ContentWatcher::DidMatchCSS(
 
 void ContentWatcher::NotifyBrowserOfChange(
     blink::WebLocalFrame* changed_frame) const {
-  blink::WebFrame* const top_frame = changed_frame->top();
-  const blink::WebSecurityOrigin top_origin = top_frame->getSecurityOrigin();
+  blink::WebFrame* const top_frame = changed_frame->Top();
+  const blink::WebSecurityOrigin top_origin = top_frame->GetSecurityOrigin();
   // Want to aggregate matched selectors from all frames where an
   // extension with access to top_origin could run on the frame.
-  if (!top_origin.canAccess(changed_frame->document().getSecurityOrigin())) {
+  if (!top_origin.CanAccess(changed_frame->GetDocument().GetSecurityOrigin())) {
     // If the changed frame can't be accessed by the top frame, then
     // no change in it could affect the set of selectors we'd send back.
     return;
@@ -100,8 +101,8 @@ void ContentWatcher::NotifyBrowserOfChange(
 
   std::set<base::StringPiece> transitive_selectors;
   for (blink::WebFrame* frame = top_frame; frame;
-       frame = frame->traverseNext()) {
-    if (top_origin.canAccess(frame->getSecurityOrigin())) {
+       frame = frame->TraverseNext()) {
+    if (top_origin.CanAccess(frame->GetSecurityOrigin())) {
       std::map<blink::WebFrame*, std::set<std::string> >::const_iterator
           frame_selectors = matching_selectors_.find(frame);
       if (frame_selectors != matching_selectors_.end()) {
@@ -117,7 +118,7 @@ void ContentWatcher::NotifyBrowserOfChange(
        ++it)
     selector_strings.push_back(it->as_string());
   content::RenderView* view =
-      content::RenderView::FromWebView(top_frame->view());
+      content::RenderView::FromWebView(top_frame->View());
   view->Send(new ExtensionHostMsg_OnWatchedPageChange(view->GetRoutingID(),
                                                       selector_strings));
 }

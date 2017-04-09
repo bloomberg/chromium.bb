@@ -41,33 +41,33 @@ namespace blink {
 namespace {
 
 template <typename T>
-void maybeEmitNamedValue(StringBuilder& builder,
+void MaybeEmitNamedValue(StringBuilder& builder,
                          bool emit,
                          const char* name,
                          T value) {
   if (!emit)
     return;
   if (builder.length() > 1)
-    builder.append(", ");
-  builder.append(name);
-  builder.append(": ");
-  builder.appendNumber(value);
+    builder.Append(", ");
+  builder.Append(name);
+  builder.Append(": ");
+  builder.AppendNumber(value);
 }
 
-void maybeEmitNamedBoolean(StringBuilder& builder,
+void MaybeEmitNamedBoolean(StringBuilder& builder,
                            bool emit,
                            const char* name,
                            bool value) {
   if (!emit)
     return;
   if (builder.length() > 1)
-    builder.append(", ");
-  builder.append(name);
-  builder.append(": ");
+    builder.Append(", ");
+  builder.Append(name);
+  builder.Append(": ");
   if (value)
-    builder.append("true");
+    builder.Append("true");
   else
-    builder.append("false");
+    builder.Append("false");
 }
 
 }  // namespace
@@ -75,185 +75,185 @@ void maybeEmitNamedBoolean(StringBuilder& builder,
 class WebMediaConstraintsPrivate final
     : public ThreadSafeRefCounted<WebMediaConstraintsPrivate> {
  public:
-  static PassRefPtr<WebMediaConstraintsPrivate> create();
-  static PassRefPtr<WebMediaConstraintsPrivate> create(
+  static PassRefPtr<WebMediaConstraintsPrivate> Create();
+  static PassRefPtr<WebMediaConstraintsPrivate> Create(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
-  bool isEmpty() const;
-  const WebMediaTrackConstraintSet& basic() const;
-  const WebVector<WebMediaTrackConstraintSet>& advanced() const;
-  const String toString() const;
+  bool IsEmpty() const;
+  const WebMediaTrackConstraintSet& Basic() const;
+  const WebVector<WebMediaTrackConstraintSet>& Advanced() const;
+  const String ToString() const;
 
  private:
   WebMediaConstraintsPrivate(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
-  WebMediaTrackConstraintSet m_basic;
-  WebVector<WebMediaTrackConstraintSet> m_advanced;
+  WebMediaTrackConstraintSet basic_;
+  WebVector<WebMediaTrackConstraintSet> advanced_;
 };
 
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create() {
+PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
-  return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+  return AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(
+PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
-  return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+  return AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
 WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced)
-    : m_basic(basic), m_advanced(advanced) {}
+    : basic_(basic), advanced_(advanced) {}
 
-bool WebMediaConstraintsPrivate::isEmpty() const {
+bool WebMediaConstraintsPrivate::IsEmpty() const {
   // TODO(hta): When generating advanced constraints, make sure no empty
   // elements can be added to the m_advanced vector.
-  return m_basic.isEmpty() && m_advanced.empty();
+  return basic_.IsEmpty() && advanced_.empty();
 }
 
-const WebMediaTrackConstraintSet& WebMediaConstraintsPrivate::basic() const {
-  return m_basic;
+const WebMediaTrackConstraintSet& WebMediaConstraintsPrivate::Basic() const {
+  return basic_;
 }
 
 const WebVector<WebMediaTrackConstraintSet>&
-WebMediaConstraintsPrivate::advanced() const {
-  return m_advanced;
+WebMediaConstraintsPrivate::Advanced() const {
+  return advanced_;
 }
 
-const String WebMediaConstraintsPrivate::toString() const {
+const String WebMediaConstraintsPrivate::ToString() const {
   StringBuilder builder;
-  if (!isEmpty()) {
-    builder.append('{');
-    builder.append(basic().toString());
-    if (!advanced().empty()) {
+  if (!IsEmpty()) {
+    builder.Append('{');
+    builder.Append(Basic().ToString());
+    if (!Advanced().empty()) {
       if (builder.length() > 1)
-        builder.append(", ");
-      builder.append("advanced: [");
+        builder.Append(", ");
+      builder.Append("advanced: [");
       bool first = true;
-      for (const auto& constraintSet : advanced()) {
+      for (const auto& constraint_set : Advanced()) {
         if (!first)
-          builder.append(", ");
-        builder.append('{');
-        builder.append(constraintSet.toString());
-        builder.append('}');
+          builder.Append(", ");
+        builder.Append('{');
+        builder.Append(constraint_set.ToString());
+        builder.Append('}');
         first = false;
       }
-      builder.append(']');
+      builder.Append(']');
     }
-    builder.append('}');
+    builder.Append('}');
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
 // *Constraints
 
-BaseConstraint::BaseConstraint(const char* name) : m_name(name) {}
+BaseConstraint::BaseConstraint(const char* name) : name_(name) {}
 
 BaseConstraint::~BaseConstraint() {}
 
 LongConstraint::LongConstraint(const char* name)
     : BaseConstraint(name),
-      m_min(),
-      m_max(),
-      m_exact(),
-      m_ideal(),
-      m_hasMin(false),
-      m_hasMax(false),
-      m_hasExact(false),
-      m_hasIdeal(false) {}
+      min_(),
+      max_(),
+      exact_(),
+      ideal_(),
+      has_min_(false),
+      has_max_(false),
+      has_exact_(false),
+      has_ideal_(false) {}
 
-bool LongConstraint::matches(long value) const {
-  if (m_hasMin && value < m_min) {
+bool LongConstraint::Matches(long value) const {
+  if (has_min_ && value < min_) {
     return false;
   }
-  if (m_hasMax && value > m_max) {
+  if (has_max_ && value > max_) {
     return false;
   }
-  if (m_hasExact && value != m_exact) {
+  if (has_exact_ && value != exact_) {
     return false;
   }
   return true;
 }
 
-bool LongConstraint::isEmpty() const {
-  return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
+bool LongConstraint::IsEmpty() const {
+  return !has_min_ && !has_max_ && !has_exact_ && !has_ideal_;
 }
 
-bool LongConstraint::hasMandatory() const {
-  return m_hasMin || m_hasMax || m_hasExact;
+bool LongConstraint::HasMandatory() const {
+  return has_min_ || has_max_ || has_exact_;
 }
 
-WebString LongConstraint::toString() const {
+WebString LongConstraint::ToString() const {
   StringBuilder builder;
-  builder.append('{');
-  maybeEmitNamedValue(builder, m_hasMin, "min", m_min);
-  maybeEmitNamedValue(builder, m_hasMax, "max", m_max);
-  maybeEmitNamedValue(builder, m_hasExact, "exact", m_exact);
-  maybeEmitNamedValue(builder, m_hasIdeal, "ideal", m_ideal);
-  builder.append('}');
-  return builder.toString();
+  builder.Append('{');
+  MaybeEmitNamedValue(builder, has_min_, "min", min_);
+  MaybeEmitNamedValue(builder, has_max_, "max", max_);
+  MaybeEmitNamedValue(builder, has_exact_, "exact", exact_);
+  MaybeEmitNamedValue(builder, has_ideal_, "ideal", ideal_);
+  builder.Append('}');
+  return builder.ToString();
 }
 
 const double DoubleConstraint::kConstraintEpsilon = 0.00001;
 
 DoubleConstraint::DoubleConstraint(const char* name)
     : BaseConstraint(name),
-      m_min(),
-      m_max(),
-      m_exact(),
-      m_ideal(),
-      m_hasMin(false),
-      m_hasMax(false),
-      m_hasExact(false),
-      m_hasIdeal(false) {}
+      min_(),
+      max_(),
+      exact_(),
+      ideal_(),
+      has_min_(false),
+      has_max_(false),
+      has_exact_(false),
+      has_ideal_(false) {}
 
-bool DoubleConstraint::matches(double value) const {
-  if (m_hasMin && value < m_min - kConstraintEpsilon) {
+bool DoubleConstraint::Matches(double value) const {
+  if (has_min_ && value < min_ - kConstraintEpsilon) {
     return false;
   }
-  if (m_hasMax && value > m_max + kConstraintEpsilon) {
+  if (has_max_ && value > max_ + kConstraintEpsilon) {
     return false;
   }
-  if (m_hasExact &&
-      fabs(static_cast<double>(value) - m_exact) > kConstraintEpsilon) {
+  if (has_exact_ &&
+      fabs(static_cast<double>(value) - exact_) > kConstraintEpsilon) {
     return false;
   }
   return true;
 }
 
-bool DoubleConstraint::isEmpty() const {
-  return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
+bool DoubleConstraint::IsEmpty() const {
+  return !has_min_ && !has_max_ && !has_exact_ && !has_ideal_;
 }
 
-bool DoubleConstraint::hasMandatory() const {
-  return m_hasMin || m_hasMax || m_hasExact;
+bool DoubleConstraint::HasMandatory() const {
+  return has_min_ || has_max_ || has_exact_;
 }
 
-WebString DoubleConstraint::toString() const {
+WebString DoubleConstraint::ToString() const {
   StringBuilder builder;
-  builder.append('{');
-  maybeEmitNamedValue(builder, m_hasMin, "min", m_min);
-  maybeEmitNamedValue(builder, m_hasMax, "max", m_max);
-  maybeEmitNamedValue(builder, m_hasExact, "exact", m_exact);
-  maybeEmitNamedValue(builder, m_hasIdeal, "ideal", m_ideal);
-  builder.append('}');
-  return builder.toString();
+  builder.Append('{');
+  MaybeEmitNamedValue(builder, has_min_, "min", min_);
+  MaybeEmitNamedValue(builder, has_max_, "max", max_);
+  MaybeEmitNamedValue(builder, has_exact_, "exact", exact_);
+  MaybeEmitNamedValue(builder, has_ideal_, "ideal", ideal_);
+  builder.Append('}');
+  return builder.ToString();
 }
 
 StringConstraint::StringConstraint(const char* name)
-    : BaseConstraint(name), m_exact(), m_ideal() {}
+    : BaseConstraint(name), exact_(), ideal_() {}
 
-bool StringConstraint::matches(WebString value) const {
-  if (m_exact.empty()) {
+bool StringConstraint::Matches(WebString value) const {
+  if (exact_.empty()) {
     return true;
   }
-  for (const auto& choice : m_exact) {
+  for (const auto& choice : exact_) {
     if (value == choice) {
       return true;
     }
@@ -261,228 +261,229 @@ bool StringConstraint::matches(WebString value) const {
   return false;
 }
 
-bool StringConstraint::isEmpty() const {
-  return m_exact.empty() && m_ideal.empty();
+bool StringConstraint::IsEmpty() const {
+  return exact_.empty() && ideal_.empty();
 }
 
-bool StringConstraint::hasMandatory() const {
-  return !m_exact.empty();
+bool StringConstraint::HasMandatory() const {
+  return !exact_.empty();
 }
 
-const WebVector<WebString>& StringConstraint::exact() const {
-  return m_exact;
+const WebVector<WebString>& StringConstraint::Exact() const {
+  return exact_;
 }
 
-const WebVector<WebString>& StringConstraint::ideal() const {
-  return m_ideal;
+const WebVector<WebString>& StringConstraint::Ideal() const {
+  return ideal_;
 }
 
-WebString StringConstraint::toString() const {
+WebString StringConstraint::ToString() const {
   StringBuilder builder;
-  builder.append('{');
-  if (!m_ideal.empty()) {
-    builder.append("ideal: [");
+  builder.Append('{');
+  if (!ideal_.empty()) {
+    builder.Append("ideal: [");
     bool first = true;
-    for (const auto& iter : m_ideal) {
+    for (const auto& iter : ideal_) {
       if (!first)
-        builder.append(", ");
-      builder.append('"');
-      builder.append(iter);
-      builder.append('"');
+        builder.Append(", ");
+      builder.Append('"');
+      builder.Append(iter);
+      builder.Append('"');
       first = false;
     }
-    builder.append(']');
+    builder.Append(']');
   }
-  if (!m_exact.empty()) {
+  if (!exact_.empty()) {
     if (builder.length() > 1)
-      builder.append(", ");
-    builder.append("exact: [");
+      builder.Append(", ");
+    builder.Append("exact: [");
     bool first = true;
-    for (const auto& iter : m_exact) {
+    for (const auto& iter : exact_) {
       if (!first)
-        builder.append(", ");
-      builder.append('"');
-      builder.append(iter);
-      builder.append('"');
+        builder.Append(", ");
+      builder.Append('"');
+      builder.Append(iter);
+      builder.Append('"');
     }
-    builder.append(']');
+    builder.Append(']');
   }
-  builder.append('}');
-  return builder.toString();
+  builder.Append('}');
+  return builder.ToString();
 }
 
 BooleanConstraint::BooleanConstraint(const char* name)
     : BaseConstraint(name),
-      m_ideal(false),
-      m_exact(false),
-      m_hasIdeal(false),
-      m_hasExact(false) {}
+      ideal_(false),
+      exact_(false),
+      has_ideal_(false),
+      has_exact_(false) {}
 
-bool BooleanConstraint::matches(bool value) const {
-  if (m_hasExact && static_cast<bool>(m_exact) != value) {
+bool BooleanConstraint::Matches(bool value) const {
+  if (has_exact_ && static_cast<bool>(exact_) != value) {
     return false;
   }
   return true;
 }
 
-bool BooleanConstraint::isEmpty() const {
-  return !m_hasIdeal && !m_hasExact;
+bool BooleanConstraint::IsEmpty() const {
+  return !has_ideal_ && !has_exact_;
 }
 
-bool BooleanConstraint::hasMandatory() const {
-  return m_hasExact;
+bool BooleanConstraint::HasMandatory() const {
+  return has_exact_;
 }
 
-WebString BooleanConstraint::toString() const {
+WebString BooleanConstraint::ToString() const {
   StringBuilder builder;
-  builder.append('{');
-  maybeEmitNamedBoolean(builder, m_hasExact, "exact", exact());
-  maybeEmitNamedBoolean(builder, m_hasIdeal, "ideal", ideal());
-  builder.append('}');
-  return builder.toString();
+  builder.Append('{');
+  MaybeEmitNamedBoolean(builder, has_exact_, "exact", Exact());
+  MaybeEmitNamedBoolean(builder, has_ideal_, "ideal", Ideal());
+  builder.Append('}');
+  return builder.ToString();
 }
 
 WebMediaTrackConstraintSet::WebMediaTrackConstraintSet()
     : width("width"),
       height("height"),
-      aspectRatio("aspectRatio"),
-      frameRate("frameRate"),
-      facingMode("facingMode"),
+      aspect_ratio("aspectRatio"),
+      frame_rate("frameRate"),
+      facing_mode("facingMode"),
       volume("volume"),
-      sampleRate("sampleRate"),
-      sampleSize("sampleSize"),
-      echoCancellation("echoCancellation"),
+      sample_rate("sampleRate"),
+      sample_size("sampleSize"),
+      echo_cancellation("echoCancellation"),
       latency("latency"),
-      channelCount("channelCount"),
-      deviceId("deviceId"),
-      disableLocalEcho("disableLocalEcho"),
-      groupId("groupId"),
-      videoKind("videoKind"),
-      depthNear("depthNear"),
-      depthFar("depthFar"),
-      focalLengthX("focalLengthX"),
-      focalLengthY("focalLengthY"),
-      mediaStreamSource("mediaStreamSource"),
-      renderToAssociatedSink("chromeRenderToAssociatedSink"),
-      hotwordEnabled("hotwordEnabled"),
-      googEchoCancellation("googEchoCancellation"),
-      googExperimentalEchoCancellation("googExperimentalEchoCancellation"),
-      googAutoGainControl("googAutoGainControl"),
-      googExperimentalAutoGainControl("googExperimentalAutoGainControl"),
-      googNoiseSuppression("googNoiseSuppression"),
-      googHighpassFilter("googHighpassFilter"),
-      googTypingNoiseDetection("googTypingNoiseDetection"),
-      googExperimentalNoiseSuppression("googExperimentalNoiseSuppression"),
-      googBeamforming("googBeamforming"),
-      googArrayGeometry("googArrayGeometry"),
-      googAudioMirroring("googAudioMirroring"),
-      googDAEchoCancellation("googDAEchoCancellation"),
-      googNoiseReduction("googNoiseReduction"),
-      offerToReceiveAudio("offerToReceiveAudio"),
-      offerToReceiveVideo("offerToReceiveVideo"),
-      voiceActivityDetection("voiceActivityDetection"),
-      iceRestart("iceRestart"),
-      googUseRtpMux("googUseRtpMux"),
-      enableDtlsSrtp("enableDtlsSrtp"),
-      enableRtpDataChannels("enableRtpDataChannels"),
-      enableDscp("enableDscp"),
-      enableIPv6("enableIPv6"),
-      googEnableVideoSuspendBelowMinBitrate(
+      channel_count("channelCount"),
+      device_id("deviceId"),
+      disable_local_echo("disableLocalEcho"),
+      group_id("groupId"),
+      video_kind("videoKind"),
+      depth_near("depthNear"),
+      depth_far("depthFar"),
+      focal_length_x("focalLengthX"),
+      focal_length_y("focalLengthY"),
+      media_stream_source("mediaStreamSource"),
+      render_to_associated_sink("chromeRenderToAssociatedSink"),
+      hotword_enabled("hotwordEnabled"),
+      goog_echo_cancellation("googEchoCancellation"),
+      goog_experimental_echo_cancellation("googExperimentalEchoCancellation"),
+      goog_auto_gain_control("googAutoGainControl"),
+      goog_experimental_auto_gain_control("googExperimentalAutoGainControl"),
+      goog_noise_suppression("googNoiseSuppression"),
+      goog_highpass_filter("googHighpassFilter"),
+      goog_typing_noise_detection("googTypingNoiseDetection"),
+      goog_experimental_noise_suppression("googExperimentalNoiseSuppression"),
+      goog_beamforming("googBeamforming"),
+      goog_array_geometry("googArrayGeometry"),
+      goog_audio_mirroring("googAudioMirroring"),
+      goog_da_echo_cancellation("googDAEchoCancellation"),
+      goog_noise_reduction("googNoiseReduction"),
+      offer_to_receive_audio("offerToReceiveAudio"),
+      offer_to_receive_video("offerToReceiveVideo"),
+      voice_activity_detection("voiceActivityDetection"),
+      ice_restart("iceRestart"),
+      goog_use_rtp_mux("googUseRtpMux"),
+      enable_dtls_srtp("enableDtlsSrtp"),
+      enable_rtp_data_channels("enableRtpDataChannels"),
+      enable_dscp("enableDscp"),
+      enable_i_pv6("enableIPv6"),
+      goog_enable_video_suspend_below_min_bitrate(
           "googEnableVideoSuspendBelowMinBitrate"),
-      googNumUnsignalledRecvStreams("googNumUnsignalledRecvStreams"),
-      googCombinedAudioVideoBwe("googCombinedAudioVideoBwe"),
-      googScreencastMinBitrate("googScreencastMinBitrate"),
-      googCpuOveruseDetection("googCpuOveruseDetection"),
-      googCpuUnderuseThreshold("googCpuUnderuseThreshold"),
-      googCpuOveruseThreshold("googCpuOveruseThreshold"),
-      googCpuUnderuseEncodeRsdThreshold("googCpuUnderuseEncodeRsdThreshold"),
-      googCpuOveruseEncodeRsdThreshold("googCpuOveruseEncodeRsdThreshold"),
-      googCpuOveruseEncodeUsage("googCpuOveruseEncodeUsage"),
-      googHighStartBitrate("googHighStartBitrate"),
-      googPayloadPadding("googPayloadPadding"),
-      googLatencyMs("latencyMs"),
-      googPowerLineFrequency("googPowerLineFrequency") {}
+      goog_num_unsignalled_recv_streams("googNumUnsignalledRecvStreams"),
+      goog_combined_audio_video_bwe("googCombinedAudioVideoBwe"),
+      goog_screencast_min_bitrate("googScreencastMinBitrate"),
+      goog_cpu_overuse_detection("googCpuOveruseDetection"),
+      goog_cpu_underuse_threshold("googCpuUnderuseThreshold"),
+      goog_cpu_overuse_threshold("googCpuOveruseThreshold"),
+      goog_cpu_underuse_encode_rsd_threshold(
+          "googCpuUnderuseEncodeRsdThreshold"),
+      goog_cpu_overuse_encode_rsd_threshold("googCpuOveruseEncodeRsdThreshold"),
+      goog_cpu_overuse_encode_usage("googCpuOveruseEncodeUsage"),
+      goog_high_start_bitrate("googHighStartBitrate"),
+      goog_payload_padding("googPayloadPadding"),
+      goog_latency_ms("latencyMs"),
+      goog_power_line_frequency("googPowerLineFrequency") {}
 
-std::vector<const BaseConstraint*> WebMediaTrackConstraintSet::allConstraints()
+std::vector<const BaseConstraint*> WebMediaTrackConstraintSet::AllConstraints()
     const {
   const BaseConstraint* temp[] = {&width,
                                   &height,
-                                  &aspectRatio,
-                                  &frameRate,
-                                  &facingMode,
+                                  &aspect_ratio,
+                                  &frame_rate,
+                                  &facing_mode,
                                   &volume,
-                                  &sampleRate,
-                                  &sampleSize,
-                                  &echoCancellation,
+                                  &sample_rate,
+                                  &sample_size,
+                                  &echo_cancellation,
                                   &latency,
-                                  &channelCount,
-                                  &deviceId,
-                                  &groupId,
-                                  &videoKind,
-                                  &depthNear,
-                                  &depthFar,
-                                  &focalLengthX,
-                                  &focalLengthY,
-                                  &mediaStreamSource,
-                                  &disableLocalEcho,
-                                  &renderToAssociatedSink,
-                                  &hotwordEnabled,
-                                  &googEchoCancellation,
-                                  &googExperimentalEchoCancellation,
-                                  &googAutoGainControl,
-                                  &googExperimentalAutoGainControl,
-                                  &googNoiseSuppression,
-                                  &googHighpassFilter,
-                                  &googTypingNoiseDetection,
-                                  &googExperimentalNoiseSuppression,
-                                  &googBeamforming,
-                                  &googArrayGeometry,
-                                  &googAudioMirroring,
-                                  &googDAEchoCancellation,
-                                  &googNoiseReduction,
-                                  &offerToReceiveAudio,
-                                  &offerToReceiveVideo,
-                                  &voiceActivityDetection,
-                                  &iceRestart,
-                                  &googUseRtpMux,
-                                  &enableDtlsSrtp,
-                                  &enableRtpDataChannels,
-                                  &enableDscp,
-                                  &enableIPv6,
-                                  &googEnableVideoSuspendBelowMinBitrate,
-                                  &googNumUnsignalledRecvStreams,
-                                  &googCombinedAudioVideoBwe,
-                                  &googScreencastMinBitrate,
-                                  &googCpuOveruseDetection,
-                                  &googCpuUnderuseThreshold,
-                                  &googCpuOveruseThreshold,
-                                  &googCpuUnderuseEncodeRsdThreshold,
-                                  &googCpuOveruseEncodeRsdThreshold,
-                                  &googCpuOveruseEncodeUsage,
-                                  &googHighStartBitrate,
-                                  &googPayloadPadding,
-                                  &googLatencyMs,
-                                  &googPowerLineFrequency};
-  const int elementCount = sizeof(temp) / sizeof(temp[0]);
-  return std::vector<const BaseConstraint*>(&temp[0], &temp[elementCount]);
+                                  &channel_count,
+                                  &device_id,
+                                  &group_id,
+                                  &video_kind,
+                                  &depth_near,
+                                  &depth_far,
+                                  &focal_length_x,
+                                  &focal_length_y,
+                                  &media_stream_source,
+                                  &disable_local_echo,
+                                  &render_to_associated_sink,
+                                  &hotword_enabled,
+                                  &goog_echo_cancellation,
+                                  &goog_experimental_echo_cancellation,
+                                  &goog_auto_gain_control,
+                                  &goog_experimental_auto_gain_control,
+                                  &goog_noise_suppression,
+                                  &goog_highpass_filter,
+                                  &goog_typing_noise_detection,
+                                  &goog_experimental_noise_suppression,
+                                  &goog_beamforming,
+                                  &goog_array_geometry,
+                                  &goog_audio_mirroring,
+                                  &goog_da_echo_cancellation,
+                                  &goog_noise_reduction,
+                                  &offer_to_receive_audio,
+                                  &offer_to_receive_video,
+                                  &voice_activity_detection,
+                                  &ice_restart,
+                                  &goog_use_rtp_mux,
+                                  &enable_dtls_srtp,
+                                  &enable_rtp_data_channels,
+                                  &enable_dscp,
+                                  &enable_i_pv6,
+                                  &goog_enable_video_suspend_below_min_bitrate,
+                                  &goog_num_unsignalled_recv_streams,
+                                  &goog_combined_audio_video_bwe,
+                                  &goog_screencast_min_bitrate,
+                                  &goog_cpu_overuse_detection,
+                                  &goog_cpu_underuse_threshold,
+                                  &goog_cpu_overuse_threshold,
+                                  &goog_cpu_underuse_encode_rsd_threshold,
+                                  &goog_cpu_overuse_encode_rsd_threshold,
+                                  &goog_cpu_overuse_encode_usage,
+                                  &goog_high_start_bitrate,
+                                  &goog_payload_padding,
+                                  &goog_latency_ms,
+                                  &goog_power_line_frequency};
+  const int element_count = sizeof(temp) / sizeof(temp[0]);
+  return std::vector<const BaseConstraint*>(&temp[0], &temp[element_count]);
 }
 
-bool WebMediaTrackConstraintSet::isEmpty() const {
-  for (const auto& constraint : allConstraints()) {
-    if (!constraint->isEmpty())
+bool WebMediaTrackConstraintSet::IsEmpty() const {
+  for (const auto& constraint : AllConstraints()) {
+    if (!constraint->IsEmpty())
       return false;
   }
   return true;
 }
 
-bool WebMediaTrackConstraintSet::hasMandatoryOutsideSet(
-    const std::vector<std::string>& goodNames,
-    std::string& foundName) const {
-  for (const auto& constraint : allConstraints()) {
-    if (constraint->hasMandatory()) {
-      if (std::find(goodNames.begin(), goodNames.end(), constraint->name()) ==
-          goodNames.end()) {
-        foundName = constraint->name();
+bool WebMediaTrackConstraintSet::HasMandatoryOutsideSet(
+    const std::vector<std::string>& good_names,
+    std::string& found_name) const {
+  for (const auto& constraint : AllConstraints()) {
+    if (constraint->HasMandatory()) {
+      if (std::find(good_names.begin(), good_names.end(),
+                    constraint->GetName()) == good_names.end()) {
+        found_name = constraint->GetName();
         return true;
       }
     }
@@ -490,68 +491,68 @@ bool WebMediaTrackConstraintSet::hasMandatoryOutsideSet(
   return false;
 }
 
-bool WebMediaTrackConstraintSet::hasMandatory() const {
-  std::string dummyString;
-  return hasMandatoryOutsideSet(std::vector<std::string>(), dummyString);
+bool WebMediaTrackConstraintSet::HasMandatory() const {
+  std::string dummy_string;
+  return HasMandatoryOutsideSet(std::vector<std::string>(), dummy_string);
 }
 
-WebString WebMediaTrackConstraintSet::toString() const {
+WebString WebMediaTrackConstraintSet::ToString() const {
   StringBuilder builder;
   bool first = true;
-  for (const auto& constraint : allConstraints()) {
-    if (!constraint->isEmpty()) {
+  for (const auto& constraint : AllConstraints()) {
+    if (!constraint->IsEmpty()) {
       if (!first)
-        builder.append(", ");
-      builder.append(constraint->name());
-      builder.append(": ");
-      builder.append(constraint->toString());
+        builder.Append(", ");
+      builder.Append(constraint->GetName());
+      builder.Append(": ");
+      builder.Append(constraint->ToString());
       first = false;
     }
   }
-  return builder.toString();
+  return builder.ToString();
 }
 
 // WebMediaConstraints
 
-void WebMediaConstraints::assign(const WebMediaConstraints& other) {
-  m_private = other.m_private;
+void WebMediaConstraints::Assign(const WebMediaConstraints& other) {
+  private_ = other.private_;
 }
 
-void WebMediaConstraints::reset() {
-  m_private.reset();
+void WebMediaConstraints::Reset() {
+  private_.Reset();
 }
 
-bool WebMediaConstraints::isEmpty() const {
-  return m_private.isNull() || m_private->isEmpty();
+bool WebMediaConstraints::IsEmpty() const {
+  return private_.IsNull() || private_->IsEmpty();
 }
 
-void WebMediaConstraints::initialize() {
-  ASSERT(isNull());
-  m_private = WebMediaConstraintsPrivate::create();
+void WebMediaConstraints::Initialize() {
+  ASSERT(IsNull());
+  private_ = WebMediaConstraintsPrivate::Create();
 }
 
-void WebMediaConstraints::initialize(
+void WebMediaConstraints::Initialize(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
-  ASSERT(isNull());
-  m_private = WebMediaConstraintsPrivate::create(basic, advanced);
+  ASSERT(IsNull());
+  private_ = WebMediaConstraintsPrivate::Create(basic, advanced);
 }
 
-const WebMediaTrackConstraintSet& WebMediaConstraints::basic() const {
-  ASSERT(!isNull());
-  return m_private->basic();
+const WebMediaTrackConstraintSet& WebMediaConstraints::Basic() const {
+  ASSERT(!IsNull());
+  return private_->Basic();
 }
 
-const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraints::advanced()
+const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraints::Advanced()
     const {
-  ASSERT(!isNull());
-  return m_private->advanced();
+  ASSERT(!IsNull());
+  return private_->Advanced();
 }
 
-const WebString WebMediaConstraints::toString() const {
-  if (isNull())
+const WebString WebMediaConstraints::ToString() const {
+  if (IsNull())
     return WebString("");
-  return m_private->toString();
+  return private_->ToString();
 }
 
 }  // namespace blink

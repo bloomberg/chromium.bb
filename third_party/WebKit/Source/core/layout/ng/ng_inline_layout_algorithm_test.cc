@@ -21,8 +21,8 @@ namespace {
 class NGInlineLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {};
 
 TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
-  loadAhem();
-  setBodyInnerHTML(R"HTML(
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
       html {
@@ -37,52 +37,52 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
 
   // Perform 1st Layout.
   LayoutNGBlockFlow* block_flow =
-      toLayoutNGBlockFlow(getLayoutObjectByElementId("container"));
+      ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
   NGInlineNode* inline_node =
-      new NGInlineNode(block_flow->firstChild(), block_flow);
+      new NGInlineNode(block_flow->FirstChild(), block_flow);
   RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
           .SetAvailableSize({LayoutUnit(50), LayoutUnit(20)})
           .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
   RefPtr<NGLayoutResult> layout_result =
-      inline_node->Layout(constraint_space.get(), nullptr);
+      inline_node->Layout(constraint_space.Get(), nullptr);
   auto* wrapper =
-      toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
 
   // Test that the anonymous wrapper has 2 line boxes, and both have unfinished
   // break tokens.
   EXPECT_EQ(2u, wrapper->Children().size());
-  auto* line1 = toNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
+  auto* line1 = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
   EXPECT_FALSE(line1->BreakToken()->IsFinished());
-  auto* line2 = toNGPhysicalLineBoxFragment(wrapper->Children()[1].get());
+  auto* line2 = ToNGPhysicalLineBoxFragment(wrapper->Children()[1].Get());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
   // Test that the wrapper has the break token from the last line as its child.
-  auto* wrapper_break_token = toNGBlockBreakToken(wrapper->BreakToken());
+  auto* wrapper_break_token = ToNGBlockBreakToken(wrapper->BreakToken());
   EXPECT_EQ(wrapper_break_token->ChildBreakTokens()[0], line2->BreakToken());
   EXPECT_FALSE(wrapper_break_token->IsFinished());
 
   // Perform 2nd layout with the break token from the 2nd line.
   RefPtr<NGLayoutResult> layout_result2 =
-      inline_node->Layout(constraint_space.get(), line2->BreakToken());
+      inline_node->Layout(constraint_space.Get(), line2->BreakToken());
   auto* wrapper2 =
-      toNGPhysicalBoxFragment(layout_result2->PhysicalFragment().get());
+      ToNGPhysicalBoxFragment(layout_result2->PhysicalFragment().Get());
 
   // Test that the anonymous wrapper has 1 line boxes, and has a finished break
   // token.
   EXPECT_EQ(1u, wrapper2->Children().size());
-  auto* line3 = toNGPhysicalLineBoxFragment(wrapper2->Children()[0].get());
+  auto* line3 = ToNGPhysicalLineBoxFragment(wrapper2->Children()[0].Get());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
 
   // Test that the wrapper has the break token without children.
-  auto* wrapper2_break_token = toNGBlockBreakToken(wrapper2->BreakToken());
+  auto* wrapper2_break_token = ToNGBlockBreakToken(wrapper2->BreakToken());
   EXPECT_EQ(0u, wrapper2_break_token->ChildBreakTokens().size());
 }
 
 // Verifies that text can flow correctly around floats that were positioned
 // before the inline block.
 TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
       * {
@@ -114,24 +114,24 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   RefPtr<NGConstraintSpace> space;
   RefPtr<NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, space) = RunBlockLayoutAlgorithmForElement(
-      document().getElementsByTagName("html")->item(0));
+      GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
-      toNGPhysicalBoxFragment(html_fragment->Children()[0].get());
+      ToNGPhysicalBoxFragment(html_fragment->Children()[0].Get());
   auto* container_fragment =
-      toNGPhysicalBoxFragment(body_fragment->Children()[0].get());
+      ToNGPhysicalBoxFragment(body_fragment->Children()[0].Get());
   auto* line_box_fragments_wrapper =
-      toNGPhysicalBoxFragment(container_fragment->Children()[0].get());
+      ToNGPhysicalBoxFragment(container_fragment->Children()[0].Get());
   Vector<NGPhysicalTextFragment*> text_fragments;
   for (const auto& child : line_box_fragments_wrapper->Children()) {
-    auto* line_box = toNGPhysicalLineBoxFragment(child.get());
+    auto* line_box = ToNGPhysicalLineBoxFragment(child.Get());
     EXPECT_EQ(1u, line_box->Children().size());
     for (const auto& text : line_box->Children())
-      text_fragments.push_back(toNGPhysicalTextFragment(text.get()));
+      text_fragments.push_back(ToNGPhysicalTextFragment(text.Get()));
   }
 
   LayoutText* layout_text =
-      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
-  ASSERT(layout_text->hasTextBoxes());
+      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
+  ASSERT(layout_text->HasTextBoxes());
 
   ASSERT_EQ(4UL, text_fragments.size());
 
@@ -139,27 +139,27 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   // 40 = #left-float1' width 30 + #left-float2 10
   EXPECT_EQ(LayoutUnit(40), text_fragment1->LeftOffset());
   EXPECT_EQ("The quick ", text_fragment1->Text());
-  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
-  EXPECT_EQ(LayoutUnit(40), inline_text_box1->x());
+  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
+  EXPECT_EQ(LayoutUnit(40), inline_text_box1->X());
 
   auto* text_fragment2 = text_fragments[1];
   // 40 = #left-float1' width 30
   EXPECT_EQ(LayoutUnit(30), text_fragment2->LeftOffset());
   EXPECT_EQ("brown fox ", text_fragment2->Text());
-  InlineTextBox* inline_text_box2 = inline_text_box1->nextTextBox();
-  EXPECT_EQ(LayoutUnit(30), inline_text_box2->x());
+  InlineTextBox* inline_text_box2 = inline_text_box1->NextTextBox();
+  EXPECT_EQ(LayoutUnit(30), inline_text_box2->X());
 
   auto* text_fragment3 = text_fragments[2];
   EXPECT_EQ(LayoutUnit(), text_fragment3->LeftOffset());
   EXPECT_EQ("jumps over the lazy ", text_fragment3->Text());
-  InlineTextBox* inline_text_box3 = inline_text_box2->nextTextBox();
-  EXPECT_EQ(LayoutUnit(), inline_text_box3->x());
+  InlineTextBox* inline_text_box3 = inline_text_box2->NextTextBox();
+  EXPECT_EQ(LayoutUnit(), inline_text_box3->X());
 }
 
 // Verifies that text correctly flows around the inline float that fits on
 // the same text line.
 TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
       * {
@@ -180,24 +180,24 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
     </div>
   )HTML");
   LayoutText* layout_text =
-      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
-  ASSERT(layout_text->hasTextBoxes());
+      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
+  ASSERT(layout_text->HasTextBoxes());
 
-  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
+  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   // 30 == narrow-float's width.
-  EXPECT_EQ(LayoutUnit(30), inline_text_box1->x());
+  EXPECT_EQ(LayoutUnit(30), inline_text_box1->X());
 
-  Element* narrow_float = document().getElementById("narrow-float");
+  Element* narrow_float = GetDocument().GetElementById("narrow-float");
   // 8 == body's margin.
-  EXPECT_EQ(8, narrow_float->offsetLeft());
-  EXPECT_EQ(8, narrow_float->offsetTop());
+  EXPECT_EQ(8, narrow_float->OffsetLeft());
+  EXPECT_EQ(8, narrow_float->OffsetTop());
 }
 
 // Verifies that the inline float got pushed to the next line if it doesn't
 // fit the current line.
 TEST_F(NGInlineLayoutAlgorithmTest,
        TextFloatsAroundInlineFloatThatDoesNotFitOnLine) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
       * {
@@ -218,15 +218,15 @@ TEST_F(NGInlineLayoutAlgorithmTest,
     </div>
   )HTML");
   LayoutText* layout_text =
-      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
-  ASSERT(layout_text->hasTextBoxes());
+      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
+  ASSERT(layout_text->HasTextBoxes());
 
-  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
-  EXPECT_EQ(LayoutUnit(), inline_text_box1->x());
+  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
+  EXPECT_EQ(LayoutUnit(), inline_text_box1->X());
 
-  Element* wide_float = document().getElementById("wide-float");
+  Element* wide_float = GetDocument().GetElementById("wide-float");
   // 8 == body's margin.
-  EXPECT_EQ(8, wide_float->offsetLeft());
+  EXPECT_EQ(8, wide_float->OffsetLeft());
 }
 
 // Verifies that if an inline float pushed to the next line then all others
@@ -234,7 +234,7 @@ TEST_F(NGInlineLayoutAlgorithmTest,
 // alignment rule.
 TEST_F(NGInlineLayoutAlgorithmTest,
        FloatsArePositionedWithRespectToTopEdgeAlignmentRule) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
       * {
@@ -258,22 +258,22 @@ TEST_F(NGInlineLayoutAlgorithmTest,
       </span>
     </div>
   )HTML");
-  Element* wide_float = document().getElementById("left-wide");
+  Element* wide_float = GetDocument().GetElementById("left-wide");
   // 8 == body's margin.
-  EXPECT_EQ(8, wide_float->offsetLeft());
+  EXPECT_EQ(8, wide_float->OffsetLeft());
 
-  Element* narrow_float = document().getElementById("left-narrow");
+  Element* narrow_float = GetDocument().GetElementById("left-narrow");
   // 160 float-wide's width + 8 body's margin.
-  EXPECT_EQ(160 + 8, narrow_float->offsetLeft());
+  EXPECT_EQ(160 + 8, narrow_float->OffsetLeft());
 
   // On the same line.
-  EXPECT_EQ(wide_float->offsetTop(), narrow_float->offsetTop());
+  EXPECT_EQ(wide_float->OffsetTop(), narrow_float->OffsetTop());
 }
 
 // Verifies that InlineLayoutAlgorithm positions floats with respect to their
 // margins.
 TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
       #container {
@@ -291,12 +291,12 @@ TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
     </div>
   )HTML");
   LayoutText* layout_text =
-      toLayoutText(getLayoutObjectByElementId("text")->slowFirstChild());
-  ASSERT(layout_text->hasTextBoxes());
+      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
+  ASSERT(layout_text->HasTextBoxes());
 
-  InlineTextBox* inline_text_box1 = layout_text->firstTextBox();
+  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   // 45 = sum of left's inline margins: 40 + left's width: 5
-  EXPECT_EQ(LayoutUnit(45), inline_text_box1->x());
+  EXPECT_EQ(LayoutUnit(45), inline_text_box1->X());
 }
 
 }  // namespace

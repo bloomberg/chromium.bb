@@ -22,35 +22,37 @@ class CORE_EXPORT CSSTransformComponent
 
  public:
   enum TransformComponentType {
-    MatrixType,
-    PerspectiveType,
-    RotationType,
-    ScaleType,
-    SkewType,
-    TranslationType,
-    Matrix3DType,
-    Rotation3DType,
-    Scale3DType,
-    Translation3DType
+    kMatrixType,
+    kPerspectiveType,
+    kRotationType,
+    kScaleType,
+    kSkewType,
+    kTranslationType,
+    kMatrix3DType,
+    kRotation3DType,
+    kScale3DType,
+    kTranslation3DType
   };
 
-  static CSSTransformComponent* fromCSSValue(const CSSValue&);
+  static CSSTransformComponent* FromCSSValue(const CSSValue&);
 
-  static bool is2DComponentType(TransformComponentType transformType) {
-    return transformType != Matrix3DType && transformType != PerspectiveType &&
-           transformType != Rotation3DType && transformType != Scale3DType &&
-           transformType != Translation3DType;
+  static bool Is2DComponentType(TransformComponentType transform_type) {
+    return transform_type != kMatrix3DType &&
+           transform_type != kPerspectiveType &&
+           transform_type != kRotation3DType &&
+           transform_type != kScale3DType &&
+           transform_type != kTranslation3DType;
   }
 
   virtual ~CSSTransformComponent() {}
 
-  virtual TransformComponentType type() const = 0;
+  virtual TransformComponentType GetType() const = 0;
 
-  bool is2D() const { return is2DComponentType(type()); }
+  bool is2D() const { return Is2DComponentType(GetType()); }
 
-  String cssText() const { return toCSSValue()->cssText(); }
+  String cssText() const { return ToCSSValue()->CssText(); }
 
-  virtual CSSFunctionValue* toCSSValue() const = 0;
+  virtual CSSFunctionValue* ToCSSValue() const = 0;
   virtual CSSMatrixComponent* asMatrix() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}

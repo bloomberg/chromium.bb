@@ -9,35 +9,35 @@
 
 namespace blink {
 
-NavigatorAuth& NavigatorAuth::from(Navigator& navigator) {
+NavigatorAuth& NavigatorAuth::From(Navigator& navigator) {
   NavigatorAuth* supplement = static_cast<NavigatorAuth*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorAuth(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 WebAuthentication* NavigatorAuth::authentication(Navigator& navigator) {
-  return NavigatorAuth::from(navigator).authentication();
+  return NavigatorAuth::From(navigator).authentication();
 }
 
 WebAuthentication* NavigatorAuth::authentication() {
-  return m_webauthentication;
+  return webauthentication_;
 }
 
 DEFINE_TRACE(NavigatorAuth) {
-  visitor->trace(m_webauthentication);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(webauthentication_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorAuth::NavigatorAuth(Navigator& navigator) {
-  if (navigator.frame())
-    m_webauthentication = WebAuthentication::create(*navigator.frame());
+  if (navigator.GetFrame())
+    webauthentication_ = WebAuthentication::Create(*navigator.GetFrame());
 }
 
-const char* NavigatorAuth::supplementName() {
+const char* NavigatorAuth::SupplementName() {
   return "NavigatorAuth";
 }
 

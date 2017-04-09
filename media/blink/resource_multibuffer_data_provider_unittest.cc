@@ -56,10 +56,10 @@ enum NetworkState { NONE, LOADED, LOADING };
 
 // Predicate that tests that request disallows compressed data.
 static bool CorrectAcceptEncoding(const blink::WebURLRequest& request) {
-  std::string value =
-      request.httpHeaderField(
-                 WebString::fromUTF8(net::HttpRequestHeaders::kAcceptEncoding))
-          .utf8();
+  std::string value = request
+                          .HttpHeaderField(WebString::FromUTF8(
+                              net::HttpRequestHeaders::kAcceptEncoding))
+                          .Utf8();
   return (value.find("identity;q=1") != std::string::npos) &&
          (value.find("*;q=0") != std::string::npos);
 }
@@ -67,10 +67,10 @@ static bool CorrectAcceptEncoding(const blink::WebURLRequest& request) {
 class ResourceMultiBufferDataProviderTest : public testing::Test {
  public:
   ResourceMultiBufferDataProviderTest()
-      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)) {
-    WebLocalFrame* frame = WebLocalFrame::create(
-        blink::WebTreeScopeType::Document, &client_, nullptr, nullptr);
-    view_->setMainFrame(frame);
+      : view_(WebView::Create(nullptr, blink::kWebPageVisibilityStateVisible)) {
+    WebLocalFrame* frame = WebLocalFrame::Create(
+        blink::WebTreeScopeType::kDocument, &client_, nullptr, nullptr);
+    view_->SetMainFrame(frame);
     url_index_.reset(new UrlIndex(frame, 0));
 
     for (int i = 0; i < kDataSize; ++i) {
@@ -78,9 +78,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     }
   }
 
-  virtual ~ResourceMultiBufferDataProviderTest() {
-    view_->close();
-  }
+  virtual ~ResourceMultiBufferDataProviderTest() { view_->Close(); }
 
   void Initialize(const char* url, int first_position) {
     gurl_ = GURL(url);
@@ -108,19 +106,19 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   void Start() {
     InSequence s;
     EXPECT_CALL(*url_loader_,
-                loadAsynchronously(Truly(CorrectAcceptEncoding), loader_));
+                LoadAsynchronously(Truly(CorrectAcceptEncoding), loader_));
 
     loader_->Start();
   }
 
   void FullResponse(int64_t instance_size, bool ok = true) {
     WebURLResponse response(gurl_);
-    response.setHTTPHeaderField(
-        WebString::fromUTF8("Content-Length"),
-        WebString::fromUTF8(base::StringPrintf("%" PRId64, instance_size)));
-    response.setExpectedContentLength(instance_size);
-    response.setHTTPStatusCode(kHttpOK);
-    loader_->didReceiveResponse(response);
+    response.SetHTTPHeaderField(
+        WebString::FromUTF8("Content-Length"),
+        WebString::FromUTF8(base::StringPrintf("%" PRId64, instance_size)));
+    response.SetExpectedContentLength(instance_size);
+    response.SetHTTPStatusCode(kHttpOK);
+    loader_->DidReceiveResponse(response);
 
     if (ok) {
       EXPECT_EQ(instance_size, url_data_->length());
@@ -141,9 +139,9 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
                        bool chunked,
                        bool accept_ranges) {
     WebURLResponse response(gurl_);
-    response.setHTTPHeaderField(
-        WebString::fromUTF8("Content-Range"),
-        WebString::fromUTF8(
+    response.SetHTTPHeaderField(
+        WebString::FromUTF8("Content-Range"),
+        WebString::FromUTF8(
             base::StringPrintf("bytes "
                                "%" PRId64 "-%" PRId64 "/%" PRId64,
                                first_position, last_position, instance_size)));
@@ -151,21 +149,21 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     // HTTP 1.1 doesn't permit Content-Length with Transfer-Encoding: chunked.
     int64_t content_length = -1;
     if (chunked) {
-      response.setHTTPHeaderField(WebString::fromUTF8("Transfer-Encoding"),
-                                  WebString::fromUTF8("chunked"));
+      response.SetHTTPHeaderField(WebString::FromUTF8("Transfer-Encoding"),
+                                  WebString::FromUTF8("chunked"));
     } else {
       content_length = last_position - first_position + 1;
     }
-    response.setExpectedContentLength(content_length);
+    response.SetExpectedContentLength(content_length);
 
     // A server isn't required to return Accept-Ranges even though it might.
     if (accept_ranges) {
-      response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
-                                  WebString::fromUTF8("bytes"));
+      response.SetHTTPHeaderField(WebString::FromUTF8("Accept-Ranges"),
+                                  WebString::FromUTF8("bytes"));
     }
 
-    response.setHTTPStatusCode(kHttpPartialContent);
-    loader_->didReceiveResponse(response);
+    response.SetHTTPStatusCode(kHttpPartialContent);
+    loader_->DidReceiveResponse(response);
 
     EXPECT_EQ(instance_size, url_data_->length());
 
@@ -182,26 +180,26 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
         .WillOnce(
             Invoke(this, &ResourceMultiBufferDataProviderTest::SetUrlData));
 
-    loader_->willFollowRedirect(newRequest, redirectResponse);
+    loader_->WillFollowRedirect(newRequest, redirectResponse);
 
     base::RunLoop().RunUntilIdle();
   }
 
   void StopWhenLoad() {
     InSequence s;
-    EXPECT_CALL(*url_loader_, cancel());
+    EXPECT_CALL(*url_loader_, Cancel());
     loader_ = nullptr;
     url_data_ = nullptr;
   }
 
   // Helper method to write to |loader_| from |data_|.
   void WriteLoader(int position, int size) {
-    loader_->didReceiveData(reinterpret_cast<char*>(data_ + position), size);
+    loader_->DidReceiveData(reinterpret_cast<char*>(data_ + position), size);
   }
 
   void WriteData(int size) {
     std::unique_ptr<char[]> data(new char[size]);
-    loader_->didReceiveData(data.get(), size);
+    loader_->DidReceiveData(data.get(), size);
   }
 
   // Verifies that data in buffer[0...size] is equal to data_[pos...pos+size].
@@ -252,9 +250,9 @@ TEST_F(ResourceMultiBufferDataProviderTest, BadHttpResponse) {
   EXPECT_CALL(*this, RedirectCallback(scoped_refptr<UrlData>(nullptr)));
 
   WebURLResponse response(gurl_);
-  response.setHTTPStatusCode(404);
-  response.setHTTPStatusText("Not Found\n");
-  loader_->didReceiveResponse(response);
+  response.SetHTTPStatusCode(404);
+  response.SetHTTPStatusText("Not Found\n");
+  loader_->DidReceiveResponse(response);
 }
 
 // Tests that partial content is requested but not fulfilled.
@@ -310,14 +308,14 @@ TEST_F(ResourceMultiBufferDataProviderTest, InvalidPartialResponse) {
   EXPECT_CALL(*this, RedirectCallback(scoped_refptr<UrlData>(nullptr)));
 
   WebURLResponse response(gurl_);
-  response.setHTTPHeaderField(
-      WebString::fromUTF8("Content-Range"),
-      WebString::fromUTF8(base::StringPrintf("bytes "
+  response.SetHTTPHeaderField(
+      WebString::FromUTF8("Content-Range"),
+      WebString::FromUTF8(base::StringPrintf("bytes "
                                              "%d-%d/%d",
                                              1, 10, 1024)));
-  response.setExpectedContentLength(10);
-  response.setHTTPStatusCode(kHttpPartialContent);
-  loader_->didReceiveResponse(response);
+  response.SetExpectedContentLength(10);
+  response.SetHTTPStatusCode(kHttpPartialContent);
+  loader_->DidReceiveResponse(response);
 }
 
 TEST_F(ResourceMultiBufferDataProviderTest, TestRedirects) {

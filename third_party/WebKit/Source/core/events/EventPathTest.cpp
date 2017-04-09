@@ -16,25 +16,25 @@ namespace blink {
 
 class EventPathTest : public ::testing::Test {
  protected:
-  Document& document() const { return m_dummyPageHolder->document(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
  private:
   void SetUp() override;
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void EventPathTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(EventPathTest, ShouldBeEmptyForPseudoElementWithoutParentElement) {
   Element* div =
-      document().createElement(HTMLNames::divTag, CreatedByCreateElement);
-  PseudoElement* pseudo = PseudoElement::create(div, PseudoIdFirstLetter);
-  pseudo->dispose();
-  EventPath eventPath(*pseudo);
-  EXPECT_TRUE(eventPath.isEmpty());
+      GetDocument().createElement(HTMLNames::divTag, kCreatedByCreateElement);
+  PseudoElement* pseudo = PseudoElement::Create(div, kPseudoIdFirstLetter);
+  pseudo->Dispose();
+  EventPath event_path(*pseudo);
+  EXPECT_TRUE(event_path.IsEmpty());
 }
 
 }  // namespace blink

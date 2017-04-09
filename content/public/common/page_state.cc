@@ -48,7 +48,7 @@ void RecursivelyRemoveScrollOffset(ExplodedFrameState* state) {
 
 void RecursivelyRemoveReferrer(ExplodedFrameState* state) {
   state->referrer = base::NullableString16();
-  state->referrer_policy = blink::WebReferrerPolicyDefault;
+  state->referrer_policy = blink::kWebReferrerPolicyDefault;
   for (std::vector<ExplodedFrameState>::iterator it = state->children.begin();
        it != state->children.end();
        ++it) {

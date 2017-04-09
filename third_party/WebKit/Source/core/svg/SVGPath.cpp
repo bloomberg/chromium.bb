@@ -37,147 +37,152 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<SVGPathByteStream> blendPathByteStreams(
-    const SVGPathByteStream& fromStream,
-    const SVGPathByteStream& toStream,
+std::unique_ptr<SVGPathByteStream> BlendPathByteStreams(
+    const SVGPathByteStream& from_stream,
+    const SVGPathByteStream& to_stream,
     float progress) {
-  std::unique_ptr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
-  SVGPathByteStreamBuilder builder(*resultStream);
-  SVGPathByteStreamSource fromSource(fromStream);
-  SVGPathByteStreamSource toSource(toStream);
-  SVGPathBlender blender(&fromSource, &toSource, &builder);
-  blender.blendAnimatedPath(progress);
-  return resultStream;
+  std::unique_ptr<SVGPathByteStream> result_stream =
+      SVGPathByteStream::Create();
+  SVGPathByteStreamBuilder builder(*result_stream);
+  SVGPathByteStreamSource from_source(from_stream);
+  SVGPathByteStreamSource to_source(to_stream);
+  SVGPathBlender blender(&from_source, &to_source, &builder);
+  blender.BlendAnimatedPath(progress);
+  return result_stream;
 }
 
-std::unique_ptr<SVGPathByteStream> addPathByteStreams(
-    const SVGPathByteStream& fromStream,
-    const SVGPathByteStream& byStream,
-    unsigned repeatCount = 1) {
-  std::unique_ptr<SVGPathByteStream> resultStream = SVGPathByteStream::create();
-  SVGPathByteStreamBuilder builder(*resultStream);
-  SVGPathByteStreamSource fromSource(fromStream);
-  SVGPathByteStreamSource bySource(byStream);
-  SVGPathBlender blender(&fromSource, &bySource, &builder);
-  blender.addAnimatedPath(repeatCount);
-  return resultStream;
+std::unique_ptr<SVGPathByteStream> AddPathByteStreams(
+    const SVGPathByteStream& from_stream,
+    const SVGPathByteStream& by_stream,
+    unsigned repeat_count = 1) {
+  std::unique_ptr<SVGPathByteStream> result_stream =
+      SVGPathByteStream::Create();
+  SVGPathByteStreamBuilder builder(*result_stream);
+  SVGPathByteStreamSource from_source(from_stream);
+  SVGPathByteStreamSource by_source(by_stream);
+  SVGPathBlender blender(&from_source, &by_source, &builder);
+  blender.AddAnimatedPath(repeat_count);
+  return result_stream;
 }
 
-std::unique_ptr<SVGPathByteStream> conditionallyAddPathByteStreams(
-    std::unique_ptr<SVGPathByteStream> fromStream,
-    const SVGPathByteStream& byStream,
-    unsigned repeatCount = 1) {
-  if (fromStream->isEmpty() || byStream.isEmpty())
-    return fromStream;
-  return addPathByteStreams(*fromStream, byStream, repeatCount);
+std::unique_ptr<SVGPathByteStream> ConditionallyAddPathByteStreams(
+    std::unique_ptr<SVGPathByteStream> from_stream,
+    const SVGPathByteStream& by_stream,
+    unsigned repeat_count = 1) {
+  if (from_stream->IsEmpty() || by_stream.IsEmpty())
+    return from_stream;
+  return AddPathByteStreams(*from_stream, by_stream, repeat_count);
 }
 
 }  // namespace
 
-SVGPath::SVGPath() : m_pathValue(CSSPathValue::emptyPathValue()) {}
+SVGPath::SVGPath() : path_value_(CSSPathValue::EmptyPathValue()) {}
 
-SVGPath::SVGPath(CSSPathValue* pathValue) : m_pathValue(pathValue) {
-  DCHECK(m_pathValue);
+SVGPath::SVGPath(CSSPathValue* path_value) : path_value_(path_value) {
+  DCHECK(path_value_);
 }
 
 SVGPath::~SVGPath() {}
 
-String SVGPath::valueAsString() const {
-  return buildStringFromByteStream(byteStream());
+String SVGPath::ValueAsString() const {
+  return BuildStringFromByteStream(ByteStream());
 }
 
-SVGPath* SVGPath::clone() const {
-  return SVGPath::create(m_pathValue);
+SVGPath* SVGPath::Clone() const {
+  return SVGPath::Create(path_value_);
 }
 
-SVGParsingError SVGPath::setValueAsString(const String& string) {
-  std::unique_ptr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
-  SVGParsingError parseStatus = buildByteStreamFromString(string, *byteStream);
-  m_pathValue = CSSPathValue::create(std::move(byteStream));
-  return parseStatus;
+SVGParsingError SVGPath::SetValueAsString(const String& string) {
+  std::unique_ptr<SVGPathByteStream> byte_stream = SVGPathByteStream::Create();
+  SVGParsingError parse_status =
+      BuildByteStreamFromString(string, *byte_stream);
+  path_value_ = CSSPathValue::Create(std::move(byte_stream));
+  return parse_status;
 }
 
-SVGPropertyBase* SVGPath::cloneForAnimation(const String& value) const {
-  std::unique_ptr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
-  buildByteStreamFromString(value, *byteStream);
-  return SVGPath::create(CSSPathValue::create(std::move(byteStream)));
+SVGPropertyBase* SVGPath::CloneForAnimation(const String& value) const {
+  std::unique_ptr<SVGPathByteStream> byte_stream = SVGPathByteStream::Create();
+  BuildByteStreamFromString(value, *byte_stream);
+  return SVGPath::Create(CSSPathValue::Create(std::move(byte_stream)));
 }
 
-void SVGPath::add(SVGPropertyBase* other, SVGElement*) {
-  const SVGPathByteStream& otherPathByteStream = toSVGPath(other)->byteStream();
-  if (byteStream().size() != otherPathByteStream.size() ||
-      byteStream().isEmpty() || otherPathByteStream.isEmpty())
+void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {
+  const SVGPathByteStream& other_path_byte_stream =
+      ToSVGPath(other)->ByteStream();
+  if (ByteStream().size() != other_path_byte_stream.size() ||
+      ByteStream().IsEmpty() || other_path_byte_stream.IsEmpty())
     return;
 
-  m_pathValue = CSSPathValue::create(
-      addPathByteStreams(byteStream(), otherPathByteStream));
+  path_value_ = CSSPathValue::Create(
+      AddPathByteStreams(ByteStream(), other_path_byte_stream));
 }
 
-void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement,
-                                     float percentage,
-                                     unsigned repeatCount,
-                                     SVGPropertyBase* fromValue,
-                                     SVGPropertyBase* toValue,
-                                     SVGPropertyBase* toAtEndOfDurationValue,
-                                     SVGElement*) {
-  DCHECK(animationElement);
-  bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
+void SVGPath::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from_value,
+    SVGPropertyBase* to_value,
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement*) {
+  DCHECK(animation_element);
+  bool is_to_animation = animation_element->GetAnimationMode() == kToAnimation;
 
-  const SVGPath& to = toSVGPath(*toValue);
-  const SVGPathByteStream& toStream = to.byteStream();
+  const SVGPath& to = ToSVGPath(*to_value);
+  const SVGPathByteStream& to_stream = to.ByteStream();
 
   // If no 'to' value is given, nothing to animate.
-  if (!toStream.size())
+  if (!to_stream.size())
     return;
 
-  const SVGPath& from = toSVGPath(*fromValue);
-  const SVGPathByteStream* fromStream = &from.byteStream();
+  const SVGPath& from = ToSVGPath(*from_value);
+  const SVGPathByteStream* from_stream = &from.ByteStream();
 
   std::unique_ptr<SVGPathByteStream> copy;
-  if (isToAnimation) {
-    copy = byteStream().clone();
-    fromStream = copy.get();
+  if (is_to_animation) {
+    copy = ByteStream().Clone();
+    from_stream = copy.get();
   }
 
   // If the 'from' value is given and it's length doesn't match the 'to' value
   // list length, fallback to a discrete animation.
-  if (fromStream->size() != toStream.size() && fromStream->size()) {
+  if (from_stream->size() != to_stream.size() && from_stream->size()) {
     if (percentage < 0.5) {
-      if (!isToAnimation) {
-        m_pathValue = from.pathValue();
+      if (!is_to_animation) {
+        path_value_ = from.PathValue();
         return;
       }
     } else {
-      m_pathValue = to.pathValue();
+      path_value_ = to.PathValue();
       return;
     }
   }
 
-  std::unique_ptr<SVGPathByteStream> newStream =
-      blendPathByteStreams(*fromStream, toStream, percentage);
+  std::unique_ptr<SVGPathByteStream> new_stream =
+      BlendPathByteStreams(*from_stream, to_stream, percentage);
 
   // Handle additive='sum'.
-  if (animationElement->isAdditive() && !isToAnimation)
-    newStream =
-        conditionallyAddPathByteStreams(std::move(newStream), byteStream());
+  if (animation_element->IsAdditive() && !is_to_animation)
+    new_stream =
+        ConditionallyAddPathByteStreams(std::move(new_stream), ByteStream());
 
   // Handle accumulate='sum'.
-  if (animationElement->isAccumulated() && repeatCount)
-    newStream = conditionallyAddPathByteStreams(
-        std::move(newStream), toSVGPath(toAtEndOfDurationValue)->byteStream(),
-        repeatCount);
+  if (animation_element->IsAccumulated() && repeat_count)
+    new_stream = ConditionallyAddPathByteStreams(
+        std::move(new_stream),
+        ToSVGPath(to_at_end_of_duration_value)->ByteStream(), repeat_count);
 
-  m_pathValue = CSSPathValue::create(std::move(newStream));
+  path_value_ = CSSPathValue::Create(std::move(new_stream));
 }
 
-float SVGPath::calculateDistance(SVGPropertyBase* to, SVGElement*) {
+float SVGPath::CalculateDistance(SVGPropertyBase* to, SVGElement*) {
   // FIXME: Support paced animations.
   return -1;
 }
 
 DEFINE_TRACE(SVGPath) {
-  visitor->trace(m_pathValue);
-  SVGPropertyBase::trace(visitor);
+  visitor->Trace(path_value_);
+  SVGPropertyBase::Trace(visitor);
 }
 
 }  // namespace blink

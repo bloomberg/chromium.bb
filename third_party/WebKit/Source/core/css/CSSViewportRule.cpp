@@ -37,46 +37,46 @@
 
 namespace blink {
 
-CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewportRule,
+CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewport_rule,
                                  CSSStyleSheet* sheet)
-    : CSSRule(sheet), m_viewportRule(viewportRule) {}
+    : CSSRule(sheet), viewport_rule_(viewport_rule) {}
 
 CSSViewportRule::~CSSViewportRule() {}
 
 CSSStyleDeclaration* CSSViewportRule::style() const {
-  if (!m_propertiesCSSOMWrapper)
-    m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(
-        m_viewportRule->mutableProperties(),
+  if (!properties_cssom_wrapper_)
+    properties_cssom_wrapper_ = StyleRuleCSSStyleDeclaration::Create(
+        viewport_rule_->MutableProperties(),
         const_cast<CSSViewportRule*>(this));
 
-  return m_propertiesCSSOMWrapper.get();
+  return properties_cssom_wrapper_.Get();
 }
 
 String CSSViewportRule::cssText() const {
   StringBuilder result;
-  result.append("@viewport { ");
+  result.Append("@viewport { ");
 
-  String decls = m_viewportRule->properties().asText();
-  result.append(decls);
-  if (!decls.isEmpty())
-    result.append(' ');
+  String decls = viewport_rule_->Properties().AsText();
+  result.Append(decls);
+  if (!decls.IsEmpty())
+    result.Append(' ');
 
-  result.append('}');
+  result.Append('}');
 
-  return result.toString();
+  return result.ToString();
 }
 
-void CSSViewportRule::reattach(StyleRuleBase* rule) {
+void CSSViewportRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  m_viewportRule = toStyleRuleViewport(rule);
-  if (m_propertiesCSSOMWrapper)
-    m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
+  viewport_rule_ = ToStyleRuleViewport(rule);
+  if (properties_cssom_wrapper_)
+    properties_cssom_wrapper_->Reattach(viewport_rule_->MutableProperties());
 }
 
 DEFINE_TRACE(CSSViewportRule) {
-  visitor->trace(m_viewportRule);
-  visitor->trace(m_propertiesCSSOMWrapper);
-  CSSRule::trace(visitor);
+  visitor->Trace(viewport_rule_);
+  visitor->Trace(properties_cssom_wrapper_);
+  CSSRule::Trace(visitor);
 }
 
 }  // namespace blink

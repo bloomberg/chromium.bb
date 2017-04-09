@@ -22,18 +22,18 @@ class WebPresentationConnection {
 
   // Takes ownership of |proxy| and stores it in connection object. Should be
   // called only once.
-  virtual void bindProxy(std::unique_ptr<WebPresentationConnectionProxy>) = 0;
+  virtual void BindProxy(std::unique_ptr<WebPresentationConnectionProxy>) = 0;
 
   // Notifies the presentation about new message.
-  virtual void didReceiveTextMessage(const WebString& message) = 0;
-  virtual void didReceiveBinaryMessage(const uint8_t* data, size_t length) = 0;
+  virtual void DidReceiveTextMessage(const WebString& message) = 0;
+  virtual void DidReceiveBinaryMessage(const uint8_t* data, size_t length) = 0;
 
   // Notifies the connection about its state change.
-  virtual void didChangeState(WebPresentationConnectionState) = 0;
+  virtual void DidChangeState(WebPresentationConnectionState) = 0;
 
   // Notifies the connection about its state change to 'closed' with "Closed"
   // reason.
-  virtual void didClose() = 0;
+  virtual void DidClose() = 0;
 };
 
 }  // namespace blink

@@ -31,26 +31,26 @@ namespace blink {
 
 class QuotesData : public RefCounted<QuotesData> {
  public:
-  static PassRefPtr<QuotesData> create() { return adoptRef(new QuotesData()); }
-  static PassRefPtr<QuotesData> create(UChar open1,
+  static PassRefPtr<QuotesData> Create() { return AdoptRef(new QuotesData()); }
+  static PassRefPtr<QuotesData> Create(UChar open1,
                                        UChar close1,
                                        UChar open2,
                                        UChar close2);
 
   bool operator==(const QuotesData& o) const {
-    return m_quotePairs == o.m_quotePairs;
+    return quote_pairs_ == o.quote_pairs_;
   }
   bool operator!=(const QuotesData& o) const { return !(*this == o); }
 
-  void addPair(const std::pair<String, String> quotePair);
-  const String getOpenQuote(int index) const;
-  const String getCloseQuote(int index) const;
-  int size() { return m_quotePairs.size(); }
+  void AddPair(const std::pair<String, String> quote_pair);
+  const String GetOpenQuote(int index) const;
+  const String GetCloseQuote(int index) const;
+  int size() { return quote_pairs_.size(); }
 
  private:
   QuotesData() {}
 
-  Vector<std::pair<String, String>> m_quotePairs;
+  Vector<std::pair<String, String>> quote_pairs_;
 };
 
 }  // namespace blink

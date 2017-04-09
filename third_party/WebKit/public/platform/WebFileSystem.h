@@ -44,14 +44,14 @@ class WebFileWriterClient;
 class WebFileSystem {
  public:
   enum Type {
-    TypeTemporary,
-    TypePersistent,
+    kTypeTemporary,
+    kTypePersistent,
 
     // Indicates an isolated filesystem which only exposes a set of files.
-    TypeIsolated,
+    kTypeIsolated,
 
     // Indicates a non-sandboxed filesystem.
-    TypeExternal,
+    kTypeExternal,
   };
 
   // Opens a FileSystem.
@@ -59,7 +59,7 @@ class WebFileSystem {
   // a name and root path for the requested FileSystem when the operation
   // is completed successfully. WebFileSystemCallbacks::didFail() must be
   // called otherwise.
-  virtual void openFileSystem(const WebURL& storagePartition,
+  virtual void OpenFileSystem(const WebURL& storage_partition,
                               const WebFileSystemType,
                               WebFileSystemCallbacks) = 0;
 
@@ -68,7 +68,7 @@ class WebFileSystem {
   // information (name, root path and type) and file metadata (file path and
   // file type) when the operation is completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void resolveURL(const WebURL& fileSystemURL,
+  virtual void ResolveURL(const WebURL& file_system_url,
                           WebFileSystemCallbacks) = 0;
 
   // Deletes FileSystem.
@@ -77,7 +77,7 @@ class WebFileSystem {
   // called otherwise.
   // All in-flight operations and following operations may fail after the
   // FileSystem is deleted.
-  virtual void deleteFileSystem(const WebURL& storagePartition,
+  virtual void DeleteFileSystem(const WebURL& storage_partition,
                                 const WebFileSystemType,
                                 WebFileSystemCallbacks) {}
 
@@ -85,16 +85,16 @@ class WebFileSystem {
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void move(const WebURL& srcPath,
-                    const WebURL& destPath,
+  virtual void Move(const WebURL& src_path,
+                    const WebURL& dest_path,
                     WebFileSystemCallbacks) = 0;
 
   // Copies a file or directory at |srcPath| to |destPath|.
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void copy(const WebURL& srcPath,
-                    const WebURL& destPath,
+  virtual void Copy(const WebURL& src_path,
+                    const WebURL& dest_path,
                     WebFileSystemCallbacks) = 0;
 
   // Deletes a file or directory at a given |path|.
@@ -102,13 +102,13 @@ class WebFileSystem {
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void remove(const WebURL& path, WebFileSystemCallbacks) = 0;
+  virtual void Remove(const WebURL& path, WebFileSystemCallbacks) = 0;
 
   // Deletes a file or directory recursively at a given |path|.
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void removeRecursively(const WebURL& path,
+  virtual void RemoveRecursively(const WebURL& path,
                                  WebFileSystemCallbacks) = 0;
 
   // Retrieves the metadata information of the file or directory at the given
@@ -116,7 +116,7 @@ class WebFileSystem {
   // filesystem cases.  WebFileSystemCallbacks::didReadMetadata() must be called
   // with a valid metadata when the retrieval is completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void readMetadata(const WebURL& path, WebFileSystemCallbacks) = 0;
+  virtual void ReadMetadata(const WebURL& path, WebFileSystemCallbacks) = 0;
 
   // Creates a file at given |path|.
   // If the |path| doesn't exist, it creates a new file at |path|.
@@ -127,7 +127,7 @@ class WebFileSystem {
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void createFile(const WebURL& path,
+  virtual void CreateFile(const WebURL& path,
                           bool exclusive,
                           WebFileSystemCallbacks) = 0;
 
@@ -140,7 +140,7 @@ class WebFileSystem {
   // WebFileSystemCallbacks::didSucceed() must be called when
   // the operation is completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void createDirectory(const WebURL& path,
+  virtual void CreateDirectory(const WebURL& path,
                                bool exclusive,
                                WebFileSystemCallbacks) = 0;
 
@@ -148,26 +148,26 @@ class WebFileSystem {
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void fileExists(const WebURL& path, WebFileSystemCallbacks) = 0;
+  virtual void FileExists(const WebURL& path, WebFileSystemCallbacks) = 0;
 
   // Checks if a directory exists at a given |path|.
   // WebFileSystemCallbacks::didSucceed() must be called when the operation is
   // completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void directoryExists(const WebURL& path, WebFileSystemCallbacks) = 0;
+  virtual void DirectoryExists(const WebURL& path, WebFileSystemCallbacks) = 0;
 
   // Reads directory entries of a given directory at |path| and returns a
   // callbacks ID which can be used to wait for additional results.
   // WebFileSystemCallbacks::didReadDirectory() must be called when the
   // operation is completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual int readDirectory(const WebURL& path, WebFileSystemCallbacks) = 0;
+  virtual int ReadDirectory(const WebURL& path, WebFileSystemCallbacks) = 0;
 
   // Creates a WebFileWriter that can be used to write to the given file.
   // WebFileSystemCallbacks::didCreateFileWriter() must be called with the
   // created WebFileWriter when the operation is completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void createFileWriter(const WebURL& path,
+  virtual void CreateFileWriter(const WebURL& path,
                                 WebFileWriterClient*,
                                 WebFileSystemCallbacks) = 0;
 
@@ -184,7 +184,7 @@ class WebFileSystem {
   // WebFileSystemCallbacks::didCreateSnapshotFile() with the metadata of the
   // snapshot file must be called when the operation is completed successfully.
   // WebFileSystemCallbacks::didFail() must be called otherwise.
-  virtual void createSnapshotFileAndReadMetadata(const WebURL& path,
+  virtual void CreateSnapshotFileAndReadMetadata(const WebURL& path,
                                                  WebFileSystemCallbacks) = 0;
 
   // Waits for additional results returned for the method call and returns true
@@ -192,7 +192,7 @@ class WebFileSystem {
   // Returns false if there is no running method call corresponding for the
   // given ID.
   // |callbacksId| must be the value returned by the original method call.
-  virtual bool waitForAdditionalResult(int callbacksId) = 0;
+  virtual bool WaitForAdditionalResult(int callbacks_id) = 0;
 
  protected:
   virtual ~WebFileSystem() {}

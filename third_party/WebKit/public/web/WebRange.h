@@ -47,25 +47,25 @@ class WebRange final {
   BLINK_EXPORT WebRange(int start, int length);
   BLINK_EXPORT WebRange() {}
 
-  int startOffset() const { return m_start; }
-  int endOffset() const { return m_end; }
-  int length() const { return m_end - m_start; }
+  int StartOffset() const { return start_; }
+  int EndOffset() const { return end_; }
+  int length() const { return end_ - start_; }
 
-  bool isNull() const { return m_start == -1 && m_end == -1; }
-  bool isEmpty() const { return m_start == m_end; }
+  bool IsNull() const { return start_ == -1 && end_ == -1; }
+  bool IsEmpty() const { return start_ == end_; }
 
 #if BLINK_IMPLEMENTATION
   WebRange(const EphemeralRange&);
   WebRange(const PlainTextRange&);
 
-  EphemeralRange createEphemeralRange(LocalFrame*) const;
+  EphemeralRange CreateEphemeralRange(LocalFrame*) const;
 #endif
 
  private:
   // Note that this also matches the values for gfx::Range::InvalidRange
   // for easy conversion.
-  int m_start = -1;
-  int m_end = -1;
+  int start_ = -1;
+  int end_ = -1;
 };
 
 }  // namespace blink

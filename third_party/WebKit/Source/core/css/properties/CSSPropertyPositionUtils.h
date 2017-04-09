@@ -18,10 +18,10 @@ class CSSPropertyPositionUtils {
   STATIC_ONLY(CSSPropertyPositionUtils);
 
   template <CSSValueID start, CSSValueID end>
-  static CSSValue* consumePositionLonghand(CSSParserTokenRange& range,
-                                           CSSParserMode cssParserMode) {
-    if (range.peek().type() == IdentToken) {
-      CSSValueID id = range.peek().id();
+  static CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
+                                           CSSParserMode css_parser_mode) {
+    if (range.Peek().GetType() == kIdentToken) {
+      CSSValueID id = range.Peek().Id();
       int percent;
       if (id == start)
         percent = 0;
@@ -31,12 +31,12 @@ class CSSPropertyPositionUtils {
         percent = 100;
       else
         return nullptr;
-      range.consumeIncludingWhitespace();
-      return CSSPrimitiveValue::create(percent,
-                                       CSSPrimitiveValue::UnitType::Percentage);
+      range.ConsumeIncludingWhitespace();
+      return CSSPrimitiveValue::Create(
+          percent, CSSPrimitiveValue::UnitType::kPercentage);
     }
-    return CSSPropertyParserHelpers::consumeLengthOrPercent(
-        range, cssParserMode, ValueRangeAll);
+    return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+        range, css_parser_mode, kValueRangeAll);
   }
 };
 

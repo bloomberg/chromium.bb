@@ -8,26 +8,26 @@
 
 namespace blink {
 
-PassRefPtr<const ShapeResult> CachingWordShapeIterator::shapeWordWithoutSpacing(
-    const TextRun& wordRun,
+PassRefPtr<const ShapeResult> CachingWordShapeIterator::ShapeWordWithoutSpacing(
+    const TextRun& word_run,
     const Font* font) {
-  ShapeCacheEntry* cacheEntry = m_shapeCache->add(wordRun, ShapeCacheEntry());
-  if (cacheEntry && cacheEntry->m_shapeResult)
-    return cacheEntry->m_shapeResult;
+  ShapeCacheEntry* cache_entry = shape_cache_->Add(word_run, ShapeCacheEntry());
+  if (cache_entry && cache_entry->shape_result_)
+    return cache_entry->shape_result_;
 
-  unsigned wordLength = 0;
-  std::unique_ptr<UChar[]> wordText = wordRun.normalizedUTF16(&wordLength);
+  unsigned word_length = 0;
+  std::unique_ptr<UChar[]> word_text = word_run.NormalizedUTF16(&word_length);
 
-  HarfBuzzShaper shaper(wordText.get(), wordLength);
-  RefPtr<const ShapeResult> shapeResult =
-      shaper.shape(font, wordRun.direction());
-  if (!shapeResult)
+  HarfBuzzShaper shaper(word_text.get(), word_length);
+  RefPtr<const ShapeResult> shape_result =
+      shaper.Shape(font, word_run.Direction());
+  if (!shape_result)
     return nullptr;
 
-  if (cacheEntry)
-    cacheEntry->m_shapeResult = shapeResult;
+  if (cache_entry)
+    cache_entry->shape_result_ = shape_result;
 
-  return shapeResult.release();
+  return shape_result.Release();
 }
 
 }  // namespace blink

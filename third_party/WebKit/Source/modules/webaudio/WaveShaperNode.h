@@ -40,8 +40,8 @@ class WaveShaperNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WaveShaperNode* create(BaseAudioContext&, ExceptionState&);
-  static WaveShaperNode* create(BaseAudioContext*,
+  static WaveShaperNode* Create(BaseAudioContext&, ExceptionState&);
+  static WaveShaperNode* Create(BaseAudioContext*,
                                 const WaveShaperOptions&,
                                 ExceptionState&);
 
@@ -56,10 +56,10 @@ class WaveShaperNode final : public AudioNode {
  private:
   explicit WaveShaperNode(BaseAudioContext&);
 
-  void setCurveImpl(const float* curveData,
-                    unsigned curveLength,
+  void SetCurveImpl(const float* curve_data,
+                    unsigned curve_length,
                     ExceptionState&);
-  WaveShaperProcessor* getWaveShaperProcessor() const;
+  WaveShaperProcessor* GetWaveShaperProcessor() const;
 };
 
 }  // namespace blink

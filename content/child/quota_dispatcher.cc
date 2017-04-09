@@ -41,13 +41,13 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   ~WebStorageQuotaDispatcherCallback() override {}
 
   void DidQueryStorageUsageAndQuota(int64_t usage, int64_t quota) override {
-    callbacks_.didQueryStorageUsageAndQuota(usage, quota);
+    callbacks_.DidQueryStorageUsageAndQuota(usage, quota);
   }
   void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) override {
-    callbacks_.didGrantStorageQuota(usage, granted_quota);
+    callbacks_.DidGrantStorageQuota(usage, granted_quota);
   }
   void DidFail(storage::QuotaStatusCode error) override {
-    callbacks_.didFail(static_cast<WebStorageQuotaError>(error));
+    callbacks_.DidFail(static_cast<WebStorageQuotaError>(error));
   }
 
  private:
@@ -137,7 +137,7 @@ void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
   params.storage_type = type;
   params.requested_size = requested_size;
   params.user_gesture =
-      blink::WebUserGestureIndicator::isProcessingUserGesture();
+      blink::WebUserGestureIndicator::IsProcessingUserGesture();
   thread_safe_sender_->Send(new QuotaHostMsg_RequestStorageQuota(params));
 }
 
@@ -175,17 +175,17 @@ void QuotaDispatcher::DidFail(
   pending_quota_callbacks_.Remove(request_id);
 }
 
-static_assert(int(blink::WebStorageQuotaTypeTemporary) ==
+static_assert(int(blink::kWebStorageQuotaTypeTemporary) ==
                   int(storage::kStorageTypeTemporary),
               "mismatching enums: kStorageTypeTemporary");
-static_assert(int(blink::WebStorageQuotaTypePersistent) ==
+static_assert(int(blink::kWebStorageQuotaTypePersistent) ==
                   int(storage::kStorageTypePersistent),
               "mismatching enums: kStorageTypePersistent");
 
-static_assert(int(blink::WebStorageQuotaErrorNotSupported) ==
+static_assert(int(blink::kWebStorageQuotaErrorNotSupported) ==
                   int(storage::kQuotaErrorNotSupported),
               "mismatching enums: kQuotaErrorNotSupported");
-static_assert(int(blink::WebStorageQuotaErrorAbort) ==
+static_assert(int(blink::kWebStorageQuotaErrorAbort) ==
                   int(storage::kQuotaErrorAbort),
               "mismatching enums: kQuotaErrorAbort");
 

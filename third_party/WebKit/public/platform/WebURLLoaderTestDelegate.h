@@ -22,19 +22,19 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
   WebURLLoaderTestDelegate();
   virtual ~WebURLLoaderTestDelegate();
 
-  virtual void didReceiveResponse(WebURLLoaderClient* originalClient,
+  virtual void DidReceiveResponse(WebURLLoaderClient* original_client,
                                   const WebURLResponse&);
-  virtual void didReceiveData(WebURLLoaderClient* originalClient,
+  virtual void DidReceiveData(WebURLLoaderClient* original_client,
                               const char* data,
-                              int dataLength);
-  virtual void didFail(WebURLLoaderClient* originalClient,
+                              int data_length);
+  virtual void DidFail(WebURLLoaderClient* original_client,
                        const WebURLError&,
-                       int64_t totalEncodedDataLength,
-                       int64_t totalEncodedBodyLength);
-  virtual void didFinishLoading(WebURLLoaderClient* originalClient,
-                                double finishTime,
-                                int64_t totalEncodedDataLength,
-                                int64_t totalEncodedBodyLength);
+                       int64_t total_encoded_data_length,
+                       int64_t total_encoded_body_length);
+  virtual void DidFinishLoading(WebURLLoaderClient* original_client,
+                                double finish_time,
+                                int64_t total_encoded_data_length,
+                                int64_t total_encoded_body_length);
 };
 
 }  // namespace blink

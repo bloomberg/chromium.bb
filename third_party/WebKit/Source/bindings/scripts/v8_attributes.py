@@ -281,7 +281,7 @@ def getter_context(interface, attribute, context):
 
     def v8_set_return_value_statement(for_main_world=False):
         if context['is_keep_alive_for_gc'] or 'CachedAttribute' in extended_attributes:
-            return 'v8SetReturnValue(info, v8Value)'
+            return 'V8SetReturnValue(info, v8Value)'
         return idl_type.v8_set_return_value(
             cpp_value, extended_attributes=extended_attributes, script_wrappable='impl',
             for_main_world=for_main_world, is_static=attribute.is_static)
@@ -319,14 +319,14 @@ def getter_expression(interface, attribute, context):
     # Needed to handle getter expressions returning Type& as the
     # use site for |expression| expects Type*.
     if attribute.idl_type.is_interface_type and len(arguments) == 0:
-        return 'WTF::getPtr(%s)' % expression
+        return 'WTF::GetPtr(%s)' % expression
     return expression
 
 
 CONTENT_ATTRIBUTE_GETTER_NAMES = {
-    'boolean': 'fastHasAttribute',
-    'long': 'getIntegralAttribute',
-    'unsigned long': 'getUnsignedIntegralAttribute',
+    'boolean': 'FastHasAttribute',
+    'long': 'GetIntegralAttribute',
+    'unsigned long': 'GetUnsignedIntegralAttribute',
 }
 
 
@@ -339,7 +339,7 @@ def getter_base_name(interface, attribute, arguments):
     content_attribute_name = extended_attributes['Reflect'] or attribute.name.lower()
     if content_attribute_name in ['class', 'id', 'name']:
         # Special-case for performance optimization.
-        return 'get%sAttribute' % content_attribute_name.capitalize()
+        return 'Get%sAttribute' % content_attribute_name.capitalize()
 
     arguments.append(scoped_content_attribute_name(interface, attribute))
 
@@ -347,8 +347,8 @@ def getter_base_name(interface, attribute, arguments):
     if base_idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
         return CONTENT_ATTRIBUTE_GETTER_NAMES[base_idl_type]
     if 'URL' in attribute.extended_attributes:
-        return 'getURLAttribute'
-    return 'fastGetAttribute'
+        return 'GetURLAttribute'
+    return 'FastGetAttribute'
 
 
 def is_keep_alive_for_gc(interface, attribute):
@@ -394,7 +394,9 @@ def setter_context(interface, attribute, interfaces, context):
                             (target_attribute_name, target_interface_name))
 
     if ('Replaceable' in attribute.extended_attributes):
-        context['cpp_setter'] = 'v8CallBoolean(info.Holder()->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), propertyName, v8Value))'
+        context['cpp_setter'] = (
+            'V8CallBoolean(info.Holder()->CreateDataProperty(' +
+            'info.GetIsolate()->GetCurrentContext(), propertyName, v8Value))')
         return
 
     extended_attributes = attribute.extended_attributes
@@ -449,13 +451,13 @@ def setter_expression(interface, attribute, context):
                 attribute.name == 'onerror'):
             includes.add('bindings/core/v8/V8ErrorHandler.h')
             arguments.append(
-                'V8EventListenerHelper::ensureEventListener<V8ErrorHandler>(' +
-                'v8Value, true, ScriptState::forReceiverObject(info))')
+                'V8EventListenerHelper::EnsureEventListener<V8ErrorHandler>(' +
+                'v8Value, true, ScriptState::ForReceiverObject(info))')
         else:
             arguments.append(
-                'V8EventListenerHelper::getEventListener(' +
-                'ScriptState::forReceiverObject(info), v8Value, true, ' +
-                'ListenerFindOrCreate)')
+                'V8EventListenerHelper::GetEventListener(' +
+                'ScriptState::ForReceiverObject(info), v8Value, true, ' +
+                'kListenerFindOrCreate)')
     else:
         arguments.append('cppValue')
     if context['is_setter_raises_exception']:
@@ -465,9 +467,9 @@ def setter_expression(interface, attribute, context):
 
 
 CONTENT_ATTRIBUTE_SETTER_NAMES = {
-    'boolean': 'setBooleanAttribute',
-    'long': 'setIntegralAttribute',
-    'unsigned long': 'setUnsignedIntegralAttribute',
+    'boolean': 'SetBooleanAttribute',
+    'long': 'SetIntegralAttribute',
+    'unsigned long': 'SetUnsignedIntegralAttribute',
 }
 
 

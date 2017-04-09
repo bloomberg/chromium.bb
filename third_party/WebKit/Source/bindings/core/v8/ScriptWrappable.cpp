@@ -12,36 +12,36 @@ namespace blink {
 
 struct SameSizeAsScriptWrappable {
   virtual ~SameSizeAsScriptWrappable() {}
-  v8::Persistent<v8::Object> m_mainWorldWrapper;
+  v8::Persistent<v8::Object> main_world_wrapper_;
 };
 
 static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable),
               "ScriptWrappable should stay small");
 
-v8::Local<v8::Object> ScriptWrappable::wrap(
+v8::Local<v8::Object> ScriptWrappable::Wrap(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> creationContext) {
-  const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
+    v8::Local<v8::Object> creation_context) {
+  const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
 
-  ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+  ASSERT(!DOMDataStore::ContainsWrapper(this, isolate));
 
   v8::Local<v8::Object> wrapper =
-      V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo);
+      V8DOMWrapper::CreateWrapper(isolate, creation_context, wrapper_type_info);
   DCHECK(!wrapper.IsEmpty());
-  return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
+  return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }
 
-v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(
+v8::Local<v8::Object> ScriptWrappable::AssociateWithWrapper(
     v8::Isolate* isolate,
-    const WrapperTypeInfo* wrapperTypeInfo,
+    const WrapperTypeInfo* wrapper_type_info,
     v8::Local<v8::Object> wrapper) {
-  return V8DOMWrapper::associateObjectWithWrapper(isolate, this,
-                                                  wrapperTypeInfo, wrapper);
+  return V8DOMWrapper::AssociateObjectWithWrapper(isolate, this,
+                                                  wrapper_type_info, wrapper);
 }
 
-void ScriptWrappable::markWrapper(const WrapperVisitor* visitor) const {
-  if (containsWrapper())
-    visitor->markWrapper(&m_mainWorldWrapper.As<v8::Value>());
+void ScriptWrappable::MarkWrapper(const WrapperVisitor* visitor) const {
+  if (ContainsWrapper())
+    visitor->MarkWrapper(&main_world_wrapper_.As<v8::Value>());
 }
 
 }  // namespace blink

@@ -9,21 +9,21 @@
 
 namespace blink {
 
-const char* MediaKeysController::supplementName() {
+const char* MediaKeysController::SupplementName() {
   return "MediaKeysController";
 }
 
 MediaKeysController::MediaKeysController(MediaKeysClient* client)
-    : m_client(client) {}
+    : client_(client) {}
 
-WebEncryptedMediaClient* MediaKeysController::encryptedMediaClient(
+WebEncryptedMediaClient* MediaKeysController::EncryptedMediaClient(
     ExecutionContext* context) {
-  return m_client->encryptedMediaClient(context);
+  return client_->EncryptedMediaClient(context);
 }
 
-void MediaKeysController::provideMediaKeysTo(Page& page,
+void MediaKeysController::ProvideMediaKeysTo(Page& page,
                                              MediaKeysClient* client) {
-  MediaKeysController::provideTo(page, supplementName(),
+  MediaKeysController::ProvideTo(page, SupplementName(),
                                  new MediaKeysController(client));
 }
 

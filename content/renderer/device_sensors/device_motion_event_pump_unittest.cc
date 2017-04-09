@@ -30,7 +30,7 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
   }
   ~MockDeviceMotionListener() override {}
 
-  void didChangeDeviceMotion(const device::MotionData& data) override {
+  void DidChangeDeviceMotion(const device::MotionData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_motion_ = true;
     ++number_of_events_;

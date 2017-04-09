@@ -51,7 +51,7 @@ class BLINK_PLATFORM_EXPORT QueueingTimeEstimator {
   void OnBeginNestedMessageLoop();
 
   // Returns all state except for the current |client_|.
-  const State& state() const { return state_; }
+  const State& GetState() const { return state_; }
 
   base::TimeDelta EstimateQueueingTimeIncludingCurrentTask(
       base::TimeTicks now) const;

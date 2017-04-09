@@ -34,68 +34,68 @@
 
 namespace blink {
 
-bool BufferedLineReader::getLine(String& line) {
-  if (m_maybeSkipLF) {
+bool BufferedLineReader::GetLine(String& line) {
+  if (maybe_skip_lf_) {
     // We ran out of data after a CR (U+000D), which means that we may be
     // in the middle of a CRLF pair. If the next character is a LF (U+000A)
     // then skip it, and then (unconditionally) return the buffered line.
-    if (!m_buffer.isEmpty()) {
-      scanCharacter(newlineCharacter);
-      m_maybeSkipLF = false;
+    if (!buffer_.IsEmpty()) {
+      ScanCharacter(kNewlineCharacter);
+      maybe_skip_lf_ = false;
     }
     // If there was no (new) data available, then keep m_maybeSkipLF set,
     // and fall through all the way down to the EOS check at the end of
     // the method.
   }
 
-  bool shouldReturnLine = false;
-  bool checkForLF = false;
-  while (!m_buffer.isEmpty()) {
-    UChar c = m_buffer.currentChar();
-    m_buffer.advance();
+  bool should_return_line = false;
+  bool check_for_lf = false;
+  while (!buffer_.IsEmpty()) {
+    UChar c = buffer_.CurrentChar();
+    buffer_.Advance();
 
-    if (c == newlineCharacter || c == carriageReturnCharacter) {
+    if (c == kNewlineCharacter || c == kCarriageReturnCharacter) {
       // We found a line ending. Return the accumulated line.
-      shouldReturnLine = true;
-      checkForLF = (c == carriageReturnCharacter);
+      should_return_line = true;
+      check_for_lf = (c == kCarriageReturnCharacter);
       break;
     }
 
     // NULs are transformed into U+FFFD (REPLACEMENT CHAR.) in step 1 of
     // the WebVTT parser algorithm.
     if (c == '\0')
-      c = replacementCharacter;
+      c = kReplacementCharacter;
 
-    m_lineBuffer.append(c);
+    line_buffer_.Append(c);
   }
 
-  if (checkForLF) {
+  if (check_for_lf) {
     // May be in the middle of a CRLF pair.
-    if (!m_buffer.isEmpty()) {
+    if (!buffer_.IsEmpty()) {
       // Scan a potential newline character.
-      scanCharacter(newlineCharacter);
+      ScanCharacter(kNewlineCharacter);
     } else {
       // Check for the LF on the next call (unless we reached EOS, in
       // which case we'll return the contents of the line buffer, and
       // reset state for the next line.)
-      m_maybeSkipLF = true;
+      maybe_skip_lf_ = true;
     }
   }
 
-  if (isAtEndOfStream()) {
+  if (IsAtEndOfStream()) {
     // We've reached the end of the stream proper. Emit a line if the
     // current line buffer is non-empty. (Note that if shouldReturnLine is
     // set already, we want to return a line nonetheless.)
-    shouldReturnLine |= !m_lineBuffer.isEmpty();
+    should_return_line |= !line_buffer_.IsEmpty();
   }
 
-  if (shouldReturnLine) {
-    line = m_lineBuffer.toString();
-    m_lineBuffer.clear();
+  if (should_return_line) {
+    line = line_buffer_.ToString();
+    line_buffer_.Clear();
     return true;
   }
 
-  DCHECK(m_buffer.isEmpty());
+  DCHECK(buffer_.IsEmpty());
   return false;
 }
 

@@ -43,28 +43,28 @@ class CORE_EXPORT ElementResolveContext {
 
   explicit ElementResolveContext(Element&);
 
-  Element* element() const { return m_element; }
-  const ContainerNode* parentNode() const { return m_parentNode; }
-  const ContainerNode* layoutParent() const { return m_layoutParent; }
-  const ComputedStyle* rootElementStyle() const { return m_rootElementStyle; }
-  const ComputedStyle* parentStyle() const {
-    return parentNode() ? parentNode()->computedStyle() : nullptr;
+  Element* GetElement() const { return element_; }
+  const ContainerNode* ParentNode() const { return parent_node_; }
+  const ContainerNode* LayoutParent() const { return layout_parent_; }
+  const ComputedStyle* RootElementStyle() const { return root_element_style_; }
+  const ComputedStyle* ParentStyle() const {
+    return ParentNode() ? ParentNode()->GetComputedStyle() : nullptr;
   }
-  const ComputedStyle* layoutParentStyle() const {
-    return layoutParent() ? layoutParent()->computedStyle() : nullptr;
+  const ComputedStyle* LayoutParentStyle() const {
+    return LayoutParent() ? LayoutParent()->GetComputedStyle() : nullptr;
   }
-  EInsideLink elementLinkState() const { return m_elementLinkState; }
-  bool distributedToInsertionPoint() const {
-    return m_distributedToInsertionPoint;
+  EInsideLink ElementLinkState() const { return element_link_state_; }
+  bool DistributedToInsertionPoint() const {
+    return distributed_to_insertion_point_;
   }
 
  private:
-  Member<Element> m_element;
-  Member<ContainerNode> m_parentNode;
-  Member<ContainerNode> m_layoutParent;
-  const ComputedStyle* m_rootElementStyle;
-  EInsideLink m_elementLinkState;
-  bool m_distributedToInsertionPoint;
+  Member<Element> element_;
+  Member<ContainerNode> parent_node_;
+  Member<ContainerNode> layout_parent_;
+  const ComputedStyle* root_element_style_;
+  EInsideLink element_link_state_;
+  bool distributed_to_insertion_point_;
 };
 
 }  // namespace blink

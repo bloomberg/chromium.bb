@@ -49,14 +49,14 @@ class WebFrameSerializerClient {
   // with URL of current frame, data, data length and flag
   // CurrentFrameIsFinished.
   enum FrameSerializationStatus {
-    CurrentFrameIsNotFinished,
-    CurrentFrameIsFinished,
+    kCurrentFrameIsNotFinished,
+    kCurrentFrameIsFinished,
   };
 
   // Receive the individual chunks of serialized and encoded data to be saved.
   // The parameter data contains the available data for saving.
   // The parameter status indicates the status of data serialization.
-  virtual void didSerializeDataForFrame(const WebCString& data,
+  virtual void DidSerializeDataForFrame(const WebCString& data,
                                         FrameSerializationStatus) = 0;
 
   WebFrameSerializerClient() {}

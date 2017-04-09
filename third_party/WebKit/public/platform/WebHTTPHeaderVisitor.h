@@ -37,7 +37,7 @@ class WebString;
 
 class WebHTTPHeaderVisitor {
  public:
-  virtual void visitHeader(const WebString& name, const WebString& value) = 0;
+  virtual void VisitHeader(const WebString& name, const WebString& value) = 0;
 
  protected:
   virtual ~WebHTTPHeaderVisitor() {}

@@ -30,10 +30,10 @@ namespace blink {
 HTMLNameCollection::HTMLNameCollection(ContainerNode& document,
                                        CollectionType type,
                                        const AtomicString& name)
-    : HTMLCollection(document, type, DoesNotOverrideItemAfter), m_name(name) {}
+    : HTMLCollection(document, type, kDoesNotOverrideItemAfter), name_(name) {}
 
 HTMLNameCollection::~HTMLNameCollection() {
-  DCHECK(type() == WindowNamedItems || type() == DocumentNamedItems);
+  DCHECK(GetType() == kWindowNamedItems || GetType() == kDocumentNamedItems);
 }
 
 }  // namespace blink

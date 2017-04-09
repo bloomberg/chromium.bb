@@ -12,8 +12,8 @@ namespace blink {
 struct WebMediaKeySystemMediaCapability {
   WebMediaKeySystemMediaCapability() {}
 
-  WebString contentType;
-  WebString mimeType;
+  WebString content_type;
+  WebString mime_type;
   WebString codecs;
   WebString robustness;
 };

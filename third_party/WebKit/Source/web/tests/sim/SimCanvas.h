@@ -16,10 +16,10 @@ class SimCanvas : public SkCanvas {
   SimCanvas(int width, int height);
 
   enum CommandType {
-    Rect,
-    Text,
-    Image,
-    Shape,
+    kRect,
+    kText,
+    kImage,
+    kShape,
   };
 
   // TODO(esprehn): Ideally we'd put the text in here too, but SkTextBlob
@@ -29,7 +29,7 @@ class SimCanvas : public SkCanvas {
     RGBA32 color;
   };
 
-  const Vector<Command>& commands() const { return m_commands; }
+  const Vector<Command>& Commands() const { return commands_; }
 
   // Rect
   void onDrawRect(const SkRect&, const SkPaint&) override;
@@ -49,21 +49,21 @@ class SimCanvas : public SkCanvas {
 
   // Text
   void onDrawText(const void* text,
-                  size_t byteLength,
+                  size_t byte_length,
                   SkScalar x,
                   SkScalar y,
                   const SkPaint&) override;
   void onDrawPosText(const void* text,
-                     size_t byteLength,
+                     size_t byte_length,
                      const SkPoint pos[],
                      const SkPaint&) override;
   void onDrawPosTextH(const void* text,
-                      size_t byteLength,
+                      size_t byte_length,
                       const SkScalar xpos[],
-                      SkScalar constY,
+                      SkScalar const_y,
                       const SkPaint&) override;
   void onDrawTextOnPath(const void* text,
-                        size_t byteLength,
+                        size_t byte_length,
                         const SkPath&,
                         const SkMatrix*,
                         const SkPaint&) override;
@@ -73,9 +73,9 @@ class SimCanvas : public SkCanvas {
                       const SkPaint&) override;
 
  private:
-  void addCommand(CommandType, RGBA32 = 0);
+  void AddCommand(CommandType, RGBA32 = 0);
 
-  Vector<Command> m_commands;
+  Vector<Command> commands_;
 };
 
 }  // namespace blink

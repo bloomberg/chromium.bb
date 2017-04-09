@@ -11,25 +11,25 @@
 namespace blink {
 
 PassRefPtr<SerializedScriptValue>
-SerializedScriptValueForModulesFactory::create(
+SerializedScriptValueForModulesFactory::Create(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     const SerializedScriptValue::SerializeOptions& options,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   TRACE_EVENT0("blink", "SerializedScriptValueFactory::create");
-  V8ScriptValueSerializerForModules serializer(ScriptState::current(isolate),
+  V8ScriptValueSerializerForModules serializer(ScriptState::Current(isolate),
                                                options);
-  return serializer.serialize(value, exceptionState);
+  return serializer.Serialize(value, exception_state);
 }
 
-v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(
+v8::Local<v8::Value> SerializedScriptValueForModulesFactory::Deserialize(
     SerializedScriptValue* value,
     v8::Isolate* isolate,
     const SerializedScriptValue::DeserializeOptions& options) {
   TRACE_EVENT0("blink", "SerializedScriptValueFactory::deserialize");
   V8ScriptValueDeserializerForModules deserializer(
-      ScriptState::current(isolate), value, options);
-  return deserializer.deserialize();
+      ScriptState::Current(isolate), value, options);
+  return deserializer.Deserialize();
 }
 
 }  // namespace blink

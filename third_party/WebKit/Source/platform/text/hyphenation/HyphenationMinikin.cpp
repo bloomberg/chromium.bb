@@ -18,99 +18,99 @@ namespace blink {
 
 using Hyphenator = android::Hyphenator;
 
-static mojom::blink::HyphenationPtr connectToRemoteService() {
+static mojom::blink::HyphenationPtr ConnectToRemoteService() {
   mojom::blink::HyphenationPtr service;
-  Platform::current()->interfaceProvider()->getInterface(
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&service));
   return service;
 }
 
-static const mojom::blink::HyphenationPtr& getService() {
+static const mojom::blink::HyphenationPtr& GetService() {
   DEFINE_STATIC_LOCAL(mojom::blink::HyphenationPtr, service,
-                      (connectToRemoteService()));
+                      (ConnectToRemoteService()));
   return service;
 }
 
-bool HyphenationMinikin::openDictionary(const AtomicString& locale) {
-  const mojom::blink::HyphenationPtr& service = getService();
+bool HyphenationMinikin::OpenDictionary(const AtomicString& locale) {
+  const mojom::blink::HyphenationPtr& service = GetService();
   base::File file;
   base::ElapsedTimer timer;
   service->OpenDictionary(locale, &file);
   UMA_HISTOGRAM_TIMES("Hyphenation.Open", timer.Elapsed());
 
-  return openDictionary(std::move(file));
+  return OpenDictionary(std::move(file));
 }
 
-bool HyphenationMinikin::openDictionary(base::File file) {
+bool HyphenationMinikin::OpenDictionary(base::File file) {
   if (!file.IsValid())
     return false;
-  if (!m_file.Initialize(std::move(file))) {
+  if (!file_.Initialize(std::move(file))) {
     DLOG(ERROR) << "mmap failed";
     return false;
   }
 
-  m_hyphenator = WTF::wrapUnique(Hyphenator::loadBinary(m_file.data()));
+  hyphenator_ = WTF::WrapUnique(Hyphenator::loadBinary(file_.data()));
 
   return true;
 }
 
-std::vector<uint8_t> HyphenationMinikin::hyphenate(
+std::vector<uint8_t> HyphenationMinikin::Hyphenate(
     const StringView& text) const {
   std::vector<uint8_t> result;
-  if (text.is8Bit()) {
-    String text16Bit = text.toString();
-    text16Bit.ensure16Bit();
-    m_hyphenator->hyphenate(&result, text16Bit.characters16(),
-                            text16Bit.length());
+  if (text.Is8Bit()) {
+    String text16_bit = text.ToString();
+    text16_bit.Ensure16Bit();
+    hyphenator_->hyphenate(&result, text16_bit.Characters16(),
+                           text16_bit.length());
   } else {
-    m_hyphenator->hyphenate(&result, text.characters16(), text.length());
+    hyphenator_->hyphenate(&result, text.Characters16(), text.length());
   }
   return result;
 }
 
-size_t HyphenationMinikin::lastHyphenLocation(const StringView& text,
-                                              size_t beforeIndex) const {
-  if (text.length() < minimumPrefixLength + minimumSuffixLength ||
-      beforeIndex <= minimumPrefixLength)
+size_t HyphenationMinikin::LastHyphenLocation(const StringView& text,
+                                              size_t before_index) const {
+  if (text.length() < kMinimumPrefixLength + kMinimumSuffixLength ||
+      before_index <= kMinimumPrefixLength)
     return 0;
 
-  std::vector<uint8_t> result = hyphenate(text);
-  beforeIndex =
-      std::min<size_t>(beforeIndex, text.length() - minimumSuffixLength);
-  CHECK_LE(beforeIndex, result.size());
-  CHECK_GE(beforeIndex, 1u);
-  static_assert(minimumPrefixLength >= 1, "|beforeIndex - 1| can underflow");
-  for (size_t i = beforeIndex - 1; i >= minimumPrefixLength; i--) {
+  std::vector<uint8_t> result = Hyphenate(text);
+  before_index =
+      std::min<size_t>(before_index, text.length() - kMinimumSuffixLength);
+  CHECK_LE(before_index, result.size());
+  CHECK_GE(before_index, 1u);
+  static_assert(kMinimumPrefixLength >= 1, "|beforeIndex - 1| can underflow");
+  for (size_t i = before_index - 1; i >= kMinimumPrefixLength; i--) {
     if (result[i])
       return i;
   }
   return 0;
 }
 
-Vector<size_t, 8> HyphenationMinikin::hyphenLocations(
+Vector<size_t, 8> HyphenationMinikin::HyphenLocations(
     const StringView& text) const {
-  Vector<size_t, 8> hyphenLocations;
-  if (text.length() < minimumPrefixLength + minimumSuffixLength)
-    return hyphenLocations;
+  Vector<size_t, 8> hyphen_locations;
+  if (text.length() < kMinimumPrefixLength + kMinimumSuffixLength)
+    return hyphen_locations;
 
-  std::vector<uint8_t> result = hyphenate(text);
-  static_assert(minimumPrefixLength >= 1,
+  std::vector<uint8_t> result = Hyphenate(text);
+  static_assert(kMinimumPrefixLength >= 1,
                 "Change the 'if' above if this fails");
-  for (size_t i = text.length() - minimumSuffixLength - 1;
-       i >= minimumPrefixLength; i--) {
+  for (size_t i = text.length() - kMinimumSuffixLength - 1;
+       i >= kMinimumPrefixLength; i--) {
     if (result[i])
-      hyphenLocations.push_back(i);
+      hyphen_locations.push_back(i);
   }
-  return hyphenLocations;
+  return hyphen_locations;
 }
 
 using LocaleMap = HashMap<AtomicString, AtomicString, CaseFoldingHash>;
 
-static LocaleMap createLocaleFallbackMap() {
+static LocaleMap CreateLocaleFallbackMap() {
   // This data is from CLDR, compiled by AOSP.
   // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/text/Hyphenator.java
   using LocaleFallback = const char * [2];
-  static LocaleFallback localeFallbackData[] = {
+  static LocaleFallback locale_fallback_data[] = {
       {"en-AS", "en-us"},  // English (American Samoa)
       {"en-GU", "en-us"},  // English (Guam)
       {"en-MH", "en-us"},  // English (Marshall Islands)
@@ -136,31 +136,31 @@ static LocaleMap createLocaleFallbackMap() {
       {"wal", "und-ethi"},  // Wolaytta
   };
   LocaleMap map;
-  for (const auto& it : localeFallbackData)
+  for (const auto& it : locale_fallback_data)
     map.insert(it[0], it[1]);
   return map;
 }
 
-PassRefPtr<Hyphenation> Hyphenation::platformGetHyphenation(
+PassRefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
     const AtomicString& locale) {
-  RefPtr<HyphenationMinikin> hyphenation(adoptRef(new HyphenationMinikin));
-  if (hyphenation->openDictionary(locale.lowerASCII()))
-    return hyphenation.release();
-  hyphenation.clear();
+  RefPtr<HyphenationMinikin> hyphenation(AdoptRef(new HyphenationMinikin));
+  if (hyphenation->OpenDictionary(locale.LowerASCII()))
+    return hyphenation.Release();
+  hyphenation.Clear();
 
-  DEFINE_STATIC_LOCAL(LocaleMap, localeFallback, (createLocaleFallbackMap()));
-  const auto& it = localeFallback.find(locale);
-  if (it != localeFallback.end())
-    return LayoutLocale::get(it->value)->getHyphenation();
+  DEFINE_STATIC_LOCAL(LocaleMap, locale_fallback, (CreateLocaleFallbackMap()));
+  const auto& it = locale_fallback.Find(locale);
+  if (it != locale_fallback.end())
+    return LayoutLocale::Get(it->value)->GetHyphenation();
 
   return nullptr;
 }
 
-PassRefPtr<HyphenationMinikin> HyphenationMinikin::fromFileForTesting(
+PassRefPtr<HyphenationMinikin> HyphenationMinikin::FromFileForTesting(
     base::File file) {
-  RefPtr<HyphenationMinikin> hyphenation(adoptRef(new HyphenationMinikin));
-  if (hyphenation->openDictionary(std::move(file)))
-    return hyphenation.release();
+  RefPtr<HyphenationMinikin> hyphenation(AdoptRef(new HyphenationMinikin));
+  if (hyphenation->OpenDictionary(std::move(file)))
+    return hyphenation.Release();
   return nullptr;
 }
 

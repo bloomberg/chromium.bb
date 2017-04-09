@@ -23,17 +23,17 @@ class WebMediaDeviceChangeObserver {
   BLINK_EXPORT ~WebMediaDeviceChangeObserver();
 
   // Notify that the set of media devices has changed.
-  BLINK_EXPORT void didChangeMediaDevices();
-  BLINK_EXPORT bool isNull() const;
-  BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
+  BLINK_EXPORT void DidChangeMediaDevices();
+  BLINK_EXPORT bool IsNull() const;
+  BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
 
 #if INSIDE_BLINK
   explicit WebMediaDeviceChangeObserver(MediaDevices*);
 #endif
  private:
-  void assign(const WebMediaDeviceChangeObserver&);
-  void reset();
-  WebPrivatePtr<MediaDevices> m_private;
+  void Assign(const WebMediaDeviceChangeObserver&);
+  void Reset();
+  WebPrivatePtr<MediaDevices> private_;
 };
 
 }  // namespace blink

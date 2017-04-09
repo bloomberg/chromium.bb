@@ -11,8 +11,8 @@ namespace blink {
 
 // https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentappresponse
 struct WebPaymentAppResponse {
-  WebString methodName;
-  WebString stringifiedDetails;
+  WebString method_name;
+  WebString stringified_details;
 };
 
 }  // namespace blink

@@ -35,12 +35,12 @@ class HTMLMarqueeElement final : public HTMLElement {
  public:
   DECLARE_VIRTUAL_TRACE();
 
-  static HTMLMarqueeElement* create(Document&);
+  static HTMLMarqueeElement* Create(Document&);
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) final;
-  void removedFrom(ContainerNode*) final;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) final;
+  void RemovedFrom(ContainerNode*) final;
 
-  bool isHorizontal() const;
+  bool IsHorizontal() const;
 
   int scrollAmount() const;
   void setScrollAmount(int, ExceptionState&);
@@ -56,10 +56,10 @@ class HTMLMarqueeElement final : public HTMLElement {
 
  private:
   explicit HTMLMarqueeElement(Document&);
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
@@ -67,42 +67,42 @@ class HTMLMarqueeElement final : public HTMLElement {
   class AnimationFinished;
 
   struct AnimationParameters {
-    String transformBegin;
-    String transformEnd;
+    String transform_begin;
+    String transform_end;
     double distance;
   };
 
   struct Metrics {
-    double contentWidth;
-    double contentHeight;
-    double marqueeWidth;
-    double marqueeHeight;
+    double content_width;
+    double content_height;
+    double marquee_width;
+    double marquee_height;
   };
 
-  StringKeyframeEffectModel* createEffectModel(const AnimationParameters&);
+  StringKeyframeEffectModel* CreateEffectModel(const AnimationParameters&);
 
-  void continueAnimation();
-  bool shouldContinue();
+  void ContinueAnimation();
+  bool ShouldContinue();
 
   enum Behavior { kScroll, kSlide, kAlternate };
-  Behavior getBehavior() const;
+  Behavior GetBehavior() const;
 
   enum Direction { kLeft, kRight, kUp, kDown };
-  Direction getDirection() const;
+  Direction GetDirection() const;
 
-  Metrics getMetrics();
-  AnimationParameters getAnimationParameters();
-  AtomicString createTransform(double value) const;
+  Metrics GetMetrics();
+  AnimationParameters GetAnimationParameters();
+  AtomicString CreateTransform(double value) const;
 
   static const int kDefaultScrollAmount = 6;
   static const int kDefaultScrollDelayMS = 85;
   static const int kMinimumScrollDelayMS = 60;
   static const int kDefaultLoopLimit = -1;
 
-  int m_continueCallbackRequestId = 0;
-  int m_loopCount = 0;
-  Member<Element> m_mover;
-  Member<Animation> m_player;
+  int continue_callback_request_id_ = 0;
+  int loop_count_ = 0;
+  Member<Element> mover_;
+  Member<Animation> player_;
 };
 
 }  // namespace blink

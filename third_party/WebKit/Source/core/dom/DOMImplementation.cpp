@@ -61,76 +61,77 @@
 namespace blink {
 
 DOMImplementation::DOMImplementation(Document& document)
-    : m_document(document) {}
+    : document_(document) {}
 
 DocumentType* DOMImplementation::createDocumentType(
-    const AtomicString& qualifiedName,
-    const String& publicId,
-    const String& systemId,
-    ExceptionState& exceptionState) {
-  AtomicString prefix, localName;
-  if (!Document::parseQualifiedName(qualifiedName, prefix, localName,
-                                    exceptionState))
+    const AtomicString& qualified_name,
+    const String& public_id,
+    const String& system_id,
+    ExceptionState& exception_state) {
+  AtomicString prefix, local_name;
+  if (!Document::ParseQualifiedName(qualified_name, prefix, local_name,
+                                    exception_state))
     return nullptr;
 
-  return DocumentType::create(m_document, qualifiedName, publicId, systemId);
+  return DocumentType::Create(document_, qualified_name, public_id, system_id);
 }
 
 XMLDocument* DOMImplementation::createDocument(
-    const AtomicString& namespaceURI,
-    const AtomicString& qualifiedName,
+    const AtomicString& namespace_uri,
+    const AtomicString& qualified_name,
     DocumentType* doctype,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   XMLDocument* doc = nullptr;
-  DocumentInit init = DocumentInit::fromContext(document().contextDocument());
-  if (namespaceURI == SVGNames::svgNamespaceURI) {
-    doc = XMLDocument::createSVG(init);
-  } else if (namespaceURI == HTMLNames::xhtmlNamespaceURI) {
-    doc = XMLDocument::createXHTML(
-        init.withRegistrationContext(document().registrationContext()));
+  DocumentInit init =
+      DocumentInit::FromContext(GetDocument().ContextDocument());
+  if (namespace_uri == SVGNames::svgNamespaceURI) {
+    doc = XMLDocument::CreateSVG(init);
+  } else if (namespace_uri == HTMLNames::xhtmlNamespaceURI) {
+    doc = XMLDocument::CreateXHTML(
+        init.WithRegistrationContext(GetDocument().RegistrationContext()));
   } else {
-    doc = XMLDocument::create(init);
+    doc = XMLDocument::Create(init);
   }
 
-  doc->setSecurityOrigin(document().getSecurityOrigin());
-  doc->setContextFeatures(document().contextFeatures());
+  doc->SetSecurityOrigin(GetDocument().GetSecurityOrigin());
+  doc->SetContextFeatures(GetDocument().GetContextFeatures());
 
-  Node* documentElement = nullptr;
-  if (!qualifiedName.isEmpty()) {
-    documentElement =
-        doc->createElementNS(namespaceURI, qualifiedName, exceptionState);
-    if (exceptionState.hadException())
+  Node* document_element = nullptr;
+  if (!qualified_name.IsEmpty()) {
+    document_element =
+        doc->createElementNS(namespace_uri, qualified_name, exception_state);
+    if (exception_state.HadException())
       return nullptr;
   }
 
   if (doctype)
-    doc->appendChild(doctype);
-  if (documentElement)
-    doc->appendChild(documentElement);
+    doc->AppendChild(doctype);
+  if (document_element)
+    doc->AppendChild(document_element);
 
   return doc;
 }
 
-bool DOMImplementation::isXMLMIMEType(const String& mimeType) {
-  if (equalIgnoringCase(mimeType, "text/xml") ||
-      equalIgnoringCase(mimeType, "application/xml") ||
-      equalIgnoringCase(mimeType, "text/xsl"))
+bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
+  if (EqualIgnoringCase(mime_type, "text/xml") ||
+      EqualIgnoringCase(mime_type, "application/xml") ||
+      EqualIgnoringCase(mime_type, "text/xsl"))
     return true;
 
   // Per RFCs 3023 and 2045, an XML MIME type is of the form:
   // ^[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+/[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+\+xml$
 
-  int length = mimeType.length();
+  int length = mime_type.length();
   if (length < 7)
     return false;
 
-  if (mimeType[0] == '/' || mimeType[length - 5] == '/' ||
-      !mimeType.endsWith("+xml", TextCaseASCIIInsensitive))
+  if (mime_type[0] == '/' || mime_type[length - 5] == '/' ||
+      !mime_type.EndsWith("+xml", kTextCaseASCIIInsensitive))
     return false;
 
-  bool hasSlash = false;
+  bool has_slash = false;
   for (int i = 0; i < length - 4; ++i) {
-    UChar ch = mimeType[i];
+    UChar ch = mime_type[i];
     if (ch >= '0' && ch <= '9')
       continue;
     if (ch >= 'a' && ch <= 'z')
@@ -157,9 +158,9 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType) {
       case '*':
         continue;
       case '/':
-        if (hasSlash)
+        if (has_slash)
           return false;
-        hasSlash = true;
+        has_slash = true;
         continue;
       default:
         return false;
@@ -169,117 +170,122 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType) {
   return true;
 }
 
-bool DOMImplementation::isJSONMIMEType(const String& mimeType) {
-  if (mimeType.startsWith("application/json", TextCaseASCIIInsensitive))
+bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
+  if (mime_type.StartsWith("application/json", kTextCaseASCIIInsensitive))
     return true;
-  if (mimeType.startsWith("application/", TextCaseASCIIInsensitive)) {
-    size_t subtype = mimeType.find("+json", 12, TextCaseASCIIInsensitive);
+  if (mime_type.StartsWith("application/", kTextCaseASCIIInsensitive)) {
+    size_t subtype = mime_type.Find("+json", 12, kTextCaseASCIIInsensitive);
     if (subtype != kNotFound) {
       // Just check that a parameter wasn't matched.
-      size_t parameterMarker = mimeType.find(";");
-      if (parameterMarker == kNotFound) {
-        unsigned endSubtype = static_cast<unsigned>(subtype) + 5;
-        return endSubtype == mimeType.length() ||
-               isASCIISpace(mimeType[endSubtype]);
+      size_t parameter_marker = mime_type.Find(";");
+      if (parameter_marker == kNotFound) {
+        unsigned end_subtype = static_cast<unsigned>(subtype) + 5;
+        return end_subtype == mime_type.length() ||
+               IsASCIISpace(mime_type[end_subtype]);
       }
-      return parameterMarker > subtype;
+      return parameter_marker > subtype;
     }
   }
   return false;
 }
 
-static bool isTextPlainType(const String& mimeType) {
-  return mimeType.startsWith("text/", TextCaseASCIIInsensitive) &&
-         !(equalIgnoringCase(mimeType, "text/html") ||
-           equalIgnoringCase(mimeType, "text/xml") ||
-           equalIgnoringCase(mimeType, "text/xsl"));
+static bool IsTextPlainType(const String& mime_type) {
+  return mime_type.StartsWith("text/", kTextCaseASCIIInsensitive) &&
+         !(EqualIgnoringCase(mime_type, "text/html") ||
+           EqualIgnoringCase(mime_type, "text/xml") ||
+           EqualIgnoringCase(mime_type, "text/xsl"));
 }
 
-bool DOMImplementation::isTextMIMEType(const String& mimeType) {
-  return MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) ||
-         isJSONMIMEType(mimeType) || isTextPlainType(mimeType);
+bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
+  return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
+         IsJSONMIMEType(mime_type) || IsTextPlainType(mime_type);
 }
 
 HTMLDocument* DOMImplementation::createHTMLDocument(const String& title) {
   DocumentInit init =
-      DocumentInit::fromContext(document().contextDocument())
-          .withRegistrationContext(document().registrationContext());
-  HTMLDocument* d = HTMLDocument::create(init);
+      DocumentInit::FromContext(GetDocument().ContextDocument())
+          .WithRegistrationContext(GetDocument().RegistrationContext());
+  HTMLDocument* d = HTMLDocument::Create(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");
-  if (!title.isNull()) {
-    HTMLHeadElement* headElement = d->head();
-    DCHECK(headElement);
-    HTMLTitleElement* titleElement = HTMLTitleElement::create(*d);
-    headElement->appendChild(titleElement);
-    titleElement->appendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
+  if (!title.IsNull()) {
+    HTMLHeadElement* head_element = d->head();
+    DCHECK(head_element);
+    HTMLTitleElement* title_element = HTMLTitleElement::Create(*d);
+    head_element->AppendChild(title_element);
+    title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }
-  d->setSecurityOrigin(document().getSecurityOrigin());
-  d->setContextFeatures(document().contextFeatures());
+  d->SetSecurityOrigin(GetDocument().GetSecurityOrigin());
+  d->SetContextFeatures(GetDocument().GetContextFeatures());
   return d;
 }
 
 Document* DOMImplementation::createDocument(const String& type,
                                             const DocumentInit& init,
-                                            bool inViewSourceMode) {
-  if (inViewSourceMode)
-    return HTMLViewSourceDocument::create(init, type);
+                                            bool in_view_source_mode) {
+  if (in_view_source_mode)
+    return HTMLViewSourceDocument::Create(init, type);
 
   // Plugins cannot take HTML and XHTML from us, and we don't even need to
   // initialize the plugin database for those.
   if (type == "text/html")
-    return HTMLDocument::create(init);
+    return HTMLDocument::Create(init);
   if (type == "application/xhtml+xml")
-    return XMLDocument::createXHTML(init);
+    return XMLDocument::CreateXHTML(init);
 
-  PluginData* pluginData = nullptr;
-  if (init.frame() && init.frame()->page() &&
-      init.frame()->loader().allowPlugins(NotAboutToInstantiatePlugin)) {
+  PluginData* plugin_data = nullptr;
+  if (init.GetFrame() && init.GetFrame()->GetPage() &&
+      init.GetFrame()->Loader().AllowPlugins(kNotAboutToInstantiatePlugin)) {
     // If the document is being created for the main frame,
     // init.frame()->tree().top()->securityContext() returns nullptr.
     // For that reason, the origin must be retrieved directly from init.url().
-    if (init.frame()->isMainFrame()) {
-      RefPtr<SecurityOrigin> origin = SecurityOrigin::create(init.url());
-      pluginData = init.frame()->page()->pluginData(origin.get());
+    if (init.GetFrame()->IsMainFrame()) {
+      RefPtr<SecurityOrigin> origin = SecurityOrigin::Create(init.Url());
+      plugin_data = init.GetFrame()->GetPage()->GetPluginData(origin.Get());
     } else {
-      pluginData = init.frame()->page()->pluginData(
-          init.frame()->tree().top()->securityContext()->getSecurityOrigin());
+      plugin_data =
+          init.GetFrame()->GetPage()->GetPluginData(init.GetFrame()
+                                                        ->Tree()
+                                                        .Top()
+                                                        ->GetSecurityContext()
+                                                        ->GetSecurityOrigin());
     }
   }
 
   // PDF is one image type for which a plugin can override built-in support.
   // We do not want QuickTime to take over all image types, obviously.
-  if ((type == "application/pdf" || type == "text/pdf") && pluginData &&
-      pluginData->supportsMimeType(type))
-    return PluginDocument::create(init);
+  if ((type == "application/pdf" || type == "text/pdf") && plugin_data &&
+      plugin_data->SupportsMimeType(type))
+    return PluginDocument::Create(init);
   // multipart/x-mixed-replace is only supported for images.
-  if (Image::supportsType(type) || type == "multipart/x-mixed-replace")
-    return ImageDocument::create(init);
+  if (Image::SupportsType(type) || type == "multipart/x-mixed-replace")
+    return ImageDocument::Create(init);
 
   // Check to see if the type can be played by our media player, if so create a
   // MediaDocument
-  if (HTMLMediaElement::supportsType(ContentType(type)))
-    return MediaDocument::create(init);
+  if (HTMLMediaElement::GetSupportsType(ContentType(type)))
+    return MediaDocument::Create(init);
 
   // Everything else except text/plain can be overridden by plugins. In
   // particular, Adobe SVG Viewer should be used for SVG, if installed.
   // Disallowing plugins to use text/plain prevents plugins from hijacking a
   // fundamental type that the browser is expected to handle, and also serves as
   // an optimization to prevent loading the plugin database in the common case.
-  if (type != "text/plain" && pluginData && pluginData->supportsMimeType(type))
-    return PluginDocument::create(init);
-  if (isTextMIMEType(type))
-    return TextDocument::create(init);
+  if (type != "text/plain" && plugin_data &&
+      plugin_data->SupportsMimeType(type))
+    return PluginDocument::Create(init);
+  if (IsTextMIMEType(type))
+    return TextDocument::Create(init);
   if (type == "image/svg+xml")
-    return XMLDocument::createSVG(init);
-  if (isXMLMIMEType(type))
-    return XMLDocument::create(init);
+    return XMLDocument::CreateSVG(init);
+  if (IsXMLMIMEType(type))
+    return XMLDocument::Create(init);
 
-  return HTMLDocument::create(init);
+  return HTMLDocument::Create(init);
 }
 
 DEFINE_TRACE(DOMImplementation) {
-  visitor->trace(m_document);
+  visitor->Trace(document_);
 }
 
 }  // namespace blink

@@ -14,18 +14,18 @@ namespace blink {
 
 namespace {
 
-CSSFontVariationValue* consumeFontVariationTag(CSSParserTokenRange& range) {
+CSSFontVariationValue* ConsumeFontVariationTag(CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
-  static const unsigned tagNameLength = 4;
+  static const unsigned kTagNameLength = 4;
 
-  const CSSParserToken& token = range.consumeIncludingWhitespace();
+  const CSSParserToken& token = range.ConsumeIncludingWhitespace();
   // Feature tag name comes first
-  if (token.type() != StringToken)
+  if (token.GetType() != kStringToken)
     return nullptr;
-  if (token.value().length() != tagNameLength)
+  if (token.Value().length() != kTagNameLength)
     return nullptr;
-  AtomicString tag = token.value().toAtomicString();
-  for (unsigned i = 0; i < tagNameLength; ++i) {
+  AtomicString tag = token.Value().ToAtomicString();
+  for (unsigned i = 0; i < kTagNameLength; ++i) {
     // Limits the range of characters to 0x20-0x7E, following the tag name rules
     // defined in the OpenType specification.
     UChar character = tag[i];
@@ -33,10 +33,10 @@ CSSFontVariationValue* consumeFontVariationTag(CSSParserTokenRange& range) {
       return nullptr;
   }
 
-  double tagValue = 0;
-  if (!CSSPropertyParserHelpers::consumeNumberRaw(range, tagValue))
+  double tag_value = 0;
+  if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, tag_value))
     return nullptr;
-  return CSSFontVariationValue::create(tag, clampTo<float>(tagValue));
+  return CSSFontVariationValue::Create(tag, clampTo<float>(tag_value));
 }
 
 }  // namespace
@@ -45,16 +45,17 @@ const CSSValue* CSSPropertyAPIFontVariationSettings::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssVariableFontsEnabled());
-  if (range.peek().id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  CSSValueList* variationSettings = CSSValueList::createCommaSeparated();
+  if (range.Peek().Id() == CSSValueNormal)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValueList* variation_settings = CSSValueList::CreateCommaSeparated();
   do {
-    CSSFontVariationValue* fontVariationValue = consumeFontVariationTag(range);
-    if (!fontVariationValue)
+    CSSFontVariationValue* font_variation_value =
+        ConsumeFontVariationTag(range);
+    if (!font_variation_value)
       return nullptr;
-    variationSettings->append(*fontVariationValue);
-  } while (CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(range));
-  return variationSettings;
+    variation_settings->Append(*font_variation_value);
+  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+  return variation_settings;
 }
 
 }  // namespace blink

@@ -40,25 +40,25 @@
 
 namespace blink {
 
-WebCryptoAlgorithm normalizeCryptoAlgorithm(
-    v8::Local<v8::Object> algorithmObject,
+WebCryptoAlgorithm NormalizeCryptoAlgorithm(
+    v8::Local<v8::Object> algorithm_object,
     WebCryptoOperation operation,
-    int* exceptionCode,
-    WebString* errorDetails,
+    int* exception_code,
+    WebString* error_details,
     v8::Isolate* isolate) {
   // FIXME: Avoid using NonThrowableExceptionState.
-  NonThrowableExceptionState exceptionState;
-  Dictionary algorithmDictionary(isolate, algorithmObject, exceptionState);
-  if (!algorithmDictionary.isUndefinedOrNull() &&
-      !algorithmDictionary.isObject())
+  NonThrowableExceptionState exception_state;
+  Dictionary algorithm_dictionary(isolate, algorithm_object, exception_state);
+  if (!algorithm_dictionary.IsUndefinedOrNull() &&
+      !algorithm_dictionary.IsObject())
     return WebCryptoAlgorithm();
   WebCryptoAlgorithm algorithm;
   AlgorithmError error;
-  AlgorithmIdentifier algorithmIdentifier;
-  algorithmIdentifier.setDictionary(algorithmDictionary);
-  if (!normalizeAlgorithm(algorithmIdentifier, operation, algorithm, &error)) {
-    *exceptionCode = webCryptoErrorToExceptionCode(error.errorType);
-    *errorDetails = error.errorDetails;
+  AlgorithmIdentifier algorithm_identifier;
+  algorithm_identifier.setDictionary(algorithm_dictionary);
+  if (!NormalizeAlgorithm(algorithm_identifier, operation, algorithm, &error)) {
+    *exception_code = WebCryptoErrorToExceptionCode(error.error_type);
+    *error_details = error.error_details;
     return WebCryptoAlgorithm();
   }
 

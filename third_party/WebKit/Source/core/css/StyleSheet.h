@@ -51,10 +51,10 @@ class CORE_EXPORT StyleSheet : public GarbageCollectedFinalized<StyleSheet>,
   virtual String type() const = 0;
 
   virtual CSSRule* ownerRule() const { return 0; }
-  virtual void clearOwnerNode() = 0;
-  virtual KURL baseURL() const = 0;
-  virtual bool isLoading() const = 0;
-  virtual bool isCSSStyleSheet() const { return false; }
+  virtual void ClearOwnerNode() = 0;
+  virtual KURL BaseURL() const = 0;
+  virtual bool IsLoading() const = 0;
+  virtual bool IsCSSStyleSheet() const { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

@@ -16,61 +16,63 @@
 
 namespace blink {
 
-void VideoPainter::paintReplaced(const PaintInfo& paintInfo,
-                                 const LayoutPoint& paintOffset) {
-  WebMediaPlayer* mediaPlayer = m_layoutVideo.mediaElement()->webMediaPlayer();
-  bool displayingPoster =
-      m_layoutVideo.videoElement()->shouldDisplayPosterImage();
-  if (!displayingPoster && !mediaPlayer)
+void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
+                                 const LayoutPoint& paint_offset) {
+  WebMediaPlayer* media_player =
+      layout_video_.MediaElement()->GetWebMediaPlayer();
+  bool displaying_poster =
+      layout_video_.VideoElement()->ShouldDisplayPosterImage();
+  if (!displaying_poster && !media_player)
     return;
 
-  LayoutRect replacedRect(m_layoutVideo.replacedContentRect());
-  replacedRect.moveBy(paintOffset);
-  IntRect snappedReplacedRect = pixelSnappedIntRect(replacedRect);
+  LayoutRect replaced_rect(layout_video_.ReplacedContentRect());
+  replaced_rect.MoveBy(paint_offset);
+  IntRect snapped_replaced_rect = PixelSnappedIntRect(replaced_rect);
 
-  if (snappedReplacedRect.isEmpty())
+  if (snapped_replaced_rect.IsEmpty())
     return;
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutVideo, paintInfo.phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_video_, paint_info.phase))
     return;
 
-  GraphicsContext& context = paintInfo.context;
-  LayoutRect contentRect = m_layoutVideo.contentBoxRect();
-  contentRect.moveBy(paintOffset);
+  GraphicsContext& context = paint_info.context;
+  LayoutRect content_rect = layout_video_.ContentBoxRect();
+  content_rect.MoveBy(paint_offset);
 
   // Video frames are only painted in software for printing or capturing node
   // images via web APIs.
-  bool forceSoftwareVideoPaint =
-      paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
+  bool force_software_video_paint =
+      paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers;
 
-  bool paintWithForeignLayer = !displayingPoster && !forceSoftwareVideoPaint &&
-                               RuntimeEnabledFeatures::slimmingPaintV2Enabled();
-  if (paintWithForeignLayer) {
-    if (WebLayer* layer = m_layoutVideo.mediaElement()->platformLayer()) {
-      IntRect pixelSnappedRect = pixelSnappedIntRect(contentRect);
-      recordForeignLayer(context, m_layoutVideo,
-                         DisplayItem::kForeignLayerVideo, layer,
-                         pixelSnappedRect.location(), pixelSnappedRect.size());
+  bool paint_with_foreign_layer =
+      !displaying_poster && !force_software_video_paint &&
+      RuntimeEnabledFeatures::slimmingPaintV2Enabled();
+  if (paint_with_foreign_layer) {
+    if (WebLayer* layer = layout_video_.MediaElement()->PlatformLayer()) {
+      IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
+      RecordForeignLayer(
+          context, layout_video_, DisplayItem::kForeignLayerVideo, layer,
+          pixel_snapped_rect.Location(), pixel_snapped_rect.size());
       return;
     }
   }
 
   // TODO(trchen): Video rect could overflow the content rect due to object-fit.
   // Should apply a clip here like EmbeddedObjectPainter does.
-  LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo,
-                                              paintInfo.phase, contentRect);
+  LayoutObjectDrawingRecorder drawing_recorder(context, layout_video_,
+                                               paint_info.phase, content_rect);
 
-  if (displayingPoster || !forceSoftwareVideoPaint) {
+  if (displaying_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise
     // paint nothing.
-    ImagePainter(m_layoutVideo)
-        .paintIntoRect(context, replacedRect, contentRect);
+    ImagePainter(layout_video_)
+        .PaintIntoRect(context, replaced_rect, content_rect);
   } else {
-    PaintFlags videoFlags = context.fillFlags();
-    videoFlags.setColor(SK_ColorBLACK);
-    m_layoutVideo.videoElement()->paintCurrentFrame(
-        context.canvas(), snappedReplacedRect, &videoFlags);
+    PaintFlags video_flags = context.FillFlags();
+    video_flags.setColor(SK_ColorBLACK);
+    layout_video_.VideoElement()->PaintCurrentFrame(
+        context.Canvas(), snapped_replaced_rect, &video_flags);
   }
 }
 

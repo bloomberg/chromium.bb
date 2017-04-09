@@ -52,34 +52,37 @@ class DOMEditor final : public GarbageCollected<DOMEditor> {
 
   DECLARE_TRACE();
 
-  bool insertBefore(ContainerNode* parentNode,
+  bool InsertBefore(ContainerNode* parent_node,
                     Node*,
-                    Node* anchorNode,
+                    Node* anchor_node,
                     ExceptionState&);
-  bool removeChild(ContainerNode* parentNode, Node*, ExceptionState&);
-  bool setAttribute(Element*,
+  bool RemoveChild(ContainerNode* parent_node, Node*, ExceptionState&);
+  bool SetAttribute(Element*,
                     const String& name,
                     const String& value,
                     ExceptionState&);
-  bool removeAttribute(Element*, const String& name, ExceptionState&);
-  bool setOuterHTML(Node*, const String& html, Node** newNode, ExceptionState&);
-  bool replaceWholeText(Text*, const String& text, ExceptionState&);
-  bool replaceChild(ContainerNode* parentNode,
-                    Node* newNode,
-                    Node* oldNode,
+  bool RemoveAttribute(Element*, const String& name, ExceptionState&);
+  bool SetOuterHTML(Node*,
+                    const String& html,
+                    Node** new_node,
                     ExceptionState&);
-  bool setNodeValue(Node* parentNode, const String& value, ExceptionState&);
+  bool ReplaceWholeText(Text*, const String& text, ExceptionState&);
+  bool ReplaceChild(ContainerNode* parent_node,
+                    Node* new_node,
+                    Node* old_node,
+                    ExceptionState&);
+  bool SetNodeValue(Node* parent_node, const String& value, ExceptionState&);
 
-  protocol::Response insertBefore(ContainerNode* parentNode,
+  protocol::Response InsertBefore(ContainerNode* parent_node,
                                   Node*,
-                                  Node* anchorNode);
-  protocol::Response removeChild(ContainerNode* parentNode, Node*);
-  protocol::Response setAttribute(Element*,
+                                  Node* anchor_node);
+  protocol::Response RemoveChild(ContainerNode* parent_node, Node*);
+  protocol::Response SetAttribute(Element*,
                                   const String& name,
                                   const String& value);
-  protocol::Response removeAttribute(Element*, const String& name);
-  protocol::Response setOuterHTML(Node*, const String& html, Node** newNode);
-  protocol::Response replaceWholeText(Text*, const String& text);
+  protocol::Response RemoveAttribute(Element*, const String& name);
+  protocol::Response SetOuterHTML(Node*, const String& html, Node** new_node);
+  protocol::Response ReplaceWholeText(Text*, const String& text);
 
  private:
   class DOMAction;
@@ -92,7 +95,7 @@ class DOMEditor final : public GarbageCollected<DOMEditor> {
   class ReplaceChildNodeAction;
   class SetNodeValueAction;
 
-  Member<InspectorHistory> m_history;
+  Member<InspectorHistory> history_;
 };
 
 }  // namespace blink

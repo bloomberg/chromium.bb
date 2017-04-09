@@ -710,13 +710,13 @@ BrowserWindowCocoa::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   // Handle ESC to dismiss permission bubbles, but still forward it
   // to the window afterwards.
-  if (event.windowsKeyCode == ui::VKEY_ESCAPE)
+  if (event.windows_key_code == ui::VKEY_ESCAPE)
     [controller_ dismissPermissionBubble];
 
   if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
     return content::KeyboardEventProcessingResult::NOT_HANDLED;
 
-  if (event.type() == blink::WebInputEvent::RawKeyDown &&
+  if (event.GetType() == blink::WebInputEvent::kRawKeyDown &&
       [controller_
           handledByExtensionCommand:event.os_event
                            priority:ui::AcceleratorManager::kHighPriority])
@@ -745,7 +745,7 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
       // TODO(spqchan): This is a temporary fix for exit extension fullscreen.
       // A priority system for exiting extension fullscreen when there is a
       // conflict is being experimented. See Issue 536047.
-      if (event.windowsKeyCode == ui::VKEY_ESCAPE)
+      if (event.windows_key_code == ui::VKEY_ESCAPE)
         [controller_ exitExtensionFullscreenIfPossible];
     }
   }

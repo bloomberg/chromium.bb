@@ -54,27 +54,27 @@ class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
 
   DECLARE_VIRTUAL_TRACE();
 
-  bool allowDatabase(ExecutionContext*,
+  bool AllowDatabase(ExecutionContext*,
                      const String& name,
-                     const String& displayName,
-                     unsigned estimatedSize);
+                     const String& display_name,
+                     unsigned estimated_size);
 
-  void didOpenDatabase(Database*,
+  void DidOpenDatabase(Database*,
                        const String& domain,
                        const String& name,
                        const String& version);
 
-  static DatabaseClient* fromPage(Page*);
-  static DatabaseClient* from(ExecutionContext*);
-  static const char* supplementName();
+  static DatabaseClient* FromPage(Page*);
+  static DatabaseClient* From(ExecutionContext*);
+  static const char* SupplementName();
 
-  void setInspectorAgent(InspectorDatabaseAgent*);
+  void SetInspectorAgent(InspectorDatabaseAgent*);
 
  private:
-  Member<InspectorDatabaseAgent> m_inspectorAgent;
+  Member<InspectorDatabaseAgent> inspector_agent_;
 };
 
-MODULES_EXPORT void provideDatabaseClientTo(Page&, DatabaseClient*);
+MODULES_EXPORT void ProvideDatabaseClientTo(Page&, DatabaseClient*);
 
 }  // namespace blink
 

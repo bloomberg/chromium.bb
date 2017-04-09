@@ -15,26 +15,26 @@ namespace blink {
 const CSSValue* CSSPropertyAPIPaintStroke::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  CSSURIValue* url = CSSPropertyParserHelpers::consumeUrl(range, &context);
+  if (range.Peek().Id() == CSSValueNone)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context);
   if (url) {
-    CSSValue* parsedValue = nullptr;
-    if (range.peek().id() == CSSValueNone) {
-      parsedValue = CSSPropertyParserHelpers::consumeIdent(range);
+    CSSValue* parsed_value = nullptr;
+    if (range.Peek().Id() == CSSValueNone) {
+      parsed_value = CSSPropertyParserHelpers::ConsumeIdent(range);
     } else {
-      parsedValue =
-          CSSPropertyParserHelpers::consumeColor(range, context.mode());
+      parsed_value =
+          CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
     }
-    if (parsedValue) {
-      CSSValueList* values = CSSValueList::createSpaceSeparated();
-      values->append(*url);
-      values->append(*parsedValue);
+    if (parsed_value) {
+      CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+      values->Append(*url);
+      values->Append(*parsed_value);
       return values;
     }
     return url;
   }
-  return CSSPropertyParserHelpers::consumeColor(range, context.mode());
+  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
 
 }  // namespace blink

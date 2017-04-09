@@ -147,9 +147,9 @@ void PluginInstanceThrottlerImpl::Initialize(
 
   // |frame| may be nullptr in tests.
   if (frame) {
-    float zoom_factor = GetWebPlugin()->container()->pageZoomFactor();
+    float zoom_factor = GetWebPlugin()->Container()->PageZoomFactor();
     auto status = frame->GetPeripheralContentStatus(
-        frame->GetWebFrame()->top()->getSecurityOrigin(), content_origin,
+        frame->GetWebFrame()->Top()->GetSecurityOrigin(), content_origin,
         gfx::Size(roundf(unobscured_size.width() / zoom_factor),
                   roundf(unobscured_size.height() / zoom_factor)),
         record_decision_);
@@ -201,12 +201,12 @@ bool PluginInstanceThrottlerImpl::ConsumeInputEvent(
   // TODO(tommycli): We should instead show a custom context menu (probably
   // using PluginPlaceholder) so users aren't confused and try to click the
   // Flash-internal 'Play' menu item. This is a stopgap solution.
-  if (event.modifiers() & blink::WebInputEvent::Modifiers::RightButtonDown)
+  if (event.GetModifiers() & blink::WebInputEvent::Modifiers::kRightButtonDown)
     return false;
 
   if (state_ != THROTTLER_STATE_MARKED_ESSENTIAL &&
-      event.type() == blink::WebInputEvent::MouseUp &&
-      (event.modifiers() & blink::WebInputEvent::LeftButtonDown)) {
+      event.GetType() == blink::WebInputEvent::kMouseUp &&
+      (event.GetModifiers() & blink::WebInputEvent::kLeftButtonDown)) {
     bool was_throttled = IsThrottled();
     MarkPluginEssential(UNTHROTTLE_METHOD_BY_CLICK);
     return was_throttled;

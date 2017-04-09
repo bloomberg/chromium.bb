@@ -28,7 +28,7 @@ LazyNow RealTimeDomain::CreateLazyNow() const {
 }
 
 base::TimeTicks RealTimeDomain::Now() const {
-  return task_queue_manager_->delegate()->NowTicks();
+  return task_queue_manager_->Delegate()->NowTicks();
 }
 
 void RealTimeDomain::RequestWakeUpAt(base::TimeTicks now,

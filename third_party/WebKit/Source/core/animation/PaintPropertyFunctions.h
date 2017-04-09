@@ -15,9 +15,9 @@ class Color;
 
 class PaintPropertyFunctions {
  public:
-  static bool getInitialColor(CSSPropertyID, StyleColor& result);
-  static bool getColor(CSSPropertyID, const ComputedStyle&, StyleColor& result);
-  static void setColor(CSSPropertyID, ComputedStyle&, const Color&);
+  static bool GetInitialColor(CSSPropertyID, StyleColor& result);
+  static bool GetColor(CSSPropertyID, const ComputedStyle&, StyleColor& result);
+  static void SetColor(CSSPropertyID, ComputedStyle&, const Color&);
 };
 
 }  // namespace blink

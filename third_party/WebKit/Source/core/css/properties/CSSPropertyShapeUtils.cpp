@@ -16,196 +16,196 @@ using namespace CSSPropertyParserHelpers;
 
 namespace {
 
-static CSSValue* consumeShapeRadius(CSSParserTokenRange& args,
-                                    CSSParserMode cssParserMode) {
-  if (identMatches<CSSValueClosestSide, CSSValueFarthestSide>(args.peek().id()))
-    return consumeIdent(args);
-  return consumeLengthOrPercent(args, cssParserMode, ValueRangeNonNegative);
+static CSSValue* ConsumeShapeRadius(CSSParserTokenRange& args,
+                                    CSSParserMode css_parser_mode) {
+  if (IdentMatches<CSSValueClosestSide, CSSValueFarthestSide>(args.Peek().Id()))
+    return ConsumeIdent(args);
+  return ConsumeLengthOrPercent(args, css_parser_mode, kValueRangeNonNegative);
 }
 
-static CSSBasicShapeCircleValue* consumeBasicShapeCircle(
+static CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
     CSSParserTokenRange& args,
     const CSSParserContext* context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // circle( [<shape-radius>]? [at <position>]? )
-  CSSBasicShapeCircleValue* shape = CSSBasicShapeCircleValue::create();
-  if (CSSValue* radius = consumeShapeRadius(args, context->mode()))
-    shape->setRadius(radius);
-  if (consumeIdent<CSSValueAt>(args)) {
-    CSSValue* centerX = nullptr;
-    CSSValue* centerY = nullptr;
-    if (!consumePosition(args, context->mode(), UnitlessQuirk::Forbid, centerX,
-                         centerY))
+  CSSBasicShapeCircleValue* shape = CSSBasicShapeCircleValue::Create();
+  if (CSSValue* radius = ConsumeShapeRadius(args, context->Mode()))
+    shape->SetRadius(radius);
+  if (ConsumeIdent<CSSValueAt>(args)) {
+    CSSValue* center_x = nullptr;
+    CSSValue* center_y = nullptr;
+    if (!ConsumePosition(args, context->Mode(), UnitlessQuirk::kForbid,
+                         center_x, center_y))
       return nullptr;
-    shape->setCenterX(centerX);
-    shape->setCenterY(centerY);
+    shape->SetCenterX(center_x);
+    shape->SetCenterY(center_y);
   }
   return shape;
 }
 
-static CSSBasicShapeEllipseValue* consumeBasicShapeEllipse(
+static CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
     CSSParserTokenRange& args,
     const CSSParserContext* context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // ellipse( [<shape-radius>{2}]? [at <position>]? )
-  CSSBasicShapeEllipseValue* shape = CSSBasicShapeEllipseValue::create();
-  if (CSSValue* radiusX = consumeShapeRadius(args, context->mode())) {
-    shape->setRadiusX(radiusX);
-    if (CSSValue* radiusY = consumeShapeRadius(args, context->mode()))
-      shape->setRadiusY(radiusY);
+  CSSBasicShapeEllipseValue* shape = CSSBasicShapeEllipseValue::Create();
+  if (CSSValue* radius_x = ConsumeShapeRadius(args, context->Mode())) {
+    shape->SetRadiusX(radius_x);
+    if (CSSValue* radius_y = ConsumeShapeRadius(args, context->Mode()))
+      shape->SetRadiusY(radius_y);
   }
-  if (consumeIdent<CSSValueAt>(args)) {
-    CSSValue* centerX = nullptr;
-    CSSValue* centerY = nullptr;
-    if (!consumePosition(args, context->mode(), UnitlessQuirk::Forbid, centerX,
-                         centerY))
+  if (ConsumeIdent<CSSValueAt>(args)) {
+    CSSValue* center_x = nullptr;
+    CSSValue* center_y = nullptr;
+    if (!ConsumePosition(args, context->Mode(), UnitlessQuirk::kForbid,
+                         center_x, center_y))
       return nullptr;
-    shape->setCenterX(centerX);
-    shape->setCenterY(centerY);
+    shape->SetCenterX(center_x);
+    shape->SetCenterY(center_y);
   }
   return shape;
 }
 
-static CSSBasicShapePolygonValue* consumeBasicShapePolygon(
+static CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
     CSSParserTokenRange& args,
     const CSSParserContext* context) {
-  CSSBasicShapePolygonValue* shape = CSSBasicShapePolygonValue::create();
-  if (identMatches<CSSValueEvenodd, CSSValueNonzero>(args.peek().id())) {
-    shape->setWindRule(args.consumeIncludingWhitespace().id() == CSSValueEvenodd
+  CSSBasicShapePolygonValue* shape = CSSBasicShapePolygonValue::Create();
+  if (IdentMatches<CSSValueEvenodd, CSSValueNonzero>(args.Peek().Id())) {
+    shape->SetWindRule(args.ConsumeIncludingWhitespace().Id() == CSSValueEvenodd
                            ? RULE_EVENODD
                            : RULE_NONZERO);
-    if (!consumeCommaIncludingWhitespace(args))
+    if (!ConsumeCommaIncludingWhitespace(args))
       return nullptr;
   }
 
   do {
-    CSSPrimitiveValue* xLength =
-        consumeLengthOrPercent(args, context->mode(), ValueRangeAll);
-    if (!xLength)
+    CSSPrimitiveValue* x_length =
+        ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+    if (!x_length)
       return nullptr;
-    CSSPrimitiveValue* yLength =
-        consumeLengthOrPercent(args, context->mode(), ValueRangeAll);
-    if (!yLength)
+    CSSPrimitiveValue* y_length =
+        ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
+    if (!y_length)
       return nullptr;
-    shape->appendPoint(xLength, yLength);
-  } while (consumeCommaIncludingWhitespace(args));
+    shape->AppendPoint(x_length, y_length);
+  } while (ConsumeCommaIncludingWhitespace(args));
   return shape;
 }
 
-static CSSBasicShapeInsetValue* consumeBasicShapeInset(
+static CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     CSSParserTokenRange& args,
     const CSSParserContext* context) {
-  CSSBasicShapeInsetValue* shape = CSSBasicShapeInsetValue::create();
+  CSSBasicShapeInsetValue* shape = CSSBasicShapeInsetValue::Create();
   CSSPrimitiveValue* top =
-      consumeLengthOrPercent(args, context->mode(), ValueRangeAll);
+      ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
   if (!top)
     return nullptr;
   CSSPrimitiveValue* right =
-      consumeLengthOrPercent(args, context->mode(), ValueRangeAll);
+      ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
   CSSPrimitiveValue* bottom = nullptr;
   CSSPrimitiveValue* left = nullptr;
   if (right) {
-    bottom = consumeLengthOrPercent(args, context->mode(), ValueRangeAll);
+    bottom = ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
     if (bottom)
-      left = consumeLengthOrPercent(args, context->mode(), ValueRangeAll);
+      left = ConsumeLengthOrPercent(args, context->Mode(), kValueRangeAll);
   }
   if (left)
-    shape->updateShapeSize4Values(top, right, bottom, left);
+    shape->UpdateShapeSize4Values(top, right, bottom, left);
   else if (bottom)
-    shape->updateShapeSize3Values(top, right, bottom);
+    shape->UpdateShapeSize3Values(top, right, bottom);
   else if (right)
-    shape->updateShapeSize2Values(top, right);
+    shape->UpdateShapeSize2Values(top, right);
   else
-    shape->updateShapeSize1Value(top);
+    shape->UpdateShapeSize1Value(top);
 
-  if (consumeIdent<CSSValueRound>(args)) {
-    CSSValue* horizontalRadii[4] = {0};
-    CSSValue* verticalRadii[4] = {0};
-    if (!CSSPropertyShapeUtils::consumeRadii(horizontalRadii, verticalRadii,
-                                             args, context->mode(), false))
+  if (ConsumeIdent<CSSValueRound>(args)) {
+    CSSValue* horizontal_radii[4] = {0};
+    CSSValue* vertical_radii[4] = {0};
+    if (!CSSPropertyShapeUtils::ConsumeRadii(horizontal_radii, vertical_radii,
+                                             args, context->Mode(), false))
       return nullptr;
-    shape->setTopLeftRadius(
-        CSSValuePair::create(horizontalRadii[0], verticalRadii[0],
-                             CSSValuePair::DropIdenticalValues));
-    shape->setTopRightRadius(
-        CSSValuePair::create(horizontalRadii[1], verticalRadii[1],
-                             CSSValuePair::DropIdenticalValues));
-    shape->setBottomRightRadius(
-        CSSValuePair::create(horizontalRadii[2], verticalRadii[2],
-                             CSSValuePair::DropIdenticalValues));
-    shape->setBottomLeftRadius(
-        CSSValuePair::create(horizontalRadii[3], verticalRadii[3],
-                             CSSValuePair::DropIdenticalValues));
+    shape->SetTopLeftRadius(
+        CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
+                             CSSValuePair::kDropIdenticalValues));
+    shape->SetTopRightRadius(
+        CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
+                             CSSValuePair::kDropIdenticalValues));
+    shape->SetBottomRightRadius(
+        CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
+                             CSSValuePair::kDropIdenticalValues));
+    shape->SetBottomLeftRadius(
+        CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
+                             CSSValuePair::kDropIdenticalValues));
   }
   return shape;
 }
 
 }  // namespace
 
-bool CSSPropertyShapeUtils::consumeRadii(CSSValue* horizontalRadii[4],
-                                         CSSValue* verticalRadii[4],
+bool CSSPropertyShapeUtils::ConsumeRadii(CSSValue* horizontal_radii[4],
+                                         CSSValue* vertical_radii[4],
                                          CSSParserTokenRange& range,
-                                         CSSParserMode cssParserMode,
-                                         bool useLegacyParsing) {
+                                         CSSParserMode css_parser_mode,
+                                         bool use_legacy_parsing) {
   unsigned i = 0;
-  for (; i < 4 && !range.atEnd() && range.peek().type() != DelimiterToken;
+  for (; i < 4 && !range.AtEnd() && range.Peek().GetType() != kDelimiterToken;
        ++i) {
-    horizontalRadii[i] =
-        consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-    if (!horizontalRadii[i])
+    horizontal_radii[i] =
+        ConsumeLengthOrPercent(range, css_parser_mode, kValueRangeNonNegative);
+    if (!horizontal_radii[i])
       return false;
   }
-  if (!horizontalRadii[0])
+  if (!horizontal_radii[0])
     return false;
-  if (range.atEnd()) {
+  if (range.AtEnd()) {
     // Legacy syntax: -webkit-border-radius: l1 l2; is equivalent to
     // border-radius: l1 / l2;
-    if (useLegacyParsing && i == 2) {
-      verticalRadii[0] = horizontalRadii[1];
-      horizontalRadii[1] = nullptr;
+    if (use_legacy_parsing && i == 2) {
+      vertical_radii[0] = horizontal_radii[1];
+      horizontal_radii[1] = nullptr;
     } else {
-      complete4Sides(horizontalRadii);
+      Complete4Sides(horizontal_radii);
       for (unsigned i = 0; i < 4; ++i)
-        verticalRadii[i] = horizontalRadii[i];
+        vertical_radii[i] = horizontal_radii[i];
       return true;
     }
   } else {
-    if (!consumeSlashIncludingWhitespace(range))
+    if (!ConsumeSlashIncludingWhitespace(range))
       return false;
-    for (i = 0; i < 4 && !range.atEnd(); ++i) {
-      verticalRadii[i] =
-          consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-      if (!verticalRadii[i])
+    for (i = 0; i < 4 && !range.AtEnd(); ++i) {
+      vertical_radii[i] = ConsumeLengthOrPercent(range, css_parser_mode,
+                                                 kValueRangeNonNegative);
+      if (!vertical_radii[i])
         return false;
     }
-    if (!verticalRadii[0] || !range.atEnd())
+    if (!vertical_radii[0] || !range.AtEnd())
       return false;
   }
-  complete4Sides(horizontalRadii);
-  complete4Sides(verticalRadii);
+  Complete4Sides(horizontal_radii);
+  Complete4Sides(vertical_radii);
   return true;
 }
 
-CSSValue* CSSPropertyShapeUtils::consumeBasicShape(
+CSSValue* CSSPropertyShapeUtils::ConsumeBasicShape(
     CSSParserTokenRange& range,
     const CSSParserContext* context) {
   CSSValue* shape = nullptr;
-  if (range.peek().type() != FunctionToken)
+  if (range.Peek().GetType() != kFunctionToken)
     return nullptr;
-  CSSValueID id = range.peek().functionId();
-  CSSParserTokenRange rangeCopy = range;
-  CSSParserTokenRange args = consumeFunction(rangeCopy);
+  CSSValueID id = range.Peek().FunctionId();
+  CSSParserTokenRange range_copy = range;
+  CSSParserTokenRange args = ConsumeFunction(range_copy);
   if (id == CSSValueCircle)
-    shape = consumeBasicShapeCircle(args, context);
+    shape = ConsumeBasicShapeCircle(args, context);
   else if (id == CSSValueEllipse)
-    shape = consumeBasicShapeEllipse(args, context);
+    shape = ConsumeBasicShapeEllipse(args, context);
   else if (id == CSSValuePolygon)
-    shape = consumeBasicShapePolygon(args, context);
+    shape = ConsumeBasicShapePolygon(args, context);
   else if (id == CSSValueInset)
-    shape = consumeBasicShapeInset(args, context);
-  if (!shape || !args.atEnd())
+    shape = ConsumeBasicShapeInset(args, context);
+  if (!shape || !args.AtEnd())
     return nullptr;
-  range = rangeCopy;
+  range = range_copy;
   return shape;
 }
 

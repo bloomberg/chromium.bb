@@ -111,8 +111,8 @@ bool CanOpenViaFastPath(content::PepperPluginInstance* plugin_instance,
   // same-origin policy which prevents the app from requesting resources from
   // another app.
   blink::WebSecurityOrigin security_origin =
-      plugin_instance->GetContainer()->document().getSecurityOrigin();
-  return security_origin.canRequest(gurl);
+      plugin_instance->GetContainer()->GetDocument().GetSecurityOrigin();
+  return security_origin.CanRequest(gurl);
 }
 
 // This contains state that is produced by LaunchSelLdr() and consumed
@@ -322,24 +322,24 @@ blink::WebAssociatedURLLoader* CreateAssociatedURLLoader(
     const blink::WebDocument& document,
     const GURL& gurl) {
   blink::WebAssociatedURLLoaderOptions options;
-  options.untrustedHTTP = true;
+  options.untrusted_http = true;
 
   // Options settings here follow the original behavior in the trusted
   // plugin and PepperURLLoaderHost.
-  if (document.getSecurityOrigin().canRequest(gurl)) {
-    options.allowCredentials = true;
+  if (document.GetSecurityOrigin().CanRequest(gurl)) {
+    options.allow_credentials = true;
   } else {
     // Allow CORS.
-    options.crossOriginRequestPolicy = blink::WebAssociatedURLLoaderOptions::
-        CrossOriginRequestPolicyUseAccessControl;
+    options.cross_origin_request_policy = blink::WebAssociatedURLLoaderOptions::
+        kCrossOriginRequestPolicyUseAccessControl;
   }
-  return document.frame()->createAssociatedURLLoader(options);
+  return document.GetFrame()->CreateAssociatedURLLoader(options);
 }
 
 blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
                                          const GURL& gurl) {
   blink::WebURLRequest request(gurl);
-  request.setFirstPartyForCookies(document.firstPartyForCookies());
+  request.SetFirstPartyForCookies(document.FirstPartyForCookies());
   return request;
 }
 
@@ -1024,7 +1024,7 @@ void DownloadManifestToBuffer(PP_Instance instance,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
   }
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->document();
+      plugin_instance->GetContainer()->GetDocument();
 
   const GURL& gurl = load_manager->manifest_base_url();
   std::unique_ptr<blink::WebAssociatedURLLoader> url_loader(
@@ -1379,7 +1379,7 @@ void PPBNaClPrivate::DownloadNexe(PP_Instance instance,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
   }
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->document();
+      plugin_instance->GetContainer()->GetDocument();
   std::unique_ptr<blink::WebAssociatedURLLoader> url_loader(
       CreateAssociatedURLLoader(document, gurl));
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
@@ -1531,7 +1531,7 @@ void DownloadFile(PP_Instance instance,
                               kInvalidNaClFileInfo));
   }
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->document();
+      plugin_instance->GetContainer()->GetDocument();
   std::unique_ptr<blink::WebAssociatedURLLoader> url_loader(
       CreateAssociatedURLLoader(document, gurl));
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
@@ -1605,36 +1605,36 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
         weak_factory_(this) {}
 
   void Load(const blink::WebURLRequest& request) {
-    url_loader_->loadAsynchronously(request, this);
+    url_loader_->LoadAsynchronously(request, this);
   }
 
  private:
-  void didReceiveResponse(const blink::WebURLResponse& response) override {
-    success_ = (response.httpStatusCode() == 200);
+  void DidReceiveResponse(const blink::WebURLResponse& response) override {
+    success_ = (response.HttpStatusCode() == 200);
     if (!success_)
       return;
 
-    expected_content_length_ = response.expectedContentLength();
+    expected_content_length_ = response.ExpectedContentLength();
 
     // Defer loading after receiving headers. This is because we may already
     // have a cached translated nexe, so check for that now.
-    url_loader_->setDefersLoading(true);
+    url_loader_->SetDefersLoading(true);
 
-    std::string etag = response.httpHeaderField("etag").utf8();
+    std::string etag = response.HttpHeaderField("etag").Utf8();
 
     // Parse the "last-modified" date string. An invalid string will result
     // in a base::Time value of 0, which is supported by the only user of
     // the |CacheInfo::last_modified| field (see
     // pnacl::PnaclTranslationCache::GetKey()).
     std::string last_modified =
-        response.httpHeaderField("last-modified").utf8();
+        response.HttpHeaderField("last-modified").Utf8();
     base::Time last_modified_time;
     ignore_result(
         base::Time::FromString(last_modified.c_str(), &last_modified_time));
 
     bool has_no_store_header = false;
     std::string cache_control =
-        response.httpHeaderField("cache-control").utf8();
+        response.HttpHeaderField("cache-control").Utf8();
 
     for (const std::string& cur : base::SplitString(
              cache_control, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
@@ -1674,10 +1674,10 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
 
     // No translated nexe was found in the cache, so we should download the
     // file to start streaming it.
-    url_loader_->setDefersLoading(false);
+    url_loader_->SetDefersLoading(false);
   }
 
-  void didReceiveData(const char* data, int data_length) override {
+  void DidReceiveData(const char* data, int data_length) override {
     if (content::PepperPluginInstance::Get(instance_)) {
       // Stream the data we received to the stream callback.
       stream_handler_->DidStreamData(stream_handler_user_data_,
@@ -1686,7 +1686,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
     }
   }
 
-  void didFinishLoading(double finish_time) override {
+  void DidFinishLoading(double finish_time) override {
     int32_t result = success_ ? PP_OK : PP_ERROR_FAILED;
 
     if (content::PepperPluginInstance::Get(instance_))
@@ -1694,7 +1694,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
     delete this;
   }
 
-  void didFail(const blink::WebURLError& error) override {
+  void DidFail(const blink::WebURLError& error) override {
     if (content::PepperPluginInstance::Get(instance_))
       stream_handler_->DidFinishStream(stream_handler_user_data_,
                                        PP_ERROR_FAILED);
@@ -1733,7 +1733,7 @@ void PPBNaClPrivate::StreamPexe(PP_Instance instance,
 
   GURL gurl(pexe_url);
   const blink::WebDocument& document =
-      plugin_instance->GetContainer()->document();
+      plugin_instance->GetContainer()->GetDocument();
   std::unique_ptr<blink::WebAssociatedURLLoader> url_loader(
       CreateAssociatedURLLoader(document, gurl));
   PexeDownloader* downloader =
@@ -1743,10 +1743,10 @@ void PPBNaClPrivate::StreamPexe(PP_Instance instance,
   blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
   // Mark the request as requesting a PNaCl bitcode file,
   // so that component updater can detect this user action.
-  url_request.addHTTPHeaderField(
-      blink::WebString::fromUTF8("Accept"),
-      blink::WebString::fromUTF8("application/x-pnacl, */*"));
-  url_request.setRequestContext(blink::WebURLRequest::RequestContextObject);
+  url_request.AddHTTPHeaderField(
+      blink::WebString::FromUTF8("Accept"),
+      blink::WebString::FromUTF8("application/x-pnacl, */*"));
+  url_request.SetRequestContext(blink::WebURLRequest::kRequestContextObject);
   downloader->Load(url_request);
 }
 

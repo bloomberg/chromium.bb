@@ -56,25 +56,25 @@ class WebDataSource {
   };
 
   // Returns the original request that resulted in this datasource.
-  virtual const WebURLRequest& originalRequest() const = 0;
+  virtual const WebURLRequest& OriginalRequest() const = 0;
 
   // Returns the request corresponding to this datasource.  It may
   // include additional request headers added by WebKit that were not
   // present in the original request.  This request may also correspond
   // to a location specified by a redirect that was followed.
-  virtual const WebURLRequest& getRequest() const = 0;
+  virtual const WebURLRequest& GetRequest() const = 0;
 
   // Returns the response associated with this datasource.
-  virtual const WebURLResponse& response() const = 0;
+  virtual const WebURLResponse& GetResponse() const = 0;
 
   // When this datasource was created as a result of WebFrame::loadData,
   // there may be an associated unreachableURL.
-  virtual bool hasUnreachableURL() const = 0;
-  virtual WebURL unreachableURL() const = 0;
+  virtual bool HasUnreachableURL() const = 0;
+  virtual WebURL UnreachableURL() const = 0;
 
   // Allows the embedder to append redirects to the chain as a navigation
   // is starting, in case it is being transferred from another process.
-  virtual void appendRedirect(const WebURL&) = 0;
+  virtual void AppendRedirect(const WebURL&) = 0;
 
   // Returns all redirects that occurred (both client and server) before
   // at last committing the current page.  This will contain one entry
@@ -82,25 +82,25 @@ class WebDataSource {
   // there are no redirects, it will contain exactly the current URL, and
   // if there is one redirect, it will contain the source and destination
   // URL).
-  virtual void redirectChain(WebVector<WebURL>&) const = 0;
+  virtual void RedirectChain(WebVector<WebURL>&) const = 0;
 
   // Returns whether the navigation associated with this datasource is a
   // client redirect.
-  virtual bool isClientRedirect() const = 0;
+  virtual bool IsClientRedirect() const = 0;
 
   // Returns whether the navigation associated with this datasource should
   // replace the current history item.
-  virtual bool replacesCurrentHistoryItem() const = 0;
+  virtual bool ReplacesCurrentHistoryItem() const = 0;
 
   // The type of navigation that triggered the creation of this datasource.
-  virtual WebNavigationType navigationType() const = 0;
+  virtual WebNavigationType GetNavigationType() const = 0;
 
   // Extra data associated with this datasource.  If non-null, the extra
   // data pointer will be deleted when the datasource is destroyed.
   // Setting the extra data pointer will cause any existing non-null
   // extra data pointer to be deleted.
-  virtual ExtraData* getExtraData() const = 0;
-  virtual void setExtraData(ExtraData*) = 0;
+  virtual ExtraData* GetExtraData() const = 0;
+  virtual void SetExtraData(ExtraData*) = 0;
 
   // Sets the navigation start time for this datasource. Ordinarily,
   // navigation start is determined in WebCore. But, in some situations,
@@ -108,34 +108,34 @@ class WebDataSource {
   // should be called before WebFrameClient::didCommitProvisionalLoad.
   // Calling it later may confuse users, because JavaScript may have run and
   // the user may have already recorded the original value.
-  virtual void setNavigationStartTime(double) = 0;
+  virtual void SetNavigationStartTime(double) = 0;
 
   // Sets timing and attributes of the navigation.
   // Ordinarily, they are determined in WebCore, but when the navigation is
   // handled by the client, they can be passed here.
-  virtual void updateNavigation(double redirectStartTime,
-                                double redirectEndTime,
-                                double fetchStartTime,
-                                bool hasRedirect) = 0;
+  virtual void UpdateNavigation(double redirect_start_time,
+                                double redirect_end_time,
+                                double fetch_start_time,
+                                bool has_redirect) = 0;
 
   // Allows the embedder to inject a filter that will be consulted for each
   // subsequent subresource load, and gets the final say in deciding whether
   // or not to allow the load. The passed-in filter object is deleted when the
   // datasource is destroyed or when a new filter is set.
-  virtual void setSubresourceFilter(WebDocumentSubresourceFilter*) = 0;
+  virtual void SetSubresourceFilter(WebDocumentSubresourceFilter*) = 0;
 
   // Allows the embedder to set and return the service worker provider
   // associated with the data source. The provider may provide the service
   // worker that controls the resource loading from this data source.
-  virtual void setServiceWorkerNetworkProvider(
+  virtual void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>) = 0;
   virtual WebServiceWorkerNetworkProvider*
-  getServiceWorkerNetworkProvider() = 0;
+  GetServiceWorkerNetworkProvider() = 0;
 
   // PlzNavigate
   // Allows to specify the SourceLocation that triggered the navigation.
-  virtual void setSourceLocation(const WebSourceLocation&) = 0;
-  virtual void resetSourceLocation() = 0;
+  virtual void SetSourceLocation(const WebSourceLocation&) = 0;
+  virtual void ResetSourceLocation() = 0;
 
  protected:
   ~WebDataSource() {}

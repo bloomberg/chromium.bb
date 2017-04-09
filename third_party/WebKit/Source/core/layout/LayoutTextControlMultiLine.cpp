@@ -36,86 +36,87 @@ LayoutTextControlMultiLine::LayoutTextControlMultiLine(
 
 LayoutTextControlMultiLine::~LayoutTextControlMultiLine() {}
 
-bool LayoutTextControlMultiLine::nodeAtPoint(
+bool LayoutTextControlMultiLine::NodeAtPoint(
     HitTestResult& result,
-    const HitTestLocation& locationInContainer,
-    const LayoutPoint& accumulatedOffset,
-    HitTestAction hitTestAction) {
-  if (!LayoutTextControl::nodeAtPoint(result, locationInContainer,
-                                      accumulatedOffset, hitTestAction))
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& accumulated_offset,
+    HitTestAction hit_test_action) {
+  if (!LayoutTextControl::NodeAtPoint(result, location_in_container,
+                                      accumulated_offset, hit_test_action))
     return false;
 
-  if (result.innerNode() == node() ||
-      result.innerNode() == innerEditorElement())
-    hitInnerEditorElement(result, locationInContainer.point(),
-                          accumulatedOffset);
+  if (result.InnerNode() == GetNode() ||
+      result.InnerNode() == InnerEditorElement())
+    HitInnerEditorElement(result, location_in_container.Point(),
+                          accumulated_offset);
 
   return true;
 }
 
-float LayoutTextControlMultiLine::getAvgCharWidth(
+float LayoutTextControlMultiLine::GetAvgCharWidth(
     const AtomicString& family) const {
   // Match the default system font to the width of MS Shell Dlg, the default
   // font for textareas in Firefox, Safari Win and IE for some encodings (in
   // IE, the default font is encoding specific). 1229 is the avgCharWidth
   // value in the OS/2 table for Courier New.
-  if (LayoutTheme::theme().needsHackForTextControlWithFontFamily(family))
-    return scaleEmToUnits(1229);
+  if (LayoutTheme::GetTheme().NeedsHackForTextControlWithFontFamily(family))
+    return ScaleEmToUnits(1229);
 
-  return LayoutTextControl::getAvgCharWidth(family);
+  return LayoutTextControl::GetAvgCharWidth(family);
 }
 
-LayoutUnit LayoutTextControlMultiLine::preferredContentLogicalWidth(
-    float charWidth) const {
-  int factor = toHTMLTextAreaElement(node())->cols();
-  return static_cast<LayoutUnit>(ceilf(charWidth * factor)) +
-         scrollbarThickness();
+LayoutUnit LayoutTextControlMultiLine::PreferredContentLogicalWidth(
+    float char_width) const {
+  int factor = toHTMLTextAreaElement(GetNode())->cols();
+  return static_cast<LayoutUnit>(ceilf(char_width * factor)) +
+         ScrollbarThickness();
 }
 
-LayoutUnit LayoutTextControlMultiLine::computeControlLogicalHeight(
-    LayoutUnit lineHeight,
-    LayoutUnit nonContentHeight) const {
-  return lineHeight * toHTMLTextAreaElement(node())->rows() + nonContentHeight;
+LayoutUnit LayoutTextControlMultiLine::ComputeControlLogicalHeight(
+    LayoutUnit line_height,
+    LayoutUnit non_content_height) const {
+  return line_height * toHTMLTextAreaElement(GetNode())->rows() +
+         non_content_height;
 }
 
-int LayoutTextControlMultiLine::baselinePosition(
-    FontBaseline baselineType,
-    bool firstLine,
+int LayoutTextControlMultiLine::BaselinePosition(
+    FontBaseline baseline_type,
+    bool first_line,
     LineDirectionMode direction,
-    LinePositionMode linePositionMode) const {
-  return LayoutBox::baselinePosition(baselineType, firstLine, direction,
-                                     linePositionMode);
+    LinePositionMode line_position_mode) const {
+  return LayoutBox::BaselinePosition(baseline_type, first_line, direction,
+                                     line_position_mode);
 }
 
-PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::createInnerEditorStyle(
-    const ComputedStyle& startStyle) const {
-  RefPtr<ComputedStyle> textBlockStyle = ComputedStyle::create();
-  textBlockStyle->inheritFrom(startStyle);
-  adjustInnerEditorStyle(*textBlockStyle);
-  textBlockStyle->setDisplay(EDisplay::kBlock);
-  textBlockStyle->setUnique();
+PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::CreateInnerEditorStyle(
+    const ComputedStyle& start_style) const {
+  RefPtr<ComputedStyle> text_block_style = ComputedStyle::Create();
+  text_block_style->InheritFrom(start_style);
+  AdjustInnerEditorStyle(*text_block_style);
+  text_block_style->SetDisplay(EDisplay::kBlock);
+  text_block_style->SetUnique();
 
-  return textBlockStyle.release();
+  return text_block_style.Release();
 }
 
-LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(
-    bool relayoutChildren,
-    SubtreeLayoutScope& layoutScope) {
-  LayoutObject* placeholderLayoutObject =
-      LayoutTextControl::layoutSpecialExcludedChild(relayoutChildren,
-                                                    layoutScope);
-  if (!placeholderLayoutObject)
+LayoutObject* LayoutTextControlMultiLine::LayoutSpecialExcludedChild(
+    bool relayout_children,
+    SubtreeLayoutScope& layout_scope) {
+  LayoutObject* placeholder_layout_object =
+      LayoutTextControl::LayoutSpecialExcludedChild(relayout_children,
+                                                    layout_scope);
+  if (!placeholder_layout_object)
     return nullptr;
-  if (!placeholderLayoutObject->isBox())
-    return placeholderLayoutObject;
-  LayoutBox* placeholderBox = toLayoutBox(placeholderLayoutObject);
-  placeholderBox->mutableStyleRef().setLogicalWidth(Length(
-      contentLogicalWidth() - placeholderBox->borderAndPaddingLogicalWidth(),
-      Fixed));
-  placeholderBox->layoutIfNeeded();
-  placeholderBox->setX(borderLeft() + paddingLeft());
-  placeholderBox->setY(borderTop() + paddingTop());
-  return placeholderLayoutObject;
+  if (!placeholder_layout_object->IsBox())
+    return placeholder_layout_object;
+  LayoutBox* placeholder_box = ToLayoutBox(placeholder_layout_object);
+  placeholder_box->MutableStyleRef().SetLogicalWidth(Length(
+      ContentLogicalWidth() - placeholder_box->BorderAndPaddingLogicalWidth(),
+      kFixed));
+  placeholder_box->LayoutIfNeeded();
+  placeholder_box->SetX(BorderLeft() + PaddingLeft());
+  placeholder_box->SetY(BorderTop() + PaddingTop());
+  return placeholder_layout_object;
 }
 
 }  // namespace blink

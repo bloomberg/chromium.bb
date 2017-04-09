@@ -9,21 +9,21 @@ namespace blink {
 DragAndDropCommand::DragAndDropCommand(Document& document)
     : CompositeEditCommand(document) {}
 
-bool DragAndDropCommand::isCommandGroupWrapper() const {
+bool DragAndDropCommand::IsCommandGroupWrapper() const {
   return true;
 }
 
-bool DragAndDropCommand::isDragAndDropCommand() const {
+bool DragAndDropCommand::IsDragAndDropCommand() const {
   return true;
 }
 
-void DragAndDropCommand::doApply(EditingState*) {
+void DragAndDropCommand::DoApply(EditingState*) {
   // Do nothing. Should only register undo entry after combined with other
   // commands.
 }
 
-InputEvent::InputType DragAndDropCommand::inputType() const {
-  return InputEvent::InputType::None;
+InputEvent::InputType DragAndDropCommand::GetInputType() const {
+  return InputEvent::InputType::kNone;
 }
 
 }  // namespace blink

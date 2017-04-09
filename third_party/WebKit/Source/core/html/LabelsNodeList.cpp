@@ -33,15 +33,15 @@ namespace blink {
 
 using namespace HTMLNames;
 
-LabelsNodeList::LabelsNodeList(ContainerNode& ownerNode)
-    : LiveNodeList(ownerNode,
-                   LabelsNodeListType,
-                   InvalidateOnForAttrChange,
-                   NodeListRootType::TreeScope) {}
+LabelsNodeList::LabelsNodeList(ContainerNode& owner_node)
+    : LiveNodeList(owner_node,
+                   kLabelsNodeListType,
+                   kInvalidateOnForAttrChange,
+                   NodeListRootType::kTreeScope) {}
 
 LabelsNodeList::~LabelsNodeList() {}
 
-bool LabelsNodeList::elementMatches(const Element& element) const {
+bool LabelsNodeList::ElementMatches(const Element& element) const {
   return isHTMLLabelElement(element) &&
          toHTMLLabelElement(element).control() == ownerNode();
 }

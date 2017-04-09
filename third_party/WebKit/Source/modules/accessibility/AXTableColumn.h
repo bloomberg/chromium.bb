@@ -44,30 +44,30 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
   explicit AXTableColumn(AXObjectCacheImpl&);
 
  public:
-  static AXTableColumn* create(AXObjectCacheImpl&);
+  static AXTableColumn* Create(AXObjectCacheImpl&);
   ~AXTableColumn() override;
 
   // retrieves the topmost "column" header (th)
-  AXObject* headerObject();
+  AXObject* HeaderObject();
   // retrieves the "column" headers (th, scope) from top to bottom
-  void headerObjectsForColumn(AXObjectVector&);
+  void HeaderObjectsForColumn(AXObjectVector&);
 
-  AccessibilityRole roleValue() const override { return ColumnRole; }
+  AccessibilityRole RoleValue() const override { return kColumnRole; }
 
-  void setColumnIndex(int columnIndex) { m_columnIndex = columnIndex; }
-  int columnIndex() const { return m_columnIndex; }
+  void SetColumnIndex(int column_index) { column_index_ = column_index; }
+  int ColumnIndex() const { return column_index_; }
 
-  void addChildren() override;
-  void setParent(AXObject*) override;
+  void AddChildren() override;
+  void SetParent(AXObject*) override;
 
  private:
-  unsigned m_columnIndex;
+  unsigned column_index_;
 
-  bool isTableCol() const override { return true; }
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool IsTableCol() const override { return true; }
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, IsTableCol());
 
 }  // namespace blink
 

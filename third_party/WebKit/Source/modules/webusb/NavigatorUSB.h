@@ -21,7 +21,7 @@ class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
  public:
   // Gets, or creates, NavigatorUSB supplement on Navigator.
   // See platform/Supplementable.h
-  static NavigatorUSB& from(Navigator&);
+  static NavigatorUSB& From(Navigator&);
 
   static USB* usb(Navigator&);
   USB* usb();
@@ -30,9 +30,9 @@ class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
 
  private:
   explicit NavigatorUSB(Navigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<USB> m_usb;
+  Member<USB> usb_;
 };
 
 }  // namespace blink

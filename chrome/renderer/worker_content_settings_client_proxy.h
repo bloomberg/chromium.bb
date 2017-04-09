@@ -32,8 +32,8 @@ class WorkerContentSettingsClientProxy
   ~WorkerContentSettingsClientProxy() override;
 
   // WebWorkerContentSettingsClientProxy overrides.
-  bool requestFileSystemAccessSync() override;
-  bool allowIndexedDB(const blink::WebString& name) override;
+  bool RequestFileSystemAccessSync() override;
+  bool AllowIndexedDB(const blink::WebString& name) override;
 
  private:
   // Loading document context for this worker.

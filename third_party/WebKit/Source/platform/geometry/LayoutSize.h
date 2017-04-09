@@ -41,7 +41,7 @@
 
 namespace blink {
 
-enum AspectRatioFit { AspectRatioFitShrink, AspectRatioFitGrow };
+enum AspectRatioFit { kAspectRatioFitShrink, kAspectRatioFitGrow };
 
 class PLATFORM_EXPORT LayoutSize {
   DISALLOW_NEW();
@@ -49,167 +49,167 @@ class PLATFORM_EXPORT LayoutSize {
  public:
   LayoutSize() {}
   explicit LayoutSize(const IntSize& size)
-      : m_width(size.width()), m_height(size.height()) {}
+      : width_(size.Width()), height_(size.Height()) {}
   LayoutSize(LayoutUnit width, LayoutUnit height)
-      : m_width(width), m_height(height) {}
+      : width_(width), height_(height) {}
   LayoutSize(int width, int height)
-      : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) {}
+      : width_(LayoutUnit(width)), height_(LayoutUnit(height)) {}
   LayoutSize(float width, float height)
-      : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) {}
+      : width_(LayoutUnit(width)), height_(LayoutUnit(height)) {}
 
   explicit LayoutSize(const FloatSize& size)
-      : m_width(size.width()), m_height(size.height()) {}
+      : width_(size.Width()), height_(size.Height()) {}
   explicit LayoutSize(const DoubleSize& size)
-      : m_width(size.width()), m_height(size.height()) {}
+      : width_(size.Width()), height_(size.Height()) {}
 
-  LayoutUnit width() const { return m_width; }
-  LayoutUnit height() const { return m_height; }
+  LayoutUnit Width() const { return width_; }
+  LayoutUnit Height() const { return height_; }
 
-  void setWidth(LayoutUnit width) { m_width = width; }
-  void setHeight(LayoutUnit height) { m_height = height; }
+  void SetWidth(LayoutUnit width) { width_ = width; }
+  void SetHeight(LayoutUnit height) { height_ = height; }
 
-  bool isEmpty() const {
-    return m_width.rawValue() <= 0 || m_height.rawValue() <= 0;
+  bool IsEmpty() const {
+    return width_.RawValue() <= 0 || height_.RawValue() <= 0;
   }
-  bool isZero() const { return !m_width && !m_height; }
+  bool IsZero() const { return !width_ && !height_; }
 
-  float aspectRatio() const { return m_width.toFloat() / m_height.toFloat(); }
+  float AspectRatio() const { return width_.ToFloat() / height_.ToFloat(); }
 
-  void expand(LayoutUnit width, LayoutUnit height) {
-    m_width += width;
-    m_height += height;
-  }
-
-  void expand(int width, int height) {
-    expand(LayoutUnit(width), LayoutUnit(height));
+  void Expand(LayoutUnit width, LayoutUnit height) {
+    width_ += width;
+    height_ += height;
   }
 
-  void shrink(int width, int height) {
-    shrink(LayoutUnit(width), LayoutUnit(height));
+  void Expand(int width, int height) {
+    Expand(LayoutUnit(width), LayoutUnit(height));
   }
 
-  void shrink(LayoutUnit width, LayoutUnit height) {
-    m_width -= width;
-    m_height -= height;
+  void Shrink(int width, int height) {
+    Shrink(LayoutUnit(width), LayoutUnit(height));
   }
 
-  void scale(float scale) {
-    m_width *= scale;
-    m_height *= scale;
+  void Shrink(LayoutUnit width, LayoutUnit height) {
+    width_ -= width;
+    height_ -= height;
   }
 
-  void scale(float widthScale, float heightScale) {
-    m_width *= widthScale;
-    m_height *= heightScale;
+  void Scale(float scale) {
+    width_ *= scale;
+    height_ *= scale;
   }
 
-  LayoutSize expandedTo(const LayoutSize& other) const {
-    return LayoutSize(m_width > other.m_width ? m_width : other.m_width,
-                      m_height > other.m_height ? m_height : other.m_height);
+  void Scale(float width_scale, float height_scale) {
+    width_ *= width_scale;
+    height_ *= height_scale;
   }
 
-  LayoutSize expandedTo(const IntSize& other) const {
+  LayoutSize ExpandedTo(const LayoutSize& other) const {
+    return LayoutSize(width_ > other.width_ ? width_ : other.width_,
+                      height_ > other.height_ ? height_ : other.height_);
+  }
+
+  LayoutSize ExpandedTo(const IntSize& other) const {
     return LayoutSize(
-        m_width > other.width() ? m_width : LayoutUnit(other.width()),
-        m_height > other.height() ? m_height : LayoutUnit(other.height()));
+        width_ > other.Width() ? width_ : LayoutUnit(other.Width()),
+        height_ > other.Height() ? height_ : LayoutUnit(other.Height()));
   }
 
-  LayoutSize shrunkTo(const LayoutSize& other) const {
-    return LayoutSize(m_width < other.m_width ? m_width : other.m_width,
-                      m_height < other.m_height ? m_height : other.m_height);
+  LayoutSize ShrunkTo(const LayoutSize& other) const {
+    return LayoutSize(width_ < other.width_ ? width_ : other.width_,
+                      height_ < other.height_ ? height_ : other.height_);
   }
 
-  void clampNegativeToZero() { *this = expandedTo(LayoutSize()); }
+  void ClampNegativeToZero() { *this = ExpandedTo(LayoutSize()); }
 
-  void clampToMinimumSize(const LayoutSize& minimumSize) {
-    if (m_width < minimumSize.width())
-      m_width = minimumSize.width();
-    if (m_height < minimumSize.height())
-      m_height = minimumSize.height();
+  void ClampToMinimumSize(const LayoutSize& minimum_size) {
+    if (width_ < minimum_size.Width())
+      width_ = minimum_size.Width();
+    if (height_ < minimum_size.Height())
+      height_ = minimum_size.Height();
   }
 
-  LayoutSize transposedSize() const { return LayoutSize(m_height, m_width); }
+  LayoutSize TransposedSize() const { return LayoutSize(height_, width_); }
 
-  LayoutSize fitToAspectRatio(const LayoutSize& aspectRatio,
+  LayoutSize FitToAspectRatio(const LayoutSize& aspect_ratio,
                               AspectRatioFit fit) const {
-    float heightScale = height().toFloat() / aspectRatio.height().toFloat();
-    float widthScale = width().toFloat() / aspectRatio.width().toFloat();
-    if ((widthScale > heightScale) != (fit == AspectRatioFitGrow))
-      return LayoutSize(height() * aspectRatio.width() / aspectRatio.height(),
-                        height());
-    return LayoutSize(width(),
-                      width() * aspectRatio.height() / aspectRatio.width());
+    float height_scale = Height().ToFloat() / aspect_ratio.Height().ToFloat();
+    float width_scale = Width().ToFloat() / aspect_ratio.Width().ToFloat();
+    if ((width_scale > height_scale) != (fit == kAspectRatioFitGrow))
+      return LayoutSize(Height() * aspect_ratio.Width() / aspect_ratio.Height(),
+                        Height());
+    return LayoutSize(Width(),
+                      Width() * aspect_ratio.Height() / aspect_ratio.Width());
   }
 
-  LayoutSize fraction() const {
-    return LayoutSize(m_width.fraction(), m_height.fraction());
+  LayoutSize Fraction() const {
+    return LayoutSize(width_.Fraction(), height_.Fraction());
   }
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  LayoutUnit m_width, m_height;
+  LayoutUnit width_, height_;
 };
 
 inline LayoutSize& operator+=(LayoutSize& a, const LayoutSize& b) {
-  a.setWidth(a.width() + b.width());
-  a.setHeight(a.height() + b.height());
+  a.SetWidth(a.Width() + b.Width());
+  a.SetHeight(a.Height() + b.Height());
   return a;
 }
 
 inline LayoutSize& operator-=(LayoutSize& a, const LayoutSize& b) {
-  a.setWidth(a.width() - b.width());
-  a.setHeight(a.height() - b.height());
+  a.SetWidth(a.Width() - b.Width());
+  a.SetHeight(a.Height() - b.Height());
   return a;
 }
 
 inline LayoutSize& operator-=(LayoutSize& a, const IntSize& b) {
-  a.setWidth(a.width() - b.width());
-  a.setHeight(a.height() - b.height());
+  a.SetWidth(a.Width() - b.Width());
+  a.SetHeight(a.Height() - b.Height());
   return a;
 }
 
 inline LayoutSize operator+(const LayoutSize& a, const LayoutSize& b) {
-  return LayoutSize(a.width() + b.width(), a.height() + b.height());
+  return LayoutSize(a.Width() + b.Width(), a.Height() + b.Height());
 }
 
 inline LayoutSize operator+(const LayoutSize& a, const IntSize& b) {
-  return LayoutSize(a.width() + b.width(), a.height() + b.height());
+  return LayoutSize(a.Width() + b.Width(), a.Height() + b.Height());
 }
 
 inline LayoutSize operator-(const LayoutSize& a, const LayoutSize& b) {
-  return LayoutSize(a.width() - b.width(), a.height() - b.height());
+  return LayoutSize(a.Width() - b.Width(), a.Height() - b.Height());
 }
 
 inline LayoutSize operator-(const LayoutSize& size) {
-  return LayoutSize(-size.width(), -size.height());
+  return LayoutSize(-size.Width(), -size.Height());
 }
 
 inline bool operator==(const LayoutSize& a, const LayoutSize& b) {
-  return a.width() == b.width() && a.height() == b.height();
+  return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
 inline bool operator==(const LayoutSize& a, const IntSize& b) {
-  return a.width() == b.width() && a.height() == b.height();
+  return a.Width() == b.Width() && a.Height() == b.Height();
 }
 
 inline bool operator!=(const LayoutSize& a, const LayoutSize& b) {
-  return a.width() != b.width() || a.height() != b.height();
+  return a.Width() != b.Width() || a.Height() != b.Height();
 }
 
 inline FloatPoint operator+(const FloatPoint& a, const LayoutSize& b) {
-  return FloatPoint(a.x() + b.width(), a.y() + b.height());
+  return FloatPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
-inline IntSize flooredIntSize(const LayoutSize& s) {
-  return IntSize(s.width().floor(), s.height().floor());
+inline IntSize FlooredIntSize(const LayoutSize& s) {
+  return IntSize(s.Width().Floor(), s.Height().Floor());
 }
 
-inline IntSize roundedIntSize(const LayoutSize& s) {
-  return IntSize(s.width().round(), s.height().round());
+inline IntSize RoundedIntSize(const LayoutSize& s) {
+  return IntSize(s.Width().Round(), s.Height().Round());
 }
 
-inline LayoutSize roundedLayoutSize(const FloatSize& s) {
+inline LayoutSize RoundedLayoutSize(const FloatSize& s) {
   return LayoutSize(s);
 }
 

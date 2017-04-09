@@ -30,11 +30,11 @@ class CORE_EXPORT EditingState final {
   EditingState();
   ~EditingState();
 
-  void abort();
-  bool isAborted() const { return m_isAborted; }
+  void Abort();
+  bool IsAborted() const { return is_aborted_; }
 
  private:
-  bool m_isAborted = false;
+  bool is_aborted_ = false;
 };
 
 // TODO(yosin): Once all commands aware |EditingState|, we get rid of
@@ -47,17 +47,17 @@ class IgnorableEditingAbortState final {
   IgnorableEditingAbortState();
   ~IgnorableEditingAbortState();
 
-  EditingState* editingState() { return &m_editingState; }
+  EditingState* GetEditingState() { return &editing_state_; }
 
  private:
-  EditingState m_editingState;
+  EditingState editing_state_;
 };
 
 // Abort the editing command if the specified expression is true.
 #define ABORT_EDITING_COMMAND_IF(expr) \
   do {                                 \
     if (expr) {                        \
-      editingState->abort();           \
+      editing_state->Abort();          \
       return;                          \
     }                                  \
   } while (false)
@@ -72,12 +72,12 @@ class NoEditingAbortChecker final {
   NoEditingAbortChecker(const char* file, int line);
   ~NoEditingAbortChecker();
 
-  EditingState* editingState() { return &m_editingState; }
+  EditingState* GetEditingState() { return &editing_state_; }
 
  private:
-  EditingState m_editingState;
-  const char* const m_file;
-  int const m_line;
+  EditingState editing_state_;
+  const char* const file_;
+  int const line_;
 };
 
 // If a function with EditingState* argument should not be aborted,
@@ -86,9 +86,9 @@ class NoEditingAbortChecker final {
 // It causes an assertion failure If DCHECK_IS_ON() and the function was aborted
 // unexpectedly.
 #define ASSERT_NO_EDITING_ABORT \
-  (NoEditingAbortChecker(__FILE__, __LINE__).editingState())
+  (NoEditingAbortChecker(__FILE__, __LINE__).GetEditingState())
 #else
-#define ASSERT_NO_EDITING_ABORT (IgnorableEditingAbortState().editingState())
+#define ASSERT_NO_EDITING_ABORT (IgnorableEditingAbortState().GetEditingState())
 #endif
 
 }  // namespace blink

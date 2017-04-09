@@ -13,57 +13,57 @@ namespace blink {
 
 WorkletScriptLoader::WorkletScriptLoader(ResourceFetcher* fetcher,
                                          Client* client)
-    : m_fetcher(fetcher), m_client(client) {}
+    : fetcher_(fetcher), client_(client) {}
 
-void WorkletScriptLoader::fetchScript(const String& scriptURL) {
-  DCHECK(isMainThread());
-  DCHECK(!resource());
-  DCHECK(!m_wasScriptLoadComplete);
+void WorkletScriptLoader::FetchScript(const String& script_url) {
+  DCHECK(IsMainThread());
+  DCHECK(!GetResource());
+  DCHECK(!was_script_load_complete_);
 
-  ResourceRequest resourceRequest(scriptURL);
-  resourceRequest.setRequestContext(WebURLRequest::RequestContextScript);
-  FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
-  ScriptResource* resource = ScriptResource::fetch(request, m_fetcher);
+  ResourceRequest resource_request(script_url);
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  FetchRequest request(resource_request, FetchInitiatorTypeNames::internal);
+  ScriptResource* resource = ScriptResource::Fetch(request, fetcher_);
   if (!resource) {
-    notifyFinished(nullptr);
+    NotifyFinished(nullptr);
     return;
   }
-  setResource(resource);
+  SetResource(resource);
   // notifyFinished() will be called later.
 }
 
-void WorkletScriptLoader::cancel() {
-  DCHECK(isMainThread());
-  if (!resource() || m_wasScriptLoadComplete)
+void WorkletScriptLoader::Cancel() {
+  DCHECK(IsMainThread());
+  if (!GetResource() || was_script_load_complete_)
     return;
-  notifyFinished(nullptr);
+  NotifyFinished(nullptr);
 }
 
-void WorkletScriptLoader::notifyFinished(Resource* resource) {
-  DCHECK(isMainThread());
-  DCHECK(!m_wasScriptLoadComplete);
-  clearResource();
-  m_wasScriptLoadComplete = true;
-  if (!resource || resource->errorOccurred()) {
-    m_client->notifyWorkletScriptLoadingFinished(this, ScriptSourceCode());
+void WorkletScriptLoader::NotifyFinished(Resource* resource) {
+  DCHECK(IsMainThread());
+  DCHECK(!was_script_load_complete_);
+  ClearResource();
+  was_script_load_complete_ = true;
+  if (!resource || resource->ErrorOccurred()) {
+    client_->NotifyWorkletScriptLoadingFinished(this, ScriptSourceCode());
   } else {
-    m_wasScriptLoadSuccessful = true;
-    m_client->notifyWorkletScriptLoadingFinished(
+    was_script_load_successful_ = true;
+    client_->NotifyWorkletScriptLoadingFinished(
         this, ScriptSourceCode(static_cast<ScriptResource*>(resource)));
   }
-  m_fetcher = nullptr;
-  m_client = nullptr;
+  fetcher_ = nullptr;
+  client_ = nullptr;
 }
 
-bool WorkletScriptLoader::wasScriptLoadSuccessful() const {
-  DCHECK(m_wasScriptLoadComplete);
-  return m_wasScriptLoadSuccessful;
+bool WorkletScriptLoader::WasScriptLoadSuccessful() const {
+  DCHECK(was_script_load_complete_);
+  return was_script_load_successful_;
 }
 
 DEFINE_TRACE(WorkletScriptLoader) {
-  visitor->trace(m_fetcher);
-  visitor->trace(m_client);
-  ResourceOwner<ScriptResource, ScriptResourceClient>::trace(visitor);
+  visitor->Trace(fetcher_);
+  visitor->Trace(client_);
+  ResourceOwner<ScriptResource, ScriptResourceClient>::Trace(visitor);
 }
 
 }  // namespace blink

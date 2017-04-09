@@ -46,17 +46,18 @@ class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedNumber* create(SVGElement* contextElement,
-                                   const QualifiedName& attributeName,
-                                   SVGNumber* initialValue) {
-    return new SVGAnimatedNumber(contextElement, attributeName, initialValue);
+  static SVGAnimatedNumber* Create(SVGElement* context_element,
+                                   const QualifiedName& attribute_name,
+                                   SVGNumber* initial_value) {
+    return new SVGAnimatedNumber(context_element, attribute_name,
+                                 initial_value);
   }
 
-  void synchronizeAttribute() override;
+  void SynchronizeAttribute() override;
 
-  void setParentOptionalNumber(
-      SVGAnimatedNumberOptionalNumber* numberOptionalNumber) {
-    m_parentNumberOptionalNumber = numberOptionalNumber;
+  void SetParentOptionalNumber(
+      SVGAnimatedNumberOptionalNumber* number_optional_number) {
+    parent_number_optional_number_ = number_optional_number;
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -64,15 +65,15 @@ class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>,
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  SVGAnimatedNumber(SVGElement* contextElement,
-                    const QualifiedName& attributeName,
-                    SVGNumber* initialValue)
-      : SVGAnimatedProperty<SVGNumber>(contextElement,
-                                       attributeName,
-                                       initialValue),
-        m_parentNumberOptionalNumber(nullptr) {}
+  SVGAnimatedNumber(SVGElement* context_element,
+                    const QualifiedName& attribute_name,
+                    SVGNumber* initial_value)
+      : SVGAnimatedProperty<SVGNumber>(context_element,
+                                       attribute_name,
+                                       initial_value),
+        parent_number_optional_number_(nullptr) {}
 
-  Member<SVGAnimatedNumberOptionalNumber> m_parentNumberOptionalNumber;
+  Member<SVGAnimatedNumberOptionalNumber> parent_number_optional_number_;
 };
 
 }  // namespace blink

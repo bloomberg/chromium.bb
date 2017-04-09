@@ -95,7 +95,7 @@ void ThrowInvalidParameters(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 void Dispatch(blink::WebFrame* frame, const blink::WebString& script) {
   if (!frame) return;
-  frame->executeScript(blink::WebScriptSource(script));
+  frame->ExecuteScript(blink::WebScriptSource(script));
 }
 
 v8::Local<v8::String> GenerateThumbnailURL(
@@ -186,14 +186,14 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
 // chrome-search://most-visited and chrome-search://suggestions.
 content::RenderFrame* GetRenderFrameWithCheckedOrigin(const GURL& origin) {
   blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::frameForCurrentContext();
+      blink::WebLocalFrame::FrameForCurrentContext();
   if (!webframe)
     return NULL;
-  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->localRoot());
+  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->LocalRoot());
   if (!main_frame || !main_frame->IsMainFrame())
     return NULL;
 
-  GURL url(webframe->document().url());
+  GURL url(webframe->GetDocument().Url());
   if (url.GetOrigin() != origin.GetOrigin())
     return NULL;
 
@@ -463,7 +463,7 @@ v8::Extension* SearchBoxExtension::Get() {
 bool SearchBoxExtension::PageSupportsInstant(blink::WebFrame* frame) {
   if (!frame) return false;
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> v = frame->executeScriptAndReturnValue(
+  v8::Local<v8::Value> v = frame->ExecuteScriptAndReturnValue(
       blink::WebScriptSource(kSupportsInstantScript));
   return !v.IsEmpty() && v->BooleanValue();
 }
@@ -474,7 +474,7 @@ void SearchBoxExtension::DispatchChromeIdentityCheckResult(
     const base::string16& identity,
     bool identity_match) {
   std::string escaped_identity = base::GetQuotedJSONString(identity);
-  blink::WebString script(blink::WebString::fromUTF8(base::StringPrintf(
+  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchChromeIdentityCheckResult, escaped_identity.c_str(),
       identity_match ? "true" : "false")));
   Dispatch(frame, script);
@@ -489,7 +489,7 @@ void SearchBoxExtension::DispatchFocusChange(blink::WebFrame* frame) {
 void SearchBoxExtension::DispatchHistorySyncCheckResult(
     blink::WebFrame* frame,
     bool sync_history) {
-  blink::WebString script(blink::WebString::fromUTF8(base::StringPrintf(
+  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
       kDispatchHistorySyncCheckResult, sync_history ? "true" : "false")));
   Dispatch(frame, script);
 }
@@ -595,10 +595,10 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
 // static
 content::RenderFrame* SearchBoxExtensionWrapper::GetRenderFrame() {
   blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::frameForCurrentContext();
+      blink::WebLocalFrame::FrameForCurrentContext();
   if (!webframe) return NULL;
 
-  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->localRoot());
+  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->LocalRoot());
   if (!main_frame || !main_frame->IsMainFrame())
     return NULL;
 

@@ -53,41 +53,41 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Range* create(Document&);
-  static Range* create(Document&,
-                       Node* startContainer,
-                       unsigned startOffset,
-                       Node* endContainer,
-                       unsigned endOffset);
-  static Range* create(Document&, const Position&, const Position&);
-  static Range* createAdjustedToTreeScope(const TreeScope&, const Position&);
+  static Range* Create(Document&);
+  static Range* Create(Document&,
+                       Node* start_container,
+                       unsigned start_offset,
+                       Node* end_container,
+                       unsigned end_offset);
+  static Range* Create(Document&, const Position&, const Position&);
+  static Range* CreateAdjustedToTreeScope(const TreeScope&, const Position&);
 
-  void dispose();
+  void Dispose();
 
-  Document& ownerDocument() const {
-    DCHECK(m_ownerDocument);
-    return *m_ownerDocument.get();
+  Document& OwnerDocument() const {
+    DCHECK(owner_document_);
+    return *owner_document_.Get();
   }
-  Node* startContainer() const { return m_start.container(); }
-  unsigned startOffset() const { return m_start.offset(); }
-  Node* endContainer() const { return m_end.container(); }
-  unsigned endOffset() const { return m_end.offset(); }
+  Node* startContainer() const { return start_.Container(); }
+  unsigned startOffset() const { return start_.Offset(); }
+  Node* endContainer() const { return end_.Container(); }
+  unsigned endOffset() const { return end_.Offset(); }
 
-  bool collapsed() const { return m_start == m_end; }
-  bool isConnected() const;
+  bool collapsed() const { return start_ == end_; }
+  bool IsConnected() const;
 
   Node* commonAncestorContainer() const;
-  static Node* commonAncestorContainer(const Node* containerA,
-                                       const Node* containerB);
+  static Node* commonAncestorContainer(const Node* container_a,
+                                       const Node* container_b);
   void setStart(Node* container,
                 unsigned offset,
                 ExceptionState& = ASSERT_NO_EXCEPTION);
   void setEnd(Node* container,
               unsigned offset,
               ExceptionState& = ASSERT_NO_EXCEPTION);
-  void collapse(bool toStart);
-  bool isPointInRange(Node* refNode, unsigned offset, ExceptionState&) const;
-  short comparePoint(Node* refNode, unsigned offset, ExceptionState&) const;
+  void collapse(bool to_start);
+  bool isPointInRange(Node* ref_node, unsigned offset, ExceptionState&) const;
+  short comparePoint(Node* ref_node, unsigned offset, ExceptionState&) const;
   enum CompareResults {
     NODE_BEFORE,
     NODE_AFTER,
@@ -96,25 +96,25 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   };
   enum CompareHow { kStartToStart, kStartToEnd, kEndToEnd, kEndToStart };
   short compareBoundaryPoints(unsigned how,
-                              const Range* sourceRange,
+                              const Range* source_range,
                               ExceptionState&) const;
-  static short compareBoundaryPoints(Node* containerA,
-                                     unsigned offsetA,
-                                     Node* containerB,
-                                     unsigned offsetB,
+  static short compareBoundaryPoints(Node* container_a,
+                                     unsigned offset_a,
+                                     Node* container_b,
+                                     unsigned offset_b,
                                      ExceptionState&);
-  static short compareBoundaryPoints(const RangeBoundaryPoint& boundaryA,
-                                     const RangeBoundaryPoint& boundaryB,
+  static short compareBoundaryPoints(const RangeBoundaryPoint& boundary_a,
+                                     const RangeBoundaryPoint& boundary_b,
                                      ExceptionState&);
-  bool boundaryPointsValid() const;
-  bool intersectsNode(Node* refNode, ExceptionState&);
+  bool BoundaryPointsValid() const;
+  bool intersectsNode(Node* ref_node, ExceptionState&);
   void deleteContents(ExceptionState&);
   DocumentFragment* extractContents(ExceptionState&);
   DocumentFragment* cloneContents(ExceptionState&);
   void insertNode(Node*, ExceptionState&);
   String toString() const;
 
-  String text() const;
+  String GetText() const;
 
   DocumentFragment* createContextualFragment(const String& html,
                                              ExceptionState&);
@@ -131,31 +131,31 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   void surroundContents(Node*, ExceptionState&);
   void setStartBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 
-  const Position startPosition() const { return m_start.toPosition(); }
-  const Position endPosition() const { return m_end.toPosition(); }
+  const Position StartPosition() const { return start_.ToPosition(); }
+  const Position EndPosition() const { return end_.ToPosition(); }
   void setStart(const Position&, ExceptionState& = ASSERT_NO_EXCEPTION);
   void setEnd(const Position&, ExceptionState& = ASSERT_NO_EXCEPTION);
 
-  Node* firstNode() const;
-  Node* pastLastNode() const;
+  Node* FirstNode() const;
+  Node* PastLastNode() const;
 
   // Not transform-friendly
-  void textRects(Vector<IntRect>&, bool useSelectionHeight = false) const;
-  IntRect boundingBox() const;
+  void TextRects(Vector<IntRect>&, bool use_selection_height = false) const;
+  IntRect BoundingBox() const;
 
   // Transform-friendly
-  void textQuads(Vector<FloatQuad>&, bool useSelectionHeight = false) const;
-  void getBorderAndTextQuads(Vector<FloatQuad>&) const;
-  FloatRect boundingRect() const;
+  void TextQuads(Vector<FloatQuad>&, bool use_selection_height = false) const;
+  void GetBorderAndTextQuads(Vector<FloatQuad>&) const;
+  FloatRect BoundingRect() const;
 
-  void nodeChildrenWillBeRemoved(ContainerNode&);
-  void nodeWillBeRemoved(Node&);
+  void NodeChildrenWillBeRemoved(ContainerNode&);
+  void NodeWillBeRemoved(Node&);
 
-  void didInsertText(Node*, unsigned offset, unsigned length);
-  void didRemoveText(Node*, unsigned offset, unsigned length);
-  void didMergeTextNodes(const NodeWithIndex& oldNode, unsigned offset);
-  void didSplitTextNode(const Text& oldNode);
-  void updateOwnerDocumentIfNeeded();
+  void DidInsertText(Node*, unsigned offset, unsigned length);
+  void DidRemoveText(Node*, unsigned offset, unsigned length);
+  void DidMergeTextNodes(const NodeWithIndex& old_node, unsigned offset);
+  void DidSplitTextNode(const Text& old_node);
+  void UpdateOwnerDocumentIfNeeded();
 
   // Expand range to a unit (word or sentence or block or document) boundary.
   // Please refer to https://bugs.webkit.org/show_bug.cgi?id=27632 comment #5
@@ -165,58 +165,58 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   ClientRectList* getClientRects() const;
   ClientRect* getBoundingClientRect() const;
 
-  static Node* checkNodeWOffset(Node*, unsigned offset, ExceptionState&);
+  static Node* CheckNodeWOffset(Node*, unsigned offset, ExceptionState&);
 
   DECLARE_TRACE();
 
  private:
   explicit Range(Document&);
   Range(Document&,
-        Node* startContainer,
-        unsigned startOffset,
-        Node* endContainer,
-        unsigned endOffset);
+        Node* start_container,
+        unsigned start_offset,
+        Node* end_container,
+        unsigned end_offset);
 
-  void setDocument(Document&);
+  void SetDocument(Document&);
 
-  void checkNodeBA(Node*, ExceptionState&) const;
-  void checkExtractPrecondition(ExceptionState&);
-  bool hasSameRoot(const Node&) const;
+  void CheckNodeBA(Node*, ExceptionState&) const;
+  void CheckExtractPrecondition(ExceptionState&);
+  bool HasSameRoot(const Node&) const;
 
   enum ActionType { DELETE_CONTENTS, EXTRACT_CONTENTS, CLONE_CONTENTS };
-  DocumentFragment* processContents(ActionType, ExceptionState&);
-  static Node* processContentsBetweenOffsets(ActionType,
+  DocumentFragment* ProcessContents(ActionType, ExceptionState&);
+  static Node* ProcessContentsBetweenOffsets(ActionType,
                                              DocumentFragment*,
                                              Node*,
-                                             unsigned startOffset,
-                                             unsigned endOffset,
+                                             unsigned start_offset,
+                                             unsigned end_offset,
                                              ExceptionState&);
-  static void processNodes(ActionType,
+  static void ProcessNodes(ActionType,
                            HeapVector<Member<Node>>&,
-                           Node* oldContainer,
-                           Node* newContainer,
+                           Node* old_container,
+                           Node* new_container,
                            ExceptionState&);
   enum ContentsProcessDirection {
-    ProcessContentsForward,
-    ProcessContentsBackward
+    kProcessContentsForward,
+    kProcessContentsBackward
   };
-  static Node* processAncestorsAndTheirSiblings(ActionType,
+  static Node* ProcessAncestorsAndTheirSiblings(ActionType,
                                                 Node* container,
                                                 ContentsProcessDirection,
-                                                Node* clonedContainer,
-                                                Node* commonRoot,
+                                                Node* cloned_container,
+                                                Node* common_root,
                                                 ExceptionState&);
-  void updateSelectionIfAddedToSelection();
-  void removeFromSelectionIfInDifferentRoot(Document& oldDocument);
+  void UpdateSelectionIfAddedToSelection();
+  void RemoveFromSelectionIfInDifferentRoot(Document& old_document);
 
-  Member<Document> m_ownerDocument;  // Cannot be null.
-  RangeBoundaryPoint m_start;
-  RangeBoundaryPoint m_end;
+  Member<Document> owner_document_;  // Cannot be null.
+  RangeBoundaryPoint start_;
+  RangeBoundaryPoint end_;
 
   friend class RangeUpdateScope;
 };
 
-CORE_EXPORT bool areRangesEqual(const Range*, const Range*);
+CORE_EXPORT bool AreRangesEqual(const Range*, const Range*);
 
 using RangeVector = HeapVector<Member<Range>>;
 

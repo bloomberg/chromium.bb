@@ -9,48 +9,48 @@
 namespace blink {
 
 AnimatableValueKeyframe::AnimatableValueKeyframe(
-    const AnimatableValueKeyframe& copyFrom)
-    : Keyframe(copyFrom.m_offset, copyFrom.m_composite, copyFrom.m_easing) {
+    const AnimatableValueKeyframe& copy_from)
+    : Keyframe(copy_from.offset_, copy_from.composite_, copy_from.easing_) {
   for (PropertyValueMap::const_iterator iter =
-           copyFrom.m_propertyValues.begin();
-       iter != copyFrom.m_propertyValues.end(); ++iter)
-    setPropertyValue(iter->key, iter->value.get());
+           copy_from.property_values_.begin();
+       iter != copy_from.property_values_.end(); ++iter)
+    SetPropertyValue(iter->key, iter->value.Get());
 }
 
-PropertyHandleSet AnimatableValueKeyframe::properties() const {
+PropertyHandleSet AnimatableValueKeyframe::Properties() const {
   // This is not used in time-critical code, so we probably don't need to
   // worry about caching this result.
   PropertyHandleSet properties;
-  for (PropertyValueMap::const_iterator iter = m_propertyValues.begin();
-       iter != m_propertyValues.end(); ++iter)
-    properties.insert(PropertyHandle(*iter.keys()));
+  for (PropertyValueMap::const_iterator iter = property_values_.begin();
+       iter != property_values_.end(); ++iter)
+    properties.insert(PropertyHandle(*iter.Keys()));
   return properties;
 }
 
-PassRefPtr<Keyframe> AnimatableValueKeyframe::clone() const {
-  return adoptRef(new AnimatableValueKeyframe(*this));
+PassRefPtr<Keyframe> AnimatableValueKeyframe::Clone() const {
+  return AdoptRef(new AnimatableValueKeyframe(*this));
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe>
-AnimatableValueKeyframe::createPropertySpecificKeyframe(
+AnimatableValueKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property) const {
-  return PropertySpecificKeyframe::create(
-      offset(), &easing(), propertyValue(property.cssProperty()), composite());
+  return PropertySpecificKeyframe::Create(
+      Offset(), &Easing(), PropertyValue(property.CssProperty()), Composite());
 }
 
 PassRefPtr<Keyframe::PropertySpecificKeyframe>
-AnimatableValueKeyframe::PropertySpecificKeyframe::cloneWithOffset(
+AnimatableValueKeyframe::PropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
-  return create(offset, m_easing, m_value, m_composite);
+  return Create(offset, easing_, value_, composite_);
 }
 
 PassRefPtr<Interpolation>
-AnimatableValueKeyframe::PropertySpecificKeyframe::createInterpolation(
+AnimatableValueKeyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property,
     const Keyframe::PropertySpecificKeyframe& end) const {
-  return LegacyStyleInterpolation::create(
-      value(), toAnimatableValuePropertySpecificKeyframe(end).value(),
-      property.cssProperty());
+  return LegacyStyleInterpolation::Create(
+      Value(), ToAnimatableValuePropertySpecificKeyframe(end).Value(),
+      property.CssProperty());
 }
 
 }  // namespace blink

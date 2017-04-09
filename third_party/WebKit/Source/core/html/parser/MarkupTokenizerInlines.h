@@ -32,20 +32,21 @@
 
 namespace blink {
 
-inline bool isTokenizerWhitespace(UChar cc) {
+inline bool IsTokenizerWhitespace(UChar cc) {
   return cc == ' ' || cc == '\x0A' || cc == '\x09' || cc == '\x0C';
 }
 
-inline void advanceStringAndASSERTIgnoringCase(SegmentedString& source,
-                                               const char* expectedCharacters) {
-  while (*expectedCharacters)
-    source.advanceAndASSERTIgnoringCase(*expectedCharacters++);
+inline void AdvanceStringAndASSERTIgnoringCase(
+    SegmentedString& source,
+    const char* expected_characters) {
+  while (*expected_characters)
+    source.AdvanceAndASSERTIgnoringCase(*expected_characters++);
 }
 
-inline void advanceStringAndASSERT(SegmentedString& source,
-                                   const char* expectedCharacters) {
-  while (*expectedCharacters)
-    source.advanceAndASSERT(*expectedCharacters++);
+inline void AdvanceStringAndASSERT(SegmentedString& source,
+                                   const char* expected_characters) {
+  while (*expected_characters)
+    source.AdvanceAndASSERT(*expected_characters++);
 }
 
 #if COMPILER(MSVC)
@@ -65,32 +66,32 @@ inline void advanceStringAndASSERT(SegmentedString& source,
 // character in the <mumble> state."
 #define RECONSUME_IN(prefix, stateName) \
   do {                                  \
-    m_state = prefix::stateName;        \
+    state_ = prefix::stateName;         \
     goto stateName;                     \
   } while (false)
 
 // We use this macro when the HTML5 spec says "consume the next input
 // character ... and switch to the <mumble> state."
-#define ADVANCE_TO(prefix, stateName)                    \
-  do {                                                   \
-    m_state = prefix::stateName;                         \
-    if (!m_inputStreamPreprocessor.advance(source))      \
-      return haveBufferedCharacterToken();               \
-    cc = m_inputStreamPreprocessor.nextInputCharacter(); \
-    goto stateName;                                      \
+#define ADVANCE_TO(prefix, stateName)                     \
+  do {                                                    \
+    state_ = prefix::stateName;                           \
+    if (!input_stream_preprocessor_.Advance(source))      \
+      return HaveBufferedCharacterToken();                \
+    cc = input_stream_preprocessor_.NextInputCharacter(); \
+    goto stateName;                                       \
   } while (false)
 
 // Sometimes there's more complicated logic in the spec that separates when
 // we consume the next input character and when we switch to a particular
 // state. We handle those cases by advancing the source directly and using
 // this macro to switch to the indicated state.
-#define SWITCH_TO(prefix, stateName)                                 \
-  do {                                                               \
-    m_state = prefix::stateName;                                     \
-    if (source.isEmpty() || !m_inputStreamPreprocessor.peek(source)) \
-      return haveBufferedCharacterToken();                           \
-    cc = m_inputStreamPreprocessor.nextInputCharacter();             \
-    goto stateName;                                                  \
+#define SWITCH_TO(prefix, stateName)                                  \
+  do {                                                                \
+    state_ = prefix::stateName;                                       \
+    if (source.IsEmpty() || !input_stream_preprocessor_.Peek(source)) \
+      return HaveBufferedCharacterToken();                            \
+    cc = input_stream_preprocessor_.NextInputCharacter();             \
+    goto stateName;                                                   \
   } while (false)
 
 }  // namespace blink

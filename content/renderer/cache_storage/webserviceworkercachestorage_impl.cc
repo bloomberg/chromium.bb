@@ -26,30 +26,30 @@ WebServiceWorkerCacheStorageImpl::WebServiceWorkerCacheStorageImpl(
 WebServiceWorkerCacheStorageImpl::~WebServiceWorkerCacheStorageImpl() {
 }
 
-void WebServiceWorkerCacheStorageImpl::dispatchHas(
+void WebServiceWorkerCacheStorageImpl::DispatchHas(
     std::unique_ptr<CacheStorageCallbacks> callbacks,
     const blink::WebString& cacheName) {
   GetDispatcher()->dispatchHas(std::move(callbacks), origin_, cacheName);
 }
 
-void WebServiceWorkerCacheStorageImpl::dispatchOpen(
+void WebServiceWorkerCacheStorageImpl::DispatchOpen(
     std::unique_ptr<CacheStorageWithCacheCallbacks> callbacks,
     const blink::WebString& cacheName) {
   GetDispatcher()->dispatchOpen(std::move(callbacks), origin_, cacheName);
 }
 
-void WebServiceWorkerCacheStorageImpl::dispatchDelete(
+void WebServiceWorkerCacheStorageImpl::DispatchDelete(
     std::unique_ptr<CacheStorageCallbacks> callbacks,
     const blink::WebString& cacheName) {
   GetDispatcher()->dispatchDelete(std::move(callbacks), origin_, cacheName);
 }
 
-void WebServiceWorkerCacheStorageImpl::dispatchKeys(
+void WebServiceWorkerCacheStorageImpl::DispatchKeys(
     std::unique_ptr<CacheStorageKeysCallbacks> callbacks) {
   GetDispatcher()->dispatchKeys(std::move(callbacks), origin_);
 }
 
-void WebServiceWorkerCacheStorageImpl::dispatchMatch(
+void WebServiceWorkerCacheStorageImpl::DispatchMatch(
     std::unique_ptr<CacheStorageMatchCallbacks> callbacks,
     const blink::WebServiceWorkerRequest& request,
     const blink::WebServiceWorkerCache::QueryParams& query_params) {

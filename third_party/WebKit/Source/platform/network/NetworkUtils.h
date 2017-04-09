@@ -17,24 +17,24 @@ class ResourceResponse;
 namespace NetworkUtils {
 
 enum PrivateRegistryFilter {
-  IncludePrivateRegistries,
-  ExcludePrivateRegistries,
+  kIncludePrivateRegistries,
+  kExcludePrivateRegistries,
 };
 
-PLATFORM_EXPORT bool isReservedIPAddress(const String& host);
+PLATFORM_EXPORT bool IsReservedIPAddress(const String& host);
 
-PLATFORM_EXPORT bool isLocalHostname(const String& host, bool* isLocal6);
+PLATFORM_EXPORT bool IsLocalHostname(const String& host, bool* is_local6);
 
-PLATFORM_EXPORT String getDomainAndRegistry(const String& host,
+PLATFORM_EXPORT String GetDomainAndRegistry(const String& host,
                                             PrivateRegistryFilter);
 
 // Returns the decoded data url as ResourceResponse and SharedBuffer
 // if url had a supported mimetype and parsing was successful.
-PLATFORM_EXPORT PassRefPtr<SharedBuffer> parseDataURLAndPopulateResponse(
+PLATFORM_EXPORT PassRefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
     const KURL&,
     ResourceResponse&);
 
-PLATFORM_EXPORT bool isRedirectResponseCode(int);
+PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 
 }  // NetworkUtils
 

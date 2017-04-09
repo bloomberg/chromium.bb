@@ -16,37 +16,37 @@ namespace blink {
 
 class CSSPaintValue : public CSSImageGeneratorValue {
  public:
-  static CSSPaintValue* create(CSSCustomIdentValue* name) {
+  static CSSPaintValue* Create(CSSCustomIdentValue* name) {
     return new CSSPaintValue(name);
   }
 
-  static CSSPaintValue* create(CSSCustomIdentValue* name,
-                               Vector<RefPtr<CSSVariableData>>& variableData) {
-    return new CSSPaintValue(name, variableData);
+  static CSSPaintValue* Create(CSSCustomIdentValue* name,
+                               Vector<RefPtr<CSSVariableData>>& variable_data) {
+    return new CSSPaintValue(name, variable_data);
   }
 
   ~CSSPaintValue();
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  String name() const;
+  String GetName() const;
 
-  PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float zoom);
-  bool isFixedSize() const { return false; }
-  IntSize fixedSize(const LayoutObject&) { return IntSize(); }
+  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&, float zoom);
+  bool IsFixedSize() const { return false; }
+  IntSize FixedSize(const LayoutObject&) { return IntSize(); }
 
-  bool isPending() const { return true; }
-  bool knownToBeOpaque(const LayoutObject&) const;
+  bool IsPending() const { return true; }
+  bool KnownToBeOpaque(const LayoutObject&) const;
 
-  void loadSubimages(const Document&) {}
+  void LoadSubimages(const Document&) {}
 
-  bool equals(const CSSPaintValue&) const;
+  bool Equals(const CSSPaintValue&) const;
 
-  const Vector<CSSPropertyID>* nativeInvalidationProperties() const {
-    return m_generator ? &m_generator->nativeInvalidationProperties() : nullptr;
+  const Vector<CSSPropertyID>* NativeInvalidationProperties() const {
+    return generator_ ? &generator_->NativeInvalidationProperties() : nullptr;
   }
-  const Vector<AtomicString>* customInvalidationProperties() const {
-    return m_generator ? &m_generator->customInvalidationProperties() : nullptr;
+  const Vector<AtomicString>* CustomInvalidationProperties() const {
+    return generator_ ? &generator_->CustomInvalidationProperties() : nullptr;
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();
@@ -60,34 +60,34 @@ class CSSPaintValue : public CSSImageGeneratorValue {
     WTF_MAKE_NONCOPYABLE(Observer);
 
    public:
-    explicit Observer(CSSPaintValue* ownerValue) : m_ownerValue(ownerValue) {}
+    explicit Observer(CSSPaintValue* owner_value) : owner_value_(owner_value) {}
 
     ~Observer() override {}
     DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_ownerValue);
-      CSSPaintImageGenerator::Observer::trace(visitor);
+      visitor->Trace(owner_value_);
+      CSSPaintImageGenerator::Observer::Trace(visitor);
     }
 
-    void paintImageGeneratorReady() final;
+    void PaintImageGeneratorReady() final;
 
    private:
-    Member<CSSPaintValue> m_ownerValue;
+    Member<CSSPaintValue> owner_value_;
   };
 
-  void paintImageGeneratorReady();
+  void PaintImageGeneratorReady();
 
-  bool parseInputArguments();
+  bool ParseInputArguments();
 
-  bool m_inputArgumentsInvalid = false;
+  bool input_arguments_invalid_ = false;
 
-  Member<CSSCustomIdentValue> m_name;
-  Member<CSSPaintImageGenerator> m_generator;
-  Member<Observer> m_paintImageGeneratorObserver;
-  Member<CSSStyleValueVector> m_parsedInputArguments;
-  Vector<RefPtr<CSSVariableData>> m_argumentVariableData;
+  Member<CSSCustomIdentValue> name_;
+  Member<CSSPaintImageGenerator> generator_;
+  Member<Observer> paint_image_generator_observer_;
+  Member<CSSStyleValueVector> parsed_input_arguments_;
+  Vector<RefPtr<CSSVariableData>> argument_variable_data_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, isPaintValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, IsPaintValue());
 
 }  // namespace blink
 

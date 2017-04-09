@@ -33,61 +33,61 @@ namespace blink {
 namespace {
 
 // TODO(mlamouri): refactor in one common place.
-WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
-  ASSERT(executionContext && executionContext->isDocument());
+WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
+  ASSERT(execution_context && execution_context->IsDocument());
 
-  Document* document = toDocument(executionContext);
-  if (!document->frame())
+  Document* document = ToDocument(execution_context);
+  if (!document->GetFrame())
     return nullptr;
   PresentationController* controller =
-      PresentationController::from(*document->frame());
-  return controller ? controller->client() : nullptr;
+      PresentationController::From(*document->GetFrame());
+  return controller ? controller->Client() : nullptr;
 }
 
-const AtomicString& connectionStateToString(
+const AtomicString& ConnectionStateToString(
     WebPresentationConnectionState state) {
-  DEFINE_STATIC_LOCAL(const AtomicString, connectingValue, ("connecting"));
-  DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
-  DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed"));
-  DEFINE_STATIC_LOCAL(const AtomicString, terminatedValue, ("terminated"));
+  DEFINE_STATIC_LOCAL(const AtomicString, connecting_value, ("connecting"));
+  DEFINE_STATIC_LOCAL(const AtomicString, connected_value, ("connected"));
+  DEFINE_STATIC_LOCAL(const AtomicString, closed_value, ("closed"));
+  DEFINE_STATIC_LOCAL(const AtomicString, terminated_value, ("terminated"));
 
   switch (state) {
-    case WebPresentationConnectionState::Connecting:
-      return connectingValue;
-    case WebPresentationConnectionState::Connected:
-      return connectedValue;
-    case WebPresentationConnectionState::Closed:
-      return closedValue;
-    case WebPresentationConnectionState::Terminated:
-      return terminatedValue;
+    case WebPresentationConnectionState::kConnecting:
+      return connecting_value;
+    case WebPresentationConnectionState::kConnected:
+      return connected_value;
+    case WebPresentationConnectionState::kClosed:
+      return closed_value;
+    case WebPresentationConnectionState::kTerminated:
+      return terminated_value;
   }
 
   ASSERT_NOT_REACHED();
-  return terminatedValue;
+  return terminated_value;
 }
 
-const AtomicString& connectionCloseReasonToString(
+const AtomicString& ConnectionCloseReasonToString(
     WebPresentationConnectionCloseReason reason) {
-  DEFINE_STATIC_LOCAL(const AtomicString, errorValue, ("error"));
-  DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed"));
-  DEFINE_STATIC_LOCAL(const AtomicString, wentAwayValue, ("wentaway"));
+  DEFINE_STATIC_LOCAL(const AtomicString, error_value, ("error"));
+  DEFINE_STATIC_LOCAL(const AtomicString, closed_value, ("closed"));
+  DEFINE_STATIC_LOCAL(const AtomicString, went_away_value, ("wentaway"));
 
   switch (reason) {
-    case WebPresentationConnectionCloseReason::Error:
-      return errorValue;
-    case WebPresentationConnectionCloseReason::Closed:
-      return closedValue;
-    case WebPresentationConnectionCloseReason::WentAway:
-      return wentAwayValue;
+    case WebPresentationConnectionCloseReason::kError:
+      return error_value;
+    case WebPresentationConnectionCloseReason::kClosed:
+      return closed_value;
+    case WebPresentationConnectionCloseReason::kWentAway:
+      return went_away_value;
   }
 
   ASSERT_NOT_REACHED();
-  return errorValue;
+  return error_value;
 }
 
-void throwPresentationDisconnectedError(ExceptionState& exceptionState) {
-  exceptionState.throwDOMException(InvalidStateError,
-                                   "Presentation connection is disconnected.");
+void ThrowPresentationDisconnectedError(ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(kInvalidStateError,
+                                    "Presentation connection is disconnected.");
 }
 
 }  // namespace
@@ -95,431 +95,432 @@ void throwPresentationDisconnectedError(ExceptionState& exceptionState) {
 class PresentationConnection::Message final
     : public GarbageCollectedFinalized<PresentationConnection::Message> {
  public:
-  Message(const String& text) : type(MessageTypeText), text(text) {}
+  Message(const String& text) : type(kMessageTypeText), text(text) {}
 
-  Message(DOMArrayBuffer* arrayBuffer)
-      : type(MessageTypeArrayBuffer), arrayBuffer(arrayBuffer) {}
+  Message(DOMArrayBuffer* array_buffer)
+      : type(kMessageTypeArrayBuffer), array_buffer(array_buffer) {}
 
-  Message(PassRefPtr<BlobDataHandle> blobDataHandle)
-      : type(MessageTypeBlob), blobDataHandle(std::move(blobDataHandle)) {}
+  Message(PassRefPtr<BlobDataHandle> blob_data_handle)
+      : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(arrayBuffer); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(array_buffer); }
 
   MessageType type;
   String text;
-  Member<DOMArrayBuffer> arrayBuffer;
-  RefPtr<BlobDataHandle> blobDataHandle;
+  Member<DOMArrayBuffer> array_buffer;
+  RefPtr<BlobDataHandle> blob_data_handle;
 };
 
 class PresentationConnection::BlobLoader final
     : public GarbageCollectedFinalized<PresentationConnection::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle,
-             PresentationConnection* PresentationConnection)
-      : m_PresentationConnection(PresentationConnection),
-        m_loader(FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer,
-                                          this)) {
-    m_loader->start(m_PresentationConnection->getExecutionContext(),
-                    std::move(blobDataHandle));
+  BlobLoader(PassRefPtr<BlobDataHandle> blob_data_handle,
+             PresentationConnection* presentation_connection)
+      : presentation_connection_(presentation_connection),
+        loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
+                                         this)) {
+    loader_->Start(presentation_connection_->GetExecutionContext(),
+                   std::move(blob_data_handle));
   }
   ~BlobLoader() override {}
 
   // FileReaderLoaderClient functions.
-  void didStartLoading() override {}
-  void didReceiveData() override {}
-  void didFinishLoading() override {
-    m_PresentationConnection->didFinishLoadingBlob(
-        m_loader->arrayBufferResult());
+  void DidStartLoading() override {}
+  void DidReceiveData() override {}
+  void DidFinishLoading() override {
+    presentation_connection_->DidFinishLoadingBlob(
+        loader_->ArrayBufferResult());
   }
-  void didFail(FileError::ErrorCode errorCode) override {
-    m_PresentationConnection->didFailLoadingBlob(errorCode);
+  void DidFail(FileError::ErrorCode error_code) override {
+    presentation_connection_->DidFailLoadingBlob(error_code);
   }
 
-  void cancel() { m_loader->cancel(); }
+  void Cancel() { loader_->Cancel(); }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_PresentationConnection); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(presentation_connection_); }
 
  private:
-  Member<PresentationConnection> m_PresentationConnection;
-  std::unique_ptr<FileReaderLoader> m_loader;
+  Member<PresentationConnection> presentation_connection_;
+  std::unique_ptr<FileReaderLoader> loader_;
 };
 
 PresentationConnection::PresentationConnection(LocalFrame* frame,
                                                const String& id,
                                                const KURL& url)
     : ContextClient(frame),
-      m_id(id),
-      m_url(url),
-      m_state(WebPresentationConnectionState::Connecting),
-      m_binaryType(BinaryTypeArrayBuffer),
-      m_proxy(nullptr) {}
+      id_(id),
+      url_(url),
+      state_(WebPresentationConnectionState::kConnecting),
+      binary_type_(kBinaryTypeArrayBuffer),
+      proxy_(nullptr) {}
 
 PresentationConnection::~PresentationConnection() {
-  ASSERT(!m_blobLoader);
+  ASSERT(!blob_loader_);
 }
 
-void PresentationConnection::bindProxy(
+void PresentationConnection::BindProxy(
     std::unique_ptr<WebPresentationConnectionProxy> proxy) {
   DCHECK(proxy);
-  m_proxy = std::move(proxy);
+  proxy_ = std::move(proxy);
 }
 
 // static
-PresentationConnection* PresentationConnection::take(
+PresentationConnection* PresentationConnection::Take(
     ScriptPromiseResolver* resolver,
-    const WebPresentationInfo& presentationInfo,
+    const WebPresentationInfo& presentation_info,
     PresentationRequest* request) {
   ASSERT(resolver);
   ASSERT(request);
-  ASSERT(resolver->getExecutionContext()->isDocument());
+  ASSERT(resolver->GetExecutionContext()->IsDocument());
 
-  Document* document = toDocument(resolver->getExecutionContext());
-  if (!document->frame())
+  Document* document = ToDocument(resolver->GetExecutionContext());
+  if (!document->GetFrame())
     return nullptr;
 
   PresentationController* controller =
-      PresentationController::from(*document->frame());
+      PresentationController::From(*document->GetFrame());
   if (!controller)
     return nullptr;
 
-  return take(controller, presentationInfo, request);
+  return Take(controller, presentation_info, request);
 }
 
 // static
-PresentationConnection* PresentationConnection::take(
+PresentationConnection* PresentationConnection::Take(
     PresentationController* controller,
-    const WebPresentationInfo& presentationInfo,
+    const WebPresentationInfo& presentation_info,
     PresentationRequest* request) {
   ASSERT(controller);
   ASSERT(request);
 
   PresentationConnection* connection = new PresentationConnection(
-      controller->frame(), presentationInfo.id, presentationInfo.url);
-  controller->registerConnection(connection);
+      controller->GetFrame(), presentation_info.id, presentation_info.url);
+  controller->RegisterConnection(connection);
 
   // Fire onconnectionavailable event asynchronously.
-  auto* event = PresentationConnectionAvailableEvent::create(
+  auto* event = PresentationConnectionAvailableEvent::Create(
       EventTypeNames::connectionavailable, connection);
-  TaskRunnerHelper::get(TaskType::Presentation, request->getExecutionContext())
-      ->postTask(BLINK_FROM_HERE,
-                 WTF::bind(&PresentationConnection::dispatchEventAsync,
-                           wrapPersistent(request), wrapPersistent(event)));
+  TaskRunnerHelper::Get(TaskType::kPresentation, request->GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&PresentationConnection::DispatchEventAsync,
+                           WrapPersistent(request), WrapPersistent(event)));
 
   return connection;
 }
 
 // static
-PresentationConnection* PresentationConnection::take(
+PresentationConnection* PresentationConnection::Take(
     PresentationReceiver* receiver,
-    const WebPresentationInfo& presentationInfo) {
+    const WebPresentationInfo& presentation_info) {
   DCHECK(receiver);
 
   PresentationConnection* connection = new PresentationConnection(
-      receiver->frame(), presentationInfo.id, presentationInfo.url);
-  receiver->registerConnection(connection);
+      receiver->GetFrame(), presentation_info.id, presentation_info.url);
+  receiver->RegisterConnection(connection);
 
   return connection;
 }
 
-const AtomicString& PresentationConnection::interfaceName() const {
+const AtomicString& PresentationConnection::InterfaceName() const {
   return EventTargetNames::PresentationConnection;
 }
 
-ExecutionContext* PresentationConnection::getExecutionContext() const {
-  if (!frame())
+ExecutionContext* PresentationConnection::GetExecutionContext() const {
+  if (!GetFrame())
     return nullptr;
-  return frame()->document();
+  return GetFrame()->GetDocument();
 }
 
-void PresentationConnection::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  if (eventType == EventTypeNames::connect)
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::PresentationConnectionConnectEventListener);
-  else if (eventType == EventTypeNames::close)
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::PresentationConnectionCloseEventListener);
-  else if (eventType == EventTypeNames::terminate)
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::PresentationConnectionTerminateEventListener);
-  else if (eventType == EventTypeNames::message)
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::PresentationConnectionMessageEventListener);
+void PresentationConnection::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  if (event_type == EventTypeNames::connect)
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kPresentationConnectionConnectEventListener);
+  else if (event_type == EventTypeNames::close)
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kPresentationConnectionCloseEventListener);
+  else if (event_type == EventTypeNames::terminate)
+    UseCounter::Count(
+        GetExecutionContext(),
+        UseCounter::kPresentationConnectionTerminateEventListener);
+  else if (event_type == EventTypeNames::message)
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kPresentationConnectionMessageEventListener);
 }
 
 DEFINE_TRACE(PresentationConnection) {
-  visitor->trace(m_blobLoader);
-  visitor->trace(m_messages);
-  EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  visitor->Trace(blob_loader_);
+  visitor->Trace(messages_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 const AtomicString& PresentationConnection::state() const {
-  return connectionStateToString(m_state);
+  return ConnectionStateToString(state_);
 }
 
 void PresentationConnection::send(const String& message,
-                                  ExceptionState& exceptionState) {
-  if (!canSendMessage(exceptionState))
+                                  ExceptionState& exception_state) {
+  if (!CanSendMessage(exception_state))
     return;
 
-  m_messages.push_back(new Message(message));
-  handleMessageQueue();
+  messages_.push_back(new Message(message));
+  HandleMessageQueue();
 }
 
-void PresentationConnection::send(DOMArrayBuffer* arrayBuffer,
-                                  ExceptionState& exceptionState) {
-  ASSERT(arrayBuffer && arrayBuffer->buffer());
-  if (!canSendMessage(exceptionState))
+void PresentationConnection::send(DOMArrayBuffer* array_buffer,
+                                  ExceptionState& exception_state) {
+  ASSERT(array_buffer && array_buffer->Buffer());
+  if (!CanSendMessage(exception_state))
     return;
 
-  m_messages.push_back(new Message(arrayBuffer));
-  handleMessageQueue();
+  messages_.push_back(new Message(array_buffer));
+  HandleMessageQueue();
 }
 
-void PresentationConnection::send(DOMArrayBufferView* arrayBufferView,
-                                  ExceptionState& exceptionState) {
-  ASSERT(arrayBufferView);
-  if (!canSendMessage(exceptionState))
+void PresentationConnection::send(DOMArrayBufferView* array_buffer_view,
+                                  ExceptionState& exception_state) {
+  ASSERT(array_buffer_view);
+  if (!CanSendMessage(exception_state))
     return;
 
-  m_messages.push_back(new Message(arrayBufferView->buffer()));
-  handleMessageQueue();
+  messages_.push_back(new Message(array_buffer_view->buffer()));
+  HandleMessageQueue();
 }
 
-void PresentationConnection::send(Blob* data, ExceptionState& exceptionState) {
+void PresentationConnection::send(Blob* data, ExceptionState& exception_state) {
   ASSERT(data);
-  if (!canSendMessage(exceptionState))
+  if (!CanSendMessage(exception_state))
     return;
 
-  m_messages.push_back(new Message(data->blobDataHandle()));
-  handleMessageQueue();
+  messages_.push_back(new Message(data->GetBlobDataHandle()));
+  HandleMessageQueue();
 }
 
-bool PresentationConnection::canSendMessage(ExceptionState& exceptionState) {
-  if (m_state != WebPresentationConnectionState::Connected) {
-    throwPresentationDisconnectedError(exceptionState);
+bool PresentationConnection::CanSendMessage(ExceptionState& exception_state) {
+  if (state_ != WebPresentationConnectionState::kConnected) {
+    ThrowPresentationDisconnectedError(exception_state);
     return false;
   }
 
   // The connection can send a message if there is a client available.
-  return !!presentationClient(getExecutionContext());
+  return !!PresentationClient(GetExecutionContext());
 }
 
-void PresentationConnection::handleMessageQueue() {
-  WebPresentationClient* client = presentationClient(getExecutionContext());
-  if (!client || !m_proxy)
+void PresentationConnection::HandleMessageQueue() {
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
+  if (!client || !proxy_)
     return;
 
-  while (!m_messages.isEmpty() && !m_blobLoader) {
-    Message* message = m_messages.front().get();
+  while (!messages_.IsEmpty() && !blob_loader_) {
+    Message* message = messages_.front().Get();
     switch (message->type) {
-      case MessageTypeText:
-        client->sendString(m_url, m_id, message->text, m_proxy.get());
-        m_messages.pop_front();
+      case kMessageTypeText:
+        client->SendString(url_, id_, message->text, proxy_.get());
+        messages_.pop_front();
         break;
-      case MessageTypeArrayBuffer:
-        client->sendArrayBuffer(
-            m_url, m_id,
-            static_cast<const uint8_t*>(message->arrayBuffer->data()),
-            message->arrayBuffer->byteLength(), m_proxy.get());
-        m_messages.pop_front();
+      case kMessageTypeArrayBuffer:
+        client->SendArrayBuffer(
+            url_, id_,
+            static_cast<const uint8_t*>(message->array_buffer->Data()),
+            message->array_buffer->ByteLength(), proxy_.get());
+        messages_.pop_front();
         break;
-      case MessageTypeBlob:
-        ASSERT(!m_blobLoader);
-        m_blobLoader = new BlobLoader(message->blobDataHandle, this);
+      case kMessageTypeBlob:
+        ASSERT(!blob_loader_);
+        blob_loader_ = new BlobLoader(message->blob_data_handle, this);
         break;
     }
   }
 }
 
 String PresentationConnection::binaryType() const {
-  switch (m_binaryType) {
-    case BinaryTypeBlob:
+  switch (binary_type_) {
+    case kBinaryTypeBlob:
       return "blob";
-    case BinaryTypeArrayBuffer:
+    case kBinaryTypeArrayBuffer:
       return "arraybuffer";
   }
   ASSERT_NOT_REACHED();
   return String();
 }
 
-void PresentationConnection::setBinaryType(const String& binaryType) {
-  if (binaryType == "blob") {
-    m_binaryType = BinaryTypeBlob;
+void PresentationConnection::setBinaryType(const String& binary_type) {
+  if (binary_type == "blob") {
+    binary_type_ = kBinaryTypeBlob;
     return;
   }
-  if (binaryType == "arraybuffer") {
-    m_binaryType = BinaryTypeArrayBuffer;
+  if (binary_type == "arraybuffer") {
+    binary_type_ = kBinaryTypeArrayBuffer;
     return;
   }
   ASSERT_NOT_REACHED();
 }
 
-void PresentationConnection::didReceiveTextMessage(const WebString& message) {
-  if (m_state != WebPresentationConnectionState::Connected)
+void PresentationConnection::DidReceiveTextMessage(const WebString& message) {
+  if (state_ != WebPresentationConnectionState::kConnected)
     return;
 
-  dispatchEvent(MessageEvent::create(message));
+  DispatchEvent(MessageEvent::Create(message));
 }
 
-void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data,
+void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
                                                      size_t length) {
-  if (m_state != WebPresentationConnectionState::Connected)
+  if (state_ != WebPresentationConnectionState::kConnected)
     return;
 
-  switch (m_binaryType) {
-    case BinaryTypeBlob: {
-      std::unique_ptr<BlobData> blobData = BlobData::create();
-      blobData->appendBytes(data, length);
+  switch (binary_type_) {
+    case kBinaryTypeBlob: {
+      std::unique_ptr<BlobData> blob_data = BlobData::Create();
+      blob_data->AppendBytes(data, length);
       Blob* blob =
-          Blob::create(BlobDataHandle::create(std::move(blobData), length));
-      dispatchEvent(MessageEvent::create(blob));
+          Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+      DispatchEvent(MessageEvent::Create(blob));
       return;
     }
-    case BinaryTypeArrayBuffer:
-      DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, length);
-      dispatchEvent(MessageEvent::create(buffer));
+    case kBinaryTypeArrayBuffer:
+      DOMArrayBuffer* buffer = DOMArrayBuffer::Create(data, length);
+      DispatchEvent(MessageEvent::Create(buffer));
       return;
   }
   ASSERT_NOT_REACHED();
 }
 
-WebPresentationConnectionState PresentationConnection::getState() {
-  return m_state;
+WebPresentationConnectionState PresentationConnection::GetState() {
+  return state_;
 }
 
 void PresentationConnection::close() {
-  if (m_state != WebPresentationConnectionState::Connecting &&
-      m_state != WebPresentationConnectionState::Connected) {
+  if (state_ != WebPresentationConnectionState::kConnecting &&
+      state_ != WebPresentationConnectionState::kConnected) {
     return;
   }
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (client)
-    client->closeConnection(m_url, m_id, m_proxy.get());
+    client->CloseConnection(url_, id_, proxy_.get());
 
-  tearDown();
+  TearDown();
 }
 
 void PresentationConnection::terminate() {
-  if (m_state != WebPresentationConnectionState::Connected)
+  if (state_ != WebPresentationConnectionState::kConnected)
     return;
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (client)
-    client->terminatePresentation(m_url, m_id);
+    client->TerminatePresentation(url_, id_);
 
-  tearDown();
+  TearDown();
 }
 
-bool PresentationConnection::matches(
-    const WebPresentationInfo& presentationInfo) const {
-  return m_url == KURL(presentationInfo.url) &&
-         m_id == String(presentationInfo.id);
+bool PresentationConnection::Matches(
+    const WebPresentationInfo& presentation_info) const {
+  return url_ == KURL(presentation_info.url) &&
+         id_ == String(presentation_info.id);
 }
 
-bool PresentationConnection::matches(const String& id, const KURL& url) const {
-  return m_url == url && m_id == id;
+bool PresentationConnection::Matches(const String& id, const KURL& url) const {
+  return url_ == url && id_ == id;
 }
 
-void PresentationConnection::didChangeState(
+void PresentationConnection::DidChangeState(
     WebPresentationConnectionState state) {
-  didChangeState(state, true /* shouldDispatchEvent */);
+  DidChangeState(state, true /* shouldDispatchEvent */);
 }
 
-void PresentationConnection::didChangeState(
+void PresentationConnection::DidChangeState(
     WebPresentationConnectionState state,
-    bool shouldDispatchEvent) {
-  if (m_state == state)
+    bool should_dispatch_event) {
+  if (state_ == state)
     return;
 
-  m_state = state;
+  state_ = state;
 
-  if (!shouldDispatchEvent)
+  if (!should_dispatch_event)
     return;
 
-  switch (m_state) {
-    case WebPresentationConnectionState::Connecting:
+  switch (state_) {
+    case WebPresentationConnectionState::kConnecting:
       return;
-    case WebPresentationConnectionState::Connected:
-      dispatchStateChangeEvent(Event::create(EventTypeNames::connect));
+    case WebPresentationConnectionState::kConnected:
+      DispatchStateChangeEvent(Event::Create(EventTypeNames::connect));
       return;
-    case WebPresentationConnectionState::Terminated:
-      dispatchStateChangeEvent(Event::create(EventTypeNames::terminate));
+    case WebPresentationConnectionState::kTerminated:
+      DispatchStateChangeEvent(Event::Create(EventTypeNames::terminate));
       return;
     // Closed state is handled in |didClose()|.
-    case WebPresentationConnectionState::Closed:
+    case WebPresentationConnectionState::kClosed:
       NOTREACHED();
       return;
   }
   NOTREACHED();
 }
 
-void PresentationConnection::didClose(
+void PresentationConnection::DidClose(
     WebPresentationConnectionCloseReason reason,
     const String& message) {
-  if (m_state == WebPresentationConnectionState::Closed)
+  if (state_ == WebPresentationConnectionState::kClosed)
     return;
 
-  m_state = WebPresentationConnectionState::Closed;
-  dispatchStateChangeEvent(PresentationConnectionCloseEvent::create(
-      EventTypeNames::close, connectionCloseReasonToString(reason), message));
+  state_ = WebPresentationConnectionState::kClosed;
+  DispatchStateChangeEvent(PresentationConnectionCloseEvent::Create(
+      EventTypeNames::close, ConnectionCloseReasonToString(reason), message));
 }
 
-void PresentationConnection::didClose() {
-  didClose(WebPresentationConnectionCloseReason::Closed, "");
+void PresentationConnection::DidClose() {
+  DidClose(WebPresentationConnectionCloseReason::kClosed, "");
 }
 
-void PresentationConnection::didFinishLoadingBlob(DOMArrayBuffer* buffer) {
-  ASSERT(!m_messages.isEmpty() && m_messages.front()->type == MessageTypeBlob);
-  ASSERT(buffer && buffer->buffer());
+void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
+  ASSERT(!messages_.IsEmpty() && messages_.front()->type == kMessageTypeBlob);
+  ASSERT(buffer && buffer->Buffer());
   // Send the loaded blob immediately here and continue processing the queue.
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (client) {
-    client->sendBlobData(m_url, m_id,
-                         static_cast<const uint8_t*>(buffer->data()),
-                         buffer->byteLength(), m_proxy.get());
+    client->SendBlobData(url_, id_, static_cast<const uint8_t*>(buffer->Data()),
+                         buffer->ByteLength(), proxy_.get());
   }
 
-  m_messages.pop_front();
-  m_blobLoader.clear();
-  handleMessageQueue();
+  messages_.pop_front();
+  blob_loader_.Clear();
+  HandleMessageQueue();
 }
 
-void PresentationConnection::didFailLoadingBlob(
-    FileError::ErrorCode errorCode) {
-  ASSERT(!m_messages.isEmpty() && m_messages.front()->type == MessageTypeBlob);
+void PresentationConnection::DidFailLoadingBlob(
+    FileError::ErrorCode error_code) {
+  ASSERT(!messages_.IsEmpty() && messages_.front()->type == kMessageTypeBlob);
   // FIXME: generate error message?
   // Ignore the current failed blob item and continue with next items.
-  m_messages.pop_front();
-  m_blobLoader.clear();
-  handleMessageQueue();
+  messages_.pop_front();
+  blob_loader_.Clear();
+  HandleMessageQueue();
 }
 
-void PresentationConnection::dispatchStateChangeEvent(Event* event) {
-  TaskRunnerHelper::get(TaskType::Presentation, getExecutionContext())
-      ->postTask(BLINK_FROM_HERE,
-                 WTF::bind(&PresentationConnection::dispatchEventAsync,
-                           wrapPersistent(this), wrapPersistent(event)));
+void PresentationConnection::DispatchStateChangeEvent(Event* event) {
+  TaskRunnerHelper::Get(TaskType::kPresentation, GetExecutionContext())
+      ->PostTask(BLINK_FROM_HERE,
+                 WTF::Bind(&PresentationConnection::DispatchEventAsync,
+                           WrapPersistent(this), WrapPersistent(event)));
 }
 
 // static
-void PresentationConnection::dispatchEventAsync(EventTarget* target,
+void PresentationConnection::DispatchEventAsync(EventTarget* target,
                                                 Event* event) {
   DCHECK(target);
   DCHECK(event);
-  target->dispatchEvent(event);
+  target->DispatchEvent(event);
 }
 
-void PresentationConnection::tearDown() {
+void PresentationConnection::TearDown() {
   // Cancel current Blob loading if any.
-  if (m_blobLoader) {
-    m_blobLoader->cancel();
-    m_blobLoader.clear();
+  if (blob_loader_) {
+    blob_loader_->Cancel();
+    blob_loader_.Clear();
   }
-  m_messages.clear();
+  messages_.Clear();
 }
 
 }  // namespace blink

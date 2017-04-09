@@ -35,15 +35,15 @@ namespace {
 bool ShouldRespondToRequest(
     blink::WebFrame** frame_ptr,
     RenderView** render_view_ptr) {
-  blink::WebFrame* frame = blink::WebLocalFrame::frameForCurrentContext();
-  if (!frame || !frame->view())
+  blink::WebFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
+  if (!frame || !frame->View())
     return false;
 
-  RenderView* render_view = RenderView::FromWebView(frame->view());
+  RenderView* render_view = RenderView::FromWebView(frame->View());
   if (!render_view)
     return false;
 
-  GURL frame_url = frame->document().url();
+  GURL frame_url = frame->GetDocument().Url();
 
   RenderFrame* render_frame = RenderFrame::FromWebFrame(frame);
   if (!render_frame)
@@ -71,9 +71,9 @@ bool ShouldRespondToRequest(
 //  - chrome.getVariableValue: Returns value for the input variable name if such
 //      a value was set by the browser. Else will return an empty string.
 void WebUIExtension::Install(blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -105,7 +105,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
   if (base::EndsWith(message, "RequiringGesture",
                      base::CompareCase::SENSITIVE) &&
-      !blink::WebUserGestureIndicator::isProcessingUserGesture()) {
+      !blink::WebUserGestureIndicator::IsProcessingUserGesture()) {
     NOTREACHED();
     return;
   }
@@ -124,15 +124,14 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
     std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     content = base::ListValue::From(
-        converter->FromV8Value(obj, frame->mainWorldScriptContext()));
+        converter->FromV8Value(obj, frame->MainWorldScriptContext()));
     DCHECK(content);
   }
 
   // Send the message up to the browser.
   render_view->Send(new ViewHostMsg_WebUISend(render_view->GetRoutingID(),
-                                              frame->document().url(),
-                                              message,
-                                              *content));
+                                              frame->GetDocument().Url(),
+                                              message, *content));
 }
 
 // static

@@ -25,8 +25,8 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
 #error Unexpected platform
 #endif
 
-base::SingleThreadTaskRunner* WebThread::getSingleThreadTaskRunner() {
-  return getWebTaskRunner()->toSingleThreadTaskRunner();
+base::SingleThreadTaskRunner* WebThread::GetSingleThreadTaskRunner() {
+  return GetWebTaskRunner()->ToSingleThreadTaskRunner();
 }
 
 }  // namespace blink

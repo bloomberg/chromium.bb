@@ -39,10 +39,10 @@ class DummyContext final
   USING_GARBAGE_COLLECTED_MIXIN(DummyContext);
 
  public:
-  static DummyContext* create() { return new DummyContext; }
+  static DummyContext* Create() { return new DummyContext; }
 
   DEFINE_INLINE_TRACE() {
-    LifecycleNotifier<DummyContext, TestingObserver>::trace(visitor);
+    LifecycleNotifier<DummyContext, TestingObserver>::Trace(visitor);
   }
 };
 
@@ -52,87 +52,87 @@ class TestingObserver final
   USING_GARBAGE_COLLECTED_MIXIN(TestingObserver);
 
  public:
-  static TestingObserver* create(DummyContext* context) {
+  static TestingObserver* Create(DummyContext* context) {
     return new TestingObserver(context);
   }
 
-  void contextDestroyed(DummyContext* destroyedContext) {
-    if (m_observerToRemoveOnDestruct) {
-      destroyedContext->removeObserver(m_observerToRemoveOnDestruct);
-      m_observerToRemoveOnDestruct.clear();
+  void ContextDestroyed(DummyContext* destroyed_context) {
+    if (observer_to_remove_on_destruct_) {
+      destroyed_context->RemoveObserver(observer_to_remove_on_destruct_);
+      observer_to_remove_on_destruct_.Clear();
     }
-    m_contextDestroyedCalled = true;
+    context_destroyed_called_ = true;
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_observerToRemoveOnDestruct);
-    LifecycleObserver::trace(visitor);
+    visitor->Trace(observer_to_remove_on_destruct_);
+    LifecycleObserver::Trace(visitor);
   }
 
-  void unobserve() { setContext(nullptr); }
+  void Unobserve() { SetContext(nullptr); }
 
-  void setObserverToRemoveAndDestroy(
-      TestingObserver* observerToRemoveOnDestruct) {
-    ASSERT(!m_observerToRemoveOnDestruct);
-    m_observerToRemoveOnDestruct = observerToRemoveOnDestruct;
+  void SetObserverToRemoveAndDestroy(
+      TestingObserver* observer_to_remove_on_destruct) {
+    ASSERT(!observer_to_remove_on_destruct_);
+    observer_to_remove_on_destruct_ = observer_to_remove_on_destruct;
   }
 
-  TestingObserver* innerObserver() const {
-    return m_observerToRemoveOnDestruct;
+  TestingObserver* InnerObserver() const {
+    return observer_to_remove_on_destruct_;
   }
-  bool contextDestroyedCalled() const { return m_contextDestroyedCalled; }
+  bool ContextDestroyedCalled() const { return context_destroyed_called_; }
 
  private:
   explicit TestingObserver(DummyContext* context)
-      : LifecycleObserver(context), m_contextDestroyedCalled(false) {}
+      : LifecycleObserver(context), context_destroyed_called_(false) {}
 
-  Member<TestingObserver> m_observerToRemoveOnDestruct;
-  bool m_contextDestroyedCalled;
+  Member<TestingObserver> observer_to_remove_on_destruct_;
+  bool context_destroyed_called_;
 };
 
 TEST(LifecycleContextTest, shouldObserveContextDestroyed) {
-  DummyContext* context = DummyContext::create();
-  Persistent<TestingObserver> observer = TestingObserver::create(context);
+  DummyContext* context = DummyContext::Create();
+  Persistent<TestingObserver> observer = TestingObserver::Create(context);
 
-  EXPECT_EQ(observer->lifecycleContext(), context);
-  EXPECT_FALSE(observer->contextDestroyedCalled());
-  context->notifyContextDestroyed();
+  EXPECT_EQ(observer->LifecycleContext(), context);
+  EXPECT_FALSE(observer->ContextDestroyedCalled());
+  context->NotifyContextDestroyed();
   context = nullptr;
-  ThreadState::current()->collectAllGarbage();
-  EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
-  EXPECT_TRUE(observer->contextDestroyedCalled());
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(0));
+  EXPECT_TRUE(observer->ContextDestroyedCalled());
 }
 
 TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve) {
-  DummyContext* context = DummyContext::create();
-  Persistent<TestingObserver> observer = TestingObserver::create(context);
-  observer->unobserve();
-  context->notifyContextDestroyed();
+  DummyContext* context = DummyContext::Create();
+  Persistent<TestingObserver> observer = TestingObserver::Create(context);
+  observer->Unobserve();
+  context->NotifyContextDestroyed();
   context = nullptr;
-  ThreadState::current()->collectAllGarbage();
-  EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
-  EXPECT_FALSE(observer->contextDestroyedCalled());
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(0));
+  EXPECT_FALSE(observer->ContextDestroyedCalled());
 }
 
 TEST(LifecycleContextTest, observerRemovedDuringNotifyDestroyed) {
-  DummyContext* context = DummyContext::create();
-  Persistent<TestingObserver> observer = TestingObserver::create(context);
-  TestingObserver* innerObserver = TestingObserver::create(context);
+  DummyContext* context = DummyContext::Create();
+  Persistent<TestingObserver> observer = TestingObserver::Create(context);
+  TestingObserver* inner_observer = TestingObserver::Create(context);
   // Attach the observer to the other. When 'observer' is notified
   // of destruction, it will remove & destroy 'innerObserver'.
-  observer->setObserverToRemoveAndDestroy(innerObserver);
+  observer->SetObserverToRemoveAndDestroy(inner_observer);
 
-  EXPECT_EQ(observer->lifecycleContext(), context);
-  EXPECT_EQ(observer->innerObserver()->lifecycleContext(), context);
-  EXPECT_FALSE(observer->contextDestroyedCalled());
-  EXPECT_FALSE(observer->innerObserver()->contextDestroyedCalled());
+  EXPECT_EQ(observer->LifecycleContext(), context);
+  EXPECT_EQ(observer->InnerObserver()->LifecycleContext(), context);
+  EXPECT_FALSE(observer->ContextDestroyedCalled());
+  EXPECT_FALSE(observer->InnerObserver()->ContextDestroyedCalled());
 
-  context->notifyContextDestroyed();
-  EXPECT_EQ(observer->innerObserver(), nullptr);
+  context->NotifyContextDestroyed();
+  EXPECT_EQ(observer->InnerObserver(), nullptr);
   context = nullptr;
-  ThreadState::current()->collectAllGarbage();
-  EXPECT_EQ(observer->lifecycleContext(), static_cast<DummyContext*>(0));
-  EXPECT_TRUE(observer->contextDestroyedCalled());
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(observer->LifecycleContext(), static_cast<DummyContext*>(0));
+  EXPECT_TRUE(observer->ContextDestroyedCalled());
 }
 
 }  // namespace blink

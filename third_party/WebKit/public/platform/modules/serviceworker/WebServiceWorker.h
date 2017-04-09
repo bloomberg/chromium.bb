@@ -53,7 +53,7 @@ class WebServiceWorker {
   class Handle {
    public:
     virtual ~Handle() {}
-    virtual WebServiceWorker* serviceWorker() { return nullptr; }
+    virtual WebServiceWorker* ServiceWorker() { return nullptr; }
   };
 
   virtual ~WebServiceWorker() {}
@@ -62,22 +62,22 @@ class WebServiceWorker {
   // to the ServiceWorker object via the client. This doesn't pass the
   // ownership to the callee, and the proxy's lifetime is same as that of
   // WebServiceWorker.
-  virtual void setProxy(WebServiceWorkerProxy*) {}
-  virtual WebServiceWorkerProxy* proxy() { return nullptr; }
+  virtual void SetProxy(WebServiceWorkerProxy*) {}
+  virtual WebServiceWorkerProxy* Proxy() { return nullptr; }
 
-  virtual WebURL url() const { return WebURL(); }
-  virtual WebServiceWorkerState state() const {
-    return WebServiceWorkerStateUnknown;
+  virtual WebURL Url() const { return WebURL(); }
+  virtual WebServiceWorkerState GetState() const {
+    return kWebServiceWorkerStateUnknown;
   }
 
   // Callee receives ownership of the passed vector.
   // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
-  virtual void postMessage(WebServiceWorkerProvider*,
+  virtual void PostMessage(WebServiceWorkerProvider*,
                            const WebString&,
                            const WebSecurityOrigin&,
                            WebMessagePortChannelArray) = 0;
 
-  virtual void terminate() {}
+  virtual void Terminate() {}
 };
 }
 

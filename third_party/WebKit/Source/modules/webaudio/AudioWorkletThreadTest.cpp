@@ -31,138 +31,141 @@ namespace blink {
 class AudioWorkletThreadTest : public ::testing::Test {
  public:
   void SetUp() override {
-    AudioWorkletThread::createSharedBackingThreadForTest();
-    m_reportingProxy = WTF::makeUnique<WorkerReportingProxy>();
-    m_securityOrigin =
-        SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
+    AudioWorkletThread::CreateSharedBackingThreadForTest();
+    reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
+    security_origin_ =
+        SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
   }
 
-  void TearDown() override { AudioWorkletThread::clearSharedBackingThread(); }
+  void TearDown() override { AudioWorkletThread::ClearSharedBackingThread(); }
 
-  std::unique_ptr<AudioWorkletThread> createAudioWorkletThread() {
+  std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
-        AudioWorkletThread::create(nullptr, *m_reportingProxy);
-    thread->start(
-        WorkerThreadStartupData::create(
-            KURL(ParsedURLString, "http://fake.url/"), "fake user agent", "",
-            nullptr, DontPauseWorkerGlobalScopeOnStart, nullptr, "",
-            m_securityOrigin.get(), nullptr, WebAddressSpaceLocal, nullptr,
+        AudioWorkletThread::Create(nullptr, *reporting_proxy_);
+    thread->Start(
+        WorkerThreadStartupData::Create(
+            KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
+            nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
+            security_origin_.Get(), nullptr, kWebAddressSpaceLocal, nullptr,
             nullptr, WorkerV8Settings::Default()),
-        ParentFrameTaskRunners::create(nullptr));
+        ParentFrameTaskRunners::Create(nullptr));
     return thread;
   }
 
   // Attempts to run some simple script for |thread|.
-  void checkWorkletCanExecuteScript(WorkerThread* thread) {
-    WaitableEvent waitEvent;
-    thread->workerBackingThread().backingThread().postTask(
+  void CheckWorkletCanExecuteScript(WorkerThread* thread) {
+    WaitableEvent wait_event;
+    thread->GetWorkerBackingThread().BackingThread().PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&AudioWorkletThreadTest::executeScriptInWorklet,
-                        crossThreadUnretained(this),
-                        crossThreadUnretained(thread),
-                        crossThreadUnretained(&waitEvent)));
-    waitEvent.wait();
+        CrossThreadBind(&AudioWorkletThreadTest::ExecuteScriptInWorklet,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(thread),
+                        CrossThreadUnretained(&wait_event)));
+    wait_event.Wait();
   }
 
  private:
-  void executeScriptInWorklet(WorkerThread* thread, WaitableEvent* waitEvent) {
-    WorkerOrWorkletScriptController* scriptController =
-        thread->globalScope()->scriptController();
-    scriptController->evaluate(ScriptSourceCode("var counter = 0; ++counter;"));
-    waitEvent->signal();
+  void ExecuteScriptInWorklet(WorkerThread* thread, WaitableEvent* wait_event) {
+    WorkerOrWorkletScriptController* script_controller =
+        thread->GlobalScope()->ScriptController();
+    script_controller->Evaluate(
+        ScriptSourceCode("var counter = 0; ++counter;"));
+    wait_event->Signal();
   }
 
-  RefPtr<SecurityOrigin> m_securityOrigin;
-  std::unique_ptr<WorkerReportingProxy> m_reportingProxy;
+  RefPtr<SecurityOrigin> security_origin_;
+  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
 TEST_F(AudioWorkletThreadTest, Basic) {
-  std::unique_ptr<AudioWorkletThread> worklet = createAudioWorkletThread();
-  checkWorkletCanExecuteScript(worklet.get());
-  worklet->terminateAndWait();
+  std::unique_ptr<AudioWorkletThread> worklet = CreateAudioWorkletThread();
+  CheckWorkletCanExecuteScript(worklet.get());
+  worklet->TerminateAndWait();
 }
 
 // Tests that the same WebThread is used for new worklets if the WebThread is
 // still alive.
 TEST_F(AudioWorkletThreadTest, CreateSecondAndTerminateFirst) {
   // Create the first worklet and wait until it is initialized.
-  std::unique_ptr<AudioWorkletThread> firstWorklet = createAudioWorkletThread();
-  WebThreadSupportingGC* firstThread =
-      &firstWorklet->workerBackingThread().backingThread();
-  checkWorkletCanExecuteScript(firstWorklet.get());
-  v8::Isolate* firstIsolate = firstWorklet->isolate();
-  ASSERT_TRUE(firstIsolate);
+  std::unique_ptr<AudioWorkletThread> first_worklet =
+      CreateAudioWorkletThread();
+  WebThreadSupportingGC* first_thread =
+      &first_worklet->GetWorkerBackingThread().BackingThread();
+  CheckWorkletCanExecuteScript(first_worklet.get());
+  v8::Isolate* first_isolate = first_worklet->GetIsolate();
+  ASSERT_TRUE(first_isolate);
 
   // Create the second worklet and immediately destroy the first worklet.
-  std::unique_ptr<AudioWorkletThread> secondWorklet =
-      createAudioWorkletThread();
+  std::unique_ptr<AudioWorkletThread> second_worklet =
+      CreateAudioWorkletThread();
   // We don't use terminateAndWait here to avoid forcible termination.
-  firstWorklet->terminate();
-  firstWorklet->waitForShutdownForTesting();
+  first_worklet->Terminate();
+  first_worklet->WaitForShutdownForTesting();
 
   // Wait until the second worklet is initialized. Verify that the second
   // worklet is using the same thread and Isolate as the first worklet.
-  WebThreadSupportingGC* secondThread =
-      &secondWorklet->workerBackingThread().backingThread();
-  ASSERT_EQ(firstThread, secondThread);
+  WebThreadSupportingGC* second_thread =
+      &second_worklet->GetWorkerBackingThread().BackingThread();
+  ASSERT_EQ(first_thread, second_thread);
 
-  v8::Isolate* secondIsolate = secondWorklet->isolate();
-  ASSERT_TRUE(secondIsolate);
-  EXPECT_EQ(firstIsolate, secondIsolate);
+  v8::Isolate* second_isolate = second_worklet->GetIsolate();
+  ASSERT_TRUE(second_isolate);
+  EXPECT_EQ(first_isolate, second_isolate);
 
   // Verify that the worklet can still successfully execute script.
-  checkWorkletCanExecuteScript(secondWorklet.get());
+  CheckWorkletCanExecuteScript(second_worklet.get());
 
-  secondWorklet->terminateAndWait();
+  second_worklet->TerminateAndWait();
 }
 
 // Tests that a new WebThread is created if all existing worklets are
 // terminated before a new worklet is created.
 TEST_F(AudioWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worklet, wait until it is initialized, and terminate it.
-  std::unique_ptr<AudioWorkletThread> worklet = createAudioWorkletThread();
-  WebThreadSupportingGC* firstThread =
-      &worklet->workerBackingThread().backingThread();
-  checkWorkletCanExecuteScript(worklet.get());
+  std::unique_ptr<AudioWorkletThread> worklet = CreateAudioWorkletThread();
+  WebThreadSupportingGC* first_thread =
+      &worklet->GetWorkerBackingThread().BackingThread();
+  CheckWorkletCanExecuteScript(worklet.get());
 
   // We don't use terminateAndWait here to avoid forcible termination.
-  worklet->terminate();
-  worklet->waitForShutdownForTesting();
+  worklet->Terminate();
+  worklet->WaitForShutdownForTesting();
 
   // Create the second worklet. The backing thread is same.
-  worklet = createAudioWorkletThread();
-  WebThreadSupportingGC* secondThread =
-      &worklet->workerBackingThread().backingThread();
-  EXPECT_EQ(firstThread, secondThread);
-  checkWorkletCanExecuteScript(worklet.get());
+  worklet = CreateAudioWorkletThread();
+  WebThreadSupportingGC* second_thread =
+      &worklet->GetWorkerBackingThread().BackingThread();
+  EXPECT_EQ(first_thread, second_thread);
+  CheckWorkletCanExecuteScript(worklet.get());
 
-  worklet->terminateAndWait();
+  worklet->TerminateAndWait();
 }
 
 // Tests that v8::Isolate and WebThread are correctly set-up if a worklet is
 // created while another is terminating.
 TEST_F(AudioWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
-  std::unique_ptr<AudioWorkletThread> firstWorklet = createAudioWorkletThread();
-  checkWorkletCanExecuteScript(firstWorklet.get());
-  v8::Isolate* firstIsolate = firstWorklet->isolate();
-  ASSERT_TRUE(firstIsolate);
+  std::unique_ptr<AudioWorkletThread> first_worklet =
+      CreateAudioWorkletThread();
+  CheckWorkletCanExecuteScript(first_worklet.get());
+  v8::Isolate* first_isolate = first_worklet->GetIsolate();
+  ASSERT_TRUE(first_isolate);
 
   // Request termination of the first worklet and create the second worklet
   // as soon as possible. We don't wait for its termination.
   // Note: We rely on the assumption that the termination steps don't run
   // on the worklet thread so quickly. This could be a source of flakiness.
-  firstWorklet->terminate();
-  std::unique_ptr<AudioWorkletThread> secondWorklet =
-      createAudioWorkletThread();
+  first_worklet->Terminate();
+  std::unique_ptr<AudioWorkletThread> second_worklet =
+      CreateAudioWorkletThread();
 
-  v8::Isolate* secondIsolate = secondWorklet->isolate();
-  ASSERT_TRUE(secondIsolate);
-  EXPECT_EQ(firstIsolate, secondIsolate);
+  v8::Isolate* second_isolate = second_worklet->GetIsolate();
+  ASSERT_TRUE(second_isolate);
+  EXPECT_EQ(first_isolate, second_isolate);
 
   // Verify that the isolate can run some scripts correctly in the second
   // worklet.
-  checkWorkletCanExecuteScript(secondWorklet.get());
-  secondWorklet->terminateAndWait();
+  CheckWorkletCanExecuteScript(second_worklet.get());
+  second_worklet->TerminateAndWait();
 }
 
 }  // namespace blink

@@ -33,11 +33,11 @@ class MODULES_EXPORT InstalledAppController final
 
   // Gets a list of related apps from the current page's manifest that belong
   // to the current underlying platform, and are installed.
-  void getInstalledRelatedApps(std::unique_ptr<AppInstalledCallbacks>);
+  void GetInstalledRelatedApps(std::unique_ptr<AppInstalledCallbacks>);
 
-  static void provideTo(LocalFrame&, WebRelatedAppsFetcher*);
-  static InstalledAppController* from(LocalFrame&);
-  static const char* supplementName();
+  static void ProvideTo(LocalFrame&, WebRelatedAppsFetcher*);
+  static InstalledAppController* From(LocalFrame&);
+  static const char* SupplementName();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -47,12 +47,12 @@ class MODULES_EXPORT InstalledAppController final
   InstalledAppController(LocalFrame&, WebRelatedAppsFetcher*);
 
   // Inherited from ContextLifecycleObserver.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // Takes a set of related applications and filters them by those which belong
   // to the current underlying platform, and are actually installed and related
   // to the current page's origin. Passes the filtered list to the callback.
-  void filterByInstalledApps(const WebVector<WebRelatedApplication>&,
+  void FilterByInstalledApps(const WebVector<WebRelatedApplication>&,
                              std::unique_ptr<AppInstalledCallbacks>);
 
   // Callback from the InstalledAppProvider mojo service.
@@ -60,9 +60,9 @@ class MODULES_EXPORT InstalledAppController final
                              WTF::Vector<mojom::blink::RelatedApplicationPtr>);
 
   // Handle to the InstalledApp mojo service.
-  mojom::blink::InstalledAppProviderPtr m_provider;
+  mojom::blink::InstalledAppProviderPtr provider_;
 
-  WebRelatedAppsFetcher* m_relatedAppsFetcher;
+  WebRelatedAppsFetcher* related_apps_fetcher_;
 };
 
 }  // namespace blink

@@ -45,17 +45,17 @@ class PushProvider : public blink::WebPushProvider,
   void WillStopCurrentWorkerThread() override;
 
   // blink::WebPushProvider implementation.
-  void subscribe(
+  void Subscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) override;
-  void unsubscribe(
+  void Unsubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       std::unique_ptr<blink::WebPushUnsubscribeCallbacks> callbacks) override;
-  void getSubscription(
+  void GetSubscription(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) override;
-  void getPermissionStatus(
+  void GetPermissionStatus(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks)

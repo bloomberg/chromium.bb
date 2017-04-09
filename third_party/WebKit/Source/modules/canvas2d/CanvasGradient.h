@@ -43,21 +43,21 @@ class MODULES_EXPORT CanvasGradient final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CanvasGradient* create(const FloatPoint& p0, const FloatPoint& p1) {
+  static CanvasGradient* Create(const FloatPoint& p0, const FloatPoint& p1) {
     return new CanvasGradient(p0, p1);
   }
-  static CanvasGradient* create(const FloatPoint& p0,
+  static CanvasGradient* Create(const FloatPoint& p0,
                                 float r0,
                                 const FloatPoint& p1,
                                 float r1) {
     return new CanvasGradient(p0, r0, p1, r1);
   }
 
-  Gradient* getGradient() const { return m_gradient.get(); }
+  Gradient* GetGradient() const { return gradient_.Get(); }
 
   void addColorStop(float value, const String& color, ExceptionState&);
 
-  bool isZeroSize() const { return m_isZeroSize; }
+  bool IsZeroSize() const { return is_zero_size_; }
 
   DEFINE_INLINE_TRACE() {}
 
@@ -68,8 +68,8 @@ class MODULES_EXPORT CanvasGradient final
                  const FloatPoint& p1,
                  float r1);
 
-  RefPtr<Gradient> m_gradient;
-  const bool m_isZeroSize;
+  RefPtr<Gradient> gradient_;
+  const bool is_zero_size_;
 };
 
 }  // namespace blink

@@ -33,131 +33,131 @@
 
 namespace blink {
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
+FetchRequest::FetchRequest(const ResourceRequest& resource_request,
                            const AtomicString& initiator,
                            const String& charset)
-    : m_resourceRequest(resourceRequest),
-      m_charset(charset),
-      m_options(ResourceFetcher::defaultResourceOptions()),
-      m_speculativePreload(false),
-      m_preloadDiscoveryTime(0.0),
-      m_defer(NoDefer),
-      m_originRestriction(UseDefaultOriginRestrictionForType),
-      m_placeholderImageRequestType(DisallowPlaceholder) {
-  m_options.initiatorInfo.name = initiator;
+    : resource_request_(resource_request),
+      charset_(charset),
+      options_(ResourceFetcher::DefaultResourceOptions()),
+      speculative_preload_(false),
+      preload_discovery_time_(0.0),
+      defer_(kNoDefer),
+      origin_restriction_(kUseDefaultOriginRestrictionForType),
+      placeholder_image_request_type_(kDisallowPlaceholder) {
+  options_.initiator_info.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
+FetchRequest::FetchRequest(const ResourceRequest& resource_request,
                            const AtomicString& initiator,
                            const ResourceLoaderOptions& options)
-    : m_resourceRequest(resourceRequest),
-      m_options(options),
-      m_speculativePreload(false),
-      m_preloadDiscoveryTime(0.0),
-      m_defer(NoDefer),
-      m_originRestriction(UseDefaultOriginRestrictionForType),
-      m_placeholderImageRequestType(
-          PlaceholderImageRequestType::DisallowPlaceholder) {
-  m_options.initiatorInfo.name = initiator;
+    : resource_request_(resource_request),
+      options_(options),
+      speculative_preload_(false),
+      preload_discovery_time_(0.0),
+      defer_(kNoDefer),
+      origin_restriction_(kUseDefaultOriginRestrictionForType),
+      placeholder_image_request_type_(
+          PlaceholderImageRequestType::kDisallowPlaceholder) {
+  options_.initiator_info.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
+FetchRequest::FetchRequest(const ResourceRequest& resource_request,
                            const FetchInitiatorInfo& initiator)
-    : m_resourceRequest(resourceRequest),
-      m_options(ResourceFetcher::defaultResourceOptions()),
-      m_speculativePreload(false),
-      m_preloadDiscoveryTime(0.0),
-      m_defer(NoDefer),
-      m_originRestriction(UseDefaultOriginRestrictionForType),
-      m_placeholderImageRequestType(
-          PlaceholderImageRequestType::DisallowPlaceholder) {
-  m_options.initiatorInfo = initiator;
+    : resource_request_(resource_request),
+      options_(ResourceFetcher::DefaultResourceOptions()),
+      speculative_preload_(false),
+      preload_discovery_time_(0.0),
+      defer_(kNoDefer),
+      origin_restriction_(kUseDefaultOriginRestrictionForType),
+      placeholder_image_request_type_(
+          PlaceholderImageRequestType::kDisallowPlaceholder) {
+  options_.initiator_info = initiator;
 }
 
 FetchRequest::~FetchRequest() {}
 
-void FetchRequest::setCrossOriginAccessControl(
+void FetchRequest::SetCrossOriginAccessControl(
     SecurityOrigin* origin,
-    CrossOriginAttributeValue crossOrigin) {
-  DCHECK_NE(crossOrigin, CrossOriginAttributeNotSet);
+    CrossOriginAttributeValue cross_origin) {
+  DCHECK_NE(cross_origin, kCrossOriginAttributeNotSet);
   // Per https://w3c.github.io/webappsec-suborigins/#security-model-opt-outs,
   // credentials are forced when credentials mode is "same-origin", the
   // 'unsafe-credentials' option is set, and the request's physical origin is
   // the same as the URL's.
-  const bool suboriginPolicyForcesCredentials =
-      origin->hasSuborigin() &&
-      origin->suborigin()->policyContains(
-          Suborigin::SuboriginPolicyOptions::UnsafeCredentials) &&
-      SecurityOrigin::create(url())->isSameSchemeHostPort(origin);
-  const bool useCredentials =
-      crossOrigin == CrossOriginAttributeUseCredentials ||
-      suboriginPolicyForcesCredentials;
-  const bool isSameOriginRequest =
-      origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
+  const bool suborigin_policy_forces_credentials =
+      origin->HasSuborigin() &&
+      origin->GetSuborigin()->PolicyContains(
+          Suborigin::SuboriginPolicyOptions::kUnsafeCredentials) &&
+      SecurityOrigin::Create(Url())->IsSameSchemeHostPort(origin);
+  const bool use_credentials =
+      cross_origin == kCrossOriginAttributeUseCredentials ||
+      suborigin_policy_forces_credentials;
+  const bool is_same_origin_request =
+      origin && origin->CanRequestNoSuborigin(resource_request_.Url());
 
   // Currently FetchRequestMode and FetchCredentialsMode are only used when the
   // request goes to Service Worker.
-  m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
-  m_resourceRequest.setFetchCredentialsMode(
-      useCredentials ? WebURLRequest::FetchCredentialsModeInclude
-                     : WebURLRequest::FetchCredentialsModeSameOrigin);
+  resource_request_.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  resource_request_.SetFetchCredentialsMode(
+      use_credentials ? WebURLRequest::kFetchCredentialsModeInclude
+                      : WebURLRequest::kFetchCredentialsModeSameOrigin);
 
-  if (isSameOriginRequest || useCredentials) {
-    m_options.allowCredentials = AllowStoredCredentials;
-    m_resourceRequest.setAllowStoredCredentials(true);
+  if (is_same_origin_request || use_credentials) {
+    options_.allow_credentials = kAllowStoredCredentials;
+    resource_request_.SetAllowStoredCredentials(true);
   } else {
-    m_options.allowCredentials = DoNotAllowStoredCredentials;
-    m_resourceRequest.setAllowStoredCredentials(false);
+    options_.allow_credentials = kDoNotAllowStoredCredentials;
+    resource_request_.SetAllowStoredCredentials(false);
   }
-  m_options.corsEnabled = IsCORSEnabled;
-  m_options.securityOrigin = origin;
-  m_options.credentialsRequested = useCredentials
-                                       ? ClientRequestedCredentials
-                                       : ClientDidNotRequestCredentials;
+  options_.cors_enabled = kIsCORSEnabled;
+  options_.security_origin = origin;
+  options_.credentials_requested = use_credentials
+                                       ? kClientRequestedCredentials
+                                       : kClientDidNotRequestCredentials;
 
   // TODO: Credentials should be removed only when the request is cross origin.
-  m_resourceRequest.removeUserAndPassFromURL();
+  resource_request_.RemoveUserAndPassFromURL();
 
   if (origin)
-    m_resourceRequest.setHTTPOrigin(origin);
+    resource_request_.SetHTTPOrigin(origin);
 }
 
-void FetchRequest::setResourceWidth(ResourceWidth resourceWidth) {
-  if (resourceWidth.isSet) {
-    m_resourceWidth.width = resourceWidth.width;
-    m_resourceWidth.isSet = true;
+void FetchRequest::SetResourceWidth(ResourceWidth resource_width) {
+  if (resource_width.is_set) {
+    resource_width_.width = resource_width.width;
+    resource_width_.is_set = true;
   }
 }
 
-void FetchRequest::setSpeculativePreload(bool speculativePreload,
-                                         double discoveryTime) {
-  m_speculativePreload = speculativePreload;
-  m_preloadDiscoveryTime = discoveryTime;
+void FetchRequest::SetSpeculativePreload(bool speculative_preload,
+                                         double discovery_time) {
+  speculative_preload_ = speculative_preload;
+  preload_discovery_time_ = discovery_time;
 }
 
-void FetchRequest::makeSynchronous() {
+void FetchRequest::MakeSynchronous() {
   // Synchronous requests should always be max priority, lest they hang the
   // renderer.
-  m_resourceRequest.setPriority(ResourceLoadPriorityHighest);
-  m_resourceRequest.setTimeoutInterval(10);
-  m_options.synchronousPolicy = RequestSynchronously;
+  resource_request_.SetPriority(kResourceLoadPriorityHighest);
+  resource_request_.SetTimeoutInterval(10);
+  options_.synchronous_policy = kRequestSynchronously;
 }
 
-void FetchRequest::setAllowImagePlaceholder() {
-  DCHECK_EQ(DisallowPlaceholder, m_placeholderImageRequestType);
-  if (!m_resourceRequest.url().protocolIsInHTTPFamily() ||
-      m_resourceRequest.httpMethod() != "GET" ||
-      !m_resourceRequest.httpHeaderField("range").isNull()) {
+void FetchRequest::SetAllowImagePlaceholder() {
+  DCHECK_EQ(kDisallowPlaceholder, placeholder_image_request_type_);
+  if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
+      resource_request_.HttpMethod() != "GET" ||
+      !resource_request_.HttpHeaderField("range").IsNull()) {
     return;
   }
 
-  m_placeholderImageRequestType = AllowPlaceholder;
+  placeholder_image_request_type_ = kAllowPlaceholder;
 
   // Fetch the first few bytes of the image. This number is tuned to both (a)
   // likely capture the entire image for small images and (b) likely contain
   // the dimensions for larger images.
   // TODO(sclittle): Calculate the optimal value for this number.
-  m_resourceRequest.setHTTPHeaderField("range", "bytes=0-2047");
+  resource_request_.SetHTTPHeaderField("range", "bytes=0-2047");
 
   // TODO(sclittle): Indicate somehow (e.g. through a new request bit) to the
   // embedder that it should return the full resource if the entire resource is

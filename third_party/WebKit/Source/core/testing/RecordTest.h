@@ -22,7 +22,7 @@ class RecordTest final : public GarbageCollectedFinalized<RecordTest>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RecordTest* create() { return new RecordTest; }
+  static RecordTest* Create() { return new RecordTest; }
   ~RecordTest();
 
   void setStringLongRecord(const Vector<std::pair<String, int32_t>>& arg);
@@ -32,7 +32,7 @@ class RecordTest final : public GarbageCollectedFinalized<RecordTest>,
       const Nullable<Vector<std::pair<String, int32_t>>>& arg);
   Nullable<Vector<std::pair<String, int32_t>>> getNullableStringLongRecord();
 
-  Vector<std::pair<String, String>> getByteStringByteStringRecord();
+  Vector<std::pair<String, String>> GetByteStringByteStringRecord();
   void setByteStringByteStringRecord(
       const Vector<std::pair<String, String>>& arg);
 
@@ -57,11 +57,11 @@ class RecordTest final : public GarbageCollectedFinalized<RecordTest>,
  private:
   RecordTest();
 
-  Vector<std::pair<String, int32_t>> m_stringLongRecord;
-  Nullable<Vector<std::pair<String, int32_t>>> m_nullableStringLongRecord;
-  Vector<std::pair<String, String>> m_byteStringByteStringRecord;
-  HeapVector<std::pair<String, Member<Element>>> m_stringElementRecord;
-  NestedRecordType m_USVStringUSVStringBooleanRecordRecord;
+  Vector<std::pair<String, int32_t>> string_long_record_;
+  Nullable<Vector<std::pair<String, int32_t>>> nullable_string_long_record_;
+  Vector<std::pair<String, String>> byte_string_byte_string_record_;
+  HeapVector<std::pair<String, Member<Element>>> string_element_record_;
+  NestedRecordType usv_string_usv_string_boolean_record_record_;
 };
 
 }  // namespace blink

@@ -57,31 +57,31 @@ TYPED_TEST(ListOrLinkedHashSetTest, RemoveFirst) {
   EXPECT_EQ(-1, list.front());
   EXPECT_EQ(3, list.back());
 
-  list.removeFirst();
+  list.RemoveFirst();
   EXPECT_EQ(0, list.front());
 
   list.pop_back();
   EXPECT_EQ(2, list.back());
 
-  list.removeFirst();
+  list.RemoveFirst();
   EXPECT_EQ(1, list.front());
 
-  list.removeFirst();
+  list.RemoveFirst();
   EXPECT_EQ(2, list.front());
 
-  list.removeFirst();
-  EXPECT_TRUE(list.isEmpty());
+  list.RemoveFirst();
+  EXPECT_TRUE(list.IsEmpty());
 }
 
 TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastNewItems) {
   using Set = TypeParam;
   Set list;
-  typename Set::AddResult result = list.appendOrMoveToLast(1);
-  EXPECT_TRUE(result.isNewEntry);
+  typename Set::AddResult result = list.AppendOrMoveToLast(1);
+  EXPECT_TRUE(result.is_new_entry);
   result = list.insert(2);
-  EXPECT_TRUE(result.isNewEntry);
-  result = list.appendOrMoveToLast(3);
-  EXPECT_TRUE(result.isNewEntry);
+  EXPECT_TRUE(result.is_new_entry);
+  result = list.AppendOrMoveToLast(3);
+  EXPECT_TRUE(result.is_new_entry);
 
   EXPECT_EQ(list.size(), 3UL);
 
@@ -101,9 +101,9 @@ TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastWithDuplicates) {
 
   // Add a single element twice.
   typename Set::AddResult result = list.insert(1);
-  EXPECT_TRUE(result.isNewEntry);
-  result = list.appendOrMoveToLast(1);
-  EXPECT_FALSE(result.isNewEntry);
+  EXPECT_TRUE(result.is_new_entry);
+  result = list.AppendOrMoveToLast(1);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(1UL, list.size());
 
   list.insert(2);
@@ -112,17 +112,17 @@ TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastWithDuplicates) {
 
   // Appending 2 move it to the end.
   EXPECT_EQ(3, list.back());
-  result = list.appendOrMoveToLast(2);
-  EXPECT_FALSE(result.isNewEntry);
+  result = list.AppendOrMoveToLast(2);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(2, list.back());
 
   // Inverse the list by moving each element to end end.
-  result = list.appendOrMoveToLast(3);
-  EXPECT_FALSE(result.isNewEntry);
-  result = list.appendOrMoveToLast(2);
-  EXPECT_FALSE(result.isNewEntry);
-  result = list.appendOrMoveToLast(1);
-  EXPECT_FALSE(result.isNewEntry);
+  result = list.AppendOrMoveToLast(3);
+  EXPECT_FALSE(result.is_new_entry);
+  result = list.AppendOrMoveToLast(2);
+  EXPECT_FALSE(result.is_new_entry);
+  result = list.AppendOrMoveToLast(1);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(3UL, list.size());
 
   typename Set::iterator iterator = list.begin();
@@ -137,12 +137,12 @@ TYPED_TEST(ListOrLinkedHashSetTest, AppendOrMoveToLastWithDuplicates) {
 TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToFirstNewItems) {
   using Set = TypeParam;
   Set list;
-  typename Set::AddResult result = list.prependOrMoveToFirst(1);
-  EXPECT_TRUE(result.isNewEntry);
+  typename Set::AddResult result = list.PrependOrMoveToFirst(1);
+  EXPECT_TRUE(result.is_new_entry);
   result = list.insert(2);
-  EXPECT_TRUE(result.isNewEntry);
-  result = list.prependOrMoveToFirst(3);
-  EXPECT_TRUE(result.isNewEntry);
+  EXPECT_TRUE(result.is_new_entry);
+  result = list.PrependOrMoveToFirst(3);
+  EXPECT_TRUE(result.is_new_entry);
 
   EXPECT_EQ(list.size(), 3UL);
 
@@ -162,9 +162,9 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
 
   // Add a single element twice.
   typename Set::AddResult result = list.insert(1);
-  EXPECT_TRUE(result.isNewEntry);
-  result = list.prependOrMoveToFirst(1);
-  EXPECT_FALSE(result.isNewEntry);
+  EXPECT_TRUE(result.is_new_entry);
+  result = list.PrependOrMoveToFirst(1);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(1UL, list.size());
 
   list.insert(2);
@@ -173,17 +173,17 @@ TYPED_TEST(ListOrLinkedHashSetTest, PrependOrMoveToLastWithDuplicates) {
 
   // Prepending 2 move it to the beginning.
   EXPECT_EQ(1, list.front());
-  result = list.prependOrMoveToFirst(2);
-  EXPECT_FALSE(result.isNewEntry);
+  result = list.PrependOrMoveToFirst(2);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(2, list.front());
 
   // Inverse the list by moving each element to the first position.
-  result = list.prependOrMoveToFirst(1);
-  EXPECT_FALSE(result.isNewEntry);
-  result = list.prependOrMoveToFirst(2);
-  EXPECT_FALSE(result.isNewEntry);
-  result = list.prependOrMoveToFirst(3);
-  EXPECT_FALSE(result.isNewEntry);
+  result = list.PrependOrMoveToFirst(1);
+  EXPECT_FALSE(result.is_new_entry);
+  result = list.PrependOrMoveToFirst(2);
+  EXPECT_FALSE(result.is_new_entry);
+  result = list.PrependOrMoveToFirst(3);
+  EXPECT_FALSE(result.is_new_entry);
   EXPECT_EQ(3UL, list.size());
 
   typename Set::iterator iterator = list.begin();
@@ -206,7 +206,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
 
   {
     const Set& ref = set;
-    typename Set::const_iterator it = ref.find(2);
+    typename Set::const_iterator it = ref.Find(2);
     EXPECT_EQ(2, *it);
     ++it;
     EXPECT_EQ(3, *it);
@@ -216,7 +216,7 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
   }
   {
     Set& ref = set;
-    typename Set::iterator it = ref.find(2);
+    typename Set::iterator it = ref.Find(2);
     EXPECT_EQ(2, *it);
     ++it;
     EXPECT_EQ(3, *it);
@@ -228,25 +228,26 @@ TYPED_TEST(ListOrLinkedHashSetTest, Find) {
 
 TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
   using Set = TypeParam;
-  bool canModifyWhileIterating = !std::is_same<Set, LinkedHashSet<int>>::value;
+  bool can_modify_while_iterating =
+      !std::is_same<Set, LinkedHashSet<int>>::value;
   Set set;
   set.insert(-1);
   set.insert(0);
   set.insert(2);
   set.insert(3);
 
-  typename Set::iterator it = set.find(2);
+  typename Set::iterator it = set.Find(2);
   EXPECT_EQ(2, *it);
-  set.insertBefore(it, 1);
-  if (!canModifyWhileIterating)
-    it = set.find(2);
+  set.InsertBefore(it, 1);
+  if (!can_modify_while_iterating)
+    it = set.Find(2);
   ++it;
   EXPECT_EQ(3, *it);
   EXPECT_EQ(5u, set.size());
   --it;
   --it;
   EXPECT_EQ(1, *it);
-  if (canModifyWhileIterating) {
+  if (can_modify_while_iterating) {
     set.erase(-1);
     set.erase(0);
     set.erase(2);
@@ -257,16 +258,16 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
     EXPECT_EQ(it, set.end());
     --it;
     EXPECT_EQ(1, *it);
-    set.insertBefore(it, -1);
-    set.insertBefore(it, 0);
+    set.InsertBefore(it, -1);
+    set.InsertBefore(it, 0);
     set.insert(2);
     set.insert(3);
   }
-  set.insertBefore(2, 42);
-  set.insertBefore(-1, 103);
+  set.InsertBefore(2, 42);
+  set.InsertBefore(-1, 103);
   EXPECT_EQ(103, set.front());
-  if (!canModifyWhileIterating)
-    it = set.find(1);
+  if (!can_modify_while_iterating)
+    it = set.Find(1);
   ++it;
   EXPECT_EQ(42, *it);
   EXPECT_EQ(7u, set.size());
@@ -274,14 +275,15 @@ TYPED_TEST(ListOrLinkedHashSetTest, InsertBefore) {
 
 TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   using Set = TypeParam;
-  bool canModifyWhileIterating = !std::is_same<Set, LinkedHashSet<int>>::value;
+  bool can_modify_while_iterating =
+      !std::is_same<Set, LinkedHashSet<int>>::value;
   Set set;
   set.insert(-1);
   set.insert(0);
   set.insert(1);
   set.insert(2);
 
-  typename Set::iterator it = set.addReturnIterator(3);
+  typename Set::iterator it = set.AddReturnIterator(3);
   EXPECT_EQ(3, *it);
   --it;
   EXPECT_EQ(2, *it);
@@ -290,8 +292,8 @@ TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   EXPECT_EQ(1, *it);
   --it;
   EXPECT_EQ(0, *it);
-  it = set.addReturnIterator(4);
-  if (canModifyWhileIterating) {
+  it = set.AddReturnIterator(4);
+  if (can_modify_while_iterating) {
     set.erase(3);
     set.erase(2);
     set.erase(1);
@@ -304,15 +306,15 @@ TYPED_TEST(ListOrLinkedHashSetTest, AddReturnIterator) {
   EXPECT_EQ(it, set.end());
   --it;
   EXPECT_EQ(4, *it);
-  if (canModifyWhileIterating) {
-    set.insertBefore(it, -1);
-    set.insertBefore(it, 0);
-    set.insertBefore(it, 1);
-    set.insertBefore(it, 2);
-    set.insertBefore(it, 3);
+  if (can_modify_while_iterating) {
+    set.InsertBefore(it, -1);
+    set.InsertBefore(it, 0);
+    set.InsertBefore(it, 1);
+    set.InsertBefore(it, 2);
+    set.InsertBefore(it, 3);
   }
   EXPECT_EQ(6u, set.size());
-  it = set.addReturnIterator(5);
+  it = set.AddReturnIterator(5);
   EXPECT_EQ(7u, set.size());
   set.erase(it);
   EXPECT_EQ(6u, set.size());
@@ -341,8 +343,8 @@ TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
   EXPECT_EQ(it2, set2.end());
 
   // Shift sets: 2->1, 1->0, 0->2
-  set1.swap(set2);  // Swap with non-empty sets.
-  set0.swap(set2);  // Swap with an empty set.
+  set1.Swap(set2);  // Swap with non-empty sets.
+  set0.Swap(set2);  // Swap with an empty set.
 
   it1 = set0.begin();
   it2 = set1.begin();
@@ -354,14 +356,14 @@ TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
   EXPECT_EQ(it2, set1.end());
   EXPECT_EQ(set2.begin(), set2.end());
 
-  int removedIndex = num >> 1;
-  set0.erase(removedIndex + 1);
-  set1.erase(num - removedIndex);
+  int removed_index = num >> 1;
+  set0.erase(removed_index + 1);
+  set1.erase(num - removed_index);
 
   it1 = set0.begin();
   it2 = set1.begin();
   for (int i = 0; i < num; ++i, ++it1, ++it2) {
-    if (i == removedIndex)
+    if (i == removed_index)
       ++i;
     EXPECT_EQ(*it1, i + 1);
     EXPECT_EQ(*it2, num - i);
@@ -372,22 +374,22 @@ TYPED_TEST(ListOrLinkedHashSetTest, Swap) {
 
 class DummyRefCounted : public RefCounted<DummyRefCounted> {
  public:
-  DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) {
-    m_isDeleted = false;
+  DummyRefCounted(bool& is_deleted) : is_deleted_(is_deleted) {
+    is_deleted_ = false;
   }
-  ~DummyRefCounted() { m_isDeleted = true; }
-  void ref() {
-    WTF::RefCounted<DummyRefCounted>::ref();
-    ++m_refInvokesCount;
+  ~DummyRefCounted() { is_deleted_ = true; }
+  void Ref() {
+    WTF::RefCounted<DummyRefCounted>::Ref();
+    ++ref_invokes_count_;
   }
 
-  static int m_refInvokesCount;
+  static int ref_invokes_count_;
 
  private:
-  bool& m_isDeleted;
+  bool& is_deleted_;
 };
 
-int DummyRefCounted::m_refInvokesCount = 0;
+int DummyRefCounted::ref_invokes_count_ = 0;
 
 template <typename Set>
 class ListOrLinkedHashSetRefPtrTest : public ::testing::Test {};
@@ -399,101 +401,101 @@ TYPED_TEST_CASE(ListOrLinkedHashSetRefPtrTest, RefPtrSetTypes);
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   using Set = TypeParam;
-  bool isDeleted = false;
-  DummyRefCounted::m_refInvokesCount = 0;
-  RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
-  EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
+  bool is_deleted = false;
+  DummyRefCounted::ref_invokes_count_ = 0;
+  RefPtr<DummyRefCounted> ptr = AdoptRef(new DummyRefCounted(is_deleted));
+  EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
 
   Set set;
   set.insert(ptr);
   // Referenced only once (to store a copy in the container).
-  EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
   EXPECT_EQ(ptr, set.front());
-  EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  DummyRefCounted* rawPtr = ptr.get();
+  DummyRefCounted* raw_ptr = ptr.Get();
 
-  EXPECT_TRUE(set.contains(ptr));
-  EXPECT_TRUE(set.contains(rawPtr));
-  EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+  EXPECT_TRUE(set.Contains(ptr));
+  EXPECT_TRUE(set.Contains(raw_ptr));
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  ptr.clear();
-  EXPECT_FALSE(isDeleted);
-  EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+  ptr.Clear();
+  EXPECT_FALSE(is_deleted);
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  set.erase(rawPtr);
-  EXPECT_TRUE(isDeleted);
+  set.erase(raw_ptr);
+  EXPECT_TRUE(is_deleted);
 
-  EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 }
 
 TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   using Set = TypeParam;
   Set set;
-  bool isDeleted = false;
-  bool isDeleted2 = false;
+  bool is_deleted = false;
+  bool is_deleted2 = false;
 
-  RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
-  RefPtr<DummyRefCounted> ptr2 = adoptRef(new DummyRefCounted(isDeleted2));
+  RefPtr<DummyRefCounted> ptr = AdoptRef(new DummyRefCounted(is_deleted));
+  RefPtr<DummyRefCounted> ptr2 = AdoptRef(new DummyRefCounted(is_deleted2));
 
-  typename Set::AddResult addResult = set.insert(ptr);
-  EXPECT_TRUE(addResult.isNewEntry);
-  set.find(ptr);
-  const Set& constSet(set);
-  constSet.find(ptr);
-  EXPECT_TRUE(set.contains(ptr));
-  typename Set::iterator it = set.addReturnIterator(ptr);
-  set.appendOrMoveToLast(ptr);
-  set.prependOrMoveToFirst(ptr);
-  set.insertBefore(ptr, ptr);
-  set.insertBefore(it, ptr);
+  typename Set::AddResult add_result = set.insert(ptr);
+  EXPECT_TRUE(add_result.is_new_entry);
+  set.Find(ptr);
+  const Set& const_set(set);
+  const_set.Find(ptr);
+  EXPECT_TRUE(set.Contains(ptr));
+  typename Set::iterator it = set.AddReturnIterator(ptr);
+  set.AppendOrMoveToLast(ptr);
+  set.PrependOrMoveToFirst(ptr);
+  set.InsertBefore(ptr, ptr);
+  set.InsertBefore(it, ptr);
   EXPECT_EQ(1u, set.size());
   set.insert(ptr2);
-  ptr2.clear();
+  ptr2.Clear();
   set.erase(ptr);
 
-  EXPECT_FALSE(isDeleted);
-  ptr.clear();
-  EXPECT_TRUE(isDeleted);
+  EXPECT_FALSE(is_deleted);
+  ptr.Clear();
+  EXPECT_TRUE(is_deleted);
 
-  EXPECT_FALSE(isDeleted2);
-  set.removeFirst();
-  EXPECT_TRUE(isDeleted2);
+  EXPECT_FALSE(is_deleted2);
+  set.RemoveFirst();
+  EXPECT_TRUE(is_deleted2);
 
   EXPECT_EQ(0u, set.size());
 }
 
 struct Simple {
-  Simple(int value) : m_value(value){};
-  int m_value;
+  Simple(int value) : value_(value){};
+  int value_;
 };
 
 struct Complicated {
-  Complicated(int value) : m_simple(value) { s_objectsConstructed++; }
+  Complicated(int value) : simple_(value) { objects_constructed_++; }
 
-  Complicated(const Complicated& other) : m_simple(other.m_simple) {
-    s_objectsConstructed++;
+  Complicated(const Complicated& other) : simple_(other.simple_) {
+    objects_constructed_++;
   }
 
-  Simple m_simple;
-  static int s_objectsConstructed;
+  Simple simple_;
+  static int objects_constructed_;
 
  private:
   Complicated();
 };
 
-int Complicated::s_objectsConstructed = 0;
+int Complicated::objects_constructed_ = 0;
 
 struct ComplicatedHashFunctions {
-  static unsigned hash(const Complicated& key) { return key.m_simple.m_value; }
-  static bool equal(const Complicated& a, const Complicated& b) {
-    return a.m_simple.m_value == b.m_simple.m_value;
+  static unsigned GetHash(const Complicated& key) { return key.simple_.value_; }
+  static bool Equal(const Complicated& a, const Complicated& b) {
+    return a.simple_.value_ == b.simple_.value_;
   }
 };
 struct ComplexityTranslator {
-  static unsigned hash(const Simple& key) { return key.m_value; }
-  static bool equal(const Complicated& a, const Simple& b) {
-    return a.m_simple.m_value == b.m_value;
+  static unsigned GetHash(const Simple& key) { return key.value_; }
+  static bool Equal(const Complicated& a, const Simple& b) {
+    return a.simple_.value_ == b.value_;
   }
 };
 
@@ -510,27 +512,27 @@ TYPED_TEST(ListOrLinkedHashSetTranslatorTest, ComplexityTranslator) {
   using Set = TypeParam;
   Set set;
   set.insert(Complicated(42));
-  int baseLine = Complicated::s_objectsConstructed;
+  int base_line = Complicated::objects_constructed_;
 
   typename Set::iterator it =
-      set.template find<ComplexityTranslator>(Simple(42));
+      set.template Find<ComplexityTranslator>(Simple(42));
   EXPECT_NE(it, set.end());
-  EXPECT_EQ(baseLine, Complicated::s_objectsConstructed);
+  EXPECT_EQ(base_line, Complicated::objects_constructed_);
 
-  it = set.template find<ComplexityTranslator>(Simple(103));
+  it = set.template Find<ComplexityTranslator>(Simple(103));
   EXPECT_EQ(it, set.end());
-  EXPECT_EQ(baseLine, Complicated::s_objectsConstructed);
+  EXPECT_EQ(base_line, Complicated::objects_constructed_);
 
-  const Set& constSet(set);
+  const Set& const_set(set);
 
-  typename Set::const_iterator constIterator =
-      constSet.template find<ComplexityTranslator>(Simple(42));
-  EXPECT_NE(constIterator, constSet.end());
-  EXPECT_EQ(baseLine, Complicated::s_objectsConstructed);
+  typename Set::const_iterator const_iterator =
+      const_set.template Find<ComplexityTranslator>(Simple(42));
+  EXPECT_NE(const_iterator, const_set.end());
+  EXPECT_EQ(base_line, Complicated::objects_constructed_);
 
-  constIterator = constSet.template find<ComplexityTranslator>(Simple(103));
-  EXPECT_EQ(constIterator, constSet.end());
-  EXPECT_EQ(baseLine, Complicated::s_objectsConstructed);
+  const_iterator = const_set.template Find<ComplexityTranslator>(Simple(103));
+  EXPECT_EQ(const_iterator, const_set.end());
+  EXPECT_EQ(base_line, Complicated::objects_constructed_);
 }
 
 struct Dummy {
@@ -551,101 +553,101 @@ TEST(ListHashSetTest, WithOwnPtr) {
   {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
-    OwnPtrSet::AddResult res1 = set.insert(WTF::wrapUnique(ptr1));
-    EXPECT_EQ(res1.storedValue->get(), ptr1);
+    OwnPtrSet::AddResult res1 = set.insert(WTF::WrapUnique(ptr1));
+    EXPECT_EQ(res1.stored_value->get(), ptr1);
   }
 
   EXPECT_FALSE(deleted1);
   EXPECT_EQ(1UL, set.size());
-  OwnPtrSet::iterator it1 = set.find(ptr1);
+  OwnPtrSet::iterator it1 = set.Find(ptr1);
   EXPECT_NE(set.end(), it1);
   EXPECT_EQ(ptr1, (*it1).get());
 
   Dummy* ptr2 = new Dummy(deleted2);
   {
-    OwnPtrSet::AddResult res2 = set.insert(WTF::wrapUnique(ptr2));
-    EXPECT_EQ(res2.storedValue->get(), ptr2);
+    OwnPtrSet::AddResult res2 = set.insert(WTF::WrapUnique(ptr2));
+    EXPECT_EQ(res2.stored_value->get(), ptr2);
   }
 
   EXPECT_FALSE(deleted2);
   EXPECT_EQ(2UL, set.size());
-  OwnPtrSet::iterator it2 = set.find(ptr2);
+  OwnPtrSet::iterator it2 = set.Find(ptr2);
   EXPECT_NE(set.end(), it2);
   EXPECT_EQ(ptr2, (*it2).get());
 
   set.erase(ptr1);
   EXPECT_TRUE(deleted1);
 
-  set.clear();
+  set.Clear();
   EXPECT_TRUE(deleted2);
-  EXPECT_TRUE(set.isEmpty());
+  EXPECT_TRUE(set.IsEmpty());
 
   deleted1 = false;
   deleted2 = false;
   {
     OwnPtrSet set;
-    set.insert(WTF::makeUnique<Dummy>(deleted1));
-    set.insert(WTF::makeUnique<Dummy>(deleted2));
+    set.insert(WTF::MakeUnique<Dummy>(deleted1));
+    set.insert(WTF::MakeUnique<Dummy>(deleted2));
   }
   EXPECT_TRUE(deleted1);
   EXPECT_TRUE(deleted2);
 
   deleted1 = false;
   deleted2 = false;
-  std::unique_ptr<Dummy> ownPtr1;
-  std::unique_ptr<Dummy> ownPtr2;
+  std::unique_ptr<Dummy> own_ptr1;
+  std::unique_ptr<Dummy> own_ptr2;
   ptr1 = new Dummy(deleted1);
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.insert(WTF::wrapUnique(ptr1));
-    set.insert(WTF::wrapUnique(ptr2));
-    ownPtr1 = set.takeFirst();
+    set.insert(WTF::WrapUnique(ptr1));
+    set.insert(WTF::WrapUnique(ptr2));
+    own_ptr1 = set.TakeFirst();
     EXPECT_EQ(1UL, set.size());
-    ownPtr2 = set.take(ptr2);
-    EXPECT_TRUE(set.isEmpty());
+    own_ptr2 = set.Take(ptr2);
+    EXPECT_TRUE(set.IsEmpty());
   }
   EXPECT_FALSE(deleted1);
   EXPECT_FALSE(deleted2);
 
-  EXPECT_EQ(ptr1, ownPtr1.get());
-  EXPECT_EQ(ptr2, ownPtr2.get());
+  EXPECT_EQ(ptr1, own_ptr1.get());
+  EXPECT_EQ(ptr2, own_ptr2.get());
 }
 
 class CountCopy final {
  public:
   static int* const kDeletedValue;
 
-  explicit CountCopy(int* counter = nullptr) : m_counter(counter) {}
-  CountCopy(const CountCopy& other) : m_counter(other.m_counter) {
-    if (m_counter && m_counter != kDeletedValue)
-      ++*m_counter;
+  explicit CountCopy(int* counter = nullptr) : counter_(counter) {}
+  CountCopy(const CountCopy& other) : counter_(other.counter_) {
+    if (counter_ && counter_ != kDeletedValue)
+      ++*counter_;
   }
-  const int* counter() const { return m_counter; }
+  const int* Counter() const { return counter_; }
 
  private:
-  int* m_counter;
+  int* counter_;
 };
 
 int* const CountCopy::kDeletedValue =
     reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
 
 struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
-  static bool isEmptyValue(const CountCopy& value) { return !value.counter(); }
-  static void constructDeletedValue(CountCopy& slot, bool) {
+  static bool IsEmptyValue(const CountCopy& value) { return !value.Counter(); }
+  static void ConstructDeletedValue(CountCopy& slot, bool) {
     slot = CountCopy(CountCopy::kDeletedValue);
   }
-  static bool isDeletedValue(const CountCopy& value) {
-    return value.counter() == CountCopy::kDeletedValue;
+  static bool IsDeletedValue(const CountCopy& value) {
+    return value.Counter() == CountCopy::kDeletedValue;
   }
 };
 
 struct CountCopyHash : public PtrHash<const int> {
-  static unsigned hash(const CountCopy& value) {
-    return PtrHash<const int>::hash(value.counter());
+  static unsigned GetHash(const CountCopy& value) {
+    return PtrHash<const int>::GetHash(value.Counter());
   }
-  static bool equal(const CountCopy& left, const CountCopy& right) {
-    return PtrHash<const int>::equal(left.counter(), right.counter());
+  static bool Equal(const CountCopy& left, const CountCopy& right) {
+    return PtrHash<const int>::Equal(left.Counter(), right.Counter());
   }
 };
 
@@ -699,38 +701,37 @@ class MoveOnly {
   // of a hash table.
   enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
 
-  explicit MoveOnly(int value = kEmpty, int id = 0)
-      : m_value(value), m_id(id) {}
-  MoveOnly(MoveOnly&& other) : m_value(other.m_value), m_id(other.m_id) {
-    other.m_value = kMovedOut;
-    other.m_id = 0;
+  explicit MoveOnly(int value = kEmpty, int id = 0) : value_(value), id_(id) {}
+  MoveOnly(MoveOnly&& other) : value_(other.value_), id_(other.id_) {
+    other.value_ = kMovedOut;
+    other.id_ = 0;
   }
   MoveOnly& operator=(MoveOnly&& other) {
-    m_value = other.m_value;
-    m_id = other.m_id;
-    other.m_value = kMovedOut;
-    other.m_id = 0;
+    value_ = other.value_;
+    id_ = other.id_;
+    other.value_ = kMovedOut;
+    other.id_ = 0;
     return *this;
   }
 
-  int value() const { return m_value; }
+  int Value() const { return value_; }
   // id() is used for distinguishing MoveOnlys with the same value().
-  int id() const { return m_id; }
+  int Id() const { return id_; }
 
  private:
   MoveOnly(const MoveOnly&) = delete;
   MoveOnly& operator=(const MoveOnly&) = delete;
 
-  int m_value;
-  int m_id;
+  int value_;
+  int id_;
 };
 
 struct MoveOnlyHash {
-  static unsigned hash(const MoveOnly& value) {
-    return DefaultHash<int>::Hash::hash(value.value());
+  static unsigned GetHash(const MoveOnly& value) {
+    return DefaultHash<int>::Hash::GetHash(value.Value());
   }
-  static bool equal(const MoveOnly& left, const MoveOnly& right) {
-    return DefaultHash<int>::Hash::equal(left.value(), right.value());
+  static bool Equal(const MoveOnly& left, const MoveOnly& right) {
+    return DefaultHash<int>::Hash::Equal(left.Value(), right.Value());
   }
 };
 
@@ -756,65 +757,65 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
   using AddResult = typename Set::AddResult;
   Set set;
   {
-    AddResult addResult = set.insert(MoveOnly(1, 1));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(1, addResult.storedValue->value());
-    EXPECT_EQ(1, addResult.storedValue->id());
+    AddResult add_result = set.insert(MoveOnly(1, 1));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(1, add_result.stored_value->Value());
+    EXPECT_EQ(1, add_result.stored_value->Id());
   }
   {
-    AddResult addResult = set.insert(MoveOnly(1, 111));
-    EXPECT_FALSE(addResult.isNewEntry);
-    EXPECT_EQ(1, addResult.storedValue->value());
-    EXPECT_EQ(1, addResult.storedValue->id());
+    AddResult add_result = set.insert(MoveOnly(1, 111));
+    EXPECT_FALSE(add_result.is_new_entry);
+    EXPECT_EQ(1, add_result.stored_value->Value());
+    EXPECT_EQ(1, add_result.stored_value->Id());
   }
-  auto iter = set.find(MoveOnly(1));
+  auto iter = set.Find(MoveOnly(1));
   ASSERT_TRUE(iter != set.end());
-  EXPECT_EQ(1, iter->value());
-  EXPECT_EQ(1, iter->id());
+  EXPECT_EQ(1, iter->Value());
+  EXPECT_EQ(1, iter->Id());
 
-  iter = set.find(MoveOnly(2));
+  iter = set.Find(MoveOnly(2));
   EXPECT_TRUE(iter == set.end());
 
   // ListHashSet and LinkedHashSet have several flavors of add().
-  iter = set.addReturnIterator(MoveOnly(2, 2));
-  EXPECT_EQ(2, iter->value());
-  EXPECT_EQ(2, iter->id());
+  iter = set.AddReturnIterator(MoveOnly(2, 2));
+  EXPECT_EQ(2, iter->Value());
+  EXPECT_EQ(2, iter->Id());
 
-  iter = set.addReturnIterator(MoveOnly(2, 222));
-  EXPECT_EQ(2, iter->value());
-  EXPECT_EQ(2, iter->id());
+  iter = set.AddReturnIterator(MoveOnly(2, 222));
+  EXPECT_EQ(2, iter->Value());
+  EXPECT_EQ(2, iter->Id());
 
   {
-    AddResult addResult = set.appendOrMoveToLast(MoveOnly(3, 3));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(3, addResult.storedValue->value());
-    EXPECT_EQ(3, addResult.storedValue->id());
+    AddResult add_result = set.AppendOrMoveToLast(MoveOnly(3, 3));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(3, add_result.stored_value->Value());
+    EXPECT_EQ(3, add_result.stored_value->Id());
   }
   {
-    AddResult addResult = set.prependOrMoveToFirst(MoveOnly(4, 4));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(4, addResult.storedValue->value());
-    EXPECT_EQ(4, addResult.storedValue->id());
+    AddResult add_result = set.PrependOrMoveToFirst(MoveOnly(4, 4));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(4, add_result.stored_value->Value());
+    EXPECT_EQ(4, add_result.stored_value->Id());
   }
   {
-    AddResult addResult = set.insertBefore(MoveOnly(4), MoveOnly(5, 5));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(5, addResult.storedValue->value());
-    EXPECT_EQ(5, addResult.storedValue->id());
+    AddResult add_result = set.InsertBefore(MoveOnly(4), MoveOnly(5, 5));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(5, add_result.stored_value->Value());
+    EXPECT_EQ(5, add_result.stored_value->Id());
   }
   {
-    iter = set.find(MoveOnly(5));
+    iter = set.Find(MoveOnly(5));
     ASSERT_TRUE(iter != set.end());
-    AddResult addResult = set.insertBefore(iter, MoveOnly(6, 6));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(6, addResult.storedValue->value());
-    EXPECT_EQ(6, addResult.storedValue->id());
+    AddResult add_result = set.InsertBefore(iter, MoveOnly(6, 6));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(6, add_result.stored_value->Value());
+    EXPECT_EQ(6, add_result.stored_value->Id());
   }
 
   // ... but they don't have any pass-out (like take()) methods.
 
   set.erase(MoveOnly(3));
-  set.clear();
+  set.Clear();
 }
 
 }  // anonymous namespace

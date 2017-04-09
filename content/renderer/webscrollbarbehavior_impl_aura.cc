@@ -10,19 +10,19 @@
 
 namespace content {
 
-bool WebScrollbarBehaviorImpl::shouldCenterOnThumb(
-      blink::WebPointerProperties::Button mouseButton,
-      bool shiftKeyPressed,
-      bool altKeyPressed) {
+bool WebScrollbarBehaviorImpl::ShouldCenterOnThumb(
+    blink::WebPointerProperties::Button mouseButton,
+    bool shiftKeyPressed,
+    bool altKeyPressed) {
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (mouseButton == blink::WebPointerProperties::Button::Middle)
+  if (mouseButton == blink::WebPointerProperties::Button::kMiddle)
     return true;
 #endif
-  return (mouseButton == blink::WebPointerProperties::Button::Left) &&
-      shiftKeyPressed;
+  return (mouseButton == blink::WebPointerProperties::Button::kLeft) &&
+         shiftKeyPressed;
 }
 
-bool WebScrollbarBehaviorImpl::shouldSnapBackToDragOrigin(
+bool WebScrollbarBehaviorImpl::ShouldSnapBackToDragOrigin(
     const blink::WebPoint& eventPoint,
     const blink::WebRect& scrollbarRect,
     bool isHorizontal) {

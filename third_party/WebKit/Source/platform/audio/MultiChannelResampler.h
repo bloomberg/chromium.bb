@@ -43,12 +43,12 @@ class PLATFORM_EXPORT MultiChannelResampler {
   WTF_MAKE_NONCOPYABLE(MultiChannelResampler);
 
  public:
-  MultiChannelResampler(double scaleFactor, unsigned numberOfChannels);
+  MultiChannelResampler(double scale_factor, unsigned number_of_channels);
 
   // Process given AudioSourceProvider for streaming applications.
-  void process(AudioSourceProvider*,
+  void Process(AudioSourceProvider*,
                AudioBus* destination,
-               size_t framesToProcess);
+               size_t frames_to_process);
 
  private:
   // FIXME: the mac port can have a more highly optimized implementation based
@@ -57,9 +57,9 @@ class PLATFORM_EXPORT MultiChannelResampler {
   // https://bugs.webkit.org/show_bug.cgi?id=75118
 
   // Each channel will be resampled using a high-quality SincResampler.
-  Vector<std::unique_ptr<SincResampler>> m_kernels;
+  Vector<std::unique_ptr<SincResampler>> kernels_;
 
-  unsigned m_numberOfChannels;
+  unsigned number_of_channels_;
 };
 
 }  // namespace blink

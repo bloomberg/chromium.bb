@@ -14,24 +14,24 @@ class CSSFontWeightInterpolationType : public CSSInterpolationType {
  public:
   CSSFontWeightInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK_EQ(cssProperty(), CSSPropertyFontWeight);
+    DCHECK_EQ(CssProperty(), CSSPropertyFontWeight);
   }
 
-  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
-  void applyStandardPropertyValue(const InterpolableValue&,
+  void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
  private:
-  InterpolationValue createFontWeightValue(FontWeight) const;
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue CreateFontWeightValue(FontWeight) const;
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertValue(const CSSValue&,
+  InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
 };

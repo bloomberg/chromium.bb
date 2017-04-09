@@ -23,8 +23,8 @@ TEST(RTCStatsTest, OnlyIncludeWhitelistedStats_GetStats) {
       new webrtc::RTCPeerConnectionStats(whitelisted_id, 42)));
 
   RTCStatsReport report(webrtc_report.get());
-  EXPECT_FALSE(report.getStats(blink::WebString::fromUTF8(not_whitelisted_id)));
-  EXPECT_TRUE(report.getStats(blink::WebString::fromUTF8(whitelisted_id)));
+  EXPECT_FALSE(report.GetStats(blink::WebString::FromUTF8(not_whitelisted_id)));
+  EXPECT_TRUE(report.GetStats(blink::WebString::FromUTF8(whitelisted_id)));
 }
 
 TEST(RTCStatsTest, OnlyIncludeWhitelistedStats_Iteration) {
@@ -39,10 +39,10 @@ TEST(RTCStatsTest, OnlyIncludeWhitelistedStats_Iteration) {
       new webrtc::RTCPeerConnectionStats(whitelisted_id, 42)));
 
   RTCStatsReport report(webrtc_report.get());
-  std::unique_ptr<blink::WebRTCStats> stats = report.next();
+  std::unique_ptr<blink::WebRTCStats> stats = report.Next();
   EXPECT_TRUE(stats);
-  EXPECT_EQ(stats->id(), whitelisted_id);
-  EXPECT_FALSE(report.next());
+  EXPECT_EQ(stats->Id(), whitelisted_id);
+  EXPECT_FALSE(report.Next());
 }
 
 }  // namespace content

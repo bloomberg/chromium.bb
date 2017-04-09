@@ -20,16 +20,16 @@ class CompositorProxyClientImpl
   DECLARE_TRACE();
 
   // CompositorProxyClient:
-  void registerCompositorProxy(CompositorProxy*) override;
-  void unregisterCompositorProxy(CompositorProxy*) override;
+  void RegisterCompositorProxy(CompositorProxy*) override;
+  void UnregisterCompositorProxy(CompositorProxy*) override;
 
-  HeapHashSet<WeakMember<CompositorProxy>>& proxies() { return m_proxies; }
+  HeapHashSet<WeakMember<CompositorProxy>>& Proxies() { return proxies_; }
 
  private:
   // CompositorProxy can be constructed in the main thread and control thread.
   // However this only ever contains ones constructed in the compositor worker
   // thread.
-  HeapHashSet<WeakMember<CompositorProxy>> m_proxies;
+  HeapHashSet<WeakMember<CompositorProxy>> proxies_;
 };
 
 }  // namespace blink

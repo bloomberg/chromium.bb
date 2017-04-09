@@ -30,12 +30,12 @@ class ScriptModuleResolver
   // Notify the ScriptModuleResolver that a ModuleScript exists.
   // This hook gives a chance for the resolver impl to populate module record
   // identifier -> ModuleScript mapping entry.
-  virtual void registerModuleScript(ModuleScript*) = 0;
+  virtual void RegisterModuleScript(ModuleScript*) = 0;
 
   // Implements "Runtime Semantics: HostResolveImportedModule"
   // https://tc39.github.io/ecma262/#sec-hostresolveimportedmodule
   // This returns a null ScriptModule when an exception is thrown.
-  virtual ScriptModule resolve(const String& specifier,
+  virtual ScriptModule Resolve(const String& specifier,
                                const ScriptModule& referrer,
                                ExceptionState&) = 0;
 };

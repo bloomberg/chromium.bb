@@ -168,7 +168,7 @@ void GamepadService::OnUserGesture() {
       info.did_observe_user_gesture = true;
       blink::WebGamepads gamepads;
       provider_->GetCurrentGamepadData(&gamepads);
-      for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+      for (unsigned i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
         const blink::WebGamepad& pad = gamepads.items[i];
         if (pad.connected)
           info.consumer->OnGamepadConnected(i, pad);

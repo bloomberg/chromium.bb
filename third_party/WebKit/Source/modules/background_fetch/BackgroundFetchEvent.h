@@ -19,13 +19,13 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchEvent* create(
+  static BackgroundFetchEvent* Create(
       const AtomicString& type,
       const BackgroundFetchEventInit& initializer) {
     return new BackgroundFetchEvent(type, initializer, nullptr /* observer */);
   }
 
-  static BackgroundFetchEvent* create(
+  static BackgroundFetchEvent* Create(
       const AtomicString& type,
       const BackgroundFetchEventInit& initializer,
       WaitUntilObserver* observer) {
@@ -38,14 +38,14 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   String tag() const;
 
   // ExtendableEvent interface.
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
  protected:
   BackgroundFetchEvent(const AtomicString& type,
                        const BackgroundFetchEventInit&,
                        WaitUntilObserver*);
 
-  String m_tag;
+  String tag_;
 };
 
 }  // namespace blink

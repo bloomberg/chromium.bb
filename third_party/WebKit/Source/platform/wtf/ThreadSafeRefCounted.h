@@ -43,35 +43,35 @@ class WTF_EXPORT ThreadSafeRefCountedBase {
   USING_FAST_MALLOC(ThreadSafeRefCountedBase);
 
  public:
-  ThreadSafeRefCountedBase(int initialRefCount = 1)
-      : m_refCount(initialRefCount) {}
+  ThreadSafeRefCountedBase(int initial_ref_count = 1)
+      : ref_count_(initial_ref_count) {}
 
-  void ref() { atomicIncrement(&m_refCount); }
+  void Ref() { AtomicIncrement(&ref_count_); }
 
-  bool hasOneRef() { return refCount() == 1; }
+  bool HasOneRef() { return RefCount() == 1; }
 
-  int refCount() const { return static_cast<int const volatile&>(m_refCount); }
+  int RefCount() const { return static_cast<int const volatile&>(ref_count_); }
 
  protected:
   // Returns whether the pointer should be freed or not.
-  bool derefBase() {
-    WTF_ANNOTATE_HAPPENS_BEFORE(&m_refCount);
-    if (atomicDecrement(&m_refCount) <= 0) {
-      WTF_ANNOTATE_HAPPENS_AFTER(&m_refCount);
+  bool DerefBase() {
+    WTF_ANNOTATE_HAPPENS_BEFORE(&ref_count_);
+    if (AtomicDecrement(&ref_count_) <= 0) {
+      WTF_ANNOTATE_HAPPENS_AFTER(&ref_count_);
       return true;
     }
     return false;
   }
 
  private:
-  int m_refCount;
+  int ref_count_;
 };
 
 template <class T>
 class ThreadSafeRefCounted : public ThreadSafeRefCountedBase {
  public:
-  void deref() {
-    if (derefBase())
+  void Deref() {
+    if (DerefBase())
       delete static_cast<T*>(this);
   }
 

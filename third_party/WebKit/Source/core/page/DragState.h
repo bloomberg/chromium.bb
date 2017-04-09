@@ -42,14 +42,14 @@ class DragState final : public GarbageCollected<DragState> {
   DragState() {}
 
   // Element that may be a drag source, for the current mouse gesture.
-  Member<Node> m_dragSrc;
-  DragSourceAction m_dragType;
+  Member<Node> drag_src_;
+  DragSourceAction drag_type_;
   // Used on only the source side of dragging.
-  Member<DataTransfer> m_dragDataTransfer;
+  Member<DataTransfer> drag_data_transfer_;
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_dragSrc);
-    visitor->trace(m_dragDataTransfer);
+    visitor->Trace(drag_src_);
+    visitor->Trace(drag_data_transfer_);
   }
 };
 

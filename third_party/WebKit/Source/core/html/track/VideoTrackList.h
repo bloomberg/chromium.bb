@@ -14,18 +14,18 @@ class CORE_EXPORT VideoTrackList final : public TrackListBase<VideoTrack> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VideoTrackList* create(HTMLMediaElement&);
+  static VideoTrackList* Create(HTMLMediaElement&);
 
   ~VideoTrackList() override;
 
   int selectedIndex() const;
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  void trackSelected(WebMediaPlayer::TrackId selectedTrackId);
+  void TrackSelected(WebMediaPlayer::TrackId selected_track_id);
 
-  DEFINE_INLINE_TRACE() { TrackListBase<VideoTrack>::trace(visitor); }
+  DEFINE_INLINE_TRACE() { TrackListBase<VideoTrack>::Trace(visitor); }
 
  private:
   explicit VideoTrackList(HTMLMediaElement&);

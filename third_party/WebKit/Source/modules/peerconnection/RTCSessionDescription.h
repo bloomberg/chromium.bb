@@ -48,9 +48,9 @@ class RTCSessionDescription final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RTCSessionDescription* create(ExecutionContext*,
+  static RTCSessionDescription* Create(ExecutionContext*,
                                        const RTCSessionDescriptionInit&);
-  static RTCSessionDescription* create(WebRTCSessionDescription);
+  static RTCSessionDescription* Create(WebRTCSessionDescription);
 
   String type();
   void setType(const String&);
@@ -60,14 +60,14 @@ class RTCSessionDescription final
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  WebRTCSessionDescription webSessionDescription();
+  WebRTCSessionDescription WebSessionDescription();
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   explicit RTCSessionDescription(WebRTCSessionDescription);
 
-  WebRTCSessionDescription m_webSessionDescription;
+  WebRTCSessionDescription web_session_description_;
 };
 
 }  // namespace blink

@@ -39,176 +39,179 @@ const double kForcedInvocationDeadlineSeconds = 10;
 IdleSpellCheckCallback::~IdleSpellCheckCallback() {}
 
 DEFINE_TRACE(IdleSpellCheckCallback) {
-  visitor->trace(m_frame);
-  visitor->trace(m_coldModeRequester);
-  IdleRequestCallback::trace(visitor);
-  SynchronousMutationObserver::trace(visitor);
+  visitor->Trace(frame_);
+  visitor->Trace(cold_mode_requester_);
+  IdleRequestCallback::Trace(visitor);
+  SynchronousMutationObserver::Trace(visitor);
 }
 
-IdleSpellCheckCallback* IdleSpellCheckCallback::create(LocalFrame& frame) {
+IdleSpellCheckCallback* IdleSpellCheckCallback::Create(LocalFrame& frame) {
   return new IdleSpellCheckCallback(frame);
 }
 
 IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
-    : m_state(State::kInactive),
-      m_idleCallbackHandle(kInvalidHandle),
-      m_frame(frame),
-      m_lastProcessedUndoStepSequence(0),
-      m_coldModeRequester(ColdModeSpellCheckRequester::create(frame)),
-      m_coldModeTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
-                      this,
-                      &IdleSpellCheckCallback::coldModeTimerFired) {}
+    : state_(State::kInactive),
+      idle_callback_handle_(kInvalidHandle),
+      frame_(frame),
+      last_processed_undo_step_sequence_(0),
+      cold_mode_requester_(ColdModeSpellCheckRequester::Create(frame)),
+      cold_mode_timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
+                       this,
+                       &IdleSpellCheckCallback::ColdModeTimerFired) {}
 
-SpellCheckRequester& IdleSpellCheckCallback::spellCheckRequester() const {
-  return frame().spellChecker().spellCheckRequester();
+SpellCheckRequester& IdleSpellCheckCallback::GetSpellCheckRequester() const {
+  return GetFrame().GetSpellChecker().GetSpellCheckRequester();
 }
 
-bool IdleSpellCheckCallback::isSpellCheckingEnabled() const {
-  return frame().spellChecker().isSpellCheckingEnabled();
+bool IdleSpellCheckCallback::IsSpellCheckingEnabled() const {
+  return GetFrame().GetSpellChecker().IsSpellCheckingEnabled();
 }
 
-void IdleSpellCheckCallback::deactivate() {
-  m_state = State::kInactive;
-  if (m_coldModeTimer.isActive())
-    m_coldModeTimer.stop();
-  if (m_idleCallbackHandle != kInvalidHandle)
-    frame().document()->cancelIdleCallback(m_idleCallbackHandle);
-  m_idleCallbackHandle = kInvalidHandle;
+void IdleSpellCheckCallback::Deactivate() {
+  state_ = State::kInactive;
+  if (cold_mode_timer_.IsActive())
+    cold_mode_timer_.Stop();
+  if (idle_callback_handle_ != kInvalidHandle)
+    GetFrame().GetDocument()->CancelIdleCallback(idle_callback_handle_);
+  idle_callback_handle_ = kInvalidHandle;
 }
 
-void IdleSpellCheckCallback::setNeedsInvocation() {
-  if (!isSpellCheckingEnabled()) {
-    deactivate();
+void IdleSpellCheckCallback::SetNeedsInvocation() {
+  if (!IsSpellCheckingEnabled()) {
+    Deactivate();
     return;
   }
 
-  if (m_state == State::kHotModeRequested)
+  if (state_ == State::kHotModeRequested)
     return;
 
-  if (m_state == State::kColdModeTimerStarted) {
-    DCHECK(m_coldModeTimer.isActive());
-    m_coldModeTimer.stop();
+  if (state_ == State::kColdModeTimerStarted) {
+    DCHECK(cold_mode_timer_.IsActive());
+    cold_mode_timer_.Stop();
   }
 
-  if (m_state == State::kColdModeRequested) {
-    frame().document()->cancelIdleCallback(m_idleCallbackHandle);
-    m_idleCallbackHandle = kInvalidHandle;
+  if (state_ == State::kColdModeRequested) {
+    GetFrame().GetDocument()->CancelIdleCallback(idle_callback_handle_);
+    idle_callback_handle_ = kInvalidHandle;
   }
 
   IdleRequestOptions options;
   options.setTimeout(kHotModeRequestTimeoutMS);
-  m_idleCallbackHandle = frame().document()->requestIdleCallback(this, options);
-  m_state = State::kHotModeRequested;
+  idle_callback_handle_ =
+      GetFrame().GetDocument()->RequestIdleCallback(this, options);
+  state_ = State::kHotModeRequested;
 }
 
-void IdleSpellCheckCallback::setNeedsColdModeInvocation() {
-  if (!isSpellCheckingEnabled()) {
-    deactivate();
+void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
+  if (!IsSpellCheckingEnabled()) {
+    Deactivate();
     return;
   }
 
-  if (m_state != State::kInactive && m_state != State::kInHotModeInvocation &&
-      m_state != State::kInColdModeInvocation)
+  if (state_ != State::kInactive && state_ != State::kInHotModeInvocation &&
+      state_ != State::kInColdModeInvocation)
     return;
 
-  DCHECK(!m_coldModeTimer.isActive());
-  int intervalMS = m_state == State::kInColdModeInvocation
-                       ? kConsecutiveColdModeTimerIntervalMS
-                       : kColdModeTimerIntervalMS;
-  m_coldModeTimer.startOneShot(intervalMS / 1000.0, BLINK_FROM_HERE);
-  m_state = State::kColdModeTimerStarted;
+  DCHECK(!cold_mode_timer_.IsActive());
+  int interval_ms = state_ == State::kInColdModeInvocation
+                        ? kConsecutiveColdModeTimerIntervalMS
+                        : kColdModeTimerIntervalMS;
+  cold_mode_timer_.StartOneShot(interval_ms / 1000.0, BLINK_FROM_HERE);
+  state_ = State::kColdModeTimerStarted;
 }
 
-void IdleSpellCheckCallback::coldModeTimerFired(TimerBase*) {
-  DCHECK_EQ(State::kColdModeTimerStarted, m_state);
+void IdleSpellCheckCallback::ColdModeTimerFired(TimerBase*) {
+  DCHECK_EQ(State::kColdModeTimerStarted, state_);
 
-  if (!isSpellCheckingEnabled()) {
-    deactivate();
+  if (!IsSpellCheckingEnabled()) {
+    Deactivate();
     return;
   }
 
-  m_idleCallbackHandle =
-      frame().document()->requestIdleCallback(this, IdleRequestOptions());
-  m_state = State::kColdModeRequested;
+  idle_callback_handle_ =
+      GetFrame().GetDocument()->RequestIdleCallback(this, IdleRequestOptions());
+  state_ = State::kColdModeRequested;
 }
 
-void IdleSpellCheckCallback::hotModeInvocation(IdleDeadline* deadline) {
+void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
   TRACE_EVENT0("blink", "IdleSpellCheckCallback::hotModeInvocation");
 
   // TODO(xiaochengh): Figure out if this has any performance impact.
-  frame().document()->updateStyleAndLayout();
+  GetFrame().GetDocument()->UpdateStyleAndLayout();
 
-  HotModeSpellCheckRequester requester(spellCheckRequester());
+  HotModeSpellCheckRequester requester(GetSpellCheckRequester());
 
-  requester.checkSpellingAt(frame().selection().selectionInDOMTree().extent());
+  requester.CheckSpellingAt(
+      GetFrame().Selection().GetSelectionInDOMTree().Extent());
 
-  const uint64_t watermark = m_lastProcessedUndoStepSequence;
-  for (const UndoStep* step : frame().editor().undoStack().undoSteps()) {
-    if (step->sequenceNumber() <= watermark)
+  const uint64_t watermark = last_processed_undo_step_sequence_;
+  for (const UndoStep* step :
+       GetFrame().GetEditor().GetUndoStack().UndoSteps()) {
+    if (step->SequenceNumber() <= watermark)
       break;
-    m_lastProcessedUndoStepSequence =
-        std::max(step->sequenceNumber(), m_lastProcessedUndoStepSequence);
+    last_processed_undo_step_sequence_ =
+        std::max(step->SequenceNumber(), last_processed_undo_step_sequence_);
     if (deadline->timeRemaining() == 0)
       break;
-    requester.checkSpellingAt(step->endingSelection().extent());
+    requester.CheckSpellingAt(step->EndingSelection().Extent());
   }
 }
 
 void IdleSpellCheckCallback::handleEvent(IdleDeadline* deadline) {
   DCHECK(RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled());
-  DCHECK(frame().document());
-  DCHECK(frame().document()->isActive());
-  DCHECK_NE(m_idleCallbackHandle, kInvalidHandle);
-  m_idleCallbackHandle = kInvalidHandle;
+  DCHECK(GetFrame().GetDocument());
+  DCHECK(GetFrame().GetDocument()->IsActive());
+  DCHECK_NE(idle_callback_handle_, kInvalidHandle);
+  idle_callback_handle_ = kInvalidHandle;
 
-  if (!isSpellCheckingEnabled()) {
-    deactivate();
+  if (!IsSpellCheckingEnabled()) {
+    Deactivate();
     return;
   }
 
-  if (m_state == State::kHotModeRequested) {
-    m_state = State::kInHotModeInvocation;
-    hotModeInvocation(deadline);
-    setNeedsColdModeInvocation();
-  } else if (m_state == State::kColdModeRequested) {
-    m_state = State::kInColdModeInvocation;
-    m_coldModeRequester->invoke(deadline);
-    if (m_coldModeRequester->fullDocumentChecked())
-      m_state = State::kInactive;
+  if (state_ == State::kHotModeRequested) {
+    state_ = State::kInHotModeInvocation;
+    HotModeInvocation(deadline);
+    SetNeedsColdModeInvocation();
+  } else if (state_ == State::kColdModeRequested) {
+    state_ = State::kInColdModeInvocation;
+    cold_mode_requester_->Invoke(deadline);
+    if (cold_mode_requester_->FullDocumentChecked())
+      state_ = State::kInactive;
     else
-      setNeedsColdModeInvocation();
+      SetNeedsColdModeInvocation();
   } else {
     NOTREACHED();
   }
 }
 
-void IdleSpellCheckCallback::documentAttached(Document* document) {
-  setNeedsColdModeInvocation();
-  setContext(document);
+void IdleSpellCheckCallback::DocumentAttached(Document* document) {
+  SetNeedsColdModeInvocation();
+  SetContext(document);
 }
 
-void IdleSpellCheckCallback::contextDestroyed(Document*) {
-  deactivate();
+void IdleSpellCheckCallback::ContextDestroyed(Document*) {
+  Deactivate();
 }
 
-void IdleSpellCheckCallback::forceInvocationForTesting() {
-  if (!isSpellCheckingEnabled())
+void IdleSpellCheckCallback::ForceInvocationForTesting() {
+  if (!IsSpellCheckingEnabled())
     return;
 
-  IdleDeadline* deadline = IdleDeadline::create(
-      kForcedInvocationDeadlineSeconds + monotonicallyIncreasingTime(),
-      IdleDeadline::CallbackType::CalledWhenIdle);
+  IdleDeadline* deadline = IdleDeadline::Create(
+      kForcedInvocationDeadlineSeconds + MonotonicallyIncreasingTime(),
+      IdleDeadline::CallbackType::kCalledWhenIdle);
 
-  switch (m_state) {
+  switch (state_) {
     case State::kColdModeTimerStarted:
-      m_coldModeTimer.stop();
-      m_state = State::kColdModeRequested;
-      m_idleCallbackHandle = kDummyHandleForForcedInvocation;
+      cold_mode_timer_.Stop();
+      state_ = State::kColdModeRequested;
+      idle_callback_handle_ = kDummyHandleForForcedInvocation;
       handleEvent(deadline);
       break;
     case State::kHotModeRequested:
     case State::kColdModeRequested:
-      frame().document()->cancelIdleCallback(m_idleCallbackHandle);
+      GetFrame().GetDocument()->CancelIdleCallback(idle_callback_handle_);
       handleEvent(deadline);
       break;
     case State::kInactive:
@@ -218,14 +221,14 @@ void IdleSpellCheckCallback::forceInvocationForTesting() {
   }
 }
 
-void IdleSpellCheckCallback::skipColdModeTimerForTesting() {
-  DCHECK(m_coldModeTimer.isActive());
-  m_coldModeTimer.stop();
-  coldModeTimerFired(&m_coldModeTimer);
+void IdleSpellCheckCallback::SkipColdModeTimerForTesting() {
+  DCHECK(cold_mode_timer_.IsActive());
+  cold_mode_timer_.Stop();
+  ColdModeTimerFired(&cold_mode_timer_);
 }
 
-void IdleSpellCheckCallback::setNeedsMoreColdModeInvocationForTesting() {
-  m_coldModeRequester->setNeedsMoreInvocationForTesting();
+void IdleSpellCheckCallback::SetNeedsMoreColdModeInvocationForTesting() {
+  cold_mode_requester_->SetNeedsMoreInvocationForTesting();
 }
 
 }  // namespace blink

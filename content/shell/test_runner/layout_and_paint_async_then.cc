@@ -23,14 +23,14 @@ class LayoutAndPaintCallback : public blink::WebLayoutAndPaintAsyncCallback {
   void set_wait_for_popup(bool wait) { wait_for_popup_ = wait; }
 
   // WebLayoutAndPaintAsyncCallback implementation.
-  void didLayoutAndPaint() override;
+  void DidLayoutAndPaint() override;
 
  private:
   base::Closure callback_;
   bool wait_for_popup_;
 };
 
-void LayoutAndPaintCallback::didLayoutAndPaint() {
+void LayoutAndPaintCallback::DidLayoutAndPaint() {
   TRACE_EVENT0("shell", "LayoutAndPaintCallback::didLayoutAndPaint");
   if (wait_for_popup_) {
     wait_for_popup_ = false;
@@ -50,10 +50,10 @@ void LayoutAndPaintAsyncThen(blink::WebWidget* web_widget,
 
   LayoutAndPaintCallback* layout_and_paint_callback =
       new LayoutAndPaintCallback(callback);
-  web_widget->layoutAndPaintAsync(layout_and_paint_callback);
-  if (blink::WebPagePopup* popup = web_widget->pagePopup()) {
+  web_widget->LayoutAndPaintAsync(layout_and_paint_callback);
+  if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
     layout_and_paint_callback->set_wait_for_popup(true);
-    popup->layoutAndPaintAsync(layout_and_paint_callback);
+    popup->LayoutAndPaintAsync(layout_and_paint_callback);
   }
 }
 

@@ -39,35 +39,35 @@
 namespace blink {
 
 WebRange::WebRange(int start, int length)
-    : m_start(start), m_end(start + length) {
+    : start_(start), end_(start + length) {
   DCHECK(start != -1 || length != 0)
       << "These values are reserved to indicate that the range is null";
 }
 
 WebRange::WebRange(const EphemeralRange& range) {
-  if (range.isNull())
+  if (range.IsNull())
     return;
 
-  m_start = range.startPosition().computeOffsetInContainerNode();
-  m_end = range.endPosition().computeOffsetInContainerNode();
+  start_ = range.StartPosition().ComputeOffsetInContainerNode();
+  end_ = range.EndPosition().ComputeOffsetInContainerNode();
 }
 
 WebRange::WebRange(const PlainTextRange& range) {
-  if (range.isNull())
+  if (range.IsNull())
     return;
 
-  m_start = range.start();
-  m_end = range.end();
+  start_ = range.Start();
+  end_ = range.end();
 }
 
-EphemeralRange WebRange::createEphemeralRange(LocalFrame* frame) const {
-  Element* selectionRoot = frame->selection()
-                               .computeVisibleSelectionInDOMTreeDeprecated()
-                               .rootEditableElement();
+EphemeralRange WebRange::CreateEphemeralRange(LocalFrame* frame) const {
+  Element* selection_root = frame->Selection()
+                                .ComputeVisibleSelectionInDOMTreeDeprecated()
+                                .RootEditableElement();
   ContainerNode* scope =
-      selectionRoot ? selectionRoot : frame->document()->documentElement();
+      selection_root ? selection_root : frame->GetDocument()->documentElement();
 
-  return PlainTextRange(m_start, m_end).createRange(*scope);
+  return PlainTextRange(start_, end_).CreateRange(*scope);
 }
 
 }  // namespace blink

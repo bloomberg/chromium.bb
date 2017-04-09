@@ -12,56 +12,56 @@
 namespace blink {
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver()
-    : m_private(nullptr) {}
+    : private_(nullptr) {}
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(bool unused)
-    : m_private(MediaDevices::create(Document::create())) {}
+    : private_(MediaDevices::Create(Document::Create())) {}
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(
     const WebMediaDeviceChangeObserver& other) {
-  assign(other);
+  Assign(other);
 }
 
 WebMediaDeviceChangeObserver& WebMediaDeviceChangeObserver::operator=(
     const WebMediaDeviceChangeObserver& other) {
-  assign(other);
+  Assign(other);
   return *this;
 }
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(
     MediaDevices* observer)
-    : m_private(observer) {}
+    : private_(observer) {}
 
 WebMediaDeviceChangeObserver::~WebMediaDeviceChangeObserver() {
-  reset();
+  Reset();
 }
 
-bool WebMediaDeviceChangeObserver::isNull() const {
-  return m_private.isNull();
+bool WebMediaDeviceChangeObserver::IsNull() const {
+  return private_.IsNull();
 }
 
-void WebMediaDeviceChangeObserver::didChangeMediaDevices() {
-  if (m_private.isNull())
+void WebMediaDeviceChangeObserver::DidChangeMediaDevices() {
+  if (private_.IsNull())
     return;
 
-  m_private->didChangeMediaDevices();
+  private_->DidChangeMediaDevices();
 }
 
-WebSecurityOrigin WebMediaDeviceChangeObserver::getSecurityOrigin() const {
-  if (m_private.isNull())
+WebSecurityOrigin WebMediaDeviceChangeObserver::GetSecurityOrigin() const {
+  if (private_.IsNull())
     return WebSecurityOrigin();
 
   return WebSecurityOrigin(
-      m_private->getExecutionContext()->getSecurityOrigin());
+      private_->GetExecutionContext()->GetSecurityOrigin());
 }
 
-void WebMediaDeviceChangeObserver::assign(
+void WebMediaDeviceChangeObserver::Assign(
     const WebMediaDeviceChangeObserver& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
-void WebMediaDeviceChangeObserver::reset() {
-  m_private.reset();
+void WebMediaDeviceChangeObserver::Reset() {
+  private_.Reset();
 }
 
 }  // namespace blink

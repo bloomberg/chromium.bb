@@ -28,30 +28,30 @@
 namespace blink {
 
 ProgressEvent::ProgressEvent()
-    : m_lengthComputable(false), m_loaded(0), m_total(0) {}
+    : length_computable_(false), loaded_(0), total_(0) {}
 
 ProgressEvent::ProgressEvent(const AtomicString& type,
                              const ProgressEventInit& initializer)
     : Event(type, initializer),
-      m_lengthComputable(initializer.lengthComputable()),
-      m_loaded(initializer.loaded()),
-      m_total(initializer.total()) {}
+      length_computable_(initializer.lengthComputable()),
+      loaded_(initializer.loaded()),
+      total_(initializer.total()) {}
 
 ProgressEvent::ProgressEvent(const AtomicString& type,
-                             bool lengthComputable,
+                             bool length_computable,
                              unsigned long long loaded,
                              unsigned long long total)
     : Event(type, false, false),
-      m_lengthComputable(lengthComputable),
-      m_loaded(loaded),
-      m_total(total) {}
+      length_computable_(length_computable),
+      loaded_(loaded),
+      total_(total) {}
 
-const AtomicString& ProgressEvent::interfaceName() const {
+const AtomicString& ProgressEvent::InterfaceName() const {
   return EventNames::ProgressEvent;
 }
 
 DEFINE_TRACE(ProgressEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

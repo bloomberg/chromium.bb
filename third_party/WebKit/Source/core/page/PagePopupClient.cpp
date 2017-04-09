@@ -37,75 +37,75 @@
 
 namespace blink {
 
-float PagePopupClient::zoomFactor() {
-  if (const ComputedStyle* style = ownerElement().computedStyle())
-    return style->effectiveZoom();
-  if (LocalFrame* frame = ownerElement().document().frame())
-    return frame->pageZoomFactor();
+float PagePopupClient::ZoomFactor() {
+  if (const ComputedStyle* style = OwnerElement().GetComputedStyle())
+    return style->EffectiveZoom();
+  if (LocalFrame* frame = OwnerElement().GetDocument().GetFrame())
+    return frame->PageZoomFactor();
   return 1;
 }
 
-#define addLiteral(literal, data) data->append(literal, sizeof(literal) - 1)
+#define addLiteral(literal, data) data->Append(literal, sizeof(literal) - 1)
 
-void PagePopupClient::addJavaScriptString(const String& str,
+void PagePopupClient::AddJavaScriptString(const String& str,
                                           SharedBuffer* data) {
   addLiteral("\"", data);
   StringBuilder builder;
-  builder.reserveCapacity(str.length());
+  builder.ReserveCapacity(str.length());
   for (unsigned i = 0; i < str.length(); ++i) {
     if (str[i] == '\r') {
-      builder.append("\\r");
+      builder.Append("\\r");
     } else if (str[i] == '\n') {
-      builder.append("\\n");
+      builder.Append("\\n");
     } else if (str[i] == '\\' || str[i] == '"') {
-      builder.append('\\');
-      builder.append(str[i]);
+      builder.Append('\\');
+      builder.Append(str[i]);
     } else if (str[i] == '<') {
       // Need to avoid to add "</script>" because the resultant string is
       // typically embedded in <script>.
-      builder.append("\\x3C");
-    } else if (str[i] < 0x20 || str[i] == lineSeparator ||
-               str[i] == paragraphSeparator) {
-      builder.append(String::format("\\u%04X", str[i]));
+      builder.Append("\\x3C");
+    } else if (str[i] < 0x20 || str[i] == kLineSeparator ||
+               str[i] == kParagraphSeparator) {
+      builder.Append(String::Format("\\u%04X", str[i]));
     } else {
-      builder.append(str[i]);
+      builder.Append(str[i]);
     }
   }
-  addString(builder.toString(), data);
+  AddString(builder.ToString(), data);
   addLiteral("\"", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   const String& value,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": ", data);
-  addJavaScriptString(value, data);
+  AddJavaScriptString(value, data);
   addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   int value,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": ", data);
-  addString(String::number(value), data);
+  AddString(String::Number(value), data);
   addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   unsigned value,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": ", data);
-  addString(String::number(value), data);
+  AddString(String::Number(value), data);
   addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   bool value,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": ", data);
   if (value)
     addLiteral("true", data);
@@ -114,37 +114,37 @@ void PagePopupClient::addProperty(const char* name,
   addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   double value,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": ", data);
-  addString(String::number(value), data);
+  AddString(String::Number(value), data);
   addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   const Vector<String>& values,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": [", data);
   for (unsigned i = 0; i < values.size(); ++i) {
     if (i)
       addLiteral(",", data);
-    addJavaScriptString(values[i], data);
+    AddJavaScriptString(values[i], data);
   }
   addLiteral("],\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name,
+void PagePopupClient::AddProperty(const char* name,
                                   const IntRect& rect,
                                   SharedBuffer* data) {
-  data->append(name, strlen(name));
+  data->Append(name, strlen(name));
   addLiteral(": {", data);
-  addProperty("x", rect.x(), data);
-  addProperty("y", rect.y(), data);
-  addProperty("width", rect.width(), data);
-  addProperty("height", rect.height(), data);
+  AddProperty("x", rect.X(), data);
+  AddProperty("y", rect.Y(), data);
+  AddProperty("width", rect.Width(), data);
+  AddProperty("height", rect.Height(), data);
   addLiteral("},\n", data);
 }
 

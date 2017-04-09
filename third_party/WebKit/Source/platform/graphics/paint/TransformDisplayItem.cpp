@@ -10,36 +10,35 @@
 
 namespace blink {
 
-void BeginTransformDisplayItem::replay(GraphicsContext& context) const {
-  context.save();
-  context.concatCTM(m_transform);
+void BeginTransformDisplayItem::Replay(GraphicsContext& context) const {
+  context.Save();
+  context.ConcatCTM(transform_);
 }
 
-void BeginTransformDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void BeginTransformDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendTransformItem(affineTransformToSkMatrix(m_transform));
+  list->AppendTransformItem(AffineTransformToSkMatrix(transform_));
 }
 
 #ifndef NDEBUG
-void BeginTransformDisplayItem::dumpPropertiesAsDebugString(
-    WTF::StringBuilder& stringBuilder) const {
-  PairedBeginDisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  stringBuilder.append(
-      WTF::String::format(", transform: [%lf,%lf,%lf,%lf,%lf,%lf]",
-                          m_transform.a(), m_transform.b(), m_transform.c(),
-                          m_transform.d(), m_transform.e(), m_transform.f()));
+void BeginTransformDisplayItem::DumpPropertiesAsDebugString(
+    WTF::StringBuilder& string_builder) const {
+  PairedBeginDisplayItem::DumpPropertiesAsDebugString(string_builder);
+  string_builder.Append(WTF::String::Format(
+      ", transform: [%lf,%lf,%lf,%lf,%lf,%lf]", transform_.A(), transform_.B(),
+      transform_.C(), transform_.D(), transform_.E(), transform_.F()));
 }
 #endif
 
-void EndTransformDisplayItem::replay(GraphicsContext& context) const {
-  context.restore();
+void EndTransformDisplayItem::Replay(GraphicsContext& context) const {
+  context.Restore();
 }
 
-void EndTransformDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void EndTransformDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendEndTransformItem();
+  list->AppendEndTransformItem();
 }
 
 }  // namespace blink

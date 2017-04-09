@@ -13,38 +13,38 @@ namespace blink {
 
 LockOrientationCallback::LockOrientationCallback(
     ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {}
+    : resolver_(resolver) {}
 
 LockOrientationCallback::~LockOrientationCallback() {}
 
-void LockOrientationCallback::onSuccess() {
-  m_resolver->resolve();
+void LockOrientationCallback::OnSuccess() {
+  resolver_->Resolve();
 }
 
-void LockOrientationCallback::onError(WebLockOrientationError error) {
+void LockOrientationCallback::OnError(WebLockOrientationError error) {
   ExceptionCode code = 0;
   String msg = "";
 
   switch (error) {
-    case WebLockOrientationErrorNotAvailable:
-      code = NotSupportedError;
+    case kWebLockOrientationErrorNotAvailable:
+      code = kNotSupportedError;
       msg = "screen.orientation.lock() is not available on this device.";
       break;
-    case WebLockOrientationErrorFullscreenRequired:
-      code = SecurityError;
+    case kWebLockOrientationErrorFullscreenRequired:
+      code = kSecurityError;
       msg =
           "The page needs to be fullscreen in order to call "
           "screen.orientation.lock().";
       break;
-    case WebLockOrientationErrorCanceled:
-      code = AbortError;
+    case kWebLockOrientationErrorCanceled:
+      code = kAbortError;
       msg =
           "A call to screen.orientation.lock() or screen.orientation.unlock() "
           "canceled this call.";
       break;
   }
 
-  m_resolver->reject(DOMException::create(code, msg));
+  resolver_->Reject(DOMException::Create(code, msg));
 }
 
 }  // namespace blink

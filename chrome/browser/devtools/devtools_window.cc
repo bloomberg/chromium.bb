@@ -171,7 +171,7 @@ DevToolsToolboxDelegate::PreHandleKeyboardEvent(
 void DevToolsToolboxDelegate::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  if (event.windowsKeyCode == 0x08) {
+  if (event.windows_key_code == 0x08) {
     // Do not navigate back in history on Windows (http://crbug.com/74156).
     return;
   }
@@ -275,12 +275,12 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
 bool DevToolsEventForwarder::ForwardEvent(
     const content::NativeWebKeyboardEvent& event) {
   std::string event_type;
-  switch (event.type()) {
-    case WebInputEvent::KeyDown:
-    case WebInputEvent::RawKeyDown:
+  switch (event.GetType()) {
+    case WebInputEvent::kKeyDown:
+    case WebInputEvent::kRawKeyDown:
       event_type = kKeyDownEventName;
       break;
-    case WebInputEvent::KeyUp:
+    case WebInputEvent::kKeyUp:
       event_type = kKeyUpEventName;
       break;
     default:
@@ -288,10 +288,10 @@ bool DevToolsEventForwarder::ForwardEvent(
   }
 
   int key_code = ui::LocatedToNonLocatedKeyboardCode(
-      static_cast<ui::KeyboardCode>(event.windowsKeyCode));
-  int modifiers =
-      event.modifiers() & (WebInputEvent::ShiftKey | WebInputEvent::ControlKey |
-                           WebInputEvent::AltKey | WebInputEvent::MetaKey);
+      static_cast<ui::KeyboardCode>(event.windows_key_code));
+  int modifiers = event.GetModifiers() &
+                  (WebInputEvent::kShiftKey | WebInputEvent::kControlKey |
+                   WebInputEvent::kAltKey | WebInputEvent::kMetaKey);
   int key = CombineKeyCodeAndModifiers(key_code, modifiers);
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
@@ -299,9 +299,9 @@ bool DevToolsEventForwarder::ForwardEvent(
   base::DictionaryValue event_data;
   event_data.SetString("type", event_type);
   event_data.SetString("key", ui::KeycodeConverter::DomKeyToKeyString(
-                                  static_cast<ui::DomKey>(event.domKey)));
+                                  static_cast<ui::DomKey>(event.dom_key)));
   event_data.SetString("code", ui::KeycodeConverter::DomCodeToCodeString(
-                                   static_cast<ui::DomCode>(event.domCode)));
+                                   static_cast<ui::DomCode>(event.dom_code)));
   event_data.SetInteger("keyCode", key_code);
   event_data.SetInteger("modifiers", modifiers);
   devtools_window_->bindings_->CallClientFunction(
@@ -1113,7 +1113,7 @@ content::KeyboardEventProcessingResult DevToolsWindow::PreHandleKeyboardEvent(
 void DevToolsWindow::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  if (event.windowsKeyCode == 0x08) {
+  if (event.windows_key_code == 0x08) {
     // Do not navigate back in history on Windows (http://crbug.com/74156).
     return;
   }
@@ -1143,9 +1143,9 @@ bool DevToolsWindow::PreHandleGestureEvent(
     WebContents* source,
     const blink::WebGestureEvent& event) {
   // Disable pinch zooming.
-  return event.type() == blink::WebGestureEvent::GesturePinchBegin ||
-         event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
-         event.type() == blink::WebGestureEvent::GesturePinchEnd;
+  return event.GetType() == blink::WebGestureEvent::kGesturePinchBegin ||
+         event.GetType() == blink::WebGestureEvent::kGesturePinchUpdate ||
+         event.GetType() == blink::WebGestureEvent::kGesturePinchEnd;
 }
 
 void DevToolsWindow::ShowCertificateViewerInDevTools(

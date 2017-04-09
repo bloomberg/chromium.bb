@@ -25,37 +25,37 @@ class CORE_EXPORT DOMMatrixReadOnly
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMMatrixReadOnly* create(ExceptionState&);
-  static DOMMatrixReadOnly* create(const String&, ExceptionState&);
-  static DOMMatrixReadOnly* create(Vector<double>, ExceptionState&);
+  static DOMMatrixReadOnly* Create(ExceptionState&);
+  static DOMMatrixReadOnly* Create(const String&, ExceptionState&);
+  static DOMMatrixReadOnly* Create(Vector<double>, ExceptionState&);
   static DOMMatrixReadOnly* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
   static DOMMatrixReadOnly* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
   static DOMMatrixReadOnly* fromMatrix(DOMMatrixInit&, ExceptionState&);
   virtual ~DOMMatrixReadOnly();
 
-  double a() const { return m_matrix->m11(); }
-  double b() const { return m_matrix->m12(); }
-  double c() const { return m_matrix->m21(); }
-  double d() const { return m_matrix->m22(); }
-  double e() const { return m_matrix->m41(); }
-  double f() const { return m_matrix->m42(); }
+  double a() const { return matrix_->M11(); }
+  double b() const { return matrix_->M12(); }
+  double c() const { return matrix_->M21(); }
+  double d() const { return matrix_->M22(); }
+  double e() const { return matrix_->M41(); }
+  double f() const { return matrix_->M42(); }
 
-  double m11() const { return m_matrix->m11(); }
-  double m12() const { return m_matrix->m12(); }
-  double m13() const { return m_matrix->m13(); }
-  double m14() const { return m_matrix->m14(); }
-  double m21() const { return m_matrix->m21(); }
-  double m22() const { return m_matrix->m22(); }
-  double m23() const { return m_matrix->m23(); }
-  double m24() const { return m_matrix->m24(); }
-  double m31() const { return m_matrix->m31(); }
-  double m32() const { return m_matrix->m32(); }
-  double m33() const { return m_matrix->m33(); }
-  double m34() const { return m_matrix->m34(); }
-  double m41() const { return m_matrix->m41(); }
-  double m42() const { return m_matrix->m42(); }
-  double m43() const { return m_matrix->m43(); }
-  double m44() const { return m_matrix->m44(); }
+  double m11() const { return matrix_->M11(); }
+  double m12() const { return matrix_->M12(); }
+  double m13() const { return matrix_->M13(); }
+  double m14() const { return matrix_->M14(); }
+  double m21() const { return matrix_->M21(); }
+  double m22() const { return matrix_->M22(); }
+  double m23() const { return matrix_->M23(); }
+  double m24() const { return matrix_->M24(); }
+  double m31() const { return matrix_->M31(); }
+  double m32() const { return matrix_->M32(); }
+  double m33() const { return matrix_->M33(); }
+  double m34() const { return matrix_->M34(); }
+  double m41() const { return matrix_->M41(); }
+  double m42() const { return matrix_->M42(); }
+  double m43() const { return matrix_->M43(); }
+  double m44() const { return matrix_->M44(); }
 
   bool is2D() const;
   bool isIdentity() const;
@@ -73,9 +73,9 @@ class CORE_EXPORT DOMMatrixReadOnly
                      double ox = 0,
                      double oy = 0,
                      double oz = 0);
-  DOMMatrix* rotate(double rotX);
-  DOMMatrix* rotate(double rotX, double rotY);
-  DOMMatrix* rotate(double rotX, double rotY, double rotZ);
+  DOMMatrix* rotate(double rot_x);
+  DOMMatrix* rotate(double rot_x, double rot_y);
+  DOMMatrix* rotate(double rot_x, double rot_y, double rot_z);
   DOMMatrix* rotateFromVector(double x, double y);
   DOMMatrix* rotateAxisAngle(double x = 0,
                              double y = 0,
@@ -96,43 +96,43 @@ class CORE_EXPORT DOMMatrixReadOnly
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  const TransformationMatrix& matrix() const { return *m_matrix; }
+  const TransformationMatrix& Matrix() const { return *matrix_; }
 
   DEFINE_INLINE_TRACE() {}
 
  protected:
   DOMMatrixReadOnly() {}
   DOMMatrixReadOnly(const String&, ExceptionState&);
-  DOMMatrixReadOnly(const TransformationMatrix&, bool is2D = true);
+  DOMMatrixReadOnly(const TransformationMatrix&, bool is2d = true);
 
   template <typename T>
   DOMMatrixReadOnly(T sequence, int size) {
     if (size == 6) {
-      m_matrix =
-          TransformationMatrix::create(sequence[0], sequence[1], sequence[2],
+      matrix_ =
+          TransformationMatrix::Create(sequence[0], sequence[1], sequence[2],
                                        sequence[3], sequence[4], sequence[5]);
-      m_is2D = true;
+      is2d_ = true;
     } else if (size == 16) {
-      m_matrix = TransformationMatrix::create(
+      matrix_ = TransformationMatrix::Create(
           sequence[0], sequence[1], sequence[2], sequence[3], sequence[4],
           sequence[5], sequence[6], sequence[7], sequence[8], sequence[9],
           sequence[10], sequence[11], sequence[12], sequence[13], sequence[14],
           sequence[15]);
-      m_is2D = false;
+      is2d_ = false;
     } else {
       NOTREACHED();
     }
   }
 
-  void setMatrixValueFromString(const String&, ExceptionState&);
+  void SetMatrixValueFromString(const String&, ExceptionState&);
 
-  static bool validateAndFixup(DOMMatrixInit&, ExceptionState&);
+  static bool ValidateAndFixup(DOMMatrixInit&, ExceptionState&);
   // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
   // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
   // to allocate TransformationMatrix on PartitionAlloc.
   // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
-  std::unique_ptr<TransformationMatrix> m_matrix;
-  bool m_is2D;
+  std::unique_ptr<TransformationMatrix> matrix_;
+  bool is2d_;
 };
 
 }  // namespace blink

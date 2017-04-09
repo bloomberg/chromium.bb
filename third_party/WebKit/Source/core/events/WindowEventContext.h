@@ -41,25 +41,25 @@ class WindowEventContext : public GarbageCollected<WindowEventContext> {
   WTF_MAKE_NONCOPYABLE(WindowEventContext);
 
  public:
-  WindowEventContext(Event&, const NodeEventContext& topNodeEventContext);
+  WindowEventContext(Event&, const NodeEventContext& top_node_event_context);
 
-  LocalDOMWindow* window() const;
-  EventTarget* target() const;
-  bool handleLocalEvents(Event&);
+  LocalDOMWindow* Window() const;
+  EventTarget* Target() const;
+  bool HandleLocalEvents(Event&);
 
   DECLARE_TRACE();
 
  private:
-  Member<LocalDOMWindow> m_window;
-  Member<EventTarget> m_target;
+  Member<LocalDOMWindow> window_;
+  Member<EventTarget> target_;
 };
 
-inline LocalDOMWindow* WindowEventContext::window() const {
-  return m_window.get();
+inline LocalDOMWindow* WindowEventContext::Window() const {
+  return window_.Get();
 }
 
-inline EventTarget* WindowEventContext::target() const {
-  return m_target.get();
+inline EventTarget* WindowEventContext::Target() const {
+  return target_.Get();
 }
 
 }  // namespace blink

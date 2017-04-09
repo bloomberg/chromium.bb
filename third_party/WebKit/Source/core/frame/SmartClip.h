@@ -42,18 +42,18 @@ class CORE_EXPORT SmartClipData {
   STACK_ALLOCATED();
 
  public:
-  SmartClipData() : m_isEmpty(true) {}
+  SmartClipData() : is_empty_(true) {}
 
   SmartClipData(Node* node, IntRect rect, String string)
-      : m_isEmpty(!node), m_rectInViewport(rect), m_string(string) {}
+      : is_empty_(!node), rect_in_viewport_(rect), string_(string) {}
 
-  IntRect rectInViewport() const;
-  const String& clipData() const;
+  IntRect RectInViewport() const;
+  const String& ClipData() const;
 
  private:
-  bool m_isEmpty;
-  IntRect m_rectInViewport;
-  String m_string;
+  bool is_empty_;
+  IntRect rect_in_viewport_;
+  String string_;
 };
 
 // SmartClip implements support for the copy operation
@@ -67,21 +67,21 @@ class CORE_EXPORT SmartClip {
  public:
   explicit SmartClip(LocalFrame*);
 
-  SmartClipData dataForRect(const IntRect&);
+  SmartClipData DataForRect(const IntRect&);
 
  private:
-  float pageScaleFactor();
+  float PageScaleFactor();
 
-  Node* minNodeContainsNodes(Node* minNode, Node* newNode);
-  Node* findBestOverlappingNode(Node*, const IntRect& cropRectInViewport);
-  bool shouldSkipBackgroundImage(Node*);
-  void collectOverlappingChildNodes(
-      Node* parentNode,
-      const IntRect& cropRectInViewport,
-      HeapVector<Member<Node>>& overlappingNodeInfoTable);
-  String extractTextFromNode(Node*);
+  Node* MinNodeContainsNodes(Node* min_node, Node* new_node);
+  Node* FindBestOverlappingNode(Node*, const IntRect& crop_rect_in_viewport);
+  bool ShouldSkipBackgroundImage(Node*);
+  void CollectOverlappingChildNodes(
+      Node* parent_node,
+      const IntRect& crop_rect_in_viewport,
+      HeapVector<Member<Node>>& overlapping_node_info_table);
+  String ExtractTextFromNode(Node*);
 
-  Member<LocalFrame> m_frame;
+  Member<LocalFrame> frame_;
 };
 
 }  // namespace blink

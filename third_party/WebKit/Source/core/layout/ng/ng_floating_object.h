@@ -27,7 +27,7 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
                                          NGLogicalOffset from_offset,
                                          NGBoxStrut margins,
                                          NGPhysicalFragment* fragment) {
-    return adoptRef(new NGFloatingObject(style, margins, available_size,
+    return AdoptRef(new NGFloatingObject(style, margins, available_size,
                                          origin_offset, from_offset,
                                          writing_mode, fragment));
   }
@@ -69,8 +69,8 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   bool IsRight() const { return exclusion_type == NGExclusion::kFloatRight; }
 
   String ToString() const {
-    return String::format("Type: '%d' Fragment: '%s'", exclusion_type,
-                          fragment->ToString().ascii().data());
+    return String::Format("Type: '%d' Fragment: '%s'", exclusion_type,
+                          fragment->ToString().Ascii().Data());
   }
 
  private:
@@ -88,9 +88,9 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
         writing_mode(writing_mode),
         fragment(fragment) {
     exclusion_type = NGExclusion::kFloatLeft;
-    if (style.floating() == EFloat::kRight)
+    if (style.Floating() == EFloat::kRight)
       exclusion_type = NGExclusion::kFloatRight;
-    clear_type = style.clear();
+    clear_type = style.Clear();
   }
 };
 

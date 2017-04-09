@@ -180,7 +180,7 @@ yellowgreen, 0xff9acd32
 #pragma clang diagnostic pop
 #endif
 
-const struct NamedColor* findColor(const char* str, unsigned len) {
+const struct NamedColor* FindColor(const char* str, unsigned len) {
   return ColorDataHash::findColorImpl(str, len);
 }
 

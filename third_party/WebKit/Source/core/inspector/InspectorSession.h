@@ -29,8 +29,8 @@ class CORE_EXPORT InspectorSession
  public:
   class Client {
    public:
-    virtual void sendProtocolMessage(int sessionId,
-                                     int callId,
+    virtual void SendProtocolMessage(int session_id,
+                                     int call_id,
                                      const String& response,
                                      const String& state) = 0;
     virtual ~Client() {}
@@ -38,19 +38,19 @@ class CORE_EXPORT InspectorSession
 
   InspectorSession(Client*,
                    CoreProbeSink*,
-                   int sessionId,
+                   int session_id,
                    v8_inspector::V8Inspector*,
-                   int contextGroupId,
-                   const String* savedState);
+                   int context_group_id,
+                   const String* saved_state);
   ~InspectorSession() override;
-  int sessionId() { return m_sessionId; }
-  v8_inspector::V8InspectorSession* v8Session() { return m_v8Session.get(); }
+  int SessionId() { return session_id_; }
+  v8_inspector::V8InspectorSession* V8Session() { return v8_session_.get(); }
 
-  void append(InspectorAgent*);
-  void restore();
-  void dispose();
-  void didCommitLoadForLocalFrame(LocalFrame*);
-  void dispatchProtocolMessage(const String& method, const String& message);
+  void Append(InspectorAgent*);
+  void Restore();
+  void Dispose();
+  void DidCommitLoadForLocalFrame(LocalFrame*);
+  void DispatchProtocolMessage(const String& method, const String& message);
   void flushProtocolNotifications() override;
 
   DECLARE_TRACE();
@@ -58,35 +58,35 @@ class CORE_EXPORT InspectorSession
  private:
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
-      int callId,
+      int call_id,
       std::unique_ptr<protocol::Serializable> message) override;
   void sendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
 
   // v8_inspector::V8Inspector::Channel implementation.
   void sendResponse(
-      int callId,
+      int call_id,
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
   void sendNotification(
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
   // TODO(kozyatinskiy): remove it.
-  void sendProtocolResponse(int callId,
+  void SendProtocolResponse(int call_id,
                             const v8_inspector::StringView& message) {}
-  void sendProtocolNotification(const v8_inspector::StringView& message) {}
+  void SendProtocolNotification(const v8_inspector::StringView& message) {}
 
-  void sendProtocolResponse(int callId, const String& message);
+  void SendProtocolResponse(int call_id, const String& message);
 
-  Client* m_client;
-  std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
-  int m_sessionId;
-  bool m_disposed;
-  Member<CoreProbeSink> m_instrumentingAgents;
-  std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
-  std::unique_ptr<protocol::DictionaryValue> m_state;
-  HeapVector<Member<InspectorAgent>> m_agents;
+  Client* client_;
+  std::unique_ptr<v8_inspector::V8InspectorSession> v8_session_;
+  int session_id_;
+  bool disposed_;
+  Member<CoreProbeSink> instrumenting_agents_;
+  std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;
+  std::unique_ptr<protocol::DictionaryValue> state_;
+  HeapVector<Member<InspectorAgent>> agents_;
   class Notification;
-  Vector<std::unique_ptr<Notification>> m_notificationQueue;
-  String m_lastSentState;
+  Vector<std::unique_ptr<Notification>> notification_queue_;
+  String last_sent_state_;
 };
 
 }  // namespace blink

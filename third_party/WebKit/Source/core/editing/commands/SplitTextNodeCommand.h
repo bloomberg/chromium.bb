@@ -34,7 +34,7 @@ class Text;
 
 class SplitTextNodeCommand final : public SimpleEditCommand {
  public:
-  static SplitTextNodeCommand* create(Text* node, int offset) {
+  static SplitTextNodeCommand* Create(Text* node, int offset) {
     return new SplitTextNodeCommand(node, offset);
   }
 
@@ -43,14 +43,14 @@ class SplitTextNodeCommand final : public SimpleEditCommand {
  private:
   SplitTextNodeCommand(Text*, int offset);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
-  void doReapply() override;
-  void insertText1AndTrimText2();
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
+  void DoReapply() override;
+  void InsertText1AndTrimText2();
 
-  Member<Text> m_text1;
-  Member<Text> m_text2;
-  unsigned m_offset;
+  Member<Text> text1_;
+  Member<Text> text2_;
+  unsigned offset_;
 };
 
 }  // namespace blink

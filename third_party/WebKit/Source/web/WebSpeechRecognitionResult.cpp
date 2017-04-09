@@ -32,12 +32,12 @@
 
 namespace blink {
 
-void WebSpeechRecognitionResult::assign(
+void WebSpeechRecognitionResult::Assign(
     const WebSpeechRecognitionResult& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
-void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
+void WebSpeechRecognitionResult::Assign(const WebVector<WebString>& transcripts,
                                         const WebVector<float>& confidences,
                                         bool final) {
   DCHECK_EQ(transcripts.size(), confidences.size());
@@ -46,17 +46,17 @@ void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
       transcripts.size());
   for (size_t i = 0; i < transcripts.size(); ++i)
     alternatives[i] =
-        SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
+        SpeechRecognitionAlternative::Create(transcripts[i], confidences[i]);
 
-  m_private = SpeechRecognitionResult::create(alternatives, final);
+  private_ = SpeechRecognitionResult::Create(alternatives, final);
 }
 
-void WebSpeechRecognitionResult::reset() {
-  m_private.reset();
+void WebSpeechRecognitionResult::Reset() {
+  private_.Reset();
 }
 
 WebSpeechRecognitionResult::operator SpeechRecognitionResult*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
 }  // namespace blink

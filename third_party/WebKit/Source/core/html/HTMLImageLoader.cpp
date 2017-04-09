@@ -39,58 +39,58 @@ HTMLImageLoader::HTMLImageLoader(Element* element) : ImageLoader(element) {}
 
 HTMLImageLoader::~HTMLImageLoader() {}
 
-void HTMLImageLoader::dispatchLoadEvent() {
+void HTMLImageLoader::DispatchLoadEvent() {
   RESOURCE_LOADING_DVLOG(1) << "HTMLImageLoader::dispatchLoadEvent " << this;
 
   // HTMLVideoElement uses this class to load the poster image, but it should
   // not fire events for loading or failure.
-  if (isHTMLVideoElement(*element()))
+  if (isHTMLVideoElement(*GetElement()))
     return;
 
-  bool errorOccurred = image()->errorOccurred();
-  if (isHTMLObjectElement(*element()) && !errorOccurred) {
+  bool error_occurred = GetImage()->ErrorOccurred();
+  if (isHTMLObjectElement(*GetElement()) && !error_occurred) {
     // An <object> considers a 404 to be an error and should fire onerror.
-    errorOccurred = (image()->response().httpStatusCode() >= 400);
+    error_occurred = (GetImage()->GetResponse().HttpStatusCode() >= 400);
   }
-  element()->dispatchEvent(Event::create(errorOccurred ? EventTypeNames::error
-                                                       : EventTypeNames::load));
+  GetElement()->DispatchEvent(Event::Create(
+      error_occurred ? EventTypeNames::error : EventTypeNames::load));
 }
 
-void HTMLImageLoader::noImageResourceToLoad() {
+void HTMLImageLoader::NoImageResourceToLoad() {
   // FIXME: Use fallback content even when there is no alt-text. The only
   // blocker is the large amount of rebaselining it requires.
-  if (toHTMLElement(element())->altText().isEmpty())
+  if (ToHTMLElement(GetElement())->AltText().IsEmpty())
     return;
 
-  if (isHTMLImageElement(element()))
-    toHTMLImageElement(element())->ensureCollapsedOrFallbackContent();
-  else if (isHTMLInputElement(element()))
-    toHTMLInputElement(element())->ensureFallbackContent();
+  if (isHTMLImageElement(GetElement()))
+    toHTMLImageElement(GetElement())->EnsureCollapsedOrFallbackContent();
+  else if (isHTMLInputElement(GetElement()))
+    toHTMLInputElement(GetElement())->EnsureFallbackContent();
 }
 
-void HTMLImageLoader::imageNotifyFinished(ImageResourceContent*) {
-  ImageResourceContent* cachedImage = image();
-  Element* element = this->element();
-  ImageLoader::imageNotifyFinished(cachedImage);
+void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
+  ImageResourceContent* cached_image = GetImage();
+  Element* element = this->GetElement();
+  ImageLoader::ImageNotifyFinished(cached_image);
 
-  bool loadError = cachedImage->errorOccurred();
+  bool load_error = cached_image->ErrorOccurred();
   if (isHTMLImageElement(*element)) {
-    if (loadError)
-      toHTMLImageElement(element)->ensureCollapsedOrFallbackContent();
+    if (load_error)
+      toHTMLImageElement(element)->EnsureCollapsedOrFallbackContent();
     else
-      toHTMLImageElement(element)->ensurePrimaryContent();
+      toHTMLImageElement(element)->EnsurePrimaryContent();
   }
 
   if (isHTMLInputElement(*element)) {
-    if (loadError)
-      toHTMLInputElement(element)->ensureFallbackContent();
+    if (load_error)
+      toHTMLInputElement(element)->EnsureFallbackContent();
     else
-      toHTMLInputElement(element)->ensurePrimaryContent();
+      toHTMLInputElement(element)->EnsurePrimaryContent();
   }
 
-  if ((loadError || cachedImage->response().httpStatusCode() >= 400) &&
+  if ((load_error || cached_image->GetResponse().HttpStatusCode() >= 400) &&
       isHTMLObjectElement(*element))
-    toHTMLObjectElement(element)->renderFallbackContent();
+    toHTMLObjectElement(element)->RenderFallbackContent();
 }
 
 }  // namespace blink

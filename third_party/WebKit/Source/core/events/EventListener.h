@@ -34,34 +34,34 @@ class CORE_EXPORT EventListener
     : public GarbageCollectedFinalized<EventListener> {
  public:
   enum ListenerType {
-    JSEventListenerType,
-    ImageEventListenerType,
-    CPPEventListenerType,
-    ConditionEventListenerType,
-    NativeEventListenerType,
+    kJSEventListenerType,
+    kImageEventListenerType,
+    kCPPEventListenerType,
+    kConditionEventListenerType,
+    kNativeEventListenerType,
   };
 
   virtual ~EventListener() {}
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
-  virtual const String& code() const { return emptyString; }
-  virtual bool wasCreatedFromMarkup() const { return false; }
-  virtual bool belongsToTheCurrentWorld(ExecutionContext*) const {
+  virtual const String& Code() const { return g_empty_string; }
+  virtual bool WasCreatedFromMarkup() const { return false; }
+  virtual bool BelongsToTheCurrentWorld(ExecutionContext*) const {
     return false;
   }
 
-  bool isAttribute() const { return virtualisAttribute(); }
-  ListenerType type() const { return m_type; }
+  bool IsAttribute() const { return VirtualisAttribute(); }
+  ListenerType GetType() const { return type_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  explicit EventListener(ListenerType type) : m_type(type) {}
+  explicit EventListener(ListenerType type) : type_(type) {}
 
  private:
-  virtual bool virtualisAttribute() const { return false; }
+  virtual bool VirtualisAttribute() const { return false; }
 
-  ListenerType m_type;
+  ListenerType type_;
 };
 
 }  // namespace blink

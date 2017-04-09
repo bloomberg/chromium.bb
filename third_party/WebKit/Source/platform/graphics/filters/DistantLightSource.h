@@ -29,24 +29,24 @@ namespace blink {
 
 class PLATFORM_EXPORT DistantLightSource final : public LightSource {
  public:
-  static PassRefPtr<DistantLightSource> create(float azimuth, float elevation) {
-    return adoptRef(new DistantLightSource(azimuth, elevation));
+  static PassRefPtr<DistantLightSource> Create(float azimuth, float elevation) {
+    return AdoptRef(new DistantLightSource(azimuth, elevation));
   }
 
-  float azimuth() const { return m_azimuth; }
-  float elevation() const { return m_elevation; }
+  float Azimuth() const { return azimuth_; }
+  float Elevation() const { return elevation_; }
 
-  bool setAzimuth(float) override;
-  bool setElevation(float) override;
+  bool SetAzimuth(float) override;
+  bool SetElevation(float) override;
 
-  TextStream& externalRepresentation(TextStream&) const override;
+  TextStream& ExternalRepresentation(TextStream&) const override;
 
  private:
   DistantLightSource(float azimuth, float elevation)
-      : LightSource(LS_DISTANT), m_azimuth(azimuth), m_elevation(elevation) {}
+      : LightSource(LS_DISTANT), azimuth_(azimuth), elevation_(elevation) {}
 
-  float m_azimuth;
-  float m_elevation;
+  float azimuth_;
+  float elevation_;
 };
 
 }  // namespace blink

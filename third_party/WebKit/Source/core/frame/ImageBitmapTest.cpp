@@ -60,126 +60,131 @@ class ImageBitmapTest : public ::testing::Test {
   virtual void SetUp() {
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
     surface->getCanvas()->clear(0xFFFFFFFF);
-    m_image = surface->makeImageSnapshot();
+    image_ = surface->makeImageSnapshot();
 
     sk_sp<SkSurface> surface2 = SkSurface::MakeRasterN32Premul(5, 5);
     surface2->getCanvas()->clear(0xAAAAAAAA);
-    m_image2 = surface2->makeImageSnapshot();
+    image2_ = surface2->makeImageSnapshot();
 
     // Save the global memory cache to restore it upon teardown.
-    m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
+    global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
 
     // Save the state of experimental canvas features and color correct
     // rendering flags to restore them on teardown.
-    experimentalCanvasFeatures =
+    experimental_canvas_features =
         RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
-    colorCorrectRendering =
+    color_correct_rendering =
         RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
-    colorCorrectRenderingDefaultMode =
+    color_correct_rendering_default_mode =
         RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled();
   }
   virtual void TearDown() {
     // Garbage collection is required prior to switching out the
     // test's memory cache; image resources are released, evicting
     // them from the cache.
-    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack,
-                                           BlinkGC::GCWithSweep,
-                                           BlinkGC::ForcedGC);
+    ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                           BlinkGC::kGCWithSweep,
+                                           BlinkGC::kForcedGC);
 
-    replaceMemoryCacheForTesting(m_globalMemoryCache.release());
+    ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
     RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(
-        experimentalCanvasFeatures);
+        experimental_canvas_features);
     RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
-        colorCorrectRendering);
+        color_correct_rendering);
     RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(
-        colorCorrectRenderingDefaultMode);
+        color_correct_rendering_default_mode);
   }
 
-  sk_sp<SkImage> m_image, m_image2;
-  Persistent<MemoryCache> m_globalMemoryCache;
-  bool experimentalCanvasFeatures;
-  bool colorCorrectRendering;
-  bool colorCorrectRenderingDefaultMode;
+  sk_sp<SkImage> image_, image2_;
+  Persistent<MemoryCache> global_memory_cache_;
+  bool experimental_canvas_features;
+  bool color_correct_rendering;
+  bool color_correct_rendering_default_mode;
 };
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
-  const ImageBitmapOptions defaultOptions;
-  HTMLImageElement* imageElement =
-      HTMLImageElement::create(*Document::create());
+  const ImageBitmapOptions default_options;
+  HTMLImageElement* image_element =
+      HTMLImageElement::Create(*Document::Create());
   ImageResourceContent* image =
-      ImageResourceContent::create(StaticBitmapImage::create(m_image).get());
-  imageElement->setImageResource(image);
+      ImageResourceContent::Create(StaticBitmapImage::Create(image_).Get());
+  image_element->SetImageResource(image);
 
-  Optional<IntRect> cropRect =
-      IntRect(0, 0, m_image->width(), m_image->height());
-  ImageBitmap* imageBitmapNoCrop = ImageBitmap::create(
-      imageElement, cropRect, &(imageElement->document()), defaultOptions);
-  cropRect = IntRect(m_image->width() / 2, m_image->height() / 2,
-                     m_image->width() / 2, m_image->height() / 2);
-  ImageBitmap* imageBitmapInteriorCrop = ImageBitmap::create(
-      imageElement, cropRect, &(imageElement->document()), defaultOptions);
-  cropRect = IntRect(-m_image->width() / 2, -m_image->height() / 2,
-                     m_image->width(), m_image->height());
-  ImageBitmap* imageBitmapExteriorCrop = ImageBitmap::create(
-      imageElement, cropRect, &(imageElement->document()), defaultOptions);
-  cropRect = IntRect(-m_image->width(), -m_image->height(), m_image->width(),
-                     m_image->height());
-  ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(
-      imageElement, cropRect, &(imageElement->document()), defaultOptions);
+  Optional<IntRect> crop_rect =
+      IntRect(0, 0, image_->width(), image_->height());
+  ImageBitmap* image_bitmap_no_crop =
+      ImageBitmap::Create(image_element, crop_rect,
+                          &(image_element->GetDocument()), default_options);
+  crop_rect = IntRect(image_->width() / 2, image_->height() / 2,
+                      image_->width() / 2, image_->height() / 2);
+  ImageBitmap* image_bitmap_interior_crop =
+      ImageBitmap::Create(image_element, crop_rect,
+                          &(image_element->GetDocument()), default_options);
+  crop_rect = IntRect(-image_->width() / 2, -image_->height() / 2,
+                      image_->width(), image_->height());
+  ImageBitmap* image_bitmap_exterior_crop =
+      ImageBitmap::Create(image_element, crop_rect,
+                          &(image_element->GetDocument()), default_options);
+  crop_rect = IntRect(-image_->width(), -image_->height(), image_->width(),
+                      image_->height());
+  ImageBitmap* image_bitmap_outside_crop =
+      ImageBitmap::Create(image_element, crop_rect,
+                          &(image_element->GetDocument()), default_options);
 
-  ASSERT_NE(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
-  ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
-  ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_NE(image_bitmap_no_crop->BitmapImage()->ImageForCurrentFrame(),
+            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
+  ASSERT_NE(image_bitmap_interior_crop->BitmapImage()->ImageForCurrentFrame(),
+            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
+  ASSERT_NE(image_bitmap_exterior_crop->BitmapImage()->ImageForCurrentFrame(),
+            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
 
-  RefPtr<StaticBitmapImage> emptyImage = imageBitmapOutsideCrop->bitmapImage();
-  ASSERT_NE(emptyImage->imageForCurrentFrame(),
-            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  RefPtr<StaticBitmapImage> empty_image =
+      image_bitmap_outside_crop->BitmapImage();
+  ASSERT_NE(empty_image->ImageForCurrentFrame(),
+            image_element->CachedImage()->GetImage()->ImageForCurrentFrame());
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
-  HTMLImageElement* image = HTMLImageElement::create(*Document::create());
-  ImageResourceContent* originalImageResource =
-      ImageResourceContent::create(StaticBitmapImage::create(m_image).get());
-  image->setImageResource(originalImageResource);
+  HTMLImageElement* image = HTMLImageElement::Create(*Document::Create());
+  ImageResourceContent* original_image_resource =
+      ImageResourceContent::Create(StaticBitmapImage::Create(image_).Get());
+  image->SetImageResource(original_image_resource);
 
-  const ImageBitmapOptions defaultOptions;
-  Optional<IntRect> cropRect =
-      IntRect(0, 0, m_image->width(), m_image->height());
-  ImageBitmap* imageBitmap = ImageBitmap::create(
-      image, cropRect, &(image->document()), defaultOptions);
+  const ImageBitmapOptions default_options;
+  Optional<IntRect> crop_rect =
+      IntRect(0, 0, image_->width(), image_->height());
+  ImageBitmap* image_bitmap = ImageBitmap::Create(
+      image, crop_rect, &(image->GetDocument()), default_options);
   // As we are applying color space conversion for the "default" mode,
   // this verifies that the color corrected image is not the same as the
   // source.
-  ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
-            originalImageResource->getImage()->imageForCurrentFrame());
+  ASSERT_NE(image_bitmap->BitmapImage()->ImageForCurrentFrame(),
+            original_image_resource->GetImage()->ImageForCurrentFrame());
 
-  ImageResourceContent* newImageResource =
-      ImageResourceContent::create(StaticBitmapImage::create(m_image2).get());
-  image->setImageResource(newImageResource);
+  ImageResourceContent* new_image_resource =
+      ImageResourceContent::Create(StaticBitmapImage::Create(image2_).Get());
+  image->SetImageResource(new_image_resource);
 
   {
-    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
-              originalImageResource->getImage()->imageForCurrentFrame());
-    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    ASSERT_NE(image_bitmap->BitmapImage()->ImageForCurrentFrame(),
+              original_image_resource->GetImage()->ImageForCurrentFrame());
+    SkImage* image1 = image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 =
-        originalImageResource->getImage()->imageForCurrentFrame().get();
+        original_image_resource->GetImage()->ImageForCurrentFrame().get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
   }
 
   {
-    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
-              newImageResource->getImage()->imageForCurrentFrame());
-    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    ASSERT_NE(image_bitmap->BitmapImage()->ImageForCurrentFrame(),
+              new_image_resource->GetImage()->ImageForCurrentFrame());
+    SkImage* image1 = image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
     ASSERT_NE(image1, nullptr);
     SkImage* image2 =
-        newImageResource->getImage()->imageForCurrentFrame().get();
+        new_image_resource->GetImage()->ImageForCurrentFrame().get();
     ASSERT_NE(image2, nullptr);
     ASSERT_NE(image1, image2);
   }
@@ -195,17 +200,17 @@ enum class ColorSpaceConversion : uint8_t {
   LAST = LINEAR_RGB
 };
 
-static ImageBitmapOptions prepareBitmapOptionsAndSetRuntimeFlags(
-    const ColorSpaceConversion& colorSpaceConversion) {
+static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
+    const ColorSpaceConversion& color_space_conversion) {
   // Set the color space conversion in ImageBitmapOptions
   ImageBitmapOptions options;
-  static const Vector<String> conversions = {"none", "default", "default",
-                                             "srgb", "linear-rgb"};
+  static const Vector<String> kConversions = {"none", "default", "default",
+                                              "srgb", "linear-rgb"};
   options.setColorSpaceConversion(
-      conversions[static_cast<uint8_t>(colorSpaceConversion)]);
+      kConversions[static_cast<uint8_t>(color_space_conversion)]);
 
   // Set the runtime flags
-  bool flag = (colorSpaceConversion !=
+  bool flag = (color_space_conversion !=
                ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
   RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(flag);
@@ -215,190 +220,192 @@ static ImageBitmapOptions prepareBitmapOptionsAndSetRuntimeFlags(
 }
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
-  HTMLImageElement* imageElement =
-      HTMLImageElement::create(*Document::create());
+  HTMLImageElement* image_element =
+      HTMLImageElement::Create(*Document::Create());
 
   SkPaint p;
   p.setColor(SK_ColorRED);
-  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
+  sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
 
-  SkImageInfo rasterImageInfo =
-      SkImageInfo::MakeN32Premul(10, 10, srcRGBColorSpace);
-  sk_sp<SkSurface> surface(SkSurface::MakeRaster(rasterImageInfo));
+  SkImageInfo raster_image_info =
+      SkImageInfo::MakeN32Premul(10, 10, src_rgb_color_space);
+  sk_sp<SkSurface> surface(SkSurface::MakeRaster(raster_image_info));
   surface->getCanvas()->drawCircle(5, 5, 5, p);
   sk_sp<SkImage> image = surface->makeImageSnapshot();
 
-  std::unique_ptr<uint8_t[]> srcPixel(
-      new uint8_t[rasterImageInfo.bytesPerPixel()]());
-  image->readPixels(rasterImageInfo.makeWH(1, 1), srcPixel.get(),
-                    image->width() * rasterImageInfo.bytesPerPixel(), 5, 5);
+  std::unique_ptr<uint8_t[]> src_pixel(
+      new uint8_t[raster_image_info.bytesPerPixel()]());
+  image->readPixels(raster_image_info.makeWH(1, 1), src_pixel.get(),
+                    image->width() * raster_image_info.bytesPerPixel(), 5, 5);
 
-  ImageResourceContent* originalImageResource =
-      ImageResourceContent::create(StaticBitmapImage::create(image).get());
-  imageElement->setImageResource(originalImageResource);
+  ImageResourceContent* original_image_resource =
+      ImageResourceContent::Create(StaticBitmapImage::Create(image).Get());
+  image_element->SetImageResource(original_image_resource);
 
-  Optional<IntRect> cropRect = IntRect(0, 0, image->width(), image->height());
+  Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
 
   // Create and test the ImageBitmap objects.
   // We don't check "none" color space conversion as it requires the encoded
   // data in a format readable by ImageDecoder. Furthermore, the code path for
   // "none" color space conversion is not affected by this CL.
 
-  sk_sp<SkColorSpace> colorSpace = nullptr;
-  SkColorType colorType = SkColorType::kN32_SkColorType;
-  SkColorSpaceXform::ColorFormat colorFormat32 =
-      (colorType == kBGRA_8888_SkColorType)
+  sk_sp<SkColorSpace> color_space = nullptr;
+  SkColorType color_type = SkColorType::kN32_SkColorType;
+  SkColorSpaceXform::ColorFormat color_format32 =
+      (color_type == kBGRA_8888_SkColorType)
           ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
           : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
+  SkColorSpaceXform::ColorFormat color_format = color_format32;
 
   for (uint8_t i = static_cast<uint8_t>(
            ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
        i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
-    ColorSpaceConversion colorSpaceConversion =
+    ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
     ImageBitmapOptions options =
-        prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
-    ImageBitmap* imageBitmap = ImageBitmap::create(
-        imageElement, cropRect, &(imageElement->document()), options);
+        PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
+    ImageBitmap* image_bitmap = ImageBitmap::Create(
+        image_element, crop_rect, &(image_element->GetDocument()), options);
 
-    SkImage* convertedImage =
-        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    SkImage* converted_image =
+        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
 
-    switch (colorSpaceConversion) {
+    switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        colorSpace = ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
-        colorFormat = colorFormat32;
+        color_space = ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeSRGB();
-        colorFormat = colorFormat32;
+        color_space = SkColorSpace::MakeSRGB();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeSRGBLinear();
-        colorType = SkColorType::kRGBA_F16_SkColorType;
-        colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        color_space = SkColorSpace::MakeSRGBLinear();
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
       default:
         NOTREACHED();
     }
 
-    SkImageInfo imageInfo = SkImageInfo::Make(
-        1, 1, colorType, SkAlphaType::kPremul_SkAlphaType, colorSpace);
-    std::unique_ptr<uint8_t[]> convertedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    convertedImage->readPixels(
-        imageInfo, convertedPixel.get(),
-        convertedImage->width() * imageInfo.bytesPerPixel(), 5, 5);
+    SkImageInfo image_info = SkImageInfo::Make(
+        1, 1, color_type, SkAlphaType::kPremul_SkAlphaType, color_space);
+    std::unique_ptr<uint8_t[]> converted_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    converted_image->readPixels(
+        image_info, converted_pixel.get(),
+        converted_image->width() * image_info.bytesPerPixel(), 5, 5);
 
     // Transform the source pixel and check if the image bitmap color conversion
     // is done correctly.
-    std::unique_ptr<SkColorSpaceXform> colorSpaceXform =
-        SkColorSpaceXform::New(srcRGBColorSpace.get(), colorSpace.get());
-    std::unique_ptr<uint8_t[]> transformedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
-                           srcPixel.get(), 1, SkAlphaType::kPremul_SkAlphaType);
+    std::unique_ptr<SkColorSpaceXform> color_space_xform =
+        SkColorSpaceXform::New(src_rgb_color_space.get(), color_space.get());
+    std::unique_ptr<uint8_t[]> transformed_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    color_space_xform->apply(color_format, transformed_pixel.get(),
+                             color_format32, src_pixel.get(), 1,
+                             SkAlphaType::kPremul_SkAlphaType);
 
-    int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
-                              imageInfo.bytesPerPixel());
+    int compare = std::memcmp(converted_pixel.get(), transformed_pixel.get(),
+                              image_info.bytesPerPixel());
     ASSERT_EQ(compare, 0);
   }
 }
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
-  HTMLImageElement* imageElement =
-      HTMLImageElement::create(*Document::create());
+  HTMLImageElement* image_element =
+      HTMLImageElement::Create(*Document::Create());
 
   SkPaint p;
   p.setColor(SK_ColorRED);
-  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
+  sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
 
-  SkImageInfo rasterImageInfo =
-      SkImageInfo::MakeN32Premul(10, 10, srcRGBColorSpace);
-  sk_sp<SkSurface> surface(SkSurface::MakeRaster(rasterImageInfo));
+  SkImageInfo raster_image_info =
+      SkImageInfo::MakeN32Premul(10, 10, src_rgb_color_space);
+  sk_sp<SkSurface> surface(SkSurface::MakeRaster(raster_image_info));
   surface->getCanvas()->drawCircle(5, 5, 5, p);
   sk_sp<SkImage> image = surface->makeImageSnapshot();
 
-  std::unique_ptr<uint8_t[]> srcPixel(
-      new uint8_t[rasterImageInfo.bytesPerPixel()]());
-  image->readPixels(rasterImageInfo.makeWH(1, 1), srcPixel.get(),
-                    image->width() * rasterImageInfo.bytesPerPixel(), 5, 5);
+  std::unique_ptr<uint8_t[]> src_pixel(
+      new uint8_t[raster_image_info.bytesPerPixel()]());
+  image->readPixels(raster_image_info.makeWH(1, 1), src_pixel.get(),
+                    image->width() * raster_image_info.bytesPerPixel(), 5, 5);
 
-  ImageResourceContent* sourceImageResource =
-      ImageResourceContent::create(StaticBitmapImage::create(image).get());
-  imageElement->setImageResource(sourceImageResource);
+  ImageResourceContent* source_image_resource =
+      ImageResourceContent::Create(StaticBitmapImage::Create(image).Get());
+  image_element->SetImageResource(source_image_resource);
 
-  Optional<IntRect> cropRect = IntRect(0, 0, image->width(), image->height());
+  Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
   ImageBitmapOptions options =
-      prepareBitmapOptionsAndSetRuntimeFlags(ColorSpaceConversion::SRGB);
-  ImageBitmap* sourceImageBitmap = ImageBitmap::create(
-      imageElement, cropRect, &(imageElement->document()), options);
+      PrepareBitmapOptionsAndSetRuntimeFlags(ColorSpaceConversion::SRGB);
+  ImageBitmap* source_image_bitmap = ImageBitmap::Create(
+      image_element, crop_rect, &(image_element->GetDocument()), options);
 
-  sk_sp<SkColorSpace> colorSpace = nullptr;
-  SkColorType colorType = SkColorType::kN32_SkColorType;
-  SkColorSpaceXform::ColorFormat colorFormat32 =
-      (colorType == kBGRA_8888_SkColorType)
+  sk_sp<SkColorSpace> color_space = nullptr;
+  SkColorType color_type = SkColorType::kN32_SkColorType;
+  SkColorSpaceXform::ColorFormat color_format32 =
+      (color_type == kBGRA_8888_SkColorType)
           ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
           : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
+  SkColorSpaceXform::ColorFormat color_format = color_format32;
 
   for (uint8_t i = static_cast<uint8_t>(
            ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
        i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
-    ColorSpaceConversion colorSpaceConversion =
+    ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
-    options = prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
-    ImageBitmap* imageBitmap =
-        ImageBitmap::create(sourceImageBitmap, cropRect, options);
-    SkImage* convertedImage =
-        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    options = PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
+    ImageBitmap* image_bitmap =
+        ImageBitmap::Create(source_image_bitmap, crop_rect, options);
+    SkImage* converted_image =
+        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
 
-    switch (colorSpaceConversion) {
+    switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        colorSpace = ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
-        colorFormat = colorFormat32;
+        color_space = ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeSRGB();
-        colorFormat = colorFormat32;
+        color_space = SkColorSpace::MakeSRGB();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeSRGBLinear();
-        colorType = SkColorType::kRGBA_F16_SkColorType;
-        colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        color_space = SkColorSpace::MakeSRGBLinear();
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
       default:
         NOTREACHED();
     }
 
-    SkImageInfo imageInfo = SkImageInfo::Make(
-        1, 1, colorType, SkAlphaType::kPremul_SkAlphaType, colorSpace);
-    std::unique_ptr<uint8_t[]> convertedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    convertedImage->readPixels(
-        imageInfo, convertedPixel.get(),
-        convertedImage->width() * imageInfo.bytesPerPixel(), 5, 5);
+    SkImageInfo image_info = SkImageInfo::Make(
+        1, 1, color_type, SkAlphaType::kPremul_SkAlphaType, color_space);
+    std::unique_ptr<uint8_t[]> converted_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    converted_image->readPixels(
+        image_info, converted_pixel.get(),
+        converted_image->width() * image_info.bytesPerPixel(), 5, 5);
 
     // Transform the source pixel and check if the image bitmap color conversion
     // is done correctly.
-    std::unique_ptr<SkColorSpaceXform> colorSpaceXform =
-        SkColorSpaceXform::New(srcRGBColorSpace.get(), colorSpace.get());
-    std::unique_ptr<uint8_t[]> transformedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
-                           srcPixel.get(), 1, SkAlphaType::kPremul_SkAlphaType);
+    std::unique_ptr<SkColorSpaceXform> color_space_xform =
+        SkColorSpaceXform::New(src_rgb_color_space.get(), color_space.get());
+    std::unique_ptr<uint8_t[]> transformed_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    color_space_xform->apply(color_format, transformed_pixel.get(),
+                             color_format32, src_pixel.get(), 1,
+                             SkAlphaType::kPremul_SkAlphaType);
 
-    int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
-                              imageInfo.bytesPerPixel());
+    int compare = std::memcmp(converted_pixel.get(), transformed_pixel.get(),
+                              image_info.bytesPerPixel());
     ASSERT_EQ(compare, 0);
   }
 }
@@ -406,153 +413,155 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
   SkPaint p;
   p.setColor(SK_ColorRED);
-  sk_sp<SkColorSpace> srcRGBColorSpace = SkColorSpace::MakeSRGB();
+  sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
 
-  SkImageInfo rasterImageInfo =
-      SkImageInfo::MakeN32Premul(10, 10, srcRGBColorSpace);
-  sk_sp<SkSurface> surface(SkSurface::MakeRaster(rasterImageInfo));
+  SkImageInfo raster_image_info =
+      SkImageInfo::MakeN32Premul(10, 10, src_rgb_color_space);
+  sk_sp<SkSurface> surface(SkSurface::MakeRaster(raster_image_info));
   surface->getCanvas()->drawCircle(5, 5, 5, p);
   sk_sp<SkImage> image = surface->makeImageSnapshot();
 
-  std::unique_ptr<uint8_t[]> srcPixel(
-      new uint8_t[rasterImageInfo.bytesPerPixel()]());
-  image->readPixels(rasterImageInfo.makeWH(1, 1), srcPixel.get(),
-                    image->width() * rasterImageInfo.bytesPerPixel(), 5, 5);
+  std::unique_ptr<uint8_t[]> src_pixel(
+      new uint8_t[raster_image_info.bytesPerPixel()]());
+  image->readPixels(raster_image_info.makeWH(1, 1), src_pixel.get(),
+                    image->width() * raster_image_info.bytesPerPixel(), 5, 5);
 
-  Optional<IntRect> cropRect = IntRect(0, 0, image->width(), image->height());
+  Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
 
-  sk_sp<SkColorSpace> colorSpace = nullptr;
-  SkColorType colorType = SkColorType::kN32_SkColorType;
-  SkColorSpaceXform::ColorFormat colorFormat32 =
-      (colorType == kBGRA_8888_SkColorType)
+  sk_sp<SkColorSpace> color_space = nullptr;
+  SkColorType color_type = SkColorType::kN32_SkColorType;
+  SkColorSpaceXform::ColorFormat color_format32 =
+      (color_type == kBGRA_8888_SkColorType)
           ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
           : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
+  SkColorSpaceXform::ColorFormat color_format = color_format32;
 
   for (uint8_t i = static_cast<uint8_t>(
            ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
        i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
-    ColorSpaceConversion colorSpaceConversion =
+    ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
     ImageBitmapOptions options =
-        prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
-    ImageBitmap* imageBitmap = ImageBitmap::create(
-        StaticBitmapImage::create(image), cropRect, options);
+        PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
+    ImageBitmap* image_bitmap = ImageBitmap::Create(
+        StaticBitmapImage::Create(image), crop_rect, options);
 
-    SkImage* convertedImage =
-        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    SkImage* converted_image =
+        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
 
-    switch (colorSpaceConversion) {
+    switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        colorSpace = ColorBehavior::globalTargetColorSpace().ToSkColorSpace();
-        colorFormat = colorFormat32;
+        color_space = ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeSRGB();
-        colorFormat = colorFormat32;
+        color_space = SkColorSpace::MakeSRGB();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeSRGBLinear();
-        colorType = SkColorType::kRGBA_F16_SkColorType;
-        colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        color_space = SkColorSpace::MakeSRGBLinear();
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
       default:
         NOTREACHED();
     }
 
-    SkImageInfo imageInfo = SkImageInfo::Make(
-        1, 1, colorType, SkAlphaType::kPremul_SkAlphaType, colorSpace);
-    std::unique_ptr<uint8_t[]> convertedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    convertedImage->readPixels(
-        imageInfo, convertedPixel.get(),
-        convertedImage->width() * imageInfo.bytesPerPixel(), 5, 5);
+    SkImageInfo image_info = SkImageInfo::Make(
+        1, 1, color_type, SkAlphaType::kPremul_SkAlphaType, color_space);
+    std::unique_ptr<uint8_t[]> converted_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    converted_image->readPixels(
+        image_info, converted_pixel.get(),
+        converted_image->width() * image_info.bytesPerPixel(), 5, 5);
 
     // Transform the source pixel and check if the image bitmap color conversion
     // is done correctly.
-    std::unique_ptr<SkColorSpaceXform> colorSpaceXform =
-        SkColorSpaceXform::New(srcRGBColorSpace.get(), colorSpace.get());
-    std::unique_ptr<uint8_t[]> transformedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
-                           srcPixel.get(), 1, SkAlphaType::kPremul_SkAlphaType);
+    std::unique_ptr<SkColorSpaceXform> color_space_xform =
+        SkColorSpaceXform::New(src_rgb_color_space.get(), color_space.get());
+    std::unique_ptr<uint8_t[]> transformed_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    color_space_xform->apply(color_format, transformed_pixel.get(),
+                             color_format32, src_pixel.get(), 1,
+                             SkAlphaType::kPremul_SkAlphaType);
 
-    int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
-                              imageInfo.bytesPerPixel());
+    int compare = std::memcmp(converted_pixel.get(), transformed_pixel.get(),
+                              image_info.bytesPerPixel());
     ASSERT_EQ(compare, 0);
   }
 }
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
-  unsigned char dataBuffer[4] = {255, 0, 0, 255};
-  DOMUint8ClampedArray* data = DOMUint8ClampedArray::create(dataBuffer, 4);
-  ImageData* imageData = ImageData::create(IntSize(1, 1), data);
-  std::unique_ptr<uint8_t[]> srcPixel(new uint8_t[4]());
-  memcpy(srcPixel.get(), imageData->data()->data(), 4);
+  unsigned char data_buffer[4] = {255, 0, 0, 255};
+  DOMUint8ClampedArray* data = DOMUint8ClampedArray::Create(data_buffer, 4);
+  ImageData* image_data = ImageData::Create(IntSize(1, 1), data);
+  std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]());
+  memcpy(src_pixel.get(), image_data->data()->Data(), 4);
 
-  Optional<IntRect> cropRect = IntRect(0, 0, 1, 1);
-  sk_sp<SkColorSpace> colorSpace = nullptr;
-  SkColorSpaceXform::ColorFormat colorFormat32 =
+  Optional<IntRect> crop_rect = IntRect(0, 0, 1, 1);
+  sk_sp<SkColorSpace> color_space = nullptr;
+  SkColorSpaceXform::ColorFormat color_format32 =
       (SkColorType::kN32_SkColorType == kBGRA_8888_SkColorType)
           ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
           : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  SkColorType colorType = SkColorType::kN32_SkColorType;
-  SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
+  SkColorType color_type = SkColorType::kN32_SkColorType;
+  SkColorSpaceXform::ColorFormat color_format = color_format32;
 
   for (uint8_t i =
            static_cast<uint8_t>(ColorSpaceConversion::DEFAULT_COLOR_CORRECTED);
        i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
-    ColorSpaceConversion colorSpaceConversion =
+    ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
     ImageBitmapOptions options =
-        prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
-    ImageBitmap* imageBitmap =
-        ImageBitmap::create(imageData, cropRect, options);
+        PrepareBitmapOptionsAndSetRuntimeFlags(color_space_conversion);
+    ImageBitmap* image_bitmap =
+        ImageBitmap::Create(image_data, crop_rect, options);
 
-    SkImage* convertedImage =
-        imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    SkImage* converted_image =
+        image_bitmap->BitmapImage()->ImageForCurrentFrame().get();
 
-    switch (colorSpaceConversion) {
+    switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
-        colorSpace = SkColorSpace::MakeSRGB();
-        colorFormat = colorFormat32;
+        color_space = SkColorSpace::MakeSRGB();
+        color_format = color_format32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
-        colorSpace = SkColorSpace::MakeSRGBLinear();
-        colorType = SkColorType::kRGBA_F16_SkColorType;
-        colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        color_space = SkColorSpace::MakeSRGBLinear();
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
       default:
         NOTREACHED();
     }
 
-    SkImageInfo imageInfo = SkImageInfo::Make(
-        1, 1, colorType, SkAlphaType::kUnpremul_SkAlphaType, colorSpace);
-    std::unique_ptr<uint8_t[]> convertedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    convertedImage->readPixels(
-        imageInfo, convertedPixel.get(),
-        convertedImage->width() * imageInfo.bytesPerPixel(), 0, 0);
+    SkImageInfo image_info = SkImageInfo::Make(
+        1, 1, color_type, SkAlphaType::kUnpremul_SkAlphaType, color_space);
+    std::unique_ptr<uint8_t[]> converted_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    converted_image->readPixels(
+        image_info, converted_pixel.get(),
+        converted_image->width() * image_info.bytesPerPixel(), 0, 0);
 
     // Transform the source pixel and check if the pixel from image bitmap has
     // the same color information.
-    std::unique_ptr<SkColorSpaceXform> colorSpaceXform = SkColorSpaceXform::New(
-        imageData->skColorSpace().get(), colorSpace.get());
-    std::unique_ptr<uint8_t[]> transformedPixel(
-        new uint8_t[imageInfo.bytesPerPixel()]());
-    colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
-                           srcPixel.get(), 1,
-                           SkAlphaType::kUnpremul_SkAlphaType);
-    int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
-                              imageInfo.bytesPerPixel());
+    std::unique_ptr<SkColorSpaceXform> color_space_xform =
+        SkColorSpaceXform::New(image_data->GetSkColorSpace().get(),
+                               color_space.get());
+    std::unique_ptr<uint8_t[]> transformed_pixel(
+        new uint8_t[image_info.bytesPerPixel()]());
+    color_space_xform->apply(color_format, transformed_pixel.get(),
+                             color_format32, src_pixel.get(), 1,
+                             SkAlphaType::kUnpremul_SkAlphaType);
+    int compare = std::memcmp(converted_pixel.get(), transformed_pixel.get(),
+                              image_info.bytesPerPixel());
     ASSERT_EQ(compare, 0);
   }
 }

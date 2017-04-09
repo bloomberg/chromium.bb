@@ -40,61 +40,64 @@
 
 namespace blink {
 
-ContentLayerDelegate::ContentLayerDelegate(GraphicsLayer* graphicsLayer)
-    : m_graphicsLayer(graphicsLayer) {}
+ContentLayerDelegate::ContentLayerDelegate(GraphicsLayer* graphics_layer)
+    : graphics_layer_(graphics_layer) {}
 
 ContentLayerDelegate::~ContentLayerDelegate() {}
 
-gfx::Rect ContentLayerDelegate::paintableRegion() {
-  IntRect interestRect = m_graphicsLayer->interestRect();
-  return gfx::Rect(interestRect.x(), interestRect.y(), interestRect.width(),
-                   interestRect.height());
+gfx::Rect ContentLayerDelegate::PaintableRegion() {
+  IntRect interest_rect = graphics_layer_->InterestRect();
+  return gfx::Rect(interest_rect.X(), interest_rect.Y(), interest_rect.Width(),
+                   interest_rect.Height());
 }
 
-void ContentLayerDelegate::paintContents(
-    WebDisplayItemList* webDisplayItemList,
-    WebContentLayerClient::PaintingControlSetting paintingControl) {
+void ContentLayerDelegate::PaintContents(
+    WebDisplayItemList* web_display_item_list,
+    WebContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
 
-  PaintController& paintController = m_graphicsLayer->getPaintController();
-  paintController.setDisplayItemConstructionIsDisabled(
-      paintingControl ==
-      WebContentLayerClient::DisplayListConstructionDisabled);
-  paintController.setSubsequenceCachingIsDisabled(
-      paintingControl == WebContentLayerClient::SubsequenceCachingDisabled);
+  PaintController& paint_controller = graphics_layer_->GetPaintController();
+  paint_controller.SetDisplayItemConstructionIsDisabled(
+      painting_control ==
+      WebContentLayerClient::kDisplayListConstructionDisabled);
+  paint_controller.SetSubsequenceCachingIsDisabled(
+      painting_control == WebContentLayerClient::kSubsequenceCachingDisabled);
 
-  if (paintingControl == WebContentLayerClient::PartialInvalidation)
-    m_graphicsLayer->client()->invalidateTargetElementForTesting();
+  if (painting_control == WebContentLayerClient::kPartialInvalidation)
+    graphics_layer_->Client()->InvalidateTargetElementForTesting();
 
   // We also disable caching when Painting or Construction are disabled. In both
   // cases we would like to compare assuming the full cost of recording, not the
   // cost of re-using cached content.
-  if (paintingControl == WebContentLayerClient::DisplayListCachingDisabled ||
-      paintingControl == WebContentLayerClient::DisplayListPaintingDisabled ||
-      paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
-    paintController.invalidateAll();
+  if (painting_control == WebContentLayerClient::kDisplayListCachingDisabled ||
+      painting_control == WebContentLayerClient::kDisplayListPaintingDisabled ||
+      painting_control ==
+          WebContentLayerClient::kDisplayListConstructionDisabled)
+    paint_controller.InvalidateAll();
 
-  GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
-  if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled ||
-      paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
-    disabledMode = GraphicsContext::FullyDisabled;
+  GraphicsContext::DisabledMode disabled_mode =
+      GraphicsContext::kNothingDisabled;
+  if (painting_control == WebContentLayerClient::kDisplayListPaintingDisabled ||
+      painting_control ==
+          WebContentLayerClient::kDisplayListConstructionDisabled)
+    disabled_mode = GraphicsContext::kFullyDisabled;
 
   // Anything other than PaintDefaultBehavior is for testing. In non-testing
   // scenarios, it is an error to call GraphicsLayer::paint. Actual painting
   // occurs in FrameView::paintTree(); this method merely copies the painted
   // output to the WebDisplayItemList.
-  if (paintingControl != PaintDefaultBehavior)
-    m_graphicsLayer->paint(nullptr, disabledMode);
+  if (painting_control != kPaintDefaultBehavior)
+    graphics_layer_->Paint(nullptr, disabled_mode);
 
-  paintController.paintArtifact().appendToWebDisplayItemList(
-      webDisplayItemList);
+  paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
+      web_display_item_list);
 
-  paintController.setDisplayItemConstructionIsDisabled(false);
-  paintController.setSubsequenceCachingIsDisabled(false);
+  paint_controller.SetDisplayItemConstructionIsDisabled(false);
+  paint_controller.SetSubsequenceCachingIsDisabled(false);
 }
 
-size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const {
-  return m_graphicsLayer->getPaintController().approximateUnsharedMemoryUsage();
+size_t ContentLayerDelegate::ApproximateUnsharedMemoryUsage() const {
+  return graphics_layer_->GetPaintController().ApproximateUnsharedMemoryUsage();
 }
 
 }  // namespace blink

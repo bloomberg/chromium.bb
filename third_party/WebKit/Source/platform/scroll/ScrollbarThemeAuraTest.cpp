@@ -15,16 +15,16 @@ namespace {
 
 class ScrollbarThemeAuraButtonOverride final : public ScrollbarThemeAura {
  public:
-  ScrollbarThemeAuraButtonOverride() : m_hasScrollbarButtons(true) {}
+  ScrollbarThemeAuraButtonOverride() : has_scrollbar_buttons_(true) {}
 
-  void setHasScrollbarButtons(bool value) { m_hasScrollbarButtons = value; }
+  void SetHasScrollbarButtons(bool value) { has_scrollbar_buttons_ = value; }
 
-  bool hasScrollbarButtons(ScrollbarOrientation unused) const override {
-    return m_hasScrollbarButtons;
+  bool HasScrollbarButtons(ScrollbarOrientation unused) const override {
+    return has_scrollbar_buttons_;
   }
 
  private:
-  bool m_hasScrollbarButtons;
+  bool has_scrollbar_buttons_;
 };
 
 }  // namespace
@@ -35,69 +35,70 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  MockScrollableArea* mockScrollableArea = MockScrollableArea::create();
-  ScrollbarThemeMock mockTheme;
-  Scrollbar* scrollbar = Scrollbar::createForTesting(
-      mockScrollableArea, HorizontalScrollbar, RegularScrollbar, &mockTheme);
+  MockScrollableArea* mock_scrollable_area = MockScrollableArea::Create();
+  ScrollbarThemeMock mock_theme;
+  Scrollbar* scrollbar =
+      Scrollbar::CreateForTesting(mock_scrollable_area, kHorizontalScrollbar,
+                                  kRegularScrollbar, &mock_theme);
   ScrollbarThemeAuraButtonOverride theme;
 
-  IntRect scrollbarSizeNormalDimensions(11, 22, 444, 66);
-  scrollbar->setFrameRect(scrollbarSizeNormalDimensions);
-  IntSize size1 = theme.buttonSize(*scrollbar);
-  EXPECT_EQ(66, size1.width());
-  EXPECT_EQ(66, size1.height());
+  IntRect scrollbar_size_normal_dimensions(11, 22, 444, 66);
+  scrollbar->SetFrameRect(scrollbar_size_normal_dimensions);
+  IntSize size1 = theme.ButtonSize(*scrollbar);
+  EXPECT_EQ(66, size1.Width());
+  EXPECT_EQ(66, size1.Height());
 
-  IntRect scrollbarSizeSquashedDimensions(11, 22, 444, 666);
-  scrollbar->setFrameRect(scrollbarSizeSquashedDimensions);
-  IntSize size2 = theme.buttonSize(*scrollbar);
-  EXPECT_EQ(222, size2.width());
-  EXPECT_EQ(666, size2.height());
+  IntRect scrollbar_size_squashed_dimensions(11, 22, 444, 666);
+  scrollbar->SetFrameRect(scrollbar_size_squashed_dimensions);
+  IntSize size2 = theme.ButtonSize(*scrollbar);
+  EXPECT_EQ(222, size2.Width());
+  EXPECT_EQ(666, size2.Height());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 TEST_F(ScrollbarThemeAuraTest, ButtonSizeVertical) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  MockScrollableArea* mockScrollableArea = MockScrollableArea::create();
-  ScrollbarThemeMock mockTheme;
-  Scrollbar* scrollbar = Scrollbar::createForTesting(
-      mockScrollableArea, VerticalScrollbar, RegularScrollbar, &mockTheme);
+  MockScrollableArea* mock_scrollable_area = MockScrollableArea::Create();
+  ScrollbarThemeMock mock_theme;
+  Scrollbar* scrollbar = Scrollbar::CreateForTesting(
+      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &mock_theme);
   ScrollbarThemeAuraButtonOverride theme;
 
-  IntRect scrollbarSizeNormalDimensions(11, 22, 44, 666);
-  scrollbar->setFrameRect(scrollbarSizeNormalDimensions);
-  IntSize size1 = theme.buttonSize(*scrollbar);
-  EXPECT_EQ(44, size1.width());
-  EXPECT_EQ(44, size1.height());
+  IntRect scrollbar_size_normal_dimensions(11, 22, 44, 666);
+  scrollbar->SetFrameRect(scrollbar_size_normal_dimensions);
+  IntSize size1 = theme.ButtonSize(*scrollbar);
+  EXPECT_EQ(44, size1.Width());
+  EXPECT_EQ(44, size1.Height());
 
-  IntRect scrollbarSizeSquashedDimensions(11, 22, 444, 666);
-  scrollbar->setFrameRect(scrollbarSizeSquashedDimensions);
-  IntSize size2 = theme.buttonSize(*scrollbar);
-  EXPECT_EQ(444, size2.width());
-  EXPECT_EQ(333, size2.height());
+  IntRect scrollbar_size_squashed_dimensions(11, 22, 444, 666);
+  scrollbar->SetFrameRect(scrollbar_size_squashed_dimensions);
+  IntSize size2 = theme.ButtonSize(*scrollbar);
+  EXPECT_EQ(444, size2.Width());
+  EXPECT_EQ(333, size2.Height());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 TEST_F(ScrollbarThemeAuraTest, NoButtonsReturnsSize0) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  MockScrollableArea* mockScrollableArea = MockScrollableArea::create();
-  ScrollbarThemeMock mockTheme;
-  Scrollbar* scrollbar = Scrollbar::createForTesting(
-      mockScrollableArea, VerticalScrollbar, RegularScrollbar, &mockTheme);
+  MockScrollableArea* mock_scrollable_area = MockScrollableArea::Create();
+  ScrollbarThemeMock mock_theme;
+  Scrollbar* scrollbar = Scrollbar::CreateForTesting(
+      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &mock_theme);
   ScrollbarThemeAuraButtonOverride theme;
-  theme.setHasScrollbarButtons(false);
+  theme.SetHasScrollbarButtons(false);
 
-  scrollbar->setFrameRect(IntRect(1, 2, 3, 4));
-  IntSize size = theme.buttonSize(*scrollbar);
-  EXPECT_EQ(0, size.width());
-  EXPECT_EQ(0, size.height());
+  scrollbar->SetFrameRect(IntRect(1, 2, 3, 4));
+  IntSize size = theme.ButtonSize(*scrollbar);
+  EXPECT_EQ(0, size.Width());
+  EXPECT_EQ(0, size.Height());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 }  // namespace blink

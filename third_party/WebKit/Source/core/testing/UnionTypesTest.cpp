@@ -9,20 +9,20 @@
 namespace blink {
 
 void UnionTypesTest::doubleOrStringOrStringArrayAttribute(
-    DoubleOrStringOrStringArray& doubleOrStringOrStringArray) {
-  switch (m_attributeType) {
-    case SpecificTypeNone:
+    DoubleOrStringOrStringArray& double_or_string_or_string_array) {
+  switch (attribute_type_) {
+    case kSpecificTypeNone:
       // Default value is zero (of double).
-      doubleOrStringOrStringArray.setDouble(0);
+      double_or_string_or_string_array.setDouble(0);
       break;
-    case SpecificTypeDouble:
-      doubleOrStringOrStringArray.setDouble(m_attributeDouble);
+    case kSpecificTypeDouble:
+      double_or_string_or_string_array.setDouble(attribute_double_);
       break;
-    case SpecificTypeString:
-      doubleOrStringOrStringArray.setString(m_attributeString);
+    case kSpecificTypeString:
+      double_or_string_or_string_array.setString(attribute_string_);
       break;
-    case SpecificTypeStringArray:
-      doubleOrStringOrStringArray.setStringArray(m_attributeStringArray);
+    case kSpecificTypeStringArray:
+      double_or_string_or_string_array.setStringArray(attribute_string_array_);
       break;
     default:
       NOTREACHED();
@@ -30,41 +30,42 @@ void UnionTypesTest::doubleOrStringOrStringArrayAttribute(
 }
 
 void UnionTypesTest::setDoubleOrStringOrStringArrayAttribute(
-    const DoubleOrStringOrStringArray& doubleOrStringOrStringArray) {
-  if (doubleOrStringOrStringArray.isDouble()) {
-    m_attributeDouble = doubleOrStringOrStringArray.getAsDouble();
-    m_attributeType = SpecificTypeDouble;
-  } else if (doubleOrStringOrStringArray.isString()) {
-    m_attributeString = doubleOrStringOrStringArray.getAsString();
-    m_attributeType = SpecificTypeString;
-  } else if (doubleOrStringOrStringArray.isStringArray()) {
-    m_attributeStringArray = doubleOrStringOrStringArray.getAsStringArray();
-    m_attributeType = SpecificTypeStringArray;
+    const DoubleOrStringOrStringArray& double_or_string_or_string_array) {
+  if (double_or_string_or_string_array.isDouble()) {
+    attribute_double_ = double_or_string_or_string_array.getAsDouble();
+    attribute_type_ = kSpecificTypeDouble;
+  } else if (double_or_string_or_string_array.isString()) {
+    attribute_string_ = double_or_string_or_string_array.getAsString();
+    attribute_type_ = kSpecificTypeString;
+  } else if (double_or_string_or_string_array.isStringArray()) {
+    attribute_string_array_ =
+        double_or_string_or_string_array.getAsStringArray();
+    attribute_type_ = kSpecificTypeStringArray;
   } else {
     NOTREACHED();
   }
 }
 
-String UnionTypesTest::doubleOrStringArg(DoubleOrString& doubleOrString) {
-  if (doubleOrString.isNull())
+String UnionTypesTest::doubleOrStringArg(DoubleOrString& double_or_string) {
+  if (double_or_string.isNull())
     return "null is passed";
-  if (doubleOrString.isDouble())
+  if (double_or_string.isDouble())
     return "double is passed: " +
-           String::numberToStringECMAScript(doubleOrString.getAsDouble());
-  if (doubleOrString.isString())
-    return "string is passed: " + doubleOrString.getAsString();
+           String::NumberToStringECMAScript(double_or_string.getAsDouble());
+  if (double_or_string.isString())
+    return "string is passed: " + double_or_string.getAsString();
   NOTREACHED();
   return String();
 }
 
 String UnionTypesTest::doubleOrInternalEnumArg(
-    DoubleOrInternalEnum& doubleOrInternalEnum) {
-  if (doubleOrInternalEnum.isDouble())
-    return "double is passed: " +
-           String::numberToStringECMAScript(doubleOrInternalEnum.getAsDouble());
-  if (doubleOrInternalEnum.isInternalEnum())
+    DoubleOrInternalEnum& double_or_internal_enum) {
+  if (double_or_internal_enum.isDouble())
+    return "double is passed: " + String::NumberToStringECMAScript(
+                                      double_or_internal_enum.getAsDouble());
+  if (double_or_internal_enum.isInternalEnum())
     return "InternalEnum is passed: " +
-           doubleOrInternalEnum.getAsInternalEnum();
+           double_or_internal_enum.getAsInternalEnum();
   NOTREACHED();
   return String();
 }
@@ -75,21 +76,21 @@ String UnionTypesTest::doubleOrStringArrayArg(
     return "";
 
   StringBuilder builder;
-  for (DoubleOrString& doubleOrString : array) {
-    DCHECK(!doubleOrString.isNull());
-    if (doubleOrString.isDouble()) {
-      builder.append("double: ");
-      builder.append(
-          String::numberToStringECMAScript(doubleOrString.getAsDouble()));
-    } else if (doubleOrString.isString()) {
-      builder.append("string: ");
-      builder.append(doubleOrString.getAsString());
+  for (DoubleOrString& double_or_string : array) {
+    DCHECK(!double_or_string.isNull());
+    if (double_or_string.isDouble()) {
+      builder.Append("double: ");
+      builder.Append(
+          String::NumberToStringECMAScript(double_or_string.getAsDouble()));
+    } else if (double_or_string.isString()) {
+      builder.Append("string: ");
+      builder.Append(double_or_string.getAsString());
     } else {
       NOTREACHED();
     }
-    builder.append(", ");
+    builder.Append(", ");
   }
-  return builder.substring(0, builder.length() - 2);
+  return builder.Substring(0, builder.length() - 2);
 }
 
 String UnionTypesTest::doubleOrStringSequenceArg(
@@ -98,74 +99,75 @@ String UnionTypesTest::doubleOrStringSequenceArg(
 }
 
 String UnionTypesTest::nodeListOrElementArg(
-    NodeListOrElement& nodeListOrElement) {
-  DCHECK(!nodeListOrElement.isNull());
-  return nodeListOrElementOrNullArg(nodeListOrElement);
+    NodeListOrElement& node_list_or_element) {
+  DCHECK(!node_list_or_element.isNull());
+  return nodeListOrElementOrNullArg(node_list_or_element);
 }
 
 String UnionTypesTest::nodeListOrElementOrNullArg(
-    NodeListOrElement& nodeListOrElementOrNull) {
-  if (nodeListOrElementOrNull.isNull())
+    NodeListOrElement& node_list_or_element_or_null) {
+  if (node_list_or_element_or_null.isNull())
     return "null or undefined is passed";
-  if (nodeListOrElementOrNull.isNodeList())
+  if (node_list_or_element_or_null.isNodeList())
     return "nodelist is passed";
-  if (nodeListOrElementOrNull.isElement())
+  if (node_list_or_element_or_null.isElement())
     return "element is passed";
   NOTREACHED();
   return String();
 }
 
 String UnionTypesTest::doubleOrStringOrStringArrayArg(
-    const DoubleOrStringOrStringArray& doubleOrStringOrStringArray) {
-  if (doubleOrStringOrStringArray.isNull())
+    const DoubleOrStringOrStringArray& double_or_string_or_string_array) {
+  if (double_or_string_or_string_array.isNull())
     return "null";
 
-  if (doubleOrStringOrStringArray.isDouble())
-    return "double: " + String::numberToStringECMAScript(
-                            doubleOrStringOrStringArray.getAsDouble());
+  if (double_or_string_or_string_array.isDouble())
+    return "double: " + String::NumberToStringECMAScript(
+                            double_or_string_or_string_array.getAsDouble());
 
-  if (doubleOrStringOrStringArray.isString())
-    return "string: " + doubleOrStringOrStringArray.getAsString();
+  if (double_or_string_or_string_array.isString())
+    return "string: " + double_or_string_or_string_array.getAsString();
 
-  DCHECK(doubleOrStringOrStringArray.isStringArray());
-  const Vector<String>& array = doubleOrStringOrStringArray.getAsStringArray();
+  DCHECK(double_or_string_or_string_array.isStringArray());
+  const Vector<String>& array =
+      double_or_string_or_string_array.getAsStringArray();
   if (!array.size())
     return "array: []";
   StringBuilder builder;
-  builder.append("array: [");
+  builder.Append("array: [");
   for (const String& item : array) {
-    DCHECK(!item.isNull());
-    builder.append(item);
-    builder.append(", ");
+    DCHECK(!item.IsNull());
+    builder.Append(item);
+    builder.Append(", ");
   }
-  return builder.substring(0, builder.length() - 2) + "]";
+  return builder.Substring(0, builder.length() - 2) + "]";
 }
 
 String UnionTypesTest::doubleOrStringOrStringSequenceArg(
-    const DoubleOrStringOrStringSequence& doubleOrStringOrStringSequence) {
-  if (doubleOrStringOrStringSequence.isNull())
+    const DoubleOrStringOrStringSequence& double_or_string_or_string_sequence) {
+  if (double_or_string_or_string_sequence.isNull())
     return "null";
 
-  if (doubleOrStringOrStringSequence.isDouble())
-    return "double: " + String::numberToStringECMAScript(
-                            doubleOrStringOrStringSequence.getAsDouble());
+  if (double_or_string_or_string_sequence.isDouble())
+    return "double: " + String::NumberToStringECMAScript(
+                            double_or_string_or_string_sequence.getAsDouble());
 
-  if (doubleOrStringOrStringSequence.isString())
-    return "string: " + doubleOrStringOrStringSequence.getAsString();
+  if (double_or_string_or_string_sequence.isString())
+    return "string: " + double_or_string_or_string_sequence.getAsString();
 
-  DCHECK(doubleOrStringOrStringSequence.isStringSequence());
+  DCHECK(double_or_string_or_string_sequence.isStringSequence());
   const Vector<String>& sequence =
-      doubleOrStringOrStringSequence.getAsStringSequence();
+      double_or_string_or_string_sequence.getAsStringSequence();
   if (!sequence.size())
     return "sequence: []";
   StringBuilder builder;
-  builder.append("sequence: [");
+  builder.Append("sequence: [");
   for (const String& item : sequence) {
-    DCHECK(!item.isNull());
-    builder.append(item);
-    builder.append(", ");
+    DCHECK(!item.IsNull());
+    builder.Append(item);
+    builder.Append(", ");
   }
-  return builder.substring(0, builder.length() - 2) + "]";
+  return builder.Substring(0, builder.length() - 2) + "]";
 }
 
 }  // namespace blink

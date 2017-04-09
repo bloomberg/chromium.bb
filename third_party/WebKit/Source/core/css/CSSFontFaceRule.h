@@ -35,7 +35,7 @@ class CSSFontFaceRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSFontFaceRule* create(StyleRuleFontFace* rule,
+  static CSSFontFaceRule* Create(StyleRuleFontFace* rule,
                                  CSSStyleSheet* sheet) {
     return new CSSFontFaceRule(rule, sheet);
   }
@@ -43,11 +43,11 @@ class CSSFontFaceRule final : public CSSRule {
   ~CSSFontFaceRule() override;
 
   String cssText() const override;
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
 
   CSSStyleDeclaration* style() const;
 
-  StyleRuleFontFace* styleRule() const { return m_fontFaceRule.get(); }
+  StyleRuleFontFace* StyleRule() const { return font_face_rule_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -56,8 +56,8 @@ class CSSFontFaceRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kFontFaceRule; }
 
-  Member<StyleRuleFontFace> m_fontFaceRule;
-  mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  Member<StyleRuleFontFace> font_face_rule_;
+  mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, kFontFaceRule);

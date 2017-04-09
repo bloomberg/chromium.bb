@@ -431,7 +431,7 @@ void ChromePasswordManagerClient::DidFinishNavigation(
 
 void ChromePasswordManagerClient::OnInputEvent(
     const blink::WebInputEvent& event) {
-  if (event.type() != blink::WebInputEvent::Char)
+  if (event.GetType() != blink::WebInputEvent::kChar)
     return;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);

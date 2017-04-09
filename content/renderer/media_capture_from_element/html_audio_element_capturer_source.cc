@@ -20,7 +20,7 @@ HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
   DCHECK(player);
   return new HtmlAudioElementCapturerSource(
       static_cast<media::WebAudioSourceProviderImpl*>(
-          player->getAudioSourceProvider()));
+          player->GetAudioSourceProvider()));
 }
 
 HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(

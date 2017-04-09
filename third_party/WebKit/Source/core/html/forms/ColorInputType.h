@@ -45,45 +45,45 @@ class ColorInputType final : public InputType,
   USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
 
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
   ~ColorInputType() override;
   DECLARE_VIRTUAL_TRACE();
-  using InputType::element;
+  using InputType::GetElement;
 
   // ColorChooserClient implementation.
-  void didChooseColor(const Color&) override;
-  void didEndChooser() override;
-  Element& ownerElement() const override;
-  IntRect elementRectRelativeToViewport() const override;
-  Color currentColor() override;
-  bool shouldShowSuggestions() const override;
-  Vector<ColorSuggestion> suggestions() const override;
-  ColorChooserClient* colorChooserClient() override;
+  void DidChooseColor(const Color&) override;
+  void DidEndChooser() override;
+  Element& OwnerElement() const override;
+  IntRect ElementRectRelativeToViewport() const override;
+  Color CurrentColor() override;
+  bool ShouldShowSuggestions() const override;
+  Vector<ColorSuggestion> Suggestions() const override;
+  ColorChooserClient* GetColorChooserClient() override;
 
  private:
   explicit ColorInputType(HTMLInputElement&);
-  InputTypeView* createView() override;
-  ValueMode valueMode() const override;
-  void valueAttributeChanged() override;
-  void countUsage() override;
-  const AtomicString& formControlType() const override;
-  bool supportsRequired() const override;
-  String sanitizeValue(const String&) const override;
-  void createShadowSubtree() override;
-  void didSetValue(const String&, bool valueChanged) override;
-  void handleDOMActivateEvent(Event*) override;
-  void closePopupView() override;
-  bool shouldRespectListAttribute() override;
-  bool typeMismatchFor(const String&) const override;
-  void warnIfValueIsInvalid(const String&) const override;
-  void updateView() override;
-  AXObject* popupRootAXObject() override;
+  InputTypeView* CreateView() override;
+  ValueMode GetValueMode() const override;
+  void ValueAttributeChanged() override;
+  void CountUsage() override;
+  const AtomicString& FormControlType() const override;
+  bool SupportsRequired() const override;
+  String SanitizeValue(const String&) const override;
+  void CreateShadowSubtree() override;
+  void DidSetValue(const String&, bool value_changed) override;
+  void HandleDOMActivateEvent(Event*) override;
+  void ClosePopupView() override;
+  bool ShouldRespectListAttribute() override;
+  bool TypeMismatchFor(const String&) const override;
+  void WarnIfValueIsInvalid(const String&) const override;
+  void UpdateView() override;
+  AXObject* PopupRootAXObject() override;
 
-  Color valueAsColor() const;
-  void endColorChooser();
-  HTMLElement* shadowColorSwatch() const;
+  Color ValueAsColor() const;
+  void EndColorChooser();
+  HTMLElement* ShadowColorSwatch() const;
 
-  Member<ColorChooser> m_chooser;
+  Member<ColorChooser> chooser_;
 };
 
 }  // namespace blink

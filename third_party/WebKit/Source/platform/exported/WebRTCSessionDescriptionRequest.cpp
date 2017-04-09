@@ -38,27 +38,27 @@ namespace blink {
 
 WebRTCSessionDescriptionRequest::WebRTCSessionDescriptionRequest(
     RTCSessionDescriptionRequest* constraints)
-    : m_private(constraints) {}
+    : private_(constraints) {}
 
-void WebRTCSessionDescriptionRequest::assign(
+void WebRTCSessionDescriptionRequest::Assign(
     const WebRTCSessionDescriptionRequest& other) {
-  m_private = other.m_private;
+  private_ = other.private_;
 }
 
-void WebRTCSessionDescriptionRequest::reset() {
-  m_private.reset();
+void WebRTCSessionDescriptionRequest::Reset() {
+  private_.Reset();
 }
 
-void WebRTCSessionDescriptionRequest::requestSucceeded(
-    const WebRTCSessionDescription& sessionDescription) const {
-  ASSERT(m_private.get());
-  m_private->requestSucceeded(sessionDescription);
+void WebRTCSessionDescriptionRequest::RequestSucceeded(
+    const WebRTCSessionDescription& session_description) const {
+  ASSERT(private_.Get());
+  private_->RequestSucceeded(session_description);
 }
 
-void WebRTCSessionDescriptionRequest::requestFailed(
+void WebRTCSessionDescriptionRequest::RequestFailed(
     const WebString& error) const {
-  ASSERT(m_private.get());
-  m_private->requestFailed(error);
+  ASSERT(private_.Get());
+  private_->RequestFailed(error);
 }
 
 }  // namespace blink

@@ -29,30 +29,30 @@
 
 namespace blink {
 
-SourceAlpha* SourceAlpha::create(FilterEffect* sourceEffect) {
-  return new SourceAlpha(sourceEffect);
+SourceAlpha* SourceAlpha::Create(FilterEffect* source_effect) {
+  return new SourceAlpha(source_effect);
 }
 
-SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
-    : FilterEffect(sourceEffect->getFilter()) {
-  setOperatingColorSpace(sourceEffect->operatingColorSpace());
-  inputEffects().push_back(sourceEffect);
+SourceAlpha::SourceAlpha(FilterEffect* source_effect)
+    : FilterEffect(source_effect->GetFilter()) {
+  SetOperatingColorSpace(source_effect->OperatingColorSpace());
+  InputEffects().push_back(source_effect);
 }
 
-sk_sp<SkImageFilter> SourceAlpha::createImageFilter() {
-  sk_sp<SkImageFilter> sourceGraphic(
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
+sk_sp<SkImageFilter> SourceAlpha::CreateImageFilter() {
+  sk_sp<SkImageFilter> source_graphic(
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
   SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
                          0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
-  sk_sp<SkColorFilter> colorFilter =
+  sk_sp<SkColorFilter> color_filter =
       SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-  return SkColorFilterImageFilter::Make(std::move(colorFilter),
-                                        std::move(sourceGraphic));
+  return SkColorFilterImageFilter::Make(std::move(color_filter),
+                                        std::move(source_graphic));
 }
 
-TextStream& SourceAlpha::externalRepresentation(TextStream& ts,
+TextStream& SourceAlpha::ExternalRepresentation(TextStream& ts,
                                                 int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[SourceAlpha]\n";
   return ts;
 }

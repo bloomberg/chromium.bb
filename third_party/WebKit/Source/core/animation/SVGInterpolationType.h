@@ -16,26 +16,26 @@ class SVGInterpolationType : public InterpolationType {
   SVGInterpolationType(const QualifiedName& attribute)
       : InterpolationType(PropertyHandle(attribute)) {}
 
-  const QualifiedName& attribute() const {
-    return getProperty().svgAttribute();
+  const QualifiedName& Attribute() const {
+    return GetProperty().SvgAttribute();
   }
 
-  virtual InterpolationValue maybeConvertNeutral(
+  virtual InterpolationValue MaybeConvertNeutral(
       const InterpolationValue& underlying,
       ConversionCheckers&) const = 0;
-  virtual InterpolationValue maybeConvertSVGValue(
+  virtual InterpolationValue MaybeConvertSVGValue(
       const SVGPropertyBase&) const = 0;
-  virtual SVGPropertyBase* appliedSVGValue(
+  virtual SVGPropertyBase* AppliedSVGValue(
       const InterpolableValue&,
       const NonInterpolableValue*) const = 0;
 
-  InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
+  InterpolationValue MaybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const override;
-  InterpolationValue maybeConvertUnderlyingValue(
+  InterpolationValue MaybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const override;
-  void apply(const InterpolableValue&,
+  void Apply(const InterpolableValue&,
              const NonInterpolableValue*,
              InterpolationEnvironment&) const override;
 };

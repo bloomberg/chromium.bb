@@ -37,52 +37,52 @@
 namespace blink {
 
 SourceBufferList::SourceBufferList(ExecutionContext* context,
-                                   GenericEventQueue* asyncEventQueue)
-    : ContextClient(context), m_asyncEventQueue(asyncEventQueue) {}
+                                   GenericEventQueue* async_event_queue)
+    : ContextClient(context), async_event_queue_(async_event_queue) {}
 
 SourceBufferList::~SourceBufferList() {}
 
-void SourceBufferList::add(SourceBuffer* buffer) {
-  m_list.push_back(buffer);
-  scheduleEvent(EventTypeNames::addsourcebuffer);
+void SourceBufferList::Add(SourceBuffer* buffer) {
+  list_.push_back(buffer);
+  ScheduleEvent(EventTypeNames::addsourcebuffer);
 }
 
 void SourceBufferList::insert(size_t position, SourceBuffer* buffer) {
-  m_list.insert(position, buffer);
-  scheduleEvent(EventTypeNames::addsourcebuffer);
+  list_.insert(position, buffer);
+  ScheduleEvent(EventTypeNames::addsourcebuffer);
 }
 
-void SourceBufferList::remove(SourceBuffer* buffer) {
-  size_t index = m_list.find(buffer);
+void SourceBufferList::Remove(SourceBuffer* buffer) {
+  size_t index = list_.Find(buffer);
   if (index == kNotFound)
     return;
-  m_list.erase(index);
-  scheduleEvent(EventTypeNames::removesourcebuffer);
+  list_.erase(index);
+  ScheduleEvent(EventTypeNames::removesourcebuffer);
 }
 
-void SourceBufferList::clear() {
-  m_list.clear();
-  scheduleEvent(EventTypeNames::removesourcebuffer);
+void SourceBufferList::Clear() {
+  list_.Clear();
+  ScheduleEvent(EventTypeNames::removesourcebuffer);
 }
 
-void SourceBufferList::scheduleEvent(const AtomicString& eventName) {
-  DCHECK(m_asyncEventQueue);
+void SourceBufferList::ScheduleEvent(const AtomicString& event_name) {
+  DCHECK(async_event_queue_);
 
-  Event* event = Event::create(eventName);
-  event->setTarget(this);
+  Event* event = Event::Create(event_name);
+  event->SetTarget(this);
 
-  m_asyncEventQueue->enqueueEvent(event);
+  async_event_queue_->EnqueueEvent(event);
 }
 
-const AtomicString& SourceBufferList::interfaceName() const {
+const AtomicString& SourceBufferList::InterfaceName() const {
   return EventTargetNames::SourceBufferList;
 }
 
 DEFINE_TRACE(SourceBufferList) {
-  visitor->trace(m_asyncEventQueue);
-  visitor->trace(m_list);
-  EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  visitor->Trace(async_event_queue_);
+  visitor->Trace(list_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

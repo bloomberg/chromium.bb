@@ -32,34 +32,34 @@ namespace {
 
 GURL GetAbsoluteUrl(const blink::WebNode& node,
                     const base::string16& url_fragment) {
-  return GURL(
-      node.document().completeURL(blink::WebString::fromUTF16(url_fragment)));
+  return GURL(node.GetDocument().CompleteURL(
+      blink::WebString::FromUTF16(url_fragment)));
 }
 
 base::string16 GetHref(const blink::WebElement& element) {
   // Get the actual 'href' attribute, which might relative if valid or can
   // possibly contain garbage otherwise, so not using absoluteLinkURL here.
-  return element.getAttribute("href").utf16();
+  return element.GetAttribute("href").Utf16();
 }
 
 GURL GetAbsoluteSrcUrl(const blink::WebElement& element) {
-  if (element.isNull())
+  if (element.IsNull())
     return GURL();
-  return GetAbsoluteUrl(element, element.getAttribute("src").utf16());
+  return GetAbsoluteUrl(element, element.GetAttribute("src").Utf16());
 }
 
 blink::WebElement GetImgChild(const blink::WebNode& node) {
   // This implementation is incomplete (for example if is an area tag) but
   // matches the original WebViewClassic implementation.
 
-  blink::WebElementCollection collection = node.getElementsByHTMLTagName("img");
-  DCHECK(!collection.isNull());
-  return collection.firstItem();
+  blink::WebElementCollection collection = node.GetElementsByHTMLTagName("img");
+  DCHECK(!collection.IsNull());
+  return collection.FirstItem();
 }
 
 GURL GetChildImageUrlFromElement(const blink::WebElement& element) {
   const blink::WebElement child_img = GetImgChild(element);
-  if (child_img.isNull())
+  if (child_img.IsNull())
     return GURL();
   return GetAbsoluteSrcUrl(child_img);
 }
@@ -144,10 +144,10 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
     bool is_same_document_navigation) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   content::DocumentState* document_state =
-      content::DocumentState::FromDataSource(frame->dataSource());
+      content::DocumentState::FromDataSource(frame->DataSource());
   if (document_state->can_load_local_resources()) {
-    blink::WebSecurityOrigin origin = frame->document().getSecurityOrigin();
-    origin.grantLoadLocalResources();
+    blink::WebSecurityOrigin origin = frame->GetDocument().GetSecurityOrigin();
+    origin.GrantLoadLocalResources();
   }
 
   // Clear the cache when we cross site boundaries in the main frame.
@@ -157,11 +157,11 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
   // up, and thus start with a clear cache. Wiring up a signal from browser to
   // renderer code to say "this navigation would have switched processes" would
   // be disruptive, so this clearing of the cache is the compromise.
-  if (!frame->parent()) {
-    url::Origin new_origin(frame->document().url());
+  if (!frame->Parent()) {
+    url::Origin new_origin(frame->GetDocument().Url());
     if (!new_origin.IsSameOriginWith(last_origin_)) {
       last_origin_ = new_origin;
-      blink::WebImageCache::clear();
+      blink::WebImageCache::Clear();
     }
   }
 }
@@ -186,33 +186,33 @@ void AwRenderFrameExt::OnDocumentHasImagesRequest(uint32_t id) {
   bool hasImages = false;
   blink::WebView* webview = GetWebView();
   if (webview) {
-    blink::WebDocument document = webview->mainFrame()->document();
+    blink::WebDocument document = webview->MainFrame()->GetDocument();
     const blink::WebElement child_img = GetImgChild(document);
-    hasImages = !child_img.isNull();
+    hasImages = !child_img.IsNull();
   }
   Send(
       new AwViewHostMsg_DocumentHasImagesResponse(routing_id(), id, hasImages));
 }
 
 void AwRenderFrameExt::FocusedNodeChanged(const blink::WebNode& node) {
-  if (node.isNull() || !node.isElementNode() || !render_frame() ||
+  if (node.IsNull() || !node.IsElementNode() || !render_frame() ||
       !render_frame()->GetRenderView())
     return;
 
-  const blink::WebElement element = node.toConst<blink::WebElement>();
+  const blink::WebElement element = node.ToConst<blink::WebElement>();
   AwHitTestData data;
 
   data.href = GetHref(element);
-  data.anchor_text = element.textContent().utf16();
+  data.anchor_text = element.TextContent().Utf16();
 
   GURL absolute_link_url;
-  if (node.isLink())
+  if (node.IsLink())
     absolute_link_url = GetAbsoluteUrl(node, data.href);
 
   GURL absolute_image_url = GetChildImageUrlFromElement(element);
 
   PopulateHitTestData(absolute_link_url, absolute_image_url,
-                      element.isEditable(), &data);
+                      element.IsEditable(), &data);
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
@@ -225,23 +225,23 @@ void AwRenderFrameExt::OnDoHitTest(const gfx::PointF& touch_center,
   if (!webview)
     return;
 
-  const blink::WebHitTestResult result = webview->hitTestResultForTap(
+  const blink::WebHitTestResult result = webview->HitTestResultForTap(
       blink::WebPoint(touch_center.x(), touch_center.y()),
       blink::WebSize(touch_area.width(), touch_area.height()));
   AwHitTestData data;
 
-  GURL absolute_image_url = result.absoluteImageURL();
-  if (!result.urlElement().isNull()) {
-    data.anchor_text = result.urlElement().textContent().utf16();
-    data.href = GetHref(result.urlElement());
+  GURL absolute_image_url = result.AbsoluteImageURL();
+  if (!result.UrlElement().IsNull()) {
+    data.anchor_text = result.UrlElement().TextContent().Utf16();
+    data.href = GetHref(result.UrlElement());
     // If we hit an image that failed to load, Blink won't give us its URL.
     // Fall back to walking the DOM in this case.
     if (absolute_image_url.is_empty())
-      absolute_image_url = GetChildImageUrlFromElement(result.urlElement());
+      absolute_image_url = GetChildImageUrlFromElement(result.UrlElement());
   }
 
-  PopulateHitTestData(result.absoluteLinkURL(), absolute_image_url,
-                      result.isContentEditable(), &data);
+  PopulateHitTestData(result.AbsoluteLinkURL(), absolute_image_url,
+                      result.IsContentEditable(), &data);
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
@@ -251,8 +251,8 @@ void AwRenderFrameExt::OnSetTextZoomFactor(float zoom_factor) {
     return;
 
   // Hide selection and autofill popups.
-  webview->hidePopups();
-  webview->setTextZoomFactor(zoom_factor);
+  webview->HidePopups();
+  webview->SetTextZoomFactor(zoom_factor);
 }
 
 void AwRenderFrameExt::OnResetScrollAndScaleState() {
@@ -260,7 +260,7 @@ void AwRenderFrameExt::OnResetScrollAndScaleState() {
   if (!webview)
     return;
 
-  webview->resetScrollAndScaleState();
+  webview->ResetScrollAndScaleState();
 }
 
 void AwRenderFrameExt::OnSetInitialPageScale(double page_scale_factor) {
@@ -268,7 +268,7 @@ void AwRenderFrameExt::OnSetInitialPageScale(double page_scale_factor) {
   if (!webview)
     return;
 
-  webview->setInitialPageScaleOverride(page_scale_factor);
+  webview->SetInitialPageScaleOverride(page_scale_factor);
 }
 
 void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
@@ -276,7 +276,7 @@ void AwRenderFrameExt::OnSetBackgroundColor(SkColor c) {
   if (!web_frame_widget)
     return;
 
-  web_frame_widget->setBaseBackgroundColor(c);
+  web_frame_widget->SetBaseBackgroundColor(c);
 }
 
 void AwRenderFrameExt::OnSmoothScroll(int target_x,
@@ -286,7 +286,7 @@ void AwRenderFrameExt::OnSmoothScroll(int target_x,
   if (!webview)
     return;
 
-  webview->smoothScroll(target_x, target_y, static_cast<long>(duration_ms));
+  webview->SmoothScroll(target_x, target_y, static_cast<long>(duration_ms));
 }
 
 blink::WebView* AwRenderFrameExt::GetWebView() {

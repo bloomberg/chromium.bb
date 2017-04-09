@@ -17,47 +17,47 @@ namespace {
 
 // This must match ICCProfileAnalyzeResult enum in histograms.xml.
 enum ICCAnalyzeResult {
-  ICCExtractedMatrixAndAnalyticTrFn = 0,
-  ICCExtractedMatrixAndApproximatedTrFn = 1,
-  ICCFailedToApproximateTrFn = 2,
-  ICCFailedToExtractRawTrFn = 3,
-  ICCFailedToExtractMatrix = 4,
-  ICCFailedToParse = 5,
-  ICCProfileAnalyzeLast = ICCFailedToParse
+  kICCExtractedMatrixAndAnalyticTrFn = 0,
+  kICCExtractedMatrixAndApproximatedTrFn = 1,
+  kICCFailedToApproximateTrFn = 2,
+  kICCFailedToExtractRawTrFn = 3,
+  kICCFailedToExtractMatrix = 4,
+  kICCFailedToParse = 5,
+  kICCProfileAnalyzeLast = kICCFailedToParse
 };
 
 // The output device color space is global and shared across multiple threads.
-SpinLock gTargetColorSpaceLock;
-gfx::ColorSpace* gTargetColorSpace = nullptr;
+SpinLock g_target_color_space_lock;
+gfx::ColorSpace* g_target_color_space = nullptr;
 
 ICCAnalyzeResult HistogramICCProfile(const gfx::ICCProfile& profile) {
   std::vector<char> data = profile.GetData();
-  sk_sp<SkICC> skICC = SkICC::Make(data.data(), data.size());
-  if (!skICC)
-    return ICCFailedToParse;
+  sk_sp<SkICC> sk_icc = SkICC::Make(data.data(), data.size());
+  if (!sk_icc)
+    return kICCFailedToParse;
 
-  SkMatrix44 toXYZD50;
-  bool toXYZD50Result = skICC->toXYZD50(&toXYZD50);
-  if (!toXYZD50Result)
-    return ICCFailedToExtractMatrix;
+  SkMatrix44 to_xyzd50;
+  bool to_xyzd50_result = sk_icc->toXYZD50(&to_xyzd50);
+  if (!to_xyzd50_result)
+    return kICCFailedToExtractMatrix;
 
   SkColorSpaceTransferFn fn;
-  bool isNumericalTransferFnResult = skICC->isNumericalTransferFn(&fn);
-  if (isNumericalTransferFnResult)
-    return ICCExtractedMatrixAndAnalyticTrFn;
+  bool is_numerical_transfer_fn_result = sk_icc->isNumericalTransferFn(&fn);
+  if (is_numerical_transfer_fn_result)
+    return kICCExtractedMatrixAndAnalyticTrFn;
 
   // Analyze the numerical approximation of table-based transfer functions.
   // This should never fail in practice, because any profile from which a
   // primary matrix was extracted will also provide raw transfer data.
   SkICC::Tables tables;
-  bool rawTransferFnResult = skICC->rawTransferFnData(&tables);
-  DCHECK(rawTransferFnResult);
-  if (!rawTransferFnResult)
-    return ICCFailedToExtractRawTrFn;
+  bool raw_transfer_fn_result = sk_icc->rawTransferFnData(&tables);
+  DCHECK(raw_transfer_fn_result);
+  if (!raw_transfer_fn_result)
+    return kICCFailedToExtractRawTrFn;
 
   // Analyze the channels separately.
-  std::vector<float> xCombined;
-  std::vector<float> tCombined;
+  std::vector<float> x_combined;
+  std::vector<float> t_combined;
   for (size_t c = 0; c < 3; ++c) {
     SkICC::Channel* channels[3] = {&tables.fRed, &tables.fGreen, &tables.fBlue};
     SkICC::Channel* channel = channels[c];
@@ -71,119 +71,119 @@ ICCAnalyzeResult HistogramICCProfile(const gfx::ICCProfile& profile) {
       float ti = data[i];
       x.push_back(xi);
       t.push_back(ti);
-      xCombined.push_back(xi);
-      tCombined.push_back(ti);
+      x_combined.push_back(xi);
+      t_combined.push_back(ti);
     }
 
-    bool nonlinearFitConverged =
+    bool nonlinear_fit_converged =
         gfx::SkApproximateTransferFn(x.data(), t.data(), x.size(), &fn);
     UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.NonlinearFitConverged",
-                          nonlinearFitConverged);
+                          nonlinear_fit_converged);
 
     // Record the accuracy of the fit, separating out by nonlinear and
     // linear fits.
-    if (nonlinearFitConverged) {
-      float maxError = 0.f;
+    if (nonlinear_fit_converged) {
+      float max_error = 0.f;
       for (size_t i = 0; i < x.size(); ++i) {
-        float fnOfXi = gfx::SkTransferFnEval(fn, x[i]);
-        float errorAtXi = std::abs(t[i] - fnOfXi);
-        maxError = std::max(maxError, errorAtXi);
+        float fn_of_xi = gfx::SkTransferFnEval(fn, x[i]);
+        float error_at_xi = std::abs(t[i] - fn_of_xi);
+        max_error = std::max(max_error, error_at_xi);
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Blink.ColorSpace.Destination.NonlinearFitError",
-          static_cast<int>(maxError * 255), 0, 127, 16);
+          static_cast<int>(max_error * 255), 0, 127, 16);
     }
   }
 
-  bool combinedNonlinearFitConverged = gfx::SkApproximateTransferFn(
-      xCombined.data(), tCombined.data(), xCombined.size(), &fn);
-  if (!combinedNonlinearFitConverged)
-    return ICCFailedToApproximateTrFn;
+  bool combined_nonlinear_fit_converged = gfx::SkApproximateTransferFn(
+      x_combined.data(), t_combined.data(), x_combined.size(), &fn);
+  if (!combined_nonlinear_fit_converged)
+    return kICCFailedToApproximateTrFn;
 
-  float combinedMaxError = 0.f;
-  for (size_t i = 0; i < xCombined.size(); ++i) {
-    float fnOfXi = gfx::SkTransferFnEval(fn, xCombined[i]);
-    float errorAtXi = std::abs(tCombined[i] - fnOfXi);
-    combinedMaxError = std::max(combinedMaxError, errorAtXi);
+  float combined_max_error = 0.f;
+  for (size_t i = 0; i < x_combined.size(); ++i) {
+    float fn_of_xi = gfx::SkTransferFnEval(fn, x_combined[i]);
+    float error_at_xi = std::abs(t_combined[i] - fn_of_xi);
+    combined_max_error = std::max(combined_max_error, error_at_xi);
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Blink.ColorSpace.Destination.NonlinearFitErrorCombined",
-      static_cast<int>(combinedMaxError * 255), 0, 127, 16);
+      static_cast<int>(combined_max_error * 255), 0, 127, 16);
 
-  return ICCExtractedMatrixAndApproximatedTrFn;
+  return kICCExtractedMatrixAndApproximatedTrFn;
 }
 
 }  // namespace
 
 // static
-void ColorBehavior::setGlobalTargetColorProfile(
+void ColorBehavior::SetGlobalTargetColorProfile(
     const gfx::ICCProfile& profile) {
   // Take a lock around initializing and accessing the global device color
   // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
+  SpinLock::Guard guard(g_target_color_space_lock);
 
   // Layout tests expect that only the first call will take effect.
-  if (gTargetColorSpace)
+  if (g_target_color_space)
     return;
 
   // Attempt to convert the ICC profile to an SkColorSpace.
   if (profile != gfx::ICCProfile()) {
-    gTargetColorSpace = new gfx::ColorSpace(profile.GetColorSpace());
+    g_target_color_space = new gfx::ColorSpace(profile.GetColorSpace());
 
-    ICCAnalyzeResult analyzeResult = HistogramICCProfile(profile);
+    ICCAnalyzeResult analyze_result = HistogramICCProfile(profile);
     UMA_HISTOGRAM_ENUMERATION("Blink.ColorSpace.Destination.ICCResult",
-                              analyzeResult, ICCProfileAnalyzeLast);
+                              analyze_result, kICCProfileAnalyzeLast);
   }
 
   // If we do not succeed, assume sRGB.
-  if (!gTargetColorSpace)
-    gTargetColorSpace = new gfx::ColorSpace(gfx::ColorSpace::CreateSRGB());
+  if (!g_target_color_space)
+    g_target_color_space = new gfx::ColorSpace(gfx::ColorSpace::CreateSRGB());
 
   // UMA statistics.
-  BitmapImageMetrics::countOutputGammaAndGamut(
-      gTargetColorSpace->ToSkColorSpace().get());
+  BitmapImageMetrics::CountOutputGammaAndGamut(
+      g_target_color_space->ToSkColorSpace().get());
 }
 
-void ColorBehavior::setGlobalTargetColorSpaceForTesting(
-    const gfx::ColorSpace& colorSpace) {
+void ColorBehavior::SetGlobalTargetColorSpaceForTesting(
+    const gfx::ColorSpace& color_space) {
   // Take a lock around initializing and accessing the global device color
   // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
+  SpinLock::Guard guard(g_target_color_space_lock);
 
-  delete gTargetColorSpace;
-  gTargetColorSpace = new gfx::ColorSpace(colorSpace);
+  delete g_target_color_space;
+  g_target_color_space = new gfx::ColorSpace(color_space);
 }
 
 // static
-const gfx::ColorSpace& ColorBehavior::globalTargetColorSpace() {
+const gfx::ColorSpace& ColorBehavior::GlobalTargetColorSpace() {
   // Take a lock around initializing and accessing the global device color
   // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
+  SpinLock::Guard guard(g_target_color_space_lock);
 
   // Initialize the output device profile to sRGB if it has not yet been
   // initialized.
-  if (!gTargetColorSpace)
-    gTargetColorSpace = new gfx::ColorSpace(gfx::ColorSpace::CreateSRGB());
+  if (!g_target_color_space)
+    g_target_color_space = new gfx::ColorSpace(gfx::ColorSpace::CreateSRGB());
 
-  return *gTargetColorSpace;
+  return *g_target_color_space;
 }
 
 // static
-ColorBehavior ColorBehavior::transformToGlobalTarget() {
-  return ColorBehavior(Type::TransformTo, globalTargetColorSpace());
+ColorBehavior ColorBehavior::TransformToGlobalTarget() {
+  return ColorBehavior(Type::kTransformTo, GlobalTargetColorSpace());
 }
 
 // static
-ColorBehavior ColorBehavior::transformToTargetForTesting() {
-  return transformToGlobalTarget();
+ColorBehavior ColorBehavior::TransformToTargetForTesting() {
+  return TransformToGlobalTarget();
 }
 
 bool ColorBehavior::operator==(const ColorBehavior& other) const {
-  if (m_type != other.m_type)
+  if (type_ != other.type_)
     return false;
-  if (m_type != Type::TransformTo)
+  if (type_ != Type::kTransformTo)
     return true;
-  return m_target == other.m_target;
+  return target_ == other.target_;
 }
 
 bool ColorBehavior::operator!=(const ColorBehavior& other) const {

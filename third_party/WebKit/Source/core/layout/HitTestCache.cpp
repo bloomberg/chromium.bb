@@ -9,23 +9,23 @@
 
 namespace blink {
 
-bool HitTestCache::lookupCachedResult(HitTestResult& hitResult,
-                                      uint64_t domTreeVersion) {
+bool HitTestCache::LookupCachedResult(HitTestResult& hit_result,
+                                      uint64_t dom_tree_version) {
   bool result = false;
   HitHistogramMetric metric = HitHistogramMetric::MISS;
-  if (hitResult.hitTestRequest().avoidCache()) {
+  if (hit_result.GetHitTestRequest().AvoidCache()) {
     metric = HitHistogramMetric::MISS_EXPLICIT_AVOID;
     // For now we don't support rect based hit results.
-  } else if (domTreeVersion == m_domTreeVersion &&
-             !hitResult.hitTestLocation().isRectBasedTest()) {
-    for (const auto& cachedItem : m_items) {
-      if (cachedItem.hitTestLocation().point() ==
-          hitResult.hitTestLocation().point()) {
-        if (hitResult.hitTestRequest().equalForCacheability(
-                cachedItem.hitTestRequest())) {
+  } else if (dom_tree_version == dom_tree_version_ &&
+             !hit_result.GetHitTestLocation().IsRectBasedTest()) {
+    for (const auto& cached_item : items_) {
+      if (cached_item.GetHitTestLocation().Point() ==
+          hit_result.GetHitTestLocation().Point()) {
+        if (hit_result.GetHitTestRequest().EqualForCacheability(
+                cached_item.GetHitTestRequest())) {
           metric = HitHistogramMetric::HIT_EXACT_MATCH;
           result = true;
-          hitResult = cachedItem;
+          hit_result = cached_item;
           break;
         }
         metric = HitHistogramMetric::MISS_VALIDITY_RECT_MATCHES;
@@ -33,48 +33,48 @@ bool HitTestCache::lookupCachedResult(HitTestResult& hitResult,
     }
   }
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, hitTestHistogram,
+      EnumerationHistogram, hit_test_histogram,
       ("Event.HitTest",
        static_cast<int32_t>(HitHistogramMetric::MAX_HIT_METRIC)));
-  hitTestHistogram.count(static_cast<int32_t>(metric));
+  hit_test_histogram.Count(static_cast<int32_t>(metric));
   return result;
 }
 
-void HitTestCache::addCachedResult(const HitTestResult& result,
-                                   uint64_t domTreeVersion) {
-  if (!result.isCacheable())
+void HitTestCache::AddCachedResult(const HitTestResult& result,
+                                   uint64_t dom_tree_version) {
+  if (!result.IsCacheable())
     return;
 
   // If the result was a hit test on an LayoutPart and the request allowed
   // querying of the layout part; then the part hasn't been loaded yet.
-  if (result.isOverFrameViewBase() &&
-      result.hitTestRequest().allowsChildFrameContent())
+  if (result.IsOverFrameViewBase() &&
+      result.GetHitTestRequest().AllowsChildFrameContent())
     return;
 
   // For now don't support rect based or list based requests.
-  if (result.hitTestLocation().isRectBasedTest() ||
-      result.hitTestRequest().listBased())
+  if (result.GetHitTestLocation().IsRectBasedTest() ||
+      result.GetHitTestRequest().ListBased())
     return;
-  if (domTreeVersion != m_domTreeVersion)
-    clear();
-  if (m_items.size() < HIT_TEST_CACHE_SIZE)
-    m_items.resize(m_updateIndex + 1);
+  if (dom_tree_version != dom_tree_version_)
+    Clear();
+  if (items_.size() < HIT_TEST_CACHE_SIZE)
+    items_.Resize(update_index_ + 1);
 
-  m_items.at(m_updateIndex).cacheValues(result);
-  m_domTreeVersion = domTreeVersion;
+  items_.at(update_index_).CacheValues(result);
+  dom_tree_version_ = dom_tree_version;
 
-  m_updateIndex++;
-  if (m_updateIndex >= HIT_TEST_CACHE_SIZE)
-    m_updateIndex = 0;
+  update_index_++;
+  if (update_index_ >= HIT_TEST_CACHE_SIZE)
+    update_index_ = 0;
 }
 
-void HitTestCache::clear() {
-  m_updateIndex = 0;
-  m_items.clear();
+void HitTestCache::Clear() {
+  update_index_ = 0;
+  items_.Clear();
 }
 
 DEFINE_TRACE(HitTestCache) {
-  visitor->trace(m_items);
+  visitor->Trace(items_);
 }
 
 }  // namespace blink

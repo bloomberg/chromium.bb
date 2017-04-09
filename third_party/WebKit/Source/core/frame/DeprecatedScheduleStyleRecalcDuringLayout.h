@@ -19,9 +19,9 @@ class DeprecatedScheduleStyleRecalcDuringLayout {
   ~DeprecatedScheduleStyleRecalcDuringLayout();
 
  private:
-  DocumentLifecycle& m_lifecycle;
-  DocumentLifecycle::DeprecatedTransition m_deprecatedTransition;
-  bool m_wasInPerformLayout;
+  DocumentLifecycle& lifecycle_;
+  DocumentLifecycle::DeprecatedTransition deprecated_transition_;
+  bool was_in_perform_layout_;
 };
 
 }  // namespace blink

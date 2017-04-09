@@ -43,65 +43,65 @@ class BiquadProcessor final : public AudioDSPKernelProcessor {
  public:
   // This values are used in histograms and should not be renumbered or deleted.
   enum FilterType {
-    LowPass = 0,
-    HighPass = 1,
-    BandPass = 2,
-    LowShelf = 3,
-    HighShelf = 4,
-    Peaking = 5,
-    Notch = 6,
-    Allpass = 7
+    kLowPass = 0,
+    kHighPass = 1,
+    kBandPass = 2,
+    kLowShelf = 3,
+    kHighShelf = 4,
+    kPeaking = 5,
+    kNotch = 6,
+    kAllpass = 7
   };
 
-  BiquadProcessor(float sampleRate,
-                  size_t numberOfChannels,
+  BiquadProcessor(float sample_rate,
+                  size_t number_of_channels,
                   AudioParamHandler& frequency,
                   AudioParamHandler& q,
                   AudioParamHandler& gain,
                   AudioParamHandler& detune);
   ~BiquadProcessor() override;
 
-  std::unique_ptr<AudioDSPKernel> createKernel() override;
+  std::unique_ptr<AudioDSPKernel> CreateKernel() override;
 
-  void process(const AudioBus* source,
+  void Process(const AudioBus* source,
                AudioBus* destination,
-               size_t framesToProcess) override;
+               size_t frames_to_process) override;
 
-  void processOnlyAudioParams(size_t framesToProcess) override;
+  void ProcessOnlyAudioParams(size_t frames_to_process) override;
 
   // Get the magnitude and phase response of the filter at the given
   // set of frequencies (in Hz). The phase response is in radians.
-  void getFrequencyResponse(int nFrequencies,
-                            const float* frequencyHz,
-                            float* magResponse,
-                            float* phaseResponse);
+  void GetFrequencyResponse(int n_frequencies,
+                            const float* frequency_hz,
+                            float* mag_response,
+                            float* phase_response);
 
-  void checkForDirtyCoefficients();
+  void CheckForDirtyCoefficients();
 
-  bool filterCoefficientsDirty() const { return m_filterCoefficientsDirty; }
-  bool hasSampleAccurateValues() const { return m_hasSampleAccurateValues; }
+  bool FilterCoefficientsDirty() const { return filter_coefficients_dirty_; }
+  bool HasSampleAccurateValues() const { return has_sample_accurate_values_; }
 
-  AudioParamHandler& parameter1() { return *m_parameter1; }
-  AudioParamHandler& parameter2() { return *m_parameter2; }
-  AudioParamHandler& parameter3() { return *m_parameter3; }
-  AudioParamHandler& parameter4() { return *m_parameter4; }
+  AudioParamHandler& Parameter1() { return *parameter1_; }
+  AudioParamHandler& Parameter2() { return *parameter2_; }
+  AudioParamHandler& Parameter3() { return *parameter3_; }
+  AudioParamHandler& Parameter4() { return *parameter4_; }
 
-  FilterType type() const { return m_type; }
-  void setType(FilterType);
+  FilterType GetType() const { return type_; }
+  void SetType(FilterType);
 
  private:
-  FilterType m_type;
+  FilterType type_;
 
-  RefPtr<AudioParamHandler> m_parameter1;
-  RefPtr<AudioParamHandler> m_parameter2;
-  RefPtr<AudioParamHandler> m_parameter3;
-  RefPtr<AudioParamHandler> m_parameter4;
+  RefPtr<AudioParamHandler> parameter1_;
+  RefPtr<AudioParamHandler> parameter2_;
+  RefPtr<AudioParamHandler> parameter3_;
+  RefPtr<AudioParamHandler> parameter4_;
 
   // so DSP kernels know when to re-compute coefficients
-  bool m_filterCoefficientsDirty;
+  bool filter_coefficients_dirty_;
 
   // Set to true if any of the filter parameters are sample-accurate.
-  bool m_hasSampleAccurateValues;
+  bool has_sample_accurate_values_;
 };
 
 }  // namespace blink

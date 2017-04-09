@@ -11,22 +11,22 @@ namespace blink {
 
 struct TabSize {
   DISALLOW_NEW();
-  TabSize(float pixels) : m_floatValue(pixels), m_isSpaces(0) {}
+  TabSize(float pixels) : float_value_(pixels), is_spaces_(0) {}
 
-  TabSize(int spaces) : m_floatValue(spaces), m_isSpaces(1) {}
+  TabSize(int spaces) : float_value_(spaces), is_spaces_(1) {}
 
-  bool isSpaces() const { return m_isSpaces; }
+  bool IsSpaces() const { return is_spaces_; }
 
-  float getPixelSize(float spaceWidth) const {
-    return m_isSpaces ? m_floatValue * spaceWidth : m_floatValue;
+  float GetPixelSize(float space_width) const {
+    return is_spaces_ ? float_value_ * space_width : float_value_;
   }
 
-  float m_floatValue;
-  unsigned m_isSpaces : 1;
+  float float_value_;
+  unsigned is_spaces_ : 1;
 };
 
 inline bool operator==(const TabSize& a, const TabSize& b) {
-  return (a.m_floatValue == b.m_floatValue) && (a.m_isSpaces == b.m_isSpaces);
+  return (a.float_value_ == b.float_value_) && (a.is_spaces_ == b.is_spaces_);
 }
 
 inline bool operator!=(const TabSize& a, const TabSize& b) {

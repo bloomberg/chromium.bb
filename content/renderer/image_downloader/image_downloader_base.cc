@@ -97,10 +97,10 @@ bool ImageDownloaderBase::FetchImage(const GURL& image_url,
   image_fetchers_.push_back(
       base::MakeUnique<MultiResolutionImageResourceFetcher>(
           image_url, frame, 0,
-          is_favicon ? WebURLRequest::RequestContextFavicon
-                     : WebURLRequest::RequestContextImage,
-          bypass_cache ? WebCachePolicy::BypassingCache
-                       : WebCachePolicy::UseProtocolCachePolicy,
+          is_favicon ? WebURLRequest::kRequestContextFavicon
+                     : WebURLRequest::kRequestContextImage,
+          bypass_cache ? WebCachePolicy::kBypassingCache
+                       : WebCachePolicy::kUseProtocolCachePolicy,
           base::Bind(&ImageDownloaderBase::DidFetchImage,
                      base::Unretained(this), callback)));
   return true;

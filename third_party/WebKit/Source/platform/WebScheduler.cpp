@@ -18,27 +18,28 @@ class IdleTaskRunner : public WebThread::IdleTask {
 
  public:
   explicit IdleTaskRunner(std::unique_ptr<WebScheduler::IdleTask> task)
-      : m_task(std::move(task)) {}
+      : task_(std::move(task)) {}
 
   ~IdleTaskRunner() override {}
 
   // WebThread::IdleTask implementation.
-  void run(double deadlineSeconds) override { (*m_task)(deadlineSeconds); }
+  void Run(double deadline_seconds) override { (*task_)(deadline_seconds); }
 
  private:
-  std::unique_ptr<WebScheduler::IdleTask> m_task;
+  std::unique_ptr<WebScheduler::IdleTask> task_;
 };
 
 }  // namespace
 
-void WebScheduler::postIdleTask(const WebTraceLocation& location,
-                                std::unique_ptr<IdleTask> idleTask) {
-  postIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
+void WebScheduler::PostIdleTask(const WebTraceLocation& location,
+                                std::unique_ptr<IdleTask> idle_task) {
+  PostIdleTask(location, new IdleTaskRunner(std::move(idle_task)));
 }
 
-void WebScheduler::postNonNestableIdleTask(const WebTraceLocation& location,
-                                           std::unique_ptr<IdleTask> idleTask) {
-  postNonNestableIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
+void WebScheduler::PostNonNestableIdleTask(
+    const WebTraceLocation& location,
+    std::unique_ptr<IdleTask> idle_task) {
+  PostNonNestableIdleTask(location, new IdleTaskRunner(std::move(idle_task)));
 }
 
 }  // namespace blink

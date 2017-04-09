@@ -17,21 +17,21 @@ namespace blink {
 class EditingStyleTest : public EditingTestBase {};
 
 TEST_F(EditingStyleTest, mergeInlineStyleOfElement) {
-  setBodyContent(
+  SetBodyContent(
       "<span id=s1 style='--A:var(---B)'>1</span>"
       "<span id=s2 style='float:var(--C)'>2</span>");
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
-  EditingStyle* editingStyle =
-      EditingStyle::create(toHTMLElement(document().getElementById("s2")));
-  editingStyle->mergeInlineStyleOfElement(
-      toHTMLElement(document().getElementById("s1")),
-      EditingStyle::OverrideValues);
+  EditingStyle* editing_style =
+      EditingStyle::Create(ToHTMLElement(GetDocument().GetElementById("s2")));
+  editing_style->MergeInlineStyleOfElement(
+      ToHTMLElement(GetDocument().GetElementById("s1")),
+      EditingStyle::kOverrideValues);
 
-  EXPECT_FALSE(editingStyle->style()->hasProperty(CSSPropertyFloat))
+  EXPECT_FALSE(editing_style->Style()->HasProperty(CSSPropertyFloat))
       << "Don't merge a property with unresolved value";
   EXPECT_EQ("var(---B)",
-            editingStyle->style()->getPropertyValue(AtomicString("--A")))
+            editing_style->Style()->GetPropertyValue(AtomicString("--A")))
       << "Keep unresolved value on merging style";
 }
 

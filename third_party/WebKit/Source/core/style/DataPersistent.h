@@ -29,58 +29,56 @@ class DataPersistent {
   USING_FAST_MALLOC(DataPersistent);
 
  public:
-  DataPersistent() : m_ownCopy(false) {}
+  DataPersistent() : own_copy_(false) {}
 
-  DataPersistent(const DataPersistent& other) : m_ownCopy(false) {
-    if (other.m_data)
-      m_data = WTF::wrapUnique(new Persistent<T>(other.m_data->get()));
+  DataPersistent(const DataPersistent& other) : own_copy_(false) {
+    if (other.data_)
+      data_ = WTF::WrapUnique(new Persistent<T>(other.data_->Get()));
 
     // Invalidated, subsequent mutations will happen on a new copy.
     //
     // (Clearing |m_ownCopy| will not be observable over T, hence
     // the const_cast<> is considered acceptable here.)
-    const_cast<DataPersistent&>(other).m_ownCopy = false;
+    const_cast<DataPersistent&>(other).own_copy_ = false;
   }
 
-  const T* get() const { return m_data ? m_data->get() : nullptr; }
+  const T* Get() const { return data_ ? data_->Get() : nullptr; }
 
-  const T& operator*() const { return m_data ? *get() : nullptr; }
-  const T* operator->() const { return get(); }
+  const T& operator*() const { return data_ ? *Get() : nullptr; }
+  const T* operator->() const { return Get(); }
 
-  T* access() {
-    if (m_data && !m_ownCopy) {
-      *m_data = (*m_data)->copy();
-      m_ownCopy = true;
+  T* Access() {
+    if (data_ && !own_copy_) {
+      *data_ = (*data_)->Copy();
+      own_copy_ = true;
     }
-    return m_data ? m_data->get() : nullptr;
+    return data_ ? data_->Get() : nullptr;
   }
 
-  void init() {
-    DCHECK(!m_data);
-    m_data = WTF::wrapUnique(new Persistent<T>(T::create()));
-    m_ownCopy = true;
+  void Init() {
+    DCHECK(!data_);
+    data_ = WTF::WrapUnique(new Persistent<T>(T::Create()));
+    own_copy_ = true;
   }
 
   bool operator==(const DataPersistent<T>& o) const {
-    DCHECK(m_data);
-    DCHECK(o.m_data);
-    return m_data->get() == o.m_data->get() ||
-           *m_data->get() == *o.m_data->get();
+    DCHECK(data_);
+    DCHECK(o.data_);
+    return data_->Get() == o.data_->Get() || *data_->Get() == *o.data_->Get();
   }
 
   bool operator!=(const DataPersistent<T>& o) const {
-    DCHECK(m_data);
-    DCHECK(o.m_data);
-    return m_data->get() != o.m_data->get() &&
-           *m_data->get() != *o.m_data->get();
+    DCHECK(data_);
+    DCHECK(o.data_);
+    return data_->Get() != o.data_->Get() && *data_->Get() != *o.data_->Get();
   }
 
-  void operator=(std::nullptr_t) { m_data.clear(); }
+  void operator=(std::nullptr_t) { data_.clear(); }
 
  private:
   // Reduce size of DataPersistent<> by delaying creation of Persistent<>.
-  std::unique_ptr<Persistent<T>> m_data;
-  unsigned m_ownCopy : 1;
+  std::unique_ptr<Persistent<T>> data_;
+  unsigned own_copy_ : 1;
 };
 
 }  // namespace blink

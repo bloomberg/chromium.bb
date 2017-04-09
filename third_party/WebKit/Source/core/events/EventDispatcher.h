@@ -48,39 +48,39 @@ class EventDispatchHandlingState
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-enum EventDispatchContinuation { ContinueDispatching, DoneDispatching };
+enum EventDispatchContinuation { kContinueDispatching, kDoneDispatching };
 
 class EventDispatcher {
   STACK_ALLOCATED();
 
  public:
-  static DispatchEventResult dispatchEvent(Node&, EventDispatchMediator*);
-  static void dispatchScopedEvent(Node&, EventDispatchMediator*);
+  static DispatchEventResult DispatchEvent(Node&, EventDispatchMediator*);
+  static void DispatchScopedEvent(Node&, EventDispatchMediator*);
 
-  static void dispatchSimulatedClick(Node&,
-                                     Event* underlyingEvent,
+  static void DispatchSimulatedClick(Node&,
+                                     Event* underlying_event,
                                      SimulatedClickMouseEventOptions,
                                      SimulatedClickCreationScope);
 
-  DispatchEventResult dispatch();
-  Node& node() const { return *m_node; }
-  Event& event() const { return *m_event; }
+  DispatchEventResult Dispatch();
+  Node& GetNode() const { return *node_; }
+  Event& GetEvent() const { return *event_; }
 
  private:
   EventDispatcher(Node&, Event*);
 
-  EventDispatchContinuation dispatchEventPreProcess(
+  EventDispatchContinuation DispatchEventPreProcess(
       EventDispatchHandlingState*&);
-  EventDispatchContinuation dispatchEventAtCapturing();
-  EventDispatchContinuation dispatchEventAtTarget();
-  void dispatchEventAtBubbling();
-  void dispatchEventPostProcess(EventDispatchHandlingState*);
+  EventDispatchContinuation DispatchEventAtCapturing();
+  EventDispatchContinuation DispatchEventAtTarget();
+  void DispatchEventAtBubbling();
+  void DispatchEventPostProcess(EventDispatchHandlingState*);
 
-  Member<Node> m_node;
-  Member<Event> m_event;
-  Member<FrameView> m_view;
+  Member<Node> node_;
+  Member<Event> event_;
+  Member<FrameView> view_;
 #if DCHECK_IS_ON()
-  bool m_eventDispatched = false;
+  bool event_dispatched_ = false;
 #endif
 };
 

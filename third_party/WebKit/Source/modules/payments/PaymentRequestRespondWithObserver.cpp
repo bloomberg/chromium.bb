@@ -20,112 +20,114 @@ namespace {
 
 // Returns the error message to let the developer know about the reason of the
 // unusual failures.
-const String getMessageForResponseError(WebServiceWorkerResponseError error) {
-  String errorMessage =
+const String GetMessageForResponseError(WebServiceWorkerResponseError error) {
+  String error_message =
       "The respondWith() was rejected in PaymentRequestEvent: ";
   switch (error) {
-    case WebServiceWorkerResponseErrorPromiseRejected:
-      errorMessage = errorMessage + "the promise was rejected.";
+    case kWebServiceWorkerResponseErrorPromiseRejected:
+      error_message = error_message + "the promise was rejected.";
       break;
-    case WebServiceWorkerResponseErrorDefaultPrevented:
-      errorMessage =
-          errorMessage +
+    case kWebServiceWorkerResponseErrorDefaultPrevented:
+      error_message =
+          error_message +
           "preventDefault() was called without calling respondWith().";
       break;
-    case WebServiceWorkerResponseErrorNoV8Instance:
-      errorMessage = errorMessage +
-                     "an object that was not a PaymentResponse was passed to "
-                     "respondWith().";
+    case kWebServiceWorkerResponseErrorNoV8Instance:
+      error_message = error_message +
+                      "an object that was not a PaymentResponse was passed to "
+                      "respondWith().";
       break;
-    case WebServiceWorkerResponseErrorResponseTypeError:
-      errorMessage = errorMessage +
-                     "the promise was resolved with an error response object.";
+    case kWebServiceWorkerResponseErrorResponseTypeError:
+      error_message = error_message +
+                      "the promise was resolved with an error response object.";
       break;
-    case WebServiceWorkerResponseErrorUnknown:
-      errorMessage = errorMessage + "an unexpected error occurred.";
+    case kWebServiceWorkerResponseErrorUnknown:
+      error_message = error_message + "an unexpected error occurred.";
       break;
-    case WebServiceWorkerResponseErrorResponseTypeOpaque:
-    case WebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault:
-    case WebServiceWorkerResponseErrorBodyUsed:
-    case WebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest:
-    case WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
-    case WebServiceWorkerResponseErrorBodyLocked:
-    case WebServiceWorkerResponseErrorNoForeignFetchResponse:
-    case WebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin:
-    case WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin:
-    case WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest:
+    case kWebServiceWorkerResponseErrorResponseTypeOpaque:
+    case kWebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault:
+    case kWebServiceWorkerResponseErrorBodyUsed:
+    case kWebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest:
+    case kWebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
+    case kWebServiceWorkerResponseErrorBodyLocked:
+    case kWebServiceWorkerResponseErrorNoForeignFetchResponse:
+    case kWebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin:
+    case kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin:
+    case kWebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest:
       NOTREACHED();
-      errorMessage = errorMessage + "an unexpected error occurred.";
+      error_message = error_message + "an unexpected error occurred.";
       break;
   }
-  return errorMessage;
+  return error_message;
 }
 
 }  // namespace
 
 PaymentRequestRespondWithObserver::~PaymentRequestRespondWithObserver() {}
 
-PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::create(
+PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::Create(
     ExecutionContext* context,
-    int eventID,
+    int event_id,
     WaitUntilObserver* observer) {
-  return new PaymentRequestRespondWithObserver(context, eventID, observer);
+  return new PaymentRequestRespondWithObserver(context, event_id, observer);
 }
 
-void PaymentRequestRespondWithObserver::onResponseRejected(
+void PaymentRequestRespondWithObserver::OnResponseRejected(
     WebServiceWorkerResponseError error) {
-  DCHECK(getExecutionContext());
-  getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
-      JSMessageSource, WarningMessageLevel, getMessageForResponseError(error)));
+  DCHECK(GetExecutionContext());
+  GetExecutionContext()->AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                             GetMessageForResponseError(error)));
 
-  WebPaymentAppResponse webData;
-  ServiceWorkerGlobalScopeClient::from(getExecutionContext())
-      ->respondToPaymentRequestEvent(m_eventID, webData, m_eventDispatchTime);
+  WebPaymentAppResponse web_data;
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(event_id_, web_data, event_dispatch_time_);
 }
 
-void PaymentRequestRespondWithObserver::onResponseFulfilled(
+void PaymentRequestRespondWithObserver::OnResponseFulfilled(
     const ScriptValue& value) {
-  DCHECK(getExecutionContext());
-  ExceptionState exceptionState(value.isolate(), ExceptionState::UnknownContext,
-                                "PaymentRequestEvent", "respondWith");
-  PaymentAppResponse response = ScriptValue::to<PaymentAppResponse>(
-      toIsolate(getExecutionContext()), value, exceptionState);
-  if (exceptionState.hadException()) {
-    exceptionState.clearException();
-    onResponseRejected(WebServiceWorkerResponseErrorNoV8Instance);
+  DCHECK(GetExecutionContext());
+  ExceptionState exception_state(value.GetIsolate(),
+                                 ExceptionState::kUnknownContext,
+                                 "PaymentRequestEvent", "respondWith");
+  PaymentAppResponse response = ScriptValue::To<PaymentAppResponse>(
+      ToIsolate(GetExecutionContext()), value, exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    OnResponseRejected(kWebServiceWorkerResponseErrorNoV8Instance);
     return;
   }
 
-  WebPaymentAppResponse webData;
-  webData.methodName = response.methodName();
+  WebPaymentAppResponse web_data;
+  web_data.method_name = response.methodName();
 
-  v8::Local<v8::String> detailsValue;
-  if (!v8::JSON::Stringify(response.details().context(),
-                           response.details().v8Value().As<v8::Object>())
-           .ToLocal(&detailsValue)) {
-    onResponseRejected(WebServiceWorkerResponseErrorUnknown);
+  v8::Local<v8::String> details_value;
+  if (!v8::JSON::Stringify(response.details().GetContext(),
+                           response.details().V8Value().As<v8::Object>())
+           .ToLocal(&details_value)) {
+    OnResponseRejected(kWebServiceWorkerResponseErrorUnknown);
     return;
   }
-  webData.stringifiedDetails = toCoreString(detailsValue);
-  ServiceWorkerGlobalScopeClient::from(getExecutionContext())
-      ->respondToPaymentRequestEvent(m_eventID, webData, m_eventDispatchTime);
+  web_data.stringified_details = ToCoreString(details_value);
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(event_id_, web_data, event_dispatch_time_);
 }
 
-void PaymentRequestRespondWithObserver::onNoResponse() {
-  DCHECK(getExecutionContext());
-  ServiceWorkerGlobalScopeClient::from(getExecutionContext())
-      ->respondToPaymentRequestEvent(m_eventID, WebPaymentAppResponse(),
-                                     m_eventDispatchTime);
+void PaymentRequestRespondWithObserver::OnNoResponse() {
+  DCHECK(GetExecutionContext());
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(event_id_, WebPaymentAppResponse(),
+                                     event_dispatch_time_);
 }
 
 PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(
     ExecutionContext* context,
-    int eventID,
+    int event_id,
     WaitUntilObserver* observer)
-    : RespondWithObserver(context, eventID, observer) {}
+    : RespondWithObserver(context, event_id, observer) {}
 
 DEFINE_TRACE(PaymentRequestRespondWithObserver) {
-  RespondWithObserver::trace(visitor);
+  RespondWithObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -20,19 +20,19 @@ class MediaKeySystemAccess final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  MediaKeySystemAccess(const String& keySystem,
+  MediaKeySystemAccess(const String& key_system,
                        std::unique_ptr<WebContentDecryptionModuleAccess>);
   virtual ~MediaKeySystemAccess();
 
-  const String& keySystem() const { return m_keySystem; }
+  const String& keySystem() const { return key_system_; }
   void getConfiguration(MediaKeySystemConfiguration& result);
   ScriptPromise createMediaKeys(ScriptState*);
 
   DECLARE_TRACE();
 
  private:
-  const String m_keySystem;
-  std::unique_ptr<WebContentDecryptionModuleAccess> m_access;
+  const String key_system_;
+  std::unique_ptr<WebContentDecryptionModuleAccess> access_;
 };
 
 }  // namespace blink

@@ -42,7 +42,7 @@ namespace blink {
 
 namespace TouchAdjustment {
 
-const float zeroTolerance = 1e-6f;
+const float kZeroTolerance = 1e-6f;
 
 // Class for remembering absolute quads of a target node and what node they
 // represent.
@@ -51,16 +51,16 @@ class SubtargetGeometry {
 
  public:
   SubtargetGeometry(Node* node, const FloatQuad& quad)
-      : m_node(node), m_quad(quad) {}
-  DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
+      : node_(node), quad_(quad) {}
+  DEFINE_INLINE_TRACE() { visitor->Trace(node_); }
 
-  Node* node() const { return m_node; }
-  FloatQuad quad() const { return m_quad; }
-  IntRect boundingBox() const { return m_quad.enclosingBoundingBox(); }
+  Node* GetNode() const { return node_; }
+  FloatQuad Quad() const { return quad_; }
+  IntRect BoundingBox() const { return quad_.EnclosingBoundingBox(); }
 
  private:
-  Member<Node> m_node;
-  FloatQuad m_quad;
+  Member<Node> node_;
+  FloatQuad quad_;
 };
 
 }  // namespace TouchAdjustment
@@ -82,71 +82,71 @@ typedef float (*DistanceFunction)(const IntPoint&,
                                   const SubtargetGeometry&);
 
 // Takes non-const Node* because isContentEditable is a non-const function.
-bool nodeRespondsToTapGesture(Node* node) {
-  if (node->willRespondToMouseClickEvents() ||
-      node->willRespondToMouseMoveEvents())
+bool NodeRespondsToTapGesture(Node* node) {
+  if (node->WillRespondToMouseClickEvents() ||
+      node->WillRespondToMouseMoveEvents())
     return true;
-  if (node->isElementNode()) {
-    Element* element = toElement(node);
+  if (node->IsElementNode()) {
+    Element* element = ToElement(node);
     // Tapping on a text field or other focusable item should trigger
     // adjustment, except that iframe elements are hard-coded to support focus
     // but the effect is often invisible so they should be excluded.
-    if (element->isMouseFocusable() && !isHTMLIFrameElement(element))
+    if (element->IsMouseFocusable() && !isHTMLIFrameElement(element))
       return true;
     // Accept nodes that has a CSS effect when touched.
-    if (element->childrenOrSiblingsAffectedByActive() ||
-        element->childrenOrSiblingsAffectedByHover())
+    if (element->ChildrenOrSiblingsAffectedByActive() ||
+        element->ChildrenOrSiblingsAffectedByHover())
       return true;
   }
-  if (const ComputedStyle* computedStyle = node->computedStyle()) {
-    if (computedStyle->affectedByActive() || computedStyle->affectedByHover())
+  if (const ComputedStyle* computed_style = node->GetComputedStyle()) {
+    if (computed_style->AffectedByActive() || computed_style->AffectedByHover())
       return true;
   }
   return false;
 }
 
-bool nodeIsZoomTarget(Node* node) {
-  if (node->isTextNode() || node->isShadowRoot())
+bool NodeIsZoomTarget(Node* node) {
+  if (node->IsTextNode() || node->IsShadowRoot())
     return false;
 
-  ASSERT(node->layoutObject());
-  return node->layoutObject()->isBox();
+  ASSERT(node->GetLayoutObject());
+  return node->GetLayoutObject()->IsBox();
 }
 
-bool providesContextMenuItems(Node* node) {
+bool ProvidesContextMenuItems(Node* node) {
   // This function tries to match the nodes that receive special context-menu
   // items in ContextMenuController::populate(), and should be kept uptodate
   // with those.
-  ASSERT(node->layoutObject() || node->isShadowRoot());
-  if (!node->layoutObject())
+  ASSERT(node->GetLayoutObject() || node->IsShadowRoot());
+  if (!node->GetLayoutObject())
     return false;
-  node->document().updateStyleAndLayoutTree();
-  if (hasEditableStyle(*node))
+  node->GetDocument().UpdateStyleAndLayoutTree();
+  if (HasEditableStyle(*node))
     return true;
-  if (node->isLink())
+  if (node->IsLink())
     return true;
-  if (node->layoutObject()->isImage())
+  if (node->GetLayoutObject()->IsImage())
     return true;
-  if (node->layoutObject()->isMedia())
+  if (node->GetLayoutObject()->IsMedia())
     return true;
-  if (node->layoutObject()->canBeSelectionLeaf()) {
+  if (node->GetLayoutObject()->CanBeSelectionLeaf()) {
     // If the context menu gesture will trigger a selection all selectable nodes
     // are valid targets.
-    if (node->layoutObject()
-            ->frame()
-            ->editor()
-            .behavior()
-            .shouldSelectOnContextualMenuClick())
+    if (node->GetLayoutObject()
+            ->GetFrame()
+            ->GetEditor()
+            .Behavior()
+            .ShouldSelectOnContextualMenuClick())
       return true;
     // Only the selected part of the layoutObject is a valid target, but this
     // will be corrected in appendContextSubtargetsForNode.
-    if (node->layoutObject()->getSelectionState() != SelectionNone)
+    if (node->GetLayoutObject()->GetSelectionState() != SelectionNone)
       return true;
   }
   return false;
 }
 
-static inline void appendQuadsToSubtargetList(
+static inline void AppendQuadsToSubtargetList(
     Vector<FloatQuad>& quads,
     Node* node,
     SubtargetGeometryList& subtargets) {
@@ -156,93 +156,93 @@ static inline void appendQuadsToSubtargetList(
     subtargets.push_back(SubtargetGeometry(node, *it));
 }
 
-static inline void appendBasicSubtargetsForNode(
+static inline void AppendBasicSubtargetsForNode(
     Node* node,
     SubtargetGeometryList& subtargets) {
   // Node guaranteed to have layoutObject due to check in node filter.
-  ASSERT(node->layoutObject());
+  ASSERT(node->GetLayoutObject());
 
   Vector<FloatQuad> quads;
-  node->layoutObject()->absoluteQuads(quads);
+  node->GetLayoutObject()->AbsoluteQuads(quads);
 
-  appendQuadsToSubtargetList(quads, node, subtargets);
+  AppendQuadsToSubtargetList(quads, node, subtargets);
 }
 
-static inline void appendContextSubtargetsForNode(
+static inline void AppendContextSubtargetsForNode(
     Node* node,
     SubtargetGeometryList& subtargets) {
   // This is a variant of appendBasicSubtargetsForNode that adds special
   // subtargets for selected or auto-selectable parts of text nodes.
-  ASSERT(node->layoutObject());
+  ASSERT(node->GetLayoutObject());
 
-  if (!node->isTextNode())
-    return appendBasicSubtargetsForNode(node, subtargets);
+  if (!node->IsTextNode())
+    return AppendBasicSubtargetsForNode(node, subtargets);
 
-  Text* textNode = toText(node);
-  LayoutText* textLayoutObject = textNode->layoutObject();
+  Text* text_node = ToText(node);
+  LayoutText* text_layout_object = text_node->GetLayoutObject();
 
-  if (textLayoutObject->frame()
-          ->editor()
-          .behavior()
-          .shouldSelectOnContextualMenuClick()) {
+  if (text_layout_object->GetFrame()
+          ->GetEditor()
+          .Behavior()
+          .ShouldSelectOnContextualMenuClick()) {
     // Make subtargets out of every word.
-    String textValue = textNode->data();
-    TextBreakIterator* wordIterator =
-        wordBreakIterator(textValue, 0, textValue.length());
-    int lastOffset = wordIterator->first();
-    if (lastOffset == -1)
+    String text_value = text_node->data();
+    TextBreakIterator* word_iterator =
+        WordBreakIterator(text_value, 0, text_value.length());
+    int last_offset = word_iterator->first();
+    if (last_offset == -1)
       return;
     int offset;
-    while ((offset = wordIterator->next()) != -1) {
-      if (isWordTextBreak(wordIterator)) {
+    while ((offset = word_iterator->next()) != -1) {
+      if (IsWordTextBreak(word_iterator)) {
         Vector<FloatQuad> quads;
-        textLayoutObject->absoluteQuadsForRange(quads, lastOffset, offset);
-        appendQuadsToSubtargetList(quads, textNode, subtargets);
+        text_layout_object->AbsoluteQuadsForRange(quads, last_offset, offset);
+        AppendQuadsToSubtargetList(quads, text_node, subtargets);
       }
-      lastOffset = offset;
+      last_offset = offset;
     }
   } else {
-    if (textLayoutObject->getSelectionState() == SelectionNone)
-      return appendBasicSubtargetsForNode(node, subtargets);
+    if (text_layout_object->GetSelectionState() == SelectionNone)
+      return AppendBasicSubtargetsForNode(node, subtargets);
     // If selected, make subtargets out of only the selected part of the text.
-    int startPos, endPos;
-    switch (textLayoutObject->getSelectionState()) {
+    int start_pos, end_pos;
+    switch (text_layout_object->GetSelectionState()) {
       case SelectionInside:
-        startPos = 0;
-        endPos = textLayoutObject->textLength();
+        start_pos = 0;
+        end_pos = text_layout_object->TextLength();
         break;
       case SelectionStart:
-        textLayoutObject->selectionStartEnd(startPos, endPos);
-        endPos = textLayoutObject->textLength();
+        text_layout_object->SelectionStartEnd(start_pos, end_pos);
+        end_pos = text_layout_object->TextLength();
         break;
       case SelectionEnd:
-        textLayoutObject->selectionStartEnd(startPos, endPos);
-        startPos = 0;
+        text_layout_object->SelectionStartEnd(start_pos, end_pos);
+        start_pos = 0;
         break;
       case SelectionBoth:
-        textLayoutObject->selectionStartEnd(startPos, endPos);
+        text_layout_object->SelectionStartEnd(start_pos, end_pos);
         break;
       default:
         ASSERT_NOT_REACHED();
         return;
     }
     Vector<FloatQuad> quads;
-    textLayoutObject->absoluteQuadsForRange(quads, startPos, endPos);
-    appendQuadsToSubtargetList(quads, textNode, subtargets);
+    text_layout_object->AbsoluteQuadsForRange(quads, start_pos, end_pos);
+    AppendQuadsToSubtargetList(quads, text_node, subtargets);
   }
 }
 
-static inline void appendZoomableSubtargets(Node* node,
+static inline void AppendZoomableSubtargets(Node* node,
                                             SubtargetGeometryList& subtargets) {
-  LayoutBox* layoutObject = toLayoutBox(node->layoutObject());
-  ASSERT(layoutObject);
+  LayoutBox* layout_object = ToLayoutBox(node->GetLayoutObject());
+  ASSERT(layout_object);
 
   Vector<FloatQuad> quads;
-  FloatRect borderBoxRect(layoutObject->borderBoxRect());
-  FloatRect contentBoxRect(layoutObject->contentBoxRect());
-  quads.push_back(layoutObject->localToAbsoluteQuad(borderBoxRect));
-  if (borderBoxRect != contentBoxRect)
-    quads.push_back(layoutObject->localToAbsoluteQuad(contentBoxRect));
+  FloatRect border_box_rect(layout_object->BorderBoxRect());
+  FloatRect content_box_rect(layout_object->ContentBoxRect());
+  quads.push_back(layout_object->LocalToAbsoluteQuad(border_box_rect));
+  if (border_box_rect != content_box_rect)
+    quads.push_back(layout_object->LocalToAbsoluteQuad(content_box_rect));
   // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for
   // floats.
 
@@ -252,61 +252,61 @@ static inline void appendZoomableSubtargets(Node* node,
     subtargets.push_back(SubtargetGeometry(node, *it));
 }
 
-static inline Node* parentShadowHostOrOwner(const Node* node) {
-  if (Node* ancestor = node->parentOrShadowHostNode())
+static inline Node* ParentShadowHostOrOwner(const Node* node) {
+  if (Node* ancestor = node->ParentOrShadowHostNode())
     return ancestor;
-  if (node->isDocumentNode())
-    return toDocument(node)->localOwner();
+  if (node->IsDocumentNode())
+    return ToDocument(node)->LocalOwner();
   return nullptr;
 }
 
 // Compiles a list of subtargets of all the relevant target nodes.
-void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
+void CompileSubtargetList(const HeapVector<Member<Node>>& intersected_nodes,
                           SubtargetGeometryList& subtargets,
-                          NodeFilter nodeFilter,
-                          AppendSubtargetsForNode appendSubtargetsForNode) {
+                          NodeFilter node_filter,
+                          AppendSubtargetsForNode append_subtargets_for_node) {
   // Find candidates responding to tap gesture events in O(n) time.
-  HeapHashMap<Member<Node>, Member<Node>> responderMap;
-  HeapHashSet<Member<Node>> ancestorsToRespondersSet;
+  HeapHashMap<Member<Node>, Member<Node>> responder_map;
+  HeapHashSet<Member<Node>> ancestors_to_responders_set;
   HeapVector<Member<Node>> candidates;
-  HeapHashSet<Member<Node>> editableAncestors;
+  HeapHashSet<Member<Node>> editable_ancestors;
 
   // A node matching the NodeFilter is called a responder. Candidate nodes must
   // either be a responder or have an ancestor that is a responder.  This
   // iteration tests all ancestors at most once by caching earlier results.
-  for (unsigned i = 0; i < intersectedNodes.size(); ++i) {
-    Node* node = intersectedNodes[i].get();
-    HeapVector<Member<Node>> visitedNodes;
-    Node* respondingNode = nullptr;
-    for (Node* visitedNode = node; visitedNode;
-         visitedNode = visitedNode->parentOrShadowHostNode()) {
+  for (unsigned i = 0; i < intersected_nodes.size(); ++i) {
+    Node* node = intersected_nodes[i].Get();
+    HeapVector<Member<Node>> visited_nodes;
+    Node* responding_node = nullptr;
+    for (Node* visited_node = node; visited_node;
+         visited_node = visited_node->ParentOrShadowHostNode()) {
       // Check if we already have a result for a common ancestor from another
       // candidate.
-      respondingNode = responderMap.at(visitedNode);
-      if (respondingNode)
+      responding_node = responder_map.at(visited_node);
+      if (responding_node)
         break;
-      visitedNodes.push_back(visitedNode);
+      visited_nodes.push_back(visited_node);
       // Check if the node filter applies, which would mean we have found a
       // responding node.
-      if (nodeFilter(visitedNode)) {
-        respondingNode = visitedNode;
+      if (node_filter(visited_node)) {
+        responding_node = visited_node;
         // Continue the iteration to collect the ancestors of the responder,
         // which we will need later.
-        for (visitedNode = parentShadowHostOrOwner(visitedNode); visitedNode;
-             visitedNode = parentShadowHostOrOwner(visitedNode)) {
-          HeapHashSet<Member<Node>>::AddResult addResult =
-              ancestorsToRespondersSet.insert(visitedNode);
-          if (!addResult.isNewEntry)
+        for (visited_node = ParentShadowHostOrOwner(visited_node); visited_node;
+             visited_node = ParentShadowHostOrOwner(visited_node)) {
+          HeapHashSet<Member<Node>>::AddResult add_result =
+              ancestors_to_responders_set.insert(visited_node);
+          if (!add_result.is_new_entry)
             break;
         }
         break;
       }
     }
     // Insert the detected responder for all the visited nodes.
-    for (unsigned j = 0; j < visitedNodes.size(); j++)
-      responderMap.insert(visitedNodes[j], respondingNode);
+    for (unsigned j = 0; j < visited_nodes.size(); j++)
+      responder_map.insert(visited_nodes[j], responding_node);
 
-    if (respondingNode)
+    if (responding_node)
       candidates.push_back(node);
   }
 
@@ -319,61 +319,62 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
     // preference to the inner-most event-handlers. So that a link is always
     // preferred even when contained in an element that monitors all
     // click-events.
-    Node* respondingNode = responderMap.at(candidate);
-    ASSERT(respondingNode);
-    if (ancestorsToRespondersSet.contains(respondingNode))
+    Node* responding_node = responder_map.at(candidate);
+    ASSERT(responding_node);
+    if (ancestors_to_responders_set.Contains(responding_node))
       continue;
     // Consolidate bounds for editable content.
-    if (editableAncestors.contains(candidate))
+    if (editable_ancestors.Contains(candidate))
       continue;
-    candidate->document().updateStyleAndLayoutTree();
-    if (hasEditableStyle(*candidate)) {
+    candidate->GetDocument().UpdateStyleAndLayoutTree();
+    if (HasEditableStyle(*candidate)) {
       Node* replacement = candidate;
-      Node* parent = candidate->parentOrShadowHostNode();
-      while (parent && hasEditableStyle(*parent)) {
+      Node* parent = candidate->ParentOrShadowHostNode();
+      while (parent && HasEditableStyle(*parent)) {
         replacement = parent;
-        if (editableAncestors.contains(replacement)) {
+        if (editable_ancestors.Contains(replacement)) {
           replacement = nullptr;
           break;
         }
-        editableAncestors.insert(replacement);
-        parent = parent->parentOrShadowHostNode();
+        editable_ancestors.insert(replacement);
+        parent = parent->ParentOrShadowHostNode();
       }
       candidate = replacement;
     }
     if (candidate)
-      appendSubtargetsForNode(candidate, subtargets);
+      append_subtargets_for_node(candidate, subtargets);
   }
 }
 
 // Compiles a list of zoomable subtargets.
-void compileZoomableSubtargets(const HeapVector<Member<Node>>& intersectedNodes,
-                               SubtargetGeometryList& subtargets) {
-  for (unsigned i = 0; i < intersectedNodes.size(); ++i) {
-    Node* candidate = intersectedNodes[i].get();
-    if (nodeIsZoomTarget(candidate))
-      appendZoomableSubtargets(candidate, subtargets);
+void CompileZoomableSubtargets(
+    const HeapVector<Member<Node>>& intersected_nodes,
+    SubtargetGeometryList& subtargets) {
+  for (unsigned i = 0; i < intersected_nodes.size(); ++i) {
+    Node* candidate = intersected_nodes[i].Get();
+    if (NodeIsZoomTarget(candidate))
+      AppendZoomableSubtargets(candidate, subtargets);
   }
 }
 
 // This returns quotient of the target area and its intersection with the touch
 // area.  This will prioritize largest intersection and smallest area, while
 // balancing the two against each other.
-float zoomableIntersectionQuotient(const IntPoint& touchHotspot,
-                                   const IntRect& touchArea,
+float ZoomableIntersectionQuotient(const IntPoint& touch_hotspot,
+                                   const IntRect& touch_area,
                                    const SubtargetGeometry& subtarget) {
-  IntRect rect = subtarget.node()->document().view()->contentsToRootFrame(
-      subtarget.boundingBox());
+  IntRect rect = subtarget.GetNode()->GetDocument().View()->ContentsToRootFrame(
+      subtarget.BoundingBox());
 
   // Check the rectangle is meaningful zoom target. It should at least contain
   // the hotspot.
-  if (!rect.contains(touchHotspot))
+  if (!rect.Contains(touch_hotspot))
     return std::numeric_limits<float>::infinity();
   IntRect intersection = rect;
-  intersection.intersect(touchArea);
+  intersection.Intersect(touch_area);
 
   // Return the quotient of the intersection.
-  return rect.size().area() / (float)intersection.size().area();
+  return rect.size().Area() / (float)intersection.size().Area();
 }
 
 // Uses a hybrid of distance to adjust and intersect ratio, normalizing each
@@ -383,65 +384,65 @@ float zoomableIntersectionQuotient(const IntPoint& touchHotspot,
 // cases can lead to a bias towards shorter links. Conversely, percentage of
 // overlap can provide strong confidence in tapping on a small target, where the
 // overlap is often quite high, and works well for tightly packed controls.
-float hybridDistanceFunction(const IntPoint& touchHotspot,
-                             const IntRect& touchRect,
+float HybridDistanceFunction(const IntPoint& touch_hotspot,
+                             const IntRect& touch_rect,
                              const SubtargetGeometry& subtarget) {
-  IntRect rect = subtarget.node()->document().view()->contentsToRootFrame(
-      subtarget.boundingBox());
+  IntRect rect = subtarget.GetNode()->GetDocument().View()->ContentsToRootFrame(
+      subtarget.BoundingBox());
 
-  float radiusSquared = 0.25f * (touchRect.size().diagonalLengthSquared());
-  float distanceToAdjustScore =
-      rect.distanceSquaredToPoint(touchHotspot) / radiusSquared;
+  float radius_squared = 0.25f * (touch_rect.size().DiagonalLengthSquared());
+  float distance_to_adjust_score =
+      rect.DistanceSquaredToPoint(touch_hotspot) / radius_squared;
 
-  int maxOverlapWidth = std::min(touchRect.width(), rect.width());
-  int maxOverlapHeight = std::min(touchRect.height(), rect.height());
-  float maxOverlapArea = std::max(maxOverlapWidth * maxOverlapHeight, 1);
-  rect.intersect(touchRect);
-  float intersectArea = rect.size().area();
-  float intersectionScore = 1 - intersectArea / maxOverlapArea;
+  int max_overlap_width = std::min(touch_rect.Width(), rect.Width());
+  int max_overlap_height = std::min(touch_rect.Height(), rect.Height());
+  float max_overlap_area = std::max(max_overlap_width * max_overlap_height, 1);
+  rect.Intersect(touch_rect);
+  float intersect_area = rect.size().Area();
+  float intersection_score = 1 - intersect_area / max_overlap_area;
 
-  float hybridScore = intersectionScore + distanceToAdjustScore;
+  float hybrid_score = intersection_score + distance_to_adjust_score;
 
-  return hybridScore;
+  return hybrid_score;
 }
 
-FloatPoint contentsToRootFrame(FrameView* view, FloatPoint pt) {
-  int x = static_cast<int>(pt.x() + 0.5f);
-  int y = static_cast<int>(pt.y() + 0.5f);
-  IntPoint adjusted = view->contentsToRootFrame(IntPoint(x, y));
-  return FloatPoint(adjusted.x(), adjusted.y());
+FloatPoint ContentsToRootFrame(FrameView* view, FloatPoint pt) {
+  int x = static_cast<int>(pt.X() + 0.5f);
+  int y = static_cast<int>(pt.Y() + 0.5f);
+  IntPoint adjusted = view->ContentsToRootFrame(IntPoint(x, y));
+  return FloatPoint(adjusted.X(), adjusted.Y());
 }
 
 // Adjusts 'point' to the nearest point inside rect, and leaves it unchanged if
 // already inside.
-void adjustPointToRect(FloatPoint& point, const FloatRect& rect) {
-  if (point.x() < rect.x())
-    point.setX(rect.x());
-  else if (point.x() > rect.maxX())
-    point.setX(rect.maxX());
+void AdjustPointToRect(FloatPoint& point, const FloatRect& rect) {
+  if (point.X() < rect.X())
+    point.SetX(rect.X());
+  else if (point.X() > rect.MaxX())
+    point.SetX(rect.MaxX());
 
-  if (point.y() < rect.y())
-    point.setY(rect.y());
-  else if (point.y() > rect.maxY())
-    point.setY(rect.maxY());
+  if (point.Y() < rect.Y())
+    point.SetY(rect.Y());
+  else if (point.Y() > rect.MaxY())
+    point.SetY(rect.MaxY());
 }
 
-bool snapTo(const SubtargetGeometry& geom,
-            const IntPoint& touchPoint,
-            const IntRect& touchArea,
-            IntPoint& adjustedPoint) {
-  FrameView* view = geom.node()->document().view();
-  FloatQuad quad = geom.quad();
+bool SnapTo(const SubtargetGeometry& geom,
+            const IntPoint& touch_point,
+            const IntRect& touch_area,
+            IntPoint& adjusted_point) {
+  FrameView* view = geom.GetNode()->GetDocument().View();
+  FloatQuad quad = geom.Quad();
 
-  if (quad.isRectilinear()) {
-    IntRect bounds = view->contentsToRootFrame(geom.boundingBox());
-    if (bounds.contains(touchPoint)) {
-      adjustedPoint = touchPoint;
+  if (quad.IsRectilinear()) {
+    IntRect bounds = view->ContentsToRootFrame(geom.BoundingBox());
+    if (bounds.Contains(touch_point)) {
+      adjusted_point = touch_point;
       return true;
     }
-    if (bounds.intersects(touchArea)) {
-      bounds.intersect(touchArea);
-      adjustedPoint = bounds.center();
+    if (bounds.Intersects(touch_area)) {
+      bounds.Intersect(touch_area);
+      adjusted_point = bounds.Center();
       return true;
     }
     return false;
@@ -454,118 +455,119 @@ bool snapTo(const SubtargetGeometry& geom,
   // the quad. Corner-cases exist where the quad will intersect but this will
   // fail to adjust the point to somewhere in the intersection.
 
-  FloatPoint p1 = contentsToRootFrame(view, quad.p1());
-  FloatPoint p2 = contentsToRootFrame(view, quad.p2());
-  FloatPoint p3 = contentsToRootFrame(view, quad.p3());
-  FloatPoint p4 = contentsToRootFrame(view, quad.p4());
+  FloatPoint p1 = ContentsToRootFrame(view, quad.P1());
+  FloatPoint p2 = ContentsToRootFrame(view, quad.P2());
+  FloatPoint p3 = ContentsToRootFrame(view, quad.P3());
+  FloatPoint p4 = ContentsToRootFrame(view, quad.P4());
   quad = FloatQuad(p1, p2, p3, p4);
 
-  if (quad.containsPoint(touchPoint)) {
-    adjustedPoint = touchPoint;
+  if (quad.ContainsPoint(touch_point)) {
+    adjusted_point = touch_point;
     return true;
   }
 
   // Pull point towards the center of the element.
-  FloatPoint center = quad.center();
+  FloatPoint center = quad.Center();
 
-  adjustPointToRect(center, touchArea);
-  adjustedPoint = roundedIntPoint(center);
+  AdjustPointToRect(center, touch_area);
+  adjusted_point = RoundedIntPoint(center);
 
-  return quad.containsPoint(adjustedPoint);
+  return quad.ContainsPoint(adjusted_point);
 }
 
 // A generic function for finding the target node with the lowest distance
 // metric. A distance metric here is the result of a distance-like function,
 // that computes how well the touch hits the node.  Distance functions could for
 // instance be distance squared or area of intersection.
-bool findNodeWithLowestDistanceMetric(Node*& targetNode,
-                                      IntPoint& targetPoint,
-                                      IntRect& targetArea,
-                                      const IntPoint& touchHotspot,
-                                      const IntRect& touchArea,
+bool FindNodeWithLowestDistanceMetric(Node*& target_node,
+                                      IntPoint& target_point,
+                                      IntRect& target_area,
+                                      const IntPoint& touch_hotspot,
+                                      const IntRect& touch_area,
                                       SubtargetGeometryList& subtargets,
-                                      DistanceFunction distanceFunction) {
-  targetNode = nullptr;
-  float bestDistanceMetric = std::numeric_limits<float>::infinity();
+                                      DistanceFunction distance_function) {
+  target_node = nullptr;
+  float best_distance_metric = std::numeric_limits<float>::infinity();
   SubtargetGeometryList::const_iterator it = subtargets.begin();
   const SubtargetGeometryList::const_iterator end = subtargets.end();
-  IntPoint adjustedPoint;
+  IntPoint adjusted_point;
 
   for (; it != end; ++it) {
-    Node* node = it->node();
-    float distanceMetric = distanceFunction(touchHotspot, touchArea, *it);
-    if (distanceMetric < bestDistanceMetric) {
-      if (snapTo(*it, touchHotspot, touchArea, adjustedPoint)) {
-        targetPoint = adjustedPoint;
-        targetArea = it->boundingBox();
-        targetNode = node;
-        bestDistanceMetric = distanceMetric;
+    Node* node = it->GetNode();
+    float distance_metric = distance_function(touch_hotspot, touch_area, *it);
+    if (distance_metric < best_distance_metric) {
+      if (SnapTo(*it, touch_hotspot, touch_area, adjusted_point)) {
+        target_point = adjusted_point;
+        target_area = it->BoundingBox();
+        target_node = node;
+        best_distance_metric = distance_metric;
       }
-    } else if (distanceMetric - bestDistanceMetric < zeroTolerance) {
-      if (snapTo(*it, touchHotspot, touchArea, adjustedPoint)) {
-        if (node->isDescendantOf(targetNode)) {
+    } else if (distance_metric - best_distance_metric < kZeroTolerance) {
+      if (SnapTo(*it, touch_hotspot, touch_area, adjusted_point)) {
+        if (node->IsDescendantOf(target_node)) {
           // Try to always return the inner-most element.
-          targetPoint = adjustedPoint;
-          targetNode = node;
-          targetArea = it->boundingBox();
+          target_point = adjusted_point;
+          target_node = node;
+          target_area = it->BoundingBox();
         }
       }
     }
   }
 
   // As for HitTestResult.innerNode, we skip over pseudo elements.
-  if (targetNode && targetNode->isPseudoElement())
-    targetNode = targetNode->parentOrShadowHostNode();
+  if (target_node && target_node->IsPseudoElement())
+    target_node = target_node->ParentOrShadowHostNode();
 
-  if (targetNode)
-    targetArea = targetNode->document().view()->contentsToRootFrame(targetArea);
+  if (target_node)
+    target_area =
+        target_node->GetDocument().View()->ContentsToRootFrame(target_area);
 
-  return (targetNode);
+  return (target_node);
 }
 
 }  // namespace TouchAdjustment
 
-bool findBestClickableCandidate(Node*& targetNode,
-                                IntPoint& targetPoint,
-                                const IntPoint& touchHotspot,
-                                const IntRect& touchArea,
+bool FindBestClickableCandidate(Node*& target_node,
+                                IntPoint& target_point,
+                                const IntPoint& touch_hotspot,
+                                const IntRect& touch_area,
                                 const HeapVector<Member<Node>>& nodes) {
-  IntRect targetArea;
+  IntRect target_area;
   TouchAdjustment::SubtargetGeometryList subtargets;
-  TouchAdjustment::compileSubtargetList(
-      nodes, subtargets, TouchAdjustment::nodeRespondsToTapGesture,
-      TouchAdjustment::appendBasicSubtargetsForNode);
-  return TouchAdjustment::findNodeWithLowestDistanceMetric(
-      targetNode, targetPoint, targetArea, touchHotspot, touchArea, subtargets,
-      TouchAdjustment::hybridDistanceFunction);
+  TouchAdjustment::CompileSubtargetList(
+      nodes, subtargets, TouchAdjustment::NodeRespondsToTapGesture,
+      TouchAdjustment::AppendBasicSubtargetsForNode);
+  return TouchAdjustment::FindNodeWithLowestDistanceMetric(
+      target_node, target_point, target_area, touch_hotspot, touch_area,
+      subtargets, TouchAdjustment::HybridDistanceFunction);
 }
 
-bool findBestContextMenuCandidate(Node*& targetNode,
-                                  IntPoint& targetPoint,
-                                  const IntPoint& touchHotspot,
-                                  const IntRect& touchArea,
+bool FindBestContextMenuCandidate(Node*& target_node,
+                                  IntPoint& target_point,
+                                  const IntPoint& touch_hotspot,
+                                  const IntRect& touch_area,
                                   const HeapVector<Member<Node>>& nodes) {
-  IntRect targetArea;
+  IntRect target_area;
   TouchAdjustment::SubtargetGeometryList subtargets;
-  TouchAdjustment::compileSubtargetList(
-      nodes, subtargets, TouchAdjustment::providesContextMenuItems,
-      TouchAdjustment::appendContextSubtargetsForNode);
-  return TouchAdjustment::findNodeWithLowestDistanceMetric(
-      targetNode, targetPoint, targetArea, touchHotspot, touchArea, subtargets,
-      TouchAdjustment::hybridDistanceFunction);
+  TouchAdjustment::CompileSubtargetList(
+      nodes, subtargets, TouchAdjustment::ProvidesContextMenuItems,
+      TouchAdjustment::AppendContextSubtargetsForNode);
+  return TouchAdjustment::FindNodeWithLowestDistanceMetric(
+      target_node, target_point, target_area, touch_hotspot, touch_area,
+      subtargets, TouchAdjustment::HybridDistanceFunction);
 }
 
-bool findBestZoomableArea(Node*& targetNode,
-                          IntRect& targetArea,
-                          const IntPoint& touchHotspot,
-                          const IntRect& touchArea,
+bool FindBestZoomableArea(Node*& target_node,
+                          IntRect& target_area,
+                          const IntPoint& touch_hotspot,
+                          const IntRect& touch_area,
                           const HeapVector<Member<Node>>& nodes) {
-  IntPoint targetPoint;
+  IntPoint target_point;
   TouchAdjustment::SubtargetGeometryList subtargets;
-  TouchAdjustment::compileZoomableSubtargets(nodes, subtargets);
-  return TouchAdjustment::findNodeWithLowestDistanceMetric(
-      targetNode, targetPoint, targetArea, touchHotspot, touchArea, subtargets,
-      TouchAdjustment::zoomableIntersectionQuotient);
+  TouchAdjustment::CompileZoomableSubtargets(nodes, subtargets);
+  return TouchAdjustment::FindNodeWithLowestDistanceMetric(
+      target_node, target_point, target_area, touch_hotspot, touch_area,
+      subtargets, TouchAdjustment::ZoomableIntersectionQuotient);
 }
 
 }  // namespace blink

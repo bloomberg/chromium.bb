@@ -17,294 +17,300 @@
 
 namespace blink {
 
-BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
-                                     PassRefPtr<BlobDataHandle> blobDataHandle,
-                                     ThreadableLoader* loader)
-    : ContextLifecycleObserver(executionContext),
-      m_blobDataHandle(std::move(blobDataHandle)),
-      m_loader(loader) {
-  if (!m_blobDataHandle) {
+BlobBytesConsumer::BlobBytesConsumer(
+    ExecutionContext* execution_context,
+    PassRefPtr<BlobDataHandle> blob_data_handle,
+    ThreadableLoader* loader)
+    : ContextLifecycleObserver(execution_context),
+      blob_data_handle_(std::move(blob_data_handle)),
+      loader_(loader) {
+  if (!blob_data_handle_) {
     // Note that |m_loader| is non-null only in tests.
-    if (m_loader) {
-      m_loader->cancel();
-      m_loader = nullptr;
+    if (loader_) {
+      loader_->Cancel();
+      loader_ = nullptr;
     }
-    m_state = PublicState::Closed;
+    state_ = PublicState::kClosed;
   }
 }
 
-BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
-                                     PassRefPtr<BlobDataHandle> blobDataHandle)
-    : BlobBytesConsumer(executionContext, std::move(blobDataHandle), nullptr) {}
+BlobBytesConsumer::BlobBytesConsumer(
+    ExecutionContext* execution_context,
+    PassRefPtr<BlobDataHandle> blob_data_handle)
+    : BlobBytesConsumer(execution_context,
+                        std::move(blob_data_handle),
+                        nullptr) {}
 
 BlobBytesConsumer::~BlobBytesConsumer() {
-  if (!m_blobURL.isEmpty())
-    BlobRegistry::revokePublicBlobURL(m_blobURL);
+  if (!blob_url_.IsEmpty())
+    BlobRegistry::RevokePublicBlobURL(blob_url_);
 }
 
-BytesConsumer::Result BlobBytesConsumer::beginRead(const char** buffer,
+BytesConsumer::Result BlobBytesConsumer::BeginRead(const char** buffer,
                                                    size_t* available) {
   *buffer = nullptr;
   *available = 0;
 
-  if (m_state == PublicState::Closed) {
+  if (state_ == PublicState::kClosed) {
     // It's possible that |cancel| has been called before the first
     // |beginRead| call. That's why we need to check this condition
     // before checking |isClean()|.
-    return Result::Done;
+    return Result::kDone;
   }
 
-  if (isClean()) {
-    DCHECK(m_blobURL.isEmpty());
-    m_blobURL =
-        BlobURL::createPublicURL(getExecutionContext()->getSecurityOrigin());
-    if (m_blobURL.isEmpty()) {
-      error();
+  if (IsClean()) {
+    DCHECK(blob_url_.IsEmpty());
+    blob_url_ =
+        BlobURL::CreatePublicURL(GetExecutionContext()->GetSecurityOrigin());
+    if (blob_url_.IsEmpty()) {
+      GetError();
     } else {
-      BlobRegistry::registerPublicBlobURL(
-          getExecutionContext()->getSecurityOrigin(), m_blobURL,
-          m_blobDataHandle);
+      BlobRegistry::RegisterPublicBlobURL(
+          GetExecutionContext()->GetSecurityOrigin(), blob_url_,
+          blob_data_handle_);
 
       // m_loader is non-null only in tests.
-      if (!m_loader)
-        m_loader = createLoader();
+      if (!loader_)
+        loader_ = CreateLoader();
 
-      ResourceRequest request(m_blobURL);
-      request.setRequestContext(WebURLRequest::RequestContextInternal);
-      request.setUseStreamOnResponse(true);
+      ResourceRequest request(blob_url_);
+      request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+      request.SetUseStreamOnResponse(true);
       // We intentionally skip
       // 'setExternalRequestStateFromRequestorAddressSpace', as 'blob:'
       // can never be external.
-      m_loader->start(request);
+      loader_->Start(request);
     }
-    m_blobDataHandle = nullptr;
+    blob_data_handle_ = nullptr;
   }
-  DCHECK_NE(m_state, PublicState::Closed);
+  DCHECK_NE(state_, PublicState::kClosed);
 
-  if (m_state == PublicState::Errored)
-    return Result::Error;
+  if (state_ == PublicState::kErrored)
+    return Result::kError;
 
-  if (!m_body) {
+  if (!body_) {
     // The response has not arrived.
-    return Result::ShouldWait;
+    return Result::kShouldWait;
   }
 
-  auto result = m_body->beginRead(buffer, available);
+  auto result = body_->BeginRead(buffer, available);
   switch (result) {
-    case Result::Ok:
-    case Result::ShouldWait:
+    case Result::kOk:
+    case Result::kShouldWait:
       break;
-    case Result::Done:
-      m_hasSeenEndOfData = true;
-      if (m_hasFinishedLoading)
-        close();
-      return m_state == PublicState::Closed ? Result::Done : Result::ShouldWait;
-    case Result::Error:
-      error();
+    case Result::kDone:
+      has_seen_end_of_data_ = true;
+      if (has_finished_loading_)
+        Close();
+      return state_ == PublicState::kClosed ? Result::kDone
+                                            : Result::kShouldWait;
+    case Result::kError:
+      GetError();
       break;
   }
   return result;
 }
 
-BytesConsumer::Result BlobBytesConsumer::endRead(size_t read) {
-  DCHECK(m_body);
-  return m_body->endRead(read);
+BytesConsumer::Result BlobBytesConsumer::EndRead(size_t read) {
+  DCHECK(body_);
+  return body_->EndRead(read);
 }
 
-PassRefPtr<BlobDataHandle> BlobBytesConsumer::drainAsBlobDataHandle(
+PassRefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
     BlobSizePolicy policy) {
-  if (!isClean())
+  if (!IsClean())
     return nullptr;
-  DCHECK(m_blobDataHandle);
-  if (policy == BlobSizePolicy::DisallowBlobWithInvalidSize &&
-      m_blobDataHandle->size() == UINT64_MAX)
+  DCHECK(blob_data_handle_);
+  if (policy == BlobSizePolicy::kDisallowBlobWithInvalidSize &&
+      blob_data_handle_->size() == UINT64_MAX)
     return nullptr;
-  close();
-  return m_blobDataHandle.release();
+  Close();
+  return blob_data_handle_.Release();
 }
 
-PassRefPtr<EncodedFormData> BlobBytesConsumer::drainAsFormData() {
+PassRefPtr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
   RefPtr<BlobDataHandle> handle =
-      drainAsBlobDataHandle(BlobSizePolicy::AllowBlobWithInvalidSize);
+      DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
   if (!handle)
     return nullptr;
-  RefPtr<EncodedFormData> formData = EncodedFormData::create();
-  formData->appendBlob(handle->uuid(), handle);
-  return formData.release();
+  RefPtr<EncodedFormData> form_data = EncodedFormData::Create();
+  form_data->AppendBlob(handle->Uuid(), handle);
+  return form_data.Release();
 }
 
-void BlobBytesConsumer::setClient(BytesConsumer::Client* client) {
-  DCHECK(!m_client);
+void BlobBytesConsumer::SetClient(BytesConsumer::Client* client) {
+  DCHECK(!client_);
   DCHECK(client);
-  m_client = client;
+  client_ = client;
 }
 
-void BlobBytesConsumer::clearClient() {
-  m_client = nullptr;
+void BlobBytesConsumer::ClearClient() {
+  client_ = nullptr;
 }
 
-void BlobBytesConsumer::cancel() {
-  if (m_state == PublicState::Closed || m_state == PublicState::Errored)
+void BlobBytesConsumer::Cancel() {
+  if (state_ == PublicState::kClosed || state_ == PublicState::kErrored)
     return;
-  close();
-  if (m_body) {
-    m_body->cancel();
-    m_body = nullptr;
+  Close();
+  if (body_) {
+    body_->Cancel();
+    body_ = nullptr;
   }
-  if (!m_blobURL.isEmpty()) {
-    BlobRegistry::revokePublicBlobURL(m_blobURL);
-    m_blobURL = KURL();
+  if (!blob_url_.IsEmpty()) {
+    BlobRegistry::RevokePublicBlobURL(blob_url_);
+    blob_url_ = KURL();
   }
-  m_blobDataHandle = nullptr;
+  blob_data_handle_ = nullptr;
 }
 
-BytesConsumer::Error BlobBytesConsumer::getError() const {
-  DCHECK_EQ(PublicState::Errored, m_state);
+BytesConsumer::Error BlobBytesConsumer::GetError() const {
+  DCHECK_EQ(PublicState::kErrored, state_);
   return Error("Failed to load a blob.");
 }
 
-BytesConsumer::PublicState BlobBytesConsumer::getPublicState() const {
-  return m_state;
+BytesConsumer::PublicState BlobBytesConsumer::GetPublicState() const {
+  return state_;
 }
 
-void BlobBytesConsumer::contextDestroyed(ExecutionContext*) {
-  if (m_state != PublicState::ReadableOrWaiting)
+void BlobBytesConsumer::ContextDestroyed(ExecutionContext*) {
+  if (state_ != PublicState::kReadableOrWaiting)
     return;
 
-  BytesConsumer::Client* client = m_client;
-  error();
+  BytesConsumer::Client* client = client_;
+  GetError();
   if (client)
-    client->onStateChange();
+    client->OnStateChange();
 }
 
-void BlobBytesConsumer::onStateChange() {
-  if (m_state != PublicState::ReadableOrWaiting)
+void BlobBytesConsumer::OnStateChange() {
+  if (state_ != PublicState::kReadableOrWaiting)
     return;
-  DCHECK(m_body);
+  DCHECK(body_);
 
-  BytesConsumer::Client* client = m_client;
-  switch (m_body->getPublicState()) {
-    case PublicState::ReadableOrWaiting:
+  BytesConsumer::Client* client = client_;
+  switch (body_->GetPublicState()) {
+    case PublicState::kReadableOrWaiting:
       break;
-    case PublicState::Closed:
-      m_hasSeenEndOfData = true;
-      if (m_hasFinishedLoading)
-        close();
+    case PublicState::kClosed:
+      has_seen_end_of_data_ = true;
+      if (has_finished_loading_)
+        Close();
       break;
-    case PublicState::Errored:
-      error();
+    case PublicState::kErrored:
+      GetError();
       break;
   }
   if (client)
-    client->onStateChange();
+    client->OnStateChange();
 }
 
-void BlobBytesConsumer::didReceiveResponse(
+void BlobBytesConsumer::DidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse&,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(handle);
-  DCHECK(!m_body);
-  DCHECK_EQ(PublicState::ReadableOrWaiting, m_state);
+  DCHECK(!body_);
+  DCHECK_EQ(PublicState::kReadableOrWaiting, state_);
 
-  m_body = new BytesConsumerForDataConsumerHandle(getExecutionContext(),
-                                                  std::move(handle));
-  m_body->setClient(this);
+  body_ = new BytesConsumerForDataConsumerHandle(GetExecutionContext(),
+                                                 std::move(handle));
+  body_->SetClient(this);
 
-  if (isClean()) {
+  if (IsClean()) {
     // This function is called synchronously in ThreadableLoader::start.
     return;
   }
-  onStateChange();
+  OnStateChange();
 }
 
-void BlobBytesConsumer::didFinishLoading(unsigned long identifier,
-                                         double finishTime) {
-  DCHECK_EQ(PublicState::ReadableOrWaiting, m_state);
-  m_hasFinishedLoading = true;
-  m_loader = nullptr;
-  if (!m_hasSeenEndOfData)
+void BlobBytesConsumer::DidFinishLoading(unsigned long identifier,
+                                         double finish_time) {
+  DCHECK_EQ(PublicState::kReadableOrWaiting, state_);
+  has_finished_loading_ = true;
+  loader_ = nullptr;
+  if (!has_seen_end_of_data_)
     return;
-  DCHECK(!isClean());
-  BytesConsumer::Client* client = m_client;
-  close();
+  DCHECK(!IsClean());
+  BytesConsumer::Client* client = client_;
+  Close();
   if (client)
-    client->onStateChange();
+    client->OnStateChange();
 }
 
-void BlobBytesConsumer::didFail(const ResourceError& e) {
-  if (e.isCancellation()) {
-    if (m_state != PublicState::ReadableOrWaiting)
+void BlobBytesConsumer::DidFail(const ResourceError& e) {
+  if (e.IsCancellation()) {
+    if (state_ != PublicState::kReadableOrWaiting)
       return;
   }
-  DCHECK_EQ(PublicState::ReadableOrWaiting, m_state);
-  m_loader = nullptr;
-  BytesConsumer::Client* client = m_client;
-  error();
-  if (isClean()) {
+  DCHECK_EQ(PublicState::kReadableOrWaiting, state_);
+  loader_ = nullptr;
+  BytesConsumer::Client* client = client_;
+  GetError();
+  if (IsClean()) {
     // This function is called synchronously in ThreadableLoader::start.
     return;
   }
   if (client) {
-    client->onStateChange();
+    client->OnStateChange();
     client = nullptr;
   }
 }
 
-void BlobBytesConsumer::didFailRedirectCheck() {
+void BlobBytesConsumer::DidFailRedirectCheck() {
   NOTREACHED();
 }
 
 DEFINE_TRACE(BlobBytesConsumer) {
-  visitor->trace(m_body);
-  visitor->trace(m_client);
-  visitor->trace(m_loader);
-  BytesConsumer::trace(visitor);
-  BytesConsumer::Client::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(body_);
+  visitor->Trace(client_);
+  visitor->Trace(loader_);
+  BytesConsumer::Trace(visitor);
+  BytesConsumer::Client::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-BlobBytesConsumer* BlobBytesConsumer::createForTesting(
-    ExecutionContext* executionContext,
-    PassRefPtr<BlobDataHandle> blobDataHandle,
+BlobBytesConsumer* BlobBytesConsumer::CreateForTesting(
+    ExecutionContext* execution_context,
+    PassRefPtr<BlobDataHandle> blob_data_handle,
     ThreadableLoader* loader) {
-  return new BlobBytesConsumer(executionContext, std::move(blobDataHandle),
+  return new BlobBytesConsumer(execution_context, std::move(blob_data_handle),
                                loader);
 }
 
-ThreadableLoader* BlobBytesConsumer::createLoader() {
+ThreadableLoader* BlobBytesConsumer::CreateLoader() {
   ThreadableLoaderOptions options;
-  options.preflightPolicy = ConsiderPreflight;
-  options.crossOriginRequestPolicy = DenyCrossOriginRequests;
-  options.contentSecurityPolicyEnforcement = DoNotEnforceContentSecurityPolicy;
+  options.preflight_policy = kConsiderPreflight;
+  options.cross_origin_request_policy = kDenyCrossOriginRequests;
+  options.content_security_policy_enforcement =
+      kDoNotEnforceContentSecurityPolicy;
   options.initiator = FetchInitiatorTypeNames::internal;
 
-  ResourceLoaderOptions resourceLoaderOptions;
-  resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
+  ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-  return ThreadableLoader::create(*getExecutionContext(), this, options,
-                                  resourceLoaderOptions);
+  return ThreadableLoader::Create(*GetExecutionContext(), this, options,
+                                  resource_loader_options);
 }
 
-void BlobBytesConsumer::close() {
-  DCHECK_EQ(m_state, PublicState::ReadableOrWaiting);
-  m_state = PublicState::Closed;
-  clear();
+void BlobBytesConsumer::Close() {
+  DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+  state_ = PublicState::kClosed;
+  Clear();
 }
 
-void BlobBytesConsumer::error() {
-  DCHECK_EQ(m_state, PublicState::ReadableOrWaiting);
-  m_state = PublicState::Errored;
-  clear();
+void BlobBytesConsumer::GetError() {
+  DCHECK_EQ(state_, PublicState::kReadableOrWaiting);
+  state_ = PublicState::kErrored;
+  Clear();
 }
 
-void BlobBytesConsumer::clear() {
-  DCHECK_NE(m_state, PublicState::ReadableOrWaiting);
-  if (m_loader) {
-    m_loader->cancel();
-    m_loader = nullptr;
+void BlobBytesConsumer::Clear() {
+  DCHECK_NE(state_, PublicState::kReadableOrWaiting);
+  if (loader_) {
+    loader_->Cancel();
+    loader_ = nullptr;
   }
-  m_client = nullptr;
+  client_ = nullptr;
 }
 
 }  // namespace blink

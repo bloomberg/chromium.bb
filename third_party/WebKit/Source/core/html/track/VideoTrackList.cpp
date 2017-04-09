@@ -9,22 +9,22 @@
 
 namespace blink {
 
-VideoTrackList* VideoTrackList::create(HTMLMediaElement& mediaElement) {
-  return new VideoTrackList(mediaElement);
+VideoTrackList* VideoTrackList::Create(HTMLMediaElement& media_element) {
+  return new VideoTrackList(media_element);
 }
 
 VideoTrackList::~VideoTrackList() {}
 
-VideoTrackList::VideoTrackList(HTMLMediaElement& mediaElement)
-    : TrackListBase<VideoTrack>(&mediaElement) {}
+VideoTrackList::VideoTrackList(HTMLMediaElement& media_element)
+    : TrackListBase<VideoTrack>(&media_element) {}
 
-const AtomicString& VideoTrackList::interfaceName() const {
+const AtomicString& VideoTrackList::InterfaceName() const {
   return EventTargetNames::VideoTrackList;
 }
 
 int VideoTrackList::selectedIndex() const {
   for (unsigned i = 0; i < length(); ++i) {
-    VideoTrack* track = anonymousIndexedGetter(i);
+    VideoTrack* track = AnonymousIndexedGetter(i);
 
     if (track->selected())
       return i;
@@ -33,13 +33,13 @@ int VideoTrackList::selectedIndex() const {
   return -1;
 }
 
-void VideoTrackList::trackSelected(WebMediaPlayer::TrackId selectedTrackId) {
+void VideoTrackList::TrackSelected(WebMediaPlayer::TrackId selected_track_id) {
   // Clear the selected flag on the previously selected track, if any.
   for (unsigned i = 0; i < length(); ++i) {
-    VideoTrack* track = anonymousIndexedGetter(i);
+    VideoTrack* track = AnonymousIndexedGetter(i);
 
-    if (track->id() != selectedTrackId)
-      track->clearSelected();
+    if (track->id() != selected_track_id)
+      track->ClearSelected();
     else
       DCHECK(track->selected());
   }

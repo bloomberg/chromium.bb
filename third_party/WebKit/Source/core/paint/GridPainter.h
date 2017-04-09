@@ -17,12 +17,12 @@ class GridPainter {
   STACK_ALLOCATED();
 
  public:
-  GridPainter(const LayoutGrid& layoutGrid) : m_layoutGrid(layoutGrid) {}
+  GridPainter(const LayoutGrid& layout_grid) : layout_grid_(layout_grid) {}
 
-  void paintChildren(const PaintInfo&, const LayoutPoint&);
+  void PaintChildren(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const LayoutGrid& m_layoutGrid;
+  const LayoutGrid& layout_grid_;
 };
 
 }  // namespace blink

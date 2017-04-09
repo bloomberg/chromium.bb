@@ -40,17 +40,17 @@ class Image;
 class SecurityOrigin;
 
 enum SourceImageStatus {
-  NormalSourceImageStatus,
-  UndecodableSourceImageStatus,     // Image element with a 'broken' image
-  ZeroSizeCanvasSourceImageStatus,  // Source is a canvas with width or heigh of
-                                    // zero
-  IncompleteSourceImageStatus,      // Image element with no source media
-  InvalidSourceImageStatus,
+  kNormalSourceImageStatus,
+  kUndecodableSourceImageStatus,     // Image element with a 'broken' image
+  kZeroSizeCanvasSourceImageStatus,  // Source is a canvas with width or heigh
+                                     // of zero
+  kIncompleteSourceImageStatus,  // Image element with no source media
+  kInvalidSourceImageStatus,
 };
 
 class CORE_EXPORT CanvasImageSource {
  public:
-  virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
+  virtual PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                     AccelerationHint,
                                                     SnapshotReason,
                                                     const FloatSize&) const = 0;
@@ -59,32 +59,33 @@ class CORE_EXPORT CanvasImageSource {
   // already tainted because this function may be used to determine whether
   // a CanvasPattern is "origin clean", and that pattern may be used on
   // another canvas, which may not be already tainted.
-  virtual bool wouldTaintOrigin(
-      SecurityOrigin* destinationSecurityOrigin) const = 0;
+  virtual bool WouldTaintOrigin(
+      SecurityOrigin* destination_security_origin) const = 0;
 
-  virtual bool isCSSImageValue() const { return false; }
-  virtual bool isVideoElement() const { return false; }
-  virtual bool isCanvasElement() const { return false; }
-  virtual bool isSVGSource() const { return false; }
-  virtual bool isImageBitmap() const { return false; }
-  virtual bool isOffscreenCanvas() const { return false; }
+  virtual bool IsCSSImageValue() const { return false; }
+  virtual bool IsVideoElement() const { return false; }
+  virtual bool IsCanvasElement() const { return false; }
+  virtual bool IsSVGSource() const { return false; }
+  virtual bool IsImageBitmap() const { return false; }
+  virtual bool IsOffscreenCanvas() const { return false; }
 
   // Adjusts the source and destination rectangles for cases where the actual
   // source image is a subregion of the image returned by
   // getSourceImageForCanvas.
-  virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const {}
-
-  virtual FloatSize elementSize(const FloatSize& defaultObjectSize) const = 0;
-  virtual FloatSize defaultDestinationSize(
-      const FloatSize& defaultObjectSize) const {
-    return elementSize(defaultObjectSize);
+  virtual void AdjustDrawRects(FloatRect* src_rect, FloatRect* dst_rect) const {
   }
-  virtual const KURL& sourceURL() const { return blankURL(); }
-  virtual bool isOpaque() const { return false; }
-  virtual bool isAccelerated() const = 0;
 
-  virtual int sourceWidth() = 0;
-  virtual int sourceHeight() = 0;
+  virtual FloatSize ElementSize(const FloatSize& default_object_size) const = 0;
+  virtual FloatSize DefaultDestinationSize(
+      const FloatSize& default_object_size) const {
+    return ElementSize(default_object_size);
+  }
+  virtual const KURL& SourceURL() const { return BlankURL(); }
+  virtual bool IsOpaque() const { return false; }
+  virtual bool IsAccelerated() const = 0;
+
+  virtual int SourceWidth() = 0;
+  virtual int SourceHeight() = 0;
 
  protected:
   virtual ~CanvasImageSource() {}

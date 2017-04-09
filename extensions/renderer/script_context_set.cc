@@ -45,11 +45,11 @@ ScriptContext* ScriptContextSet::Register(
 
   GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
   Feature::Context context_type = ClassifyJavaScriptContext(
-      extension, world_id, frame_url, frame->document().getSecurityOrigin());
+      extension, world_id, frame_url, frame->GetDocument().GetSecurityOrigin());
   Feature::Context effective_context_type = ClassifyJavaScriptContext(
       effective_extension, world_id,
       ScriptContext::GetEffectiveDocumentURL(frame, frame_url, true),
-      frame->document().getSecurityOrigin());
+      frame->GetDocument().GetSecurityOrigin());
 
   ScriptContext* context =
       new ScriptContext(v8_context, frame, extension, context_type,
@@ -207,7 +207,7 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
 
   // TODO(kalman): This isUnique() check is wrong, it should be performed as
   // part of ScriptContext::IsSandboxedPage().
-  if (!origin.isUnique() &&
+  if (!origin.IsUnique() &&
       RendererExtensionRegistry::Get()->ExtensionBindingsAllowed(url)) {
     if (!extension)  // TODO(kalman): when does this happen?
       return Feature::UNSPECIFIED_CONTEXT;

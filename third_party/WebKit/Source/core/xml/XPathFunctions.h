@@ -36,21 +36,21 @@ namespace XPath {
 
 class CORE_EXPORT Function : public Expression {
  public:
-  void setArguments(HeapVector<Member<Expression>>&);
-  void setName(const String& name) { m_name = name; }
+  void SetArguments(HeapVector<Member<Expression>>&);
+  void SetName(const String& name) { name_ = name; }
 
  protected:
-  Expression* arg(int pos) { return subExpr(pos); }
-  const Expression* arg(int pos) const { return subExpr(pos); }
-  unsigned argCount() const { return subExprCount(); }
-  String name() const { return m_name; }
+  Expression* Arg(int pos) { return SubExpr(pos); }
+  const Expression* Arg(int pos) const { return SubExpr(pos); }
+  unsigned ArgCount() const { return SubExprCount(); }
+  String GetName() const { return name_; }
 
  private:
-  String m_name;
+  String name_;
 };
 
-Function* createFunction(const String& name);
-CORE_EXPORT Function* createFunction(const String& name,
+Function* CreateFunction(const String& name);
+CORE_EXPORT Function* CreateFunction(const String& name,
                                      HeapVector<Member<Expression>>&);
 
 }  // namespace XPath

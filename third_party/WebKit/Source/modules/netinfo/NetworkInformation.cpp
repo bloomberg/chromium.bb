@@ -15,25 +15,25 @@ namespace blink {
 
 namespace {
 
-String connectionTypeToString(WebConnectionType type) {
+String ConnectionTypeToString(WebConnectionType type) {
   switch (type) {
-    case WebConnectionTypeCellular2G:
-    case WebConnectionTypeCellular3G:
-    case WebConnectionTypeCellular4G:
+    case kWebConnectionTypeCellular2G:
+    case kWebConnectionTypeCellular3G:
+    case kWebConnectionTypeCellular4G:
       return "cellular";
-    case WebConnectionTypeBluetooth:
+    case kWebConnectionTypeBluetooth:
       return "bluetooth";
-    case WebConnectionTypeEthernet:
+    case kWebConnectionTypeEthernet:
       return "ethernet";
-    case WebConnectionTypeWifi:
+    case kWebConnectionTypeWifi:
       return "wifi";
-    case WebConnectionTypeWimax:
+    case kWebConnectionTypeWimax:
       return "wimax";
-    case WebConnectionTypeOther:
+    case kWebConnectionTypeOther:
       return "other";
-    case WebConnectionTypeNone:
+    case kWebConnectionTypeNone:
       return "none";
-    case WebConnectionTypeUnknown:
+    case kWebConnectionTypeUnknown:
       return "unknown";
   }
   ASSERT_NOT_REACHED();
@@ -42,119 +42,120 @@ String connectionTypeToString(WebConnectionType type) {
 
 }  // namespace
 
-NetworkInformation* NetworkInformation::create(ExecutionContext* context) {
+NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
   return new NetworkInformation(context);
 }
 
 NetworkInformation::~NetworkInformation() {
-  ASSERT(!m_observing);
+  ASSERT(!observing_);
 }
 
 String NetworkInformation::type() const {
   // m_type is only updated when listening for events, so ask
   // networkStateNotifier if not listening (crbug.com/379841).
-  if (!m_observing)
-    return connectionTypeToString(networkStateNotifier().connectionType());
+  if (!observing_)
+    return ConnectionTypeToString(GetNetworkStateNotifier().ConnectionType());
 
   // If observing, return m_type which changes when the event fires, per spec.
-  return connectionTypeToString(m_type);
+  return ConnectionTypeToString(type_);
 }
 
 double NetworkInformation::downlinkMax() const {
-  if (!m_observing)
-    return networkStateNotifier().maxBandwidth();
+  if (!observing_)
+    return GetNetworkStateNotifier().MaxBandwidth();
 
-  return m_downlinkMaxMbps;
+  return downlink_max_mbps_;
 }
 
-void NetworkInformation::connectionChange(WebConnectionType type,
-                                          double downlinkMaxMbps) {
-  ASSERT(getExecutionContext()->isContextThread());
+void NetworkInformation::ConnectionChange(WebConnectionType type,
+                                          double downlink_max_mbps) {
+  ASSERT(GetExecutionContext()->IsContextThread());
 
   // This can happen if the observer removes and then adds itself again
   // during notification.
-  if (m_type == type && m_downlinkMaxMbps == downlinkMaxMbps)
+  if (type_ == type && downlink_max_mbps_ == downlink_max_mbps)
     return;
 
-  m_type = type;
-  m_downlinkMaxMbps = downlinkMaxMbps;
-  dispatchEvent(Event::create(EventTypeNames::typechange));
+  type_ = type;
+  downlink_max_mbps_ = downlink_max_mbps;
+  DispatchEvent(Event::Create(EventTypeNames::typechange));
 
   if (RuntimeEnabledFeatures::netInfoDownlinkMaxEnabled())
-    dispatchEvent(Event::create(EventTypeNames::change));
+    DispatchEvent(Event::Create(EventTypeNames::change));
 }
 
-const AtomicString& NetworkInformation::interfaceName() const {
+const AtomicString& NetworkInformation::InterfaceName() const {
   return EventTargetNames::NetworkInformation;
 }
 
-ExecutionContext* NetworkInformation::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
+ExecutionContext* NetworkInformation::GetExecutionContext() const {
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void NetworkInformation::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  startObserving();
+void NetworkInformation::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  StartObserving();
 }
 
-void NetworkInformation::removedEventListener(
-    const AtomicString& eventType,
-    const RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::removedEventListener(eventType,
-                                                  registeredListener);
-  if (!hasEventListeners())
-    stopObserving();
+void NetworkInformation::RemovedEventListener(
+    const AtomicString& event_type,
+    const RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::RemovedEventListener(event_type,
+                                                  registered_listener);
+  if (!HasEventListeners())
+    StopObserving();
 }
 
-void NetworkInformation::removeAllEventListeners() {
-  EventTargetWithInlineData::removeAllEventListeners();
-  ASSERT(!hasEventListeners());
-  stopObserving();
+void NetworkInformation::RemoveAllEventListeners() {
+  EventTargetWithInlineData::RemoveAllEventListeners();
+  ASSERT(!HasEventListeners());
+  StopObserving();
 }
 
-bool NetworkInformation::hasPendingActivity() const {
-  ASSERT(m_contextStopped || m_observing == hasEventListeners());
+bool NetworkInformation::HasPendingActivity() const {
+  ASSERT(context_stopped_ || observing_ == HasEventListeners());
 
   // Prevent collection of this object when there are active listeners.
-  return m_observing;
+  return observing_;
 }
 
-void NetworkInformation::contextDestroyed(ExecutionContext*) {
-  m_contextStopped = true;
-  stopObserving();
+void NetworkInformation::ContextDestroyed(ExecutionContext*) {
+  context_stopped_ = true;
+  StopObserving();
 }
 
-void NetworkInformation::startObserving() {
-  if (!m_observing && !m_contextStopped) {
-    m_type = networkStateNotifier().connectionType();
-    networkStateNotifier().addConnectionObserver(
+void NetworkInformation::StartObserving() {
+  if (!observing_ && !context_stopped_) {
+    type_ = GetNetworkStateNotifier().ConnectionType();
+    GetNetworkStateNotifier().AddConnectionObserver(
         this,
-        TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
-    m_observing = true;
+        TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()));
+    observing_ = true;
   }
 }
 
-void NetworkInformation::stopObserving() {
-  if (m_observing) {
-    networkStateNotifier().removeConnectionObserver(
+void NetworkInformation::StopObserving() {
+  if (observing_) {
+    GetNetworkStateNotifier().RemoveConnectionObserver(
         this,
-        TaskRunnerHelper::get(TaskType::Networking, getExecutionContext()));
-    m_observing = false;
+        TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()));
+    observing_ = false;
   }
 }
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
     : ContextLifecycleObserver(context),
-      m_type(networkStateNotifier().connectionType()),
-      m_downlinkMaxMbps(networkStateNotifier().maxBandwidth()),
-      m_observing(false),
-      m_contextStopped(false) {}
+      type_(GetNetworkStateNotifier().ConnectionType()),
+      downlink_max_mbps_(GetNetworkStateNotifier().MaxBandwidth()),
+      observing_(false),
+      context_stopped_(false) {}
 
 DEFINE_TRACE(NetworkInformation) {
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

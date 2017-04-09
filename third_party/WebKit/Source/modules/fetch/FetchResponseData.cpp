@@ -16,33 +16,33 @@ namespace blink {
 
 namespace {
 
-WebServiceWorkerResponseType fetchTypeToWebType(
-    FetchResponseData::Type fetchType) {
-  WebServiceWorkerResponseType webType = WebServiceWorkerResponseTypeDefault;
-  switch (fetchType) {
-    case FetchResponseData::BasicType:
-      webType = WebServiceWorkerResponseTypeBasic;
+WebServiceWorkerResponseType FetchTypeToWebType(
+    FetchResponseData::Type fetch_type) {
+  WebServiceWorkerResponseType web_type = kWebServiceWorkerResponseTypeDefault;
+  switch (fetch_type) {
+    case FetchResponseData::kBasicType:
+      web_type = kWebServiceWorkerResponseTypeBasic;
       break;
-    case FetchResponseData::CORSType:
-      webType = WebServiceWorkerResponseTypeCORS;
+    case FetchResponseData::kCORSType:
+      web_type = kWebServiceWorkerResponseTypeCORS;
       break;
-    case FetchResponseData::DefaultType:
-      webType = WebServiceWorkerResponseTypeDefault;
+    case FetchResponseData::kDefaultType:
+      web_type = kWebServiceWorkerResponseTypeDefault;
       break;
-    case FetchResponseData::ErrorType:
-      webType = WebServiceWorkerResponseTypeError;
+    case FetchResponseData::kErrorType:
+      web_type = kWebServiceWorkerResponseTypeError;
       break;
-    case FetchResponseData::OpaqueType:
-      webType = WebServiceWorkerResponseTypeOpaque;
+    case FetchResponseData::kOpaqueType:
+      web_type = kWebServiceWorkerResponseTypeOpaque;
       break;
-    case FetchResponseData::OpaqueRedirectType:
-      webType = WebServiceWorkerResponseTypeOpaqueRedirect;
+    case FetchResponseData::kOpaqueRedirectType:
+      web_type = kWebServiceWorkerResponseTypeOpaqueRedirect;
       break;
   }
-  return webType;
+  return web_type;
 }
 
-WebVector<WebString> headerSetToWebVector(const HTTPHeaderSet& headers) {
+WebVector<WebString> HeaderSetToWebVector(const HTTPHeaderSet& headers) {
   // Can't just pass *headers to the WebVector constructor because HashSet
   // iterators are not stl iterator compatible.
   WebVector<WebString> result(static_cast<size_t>(headers.size()));
@@ -54,60 +54,60 @@ WebVector<WebString> headerSetToWebVector(const HTTPHeaderSet& headers) {
 
 }  // namespace
 
-FetchResponseData* FetchResponseData::create() {
+FetchResponseData* FetchResponseData::Create() {
   // "Unless stated otherwise, a response's url is null, status is 200, status
   // message is `OK`, header list is an empty header list, and body is null."
-  return new FetchResponseData(DefaultType, 200, "OK");
+  return new FetchResponseData(kDefaultType, 200, "OK");
 }
 
-FetchResponseData* FetchResponseData::createNetworkErrorResponse() {
+FetchResponseData* FetchResponseData::CreateNetworkErrorResponse() {
   // "A network error is a response whose status is always 0, status message
   // is always the empty byte sequence, header list is aways an empty list,
   // and body is always null."
-  return new FetchResponseData(ErrorType, 0, "");
+  return new FetchResponseData(kErrorType, 0, "");
 }
 
-FetchResponseData* FetchResponseData::createWithBuffer(
+FetchResponseData* FetchResponseData::CreateWithBuffer(
     BodyStreamBuffer* buffer) {
-  FetchResponseData* response = FetchResponseData::create();
-  response->m_buffer = buffer;
+  FetchResponseData* response = FetchResponseData::Create();
+  response->buffer_ = buffer;
   return response;
 }
 
-FetchResponseData* FetchResponseData::createBasicFilteredResponse() const {
-  DCHECK_EQ(m_type, DefaultType);
+FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
+  DCHECK_EQ(type_, kDefaultType);
   // "A basic filtered response is a filtered response whose type is |basic|,
   // header list excludes any headers in internal response's header list whose
   // name is `Set-Cookie` or `Set-Cookie2`."
   FetchResponseData* response =
-      new FetchResponseData(BasicType, m_status, m_statusMessage);
-  response->setURLList(m_urlList);
-  for (size_t i = 0; i < m_headerList->size(); ++i) {
-    const FetchHeaderList::Header* header = m_headerList->list()[i].get();
-    if (FetchUtils::isForbiddenResponseHeaderName(header->first))
+      new FetchResponseData(kBasicType, status_, status_message_);
+  response->SetURLList(url_list_);
+  for (size_t i = 0; i < header_list_->size(); ++i) {
+    const FetchHeaderList::Header* header = header_list_->List()[i].get();
+    if (FetchUtils::IsForbiddenResponseHeaderName(header->first))
       continue;
-    response->m_headerList->append(header->first, header->second);
+    response->header_list_->Append(header->first, header->second);
   }
-  response->m_buffer = m_buffer;
-  response->m_mimeType = m_mimeType;
-  response->m_internalResponse = const_cast<FetchResponseData*>(this);
+  response->buffer_ = buffer_;
+  response->mime_type_ = mime_type_;
+  response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
 
-FetchResponseData* FetchResponseData::createCORSFilteredResponse() const {
-  DCHECK_EQ(m_type, DefaultType);
-  HTTPHeaderSet accessControlExposeHeaderSet;
-  String accessControlExposeHeaders;
-  if (m_headerList->get(HTTPNames::Access_Control_Expose_Headers,
-                        accessControlExposeHeaders))
-    parseAccessControlExposeHeadersAllowList(accessControlExposeHeaders,
-                                             accessControlExposeHeaderSet);
-  return createCORSFilteredResponse(accessControlExposeHeaderSet);
+FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
+  DCHECK_EQ(type_, kDefaultType);
+  HTTPHeaderSet access_control_expose_header_set;
+  String access_control_expose_headers;
+  if (header_list_->Get(HTTPNames::Access_Control_Expose_Headers,
+                        access_control_expose_headers))
+    ParseAccessControlExposeHeadersAllowList(access_control_expose_headers,
+                                             access_control_expose_header_set);
+  return CreateCORSFilteredResponse(access_control_expose_header_set);
 }
 
-FetchResponseData* FetchResponseData::createCORSFilteredResponse(
-    const HTTPHeaderSet& exposedHeaders) const {
-  DCHECK_EQ(m_type, DefaultType);
+FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
+    const HTTPHeaderSet& exposed_headers) const {
+  DCHECK_EQ(type_, kDefaultType);
   // "A CORS filtered response is a filtered response whose type is |CORS|,
   // header list excludes all headers in internal response's header list,
   // except those whose name is either one of `Cache-Control`,
@@ -116,190 +116,192 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse(
   // parsing `Access-Control-Expose-Headers` in internal response's header
   // list."
   FetchResponseData* response =
-      new FetchResponseData(CORSType, m_status, m_statusMessage);
-  response->setURLList(m_urlList);
-  for (size_t i = 0; i < m_headerList->size(); ++i) {
-    const FetchHeaderList::Header* header = m_headerList->list()[i].get();
+      new FetchResponseData(kCORSType, status_, status_message_);
+  response->SetURLList(url_list_);
+  for (size_t i = 0; i < header_list_->size(); ++i) {
+    const FetchHeaderList::Header* header = header_list_->List()[i].get();
     const String& name = header->first;
-    const bool explicitlyExposed = exposedHeaders.contains(name);
-    if (isOnAccessControlResponseHeaderWhitelist(name) ||
-        (explicitlyExposed &&
-         !FetchUtils::isForbiddenResponseHeaderName(name))) {
-      if (explicitlyExposed)
-        response->m_corsExposedHeaderNames.insert(name);
-      response->m_headerList->append(name, header->second);
+    const bool explicitly_exposed = exposed_headers.Contains(name);
+    if (IsOnAccessControlResponseHeaderWhitelist(name) ||
+        (explicitly_exposed &&
+         !FetchUtils::IsForbiddenResponseHeaderName(name))) {
+      if (explicitly_exposed)
+        response->cors_exposed_header_names_.insert(name);
+      response->header_list_->Append(name, header->second);
     }
   }
-  response->m_buffer = m_buffer;
-  response->m_mimeType = m_mimeType;
-  response->m_internalResponse = const_cast<FetchResponseData*>(this);
+  response->buffer_ = buffer_;
+  response->mime_type_ = mime_type_;
+  response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
 
-FetchResponseData* FetchResponseData::createOpaqueFilteredResponse() const {
-  DCHECK_EQ(m_type, DefaultType);
+FetchResponseData* FetchResponseData::CreateOpaqueFilteredResponse() const {
+  DCHECK_EQ(type_, kDefaultType);
   // "An opaque filtered response is a filtered response whose type is
   // 'opaque', url list is the empty list, status is 0, status message is the
   // empty byte sequence, header list is the empty list, body is null, and
   // cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
-  FetchResponseData* response = new FetchResponseData(OpaqueType, 0, "");
-  response->m_internalResponse = const_cast<FetchResponseData*>(this);
+  FetchResponseData* response = new FetchResponseData(kOpaqueType, 0, "");
+  response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
 
-FetchResponseData* FetchResponseData::createOpaqueRedirectFilteredResponse()
+FetchResponseData* FetchResponseData::CreateOpaqueRedirectFilteredResponse()
     const {
-  DCHECK_EQ(m_type, DefaultType);
+  DCHECK_EQ(type_, kDefaultType);
   // "An opaque filtered response is a filtered response whose type is
   // 'opaqueredirect', status is 0, status message is the empty byte sequence,
   // header list is the empty list, body is null, and cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
   FetchResponseData* response =
-      new FetchResponseData(OpaqueRedirectType, 0, "");
-  response->setURLList(m_urlList);
-  response->m_internalResponse = const_cast<FetchResponseData*>(this);
+      new FetchResponseData(kOpaqueRedirectType, 0, "");
+  response->SetURLList(url_list_);
+  response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
 
-const KURL* FetchResponseData::url() const {
+const KURL* FetchResponseData::Url() const {
   // "A response has an associated url. It is a pointer to the last response URL
   // in response’s url list and null if response’s url list is the empty list."
-  if (m_urlList.isEmpty())
+  if (url_list_.IsEmpty())
     return nullptr;
-  return &m_urlList.back();
+  return &url_list_.back();
 }
 
-String FetchResponseData::mimeType() const {
-  return m_mimeType;
+String FetchResponseData::MimeType() const {
+  return mime_type_;
 }
 
-BodyStreamBuffer* FetchResponseData::internalBuffer() const {
-  if (m_internalResponse) {
-    return m_internalResponse->m_buffer;
+BodyStreamBuffer* FetchResponseData::InternalBuffer() const {
+  if (internal_response_) {
+    return internal_response_->buffer_;
   }
-  return m_buffer;
+  return buffer_;
 }
 
-String FetchResponseData::internalMIMEType() const {
-  if (m_internalResponse) {
-    return m_internalResponse->mimeType();
+String FetchResponseData::InternalMIMEType() const {
+  if (internal_response_) {
+    return internal_response_->MimeType();
   }
-  return m_mimeType;
+  return mime_type_;
 }
 
-void FetchResponseData::setURLList(const Vector<KURL>& urlList) {
-  m_urlList = urlList;
+void FetchResponseData::SetURLList(const Vector<KURL>& url_list) {
+  url_list_ = url_list;
 }
 
-const Vector<KURL>& FetchResponseData::internalURLList() const {
-  if (m_internalResponse) {
-    return m_internalResponse->m_urlList;
+const Vector<KURL>& FetchResponseData::InternalURLList() const {
+  if (internal_response_) {
+    return internal_response_->url_list_;
   }
-  return m_urlList;
+  return url_list_;
 }
 
-FetchResponseData* FetchResponseData::clone(ScriptState* scriptState) {
-  FetchResponseData* newResponse = create();
-  newResponse->m_type = m_type;
-  if (m_terminationReason) {
-    newResponse->m_terminationReason = WTF::wrapUnique(new TerminationReason);
-    *newResponse->m_terminationReason = *m_terminationReason;
+FetchResponseData* FetchResponseData::Clone(ScriptState* script_state) {
+  FetchResponseData* new_response = Create();
+  new_response->type_ = type_;
+  if (termination_reason_) {
+    new_response->termination_reason_ = WTF::WrapUnique(new TerminationReason);
+    *new_response->termination_reason_ = *termination_reason_;
   }
-  newResponse->setURLList(m_urlList);
-  newResponse->m_status = m_status;
-  newResponse->m_statusMessage = m_statusMessage;
-  newResponse->m_headerList = m_headerList->clone();
-  newResponse->m_mimeType = m_mimeType;
-  newResponse->m_responseTime = m_responseTime;
-  newResponse->m_cacheStorageCacheName = m_cacheStorageCacheName;
-  newResponse->m_corsExposedHeaderNames = m_corsExposedHeaderNames;
+  new_response->SetURLList(url_list_);
+  new_response->status_ = status_;
+  new_response->status_message_ = status_message_;
+  new_response->header_list_ = header_list_->Clone();
+  new_response->mime_type_ = mime_type_;
+  new_response->response_time_ = response_time_;
+  new_response->cache_storage_cache_name_ = cache_storage_cache_name_;
+  new_response->cors_exposed_header_names_ = cors_exposed_header_names_;
 
-  switch (m_type) {
-    case BasicType:
-    case CORSType:
-      ASSERT(m_internalResponse);
-      ASSERT(m_buffer == m_internalResponse->m_buffer);
-      ASSERT(m_internalResponse->m_type == DefaultType);
-      newResponse->m_internalResponse = m_internalResponse->clone(scriptState);
-      m_buffer = m_internalResponse->m_buffer;
-      newResponse->m_buffer = newResponse->m_internalResponse->m_buffer;
+  switch (type_) {
+    case kBasicType:
+    case kCORSType:
+      ASSERT(internal_response_);
+      ASSERT(buffer_ == internal_response_->buffer_);
+      ASSERT(internal_response_->type_ == kDefaultType);
+      new_response->internal_response_ =
+          internal_response_->Clone(script_state);
+      buffer_ = internal_response_->buffer_;
+      new_response->buffer_ = new_response->internal_response_->buffer_;
       break;
-    case DefaultType: {
-      ASSERT(!m_internalResponse);
-      if (m_buffer) {
+    case kDefaultType: {
+      ASSERT(!internal_response_);
+      if (buffer_) {
         BodyStreamBuffer* new1 = nullptr;
         BodyStreamBuffer* new2 = nullptr;
-        m_buffer->tee(&new1, &new2);
-        m_buffer = new1;
-        newResponse->m_buffer = new2;
+        buffer_->Tee(&new1, &new2);
+        buffer_ = new1;
+        new_response->buffer_ = new2;
       }
       break;
     }
-    case ErrorType:
-      ASSERT(!m_internalResponse);
-      ASSERT(!m_buffer);
+    case kErrorType:
+      ASSERT(!internal_response_);
+      ASSERT(!buffer_);
       break;
-    case OpaqueType:
-    case OpaqueRedirectType:
-      ASSERT(m_internalResponse);
-      ASSERT(!m_buffer);
-      ASSERT(m_internalResponse->m_type == DefaultType);
-      newResponse->m_internalResponse = m_internalResponse->clone(scriptState);
+    case kOpaqueType:
+    case kOpaqueRedirectType:
+      ASSERT(internal_response_);
+      ASSERT(!buffer_);
+      ASSERT(internal_response_->type_ == kDefaultType);
+      new_response->internal_response_ =
+          internal_response_->Clone(script_state);
       break;
   }
-  return newResponse;
+  return new_response;
 }
 
-void FetchResponseData::populateWebServiceWorkerResponse(
+void FetchResponseData::PopulateWebServiceWorkerResponse(
     WebServiceWorkerResponse& response) {
-  if (m_internalResponse) {
-    m_internalResponse->populateWebServiceWorkerResponse(response);
-    response.setResponseType(fetchTypeToWebType(m_type));
-    response.setCorsExposedHeaderNames(
-        headerSetToWebVector(m_corsExposedHeaderNames));
+  if (internal_response_) {
+    internal_response_->PopulateWebServiceWorkerResponse(response);
+    response.SetResponseType(FetchTypeToWebType(type_));
+    response.SetCorsExposedHeaderNames(
+        HeaderSetToWebVector(cors_exposed_header_names_));
     return;
   }
-  response.setURLList(m_urlList);
-  response.setStatus(status());
-  response.setStatusText(statusMessage());
-  response.setResponseType(fetchTypeToWebType(m_type));
-  response.setResponseTime(responseTime());
-  response.setCacheStorageCacheName(cacheStorageCacheName());
-  response.setCorsExposedHeaderNames(
-      headerSetToWebVector(m_corsExposedHeaderNames));
-  for (size_t i = 0; i < headerList()->size(); ++i) {
-    const FetchHeaderList::Header* header = headerList()->list()[i].get();
-    response.appendHeader(header->first, header->second);
+  response.SetURLList(url_list_);
+  response.SetStatus(Status());
+  response.SetStatusText(StatusMessage());
+  response.SetResponseType(FetchTypeToWebType(type_));
+  response.SetResponseTime(ResponseTime());
+  response.SetCacheStorageCacheName(CacheStorageCacheName());
+  response.SetCorsExposedHeaderNames(
+      HeaderSetToWebVector(cors_exposed_header_names_));
+  for (size_t i = 0; i < HeaderList()->size(); ++i) {
+    const FetchHeaderList::Header* header = HeaderList()->List()[i].get();
+    response.AppendHeader(header->first, header->second);
   }
 }
 
 FetchResponseData::FetchResponseData(Type type,
                                      unsigned short status,
-                                     AtomicString statusMessage)
-    : m_type(type),
-      m_status(status),
-      m_statusMessage(statusMessage),
-      m_headerList(FetchHeaderList::create()),
-      m_responseTime(0) {}
+                                     AtomicString status_message)
+    : type_(type),
+      status_(status),
+      status_message_(status_message),
+      header_list_(FetchHeaderList::Create()),
+      response_time_(0) {}
 
-void FetchResponseData::replaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
-  if (m_type == BasicType || m_type == CORSType) {
-    ASSERT(m_internalResponse);
-    m_internalResponse->m_buffer = buffer;
-    m_buffer = buffer;
-  } else if (m_type == DefaultType) {
-    ASSERT(!m_internalResponse);
-    m_buffer = buffer;
+void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
+  if (type_ == kBasicType || type_ == kCORSType) {
+    ASSERT(internal_response_);
+    internal_response_->buffer_ = buffer;
+    buffer_ = buffer;
+  } else if (type_ == kDefaultType) {
+    ASSERT(!internal_response_);
+    buffer_ = buffer;
   }
 }
 
 DEFINE_TRACE(FetchResponseData) {
-  visitor->trace(m_headerList);
-  visitor->trace(m_internalResponse);
-  visitor->trace(m_buffer);
+  visitor->Trace(header_list_);
+  visitor->Trace(internal_response_);
+  visitor->Trace(buffer_);
 }
 
 }  // namespace blink

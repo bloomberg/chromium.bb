@@ -52,18 +52,18 @@ class Text;
 
 class XMLParserContext : public RefCounted<XMLParserContext> {
  public:
-  static PassRefPtr<XMLParserContext> createMemoryParser(xmlSAXHandlerPtr,
-                                                         void* userData,
+  static PassRefPtr<XMLParserContext> CreateMemoryParser(xmlSAXHandlerPtr,
+                                                         void* user_data,
                                                          const CString& chunk);
-  static PassRefPtr<XMLParserContext> createStringParser(xmlSAXHandlerPtr,
-                                                         void* userData);
+  static PassRefPtr<XMLParserContext> CreateStringParser(xmlSAXHandlerPtr,
+                                                         void* user_data);
   ~XMLParserContext();
-  xmlParserCtxtPtr context() const { return m_context; }
+  xmlParserCtxtPtr Context() const { return context_; }
 
  private:
-  XMLParserContext(xmlParserCtxtPtr context) : m_context(context) {}
+  XMLParserContext(xmlParserCtxtPtr context) : context_(context) {}
 
-  xmlParserCtxtPtr m_context;
+  xmlParserCtxtPtr context_;
 };
 
 class XMLDocumentParser final : public ScriptableDocumentParser,
@@ -71,47 +71,49 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
 
  public:
-  static XMLDocumentParser* create(Document& document, FrameView* view) {
+  static XMLDocumentParser* Create(Document& document, FrameView* view) {
     return new XMLDocumentParser(document, view);
   }
-  static XMLDocumentParser* create(DocumentFragment* fragment,
+  static XMLDocumentParser* Create(DocumentFragment* fragment,
                                    Element* element,
-                                   ParserContentPolicy parserContentPolicy) {
-    return new XMLDocumentParser(fragment, element, parserContentPolicy);
+                                   ParserContentPolicy parser_content_policy) {
+    return new XMLDocumentParser(fragment, element, parser_content_policy);
   }
   ~XMLDocumentParser() override;
   DECLARE_VIRTUAL_TRACE();
 
   // Exposed for callbacks:
-  void handleError(XMLErrors::ErrorType, const char* message, TextPosition);
+  void HandleError(XMLErrors::ErrorType, const char* message, TextPosition);
 
-  void setIsXHTMLDocument(bool isXHTML) { m_isXHTMLDocument = isXHTML; }
-  bool isXHTMLDocument() const { return m_isXHTMLDocument; }
+  void SetIsXHTMLDocument(bool is_xhtml) { is_xhtml_document_ = is_xhtml; }
+  bool IsXHTMLDocument() const { return is_xhtml_document_; }
 
-  bool isCurrentlyParsing8BitChunk() { return m_isCurrentlyParsing8BitChunk; }
+  bool IsCurrentlyParsing8BitChunk() {
+    return is_currently_parsing8_bit_chunk_;
+  }
 
-  static bool parseDocumentFragment(
+  static bool ParseDocumentFragment(
       const String&,
       DocumentFragment*,
       Element* parent = 0,
-      ParserContentPolicy = AllowScriptingContent);
+      ParserContentPolicy = kAllowScriptingContent);
 
   // Used by the XMLHttpRequest to check if the responseXML was well formed.
-  bool wellFormed() const override { return !m_sawError; }
+  bool WellFormed() const override { return !saw_error_; }
 
-  TextPosition textPosition() const override;
+  TextPosition GetTextPosition() const override;
 
-  static bool supportsXMLVersion(const String&);
+  static bool SupportsXMLVersion(const String&);
 
   class PendingCallback {
     USING_FAST_MALLOC(PendingCallback);
 
    public:
     virtual ~PendingCallback() {}
-    virtual void call(XMLDocumentParser*) = 0;
+    virtual void Call(XMLDocumentParser*) = 0;
   };
 
-  void setScriptStartPosition(TextPosition);
+  void SetScriptStartPosition(TextPosition);
 
  private:
   explicit XMLDocumentParser(Document&, FrameView* = 0);
@@ -119,110 +121,110 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
 
   // From DocumentParser
   void insert(const SegmentedString&) override;
-  void append(const String&) override;
-  void finish() override;
-  bool isWaitingForScripts() const override;
-  void stopParsing() override;
-  void detach() override;
-  OrdinalNumber lineNumber() const override;
-  OrdinalNumber columnNumber() const;
+  void Append(const String&) override;
+  void Finish() override;
+  bool IsWaitingForScripts() const override;
+  void StopParsing() override;
+  void Detach() override;
+  OrdinalNumber LineNumber() const override;
+  OrdinalNumber ColumnNumber() const;
 
   // from ResourceClient
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "XMLDocumentParser"; }
+  void NotifyFinished(Resource*) override;
+  String DebugName() const override { return "XMLDocumentParser"; }
 
   void end();
 
-  void pauseParsing();
-  void resumeParsing();
+  void PauseParsing();
+  void ResumeParsing();
 
-  bool appendFragmentSource(const String&);
+  bool AppendFragmentSource(const String&);
 
  public:
   // Callbacks from parser SAX
   PRINTF_FORMAT(3, 0)
-  void error(XMLErrors::ErrorType, const char* message, va_list args);
-  void startElementNs(const AtomicString& localName,
+  void GetError(XMLErrors::ErrorType, const char* message, va_list args);
+  void StartElementNs(const AtomicString& local_name,
                       const AtomicString& prefix,
                       const AtomicString& uri,
-                      int namespaceCount,
+                      int namespace_count,
                       const xmlChar** namespaces,
-                      int attributeCount,
-                      int defaultedCount,
-                      const xmlChar** libxmlAttributes);
-  void endElementNs();
-  void characters(const xmlChar* chars, int length);
-  void processingInstruction(const String& target, const String& data);
-  void cdataBlock(const String&);
-  void comment(const String&);
-  void startDocument(const String& version,
+                      int attribute_count,
+                      int defaulted_count,
+                      const xmlChar** libxml_attributes);
+  void EndElementNs();
+  void Characters(const xmlChar* chars, int length);
+  void GetProcessingInstruction(const String& target, const String& data);
+  void CdataBlock(const String&);
+  void Comment(const String&);
+  void StartDocument(const String& version,
                      const String& encoding,
                      int standalone);
-  void internalSubset(const String& name,
-                      const String& externalID,
-                      const String& systemID);
-  void endDocument();
+  void InternalSubset(const String& name,
+                      const String& external_id,
+                      const String& system_id);
+  void EndDocument();
 
  private:
-  void initializeParserContext(const CString& chunk = CString());
+  void InitializeParserContext(const CString& chunk = CString());
 
-  void pushCurrentNode(ContainerNode*);
-  void popCurrentNode();
-  void clearCurrentNodeStack();
+  void PushCurrentNode(ContainerNode*);
+  void PopCurrentNode();
+  void ClearCurrentNodeStack();
 
-  void insertErrorMessageBlock();
+  void InsertErrorMessageBlock();
 
-  void createLeafTextNodeIfNeeded();
-  bool updateLeafTextNode();
+  void CreateLeafTextNodeIfNeeded();
+  bool UpdateLeafTextNode();
 
-  void doWrite(const String&);
-  void doEnd();
+  void DoWrite(const String&);
+  void DoEnd();
 
-  bool m_hasView;
+  bool has_view_;
 
-  SegmentedString m_originalSourceForTransform;
+  SegmentedString original_source_for_transform_;
 
-  xmlParserCtxtPtr context() const {
-    return m_context ? m_context->context() : 0;
+  xmlParserCtxtPtr Context() const {
+    return context_ ? context_->Context() : 0;
   }
-  RefPtr<XMLParserContext> m_context;
-  Deque<std::unique_ptr<PendingCallback>> m_pendingCallbacks;
-  Vector<xmlChar> m_bufferedText;
+  RefPtr<XMLParserContext> context_;
+  Deque<std::unique_ptr<PendingCallback>> pending_callbacks_;
+  Vector<xmlChar> buffered_text_;
 
-  Member<ContainerNode> m_currentNode;
-  HeapVector<Member<ContainerNode>> m_currentNodeStack;
+  Member<ContainerNode> current_node_;
+  HeapVector<Member<ContainerNode>> current_node_stack_;
 
-  Member<Text> m_leafTextNode;
+  Member<Text> leaf_text_node_;
 
-  bool m_isCurrentlyParsing8BitChunk;
-  bool m_sawError;
-  bool m_sawCSS;
-  bool m_sawXSLTransform;
-  bool m_sawFirstElement;
-  bool m_isXHTMLDocument;
-  bool m_parserPaused;
-  bool m_requestingScript;
-  bool m_finishCalled;
+  bool is_currently_parsing8_bit_chunk_;
+  bool saw_error_;
+  bool saw_css_;
+  bool saw_xsl_transform_;
+  bool saw_first_element_;
+  bool is_xhtml_document_;
+  bool parser_paused_;
+  bool requesting_script_;
+  bool finish_called_;
 
-  XMLErrors m_xmlErrors;
+  XMLErrors xml_errors_;
 
-  Member<ScriptResource> m_pendingScript;
-  Member<Element> m_scriptElement;
-  TextPosition m_scriptStartPosition;
-  double m_parserBlockingPendingScriptLoadStartTime;
+  Member<ScriptResource> pending_script_;
+  Member<Element> script_element_;
+  TextPosition script_start_position_;
+  double parser_blocking_pending_script_load_start_time_;
 
-  bool m_parsingFragment;
-  AtomicString m_defaultNamespaceURI;
+  bool parsing_fragment_;
+  AtomicString default_namespace_uri_;
 
   typedef HashMap<AtomicString, AtomicString> PrefixForNamespaceMap;
-  PrefixForNamespaceMap m_prefixToNamespaceMap;
-  SegmentedString m_pendingSrc;
+  PrefixForNamespaceMap prefix_to_namespace_map_;
+  SegmentedString pending_src_;
 };
 
-xmlDocPtr xmlDocPtrForString(Document*,
+xmlDocPtr XmlDocPtrForString(Document*,
                              const String& source,
                              const String& url);
-HashMap<String, String> parseAttributes(const String&, bool& attrsOK);
+HashMap<String, String> ParseAttributes(const String&, bool& attrs_ok);
 
 }  // namespace blink
 

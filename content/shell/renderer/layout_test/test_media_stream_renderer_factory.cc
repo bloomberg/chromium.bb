@@ -21,10 +21,10 @@ static const int kVideoCaptureFrameDurationMs = 33;
 
 bool IsMockMediaStreamWithVideo(const WebMediaStream& web_stream) {
 #if BUILDFLAG(ENABLE_WEBRTC)
-  if (web_stream.isNull())
+  if (web_stream.IsNull())
     return false;
   WebVector<WebMediaStreamTrack> video_tracks;
-  web_stream.videoTracks(video_tracks);
+  web_stream.VideoTracks(video_tracks);
   return video_tracks.size() > 0;
 #else
   return false;

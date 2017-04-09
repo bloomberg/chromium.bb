@@ -33,39 +33,39 @@ class Element;
 
 class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
  public:
-  StyleElement(Document*, bool createdByParser);
+  StyleElement(Document*, bool created_by_parser);
   virtual ~StyleElement();
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  enum ProcessingResult { ProcessingSuccessful, ProcessingFatalError };
+  enum ProcessingResult { kProcessingSuccessful, kProcessingFatalError };
 
   virtual const AtomicString& type() const = 0;
   virtual const AtomicString& media() const = 0;
 
-  CSSStyleSheet* sheet() const { return m_sheet.get(); }
+  CSSStyleSheet* sheet() const { return sheet_.Get(); }
 
-  bool isLoading() const;
-  bool sheetLoaded(Document&);
-  void startLoadingDynamicSheet(Document&);
+  bool IsLoading() const;
+  bool SheetLoaded(Document&);
+  void StartLoadingDynamicSheet(Document&);
 
-  void removedFrom(Element&, ContainerNode* insertionPoint);
-  ProcessingResult processStyleSheet(Document&, Element&);
-  ProcessingResult childrenChanged(Element&);
-  ProcessingResult finishParsingChildren(Element&);
+  void RemovedFrom(Element&, ContainerNode* insertion_point);
+  ProcessingResult ProcessStyleSheet(Document&, Element&);
+  ProcessingResult ChildrenChanged(Element&);
+  ProcessingResult FinishParsingChildren(Element&);
 
-  Member<CSSStyleSheet> m_sheet;
+  Member<CSSStyleSheet> sheet_;
 
  private:
-  ProcessingResult createSheet(Element&, const String& text = String());
-  ProcessingResult process(Element&);
-  void clearSheet(Element& ownerElement);
+  ProcessingResult CreateSheet(Element&, const String& text = String());
+  ProcessingResult Process(Element&);
+  void ClearSheet(Element& owner_element);
 
-  bool m_createdByParser : 1;
-  bool m_loading : 1;
-  bool m_registeredAsCandidate : 1;
-  TextPosition m_startPosition;
-  StyleEngineContext m_styleEngineContext;
+  bool created_by_parser_ : 1;
+  bool loading_ : 1;
+  bool registered_as_candidate_ : 1;
+  TextPosition start_position_;
+  StyleEngineContext style_engine_context_;
 };
 
 }  // namespace blink

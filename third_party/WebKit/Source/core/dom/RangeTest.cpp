@@ -28,22 +28,23 @@ namespace blink {
 class RangeTest : public EditingTestBase {};
 
 TEST_F(RangeTest, createAdjustedToTreeScopeWithPositionInShadowTree) {
-  document().body()->setInnerHTML("<div><select><option>012</option></div>");
-  Element* const selectElement = document().querySelector("select");
+  GetDocument().body()->setInnerHTML("<div><select><option>012</option></div>");
+  Element* const select_element = GetDocument().QuerySelector("select");
   const Position& position =
-      Position::afterNode(selectElement->userAgentShadowRoot());
-  Range* const range = Range::createAdjustedToTreeScope(document(), position);
-  EXPECT_EQ(range->startContainer(), selectElement->parentNode());
+      Position::AfterNode(select_element->UserAgentShadowRoot());
+  Range* const range =
+      Range::CreateAdjustedToTreeScope(GetDocument(), position);
+  EXPECT_EQ(range->startContainer(), select_element->parentNode());
   EXPECT_EQ(static_cast<unsigned>(range->startOffset()),
-            selectElement->nodeIndex());
+            select_element->NodeIndex());
   EXPECT_TRUE(range->collapsed());
 }
 
 TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
-  document().body()->setInnerHTML("<span><b>abc</b>def</span>");
-  document().settings()->setScriptEnabled(true);
-  Element* const scriptElement = document().createElement("script");
-  scriptElement->setTextContent(
+  GetDocument().body()->setInnerHTML("<span><b>abc</b>def</span>");
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  Element* const script_element = GetDocument().createElement("script");
+  script_element->setTextContent(
       "let count = 0;"
       "const span = document.querySelector('span');"
       "span.addEventListener('DOMSubtreeModified', () => {"
@@ -51,136 +52,139 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
       "  span.firstChild.textContent = 'ABC';"
       "  span.lastChild.textContent = 'DEF';"
       "});");
-  document().body()->appendChild(scriptElement);
+  GetDocument().body()->AppendChild(script_element);
 
-  Element* const spanElement = document().querySelector("span");
+  Element* const span_element = GetDocument().QuerySelector("span");
   Range* const range =
-      Range::create(document(), spanElement, 0, spanElement, 1);
-  Element* const result = document().createElement("div");
-  result->appendChild(range->extractContents(ASSERT_NO_EXCEPTION));
+      Range::Create(GetDocument(), span_element, 0, span_element, 1);
+  Element* const result = GetDocument().createElement("div");
+  result->AppendChild(range->extractContents(ASSERT_NO_EXCEPTION));
 
   EXPECT_EQ("<b>abc</b>", result->innerHTML())
       << "DOM mutation event handler should not affect result.";
-  EXPECT_EQ("<span>DEF</span>", spanElement->outerHTML())
+  EXPECT_EQ("<span>DEF</span>", span_element->outerHTML())
       << "DOM mutation event handler should be executed.";
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   V8TestingScope scope;
 
-  document().body()->setInnerHTML("1234");
-  Text* oldText = toText(document().body()->firstChild());
+  GetDocument().body()->setInnerHTML("1234");
+  Text* old_text = ToText(GetDocument().body()->FirstChild());
 
-  Range* range04 = Range::create(document(), oldText, 0, oldText, 4);
-  Range* range02 = Range::create(document(), oldText, 0, oldText, 2);
-  Range* range22 = Range::create(document(), oldText, 2, oldText, 2);
-  Range* range24 = Range::create(document(), oldText, 2, oldText, 4);
+  Range* range04 = Range::Create(GetDocument(), old_text, 0, old_text, 4);
+  Range* range02 = Range::Create(GetDocument(), old_text, 0, old_text, 2);
+  Range* range22 = Range::Create(GetDocument(), old_text, 2, old_text, 2);
+  Range* range24 = Range::Create(GetDocument(), old_text, 2, old_text, 4);
 
-  oldText->splitText(2, ASSERT_NO_EXCEPTION);
-  Text* newText = toText(oldText->nextSibling());
+  old_text->splitText(2, ASSERT_NO_EXCEPTION);
+  Text* new_text = ToText(old_text->nextSibling());
 
-  EXPECT_TRUE(range04->boundaryPointsValid());
-  EXPECT_EQ(oldText, range04->startContainer());
+  EXPECT_TRUE(range04->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range04->startContainer());
   EXPECT_EQ(0u, range04->startOffset());
-  EXPECT_EQ(newText, range04->endContainer());
+  EXPECT_EQ(new_text, range04->endContainer());
   EXPECT_EQ(2u, range04->endOffset());
 
-  EXPECT_TRUE(range02->boundaryPointsValid());
-  EXPECT_EQ(oldText, range02->startContainer());
+  EXPECT_TRUE(range02->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range02->startContainer());
   EXPECT_EQ(0u, range02->startOffset());
-  EXPECT_EQ(oldText, range02->endContainer());
+  EXPECT_EQ(old_text, range02->endContainer());
   EXPECT_EQ(2u, range02->endOffset());
 
   // Our implementation always moves the boundary point at the separation point
   // to the end of the original text node.
-  EXPECT_TRUE(range22->boundaryPointsValid());
-  EXPECT_EQ(oldText, range22->startContainer());
+  EXPECT_TRUE(range22->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range22->startContainer());
   EXPECT_EQ(2u, range22->startOffset());
-  EXPECT_EQ(oldText, range22->endContainer());
+  EXPECT_EQ(old_text, range22->endContainer());
   EXPECT_EQ(2u, range22->endOffset());
 
-  EXPECT_TRUE(range24->boundaryPointsValid());
-  EXPECT_EQ(oldText, range24->startContainer());
+  EXPECT_TRUE(range24->BoundaryPointsValid());
+  EXPECT_EQ(old_text, range24->startContainer());
   EXPECT_EQ(2u, range24->startOffset());
-  EXPECT_EQ(newText, range24->endContainer());
+  EXPECT_EQ(new_text, range24->endContainer());
   EXPECT_EQ(2u, range24->endOffset());
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
   V8TestingScope scope;
 
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<span id=\"outer\">0<span id=\"inner-left\">1</span>SPLITME<span "
       "id=\"inner-right\">2</span>3</span>");
 
-  Element* outer = document().getElementById(AtomicString::fromUTF8("outer"));
-  Element* innerLeft =
-      document().getElementById(AtomicString::fromUTF8("inner-left"));
-  Element* innerRight =
-      document().getElementById(AtomicString::fromUTF8("inner-right"));
-  Text* oldText = toText(outer->childNodes()->item(2));
+  Element* outer =
+      GetDocument().GetElementById(AtomicString::FromUTF8("outer"));
+  Element* inner_left =
+      GetDocument().GetElementById(AtomicString::FromUTF8("inner-left"));
+  Element* inner_right =
+      GetDocument().GetElementById(AtomicString::FromUTF8("inner-right"));
+  Text* old_text = ToText(outer->childNodes()->item(2));
 
-  Range* rangeOuterOutside = Range::create(document(), outer, 0, outer, 5);
-  Range* rangeOuterInside = Range::create(document(), outer, 1, outer, 4);
-  Range* rangeOuterSurroundingText =
-      Range::create(document(), outer, 2, outer, 3);
-  Range* rangeInnerLeft = Range::create(document(), innerLeft, 0, innerLeft, 1);
-  Range* rangeInnerRight =
-      Range::create(document(), innerRight, 0, innerRight, 1);
-  Range* rangeFromTextToMiddleOfElement =
-      Range::create(document(), oldText, 6, outer, 3);
+  Range* range_outer_outside = Range::Create(GetDocument(), outer, 0, outer, 5);
+  Range* range_outer_inside = Range::Create(GetDocument(), outer, 1, outer, 4);
+  Range* range_outer_surrounding_text =
+      Range::Create(GetDocument(), outer, 2, outer, 3);
+  Range* range_inner_left =
+      Range::Create(GetDocument(), inner_left, 0, inner_left, 1);
+  Range* range_inner_right =
+      Range::Create(GetDocument(), inner_right, 0, inner_right, 1);
+  Range* range_from_text_to_middle_of_element =
+      Range::Create(GetDocument(), old_text, 6, outer, 3);
 
-  oldText->splitText(3, ASSERT_NO_EXCEPTION);
-  Text* newText = toText(oldText->nextSibling());
+  old_text->splitText(3, ASSERT_NO_EXCEPTION);
+  Text* new_text = ToText(old_text->nextSibling());
 
-  EXPECT_TRUE(rangeOuterOutside->boundaryPointsValid());
-  EXPECT_EQ(outer, rangeOuterOutside->startContainer());
-  EXPECT_EQ(0u, rangeOuterOutside->startOffset());
-  EXPECT_EQ(outer, rangeOuterOutside->endContainer());
+  EXPECT_TRUE(range_outer_outside->BoundaryPointsValid());
+  EXPECT_EQ(outer, range_outer_outside->startContainer());
+  EXPECT_EQ(0u, range_outer_outside->startOffset());
+  EXPECT_EQ(outer, range_outer_outside->endContainer());
   EXPECT_EQ(6u,
-            rangeOuterOutside
+            range_outer_outside
                 ->endOffset());  // Increased by 1 since a new node is inserted.
 
-  EXPECT_TRUE(rangeOuterInside->boundaryPointsValid());
-  EXPECT_EQ(outer, rangeOuterInside->startContainer());
-  EXPECT_EQ(1u, rangeOuterInside->startOffset());
-  EXPECT_EQ(outer, rangeOuterInside->endContainer());
-  EXPECT_EQ(5u, rangeOuterInside->endOffset());
+  EXPECT_TRUE(range_outer_inside->BoundaryPointsValid());
+  EXPECT_EQ(outer, range_outer_inside->startContainer());
+  EXPECT_EQ(1u, range_outer_inside->startOffset());
+  EXPECT_EQ(outer, range_outer_inside->endContainer());
+  EXPECT_EQ(5u, range_outer_inside->endOffset());
 
-  EXPECT_TRUE(rangeOuterSurroundingText->boundaryPointsValid());
-  EXPECT_EQ(outer, rangeOuterSurroundingText->startContainer());
-  EXPECT_EQ(2u, rangeOuterSurroundingText->startOffset());
-  EXPECT_EQ(outer, rangeOuterSurroundingText->endContainer());
-  EXPECT_EQ(4u, rangeOuterSurroundingText->endOffset());
+  EXPECT_TRUE(range_outer_surrounding_text->BoundaryPointsValid());
+  EXPECT_EQ(outer, range_outer_surrounding_text->startContainer());
+  EXPECT_EQ(2u, range_outer_surrounding_text->startOffset());
+  EXPECT_EQ(outer, range_outer_surrounding_text->endContainer());
+  EXPECT_EQ(4u, range_outer_surrounding_text->endOffset());
 
-  EXPECT_TRUE(rangeInnerLeft->boundaryPointsValid());
-  EXPECT_EQ(innerLeft, rangeInnerLeft->startContainer());
-  EXPECT_EQ(0u, rangeInnerLeft->startOffset());
-  EXPECT_EQ(innerLeft, rangeInnerLeft->endContainer());
-  EXPECT_EQ(1u, rangeInnerLeft->endOffset());
+  EXPECT_TRUE(range_inner_left->BoundaryPointsValid());
+  EXPECT_EQ(inner_left, range_inner_left->startContainer());
+  EXPECT_EQ(0u, range_inner_left->startOffset());
+  EXPECT_EQ(inner_left, range_inner_left->endContainer());
+  EXPECT_EQ(1u, range_inner_left->endOffset());
 
-  EXPECT_TRUE(rangeInnerRight->boundaryPointsValid());
-  EXPECT_EQ(innerRight, rangeInnerRight->startContainer());
-  EXPECT_EQ(0u, rangeInnerRight->startOffset());
-  EXPECT_EQ(innerRight, rangeInnerRight->endContainer());
-  EXPECT_EQ(1u, rangeInnerRight->endOffset());
+  EXPECT_TRUE(range_inner_right->BoundaryPointsValid());
+  EXPECT_EQ(inner_right, range_inner_right->startContainer());
+  EXPECT_EQ(0u, range_inner_right->startOffset());
+  EXPECT_EQ(inner_right, range_inner_right->endContainer());
+  EXPECT_EQ(1u, range_inner_right->endOffset());
 
-  EXPECT_TRUE(rangeFromTextToMiddleOfElement->boundaryPointsValid());
-  EXPECT_EQ(newText, rangeFromTextToMiddleOfElement->startContainer());
-  EXPECT_EQ(3u, rangeFromTextToMiddleOfElement->startOffset());
-  EXPECT_EQ(outer, rangeFromTextToMiddleOfElement->endContainer());
-  EXPECT_EQ(4u, rangeFromTextToMiddleOfElement->endOffset());
+  EXPECT_TRUE(range_from_text_to_middle_of_element->BoundaryPointsValid());
+  EXPECT_EQ(new_text, range_from_text_to_middle_of_element->startContainer());
+  EXPECT_EQ(3u, range_from_text_to_middle_of_element->startOffset());
+  EXPECT_EQ(outer, range_from_text_to_middle_of_element->endContainer());
+  EXPECT_EQ(4u, range_from_text_to_middle_of_element->endOffset());
 }
 
 TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
-  Element* foo = document().createElement("foo");
-  Element* bar = document().createElement("bar");
-  foo->appendChild(bar);
+  Element* foo = GetDocument().createElement("foo");
+  Element* bar = GetDocument().createElement("bar");
+  foo->AppendChild(bar);
 
-  Range* range = Range::create(document(), Position(bar, 0), Position(foo, 1));
+  Range* range =
+      Range::Create(GetDocument(), Position(bar, 0), Position(foo, 1));
 
-  Document* anotherDocument = Document::create();
-  anotherDocument->appendChild(foo);
+  Document* another_document = Document::Create();
+  another_document->AppendChild(foo);
 
   EXPECT_EQ(bar, range->startContainer());
   EXPECT_EQ(0u, range->startOffset());
@@ -190,20 +194,20 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
 
 // Regression test for crbug.com/639184
 TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<div><span id=span1>foo</span>bar<span id=span2>baz</span></div>");
 
-  Element* div = document().querySelector("div");
-  Element* span1 = document().getElementById("span1");
-  Element* span2 = document().getElementById("span2");
-  Text* text = toText(div->childNodes()->item(1));
+  Element* div = GetDocument().QuerySelector("div");
+  Element* span1 = GetDocument().GetElementById("span1");
+  Element* span2 = GetDocument().GetElementById("span2");
+  Text* text = ToText(div->childNodes()->item(1));
 
-  Range* range = Range::create(document(), span2, 0, div, 3);
+  Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
 
-  div->removeChild(span1);
+  div->RemoveChild(span1);
   text->insertData(0, "bar", ASSERT_NO_EXCEPTION);
 
-  EXPECT_TRUE(range->boundaryPointsValid());
+  EXPECT_TRUE(range->BoundaryPointsValid());
   EXPECT_EQ(span2, range->startContainer());
   EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(div, range->endContainer());
@@ -212,20 +216,20 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextInsert) {
 
 // Regression test for crbug.com/639184
 TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<div><span id=span1>foofoo</span>bar<span id=span2>baz</span></div>");
 
-  Element* div = document().querySelector("div");
-  Element* span1 = document().getElementById("span1");
-  Element* span2 = document().getElementById("span2");
-  Text* text = toText(div->childNodes()->item(1));
+  Element* div = GetDocument().QuerySelector("div");
+  Element* span1 = GetDocument().GetElementById("span1");
+  Element* span2 = GetDocument().GetElementById("span2");
+  Text* text = ToText(div->childNodes()->item(1));
 
-  Range* range = Range::create(document(), span2, 0, div, 3);
+  Range* range = Range::Create(GetDocument(), span2, 0, div, 3);
 
-  div->removeChild(span1);
+  div->RemoveChild(span1);
   text->deleteData(0, 3, ASSERT_NO_EXCEPTION);
 
-  EXPECT_TRUE(range->boundaryPointsValid());
+  EXPECT_TRUE(range->BoundaryPointsValid());
   EXPECT_EQ(span2, range->startContainer());
   EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(div, range->endContainer());
@@ -234,29 +238,29 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
 
 // Regression test for crbug.com/698123
 TEST_F(RangeTest, ExpandNotCrash) {
-  Range* range = Range::create(document());
-  Node* div = HTMLDivElement::create(document());
+  Range* range = Range::Create(GetDocument());
+  Node* div = HTMLDivElement::Create(GetDocument());
   range->setStart(div, 0, ASSERT_NO_EXCEPTION);
   range->expand("", ASSERT_NO_EXCEPTION);
 }
 
 TEST_F(RangeTest, MultipleTextQuads) {
-  setBodyContent("<div><p id='one'>one</p><p id='two'>two</p></div>");
-  Position start(document().getElementById("one")->firstChild(), 0);
-  Position end(document().getElementById("two")->firstChild(), 3);
-  Range* range = Range::create(document(), start, end);
+  SetBodyContent("<div><p id='one'>one</p><p id='two'>two</p></div>");
+  Position start(GetDocument().GetElementById("one")->FirstChild(), 0);
+  Position end(GetDocument().GetElementById("two")->FirstChild(), 3);
+  Range* range = Range::Create(GetDocument(), start, end);
   Vector<FloatQuad> quads;
-  range->textQuads(quads);
+  range->TextQuads(quads);
   EXPECT_EQ(2u, quads.size());
 }
 
 TEST_F(RangeTest, ToPosition) {
-  Node& textarea = *HTMLTextAreaElement::create(document());
-  Range& range = *Range::create(document());
+  Node& textarea = *HTMLTextAreaElement::Create(GetDocument());
+  Range& range = *Range::Create(GetDocument());
   const Position position = Position(&textarea, 0);
   range.setStart(position, ASSERT_NO_EXCEPTION);
-  EXPECT_EQ(position, range.startPosition());
-  EXPECT_EQ(position, range.endPosition());
+  EXPECT_EQ(position, range.StartPosition());
+  EXPECT_EQ(position, range.EndPosition());
 }
 
 }  // namespace blink

@@ -16,25 +16,25 @@ class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
   virtual ~NonInterpolableValue() {}
 
   typedef const void* Type;
-  virtual Type getType() const = 0;
+  virtual Type GetType() const = 0;
 };
 
 // These macros provide safe downcasts of NonInterpolableValue subclasses with
 // debug assertions.
 // See CSSValueInterpolationType.cpp for example usage.
 #define DECLARE_NON_INTERPOLABLE_VALUE_TYPE() \
-  static Type staticType;                     \
-  Type getType() const final { return staticType; }
+  static Type static_type_;                   \
+  Type GetType() const final { return static_type_; }
 
 #define DEFINE_NON_INTERPOLABLE_VALUE_TYPE(T) \
-  NonInterpolableValue::Type T::staticType = &T::staticType;
+  NonInterpolableValue::Type T::static_type_ = &T::static_type_;
 
 #define DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(T)               \
-  inline bool is##T(const NonInterpolableValue* value) {          \
-    return !value || value->getType() == T::staticType;           \
+  inline bool Is##T(const NonInterpolableValue* value) {          \
+    return !value || value->GetType() == T::static_type_;         \
   }                                                               \
-  DEFINE_TYPE_CASTS(T, NonInterpolableValue, value, is##T(value), \
-                    is##T(&value));
+  DEFINE_TYPE_CASTS(T, NonInterpolableValue, value, Is##T(value), \
+                    Is##T(&value));
 
 }  // namespace blink
 

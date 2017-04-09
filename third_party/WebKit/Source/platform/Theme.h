@@ -58,75 +58,75 @@ class PLATFORM_EXPORT Theme {
   // controls that need to do this.  The adjustment is an offset that adds to
   // the baseline, e.g., marginTop() + height() + |offset|.
   // The offset is not zoomed.
-  virtual int baselinePositionAdjustment(ControlPart) const { return 0; }
+  virtual int BaselinePositionAdjustment(ControlPart) const { return 0; }
 
   // A method asking if the control changes its appearance when the window is
   // inactive.
-  virtual bool controlHasInactiveAppearance(ControlPart) const { return false; }
+  virtual bool ControlHasInactiveAppearance(ControlPart) const { return false; }
 
   // General methods for whether or not any of the controls in the theme change
   // appearance when the window is inactive or when hovered over.
-  virtual bool controlsCanHaveInactiveAppearance() const { return false; }
-  virtual bool controlsCanHaveHoveredAppearance() const { return false; }
+  virtual bool ControlsCanHaveInactiveAppearance() const { return false; }
+  virtual bool ControlsCanHaveHoveredAppearance() const { return false; }
 
   // Used by LayoutTheme::isControlStyled to figure out if the native look and
   // feel should be turned off.
-  virtual bool controlDrawsBorder(ControlPart) const { return true; }
-  virtual bool controlDrawsBackground(ControlPart) const { return true; }
-  virtual bool controlDrawsFocusOutline(ControlPart) const { return true; }
+  virtual bool ControlDrawsBorder(ControlPart) const { return true; }
+  virtual bool ControlDrawsBackground(ControlPart) const { return true; }
+  virtual bool ControlDrawsFocusOutline(ControlPart) const { return true; }
 
   // Methods for obtaining platform-specific colors.
-  virtual Color selectionColor(ControlPart, ControlState, SelectionPart) const {
+  virtual Color SelectionColor(ControlPart, ControlState, SelectionPart) const {
     return Color();
   }
-  virtual Color textSearchHighlightColor() const { return Color(); }
+  virtual Color TextSearchHighlightColor() const { return Color(); }
 
   // CSS system colors and fonts
-  virtual Color systemColor(ThemeColor) const { return Color(); }
+  virtual Color SystemColor(ThemeColor) const { return Color(); }
 
   // How fast the caret blinks in text fields.
-  virtual double caretBlinkInterval() const { return 0.5; }
+  virtual double CaretBlinkInterval() const { return 0.5; }
 
   // Methods used to adjust the ComputedStyles of controls.
 
   // The font description result should have a zoomed font size.
-  virtual FontDescription controlFont(ControlPart,
-                                      const FontDescription& fontDescription,
+  virtual FontDescription ControlFont(ControlPart,
+                                      const FontDescription& font_description,
                                       float /*zoomFactor*/) const {
-    return fontDescription;
+    return font_description;
   }
 
   // The size here is in zoomed coordinates already.  If a new size is returned,
   // it also needs to be in zoomed coordinates.
-  virtual LengthSize controlSize(ControlPart,
-                                 const FontDescription&,
-                                 const LengthSize& zoomedSize,
-                                 float /*zoomFactor*/) const {
-    return zoomedSize;
+  virtual LengthSize GetControlSize(ControlPart,
+                                    const FontDescription&,
+                                    const LengthSize& zoomed_size,
+                                    float /*zoomFactor*/) const {
+    return zoomed_size;
   }
 
   // Returns the minimum size for a control in zoomed coordinates.
-  virtual LengthSize minimumControlSize(ControlPart,
+  virtual LengthSize MinimumControlSize(ControlPart,
                                         const FontDescription&,
                                         float /*zoomFactor*/) const {
-    return LengthSize(Length(0, Fixed), Length(0, Fixed));
+    return LengthSize(Length(0, kFixed), Length(0, kFixed));
   }
 
   // Allows the theme to modify the existing padding/border.
-  virtual LengthBox controlPadding(ControlPart,
+  virtual LengthBox ControlPadding(ControlPart,
                                    const FontDescription&,
-                                   const LengthBox& zoomedBox,
-                                   float zoomFactor) const;
-  virtual LengthBox controlBorder(ControlPart,
+                                   const LengthBox& zoomed_box,
+                                   float zoom_factor) const;
+  virtual LengthBox ControlBorder(ControlPart,
                                   const FontDescription&,
-                                  const LengthBox& zoomedBox,
-                                  float zoomFactor) const;
+                                  const LengthBox& zoomed_box,
+                                  float zoom_factor) const;
 
   // Whether or not whitespace: pre should be forced on always.
-  virtual bool controlRequiresPreWhiteSpace(ControlPart) const { return false; }
+  virtual bool ControlRequiresPreWhiteSpace(ControlPart) const { return false; }
 
   // Method for painting a control. The rect is in zoomed coordinates.
-  virtual void paint(ControlPart,
+  virtual void Paint(ControlPart,
                      ControlStates,
                      GraphicsContext&,
                      const IntRect& /*zoomedRect*/,
@@ -136,17 +136,17 @@ class PLATFORM_EXPORT Theme {
   // Add visual overflow (e.g., the check on an OS X checkbox). The rect passed
   // in is in zoomed coordinates so the inflation should take that into account
   // and make sure the inflation amount is also scaled by the zoomFactor.
-  virtual void addVisualOverflow(ControlPart,
+  virtual void AddVisualOverflow(ControlPart,
                                  ControlStates,
-                                 float zoomFactor,
-                                 IntRect& borderBox) const {}
+                                 float zoom_factor,
+                                 IntRect& border_box) const {}
 
  private:
-  mutable Color m_activeSelectionColor;
-  mutable Color m_inactiveSelectionColor;
+  mutable Color active_selection_color_;
+  mutable Color inactive_selection_color_;
 };
 
-PLATFORM_EXPORT Theme* platformTheme();
+PLATFORM_EXPORT Theme* PlatformTheme();
 
 }  // namespace blink
 

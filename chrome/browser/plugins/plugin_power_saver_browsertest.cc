@@ -340,7 +340,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
                                             const gfx::Point& point) {
     WaitForPlaceholderReady(GetActiveWebContents(), element_id);
     content::SimulateMouseClickAt(GetActiveWebContents(), 0 /* modifiers */,
-                                  blink::WebMouseEvent::Button::Left, point);
+                                  blink::WebMouseEvent::Button::kLeft, point);
 
     VerifyPluginMarkedEssential(GetActiveWebContents(), element_id);
   }

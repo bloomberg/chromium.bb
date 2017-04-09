@@ -39,27 +39,27 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
  public:
   ~LayoutImageResourceStyleImage() override;
 
-  static LayoutImageResource* create(StyleImage* styleImage) {
-    return new LayoutImageResourceStyleImage(styleImage);
+  static LayoutImageResource* Create(StyleImage* style_image) {
+    return new LayoutImageResourceStyleImage(style_image);
   }
-  void initialize(LayoutObject*) override;
-  void shutdown() override;
+  void Initialize(LayoutObject*) override;
+  void Shutdown() override;
 
-  bool hasImage() const override { return true; }
-  PassRefPtr<Image> image(const IntSize&, float) const override;
-  bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
+  bool HasImage() const override { return true; }
+  PassRefPtr<Image> GetImage(const IntSize&, float) const override;
+  bool ErrorOccurred() const override { return style_image_->ErrorOccurred(); }
 
-  bool imageHasRelativeSize() const override {
-    return m_styleImage->imageHasRelativeSize();
+  bool ImageHasRelativeSize() const override {
+    return style_image_->ImageHasRelativeSize();
   }
-  LayoutSize imageSize(float multiplier) const override;
-  WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
+  LayoutSize ImageSize(float multiplier) const override;
+  WrappedImagePtr ImagePtr() const override { return style_image_->Data(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit LayoutImageResourceStyleImage(StyleImage*);
-  Member<StyleImage> m_styleImage;
+  Member<StyleImage> style_image_;
 };
 
 }  // namespace blink

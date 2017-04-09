@@ -70,44 +70,44 @@ class PLATFORM_EXPORT ImageSource final {
   // an increased memory cost to do so.
   //
   // Returns the number of bytes of frame data actually cleared.
-  size_t clearCacheExceptFrame(size_t);
+  size_t ClearCacheExceptFrame(size_t);
 
-  PassRefPtr<SharedBuffer> data();
+  PassRefPtr<SharedBuffer> Data();
   // Returns false when the decoder layer rejects the data.
-  bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
-  String filenameExtension() const;
+  bool SetData(PassRefPtr<SharedBuffer> data, bool all_data_received);
+  String FilenameExtension() const;
 
-  bool isSizeAvailable();
-  bool hasColorProfile() const;
+  bool IsSizeAvailable();
+  bool HasColorProfile() const;
   IntSize size(
-      RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
-  IntSize frameSizeAtIndex(
+      RespectImageOrientationEnum = kDoNotRespectImageOrientation) const;
+  IntSize FrameSizeAtIndex(
       size_t,
-      RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
+      RespectImageOrientationEnum = kDoNotRespectImageOrientation) const;
 
-  bool getHotSpot(IntPoint&) const;
-  int repetitionCount();
+  bool GetHotSpot(IntPoint&) const;
+  int RepetitionCount();
 
-  size_t frameCount() const;
+  size_t FrameCount() const;
 
   // Attempts to create the requested frame.
-  sk_sp<SkImage> createFrameAtIndex(size_t, const ColorBehavior&);
+  sk_sp<SkImage> CreateFrameAtIndex(size_t, const ColorBehavior&);
 
-  float frameDurationAtIndex(size_t) const;
-  bool frameHasAlphaAtIndex(
+  float FrameDurationAtIndex(size_t) const;
+  bool FrameHasAlphaAtIndex(
       size_t) const;  // Whether or not the frame actually used any alpha.
-  bool frameIsCompleteAtIndex(
+  bool FrameIsCompleteAtIndex(
       size_t) const;  // Whether or not the frame is fully received.
-  ImageOrientation orientationAtIndex(size_t) const;  // EXIF image orientation
+  ImageOrientation OrientationAtIndex(size_t) const;  // EXIF image orientation
 
   // Returns the number of bytes in the decoded frame. May return 0 if the
   // frame has not yet begun to decode.
-  size_t frameBytesAtIndex(size_t) const;
+  size_t FrameBytesAtIndex(size_t) const;
 
  private:
-  std::unique_ptr<DeferredImageDecoder> m_decoder;
-  ColorBehavior m_decoderColorBehavior;
-  bool m_allDataReceived = false;
+  std::unique_ptr<DeferredImageDecoder> decoder_;
+  ColorBehavior decoder_color_behavior_;
+  bool all_data_received_ = false;
 };
 
 }  // namespace blink

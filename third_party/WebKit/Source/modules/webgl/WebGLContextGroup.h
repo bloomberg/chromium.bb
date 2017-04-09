@@ -41,7 +41,7 @@ class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
  public:
   WebGLContextGroup();
 
-  void addContext(WebGLRenderingContextBase*);
+  void AddContext(WebGLRenderingContextBase*);
 
   // There's no point in having a removeContext method any more now that
   // the context group is GarbageCollected. The only time it would be
@@ -49,9 +49,9 @@ class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
   // time, the context is not allowed to refer back to the context group
   // since both are on the Oilpan heap.
 
-  gpu::gles2::GLES2Interface* getAGLInterface();
+  gpu::gles2::GLES2Interface* GetAGLInterface();
 
-  void loseContextGroup(WebGLRenderingContextBase::LostContextMode,
+  void LoseContextGroup(WebGLRenderingContextBase::LostContextMode,
                         WebGLRenderingContextBase::AutoRecoveryMethod);
 
   // This counter gets incremented every time context loss is
@@ -59,18 +59,18 @@ class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
   // the objects in a given context group upon context loss, each
   // object needs to keep track of the context loss count when it was
   // created, in order to validate itself.
-  uint32_t numberOfContextLosses() const;
+  uint32_t NumberOfContextLosses() const;
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_contexts); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(contexts_); }
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   friend class WebGLObject;
 
-  uint32_t m_numberOfContextLosses;
+  uint32_t number_of_context_losses_;
 
-  HeapHashSet<TraceWrapperMember<WebGLRenderingContextBase>> m_contexts;
+  HeapHashSet<TraceWrapperMember<WebGLRenderingContextBase>> contexts_;
 };
 
 }  // namespace blink

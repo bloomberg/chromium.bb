@@ -22,41 +22,41 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
   explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
   virtual ~WebDatabaseObserverImpl();
 
-  void databaseOpened(const blink::WebSecurityOrigin& origin,
+  void DatabaseOpened(const blink::WebSecurityOrigin& origin,
                       const blink::WebString& database_name,
                       const blink::WebString& database_display_name,
                       unsigned long estimated_size) override;
-  void databaseModified(const blink::WebSecurityOrigin& origin,
+  void DatabaseModified(const blink::WebSecurityOrigin& origin,
                         const blink::WebString& database_name) override;
-  void databaseClosed(const blink::WebSecurityOrigin& origin,
+  void DatabaseClosed(const blink::WebSecurityOrigin& origin,
                       const blink::WebString& database_name) override;
-  void reportOpenDatabaseResult(const blink::WebSecurityOrigin& origin,
+  void ReportOpenDatabaseResult(const blink::WebSecurityOrigin& origin,
                                 const blink::WebString& database_name,
                                 int callsite,
                                 int websql_error,
                                 int sqlite_error,
                                 double call_time) override;
-  void reportChangeVersionResult(const blink::WebSecurityOrigin& origin,
+  void ReportChangeVersionResult(const blink::WebSecurityOrigin& origin,
                                  const blink::WebString& database_name,
                                  int callsite,
                                  int websql_error,
                                  int sqlite_error) override;
-  void reportStartTransactionResult(const blink::WebSecurityOrigin& origin,
+  void ReportStartTransactionResult(const blink::WebSecurityOrigin& origin,
                                     const blink::WebString& database_name,
                                     int callsite,
                                     int websql_error,
                                     int sqlite_error) override;
-  void reportCommitTransactionResult(const blink::WebSecurityOrigin& origin,
+  void ReportCommitTransactionResult(const blink::WebSecurityOrigin& origin,
                                      const blink::WebString& database_name,
                                      int callsite,
                                      int websql_error,
                                      int sqlite_error) override;
-  void reportExecuteStatementResult(const blink::WebSecurityOrigin& origin,
+  void ReportExecuteStatementResult(const blink::WebSecurityOrigin& origin,
                                     const blink::WebString& database_name,
                                     int callsite,
                                     int websql_error,
                                     int sqlite_error) override;
-  void reportVacuumDatabaseResult(const blink::WebSecurityOrigin& origin,
+  void ReportVacuumDatabaseResult(const blink::WebSecurityOrigin& origin,
                                   const blink::WebString& database_name,
                                   int sqlite_error) override;
 

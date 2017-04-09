@@ -40,47 +40,47 @@ class CORE_EXPORT DocumentResource final : public TextResource {
  public:
   using ClientType = ResourceClient;
 
-  static DocumentResource* fetchSVGDocument(FetchRequest&, ResourceFetcher*);
+  static DocumentResource* FetchSVGDocument(FetchRequest&, ResourceFetcher*);
   ~DocumentResource() override;
   DECLARE_VIRTUAL_TRACE();
 
-  Document* document() const { return m_document.get(); }
+  Document* GetDocument() const { return document_.Get(); }
 
-  void checkNotify() override;
+  void CheckNotify() override;
 
  private:
   class SVGDocumentResourceFactory : public ResourceFactory {
    public:
-    SVGDocumentResourceFactory() : ResourceFactory(Resource::SVGDocument) {}
+    SVGDocumentResourceFactory() : ResourceFactory(Resource::kSVGDocument) {}
 
-    Resource* create(const ResourceRequest& request,
+    Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options,
                      const String& charset) const override {
-      return new DocumentResource(request, Resource::SVGDocument, options);
+      return new DocumentResource(request, Resource::kSVGDocument, options);
     }
   };
   DocumentResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
-  bool mimeTypeAllowed() const;
-  Document* createDocument(const KURL&);
+  bool MimeTypeAllowed() const;
+  Document* CreateDocument(const KURL&);
 
-  Member<Document> m_document;
+  Member<Document> document_;
 };
 
 DEFINE_TYPE_CASTS(DocumentResource,
                   Resource,
                   resource,
-                  resource->getType() == Resource::SVGDocument,
-                  resource.getType() == Resource::SVGDocument);
+                  resource->GetType() == Resource::kSVGDocument,
+                  resource.GetType() == Resource::kSVGDocument);
 
 class CORE_EXPORT DocumentResourceClient : public ResourceClient {
  public:
   ~DocumentResourceClient() override {}
-  static bool isExpectedType(ResourceClient* client) {
-    return client->getResourceClientType() == DocumentType;
+  static bool IsExpectedType(ResourceClient* client) {
+    return client->GetResourceClientType() == kDocumentType;
   }
-  ResourceClientType getResourceClientType() const final {
-    return DocumentType;
+  ResourceClientType GetResourceClientType() const final {
+    return kDocumentType;
   }
 };
 

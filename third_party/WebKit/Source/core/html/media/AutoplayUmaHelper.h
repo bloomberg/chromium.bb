@@ -17,40 +17,40 @@ namespace blink {
 // These values are used for histograms. Do not reorder.
 enum class AutoplaySource {
   // Autoplay comes from HTMLMediaElement `autoplay` attribute.
-  Attribute = 0,
+  kAttribute = 0,
   // Autoplay comes from `play()` method.
-  Method = 1,
+  kMethod = 1,
   // Used for checking dual source.
-  NumberOfSources = 2,
+  kNumberOfSources = 2,
   // Both sources are used.
-  DualSource = 2,
+  kDualSource = 2,
   // This enum value must be last.
-  NumberOfUmaSources = 3,
+  kNumberOfUmaSources = 3,
 };
 
 // These values are used for histograms. Do not reorder.
 enum class AutoplayUnmuteActionStatus {
-  Failure = 0,
-  Success = 1,
-  NumberOfStatus = 2,
+  kFailure = 0,
+  kSuccess = 1,
+  kNumberOfStatus = 2,
 };
 
 // These values are used for histograms. Do not reorder.
 enum AutoplayBlockedReason {
-  AutoplayBlockedReasonDataSaver = 0,
-  AutoplayBlockedReasonSetting = 1,
-  AutoplayBlockedReasonDataSaverAndSetting = 2,
+  kAutoplayBlockedReasonDataSaver = 0,
+  kAutoplayBlockedReasonSetting = 1,
+  kAutoplayBlockedReasonDataSaverAndSetting = 2,
   // Keey at the end.
-  AutoplayBlockedReasonMax = 3
+  kAutoplayBlockedReasonMax = 3
 };
 
 enum class CrossOriginAutoplayResult {
-  AutoplayAllowed = 0,
-  AutoplayBlocked = 1,
-  PlayedWithGesture = 2,
-  UserPaused = 3,
+  kAutoplayAllowed = 0,
+  kAutoplayBlocked = 1,
+  kPlayedWithGesture = 2,
+  kUserPaused = 3,
   // Keep at the end.
-  NumberOfResults = 4,
+  kNumberOfResults = 4,
 };
 
 class Document;
@@ -62,24 +62,24 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   USING_GARBAGE_COLLECTED_MIXIN(AutoplayUmaHelper);
 
  public:
-  static AutoplayUmaHelper* create(HTMLMediaElement*);
+  static AutoplayUmaHelper* Create(HTMLMediaElement*);
 
   ~AutoplayUmaHelper();
 
   bool operator==(const EventListener&) const override;
 
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  void onAutoplayInitiated(AutoplaySource);
+  void OnAutoplayInitiated(AutoplaySource);
 
-  void recordCrossOriginAutoplayResult(CrossOriginAutoplayResult);
-  void recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
+  void RecordCrossOriginAutoplayResult(CrossOriginAutoplayResult);
+  void RecordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus);
 
-  void didMoveToNewDocument(Document& oldDocument);
+  void DidMoveToNewDocument(Document& old_document);
 
-  bool isVisible() const { return m_isVisible; }
+  bool IsVisible() const { return is_visible_; }
 
-  bool hasSource() const { return !m_sources.empty(); }
+  bool HasSource() const { return !sources_.empty(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -88,37 +88,38 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   explicit AutoplayUmaHelper(HTMLMediaElement*);
   void handleEvent(ExecutionContext*, Event*) override;
-  void handlePlayingEvent();
-  void handlePauseEvent();
-  virtual void handleContextDestroyed();  // Make virtual for testing.
+  void HandlePlayingEvent();
+  void HandlePauseEvent();
+  virtual void HandleContextDestroyed();  // Make virtual for testing.
 
-  void maybeUnregisterContextDestroyedObserver();
-  void maybeUnregisterMediaElementPauseListener();
+  void MaybeUnregisterContextDestroyedObserver();
+  void MaybeUnregisterMediaElementPauseListener();
 
-  void maybeStartRecordingMutedVideoPlayMethodBecomeVisible();
-  void maybeStopRecordingMutedVideoPlayMethodBecomeVisible(bool isVisible);
+  void MaybeStartRecordingMutedVideoPlayMethodBecomeVisible();
+  void MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(bool is_visible);
 
-  void maybeStartRecordingMutedVideoOffscreenDuration();
-  void maybeStopRecordingMutedVideoOffscreenDuration();
+  void MaybeStartRecordingMutedVideoOffscreenDuration();
+  void MaybeStopRecordingMutedVideoOffscreenDuration();
 
-  void maybeRecordUserPausedAutoplayingCrossOriginVideo();
+  void MaybeRecordUserPausedAutoplayingCrossOriginVideo();
 
-  void onVisibilityChangedForMutedVideoOffscreenDuration(bool isVisibile);
-  void onVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool isVisible);
+  void OnVisibilityChangedForMutedVideoOffscreenDuration(bool is_visibile);
+  void OnVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool is_visible);
 
-  bool shouldListenToContextDestroyed() const;
-  bool shouldRecordUserPausedAutoplayingCrossOriginVideo() const;
+  bool ShouldListenToContextDestroyed() const;
+  bool ShouldRecordUserPausedAutoplayingCrossOriginVideo() const;
 
   // The autoplay sources.
-  std::set<AutoplaySource> m_sources;
+  std::set<AutoplaySource> sources_;
 
   // The media element this UMA helper is attached to. |m_element| owns |this|.
-  Member<HTMLMediaElement> m_element;
+  Member<HTMLMediaElement> element_;
 
   // The observer is used to observe whether a muted video autoplaying by play()
   // method become visible at some point.
   // The UMA is pending for recording as long as this observer is non-null.
-  Member<ElementVisibilityObserver> m_mutedVideoPlayMethodVisibilityObserver;
+  Member<ElementVisibilityObserver>
+      muted_video_play_method_visibility_observer_;
 
   // -----------------------------------------------------------------------
   // Variables used for recording the duration of autoplay muted video playing
@@ -127,21 +128,21 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   // The recording stops whenever the playback pauses or the page is unloaded.
 
   // The starting time of autoplaying muted video.
-  int64_t m_mutedVideoAutoplayOffscreenStartTimeMS;
+  int64_t muted_video_autoplay_offscreen_start_time_ms_;
 
   // The duration an autoplaying muted video has been in offscreen.
-  int64_t m_mutedVideoAutoplayOffscreenDurationMS;
+  int64_t muted_video_autoplay_offscreen_duration_ms_;
 
   // Whether an autoplaying muted video is visible.
-  bool m_isVisible;
+  bool is_visible_;
 
-  std::set<CrossOriginAutoplayResult> m_recordedCrossOriginAutoplayResults;
+  std::set<CrossOriginAutoplayResult> recorded_cross_origin_autoplay_results_;
 
   // The observer is used to observer an autoplaying muted video changing it's
   // visibility, which is used for offscreen duration UMA.  The UMA is pending
   // for recording as long as this observer is non-null.
   Member<ElementVisibilityObserver>
-      m_mutedVideoOffscreenDurationVisibilityObserver;
+      muted_video_offscreen_duration_visibility_observer_;
 };
 
 }  // namespace blink

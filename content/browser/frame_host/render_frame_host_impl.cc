@@ -165,9 +165,9 @@ base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
 base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
     blink::WebTextDirection dir) {
   switch (dir) {
-    case blink::WebTextDirectionLeftToRight:
+    case blink::kWebTextDirectionLeftToRight:
       return base::i18n::LEFT_TO_RIGHT;
-    case blink::WebTextDirectionRightToLeft:
+    case blink::kWebTextDirectionRightToLeft:
       return base::i18n::RIGHT_TO_LEFT;
     default:
       NOTREACHED();
@@ -684,11 +684,12 @@ blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
     frame = frame->GetParent();
   }
   if (!frame)
-    return blink::WebPageVisibilityStateHidden;
+    return blink::kWebPageVisibilityStateHidden;
 
   blink::WebPageVisibilityState visibility_state =
-      GetRenderWidgetHost()->is_hidden() ? blink::WebPageVisibilityStateHidden
-                                         : blink::WebPageVisibilityStateVisible;
+      GetRenderWidgetHost()->is_hidden()
+          ? blink::kWebPageVisibilityStateHidden
+          : blink::kWebPageVisibilityStateVisible;
   GetContentClient()->browser()->OverridePageVisibilityState(this,
                                                              &visibility_state);
   return visibility_state;

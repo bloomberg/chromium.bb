@@ -27,7 +27,7 @@ namespace blink {
 
 struct SameSizeAsStyleBoxData : public RefCounted<SameSizeAsStyleBoxData> {
   Length length[7];
-  int m_zIndex;
+  int z_index_;
   uint32_t bitfields;
 };
 
@@ -35,22 +35,23 @@ static_assert(sizeof(StyleBoxData) == sizeof(SameSizeAsStyleBoxData),
               "StyleBoxData should stay small");
 
 StyleBoxData::StyleBoxData()
-    : m_minWidth(ComputedStyle::initialMinSize()),
-      m_maxWidth(ComputedStyle::initialMaxSize()),
-      m_minHeight(ComputedStyle::initialMinSize()),
-      m_maxHeight(ComputedStyle::initialMaxSize()),
-      m_zIndex(0),
-      m_hasAutoZIndex(true),
-      m_boxSizing(static_cast<unsigned>(ComputedStyle::initialBoxSizing())),
-      m_boxDecorationBreak(BoxDecorationBreakSlice) {}
+    : min_width_(ComputedStyle::InitialMinSize()),
+      max_width_(ComputedStyle::InitialMaxSize()),
+      min_height_(ComputedStyle::InitialMinSize()),
+      max_height_(ComputedStyle::InitialMaxSize()),
+      z_index_(0),
+      has_auto_z_index_(true),
+      box_sizing_(static_cast<unsigned>(ComputedStyle::InitialBoxSizing())),
+      box_decoration_break_(kBoxDecorationBreakSlice) {}
 
 bool StyleBoxData::operator==(const StyleBoxData& o) const {
-  return m_width == o.m_width && m_height == o.m_height &&
-         m_minWidth == o.m_minWidth && m_maxWidth == o.m_maxWidth &&
-         m_minHeight == o.m_minHeight && m_maxHeight == o.m_maxHeight &&
-         m_verticalAlign == o.m_verticalAlign && m_zIndex == o.m_zIndex &&
-         m_hasAutoZIndex == o.m_hasAutoZIndex && m_boxSizing == o.m_boxSizing &&
-         m_boxDecorationBreak == o.m_boxDecorationBreak;
+  return width_ == o.width_ && height_ == o.height_ &&
+         min_width_ == o.min_width_ && max_width_ == o.max_width_ &&
+         min_height_ == o.min_height_ && max_height_ == o.max_height_ &&
+         vertical_align_ == o.vertical_align_ && z_index_ == o.z_index_ &&
+         has_auto_z_index_ == o.has_auto_z_index_ &&
+         box_sizing_ == o.box_sizing_ &&
+         box_decoration_break_ == o.box_decoration_break_;
 }
 
 }  // namespace blink

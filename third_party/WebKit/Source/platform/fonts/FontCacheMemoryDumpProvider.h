@@ -18,7 +18,7 @@ class PLATFORM_EXPORT FontCacheMemoryDumpProvider final
   USING_FAST_MALLOC(FontCacheMemoryDumpProvider);
 
  public:
-  static FontCacheMemoryDumpProvider* instance();
+  static FontCacheMemoryDumpProvider* Instance();
   ~FontCacheMemoryDumpProvider() override {}
 
   // base::trace_event::MemoryDumpProvider implementation.

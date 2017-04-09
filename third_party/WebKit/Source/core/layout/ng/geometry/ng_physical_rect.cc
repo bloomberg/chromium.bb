@@ -9,13 +9,13 @@
 namespace blink {
 
 NGPixelSnappedPhysicalRect NGPhysicalRect::SnapToDevicePixels() const {
-  NGPixelSnappedPhysicalRect snappedRect;
-  snappedRect.left = roundToInt(location.left);
-  snappedRect.top = roundToInt(location.top);
-  snappedRect.width = snapSizeToPixel(size.width, location.left);
-  snappedRect.height = snapSizeToPixel(size.height, location.top);
+  NGPixelSnappedPhysicalRect snapped_rect;
+  snapped_rect.left = RoundToInt(location.left);
+  snapped_rect.top = RoundToInt(location.top);
+  snapped_rect.width = SnapSizeToPixel(size.width, location.left);
+  snapped_rect.height = SnapSizeToPixel(size.height, location.top);
 
-  return snappedRect;
+  return snapped_rect;
 }
 
 bool NGPhysicalRect::operator==(const NGPhysicalRect& other) const {
@@ -23,10 +23,10 @@ bool NGPhysicalRect::operator==(const NGPhysicalRect& other) const {
 }
 
 String NGPhysicalRect::ToString() const {
-  return String::format("%s,%s %sx%s", location.left.toString().ascii().data(),
-                        location.top.toString().ascii().data(),
-                        size.width.toString().ascii().data(),
-                        size.height.toString().ascii().data());
+  return String::Format("%s,%s %sx%s", location.left.ToString().Ascii().Data(),
+                        location.top.ToString().Ascii().Data(),
+                        size.width.ToString().Ascii().Data(),
+                        size.height.ToString().Ascii().Data());
 }
 
 std::ostream& operator<<(std::ostream& os, const NGPhysicalRect& value) {

@@ -33,26 +33,26 @@ namespace blink {
 SetNodeAttributeCommand::SetNodeAttributeCommand(Element* element,
                                                  const QualifiedName& attribute,
                                                  const AtomicString& value)
-    : SimpleEditCommand(element->document()),
-      m_element(element),
-      m_attribute(attribute),
-      m_value(value) {
-  DCHECK(m_element);
+    : SimpleEditCommand(element->GetDocument()),
+      element_(element),
+      attribute_(attribute),
+      value_(value) {
+  DCHECK(element_);
 }
 
-void SetNodeAttributeCommand::doApply(EditingState*) {
-  m_oldValue = m_element->getAttribute(m_attribute);
-  m_element->setAttribute(m_attribute, m_value);
+void SetNodeAttributeCommand::DoApply(EditingState*) {
+  old_value_ = element_->getAttribute(attribute_);
+  element_->setAttribute(attribute_, value_);
 }
 
-void SetNodeAttributeCommand::doUnapply() {
-  m_element->setAttribute(m_attribute, m_oldValue);
-  m_oldValue = nullAtom;
+void SetNodeAttributeCommand::DoUnapply() {
+  element_->setAttribute(attribute_, old_value_);
+  old_value_ = g_null_atom;
 }
 
 DEFINE_TRACE(SetNodeAttributeCommand) {
-  visitor->trace(m_element);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(element_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

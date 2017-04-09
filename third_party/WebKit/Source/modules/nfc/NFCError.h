@@ -19,7 +19,7 @@ class NFCError {
  public:
   // Required by CallbackPromiseAdapter
   using WebType = const device::nfc::mojom::blink::NFCErrorType&;
-  static DOMException* take(ScriptPromiseResolver*,
+  static DOMException* Take(ScriptPromiseResolver*,
                             const device::nfc::mojom::blink::NFCErrorType&);
 };
 

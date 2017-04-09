@@ -32,39 +32,39 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<ComponentTransferType>();
+GetStaticStringEntries<ComponentTransferType>();
 
 class SVGComponentTransferFunctionElement : public SVGElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ComponentTransferFunction transferFunction() const;
+  ComponentTransferFunction TransferFunction() const;
 
-  SVGAnimatedNumberList* tableValues() { return m_tableValues.get(); }
-  SVGAnimatedNumber* slope() { return m_slope.get(); }
-  SVGAnimatedNumber* intercept() { return m_intercept.get(); }
-  SVGAnimatedNumber* amplitude() { return m_amplitude.get(); }
-  SVGAnimatedNumber* exponent() { return m_exponent.get(); }
-  SVGAnimatedNumber* offset() { return m_offset.get(); }
-  SVGAnimatedEnumeration<ComponentTransferType>* type() { return m_type.get(); }
+  SVGAnimatedNumberList* tableValues() { return table_values_.Get(); }
+  SVGAnimatedNumber* slope() { return slope_.Get(); }
+  SVGAnimatedNumber* intercept() { return intercept_.Get(); }
+  SVGAnimatedNumber* amplitude() { return amplitude_.Get(); }
+  SVGAnimatedNumber* exponent() { return exponent_.Get(); }
+  SVGAnimatedNumber* offset() { return offset_.Get(); }
+  SVGAnimatedEnumeration<ComponentTransferType>* type() { return type_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   SVGComponentTransferFunctionElement(const QualifiedName&, Document&);
 
-  void svgAttributeChanged(const QualifiedName&) final;
+  void SvgAttributeChanged(const QualifiedName&) final;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) final { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) final { return false; }
 
  private:
-  Member<SVGAnimatedNumberList> m_tableValues;
-  Member<SVGAnimatedNumber> m_slope;
-  Member<SVGAnimatedNumber> m_intercept;
-  Member<SVGAnimatedNumber> m_amplitude;
-  Member<SVGAnimatedNumber> m_exponent;
-  Member<SVGAnimatedNumber> m_offset;
-  Member<SVGAnimatedEnumeration<ComponentTransferType>> m_type;
+  Member<SVGAnimatedNumberList> table_values_;
+  Member<SVGAnimatedNumber> slope_;
+  Member<SVGAnimatedNumber> intercept_;
+  Member<SVGAnimatedNumber> amplitude_;
+  Member<SVGAnimatedNumber> exponent_;
+  Member<SVGAnimatedNumber> offset_;
+  Member<SVGAnimatedEnumeration<ComponentTransferType>> type_;
 };
 
 }  // namespace blink

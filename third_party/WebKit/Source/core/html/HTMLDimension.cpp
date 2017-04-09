@@ -39,146 +39,146 @@
 namespace blink {
 
 template <typename CharacterType>
-static HTMLDimension parseDimension(const CharacterType* characters,
-                                    size_t lastParsedIndex,
-                                    size_t endOfCurrentToken) {
-  HTMLDimension::HTMLDimensionType type = HTMLDimension::Absolute;
+static HTMLDimension ParseDimension(const CharacterType* characters,
+                                    size_t last_parsed_index,
+                                    size_t end_of_current_token) {
+  HTMLDimension::HTMLDimensionType type = HTMLDimension::kAbsolute;
   double value = 0.;
 
   // HTML5's split removes leading and trailing spaces so we need to skip the
   // leading spaces here.
-  while (lastParsedIndex < endOfCurrentToken &&
-         isASCIISpace((characters[lastParsedIndex])))
-    ++lastParsedIndex;
+  while (last_parsed_index < end_of_current_token &&
+         IsASCIISpace((characters[last_parsed_index])))
+    ++last_parsed_index;
 
   // This is Step 5.5. in the algorithm. Going to the last step would make the
   // code less readable.
-  if (lastParsedIndex >= endOfCurrentToken)
-    return HTMLDimension(value, HTMLDimension::Relative);
+  if (last_parsed_index >= end_of_current_token)
+    return HTMLDimension(value, HTMLDimension::kRelative);
 
-  size_t position = lastParsedIndex;
-  while (position < endOfCurrentToken && isASCIIDigit(characters[position]))
+  size_t position = last_parsed_index;
+  while (position < end_of_current_token && IsASCIIDigit(characters[position]))
     ++position;
 
-  if (position > lastParsedIndex) {
+  if (position > last_parsed_index) {
     bool ok = false;
-    unsigned integerValue = charactersToUIntStrict(
-        characters + lastParsedIndex, position - lastParsedIndex, &ok);
+    unsigned integer_value = CharactersToUIntStrict(
+        characters + last_parsed_index, position - last_parsed_index, &ok);
     if (!ok)
-      return HTMLDimension(0., HTMLDimension::Relative);
-    value += integerValue;
+      return HTMLDimension(0., HTMLDimension::kRelative);
+    value += integer_value;
 
-    if (position < endOfCurrentToken && characters[position] == '.') {
+    if (position < end_of_current_token && characters[position] == '.') {
       ++position;
-      Vector<CharacterType> fractionNumbers;
-      while (position < endOfCurrentToken &&
-             (isASCIIDigit(characters[position]) ||
-              isASCIISpace(characters[position]))) {
-        if (isASCIIDigit(characters[position]))
-          fractionNumbers.push_back(characters[position]);
+      Vector<CharacterType> fraction_numbers;
+      while (position < end_of_current_token &&
+             (IsASCIIDigit(characters[position]) ||
+              IsASCIISpace(characters[position]))) {
+        if (IsASCIIDigit(characters[position]))
+          fraction_numbers.push_back(characters[position]);
         ++position;
       }
 
-      if (fractionNumbers.size()) {
-        double fractionValue = charactersToUIntStrict(
-            fractionNumbers.data(), fractionNumbers.size(), &ok);
+      if (fraction_numbers.size()) {
+        double fraction_value = CharactersToUIntStrict(
+            fraction_numbers.Data(), fraction_numbers.size(), &ok);
         if (!ok)
-          return HTMLDimension(0., HTMLDimension::Relative);
+          return HTMLDimension(0., HTMLDimension::kRelative);
 
-        value += fractionValue /
-                 pow(10., static_cast<double>(fractionNumbers.size()));
+        value += fraction_value /
+                 pow(10., static_cast<double>(fraction_numbers.size()));
       }
     }
   }
 
-  while (position < endOfCurrentToken && isASCIISpace(characters[position]))
+  while (position < end_of_current_token && IsASCIISpace(characters[position]))
     ++position;
 
-  if (position < endOfCurrentToken) {
+  if (position < end_of_current_token) {
     if (characters[position] == '*')
-      type = HTMLDimension::Relative;
+      type = HTMLDimension::kRelative;
     else if (characters[position] == '%')
-      type = HTMLDimension::Percentage;
+      type = HTMLDimension::kPercentage;
   }
 
   return HTMLDimension(value, type);
 }
 
-static HTMLDimension parseDimension(const String& rawToken,
-                                    size_t lastParsedIndex,
-                                    size_t endOfCurrentToken) {
-  if (rawToken.is8Bit())
-    return parseDimension<LChar>(rawToken.characters8(), lastParsedIndex,
-                                 endOfCurrentToken);
-  return parseDimension<UChar>(rawToken.characters16(), lastParsedIndex,
-                               endOfCurrentToken);
+static HTMLDimension ParseDimension(const String& raw_token,
+                                    size_t last_parsed_index,
+                                    size_t end_of_current_token) {
+  if (raw_token.Is8Bit())
+    return ParseDimension<LChar>(raw_token.Characters8(), last_parsed_index,
+                                 end_of_current_token);
+  return ParseDimension<UChar>(raw_token.Characters16(), last_parsed_index,
+                               end_of_current_token);
 }
 
 // This implements the "rules for parsing a list of dimensions" per HTML5.
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#rules-for-parsing-a-list-of-dimensions
-Vector<HTMLDimension> parseListOfDimensions(const String& input) {
-  static const char comma = ',';
+Vector<HTMLDimension> ParseListOfDimensions(const String& input) {
+  static const char kComma = ',';
 
   // Step 2. Remove the last character if it's a comma.
-  String trimmedString = input;
-  if (trimmedString.endsWith(comma))
-    trimmedString.truncate(trimmedString.length() - 1);
+  String trimmed_string = input;
+  if (trimmed_string.EndsWith(kComma))
+    trimmed_string.Truncate(trimmed_string.length() - 1);
 
   // HTML5's split doesn't return a token for an empty string so
   // we need to match them here.
-  if (trimmedString.isEmpty())
+  if (trimmed_string.IsEmpty())
     return Vector<HTMLDimension>();
 
   // Step 3. To avoid String copies, we just look for commas instead of
   // splitting.
-  Vector<HTMLDimension> parsedDimensions;
-  size_t lastParsedIndex = 0;
+  Vector<HTMLDimension> parsed_dimensions;
+  size_t last_parsed_index = 0;
   while (true) {
-    size_t nextComma = trimmedString.find(comma, lastParsedIndex);
-    if (nextComma == kNotFound)
+    size_t next_comma = trimmed_string.Find(kComma, last_parsed_index);
+    if (next_comma == kNotFound)
       break;
 
-    parsedDimensions.push_back(
-        parseDimension(trimmedString, lastParsedIndex, nextComma));
-    lastParsedIndex = nextComma + 1;
+    parsed_dimensions.push_back(
+        ParseDimension(trimmed_string, last_parsed_index, next_comma));
+    last_parsed_index = next_comma + 1;
   }
 
-  parsedDimensions.push_back(
-      parseDimension(trimmedString, lastParsedIndex, trimmedString.length()));
-  return parsedDimensions;
+  parsed_dimensions.push_back(ParseDimension(trimmed_string, last_parsed_index,
+                                             trimmed_string.length()));
+  return parsed_dimensions;
 }
 
 template <typename CharacterType>
-static bool parseDimensionValue(const CharacterType* current,
+static bool ParseDimensionValue(const CharacterType* current,
                                 const CharacterType* end,
                                 HTMLDimension& dimension) {
-  skipWhile<CharacterType, isHTMLSpace>(current, end);
+  skipWhile<CharacterType, IsHTMLSpace>(current, end);
   // Deviation: HTML allows '+' here.
-  const CharacterType* numberStart = current;
-  if (!skipExactly<CharacterType, isASCIIDigit>(current, end))
+  const CharacterType* number_start = current;
+  if (!skipExactly<CharacterType, IsASCIIDigit>(current, end))
     return false;
-  skipWhile<CharacterType, isASCIIDigit>(current, end);
+  skipWhile<CharacterType, IsASCIIDigit>(current, end);
   if (skipExactly<CharacterType>(current, end, '.')) {
     // Deviation: HTML requires a digit after the full stop to be able to treat
     // the value as a percentage (if not, the '.' will considered "garbage",
     // yielding a regular length.) Gecko and Edge does not.
-    skipWhile<CharacterType, isASCIIDigit>(current, end);
+    skipWhile<CharacterType, IsASCIIDigit>(current, end);
   }
   bool ok;
-  double value = charactersToDouble(numberStart, current - numberStart, &ok);
+  double value = CharactersToDouble(number_start, current - number_start, &ok);
   if (!ok)
     return false;
-  HTMLDimension::HTMLDimensionType type = HTMLDimension::Absolute;
+  HTMLDimension::HTMLDimensionType type = HTMLDimension::kAbsolute;
   if (current < end) {
     if (*current == '%') {
-      type = HTMLDimension::Percentage;
+      type = HTMLDimension::kPercentage;
     } else if (*current == '*') {
       // Deviation: HTML does not recognize '*' in this context, and we don't
       // treat it as a valid value. We do count it though, so this is purely
       // for statistics. Note though that per the specced behavior, "<number>*"
       // would be the same as "<number>" (i.e '*' would just be trailing
       // garbage.)
-      type = HTMLDimension::Relative;
+      type = HTMLDimension::kRelative;
     }
   }
   dimension = HTMLDimension(value, type);
@@ -186,15 +186,15 @@ static bool parseDimensionValue(const CharacterType* current,
 }
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-dimension-values
-bool parseDimensionValue(const String& input, HTMLDimension& dimension) {
-  if (input.isEmpty())
+bool ParseDimensionValue(const String& input, HTMLDimension& dimension) {
+  if (input.IsEmpty())
     return false;
-  if (input.is8Bit()) {
-    return parseDimensionValue(input.characters8(),
-                               input.characters8() + input.length(), dimension);
+  if (input.Is8Bit()) {
+    return ParseDimensionValue(input.Characters8(),
+                               input.Characters8() + input.length(), dimension);
   }
-  return parseDimensionValue(input.characters16(),
-                             input.characters16() + input.length(), dimension);
+  return ParseDimensionValue(input.Characters16(),
+                             input.Characters16() + input.length(), dimension);
 }
 
 }  // namespace blink

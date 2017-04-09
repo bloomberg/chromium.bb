@@ -16,31 +16,33 @@ class PLATFORM_EXPORT PlatformCredential
   WTF_MAKE_NONCOPYABLE(PlatformCredential);
 
  public:
-  static PlatformCredential* create(const String& id,
+  static PlatformCredential* Create(const String& id,
                                     const String& name,
-                                    const KURL& iconURL);
+                                    const KURL& icon_url);
   virtual ~PlatformCredential();
 
-  const String& id() const { return m_id; }
-  const String& name() const { return m_name; }
-  const KURL& iconURL() const { return m_iconURL; }
-  const String& type() const { return m_type; }
+  const String& Id() const { return id_; }
+  const String& GetName() const { return name_; }
+  const KURL& GetIconURL() const { return icon_url_; }
+  const String& GetType() const { return type_; }
 
-  virtual bool isPassword() { return false; }
-  virtual bool isFederated() { return false; }
+  virtual bool IsPassword() { return false; }
+  virtual bool IsFederated() { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  PlatformCredential(const String& id, const String& name, const KURL& iconURL);
+  PlatformCredential(const String& id,
+                     const String& name,
+                     const KURL& icon_url);
 
-  void setType(const String& type) { m_type = type; }
+  void SetType(const String& type) { type_ = type; }
 
  private:
-  String m_id;
-  String m_name;
-  KURL m_iconURL;
-  String m_type;
+  String id_;
+  String name_;
+  KURL icon_url_;
+  String type_;
 };
 
 }  // namespace blink

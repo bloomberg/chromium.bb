@@ -35,77 +35,77 @@
 namespace blink {
 
 ChannelSplitterHandler::ChannelSplitterHandler(AudioNode& node,
-                                               float sampleRate,
-                                               unsigned numberOfOutputs)
-    : AudioHandler(NodeTypeChannelSplitter, node, sampleRate) {
+                                               float sample_rate,
+                                               unsigned number_of_outputs)
+    : AudioHandler(kNodeTypeChannelSplitter, node, sample_rate) {
   // These properties are fixed and cannot be changed by the user.
-  m_channelCount = numberOfOutputs;
-  setInternalChannelCountMode(Explicit);
-  addInput();
+  channel_count_ = number_of_outputs;
+  SetInternalChannelCountMode(kExplicit);
+  AddInput();
 
   // Create a fixed number of outputs (able to handle the maximum number of
   // channels fed to an input).
-  for (unsigned i = 0; i < numberOfOutputs; ++i)
-    addOutput(1);
+  for (unsigned i = 0; i < number_of_outputs; ++i)
+    AddOutput(1);
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<ChannelSplitterHandler> ChannelSplitterHandler::create(
+PassRefPtr<ChannelSplitterHandler> ChannelSplitterHandler::Create(
     AudioNode& node,
-    float sampleRate,
-    unsigned numberOfOutputs) {
-  return adoptRef(
-      new ChannelSplitterHandler(node, sampleRate, numberOfOutputs));
+    float sample_rate,
+    unsigned number_of_outputs) {
+  return AdoptRef(
+      new ChannelSplitterHandler(node, sample_rate, number_of_outputs));
 }
 
-void ChannelSplitterHandler::process(size_t framesToProcess) {
-  AudioBus* source = input(0).bus();
+void ChannelSplitterHandler::Process(size_t frames_to_process) {
+  AudioBus* source = Input(0).Bus();
   DCHECK(source);
-  DCHECK_EQ(framesToProcess, source->length());
+  DCHECK_EQ(frames_to_process, source->length());
 
-  unsigned numberOfSourceChannels = source->numberOfChannels();
+  unsigned number_of_source_channels = source->NumberOfChannels();
 
-  for (unsigned i = 0; i < numberOfOutputs(); ++i) {
-    AudioBus* destination = output(i).bus();
+  for (unsigned i = 0; i < NumberOfOutputs(); ++i) {
+    AudioBus* destination = Output(i).Bus();
     DCHECK(destination);
 
-    if (i < numberOfSourceChannels) {
+    if (i < number_of_source_channels) {
       // Split the channel out if it exists in the source.
       // It would be nice to avoid the copy and simply pass along pointers, but
       // this becomes extremely difficult with fanout and fanin.
-      destination->channel(0)->copyFrom(source->channel(i));
-    } else if (output(i).renderingFanOutCount() > 0) {
+      destination->Channel(0)->CopyFrom(source->Channel(i));
+    } else if (Output(i).RenderingFanOutCount() > 0) {
       // Only bother zeroing out the destination if it's connected to anything
-      destination->zero();
+      destination->Zero();
     }
   }
 }
 
-void ChannelSplitterHandler::setChannelCount(unsigned long channelCount,
-                                             ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void ChannelSplitterHandler::SetChannelCount(unsigned long channel_count,
+                                             ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // channelCount cannot be changed from the number of outputs.
-  if (channelCount != numberOfOutputs()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+  if (channel_count != NumberOfOutputs()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "ChannelSplitter: channelCount cannot be changed from " +
-            String::number(numberOfOutputs()));
+            String::Number(NumberOfOutputs()));
   }
 }
 
-void ChannelSplitterHandler::setChannelCountMode(
+void ChannelSplitterHandler::SetChannelCountMode(
     const String& mode,
-    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // channcelCountMode must be 'explicit'.
   if (mode != "explicit") {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "ChannelSplitter: channelCountMode cannot be changed from 'explicit'");
   }
 }
@@ -113,57 +113,57 @@ void ChannelSplitterHandler::setChannelCountMode(
 // ----------------------------------------------------------------
 
 ChannelSplitterNode::ChannelSplitterNode(BaseAudioContext& context,
-                                         unsigned numberOfOutputs)
+                                         unsigned number_of_outputs)
     : AudioNode(context) {
-  setHandler(ChannelSplitterHandler::create(*this, context.sampleRate(),
-                                            numberOfOutputs));
+  SetHandler(ChannelSplitterHandler::Create(*this, context.sampleRate(),
+                                            number_of_outputs));
 }
 
-ChannelSplitterNode* ChannelSplitterNode::create(
+ChannelSplitterNode* ChannelSplitterNode::Create(
     BaseAudioContext& context,
-    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
   // Default number of outputs for the splitter node is 6.
-  return create(context, 6, exceptionState);
+  return Create(context, 6, exception_state);
 }
 
-ChannelSplitterNode* ChannelSplitterNode::create(
+ChannelSplitterNode* ChannelSplitterNode::Create(
     BaseAudioContext& context,
-    unsigned numberOfOutputs,
-    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+    unsigned number_of_outputs,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
-  if (!numberOfOutputs ||
-      numberOfOutputs > BaseAudioContext::maxNumberOfChannels()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexOutsideRange<size_t>(
-                            "number of outputs", numberOfOutputs, 1,
-                            ExceptionMessages::InclusiveBound,
-                            BaseAudioContext::maxNumberOfChannels(),
-                            ExceptionMessages::InclusiveBound));
+  if (!number_of_outputs ||
+      number_of_outputs > BaseAudioContext::MaxNumberOfChannels()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexOutsideRange<size_t>(
+                             "number of outputs", number_of_outputs, 1,
+                             ExceptionMessages::kInclusiveBound,
+                             BaseAudioContext::MaxNumberOfChannels(),
+                             ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
-  return new ChannelSplitterNode(context, numberOfOutputs);
+  return new ChannelSplitterNode(context, number_of_outputs);
 }
 
-ChannelSplitterNode* ChannelSplitterNode::create(
+ChannelSplitterNode* ChannelSplitterNode::Create(
     BaseAudioContext* context,
     const ChannelSplitterOptions& options,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   ChannelSplitterNode* node =
-      create(*context, options.numberOfOutputs(), exceptionState);
+      Create(*context, options.numberOfOutputs(), exception_state);
 
   if (!node)
     return nullptr;
 
-  node->handleChannelOptions(options, exceptionState);
+  node->HandleChannelOptions(options, exception_state);
 
   return node;
 }

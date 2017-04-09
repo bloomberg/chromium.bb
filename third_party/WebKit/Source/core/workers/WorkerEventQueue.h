@@ -37,24 +37,24 @@ class WorkerGlobalScope;
 
 class WorkerEventQueue final : public EventQueue {
  public:
-  static WorkerEventQueue* create(WorkerGlobalScope*);
+  static WorkerEventQueue* Create(WorkerGlobalScope*);
   ~WorkerEventQueue() override;
   DECLARE_TRACE();
 
   // EventQueue
-  bool enqueueEvent(Event*) override;
-  bool cancelEvent(Event*) override;
-  void close() override;
+  bool EnqueueEvent(Event*) override;
+  bool CancelEvent(Event*) override;
+  void Close() override;
 
  private:
   explicit WorkerEventQueue(WorkerGlobalScope*);
-  bool removeEvent(Event*);
-  void dispatchEvent(Event*);
+  bool RemoveEvent(Event*);
+  void DispatchEvent(Event*);
 
-  Member<WorkerGlobalScope> m_workerGlobalScope;
-  bool m_isClosed;
+  Member<WorkerGlobalScope> worker_global_scope_;
+  bool is_closed_;
 
-  HeapHashSet<Member<Event>> m_pendingEvents;
+  HeapHashSet<Member<Event>> pending_events_;
 };
 
 }  // namespace blink

@@ -24,78 +24,79 @@ class CanvasFontCacheTest : public ::testing::Test {
   CanvasFontCacheTest();
   void SetUp() override;
 
-  DummyPageHolder& page() const { return *m_dummyPageHolder; }
-  Document& document() const { return *m_document; }
-  HTMLCanvasElement& canvasElement() const { return *m_canvasElement; }
-  CanvasRenderingContext* context2d() const;
-  CanvasFontCache* cache() { return m_document->canvasFontCache(); }
+  DummyPageHolder& Page() const { return *dummy_page_holder_; }
+  Document& GetDocument() const { return *document_; }
+  HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
+  CanvasRenderingContext* Context2d() const;
+  CanvasFontCache* Cache() { return document_->GetCanvasFontCache(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<Document> m_document;
-  Persistent<HTMLCanvasElement> m_canvasElement;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<Document> document_;
+  Persistent<HTMLCanvasElement> canvas_element_;
 };
 
 CanvasFontCacheTest::CanvasFontCacheTest() {}
 
-CanvasRenderingContext* CanvasFontCacheTest::context2d() const {
+CanvasRenderingContext* CanvasFontCacheTest::Context2d() const {
   // If the following check fails, perhaps you forgot to call createContext
   // in your test?
-  EXPECT_NE(nullptr, canvasElement().renderingContext());
-  EXPECT_TRUE(canvasElement().renderingContext()->is2d());
-  return canvasElement().renderingContext();
+  EXPECT_NE(nullptr, CanvasElement().RenderingContext());
+  EXPECT_TRUE(CanvasElement().RenderingContext()->Is2d());
+  return CanvasElement().RenderingContext();
 }
 
 void CanvasFontCacheTest::SetUp() {
-  Page::PageClients pageClients;
-  fillWithEmptyClients(pageClients);
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
-  m_document = &m_dummyPageHolder->document();
-  m_document->documentElement()->setInnerHTML(
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  dummy_page_holder_ =
+      DummyPageHolder::Create(IntSize(800, 600), &page_clients);
+  document_ = &dummy_page_holder_->GetDocument();
+  document_->documentElement()->setInnerHTML(
       "<body><canvas id='c'></canvas></body>");
-  m_document->view()->updateAllLifecyclePhases();
-  m_canvasElement = toHTMLCanvasElement(m_document->getElementById("c"));
-  String canvasType("2d");
+  document_->View()->UpdateAllLifecyclePhases();
+  canvas_element_ = toHTMLCanvasElement(document_->GetElementById("c"));
+  String canvas_type("2d");
   CanvasContextCreationAttributes attributes;
   attributes.setAlpha(true);
-  m_canvasElement->getCanvasRenderingContext(canvasType, attributes);
-  context2d();  // Calling this for the checks
+  canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
+  Context2d();  // Calling this for the checks
 }
 
 TEST_F(CanvasFontCacheTest, CacheHardLimit) {
-  String fontString;
+  String font_string;
   unsigned i;
-  for (i = 0; i < cache()->hardMaxFonts() + 1; i++) {
-    fontString = String::number(i + 1) + "px sans-serif";
-    context2d()->setFont(fontString);
-    if (i < cache()->hardMaxFonts()) {
-      EXPECT_TRUE(cache()->isInCache("1px sans-serif"));
+  for (i = 0; i < Cache()->HardMaxFonts() + 1; i++) {
+    font_string = String::Number(i + 1) + "px sans-serif";
+    Context2d()->setFont(font_string);
+    if (i < Cache()->HardMaxFonts()) {
+      EXPECT_TRUE(Cache()->IsInCache("1px sans-serif"));
     } else {
-      EXPECT_FALSE(cache()->isInCache("1px sans-serif"));
+      EXPECT_FALSE(Cache()->IsInCache("1px sans-serif"));
     }
-    EXPECT_TRUE(cache()->isInCache(fontString));
+    EXPECT_TRUE(Cache()->IsInCache(font_string));
   }
 }
 
 TEST_F(CanvasFontCacheTest, PageVisibilityChange) {
-  context2d()->setFont("10px sans-serif");
-  EXPECT_TRUE(cache()->isInCache("10px sans-serif"));
-  page().page().setVisibilityState(PageVisibilityStateHidden, false);
-  EXPECT_FALSE(cache()->isInCache("10px sans-serif"));
+  Context2d()->setFont("10px sans-serif");
+  EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
+  Page().GetPage().SetVisibilityState(kPageVisibilityStateHidden, false);
+  EXPECT_FALSE(Cache()->IsInCache("10px sans-serif"));
 
-  context2d()->setFont("15px sans-serif");
-  EXPECT_FALSE(cache()->isInCache("10px sans-serif"));
-  EXPECT_TRUE(cache()->isInCache("15px sans-serif"));
+  Context2d()->setFont("15px sans-serif");
+  EXPECT_FALSE(Cache()->IsInCache("10px sans-serif"));
+  EXPECT_TRUE(Cache()->IsInCache("15px sans-serif"));
 
-  context2d()->setFont("10px sans-serif");
-  EXPECT_TRUE(cache()->isInCache("10px sans-serif"));
-  EXPECT_FALSE(cache()->isInCache("15px sans-serif"));
+  Context2d()->setFont("10px sans-serif");
+  EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
+  EXPECT_FALSE(Cache()->IsInCache("15px sans-serif"));
 
-  page().page().setVisibilityState(PageVisibilityStateVisible, false);
-  context2d()->setFont("15px sans-serif");
-  context2d()->setFont("10px sans-serif");
-  EXPECT_TRUE(cache()->isInCache("10px sans-serif"));
-  EXPECT_TRUE(cache()->isInCache("15px sans-serif"));
+  Page().GetPage().SetVisibilityState(kPageVisibilityStateVisible, false);
+  Context2d()->setFont("15px sans-serif");
+  Context2d()->setFont("10px sans-serif");
+  EXPECT_TRUE(Cache()->IsInCache("10px sans-serif"));
+  EXPECT_TRUE(Cache()->IsInCache("15px sans-serif"));
 }
 
 }  // namespace blink

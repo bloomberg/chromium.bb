@@ -13,81 +13,81 @@ class PseudoElementData final : public GarbageCollected<PseudoElementData> {
   WTF_MAKE_NONCOPYABLE(PseudoElementData);
 
  public:
-  static PseudoElementData* create();
-  void setPseudoElement(PseudoId, PseudoElement*);
-  PseudoElement* pseudoElement(PseudoId) const;
-  bool hasPseudoElements() const;
-  void clearPseudoElements();
+  static PseudoElementData* Create();
+  void SetPseudoElement(PseudoId, PseudoElement*);
+  PseudoElement* GetPseudoElement(PseudoId) const;
+  bool HasPseudoElements() const;
+  void ClearPseudoElements();
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_generatedBefore);
-    visitor->trace(m_generatedAfter);
-    visitor->trace(m_generatedFirstLetter);
-    visitor->trace(m_backdrop);
+    visitor->Trace(generated_before_);
+    visitor->Trace(generated_after_);
+    visitor->Trace(generated_first_letter_);
+    visitor->Trace(backdrop_);
   }
 
  private:
   PseudoElementData() = default;
-  Member<PseudoElement> m_generatedBefore;
-  Member<PseudoElement> m_generatedAfter;
-  Member<PseudoElement> m_generatedFirstLetter;
-  Member<PseudoElement> m_backdrop;
+  Member<PseudoElement> generated_before_;
+  Member<PseudoElement> generated_after_;
+  Member<PseudoElement> generated_first_letter_;
+  Member<PseudoElement> backdrop_;
 };
 
-inline PseudoElementData* PseudoElementData::create() {
+inline PseudoElementData* PseudoElementData::Create() {
   return new PseudoElementData();
 }
 
-inline bool PseudoElementData::hasPseudoElements() const {
-  return m_generatedBefore || m_generatedAfter || m_backdrop ||
-         m_generatedFirstLetter;
+inline bool PseudoElementData::HasPseudoElements() const {
+  return generated_before_ || generated_after_ || backdrop_ ||
+         generated_first_letter_;
 }
 
-inline void PseudoElementData::clearPseudoElements() {
-  setPseudoElement(PseudoIdBefore, nullptr);
-  setPseudoElement(PseudoIdAfter, nullptr);
-  setPseudoElement(PseudoIdBackdrop, nullptr);
-  setPseudoElement(PseudoIdFirstLetter, nullptr);
+inline void PseudoElementData::ClearPseudoElements() {
+  SetPseudoElement(kPseudoIdBefore, nullptr);
+  SetPseudoElement(kPseudoIdAfter, nullptr);
+  SetPseudoElement(kPseudoIdBackdrop, nullptr);
+  SetPseudoElement(kPseudoIdFirstLetter, nullptr);
 }
 
-inline void PseudoElementData::setPseudoElement(PseudoId pseudoId,
+inline void PseudoElementData::SetPseudoElement(PseudoId pseudo_id,
                                                 PseudoElement* element) {
-  switch (pseudoId) {
-    case PseudoIdBefore:
-      if (m_generatedBefore)
-        m_generatedBefore->dispose();
-      m_generatedBefore = element;
+  switch (pseudo_id) {
+    case kPseudoIdBefore:
+      if (generated_before_)
+        generated_before_->Dispose();
+      generated_before_ = element;
       break;
-    case PseudoIdAfter:
-      if (m_generatedAfter)
-        m_generatedAfter->dispose();
-      m_generatedAfter = element;
+    case kPseudoIdAfter:
+      if (generated_after_)
+        generated_after_->Dispose();
+      generated_after_ = element;
       break;
-    case PseudoIdBackdrop:
-      if (m_backdrop)
-        m_backdrop->dispose();
-      m_backdrop = element;
+    case kPseudoIdBackdrop:
+      if (backdrop_)
+        backdrop_->Dispose();
+      backdrop_ = element;
       break;
-    case PseudoIdFirstLetter:
-      if (m_generatedFirstLetter)
-        m_generatedFirstLetter->dispose();
-      m_generatedFirstLetter = element;
+    case kPseudoIdFirstLetter:
+      if (generated_first_letter_)
+        generated_first_letter_->Dispose();
+      generated_first_letter_ = element;
       break;
     default:
       NOTREACHED();
   }
 }
 
-inline PseudoElement* PseudoElementData::pseudoElement(
-    PseudoId pseudoId) const {
-  switch (pseudoId) {
-    case PseudoIdBefore:
-      return m_generatedBefore;
-    case PseudoIdAfter:
-      return m_generatedAfter;
-    case PseudoIdBackdrop:
-      return m_backdrop;
-    case PseudoIdFirstLetter:
-      return m_generatedFirstLetter;
+inline PseudoElement* PseudoElementData::GetPseudoElement(
+    PseudoId pseudo_id) const {
+  switch (pseudo_id) {
+    case kPseudoIdBefore:
+      return generated_before_;
+    case kPseudoIdAfter:
+      return generated_after_;
+    case kPseudoIdBackdrop:
+      return backdrop_;
+    case kPseudoIdFirstLetter:
+      return generated_first_letter_;
     default:
       return nullptr;
   }

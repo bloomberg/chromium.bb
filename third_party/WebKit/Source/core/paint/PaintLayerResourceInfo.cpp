@@ -35,57 +35,57 @@
 namespace blink {
 
 PaintLayerResourceInfo::PaintLayerResourceInfo(PaintLayer* layer)
-    : m_layer(layer) {}
+    : layer_(layer) {}
 
 PaintLayerResourceInfo::~PaintLayerResourceInfo() {
-  DCHECK(!m_layer);
+  DCHECK(!layer_);
 }
 
-TreeScope* PaintLayerResourceInfo::treeScope() {
-  DCHECK(m_layer);
-  Node* node = m_layer->layoutObject().node();
-  return node ? &node->treeScope() : nullptr;
+TreeScope* PaintLayerResourceInfo::GetTreeScope() {
+  DCHECK(layer_);
+  Node* node = layer_->GetLayoutObject().GetNode();
+  return node ? &node->GetTreeScope() : nullptr;
 }
 
-void PaintLayerResourceInfo::resourceContentChanged() {
-  DCHECK(m_layer);
-  LayoutObject& layoutObject = m_layer->layoutObject();
-  layoutObject.setShouldDoFullPaintInvalidation();
+void PaintLayerResourceInfo::ResourceContentChanged() {
+  DCHECK(layer_);
+  LayoutObject& layout_object = layer_->GetLayoutObject();
+  layout_object.SetShouldDoFullPaintInvalidation();
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
-  layoutObject.setNeedsPaintPropertyUpdate();
-  const ComputedStyle& style = layoutObject.styleRef();
-  if (style.hasFilter() && style.filter().hasReferenceFilter())
-    invalidateFilterChain();
+  layout_object.SetNeedsPaintPropertyUpdate();
+  const ComputedStyle& style = layout_object.StyleRef();
+  if (style.HasFilter() && style.Filter().HasReferenceFilter())
+    InvalidateFilterChain();
 }
 
-void PaintLayerResourceInfo::resourceElementChanged() {
-  DCHECK(m_layer);
-  LayoutObject& layoutObject = m_layer->layoutObject();
-  layoutObject.setShouldDoFullPaintInvalidation();
+void PaintLayerResourceInfo::ResourceElementChanged() {
+  DCHECK(layer_);
+  LayoutObject& layout_object = layer_->GetLayoutObject();
+  layout_object.SetShouldDoFullPaintInvalidation();
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
-  layoutObject.setNeedsPaintPropertyUpdate();
-  const ComputedStyle& style = layoutObject.styleRef();
-  if (style.hasFilter() && style.filter().hasReferenceFilter())
-    invalidateFilterChain();
+  layout_object.SetNeedsPaintPropertyUpdate();
+  const ComputedStyle& style = layout_object.StyleRef();
+  if (style.HasFilter() && style.Filter().HasReferenceFilter())
+    InvalidateFilterChain();
 }
 
-void PaintLayerResourceInfo::setLastEffect(FilterEffect* lastEffect) {
-  m_lastEffect = lastEffect;
+void PaintLayerResourceInfo::SetLastEffect(FilterEffect* last_effect) {
+  last_effect_ = last_effect;
 }
 
-FilterEffect* PaintLayerResourceInfo::lastEffect() const {
-  return m_lastEffect;
+FilterEffect* PaintLayerResourceInfo::LastEffect() const {
+  return last_effect_;
 }
 
-void PaintLayerResourceInfo::invalidateFilterChain() {
-  m_lastEffect = nullptr;
+void PaintLayerResourceInfo::InvalidateFilterChain() {
+  last_effect_ = nullptr;
 }
 
 DEFINE_TRACE(PaintLayerResourceInfo) {
-  visitor->trace(m_lastEffect);
-  SVGResourceClient::trace(visitor);
+  visitor->Trace(last_effect_);
+  SVGResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

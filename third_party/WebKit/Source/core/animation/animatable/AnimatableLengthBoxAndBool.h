@@ -38,24 +38,24 @@ namespace blink {
 class AnimatableLengthBoxAndBool final : public AnimatableValue {
  public:
   ~AnimatableLengthBoxAndBool() override {}
-  static PassRefPtr<AnimatableLengthBoxAndBool> create(
+  static PassRefPtr<AnimatableLengthBoxAndBool> Create(
       PassRefPtr<AnimatableValue> box,
       bool flag) {
-    return adoptRef(new AnimatableLengthBoxAndBool(std::move(box), flag));
+    return AdoptRef(new AnimatableLengthBoxAndBool(std::move(box), flag));
   }
 
  private:
   AnimatableLengthBoxAndBool(PassRefPtr<AnimatableValue> box, bool flag)
-      : m_box(std::move(box)), m_flag(flag) {}
-  AnimatableType type() const override { return TypeLengthBoxAndBool; }
-  bool equalTo(const AnimatableValue*) const override;
+      : box_(std::move(box)), flag_(flag) {}
+  AnimatableType GetType() const override { return kTypeLengthBoxAndBool; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  RefPtr<AnimatableValue> m_box;
-  bool m_flag;
+  RefPtr<AnimatableValue> box_;
+  bool flag_;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBoxAndBool,
-                                   isLengthBoxAndBool());
+                                   IsLengthBoxAndBool());
 
 }  // namespace blink
 

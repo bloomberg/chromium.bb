@@ -22,21 +22,21 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
     virtual ~WebViewSchedulerSettings() {}
 
     // Background throttling aggressiveness settings.
-    virtual float expensiveBackgroundThrottlingCPUBudget() = 0;
-    virtual float expensiveBackgroundThrottlingInitialBudget() = 0;
-    virtual float expensiveBackgroundThrottlingMaxBudget() = 0;
-    virtual float expensiveBackgroundThrottlingMaxDelay() = 0;
+    virtual float ExpensiveBackgroundThrottlingCPUBudget() = 0;
+    virtual float ExpensiveBackgroundThrottlingInitialBudget() = 0;
+    virtual float ExpensiveBackgroundThrottlingMaxBudget() = 0;
+    virtual float ExpensiveBackgroundThrottlingMaxDelay() = 0;
   };
 
   virtual ~WebViewScheduler() {}
 
   // The scheduler may throttle tasks associated with background pages.
-  virtual void setPageVisible(bool) = 0;
+  virtual void SetPageVisible(bool) = 0;
 
   // Creates a new WebFrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to
   // |BlameContext|.
-  virtual std::unique_ptr<WebFrameScheduler> createFrameScheduler(
+  virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext*) = 0;
 
   // Instructs this WebViewScheduler to use virtual time. When virtual time is
@@ -48,14 +48,14 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
   //
   // |ABCDE                       (virtual time)
   // |-----------------------------> time
-  virtual void enableVirtualTime() = 0;
+  virtual void EnableVirtualTime() = 0;
 
   // Disables virtual time. Note that this is only used for testing, because
   // there's no reason to do this in production.
-  virtual void disableVirtualTimeForTesting() = 0;
+  virtual void DisableVirtualTimeForTesting() = 0;
 
   // Returns true if virtual time is currently allowed to advance.
-  virtual bool virtualTimeAllowedToAdvance() const = 0;
+  virtual bool VirtualTimeAllowedToAdvance() const = 0;
 
   enum class VirtualTimePolicy {
     // In this policy virtual time is allowed to advance. If the blink scheduler
@@ -80,11 +80,11 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
 
   // Sets the virtual time policy, which is applied imemdiatly to all child
   // WebFrameSchedulers.
-  virtual void setVirtualTimePolicy(VirtualTimePolicy) = 0;
+  virtual void SetVirtualTimePolicy(VirtualTimePolicy) = 0;
 
-  virtual void audioStateChanged(bool isAudioPlaying) = 0;
+  virtual void AudioStateChanged(bool is_audio_playing) = 0;
 
-  virtual bool hasActiveConnectionForTest() const = 0;
+  virtual bool HasActiveConnectionForTest() const = 0;
 };
 
 }  // namespace blink

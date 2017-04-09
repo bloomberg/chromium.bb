@@ -41,58 +41,58 @@ class CSSMatrix final : public GarbageCollectedFinalized<CSSMatrix>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSMatrix* create(const TransformationMatrix& m) {
+  static CSSMatrix* Create(const TransformationMatrix& m) {
     return new CSSMatrix(m);
   }
-  static CSSMatrix* create(ExecutionContext*, const String&, ExceptionState&);
+  static CSSMatrix* Create(ExecutionContext*, const String&, ExceptionState&);
 
-  double a() const { return m_matrix->a(); }
-  double b() const { return m_matrix->b(); }
-  double c() const { return m_matrix->c(); }
-  double d() const { return m_matrix->d(); }
-  double e() const { return m_matrix->e(); }
-  double f() const { return m_matrix->f(); }
+  double a() const { return matrix_->A(); }
+  double b() const { return matrix_->B(); }
+  double c() const { return matrix_->C(); }
+  double d() const { return matrix_->D(); }
+  double e() const { return matrix_->E(); }
+  double f() const { return matrix_->F(); }
 
-  void setA(double f) { m_matrix->setA(f); }
-  void setB(double f) { m_matrix->setB(f); }
-  void setC(double f) { m_matrix->setC(f); }
-  void setD(double f) { m_matrix->setD(f); }
-  void setE(double f) { m_matrix->setE(f); }
-  void setF(double f) { m_matrix->setF(f); }
+  void setA(double f) { matrix_->SetA(f); }
+  void setB(double f) { matrix_->SetB(f); }
+  void setC(double f) { matrix_->SetC(f); }
+  void setD(double f) { matrix_->SetD(f); }
+  void setE(double f) { matrix_->SetE(f); }
+  void setF(double f) { matrix_->SetF(f); }
 
-  double m11() const { return m_matrix->m11(); }
-  double m12() const { return m_matrix->m12(); }
-  double m13() const { return m_matrix->m13(); }
-  double m14() const { return m_matrix->m14(); }
-  double m21() const { return m_matrix->m21(); }
-  double m22() const { return m_matrix->m22(); }
-  double m23() const { return m_matrix->m23(); }
-  double m24() const { return m_matrix->m24(); }
-  double m31() const { return m_matrix->m31(); }
-  double m32() const { return m_matrix->m32(); }
-  double m33() const { return m_matrix->m33(); }
-  double m34() const { return m_matrix->m34(); }
-  double m41() const { return m_matrix->m41(); }
-  double m42() const { return m_matrix->m42(); }
-  double m43() const { return m_matrix->m43(); }
-  double m44() const { return m_matrix->m44(); }
+  double m11() const { return matrix_->M11(); }
+  double m12() const { return matrix_->M12(); }
+  double m13() const { return matrix_->M13(); }
+  double m14() const { return matrix_->M14(); }
+  double m21() const { return matrix_->M21(); }
+  double m22() const { return matrix_->M22(); }
+  double m23() const { return matrix_->M23(); }
+  double m24() const { return matrix_->M24(); }
+  double m31() const { return matrix_->M31(); }
+  double m32() const { return matrix_->M32(); }
+  double m33() const { return matrix_->M33(); }
+  double m34() const { return matrix_->M34(); }
+  double m41() const { return matrix_->M41(); }
+  double m42() const { return matrix_->M42(); }
+  double m43() const { return matrix_->M43(); }
+  double m44() const { return matrix_->M44(); }
 
-  void setM11(double f) { m_matrix->setM11(f); }
-  void setM12(double f) { m_matrix->setM12(f); }
-  void setM13(double f) { m_matrix->setM13(f); }
-  void setM14(double f) { m_matrix->setM14(f); }
-  void setM21(double f) { m_matrix->setM21(f); }
-  void setM22(double f) { m_matrix->setM22(f); }
-  void setM23(double f) { m_matrix->setM23(f); }
-  void setM24(double f) { m_matrix->setM24(f); }
-  void setM31(double f) { m_matrix->setM31(f); }
-  void setM32(double f) { m_matrix->setM32(f); }
-  void setM33(double f) { m_matrix->setM33(f); }
-  void setM34(double f) { m_matrix->setM34(f); }
-  void setM41(double f) { m_matrix->setM41(f); }
-  void setM42(double f) { m_matrix->setM42(f); }
-  void setM43(double f) { m_matrix->setM43(f); }
-  void setM44(double f) { m_matrix->setM44(f); }
+  void setM11(double f) { matrix_->SetM11(f); }
+  void setM12(double f) { matrix_->SetM12(f); }
+  void setM13(double f) { matrix_->SetM13(f); }
+  void setM14(double f) { matrix_->SetM14(f); }
+  void setM21(double f) { matrix_->SetM21(f); }
+  void setM22(double f) { matrix_->SetM22(f); }
+  void setM23(double f) { matrix_->SetM23(f); }
+  void setM24(double f) { matrix_->SetM24(f); }
+  void setM31(double f) { matrix_->SetM31(f); }
+  void setM32(double f) { matrix_->SetM32(f); }
+  void setM33(double f) { matrix_->SetM33(f); }
+  void setM34(double f) { matrix_->SetM34(f); }
+  void setM41(double f) { matrix_->SetM41(f); }
+  void setM42(double f) { matrix_->SetM42(f); }
+  void setM43(double f) { matrix_->SetM43(f); }
+  void setM44(double f) { matrix_->SetM44(f); }
 
   void setMatrixValue(const String&, ExceptionState&);
 
@@ -101,7 +101,7 @@ class CSSMatrix final : public GarbageCollectedFinalized<CSSMatrix>,
 
   // Multiply this matrix by secondMatrix, on the right
   // (result = this * secondMatrix)
-  CSSMatrix* multiply(CSSMatrix* secondMatrix) const;
+  CSSMatrix* multiply(CSSMatrix* second_matrix) const;
 
   // Return the inverse of this matrix. Throw an exception if the matrix is not
   // invertible.
@@ -121,14 +121,14 @@ class CSSMatrix final : public GarbageCollectedFinalized<CSSMatrix>,
   // operations Operation is performed as though the this matrix is multiplied
   // by a matrix with the scale values on the left
   // (result = scale(x,y,z) * this)
-  CSSMatrix* scale(double scaleX, double scaleY, double scaleZ) const;
+  CSSMatrix* scale(double scale_x, double scale_y, double scale_z) const;
 
   // Returns this matrix rotated by the passed values.
   // If rotY and rotZ are NaN, rotate about Z (rotX=0, rotateY=0, rotateZ=rotX).
   // Otherwise use a rotation value of 0 for any passed NaN.
   // Operation is performed as though the this matrix is multiplied by a matrix
   // with the rotation values on the left (result = rotation(x,y,z) * this)
-  CSSMatrix* rotate(double rotX, double rotY, double rotZ) const;
+  CSSMatrix* rotate(double rot_x, double rot_y, double rot_z) const;
 
   // Returns this matrix rotated about the passed axis by the passed angle.
   // Passing a NaN will use a value of 0. If the axis is (0,0,0) use a value
@@ -149,7 +149,7 @@ class CSSMatrix final : public GarbageCollectedFinalized<CSSMatrix>,
   // with the skew values on the left (result = skewY(angle) * this)
   CSSMatrix* skewY(double angle) const;
 
-  const TransformationMatrix& transform() const { return *m_matrix; }
+  const TransformationMatrix& Transform() const { return *matrix_; }
 
   String toString() const;
 
@@ -163,7 +163,7 @@ class CSSMatrix final : public GarbageCollectedFinalized<CSSMatrix>,
   // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr
   // to allocate TransformationMatrix on PartitionAlloc.
   // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
-  std::unique_ptr<TransformationMatrix> m_matrix;
+  std::unique_ptr<TransformationMatrix> matrix_;
 };
 
 }  // namespace blink

@@ -39,15 +39,15 @@ namespace blink {
 
 struct KURLHash {
   STATIC_ONLY(KURLHash);
-  static unsigned hash(const KURL& key) {
-    return key.getString().impl()->hash();
+  static unsigned GetHash(const KURL& key) {
+    return key.GetString().Impl()->GetHash();
   }
 
-  static bool equal(const KURL& a, const KURL& b) {
-    return StringHash::equal(a.getString(), b.getString());
+  static bool Equal(const KURL& a, const KURL& b) {
+    return StringHash::Equal(a.GetString(), b.GetString());
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
 }  // namespace blink

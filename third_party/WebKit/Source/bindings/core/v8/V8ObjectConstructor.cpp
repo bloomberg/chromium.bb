@@ -29,30 +29,30 @@
 
 namespace blink {
 
-v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstance(
+v8::MaybeLocal<v8::Object> V8ObjectConstructor::NewInstance(
     v8::Isolate* isolate,
     v8::Local<v8::Function> function,
     int argc,
     v8::Local<v8::Value> argv[]) {
   ASSERT(!function.IsEmpty());
   TRACE_EVENT0("v8", "v8.newInstance");
-  ConstructorMode constructorMode(isolate);
-  v8::MicrotasksScope microtasksScope(isolate,
-                                      v8::MicrotasksScope::kDoNotRunMicrotasks);
+  ConstructorMode constructor_mode(isolate);
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Object> result =
       function->NewInstance(isolate->GetCurrentContext(), argc, argv);
   CHECK(!isolate->IsDead());
   return result;
 }
 
-void V8ObjectConstructor::isValidConstructorMode(
+void V8ObjectConstructor::IsValidConstructorMode(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  if (ConstructorMode::current(info.GetIsolate()) ==
-      ConstructorMode::CreateNewObject) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), "Illegal constructor");
+  if (ConstructorMode::Current(info.GetIsolate()) ==
+      ConstructorMode::kCreateNewObject) {
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), "Illegal constructor");
     return;
   }
-  v8SetReturnValue(info, info.Holder());
+  V8SetReturnValue(info, info.Holder());
 }
 
 }  // namespace blink

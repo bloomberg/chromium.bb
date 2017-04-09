@@ -317,7 +317,7 @@ PepperMediaStreamAudioTrackHost::PepperMediaStreamAudioTrackHost(
       track_(track),
       connected_(false),
       audio_sink_(this) {
-  DCHECK(!track_.isNull());
+  DCHECK(!track_.IsNull());
 }
 
 PepperMediaStreamAudioTrackHost::~PepperMediaStreamAudioTrackHost() {

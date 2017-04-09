@@ -19,20 +19,20 @@ GetWebServiceWorkerState(ServiceWorkerVersion* version) {
   DCHECK(version);
   switch (version->status()) {
     case ServiceWorkerVersion::NEW:
-      return blink::WebServiceWorkerStateUnknown;
+      return blink::kWebServiceWorkerStateUnknown;
     case ServiceWorkerVersion::INSTALLING:
-      return blink::WebServiceWorkerStateInstalling;
+      return blink::kWebServiceWorkerStateInstalling;
     case ServiceWorkerVersion::INSTALLED:
-      return blink::WebServiceWorkerStateInstalled;
+      return blink::kWebServiceWorkerStateInstalled;
     case ServiceWorkerVersion::ACTIVATING:
-      return blink::WebServiceWorkerStateActivating;
+      return blink::kWebServiceWorkerStateActivating;
     case ServiceWorkerVersion::ACTIVATED:
-      return blink::WebServiceWorkerStateActivated;
+      return blink::kWebServiceWorkerStateActivated;
     case ServiceWorkerVersion::REDUNDANT:
-      return blink::WebServiceWorkerStateRedundant;
+      return blink::kWebServiceWorkerStateRedundant;
   }
   NOTREACHED() << version->status();
-  return blink::WebServiceWorkerStateUnknown;
+  return blink::kWebServiceWorkerStateUnknown;
 }
 
 }  // namespace

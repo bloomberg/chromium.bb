@@ -43,25 +43,25 @@ class PositionError final : public GarbageCollectedFinalized<PositionError>,
     kTimeout = 3
   };
 
-  static PositionError* create(ErrorCode code, const String& message) {
+  static PositionError* Create(ErrorCode code, const String& message) {
     return new PositionError(code, message);
   }
   DEFINE_INLINE_TRACE() {}
 
-  ErrorCode code() const { return m_code; }
-  const String& message() const { return m_message; }
-  void setIsFatal(bool isFatal) { m_isFatal = isFatal; }
-  bool isFatal() const { return m_isFatal; }
+  ErrorCode code() const { return code_; }
+  const String& message() const { return message_; }
+  void SetIsFatal(bool is_fatal) { is_fatal_ = is_fatal; }
+  bool IsFatal() const { return is_fatal_; }
 
  private:
   PositionError(ErrorCode code, const String& message)
-      : m_code(code), m_message(message), m_isFatal(false) {}
+      : code_(code), message_(message), is_fatal_(false) {}
 
-  ErrorCode m_code;
-  String m_message;
+  ErrorCode code_;
+  String message_;
   // Whether the error is fatal, such that no request can ever obtain a good
   // position fix in the future.
-  bool m_isFatal;
+  bool is_fatal_;
 };
 
 }  // namespace blink

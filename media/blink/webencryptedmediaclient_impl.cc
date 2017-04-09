@@ -101,18 +101,18 @@ WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
 WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() {
 }
 
-void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
+void WebEncryptedMediaClientImpl::RequestMediaKeySystemAccess(
     blink::WebEncryptedMediaRequest request) {
-  GetReporter(request.keySystem())->ReportRequested();
+  GetReporter(request.KeySystem())->ReportRequested();
 
   media_log_->RecordRapporWithSecurityOrigin("Media.OriginUrl.EME");
-  if (!request.getSecurityOrigin().isPotentiallyTrustworthy()) {
+  if (!request.GetSecurityOrigin().IsPotentiallyTrustworthy()) {
     media_log_->RecordRapporWithSecurityOrigin("Media.OriginUrl.EME.Insecure");
   }
 
   key_system_config_selector_.SelectConfig(
-      request.keySystem(), request.supportedConfigurations(),
-      request.getSecurityOrigin(), are_secure_codecs_supported_cb_.Run(),
+      request.KeySystem(), request.SupportedConfigurations(),
+      request.GetSecurityOrigin(), are_secure_codecs_supported_cb_.Run(),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestSucceeded,
                  weak_factory_.GetWeakPtr(), request),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestNotSupported,
@@ -124,7 +124,7 @@ void WebEncryptedMediaClientImpl::CreateCdm(
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
     std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
-  WebContentDecryptionModuleImpl::Create(cdm_factory_, key_system.utf16(),
+  WebContentDecryptionModuleImpl::Create(cdm_factory_, key_system.Utf16(),
                                          security_origin, cdm_config,
                                          std::move(result));
 }
@@ -133,7 +133,7 @@ void WebEncryptedMediaClientImpl::OnRequestSucceeded(
     blink::WebEncryptedMediaRequest request,
     const blink::WebMediaKeySystemConfiguration& accumulated_configuration,
     const CdmConfig& cdm_config) {
-  GetReporter(request.keySystem())->ReportSupported();
+  GetReporter(request.KeySystem())->ReportSupported();
   // TODO(sandersd): Pass |are_secure_codecs_required| along and use it to
   // configure the CDM security level and use of secure surfaces on Android.
 
@@ -142,21 +142,21 @@ void WebEncryptedMediaClientImpl::OnRequestSucceeded(
   // requestMediaKeySystemAccess request succeeding. However, the blink
   // objects may have been cleared, so check if this is the case and simply
   // reject the request.
-  blink::WebSecurityOrigin origin = request.getSecurityOrigin();
-  if (origin.isNull()) {
-    request.requestNotSupported("Unable to create MediaKeySystemAccess");
+  blink::WebSecurityOrigin origin = request.GetSecurityOrigin();
+  if (origin.IsNull()) {
+    request.RequestNotSupported("Unable to create MediaKeySystemAccess");
     return;
   }
 
-  request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-      request.keySystem(), origin, accumulated_configuration, cdm_config,
+  request.RequestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
+      request.KeySystem(), origin, accumulated_configuration, cdm_config,
       weak_factory_.GetWeakPtr()));
 }
 
 void WebEncryptedMediaClientImpl::OnRequestNotSupported(
     blink::WebEncryptedMediaRequest request,
     const blink::WebString& error_message) {
-  request.requestNotSupported(error_message);
+  request.RequestNotSupported(error_message);
 }
 
 WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
@@ -164,8 +164,8 @@ WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
   // Assumes that empty will not be found by GetKeySystemNameForUMA().
   // TODO(sandersd): Avoid doing ASCII conversion more than once.
   std::string key_system_ascii;
-  if (key_system.containsOnlyASCII())
-    key_system_ascii = key_system.ascii();
+  if (key_system.ContainsOnlyASCII())
+    key_system_ascii = key_system.Ascii();
 
   // Return a per-frame singleton so that UMA reports will be once-per-frame.
   std::string uma_name = GetKeySystemNameForUMA(key_system_ascii);

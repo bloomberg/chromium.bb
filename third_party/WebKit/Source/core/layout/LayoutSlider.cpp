@@ -29,7 +29,7 @@
 
 namespace blink {
 
-const int LayoutSlider::defaultTrackLength = 129;
+const int LayoutSlider::kDefaultTrackLength = 129;
 
 LayoutSlider::LayoutSlider(HTMLInputElement* element)
     : LayoutFlexibleBox(element) {
@@ -39,41 +39,42 @@ LayoutSlider::LayoutSlider(HTMLInputElement* element)
 
 LayoutSlider::~LayoutSlider() {}
 
-int LayoutSlider::baselinePosition(FontBaseline,
+int LayoutSlider::BaselinePosition(FontBaseline,
                                    bool /*firstLine*/,
                                    LineDirectionMode,
-                                   LinePositionMode linePositionMode) const {
-  DCHECK_EQ(linePositionMode, PositionOnContainingLine);
+                                   LinePositionMode line_position_mode) const {
+  DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   // FIXME: Patch this function for writing-mode.
-  return (size().height() + marginTop()).toInt();
+  return (size().Height() + MarginTop()).ToInt();
 }
 
-void LayoutSlider::computeIntrinsicLogicalWidths(
-    LayoutUnit& minLogicalWidth,
-    LayoutUnit& maxLogicalWidth) const {
-  maxLogicalWidth = LayoutUnit(defaultTrackLength * style()->effectiveZoom());
-  if (!style()->width().isPercentOrCalc())
-    minLogicalWidth = maxLogicalWidth;
+void LayoutSlider::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  max_logical_width =
+      LayoutUnit(kDefaultTrackLength * Style()->EffectiveZoom());
+  if (!Style()->Width().IsPercentOrCalc())
+    min_logical_width = max_logical_width;
 }
 
-inline SliderThumbElement* LayoutSlider::sliderThumbElement() const {
-  return toSliderThumbElement(
-      toElement(node())->userAgentShadowRoot()->getElementById(
-          ShadowElementNames::sliderThumb()));
+inline SliderThumbElement* LayoutSlider::GetSliderThumbElement() const {
+  return ToSliderThumbElement(
+      ToElement(GetNode())->UserAgentShadowRoot()->GetElementById(
+          ShadowElementNames::SliderThumb()));
 }
 
-void LayoutSlider::layout() {
+void LayoutSlider::GetLayout() {
   // FIXME: Find a way to cascade appearance.
   // http://webkit.org/b/62535
-  LayoutBox* thumbBox = sliderThumbElement()->layoutBox();
-  if (thumbBox && thumbBox->isSliderThumb())
-    toLayoutSliderThumb(thumbBox)->updateAppearance(styleRef());
+  LayoutBox* thumb_box = GetSliderThumbElement()->GetLayoutBox();
+  if (thumb_box && thumb_box->IsSliderThumb())
+    ToLayoutSliderThumb(thumb_box)->UpdateAppearance(StyleRef());
 
-  LayoutFlexibleBox::layout();
+  LayoutFlexibleBox::GetLayout();
 }
 
-bool LayoutSlider::inDragMode() const {
-  return sliderThumbElement()->isActive();
+bool LayoutSlider::InDragMode() const {
+  return GetSliderThumbElement()->IsActive();
 }
 
 }  // namespace blink

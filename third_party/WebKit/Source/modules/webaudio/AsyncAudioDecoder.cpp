@@ -38,37 +38,37 @@
 
 namespace blink {
 
-void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData,
-                                    float sampleRate,
-                                    AudioBufferCallback* successCallback,
-                                    AudioBufferCallback* errorCallback,
+void AsyncAudioDecoder::DecodeAsync(DOMArrayBuffer* audio_data,
+                                    float sample_rate,
+                                    AudioBufferCallback* success_callback,
+                                    AudioBufferCallback* error_callback,
                                     ScriptPromiseResolver* resolver,
                                     BaseAudioContext* context) {
-  DCHECK(isMainThread());
-  DCHECK(audioData);
-  if (!audioData)
+  DCHECK(IsMainThread());
+  DCHECK(audio_data);
+  if (!audio_data)
     return;
 
-  BackgroundTaskRunner::postOnBackgroundThread(
+  BackgroundTaskRunner::PostOnBackgroundThread(
       BLINK_FROM_HERE,
-      crossThreadBind(&AsyncAudioDecoder::decodeOnBackgroundThread,
-                      wrapCrossThreadPersistent(audioData), sampleRate,
-                      wrapCrossThreadPersistent(successCallback),
-                      wrapCrossThreadPersistent(errorCallback),
-                      wrapCrossThreadPersistent(resolver),
-                      wrapCrossThreadPersistent(context)));
+      CrossThreadBind(&AsyncAudioDecoder::DecodeOnBackgroundThread,
+                      WrapCrossThreadPersistent(audio_data), sample_rate,
+                      WrapCrossThreadPersistent(success_callback),
+                      WrapCrossThreadPersistent(error_callback),
+                      WrapCrossThreadPersistent(resolver),
+                      WrapCrossThreadPersistent(context)));
 }
 
-void AsyncAudioDecoder::decodeOnBackgroundThread(
-    DOMArrayBuffer* audioData,
-    float sampleRate,
-    AudioBufferCallback* successCallback,
-    AudioBufferCallback* errorCallback,
+void AsyncAudioDecoder::DecodeOnBackgroundThread(
+    DOMArrayBuffer* audio_data,
+    float sample_rate,
+    AudioBufferCallback* success_callback,
+    AudioBufferCallback* error_callback,
     ScriptPromiseResolver* resolver,
     BaseAudioContext* context) {
-  DCHECK(!isMainThread());
-  RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(
-      audioData->data(), audioData->byteLength(), false, sampleRate);
+  DCHECK(!IsMainThread());
+  RefPtr<AudioBus> bus = CreateBusFromInMemoryAudioFile(
+      audio_data->Data(), audio_data->ByteLength(), false, sample_rate);
 
   // Decoding is finished, but we need to do the callbacks on the main thread.
   // A reference to |*bus| is retained by WTF::Function and will be removed
@@ -77,31 +77,31 @@ void AsyncAudioDecoder::decodeOnBackgroundThread(
   // We also want to avoid notifying the main thread if AudioContext does not
   // exist any more.
   if (context) {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&AsyncAudioDecoder::notifyComplete,
-                        wrapCrossThreadPersistent(audioData),
-                        wrapCrossThreadPersistent(successCallback),
-                        wrapCrossThreadPersistent(errorCallback), bus.release(),
-                        wrapCrossThreadPersistent(resolver),
-                        wrapCrossThreadPersistent(context)));
+        CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
+                        WrapCrossThreadPersistent(audio_data),
+                        WrapCrossThreadPersistent(success_callback),
+                        WrapCrossThreadPersistent(error_callback),
+                        bus.Release(), WrapCrossThreadPersistent(resolver),
+                        WrapCrossThreadPersistent(context)));
   }
 }
 
-void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer*,
-                                       AudioBufferCallback* successCallback,
-                                       AudioBufferCallback* errorCallback,
-                                       AudioBus* audioBus,
+void AsyncAudioDecoder::NotifyComplete(DOMArrayBuffer*,
+                                       AudioBufferCallback* success_callback,
+                                       AudioBufferCallback* error_callback,
+                                       AudioBus* audio_bus,
                                        ScriptPromiseResolver* resolver,
                                        BaseAudioContext* context) {
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
 
-  AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);
+  AudioBuffer* audio_buffer = AudioBuffer::CreateFromAudioBus(audio_bus);
 
   // If the context is available, let the context finish the notification.
   if (context) {
-    context->handleDecodeAudioData(audioBuffer, resolver, successCallback,
-                                   errorCallback);
+    context->HandleDecodeAudioData(audio_buffer, resolver, success_callback,
+                                   error_callback);
   }
 }
 

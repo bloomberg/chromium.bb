@@ -17,171 +17,171 @@ class WebServiceWorkerResponsePrivate
  public:
   WebServiceWorkerResponsePrivate()
       : status(0),
-        responseType(WebServiceWorkerResponseTypeDefault),
-        error(WebServiceWorkerResponseErrorUnknown),
-        responseTime(0) {}
-  WebVector<WebURL> urlList;
+        response_type(kWebServiceWorkerResponseTypeDefault),
+        error(kWebServiceWorkerResponseErrorUnknown),
+        response_time(0) {}
+  WebVector<WebURL> url_list;
   unsigned short status;
-  WebString statusText;
-  WebServiceWorkerResponseType responseType;
+  WebString status_text;
+  WebServiceWorkerResponseType response_type;
   HTTPHeaderMap headers;
-  RefPtr<BlobDataHandle> blobDataHandle;
-  WebURL streamURL;
+  RefPtr<BlobDataHandle> blob_data_handle;
+  WebURL stream_url;
   WebServiceWorkerResponseError error;
-  int64_t responseTime;
-  WebString cacheStorageCacheName;
-  WebVector<WebString> corsExposedHeaderNames;
+  int64_t response_time;
+  WebString cache_storage_cache_name;
+  WebVector<WebString> cors_exposed_header_names;
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
-    : m_private(adoptRef(new WebServiceWorkerResponsePrivate)) {}
+    : private_(AdoptRef(new WebServiceWorkerResponsePrivate)) {}
 
-void WebServiceWorkerResponse::reset() {
-  m_private.reset();
+void WebServiceWorkerResponse::Reset() {
+  private_.Reset();
 }
 
-void WebServiceWorkerResponse::assign(const WebServiceWorkerResponse& other) {
-  m_private = other.m_private;
+void WebServiceWorkerResponse::Assign(const WebServiceWorkerResponse& other) {
+  private_ = other.private_;
 }
 
-void WebServiceWorkerResponse::setURLList(const WebVector<WebURL>& urlList) {
-  m_private->urlList = urlList;
+void WebServiceWorkerResponse::SetURLList(const WebVector<WebURL>& url_list) {
+  private_->url_list = url_list;
 }
 
-const WebVector<WebURL>& WebServiceWorkerResponse::urlList() const {
-  return m_private->urlList;
+const WebVector<WebURL>& WebServiceWorkerResponse::UrlList() const {
+  return private_->url_list;
 }
 
-void WebServiceWorkerResponse::setStatus(unsigned short status) {
-  m_private->status = status;
+void WebServiceWorkerResponse::SetStatus(unsigned short status) {
+  private_->status = status;
 }
 
-unsigned short WebServiceWorkerResponse::status() const {
-  return m_private->status;
+unsigned short WebServiceWorkerResponse::Status() const {
+  return private_->status;
 }
 
-void WebServiceWorkerResponse::setStatusText(const WebString& statusText) {
-  m_private->statusText = statusText;
+void WebServiceWorkerResponse::SetStatusText(const WebString& status_text) {
+  private_->status_text = status_text;
 }
 
-const WebString& WebServiceWorkerResponse::statusText() const {
-  return m_private->statusText;
+const WebString& WebServiceWorkerResponse::StatusText() const {
+  return private_->status_text;
 }
 
-void WebServiceWorkerResponse::setResponseType(
-    WebServiceWorkerResponseType responseType) {
-  m_private->responseType = responseType;
+void WebServiceWorkerResponse::SetResponseType(
+    WebServiceWorkerResponseType response_type) {
+  private_->response_type = response_type;
 }
 
-WebServiceWorkerResponseType WebServiceWorkerResponse::responseType() const {
-  return m_private->responseType;
+WebServiceWorkerResponseType WebServiceWorkerResponse::ResponseType() const {
+  return private_->response_type;
 }
 
-void WebServiceWorkerResponse::setHeader(const WebString& key,
+void WebServiceWorkerResponse::SetHeader(const WebString& key,
                                          const WebString& value) {
-  m_private->headers.set(key, value);
+  private_->headers.Set(key, value);
 }
 
-void WebServiceWorkerResponse::appendHeader(const WebString& key,
+void WebServiceWorkerResponse::AppendHeader(const WebString& key,
                                             const WebString& value) {
-  HTTPHeaderMap::AddResult addResult = m_private->headers.add(key, value);
-  if (!addResult.isNewEntry)
-    addResult.storedValue->value =
-        addResult.storedValue->value + ", " + String(value);
+  HTTPHeaderMap::AddResult add_result = private_->headers.Add(key, value);
+  if (!add_result.is_new_entry)
+    add_result.stored_value->value =
+        add_result.stored_value->value + ", " + String(value);
 }
 
-WebVector<WebString> WebServiceWorkerResponse::getHeaderKeys() const {
+WebVector<WebString> WebServiceWorkerResponse::GetHeaderKeys() const {
   Vector<String> keys;
-  for (HTTPHeaderMap::const_iterator it = m_private->headers.begin(),
-                                     end = m_private->headers.end();
+  for (HTTPHeaderMap::const_iterator it = private_->headers.begin(),
+                                     end = private_->headers.end();
        it != end; ++it)
     keys.push_back(it->key);
 
   return keys;
 }
 
-WebString WebServiceWorkerResponse::getHeader(const WebString& key) const {
-  return m_private->headers.get(key);
+WebString WebServiceWorkerResponse::GetHeader(const WebString& key) const {
+  return private_->headers.Get(key);
 }
 
-void WebServiceWorkerResponse::visitHTTPHeaderFields(
-    WebHTTPHeaderVisitor* headerVisitor) const {
-  for (HTTPHeaderMap::const_iterator i = m_private->headers.begin(),
-                                     end = m_private->headers.end();
+void WebServiceWorkerResponse::VisitHTTPHeaderFields(
+    WebHTTPHeaderVisitor* header_visitor) const {
+  for (HTTPHeaderMap::const_iterator i = private_->headers.begin(),
+                                     end = private_->headers.end();
        i != end; ++i)
-    headerVisitor->visitHeader(i->key, i->value);
+    header_visitor->VisitHeader(i->key, i->value);
 }
 
-void WebServiceWorkerResponse::setBlob(const WebString& uuid, uint64_t size) {
-  m_private->blobDataHandle = BlobDataHandle::create(uuid, String(), size);
+void WebServiceWorkerResponse::SetBlob(const WebString& uuid, uint64_t size) {
+  private_->blob_data_handle = BlobDataHandle::Create(uuid, String(), size);
 }
 
-WebString WebServiceWorkerResponse::blobUUID() const {
-  if (!m_private->blobDataHandle)
+WebString WebServiceWorkerResponse::BlobUUID() const {
+  if (!private_->blob_data_handle)
     return WebString();
-  return m_private->blobDataHandle->uuid();
+  return private_->blob_data_handle->Uuid();
 }
 
-uint64_t WebServiceWorkerResponse::blobSize() const {
-  if (!m_private->blobDataHandle)
+uint64_t WebServiceWorkerResponse::BlobSize() const {
+  if (!private_->blob_data_handle)
     return 0;
-  return m_private->blobDataHandle->size();
+  return private_->blob_data_handle->size();
 }
 
-void WebServiceWorkerResponse::setStreamURL(const WebURL& url) {
-  m_private->streamURL = url;
+void WebServiceWorkerResponse::SetStreamURL(const WebURL& url) {
+  private_->stream_url = url;
 }
 
-const WebURL& WebServiceWorkerResponse::streamURL() const {
-  return m_private->streamURL;
+const WebURL& WebServiceWorkerResponse::StreamURL() const {
+  return private_->stream_url;
 }
 
-void WebServiceWorkerResponse::setError(WebServiceWorkerResponseError error) {
-  m_private->error = error;
+void WebServiceWorkerResponse::SetError(WebServiceWorkerResponseError error) {
+  private_->error = error;
 }
 
-WebServiceWorkerResponseError WebServiceWorkerResponse::error() const {
-  return m_private->error;
+WebServiceWorkerResponseError WebServiceWorkerResponse::GetError() const {
+  return private_->error;
 }
 
-void WebServiceWorkerResponse::setResponseTime(int64_t time) {
-  m_private->responseTime = time;
+void WebServiceWorkerResponse::SetResponseTime(int64_t time) {
+  private_->response_time = time;
 }
 
-int64_t WebServiceWorkerResponse::responseTime() const {
-  return m_private->responseTime;
+int64_t WebServiceWorkerResponse::ResponseTime() const {
+  return private_->response_time;
 }
 
-void WebServiceWorkerResponse::setCacheStorageCacheName(
-    const WebString& cacheStorageCacheName) {
-  m_private->cacheStorageCacheName = cacheStorageCacheName;
+void WebServiceWorkerResponse::SetCacheStorageCacheName(
+    const WebString& cache_storage_cache_name) {
+  private_->cache_storage_cache_name = cache_storage_cache_name;
 }
 
-const WebString& WebServiceWorkerResponse::cacheStorageCacheName() const {
-  return m_private->cacheStorageCacheName;
+const WebString& WebServiceWorkerResponse::CacheStorageCacheName() const {
+  return private_->cache_storage_cache_name;
 }
 
-void WebServiceWorkerResponse::setCorsExposedHeaderNames(
-    const WebVector<WebString>& headerNames) {
-  m_private->corsExposedHeaderNames = headerNames;
+void WebServiceWorkerResponse::SetCorsExposedHeaderNames(
+    const WebVector<WebString>& header_names) {
+  private_->cors_exposed_header_names = header_names;
 }
 
-const WebVector<WebString>& WebServiceWorkerResponse::corsExposedHeaderNames()
+const WebVector<WebString>& WebServiceWorkerResponse::CorsExposedHeaderNames()
     const {
-  return m_private->corsExposedHeaderNames;
+  return private_->cors_exposed_header_names;
 }
 
-const HTTPHeaderMap& WebServiceWorkerResponse::headers() const {
-  return m_private->headers;
+const HTTPHeaderMap& WebServiceWorkerResponse::Headers() const {
+  return private_->headers;
 }
 
-void WebServiceWorkerResponse::setBlobDataHandle(
-    PassRefPtr<BlobDataHandle> blobDataHandle) {
-  m_private->blobDataHandle = std::move(blobDataHandle);
+void WebServiceWorkerResponse::SetBlobDataHandle(
+    PassRefPtr<BlobDataHandle> blob_data_handle) {
+  private_->blob_data_handle = std::move(blob_data_handle);
 }
 
-PassRefPtr<BlobDataHandle> WebServiceWorkerResponse::blobDataHandle() const {
-  return m_private->blobDataHandle;
+PassRefPtr<BlobDataHandle> WebServiceWorkerResponse::GetBlobDataHandle() const {
+  return private_->blob_data_handle;
 }
 
 }  // namespace blink

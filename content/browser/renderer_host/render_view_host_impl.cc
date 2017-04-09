@@ -866,7 +866,7 @@ void RenderViewHostImpl::OnFocus() {
 
 void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
-  if (mouse_event.type() == WebInputEvent::MouseWheel &&
+  if (mouse_event.GetType() == WebInputEvent::kMouseWheel &&
       GetWidget()->ignore_input_events()) {
     delegate_->OnIgnoredUIEvent();
   }
@@ -875,7 +875,7 @@ void RenderViewHostImpl::RenderWidgetDidForwardMouseEvent(
 bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   if (GetWidget()->ignore_input_events()) {
-    if (key_event.type() == WebInputEvent::RawKeyDown)
+    if (key_event.GetType() == WebInputEvent::kRawKeyDown)
       delegate_->OnIgnoredUIEvent();
     return false;
   }

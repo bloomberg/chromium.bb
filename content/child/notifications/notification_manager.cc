@@ -36,7 +36,7 @@ NotificationResources ToNotificationResources(
   resources.image = web_resources->image;
   resources.notification_icon = web_resources->icon;
   resources.badge = web_resources->badge;
-  for (const auto& action_icon : web_resources->actionIcons)
+  for (const auto& action_icon : web_resources->action_icons)
     resources.action_icons.push_back(action_icon);
   return resources;
 }
@@ -83,13 +83,13 @@ void NotificationManager::WillStopCurrentWorkerThread() {
   delete this;
 }
 
-void NotificationManager::show(
+void NotificationManager::Show(
     const blink::WebSecurityOrigin& origin,
     const blink::WebNotificationData& notification_data,
     std::unique_ptr<blink::WebNotificationResources> notification_resources,
     blink::WebNotificationDelegate* delegate) {
   DCHECK_EQ(0u, notification_data.actions.size());
-  DCHECK_EQ(0u, notification_resources->actionIcons.size());
+  DCHECK_EQ(0u, notification_resources->action_icons.size());
 
   GURL origin_gurl = url::Origin(origin).GetURL();
 
@@ -98,7 +98,7 @@ void NotificationManager::show(
 
   active_page_notifications_[notification_id] = ActiveNotificationData(
       delegate, origin_gurl,
-      notification_data.tag.utf8(
+      notification_data.tag.Utf8(
           WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD));
 
   // TODO(mkwst): This is potentially doing the wrong thing with unique
@@ -110,7 +110,7 @@ void NotificationManager::show(
       ToNotificationResources(std::move(notification_resources))));
 }
 
-void NotificationManager::showPersistent(
+void NotificationManager::ShowPersistent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebNotificationData& notification_data,
     std::unique_ptr<blink::WebNotificationResources> notification_resources,
@@ -118,12 +118,12 @@ void NotificationManager::showPersistent(
     std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK_EQ(notification_data.actions.size(),
-            notification_resources->actionIcons.size());
+            notification_resources->action_icons.size());
 
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)
-          ->registrationId();
+          ->RegistrationId();
 
   // Verify that the author-provided payload size does not exceed our limit.
   // This is an implementation-defined limit to prevent abuse of notification
@@ -138,7 +138,7 @@ void NotificationManager::showPersistent(
   UMA_HISTOGRAM_COUNTS_1000("Notifications.AuthorDataSize", author_data_size);
 
   if (author_data_size > PlatformNotificationData::kMaximumDeveloperDataSize) {
-    callbacks->onError();
+    callbacks->OnError();
     return;
   }
 
@@ -159,7 +159,7 @@ void NotificationManager::showPersistent(
       ToNotificationResources(std::move(notification_resources))));
 }
 
-void NotificationManager::getNotifications(
+void NotificationManager::GetNotifications(
     const blink::WebString& filter_tag,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     std::unique_ptr<blink::WebNotificationGetCallbacks> callbacks) {
@@ -170,9 +170,9 @@ void NotificationManager::getNotifications(
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration);
 
-  GURL origin = GURL(service_worker_registration_impl->scope()).GetOrigin();
+  GURL origin = GURL(service_worker_registration_impl->Scope()).GetOrigin();
   int64_t service_worker_registration_id =
-      service_worker_registration_impl->registrationId();
+      service_worker_registration_impl->RegistrationId();
 
   // TODO(peter): GenerateNotificationId is more of a request id. Consider
   // renaming the method in the NotificationDispatcher if this makes sense.
@@ -184,11 +184,11 @@ void NotificationManager::getNotifications(
 
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_GetNotifications(
       request_id, service_worker_registration_id, origin,
-      filter_tag.utf8(
+      filter_tag.Utf8(
           WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD)));
 }
 
-void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
+void NotificationManager::Close(blink::WebNotificationDelegate* delegate) {
   for (auto& iter : active_page_notifications_) {
     if (iter.second.delegate != delegate)
       continue;
@@ -204,7 +204,7 @@ void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
   NOTREACHED();
 }
 
-void NotificationManager::closePersistent(
+void NotificationManager::ClosePersistent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebString& tag,
     const blink::WebString& notification_id) {
@@ -213,12 +213,12 @@ void NotificationManager::closePersistent(
       // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
       // https://crbug.com/490074 for detail.
       url::Origin(origin).GetURL(),
-      tag.utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD),
-      notification_id.utf8(
+      tag.Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD),
+      notification_id.Utf8(
           WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD)));
 }
 
-void NotificationManager::notifyDelegateDestroyed(
+void NotificationManager::NotifyDelegateDestroyed(
     blink::WebNotificationDelegate* delegate) {
   for (auto& iter : active_page_notifications_) {
     if (iter.second.delegate != delegate)
@@ -250,7 +250,7 @@ void NotificationManager::OnDidShow(int notification_id) {
   if (iter == active_page_notifications_.end())
     return;
 
-  iter->second.delegate->dispatchShowEvent();
+  iter->second.delegate->DispatchShowEvent();
 }
 
 void NotificationManager::OnDidShowPersistent(int request_id, bool success) {
@@ -262,9 +262,9 @@ void NotificationManager::OnDidShowPersistent(int request_id, bool success) {
     return;
 
   if (success)
-    callbacks->onSuccess();
+    callbacks->OnSuccess();
   else
-    callbacks->onError();
+    callbacks->OnError();
 
   pending_show_notification_requests_.Remove(request_id);
 }
@@ -274,7 +274,7 @@ void NotificationManager::OnDidClose(int notification_id) {
   if (iter == active_page_notifications_.end())
     return;
 
-  iter->second.delegate->dispatchCloseEvent();
+  iter->second.delegate->DispatchCloseEvent();
 
   active_page_notifications_.erase(iter);
 }
@@ -284,7 +284,7 @@ void NotificationManager::OnDidClick(int notification_id) {
   if (iter == active_page_notifications_.end())
     return;
 
-  iter->second.delegate->dispatchClickEvent();
+  iter->second.delegate->DispatchClickEvent();
 }
 
 void NotificationManager::OnDidGetNotifications(
@@ -301,15 +301,15 @@ void NotificationManager::OnDidGetNotifications(
 
   for (size_t i = 0; i < notification_infos.size(); ++i) {
     blink::WebPersistentNotificationInfo web_notification_info;
-    web_notification_info.notificationId =
-        blink::WebString::fromUTF8(notification_infos[i].first);
+    web_notification_info.notification_id =
+        blink::WebString::FromUTF8(notification_infos[i].first);
     web_notification_info.data =
         ToWebNotificationData(notification_infos[i].second);
 
     notifications[i] = web_notification_info;
   }
 
-  callbacks->onSuccess(notifications);
+  callbacks->OnSuccess(notifications);
 
   pending_get_notification_requests_.Remove(request_id);
 }

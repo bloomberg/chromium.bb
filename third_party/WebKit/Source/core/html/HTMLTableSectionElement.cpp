@@ -38,16 +38,16 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLTableSectionElement::HTMLTableSectionElement(
-    const QualifiedName& tagName,
+    const QualifiedName& tag_name,
     Document& document)
-    : HTMLTablePartElement(tagName, document) {}
+    : HTMLTablePartElement(tag_name, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement)
 
 const StylePropertySet*
-HTMLTableSectionElement::additionalPresentationAttributeStyle() {
-  if (HTMLTableElement* table = findParentTable())
-    return table->additionalGroupStyle(true);
+HTMLTableSectionElement::AdditionalPresentationAttributeStyle() {
+  if (HTMLTableElement* table = FindParentTable())
+    return table->AdditionalGroupStyle(true);
   return nullptr;
 }
 
@@ -55,47 +55,47 @@ HTMLTableSectionElement::additionalPresentationAttributeStyle() {
 // the index... but they aren't used during usual HTML parsing anyway
 HTMLElement* HTMLTableSectionElement::insertRow(
     int index,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   HTMLCollection* children = rows();
-  int numRows = children ? static_cast<int>(children->length()) : 0;
-  if (index < -1 || index > numRows) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The provided index (" + String::number(index) +
-                            " is outside the range [-1, " +
-                            String::number(numRows) + "].");
+  int num_rows = children ? static_cast<int>(children->length()) : 0;
+  if (index < -1 || index > num_rows) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The provided index (" + String::Number(index) +
+                             " is outside the range [-1, " +
+                             String::Number(num_rows) + "].");
     return nullptr;
   }
 
-  HTMLTableRowElement* row = HTMLTableRowElement::create(document());
-  if (numRows == index || index == -1)
-    appendChild(row, exceptionState);
+  HTMLTableRowElement* row = HTMLTableRowElement::Create(GetDocument());
+  if (num_rows == index || index == -1)
+    AppendChild(row, exception_state);
   else
-    insertBefore(row, children->item(index), exceptionState);
+    InsertBefore(row, children->item(index), exception_state);
   return row;
 }
 
 void HTMLTableSectionElement::deleteRow(int index,
-                                        ExceptionState& exceptionState) {
+                                        ExceptionState& exception_state) {
   HTMLCollection* children = rows();
-  int numRows = children ? (int)children->length() : 0;
+  int num_rows = children ? (int)children->length() : 0;
   if (index == -1) {
-    if (!numRows)
+    if (!num_rows)
       return;
-    index = numRows - 1;
+    index = num_rows - 1;
   }
-  if (index >= 0 && index < numRows) {
+  if (index >= 0 && index < num_rows) {
     Element* row = children->item(index);
-    HTMLElement::removeChild(row, exceptionState);
+    HTMLElement::RemoveChild(row, exception_state);
   } else {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The provided index (" + String::number(index) +
-                            " is outside the range [-1, " +
-                            String::number(numRows) + "].");
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The provided index (" + String::Number(index) +
+                             " is outside the range [-1, " +
+                             String::Number(num_rows) + "].");
   }
 }
 
 HTMLCollection* HTMLTableSectionElement::rows() {
-  return ensureCachedCollection<HTMLCollection>(TSectionRows);
+  return EnsureCachedCollection<HTMLCollection>(kTSectionRows);
 }
 
 }  // namespace blink

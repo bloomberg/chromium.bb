@@ -32,39 +32,40 @@
 
 namespace blink {
 
-AXTableHeaderContainer::AXTableHeaderContainer(AXObjectCacheImpl& axObjectCache)
-    : AXMockObject(axObjectCache) {}
+AXTableHeaderContainer::AXTableHeaderContainer(
+    AXObjectCacheImpl& ax_object_cache)
+    : AXMockObject(ax_object_cache) {}
 
 AXTableHeaderContainer::~AXTableHeaderContainer() {}
 
-AXTableHeaderContainer* AXTableHeaderContainer::create(
-    AXObjectCacheImpl& axObjectCache) {
-  return new AXTableHeaderContainer(axObjectCache);
+AXTableHeaderContainer* AXTableHeaderContainer::Create(
+    AXObjectCacheImpl& ax_object_cache) {
+  return new AXTableHeaderContainer(ax_object_cache);
 }
 
-bool AXTableHeaderContainer::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  if (!m_parent)
+bool AXTableHeaderContainer::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  if (!parent_)
     return true;
 
-  if (!m_parent->accessibilityIsIgnored())
+  if (!parent_->AccessibilityIsIgnored())
     return false;
 
-  if (ignoredReasons)
-    m_parent->computeAccessibilityIsIgnored(ignoredReasons);
+  if (ignored_reasons)
+    parent_->ComputeAccessibilityIsIgnored(ignored_reasons);
 
   return true;
 }
 
-void AXTableHeaderContainer::addChildren() {
-  DCHECK(!isDetached());
-  DCHECK(!m_haveChildren);
+void AXTableHeaderContainer::AddChildren() {
+  DCHECK(!IsDetached());
+  DCHECK(!have_children_);
 
-  m_haveChildren = true;
-  if (!m_parent || !m_parent->isAXTable())
+  have_children_ = true;
+  if (!parent_ || !parent_->IsAXTable())
     return;
 
-  toAXTable(m_parent)->columnHeaders(m_children);
+  ToAXTable(parent_)->ColumnHeaders(children_);
 }
 
 }  // namespace blink

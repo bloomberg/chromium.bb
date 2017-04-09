@@ -29,36 +29,36 @@
 
 namespace blink {
 
-String CSSCubicBezierTimingFunctionValue::customCSSText() const {
-  return "cubic-bezier(" + String::number(m_x1) + ", " + String::number(m_y1) +
-         ", " + String::number(m_x2) + ", " + String::number(m_y2) + ")";
+String CSSCubicBezierTimingFunctionValue::CustomCSSText() const {
+  return "cubic-bezier(" + String::Number(x1_) + ", " + String::Number(y1_) +
+         ", " + String::Number(x2_) + ", " + String::Number(y2_) + ")";
 }
 
-bool CSSCubicBezierTimingFunctionValue::equals(
+bool CSSCubicBezierTimingFunctionValue::Equals(
     const CSSCubicBezierTimingFunctionValue& other) const {
-  return m_x1 == other.m_x1 && m_x2 == other.m_x2 && m_y1 == other.m_y1 &&
-         m_y2 == other.m_y2;
+  return x1_ == other.x1_ && x2_ == other.x2_ && y1_ == other.y1_ &&
+         y2_ == other.y2_;
 }
 
-String CSSStepsTimingFunctionValue::customCSSText() const {
-  String stepPositionString;
-  switch (m_stepPosition) {
+String CSSStepsTimingFunctionValue::CustomCSSText() const {
+  String step_position_string;
+  switch (step_position_) {
     case StepsTimingFunction::StepPosition::START:
-      stepPositionString = "start";
+      step_position_string = "start";
       break;
     case StepsTimingFunction::StepPosition::MIDDLE:
-      stepPositionString = "middle";
+      step_position_string = "middle";
       break;
     case StepsTimingFunction::StepPosition::END:
-      stepPositionString = "end";
+      step_position_string = "end";
       break;
   }
-  return "steps(" + String::number(m_steps) + ", " + stepPositionString + ')';
+  return "steps(" + String::Number(steps_) + ", " + step_position_string + ')';
 }
 
-bool CSSStepsTimingFunctionValue::equals(
+bool CSSStepsTimingFunctionValue::Equals(
     const CSSStepsTimingFunctionValue& other) const {
-  return m_steps == other.m_steps && m_stepPosition == other.m_stepPosition;
+  return steps_ == other.steps_ && step_position_ == other.step_position_;
 }
 
 }  // namespace blink

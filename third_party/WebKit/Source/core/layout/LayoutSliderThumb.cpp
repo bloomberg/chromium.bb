@@ -39,17 +39,17 @@ namespace blink {
 LayoutSliderThumb::LayoutSliderThumb(SliderThumbElement* element)
     : LayoutBlockFlow(element) {}
 
-void LayoutSliderThumb::updateAppearance(const ComputedStyle& parentStyle) {
-  if (parentStyle.appearance() == SliderVerticalPart)
-    mutableStyleRef().setAppearance(SliderThumbVerticalPart);
-  else if (parentStyle.appearance() == SliderHorizontalPart)
-    mutableStyleRef().setAppearance(SliderThumbHorizontalPart);
-  else if (parentStyle.appearance() == MediaSliderPart)
-    mutableStyleRef().setAppearance(MediaSliderThumbPart);
-  else if (parentStyle.appearance() == MediaVolumeSliderPart)
-    mutableStyleRef().setAppearance(MediaVolumeSliderThumbPart);
-  if (styleRef().hasAppearance())
-    LayoutTheme::theme().adjustSliderThumbSize(mutableStyleRef());
+void LayoutSliderThumb::UpdateAppearance(const ComputedStyle& parent_style) {
+  if (parent_style.Appearance() == kSliderVerticalPart)
+    MutableStyleRef().SetAppearance(kSliderThumbVerticalPart);
+  else if (parent_style.Appearance() == kSliderHorizontalPart)
+    MutableStyleRef().SetAppearance(kSliderThumbHorizontalPart);
+  else if (parent_style.Appearance() == kMediaSliderPart)
+    MutableStyleRef().SetAppearance(kMediaSliderThumbPart);
+  else if (parent_style.Appearance() == kMediaVolumeSliderPart)
+    MutableStyleRef().SetAppearance(kMediaVolumeSliderThumbPart);
+  if (StyleRef().HasAppearance())
+    LayoutTheme::GetTheme().AdjustSliderThumbSize(MutableStyleRef());
 }
 
 }  // namespace blink

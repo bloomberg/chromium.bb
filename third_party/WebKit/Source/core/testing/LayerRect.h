@@ -45,42 +45,42 @@ class LayerRect final : public GarbageCollectedFinalized<LayerRect>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static LayerRect* create(Node* node,
-                           const String& layerType,
-                           int nodeOffsetX,
-                           int nodeOffsetY,
+  static LayerRect* Create(Node* node,
+                           const String& layer_type,
+                           int node_offset_x,
+                           int node_offset_y,
                            ClientRect* rect) {
-    return new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect);
+    return new LayerRect(node, layer_type, node_offset_x, node_offset_y, rect);
   }
 
-  Node* layerAssociatedNode() const { return m_layerAssociatedNode.get(); }
-  String layerType() const { return m_layerType; }
-  int associatedNodeOffsetX() const { return m_associatedNodeOffsetX; }
-  int associatedNodeOffsetY() const { return m_associatedNodeOffsetY; }
-  ClientRect* layerRelativeRect() const { return m_rect.get(); }
+  Node* layerAssociatedNode() const { return layer_associated_node_.Get(); }
+  String layerType() const { return layer_type_; }
+  int associatedNodeOffsetX() const { return associated_node_offset_x_; }
+  int associatedNodeOffsetY() const { return associated_node_offset_y_; }
+  ClientRect* layerRelativeRect() const { return rect_.Get(); }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_layerAssociatedNode);
-    visitor->trace(m_rect);
+    visitor->Trace(layer_associated_node_);
+    visitor->Trace(rect_);
   }
 
  private:
   LayerRect(Node* node,
-            const String& layerName,
-            int nodeOffsetX,
-            int nodeOffsetY,
+            const String& layer_name,
+            int node_offset_x,
+            int node_offset_y,
             ClientRect* rect)
-      : m_layerAssociatedNode(node),
-        m_layerType(layerName),
-        m_associatedNodeOffsetX(nodeOffsetX),
-        m_associatedNodeOffsetY(nodeOffsetY),
-        m_rect(rect) {}
+      : layer_associated_node_(node),
+        layer_type_(layer_name),
+        associated_node_offset_x_(node_offset_x),
+        associated_node_offset_y_(node_offset_y),
+        rect_(rect) {}
 
-  Member<Node> m_layerAssociatedNode;
-  String m_layerType;
-  int m_associatedNodeOffsetX;
-  int m_associatedNodeOffsetY;
-  Member<ClientRect> m_rect;
+  Member<Node> layer_associated_node_;
+  String layer_type_;
+  int associated_node_offset_x_;
+  int associated_node_offset_y_;
+  Member<ClientRect> rect_;
 };
 
 }  // namespace blink

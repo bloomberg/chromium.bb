@@ -32,6 +32,9 @@
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 
+// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+#undef CopyCursor
+
 namespace blink {
 
 class PLATFORM_EXPORT Cursor {
@@ -39,132 +42,132 @@ class PLATFORM_EXPORT Cursor {
 
  public:
   enum Type {
-    Pointer = 0,
-    Cross,
-    Hand,
-    IBeam,
-    Wait,
-    Help,
-    EastResize,
-    NorthResize,
-    NorthEastResize,
-    NorthWestResize,
-    SouthResize,
-    SouthEastResize,
-    SouthWestResize,
-    WestResize,
-    NorthSouthResize,
-    EastWestResize,
-    NorthEastSouthWestResize,
-    NorthWestSouthEastResize,
-    ColumnResize,
-    RowResize,
-    MiddlePanning,
-    EastPanning,
-    NorthPanning,
-    NorthEastPanning,
-    NorthWestPanning,
-    SouthPanning,
-    SouthEastPanning,
-    SouthWestPanning,
-    WestPanning,
-    Move,
-    VerticalText,
-    Cell,
-    ContextMenu,
-    Alias,
-    Progress,
-    NoDrop,
-    Copy,
-    None,
-    NotAllowed,
-    ZoomIn,
-    ZoomOut,
-    Grab,
-    Grabbing,
-    Custom
+    kPointer = 0,
+    kCross,
+    kHand,
+    kIBeam,
+    kWait,
+    kHelp,
+    kEastResize,
+    kNorthResize,
+    kNorthEastResize,
+    kNorthWestResize,
+    kSouthResize,
+    kSouthEastResize,
+    kSouthWestResize,
+    kWestResize,
+    kNorthSouthResize,
+    kEastWestResize,
+    kNorthEastSouthWestResize,
+    kNorthWestSouthEastResize,
+    kColumnResize,
+    kRowResize,
+    kMiddlePanning,
+    kEastPanning,
+    kNorthPanning,
+    kNorthEastPanning,
+    kNorthWestPanning,
+    kSouthPanning,
+    kSouthEastPanning,
+    kSouthWestPanning,
+    kWestPanning,
+    kMove,
+    kVerticalText,
+    kCell,
+    kContextMenu,
+    kAlias,
+    kProgress,
+    kNoDrop,
+    kCopy,
+    kNone,
+    kNotAllowed,
+    kZoomIn,
+    kZoomOut,
+    kGrab,
+    kGrabbing,
+    kCustom
   };
 
   Cursor()
       // This is an invalid Cursor and should never actually get used.
-      : m_type(static_cast<Type>(-1)) {}
+      : type_(static_cast<Type>(-1)) {}
 
-  Cursor(Image*, bool hotSpotSpecified, const IntPoint& hotSpot);
+  Cursor(Image*, bool hot_spot_specified, const IntPoint& hot_spot);
 
   // Hot spot is in image pixels.
   Cursor(Image*,
-         bool hotSpotSpecified,
-         const IntPoint& hotSpot,
-         float imageScaleFactor);
+         bool hot_spot_specified,
+         const IntPoint& hot_spot,
+         float image_scale_factor);
 
   Cursor(const Cursor&);
   ~Cursor();
   Cursor& operator=(const Cursor&);
 
   explicit Cursor(Type);
-  Type getType() const {
-    ASSERT(m_type >= 0 && m_type <= Custom);
-    return m_type;
+  Type GetType() const {
+    ASSERT(type_ >= 0 && type_ <= kCustom);
+    return type_;
   }
-  Image* getImage() const { return m_image.get(); }
-  const IntPoint& hotSpot() const { return m_hotSpot; }
+  Image* GetImage() const { return image_.Get(); }
+  const IntPoint& HotSpot() const { return hot_spot_; }
   // Image scale in image pixels per logical (UI) pixel.
-  float imageScaleFactor() const { return m_imageScaleFactor; }
+  float ImageScaleFactor() const { return image_scale_factor_; }
 
  private:
-  Type m_type;
-  RefPtr<Image> m_image;
-  IntPoint m_hotSpot;
-  float m_imageScaleFactor;
+  Type type_;
+  RefPtr<Image> image_;
+  IntPoint hot_spot_;
+  float image_scale_factor_;
 };
 
-PLATFORM_EXPORT IntPoint determineHotSpot(Image*,
-                                          bool hotSpotSpecified,
-                                          const IntPoint& specifiedHotSpot);
+PLATFORM_EXPORT IntPoint DetermineHotSpot(Image*,
+                                          bool hot_spot_specified,
+                                          const IntPoint& specified_hot_spot);
 
-PLATFORM_EXPORT const Cursor& pointerCursor();
-PLATFORM_EXPORT const Cursor& crossCursor();
-PLATFORM_EXPORT const Cursor& handCursor();
-PLATFORM_EXPORT const Cursor& moveCursor();
-PLATFORM_EXPORT const Cursor& iBeamCursor();
-PLATFORM_EXPORT const Cursor& waitCursor();
-PLATFORM_EXPORT const Cursor& helpCursor();
-PLATFORM_EXPORT const Cursor& eastResizeCursor();
-PLATFORM_EXPORT const Cursor& northResizeCursor();
-PLATFORM_EXPORT const Cursor& northEastResizeCursor();
-PLATFORM_EXPORT const Cursor& northWestResizeCursor();
-PLATFORM_EXPORT const Cursor& southResizeCursor();
-PLATFORM_EXPORT const Cursor& southEastResizeCursor();
-PLATFORM_EXPORT const Cursor& southWestResizeCursor();
-PLATFORM_EXPORT const Cursor& westResizeCursor();
-PLATFORM_EXPORT const Cursor& northSouthResizeCursor();
-PLATFORM_EXPORT const Cursor& eastWestResizeCursor();
-PLATFORM_EXPORT const Cursor& northEastSouthWestResizeCursor();
-PLATFORM_EXPORT const Cursor& northWestSouthEastResizeCursor();
-PLATFORM_EXPORT const Cursor& columnResizeCursor();
-PLATFORM_EXPORT const Cursor& rowResizeCursor();
-PLATFORM_EXPORT const Cursor& middlePanningCursor();
-PLATFORM_EXPORT const Cursor& eastPanningCursor();
-PLATFORM_EXPORT const Cursor& northPanningCursor();
-PLATFORM_EXPORT const Cursor& northEastPanningCursor();
-PLATFORM_EXPORT const Cursor& northWestPanningCursor();
-PLATFORM_EXPORT const Cursor& southPanningCursor();
-PLATFORM_EXPORT const Cursor& southEastPanningCursor();
-PLATFORM_EXPORT const Cursor& southWestPanningCursor();
-PLATFORM_EXPORT const Cursor& westPanningCursor();
-PLATFORM_EXPORT const Cursor& verticalTextCursor();
-PLATFORM_EXPORT const Cursor& cellCursor();
-PLATFORM_EXPORT const Cursor& contextMenuCursor();
-PLATFORM_EXPORT const Cursor& noDropCursor();
-PLATFORM_EXPORT const Cursor& notAllowedCursor();
-PLATFORM_EXPORT const Cursor& progressCursor();
-PLATFORM_EXPORT const Cursor& aliasCursor();
-PLATFORM_EXPORT const Cursor& zoomInCursor();
-PLATFORM_EXPORT const Cursor& zoomOutCursor();
-PLATFORM_EXPORT const Cursor& copyCursor();
-PLATFORM_EXPORT const Cursor& noneCursor();
-PLATFORM_EXPORT const Cursor& grabCursor();
-PLATFORM_EXPORT const Cursor& grabbingCursor();
+PLATFORM_EXPORT const Cursor& PointerCursor();
+PLATFORM_EXPORT const Cursor& CrossCursor();
+PLATFORM_EXPORT const Cursor& HandCursor();
+PLATFORM_EXPORT const Cursor& MoveCursor();
+PLATFORM_EXPORT const Cursor& IBeamCursor();
+PLATFORM_EXPORT const Cursor& WaitCursor();
+PLATFORM_EXPORT const Cursor& HelpCursor();
+PLATFORM_EXPORT const Cursor& EastResizeCursor();
+PLATFORM_EXPORT const Cursor& NorthResizeCursor();
+PLATFORM_EXPORT const Cursor& NorthEastResizeCursor();
+PLATFORM_EXPORT const Cursor& NorthWestResizeCursor();
+PLATFORM_EXPORT const Cursor& SouthResizeCursor();
+PLATFORM_EXPORT const Cursor& SouthEastResizeCursor();
+PLATFORM_EXPORT const Cursor& SouthWestResizeCursor();
+PLATFORM_EXPORT const Cursor& WestResizeCursor();
+PLATFORM_EXPORT const Cursor& NorthSouthResizeCursor();
+PLATFORM_EXPORT const Cursor& EastWestResizeCursor();
+PLATFORM_EXPORT const Cursor& NorthEastSouthWestResizeCursor();
+PLATFORM_EXPORT const Cursor& NorthWestSouthEastResizeCursor();
+PLATFORM_EXPORT const Cursor& ColumnResizeCursor();
+PLATFORM_EXPORT const Cursor& RowResizeCursor();
+PLATFORM_EXPORT const Cursor& MiddlePanningCursor();
+PLATFORM_EXPORT const Cursor& EastPanningCursor();
+PLATFORM_EXPORT const Cursor& NorthPanningCursor();
+PLATFORM_EXPORT const Cursor& NorthEastPanningCursor();
+PLATFORM_EXPORT const Cursor& NorthWestPanningCursor();
+PLATFORM_EXPORT const Cursor& SouthPanningCursor();
+PLATFORM_EXPORT const Cursor& SouthEastPanningCursor();
+PLATFORM_EXPORT const Cursor& SouthWestPanningCursor();
+PLATFORM_EXPORT const Cursor& WestPanningCursor();
+PLATFORM_EXPORT const Cursor& VerticalTextCursor();
+PLATFORM_EXPORT const Cursor& CellCursor();
+PLATFORM_EXPORT const Cursor& ContextMenuCursor();
+PLATFORM_EXPORT const Cursor& NoDropCursor();
+PLATFORM_EXPORT const Cursor& NotAllowedCursor();
+PLATFORM_EXPORT const Cursor& ProgressCursor();
+PLATFORM_EXPORT const Cursor& AliasCursor();
+PLATFORM_EXPORT const Cursor& ZoomInCursor();
+PLATFORM_EXPORT const Cursor& ZoomOutCursor();
+PLATFORM_EXPORT const Cursor& CopyCursor();
+PLATFORM_EXPORT const Cursor& NoneCursor();
+PLATFORM_EXPORT const Cursor& GrabCursor();
+PLATFORM_EXPORT const Cursor& GrabbingCursor();
 
 }  // namespace blink
 

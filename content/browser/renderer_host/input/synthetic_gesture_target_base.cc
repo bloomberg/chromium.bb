@@ -45,36 +45,36 @@ SyntheticGestureTargetBase::~SyntheticGestureTargetBase() {
 void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
     const WebInputEvent& event) {
   TRACE_EVENT1("input", "SyntheticGestureTarget::DispatchInputEventToPlatform",
-               "type", WebInputEvent::GetName(event.type()));
+               "type", WebInputEvent::GetName(event.GetType()));
 
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 
-  if (WebInputEvent::isTouchEventType(event.type())) {
+  if (WebInputEvent::IsTouchEventType(event.GetType())) {
     const WebTouchEvent& web_touch =
         static_cast<const WebTouchEvent&>(event);
 
     // Check that all touch pointers are within the content bounds.
-    for (unsigned i = 0; i < web_touch.touchesLength; i++)
-      CHECK(web_touch.touches[i].state != WebTouchPoint::StatePressed ||
+    for (unsigned i = 0; i < web_touch.touches_length; i++)
+      CHECK(web_touch.touches[i].state != WebTouchPoint::kStatePressed ||
             PointIsWithinContents(web_touch.touches[i].position.x,
                                   web_touch.touches[i].position.y))
           << "Touch coordinates are not within content bounds on TouchStart.";
 
     DispatchWebTouchEventToPlatform(web_touch, latency_info);
-  } else if (event.type() == WebInputEvent::MouseWheel) {
+  } else if (event.GetType() == WebInputEvent::kMouseWheel) {
     const WebMouseWheelEvent& web_wheel =
         static_cast<const WebMouseWheelEvent&>(event);
-    CHECK(PointIsWithinContents(web_wheel.positionInWidget().x,
-                                web_wheel.positionInWidget().y))
+    CHECK(PointIsWithinContents(web_wheel.PositionInWidget().x,
+                                web_wheel.PositionInWidget().y))
         << "Mouse wheel position is not within content bounds.";
     DispatchWebMouseWheelEventToPlatform(web_wheel, latency_info);
-  } else if (WebInputEvent::isMouseEventType(event.type())) {
+  } else if (WebInputEvent::IsMouseEventType(event.GetType())) {
     const WebMouseEvent& web_mouse =
         static_cast<const WebMouseEvent&>(event);
-    CHECK(event.type() != WebInputEvent::MouseDown ||
-          PointIsWithinContents(web_mouse.positionInWidget().x,
-                                web_mouse.positionInWidget().y))
+    CHECK(event.GetType() != WebInputEvent::kMouseDown ||
+          PointIsWithinContents(web_mouse.PositionInWidget().x,
+                                web_mouse.PositionInWidget().y))
         << "Mouse pointer is not within content bounds on MouseDown.";
     DispatchWebMouseEventToPlatform(web_mouse, latency_info);
   } else {

@@ -12,18 +12,18 @@
 namespace blink {
 
 TEST(DynamicsCompressorNodeTest, ProcessorLifetime) {
-  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::create();
-  OfflineAudioContext* context = OfflineAudioContext::create(
-      &page->document(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
+  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::Create();
+  OfflineAudioContext* context = OfflineAudioContext::Create(
+      &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   DynamicsCompressorNode* node =
       context->createDynamicsCompressor(ASSERT_NO_EXCEPTION);
-  DynamicsCompressorHandler& handler = node->dynamicsCompressorHandler();
-  EXPECT_TRUE(handler.m_dynamicsCompressor);
+  DynamicsCompressorHandler& handler = node->GetDynamicsCompressorHandler();
+  EXPECT_TRUE(handler.dynamics_compressor_);
   BaseAudioContext::AutoLocker locker(context);
-  handler.dispose();
+  handler.Dispose();
   // m_dynamicsCompressor should live after dispose() because an audio thread
   // is using it.
-  EXPECT_TRUE(handler.m_dynamicsCompressor);
+  EXPECT_TRUE(handler.dynamics_compressor_);
 }
 
 }  // namespace blink

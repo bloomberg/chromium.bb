@@ -15,53 +15,53 @@ namespace blink {
 using protocol::Response;
 
 namespace LogAgentState {
-static const char logEnabled[] = "logEnabled";
-static const char logViolations[] = "logViolations";
+static const char kLogEnabled[] = "logEnabled";
+static const char kLogViolations[] = "logViolations";
 }
 
 namespace {
 
-String messageSourceValue(MessageSource source) {
-  DCHECK(source != ConsoleAPIMessageSource);
+String MessageSourceValue(MessageSource source) {
+  DCHECK(source != kConsoleAPIMessageSource);
   switch (source) {
-    case XMLMessageSource:
+    case kXMLMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Xml;
-    case JSMessageSource:
+    case kJSMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Javascript;
-    case NetworkMessageSource:
+    case kNetworkMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Network;
-    case StorageMessageSource:
+    case kStorageMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Storage;
-    case AppCacheMessageSource:
+    case kAppCacheMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Appcache;
-    case RenderingMessageSource:
+    case kRenderingMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Rendering;
-    case SecurityMessageSource:
+    case kSecurityMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Security;
-    case OtherMessageSource:
+    case kOtherMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Other;
-    case DeprecationMessageSource:
+    case kDeprecationMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Deprecation;
-    case WorkerMessageSource:
+    case kWorkerMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Worker;
-    case ViolationMessageSource:
+    case kViolationMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Violation;
-    case InterventionMessageSource:
+    case kInterventionMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Intervention;
     default:
       return protocol::Log::LogEntry::SourceEnum::Other;
   }
 }
 
-String messageLevelValue(MessageLevel level) {
+String MessageLevelValue(MessageLevel level) {
   switch (level) {
-    case VerboseMessageLevel:
+    case kVerboseMessageLevel:
       return protocol::Log::LogEntry::LevelEnum::Verbose;
-    case InfoMessageLevel:
+    case kInfoMessageLevel:
       return protocol::Log::LogEntry::LevelEnum::Info;
-    case WarningMessageLevel:
+    case kWarningMessageLevel:
       return protocol::Log::LogEntry::LevelEnum::Warning;
-    case ErrorMessageLevel:
+    case kErrorMessageLevel:
       return protocol::Log::LogEntry::LevelEnum::Error;
   }
   return protocol::Log::LogEntry::LevelEnum::Info;
@@ -72,25 +72,25 @@ String messageLevelValue(MessageLevel level) {
 using protocol::Log::ViolationSetting;
 
 InspectorLogAgent::InspectorLogAgent(ConsoleMessageStorage* storage,
-                                     PerformanceMonitor* performanceMonitor)
-    : m_enabled(false),
-      m_storage(storage),
-      m_performanceMonitor(performanceMonitor) {}
+                                     PerformanceMonitor* performance_monitor)
+    : enabled_(false),
+      storage_(storage),
+      performance_monitor_(performance_monitor) {}
 
 InspectorLogAgent::~InspectorLogAgent() {}
 
 DEFINE_TRACE(InspectorLogAgent) {
-  visitor->trace(m_storage);
-  visitor->trace(m_performanceMonitor);
-  InspectorBaseAgent::trace(visitor);
-  PerformanceMonitor::Client::trace(visitor);
+  visitor->Trace(storage_);
+  visitor->Trace(performance_monitor_);
+  InspectorBaseAgent::Trace(visitor);
+  PerformanceMonitor::Client::Trace(visitor);
 }
 
-void InspectorLogAgent::restore() {
-  if (!m_state->booleanProperty(LogAgentState::logEnabled, false))
+void InspectorLogAgent::Restore() {
+  if (!state_->booleanProperty(LogAgentState::kLogEnabled, false))
     return;
   enable();
-  protocol::Value* config = m_state->get(LogAgentState::logViolations);
+  protocol::Value* config = state_->get(LogAgentState::kLogViolations);
   if (config) {
     protocol::ErrorSupport errors;
     startViolationsReport(
@@ -98,75 +98,76 @@ void InspectorLogAgent::restore() {
   }
 }
 
-void InspectorLogAgent::consoleMessageAdded(ConsoleMessage* message) {
-  DCHECK(m_enabled);
+void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
+  DCHECK(enabled_);
 
   std::unique_ptr<protocol::Log::LogEntry> entry =
       protocol::Log::LogEntry::create()
-          .setSource(messageSourceValue(message->source()))
-          .setLevel(messageLevelValue(message->level()))
-          .setText(message->message())
-          .setTimestamp(message->timestamp())
+          .setSource(MessageSourceValue(message->Source()))
+          .setLevel(MessageLevelValue(message->Level()))
+          .setText(message->Message())
+          .setTimestamp(message->Timestamp())
           .build();
-  if (!message->location()->url().isEmpty())
-    entry->setUrl(message->location()->url());
-  std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace> stackTrace =
-      message->location()->buildInspectorObject();
-  if (stackTrace)
-    entry->setStackTrace(std::move(stackTrace));
-  if (message->location()->lineNumber())
-    entry->setLineNumber(message->location()->lineNumber() - 1);
-  if (message->source() == WorkerMessageSource &&
-      !message->workerId().isEmpty())
-    entry->setWorkerId(message->workerId());
-  if (message->source() == NetworkMessageSource && message->requestIdentifier())
+  if (!message->Location()->Url().IsEmpty())
+    entry->setUrl(message->Location()->Url());
+  std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
+      stack_trace = message->Location()->BuildInspectorObject();
+  if (stack_trace)
+    entry->setStackTrace(std::move(stack_trace));
+  if (message->Location()->LineNumber())
+    entry->setLineNumber(message->Location()->LineNumber() - 1);
+  if (message->Source() == kWorkerMessageSource &&
+      !message->WorkerId().IsEmpty())
+    entry->setWorkerId(message->WorkerId());
+  if (message->Source() == kNetworkMessageSource &&
+      message->RequestIdentifier())
     entry->setNetworkRequestId(
-        IdentifiersFactory::requestId(message->requestIdentifier()));
+        IdentifiersFactory::RequestId(message->RequestIdentifier()));
 
-  frontend()->entryAdded(std::move(entry));
-  frontend()->flush();
+  GetFrontend()->entryAdded(std::move(entry));
+  GetFrontend()->flush();
 }
 
 Response InspectorLogAgent::enable() {
-  if (m_enabled)
+  if (enabled_)
     return Response::OK();
-  m_instrumentingAgents->addInspectorLogAgent(this);
-  m_state->setBoolean(LogAgentState::logEnabled, true);
-  m_enabled = true;
+  instrumenting_agents_->addInspectorLogAgent(this);
+  state_->setBoolean(LogAgentState::kLogEnabled, true);
+  enabled_ = true;
 
-  if (m_storage->expiredCount()) {
+  if (storage_->ExpiredCount()) {
     std::unique_ptr<protocol::Log::LogEntry> expired =
         protocol::Log::LogEntry::create()
             .setSource(protocol::Log::LogEntry::SourceEnum::Other)
             .setLevel(protocol::Log::LogEntry::LevelEnum::Warning)
-            .setText(String::number(m_storage->expiredCount()) +
+            .setText(String::Number(storage_->ExpiredCount()) +
                      String(" log entires are not shown."))
             .setTimestamp(0)
             .build();
-    frontend()->entryAdded(std::move(expired));
-    frontend()->flush();
+    GetFrontend()->entryAdded(std::move(expired));
+    GetFrontend()->flush();
   }
-  for (size_t i = 0; i < m_storage->size(); ++i)
-    consoleMessageAdded(m_storage->at(i));
+  for (size_t i = 0; i < storage_->size(); ++i)
+    ConsoleMessageAdded(storage_->at(i));
   return Response::OK();
 }
 
 Response InspectorLogAgent::disable() {
-  if (!m_enabled)
+  if (!enabled_)
     return Response::OK();
-  m_state->setBoolean(LogAgentState::logEnabled, false);
+  state_->setBoolean(LogAgentState::kLogEnabled, false);
   stopViolationsReport();
-  m_enabled = false;
-  m_instrumentingAgents->removeInspectorLogAgent(this);
+  enabled_ = false;
+  instrumenting_agents_->removeInspectorLogAgent(this);
   return Response::OK();
 }
 
 Response InspectorLogAgent::clear() {
-  m_storage->clear();
+  storage_->Clear();
   return Response::OK();
 }
 
-static PerformanceMonitor::Violation parseViolation(const String& name) {
+static PerformanceMonitor::Violation ParseViolation(const String& name) {
   if (name == ViolationSetting::NameEnum::DiscouragedAPIUse)
     return PerformanceMonitor::kDiscouragedAPIUse;
   if (name == ViolationSetting::NameEnum::LongTask)
@@ -186,48 +187,48 @@ static PerformanceMonitor::Violation parseViolation(const String& name) {
 
 Response InspectorLogAgent::startViolationsReport(
     std::unique_ptr<protocol::Array<ViolationSetting>> settings) {
-  if (!m_enabled)
+  if (!enabled_)
     return Response::Error("Log is not enabled");
-  m_state->setValue(LogAgentState::logViolations, settings->toValue());
-  if (!m_performanceMonitor)
+  state_->setValue(LogAgentState::kLogViolations, settings->toValue());
+  if (!performance_monitor_)
     return Response::Error("Violations are not supported for this target");
-  m_performanceMonitor->unsubscribeAll(this);
+  performance_monitor_->UnsubscribeAll(this);
   for (size_t i = 0; i < settings->length(); ++i) {
     PerformanceMonitor::Violation violation =
-        parseViolation(settings->get(i)->getName());
+        ParseViolation(settings->get(i)->getName());
     if (violation == PerformanceMonitor::kAfterLast)
       continue;
-    m_performanceMonitor->subscribe(
+    performance_monitor_->Subscribe(
         violation, settings->get(i)->getThreshold() / 1000, this);
   }
   return Response::OK();
 }
 
 Response InspectorLogAgent::stopViolationsReport() {
-  m_state->remove(LogAgentState::logViolations);
-  if (!m_performanceMonitor)
+  state_->remove(LogAgentState::kLogViolations);
+  if (!performance_monitor_)
     return Response::Error("Violations are not supported for this target");
-  m_performanceMonitor->unsubscribeAll(this);
+  performance_monitor_->UnsubscribeAll(this);
   return Response::OK();
 }
 
-void InspectorLogAgent::reportLongLayout(double duration) {
-  String messageText =
-      String::format("Forced reflow while executing JavaScript took %ldms",
+void InspectorLogAgent::ReportLongLayout(double duration) {
+  String message_text =
+      String::Format("Forced reflow while executing JavaScript took %ldms",
                      lround(duration * 1000));
-  ConsoleMessage* message = ConsoleMessage::create(
-      ViolationMessageSource, VerboseMessageLevel, messageText);
-  consoleMessageAdded(message);
+  ConsoleMessage* message = ConsoleMessage::Create(
+      kViolationMessageSource, kVerboseMessageLevel, message_text);
+  ConsoleMessageAdded(message);
 }
 
-void InspectorLogAgent::reportGenericViolation(PerformanceMonitor::Violation,
+void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
                                                double time,
                                                SourceLocation* location) {
-  location->takeStackTrace();
-  ConsoleMessage* message = ConsoleMessage::create(
-      ViolationMessageSource, VerboseMessageLevel, text, location->clone());
-  consoleMessageAdded(message);
+  location->TakeStackTrace();
+  ConsoleMessage* message = ConsoleMessage::Create(
+      kViolationMessageSource, kVerboseMessageLevel, text, location->Clone());
+  ConsoleMessageAdded(message);
 };
 
 }  // namespace blink

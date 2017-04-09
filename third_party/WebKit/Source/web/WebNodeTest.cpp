@@ -16,53 +16,53 @@ namespace blink {
 
 class WebNodeTest : public testing::Test {
  protected:
-  Document& document() { return m_pageHolder->document(); }
+  Document& GetDocument() { return page_holder_->GetDocument(); }
 
-  void setInnerHTML(const String& html) {
-    document().documentElement()->setInnerHTML(html);
+  void SetInnerHTML(const String& html) {
+    GetDocument().documentElement()->setInnerHTML(html);
   }
 
-  WebNode root() { return WebNode(document().documentElement()); }
+  WebNode Root() { return WebNode(GetDocument().documentElement()); }
 
  private:
   void SetUp() override;
 
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 void WebNodeTest::SetUp() {
-  m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(WebNodeTest, QuerySelectorMatches) {
-  setInnerHTML("<div id=x><span class=a></span></div>");
-  WebElement element = root().querySelector(".a");
-  EXPECT_FALSE(element.isNull());
-  EXPECT_TRUE(element.hasHTMLTagName("span"));
+  SetInnerHTML("<div id=x><span class=a></span></div>");
+  WebElement element = Root().QuerySelector(".a");
+  EXPECT_FALSE(element.IsNull());
+  EXPECT_TRUE(element.HasHTMLTagName("span"));
 }
 
 TEST_F(WebNodeTest, QuerySelectorDoesNotMatch) {
-  setInnerHTML("<div id=x><span class=a></span></div>");
-  WebElement element = root().querySelector("section");
-  EXPECT_TRUE(element.isNull());
+  SetInnerHTML("<div id=x><span class=a></span></div>");
+  WebElement element = Root().QuerySelector("section");
+  EXPECT_TRUE(element.IsNull());
 }
 
 TEST_F(WebNodeTest, QuerySelectorError) {
-  setInnerHTML("<div></div>");
-  WebElement element = root().querySelector("@invalid-selector");
-  EXPECT_TRUE(element.isNull());
+  SetInnerHTML("<div></div>");
+  WebElement element = Root().QuerySelector("@invalid-selector");
+  EXPECT_TRUE(element.IsNull());
 }
 
 TEST_F(WebNodeTest, GetElementsByHTMLTagName) {
-  setInnerHTML(
+  SetInnerHTML(
       "<body><LABEL></LABEL><svg "
       "xmlns='http://www.w3.org/2000/svg'><label></label></svg></body>");
   // WebNode::getElementsByHTMLTagName returns only HTML elements.
-  WebElementCollection collection = root().getElementsByHTMLTagName("label");
+  WebElementCollection collection = Root().GetElementsByHTMLTagName("label");
   EXPECT_EQ(1u, collection.length());
-  EXPECT_TRUE(collection.firstItem().hasHTMLTagName("label"));
+  EXPECT_TRUE(collection.FirstItem().HasHTMLTagName("label"));
   // The argument should be lower-case.
-  collection = root().getElementsByHTMLTagName("LABEL");
+  collection = Root().GetElementsByHTMLTagName("LABEL");
   EXPECT_EQ(0u, collection.length());
 }
 

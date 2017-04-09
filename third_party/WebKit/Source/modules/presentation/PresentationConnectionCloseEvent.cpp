@@ -9,26 +9,26 @@
 namespace blink {
 
 PresentationConnectionCloseEvent::PresentationConnectionCloseEvent(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     const String& reason,
     const String& message)
-    : Event(eventType, false /* canBubble */, false /* cancelable */),
-      m_reason(reason),
-      m_message(message) {}
+    : Event(event_type, false /* canBubble */, false /* cancelable */),
+      reason_(reason),
+      message_(message) {}
 
 PresentationConnectionCloseEvent::PresentationConnectionCloseEvent(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     const PresentationConnectionCloseEventInit& initializer)
-    : Event(eventType, initializer),
-      m_reason(initializer.reason()),
-      m_message(initializer.message()) {}
+    : Event(event_type, initializer),
+      reason_(initializer.reason()),
+      message_(initializer.message()) {}
 
-const AtomicString& PresentationConnectionCloseEvent::interfaceName() const {
+const AtomicString& PresentationConnectionCloseEvent::InterfaceName() const {
   return EventNames::PresentationConnectionCloseEvent;
 }
 
 DEFINE_TRACE(PresentationConnectionCloseEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

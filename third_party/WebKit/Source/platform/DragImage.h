@@ -50,43 +50,43 @@ class PLATFORM_EXPORT DragImage {
   WTF_MAKE_NONCOPYABLE(DragImage);
 
  public:
-  static std::unique_ptr<DragImage> create(
+  static std::unique_ptr<DragImage> Create(
       Image*,
-      RespectImageOrientationEnum = DoNotRespectImageOrientation,
-      float deviceScaleFactor = 1,
-      InterpolationQuality = InterpolationHigh,
+      RespectImageOrientationEnum = kDoNotRespectImageOrientation,
+      float device_scale_factor = 1,
+      InterpolationQuality = kInterpolationHigh,
       float opacity = 1,
-      FloatSize imageScale = FloatSize(1, 1));
+      FloatSize image_scale = FloatSize(1, 1));
 
-  static std::unique_ptr<DragImage> create(const KURL&,
+  static std::unique_ptr<DragImage> Create(const KURL&,
                                            const String& label,
-                                           const FontDescription& systemFont,
-                                           float deviceScaleFactor);
+                                           const FontDescription& system_font,
+                                           float device_scale_factor);
   ~DragImage();
 
-  static FloatSize clampedImageScale(const IntSize&,
+  static FloatSize ClampedImageScale(const IntSize&,
                                      const IntSize&,
-                                     const IntSize& maxSize);
+                                     const IntSize& max_size);
 
-  const SkBitmap& bitmap() { return m_bitmap; }
-  float resolutionScale() const { return m_resolutionScale; }
-  IntSize size() const { return IntSize(m_bitmap.width(), m_bitmap.height()); }
+  const SkBitmap& Bitmap() { return bitmap_; }
+  float ResolutionScale() const { return resolution_scale_; }
+  IntSize size() const { return IntSize(bitmap_.width(), bitmap_.height()); }
 
-  void scale(float scaleX, float scaleY);
+  void Scale(float scale_x, float scale_y);
 
-  static sk_sp<SkImage> resizeAndOrientImage(
+  static sk_sp<SkImage> ResizeAndOrientImage(
       sk_sp<SkImage>,
       ImageOrientation,
-      FloatSize imageScale = FloatSize(1, 1),
+      FloatSize image_scale = FloatSize(1, 1),
       float opacity = 1.0,
-      InterpolationQuality = InterpolationNone);
+      InterpolationQuality = kInterpolationNone);
 
  private:
-  DragImage(const SkBitmap&, float resolutionScale, InterpolationQuality);
+  DragImage(const SkBitmap&, float resolution_scale, InterpolationQuality);
 
-  SkBitmap m_bitmap;
-  float m_resolutionScale;
-  InterpolationQuality m_interpolationQuality;
+  SkBitmap bitmap_;
+  float resolution_scale_;
+  InterpolationQuality interpolation_quality_;
 };
 
 }  // namespace blink

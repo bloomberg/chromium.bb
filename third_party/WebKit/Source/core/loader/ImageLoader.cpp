@@ -56,221 +56,222 @@
 
 namespace blink {
 
-static ImageEventSender& loadEventSender() {
+static ImageEventSender& LoadEventSender() {
   DEFINE_STATIC_LOCAL(ImageEventSender, sender,
-                      (ImageEventSender::create(EventTypeNames::load)));
+                      (ImageEventSender::Create(EventTypeNames::load)));
   return sender;
 }
 
-static ImageEventSender& errorEventSender() {
+static ImageEventSender& ErrorEventSender() {
   DEFINE_STATIC_LOCAL(ImageEventSender, sender,
-                      (ImageEventSender::create(EventTypeNames::error)));
+                      (ImageEventSender::Create(EventTypeNames::error)));
   return sender;
 }
 
-static inline bool pageIsBeingDismissed(Document* document) {
-  return document->pageDismissalEventBeingDispatched() != Document::NoDismissal;
+static inline bool PageIsBeingDismissed(Document* document) {
+  return document->PageDismissalEventBeingDispatched() !=
+         Document::kNoDismissal;
 }
 
-static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(
+static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
     ImageLoader* loader) {
   DCHECK(loader);
-  DCHECK(loader->element());
-  if (loader->element()->document().frame() &&
-      loader->element()
-          ->document()
-          .frame()
-          ->script()
-          .shouldBypassMainWorldCSP())
-    return ImageLoader::BypassMainWorldCSP;
-  return ImageLoader::DoNotBypassMainWorldCSP;
+  DCHECK(loader->GetElement());
+  if (loader->GetElement()->GetDocument().GetFrame() &&
+      loader->GetElement()
+          ->GetDocument()
+          .GetFrame()
+          ->Script()
+          .ShouldBypassMainWorldCSP())
+    return ImageLoader::kBypassMainWorldCSP;
+  return ImageLoader::kDoNotBypassMainWorldCSP;
 }
 
 class ImageLoader::Task {
  public:
-  static std::unique_ptr<Task> create(ImageLoader* loader,
-                                      UpdateFromElementBehavior updateBehavior,
-                                      ReferrerPolicy referrerPolicy) {
-    return WTF::makeUnique<Task>(loader, updateBehavior, referrerPolicy);
+  static std::unique_ptr<Task> Create(ImageLoader* loader,
+                                      UpdateFromElementBehavior update_behavior,
+                                      ReferrerPolicy referrer_policy) {
+    return WTF::MakeUnique<Task>(loader, update_behavior, referrer_policy);
   }
 
   Task(ImageLoader* loader,
-       UpdateFromElementBehavior updateBehavior,
-       ReferrerPolicy referrerPolicy)
-      : m_loader(loader),
-        m_shouldBypassMainWorldCSP(shouldBypassMainWorldCSP(loader)),
-        m_updateBehavior(updateBehavior),
-        m_weakFactory(this),
-        m_referrerPolicy(referrerPolicy) {
-    ExecutionContext& context = m_loader->element()->document();
-    probe::asyncTaskScheduled(&context, "Image", this);
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+       UpdateFromElementBehavior update_behavior,
+       ReferrerPolicy referrer_policy)
+      : loader_(loader),
+        should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
+        update_behavior_(update_behavior),
+        weak_factory_(this),
+        referrer_policy_(referrer_policy) {
+    ExecutionContext& context = loader_->GetElement()->GetDocument();
+    probe::AsyncTaskScheduled(&context, "Image", this);
+    v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
     v8::HandleScope scope(isolate);
     // If we're invoked from C++ without a V8 context on the stack, we should
     // run the microtask in the context of the element's document's main world.
     if (!isolate->GetCurrentContext().IsEmpty()) {
-      m_scriptState = ScriptState::current(isolate);
+      script_state_ = ScriptState::Current(isolate);
     } else {
-      m_scriptState =
-          toScriptStateForMainWorld(loader->element()->document().frame());
-      DCHECK(m_scriptState);
+      script_state_ = ToScriptStateForMainWorld(
+          loader->GetElement()->GetDocument().GetFrame());
+      DCHECK(script_state_);
     }
-    m_requestURL =
-        loader->imageSourceToKURL(loader->element()->imageSourceURL());
+    request_url_ =
+        loader->ImageSourceToKURL(loader->GetElement()->ImageSourceURL());
   }
 
-  void run() {
-    if (!m_loader)
+  void Run() {
+    if (!loader_)
       return;
-    ExecutionContext& context = m_loader->element()->document();
-    probe::AsyncTask asyncTask(&context, this);
-    if (m_scriptState->contextIsValid()) {
-      ScriptState::Scope scope(m_scriptState.get());
-      m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP,
-                                    m_updateBehavior, m_requestURL,
-                                    m_referrerPolicy);
+    ExecutionContext& context = loader_->GetElement()->GetDocument();
+    probe::AsyncTask async_task(&context, this);
+    if (script_state_->ContextIsValid()) {
+      ScriptState::Scope scope(script_state_.Get());
+      loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
+                                   update_behavior_, request_url_,
+                                   referrer_policy_);
     } else {
-      m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP,
-                                    m_updateBehavior, m_requestURL,
-                                    m_referrerPolicy);
+      loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
+                                   update_behavior_, request_url_,
+                                   referrer_policy_);
     }
   }
 
-  void clearLoader() {
-    m_loader = nullptr;
-    m_scriptState.clear();
+  void ClearLoader() {
+    loader_ = nullptr;
+    script_state_.Clear();
   }
 
-  WeakPtr<Task> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
+  WeakPtr<Task> CreateWeakPtr() { return weak_factory_.CreateWeakPtr(); }
 
  private:
-  WeakPersistent<ImageLoader> m_loader;
-  BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
-  UpdateFromElementBehavior m_updateBehavior;
-  RefPtr<ScriptState> m_scriptState;
-  WeakPtrFactory<Task> m_weakFactory;
-  ReferrerPolicy m_referrerPolicy;
-  KURL m_requestURL;
+  WeakPersistent<ImageLoader> loader_;
+  BypassMainWorldBehavior should_bypass_main_world_csp_;
+  UpdateFromElementBehavior update_behavior_;
+  RefPtr<ScriptState> script_state_;
+  WeakPtrFactory<Task> weak_factory_;
+  ReferrerPolicy referrer_policy_;
+  KURL request_url_;
 };
 
 ImageLoader::ImageLoader(Element* element)
-    : m_element(element),
-      m_derefElementTimer(this, &ImageLoader::timerFired),
-      m_hasPendingLoadEvent(false),
-      m_hasPendingErrorEvent(false),
-      m_imageComplete(true),
-      m_loadingImageDocument(false),
-      m_elementIsProtected(false),
-      m_suppressErrorEvents(false) {
+    : element_(element),
+      deref_element_timer_(this, &ImageLoader::TimerFired),
+      has_pending_load_event_(false),
+      has_pending_error_event_(false),
+      image_complete_(true),
+      loading_image_document_(false),
+      element_is_protected_(false),
+      suppress_error_events_(false) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
 
 ImageLoader::~ImageLoader() {}
 
-void ImageLoader::dispose() {
+void ImageLoader::Dispose() {
   RESOURCE_LOADING_DVLOG(1)
       << "~ImageLoader " << this
-      << "; m_hasPendingLoadEvent=" << m_hasPendingLoadEvent
-      << ", m_hasPendingErrorEvent=" << m_hasPendingErrorEvent;
+      << "; m_hasPendingLoadEvent=" << has_pending_load_event_
+      << ", m_hasPendingErrorEvent=" << has_pending_error_event_;
 
-  if (m_image) {
-    m_image->removeObserver(this);
-    m_image = nullptr;
+  if (image_) {
+    image_->RemoveObserver(this);
+    image_ = nullptr;
   }
 }
 
 DEFINE_TRACE(ImageLoader) {
-  visitor->trace(m_image);
-  visitor->trace(m_imageResourceForImageDocument);
-  visitor->trace(m_element);
+  visitor->Trace(image_);
+  visitor->Trace(image_resource_for_image_document_);
+  visitor->Trace(element_);
 }
 
-void ImageLoader::setImage(ImageResourceContent* newImage) {
-  setImageWithoutConsideringPendingLoadEvent(newImage);
+void ImageLoader::SetImage(ImageResourceContent* new_image) {
+  SetImageWithoutConsideringPendingLoadEvent(new_image);
 
   // Only consider updating the protection ref-count of the Element immediately
   // before returning from this function as doing so might result in the
   // destruction of this ImageLoader.
-  updatedHasPendingEvent();
+  UpdatedHasPendingEvent();
 }
 
-void ImageLoader::setImageWithoutConsideringPendingLoadEvent(
-    ImageResourceContent* newImage) {
-  DCHECK(m_failedLoadURL.isEmpty());
-  ImageResourceContent* oldImage = m_image.get();
-  if (newImage != oldImage) {
-    m_image = newImage;
-    if (m_hasPendingLoadEvent) {
-      loadEventSender().cancelEvent(this);
-      m_hasPendingLoadEvent = false;
+void ImageLoader::SetImageWithoutConsideringPendingLoadEvent(
+    ImageResourceContent* new_image) {
+  DCHECK(failed_load_url_.IsEmpty());
+  ImageResourceContent* old_image = image_.Get();
+  if (new_image != old_image) {
+    image_ = new_image;
+    if (has_pending_load_event_) {
+      LoadEventSender().CancelEvent(this);
+      has_pending_load_event_ = false;
     }
-    if (m_hasPendingErrorEvent) {
-      errorEventSender().cancelEvent(this);
-      m_hasPendingErrorEvent = false;
+    if (has_pending_error_event_) {
+      ErrorEventSender().CancelEvent(this);
+      has_pending_error_event_ = false;
     }
-    m_imageComplete = true;
-    if (newImage) {
-      newImage->addObserver(this);
+    image_complete_ = true;
+    if (new_image) {
+      new_image->AddObserver(this);
     }
-    if (oldImage) {
-      oldImage->removeObserver(this);
+    if (old_image) {
+      old_image->RemoveObserver(this);
     }
   }
 
-  if (LayoutImageResource* imageResource = layoutImageResource())
-    imageResource->resetAnimation();
+  if (LayoutImageResource* image_resource = GetLayoutImageResource())
+    image_resource->ResetAnimation();
 }
 
-static void configureRequest(
+static void ConfigureRequest(
     FetchRequest& request,
-    ImageLoader::BypassMainWorldBehavior bypassBehavior,
+    ImageLoader::BypassMainWorldBehavior bypass_behavior,
     Element& element,
-    const ClientHintsPreferences& clientHintsPreferences) {
-  if (bypassBehavior == ImageLoader::BypassMainWorldCSP)
-    request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
+    const ClientHintsPreferences& client_hints_preferences) {
+  if (bypass_behavior == ImageLoader::kBypassMainWorldCSP)
+    request.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
 
-  CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
-      element.fastGetAttribute(HTMLNames::crossoriginAttr));
-  if (crossOrigin != CrossOriginAttributeNotSet) {
-    request.setCrossOriginAccessControl(element.document().getSecurityOrigin(),
-                                        crossOrigin);
+  CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
+      element.FastGetAttribute(HTMLNames::crossoriginAttr));
+  if (cross_origin != kCrossOriginAttributeNotSet) {
+    request.SetCrossOriginAccessControl(
+        element.GetDocument().GetSecurityOrigin(), cross_origin);
   }
 
-  if (clientHintsPreferences.shouldSendResourceWidth() &&
+  if (client_hints_preferences.ShouldSendResourceWidth() &&
       isHTMLImageElement(element))
-    request.setResourceWidth(toHTMLImageElement(element).getResourceWidth());
+    request.SetResourceWidth(toHTMLImageElement(element).GetResourceWidth());
 }
 
-inline void ImageLoader::dispatchErrorEvent() {
-  m_hasPendingErrorEvent = true;
-  errorEventSender().dispatchEventSoon(this);
+inline void ImageLoader::DispatchErrorEvent() {
+  has_pending_error_event_ = true;
+  ErrorEventSender().DispatchEventSoon(this);
 }
 
-inline void ImageLoader::crossSiteOrCSPViolationOccurred(
-    AtomicString imageSourceURL) {
-  m_failedLoadURL = imageSourceURL;
+inline void ImageLoader::CrossSiteOrCSPViolationOccurred(
+    AtomicString image_source_url) {
+  failed_load_url_ = image_source_url;
 }
 
-inline void ImageLoader::clearFailedLoadURL() {
-  m_failedLoadURL = AtomicString();
+inline void ImageLoader::ClearFailedLoadURL() {
+  failed_load_url_ = AtomicString();
 }
 
-inline void ImageLoader::enqueueImageLoadingMicroTask(
-    UpdateFromElementBehavior updateBehavior,
-    ReferrerPolicy referrerPolicy) {
+inline void ImageLoader::EnqueueImageLoadingMicroTask(
+    UpdateFromElementBehavior update_behavior,
+    ReferrerPolicy referrer_policy) {
   std::unique_ptr<Task> task =
-      Task::create(this, updateBehavior, referrerPolicy);
-  m_pendingTask = task->createWeakPtr();
-  Microtask::enqueueMicrotask(
-      WTF::bind(&Task::run, WTF::passed(std::move(task))));
-  m_loadDelayCounter =
-      IncrementLoadEventDelayCount::create(m_element->document());
+      Task::Create(this, update_behavior, referrer_policy);
+  pending_task_ = task->CreateWeakPtr();
+  Microtask::EnqueueMicrotask(
+      WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
+  load_delay_counter_ =
+      IncrementLoadEventDelayCount::Create(element_->GetDocument());
 }
 
-void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
-                                      UpdateFromElementBehavior updateBehavior,
+void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
+                                      UpdateFromElementBehavior update_behavior,
                                       const KURL& url,
-                                      ReferrerPolicy referrerPolicy) {
+                                      ReferrerPolicy referrer_policy) {
   // FIXME: According to
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
   // When "update image" is called due to environment changes and the load
@@ -279,70 +280,71 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
   // We don't need to call clearLoader here: Either we were called from the
   // task, or our caller updateFromElement cleared the task's loader (and set
   // m_pendingTask to null).
-  m_pendingTask.reset();
+  pending_task_.reset();
   // Make sure to only decrement the count when we exit this function
-  std::unique_ptr<IncrementLoadEventDelayCount> loadDelayCounter;
-  loadDelayCounter.swap(m_loadDelayCounter);
+  std::unique_ptr<IncrementLoadEventDelayCount> load_delay_counter;
+  load_delay_counter.swap(load_delay_counter_);
 
-  Document& document = m_element->document();
-  if (!document.isActive())
+  Document& document = element_->GetDocument();
+  if (!document.IsActive())
     return;
 
-  AtomicString imageSourceURL = m_element->imageSourceURL();
-  ImageResourceContent* newImage = nullptr;
-  if (!url.isNull()) {
+  AtomicString image_source_url = element_->ImageSourceURL();
+  ImageResourceContent* new_image = nullptr;
+  if (!url.IsNull()) {
     // Unlike raw <img>, we block mixed content inside of <picture> or
     // <img srcset>.
-    ResourceLoaderOptions resourceLoaderOptions =
-        ResourceFetcher::defaultResourceOptions();
-    ResourceRequest resourceRequest(url);
-    if (updateBehavior == UpdateForcedReload) {
-      resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
-      resourceRequest.setPreviewsState(WebURLRequest::PreviewsNoTransform);
+    ResourceLoaderOptions resource_loader_options =
+        ResourceFetcher::DefaultResourceOptions();
+    ResourceRequest resource_request(url);
+    if (update_behavior == kUpdateForcedReload) {
+      resource_request.SetCachePolicy(WebCachePolicy::kBypassingCache);
+      resource_request.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
     }
 
-    if (referrerPolicy != ReferrerPolicyDefault) {
-      resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-          referrerPolicy, url, document.outgoingReferrer()));
+    if (referrer_policy != kReferrerPolicyDefault) {
+      resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+          referrer_policy, url, document.OutgoingReferrer()));
     }
 
-    if (isHTMLPictureElement(element()->parentNode()) ||
-        !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull())
-      resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
-    FetchRequest request(resourceRequest, element()->localName(),
-                         resourceLoaderOptions);
-    configureRequest(request, bypassBehavior, *m_element,
-                     document.clientHintsPreferences());
+    if (isHTMLPictureElement(GetElement()->parentNode()) ||
+        !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull())
+      resource_request.SetRequestContext(
+          WebURLRequest::kRequestContextImageSet);
+    FetchRequest request(resource_request, GetElement()->localName(),
+                         resource_loader_options);
+    ConfigureRequest(request, bypass_behavior, *element_,
+                     document.GetClientHintsPreferences());
 
-    if (updateBehavior != UpdateForcedReload && document.settings() &&
-        document.settings()->getFetchImagePlaceholders()) {
-      request.setAllowImagePlaceholder();
+    if (update_behavior != kUpdateForcedReload && document.GetSettings() &&
+        document.GetSettings()->GetFetchImagePlaceholders()) {
+      request.SetAllowImagePlaceholder();
     }
 
-    newImage = ImageResourceContent::fetch(request, document.fetcher());
+    new_image = ImageResourceContent::Fetch(request, document.Fetcher());
 
-    if (!newImage && !pageIsBeingDismissed(&document)) {
-      crossSiteOrCSPViolationOccurred(imageSourceURL);
-      dispatchErrorEvent();
+    if (!new_image && !PageIsBeingDismissed(&document)) {
+      CrossSiteOrCSPViolationOccurred(image_source_url);
+      DispatchErrorEvent();
     } else {
-      clearFailedLoadURL();
+      ClearFailedLoadURL();
     }
   } else {
-    if (!imageSourceURL.isNull()) {
+    if (!image_source_url.IsNull()) {
       // Fire an error event if the url string is not empty, but the KURL is.
-      dispatchErrorEvent();
+      DispatchErrorEvent();
     }
-    noImageResourceToLoad();
+    NoImageResourceToLoad();
   }
 
-  ImageResourceContent* oldImage = m_image.get();
-  if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() &&
-      m_element->layoutObject()->isImage() && newImage == oldImage) {
-    toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
+  ImageResourceContent* old_image = image_.Get();
+  if (update_behavior == kUpdateSizeChanged && element_->GetLayoutObject() &&
+      element_->GetLayoutObject()->IsImage() && new_image == old_image) {
+    ToLayoutImage(element_->GetLayoutObject())->IntrinsicSizeChanged();
   } else {
-    if (m_hasPendingLoadEvent) {
-      loadEventSender().cancelEvent(this);
-      m_hasPendingLoadEvent = false;
+    if (has_pending_load_event_) {
+      LoadEventSender().CancelEvent(this);
+      has_pending_load_event_ = false;
     }
 
     // Cancel error events that belong to the previous load, which is now
@@ -351,45 +353,45 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
     // posted by this load and we should not cancel the event.
     // FIXME: If both previous load and this one got blocked with an error, we
     // can receive one error event instead of two.
-    if (m_hasPendingErrorEvent && newImage) {
-      errorEventSender().cancelEvent(this);
-      m_hasPendingErrorEvent = false;
+    if (has_pending_error_event_ && new_image) {
+      ErrorEventSender().CancelEvent(this);
+      has_pending_error_event_ = false;
     }
 
-    m_image = newImage;
-    m_hasPendingLoadEvent = newImage;
-    m_imageComplete = !newImage;
+    image_ = new_image;
+    has_pending_load_event_ = new_image;
+    image_complete_ = !new_image;
 
-    updateLayoutObject();
+    UpdateLayoutObject();
     // If newImage exists and is cached, addObserver() will result in the load
     // event being queued to fire. Ensure this happens after beforeload is
     // dispatched.
-    if (newImage) {
-      newImage->addObserver(this);
+    if (new_image) {
+      new_image->AddObserver(this);
     }
-    if (oldImage) {
-      oldImage->removeObserver(this);
+    if (old_image) {
+      old_image->RemoveObserver(this);
     }
   }
 
-  if (LayoutImageResource* imageResource = layoutImageResource())
-    imageResource->resetAnimation();
+  if (LayoutImageResource* image_resource = GetLayoutImageResource())
+    image_resource->ResetAnimation();
 
   // Only consider updating the protection ref-count of the Element immediately
   // before returning from this function as doing so might result in the
   // destruction of this ImageLoader.
-  updatedHasPendingEvent();
+  UpdatedHasPendingEvent();
 }
 
-void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
-                                    ReferrerPolicy referrerPolicy) {
-  AtomicString imageSourceURL = m_element->imageSourceURL();
-  m_suppressErrorEvents = (updateBehavior == UpdateSizeChanged);
+void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
+                                    ReferrerPolicy referrer_policy) {
+  AtomicString image_source_url = element_->ImageSourceURL();
+  suppress_error_events_ = (update_behavior == kUpdateSizeChanged);
 
-  if (updateBehavior == UpdateIgnorePreviousError)
-    clearFailedLoadURL();
+  if (update_behavior == kUpdateIgnorePreviousError)
+    ClearFailedLoadURL();
 
-  if (!m_failedLoadURL.isEmpty() && imageSourceURL == m_failedLoadURL)
+  if (!failed_load_url_.IsEmpty() && image_source_url == failed_load_url_)
     return;
 
   // Prevent the creation of a ResourceLoader (and therefore a network request)
@@ -397,247 +399,248 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
   // requested as a main resource and ImageDocumentParser will take care of
   // funneling the main resource bytes into m_image, so just create an
   // ImageResource to be populated later.
-  if (m_loadingImageDocument && updateBehavior != UpdateForcedReload) {
-    ImageResource* imageResource =
-        ImageResource::create(imageSourceToKURL(m_element->imageSourceURL()));
-    imageResource->setStatus(ResourceStatus::Pending);
-    m_imageResourceForImageDocument = imageResource;
-    setImage(imageResource->getContent());
+  if (loading_image_document_ && update_behavior != kUpdateForcedReload) {
+    ImageResource* image_resource =
+        ImageResource::Create(ImageSourceToKURL(element_->ImageSourceURL()));
+    image_resource->SetStatus(ResourceStatus::kPending);
+    image_resource_for_image_document_ = image_resource;
+    SetImage(image_resource->GetContent());
     return;
   }
 
   // If we have a pending task, we have to clear it -- either we're now loading
   // immediately, or we need to reset the task's state.
-  if (m_pendingTask) {
-    m_pendingTask->clearLoader();
-    m_pendingTask.reset();
+  if (pending_task_) {
+    pending_task_->ClearLoader();
+    pending_task_.reset();
   }
 
-  KURL url = imageSourceToKURL(imageSourceURL);
-  if (shouldLoadImmediately(url)) {
-    doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior, url,
-                        referrerPolicy);
+  KURL url = ImageSourceToKURL(image_source_url);
+  if (ShouldLoadImmediately(url)) {
+    DoUpdateFromElement(kDoNotBypassMainWorldCSP, update_behavior, url,
+                        referrer_policy);
     return;
   }
   // Allow the idiom "img.src=''; img.src='.." to clear down the image before an
   // asynchronous load completes.
-  if (imageSourceURL.isEmpty()) {
-    ImageResourceContent* image = m_image.get();
+  if (image_source_url.IsEmpty()) {
+    ImageResourceContent* image = image_.Get();
     if (image) {
-      image->removeObserver(this);
+      image->RemoveObserver(this);
     }
-    m_image = nullptr;
+    image_ = nullptr;
   }
 
   // Don't load images for inactive documents. We don't want to slow down the
   // raw HTML parsing case by loading images we don't intend to display.
-  Document& document = m_element->document();
-  if (document.isActive())
-    enqueueImageLoadingMicroTask(updateBehavior, referrerPolicy);
+  Document& document = element_->GetDocument();
+  if (document.IsActive())
+    EnqueueImageLoadingMicroTask(update_behavior, referrer_policy);
 }
 
-KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const {
+KURL ImageLoader::ImageSourceToKURL(AtomicString image_source_url) const {
   KURL url;
 
   // Don't load images for inactive documents. We don't want to slow down the
   // raw HTML parsing case by loading images we don't intend to display.
-  Document& document = m_element->document();
-  if (!document.isActive())
+  Document& document = element_->GetDocument();
+  if (!document.IsActive())
     return url;
 
   // Do not load any image if the 'src' attribute is missing or if it is
   // an empty string.
-  if (!imageSourceURL.isNull()) {
-    String strippedImageSourceURL =
-        stripLeadingAndTrailingHTMLSpaces(imageSourceURL);
-    if (!strippedImageSourceURL.isEmpty())
-      url = document.completeURL(strippedImageSourceURL);
+  if (!image_source_url.IsNull()) {
+    String stripped_image_source_url =
+        StripLeadingAndTrailingHTMLSpaces(image_source_url);
+    if (!stripped_image_source_url.IsEmpty())
+      url = document.CompleteURL(stripped_image_source_url);
   }
   return url;
 }
 
-bool ImageLoader::shouldLoadImmediately(const KURL& url) const {
+bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
   // We force any image loads which might require alt content through the
   // asynchronous path so that we can add the shadow DOM for the alt-text
   // content when style recalc is over and DOM mutation is allowed again.
-  if (!url.isNull()) {
-    Resource* resource = memoryCache()->resourceForURL(
-        url, m_element->document().fetcher()->getCacheIdentifier());
-    if (resource && !resource->errorOccurred())
+  if (!url.IsNull()) {
+    Resource* resource = GetMemoryCache()->ResourceForURL(
+        url, element_->GetDocument().Fetcher()->GetCacheIdentifier());
+    if (resource && !resource->ErrorOccurred())
       return true;
   }
-  return (isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element));
+  return (isHTMLObjectElement(element_) || isHTMLEmbedElement(element_));
 }
 
-void ImageLoader::imageNotifyFinished(ImageResourceContent* resource) {
+void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   RESOURCE_LOADING_DVLOG(1)
       << "ImageLoader::imageNotifyFinished " << this
-      << "; m_hasPendingLoadEvent=" << m_hasPendingLoadEvent;
+      << "; m_hasPendingLoadEvent=" << has_pending_load_event_;
 
-  DCHECK(m_failedLoadURL.isEmpty());
-  DCHECK_EQ(resource, m_image.get());
+  DCHECK(failed_load_url_.IsEmpty());
+  DCHECK_EQ(resource, image_.Get());
 
-  m_imageComplete = true;
+  image_complete_ = true;
 
   // Update ImageAnimationPolicy for m_image.
-  if (m_image)
-    m_image->updateImageAnimationPolicy();
+  if (image_)
+    image_->UpdateImageAnimationPolicy();
 
-  updateLayoutObject();
+  UpdateLayoutObject();
 
-  if (m_image && m_image->getImage() && m_image->getImage()->isSVGImage())
-    toSVGImage(m_image->getImage())->updateUseCounters(element()->document());
+  if (image_ && image_->GetImage() && image_->GetImage()->IsSVGImage())
+    ToSVGImage(image_->GetImage())
+        ->UpdateUseCounters(GetElement()->GetDocument());
 
-  if (!m_hasPendingLoadEvent)
+  if (!has_pending_load_event_)
     return;
 
-  if (resource->errorOccurred()) {
-    loadEventSender().cancelEvent(this);
-    m_hasPendingLoadEvent = false;
+  if (resource->ErrorOccurred()) {
+    LoadEventSender().CancelEvent(this);
+    has_pending_load_event_ = false;
 
-    if (resource->resourceError().isAccessCheck()) {
-      crossSiteOrCSPViolationOccurred(
-          AtomicString(resource->resourceError().failingURL()));
+    if (resource->GetResourceError().IsAccessCheck()) {
+      CrossSiteOrCSPViolationOccurred(
+          AtomicString(resource->GetResourceError().FailingURL()));
     }
 
     // The error event should not fire if the image data update is a result of
     // environment change.
     // https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element:the-img-element-55
-    if (!m_suppressErrorEvents)
-      dispatchErrorEvent();
+    if (!suppress_error_events_)
+      DispatchErrorEvent();
 
     // Only consider updating the protection ref-count of the Element
     // immediately before returning from this function as doing so might result
     // in the destruction of this ImageLoader.
-    updatedHasPendingEvent();
+    UpdatedHasPendingEvent();
     return;
   }
-  loadEventSender().dispatchEventSoon(this);
+  LoadEventSender().DispatchEventSoon(this);
 }
 
-LayoutImageResource* ImageLoader::layoutImageResource() {
-  LayoutObject* layoutObject = m_element->layoutObject();
+LayoutImageResource* ImageLoader::GetLayoutImageResource() {
+  LayoutObject* layout_object = element_->GetLayoutObject();
 
-  if (!layoutObject)
+  if (!layout_object)
     return 0;
 
   // We don't return style generated image because it doesn't belong to the
   // ImageLoader. See <https://bugs.webkit.org/show_bug.cgi?id=42840>
-  if (layoutObject->isImage() &&
-      !static_cast<LayoutImage*>(layoutObject)->isGeneratedContent())
-    return toLayoutImage(layoutObject)->imageResource();
+  if (layout_object->IsImage() &&
+      !static_cast<LayoutImage*>(layout_object)->IsGeneratedContent())
+    return ToLayoutImage(layout_object)->ImageResource();
 
-  if (layoutObject->isSVGImage())
-    return toLayoutSVGImage(layoutObject)->imageResource();
+  if (layout_object->IsSVGImage())
+    return ToLayoutSVGImage(layout_object)->ImageResource();
 
-  if (layoutObject->isVideo())
-    return toLayoutVideo(layoutObject)->imageResource();
+  if (layout_object->IsVideo())
+    return ToLayoutVideo(layout_object)->ImageResource();
 
   return 0;
 }
 
-void ImageLoader::updateLayoutObject() {
-  LayoutImageResource* imageResource = layoutImageResource();
+void ImageLoader::UpdateLayoutObject() {
+  LayoutImageResource* image_resource = GetLayoutImageResource();
 
-  if (!imageResource)
+  if (!image_resource)
     return;
 
   // Only update the layoutObject if it doesn't have an image or if what we have
   // is a complete image.  This prevents flickering in the case where a dynamic
   // change is happening between two images.
-  ImageResourceContent* cachedImage = imageResource->cachedImage();
-  if (m_image != cachedImage && (m_imageComplete || !cachedImage))
-    imageResource->setImageResource(m_image.get());
+  ImageResourceContent* cached_image = image_resource->CachedImage();
+  if (image_ != cached_image && (image_complete_ || !cached_image))
+    image_resource->SetImageResource(image_.Get());
 }
 
-void ImageLoader::updatedHasPendingEvent() {
+void ImageLoader::UpdatedHasPendingEvent() {
   // If an Element that does image loading is removed from the DOM the
   // load/error event for the image is still observable. As long as the
   // ImageLoader is actively loading, the Element itself needs to be ref'ed to
   // keep it from being destroyed by DOM manipulation or garbage collection. If
   // such an Element wishes for the load to stop when removed from the DOM it
   // needs to stop the ImageLoader explicitly.
-  bool wasProtected = m_elementIsProtected;
-  m_elementIsProtected = m_hasPendingLoadEvent || m_hasPendingErrorEvent;
-  if (wasProtected == m_elementIsProtected)
+  bool was_protected = element_is_protected_;
+  element_is_protected_ = has_pending_load_event_ || has_pending_error_event_;
+  if (was_protected == element_is_protected_)
     return;
 
-  if (m_elementIsProtected) {
-    if (m_derefElementTimer.isActive())
-      m_derefElementTimer.stop();
+  if (element_is_protected_) {
+    if (deref_element_timer_.IsActive())
+      deref_element_timer_.Stop();
     else
-      m_keepAlive = m_element;
+      keep_alive_ = element_;
   } else {
-    DCHECK(!m_derefElementTimer.isActive());
-    m_derefElementTimer.startOneShot(0, BLINK_FROM_HERE);
+    DCHECK(!deref_element_timer_.IsActive());
+    deref_element_timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
 }
 
-void ImageLoader::timerFired(TimerBase*) {
-  m_keepAlive.clear();
+void ImageLoader::TimerFired(TimerBase*) {
+  keep_alive_.Clear();
 }
 
-void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender) {
+void ImageLoader::DispatchPendingEvent(ImageEventSender* event_sender) {
   RESOURCE_LOADING_DVLOG(1) << "ImageLoader::dispatchPendingEvent " << this;
-  DCHECK(eventSender == &loadEventSender() ||
-         eventSender == &errorEventSender());
-  const AtomicString& eventType = eventSender->eventType();
-  if (eventType == EventTypeNames::load)
-    dispatchPendingLoadEvent();
-  if (eventType == EventTypeNames::error)
-    dispatchPendingErrorEvent();
+  DCHECK(event_sender == &LoadEventSender() ||
+         event_sender == &ErrorEventSender());
+  const AtomicString& event_type = event_sender->EventType();
+  if (event_type == EventTypeNames::load)
+    DispatchPendingLoadEvent();
+  if (event_type == EventTypeNames::error)
+    DispatchPendingErrorEvent();
 }
 
-void ImageLoader::dispatchPendingLoadEvent() {
-  if (!m_hasPendingLoadEvent)
+void ImageLoader::DispatchPendingLoadEvent() {
+  if (!has_pending_load_event_)
     return;
-  if (!m_image)
+  if (!image_)
     return;
-  m_hasPendingLoadEvent = false;
-  if (element()->document().frame())
-    dispatchLoadEvent();
+  has_pending_load_event_ = false;
+  if (GetElement()->GetDocument().GetFrame())
+    DispatchLoadEvent();
 
   // Only consider updating the protection ref-count of the Element immediately
   // before returning from this function as doing so might result in the
   // destruction of this ImageLoader.
-  updatedHasPendingEvent();
+  UpdatedHasPendingEvent();
 }
 
-void ImageLoader::dispatchPendingErrorEvent() {
-  if (!m_hasPendingErrorEvent)
+void ImageLoader::DispatchPendingErrorEvent() {
+  if (!has_pending_error_event_)
     return;
-  m_hasPendingErrorEvent = false;
+  has_pending_error_event_ = false;
 
-  if (element()->document().frame())
-    element()->dispatchEvent(Event::create(EventTypeNames::error));
+  if (GetElement()->GetDocument().GetFrame())
+    GetElement()->DispatchEvent(Event::Create(EventTypeNames::error));
 
   // Only consider updating the protection ref-count of the Element immediately
   // before returning from this function as doing so might result in the
   // destruction of this ImageLoader.
-  updatedHasPendingEvent();
+  UpdatedHasPendingEvent();
 }
 
-bool ImageLoader::getImageAnimationPolicy(ImageAnimationPolicy& policy) {
-  if (!element()->document().settings())
+bool ImageLoader::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
+  if (!GetElement()->GetDocument().GetSettings())
     return false;
 
-  policy = element()->document().settings()->getImageAnimationPolicy();
+  policy = GetElement()->GetDocument().GetSettings()->GetImageAnimationPolicy();
   return true;
 }
 
-void ImageLoader::dispatchPendingLoadEvents() {
-  loadEventSender().dispatchPendingEvents();
+void ImageLoader::DispatchPendingLoadEvents() {
+  LoadEventSender().DispatchPendingEvents();
 }
 
-void ImageLoader::dispatchPendingErrorEvents() {
-  errorEventSender().dispatchPendingEvents();
+void ImageLoader::DispatchPendingErrorEvents() {
+  ErrorEventSender().DispatchPendingEvents();
 }
 
-void ImageLoader::elementDidMoveToNewDocument() {
-  if (m_loadDelayCounter)
-    m_loadDelayCounter->documentChanged(m_element->document());
-  clearFailedLoadURL();
-  setImage(0);
+void ImageLoader::ElementDidMoveToNewDocument() {
+  if (load_delay_counter_)
+    load_delay_counter_->DocumentChanged(element_->GetDocument());
+  ClearFailedLoadURL();
+  SetImage(0);
 }
 
 }  // namespace blink

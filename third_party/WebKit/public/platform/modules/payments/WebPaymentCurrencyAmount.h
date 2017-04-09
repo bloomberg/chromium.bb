@@ -13,7 +13,7 @@ namespace blink {
 struct WebPaymentCurrencyAmount {
   WebString currency;
   WebString value;
-  WebString currencySystem;
+  WebString currency_system;
 };
 
 }  // namespace blink

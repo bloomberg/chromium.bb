@@ -31,20 +31,22 @@ namespace {
 
 class MockChromeClient : public EmptyChromeClient {
  public:
-  MockChromeClient() : m_hasScheduledAnimation(false) {}
+  MockChromeClient() : has_scheduled_animation_(false) {}
 
   // ChromeClient
-  MOCK_METHOD2(attachRootGraphicsLayer,
+  MOCK_METHOD2(AttachRootGraphicsLayer,
                void(GraphicsLayer*, LocalFrame* localRoot));
-  MOCK_METHOD3(mockSetToolTip, void(LocalFrame*, const String&, TextDirection));
-  void setToolTip(LocalFrame& frame,
-                  const String& tooltipText,
+  MOCK_METHOD3(MockSetToolTip, void(LocalFrame*, const String&, TextDirection));
+  void SetToolTip(LocalFrame& frame,
+                  const String& tooltip_text,
                   TextDirection dir) override {
-    mockSetToolTip(&frame, tooltipText, dir);
+    MockSetToolTip(&frame, tooltip_text, dir);
   }
 
-  void scheduleAnimation(FrameViewBase*) override { m_hasScheduledAnimation = true; }
-  bool m_hasScheduledAnimation;
+  void ScheduleAnimation(FrameViewBase*) override {
+    has_scheduled_animation_ = true;
+  }
+  bool has_scheduled_animation_;
 };
 
 typedef bool TestParamRootLayerScrolling;
@@ -55,89 +57,93 @@ class FrameViewTest
  protected:
   FrameViewTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        m_chromeClient(new MockChromeClient) {
-    EXPECT_CALL(chromeClient(), attachRootGraphicsLayer(_, _))
+        chrome_client_(new MockChromeClient) {
+    EXPECT_CALL(ChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
   }
 
   ~FrameViewTest() {
-    testing::Mock::VerifyAndClearExpectations(&chromeClient());
+    testing::Mock::VerifyAndClearExpectations(&ChromeClient());
   }
 
   void SetUp() override {
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = m_chromeClient.get();
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
-    m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
+    page_holder_->GetPage().GetSettings().SetAcceleratedCompositingEnabled(
+        true);
   }
 
-  Document& document() { return m_pageHolder->document(); }
-  MockChromeClient& chromeClient() { return *m_chromeClient; }
+  Document& GetDocument() { return page_holder_->GetDocument(); }
+  MockChromeClient& ChromeClient() { return *chrome_client_; }
 
  private:
-  Persistent<MockChromeClient> m_chromeClient;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  Persistent<MockChromeClient> chrome_client_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
 
 TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
-  document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
-  document().view()->updateAllLifecyclePhases();
-  document().getElementById("a")->setAttribute(HTMLNames::styleAttr,
-                                               "color: green");
-  chromeClient().m_hasScheduledAnimation = false;
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_FALSE(chromeClient().m_hasScheduledAnimation);
+  GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().GetElementById("a")->setAttribute(HTMLNames::styleAttr,
+                                                  "color: green");
+  ChromeClient().has_scheduled_animation_ = false;
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(ChromeClient().has_scheduled_animation_);
 }
 
 TEST_P(FrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
-  document().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
-  document().view()->updateAllLifecyclePhases();
-  chromeClient().m_hasScheduledAnimation = false;
-  document()
-      .getElementById("a")
-      ->layoutObject()
-      ->setShouldDoFullPaintInvalidation();
-  EXPECT_TRUE(chromeClient().m_hasScheduledAnimation);
-  chromeClient().m_hasScheduledAnimation = false;
-  document()
-      .getElementById("a")
-      ->layoutObject()
-      ->setShouldDoFullPaintInvalidation();
-  EXPECT_TRUE(chromeClient().m_hasScheduledAnimation);
-  chromeClient().m_hasScheduledAnimation = false;
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_FALSE(chromeClient().m_hasScheduledAnimation);
+  GetDocument().body()->setInnerHTML("<div id='a' style='color: blue'>A</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ChromeClient().has_scheduled_animation_ = false;
+  GetDocument()
+      .GetElementById("a")
+      ->GetLayoutObject()
+      ->SetShouldDoFullPaintInvalidation();
+  EXPECT_TRUE(ChromeClient().has_scheduled_animation_);
+  ChromeClient().has_scheduled_animation_ = false;
+  GetDocument()
+      .GetElementById("a")
+      ->GetLayoutObject()
+      ->SetShouldDoFullPaintInvalidation();
+  EXPECT_TRUE(ChromeClient().has_scheduled_animation_);
+  ChromeClient().has_scheduled_animation_ = false;
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(ChromeClient().has_scheduled_animation_);
 }
 
 // If we don't hide the tooltip on scroll, it can negatively impact scrolling
 // performance. See crbug.com/586852 for details.
 TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<div style='width:1000px;height:1000px'></div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _));
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(1, 1), UserScroll);
+  EXPECT_CALL(ChromeClient(),
+              MockSetToolTip(GetDocument().GetFrame(), String(), _));
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(1, 1), kUserScroll);
 
   // Programmatic scrolling should not dismiss the tooltip, so setToolTip
   // should not be called for this invocation.
-  EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _))
+  EXPECT_CALL(ChromeClient(),
+              MockSetToolTip(GetDocument().GetFrame(), String(), _))
       .Times(0);
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(2, 2), ProgrammaticScroll);
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(2, 2), kProgrammaticScroll);
 }
 
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
 // pixels is calculated in 32-bit integer, because 65536 * 65536 would become 0
 // if it was calculated in 32-bit and thus it would be considered as empty.
 TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
-  EXPECT_FALSE(document().view()->isVisuallyNonEmpty());
-  document().view()->incrementVisuallyNonEmptyPixelCount(IntSize(65536, 65536));
-  EXPECT_TRUE(document().view()->isVisuallyNonEmpty());
+  EXPECT_FALSE(GetDocument().View()->IsVisuallyNonEmpty());
+  GetDocument().View()->IncrementVisuallyNonEmptyPixelCount(
+      IntSize(65536, 65536));
+  EXPECT_TRUE(GetDocument().View()->IsVisuallyNonEmpty());
 }
 
 // This test addresses http://crbug.com/696173, in which a call to
@@ -145,23 +151,23 @@ TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
 // a crash as the code was incorrectly assuming that the ancestor overflow layer
 // would always be valid.
 TEST_P(FrameViewTest, ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<style>.container { height: 200%; }"
       "#sticky { position: sticky; top: 0; height: 50px; }</style>"
       "<div class='container'><div id='sticky'></div></div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  LayoutBoxModelObject* sticky = toLayoutBoxModelObject(
-      document().getElementById("sticky")->layoutObject());
+  LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
+      GetDocument().GetElementById("sticky")->GetLayoutObject());
 
   // Deliberately invalidate the ancestor overflow layer. This approximates
   // http://crbug.com/696173, in which the ancestor overflow layer can be null
   // during layout.
-  sticky->layer()->updateAncestorOverflowLayer(nullptr);
+  sticky->Layer()->UpdateAncestorOverflowLayer(nullptr);
 
   // This call should not crash.
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0, 100), ProgrammaticScroll);
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 100), kProgrammaticScroll);
 }
 
 TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
@@ -170,33 +176,34 @@ TEST_P(FrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     return;
 
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<style>.container { height: 200%; }"
       "#sticky { position: sticky; top: 0; height: 50px; }</style>"
       "<div class='container'><div id='sticky'></div></div>");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  LayoutBoxModelObject* sticky = toLayoutBoxModelObject(
-      document().getElementById("sticky")->layoutObject());
+  LayoutBoxModelObject* sticky = ToLayoutBoxModelObject(
+      GetDocument().GetElementById("sticky")->GetLayoutObject());
 
   EXPECT_TRUE(
-      document().view()->viewportConstrainedObjects()->contains(sticky));
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
 
   // Making the element non-sticky should remove it from the set of
   // viewport-constrained objects.
-  document().getElementById("sticky")->setAttribute(HTMLNames::styleAttr,
-                                                    "position: relative");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().GetElementById("sticky")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(
-      document().view()->viewportConstrainedObjects()->contains(sticky));
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
 
   // And making it sticky again should put it back in that list.
-  document().getElementById("sticky")->setAttribute(HTMLNames::styleAttr, "");
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().GetElementById("sticky")->setAttribute(HTMLNames::styleAttr,
+                                                       "");
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(
-      document().view()->viewportConstrainedObjects()->contains(sticky));
+      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky));
 }
 
 }  // namespace

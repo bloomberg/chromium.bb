@@ -9,30 +9,30 @@
 namespace blink {
 
 DEFINE_TRACE(ModuleScriptLoaderRegistry) {
-  visitor->trace(m_activeLoaders);
+  visitor->Trace(active_loaders_);
 }
 
-ModuleScriptLoader* ModuleScriptLoaderRegistry::fetch(
+ModuleScriptLoader* ModuleScriptLoaderRegistry::Fetch(
     const ModuleScriptFetchRequest& request,
     ModuleGraphLevel level,
     Modulator* modulator,
     ResourceFetcher* fetcher,
     ModuleScriptLoaderClient* client) {
   ModuleScriptLoader* loader =
-      ModuleScriptLoader::create(modulator, this, client);
-  DCHECK(loader->isInitialState());
-  m_activeLoaders.insert(loader);
-  loader->fetch(request, fetcher, level);
+      ModuleScriptLoader::Create(modulator, this, client);
+  DCHECK(loader->IsInitialState());
+  active_loaders_.insert(loader);
+  loader->Fetch(request, fetcher, level);
   return loader;
 }
 
-void ModuleScriptLoaderRegistry::releaseFinishedLoader(
+void ModuleScriptLoaderRegistry::ReleaseFinishedLoader(
     ModuleScriptLoader* loader) {
-  DCHECK(loader->hasFinished());
+  DCHECK(loader->HasFinished());
 
-  auto it = m_activeLoaders.find(loader);
-  DCHECK_NE(it, m_activeLoaders.end());
-  m_activeLoaders.erase(it);
+  auto it = active_loaders_.Find(loader);
+  DCHECK_NE(it, active_loaders_.end());
+  active_loaders_.erase(it);
 }
 
 }  // namespace blink

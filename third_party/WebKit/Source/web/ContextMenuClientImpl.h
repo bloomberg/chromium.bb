@@ -40,15 +40,15 @@ struct WebContextMenuData;
 
 class ContextMenuClientImpl final : public ContextMenuClient {
  public:
-  explicit ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) {}
+  explicit ContextMenuClientImpl(WebViewImpl* web_view) : web_view_(web_view) {}
   ~ContextMenuClientImpl() override {}
-  bool showContextMenu(const ContextMenu*, bool fromTouch) override;
-  void clearContextMenu() override;
+  bool ShowContextMenu(const ContextMenu*, bool from_touch) override;
+  void ClearContextMenu() override;
 
  private:
-  void populateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
-  bool shouldShowContextMenuFromTouch(const blink::WebContextMenuData&);
-  WebViewImpl* m_webView;
+  void PopulateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
+  bool ShouldShowContextMenuFromTouch(const blink::WebContextMenuData&);
+  WebViewImpl* web_view_;
 };
 
 }  // namespace blink

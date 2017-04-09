@@ -28,8 +28,8 @@
 
 namespace blink {
 
-PLATFORM_EXPORT const char* currentSearchLocaleID();
-PLATFORM_EXPORT const char* currentTextBreakLocaleID();
+PLATFORM_EXPORT const char* CurrentSearchLocaleID();
+PLATFORM_EXPORT const char* CurrentTextBreakLocaleID();
 }
 
 #endif

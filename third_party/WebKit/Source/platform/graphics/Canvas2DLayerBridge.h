@@ -83,98 +83,98 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
 
  public:
   enum AccelerationMode {
-    DisableAcceleration,
-    EnableAcceleration,
-    ForceAccelerationForTesting,
+    kDisableAcceleration,
+    kEnableAcceleration,
+    kForceAccelerationForTesting,
   };
 
   Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>,
                       const IntSize&,
-                      int msaaSampleCount,
+                      int msaa_sample_count,
                       OpacityMode,
                       AccelerationMode,
                       const gfx::ColorSpace&,
-                      bool skSurfacesUseColorSpace,
+                      bool sk_surfaces_use_color_space,
                       SkColorType);
 
   ~Canvas2DLayerBridge() override;
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(
-      cc::TextureMailbox* outMailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) override;
+  bool PrepareTextureMailbox(cc::TextureMailbox* out_mailbox,
+                             std::unique_ptr<cc::SingleReleaseCallback>*
+                                 out_release_callback) override;
 
   // Callback for mailboxes given to the compositor from PrepareTextureMailbox.
-  void mailboxReleased(const gpu::Mailbox&,
+  void MailboxReleased(const gpu::Mailbox&,
                        const gpu::SyncToken&,
-                       bool lostResource);
+                       bool lost_resource);
 
   // ImageBufferSurface implementation
-  void finalizeFrame();
-  void doPaintInvalidation(const FloatRect& dirtyRect);
-  void willWritePixels();
-  void willOverwriteAllPixels();
-  void willOverwriteCanvas();
-  PaintCanvas* canvas();
-  void disableDeferral(DisableDeferralReason);
-  bool checkSurfaceValid();
-  bool restoreSurface();
-  WebLayer* layer() const;
-  bool isAccelerated() const;
-  void setFilterQuality(SkFilterQuality);
-  void setIsHidden(bool);
-  void setImageBuffer(ImageBuffer*);
-  void didDraw(const FloatRect&);
-  bool writePixels(const SkImageInfo&,
+  void FinalizeFrame();
+  void DoPaintInvalidation(const FloatRect& dirty_rect);
+  void WillWritePixels();
+  void WillOverwriteAllPixels();
+  void WillOverwriteCanvas();
+  PaintCanvas* Canvas();
+  void DisableDeferral(DisableDeferralReason);
+  bool CheckSurfaceValid();
+  bool RestoreSurface();
+  WebLayer* Layer() const;
+  bool IsAccelerated() const;
+  void SetFilterQuality(SkFilterQuality);
+  void SetIsHidden(bool);
+  void SetImageBuffer(ImageBuffer*);
+  void DidDraw(const FloatRect&);
+  bool WritePixels(const SkImageInfo&,
                    const void* pixels,
-                   size_t rowBytes,
+                   size_t row_bytes,
                    int x,
                    int y);
-  void flush();
-  void flushGpu();
-  bool isHidden() { return m_isHidden; }
-  OpacityMode opacityMode() { return m_opacityMode; }
-  void dontUseIdleSchedulingForTesting() {
-    m_dontUseIdleSchedulingForTesting = true;
+  void Flush();
+  void FlushGpu();
+  bool IsHidden() { return is_hidden_; }
+  OpacityMode GetOpacityMode() { return opacity_mode_; }
+  void DontUseIdleSchedulingForTesting() {
+    dont_use_idle_scheduling_for_testing_ = true;
   }
 
-  void beginDestruction();
-  void hibernate();
-  bool isHibernating() const { return m_hibernationImage.get(); }
-  sk_sp<SkColorSpace> skSurfaceColorSpace() const;
-  SkColorType colorType() const { return m_colorType; }
+  void BeginDestruction();
+  void Hibernate();
+  bool IsHibernating() const { return hibernation_image_.get(); }
+  sk_sp<SkColorSpace> SkSurfaceColorSpace() const;
+  SkColorType ColorType() const { return color_type_; }
 
-  bool hasRecordedDrawCommands() { return m_haveRecordedDrawCommands; }
+  bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
-  sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
+  sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason);
 
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
   enum HibernationEvent {
-    HibernationScheduled = 0,
-    HibernationAbortedDueToDestructionWhileHibernatePending = 1,
-    HibernationAbortedDueToPendingDestruction = 2,
-    HibernationAbortedDueToVisibilityChange = 3,
-    HibernationAbortedDueGpuContextLoss = 4,
-    HibernationAbortedDueToSwitchToUnacceleratedRendering = 5,
-    HibernationAbortedDueToAllocationFailure = 6,
-    HibernationEndedNormally = 7,
-    HibernationEndedWithSwitchToBackgroundRendering = 8,
-    HibernationEndedWithFallbackToSW = 9,
-    HibernationEndedWithTeardown = 10,
-    HibernationAbortedBecauseNoSurface = 11,
+    kHibernationScheduled = 0,
+    kHibernationAbortedDueToDestructionWhileHibernatePending = 1,
+    kHibernationAbortedDueToPendingDestruction = 2,
+    kHibernationAbortedDueToVisibilityChange = 3,
+    kHibernationAbortedDueGpuContextLoss = 4,
+    kHibernationAbortedDueToSwitchToUnacceleratedRendering = 5,
+    kHibernationAbortedDueToAllocationFailure = 6,
+    kHibernationEndedNormally = 7,
+    kHibernationEndedWithSwitchToBackgroundRendering = 8,
+    kHibernationEndedWithFallbackToSW = 9,
+    kHibernationEndedWithTeardown = 10,
+    kHibernationAbortedBecauseNoSurface = 11,
 
-    HibernationEventCount = 12,
+    kHibernationEventCount = 12,
   };
 
   class PLATFORM_EXPORT Logger {
    public:
-    virtual void reportHibernationEvent(HibernationEvent);
-    virtual void didStartHibernating() {}
+    virtual void ReportHibernationEvent(HibernationEvent);
+    virtual void DidStartHibernating() {}
     virtual ~Logger() {}
   };
 
-  void setLoggerForTesting(std::unique_ptr<Logger>);
+  void SetLoggerForTesting(std::unique_ptr<Logger>);
 
  private:
   void ResetSurface();
@@ -186,31 +186,31 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
 
   struct MailboxInfo {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    gpu::Mailbox m_mailbox;
-    sk_sp<SkImage> m_image;
-    RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
+    gpu::Mailbox mailbox_;
+    sk_sp<SkImage> image_;
+    RefPtr<Canvas2DLayerBridge> parent_layer_bridge_;
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
     // If this mailbox wraps an IOSurface-backed texture, the ids of the
     // CHROMIUM image and the texture.
-    RefPtr<ImageInfo> m_imageInfo;
+    RefPtr<ImageInfo> image_info_;
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
 
     MailboxInfo(const MailboxInfo&);
     MailboxInfo();
   };
 
-  gpu::gles2::GLES2Interface* contextGL();
-  void startRecording();
-  void skipQueuedDrawCommands();
-  void flushRecordingOnly();
-  void reportSurfaceCreationFailure();
+  gpu::gles2::GLES2Interface* ContextGL();
+  void StartRecording();
+  void SkipQueuedDrawCommands();
+  void FlushRecordingOnly();
+  void ReportSurfaceCreationFailure();
 
-  SkSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
-  bool shouldAccelerate(AccelerationHint) const;
+  SkSurface* GetOrCreateSurface(AccelerationHint = kPreferAcceleration);
+  bool ShouldAccelerate(AccelerationHint) const;
 
   // Returns the GL filter associated with |m_filterQuality|.
-  GLenum getGLFilter();
+  GLenum GetGLFilter();
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
   // Creates an IOSurface-backed texture. Copies |image| into the texture.
@@ -218,86 +218,86 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   // MailboxInfo, and prepended it to |m_mailboxs|. Returns whether the
   // mailbox was successfully prepared. |mailbox| is an out parameter only
   // populated on success.
-  bool prepareIOSurfaceMailboxFromImage(SkImage*, cc::TextureMailbox*);
+  bool PrepareIOSurfaceMailboxFromImage(SkImage*, cc::TextureMailbox*);
 
   // Creates an IOSurface-backed texture. Returns an ImageInfo, which is empty
   // on failure. The caller takes ownership of both the texture and the image.
-  RefPtr<ImageInfo> createIOSurfaceBackedTexture();
+  RefPtr<ImageInfo> CreateIOSurfaceBackedTexture();
 
   // Releases all resources associated with a CHROMIUM image.
-  void deleteCHROMIUMImage(RefPtr<ImageInfo>);
+  void DeleteCHROMIUMImage(RefPtr<ImageInfo>);
 
   // Releases all resources in the CHROMIUM image cache.
-  void clearCHROMIUMImageCache();
+  void ClearCHROMIUMImageCache();
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
 
   // Prepends a new MailboxInfo object to |m_mailboxes|.
-  void createMailboxInfo();
+  void CreateMailboxInfo();
 
   // Returns whether the mailbox was successfully prepared from the SkImage.
   // The mailbox is an out parameter only populated on success.
-  bool prepareMailboxFromImage(sk_sp<SkImage>, cc::TextureMailbox*);
+  bool PrepareMailboxFromImage(sk_sp<SkImage>, cc::TextureMailbox*);
 
   // Resets Skia's texture bindings. This method should be called after
   // changing texture bindings.
-  void resetSkiaTextureBinding();
+  void ResetSkiaTextureBinding();
 
-  std::unique_ptr<PaintRecorder> m_recorder;
-  sk_sp<SkSurface> m_surface;
-  std::unique_ptr<PaintCanvas> m_surfacePaintCanvas;
-  sk_sp<SkImage> m_hibernationImage;
-  int m_initialSurfaceSaveCount;
-  std::unique_ptr<WebExternalTextureLayer> m_layer;
-  std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
-  std::unique_ptr<SharedContextRateLimiter> m_rateLimiter;
-  std::unique_ptr<Logger> m_logger;
-  WeakPtrFactory<Canvas2DLayerBridge> m_weakPtrFactory;
-  ImageBuffer* m_imageBuffer;
-  int m_msaaSampleCount;
-  int m_framesSinceLastCommit = 0;
-  size_t m_bytesAllocated;
-  bool m_haveRecordedDrawCommands;
-  bool m_destructionInProgress;
-  SkFilterQuality m_filterQuality;
-  bool m_isHidden;
-  bool m_isDeferralEnabled;
-  bool m_softwareRenderingWhileHidden;
-  bool m_surfaceCreationFailedAtLeastOnce = false;
-  bool m_hibernationScheduled = false;
-  bool m_dontUseIdleSchedulingForTesting = false;
-  bool m_didDrawSinceLastFlush = false;
-  bool m_didDrawSinceLastGpuFlush = false;
+  std::unique_ptr<PaintRecorder> recorder_;
+  sk_sp<SkSurface> surface_;
+  std::unique_ptr<PaintCanvas> surface_paint_canvas_;
+  sk_sp<SkImage> hibernation_image_;
+  int initial_surface_save_count_;
+  std::unique_ptr<WebExternalTextureLayer> layer_;
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+  std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
+  std::unique_ptr<Logger> logger_;
+  WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
+  ImageBuffer* image_buffer_;
+  int msaa_sample_count_;
+  int frames_since_last_commit_ = 0;
+  size_t bytes_allocated_;
+  bool have_recorded_draw_commands_;
+  bool destruction_in_progress_;
+  SkFilterQuality filter_quality_;
+  bool is_hidden_;
+  bool is_deferral_enabled_;
+  bool software_rendering_while_hidden_;
+  bool surface_creation_failed_at_least_once_ = false;
+  bool hibernation_scheduled_ = false;
+  bool dont_use_idle_scheduling_for_testing_ = false;
+  bool did_draw_since_last_flush_ = false;
+  bool did_draw_since_last_gpu_flush_ = false;
 
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
   friend class HTMLCanvasPainterTestForSPv2;
 
-  uint32_t m_lastImageId;
+  uint32_t last_image_id_;
 
   enum {
     // We should normally not have more that two active mailboxes at a time,
     // but sometimes we may have three due to the async nature of mailbox
     // handling.
-    MaxActiveMailboxes = 3,
+    kMaxActiveMailboxes = 3,
   };
 
-  Deque<MailboxInfo, MaxActiveMailboxes> m_mailboxes;
-  GLenum m_lastFilter;
-  AccelerationMode m_accelerationMode;
-  OpacityMode m_opacityMode;
-  const IntSize m_size;
+  Deque<MailboxInfo, kMaxActiveMailboxes> mailboxes_;
+  GLenum last_filter_;
+  AccelerationMode acceleration_mode_;
+  OpacityMode opacity_mode_;
+  const IntSize size_;
   // The color space that the compositor is to use. This will always be
   // defined.
-  gfx::ColorSpace m_colorSpace;
-  bool m_skSurfacesUseColorSpace = false;
-  SkColorType m_colorType;
-  int m_recordingPixelCount;
+  gfx::ColorSpace color_space_;
+  bool sk_surfaces_use_color_space_ = false;
+  SkColorType color_type_;
+  int recording_pixel_count_;
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
   // Each element in this vector represents an IOSurface backed texture that
   // is ready to be reused.
   // Elements in this vector can safely be purged in low memory conditions.
-  Vector<RefPtr<ImageInfo>> m_imageInfoCache;
+  Vector<RefPtr<ImageInfo>> image_info_cache_;
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
 };
 

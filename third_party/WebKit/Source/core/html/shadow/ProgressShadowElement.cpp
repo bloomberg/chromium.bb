@@ -43,15 +43,15 @@ ProgressShadowElement::ProgressShadowElement(Document& document)
 
 DEFINE_NODE_FACTORY(ProgressShadowElement)
 
-HTMLProgressElement* ProgressShadowElement::progressElement() const {
-  return toHTMLProgressElement(ownerShadowHost());
+HTMLProgressElement* ProgressShadowElement::ProgressElement() const {
+  return toHTMLProgressElement(OwnerShadowHost());
 }
 
-bool ProgressShadowElement::layoutObjectIsNeeded(const ComputedStyle& style) {
-  LayoutObject* progressLayoutObject = progressElement()->layoutObject();
-  return progressLayoutObject &&
-         !progressLayoutObject->style()->hasAppearance() &&
-         HTMLDivElement::layoutObjectIsNeeded(style);
+bool ProgressShadowElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+  LayoutObject* progress_layout_object = ProgressElement()->GetLayoutObject();
+  return progress_layout_object &&
+         !progress_layout_object->Style()->HasAppearance() &&
+         HTMLDivElement::LayoutObjectIsNeeded(style);
 }
 
 }  // namespace blink

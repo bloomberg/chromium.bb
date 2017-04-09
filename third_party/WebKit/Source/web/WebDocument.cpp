@@ -69,237 +69,237 @@
 
 namespace blink {
 
-WebURL WebDocument::url() const {
-  return constUnwrap<Document>()->url();
+WebURL WebDocument::Url() const {
+  return ConstUnwrap<Document>()->Url();
 }
 
-WebSecurityOrigin WebDocument::getSecurityOrigin() const {
-  if (!constUnwrap<Document>())
+WebSecurityOrigin WebDocument::GetSecurityOrigin() const {
+  if (!ConstUnwrap<Document>())
     return WebSecurityOrigin();
-  return WebSecurityOrigin(constUnwrap<Document>()->getSecurityOrigin());
+  return WebSecurityOrigin(ConstUnwrap<Document>()->GetSecurityOrigin());
 }
 
-bool WebDocument::isSecureContext() const {
-  const Document* document = constUnwrap<Document>();
-  return document && document->isSecureContext();
+bool WebDocument::IsSecureContext() const {
+  const Document* document = ConstUnwrap<Document>();
+  return document && document->IsSecureContext();
 }
 
-WebString WebDocument::encoding() const {
-  return constUnwrap<Document>()->encodingName();
+WebString WebDocument::Encoding() const {
+  return ConstUnwrap<Document>()->EncodingName();
 }
 
-WebString WebDocument::contentLanguage() const {
-  return constUnwrap<Document>()->contentLanguage();
+WebString WebDocument::ContentLanguage() const {
+  return ConstUnwrap<Document>()->ContentLanguage();
 }
 
-WebString WebDocument::referrer() const {
-  return constUnwrap<Document>()->referrer();
+WebString WebDocument::GetReferrer() const {
+  return ConstUnwrap<Document>()->referrer();
 }
 
-WebColor WebDocument::themeColor() const {
-  return constUnwrap<Document>()->themeColor().rgb();
+WebColor WebDocument::ThemeColor() const {
+  return ConstUnwrap<Document>()->ThemeColor().Rgb();
 }
 
-WebURL WebDocument::openSearchDescriptionURL() const {
-  return const_cast<Document*>(constUnwrap<Document>())
-      ->openSearchDescriptionURL();
+WebURL WebDocument::OpenSearchDescriptionURL() const {
+  return const_cast<Document*>(ConstUnwrap<Document>())
+      ->OpenSearchDescriptionURL();
 }
 
-WebLocalFrame* WebDocument::frame() const {
-  return WebLocalFrameImpl::fromFrame(constUnwrap<Document>()->frame());
+WebLocalFrame* WebDocument::GetFrame() const {
+  return WebLocalFrameImpl::FromFrame(ConstUnwrap<Document>()->GetFrame());
 }
 
-bool WebDocument::isHTMLDocument() const {
-  return constUnwrap<Document>()->isHTMLDocument();
+bool WebDocument::IsHTMLDocument() const {
+  return ConstUnwrap<Document>()->IsHTMLDocument();
 }
 
-bool WebDocument::isXHTMLDocument() const {
-  return constUnwrap<Document>()->isXHTMLDocument();
+bool WebDocument::IsXHTMLDocument() const {
+  return ConstUnwrap<Document>()->IsXHTMLDocument();
 }
 
-bool WebDocument::isPluginDocument() const {
-  return constUnwrap<Document>()->isPluginDocument();
+bool WebDocument::IsPluginDocument() const {
+  return ConstUnwrap<Document>()->IsPluginDocument();
 }
 
-WebURL WebDocument::baseURL() const {
-  return constUnwrap<Document>()->baseURL();
+WebURL WebDocument::BaseURL() const {
+  return ConstUnwrap<Document>()->BaseURL();
 }
 
-WebURL WebDocument::firstPartyForCookies() const {
-  return constUnwrap<Document>()->firstPartyForCookies();
+WebURL WebDocument::FirstPartyForCookies() const {
+  return ConstUnwrap<Document>()->FirstPartyForCookies();
 }
 
-WebElement WebDocument::documentElement() const {
-  return WebElement(constUnwrap<Document>()->documentElement());
+WebElement WebDocument::DocumentElement() const {
+  return WebElement(ConstUnwrap<Document>()->documentElement());
 }
 
-WebElement WebDocument::body() const {
-  return WebElement(constUnwrap<Document>()->body());
+WebElement WebDocument::Body() const {
+  return WebElement(ConstUnwrap<Document>()->body());
 }
 
-WebElement WebDocument::head() {
-  return WebElement(unwrap<Document>()->head());
+WebElement WebDocument::Head() {
+  return WebElement(Unwrap<Document>()->head());
 }
 
-WebString WebDocument::title() const {
-  return WebString(constUnwrap<Document>()->title());
+WebString WebDocument::Title() const {
+  return WebString(ConstUnwrap<Document>()->title());
 }
 
-WebString WebDocument::contentAsTextForTesting() const {
-  if (Element* documentElement = constUnwrap<Document>()->documentElement())
-    return WebString(documentElement->innerText());
+WebString WebDocument::ContentAsTextForTesting() const {
+  if (Element* document_element = ConstUnwrap<Document>()->documentElement())
+    return WebString(document_element->innerText());
   return WebString();
 }
 
-WebElementCollection WebDocument::all() {
-  return WebElementCollection(unwrap<Document>()->all());
+WebElementCollection WebDocument::All() {
+  return WebElementCollection(Unwrap<Document>()->all());
 }
 
-void WebDocument::forms(WebVector<WebFormElement>& results) const {
+void WebDocument::Forms(WebVector<WebFormElement>& results) const {
   HTMLCollection* forms =
-      const_cast<Document*>(constUnwrap<Document>())->forms();
-  size_t sourceLength = forms->length();
+      const_cast<Document*>(ConstUnwrap<Document>())->forms();
+  size_t source_length = forms->length();
   Vector<WebFormElement> temp;
-  temp.reserveCapacity(sourceLength);
-  for (size_t i = 0; i < sourceLength; ++i) {
+  temp.ReserveCapacity(source_length);
+  for (size_t i = 0; i < source_length; ++i) {
     Element* element = forms->item(i);
     // Strange but true, sometimes node can be 0.
-    if (element && element->isHTMLElement())
+    if (element && element->IsHTMLElement())
       temp.push_back(WebFormElement(toHTMLFormElement(element)));
   }
-  results.assign(temp);
+  results.Assign(temp);
 }
 
-WebURL WebDocument::completeURL(const WebString& partialURL) const {
-  return constUnwrap<Document>()->completeURL(partialURL);
+WebURL WebDocument::CompleteURL(const WebString& partial_url) const {
+  return ConstUnwrap<Document>()->CompleteURL(partial_url);
 }
 
-WebElement WebDocument::getElementById(const WebString& id) const {
-  return WebElement(constUnwrap<Document>()->getElementById(id));
+WebElement WebDocument::GetElementById(const WebString& id) const {
+  return WebElement(ConstUnwrap<Document>()->GetElementById(id));
 }
 
-WebElement WebDocument::focusedElement() const {
-  return WebElement(constUnwrap<Document>()->focusedElement());
+WebElement WebDocument::FocusedElement() const {
+  return WebElement(ConstUnwrap<Document>()->FocusedElement());
 }
 
-void WebDocument::insertStyleSheet(const WebString& sourceCode) {
-  Document* document = unwrap<Document>();
+void WebDocument::InsertStyleSheet(const WebString& source_code) {
+  Document* document = Unwrap<Document>();
   DCHECK(document);
-  StyleSheetContents* parsedSheet =
-      StyleSheetContents::create(CSSParserContext::create(*document));
-  parsedSheet->parseString(sourceCode);
-  document->styleEngine().injectAuthorSheet(parsedSheet);
+  StyleSheetContents* parsed_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(*document));
+  parsed_sheet->ParseString(source_code);
+  document->GetStyleEngine().InjectAuthorSheet(parsed_sheet);
 }
 
-void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors) {
-  Document* document = unwrap<Document>();
-  CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*document);
-  if (!watch && webSelectors.empty())
+void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
+  Document* document = Unwrap<Document>();
+  CSSSelectorWatch* watch = CSSSelectorWatch::FromIfExists(*document);
+  if (!watch && web_selectors.empty())
     return;
   Vector<String> selectors;
-  selectors.append(webSelectors.data(), webSelectors.size());
-  CSSSelectorWatch::from(*document).watchCSSSelectors(selectors);
+  selectors.Append(web_selectors.Data(), web_selectors.size());
+  CSSSelectorWatch::From(*document).WatchCSSSelectors(selectors);
 }
 
-WebReferrerPolicy WebDocument::getReferrerPolicy() const {
+WebReferrerPolicy WebDocument::GetReferrerPolicy() const {
   return static_cast<WebReferrerPolicy>(
-      constUnwrap<Document>()->getReferrerPolicy());
+      ConstUnwrap<Document>()->GetReferrerPolicy());
 }
 
-WebString WebDocument::outgoingReferrer() {
-  return WebString(unwrap<Document>()->outgoingReferrer());
+WebString WebDocument::OutgoingReferrer() {
+  return WebString(Unwrap<Document>()->OutgoingReferrer());
 }
 
-WebAXObject WebDocument::accessibilityObject() const {
-  const Document* document = constUnwrap<Document>();
-  AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
-  return cache ? WebAXObject(cache->getOrCreate(
-                     toLayoutView(LayoutAPIShim::layoutObjectFrom(
-                         document->layoutViewItem()))))
+WebAXObject WebDocument::AccessibilityObject() const {
+  const Document* document = ConstUnwrap<Document>();
+  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  return cache ? WebAXObject(cache->GetOrCreate(
+                     ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
+                         document->GetLayoutViewItem()))))
                : WebAXObject();
 }
 
-WebAXObject WebDocument::accessibilityObjectFromID(int axID) const {
-  const Document* document = constUnwrap<Document>();
-  AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
-  return cache ? WebAXObject(cache->objectFromAXID(axID)) : WebAXObject();
+WebAXObject WebDocument::AccessibilityObjectFromID(int ax_id) const {
+  const Document* document = ConstUnwrap<Document>();
+  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  return cache ? WebAXObject(cache->ObjectFromAXID(ax_id)) : WebAXObject();
 }
 
-WebAXObject WebDocument::focusedAccessibilityObject() const {
-  const Document* document = constUnwrap<Document>();
-  AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
-  return cache ? WebAXObject(cache->focusedObject()) : WebAXObject();
+WebAXObject WebDocument::FocusedAccessibilityObject() const {
+  const Document* document = ConstUnwrap<Document>();
+  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
 }
 
-WebVector<WebDraggableRegion> WebDocument::draggableRegions() const {
-  WebVector<WebDraggableRegion> draggableRegions;
-  const Document* document = constUnwrap<Document>();
-  if (document->hasAnnotatedRegions()) {
-    const Vector<AnnotatedRegionValue>& regions = document->annotatedRegions();
-    draggableRegions = WebVector<WebDraggableRegion>(regions.size());
+WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
+  WebVector<WebDraggableRegion> draggable_regions;
+  const Document* document = ConstUnwrap<Document>();
+  if (document->HasAnnotatedRegions()) {
+    const Vector<AnnotatedRegionValue>& regions = document->AnnotatedRegions();
+    draggable_regions = WebVector<WebDraggableRegion>(regions.size());
     for (size_t i = 0; i < regions.size(); i++) {
       const AnnotatedRegionValue& value = regions[i];
-      draggableRegions[i].draggable = value.draggable;
-      draggableRegions[i].bounds = IntRect(value.bounds);
+      draggable_regions[i].draggable = value.draggable;
+      draggable_regions[i].bounds = IntRect(value.bounds);
     }
   }
-  return draggableRegions;
+  return draggable_regions;
 }
 
-v8::Local<v8::Value> WebDocument::registerEmbedderCustomElement(
+v8::Local<v8::Value> WebDocument::RegisterEmbedderCustomElement(
     const WebString& name,
     v8::Local<v8::Value> options,
     WebExceptionCode& ec) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  Document* document = unwrap<Document>();
-  DummyExceptionStateForTesting exceptionState;
-  ElementRegistrationOptions registrationOptions;
-  V8ElementRegistrationOptions::toImpl(isolate, options, registrationOptions,
-                                       exceptionState);
-  if (exceptionState.hadException())
+  Document* document = Unwrap<Document>();
+  DummyExceptionStateForTesting exception_state;
+  ElementRegistrationOptions registration_options;
+  V8ElementRegistrationOptions::toImpl(isolate, options, registration_options,
+                                       exception_state);
+  if (exception_state.HadException())
     return v8::Local<v8::Value>();
   ScriptValue constructor = document->registerElement(
-      ScriptState::current(isolate), name, registrationOptions, exceptionState,
-      V0CustomElement::EmbedderNames);
-  ec = exceptionState.code();
-  if (exceptionState.hadException())
+      ScriptState::Current(isolate), name, registration_options,
+      exception_state, V0CustomElement::kEmbedderNames);
+  ec = exception_state.Code();
+  if (exception_state.HadException())
     return v8::Local<v8::Value>();
-  return constructor.v8Value();
+  return constructor.V8Value();
 }
 
-WebURL WebDocument::manifestURL() const {
-  const Document* document = constUnwrap<Document>();
-  HTMLLinkElement* linkElement = document->linkManifest();
-  if (!linkElement)
+WebURL WebDocument::ManifestURL() const {
+  const Document* document = ConstUnwrap<Document>();
+  HTMLLinkElement* link_element = document->LinkManifest();
+  if (!link_element)
     return WebURL();
-  return linkElement->href();
+  return link_element->Href();
 }
 
-bool WebDocument::manifestUseCredentials() const {
-  const Document* document = constUnwrap<Document>();
-  HTMLLinkElement* linkElement = document->linkManifest();
-  if (!linkElement)
+bool WebDocument::ManifestUseCredentials() const {
+  const Document* document = ConstUnwrap<Document>();
+  HTMLLinkElement* link_element = document->LinkManifest();
+  if (!link_element)
     return false;
-  return equalIgnoringASCIICase(
-      linkElement->fastGetAttribute(HTMLNames::crossoriginAttr),
+  return EqualIgnoringASCIICase(
+      link_element->FastGetAttribute(HTMLNames::crossoriginAttr),
       "use-credentials");
 }
 
-WebDistillabilityFeatures WebDocument::distillabilityFeatures() {
-  return DocumentStatisticsCollector::collectStatistics(*unwrap<Document>());
+WebDistillabilityFeatures WebDocument::DistillabilityFeatures() {
+  return DocumentStatisticsCollector::CollectStatistics(*Unwrap<Document>());
 }
 
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebDocument, constUnwrap<Node>()->isDocumentNode());
+DEFINE_WEB_NODE_TYPE_CASTS(WebDocument, ConstUnwrap<Node>()->IsDocumentNode());
 
 WebDocument& WebDocument::operator=(Document* elem) {
-  m_private = elem;
+  private_ = elem;
   return *this;
 }
 
 WebDocument::operator Document*() const {
-  return toDocument(m_private.get());
+  return ToDocument(private_.Get());
 }
 
 }  // namespace blink

@@ -47,7 +47,7 @@ class HTMLFormElement;
 
 class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
  public:
-  enum SubmitMethod { GetMethod, PostMethod, DialogMethod };
+  enum SubmitMethod { kGetMethod, kPostMethod, kDialogMethod };
 
   class Attributes {
     DISALLOW_NEW();
@@ -55,65 +55,65 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
 
    public:
     Attributes()
-        : m_method(GetMethod),
-          m_isMultiPartForm(false),
-          m_encodingType("application/x-www-form-urlencoded") {}
+        : method_(kGetMethod),
+          is_multi_part_form_(false),
+          encoding_type_("application/x-www-form-urlencoded") {}
 
-    SubmitMethod method() const { return m_method; }
-    static SubmitMethod parseMethodType(const String&);
-    void updateMethodType(const String&);
-    static String methodString(SubmitMethod);
+    SubmitMethod Method() const { return method_; }
+    static SubmitMethod ParseMethodType(const String&);
+    void UpdateMethodType(const String&);
+    static String MethodString(SubmitMethod);
 
-    const String& action() const { return m_action; }
-    void parseAction(const String&);
+    const String& Action() const { return action_; }
+    void ParseAction(const String&);
 
-    const AtomicString& target() const { return m_target; }
-    void setTarget(const AtomicString& target) { m_target = target; }
+    const AtomicString& Target() const { return target_; }
+    void SetTarget(const AtomicString& target) { target_ = target; }
 
-    const AtomicString& encodingType() const { return m_encodingType; }
-    static AtomicString parseEncodingType(const String&);
-    void updateEncodingType(const String&);
-    bool isMultiPartForm() const { return m_isMultiPartForm; }
+    const AtomicString& EncodingType() const { return encoding_type_; }
+    static AtomicString ParseEncodingType(const String&);
+    void UpdateEncodingType(const String&);
+    bool IsMultiPartForm() const { return is_multi_part_form_; }
 
-    const String& acceptCharset() const { return m_acceptCharset; }
-    void setAcceptCharset(const String& value) { m_acceptCharset = value; }
+    const String& AcceptCharset() const { return accept_charset_; }
+    void SetAcceptCharset(const String& value) { accept_charset_ = value; }
 
-    void copyFrom(const Attributes&);
+    void CopyFrom(const Attributes&);
 
    private:
-    SubmitMethod m_method;
-    bool m_isMultiPartForm;
+    SubmitMethod method_;
+    bool is_multi_part_form_;
 
-    String m_action;
-    AtomicString m_target;
-    AtomicString m_encodingType;
-    String m_acceptCharset;
+    String action_;
+    AtomicString target_;
+    AtomicString encoding_type_;
+    String accept_charset_;
   };
 
-  static FormSubmission* create(HTMLFormElement*,
+  static FormSubmission* Create(HTMLFormElement*,
                                 const Attributes&,
                                 Event*,
-                                HTMLFormControlElement* submitButton);
+                                HTMLFormControlElement* submit_button);
   DECLARE_TRACE();
 
-  FrameLoadRequest createFrameLoadRequest(Document* originDocument);
+  FrameLoadRequest CreateFrameLoadRequest(Document* origin_document);
 
-  KURL requestURL() const;
+  KURL RequestURL() const;
 
-  SubmitMethod method() const { return m_method; }
-  const KURL& action() const { return m_action; }
-  const AtomicString& target() const { return m_target; }
-  void clearTarget() { m_target = nullAtom; }
-  HTMLFormElement* form() const { return m_form.get(); }
-  EncodedFormData* data() const { return m_formData.get(); }
+  SubmitMethod Method() const { return method_; }
+  const KURL& Action() const { return action_; }
+  const AtomicString& Target() const { return target_; }
+  void ClearTarget() { target_ = g_null_atom; }
+  HTMLFormElement* Form() const { return form_.Get(); }
+  EncodedFormData* Data() const { return form_data_.Get(); }
 
-  const String& result() const { return m_result; }
+  const String& Result() const { return result_; }
 
  private:
   FormSubmission(SubmitMethod,
                  const KURL& action,
                  const AtomicString& target,
-                 const AtomicString& contentType,
+                 const AtomicString& content_type,
                  HTMLFormElement*,
                  PassRefPtr<EncodedFormData>,
                  const String& boundary,
@@ -122,15 +122,15 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
   explicit FormSubmission(const String& result);
 
   // FIXME: Hold an instance of Attributes instead of individual members.
-  SubmitMethod m_method;
-  KURL m_action;
-  AtomicString m_target;
-  AtomicString m_contentType;
-  Member<HTMLFormElement> m_form;
-  RefPtr<EncodedFormData> m_formData;
-  String m_boundary;
-  Member<Event> m_event;
-  String m_result;
+  SubmitMethod method_;
+  KURL action_;
+  AtomicString target_;
+  AtomicString content_type_;
+  Member<HTMLFormElement> form_;
+  RefPtr<EncodedFormData> form_data_;
+  String boundary_;
+  Member<Event> event_;
+  String result_;
 };
 
 }  // namespace blink

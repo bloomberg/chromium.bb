@@ -68,343 +68,347 @@
 
 namespace blink {
 
-std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::create(
+std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::Create(
     Node* node,
-    WebViewImpl* owningWebViewImpl) {
-  return WTF::wrapUnique(new LinkHighlightImpl(node, owningWebViewImpl));
+    WebViewImpl* owning_web_view_impl) {
+  return WTF::WrapUnique(new LinkHighlightImpl(node, owning_web_view_impl));
 }
 
-LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
-    : m_node(node),
-      m_owningWebViewImpl(owningWebViewImpl),
-      m_currentGraphicsLayer(0),
-      m_isScrollingGraphicsLayer(false),
-      m_geometryNeedsUpdate(false),
-      m_isAnimating(false),
-      m_startTime(monotonicallyIncreasingTime()) {
-  DCHECK(m_node);
-  DCHECK(owningWebViewImpl);
-  WebCompositorSupport* compositorSupport =
-      Platform::current()->compositorSupport();
-  DCHECK(compositorSupport);
-  m_contentLayer = compositorSupport->createContentLayer(this);
-  m_clipLayer = compositorSupport->createLayer();
-  m_clipLayer->setTransformOrigin(WebFloatPoint3D());
-  m_clipLayer->addChild(m_contentLayer->layer());
+LinkHighlightImpl::LinkHighlightImpl(Node* node,
+                                     WebViewImpl* owning_web_view_impl)
+    : node_(node),
+      owning_web_view_impl_(owning_web_view_impl),
+      current_graphics_layer_(0),
+      is_scrolling_graphics_layer_(false),
+      geometry_needs_update_(false),
+      is_animating_(false),
+      start_time_(MonotonicallyIncreasingTime()) {
+  DCHECK(node_);
+  DCHECK(owning_web_view_impl);
+  WebCompositorSupport* compositor_support =
+      Platform::Current()->CompositorSupport();
+  DCHECK(compositor_support);
+  content_layer_ = compositor_support->CreateContentLayer(this);
+  clip_layer_ = compositor_support->CreateLayer();
+  clip_layer_->SetTransformOrigin(WebFloatPoint3D());
+  clip_layer_->AddChild(content_layer_->Layer());
 
-  m_compositorPlayer = CompositorAnimationPlayer::create();
-  DCHECK(m_compositorPlayer);
-  m_compositorPlayer->setAnimationDelegate(this);
-  if (m_owningWebViewImpl->linkHighlightsTimeline())
-    m_owningWebViewImpl->linkHighlightsTimeline()->playerAttached(*this);
+  compositor_player_ = CompositorAnimationPlayer::Create();
+  DCHECK(compositor_player_);
+  compositor_player_->SetAnimationDelegate(this);
+  if (owning_web_view_impl_->LinkHighlightsTimeline())
+    owning_web_view_impl_->LinkHighlightsTimeline()->PlayerAttached(*this);
 
-  CompositorElementId elementId = createCompositorElementId(
-      DOMNodeIds::idForNode(node), CompositorSubElementId::LinkHighlight);
-  m_compositorPlayer->attachElement(elementId);
-  m_contentLayer->layer()->setDrawsContent(true);
-  m_contentLayer->layer()->setOpacity(1);
-  m_contentLayer->layer()->setElementId(elementId);
-  m_geometryNeedsUpdate = true;
+  CompositorElementId element_id = CreateCompositorElementId(
+      DOMNodeIds::IdForNode(node), CompositorSubElementId::kLinkHighlight);
+  compositor_player_->AttachElement(element_id);
+  content_layer_->Layer()->SetDrawsContent(true);
+  content_layer_->Layer()->SetOpacity(1);
+  content_layer_->Layer()->SetElementId(element_id);
+  geometry_needs_update_ = true;
 }
 
 LinkHighlightImpl::~LinkHighlightImpl() {
-  if (m_compositorPlayer->isElementAttached())
-    m_compositorPlayer->detachElement();
-  if (m_owningWebViewImpl->linkHighlightsTimeline())
-    m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
-  m_compositorPlayer->setAnimationDelegate(nullptr);
-  m_compositorPlayer.reset();
+  if (compositor_player_->IsElementAttached())
+    compositor_player_->DetachElement();
+  if (owning_web_view_impl_->LinkHighlightsTimeline())
+    owning_web_view_impl_->LinkHighlightsTimeline()->PlayerDestroyed(*this);
+  compositor_player_->SetAnimationDelegate(nullptr);
+  compositor_player_.reset();
 
-  clearGraphicsLayerLinkHighlightPointer();
-  releaseResources();
+  ClearGraphicsLayerLinkHighlightPointer();
+  ReleaseResources();
 }
 
-WebContentLayer* LinkHighlightImpl::contentLayer() {
-  return m_contentLayer.get();
+WebContentLayer* LinkHighlightImpl::ContentLayer() {
+  return content_layer_.get();
 }
 
-WebLayer* LinkHighlightImpl::clipLayer() {
-  return m_clipLayer.get();
+WebLayer* LinkHighlightImpl::ClipLayer() {
+  return clip_layer_.get();
 }
 
-void LinkHighlightImpl::releaseResources() {
-  m_node.clear();
+void LinkHighlightImpl::ReleaseResources() {
+  node_.Clear();
 }
 
-void LinkHighlightImpl::attachLinkHighlightToCompositingLayer(
-    const LayoutBoxModelObject& paintInvalidationContainer) {
-  GraphicsLayer* newGraphicsLayer =
-      paintInvalidationContainer.layer()->graphicsLayerBacking(
-          m_node->layoutObject());
-  m_isScrollingGraphicsLayer = false;
+void LinkHighlightImpl::AttachLinkHighlightToCompositingLayer(
+    const LayoutBoxModelObject& paint_invalidation_container) {
+  GraphicsLayer* new_graphics_layer =
+      paint_invalidation_container.Layer()->GraphicsLayerBacking(
+          node_->GetLayoutObject());
+  is_scrolling_graphics_layer_ = false;
   // FIXME: There should always be a GraphicsLayer. See crbug.com/431961.
-  if (paintInvalidationContainer.layer()->needsCompositedScrolling() &&
-      m_node->layoutObject() != &paintInvalidationContainer) {
-    m_isScrollingGraphicsLayer = true;
+  if (paint_invalidation_container.Layer()->NeedsCompositedScrolling() &&
+      node_->GetLayoutObject() != &paint_invalidation_container) {
+    is_scrolling_graphics_layer_ = true;
   }
-  if (!newGraphicsLayer)
+  if (!new_graphics_layer)
     return;
 
-  m_clipLayer->setTransform(SkMatrix44(SkMatrix44::kIdentity_Constructor));
+  clip_layer_->SetTransform(SkMatrix44(SkMatrix44::kIdentity_Constructor));
 
-  if (m_currentGraphicsLayer != newGraphicsLayer) {
-    if (m_currentGraphicsLayer)
-      clearGraphicsLayerLinkHighlightPointer();
+  if (current_graphics_layer_ != new_graphics_layer) {
+    if (current_graphics_layer_)
+      ClearGraphicsLayerLinkHighlightPointer();
 
-    m_currentGraphicsLayer = newGraphicsLayer;
-    m_currentGraphicsLayer->addLinkHighlight(this);
+    current_graphics_layer_ = new_graphics_layer;
+    current_graphics_layer_->AddLinkHighlight(this);
   }
 }
 
-static void addQuadToPath(const FloatQuad& quad, Path& path) {
+static void AddQuadToPath(const FloatQuad& quad, Path& path) {
   // FIXME: Make this create rounded quad-paths, just like the axis-aligned
   // case.
-  path.moveTo(quad.p1());
-  path.addLineTo(quad.p2());
-  path.addLineTo(quad.p3());
-  path.addLineTo(quad.p4());
-  path.closeSubpath();
+  path.MoveTo(quad.P1());
+  path.AddLineTo(quad.P2());
+  path.AddLineTo(quad.P3());
+  path.AddLineTo(quad.P4());
+  path.CloseSubpath();
 }
 
-void LinkHighlightImpl::computeQuads(const Node& node,
-                                     Vector<FloatQuad>& outQuads) const {
-  if (!node.layoutObject())
+void LinkHighlightImpl::ComputeQuads(const Node& node,
+                                     Vector<FloatQuad>& out_quads) const {
+  if (!node.GetLayoutObject())
     return;
 
-  LayoutObject* layoutObject = node.layoutObject();
+  LayoutObject* layout_object = node.GetLayoutObject();
 
   // For inline elements, absoluteQuads will return a line box based on the
   // line-height and font metrics, which is technically incorrect as replaced
   // elements like images should use their intristic height and expand the
   // linebox  as needed. To get an appropriately sized highlight we descend
   // into the children and have them add their boxes.
-  if (layoutObject->isLayoutInline()) {
-    for (Node* child = LayoutTreeBuilderTraversal::firstChild(node); child;
-         child = LayoutTreeBuilderTraversal::nextSibling(*child))
-      computeQuads(*child, outQuads);
+  if (layout_object->IsLayoutInline()) {
+    for (Node* child = LayoutTreeBuilderTraversal::FirstChild(node); child;
+         child = LayoutTreeBuilderTraversal::NextSibling(*child))
+      ComputeQuads(*child, out_quads);
   } else {
     // FIXME: this does not need to be absolute, just in the paint invalidation
     // container's space.
-    layoutObject->absoluteQuads(outQuads, TraverseDocumentBoundaries);
+    layout_object->AbsoluteQuads(out_quads, kTraverseDocumentBoundaries);
   }
 }
 
-bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(
-    const LayoutBoxModelObject& paintInvalidationContainer) {
-  if (!m_node || !m_node->layoutObject() || !m_currentGraphicsLayer)
+bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
+    const LayoutBoxModelObject& paint_invalidation_container) {
+  if (!node_ || !node_->GetLayoutObject() || !current_graphics_layer_)
     return false;
 
   // FIXME: This is defensive code to avoid crashes such as those described in
   // crbug.com/440887. This should be cleaned up once we fix the root cause of
   // of the paint invalidation container not being composited.
-  if (!paintInvalidationContainer.layer()->compositedLayerMapping() &&
-      !paintInvalidationContainer.layer()->groupedMapping())
+  if (!paint_invalidation_container.Layer()->GetCompositedLayerMapping() &&
+      !paint_invalidation_container.Layer()->GroupedMapping())
     return false;
 
   // Get quads for node in absolute coordinates.
   Vector<FloatQuad> quads;
-  computeQuads(*m_node, quads);
+  ComputeQuads(*node_, quads);
   DCHECK(quads.size());
-  Path newPath;
+  Path new_path;
 
-  for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
-    FloatQuad absoluteQuad = quads[quadIndex];
+  for (size_t quad_index = 0; quad_index < quads.size(); ++quad_index) {
+    FloatQuad absolute_quad = quads[quad_index];
 
     // Scrolling content layers have the same offset from layout object as the
     // non-scrolling layers. Thus we need to adjust for their scroll offset.
-    if (m_isScrollingGraphicsLayer) {
-      FloatPoint scrollPosition = paintInvalidationContainer.layer()
-                                      ->getScrollableArea()
-                                      ->scrollPosition();
-      absoluteQuad.move(toScrollOffset(scrollPosition));
+    if (is_scrolling_graphics_layer_) {
+      FloatPoint scroll_position = paint_invalidation_container.Layer()
+                                       ->GetScrollableArea()
+                                       ->ScrollPosition();
+      absolute_quad.Move(ToScrollOffset(scroll_position));
     }
 
-    absoluteQuad.setP1(roundedIntPoint(absoluteQuad.p1()));
-    absoluteQuad.setP2(roundedIntPoint(absoluteQuad.p2()));
-    absoluteQuad.setP3(roundedIntPoint(absoluteQuad.p3()));
-    absoluteQuad.setP4(roundedIntPoint(absoluteQuad.p4()));
-    FloatQuad transformedQuad = paintInvalidationContainer.absoluteToLocalQuad(
-        absoluteQuad, UseTransforms | TraverseDocumentBoundaries);
-    FloatPoint offsetToBacking;
+    absolute_quad.SetP1(RoundedIntPoint(absolute_quad.P1()));
+    absolute_quad.SetP2(RoundedIntPoint(absolute_quad.P2()));
+    absolute_quad.SetP3(RoundedIntPoint(absolute_quad.P3()));
+    absolute_quad.SetP4(RoundedIntPoint(absolute_quad.P4()));
+    FloatQuad transformed_quad =
+        paint_invalidation_container.AbsoluteToLocalQuad(
+            absolute_quad, kUseTransforms | kTraverseDocumentBoundaries);
+    FloatPoint offset_to_backing;
 
-    PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-        paintInvalidationContainer, offsetToBacking);
+    PaintLayer::MapPointInPaintInvalidationContainerToBacking(
+        paint_invalidation_container, offset_to_backing);
 
     // Adjust for offset from LayoutObject.
-    offsetToBacking.move(-m_currentGraphicsLayer->offsetFromLayoutObject());
+    offset_to_backing.Move(-current_graphics_layer_->OffsetFromLayoutObject());
 
-    transformedQuad.move(toFloatSize(offsetToBacking));
+    transformed_quad.Move(ToFloatSize(offset_to_backing));
 
     // FIXME: for now, we'll only use rounded paths if we have a single node
     // quad. The reason for this is that we may sometimes get a chain of
     // adjacent boxes (e.g. for text nodes) which end up looking like sausage
     // links: these should ideally be merged into a single rect before creating
     // the path, but that's another CL.
-    if (quads.size() == 1 && transformedQuad.isRectilinear() &&
-        !m_owningWebViewImpl->settingsImpl()
-             ->mockGestureTapHighlightsEnabled()) {
-      FloatSize rectRoundingRadii(3, 3);
-      newPath.addRoundedRect(transformedQuad.boundingBox(), rectRoundingRadii);
+    if (quads.size() == 1 && transformed_quad.IsRectilinear() &&
+        !owning_web_view_impl_->SettingsImpl()
+             ->MockGestureTapHighlightsEnabled()) {
+      FloatSize rect_rounding_radii(3, 3);
+      new_path.AddRoundedRect(transformed_quad.BoundingBox(),
+                              rect_rounding_radii);
     } else {
-      addQuadToPath(transformedQuad, newPath);
+      AddQuadToPath(transformed_quad, new_path);
     }
   }
 
-  FloatRect boundingRect = newPath.boundingRect();
-  newPath.translate(-toFloatSize(boundingRect.location()));
+  FloatRect bounding_rect = new_path.BoundingRect();
+  new_path.Translate(-ToFloatSize(bounding_rect.Location()));
 
-  bool pathHasChanged = !(newPath == m_path);
-  if (pathHasChanged) {
-    m_path = newPath;
-    m_contentLayer->layer()->setBounds(enclosingIntRect(boundingRect).size());
+  bool path_has_changed = !(new_path == path_);
+  if (path_has_changed) {
+    path_ = new_path;
+    content_layer_->Layer()->SetBounds(EnclosingIntRect(bounding_rect).size());
   }
 
-  m_contentLayer->layer()->setPosition(boundingRect.location());
+  content_layer_->Layer()->SetPosition(bounding_rect.Location());
 
-  return pathHasChanged;
+  return path_has_changed;
 }
 
-gfx::Rect LinkHighlightImpl::paintableRegion() {
-  return gfx::Rect(0, 0, contentLayer()->layer()->bounds().width,
-                   contentLayer()->layer()->bounds().height);
+gfx::Rect LinkHighlightImpl::PaintableRegion() {
+  return gfx::Rect(0, 0, ContentLayer()->Layer()->Bounds().width,
+                   ContentLayer()->Layer()->Bounds().height);
 }
 
-void LinkHighlightImpl::paintContents(
-    WebDisplayItemList* webDisplayItemList,
-    WebContentLayerClient::PaintingControlSetting paintingControl) {
-  if (!m_node || !m_node->layoutObject())
+void LinkHighlightImpl::PaintContents(
+    WebDisplayItemList* web_display_item_list,
+    WebContentLayerClient::PaintingControlSetting painting_control) {
+  if (!node_ || !node_->GetLayoutObject())
     return;
 
   PaintRecorder recorder;
-  gfx::Rect visualRect = paintableRegion();
+  gfx::Rect visual_rect = PaintableRegion();
   PaintCanvas* canvas =
-      recorder.beginRecording(visualRect.width(), visualRect.height());
+      recorder.beginRecording(visual_rect.width(), visual_rect.height());
 
   PaintFlags flags;
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
-  canvas->drawPath(m_path.getSkPath(), flags);
+  flags.setColor(node_->GetLayoutObject()->Style()->TapHighlightColor().Rgb());
+  canvas->drawPath(path_.GetSkPath(), flags);
 
-  webDisplayItemList->appendDrawingItem(
-      WebRect(visualRect.x(), visualRect.y(), visualRect.width(),
-              visualRect.height()),
+  web_display_item_list->AppendDrawingItem(
+      WebRect(visual_rect.x(), visual_rect.y(), visual_rect.width(),
+              visual_rect.height()),
       recorder.finishRecordingAsPicture());
 }
 
-void LinkHighlightImpl::startHighlightAnimationIfNeeded() {
-  if (m_isAnimating)
+void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
+  if (is_animating_)
     return;
 
-  m_isAnimating = true;
-  const float startOpacity = 1;
+  is_animating_ = true;
+  const float kStartOpacity = 1;
   // FIXME: Should duration be configurable?
-  const float fadeDuration = 0.1f;
-  const float minPreFadeDuration = 0.1f;
+  const float kFadeDuration = 0.1f;
+  const float kMinPreFadeDuration = 0.1f;
 
-  m_contentLayer->layer()->setOpacity(startOpacity);
+  content_layer_->Layer()->SetOpacity(kStartOpacity);
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
-      CompositorFloatAnimationCurve::create();
+      CompositorFloatAnimationCurve::Create();
 
-  const auto& timingFunction = *CubicBezierTimingFunction::preset(
+  const auto& timing_function = *CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE);
 
-  curve->addKeyframe(CompositorFloatKeyframe(0, startOpacity, timingFunction));
+  curve->AddKeyframe(
+      CompositorFloatKeyframe(0, kStartOpacity, timing_function));
   // Make sure we have displayed for at least minPreFadeDuration before starting
   // to fade out.
-  float extraDurationRequired = std::max(
-      0.f, minPreFadeDuration -
-               static_cast<float>(monotonicallyIncreasingTime() - m_startTime));
-  if (extraDurationRequired)
-    curve->addKeyframe(CompositorFloatKeyframe(extraDurationRequired,
-                                               startOpacity, timingFunction));
+  float extra_duration_required = std::max(
+      0.f, kMinPreFadeDuration -
+               static_cast<float>(MonotonicallyIncreasingTime() - start_time_));
+  if (extra_duration_required)
+    curve->AddKeyframe(CompositorFloatKeyframe(extra_duration_required,
+                                               kStartOpacity, timing_function));
   // For layout tests we don't fade out.
-  curve->addKeyframe(CompositorFloatKeyframe(
-      fadeDuration + extraDurationRequired, layoutTestMode() ? startOpacity : 0,
-      timingFunction));
+  curve->AddKeyframe(CompositorFloatKeyframe(
+      kFadeDuration + extra_duration_required,
+      LayoutTestMode() ? kStartOpacity : 0, timing_function));
 
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
       *curve, CompositorTargetProperty::OPACITY, 0, 0);
 
-  m_contentLayer->layer()->setDrawsContent(true);
-  m_compositorPlayer->addAnimation(std::move(animation));
+  content_layer_->Layer()->SetDrawsContent(true);
+  compositor_player_->AddAnimation(std::move(animation));
 
-  invalidate();
-  m_owningWebViewImpl->mainFrameImpl()->frameWidget()->scheduleAnimation();
+  Invalidate();
+  owning_web_view_impl_->MainFrameImpl()->FrameWidget()->ScheduleAnimation();
 }
 
-void LinkHighlightImpl::clearGraphicsLayerLinkHighlightPointer() {
-  if (m_currentGraphicsLayer) {
-    m_currentGraphicsLayer->removeLinkHighlight(this);
-    m_currentGraphicsLayer = 0;
+void LinkHighlightImpl::ClearGraphicsLayerLinkHighlightPointer() {
+  if (current_graphics_layer_) {
+    current_graphics_layer_->RemoveLinkHighlight(this);
+    current_graphics_layer_ = 0;
   }
 }
 
-void LinkHighlightImpl::notifyAnimationStarted(double, int) {}
+void LinkHighlightImpl::NotifyAnimationStarted(double, int) {}
 
-void LinkHighlightImpl::notifyAnimationFinished(double, int) {
+void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
   // Since WebViewImpl may hang on to us for a while, make sure we
   // release resources as soon as possible.
-  clearGraphicsLayerLinkHighlightPointer();
-  releaseResources();
+  ClearGraphicsLayerLinkHighlightPointer();
+  ReleaseResources();
 }
 
 class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
-  String debugName() const final { return "LinkHighlight"; }
-  LayoutRect visualRect() const final { return LayoutRect(); }
+  String DebugName() const final { return "LinkHighlight"; }
+  LayoutRect VisualRect() const final { return LayoutRect(); }
 };
 
-void LinkHighlightImpl::updateGeometry() {
+void LinkHighlightImpl::UpdateGeometry() {
   // To avoid unnecessary updates (e.g. other entities have requested animations
   // from our WebViewImpl), only proceed if we actually requested an update.
-  if (!m_geometryNeedsUpdate)
+  if (!geometry_needs_update_)
     return;
 
-  m_geometryNeedsUpdate = false;
+  geometry_needs_update_ = false;
 
-  bool hasLayoutObject = m_node && m_node->layoutObject();
-  if (hasLayoutObject) {
-    const LayoutBoxModelObject& paintInvalidationContainer =
-        m_node->layoutObject()->containerForPaintInvalidation();
-    attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
-    if (computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {
+  bool has_layout_object = node_ && node_->GetLayoutObject();
+  if (has_layout_object) {
+    const LayoutBoxModelObject& paint_invalidation_container =
+        node_->GetLayoutObject()->ContainerForPaintInvalidation();
+    AttachLinkHighlightToCompositingLayer(paint_invalidation_container);
+    if (ComputeHighlightLayerPathAndPosition(paint_invalidation_container)) {
       // We only need to invalidate the layer if the highlight size has changed,
       // otherwise we can just re-position the layer without needing to
       // repaint.
-      m_contentLayer->layer()->invalidate();
+      content_layer_->Layer()->Invalidate();
 
-      if (m_currentGraphicsLayer)
-        m_currentGraphicsLayer->trackRasterInvalidation(
+      if (current_graphics_layer_)
+        current_graphics_layer_->TrackRasterInvalidation(
             LinkHighlightDisplayItemClientForTracking(),
-            enclosingIntRect(
-                FloatRect(layer()->position().x, layer()->position().y,
-                          layer()->bounds().width, layer()->bounds().height)),
-            PaintInvalidationFull);
+            EnclosingIntRect(
+                FloatRect(Layer()->GetPosition().x, Layer()->GetPosition().y,
+                          Layer()->Bounds().width, Layer()->Bounds().height)),
+            kPaintInvalidationFull);
     }
   } else {
-    clearGraphicsLayerLinkHighlightPointer();
-    releaseResources();
+    ClearGraphicsLayerLinkHighlightPointer();
+    ReleaseResources();
   }
 }
 
-void LinkHighlightImpl::clearCurrentGraphicsLayer() {
-  m_currentGraphicsLayer = 0;
-  m_geometryNeedsUpdate = true;
+void LinkHighlightImpl::ClearCurrentGraphicsLayer() {
+  current_graphics_layer_ = 0;
+  geometry_needs_update_ = true;
 }
 
-void LinkHighlightImpl::invalidate() {
+void LinkHighlightImpl::Invalidate() {
   // Make sure we update geometry on the next callback from
   // WebViewImpl::layout().
-  m_geometryNeedsUpdate = true;
+  geometry_needs_update_ = true;
 }
 
-WebLayer* LinkHighlightImpl::layer() {
-  return clipLayer();
+WebLayer* LinkHighlightImpl::Layer() {
+  return ClipLayer();
 }
 
-CompositorAnimationPlayer* LinkHighlightImpl::compositorPlayer() const {
-  return m_compositorPlayer.get();
+CompositorAnimationPlayer* LinkHighlightImpl::CompositorPlayer() const {
+  return compositor_player_.get();
 }
 
 }  // namespace blink

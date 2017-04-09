@@ -20,7 +20,7 @@ class NavigatorPermissions final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorPermissions);
 
  public:
-  static NavigatorPermissions& from(Navigator&);
+  static NavigatorPermissions& From(Navigator&);
   static Permissions* permissions(Navigator&);
 
   DECLARE_VIRTUAL_TRACE();
@@ -28,9 +28,9 @@ class NavigatorPermissions final
  private:
   NavigatorPermissions();
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<Permissions> m_permissions;
+  Member<Permissions> permissions_;
 };
 
 }  // namespace blink

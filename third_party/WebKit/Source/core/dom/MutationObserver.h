@@ -70,40 +70,40 @@ class CORE_EXPORT MutationObserver final
 
  public:
   enum MutationType {
-    ChildList = 1 << 0,
-    Attributes = 1 << 1,
-    CharacterData = 1 << 2,
+    kChildList = 1 << 0,
+    kAttributes = 1 << 1,
+    kCharacterData = 1 << 2,
 
-    AllMutationTypes = ChildList | Attributes | CharacterData
+    kAllMutationTypes = kChildList | kAttributes | kCharacterData
   };
 
-  enum ObservationFlags { Subtree = 1 << 3, AttributeFilter = 1 << 4 };
+  enum ObservationFlags { kSubtree = 1 << 3, kAttributeFilter = 1 << 4 };
 
   enum DeliveryFlags {
-    AttributeOldValue = 1 << 5,
-    CharacterDataOldValue = 1 << 6,
+    kAttributeOldValue = 1 << 5,
+    kCharacterDataOldValue = 1 << 6,
   };
 
-  static MutationObserver* create(MutationCallback*);
-  static void resumeSuspendedObservers();
-  static void deliverMutations();
-  static void enqueueSlotChange(HTMLSlotElement&);
-  static void cleanSlotChangeList(Document&);
+  static MutationObserver* Create(MutationCallback*);
+  static void ResumeSuspendedObservers();
+  static void DeliverMutations();
+  static void EnqueueSlotChange(HTMLSlotElement&);
+  static void CleanSlotChangeList(Document&);
 
   ~MutationObserver();
 
   void observe(Node*, const MutationObserverInit&, ExceptionState&);
   MutationRecordVector takeRecords();
   void disconnect();
-  void observationStarted(MutationObserverRegistration*);
-  void observationEnded(MutationObserverRegistration*);
-  void enqueueMutationRecord(MutationRecord*);
-  void setHasTransientRegistration();
+  void ObservationStarted(MutationObserverRegistration*);
+  void ObservationEnded(MutationObserverRegistration*);
+  void EnqueueMutationRecord(MutationRecord*);
+  void SetHasTransientRegistration();
 
-  HeapHashSet<Member<Node>> getObservedNodes() const;
+  HeapHashSet<Member<Node>> GetObservedNodes() const;
 
-  bool hasPendingActivity() const override { return !m_records.isEmpty(); }
-  ExecutionContext* getExecutionContext() const;
+  bool HasPendingActivity() const override { return !records_.IsEmpty(); }
+  ExecutionContext* GetExecutionContext() const;
 
   // Eagerly finalized as destructor accesses heap object members.
   EAGERLY_FINALIZE();
@@ -115,14 +115,14 @@ class CORE_EXPORT MutationObserver final
   struct ObserverLessThan;
 
   explicit MutationObserver(MutationCallback*);
-  void deliver();
-  bool shouldBeSuspended() const;
-  void cancelInspectorAsyncTasks();
+  void Deliver();
+  bool ShouldBeSuspended() const;
+  void CancelInspectorAsyncTasks();
 
-  TraceWrapperMember<MutationCallback> m_callback;
-  HeapVector<TraceWrapperMember<MutationRecord>> m_records;
-  MutationObserverRegistrationSet m_registrations;
-  unsigned m_priority;
+  TraceWrapperMember<MutationCallback> callback_;
+  HeapVector<TraceWrapperMember<MutationRecord>> records_;
+  MutationObserverRegistrationSet registrations_;
+  unsigned priority_;
 
   FRIEND_TEST_ALL_PREFIXES(MutationObserverTest, DisconnectCrash);
 };

@@ -14,75 +14,75 @@ namespace blink {
 
 EnableNavigationPreloadCallbacks::EnableNavigationPreloadCallbacks(
     ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {
-  DCHECK(m_resolver);
+    : resolver_(resolver) {
+  DCHECK(resolver_);
 }
 
 EnableNavigationPreloadCallbacks::~EnableNavigationPreloadCallbacks() {}
 
-void EnableNavigationPreloadCallbacks::onSuccess() {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void EnableNavigationPreloadCallbacks::OnSuccess() {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->resolve();
+  resolver_->Resolve();
 }
 
-void EnableNavigationPreloadCallbacks::onError(
+void EnableNavigationPreloadCallbacks::OnError(
     const WebServiceWorkerError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+  resolver_->Reject(ServiceWorkerError::Take(resolver_.Get(), error));
 }
 
 GetNavigationPreloadStateCallbacks::GetNavigationPreloadStateCallbacks(
     ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {
-  DCHECK(m_resolver);
+    : resolver_(resolver) {
+  DCHECK(resolver_);
 }
 
 GetNavigationPreloadStateCallbacks::~GetNavigationPreloadStateCallbacks() {}
 
-void GetNavigationPreloadStateCallbacks::onSuccess(
+void GetNavigationPreloadStateCallbacks::OnSuccess(
     const WebNavigationPreloadState& state) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
   NavigationPreloadState dict;
   dict.setEnabled(state.enabled);
-  dict.setHeaderValue(state.headerValue);
-  m_resolver->resolve(dict);
+  dict.setHeaderValue(state.header_value);
+  resolver_->Resolve(dict);
 }
 
-void GetNavigationPreloadStateCallbacks::onError(
+void GetNavigationPreloadStateCallbacks::OnError(
     const WebServiceWorkerError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+  resolver_->Reject(ServiceWorkerError::Take(resolver_.Get(), error));
 }
 
 SetNavigationPreloadHeaderCallbacks::SetNavigationPreloadHeaderCallbacks(
     ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {
-  DCHECK(m_resolver);
+    : resolver_(resolver) {
+  DCHECK(resolver_);
 }
 
 SetNavigationPreloadHeaderCallbacks::~SetNavigationPreloadHeaderCallbacks() {}
 
-void SetNavigationPreloadHeaderCallbacks::onSuccess() {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void SetNavigationPreloadHeaderCallbacks::OnSuccess() {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->resolve();
+  resolver_->Resolve();
 }
 
-void SetNavigationPreloadHeaderCallbacks::onError(
+void SetNavigationPreloadHeaderCallbacks::OnError(
     const WebServiceWorkerError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+  resolver_->Reject(ServiceWorkerError::Take(resolver_.Get(), error));
 }
 
 }  // namespace blink

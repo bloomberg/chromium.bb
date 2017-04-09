@@ -6,12 +6,12 @@
 
 namespace blink {
 
-AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::create(
+AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::Create(
     v8::Isolate* isolate,
     const String& name,
     v8::Local<v8::Function> constructor,
     v8::Local<v8::Function> process) {
-  DCHECK(!isMainThread());
+  DCHECK(!IsMainThread());
   return new AudioWorkletProcessorDefinition(isolate, name, constructor,
                                              process);
 }
@@ -21,22 +21,22 @@ AudioWorkletProcessorDefinition::AudioWorkletProcessorDefinition(
     const String& name,
     v8::Local<v8::Function> constructor,
     v8::Local<v8::Function> process)
-    : m_name(name),
-      m_constructor(isolate, constructor),
-      m_process(isolate, process) {}
+    : name_(name),
+      constructor_(isolate, constructor),
+      process_(isolate, process) {}
 
 AudioWorkletProcessorDefinition::~AudioWorkletProcessorDefinition() {}
 
-v8::Local<v8::Function> AudioWorkletProcessorDefinition::constructorLocal(
+v8::Local<v8::Function> AudioWorkletProcessorDefinition::ConstructorLocal(
     v8::Isolate* isolate) {
-  DCHECK(!isMainThread());
-  return m_constructor.newLocal(isolate);
+  DCHECK(!IsMainThread());
+  return constructor_.NewLocal(isolate);
 }
 
-v8::Local<v8::Function> AudioWorkletProcessorDefinition::processLocal(
+v8::Local<v8::Function> AudioWorkletProcessorDefinition::ProcessLocal(
     v8::Isolate* isolate) {
-  DCHECK(!isMainThread());
-  return m_process.newLocal(isolate);
+  DCHECK(!IsMainThread());
+  return process_.NewLocal(isolate);
 }
 
 }  // namespace blink

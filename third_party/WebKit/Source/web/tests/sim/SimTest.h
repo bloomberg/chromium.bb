@@ -25,31 +25,31 @@ class SimTest : public ::testing::Test {
   SimTest();
   ~SimTest() override;
 
-  void loadURL(const String& url);
+  void LoadURL(const String& url);
 
-  LocalDOMWindow& window();
-  SimPage& page();
-  Document& document();
-  WebViewImpl& webView();
-  WebLocalFrameImpl& mainFrame();
-  const SimWebViewClient& webViewClient() const;
-  SimCompositor& compositor();
+  LocalDOMWindow& Window();
+  SimPage& Page();
+  Document& GetDocument();
+  WebViewImpl& WebView();
+  WebLocalFrameImpl& MainFrame();
+  const SimWebViewClient& WebViewClient() const;
+  SimCompositor& Compositor();
 
-  Vector<String>& consoleMessages() { return m_consoleMessages; }
+  Vector<String>& ConsoleMessages() { return console_messages_; }
 
  private:
   friend class SimWebFrameClient;
 
-  void addConsoleMessage(const String&);
+  void AddConsoleMessage(const String&);
 
-  SimNetwork m_network;
-  SimCompositor m_compositor;
-  SimWebViewClient m_webViewClient;
-  SimWebFrameClient m_webFrameClient;
-  SimPage m_page;
-  FrameTestHelpers::WebViewHelper m_webViewHelper;
+  SimNetwork network_;
+  SimCompositor compositor_;
+  SimWebViewClient web_view_client_;
+  SimWebFrameClient web_frame_client_;
+  SimPage page_;
+  FrameTestHelpers::WebViewHelper web_view_helper_;
 
-  Vector<String> m_consoleMessages;
+  Vector<String> console_messages_;
 };
 
 }  // namespace blink

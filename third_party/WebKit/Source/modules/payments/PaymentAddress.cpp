@@ -11,42 +11,42 @@ namespace blink {
 
 PaymentAddress::PaymentAddress(
     payments::mojom::blink::PaymentAddressPtr address)
-    : m_country(address->country),
-      m_addressLine(address->address_line),
-      m_region(address->region),
-      m_city(address->city),
-      m_dependentLocality(address->dependent_locality),
-      m_postalCode(address->postal_code),
-      m_sortingCode(address->sorting_code),
-      m_languageCode(address->language_code),
-      m_organization(address->organization),
-      m_recipient(address->recipient),
-      m_phone(address->phone) {
-  if (!m_languageCode.isEmpty() && !address->script_code.isEmpty()) {
+    : country_(address->country),
+      address_line_(address->address_line),
+      region_(address->region),
+      city_(address->city),
+      dependent_locality_(address->dependent_locality),
+      postal_code_(address->postal_code),
+      sorting_code_(address->sorting_code),
+      language_code_(address->language_code),
+      organization_(address->organization),
+      recipient_(address->recipient),
+      phone_(address->phone) {
+  if (!language_code_.IsEmpty() && !address->script_code.IsEmpty()) {
     StringBuilder builder;
-    builder.append(m_languageCode);
-    builder.append('-');
-    builder.append(address->script_code);
-    m_languageCode = builder.toString();
+    builder.Append(language_code_);
+    builder.Append('-');
+    builder.Append(address->script_code);
+    language_code_ = builder.ToString();
   }
 }
 
 PaymentAddress::~PaymentAddress() {}
 
-ScriptValue PaymentAddress::toJSONForBinding(ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  result.addString("country", country());
-  result.add("addressLine", addressLine());
-  result.addString("region", region());
-  result.addString("city", city());
-  result.addString("dependentLocality", dependentLocality());
-  result.addString("postalCode", postalCode());
-  result.addString("sortingCode", sortingCode());
-  result.addString("languageCode", languageCode());
-  result.addString("organization", organization());
-  result.addString("recipient", recipient());
-  result.addString("phone", phone());
-  return result.scriptValue();
+ScriptValue PaymentAddress::toJSONForBinding(ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  result.AddString("country", country());
+  result.Add("addressLine", addressLine());
+  result.AddString("region", region());
+  result.AddString("city", city());
+  result.AddString("dependentLocality", dependentLocality());
+  result.AddString("postalCode", postalCode());
+  result.AddString("sortingCode", sortingCode());
+  result.AddString("languageCode", languageCode());
+  result.AddString("organization", organization());
+  result.AddString("recipient", recipient());
+  result.AddString("phone", phone());
+  return result.GetScriptValue();
 }
 
 }  // namespace blink

@@ -20,8 +20,8 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForUtilityThread
   ~WebThreadImplForUtilityThread() override;
 
   // WebThread implementation.
-  WebScheduler* scheduler() const override;
-  PlatformThreadId threadId() const override;
+  WebScheduler* Scheduler() const override;
+  PlatformThreadId ThreadId() const override;
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* GetTaskRunner() const override;

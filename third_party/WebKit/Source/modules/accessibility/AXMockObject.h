@@ -43,16 +43,16 @@ class MODULES_EXPORT AXMockObject : public AXObject {
   ~AXMockObject() override;
 
   // AXObject overrides.
-  AXObject* computeParent() const override { return m_parent; }
-  bool isEnabled() const override { return true; }
+  AXObject* ComputeParent() const override { return parent_; }
+  bool IsEnabled() const override { return true; }
 
  private:
-  bool isMockObject() const final { return true; }
+  bool IsMockObject() const final { return true; }
 
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, isMockObject());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, IsMockObject());
 
 }  // namespace blink
 

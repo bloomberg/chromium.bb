@@ -23,17 +23,17 @@ class FilterPainter {
  public:
   FilterPainter(PaintLayer&,
                 GraphicsContext&,
-                const LayoutPoint& offsetFromRoot,
+                const LayoutPoint& offset_from_root,
                 const ClipRect&,
                 PaintLayerPaintingInfo&,
-                PaintLayerFlags paintFlags);
+                PaintLayerFlags paint_flags);
   ~FilterPainter();
 
  private:
-  bool m_filterInProgress;
-  GraphicsContext& m_context;
-  std::unique_ptr<LayerClipRecorder> m_clipRecorder;
-  LayoutObject& m_layoutObject;
+  bool filter_in_progress_;
+  GraphicsContext& context_;
+  std::unique_ptr<LayerClipRecorder> clip_recorder_;
+  LayoutObject& layout_object_;
 };
 
 }  // namespace blink

@@ -38,12 +38,12 @@ class PointerEventsHitRules {
 
   PointerEventsHitRules(EHitTesting, const HitTestRequest&, EPointerEvents);
 
-  unsigned requireVisible : 1;
-  unsigned requireFill : 1;
-  unsigned requireStroke : 1;
-  unsigned canHitStroke : 1;
-  unsigned canHitFill : 1;
-  unsigned canHitBoundingBox : 1;
+  unsigned require_visible : 1;
+  unsigned require_fill : 1;
+  unsigned require_stroke : 1;
+  unsigned can_hit_stroke : 1;
+  unsigned can_hit_fill : 1;
+  unsigned can_hit_bounding_box : 1;
 };
 
 }  // namespace blink

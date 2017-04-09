@@ -15,15 +15,15 @@ class HTMLPictureElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLPictureElement);
 
-  void sourceOrMediaChanged();
-  void removeListenerFromSourceChildren();
-  void addListenerToSourceChildren();
+  void SourceOrMediaChanged();
+  void RemoveListenerFromSourceChildren();
+  void AddListenerToSourceChildren();
 
  protected:
   explicit HTMLPictureElement(Document&);
 
  private:
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
 };
 
 }  // namespace blink

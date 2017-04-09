@@ -22,18 +22,18 @@ class BLINK_PLATFORM_EXPORT TaskTimeObserver {
   // Callback to be called when task is about to start.
   // |task_queue| - TaskQueue on which this task will run,
   // |start_time| - time in seconds when task started to run,
-  virtual void willProcessTask(TaskQueue* task_queue, double start_time) = 0;
+  virtual void WillProcessTask(TaskQueue* task_queue, double start_time) = 0;
 
   // Callback to be called when task is completed.
   // |task_queue| - TaskQueue on which this task was run,
   // |start_time| - time in seconds when task started to run,
   // |end_time| - time in seconds when task was completed.
-  virtual void didProcessTask(TaskQueue* task_queue,
+  virtual void DidProcessTask(TaskQueue* task_queue,
                               double start_time,
                               double end_time) = 0;
 
   // Callback to be called when we enter a nested message loop.
-  virtual void onBeginNestedMessageLoop() = 0;
+  virtual void OnBeginNestedMessageLoop() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskTimeObserver);

@@ -21,7 +21,7 @@ class WebServiceWorkerRegistration;
 
 // Structure representing the info associated with a persistent notification.
 struct WebPersistentNotificationInfo {
-  WebString notificationId;
+  WebString notification_id;
   WebNotificationData data;
 };
 
@@ -36,7 +36,7 @@ class WebNotificationManager {
 
   // Shows a page notification on the user's system. These notifications will
   // have their events delivered to the delegate specified in this call.
-  virtual void show(const WebSecurityOrigin&,
+  virtual void Show(const WebSecurityOrigin&,
                     const WebNotificationData&,
                     std::unique_ptr<WebNotificationResources>,
                     WebNotificationDelegate*) = 0;
@@ -45,7 +45,7 @@ class WebNotificationManager {
   // will have their events delivered to a Service Worker rather than the
   // object's delegate. Will take ownership of the WebNotificationShowCallbacks
   // object.
-  virtual void showPersistent(
+  virtual void ShowPersistent(
       const WebSecurityOrigin&,
       const WebNotificationData&,
       std::unique_ptr<WebNotificationResources>,
@@ -56,22 +56,22 @@ class WebNotificationManager {
   // Worker Registration.  If |filterTag| is not an empty string, only the
   // notification with the given tag will be considered. Will take ownership of
   // the WebNotificationGetCallbacks object.
-  virtual void getNotifications(
-      const WebString& filterTag,
+  virtual void GetNotifications(
+      const WebString& filter_tag,
       WebServiceWorkerRegistration*,
       std::unique_ptr<WebNotificationGetCallbacks>) = 0;
 
   // Closes a notification previously shown, and removes it if being shown.
-  virtual void close(WebNotificationDelegate*) = 0;
+  virtual void Close(WebNotificationDelegate*) = 0;
 
   // Closes a persistent notification identified by its notification Id.
-  virtual void closePersistent(const WebSecurityOrigin&,
+  virtual void ClosePersistent(const WebSecurityOrigin&,
                                const WebString& tag,
-                               const WebString& notificationId) = 0;
+                               const WebString& notification_id) = 0;
 
   // Indicates that the delegate object is being destroyed, and must no longer
   // be used by the embedder to dispatch events.
-  virtual void notifyDelegateDestroyed(WebNotificationDelegate*) = 0;
+  virtual void NotifyDelegateDestroyed(WebNotificationDelegate*) = 0;
 };
 
 }  // namespace blink

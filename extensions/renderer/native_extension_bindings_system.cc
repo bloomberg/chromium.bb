@@ -617,8 +617,8 @@ void NativeExtensionBindingsSystem::SendRequest(
 
   GURL url;
   blink::WebLocalFrame* frame = script_context->web_frame();
-  if (frame && !frame->document().isNull())
-    url = frame->document().url();
+  if (frame && !frame->GetDocument().IsNull())
+    url = frame->GetDocument().Url();
   else
     url = script_context->url();
 

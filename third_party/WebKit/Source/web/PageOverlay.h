@@ -50,41 +50,41 @@ class WEB_EXPORT PageOverlay : public GraphicsLayerClient,
     virtual ~Delegate() {}
 
     // Paints page overlay contents.
-    virtual void paintPageOverlay(const PageOverlay&,
+    virtual void PaintPageOverlay(const PageOverlay&,
                                   GraphicsContext&,
-                                  const WebSize& webViewSize) const = 0;
+                                  const WebSize& web_view_size) const = 0;
   };
 
-  static std::unique_ptr<PageOverlay> create(
+  static std::unique_ptr<PageOverlay> Create(
       WebLocalFrameImpl*,
       std::unique_ptr<PageOverlay::Delegate>);
 
   ~PageOverlay();
 
-  void update();
+  void Update();
 
-  GraphicsLayer* graphicsLayer() const { return m_layer.get(); }
+  GraphicsLayer* GetGraphicsLayer() const { return layer_.get(); }
 
   // DisplayItemClient methods.
-  String debugName() const final { return "PageOverlay"; }
-  LayoutRect visualRect() const override;
+  String DebugName() const final { return "PageOverlay"; }
+  LayoutRect VisualRect() const override;
 
   // GraphicsLayerClient implementation
-  bool needsRepaint(const GraphicsLayer&) const { return true; }
-  IntRect computeInterestRect(const GraphicsLayer*,
+  bool NeedsRepaint(const GraphicsLayer&) const { return true; }
+  IntRect ComputeInterestRect(const GraphicsLayer*,
                               const IntRect&) const override;
-  void paintContents(const GraphicsLayer*,
+  void PaintContents(const GraphicsLayer*,
                      GraphicsContext&,
                      GraphicsLayerPaintingPhase,
-                     const IntRect& interestRect) const override;
-  String debugName(const GraphicsLayer*) const override;
+                     const IntRect& interest_rect) const override;
+  String DebugName(const GraphicsLayer*) const override;
 
  private:
   PageOverlay(WebLocalFrameImpl*, std::unique_ptr<PageOverlay::Delegate>);
 
-  Persistent<WebLocalFrameImpl> m_frameImpl;
-  std::unique_ptr<PageOverlay::Delegate> m_delegate;
-  std::unique_ptr<GraphicsLayer> m_layer;
+  Persistent<WebLocalFrameImpl> frame_impl_;
+  std::unique_ptr<PageOverlay::Delegate> delegate_;
+  std::unique_ptr<GraphicsLayer> layer_;
 };
 
 }  // namespace blink

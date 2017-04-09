@@ -39,105 +39,105 @@
 
 namespace blink {
 
-static const unsigned invalidCueIndex = UINT_MAX;
+static const unsigned kInvalidCueIndex = UINT_MAX;
 
 TextTrackCue::TextTrackCue(double start, double end)
-    : m_startTime(start),
-      m_endTime(end),
-      m_track(nullptr),
-      m_cueIndex(invalidCueIndex),
-      m_isActive(false),
-      m_pauseOnExit(false) {}
+    : start_time_(start),
+      end_time_(end),
+      track_(nullptr),
+      cue_index_(kInvalidCueIndex),
+      is_active_(false),
+      pause_on_exit_(false) {}
 
-void TextTrackCue::cueWillChange() {
-  if (m_track)
-    m_track->cueWillChange(this);
+void TextTrackCue::CueWillChange() {
+  if (track_)
+    track_->CueWillChange(this);
 }
 
-void TextTrackCue::cueDidChange() {
-  if (m_track)
-    m_track->cueDidChange(this);
+void TextTrackCue::CueDidChange() {
+  if (track_)
+    track_->CueDidChange(this);
 }
 
 TextTrack* TextTrackCue::track() const {
-  return m_track;
+  return track_;
 }
 
-void TextTrackCue::setTrack(TextTrack* track) {
-  m_track = track;
+void TextTrackCue::SetTrack(TextTrack* track) {
+  track_ = track;
 }
 
-Node* TextTrackCue::owner() const {
-  return m_track ? m_track->owner() : 0;
+Node* TextTrackCue::Owner() const {
+  return track_ ? track_->Owner() : 0;
 }
 
 void TextTrackCue::setId(const AtomicString& id) {
-  if (m_id == id)
+  if (id_ == id)
     return;
 
-  cueWillChange();
-  m_id = id;
-  cueDidChange();
+  CueWillChange();
+  id_ = id;
+  CueDidChange();
 }
 
 void TextTrackCue::setStartTime(double value) {
   // TODO(93143): Add spec-compliant behavior for negative time values.
-  if (m_startTime == value || value < 0)
+  if (start_time_ == value || value < 0)
     return;
 
-  cueWillChange();
-  m_startTime = value;
-  cueDidChange();
+  CueWillChange();
+  start_time_ = value;
+  CueDidChange();
 }
 
 void TextTrackCue::setEndTime(double value) {
   // TODO(93143): Add spec-compliant behavior for negative time values.
-  if (m_endTime == value || value < 0)
+  if (end_time_ == value || value < 0)
     return;
 
-  cueWillChange();
-  m_endTime = value;
-  cueDidChange();
+  CueWillChange();
+  end_time_ = value;
+  CueDidChange();
 }
 
 void TextTrackCue::setPauseOnExit(bool value) {
-  if (m_pauseOnExit == value)
+  if (pause_on_exit_ == value)
     return;
 
-  cueWillChange();
-  m_pauseOnExit = value;
-  cueDidChange();
+  CueWillChange();
+  pause_on_exit_ = value;
+  CueDidChange();
 }
 
-void TextTrackCue::invalidateCueIndex() {
-  m_cueIndex = invalidCueIndex;
+void TextTrackCue::InvalidateCueIndex() {
+  cue_index_ = kInvalidCueIndex;
 }
 
-unsigned TextTrackCue::cueIndex() {
+unsigned TextTrackCue::CueIndex() {
   // This method can only be called on cues while they are associated with
   // a(n enabled) track (and hence that track's list of cues should exist.)
   DCHECK(track() && track()->cues());
-  TextTrackCueList* cueList = track()->cues();
-  if (!cueList->isCueIndexValid(m_cueIndex))
-    cueList->validateCueIndexes();
-  return m_cueIndex;
+  TextTrackCueList* cue_list = track()->cues();
+  if (!cue_list->IsCueIndexValid(cue_index_))
+    cue_list->ValidateCueIndexes();
+  return cue_index_;
 }
 
-DispatchEventResult TextTrackCue::dispatchEventInternal(Event* event) {
+DispatchEventResult TextTrackCue::DispatchEventInternal(Event* event) {
   // When a TextTrack's mode is disabled: no cues are active, no events fired.
-  if (!track() || track()->mode() == TextTrack::disabledKeyword())
-    return DispatchEventResult::CanceledBeforeDispatch;
+  if (!track() || track()->mode() == TextTrack::DisabledKeyword())
+    return DispatchEventResult::kCanceledBeforeDispatch;
 
-  return EventTarget::dispatchEventInternal(event);
+  return EventTarget::DispatchEventInternal(event);
 }
 
-const AtomicString& TextTrackCue::interfaceName() const {
+const AtomicString& TextTrackCue::InterfaceName() const {
   return EventTargetNames::TextTrackCue;
 }
 
 DEFINE_TRACE(TextTrackCue) {
-  visitor->trace(m_track);
-  EventTargetWithInlineData::trace(visitor);
+  visitor->Trace(track_);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 }  // namespace blink

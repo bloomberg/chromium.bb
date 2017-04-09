@@ -6,14 +6,14 @@
 
 namespace blink {
 
-CSSValue* CSSPropertyMarginUtils::consumeMarginOrOffset(
+CSSValue* CSSPropertyMarginUtils::ConsumeMarginOrOffset(
     CSSParserTokenRange& range,
-    CSSParserMode cssParserMode,
+    CSSParserMode css_parser_mode,
     CSSPropertyParserHelpers::UnitlessQuirk unitless) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, cssParserMode, ValueRangeAll, unitless);
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, css_parser_mode, kValueRangeAll, unitless);
 }
 
 }  // namespace blink

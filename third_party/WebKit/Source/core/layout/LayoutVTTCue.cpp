@@ -40,69 +40,69 @@ class SnapToLinesLayouter {
   STACK_ALLOCATED();
 
  public:
-  SnapToLinesLayouter(LayoutVTTCue& cueBox, const IntRect& controlsRect)
-      : m_cueBox(cueBox), m_controlsRect(controlsRect), m_margin(0.0) {
-    if (Settings* settings = m_cueBox.document().settings())
-      m_margin = settings->getTextTrackMarginPercentage() / 100.0;
+  SnapToLinesLayouter(LayoutVTTCue& cue_box, const IntRect& controls_rect)
+      : cue_box_(cue_box), controls_rect_(controls_rect), margin_(0.0) {
+    if (Settings* settings = cue_box_.GetDocument().GetSettings())
+      margin_ = settings->GetTextTrackMarginPercentage() / 100.0;
   }
 
-  void layout();
+  void GetLayout();
 
  private:
-  bool isOutside(const IntRect&) const;
-  bool isOverlapping() const;
-  LayoutUnit computeInitialPositionAdjustment(LayoutUnit&,
+  bool IsOutside(const IntRect&) const;
+  bool IsOverlapping() const;
+  LayoutUnit ComputeInitialPositionAdjustment(LayoutUnit&,
                                               LayoutUnit,
                                               LayoutUnit) const;
-  bool shouldSwitchDirection(InlineFlowBox*, LayoutUnit, LayoutUnit) const;
+  bool ShouldSwitchDirection(InlineFlowBox*, LayoutUnit, LayoutUnit) const;
 
-  void moveBoxesBy(LayoutUnit distance) {
-    m_cueBox.setLogicalTop(m_cueBox.logicalTop() + distance);
+  void MoveBoxesBy(LayoutUnit distance) {
+    cue_box_.SetLogicalTop(cue_box_.LogicalTop() + distance);
   }
 
-  InlineFlowBox* findFirstLineBox() const;
+  InlineFlowBox* FindFirstLineBox() const;
 
-  LayoutPoint m_specifiedPosition;
-  LayoutVTTCue& m_cueBox;
-  IntRect m_controlsRect;
-  double m_margin;
+  LayoutPoint specified_position_;
+  LayoutVTTCue& cue_box_;
+  IntRect controls_rect_;
+  double margin_;
 };
 
-InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const {
-  if (!m_cueBox.firstChild()->isLayoutInline())
+InlineFlowBox* SnapToLinesLayouter::FindFirstLineBox() const {
+  if (!cue_box_.FirstChild()->IsLayoutInline())
     return nullptr;
-  return toLayoutInline(m_cueBox.firstChild())->firstLineBox();
+  return ToLayoutInline(cue_box_.FirstChild())->FirstLineBox();
 }
 
-LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(
+LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
     LayoutUnit& step,
-    LayoutUnit maxDimension,
+    LayoutUnit max_dimension,
     LayoutUnit margin) const {
-  DCHECK(std::isfinite(m_cueBox.snapToLinesPosition()));
+  DCHECK(std::isfinite(cue_box_.SnapToLinesPosition()));
 
   // 6. Let line be cue's computed line.
   // 7. Round line to an integer by adding 0.5 and then flooring it.
-  LayoutUnit linePosition(floorf(m_cueBox.snapToLinesPosition() + 0.5f));
+  LayoutUnit line_position(floorf(cue_box_.SnapToLinesPosition() + 0.5f));
 
-  WritingMode writingMode = m_cueBox.style()->getWritingMode();
+  WritingMode writing_mode = cue_box_.Style()->GetWritingMode();
   // 8. Vertical Growing Left: Add one to line then negate it.
-  if (isFlippedBlocksWritingMode(writingMode))
-    linePosition = -(linePosition + 1);
+  if (IsFlippedBlocksWritingMode(writing_mode))
+    line_position = -(line_position + 1);
 
   // 9. Let position be the result of multiplying step and line offset.
-  LayoutUnit position = step * linePosition;
+  LayoutUnit position = step * line_position;
 
   // 10. Vertical Growing Left: Decrease position by the width of the
   // bounding box of the boxes in boxes, then increase position by step.
-  if (isFlippedBlocksWritingMode(writingMode)) {
-    position -= m_cueBox.size().width();
+  if (IsFlippedBlocksWritingMode(writing_mode)) {
+    position -= cue_box_.size().Width();
     position += step;
   }
 
   // 11. If line is less than zero...
-  if (linePosition < 0) {
+  if (line_position < 0) {
     // ... then increase position by max dimension ...
-    position += maxDimension;
+    position += max_dimension;
 
     // ... and negate step.
     step = -step;
@@ -117,35 +117,35 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(
 // are relative to the same coordinate space. If we didn't the (bounding) boxes
 // could be affect by transforms on an ancestor et.c, which could yield
 // incorrect results.
-IntRect contentBoxRelativeToAncestor(const LayoutBox& box,
+IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
                                      const LayoutBoxModelObject& ancestor) {
-  FloatRect cueContentBox(box.contentBoxRect());
+  FloatRect cue_content_box(box.ContentBoxRect());
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
-  FloatQuad mappedContentQuad =
-      box.localToAncestorQuad(cueContentBox, &ancestor, UseTransforms);
-  return mappedContentQuad.enclosingBoundingBox();
+  FloatQuad mapped_content_quad =
+      box.LocalToAncestorQuad(cue_content_box, &ancestor, kUseTransforms);
+  return mapped_content_quad.EnclosingBoundingBox();
 }
 
-IntRect cueBoundingBox(const LayoutBox& cueBox) {
-  return contentBoxRelativeToAncestor(cueBox, *cueBox.containingBlock());
+IntRect CueBoundingBox(const LayoutBox& cue_box) {
+  return ContentBoxRelativeToAncestor(cue_box, *cue_box.ContainingBlock());
 }
 
-bool SnapToLinesLayouter::isOutside(const IntRect& titleArea) const {
-  return !titleArea.contains(cueBoundingBox(m_cueBox));
+bool SnapToLinesLayouter::IsOutside(const IntRect& title_area) const {
+  return !title_area.Contains(CueBoundingBox(cue_box_));
 }
 
-bool SnapToLinesLayouter::isOverlapping() const {
-  IntRect cueBoxRect = cueBoundingBox(m_cueBox);
-  for (LayoutBox* box = m_cueBox.previousSiblingBox(); box;
-       box = box->previousSiblingBox()) {
-    if (cueBoxRect.intersects(cueBoundingBox(*box)))
+bool SnapToLinesLayouter::IsOverlapping() const {
+  IntRect cue_box_rect = CueBoundingBox(cue_box_);
+  for (LayoutBox* box = cue_box_.PreviousSiblingBox(); box;
+       box = box->PreviousSiblingBox()) {
+    if (cue_box_rect.Intersects(CueBoundingBox(*box)))
       return true;
   }
-  return cueBoxRect.intersects(m_controlsRect);
+  return cue_box_rect.Intersects(controls_rect_);
 }
 
-bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox,
+bool SnapToLinesLayouter::ShouldSwitchDirection(InlineFlowBox* first_line_box,
                                                 LayoutUnit step,
                                                 LayoutUnit margin) const {
   // 17. Horizontal: If step is negative and the top of the first line box in
@@ -157,22 +157,21 @@ bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox,
   // if step is positive and the right edge of the first line box in boxes is
   // now to the right of the right edge of the title area, jump to the step
   // labeled switch direction.
-  LayoutUnit logicalTop = m_cueBox.logicalTop();
-  if (step < 0 && logicalTop < margin)
+  LayoutUnit logical_top = cue_box_.LogicalTop();
+  if (step < 0 && logical_top < margin)
     return true;
-  if (step > 0 &&
-      logicalTop + firstLineBox->logicalHeight() + margin >
-          m_cueBox.containingBlock()->logicalHeight())
+  if (step > 0 && logical_top + first_line_box->LogicalHeight() + margin >
+                      cue_box_.ContainingBlock()->LogicalHeight())
     return true;
   return false;
 }
 
-void SnapToLinesLayouter::layout() {
+void SnapToLinesLayouter::GetLayout() {
   // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
   // Step 13, "If cue's text track cue snap-to-lines flag is set".
 
-  InlineFlowBox* firstLineBox = findFirstLineBox();
-  if (!firstLineBox)
+  InlineFlowBox* first_line_box = FindFirstLineBox();
+  if (!first_line_box)
     return;
 
   // 1. Horizontal: Let margin be a user-agent-defined vertical length which
@@ -183,36 +182,36 @@ void SnapToLinesLayouter::layout() {
   // into which cues will not be placed.
   // 2. Horizontal: Let full dimension be the height of video's rendering area
   //    Vertical: Let full dimension be the width of video's rendering area.
-  WritingMode writingMode = m_cueBox.style()->getWritingMode();
-  LayoutBlock* parentBlock = m_cueBox.containingBlock();
-  LayoutUnit fullDimension = blink::isHorizontalWritingMode(writingMode)
-                                 ? parentBlock->size().height()
-                                 : parentBlock->size().width();
-  LayoutUnit margin(fullDimension * m_margin);
+  WritingMode writing_mode = cue_box_.Style()->GetWritingMode();
+  LayoutBlock* parent_block = cue_box_.ContainingBlock();
+  LayoutUnit full_dimension = blink::IsHorizontalWritingMode(writing_mode)
+                                  ? parent_block->size().Height()
+                                  : parent_block->size().Width();
+  LayoutUnit margin(full_dimension * margin_);
 
   // 3. Let max dimension be full dimension - (2 * margin)
-  LayoutUnit maxDimension = fullDimension - 2 * margin;
+  LayoutUnit max_dimension = full_dimension - 2 * margin;
 
   // 4. Horizontal: Let step be the height of the first line box in boxes.
   //    Vertical: Let step be the width of the first line box in boxes.
-  LayoutUnit step = firstLineBox->logicalHeight();
+  LayoutUnit step = first_line_box->LogicalHeight();
 
   // 5. If step is zero, then jump to the step labeled done positioning below.
   if (!step)
     return;
 
   // Steps 6-11.
-  LayoutUnit positionAdjustment =
-      computeInitialPositionAdjustment(step, maxDimension, margin);
+  LayoutUnit position_adjustment =
+      ComputeInitialPositionAdjustment(step, max_dimension, margin);
 
   // 12. Move all boxes in boxes ...
   // Horizontal: ... down by the distance given by position
   // Vertical: ... right by the distance given by position
-  moveBoxesBy(positionAdjustment);
+  MoveBoxesBy(position_adjustment);
 
   // 13. Remember the position of all the boxes in boxes as their specified
   // position.
-  m_specifiedPosition = m_cueBox.location();
+  specified_position_ = cue_box_.Location();
 
   // XX. Let switched be false.
   bool switched = false;
@@ -223,31 +222,31 @@ void SnapToLinesLayouter::layout() {
   // Vertical: Let title area be a box that covers all of the video’s
   // rendering area except for a width of margin at the left of the rendering
   // area and a width of margin at the right of the rendering area.
-  IntRect titleArea =
-      enclosingIntRect(m_cueBox.containingBlock()->contentBoxRect());
-  if (blink::isHorizontalWritingMode(writingMode)) {
-    titleArea.move(0, margin.toInt());
-    titleArea.contract(0, (2 * margin).toInt());
+  IntRect title_area =
+      EnclosingIntRect(cue_box_.ContainingBlock()->ContentBoxRect());
+  if (blink::IsHorizontalWritingMode(writing_mode)) {
+    title_area.Move(0, margin.ToInt());
+    title_area.Contract(0, (2 * margin).ToInt());
   } else {
-    titleArea.move(margin.toInt(), 0);
-    titleArea.contract((2 * margin).toInt(), 0);
+    title_area.Move(margin.ToInt(), 0);
+    title_area.Contract((2 * margin).ToInt(), 0);
   }
 
   // 15. Step loop: If none of the boxes in boxes would overlap any of the
   // boxes in output, and all of the boxes in output are entirely within the
   // title area box, then jump to the step labeled done positioning below.
-  while (isOutside(titleArea) || isOverlapping()) {
+  while (IsOutside(title_area) || IsOverlapping()) {
     // 16. Let current position score be the percentage of the area of the
     // bounding box of the boxes in boxes that is outside the title area
     // box.
-    if (!shouldSwitchDirection(firstLineBox, step, margin)) {
+    if (!ShouldSwitchDirection(first_line_box, step, margin)) {
       // 18. Horizontal: Move all the boxes in boxes down by the distance
       // given by step. (If step is negative, then this will actually
       // result in an upwards movement of the boxes in absolute terms.)
       // Vertical: Move all the boxes in boxes right by the distance
       // given by step. (If step is negative, then this will actually
       // result in a leftwards movement of the boxes in absolute terms.)
-      moveBoxesBy(step);
+      MoveBoxesBy(step);
 
       // 19. Jump back to the step labeled step loop.
       continue;
@@ -259,13 +258,13 @@ void SnapToLinesLayouter::layout() {
       // This does not "remove" the boxes, but rather just pushes them
       // out of the viewport. Otherwise we'd need to mutate the layout
       // tree during layout.
-      m_cueBox.setLogicalTop(m_cueBox.containingBlock()->logicalHeight() + 1);
+      cue_box_.SetLogicalTop(cue_box_.ContainingBlock()->LogicalHeight() + 1);
       break;
     }
 
     // 21. Otherwise, move all the boxes in boxes back to their specified
     // position as determined in the earlier step.
-    m_cueBox.setLocation(m_specifiedPosition);
+    cue_box_.SetLocation(specified_position_);
 
     // 22. Negate step.
     step = -step;
@@ -279,10 +278,10 @@ void SnapToLinesLayouter::layout() {
 
 }  // unnamed namespace
 
-LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snapToLinesPosition)
-    : LayoutBlockFlow(node), m_snapToLinesPosition(snapToLinesPosition) {}
+LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snap_to_lines_position)
+    : LayoutBlockFlow(node), snap_to_lines_position_(snap_to_lines_position) {}
 
-void LayoutVTTCue::repositionCueSnapToLinesNotSet() {
+void LayoutVTTCue::RepositionCueSnapToLinesNotSet() {
   // FIXME: Implement overlapping detection when snap-to-lines is not set.
   // http://wkb.ug/84296
 
@@ -326,52 +325,52 @@ void LayoutVTTCue::repositionCueSnapToLinesNotSet() {
   // boxes will unfortunately overlap.)
 }
 
-IntRect LayoutVTTCue::computeControlsRect() const {
+IntRect LayoutVTTCue::ComputeControlsRect() const {
   // Determine the area covered by the media controls, if any. For this, the
   // LayoutVTTCue will walk the tree up to the HTMLMediaElement, then ask for
   // the MediaControls.
-  DCHECK(parent()->node()->isTextTrackContainer());
-  DCHECK(isHTMLMediaElement(parent()->parent()->node()));
+  DCHECK(Parent()->GetNode()->IsTextTrackContainer());
+  DCHECK(IsHTMLMediaElement(Parent()->Parent()->GetNode()));
 
-  HTMLMediaElement* mediaElement =
-      toHTMLMediaElement(parent()->parent()->node());
-  DCHECK(mediaElement);
+  HTMLMediaElement* media_element =
+      ToHTMLMediaElement(Parent()->Parent()->GetNode());
+  DCHECK(media_element);
 
-  MediaControls* controls = mediaElement->mediaControls();
-  if (!controls || !controls->containerLayoutObject())
+  MediaControls* controls = media_element->GetMediaControls();
+  if (!controls || !controls->ContainerLayoutObject())
     return IntRect();
 
   // Only a part of the media controls is used for overlap avoidance.
-  LayoutObject* panelLayoutObject =
-      mediaElement->mediaControls()->panelLayoutObject();
+  LayoutObject* panel_layout_object =
+      media_element->GetMediaControls()->PanelLayoutObject();
 
   // The (second part of the) following is mostly defensive - in general
   // there should be a LayoutBox representing the part of the controls that
   // are relevant for overlap avoidance. (The controls pseudo elements are
   // generally reachable from outside the shadow tree though, hence the
   // "mostly".)
-  if (!panelLayoutObject || !panelLayoutObject->isBox())
+  if (!panel_layout_object || !panel_layout_object->IsBox())
     return IntRect();
 
   // Assume that the controls container are positioned in the same relative
   // position as the text track container. (LayoutMedia::layout ensures this.)
-  return contentBoxRelativeToAncestor(
-      toLayoutBox(*panelLayoutObject),
-      toLayoutBox(*controls->containerLayoutObject()));
+  return ContentBoxRelativeToAncestor(
+      ToLayoutBox(*panel_layout_object),
+      ToLayoutBox(*controls->ContainerLayoutObject()));
 }
 
-void LayoutVTTCue::layout() {
-  LayoutBlockFlow::layout();
+void LayoutVTTCue::GetLayout() {
+  LayoutBlockFlow::GetLayout();
 
-  DCHECK(firstChild());
+  DCHECK(FirstChild());
 
   LayoutState state(*this);
 
   // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
-  if (!std::isnan(m_snapToLinesPosition))
-    SnapToLinesLayouter(*this, computeControlsRect()).layout();
+  if (!std::isnan(snap_to_lines_position_))
+    SnapToLinesLayouter(*this, ComputeControlsRect()).GetLayout();
   else
-    repositionCueSnapToLinesNotSet();
+    RepositionCueSnapToLinesNotSet();
 }
 
 }  // namespace blink

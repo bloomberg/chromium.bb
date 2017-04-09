@@ -25,42 +25,42 @@ class WebPepperSocketChannelClientProxy final
       public WebSocketChannelClient {
   USING_GARBAGE_COLLECTED_MIXIN(WebPepperSocketChannelClientProxy)
  public:
-  static WebPepperSocketChannelClientProxy* create(WebPepperSocketImpl* impl) {
+  static WebPepperSocketChannelClientProxy* Create(WebPepperSocketImpl* impl) {
     return new WebPepperSocketChannelClientProxy(impl);
   }
 
-  void didConnect(const String& subprotocol,
+  void DidConnect(const String& subprotocol,
                   const String& extensions) override {
-    m_impl->didConnect(subprotocol, extensions);
+    impl_->DidConnect(subprotocol, extensions);
   }
-  void didReceiveTextMessage(const String& payload) override {
-    m_impl->didReceiveTextMessage(payload);
+  void DidReceiveTextMessage(const String& payload) override {
+    impl_->DidReceiveTextMessage(payload);
   }
-  void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override {
-    m_impl->didReceiveBinaryMessage(std::move(payload));
+  void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override {
+    impl_->DidReceiveBinaryMessage(std::move(payload));
   }
-  void didError() override { m_impl->didError(); }
-  void didConsumeBufferedAmount(uint64_t consumed) override {
-    m_impl->didConsumeBufferedAmount(consumed);
+  void DidError() override { impl_->DidError(); }
+  void DidConsumeBufferedAmount(uint64_t consumed) override {
+    impl_->DidConsumeBufferedAmount(consumed);
   }
-  void didStartClosingHandshake() override {
-    m_impl->didStartClosingHandshake();
+  void DidStartClosingHandshake() override {
+    impl_->DidStartClosingHandshake();
   }
-  void didClose(ClosingHandshakeCompletionStatus status,
+  void DidClose(ClosingHandshakeCompletionStatus status,
                 unsigned short code,
                 const String& reason) override {
-    WebPepperSocketImpl* impl = m_impl;
-    m_impl = nullptr;
-    impl->didClose(status, code, reason);
+    WebPepperSocketImpl* impl = impl_;
+    impl_ = nullptr;
+    impl->DidClose(status, code, reason);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { WebSocketChannelClient::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { WebSocketChannelClient::Trace(visitor); }
 
  private:
   explicit WebPepperSocketChannelClientProxy(WebPepperSocketImpl* impl)
-      : m_impl(impl) {}
+      : impl_(impl) {}
 
-  WebPepperSocketImpl* m_impl;
+  WebPepperSocketImpl* impl_;
 };
 
 }  // namespace blink

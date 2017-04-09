@@ -36,7 +36,7 @@ class CORE_EXPORT HTMLParagraphElement final : public HTMLElement {
  private:
   explicit HTMLParagraphElement(Document&);
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 };

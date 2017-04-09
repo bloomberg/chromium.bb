@@ -13,7 +13,7 @@ class ModuleBindingsInitializer {
   STATIC_ONLY(ModuleBindingsInitializer);
 
  public:
-  static void init();
+  static void Init();
 };
 
 }  // namespace blink

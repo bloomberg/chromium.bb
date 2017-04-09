@@ -35,84 +35,85 @@
 
 namespace WTF {
 
-static const int defaultBufferCapacity = 32768;
+static const int kDefaultBufferCapacity = 32768;
 
 ArrayBufferBuilder::ArrayBufferBuilder()
-    : m_bytesUsed(0), m_variableCapacity(true) {
-  m_buffer = ArrayBuffer::create(defaultBufferCapacity, 1);
+    : bytes_used_(0), variable_capacity_(true) {
+  buffer_ = ArrayBuffer::Create(kDefaultBufferCapacity, 1);
 }
 
-bool ArrayBufferBuilder::expandCapacity(unsigned sizeToIncrease) {
-  unsigned currentBufferSize = m_buffer->byteLength();
+bool ArrayBufferBuilder::ExpandCapacity(unsigned size_to_increase) {
+  unsigned current_buffer_size = buffer_->ByteLength();
 
   // If the size of the buffer exceeds max of unsigned, it can't be grown any
   // more.
-  if (sizeToIncrease > std::numeric_limits<unsigned>::max() - m_bytesUsed)
+  if (size_to_increase > std::numeric_limits<unsigned>::max() - bytes_used_)
     return false;
 
-  unsigned newBufferSize = m_bytesUsed + sizeToIncrease;
+  unsigned new_buffer_size = bytes_used_ + size_to_increase;
 
   // Grow exponentially if possible.
-  unsigned exponentialGrowthNewBufferSize =
+  unsigned exponential_growth_new_buffer_size =
       std::numeric_limits<unsigned>::max();
-  if (currentBufferSize <= std::numeric_limits<unsigned>::max() / 2)
-    exponentialGrowthNewBufferSize = currentBufferSize * 2;
-  if (exponentialGrowthNewBufferSize > newBufferSize)
-    newBufferSize = exponentialGrowthNewBufferSize;
+  if (current_buffer_size <= std::numeric_limits<unsigned>::max() / 2)
+    exponential_growth_new_buffer_size = current_buffer_size * 2;
+  if (exponential_growth_new_buffer_size > new_buffer_size)
+    new_buffer_size = exponential_growth_new_buffer_size;
 
   // Copy existing data in current buffer to new buffer.
-  RefPtr<ArrayBuffer> newBuffer = ArrayBuffer::create(newBufferSize, 1);
-  if (!newBuffer)
+  RefPtr<ArrayBuffer> new_buffer = ArrayBuffer::Create(new_buffer_size, 1);
+  if (!new_buffer)
     return false;
 
-  memcpy(newBuffer->data(), m_buffer->data(), m_bytesUsed);
-  m_buffer = newBuffer;
+  memcpy(new_buffer->Data(), buffer_->Data(), bytes_used_);
+  buffer_ = new_buffer;
   return true;
 }
 
-unsigned ArrayBufferBuilder::append(const char* data, unsigned length) {
+unsigned ArrayBufferBuilder::Append(const char* data, unsigned length) {
   DCHECK_GT(length, 0u);
 
-  unsigned currentBufferSize = m_buffer->byteLength();
+  unsigned current_buffer_size = buffer_->ByteLength();
 
-  DCHECK_LE(m_bytesUsed, currentBufferSize);
+  DCHECK_LE(bytes_used_, current_buffer_size);
 
-  unsigned remainingBufferSpace = currentBufferSize - m_bytesUsed;
+  unsigned remaining_buffer_space = current_buffer_size - bytes_used_;
 
-  unsigned bytesToSave = length;
+  unsigned bytes_to_save = length;
 
-  if (length > remainingBufferSpace) {
-    if (m_variableCapacity) {
-      if (!expandCapacity(length))
+  if (length > remaining_buffer_space) {
+    if (variable_capacity_) {
+      if (!ExpandCapacity(length))
         return 0;
     } else {
-      bytesToSave = remainingBufferSpace;
+      bytes_to_save = remaining_buffer_space;
     }
   }
 
-  memcpy(static_cast<char*>(m_buffer->data()) + m_bytesUsed, data, bytesToSave);
-  m_bytesUsed += bytesToSave;
+  memcpy(static_cast<char*>(buffer_->Data()) + bytes_used_, data,
+         bytes_to_save);
+  bytes_used_ += bytes_to_save;
 
-  return bytesToSave;
+  return bytes_to_save;
 }
 
-PassRefPtr<ArrayBuffer> ArrayBufferBuilder::toArrayBuffer() {
+PassRefPtr<ArrayBuffer> ArrayBufferBuilder::ToArrayBuffer() {
   // Fully used. Return m_buffer as-is.
-  if (m_buffer->byteLength() == m_bytesUsed)
-    return m_buffer;
+  if (buffer_->ByteLength() == bytes_used_)
+    return buffer_;
 
-  return m_buffer->slice(0, m_bytesUsed);
+  return buffer_->Slice(0, bytes_used_);
 }
 
-String ArrayBufferBuilder::toString() {
-  return String(static_cast<const char*>(m_buffer->data()), m_bytesUsed);
+String ArrayBufferBuilder::ToString() {
+  return String(static_cast<const char*>(buffer_->Data()), bytes_used_);
 }
 
-void ArrayBufferBuilder::shrinkToFit() {
-  DCHECK_LE(m_bytesUsed, m_buffer->byteLength());
+void ArrayBufferBuilder::ShrinkToFit() {
+  DCHECK_LE(bytes_used_, buffer_->ByteLength());
 
-  if (m_buffer->byteLength() > m_bytesUsed)
-    m_buffer = m_buffer->slice(0, m_bytesUsed);
+  if (buffer_->ByteLength() > bytes_used_)
+    buffer_ = buffer_->Slice(0, bytes_used_);
 }
 
 }  // namespace WTF

@@ -51,7 +51,7 @@ class WorkerGlobalScopeFileSystem {
   static void webkitRequestFileSystem(WorkerGlobalScope&,
                                       int type,
                                       long long size,
-                                      FileSystemCallback* successCallback,
+                                      FileSystemCallback* success_callback,
                                       ErrorCallback*);
   static DOMFileSystemSync* webkitRequestFileSystemSync(WorkerGlobalScope&,
                                                         int type,
@@ -59,7 +59,7 @@ class WorkerGlobalScopeFileSystem {
                                                         ExceptionState&);
   static void webkitResolveLocalFileSystemURL(WorkerGlobalScope&,
                                               const String& url,
-                                              EntryCallback* successCallback,
+                                              EntryCallback* success_callback,
                                               ErrorCallback*);
   static EntrySync* webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope&,
                                                         const String& url,

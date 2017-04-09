@@ -45,29 +45,29 @@ class AXListBoxOption final : public AXLayoutObject {
   AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXListBoxOption* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXListBoxOption* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXListBoxOption() override;
 
-  bool isAXListBoxOption() const override { return true; }
-  AccessibilityRole determineAccessibilityRole() final;
-  bool isSelected() const override;
-  bool isEnabled() const override;
-  bool isSelectedOptionActive() const override;
-  void setSelected(bool) override;
-  bool canSetSelectedAttribute() const override;
-  String textAlternative(bool recursive,
-                         bool inAriaLabelledByTraversal,
+  bool IsAXListBoxOption() const override { return true; }
+  AccessibilityRole DetermineAccessibilityRole() final;
+  bool IsSelected() const override;
+  bool IsEnabled() const override;
+  bool IsSelectedOptionActive() const override;
+  void SetSelected(bool) override;
+  bool CanSetSelectedAttribute() const override;
+  String TextAlternative(bool recursive,
+                         bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
                          AXNameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 
  private:
-  bool canHaveChildren() const override { return false; }
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool CanHaveChildren() const override { return false; }
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-  HTMLSelectElement* listBoxOptionParentNode() const;
-  bool isParentPresentationalRole() const;
+  HTMLSelectElement* ListBoxOptionParentNode() const;
+  bool IsParentPresentationalRole() const;
 };
 
 }  // namespace blink

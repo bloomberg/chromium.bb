@@ -49,33 +49,33 @@ class CORE_EXPORT V0CustomElement {
 
  public:
   enum NameSet {
-    EmbedderNames = 1 << 0,
-    StandardNames = 1 << 1,
-    AllNames = EmbedderNames | StandardNames
+    kEmbedderNames = 1 << 0,
+    kStandardNames = 1 << 1,
+    kAllNames = kEmbedderNames | kStandardNames
   };
-  static bool isValidName(const AtomicString& name,
-                          NameSet validNames = AllNames);
-  static void addEmbedderCustomElementName(const AtomicString& name);
+  static bool IsValidName(const AtomicString& name,
+                          NameSet valid_names = kAllNames);
+  static void AddEmbedderCustomElementName(const AtomicString& name);
 
   // API to notify of document-level changes
-  static V0CustomElementMicrotaskImportStep* didCreateImport(HTMLImportChild*);
-  static void didFinishLoadingImport(Document& master);
+  static V0CustomElementMicrotaskImportStep* DidCreateImport(HTMLImportChild*);
+  static void DidFinishLoadingImport(Document& master);
 
   // API for registration contexts
-  static void define(Element*, V0CustomElementDefinition*);
+  static void Define(Element*, V0CustomElementDefinition*);
 
   // API for Element to kick off changes
 
-  static void attributeDidChange(Element*,
+  static void AttributeDidChange(Element*,
                                  const AtomicString& name,
-                                 const AtomicString& oldValue,
-                                 const AtomicString& newValue);
-  static void didAttach(Element*, const Document&);
-  static void didDetach(Element*, const Document&);
-  static void wasDestroyed(Element*);
+                                 const AtomicString& old_value,
+                                 const AtomicString& new_value);
+  static void DidAttach(Element*, const Document&);
+  static void DidDetach(Element*, const Document&);
+  static void WasDestroyed(Element*);
 
  private:
-  static Vector<AtomicString>& embedderCustomElementNames();
+  static Vector<AtomicString>& EmbedderCustomElementNames();
 };
 
 }  // namespace blink

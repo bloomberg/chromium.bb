@@ -21,9 +21,9 @@ class BLINK_PLATFORM_EXPORT WebPresentationAvailabilityObserver {
  public:
   virtual ~WebPresentationAvailabilityObserver() = default;
 
-  virtual void availabilityChanged(bool) = 0;
+  virtual void AvailabilityChanged(bool) = 0;
 
-  virtual const WebVector<WebURL>& urls() const = 0;
+  virtual const WebVector<WebURL>& Urls() const = 0;
 };
 
 }  // namespace blink

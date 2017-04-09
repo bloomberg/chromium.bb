@@ -14,23 +14,23 @@
 namespace blink {
 
 ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
-  ASSERT(ThreadState::current());
-  v8::Isolate* isolate = ThreadState::current()->isolate();
-  V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-  isolateData->addActiveScriptWrappable(this);
+  ASSERT(ThreadState::Current());
+  v8::Isolate* isolate = ThreadState::Current()->GetIsolate();
+  V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
+  isolate_data->AddActiveScriptWrappable(this);
 }
 
-void ActiveScriptWrappableBase::traceActiveScriptWrappables(
+void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     v8::Isolate* isolate,
     ScriptWrappableVisitor* visitor) {
-  V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-  auto activeScriptWrappables = isolateData->activeScriptWrappables();
-  if (!activeScriptWrappables) {
+  V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);
+  auto active_script_wrappables = isolate_data->ActiveScriptWrappables();
+  if (!active_script_wrappables) {
     return;
   }
 
-  for (auto activeWrappable : *activeScriptWrappables) {
-    if (!activeWrappable->dispatchHasPendingActivity(activeWrappable)) {
+  for (auto active_wrappable : *active_script_wrappables) {
+    if (!active_wrappable->DispatchHasPendingActivity(active_wrappable)) {
       continue;
     }
 
@@ -47,15 +47,16 @@ void ActiveScriptWrappableBase::traceActiveScriptWrappables(
     // |isContextDestroyed()|.
     //
     // TODO(haraken): Implement correct lifetime using traceWrapper.
-    if (activeWrappable->isContextDestroyed(activeWrappable)) {
+    if (active_wrappable->IsContextDestroyed(active_wrappable)) {
       continue;
     }
 
-    auto scriptWrappable = activeWrappable->toScriptWrappable(activeWrappable);
-    auto wrapperTypeInfo =
-        const_cast<WrapperTypeInfo*>(scriptWrappable->wrapperTypeInfo());
+    auto script_wrappable =
+        active_wrappable->ToScriptWrappable(active_wrappable);
+    auto wrapper_type_info =
+        const_cast<WrapperTypeInfo*>(script_wrappable->GetWrapperTypeInfo());
     visitor->RegisterV8Reference(
-        std::make_pair(wrapperTypeInfo, scriptWrappable));
+        std::make_pair(wrapper_type_info, script_wrappable));
   }
 }
 

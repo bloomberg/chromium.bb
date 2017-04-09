@@ -37,8 +37,8 @@ class KURL;
 
 class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
  public:
-  virtual void setURL(const KURL&) = 0;
-  virtual void setInput(const String&) = 0;
+  virtual void SetURL(const KURL&) = 0;
+  virtual void SetInput(const String&) = 0;
   ~DOMURLUtils() override;
 
   void setHref(const String&);
@@ -54,11 +54,11 @@ class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
   virtual void setSearch(const String&);
 
  protected:
-  void setSearchInternal(const String&);
+  void SetSearchInternal(const String&);
 
-  bool isInUpdate() const { return m_isInUpdate; }
+  bool IsInUpdate() const { return is_in_update_; }
 
-  bool m_isInUpdate = false;
+  bool is_in_update_ = false;
 };
 
 }  // namespace blink

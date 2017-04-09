@@ -43,24 +43,24 @@ class NavigatorUserMediaError;
 class MediaErrorState {
  public:
   MediaErrorState();
-  void throwTypeError(const String& message);
-  void throwDOMException(ExceptionCode, const String& message);
-  void throwConstraintError(const String& message, const String& constraint);
-  void reset();
+  void ThrowTypeError(const String& message);
+  void ThrowDOMException(ExceptionCode, const String& message);
+  void ThrowConstraintError(const String& message, const String& constraint);
+  void Reset();
 
-  bool hadException();
-  bool canGenerateException();
-  void raiseException(ExceptionState&);
-  String getErrorMessage();
-  NavigatorUserMediaError* createError();
+  bool HadException();
+  bool CanGenerateException();
+  void RaiseException(ExceptionState&);
+  String GetErrorMessage();
+  NavigatorUserMediaError* CreateError();
 
  private:
-  enum ErrorType { NoError, TypeError, DOMException, ConstraintError };
-  ErrorType m_errorType;
-  String m_name;
-  ExceptionCode m_code;
-  String m_message;
-  String m_constraint;
+  enum ErrorType { kNoError, kTypeError, kDOMException, kConstraintError };
+  ErrorType error_type_;
+  String name_;
+  ExceptionCode code_;
+  String message_;
+  String constraint_;
 };
 
 }  // namespace blink

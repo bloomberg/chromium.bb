@@ -57,14 +57,14 @@ void GetAllContainersForModule(PluginModule* module, ContainerSet* containers) {
 WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel level) {
   switch (level) {
     case PP_LOGLEVEL_TIP:
-      return WebConsoleMessage::LevelVerbose;
+      return WebConsoleMessage::kLevelVerbose;
     case PP_LOGLEVEL_LOG:
-      return WebConsoleMessage::LevelInfo;
+      return WebConsoleMessage::kLevelInfo;
     case PP_LOGLEVEL_WARNING:
-      return WebConsoleMessage::LevelWarning;
+      return WebConsoleMessage::kLevelWarning;
     case PP_LOGLEVEL_ERROR:
     default:
-      return WebConsoleMessage::LevelError;
+      return WebConsoleMessage::kLevelError;
   }
 }
 
@@ -76,7 +76,7 @@ WebConsoleMessage MakeLogMessage(PP_LogLevel level,
     result.append(": ");
   result.append(message);
   return WebConsoleMessage(LogLevelToWebLogLevel(level),
-                           WebString::fromUTF8(result));
+                           WebString::FromUTF8(result));
 }
 
 }  // namespace
@@ -152,11 +152,9 @@ void HostGlobals::LogWithSource(PP_Instance instance,
   // detaching a Document…
   // TODO(dcheng): Make it so this can't happen. https://crbug.com/561683
   if (instance_object &&
-      instance_object->container()->document().frame()) {
-    instance_object->container()
-        ->document()
-        .frame()
-        ->addMessageToConsole(MakeLogMessage(level, source, value));
+      instance_object->container()->GetDocument().GetFrame()) {
+    instance_object->container()->GetDocument().GetFrame()->AddMessageToConsole(
+        MakeLogMessage(level, source, value));
   } else {
     BroadcastLogWithSource(0, level, source, value);
   }
@@ -185,9 +183,9 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
   WebConsoleMessage message = MakeLogMessage(level, source, value);
   for (ContainerSet::iterator i = containers.begin(); i != containers.end();
        ++i) {
-    WebLocalFrame* frame = (*i)->document().frame();
+    WebLocalFrame* frame = (*i)->GetDocument().GetFrame();
     if (frame)
-      frame->addMessageToConsole(message);
+      frame->AddMessageToConsole(message);
   }
 }
 

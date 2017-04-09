@@ -10,20 +10,20 @@ namespace blink {
 
 DeprecatedScheduleStyleRecalcDuringLayout::
     DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle& lifecycle)
-    : m_lifecycle(lifecycle),
-      m_deprecatedTransition(DocumentLifecycle::InPerformLayout,
-                             DocumentLifecycle::VisualUpdatePending),
-      m_wasInPerformLayout(lifecycle.state() ==
-                           DocumentLifecycle::InPerformLayout) {}
+    : lifecycle_(lifecycle),
+      deprecated_transition_(DocumentLifecycle::kInPerformLayout,
+                             DocumentLifecycle::kVisualUpdatePending),
+      was_in_perform_layout_(lifecycle.GetState() ==
+                             DocumentLifecycle::kInPerformLayout) {}
 
 DeprecatedScheduleStyleRecalcDuringLayout::
     ~DeprecatedScheduleStyleRecalcDuringLayout() {
   // This block of code is intended to restore the state machine to the
   // proper state. The style recalc will still have been schedule, however.
-  if (m_wasInPerformLayout &&
-      m_lifecycle.state() != DocumentLifecycle::InPerformLayout) {
-    ASSERT(m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
-    m_lifecycle.advanceTo(DocumentLifecycle::InPerformLayout);
+  if (was_in_perform_layout_ &&
+      lifecycle_.GetState() != DocumentLifecycle::kInPerformLayout) {
+    ASSERT(lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending);
+    lifecycle_.AdvanceTo(DocumentLifecycle::kInPerformLayout);
   }
 }
 

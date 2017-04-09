@@ -45,41 +45,41 @@ namespace blink {
 
 class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
  public:
-  static WebDataSourceImpl* create(LocalFrame*,
+  static WebDataSourceImpl* Create(LocalFrame*,
                                    const ResourceRequest&,
                                    const SubstituteData&,
                                    ClientRedirectPolicy);
 
-  static WebDataSourceImpl* fromDocumentLoader(DocumentLoader* loader) {
+  static WebDataSourceImpl* FromDocumentLoader(DocumentLoader* loader) {
     return static_cast<WebDataSourceImpl*>(loader);
   }
 
   // WebDataSource methods:
-  const WebURLRequest& originalRequest() const override;
-  const WebURLRequest& getRequest() const override;
-  const WebURLResponse& response() const override;
-  bool hasUnreachableURL() const override;
-  WebURL unreachableURL() const override;
-  void appendRedirect(const WebURL&) override;
-  void redirectChain(WebVector<WebURL>&) const override;
-  bool isClientRedirect() const override;
-  bool replacesCurrentHistoryItem() const override;
-  WebNavigationType navigationType() const override;
-  ExtraData* getExtraData() const override;
-  void setExtraData(ExtraData*) override;
-  void setNavigationStartTime(double) override;
-  void updateNavigation(double redirectStartTime,
-                        double redirectEndTime,
-                        double fetchStartTime,
-                        bool hasRedirect) override;
-  void setSubresourceFilter(WebDocumentSubresourceFilter*) override;
-  void setServiceWorkerNetworkProvider(
+  const WebURLRequest& OriginalRequest() const override;
+  const WebURLRequest& GetRequest() const override;
+  const WebURLResponse& GetResponse() const override;
+  bool HasUnreachableURL() const override;
+  WebURL UnreachableURL() const override;
+  void AppendRedirect(const WebURL&) override;
+  void RedirectChain(WebVector<WebURL>&) const override;
+  bool IsClientRedirect() const override;
+  bool ReplacesCurrentHistoryItem() const override;
+  WebNavigationType GetNavigationType() const override;
+  ExtraData* GetExtraData() const override;
+  void SetExtraData(ExtraData*) override;
+  void SetNavigationStartTime(double) override;
+  void UpdateNavigation(double redirect_start_time,
+                        double redirect_end_time,
+                        double fetch_start_time,
+                        bool has_redirect) override;
+  void SetSubresourceFilter(WebDocumentSubresourceFilter*) override;
+  void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>) override;
-  WebServiceWorkerNetworkProvider* getServiceWorkerNetworkProvider() override;
-  void setSourceLocation(const WebSourceLocation&) override;
-  void resetSourceLocation() override;
+  WebServiceWorkerNetworkProvider* GetServiceWorkerNetworkProvider() override;
+  void SetSourceLocation(const WebSourceLocation&) override;
+  void ResetSourceLocation() override;
 
-  static WebNavigationType toWebNavigationType(NavigationType);
+  static WebNavigationType ToWebNavigationType(NavigationType);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -89,16 +89,16 @@ class WebDataSourceImpl final : public DocumentLoader, public WebDataSource {
                     const SubstituteData&,
                     ClientRedirectPolicy);
   ~WebDataSourceImpl() override;
-  void detachFromFrame() override;
-  String debugName() const override { return "WebDataSourceImpl"; }
+  void DetachFromFrame() override;
+  String DebugName() const override { return "WebDataSourceImpl"; }
 
   // Mutable because the const getters will magically sync these to the
   // latest version from WebKit.
-  mutable WrappedResourceRequest m_originalRequestWrapper;
-  mutable WrappedResourceRequest m_requestWrapper;
-  mutable WrappedResourceResponse m_responseWrapper;
+  mutable WrappedResourceRequest original_request_wrapper_;
+  mutable WrappedResourceRequest request_wrapper_;
+  mutable WrappedResourceResponse response_wrapper_;
 
-  std::unique_ptr<ExtraData> m_extraData;
+  std::unique_ptr<ExtraData> extra_data_;
 };
 
 }  // namespace blink

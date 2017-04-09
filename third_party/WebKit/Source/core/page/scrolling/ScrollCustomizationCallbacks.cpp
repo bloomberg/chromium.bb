@@ -8,36 +8,36 @@
 
 namespace blink {
 
-void ScrollCustomizationCallbacks::setDistributeScroll(
+void ScrollCustomizationCallbacks::SetDistributeScroll(
     Element* element,
-    ScrollStateCallback* scrollStateCallback) {
-  m_distributeScrollCallbacks.set(element, scrollStateCallback);
+    ScrollStateCallback* scroll_state_callback) {
+  distribute_scroll_callbacks_.Set(element, scroll_state_callback);
 }
 
-ScrollStateCallback* ScrollCustomizationCallbacks::getDistributeScroll(
+ScrollStateCallback* ScrollCustomizationCallbacks::GetDistributeScroll(
     Element* element) {
-  auto it = m_distributeScrollCallbacks.find(element);
-  if (it == m_distributeScrollCallbacks.end())
+  auto it = distribute_scroll_callbacks_.Find(element);
+  if (it == distribute_scroll_callbacks_.end())
     return nullptr;
-  return it->value.get();
+  return it->value.Get();
 }
 
-void ScrollCustomizationCallbacks::setApplyScroll(
+void ScrollCustomizationCallbacks::SetApplyScroll(
     Element* element,
-    ScrollStateCallback* scrollStateCallback) {
-  m_applyScrollCallbacks.set(element, scrollStateCallback);
+    ScrollStateCallback* scroll_state_callback) {
+  apply_scroll_callbacks_.Set(element, scroll_state_callback);
 }
 
-void ScrollCustomizationCallbacks::removeApplyScroll(Element* element) {
-  m_applyScrollCallbacks.erase(element);
+void ScrollCustomizationCallbacks::RemoveApplyScroll(Element* element) {
+  apply_scroll_callbacks_.erase(element);
 }
 
-ScrollStateCallback* ScrollCustomizationCallbacks::getApplyScroll(
+ScrollStateCallback* ScrollCustomizationCallbacks::GetApplyScroll(
     Element* element) {
-  auto it = m_applyScrollCallbacks.find(element);
-  if (it == m_applyScrollCallbacks.end())
+  auto it = apply_scroll_callbacks_.Find(element);
+  if (it == apply_scroll_callbacks_.end())
     return nullptr;
-  return it->value.get();
+  return it->value.Get();
 }
 
 }  // namespace blink

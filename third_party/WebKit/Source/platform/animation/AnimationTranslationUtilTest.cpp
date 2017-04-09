@@ -37,37 +37,37 @@ namespace blink {
 
 TEST(AnimationTranslationUtilTest, transformsWork) {
   TransformOperations ops;
-  CompositorTransformOperations outOps;
+  CompositorTransformOperations out_ops;
 
-  ops.operations().push_back(TranslateTransformOperation::create(
-      Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
-  ops.operations().push_back(RotateTransformOperation::create(
-      0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
-  ops.operations().push_back(ScaleTransformOperation::create(
-      50.2, 100, -4, TransformOperation::Scale3D));
-  toCompositorTransformOperations(ops, &outOps);
+  ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length(2, kFixed), Length(0, kFixed), TransformOperation::kTranslateX));
+  ops.Operations().push_back(RotateTransformOperation::Create(
+      0.1, 0.2, 0.3, 200000.4, TransformOperation::kRotate3D));
+  ops.Operations().push_back(ScaleTransformOperation::Create(
+      50.2, 100, -4, TransformOperation::kScale3D));
+  ToCompositorTransformOperations(ops, &out_ops);
 
-  EXPECT_EQ(3UL, outOps.asCcTransformOperations().size());
-  const float err = 0.0001;
+  EXPECT_EQ(3UL, out_ops.AsCcTransformOperations().size());
+  const float kErr = 0.0001;
 
-  auto& op0 = outOps.asCcTransformOperations().at(0);
+  auto& op0 = out_ops.AsCcTransformOperations().at(0);
   EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_TRANSLATE, op0.type);
-  EXPECT_NEAR(op0.translate.x, 2.0f, err);
-  EXPECT_NEAR(op0.translate.y, 0.0f, err);
-  EXPECT_NEAR(op0.translate.z, 0.0f, err);
+  EXPECT_NEAR(op0.translate.x, 2.0f, kErr);
+  EXPECT_NEAR(op0.translate.y, 0.0f, kErr);
+  EXPECT_NEAR(op0.translate.z, 0.0f, kErr);
 
-  auto& op1 = outOps.asCcTransformOperations().at(1);
+  auto& op1 = out_ops.AsCcTransformOperations().at(1);
   EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_ROTATE, op1.type);
-  EXPECT_NEAR(op1.rotate.axis.x, 0.1f, err);
-  EXPECT_NEAR(op1.rotate.axis.y, 0.2f, err);
-  EXPECT_NEAR(op1.rotate.axis.z, 0.3f, err);
+  EXPECT_NEAR(op1.rotate.axis.x, 0.1f, kErr);
+  EXPECT_NEAR(op1.rotate.axis.y, 0.2f, kErr);
+  EXPECT_NEAR(op1.rotate.axis.z, 0.3f, kErr);
   EXPECT_NEAR(op1.rotate.angle, 200000.4f, 0.01f);
 
-  auto& op2 = outOps.asCcTransformOperations().at(2);
+  auto& op2 = out_ops.AsCcTransformOperations().at(2);
   EXPECT_EQ(cc::TransformOperation::TRANSFORM_OPERATION_SCALE, op2.type);
-  EXPECT_NEAR(op2.scale.x, 50.2f, err);
-  EXPECT_NEAR(op2.scale.y, 100.0f, err);
-  EXPECT_NEAR(op2.scale.z, -4.0f, err);
+  EXPECT_NEAR(op2.scale.x, 50.2f, kErr);
+  EXPECT_NEAR(op2.scale.y, 100.0f, kErr);
+  EXPECT_NEAR(op2.scale.z, -4.0f, kErr);
 }
 
 }  // namespace blink

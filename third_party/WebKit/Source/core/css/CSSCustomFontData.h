@@ -29,46 +29,46 @@ namespace blink {
 
 class CSSCustomFontData final : public CustomFontData {
  public:
-  enum FallbackVisibility { InvisibleFallback, VisibleFallback };
+  enum FallbackVisibility { kInvisibleFallback, kVisibleFallback };
 
-  static PassRefPtr<CSSCustomFontData> create(RemoteFontFaceSource* source,
+  static PassRefPtr<CSSCustomFontData> Create(RemoteFontFaceSource* source,
                                               FallbackVisibility visibility) {
-    return adoptRef(new CSSCustomFontData(source, visibility));
+    return AdoptRef(new CSSCustomFontData(source, visibility));
   }
 
   ~CSSCustomFontData() override {}
 
-  bool shouldSkipDrawing() const override {
-    if (m_fontFaceSource)
-      m_fontFaceSource->paintRequested();
-    return m_fallbackVisibility == InvisibleFallback && m_isLoading;
+  bool ShouldSkipDrawing() const override {
+    if (font_face_source_)
+      font_face_source_->PaintRequested();
+    return fallback_visibility_ == kInvisibleFallback && is_loading_;
   }
 
-  void beginLoadIfNeeded() const override {
-    if (!m_isLoading && m_fontFaceSource) {
-      m_isLoading = true;
-      m_fontFaceSource->beginLoadIfNeeded();
+  void BeginLoadIfNeeded() const override {
+    if (!is_loading_ && font_face_source_) {
+      is_loading_ = true;
+      font_face_source_->BeginLoadIfNeeded();
     }
   }
 
-  bool isLoading() const override { return m_isLoading; }
-  bool isLoadingFallback() const override { return true; }
-  void clearFontFaceSource() override { m_fontFaceSource = 0; }
+  bool IsLoading() const override { return is_loading_; }
+  bool IsLoadingFallback() const override { return true; }
+  void ClearFontFaceSource() override { font_face_source_ = 0; }
 
  private:
   CSSCustomFontData(RemoteFontFaceSource* source, FallbackVisibility visibility)
-      : m_fontFaceSource(source),
-        m_fallbackVisibility(visibility),
-        m_isLoading(false) {
+      : font_face_source_(source),
+        fallback_visibility_(visibility),
+        is_loading_(false) {
     if (source)
-      m_isLoading = source->isLoading();
+      is_loading_ = source->IsLoading();
   }
 
   // TODO(Oilpan): consider moving (Custom)FontFace hierarchy to the heap,
   // thereby making this reference a Member<>.
-  WeakPersistent<RemoteFontFaceSource> m_fontFaceSource;
-  FallbackVisibility m_fallbackVisibility;
-  mutable bool m_isLoading;
+  WeakPersistent<RemoteFontFaceSource> font_face_source_;
+  FallbackVisibility fallback_visibility_;
+  mutable bool is_loading_;
 };
 
 }  // namespace blink

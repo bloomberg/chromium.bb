@@ -8,198 +8,199 @@
 
 namespace blink {
 
-Grid::Grid(const LayoutGrid* grid) : m_orderIterator(grid) {}
+Grid::Grid(const LayoutGrid* grid) : order_iterator_(grid) {}
 
-size_t Grid::numTracks(GridTrackSizingDirection direction) const {
-  if (direction == ForRows)
-    return m_grid.size();
-  return m_grid.size() ? m_grid[0].size() : 0;
+size_t Grid::NumTracks(GridTrackSizingDirection direction) const {
+  if (direction == kForRows)
+    return grid_.size();
+  return grid_.size() ? grid_[0].size() : 0;
 }
 
-void Grid::ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize) {
-  const size_t oldRowSize = numTracks(ForRows);
-  if (maximumRowSize > oldRowSize) {
-    m_grid.grow(maximumRowSize);
-    for (size_t row = oldRowSize; row < numTracks(ForRows); ++row)
-      m_grid[row].grow(numTracks(ForColumns));
+void Grid::EnsureGridSize(size_t maximum_row_size, size_t maximum_column_size) {
+  const size_t old_row_size = NumTracks(kForRows);
+  if (maximum_row_size > old_row_size) {
+    grid_.Grow(maximum_row_size);
+    for (size_t row = old_row_size; row < NumTracks(kForRows); ++row)
+      grid_[row].Grow(NumTracks(kForColumns));
   }
 
-  if (maximumColumnSize > numTracks(ForColumns)) {
-    for (size_t row = 0; row < numTracks(ForRows); ++row)
-      m_grid[row].grow(maximumColumnSize);
+  if (maximum_column_size > NumTracks(kForColumns)) {
+    for (size_t row = 0; row < NumTracks(kForRows); ++row)
+      grid_[row].Grow(maximum_column_size);
   }
 }
 
 void Grid::insert(LayoutBox& child, const GridArea& area) {
-  DCHECK(area.rows.isTranslatedDefinite());
-  DCHECK(area.columns.isTranslatedDefinite());
-  ensureGridSize(area.rows.endLine(), area.columns.endLine());
+  DCHECK(area.rows.IsTranslatedDefinite());
+  DCHECK(area.columns.IsTranslatedDefinite());
+  EnsureGridSize(area.rows.EndLine(), area.columns.EndLine());
 
   for (const auto& row : area.rows) {
     for (const auto& column : area.columns)
-      m_grid[row][column].push_back(&child);
+      grid_[row][column].push_back(&child);
   }
 
-  setGridItemArea(child, area);
+  SetGridItemArea(child, area);
 }
 
-void Grid::setSmallestTracksStart(int rowStart, int columnStart) {
-  m_smallestRowStart = rowStart;
-  m_smallestColumnStart = columnStart;
+void Grid::SetSmallestTracksStart(int row_start, int column_start) {
+  smallest_row_start_ = row_start;
+  smallest_column_start_ = column_start;
 }
 
-int Grid::smallestTrackStart(GridTrackSizingDirection direction) const {
-  return direction == ForRows ? m_smallestRowStart : m_smallestColumnStart;
+int Grid::SmallestTrackStart(GridTrackSizingDirection direction) const {
+  return direction == kForRows ? smallest_row_start_ : smallest_column_start_;
 }
 
-GridArea Grid::gridItemArea(const LayoutBox& item) const {
-  DCHECK(m_gridItemArea.contains(&item));
-  return m_gridItemArea.at(&item);
+GridArea Grid::GridItemArea(const LayoutBox& item) const {
+  DCHECK(grid_item_area_.Contains(&item));
+  return grid_item_area_.at(&item);
 }
 
-void Grid::setGridItemArea(const LayoutBox& item, GridArea area) {
-  m_gridItemArea.set(&item, area);
+void Grid::SetGridItemArea(const LayoutBox& item, GridArea area) {
+  grid_item_area_.Set(&item, area);
 }
 
-size_t Grid::gridItemPaintOrder(const LayoutBox& item) const {
-  return m_gridItemsIndexesMap.at(&item);
+size_t Grid::GridItemPaintOrder(const LayoutBox& item) const {
+  return grid_items_indexes_map_.at(&item);
 }
 
-void Grid::setGridItemPaintOrder(const LayoutBox& item, size_t order) {
-  m_gridItemsIndexesMap.set(&item, order);
+void Grid::SetGridItemPaintOrder(const LayoutBox& item, size_t order) {
+  grid_items_indexes_map_.Set(&item, order);
 }
 
-const GridCell& Grid::cell(size_t row, size_t column) const {
-  return m_grid[row][column];
+const GridCell& Grid::Cell(size_t row, size_t column) const {
+  return grid_[row][column];
 }
 
 #if DCHECK_IS_ON()
-bool Grid::hasAnyGridItemPaintOrder() const {
-  return !m_gridItemsIndexesMap.isEmpty();
+bool Grid::HasAnyGridItemPaintOrder() const {
+  return !grid_items_indexes_map_.IsEmpty();
 }
 #endif
 
-void Grid::setAutoRepeatTracks(size_t autoRepeatRows,
-                               size_t autoRepeatColumns) {
+void Grid::SetAutoRepeatTracks(size_t auto_repeat_rows,
+                               size_t auto_repeat_columns) {
   DCHECK_GE(static_cast<unsigned>(kGridMaxTracks),
-            numTracks(ForRows) + autoRepeatRows);
+            NumTracks(kForRows) + auto_repeat_rows);
   DCHECK_GE(static_cast<unsigned>(kGridMaxTracks),
-            numTracks(ForColumns) + autoRepeatColumns);
-  m_autoRepeatRows = autoRepeatRows;
-  m_autoRepeatColumns = autoRepeatColumns;
+            NumTracks(kForColumns) + auto_repeat_columns);
+  auto_repeat_rows_ = auto_repeat_rows;
+  auto_repeat_columns_ = auto_repeat_columns;
 }
 
-size_t Grid::autoRepeatTracks(GridTrackSizingDirection direction) const {
-  return direction == ForRows ? m_autoRepeatRows : m_autoRepeatColumns;
+size_t Grid::AutoRepeatTracks(GridTrackSizingDirection direction) const {
+  return direction == kForRows ? auto_repeat_rows_ : auto_repeat_columns_;
 }
 
-void Grid::setAutoRepeatEmptyColumns(
-    std::unique_ptr<OrderedTrackIndexSet> autoRepeatEmptyColumns) {
-  m_autoRepeatEmptyColumns = std::move(autoRepeatEmptyColumns);
+void Grid::SetAutoRepeatEmptyColumns(
+    std::unique_ptr<OrderedTrackIndexSet> auto_repeat_empty_columns) {
+  auto_repeat_empty_columns_ = std::move(auto_repeat_empty_columns);
 }
 
-void Grid::setAutoRepeatEmptyRows(
-    std::unique_ptr<OrderedTrackIndexSet> autoRepeatEmptyRows) {
-  m_autoRepeatEmptyRows = std::move(autoRepeatEmptyRows);
+void Grid::SetAutoRepeatEmptyRows(
+    std::unique_ptr<OrderedTrackIndexSet> auto_repeat_empty_rows) {
+  auto_repeat_empty_rows_ = std::move(auto_repeat_empty_rows);
 }
 
-bool Grid::hasAutoRepeatEmptyTracks(GridTrackSizingDirection direction) const {
-  return direction == ForColumns ? !!m_autoRepeatEmptyColumns
-                                 : !!m_autoRepeatEmptyRows;
+bool Grid::HasAutoRepeatEmptyTracks(GridTrackSizingDirection direction) const {
+  return direction == kForColumns ? !!auto_repeat_empty_columns_
+                                  : !!auto_repeat_empty_rows_;
 }
 
-bool Grid::isEmptyAutoRepeatTrack(GridTrackSizingDirection direction,
+bool Grid::IsEmptyAutoRepeatTrack(GridTrackSizingDirection direction,
                                   size_t line) const {
-  DCHECK(hasAutoRepeatEmptyTracks(direction));
-  return autoRepeatEmptyTracks(direction)->contains(line);
+  DCHECK(HasAutoRepeatEmptyTracks(direction));
+  return AutoRepeatEmptyTracks(direction)->Contains(line);
 }
 
-OrderedTrackIndexSet* Grid::autoRepeatEmptyTracks(
+OrderedTrackIndexSet* Grid::AutoRepeatEmptyTracks(
     GridTrackSizingDirection direction) const {
-  DCHECK(hasAutoRepeatEmptyTracks(direction));
-  return direction == ForColumns ? m_autoRepeatEmptyColumns.get()
-                                 : m_autoRepeatEmptyRows.get();
+  DCHECK(HasAutoRepeatEmptyTracks(direction));
+  return direction == kForColumns ? auto_repeat_empty_columns_.get()
+                                  : auto_repeat_empty_rows_.get();
 }
 
-GridSpan Grid::gridItemSpan(const LayoutBox& gridItem,
+GridSpan Grid::GridItemSpan(const LayoutBox& grid_item,
                             GridTrackSizingDirection direction) const {
-  GridArea area = gridItemArea(gridItem);
-  return direction == ForColumns ? area.columns : area.rows;
+  GridArea area = GridItemArea(grid_item);
+  return direction == kForColumns ? area.columns : area.rows;
 }
 
-void Grid::setHasAnyOrthogonalGridItem(bool hasAnyOrthogonalGridItem) {
-  m_hasAnyOrthogonalGridItem = hasAnyOrthogonalGridItem;
+void Grid::SetHasAnyOrthogonalGridItem(bool has_any_orthogonal_grid_item) {
+  has_any_orthogonal_grid_item_ = has_any_orthogonal_grid_item;
 }
 
-void Grid::setNeedsItemsPlacement(bool needsItemsPlacement) {
-  m_needsItemsPlacement = needsItemsPlacement;
+void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
+  needs_items_placement_ = needs_items_placement;
 
-  if (!needsItemsPlacement) {
-    m_grid.shrinkToFit();
+  if (!needs_items_placement) {
+    grid_.ShrinkToFit();
     return;
   }
 
-  m_grid.resize(0);
-  m_gridItemArea.clear();
-  m_gridItemsIndexesMap.clear();
-  m_hasAnyOrthogonalGridItem = false;
-  m_smallestRowStart = 0;
-  m_smallestColumnStart = 0;
-  m_autoRepeatColumns = 0;
-  m_autoRepeatRows = 0;
-  m_autoRepeatEmptyColumns = nullptr;
-  m_autoRepeatEmptyRows = nullptr;
+  grid_.Resize(0);
+  grid_item_area_.Clear();
+  grid_items_indexes_map_.Clear();
+  has_any_orthogonal_grid_item_ = false;
+  smallest_row_start_ = 0;
+  smallest_column_start_ = 0;
+  auto_repeat_columns_ = 0;
+  auto_repeat_rows_ = 0;
+  auto_repeat_empty_columns_ = nullptr;
+  auto_repeat_empty_rows_ = nullptr;
 }
 
 GridIterator::GridIterator(const Grid& grid,
                            GridTrackSizingDirection direction,
-                           size_t fixedTrackIndex,
-                           size_t varyingTrackIndex)
-    : m_grid(grid.m_grid),
-      m_direction(direction),
-      m_rowIndex((direction == ForColumns) ? varyingTrackIndex
-                                           : fixedTrackIndex),
-      m_columnIndex((direction == ForColumns) ? fixedTrackIndex
-                                              : varyingTrackIndex),
-      m_childIndex(0) {
-  DCHECK(!m_grid.isEmpty());
-  DCHECK(!m_grid[0].isEmpty());
-  DCHECK_LT(m_rowIndex, m_grid.size());
-  DCHECK_LT(m_columnIndex, m_grid[0].size());
+                           size_t fixed_track_index,
+                           size_t varying_track_index)
+    : grid_(grid.grid_),
+      direction_(direction),
+      row_index_((direction == kForColumns) ? varying_track_index
+                                            : fixed_track_index),
+      column_index_((direction == kForColumns) ? fixed_track_index
+                                               : varying_track_index),
+      child_index_(0) {
+  DCHECK(!grid_.IsEmpty());
+  DCHECK(!grid_[0].IsEmpty());
+  DCHECK_LT(row_index_, grid_.size());
+  DCHECK_LT(column_index_, grid_[0].size());
 }
 
-LayoutBox* GridIterator::nextGridItem() {
-  DCHECK(!m_grid.isEmpty());
-  DCHECK(!m_grid[0].isEmpty());
+LayoutBox* GridIterator::NextGridItem() {
+  DCHECK(!grid_.IsEmpty());
+  DCHECK(!grid_[0].IsEmpty());
 
-  size_t& varyingTrackIndex =
-      (m_direction == ForColumns) ? m_rowIndex : m_columnIndex;
-  const size_t endOfVaryingTrackIndex =
-      (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
-  for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
-    const GridCell& children = m_grid[m_rowIndex][m_columnIndex];
-    if (m_childIndex < children.size())
-      return children[m_childIndex++];
+  size_t& varying_track_index =
+      (direction_ == kForColumns) ? row_index_ : column_index_;
+  const size_t end_of_varying_track_index =
+      (direction_ == kForColumns) ? grid_.size() : grid_[0].size();
+  for (; varying_track_index < end_of_varying_track_index;
+       ++varying_track_index) {
+    const GridCell& children = grid_[row_index_][column_index_];
+    if (child_index_ < children.size())
+      return children[child_index_++];
 
-    m_childIndex = 0;
+    child_index_ = 0;
   }
   return nullptr;
 }
 
-bool GridIterator::checkEmptyCells(size_t rowSpan, size_t columnSpan) const {
-  DCHECK(!m_grid.isEmpty());
-  DCHECK(!m_grid[0].isEmpty());
+bool GridIterator::CheckEmptyCells(size_t row_span, size_t column_span) const {
+  DCHECK(!grid_.IsEmpty());
+  DCHECK(!grid_[0].IsEmpty());
 
   // Ignore cells outside current grid as we will grow it later if needed.
-  size_t maxRows = std::min(m_rowIndex + rowSpan, m_grid.size());
-  size_t maxColumns = std::min(m_columnIndex + columnSpan, m_grid[0].size());
+  size_t max_rows = std::min(row_index_ + row_span, grid_.size());
+  size_t max_columns = std::min(column_index_ + column_span, grid_[0].size());
 
   // This adds a O(N^2) behavior that shouldn't be a big deal as we expect
   // spanning areas to be small.
-  for (size_t row = m_rowIndex; row < maxRows; ++row) {
-    for (size_t column = m_columnIndex; column < maxColumns; ++column) {
-      const GridCell& children = m_grid[row][column];
-      if (!children.isEmpty())
+  for (size_t row = row_index_; row < max_rows; ++row) {
+    for (size_t column = column_index_; column < max_columns; ++column) {
+      const GridCell& children = grid_[row][column];
+      if (!children.IsEmpty())
         return false;
     }
   }
@@ -207,33 +208,34 @@ bool GridIterator::checkEmptyCells(size_t rowSpan, size_t columnSpan) const {
   return true;
 }
 
-std::unique_ptr<GridArea> GridIterator::nextEmptyGridArea(
-    size_t fixedTrackSpan,
-    size_t varyingTrackSpan) {
-  DCHECK(!m_grid.isEmpty());
-  DCHECK(!m_grid[0].isEmpty());
-  DCHECK_GE(fixedTrackSpan, 1u);
-  DCHECK_GE(varyingTrackSpan, 1u);
+std::unique_ptr<GridArea> GridIterator::NextEmptyGridArea(
+    size_t fixed_track_span,
+    size_t varying_track_span) {
+  DCHECK(!grid_.IsEmpty());
+  DCHECK(!grid_[0].IsEmpty());
+  DCHECK_GE(fixed_track_span, 1u);
+  DCHECK_GE(varying_track_span, 1u);
 
-  size_t rowSpan =
-      (m_direction == ForColumns) ? varyingTrackSpan : fixedTrackSpan;
-  size_t columnSpan =
-      (m_direction == ForColumns) ? fixedTrackSpan : varyingTrackSpan;
+  size_t row_span =
+      (direction_ == kForColumns) ? varying_track_span : fixed_track_span;
+  size_t column_span =
+      (direction_ == kForColumns) ? fixed_track_span : varying_track_span;
 
-  size_t& varyingTrackIndex =
-      (m_direction == ForColumns) ? m_rowIndex : m_columnIndex;
-  const size_t endOfVaryingTrackIndex =
-      (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
-  for (; varyingTrackIndex < endOfVaryingTrackIndex; ++varyingTrackIndex) {
-    if (checkEmptyCells(rowSpan, columnSpan)) {
-      std::unique_ptr<GridArea> result = WTF::wrapUnique(
-          new GridArea(GridSpan::translatedDefiniteGridSpan(
-                           m_rowIndex, m_rowIndex + rowSpan),
-                       GridSpan::translatedDefiniteGridSpan(
-                           m_columnIndex, m_columnIndex + columnSpan)));
+  size_t& varying_track_index =
+      (direction_ == kForColumns) ? row_index_ : column_index_;
+  const size_t end_of_varying_track_index =
+      (direction_ == kForColumns) ? grid_.size() : grid_[0].size();
+  for (; varying_track_index < end_of_varying_track_index;
+       ++varying_track_index) {
+    if (CheckEmptyCells(row_span, column_span)) {
+      std::unique_ptr<GridArea> result = WTF::WrapUnique(
+          new GridArea(GridSpan::TranslatedDefiniteGridSpan(
+                           row_index_, row_index_ + row_span),
+                       GridSpan::TranslatedDefiniteGridSpan(
+                           column_index_, column_index_ + column_span)));
       // Advance the iterator to avoid an infinite loop where we would return
       // the same grid area over and over.
-      ++varyingTrackIndex;
+      ++varying_track_index;
       return result;
     }
   }

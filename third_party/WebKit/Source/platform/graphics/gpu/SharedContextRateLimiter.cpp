@@ -14,69 +14,69 @@
 
 namespace blink {
 
-std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::create(
-    unsigned maxPendingTicks) {
-  return WTF::wrapUnique(new SharedContextRateLimiter(maxPendingTicks));
+std::unique_ptr<SharedContextRateLimiter> SharedContextRateLimiter::Create(
+    unsigned max_pending_ticks) {
+  return WTF::WrapUnique(new SharedContextRateLimiter(max_pending_ticks));
 }
 
-SharedContextRateLimiter::SharedContextRateLimiter(unsigned maxPendingTicks)
-    : m_maxPendingTicks(maxPendingTicks), m_canUseSyncQueries(false) {
-  m_contextProvider = WTF::wrapUnique(
-      Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-  if (!m_contextProvider)
+SharedContextRateLimiter::SharedContextRateLimiter(unsigned max_pending_ticks)
+    : max_pending_ticks_(max_pending_ticks), can_use_sync_queries_(false) {
+  context_provider_ = WTF::WrapUnique(
+      Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider());
+  if (!context_provider_)
     return;
 
-  gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-    std::unique_ptr<Extensions3DUtil> extensionsUtil =
-        Extensions3DUtil::create(gl);
+    std::unique_ptr<Extensions3DUtil> extensions_util =
+        Extensions3DUtil::Create(gl);
     // TODO(junov): when the GLES 3.0 command buffer is ready, we could use
     // fenceSync instead.
-    m_canUseSyncQueries =
-        extensionsUtil->supportsExtension("GL_CHROMIUM_sync_query");
+    can_use_sync_queries_ =
+        extensions_util->SupportsExtension("GL_CHROMIUM_sync_query");
   }
 }
 
-void SharedContextRateLimiter::tick() {
-  if (!m_contextProvider)
+void SharedContextRateLimiter::Tick() {
+  if (!context_provider_)
     return;
 
-  gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   if (!gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     return;
 
-  m_queries.push_back(0);
-  if (m_canUseSyncQueries)
-    gl->GenQueriesEXT(1, &m_queries.back());
-  if (m_canUseSyncQueries) {
-    gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.back());
+  queries_.push_back(0);
+  if (can_use_sync_queries_)
+    gl->GenQueriesEXT(1, &queries_.back());
+  if (can_use_sync_queries_) {
+    gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, queries_.back());
     gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
   }
-  if (m_queries.size() > m_maxPendingTicks) {
-    if (m_canUseSyncQueries) {
+  if (queries_.size() > max_pending_ticks_) {
+    if (can_use_sync_queries_) {
       GLuint result;
-      gl->GetQueryObjectuivEXT(m_queries.front(), GL_QUERY_RESULT_EXT, &result);
-      gl->DeleteQueriesEXT(1, &m_queries.front());
-      m_queries.pop_front();
+      gl->GetQueryObjectuivEXT(queries_.front(), GL_QUERY_RESULT_EXT, &result);
+      gl->DeleteQueriesEXT(1, &queries_.front());
+      queries_.pop_front();
     } else {
       gl->Finish();
-      reset();
+      Reset();
     }
   }
 }
 
-void SharedContextRateLimiter::reset() {
-  if (!m_contextProvider)
+void SharedContextRateLimiter::Reset() {
+  if (!context_provider_)
     return;
 
-  gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-    while (m_queries.size() > 0) {
-      gl->DeleteQueriesEXT(1, &m_queries.front());
-      m_queries.pop_front();
+    while (queries_.size() > 0) {
+      gl->DeleteQueriesEXT(1, &queries_.front());
+      queries_.pop_front();
     }
   } else {
-    m_queries.clear();
+    queries_.Clear();
   }
 }
 

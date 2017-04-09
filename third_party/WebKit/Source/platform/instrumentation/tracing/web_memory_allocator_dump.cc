@@ -16,27 +16,27 @@ WebMemoryAllocatorDump::WebMemoryAllocatorDump(
 
 WebMemoryAllocatorDump::~WebMemoryAllocatorDump() {}
 
-void WebMemoryAllocatorDump::addScalar(const char* name,
+void WebMemoryAllocatorDump::AddScalar(const char* name,
                                        const char* units,
                                        uint64_t value) {
   memory_allocator_dump_->AddScalar(name, units, value);
 }
 
-void WebMemoryAllocatorDump::addScalarF(const char* name,
+void WebMemoryAllocatorDump::AddScalarF(const char* name,
                                         const char* units,
                                         double value) {
   memory_allocator_dump_->AddScalarF(name, units, value);
 }
 
-void WebMemoryAllocatorDump::addString(const char* name,
+void WebMemoryAllocatorDump::AddString(const char* name,
                                        const char* units,
                                        const String& value) {
   StringUTF8Adaptor adapter(value);
-  std::string utf8(adapter.data(), adapter.length());
+  std::string utf8(adapter.Data(), adapter.length());
   memory_allocator_dump_->AddString(name, units, utf8);
 }
 
-WebMemoryAllocatorDumpGuid WebMemoryAllocatorDump::guid() const {
+WebMemoryAllocatorDumpGuid WebMemoryAllocatorDump::Guid() const {
   return guid_;
 }
 

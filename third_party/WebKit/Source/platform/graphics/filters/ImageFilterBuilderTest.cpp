@@ -37,41 +37,41 @@ namespace blink {
 
 class ImageFilterBuilderTest : public Test {
  protected:
-  void colorSpaceTest() {
+  void ColorSpaceTest() {
     // Build filter tree
-    Filter* referenceFilter = Filter::create(1.0f);
+    Filter* reference_filter = Filter::Create(1.0f);
 
     // Add a dummy source graphic input
-    FilterEffect* sourceEffect = referenceFilter->getSourceGraphic();
-    sourceEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
+    FilterEffect* source_effect = reference_filter->GetSourceGraphic();
+    source_effect->SetOperatingColorSpace(kColorSpaceDeviceRGB);
 
     // Add a blur effect (with input : source)
-    FilterEffect* blurEffect =
-        FEGaussianBlur::create(referenceFilter, 3.0f, 3.0f);
-    blurEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
-    blurEffect->inputEffects().push_back(sourceEffect);
+    FilterEffect* blur_effect =
+        FEGaussianBlur::Create(reference_filter, 3.0f, 3.0f);
+    blur_effect->SetOperatingColorSpace(kColorSpaceLinearRGB);
+    blur_effect->InputEffects().push_back(source_effect);
 
     // Add a blend effect (with inputs : blur, source)
-    FilterEffect* blendEffect =
-        FEBlend::create(referenceFilter, WebBlendModeNormal);
-    blendEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
-    FilterEffectVector& blendInputs = blendEffect->inputEffects();
-    blendInputs.reserveCapacity(2);
-    blendInputs.push_back(sourceEffect);
-    blendInputs.push_back(blurEffect);
+    FilterEffect* blend_effect =
+        FEBlend::Create(reference_filter, kWebBlendModeNormal);
+    blend_effect->SetOperatingColorSpace(kColorSpaceDeviceRGB);
+    FilterEffectVector& blend_inputs = blend_effect->InputEffects();
+    blend_inputs.ReserveCapacity(2);
+    blend_inputs.push_back(source_effect);
+    blend_inputs.push_back(blur_effect);
 
     // Add a merge effect (with inputs : blur, blend)
-    FilterEffect* mergeEffect = FEMerge::create(referenceFilter);
-    mergeEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
-    FilterEffectVector& mergeInputs = mergeEffect->inputEffects();
-    mergeInputs.reserveCapacity(2);
-    mergeInputs.push_back(blurEffect);
-    mergeInputs.push_back(blendEffect);
-    referenceFilter->setLastEffect(mergeEffect);
+    FilterEffect* merge_effect = FEMerge::Create(reference_filter);
+    merge_effect->SetOperatingColorSpace(kColorSpaceLinearRGB);
+    FilterEffectVector& merge_inputs = merge_effect->InputEffects();
+    merge_inputs.ReserveCapacity(2);
+    merge_inputs.push_back(blur_effect);
+    merge_inputs.push_back(blend_effect);
+    reference_filter->SetLastEffect(merge_effect);
 
     // Get SkImageFilter resulting tree
-    sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::build(
-        referenceFilter->lastEffect(), ColorSpaceDeviceRGB);
+    sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::Build(
+        reference_filter->LastEffect(), kColorSpaceDeviceRGB);
 
     // Let's check that the resulting tree looks like this :
     //      ColorSpace (Linear->Device) : CS (L->D)
@@ -113,7 +113,7 @@ class ImageFilterBuilderTest : public Test {
 };
 
 TEST_F(ImageFilterBuilderTest, testColorSpace) {
-  colorSpaceTest();
+  ColorSpaceTest();
 }
 
 }  // namespace blink

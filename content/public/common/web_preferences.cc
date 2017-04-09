@@ -20,47 +20,48 @@ const char kCommonScript[] = "Zyyy";
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
-STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_MAC, WebSettings::EditingBehaviorMac);
-STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_WIN, WebSettings::EditingBehaviorWin);
-STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehaviorUnix);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_MAC, WebSettings::kEditingBehaviorMac);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_WIN, WebSettings::kEditingBehaviorWin);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::kEditingBehaviorUnix);
 STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
-                   WebSettings::EditingBehaviorAndroid);
+                   WebSettings::kEditingBehaviorAndroid);
 
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
-                   WebSettings::V8CacheOptionsDefault);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::V8CacheOptionsNone);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_PARSE, WebSettings::V8CacheOptionsParse);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::V8CacheOptionsCode);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST, WebSettings::V8CacheOptionsCode);
+                   WebSettings::kV8CacheOptionsDefault);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::kV8CacheOptionsNone);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_PARSE, WebSettings::kV8CacheOptionsParse);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::kV8CacheOptionsCode);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST, WebSettings::kV8CacheOptionsCode);
 
 STATIC_ASSERT_ENUM(ProgressBarCompletion::LOAD_EVENT,
-                   WebSettings::ProgressBarCompletion::LoadEvent);
+                   WebSettings::ProgressBarCompletion::kLoadEvent);
 STATIC_ASSERT_ENUM(ProgressBarCompletion::RESOURCES_BEFORE_DCL,
-                   WebSettings::ProgressBarCompletion::ResourcesBeforeDCL);
+                   WebSettings::ProgressBarCompletion::kResourcesBeforeDCL);
 STATIC_ASSERT_ENUM(ProgressBarCompletion::DOM_CONTENT_LOADED,
-                   WebSettings::ProgressBarCompletion::DOMContentLoaded);
+                   WebSettings::ProgressBarCompletion::kDOMContentLoaded);
 STATIC_ASSERT_ENUM(
     ProgressBarCompletion::RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES,
-    WebSettings::ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames);
+    WebSettings::ProgressBarCompletion::
+        kResourcesBeforeDCLAndSameOriginIFrames);
 
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ALLOWED,
-                   WebSettings::ImageAnimationPolicyAllowed);
+                   WebSettings::kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
-                   WebSettings::ImageAnimationPolicyAnimateOnce);
+                   WebSettings::kImageAnimationPolicyAnimateOnce);
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_NO_ANIMATION,
-                   WebSettings::ImageAnimationPolicyNoAnimation);
+                   WebSettings::kImageAnimationPolicyNoAnimation);
 
-STATIC_ASSERT_ENUM(ui::POINTER_TYPE_NONE, blink::PointerTypeNone);
-STATIC_ASSERT_ENUM(ui::POINTER_TYPE_COARSE, blink::PointerTypeCoarse);
-STATIC_ASSERT_ENUM(ui::POINTER_TYPE_FINE, blink::PointerTypeFine);
+STATIC_ASSERT_ENUM(ui::POINTER_TYPE_NONE, blink::kPointerTypeNone);
+STATIC_ASSERT_ENUM(ui::POINTER_TYPE_COARSE, blink::kPointerTypeCoarse);
+STATIC_ASSERT_ENUM(ui::POINTER_TYPE_FINE, blink::kPointerTypeFine);
 
-STATIC_ASSERT_ENUM(ui::HOVER_TYPE_NONE, blink::HoverTypeNone);
-STATIC_ASSERT_ENUM(ui::HOVER_TYPE_HOVER, blink::HoverTypeHover);
+STATIC_ASSERT_ENUM(ui::HOVER_TYPE_NONE, blink::kHoverTypeNone);
+STATIC_ASSERT_ENUM(ui::HOVER_TYPE_HOVER, blink::kHoverTypeHover);
 
-STATIC_ASSERT_ENUM(ViewportStyle::DEFAULT, blink::WebViewportStyle::Default);
-STATIC_ASSERT_ENUM(ViewportStyle::MOBILE, blink::WebViewportStyle::Mobile);
+STATIC_ASSERT_ENUM(ViewportStyle::DEFAULT, blink::WebViewportStyle::kDefault);
+STATIC_ASSERT_ENUM(ViewportStyle::MOBILE, blink::WebViewportStyle::kMobile);
 STATIC_ASSERT_ENUM(ViewportStyle::TELEVISION,
-                   blink::WebViewportStyle::Television);
+                   blink::WebViewportStyle::kTelevision);
 
 WebPreferences::WebPreferences()
     : default_font_size(16),

@@ -46,12 +46,12 @@ namespace WTF {
 // turnOffVerification).
 class ThreadRestrictionVerifier {
  public:
-  ThreadRestrictionVerifier() : m_shared(false), m_owningThread(0) {}
+  ThreadRestrictionVerifier() : shared_(false), owning_thread_(0) {}
 
   // Call onRef() before refCount is incremented in ref(). Returns whether the
   // ref() is safe.
   template <typename COUNTERTYPE>
-  bool onRef(COUNTERTYPE refCount) {
+  bool OnRef(COUNTERTYPE ref_count) {
     // Start thread verification as soon as the ref count gets to 2. This
     // heuristic reflects the fact that items are often created on one
     // thread and then given to another thread to be used.
@@ -60,46 +60,46 @@ class ThreadRestrictionVerifier {
     // CrossThreadCopier.h
     // We should be able to add a "detachFromThread" method to make this
     // explicit.
-    if (refCount == 1)
-      setShared(true);
-    return isSafeToUse();
+    if (ref_count == 1)
+      SetShared(true);
+    return IsSafeToUse();
   }
 
   // Call onDeref() before refCount is decremented in deref(). Returns whether
   // the deref() is safe.
   template <typename COUNTERTYPE>
-  bool onDeref(COUNTERTYPE refCount) {
-    bool safe = isSafeToUse();
+  bool OnDeref(COUNTERTYPE ref_count) {
+    bool safe = IsSafeToUse();
     // Stop thread verification when the ref goes to 1 because it
     // is safe to be passed to another thread at this point.
-    if (refCount == 2)
-      setShared(false);
+    if (ref_count == 2)
+      SetShared(false);
     return safe;
   }
 
   // Is it OK to use the object at this moment on the current thread?
-  bool isSafeToUse() const {
-    return !m_shared || m_owningThread == currentThread();
+  bool IsSafeToUse() const {
+    return !shared_ || owning_thread_ == CurrentThread();
   }
 
  private:
   // Indicates that the object may (or may not) be owned by more than one place.
-  void setShared(bool shared) {
-    bool previouslyShared = m_shared;
-    m_shared = shared;
+  void SetShared(bool shared) {
+    bool previously_shared = shared_;
+    shared_ = shared;
 
-    if (!m_shared)
+    if (!shared_)
       return;
 
-    DCHECK_NE(shared, previouslyShared);
+    DCHECK_NE(shared, previously_shared);
     // Capture the current thread to verify that subsequent ref/deref happen on
     // this thread.
-    m_owningThread = currentThread();
+    owning_thread_ = CurrentThread();
   }
 
-  bool m_shared;
+  bool shared_;
 
-  ThreadIdentifier m_owningThread;
+  ThreadIdentifier owning_thread_;
 };
 
 }  // namespace WTF

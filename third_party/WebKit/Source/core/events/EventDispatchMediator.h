@@ -42,22 +42,22 @@ class EventDispatcher;
 class EventDispatchMediator
     : public GarbageCollectedFinalized<EventDispatchMediator> {
  public:
-  static EventDispatchMediator* create(Event*);
+  static EventDispatchMediator* Create(Event*);
   virtual ~EventDispatchMediator() {}
   DECLARE_VIRTUAL_TRACE();
-  virtual DispatchEventResult dispatchEvent(EventDispatcher&) const;
-  Event& event() const { return *m_event; }
+  virtual DispatchEventResult DispatchEvent(EventDispatcher&) const;
+  Event& GetEvent() const { return *event_; }
 
  protected:
   explicit EventDispatchMediator(Event*);
   EventDispatchMediator() {}
-  void setEvent(Event* event) {
+  void SetEvent(Event* event) {
     DCHECK(event);
-    m_event = event;
+    event_ = event;
   }
 
  private:
-  Member<Event> m_event;
+  Member<Event> event_;
 };
 
 }  // namespace blink

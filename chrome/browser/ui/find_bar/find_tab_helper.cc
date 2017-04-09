@@ -97,8 +97,8 @@ void FindTabHelper::StartFinding(base::string16 search_string,
 
   WebFindOptions options;
   options.forward = forward_direction;
-  options.matchCase = case_sensitive;
-  options.findNext = find_next;
+  options.match_case = case_sensitive;
+  options.find_next = find_next;
   web_contents()->Find(current_find_request_id_, find_text_, options);
 }
 

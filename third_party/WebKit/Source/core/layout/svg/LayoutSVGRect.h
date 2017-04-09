@@ -37,25 +37,25 @@ class LayoutSVGRect final : public LayoutSVGShape {
   explicit LayoutSVGRect(SVGRectElement*);
   ~LayoutSVGRect() override;
 
-  ShapeGeometryCodePath geometryCodePath() const override {
-    return m_usePathFallback ? PathGeometry : RectGeometryFastPath;
+  ShapeGeometryCodePath GeometryCodePath() const override {
+    return use_path_fallback_ ? kPathGeometry : kRectGeometryFastPath;
   }
 
-  const char* name() const override { return "LayoutSVGRect"; }
+  const char* GetName() const override { return "LayoutSVGRect"; }
 
  private:
-  void updateShapeFromElement() override;
-  bool isShapeEmpty() const override {
-    return m_usePathFallback ? LayoutSVGShape::isShapeEmpty()
-                             : m_fillBoundingBox.isEmpty();
+  void UpdateShapeFromElement() override;
+  bool IsShapeEmpty() const override {
+    return use_path_fallback_ ? LayoutSVGShape::IsShapeEmpty()
+                              : fill_bounding_box_.IsEmpty();
   }
-  bool shapeDependentStrokeContains(const FloatPoint&) override;
-  bool shapeDependentFillContains(const FloatPoint&,
+  bool ShapeDependentStrokeContains(const FloatPoint&) override;
+  bool ShapeDependentFillContains(const FloatPoint&,
                                   const WindRule) const override;
-  bool definitelyHasSimpleStroke() const;
+  bool DefinitelyHasSimpleStroke() const;
 
  private:
-  bool m_usePathFallback;
+  bool use_path_fallback_;
 };
 
 }  // namespace blink

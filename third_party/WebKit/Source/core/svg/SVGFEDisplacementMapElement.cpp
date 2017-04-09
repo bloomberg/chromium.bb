@@ -26,9 +26,9 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<ChannelSelectorType>() {
+GetStaticStringEntries<ChannelSelectorType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
+  if (entries.IsEmpty()) {
     entries.push_back(std::make_pair(CHANNEL_R, "R"));
     entries.push_back(std::make_pair(CHANNEL_G, "G"));
     entries.push_back(std::make_pair(CHANNEL_B, "B"));
@@ -41,91 +41,91 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDisplacementMapTag,
                                            document),
-      m_scale(SVGAnimatedNumber::create(this,
-                                        SVGNames::scaleAttr,
-                                        SVGNumber::create(0))),
-      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)),
-      m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr)),
-      m_xChannelSelector(SVGAnimatedEnumeration<ChannelSelectorType>::create(
+      scale_(SVGAnimatedNumber::Create(this,
+                                       SVGNames::scaleAttr,
+                                       SVGNumber::Create(0))),
+      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
+      in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
+      x_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(
           this,
           SVGNames::xChannelSelectorAttr,
           CHANNEL_A)),
-      m_yChannelSelector(SVGAnimatedEnumeration<ChannelSelectorType>::create(
+      y_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(
           this,
           SVGNames::yChannelSelectorAttr,
           CHANNEL_A)) {
-  addToPropertyMap(m_scale);
-  addToPropertyMap(m_in1);
-  addToPropertyMap(m_in2);
-  addToPropertyMap(m_xChannelSelector);
-  addToPropertyMap(m_yChannelSelector);
+  AddToPropertyMap(scale_);
+  AddToPropertyMap(in1_);
+  AddToPropertyMap(in2_);
+  AddToPropertyMap(x_channel_selector_);
+  AddToPropertyMap(y_channel_selector_);
 }
 
 DEFINE_TRACE(SVGFEDisplacementMapElement) {
-  visitor->trace(m_scale);
-  visitor->trace(m_in1);
-  visitor->trace(m_in2);
-  visitor->trace(m_xChannelSelector);
-  visitor->trace(m_yChannelSelector);
-  SVGFilterPrimitiveStandardAttributes::trace(visitor);
+  visitor->Trace(scale_);
+  visitor->Trace(in1_);
+  visitor->Trace(in2_);
+  visitor->Trace(x_channel_selector_);
+  visitor->Trace(y_channel_selector_);
+  SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFEDisplacementMapElement)
 
-bool SVGFEDisplacementMapElement::setFilterEffectAttribute(
+bool SVGFEDisplacementMapElement::SetFilterEffectAttribute(
     FilterEffect* effect,
-    const QualifiedName& attrName) {
-  FEDisplacementMap* displacementMap = static_cast<FEDisplacementMap*>(effect);
-  if (attrName == SVGNames::xChannelSelectorAttr)
-    return displacementMap->setXChannelSelector(
-        m_xChannelSelector->currentValue()->enumValue());
-  if (attrName == SVGNames::yChannelSelectorAttr)
-    return displacementMap->setYChannelSelector(
-        m_yChannelSelector->currentValue()->enumValue());
-  if (attrName == SVGNames::scaleAttr)
-    return displacementMap->setScale(m_scale->currentValue()->value());
+    const QualifiedName& attr_name) {
+  FEDisplacementMap* displacement_map = static_cast<FEDisplacementMap*>(effect);
+  if (attr_name == SVGNames::xChannelSelectorAttr)
+    return displacement_map->SetXChannelSelector(
+        x_channel_selector_->CurrentValue()->EnumValue());
+  if (attr_name == SVGNames::yChannelSelectorAttr)
+    return displacement_map->SetYChannelSelector(
+        y_channel_selector_->CurrentValue()->EnumValue());
+  if (attr_name == SVGNames::scaleAttr)
+    return displacement_map->SetScale(scale_->CurrentValue()->Value());
 
-  return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(
-      effect, attrName);
+  return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
+      effect, attr_name);
 }
 
-void SVGFEDisplacementMapElement::svgAttributeChanged(
-    const QualifiedName& attrName) {
-  if (attrName == SVGNames::xChannelSelectorAttr ||
-      attrName == SVGNames::yChannelSelectorAttr ||
-      attrName == SVGNames::scaleAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    primitiveAttributeChanged(attrName);
+void SVGFEDisplacementMapElement::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::xChannelSelectorAttr ||
+      attr_name == SVGNames::yChannelSelectorAttr ||
+      attr_name == SVGNames::scaleAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attrName == SVGNames::inAttr || attrName == SVGNames::in2Attr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidate();
+  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::in2Attr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    Invalidate();
     return;
   }
 
-  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+  SVGFilterPrimitiveStandardAttributes::SvgAttributeChanged(attr_name);
 }
 
-FilterEffect* SVGFEDisplacementMapElement::build(
-    SVGFilterBuilder* filterBuilder,
+FilterEffect* SVGFEDisplacementMapElement::Build(
+    SVGFilterBuilder* filter_builder,
     Filter* filter) {
-  FilterEffect* input1 = filterBuilder->getEffectById(
-      AtomicString(m_in1->currentValue()->value()));
-  FilterEffect* input2 = filterBuilder->getEffectById(
-      AtomicString(m_in2->currentValue()->value()));
+  FilterEffect* input1 = filter_builder->GetEffectById(
+      AtomicString(in1_->CurrentValue()->Value()));
+  FilterEffect* input2 = filter_builder->GetEffectById(
+      AtomicString(in2_->CurrentValue()->Value()));
   DCHECK(input1);
   DCHECK(input2);
 
-  FilterEffect* effect = FEDisplacementMap::create(
-      filter, m_xChannelSelector->currentValue()->enumValue(),
-      m_yChannelSelector->currentValue()->enumValue(),
-      m_scale->currentValue()->value());
-  FilterEffectVector& inputEffects = effect->inputEffects();
-  inputEffects.reserveCapacity(2);
-  inputEffects.push_back(input1);
-  inputEffects.push_back(input2);
+  FilterEffect* effect = FEDisplacementMap::Create(
+      filter, x_channel_selector_->CurrentValue()->EnumValue(),
+      y_channel_selector_->CurrentValue()->EnumValue(),
+      scale_->CurrentValue()->Value());
+  FilterEffectVector& input_effects = effect->InputEffects();
+  input_effects.ReserveCapacity(2);
+  input_effects.push_back(input1);
+  input_effects.push_back(input2);
   return effect;
 }
 

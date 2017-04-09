@@ -40,30 +40,30 @@ class WebMIDIAccessorClient {
  public:
   // didAddInputPort() and didAddOutputPort() can be called before and after
   // didStartSession() is called. But |id| should be unique in each function.
-  virtual void didAddInputPort(const WebString& id,
+  virtual void DidAddInputPort(const WebString& id,
                                const WebString& manufacturer,
                                const WebString& name,
                                const WebString& version,
                                midi::mojom::PortState) = 0;
-  virtual void didAddOutputPort(const WebString& id,
+  virtual void DidAddOutputPort(const WebString& id,
                                 const WebString& manufacturer,
                                 const WebString& name,
                                 const WebString& version,
                                 midi::mojom::PortState) = 0;
   // didSetInputPortState() and didSetOutputPortState() should not be called
   // until didStartSession() is called.
-  virtual void didSetInputPortState(unsigned portIndex,
+  virtual void DidSetInputPortState(unsigned port_index,
                                     midi::mojom::PortState) = 0;
-  virtual void didSetOutputPortState(unsigned portIndex,
+  virtual void DidSetOutputPortState(unsigned port_index,
                                      midi::mojom::PortState) = 0;
 
-  virtual void didStartSession(midi::mojom::Result) = 0;
+  virtual void DidStartSession(midi::mojom::Result) = 0;
 
   // |timeStamp| is in milliseconds according to the Web MIDI API.
-  virtual void didReceiveMIDIData(unsigned portIndex,
+  virtual void DidReceiveMIDIData(unsigned port_index,
                                   const unsigned char* data,
                                   size_t length,
-                                  double timeStamp) = 0;
+                                  double time_stamp) = 0;
 
  protected:
   virtual ~WebMIDIAccessorClient() {}

@@ -17,49 +17,49 @@ namespace blink {
 
 namespace RootScrollerUtil {
 
-ScrollableArea* scrollableAreaForRootScroller(const Node* node) {
+ScrollableArea* ScrollableAreaForRootScroller(const Node* node) {
   if (!node)
     return nullptr;
 
-  if (node->isDocumentNode() || node == node->document().documentElement()) {
-    if (!node->document().view())
+  if (node->IsDocumentNode() || node == node->GetDocument().documentElement()) {
+    if (!node->GetDocument().View())
       return nullptr;
 
     // For a FrameView, we use the layoutViewport rather than the
     // getScrollableArea() since that could be the RootFrameViewport. The
     // rootScroller's ScrollableArea will be swapped in as the layout viewport
     // in RootFrameViewport so we need to ensure we get the layout viewport.
-    return node->document().view()->layoutViewportScrollableArea();
+    return node->GetDocument().View()->LayoutViewportScrollableArea();
   }
 
-  DCHECK(node->isElementNode());
-  const Element* element = toElement(node);
+  DCHECK(node->IsElementNode());
+  const Element* element = ToElement(node);
 
-  if (!element->layoutObject() || !element->layoutObject()->isBox())
+  if (!element->GetLayoutObject() || !element->GetLayoutObject()->IsBox())
     return nullptr;
 
   return static_cast<PaintInvalidationCapableScrollableArea*>(
-      toLayoutBoxModelObject(element->layoutObject())->getScrollableArea());
+      ToLayoutBoxModelObject(element->GetLayoutObject())->GetScrollableArea());
 }
 
-PaintLayer* paintLayerForRootScroller(const Node* node) {
+PaintLayer* PaintLayerForRootScroller(const Node* node) {
   if (!node)
     return nullptr;
 
-  if (node->isDocumentNode() || node == node->document().documentElement()) {
-    if (!node->document().layoutView())
+  if (node->IsDocumentNode() || node == node->GetDocument().documentElement()) {
+    if (!node->GetDocument().GetLayoutView())
       return nullptr;
 
-    return node->document().layoutView()->layer();
+    return node->GetDocument().GetLayoutView()->Layer();
   }
 
-  DCHECK(node->isElementNode());
-  const Element* element = toElement(node);
-  if (!element->layoutObject() || !element->layoutObject()->isBox())
+  DCHECK(node->IsElementNode());
+  const Element* element = ToElement(node);
+  if (!element->GetLayoutObject() || !element->GetLayoutObject()->IsBox())
     return nullptr;
 
-  LayoutBox* box = toLayoutBox(element->layoutObject());
-  return box->layer();
+  LayoutBox* box = ToLayoutBox(element->GetLayoutObject());
+  return box->Layer();
 }
 
 }  // namespace RootScrollerUtil

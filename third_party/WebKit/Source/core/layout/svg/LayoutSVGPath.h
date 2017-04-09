@@ -35,22 +35,22 @@ class LayoutSVGPath final : public LayoutSVGShape {
   explicit LayoutSVGPath(SVGGeometryElement*);
   ~LayoutSVGPath() override;
 
-  const Vector<MarkerPosition>* markerPositions() const override {
-    return &m_markerPositions;
+  const Vector<MarkerPosition>* MarkerPositions() const override {
+    return &marker_positions_;
   }
 
-  const char* name() const override { return "LayoutSVGPath"; }
+  const char* GetName() const override { return "LayoutSVGPath"; }
 
  private:
-  void updateShapeFromElement() override;
-  FloatRect hitTestStrokeBoundingBox() const override;
-  FloatRect calculateUpdatedStrokeBoundingBox() const;
+  void UpdateShapeFromElement() override;
+  FloatRect HitTestStrokeBoundingBox() const override;
+  FloatRect CalculateUpdatedStrokeBoundingBox() const;
 
-  FloatRect markerRect(float strokeWidth) const;
-  bool shouldGenerateMarkerPositions() const;
-  void processMarkerPositions();
+  FloatRect MarkerRect(float stroke_width) const;
+  bool ShouldGenerateMarkerPositions() const;
+  void ProcessMarkerPositions();
 
-  Vector<MarkerPosition> m_markerPositions;
+  Vector<MarkerPosition> marker_positions_;
 };
 
 }  // namespace blink

@@ -39,42 +39,44 @@
 
 namespace blink {
 
-String DOMWindowBase64::btoa(const String& stringToEncode,
-                             ExceptionState& exceptionState) {
-  if (stringToEncode.isNull())
+String DOMWindowBase64::btoa(const String& string_to_encode,
+                             ExceptionState& exception_state) {
+  if (string_to_encode.IsNull())
     return String();
 
-  if (!stringToEncode.containsOnlyLatin1()) {
-    exceptionState.throwDOMException(InvalidCharacterError,
-                                     "The string to be encoded contains "
-                                     "characters outside of the Latin1 range.");
+  if (!string_to_encode.ContainsOnlyLatin1()) {
+    exception_state.ThrowDOMException(
+        kInvalidCharacterError,
+        "The string to be encoded contains "
+        "characters outside of the Latin1 range.");
     return String();
   }
 
-  return base64Encode(stringToEncode.latin1());
+  return Base64Encode(string_to_encode.Latin1());
 }
 
-String DOMWindowBase64::atob(const String& encodedString,
-                             ExceptionState& exceptionState) {
-  if (encodedString.isNull())
+String DOMWindowBase64::atob(const String& encoded_string,
+                             ExceptionState& exception_state) {
+  if (encoded_string.IsNull())
     return String();
 
-  if (!encodedString.containsOnlyLatin1()) {
-    exceptionState.throwDOMException(InvalidCharacterError,
-                                     "The string to be decoded contains "
-                                     "characters outside of the Latin1 range.");
+  if (!encoded_string.ContainsOnlyLatin1()) {
+    exception_state.ThrowDOMException(
+        kInvalidCharacterError,
+        "The string to be decoded contains "
+        "characters outside of the Latin1 range.");
     return String();
   }
   Vector<char> out;
-  if (!base64Decode(encodedString, out, isHTMLSpace<UChar>,
-                    Base64ValidatePadding)) {
-    exceptionState.throwDOMException(
-        InvalidCharacterError,
+  if (!Base64Decode(encoded_string, out, IsHTMLSpace<UChar>,
+                    kBase64ValidatePadding)) {
+    exception_state.ThrowDOMException(
+        kInvalidCharacterError,
         "The string to be decoded is not correctly encoded.");
     return String();
   }
 
-  return String(out.data(), out.size());
+  return String(out.Data(), out.size());
 }
 
 }  // namespace blink

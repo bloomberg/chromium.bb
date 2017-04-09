@@ -15,11 +15,11 @@ class CSSValue;
 class CSSPropertyAlignmentUtils {
   STATIC_ONLY(CSSPropertyAlignmentUtils);
 
-  static CSSValue* consumeSelfPositionOverflowPosition(CSSParserTokenRange&);
-  static CSSValue* consumeSimplifiedItemPosition(CSSParserTokenRange&);
-  static CSSValue* consumeContentDistributionOverflowPosition(
+  static CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange&);
+  static CSSValue* ConsumeSimplifiedItemPosition(CSSParserTokenRange&);
+  static CSSValue* ConsumeContentDistributionOverflowPosition(
       CSSParserTokenRange&);
-  static CSSValue* consumeSimplifiedContentPosition(CSSParserTokenRange&);
+  static CSSValue* ConsumeSimplifiedContentPosition(CSSParserTokenRange&);
 };
 
 }  // namespace blink

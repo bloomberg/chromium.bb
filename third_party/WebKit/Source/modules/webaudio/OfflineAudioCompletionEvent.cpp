@@ -27,44 +27,44 @@
 
 namespace blink {
 
-OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create() {
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::Create() {
   return new OfflineAudioCompletionEvent;
 }
 
-OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(
-    AudioBuffer* renderedBuffer) {
-  return new OfflineAudioCompletionEvent(renderedBuffer);
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::Create(
+    AudioBuffer* rendered_buffer) {
+  return new OfflineAudioCompletionEvent(rendered_buffer);
 }
 
-OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(
-    const AtomicString& eventType,
-    const OfflineAudioCompletionEventInit& eventInit) {
-  return new OfflineAudioCompletionEvent(eventType, eventInit);
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::Create(
+    const AtomicString& event_type,
+    const OfflineAudioCompletionEventInit& event_init) {
+  return new OfflineAudioCompletionEvent(event_type, event_init);
 }
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent() {}
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
-    AudioBuffer* renderedBuffer)
+    AudioBuffer* rendered_buffer)
     : Event(EventTypeNames::complete, true, false),
-      m_renderedBuffer(renderedBuffer) {}
+      rendered_buffer_(rendered_buffer) {}
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
-    const AtomicString& eventType,
-    const OfflineAudioCompletionEventInit& eventInit)
-    : Event(eventType, eventInit) {
-  m_renderedBuffer = eventInit.renderedBuffer();
+    const AtomicString& event_type,
+    const OfflineAudioCompletionEventInit& event_init)
+    : Event(event_type, event_init) {
+  rendered_buffer_ = event_init.renderedBuffer();
 }
 
 OfflineAudioCompletionEvent::~OfflineAudioCompletionEvent() {}
 
-const AtomicString& OfflineAudioCompletionEvent::interfaceName() const {
+const AtomicString& OfflineAudioCompletionEvent::InterfaceName() const {
   return EventNames::OfflineAudioCompletionEvent;
 }
 
 DEFINE_TRACE(OfflineAudioCompletionEvent) {
-  visitor->trace(m_renderedBuffer);
-  Event::trace(visitor);
+  visitor->Trace(rendered_buffer_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

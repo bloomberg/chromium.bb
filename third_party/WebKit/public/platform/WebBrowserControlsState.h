@@ -37,9 +37,9 @@ namespace blink {
 // Chromium and CC versions namely: |content::BrowserControlsState|, and
 // |cc::BrowserControlsState|
 enum WebBrowserControlsState {
-  WebBrowserControlsShown = 1,
-  WebBrowserControlsHidden = 2,
-  WebBrowserControlsBoth = 3
+  kWebBrowserControlsShown = 1,
+  kWebBrowserControlsHidden = 2,
+  kWebBrowserControlsBoth = 3
 };
 
 }  // namespace blink

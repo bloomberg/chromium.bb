@@ -16,7 +16,7 @@ namespace mojo {
 template <>
 struct StructTraits<blink::mojom::ReferrerDataView, blink::Referrer> {
   static blink::KURL url(const blink::Referrer& referrer) {
-    if (referrer.referrer == blink::Referrer::noReferrer())
+    if (referrer.referrer == blink::Referrer::NoReferrer())
       return blink::KURL();
 
     return blink::KURL(blink::KURL(), referrer.referrer);
@@ -24,7 +24,7 @@ struct StructTraits<blink::mojom::ReferrerDataView, blink::Referrer> {
 
   // Equality of values is asserted in //Source/web/AssertMatchingEnums.cpp.
   static blink::WebReferrerPolicy policy(const blink::Referrer& referrer) {
-    return static_cast<blink::WebReferrerPolicy>(referrer.referrerPolicy);
+    return static_cast<blink::WebReferrerPolicy>(referrer.referrer_policy);
   }
 
   static bool Read(blink::mojom::ReferrerDataView data, blink::Referrer* out) {
@@ -33,11 +33,12 @@ struct StructTraits<blink::mojom::ReferrerDataView, blink::Referrer> {
     if (!data.ReadUrl(&referrer) || !data.ReadPolicy(&webReferrerPolicy))
       return false;
 
-    out->referrerPolicy = static_cast<blink::ReferrerPolicy>(webReferrerPolicy);
-    out->referrer = AtomicString(referrer.getString());
+    out->referrer_policy =
+        static_cast<blink::ReferrerPolicy>(webReferrerPolicy);
+    out->referrer = AtomicString(referrer.GetString());
 
     // Mimics the ASSERT() done in the blink::Referrer constructor.
-    return referrer.isValid() || out->referrer == blink::Referrer::noReferrer();
+    return referrer.IsValid() || out->referrer == blink::Referrer::NoReferrer();
   }
 };
 

@@ -39,22 +39,22 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   // Shapes a line of text by finding a valid and appropriate break opportunity
   // based on the shaping results for the entire paragraph.
   // The output parameter breakOffset indicates the resulting break offset.
-  PassRefPtr<ShapeResult> shapeLine(unsigned startOffset,
-                                    LayoutUnit availableSpace,
-                                    unsigned* breakOffset);
+  PassRefPtr<ShapeResult> ShapeLine(unsigned start_offset,
+                                    LayoutUnit available_space,
+                                    unsigned* break_offset);
 
  private:
-  unsigned previousBreakOpportunity(LazyLineBreakIterator*,
+  unsigned PreviousBreakOpportunity(LazyLineBreakIterator*,
                                     unsigned start,
                                     unsigned offset);
-  unsigned nextBreakOpportunity(LazyLineBreakIterator*, unsigned offset);
+  unsigned NextBreakOpportunity(LazyLineBreakIterator*, unsigned offset);
 
-  const HarfBuzzShaper* m_shaper;
-  const Font* m_font;
-  const ShapeResult* m_result;
-  const AtomicString m_locale;
-  LineBreakType m_breakType;
-  String m_text;
+  const HarfBuzzShaper* shaper_;
+  const Font* font_;
+  const ShapeResult* result_;
+  const AtomicString locale_;
+  LineBreakType break_type_;
+  String text_;
 };
 
 }  // namespace blink

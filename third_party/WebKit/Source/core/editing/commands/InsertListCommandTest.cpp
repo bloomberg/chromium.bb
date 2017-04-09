@@ -15,7 +15,7 @@ class InsertListCommandTest : public EditingTestBase {};
 
 TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   // Needs to be editable to use InsertListCommand.
-  document().setDesignMode("on");
+  GetDocument().setDesignMode("on");
   // Set up the condition:
   // * Selection is a range, to go down into
   //   InsertListCommand::listifyParagraph.
@@ -29,21 +29,22 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   //   CompositeEditCommand::mergeIdenticalElements.
   // The removeNode is what updates document lifecycle to VisualUpdatePending
   // and makes FrameView::needsLayout return true.
-  setBodyContent("\nd\n<ol>");
-  Text* emptyText = document().createTextNode("");
-  document().body()->insertBefore(emptyText, document().body()->firstChild());
-  updateAllLifecyclePhases();
-  document().frame()->selection().setSelection(
+  SetBodyContent("\nd\n<ol>");
+  Text* empty_text = GetDocument().createTextNode("");
+  GetDocument().body()->InsertBefore(empty_text,
+                                     GetDocument().body()->FirstChild());
+  UpdateAllLifecyclePhases();
+  GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .collapse(Position(document().body(), 0))
-          .extend(Position(document().body(), 2))
-          .build());
+          .Collapse(Position(GetDocument().body(), 0))
+          .Extend(Position(GetDocument().body(), 2))
+          .Build());
 
   InsertListCommand* command =
-      InsertListCommand::create(document(), InsertListCommand::OrderedList);
+      InsertListCommand::Create(GetDocument(), InsertListCommand::kOrderedList);
   // This should not DCHECK.
-  EXPECT_TRUE(command->apply())
+  EXPECT_TRUE(command->Apply())
       << "The insert ordered list command should have succeeded";
-  EXPECT_EQ("<ol><li>d</li></ol>", document().body()->innerHTML());
+  EXPECT_EQ("<ol><li>d</li></ol>", GetDocument().body()->innerHTML());
 }
 }

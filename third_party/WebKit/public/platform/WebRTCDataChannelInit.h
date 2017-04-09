@@ -39,13 +39,13 @@ struct WebRTCDataChannelInit {
  public:
   WebRTCDataChannelInit()
       : ordered(true),
-        maxRetransmitTime(-1),
-        maxRetransmits(-1),
+        max_retransmit_time(-1),
+        max_retransmits(-1),
         negotiated(false),
         id(-1) {}
   bool ordered;
-  int maxRetransmitTime;
-  int maxRetransmits;
+  int max_retransmit_time;
+  int max_retransmits;
   WebString protocol;
   bool negotiated;
   int id;

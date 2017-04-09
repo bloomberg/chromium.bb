@@ -26,23 +26,24 @@ class ScrollbarsTest : private ScopedRootLayerScrollingForTest, public SimTest {
 };
 
 TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
-  v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-  webView().resize(WebSize(800, 600));
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
-  loadURL("https://example.com/test.html");
-  request.complete("<style> body { width: 1600px; height: 1200px; } </style>");
-  PaintLayerScrollableArea* plsa = document().layoutView()->getScrollableArea();
+  LoadURL("https://example.com/test.html");
+  request.Complete("<style> body { width: 1600px; height: 1200px; } </style>");
+  PaintLayerScrollableArea* plsa =
+      GetDocument().GetLayoutView()->GetScrollableArea();
 
-  compositor().beginFrame();
-  ASSERT_TRUE(plsa->verticalScrollbar() && plsa->horizontalScrollbar());
+  Compositor().BeginFrame();
+  ASSERT_TRUE(plsa->VerticalScrollbar() && plsa->HorizontalScrollbar());
 
   // Forces recalc of LayoutView's computed style in Document::updateStyle,
   // without invalidating layout.
-  mainFrame().executeScriptAndReturnValue(WebScriptSource(
+  MainFrame().ExecuteScriptAndReturnValue(WebScriptSource(
       "document.querySelector('style').sheet.insertRule('body {}', 1);"));
 
-  compositor().beginFrame();
-  ASSERT_TRUE(plsa->verticalScrollbar() && plsa->horizontalScrollbar());
+  Compositor().BeginFrame();
+  ASSERT_TRUE(plsa->VerticalScrollbar() && plsa->HorizontalScrollbar());
 }
 
 // Ensure that causing a change in scrollbar existence causes a nested layout
@@ -53,16 +54,16 @@ TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
 TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
   // The bug reproduces only with RLS off. When RLS ships we can keep the test
   // but remove this setting.
-  ScopedRootLayerScrollingForTest turnOffRootLayerScrolling(false);
+  ScopedRootLayerScrollingForTest turn_off_root_layer_scrolling(false);
 
   // This test is specifically checking the behavior when overlay scrollbars
   // are enabled.
-  DCHECK(ScrollbarTheme::theme().usesOverlayScrollbars());
+  DCHECK(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
 
-  webView().resize(WebSize(800, 600));
+  WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
-  loadURL("https://example.com/test.html");
-  request.complete(
+  LoadURL("https://example.com/test.html");
+  request.Complete(
       "<!DOCTYPE html>"
       "<style>"
       "  ::-webkit-scrollbar {"
@@ -86,22 +87,22 @@ TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
       "</style>"
       "<div id='box' class='box'></div>");
 
-  ScrollableArea* layoutViewport =
-      document().view()->layoutViewportScrollableArea();
+  ScrollableArea* layout_viewport =
+      GetDocument().View()->LayoutViewportScrollableArea();
 
-  compositor().beginFrame();
-  ASSERT_FALSE(layoutViewport->verticalScrollbar());
-  ASSERT_FALSE(layoutViewport->horizontalScrollbar());
+  Compositor().BeginFrame();
+  ASSERT_FALSE(layout_viewport->VerticalScrollbar());
+  ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
 
   // Adding translation will cause a vertical scrollbar to appear but not dirty
   // layout otherwise. Ensure the change of scrollbar causes a layout to
   // recalculate the page width with the vertical scrollbar added.
-  mainFrame().executeScript(WebScriptSource(
+  MainFrame().ExecuteScript(WebScriptSource(
       "document.getElementById('box').className = 'box transformed';"));
-  compositor().beginFrame();
+  Compositor().BeginFrame();
 
-  ASSERT_TRUE(layoutViewport->verticalScrollbar());
-  ASSERT_FALSE(layoutViewport->horizontalScrollbar());
+  ASSERT_TRUE(layout_viewport->VerticalScrollbar());
+  ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
 }
 
 typedef bool TestParamOverlayScrollbar;
@@ -110,19 +111,19 @@ class ScrollbarAppearanceTest
       public ::testing::WithParamInterface<TestParamOverlayScrollbar> {
  public:
   // Use real scrollbars to ensure we're testing the real ScrollbarThemes.
-  ScrollbarAppearanceTest() : m_mockScrollbars(false, GetParam()) {}
+  ScrollbarAppearanceTest() : mock_scrollbars_(false, GetParam()) {}
 
  private:
-  FrameTestHelpers::UseMockScrollbarSettings m_mockScrollbars;
+  FrameTestHelpers::UseMockScrollbarSettings mock_scrollbars_;
 };
 
 class StubWebThemeEngine : public WebThemeEngine {
  public:
-  WebSize getSize(Part part) override {
+  WebSize GetSize(Part part) override {
     switch (part) {
-      case PartScrollbarHorizontalThumb:
+      case kPartScrollbarHorizontalThumb:
         return blink::WebSize(kMinimumHorizontalLength, 15);
-      case PartScrollbarVerticalThumb:
+      case kPartScrollbarVerticalThumb:
         return blink::WebSize(15, kMinimumVerticalLength);
       default:
         return WebSize();
@@ -137,10 +138,10 @@ constexpr int StubWebThemeEngine::kMinimumVerticalLength;
 
 class ScrollbarTestingPlatformSupport : public TestingPlatformSupport {
  public:
-  WebThemeEngine* themeEngine() override { return &m_stubThemeEngine; }
+  WebThemeEngine* ThemeEngine() override { return &stub_theme_engine_; }
 
  private:
-  StubWebThemeEngine m_stubThemeEngine;
+  StubWebThemeEngine stub_theme_engine_;
 };
 
 // Test both overlay and non-overlay scrollbars.
@@ -153,24 +154,24 @@ INSTANTIATE_TEST_CASE_P(All, ScrollbarAppearanceTest, ::testing::Bool());
 TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
 
-  v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-  webView().resize(WebSize(800, 600));
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
-  loadURL("https://example.com/test.html");
-  request.complete(
+  LoadURL("https://example.com/test.html");
+  request.Complete(
       "<style> body { width: 1000000px; height: 1000000px; } </style>");
-  ScrollableArea* scrollableArea =
-      document().view()->layoutViewportScrollableArea();
+  ScrollableArea* scrollable_area =
+      GetDocument().View()->LayoutViewportScrollableArea();
 
-  compositor().beginFrame();
-  ASSERT_TRUE(scrollableArea->verticalScrollbar());
-  ASSERT_TRUE(scrollableArea->horizontalScrollbar());
+  Compositor().BeginFrame();
+  ASSERT_TRUE(scrollable_area->VerticalScrollbar());
+  ASSERT_TRUE(scrollable_area->HorizontalScrollbar());
 
-  ScrollbarTheme& theme = scrollableArea->verticalScrollbar()->theme();
+  ScrollbarTheme& theme = scrollable_area->VerticalScrollbar()->GetTheme();
   EXPECT_EQ(StubWebThemeEngine::kMinimumHorizontalLength,
-            theme.thumbLength(*scrollableArea->horizontalScrollbar()));
+            theme.ThumbLength(*scrollable_area->HorizontalScrollbar()));
   EXPECT_EQ(StubWebThemeEngine::kMinimumVerticalLength,
-            theme.thumbLength(*scrollableArea->verticalScrollbar()));
+            theme.ThumbLength(*scrollable_area->VerticalScrollbar()));
 }
 #endif
 

@@ -38,23 +38,23 @@ struct DefaultHash<SkSize> {
   STATIC_ONLY(DefaultHash);
   struct Hash {
     STATIC_ONLY(Hash);
-    static unsigned hash(const SkSize& key) {
-      return hashInts(key.width(), key.height());
+    static unsigned GetHash(const SkSize& key) {
+      return HashInts(key.width(), key.height());
     }
-    static bool equal(const SkSize& a, const SkSize& b) { return a == b; }
-    static const bool safeToCompareToEmptyOrDeleted = true;
+    static bool Equal(const SkSize& a, const SkSize& b) { return a == b; }
+    static const bool safe_to_compare_to_empty_or_deleted = true;
   };
 };
 
 template <>
 struct HashTraits<SkSize> : GenericHashTraits<SkSize> {
   STATIC_ONLY(HashTraits);
-  static const bool emptyValueIsZero = true;
-  static SkSize emptyValue() { return SkSize::Make(0, 0); }
-  static void constructDeletedValue(SkSize& slot, bool) {
+  static const bool kEmptyValueIsZero = true;
+  static SkSize EmptyValue() { return SkSize::Make(0, 0); }
+  static void ConstructDeletedValue(SkSize& slot, bool) {
     slot = SkSize::Make(-1, -1);
   }
-  static bool isDeletedValue(const SkSize& value) {
+  static bool IsDeletedValue(const SkSize& value) {
     return value.width() == -1 && value.height() == -1;
   }
 };
@@ -64,23 +64,23 @@ struct DefaultHash<SkISize> {
   STATIC_ONLY(DefaultHash);
   struct Hash {
     STATIC_ONLY(Hash);
-    static unsigned hash(const SkISize& key) {
-      return hashInts(key.width(), key.height());
+    static unsigned GetHash(const SkISize& key) {
+      return HashInts(key.width(), key.height());
     }
-    static bool equal(const SkISize& a, const SkISize& b) { return a == b; }
-    static const bool safeToCompareToEmptyOrDeleted = true;
+    static bool Equal(const SkISize& a, const SkISize& b) { return a == b; }
+    static const bool safe_to_compare_to_empty_or_deleted = true;
   };
 };
 
 template <>
 struct HashTraits<SkISize> : GenericHashTraits<SkISize> {
   STATIC_ONLY(HashTraits);
-  static const bool emptyValueIsZero = true;
-  static SkISize emptyValue() { return SkISize::Make(0, 0); }
-  static void constructDeletedValue(SkISize& slot, bool) {
+  static const bool kEmptyValueIsZero = true;
+  static SkISize EmptyValue() { return SkISize::Make(0, 0); }
+  static void ConstructDeletedValue(SkISize& slot, bool) {
     slot = SkISize::Make(-1, -1);
   }
-  static bool isDeletedValue(const SkISize& value) {
+  static bool IsDeletedValue(const SkISize& value) {
     return value.width() == -1 && value.height() == -1;
   }
 };

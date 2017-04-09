@@ -14,23 +14,23 @@
 namespace blink {
 
 TEST(StyleElementTest, CreateSheetUsesCache) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(800, 600));
-  Document& document = dummyPageHolder->document();
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
 
   document.documentElement()->setInnerHTML(
       "<style id=style>a { top: 0; }</style>");
 
-  HTMLStyleElement& styleElement =
-      toHTMLStyleElement(*document.getElementById("style"));
-  StyleSheetContents* sheet = styleElement.sheet()->contents();
+  HTMLStyleElement& style_element =
+      toHTMLStyleElement(*document.GetElementById("style"));
+  StyleSheetContents* sheet = style_element.sheet()->Contents();
 
   Comment* comment = document.createComment("hello!");
-  styleElement.appendChild(comment);
-  EXPECT_EQ(styleElement.sheet()->contents(), sheet);
+  style_element.AppendChild(comment);
+  EXPECT_EQ(style_element.sheet()->Contents(), sheet);
 
-  styleElement.removeChild(comment);
-  EXPECT_EQ(styleElement.sheet()->contents(), sheet);
+  style_element.RemoveChild(comment);
+  EXPECT_EQ(style_element.sheet()->Contents(), sheet);
 }
 
 }  // namespace blink

@@ -19,7 +19,7 @@ void MediaStreamVideoSink::ConnectToTrack(
     const blink::WebMediaStreamTrack& track,
     const VideoCaptureDeliverFrameCB& callback,
     bool is_sink_secure) {
-  DCHECK(connected_track_.isNull());
+  DCHECK(connected_track_.IsNull());
   connected_track_ = track;
   MediaStreamVideoTrack* const video_track =
       MediaStreamVideoTrack::GetVideoTrack(connected_track_);
@@ -32,7 +32,7 @@ void MediaStreamVideoSink::DisconnectFromTrack() {
       MediaStreamVideoTrack::GetVideoTrack(connected_track_);
   if (video_track)
     video_track->RemoveSink(this);
-  connected_track_.reset();
+  connected_track_.Reset();
 }
 
 }  // namespace content

@@ -12,12 +12,12 @@ namespace content {
 
 blink::WebMediaStream GetWebMediaStreamFromWebMediaPlayerSource(
     const blink::WebMediaPlayerSource& source) {
-  if (source.isMediaStream())
-    return source.getAsMediaStream();
+  if (source.IsMediaStream())
+    return source.GetAsMediaStream();
 
-  if (source.isURL()) {
-    return blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(
-        source.getAsURL());
+  if (source.IsURL()) {
+    return blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(
+        source.GetAsURL());
   }
 
   return blink::WebMediaStream();

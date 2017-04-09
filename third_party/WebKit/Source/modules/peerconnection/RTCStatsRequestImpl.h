@@ -43,20 +43,20 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 
  public:
-  static RTCStatsRequestImpl* create(ExecutionContext*,
+  static RTCStatsRequestImpl* Create(ExecutionContext*,
                                      RTCPeerConnection*,
                                      RTCStatsCallback*,
                                      MediaStreamTrack*);
   ~RTCStatsRequestImpl() override;
 
-  RTCStatsResponseBase* createResponse() override;
-  bool hasSelector() override;
-  MediaStreamComponent* component() override;
+  RTCStatsResponseBase* CreateResponse() override;
+  bool HasSelector() override;
+  MediaStreamComponent* Component() override;
 
-  void requestSucceeded(RTCStatsResponseBase*) override;
+  void RequestSucceeded(RTCStatsResponseBase*) override;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -66,11 +66,11 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
                       RTCStatsCallback*,
                       MediaStreamTrack*);
 
-  void clear();
+  void Clear();
 
-  Member<RTCStatsCallback> m_successCallback;
-  Member<MediaStreamComponent> m_component;
-  Member<RTCPeerConnection> m_requester;
+  Member<RTCStatsCallback> success_callback_;
+  Member<MediaStreamComponent> component_;
+  Member<RTCPeerConnection> requester_;
 };
 
 }  // namespace blink

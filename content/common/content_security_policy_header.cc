@@ -8,8 +8,8 @@ namespace content {
 
 ContentSecurityPolicyHeader::ContentSecurityPolicyHeader()
     : header_value(std::string()),
-      type(blink::WebContentSecurityPolicyTypeEnforce),
-      source(blink::WebContentSecurityPolicySourceHTTP) {}
+      type(blink::kWebContentSecurityPolicyTypeEnforce),
+      source(blink::kWebContentSecurityPolicySourceHTTP) {}
 
 ContentSecurityPolicyHeader::ContentSecurityPolicyHeader(
     const std::string& header_value,

@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ScriptRunIterator {
   // the process.
   ScriptRunIterator(const UChar* text, size_t length, const ScriptData*);
 
-  bool consume(unsigned& limit, UScriptCode&);
+  bool Consume(unsigned& limit, UScriptCode&);
 
  private:
   struct BracketRec {
@@ -39,33 +39,33 @@ class PLATFORM_EXPORT ScriptRunIterator {
     UChar32 ch;
     UScriptCode script;
   };
-  void openBracket(UChar32);
-  void closeBracket(UChar32);
-  bool mergeSets();
-  void fixupStack(UScriptCode resolvedScript);
-  bool fetch(size_t* pos, UChar32*);
+  void OpenBracket(UChar32);
+  void CloseBracket(UChar32);
+  bool MergeSets();
+  void FixupStack(UScriptCode resolved_script);
+  bool Fetch(size_t* pos, UChar32*);
 
-  UScriptCode resolveCurrentScript() const;
+  UScriptCode ResolveCurrentScript() const;
 
-  const UChar* m_text;
-  const size_t m_length;
+  const UChar* text_;
+  const size_t length_;
 
-  Deque<BracketRec> m_brackets;
-  size_t m_bracketsFixupDepth;
+  Deque<BracketRec> brackets_;
+  size_t brackets_fixup_depth_;
   // Limit max brackets so that the bracket tracking buffer does not grow
   // excessively large when processing long runs of text.
   static const int kMaxBrackets = 32;
 
-  Vector<UScriptCode> m_currentSet;
-  Vector<UScriptCode> m_nextSet;
-  Vector<UScriptCode> m_aheadSet;
+  Vector<UScriptCode> current_set_;
+  Vector<UScriptCode> next_set_;
+  Vector<UScriptCode> ahead_set_;
 
-  UChar32 m_aheadCharacter;
-  size_t m_aheadPos;
+  UChar32 ahead_character_;
+  size_t ahead_pos_;
 
-  UScriptCode m_commonPreferred;
+  UScriptCode common_preferred_;
 
-  const ScriptData* m_scriptData;
+  const ScriptData* script_data_;
 };
 
 // ScriptData is a wrapper which returns a set of scripts for a particular
@@ -84,32 +84,32 @@ class PLATFORM_EXPORT ScriptData {
   virtual ~ScriptData();
 
   enum PairedBracketType {
-    BracketTypeNone,
-    BracketTypeOpen,
-    BracketTypeClose,
-    BracketTypeCount
+    kBracketTypeNone,
+    kBracketTypeOpen,
+    kBracketTypeClose,
+    kBracketTypeCount
   };
 
   static const int kMaxScriptCount;
 
-  virtual void getScripts(UChar32, Vector<UScriptCode>& dst) const = 0;
+  virtual void GetScripts(UChar32, Vector<UScriptCode>& dst) const = 0;
 
-  virtual UChar32 getPairedBracket(UChar32) const = 0;
+  virtual UChar32 GetPairedBracket(UChar32) const = 0;
 
-  virtual PairedBracketType getPairedBracketType(UChar32) const = 0;
+  virtual PairedBracketType GetPairedBracketType(UChar32) const = 0;
 };
 
 class PLATFORM_EXPORT ICUScriptData : public ScriptData {
  public:
   ~ICUScriptData() override {}
 
-  static const ICUScriptData* instance();
+  static const ICUScriptData* Instance();
 
-  void getScripts(UChar32, Vector<UScriptCode>& dst) const override;
+  void GetScripts(UChar32, Vector<UScriptCode>& dst) const override;
 
-  UChar32 getPairedBracket(UChar32) const override;
+  UChar32 GetPairedBracket(UChar32) const override;
 
-  PairedBracketType getPairedBracketType(UChar32) const override;
+  PairedBracketType GetPairedBracketType(UChar32) const override;
 };
 }  // namespace blink
 

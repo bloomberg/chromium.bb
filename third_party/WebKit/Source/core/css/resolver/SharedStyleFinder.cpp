@@ -59,364 +59,372 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline ComputedStyle* getElementStyle(Element& element) {
-  if (element.needsReattachLayoutTree()) {
-    if (ComputedStyle* computedStyle =
-            element.document().getNonAttachedStyle(element))
-      return computedStyle;
+inline ComputedStyle* GetElementStyle(Element& element) {
+  if (element.NeedsReattachLayoutTree()) {
+    if (ComputedStyle* computed_style =
+            element.GetDocument().GetNonAttachedStyle(element))
+      return computed_style;
   }
-  return element.mutableComputedStyle();
+  return element.MutableComputedStyle();
 }
 
-bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const {
-  if (!isHTMLInputElement(candidate) || !isHTMLInputElement(element()))
+bool SharedStyleFinder::CanShareStyleWithControl(Element& candidate) const {
+  if (!isHTMLInputElement(candidate) || !isHTMLInputElement(GetElement()))
     return false;
 
-  HTMLInputElement& candidateInput = toHTMLInputElement(candidate);
-  HTMLInputElement& thisInput = toHTMLInputElement(element());
+  HTMLInputElement& candidate_input = toHTMLInputElement(candidate);
+  HTMLInputElement& this_input = toHTMLInputElement(GetElement());
 
-  if (candidateInput.isAutofilled() != thisInput.isAutofilled())
+  if (candidate_input.IsAutofilled() != this_input.IsAutofilled())
     return false;
-  if (candidateInput.shouldAppearChecked() != thisInput.shouldAppearChecked())
+  if (candidate_input.ShouldAppearChecked() != this_input.ShouldAppearChecked())
     return false;
-  if (candidateInput.shouldAppearIndeterminate() !=
-      thisInput.shouldAppearIndeterminate())
+  if (candidate_input.ShouldAppearIndeterminate() !=
+      this_input.ShouldAppearIndeterminate())
     return false;
-  if (candidateInput.isRequired() != thisInput.isRequired())
-    return false;
-
-  if (candidate.isDisabledFormControl() != element().isDisabledFormControl())
+  if (candidate_input.IsRequired() != this_input.IsRequired())
     return false;
 
-  if (candidate.matchesDefaultPseudoClass() !=
-      element().matchesDefaultPseudoClass())
+  if (candidate.IsDisabledFormControl() != GetElement().IsDisabledFormControl())
     return false;
 
-  if (document().containsValidityStyleRules()) {
-    bool willValidate = candidate.willValidate();
+  if (candidate.MatchesDefaultPseudoClass() !=
+      GetElement().MatchesDefaultPseudoClass())
+    return false;
 
-    if (willValidate != element().willValidate())
+  if (GetDocument().ContainsValidityStyleRules()) {
+    bool will_validate = candidate.willValidate();
+
+    if (will_validate != GetElement().willValidate())
       return false;
 
-    if (willValidate &&
-        (candidate.isValidElement() != element().isValidElement()))
+    if (will_validate &&
+        (candidate.IsValidElement() != GetElement().IsValidElement()))
       return false;
 
-    if (candidate.isInRange() != element().isInRange())
+    if (candidate.IsInRange() != GetElement().IsInRange())
       return false;
 
-    if (candidate.isOutOfRange() != element().isOutOfRange())
+    if (candidate.IsOutOfRange() != GetElement().IsOutOfRange())
       return false;
   }
 
-  if (candidateInput.isPlaceholderVisible() != thisInput.isPlaceholderVisible())
+  if (candidate_input.IsPlaceholderVisible() !=
+      this_input.IsPlaceholderVisible())
     return false;
 
   return true;
 }
 
-bool SharedStyleFinder::classNamesAffectedByRules(
-    const SpaceSplitString& classNames) const {
-  unsigned count = classNames.size();
+bool SharedStyleFinder::ClassNamesAffectedByRules(
+    const SpaceSplitString& class_names) const {
+  unsigned count = class_names.size();
   for (unsigned i = 0; i < count; ++i) {
-    if (m_features.hasSelectorForClass(classNames[i]))
+    if (features_.HasSelectorForClass(class_names[i]))
       return true;
   }
   return false;
 }
 
-static inline const AtomicString& typeAttributeValue(const Element& element) {
+static inline const AtomicString& TypeAttributeValue(const Element& element) {
   // type is animatable in SVG so we need to go down the slow path here.
-  return element.isSVGElement() ? element.getAttribute(typeAttr)
-                                : element.fastGetAttribute(typeAttr);
+  return element.IsSVGElement() ? element.getAttribute(typeAttr)
+                                : element.FastGetAttribute(typeAttr);
 }
 
-bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(
+bool SharedStyleFinder::SharingCandidateHasIdenticalStyleAffectingAttributes(
     Element& candidate) const {
-  if (element().sharesSameElementData(candidate))
+  if (GetElement().SharesSameElementData(candidate))
     return true;
-  if (element().fastGetAttribute(XMLNames::langAttr) !=
-      candidate.fastGetAttribute(XMLNames::langAttr))
+  if (GetElement().FastGetAttribute(XMLNames::langAttr) !=
+      candidate.FastGetAttribute(XMLNames::langAttr))
     return false;
-  if (element().fastGetAttribute(langAttr) !=
-      candidate.fastGetAttribute(langAttr))
+  if (GetElement().FastGetAttribute(langAttr) !=
+      candidate.FastGetAttribute(langAttr))
     return false;
 
   // These two checks must be here since RuleSet has a special case to allow
   // style sharing between elements with type and readonly attributes whereas
   // other attribute selectors prevent sharing.
-  if (typeAttributeValue(element()) != typeAttributeValue(candidate))
+  if (TypeAttributeValue(GetElement()) != TypeAttributeValue(candidate))
     return false;
-  if (element().fastGetAttribute(readonlyAttr) !=
-      candidate.fastGetAttribute(readonlyAttr))
+  if (GetElement().FastGetAttribute(readonlyAttr) !=
+      candidate.FastGetAttribute(readonlyAttr))
     return false;
 
-  if (!m_elementAffectedByClassRules) {
-    if (candidate.hasClass() &&
-        classNamesAffectedByRules(candidate.classNames()))
+  if (!element_affected_by_class_rules_) {
+    if (candidate.HasClass() &&
+        ClassNamesAffectedByRules(candidate.ClassNames()))
       return false;
-  } else if (candidate.hasClass()) {
+  } else if (candidate.HasClass()) {
     // SVG elements require a (slow!) getAttribute comparision because "class"
     // is an animatable attribute for SVG.
-    if (element().isSVGElement()) {
-      if (element().getAttribute(classAttr) !=
+    if (GetElement().IsSVGElement()) {
+      if (GetElement().getAttribute(classAttr) !=
           candidate.getAttribute(classAttr))
         return false;
-    } else if (element().classNames() != candidate.classNames()) {
+    } else if (GetElement().ClassNames() != candidate.ClassNames()) {
       return false;
     }
   } else {
     return false;
   }
 
-  if (element().presentationAttributeStyle() !=
-      candidate.presentationAttributeStyle())
+  if (GetElement().PresentationAttributeStyle() !=
+      candidate.PresentationAttributeStyle())
     return false;
 
   // FIXME: Consider removing this, it's unlikely we'll have so many progress
   // elements that sharing the style makes sense. Instead we should just not
   // support style sharing for them.
-  if (isHTMLProgressElement(element())) {
-    if (element().shouldAppearIndeterminate() !=
-        candidate.shouldAppearIndeterminate())
+  if (isHTMLProgressElement(GetElement())) {
+    if (GetElement().ShouldAppearIndeterminate() !=
+        candidate.ShouldAppearIndeterminate())
       return false;
   }
 
-  if (isHTMLOptGroupElement(element()) || isHTMLOptionElement(element())) {
-    if (element().isDisabledFormControl() != candidate.isDisabledFormControl())
+  if (isHTMLOptGroupElement(GetElement()) ||
+      isHTMLOptionElement(GetElement())) {
+    if (GetElement().IsDisabledFormControl() !=
+        candidate.IsDisabledFormControl())
       return false;
-    if (isHTMLOptionElement(element()) &&
-        toHTMLOptionElement(element()).selected() !=
-            toHTMLOptionElement(candidate).selected())
+    if (isHTMLOptionElement(GetElement()) &&
+        toHTMLOptionElement(GetElement()).Selected() !=
+            toHTMLOptionElement(candidate).Selected())
       return false;
   }
 
   return true;
 }
 
-bool SharedStyleFinder::sharingCandidateCanShareHostStyles(
+bool SharedStyleFinder::SharingCandidateCanShareHostStyles(
     Element& candidate) const {
-  const ElementShadow* elementShadow = element().shadow();
-  const ElementShadow* candidateShadow = candidate.shadow();
+  const ElementShadow* element_shadow = GetElement().Shadow();
+  const ElementShadow* candidate_shadow = candidate.Shadow();
 
-  if (!elementShadow && !candidateShadow)
+  if (!element_shadow && !candidate_shadow)
     return true;
 
-  if (static_cast<bool>(elementShadow) != static_cast<bool>(candidateShadow))
+  if (static_cast<bool>(element_shadow) != static_cast<bool>(candidate_shadow))
     return false;
 
-  return elementShadow->hasSameStyles(*candidateShadow);
+  return element_shadow->HasSameStyles(*candidate_shadow);
 }
 
-bool SharedStyleFinder::sharingCandidateAssignedToSameSlot(
+bool SharedStyleFinder::SharingCandidateAssignedToSameSlot(
     Element& candidate) const {
-  HTMLSlotElement* elementSlot = element().assignedSlot();
-  HTMLSlotElement* candidateSlot = candidate.assignedSlot();
-  if (!elementSlot && !candidateSlot)
+  HTMLSlotElement* element_slot = GetElement().AssignedSlot();
+  HTMLSlotElement* candidate_slot = candidate.AssignedSlot();
+  if (!element_slot && !candidate_slot)
     return true;
-  return elementSlot == candidateSlot;
+  return element_slot == candidate_slot;
 }
 
-bool SharedStyleFinder::sharingCandidateDistributedToSameInsertionPoint(
+bool SharedStyleFinder::SharingCandidateDistributedToSameInsertionPoint(
     Element& candidate) const {
-  HeapVector<Member<InsertionPoint>, 8> insertionPoints,
-      candidateInsertionPoints;
-  collectDestinationInsertionPoints(element(), insertionPoints);
-  collectDestinationInsertionPoints(candidate, candidateInsertionPoints);
-  if (insertionPoints.size() != candidateInsertionPoints.size())
+  HeapVector<Member<InsertionPoint>, 8> insertion_points,
+      candidate_insertion_points;
+  CollectDestinationInsertionPoints(GetElement(), insertion_points);
+  CollectDestinationInsertionPoints(candidate, candidate_insertion_points);
+  if (insertion_points.size() != candidate_insertion_points.size())
     return false;
-  for (size_t i = 0; i < insertionPoints.size(); ++i) {
-    if (insertionPoints[i] != candidateInsertionPoints[i])
+  for (size_t i = 0; i < insertion_points.size(); ++i) {
+    if (insertion_points[i] != candidate_insertion_points[i])
       return false;
   }
   return true;
 }
 
 DISABLE_CFI_PERF
-bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const {
-  if (element() == candidate)
+bool SharedStyleFinder::CanShareStyleWithElement(Element& candidate) const {
+  if (GetElement() == candidate)
     return false;
-  Element* parent = candidate.parentOrShadowHostElement();
-  const ComputedStyle* style = getElementStyle(candidate);
+  Element* parent = candidate.ParentOrShadowHostElement();
+  const ComputedStyle* style = GetElementStyle(candidate);
   if (!style)
     return false;
-  if (!style->isSharable())
+  if (!style->IsSharable())
     return false;
   if (!parent)
     return false;
-  if (getElementStyle(*element().parentOrShadowHostElement()) !=
-      getElementStyle(*parent))
+  if (GetElementStyle(*GetElement().ParentOrShadowHostElement()) !=
+      GetElementStyle(*parent))
     return false;
-  if (candidate.tagQName() != element().tagQName())
+  if (candidate.TagQName() != GetElement().TagQName())
     return false;
-  if (candidate.inlineStyle())
+  if (candidate.InlineStyle())
     return false;
-  if (candidate.needsStyleRecalc() && !candidate.needsReattachLayoutTree())
+  if (candidate.NeedsStyleRecalc() && !candidate.NeedsReattachLayoutTree())
     return false;
-  if (candidate.isSVGElement() &&
-      toSVGElement(candidate).animatedSMILStyleProperties())
+  if (candidate.IsSVGElement() &&
+      ToSVGElement(candidate).AnimatedSMILStyleProperties())
     return false;
-  if (candidate.isLink() != element().isLink())
+  if (candidate.IsLink() != GetElement().IsLink())
     return false;
-  if (candidate.shadowPseudoId() != element().shadowPseudoId())
+  if (candidate.ShadowPseudoId() != GetElement().ShadowPseudoId())
     return false;
-  if (!sharingCandidateHasIdenticalStyleAffectingAttributes(candidate))
+  if (!SharingCandidateHasIdenticalStyleAffectingAttributes(candidate))
     return false;
-  if (candidate.additionalPresentationAttributeStyle() !=
-      element().additionalPresentationAttributeStyle())
+  if (candidate.AdditionalPresentationAttributeStyle() !=
+      GetElement().AdditionalPresentationAttributeStyle())
     return false;
-  if (candidate.hasID() &&
-      m_features.hasSelectorForId(candidate.idForStyleResolution()))
+  if (candidate.HasID() &&
+      features_.HasSelectorForId(candidate.IdForStyleResolution()))
     return false;
-  if (!sharingCandidateCanShareHostStyles(candidate))
+  if (!SharingCandidateCanShareHostStyles(candidate))
     return false;
   // For Shadow DOM V1
-  if (!sharingCandidateAssignedToSameSlot(candidate))
+  if (!SharingCandidateAssignedToSameSlot(candidate))
     return false;
   // For Shadow DOM V0
-  if (!sharingCandidateDistributedToSameInsertionPoint(candidate))
+  if (!SharingCandidateDistributedToSameInsertionPoint(candidate))
     return false;
-  if (candidate.isInTopLayer() != element().isInTopLayer())
-    return false;
-
-  bool isControl = candidate.isFormControlElement();
-  DCHECK_EQ(isControl, element().isFormControlElement());
-  if (isControl && !canShareStyleWithControl(candidate))
+  if (candidate.IsInTopLayer() != GetElement().IsInTopLayer())
     return false;
 
-  if (isHTMLOptionElement(candidate) && isHTMLOptionElement(element()) &&
-      (toHTMLOptionElement(candidate).selected() !=
-           toHTMLOptionElement(element()).selected() ||
-       toHTMLOptionElement(candidate).spatialNavigationFocused() !=
-           toHTMLOptionElement(element()).spatialNavigationFocused()))
+  bool is_control = candidate.IsFormControlElement();
+  DCHECK_EQ(is_control, GetElement().IsFormControlElement());
+  if (is_control && !CanShareStyleWithControl(candidate))
+    return false;
+
+  if (isHTMLOptionElement(candidate) && isHTMLOptionElement(GetElement()) &&
+      (toHTMLOptionElement(candidate).Selected() !=
+           toHTMLOptionElement(GetElement()).Selected() ||
+       toHTMLOptionElement(candidate).SpatialNavigationFocused() !=
+           toHTMLOptionElement(GetElement()).SpatialNavigationFocused()))
     return false;
 
   // FIXME: This line is surprisingly hot, we may wish to inline
   // hasDirectionAuto into StyleResolver.
-  if (candidate.isHTMLElement() && toHTMLElement(candidate).hasDirectionAuto())
+  if (candidate.IsHTMLElement() && ToHTMLElement(candidate).HasDirectionAuto())
     return false;
 
-  if (isHTMLImageElement(candidate) && isHTMLImageElement(element()) &&
-      toHTMLImageElement(candidate).isCollapsed() !=
-          toHTMLImageElement(element()).isCollapsed()) {
+  if (isHTMLImageElement(candidate) && isHTMLImageElement(GetElement()) &&
+      toHTMLImageElement(candidate).IsCollapsed() !=
+          toHTMLImageElement(GetElement()).IsCollapsed()) {
     return false;
   }
 
-  if (candidate.isLink() && m_context.elementLinkState() != style->insideLink())
+  if (candidate.IsLink() && context_.ElementLinkState() != style->InsideLink())
     return false;
 
-  if (candidate.isUnresolvedV0CustomElement() !=
-      element().isUnresolvedV0CustomElement())
+  if (candidate.IsUnresolvedV0CustomElement() !=
+      GetElement().IsUnresolvedV0CustomElement())
     return false;
 
-  if (element().parentOrShadowHostElement() != parent) {
-    if (!parent->isStyledElement())
+  if (GetElement().ParentOrShadowHostElement() != parent) {
+    if (!parent->IsStyledElement())
       return false;
-    if (parent->inlineStyle())
+    if (parent->InlineStyle())
       return false;
-    if (parent->isSVGElement() &&
-        toSVGElement(parent)->animatedSMILStyleProperties())
+    if (parent->IsSVGElement() &&
+        ToSVGElement(parent)->AnimatedSMILStyleProperties())
       return false;
-    if (parent->hasID() &&
-        m_features.hasSelectorForId(parent->idForStyleResolution()))
+    if (parent->HasID() &&
+        features_.HasSelectorForId(parent->IdForStyleResolution()))
       return false;
-    if (!parent->childrenSupportStyleSharing())
+    if (!parent->ChildrenSupportStyleSharing())
       return false;
   }
 
-  ShadowRoot* root1 = element().containingShadowRoot();
-  ShadowRoot* root2 = candidate.containingShadowRoot();
-  if (root1 && root2 && root1->type() != root2->type())
+  ShadowRoot* root1 = GetElement().ContainingShadowRoot();
+  ShadowRoot* root2 = candidate.ContainingShadowRoot();
+  if (root1 && root2 && root1->GetType() != root2->GetType())
     return false;
 
-  if (document().containsValidityStyleRules()) {
-    if (candidate.isValidElement() != element().isValidElement())
+  if (GetDocument().ContainsValidityStyleRules()) {
+    if (candidate.IsValidElement() != GetElement().IsValidElement())
       return false;
   }
 
   return true;
 }
 
-bool SharedStyleFinder::documentContainsValidCandidate() const {
+bool SharedStyleFinder::DocumentContainsValidCandidate() const {
   for (Element& element :
-       ElementTraversal::startsAt(document().documentElement())) {
-    if (element.supportsStyleSharing() && canShareStyleWithElement(element))
+       ElementTraversal::StartsAt(GetDocument().documentElement())) {
+    if (element.SupportsStyleSharing() && CanShareStyleWithElement(element))
       return true;
   }
   return false;
 }
 
-inline Element* SharedStyleFinder::findElementForStyleSharing() const {
-  StyleSharingList& styleSharingList = m_styleResolver->styleSharingList();
-  for (StyleSharingList::iterator it = styleSharingList.begin();
-       it != styleSharingList.end(); ++it) {
+inline Element* SharedStyleFinder::FindElementForStyleSharing() const {
+  StyleSharingList& style_sharing_list = style_resolver_->GetStyleSharingList();
+  for (StyleSharingList::iterator it = style_sharing_list.begin();
+       it != style_sharing_list.end(); ++it) {
     Element& candidate = **it;
-    if (!canShareStyleWithElement(candidate))
+    if (!CanShareStyleWithElement(candidate))
       continue;
-    if (it != styleSharingList.begin()) {
+    if (it != style_sharing_list.begin()) {
       // Move the element to the front of the LRU
-      styleSharingList.erase(it);
-      styleSharingList.push_front(&candidate);
+      style_sharing_list.erase(it);
+      style_sharing_list.push_front(&candidate);
     }
     return &candidate;
   }
-  m_styleResolver->addToStyleSharingList(element());
+  style_resolver_->AddToStyleSharingList(GetElement());
   return nullptr;
 }
 
-bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet) {
-  if (!ruleSet)
+bool SharedStyleFinder::MatchesRuleSet(RuleSet* rule_set) {
+  if (!rule_set)
     return false;
-  ElementRuleCollector collector(m_context, m_styleResolver->selectorFilter());
-  return collector.hasAnyMatchingRules(ruleSet);
+  ElementRuleCollector collector(context_,
+                                 style_resolver_->GetSelectorFilter());
+  return collector.HasAnyMatchingRules(rule_set);
 }
 
-ComputedStyle* SharedStyleFinder::findSharedStyle() {
-  INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleLookups,
-                                1);
+ComputedStyle* SharedStyleFinder::FindSharedStyle() {
+  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                shared_style_lookups, 1);
 
-  if (!element().supportsStyleSharing())
+  if (!GetElement().SupportsStyleSharing())
     return nullptr;
 
   // Cache whether context.element() is affected by any known class selectors.
-  m_elementAffectedByClassRules =
-      element().hasClass() && classNamesAffectedByRules(element().classNames());
+  element_affected_by_class_rules_ =
+      GetElement().HasClass() &&
+      ClassNamesAffectedByRules(GetElement().ClassNames());
 
-  Element* shareElement = findElementForStyleSharing();
+  Element* share_element = FindElementForStyleSharing();
 
-  if (!shareElement) {
-    if (document().styleEngine().stats() &&
-        document().styleEngine().stats()->allCountersEnabled() &&
-        documentContainsValidCandidate())
-      INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleMissed,
-                                    1);
+  if (!share_element) {
+    if (GetDocument().GetStyleEngine().Stats() &&
+        GetDocument().GetStyleEngine().Stats()->AllCountersEnabled() &&
+        DocumentContainsValidCandidate())
+      INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                    shared_style_missed, 1);
     return nullptr;
   }
 
-  INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), sharedStyleFound, 1);
+  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                shared_style_found, 1);
 
-  if (matchesRuleSet(m_siblingRuleSet)) {
-    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(),
-                                  sharedStyleRejectedBySiblingRules, 1);
+  if (MatchesRuleSet(sibling_rule_set_)) {
+    INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                  shared_style_rejected_by_sibling_rules, 1);
     return nullptr;
   }
 
-  if (matchesRuleSet(m_uncommonAttributeRuleSet)) {
-    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(),
-                                  sharedStyleRejectedByUncommonAttributeRules,
-                                  1);
+  if (MatchesRuleSet(uncommon_attribute_rule_set_)) {
+    INCREMENT_STYLE_STATS_COUNTER(
+        GetDocument().GetStyleEngine(),
+        shared_style_rejected_by_uncommon_attribute_rules, 1);
     return nullptr;
   }
 
   // Tracking child index requires unique style for each node. This may get set
   // by the sibling rule match above.
-  if (!element().parentElementOrShadowRoot()->childrenSupportStyleSharing()) {
-    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(),
-                                  sharedStyleRejectedByParent, 1);
+  if (!GetElement()
+           .ParentElementOrShadowRoot()
+           ->ChildrenSupportStyleSharing()) {
+    INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                  shared_style_rejected_by_parent, 1);
     return nullptr;
   }
 
-  return getElementStyle(*shareElement);
+  return GetElementStyle(*share_element);
 }
 
 }  // namespace blink

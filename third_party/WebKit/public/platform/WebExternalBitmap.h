@@ -41,12 +41,12 @@ class WebExternalBitmap {
 
   // Sets the size of the bitmap. This may reallocate the bitmap and
   // invalidate the pointer returned from pixels if the size changes.
-  virtual void setSize(WebSize) = 0;
+  virtual void SetSize(WebSize) = 0;
 
   // Returns the pixels for the bitmap. The buffer that's returned will
   // contain size().width * size().height * 4 bytes and will use Skia's byte
   // order.
-  virtual uint8_t* pixels() = 0;
+  virtual uint8_t* Pixels() = 0;
 };
 
 }  // namespace blink

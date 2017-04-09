@@ -6,6 +6,6 @@
 
 namespace blink {
 
-bool FirstPaintInvalidationTracking::s_enabledForShowPaintRects = false;
+bool FirstPaintInvalidationTracking::enabled_for_show_paint_rects_ = false;
 
 }  // namespace blink

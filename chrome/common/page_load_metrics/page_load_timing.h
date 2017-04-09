@@ -128,7 +128,7 @@ struct PageLoadMetadata {
   PageLoadMetadata();
   bool operator==(const PageLoadMetadata& other) const;
   // These are packed blink::WebLoadingBehaviorFlag enums.
-  int behavior_flags = blink::WebLoadingBehaviorNone;
+  int behavior_flags = blink::kWebLoadingBehaviorNone;
 };
 
 }  // namespace page_load_metrics

@@ -35,42 +35,42 @@ namespace blink {
 
 StyleSheetCollection::StyleSheetCollection() {}
 
-void StyleSheetCollection::dispose() {
-  m_styleSheetsForStyleSheetList.clear();
-  m_activeAuthorStyleSheets.clear();
+void StyleSheetCollection::Dispose() {
+  style_sheets_for_style_sheet_list_.Clear();
+  active_author_style_sheets_.Clear();
 }
 
-void StyleSheetCollection::swap(StyleSheetCollection& other) {
-  ::blink::swap(m_styleSheetsForStyleSheetList,
-                other.m_styleSheetsForStyleSheetList, this, &other);
-  m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
+void StyleSheetCollection::Swap(StyleSheetCollection& other) {
+  ::blink::swap(style_sheets_for_style_sheet_list_,
+                other.style_sheets_for_style_sheet_list_, this, &other);
+  active_author_style_sheets_.Swap(other.active_author_style_sheets_);
 }
 
-void StyleSheetCollection::swapSheetsForSheetList(
+void StyleSheetCollection::SwapSheetsForSheetList(
     HeapVector<Member<StyleSheet>>& sheets) {
   // Only called for collection of HTML Imports that never has active sheets.
-  DCHECK(m_activeAuthorStyleSheets.isEmpty());
-  ::blink::swap(m_styleSheetsForStyleSheetList, sheets, this);
+  DCHECK(active_author_style_sheets_.IsEmpty());
+  ::blink::swap(style_sheets_for_style_sheet_list_, sheets, this);
 }
 
-void StyleSheetCollection::appendActiveStyleSheet(
-    const ActiveStyleSheet& activeSheet) {
-  m_activeAuthorStyleSheets.push_back(activeSheet);
+void StyleSheetCollection::AppendActiveStyleSheet(
+    const ActiveStyleSheet& active_sheet) {
+  active_author_style_sheets_.push_back(active_sheet);
 }
 
-void StyleSheetCollection::appendSheetForList(StyleSheet* sheet) {
-  m_styleSheetsForStyleSheetList.push_back(
+void StyleSheetCollection::AppendSheetForList(StyleSheet* sheet) {
+  style_sheets_for_style_sheet_list_.push_back(
       TraceWrapperMember<StyleSheet>(this, sheet));
 }
 
 DEFINE_TRACE(StyleSheetCollection) {
-  visitor->trace(m_activeAuthorStyleSheets);
-  visitor->trace(m_styleSheetsForStyleSheetList);
+  visitor->Trace(active_author_style_sheets_);
+  visitor->Trace(style_sheets_for_style_sheet_list_);
 }
 
 DEFINE_TRACE_WRAPPERS(StyleSheetCollection) {
-  for (auto sheet : m_styleSheetsForStyleSheetList) {
-    visitor->traceWrappers(sheet);
+  for (auto sheet : style_sheets_for_style_sheet_list_) {
+    visitor->TraceWrappers(sheet);
   }
 }
 

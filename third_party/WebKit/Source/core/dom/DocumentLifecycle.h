@@ -48,44 +48,44 @@ class CORE_EXPORT DocumentLifecycle {
 
  public:
   enum LifecycleState {
-    Uninitialized,
-    Inactive,
+    kUninitialized,
+    kInactive,
 
     // When the document is active, it traverses these states.
 
-    VisualUpdatePending,
+    kVisualUpdatePending,
 
-    InStyleRecalc,
-    StyleClean,
+    kInStyleRecalc,
+    kStyleClean,
 
-    InLayoutSubtreeChange,
-    LayoutSubtreeChangeClean,
+    kInLayoutSubtreeChange,
+    kLayoutSubtreeChangeClean,
 
-    InPreLayout,
-    InPerformLayout,
-    AfterPerformLayout,
-    LayoutClean,
+    kInPreLayout,
+    kInPerformLayout,
+    kAfterPerformLayout,
+    kLayoutClean,
 
-    InCompositingUpdate,
-    CompositingClean,
+    kInCompositingUpdate,
+    kCompositingClean,
 
-    InPaintInvalidation,
-    PaintInvalidationClean,
+    kInPaintInvalidation,
+    kPaintInvalidationClean,
 
     // In InPrePaint step, any data needed by painting are prepared.
     // When RuntimeEnabledFeatures::slimmingPaintV2Enabled, paint property trees
     // are built.
     // Otherwise these steps are not applicable.
-    InPrePaint,
-    PrePaintClean,
+    kInPrePaint,
+    kPrePaintClean,
 
-    InPaint,
-    PaintClean,
+    kInPaint,
+    kPaintClean,
 
     // Once the document starts shutting down, we cannot return
     // to the style/layout/compositing states.
-    Stopping,
-    Stopped,
+    kStopping,
+    kStopped,
   };
 
   class Scope {
@@ -93,12 +93,12 @@ class CORE_EXPORT DocumentLifecycle {
     WTF_MAKE_NONCOPYABLE(Scope);
 
    public:
-    Scope(DocumentLifecycle&, LifecycleState finalState);
+    Scope(DocumentLifecycle&, LifecycleState final_state);
     ~Scope();
 
    private:
-    DocumentLifecycle& m_lifecycle;
-    LifecycleState m_finalState;
+    DocumentLifecycle& lifecycle_;
+    LifecycleState final_state_;
   };
 
   class DeprecatedTransition {
@@ -109,13 +109,13 @@ class CORE_EXPORT DocumentLifecycle {
     DeprecatedTransition(LifecycleState from, LifecycleState to);
     ~DeprecatedTransition();
 
-    LifecycleState from() const { return m_from; }
-    LifecycleState to() const { return m_to; }
+    LifecycleState From() const { return from_; }
+    LifecycleState To() const { return to_; }
 
    private:
-    DeprecatedTransition* m_previous;
-    LifecycleState m_from;
-    LifecycleState m_to;
+    DeprecatedTransition* previous_;
+    LifecycleState from_;
+    LifecycleState to_;
   };
 
   // Within this scope, state transitions are not allowed.
@@ -125,17 +125,17 @@ class CORE_EXPORT DocumentLifecycle {
     WTF_MAKE_NONCOPYABLE(DisallowTransitionScope);
 
    public:
-    explicit DisallowTransitionScope(DocumentLifecycle& documentLifecycle)
-        : m_documentLifecycle(documentLifecycle) {
-      m_documentLifecycle.incrementNoTransitionCount();
+    explicit DisallowTransitionScope(DocumentLifecycle& document_lifecycle)
+        : document_lifecycle_(document_lifecycle) {
+      document_lifecycle_.IncrementNoTransitionCount();
     }
 
     ~DisallowTransitionScope() {
-      m_documentLifecycle.decrementNoTransitionCount();
+      document_lifecycle_.DecrementNoTransitionCount();
     }
 
    private:
-    DocumentLifecycle& m_documentLifecycle;
+    DocumentLifecycle& document_lifecycle_;
   };
 
   class DetachScope {
@@ -143,15 +143,15 @@ class CORE_EXPORT DocumentLifecycle {
     WTF_MAKE_NONCOPYABLE(DetachScope);
 
    public:
-    explicit DetachScope(DocumentLifecycle& documentLifecycle)
-        : m_documentLifecycle(documentLifecycle) {
-      m_documentLifecycle.incrementDetachCount();
+    explicit DetachScope(DocumentLifecycle& document_lifecycle)
+        : document_lifecycle_(document_lifecycle) {
+      document_lifecycle_.IncrementDetachCount();
     }
 
-    ~DetachScope() { m_documentLifecycle.decrementDetachCount(); }
+    ~DetachScope() { document_lifecycle_.DecrementDetachCount(); }
 
    private:
-    DocumentLifecycle& m_documentLifecycle;
+    DocumentLifecycle& document_lifecycle_;
   };
 
   // Throttling is disabled by default. Instantiating this class allows
@@ -176,84 +176,84 @@ class CORE_EXPORT DocumentLifecycle {
     ~DisallowThrottlingScope();
 
    private:
-    int m_savedCount;
+    int saved_count_;
   };
 
   DocumentLifecycle();
   ~DocumentLifecycle();
 
-  bool isActive() const { return m_state > Inactive && m_state < Stopping; }
-  LifecycleState state() const { return m_state; }
+  bool IsActive() const { return state_ > kInactive && state_ < kStopping; }
+  LifecycleState GetState() const { return state_; }
 
-  bool stateAllowsTreeMutations() const;
-  bool stateAllowsLayoutTreeMutations() const;
-  bool stateAllowsDetach() const;
-  bool stateAllowsLayoutInvalidation() const;
-  bool stateAllowsLayoutTreeNotifications() const;
+  bool StateAllowsTreeMutations() const;
+  bool StateAllowsLayoutTreeMutations() const;
+  bool StateAllowsDetach() const;
+  bool StateAllowsLayoutInvalidation() const;
+  bool StateAllowsLayoutTreeNotifications() const;
 
-  void advanceTo(LifecycleState);
-  void ensureStateAtMost(LifecycleState);
+  void AdvanceTo(LifecycleState);
+  void EnsureStateAtMost(LifecycleState);
 
-  bool stateTransitionDisallowed() const { return m_disallowTransitionCount; }
-  void incrementNoTransitionCount() { m_disallowTransitionCount++; }
-  void decrementNoTransitionCount() {
-    DCHECK_GT(m_disallowTransitionCount, 0);
-    m_disallowTransitionCount--;
+  bool StateTransitionDisallowed() const { return disallow_transition_count_; }
+  void IncrementNoTransitionCount() { disallow_transition_count_++; }
+  void DecrementNoTransitionCount() {
+    DCHECK_GT(disallow_transition_count_, 0);
+    disallow_transition_count_--;
   }
 
-  bool inDetach() const { return m_detachCount; }
-  void incrementDetachCount() { m_detachCount++; }
-  void decrementDetachCount() {
-    DCHECK_GT(m_detachCount, 0);
-    m_detachCount--;
+  bool InDetach() const { return detach_count_; }
+  void IncrementDetachCount() { detach_count_++; }
+  void DecrementDetachCount() {
+    DCHECK_GT(detach_count_, 0);
+    detach_count_--;
   }
 
-  bool throttlingAllowed() const;
+  bool ThrottlingAllowed() const;
 
 #if DCHECK_IS_ON()
-  WTF::String toString() const;
+  WTF::String ToString() const;
 #endif
  private:
 #if DCHECK_IS_ON()
-  bool canAdvanceTo(LifecycleState) const;
-  bool canRewindTo(LifecycleState) const;
+  bool CanAdvanceTo(LifecycleState) const;
+  bool CanRewindTo(LifecycleState) const;
 #endif
 
-  LifecycleState m_state;
-  int m_detachCount;
-  int m_disallowTransitionCount;
+  LifecycleState state_;
+  int detach_count_;
+  int disallow_transition_count_;
 };
 
-inline bool DocumentLifecycle::stateAllowsTreeMutations() const {
+inline bool DocumentLifecycle::StateAllowsTreeMutations() const {
   // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout
   // either, but we need to fix MediaList listeners and plugins first.
-  return m_state != InStyleRecalc && m_state != InPerformLayout &&
-         m_state != InCompositingUpdate && m_state != InPrePaint &&
-         m_state != InPaint;
+  return state_ != kInStyleRecalc && state_ != kInPerformLayout &&
+         state_ != kInCompositingUpdate && state_ != kInPrePaint &&
+         state_ != kInPaint;
 }
 
-inline bool DocumentLifecycle::stateAllowsLayoutTreeMutations() const {
-  return m_detachCount || m_state == InStyleRecalc ||
-         m_state == InLayoutSubtreeChange;
+inline bool DocumentLifecycle::StateAllowsLayoutTreeMutations() const {
+  return detach_count_ || state_ == kInStyleRecalc ||
+         state_ == kInLayoutSubtreeChange;
 }
 
-inline bool DocumentLifecycle::stateAllowsLayoutTreeNotifications() const {
-  return m_state == InLayoutSubtreeChange;
+inline bool DocumentLifecycle::StateAllowsLayoutTreeNotifications() const {
+  return state_ == kInLayoutSubtreeChange;
 }
 
-inline bool DocumentLifecycle::stateAllowsDetach() const {
-  return m_state == VisualUpdatePending || m_state == InStyleRecalc ||
-         m_state == StyleClean || m_state == LayoutSubtreeChangeClean ||
-         m_state == InPreLayout || m_state == LayoutClean ||
-         m_state == CompositingClean || m_state == PaintInvalidationClean ||
-         m_state == PrePaintClean || m_state == PaintClean ||
-         m_state == Stopping;
+inline bool DocumentLifecycle::StateAllowsDetach() const {
+  return state_ == kVisualUpdatePending || state_ == kInStyleRecalc ||
+         state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
+         state_ == kInPreLayout || state_ == kLayoutClean ||
+         state_ == kCompositingClean || state_ == kPaintInvalidationClean ||
+         state_ == kPrePaintClean || state_ == kPaintClean ||
+         state_ == kStopping;
 }
 
-inline bool DocumentLifecycle::stateAllowsLayoutInvalidation() const {
-  return m_state != InPerformLayout && m_state != InCompositingUpdate &&
-         m_state != InPaintInvalidation && m_state != InPrePaint &&
-         m_state != InPaint;
+inline bool DocumentLifecycle::StateAllowsLayoutInvalidation() const {
+  return state_ != kInPerformLayout && state_ != kInCompositingUpdate &&
+         state_ != kInPaintInvalidation && state_ != kInPrePaint &&
+         state_ != kInPaint;
 }
 
 }  // namespace blink

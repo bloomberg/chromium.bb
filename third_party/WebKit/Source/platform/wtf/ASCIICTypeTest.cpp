@@ -11,7 +11,7 @@ namespace WTF {
 TEST(ASCIICTypeTest, ASCIICaseFoldTable) {
   LChar symbol = 0xff;
   while (symbol--) {
-    EXPECT_EQ(toASCIILower<LChar>(symbol), ASCIICaseFoldTable[symbol]);
+    EXPECT_EQ(ToASCIILower<LChar>(symbol), kASCIICaseFoldTable[symbol]);
   }
 }
 

@@ -8,28 +8,28 @@
 
 namespace blink {
 
-CSSPerspective* CSSPerspective::create(const CSSLengthValue* length,
-                                       ExceptionState& exceptionState) {
-  if (length->containsPercent()) {
-    exceptionState.throwTypeError(
+CSSPerspective* CSSPerspective::Create(const CSSLengthValue* length,
+                                       ExceptionState& exception_state) {
+  if (length->ContainsPercent()) {
+    exception_state.ThrowTypeError(
         "CSSPerspective does not support CSSLengthValues with percent units");
     return nullptr;
   }
   return new CSSPerspective(length);
 }
 
-CSSPerspective* CSSPerspective::fromCSSValue(const CSSFunctionValue& value) {
-  DCHECK_EQ(value.functionType(), CSSValuePerspective);
+CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
+  DCHECK_EQ(value.FunctionType(), CSSValuePerspective);
   DCHECK_EQ(value.length(), 1U);
   CSSLengthValue* length =
-      CSSLengthValue::fromCSSValue(toCSSPrimitiveValue(value.item(0)));
-  DCHECK(!length->containsPercent());
+      CSSLengthValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+  DCHECK(!length->ContainsPercent());
   return new CSSPerspective(length);
 }
 
-CSSFunctionValue* CSSPerspective::toCSSValue() const {
-  CSSFunctionValue* result = CSSFunctionValue::create(CSSValuePerspective);
-  result->append(*m_length->toCSSValue());
+CSSFunctionValue* CSSPerspective::ToCSSValue() const {
+  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+  result->Append(*length_->ToCSSValue());
   return result;
 }
 

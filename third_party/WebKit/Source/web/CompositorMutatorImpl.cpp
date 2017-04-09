@@ -20,80 +20,80 @@ namespace blink {
 
 namespace {
 
-void createCompositorMutatorClient(
+void CreateCompositorMutatorClient(
     std::unique_ptr<CompositorMutatorClient>* ptr,
-    WaitableEvent* doneEvent) {
-  CompositorMutatorImpl* mutator = CompositorMutatorImpl::create();
-  ptr->reset(new CompositorMutatorClient(mutator, mutator->animationManager()));
-  mutator->setClient(ptr->get());
-  doneEvent->signal();
+    WaitableEvent* done_event) {
+  CompositorMutatorImpl* mutator = CompositorMutatorImpl::Create();
+  ptr->reset(new CompositorMutatorClient(mutator, mutator->AnimationManager()));
+  mutator->SetClient(ptr->get());
+  done_event->Signal();
 }
 
 }  // namespace
 
 CompositorMutatorImpl::CompositorMutatorImpl()
-    : m_animationManager(WTF::wrapUnique(new CustomCompositorAnimationManager)),
-      m_client(nullptr) {}
+    : animation_manager_(WTF::WrapUnique(new CustomCompositorAnimationManager)),
+      client_(nullptr) {}
 
-std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::createClient() {
-  std::unique_ptr<CompositorMutatorClient> mutatorClient;
-  WaitableEvent doneEvent;
-  if (WebThread* compositorThread = Platform::current()->compositorThread()) {
-    compositorThread->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(&createCompositorMutatorClient,
-                                         crossThreadUnretained(&mutatorClient),
-                                         crossThreadUnretained(&doneEvent)));
+std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::CreateClient() {
+  std::unique_ptr<CompositorMutatorClient> mutator_client;
+  WaitableEvent done_event;
+  if (WebThread* compositor_thread = Platform::Current()->CompositorThread()) {
+    compositor_thread->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, CrossThreadBind(&CreateCompositorMutatorClient,
+                                         CrossThreadUnretained(&mutator_client),
+                                         CrossThreadUnretained(&done_event)));
   } else {
-    createCompositorMutatorClient(&mutatorClient, &doneEvent);
+    CreateCompositorMutatorClient(&mutator_client, &done_event);
   }
   // TODO(flackr): Instead of waiting for this event, we may be able to just set
   // the mutator on the CompositorWorkerProxyClient directly from the compositor
   // thread before it gets used there. We still need to make sure we only
   // create one mutator though.
-  doneEvent.wait();
-  return mutatorClient;
+  done_event.Wait();
+  return mutator_client;
 }
 
-CompositorMutatorImpl* CompositorMutatorImpl::create() {
+CompositorMutatorImpl* CompositorMutatorImpl::Create() {
   return new CompositorMutatorImpl();
 }
 
-bool CompositorMutatorImpl::mutate(
-    double monotonicTimeNow,
-    CompositorMutableStateProvider* stateProvider) {
+bool CompositorMutatorImpl::Mutate(
+    double monotonic_time_now,
+    CompositorMutableStateProvider* state_provider) {
   TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::mutate");
-  bool needToReinvoke = false;
+  bool need_to_reinvoke = false;
   // TODO(vollick): we should avoid executing the animation frame
   // callbacks if none of the proxies in the global scope are affected by
   // m_mutations.
-  for (CompositorAnimator* animator : m_animators) {
-    if (animator->mutate(monotonicTimeNow, stateProvider))
-      needToReinvoke = true;
+  for (CompositorAnimator* animator : animators_) {
+    if (animator->Mutate(monotonic_time_now, state_provider))
+      need_to_reinvoke = true;
   }
 
-  return needToReinvoke;
+  return need_to_reinvoke;
 }
 
-void CompositorMutatorImpl::registerCompositorAnimator(
+void CompositorMutatorImpl::RegisterCompositorAnimator(
     CompositorAnimator* animator) {
-  DCHECK(!isMainThread());
+  DCHECK(!IsMainThread());
   TRACE_EVENT0("compositor-worker",
                "CompositorMutatorImpl::registerCompositorAnimator");
-  DCHECK(!m_animators.contains(animator));
-  m_animators.insert(animator);
-  setNeedsMutate();
+  DCHECK(!animators_.Contains(animator));
+  animators_.insert(animator);
+  SetNeedsMutate();
 }
 
-void CompositorMutatorImpl::unregisterCompositorAnimator(
+void CompositorMutatorImpl::UnregisterCompositorAnimator(
     CompositorAnimator* animator) {
-  DCHECK(m_animators.contains(animator));
-  m_animators.erase(animator);
+  DCHECK(animators_.Contains(animator));
+  animators_.erase(animator);
 }
 
-void CompositorMutatorImpl::setNeedsMutate() {
-  DCHECK(!isMainThread());
+void CompositorMutatorImpl::SetNeedsMutate() {
+  DCHECK(!IsMainThread());
   TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::setNeedsMutate");
-  m_client->setNeedsMutate();
+  client_->SetNeedsMutate();
 }
 
 }  // namespace blink

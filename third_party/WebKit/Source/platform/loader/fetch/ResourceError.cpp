@@ -34,79 +34,80 @@
 
 namespace blink {
 
-const char errorDomainBlinkInternal[] = "BlinkInternal";
+const char kErrorDomainBlinkInternal[] = "BlinkInternal";
 
-ResourceError ResourceError::cancelledError(const String& failingURL) {
-  return Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
+ResourceError ResourceError::CancelledError(const String& failing_url) {
+  return Platform::Current()->CancelledError(
+      KURL(kParsedURLString, failing_url));
 }
 
-ResourceError ResourceError::cancelledDueToAccessCheckError(
-    const String& failingURL,
-    ResourceRequestBlockedReason blockedReason) {
-  ResourceError error = cancelledError(failingURL);
-  error.setIsAccessCheck(true);
-  if (blockedReason == ResourceRequestBlockedReason::SubresourceFilter)
-    error.setShouldCollapseInitiator(true);
+ResourceError ResourceError::CancelledDueToAccessCheckError(
+    const String& failing_url,
+    ResourceRequestBlockedReason blocked_reason) {
+  ResourceError error = CancelledError(failing_url);
+  error.SetIsAccessCheck(true);
+  if (blocked_reason == ResourceRequestBlockedReason::kSubresourceFilter)
+    error.SetShouldCollapseInitiator(true);
   return error;
 }
 
-ResourceError ResourceError::cacheMissError(const String& failingURL) {
-  ResourceError error(errorDomainBlinkInternal, 0, failingURL, String());
-  error.setIsCacheMiss(true);
+ResourceError ResourceError::CacheMissError(const String& failing_url) {
+  ResourceError error(kErrorDomainBlinkInternal, 0, failing_url, String());
+  error.SetIsCacheMiss(true);
   return error;
 }
 
-ResourceError ResourceError::copy() const {
-  ResourceError errorCopy;
-  errorCopy.m_domain = m_domain.isolatedCopy();
-  errorCopy.m_errorCode = m_errorCode;
-  errorCopy.m_failingURL = m_failingURL.isolatedCopy();
-  errorCopy.m_localizedDescription = m_localizedDescription.isolatedCopy();
-  errorCopy.m_isNull = m_isNull;
-  errorCopy.m_isCancellation = m_isCancellation;
-  errorCopy.m_isAccessCheck = m_isAccessCheck;
-  errorCopy.m_isTimeout = m_isTimeout;
-  errorCopy.m_staleCopyInCache = m_staleCopyInCache;
-  errorCopy.m_wasIgnoredByHandler = m_wasIgnoredByHandler;
-  errorCopy.m_isCacheMiss = m_isCacheMiss;
-  return errorCopy;
+ResourceError ResourceError::Copy() const {
+  ResourceError error_copy;
+  error_copy.domain_ = domain_.IsolatedCopy();
+  error_copy.error_code_ = error_code_;
+  error_copy.failing_url_ = failing_url_.IsolatedCopy();
+  error_copy.localized_description_ = localized_description_.IsolatedCopy();
+  error_copy.is_null_ = is_null_;
+  error_copy.is_cancellation_ = is_cancellation_;
+  error_copy.is_access_check_ = is_access_check_;
+  error_copy.is_timeout_ = is_timeout_;
+  error_copy.stale_copy_in_cache_ = stale_copy_in_cache_;
+  error_copy.was_ignored_by_handler_ = was_ignored_by_handler_;
+  error_copy.is_cache_miss_ = is_cache_miss_;
+  return error_copy;
 }
 
-bool ResourceError::compare(const ResourceError& a, const ResourceError& b) {
-  if (a.isNull() && b.isNull())
+bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
+  if (a.IsNull() && b.IsNull())
     return true;
 
-  if (a.isNull() || b.isNull())
+  if (a.IsNull() || b.IsNull())
     return false;
 
-  if (a.domain() != b.domain())
+  if (a.Domain() != b.Domain())
     return false;
 
-  if (a.errorCode() != b.errorCode())
+  if (a.ErrorCode() != b.ErrorCode())
     return false;
 
-  if (a.failingURL() != b.failingURL())
+  if (a.FailingURL() != b.FailingURL())
     return false;
 
-  if (a.localizedDescription() != b.localizedDescription())
+  if (a.LocalizedDescription() != b.LocalizedDescription())
     return false;
 
-  if (a.isCancellation() != b.isCancellation())
+  if (a.IsCancellation() != b.IsCancellation())
     return false;
 
-  if (a.isAccessCheck() != b.isAccessCheck())
+  if (a.IsAccessCheck() != b.IsAccessCheck())
     return false;
 
-  if (a.isTimeout() != b.isTimeout())
+  if (a.IsTimeout() != b.IsTimeout())
     return false;
 
-  if (a.staleCopyInCache() != b.staleCopyInCache())
+  if (a.StaleCopyInCache() != b.StaleCopyInCache())
     return false;
 
-  if (a.wasIgnoredByHandler() != b.wasIgnoredByHandler())
+  if (a.WasIgnoredByHandler() != b.WasIgnoredByHandler())
     return false;
 
-  if (a.isCacheMiss() != b.isCacheMiss())
+  if (a.IsCacheMiss() != b.IsCacheMiss())
     return false;
 
   return true;

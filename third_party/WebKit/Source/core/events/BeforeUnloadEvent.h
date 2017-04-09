@@ -35,16 +35,16 @@ class BeforeUnloadEvent final : public Event {
  public:
   ~BeforeUnloadEvent() override;
 
-  static BeforeUnloadEvent* create() { return new BeforeUnloadEvent; }
+  static BeforeUnloadEvent* Create() { return new BeforeUnloadEvent; }
 
-  bool isBeforeUnloadEvent() const override;
+  bool IsBeforeUnloadEvent() const override;
 
-  void setReturnValue(const String& returnValue) {
-    m_returnValue = returnValue;
+  void setReturnValue(const String& return_value) {
+    return_value_ = return_value;
   }
-  String returnValue() const { return m_returnValue; }
+  String returnValue() const { return return_value_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::BeforeUnloadEvent;
   }
 
@@ -53,7 +53,7 @@ class BeforeUnloadEvent final : public Event {
  private:
   BeforeUnloadEvent();
 
-  String m_returnValue;
+  String return_value_;
 };
 
 DEFINE_EVENT_TYPE_CASTS(BeforeUnloadEvent);

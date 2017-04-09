@@ -12,25 +12,25 @@
 namespace blink {
 
 BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data,
-                                                   String& otsParseMessage)
-    : m_customPlatformData(
-          FontCustomPlatformData::create(data, otsParseMessage)) {}
+                                                   String& ots_parse_message)
+    : custom_platform_data_(
+          FontCustomPlatformData::Create(data, ots_parse_message)) {}
 
 BinaryDataFontFaceSource::~BinaryDataFontFaceSource() {}
 
-bool BinaryDataFontFaceSource::isValid() const {
-  return m_customPlatformData.get();
+bool BinaryDataFontFaceSource::IsValid() const {
+  return custom_platform_data_.Get();
 }
 
-PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(
-    const FontDescription& fontDescription) {
-  return SimpleFontData::create(
-      m_customPlatformData->fontPlatformData(
-          fontDescription.effectiveFontSize(),
-          fontDescription.isSyntheticBold(),
-          fontDescription.isSyntheticItalic(), fontDescription.orientation(),
-          fontDescription.variationSettings()),
-      CustomFontData::create());
+PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::CreateFontData(
+    const FontDescription& font_description) {
+  return SimpleFontData::Create(
+      custom_platform_data_->GetFontPlatformData(
+          font_description.EffectiveFontSize(),
+          font_description.IsSyntheticBold(),
+          font_description.IsSyntheticItalic(), font_description.Orientation(),
+          font_description.VariationSettings()),
+      CustomFontData::Create());
 }
 
 }  // namespace blink

@@ -31,29 +31,29 @@
 
 namespace blink {
 
-DelayProcessor::DelayProcessor(float sampleRate,
-                               unsigned numberOfChannels,
-                               AudioParamHandler& delayTime,
-                               double maxDelayTime)
-    : AudioDSPKernelProcessor(sampleRate, numberOfChannels),
-      m_delayTime(delayTime),
-      m_maxDelayTime(maxDelayTime) {}
+DelayProcessor::DelayProcessor(float sample_rate,
+                               unsigned number_of_channels,
+                               AudioParamHandler& delay_time,
+                               double max_delay_time)
+    : AudioDSPKernelProcessor(sample_rate, number_of_channels),
+      delay_time_(delay_time),
+      max_delay_time_(max_delay_time) {}
 
 DelayProcessor::~DelayProcessor() {
-  if (isInitialized())
-    uninitialize();
+  if (IsInitialized())
+    Uninitialize();
 }
 
-std::unique_ptr<AudioDSPKernel> DelayProcessor::createKernel() {
-  return WTF::makeUnique<DelayDSPKernel>(this);
+std::unique_ptr<AudioDSPKernel> DelayProcessor::CreateKernel() {
+  return WTF::MakeUnique<DelayDSPKernel>(this);
 }
 
-void DelayProcessor::processOnlyAudioParams(size_t framesToProcess) {
-  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+void DelayProcessor::ProcessOnlyAudioParams(size_t frames_to_process) {
+  DCHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
 
   float values[AudioUtilities::kRenderQuantumFrames];
 
-  m_delayTime->calculateSampleAccurateValues(values, framesToProcess);
+  delay_time_->CalculateSampleAccurateValues(values, frames_to_process);
 }
 
 }  // namespace blink

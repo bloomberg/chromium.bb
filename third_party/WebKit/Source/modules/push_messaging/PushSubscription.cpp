@@ -19,78 +19,77 @@
 
 namespace blink {
 
-PushSubscription* PushSubscription::take(
+PushSubscription* PushSubscription::Take(
     ScriptPromiseResolver*,
-    std::unique_ptr<WebPushSubscription> pushSubscription,
-    ServiceWorkerRegistration* serviceWorkerRegistration) {
-  if (!pushSubscription)
+    std::unique_ptr<WebPushSubscription> push_subscription,
+    ServiceWorkerRegistration* service_worker_registration) {
+  if (!push_subscription)
     return nullptr;
-  return new PushSubscription(*pushSubscription, serviceWorkerRegistration);
+  return new PushSubscription(*push_subscription, service_worker_registration);
 }
 
-void PushSubscription::dispose(WebPushSubscription* pushSubscription) {
-  if (pushSubscription)
-    delete pushSubscription;
+void PushSubscription::Dispose(WebPushSubscription* push_subscription) {
+  if (push_subscription)
+    delete push_subscription;
 }
 
 PushSubscription::PushSubscription(
     const WebPushSubscription& subscription,
-    ServiceWorkerRegistration* serviceWorkerRegistration)
-    : m_endpoint(subscription.endpoint),
-      m_options(PushSubscriptionOptions::create(subscription.options)),
-      m_p256dh(DOMArrayBuffer::create(subscription.p256dh.data(),
-                                      subscription.p256dh.size())),
-      m_auth(DOMArrayBuffer::create(subscription.auth.data(),
-                                    subscription.auth.size())),
-      m_serviceWorkerRegistration(serviceWorkerRegistration) {}
+    ServiceWorkerRegistration* service_worker_registration)
+    : endpoint_(subscription.endpoint),
+      options_(PushSubscriptionOptions::Create(subscription.options)),
+      p256dh_(DOMArrayBuffer::Create(subscription.p256dh.Data(),
+                                     subscription.p256dh.size())),
+      auth_(DOMArrayBuffer::Create(subscription.auth.Data(),
+                                   subscription.auth.size())),
+      service_worker_registration_(service_worker_registration) {}
 
 PushSubscription::~PushSubscription() {}
 
 DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const {
   if (name == "p256dh")
-    return m_p256dh;
+    return p256dh_;
   if (name == "auth")
-    return m_auth;
+    return auth_;
 
   return nullptr;
 }
 
-ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+ScriptPromise PushSubscription::unsubscribe(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  WebPushProvider* webPushProvider = Platform::current()->pushProvider();
-  DCHECK(webPushProvider);
+  WebPushProvider* web_push_provider = Platform::Current()->PushProvider();
+  DCHECK(web_push_provider);
 
-  webPushProvider->unsubscribe(
-      m_serviceWorkerRegistration->webRegistration(),
-      WTF::makeUnique<CallbackPromiseAdapter<bool, PushError>>(resolver));
+  web_push_provider->Unsubscribe(
+      service_worker_registration_->WebRegistration(),
+      WTF::MakeUnique<CallbackPromiseAdapter<bool, PushError>>(resolver));
   return promise;
 }
 
-ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState) {
-  DCHECK(m_p256dh);
+ScriptValue PushSubscription::toJSONForBinding(ScriptState* script_state) {
+  DCHECK(p256dh_);
 
-  V8ObjectBuilder result(scriptState);
-  result.addString("endpoint", endpoint());
+  V8ObjectBuilder result(script_state);
+  result.AddString("endpoint", endpoint());
 
-  V8ObjectBuilder keys(scriptState);
-  keys.add("p256dh",
-           WTF::base64URLEncode(static_cast<const char*>(m_p256dh->data()),
-                                m_p256dh->byteLength()));
-  keys.add("auth",
-           WTF::base64URLEncode(static_cast<const char*>(m_auth->data()),
-                                m_auth->byteLength()));
-  result.add("keys", keys);
+  V8ObjectBuilder keys(script_state);
+  keys.Add("p256dh",
+           WTF::Base64URLEncode(static_cast<const char*>(p256dh_->Data()),
+                                p256dh_->ByteLength()));
+  keys.Add("auth", WTF::Base64URLEncode(static_cast<const char*>(auth_->Data()),
+                                        auth_->ByteLength()));
+  result.Add("keys", keys);
 
-  return result.scriptValue();
+  return result.GetScriptValue();
 }
 
 DEFINE_TRACE(PushSubscription) {
-  visitor->trace(m_options);
-  visitor->trace(m_p256dh);
-  visitor->trace(m_auth);
-  visitor->trace(m_serviceWorkerRegistration);
+  visitor->Trace(options_);
+  visitor->Trace(p256dh_);
+  visitor->Trace(auth_);
+  visitor->Trace(service_worker_registration_);
 }
 
 }  // namespace blink

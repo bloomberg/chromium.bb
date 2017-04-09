@@ -38,47 +38,47 @@
 namespace blink {
 
 WebMediaDevicesRequest::WebMediaDevicesRequest(MediaDevicesRequest* request)
-    : m_private(request) {}
+    : private_(request) {}
 
-void WebMediaDevicesRequest::reset() {
-  m_private.reset();
+void WebMediaDevicesRequest::Reset() {
+  private_.Reset();
 }
 
-WebSecurityOrigin WebMediaDevicesRequest::getSecurityOrigin() const {
-  DCHECK(!isNull());
-  DCHECK(m_private->getExecutionContext());
+WebSecurityOrigin WebMediaDevicesRequest::GetSecurityOrigin() const {
+  DCHECK(!IsNull());
+  DCHECK(private_->GetExecutionContext());
   return WebSecurityOrigin(
-      m_private->getExecutionContext()->getSecurityOrigin());
+      private_->GetExecutionContext()->GetSecurityOrigin());
 }
 
-WebDocument WebMediaDevicesRequest::ownerDocument() const {
-  DCHECK(!isNull());
-  return WebDocument(m_private->ownerDocument());
+WebDocument WebMediaDevicesRequest::OwnerDocument() const {
+  DCHECK(!IsNull());
+  return WebDocument(private_->OwnerDocument());
 }
 
-void WebMediaDevicesRequest::requestSucceeded(
-    WebVector<WebMediaDeviceInfo> webDevices) {
-  DCHECK(!isNull());
+void WebMediaDevicesRequest::RequestSucceeded(
+    WebVector<WebMediaDeviceInfo> web_devices) {
+  DCHECK(!IsNull());
 
-  MediaDeviceInfoVector devices(webDevices.size());
-  for (size_t i = 0; i < webDevices.size(); ++i)
-    devices[i] = MediaDeviceInfo::create(webDevices[i]);
+  MediaDeviceInfoVector devices(web_devices.size());
+  for (size_t i = 0; i < web_devices.size(); ++i)
+    devices[i] = MediaDeviceInfo::Create(web_devices[i]);
 
-  m_private->succeed(devices);
+  private_->Succeed(devices);
 }
 
-bool WebMediaDevicesRequest::equals(const WebMediaDevicesRequest& other) const {
-  if (isNull() || other.isNull())
+bool WebMediaDevicesRequest::Equals(const WebMediaDevicesRequest& other) const {
+  if (IsNull() || other.IsNull())
     return false;
-  return m_private.get() == other.m_private.get();
+  return private_.Get() == other.private_.Get();
 }
 
-void WebMediaDevicesRequest::assign(const WebMediaDevicesRequest& other) {
-  m_private = other.m_private;
+void WebMediaDevicesRequest::Assign(const WebMediaDevicesRequest& other) {
+  private_ = other.private_;
 }
 
 WebMediaDevicesRequest::operator MediaDevicesRequest*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
 }  // namespace blink

@@ -41,26 +41,26 @@ class WebString;
 class WebPepperSocketClient {
  public:
   enum ClosingHandshakeCompletionStatus {
-    ClosingHandshakeIncomplete,
-    ClosingHandshakeComplete
+    kClosingHandshakeIncomplete,
+    kClosingHandshakeComplete
   };
 
   virtual ~WebPepperSocketClient() {}
-  virtual void didConnect(const WebString& subprotocol,
+  virtual void DidConnect(const WebString& subprotocol,
                           const WebString& extensions) {}
-  virtual void didReceiveMessage(const WebString& message) {}
-  virtual void didReceiveArrayBuffer(const WebArrayBuffer& arrayBuffer) {}
-  virtual void didReceiveMessageError() {}
-  virtual void didConsumeBufferedAmount(unsigned long consumed) {}
-  virtual void didStartClosingHandshake() {}
-  virtual void didClose(ClosingHandshakeCompletionStatus,
+  virtual void DidReceiveMessage(const WebString& message) {}
+  virtual void DidReceiveArrayBuffer(const WebArrayBuffer& array_buffer) {}
+  virtual void DidReceiveMessageError() {}
+  virtual void DidConsumeBufferedAmount(unsigned long consumed) {}
+  virtual void DidStartClosingHandshake() {}
+  virtual void DidClose(ClosingHandshakeCompletionStatus,
                         unsigned short code,
                         const WebString& reason) {}
 
   // FIXME: Deperecate these methods.
-  virtual void didConnect() {}
-  virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) {}
-  virtual void didClose(unsigned long unhandledBufferedAmount,
+  virtual void DidConnect() {}
+  virtual void DidUpdateBufferedAmount(unsigned long buffered_amount) {}
+  virtual void DidClose(unsigned long unhandled_buffered_amount,
                         ClosingHandshakeCompletionStatus,
                         unsigned short code,
                         const WebString& reason) {}

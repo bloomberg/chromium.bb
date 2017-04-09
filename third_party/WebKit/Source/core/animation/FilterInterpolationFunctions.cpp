@@ -18,16 +18,16 @@ namespace blink {
 
 class FilterNonInterpolableValue : public NonInterpolableValue {
  public:
-  static PassRefPtr<FilterNonInterpolableValue> create(
+  static PassRefPtr<FilterNonInterpolableValue> Create(
       FilterOperation::OperationType type,
-      PassRefPtr<NonInterpolableValue> typeNonInterpolableValue) {
-    return adoptRef(new FilterNonInterpolableValue(
-        type, std::move(typeNonInterpolableValue)));
+      PassRefPtr<NonInterpolableValue> type_non_interpolable_value) {
+    return AdoptRef(new FilterNonInterpolableValue(
+        type, std::move(type_non_interpolable_value)));
   }
 
-  FilterOperation::OperationType operationType() const { return m_type; }
-  const NonInterpolableValue* typeNonInterpolableValue() const {
-    return m_typeNonInterpolableValue.get();
+  FilterOperation::OperationType GetOperationType() const { return type_; }
+  const NonInterpolableValue* TypeNonInterpolableValue() const {
+    return type_non_interpolable_value_.Get();
   }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
@@ -35,12 +35,12 @@ class FilterNonInterpolableValue : public NonInterpolableValue {
  private:
   FilterNonInterpolableValue(
       FilterOperation::OperationType type,
-      PassRefPtr<NonInterpolableValue> typeNonInterpolableValue)
-      : m_type(type),
-        m_typeNonInterpolableValue(std::move(typeNonInterpolableValue)) {}
+      PassRefPtr<NonInterpolableValue> type_non_interpolable_value)
+      : type_(type),
+        type_non_interpolable_value_(std::move(type_non_interpolable_value)) {}
 
-  const FilterOperation::OperationType m_type;
-  RefPtr<NonInterpolableValue> m_typeNonInterpolableValue;
+  const FilterOperation::OperationType type_;
+  RefPtr<NonInterpolableValue> type_non_interpolable_value_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(FilterNonInterpolableValue);
@@ -48,7 +48,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(FilterNonInterpolableValue);
 
 namespace {
 
-double defaultParameter(FilterOperation::OperationType type) {
+double DefaultParameter(FilterOperation::OperationType type) {
   switch (type) {
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::GRAYSCALE:
@@ -68,7 +68,7 @@ double defaultParameter(FilterOperation::OperationType type) {
   }
 }
 
-double clampParameter(double value, FilterOperation::OperationType type) {
+double ClampParameter(double value, FilterOperation::OperationType type) {
   switch (type) {
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:
@@ -92,15 +92,15 @@ double clampParameter(double value, FilterOperation::OperationType type) {
 
 }  // namespace
 
-InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(
+InterpolationValue FilterInterpolationFunctions::MaybeConvertCSSFilter(
     const CSSValue& value) {
-  if (value.isURIValue())
+  if (value.IsURIValue())
     return nullptr;
 
-  const CSSFunctionValue& filter = toCSSFunctionValue(value);
+  const CSSFunctionValue& filter = ToCSSFunctionValue(value);
   DCHECK_LE(filter.length(), 1u);
   FilterOperation::OperationType type =
-      FilterOperationResolver::filterOperationForType(filter.functionType());
+      FilterOperationResolver::FilterOperationForType(filter.FunctionType());
   InterpolationValue result = nullptr;
 
   switch (type) {
@@ -111,39 +111,39 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(
     case FilterOperation::OPACITY:
     case FilterOperation::SATURATE:
     case FilterOperation::SEPIA: {
-      double amount = defaultParameter(type);
+      double amount = DefaultParameter(type);
       if (filter.length() == 1) {
-        const CSSPrimitiveValue& firstValue =
-            toCSSPrimitiveValue(filter.item(0));
-        amount = firstValue.getDoubleValue();
-        if (firstValue.isPercentage())
+        const CSSPrimitiveValue& first_value =
+            ToCSSPrimitiveValue(filter.Item(0));
+        amount = first_value.GetDoubleValue();
+        if (first_value.IsPercentage())
           amount /= 100;
       }
-      result.interpolableValue = InterpolableNumber::create(amount);
+      result.interpolable_value = InterpolableNumber::Create(amount);
       break;
     }
 
     case FilterOperation::HUE_ROTATE: {
-      double angle = defaultParameter(type);
+      double angle = DefaultParameter(type);
       if (filter.length() == 1)
-        angle = toCSSPrimitiveValue(filter.item(0)).computeDegrees();
-      result.interpolableValue = InterpolableNumber::create(angle);
+        angle = ToCSSPrimitiveValue(filter.Item(0)).ComputeDegrees();
+      result.interpolable_value = InterpolableNumber::Create(angle);
       break;
     }
 
     case FilterOperation::BLUR: {
       if (filter.length() == 0)
-        result.interpolableValue =
-            LengthInterpolationFunctions::createNeutralInterpolableValue();
+        result.interpolable_value =
+            LengthInterpolationFunctions::CreateNeutralInterpolableValue();
       else
         result =
-            LengthInterpolationFunctions::maybeConvertCSSValue(filter.item(0));
+            LengthInterpolationFunctions::MaybeConvertCSSValue(filter.Item(0));
       break;
     }
 
     case FilterOperation::DROP_SHADOW: {
       result =
-          ShadowInterpolationFunctions::maybeConvertCSSValue(filter.item(0));
+          ShadowInterpolationFunctions::MaybeConvertCSSValue(filter.Item(0));
       break;
     }
 
@@ -155,41 +155,41 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertCSSFilter(
   if (!result)
     return nullptr;
 
-  result.nonInterpolableValue = FilterNonInterpolableValue::create(
-      type, std::move(result.nonInterpolableValue));
+  result.non_interpolable_value = FilterNonInterpolableValue::Create(
+      type, std::move(result.non_interpolable_value));
   return result;
 }
 
-InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(
+InterpolationValue FilterInterpolationFunctions::MaybeConvertFilter(
     const FilterOperation& filter,
     double zoom) {
   InterpolationValue result = nullptr;
 
-  switch (filter.type()) {
+  switch (filter.GetType()) {
     case FilterOperation::GRAYSCALE:
     case FilterOperation::HUE_ROTATE:
     case FilterOperation::SATURATE:
     case FilterOperation::SEPIA:
-      result.interpolableValue = InterpolableNumber::create(
-          toBasicColorMatrixFilterOperation(filter).amount());
+      result.interpolable_value = InterpolableNumber::Create(
+          ToBasicColorMatrixFilterOperation(filter).Amount());
       break;
 
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
-      result.interpolableValue = InterpolableNumber::create(
-          toBasicComponentTransferFilterOperation(filter).amount());
+      result.interpolable_value = InterpolableNumber::Create(
+          ToBasicComponentTransferFilterOperation(filter).Amount());
       break;
 
     case FilterOperation::BLUR:
-      result = LengthInterpolationFunctions::maybeConvertLength(
-          toBlurFilterOperation(filter).stdDeviation(), zoom);
+      result = LengthInterpolationFunctions::MaybeConvertLength(
+          ToBlurFilterOperation(filter).StdDeviation(), zoom);
       break;
 
     case FilterOperation::DROP_SHADOW: {
-      result = ShadowInterpolationFunctions::convertShadowData(
-          toDropShadowFilterOperation(filter).shadow(), zoom);
+      result = ShadowInterpolationFunctions::ConvertShadowData(
+          ToDropShadowFilterOperation(filter).Shadow(), zoom);
       break;
     }
 
@@ -204,32 +204,32 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(
   if (!result)
     return nullptr;
 
-  result.nonInterpolableValue = FilterNonInterpolableValue::create(
-      filter.type(), std::move(result.nonInterpolableValue));
+  result.non_interpolable_value = FilterNonInterpolableValue::Create(
+      filter.GetType(), std::move(result.non_interpolable_value));
   return result;
 }
 
 std::unique_ptr<InterpolableValue>
-FilterInterpolationFunctions::createNoneValue(
-    const NonInterpolableValue& untypedValue) {
-  switch (toFilterNonInterpolableValue(untypedValue).operationType()) {
+FilterInterpolationFunctions::CreateNoneValue(
+    const NonInterpolableValue& untyped_value) {
+  switch (ToFilterNonInterpolableValue(untyped_value).GetOperationType()) {
     case FilterOperation::GRAYSCALE:
     case FilterOperation::INVERT:
     case FilterOperation::SEPIA:
     case FilterOperation::HUE_ROTATE:
-      return InterpolableNumber::create(0);
+      return InterpolableNumber::Create(0);
 
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:
     case FilterOperation::OPACITY:
     case FilterOperation::SATURATE:
-      return InterpolableNumber::create(1);
+      return InterpolableNumber::Create(1);
 
     case FilterOperation::BLUR:
-      return LengthInterpolationFunctions::createNeutralInterpolableValue();
+      return LengthInterpolationFunctions::CreateNeutralInterpolableValue();
 
     case FilterOperation::DROP_SHADOW:
-      return ShadowInterpolationFunctions::createNeutralInterpolableValue();
+      return ShadowInterpolationFunctions::CreateNeutralInterpolableValue();
 
     default:
       NOTREACHED();
@@ -237,54 +237,55 @@ FilterInterpolationFunctions::createNoneValue(
   }
 }
 
-bool FilterInterpolationFunctions::filtersAreCompatible(
+bool FilterInterpolationFunctions::FiltersAreCompatible(
     const NonInterpolableValue& a,
     const NonInterpolableValue& b) {
-  return toFilterNonInterpolableValue(a).operationType() ==
-         toFilterNonInterpolableValue(b).operationType();
+  return ToFilterNonInterpolableValue(a).GetOperationType() ==
+         ToFilterNonInterpolableValue(b).GetOperationType();
 }
 
-FilterOperation* FilterInterpolationFunctions::createFilter(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue& untypedNonInterpolableValue,
+FilterOperation* FilterInterpolationFunctions::CreateFilter(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue& untyped_non_interpolable_value,
     const StyleResolverState& state) {
-  const FilterNonInterpolableValue& nonInterpolableValue =
-      toFilterNonInterpolableValue(untypedNonInterpolableValue);
-  FilterOperation::OperationType type = nonInterpolableValue.operationType();
+  const FilterNonInterpolableValue& non_interpolable_value =
+      ToFilterNonInterpolableValue(untyped_non_interpolable_value);
+  FilterOperation::OperationType type =
+      non_interpolable_value.GetOperationType();
 
   switch (type) {
     case FilterOperation::GRAYSCALE:
     case FilterOperation::HUE_ROTATE:
     case FilterOperation::SATURATE:
     case FilterOperation::SEPIA: {
-      double value =
-          clampParameter(toInterpolableNumber(interpolableValue).value(), type);
-      return BasicColorMatrixFilterOperation::create(value, type);
+      double value = ClampParameter(
+          ToInterpolableNumber(interpolable_value).Value(), type);
+      return BasicColorMatrixFilterOperation::Create(value, type);
     }
 
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY: {
-      double value =
-          clampParameter(toInterpolableNumber(interpolableValue).value(), type);
-      return BasicComponentTransferFilterOperation::create(value, type);
+      double value = ClampParameter(
+          ToInterpolableNumber(interpolable_value).Value(), type);
+      return BasicComponentTransferFilterOperation::Create(value, type);
     }
 
     case FilterOperation::BLUR: {
-      Length stdDeviation = LengthInterpolationFunctions::createLength(
-          interpolableValue, nonInterpolableValue.typeNonInterpolableValue(),
-          state.cssToLengthConversionData(), ValueRangeNonNegative);
-      return BlurFilterOperation::create(stdDeviation);
+      Length std_deviation = LengthInterpolationFunctions::CreateLength(
+          interpolable_value, non_interpolable_value.TypeNonInterpolableValue(),
+          state.CssToLengthConversionData(), kValueRangeNonNegative);
+      return BlurFilterOperation::Create(std_deviation);
     }
 
     case FilterOperation::DROP_SHADOW: {
-      ShadowData shadowData = ShadowInterpolationFunctions::createShadowData(
-          interpolableValue, nonInterpolableValue.typeNonInterpolableValue(),
+      ShadowData shadow_data = ShadowInterpolationFunctions::CreateShadowData(
+          interpolable_value, non_interpolable_value.TypeNonInterpolableValue(),
           state);
-      if (shadowData.color().isCurrentColor())
-        shadowData.overrideColor(Color::black);
-      return DropShadowFilterOperation::create(shadowData);
+      if (shadow_data.GetColor().IsCurrentColor())
+        shadow_data.OverrideColor(Color::kBlack);
+      return DropShadowFilterOperation::Create(shadow_data);
     }
 
     default:

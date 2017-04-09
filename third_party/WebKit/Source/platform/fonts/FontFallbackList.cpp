@@ -40,189 +40,191 @@
 namespace blink {
 
 FontFallbackList::FontFallbackList()
-    : m_cachedPrimarySimpleFontData(0),
-      m_fontSelector(nullptr),
-      m_fontSelectorVersion(0),
-      m_familyIndex(0),
-      m_generation(FontCache::fontCache()->generation()),
-      m_hasLoadingFallback(false) {}
+    : cached_primary_simple_font_data_(0),
+      font_selector_(nullptr),
+      font_selector_version_(0),
+      family_index_(0),
+      generation_(FontCache::GetFontCache()->Generation()),
+      has_loading_fallback_(false) {}
 
-void FontFallbackList::invalidate(FontSelector* fontSelector) {
-  releaseFontData();
-  m_fontList.clear();
-  m_cachedPrimarySimpleFontData = 0;
-  m_familyIndex = 0;
-  m_hasLoadingFallback = false;
-  if (m_fontSelector != fontSelector)
-    m_fontSelector = fontSelector;
-  m_fontSelectorVersion = m_fontSelector ? m_fontSelector->version() : 0;
-  m_generation = FontCache::fontCache()->generation();
+void FontFallbackList::Invalidate(FontSelector* font_selector) {
+  ReleaseFontData();
+  font_list_.Clear();
+  cached_primary_simple_font_data_ = 0;
+  family_index_ = 0;
+  has_loading_fallback_ = false;
+  if (font_selector_ != font_selector)
+    font_selector_ = font_selector;
+  font_selector_version_ = font_selector_ ? font_selector_->Version() : 0;
+  generation_ = FontCache::GetFontCache()->Generation();
 }
 
-void FontFallbackList::releaseFontData() {
-  unsigned numFonts = m_fontList.size();
-  for (unsigned i = 0; i < numFonts; ++i) {
-    if (!m_fontList[i]->isCustomFont()) {
-      ASSERT(!m_fontList[i]->isSegmented());
-      FontCache::fontCache()->releaseFontData(toSimpleFontData(m_fontList[i]));
+void FontFallbackList::ReleaseFontData() {
+  unsigned num_fonts = font_list_.size();
+  for (unsigned i = 0; i < num_fonts; ++i) {
+    if (!font_list_[i]->IsCustomFont()) {
+      ASSERT(!font_list_[i]->IsSegmented());
+      FontCache::GetFontCache()->ReleaseFontData(
+          ToSimpleFontData(font_list_[i]));
     }
   }
-  m_shapeCache.reset();  // Clear the weak pointer to the cache instance.
+  shape_cache_.reset();  // Clear the weak pointer to the cache instance.
 }
 
-bool FontFallbackList::loadingCustomFonts() const {
-  if (!m_hasLoadingFallback)
+bool FontFallbackList::LoadingCustomFonts() const {
+  if (!has_loading_fallback_)
     return false;
 
-  unsigned numFonts = m_fontList.size();
-  for (unsigned i = 0; i < numFonts; ++i) {
-    if (m_fontList[i]->isLoading())
+  unsigned num_fonts = font_list_.size();
+  for (unsigned i = 0; i < num_fonts; ++i) {
+    if (font_list_[i]->IsLoading())
       return true;
   }
   return false;
 }
 
-bool FontFallbackList::shouldSkipDrawing() const {
-  if (!m_hasLoadingFallback)
+bool FontFallbackList::ShouldSkipDrawing() const {
+  if (!has_loading_fallback_)
     return false;
 
-  unsigned numFonts = m_fontList.size();
-  for (unsigned i = 0; i < numFonts; ++i) {
-    if (m_fontList[i]->shouldSkipDrawing())
+  unsigned num_fonts = font_list_.size();
+  for (unsigned i = 0; i < num_fonts; ++i) {
+    if (font_list_[i]->ShouldSkipDrawing())
       return true;
   }
   return false;
 }
 
-const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(
-    const FontDescription& fontDescription) const {
-  bool shouldLoadCustomFont = true;
+const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
+    const FontDescription& font_description) const {
+  bool should_load_custom_font = true;
 
-  for (unsigned fontIndex = 0;; ++fontIndex) {
-    const FontData* fontData = fontDataAt(fontDescription, fontIndex);
-    if (!fontData) {
+  for (unsigned font_index = 0;; ++font_index) {
+    const FontData* font_data = FontDataAt(font_description, font_index);
+    if (!font_data) {
       // All fonts are custom fonts and are loading. Return the first FontData.
-      fontData = fontDataAt(fontDescription, 0);
-      if (fontData)
-        return fontData->fontDataForCharacter(spaceCharacter);
+      font_data = FontDataAt(font_description, 0);
+      if (font_data)
+        return font_data->FontDataForCharacter(kSpaceCharacter);
 
-      SimpleFontData* lastResortFallback =
-          FontCache::fontCache()
-              ->getLastResortFallbackFont(fontDescription)
-              .get();
-      ASSERT(lastResortFallback);
-      return lastResortFallback;
+      SimpleFontData* last_resort_fallback =
+          FontCache::GetFontCache()
+              ->GetLastResortFallbackFont(font_description)
+              .Get();
+      ASSERT(last_resort_fallback);
+      return last_resort_fallback;
     }
 
-    if (fontData->isSegmented() &&
-        !toSegmentedFontData(fontData)->containsCharacter(spaceCharacter))
+    if (font_data->IsSegmented() &&
+        !ToSegmentedFontData(font_data)->ContainsCharacter(kSpaceCharacter))
       continue;
 
-    const SimpleFontData* fontDataForSpace =
-        fontData->fontDataForCharacter(spaceCharacter);
-    ASSERT(fontDataForSpace);
+    const SimpleFontData* font_data_for_space =
+        font_data->FontDataForCharacter(kSpaceCharacter);
+    ASSERT(font_data_for_space);
 
     // When a custom font is loading, we should use the correct fallback font to
     // layout the text.  Here skip the temporary font for the loading custom
     // font which may not act as the correct fallback font.
-    if (!fontDataForSpace->isLoadingFallback())
-      return fontDataForSpace;
+    if (!font_data_for_space->IsLoadingFallback())
+      return font_data_for_space;
 
-    if (fontData->isSegmented()) {
-      const SegmentedFontData* segmented = toSegmentedFontData(fontData);
-      for (unsigned i = 0; i < segmented->numFaces(); i++) {
-        const SimpleFontData* rangeFontData = segmented->faceAt(i)->fontData();
-        if (!rangeFontData->isLoadingFallback())
-          return rangeFontData;
+    if (font_data->IsSegmented()) {
+      const SegmentedFontData* segmented = ToSegmentedFontData(font_data);
+      for (unsigned i = 0; i < segmented->NumFaces(); i++) {
+        const SimpleFontData* range_font_data =
+            segmented->FaceAt(i)->FontData();
+        if (!range_font_data->IsLoadingFallback())
+          return range_font_data;
       }
-      if (fontData->isLoading())
-        shouldLoadCustomFont = false;
+      if (font_data->IsLoading())
+        should_load_custom_font = false;
     }
 
     // Begin to load the first custom font if needed.
-    if (shouldLoadCustomFont) {
-      shouldLoadCustomFont = false;
-      fontDataForSpace->customFontData()->beginLoadIfNeeded();
+    if (should_load_custom_font) {
+      should_load_custom_font = false;
+      font_data_for_space->GetCustomFontData()->BeginLoadIfNeeded();
     }
   }
 }
 
-PassRefPtr<FontData> FontFallbackList::getFontData(
-    const FontDescription& fontDescription,
-    int& familyIndex) const {
-  const FontFamily* currFamily = &fontDescription.family();
-  for (int i = 0; currFamily && i < familyIndex; i++)
-    currFamily = currFamily->next();
+PassRefPtr<FontData> FontFallbackList::GetFontData(
+    const FontDescription& font_description,
+    int& family_index) const {
+  const FontFamily* curr_family = &font_description.Family();
+  for (int i = 0; curr_family && i < family_index; i++)
+    curr_family = curr_family->Next();
 
-  for (; currFamily; currFamily = currFamily->next()) {
-    familyIndex++;
-    if (currFamily->family().length()) {
+  for (; curr_family; curr_family = curr_family->Next()) {
+    family_index++;
+    if (curr_family->Family().length()) {
       RefPtr<FontData> result;
-      if (m_fontSelector)
-        result =
-            m_fontSelector->getFontData(fontDescription, currFamily->family());
+      if (font_selector_)
+        result = font_selector_->GetFontData(font_description,
+                                             curr_family->Family());
       if (!result)
-        result = FontCache::fontCache()->getFontData(fontDescription,
-                                                     currFamily->family());
+        result = FontCache::GetFontCache()->GetFontData(font_description,
+                                                        curr_family->Family());
       if (result)
-        return result.release();
+        return result.Release();
     }
   }
-  familyIndex = cAllFamiliesScanned;
+  family_index = kCAllFamiliesScanned;
 
-  if (m_fontSelector) {
+  if (font_selector_) {
     // Try the user's preferred standard font.
-    if (RefPtr<FontData> data = m_fontSelector->getFontData(
-            fontDescription, FontFamilyNames::webkit_standard))
-      return data.release();
+    if (RefPtr<FontData> data = font_selector_->GetFontData(
+            font_description, FontFamilyNames::webkit_standard))
+      return data.Release();
   }
 
   // Still no result. Hand back our last resort fallback font.
-  return FontCache::fontCache()->getLastResortFallbackFont(fontDescription);
+  return FontCache::GetFontCache()->GetLastResortFallbackFont(font_description);
 }
 
-FallbackListCompositeKey FontFallbackList::compositeKey(
-    const FontDescription& fontDescription) const {
-  FallbackListCompositeKey key(fontDescription);
-  const FontFamily* currentFamily = &fontDescription.family();
-  while (currentFamily) {
-    if (currentFamily->family().length()) {
+FallbackListCompositeKey FontFallbackList::CompositeKey(
+    const FontDescription& font_description) const {
+  FallbackListCompositeKey key(font_description);
+  const FontFamily* current_family = &font_description.Family();
+  while (current_family) {
+    if (current_family->Family().length()) {
       FontFaceCreationParams params(
-          adjustFamilyNameToAvoidUnsupportedFonts(currentFamily->family()));
+          AdjustFamilyNameToAvoidUnsupportedFonts(current_family->Family()));
       RefPtr<FontData> result;
-      if (m_fontSelector)
-        result = m_fontSelector->getFontData(fontDescription,
-                                             currentFamily->family());
+      if (font_selector_)
+        result = font_selector_->GetFontData(font_description,
+                                             current_family->Family());
       if (!result) {
-        if (FontPlatformData* platformData =
-                FontCache::fontCache()->getFontPlatformData(fontDescription,
-                                                            params))
-          result = FontCache::fontCache()->fontDataFromFontPlatformData(
-              platformData);
+        if (FontPlatformData* platform_data =
+                FontCache::GetFontCache()->GetFontPlatformData(font_description,
+                                                               params))
+          result = FontCache::GetFontCache()->FontDataFromFontPlatformData(
+              platform_data);
       }
       if (result) {
-        key.add(fontDescription.cacheKey(params));
-        if (!result->isSegmented() && !result->isCustomFont())
-          FontCache::fontCache()->releaseFontData(toSimpleFontData(result));
+        key.Add(font_description.CacheKey(params));
+        if (!result->IsSegmented() && !result->IsCustomFont())
+          FontCache::GetFontCache()->ReleaseFontData(ToSimpleFontData(result));
       }
     }
-    currentFamily = currentFamily->next();
+    current_family = current_family->Next();
   }
 
   return key;
 }
 
-const FontData* FontFallbackList::fontDataAt(
-    const FontDescription& fontDescription,
-    unsigned realizedFontIndex) const {
-  if (realizedFontIndex < m_fontList.size())
-    return m_fontList[realizedFontIndex]
-        .get();  // This fallback font is already in our list.
+const FontData* FontFallbackList::FontDataAt(
+    const FontDescription& font_description,
+    unsigned realized_font_index) const {
+  if (realized_font_index < font_list_.size())
+    return font_list_[realized_font_index]
+        .Get();  // This fallback font is already in our list.
 
   // Make sure we're not passing in some crazy value here.
-  ASSERT(realizedFontIndex == m_fontList.size());
+  ASSERT(realized_font_index == font_list_.size());
 
-  if (m_familyIndex == cAllFamiliesScanned)
+  if (family_index_ == kCAllFamiliesScanned)
     return 0;
 
   // Ask the font cache for the font data.
@@ -230,21 +232,21 @@ const FontData* FontFallbackList::fontDataAt(
   // families we've looked at before in |m_familyIndex|, so that we never scan
   // the same spot in the list twice.  getFontData will adjust our
   // |m_familyIndex| as it scans for the right font to make.
-  ASSERT(FontCache::fontCache()->generation() == m_generation);
-  RefPtr<FontData> result = getFontData(fontDescription, m_familyIndex);
+  ASSERT(FontCache::GetFontCache()->Generation() == generation_);
+  RefPtr<FontData> result = GetFontData(font_description, family_index_);
   if (result) {
-    m_fontList.push_back(result);
-    if (result->isLoadingFallback())
-      m_hasLoadingFallback = true;
+    font_list_.push_back(result);
+    if (result->IsLoadingFallback())
+      has_loading_fallback_ = true;
   }
-  return result.get();
+  return result.Get();
 }
 
-bool FontFallbackList::isValid() const {
-  if (!m_fontSelector)
-    return m_fontSelectorVersion == 0;
+bool FontFallbackList::IsValid() const {
+  if (!font_selector_)
+    return font_selector_version_ == 0;
 
-  return m_fontSelector->version() == m_fontSelectorVersion;
+  return font_selector_->Version() == font_selector_version_;
 }
 
 }  // namespace blink

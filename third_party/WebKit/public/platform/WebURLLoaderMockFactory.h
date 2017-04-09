@@ -21,36 +21,36 @@ struct WebURLError;
 
 class WebURLLoaderMockFactory {
  public:
-  static std::unique_ptr<WebURLLoaderMockFactory> create();
+  static std::unique_ptr<WebURLLoaderMockFactory> Create();
 
   virtual ~WebURLLoaderMockFactory() {}
 
   // Create a WebURLLoader that takes care of mocked requests.
   // Non-mocked request are forwarded to given loader which should not
   // be nullptr.
-  virtual WebURLLoader* createURLLoader(WebURLLoader*) = 0;
+  virtual WebURLLoader* CreateURLLoader(WebURLLoader*) = 0;
 
   // Registers a response and the file to be served when the specified URL
   // is loaded. If no file is specified then the response content will be empty.
   // unregisterURL() should be called for each test entry before registering
   // another response for the same URL from another test.
-  virtual void registerURL(const WebURL&,
+  virtual void RegisterURL(const WebURL&,
                            const WebURLResponse&,
-                           const WebString& filePath) = 0;
+                           const WebString& file_path) = 0;
 
   // Registers an error to be served when the specified URL is requested.
   // unregisterURL() should be called for each test entry before registering
   // another response for the same URL from another test.
-  virtual void registerErrorURL(const WebURL&,
+  virtual void RegisterErrorURL(const WebURL&,
                                 const WebURLResponse&,
                                 const WebURLError&) = 0;
 
   // Unregisters the given URL so it is no longer mocked.
-  virtual void unregisterURL(const WebURL&) = 0;
+  virtual void UnregisterURL(const WebURL&) = 0;
 
   // Unregisters URLs so they are no longer mocked. This also clears the
   // MemoryCache.
-  virtual void unregisterAllURLsAndClearMemoryCache() = 0;
+  virtual void UnregisterAllURLsAndClearMemoryCache() = 0;
 
   // Causes all pending asynchronous requests to be served. When this method
   // returns all the pending requests have been processed.
@@ -59,11 +59,11 @@ class WebURLLoaderMockFactory {
   // is being involved).
   // DO NOT USE THIS for Frame loading; always use methods defined in
   // FrameTestHelpers instead.
-  virtual void serveAsynchronousRequests() = 0;
+  virtual void ServeAsynchronousRequests() = 0;
 
   // Set a delegate that allows callbacks for all WebURLLoaderClients to be
   // intercepted.
-  virtual void setLoaderDelegate(WebURLLoaderTestDelegate*) = 0;
+  virtual void SetLoaderDelegate(WebURLLoaderTestDelegate*) = 0;
 };
 
 }  // namespace blink

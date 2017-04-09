@@ -24,30 +24,31 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
   ~MockPlatform() override {}
 
   // From blink::Platform:
-  void cacheMetadata(const WebURL& url, int64_t, const char*, size_t) override {
-    m_cachedURLs.push_back(url);
+  void CacheMetadata(const WebURL& url, int64_t, const char*, size_t) override {
+    cached_ur_ls_.push_back(url);
   }
 
-  const Vector<WebURL>& cachedURLs() const { return m_cachedURLs; }
+  const Vector<WebURL>& CachedURLs() const { return cached_ur_ls_; }
 
  private:
-  Vector<WebURL> m_cachedURLs;
+  Vector<WebURL> cached_ur_ls_;
 };
 
-ResourceResponse createTestResourceResponse() {
+ResourceResponse CreateTestResourceResponse() {
   ResourceResponse response;
-  response.setURL(URLTestHelpers::toKURL("https://example.com/"));
-  response.setHTTPStatusCode(200);
+  response.SetURL(URLTestHelpers::ToKURL("https://example.com/"));
+  response.SetHTTPStatusCode(200);
   return response;
 }
 
-void createTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
-  const char testData[] = "test data";
+void CreateTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
+  const char kTestData[] = "test data";
   Resource* resource =
-      RawResource::create(ResourceRequest(response.url()), Resource::Raw);
-  resource->setResponse(response);
-  resource->cacheHandler()->setCachedMetadata(
-      100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
+      RawResource::Create(ResourceRequest(response.Url()), Resource::kRaw);
+  resource->SetResponse(response);
+  resource->CacheHandler()->SetCachedMetadata(
+      100, kTestData, sizeof(kTestData),
+      CachedMetadataHandler::kSendToPlatform);
   return;
 }
 
@@ -55,96 +56,96 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
 
 TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
-  ResourceResponse response(createTestResourceResponse());
-  createTestResourceAndSetCachedMetadata(response);
-  EXPECT_EQ(1u, mock->cachedURLs().size());
+  ResourceResponse response(CreateTestResourceResponse());
+  CreateTestResourceAndSetCachedMetadata(response);
+  EXPECT_EQ(1u, mock->CachedURLs().size());
 }
 
 TEST(
     ResourceTest,
     SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedViaServiceWorker) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
-  ResourceResponse response(createTestResourceResponse());
-  response.setWasFetchedViaServiceWorker(true);
-  createTestResourceAndSetCachedMetadata(response);
-  EXPECT_EQ(0u, mock->cachedURLs().size());
+  ResourceResponse response(CreateTestResourceResponse());
+  response.SetWasFetchedViaServiceWorker(true);
+  CreateTestResourceAndSetCachedMetadata(response);
+  EXPECT_EQ(0u, mock->CachedURLs().size());
 }
 
 TEST(ResourceTest, RevalidateWithFragment) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+  KURL url(kParsedURLString, "http://127.0.0.1:8000/foo.html");
   ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  Resource* resource = RawResource::create(url, Resource::Raw);
-  resource->responseReceived(response, nullptr);
-  resource->finish();
+  response.SetURL(url);
+  response.SetHTTPStatusCode(200);
+  Resource* resource = RawResource::Create(url, Resource::kRaw);
+  resource->ResponseReceived(response, nullptr);
+  resource->Finish();
 
   // Revalidating with a url that differs by only the fragment
   // shouldn't trigger a securiy check.
-  url.setFragmentIdentifier("bar");
-  resource->setRevalidatingRequest(ResourceRequest(url));
-  ResourceResponse revalidatingResponse;
-  revalidatingResponse.setURL(url);
-  revalidatingResponse.setHTTPStatusCode(304);
-  resource->responseReceived(revalidatingResponse, nullptr);
+  url.SetFragmentIdentifier("bar");
+  resource->SetRevalidatingRequest(ResourceRequest(url));
+  ResourceResponse revalidating_response;
+  revalidating_response.SetURL(url);
+  revalidating_response.SetHTTPStatusCode(304);
+  resource->ResponseReceived(revalidating_response, nullptr);
 }
 
 TEST(ResourceTest, Vary) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
-  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+  KURL url(kParsedURLString, "http://127.0.0.1:8000/foo.html");
   ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
+  response.SetURL(url);
+  response.SetHTTPStatusCode(200);
 
-  Resource* resource = RawResource::create(url, Resource::Raw);
-  resource->responseReceived(response, nullptr);
-  resource->finish();
+  Resource* resource = RawResource::Create(url, Resource::kRaw);
+  resource->ResponseReceived(response, nullptr);
+  resource->Finish();
 
-  ResourceRequest newRequest(url);
-  EXPECT_FALSE(resource->mustReloadDueToVaryHeader(newRequest));
+  ResourceRequest new_request(url);
+  EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
-  response.setHTTPHeaderField(HTTPNames::Vary, "*");
-  resource->setResponse(response);
-  EXPECT_TRUE(resource->mustReloadDueToVaryHeader(newRequest));
+  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  resource->SetResponse(response);
+  EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Irrelevant header
-  response.setHTTPHeaderField(HTTPNames::Vary, "definitelynotarealheader");
-  resource->setResponse(response);
-  EXPECT_FALSE(resource->mustReloadDueToVaryHeader(newRequest));
+  response.SetHTTPHeaderField(HTTPNames::Vary, "definitelynotarealheader");
+  resource->SetResponse(response);
+  EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Header present on new but not old
-  newRequest.setHTTPHeaderField(HTTPNames::User_Agent, "something");
-  response.setHTTPHeaderField(HTTPNames::Vary, HTTPNames::User_Agent);
-  resource->setResponse(response);
-  EXPECT_TRUE(resource->mustReloadDueToVaryHeader(newRequest));
-  newRequest.clearHTTPHeaderField(HTTPNames::User_Agent);
+  new_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
+  response.SetHTTPHeaderField(HTTPNames::Vary, HTTPNames::User_Agent);
+  resource->SetResponse(response);
+  EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
+  new_request.ClearHTTPHeaderField(HTTPNames::User_Agent);
 
-  ResourceRequest oldRequest(url);
-  oldRequest.setHTTPHeaderField(HTTPNames::User_Agent, "something");
-  oldRequest.setHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
-  resource = RawResource::create(oldRequest, Resource::Raw);
-  resource->responseReceived(response, nullptr);
-  resource->finish();
+  ResourceRequest old_request(url);
+  old_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
+  old_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
+  resource = RawResource::Create(old_request, Resource::kRaw);
+  resource->ResponseReceived(response, nullptr);
+  resource->Finish();
 
   // Header present on old but not new
-  newRequest.clearHTTPHeaderField(HTTPNames::User_Agent);
-  response.setHTTPHeaderField(HTTPNames::Vary, HTTPNames::User_Agent);
-  resource->setResponse(response);
-  EXPECT_TRUE(resource->mustReloadDueToVaryHeader(newRequest));
+  new_request.ClearHTTPHeaderField(HTTPNames::User_Agent);
+  response.SetHTTPHeaderField(HTTPNames::Vary, HTTPNames::User_Agent);
+  resource->SetResponse(response);
+  EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Header present on both
-  newRequest.setHTTPHeaderField(HTTPNames::User_Agent, "something");
-  EXPECT_FALSE(resource->mustReloadDueToVaryHeader(newRequest));
+  new_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
+  EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
   // One matching, one mismatching
-  response.setHTTPHeaderField(HTTPNames::Vary, "User-Agent, Referer");
-  resource->setResponse(response);
-  EXPECT_TRUE(resource->mustReloadDueToVaryHeader(newRequest));
+  response.SetHTTPHeaderField(HTTPNames::Vary, "User-Agent, Referer");
+  resource->SetResponse(response);
+  EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Two matching
-  newRequest.setHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
-  EXPECT_FALSE(resource->mustReloadDueToVaryHeader(newRequest));
+  new_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
+  EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 }
 
 }  // namespace blink

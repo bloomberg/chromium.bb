@@ -36,28 +36,28 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLOptGroupElement* create(Document&);
+  static HTMLOptGroupElement* Create(Document&);
 
-  bool isDisabledFormControl() const override;
-  String defaultToolTip() const override;
-  HTMLSelectElement* ownerSelectElement() const;
+  bool IsDisabledFormControl() const override;
+  String DefaultToolTip() const override;
+  HTMLSelectElement* OwnerSelectElement() const;
 
-  String groupLabelText() const;
-  HTMLDivElement& optGroupLabelElement() const;
+  String GroupLabelText() const;
+  HTMLDivElement& OptGroupLabelElement() const;
 
  private:
   explicit HTMLOptGroupElement(Document&);
   ~HTMLOptGroupElement();
 
-  bool supportsFocus() const override;
-  void parseAttribute(const AttributeModificationParams&) override;
-  void accessKeyAction(bool sendMouseEvents) override;
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
-  bool matchesEnabledPseudoClass() const override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  bool SupportsFocus() const override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  void AccessKeyAction(bool send_mouse_events) override;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  bool MatchesEnabledPseudoClass() const override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
-  void updateGroupLabel();
+  void UpdateGroupLabel();
 };
 
 }  // namespace blink

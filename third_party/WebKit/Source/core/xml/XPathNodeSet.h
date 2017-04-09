@@ -36,62 +36,64 @@ namespace XPath {
 
 class NodeSet final : public GarbageCollected<NodeSet> {
  public:
-  static NodeSet* create() { return new NodeSet; }
-  static NodeSet* create(const NodeSet&);
-  DEFINE_INLINE_TRACE() { visitor->trace(m_nodes); }
+  static NodeSet* Create() { return new NodeSet; }
+  static NodeSet* Create(const NodeSet&);
+  DEFINE_INLINE_TRACE() { visitor->Trace(nodes_); }
 
-  size_t size() const { return m_nodes.size(); }
-  bool isEmpty() const { return !m_nodes.size(); }
-  Node* operator[](unsigned i) const { return m_nodes.at(i).get(); }
-  HeapVector<Member<Node>>::iterator begin() { return m_nodes.begin(); }
-  HeapVector<Member<Node>>::iterator end() { return m_nodes.end(); }
+  size_t size() const { return nodes_.size(); }
+  bool IsEmpty() const { return !nodes_.size(); }
+  Node* operator[](unsigned i) const { return nodes_.at(i).Get(); }
+  HeapVector<Member<Node>>::iterator begin() { return nodes_.begin(); }
+  HeapVector<Member<Node>>::iterator end() { return nodes_.end(); }
   HeapVector<Member<Node>>::const_iterator begin() const {
-    return m_nodes.begin();
+    return nodes_.begin();
   }
-  HeapVector<Member<Node>>::const_iterator end() const { return m_nodes.end(); }
-  void reserveCapacity(size_t newCapacity) {
-    m_nodes.reserveCapacity(newCapacity);
+  HeapVector<Member<Node>>::const_iterator end() const { return nodes_.end(); }
+  void ReserveCapacity(size_t new_capacity) {
+    nodes_.ReserveCapacity(new_capacity);
   }
-  void clear() { m_nodes.clear(); }
-  void swap(NodeSet& other) {
-    std::swap(m_isSorted, other.m_isSorted);
-    std::swap(m_subtreesAreDisjoint, other.m_subtreesAreDisjoint);
-    m_nodes.swap(other.m_nodes);
+  void Clear() { nodes_.Clear(); }
+  void Swap(NodeSet& other) {
+    std::swap(is_sorted_, other.is_sorted_);
+    std::swap(subtrees_are_disjoint_, other.subtrees_are_disjoint_);
+    nodes_.Swap(other.nodes_);
   }
 
   // NodeSet itself does not verify that nodes in it are unique.
-  void append(Node* node) { m_nodes.push_back(node); }
-  void append(const NodeSet& nodeSet) { m_nodes.appendVector(nodeSet.m_nodes); }
+  void Append(Node* node) { nodes_.push_back(node); }
+  void Append(const NodeSet& node_set) { nodes_.AppendVector(node_set.nodes_); }
 
   // Returns the set's first node in document order, or 0 if the set is empty.
-  Node* firstNode() const;
+  Node* FirstNode() const;
 
   // Returns 0 if the set is empty.
-  Node* anyNode() const;
+  Node* AnyNode() const;
 
   // NodeSet itself doesn't check if it contains nodes in document order - the
   // caller should tell it if it does not.
-  void markSorted(bool isSorted) { m_isSorted = isSorted; }
-  bool isSorted() const { return m_isSorted || m_nodes.size() < 2; }
+  void MarkSorted(bool is_sorted) { is_sorted_ = is_sorted; }
+  bool IsSorted() const { return is_sorted_ || nodes_.size() < 2; }
 
-  void sort() const;
+  void Sort() const;
 
   // No node in the set is ancestor of another. Unlike m_isSorted, this is
   // assumed to be false, unless the caller sets it to true.
-  void markSubtreesDisjoint(bool disjoint) { m_subtreesAreDisjoint = disjoint; }
-  bool subtreesAreDisjoint() const {
-    return m_subtreesAreDisjoint || m_nodes.size() < 2;
+  void MarkSubtreesDisjoint(bool disjoint) {
+    subtrees_are_disjoint_ = disjoint;
+  }
+  bool SubtreesAreDisjoint() const {
+    return subtrees_are_disjoint_ || nodes_.size() < 2;
   }
 
-  void reverse();
+  void Reverse();
 
  private:
-  NodeSet() : m_isSorted(true), m_subtreesAreDisjoint(false) {}
-  void traversalSort() const;
+  NodeSet() : is_sorted_(true), subtrees_are_disjoint_(false) {}
+  void TraversalSort() const;
 
-  bool m_isSorted;
-  bool m_subtreesAreDisjoint;
-  HeapVector<Member<Node>> m_nodes;
+  bool is_sorted_;
+  bool subtrees_are_disjoint_;
+  HeapVector<Member<Node>> nodes_;
 };
 
 }  // namespace XPath

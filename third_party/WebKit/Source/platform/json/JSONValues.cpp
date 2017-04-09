@@ -40,32 +40,32 @@ namespace blink {
 
 namespace {
 
-const char* const nullString = "null";
-const char* const trueString = "true";
-const char* const falseString = "false";
+const char* const kNullString = "null";
+const char* const kTrueString = "true";
+const char* const kFalseString = "false";
 
-inline bool escapeChar(UChar c, StringBuilder* dst) {
+inline bool EscapeChar(UChar c, StringBuilder* dst) {
   switch (c) {
     case '\b':
-      dst->append("\\b");
+      dst->Append("\\b");
       break;
     case '\f':
-      dst->append("\\f");
+      dst->Append("\\f");
       break;
     case '\n':
-      dst->append("\\n");
+      dst->Append("\\n");
       break;
     case '\r':
-      dst->append("\\r");
+      dst->Append("\\r");
       break;
     case '\t':
-      dst->append("\\t");
+      dst->Append("\\t");
       break;
     case '\\':
-      dst->append("\\\\");
+      dst->Append("\\\\");
       break;
     case '"':
-      dst->append("\\\"");
+      dst->Append("\\\"");
       break;
     default:
       return false;
@@ -73,419 +73,419 @@ inline bool escapeChar(UChar c, StringBuilder* dst) {
   return true;
 }
 
-const LChar hexDigits[17] = "0123456789ABCDEF";
+const LChar kHexDigits[17] = "0123456789ABCDEF";
 
-void appendUnsignedAsHex(UChar number, StringBuilder* dst) {
-  dst->append("\\u");
+void AppendUnsignedAsHex(UChar number, StringBuilder* dst) {
+  dst->Append("\\u");
   for (size_t i = 0; i < 4; ++i) {
-    dst->append(hexDigits[(number & 0xF000) >> 12]);
+    dst->Append(kHexDigits[(number & 0xF000) >> 12]);
     number <<= 4;
   }
 }
 
-void writeIndent(int depth, StringBuilder* output) {
+void WriteIndent(int depth, StringBuilder* output) {
   for (int i = 0; i < depth; ++i)
-    output->append("  ");
+    output->Append("  ");
 }
 
 }  // anonymous namespace
 
-void escapeStringForJSON(const String& str, StringBuilder* dst) {
+void EscapeStringForJSON(const String& str, StringBuilder* dst) {
   for (unsigned i = 0; i < str.length(); ++i) {
     UChar c = str[i];
-    if (!escapeChar(c, dst)) {
+    if (!EscapeChar(c, dst)) {
       if (c < 32 || c > 126 || c == '<' || c == '>') {
         // 1. Escaping <, > to prevent script execution.
         // 2. Technically, we could also pass through c > 126 as UTF8, but this
         //    is also optional. It would also be a pain to implement here.
-        appendUnsignedAsHex(c, dst);
+        AppendUnsignedAsHex(c, dst);
       } else {
-        dst->append(c);
+        dst->Append(c);
       }
     }
   }
 }
 
-void doubleQuoteStringForJSON(const String& str, StringBuilder* dst) {
-  dst->append('"');
-  escapeStringForJSON(str, dst);
-  dst->append('"');
+void DoubleQuoteStringForJSON(const String& str, StringBuilder* dst) {
+  dst->Append('"');
+  EscapeStringForJSON(str, dst);
+  dst->Append('"');
 }
 
-String JSONValue::quoteString(const String& input) {
+String JSONValue::QuoteString(const String& input) {
   StringBuilder builder;
-  doubleQuoteStringForJSON(input, &builder);
-  return builder.toString();
+  DoubleQuoteStringForJSON(input, &builder);
+  return builder.ToString();
 }
 
-bool JSONValue::asBoolean(bool*) const {
+bool JSONValue::AsBoolean(bool*) const {
   return false;
 }
 
-bool JSONValue::asDouble(double*) const {
+bool JSONValue::AsDouble(double*) const {
   return false;
 }
 
-bool JSONValue::asInteger(int*) const {
+bool JSONValue::AsInteger(int*) const {
   return false;
 }
 
-bool JSONValue::asString(String*) const {
+bool JSONValue::AsString(String*) const {
   return false;
 }
 
-String JSONValue::toJSONString() const {
+String JSONValue::ToJSONString() const {
   StringBuilder result;
-  result.reserveCapacity(512);
-  writeJSON(&result);
-  return result.toString();
+  result.ReserveCapacity(512);
+  WriteJSON(&result);
+  return result.ToString();
 }
 
-String JSONValue::toPrettyJSONString() const {
+String JSONValue::ToPrettyJSONString() const {
   StringBuilder result;
-  result.reserveCapacity(512);
-  prettyWriteJSON(&result);
-  return result.toString();
+  result.ReserveCapacity(512);
+  PrettyWriteJSON(&result);
+  return result.ToString();
 }
 
-void JSONValue::writeJSON(StringBuilder* output) const {
-  DCHECK(m_type == TypeNull);
-  output->append(nullString, 4);
+void JSONValue::WriteJSON(StringBuilder* output) const {
+  DCHECK(type_ == kTypeNull);
+  output->Append(kNullString, 4);
 }
 
-void JSONValue::prettyWriteJSON(StringBuilder* output) const {
-  prettyWriteJSONInternal(output, 0);
-  output->append('\n');
+void JSONValue::PrettyWriteJSON(StringBuilder* output) const {
+  PrettyWriteJSONInternal(output, 0);
+  output->Append('\n');
 }
 
-void JSONValue::prettyWriteJSONInternal(StringBuilder* output,
+void JSONValue::PrettyWriteJSONInternal(StringBuilder* output,
                                         int depth) const {
-  writeJSON(output);
+  WriteJSON(output);
 }
 
-std::unique_ptr<JSONValue> JSONValue::clone() const {
-  return JSONValue::null();
+std::unique_ptr<JSONValue> JSONValue::Clone() const {
+  return JSONValue::Null();
 }
 
-bool JSONBasicValue::asBoolean(bool* output) const {
-  if (getType() != TypeBoolean)
+bool JSONBasicValue::AsBoolean(bool* output) const {
+  if (GetType() != kTypeBoolean)
     return false;
-  *output = m_boolValue;
+  *output = bool_value_;
   return true;
 }
 
-bool JSONBasicValue::asDouble(double* output) const {
-  if (getType() == TypeDouble) {
-    *output = m_doubleValue;
+bool JSONBasicValue::AsDouble(double* output) const {
+  if (GetType() == kTypeDouble) {
+    *output = double_value_;
     return true;
   }
-  if (getType() == TypeInteger) {
-    *output = m_integerValue;
+  if (GetType() == kTypeInteger) {
+    *output = integer_value_;
     return true;
   }
   return false;
 }
 
-bool JSONBasicValue::asInteger(int* output) const {
-  if (getType() != TypeInteger)
+bool JSONBasicValue::AsInteger(int* output) const {
+  if (GetType() != kTypeInteger)
     return false;
-  *output = m_integerValue;
+  *output = integer_value_;
   return true;
 }
 
-void JSONBasicValue::writeJSON(StringBuilder* output) const {
-  DCHECK(getType() == TypeBoolean || getType() == TypeInteger ||
-         getType() == TypeDouble);
-  if (getType() == TypeBoolean) {
-    if (m_boolValue)
-      output->append(trueString, 4);
+void JSONBasicValue::WriteJSON(StringBuilder* output) const {
+  DCHECK(GetType() == kTypeBoolean || GetType() == kTypeInteger ||
+         GetType() == kTypeDouble);
+  if (GetType() == kTypeBoolean) {
+    if (bool_value_)
+      output->Append(kTrueString, 4);
     else
-      output->append(falseString, 5);
-  } else if (getType() == TypeDouble) {
-    if (!std::isfinite(m_doubleValue)) {
-      output->append(nullString, 4);
+      output->Append(kFalseString, 5);
+  } else if (GetType() == kTypeDouble) {
+    if (!std::isfinite(double_value_)) {
+      output->Append(kNullString, 4);
       return;
     }
-    output->append(Decimal::fromDouble(m_doubleValue).toString());
-  } else if (getType() == TypeInteger) {
-    output->append(String::number(m_integerValue));
+    output->Append(Decimal::FromDouble(double_value_).ToString());
+  } else if (GetType() == kTypeInteger) {
+    output->Append(String::Number(integer_value_));
   }
 }
 
-std::unique_ptr<JSONValue> JSONBasicValue::clone() const {
-  switch (getType()) {
-    case TypeDouble:
-      return JSONBasicValue::create(m_doubleValue);
-    case TypeInteger:
-      return JSONBasicValue::create(m_integerValue);
-    case TypeBoolean:
-      return JSONBasicValue::create(m_boolValue);
+std::unique_ptr<JSONValue> JSONBasicValue::Clone() const {
+  switch (GetType()) {
+    case kTypeDouble:
+      return JSONBasicValue::Create(double_value_);
+    case kTypeInteger:
+      return JSONBasicValue::Create(integer_value_);
+    case kTypeBoolean:
+      return JSONBasicValue::Create(bool_value_);
     default:
       NOTREACHED();
   }
   return nullptr;
 }
 
-bool JSONString::asString(String* output) const {
-  *output = m_stringValue;
+bool JSONString::AsString(String* output) const {
+  *output = string_value_;
   return true;
 }
 
-void JSONString::writeJSON(StringBuilder* output) const {
-  DCHECK(getType() == TypeString);
-  doubleQuoteStringForJSON(m_stringValue, output);
+void JSONString::WriteJSON(StringBuilder* output) const {
+  DCHECK(GetType() == kTypeString);
+  DoubleQuoteStringForJSON(string_value_, output);
 }
 
-std::unique_ptr<JSONValue> JSONString::clone() const {
-  return JSONString::create(m_stringValue);
+std::unique_ptr<JSONValue> JSONString::Clone() const {
+  return JSONString::Create(string_value_);
 }
 
 JSONObject::~JSONObject() {}
 
-void JSONObject::setBoolean(const String& name, bool value) {
-  setValue(name, JSONBasicValue::create(value));
+void JSONObject::SetBoolean(const String& name, bool value) {
+  SetValue(name, JSONBasicValue::Create(value));
 }
 
-void JSONObject::setInteger(const String& name, int value) {
-  setValue(name, JSONBasicValue::create(value));
+void JSONObject::SetInteger(const String& name, int value) {
+  SetValue(name, JSONBasicValue::Create(value));
 }
 
-void JSONObject::setDouble(const String& name, double value) {
-  setValue(name, JSONBasicValue::create(value));
+void JSONObject::SetDouble(const String& name, double value) {
+  SetValue(name, JSONBasicValue::Create(value));
 }
 
-void JSONObject::setString(const String& name, const String& value) {
-  setValue(name, JSONString::create(value));
+void JSONObject::SetString(const String& name, const String& value) {
+  SetValue(name, JSONString::Create(value));
 }
 
-void JSONObject::setValue(const String& name,
+void JSONObject::SetValue(const String& name,
                           std::unique_ptr<JSONValue> value) {
-  set(name, value);
+  Set(name, value);
 }
 
-void JSONObject::setObject(const String& name,
+void JSONObject::SetObject(const String& name,
                            std::unique_ptr<JSONObject> value) {
-  set(name, value);
+  Set(name, value);
 }
 
-void JSONObject::setArray(const String& name,
+void JSONObject::SetArray(const String& name,
                           std::unique_ptr<JSONArray> value) {
-  set(name, value);
+  Set(name, value);
 }
 
-bool JSONObject::getBoolean(const String& name, bool* output) const {
-  JSONValue* value = get(name);
+bool JSONObject::GetBoolean(const String& name, bool* output) const {
+  JSONValue* value = Get(name);
   if (!value)
     return false;
-  return value->asBoolean(output);
+  return value->AsBoolean(output);
 }
 
-bool JSONObject::getInteger(const String& name, int* output) const {
-  JSONValue* value = get(name);
+bool JSONObject::GetInteger(const String& name, int* output) const {
+  JSONValue* value = Get(name);
   if (!value)
     return false;
-  return value->asInteger(output);
+  return value->AsInteger(output);
 }
 
-bool JSONObject::getDouble(const String& name, double* output) const {
-  JSONValue* value = get(name);
+bool JSONObject::GetDouble(const String& name, double* output) const {
+  JSONValue* value = Get(name);
   if (!value)
     return false;
-  return value->asDouble(output);
+  return value->AsDouble(output);
 }
 
-bool JSONObject::getString(const String& name, String* output) const {
-  JSONValue* value = get(name);
+bool JSONObject::GetString(const String& name, String* output) const {
+  JSONValue* value = Get(name);
   if (!value)
     return false;
-  return value->asString(output);
+  return value->AsString(output);
 }
 
-JSONObject* JSONObject::getObject(const String& name) const {
-  return JSONObject::cast(get(name));
+JSONObject* JSONObject::GetObject(const String& name) const {
+  return JSONObject::Cast(Get(name));
 }
 
-JSONArray* JSONObject::getArray(const String& name) const {
-  return JSONArray::cast(get(name));
+JSONArray* JSONObject::GetArray(const String& name) const {
+  return JSONArray::Cast(Get(name));
 }
 
-JSONValue* JSONObject::get(const String& name) const {
-  Dictionary::const_iterator it = m_data.find(name);
-  if (it == m_data.end())
+JSONValue* JSONObject::Get(const String& name) const {
+  Dictionary::const_iterator it = data_.Find(name);
+  if (it == data_.end())
     return nullptr;
   return it->value.get();
 }
 
 JSONObject::Entry JSONObject::at(size_t index) const {
-  const String key = m_order[index];
-  return std::make_pair(key, m_data.find(key)->value.get());
+  const String key = order_[index];
+  return std::make_pair(key, data_.Find(key)->value.get());
 }
 
-bool JSONObject::booleanProperty(const String& name, bool defaultValue) const {
-  bool result = defaultValue;
-  getBoolean(name, &result);
+bool JSONObject::BooleanProperty(const String& name, bool default_value) const {
+  bool result = default_value;
+  GetBoolean(name, &result);
   return result;
 }
 
-int JSONObject::integerProperty(const String& name, int defaultValue) const {
-  int result = defaultValue;
-  getInteger(name, &result);
+int JSONObject::IntegerProperty(const String& name, int default_value) const {
+  int result = default_value;
+  GetInteger(name, &result);
   return result;
 }
 
-double JSONObject::doubleProperty(const String& name,
-                                  double defaultValue) const {
-  double result = defaultValue;
-  getDouble(name, &result);
+double JSONObject::DoubleProperty(const String& name,
+                                  double default_value) const {
+  double result = default_value;
+  GetDouble(name, &result);
   return result;
 }
 
-void JSONObject::remove(const String& name) {
-  m_data.erase(name);
-  for (size_t i = 0; i < m_order.size(); ++i) {
-    if (m_order[i] == name) {
-      m_order.erase(i);
+void JSONObject::Remove(const String& name) {
+  data_.erase(name);
+  for (size_t i = 0; i < order_.size(); ++i) {
+    if (order_[i] == name) {
+      order_.erase(i);
       break;
     }
   }
 }
 
-void JSONObject::writeJSON(StringBuilder* output) const {
-  output->append('{');
-  for (size_t i = 0; i < m_order.size(); ++i) {
-    Dictionary::const_iterator it = m_data.find(m_order[i]);
-    CHECK(it != m_data.end());
+void JSONObject::WriteJSON(StringBuilder* output) const {
+  output->Append('{');
+  for (size_t i = 0; i < order_.size(); ++i) {
+    Dictionary::const_iterator it = data_.Find(order_[i]);
+    CHECK(it != data_.end());
     if (i)
-      output->append(',');
-    doubleQuoteStringForJSON(it->key, output);
-    output->append(':');
-    it->value->writeJSON(output);
+      output->Append(',');
+    DoubleQuoteStringForJSON(it->key, output);
+    output->Append(':');
+    it->value->WriteJSON(output);
   }
-  output->append('}');
+  output->Append('}');
 }
 
-void JSONObject::prettyWriteJSONInternal(StringBuilder* output,
+void JSONObject::PrettyWriteJSONInternal(StringBuilder* output,
                                          int depth) const {
-  output->append("{\n");
-  for (size_t i = 0; i < m_order.size(); ++i) {
-    Dictionary::const_iterator it = m_data.find(m_order[i]);
-    CHECK(it != m_data.end());
+  output->Append("{\n");
+  for (size_t i = 0; i < order_.size(); ++i) {
+    Dictionary::const_iterator it = data_.Find(order_[i]);
+    CHECK(it != data_.end());
     if (i)
-      output->append(",\n");
-    writeIndent(depth + 1, output);
-    doubleQuoteStringForJSON(it->key, output);
-    output->append(": ");
-    it->value->prettyWriteJSONInternal(output, depth + 1);
+      output->Append(",\n");
+    WriteIndent(depth + 1, output);
+    DoubleQuoteStringForJSON(it->key, output);
+    output->Append(": ");
+    it->value->PrettyWriteJSONInternal(output, depth + 1);
   }
-  output->append('\n');
-  writeIndent(depth, output);
-  output->append('}');
+  output->Append('\n');
+  WriteIndent(depth, output);
+  output->Append('}');
 }
 
-std::unique_ptr<JSONValue> JSONObject::clone() const {
-  std::unique_ptr<JSONObject> result = JSONObject::create();
-  for (size_t i = 0; i < m_order.size(); ++i) {
-    String key = m_order[i];
-    Dictionary::const_iterator value = m_data.find(key);
-    DCHECK(value != m_data.end() && value->value);
-    result->setValue(key, value->value->clone());
+std::unique_ptr<JSONValue> JSONObject::Clone() const {
+  std::unique_ptr<JSONObject> result = JSONObject::Create();
+  for (size_t i = 0; i < order_.size(); ++i) {
+    String key = order_[i];
+    Dictionary::const_iterator value = data_.Find(key);
+    DCHECK(value != data_.end() && value->value);
+    result->SetValue(key, value->value->Clone());
   }
   return std::move(result);
 }
 
-JSONObject::JSONObject() : JSONValue(TypeObject), m_data(), m_order() {}
+JSONObject::JSONObject() : JSONValue(kTypeObject), data_(), order_() {}
 
 JSONArray::~JSONArray() {}
 
-void JSONArray::writeJSON(StringBuilder* output) const {
-  output->append('[');
+void JSONArray::WriteJSON(StringBuilder* output) const {
+  output->Append('[');
   bool first = true;
-  for (const std::unique_ptr<JSONValue>& value : m_data) {
+  for (const std::unique_ptr<JSONValue>& value : data_) {
     if (!first)
-      output->append(',');
-    value->writeJSON(output);
+      output->Append(',');
+    value->WriteJSON(output);
     first = false;
   }
-  output->append(']');
+  output->Append(']');
 }
 
-void JSONArray::prettyWriteJSONInternal(StringBuilder* output,
+void JSONArray::PrettyWriteJSONInternal(StringBuilder* output,
                                         int depth) const {
-  output->append('[');
+  output->Append('[');
   bool first = true;
-  bool lastInsertedNewLine = false;
-  for (const std::unique_ptr<JSONValue>& value : m_data) {
-    bool insertNewLine = value->getType() == JSONValue::TypeObject ||
-                         value->getType() == JSONValue::TypeArray ||
-                         value->getType() == JSONValue::TypeString;
+  bool last_inserted_new_line = false;
+  for (const std::unique_ptr<JSONValue>& value : data_) {
+    bool insert_new_line = value->GetType() == JSONValue::kTypeObject ||
+                           value->GetType() == JSONValue::kTypeArray ||
+                           value->GetType() == JSONValue::kTypeString;
     if (first) {
-      if (insertNewLine) {
-        output->append('\n');
-        writeIndent(depth + 1, output);
+      if (insert_new_line) {
+        output->Append('\n');
+        WriteIndent(depth + 1, output);
       }
       first = false;
     } else {
-      output->append(',');
-      if (lastInsertedNewLine) {
-        output->append('\n');
-        writeIndent(depth + 1, output);
+      output->Append(',');
+      if (last_inserted_new_line) {
+        output->Append('\n');
+        WriteIndent(depth + 1, output);
       } else {
-        output->append(' ');
+        output->Append(' ');
       }
     }
-    value->prettyWriteJSONInternal(output, depth + 1);
-    lastInsertedNewLine = insertNewLine;
+    value->PrettyWriteJSONInternal(output, depth + 1);
+    last_inserted_new_line = insert_new_line;
   }
-  if (lastInsertedNewLine) {
-    output->append('\n');
-    writeIndent(depth, output);
+  if (last_inserted_new_line) {
+    output->Append('\n');
+    WriteIndent(depth, output);
   }
-  output->append(']');
+  output->Append(']');
 }
 
-std::unique_ptr<JSONValue> JSONArray::clone() const {
-  std::unique_ptr<JSONArray> result = JSONArray::create();
-  for (const std::unique_ptr<JSONValue>& value : m_data)
-    result->pushValue(value->clone());
+std::unique_ptr<JSONValue> JSONArray::Clone() const {
+  std::unique_ptr<JSONArray> result = JSONArray::Create();
+  for (const std::unique_ptr<JSONValue>& value : data_)
+    result->PushValue(value->Clone());
   return std::move(result);
 }
 
-JSONArray::JSONArray() : JSONValue(TypeArray) {}
+JSONArray::JSONArray() : JSONValue(kTypeArray) {}
 
-void JSONArray::pushBoolean(bool value) {
-  m_data.push_back(JSONBasicValue::create(value));
+void JSONArray::PushBoolean(bool value) {
+  data_.push_back(JSONBasicValue::Create(value));
 }
 
-void JSONArray::pushInteger(int value) {
-  m_data.push_back(JSONBasicValue::create(value));
+void JSONArray::PushInteger(int value) {
+  data_.push_back(JSONBasicValue::Create(value));
 }
 
-void JSONArray::pushDouble(double value) {
-  m_data.push_back(JSONBasicValue::create(value));
+void JSONArray::PushDouble(double value) {
+  data_.push_back(JSONBasicValue::Create(value));
 }
 
-void JSONArray::pushString(const String& value) {
-  m_data.push_back(JSONString::create(value));
+void JSONArray::PushString(const String& value) {
+  data_.push_back(JSONString::Create(value));
 }
 
-void JSONArray::pushValue(std::unique_ptr<JSONValue> value) {
+void JSONArray::PushValue(std::unique_ptr<JSONValue> value) {
   DCHECK(value);
-  m_data.push_back(std::move(value));
+  data_.push_back(std::move(value));
 }
 
-void JSONArray::pushObject(std::unique_ptr<JSONObject> value) {
+void JSONArray::PushObject(std::unique_ptr<JSONObject> value) {
   DCHECK(value);
-  m_data.push_back(std::move(value));
+  data_.push_back(std::move(value));
 }
 
-void JSONArray::pushArray(std::unique_ptr<JSONArray> value) {
+void JSONArray::PushArray(std::unique_ptr<JSONArray> value) {
   DCHECK(value);
-  m_data.push_back(std::move(value));
+  data_.push_back(std::move(value));
 }
 
 JSONValue* JSONArray::at(size_t index) const {
-  DCHECK_LT(index, m_data.size());
-  return m_data[index].get();
+  DCHECK_LT(index, data_.size());
+  return data_[index].get();
 }
 
 }  // namespace blink

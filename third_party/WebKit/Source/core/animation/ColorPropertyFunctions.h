@@ -14,35 +14,35 @@ class ComputedStyle;
 
 struct OptionalStyleColor {
  public:
-  OptionalStyleColor(std::nullptr_t) : m_isNull(true) {}
-  OptionalStyleColor(const StyleColor& styleColor)
-      : m_isNull(false), m_styleColor(styleColor) {}
+  OptionalStyleColor(std::nullptr_t) : is_null_(true) {}
+  OptionalStyleColor(const StyleColor& style_color)
+      : is_null_(false), style_color_(style_color) {}
   OptionalStyleColor(const Color& color)
-      : m_isNull(false), m_styleColor(color) {}
+      : is_null_(false), style_color_(color) {}
 
-  bool isNull() const { return m_isNull; }
-  const StyleColor& access() const {
-    DCHECK(!m_isNull);
-    return m_styleColor;
+  bool IsNull() const { return is_null_; }
+  const StyleColor& Access() const {
+    DCHECK(!is_null_);
+    return style_color_;
   }
   bool operator==(const OptionalStyleColor& other) const {
-    return m_isNull == other.m_isNull && m_styleColor == other.m_styleColor;
+    return is_null_ == other.is_null_ && style_color_ == other.style_color_;
   }
 
  private:
-  bool m_isNull;
-  StyleColor m_styleColor;
+  bool is_null_;
+  StyleColor style_color_;
 };
 
 class ColorPropertyFunctions {
  public:
-  static OptionalStyleColor getInitialColor(CSSPropertyID);
-  static OptionalStyleColor getUnvisitedColor(CSSPropertyID,
+  static OptionalStyleColor GetInitialColor(CSSPropertyID);
+  static OptionalStyleColor GetUnvisitedColor(CSSPropertyID,
                                               const ComputedStyle&);
-  static OptionalStyleColor getVisitedColor(CSSPropertyID,
+  static OptionalStyleColor GetVisitedColor(CSSPropertyID,
                                             const ComputedStyle&);
-  static void setUnvisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
-  static void setVisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
+  static void SetUnvisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
+  static void SetVisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
 };
 
 }  // namespace blink

@@ -36,16 +36,16 @@ namespace blink {
 
 namespace {
 
-UStringSearch* createSearcher() {
+UStringSearch* CreateSearcher() {
   // Provide a non-empty pattern and non-empty text so usearch_open will not
   // fail, but it doesn't matter exactly what it is, since we don't perform any
   // searches without setting both the pattern and the text.
   UErrorCode status = U_ZERO_ERROR;
-  String searchCollatorName =
-      currentSearchLocaleID() + String("@collation=search");
+  String search_collator_name =
+      CurrentSearchLocaleID() + String("@collation=search");
   UStringSearch* searcher =
-      usearch_open(&newlineCharacter, 1, &newlineCharacter, 1,
-                   searchCollatorName.utf8().data(), 0, &status);
+      usearch_open(&kNewlineCharacter, 1, &kNewlineCharacter, 1,
+                   search_collator_name.Utf8().Data(), 0, &status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING)
       << status;
@@ -56,40 +56,39 @@ class ICULockableSearcher {
   WTF_MAKE_NONCOPYABLE(ICULockableSearcher);
 
  public:
-  static UStringSearch* acquireSearcher() {
-    instance().lock();
-    return instance().m_searcher;
+  static UStringSearch* AcquireSearcher() {
+    Instance().lock();
+    return Instance().searcher_;
   }
 
-  static void releaseSearcher() { instance().unlock(); }
+  static void ReleaseSearcher() { Instance().unlock(); }
 
  private:
-  static ICULockableSearcher& instance() {
-    static ICULockableSearcher searcher(createSearcher());
+  static ICULockableSearcher& Instance() {
+    static ICULockableSearcher searcher(CreateSearcher());
     return searcher;
   }
 
-  explicit ICULockableSearcher(UStringSearch* searcher)
-      : m_searcher(searcher) {}
+  explicit ICULockableSearcher(UStringSearch* searcher) : searcher_(searcher) {}
 
   void lock() {
 #if DCHECK_IS_ON()
-    DCHECK(!m_locked);
-    m_locked = true;
+    DCHECK(!locked_);
+    locked_ = true;
 #endif
   }
 
   void unlock() {
 #if DCHECK_IS_ON()
-    DCHECK(m_locked);
-    m_locked = false;
+    DCHECK(locked_);
+    locked_ = false;
 #endif
   }
 
-  UStringSearch* const m_searcher = nullptr;
+  UStringSearch* const searcher_ = nullptr;
 
 #if DCHECK_IS_ON()
-  bool m_locked = false;
+  bool locked_ = false;
 #endif
 };
 
@@ -99,71 +98,71 @@ class ICULockableSearcher {
 // If we ever have a reason to do more than once search buffer at once, we'll
 // have to move to multiple searchers.
 TextSearcherICU::TextSearcherICU()
-    : m_searcher(ICULockableSearcher::acquireSearcher()) {}
+    : searcher_(ICULockableSearcher::AcquireSearcher()) {}
 
 TextSearcherICU::~TextSearcherICU() {
   // Leave the static object pointing to valid strings (pattern=target,
   // text=buffer). Otheriwse, usearch_reset() will results in 'use-after-free'
   // error.
-  setPattern(&newlineCharacter, 1);
-  setText(&newlineCharacter, 1);
-  ICULockableSearcher::releaseSearcher();
+  SetPattern(&kNewlineCharacter, 1);
+  SetText(&kNewlineCharacter, 1);
+  ICULockableSearcher::ReleaseSearcher();
 }
 
-void TextSearcherICU::setPattern(const StringView& pattern,
-                                 bool caseSensitive) {
-  setCaseSensitivity(caseSensitive);
-  setPattern(pattern.characters16(), pattern.length());
+void TextSearcherICU::SetPattern(const StringView& pattern,
+                                 bool case_sensitive) {
+  SetCaseSensitivity(case_sensitive);
+  SetPattern(pattern.Characters16(), pattern.length());
 }
 
-void TextSearcherICU::setText(const UChar* text, size_t length) {
+void TextSearcherICU::SetText(const UChar* text, size_t length) {
   UErrorCode status = U_ZERO_ERROR;
-  usearch_setText(m_searcher, text, length, &status);
+  usearch_setText(searcher_, text, length, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
-  m_textLength = length;
+  text_length_ = length;
 }
 
-void TextSearcherICU::setOffset(size_t offset) {
+void TextSearcherICU::SetOffset(size_t offset) {
   UErrorCode status = U_ZERO_ERROR;
-  usearch_setOffset(m_searcher, offset, &status);
+  usearch_setOffset(searcher_, offset, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
 }
 
-bool TextSearcherICU::nextMatchResult(MatchResultICU& result) {
+bool TextSearcherICU::NextMatchResult(MatchResultICU& result) {
   UErrorCode status = U_ZERO_ERROR;
-  const int matchStart = usearch_next(m_searcher, &status);
+  const int match_start = usearch_next(searcher_, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
 
   // TODO(iceman): It is possible to use |usearch_getText| function
   // to retrieve text length and not store it explicitly.
-  if (!(matchStart >= 0 && static_cast<size_t>(matchStart) < m_textLength)) {
-    DCHECK_EQ(matchStart, USEARCH_DONE);
+  if (!(match_start >= 0 && static_cast<size_t>(match_start) < text_length_)) {
+    DCHECK_EQ(match_start, USEARCH_DONE);
     result.start = 0;
     result.length = 0;
     return false;
   }
 
-  result.start = static_cast<size_t>(matchStart);
-  result.length = usearch_getMatchedLength(m_searcher);
+  result.start = static_cast<size_t>(match_start);
+  result.length = usearch_getMatchedLength(searcher_);
   return true;
 }
 
-void TextSearcherICU::setPattern(const UChar* pattern, size_t length) {
+void TextSearcherICU::SetPattern(const UChar* pattern, size_t length) {
   UErrorCode status = U_ZERO_ERROR;
-  usearch_setPattern(m_searcher, pattern, length, &status);
+  usearch_setPattern(searcher_, pattern, length, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
 }
 
-void TextSearcherICU::setCaseSensitivity(bool caseSensitive) {
+void TextSearcherICU::SetCaseSensitivity(bool case_sensitive) {
   const UCollationStrength strength =
-      caseSensitive ? UCOL_TERTIARY : UCOL_PRIMARY;
+      case_sensitive ? UCOL_TERTIARY : UCOL_PRIMARY;
 
-  UCollator* const collator = usearch_getCollator(m_searcher);
+  UCollator* const collator = usearch_getCollator(searcher_);
   if (ucol_getStrength(collator) == strength)
     return;
 
   ucol_setStrength(collator, strength);
-  usearch_reset(m_searcher);
+  usearch_reset(searcher_);
 }
 
 }  // namespace blink

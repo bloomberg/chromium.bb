@@ -188,7 +188,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   any_thread().observer = nullptr;
   main_thread_only().observer = nullptr;
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
-  immediate_incoming_queue().clear();
+  immediate_incoming_queue().Clear();
   main_thread_only().immediate_work_queue.reset();
   main_thread_only().delayed_work_queue.reset();
 }
@@ -379,7 +379,7 @@ void TaskQueueImpl::ReloadImmediateWorkQueueIfEmpty() {
 WTF::Deque<TaskQueueImpl::Task> TaskQueueImpl::TakeImmediateIncomingQueue() {
   base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   WTF::Deque<TaskQueueImpl::Task> queue;
-  queue.swap(immediate_incoming_queue());
+  queue.Swap(immediate_incoming_queue());
   return queue;
 }
 

@@ -17,57 +17,57 @@ TEST(ModulatorTest, resolveModuleSpecifier) {
   // "The following are valid module specifiers according to the above
   // algorithm:"
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("https://example.com/apples.js", KURL())
-          .isValid());
+      Modulator::ResolveModuleSpecifier("https://example.com/apples.js", KURL())
+          .IsValid());
 
   KURL resolved =
-      Modulator::resolveModuleSpecifier("http:example.com\\pears.mjs", KURL());
-  EXPECT_TRUE(resolved.isValid());
-  EXPECT_EQ("http://example.com/pears.mjs", resolved.getString());
+      Modulator::ResolveModuleSpecifier("http:example.com\\pears.mjs", KURL());
+  EXPECT_TRUE(resolved.IsValid());
+  EXPECT_EQ("http://example.com/pears.mjs", resolved.GetString());
 
-  KURL baseURL(KURL(), "https://example.com");
+  KURL base_url(KURL(), "https://example.com");
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("//example.com/", baseURL).isValid());
+      Modulator::ResolveModuleSpecifier("//example.com/", base_url).IsValid());
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("./strawberries.js.cgi", baseURL)
-          .isValid());
+      Modulator::ResolveModuleSpecifier("./strawberries.js.cgi", base_url)
+          .IsValid());
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("../lychees", baseURL).isValid());
+      Modulator::ResolveModuleSpecifier("../lychees", base_url).IsValid());
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("/limes.jsx", baseURL).isValid());
-  EXPECT_TRUE(Modulator::resolveModuleSpecifier(
+      Modulator::ResolveModuleSpecifier("/limes.jsx", base_url).IsValid());
+  EXPECT_TRUE(Modulator::ResolveModuleSpecifier(
                   "data:text/javascript,export default 'grapes';", KURL())
-                  .isValid());
+                  .IsValid());
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier(
+      Modulator::ResolveModuleSpecifier(
           "blob:https://whatwg.org/d0360e2f-caee-469f-9a2f-87d5b0456f6f",
           KURL())
-          .isValid());
+          .IsValid());
 
   // "The following are valid module specifiers according to the above
   // algorithm, but will invariably cause failures when they are fetched:"
-  EXPECT_TRUE(Modulator::resolveModuleSpecifier(
+  EXPECT_TRUE(Modulator::ResolveModuleSpecifier(
                   "javascript:export default 'artichokes';", KURL())
-                  .isValid());
-  EXPECT_TRUE(Modulator::resolveModuleSpecifier(
+                  .IsValid());
+  EXPECT_TRUE(Modulator::ResolveModuleSpecifier(
                   "data:text/plain,export default 'kale';", KURL())
-                  .isValid());
+                  .IsValid());
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("about:legumes", KURL()).isValid());
+      Modulator::ResolveModuleSpecifier("about:legumes", KURL()).IsValid());
   EXPECT_TRUE(
-      Modulator::resolveModuleSpecifier("wss://example.com/celery", KURL())
-          .isValid());
+      Modulator::ResolveModuleSpecifier("wss://example.com/celery", KURL())
+          .IsValid());
 
   // "The following are not valid module specifiers according to the above
   // algorithm:"
   EXPECT_FALSE(
-      Modulator::resolveModuleSpecifier("https://f:b/c", KURL()).isValid());
+      Modulator::ResolveModuleSpecifier("https://f:b/c", KURL()).IsValid());
   EXPECT_FALSE(
-      Modulator::resolveModuleSpecifier("pumpkins.js", KURL()).isValid());
+      Modulator::ResolveModuleSpecifier("pumpkins.js", KURL()).IsValid());
 
   // Unprefixed module specifiers should still fail w/ a valid baseURL.
   EXPECT_FALSE(
-      Modulator::resolveModuleSpecifier("avocados.js", baseURL).isValid());
+      Modulator::ResolveModuleSpecifier("avocados.js", base_url).IsValid());
 }
 
 }  // namespace blink

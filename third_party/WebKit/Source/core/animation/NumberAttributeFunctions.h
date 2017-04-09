@@ -11,7 +11,7 @@ namespace blink {
 
 class NumberAttributeFunctions {
  public:
-  static bool isNonNegative(const QualifiedName& attribute) {
+  static bool IsNonNegative(const QualifiedName& attribute) {
     return attribute == SVGNames::pathLengthAttr;
   }
 };

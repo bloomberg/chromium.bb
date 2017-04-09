@@ -51,9 +51,7 @@ class CONTENT_EXPORT WebCursor {
     }
 
     CursorInfo()
-        : type(blink::WebCursorInfo::TypePointer),
-          image_scale_factor(1) {
-    }
+        : type(blink::WebCursorInfo::kTypePointer), image_scale_factor(1) {}
 
     blink::WebCursorInfo::Type type;
     gfx::Point hotspot;

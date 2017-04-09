@@ -39,70 +39,70 @@ class CORE_EXPORT RootScrollerController
  public:
   // Creates a RootScrollerController for the given document. Note: instances
   // of this class need to be made aware of layout updates.
-  static RootScrollerController* create(Document&);
+  static RootScrollerController* Create(Document&);
 
   DECLARE_TRACE();
 
   // Sets the element that will be used as the root scroller. This can be
   // nullptr, in which case we'll use the default element (documentElement) as
   // the effective root scroller.
-  void set(Element*);
+  void Set(Element*);
 
   // Returns the element currently set as the root scroller from script. This
   // differs from the effective root scroller since the set Element may not
   // currently be a valid root scroller. e.g. If the page sets an Element
   // with `display: none`, get() will return that element, even though the
   // effective root scroller will remain the document Node.
-  Element* get() const;
+  Element* Get() const;
 
   // This returns the Element that's actually being used to control viewport
   // actions right now. This is different from get() if a root scroller hasn't
   // been set, or if the set root scroller isn't currently a valid scroller.
-  Node& effectiveRootScroller() const;
+  Node& EffectiveRootScroller() const;
 
   // This class needs to be informed of changes in layout so that it can
   // determine if the current root scroller is still valid or if it must be
   // replaced by the default root scroller.
-  void didUpdateLayout();
+  void DidUpdateLayout();
 
   // Returns the PaintLayer associated with the currently effective root
   // scroller.
-  PaintLayer* rootScrollerPaintLayer() const;
+  PaintLayer* RootScrollerPaintLayer() const;
 
   // Used to determine which Element should scroll the viewport.  This is
   // needed since Blink's scrolling machinery works on Elements whereas the
   // document *Node* also scrolls so we need to designate an element one
   // Element as the viewport scroller. Sadly, this is *not* the
   // document.scrollingElement in general.
-  bool scrollsViewport(const Element&) const;
+  bool ScrollsViewport(const Element&) const;
 
  private:
   RootScrollerController(Document&);
 
   // Ensures the effective root scroller is currently valid and replaces it
   // with the default if not.
-  void recomputeEffectiveRootScroller();
+  void RecomputeEffectiveRootScroller();
 
   // Determines whether the given element meets the criteria to become the
   // effective root scroller.
-  bool isValidRootScroller(const Element&) const;
+  bool IsValidRootScroller(const Element&) const;
 
   // The owning Document whose root scroller this object manages.
-  WeakMember<Document> m_document;
+  WeakMember<Document> document_;
 
   // The Element that was set from script as rootScroller for this Document.
   // Depending on its validity to be the root scroller (e.g. a display: none
   // element isn't a valid root scroller), this may not actually be the
   // Element being used as the root scroller.
-  WeakMember<Element> m_rootScroller;
+  WeakMember<Element> root_scroller_;
 
   // The Node currently being used as the root scroller in this Document.
   // If the m_rootScroller is valid this will point to it. Otherwise, it'll
   // use the document Node. It'll never be nullptr since the Document owns the
   // RootScrollerController.
-  Member<Node> m_effectiveRootScroller;
+  Member<Node> effective_root_scroller_;
 
-  bool m_documentHasDocumentElement;
+  bool document_has_document_element_;
 };
 
 }  // namespace blink

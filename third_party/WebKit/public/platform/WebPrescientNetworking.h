@@ -43,9 +43,9 @@ class WebPrescientNetworking {
 
   // When a page navigation is speculated, DNS prefetch is triggered to hide
   // the host resolution latency.
-  virtual void prefetchDNS(const WebString& hostname) {}
+  virtual void PrefetchDNS(const WebString& hostname) {}
 
-  virtual void preconnect(const WebURL& url, const bool allowCredentials) {}
+  virtual void Preconnect(const WebURL& url, const bool allow_credentials) {}
 };
 
 }  // namespace blink

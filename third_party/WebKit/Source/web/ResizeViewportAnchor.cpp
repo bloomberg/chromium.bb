@@ -13,27 +13,27 @@
 
 namespace blink {
 
-void ResizeViewportAnchor::resizeFrameView(IntSize size) {
-  FrameView* frameView = rootFrameView();
-  DCHECK(frameView);
+void ResizeViewportAnchor::ResizeFrameView(IntSize size) {
+  FrameView* frame_view = RootFrameView();
+  DCHECK(frame_view);
 
-  ScrollableArea* rootViewport = frameView->getScrollableArea();
-  ScrollOffset offset = rootViewport->getScrollOffset();
+  ScrollableArea* root_viewport = frame_view->GetScrollableArea();
+  ScrollOffset offset = root_viewport->GetScrollOffset();
 
-  frameView->resize(size);
-  m_drift += rootViewport->getScrollOffset() - offset;
+  frame_view->Resize(size);
+  drift_ += root_viewport->GetScrollOffset() - offset;
 }
 
-void ResizeViewportAnchor::endScope() {
-  if (--m_scopeCount > 0)
+void ResizeViewportAnchor::EndScope() {
+  if (--scope_count_ > 0)
     return;
 
-  FrameView* frameView = rootFrameView();
-  if (!frameView)
+  FrameView* frame_view = RootFrameView();
+  if (!frame_view)
     return;
 
-  ScrollOffset visualViewportInDocument =
-      frameView->getScrollableArea()->getScrollOffset() - m_drift;
+  ScrollOffset visual_viewport_in_document =
+      frame_view->GetScrollableArea()->GetScrollOffset() - drift_;
 
   // TODO(bokan): Don't use RootFrameViewport::setScrollPosition since it
   // assumes we can just set a sub-pixel precision offset on the FrameView.
@@ -42,16 +42,17 @@ void ResizeViewportAnchor::endScope() {
   // which needs the two threads to match exactly pixel-for-pixel. We can
   // replace this with RFV::setScrollPosition once Blink is sub-pixel scroll
   // offset aware. crbug.com/414283.
-  DCHECK(frameView->getRootFrameViewport());
-  frameView->getRootFrameViewport()->restoreToAnchor(visualViewportInDocument);
+  DCHECK(frame_view->GetRootFrameViewport());
+  frame_view->GetRootFrameViewport()->RestoreToAnchor(
+      visual_viewport_in_document);
 
-  m_drift = ScrollOffset();
+  drift_ = ScrollOffset();
 }
 
-FrameView* ResizeViewportAnchor::rootFrameView() {
-  if (Frame* frame = m_page->mainFrame()) {
-    if (frame->isLocalFrame())
-      return toLocalFrame(frame)->view();
+FrameView* ResizeViewportAnchor::RootFrameView() {
+  if (Frame* frame = page_->MainFrame()) {
+    if (frame->IsLocalFrame())
+      return ToLocalFrame(frame)->View();
   }
   return nullptr;
 }

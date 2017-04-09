@@ -35,41 +35,41 @@ namespace blink {
 
 class CORE_EXPORT DOMURLUtilsReadOnly {
  public:
-  virtual KURL url() const = 0;
-  virtual String input() const = 0;
+  virtual KURL Url() const = 0;
+  virtual String Input() const = 0;
   virtual ~DOMURLUtilsReadOnly() {}
 
   String href();
 
   static String origin(const KURL&);
-  String origin() { return origin(url()); }
+  String origin() { return origin(Url()); }
 
-  static String protocol(const KURL& url) { return url.protocol() + ":"; }
-  String protocol() { return protocol(url()); }
+  static String protocol(const KURL& url) { return url.Protocol() + ":"; }
+  String protocol() { return protocol(Url()); }
 
-  static String username(const KURL& url) { return url.user(); }
-  String username() { return username(url()); }
+  static String username(const KURL& url) { return url.User(); }
+  String username() { return username(Url()); }
 
-  static String password(const KURL& url) { return url.pass(); }
-  String password() { return password(url()); }
+  static String password(const KURL& url) { return url.Pass(); }
+  String password() { return password(Url()); }
 
   static String host(const KURL&);
-  String host() { return host(url()); }
+  String host() { return host(Url()); }
 
-  static String hostname(const KURL& url) { return url.host(); }
-  String hostname() { return hostname(url()); }
+  static String hostname(const KURL& url) { return url.Host(); }
+  String hostname() { return hostname(Url()); }
 
   static String port(const KURL&);
-  String port() { return port(url()); }
+  String port() { return port(Url()); }
 
-  static String pathname(const KURL& url) { return url.path(); }
-  String pathname() { return pathname(url()); }
+  static String pathname(const KURL& url) { return url.GetPath(); }
+  String pathname() { return pathname(Url()); }
 
   static String search(const KURL&);
-  String search() { return search(url()); }
+  String search() { return search(Url()); }
 
   static String hash(const KURL&);
-  String hash() { return hash(url()); }
+  String hash() { return hash(Url()); }
 };
 
 }  // namespace blink

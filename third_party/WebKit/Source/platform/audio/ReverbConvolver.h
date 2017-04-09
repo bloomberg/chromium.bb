@@ -54,46 +54,46 @@ class PLATFORM_EXPORT ReverbConvolver {
   // phase errors add up quickly and lead to non-sensical results with larger
   // FFT sizes and single-precision floats.  In these cases 2048 is a good
   // size.  If not doing multi-threaded convolution, then should not go > 8192.
-  ReverbConvolver(AudioChannel* impulseResponse,
-                  size_t renderSliceSize,
-                  size_t maxFFTSize,
-                  size_t convolverRenderPhase,
-                  bool useBackgroundThreads);
+  ReverbConvolver(AudioChannel* impulse_response,
+                  size_t render_slice_size,
+                  size_t max_fft_size,
+                  size_t convolver_render_phase,
+                  bool use_background_threads);
   ~ReverbConvolver();
 
-  void process(const AudioChannel* sourceChannel,
-               AudioChannel* destinationChannel,
-               size_t framesToProcess);
-  void reset();
+  void Process(const AudioChannel* source_channel,
+               AudioChannel* destination_channel,
+               size_t frames_to_process);
+  void Reset();
 
-  ReverbInputBuffer* inputBuffer() { return &m_inputBuffer; }
+  ReverbInputBuffer* InputBuffer() { return &input_buffer_; }
 
-  size_t latencyFrames() const;
+  size_t LatencyFrames() const;
 
  private:
-  void processInBackground();
+  void ProcessInBackground();
 
-  Vector<std::unique_ptr<ReverbConvolverStage>> m_stages;
-  Vector<std::unique_ptr<ReverbConvolverStage>> m_backgroundStages;
-  size_t m_impulseResponseLength;
+  Vector<std::unique_ptr<ReverbConvolverStage>> stages_;
+  Vector<std::unique_ptr<ReverbConvolverStage>> background_stages_;
+  size_t impulse_response_length_;
 
-  ReverbAccumulationBuffer m_accumulationBuffer;
+  ReverbAccumulationBuffer accumulation_buffer_;
 
   // One or more background threads read from this input buffer which is fed
   // from the realtime thread.
-  ReverbInputBuffer m_inputBuffer;
+  ReverbInputBuffer input_buffer_;
 
   // First stage will be of size m_minFFTSize.  Each next stage will be twice as
   // big until we hit m_maxFFTSize.
-  size_t m_minFFTSize;
-  size_t m_maxFFTSize;
+  size_t min_fft_size_;
+  size_t max_fft_size_;
 
   // But don't exceed this size in the real-time thread (if we're doing
   // background processing).
-  size_t m_maxRealtimeFFTSize;
+  size_t max_realtime_fft_size_;
 
   // Background thread and synchronization
-  std::unique_ptr<WebThread> m_backgroundThread;
+  std::unique_ptr<WebThread> background_thread_;
 };
 
 }  // namespace blink

@@ -47,129 +47,131 @@
 
 namespace blink {
 
-const ScrollAlignment ScrollAlignment::alignCenterIfNeeded = {
-    ScrollAlignmentNoScroll, ScrollAlignmentCenter, ScrollAlignmentClosestEdge};
-const ScrollAlignment ScrollAlignment::alignToEdgeIfNeeded = {
-    ScrollAlignmentNoScroll, ScrollAlignmentClosestEdge,
-    ScrollAlignmentClosestEdge};
-const ScrollAlignment ScrollAlignment::alignCenterAlways = {
-    ScrollAlignmentCenter, ScrollAlignmentCenter, ScrollAlignmentCenter};
-const ScrollAlignment ScrollAlignment::alignTopAlways = {
-    ScrollAlignmentTop, ScrollAlignmentTop, ScrollAlignmentTop};
-const ScrollAlignment ScrollAlignment::alignBottomAlways = {
-    ScrollAlignmentBottom, ScrollAlignmentBottom, ScrollAlignmentBottom};
+const ScrollAlignment ScrollAlignment::kAlignCenterIfNeeded = {
+    kScrollAlignmentNoScroll, kScrollAlignmentCenter,
+    kScrollAlignmentClosestEdge};
+const ScrollAlignment ScrollAlignment::kAlignToEdgeIfNeeded = {
+    kScrollAlignmentNoScroll, kScrollAlignmentClosestEdge,
+    kScrollAlignmentClosestEdge};
+const ScrollAlignment ScrollAlignment::kAlignCenterAlways = {
+    kScrollAlignmentCenter, kScrollAlignmentCenter, kScrollAlignmentCenter};
+const ScrollAlignment ScrollAlignment::kAlignTopAlways = {
+    kScrollAlignmentTop, kScrollAlignmentTop, kScrollAlignmentTop};
+const ScrollAlignment ScrollAlignment::kAlignBottomAlways = {
+    kScrollAlignmentBottom, kScrollAlignmentBottom, kScrollAlignmentBottom};
 
 #define MIN_INTERSECT_FOR_REVEAL 32
 
-LayoutRect ScrollAlignment::getRectToExpose(const LayoutRect& visibleRect,
-                                            const LayoutRect& exposeRect,
-                                            const ScrollAlignment& alignX,
-                                            const ScrollAlignment& alignY) {
+LayoutRect ScrollAlignment::GetRectToExpose(const LayoutRect& visible_rect,
+                                            const LayoutRect& expose_rect,
+                                            const ScrollAlignment& align_x,
+                                            const ScrollAlignment& align_y) {
   // Prevent degenerate cases by giving the visible rect a minimum non-0 size.
-  LayoutRect nonZeroVisibleRect(visibleRect);
-  LayoutUnit minimumLayoutUnit;
-  minimumLayoutUnit.setRawValue(1);
-  if (nonZeroVisibleRect.width() == LayoutUnit())
-    nonZeroVisibleRect.setWidth(minimumLayoutUnit);
-  if (nonZeroVisibleRect.height() == LayoutUnit())
-    nonZeroVisibleRect.setHeight(minimumLayoutUnit);
+  LayoutRect non_zero_visible_rect(visible_rect);
+  LayoutUnit minimum_layout_unit;
+  minimum_layout_unit.SetRawValue(1);
+  if (non_zero_visible_rect.Width() == LayoutUnit())
+    non_zero_visible_rect.SetWidth(minimum_layout_unit);
+  if (non_zero_visible_rect.Height() == LayoutUnit())
+    non_zero_visible_rect.SetHeight(minimum_layout_unit);
 
   // Determine the appropriate X behavior.
-  ScrollAlignmentBehavior scrollX;
-  LayoutRect exposeRectX(exposeRect.x(), nonZeroVisibleRect.y(),
-                         exposeRect.width(), nonZeroVisibleRect.height());
-  LayoutUnit intersectWidth =
-      intersection(nonZeroVisibleRect, exposeRectX).width();
-  if (intersectWidth == exposeRect.width() ||
-      intersectWidth >= MIN_INTERSECT_FOR_REVEAL) {
+  ScrollAlignmentBehavior scroll_x;
+  LayoutRect expose_rect_x(expose_rect.X(), non_zero_visible_rect.Y(),
+                           expose_rect.Width(), non_zero_visible_rect.Height());
+  LayoutUnit intersect_width =
+      Intersection(non_zero_visible_rect, expose_rect_x).Width();
+  if (intersect_width == expose_rect.Width() ||
+      intersect_width >= MIN_INTERSECT_FOR_REVEAL) {
     // If the rectangle is fully visible, use the specified visible behavior.
     // If the rectangle is partially visible, but over a certain threshold,
     // then treat it as fully visible to avoid unnecessary horizontal scrolling
-    scrollX = getVisibleBehavior(alignX);
-  } else if (intersectWidth == nonZeroVisibleRect.width()) {
+    scroll_x = GetVisibleBehavior(align_x);
+  } else if (intersect_width == non_zero_visible_rect.Width()) {
     // If the rect is bigger than the visible area, don't bother trying to
     // center. Other alignments will work.
-    scrollX = getVisibleBehavior(alignX);
-    if (scrollX == ScrollAlignmentCenter)
-      scrollX = ScrollAlignmentNoScroll;
-  } else if (intersectWidth > 0) {
+    scroll_x = GetVisibleBehavior(align_x);
+    if (scroll_x == kScrollAlignmentCenter)
+      scroll_x = kScrollAlignmentNoScroll;
+  } else if (intersect_width > 0) {
     // If the rectangle is partially visible, but not above the minimum
     // threshold, use the specified partial behavior
-    scrollX = getPartialBehavior(alignX);
+    scroll_x = GetPartialBehavior(align_x);
   } else {
-    scrollX = getHiddenBehavior(alignX);
+    scroll_x = GetHiddenBehavior(align_x);
   }
 
-  if (scrollX == ScrollAlignmentClosestEdge) {
+  if (scroll_x == kScrollAlignmentClosestEdge) {
     // Closest edge is the right in two cases:
     // (1) exposeRect to the right of and smaller than nonZeroVisibleRect
     // (2) exposeRect to the left of and larger than nonZeroVisibleRect
-    if ((exposeRect.maxX() > nonZeroVisibleRect.maxX() &&
-         exposeRect.width() < nonZeroVisibleRect.width()) ||
-        (exposeRect.maxX() < nonZeroVisibleRect.maxX() &&
-         exposeRect.width() > nonZeroVisibleRect.width())) {
-      scrollX = ScrollAlignmentRight;
+    if ((expose_rect.MaxX() > non_zero_visible_rect.MaxX() &&
+         expose_rect.Width() < non_zero_visible_rect.Width()) ||
+        (expose_rect.MaxX() < non_zero_visible_rect.MaxX() &&
+         expose_rect.Width() > non_zero_visible_rect.Width())) {
+      scroll_x = kScrollAlignmentRight;
     }
   }
 
   // Given the X behavior, compute the X coordinate.
   LayoutUnit x;
-  if (scrollX == ScrollAlignmentNoScroll)
-    x = nonZeroVisibleRect.x();
-  else if (scrollX == ScrollAlignmentRight)
-    x = exposeRect.maxX() - nonZeroVisibleRect.width();
-  else if (scrollX == ScrollAlignmentCenter)
-    x = exposeRect.x() + (exposeRect.width() - nonZeroVisibleRect.width()) / 2;
+  if (scroll_x == kScrollAlignmentNoScroll)
+    x = non_zero_visible_rect.X();
+  else if (scroll_x == kScrollAlignmentRight)
+    x = expose_rect.MaxX() - non_zero_visible_rect.Width();
+  else if (scroll_x == kScrollAlignmentCenter)
+    x = expose_rect.X() +
+        (expose_rect.Width() - non_zero_visible_rect.Width()) / 2;
   else
-    x = exposeRect.x();
+    x = expose_rect.X();
 
   // Determine the appropriate Y behavior.
-  ScrollAlignmentBehavior scrollY;
-  LayoutRect exposeRectY(nonZeroVisibleRect.x(), exposeRect.y(),
-                         nonZeroVisibleRect.width(), exposeRect.height());
-  LayoutUnit intersectHeight =
-      intersection(nonZeroVisibleRect, exposeRectY).height();
-  if (intersectHeight == exposeRect.height()) {
+  ScrollAlignmentBehavior scroll_y;
+  LayoutRect expose_rect_y(non_zero_visible_rect.X(), expose_rect.Y(),
+                           non_zero_visible_rect.Width(), expose_rect.Height());
+  LayoutUnit intersect_height =
+      Intersection(non_zero_visible_rect, expose_rect_y).Height();
+  if (intersect_height == expose_rect.Height()) {
     // If the rectangle is fully visible, use the specified visible behavior.
-    scrollY = getVisibleBehavior(alignY);
-  } else if (intersectHeight == nonZeroVisibleRect.height()) {
+    scroll_y = GetVisibleBehavior(align_y);
+  } else if (intersect_height == non_zero_visible_rect.Height()) {
     // If the rect is bigger than the visible area, don't bother trying to
     // center. Other alignments will work.
-    scrollY = getVisibleBehavior(alignY);
-    if (scrollY == ScrollAlignmentCenter)
-      scrollY = ScrollAlignmentNoScroll;
-  } else if (intersectHeight > 0) {
+    scroll_y = GetVisibleBehavior(align_y);
+    if (scroll_y == kScrollAlignmentCenter)
+      scroll_y = kScrollAlignmentNoScroll;
+  } else if (intersect_height > 0) {
     // If the rectangle is partially visible, use the specified partial behavior
-    scrollY = getPartialBehavior(alignY);
+    scroll_y = GetPartialBehavior(align_y);
   } else {
-    scrollY = getHiddenBehavior(alignY);
+    scroll_y = GetHiddenBehavior(align_y);
   }
 
-  if (scrollY == ScrollAlignmentClosestEdge) {
+  if (scroll_y == kScrollAlignmentClosestEdge) {
     // Closest edge is the bottom in two cases:
     // (1) exposeRect below and smaller than nonZeroVisibleRect
     // (2) exposeRect above and larger than nonZeroVisibleRect
-    if ((exposeRect.maxY() > nonZeroVisibleRect.maxY() &&
-         exposeRect.height() < nonZeroVisibleRect.height()) ||
-        (exposeRect.maxY() < nonZeroVisibleRect.maxY() &&
-         exposeRect.height() > nonZeroVisibleRect.height())) {
-      scrollY = ScrollAlignmentBottom;
+    if ((expose_rect.MaxY() > non_zero_visible_rect.MaxY() &&
+         expose_rect.Height() < non_zero_visible_rect.Height()) ||
+        (expose_rect.MaxY() < non_zero_visible_rect.MaxY() &&
+         expose_rect.Height() > non_zero_visible_rect.Height())) {
+      scroll_y = kScrollAlignmentBottom;
     }
   }
 
   // Given the Y behavior, compute the Y coordinate.
   LayoutUnit y;
-  if (scrollY == ScrollAlignmentNoScroll)
-    y = nonZeroVisibleRect.y();
-  else if (scrollY == ScrollAlignmentBottom)
-    y = exposeRect.maxY() - nonZeroVisibleRect.height();
-  else if (scrollY == ScrollAlignmentCenter)
-    y = exposeRect.y() +
-        (exposeRect.height() - nonZeroVisibleRect.height()) / 2;
+  if (scroll_y == kScrollAlignmentNoScroll)
+    y = non_zero_visible_rect.Y();
+  else if (scroll_y == kScrollAlignmentBottom)
+    y = expose_rect.MaxY() - non_zero_visible_rect.Height();
+  else if (scroll_y == kScrollAlignmentCenter)
+    y = expose_rect.Y() +
+        (expose_rect.Height() - non_zero_visible_rect.Height()) / 2;
   else
-    y = exposeRect.y();
+    y = expose_rect.Y();
 
-  return LayoutRect(LayoutPoint(x, y), nonZeroVisibleRect.size());
+  return LayoutRect(LayoutPoint(x, y), non_zero_visible_rect.size());
 }
 
 }  // namespace blink

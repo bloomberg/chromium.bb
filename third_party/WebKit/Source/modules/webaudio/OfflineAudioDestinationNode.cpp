@@ -43,229 +43,230 @@ namespace blink {
 
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
     AudioNode& node,
-    AudioBuffer* renderTarget)
+    AudioBuffer* render_target)
     : AudioDestinationHandler(node),
-      m_renderTarget(renderTarget),
-      m_renderThread(WTF::wrapUnique(
-          Platform::current()->createThread("offline audio renderer"))),
-      m_framesProcessed(0),
-      m_framesToProcess(0),
-      m_isRenderingStarted(false),
-      m_shouldSuspend(false) {
-  m_renderBus = AudioBus::create(renderTarget->numberOfChannels(),
+      render_target_(render_target),
+      render_thread_(WTF::WrapUnique(
+          Platform::Current()->CreateThread("offline audio renderer"))),
+      frames_processed_(0),
+      frames_to_process_(0),
+      is_rendering_started_(false),
+      should_suspend_(false) {
+  render_bus_ = AudioBus::Create(render_target->numberOfChannels(),
                                  AudioUtilities::kRenderQuantumFrames);
-  m_framesToProcess = m_renderTarget->length();
+  frames_to_process_ = render_target_->length();
 
   // Node-specific defaults.
-  m_channelCount = m_renderTarget->numberOfChannels();
-  setInternalChannelCountMode(Explicit);
-  setInternalChannelInterpretation(AudioBus::Speakers);
+  channel_count_ = render_target_->numberOfChannels();
+  SetInternalChannelCountMode(kExplicit);
+  SetInternalChannelInterpretation(AudioBus::kSpeakers);
 }
 
 PassRefPtr<OfflineAudioDestinationHandler>
-OfflineAudioDestinationHandler::create(AudioNode& node,
-                                       AudioBuffer* renderTarget) {
-  return adoptRef(new OfflineAudioDestinationHandler(node, renderTarget));
+OfflineAudioDestinationHandler::Create(AudioNode& node,
+                                       AudioBuffer* render_target) {
+  return AdoptRef(new OfflineAudioDestinationHandler(node, render_target));
 }
 
 OfflineAudioDestinationHandler::~OfflineAudioDestinationHandler() {
-  DCHECK(!isInitialized());
+  DCHECK(!IsInitialized());
 }
 
-void OfflineAudioDestinationHandler::dispose() {
-  uninitialize();
-  AudioDestinationHandler::dispose();
+void OfflineAudioDestinationHandler::Dispose() {
+  Uninitialize();
+  AudioDestinationHandler::Dispose();
 }
 
-void OfflineAudioDestinationHandler::initialize() {
-  if (isInitialized())
+void OfflineAudioDestinationHandler::Initialize() {
+  if (IsInitialized())
     return;
 
-  AudioHandler::initialize();
+  AudioHandler::Initialize();
 }
 
-void OfflineAudioDestinationHandler::uninitialize() {
-  if (!isInitialized())
+void OfflineAudioDestinationHandler::Uninitialize() {
+  if (!IsInitialized())
     return;
 
-  if (m_renderThread)
-    m_renderThread.reset();
+  if (render_thread_)
+    render_thread_.reset();
 
-  AudioHandler::uninitialize();
+  AudioHandler::Uninitialize();
 }
 
-OfflineAudioContext* OfflineAudioDestinationHandler::context() const {
-  return static_cast<OfflineAudioContext*>(AudioDestinationHandler::context());
+OfflineAudioContext* OfflineAudioDestinationHandler::Context() const {
+  return static_cast<OfflineAudioContext*>(AudioDestinationHandler::Context());
 }
 
-unsigned long OfflineAudioDestinationHandler::maxChannelCount() const {
-  return m_channelCount;
+unsigned long OfflineAudioDestinationHandler::MaxChannelCount() const {
+  return channel_count_;
 }
 
-void OfflineAudioDestinationHandler::startRendering() {
-  DCHECK(isMainThread());
-  DCHECK(m_renderThread);
-  DCHECK(m_renderTarget);
+void OfflineAudioDestinationHandler::StartRendering() {
+  DCHECK(IsMainThread());
+  DCHECK(render_thread_);
+  DCHECK(render_target_);
 
-  if (!m_renderTarget)
+  if (!render_target_)
     return;
 
   // Rendering was not started. Starting now.
-  if (!m_isRenderingStarted) {
-    m_isRenderingStarted = true;
-    m_renderThread->getWebTaskRunner()->postTask(
+  if (!is_rendering_started_) {
+    is_rendering_started_ = true;
+    render_thread_->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&OfflineAudioDestinationHandler::startOfflineRendering,
-                        wrapPassRefPtr(this)));
+        CrossThreadBind(&OfflineAudioDestinationHandler::StartOfflineRendering,
+                        WrapPassRefPtr(this)));
     return;
   }
 
   // Rendering is already started, which implicitly means we resume the
   // rendering by calling |doOfflineRendering| on the render thread.
-  m_renderThread->getWebTaskRunner()->postTask(
+  render_thread_->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      crossThreadBind(&OfflineAudioDestinationHandler::doOfflineRendering,
-                      wrapPassRefPtr(this)));
+      CrossThreadBind(&OfflineAudioDestinationHandler::DoOfflineRendering,
+                      WrapPassRefPtr(this)));
 }
 
-void OfflineAudioDestinationHandler::stopRendering() {
+void OfflineAudioDestinationHandler::StopRendering() {
   // offline audio rendering CANNOT BE stopped by JavaScript.
   ASSERT_NOT_REACHED();
 }
 
-size_t OfflineAudioDestinationHandler::callbackBufferSize() const {
+size_t OfflineAudioDestinationHandler::CallbackBufferSize() const {
   // The callback buffer size has no meaning for an offline context.
   NOTREACHED();
   return 0;
 }
-WebThread* OfflineAudioDestinationHandler::offlineRenderThread() {
-  DCHECK(m_renderThread);
+WebThread* OfflineAudioDestinationHandler::OfflineRenderThread() {
+  DCHECK(render_thread_);
 
-  return m_renderThread.get();
+  return render_thread_.get();
 }
 
-void OfflineAudioDestinationHandler::startOfflineRendering() {
-  DCHECK(!isMainThread());
+void OfflineAudioDestinationHandler::StartOfflineRendering() {
+  DCHECK(!IsMainThread());
 
-  DCHECK(m_renderBus);
-  if (!m_renderBus)
+  DCHECK(render_bus_);
+  if (!render_bus_)
     return;
 
-  bool isAudioContextInitialized = context()->isDestinationInitialized();
-  DCHECK(isAudioContextInitialized);
-  if (!isAudioContextInitialized)
+  bool is_audio_context_initialized = Context()->IsDestinationInitialized();
+  DCHECK(is_audio_context_initialized);
+  if (!is_audio_context_initialized)
     return;
 
-  bool channelsMatch =
-      m_renderBus->numberOfChannels() == m_renderTarget->numberOfChannels();
-  DCHECK(channelsMatch);
-  if (!channelsMatch)
+  bool channels_match =
+      render_bus_->NumberOfChannels() == render_target_->numberOfChannels();
+  DCHECK(channels_match);
+  if (!channels_match)
     return;
 
-  bool isRenderBusAllocated =
-      m_renderBus->length() >= AudioUtilities::kRenderQuantumFrames;
-  DCHECK(isRenderBusAllocated);
-  if (!isRenderBusAllocated)
+  bool is_render_bus_allocated =
+      render_bus_->length() >= AudioUtilities::kRenderQuantumFrames;
+  DCHECK(is_render_bus_allocated);
+  if (!is_render_bus_allocated)
     return;
 
   // Start rendering.
-  doOfflineRendering();
+  DoOfflineRendering();
 }
 
-void OfflineAudioDestinationHandler::doOfflineRendering() {
-  DCHECK(!isMainThread());
+void OfflineAudioDestinationHandler::DoOfflineRendering() {
+  DCHECK(!IsMainThread());
 
-  unsigned numberOfChannels = m_renderTarget->numberOfChannels();
+  unsigned number_of_channels = render_target_->numberOfChannels();
 
   // Reset the suspend flag.
-  m_shouldSuspend = false;
+  should_suspend_ = false;
 
   // If there is more to process and there is no suspension at the moment,
   // do continue to render quanta. Then calling OfflineAudioContext.resume()
   // will pick up the render loop again from where it was suspended.
-  while (m_framesToProcess > 0 && !m_shouldSuspend) {
+  while (frames_to_process_ > 0 && !should_suspend_) {
     // Suspend the rendering and update m_shouldSuspend if a scheduled
     // suspend found at the current sample frame. Otherwise render one
     // quantum and return false.
-    m_shouldSuspend = renderIfNotSuspended(
-        0, m_renderBus.get(), AudioUtilities::kRenderQuantumFrames);
+    should_suspend_ = RenderIfNotSuspended(
+        0, render_bus_.Get(), AudioUtilities::kRenderQuantumFrames);
 
-    if (m_shouldSuspend)
+    if (should_suspend_)
       return;
 
-    size_t framesAvailableToCopy =
-        std::min(m_framesToProcess,
+    size_t frames_available_to_copy =
+        std::min(frames_to_process_,
                  static_cast<size_t>(AudioUtilities::kRenderQuantumFrames));
 
-    for (unsigned channelIndex = 0; channelIndex < numberOfChannels;
-         ++channelIndex) {
-      const float* source = m_renderBus->channel(channelIndex)->data();
-      float* destination = m_renderTarget->getChannelData(channelIndex)->data();
-      memcpy(destination + m_framesProcessed, source,
-             sizeof(float) * framesAvailableToCopy);
+    for (unsigned channel_index = 0; channel_index < number_of_channels;
+         ++channel_index) {
+      const float* source = render_bus_->Channel(channel_index)->Data();
+      float* destination =
+          render_target_->getChannelData(channel_index)->Data();
+      memcpy(destination + frames_processed_, source,
+             sizeof(float) * frames_available_to_copy);
     }
 
-    m_framesProcessed += framesAvailableToCopy;
+    frames_processed_ += frames_available_to_copy;
 
-    DCHECK_GE(m_framesToProcess, framesAvailableToCopy);
-    m_framesToProcess -= framesAvailableToCopy;
+    DCHECK_GE(frames_to_process_, frames_available_to_copy);
+    frames_to_process_ -= frames_available_to_copy;
   }
 
   // Finish up the rendering loop if there is no more to process.
-  if (!m_framesToProcess)
-    finishOfflineRendering();
+  if (!frames_to_process_)
+    FinishOfflineRendering();
 }
 
-void OfflineAudioDestinationHandler::suspendOfflineRendering() {
-  DCHECK(!isMainThread());
+void OfflineAudioDestinationHandler::SuspendOfflineRendering() {
+  DCHECK(!IsMainThread());
 
   // The actual rendering has been suspended. Notify the context.
-  if (context()->getExecutionContext()) {
-    TaskRunnerHelper::get(TaskType::MediaElementEvent,
-                          context()->getExecutionContext())
-        ->postTask(BLINK_FROM_HERE,
-                   crossThreadBind(
-                       &OfflineAudioDestinationHandler::notifySuspend,
-                       wrapPassRefPtr(this), context()->currentSampleFrame()));
+  if (Context()->GetExecutionContext()) {
+    TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
+                          Context()->GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE,
+                   CrossThreadBind(
+                       &OfflineAudioDestinationHandler::NotifySuspend,
+                       WrapPassRefPtr(this), Context()->CurrentSampleFrame()));
   }
 }
 
-void OfflineAudioDestinationHandler::finishOfflineRendering() {
-  DCHECK(!isMainThread());
+void OfflineAudioDestinationHandler::FinishOfflineRendering() {
+  DCHECK(!IsMainThread());
 
   // The actual rendering has been completed. Notify the context.
-  if (context()->getExecutionContext()) {
-    TaskRunnerHelper::get(TaskType::MediaElementEvent,
-                          context()->getExecutionContext())
-        ->postTask(
+  if (Context()->GetExecutionContext()) {
+    TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
+                          Context()->GetExecutionContext())
+        ->PostTask(
             BLINK_FROM_HERE,
-            crossThreadBind(&OfflineAudioDestinationHandler::notifyComplete,
-                            wrapPassRefPtr(this)));
+            CrossThreadBind(&OfflineAudioDestinationHandler::NotifyComplete,
+                            WrapPassRefPtr(this)));
   }
 }
 
-void OfflineAudioDestinationHandler::notifySuspend(size_t frame) {
-  DCHECK(isMainThread());
+void OfflineAudioDestinationHandler::NotifySuspend(size_t frame) {
+  DCHECK(IsMainThread());
 
-  if (context())
-    context()->resolveSuspendOnMainThread(frame);
+  if (Context())
+    Context()->ResolveSuspendOnMainThread(frame);
 }
 
-void OfflineAudioDestinationHandler::notifyComplete() {
+void OfflineAudioDestinationHandler::NotifyComplete() {
   // The OfflineAudioContext might be gone.
-  if (context())
-    context()->fireCompletionEvent();
+  if (Context())
+    Context()->FireCompletionEvent();
 }
 
-bool OfflineAudioDestinationHandler::renderIfNotSuspended(
-    AudioBus* sourceBus,
-    AudioBus* destinationBus,
-    size_t numberOfFrames) {
+bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
+    AudioBus* source_bus,
+    AudioBus* destination_bus,
+    size_t number_of_frames) {
   // We don't want denormals slowing down any of the audio processing
   // since they can very seriously hurt performance.
   // This will take care of all AudioNodes because they all process within this
   // scope.
-  DenormalDisabler denormalDisabler;
+  DenormalDisabler denormal_disabler;
 
   // Need to check if the context actually alive. Otherwise the subsequent
   // steps will fail. If the context is not alive somehow, return immediately
@@ -273,59 +274,60 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(
   //
   // TODO(hongchan): because the context can go away while rendering, so this
   // check cannot guarantee the safe execution of the following steps.
-  DCHECK(context());
-  if (!context())
+  DCHECK(Context());
+  if (!Context())
     return false;
 
-  context()->deferredTaskHandler().setAudioThreadToCurrentThread();
+  Context()->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
 
   // If the destination node is not initialized, pass the silence to the final
   // audio destination (one step before the FIFO). This check is for the case
   // where the destination is in the middle of tearing down process.
-  if (!isInitialized()) {
-    destinationBus->zero();
+  if (!IsInitialized()) {
+    destination_bus->Zero();
     return false;
   }
 
   // Take care pre-render tasks at the beginning of each render quantum. Then
   // it will stop the rendering loop if the context needs to be suspended
   // at the beginning of the next render quantum.
-  if (context()->handlePreOfflineRenderTasks()) {
-    suspendOfflineRendering();
+  if (Context()->HandlePreOfflineRenderTasks()) {
+    SuspendOfflineRendering();
     return true;
   }
 
   // Prepare the local audio input provider for this render quantum.
-  if (sourceBus)
-    m_localAudioInputProvider.set(sourceBus);
+  if (source_bus)
+    local_audio_input_provider_.Set(source_bus);
 
-  DCHECK_GE(numberOfInputs(), 1u);
-  if (numberOfInputs() < 1) {
-    destinationBus->zero();
+  DCHECK_GE(NumberOfInputs(), 1u);
+  if (NumberOfInputs() < 1) {
+    destination_bus->Zero();
     return false;
   }
   // This will cause the node(s) connected to us to process, which in turn will
   // pull on their input(s), all the way backwards through the rendering graph.
-  AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
+  AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
 
-  if (!renderedBus) {
-    destinationBus->zero();
-  } else if (renderedBus != destinationBus) {
+  if (!rendered_bus) {
+    destination_bus->Zero();
+  } else if (rendered_bus != destination_bus) {
     // in-place processing was not possible - so copy
-    destinationBus->copyFrom(*renderedBus);
+    destination_bus->CopyFrom(*rendered_bus);
   }
 
   // Process nodes which need a little extra help because they are not connected
   // to anything, but still need to process.
-  context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
+  Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
+      number_of_frames);
 
   // Let the context take care of any business at the end of each render
   // quantum.
-  context()->handlePostOfflineRenderTasks();
+  Context()->HandlePostOfflineRenderTasks();
 
   // Advance current sample-frame.
-  size_t newSampleFrame = m_currentSampleFrame + numberOfFrames;
-  releaseStore(&m_currentSampleFrame, newSampleFrame);
+  size_t new_sample_frame = current_sample_frame_ + number_of_frames;
+  ReleaseStore(&current_sample_frame_, new_sample_frame);
 
   return false;
 }
@@ -334,15 +336,15 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(
 
 OfflineAudioDestinationNode::OfflineAudioDestinationNode(
     BaseAudioContext& context,
-    AudioBuffer* renderTarget)
+    AudioBuffer* render_target)
     : AudioDestinationNode(context) {
-  setHandler(OfflineAudioDestinationHandler::create(*this, renderTarget));
+  SetHandler(OfflineAudioDestinationHandler::Create(*this, render_target));
 }
 
-OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(
+OfflineAudioDestinationNode* OfflineAudioDestinationNode::Create(
     BaseAudioContext* context,
-    AudioBuffer* renderTarget) {
-  return new OfflineAudioDestinationNode(*context, renderTarget);
+    AudioBuffer* render_target) {
+  return new OfflineAudioDestinationNode(*context, render_target);
 }
 
 }  // namespace blink

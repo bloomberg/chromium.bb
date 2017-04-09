@@ -31,13 +31,13 @@
 
 /*
  * typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
- * extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+ * extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
  */
 
-.type pushAllRegisters, %function
-.global pushAllRegisters
-.hidden pushAllRegisters
-pushAllRegisters:
+.type PushAllRegisters, %function
+.global PushAllRegisters
+.hidden PushAllRegisters
+PushAllRegisters:
         // Reserve space for callee-saved registers, return address,
         // as well as for the callee arguments.
         addiu $sp,$sp,-56

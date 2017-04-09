@@ -17,12 +17,12 @@ class CSSPropertyEquality {
   STATIC_ONLY(CSSPropertyEquality);
 
  public:
-  static bool propertiesEqual(CSSPropertyID,
+  static bool PropertiesEqual(CSSPropertyID,
                               const ComputedStyle&,
                               const ComputedStyle&);
 
-  static bool registeredCustomPropertiesEqual(
-      const WTF::AtomicString& propertyName,
+  static bool RegisteredCustomPropertiesEqual(
+      const WTF::AtomicString& property_name,
       const ComputedStyle&,
       const ComputedStyle&);
 };

@@ -30,60 +30,64 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
                 "CORSEnabled should be an enum");
 
   ResourceLoaderOptions original;
-  RefPtr<SecurityOrigin> securityOrigin =
-      SecurityOrigin::createFromString("http://www.google.com");
-  original.securityOrigin = securityOrigin;
-  original.initiatorInfo.name = AtomicString("xmlhttprequest");
+  RefPtr<SecurityOrigin> security_origin =
+      SecurityOrigin::CreateFromString("http://www.google.com");
+  original.security_origin = security_origin;
+  original.initiator_info.name = AtomicString("xmlhttprequest");
 
-  CrossThreadResourceLoaderOptionsData copyData =
-      CrossThreadCopier<ResourceLoaderOptions>::copy(original);
-  ResourceLoaderOptions copy = copyData;
+  CrossThreadResourceLoaderOptionsData copy_data =
+      CrossThreadCopier<ResourceLoaderOptions>::Copy(original);
+  ResourceLoaderOptions copy = copy_data;
 
   // Check that contents are correctly copied to |copyData|
-  EXPECT_EQ(original.dataBufferingPolicy, copyData.dataBufferingPolicy);
-  EXPECT_EQ(original.allowCredentials, copyData.allowCredentials);
-  EXPECT_EQ(original.credentialsRequested, copyData.credentialsRequested);
-  EXPECT_EQ(original.contentSecurityPolicyOption,
-            copyData.contentSecurityPolicyOption);
-  EXPECT_EQ(original.initiatorInfo.name, copyData.initiatorInfo.name);
-  EXPECT_EQ(original.initiatorInfo.position, copyData.initiatorInfo.position);
-  EXPECT_EQ(original.initiatorInfo.startTime, copyData.initiatorInfo.startTime);
-  EXPECT_EQ(original.requestInitiatorContext, copyData.requestInitiatorContext);
-  EXPECT_EQ(original.synchronousPolicy, copyData.synchronousPolicy);
-  EXPECT_EQ(original.corsEnabled, copyData.corsEnabled);
-  EXPECT_EQ(original.securityOrigin->protocol(),
-            copyData.securityOrigin->protocol());
-  EXPECT_EQ(original.securityOrigin->host(), copyData.securityOrigin->host());
-  EXPECT_EQ(original.securityOrigin->domain(),
-            copyData.securityOrigin->domain());
+  EXPECT_EQ(original.data_buffering_policy, copy_data.data_buffering_policy);
+  EXPECT_EQ(original.allow_credentials, copy_data.allow_credentials);
+  EXPECT_EQ(original.credentials_requested, copy_data.credentials_requested);
+  EXPECT_EQ(original.content_security_policy_option,
+            copy_data.content_security_policy_option);
+  EXPECT_EQ(original.initiator_info.name, copy_data.initiator_info.name);
+  EXPECT_EQ(original.initiator_info.position,
+            copy_data.initiator_info.position);
+  EXPECT_EQ(original.initiator_info.start_time,
+            copy_data.initiator_info.start_time);
+  EXPECT_EQ(original.request_initiator_context,
+            copy_data.request_initiator_context);
+  EXPECT_EQ(original.synchronous_policy, copy_data.synchronous_policy);
+  EXPECT_EQ(original.cors_enabled, copy_data.cors_enabled);
+  EXPECT_EQ(original.security_origin->Protocol(),
+            copy_data.security_origin->Protocol());
+  EXPECT_EQ(original.security_origin->Host(),
+            copy_data.security_origin->Host());
+  EXPECT_EQ(original.security_origin->Domain(),
+            copy_data.security_origin->Domain());
 
   // Check that pointers are different between |original| and |copyData|
-  EXPECT_NE(original.initiatorInfo.name.impl(),
-            copyData.initiatorInfo.name.impl());
-  EXPECT_NE(original.securityOrigin.get(), copyData.securityOrigin.get());
-  EXPECT_NE(original.securityOrigin->protocol().impl(),
-            copyData.securityOrigin->protocol().impl());
-  EXPECT_NE(original.securityOrigin->host().impl(),
-            copyData.securityOrigin->host().impl());
-  EXPECT_NE(original.securityOrigin->domain().impl(),
-            copyData.securityOrigin->domain().impl());
+  EXPECT_NE(original.initiator_info.name.Impl(),
+            copy_data.initiator_info.name.Impl());
+  EXPECT_NE(original.security_origin.Get(), copy_data.security_origin.Get());
+  EXPECT_NE(original.security_origin->Protocol().Impl(),
+            copy_data.security_origin->Protocol().Impl());
+  EXPECT_NE(original.security_origin->Host().Impl(),
+            copy_data.security_origin->Host().Impl());
+  EXPECT_NE(original.security_origin->Domain().Impl(),
+            copy_data.security_origin->Domain().Impl());
 
   // Check that contents are correctly copied to |copy|
-  EXPECT_EQ(original.dataBufferingPolicy, copy.dataBufferingPolicy);
-  EXPECT_EQ(original.allowCredentials, copy.allowCredentials);
-  EXPECT_EQ(original.credentialsRequested, copy.credentialsRequested);
-  EXPECT_EQ(original.contentSecurityPolicyOption,
-            copy.contentSecurityPolicyOption);
-  EXPECT_EQ(original.initiatorInfo.name, copy.initiatorInfo.name);
-  EXPECT_EQ(original.initiatorInfo.position, copy.initiatorInfo.position);
-  EXPECT_EQ(original.initiatorInfo.startTime, copy.initiatorInfo.startTime);
-  EXPECT_EQ(original.requestInitiatorContext, copy.requestInitiatorContext);
-  EXPECT_EQ(original.synchronousPolicy, copy.synchronousPolicy);
-  EXPECT_EQ(original.corsEnabled, copy.corsEnabled);
-  EXPECT_EQ(original.securityOrigin->protocol(),
-            copy.securityOrigin->protocol());
-  EXPECT_EQ(original.securityOrigin->host(), copy.securityOrigin->host());
-  EXPECT_EQ(original.securityOrigin->domain(), copy.securityOrigin->domain());
+  EXPECT_EQ(original.data_buffering_policy, copy.data_buffering_policy);
+  EXPECT_EQ(original.allow_credentials, copy.allow_credentials);
+  EXPECT_EQ(original.credentials_requested, copy.credentials_requested);
+  EXPECT_EQ(original.content_security_policy_option,
+            copy.content_security_policy_option);
+  EXPECT_EQ(original.initiator_info.name, copy.initiator_info.name);
+  EXPECT_EQ(original.initiator_info.position, copy.initiator_info.position);
+  EXPECT_EQ(original.initiator_info.start_time, copy.initiator_info.start_time);
+  EXPECT_EQ(original.request_initiator_context, copy.request_initiator_context);
+  EXPECT_EQ(original.synchronous_policy, copy.synchronous_policy);
+  EXPECT_EQ(original.cors_enabled, copy.cors_enabled);
+  EXPECT_EQ(original.security_origin->Protocol(),
+            copy.security_origin->Protocol());
+  EXPECT_EQ(original.security_origin->Host(), copy.security_origin->Host());
+  EXPECT_EQ(original.security_origin->Domain(), copy.security_origin->Domain());
 
   // Check that pointers are different between |original| and |copy|
   // FIXME: When |original| and |copy| are in different threads, then
@@ -91,13 +95,13 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
   //           copy.initiatorInfo.name.impl());
   // should pass. However, in the unit test here, these two pointers are the
   // same, because initiatorInfo.name is AtomicString.
-  EXPECT_NE(original.securityOrigin.get(), copy.securityOrigin.get());
-  EXPECT_NE(original.securityOrigin->protocol().impl(),
-            copy.securityOrigin->protocol().impl());
-  EXPECT_NE(original.securityOrigin->host().impl(),
-            copy.securityOrigin->host().impl());
-  EXPECT_NE(original.securityOrigin->domain().impl(),
-            copy.securityOrigin->domain().impl());
+  EXPECT_NE(original.security_origin.Get(), copy.security_origin.Get());
+  EXPECT_NE(original.security_origin->Protocol().Impl(),
+            copy.security_origin->Protocol().Impl());
+  EXPECT_NE(original.security_origin->Host().Impl(),
+            copy.security_origin->Host().Impl());
+  EXPECT_NE(original.security_origin->Domain().Impl(),
+            copy.security_origin->Domain().Impl());
 
   // FIXME: The checks for content equality/pointer inequality for
   // securityOrigin here is not complete (i.e. m_filePath is not checked). A

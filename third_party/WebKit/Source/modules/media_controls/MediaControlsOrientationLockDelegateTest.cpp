@@ -32,31 +32,31 @@ namespace {
 // nor a failure.
 class DummyScreenOrientationCallback : public WebLockOrientationCallback {
  public:
-  void onSuccess() override {}
-  void onError(WebLockOrientationError) override {}
+  void OnSuccess() override {}
+  void OnError(WebLockOrientationError) override {}
 };
 
 class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
-  bool hasVideo() const override { return true; }
+  bool HasVideo() const override { return true; }
 
-  MOCK_CONST_METHOD0(naturalSize, WebSize());
+  MOCK_CONST_METHOD0(NaturalSize, WebSize());
 };
 
 class MockChromeClient : public EmptyChromeClient {
  public:
-  MOCK_CONST_METHOD0(screenInfo, WebScreenInfo());
+  MOCK_CONST_METHOD0(GetScreenInfo, WebScreenInfo());
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* create() { return new StubLocalFrameClient; }
+  static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
 
-  std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
+  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override {
-    return WTF::wrapUnique(new MockVideoWebMediaPlayer());
+    return WTF::WrapUnique(new MockVideoWebMediaPlayer());
   }
 };
 
@@ -65,17 +65,17 @@ class MockScreenOrientationController final
   WTF_MAKE_NONCOPYABLE(MockScreenOrientationController);
 
  public:
-  static MockScreenOrientationController* provideTo(LocalFrame& frame) {
+  static MockScreenOrientationController* ProvideTo(LocalFrame& frame) {
     MockScreenOrientationController* controller =
         new MockScreenOrientationController(frame);
-    ScreenOrientationController::provideTo(frame, controller);
+    ScreenOrientationController::ProvideTo(frame, controller);
     return controller;
   }
 
   MOCK_METHOD1(lock, void(WebScreenOrientationLockType));
-  MOCK_METHOD0(mockUnlock, void());
+  MOCK_METHOD0(MockUnlock, void());
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ScreenOrientationController::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { ScreenOrientationController::Trace(visitor); }
 
  private:
   explicit MockScreenOrientationController(LocalFrame& frame)
@@ -83,20 +83,20 @@ class MockScreenOrientationController final
 
   void lock(WebScreenOrientationLockType type,
             std::unique_ptr<WebLockOrientationCallback>) override {
-    m_locked = true;
+    locked_ = true;
     lock(type);
   }
 
   void unlock() override {
-    m_locked = false;
-    mockUnlock();
+    locked_ = false;
+    MockUnlock();
   }
 
-  void notifyOrientationChanged() override {}
+  void NotifyOrientationChanged() override {}
 
-  bool maybeHasActiveLock() const override { return m_locked; }
+  bool MaybeHasActiveLock() const override { return locked_; }
 
-  bool m_locked = false;
+  bool locked_ = false;
 };
 
 }  // anonymous namespace
@@ -104,256 +104,258 @@ class MockScreenOrientationController final
 class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_previousVideoFullscreenOrientationLockValue =
+    previous_video_fullscreen_orientation_lock_value_ =
         RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled();
     RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(true);
 
-    m_chromeClient = new MockChromeClient();
+    chrome_client_ = new MockChromeClient();
 
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = m_chromeClient.get();
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
 
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients,
-                                           StubLocalFrameClient::create());
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients,
+                                           StubLocalFrameClient::Create());
 
-    document().write("<body><video></body>");
-    m_video = toHTMLVideoElement(*document().querySelector("video"));
+    GetDocument().write("<body><video></body>");
+    video_ = toHTMLVideoElement(*GetDocument().QuerySelector("video"));
 
-    m_screenOrientationController =
-        MockScreenOrientationController::provideTo(m_pageHolder->frame());
+    screen_orientation_controller_ =
+        MockScreenOrientationController::ProvideTo(page_holder_->GetFrame());
   }
 
   void TearDown() override {
-    ::testing::Mock::VerifyAndClear(&screenOrientationController());
+    ::testing::Mock::VerifyAndClear(&GetScreenOrientationController());
 
     RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(
-        m_previousVideoFullscreenOrientationLockValue);
+        previous_video_fullscreen_orientation_lock_value_);
   }
 
-  static bool hasDelegate(const MediaControls& mediaControls) {
-    return !!static_cast<const MediaControlsImpl*>(&mediaControls)
-                 ->m_orientationLockDelegate;
+  static bool HasDelegate(const MediaControls& media_controls) {
+    return !!static_cast<const MediaControlsImpl*>(&media_controls)
+                 ->orientation_lock_delegate_;
   }
 
-  void simulateEnterFullscreen() {
-    UserGestureIndicator gesture(DocumentUserGestureToken::create(&document()));
+  void SimulateEnterFullscreen() {
+    UserGestureIndicator gesture(
+        DocumentUserGestureToken::Create(&GetDocument()));
 
-    Fullscreen::requestFullscreen(video());
-    Fullscreen::from(document()).didEnterFullscreen();
-    testing::runPendingTasks();
+    Fullscreen::RequestFullscreen(Video());
+    Fullscreen::From(GetDocument()).DidEnterFullscreen();
+    testing::RunPendingTasks();
   }
 
-  void simulateExitFullscreen() {
-    Fullscreen::exitFullscreen(document());
-    Fullscreen::from(document()).didExitFullscreen();
-    testing::runPendingTasks();
+  void SimulateExitFullscreen() {
+    Fullscreen::ExitFullscreen(GetDocument());
+    Fullscreen::From(GetDocument()).DidExitFullscreen();
+    testing::RunPendingTasks();
   }
 
-  void simulateOrientationLock() {
+  void SimulateOrientationLock() {
     ScreenOrientationController* controller =
-        ScreenOrientationController::from(*document().frame());
-    controller->lock(WebScreenOrientationLockLandscape,
-                     WTF::wrapUnique(new DummyScreenOrientationCallback));
-    EXPECT_TRUE(controller->maybeHasActiveLock());
+        ScreenOrientationController::From(*GetDocument().GetFrame());
+    controller->lock(kWebScreenOrientationLockLandscape,
+                     WTF::WrapUnique(new DummyScreenOrientationCallback));
+    EXPECT_TRUE(controller->MaybeHasActiveLock());
   }
 
-  void simulateVideoReadyState(HTMLMediaElement::ReadyState state) {
-    video().setReadyState(state);
+  void SimulateVideoReadyState(HTMLMediaElement::ReadyState state) {
+    Video().SetReadyState(state);
   }
 
-  void simulateVideoNetworkState(HTMLMediaElement::NetworkState state) {
-    video().setNetworkState(state);
+  void SimulateVideoNetworkState(HTMLMediaElement::NetworkState state) {
+    Video().SetNetworkState(state);
   }
 
-  MediaControlsImpl* mediaControls() const {
-    return static_cast<MediaControlsImpl*>(m_video->mediaControls());
+  MediaControlsImpl* MediaControls() const {
+    return static_cast<MediaControlsImpl*>(video_->GetMediaControls());
   }
 
-  void checkStatePendingFullscreen() const {
-    EXPECT_EQ(MediaControlsOrientationLockDelegate::State::PendingFullscreen,
-              mediaControls()->m_orientationLockDelegate->m_state);
+  void CheckStatePendingFullscreen() const {
+    EXPECT_EQ(MediaControlsOrientationLockDelegate::State::kPendingFullscreen,
+              MediaControls()->orientation_lock_delegate_->state_);
   }
 
-  void checkStatePendingMetadata() const {
-    EXPECT_EQ(MediaControlsOrientationLockDelegate::State::PendingMetadata,
-              mediaControls()->m_orientationLockDelegate->m_state);
+  void CheckStatePendingMetadata() const {
+    EXPECT_EQ(MediaControlsOrientationLockDelegate::State::kPendingMetadata,
+              MediaControls()->orientation_lock_delegate_->state_);
   }
 
-  void checkStateMaybeLockedFullscreen() const {
+  void CheckStateMaybeLockedFullscreen() const {
     EXPECT_EQ(
-        MediaControlsOrientationLockDelegate::State::MaybeLockedFullscreen,
-        mediaControls()->m_orientationLockDelegate->m_state);
+        MediaControlsOrientationLockDelegate::State::kMaybeLockedFullscreen,
+        MediaControls()->orientation_lock_delegate_->state_);
   }
 
-  bool delegateWillUnlockFullscreen() const {
-    return mediaControls()
-        ->m_orientationLockDelegate->m_shouldUnlockOrientation;
+  bool DelegateWillUnlockFullscreen() const {
+    return MediaControls()
+        ->orientation_lock_delegate_->should_unlock_orientation_;
   }
 
-  WebScreenOrientationLockType computeOrientationLock() const {
-    return mediaControls()->m_orientationLockDelegate->computeOrientationLock();
+  WebScreenOrientationLockType ComputeOrientationLock() const {
+    return MediaControls()
+        ->orientation_lock_delegate_->ComputeOrientationLock();
   }
 
-  MockChromeClient& chromeClient() const { return *m_chromeClient; }
+  MockChromeClient& ChromeClient() const { return *chrome_client_; }
 
-  HTMLVideoElement& video() const { return *m_video; }
-  Document& document() const { return m_pageHolder->document(); }
-  MockScreenOrientationController& screenOrientationController() const {
-    return *m_screenOrientationController;
+  HTMLVideoElement& Video() const { return *video_; }
+  Document& GetDocument() const { return page_holder_->GetDocument(); }
+  MockScreenOrientationController& GetScreenOrientationController() const {
+    return *screen_orientation_controller_;
   }
-  MockVideoWebMediaPlayer& mockWebMediaPlayer() const {
-    return *static_cast<MockVideoWebMediaPlayer*>(video().webMediaPlayer());
+  MockVideoWebMediaPlayer& MockWebMediaPlayer() const {
+    return *static_cast<MockVideoWebMediaPlayer*>(Video().GetWebMediaPlayer());
   }
 
  private:
-  bool m_previousVideoFullscreenOrientationLockValue;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
-  Persistent<HTMLVideoElement> m_video;
-  Persistent<MockScreenOrientationController> m_screenOrientationController;
-  Persistent<MockChromeClient> m_chromeClient;
+  bool previous_video_fullscreen_orientation_lock_value_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
+  Persistent<HTMLVideoElement> video_;
+  Persistent<MockScreenOrientationController> screen_orientation_controller_;
+  Persistent<MockChromeClient> chrome_client_;
 };
 
 TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresFlag) {
   // Flag on by default.
-  EXPECT_TRUE(hasDelegate(*video().mediaControls()));
+  EXPECT_TRUE(HasDelegate(*Video().GetMediaControls()));
 
   // Same with flag off.
   RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(false);
-  HTMLVideoElement* video = HTMLVideoElement::create(document());
-  document().body()->appendChild(video);
-  EXPECT_FALSE(hasDelegate(*video->mediaControls()));
+  HTMLVideoElement* video = HTMLVideoElement::Create(GetDocument());
+  GetDocument().body()->AppendChild(video);
+  EXPECT_FALSE(HasDelegate(*video->GetMediaControls()));
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresVideo) {
-  HTMLAudioElement* audio = HTMLAudioElement::create(document());
-  document().body()->appendChild(audio);
-  EXPECT_FALSE(hasDelegate(*audio->mediaControls()));
+  HTMLAudioElement* audio = HTMLAudioElement::Create(GetDocument());
+  GetDocument().body()->AppendChild(audio);
+  EXPECT_FALSE(HasDelegate(*audio->GetMediaControls()));
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, InitialState) {
-  checkStatePendingFullscreen();
+  CheckStatePendingFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenNoMetadata) {
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
 
-  checkStatePendingMetadata();
+  CheckStatePendingMetadata();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenNoMetadata) {
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(0);
-  EXPECT_CALL(screenOrientationController(), mockUnlock()).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(0);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
   // State set to PendingMetadata.
-  simulateExitFullscreen();
+  SimulateExitFullscreen();
 
-  checkStatePendingFullscreen();
+  CheckStatePendingFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenWithMetadata) {
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
 
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(1);
-  EXPECT_FALSE(delegateWillUnlockFullscreen());
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(1);
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
 
-  EXPECT_TRUE(delegateWillUnlockFullscreen());
-  checkStateMaybeLockedFullscreen();
+  EXPECT_TRUE(DelegateWillUnlockFullscreen());
+  CheckStateMaybeLockedFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenWithMetadata) {
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
 
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(1);
-  EXPECT_CALL(screenOrientationController(), mockUnlock()).Times(1);
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(1);
+  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(1);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
   // State set to MaybeLockedFullscreen.
-  simulateExitFullscreen();
+  SimulateExitFullscreen();
 
-  EXPECT_FALSE(delegateWillUnlockFullscreen());
-  checkStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  CheckStatePendingFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenAfterPageLock) {
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
-  simulateOrientationLock();
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  SimulateOrientationLock();
 
-  EXPECT_FALSE(delegateWillUnlockFullscreen());
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(0);
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
 
-  EXPECT_FALSE(delegateWillUnlockFullscreen());
-  checkStateMaybeLockedFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  CheckStateMaybeLockedFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenAfterPageLock) {
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
-  simulateOrientationLock();
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  SimulateOrientationLock();
 
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(0);
-  EXPECT_CALL(screenOrientationController(), mockUnlock()).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(0);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
   // State set to MaybeLockedFullscreen.
-  simulateExitFullscreen();
+  SimulateExitFullscreen();
 
-  EXPECT_FALSE(delegateWillUnlockFullscreen());
-  checkStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  CheckStatePendingFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest,
        ReceivedMetadataAfterExitingFullscreen) {
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(1);
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(1);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
   // State set to PendingMetadata.
 
   // Set up the WebMediaPlayer instance.
-  video().setSrc("http://example.com");
-  testing::runPendingTasks();
+  Video().SetSrc("http://example.com");
+  testing::RunPendingTasks();
 
-  simulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
-  testing::runPendingTasks();
+  SimulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  testing::RunPendingTasks();
 
-  checkStateMaybeLockedFullscreen();
+  CheckStateMaybeLockedFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, ReceivedMetadataLater) {
-  EXPECT_CALL(screenOrientationController(), lock(_)).Times(0);
-  EXPECT_CALL(screenOrientationController(), mockUnlock()).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
+  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(0);
 
-  simulateEnterFullscreen();
+  SimulateEnterFullscreen();
   // State set to PendingMetadata.
-  simulateExitFullscreen();
+  SimulateExitFullscreen();
 
   // Set up the WebMediaPlayer instance.
-  video().setSrc("http://example.com");
-  testing::runPendingTasks();
+  Video().SetSrc("http://example.com");
+  testing::RunPendingTasks();
 
-  simulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
-  testing::runPendingTasks();
+  SimulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  testing::RunPendingTasks();
 
-  checkStatePendingFullscreen();
+  CheckStatePendingFullscreen();
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
   // Set up the WebMediaPlayer instance.
-  video().setSrc("http://example.com");
-  testing::runPendingTasks();
+  Video().SetSrc("http://example.com");
+  testing::RunPendingTasks();
 
-  simulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
-  simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+  SimulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
+  SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
 
-  EXPECT_CALL(mockWebMediaPlayer(), naturalSize())
+  EXPECT_CALL(MockWebMediaPlayer(), NaturalSize())
       .Times(14)  // Each `computeOrientationLock` calls the method twice.
       .WillOnce(Return(WebSize(100, 50)))
       .WillOnce(Return(WebSize(100, 50)))
@@ -362,42 +364,42 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
       .WillRepeatedly(Return(WebSize(100, 100)));
 
   // 100x50
-  EXPECT_EQ(WebScreenOrientationLockLandscape, computeOrientationLock());
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
 
   // 50x100
-  EXPECT_EQ(WebScreenOrientationLockPortrait, computeOrientationLock());
+  EXPECT_EQ(kWebScreenOrientationLockPortrait, ComputeOrientationLock());
 
   // 100x100 has more subtilities, it depends on the current screen orientation.
-  WebScreenInfo screenInfo;
-  screenInfo.orientationType = WebScreenOrientationUndefined;
-  EXPECT_CALL(chromeClient(), screenInfo())
+  WebScreenInfo screen_info;
+  screen_info.orientation_type = kWebScreenOrientationUndefined;
+  EXPECT_CALL(ChromeClient(), GetScreenInfo())
       .Times(1)
-      .WillOnce(Return(screenInfo));
-  EXPECT_EQ(WebScreenOrientationLockLandscape, computeOrientationLock());
+      .WillOnce(Return(screen_info));
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
 
-  screenInfo.orientationType = WebScreenOrientationPortraitPrimary;
-  EXPECT_CALL(chromeClient(), screenInfo())
+  screen_info.orientation_type = kWebScreenOrientationPortraitPrimary;
+  EXPECT_CALL(ChromeClient(), GetScreenInfo())
       .Times(1)
-      .WillOnce(Return(screenInfo));
-  EXPECT_EQ(WebScreenOrientationLockPortrait, computeOrientationLock());
+      .WillOnce(Return(screen_info));
+  EXPECT_EQ(kWebScreenOrientationLockPortrait, ComputeOrientationLock());
 
-  screenInfo.orientationType = WebScreenOrientationPortraitPrimary;
-  EXPECT_CALL(chromeClient(), screenInfo())
+  screen_info.orientation_type = kWebScreenOrientationPortraitPrimary;
+  EXPECT_CALL(ChromeClient(), GetScreenInfo())
       .Times(1)
-      .WillOnce(Return(screenInfo));
-  EXPECT_EQ(WebScreenOrientationLockPortrait, computeOrientationLock());
+      .WillOnce(Return(screen_info));
+  EXPECT_EQ(kWebScreenOrientationLockPortrait, ComputeOrientationLock());
 
-  screenInfo.orientationType = WebScreenOrientationLandscapePrimary;
-  EXPECT_CALL(chromeClient(), screenInfo())
+  screen_info.orientation_type = kWebScreenOrientationLandscapePrimary;
+  EXPECT_CALL(ChromeClient(), GetScreenInfo())
       .Times(1)
-      .WillOnce(Return(screenInfo));
-  EXPECT_EQ(WebScreenOrientationLockLandscape, computeOrientationLock());
+      .WillOnce(Return(screen_info));
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
 
-  screenInfo.orientationType = WebScreenOrientationLandscapeSecondary;
-  EXPECT_CALL(chromeClient(), screenInfo())
+  screen_info.orientation_type = kWebScreenOrientationLandscapeSecondary;
+  EXPECT_CALL(ChromeClient(), GetScreenInfo())
       .Times(1)
-      .WillOnce(Return(screenInfo));
-  EXPECT_EQ(WebScreenOrientationLockLandscape, computeOrientationLock());
+      .WillOnce(Return(screen_info));
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
 }
 
 }  // namespace blink

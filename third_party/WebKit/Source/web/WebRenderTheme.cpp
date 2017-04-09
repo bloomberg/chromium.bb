@@ -37,12 +37,12 @@
 
 namespace blink {
 
-void setCaretBlinkInterval(double interval) {
-  LayoutTheme::theme().setCaretBlinkInterval(interval);
+void SetCaretBlinkInterval(double interval) {
+  LayoutTheme::GetTheme().SetCaretBlinkInterval(interval);
 }
 
-void setFocusRingColor(WebColor color) {
-  LayoutTheme::theme().setCustomFocusRingColor(color);
+void SetFocusRingColor(WebColor color) {
+  LayoutTheme::GetTheme().SetCustomFocusRingColor(color);
 }
 
 }  // namespace blink

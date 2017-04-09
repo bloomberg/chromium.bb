@@ -24,7 +24,7 @@ class CORE_EXPORT ResizeObserver final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ResizeObserver* create(Document&, ResizeObserverCallback*);
+  static ResizeObserver* Create(Document&, ResizeObserverCallback*);
 
   virtual ~ResizeObserver(){};
 
@@ -34,12 +34,12 @@ class CORE_EXPORT ResizeObserver final
   void disconnect();
 
   // Returns depth of shallowest observed node, kDepthLimit if none.
-  size_t gatherObservations(size_t deeperThan);
-  bool skippedObservations() { return m_skippedObservations; }
-  void deliverObservations();
-  void clearObservations();
-  void elementSizeChanged();
-  bool hasElementSizeChanged() { return m_elementSizeChanged; }
+  size_t GatherObservations(size_t deeper_than);
+  bool SkippedObservations() { return skipped_observations_; }
+  void DeliverObservations();
+  void ClearObservations();
+  void ElementSizeChanged();
+  bool HasElementSizeChanged() { return element_size_changed_; }
   DECLARE_TRACE();
 
  private:
@@ -47,16 +47,16 @@ class CORE_EXPORT ResizeObserver final
 
   using ObservationList = HeapLinkedHashSet<WeakMember<ResizeObservation>>;
 
-  Member<ResizeObserverCallback> m_callback;
+  Member<ResizeObserverCallback> callback_;
   // List of elements we are observing
-  ObservationList m_observations;
+  ObservationList observations_;
   // List of elements that have changes
-  HeapVector<Member<ResizeObservation>> m_activeObservations;
+  HeapVector<Member<ResizeObservation>> active_observations_;
   // True if observations were skipped gatherObservations
-  bool m_skippedObservations;
+  bool skipped_observations_;
   // True if any ResizeObservation reported size change
-  bool m_elementSizeChanged;
-  WeakMember<ResizeObserverController> m_controller;
+  bool element_size_changed_;
+  WeakMember<ResizeObserverController> controller_;
 };
 
 }  // namespace blink

@@ -19,76 +19,76 @@ namespace blink {
 
 class Hyphenation;
 
-enum class LineBreakIteratorMode { Default, Normal, Strict, Loose };
+enum class LineBreakIteratorMode { kDefault, kNormal, kStrict, kLoose };
 
 class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
  public:
-  static const LayoutLocale* get(const AtomicString& locale);
-  static const LayoutLocale& getDefault();
-  static const LayoutLocale& getSystem();
-  static const LayoutLocale& valueOrDefault(const LayoutLocale* locale) {
-    return locale ? *locale : getDefault();
+  static const LayoutLocale* Get(const AtomicString& locale);
+  static const LayoutLocale& GetDefault();
+  static const LayoutLocale& GetSystem();
+  static const LayoutLocale& ValueOrDefault(const LayoutLocale* locale) {
+    return locale ? *locale : GetDefault();
   }
 
   bool operator==(const LayoutLocale& other) const {
-    return m_string == other.m_string;
+    return string_ == other.string_;
   }
   bool operator!=(const LayoutLocale& other) const {
-    return m_string != other.m_string;
+    return string_ != other.string_;
   }
 
-  const AtomicString& localeString() const { return m_string; }
-  static const AtomicString& localeString(const LayoutLocale* locale) {
-    return locale ? locale->m_string : nullAtom;
+  const AtomicString& LocaleString() const { return string_; }
+  static const AtomicString& LocaleString(const LayoutLocale* locale) {
+    return locale ? locale->string_ : g_null_atom;
   }
-  operator const AtomicString&() const { return m_string; }
-  CString ascii() const { return m_string.ascii(); }
+  operator const AtomicString&() const { return string_; }
+  CString Ascii() const { return string_.Ascii(); }
 
-  const hb_language_impl_t* harfbuzzLanguage() const {
-    return m_harfbuzzLanguage;
+  const hb_language_impl_t* HarfbuzzLanguage() const {
+    return harfbuzz_language_;
   }
-  const char* localeForSkFontMgr() const;
-  UScriptCode script() const { return m_script; }
+  const char* LocaleForSkFontMgr() const;
+  UScriptCode Script() const { return script_; }
 
   // Disambiguation of the Unified Han Ideographs.
-  UScriptCode scriptForHan() const;
-  bool hasScriptForHan() const;
-  static const LayoutLocale* localeForHan(const LayoutLocale*);
-  static void invalidateLocaleForHan() { s_defaultForHanComputed = false; }
-  const char* localeForHanForSkFontMgr() const;
+  UScriptCode ScriptForHan() const;
+  bool HasScriptForHan() const;
+  static const LayoutLocale* LocaleForHan(const LayoutLocale*);
+  static void InvalidateLocaleForHan() { default_for_han_computed_ = false; }
+  const char* LocaleForHanForSkFontMgr() const;
 
-  Hyphenation* getHyphenation() const;
+  Hyphenation* GetHyphenation() const;
 
-  AtomicString localeWithBreakKeyword(LineBreakIteratorMode) const;
+  AtomicString LocaleWithBreakKeyword(LineBreakIteratorMode) const;
 
-  static PassRefPtr<LayoutLocale> createForTesting(const AtomicString&);
-  static void clearForTesting();
-  static void setHyphenationForTesting(const AtomicString&,
+  static PassRefPtr<LayoutLocale> CreateForTesting(const AtomicString&);
+  static void ClearForTesting();
+  static void SetHyphenationForTesting(const AtomicString&,
                                        PassRefPtr<Hyphenation>);
 
  private:
   explicit LayoutLocale(const AtomicString&);
 
-  void computeScriptForHan() const;
-  static void computeLocaleForHan();
+  void ComputeScriptForHan() const;
+  static void ComputeLocaleForHan();
 
-  AtomicString m_string;
-  mutable CString m_stringForSkFontMgr;
-  mutable RefPtr<Hyphenation> m_hyphenation;
+  AtomicString string_;
+  mutable CString string_for_sk_font_mgr_;
+  mutable RefPtr<Hyphenation> hyphenation_;
 
   // hb_language_t is defined in hb.h, which not all files can include.
-  const hb_language_impl_t* m_harfbuzzLanguage;
+  const hb_language_impl_t* harfbuzz_language_;
 
-  UScriptCode m_script;
-  mutable UScriptCode m_scriptForHan;
+  UScriptCode script_;
+  mutable UScriptCode script_for_han_;
 
-  mutable unsigned m_hasScriptForHan : 1;
-  mutable unsigned m_hyphenationComputed : 1;
+  mutable unsigned has_script_for_han_ : 1;
+  mutable unsigned hyphenation_computed_ : 1;
 
-  static const LayoutLocale* s_default;
-  static const LayoutLocale* s_system;
-  static const LayoutLocale* s_defaultForHan;
-  static bool s_defaultForHanComputed;
+  static const LayoutLocale* default_;
+  static const LayoutLocale* system_;
+  static const LayoutLocale* default_for_han_;
+  static bool default_for_han_computed_;
 };
 
 }  // namespace blink

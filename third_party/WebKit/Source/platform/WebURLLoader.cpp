@@ -8,8 +8,8 @@
 
 namespace blink {
 
-void WebURLLoader::setLoadingTaskRunner(WebTaskRunner* taskRunner) {
-  setLoadingTaskRunner(taskRunner->toSingleThreadTaskRunner());
+void WebURLLoader::SetLoadingTaskRunner(WebTaskRunner* task_runner) {
+  SetLoadingTaskRunner(task_runner->ToSingleThreadTaskRunner());
 }
 
 }  // namespace blink

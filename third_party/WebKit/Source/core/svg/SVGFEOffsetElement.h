@@ -33,21 +33,21 @@ class SVGFEOffsetElement final : public SVGFilterPrimitiveStandardAttributes {
  public:
   DECLARE_NODE_FACTORY(SVGFEOffsetElement);
 
-  SVGAnimatedNumber* dx() { return m_dx.get(); }
-  SVGAnimatedNumber* dy() { return m_dy.get(); }
-  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedNumber* dx() { return dx_.Get(); }
+  SVGAnimatedNumber* dy() { return dy_.Get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEOffsetElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumber> m_dx;
-  Member<SVGAnimatedNumber> m_dy;
-  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedNumber> dx_;
+  Member<SVGAnimatedNumber> dy_;
+  Member<SVGAnimatedString> in1_;
 };
 
 }  // namespace blink

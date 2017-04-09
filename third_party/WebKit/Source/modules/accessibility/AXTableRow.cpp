@@ -36,108 +36,108 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTableRow::AXTableRow(LayoutObject* layoutObject,
-                       AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache) {}
+AXTableRow::AXTableRow(LayoutObject* layout_object,
+                       AXObjectCacheImpl& ax_object_cache)
+    : AXLayoutObject(layout_object, ax_object_cache) {}
 
 AXTableRow::~AXTableRow() {}
 
-AXTableRow* AXTableRow::create(LayoutObject* layoutObject,
-                               AXObjectCacheImpl& axObjectCache) {
-  return new AXTableRow(layoutObject, axObjectCache);
+AXTableRow* AXTableRow::Create(LayoutObject* layout_object,
+                               AXObjectCacheImpl& ax_object_cache) {
+  return new AXTableRow(layout_object, ax_object_cache);
 }
 
-void AXTableRow::addChildren() {
-  AXLayoutObject::addChildren();
+void AXTableRow::AddChildren() {
+  AXLayoutObject::AddChildren();
 
   // A row is allowed to have a column index, indicating the index of the
   // first cell in that row, and each subsequent cell gets the next index.
-  int colIndex = ariaColumnIndex();
-  if (!colIndex)
+  int col_index = AriaColumnIndex();
+  if (!col_index)
     return;
 
   unsigned index = 0;
-  for (const auto& cell : children()) {
-    if (cell->isTableCell())
-      toAXTableCell(cell.get())->setARIAColIndexFromRow(colIndex + index);
+  for (const auto& cell : Children()) {
+    if (cell->IsTableCell())
+      ToAXTableCell(cell.Get())->SetARIAColIndexFromRow(col_index + index);
     index++;
   }
 }
 
-AccessibilityRole AXTableRow::determineAccessibilityRole() {
-  if (!isTableRow())
-    return AXLayoutObject::determineAccessibilityRole();
+AccessibilityRole AXTableRow::DetermineAccessibilityRole() {
+  if (!IsTableRow())
+    return AXLayoutObject::DetermineAccessibilityRole();
 
-  if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-    return m_ariaRole;
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+    return aria_role_;
 
-  return RowRole;
+  return kRowRole;
 }
 
-bool AXTableRow::isTableRow() const {
-  AXObject* table = parentTable();
-  if (!table || !table->isAXTable())
+bool AXTableRow::IsTableRow() const {
+  AXObject* table = ParentTable();
+  if (!table || !table->IsAXTable())
     return false;
 
   return true;
 }
 
-bool AXTableRow::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
-  if (decision == IncludeObject)
+bool AXTableRow::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  AXObjectInclusion decision = DefaultObjectInclusion(ignored_reasons);
+  if (decision == kIncludeObject)
     return false;
-  if (decision == IgnoreObject)
+  if (decision == kIgnoreObject)
     return true;
 
-  if (!isTableRow())
-    return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
+  if (!IsTableRow())
+    return AXLayoutObject::ComputeAccessibilityIsIgnored(ignored_reasons);
 
   return false;
 }
 
-AXObject* AXTableRow::parentTable() const {
-  AXObject* parent = parentObjectUnignored();
-  if (!parent || !parent->isAXTable())
+AXObject* AXTableRow::ParentTable() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent || !parent->IsAXTable())
     return 0;
 
   return parent;
 }
 
-AXObject* AXTableRow::headerObject() {
+AXObject* AXTableRow::HeaderObject() {
   AXObjectVector headers;
-  headerObjectsForRow(headers);
+  HeaderObjectsForRow(headers);
   if (!headers.size())
     return 0;
 
-  return headers[0].get();
+  return headers[0].Get();
 }
 
-unsigned AXTableRow::ariaColumnIndex() const {
-  const AtomicString& colIndexValue = getAttribute(aria_colindexAttr);
-  if (colIndexValue.toInt() >= 1)
-    return colIndexValue.toInt();
+unsigned AXTableRow::AriaColumnIndex() const {
+  const AtomicString& col_index_value = GetAttribute(aria_colindexAttr);
+  if (col_index_value.ToInt() >= 1)
+    return col_index_value.ToInt();
 
   return 0;
 }
 
-unsigned AXTableRow::ariaRowIndex() const {
-  const AtomicString& rowIndexValue = getAttribute(aria_rowindexAttr);
-  if (rowIndexValue.toInt() >= 1)
-    return rowIndexValue.toInt();
+unsigned AXTableRow::AriaRowIndex() const {
+  const AtomicString& row_index_value = GetAttribute(aria_rowindexAttr);
+  if (row_index_value.ToInt() >= 1)
+    return row_index_value.ToInt();
 
   return 0;
 }
 
-void AXTableRow::headerObjectsForRow(AXObjectVector& headers) {
-  if (!m_layoutObject || !m_layoutObject->isTableRow())
+void AXTableRow::HeaderObjectsForRow(AXObjectVector& headers) {
+  if (!layout_object_ || !layout_object_->IsTableRow())
     return;
 
-  for (const auto& cell : children()) {
-    if (!cell->isTableCell())
+  for (const auto& cell : Children()) {
+    if (!cell->IsTableCell())
       continue;
 
-    if (toAXTableCell(cell.get())->scanToDecideHeaderRole() == RowHeaderRole)
+    if (ToAXTableCell(cell.Get())->ScanToDecideHeaderRole() == kRowHeaderRole)
       headers.push_back(cell);
   }
 }

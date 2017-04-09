@@ -16,24 +16,24 @@ enum class FrameDetachType;
 
 class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
  public:
-  virtual bool inShadowTree() const = 0;
+  virtual bool InShadowTree() const = 0;
 
   // TODO(dcheng): Move this into LocalFrameClient, since remote frames don't
   // need this.
-  virtual void willBeDetached() = 0;
-  virtual void detached(FrameDetachType) = 0;
+  virtual void WillBeDetached() = 0;
+  virtual void Detached(FrameDetachType) = 0;
 
-  virtual Frame* opener() const = 0;
-  virtual void setOpener(Frame*) = 0;
+  virtual Frame* Opener() const = 0;
+  virtual void SetOpener(Frame*) = 0;
 
-  virtual Frame* parent() const = 0;
-  virtual Frame* top() const = 0;
-  virtual Frame* nextSibling() const = 0;
-  virtual Frame* firstChild() const = 0;
+  virtual Frame* Parent() const = 0;
+  virtual Frame* Top() const = 0;
+  virtual Frame* NextSibling() const = 0;
+  virtual Frame* FirstChild() const = 0;
 
-  virtual unsigned backForwardLength() = 0;
+  virtual unsigned BackForwardLength() = 0;
 
-  virtual void frameFocused() const = 0;
+  virtual void FrameFocused() const = 0;
 
   virtual ~FrameClient() {}
 

@@ -22,19 +22,19 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
  public:
   virtual ~PaymentRequestRespondWithObserver();
 
-  static PaymentRequestRespondWithObserver* create(ExecutionContext*,
-                                                   int eventID,
+  static PaymentRequestRespondWithObserver* Create(ExecutionContext*,
+                                                   int event_id,
                                                    WaitUntilObserver*);
 
-  void onResponseRejected(WebServiceWorkerResponseError) override;
-  void onResponseFulfilled(const ScriptValue&) override;
-  void onNoResponse() override;
+  void OnResponseRejected(WebServiceWorkerResponseError) override;
+  void OnResponseFulfilled(const ScriptValue&) override;
+  void OnNoResponse() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   PaymentRequestRespondWithObserver(ExecutionContext*,
-                                    int eventID,
+                                    int event_id,
                                     WaitUntilObserver*);
 };
 

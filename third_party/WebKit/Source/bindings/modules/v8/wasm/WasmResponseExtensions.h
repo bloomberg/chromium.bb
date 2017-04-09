@@ -17,7 +17,7 @@ class MODULES_EXPORT WasmResponseExtensions {
   STATIC_ONLY(WasmResponseExtensions);
 
  public:
-  static void initialize(v8::Isolate*);
+  static void Initialize(v8::Isolate*);
 };
 
 }  // namespace blink

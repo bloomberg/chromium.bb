@@ -36,11 +36,11 @@ class WebDateTimeChooserCompletion {
   // Called with a date/time value in the HTML format. The callback instance
   // is destroyed when this method is called. If the value is NaN it means an
   // empty value. Value should not be infinity.
-  virtual void didChooseValue(double) = 0;
+  virtual void DidChooseValue(double) = 0;
 
   // Called when a user closed the chooser without choosing a value. The
   // callback instance is destroyed when this method is called.
-  virtual void didCancelChooser() = 0;
+  virtual void DidCancelChooser() = 0;
 
  protected:
   virtual ~WebDateTimeChooserCompletion() {}

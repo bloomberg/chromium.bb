@@ -38,22 +38,22 @@
 
 namespace blink {
 
-static Vector<TextCheckingResult> toCoreResults(
+static Vector<TextCheckingResult> ToCoreResults(
     const WebVector<WebTextCheckingResult>& results) {
-  Vector<TextCheckingResult> coreResults;
+  Vector<TextCheckingResult> core_results;
   for (size_t i = 0; i < results.size(); ++i)
-    coreResults.push_back(results[i]);
-  return coreResults;
+    core_results.push_back(results[i]);
+  return core_results;
 }
 
-void WebTextCheckingCompletionImpl::didFinishCheckingText(
+void WebTextCheckingCompletionImpl::DidFinishCheckingText(
     const WebVector<WebTextCheckingResult>& results) {
-  m_request->didSucceed(toCoreResults(results));
+  request_->DidSucceed(ToCoreResults(results));
   delete this;
 }
 
-void WebTextCheckingCompletionImpl::didCancelCheckingText() {
-  m_request->didCancel();
+void WebTextCheckingCompletionImpl::DidCancelCheckingText() {
+  request_->DidCancel();
   delete this;
 }
 

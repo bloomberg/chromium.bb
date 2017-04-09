@@ -25,52 +25,52 @@
 
 namespace blink {
 
-String ValidityState::validationMessage() const {
-  return m_control->validationMessage();
+String ValidityState::ValidationMessage() const {
+  return control_->validationMessage();
 }
 
 bool ValidityState::valueMissing() const {
-  return m_control->valueMissing();
+  return control_->ValueMissing();
 }
 
 bool ValidityState::typeMismatch() const {
-  return m_control->typeMismatch();
+  return control_->TypeMismatch();
 }
 
 bool ValidityState::patternMismatch() const {
-  return m_control->patternMismatch();
+  return control_->PatternMismatch();
 }
 
 bool ValidityState::tooLong() const {
-  return m_control->tooLong();
+  return control_->TooLong();
 }
 
 bool ValidityState::tooShort() const {
-  return m_control->tooShort();
+  return control_->TooShort();
 }
 
 bool ValidityState::rangeUnderflow() const {
-  return m_control->rangeUnderflow();
+  return control_->RangeUnderflow();
 }
 
 bool ValidityState::rangeOverflow() const {
-  return m_control->rangeOverflow();
+  return control_->RangeOverflow();
 }
 
 bool ValidityState::stepMismatch() const {
-  return m_control->stepMismatch();
+  return control_->StepMismatch();
 }
 
 bool ValidityState::badInput() const {
-  return m_control->hasBadInput();
+  return control_->HasBadInput();
 }
 
 bool ValidityState::customError() const {
-  return m_control->customError();
+  return control_->CustomError();
 }
 
 bool ValidityState::valid() const {
-  return m_control->valid();
+  return control_->Valid();
 }
 
 }  // namespace blink

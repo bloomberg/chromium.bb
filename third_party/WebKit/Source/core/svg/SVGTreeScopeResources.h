@@ -28,37 +28,37 @@ class SVGTreeScopeResources
   explicit SVGTreeScopeResources(TreeScope*);
   ~SVGTreeScopeResources();
 
-  void updateResource(const AtomicString& id, LayoutSVGResourceContainer*);
-  void updateResource(const AtomicString& oldId,
-                      const AtomicString& newId,
+  void UpdateResource(const AtomicString& id, LayoutSVGResourceContainer*);
+  void UpdateResource(const AtomicString& old_id,
+                      const AtomicString& new_id,
                       LayoutSVGResourceContainer*);
-  void removeResource(const AtomicString& id, LayoutSVGResourceContainer*);
-  LayoutSVGResourceContainer* resourceById(const AtomicString& id) const;
+  void RemoveResource(const AtomicString& id, LayoutSVGResourceContainer*);
+  LayoutSVGResourceContainer* ResourceById(const AtomicString& id) const;
 
   // Pending resources are such which are referenced by any object in the SVG
   // document, but do NOT exist yet. For instance, dynamically built gradients
   // / patterns / clippers...
-  void addPendingResource(const AtomicString& id, Element&);
-  bool isElementPendingResource(Element&, const AtomicString& id) const;
-  void notifyResourceAvailable(const AtomicString& id);
-  void removeElementFromPendingResources(Element&);
+  void AddPendingResource(const AtomicString& id, Element&);
+  bool IsElementPendingResource(Element&, const AtomicString& id) const;
+  void NotifyResourceAvailable(const AtomicString& id);
+  void RemoveElementFromPendingResources(Element&);
 
   DECLARE_TRACE();
 
  private:
-  void clearHasPendingResourcesIfPossible(Element&);
+  void ClearHasPendingResourcesIfPossible(Element&);
 
   using SVGPendingElements = HeapHashSet<Member<Element>>;
   using ResourceMap = HashMap<AtomicString, LayoutSVGResourceContainer*>;
 
-  void registerResource(const AtomicString& id, LayoutSVGResourceContainer*);
-  void unregisterResource(ResourceMap::iterator);
-  void notifyPendingClients(const AtomicString& id);
+  void RegisterResource(const AtomicString& id, LayoutSVGResourceContainer*);
+  void UnregisterResource(ResourceMap::iterator);
+  void NotifyPendingClients(const AtomicString& id);
 
-  ResourceMap m_resources;
+  ResourceMap resources_;
   // Resources that are pending.
-  HeapHashMap<AtomicString, Member<SVGPendingElements>> m_pendingResources;
-  Member<TreeScope> m_treeScope;
+  HeapHashMap<AtomicString, Member<SVGPendingElements>> pending_resources_;
+  Member<TreeScope> tree_scope_;
 };
 
 }  // namespace blink

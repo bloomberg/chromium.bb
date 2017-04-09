@@ -16,24 +16,24 @@ class SensorProxy;
 // This class encapsulates sensor reading update notification logic.
 class SensorReadingUpdater : public GarbageCollected<SensorReadingUpdater> {
  public:
-  static SensorReadingUpdater* create(SensorProxy*,
+  static SensorReadingUpdater* Create(SensorProxy*,
                                       device::mojom::blink::ReportingMode);
 
-  virtual void start();
+  virtual void Start();
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit SensorReadingUpdater(SensorProxy*);
-  void enqueueAnimationFrameTask();
-  virtual void onAnimationFrameInternal() = 0;
+  void EnqueueAnimationFrameTask();
+  virtual void OnAnimationFrameInternal() = 0;
 
-  Member<SensorProxy> m_sensorProxy;
-  WeakMember<Document> m_document;
-  bool m_hasPendingAnimationFrameTask;
+  Member<SensorProxy> sensor_proxy_;
+  WeakMember<Document> document_;
+  bool has_pending_animation_frame_task_;
 
  private:
-  void onAnimationFrame();
+  void OnAnimationFrame();
 };
 
 }  // namespace blink

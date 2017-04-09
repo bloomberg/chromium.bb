@@ -60,13 +60,12 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
     // Keep track of active loading state via loadAsynchronously() and cancel().
     NiceMock<MockWebAssociatedURLLoader>* url_loader =
         new NiceMock<MockWebAssociatedURLLoader>();
-    ON_CALL(*url_loader, cancel())
-        .WillByDefault(Invoke([this]() {
-          // Check that we have not been destroyed first.
-          if (test_data_providers.find(this) != test_data_providers.end()) {
-            this->loading_ = false;
-          }
-        }));
+    ON_CALL(*url_loader, Cancel()).WillByDefault(Invoke([this]() {
+      // Check that we have not been destroyed first.
+      if (test_data_providers.find(this) != test_data_providers.end()) {
+        this->loading_ = false;
+      }
+    }));
     loading_ = true;
     active_loader_.reset(
         new ActiveLoader(std::unique_ptr<WebAssociatedURLLoader>(url_loader)));
@@ -225,17 +224,15 @@ static const char kHttpDifferentOriginUrl[] = "http://127.0.0.1/foo.webm";
 class MultibufferDataSourceTest : public testing::Test {
  public:
   MultibufferDataSourceTest()
-      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)),
+      : view_(WebView::Create(nullptr, blink::kWebPageVisibilityStateVisible)),
         preload_(MultibufferDataSource::AUTO) {
-    WebLocalFrame* frame = WebLocalFrame::create(
-        blink::WebTreeScopeType::Document, &client_, nullptr, nullptr);
-    view_->setMainFrame(frame);
+    WebLocalFrame* frame = WebLocalFrame::Create(
+        blink::WebTreeScopeType::kDocument, &client_, nullptr, nullptr);
+    view_->SetMainFrame(frame);
     url_index_ = make_linked_ptr(new TestUrlIndex(frame));
   }
 
-  virtual ~MultibufferDataSourceTest() {
-    view_->close();
-  }
+  virtual ~MultibufferDataSourceTest() { view_->Close(); }
 
   MOCK_METHOD1(OnInitialize, void(bool));
 
@@ -245,7 +242,7 @@ class MultibufferDataSourceTest : public testing::Test {
     GURL gurl(url);
     data_source_.reset(new MockMultibufferDataSource(
         gurl, cors_mode, message_loop_.task_runner(), url_index_,
-        view_->mainFrame()->toWebLocalFrame(), &host_));
+        view_->MainFrame()->ToWebLocalFrame(), &host_));
     data_source_->SetPreload(preload_);
 
     response_generator_.reset(new TestResponseGenerator(gurl, kFileSize));
@@ -300,7 +297,7 @@ class MultibufferDataSourceTest : public testing::Test {
   // appropriate to do when tearing down a test.
   void Stop() {
     if (loading()) {
-      data_provider()->didFail(response_generator_->GenerateError());
+      data_provider()->DidFail(response_generator_->GenerateError());
       base::RunLoop().RunUntilIdle();
     }
 
@@ -312,7 +309,7 @@ class MultibufferDataSourceTest : public testing::Test {
     EXPECT_TRUE(url_loader());
     if (!active_loader())
       return;
-    data_provider()->didReceiveResponse(response);
+    data_provider()->DidReceiveResponse(response);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -323,7 +320,7 @@ class MultibufferDataSourceTest : public testing::Test {
     std::unique_ptr<char[]> data(new char[size]);
     memset(data.get(), 0xA5, size);  // Arbitrary non-zero value.
 
-    data_provider()->didReceiveData(data.get(), size);
+    data_provider()->DidReceiveData(data.get(), size);
   }
 
   void ReceiveData(int size) {
@@ -335,12 +332,12 @@ class MultibufferDataSourceTest : public testing::Test {
     EXPECT_TRUE(url_loader());
     if (!url_loader())
       return;
-    data_provider()->didFinishLoading(0);
+    data_provider()->DidFinishLoading(0);
     base::RunLoop().RunUntilIdle();
   }
 
   void FailLoading() {
-    data_provider()->didFail(response_generator_->GenerateError());
+    data_provider()->DidFail(response_generator_->GenerateError());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -549,8 +546,8 @@ TEST_F(MultibufferDataSourceTest, Range_SupportedButReturned200) {
   Initialize(kHttpUrl, true);
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   WebURLResponse response = response_generator_->Generate200();
-  response.setHTTPHeaderField(WebString::fromUTF8("Accept-Ranges"),
-                              WebString::fromUTF8("bytes"));
+  response.SetHTTPHeaderField(WebString::FromUTF8("Accept-Ranges"),
+                              WebString::FromUTF8("bytes"));
   Respond(response);
 
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
@@ -676,7 +673,7 @@ TEST_F(MultibufferDataSourceTest, Http_RetryOnError) {
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReadAt(kDataSize);
   base::RunLoop run_loop;
-  data_provider()->didFail(response_generator_->GenerateError());
+  data_provider()->DidFail(response_generator_->GenerateError());
   data_provider()->RunOnStart(run_loop.QuitClosure());
   run_loop.Run();
   Respond(response_generator_->Generate206(kDataSize));
@@ -732,7 +729,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
-  response2.setURL(GURL(kHttpDifferentPathUrl));
+  response2.SetURL(GURL(kHttpDifferentPathUrl));
   // The origin URL of response1 and response2 are same. So no error should
   // occur.
   ExecuteMixedResponseSuccessTest(response1, response2);
@@ -745,7 +742,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
-  response2.setURL(GURL(kHttpDifferentOriginUrl));
+  response2.SetURL(GURL(kHttpDifferentOriginUrl));
   // The origin URL of response1 and response2 are different. So an error should
   // occur.
   ExecuteMixedResponseFailureTest(response1, response2);
@@ -756,7 +753,7 @@ TEST_F(MultibufferDataSourceTest,
   Initialize(kHttpUrl, true);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.setWasFetchedViaServiceWorker(true);
+  response1.SetWasFetchedViaServiceWorker(true);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // response1 is generated in a Service Worker but response2 is from a native
@@ -769,9 +766,9 @@ TEST_F(MultibufferDataSourceTest,
   Initialize(kHttpUrl, true);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.setWasFetchedViaServiceWorker(true);
+  response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpUrl)};
-  response1.setURLListViaServiceWorker(url_list);
+  response1.SetURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -784,9 +781,9 @@ TEST_F(MultibufferDataSourceTest,
   Initialize(kHttpUrl, true);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.setWasFetchedViaServiceWorker(true);
+  response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentPathUrl)};
-  response1.setURLListViaServiceWorker(url_list);
+  response1.SetURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -799,9 +796,9 @@ TEST_F(MultibufferDataSourceTest,
   Initialize(kHttpUrl, true);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.setWasFetchedViaServiceWorker(true);
+  response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
-  response1.setURLListViaServiceWorker(url_list);
+  response1.SetURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different. So an error should
@@ -814,9 +811,9 @@ TEST_F(MultibufferDataSourceTest,
   InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.setWasFetchedViaServiceWorker(true);
+  response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
-  response1.setURLListViaServiceWorker(url_list);
+  response1.SetURLListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different, but a CORS check
@@ -1020,7 +1017,7 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
   StrictMock<MockBufferedDataSourceHost> host2;
   MockMultibufferDataSource source2(
       GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(),
-      url_index_, view_->mainFrame()->toWebLocalFrame(), &host2);
+      url_index_, view_->MainFrame()->ToWebLocalFrame(), &host2);
   source2.SetPreload(preload_);
 
   EXPECT_CALL(*this, OnInitialize(true));
@@ -1312,7 +1309,7 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
       gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
-      view_->mainFrame()->toWebLocalFrame(), &host_));
+      view_->MainFrame()->ToWebLocalFrame(), &host_));
   data_source_->SetPreload(preload_);
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize + 1));
@@ -1355,15 +1352,15 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReadAt(kDataSize + 10, kDataSize - 10);
   base::RunLoop run_loop;
-  data_provider()->didFail(response_generator_->GenerateError());
+  data_provider()->DidFail(response_generator_->GenerateError());
   data_provider()->RunOnStart(run_loop.QuitClosure());
   run_loop.Run();
 
   // Server responds with a redirect.
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(request, response);
+  response.SetHTTPStatusCode(307);
+  data_provider()->WillFollowRedirect(request, response);
   Respond(response_generator_->Generate206(kDataSize));
   ReceiveData(kDataSize);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
@@ -1378,8 +1375,8 @@ TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
   // Server responds with a redirect.
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(request, response);
+  response.SetHTTPStatusCode(307);
+  data_provider()->WillFollowRedirect(request, response);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   Respond(response_generator_->Generate206(0));
@@ -1400,8 +1397,8 @@ TEST_F(MultibufferDataSourceTest, Http_RangeNotSatisfiableAfterRedirect) {
   // Server responds with a redirect.
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(request, response);
+  response.SetHTTPStatusCode(307);
+  data_provider()->WillFollowRedirect(request, response);
 
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
   Respond(response_generator_->GenerateResponse(416));
@@ -1414,8 +1411,8 @@ TEST_F(MultibufferDataSourceTest, Http_404AfterRedirect) {
   // Server responds with a redirect.
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(request, response);
+  response.SetHTTPStatusCode(307);
+  data_provider()->WillFollowRedirect(request, response);
 
   Respond(response_generator_->Generate404());
   Stop();
@@ -1425,8 +1422,8 @@ TEST_F(MultibufferDataSourceTest, LengthKnownAtEOF) {
   Initialize(kHttpUrl, true);
   // Server responds without content-length.
   WebURLResponse response = response_generator_->Generate200();
-  response.clearHTTPHeaderField(WebString::fromUTF8("Content-Length"));
-  response.setExpectedContentLength(kPositionNotSpecified);
+  response.ClearHTTPHeaderField(WebString::FromUTF8("Content-Length"));
+  response.SetExpectedContentLength(kPositionNotSpecified);
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
   ReceiveData(kDataSize);
@@ -1452,11 +1449,11 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
   Initialize(kHttpUrl, true);
   GURL gurl(kHttpUrl);
   blink::WebURLResponse response(gurl);
-  response.setHTTPStatusCode(200);
-  response.setHTTPHeaderField(
-      WebString::fromUTF8("Content-Length"),
-      WebString::fromUTF8(base::Int64ToString(kDataSize / 2)));
-  response.setExpectedContentLength(kDataSize / 2);
+  response.SetHTTPStatusCode(200);
+  response.SetHTTPHeaderField(
+      WebString::FromUTF8("Content-Length"),
+      WebString::FromUTF8(base::Int64ToString(kDataSize / 2)));
+  response.SetExpectedContentLength(kDataSize / 2);
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize / 2));
   EXPECT_CALL(host_, SetTotalBytes(kDataSize / 2));
@@ -1475,9 +1472,9 @@ TEST_F(MultibufferDataSourceTest, DidPassCORSAccessTest) {
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.setWasFetchedViaServiceWorker(true);
+  response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> urlList = {GURL(kHttpDifferentOriginUrl)};
-  response1.setURLListViaServiceWorker(urlList);
+  response1.SetURLListViaServiceWorker(urlList);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
 
@@ -1507,8 +1504,8 @@ TEST_F(MultibufferDataSourceTest, EtagTest) {
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   WebURLResponse response = response_generator_->Generate206(0);
   const std::string etag("\"arglebargle glop-glyf?\"");
-  response.setHTTPHeaderField(WebString::fromUTF8("Etag"),
-                              WebString::fromUTF8(etag));
+  response.SetHTTPHeaderField(WebString::FromUTF8("Etag"),
+                              WebString::FromUTF8(etag));
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
   ReceiveData(kDataSize);
@@ -1571,7 +1568,7 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
       gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
-      view_->mainFrame()->toWebLocalFrame(), &host_));
+      view_->MainFrame()->ToWebLocalFrame(), &host_));
   data_source_->SetPreload(preload_);
 
   response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));
@@ -1592,7 +1589,7 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, kDataSize + 1));
   ReceiveDataLow(1);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
-  data_provider()->didFinishLoading(0);
+  data_provider()->DidFinishLoading(0);
 
   EXPECT_CALL(*this, ReadCallback(1));
   data_source_->Read(kDataSize, 2, buffer_,

@@ -43,70 +43,70 @@ class RealtimeAnalyser final {
  public:
   RealtimeAnalyser();
 
-  size_t fftSize() const { return m_fftSize; }
-  bool setFftSize(size_t);
+  size_t FftSize() const { return fft_size_; }
+  bool SetFftSize(size_t);
 
-  unsigned frequencyBinCount() const { return m_fftSize / 2; }
+  unsigned FrequencyBinCount() const { return fft_size_ / 2; }
 
-  void setMinDecibels(double k) { m_minDecibels = k; }
-  double minDecibels() const { return m_minDecibels; }
+  void SetMinDecibels(double k) { min_decibels_ = k; }
+  double MinDecibels() const { return min_decibels_; }
 
-  void setMaxDecibels(double k) { m_maxDecibels = k; }
-  double maxDecibels() const { return m_maxDecibels; }
+  void SetMaxDecibels(double k) { max_decibels_ = k; }
+  double MaxDecibels() const { return max_decibels_; }
 
-  void setSmoothingTimeConstant(double k) { m_smoothingTimeConstant = k; }
-  double smoothingTimeConstant() const { return m_smoothingTimeConstant; }
+  void SetSmoothingTimeConstant(double k) { smoothing_time_constant_ = k; }
+  double SmoothingTimeConstant() const { return smoothing_time_constant_; }
 
-  void getFloatFrequencyData(DOMFloat32Array*, double);
-  void getByteFrequencyData(DOMUint8Array*, double);
-  void getFloatTimeDomainData(DOMFloat32Array*);
-  void getByteTimeDomainData(DOMUint8Array*);
+  void GetFloatFrequencyData(DOMFloat32Array*, double);
+  void GetByteFrequencyData(DOMUint8Array*, double);
+  void GetFloatTimeDomainData(DOMFloat32Array*);
+  void GetByteTimeDomainData(DOMUint8Array*);
 
   // The audio thread writes input data here.
-  void writeInput(AudioBus*, size_t framesToProcess);
+  void WriteInput(AudioBus*, size_t frames_to_process);
 
-  static const double DefaultSmoothingTimeConstant;
-  static const double DefaultMinDecibels;
-  static const double DefaultMaxDecibels;
+  static const double kDefaultSmoothingTimeConstant;
+  static const double kDefaultMinDecibels;
+  static const double kDefaultMaxDecibels;
 
-  static const unsigned DefaultFFTSize;
-  static const unsigned MinFFTSize;
-  static const unsigned MaxFFTSize;
-  static const unsigned InputBufferSize;
+  static const unsigned kDefaultFFTSize;
+  static const unsigned kMinFFTSize;
+  static const unsigned kMaxFFTSize;
+  static const unsigned kInputBufferSize;
 
  private:
   // The audio thread writes the input audio here.
-  AudioFloatArray m_inputBuffer;
-  unsigned m_writeIndex;
+  AudioFloatArray input_buffer_;
+  unsigned write_index_;
 
   // Input audio is downmixed to this bus before copying to m_inputBuffer.
-  RefPtr<AudioBus> m_downMixBus;
+  RefPtr<AudioBus> down_mix_bus_;
 
-  size_t m_fftSize;
-  std::unique_ptr<FFTFrame> m_analysisFrame;
-  void doFFTAnalysis();
+  size_t fft_size_;
+  std::unique_ptr<FFTFrame> analysis_frame_;
+  void DoFFTAnalysis();
 
   // Convert the contents of magnitudeBuffer to byte values, saving the result
   // in |destination|.
-  void convertToByteData(DOMUint8Array* destination);
+  void ConvertToByteData(DOMUint8Array* destination);
 
   // Convert magnidue buffer to dB, saving the result in |destination|
-  void convertFloatToDb(DOMFloat32Array* destination);
+  void ConvertFloatToDb(DOMFloat32Array* destination);
 
   // doFFTAnalysis() stores the floating-point magnitude analysis data here.
-  AudioFloatArray m_magnitudeBuffer;
-  AudioFloatArray& magnitudeBuffer() { return m_magnitudeBuffer; }
+  AudioFloatArray magnitude_buffer_;
+  AudioFloatArray& MagnitudeBuffer() { return magnitude_buffer_; }
 
   // A value between 0 and 1 which averages the previous version of
   // m_magnitudeBuffer with the current analysis magnitude data.
-  double m_smoothingTimeConstant;
+  double smoothing_time_constant_;
 
   // The range used when converting when using getByteFrequencyData().
-  double m_minDecibels;
-  double m_maxDecibels;
+  double min_decibels_;
+  double max_decibels_;
 
   // Time at which the FFT was last computed.
-  double m_lastAnalysisTime;
+  double last_analysis_time_;
 };
 
 }  // namespace blink

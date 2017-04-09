@@ -37,70 +37,70 @@
 
 namespace blink {
 
-void ModulesInitializer::initialize() {
-  ASSERT(!isInitialized());
+void ModulesInitializer::Initialize() {
+  ASSERT(!IsInitialized());
 
   // Strings must be initialized before calling CoreInitializer::init().
-  const unsigned modulesStaticStringsCount =
+  const unsigned kModulesStaticStringsCount =
       EventNames::EventModulesNamesCount +
       EventTargetNames::EventTargetModulesNamesCount +
       IndexedDBNames::IndexedDBNamesCount;
-  StringImpl::reserveStaticStringsCapacityForSize(modulesStaticStringsCount);
+  StringImpl::ReserveStaticStringsCapacityForSize(kModulesStaticStringsCount);
 
   EventNames::initModules();
   EventTargetNames::initModules();
-  Document::registerEventFactory(EventModulesFactory::create());
-  ModuleBindingsInitializer::init();
+  Document::RegisterEventFactory(EventModulesFactory::Create());
+  ModuleBindingsInitializer::Init();
   IndexedDBNames::init();
-  AXObjectCache::init(AXObjectCacheImpl::create);
-  DraggedIsolatedFileSystem::init(
-      DraggedIsolatedFileSystemImpl::prepareForDataObject);
-  CSSPaintImageGenerator::init(CSSPaintImageGeneratorImpl::create);
+  AXObjectCache::Init(AXObjectCacheImpl::Create);
+  DraggedIsolatedFileSystem::Init(
+      DraggedIsolatedFileSystemImpl::PrepareForDataObject);
+  CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
   // Some unit tests may have no message loop ready, so we can't initialize the
   // mojo stuff here. They can initialize those mojo stuff they're interested in
   // later after they got a message loop ready.
-  if (canInitializeMojo())
+  if (CanInitializeMojo())
     TimeZoneMonitorClient::Init();
 
-  CoreInitializer::initialize();
+  CoreInitializer::Initialize();
 
   // Canvas context types must be registered with the HTMLCanvasElement.
-  HTMLCanvasElement::registerRenderingContextFactory(
-      WTF::makeUnique<CanvasRenderingContext2D::Factory>());
-  HTMLCanvasElement::registerRenderingContextFactory(
-      WTF::makeUnique<WebGLRenderingContext::Factory>());
-  HTMLCanvasElement::registerRenderingContextFactory(
-      WTF::makeUnique<WebGL2RenderingContext::Factory>());
-  HTMLCanvasElement::registerRenderingContextFactory(
-      WTF::makeUnique<ImageBitmapRenderingContext::Factory>());
+  HTMLCanvasElement::RegisterRenderingContextFactory(
+      WTF::MakeUnique<CanvasRenderingContext2D::Factory>());
+  HTMLCanvasElement::RegisterRenderingContextFactory(
+      WTF::MakeUnique<WebGLRenderingContext::Factory>());
+  HTMLCanvasElement::RegisterRenderingContextFactory(
+      WTF::MakeUnique<WebGL2RenderingContext::Factory>());
+  HTMLCanvasElement::RegisterRenderingContextFactory(
+      WTF::MakeUnique<ImageBitmapRenderingContext::Factory>());
 
   // OffscreenCanvas context types must be registered with the OffscreenCanvas.
-  OffscreenCanvas::registerRenderingContextFactory(
-      WTF::makeUnique<OffscreenCanvasRenderingContext2D::Factory>());
-  OffscreenCanvas::registerRenderingContextFactory(
-      WTF::makeUnique<WebGLRenderingContext::Factory>());
-  OffscreenCanvas::registerRenderingContextFactory(
-      WTF::makeUnique<WebGL2RenderingContext::Factory>());
+  OffscreenCanvas::RegisterRenderingContextFactory(
+      WTF::MakeUnique<OffscreenCanvasRenderingContext2D::Factory>());
+  OffscreenCanvas::RegisterRenderingContextFactory(
+      WTF::MakeUnique<WebGLRenderingContext::Factory>());
+  OffscreenCanvas::RegisterRenderingContextFactory(
+      WTF::MakeUnique<WebGL2RenderingContext::Factory>());
 
   // Mojo Interfaces registered with LocalFrame
-  LocalFrame::registerInitializationCallback([](LocalFrame* frame) {
-    if (frame && frame->isMainFrame()) {
-      frame->interfaceRegistry()->addInterface(WTF::bind(
-          &CopylessPasteServer::bindMojoRequest, wrapWeakPersistent(frame)));
+  LocalFrame::RegisterInitializationCallback([](LocalFrame* frame) {
+    if (frame && frame->IsMainFrame()) {
+      frame->GetInterfaceRegistry()->AddInterface(WTF::Bind(
+          &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(frame)));
     }
-    frame->interfaceRegistry()->addInterface(
-        WTF::bind(&InstallationServiceImpl::create, wrapWeakPersistent(frame)));
+    frame->GetInterfaceRegistry()->AddInterface(
+        WTF::Bind(&InstallationServiceImpl::Create, WrapWeakPersistent(frame)));
     // TODO(dominickn): This interface should be document-scoped rather than
     // frame-scoped, as the resulting banner event is dispatched to
     // frame()->document().
-    frame->interfaceRegistry()->addInterface(WTF::bind(
-        &AppBannerController::bindMojoRequest, wrapWeakPersistent(frame)));
+    frame->GetInterfaceRegistry()->AddInterface(WTF::Bind(
+        &AppBannerController::BindMojoRequest, WrapWeakPersistent(frame)));
   });
 
-  HTMLMediaElement::registerMediaControlsFactory(
-      WTF::makeUnique<MediaControlsImpl::Factory>());
+  HTMLMediaElement::RegisterMediaControlsFactory(
+      WTF::MakeUnique<MediaControlsImpl::Factory>());
 
-  ASSERT(isInitialized());
+  ASSERT(IsInitialized());
 }
 
 }  // namespace blink

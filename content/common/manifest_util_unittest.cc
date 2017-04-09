@@ -13,11 +13,11 @@ TEST(ManifestUtilTest, WebDisplayModeConversions) {
     blink::WebDisplayMode display_mode;
     std::string lowercase_display_mode_string;
   } reversible_conversions[] = {
-      {blink::WebDisplayModeUndefined, ""},
-      {blink::WebDisplayModeBrowser, "browser"},
-      {blink::WebDisplayModeMinimalUi, "minimal-ui"},
-      {blink::WebDisplayModeStandalone, "standalone"},
-      {blink::WebDisplayModeFullscreen, "fullscreen"},
+      {blink::kWebDisplayModeUndefined, ""},
+      {blink::kWebDisplayModeBrowser, "browser"},
+      {blink::kWebDisplayModeMinimalUi, "minimal-ui"},
+      {blink::kWebDisplayModeStandalone, "standalone"},
+      {blink::kWebDisplayModeFullscreen, "fullscreen"},
   };
 
   for (const ReversibleConversion& conversion : reversible_conversions) {
@@ -29,12 +29,12 @@ TEST(ManifestUtilTest, WebDisplayModeConversions) {
   }
 
   // WebDisplayModeFromString() should work with non-lowercase strings.
-  EXPECT_EQ(blink::WebDisplayModeFullscreen,
+  EXPECT_EQ(blink::kWebDisplayModeFullscreen,
             WebDisplayModeFromString("Fullscreen"));
 
   // WebDisplayModeFromString() should return
   // blink::WebDisplayModeUndefined if the string isn't known.
-  EXPECT_EQ(blink::WebDisplayModeUndefined,
+  EXPECT_EQ(blink::kWebDisplayModeUndefined,
             WebDisplayModeFromString("random"));
 }
 
@@ -43,16 +43,16 @@ TEST(ManifestUtilTest, WebScreenOrientationLockTypeConversions) {
     blink::WebScreenOrientationLockType orientation;
     std::string lowercase_orientation_string;
   } reversible_conversions[] = {
-      {blink::WebScreenOrientationLockDefault, ""},
-      {blink::WebScreenOrientationLockPortraitPrimary, "portrait-primary"},
-      {blink::WebScreenOrientationLockPortraitSecondary, "portrait-secondary"},
-      {blink::WebScreenOrientationLockLandscapePrimary, "landscape-primary"},
-      {blink::WebScreenOrientationLockLandscapeSecondary,
+      {blink::kWebScreenOrientationLockDefault, ""},
+      {blink::kWebScreenOrientationLockPortraitPrimary, "portrait-primary"},
+      {blink::kWebScreenOrientationLockPortraitSecondary, "portrait-secondary"},
+      {blink::kWebScreenOrientationLockLandscapePrimary, "landscape-primary"},
+      {blink::kWebScreenOrientationLockLandscapeSecondary,
        "landscape-secondary"},
-      {blink::WebScreenOrientationLockAny, "any"},
-      {blink::WebScreenOrientationLockLandscape, "landscape"},
-      {blink::WebScreenOrientationLockPortrait, "portrait"},
-      {blink::WebScreenOrientationLockNatural, "natural"},
+      {blink::kWebScreenOrientationLockAny, "any"},
+      {blink::kWebScreenOrientationLockLandscape, "landscape"},
+      {blink::kWebScreenOrientationLockPortrait, "portrait"},
+      {blink::kWebScreenOrientationLockNatural, "natural"},
   };
 
   for (const ReversibleConversion& conversion : reversible_conversions) {
@@ -65,12 +65,12 @@ TEST(ManifestUtilTest, WebScreenOrientationLockTypeConversions) {
 
   // WebScreenOrientationLockTypeFromString() should work with non-lowercase
   // strings.
-  EXPECT_EQ(blink::WebScreenOrientationLockNatural,
+  EXPECT_EQ(blink::kWebScreenOrientationLockNatural,
             WebScreenOrientationLockTypeFromString("Natural"));
 
   // WebScreenOrientationLockTypeFromString() should return
   // blink::WebScreenOrientationLockDefault if the string isn't known.
-  EXPECT_EQ(blink::WebScreenOrientationLockDefault,
+  EXPECT_EQ(blink::kWebScreenOrientationLockDefault,
             WebScreenOrientationLockTypeFromString("random"));
 }
 

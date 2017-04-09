@@ -12,45 +12,46 @@ namespace blink {
 class DocumentUserGestureTokenTest : public ::testing::Test {
  public:
   void SetUp() override {
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    ASSERT_FALSE(document().frame()->hasReceivedUserGesture());
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    ASSERT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
   }
 
-  Document& document() const { return m_dummyPageHolder->document(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(DocumentUserGestureTokenTest, NoGesture) {
   // A nullptr Document* will not set user gesture state.
-  DocumentUserGestureToken::create(nullptr);
-  EXPECT_FALSE(document().frame()->hasReceivedUserGesture());
+  DocumentUserGestureToken::Create(nullptr);
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
 TEST_F(DocumentUserGestureTokenTest, PossiblyExisting) {
   // A non-null Document* will set state, but a subsequent nullptr Document*
   // token will not override it.
-  DocumentUserGestureToken::create(&document());
-  EXPECT_TRUE(document().frame()->hasReceivedUserGesture());
-  DocumentUserGestureToken::create(nullptr);
-  EXPECT_TRUE(document().frame()->hasReceivedUserGesture());
+  DocumentUserGestureToken::Create(&GetDocument());
+  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
+  DocumentUserGestureToken::Create(nullptr);
+  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
 TEST_F(DocumentUserGestureTokenTest, NewGesture) {
   // UserGestureToken::Status doesn't impact Document gesture state.
-  DocumentUserGestureToken::create(&document(), UserGestureToken::NewGesture);
-  EXPECT_TRUE(document().frame()->hasReceivedUserGesture());
+  DocumentUserGestureToken::Create(&GetDocument(),
+                                   UserGestureToken::kNewGesture);
+  EXPECT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
 TEST_F(DocumentUserGestureTokenTest, Navigate) {
-  DocumentUserGestureToken::create(&document());
-  ASSERT_TRUE(document().frame()->hasReceivedUserGesture());
+  DocumentUserGestureToken::Create(&GetDocument());
+  ASSERT_TRUE(GetDocument().GetFrame()->HasReceivedUserGesture());
 
   // Navigate to a different Document. In the main frame, user gesture state
   // will get reset.
-  document().frame()->loader().load(FrameLoadRequest(nullptr, KURL()));
-  EXPECT_FALSE(document().frame()->hasReceivedUserGesture());
+  GetDocument().GetFrame()->Loader().Load(FrameLoadRequest(nullptr, KURL()));
+  EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 
 }  // namespace blink

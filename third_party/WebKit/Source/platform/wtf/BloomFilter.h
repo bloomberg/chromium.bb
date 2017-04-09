@@ -42,100 +42,100 @@ class BloomFilter {
  public:
   static_assert(keyBits <= 16, "bloom filter key size check");
 
-  static const size_t tableSize = 1 << keyBits;
-  static const unsigned keyMask = (1 << keyBits) - 1;
-  static uint8_t maximumCount() { return std::numeric_limits<uint8_t>::max(); }
+  static const size_t kTableSize = 1 << keyBits;
+  static const unsigned kKeyMask = (1 << keyBits) - 1;
+  static uint8_t MaximumCount() { return std::numeric_limits<uint8_t>::max(); }
 
-  BloomFilter() { clear(); }
+  BloomFilter() { Clear(); }
 
-  void add(unsigned hash);
-  void remove(unsigned hash);
+  void Add(unsigned hash);
+  void Remove(unsigned hash);
 
   // The filter may give false positives (claim it may contain a key it doesn't)
   // but never false negatives (claim it doesn't contain a key it does).
-  bool mayContain(unsigned hash) const {
-    return firstSlot(hash) && secondSlot(hash);
+  bool MayContain(unsigned hash) const {
+    return FirstSlot(hash) && SecondSlot(hash);
   }
 
   // The filter must be cleared before reuse even if all keys are removed.
   // Otherwise overflowed keys will stick around.
-  void clear();
+  void Clear();
 
-  void add(const AtomicString& string) { add(string.impl()->existingHash()); }
-  void add(const String& string) { add(string.impl()->hash()); }
-  void remove(const AtomicString& string) {
-    remove(string.impl()->existingHash());
+  void Add(const AtomicString& string) { Add(string.Impl()->ExistingHash()); }
+  void Add(const String& string) { Add(string.Impl()->GetHash()); }
+  void Remove(const AtomicString& string) {
+    Remove(string.Impl()->ExistingHash());
   }
-  void remove(const String& string) { remove(string.impl()->hash()); }
+  void Remove(const String& string) { Remove(string.Impl()->GetHash()); }
 
-  bool mayContain(const AtomicString& string) const {
-    return mayContain(string.impl()->existingHash());
+  bool MayContain(const AtomicString& string) const {
+    return MayContain(string.Impl()->ExistingHash());
   }
-  bool mayContain(const String& string) const {
-    return mayContain(string.impl()->hash());
+  bool MayContain(const String& string) const {
+    return MayContain(string.Impl()->GetHash());
   }
 
 #if DCHECK_IS_ON()
   // Slow.
-  bool likelyEmpty() const;
-  bool isClear() const;
+  bool LikelyEmpty() const;
+  bool IsClear() const;
 #endif
 
  private:
-  uint8_t& firstSlot(unsigned hash) { return m_table[hash & keyMask]; }
-  uint8_t& secondSlot(unsigned hash) { return m_table[(hash >> 16) & keyMask]; }
-  const uint8_t& firstSlot(unsigned hash) const {
-    return m_table[hash & keyMask];
+  uint8_t& FirstSlot(unsigned hash) { return table_[hash & kKeyMask]; }
+  uint8_t& SecondSlot(unsigned hash) { return table_[(hash >> 16) & kKeyMask]; }
+  const uint8_t& FirstSlot(unsigned hash) const {
+    return table_[hash & kKeyMask];
   }
-  const uint8_t& secondSlot(unsigned hash) const {
-    return m_table[(hash >> 16) & keyMask];
+  const uint8_t& SecondSlot(unsigned hash) const {
+    return table_[(hash >> 16) & kKeyMask];
   }
 
-  uint8_t m_table[tableSize];
+  uint8_t table_[kTableSize];
 };
 
 template <unsigned keyBits>
-inline void BloomFilter<keyBits>::add(unsigned hash) {
-  uint8_t& first = firstSlot(hash);
-  uint8_t& second = secondSlot(hash);
-  if (LIKELY(first < maximumCount()))
+inline void BloomFilter<keyBits>::Add(unsigned hash) {
+  uint8_t& first = FirstSlot(hash);
+  uint8_t& second = SecondSlot(hash);
+  if (LIKELY(first < MaximumCount()))
     ++first;
-  if (LIKELY(second < maximumCount()))
+  if (LIKELY(second < MaximumCount()))
     ++second;
 }
 
 template <unsigned keyBits>
-inline void BloomFilter<keyBits>::remove(unsigned hash) {
-  uint8_t& first = firstSlot(hash);
-  uint8_t& second = secondSlot(hash);
+inline void BloomFilter<keyBits>::Remove(unsigned hash) {
+  uint8_t& first = FirstSlot(hash);
+  uint8_t& second = SecondSlot(hash);
   DCHECK(first);
   DCHECK(second);
   // In case of an overflow, the slot sticks in the table until clear().
-  if (LIKELY(first < maximumCount()))
+  if (LIKELY(first < MaximumCount()))
     --first;
-  if (LIKELY(second < maximumCount()))
+  if (LIKELY(second < MaximumCount()))
     --second;
 }
 
 template <unsigned keyBits>
-inline void BloomFilter<keyBits>::clear() {
-  memset(m_table, 0, tableSize);
+inline void BloomFilter<keyBits>::Clear() {
+  memset(table_, 0, kTableSize);
 }
 
 #if DCHECK_IS_ON()
 template <unsigned keyBits>
-bool BloomFilter<keyBits>::likelyEmpty() const {
-  for (size_t n = 0; n < tableSize; ++n) {
-    if (m_table[n] && m_table[n] != maximumCount())
+bool BloomFilter<keyBits>::LikelyEmpty() const {
+  for (size_t n = 0; n < kTableSize; ++n) {
+    if (table_[n] && table_[n] != MaximumCount())
       return false;
   }
   return true;
 }
 
 template <unsigned keyBits>
-bool BloomFilter<keyBits>::isClear() const {
-  for (size_t n = 0; n < tableSize; ++n) {
-    if (m_table[n])
+bool BloomFilter<keyBits>::IsClear() const {
+  for (size_t n = 0; n < kTableSize; ++n) {
+    if (table_[n])
       return false;
   }
   return true;

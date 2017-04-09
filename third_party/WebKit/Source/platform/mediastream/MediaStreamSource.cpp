@@ -32,39 +32,39 @@
 
 namespace blink {
 
-MediaStreamSource* MediaStreamSource::create(const String& id,
+MediaStreamSource* MediaStreamSource::Create(const String& id,
                                              StreamType type,
                                              const String& name,
                                              bool remote,
-                                             ReadyState readyState,
-                                             bool requiresConsumer) {
-  return new MediaStreamSource(id, type, name, remote, readyState,
-                               requiresConsumer);
+                                             ReadyState ready_state,
+                                             bool requires_consumer) {
+  return new MediaStreamSource(id, type, name, remote, ready_state,
+                               requires_consumer);
 }
 
 MediaStreamSource::MediaStreamSource(const String& id,
                                      StreamType type,
                                      const String& name,
                                      bool remote,
-                                     ReadyState readyState,
-                                     bool requiresConsumer)
-    : m_id(id),
-      m_type(type),
-      m_name(name),
-      m_remote(remote),
-      m_readyState(readyState),
-      m_requiresConsumer(requiresConsumer) {}
+                                     ReadyState ready_state,
+                                     bool requires_consumer)
+    : id_(id),
+      type_(type),
+      name_(name),
+      remote_(remote),
+      ready_state_(ready_state),
+      requires_consumer_(requires_consumer) {}
 
-void MediaStreamSource::setReadyState(ReadyState readyState) {
-  if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
-    m_readyState = readyState;
+void MediaStreamSource::SetReadyState(ReadyState ready_state) {
+  if (ready_state_ != kReadyStateEnded && ready_state_ != ready_state) {
+    ready_state_ = ready_state;
 
     // Observers may dispatch events which create and add new Observers;
     // take a snapshot so as to safely iterate.
     HeapVector<Member<Observer>> observers;
-    copyToVector(m_observers, observers);
+    CopyToVector(observers_, observers);
     for (auto observer : observers)
-      observer->sourceChangedState();
+      observer->SourceChangedState();
 
     // setReadyState() will be invoked via the MediaStreamComponent::dispose()
     // prefinalizer, allocating |observers|. Which means that |observers| will
@@ -85,48 +85,48 @@ void MediaStreamSource::setReadyState(ReadyState readyState) {
   }
 }
 
-void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer) {
-  m_observers.insert(observer);
+void MediaStreamSource::AddObserver(MediaStreamSource::Observer* observer) {
+  observers_.insert(observer);
 }
 
-void MediaStreamSource::addAudioConsumer(AudioDestinationConsumer* consumer) {
-  ASSERT(m_requiresConsumer);
-  MutexLocker locker(m_audioConsumersLock);
-  m_audioConsumers.insert(consumer);
+void MediaStreamSource::AddAudioConsumer(AudioDestinationConsumer* consumer) {
+  ASSERT(requires_consumer_);
+  MutexLocker locker(audio_consumers_lock_);
+  audio_consumers_.insert(consumer);
 }
 
-bool MediaStreamSource::removeAudioConsumer(
+bool MediaStreamSource::RemoveAudioConsumer(
     AudioDestinationConsumer* consumer) {
-  ASSERT(m_requiresConsumer);
-  MutexLocker locker(m_audioConsumersLock);
-  auto it = m_audioConsumers.find(consumer);
-  if (it == m_audioConsumers.end())
+  ASSERT(requires_consumer_);
+  MutexLocker locker(audio_consumers_lock_);
+  auto it = audio_consumers_.Find(consumer);
+  if (it == audio_consumers_.end())
     return false;
-  m_audioConsumers.erase(it);
+  audio_consumers_.erase(it);
   return true;
 }
 
-void MediaStreamSource::getSettings(WebMediaStreamTrack::Settings& settings) {
-  settings.deviceId = id();
+void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
+  settings.device_id = Id();
 }
 
-void MediaStreamSource::setAudioFormat(size_t numberOfChannels,
-                                       float sampleRate) {
-  ASSERT(m_requiresConsumer);
-  MutexLocker locker(m_audioConsumersLock);
-  for (AudioDestinationConsumer* consumer : m_audioConsumers)
-    consumer->setFormat(numberOfChannels, sampleRate);
+void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
+                                       float sample_rate) {
+  ASSERT(requires_consumer_);
+  MutexLocker locker(audio_consumers_lock_);
+  for (AudioDestinationConsumer* consumer : audio_consumers_)
+    consumer->SetFormat(number_of_channels, sample_rate);
 }
 
-void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames) {
-  ASSERT(m_requiresConsumer);
-  MutexLocker locker(m_audioConsumersLock);
-  for (AudioDestinationConsumer* consumer : m_audioConsumers)
-    consumer->consumeAudio(bus, numberOfFrames);
+void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
+  ASSERT(requires_consumer_);
+  MutexLocker locker(audio_consumers_lock_);
+  for (AudioDestinationConsumer* consumer : audio_consumers_)
+    consumer->ConsumeAudio(bus, number_of_frames);
 }
 
 DEFINE_TRACE(MediaStreamSource) {
-  visitor->trace(m_observers);
+  visitor->Trace(observers_);
 }
 
 }  // namespace blink

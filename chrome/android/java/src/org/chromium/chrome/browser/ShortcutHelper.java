@@ -347,7 +347,7 @@ public class ShortcutHelper {
     public static Intent createWebappShortcutIntentForTesting(String id, String url) {
         assert !ThreadUtils.runningOnUiThread();
         return createWebappShortcutIntent(id, null, url, getScopeFromUrl(url), null, null, null,
-                WEBAPP_SHORTCUT_VERSION, WebDisplayMode.Standalone, 0, 0, 0, false);
+                WEBAPP_SHORTCUT_VERSION, WebDisplayMode.kStandalone, 0, 0, 0, false);
     }
 
     /**

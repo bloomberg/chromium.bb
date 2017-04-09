@@ -16,8 +16,8 @@ namespace {
 base::trace_event::BlameContext* GetParentBlameContext(
     RenderFrameImpl* parent_frame) {
   if (parent_frame)
-    return parent_frame->frameBlameContext();
-  return blink::Platform::current()->topLevelBlameContext();
+    return parent_frame->GetFrameBlameContext();
+  return blink::Platform::Current()->GetTopLevelBlameContext();
 }
 
 }  // namespace

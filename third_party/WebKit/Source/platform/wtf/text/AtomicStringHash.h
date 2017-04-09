@@ -35,15 +35,15 @@
 namespace WTF {
 
 struct AtomicStringHash {
-  static unsigned hash(const AtomicString& key) {
-    return key.impl()->existingHash();
+  static unsigned GetHash(const AtomicString& key) {
+    return key.Impl()->ExistingHash();
   }
 
-  static bool equal(const AtomicString& a, const AtomicString& b) {
+  static bool Equal(const AtomicString& a, const AtomicString& b) {
     return a == b;
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
 // AtomicStringHash is the default hash for AtomicString
@@ -53,11 +53,11 @@ struct HashTraits<AtomicString> : SimpleClassHashTraits<AtomicString> {
   // empty value (nullAtom).
   typedef const AtomicString& PeekOutType;
 
-  static const AtomicString& emptyValue() { return nullAtom; }
-  static PeekOutType peek(const AtomicString& value) { return value; }
+  static const AtomicString& EmptyValue() { return g_null_atom; }
+  static PeekOutType Peek(const AtomicString& value) { return value; }
 
-  static const bool hasIsEmptyValueFunction = true;
-  static bool isEmptyValue(const AtomicString& value) { return value.isNull(); }
+  static const bool kHasIsEmptyValueFunction = true;
+  static bool IsEmptyValue(const AtomicString& value) { return value.IsNull(); }
 };
 
 }  // namespace WTF

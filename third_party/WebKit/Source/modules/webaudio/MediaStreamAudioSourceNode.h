@@ -41,34 +41,34 @@ class MediaStreamAudioSourceOptions;
 
 class MediaStreamAudioSourceHandler final : public AudioHandler {
  public:
-  static PassRefPtr<MediaStreamAudioSourceHandler> create(
+  static PassRefPtr<MediaStreamAudioSourceHandler> Create(
       AudioNode&,
       std::unique_ptr<AudioSourceProvider>);
   ~MediaStreamAudioSourceHandler() override;
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
+  void Process(size_t frames_to_process) override;
 
   // A helper for AudioSourceProviderClient implementation of
   // MediaStreamAudioSourceNode.
-  void setFormat(size_t numberOfChannels, float sampleRate);
+  void SetFormat(size_t number_of_channels, float sample_rate);
 
  private:
   MediaStreamAudioSourceHandler(AudioNode&,
                                 std::unique_ptr<AudioSourceProvider>);
 
   // As an audio source, we will never propagate silence.
-  bool propagatesSilence() const override { return false; }
+  bool PropagatesSilence() const override { return false; }
 
-  AudioSourceProvider* getAudioSourceProvider() const {
-    return m_audioSourceProvider.get();
+  AudioSourceProvider* GetAudioSourceProvider() const {
+    return audio_source_provider_.get();
   }
 
-  std::unique_ptr<AudioSourceProvider> m_audioSourceProvider;
+  std::unique_ptr<AudioSourceProvider> audio_source_provider_;
 
-  Mutex m_processLock;
+  Mutex process_lock_;
 
-  unsigned m_sourceNumberOfChannels;
+  unsigned source_number_of_channels_;
 };
 
 class MediaStreamAudioSourceNode final : public AudioNode,
@@ -77,10 +77,10 @@ class MediaStreamAudioSourceNode final : public AudioNode,
   USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 
  public:
-  static MediaStreamAudioSourceNode* create(BaseAudioContext&,
+  static MediaStreamAudioSourceNode* Create(BaseAudioContext&,
                                             MediaStream&,
                                             ExceptionState&);
-  static MediaStreamAudioSourceNode* create(
+  static MediaStreamAudioSourceNode* Create(
       BaseAudioContext*,
       const MediaStreamAudioSourceOptions&,
       ExceptionState&);
@@ -90,7 +90,7 @@ class MediaStreamAudioSourceNode final : public AudioNode,
   MediaStream* getMediaStream() const;
 
   // AudioSourceProviderClient functions:
-  void setFormat(size_t numberOfChannels, float sampleRate) override;
+  void SetFormat(size_t number_of_channels, float sample_rate) override;
 
  private:
   MediaStreamAudioSourceNode(BaseAudioContext&,
@@ -98,10 +98,10 @@ class MediaStreamAudioSourceNode final : public AudioNode,
                              MediaStreamTrack*,
                              std::unique_ptr<AudioSourceProvider>);
 
-  MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
+  MediaStreamAudioSourceHandler& GetMediaStreamAudioSourceHandler() const;
 
-  Member<MediaStreamTrack> m_audioTrack;
-  Member<MediaStream> m_mediaStream;
+  Member<MediaStreamTrack> audio_track_;
+  Member<MediaStream> media_stream_;
 };
 
 }  // namespace blink

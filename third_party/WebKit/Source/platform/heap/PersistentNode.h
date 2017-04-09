@@ -21,7 +21,7 @@ class PersistentNode final {
   DISALLOW_NEW();
 
  public:
-  PersistentNode() : m_self(nullptr), m_trace(nullptr) { ASSERT(isUnused()); }
+  PersistentNode() : self_(nullptr), trace_(nullptr) { ASSERT(IsUnused()); }
 
 #if DCHECK_IS_ON()
   ~PersistentNode() {
@@ -29,7 +29,7 @@ class PersistentNode final {
     // without clearing persistent handles that the thread created.
     // We don't enable the assert for the main thread because the
     // main thread finishes without clearing all persistent handles.
-    ASSERT(isMainThread() || isUnused());
+    ASSERT(IsMainThread() || IsUnused());
   }
 #endif
 
@@ -44,35 +44,35 @@ class PersistentNode final {
   // Instead we call the constructor with a TraceCallback which knows the
   // type of the most specific child and calls trace directly. See
   // TraceMethodDelegate in Visitor.h for how this is done.
-  void tracePersistentNode(Visitor* visitor) {
-    ASSERT(!isUnused());
-    ASSERT(m_trace);
-    m_trace(visitor, m_self);
+  void TracePersistentNode(Visitor* visitor) {
+    ASSERT(!IsUnused());
+    ASSERT(trace_);
+    trace_(visitor, self_);
   }
 
-  void initialize(void* self, TraceCallback trace) {
-    ASSERT(isUnused());
-    m_self = self;
-    m_trace = trace;
+  void Initialize(void* self, TraceCallback trace) {
+    ASSERT(IsUnused());
+    self_ = self;
+    trace_ = trace;
   }
 
-  void setFreeListNext(PersistentNode* node) {
-    ASSERT(!node || node->isUnused());
-    m_self = node;
-    m_trace = nullptr;
-    ASSERT(isUnused());
+  void SetFreeListNext(PersistentNode* node) {
+    ASSERT(!node || node->IsUnused());
+    self_ = node;
+    trace_ = nullptr;
+    ASSERT(IsUnused());
   }
 
-  PersistentNode* freeListNext() {
-    ASSERT(isUnused());
-    PersistentNode* node = reinterpret_cast<PersistentNode*>(m_self);
-    ASSERT(!node || node->isUnused());
+  PersistentNode* FreeListNext() {
+    ASSERT(IsUnused());
+    PersistentNode* node = reinterpret_cast<PersistentNode*>(self_);
+    ASSERT(!node || node->IsUnused());
     return node;
   }
 
-  bool isUnused() const { return !m_trace; }
+  bool IsUnused() const { return !trace_; }
 
-  void* self() const { return m_self; }
+  void* Self() const { return self_; }
 
  private:
   // If this PersistentNode is in use:
@@ -81,17 +81,17 @@ class PersistentNode final {
   // If this PersistentNode is freed:
   //   - m_self points to the next freed PersistentNode.
   //   - m_trace is nullptr.
-  void* m_self;
-  TraceCallback m_trace;
+  void* self_;
+  TraceCallback trace_;
 };
 
 struct PersistentNodeSlots final {
   USING_FAST_MALLOC(PersistentNodeSlots);
 
  private:
-  static const int slotCount = 256;
-  PersistentNodeSlots* m_next;
-  PersistentNode m_slot[slotCount];
+  static const int kSlotCount = 256;
+  PersistentNodeSlots* next_;
+  PersistentNode slot_[kSlotCount];
   friend class PersistentRegion;
   friend class CrossThreadPersistentRegion;
 };
@@ -105,62 +105,62 @@ class PLATFORM_EXPORT PersistentRegion final {
 
  public:
   PersistentRegion()
-      : m_freeListHead(nullptr),
-        m_slots(nullptr)
+      : free_list_head_(nullptr),
+        slots_(nullptr)
 #if DCHECK_IS_ON()
         ,
-        m_persistentCount(0)
+        persistent_count_(0)
 #endif
   {
   }
   ~PersistentRegion();
 
-  PersistentNode* allocatePersistentNode(void* self, TraceCallback trace) {
+  PersistentNode* AllocatePersistentNode(void* self, TraceCallback trace) {
 #if DCHECK_IS_ON()
-    ++m_persistentCount;
+    ++persistent_count_;
 #endif
-    if (UNLIKELY(!m_freeListHead))
-      ensurePersistentNodeSlots(self, trace);
-    ASSERT(m_freeListHead);
-    PersistentNode* node = m_freeListHead;
-    m_freeListHead = m_freeListHead->freeListNext();
-    node->initialize(self, trace);
-    ASSERT(!node->isUnused());
+    if (UNLIKELY(!free_list_head_))
+      EnsurePersistentNodeSlots(self, trace);
+    ASSERT(free_list_head_);
+    PersistentNode* node = free_list_head_;
+    free_list_head_ = free_list_head_->FreeListNext();
+    node->Initialize(self, trace);
+    ASSERT(!node->IsUnused());
     return node;
   }
 
-  void freePersistentNode(PersistentNode* persistentNode) {
+  void FreePersistentNode(PersistentNode* persistent_node) {
 #if DCHECK_IS_ON()
-    DCHECK_GT(m_persistentCount, 0);
+    DCHECK_GT(persistent_count_, 0);
 #endif
-    persistentNode->setFreeListNext(m_freeListHead);
-    m_freeListHead = persistentNode;
+    persistent_node->SetFreeListNext(free_list_head_);
+    free_list_head_ = persistent_node;
 #if DCHECK_IS_ON()
-    --m_persistentCount;
+    --persistent_count_;
 #endif
   }
 
-  static bool shouldTracePersistentNode(Visitor*, PersistentNode*) {
+  static bool ShouldTracePersistentNode(Visitor*, PersistentNode*) {
     return true;
   }
 
-  void releasePersistentNode(PersistentNode*,
+  void ReleasePersistentNode(PersistentNode*,
                              ThreadState::PersistentClearCallback);
   using ShouldTraceCallback = bool (*)(Visitor*, PersistentNode*);
-  void tracePersistentNodes(
+  void TracePersistentNodes(
       Visitor*,
-      ShouldTraceCallback = PersistentRegion::shouldTracePersistentNode);
-  int numberOfPersistents();
+      ShouldTraceCallback = PersistentRegion::ShouldTracePersistentNode);
+  int NumberOfPersistents();
 
  private:
   friend CrossThreadPersistentRegion;
 
-  void ensurePersistentNodeSlots(void*, TraceCallback);
+  void EnsurePersistentNodeSlots(void*, TraceCallback);
 
-  PersistentNode* m_freeListHead;
-  PersistentNodeSlots* m_slots;
+  PersistentNode* free_list_head_;
+  PersistentNodeSlots* slots_;
 #if DCHECK_IS_ON()
-  int m_persistentCount;
+  int persistent_count_;
 #endif
 };
 
@@ -169,19 +169,19 @@ class CrossThreadPersistentRegion final {
 
  public:
   CrossThreadPersistentRegion()
-      : m_persistentRegion(WTF::wrapUnique(new PersistentRegion)) {}
+      : persistent_region_(WTF::WrapUnique(new PersistentRegion)) {}
 
-  void allocatePersistentNode(PersistentNode*& persistentNode,
+  void AllocatePersistentNode(PersistentNode*& persistent_node,
                               void* self,
                               TraceCallback trace) {
-    MutexLocker lock(m_mutex);
+    MutexLocker lock(mutex_);
     PersistentNode* node =
-        m_persistentRegion->allocatePersistentNode(self, trace);
-    releaseStore(reinterpret_cast<void* volatile*>(&persistentNode), node);
+        persistent_region_->AllocatePersistentNode(self, trace);
+    ReleaseStore(reinterpret_cast<void* volatile*>(&persistent_node), node);
   }
 
-  void freePersistentNode(PersistentNode*& persistentNode) {
-    MutexLocker lock(m_mutex);
+  void FreePersistentNode(PersistentNode*& persistent_node) {
+    MutexLocker lock(mutex_);
     // When the thread that holds the heap object that the cross-thread
     // persistent shuts down, prepareForThreadStateTermination() will clear out
     // the associated CrossThreadPersistent<> and PersistentNode so as to avoid
@@ -192,39 +192,39 @@ class CrossThreadPersistentRegion final {
     // The lock ensures the updating is ordered, but by the time lock has been
     // acquired the PersistentNode reference may have been cleared out already;
     // check for this.
-    if (!persistentNode)
+    if (!persistent_node)
       return;
-    m_persistentRegion->freePersistentNode(persistentNode);
-    releaseStore(reinterpret_cast<void* volatile*>(&persistentNode), nullptr);
+    persistent_region_->FreePersistentNode(persistent_node);
+    ReleaseStore(reinterpret_cast<void* volatile*>(&persistent_node), nullptr);
   }
 
   class LockScope final {
     STACK_ALLOCATED();
 
    public:
-    LockScope(CrossThreadPersistentRegion& persistentRegion)
-        : m_persistentRegion(persistentRegion) {
-      m_persistentRegion.lock();
+    LockScope(CrossThreadPersistentRegion& persistent_region)
+        : persistent_region_(persistent_region) {
+      persistent_region_.lock();
     }
-    ~LockScope() { m_persistentRegion.unlock(); }
+    ~LockScope() { persistent_region_.unlock(); }
 
    private:
-    CrossThreadPersistentRegion& m_persistentRegion;
+    CrossThreadPersistentRegion& persistent_region_;
   };
 
-  void tracePersistentNodes(Visitor* visitor) {
+  void TracePersistentNodes(Visitor* visitor) {
 // If this assert triggers, you're tracing without being in a LockScope.
 #if DCHECK_IS_ON()
-    DCHECK(m_mutex.locked());
+    DCHECK(mutex_.Locked());
 #endif
-    m_persistentRegion->tracePersistentNodes(
-        visitor, CrossThreadPersistentRegion::shouldTracePersistentNode);
+    persistent_region_->TracePersistentNodes(
+        visitor, CrossThreadPersistentRegion::ShouldTracePersistentNode);
   }
 
-  void prepareForThreadStateTermination(ThreadState*);
+  void PrepareForThreadStateTermination(ThreadState*);
 
   NO_SANITIZE_ADDRESS
-  static bool shouldTracePersistentNode(Visitor*, PersistentNode*);
+  static bool ShouldTracePersistentNode(Visitor*, PersistentNode*);
 
 #if defined(ADDRESS_SANITIZER)
   void unpoisonCrossThreadPersistents();
@@ -233,20 +233,20 @@ class CrossThreadPersistentRegion final {
  private:
   friend class LockScope;
 
-  void lock() { m_mutex.lock(); }
+  void lock() { mutex_.lock(); }
 
-  void unlock() { m_mutex.unlock(); }
+  void unlock() { mutex_.unlock(); }
 
   // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
   // because we don't want to virtualize performance-sensitive methods
   // such as PersistentRegion::allocate/freePersistentNode.
-  std::unique_ptr<PersistentRegion> m_persistentRegion;
+  std::unique_ptr<PersistentRegion> persistent_region_;
 
   // Recursive as prepareForThreadStateTermination() clears a PersistentNode's
   // associated Persistent<> -- it in turn freeing the PersistentNode. And both
   // CrossThreadPersistentRegion operations need a lock on the region before
   // mutating.
-  RecursiveMutex m_mutex;
+  RecursiveMutex mutex_;
 };
 
 }  // namespace blink

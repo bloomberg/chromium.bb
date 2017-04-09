@@ -31,13 +31,13 @@ class PepperFileChooserHost::CompletionHandler
 
   ~CompletionHandler() override {}
 
-  void didChooseFile(
+  void DidChooseFile(
       const blink::WebVector<blink::WebString>& file_names) override {
     if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
         files.push_back(PepperFileChooserHost::ChosenFileInfo(
-            file_names[i].utf8(), std::string()));
+            file_names[i].Utf8(), std::string()));
       }
       host_->StoreChosenFiles(files);
     }
@@ -45,13 +45,13 @@ class PepperFileChooserHost::CompletionHandler
     // It is the responsibility of this method to delete the instance.
     delete this;
   }
-  void didChooseFile(
+  void DidChooseFile(
       const blink::WebVector<SelectedFileInfo>& file_names) override {
     if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
         files.push_back(PepperFileChooserHost::ChosenFileInfo(
-            file_names[i].path.utf8(), file_names[i].displayName.utf8()));
+            file_names[i].path.Utf8(), file_names[i].display_name.Utf8()));
       }
       host_->StoreChosenFiles(files);
     }

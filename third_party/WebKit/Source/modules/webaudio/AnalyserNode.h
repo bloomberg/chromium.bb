@@ -38,67 +38,67 @@ class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
  public:
-  static PassRefPtr<AnalyserHandler> create(AudioNode&, float sampleRate);
+  static PassRefPtr<AnalyserHandler> Create(AudioNode&, float sample_rate);
   ~AnalyserHandler() override;
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
+  void Process(size_t frames_to_process) override;
 
-  unsigned fftSize() const { return m_analyser.fftSize(); }
-  void setFftSize(unsigned size, ExceptionState&);
+  unsigned FftSize() const { return analyser_.FftSize(); }
+  void SetFftSize(unsigned size, ExceptionState&);
 
-  unsigned frequencyBinCount() const { return m_analyser.frequencyBinCount(); }
+  unsigned FrequencyBinCount() const { return analyser_.FrequencyBinCount(); }
 
-  void setMinDecibels(double k, ExceptionState&);
-  double minDecibels() const { return m_analyser.minDecibels(); }
+  void SetMinDecibels(double k, ExceptionState&);
+  double MinDecibels() const { return analyser_.MinDecibels(); }
 
-  void setMaxDecibels(double k, ExceptionState&);
-  double maxDecibels() const { return m_analyser.maxDecibels(); }
+  void SetMaxDecibels(double k, ExceptionState&);
+  double MaxDecibels() const { return analyser_.MaxDecibels(); }
 
-  void setMinMaxDecibels(double min, double max, ExceptionState&);
+  void SetMinMaxDecibels(double min, double max, ExceptionState&);
 
-  void setSmoothingTimeConstant(double k, ExceptionState&);
-  double smoothingTimeConstant() const {
-    return m_analyser.smoothingTimeConstant();
+  void SetSmoothingTimeConstant(double k, ExceptionState&);
+  double SmoothingTimeConstant() const {
+    return analyser_.SmoothingTimeConstant();
   }
 
-  void getFloatFrequencyData(DOMFloat32Array* array, double currentTime) {
-    m_analyser.getFloatFrequencyData(array, currentTime);
+  void GetFloatFrequencyData(DOMFloat32Array* array, double current_time) {
+    analyser_.GetFloatFrequencyData(array, current_time);
   }
-  void getByteFrequencyData(DOMUint8Array* array, double currentTime) {
-    m_analyser.getByteFrequencyData(array, currentTime);
+  void GetByteFrequencyData(DOMUint8Array* array, double current_time) {
+    analyser_.GetByteFrequencyData(array, current_time);
   }
-  void getFloatTimeDomainData(DOMFloat32Array* array) {
-    m_analyser.getFloatTimeDomainData(array);
+  void GetFloatTimeDomainData(DOMFloat32Array* array) {
+    analyser_.GetFloatTimeDomainData(array);
   }
-  void getByteTimeDomainData(DOMUint8Array* array) {
-    m_analyser.getByteTimeDomainData(array);
+  void GetByteTimeDomainData(DOMUint8Array* array) {
+    analyser_.GetByteTimeDomainData(array);
   }
 
   // AnalyserNode needs special handling when updating the pull status
   // because the node must get pulled even if there are no inputs or
   // outputs so that the internal state is properly updated with the
   // correct time data.
-  void updatePullStatus() override;
+  void UpdatePullStatus() override;
 
  private:
-  AnalyserHandler(AudioNode&, float sampleRate);
-  bool propagatesSilence() const {
+  AnalyserHandler(AudioNode&, float sample_rate);
+  bool PropagatesSilence() const {
     // An AnalyserNode does actually propogate silence, but to get the
     // time and FFT data updated correctly, process() needs to be
     // called even if all the inputs are silent.
     return false;
   }
 
-  RealtimeAnalyser m_analyser;
+  RealtimeAnalyser analyser_;
 };
 
 class AnalyserNode final : public AudioBasicInspectorNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnalyserNode* create(BaseAudioContext&, ExceptionState&);
-  static AnalyserNode* create(BaseAudioContext*,
+  static AnalyserNode* Create(BaseAudioContext&, ExceptionState&);
+  static AnalyserNode* Create(BaseAudioContext*,
                               const AnalyserOptions&,
                               ExceptionState&);
 
@@ -118,9 +118,9 @@ class AnalyserNode final : public AudioBasicInspectorNode {
 
  private:
   AnalyserNode(BaseAudioContext&);
-  AnalyserHandler& analyserHandler() const;
+  AnalyserHandler& GetAnalyserHandler() const;
 
-  void setMinMaxDecibels(double min, double max, ExceptionState&);
+  void SetMinMaxDecibels(double min, double max, ExceptionState&);
 };
 
 }  // namespace blink

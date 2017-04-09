@@ -42,18 +42,18 @@ class WordAwareIterator {
   explicit WordAwareIterator(const Position& start, const Position& end);
   ~WordAwareIterator();
 
-  bool atEnd() const { return !m_didLookAhead && m_textIterator.atEnd(); }
-  void advance();
+  bool AtEnd() const { return !did_look_ahead_ && text_iterator_.AtEnd(); }
+  void Advance();
 
-  String substring(unsigned position, unsigned length) const;
-  UChar characterAt(unsigned index) const;
+  String Substring(unsigned position, unsigned length) const;
+  UChar CharacterAt(unsigned index) const;
   int length() const;
 
  private:
-  ForwardsTextBuffer m_buffer;
+  ForwardsTextBuffer buffer_;
   // Did we have to look ahead in the textIterator to confirm the current chunk?
-  bool m_didLookAhead;
-  TextIterator m_textIterator;
+  bool did_look_ahead_;
+  TextIterator text_iterator_;
 };
 
 }  // namespace blink

@@ -38,81 +38,81 @@ class EventSender final : public GarbageCollectedFinalized<EventSender<T>> {
   WTF_MAKE_NONCOPYABLE(EventSender);
 
  public:
-  static EventSender* create(const AtomicString& eventType) {
-    return new EventSender(eventType);
+  static EventSender* Create(const AtomicString& event_type) {
+    return new EventSender(event_type);
   }
 
-  const AtomicString& eventType() const { return m_eventType; }
-  void dispatchEventSoon(T*);
-  void cancelEvent(T*);
-  void dispatchPendingEvents();
+  const AtomicString& EventType() const { return event_type_; }
+  void DispatchEventSoon(T*);
+  void CancelEvent(T*);
+  void DispatchPendingEvents();
 
 #if DCHECK_IS_ON()
-  bool hasPendingEvents(T* sender) const {
-    return m_dispatchSoonList.find(sender) != kNotFound ||
-           m_dispatchingList.find(sender) != kNotFound;
+  bool HasPendingEvents(T* sender) const {
+    return dispatch_soon_list_.Find(sender) != kNotFound ||
+           dispatching_list_.Find(sender) != kNotFound;
   }
 #endif
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_dispatchSoonList);
-    visitor->trace(m_dispatchingList);
+    visitor->Trace(dispatch_soon_list_);
+    visitor->Trace(dispatching_list_);
   }
 
  private:
-  explicit EventSender(const AtomicString& eventType);
+  explicit EventSender(const AtomicString& event_type);
 
-  void timerFired(TimerBase*) { dispatchPendingEvents(); }
+  void TimerFired(TimerBase*) { DispatchPendingEvents(); }
 
-  AtomicString m_eventType;
-  Timer<EventSender<T>> m_timer;
-  HeapVector<Member<T>> m_dispatchSoonList;
-  HeapVector<Member<T>> m_dispatchingList;
+  AtomicString event_type_;
+  Timer<EventSender<T>> timer_;
+  HeapVector<Member<T>> dispatch_soon_list_;
+  HeapVector<Member<T>> dispatching_list_;
 };
 
 template <typename T>
-EventSender<T>::EventSender(const AtomicString& eventType)
-    : m_eventType(eventType), m_timer(this, &EventSender::timerFired) {}
+EventSender<T>::EventSender(const AtomicString& event_type)
+    : event_type_(event_type), timer_(this, &EventSender::TimerFired) {}
 
 template <typename T>
-void EventSender<T>::dispatchEventSoon(T* sender) {
-  m_dispatchSoonList.push_back(sender);
-  if (!m_timer.isActive())
-    m_timer.startOneShot(0, BLINK_FROM_HERE);
+void EventSender<T>::DispatchEventSoon(T* sender) {
+  dispatch_soon_list_.push_back(sender);
+  if (!timer_.IsActive())
+    timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
 template <typename T>
-void EventSender<T>::cancelEvent(T* sender) {
+void EventSender<T>::CancelEvent(T* sender) {
   // Remove instances of this sender from both lists.
   // Use loops because we allow multiple instances to get into the lists.
-  for (auto& senderInList : m_dispatchSoonList) {
-    if (senderInList == sender)
-      senderInList = nullptr;
+  for (auto& sender_in_list : dispatch_soon_list_) {
+    if (sender_in_list == sender)
+      sender_in_list = nullptr;
   }
-  for (auto& senderInList : m_dispatchingList) {
-    if (senderInList == sender)
-      senderInList = nullptr;
+  for (auto& sender_in_list : dispatching_list_) {
+    if (sender_in_list == sender)
+      sender_in_list = nullptr;
   }
 }
 
 template <typename T>
-void EventSender<T>::dispatchPendingEvents() {
+void EventSender<T>::DispatchPendingEvents() {
   // Need to avoid re-entering this function; if new dispatches are
   // scheduled before the parent finishes processing the list, they
   // will set a timer and eventually be processed.
-  if (!m_dispatchingList.isEmpty())
+  if (!dispatching_list_.IsEmpty())
     return;
 
-  m_timer.stop();
+  timer_.Stop();
 
-  m_dispatchingList.swap(m_dispatchSoonList);
-  for (auto& senderInList : m_dispatchingList) {
-    if (T* sender = senderInList) {
-      senderInList = nullptr;
-      sender->dispatchPendingEvent(this);
+  dispatching_list_.Swap(dispatch_soon_list_);
+  for (auto& sender_in_list : dispatching_list_) {
+    if (T* sender = sender_in_list) {
+      sender_in_list = nullptr;
+      sender->DispatchPendingEvent(this);
     }
   }
-  m_dispatchingList.clear();
+  dispatching_list_.Clear();
 }
 
 }  // namespace blink

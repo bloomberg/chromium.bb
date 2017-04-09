@@ -9,45 +9,46 @@
 namespace blink {
 
 WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
-                             const WebGestureEvent& gestureEvent,
-                             Button buttonParam,
-                             int clickCountParam,
+                             const WebGestureEvent& gesture_event,
+                             Button button_param,
+                             int click_count_param,
                              int modifiers,
-                             double timeStampSeconds)
-    : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, timeStampSeconds),
-      WebPointerProperties(buttonParam,
-                           WebPointerProperties::PointerType::Mouse),
-      clickCount(clickCountParam),
-      m_positionInWidget(gestureEvent.x, gestureEvent.y),
-      m_positionInScreen(gestureEvent.globalX, gestureEvent.globalY) {
-  setFrameScale(gestureEvent.frameScale());
-  setFrameTranslate(gestureEvent.frameTranslate());
+                             double time_stamp_seconds)
+    : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, time_stamp_seconds),
+      WebPointerProperties(button_param,
+                           WebPointerProperties::PointerType::kMouse),
+      click_count(click_count_param),
+      position_in_widget_(gesture_event.x, gesture_event.y),
+      position_in_screen_(gesture_event.global_x, gesture_event.global_y) {
+  SetFrameScale(gesture_event.FrameScale());
+  SetFrameTranslate(gesture_event.FrameTranslate());
 }
 
-WebFloatPoint WebMouseEvent::movementInRootFrame() const {
-  return WebFloatPoint((movementX / m_frameScale), (movementY / m_frameScale));
+WebFloatPoint WebMouseEvent::MovementInRootFrame() const {
+  return WebFloatPoint((movement_x / frame_scale_),
+                       (movement_y / frame_scale_));
 }
 
-WebFloatPoint WebMouseEvent::positionInRootFrame() const {
+WebFloatPoint WebMouseEvent::PositionInRootFrame() const {
   return WebFloatPoint(
-      (m_positionInWidget.x / m_frameScale) + m_frameTranslate.x,
-      (m_positionInWidget.y / m_frameScale) + m_frameTranslate.y);
+      (position_in_widget_.x / frame_scale_) + frame_translate_.x,
+      (position_in_widget_.y / frame_scale_) + frame_translate_.y);
 }
 
-WebMouseEvent WebMouseEvent::flattenTransform() const {
+WebMouseEvent WebMouseEvent::FlattenTransform() const {
   WebMouseEvent result = *this;
-  result.flattenTransformSelf();
+  result.FlattenTransformSelf();
   return result;
 }
 
-void WebMouseEvent::flattenTransformSelf() {
-  m_positionInWidget.x =
-      floor((m_positionInWidget.x / m_frameScale) + m_frameTranslate.x);
-  m_positionInWidget.y =
-      floor((m_positionInWidget.y / m_frameScale) + m_frameTranslate.y);
-  m_frameTranslate.x = 0;
-  m_frameTranslate.y = 0;
-  m_frameScale = 1;
+void WebMouseEvent::FlattenTransformSelf() {
+  position_in_widget_.x =
+      floor((position_in_widget_.x / frame_scale_) + frame_translate_.x);
+  position_in_widget_.y =
+      floor((position_in_widget_.y / frame_scale_) + frame_translate_.y);
+  frame_translate_.x = 0;
+  frame_translate_.y = 0;
+  frame_scale_ = 1;
 }
 
 }  // namespace blink

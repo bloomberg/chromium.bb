@@ -35,11 +35,11 @@ namespace blink {
 
 // Types and helper functions related to mixed content checks.
 enum class WebMixedContentContextType {
-  NotMixedContent,
-  Blockable,
-  OptionallyBlockable,
-  ShouldBeBlockable,
-  Last = ShouldBeBlockable
+  kNotMixedContent,
+  kBlockable,
+  kOptionallyBlockable,
+  kShouldBeBlockable,
+  kLast = kShouldBeBlockable
 };
 
 }  // namespace blink

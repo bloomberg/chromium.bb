@@ -46,11 +46,11 @@ class Scrollbar;
 class PLATFORM_EXPORT ScrollAnimatorBase
     : public ScrollAnimatorCompositorCoordinator {
  public:
-  static ScrollAnimatorBase* create(ScrollableArea*);
+  static ScrollAnimatorBase* Create(ScrollableArea*);
 
   virtual ~ScrollAnimatorBase();
 
-  virtual void dispose() {}
+  virtual void Dispose() {}
 
   // A possibly animated scroll. The base class implementation always scrolls
   // immediately, never animates. If the scroll is animated and currently the
@@ -58,62 +58,62 @@ class PLATFORM_EXPORT ScrollAnimatorBase
   // no unusedDelta and didScroll=true, i.e. fully consuming the scroll request.
   // This makes animations latch to a single scroller. Note, the semantics are
   // currently somewhat different on Mac - see ScrollAnimatorMac.mm.
-  virtual ScrollResult userScroll(ScrollGranularity, const ScrollOffset& delta);
+  virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset& delta);
 
-  virtual void scrollToOffsetWithoutAnimation(const ScrollOffset&);
+  virtual void ScrollToOffsetWithoutAnimation(const ScrollOffset&);
 
-  void setCurrentOffset(const ScrollOffset&);
-  ScrollOffset currentOffset() const;
-  virtual ScrollOffset desiredTargetOffset() const { return currentOffset(); }
+  void SetCurrentOffset(const ScrollOffset&);
+  ScrollOffset CurrentOffset() const;
+  virtual ScrollOffset DesiredTargetOffset() const { return CurrentOffset(); }
 
   // Returns how much of pixelDelta will be used by the underlying scrollable
   // area.
-  virtual ScrollOffset computeDeltaToConsume(const ScrollOffset& delta) const;
+  virtual ScrollOffset ComputeDeltaToConsume(const ScrollOffset& delta) const;
 
   // ScrollAnimatorCompositorCoordinator implementation.
-  ScrollableArea* getScrollableArea() const override {
-    return m_scrollableArea;
+  ScrollableArea* GetScrollableArea() const override {
+    return scrollable_area_;
   }
-  void tickAnimation(double monotonicTime) override{};
-  void cancelAnimation() override {}
-  void takeOverCompositorAnimation() override {}
-  void updateCompositorAnimations() override{};
-  void notifyCompositorAnimationFinished(int groupId) override{};
-  void notifyCompositorAnimationAborted(int groupId) override{};
-  void layerForCompositedScrollingDidChange(
+  void TickAnimation(double monotonic_time) override{};
+  void CancelAnimation() override {}
+  void TakeOverCompositorAnimation() override {}
+  void UpdateCompositorAnimations() override{};
+  void NotifyCompositorAnimationFinished(int group_id) override{};
+  void NotifyCompositorAnimationAborted(int group_id) override{};
+  void LayerForCompositedScrollingDidChange(
       CompositorAnimationTimeline*) override{};
 
-  virtual void contentAreaWillPaint() const {}
-  virtual void mouseEnteredContentArea() const {}
-  virtual void mouseExitedContentArea() const {}
-  virtual void mouseMovedInContentArea() const {}
-  virtual void mouseEnteredScrollbar(Scrollbar&) const {}
-  virtual void mouseExitedScrollbar(Scrollbar&) const {}
-  virtual void contentsResized() const {}
-  virtual void contentAreaDidShow() const {}
-  virtual void contentAreaDidHide() const {}
+  virtual void ContentAreaWillPaint() const {}
+  virtual void MouseEnteredContentArea() const {}
+  virtual void MouseExitedContentArea() const {}
+  virtual void MouseMovedInContentArea() const {}
+  virtual void MouseEnteredScrollbar(Scrollbar&) const {}
+  virtual void MouseExitedScrollbar(Scrollbar&) const {}
+  virtual void ContentsResized() const {}
+  virtual void ContentAreaDidShow() const {}
+  virtual void ContentAreaDidHide() const {}
 
-  virtual void finishCurrentScrollAnimations() {}
+  virtual void FinishCurrentScrollAnimations() {}
 
-  virtual void didAddVerticalScrollbar(Scrollbar&) {}
-  virtual void willRemoveVerticalScrollbar(Scrollbar&) {}
-  virtual void didAddHorizontalScrollbar(Scrollbar&) {}
-  virtual void willRemoveHorizontalScrollbar(Scrollbar&) {}
+  virtual void DidAddVerticalScrollbar(Scrollbar&) {}
+  virtual void WillRemoveVerticalScrollbar(Scrollbar&) {}
+  virtual void DidAddHorizontalScrollbar(Scrollbar&) {}
+  virtual void WillRemoveHorizontalScrollbar(Scrollbar&) {}
 
-  virtual void notifyContentAreaScrolled(const ScrollOffset&) {}
+  virtual void NotifyContentAreaScrolled(const ScrollOffset&) {}
 
-  virtual bool setScrollbarsVisibleForTesting(bool) { return false; }
+  virtual bool SetScrollbarsVisibleForTesting(bool) { return false; }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   explicit ScrollAnimatorBase(ScrollableArea*);
 
-  virtual void notifyOffsetChanged();
+  virtual void NotifyOffsetChanged();
 
-  Member<ScrollableArea> m_scrollableArea;
+  Member<ScrollableArea> scrollable_area_;
 
-  ScrollOffset m_currentOffset;
+  ScrollOffset current_offset_;
 };
 
 }  // namespace blink

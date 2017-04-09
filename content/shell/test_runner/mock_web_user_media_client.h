@@ -19,10 +19,10 @@ class MockWebUserMediaClient : public blink::WebUserMediaClient {
   explicit MockWebUserMediaClient(WebTestDelegate* delegate);
   ~MockWebUserMediaClient() override;
 
-  void requestUserMedia(const blink::WebUserMediaRequest&) override;
-  void cancelUserMediaRequest(const blink::WebUserMediaRequest&) override;
-  void requestMediaDevices(const blink::WebMediaDevicesRequest&) override;
-  void setMediaDeviceChangeObserver(
+  void RequestUserMedia(const blink::WebUserMediaRequest&) override;
+  void CancelUserMediaRequest(const blink::WebUserMediaRequest&) override;
+  void RequestMediaDevices(const blink::WebMediaDevicesRequest&) override;
+  void SetMediaDeviceChangeObserver(
       const blink::WebMediaDeviceChangeObserver&) override;
 
  private:

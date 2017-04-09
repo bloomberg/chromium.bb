@@ -47,7 +47,7 @@ class CORE_EXPORT Screen final : public GarbageCollected<Screen>,
   USING_GARBAGE_COLLECTED_MIXIN(Screen);
 
  public:
-  static Screen* create(LocalFrame* frame) { return new Screen(frame); }
+  static Screen* Create(LocalFrame* frame) { return new Screen(frame); }
 
   int height() const;
   int width() const;

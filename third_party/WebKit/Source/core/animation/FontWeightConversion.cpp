@@ -9,25 +9,25 @@
 
 namespace blink {
 
-double fontWeightToDouble(FontWeight fontWeight) {
-  switch (fontWeight) {
-    case FontWeight100:
+double FontWeightToDouble(FontWeight font_weight) {
+  switch (font_weight) {
+    case kFontWeight100:
       return 100;
-    case FontWeight200:
+    case kFontWeight200:
       return 200;
-    case FontWeight300:
+    case kFontWeight300:
       return 300;
-    case FontWeight400:
+    case kFontWeight400:
       return 400;
-    case FontWeight500:
+    case kFontWeight500:
       return 500;
-    case FontWeight600:
+    case kFontWeight600:
       return 600;
-    case FontWeight700:
+    case kFontWeight700:
       return 700;
-    case FontWeight800:
+    case kFontWeight800:
       return 800;
-    case FontWeight900:
+    case kFontWeight900:
       return 900;
     default:
       NOTREACHED();
@@ -35,15 +35,17 @@ double fontWeightToDouble(FontWeight fontWeight) {
   }
 }
 
-FontWeight doubleToFontWeight(double value) {
-  static const FontWeight fontWeights[] = {
-      FontWeight100, FontWeight200, FontWeight300, FontWeight400, FontWeight500,
-      FontWeight600, FontWeight700, FontWeight800, FontWeight900,
+FontWeight DoubleToFontWeight(double value) {
+  static const FontWeight kFontWeights[] = {
+      kFontWeight100, kFontWeight200, kFontWeight300,
+      kFontWeight400, kFontWeight500, kFontWeight600,
+      kFontWeight700, kFontWeight800, kFontWeight900,
   };
 
   int index = round(value / 100 - 1);
-  int clampedIndex = clampTo<int>(index, 0, WTF_ARRAY_LENGTH(fontWeights) - 1);
-  return fontWeights[clampedIndex];
+  int clamped_index =
+      clampTo<int>(index, 0, WTF_ARRAY_LENGTH(kFontWeights) - 1);
+  return kFontWeights[clamped_index];
 }
 
 }  // namespace blink

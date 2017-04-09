@@ -34,17 +34,17 @@ class ContentDecryptionModuleResultPromise
   ~ContentDecryptionModuleResultPromise() override;
 
   // ContentDecryptionModuleResult implementation.
-  void complete() override;
-  void completeWithContentDecryptionModule(
+  void Complete() override;
+  void CompleteWithContentDecryptionModule(
       WebContentDecryptionModule*) override;
-  void completeWithSession(
+  void CompleteWithSession(
       WebContentDecryptionModuleResult::SessionStatus) override;
-  void completeWithError(WebContentDecryptionModuleException,
-                         unsigned long systemCode,
+  void CompleteWithError(WebContentDecryptionModuleException,
+                         unsigned long system_code,
                          const WebString&) override;
 
   // It is only valid to call this before completion.
-  ScriptPromise promise();
+  ScriptPromise Promise();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -54,23 +54,23 @@ class ContentDecryptionModuleResultPromise
   // Resolves the promise with |value|. Used by subclasses to resolve the
   // promise.
   template <typename... T>
-  void resolve(T... value) {
-    DCHECK(isValidToFulfillPromise());
+  void Resolve(T... value) {
+    DCHECK(IsValidToFulfillPromise());
 
-    m_resolver->resolve(value...);
-    m_resolver.clear();
+    resolver_->Resolve(value...);
+    resolver_.Clear();
   }
 
   // Rejects the promise with a DOMException.
-  void reject(ExceptionCode, const String& errorMessage);
+  void Reject(ExceptionCode, const String& error_message);
 
-  ExecutionContext* getExecutionContext() const;
+  ExecutionContext* GetExecutionContext() const;
 
   // Determine if it's OK to resolve/reject this promise.
-  bool isValidToFulfillPromise();
+  bool IsValidToFulfillPromise();
 
  private:
-  Member<ScriptPromiseResolver> m_resolver;
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace blink

@@ -42,186 +42,187 @@ namespace blink {
 class LocaleWinTest : public ::testing::Test {
  protected:
   enum {
-    January = 0,
-    February,
-    March,
-    April,
-    May,
-    June,
-    July,
-    August,
-    September,
-    October,
-    November,
-    December,
+    kJanuary = 0,
+    kFebruary,
+    kMarch,
+    kApril,
+    kMay,
+    kJune,
+    kJuly,
+    kAugust,
+    kSeptember,
+    kOctober,
+    kNovember,
+    kDecember,
   };
 
   enum {
-    Sunday = 0,
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday,
+    kSunday = 0,
+    kMonday,
+    kTuesday,
+    kWednesday,
+    kThursday,
+    kFriday,
+    kSaturday,
   };
 
   // See http://msdn.microsoft.com/en-us/goglobal/bb964664.aspx
   // Note that some locales are country-neutral.
   enum {
-    ArabicEG = 0x0C01,   // ar-eg
-    ChineseCN = 0x0804,  // zh-cn
-    ChineseHK = 0x0C04,  // zh-hk
-    ChineseTW = 0x0404,  // zh-tw
-    German = 0x0407,     // de
-    EnglishUS = 0x409,   // en-us
-    FrenchFR = 0x40C,    // fr
-    JapaneseJP = 0x411,  // ja
-    KoreanKR = 0x0412,   // ko
-    Persian = 0x0429,    // fa
-    Spanish = 0x040A,    // es
+    kArabicEG = 0x0C01,   // ar-eg
+    kChineseCN = 0x0804,  // zh-cn
+    kChineseHK = 0x0C04,  // zh-hk
+    kChineseTW = 0x0404,  // zh-tw
+    kGerman = 0x0407,     // de
+    kEnglishUS = 0x409,   // en-us
+    kFrenchFR = 0x40C,    // fr
+    kJapaneseJP = 0x411,  // ja
+    kKoreanKR = 0x0412,   // ko
+    kPersian = 0x0429,    // fa
+    kSpanish = 0x040A,    // es
   };
 
-  DateComponents getDateComponents(int year, int month, int day) {
+  DateComponents GetDateComponents(int year, int month, int day) {
     DateComponents date;
-    date.setMillisecondsSinceEpochForDate(msForDate(year, month, day));
+    date.SetMillisecondsSinceEpochForDate(MsForDate(year, month, day));
     return date;
   }
 
-  double msForDate(int year, int month, int day) {
-    return dateToDaysFrom1970(year, month, day) * msPerDay;
+  double MsForDate(int year, int month, int day) {
+    return DateToDaysFrom1970(year, month, day) * kMsPerDay;
   }
 
-  String formatDate(LCID lcid, int year, int month, int day) {
+  String FormatDate(LCID lcid, int year, int month, int day) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->formatDateTime(getDateComponents(year, month, day));
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->FormatDateTime(GetDateComponents(year, month, day));
   }
 
-  unsigned firstDayOfWeek(LCID lcid) {
+  unsigned FirstDayOfWeek(LCID lcid) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->firstDayOfWeek();
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->FirstDayOfWeek();
   }
 
-  String monthLabel(LCID lcid, unsigned index) {
+  String MonthLabel(LCID lcid, unsigned index) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->monthLabels()[index];
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->MonthLabels()[index];
   }
 
-  String weekDayShortLabel(LCID lcid, unsigned index) {
+  String WeekDayShortLabel(LCID lcid, unsigned index) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->weekDayShortLabels()[index];
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->WeekDayShortLabels()[index];
   }
 
-  bool isRTL(LCID lcid) {
+  bool IsRTL(LCID lcid) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->isRTL();
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->IsRTL();
   }
 
-  String monthFormat(LCID lcid) {
+  String MonthFormat(LCID lcid) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->monthFormat();
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->MonthFormat();
   }
 
-  String timeFormat(LCID lcid) {
+  String TimeFormat(LCID lcid) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->timeFormat();
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->TimeFormat();
   }
 
-  String shortTimeFormat(LCID lcid) {
+  String ShortTimeFormat(LCID lcid) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->shortTimeFormat();
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->ShortTimeFormat();
   }
 
-  String shortMonthLabel(LCID lcid, unsigned index) {
+  String ShortMonthLabel(LCID lcid, unsigned index) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->shortMonthLabels()[index];
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->ShortMonthLabels()[index];
   }
 
-  String timeAMPMLabel(LCID lcid, unsigned index) {
+  String TimeAMPMLabel(LCID lcid, unsigned index) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->timeAMPMLabels()[index];
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->TimeAMPMLabels()[index];
   }
 
-  String decimalSeparator(LCID lcid) {
+  String DecimalSeparator(LCID lcid) {
     std::unique_ptr<LocaleWin> locale =
-        LocaleWin::create(lcid, true /* defaultsForLocale */);
-    return locale->localizedDecimalSeparator();
+        LocaleWin::Create(lcid, true /* defaultsForLocale */);
+    return locale->LocalizedDecimalSeparator();
   }
 };
 
 TEST_F(LocaleWinTest, formatDate) {
   EXPECT_STREQ("04/27/2005",
-               formatDate(EnglishUS, 2005, April, 27).utf8().data());
+               FormatDate(kEnglishUS, 2005, kApril, 27).Utf8().Data());
   EXPECT_STREQ("27/04/2005",
-               formatDate(FrenchFR, 2005, April, 27).utf8().data());
+               FormatDate(kFrenchFR, 2005, kApril, 27).Utf8().Data());
   EXPECT_STREQ("2005/04/27",
-               formatDate(JapaneseJP, 2005, April, 27).utf8().data());
+               FormatDate(kJapaneseJP, 2005, kApril, 27).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, firstDayOfWeek) {
-  EXPECT_EQ(Sunday, firstDayOfWeek(EnglishUS));
-  EXPECT_EQ(Monday, firstDayOfWeek(FrenchFR));
-  EXPECT_EQ(Sunday, firstDayOfWeek(JapaneseJP));
+  EXPECT_EQ(kSunday, FirstDayOfWeek(kEnglishUS));
+  EXPECT_EQ(kMonday, FirstDayOfWeek(kFrenchFR));
+  EXPECT_EQ(kSunday, FirstDayOfWeek(kJapaneseJP));
 }
 
 TEST_F(LocaleWinTest, monthLabels) {
-  EXPECT_STREQ("January", monthLabel(EnglishUS, January).utf8().data());
-  EXPECT_STREQ("June", monthLabel(EnglishUS, June).utf8().data());
-  EXPECT_STREQ("December", monthLabel(EnglishUS, December).utf8().data());
+  EXPECT_STREQ("January", MonthLabel(kEnglishUS, kJanuary).Utf8().Data());
+  EXPECT_STREQ("June", MonthLabel(kEnglishUS, kJune).Utf8().Data());
+  EXPECT_STREQ("December", MonthLabel(kEnglishUS, kDecember).Utf8().Data());
 
-  EXPECT_STREQ("janvier", monthLabel(FrenchFR, January).utf8().data());
-  EXPECT_STREQ("juin", monthLabel(FrenchFR, June).utf8().data());
+  EXPECT_STREQ("janvier", MonthLabel(kFrenchFR, kJanuary).Utf8().Data());
+  EXPECT_STREQ("juin", MonthLabel(kFrenchFR, kJune).Utf8().Data());
   EXPECT_STREQ(
       "d\xC3\xA9"
       "cembre",
-      monthLabel(FrenchFR, December).utf8().data());
+      MonthLabel(kFrenchFR, kDecember).Utf8().Data());
 
-  EXPECT_STREQ("1\xE6\x9C\x88", monthLabel(JapaneseJP, January).utf8().data());
-  EXPECT_STREQ("6\xE6\x9C\x88", monthLabel(JapaneseJP, June).utf8().data());
+  EXPECT_STREQ("1\xE6\x9C\x88",
+               MonthLabel(kJapaneseJP, kJanuary).Utf8().Data());
+  EXPECT_STREQ("6\xE6\x9C\x88", MonthLabel(kJapaneseJP, kJune).Utf8().Data());
   EXPECT_STREQ("12\xE6\x9C\x88",
-               monthLabel(JapaneseJP, December).utf8().data());
+               MonthLabel(kJapaneseJP, kDecember).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, weekDayShortLabels) {
-  EXPECT_STREQ("Sun", weekDayShortLabel(EnglishUS, Sunday).utf8().data());
-  EXPECT_STREQ("Wed", weekDayShortLabel(EnglishUS, Wednesday).utf8().data());
-  EXPECT_STREQ("Sat", weekDayShortLabel(EnglishUS, Saturday).utf8().data());
+  EXPECT_STREQ("Sun", WeekDayShortLabel(kEnglishUS, kSunday).Utf8().Data());
+  EXPECT_STREQ("Wed", WeekDayShortLabel(kEnglishUS, kWednesday).Utf8().Data());
+  EXPECT_STREQ("Sat", WeekDayShortLabel(kEnglishUS, kSaturday).Utf8().Data());
 
-  EXPECT_STREQ("dim.", weekDayShortLabel(FrenchFR, Sunday).utf8().data());
-  EXPECT_STREQ("mer.", weekDayShortLabel(FrenchFR, Wednesday).utf8().data());
-  EXPECT_STREQ("sam.", weekDayShortLabel(FrenchFR, Saturday).utf8().data());
+  EXPECT_STREQ("dim.", WeekDayShortLabel(kFrenchFR, kSunday).Utf8().Data());
+  EXPECT_STREQ("mer.", WeekDayShortLabel(kFrenchFR, kWednesday).Utf8().Data());
+  EXPECT_STREQ("sam.", WeekDayShortLabel(kFrenchFR, kSaturday).Utf8().Data());
 
   EXPECT_STREQ("\xE6\x97\xA5",
-               weekDayShortLabel(JapaneseJP, Sunday).utf8().data());
+               WeekDayShortLabel(kJapaneseJP, kSunday).Utf8().Data());
   EXPECT_STREQ("\xE6\xB0\xB4",
-               weekDayShortLabel(JapaneseJP, Wednesday).utf8().data());
+               WeekDayShortLabel(kJapaneseJP, kWednesday).Utf8().Data());
   EXPECT_STREQ("\xE5\x9C\x9F",
-               weekDayShortLabel(JapaneseJP, Saturday).utf8().data());
+               WeekDayShortLabel(kJapaneseJP, kSaturday).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, isRTL) {
-  EXPECT_TRUE(isRTL(ArabicEG));
-  EXPECT_FALSE(isRTL(EnglishUS));
+  EXPECT_TRUE(IsRTL(kArabicEG));
+  EXPECT_FALSE(IsRTL(kEnglishUS));
 }
 
 TEST_F(LocaleWinTest, dateFormat) {
-  EXPECT_STREQ("y-M-d", LocaleWin::dateFormat("y-M-d").utf8().data());
+  EXPECT_STREQ("y-M-d", LocaleWin::DateFormat("y-M-d").Utf8().Data());
   EXPECT_STREQ("''yy'-'''MM'''-'dd",
-               LocaleWin::dateFormat("''yy-''MM''-dd").utf8().data());
+               LocaleWin::DateFormat("''yy-''MM''-dd").Utf8().Data());
   EXPECT_STREQ("yyyy'-''''-'MMM'''''-'dd",
-               LocaleWin::dateFormat("yyyy-''''-MMM''''-dd").utf8().data());
+               LocaleWin::DateFormat("yyyy-''''-MMM''''-dd").Utf8().Data());
   EXPECT_STREQ("yyyy'-'''''MMMM-dd",
-               LocaleWin::dateFormat("yyyy-''''MMMM-dd").utf8().data());
+               LocaleWin::DateFormat("yyyy-''''MMMM-dd").Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, monthFormat) {
@@ -229,94 +230,94 @@ TEST_F(LocaleWinTest, monthFormat) {
   //  "MMMM, yyyy" on Windows 7 or older.
   //  "MMMM yyyy" on Window 8 or later.
   EXPECT_STREQ("MMMM yyyy",
-               monthFormat(EnglishUS).replace(',', "").utf8().data());
-  EXPECT_STREQ("MMMM yyyy", monthFormat(FrenchFR).utf8().data());
+               MonthFormat(kEnglishUS).Replace(',', "").Utf8().Data());
+  EXPECT_STREQ("MMMM yyyy", MonthFormat(kFrenchFR).Utf8().Data());
   EXPECT_STREQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88",
-               monthFormat(JapaneseJP).utf8().data());
+               MonthFormat(kJapaneseJP).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, timeFormat) {
-  EXPECT_STREQ("h:mm:ss a", timeFormat(EnglishUS).utf8().data());
-  EXPECT_STREQ("HH:mm:ss", timeFormat(FrenchFR).utf8().data());
-  EXPECT_STREQ("H:mm:ss", timeFormat(JapaneseJP).utf8().data());
+  EXPECT_STREQ("h:mm:ss a", TimeFormat(kEnglishUS).Utf8().Data());
+  EXPECT_STREQ("HH:mm:ss", TimeFormat(kFrenchFR).Utf8().Data());
+  EXPECT_STREQ("H:mm:ss", TimeFormat(kJapaneseJP).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, shortTimeFormat) {
-  EXPECT_STREQ("h:mm a", shortTimeFormat(EnglishUS).utf8().data());
-  EXPECT_STREQ("HH:mm", shortTimeFormat(FrenchFR).utf8().data());
-  EXPECT_STREQ("H:mm", shortTimeFormat(JapaneseJP).utf8().data());
+  EXPECT_STREQ("h:mm a", ShortTimeFormat(kEnglishUS).Utf8().Data());
+  EXPECT_STREQ("HH:mm", ShortTimeFormat(kFrenchFR).Utf8().Data());
+  EXPECT_STREQ("H:mm", ShortTimeFormat(kJapaneseJP).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, shortMonthLabels) {
-  EXPECT_STREQ("Jan", shortMonthLabel(EnglishUS, 0).utf8().data());
-  EXPECT_STREQ("Dec", shortMonthLabel(EnglishUS, 11).utf8().data());
-  EXPECT_STREQ("janv.", shortMonthLabel(FrenchFR, 0).utf8().data());
+  EXPECT_STREQ("Jan", ShortMonthLabel(kEnglishUS, 0).Utf8().Data());
+  EXPECT_STREQ("Dec", ShortMonthLabel(kEnglishUS, 11).Utf8().Data());
+  EXPECT_STREQ("janv.", ShortMonthLabel(kFrenchFR, 0).Utf8().Data());
   EXPECT_STREQ(
       "d\xC3\xA9"
       "c.",
-      shortMonthLabel(FrenchFR, 11).utf8().data());
-  EXPECT_STREQ("1", shortMonthLabel(JapaneseJP, 0).utf8().data());
-  EXPECT_STREQ("12", shortMonthLabel(JapaneseJP, 11).utf8().data());
+      ShortMonthLabel(kFrenchFR, 11).Utf8().Data());
+  EXPECT_STREQ("1", ShortMonthLabel(kJapaneseJP, 0).Utf8().Data());
+  EXPECT_STREQ("12", ShortMonthLabel(kJapaneseJP, 11).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, timeAMPMLabels) {
-  EXPECT_STREQ("AM", timeAMPMLabel(EnglishUS, 0).utf8().data());
-  EXPECT_STREQ("PM", timeAMPMLabel(EnglishUS, 1).utf8().data());
+  EXPECT_STREQ("AM", TimeAMPMLabel(kEnglishUS, 0).Utf8().Data());
+  EXPECT_STREQ("PM", TimeAMPMLabel(kEnglishUS, 1).Utf8().Data());
 
-  EXPECT_STREQ("", timeAMPMLabel(FrenchFR, 0).utf8().data());
-  EXPECT_STREQ("", timeAMPMLabel(FrenchFR, 1).utf8().data());
+  EXPECT_STREQ("", TimeAMPMLabel(kFrenchFR, 0).Utf8().Data());
+  EXPECT_STREQ("", TimeAMPMLabel(kFrenchFR, 1).Utf8().Data());
 
   EXPECT_STREQ("\xE5\x8D\x88\xE5\x89\x8D",
-               timeAMPMLabel(JapaneseJP, 0).utf8().data());
+               TimeAMPMLabel(kJapaneseJP, 0).Utf8().Data());
   EXPECT_STREQ("\xE5\x8D\x88\xE5\xBE\x8C",
-               timeAMPMLabel(JapaneseJP, 1).utf8().data());
+               TimeAMPMLabel(kJapaneseJP, 1).Utf8().Data());
 }
 
 TEST_F(LocaleWinTest, decimalSeparator) {
-  EXPECT_STREQ(".", decimalSeparator(EnglishUS).utf8().data());
-  EXPECT_STREQ(",", decimalSeparator(FrenchFR).utf8().data());
+  EXPECT_STREQ(".", DecimalSeparator(kEnglishUS).Utf8().Data());
+  EXPECT_STREQ(",", DecimalSeparator(kFrenchFR).Utf8().Data());
 }
 
-static void testNumberIsReversible(LCID lcid,
+static void TestNumberIsReversible(LCID lcid,
                                    const char* original,
-                                   const char* shouldHave = 0) {
+                                   const char* should_have = 0) {
   std::unique_ptr<LocaleWin> locale =
-      LocaleWin::create(lcid, true /* defaultsForLocale */);
-  String localized = locale->convertToLocalizedNumber(original);
-  if (shouldHave)
-    EXPECT_TRUE(localized.contains(shouldHave));
-  String converted = locale->convertFromLocalizedNumber(localized);
-  EXPECT_STREQ(original, converted.utf8().data());
+      LocaleWin::Create(lcid, true /* defaultsForLocale */);
+  String localized = locale->ConvertToLocalizedNumber(original);
+  if (should_have)
+    EXPECT_TRUE(localized.Contains(should_have));
+  String converted = locale->ConvertFromLocalizedNumber(localized);
+  EXPECT_STREQ(original, converted.Utf8().Data());
 }
 
-void testNumbers(LCID lcid) {
-  testNumberIsReversible(lcid, "123456789012345678901234567890");
-  testNumberIsReversible(lcid, "-123.456");
-  testNumberIsReversible(lcid, ".456");
-  testNumberIsReversible(lcid, "-0.456");
+void TestNumbers(LCID lcid) {
+  TestNumberIsReversible(lcid, "123456789012345678901234567890");
+  TestNumberIsReversible(lcid, "-123.456");
+  TestNumberIsReversible(lcid, ".456");
+  TestNumberIsReversible(lcid, "-0.456");
 }
 
 TEST_F(LocaleWinTest, localizedNumberRoundTrip) {
-  testNumberIsReversible(EnglishUS, "123456789012345678901234567890");
-  testNumberIsReversible(EnglishUS, "-123.456", ".");
-  testNumberIsReversible(EnglishUS, ".456", ".");
-  testNumberIsReversible(EnglishUS, "-0.456", ".");
+  TestNumberIsReversible(kEnglishUS, "123456789012345678901234567890");
+  TestNumberIsReversible(kEnglishUS, "-123.456", ".");
+  TestNumberIsReversible(kEnglishUS, ".456", ".");
+  TestNumberIsReversible(kEnglishUS, "-0.456", ".");
 
-  testNumberIsReversible(FrenchFR, "123456789012345678901234567890");
-  testNumberIsReversible(FrenchFR, "-123.456", ",");
-  testNumberIsReversible(FrenchFR, ".456", ",");
-  testNumberIsReversible(FrenchFR, "-0.456", ",");
+  TestNumberIsReversible(kFrenchFR, "123456789012345678901234567890");
+  TestNumberIsReversible(kFrenchFR, "-123.456", ",");
+  TestNumberIsReversible(kFrenchFR, ".456", ",");
+  TestNumberIsReversible(kFrenchFR, "-0.456", ",");
 
   // Test some of major locales.
-  testNumbers(ArabicEG);
-  testNumbers(German);
-  testNumbers(Spanish);
-  testNumbers(Persian);
-  testNumbers(JapaneseJP);
-  testNumbers(KoreanKR);
-  testNumbers(ChineseCN);
-  testNumbers(ChineseHK);
-  testNumbers(ChineseTW);
+  TestNumbers(kArabicEG);
+  TestNumbers(kGerman);
+  TestNumbers(kSpanish);
+  TestNumbers(kPersian);
+  TestNumbers(kJapaneseJP);
+  TestNumbers(kKoreanKR);
+  TestNumbers(kChineseCN);
+  TestNumbers(kChineseHK);
+  TestNumbers(kChineseTW);
 }
 
 }  // namespace blink

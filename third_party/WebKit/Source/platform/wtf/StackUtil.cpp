@@ -18,7 +18,7 @@ extern "C" void* __libc_stack_end;  // NOLINT
 
 namespace WTF {
 
-size_t getUnderestimatedStackSize() {
+size_t GetUnderestimatedStackSize() {
 // FIXME: ASAN bot uses a fake stack as a thread stack frame,
 // and its size is different from the value which APIs tells us.
 #if defined(ADDRESS_SANITIZER)
@@ -87,14 +87,14 @@ size_t getUnderestimatedStackSize() {
   }
   return pthread_get_stacksize_np(pthread_self());
 #elif OS(WIN) && COMPILER(MSVC)
-  return WTFThreadData::threadStackSize();
+  return WTFThreadData::ThreadStackSize();
 #else
 #error "Stack frame size estimation not supported on this platform."
   return 0;
 #endif
 }
 
-void* getStackStart() {
+void* GetStackStart() {
 #if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
   pthread_attr_t attr;
   int error;
@@ -143,38 +143,38 @@ void* getStackStart() {
 
 namespace internal {
 
-uintptr_t s_mainThreadStackStart = 0;
-uintptr_t s_mainThreadUnderestimatedStackSize = 0;
+uintptr_t g_main_thread_stack_start = 0;
+uintptr_t g_main_thread_underestimated_stack_size = 0;
 
-void initializeMainThreadStackEstimate() {
+void InitializeMainThreadStackEstimate() {
   // getStackStart is exclusive, not inclusive (i.e. it points past the last
   // page of the stack in linear order). So, to ensure an inclusive comparison,
   // subtract here and below.
-  s_mainThreadStackStart =
-      reinterpret_cast<uintptr_t>(getStackStart()) - sizeof(void*);
+  g_main_thread_stack_start =
+      reinterpret_cast<uintptr_t>(GetStackStart()) - sizeof(void*);
 
-  size_t underestimatedStackSize = getUnderestimatedStackSize();
-  if (underestimatedStackSize > sizeof(void*)) {
-    underestimatedStackSize = underestimatedStackSize - sizeof(void*);
+  size_t underestimated_stack_size = GetUnderestimatedStackSize();
+  if (underestimated_stack_size > sizeof(void*)) {
+    underestimated_stack_size = underestimated_stack_size - sizeof(void*);
   }
-  s_mainThreadUnderestimatedStackSize = underestimatedStackSize;
+  g_main_thread_underestimated_stack_size = underestimated_stack_size;
 }
 
 #if OS(WIN) && COMPILER(MSVC)
-size_t threadStackSize() {
+size_t ThreadStackSize() {
   // Notice that we cannot use the TIB's StackLimit for the stack end, as i
   // tracks the end of the committed range. We're after the end of the reserved
   // stack area (most of which will be uncommitted, most times.)
-  MEMORY_BASIC_INFORMATION stackInfo;
-  memset(&stackInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
-  size_t resultSize =
-      VirtualQuery(&stackInfo, &stackInfo, sizeof(MEMORY_BASIC_INFORMATION));
-  DCHECK_GE(resultSize, sizeof(MEMORY_BASIC_INFORMATION));
-  uint8_t* stackEnd = reinterpret_cast<uint8_t*>(stackInfo.AllocationBase);
+  MEMORY_BASIC_INFORMATION stack_info;
+  memset(&stack_info, 0, sizeof(MEMORY_BASIC_INFORMATION));
+  size_t result_size =
+      VirtualQuery(&stack_info, &stack_info, sizeof(MEMORY_BASIC_INFORMATION));
+  DCHECK_GE(result_size, sizeof(MEMORY_BASIC_INFORMATION));
+  uint8_t* stack_end = reinterpret_cast<uint8_t*>(stack_info.AllocationBase);
 
-  uint8_t* stackStart = reinterpret_cast<uint8_t*>(WTF::getStackStart());
-  RELEASE_ASSERT(stackStart && stackStart > stackEnd);
-  size_t s_threadStackSize = static_cast<size_t>(stackStart - stackEnd);
+  uint8_t* stack_start = reinterpret_cast<uint8_t*>(WTF::GetStackStart());
+  RELEASE_ASSERT(stack_start && stack_start > stack_end);
+  size_t thread_stack_size = static_cast<size_t>(stack_start - stack_end);
   // When the third last page of the reserved stack is accessed as a
   // guard page, the second last page will be committed (along with removing
   // the guard bit on the third last) _and_ a stack overflow exception
@@ -186,9 +186,9 @@ size_t threadStackSize() {
   //
   // http://blogs.msdn.com/b/satyem/archive/2012/08/13/thread-s-stack-memory-management.aspx
   // explains the details.
-  RELEASE_ASSERT(s_threadStackSize > 4 * 0x1000);
-  s_threadStackSize -= 4 * 0x1000;
-  return s_threadStackSize;
+  RELEASE_ASSERT(thread_stack_size > 4 * 0x1000);
+  thread_stack_size -= 4 * 0x1000;
+  return thread_stack_size;
 }
 #endif
 

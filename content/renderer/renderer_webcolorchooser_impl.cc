@@ -36,12 +36,12 @@ bool RendererWebColorChooserImpl::OnMessageReceived(
   return handled;
 }
 
-void RendererWebColorChooserImpl::setSelectedColor(blink::WebColor color) {
+void RendererWebColorChooserImpl::SetSelectedColor(blink::WebColor color) {
   Send(new FrameHostMsg_SetSelectedColorInColorChooser(
       routing_id(), identifier_, static_cast<SkColor>(color)));
 }
 
-void RendererWebColorChooserImpl::endChooser() {
+void RendererWebColorChooserImpl::EndChooser() {
   Send(new FrameHostMsg_EndColorChooser(routing_id(), identifier_));
 }
 
@@ -58,13 +58,13 @@ void RendererWebColorChooserImpl::OnDidChooseColorResponse(int color_chooser_id,
                                                            SkColor color) {
   DCHECK(identifier_ == color_chooser_id);
 
-  client_->didChooseColor(static_cast<blink::WebColor>(color));
+  client_->DidChooseColor(static_cast<blink::WebColor>(color));
 }
 
 void RendererWebColorChooserImpl::OnDidEndColorChooser(int color_chooser_id) {
   if (identifier_ != color_chooser_id)
     return;
-  client_->didEndChooser();
+  client_->DidEndChooser();
 }
 
 }  // namespace content

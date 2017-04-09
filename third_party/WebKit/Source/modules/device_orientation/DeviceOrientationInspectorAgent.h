@@ -30,13 +30,13 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
   protocol::Response clearDeviceOrientationOverride() override;
 
   protocol::Response disable() override;
-  void restore() override;
-  void didCommitLoadForLocalFrame(LocalFrame*) override;
+  void Restore() override;
+  void DidCommitLoadForLocalFrame(LocalFrame*) override;
 
  private:
-  DeviceOrientationController* controller();
+  DeviceOrientationController* Controller();
 
-  Member<InspectedFrames> m_inspectedFrames;
+  Member<InspectedFrames> inspected_frames_;
 };
 
 }  // namespace blink

@@ -13,9 +13,9 @@ namespace scheduler {
 // TODO(scheduler-dev): Remove conversions when Blink starts using
 // base::TimeTicks instead of doubles for time.
 static inline base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
-    double monotonicTimeInSeconds) {
+    double monotonic_time_in_seconds) {
   return base::TimeTicks() +
-         base::TimeDelta::FromSecondsD(monotonicTimeInSeconds);
+         base::TimeDelta::FromSecondsD(monotonic_time_in_seconds);
 }
 
 }  // namespace scheduler

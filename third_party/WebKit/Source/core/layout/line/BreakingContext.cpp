@@ -26,49 +26,48 @@
 
 namespace blink {
 
-InlineIterator BreakingContext::handleEndOfLine() {
-  if (m_lineBreak == m_resolver.position() &&
-      (!m_lineBreak.getLineLayoutItem() ||
-       !m_lineBreak.getLineLayoutItem().isBR())) {
+InlineIterator BreakingContext::HandleEndOfLine() {
+  if (line_break_ == resolver_.GetPosition() &&
+      (!line_break_.GetLineLayoutItem() ||
+       !line_break_.GetLineLayoutItem().IsBR())) {
     // we just add as much as possible
-    if (m_blockStyle->whiteSpace() == EWhiteSpace::kPre &&
-        !m_current.offset()) {
-      m_lineBreak.moveTo(m_lastObject,
-                         m_lastObject.isText() ? m_lastObject.length() : 0);
-    } else if (m_lineBreak.getLineLayoutItem()) {
+    if (block_style_->WhiteSpace() == EWhiteSpace::kPre && !current_.Offset()) {
+      line_break_.MoveTo(last_object_,
+                         last_object_.IsText() ? last_object_.length() : 0);
+    } else if (line_break_.GetLineLayoutItem()) {
       // Don't ever break in the middle of a word if we can help it.
       // There's no room at all. We just have to be on this line,
       // even though we'll spill out.
-      m_lineBreak.moveTo(m_current.getLineLayoutItem(), m_current.offset());
+      line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset());
     }
   }
 
   // FIXME Bug 100049: We do not need to consume input in a multi-segment line
   // unless no segment will.
-  if (m_lineBreak == m_resolver.position())
-    m_lineBreak.increment();
+  if (line_break_ == resolver_.GetPosition())
+    line_break_.Increment();
 
   // Sanity check our midpoints.
-  m_lineMidpointState.checkMidpoints(m_lineBreak);
+  line_midpoint_state_.CheckMidpoints(line_break_);
 
-  m_trailingObjects.updateMidpointsForTrailingObjects(
-      m_lineMidpointState, m_lineBreak, TrailingObjects::CollapseFirstSpace);
+  trailing_objects_.UpdateMidpointsForTrailingObjects(
+      line_midpoint_state_, line_break_, TrailingObjects::kCollapseFirstSpace);
 
   // We might have made lineBreak an iterator that points past the end
   // of the object. Do this adjustment to make it point to the start
   // of the next object instead to avoid confusing the rest of the
   // code.
-  if (m_lineBreak.offset()) {
+  if (line_break_.Offset()) {
     // This loop enforces the invariant that line breaks should never point
     // at an empty inline. See http://crbug.com/305904.
     do {
-      m_lineBreak.setOffset(m_lineBreak.offset() - 1);
-      m_lineBreak.increment();
-    } while (!m_lineBreak.atEnd() &&
-             isEmptyInline(m_lineBreak.getLineLayoutItem()));
+      line_break_.SetOffset(line_break_.Offset() - 1);
+      line_break_.Increment();
+    } while (!line_break_.AtEnd() &&
+             IsEmptyInline(line_break_.GetLineLayoutItem()));
   }
 
-  return m_lineBreak;
+  return line_break_;
 }
 
 }  // namespace blink

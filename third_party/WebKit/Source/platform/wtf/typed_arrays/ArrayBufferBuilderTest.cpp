@@ -38,188 +38,188 @@
 namespace WTF {
 
 TEST(ArrayBufferBuilderTest, Constructor) {
-  ArrayBufferBuilder zeroBuilder(0);
-  EXPECT_EQ(0u, zeroBuilder.byteLength());
-  EXPECT_EQ(0u, zeroBuilder.capacity());
+  ArrayBufferBuilder zero_builder(0);
+  EXPECT_EQ(0u, zero_builder.ByteLength());
+  EXPECT_EQ(0u, zero_builder.Capacity());
 
-  ArrayBufferBuilder smallBuilder(1024);
-  EXPECT_EQ(0u, zeroBuilder.byteLength());
-  EXPECT_EQ(1024u, smallBuilder.capacity());
+  ArrayBufferBuilder small_builder(1024);
+  EXPECT_EQ(0u, zero_builder.ByteLength());
+  EXPECT_EQ(1024u, small_builder.Capacity());
 
-  ArrayBufferBuilder bigBuilder(2048);
-  EXPECT_EQ(0u, zeroBuilder.byteLength());
-  EXPECT_EQ(2048u, bigBuilder.capacity());
+  ArrayBufferBuilder big_builder(2048);
+  EXPECT_EQ(0u, zero_builder.ByteLength());
+  EXPECT_EQ(2048u, big_builder.Capacity());
 }
 
 TEST(ArrayBufferBuilderTest, Append) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
-  ArrayBufferBuilder builder(2 * dataSize);
+  ArrayBufferBuilder builder(2 * data_size);
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(dataSize * 2, builder.capacity());
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(data_size * 2, builder.Capacity());
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_EQ(dataSize * 2, builder.byteLength());
-  EXPECT_EQ(dataSize * 2, builder.capacity());
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_EQ(data_size * 2, builder.ByteLength());
+  EXPECT_EQ(data_size * 2, builder.Capacity());
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_EQ(dataSize * 3, builder.byteLength());
-  EXPECT_GE(builder.capacity(), dataSize * 3);
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_EQ(data_size * 3, builder.ByteLength());
+  EXPECT_GE(builder.Capacity(), data_size * 3);
 }
 
 TEST(ArrayBufferBuilderTest, AppendRepeatedly) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
   ArrayBufferBuilder builder(37);  // Some number coprime with dataSize.
 
   for (size_t i = 1; i < 1000U; ++i) {
-    EXPECT_EQ(dataSize, builder.append(data, dataSize));
-    EXPECT_EQ(dataSize * i, builder.byteLength());
-    EXPECT_GE(builder.capacity(), dataSize * i);
+    EXPECT_EQ(data_size, builder.Append(kData, data_size));
+    EXPECT_EQ(data_size * i, builder.ByteLength());
+    EXPECT_GE(builder.Capacity(), data_size * i);
   }
 }
 
 TEST(ArrayBufferBuilderTest, DefaultConstructorAndAppendRepeatedly) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
   ArrayBufferBuilder builder;
 
   for (size_t i = 1; i < 4000U; ++i) {
-    EXPECT_EQ(dataSize, builder.append(data, dataSize));
-    EXPECT_EQ(dataSize * i, builder.byteLength());
-    EXPECT_GE(builder.capacity(), dataSize * i);
+    EXPECT_EQ(data_size, builder.Append(kData, data_size));
+    EXPECT_EQ(data_size * i, builder.ByteLength());
+    EXPECT_GE(builder.Capacity(), data_size * i);
   }
 }
 
 TEST(ArrayBufferBuilderTest, AppendFixedCapacity) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
   ArrayBufferBuilder builder(15);
-  builder.setVariableCapacity(false);
+  builder.SetVariableCapacity(false);
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(15u, builder.capacity());
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(15u, builder.Capacity());
 
-  EXPECT_EQ(5u, builder.append(data, dataSize));
-  EXPECT_EQ(15u, builder.byteLength());
-  EXPECT_EQ(15u, builder.capacity());
+  EXPECT_EQ(5u, builder.Append(kData, data_size));
+  EXPECT_EQ(15u, builder.ByteLength());
+  EXPECT_EQ(15u, builder.Capacity());
 
-  EXPECT_EQ(0u, builder.append(data, dataSize));
-  EXPECT_EQ(15u, builder.byteLength());
-  EXPECT_EQ(15u, builder.capacity());
+  EXPECT_EQ(0u, builder.Append(kData, data_size));
+  EXPECT_EQ(15u, builder.ByteLength());
+  EXPECT_EQ(15u, builder.Capacity());
 }
 
 TEST(ArrayBufferBuilderTest, ToArrayBuffer) {
-  const char data1[] = "HelloWorld";
-  size_t data1Size = sizeof(data1) - 1;
+  const char kData1[] = "HelloWorld";
+  size_t data1_size = sizeof(kData1) - 1;
 
-  const char data2[] = "GoodbyeWorld";
-  size_t data2Size = sizeof(data2) - 1;
+  const char kData2[] = "GoodbyeWorld";
+  size_t data2_size = sizeof(kData2) - 1;
 
   ArrayBufferBuilder builder(1024);
-  builder.append(data1, data1Size);
-  builder.append(data2, data2Size);
+  builder.Append(kData1, data1_size);
+  builder.Append(kData2, data2_size);
 
-  const char expected[] = "HelloWorldGoodbyeWorld";
-  size_t expectedSize = sizeof(expected) - 1;
+  const char kExpected[] = "HelloWorldGoodbyeWorld";
+  size_t expected_size = sizeof(kExpected) - 1;
 
-  RefPtr<ArrayBuffer> result = builder.toArrayBuffer();
-  ASSERT_EQ(data1Size + data2Size, result->byteLength());
-  ASSERT_EQ(expectedSize, result->byteLength());
-  EXPECT_EQ(0, memcmp(expected, result->data(), expectedSize));
+  RefPtr<ArrayBuffer> result = builder.ToArrayBuffer();
+  ASSERT_EQ(data1_size + data2_size, result->ByteLength());
+  ASSERT_EQ(expected_size, result->ByteLength());
+  EXPECT_EQ(0, memcmp(kExpected, result->Data(), expected_size));
 }
 
 TEST(ArrayBufferBuilderTest, ToArrayBufferSameAddressIfExactCapacity) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
-  ArrayBufferBuilder builder(dataSize);
-  builder.append(data, dataSize);
+  ArrayBufferBuilder builder(data_size);
+  builder.Append(kData, data_size);
 
-  RefPtr<ArrayBuffer> result1 = builder.toArrayBuffer();
-  RefPtr<ArrayBuffer> result2 = builder.toArrayBuffer();
-  EXPECT_EQ(result1.get(), result2.get());
+  RefPtr<ArrayBuffer> result1 = builder.ToArrayBuffer();
+  RefPtr<ArrayBuffer> result2 = builder.ToArrayBuffer();
+  EXPECT_EQ(result1.Get(), result2.Get());
 }
 
 TEST(ArrayBufferBuilderTest, ToString) {
-  const char data1[] = "HelloWorld";
-  size_t data1Size = sizeof(data1) - 1;
+  const char kData1[] = "HelloWorld";
+  size_t data1_size = sizeof(kData1) - 1;
 
-  const char data2[] = "GoodbyeWorld";
-  size_t data2Size = sizeof(data2) - 1;
+  const char kData2[] = "GoodbyeWorld";
+  size_t data2_size = sizeof(kData2) - 1;
 
   ArrayBufferBuilder builder(1024);
-  builder.append(data1, data1Size);
-  builder.append(data2, data2Size);
+  builder.Append(kData1, data1_size);
+  builder.Append(kData2, data2_size);
 
-  const char expected[] = "HelloWorldGoodbyeWorld";
-  size_t expectedSize = sizeof(expected) - 1;
+  const char kExpected[] = "HelloWorldGoodbyeWorld";
+  size_t expected_size = sizeof(kExpected) - 1;
 
-  String result = builder.toString();
-  EXPECT_EQ(expectedSize, result.length());
+  String result = builder.ToString();
+  EXPECT_EQ(expected_size, result.length());
   for (unsigned i = 0; i < result.length(); ++i)
-    EXPECT_EQ(expected[i], result[i]);
+    EXPECT_EQ(kExpected[i], result[i]);
 }
 
 TEST(ArrayBufferBuilderTest, ShrinkToFitNoAppend) {
   ArrayBufferBuilder builder(1024);
-  EXPECT_EQ(1024u, builder.capacity());
-  builder.shrinkToFit();
-  EXPECT_EQ(0u, builder.byteLength());
-  EXPECT_EQ(0u, builder.capacity());
+  EXPECT_EQ(1024u, builder.Capacity());
+  builder.ShrinkToFit();
+  EXPECT_EQ(0u, builder.ByteLength());
+  EXPECT_EQ(0u, builder.Capacity());
 }
 
 TEST(ArrayBufferBuilderTest, ShrinkToFit) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
   ArrayBufferBuilder builder(32);
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(32u, builder.capacity());
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(32u, builder.Capacity());
 
-  builder.shrinkToFit();
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(dataSize, builder.capacity());
+  builder.ShrinkToFit();
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(data_size, builder.Capacity());
 }
 
 TEST(ArrayBufferBuilderTest, ShrinkToFitFullyUsed) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
-  ArrayBufferBuilder builder(dataSize);
-  const void* internalAddress = builder.data();
+  ArrayBufferBuilder builder(data_size);
+  const void* internal_address = builder.Data();
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(dataSize, builder.capacity());
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(data_size, builder.Capacity());
 
-  builder.shrinkToFit();
+  builder.ShrinkToFit();
   // Reallocation should not happen.
-  EXPECT_EQ(internalAddress, builder.data());
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(dataSize, builder.capacity());
+  EXPECT_EQ(internal_address, builder.Data());
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(data_size, builder.Capacity());
 }
 
 TEST(ArrayBufferBuilderTest, ShrinkToFitAfterGrowth) {
-  const char data[] = "HelloWorld";
-  size_t dataSize = sizeof(data) - 1;
+  const char kData[] = "HelloWorld";
+  size_t data_size = sizeof(kData) - 1;
 
   ArrayBufferBuilder builder(5);
 
-  EXPECT_EQ(dataSize, builder.append(data, dataSize));
-  EXPECT_GE(builder.capacity(), dataSize);
-  builder.shrinkToFit();
-  EXPECT_EQ(dataSize, builder.byteLength());
-  EXPECT_EQ(dataSize, builder.capacity());
+  EXPECT_EQ(data_size, builder.Append(kData, data_size));
+  EXPECT_GE(builder.Capacity(), data_size);
+  builder.ShrinkToFit();
+  EXPECT_EQ(data_size, builder.ByteLength());
+  EXPECT_EQ(data_size, builder.Capacity());
 }
 
 }  // namespace WTF

@@ -43,122 +43,117 @@ class PLATFORM_EXPORT FloatBox {
   DISALLOW_NEW();
 
  public:
-  FloatBox() : m_x(0), m_y(0), m_z(0), m_width(0), m_height(0), m_depth(0) {}
+  FloatBox() : x_(0), y_(0), z_(0), width_(0), height_(0), depth_(0) {}
 
   FloatBox(float x, float y, float z, float width, float height, float depth)
-      : m_x(x),
-        m_y(y),
-        m_z(z),
-        m_width(width),
-        m_height(height),
-        m_depth(depth) {}
+      : x_(x), y_(y), z_(z), width_(width), height_(height), depth_(depth) {}
 
   FloatBox(const FloatBox& box)
-      : m_x(box.x()),
-        m_y(box.y()),
-        m_z(box.z()),
-        m_width(box.width()),
-        m_height(box.height()),
-        m_depth(box.depth()) {}
+      : x_(box.X()),
+        y_(box.Y()),
+        z_(box.Z()),
+        width_(box.Width()),
+        height_(box.Height()),
+        depth_(box.Depth()) {}
 
-  void setOrigin(const FloatPoint3D& origin) {
-    m_x = origin.x();
-    m_y = origin.y();
-    m_z = origin.z();
+  void SetOrigin(const FloatPoint3D& origin) {
+    x_ = origin.X();
+    y_ = origin.Y();
+    z_ = origin.Z();
   }
 
-  void setSize(const FloatPoint3D& origin) {
-    ASSERT(origin.x() >= 0);
-    ASSERT(origin.y() >= 0);
-    ASSERT(origin.z() >= 0);
+  void SetSize(const FloatPoint3D& origin) {
+    ASSERT(origin.X() >= 0);
+    ASSERT(origin.Y() >= 0);
+    ASSERT(origin.Z() >= 0);
 
-    m_width = origin.x();
-    m_height = origin.y();
-    m_depth = origin.z();
+    width_ = origin.X();
+    height_ = origin.Y();
+    depth_ = origin.Z();
   }
 
-  void move(const FloatPoint3D& location) {
-    m_x += location.x();
-    m_y += location.y();
-    m_z += location.z();
+  void Move(const FloatPoint3D& location) {
+    x_ += location.X();
+    y_ += location.Y();
+    z_ += location.Z();
   }
 
-  void flatten() {
-    m_z = 0;
-    m_depth = 0;
+  void Flatten() {
+    z_ = 0;
+    depth_ = 0;
   }
 
-  void expandTo(const FloatPoint3D& low, const FloatPoint3D& high) {
-    ASSERT(low.x() <= high.x());
-    ASSERT(low.y() <= high.y());
-    ASSERT(low.z() <= high.z());
+  void ExpandTo(const FloatPoint3D& low, const FloatPoint3D& high) {
+    ASSERT(low.X() <= high.X());
+    ASSERT(low.Y() <= high.Y());
+    ASSERT(low.Z() <= high.Z());
 
-    float minX = std::min(m_x, low.x());
-    float minY = std::min(m_y, low.y());
-    float minZ = std::min(m_z, low.z());
+    float min_x = std::min(x_, low.X());
+    float min_y = std::min(y_, low.Y());
+    float min_z = std::min(z_, low.Z());
 
-    float maxX = std::max(right(), high.x());
-    float maxY = std::max(bottom(), high.y());
-    float maxZ = std::max(front(), high.z());
+    float max_x = std::max(Right(), high.X());
+    float max_y = std::max(Bottom(), high.Y());
+    float max_z = std::max(front(), high.Z());
 
-    m_x = minX;
-    m_y = minY;
-    m_z = minZ;
+    x_ = min_x;
+    y_ = min_y;
+    z_ = min_z;
 
-    m_width = maxX - minX;
-    m_height = maxY - minY;
-    m_depth = maxZ - minZ;
+    width_ = max_x - min_x;
+    height_ = max_y - min_y;
+    depth_ = max_z - min_z;
   }
 
-  void expandTo(const FloatPoint3D& point) { expandTo(point, point); }
+  void ExpandTo(const FloatPoint3D& point) { ExpandTo(point, point); }
 
-  void expandTo(const FloatBox& box) {
-    expandTo(FloatPoint3D(box.x(), box.y(), box.z()),
-             FloatPoint3D(box.right(), box.bottom(), box.front()));
+  void ExpandTo(const FloatBox& box) {
+    ExpandTo(FloatPoint3D(box.X(), box.Y(), box.Z()),
+             FloatPoint3D(box.Right(), box.Bottom(), box.front()));
   }
 
-  void unionBounds(const FloatBox& box) {
-    if (box.isEmpty())
+  void UnionBounds(const FloatBox& box) {
+    if (box.IsEmpty())
       return;
 
-    if (isEmpty()) {
+    if (IsEmpty()) {
       *this = box;
       return;
     }
 
-    expandTo(box);
+    ExpandTo(box);
   }
 
-  bool isEmpty() const {
-    return (m_width <= 0 && m_height <= 0) || (m_width <= 0 && m_depth <= 0) ||
-           (m_height <= 0 && m_depth <= 0);
+  bool IsEmpty() const {
+    return (width_ <= 0 && height_ <= 0) || (width_ <= 0 && depth_ <= 0) ||
+           (height_ <= 0 && depth_ <= 0);
   }
 
-  float right() const { return m_x + m_width; }
-  float bottom() const { return m_y + m_height; }
-  float front() const { return m_z + m_depth; }
-  float x() const { return m_x; }
-  float y() const { return m_y; }
-  float z() const { return m_z; }
-  float width() const { return m_width; }
-  float height() const { return m_height; }
-  float depth() const { return m_depth; }
+  float Right() const { return x_ + width_; }
+  float Bottom() const { return y_ + height_; }
+  float front() const { return z_ + depth_; }
+  float X() const { return x_; }
+  float Y() const { return y_; }
+  float Z() const { return z_; }
+  float Width() const { return width_; }
+  float Height() const { return height_; }
+  float Depth() const { return depth_; }
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  float m_x;
-  float m_y;
-  float m_z;
-  float m_width;
-  float m_height;
-  float m_depth;
+  float x_;
+  float y_;
+  float z_;
+  float width_;
+  float height_;
+  float depth_;
 };
 
 inline bool operator==(const FloatBox& a, const FloatBox& b) {
-  return a.x() == b.x() && a.y() == b.y() && a.z() == b.z() &&
-         a.width() == b.width() && a.height() == b.height() &&
-         a.depth() == b.depth();
+  return a.X() == b.X() && a.Y() == b.Y() && a.Z() == b.Z() &&
+         a.Width() == b.Width() && a.Height() == b.Height() &&
+         a.Depth() == b.Depth();
 }
 
 inline bool operator!=(const FloatBox& a, const FloatBox& b) {

@@ -34,7 +34,7 @@
 
 namespace WTF {
 
-PassRefPtr<StringImpl> AtomicString::add(CFStringRef string) {
+PassRefPtr<StringImpl> AtomicString::Add(CFStringRef string) {
   if (!string)
     return nullptr;
 
@@ -42,16 +42,16 @@ PassRefPtr<StringImpl> AtomicString::add(CFStringRef string) {
 
   if (const LChar* ptr = reinterpret_cast<const LChar*>(
           CFStringGetCStringPtr(string, kCFStringEncodingISOLatin1)))
-    return AtomicStringTable::instance().add(ptr, length);
+    return AtomicStringTable::Instance().Add(ptr, length);
 
   if (const UniChar* ptr = CFStringGetCharactersPtr(string))
-    return AtomicStringTable::instance().add(
+    return AtomicStringTable::Instance().Add(
         reinterpret_cast<const UChar*>(ptr), length);
 
-  Vector<UniChar, 1024> ucharBuffer(length);
-  CFStringGetCharacters(string, CFRangeMake(0, length), ucharBuffer.data());
-  return AtomicStringTable::instance().add(
-      reinterpret_cast<const UChar*>(ucharBuffer.data()), length);
+  Vector<UniChar, 1024> uchar_buffer(length);
+  CFStringGetCharacters(string, CFRangeMake(0, length), uchar_buffer.Data());
+  return AtomicStringTable::Instance().Add(
+      reinterpret_cast<const UChar*>(uchar_buffer.Data()), length);
 }
 
 }  // namespace WTF

@@ -17,27 +17,27 @@ class CORE_EXPORT InputDeviceCapabilities final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static InputDeviceCapabilities* create(bool firesTouchEvents) {
-    return new InputDeviceCapabilities(firesTouchEvents);
+  static InputDeviceCapabilities* Create(bool fires_touch_events) {
+    return new InputDeviceCapabilities(fires_touch_events);
   }
 
-  static InputDeviceCapabilities* create(
+  static InputDeviceCapabilities* Create(
       const InputDeviceCapabilitiesInit& initializer) {
     return new InputDeviceCapabilities(initializer);
   }
 
-  bool firesTouchEvents() const { return m_firesTouchEvents; }
+  bool firesTouchEvents() const { return fires_touch_events_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  InputDeviceCapabilities(bool firesTouchEvents);
+  InputDeviceCapabilities(bool fires_touch_events);
   InputDeviceCapabilities(const InputDeviceCapabilitiesInit&);
 
   // Whether this device dispatches touch events. This mainly lets developers
   // avoid handling both touch and mouse events dispatched for a single user
   // action.
-  bool m_firesTouchEvents;
+  bool fires_touch_events_;
 };
 
 // Grouping constant-valued InputDeviceCapabilities objects together,
@@ -52,16 +52,16 @@ class InputDeviceCapabilitiesConstants final
  public:
   // Returns an InputDeviceCapabilities which has
   // |firesTouchEvents| set to value of |firesTouch|.
-  InputDeviceCapabilities* firesTouchEvents(bool firesTouch);
+  InputDeviceCapabilities* FiresTouchEvents(bool fires_touch);
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_firesTouchEvents);
-    visitor->trace(m_doesntFireTouchEvents);
+    visitor->Trace(fires_touch_events_);
+    visitor->Trace(doesnt_fire_touch_events_);
   }
 
  private:
-  Member<InputDeviceCapabilities> m_firesTouchEvents;
-  Member<InputDeviceCapabilities> m_doesntFireTouchEvents;
+  Member<InputDeviceCapabilities> fires_touch_events_;
+  Member<InputDeviceCapabilities> doesnt_fire_touch_events_;
 };
 
 }  // namespace blink

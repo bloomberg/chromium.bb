@@ -36,76 +36,77 @@ namespace blink {
 
 class SecurityOrigin;
 
-PublicURLManager* PublicURLManager::create(ExecutionContext* context) {
+PublicURLManager* PublicURLManager::Create(ExecutionContext* context) {
   return new PublicURLManager(context);
 }
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)
-    : ContextLifecycleObserver(context), m_isStopped(false) {}
+    : ContextLifecycleObserver(context), is_stopped_(false) {}
 
-String PublicURLManager::registerURL(ExecutionContext* context,
+String PublicURLManager::RegisterURL(ExecutionContext* context,
                                      URLRegistrable* registrable,
                                      const String& uuid) {
-  SecurityOrigin* origin = context->getSecurityOrigin();
-  const KURL& url = BlobURL::createPublicURL(origin);
-  DCHECK(!url.isEmpty());
-  const String& urlString = url.getString();
+  SecurityOrigin* origin = context->GetSecurityOrigin();
+  const KURL& url = BlobURL::CreatePublicURL(origin);
+  DCHECK(!url.IsEmpty());
+  const String& url_string = url.GetString();
 
-  if (!m_isStopped) {
+  if (!is_stopped_) {
     RegistryURLMap::ValueType* found =
-        m_registryToURL.insert(&registrable->registry(), URLMap()).storedValue;
-    found->key->registerURL(origin, url, registrable);
-    found->value.insert(urlString, uuid);
+        registry_to_url_.insert(&registrable->Registry(), URLMap())
+            .stored_value;
+    found->key->RegisterURL(origin, url, registrable);
+    found->value.insert(url_string, uuid);
   }
 
-  return urlString;
+  return url_string;
 }
 
-void PublicURLManager::revoke(const KURL& url) {
-  for (auto& registryUrl : m_registryToURL) {
-    if (registryUrl.value.contains(url.getString())) {
-      registryUrl.key->unregisterURL(url);
-      registryUrl.value.erase(url.getString());
+void PublicURLManager::Revoke(const KURL& url) {
+  for (auto& registry_url : registry_to_url_) {
+    if (registry_url.value.Contains(url.GetString())) {
+      registry_url.key->UnregisterURL(url);
+      registry_url.value.erase(url.GetString());
       break;
     }
   }
 }
 
-void PublicURLManager::revoke(const String& uuid) {
+void PublicURLManager::Revoke(const String& uuid) {
   // A linear scan; revoking by UUID is assumed rare.
-  Vector<String> urlsToRemove;
-  for (auto& registryUrl : m_registryToURL) {
-    URLRegistry* registry = registryUrl.key;
-    URLMap& registeredURLs = registryUrl.value;
-    for (auto& registeredUrl : registeredURLs) {
-      if (uuid == registeredUrl.value) {
-        KURL url(ParsedURLString, registeredUrl.key);
-        getExecutionContext()->removeURLFromMemoryCache(url);
-        registry->unregisterURL(url);
-        urlsToRemove.push_back(registeredUrl.key);
+  Vector<String> urls_to_remove;
+  for (auto& registry_url : registry_to_url_) {
+    URLRegistry* registry = registry_url.key;
+    URLMap& registered_ur_ls = registry_url.value;
+    for (auto& registered_url : registered_ur_ls) {
+      if (uuid == registered_url.value) {
+        KURL url(kParsedURLString, registered_url.key);
+        GetExecutionContext()->RemoveURLFromMemoryCache(url);
+        registry->UnregisterURL(url);
+        urls_to_remove.push_back(registered_url.key);
       }
     }
-    for (const auto& url : urlsToRemove)
-      registeredURLs.erase(url);
-    urlsToRemove.clear();
+    for (const auto& url : urls_to_remove)
+      registered_ur_ls.erase(url);
+    urls_to_remove.Clear();
   }
 }
 
-void PublicURLManager::contextDestroyed(ExecutionContext*) {
-  if (m_isStopped)
+void PublicURLManager::ContextDestroyed(ExecutionContext*) {
+  if (is_stopped_)
     return;
 
-  m_isStopped = true;
-  for (auto& registryUrl : m_registryToURL) {
-    for (auto& url : registryUrl.value)
-      registryUrl.key->unregisterURL(KURL(ParsedURLString, url.key));
+  is_stopped_ = true;
+  for (auto& registry_url : registry_to_url_) {
+    for (auto& url : registry_url.value)
+      registry_url.key->UnregisterURL(KURL(kParsedURLString, url.key));
   }
 
-  m_registryToURL.clear();
+  registry_to_url_.Clear();
 }
 
 DEFINE_TRACE(PublicURLManager) {
-  ContextLifecycleObserver::trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

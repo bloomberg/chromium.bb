@@ -14,29 +14,29 @@
 
 namespace blink {
 
-PassRefPtr<StaticBitmapImage> StaticBitmapImage::create(sk_sp<SkImage> image) {
+PassRefPtr<StaticBitmapImage> StaticBitmapImage::Create(sk_sp<SkImage> image) {
   if (!image)
     return nullptr;
   if (image->isTextureBacked())
-    return AcceleratedStaticBitmapImage::createFromSharedContextImage(
+    return AcceleratedStaticBitmapImage::CreateFromSharedContextImage(
         std::move(image));
-  return UnacceleratedStaticBitmapImage::create(std::move(image));
+  return UnacceleratedStaticBitmapImage::Create(std::move(image));
 }
 
-void StaticBitmapImage::drawHelper(PaintCanvas* canvas,
+void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
                                    const PaintFlags& flags,
-                                   const FloatRect& dstRect,
-                                   const FloatRect& srcRect,
-                                   ImageClampingMode clampMode,
+                                   const FloatRect& dst_rect,
+                                   const FloatRect& src_rect,
+                                   ImageClampingMode clamp_mode,
                                    sk_sp<SkImage> image) {
-  FloatRect adjustedSrcRect = srcRect;
-  adjustedSrcRect.intersect(SkRect::Make(image->bounds()));
+  FloatRect adjusted_src_rect = src_rect;
+  adjusted_src_rect.Intersect(SkRect::Make(image->bounds()));
 
-  if (dstRect.isEmpty() || adjustedSrcRect.isEmpty())
+  if (dst_rect.IsEmpty() || adjusted_src_rect.IsEmpty())
     return;  // Nothing to draw.
 
-  canvas->drawImageRect(std::move(image), adjustedSrcRect, dstRect, &flags,
-                        WebCoreClampingModeToSkiaRectConstraint(clampMode));
+  canvas->drawImageRect(std::move(image), adjusted_src_rect, dst_rect, &flags,
+                        WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 }
 
 }  // namespace blink

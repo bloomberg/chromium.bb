@@ -63,36 +63,36 @@ namespace blink {
 
 class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
  public:
-  WebAXSparseAttributeClientAdapter(WebAXSparseAttributeClient& attributeMap)
-      : m_attributeMap(attributeMap) {}
+  WebAXSparseAttributeClientAdapter(WebAXSparseAttributeClient& attribute_map)
+      : attribute_map_(attribute_map) {}
   virtual ~WebAXSparseAttributeClientAdapter() {}
 
  private:
-  WebAXSparseAttributeClient& m_attributeMap;
+  WebAXSparseAttributeClient& attribute_map_;
 
-  void addBoolAttribute(AXBoolAttribute attribute, bool value) override {
-    m_attributeMap.addBoolAttribute(static_cast<WebAXBoolAttribute>(attribute),
+  void AddBoolAttribute(AXBoolAttribute attribute, bool value) override {
+    attribute_map_.AddBoolAttribute(static_cast<WebAXBoolAttribute>(attribute),
                                     value);
   }
 
-  void addStringAttribute(AXStringAttribute attribute,
+  void AddStringAttribute(AXStringAttribute attribute,
                           const String& value) override {
-    m_attributeMap.addStringAttribute(
+    attribute_map_.AddStringAttribute(
         static_cast<WebAXStringAttribute>(attribute), value);
   }
 
-  void addObjectAttribute(AXObjectAttribute attribute,
+  void AddObjectAttribute(AXObjectAttribute attribute,
                           AXObject& value) override {
-    m_attributeMap.addObjectAttribute(
+    attribute_map_.AddObjectAttribute(
         static_cast<WebAXObjectAttribute>(attribute), WebAXObject(&value));
   }
 
-  void addObjectVectorAttribute(AXObjectVectorAttribute attribute,
+  void AddObjectVectorAttribute(AXObjectVectorAttribute attribute,
                                 HeapVector<Member<AXObject>>& value) override {
     WebVector<WebAXObject> result(value.size());
     for (size_t i = 0; i < value.size(); i++)
       result[i] = WebAXObject(value[i]);
-    m_attributeMap.addObjectVectorAttribute(
+    attribute_map_.AddObjectVectorAttribute(
         static_cast<WebAXObjectVectorAttribute>(attribute), result);
   }
 };
@@ -100,505 +100,505 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
 #if DCHECK_IS_ON()
 // It's not safe to call some WebAXObject APIs if a layout is pending.
 // Clients should call updateLayoutAndCheckValidity first.
-static bool isLayoutClean(Document* document) {
-  if (!document || !document->view())
+static bool IsLayoutClean(Document* document) {
+  if (!document || !document->View())
     return false;
-  return document->lifecycle().state() >= DocumentLifecycle::LayoutClean ||
-         ((document->lifecycle().state() == DocumentLifecycle::StyleClean ||
-           document->lifecycle().state() ==
-               DocumentLifecycle::LayoutSubtreeChangeClean) &&
-          !document->view()->needsLayout());
+  return document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean ||
+         ((document->Lifecycle().GetState() == DocumentLifecycle::kStyleClean ||
+           document->Lifecycle().GetState() ==
+               DocumentLifecycle::kLayoutSubtreeChangeClean) &&
+          !document->View()->NeedsLayout());
 }
 #endif
 
-WebScopedAXContext::WebScopedAXContext(WebDocument& rootDocument)
-    : m_private(ScopedAXObjectCache::create(*rootDocument.unwrap<Document>())) {
+WebScopedAXContext::WebScopedAXContext(WebDocument& root_document)
+    : private_(ScopedAXObjectCache::Create(*root_document.Unwrap<Document>())) {
 }
 
 WebScopedAXContext::~WebScopedAXContext() {
-  m_private.reset(0);
+  private_.reset(0);
 }
 
-WebAXObject WebScopedAXContext::root() const {
-  return WebAXObject(static_cast<AXObjectCacheImpl*>(m_private->get())->root());
+WebAXObject WebScopedAXContext::Root() const {
+  return WebAXObject(static_cast<AXObjectCacheImpl*>(private_->Get())->Root());
 }
 
-void WebAXObject::reset() {
-  m_private.reset();
+void WebAXObject::Reset() {
+  private_.Reset();
 }
 
-void WebAXObject::assign(const WebAXObject& other) {
-  m_private = other.m_private;
+void WebAXObject::Assign(const WebAXObject& other) {
+  private_ = other.private_;
 }
 
-bool WebAXObject::equals(const WebAXObject& n) const {
-  return m_private.get() == n.m_private.get();
+bool WebAXObject::Equals(const WebAXObject& n) const {
+  return private_.Get() == n.private_.Get();
 }
 
-bool WebAXObject::isDetached() const {
-  if (m_private.isNull())
+bool WebAXObject::IsDetached() const {
+  if (private_.IsNull())
     return true;
 
-  return m_private->isDetached();
+  return private_->IsDetached();
 }
 
-int WebAXObject::axID() const {
-  if (isDetached())
+int WebAXObject::AxID() const {
+  if (IsDetached())
     return -1;
 
-  return m_private->axObjectID();
+  return private_->AxObjectID();
 }
 
-int WebAXObject::generateAXID() const {
-  if (isDetached())
+int WebAXObject::GenerateAXID() const {
+  if (IsDetached())
     return -1;
 
-  return m_private->axObjectCache().generateAXID();
+  return private_->AxObjectCache().GenerateAXID();
 }
 
-bool WebAXObject::updateLayoutAndCheckValidity() {
-  if (!isDetached()) {
-    Document* document = m_private->getDocument();
-    if (!document || !document->view())
+bool WebAXObject::UpdateLayoutAndCheckValidity() {
+  if (!IsDetached()) {
+    Document* document = private_->GetDocument();
+    if (!document || !document->View())
       return false;
-    document->view()->updateLifecycleToCompositingCleanPlusScrolling();
+    document->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   }
 
   // Doing a layout can cause this object to be invalid, so check again.
-  return !isDetached();
+  return !IsDetached();
 }
 
-WebAXSupportedAction WebAXObject::action() const {
-  if (isDetached())
-    return WebAXSupportedAction::None;
+WebAXSupportedAction WebAXObject::Action() const {
+  if (IsDetached())
+    return WebAXSupportedAction::kNone;
 
-  return static_cast<WebAXSupportedAction>(m_private->action());
+  return static_cast<WebAXSupportedAction>(private_->Action());
 }
 
-bool WebAXObject::canDecrement() const {
-  if (isDetached())
+bool WebAXObject::CanDecrement() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isSlider();
+  return private_->IsSlider();
 }
 
-bool WebAXObject::canIncrement() const {
-  if (isDetached())
+bool WebAXObject::CanIncrement() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isSlider();
+  return private_->IsSlider();
 }
 
-bool WebAXObject::canPress() const {
-  if (isDetached())
+bool WebAXObject::CanPress() const {
+  if (IsDetached())
     return false;
 
-  return m_private->actionElement() || m_private->isButton() ||
-         m_private->isMenuRelated();
+  return private_->ActionElement() || private_->IsButton() ||
+         private_->IsMenuRelated();
 }
 
-bool WebAXObject::canSetFocusAttribute() const {
-  if (isDetached())
+bool WebAXObject::CanSetFocusAttribute() const {
+  if (IsDetached())
     return false;
 
-  return m_private->canSetFocusAttribute();
+  return private_->CanSetFocusAttribute();
 }
 
-bool WebAXObject::canSetValueAttribute() const {
-  if (isDetached())
+bool WebAXObject::CanSetValueAttribute() const {
+  if (IsDetached())
     return false;
 
-  return m_private->canSetValueAttribute();
+  return private_->CanSetValueAttribute();
 }
 
-unsigned WebAXObject::childCount() const {
-  if (isDetached())
+unsigned WebAXObject::ChildCount() const {
+  if (IsDetached())
     return 0;
 
-  return m_private->children().size();
+  return private_->Children().size();
 }
 
-WebAXObject WebAXObject::childAt(unsigned index) const {
-  if (isDetached())
+WebAXObject WebAXObject::ChildAt(unsigned index) const {
+  if (IsDetached())
     return WebAXObject();
 
-  if (m_private->children().size() <= index)
+  if (private_->Children().size() <= index)
     return WebAXObject();
 
-  return WebAXObject(m_private->children()[index]);
+  return WebAXObject(private_->Children()[index]);
 }
 
-WebAXObject WebAXObject::parentObject() const {
-  if (isDetached())
+WebAXObject WebAXObject::ParentObject() const {
+  if (IsDetached())
     return WebAXObject();
 
-  return WebAXObject(m_private->parentObject());
+  return WebAXObject(private_->ParentObject());
 }
 
-void WebAXObject::getSparseAXAttributes(
+void WebAXObject::GetSparseAXAttributes(
     WebAXSparseAttributeClient& client) const {
-  if (isDetached())
+  if (IsDetached())
     return;
 
   WebAXSparseAttributeClientAdapter adapter(client);
-  m_private->getSparseAXAttributes(adapter);
+  private_->GetSparseAXAttributes(adapter);
 }
 
-bool WebAXObject::canSetSelectedAttribute() const {
-  if (isDetached())
+bool WebAXObject::CanSetSelectedAttribute() const {
+  if (IsDetached())
     return false;
 
-  return m_private->canSetSelectedAttribute();
+  return private_->CanSetSelectedAttribute();
 }
 
-bool WebAXObject::isAnchor() const {
-  if (isDetached())
+bool WebAXObject::IsAnchor() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isAnchor();
+  return private_->IsAnchor();
 }
 
-bool WebAXObject::isAriaReadOnly() const {
-  if (isDetached())
+bool WebAXObject::IsAriaReadOnly() const {
+  if (IsDetached())
     return false;
 
-  return equalIgnoringASCIICase(
-      m_private->getAttribute(HTMLNames::aria_readonlyAttr), "true");
+  return EqualIgnoringASCIICase(
+      private_->GetAttribute(HTMLNames::aria_readonlyAttr), "true");
 }
 
-WebString WebAXObject::ariaAutoComplete() const {
-  if (isDetached())
+WebString WebAXObject::AriaAutoComplete() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->ariaAutoComplete();
+  return private_->AriaAutoComplete();
 }
 
-WebAXAriaCurrentState WebAXObject::ariaCurrentState() const {
-  if (isDetached())
-    return WebAXAriaCurrentStateUndefined;
+WebAXAriaCurrentState WebAXObject::AriaCurrentState() const {
+  if (IsDetached())
+    return kWebAXAriaCurrentStateUndefined;
 
-  return static_cast<WebAXAriaCurrentState>(m_private->ariaCurrentState());
+  return static_cast<WebAXAriaCurrentState>(private_->GetAriaCurrentState());
 }
 
-bool WebAXObject::isButtonStateMixed() const {
-  if (isDetached())
+bool WebAXObject::IsButtonStateMixed() const {
+  if (IsDetached())
     return false;
 
-  return m_private->checkboxOrRadioValue() == ButtonStateMixed;
+  return private_->CheckboxOrRadioValue() == kButtonStateMixed;
 }
 
-bool WebAXObject::isChecked() const {
-  if (isDetached())
+bool WebAXObject::IsChecked() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isChecked();
+  return private_->IsChecked();
 }
 
-bool WebAXObject::isClickable() const {
-  if (isDetached())
+bool WebAXObject::IsClickable() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isClickable();
+  return private_->IsClickable();
 }
 
-bool WebAXObject::isCollapsed() const {
-  if (isDetached())
+bool WebAXObject::IsCollapsed() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isCollapsed();
+  return private_->IsCollapsed();
 }
 
-bool WebAXObject::isControl() const {
-  if (isDetached())
+bool WebAXObject::IsControl() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isControl();
+  return private_->IsControl();
 }
 
-bool WebAXObject::isEnabled() const {
-  if (isDetached())
+bool WebAXObject::IsEnabled() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isEnabled();
+  return private_->IsEnabled();
 }
 
-WebAXExpanded WebAXObject::isExpanded() const {
-  if (isDetached())
-    return WebAXExpandedUndefined;
+WebAXExpanded WebAXObject::IsExpanded() const {
+  if (IsDetached())
+    return kWebAXExpandedUndefined;
 
-  return static_cast<WebAXExpanded>(m_private->isExpanded());
+  return static_cast<WebAXExpanded>(private_->IsExpanded());
 }
 
-bool WebAXObject::isFocused() const {
-  if (isDetached())
+bool WebAXObject::IsFocused() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isFocused();
+  return private_->IsFocused();
 }
 
-bool WebAXObject::isHovered() const {
-  if (isDetached())
+bool WebAXObject::IsHovered() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isHovered();
+  return private_->IsHovered();
 }
 
-bool WebAXObject::isLinked() const {
-  if (isDetached())
+bool WebAXObject::IsLinked() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isLinked();
+  return private_->IsLinked();
 }
 
-bool WebAXObject::isLoaded() const {
-  if (isDetached())
+bool WebAXObject::IsLoaded() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isLoaded();
+  return private_->IsLoaded();
 }
 
-bool WebAXObject::isModal() const {
-  if (isDetached())
+bool WebAXObject::IsModal() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isModal();
+  return private_->IsModal();
 }
 
-bool WebAXObject::isMultiSelectable() const {
-  if (isDetached())
+bool WebAXObject::IsMultiSelectable() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isMultiSelectable();
+  return private_->IsMultiSelectable();
 }
 
-bool WebAXObject::isOffScreen() const {
-  if (isDetached())
+bool WebAXObject::IsOffScreen() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isOffScreen();
+  return private_->IsOffScreen();
 }
 
-bool WebAXObject::isPasswordField() const {
-  if (isDetached())
+bool WebAXObject::IsPasswordField() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isPasswordField();
+  return private_->IsPasswordField();
 }
 
-bool WebAXObject::isPressed() const {
-  if (isDetached())
+bool WebAXObject::IsPressed() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isPressed();
+  return private_->IsPressed();
 }
 
-bool WebAXObject::isReadOnly() const {
-  if (isDetached())
+bool WebAXObject::IsReadOnly() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isReadOnly();
+  return private_->IsReadOnly();
 }
 
-bool WebAXObject::isRequired() const {
-  if (isDetached())
+bool WebAXObject::IsRequired() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isRequired();
+  return private_->IsRequired();
 }
 
-bool WebAXObject::isSelected() const {
-  if (isDetached())
+bool WebAXObject::IsSelected() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isSelected();
+  return private_->IsSelected();
 }
 
-bool WebAXObject::isSelectedOptionActive() const {
-  if (isDetached())
+bool WebAXObject::IsSelectedOptionActive() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isSelectedOptionActive();
+  return private_->IsSelectedOptionActive();
 }
 
-bool WebAXObject::isVisible() const {
-  if (isDetached())
+bool WebAXObject::IsVisible() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isVisible();
+  return private_->IsVisible();
 }
 
-bool WebAXObject::isVisited() const {
-  if (isDetached())
+bool WebAXObject::IsVisited() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isVisited();
+  return private_->IsVisited();
 }
 
-WebString WebAXObject::accessKey() const {
-  if (isDetached())
+WebString WebAXObject::AccessKey() const {
+  if (IsDetached())
     return WebString();
 
-  return WebString(m_private->accessKey());
+  return WebString(private_->AccessKey());
 }
 
-unsigned WebAXObject::backgroundColor() const {
-  if (isDetached())
+unsigned WebAXObject::BackgroundColor() const {
+  if (IsDetached())
     return 0;
 
   // RGBA32 is an alias for unsigned int.
-  return m_private->backgroundColor();
+  return private_->BackgroundColor();
 }
 
-unsigned WebAXObject::color() const {
-  if (isDetached())
+unsigned WebAXObject::GetColor() const {
+  if (IsDetached())
     return 0;
 
   // RGBA32 is an alias for unsigned int.
-  return m_private->color();
+  return private_->GetColor();
 }
 
 // Deprecated.
-void WebAXObject::colorValue(int& r, int& g, int& b) const {
-  if (isDetached())
+void WebAXObject::ColorValue(int& r, int& g, int& b) const {
+  if (IsDetached())
     return;
 
-  unsigned color = m_private->colorValue();
+  unsigned color = private_->ColorValue();
   r = (color >> 16) & 0xFF;
   g = (color >> 8) & 0xFF;
   b = color & 0xFF;
 }
 
-unsigned WebAXObject::colorValue() const {
-  if (isDetached())
+unsigned WebAXObject::ColorValue() const {
+  if (IsDetached())
     return 0;
 
   // RGBA32 is an alias for unsigned int.
-  return m_private->colorValue();
+  return private_->ColorValue();
 }
 
-WebAXObject WebAXObject::ariaActiveDescendant() const {
-  if (isDetached())
+WebAXObject WebAXObject::AriaActiveDescendant() const {
+  if (IsDetached())
     return WebAXObject();
 
-  return WebAXObject(m_private->activeDescendant());
+  return WebAXObject(private_->ActiveDescendant());
 }
 
-bool WebAXObject::ariaHasPopup() const {
-  if (isDetached())
+bool WebAXObject::AriaHasPopup() const {
+  if (IsDetached())
     return false;
 
-  return m_private->ariaHasPopup();
+  return private_->AriaHasPopup();
 }
 
-bool WebAXObject::isEditable() const {
-  if (isDetached())
+bool WebAXObject::IsEditable() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isEditable();
+  return private_->IsEditable();
 }
 
-bool WebAXObject::isMultiline() const {
-  if (isDetached())
+bool WebAXObject::IsMultiline() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isMultiline();
+  return private_->IsMultiline();
 }
 
-bool WebAXObject::isRichlyEditable() const {
-  if (isDetached())
+bool WebAXObject::IsRichlyEditable() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isRichlyEditable();
+  return private_->IsRichlyEditable();
 }
 
-int WebAXObject::posInSet() const {
-  if (isDetached())
+int WebAXObject::PosInSet() const {
+  if (IsDetached())
     return 0;
 
-  return m_private->posInSet();
+  return private_->PosInSet();
 }
 
-int WebAXObject::setSize() const {
-  if (isDetached())
+int WebAXObject::SetSize() const {
+  if (IsDetached())
     return 0;
 
-  return m_private->setSize();
+  return private_->SetSize();
 }
 
-bool WebAXObject::isInLiveRegion() const {
-  if (isDetached())
+bool WebAXObject::IsInLiveRegion() const {
+  if (IsDetached())
     return false;
 
-  return 0 != m_private->liveRegionRoot();
+  return 0 != private_->LiveRegionRoot();
 }
 
-bool WebAXObject::liveRegionAtomic() const {
-  if (isDetached())
+bool WebAXObject::LiveRegionAtomic() const {
+  if (IsDetached())
     return false;
 
-  return m_private->liveRegionAtomic();
+  return private_->LiveRegionAtomic();
 }
 
-bool WebAXObject::liveRegionBusy() const {
-  if (isDetached())
+bool WebAXObject::LiveRegionBusy() const {
+  if (IsDetached())
     return false;
 
-  return m_private->liveRegionBusy();
+  return private_->LiveRegionBusy();
 }
 
-WebString WebAXObject::liveRegionRelevant() const {
-  if (isDetached())
+WebString WebAXObject::LiveRegionRelevant() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->liveRegionRelevant();
+  return private_->LiveRegionRelevant();
 }
 
-WebString WebAXObject::liveRegionStatus() const {
-  if (isDetached())
+WebString WebAXObject::LiveRegionStatus() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->liveRegionStatus();
+  return private_->LiveRegionStatus();
 }
 
-WebAXObject WebAXObject::liveRegionRoot() const {
-  if (isDetached())
+WebAXObject WebAXObject::LiveRegionRoot() const {
+  if (IsDetached())
     return WebAXObject();
 
-  AXObject* liveRegionRoot = m_private->liveRegionRoot();
-  if (liveRegionRoot)
-    return WebAXObject(liveRegionRoot);
+  AXObject* live_region_root = private_->LiveRegionRoot();
+  if (live_region_root)
+    return WebAXObject(live_region_root);
   return WebAXObject();
 }
 
-bool WebAXObject::containerLiveRegionAtomic() const {
-  if (isDetached())
+bool WebAXObject::ContainerLiveRegionAtomic() const {
+  if (IsDetached())
     return false;
 
-  return m_private->containerLiveRegionAtomic();
+  return private_->ContainerLiveRegionAtomic();
 }
 
-bool WebAXObject::containerLiveRegionBusy() const {
-  if (isDetached())
+bool WebAXObject::ContainerLiveRegionBusy() const {
+  if (IsDetached())
     return false;
 
-  return m_private->containerLiveRegionBusy();
+  return private_->ContainerLiveRegionBusy();
 }
 
-WebString WebAXObject::containerLiveRegionRelevant() const {
-  if (isDetached())
+WebString WebAXObject::ContainerLiveRegionRelevant() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->containerLiveRegionRelevant();
+  return private_->ContainerLiveRegionRelevant();
 }
 
-WebString WebAXObject::containerLiveRegionStatus() const {
-  if (isDetached())
+WebString WebAXObject::ContainerLiveRegionStatus() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->containerLiveRegionStatus();
+  return private_->ContainerLiveRegionStatus();
 }
 
-bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const {
+bool WebAXObject::AriaOwns(WebVector<WebAXObject>& owns_elements) const {
   // aria-owns rearranges the accessibility tree rather than just
   // exposing an attribute.
 
@@ -608,953 +608,955 @@ bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const {
   return false;
 }
 
-WebString WebAXObject::fontFamily() const {
-  if (isDetached())
+WebString WebAXObject::FontFamily() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->fontFamily();
+  return private_->FontFamily();
 }
 
-float WebAXObject::fontSize() const {
-  if (isDetached())
+float WebAXObject::FontSize() const {
+  if (IsDetached())
     return 0.0f;
 
-  return m_private->fontSize();
+  return private_->FontSize();
 }
 
-bool WebAXObject::canvasHasFallbackContent() const {
-  if (isDetached())
+bool WebAXObject::CanvasHasFallbackContent() const {
+  if (IsDetached())
     return false;
 
-  return m_private->canvasHasFallbackContent();
+  return private_->CanvasHasFallbackContent();
 }
 
-WebString WebAXObject::imageDataUrl(const WebSize& maxSize) const {
-  if (isDetached())
+WebString WebAXObject::ImageDataUrl(const WebSize& max_size) const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->imageDataUrl(maxSize);
+  return private_->ImageDataUrl(max_size);
 }
 
-WebAXInvalidState WebAXObject::invalidState() const {
-  if (isDetached())
-    return WebAXInvalidStateUndefined;
+WebAXInvalidState WebAXObject::InvalidState() const {
+  if (IsDetached())
+    return kWebAXInvalidStateUndefined;
 
-  return static_cast<WebAXInvalidState>(m_private->getInvalidState());
+  return static_cast<WebAXInvalidState>(private_->GetInvalidState());
 }
 
 // Only used when invalidState() returns WebAXInvalidStateOther.
-WebString WebAXObject::ariaInvalidValue() const {
-  if (isDetached())
+WebString WebAXObject::AriaInvalidValue() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->ariaInvalidValue();
+  return private_->AriaInvalidValue();
 }
 
-double WebAXObject::estimatedLoadingProgress() const {
-  if (isDetached())
+double WebAXObject::EstimatedLoadingProgress() const {
+  if (IsDetached())
     return 0.0;
 
-  return m_private->estimatedLoadingProgress();
+  return private_->EstimatedLoadingProgress();
 }
 
-int WebAXObject::headingLevel() const {
-  if (isDetached())
+int WebAXObject::HeadingLevel() const {
+  if (IsDetached())
     return 0;
 
-  return m_private->headingLevel();
+  return private_->HeadingLevel();
 }
 
-int WebAXObject::hierarchicalLevel() const {
-  if (isDetached())
+int WebAXObject::HierarchicalLevel() const {
+  if (IsDetached())
     return 0;
 
-  return m_private->hierarchicalLevel();
+  return private_->HierarchicalLevel();
 }
 
 // FIXME: This method passes in a point that has page scale applied but assumes
 // that (0, 0) is the top left of the visual viewport. In other words, the
 // point has the VisualViewport scale applied, but not the VisualViewport
 // offset. crbug.com/459591.
-WebAXObject WebAXObject::hitTest(const WebPoint& point) const {
-  if (isDetached())
+WebAXObject WebAXObject::HitTest(const WebPoint& point) const {
+  if (IsDetached())
     return WebAXObject();
 
-  IntPoint contentsPoint =
-      m_private->documentFrameView()->soonToBeRemovedUnscaledViewportToContents(
+  IntPoint contents_point =
+      private_->DocumentFrameView()->SoonToBeRemovedUnscaledViewportToContents(
           point);
-  AXObject* hit = m_private->accessibilityHitTest(contentsPoint);
+  AXObject* hit = private_->AccessibilityHitTest(contents_point);
 
   if (hit)
     return WebAXObject(hit);
 
-  if (m_private->getBoundsInFrameCoordinates().contains(contentsPoint))
+  if (private_->GetBoundsInFrameCoordinates().Contains(contents_point))
     return *this;
 
   return WebAXObject();
 }
 
-WebString WebAXObject::keyboardShortcut() const {
-  if (isDetached())
+WebString WebAXObject::KeyboardShortcut() const {
+  if (IsDetached())
     return WebString();
 
-  String accessKey = m_private->accessKey();
-  if (accessKey.isNull())
+  String access_key = private_->AccessKey();
+  if (access_key.IsNull())
     return WebString();
 
-  DEFINE_STATIC_LOCAL(String, modifierString, ());
-  if (modifierString.isNull()) {
+  DEFINE_STATIC_LOCAL(String, modifier_string, ());
+  if (modifier_string.IsNull()) {
     unsigned modifiers = KeyboardEventManager::kAccessKeyModifiers;
     // Follow the same order as Mozilla MSAA implementation:
     // Ctrl+Alt+Shift+Meta+key. MSDN states that keyboard shortcut strings
     // should not be localized and defines the separator as "+".
-    StringBuilder modifierStringBuilder;
-    if (modifiers & WebInputEvent::ControlKey)
-      modifierStringBuilder.append("Ctrl+");
-    if (modifiers & WebInputEvent::AltKey)
-      modifierStringBuilder.append("Alt+");
-    if (modifiers & WebInputEvent::ShiftKey)
-      modifierStringBuilder.append("Shift+");
-    if (modifiers & WebInputEvent::MetaKey)
-      modifierStringBuilder.append("Win+");
-    modifierString = modifierStringBuilder.toString();
+    StringBuilder modifier_string_builder;
+    if (modifiers & WebInputEvent::kControlKey)
+      modifier_string_builder.Append("Ctrl+");
+    if (modifiers & WebInputEvent::kAltKey)
+      modifier_string_builder.Append("Alt+");
+    if (modifiers & WebInputEvent::kShiftKey)
+      modifier_string_builder.Append("Shift+");
+    if (modifiers & WebInputEvent::kMetaKey)
+      modifier_string_builder.Append("Win+");
+    modifier_string = modifier_string_builder.ToString();
   }
 
-  return String(modifierString + accessKey);
+  return String(modifier_string + access_key);
 }
 
-WebString WebAXObject::language() const {
-  if (isDetached())
+WebString WebAXObject::Language() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->language();
+  return private_->Language();
 }
 
-bool WebAXObject::performDefaultAction() const {
-  if (isDetached())
+bool WebAXObject::PerformDefaultAction() const {
+  if (IsDetached())
     return false;
 
-  return m_private->performDefaultAction();
+  return private_->PerformDefaultAction();
 }
 
-bool WebAXObject::increment() const {
-  if (isDetached())
+bool WebAXObject::Increment() const {
+  if (IsDetached())
     return false;
 
-  if (canIncrement()) {
-    m_private->increment();
+  if (CanIncrement()) {
+    private_->Increment();
     return true;
   }
   return false;
 }
 
-bool WebAXObject::decrement() const {
-  if (isDetached())
+bool WebAXObject::Decrement() const {
+  if (IsDetached())
     return false;
 
-  if (canDecrement()) {
-    m_private->decrement();
+  if (CanDecrement()) {
+    private_->Decrement();
     return true;
   }
   return false;
 }
 
-WebAXObject WebAXObject::inPageLinkTarget() const {
-  if (isDetached())
+WebAXObject WebAXObject::InPageLinkTarget() const {
+  if (IsDetached())
     return WebAXObject();
-  AXObject* target = m_private->inPageLinkTarget();
+  AXObject* target = private_->InPageLinkTarget();
   if (!target)
     return WebAXObject();
   return WebAXObject(target);
 }
 
-WebAXOrientation WebAXObject::orientation() const {
-  if (isDetached())
-    return WebAXOrientationUndefined;
+WebAXOrientation WebAXObject::Orientation() const {
+  if (IsDetached())
+    return kWebAXOrientationUndefined;
 
-  return static_cast<WebAXOrientation>(m_private->orientation());
+  return static_cast<WebAXOrientation>(private_->Orientation());
 }
 
-bool WebAXObject::press() const {
-  if (isDetached())
+bool WebAXObject::Press() const {
+  if (IsDetached())
     return false;
 
-  return m_private->press();
+  return private_->Press();
 }
 
-WebVector<WebAXObject> WebAXObject::radioButtonsInGroup() const {
-  if (isDetached())
+WebVector<WebAXObject> WebAXObject::RadioButtonsInGroup() const {
+  if (IsDetached())
     return WebVector<WebAXObject>();
 
-  AXObject::AXObjectVector radioButtons = m_private->radioButtonsInGroup();
-  WebVector<WebAXObject> webRadioButtons(radioButtons.size());
-  for (size_t i = 0; i < radioButtons.size(); ++i)
-    webRadioButtons[i] = WebAXObject(radioButtons[i]);
-  return webRadioButtons;
+  AXObject::AXObjectVector radio_buttons = private_->RadioButtonsInGroup();
+  WebVector<WebAXObject> web_radio_buttons(radio_buttons.size());
+  for (size_t i = 0; i < radio_buttons.size(); ++i)
+    web_radio_buttons[i] = WebAXObject(radio_buttons[i]);
+  return web_radio_buttons;
 }
 
-WebAXRole WebAXObject::role() const {
-  if (isDetached())
-    return WebAXRoleUnknown;
+WebAXRole WebAXObject::Role() const {
+  if (IsDetached())
+    return kWebAXRoleUnknown;
 
-  return static_cast<WebAXRole>(m_private->roleValue());
+  return static_cast<WebAXRole>(private_->RoleValue());
 }
 
-void WebAXObject::selection(WebAXObject& anchorObject,
-                            int& anchorOffset,
-                            WebAXTextAffinity& anchorAffinity,
-                            WebAXObject& focusObject,
-                            int& focusOffset,
-                            WebAXTextAffinity& focusAffinity) const {
-  if (isDetached()) {
-    anchorObject = WebAXObject();
-    anchorOffset = -1;
-    anchorAffinity = WebAXTextAffinityDownstream;
-    focusObject = WebAXObject();
-    focusOffset = -1;
-    focusAffinity = WebAXTextAffinityDownstream;
+void WebAXObject::Selection(WebAXObject& anchor_object,
+                            int& anchor_offset,
+                            WebAXTextAffinity& anchor_affinity,
+                            WebAXObject& focus_object,
+                            int& focus_offset,
+                            WebAXTextAffinity& focus_affinity) const {
+  if (IsDetached()) {
+    anchor_object = WebAXObject();
+    anchor_offset = -1;
+    anchor_affinity = kWebAXTextAffinityDownstream;
+    focus_object = WebAXObject();
+    focus_offset = -1;
+    focus_affinity = kWebAXTextAffinityDownstream;
     return;
   }
 
-  AXObject::AXRange axSelection = m_private->selection();
-  anchorObject = WebAXObject(axSelection.anchorObject);
-  anchorOffset = axSelection.anchorOffset;
-  anchorAffinity = static_cast<WebAXTextAffinity>(axSelection.anchorAffinity);
-  focusObject = WebAXObject(axSelection.focusObject);
-  focusOffset = axSelection.focusOffset;
-  focusAffinity = static_cast<WebAXTextAffinity>(axSelection.focusAffinity);
+  AXObject::AXRange ax_selection = private_->Selection();
+  anchor_object = WebAXObject(ax_selection.anchor_object);
+  anchor_offset = ax_selection.anchor_offset;
+  anchor_affinity =
+      static_cast<WebAXTextAffinity>(ax_selection.anchor_affinity);
+  focus_object = WebAXObject(ax_selection.focus_object);
+  focus_offset = ax_selection.focus_offset;
+  focus_affinity = static_cast<WebAXTextAffinity>(ax_selection.focus_affinity);
   return;
 }
 
-void WebAXObject::setSelection(const WebAXObject& anchorObject,
-                               int anchorOffset,
-                               const WebAXObject& focusObject,
-                               int focusOffset) const {
-  if (isDetached())
+void WebAXObject::SetSelection(const WebAXObject& anchor_object,
+                               int anchor_offset,
+                               const WebAXObject& focus_object,
+                               int focus_offset) const {
+  if (IsDetached())
     return;
 
-  AXObject::AXRange axSelection(anchorObject, anchorOffset,
-                                TextAffinity::Upstream, focusObject,
-                                focusOffset, TextAffinity::Downstream);
-  m_private->setSelection(axSelection);
+  AXObject::AXRange ax_selection(anchor_object, anchor_offset,
+                                 TextAffinity::kUpstream, focus_object,
+                                 focus_offset, TextAffinity::kDownstream);
+  private_->SetSelection(ax_selection);
   return;
 }
 
-unsigned WebAXObject::selectionEnd() const {
-  if (isDetached())
+unsigned WebAXObject::SelectionEnd() const {
+  if (IsDetached())
     return 0;
 
-  AXObject::AXRange axSelection = m_private->selectionUnderObject();
-  if (axSelection.focusOffset < 0)
+  AXObject::AXRange ax_selection = private_->SelectionUnderObject();
+  if (ax_selection.focus_offset < 0)
     return 0;
 
-  return axSelection.focusOffset;
+  return ax_selection.focus_offset;
 }
 
-unsigned WebAXObject::selectionStart() const {
-  if (isDetached())
+unsigned WebAXObject::SelectionStart() const {
+  if (IsDetached())
     return 0;
 
-  AXObject::AXRange axSelection = m_private->selectionUnderObject();
-  if (axSelection.anchorOffset < 0)
+  AXObject::AXRange ax_selection = private_->SelectionUnderObject();
+  if (ax_selection.anchor_offset < 0)
     return 0;
 
-  return axSelection.anchorOffset;
+  return ax_selection.anchor_offset;
 }
 
-unsigned WebAXObject::selectionEndLineNumber() const {
-  if (isDetached())
+unsigned WebAXObject::SelectionEndLineNumber() const {
+  if (IsDetached())
     return 0;
 
-  VisiblePosition position = m_private->visiblePositionForIndex(selectionEnd());
-  int lineNumber = m_private->lineForPosition(position);
-  if (lineNumber < 0)
+  VisiblePosition position = private_->VisiblePositionForIndex(SelectionEnd());
+  int line_number = private_->LineForPosition(position);
+  if (line_number < 0)
     return 0;
 
-  return lineNumber;
+  return line_number;
 }
 
-unsigned WebAXObject::selectionStartLineNumber() const {
-  if (isDetached())
+unsigned WebAXObject::SelectionStartLineNumber() const {
+  if (IsDetached())
     return 0;
 
   VisiblePosition position =
-      m_private->visiblePositionForIndex(selectionStart());
-  int lineNumber = m_private->lineForPosition(position);
-  if (lineNumber < 0)
+      private_->VisiblePositionForIndex(SelectionStart());
+  int line_number = private_->LineForPosition(position);
+  if (line_number < 0)
     return 0;
 
-  return lineNumber;
+  return line_number;
 }
 
-void WebAXObject::setFocused(bool on) const {
-  if (!isDetached())
-    m_private->setFocused(on);
+void WebAXObject::SetFocused(bool on) const {
+  if (!IsDetached())
+    private_->SetFocused(on);
 }
 
-void WebAXObject::setSelectedTextRange(int selectionStart,
-                                       int selectionEnd) const {
-  if (isDetached())
+void WebAXObject::SetSelectedTextRange(int selection_start,
+                                       int selection_end) const {
+  if (IsDetached())
     return;
 
-  m_private->setSelection(AXObject::AXRange(selectionStart, selectionEnd));
+  private_->SetSelection(AXObject::AXRange(selection_start, selection_end));
 }
 
-void WebAXObject::setSequentialFocusNavigationStartingPoint() const {
-  if (isDetached())
+void WebAXObject::SetSequentialFocusNavigationStartingPoint() const {
+  if (IsDetached())
     return;
 
-  m_private->setSequentialFocusNavigationStartingPoint();
+  private_->SetSequentialFocusNavigationStartingPoint();
 }
 
-void WebAXObject::setValue(WebString value) const {
-  if (isDetached())
+void WebAXObject::SetValue(WebString value) const {
+  if (IsDetached())
     return;
 
-  m_private->setValue(value);
+  private_->SetValue(value);
 }
 
-void WebAXObject::showContextMenu() const {
-  if (isDetached())
+void WebAXObject::ShowContextMenu() const {
+  if (IsDetached())
     return;
 
-  Node* node = m_private->getNode();
+  Node* node = private_->GetNode();
   if (!node)
     return;
 
   Element* element = nullptr;
-  if (node->isElementNode()) {
-    element = toElement(node);
-  } else if (node->isDocumentNode()) {
-    element = node->document().documentElement();
+  if (node->IsElementNode()) {
+    element = ToElement(node);
+  } else if (node->IsDocumentNode()) {
+    element = node->GetDocument().documentElement();
   } else {
-    node->updateDistribution();
-    ContainerNode* parent = FlatTreeTraversal::parent(*node);
+    node->UpdateDistribution();
+    ContainerNode* parent = FlatTreeTraversal::Parent(*node);
     if (!parent)
       return;
-    SECURITY_DCHECK(parent->isElementNode());
-    element = toElement(parent);
+    SECURITY_DCHECK(parent->IsElementNode());
+    element = ToElement(parent);
   }
 
   if (!element)
     return;
 
-  LocalFrame* frame = element->document().frame();
+  LocalFrame* frame = element->GetDocument().GetFrame();
   if (!frame)
     return;
 
-  WebViewImpl* view = WebLocalFrameImpl::fromFrame(frame)->viewImpl();
+  WebViewImpl* view = WebLocalFrameImpl::FromFrame(frame)->ViewImpl();
   if (!view)
     return;
 
-  view->showContextMenuForElement(WebElement(element));
+  view->ShowContextMenuForElement(WebElement(element));
 }
 
-WebString WebAXObject::stringValue() const {
-  if (isDetached())
+WebString WebAXObject::StringValue() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->stringValue();
+  return private_->StringValue();
 }
 
-WebAXTextDirection WebAXObject::textDirection() const {
-  if (isDetached())
-    return WebAXTextDirectionLR;
+WebAXTextDirection WebAXObject::GetTextDirection() const {
+  if (IsDetached())
+    return kWebAXTextDirectionLR;
 
-  return static_cast<WebAXTextDirection>(m_private->textDirection());
+  return static_cast<WebAXTextDirection>(private_->GetTextDirection());
 }
 
-WebAXTextStyle WebAXObject::textStyle() const {
-  if (isDetached())
-    return WebAXTextStyleNone;
+WebAXTextStyle WebAXObject::TextStyle() const {
+  if (IsDetached())
+    return kWebAXTextStyleNone;
 
-  return static_cast<WebAXTextStyle>(m_private->getTextStyle());
+  return static_cast<WebAXTextStyle>(private_->GetTextStyle());
 }
 
-WebURL WebAXObject::url() const {
-  if (isDetached())
+WebURL WebAXObject::Url() const {
+  if (IsDetached())
     return WebURL();
 
-  return m_private->url();
+  return private_->Url();
 }
 
-WebString WebAXObject::name(WebAXNameFrom& outNameFrom,
-                            WebVector<WebAXObject>& outNameObjects) const {
-  if (isDetached())
+WebString WebAXObject::GetName(WebAXNameFrom& out_name_from,
+                               WebVector<WebAXObject>& out_name_objects) const {
+  if (IsDetached())
     return WebString();
 
-  AXNameFrom nameFrom = AXNameFromUninitialized;
-  HeapVector<Member<AXObject>> nameObjects;
-  WebString result = m_private->name(nameFrom, &nameObjects);
-  outNameFrom = static_cast<WebAXNameFrom>(nameFrom);
+  AXNameFrom name_from = kAXNameFromUninitialized;
+  HeapVector<Member<AXObject>> name_objects;
+  WebString result = private_->GetName(name_from, &name_objects);
+  out_name_from = static_cast<WebAXNameFrom>(name_from);
 
-  WebVector<WebAXObject> webNameObjects(nameObjects.size());
-  for (size_t i = 0; i < nameObjects.size(); i++)
-    webNameObjects[i] = WebAXObject(nameObjects[i]);
-  outNameObjects.swap(webNameObjects);
+  WebVector<WebAXObject> web_name_objects(name_objects.size());
+  for (size_t i = 0; i < name_objects.size(); i++)
+    web_name_objects[i] = WebAXObject(name_objects[i]);
+  out_name_objects.Swap(web_name_objects);
 
   return result;
 }
 
-WebString WebAXObject::name() const {
-  if (isDetached())
+WebString WebAXObject::GetName() const {
+  if (IsDetached())
     return WebString();
 
-  AXNameFrom nameFrom;
-  HeapVector<Member<AXObject>> nameObjects;
-  return m_private->name(nameFrom, &nameObjects);
+  AXNameFrom name_from;
+  HeapVector<Member<AXObject>> name_objects;
+  return private_->GetName(name_from, &name_objects);
 }
 
-WebString WebAXObject::description(
-    WebAXNameFrom nameFrom,
-    WebAXDescriptionFrom& outDescriptionFrom,
-    WebVector<WebAXObject>& outDescriptionObjects) const {
-  if (isDetached())
+WebString WebAXObject::Description(
+    WebAXNameFrom name_from,
+    WebAXDescriptionFrom& out_description_from,
+    WebVector<WebAXObject>& out_description_objects) const {
+  if (IsDetached())
     return WebString();
 
-  AXDescriptionFrom descriptionFrom = AXDescriptionFromUninitialized;
-  HeapVector<Member<AXObject>> descriptionObjects;
-  String result = m_private->description(static_cast<AXNameFrom>(nameFrom),
-                                         descriptionFrom, &descriptionObjects);
-  outDescriptionFrom = static_cast<WebAXDescriptionFrom>(descriptionFrom);
+  AXDescriptionFrom description_from = kAXDescriptionFromUninitialized;
+  HeapVector<Member<AXObject>> description_objects;
+  String result = private_->Description(static_cast<AXNameFrom>(name_from),
+                                        description_from, &description_objects);
+  out_description_from = static_cast<WebAXDescriptionFrom>(description_from);
 
-  WebVector<WebAXObject> webDescriptionObjects(descriptionObjects.size());
-  for (size_t i = 0; i < descriptionObjects.size(); i++)
-    webDescriptionObjects[i] = WebAXObject(descriptionObjects[i]);
-  outDescriptionObjects.swap(webDescriptionObjects);
+  WebVector<WebAXObject> web_description_objects(description_objects.size());
+  for (size_t i = 0; i < description_objects.size(); i++)
+    web_description_objects[i] = WebAXObject(description_objects[i]);
+  out_description_objects.Swap(web_description_objects);
 
   return result;
 }
 
-WebString WebAXObject::placeholder(WebAXNameFrom nameFrom) const {
-  if (isDetached())
+WebString WebAXObject::Placeholder(WebAXNameFrom name_from) const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->placeholder(static_cast<AXNameFrom>(nameFrom));
+  return private_->Placeholder(static_cast<AXNameFrom>(name_from));
 }
 
-bool WebAXObject::supportsRangeValue() const {
-  if (isDetached())
+bool WebAXObject::SupportsRangeValue() const {
+  if (IsDetached())
     return false;
 
-  return m_private->supportsRangeValue();
+  return private_->SupportsRangeValue();
 }
 
-WebString WebAXObject::valueDescription() const {
-  if (isDetached())
+WebString WebAXObject::ValueDescription() const {
+  if (IsDetached())
     return WebString();
 
-  return m_private->valueDescription();
+  return private_->ValueDescription();
 }
 
-float WebAXObject::valueForRange() const {
-  if (isDetached())
+float WebAXObject::ValueForRange() const {
+  if (IsDetached())
     return 0.0;
 
-  return m_private->valueForRange();
+  return private_->ValueForRange();
 }
 
-float WebAXObject::maxValueForRange() const {
-  if (isDetached())
+float WebAXObject::MaxValueForRange() const {
+  if (IsDetached())
     return 0.0;
 
-  return m_private->maxValueForRange();
+  return private_->MaxValueForRange();
 }
 
-float WebAXObject::minValueForRange() const {
-  if (isDetached())
+float WebAXObject::MinValueForRange() const {
+  if (IsDetached())
     return 0.0;
 
-  return m_private->minValueForRange();
+  return private_->MinValueForRange();
 }
 
-WebNode WebAXObject::node() const {
-  if (isDetached())
+WebNode WebAXObject::GetNode() const {
+  if (IsDetached())
     return WebNode();
 
-  Node* node = m_private->getNode();
+  Node* node = private_->GetNode();
   if (!node)
     return WebNode();
 
   return WebNode(node);
 }
 
-WebDocument WebAXObject::document() const {
-  if (isDetached())
+WebDocument WebAXObject::GetDocument() const {
+  if (IsDetached())
     return WebDocument();
 
-  Document* document = m_private->getDocument();
+  Document* document = private_->GetDocument();
   if (!document)
     return WebDocument();
 
   return WebDocument(document);
 }
 
-bool WebAXObject::hasComputedStyle() const {
-  if (isDetached())
+bool WebAXObject::HasComputedStyle() const {
+  if (IsDetached())
     return false;
 
-  Document* document = m_private->getDocument();
+  Document* document = private_->GetDocument();
   if (document)
-    document->updateStyleAndLayoutTree();
+    document->UpdateStyleAndLayoutTree();
 
-  Node* node = m_private->getNode();
+  Node* node = private_->GetNode();
   if (!node)
     return false;
 
-  return node->ensureComputedStyle();
+  return node->EnsureComputedStyle();
 }
 
-WebString WebAXObject::computedStyleDisplay() const {
-  if (isDetached())
+WebString WebAXObject::ComputedStyleDisplay() const {
+  if (IsDetached())
     return WebString();
 
-  Document* document = m_private->getDocument();
+  Document* document = private_->GetDocument();
   if (document)
-    document->updateStyleAndLayoutTree();
+    document->UpdateStyleAndLayoutTree();
 
-  Node* node = m_private->getNode();
+  Node* node = private_->GetNode();
   if (!node)
     return WebString();
 
-  const ComputedStyle* computedStyle = node->ensureComputedStyle();
-  if (!computedStyle)
+  const ComputedStyle* computed_style = node->EnsureComputedStyle();
+  if (!computed_style)
     return WebString();
 
   return WebString(
-      CSSIdentifierValue::create(computedStyle->display())->cssText());
+      CSSIdentifierValue::Create(computed_style->Display())->CssText());
 }
 
-bool WebAXObject::accessibilityIsIgnored() const {
-  if (isDetached())
+bool WebAXObject::AccessibilityIsIgnored() const {
+  if (IsDetached())
     return false;
 
-  return m_private->accessibilityIsIgnored();
+  return private_->AccessibilityIsIgnored();
 }
 
-bool WebAXObject::lineBreaks(WebVector<int>& result) const {
-  if (isDetached())
+bool WebAXObject::LineBreaks(WebVector<int>& result) const {
+  if (IsDetached())
     return false;
 
-  Vector<int> lineBreaksVector;
-  m_private->lineBreaks(lineBreaksVector);
+  Vector<int> line_breaks_vector;
+  private_->LineBreaks(line_breaks_vector);
 
-  size_t vectorSize = lineBreaksVector.size();
-  WebVector<int> lineBreaksWebVector(vectorSize);
-  for (size_t i = 0; i < vectorSize; i++)
-    lineBreaksWebVector[i] = lineBreaksVector[i];
-  result.swap(lineBreaksWebVector);
+  size_t vector_size = line_breaks_vector.size();
+  WebVector<int> line_breaks_web_vector(vector_size);
+  for (size_t i = 0; i < vector_size; i++)
+    line_breaks_web_vector[i] = line_breaks_vector[i];
+  result.Swap(line_breaks_web_vector);
 
   return true;
 }
 
-int WebAXObject::ariaColumnCount() const {
-  if (isDetached())
+int WebAXObject::AriaColumnCount() const {
+  if (IsDetached())
     return 0;
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return 0;
 
-  return toAXTable(m_private.get())->ariaColumnCount();
+  return ToAXTable(private_.Get())->AriaColumnCount();
 }
 
-unsigned WebAXObject::ariaColumnIndex() const {
-  if (isDetached())
+unsigned WebAXObject::AriaColumnIndex() const {
+  if (IsDetached())
     return 0;
 
-  if (!m_private->isTableCell())
+  if (!private_->IsTableCell())
     return 0;
 
-  return toAXTableCell(m_private.get())->ariaColumnIndex();
+  return ToAXTableCell(private_.Get())->AriaColumnIndex();
 }
 
-int WebAXObject::ariaRowCount() const {
-  if (isDetached())
+int WebAXObject::AriaRowCount() const {
+  if (IsDetached())
     return 0;
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return 0;
 
-  return toAXTable(m_private.get())->ariaRowCount();
+  return ToAXTable(private_.Get())->AriaRowCount();
 }
 
-unsigned WebAXObject::ariaRowIndex() const {
-  if (isDetached())
+unsigned WebAXObject::AriaRowIndex() const {
+  if (IsDetached())
     return 0;
 
-  if (m_private->isTableCell())
-    return toAXTableCell(m_private.get())->ariaRowIndex();
+  if (private_->IsTableCell())
+    return ToAXTableCell(private_.Get())->AriaRowIndex();
 
-  if (m_private->isTableRow())
-    return toAXTableRow(m_private.get())->ariaRowIndex();
+  if (private_->IsTableRow())
+    return ToAXTableRow(private_.Get())->AriaRowIndex();
 
   return 0;
 }
 
-unsigned WebAXObject::columnCount() const {
-  if (isDetached())
+unsigned WebAXObject::ColumnCount() const {
+  if (IsDetached())
     return false;
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return 0;
 
-  return toAXTable(m_private.get())->columnCount();
+  return ToAXTable(private_.Get())->ColumnCount();
 }
 
-unsigned WebAXObject::rowCount() const {
-  if (isDetached())
+unsigned WebAXObject::RowCount() const {
+  if (IsDetached())
     return 0;
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return 0;
 
-  return toAXTable(m_private.get())->rowCount();
+  return ToAXTable(private_.Get())->RowCount();
 }
 
-WebAXObject WebAXObject::cellForColumnAndRow(unsigned column,
+WebAXObject WebAXObject::CellForColumnAndRow(unsigned column,
                                              unsigned row) const {
-  if (isDetached())
+  if (IsDetached())
     return WebAXObject();
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return WebAXObject();
 
   AXTableCell* cell =
-      toAXTable(m_private.get())->cellForColumnAndRow(column, row);
+      ToAXTable(private_.Get())->CellForColumnAndRow(column, row);
   return WebAXObject(static_cast<AXObject*>(cell));
 }
 
-WebAXObject WebAXObject::headerContainerObject() const {
-  if (isDetached())
+WebAXObject WebAXObject::HeaderContainerObject() const {
+  if (IsDetached())
     return WebAXObject();
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return WebAXObject();
 
-  return WebAXObject(toAXTable(m_private.get())->headerContainer());
+  return WebAXObject(ToAXTable(private_.Get())->HeaderContainer());
 }
 
-WebAXObject WebAXObject::rowAtIndex(unsigned rowIndex) const {
-  if (isDetached())
+WebAXObject WebAXObject::RowAtIndex(unsigned row_index) const {
+  if (IsDetached())
     return WebAXObject();
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return WebAXObject();
 
-  const AXObject::AXObjectVector& rows = toAXTable(m_private.get())->rows();
-  if (rowIndex < rows.size())
-    return WebAXObject(rows[rowIndex]);
+  const AXObject::AXObjectVector& rows = ToAXTable(private_.Get())->Rows();
+  if (row_index < rows.size())
+    return WebAXObject(rows[row_index]);
 
   return WebAXObject();
 }
 
-WebAXObject WebAXObject::columnAtIndex(unsigned columnIndex) const {
-  if (isDetached())
+WebAXObject WebAXObject::ColumnAtIndex(unsigned column_index) const {
+  if (IsDetached())
     return WebAXObject();
 
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return WebAXObject();
 
   const AXObject::AXObjectVector& columns =
-      toAXTable(m_private.get())->columns();
-  if (columnIndex < columns.size())
-    return WebAXObject(columns[columnIndex]);
+      ToAXTable(private_.Get())->Columns();
+  if (column_index < columns.size())
+    return WebAXObject(columns[column_index]);
 
   return WebAXObject();
 }
 
-unsigned WebAXObject::rowIndex() const {
-  if (isDetached())
+unsigned WebAXObject::RowIndex() const {
+  if (IsDetached())
     return 0;
 
-  if (!m_private->isTableRow())
+  if (!private_->IsTableRow())
     return 0;
 
-  return toAXTableRow(m_private.get())->rowIndex();
+  return ToAXTableRow(private_.Get())->RowIndex();
 }
 
-WebAXObject WebAXObject::rowHeader() const {
-  if (isDetached())
+WebAXObject WebAXObject::RowHeader() const {
+  if (IsDetached())
     return WebAXObject();
 
-  if (!m_private->isTableRow())
+  if (!private_->IsTableRow())
     return WebAXObject();
 
-  return WebAXObject(toAXTableRow(m_private.get())->headerObject());
+  return WebAXObject(ToAXTableRow(private_.Get())->HeaderObject());
 }
 
-void WebAXObject::rowHeaders(WebVector<WebAXObject>& rowHeaderElements) const {
-  if (isDetached())
+void WebAXObject::RowHeaders(
+    WebVector<WebAXObject>& row_header_elements) const {
+  if (IsDetached())
     return;
 
-  if (!m_private->isAXTable())
-    return;
-
-  AXObject::AXObjectVector headers;
-  toAXTable(m_private.get())->rowHeaders(headers);
-
-  size_t headerCount = headers.size();
-  WebVector<WebAXObject> result(headerCount);
-
-  for (size_t i = 0; i < headerCount; i++)
-    result[i] = WebAXObject(headers[i]);
-
-  rowHeaderElements.swap(result);
-}
-
-unsigned WebAXObject::columnIndex() const {
-  if (isDetached())
-    return 0;
-
-  if (m_private->roleValue() != ColumnRole)
-    return 0;
-
-  return toAXTableColumn(m_private.get())->columnIndex();
-}
-
-WebAXObject WebAXObject::columnHeader() const {
-  if (isDetached())
-    return WebAXObject();
-
-  if (m_private->roleValue() != ColumnRole)
-    return WebAXObject();
-
-  return WebAXObject(toAXTableColumn(m_private.get())->headerObject());
-}
-
-void WebAXObject::columnHeaders(
-    WebVector<WebAXObject>& columnHeaderElements) const {
-  if (isDetached())
-    return;
-
-  if (!m_private->isAXTable())
+  if (!private_->IsAXTable())
     return;
 
   AXObject::AXObjectVector headers;
-  toAXTable(m_private.get())->columnHeaders(headers);
+  ToAXTable(private_.Get())->RowHeaders(headers);
 
-  size_t headerCount = headers.size();
-  WebVector<WebAXObject> result(headerCount);
+  size_t header_count = headers.size();
+  WebVector<WebAXObject> result(header_count);
 
-  for (size_t i = 0; i < headerCount; i++)
+  for (size_t i = 0; i < header_count; i++)
     result[i] = WebAXObject(headers[i]);
 
-  columnHeaderElements.swap(result);
+  row_header_elements.Swap(result);
 }
 
-unsigned WebAXObject::cellColumnIndex() const {
-  if (isDetached())
+unsigned WebAXObject::ColumnIndex() const {
+  if (IsDetached())
     return 0;
 
-  if (!m_private->isTableCell())
+  if (private_->RoleValue() != kColumnRole)
     return 0;
 
-  std::pair<unsigned, unsigned> columnRange;
-  toAXTableCell(m_private.get())->columnIndexRange(columnRange);
-  return columnRange.first;
+  return ToAXTableColumn(private_.Get())->ColumnIndex();
 }
 
-unsigned WebAXObject::cellColumnSpan() const {
-  if (isDetached())
-    return 0;
+WebAXObject WebAXObject::ColumnHeader() const {
+  if (IsDetached())
+    return WebAXObject();
 
-  if (!m_private->isTableCell())
-    return 0;
+  if (private_->RoleValue() != kColumnRole)
+    return WebAXObject();
 
-  std::pair<unsigned, unsigned> columnRange;
-  toAXTableCell(m_private.get())->columnIndexRange(columnRange);
-  return columnRange.second;
+  return WebAXObject(ToAXTableColumn(private_.Get())->HeaderObject());
 }
 
-unsigned WebAXObject::cellRowIndex() const {
-  if (isDetached())
-    return 0;
-
-  if (!m_private->isTableCell())
-    return 0;
-
-  std::pair<unsigned, unsigned> rowRange;
-  toAXTableCell(m_private.get())->rowIndexRange(rowRange);
-  return rowRange.first;
-}
-
-unsigned WebAXObject::cellRowSpan() const {
-  if (isDetached())
-    return 0;
-
-  if (!m_private->isTableCell())
-    return 0;
-
-  std::pair<unsigned, unsigned> rowRange;
-  toAXTableCell(m_private.get())->rowIndexRange(rowRange);
-  return rowRange.second;
-}
-
-WebAXSortDirection WebAXObject::sortDirection() const {
-  if (isDetached())
-    return WebAXSortDirectionUndefined;
-
-  return static_cast<WebAXSortDirection>(m_private->getSortDirection());
-}
-
-void WebAXObject::loadInlineTextBoxes() const {
-  if (isDetached())
+void WebAXObject::ColumnHeaders(
+    WebVector<WebAXObject>& column_header_elements) const {
+  if (IsDetached())
     return;
 
-  m_private->loadInlineTextBoxes();
+  if (!private_->IsAXTable())
+    return;
+
+  AXObject::AXObjectVector headers;
+  ToAXTable(private_.Get())->ColumnHeaders(headers);
+
+  size_t header_count = headers.size();
+  WebVector<WebAXObject> result(header_count);
+
+  for (size_t i = 0; i < header_count; i++)
+    result[i] = WebAXObject(headers[i]);
+
+  column_header_elements.Swap(result);
 }
 
-WebAXObject WebAXObject::nextOnLine() const {
-  if (isDetached())
+unsigned WebAXObject::CellColumnIndex() const {
+  if (IsDetached())
+    return 0;
+
+  if (!private_->IsTableCell())
+    return 0;
+
+  std::pair<unsigned, unsigned> column_range;
+  ToAXTableCell(private_.Get())->ColumnIndexRange(column_range);
+  return column_range.first;
+}
+
+unsigned WebAXObject::CellColumnSpan() const {
+  if (IsDetached())
+    return 0;
+
+  if (!private_->IsTableCell())
+    return 0;
+
+  std::pair<unsigned, unsigned> column_range;
+  ToAXTableCell(private_.Get())->ColumnIndexRange(column_range);
+  return column_range.second;
+}
+
+unsigned WebAXObject::CellRowIndex() const {
+  if (IsDetached())
+    return 0;
+
+  if (!private_->IsTableCell())
+    return 0;
+
+  std::pair<unsigned, unsigned> row_range;
+  ToAXTableCell(private_.Get())->RowIndexRange(row_range);
+  return row_range.first;
+}
+
+unsigned WebAXObject::CellRowSpan() const {
+  if (IsDetached())
+    return 0;
+
+  if (!private_->IsTableCell())
+    return 0;
+
+  std::pair<unsigned, unsigned> row_range;
+  ToAXTableCell(private_.Get())->RowIndexRange(row_range);
+  return row_range.second;
+}
+
+WebAXSortDirection WebAXObject::SortDirection() const {
+  if (IsDetached())
+    return kWebAXSortDirectionUndefined;
+
+  return static_cast<WebAXSortDirection>(private_->GetSortDirection());
+}
+
+void WebAXObject::LoadInlineTextBoxes() const {
+  if (IsDetached())
+    return;
+
+  private_->LoadInlineTextBoxes();
+}
+
+WebAXObject WebAXObject::NextOnLine() const {
+  if (IsDetached())
     return WebAXObject();
 
-  return WebAXObject(m_private.get()->nextOnLine());
+  return WebAXObject(private_.Get()->NextOnLine());
 }
 
-WebAXObject WebAXObject::previousOnLine() const {
-  if (isDetached())
+WebAXObject WebAXObject::PreviousOnLine() const {
+  if (IsDetached())
     return WebAXObject();
 
-  return WebAXObject(m_private.get()->previousOnLine());
+  return WebAXObject(private_.Get()->PreviousOnLine());
 }
 
-void WebAXObject::markers(WebVector<WebAXMarkerType>& types,
+void WebAXObject::Markers(WebVector<WebAXMarkerType>& types,
                           WebVector<int>& starts,
                           WebVector<int>& ends) const {
-  if (isDetached())
+  if (IsDetached())
     return;
 
-  Vector<DocumentMarker::MarkerType> markerTypes;
-  Vector<AXObject::AXRange> markerRanges;
-  m_private->markers(markerTypes, markerRanges);
-  DCHECK_EQ(markerTypes.size(), markerRanges.size());
+  Vector<DocumentMarker::MarkerType> marker_types;
+  Vector<AXObject::AXRange> marker_ranges;
+  private_->Markers(marker_types, marker_ranges);
+  DCHECK_EQ(marker_types.size(), marker_ranges.size());
 
-  WebVector<WebAXMarkerType> webMarkerTypes(markerTypes.size());
-  WebVector<int> startOffsets(markerRanges.size());
-  WebVector<int> endOffsets(markerRanges.size());
-  for (size_t i = 0; i < markerTypes.size(); ++i) {
-    webMarkerTypes[i] = static_cast<WebAXMarkerType>(markerTypes[i]);
-    DCHECK(markerRanges[i].isSimple());
-    startOffsets[i] = markerRanges[i].anchorOffset;
-    endOffsets[i] = markerRanges[i].focusOffset;
+  WebVector<WebAXMarkerType> web_marker_types(marker_types.size());
+  WebVector<int> start_offsets(marker_ranges.size());
+  WebVector<int> end_offsets(marker_ranges.size());
+  for (size_t i = 0; i < marker_types.size(); ++i) {
+    web_marker_types[i] = static_cast<WebAXMarkerType>(marker_types[i]);
+    DCHECK(marker_ranges[i].IsSimple());
+    start_offsets[i] = marker_ranges[i].anchor_offset;
+    end_offsets[i] = marker_ranges[i].focus_offset;
   }
 
-  types.swap(webMarkerTypes);
-  starts.swap(startOffsets);
-  ends.swap(endOffsets);
+  types.Swap(web_marker_types);
+  starts.Swap(start_offsets);
+  ends.Swap(end_offsets);
 }
 
-void WebAXObject::characterOffsets(WebVector<int>& offsets) const {
-  if (isDetached())
+void WebAXObject::CharacterOffsets(WebVector<int>& offsets) const {
+  if (IsDetached())
     return;
 
-  Vector<int> offsetsVector;
-  m_private->textCharacterOffsets(offsetsVector);
+  Vector<int> offsets_vector;
+  private_->TextCharacterOffsets(offsets_vector);
 
-  size_t vectorSize = offsetsVector.size();
-  WebVector<int> offsetsWebVector(vectorSize);
-  for (size_t i = 0; i < vectorSize; i++)
-    offsetsWebVector[i] = offsetsVector[i];
-  offsets.swap(offsetsWebVector);
+  size_t vector_size = offsets_vector.size();
+  WebVector<int> offsets_web_vector(vector_size);
+  for (size_t i = 0; i < vector_size; i++)
+    offsets_web_vector[i] = offsets_vector[i];
+  offsets.Swap(offsets_web_vector);
 }
 
-void WebAXObject::wordBoundaries(WebVector<int>& starts,
-                                 WebVector<int>& ends) const {
-  if (isDetached())
+void WebAXObject::GetWordBoundaries(WebVector<int>& starts,
+                                    WebVector<int>& ends) const {
+  if (IsDetached())
     return;
 
-  Vector<AXObject::AXRange> wordBoundaries;
-  m_private->wordBoundaries(wordBoundaries);
+  Vector<AXObject::AXRange> word_boundaries;
+  private_->GetWordBoundaries(word_boundaries);
 
-  WebVector<int> wordStartOffsets(wordBoundaries.size());
-  WebVector<int> wordEndOffsets(wordBoundaries.size());
-  for (size_t i = 0; i < wordBoundaries.size(); ++i) {
-    DCHECK(wordBoundaries[i].isSimple());
-    wordStartOffsets[i] = wordBoundaries[i].anchorOffset;
-    wordEndOffsets[i] = wordBoundaries[i].focusOffset;
+  WebVector<int> word_start_offsets(word_boundaries.size());
+  WebVector<int> word_end_offsets(word_boundaries.size());
+  for (size_t i = 0; i < word_boundaries.size(); ++i) {
+    DCHECK(word_boundaries[i].IsSimple());
+    word_start_offsets[i] = word_boundaries[i].anchor_offset;
+    word_end_offsets[i] = word_boundaries[i].focus_offset;
   }
 
-  starts.swap(wordStartOffsets);
-  ends.swap(wordEndOffsets);
+  starts.Swap(word_start_offsets);
+  ends.Swap(word_end_offsets);
 }
 
-bool WebAXObject::isScrollableContainer() const {
-  if (isDetached())
+bool WebAXObject::IsScrollableContainer() const {
+  if (IsDetached())
     return false;
 
-  return m_private->isScrollableContainer();
+  return private_->IsScrollableContainer();
 }
 
-WebPoint WebAXObject::getScrollOffset() const {
-  if (isDetached())
+WebPoint WebAXObject::GetScrollOffset() const {
+  if (IsDetached())
     return WebPoint();
 
-  return m_private->getScrollOffset();
+  return private_->GetScrollOffset();
 }
 
-WebPoint WebAXObject::minimumScrollOffset() const {
-  if (isDetached())
+WebPoint WebAXObject::MinimumScrollOffset() const {
+  if (IsDetached())
     return WebPoint();
 
-  return m_private->minimumScrollOffset();
+  return private_->MinimumScrollOffset();
 }
 
-WebPoint WebAXObject::maximumScrollOffset() const {
-  if (isDetached())
+WebPoint WebAXObject::MaximumScrollOffset() const {
+  if (IsDetached())
     return WebPoint();
 
-  return m_private->maximumScrollOffset();
+  return private_->MaximumScrollOffset();
 }
 
-void WebAXObject::setScrollOffset(const WebPoint& offset) const {
-  if (isDetached())
+void WebAXObject::SetScrollOffset(const WebPoint& offset) const {
+  if (IsDetached())
     return;
 
-  m_private->setScrollOffset(offset);
+  private_->SetScrollOffset(offset);
 }
 
-void WebAXObject::getRelativeBounds(WebAXObject& offsetContainer,
-                                    WebFloatRect& boundsInContainer,
-                                    SkMatrix44& containerTransform) const {
-  if (isDetached())
+void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
+                                    WebFloatRect& bounds_in_container,
+                                    SkMatrix44& container_transform) const {
+  if (IsDetached())
     return;
 
 #if DCHECK_IS_ON()
-  DCHECK(isLayoutClean(m_private->getDocument()));
+  DCHECK(IsLayoutClean(private_->GetDocument()));
 #endif
 
   AXObject* container = nullptr;
   FloatRect bounds;
-  m_private->getRelativeBounds(&container, bounds, containerTransform);
-  offsetContainer = WebAXObject(container);
-  boundsInContainer = WebFloatRect(bounds);
+  private_->GetRelativeBounds(&container, bounds, container_transform);
+  offset_container = WebAXObject(container);
+  bounds_in_container = WebFloatRect(bounds);
 }
 
-void WebAXObject::scrollToMakeVisible() const {
-  if (!isDetached())
-    m_private->scrollToMakeVisible();
+void WebAXObject::ScrollToMakeVisible() const {
+  if (!IsDetached())
+    private_->ScrollToMakeVisible();
 }
 
-void WebAXObject::scrollToMakeVisibleWithSubFocus(
+void WebAXObject::ScrollToMakeVisibleWithSubFocus(
     const WebRect& subfocus) const {
-  if (!isDetached())
-    m_private->scrollToMakeVisibleWithSubFocus(subfocus);
+  if (!IsDetached())
+    private_->ScrollToMakeVisibleWithSubFocus(subfocus);
 }
 
-void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const {
-  if (!isDetached())
-    m_private->scrollToGlobalPoint(point);
+void WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
+  if (!IsDetached())
+    private_->ScrollToGlobalPoint(point);
 }
 
-WebAXObject::WebAXObject(AXObject* object) : m_private(object) {}
+WebAXObject::WebAXObject(AXObject* object) : private_(object) {}
 
 WebAXObject& WebAXObject::operator=(AXObject* object) {
-  m_private = object;
+  private_ = object;
   return *this;
 }
 
 WebAXObject::operator AXObject*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
 }  // namespace blink

@@ -46,17 +46,17 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
  public:
   struct Step {
     DISALLOW_NEW();
-    Step(int step = 1, int stepBase = 0) : step(step), stepBase(stepBase) {}
+    Step(int step = 1, int step_base = 0) : step(step), step_base(step_base) {}
     int step;
-    int stepBase;
+    int step_base;
   };
 
   struct Range {
     DISALLOW_NEW();
     Range(int minimum, int maximum) : minimum(minimum), maximum(maximum) {}
-    int clampValue(int) const;
-    bool isInRange(int) const;
-    bool isSingleton() const { return minimum == maximum; }
+    int ClampValue(int) const;
+    bool IsInRange(int) const;
+    bool IsSingleton() const { return minimum == maximum; }
 
     int minimum;
     int maximum;
@@ -66,47 +66,47 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
   DateTimeNumericFieldElement(Document&,
                               FieldOwner&,
                               const Range&,
-                              const Range& hardLimits,
+                              const Range& hard_limits,
                               const String& placeholder,
                               const Step& = Step());
 
-  int clampValue(int value) const { return m_range.clampValue(value); }
-  virtual int defaultValueForStepDown() const;
-  virtual int defaultValueForStepUp() const;
-  const Range& range() const { return m_range; }
+  int ClampValue(int value) const { return range_.ClampValue(value); }
+  virtual int DefaultValueForStepDown() const;
+  virtual int DefaultValueForStepUp() const;
+  const Range& GetRange() const { return range_; }
 
   // DateTimeFieldElement functions.
-  bool hasValue() const final;
-  void initialize(const AtomicString& pseudo, const String& axHelpText);
-  int maximum() const;
-  void setEmptyValue(EventBehavior = DispatchNoEvent) final;
-  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
-  int valueAsInteger() const final;
-  String visibleValue() const final;
+  bool HasValue() const final;
+  void Initialize(const AtomicString& pseudo, const String& ax_help_text);
+  int Maximum() const;
+  void SetEmptyValue(EventBehavior = kDispatchNoEvent) final;
+  void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) override;
+  int ValueAsInteger() const final;
+  String VisibleValue() const final;
 
  private:
   // DateTimeFieldElement functions.
-  void handleKeyboardEvent(KeyboardEvent*) final;
-  float maximumWidth(const ComputedStyle&) override;
-  void stepDown() final;
-  void stepUp() final;
-  String value() const final;
+  void HandleKeyboardEvent(KeyboardEvent*) final;
+  float MaximumWidth(const ComputedStyle&) override;
+  void StepDown() final;
+  void StepUp() final;
+  String Value() const final;
 
   // Node functions.
-  void setFocused(bool) final;
+  void SetFocused(bool) final;
 
-  String formatValue(int) const;
-  int roundUp(int) const;
-  int roundDown(int) const;
-  int typeAheadValue() const;
+  String FormatValue(int) const;
+  int RoundUp(int) const;
+  int RoundDown(int) const;
+  int TypeAheadValue() const;
 
-  const String m_placeholder;
-  const Range m_range;
-  const Range m_hardLimits;
-  const Step m_step;
-  int m_value;
-  bool m_hasValue;
-  mutable StringBuilder m_typeAheadBuffer;
+  const String placeholder_;
+  const Range range_;
+  const Range hard_limits_;
+  const Step step_;
+  int value_;
+  bool has_value_;
+  mutable StringBuilder type_ahead_buffer_;
 };
 
 }  // namespace blink

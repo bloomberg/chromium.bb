@@ -11,7 +11,7 @@ namespace blink {
 
 TEST(AcceptLanguagesResolverTest, AcceptLanguagesChanged) {
   struct {
-    const char* acceptLanguages;
+    const char* accept_languages;
     UScriptCode script;
     const char* locale;
   } tests[] = {
@@ -47,18 +47,18 @@ TEST(AcceptLanguagesResolverTest, AcceptLanguagesChanged) {
 
   for (const auto& test : tests) {
     const LayoutLocale* locale =
-        AcceptLanguagesResolver::localeForHanFromAcceptLanguages(
-            test.acceptLanguages);
+        AcceptLanguagesResolver::LocaleForHanFromAcceptLanguages(
+            test.accept_languages);
 
     if (test.script == USCRIPT_COMMON) {
-      EXPECT_EQ(nullptr, locale) << test.acceptLanguages;
+      EXPECT_EQ(nullptr, locale) << test.accept_languages;
       continue;
     }
 
-    ASSERT_NE(nullptr, locale) << test.acceptLanguages;
-    EXPECT_EQ(test.script, locale->scriptForHan()) << test.acceptLanguages;
-    EXPECT_STRCASEEQ(test.locale, locale->localeForHanForSkFontMgr())
-        << test.acceptLanguages;
+    ASSERT_NE(nullptr, locale) << test.accept_languages;
+    EXPECT_EQ(test.script, locale->ScriptForHan()) << test.accept_languages;
+    EXPECT_STRCASEEQ(test.locale, locale->LocaleForHanForSkFontMgr())
+        << test.accept_languages;
   }
 }
 

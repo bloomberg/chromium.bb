@@ -15,96 +15,96 @@ namespace blink {
 
 namespace {
 char MachineStateToChar(TextSegmentationMachineState state) {
-  static const char indicators[] = {
+  static const char kIndicators[] = {
       'I',  // Invalid
       'R',  // NeedMoreCodeUnit (Repeat)
       'S',  // NeedFollowingCodeUnit (Switch)
       'F',  // Finished
   };
-  const auto& it = std::begin(indicators) + static_cast<size_t>(state);
-  DCHECK_GE(it, std::begin(indicators)) << "Unknown backspace value";
-  DCHECK_LT(it, std::end(indicators)) << "Unknown backspace value";
+  const auto& it = std::begin(kIndicators) + static_cast<size_t>(state);
+  DCHECK_GE(it, std::begin(kIndicators)) << "Unknown backspace value";
+  DCHECK_LT(it, std::end(kIndicators)) << "Unknown backspace value";
   return *it;
 }
 
-Vector<UChar> codePointsToCodeUnits(const Vector<UChar32>& codePoints) {
+Vector<UChar> CodePointsToCodeUnits(const Vector<UChar32>& code_points) {
   Vector<UChar> out;
-  for (const auto& codePoint : codePoints) {
-    if (U16_LENGTH(codePoint) == 2) {
-      out.push_back(U16_LEAD(codePoint));
-      out.push_back(U16_TRAIL(codePoint));
+  for (const auto& code_point : code_points) {
+    if (U16_LENGTH(code_point) == 2) {
+      out.push_back(U16_LEAD(code_point));
+      out.push_back(U16_TRAIL(code_point));
     } else {
-      out.push_back(static_cast<UChar>(codePoint));
+      out.push_back(static_cast<UChar>(code_point));
     }
   }
   return out;
 }
 
 template <typename StateMachine>
-String processSequence(StateMachine* machine,
+String ProcessSequence(StateMachine* machine,
                        const Vector<UChar32>& preceding,
                        const Vector<UChar32>& following) {
-  machine->reset();
+  machine->Reset();
   StringBuilder out;
-  TextSegmentationMachineState state = TextSegmentationMachineState::Invalid;
-  Vector<UChar> precedingCodeUnits = codePointsToCodeUnits(preceding);
-  std::reverse(precedingCodeUnits.begin(), precedingCodeUnits.end());
-  for (const auto& codeUnit : precedingCodeUnits) {
-    state = machine->feedPrecedingCodeUnit(codeUnit);
-    out.append(MachineStateToChar(state));
+  TextSegmentationMachineState state = TextSegmentationMachineState::kInvalid;
+  Vector<UChar> preceding_code_units = CodePointsToCodeUnits(preceding);
+  std::reverse(preceding_code_units.begin(), preceding_code_units.end());
+  for (const auto& code_unit : preceding_code_units) {
+    state = machine->FeedPrecedingCodeUnit(code_unit);
+    out.Append(MachineStateToChar(state));
     switch (state) {
-      case TextSegmentationMachineState::Invalid:
-      case TextSegmentationMachineState::Finished:
-        return out.toString();
-      case TextSegmentationMachineState::NeedMoreCodeUnit:
+      case TextSegmentationMachineState::kInvalid:
+      case TextSegmentationMachineState::kFinished:
+        return out.ToString();
+      case TextSegmentationMachineState::kNeedMoreCodeUnit:
         continue;
-      case TextSegmentationMachineState::NeedFollowingCodeUnit:
+      case TextSegmentationMachineState::kNeedFollowingCodeUnit:
         break;
     }
   }
-  if (preceding.isEmpty() ||
-      state == TextSegmentationMachineState::NeedMoreCodeUnit) {
-    state = machine->tellEndOfPrecedingText();
-    out.append(MachineStateToChar(state));
+  if (preceding.IsEmpty() ||
+      state == TextSegmentationMachineState::kNeedMoreCodeUnit) {
+    state = machine->TellEndOfPrecedingText();
+    out.Append(MachineStateToChar(state));
   }
-  if (state == TextSegmentationMachineState::Finished)
-    return out.toString();
+  if (state == TextSegmentationMachineState::kFinished)
+    return out.ToString();
 
-  Vector<UChar> followingCodeUnits = codePointsToCodeUnits(following);
-  for (const auto& codeUnit : followingCodeUnits) {
-    state = machine->feedFollowingCodeUnit(codeUnit);
-    out.append(MachineStateToChar(state));
+  Vector<UChar> following_code_units = CodePointsToCodeUnits(following);
+  for (const auto& code_unit : following_code_units) {
+    state = machine->FeedFollowingCodeUnit(code_unit);
+    out.Append(MachineStateToChar(state));
     switch (state) {
-      case TextSegmentationMachineState::Invalid:
-      case TextSegmentationMachineState::Finished:
-        return out.toString();
-      case TextSegmentationMachineState::NeedMoreCodeUnit:
+      case TextSegmentationMachineState::kInvalid:
+      case TextSegmentationMachineState::kFinished:
+        return out.ToString();
+      case TextSegmentationMachineState::kNeedMoreCodeUnit:
         continue;
-      case TextSegmentationMachineState::NeedFollowingCodeUnit:
+      case TextSegmentationMachineState::kNeedFollowingCodeUnit:
         break;
     }
   }
-  return out.toString();
+  return out.ToString();
 }
 }  // namespace
 
-String GraphemeStateMachineTestBase::processSequenceBackward(
+String GraphemeStateMachineTestBase::ProcessSequenceBackward(
     BackwardGraphemeBoundaryStateMachine* machine,
     const Vector<UChar32>& preceding) {
-  const String& out = processSequence(machine, preceding, Vector<UChar32>());
-  if (machine->finalizeAndGetBoundaryOffset() !=
-      machine->finalizeAndGetBoundaryOffset())
+  const String& out = ProcessSequence(machine, preceding, Vector<UChar32>());
+  if (machine->FinalizeAndGetBoundaryOffset() !=
+      machine->FinalizeAndGetBoundaryOffset())
     return "State machine changes final offset after finished.";
   return out;
 }
 
-String GraphemeStateMachineTestBase::processSequenceForward(
+String GraphemeStateMachineTestBase::ProcessSequenceForward(
     ForwardGraphemeBoundaryStateMachine* machine,
     const Vector<UChar32>& preceding,
     const Vector<UChar32>& following) {
-  const String& out = processSequence(machine, preceding, following);
-  if (machine->finalizeAndGetBoundaryOffset() !=
-      machine->finalizeAndGetBoundaryOffset())
+  const String& out = ProcessSequence(machine, preceding, following);
+  if (machine->FinalizeAndGetBoundaryOffset() !=
+      machine->FinalizeAndGetBoundaryOffset())
     return "State machine changes final offset after finished.";
   return out;
 }

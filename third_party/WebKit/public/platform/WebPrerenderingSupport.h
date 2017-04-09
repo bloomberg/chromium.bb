@@ -39,33 +39,33 @@ class WebPrerender;
 
 class WebPrerenderingSupport {
  public:
-  BLINK_PLATFORM_EXPORT static void initialize(WebPrerenderingSupport*);
-  BLINK_PLATFORM_EXPORT static void shutdown();
-  BLINK_PLATFORM_EXPORT static WebPrerenderingSupport* current();
+  BLINK_PLATFORM_EXPORT static void Initialize(WebPrerenderingSupport*);
+  BLINK_PLATFORM_EXPORT static void Shutdown();
+  BLINK_PLATFORM_EXPORT static WebPrerenderingSupport* Current();
 
   // A prerender link element is added when it is inserted into a document.
-  virtual void add(const WebPrerender&) = 0;
+  virtual void Add(const WebPrerender&) = 0;
 
   // A prerender is canceled when it is removed from a document.
-  virtual void cancel(const WebPrerender&) = 0;
+  virtual void Cancel(const WebPrerender&) = 0;
 
   // A prerender is abandoned when it's navigated away from or suspended in the
   // page cache. This is a weaker signal than cancel(), since the launcher
   // hasn't indicated that the prerender isn't wanted, and we may end up using
   // it after, for instance, a short redirect chain.
-  virtual void abandon(const WebPrerender&) = 0;
+  virtual void Abandon(const WebPrerender&) = 0;
 
   // Called when the current page has finished requesting early discoverable
   // resources for prefetch. In prefetch mode link elements do not initiate any
   // prerenders.
-  virtual void prefetchFinished() = 0;
+  virtual void PrefetchFinished() = 0;
 
  protected:
   WebPrerenderingSupport() {}
   virtual ~WebPrerenderingSupport() {}
 
  private:
-  static WebPrerenderingSupport* s_platform;
+  static WebPrerenderingSupport* platform_;
 };
 
 }  // namespace blink

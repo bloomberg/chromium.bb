@@ -20,19 +20,19 @@ WebInputEvent::RailsMode MouseWheelRailsFilterMac::UpdateRailsMode(
   // A somewhat-arbitrary decay constant for hysteresis.
   const float kDecayConstant = 0.8f;
 
-  if (event.phase == WebMouseWheelEvent::PhaseBegan) {
+  if (event.phase == WebMouseWheelEvent::kPhaseBegan) {
     decayed_delta_ = gfx::Vector2dF();
   }
-  if (event.deltaX == 0 && event.deltaY == 0)
-    return WebInputEvent::RailsModeFree;
+  if (event.delta_x == 0 && event.delta_y == 0)
+    return WebInputEvent::kRailsModeFree;
 
   decayed_delta_.Scale(kDecayConstant);
   decayed_delta_ +=
-      gfx::Vector2dF(std::abs(event.deltaX), std::abs(event.deltaY));
+      gfx::Vector2dF(std::abs(event.delta_x), std::abs(event.delta_y));
 
   if (decayed_delta_.y() >= decayed_delta_.x())
-    return WebInputEvent::RailsModeVertical;
-  return WebInputEvent::RailsModeHorizontal;
+    return WebInputEvent::kRailsModeVertical;
+  return WebInputEvent::kRailsModeHorizontal;
 }
 
 }  // namespace content

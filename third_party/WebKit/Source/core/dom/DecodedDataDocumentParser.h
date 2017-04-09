@@ -37,26 +37,26 @@ class CORE_EXPORT DecodedDataDocumentParser : public DocumentParser {
  public:
   // Only used by the XMLDocumentParser to communicate back to
   // XMLHttpRequest if the responseXML was well formed.
-  virtual bool wellFormed() const { return true; }
+  virtual bool WellFormed() const { return true; }
 
   // The below functions are used by DocumentWriter (the loader).
-  void appendBytes(const char* bytes, size_t length) override;
-  virtual void flush();
-  bool needsDecoder() const final { return m_needsDecoder; }
-  void setDecoder(std::unique_ptr<TextResourceDecoder>) override;
-  TextResourceDecoder* decoder() final;
+  void AppendBytes(const char* bytes, size_t length) override;
+  virtual void Flush();
+  bool NeedsDecoder() const final { return needs_decoder_; }
+  void SetDecoder(std::unique_ptr<TextResourceDecoder>) override;
+  TextResourceDecoder* Decoder() final;
 
-  std::unique_ptr<TextResourceDecoder> takeDecoder();
+  std::unique_ptr<TextResourceDecoder> TakeDecoder();
 
  protected:
   explicit DecodedDataDocumentParser(Document&);
   ~DecodedDataDocumentParser() override;
 
  private:
-  void updateDocument(String& decodedData);
+  void UpdateDocument(String& decoded_data);
 
-  bool m_needsDecoder;
-  std::unique_ptr<TextResourceDecoder> m_decoder;
+  bool needs_decoder_;
+  std::unique_ptr<TextResourceDecoder> decoder_;
 };
 
 }  // namespace blink

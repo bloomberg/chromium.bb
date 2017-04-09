@@ -14,15 +14,15 @@ namespace blink {
 const CSSValue* CSSPropertyAPIQuotes::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueNone)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  CSSValueList* values = CSSValueList::createSpaceSeparated();
-  while (!range.atEnd()) {
-    CSSStringValue* parsedValue =
-        CSSPropertyParserHelpers::consumeString(range);
-    if (!parsedValue)
+  if (range.Peek().Id() == CSSValueNone)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+  while (!range.AtEnd()) {
+    CSSStringValue* parsed_value =
+        CSSPropertyParserHelpers::ConsumeString(range);
+    if (!parsed_value)
       return nullptr;
-    values->append(*parsedValue);
+    values->Append(*parsed_value);
   }
   if (values->length() && values->length() % 2 == 0)
     return values;

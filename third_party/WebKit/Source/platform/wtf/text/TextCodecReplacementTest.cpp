@@ -17,43 +17,43 @@ namespace WTF {
 namespace {
 
 // Just one example, others are listed in the codec implementation.
-const char* replacementAlias = "iso-2022-kr";
+const char* g_replacement_alias = "iso-2022-kr";
 
 TEST(TextCodecReplacement, Aliases) {
   // "replacement" is not a valid alias for itself
-  EXPECT_FALSE(TextEncoding("replacement").isValid());
-  EXPECT_FALSE(TextEncoding("rEpLaCeMeNt").isValid());
+  EXPECT_FALSE(TextEncoding("replacement").IsValid());
+  EXPECT_FALSE(TextEncoding("rEpLaCeMeNt").IsValid());
 
-  EXPECT_TRUE(TextEncoding(replacementAlias).isValid());
-  EXPECT_STREQ("replacement", TextEncoding(replacementAlias).name());
+  EXPECT_TRUE(TextEncoding(g_replacement_alias).IsValid());
+  EXPECT_STREQ("replacement", TextEncoding(g_replacement_alias).GetName());
 }
 
 TEST(TextCodecReplacement, DecodesToFFFD) {
-  TextEncoding encoding(replacementAlias);
-  std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
+  TextEncoding encoding(g_replacement_alias);
+  std::unique_ptr<TextCodec> codec(NewTextCodec(encoding));
 
-  bool sawError = false;
-  const char testCase[] = "hello world";
-  size_t testCaseSize = sizeof(testCase) - 1;
+  bool saw_error = false;
+  const char kTestCase[] = "hello world";
+  size_t test_case_size = sizeof(kTestCase) - 1;
 
   const String result =
-      codec->decode(testCase, testCaseSize, DataEOF, false, sawError);
-  EXPECT_TRUE(sawError);
+      codec->Decode(kTestCase, test_case_size, kDataEOF, false, saw_error);
+  EXPECT_TRUE(saw_error);
   ASSERT_EQ(1u, result.length());
   EXPECT_EQ(0xFFFDU, result[0]);
 }
 
 TEST(TextCodecReplacement, EncodesToUTF8) {
-  TextEncoding encoding(replacementAlias);
-  std::unique_ptr<TextCodec> codec(newTextCodec(encoding));
+  TextEncoding encoding(g_replacement_alias);
+  std::unique_ptr<TextCodec> codec(NewTextCodec(encoding));
 
   // "Kanji" in Chinese characters.
-  const UChar testCase[] = {0x6F22, 0x5B57};
-  size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
+  const UChar kTestCase[] = {0x6F22, 0x5B57};
+  size_t test_case_size = WTF_ARRAY_LENGTH(kTestCase);
   CString result =
-      codec->encode(testCase, testCaseSize, QuestionMarksForUnencodables);
+      codec->Encode(kTestCase, test_case_size, kQuestionMarksForUnencodables);
 
-  EXPECT_STREQ("\xE6\xBC\xA2\xE5\xAD\x97", result.data());
+  EXPECT_STREQ("\xE6\xBC\xA2\xE5\xAD\x97", result.Data());
 }
 
 }  // namespace

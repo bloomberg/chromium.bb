@@ -29,13 +29,13 @@ namespace blink {
 
 namespace {
 
-unsigned convertDeltaMode(const WebMouseWheelEvent& event) {
-  return event.scrollByPage ? WheelEvent::kDomDeltaPage
-                            : WheelEvent::kDomDeltaPixel;
+unsigned ConvertDeltaMode(const WebMouseWheelEvent& event) {
+  return event.scroll_by_page ? WheelEvent::kDomDeltaPage
+                              : WheelEvent::kDomDeltaPixel;
 }
 
 // Negate a long value without integer overflow.
-long negateIfPossible(long value) {
+long NegateIfPossible(long value) {
   if (value == LONG_MIN)
     return value;
   return -value;
@@ -43,68 +43,68 @@ long negateIfPossible(long value) {
 
 }  // namespace
 
-WheelEvent* WheelEvent::create(const WebMouseWheelEvent& event,
+WheelEvent* WheelEvent::Create(const WebMouseWheelEvent& event,
                                AbstractView* view) {
   return new WheelEvent(event, view);
 }
 
 WheelEvent::WheelEvent()
-    : m_deltaX(0), m_deltaY(0), m_deltaZ(0), m_deltaMode(kDomDeltaPixel) {}
+    : delta_x_(0), delta_y_(0), delta_z_(0), delta_mode_(kDomDeltaPixel) {}
 
 WheelEvent::WheelEvent(const AtomicString& type,
                        const WheelEventInit& initializer)
     : MouseEvent(type, initializer),
-      m_wheelDelta(initializer.wheelDeltaX() ? initializer.wheelDeltaX()
+      wheel_delta_(initializer.wheelDeltaX() ? initializer.wheelDeltaX()
                                              : -initializer.deltaX(),
                    initializer.wheelDeltaY() ? initializer.wheelDeltaY()
                                              : -initializer.deltaY()),
-      m_deltaX(initializer.deltaX()
+      delta_x_(initializer.deltaX()
                    ? initializer.deltaX()
-                   : negateIfPossible(initializer.wheelDeltaX())),
-      m_deltaY(initializer.deltaY()
+                   : NegateIfPossible(initializer.wheelDeltaX())),
+      delta_y_(initializer.deltaY()
                    ? initializer.deltaY()
-                   : negateIfPossible(initializer.wheelDeltaY())),
-      m_deltaZ(initializer.deltaZ()),
-      m_deltaMode(initializer.deltaMode()) {}
+                   : NegateIfPossible(initializer.wheelDeltaY())),
+      delta_z_(initializer.deltaZ()),
+      delta_mode_(initializer.deltaMode()) {}
 
 WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
     : MouseEvent(EventTypeNames::wheel,
                  true,
-                 event.isCancelable(),
+                 event.IsCancelable(),
                  view,
                  event,
-                 event.clickCount,
+                 event.click_count,
                  // TODO(zino): Should support canvas hit region because the
                  // wheel event is a kind of mouse event. Please see
                  // http://crbug.com/594075
                  String(),
                  nullptr),
-      m_wheelDelta(event.wheelTicksX * TickMultiplier,
-                   event.wheelTicksY * TickMultiplier),
-      m_deltaX(-event.deltaXInRootFrame()),
-      m_deltaY(-event.deltaYInRootFrame()),
-      m_deltaZ(0),
-      m_deltaMode(convertDeltaMode(event)),
-      m_nativeEvent(event) {}
+      wheel_delta_(event.wheel_ticks_x * kTickMultiplier,
+                   event.wheel_ticks_y * kTickMultiplier),
+      delta_x_(-event.DeltaXInRootFrame()),
+      delta_y_(-event.DeltaYInRootFrame()),
+      delta_z_(0),
+      delta_mode_(ConvertDeltaMode(event)),
+      native_event_(event) {}
 
-const AtomicString& WheelEvent::interfaceName() const {
+const AtomicString& WheelEvent::InterfaceName() const {
   return EventNames::WheelEvent;
 }
 
-bool WheelEvent::isMouseEvent() const {
+bool WheelEvent::IsMouseEvent() const {
   return false;
 }
 
-bool WheelEvent::isWheelEvent() const {
+bool WheelEvent::IsWheelEvent() const {
   return true;
 }
 
-EventDispatchMediator* WheelEvent::createMediator() {
-  return EventDispatchMediator::create(this);
+EventDispatchMediator* WheelEvent::CreateMediator() {
+  return EventDispatchMediator::Create(this);
 }
 
 DEFINE_TRACE(WheelEvent) {
-  MouseEvent::trace(visitor);
+  MouseEvent::Trace(visitor);
 }
 
 }  // namespace blink

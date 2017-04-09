@@ -29,23 +29,23 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceGraphic final : public FilterEffect {
  public:
-  static SourceGraphic* create(Filter*);
+  static SourceGraphic* Create(Filter*);
   ~SourceGraphic() override;
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
-  void setSourceRect(const IntRect&);
+  void SetSourceRect(const IntRect&);
 
  private:
   explicit SourceGraphic(Filter*);
 
-  FilterEffectType getFilterEffectType() const override {
-    return FilterEffectTypeSourceInput;
+  FilterEffectType GetFilterEffectType() const override {
+    return kFilterEffectTypeSourceInput;
   }
 
-  FloatRect mapInputs(const FloatRect&) const override;
+  FloatRect MapInputs(const FloatRect&) const override;
 
-  IntRect m_sourceRect;
+  IntRect source_rect_;
 };
 
 }  // namespace blink

@@ -8,7 +8,7 @@
 
 namespace blink {
 
-static const uint16_t* toUint16(const UChar* src) {
+static const uint16_t* ToUint16(const UChar* src) {
   // FIXME: This relies on undefined behavior however it works on the
   // current versions of all compilers we care about and avoids making
   // a copy of the string.
@@ -18,76 +18,77 @@ static const uint16_t* toUint16(const UChar* src) {
 }
 
 CaseMappingHarfBuzzBufferFiller::CaseMappingHarfBuzzBufferFiller(
-    CaseMapIntend caseMapIntend,
+    CaseMapIntend case_map_intend,
     AtomicString locale,
-    hb_buffer_t* harfBuzzBuffer,
+    hb_buffer_t* harf_buzz_buffer,
     const UChar* buffer,
-    unsigned bufferLength,
-    unsigned startIndex,
-    unsigned numCharacters)
-    : m_harfBuzzBuffer(harfBuzzBuffer) {
-  if (caseMapIntend == CaseMapIntend::KeepSameCase) {
-    hb_buffer_add_utf16(m_harfBuzzBuffer, toUint16(buffer), bufferLength,
-                        startIndex, numCharacters);
+    unsigned buffer_length,
+    unsigned start_index,
+    unsigned num_characters)
+    : harf_buzz_buffer_(harf_buzz_buffer) {
+  if (case_map_intend == CaseMapIntend::kKeepSameCase) {
+    hb_buffer_add_utf16(harf_buzz_buffer_, ToUint16(buffer), buffer_length,
+                        start_index, num_characters);
   } else {
-    String caseMappedText;
-    if (caseMapIntend == CaseMapIntend::UpperCase) {
-      caseMappedText = String(buffer, bufferLength).upper(locale);
+    String case_mapped_text;
+    if (case_map_intend == CaseMapIntend::kUpperCase) {
+      case_mapped_text = String(buffer, buffer_length).Upper(locale);
     } else {
-      caseMappedText = String(buffer, bufferLength).lower(locale);
+      case_mapped_text = String(buffer, buffer_length).Lower(locale);
     }
 
-    if (caseMappedText.length() != bufferLength) {
-      fillSlowCase(caseMapIntend, locale, buffer, bufferLength, startIndex,
-                   numCharacters);
+    if (case_mapped_text.length() != buffer_length) {
+      FillSlowCase(case_map_intend, locale, buffer, buffer_length, start_index,
+                   num_characters);
       return;
     }
 
-    ASSERT(caseMappedText.length() == bufferLength);
-    ASSERT(!caseMappedText.is8Bit());
-    hb_buffer_add_utf16(m_harfBuzzBuffer,
-                        toUint16(caseMappedText.characters16()), bufferLength,
-                        startIndex, numCharacters);
+    ASSERT(case_mapped_text.length() == buffer_length);
+    ASSERT(!case_mapped_text.Is8Bit());
+    hb_buffer_add_utf16(harf_buzz_buffer_,
+                        ToUint16(case_mapped_text.Characters16()),
+                        buffer_length, start_index, num_characters);
   }
 }
 
 // TODO(drott): crbug.com/623940 Fix lack of context sensitive case mapping
 // here.
-void CaseMappingHarfBuzzBufferFiller::fillSlowCase(CaseMapIntend caseMapIntend,
-                                                   AtomicString locale,
-                                                   const UChar* buffer,
-                                                   unsigned bufferLength,
-                                                   unsigned startIndex,
-                                                   unsigned numCharacters) {
+void CaseMappingHarfBuzzBufferFiller::FillSlowCase(
+    CaseMapIntend case_map_intend,
+    AtomicString locale,
+    const UChar* buffer,
+    unsigned buffer_length,
+    unsigned start_index,
+    unsigned num_characters) {
   // Record pre-context.
-  hb_buffer_add_utf16(m_harfBuzzBuffer, toUint16(buffer), bufferLength,
-                      startIndex, 0);
+  hb_buffer_add_utf16(harf_buzz_buffer_, ToUint16(buffer), buffer_length,
+                      start_index, 0);
 
-  for (unsigned charIndex = startIndex;
-       charIndex < startIndex + numCharacters;) {
-    unsigned newCharIndex = charIndex;
-    U16_FWD_1(buffer, newCharIndex, numCharacters);
-    String charByChar(&buffer[charIndex], newCharIndex - charIndex);
-    String caseMappedChar;
-    if (caseMapIntend == CaseMapIntend::UpperCase)
-      caseMappedChar = charByChar.upper(locale);
+  for (unsigned char_index = start_index;
+       char_index < start_index + num_characters;) {
+    unsigned new_char_index = char_index;
+    U16_FWD_1(buffer, new_char_index, num_characters);
+    String char_by_char(&buffer[char_index], new_char_index - char_index);
+    String case_mapped_char;
+    if (case_map_intend == CaseMapIntend::kUpperCase)
+      case_mapped_char = char_by_char.Upper(locale);
     else
-      caseMappedChar = charByChar.lower(locale);
+      case_mapped_char = char_by_char.Lower(locale);
 
-    for (unsigned j = 0; j < caseMappedChar.length();) {
+    for (unsigned j = 0; j < case_mapped_char.length();) {
       UChar32 codepoint = 0;
-      U16_NEXT(caseMappedChar.characters16(), j, caseMappedChar.length(),
+      U16_NEXT(case_mapped_char.Characters16(), j, case_mapped_char.length(),
                codepoint);
       // Add all characters of the case mapping result at the same cluster
       // position.
-      hb_buffer_add(m_harfBuzzBuffer, codepoint, charIndex);
+      hb_buffer_add(harf_buzz_buffer_, codepoint, char_index);
     }
-    charIndex = newCharIndex;
+    char_index = new_char_index;
   }
 
   // Record post-context
-  hb_buffer_add_utf16(m_harfBuzzBuffer, toUint16(buffer), bufferLength,
-                      startIndex + numCharacters, 0);
+  hb_buffer_add_utf16(harf_buzz_buffer_, ToUint16(buffer), buffer_length,
+                      start_index + num_characters, 0);
 }
 
 }  // namespace blink

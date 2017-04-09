@@ -31,16 +31,16 @@ class DummyModulator : public Modulator {
   virtual ~DummyModulator();
   DECLARE_TRACE();
 
-  ScriptModuleResolver* scriptModuleResolver() override;
-  WebTaskRunner* taskRunner() override;
-  ReferrerPolicy referrerPolicy() override;
-  SecurityOrigin* securityOrigin() override;
+  ScriptModuleResolver* GetScriptModuleResolver() override;
+  WebTaskRunner* TaskRunner() override;
+  ReferrerPolicy GetReferrerPolicy() override;
+  SecurityOrigin* GetSecurityOrigin() override;
 
-  void fetchNewSingleModule(const ModuleScriptFetchRequest&,
+  void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
-  ScriptModule compileModule(const String& script,
-                             const String& urlStr,
+  ScriptModule CompileModule(const String& script,
+                             const String& url_str,
                              AccessControlStatus) override;
 };
 

@@ -20,31 +20,31 @@ class WebAudioLatencyHint {
 
   explicit WebAudioLatencyHint(const WebString& category) {
     if (category == "interactive") {
-      m_category = kCategoryInteractive;
+      category_ = kCategoryInteractive;
     } else if (category == "balanced") {
-      m_category = kCategoryBalanced;
+      category_ = kCategoryBalanced;
     } else if (category == "playback") {
-      m_category = kCategoryPlayback;
+      category_ = kCategoryPlayback;
     } else {
       NOTREACHED();
-      m_category = kCategoryInteractive;
+      category_ = kCategoryInteractive;
     }
   }
 
   explicit WebAudioLatencyHint(AudioContextLatencyCategory category)
-      : m_category(category), m_seconds(0) {}
+      : category_(category), seconds_(0) {}
   explicit WebAudioLatencyHint(double seconds)
-      : m_category(kCategoryExact), m_seconds(seconds) {}
+      : category_(kCategoryExact), seconds_(seconds) {}
 
-  AudioContextLatencyCategory category() const { return m_category; }
-  double seconds() const {
-    DCHECK_EQ(m_category, kCategoryExact);
-    return m_seconds;
+  AudioContextLatencyCategory Category() const { return category_; }
+  double Seconds() const {
+    DCHECK_EQ(category_, kCategoryExact);
+    return seconds_;
   }
 
  private:
-  AudioContextLatencyCategory m_category;
-  double m_seconds;
+  AudioContextLatencyCategory category_;
+  double seconds_;
 };
 
 }  // namespace blink

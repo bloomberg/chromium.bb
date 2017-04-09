@@ -51,30 +51,31 @@ class PLATFORM_EXPORT SharedBufferChunkReader final {
   SharedBufferChunkReader(PassRefPtr<const SharedBuffer>,
                           const char* separator);
 
-  void setSeparator(const Vector<char>&);
-  void setSeparator(const char*);
+  void SetSeparator(const Vector<char>&);
+  void SetSeparator(const char*);
 
   // Returns false when the end of the buffer was reached.
-  bool nextChunk(Vector<char>& data, bool includeSeparator = false);
+  bool NextChunk(Vector<char>& data, bool include_separator = false);
 
   // Returns a null string when the end of the buffer has been reached.
-  String nextChunkAsUTF8StringWithLatin1Fallback(bool includeSeparator = false);
+  String NextChunkAsUTF8StringWithLatin1Fallback(
+      bool include_separator = false);
 
   // Reads size bytes at the current location in the buffer, without changing
   // the buffer position.
   // Returns the number of bytes read. That number might be less than the
   // specified size if the end of the buffer was reached.
-  size_t peek(Vector<char>&, size_t);
+  size_t Peek(Vector<char>&, size_t);
 
  private:
-  RefPtr<const SharedBuffer> m_buffer;
-  size_t m_bufferPosition;
-  const char* m_segment;
-  size_t m_segmentLength;
-  size_t m_segmentIndex;
-  bool m_reachedEndOfFile;
-  Vector<char> m_separator;
-  size_t m_separatorIndex;
+  RefPtr<const SharedBuffer> buffer_;
+  size_t buffer_position_;
+  const char* segment_;
+  size_t segment_length_;
+  size_t segment_index_;
+  bool reached_end_of_file_;
+  Vector<char> separator_;
+  size_t separator_index_;
 };
 
 }  // namespace blink

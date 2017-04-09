@@ -38,116 +38,117 @@ namespace blink {
 const unsigned kMaxFFTPow2Size = 15;
 
 // Normal constructor: allocates for a given fftSize.
-FFTFrame::FFTFrame(unsigned fftSize)
-    : m_FFTSize(fftSize),
-      m_log2FFTSize(static_cast<unsigned>(log2(fftSize))),
-      m_realData(fftSize / 2),
-      m_imagData(fftSize / 2),
-      m_forwardContext(nullptr),
-      m_inverseContext(nullptr),
-      m_complexData(fftSize) {
+FFTFrame::FFTFrame(unsigned fft_size)
+    : fft_size_(fft_size),
+      log2fft_size_(static_cast<unsigned>(log2(fft_size))),
+      real_data_(fft_size / 2),
+      imag_data_(fft_size / 2),
+      forward_context_(nullptr),
+      inverse_context_(nullptr),
+      complex_data_(fft_size) {
   // We only allow power of two.
-  DCHECK_EQ(1UL << m_log2FFTSize, m_FFTSize);
+  DCHECK_EQ(1UL << log2fft_size_, fft_size_);
 
-  m_forwardContext = contextForSize(m_log2FFTSize);
-  m_inverseContext = contextForSize(m_log2FFTSize);
+  forward_context_ = ContextForSize(log2fft_size_);
+  inverse_context_ = ContextForSize(log2fft_size_);
 }
 
 // Creates a blank/empty frame (interpolate() must later be called).
 FFTFrame::FFTFrame()
-    : m_FFTSize(0),
-      m_log2FFTSize(0),
-      m_forwardContext(nullptr),
-      m_inverseContext(nullptr) {}
+    : fft_size_(0),
+      log2fft_size_(0),
+      forward_context_(nullptr),
+      inverse_context_(nullptr) {}
 
 // Copy constructor.
 FFTFrame::FFTFrame(const FFTFrame& frame)
-    : m_FFTSize(frame.m_FFTSize),
-      m_log2FFTSize(frame.m_log2FFTSize),
-      m_realData(frame.m_FFTSize / 2),
-      m_imagData(frame.m_FFTSize / 2),
-      m_forwardContext(nullptr),
-      m_inverseContext(nullptr),
-      m_complexData(frame.m_FFTSize) {
-  m_forwardContext = contextForSize(m_log2FFTSize);
-  m_inverseContext = contextForSize(m_log2FFTSize);
+    : fft_size_(frame.fft_size_),
+      log2fft_size_(frame.log2fft_size_),
+      real_data_(frame.fft_size_ / 2),
+      imag_data_(frame.fft_size_ / 2),
+      forward_context_(nullptr),
+      inverse_context_(nullptr),
+      complex_data_(frame.fft_size_) {
+  forward_context_ = ContextForSize(log2fft_size_);
+  inverse_context_ = ContextForSize(log2fft_size_);
 
   // Copy/setup frame data.
-  unsigned nbytes = sizeof(float) * (m_FFTSize / 2);
-  memcpy(realData(), frame.realData(), nbytes);
-  memcpy(imagData(), frame.imagData(), nbytes);
+  unsigned nbytes = sizeof(float) * (fft_size_ / 2);
+  memcpy(RealData(), frame.RealData(), nbytes);
+  memcpy(ImagData(), frame.ImagData(), nbytes);
 }
 
-void FFTFrame::initialize() {}
+void FFTFrame::Initialize() {}
 
-void FFTFrame::cleanup() {}
+void FFTFrame::Cleanup() {}
 
 FFTFrame::~FFTFrame() {
-  if (m_forwardContext)
-    free(m_forwardContext);
-  if (m_inverseContext)
-    free(m_inverseContext);
+  if (forward_context_)
+    free(forward_context_);
+  if (inverse_context_)
+    free(inverse_context_);
 }
 
-void FFTFrame::doFFT(const float* data) {
-  DCHECK(m_forwardContext);
+void FFTFrame::DoFFT(const float* data) {
+  DCHECK(forward_context_);
 
-  if (m_forwardContext) {
-    AudioFloatArray complexFFT(m_FFTSize + 2);
+  if (forward_context_) {
+    AudioFloatArray complex_fft(fft_size_ + 2);
 
-    omxSP_FFTFwd_RToCCS_F32(data, complexFFT.data(), m_forwardContext);
+    omxSP_FFTFwd_RToCCS_F32(data, complex_fft.Data(), forward_context_);
 
-    unsigned len = m_FFTSize / 2;
+    unsigned len = fft_size_ / 2;
 
     // Split FFT data into real and imaginary arrays.
-    const float* c = complexFFT.data();
-    float* real = m_realData.data();
-    float* imag = m_imagData.data();
+    const float* c = complex_fft.Data();
+    float* real = real_data_.Data();
+    float* imag = imag_data_.Data();
     for (unsigned k = 1; k < len; ++k) {
       int index = 2 * k;
       real[k] = c[index];
       imag[k] = c[index + 1];
     }
     real[0] = c[0];
-    imag[0] = c[m_FFTSize];
+    imag[0] = c[fft_size_];
   }
 }
 
-void FFTFrame::doInverseFFT(float* data) {
-  DCHECK(m_inverseContext);
+void FFTFrame::DoInverseFFT(float* data) {
+  DCHECK(inverse_context_);
 
-  if (m_inverseContext) {
-    AudioFloatArray fftDataArray(m_FFTSize + 2);
+  if (inverse_context_) {
+    AudioFloatArray fft_data_array(fft_size_ + 2);
 
-    unsigned len = m_FFTSize / 2;
+    unsigned len = fft_size_ / 2;
 
     // Pack the real and imaginary data into the complex array format
-    float* fftData = fftDataArray.data();
-    const float* real = m_realData.data();
-    const float* imag = m_imagData.data();
+    float* fft_data = fft_data_array.Data();
+    const float* real = real_data_.Data();
+    const float* imag = imag_data_.Data();
     for (unsigned k = 1; k < len; ++k) {
       int index = 2 * k;
-      fftData[index] = real[k];
-      fftData[index + 1] = imag[k];
+      fft_data[index] = real[k];
+      fft_data[index + 1] = imag[k];
     }
-    fftData[0] = real[0];
-    fftData[1] = 0;
-    fftData[m_FFTSize] = imag[0];
-    fftData[m_FFTSize + 1] = 0;
+    fft_data[0] = real[0];
+    fft_data[1] = 0;
+    fft_data[fft_size_] = imag[0];
+    fft_data[fft_size_ + 1] = 0;
 
-    omxSP_FFTInv_CCSToR_F32(fftData, data, m_inverseContext);
+    omxSP_FFTInv_CCSToR_F32(fft_data, data, inverse_context_);
   }
 }
 
-OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize) {
-  DCHECK(log2FFTSize);
-  DCHECK_LE(log2FFTSize, kMaxFFTPow2Size);
-  int bufSize;
-  OMXResult status = omxSP_FFTGetBufSize_R_F32(log2FFTSize, &bufSize);
+OMXFFTSpec_R_F32* FFTFrame::ContextForSize(unsigned log2fft_size) {
+  DCHECK(log2fft_size);
+  DCHECK_LE(log2fft_size, kMaxFFTPow2Size);
+  int buf_size;
+  OMXResult status = omxSP_FFTGetBufSize_R_F32(log2fft_size, &buf_size);
 
   if (status == OMX_Sts_NoErr) {
-    OMXFFTSpec_R_F32* context = static_cast<OMXFFTSpec_R_F32*>(malloc(bufSize));
-    omxSP_FFTInit_R_F32(context, log2FFTSize);
+    OMXFFTSpec_R_F32* context =
+        static_cast<OMXFFTSpec_R_F32*>(malloc(buf_size));
+    omxSP_FFTInit_R_F32(context, log2fft_size);
     return context;
   }
 

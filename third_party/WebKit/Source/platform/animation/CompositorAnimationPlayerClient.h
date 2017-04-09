@@ -16,7 +16,7 @@ class BLINK_PLATFORM_EXPORT CompositorAnimationPlayerClient {
  public:
   virtual ~CompositorAnimationPlayerClient();
 
-  virtual CompositorAnimationPlayer* compositorPlayer() const = 0;
+  virtual CompositorAnimationPlayer* CompositorPlayer() const = 0;
 };
 
 }  // namespace blink

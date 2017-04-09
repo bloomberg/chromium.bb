@@ -20,14 +20,14 @@ class MODULES_EXPORT BackgroundFetchClickEvent final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchClickEvent* create(
+  static BackgroundFetchClickEvent* Create(
       const AtomicString& type,
       const BackgroundFetchClickEventInit& initializer) {
     return new BackgroundFetchClickEvent(type, initializer,
                                          nullptr /* observer */);
   }
 
-  static BackgroundFetchClickEvent* create(
+  static BackgroundFetchClickEvent* Create(
       const AtomicString& type,
       const BackgroundFetchClickEventInit& initializer,
       WaitUntilObserver* observer) {
@@ -40,14 +40,14 @@ class MODULES_EXPORT BackgroundFetchClickEvent final
   AtomicString state() const;
 
   // ExtendableEvent interface.
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
  private:
   BackgroundFetchClickEvent(const AtomicString& type,
                             const BackgroundFetchClickEventInit&,
                             WaitUntilObserver*);
 
-  AtomicString m_state;
+  AtomicString state_;
 };
 
 }  // namespace blink

@@ -11,51 +11,51 @@
 
 namespace blink {
 
-USBConfiguration* USBConfiguration::create(const USBDevice* device,
-                                           size_t configurationIndex) {
-  return new USBConfiguration(device, configurationIndex);
+USBConfiguration* USBConfiguration::Create(const USBDevice* device,
+                                           size_t configuration_index) {
+  return new USBConfiguration(device, configuration_index);
 }
 
-USBConfiguration* USBConfiguration::create(const USBDevice* device,
-                                           size_t configurationValue,
-                                           ExceptionState& exceptionState) {
-  const auto& configurations = device->info().configurations;
+USBConfiguration* USBConfiguration::Create(const USBDevice* device,
+                                           size_t configuration_value,
+                                           ExceptionState& exception_state) {
+  const auto& configurations = device->Info().configurations;
   for (size_t i = 0; i < configurations.size(); ++i) {
-    if (configurations[i]->configuration_value == configurationValue)
+    if (configurations[i]->configuration_value == configuration_value)
       return new USBConfiguration(device, i);
   }
-  exceptionState.throwRangeError("Invalid configuration value.");
+  exception_state.ThrowRangeError("Invalid configuration value.");
   return nullptr;
 }
 
 USBConfiguration::USBConfiguration(const USBDevice* device,
-                                   size_t configurationIndex)
-    : m_device(device), m_configurationIndex(configurationIndex) {
-  ASSERT(m_device);
-  ASSERT(m_configurationIndex < m_device->info().configurations.size());
+                                   size_t configuration_index)
+    : device_(device), configuration_index_(configuration_index) {
+  ASSERT(device_);
+  ASSERT(configuration_index_ < device_->Info().configurations.size());
 }
 
-const USBDevice* USBConfiguration::device() const {
-  return m_device;
+const USBDevice* USBConfiguration::Device() const {
+  return device_;
 }
 
-size_t USBConfiguration::index() const {
-  return m_configurationIndex;
+size_t USBConfiguration::Index() const {
+  return configuration_index_;
 }
 
-const device::usb::blink::ConfigurationInfo& USBConfiguration::info() const {
-  return *m_device->info().configurations[m_configurationIndex];
+const device::usb::blink::ConfigurationInfo& USBConfiguration::Info() const {
+  return *device_->Info().configurations[configuration_index_];
 }
 
 HeapVector<Member<USBInterface>> USBConfiguration::interfaces() const {
   HeapVector<Member<USBInterface>> interfaces;
-  for (size_t i = 0; i < info().interfaces.size(); ++i)
-    interfaces.push_back(USBInterface::create(this, i));
+  for (size_t i = 0; i < Info().interfaces.size(); ++i)
+    interfaces.push_back(USBInterface::Create(this, i));
   return interfaces;
 }
 
 DEFINE_TRACE(USBConfiguration) {
-  visitor->trace(m_device);
+  visitor->Trace(device_);
 }
 
 }  // namespace blink

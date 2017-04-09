@@ -7,9 +7,9 @@
 
 namespace blink {
 
-bool AnimatableDoubleAndBool::equalTo(const AnimatableValue* value) const {
-  const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
-  return m_number == other->m_number && m_flag == other->m_flag;
+bool AnimatableDoubleAndBool::EqualTo(const AnimatableValue* value) const {
+  const AnimatableDoubleAndBool* other = ToAnimatableDoubleAndBool(value);
+  return number_ == other->number_ && flag_ == other->flag_;
 }
 
 }  // namespace blink

@@ -15,32 +15,32 @@ class NGSpaceUtilsTest : public NGBaseLayoutAlgorithmTest {};
 // Verifies that IsNewFormattingContextForInFlowBlockLevelChild returnes true
 // if the child is out-of-flow, e.g. floating or abs-pos.
 TEST_F(NGSpaceUtilsTest, NewFormattingContextForOutOfFlowChild) {
-  setBodyInnerHTML(R"HTML(
+  SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <div id="parent">
       <div id="child"></div>
     </div>
   )HTML");
 
-  auto& parent_style = getLayoutObjectByElementId("parent")->styleRef();
-  auto* child = getLayoutObjectByElementId("child");
+  auto& parent_style = GetLayoutObjectByElementId("parent")->StyleRef();
+  auto* child = GetLayoutObjectByElementId("child");
   auto* node = new NGBlockNode(child);
 
   auto run_test = [&](RefPtr<ComputedStyle> style) {
-    child->setStyle(style);
+    child->SetStyle(style);
     EXPECT_TRUE(IsNewFormattingContextForBlockLevelChild(parent_style, *node));
   };
 
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
-  style->setFloating(EFloat::kLeft);
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetFloating(EFloat::kLeft);
   run_test(style);
 
-  style = ComputedStyle::create();
-  style->setPosition(EPosition::kAbsolute);
+  style = ComputedStyle::Create();
+  style->SetPosition(EPosition::kAbsolute);
   run_test(style);
 
-  style = ComputedStyle::create();
-  style->setPosition(EPosition::kFixed);
+  style = ComputedStyle::Create();
+  style->SetPosition(EPosition::kFixed);
   run_test(style);
 }
 

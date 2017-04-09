@@ -32,18 +32,18 @@ class LayoutSubtreeRootList : public DepthOrderedLayoutObjectList {
  public:
   LayoutSubtreeRootList() {}
 
-  void clearAndMarkContainingBlocksForLayout();
+  void ClearAndMarkContainingBlocksForLayout();
 
   // TODO(leviw): Remove this once we stop exposing to DevTools one root
   // for a layout crbug.com/460596
-  LayoutObject* randomRoot();
+  LayoutObject* RandomRoot();
 
-  void countObjectsNeedingLayout(unsigned& needsLayoutObjects,
-                                 unsigned& totalObjects);
+  void CountObjectsNeedingLayout(unsigned& needs_layout_objects,
+                                 unsigned& total_objects);
 
-  static void countObjectsNeedingLayoutInRoot(const LayoutObject* root,
-                                              unsigned& needsLayoutObjects,
-                                              unsigned& totalObjects);
+  static void CountObjectsNeedingLayoutInRoot(const LayoutObject* root,
+                                              unsigned& needs_layout_objects,
+                                              unsigned& total_objects);
 };
 
 }  // namespace blink

@@ -25,8 +25,8 @@ class RendererWebColorChooserImpl : public blink::WebColorChooser,
   ~RendererWebColorChooserImpl() override;
 
   // blink::WebColorChooser implementation:
-  void setSelectedColor(const blink::WebColor) override;
-  void endChooser() override;
+  void SetSelectedColor(const blink::WebColor) override;
+  void EndChooser() override;
 
   void Open(SkColor initial_color,
             const std::vector<content::ColorSuggestion>& suggestions);

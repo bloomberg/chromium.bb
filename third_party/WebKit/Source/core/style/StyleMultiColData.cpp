@@ -26,36 +26,36 @@
 namespace blink {
 
 StyleMultiColData::StyleMultiColData()
-    : m_width(0),
-      m_count(ComputedStyle::initialColumnCount()),
-      m_gap(0),
-      m_visitedLinkColumnRuleColor(StyleColor::currentColor()),
-      m_autoWidth(true),
-      m_autoCount(true),
-      m_normalGap(true),
-      m_fill(ComputedStyle::initialColumnFill()),
-      m_columnSpan(false) {}
+    : width_(0),
+      count_(ComputedStyle::InitialColumnCount()),
+      gap_(0),
+      visited_link_column_rule_color_(StyleColor::CurrentColor()),
+      auto_width_(true),
+      auto_count_(true),
+      normal_gap_(true),
+      fill_(ComputedStyle::InitialColumnFill()),
+      column_span_(false) {}
 
 StyleMultiColData::StyleMultiColData(const StyleMultiColData& o)
     : RefCounted<StyleMultiColData>(),
-      m_width(o.m_width),
-      m_count(o.m_count),
-      m_gap(o.m_gap),
-      m_rule(o.m_rule),
-      m_visitedLinkColumnRuleColor(o.m_visitedLinkColumnRuleColor),
-      m_autoWidth(o.m_autoWidth),
-      m_autoCount(o.m_autoCount),
-      m_normalGap(o.m_normalGap),
-      m_fill(o.m_fill),
-      m_columnSpan(o.m_columnSpan) {}
+      width_(o.width_),
+      count_(o.count_),
+      gap_(o.gap_),
+      rule_(o.rule_),
+      visited_link_column_rule_color_(o.visited_link_column_rule_color_),
+      auto_width_(o.auto_width_),
+      auto_count_(o.auto_count_),
+      normal_gap_(o.normal_gap_),
+      fill_(o.fill_),
+      column_span_(o.column_span_) {}
 
 bool StyleMultiColData::operator==(const StyleMultiColData& o) const {
-  return m_width == o.m_width && m_count == o.m_count && m_gap == o.m_gap &&
-         m_rule == o.m_rule &&
-         m_visitedLinkColumnRuleColor == o.m_visitedLinkColumnRuleColor &&
-         m_autoWidth == o.m_autoWidth && m_autoCount == o.m_autoCount &&
-         m_normalGap == o.m_normalGap && m_fill == o.m_fill &&
-         m_columnSpan == o.m_columnSpan;
+  return width_ == o.width_ && count_ == o.count_ && gap_ == o.gap_ &&
+         rule_ == o.rule_ &&
+         visited_link_column_rule_color_ == o.visited_link_column_rule_color_ &&
+         auto_width_ == o.auto_width_ && auto_count_ == o.auto_count_ &&
+         normal_gap_ == o.normal_gap_ && fill_ == o.fill_ &&
+         column_span_ == o.column_span_;
 }
 
 }  // namespace blink

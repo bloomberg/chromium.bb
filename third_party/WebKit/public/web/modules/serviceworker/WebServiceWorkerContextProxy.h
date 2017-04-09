@@ -55,75 +55,75 @@ class WebServiceWorkerContextProxy {
  public:
   virtual ~WebServiceWorkerContextProxy() {}
 
-  virtual void setRegistration(
+  virtual void SetRegistration(
       std::unique_ptr<WebServiceWorkerRegistration::Handle>) = 0;
 
-  virtual void dispatchActivateEvent(int eventID) = 0;
+  virtual void DispatchActivateEvent(int event_id) = 0;
 
-  enum class BackgroundFetchState { Pending, Succeeded, Failed };
+  enum class BackgroundFetchState { kPending, kSucceeded, kFailed };
 
-  virtual void dispatchBackgroundFetchAbortEvent(int eventID,
+  virtual void DispatchBackgroundFetchAbortEvent(int event_id,
                                                  const WebString& tag) = 0;
-  virtual void dispatchBackgroundFetchClickEvent(
-      int eventID,
+  virtual void DispatchBackgroundFetchClickEvent(
+      int event_id,
       const WebString& tag,
       BackgroundFetchState status) = 0;
-  virtual void dispatchBackgroundFetchFailEvent(
-      int eventID,
+  virtual void DispatchBackgroundFetchFailEvent(
+      int event_id,
       const WebString& tag,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
-  virtual void dispatchBackgroundFetchedEvent(
-      int eventID,
+  virtual void DispatchBackgroundFetchedEvent(
+      int event_id,
       const WebString& tag,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
-  virtual void dispatchExtendableMessageEvent(
-      int eventID,
+  virtual void DispatchExtendableMessageEvent(
+      int event_id,
       const WebString& message,
-      const WebSecurityOrigin& sourceOrigin,
+      const WebSecurityOrigin& source_origin,
       WebMessagePortChannelArray,
       const WebServiceWorkerClientInfo&) = 0;
-  virtual void dispatchExtendableMessageEvent(
-      int eventID,
+  virtual void DispatchExtendableMessageEvent(
+      int event_id,
       const WebString& message,
-      const WebSecurityOrigin& sourceOrigin,
+      const WebSecurityOrigin& source_origin,
       WebMessagePortChannelArray,
       std::unique_ptr<WebServiceWorker::Handle>) = 0;
-  virtual void dispatchInstallEvent(int eventID) = 0;
-  virtual void dispatchFetchEvent(int fetchEventID,
-                                  const WebServiceWorkerRequest& webRequest,
-                                  bool navigationPreloadSent) = 0;
-  virtual void dispatchForeignFetchEvent(
-      int fetchEventID,
-      const WebServiceWorkerRequest& webRequest) = 0;
-  virtual void dispatchNotificationClickEvent(int eventID,
-                                              const WebString& notificationID,
+  virtual void DispatchInstallEvent(int event_id) = 0;
+  virtual void DispatchFetchEvent(int fetch_event_id,
+                                  const WebServiceWorkerRequest& web_request,
+                                  bool navigation_preload_sent) = 0;
+  virtual void DispatchForeignFetchEvent(
+      int fetch_event_id,
+      const WebServiceWorkerRequest& web_request) = 0;
+  virtual void DispatchNotificationClickEvent(int event_id,
+                                              const WebString& notification_id,
                                               const WebNotificationData&,
-                                              int actionIndex,
+                                              int action_index,
                                               const WebString& reply) = 0;
-  virtual void dispatchNotificationCloseEvent(int eventID,
-                                              const WebString& notificationID,
+  virtual void DispatchNotificationCloseEvent(int event_id,
+                                              const WebString& notification_id,
                                               const WebNotificationData&) = 0;
-  virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
+  virtual void DispatchPushEvent(int event_id, const WebString& data) = 0;
 
-  virtual bool hasFetchEventHandler() = 0;
+  virtual bool HasFetchEventHandler() = 0;
 
-  enum LastChanceOption { IsNotLastChance, IsLastChance };
+  enum LastChanceOption { kIsNotLastChance, kIsLastChance };
 
   // Once the ServiceWorker has finished handling the sync event,
   // didHandleSyncEvent is called on the context client.
-  virtual void dispatchSyncEvent(int syncEventID,
+  virtual void DispatchSyncEvent(int sync_event_id,
                                  const WebString& tag,
                                  LastChanceOption) = 0;
 
-  virtual void dispatchPaymentRequestEvent(int eventID,
+  virtual void DispatchPaymentRequestEvent(int event_id,
                                            const WebPaymentAppRequest&) = 0;
 
-  virtual void onNavigationPreloadResponse(
-      int fetchEventID,
+  virtual void OnNavigationPreloadResponse(
+      int fetch_event_id,
       std::unique_ptr<WebURLResponse>,
       std::unique_ptr<WebDataConsumerHandle>) = 0;
-  virtual void onNavigationPreloadError(
-      int fetchEventID,
+  virtual void OnNavigationPreloadError(
+      int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) = 0;
 };
 

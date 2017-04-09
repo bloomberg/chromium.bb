@@ -53,7 +53,9 @@ class WebSandboxSupport {
   // parameter and must call CGFontRelease() to unload it when done.
   //
   // Returns: true on success, false on error.
-  virtual bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID) = 0;
+  virtual bool LoadFont(NSFont* src_font,
+                        CGFontRef* out,
+                        uint32_t* font_id) = 0;
 };
 
 }  // namespace blink

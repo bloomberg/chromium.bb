@@ -27,36 +27,36 @@ class CORE_EXPORT ScriptModule final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  static ScriptModule compile(v8::Isolate*,
+  static ScriptModule Compile(v8::Isolate*,
                               const String& source,
-                              const String& fileName,
+                              const String& file_name,
                               AccessControlStatus);
 
   // TODO(kouhei): Remove copy ctor
   ScriptModule() {}
   ScriptModule(WTF::HashTableDeletedValueType)
-      : m_module(WTF::HashTableDeletedValue) {}
+      : module_(WTF::kHashTableDeletedValue) {}
   ~ScriptModule();
 
   // Returns exception, if any.
-  ScriptValue instantiate(ScriptState*);
-  void evaluate(ScriptState*);
+  ScriptValue Instantiate(ScriptState*);
+  void Evaluate(ScriptState*);
 
-  Vector<String> moduleRequests(ScriptState*);
+  Vector<String> ModuleRequests(ScriptState*);
 
-  bool isHashTableDeletedValue() const {
-    return m_module.isHashTableDeletedValue();
+  bool IsHashTableDeletedValue() const {
+    return module_.IsHashTableDeletedValue();
   }
 
   bool operator==(const blink::ScriptModule& other) const {
-    if (isHashTableDeletedValue() && other.isHashTableDeletedValue())
+    if (IsHashTableDeletedValue() && other.IsHashTableDeletedValue())
       return true;
 
-    if (isHashTableDeletedValue() || other.isHashTableDeletedValue())
+    if (IsHashTableDeletedValue() || other.IsHashTableDeletedValue())
       return false;
 
-    blink::SharedPersistent<v8::Module>* left = m_module.get();
-    blink::SharedPersistent<v8::Module>* right = other.m_module.get();
+    blink::SharedPersistent<v8::Module>* left = module_.Get();
+    blink::SharedPersistent<v8::Module>* right = other.module_.Get();
     if (left == right)
       return true;
     if (!left || !right)
@@ -68,18 +68,18 @@ class CORE_EXPORT ScriptModule final {
     return !(*this == other);
   }
 
-  bool isNull() const { return !m_module || m_module->isEmpty(); }
+  bool IsNull() const { return !module_ || module_->IsEmpty(); }
 
  private:
   ScriptModule(v8::Isolate*, v8::Local<v8::Module>);
 
-  static v8::MaybeLocal<v8::Module> resolveModuleCallback(
+  static v8::MaybeLocal<v8::Module> ResolveModuleCallback(
       v8::Local<v8::Context>,
       v8::Local<v8::String> specifier,
       v8::Local<v8::Module> referrer);
 
-  RefPtr<SharedPersistent<v8::Module>> m_module;
-  unsigned m_identityHash = 0;
+  RefPtr<SharedPersistent<v8::Module>> module_;
+  unsigned identity_hash_ = 0;
 
   friend struct ScriptModuleHash;
 };
@@ -88,16 +88,16 @@ struct ScriptModuleHash {
   STATIC_ONLY(ScriptModuleHash);
 
  public:
-  static unsigned hash(const blink::ScriptModule& key) {
-    return key.m_identityHash;
+  static unsigned GetHash(const blink::ScriptModule& key) {
+    return key.identity_hash_;
   }
 
-  static bool equal(const blink::ScriptModule& a,
+  static bool Equal(const blink::ScriptModule& a,
                     const blink::ScriptModule& b) {
     return a == b;
   }
 
-  static constexpr bool safeToCompareToEmptyOrDeleted = true;
+  static constexpr bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 }  // namespace blink

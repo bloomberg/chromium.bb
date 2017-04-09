@@ -25,45 +25,45 @@ class WebCryptoImpl : public blink::WebCrypto {
 
   ~WebCryptoImpl() override;
 
-  void encrypt(const blink::WebCryptoAlgorithm& algorithm,
+  void Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                blink::WebVector<unsigned char> data,
                blink::WebCryptoResult result) override;
-  void decrypt(const blink::WebCryptoAlgorithm& algorithm,
+  void Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                blink::WebVector<unsigned char> data,
                blink::WebCryptoResult result) override;
-  void digest(const blink::WebCryptoAlgorithm& algorithm,
+  void Digest(const blink::WebCryptoAlgorithm& algorithm,
               blink::WebVector<unsigned char> data,
               blink::WebCryptoResult result) override;
-  void generateKey(const blink::WebCryptoAlgorithm& algorithm,
+  void GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
                    bool extractable,
                    blink::WebCryptoKeyUsageMask usages,
                    blink::WebCryptoResult result) override;
-  void importKey(blink::WebCryptoKeyFormat format,
+  void ImportKey(blink::WebCryptoKeyFormat format,
                  blink::WebVector<unsigned char> key_data,
                  const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoResult result) override;
-  void exportKey(blink::WebCryptoKeyFormat format,
+  void ExportKey(blink::WebCryptoKeyFormat format,
                  const blink::WebCryptoKey& key,
                  blink::WebCryptoResult result) override;
-  void sign(const blink::WebCryptoAlgorithm& algorithm,
+  void Sign(const blink::WebCryptoAlgorithm& algorithm,
             const blink::WebCryptoKey& key,
             blink::WebVector<unsigned char> data,
             blink::WebCryptoResult result) override;
-  void verifySignature(const blink::WebCryptoAlgorithm& algorithm,
+  void VerifySignature(const blink::WebCryptoAlgorithm& algorithm,
                        const blink::WebCryptoKey& key,
                        blink::WebVector<unsigned char> signature,
                        blink::WebVector<unsigned char> data,
                        blink::WebCryptoResult result) override;
-  void wrapKey(blink::WebCryptoKeyFormat format,
+  void WrapKey(blink::WebCryptoKeyFormat format,
                const blink::WebCryptoKey& key,
                const blink::WebCryptoKey& wrapping_key,
                const blink::WebCryptoAlgorithm& wrap_algorithm,
                blink::WebCryptoResult result) override;
-  void unwrapKey(blink::WebCryptoKeyFormat format,
+  void UnwrapKey(blink::WebCryptoKeyFormat format,
                  blink::WebVector<unsigned char> wrapped_key,
                  const blink::WebCryptoKey& wrapping_key,
                  const blink::WebCryptoAlgorithm& unwrap_algorithm,
@@ -72,12 +72,12 @@ class WebCryptoImpl : public blink::WebCrypto {
                  blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoResult result) override;
 
-  void deriveBits(const blink::WebCryptoAlgorithm& algorithm,
+  void DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
                   const blink::WebCryptoKey& base_key,
                   unsigned int length_bits,
                   blink::WebCryptoResult result) override;
 
-  void deriveKey(const blink::WebCryptoAlgorithm& algorithm,
+  void DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
                  const blink::WebCryptoKey& base_key,
                  const blink::WebCryptoAlgorithm& import_algorithm,
                  const blink::WebCryptoAlgorithm& key_length_algorithm,
@@ -89,10 +89,10 @@ class WebCryptoImpl : public blink::WebCrypto {
   // compute a digest one chunk at a time. Thus, the consume does not need to
   // hold onto a large buffer with all the data to digest. Chunks can be given
   // one at a time and the digest will be computed piecemeal.
-  std::unique_ptr<blink::WebCryptoDigestor> createDigestor(
+  std::unique_ptr<blink::WebCryptoDigestor> CreateDigestor(
       blink::WebCryptoAlgorithmId algorithm_id) override;
 
-  bool deserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+  bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
                               blink::WebCryptoKeyType type,
                               bool extractable,
                               blink::WebCryptoKeyUsageMask usages,
@@ -100,7 +100,7 @@ class WebCryptoImpl : public blink::WebCrypto {
                               unsigned key_data_size,
                               blink::WebCryptoKey& key) override;
 
-  bool serializeKeyForClone(const blink::WebCryptoKey& key,
+  bool SerializeKeyForClone(const blink::WebCryptoKey& key,
                             blink::WebVector<unsigned char>& key_data) override;
 
  private:

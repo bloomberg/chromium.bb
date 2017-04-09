@@ -24,89 +24,89 @@ class WorkerThreadStartupData;
 class CORE_EXPORT ThreadedMessagingProxyBase
     : private WorkerLoaderProxyProvider {
  public:
-  void terminateGlobalScope();
+  void TerminateGlobalScope();
 
-  virtual void workerThreadCreated();
+  virtual void WorkerThreadCreated();
 
   // This method should be called in the destructor of the object which
   // initially created it. This object could either be a Worker or a Worklet.
-  virtual void parentObjectDestroyed();
+  virtual void ParentObjectDestroyed();
 
-  void countFeature(UseCounter::Feature);
-  void countDeprecation(UseCounter::Feature);
+  void CountFeature(UseCounter::Feature);
+  void CountDeprecation(UseCounter::Feature);
 
-  void reportConsoleMessage(MessageSource,
+  void ReportConsoleMessage(MessageSource,
                             MessageLevel,
                             const String& message,
                             std::unique_ptr<SourceLocation>);
-  void postMessageToPageInspector(const String&);
+  void PostMessageToPageInspector(const String&);
 
   // 'virtual' for testing.
-  virtual void workerThreadTerminated();
+  virtual void WorkerThreadTerminated();
 
   // Accessed only from the parent thread.
-  ExecutionContext* getExecutionContext() const {
-    return m_executionContext.get();
+  ExecutionContext* GetExecutionContext() const {
+    return execution_context_.Get();
   }
 
   // Accessed from both the parent thread and the worker.
-  ParentFrameTaskRunners* getParentFrameTaskRunners() {
-    return m_parentFrameTaskRunners.get();
+  ParentFrameTaskRunners* GetParentFrameTaskRunners() {
+    return parent_frame_task_runners_.Get();
   }
 
   // Number of live messaging proxies, used by leak detection.
-  static int proxyCount();
+  static int ProxyCount();
 
-  void setWorkerThreadForTest(std::unique_ptr<WorkerThread>);
+  void SetWorkerThreadForTest(std::unique_ptr<WorkerThread>);
 
  protected:
   ThreadedMessagingProxyBase(ExecutionContext*);
   ~ThreadedMessagingProxyBase() override;
 
-  void initializeWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
-  virtual std::unique_ptr<WorkerThread> createWorkerThread(
-      double originTime) = 0;
+  void InitializeWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
+  virtual std::unique_ptr<WorkerThread> CreateWorkerThread(
+      double origin_time) = 0;
 
-  WorkerThread* workerThread() const { return m_workerThread.get(); }
+  WorkerThread* GetWorkerThread() const { return worker_thread_.get(); }
 
-  bool askedToTerminate() const { return m_askedToTerminate; }
+  bool AskedToTerminate() const { return asked_to_terminate_; }
 
-  PassRefPtr<WorkerLoaderProxy> loaderProxy() { return m_loaderProxy; }
-  WorkerInspectorProxy* workerInspectorProxy() const {
-    return m_workerInspectorProxy.get();
+  PassRefPtr<WorkerLoaderProxy> LoaderProxy() { return loader_proxy_; }
+  WorkerInspectorProxy* GetWorkerInspectorProxy() const {
+    return worker_inspector_proxy_.Get();
   }
 
   // Returns true if this is called on the parent context thread.
-  bool isParentContextThread() const;
+  bool IsParentContextThread() const;
 
   // WorkerLoaderProxyProvider
   // These methods are called on different threads to schedule loading
   // requests and to send callbacks back to WorkerGlobalScope.
-  void postTaskToLoader(const WebTraceLocation&,
+  void PostTaskToLoader(const WebTraceLocation&,
                         std::unique_ptr<WTF::CrossThreadClosure>) override;
-  void postTaskToWorkerGlobalScope(
+  void PostTaskToWorkerGlobalScope(
       const WebTraceLocation&,
       std::unique_ptr<WTF::CrossThreadClosure>) override;
-  ThreadableLoadingContext* getThreadableLoadingContext() override;
+  ThreadableLoadingContext* GetThreadableLoadingContext() override;
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;
   friend class ThreadedWorkletMessagingProxyForTest;
 
-  void parentObjectDestroyedInternal();
+  void ParentObjectDestroyedInternal();
 
-  Persistent<ExecutionContext> m_executionContext;
-  Persistent<ThreadableLoadingContext> m_loadingContext;
-  Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
+  Persistent<ExecutionContext> execution_context_;
+  Persistent<ThreadableLoadingContext> loading_context_;
+  Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
   // Accessed cross-thread when worker thread posts tasks to the parent.
-  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
+  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
 
-  std::unique_ptr<WorkerThread> m_workerThread;
+  std::unique_ptr<WorkerThread> worker_thread_;
 
-  RefPtr<WorkerLoaderProxy> m_loaderProxy;
+  RefPtr<WorkerLoaderProxy> loader_proxy_;
 
-  bool m_mayBeDestroyed;
-  bool m_askedToTerminate;
+  bool may_be_destroyed_;
+  bool asked_to_terminate_;
 };
 
 }  // namespace blink

@@ -21,17 +21,17 @@ class CORE_EXPORT ConsoleMessageStorage
  public:
   ConsoleMessageStorage();
 
-  void addConsoleMessage(ExecutionContext*, ConsoleMessage*);
-  void clear();
+  void AddConsoleMessage(ExecutionContext*, ConsoleMessage*);
+  void Clear();
   size_t size() const;
   ConsoleMessage* at(size_t index) const;
-  int expiredCount() const;
+  int ExpiredCount() const;
 
   DECLARE_TRACE();
 
  private:
-  int m_expiredCount;
-  HeapDeque<Member<ConsoleMessage>> m_messages;
+  int expired_count_;
+  HeapDeque<Member<ConsoleMessage>> messages_;
 };
 
 }  // namespace blink

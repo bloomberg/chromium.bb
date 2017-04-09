@@ -17,7 +17,7 @@ class Document;
 // has finished parsing.
 class MODULES_EXPORT CopylessPasteExtractor final {
  public:
-  static String extract(Document&);
+  static String Extract(Document&);
 };
 
 }  // namespace blink

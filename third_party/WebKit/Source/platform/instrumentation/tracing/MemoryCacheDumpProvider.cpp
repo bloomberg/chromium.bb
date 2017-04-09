@@ -8,36 +8,36 @@ namespace blink {
 
 DEFINE_TRACE(MemoryCacheDumpClient) {}
 
-MemoryCacheDumpProvider* MemoryCacheDumpProvider::instance() {
+MemoryCacheDumpProvider* MemoryCacheDumpProvider::Instance() {
   DEFINE_STATIC_LOCAL(MemoryCacheDumpProvider, instance, ());
   return &instance;
 }
 
 bool MemoryCacheDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* memoryDump) {
-  DCHECK(isMainThread());
-  if (!m_client)
+    base::trace_event::ProcessMemoryDump* memory_dump) {
+  DCHECK(IsMainThread());
+  if (!client_)
     return false;
 
   WebMemoryDumpLevelOfDetail level;
   switch (args.level_of_detail) {
     case base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND:
-      level = blink::WebMemoryDumpLevelOfDetail::Background;
+      level = blink::WebMemoryDumpLevelOfDetail::kBackground;
       break;
     case base::trace_event::MemoryDumpLevelOfDetail::LIGHT:
-      level = blink::WebMemoryDumpLevelOfDetail::Light;
+      level = blink::WebMemoryDumpLevelOfDetail::kLight;
       break;
     case base::trace_event::MemoryDumpLevelOfDetail::DETAILED:
-      level = blink::WebMemoryDumpLevelOfDetail::Detailed;
+      level = blink::WebMemoryDumpLevelOfDetail::kDetailed;
       break;
     default:
       NOTREACHED();
       return false;
   }
 
-  WebProcessMemoryDump dump(args.level_of_detail, memoryDump);
-  return m_client->onMemoryDump(level, &dump);
+  WebProcessMemoryDump dump(args.level_of_detail, memory_dump);
+  return client_->OnMemoryDump(level, &dump);
 }
 
 MemoryCacheDumpProvider::MemoryCacheDumpProvider() {}

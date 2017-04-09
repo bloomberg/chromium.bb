@@ -39,90 +39,91 @@ namespace {
 
 class ChannelProvider final : public AudioSourceProvider {
  public:
-  ChannelProvider(AudioSourceProvider* multiChannelProvider,
-                  unsigned numberOfChannels)
-      : m_multiChannelProvider(multiChannelProvider),
-        m_numberOfChannels(numberOfChannels),
-        m_currentChannel(0),
-        m_framesToProcess(0) {}
+  ChannelProvider(AudioSourceProvider* multi_channel_provider,
+                  unsigned number_of_channels)
+      : multi_channel_provider_(multi_channel_provider),
+        number_of_channels_(number_of_channels),
+        current_channel_(0),
+        frames_to_process_(0) {}
 
   // provideInput() will be called once for each channel, starting with the
   // first channel.  Each time it's called, it will provide the next channel of
   // data.
-  void provideInput(AudioBus* bus, size_t framesToProcess) override {
-    bool isBusGood = bus && bus->numberOfChannels() == 1;
-    DCHECK(isBusGood);
-    if (!isBusGood)
+  void ProvideInput(AudioBus* bus, size_t frames_to_process) override {
+    bool is_bus_good = bus && bus->NumberOfChannels() == 1;
+    DCHECK(is_bus_good);
+    if (!is_bus_good)
       return;
 
     // Get the data from the multi-channel provider when the first channel asks
     // for it.  For subsequent channels, we can just dish out the channel data
     // from that (stored in m_multiChannelBus).
-    if (!m_currentChannel) {
-      m_framesToProcess = framesToProcess;
-      m_multiChannelBus = AudioBus::create(m_numberOfChannels, framesToProcess);
-      m_multiChannelProvider->provideInput(m_multiChannelBus.get(),
-                                           framesToProcess);
+    if (!current_channel_) {
+      frames_to_process_ = frames_to_process;
+      multi_channel_bus_ =
+          AudioBus::Create(number_of_channels_, frames_to_process);
+      multi_channel_provider_->ProvideInput(multi_channel_bus_.Get(),
+                                            frames_to_process);
     }
 
     // All channels must ask for the same amount. This should always be the
     // case, but let's just make sure.
-    bool isGood =
-        m_multiChannelBus.get() && framesToProcess == m_framesToProcess;
-    DCHECK(isGood);
-    if (!isGood)
+    bool is_good =
+        multi_channel_bus_.Get() && frames_to_process == frames_to_process_;
+    DCHECK(is_good);
+    if (!is_good)
       return;
 
     // Copy the channel data from what we received from m_multiChannelProvider.
-    DCHECK_LE(m_currentChannel, m_numberOfChannels);
-    if (m_currentChannel < m_numberOfChannels) {
-      memcpy(bus->channel(0)->mutableData(),
-             m_multiChannelBus->channel(m_currentChannel)->data(),
-             sizeof(float) * framesToProcess);
-      ++m_currentChannel;
+    DCHECK_LE(current_channel_, number_of_channels_);
+    if (current_channel_ < number_of_channels_) {
+      memcpy(bus->Channel(0)->MutableData(),
+             multi_channel_bus_->Channel(current_channel_)->Data(),
+             sizeof(float) * frames_to_process);
+      ++current_channel_;
     }
   }
 
  private:
-  AudioSourceProvider* m_multiChannelProvider;
-  RefPtr<AudioBus> m_multiChannelBus;
-  unsigned m_numberOfChannels;
-  unsigned m_currentChannel;
+  AudioSourceProvider* multi_channel_provider_;
+  RefPtr<AudioBus> multi_channel_bus_;
+  unsigned number_of_channels_;
+  unsigned current_channel_;
   // Used to verify that all channels ask for the same amount.
-  size_t m_framesToProcess;
+  size_t frames_to_process_;
 };
 
 }  // namespace
 
-MultiChannelResampler::MultiChannelResampler(double scaleFactor,
-                                             unsigned numberOfChannels)
-    : m_numberOfChannels(numberOfChannels) {
+MultiChannelResampler::MultiChannelResampler(double scale_factor,
+                                             unsigned number_of_channels)
+    : number_of_channels_(number_of_channels) {
   // Create each channel's resampler.
-  for (unsigned channelIndex = 0; channelIndex < numberOfChannels;
-       ++channelIndex)
-    m_kernels.push_back(WTF::makeUnique<SincResampler>(scaleFactor));
+  for (unsigned channel_index = 0; channel_index < number_of_channels;
+       ++channel_index)
+    kernels_.push_back(WTF::MakeUnique<SincResampler>(scale_factor));
 }
 
-void MultiChannelResampler::process(AudioSourceProvider* provider,
+void MultiChannelResampler::Process(AudioSourceProvider* provider,
                                     AudioBus* destination,
-                                    size_t framesToProcess) {
+                                    size_t frames_to_process) {
   // The provider can provide us with multi-channel audio data. But each of our
   // single-channel resamplers (kernels) below requires a provider which
   // provides a single unique channel of data.  channelProvider wraps the
   // original multi-channel provider and dishes out one channel at a time.
-  ChannelProvider channelProvider(provider, m_numberOfChannels);
+  ChannelProvider channel_provider(provider, number_of_channels_);
 
-  for (unsigned channelIndex = 0; channelIndex < m_numberOfChannels;
-       ++channelIndex) {
+  for (unsigned channel_index = 0; channel_index < number_of_channels_;
+       ++channel_index) {
     // Depending on the sample-rate scale factor, and the internal buffering
     // used in a SincResampler kernel, this call to process() will only
     // sometimes call provideInput() on the channelProvider.  However, if it
     // calls provideInput() for the first channel, then it will call it for the
     // remaining channels, since they all buffer in the same way and are
     // processing the same number of frames.
-    m_kernels[channelIndex]->process(
-        &channelProvider, destination->channel(channelIndex)->mutableData(),
-        framesToProcess);
+    kernels_[channel_index]->Process(
+        &channel_provider, destination->Channel(channel_index)->MutableData(),
+        frames_to_process);
   }
 }
 

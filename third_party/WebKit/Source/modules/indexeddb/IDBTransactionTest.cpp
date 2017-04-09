@@ -46,19 +46,19 @@
 namespace blink {
 namespace {
 
-void deactivateNewTransactions(v8::Isolate* isolate) {
-  V8PerIsolateData::from(isolate)->runEndOfScopeTasks();
+void DeactivateNewTransactions(v8::Isolate* isolate) {
+  V8PerIsolateData::From(isolate)->RunEndOfScopeTasks();
 }
 
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
  public:
-  static FakeIDBDatabaseCallbacks* create() {
+  static FakeIDBDatabaseCallbacks* Create() {
     return new FakeIDBDatabaseCallbacks();
   }
-  void onVersionChange(int64_t oldVersion, int64_t newVersion) override {}
-  void onForcedClose() override {}
-  void onAbort(int64_t transactionId, DOMException* error) override {}
-  void onComplete(int64_t transactionId) override {}
+  void OnVersionChange(int64_t old_version, int64_t new_version) override {}
+  void OnForcedClose() override {}
+  void OnAbort(int64_t transaction_id, DOMException* error) override {}
+  void OnComplete(int64_t transaction_id) override {}
 
  private:
   FakeIDBDatabaseCallbacks() {}
@@ -66,85 +66,85 @@ class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
 
 TEST(IDBTransactionTest, EnsureLifetime) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
-  EXPECT_CALL(*backend, close()).Times(1);
-  Persistent<IDBDatabase> db =
-      IDBDatabase::create(scope.getExecutionContext(), std::move(backend),
-                          FakeIDBDatabaseCallbacks::create(), scope.isolate());
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Close()).Times(1);
+  Persistent<IDBDatabase> db = IDBDatabase::Create(
+      scope.GetExecutionContext(), std::move(backend),
+      FakeIDBDatabaseCallbacks::Create(), scope.GetIsolate());
 
-  const int64_t transactionId = 1234;
-  HashSet<String> transactionScope = HashSet<String>();
-  transactionScope.insert("test-store-name");
+  const int64_t kTransactionId = 1234;
+  HashSet<String> transaction_scope = HashSet<String>();
+  transaction_scope.insert("test-store-name");
   Persistent<IDBTransaction> transaction =
-      IDBTransaction::createNonVersionChange(
-          scope.getScriptState(), transactionId, transactionScope,
-          WebIDBTransactionModeReadOnly, db.get());
+      IDBTransaction::CreateNonVersionChange(
+          scope.GetScriptState(), kTransactionId, transaction_scope,
+          kWebIDBTransactionModeReadOnly, db.Get());
   PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
   set.insert(transaction);
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, set.size());
 
-  Persistent<IDBRequest> request = IDBRequest::create(
-      scope.getScriptState(), IDBAny::createUndefined(), transaction.get());
-  deactivateNewTransactions(scope.isolate());
+  Persistent<IDBRequest> request = IDBRequest::Create(
+      scope.GetScriptState(), IDBAny::CreateUndefined(), transaction.Get());
+  DeactivateNewTransactions(scope.GetIsolate());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, set.size());
 
   // This will generate an abort() call to the back end which is dropped by the
   // fake proxy, so an explicit onAbort call is made.
-  scope.getExecutionContext()->notifyContextDestroyed();
-  transaction->onAbort(DOMException::create(AbortError, "Aborted"));
-  transaction.clear();
+  scope.GetExecutionContext()->NotifyContextDestroyed();
+  transaction->OnAbort(DOMException::Create(kAbortError, "Aborted"));
+  transaction.Clear();
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0u, set.size());
 }
 
 TEST(IDBTransactionTest, TransactionFinish) {
   V8TestingScope scope;
-  const int64_t transactionId = 1234;
+  const int64_t kTransactionId = 1234;
 
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
-  EXPECT_CALL(*backend, commit(transactionId)).Times(1);
-  EXPECT_CALL(*backend, close()).Times(1);
-  Persistent<IDBDatabase> db =
-      IDBDatabase::create(scope.getExecutionContext(), std::move(backend),
-                          FakeIDBDatabaseCallbacks::create(), scope.isolate());
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Commit(kTransactionId)).Times(1);
+  EXPECT_CALL(*backend, Close()).Times(1);
+  Persistent<IDBDatabase> db = IDBDatabase::Create(
+      scope.GetExecutionContext(), std::move(backend),
+      FakeIDBDatabaseCallbacks::Create(), scope.GetIsolate());
 
-  HashSet<String> transactionScope = HashSet<String>();
-  transactionScope.insert("test-store-name");
+  HashSet<String> transaction_scope = HashSet<String>();
+  transaction_scope.insert("test-store-name");
   Persistent<IDBTransaction> transaction =
-      IDBTransaction::createNonVersionChange(
-          scope.getScriptState(), transactionId, transactionScope,
-          WebIDBTransactionModeReadOnly, db.get());
+      IDBTransaction::CreateNonVersionChange(
+          scope.GetScriptState(), kTransactionId, transaction_scope,
+          kWebIDBTransactionModeReadOnly, db.Get());
   PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
   set.insert(transaction);
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, set.size());
 
-  deactivateNewTransactions(scope.isolate());
+  DeactivateNewTransactions(scope.GetIsolate());
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, set.size());
 
-  transaction.clear();
+  transaction.Clear();
 
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, set.size());
 
   // Stop the context, so events don't get queued (which would keep the
   // transaction alive).
-  scope.getExecutionContext()->notifyContextDestroyed();
+  scope.GetExecutionContext()->NotifyContextDestroyed();
 
   // Fire an abort to make sure this doesn't free the transaction during use.
   // The test will not fail if it is, but ASAN would notice the error.
-  db->onAbort(transactionId, DOMException::create(AbortError, "Aborted"));
+  db->OnAbort(kTransactionId, DOMException::Create(kAbortError, "Aborted"));
 
   // onAbort() should have cleared the transaction's reference to the database.
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0u, set.size());
 }
 

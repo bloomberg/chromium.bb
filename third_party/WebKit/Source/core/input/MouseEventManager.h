@@ -43,105 +43,105 @@ class CORE_EXPORT MouseEventManager final
   virtual ~MouseEventManager();
   DECLARE_TRACE();
 
-  WebInputEventResult dispatchMouseEvent(EventTarget*,
+  WebInputEventResult DispatchMouseEvent(EventTarget*,
                                          const AtomicString&,
                                          const WebMouseEvent&,
-                                         const String& canvasRegionId,
-                                         EventTarget* relatedTarget,
-                                         bool checkForListener = false);
+                                         const String& canvas_region_id,
+                                         EventTarget* related_target,
+                                         bool check_for_listener = false);
 
-  WebInputEventResult setMousePositionAndDispatchMouseEvent(
-      Node* targetNode,
-      const String& canvasRegionId,
-      const AtomicString& eventType,
+  WebInputEventResult SetMousePositionAndDispatchMouseEvent(
+      Node* target_node,
+      const String& canvas_region_id,
+      const AtomicString& event_type,
       const WebMouseEvent&);
 
-  WebInputEventResult dispatchMouseClickIfNeeded(
+  WebInputEventResult DispatchMouseClickIfNeeded(
       const MouseEventWithHitTestResults&);
 
-  WebInputEventResult dispatchDragSrcEvent(const AtomicString& eventType,
+  WebInputEventResult DispatchDragSrcEvent(const AtomicString& event_type,
                                            const WebMouseEvent&);
-  WebInputEventResult dispatchDragEvent(const AtomicString& eventType,
+  WebInputEventResult DispatchDragEvent(const AtomicString& event_type,
                                         Node* target,
                                         const WebMouseEvent&,
                                         DataTransfer*);
 
   // Resets the internal state of this object.
-  void clear();
+  void Clear();
 
-  void sendBoundaryEvents(EventTarget* exitedTarget,
-                          EventTarget* enteredTarget,
-                          const String& canvasRegionId,
+  void SendBoundaryEvents(EventTarget* exited_target,
+                          EventTarget* entered_target,
+                          const String& canvas_region_id,
                           const WebMouseEvent&);
 
-  void setNodeUnderMouse(Node*,
-                         const String& canvasRegionId,
+  void SetNodeUnderMouse(Node*,
+                         const String& canvas_region_id,
                          const WebMouseEvent&);
 
-  WebInputEventResult handleMouseFocus(
+  WebInputEventResult HandleMouseFocus(
       const HitTestResult&,
-      InputDeviceCapabilities* sourceCapabilities);
+      InputDeviceCapabilities* source_capabilities);
 
-  void fakeMouseMoveEventTimerFired(TimerBase*);
+  void FakeMouseMoveEventTimerFired(TimerBase*);
 
-  void cancelFakeMouseMoveEvent();
-  void dispatchFakeMouseMoveEventSoon();
-  void dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
+  void CancelFakeMouseMoveEvent();
+  void DispatchFakeMouseMoveEventSoon();
+  void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
-  void setLastKnownMousePosition(const WebMouseEvent&);
+  void SetLastKnownMousePosition(const WebMouseEvent&);
 
-  bool handleDragDropIfPossible(const GestureEventWithHitTestResults&);
+  bool HandleDragDropIfPossible(const GestureEventWithHitTestResults&);
 
-  WebInputEventResult handleMouseDraggedEvent(
+  WebInputEventResult HandleMouseDraggedEvent(
       const MouseEventWithHitTestResults&);
-  WebInputEventResult handleMousePressEvent(
+  WebInputEventResult HandleMousePressEvent(
       const MouseEventWithHitTestResults&);
-  WebInputEventResult handleMouseReleaseEvent(
+  WebInputEventResult HandleMouseReleaseEvent(
       const MouseEventWithHitTestResults&);
 
-  DragState& dragState();
+  DragState& GetDragState();
 
-  void focusDocumentView();
+  void FocusDocumentView();
 
   // Resets the state that indicates the next events could cause a drag. It is
   // called when we realize the next events should not cause drag based on the
   // drag heuristics.
-  void clearDragHeuristicState();
+  void ClearDragHeuristicState();
 
-  void dragSourceEndedAt(const WebMouseEvent&, DragOperation);
+  void DragSourceEndedAt(const WebMouseEvent&, DragOperation);
 
-  void updateSelectionForMouseDrag();
+  void UpdateSelectionForMouseDrag();
 
-  void handleMousePressEventUpdateStates(const WebMouseEvent&);
+  void HandleMousePressEventUpdateStates(const WebMouseEvent&);
 
   // Returns whether pan is handled and resets the state on release.
-  bool handleSvgPanIfNeeded(bool isReleaseEvent);
+  bool HandleSvgPanIfNeeded(bool is_release_event);
 
-  void invalidateClick();
+  void InvalidateClick();
 
   // TODO: These functions ideally should be private but the code needs more
   // refactoring to be able to remove the dependency from EventHandler.
-  Node* getNodeUnderMouse();
-  bool isMousePositionUnknown();
-  IntPoint lastKnownMousePosition();
+  Node* GetNodeUnderMouse();
+  bool IsMousePositionUnknown();
+  IntPoint LastKnownMousePosition();
 
-  bool mousePressed();
-  void setMousePressed(bool);
+  bool MousePressed();
+  void SetMousePressed(bool);
 
-  bool capturesDragging() const;
-  void setCapturesDragging(bool);
+  bool CapturesDragging() const;
+  void SetCapturesDragging(bool);
 
-  void setMouseDownMayStartAutoscroll() {
-    m_mouseDownMayStartAutoscroll = true;
+  void SetMouseDownMayStartAutoscroll() {
+    mouse_down_may_start_autoscroll_ = true;
   }
 
-  Node* mousePressNode();
-  void setMousePressNode(Node*);
+  Node* MousePressNode();
+  void SetMousePressNode(Node*);
 
-  void setClickNode(Node*);
-  void setClickCount(int);
+  void SetClickNode(Node*);
+  void SetClickCount(int);
 
-  bool mouseDownMayStartDrag();
+  bool MouseDownMayStartDrag();
 
  private:
   class MouseEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
@@ -150,89 +150,89 @@ class CORE_EXPORT MouseEventManager final
    public:
     MouseEventBoundaryEventDispatcher(MouseEventManager*,
                                       const WebMouseEvent*,
-                                      EventTarget* exitedTarget,
-                                      const String& canvasRegionId);
+                                      EventTarget* exited_target,
+                                      const String& canvas_region_id);
 
    protected:
-    void dispatchOut(EventTarget*, EventTarget* relatedTarget) override;
-    void dispatchOver(EventTarget*, EventTarget* relatedTarget) override;
-    void dispatchLeave(EventTarget*,
-                       EventTarget* relatedTarget,
-                       bool checkForListener) override;
-    void dispatchEnter(EventTarget*,
-                       EventTarget* relatedTarget,
-                       bool checkForListener) override;
-    AtomicString getLeaveEvent() override;
-    AtomicString getEnterEvent() override;
+    void DispatchOut(EventTarget*, EventTarget* related_target) override;
+    void DispatchOver(EventTarget*, EventTarget* related_target) override;
+    void DispatchLeave(EventTarget*,
+                       EventTarget* related_target,
+                       bool check_for_listener) override;
+    void DispatchEnter(EventTarget*,
+                       EventTarget* related_target,
+                       bool check_for_listener) override;
+    AtomicString GetLeaveEvent() override;
+    AtomicString GetEnterEvent() override;
 
    private:
-    void dispatch(EventTarget*,
-                  EventTarget* relatedTarget,
+    void Dispatch(EventTarget*,
+                  EventTarget* related_target,
                   const AtomicString&,
-                  const String& canvasRegionId,
+                  const String& canvas_region_id,
                   const WebMouseEvent&,
-                  bool checkForListener);
-    Member<MouseEventManager> m_mouseEventManager;
-    const WebMouseEvent* m_webMouseEvent;
-    Member<EventTarget> m_exitedTarget;
-    String m_canvasRegionId;
+                  bool check_for_listener);
+    Member<MouseEventManager> mouse_event_manager_;
+    const WebMouseEvent* web_mouse_event_;
+    Member<EventTarget> exited_target_;
+    String canvas_region_id_;
   };
 
   // If the given element is a shadow host and its root has delegatesFocus=false
   // flag, slide focus to its inner element. Returns true if the resulting focus
   // is different from the given element.
-  bool slideFocusOnShadowHostIfNecessary(const Element&);
+  bool SlideFocusOnShadowHostIfNecessary(const Element&);
 
-  bool dragThresholdExceeded(const IntPoint&) const;
-  bool handleDrag(const MouseEventWithHitTestResults&, DragInitiator);
-  bool tryStartDrag(const MouseEventWithHitTestResults&);
-  void clearDragDataTransfer();
-  DataTransfer* createDraggingDataTransfer() const;
+  bool DragThresholdExceeded(const IntPoint&) const;
+  bool HandleDrag(const MouseEventWithHitTestResults&, DragInitiator);
+  bool TryStartDrag(const MouseEventWithHitTestResults&);
+  void ClearDragDataTransfer();
+  DataTransfer* CreateDraggingDataTransfer() const;
 
-  void resetDragState();
+  void ResetDragState();
 
   // Implementations of |SynchronousMutationObserver|
-  void nodeChildrenWillBeRemoved(ContainerNode&) final;
-  void nodeWillBeRemoved(Node& nodeToBeRemoved) final;
+  void NodeChildrenWillBeRemoved(ContainerNode&) final;
+  void NodeWillBeRemoved(Node& node_to_be_removed) final;
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |MouseEventManager::clear()|.
 
-  const Member<LocalFrame> m_frame;
-  Member<ScrollManager> m_scrollManager;
+  const Member<LocalFrame> frame_;
+  Member<ScrollManager> scroll_manager_;
 
   // The effective position of the mouse pointer.
   // See
   // https://w3c.github.io/pointerevents/#dfn-tracking-the-effective-position-of-the-legacy-mouse-pointer.
-  Member<Node> m_nodeUnderMouse;
+  Member<Node> node_under_mouse_;
 
   // The last mouse movement position this frame has seen in root frame
   // coordinates.
-  IntPoint m_lastKnownMousePosition;
-  IntPoint m_lastKnownMouseGlobalPosition;
+  IntPoint last_known_mouse_position_;
+  IntPoint last_known_mouse_global_position_;
 
-  unsigned m_isMousePositionUnknown : 1;
+  unsigned is_mouse_position_unknown_ : 1;
   // Current button-press state for mouse/mouse-like-stylus.
   // TODO(crbug.com/563676): Buggy for chorded buttons.
-  unsigned m_mousePressed : 1;
+  unsigned mouse_pressed_ : 1;
 
-  unsigned m_mouseDownMayStartAutoscroll : 1;
-  unsigned m_svgPan : 1;
-  unsigned m_capturesDragging : 1;
-  unsigned m_mouseDownMayStartDrag : 1;
+  unsigned mouse_down_may_start_autoscroll_ : 1;
+  unsigned svg_pan_ : 1;
+  unsigned captures_dragging_ : 1;
+  unsigned mouse_down_may_start_drag_ : 1;
 
-  Member<Node> m_mousePressNode;
+  Member<Node> mouse_press_node_;
 
-  int m_clickCount;
-  Member<Node> m_clickNode;
+  int click_count_;
+  Member<Node> click_node_;
 
-  IntPoint m_mouseDownPos;  // In our view's coords.
-  TimeTicks m_mouseDownTimestamp;
-  WebMouseEvent m_mouseDown;
+  IntPoint mouse_down_pos_;  // In our view's coords.
+  TimeTicks mouse_down_timestamp_;
+  WebMouseEvent mouse_down_;
 
-  LayoutPoint m_dragStartPos;
+  LayoutPoint drag_start_pos_;
 
-  TaskRunnerTimer<MouseEventManager> m_fakeMouseMoveEventTimer;
+  TaskRunnerTimer<MouseEventManager> fake_mouse_move_event_timer_;
 };
 
 }  // namespace blink

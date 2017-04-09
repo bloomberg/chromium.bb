@@ -10,8 +10,8 @@
 
 namespace blink {
 
-PLATFORM_EXPORT void bt709ColorProfileData(Vector<char>& data);
-PLATFORM_EXPORT void bt601ColorProfileData(Vector<char>& data);
+PLATFORM_EXPORT void Bt709ColorProfileData(Vector<char>& data);
+PLATFORM_EXPORT void Bt601ColorProfileData(Vector<char>& data);
 
 }  // namespace blink
 

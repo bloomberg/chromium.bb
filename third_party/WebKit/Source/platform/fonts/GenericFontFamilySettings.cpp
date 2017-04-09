@@ -36,157 +36,157 @@ namespace blink {
 
 GenericFontFamilySettings::GenericFontFamilySettings(
     const GenericFontFamilySettings& other)
-    : m_standardFontFamilyMap(other.m_standardFontFamilyMap),
-      m_serifFontFamilyMap(other.m_serifFontFamilyMap),
-      m_fixedFontFamilyMap(other.m_fixedFontFamilyMap),
-      m_sansSerifFontFamilyMap(other.m_sansSerifFontFamilyMap),
-      m_cursiveFontFamilyMap(other.m_cursiveFontFamilyMap),
-      m_fantasyFontFamilyMap(other.m_fantasyFontFamilyMap),
-      m_pictographFontFamilyMap(other.m_pictographFontFamilyMap) {}
+    : standard_font_family_map_(other.standard_font_family_map_),
+      serif_font_family_map_(other.serif_font_family_map_),
+      fixed_font_family_map_(other.fixed_font_family_map_),
+      sans_serif_font_family_map_(other.sans_serif_font_family_map_),
+      cursive_font_family_map_(other.cursive_font_family_map_),
+      fantasy_font_family_map_(other.fantasy_font_family_map_),
+      pictograph_font_family_map_(other.pictograph_font_family_map_) {}
 
 GenericFontFamilySettings& GenericFontFamilySettings::operator=(
     const GenericFontFamilySettings& other) {
-  m_standardFontFamilyMap = other.m_standardFontFamilyMap;
-  m_serifFontFamilyMap = other.m_serifFontFamilyMap;
-  m_fixedFontFamilyMap = other.m_fixedFontFamilyMap;
-  m_sansSerifFontFamilyMap = other.m_sansSerifFontFamilyMap;
-  m_cursiveFontFamilyMap = other.m_cursiveFontFamilyMap;
-  m_fantasyFontFamilyMap = other.m_fantasyFontFamilyMap;
-  m_pictographFontFamilyMap = other.m_pictographFontFamilyMap;
+  standard_font_family_map_ = other.standard_font_family_map_;
+  serif_font_family_map_ = other.serif_font_family_map_;
+  fixed_font_family_map_ = other.fixed_font_family_map_;
+  sans_serif_font_family_map_ = other.sans_serif_font_family_map_;
+  cursive_font_family_map_ = other.cursive_font_family_map_;
+  fantasy_font_family_map_ = other.fantasy_font_family_map_;
+  pictograph_font_family_map_ = other.pictograph_font_family_map_;
   return *this;
 }
 
 // Sets the entry in the font map for the given script. If family is the empty
 // string, removes the entry instead.
-void GenericFontFamilySettings::setGenericFontFamilyMap(
-    ScriptFontFamilyMap& fontMap,
+void GenericFontFamilySettings::SetGenericFontFamilyMap(
+    ScriptFontFamilyMap& font_map,
     const AtomicString& family,
     UScriptCode script) {
-  ScriptFontFamilyMap::iterator it = fontMap.find(static_cast<int>(script));
-  if (family.isEmpty()) {
-    if (it == fontMap.end())
+  ScriptFontFamilyMap::iterator it = font_map.Find(static_cast<int>(script));
+  if (family.IsEmpty()) {
+    if (it == font_map.end())
       return;
-    fontMap.erase(it);
-  } else if (it != fontMap.end() && it->value == family) {
+    font_map.erase(it);
+  } else if (it != font_map.end() && it->value == family) {
     return;
   } else {
-    fontMap.set(static_cast<int>(script), family);
+    font_map.Set(static_cast<int>(script), family);
   }
 }
 
-const AtomicString& GenericFontFamilySettings::genericFontFamilyForScript(
-    const ScriptFontFamilyMap& fontMap,
+const AtomicString& GenericFontFamilySettings::GenericFontFamilyForScript(
+    const ScriptFontFamilyMap& font_map,
     UScriptCode script) const {
   ScriptFontFamilyMap::iterator it =
-      const_cast<ScriptFontFamilyMap&>(fontMap).find(static_cast<int>(script));
-  if (it != fontMap.end()) {
+      const_cast<ScriptFontFamilyMap&>(font_map).Find(static_cast<int>(script));
+  if (it != font_map.end()) {
     // Replace with the first available font if it starts with ",".
-    if (!it->value.isEmpty() && it->value[0] == ',')
-      it->value = AtomicString(FontCache::firstAvailableOrFirst(it->value));
+    if (!it->value.IsEmpty() && it->value[0] == ',')
+      it->value = AtomicString(FontCache::FirstAvailableOrFirst(it->value));
     return it->value;
   }
   if (script != USCRIPT_COMMON)
-    return genericFontFamilyForScript(fontMap, USCRIPT_COMMON);
-  return emptyAtom;
+    return GenericFontFamilyForScript(font_map, USCRIPT_COMMON);
+  return g_empty_atom;
 }
 
-const AtomicString& GenericFontFamilySettings::standard(
+const AtomicString& GenericFontFamilySettings::Standard(
     UScriptCode script) const {
-  return genericFontFamilyForScript(m_standardFontFamilyMap, script);
+  return GenericFontFamilyForScript(standard_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updateStandard(const AtomicString& family,
+bool GenericFontFamilySettings::UpdateStandard(const AtomicString& family,
                                                UScriptCode script) {
-  if (family == standard())
+  if (family == Standard())
     return false;
-  setGenericFontFamilyMap(m_standardFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(standard_font_family_map_, family, script);
   return true;
 }
 
-const AtomicString& GenericFontFamilySettings::fixed(UScriptCode script) const {
-  return genericFontFamilyForScript(m_fixedFontFamilyMap, script);
+const AtomicString& GenericFontFamilySettings::Fixed(UScriptCode script) const {
+  return GenericFontFamilyForScript(fixed_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updateFixed(const AtomicString& family,
+bool GenericFontFamilySettings::UpdateFixed(const AtomicString& family,
                                             UScriptCode script) {
-  if (family == fixed())
+  if (family == Fixed())
     return false;
-  setGenericFontFamilyMap(m_fixedFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(fixed_font_family_map_, family, script);
   return true;
 }
 
-const AtomicString& GenericFontFamilySettings::serif(UScriptCode script) const {
-  return genericFontFamilyForScript(m_serifFontFamilyMap, script);
+const AtomicString& GenericFontFamilySettings::Serif(UScriptCode script) const {
+  return GenericFontFamilyForScript(serif_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updateSerif(const AtomicString& family,
+bool GenericFontFamilySettings::UpdateSerif(const AtomicString& family,
                                             UScriptCode script) {
-  if (family == serif())
+  if (family == Serif())
     return false;
-  setGenericFontFamilyMap(m_serifFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(serif_font_family_map_, family, script);
   return true;
 }
 
-const AtomicString& GenericFontFamilySettings::sansSerif(
+const AtomicString& GenericFontFamilySettings::SansSerif(
     UScriptCode script) const {
-  return genericFontFamilyForScript(m_sansSerifFontFamilyMap, script);
+  return GenericFontFamilyForScript(sans_serif_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updateSansSerif(const AtomicString& family,
+bool GenericFontFamilySettings::UpdateSansSerif(const AtomicString& family,
                                                 UScriptCode script) {
-  if (family == sansSerif())
+  if (family == SansSerif())
     return false;
-  setGenericFontFamilyMap(m_sansSerifFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(sans_serif_font_family_map_, family, script);
   return true;
 }
 
-const AtomicString& GenericFontFamilySettings::cursive(
+const AtomicString& GenericFontFamilySettings::Cursive(
     UScriptCode script) const {
-  return genericFontFamilyForScript(m_cursiveFontFamilyMap, script);
+  return GenericFontFamilyForScript(cursive_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updateCursive(const AtomicString& family,
+bool GenericFontFamilySettings::UpdateCursive(const AtomicString& family,
                                               UScriptCode script) {
-  if (family == cursive())
+  if (family == Cursive())
     return false;
-  setGenericFontFamilyMap(m_cursiveFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(cursive_font_family_map_, family, script);
   return true;
 }
 
-const AtomicString& GenericFontFamilySettings::fantasy(
+const AtomicString& GenericFontFamilySettings::Fantasy(
     UScriptCode script) const {
-  return genericFontFamilyForScript(m_fantasyFontFamilyMap, script);
+  return GenericFontFamilyForScript(fantasy_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updateFantasy(const AtomicString& family,
+bool GenericFontFamilySettings::UpdateFantasy(const AtomicString& family,
                                               UScriptCode script) {
-  if (family == fantasy())
+  if (family == Fantasy())
     return false;
-  setGenericFontFamilyMap(m_fantasyFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(fantasy_font_family_map_, family, script);
   return true;
 }
 
-const AtomicString& GenericFontFamilySettings::pictograph(
+const AtomicString& GenericFontFamilySettings::Pictograph(
     UScriptCode script) const {
-  return genericFontFamilyForScript(m_pictographFontFamilyMap, script);
+  return GenericFontFamilyForScript(pictograph_font_family_map_, script);
 }
 
-bool GenericFontFamilySettings::updatePictograph(const AtomicString& family,
+bool GenericFontFamilySettings::UpdatePictograph(const AtomicString& family,
                                                  UScriptCode script) {
-  if (family == pictograph())
+  if (family == Pictograph())
     return false;
-  setGenericFontFamilyMap(m_pictographFontFamilyMap, family, script);
+  SetGenericFontFamilyMap(pictograph_font_family_map_, family, script);
   return true;
 }
 
-void GenericFontFamilySettings::reset() {
-  m_standardFontFamilyMap.clear();
-  m_serifFontFamilyMap.clear();
-  m_fixedFontFamilyMap.clear();
-  m_sansSerifFontFamilyMap.clear();
-  m_cursiveFontFamilyMap.clear();
-  m_fantasyFontFamilyMap.clear();
-  m_pictographFontFamilyMap.clear();
+void GenericFontFamilySettings::Reset() {
+  standard_font_family_map_.Clear();
+  serif_font_family_map_.Clear();
+  fixed_font_family_map_.Clear();
+  sans_serif_font_family_map_.Clear();
+  cursive_font_family_map_.Clear();
+  fantasy_font_family_map_.Clear();
+  pictograph_font_family_map_.Clear();
 }
 
 }  // namespace blink

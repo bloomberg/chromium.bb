@@ -34,80 +34,81 @@
 namespace blink {
 
 FEConvolveMatrix::FEConvolveMatrix(Filter* filter,
-                                   const IntSize& kernelSize,
+                                   const IntSize& kernel_size,
                                    float divisor,
                                    float bias,
-                                   const IntPoint& targetOffset,
-                                   EdgeModeType edgeMode,
-                                   bool preserveAlpha,
-                                   const Vector<float>& kernelMatrix)
+                                   const IntPoint& target_offset,
+                                   EdgeModeType edge_mode,
+                                   bool preserve_alpha,
+                                   const Vector<float>& kernel_matrix)
     : FilterEffect(filter),
-      m_kernelSize(kernelSize),
-      m_divisor(divisor),
-      m_bias(bias),
-      m_targetOffset(targetOffset),
-      m_edgeMode(edgeMode),
-      m_preserveAlpha(preserveAlpha),
-      m_kernelMatrix(kernelMatrix) {}
+      kernel_size_(kernel_size),
+      divisor_(divisor),
+      bias_(bias),
+      target_offset_(target_offset),
+      edge_mode_(edge_mode),
+      preserve_alpha_(preserve_alpha),
+      kernel_matrix_(kernel_matrix) {}
 
-FEConvolveMatrix* FEConvolveMatrix::create(Filter* filter,
-                                           const IntSize& kernelSize,
+FEConvolveMatrix* FEConvolveMatrix::Create(Filter* filter,
+                                           const IntSize& kernel_size,
                                            float divisor,
                                            float bias,
-                                           const IntPoint& targetOffset,
-                                           EdgeModeType edgeMode,
-                                           bool preserveAlpha,
-                                           const Vector<float>& kernelMatrix) {
-  return new FEConvolveMatrix(filter, kernelSize, divisor, bias, targetOffset,
-                              edgeMode, preserveAlpha, kernelMatrix);
+                                           const IntPoint& target_offset,
+                                           EdgeModeType edge_mode,
+                                           bool preserve_alpha,
+                                           const Vector<float>& kernel_matrix) {
+  return new FEConvolveMatrix(filter, kernel_size, divisor, bias, target_offset,
+                              edge_mode, preserve_alpha, kernel_matrix);
 }
 
-FloatRect FEConvolveMatrix::mapEffect(const FloatRect& rect) const {
-  if (!parametersValid())
+FloatRect FEConvolveMatrix::MapEffect(const FloatRect& rect) const {
+  if (!ParametersValid())
     return rect;
   FloatRect result = rect;
-  result.moveBy(-m_targetOffset);
-  result.expand(FloatSize(m_kernelSize));
+  result.MoveBy(-target_offset_);
+  result.Expand(FloatSize(kernel_size_));
   return result;
 }
 
-bool FEConvolveMatrix::setDivisor(float divisor) {
-  if (m_divisor == divisor)
+bool FEConvolveMatrix::SetDivisor(float divisor) {
+  if (divisor_ == divisor)
     return false;
-  m_divisor = divisor;
+  divisor_ = divisor;
   return true;
 }
 
-bool FEConvolveMatrix::setBias(float bias) {
-  if (m_bias == bias)
+bool FEConvolveMatrix::SetBias(float bias) {
+  if (bias_ == bias)
     return false;
-  m_bias = bias;
+  bias_ = bias;
   return true;
 }
 
-bool FEConvolveMatrix::setTargetOffset(const IntPoint& targetOffset) {
-  if (m_targetOffset == targetOffset)
+bool FEConvolveMatrix::SetTargetOffset(const IntPoint& target_offset) {
+  if (target_offset_ == target_offset)
     return false;
-  m_targetOffset = targetOffset;
+  target_offset_ = target_offset;
   return true;
 }
 
-bool FEConvolveMatrix::setEdgeMode(EdgeModeType edgeMode) {
-  if (m_edgeMode == edgeMode)
+bool FEConvolveMatrix::SetEdgeMode(EdgeModeType edge_mode) {
+  if (edge_mode_ == edge_mode)
     return false;
-  m_edgeMode = edgeMode;
+  edge_mode_ = edge_mode;
   return true;
 }
 
-bool FEConvolveMatrix::setPreserveAlpha(bool preserveAlpha) {
-  if (m_preserveAlpha == preserveAlpha)
+bool FEConvolveMatrix::SetPreserveAlpha(bool preserve_alpha) {
+  if (preserve_alpha_ == preserve_alpha)
     return false;
-  m_preserveAlpha = preserveAlpha;
+  preserve_alpha_ = preserve_alpha;
   return true;
 }
 
-SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(EdgeModeType edgeMode) {
-  switch (edgeMode) {
+SkMatrixConvolutionImageFilter::TileMode ToSkiaTileMode(
+    EdgeModeType edge_mode) {
+  switch (edge_mode) {
     case EDGEMODE_DUPLICATE:
       return SkMatrixConvolutionImageFilter::kClamp_TileMode;
     case EDGEMODE_WRAP:
@@ -119,47 +120,47 @@ SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(EdgeModeType edgeMode) {
   }
 }
 
-bool FEConvolveMatrix::parametersValid() const {
-  if (m_kernelSize.isEmpty())
+bool FEConvolveMatrix::ParametersValid() const {
+  if (kernel_size_.IsEmpty())
     return false;
-  uint64_t kernelArea = m_kernelSize.area();
-  if (!CheckedNumeric<int>(kernelArea).IsValid())
+  uint64_t kernel_area = kernel_size_.Area();
+  if (!CheckedNumeric<int>(kernel_area).IsValid())
     return false;
-  if (safeCast<size_t>(kernelArea) != m_kernelMatrix.size())
+  if (SafeCast<size_t>(kernel_area) != kernel_matrix_.size())
     return false;
-  if (m_targetOffset.x() < 0 || m_targetOffset.x() >= m_kernelSize.width())
+  if (target_offset_.X() < 0 || target_offset_.X() >= kernel_size_.Width())
     return false;
-  if (m_targetOffset.y() < 0 || m_targetOffset.y() >= m_kernelSize.height())
+  if (target_offset_.Y() < 0 || target_offset_.Y() >= kernel_size_.Height())
     return false;
-  if (!m_divisor)
+  if (!divisor_)
     return false;
   return true;
 }
 
-sk_sp<SkImageFilter> FEConvolveMatrix::createImageFilter() {
-  if (!parametersValid())
-    return createTransparentBlack();
+sk_sp<SkImageFilter> FEConvolveMatrix::CreateImageFilter() {
+  if (!ParametersValid())
+    return CreateTransparentBlack();
 
   sk_sp<SkImageFilter> input(
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-  SkISize kernelSize(
-      SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace()));
+  SkISize kernel_size(
+      SkISize::Make(kernel_size_.Width(), kernel_size_.Height()));
   // parametersValid() above checks that the kernel area fits in int.
-  int numElements = safeCast<int>(m_kernelSize.area());
-  SkScalar gain = SkFloatToScalar(1.0f / m_divisor);
-  SkScalar bias = SkFloatToScalar(m_bias * 255);
-  SkIPoint target = SkIPoint::Make(m_targetOffset.x(), m_targetOffset.y());
-  SkMatrixConvolutionImageFilter::TileMode tileMode =
-      toSkiaTileMode(m_edgeMode);
-  bool convolveAlpha = !m_preserveAlpha;
+  int num_elements = SafeCast<int>(kernel_size_.Area());
+  SkScalar gain = SkFloatToScalar(1.0f / divisor_);
+  SkScalar bias = SkFloatToScalar(bias_ * 255);
+  SkIPoint target = SkIPoint::Make(target_offset_.X(), target_offset_.Y());
+  SkMatrixConvolutionImageFilter::TileMode tile_mode =
+      ToSkiaTileMode(edge_mode_);
+  bool convolve_alpha = !preserve_alpha_;
   std::unique_ptr<SkScalar[]> kernel =
-      wrapArrayUnique(new SkScalar[numElements]);
-  for (int i = 0; i < numElements; ++i)
-    kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
-  SkImageFilter::CropRect cropRect = getCropRect();
+      WrapArrayUnique(new SkScalar[num_elements]);
+  for (int i = 0; i < num_elements; ++i)
+    kernel[i] = SkFloatToScalar(kernel_matrix_[num_elements - 1 - i]);
+  SkImageFilter::CropRect crop_rect = GetCropRect();
   return SkMatrixConvolutionImageFilter::Make(
-      kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha,
-      std::move(input), &cropRect);
+      kernel_size, kernel.get(), gain, bias, target, tile_mode, convolve_alpha,
+      std::move(input), &crop_rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const EdgeModeType& type) {
@@ -180,19 +181,19 @@ static TextStream& operator<<(TextStream& ts, const EdgeModeType& type) {
   return ts;
 }
 
-TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts,
+TextStream& FEConvolveMatrix::ExternalRepresentation(TextStream& ts,
                                                      int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[feConvolveMatrix";
-  FilterEffect::externalRepresentation(ts);
-  ts << " order=\"" << FloatSize(m_kernelSize) << "\" "
-     << "kernelMatrix=\"" << m_kernelMatrix << "\" "
-     << "divisor=\"" << m_divisor << "\" "
-     << "bias=\"" << m_bias << "\" "
-     << "target=\"" << m_targetOffset << "\" "
-     << "edgeMode=\"" << m_edgeMode << "\" "
-     << "preserveAlpha=\"" << m_preserveAlpha << "\"]\n";
-  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  FilterEffect::ExternalRepresentation(ts);
+  ts << " order=\"" << FloatSize(kernel_size_) << "\" "
+     << "kernelMatrix=\"" << kernel_matrix_ << "\" "
+     << "divisor=\"" << divisor_ << "\" "
+     << "bias=\"" << bias_ << "\" "
+     << "target=\"" << target_offset_ << "\" "
+     << "edgeMode=\"" << edge_mode_ << "\" "
+     << "preserveAlpha=\"" << preserve_alpha_ << "\"]\n";
+  InputEffect(0)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

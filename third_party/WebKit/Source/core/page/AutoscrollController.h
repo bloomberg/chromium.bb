@@ -43,11 +43,11 @@ class LayoutObject;
 class WebMouseEvent;
 
 enum AutoscrollType {
-  NoAutoscroll,
-  AutoscrollForDragAndDrop,
-  AutoscrollForSelection,
-  AutoscrollForMiddleClickCanStop,
-  AutoscrollForMiddleClick,
+  kNoAutoscroll,
+  kAutoscrollForDragAndDrop,
+  kAutoscrollForSelection,
+  kAutoscrollForMiddleClickCanStop,
+  kAutoscrollForMiddleClick,
 };
 
 // AutscrollController handels autoscroll and middle click autoscroll for
@@ -55,43 +55,44 @@ enum AutoscrollType {
 class CORE_EXPORT AutoscrollController final
     : public GarbageCollected<AutoscrollController> {
  public:
-  static AutoscrollController* create(Page&);
+  static AutoscrollController* Create(Page&);
   DECLARE_TRACE();
 
-  static const int noMiddleClickAutoscrollRadius = 15;
+  static const int kNoMiddleClickAutoscrollRadius = 15;
 
-  void animate(double monotonicFrameBeginTime);
-  bool autoscrollInProgress() const;
-  bool autoscrollInProgress(const LayoutBox*) const;
-  bool middleClickAutoscrollInProgress() const;
-  void startAutoscrollForSelection(LayoutObject*);
-  void stopAutoscroll();
-  void stopAutoscrollIfNeeded(LayoutObject*);
-  void updateAutoscrollLayoutObject();
-  void updateDragAndDrop(Node* targetNode,
-                         const IntPoint& eventPosition,
-                         TimeTicks eventTime);
-  void handleMouseReleaseForMiddleClickAutoscroll(LocalFrame*,
+  void Animate(double monotonic_frame_begin_time);
+  bool AutoscrollInProgress() const;
+  bool AutoscrollInProgress(const LayoutBox*) const;
+  bool MiddleClickAutoscrollInProgress() const;
+  void StartAutoscrollForSelection(LayoutObject*);
+  void StopAutoscroll();
+  void StopAutoscrollIfNeeded(LayoutObject*);
+  void UpdateAutoscrollLayoutObject();
+  void UpdateDragAndDrop(Node* target_node,
+                         const IntPoint& event_position,
+                         TimeTicks event_time);
+  void HandleMouseReleaseForMiddleClickAutoscroll(LocalFrame*,
                                                   const WebMouseEvent&);
-  void startMiddleClickAutoscroll(LayoutBox*, const IntPoint&);
+  void StartMiddleClickAutoscroll(LayoutBox*, const IntPoint&);
 
  private:
   explicit AutoscrollController(Page&);
 
-  void startAutoscroll();
+  void StartAutoscroll();
 
-  void updateMiddleClickAutoscrollState(FrameView*,
-                                        const IntPoint& lastKnownMousePosition);
-  FloatSize calculateAutoscrollDelta();
+  void UpdateMiddleClickAutoscrollState(
+      FrameView*,
+      const IntPoint& last_known_mouse_position);
+  FloatSize CalculateAutoscrollDelta();
 
-  Member<Page> m_page;
-  LayoutBox* m_autoscrollLayoutObject;
-  LayoutBox* m_pressedLayoutObject;
-  AutoscrollType m_autoscrollType;
-  IntPoint m_dragAndDropAutoscrollReferencePosition;
-  TimeTicks m_dragAndDropAutoscrollStartTime;
-  IntPoint m_middleClickAutoscrollStartPos;
-  bool m_didLatchForMiddleClickAutoscroll;
+  Member<Page> page_;
+  LayoutBox* autoscroll_layout_object_;
+  LayoutBox* pressed_layout_object_;
+  AutoscrollType autoscroll_type_;
+  IntPoint drag_and_drop_autoscroll_reference_position_;
+  TimeTicks drag_and_drop_autoscroll_start_time_;
+  IntPoint middle_click_autoscroll_start_pos_;
+  bool did_latch_for_middle_click_autoscroll_;
 };
 
 }  // namespace blink

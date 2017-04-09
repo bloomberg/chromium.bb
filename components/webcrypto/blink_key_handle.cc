@@ -84,19 +84,19 @@ class AsymKey : public Key {
 };
 
 Key* GetKey(const blink::WebCryptoKey& key) {
-  return reinterpret_cast<Key*>(key.handle());
+  return reinterpret_cast<Key*>(key.Handle());
 }
 
 }  // namespace
 
 const std::vector<uint8_t>& GetSymmetricKeyData(
     const blink::WebCryptoKey& key) {
-  DCHECK_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  DCHECK_EQ(blink::kWebCryptoKeyTypeSecret, key.GetType());
   return GetKey(key)->AsSymKey()->raw_key_data();
 }
 
 EVP_PKEY* GetEVP_PKEY(const blink::WebCryptoKey& key) {
-  DCHECK_NE(blink::WebCryptoKeyTypeSecret, key.type());
+  DCHECK_NE(blink::kWebCryptoKeyTypeSecret, key.GetType());
   return GetKey(key)->AsAsymKey()->pkey();
 }
 

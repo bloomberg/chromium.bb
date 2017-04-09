@@ -23,39 +23,39 @@ class MODULES_EXPORT PaymentsValidators final {
   // defined by [[ISO4217]], however any string of at most 2048 characters is
   // considered valid in other currencySystem. Returns false if currency |code|
   // is too long (greater than 2048).
-  static bool isValidCurrencyCodeFormat(const String& code,
+  static bool IsValidCurrencyCodeFormat(const String& code,
                                         const String& system,
-                                        String* optionalErrorMessage);
+                                        String* optional_error_message);
 
   // Returns true if |amount| is a valid currency code as defined in ISO 20022
   // CurrencyAnd30Amount.
-  static bool isValidAmountFormat(const String& amount,
-                                  String* optionalErrorMessage);
+  static bool IsValidAmountFormat(const String& amount,
+                                  String* optional_error_message);
 
   // Returns true if |code| is a valid ISO 3166 country code.
-  static bool isValidCountryCodeFormat(const String& code,
-                                       String* optionalErrorMessage);
+  static bool IsValidCountryCodeFormat(const String& code,
+                                       String* optional_error_message);
 
   // Returns true if |code| is a valid ISO 639 language code.
-  static bool isValidLanguageCodeFormat(const String& code,
-                                        String* optionalErrorMessage);
+  static bool IsValidLanguageCodeFormat(const String& code,
+                                        String* optional_error_message);
 
   // Returns true if |code| is a valid ISO 15924 script code.
-  static bool isValidScriptCodeFormat(const String& code,
-                                      String* optionalErrorMessage);
+  static bool IsValidScriptCodeFormat(const String& code,
+                                      String* optional_error_message);
 
   // Returns true if the payment address is valid:
   //  - Has a valid region code
   //  - Has a valid language code, if any.
   //  - Has a valid script code, if any.
   // A script code should be present only if language code is present.
-  static bool isValidShippingAddress(
+  static bool IsValidShippingAddress(
       const payments::mojom::blink::PaymentAddressPtr&,
-      String* optionalErrorMessage);
+      String* optional_error_message);
 
   // Returns false if |error| is too long (greater than 2048).
-  static bool isValidErrorMsgFormat(const String& code,
-                                    String* optionalErrorMessage);
+  static bool IsValidErrorMsgFormat(const String& code,
+                                    String* optional_error_message);
 };
 
 }  // namespace blink

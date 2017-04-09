@@ -16,18 +16,18 @@ namespace blink {
 // command wrapper to achieve undo group.
 class DragAndDropCommand final : public CompositeEditCommand {
  public:
-  static DragAndDropCommand* create(Document& document) {
+  static DragAndDropCommand* Create(Document& document) {
     return new DragAndDropCommand(document);
   }
 
-  bool isCommandGroupWrapper() const override;
-  bool isDragAndDropCommand() const override;
+  bool IsCommandGroupWrapper() const override;
+  bool IsDragAndDropCommand() const override;
 
  private:
   explicit DragAndDropCommand(Document&);
 
-  void doApply(EditingState*) override;
-  InputEvent::InputType inputType() const override;
+  void DoApply(EditingState*) override;
+  InputEvent::InputType GetInputType() const override;
 };
 
 }  // namespace blink

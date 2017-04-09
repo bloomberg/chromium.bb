@@ -59,12 +59,12 @@ static base::LazyInstance<BlobTransportController>::Leaky g_controller =
 // This keeps the process alive while blobs are being transferred.
 // These need to be called on the main thread.
 void IncChildProcessRefCount() {
-  blink::Platform::current()->suddenTerminationChanged(false);
+  blink::Platform::Current()->SuddenTerminationChanged(false);
   ChildProcess::current()->AddRefProcess();
 }
 
 void DecChildProcessRefCount() {
-  blink::Platform::current()->suddenTerminationChanged(true);
+  blink::Platform::Current()->SuddenTerminationChanged(true);
   ChildProcess::current()->ReleaseProcess();
 }
 

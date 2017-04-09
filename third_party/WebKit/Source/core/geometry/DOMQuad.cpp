@@ -12,7 +12,7 @@
 
 namespace blink {
 
-DOMQuad* DOMQuad::create(const DOMPointInit& p1,
+DOMQuad* DOMQuad::Create(const DOMPointInit& p1,
                          const DOMPointInit& p2,
                          const DOMPointInit& p3,
                          const DOMPointInit& p4) {
@@ -31,50 +31,50 @@ DOMQuad* DOMQuad::fromQuad(const DOMQuadInit& other) {
 }
 
 DOMRect* DOMQuad::getBounds() {
-  return DOMRect::create(m_left, m_top, m_right - m_left, m_bottom - m_top);
+  return DOMRect::Create(left_, top_, right_ - left_, bottom_ - top_);
 }
 
-void DOMQuad::calculateBounds() {
-  m_left = std::min(p1()->x(), p2()->x());
-  m_left = std::min(m_left, p3()->x());
-  m_left = std::min(m_left, p4()->x());
-  m_top = std::min(p1()->y(), p2()->y());
-  m_top = std::min(m_top, p3()->y());
-  m_top = std::min(m_top, p4()->y());
-  m_right = std::max(p1()->x(), p2()->x());
-  m_right = std::max(m_right, p3()->x());
-  m_right = std::max(m_right, p4()->x());
-  m_bottom = std::max(p1()->y(), p2()->y());
-  m_bottom = std::max(m_bottom, p3()->y());
-  m_bottom = std::max(m_bottom, p4()->y());
+void DOMQuad::CalculateBounds() {
+  left_ = std::min(p1()->x(), p2()->x());
+  left_ = std::min(left_, p3()->x());
+  left_ = std::min(left_, p4()->x());
+  top_ = std::min(p1()->y(), p2()->y());
+  top_ = std::min(top_, p3()->y());
+  top_ = std::min(top_, p4()->y());
+  right_ = std::max(p1()->x(), p2()->x());
+  right_ = std::max(right_, p3()->x());
+  right_ = std::max(right_, p4()->x());
+  bottom_ = std::max(p1()->y(), p2()->y());
+  bottom_ = std::max(bottom_, p3()->y());
+  bottom_ = std::max(bottom_, p4()->y());
 }
 
 DOMQuad::DOMQuad(const DOMPointInit& p1,
                  const DOMPointInit& p2,
                  const DOMPointInit& p3,
                  const DOMPointInit& p4)
-    : m_p1(DOMPoint::fromPoint(p1)),
-      m_p2(DOMPoint::fromPoint(p2)),
-      m_p3(DOMPoint::fromPoint(p3)),
-      m_p4(DOMPoint::fromPoint(p4)) {
-  calculateBounds();
+    : p1_(DOMPoint::fromPoint(p1)),
+      p2_(DOMPoint::fromPoint(p2)),
+      p3_(DOMPoint::fromPoint(p3)),
+      p4_(DOMPoint::fromPoint(p4)) {
+  CalculateBounds();
 }
 
 DOMQuad::DOMQuad(double x, double y, double width, double height)
-    : m_p1(DOMPoint::create(x, y, 0, 1)),
-      m_p2(DOMPoint::create(x + width, y, 0, 1)),
-      m_p3(DOMPoint::create(x + width, y + height, 0, 1)),
-      m_p4(DOMPoint::create(x, y + height, 0, 1)) {
-  calculateBounds();
+    : p1_(DOMPoint::Create(x, y, 0, 1)),
+      p2_(DOMPoint::Create(x + width, y, 0, 1)),
+      p3_(DOMPoint::Create(x + width, y + height, 0, 1)),
+      p4_(DOMPoint::Create(x, y + height, 0, 1)) {
+  CalculateBounds();
 }
 
-ScriptValue DOMQuad::toJSONForBinding(ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  result.add("p1", p1());
-  result.add("p2", p2());
-  result.add("p3", p3());
-  result.add("p4", p4());
-  return result.scriptValue();
+ScriptValue DOMQuad::toJSONForBinding(ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  result.Add("p1", p1());
+  result.Add("p2", p2());
+  result.Add("p3", p3());
+  result.Add("p4", p4());
+  return result.GetScriptValue();
 }
 
 }  // namespace blink

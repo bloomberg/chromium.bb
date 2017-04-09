@@ -10,21 +10,21 @@
 
 namespace blink {
 
-CopylessPasteServer::CopylessPasteServer(LocalFrame& frame) : m_frame(frame) {}
+CopylessPasteServer::CopylessPasteServer(LocalFrame& frame) : frame_(frame) {}
 
-void CopylessPasteServer::bindMojoRequest(
+void CopylessPasteServer::BindMojoRequest(
     LocalFrame* frame,
     mojom::document_metadata::blink::CopylessPasteRequest request) {
   DCHECK(frame);
 
   // TODO(wychen): remove bindMojoRequest pattern, and make this a service
   // associated with frame lifetime.
-  mojo::MakeStrongBinding(WTF::makeUnique<CopylessPasteServer>(*frame),
+  mojo::MakeStrongBinding(WTF::MakeUnique<CopylessPasteServer>(*frame),
                           std::move(request));
 }
 
 void CopylessPasteServer::GetEntities(const GetEntitiesCallback& callback) {
-  if (!m_frame || !m_frame->document()) {
+  if (!frame_ || !frame_->GetDocument()) {
     callback.Run(nullptr);
     return;
   }

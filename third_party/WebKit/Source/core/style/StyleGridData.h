@@ -44,87 +44,90 @@ typedef HashMap<size_t,
 
 class StyleGridData : public RefCounted<StyleGridData> {
  public:
-  static PassRefPtr<StyleGridData> create() {
-    return adoptRef(new StyleGridData);
+  static PassRefPtr<StyleGridData> Create() {
+    return AdoptRef(new StyleGridData);
   }
-  PassRefPtr<StyleGridData> copy() const {
-    return adoptRef(new StyleGridData(*this));
+  PassRefPtr<StyleGridData> Copy() const {
+    return AdoptRef(new StyleGridData(*this));
   }
 
   bool operator==(const StyleGridData& o) const {
-    return m_gridTemplateColumns == o.m_gridTemplateColumns &&
-           m_gridTemplateRows == o.m_gridTemplateRows &&
-           m_gridAutoFlow == o.m_gridAutoFlow &&
-           m_gridAutoRows == o.m_gridAutoRows &&
-           m_gridAutoColumns == o.m_gridAutoColumns &&
-           m_namedGridColumnLines == o.m_namedGridColumnLines &&
-           m_namedGridRowLines == o.m_namedGridRowLines &&
-           m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines &&
-           m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines &&
-           m_autoRepeatNamedGridColumnLines ==
-               o.m_autoRepeatNamedGridColumnLines &&
-           m_autoRepeatNamedGridRowLines == o.m_autoRepeatNamedGridRowLines &&
-           m_autoRepeatOrderedNamedGridColumnLines ==
-               o.m_autoRepeatOrderedNamedGridColumnLines &&
-           m_autoRepeatOrderedNamedGridRowLines ==
-               o.m_autoRepeatOrderedNamedGridRowLines &&
-           m_namedGridArea == o.m_namedGridArea &&
-           m_namedGridArea == o.m_namedGridArea &&
-           m_namedGridAreaRowCount == o.m_namedGridAreaRowCount &&
-           m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount &&
-           m_gridColumnGap == o.m_gridColumnGap &&
-           m_gridRowGap == o.m_gridRowGap &&
-           m_gridAutoRepeatColumns == o.m_gridAutoRepeatColumns &&
-           m_gridAutoRepeatRows == o.m_gridAutoRepeatRows &&
-           m_autoRepeatColumnsInsertionPoint ==
-               o.m_autoRepeatColumnsInsertionPoint &&
-           m_autoRepeatRowsInsertionPoint == o.m_autoRepeatRowsInsertionPoint &&
-           m_autoRepeatColumnsType == o.m_autoRepeatColumnsType &&
-           m_autoRepeatRowsType == o.m_autoRepeatRowsType;
+    return grid_template_columns_ == o.grid_template_columns_ &&
+           grid_template_rows_ == o.grid_template_rows_ &&
+           grid_auto_flow_ == o.grid_auto_flow_ &&
+           grid_auto_rows_ == o.grid_auto_rows_ &&
+           grid_auto_columns_ == o.grid_auto_columns_ &&
+           named_grid_column_lines_ == o.named_grid_column_lines_ &&
+           named_grid_row_lines_ == o.named_grid_row_lines_ &&
+           ordered_named_grid_column_lines_ ==
+               o.ordered_named_grid_column_lines_ &&
+           ordered_named_grid_row_lines_ == o.ordered_named_grid_row_lines_ &&
+           auto_repeat_named_grid_column_lines_ ==
+               o.auto_repeat_named_grid_column_lines_ &&
+           auto_repeat_named_grid_row_lines_ ==
+               o.auto_repeat_named_grid_row_lines_ &&
+           auto_repeat_ordered_named_grid_column_lines_ ==
+               o.auto_repeat_ordered_named_grid_column_lines_ &&
+           auto_repeat_ordered_named_grid_row_lines_ ==
+               o.auto_repeat_ordered_named_grid_row_lines_ &&
+           named_grid_area_ == o.named_grid_area_ &&
+           named_grid_area_ == o.named_grid_area_ &&
+           named_grid_area_row_count_ == o.named_grid_area_row_count_ &&
+           named_grid_area_column_count_ == o.named_grid_area_column_count_ &&
+           grid_column_gap_ == o.grid_column_gap_ &&
+           grid_row_gap_ == o.grid_row_gap_ &&
+           grid_auto_repeat_columns_ == o.grid_auto_repeat_columns_ &&
+           grid_auto_repeat_rows_ == o.grid_auto_repeat_rows_ &&
+           auto_repeat_columns_insertion_point_ ==
+               o.auto_repeat_columns_insertion_point_ &&
+           auto_repeat_rows_insertion_point_ ==
+               o.auto_repeat_rows_insertion_point_ &&
+           auto_repeat_columns_type_ == o.auto_repeat_columns_type_ &&
+           auto_repeat_rows_type_ == o.auto_repeat_rows_type_;
   }
 
   bool operator!=(const StyleGridData& o) const { return !(*this == o); }
 
-  Vector<GridTrackSize> m_gridTemplateColumns;
-  Vector<GridTrackSize> m_gridTemplateRows;
+  Vector<GridTrackSize> grid_template_columns_;
+  Vector<GridTrackSize> grid_template_rows_;
 
-  NamedGridLinesMap m_namedGridColumnLines;
-  NamedGridLinesMap m_namedGridRowLines;
+  NamedGridLinesMap named_grid_column_lines_;
+  NamedGridLinesMap named_grid_row_lines_;
 
   // In order to reconstruct the original named grid line order, we can't rely
   // on NamedGridLinesMap as it loses the position if multiple grid lines are
   // set on a single track.
-  OrderedNamedGridLines m_orderedNamedGridColumnLines;
-  OrderedNamedGridLines m_orderedNamedGridRowLines;
+  OrderedNamedGridLines ordered_named_grid_column_lines_;
+  OrderedNamedGridLines ordered_named_grid_row_lines_;
 
-  NamedGridLinesMap m_autoRepeatNamedGridColumnLines;
-  NamedGridLinesMap m_autoRepeatNamedGridRowLines;
-  OrderedNamedGridLines m_autoRepeatOrderedNamedGridColumnLines;
-  OrderedNamedGridLines m_autoRepeatOrderedNamedGridRowLines;
+  NamedGridLinesMap auto_repeat_named_grid_column_lines_;
+  NamedGridLinesMap auto_repeat_named_grid_row_lines_;
+  OrderedNamedGridLines auto_repeat_ordered_named_grid_column_lines_;
+  OrderedNamedGridLines auto_repeat_ordered_named_grid_row_lines_;
 
-  unsigned m_gridAutoFlow : GridAutoFlowBits;
+  unsigned grid_auto_flow_ : kGridAutoFlowBits;
 
-  Vector<GridTrackSize> m_gridAutoRows;
-  Vector<GridTrackSize> m_gridAutoColumns;
+  Vector<GridTrackSize> grid_auto_rows_;
+  Vector<GridTrackSize> grid_auto_columns_;
 
-  NamedGridAreaMap m_namedGridArea;
+  NamedGridAreaMap named_grid_area_;
   // Because m_namedGridArea doesn't store the unnamed grid areas, we need to
   // keep track of the explicit grid size defined by both named and unnamed grid
   // areas.
-  size_t m_namedGridAreaRowCount;
-  size_t m_namedGridAreaColumnCount;
+  size_t named_grid_area_row_count_;
+  size_t named_grid_area_column_count_;
 
-  Length m_gridColumnGap;
-  Length m_gridRowGap;
+  Length grid_column_gap_;
+  Length grid_row_gap_;
 
-  Vector<GridTrackSize> m_gridAutoRepeatColumns;
-  Vector<GridTrackSize> m_gridAutoRepeatRows;
+  Vector<GridTrackSize> grid_auto_repeat_columns_;
+  Vector<GridTrackSize> grid_auto_repeat_rows_;
 
-  size_t m_autoRepeatColumnsInsertionPoint;
-  size_t m_autoRepeatRowsInsertionPoint;
+  size_t auto_repeat_columns_insertion_point_;
+  size_t auto_repeat_rows_insertion_point_;
 
-  AutoRepeatType m_autoRepeatColumnsType;
-  AutoRepeatType m_autoRepeatRowsType;
+  AutoRepeatType auto_repeat_columns_type_;
+  AutoRepeatType auto_repeat_rows_type_;
 
  private:
   StyleGridData();

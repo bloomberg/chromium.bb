@@ -15,24 +15,26 @@ class CORE_EXPORT DOMSharedArrayBuffer final : public DOMArrayBufferBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMSharedArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer) {
-    DCHECK(buffer->isShared());
+  static DOMSharedArrayBuffer* Create(PassRefPtr<WTF::ArrayBuffer> buffer) {
+    DCHECK(buffer->IsShared());
     return new DOMSharedArrayBuffer(std::move(buffer));
   }
-  static DOMSharedArrayBuffer* create(unsigned numElements,
-                                      unsigned elementByteSize) {
-    return create(WTF::ArrayBuffer::createShared(numElements, elementByteSize));
+  static DOMSharedArrayBuffer* Create(unsigned num_elements,
+                                      unsigned element_byte_size) {
+    return Create(
+        WTF::ArrayBuffer::CreateShared(num_elements, element_byte_size));
   }
-  static DOMSharedArrayBuffer* create(const void* source, unsigned byteLength) {
-    return create(WTF::ArrayBuffer::createShared(source, byteLength));
+  static DOMSharedArrayBuffer* Create(const void* source,
+                                      unsigned byte_length) {
+    return Create(WTF::ArrayBuffer::CreateShared(source, byte_length));
   }
-  static DOMSharedArrayBuffer* create(WTF::ArrayBufferContents& contents) {
-    DCHECK(contents.isShared());
-    return create(WTF::ArrayBuffer::create(contents));
+  static DOMSharedArrayBuffer* Create(WTF::ArrayBufferContents& contents) {
+    DCHECK(contents.IsShared());
+    return Create(WTF::ArrayBuffer::Create(contents));
   }
 
-  v8::Local<v8::Object> wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creationContext) override;
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) override;
 
  private:
   explicit DOMSharedArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)

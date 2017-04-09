@@ -33,145 +33,146 @@
 
 namespace blink {
 
-VTTScanner::VTTScanner(const String& line) : m_is8Bit(line.is8Bit()) {
-  if (m_is8Bit) {
-    m_data.characters8 = line.characters8();
-    m_end.characters8 = m_data.characters8 + line.length();
+VTTScanner::VTTScanner(const String& line) : is8_bit_(line.Is8Bit()) {
+  if (is8_bit_) {
+    data_.characters8 = line.Characters8();
+    end_.characters8 = data_.characters8 + line.length();
   } else {
-    m_data.characters16 = line.characters16();
-    m_end.characters16 = m_data.characters16 + line.length();
+    data_.characters16 = line.Characters16();
+    end_.characters16 = data_.characters16 + line.length();
   }
 }
 
-bool VTTScanner::scan(char c) {
-  if (!match(c))
+bool VTTScanner::Scan(char c) {
+  if (!Match(c))
     return false;
-  advance();
+  Advance();
   return true;
 }
 
-bool VTTScanner::scan(const LChar* characters, size_t charactersCount) {
-  unsigned matchLength = m_is8Bit ? m_end.characters8 - m_data.characters8
-                                  : m_end.characters16 - m_data.characters16;
-  if (matchLength < charactersCount)
+bool VTTScanner::Scan(const LChar* characters, size_t characters_count) {
+  unsigned match_length = is8_bit_ ? end_.characters8 - data_.characters8
+                                   : end_.characters16 - data_.characters16;
+  if (match_length < characters_count)
     return false;
   bool matched;
-  if (m_is8Bit)
-    matched = WTF::equal(m_data.characters8, characters, charactersCount);
+  if (is8_bit_)
+    matched = WTF::Equal(data_.characters8, characters, characters_count);
   else
-    matched = WTF::equal(m_data.characters16, characters, charactersCount);
+    matched = WTF::Equal(data_.characters16, characters, characters_count);
   if (matched)
-    advance(charactersCount);
+    Advance(characters_count);
   return matched;
 }
 
-bool VTTScanner::scanRun(const Run& run, const String& toMatch) {
-  DCHECK_EQ(run.start(), getPosition());
-  DCHECK_LE(run.start(), end());
-  DCHECK_GE(run.end(), run.start());
+bool VTTScanner::ScanRun(const Run& run, const String& to_match) {
+  DCHECK_EQ(run.Start(), GetPosition());
+  DCHECK_LE(run.Start(), end());
+  DCHECK_GE(run.end(), run.Start());
   DCHECK_LE(run.end(), end());
-  size_t matchLength = run.length();
-  if (toMatch.length() > matchLength)
+  size_t match_length = run.length();
+  if (to_match.length() > match_length)
     return false;
   bool matched;
-  if (m_is8Bit)
-    matched = WTF::equal(toMatch.impl(), m_data.characters8, matchLength);
+  if (is8_bit_)
+    matched = WTF::Equal(to_match.Impl(), data_.characters8, match_length);
   else
-    matched = WTF::equal(toMatch.impl(), m_data.characters16, matchLength);
+    matched = WTF::Equal(to_match.Impl(), data_.characters16, match_length);
   if (matched)
-    seekTo(run.end());
+    SeekTo(run.end());
   return matched;
 }
 
-void VTTScanner::skipRun(const Run& run) {
-  DCHECK_LE(run.start(), end());
-  DCHECK_GE(run.end(), run.start());
+void VTTScanner::SkipRun(const Run& run) {
+  DCHECK_LE(run.Start(), end());
+  DCHECK_GE(run.end(), run.Start());
   DCHECK_LE(run.end(), end());
-  seekTo(run.end());
+  SeekTo(run.end());
 }
 
-String VTTScanner::extractString(const Run& run) {
-  DCHECK_EQ(run.start(), getPosition());
-  DCHECK_LE(run.start(), end());
-  DCHECK_GE(run.end(), run.start());
+String VTTScanner::ExtractString(const Run& run) {
+  DCHECK_EQ(run.Start(), GetPosition());
+  DCHECK_LE(run.Start(), end());
+  DCHECK_GE(run.end(), run.Start());
   DCHECK_LE(run.end(), end());
   String s;
-  if (m_is8Bit)
-    s = String(m_data.characters8, run.length());
+  if (is8_bit_)
+    s = String(data_.characters8, run.length());
   else
-    s = String(m_data.characters16, run.length());
-  seekTo(run.end());
+    s = String(data_.characters16, run.length());
+  SeekTo(run.end());
   return s;
 }
 
-String VTTScanner::restOfInputAsString() {
-  Run rest(getPosition(), end(), m_is8Bit);
-  return extractString(rest);
+String VTTScanner::RestOfInputAsString() {
+  Run rest(GetPosition(), end(), is8_bit_);
+  return ExtractString(rest);
 }
 
-unsigned VTTScanner::scanDigits(int& number) {
-  Run runOfDigits = collectWhile<isASCIIDigit>();
-  if (runOfDigits.isEmpty()) {
+unsigned VTTScanner::ScanDigits(int& number) {
+  Run run_of_digits = CollectWhile<IsASCIIDigit>();
+  if (run_of_digits.IsEmpty()) {
     number = 0;
     return 0;
   }
-  bool validNumber;
-  size_t numDigits = runOfDigits.length();
-  if (m_is8Bit)
-    number = charactersToInt(m_data.characters8, numDigits, &validNumber);
+  bool valid_number;
+  size_t num_digits = run_of_digits.length();
+  if (is8_bit_)
+    number = CharactersToInt(data_.characters8, num_digits, &valid_number);
   else
-    number = charactersToInt(m_data.characters16, numDigits, &validNumber);
+    number = CharactersToInt(data_.characters16, num_digits, &valid_number);
 
   // Since we know that scanDigits only scanned valid (ASCII) digits (and
   // hence that's what got passed to charactersToInt()), the remaining
   // failure mode for charactersToInt() is overflow, so if |validNumber| is
   // not true, then set |number| to the maximum int value.
-  if (!validNumber)
+  if (!valid_number)
     number = std::numeric_limits<int>::max();
   // Consume the digits.
-  seekTo(runOfDigits.end());
-  return numDigits;
+  SeekTo(run_of_digits.end());
+  return num_digits;
 }
 
-bool VTTScanner::scanFloat(float& number) {
-  Run integerRun = collectWhile<isASCIIDigit>();
-  seekTo(integerRun.end());
-  Run decimalRun(getPosition(), getPosition(), m_is8Bit);
-  if (scan('.')) {
-    decimalRun = collectWhile<isASCIIDigit>();
-    seekTo(decimalRun.end());
+bool VTTScanner::ScanFloat(float& number) {
+  Run integer_run = CollectWhile<IsASCIIDigit>();
+  SeekTo(integer_run.end());
+  Run decimal_run(GetPosition(), GetPosition(), is8_bit_);
+  if (Scan('.')) {
+    decimal_run = CollectWhile<IsASCIIDigit>();
+    SeekTo(decimal_run.end());
   }
 
   // At least one digit required.
-  if (integerRun.isEmpty() && decimalRun.isEmpty()) {
+  if (integer_run.IsEmpty() && decimal_run.IsEmpty()) {
     // Restore to starting position.
-    seekTo(integerRun.start());
+    SeekTo(integer_run.Start());
     return false;
   }
 
-  size_t lengthOfFloat =
-      Run(integerRun.start(), getPosition(), m_is8Bit).length();
-  bool validNumber;
-  if (m_is8Bit)
-    number = charactersToFloat(integerRun.start(), lengthOfFloat, &validNumber);
+  size_t length_of_float =
+      Run(integer_run.Start(), GetPosition(), is8_bit_).length();
+  bool valid_number;
+  if (is8_bit_)
+    number =
+        CharactersToFloat(integer_run.Start(), length_of_float, &valid_number);
   else
     number =
-        charactersToFloat(reinterpret_cast<const UChar*>(integerRun.start()),
-                          lengthOfFloat, &validNumber);
+        CharactersToFloat(reinterpret_cast<const UChar*>(integer_run.Start()),
+                          length_of_float, &valid_number);
 
-  if (!validNumber)
+  if (!valid_number)
     number = std::numeric_limits<float>::max();
   return true;
 }
 
-bool VTTScanner::scanPercentage(float& percentage) {
-  Position savedPosition = getPosition();
-  if (!scanFloat(percentage))
+bool VTTScanner::ScanPercentage(float& percentage) {
+  Position saved_position = GetPosition();
+  if (!ScanFloat(percentage))
     return false;
-  if (scan('%'))
+  if (Scan('%'))
     return true;
   // Restore scanner position.
-  seekTo(savedPosition);
+  SeekTo(saved_position);
   return false;
 }
 

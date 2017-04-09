@@ -26,50 +26,50 @@ class PNGImageEncoderState;
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
  public:
-  static CanvasAsyncBlobCreator* create(
-      DOMUint8ClampedArray* unpremultipliedRGBAImageData,
-      const String& mimeType,
+  static CanvasAsyncBlobCreator* Create(
+      DOMUint8ClampedArray* unpremultiplied_rgba_image_data,
+      const String& mime_type,
       const IntSize&,
       BlobCallback*,
-      double startTime,
+      double start_time,
       Document*);
-  static CanvasAsyncBlobCreator* create(
-      DOMUint8ClampedArray* unpremultipliedRGBAImageData,
-      const String& mimeType,
+  static CanvasAsyncBlobCreator* Create(
+      DOMUint8ClampedArray* unpremultiplied_rgba_image_data,
+      const String& mime_type,
       const IntSize&,
-      double startTime,
+      double start_time,
       Document*,
       ScriptPromiseResolver*);
-  void scheduleAsyncBlobCreation(const double& quality);
+  void ScheduleAsyncBlobCreation(const double& quality);
   virtual ~CanvasAsyncBlobCreator();
   enum MimeType {
-    MimeTypePng,
-    MimeTypeJpeg,
-    MimeTypeWebp,
-    NumberOfMimeTypeSupported
+    kMimeTypePng,
+    kMimeTypeJpeg,
+    kMimeTypeWebp,
+    kNumberOfMimeTypeSupported
   };
   // This enum is used to back an UMA histogram, and should therefore be treated
   // as append-only.
   enum IdleTaskStatus {
-    IdleTaskNotStarted,
-    IdleTaskStarted,
-    IdleTaskCompleted,
-    IdleTaskFailed,
-    IdleTaskSwitchedToImmediateTask,
-    IdleTaskNotSupported,  // Idle tasks are not implemented for some image
-                           // types
-    IdleTaskCount,         // Should not be seen in production
+    kIdleTaskNotStarted,
+    kIdleTaskStarted,
+    kIdleTaskCompleted,
+    kIdleTaskFailed,
+    kIdleTaskSwitchedToImmediateTask,
+    kIdleTaskNotSupported,  // Idle tasks are not implemented for some image
+                            // types
+    kIdleTaskCount,         // Should not be seen in production
   };
 
   enum ToBlobFunctionType {
-    HTMLCanvasToBlobCallback,
-    OffscreenCanvasToBlobPromise,
-    NumberOfToBlobFunctionTypes
+    kHTMLCanvasToBlobCallback,
+    kOffscreenCanvasToBlobPromise,
+    kNumberOfToBlobFunctionTypes
   };
 
   // Methods are virtual for mocking in unit tests
-  virtual void signalTaskSwitchInStartTimeoutEventForTesting() {}
-  virtual void signalTaskSwitchInCompleteTimeoutEventForTesting() {}
+  virtual void SignalTaskSwitchInStartTimeoutEventForTesting() {}
+  virtual void SignalTaskSwitchInCompleteTimeoutEventForTesting() {}
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -82,67 +82,67 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                          Document*,
                          ScriptPromiseResolver*);
   // Methods are virtual for unit testing
-  virtual void scheduleInitiatePngEncoding();
-  virtual void scheduleInitiateJpegEncoding(const double&);
-  virtual void idleEncodeRowsPng(double deadlineSeconds);
-  virtual void idleEncodeRowsJpeg(double deadlineSeconds);
-  virtual void postDelayedTaskToCurrentThread(const WebTraceLocation&,
+  virtual void ScheduleInitiatePngEncoding();
+  virtual void ScheduleInitiateJpegEncoding(const double&);
+  virtual void IdleEncodeRowsPng(double deadline_seconds);
+  virtual void IdleEncodeRowsJpeg(double deadline_seconds);
+  virtual void PostDelayedTaskToCurrentThread(const WebTraceLocation&,
                                               std::unique_ptr<WTF::Closure>,
-                                              double delayMs);
-  virtual void signalAlternativeCodePathFinishedForTesting() {}
-  virtual void createBlobAndReturnResult();
-  virtual void createNullAndReturnResult();
+                                              double delay_ms);
+  virtual void SignalAlternativeCodePathFinishedForTesting() {}
+  virtual void CreateBlobAndReturnResult();
+  virtual void CreateNullAndReturnResult();
 
-  void initiatePngEncoding(double deadlineSeconds);
-  void initiateJpegEncoding(const double& quality, double deadlineSeconds);
-  IdleTaskStatus m_idleTaskStatus;
+  void InitiatePngEncoding(double deadline_seconds);
+  void InitiateJpegEncoding(const double& quality, double deadline_seconds);
+  IdleTaskStatus idle_task_status_;
 
  private:
   friend class CanvasAsyncBlobCreatorTest;
 
-  void dispose();
+  void Dispose();
 
-  std::unique_ptr<PNGImageEncoderState> m_pngEncoderState;
-  std::unique_ptr<JPEGImageEncoderState> m_jpegEncoderState;
-  Member<DOMUint8ClampedArray> m_data;
-  std::unique_ptr<Vector<unsigned char>> m_encodedImage;
-  int m_numRowsCompleted;
-  Member<Document> m_document;
+  std::unique_ptr<PNGImageEncoderState> png_encoder_state_;
+  std::unique_ptr<JPEGImageEncoderState> jpeg_encoder_state_;
+  Member<DOMUint8ClampedArray> data_;
+  std::unique_ptr<Vector<unsigned char>> encoded_image_;
+  int num_rows_completed_;
+  Member<Document> document_;
 
-  const IntSize m_size;
-  size_t m_pixelRowStride;
-  const MimeType m_mimeType;
-  double m_startTime;
-  double m_scheduleInitiateStartTime;
-  double m_elapsedTime;
+  const IntSize size_;
+  size_t pixel_row_stride_;
+  const MimeType mime_type_;
+  double start_time_;
+  double schedule_initiate_start_time_;
+  double elapsed_time_;
 
-  ToBlobFunctionType m_functionType;
+  ToBlobFunctionType function_type_;
 
   // Used when CanvasAsyncBlobCreator runs on main thread only
-  Member<ParentFrameTaskRunners> m_parentFrameTaskRunner;
+  Member<ParentFrameTaskRunners> parent_frame_task_runner_;
 
   // Used for HTMLCanvasElement only
-  Member<BlobCallback> m_callback;
+  Member<BlobCallback> callback_;
 
   // Used for OffscreenCanvas only
-  Member<ScriptPromiseResolver> m_scriptPromiseResolver;
+  Member<ScriptPromiseResolver> script_promise_resolver_;
 
   // PNG
-  bool initializePngStruct();
-  void forceEncodeRowsPngOnCurrentThread();  // Similar to idleEncodeRowsPng
+  bool InitializePngStruct();
+  void ForceEncodeRowsPngOnCurrentThread();  // Similar to idleEncodeRowsPng
                                              // without deadline
 
   // JPEG
-  bool initializeJpegStruct(double quality);
-  void forceEncodeRowsJpegOnCurrentThread();  // Similar to idleEncodeRowsJpeg
+  bool InitializeJpegStruct(double quality);
+  void ForceEncodeRowsJpegOnCurrentThread();  // Similar to idleEncodeRowsJpeg
                                               // without
                                               // deadline
 
   // WEBP
-  void encodeImageOnEncoderThread(double quality);
+  void EncodeImageOnEncoderThread(double quality);
 
-  void idleTaskStartTimeoutEvent(double quality);
-  void idleTaskCompleteTimeoutEvent();
+  void IdleTaskStartTimeoutEvent(double quality);
+  void IdleTaskCompleteTimeoutEvent();
 };
 
 }  // namespace blink

@@ -33,111 +33,111 @@
 
 namespace blink {
 
-IDBAny* IDBAny::createUndefined() {
-  return new IDBAny(UndefinedType);
+IDBAny* IDBAny::CreateUndefined() {
+  return new IDBAny(kUndefinedType);
 }
 
-IDBAny* IDBAny::createNull() {
-  return new IDBAny(NullType);
+IDBAny* IDBAny::CreateNull() {
+  return new IDBAny(kNullType);
 }
 
-IDBAny::IDBAny(Type type) : m_type(type) {
-  ASSERT(type == UndefinedType || type == NullType);
+IDBAny::IDBAny(Type type) : type_(type) {
+  ASSERT(type == kUndefinedType || type == kNullType);
 }
 
 IDBAny::~IDBAny() {}
 
-void IDBAny::contextWillBeDestroyed() {
-  if (m_idbCursor)
-    m_idbCursor->contextWillBeDestroyed();
+void IDBAny::ContextWillBeDestroyed() {
+  if (idb_cursor_)
+    idb_cursor_->ContextWillBeDestroyed();
 }
 
-DOMStringList* IDBAny::domStringList() const {
-  ASSERT(m_type == DOMStringListType);
-  return m_domStringList.get();
+DOMStringList* IDBAny::DomStringList() const {
+  ASSERT(type_ == kDOMStringListType);
+  return dom_string_list_.Get();
 }
 
-IDBCursor* IDBAny::idbCursor() const {
-  ASSERT(m_type == IDBCursorType);
-  SECURITY_DCHECK(m_idbCursor->isKeyCursor());
-  return m_idbCursor.get();
+IDBCursor* IDBAny::IdbCursor() const {
+  ASSERT(type_ == kIDBCursorType);
+  SECURITY_DCHECK(idb_cursor_->IsKeyCursor());
+  return idb_cursor_.Get();
 }
 
-IDBCursorWithValue* IDBAny::idbCursorWithValue() const {
-  ASSERT(m_type == IDBCursorWithValueType);
-  SECURITY_DCHECK(m_idbCursor->isCursorWithValue());
-  return toIDBCursorWithValue(m_idbCursor.get());
+IDBCursorWithValue* IDBAny::IdbCursorWithValue() const {
+  ASSERT(type_ == kIDBCursorWithValueType);
+  SECURITY_DCHECK(idb_cursor_->IsCursorWithValue());
+  return ToIDBCursorWithValue(idb_cursor_.Get());
 }
 
-IDBDatabase* IDBAny::idbDatabase() const {
-  ASSERT(m_type == IDBDatabaseType);
-  return m_idbDatabase.get();
+IDBDatabase* IDBAny::IdbDatabase() const {
+  ASSERT(type_ == kIDBDatabaseType);
+  return idb_database_.Get();
 }
 
-IDBIndex* IDBAny::idbIndex() const {
-  ASSERT(m_type == IDBIndexType);
-  return m_idbIndex.get();
+IDBIndex* IDBAny::IdbIndex() const {
+  ASSERT(type_ == kIDBIndexType);
+  return idb_index_.Get();
 }
 
-IDBObjectStore* IDBAny::idbObjectStore() const {
-  ASSERT(m_type == IDBObjectStoreType);
-  return m_idbObjectStore.get();
+IDBObjectStore* IDBAny::IdbObjectStore() const {
+  ASSERT(type_ == kIDBObjectStoreType);
+  return idb_object_store_.Get();
 }
 
-const IDBKey* IDBAny::key() const {
+const IDBKey* IDBAny::Key() const {
   // If type is IDBValueType then instead use value()->primaryKey().
-  ASSERT(m_type == KeyType);
-  return m_idbKey.get();
+  ASSERT(type_ == kKeyType);
+  return idb_key_.Get();
 }
 
-IDBValue* IDBAny::value() const {
-  ASSERT(m_type == IDBValueType);
-  return m_idbValue.get();
+IDBValue* IDBAny::Value() const {
+  ASSERT(type_ == kIDBValueType);
+  return idb_value_.Get();
 }
 
-const Vector<RefPtr<IDBValue>>* IDBAny::values() const {
-  ASSERT(m_type == IDBValueArrayType);
-  return &m_idbValues;
+const Vector<RefPtr<IDBValue>>* IDBAny::Values() const {
+  ASSERT(type_ == kIDBValueArrayType);
+  return &idb_values_;
 }
 
-int64_t IDBAny::integer() const {
-  ASSERT(m_type == IntegerType);
-  return m_integer;
+int64_t IDBAny::Integer() const {
+  ASSERT(type_ == kIntegerType);
+  return integer_;
 }
 
 IDBAny::IDBAny(DOMStringList* value)
-    : m_type(DOMStringListType), m_domStringList(value) {}
+    : type_(kDOMStringListType), dom_string_list_(value) {}
 
 IDBAny::IDBAny(IDBCursor* value)
-    : m_type(value->isCursorWithValue() ? IDBCursorWithValueType
-                                        : IDBCursorType),
-      m_idbCursor(value) {}
+    : type_(value->IsCursorWithValue() ? kIDBCursorWithValueType
+                                       : kIDBCursorType),
+      idb_cursor_(value) {}
 
 IDBAny::IDBAny(IDBDatabase* value)
-    : m_type(IDBDatabaseType), m_idbDatabase(value) {}
+    : type_(kIDBDatabaseType), idb_database_(value) {}
 
-IDBAny::IDBAny(IDBIndex* value) : m_type(IDBIndexType), m_idbIndex(value) {}
+IDBAny::IDBAny(IDBIndex* value) : type_(kIDBIndexType), idb_index_(value) {}
 
 IDBAny::IDBAny(IDBObjectStore* value)
-    : m_type(IDBObjectStoreType), m_idbObjectStore(value) {}
+    : type_(kIDBObjectStoreType), idb_object_store_(value) {}
 
 IDBAny::IDBAny(const Vector<RefPtr<IDBValue>>& values)
-    : m_type(IDBValueArrayType), m_idbValues(values) {}
+    : type_(kIDBValueArrayType), idb_values_(values) {}
 
 IDBAny::IDBAny(PassRefPtr<IDBValue> value)
-    : m_type(IDBValueType), m_idbValue(value) {}
+    : type_(kIDBValueType), idb_value_(value) {}
 
-IDBAny::IDBAny(IDBKey* key) : m_type(KeyType), m_idbKey(key) {}
+IDBAny::IDBAny(IDBKey* key) : type_(kKeyType), idb_key_(key) {}
 
-IDBAny::IDBAny(int64_t value) : m_type(IntegerType), m_integer(value) {}
+IDBAny::IDBAny(int64_t value) : type_(kIntegerType), integer_(value) {}
 
 DEFINE_TRACE(IDBAny) {
-  visitor->trace(m_domStringList);
-  visitor->trace(m_idbCursor);
-  visitor->trace(m_idbDatabase);
-  visitor->trace(m_idbIndex);
-  visitor->trace(m_idbObjectStore);
-  visitor->trace(m_idbKey);
+  visitor->Trace(dom_string_list_);
+  visitor->Trace(idb_cursor_);
+  visitor->Trace(idb_database_);
+  visitor->Trace(idb_index_);
+  visitor->Trace(idb_object_store_);
+  visitor->Trace(idb_key_);
 }
 
 }  // namespace blink

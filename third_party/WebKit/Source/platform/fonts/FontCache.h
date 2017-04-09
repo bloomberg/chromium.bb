@@ -67,13 +67,13 @@ class OpenTypeVerticalData;
 class ShapeCache;
 class SimpleFontData;
 
-enum ShouldRetain { Retain, DoNotRetain };
-enum PurgeSeverity { PurgeIfNeeded, ForcePurge };
+enum ShouldRetain { kRetain, kDoNotRetain };
+enum PurgeSeverity { kPurgeIfNeeded, kForcePurge };
 enum class AlternateFontName {
-  AllowAlternate,
-  NoAlternate,
-  LocalUniqueFace,
-  LastResort
+  kAllowAlternate,
+  kNoAlternate,
+  kLocalUniqueFace,
+  kLastResort
 };
 
 class PLATFORM_EXPORT FontCache {
@@ -83,33 +83,33 @@ class PLATFORM_EXPORT FontCache {
   USING_FAST_MALLOC(FontCache);
 
  public:
-  static FontCache* fontCache();
+  static FontCache* GetFontCache();
 
-  void releaseFontData(const SimpleFontData*);
+  void ReleaseFontData(const SimpleFontData*);
 
   // This method is implemented by the plaform and used by
   // FontFastPath to lookup the font for a given character.
-  PassRefPtr<SimpleFontData> fallbackFontForCharacter(
+  PassRefPtr<SimpleFontData> FallbackFontForCharacter(
       const FontDescription&,
       UChar32,
-      const SimpleFontData* fontDataToSubstitute,
-      FontFallbackPriority = FontFallbackPriority::Text);
+      const SimpleFontData* font_data_to_substitute,
+      FontFallbackPriority = FontFallbackPriority::kText);
 
   // Also implemented by the platform.
-  void platformInit();
+  void PlatformInit();
 
-  PassRefPtr<SimpleFontData> getFontData(
+  PassRefPtr<SimpleFontData> GetFontData(
       const FontDescription&,
       const AtomicString&,
-      AlternateFontName = AlternateFontName::AllowAlternate,
-      ShouldRetain = Retain);
-  PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&,
-                                                       ShouldRetain = Retain);
-  SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
+      AlternateFontName = AlternateFontName::kAllowAlternate,
+      ShouldRetain = kRetain);
+  PassRefPtr<SimpleFontData> GetLastResortFallbackFont(const FontDescription&,
+                                                       ShouldRetain = kRetain);
+  SimpleFontData* GetNonRetainedLastResortFallbackFont(const FontDescription&);
 
   // Should be used in determining whether family names listed in font-family:
   // ... are available locally. Only returns true if family name matches.
-  bool isPlatformFamilyMatchAvailable(const FontDescription&,
+  bool IsPlatformFamilyMatchAvailable(const FontDescription&,
                                       const AtomicString& family);
 
   // Should be used in determining whether the <abc> argument to local in
@@ -118,177 +118,178 @@ class PLATFORM_EXPORT FontCache {
   // https://drafts.csswg.org/css-fonts-3/#src-desc
   // TODO crbug.com/627143 complete this and actually look at the right
   // namerecords.
-  bool isPlatformFontUniqueNameMatchAvailable(
+  bool IsPlatformFontUniqueNameMatchAvailable(
       const FontDescription&,
-      const AtomicString& uniqueFontName);
+      const AtomicString& unique_font_name);
 
-  static String firstAvailableOrFirst(const String&);
+  static String FirstAvailableOrFirst(const String&);
 
   // Returns the ShapeCache instance associated with the given cache key.
   // Creates a new instance as needed and as such is guaranteed not to return
   // a nullptr. Instances are managed by FontCache and are only guaranteed to
   // be valid for the duration of the current session, as controlled by
   // disable/enablePurging.
-  ShapeCache* getShapeCache(const FallbackListCompositeKey&);
+  ShapeCache* GetShapeCache(const FallbackListCompositeKey&);
 
-  void addClient(FontCacheClient*);
+  void AddClient(FontCacheClient*);
 
-  unsigned short generation();
-  void invalidate();
+  unsigned short Generation();
+  void Invalidate();
 
-  SkFontMgr* fontManager() { return m_fontManager.get(); }
-  static void setFontManager(sk_sp<SkFontMgr>);
+  SkFontMgr* FontManager() { return font_manager_.get(); }
+  static void SetFontManager(sk_sp<SkFontMgr>);
 
 #if !OS(MACOSX)
-  static const AtomicString& systemFontFamily();
+  static const AtomicString& SystemFontFamily();
 #else
-  static const AtomicString& legacySystemFontFamily();
+  static const AtomicString& LegacySystemFontFamily();
 #endif
 #if OS(LINUX) || OS(ANDROID)
-  static void setSystemFontFamily(const AtomicString&);
+  static void SetSystemFontFamily(const AtomicString&);
 #endif
 
 #if OS(WIN)
-  static bool antialiasedTextEnabled() { return s_antialiasedTextEnabled; }
-  static bool lcdTextEnabled() { return s_lcdTextEnabled; }
-  static float deviceScaleFactor() { return s_deviceScaleFactor; }
-  static void setAntialiasedTextEnabled(bool enabled) {
-    s_antialiasedTextEnabled = enabled;
+  static bool AntialiasedTextEnabled() { return antialiased_text_enabled_; }
+  static bool LcdTextEnabled() { return lcd_text_enabled_; }
+  static float DeviceScaleFactor() { return device_scale_factor_; }
+  static void SetAntialiasedTextEnabled(bool enabled) {
+    antialiased_text_enabled_ = enabled;
   }
-  static void setLCDTextEnabled(bool enabled) { s_lcdTextEnabled = enabled; }
-  static void setDeviceScaleFactor(float deviceScaleFactor) {
-    s_deviceScaleFactor = deviceScaleFactor;
+  static void SetLCDTextEnabled(bool enabled) { lcd_text_enabled_ = enabled; }
+  static void SetDeviceScaleFactor(float device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
   }
-  static void addSideloadedFontForTesting(SkTypeface*);
+  static void AddSideloadedFontForTesting(SkTypeface*);
   // Functions to cache and retrieve the system font metrics.
-  static void setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight);
-  static void setSmallCaptionFontMetrics(const wchar_t* familyName,
-                                         int32_t fontHeight);
-  static void setStatusFontMetrics(const wchar_t* familyName,
-                                   int32_t fontHeight);
-  static int32_t menuFontHeight() { return s_menuFontHeight; }
-  static const AtomicString& menuFontFamily() {
-    return *s_smallCaptionFontFamilyName;
+  static void SetMenuFontMetrics(const wchar_t* family_name,
+                                 int32_t font_height);
+  static void SetSmallCaptionFontMetrics(const wchar_t* family_name,
+                                         int32_t font_height);
+  static void SetStatusFontMetrics(const wchar_t* family_name,
+                                   int32_t font_height);
+  static int32_t MenuFontHeight() { return menu_font_height_; }
+  static const AtomicString& MenuFontFamily() {
+    return *small_caption_font_family_name_;
   }
-  static int32_t smallCaptionFontHeight() { return s_smallCaptionFontHeight; }
-  static const AtomicString& smallCaptionFontFamily() {
-    return *s_smallCaptionFontFamilyName;
+  static int32_t SmallCaptionFontHeight() { return small_caption_font_height_; }
+  static const AtomicString& SmallCaptionFontFamily() {
+    return *small_caption_font_family_name_;
   }
-  static int32_t statusFontHeight() { return s_statusFontHeight; }
-  static const AtomicString& statusFontFamily() {
-    return *s_statusFontFamilyName;
+  static int32_t StatusFontHeight() { return status_font_height_; }
+  static const AtomicString& StatusFontFamily() {
+    return *status_font_family_name_;
   }
-  static void setUseSkiaFontFallback(bool useSkiaFontFallback) {
-    s_useSkiaFontFallback = useSkiaFontFallback;
+  static void SetUseSkiaFontFallback(bool use_skia_font_fallback) {
+    use_skia_font_fallback_ = use_skia_font_fallback;
   }
 #endif
 
   typedef uint32_t FontFileKey;
-  PassRefPtr<OpenTypeVerticalData> getVerticalData(const FontFileKey&,
+  PassRefPtr<OpenTypeVerticalData> GetVerticalData(const FontFileKey&,
                                                    const FontPlatformData&);
 
-  static void acceptLanguagesChanged(const String&);
+  static void AcceptLanguagesChanged(const String&);
 
 #if OS(ANDROID)
-  static AtomicString getGenericFamilyNameForScript(
-      const AtomicString& familyName,
+  static AtomicString GetGenericFamilyNameForScript(
+      const AtomicString& family_name,
       const FontDescription&);
 #else
   struct PlatformFallbackFont {
     String name;
     CString filename;
-    int fontconfigInterfaceId;
-    int ttcIndex;
-    bool isBold;
-    bool isItalic;
+    int fontconfig_interface_id;
+    int ttc_index;
+    bool is_bold;
+    bool is_italic;
   };
-  static void getFontForCharacter(UChar32,
-                                  const char* preferredLocale,
+  static void GetFontForCharacter(UChar32,
+                                  const char* preferred_locale,
                                   PlatformFallbackFont*);
 #endif
-  PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(
+  PassRefPtr<SimpleFontData> FontDataFromFontPlatformData(
       const FontPlatformData*,
-      ShouldRetain = Retain,
+      ShouldRetain = kRetain,
       bool = false);
 
-  void invalidateShapeCache();
+  void InvalidateShapeCache();
 
-  static void crashWithFontInfo(const FontDescription*);
+  static void CrashWithFontInfo(const FontDescription*);
 
   // Memory reporting
-  void dumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump*);
-  void dumpShapeResultCache(base::trace_event::ProcessMemoryDump*);
+  void DumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump*);
+  void DumpShapeResultCache(base::trace_event::ProcessMemoryDump*);
 
  private:
   FontCache();
   ~FontCache();
 
-  void purge(PurgeSeverity = PurgeIfNeeded);
+  void Purge(PurgeSeverity = kPurgeIfNeeded);
 
-  void disablePurging() { m_purgePreventCount++; }
-  void enablePurging() {
-    ASSERT(m_purgePreventCount);
-    if (!--m_purgePreventCount)
-      purge(PurgeIfNeeded);
+  void DisablePurging() { purge_prevent_count_++; }
+  void EnablePurging() {
+    ASSERT(purge_prevent_count_);
+    if (!--purge_prevent_count_)
+      Purge(kPurgeIfNeeded);
   }
 
   // FIXME: This method should eventually be removed.
-  FontPlatformData* getFontPlatformData(
+  FontPlatformData* GetFontPlatformData(
       const FontDescription&,
       const FontFaceCreationParams&,
-      AlternateFontName = AlternateFontName::AllowAlternate);
+      AlternateFontName = AlternateFontName::kAllowAlternate);
 #if !OS(MACOSX)
-  FontPlatformData* systemFontPlatformData(const FontDescription&);
+  FontPlatformData* SystemFontPlatformData(const FontDescription&);
 #endif
 
   // These methods are implemented by each platform.
-  std::unique_ptr<FontPlatformData> createFontPlatformData(
+  std::unique_ptr<FontPlatformData> CreateFontPlatformData(
       const FontDescription&,
       const FontFaceCreationParams&,
-      float fontSize,
-      AlternateFontName = AlternateFontName::AllowAlternate);
-  std::unique_ptr<FontPlatformData> scaleFontPlatformData(
+      float font_size,
+      AlternateFontName = AlternateFontName::kAllowAlternate);
+  std::unique_ptr<FontPlatformData> ScaleFontPlatformData(
       const FontPlatformData&,
       const FontDescription&,
       const FontFaceCreationParams&,
-      float fontSize);
+      float font_size);
 
   // Implemented on skia platforms.
-  sk_sp<SkTypeface> createTypeface(const FontDescription&,
+  sk_sp<SkTypeface> CreateTypeface(const FontDescription&,
                                    const FontFaceCreationParams&,
                                    CString& name);
 
 #if OS(ANDROID) || OS(LINUX)
-  static AtomicString getFamilyNameForCharacter(SkFontMgr*,
+  static AtomicString GetFamilyNameForCharacter(SkFontMgr*,
                                                 UChar32,
                                                 const FontDescription&,
                                                 FontFallbackPriority);
 #endif
 
-  PassRefPtr<SimpleFontData> fallbackOnStandardFontStyle(const FontDescription&,
+  PassRefPtr<SimpleFontData> FallbackOnStandardFontStyle(const FontDescription&,
                                                          UChar32);
 
   // Don't purge if this count is > 0;
-  int m_purgePreventCount;
+  int purge_prevent_count_;
 
-  sk_sp<SkFontMgr> m_fontManager;
+  sk_sp<SkFontMgr> font_manager_;
 
   // A leaky owning bare pointer.
-  static SkFontMgr* s_staticFontManager;
+  static SkFontMgr* static_font_manager_;
 
 #if OS(WIN)
-  static bool s_antialiasedTextEnabled;
-  static bool s_lcdTextEnabled;
-  static float s_deviceScaleFactor;
-  static HashMap<String, sk_sp<SkTypeface>>* s_sideloadedFonts;
+  static bool antialiased_text_enabled_;
+  static bool lcd_text_enabled_;
+  static float device_scale_factor_;
+  static HashMap<String, sk_sp<SkTypeface>>* sideloaded_fonts_;
   // The system font metrics cache.
-  static AtomicString* s_menuFontFamilyName;
-  static int32_t s_menuFontHeight;
-  static AtomicString* s_smallCaptionFontFamilyName;
-  static int32_t s_smallCaptionFontHeight;
-  static AtomicString* s_statusFontFamilyName;
-  static int32_t s_statusFontHeight;
-  static bool s_useSkiaFontFallback;
+  static AtomicString* menu_font_family_name_;
+  static int32_t menu_font_height_;
+  static AtomicString* small_caption_font_family_name_;
+  static int32_t small_caption_font_height_;
+  static AtomicString* status_font_family_name_;
+  static int32_t status_font_height_;
+  static bool use_skia_font_fallback_;
 #endif
 
   friend class SimpleFontData;  // For fontDataFromFontPlatformData
@@ -300,11 +301,11 @@ class PLATFORM_EXPORT FontCachePurgePreventer {
   WTF_MAKE_NONCOPYABLE(FontCachePurgePreventer);
 
  public:
-  FontCachePurgePreventer() { FontCache::fontCache()->disablePurging(); }
-  ~FontCachePurgePreventer() { FontCache::fontCache()->enablePurging(); }
+  FontCachePurgePreventer() { FontCache::GetFontCache()->DisablePurging(); }
+  ~FontCachePurgePreventer() { FontCache::GetFontCache()->EnablePurging(); }
 };
 
-AtomicString toAtomicString(const SkString&);
+AtomicString ToAtomicString(const SkString&);
 
 }  // namespace blink
 

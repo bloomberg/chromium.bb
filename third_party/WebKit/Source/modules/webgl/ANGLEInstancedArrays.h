@@ -40,11 +40,11 @@ class ANGLEInstancedArrays final : public WebGLExtension {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ANGLEInstancedArrays* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static ANGLEInstancedArrays* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
+  WebGLExtensionName GetName() const override;
 
   void drawArraysInstancedANGLE(GLenum mode,
                                 GLint first,

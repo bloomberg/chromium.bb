@@ -33,48 +33,48 @@
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeMobile::create() {
-  return adoptRef(new LayoutThemeMobile());
+PassRefPtr<LayoutTheme> LayoutThemeMobile::Create() {
+  return AdoptRef(new LayoutThemeMobile());
 }
 
 LayoutThemeMobile::~LayoutThemeMobile() {}
 
-String LayoutThemeMobile::extraDefaultStyleSheet() {
-  return LayoutThemeDefault::extraDefaultStyleSheet() +
-         loadResourceAsASCIIString("themeChromiumLinux.css") +
-         loadResourceAsASCIIString("themeChromiumAndroid.css");
+String LayoutThemeMobile::ExtraDefaultStyleSheet() {
+  return LayoutThemeDefault::ExtraDefaultStyleSheet() +
+         LoadResourceAsASCIIString("themeChromiumLinux.css") +
+         LoadResourceAsASCIIString("themeChromiumAndroid.css");
 }
 
-String LayoutThemeMobile::extraMediaControlsStyleSheet() {
-  return loadResourceAsASCIIString("mediaControlsAndroid.css");
+String LayoutThemeMobile::ExtraMediaControlsStyleSheet() {
+  return LoadResourceAsASCIIString("mediaControlsAndroid.css");
 }
 
-String LayoutThemeMobile::extraFullscreenStyleSheet() {
-  return loadResourceAsASCIIString("fullscreenAndroid.css");
+String LayoutThemeMobile::ExtraFullscreenStyleSheet() {
+  return LoadResourceAsASCIIString("fullscreenAndroid.css");
 }
 
-void LayoutThemeMobile::adjustInnerSpinButtonStyle(ComputedStyle& style) const {
-  if (LayoutTestSupport::isRunningLayoutTest()) {
+void LayoutThemeMobile::AdjustInnerSpinButtonStyle(ComputedStyle& style) const {
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
     // Match Linux spin button style in layout tests.
     // FIXME: Consider removing the conditional if a future Android theme
     // matches this.
-    IntSize size = Platform::current()->themeEngine()->getSize(
-        WebThemeEngine::PartInnerSpinButton);
+    IntSize size = Platform::Current()->ThemeEngine()->GetSize(
+        WebThemeEngine::kPartInnerSpinButton);
 
-    style.setWidth(Length(size.width(), Fixed));
-    style.setMinWidth(Length(size.width(), Fixed));
+    style.SetWidth(Length(size.Width(), kFixed));
+    style.SetMinWidth(Length(size.Width(), kFixed));
   }
 }
 
-bool LayoutThemeMobile::shouldUseFallbackTheme(
+bool LayoutThemeMobile::ShouldUseFallbackTheme(
     const ComputedStyle& style) const {
 #if OS(MACOSX)
   // Mac WebThemeEngine cannot handle these controls.
-  ControlPart part = style.appearance();
-  if (part == CheckboxPart || part == RadioPart)
+  ControlPart part = style.Appearance();
+  if (part == kCheckboxPart || part == kRadioPart)
     return true;
 #endif
-  return LayoutThemeDefault::shouldUseFallbackTheme(style);
+  return LayoutThemeDefault::ShouldUseFallbackTheme(style);
 }
 
 }  // namespace blink

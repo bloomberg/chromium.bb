@@ -40,17 +40,17 @@ class SpeechSynthesisVoice final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechSynthesisVoice* create(PassRefPtr<PlatformSpeechSynthesisVoice>);
+  static SpeechSynthesisVoice* Create(PassRefPtr<PlatformSpeechSynthesisVoice>);
   ~SpeechSynthesisVoice();
 
-  const String& voiceURI() const { return m_platformVoice->voiceURI(); }
-  const String& name() const { return m_platformVoice->name(); }
-  const String& lang() const { return m_platformVoice->lang(); }
-  bool localService() const { return m_platformVoice->localService(); }
-  bool isDefault() const { return m_platformVoice->isDefault(); }
+  const String& voiceURI() const { return platform_voice_->VoiceURI(); }
+  const String& name() const { return platform_voice_->GetName(); }
+  const String& lang() const { return platform_voice_->Lang(); }
+  bool localService() const { return platform_voice_->LocalService(); }
+  bool isDefault() const { return platform_voice_->IsDefault(); }
 
-  PlatformSpeechSynthesisVoice* platformVoice() const {
-    return m_platformVoice.get();
+  PlatformSpeechSynthesisVoice* PlatformVoice() const {
+    return platform_voice_.Get();
   }
 
   DEFINE_INLINE_TRACE() {}
@@ -58,7 +58,7 @@ class SpeechSynthesisVoice final
  private:
   explicit SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice>);
 
-  RefPtr<PlatformSpeechSynthesisVoice> m_platformVoice;
+  RefPtr<PlatformSpeechSynthesisVoice> platform_voice_;
 };
 
 }  // namespace blink

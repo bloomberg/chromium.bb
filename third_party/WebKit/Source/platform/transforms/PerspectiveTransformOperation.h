@@ -33,39 +33,39 @@ namespace blink {
 class PLATFORM_EXPORT PerspectiveTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<PerspectiveTransformOperation> create(double p) {
-    return adoptRef(new PerspectiveTransformOperation(p));
+  static PassRefPtr<PerspectiveTransformOperation> Create(double p) {
+    return AdoptRef(new PerspectiveTransformOperation(p));
   }
 
-  double perspective() const { return m_p; }
+  double Perspective() const { return p_; }
 
-  virtual bool canBlendWith(const TransformOperation& other) const {
-    return isSameType(other);
+  virtual bool CanBlendWith(const TransformOperation& other) const {
+    return IsSameType(other);
   }
 
  private:
-  OperationType type() const override { return Perspective; }
+  OperationType GetType() const override { return kPerspective; }
 
   bool operator==(const TransformOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const PerspectiveTransformOperation* p =
         static_cast<const PerspectiveTransformOperation*>(&o);
-    return m_p == p->m_p;
+    return p_ == p->p_;
   }
 
-  void apply(TransformationMatrix& transform, const FloatSize&) const override {
-    transform.applyPerspective(m_p);
+  void Apply(TransformationMatrix& transform, const FloatSize&) const override {
+    transform.ApplyPerspective(p_);
   }
 
-  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
                                        double progress,
-                                       bool blendToIdentity = false) override;
-  PassRefPtr<TransformOperation> zoom(double factor) final;
+                                       bool blend_to_identity = false) override;
+  PassRefPtr<TransformOperation> Zoom(double factor) final;
 
-  PerspectiveTransformOperation(double p) : m_p(p) {}
+  PerspectiveTransformOperation(double p) : p_(p) {}
 
-  double m_p;
+  double p_;
 };
 
 }  // namespace blink

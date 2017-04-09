@@ -65,21 +65,21 @@ MediaRecorderHandler::~MediaRecorderHandler() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Send a |last_in_slice| to our |client_|.
   if (client_)
-    client_->writeData(
+    client_->WriteData(
         nullptr, 0u, true,
         (TimeTicks::Now() - TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
-bool MediaRecorderHandler::canSupportMimeType(
+bool MediaRecorderHandler::CanSupportMimeType(
     const blink::WebString& web_type,
     const blink::WebString& web_codecs) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // An empty |web_type| means MediaRecorderHandler can choose its preferred
   // codecs.
-  if (web_type.isEmpty())
+  if (web_type.IsEmpty())
     return true;
 
-  const std::string type(web_type.utf8());
+  const std::string type(web_type.Utf8());
   const bool video = base::EqualsCaseInsensitiveASCII(type, "video/webm") ||
                      base::EqualsCaseInsensitiveASCII(type, "video/x-matroska");
   const bool audio =
@@ -98,7 +98,7 @@ bool MediaRecorderHandler::canSupportMimeType(
       video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
 
   std::vector<std::string> codecs_list;
-  media::SplitCodecsToVector(web_codecs.utf8(), &codecs_list, true /* strip */);
+  media::SplitCodecsToVector(web_codecs.Utf8(), &codecs_list, true /* strip */);
   for (const auto& codec : codecs_list) {
     auto* const* found = std::find_if(
         &codecs[0], &codecs[codecs_count], [&codec](const char* name) {
@@ -110,7 +110,7 @@ bool MediaRecorderHandler::canSupportMimeType(
   return true;
 }
 
-bool MediaRecorderHandler::initialize(
+bool MediaRecorderHandler::Initialize(
     blink::WebMediaRecorderHandlerClient* client,
     const blink::WebMediaStream& media_stream,
     const blink::WebString& type,
@@ -122,13 +122,13 @@ bool MediaRecorderHandler::initialize(
   // The histogram counts the number of calls to the JS API.
   UpdateWebRTCMethodCount(WEBKIT_MEDIA_STREAM_RECORDER);
 
-  if (!canSupportMimeType(type, codecs)) {
-    DLOG(ERROR) << "Unsupported " << type.utf8() << ";codecs=" << codecs.utf8();
+  if (!CanSupportMimeType(type, codecs)) {
+    DLOG(ERROR) << "Unsupported " << type.Utf8() << ";codecs=" << codecs.Utf8();
     return false;
   }
 
   // Once established that we support the codec(s), hunt then individually.
-  const std::string& codecs_str = ToLowerASCII(codecs.utf8());
+  const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
   if (codecs_str.find("vp8") != std::string::npos)
     codec_id_ = VideoTrackRecorder::CodecId::VP8;
   else if (codecs_str.find("vp9") != std::string::npos)
@@ -154,34 +154,34 @@ bool MediaRecorderHandler::initialize(
   return true;
 }
 
-bool MediaRecorderHandler::start(int timeslice) {
+bool MediaRecorderHandler::Start(int timeslice) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
-  DCHECK(!media_stream_.isNull());
+  DCHECK(!media_stream_.IsNull());
   DCHECK(timeslice_.is_zero());
   DCHECK(!webm_muxer_);
 
   timeslice_ = TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = TimeTicks::Now();
 
-  media_stream_.videoTracks(video_tracks_);
-  media_stream_.audioTracks(audio_tracks_);
+  media_stream_.VideoTracks(video_tracks_);
+  media_stream_.AudioTracks(audio_tracks_);
 
-  if (video_tracks_.isEmpty() && audio_tracks_.isEmpty()) {
+  if (video_tracks_.IsEmpty() && audio_tracks_.IsEmpty()) {
     LOG(WARNING) << __func__ << ": no media tracks.";
     return false;
   }
 
   const bool use_video_tracks =
-      !video_tracks_.isEmpty() && video_tracks_[0].isEnabled() &&
-      video_tracks_[0].source().getReadyState() !=
-          blink::WebMediaStreamSource::ReadyStateEnded;
+      !video_tracks_.IsEmpty() && video_tracks_[0].IsEnabled() &&
+      video_tracks_[0].Source().GetReadyState() !=
+          blink::WebMediaStreamSource::kReadyStateEnded;
   const bool use_audio_tracks =
-      !audio_tracks_.isEmpty() &&
+      !audio_tracks_.IsEmpty() &&
       MediaStreamAudioTrack::From(audio_tracks_[0]) &&
-      audio_tracks_[0].isEnabled() &&
-      audio_tracks_[0].source().getReadyState() !=
-          blink::WebMediaStreamSource::ReadyStateEnded;
+      audio_tracks_[0].IsEnabled() &&
+      audio_tracks_[0].Source().GetReadyState() !=
+          blink::WebMediaStreamSource::kReadyStateEnded;
 
   if (!use_video_tracks && !use_audio_tracks) {
     LOG(WARNING) << __func__ << ": no tracks to be recorded.";
@@ -200,7 +200,7 @@ bool MediaRecorderHandler::start(int timeslice) {
         << "Recording multiple video tracks is not implemented. "
         << "Only recording first video track.";
     const blink::WebMediaStreamTrack& video_track = video_tracks_[0];
-    if (video_track.isNull())
+    if (video_track.IsNull())
       return false;
 
     const VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
@@ -218,7 +218,7 @@ bool MediaRecorderHandler::start(int timeslice) {
         << "Recording multiple audio"
         << " tracks is not implemented.  Only recording first audio track.";
     const blink::WebMediaStreamTrack& audio_track = audio_tracks_[0];
-    if (audio_track.isNull())
+    if (audio_track.IsNull())
       return false;
 
     const AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
@@ -233,7 +233,7 @@ bool MediaRecorderHandler::start(int timeslice) {
   return true;
 }
 
-void MediaRecorderHandler::stop() {
+void MediaRecorderHandler::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Don't check |recording_| since we can go directly from pause() to stop().
 
@@ -245,7 +245,7 @@ void MediaRecorderHandler::stop() {
   webm_muxer_.reset();
 }
 
-void MediaRecorderHandler::pause() {
+void MediaRecorderHandler::Pause() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(recording_);
   recording_ = false;
@@ -256,7 +256,7 @@ void MediaRecorderHandler::pause() {
   webm_muxer_->Pause();
 }
 
-void MediaRecorderHandler::resume() {
+void MediaRecorderHandler::Resume() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!recording_);
   recording_ = true;
@@ -276,7 +276,7 @@ void MediaRecorderHandler::OnEncodedVideo(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   if (UpdateTracksAndCheckIfChanged()) {
-    client_->onError("Amount of tracks in MediaStream has changed.");
+    client_->OnError("Amount of tracks in MediaStream has changed.");
     return;
   }
   if (!webm_muxer_)
@@ -285,7 +285,7 @@ void MediaRecorderHandler::OnEncodedVideo(
                                    std::move(encoded_alpha), timestamp,
                                    is_key_frame)) {
     DLOG(ERROR) << "Error muxing video data";
-    client_->onError("Error muxing video data");
+    client_->OnError("Error muxing video data");
   }
 }
 
@@ -296,7 +296,7 @@ void MediaRecorderHandler::OnEncodedAudio(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   if (UpdateTracksAndCheckIfChanged()) {
-    client_->onError("Amount of tracks in MediaStream has changed.");
+    client_->OnError("Amount of tracks in MediaStream has changed.");
     return;
   }
   if (!webm_muxer_)
@@ -304,7 +304,7 @@ void MediaRecorderHandler::OnEncodedAudio(
   if (!webm_muxer_->OnEncodedAudio(params, std::move(encoded_data),
                                    timestamp)) {
     DLOG(ERROR) << "Error muxing audio data";
-    client_->onError("Error muxing audio data");
+    client_->OnError("Error muxing audio data");
   }
 }
 
@@ -313,7 +313,7 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
   const TimeTicks now = TimeTicks::Now();
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {
-    client_->writeData(data.data(), data.length(), true /* lastInSlice */,
+    client_->WriteData(data.data(), data.length(), true /* lastInSlice */,
                        (now - TimeTicks::UnixEpoch()).InMillisecondsF());
     return;
   }
@@ -322,7 +322,7 @@ void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DVLOG_IF(1, last_in_slice) << "Slice finished @ " << now;
   if (last_in_slice)
     slice_origin_timestamp_ = now;
-  client_->writeData(data.data(), data.length(), last_in_slice,
+  client_->WriteData(data.data(), data.length(), last_in_slice,
                      (now - TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
@@ -330,15 +330,15 @@ bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks, audio_tracks;
-  media_stream_.videoTracks(video_tracks);
-  media_stream_.audioTracks(audio_tracks);
+  media_stream_.VideoTracks(video_tracks);
+  media_stream_.AudioTracks(audio_tracks);
 
   bool video_tracks_changed = video_tracks_.size() != video_tracks.size();
   bool audio_tracks_changed = audio_tracks_.size() != audio_tracks.size();
 
   if (!video_tracks_changed) {
     for (size_t i = 0; i < video_tracks.size(); ++i) {
-      if (video_tracks_[i].id() != video_tracks[i].id()) {
+      if (video_tracks_[i].Id() != video_tracks[i].Id()) {
         video_tracks_changed = true;
         break;
       }
@@ -346,7 +346,7 @@ bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
   }
   if (!video_tracks_changed && !audio_tracks_changed) {
     for (size_t i = 0; i < audio_tracks.size(); ++i) {
-      if (audio_tracks_[i].id() != audio_tracks[i].id()) {
+      if (audio_tracks_[i].Id() != audio_tracks[i].Id()) {
         audio_tracks_changed = true;
         break;
       }

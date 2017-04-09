@@ -32,30 +32,30 @@ namespace blink {
 
 FEMerge::FEMerge(Filter* filter) : FilterEffect(filter) {}
 
-FEMerge* FEMerge::create(Filter* filter) {
+FEMerge* FEMerge::Create(Filter* filter) {
   return new FEMerge(filter);
 }
 
-sk_sp<SkImageFilter> FEMerge::createImageFilter() {
-  unsigned size = numberOfEffectInputs();
+sk_sp<SkImageFilter> FEMerge::CreateImageFilter() {
+  unsigned size = NumberOfEffectInputs();
 
-  std::unique_ptr<sk_sp<SkImageFilter>[]> inputRefs =
-      wrapArrayUnique(new sk_sp<SkImageFilter>[ size ]);
+  std::unique_ptr<sk_sp<SkImageFilter>[]> input_refs =
+      WrapArrayUnique(new sk_sp<SkImageFilter>[size]);
   for (unsigned i = 0; i < size; ++i)
-    inputRefs[i] =
-        SkiaImageFilterBuilder::build(inputEffect(i), operatingColorSpace());
-  SkImageFilter::CropRect rect = getCropRect();
-  return SkMergeImageFilter::MakeN(inputRefs.get(), size, nullptr, &rect);
+    input_refs[i] =
+        SkiaImageFilterBuilder::Build(InputEffect(i), OperatingColorSpace());
+  SkImageFilter::CropRect rect = GetCropRect();
+  return SkMergeImageFilter::MakeN(input_refs.get(), size, nullptr, &rect);
 }
 
-TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const {
-  writeIndent(ts, indent);
+TextStream& FEMerge::ExternalRepresentation(TextStream& ts, int indent) const {
+  WriteIndent(ts, indent);
   ts << "[feMerge";
-  FilterEffect::externalRepresentation(ts);
-  unsigned size = numberOfEffectInputs();
+  FilterEffect::ExternalRepresentation(ts);
+  unsigned size = NumberOfEffectInputs();
   ts << " mergeNodes=\"" << size << "\"]\n";
   for (unsigned i = 0; i < size; ++i)
-    inputEffect(i)->externalRepresentation(ts, indent + 1);
+    InputEffect(i)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

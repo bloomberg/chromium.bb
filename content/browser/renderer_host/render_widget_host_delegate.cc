@@ -64,7 +64,7 @@ bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() const {
 
 blink::WebDisplayMode RenderWidgetHostDelegate::GetDisplayMode(
     RenderWidgetHostImpl* render_widget_host) const {
-  return blink::WebDisplayModeBrowser;
+  return blink::kWebDisplayModeBrowser;
 }
 
 bool RenderWidgetHostDelegate::HasMouseLock(

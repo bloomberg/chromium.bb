@@ -72,9 +72,9 @@ int MakeRequestID() {
 }
 
 void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
-  if ((request.referrer_policy == blink::WebReferrerPolicyDefault ||
+  if ((request.referrer_policy == blink::kWebReferrerPolicyDefault ||
        request.referrer_policy ==
-           blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
+           blink::kWebReferrerPolicyNoReferrerWhenDowngrade) &&
       request.referrer.SchemeIsCryptographic() &&
       !request.url.SchemeIsCryptographic()) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
@@ -580,7 +580,7 @@ void ResourceDispatcher::StartSync(
 
   SyncLoadResult result;
 
-  if (ipc_type == blink::WebURLRequest::LoadingIPCType::Mojo) {
+  if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     if (!url_loader_factory->SyncLoad(
             routing_id, MakeRequestID(), *request, &result)) {
       response->error_code = net::ERR_FAILED;
@@ -634,7 +634,7 @@ int ResourceDispatcher::StartAsync(
                                                         loading_task_runner);
   }
 
-  if (ipc_type == blink::WebURLRequest::LoadingIPCType::Mojo) {
+  if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         loading_task_runner ? loading_task_runner : main_thread_task_runner_;
     std::unique_ptr<URLLoaderClientImpl> client(

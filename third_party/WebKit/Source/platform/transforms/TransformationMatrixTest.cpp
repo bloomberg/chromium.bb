@@ -16,44 +16,44 @@ TEST(TransformationMatrixTest, NonInvertableBlendTest) {
   TransformationMatrix result;
 
   result = to;
-  result.blend(from, 0.25);
+  result.Blend(from, 0.25);
   EXPECT_EQ(result, from);
 
   result = to;
-  result.blend(from, 0.75);
+  result.Blend(from, 0.75);
   EXPECT_EQ(result, to);
 }
 
 TEST(TransformationMatrixTest, IsIdentityOr2DTranslation) {
   TransformationMatrix matrix;
-  EXPECT_TRUE(matrix.isIdentityOr2DTranslation());
+  EXPECT_TRUE(matrix.IsIdentityOr2DTranslation());
 
-  matrix.makeIdentity();
-  matrix.translate(10, 0);
-  EXPECT_TRUE(matrix.isIdentityOr2DTranslation());
+  matrix.MakeIdentity();
+  matrix.Translate(10, 0);
+  EXPECT_TRUE(matrix.IsIdentityOr2DTranslation());
 
-  matrix.makeIdentity();
-  matrix.translate(0, -20);
-  EXPECT_TRUE(matrix.isIdentityOr2DTranslation());
+  matrix.MakeIdentity();
+  matrix.Translate(0, -20);
+  EXPECT_TRUE(matrix.IsIdentityOr2DTranslation());
 
-  matrix.makeIdentity();
-  matrix.translate3d(0, 0, 1);
-  EXPECT_FALSE(matrix.isIdentityOr2DTranslation());
+  matrix.MakeIdentity();
+  matrix.Translate3d(0, 0, 1);
+  EXPECT_FALSE(matrix.IsIdentityOr2DTranslation());
 
-  matrix.makeIdentity();
-  matrix.rotate(40 /* degrees */);
-  EXPECT_FALSE(matrix.isIdentityOr2DTranslation());
+  matrix.MakeIdentity();
+  matrix.Rotate(40 /* degrees */);
+  EXPECT_FALSE(matrix.IsIdentityOr2DTranslation());
 
-  matrix.makeIdentity();
-  matrix.skewX(30 /* degrees */);
-  EXPECT_FALSE(matrix.isIdentityOr2DTranslation());
+  matrix.MakeIdentity();
+  matrix.SkewX(30 /* degrees */);
+  EXPECT_FALSE(matrix.IsIdentityOr2DTranslation());
 }
 
 TEST(TransformationMatrixTest, To2DTranslation) {
   TransformationMatrix matrix;
-  EXPECT_EQ(FloatSize(), matrix.to2DTranslation());
-  matrix.translate(30, -40);
-  EXPECT_EQ(FloatSize(30, -40), matrix.to2DTranslation());
+  EXPECT_EQ(FloatSize(), matrix.To2DTranslation());
+  matrix.Translate(30, -40);
+  EXPECT_EQ(FloatSize(30, -40), matrix.To2DTranslation());
 }
 
 TEST(TransformationMatrixTest, ApplyTransformOrigin) {
@@ -61,15 +61,15 @@ TEST(TransformationMatrixTest, ApplyTransformOrigin) {
 
   // (0,0,0) is a fixed point of this scale.
   // (1,1,1) should be scaled appropriately.
-  matrix.scale3d(2, 3, 4);
-  EXPECT_EQ(FloatPoint3D(0, 0, 0), matrix.mapPoint(FloatPoint3D(0, 0, 0)));
-  EXPECT_EQ(FloatPoint3D(2, 3, -4), matrix.mapPoint(FloatPoint3D(1, 1, -1)));
+  matrix.Scale3d(2, 3, 4);
+  EXPECT_EQ(FloatPoint3D(0, 0, 0), matrix.MapPoint(FloatPoint3D(0, 0, 0)));
+  EXPECT_EQ(FloatPoint3D(2, 3, -4), matrix.MapPoint(FloatPoint3D(1, 1, -1)));
 
   // With the transform origin applied, (1,2,3) is the fixed point.
   // (0,0,0) should be scaled according to its distance from (1,2,3).
-  matrix.applyTransformOrigin(1, 2, 3);
-  EXPECT_EQ(FloatPoint3D(1, 2, 3), matrix.mapPoint(FloatPoint3D(1, 2, 3)));
-  EXPECT_EQ(FloatPoint3D(-1, -4, -9), matrix.mapPoint(FloatPoint3D(0, 0, 0)));
+  matrix.ApplyTransformOrigin(1, 2, 3);
+  EXPECT_EQ(FloatPoint3D(1, 2, 3), matrix.MapPoint(FloatPoint3D(1, 2, 3)));
+  EXPECT_EQ(FloatPoint3D(-1, -4, -9), matrix.MapPoint(FloatPoint3D(0, 0, 0)));
 }
 
 TEST(TransformationMatrixTest, Multiplication) {
@@ -85,48 +85,48 @@ TEST(TransformationMatrixTest, Multiplication) {
   // [ 3 3 3 3 ]
   // [ 5 4 4 4 ]
 
-  TransformationMatrix expectedAtimesB(34, 34, 34, 34, 30, 30, 30, 30, 30, 30,
-                                       30, 30, 30, 30, 30, 30);
+  TransformationMatrix expected_atimes_b(34, 34, 34, 34, 30, 30, 30, 30, 30, 30,
+                                         30, 30, 30, 30, 30, 30);
 
-  EXPECT_EQ(expectedAtimesB, a * b);
+  EXPECT_EQ(expected_atimes_b, a * b);
 
-  a.multiply(b);
-  EXPECT_EQ(expectedAtimesB, a);
+  a.Multiply(b);
+  EXPECT_EQ(expected_atimes_b, a);
 }
 
 TEST(TransformationMatrixTest, ToString) {
   TransformationMatrix zeros(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_EQ("[0,0,0,0,\n0,0,0,0,\n0,0,0,0,\n0,0,0,0] (degenerate)",
-            zeros.toString());
-  EXPECT_EQ("[0,0,0,0,\n0,0,0,0,\n0,0,0,0,\n0,0,0,0]", zeros.toString(true));
+            zeros.ToString());
+  EXPECT_EQ("[0,0,0,0,\n0,0,0,0,\n0,0,0,0,\n0,0,0,0]", zeros.ToString(true));
 
   TransformationMatrix identity;
-  EXPECT_EQ("identity", identity.toString());
-  EXPECT_EQ("[1,0,0,0,\n0,1,0,0,\n0,0,1,0,\n0,0,0,1]", identity.toString(true));
+  EXPECT_EQ("identity", identity.ToString());
+  EXPECT_EQ("[1,0,0,0,\n0,1,0,0,\n0,0,1,0,\n0,0,0,1]", identity.ToString(true));
 
   TransformationMatrix translation;
-  translation.translate3d(3, 5, 7);
-  EXPECT_EQ("translation(3,5,7)", translation.toString());
+  translation.Translate3d(3, 5, 7);
+  EXPECT_EQ("translation(3,5,7)", translation.ToString());
   EXPECT_EQ("[1,0,0,3,\n0,1,0,5,\n0,0,1,7,\n0,0,0,1]",
-            translation.toString(true));
+            translation.ToString(true));
 
   TransformationMatrix rotation;
-  rotation.rotate(180);
+  rotation.Rotate(180);
   EXPECT_EQ(
       "translation(0,0,0), scale(1,1,1), skew(0,0,0), "
       "quaternion(0,0,1,-6.12323e-17), perspective(0,0,0,1)",
-      rotation.toString());
+      rotation.ToString());
   EXPECT_EQ("[-1,-1.22465e-16,0,0,\n1.22465e-16,-1,0,0,\n0,0,1,0,\n0,0,0,1]",
-            rotation.toString(true));
+            rotation.ToString(true));
 
-  TransformationMatrix columnMajorConstructor(1, 1, 1, 6, 2, 2, 0, 7, 3, 3, 3,
-                                              8, 4, 4, 4, 9);
+  TransformationMatrix column_major_constructor(1, 1, 1, 6, 2, 2, 0, 7, 3, 3, 3,
+                                                8, 4, 4, 4, 9);
   // [ 1 2 3 4 ]
   // [ 1 2 3 4 ]
   // [ 1 0 3 4 ]
   // [ 6 7 8 9 ]
   EXPECT_EQ("[1,2,3,4,\n1,2,3,4,\n1,0,3,4,\n6,7,8,9]",
-            columnMajorConstructor.toString(true));
+            column_major_constructor.ToString(true));
 }
 
 }  // namespace blink

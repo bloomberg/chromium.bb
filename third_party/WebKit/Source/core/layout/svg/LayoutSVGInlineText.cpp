@@ -44,170 +44,174 @@ namespace blink {
 // Turn tabs, newlines and carriage returns into spaces. In the future this
 // should be removed in favor of letting the generic white-space code handle
 // this.
-static PassRefPtr<StringImpl> normalizeWhitespace(
+static PassRefPtr<StringImpl> NormalizeWhitespace(
     PassRefPtr<StringImpl> string) {
-  RefPtr<StringImpl> newString = string->replace('\t', ' ');
-  newString = newString->replace('\n', ' ');
-  newString = newString->replace('\r', ' ');
-  return newString.release();
+  RefPtr<StringImpl> new_string = string->Replace('\t', ' ');
+  new_string = new_string->Replace('\n', ' ');
+  new_string = new_string->Replace('\r', ' ');
+  return new_string.Release();
 }
 
 LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
-    : LayoutText(n, normalizeWhitespace(std::move(string))),
-      m_scalingFactor(1) {}
+    : LayoutText(n, NormalizeWhitespace(std::move(string))),
+      scaling_factor_(1) {}
 
-void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text) {
-  LayoutText::setTextInternal(std::move(text));
-  if (LayoutSVGText* textLayoutObject =
-          LayoutSVGText::locateLayoutSVGTextAncestor(this))
-    textLayoutObject->subtreeTextDidChange();
+void LayoutSVGInlineText::SetTextInternal(PassRefPtr<StringImpl> text) {
+  LayoutText::SetTextInternal(std::move(text));
+  if (LayoutSVGText* text_layout_object =
+          LayoutSVGText::LocateLayoutSVGTextAncestor(this))
+    text_layout_object->SubtreeTextDidChange();
 }
 
-void LayoutSVGInlineText::styleDidChange(StyleDifference diff,
-                                         const ComputedStyle* oldStyle) {
-  LayoutText::styleDidChange(diff, oldStyle);
-  updateScaledFont();
+void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
+                                         const ComputedStyle* old_style) {
+  LayoutText::StyleDidChange(diff, old_style);
+  UpdateScaledFont();
 
-  bool newPreserves =
-      style() ? style()->whiteSpace() == EWhiteSpace::kPre : false;
-  bool oldPreserves =
-      oldStyle ? oldStyle->whiteSpace() == EWhiteSpace::kPre : false;
-  if (oldPreserves != newPreserves) {
-    setText(originalText(), true);
+  bool new_preserves =
+      Style() ? Style()->WhiteSpace() == EWhiteSpace::kPre : false;
+  bool old_preserves =
+      old_style ? old_style->WhiteSpace() == EWhiteSpace::kPre : false;
+  if (old_preserves != new_preserves) {
+    SetText(OriginalText(), true);
     return;
   }
 
-  if (!diff.needsFullLayout())
+  if (!diff.NeedsFullLayout())
     return;
 
   // The text metrics may be influenced by style changes.
-  if (LayoutSVGText* textLayoutObject =
-          LayoutSVGText::locateLayoutSVGTextAncestor(this)) {
-    textLayoutObject->setNeedsTextMetricsUpdate();
-    textLayoutObject->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::StyleChange);
+  if (LayoutSVGText* text_layout_object =
+          LayoutSVGText::LocateLayoutSVGTextAncestor(this)) {
+    text_layout_object->SetNeedsTextMetricsUpdate();
+    text_layout_object->SetNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::kStyleChange);
   }
 }
 
-InlineTextBox* LayoutSVGInlineText::createTextBox(int start,
+InlineTextBox* LayoutSVGInlineText::CreateTextBox(int start,
                                                   unsigned short length) {
   InlineTextBox* box =
       new SVGInlineTextBox(LineLayoutItem(this), start, length);
-  box->setHasVirtualLogicalHeight();
+  box->SetHasVirtualLogicalHeight();
   return box;
 }
 
-LayoutRect LayoutSVGInlineText::localCaretRect(InlineBox* box,
-                                               int caretOffset,
+LayoutRect LayoutSVGInlineText::LocalCaretRect(InlineBox* box,
+                                               int caret_offset,
                                                LayoutUnit*) {
-  if (!box || !box->isInlineTextBox())
+  if (!box || !box->IsInlineTextBox())
     return LayoutRect();
 
-  InlineTextBox* textBox = toInlineTextBox(box);
-  if (static_cast<unsigned>(caretOffset) < textBox->start() ||
-      static_cast<unsigned>(caretOffset) > textBox->start() + textBox->len())
+  InlineTextBox* text_box = ToInlineTextBox(box);
+  if (static_cast<unsigned>(caret_offset) < text_box->Start() ||
+      static_cast<unsigned>(caret_offset) > text_box->Start() + text_box->Len())
     return LayoutRect();
 
   // Use the edge of the selection rect to determine the caret rect.
-  if (static_cast<unsigned>(caretOffset) < textBox->start() + textBox->len()) {
-    LayoutRect rect = textBox->localSelectionRect(caretOffset, caretOffset + 1);
-    LayoutUnit x = box->isLeftToRightDirection() ? rect.x() : rect.maxX();
-    return LayoutRect(x, rect.y(), frameView()->caretWidth(), rect.height());
+  if (static_cast<unsigned>(caret_offset) <
+      text_box->Start() + text_box->Len()) {
+    LayoutRect rect =
+        text_box->LocalSelectionRect(caret_offset, caret_offset + 1);
+    LayoutUnit x = box->IsLeftToRightDirection() ? rect.X() : rect.MaxX();
+    return LayoutRect(x, rect.Y(), GetFrameView()->CaretWidth(), rect.Height());
   }
 
-  LayoutRect rect = textBox->localSelectionRect(caretOffset - 1, caretOffset);
-  LayoutUnit x = box->isLeftToRightDirection() ? rect.maxX() : rect.x();
-  return LayoutRect(x, rect.y(), frameView()->caretWidth(), rect.height());
+  LayoutRect rect =
+      text_box->LocalSelectionRect(caret_offset - 1, caret_offset);
+  LayoutUnit x = box->IsLeftToRightDirection() ? rect.MaxX() : rect.X();
+  return LayoutRect(x, rect.Y(), GetFrameView()->CaretWidth(), rect.Height());
 }
 
-FloatRect LayoutSVGInlineText::floatLinesBoundingBox() const {
-  FloatRect boundingBox;
-  for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-    boundingBox.unite(FloatRect(box->frameRect()));
-  return boundingBox;
+FloatRect LayoutSVGInlineText::FloatLinesBoundingBox() const {
+  FloatRect bounding_box;
+  for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox())
+    bounding_box.Unite(FloatRect(box->FrameRect()));
+  return bounding_box;
 }
 
-LayoutRect LayoutSVGInlineText::linesBoundingBox() const {
-  return enclosingLayoutRect(floatLinesBoundingBox());
+LayoutRect LayoutSVGInlineText::LinesBoundingBox() const {
+  return EnclosingLayoutRect(FloatLinesBoundingBox());
 }
 
-bool LayoutSVGInlineText::characterStartsNewTextChunk(int position) const {
+bool LayoutSVGInlineText::CharacterStartsNewTextChunk(int position) const {
   DCHECK_GE(position, 0);
-  DCHECK_LT(position, static_cast<int>(textLength()));
+  DCHECK_LT(position, static_cast<int>(TextLength()));
 
   // Each <textPath> element starts a new text chunk, regardless of any x/y
   // values.
-  if (!position && parent()->isSVGTextPath() && !previousSibling())
+  if (!position && Parent()->IsSVGTextPath() && !PreviousSibling())
     return true;
 
   const SVGCharacterDataMap::const_iterator it =
-      m_characterDataMap.find(static_cast<unsigned>(position + 1));
-  if (it == m_characterDataMap.end())
+      character_data_map_.Find(static_cast<unsigned>(position + 1));
+  if (it == character_data_map_.end())
     return false;
 
-  return it->value.hasX() || it->value.hasY();
+  return it->value.HasX() || it->value.HasY();
 }
 
-PositionWithAffinity LayoutSVGInlineText::positionForPoint(
+PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
     const LayoutPoint& point) {
-  if (!hasTextBoxes() || !textLength())
-    return createPositionWithAffinity(0);
+  if (!HasTextBoxes() || !TextLength())
+    return CreatePositionWithAffinity(0);
 
-  DCHECK(m_scalingFactor);
+  DCHECK(scaling_factor_);
 
-  const SimpleFontData* fontData = m_scaledFont.primaryFont();
-  DCHECK(fontData);
+  const SimpleFontData* font_data = scaled_font_.PrimaryFont();
+  DCHECK(font_data);
   float baseline =
-      fontData ? fontData->getFontMetrics().floatAscent() / m_scalingFactor : 0;
+      font_data ? font_data->GetFontMetrics().FloatAscent() / scaling_factor_
+                : 0;
 
-  LayoutBlock* containingBlock = this->containingBlock();
-  DCHECK(containingBlock);
+  LayoutBlock* containing_block = this->ContainingBlock();
+  DCHECK(containing_block);
 
   // Map local point to absolute point, as the character origins stored in the
   // text fragments use absolute coordinates.
-  FloatPoint absolutePoint(point);
-  absolutePoint.moveBy(containingBlock->location());
+  FloatPoint absolute_point(point);
+  absolute_point.MoveBy(containing_block->Location());
 
-  float closestDistance = std::numeric_limits<float>::max();
-  float closestDistancePosition = 0;
-  const SVGTextFragment* closestDistanceFragment = nullptr;
-  SVGInlineTextBox* closestDistanceBox = nullptr;
+  float closest_distance = std::numeric_limits<float>::max();
+  float closest_distance_position = 0;
+  const SVGTextFragment* closest_distance_fragment = nullptr;
+  SVGInlineTextBox* closest_distance_box = nullptr;
 
-  for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-    if (!box->isSVGInlineTextBox())
+  for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox()) {
+    if (!box->IsSVGInlineTextBox())
       continue;
 
-    SVGInlineTextBox* textBox = toSVGInlineTextBox(box);
-    for (const SVGTextFragment& fragment : textBox->textFragments()) {
-      FloatRect fragmentRect = fragment.boundingBox(baseline);
+    SVGInlineTextBox* text_box = ToSVGInlineTextBox(box);
+    for (const SVGTextFragment& fragment : text_box->TextFragments()) {
+      FloatRect fragment_rect = fragment.BoundingBox(baseline);
 
       float distance = 0;
-      if (!fragmentRect.contains(absolutePoint))
-        distance = fragmentRect.squaredDistanceTo(absolutePoint);
+      if (!fragment_rect.Contains(absolute_point))
+        distance = fragment_rect.SquaredDistanceTo(absolute_point);
 
-      if (distance <= closestDistance) {
-        closestDistance = distance;
-        closestDistanceBox = textBox;
-        closestDistanceFragment = &fragment;
-        closestDistancePosition = fragmentRect.x();
+      if (distance <= closest_distance) {
+        closest_distance = distance;
+        closest_distance_box = text_box;
+        closest_distance_fragment = &fragment;
+        closest_distance_position = fragment_rect.X();
       }
     }
   }
 
-  if (!closestDistanceFragment)
-    return createPositionWithAffinity(0);
+  if (!closest_distance_fragment)
+    return CreatePositionWithAffinity(0);
 
-  int offset = closestDistanceBox->offsetForPositionInFragment(
-      *closestDistanceFragment,
-      LayoutUnit(absolutePoint.x() - closestDistancePosition), true);
-  return createPositionWithAffinity(
-      offset + closestDistanceBox->start(),
-      offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::Downstream);
+  int offset = closest_distance_box->OffsetForPositionInFragment(
+      *closest_distance_fragment,
+      LayoutUnit(absolute_point.X() - closest_distance_position), true);
+  return CreatePositionWithAffinity(
+      offset + closest_distance_box->Start(),
+      offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::kDownstream);
 }
 
 namespace {
 
-inline bool isValidSurrogatePair(const TextRun& run, unsigned index) {
+inline bool IsValidSurrogatePair(const TextRun& run, unsigned index) {
   if (!U16_IS_LEAD(run[index]))
     return false;
   if (index + 1 >= run.length())
@@ -215,11 +219,11 @@ inline bool isValidSurrogatePair(const TextRun& run, unsigned index) {
   return U16_IS_TRAIL(run[index + 1]);
 }
 
-TextRun constructTextRun(LayoutSVGInlineText& text,
+TextRun ConstructTextRun(LayoutSVGInlineText& text,
                          unsigned position,
                          unsigned length,
-                         TextDirection textDirection) {
-  const ComputedStyle& style = text.styleRef();
+                         TextDirection text_direction) {
+  const ComputedStyle& style = text.StyleRef();
 
   TextRun run(
       // characters, will be set below if non-zero.
@@ -227,23 +231,23 @@ TextRun constructTextRun(LayoutSVGInlineText& text,
       0,  // length, will be set below if non-zero.
       0,  // xPos, only relevant with allowTabs=true
       0,  // padding, only relevant for justified text, not relevant for SVG
-      TextRun::AllowTrailingExpansion, textDirection,
-      isOverride(style.getUnicodeBidi()) /* directionalOverride */);
+      TextRun::kAllowTrailingExpansion, text_direction,
+      IsOverride(style.GetUnicodeBidi()) /* directionalOverride */);
 
   if (length) {
-    if (text.is8Bit())
-      run.setText(text.characters8() + position, length);
+    if (text.Is8Bit())
+      run.SetText(text.Characters8() + position, length);
     else
-      run.setText(text.characters16() + position, length);
+      run.SetText(text.Characters16() + position, length);
   }
 
   // We handle letter & word spacing ourselves.
-  run.disableSpacing();
+  run.DisableSpacing();
 
   // Propagate the maximum length of the characters buffer to the TextRun, even
   // when we're only processing a substring.
-  run.setCharactersLength(text.textLength() - position);
-  DCHECK_GE(run.charactersLength(), run.length());
+  run.SetCharactersLength(text.TextLength() - position);
+  DCHECK_GE(run.CharactersLength(), run.length());
   return run;
 }
 
@@ -252,174 +256,177 @@ TextRun constructTextRun(LayoutSVGInlineText& text,
 // position. The code below synthesizes an average glyph width when characters
 // share a single position. This will incorrectly split combining diacritics.
 // See: https://crbug.com/473476.
-void synthesizeGraphemeWidths(const TextRun& run,
+void SynthesizeGraphemeWidths(const TextRun& run,
                               Vector<CharacterRange>& ranges) {
-  unsigned distributeCount = 0;
-  for (int rangeIndex = static_cast<int>(ranges.size()) - 1; rangeIndex >= 0;
-       --rangeIndex) {
-    CharacterRange& currentRange = ranges[rangeIndex];
-    if (currentRange.width() == 0) {
-      distributeCount++;
-    } else if (distributeCount != 0) {
+  unsigned distribute_count = 0;
+  for (int range_index = static_cast<int>(ranges.size()) - 1; range_index >= 0;
+       --range_index) {
+    CharacterRange& current_range = ranges[range_index];
+    if (current_range.Width() == 0) {
+      distribute_count++;
+    } else if (distribute_count != 0) {
       // Only count surrogate pairs as a single character.
-      bool surrogatePair = isValidSurrogatePair(run, rangeIndex);
-      if (!surrogatePair)
-        distributeCount++;
+      bool surrogate_pair = IsValidSurrogatePair(run, range_index);
+      if (!surrogate_pair)
+        distribute_count++;
 
-      float newWidth = currentRange.width() / distributeCount;
-      currentRange.end = currentRange.start + newWidth;
-      float lastEndPosition = currentRange.end;
-      for (unsigned distribute = 1; distribute < distributeCount;
+      float new_width = current_range.Width() / distribute_count;
+      current_range.end = current_range.start + new_width;
+      float last_end_position = current_range.end;
+      for (unsigned distribute = 1; distribute < distribute_count;
            distribute++) {
         // This surrogate pair check will skip processing of the second
         // character forming the surrogate pair.
-        unsigned distributeIndex =
-            rangeIndex + distribute + (surrogatePair ? 1 : 0);
-        ranges[distributeIndex].start = lastEndPosition;
-        ranges[distributeIndex].end = lastEndPosition + newWidth;
-        lastEndPosition = ranges[distributeIndex].end;
+        unsigned distribute_index =
+            range_index + distribute + (surrogate_pair ? 1 : 0);
+        ranges[distribute_index].start = last_end_position;
+        ranges[distribute_index].end = last_end_position + new_width;
+        last_end_position = ranges[distribute_index].end;
       }
 
-      distributeCount = 0;
+      distribute_count = 0;
     }
   }
 }
 
 }  // namespace
 
-void LayoutSVGInlineText::addMetricsFromRun(const TextRun& run,
-                                            bool& lastCharacterWasWhiteSpace) {
-  Vector<CharacterRange> charRanges =
-      scaledFont().individualCharacterRanges(run);
-  synthesizeGraphemeWidths(run, charRanges);
+void LayoutSVGInlineText::AddMetricsFromRun(
+    const TextRun& run,
+    bool& last_character_was_white_space) {
+  Vector<CharacterRange> char_ranges =
+      ScaledFont().IndividualCharacterRanges(run);
+  SynthesizeGraphemeWidths(run, char_ranges);
 
-  const SimpleFontData* fontData = scaledFont().primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+  const SimpleFontData* font_data = ScaledFont().PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return;
 
-  const float cachedFontHeight =
-      fontData->getFontMetrics().floatHeight() / m_scalingFactor;
-  const bool preserveWhiteSpace = styleRef().whiteSpace() == EWhiteSpace::kPre;
-  const unsigned runLength = run.length();
+  const float cached_font_height =
+      font_data->GetFontMetrics().FloatHeight() / scaling_factor_;
+  const bool preserve_white_space =
+      StyleRef().WhiteSpace() == EWhiteSpace::kPre;
+  const unsigned run_length = run.length();
 
   // TODO(pdr): Character-based iteration is ambiguous and error-prone. It
   // should be unified under a single concept. See: https://crbug.com/593570
-  unsigned characterIndex = 0;
-  while (characterIndex < runLength) {
-    bool currentCharacterIsWhiteSpace = run[characterIndex] == ' ';
-    if (!preserveWhiteSpace && lastCharacterWasWhiteSpace &&
-        currentCharacterIsWhiteSpace) {
-      m_metrics.push_back(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
-      characterIndex++;
+  unsigned character_index = 0;
+  while (character_index < run_length) {
+    bool current_character_is_white_space = run[character_index] == ' ';
+    if (!preserve_white_space && last_character_was_white_space &&
+        current_character_is_white_space) {
+      metrics_.push_back(SVGTextMetrics(SVGTextMetrics::kSkippedSpaceMetrics));
+      character_index++;
       continue;
     }
 
-    unsigned length = isValidSurrogatePair(run, characterIndex) ? 2 : 1;
-    float width = charRanges[characterIndex].width() / m_scalingFactor;
+    unsigned length = IsValidSurrogatePair(run, character_index) ? 2 : 1;
+    float width = char_ranges[character_index].Width() / scaling_factor_;
 
-    m_metrics.push_back(SVGTextMetrics(length, width, cachedFontHeight));
+    metrics_.push_back(SVGTextMetrics(length, width, cached_font_height));
 
-    lastCharacterWasWhiteSpace = currentCharacterIsWhiteSpace;
-    characterIndex += length;
+    last_character_was_white_space = current_character_is_white_space;
+    character_index += length;
   }
 }
 
-void LayoutSVGInlineText::updateMetricsList(bool& lastCharacterWasWhiteSpace) {
-  m_metrics.clear();
+void LayoutSVGInlineText::UpdateMetricsList(
+    bool& last_character_was_white_space) {
+  metrics_.Clear();
 
-  if (!textLength())
+  if (!TextLength())
     return;
 
   TextRun run =
-      constructTextRun(*this, 0, textLength(), styleRef().direction());
-  BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-  BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
-  bool bidiOverride = isOverride(styleRef().getUnicodeBidi());
-  BidiStatus status(TextDirection::kLtr, bidiOverride);
-  if (run.is8Bit() || bidiOverride) {
-    WTF::Unicode::CharDirection direction = WTF::Unicode::LeftToRight;
+      ConstructTextRun(*this, 0, TextLength(), StyleRef().Direction());
+  BidiResolver<TextRunIterator, BidiCharacterRun> bidi_resolver;
+  BidiRunList<BidiCharacterRun>& bidi_runs = bidi_resolver.Runs();
+  bool bidi_override = IsOverride(StyleRef().GetUnicodeBidi());
+  BidiStatus status(TextDirection::kLtr, bidi_override);
+  if (run.Is8Bit() || bidi_override) {
+    WTF::Unicode::CharDirection direction = WTF::Unicode::kLeftToRight;
     // If BiDi override is in effect, use the specified direction.
-    if (bidiOverride && !styleRef().isLeftToRightDirection())
-      direction = WTF::Unicode::RightToLeft;
-    bidiRuns.addRun(new BidiCharacterRun(
-        status.context->override(), status.context->level(), 0,
-        run.charactersLength(), direction, status.context->dir()));
+    if (bidi_override && !StyleRef().IsLeftToRightDirection())
+      direction = WTF::Unicode::kRightToLeft;
+    bidi_runs.AddRun(new BidiCharacterRun(
+        status.context->Override(), status.context->Level(), 0,
+        run.CharactersLength(), direction, status.context->Dir()));
   } else {
-    status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
-    bidiResolver.setStatus(status);
-    bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-    const bool hardLineBreak = false;
-    const bool reorderRuns = false;
-    bidiResolver.createBidiRunsForLine(TextRunIterator(&run, run.length()),
-                                       NoVisualOverride, hardLineBreak,
-                                       reorderRuns);
+    status.last = status.last_strong = WTF::Unicode::kOtherNeutral;
+    bidi_resolver.SetStatus(status);
+    bidi_resolver.SetPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
+    const bool kHardLineBreak = false;
+    const bool kReorderRuns = false;
+    bidi_resolver.CreateBidiRunsForLine(TextRunIterator(&run, run.length()),
+                                        kNoVisualOverride, kHardLineBreak,
+                                        kReorderRuns);
   }
 
-  for (const BidiCharacterRun* bidiRun = bidiRuns.firstRun(); bidiRun;
-       bidiRun = bidiRun->next()) {
-    TextRun subRun = constructTextRun(*this, bidiRun->start(),
-                                      bidiRun->stop() - bidiRun->start(),
-                                      bidiRun->direction());
-    addMetricsFromRun(subRun, lastCharacterWasWhiteSpace);
+  for (const BidiCharacterRun* bidi_run = bidi_runs.FirstRun(); bidi_run;
+       bidi_run = bidi_run->Next()) {
+    TextRun sub_run = ConstructTextRun(*this, bidi_run->Start(),
+                                       bidi_run->Stop() - bidi_run->Start(),
+                                       bidi_run->Direction());
+    AddMetricsFromRun(sub_run, last_character_was_white_space);
   }
 
-  bidiResolver.runs().deleteRuns();
+  bidi_resolver.Runs().DeleteRuns();
 }
 
-void LayoutSVGInlineText::updateScaledFont() {
-  computeNewScaledFontForStyle(*this, m_scalingFactor, m_scaledFont);
+void LayoutSVGInlineText::UpdateScaledFont() {
+  ComputeNewScaledFontForStyle(*this, scaling_factor_, scaled_font_);
 }
 
-void LayoutSVGInlineText::computeNewScaledFontForStyle(
-    const LayoutObject& layoutObject,
-    float& scalingFactor,
-    Font& scaledFont) {
-  const ComputedStyle& style = layoutObject.styleRef();
+void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
+    const LayoutObject& layout_object,
+    float& scaling_factor,
+    Font& scaled_font) {
+  const ComputedStyle& style = layout_object.StyleRef();
 
   // Alter font-size to the right on-screen value to avoid scaling the glyphs
   // themselves, except when GeometricPrecision is specified.
-  scalingFactor =
-      SVGLayoutSupport::calculateScreenFontSizeScalingFactor(&layoutObject);
-  if (!scalingFactor) {
-    scalingFactor = 1;
-    scaledFont = style.font();
+  scaling_factor =
+      SVGLayoutSupport::CalculateScreenFontSizeScalingFactor(&layout_object);
+  if (!scaling_factor) {
+    scaling_factor = 1;
+    scaled_font = style.GetFont();
     return;
   }
 
-  const FontDescription& unscaledFontDescription = style.getFontDescription();
-  if (unscaledFontDescription.textRendering() == GeometricPrecision)
-    scalingFactor = 1;
+  const FontDescription& unscaled_font_description = style.GetFontDescription();
+  if (unscaled_font_description.TextRendering() == kGeometricPrecision)
+    scaling_factor = 1;
 
-  Document& document = layoutObject.document();
-  float scaledFontSize = FontSize::getComputedSizeFromSpecifiedSize(
-      &document, scalingFactor, unscaledFontDescription.isAbsoluteSize(),
-      unscaledFontDescription.specifiedSize(), DoNotApplyMinimumForFontSize);
-  if (scaledFontSize == unscaledFontDescription.computedSize()) {
-    scaledFont = style.font();
+  Document& document = layout_object.GetDocument();
+  float scaled_font_size = FontSize::GetComputedSizeFromSpecifiedSize(
+      &document, scaling_factor, unscaled_font_description.IsAbsoluteSize(),
+      unscaled_font_description.SpecifiedSize(), kDoNotApplyMinimumForFontSize);
+  if (scaled_font_size == unscaled_font_description.ComputedSize()) {
+    scaled_font = style.GetFont();
     return;
   }
 
-  FontDescription fontDescription = unscaledFontDescription;
-  fontDescription.setComputedSize(scaledFontSize);
+  FontDescription font_description = unscaled_font_description;
+  font_description.SetComputedSize(scaled_font_size);
 
-  scaledFont = Font(fontDescription);
-  scaledFont.update(document.styleEngine().fontSelector());
+  scaled_font = Font(font_description);
+  scaled_font.Update(document.GetStyleEngine().FontSelector());
 }
 
-LayoutRect LayoutSVGInlineText::absoluteVisualRect() const {
-  return parent()->absoluteVisualRect();
+LayoutRect LayoutSVGInlineText::AbsoluteVisualRect() const {
+  return Parent()->AbsoluteVisualRect();
 }
 
-FloatRect LayoutSVGInlineText::visualRectInLocalSVGCoordinates() const {
-  return parent()->visualRectInLocalSVGCoordinates();
+FloatRect LayoutSVGInlineText::VisualRectInLocalSVGCoordinates() const {
+  return Parent()->VisualRectInLocalSVGCoordinates();
 }
 
-PassRefPtr<StringImpl> LayoutSVGInlineText::originalText() const {
-  RefPtr<StringImpl> result = LayoutText::originalText();
+PassRefPtr<StringImpl> LayoutSVGInlineText::OriginalText() const {
+  RefPtr<StringImpl> result = LayoutText::OriginalText();
   if (!result)
     return nullptr;
-  return normalizeWhitespace(result);
+  return NormalizeWhitespace(result);
 }
 
 }  // namespace blink

@@ -11,59 +11,59 @@
 
 namespace blink {
 
-AnimationEffectTimingReadOnly* AnimationEffectTimingReadOnly::create(
+AnimationEffectTimingReadOnly* AnimationEffectTimingReadOnly::Create(
     AnimationEffectReadOnly* parent) {
   return new AnimationEffectTimingReadOnly(parent);
 }
 
 AnimationEffectTimingReadOnly::AnimationEffectTimingReadOnly(
     AnimationEffectReadOnly* parent)
-    : m_parent(parent) {}
+    : parent_(parent) {}
 
 double AnimationEffectTimingReadOnly::delay() {
-  return m_parent->specifiedTiming().startDelay * 1000;
+  return parent_->SpecifiedTiming().start_delay * 1000;
 }
 
 double AnimationEffectTimingReadOnly::endDelay() {
-  return m_parent->specifiedTiming().endDelay * 1000;
+  return parent_->SpecifiedTiming().end_delay * 1000;
 }
 
 String AnimationEffectTimingReadOnly::fill() {
-  return Timing::fillModeString(m_parent->specifiedTiming().fillMode);
+  return Timing::FillModeString(parent_->SpecifiedTiming().fill_mode);
 }
 
 double AnimationEffectTimingReadOnly::iterationStart() {
-  return m_parent->specifiedTiming().iterationStart;
+  return parent_->SpecifiedTiming().iteration_start;
 }
 
 double AnimationEffectTimingReadOnly::iterations() {
-  return m_parent->specifiedTiming().iterationCount;
+  return parent_->SpecifiedTiming().iteration_count;
 }
 
 void AnimationEffectTimingReadOnly::duration(
-    UnrestrictedDoubleOrString& returnValue) {
-  if (std::isnan(m_parent->specifiedTiming().iterationDuration)) {
-    returnValue.setString("auto");
+    UnrestrictedDoubleOrString& return_value) {
+  if (std::isnan(parent_->SpecifiedTiming().iteration_duration)) {
+    return_value.setString("auto");
   } else {
-    returnValue.setUnrestrictedDouble(
-        m_parent->specifiedTiming().iterationDuration * 1000);
+    return_value.setUnrestrictedDouble(
+        parent_->SpecifiedTiming().iteration_duration * 1000);
   }
 }
 
-double AnimationEffectTimingReadOnly::playbackRate() {
-  return m_parent->specifiedTiming().playbackRate;
+double AnimationEffectTimingReadOnly::PlaybackRate() {
+  return parent_->SpecifiedTiming().playback_rate;
 }
 
 String AnimationEffectTimingReadOnly::direction() {
-  return Timing::playbackDirectionString(m_parent->specifiedTiming().direction);
+  return Timing::PlaybackDirectionString(parent_->SpecifiedTiming().direction);
 }
 
 String AnimationEffectTimingReadOnly::easing() {
-  return m_parent->specifiedTiming().timingFunction->toString();
+  return parent_->SpecifiedTiming().timing_function->ToString();
 }
 
 DEFINE_TRACE(AnimationEffectTimingReadOnly) {
-  visitor->trace(m_parent);
+  visitor->Trace(parent_);
 }
 
 }  // namespace blink

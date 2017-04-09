@@ -7,14 +7,14 @@
 
 namespace blink {
 
-void ResourcePreloader::takeAndPreload(PreloadRequestStream& r) {
+void ResourcePreloader::TakeAndPreload(PreloadRequestStream& r) {
   PreloadRequestStream requests;
-  NetworkHintsInterfaceImpl networkHintsInterface;
-  requests.swap(r);
+  NetworkHintsInterfaceImpl network_hints_interface;
+  requests.Swap(r);
 
   for (PreloadRequestStream::iterator it = requests.begin();
        it != requests.end(); ++it)
-    preload(std::move(*it), networkHintsInterface);
+    Preload(std::move(*it), network_hints_interface);
 }
 
 }  // namespace blink

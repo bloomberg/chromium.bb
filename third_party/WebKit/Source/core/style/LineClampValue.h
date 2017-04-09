@@ -35,26 +35,25 @@ class LineClampValue {
   DISALLOW_NEW();
 
  public:
-  LineClampValue() : m_type(LineClampLineCount), m_value(-1) {}
+  LineClampValue() : type_(kLineClampLineCount), value_(-1) {}
 
-  LineClampValue(int value, ELineClampType type)
-      : m_type(type), m_value(value) {}
+  LineClampValue(int value, ELineClampType type) : type_(type), value_(value) {}
 
-  int value() const { return m_value; }
+  int Value() const { return value_; }
 
-  bool isPercentage() const { return m_type == LineClampPercentage; }
+  bool IsPercentage() const { return type_ == kLineClampPercentage; }
 
-  bool isNone() const { return m_value == -1; }
+  bool IsNone() const { return value_ == -1; }
 
   bool operator==(const LineClampValue& o) const {
-    return value() == o.value() && isPercentage() == o.isPercentage();
+    return Value() == o.Value() && IsPercentage() == o.IsPercentage();
   }
 
   bool operator!=(const LineClampValue& o) const { return !(*this == o); }
 
  private:
-  ELineClampType m_type;
-  int m_value;
+  ELineClampType type_;
+  int value_;
 };
 
 }  // namespace blink

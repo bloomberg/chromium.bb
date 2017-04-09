@@ -34,49 +34,49 @@
 
 namespace blink {
 
-SVGAnimatedAngle::SVGAnimatedAngle(SVGElement* contextElement)
-    : SVGAnimatedProperty<SVGAngle>(contextElement,
+SVGAnimatedAngle::SVGAnimatedAngle(SVGElement* context_element)
+    : SVGAnimatedProperty<SVGAngle>(context_element,
                                     SVGNames::orientAttr,
-                                    SVGAngle::create()),
-      m_orientType(SVGAnimatedEnumeration<SVGMarkerOrientType>::create(
-          contextElement,
+                                    SVGAngle::Create()),
+      orient_type_(SVGAnimatedEnumeration<SVGMarkerOrientType>::Create(
+          context_element,
           SVGNames::orientAttr,
-          baseValue()->orientType())) {}
+          BaseValue()->OrientType())) {}
 
 SVGAnimatedAngle::~SVGAnimatedAngle() {}
 
 DEFINE_TRACE(SVGAnimatedAngle) {
-  visitor->trace(m_orientType);
-  SVGAnimatedProperty<SVGAngle>::trace(visitor);
+  visitor->Trace(orient_type_);
+  SVGAnimatedProperty<SVGAngle>::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(SVGAnimatedAngle) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
-bool SVGAnimatedAngle::needsSynchronizeAttribute() {
-  return m_orientType->needsSynchronizeAttribute() ||
-         SVGAnimatedProperty<SVGAngle>::needsSynchronizeAttribute();
+bool SVGAnimatedAngle::NeedsSynchronizeAttribute() {
+  return orient_type_->NeedsSynchronizeAttribute() ||
+         SVGAnimatedProperty<SVGAngle>::NeedsSynchronizeAttribute();
 }
 
-void SVGAnimatedAngle::synchronizeAttribute() {
+void SVGAnimatedAngle::SynchronizeAttribute() {
   // If the current value is not an <angle> we synchronize the value of the
   // wrapped enumeration.
-  if (m_orientType->currentValue()->enumValue() != SVGMarkerOrientAngle) {
-    m_orientType->synchronizeAttribute();
+  if (orient_type_->CurrentValue()->EnumValue() != kSVGMarkerOrientAngle) {
+    orient_type_->SynchronizeAttribute();
     return;
   }
-  SVGAnimatedProperty<SVGAngle>::synchronizeAttribute();
+  SVGAnimatedProperty<SVGAngle>::SynchronizeAttribute();
 }
 
-void SVGAnimatedAngle::setAnimatedValue(SVGPropertyBase* value) {
-  SVGAnimatedProperty<SVGAngle>::setAnimatedValue(value);
-  m_orientType->setAnimatedValue(currentValue()->orientType());
+void SVGAnimatedAngle::SetAnimatedValue(SVGPropertyBase* value) {
+  SVGAnimatedProperty<SVGAngle>::SetAnimatedValue(value);
+  orient_type_->SetAnimatedValue(CurrentValue()->OrientType());
 }
 
-void SVGAnimatedAngle::animationEnded() {
-  SVGAnimatedProperty<SVGAngle>::animationEnded();
-  m_orientType->animationEnded();
+void SVGAnimatedAngle::AnimationEnded() {
+  SVGAnimatedProperty<SVGAngle>::AnimationEnded();
+  orient_type_->AnimationEnded();
 }
 
 }  // namespace blink

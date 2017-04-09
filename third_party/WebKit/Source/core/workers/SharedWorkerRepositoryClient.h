@@ -50,12 +50,12 @@ class SharedWorkerRepositoryClient {
   SharedWorkerRepositoryClient() {}
   virtual ~SharedWorkerRepositoryClient() {}
 
-  virtual void connect(SharedWorker*,
+  virtual void Connect(SharedWorker*,
                        std::unique_ptr<WebMessagePortChannel>,
                        const KURL&,
                        const String& name) = 0;
 
-  virtual void documentDetached(Document*) = 0;
+  virtual void DocumentDetached(Document*) = 0;
 };
 
 }  // namespace blink

@@ -34,177 +34,177 @@ CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
     const TextIteratorBehavior& behavior)
-    : m_offset(0),
-      m_runOffset(0),
-      m_atBreak(true),
-      m_textIterator(start, end, behavior) {
-  initialize();
+    : offset_(0),
+      run_offset_(0),
+      at_break_(true),
+      text_iterator_(start, end, behavior) {
+  Initialize();
 }
 
 template <typename Strategy>
 CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(
     const EphemeralRangeTemplate<Strategy>& range,
     const TextIteratorBehavior& behavior)
-    : CharacterIteratorAlgorithm(range.startPosition(),
-                                 range.endPosition(),
+    : CharacterIteratorAlgorithm(range.StartPosition(),
+                                 range.EndPosition(),
                                  behavior) {}
 
 template <typename Strategy>
-void CharacterIteratorAlgorithm<Strategy>::initialize() {
-  while (!atEnd() && !m_textIterator.length())
-    m_textIterator.advance();
+void CharacterIteratorAlgorithm<Strategy>::Initialize() {
+  while (!AtEnd() && !text_iterator_.length())
+    text_iterator_.Advance();
 }
 
 template <typename Strategy>
-EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::range()
+EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::Range()
     const {
-  EphemeralRangeTemplate<Strategy> range(m_textIterator.range());
-  if (m_textIterator.atEnd() || m_textIterator.length() <= 1)
+  EphemeralRangeTemplate<Strategy> range(text_iterator_.Range());
+  if (text_iterator_.AtEnd() || text_iterator_.length() <= 1)
     return range;
-  PositionTemplate<Strategy> startPosition =
-      range.startPosition().parentAnchoredEquivalent();
-  PositionTemplate<Strategy> endPosition =
-      range.endPosition().parentAnchoredEquivalent();
-  Node* node = startPosition.computeContainerNode();
-  DCHECK_EQ(node, endPosition.computeContainerNode());
-  int offset = startPosition.offsetInContainerNode() + m_runOffset;
+  PositionTemplate<Strategy> start_position =
+      range.StartPosition().ParentAnchoredEquivalent();
+  PositionTemplate<Strategy> end_position =
+      range.EndPosition().ParentAnchoredEquivalent();
+  Node* node = start_position.ComputeContainerNode();
+  DCHECK_EQ(node, end_position.ComputeContainerNode());
+  int offset = start_position.OffsetInContainerNode() + run_offset_;
   return EphemeralRangeTemplate<Strategy>(
       PositionTemplate<Strategy>(node, offset),
       PositionTemplate<Strategy>(node, offset + 1));
 }
 
 template <typename Strategy>
-Document* CharacterIteratorAlgorithm<Strategy>::ownerDocument() const {
-  return m_textIterator.ownerDocument();
+Document* CharacterIteratorAlgorithm<Strategy>::OwnerDocument() const {
+  return text_iterator_.OwnerDocument();
 }
 
 template <typename Strategy>
-Node* CharacterIteratorAlgorithm<Strategy>::currentContainer() const {
-  return m_textIterator.currentContainer();
+Node* CharacterIteratorAlgorithm<Strategy>::CurrentContainer() const {
+  return text_iterator_.CurrentContainer();
 }
 
 template <typename Strategy>
-int CharacterIteratorAlgorithm<Strategy>::startOffset() const {
-  if (!m_textIterator.atEnd()) {
-    if (m_textIterator.length() > 1)
-      return m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-    DCHECK(!m_runOffset);
+int CharacterIteratorAlgorithm<Strategy>::StartOffset() const {
+  if (!text_iterator_.AtEnd()) {
+    if (text_iterator_.length() > 1)
+      return text_iterator_.StartOffsetInCurrentContainer() + run_offset_;
+    DCHECK(!run_offset_);
   }
-  return m_textIterator.startOffsetInCurrentContainer();
+  return text_iterator_.StartOffsetInCurrentContainer();
 }
 
 template <typename Strategy>
-int CharacterIteratorAlgorithm<Strategy>::endOffset() const {
-  if (!m_textIterator.atEnd()) {
-    if (m_textIterator.length() > 1)
-      return m_textIterator.startOffsetInCurrentContainer() + m_runOffset + 1;
-    DCHECK(!m_runOffset);
+int CharacterIteratorAlgorithm<Strategy>::EndOffset() const {
+  if (!text_iterator_.AtEnd()) {
+    if (text_iterator_.length() > 1)
+      return text_iterator_.StartOffsetInCurrentContainer() + run_offset_ + 1;
+    DCHECK(!run_offset_);
   }
-  return m_textIterator.endOffsetInCurrentContainer();
+  return text_iterator_.EndOffsetInCurrentContainer();
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition()
+PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::StartPosition()
     const {
-  if (!m_textIterator.atEnd()) {
-    if (m_textIterator.length() > 1) {
-      Node* n = m_textIterator.currentContainer();
-      int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-      return PositionTemplate<Strategy>::editingPositionOf(n, offset);
+  if (!text_iterator_.AtEnd()) {
+    if (text_iterator_.length() > 1) {
+      Node* n = text_iterator_.CurrentContainer();
+      int offset = text_iterator_.StartOffsetInCurrentContainer() + run_offset_;
+      return PositionTemplate<Strategy>::EditingPositionOf(n, offset);
     }
-    DCHECK(!m_runOffset);
+    DCHECK(!run_offset_);
   }
-  return m_textIterator.startPositionInCurrentContainer();
+  return text_iterator_.StartPositionInCurrentContainer();
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::endPosition()
+PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::EndPosition()
     const {
-  if (!m_textIterator.atEnd()) {
-    if (m_textIterator.length() > 1) {
-      Node* n = m_textIterator.currentContainer();
-      int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-      return PositionTemplate<Strategy>::editingPositionOf(n, offset + 1);
+  if (!text_iterator_.AtEnd()) {
+    if (text_iterator_.length() > 1) {
+      Node* n = text_iterator_.CurrentContainer();
+      int offset = text_iterator_.StartOffsetInCurrentContainer() + run_offset_;
+      return PositionTemplate<Strategy>::EditingPositionOf(n, offset + 1);
     }
-    DCHECK(!m_runOffset);
+    DCHECK(!run_offset_);
   }
-  return m_textIterator.endPositionInCurrentContainer();
+  return text_iterator_.EndPositionInCurrentContainer();
 }
 
 template <typename Strategy>
-void CharacterIteratorAlgorithm<Strategy>::advance(int count) {
+void CharacterIteratorAlgorithm<Strategy>::Advance(int count) {
   if (count <= 0) {
     DCHECK(!count);
     return;
   }
 
-  m_atBreak = false;
+  at_break_ = false;
 
   // easy if there is enough left in the current m_textIterator run
-  int remaining = m_textIterator.length() - m_runOffset;
+  int remaining = text_iterator_.length() - run_offset_;
   if (count < remaining) {
-    m_runOffset += count;
-    m_offset += count;
+    run_offset_ += count;
+    offset_ += count;
     return;
   }
 
   // exhaust the current m_textIterator run
   count -= remaining;
-  m_offset += remaining;
+  offset_ += remaining;
 
   // move to a subsequent m_textIterator run
-  for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
-    int runLength = m_textIterator.length();
-    if (!runLength) {
-      m_atBreak = m_textIterator.breaksAtReplacedElement();
+  for (text_iterator_.Advance(); !AtEnd(); text_iterator_.Advance()) {
+    int run_length = text_iterator_.length();
+    if (!run_length) {
+      at_break_ = text_iterator_.BreaksAtReplacedElement();
     } else {
       // see whether this is m_textIterator to use
-      if (count < runLength) {
-        m_runOffset = count;
-        m_offset += count;
+      if (count < run_length) {
+        run_offset_ = count;
+        offset_ += count;
         return;
       }
 
       // exhaust this m_textIterator run
-      count -= runLength;
-      m_offset += runLength;
+      count -= run_length;
+      offset_ += run_length;
     }
   }
 
   // ran to the end of the m_textIterator... no more runs left
-  m_atBreak = true;
-  m_runOffset = 0;
+  at_break_ = true;
+  run_offset_ = 0;
 }
 
 template <typename Strategy>
-void CharacterIteratorAlgorithm<Strategy>::copyTextTo(
+void CharacterIteratorAlgorithm<Strategy>::CopyTextTo(
     ForwardsTextBuffer* output) {
-  m_textIterator.copyTextTo(output, m_runOffset);
+  text_iterator_.CopyTextTo(output, run_offset_);
 }
 
 template <typename Strategy>
 EphemeralRangeTemplate<Strategy>
-CharacterIteratorAlgorithm<Strategy>::calculateCharacterSubrange(int offset,
+CharacterIteratorAlgorithm<Strategy>::CalculateCharacterSubrange(int offset,
                                                                  int length) {
-  advance(offset);
-  const PositionTemplate<Strategy> startPos = startPosition();
+  Advance(offset);
+  const PositionTemplate<Strategy> start_pos = StartPosition();
 
   if (!length)
-    return EphemeralRangeTemplate<Strategy>(startPos, startPos);
+    return EphemeralRangeTemplate<Strategy>(start_pos, start_pos);
   if (length > 1)
-    advance(length - 1);
-  return EphemeralRangeTemplate<Strategy>(startPos, endPosition());
+    Advance(length - 1);
+  return EphemeralRangeTemplate<Strategy>(start_pos, EndPosition());
 }
 
-EphemeralRange calculateCharacterSubrange(const EphemeralRange& range,
-                                          int characterOffset,
-                                          int characterCount) {
-  CharacterIterator entireRangeIterator(
+EphemeralRange CalculateCharacterSubrange(const EphemeralRange& range,
+                                          int character_offset,
+                                          int character_count) {
+  CharacterIterator entire_range_iterator(
       range, TextIteratorBehavior::Builder()
-                 .setEmitsObjectReplacementCharacter(true)
-                 .build());
-  return entireRangeIterator.calculateCharacterSubrange(characterOffset,
-                                                        characterCount);
+                 .SetEmitsObjectReplacementCharacter(true)
+                 .Build());
+  return entire_range_iterator.CalculateCharacterSubrange(character_offset,
+                                                          character_count);
 }
 
 template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;

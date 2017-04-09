@@ -56,84 +56,84 @@ class SyncCallbackHelper final
   typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType>
       HelperType;
 
-  static HelperType* create() { return new SyncCallbackHelper(); }
+  static HelperType* Create() { return new SyncCallbackHelper(); }
 
-  ResultType* getResult(ExceptionState& exceptionState) {
-    if (m_errorCode)
-      FileError::throwDOMException(exceptionState, m_errorCode);
+  ResultType* GetResult(ExceptionState& exception_state) {
+    if (error_code_)
+      FileError::ThrowDOMException(exception_state, error_code_);
 
-    return m_result;
+    return result_;
   }
 
-  SuccessCallback* getSuccessCallback() {
-    return SuccessCallbackImpl::create(this);
+  SuccessCallback* GetSuccessCallback() {
+    return SuccessCallbackImpl::Create(this);
   }
-  ErrorCallbackBase* getErrorCallback() {
-    return ErrorCallbackImpl::create(this);
+  ErrorCallbackBase* GetErrorCallback() {
+    return ErrorCallbackImpl::Create(this);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_result); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(result_); }
 
  private:
-  SyncCallbackHelper() : m_errorCode(FileError::kOK), m_completed(false) {}
+  SyncCallbackHelper() : error_code_(FileError::kOK), completed_(false) {}
 
   class SuccessCallbackImpl final : public SuccessCallback {
    public:
-    static SuccessCallbackImpl* create(HelperType* helper) {
+    static SuccessCallbackImpl* Create(HelperType* helper) {
       return new SuccessCallbackImpl(helper);
     }
 
-    virtual void handleEvent() { m_helper->setError(FileError::kOK); }
+    virtual void handleEvent() { helper_->SetError(FileError::kOK); }
 
-    virtual void handleEvent(CallbackArg arg) { m_helper->setResult(arg); }
+    virtual void handleEvent(CallbackArg arg) { helper_->SetResult(arg); }
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_helper);
-      SuccessCallback::trace(visitor);
+      visitor->Trace(helper_);
+      SuccessCallback::Trace(visitor);
     }
 
    private:
-    explicit SuccessCallbackImpl(HelperType* helper) : m_helper(helper) {}
-    Member<HelperType> m_helper;
+    explicit SuccessCallbackImpl(HelperType* helper) : helper_(helper) {}
+    Member<HelperType> helper_;
   };
 
   class ErrorCallbackImpl final : public ErrorCallbackBase {
    public:
-    static ErrorCallbackImpl* create(HelperType* helper) {
+    static ErrorCallbackImpl* Create(HelperType* helper) {
       return new ErrorCallbackImpl(helper);
     }
 
-    void invoke(FileError::ErrorCode error) override {
-      m_helper->setError(error);
+    void Invoke(FileError::ErrorCode error) override {
+      helper_->SetError(error);
     }
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_helper);
-      ErrorCallbackBase::trace(visitor);
+      visitor->Trace(helper_);
+      ErrorCallbackBase::Trace(visitor);
     }
 
    private:
-    explicit ErrorCallbackImpl(HelperType* helper) : m_helper(helper) {}
-    Member<HelperType> m_helper;
+    explicit ErrorCallbackImpl(HelperType* helper) : helper_(helper) {}
+    Member<HelperType> helper_;
   };
 
-  void setError(FileError::ErrorCode error) {
-    m_errorCode = error;
-    m_completed = true;
+  void SetError(FileError::ErrorCode error) {
+    error_code_ = error;
+    completed_ = true;
   }
 
-  void setResult(CallbackArg result) {
-    m_result = ResultType::create(result);
-    m_completed = true;
+  void SetResult(CallbackArg result) {
+    result_ = ResultType::Create(result);
+    completed_ = true;
   }
 
-  Member<ResultType> m_result;
-  FileError::ErrorCode m_errorCode;
-  bool m_completed;
+  Member<ResultType> result_;
+  FileError::ErrorCode error_code_;
+  bool completed_;
 };
 
 struct EmptyType : public GarbageCollected<EmptyType> {
-  static EmptyType* create(EmptyType*) { return 0; }
+  static EmptyType* Create(EmptyType*) { return 0; }
 
   DEFINE_INLINE_TRACE() {}
 };

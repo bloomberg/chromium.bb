@@ -33,49 +33,50 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   explicit LayoutSVGResourceMarker(SVGMarkerElement*);
   ~LayoutSVGResourceMarker() override;
 
-  const char* name() const override { return "LayoutSVGResourceMarker"; }
+  const char* GetName() const override { return "LayoutSVGResourceMarker"; }
 
-  void removeAllClientsFromCache(bool markForInvalidation = true) override;
-  void removeClientFromCache(LayoutObject*,
-                             bool markForInvalidation = true) override;
+  void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
+  void RemoveClientFromCache(LayoutObject*,
+                             bool mark_for_invalidation = true) override;
 
   // Calculates marker boundaries, mapped to the target element's coordinate
   // space.
-  FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
-  AffineTransform markerTransformation(const FloatPoint& origin,
+  FloatRect MarkerBoundaries(
+      const AffineTransform& marker_transformation) const;
+  AffineTransform MarkerTransformation(const FloatPoint& origin,
                                        float angle,
-                                       float strokeWidth) const;
+                                       float stroke_width) const;
 
-  AffineTransform localToSVGParentTransform() const final {
-    return m_localToParentTransform;
+  AffineTransform LocalToSVGParentTransform() const final {
+    return local_to_parent_transform_;
   }
-  void setNeedsTransformUpdate() final;
+  void SetNeedsTransformUpdate() final;
 
   // The viewport origin is (0,0) and not the reference point because each
   // marker instance includes the reference in markerTransformation().
-  FloatRect viewport() const { return FloatRect(FloatPoint(), m_viewportSize); }
+  FloatRect Viewport() const { return FloatRect(FloatPoint(), viewport_size_); }
 
-  bool shouldPaint() const;
+  bool ShouldPaint() const;
 
-  FloatPoint referencePoint() const;
-  float angle() const;
-  SVGMarkerUnitsType markerUnits() const;
-  SVGMarkerOrientType orientType() const;
+  FloatPoint ReferencePoint() const;
+  float Angle() const;
+  SVGMarkerUnitsType MarkerUnits() const;
+  SVGMarkerOrientType OrientType() const;
 
-  static const LayoutSVGResourceType s_resourceType = MarkerResourceType;
-  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType kResourceType = kMarkerResourceType;
+  LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
  private:
-  void layout() override;
-  SVGTransformChange calculateLocalTransform() final;
+  void GetLayout() override;
+  SVGTransformChange CalculateLocalTransform() final;
 
-  AffineTransform m_localToParentTransform;
-  FloatSize m_viewportSize;
-  bool m_needsTransformUpdate;
+  AffineTransform local_to_parent_transform_;
+  FloatSize viewport_size_;
+  bool needs_transform_update_;
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMarker,
-                                      MarkerResourceType);
+                                      kMarkerResourceType);
 
 }  // namespace blink
 

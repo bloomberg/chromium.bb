@@ -38,21 +38,21 @@ namespace blink {
 // FIXME: This enum makes it hard to tell in general what values may be
 // appropriate for any given Length.
 enum LengthType {
-  Auto,
-  Percent,
-  Fixed,
-  MinContent,
-  MaxContent,
-  FillAvailable,
-  FitContent,
-  Calculated,
-  ExtendToZoom,
-  DeviceWidth,
-  DeviceHeight,
-  MaxSizeNone
+  kAuto,
+  kPercent,
+  kFixed,
+  kMinContent,
+  kMaxContent,
+  kFillAvailable,
+  kFitContent,
+  kCalculated,
+  kExtendToZoom,
+  kDeviceWidth,
+  kDeviceHeight,
+  kMaxSizeNone
 };
 
-enum ValueRange { ValueRangeAll, ValueRangeNonNegative };
+enum ValueRange { kValueRangeAll, kValueRangeNonNegative };
 
 struct PixelsAndPercent {
   DISALLOW_NEW();
@@ -68,190 +68,191 @@ class PLATFORM_EXPORT Length {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  Length() : m_intValue(0), m_quirk(false), m_type(Auto), m_isFloat(false) {}
+  Length() : int_value_(0), quirk_(false), type_(kAuto), is_float_(false) {}
 
   Length(LengthType t)
-      : m_intValue(0), m_quirk(false), m_type(t), m_isFloat(false) {
-    ASSERT(t != Calculated);
+      : int_value_(0), quirk_(false), type_(t), is_float_(false) {
+    ASSERT(t != kCalculated);
   }
 
   Length(int v, LengthType t, bool q = false)
-      : m_intValue(v), m_quirk(q), m_type(t), m_isFloat(false) {
-    ASSERT(t != Calculated);
+      : int_value_(v), quirk_(q), type_(t), is_float_(false) {
+    ASSERT(t != kCalculated);
   }
 
   Length(LayoutUnit v, LengthType t, bool q = false)
-      : m_floatValue(v.toFloat()), m_quirk(q), m_type(t), m_isFloat(true) {
-    ASSERT(t != Calculated);
+      : float_value_(v.ToFloat()), quirk_(q), type_(t), is_float_(true) {
+    ASSERT(t != kCalculated);
   }
 
   Length(float v, LengthType t, bool q = false)
-      : m_floatValue(v), m_quirk(q), m_type(t), m_isFloat(true) {
-    ASSERT(t != Calculated);
+      : float_value_(v), quirk_(q), type_(t), is_float_(true) {
+    ASSERT(t != kCalculated);
   }
 
   Length(double v, LengthType t, bool q = false)
-      : m_quirk(q), m_type(t), m_isFloat(true) {
-    m_floatValue = static_cast<float>(v);
+      : quirk_(q), type_(t), is_float_(true) {
+    float_value_ = static_cast<float>(v);
   }
 
   explicit Length(PassRefPtr<CalculationValue>);
 
   Length(const Length& length) {
     memcpy(this, &length, sizeof(Length));
-    if (isCalculated())
-      incrementCalculatedRef();
+    if (IsCalculated())
+      IncrementCalculatedRef();
   }
 
   Length& operator=(const Length& length) {
-    if (length.isCalculated())
-      length.incrementCalculatedRef();
-    if (isCalculated())
-      decrementCalculatedRef();
+    if (length.IsCalculated())
+      length.IncrementCalculatedRef();
+    if (IsCalculated())
+      DecrementCalculatedRef();
     memcpy(this, &length, sizeof(Length));
     return *this;
   }
 
   ~Length() {
-    if (isCalculated())
-      decrementCalculatedRef();
+    if (IsCalculated())
+      DecrementCalculatedRef();
   }
 
   bool operator==(const Length& o) const {
-    return (m_type == o.m_type) && (m_quirk == o.m_quirk) &&
-           (isMaxSizeNone() || (getFloatValue() == o.getFloatValue()) ||
-            isCalculatedEqual(o));
+    return (type_ == o.type_) && (quirk_ == o.quirk_) &&
+           (IsMaxSizeNone() || (GetFloatValue() == o.GetFloatValue()) ||
+            IsCalculatedEqual(o));
   }
   bool operator!=(const Length& o) const { return !(*this == o); }
 
   const Length& operator*=(float v) {
-    if (isCalculated()) {
+    if (IsCalculated()) {
       ASSERT_NOT_REACHED();
       return *this;
     }
 
-    if (m_isFloat)
-      m_floatValue = static_cast<float>(m_floatValue * v);
+    if (is_float_)
+      float_value_ = static_cast<float>(float_value_ * v);
     else
-      m_intValue = static_cast<int>(m_intValue * v);
+      int_value_ = static_cast<int>(int_value_ * v);
 
     return *this;
   }
 
   // FIXME: Make this private (if possible) or at least rename it
   // (http://crbug.com/432707).
-  inline float value() const {
-    ASSERT(!isCalculated());
-    return getFloatValue();
+  inline float Value() const {
+    ASSERT(!IsCalculated());
+    return GetFloatValue();
   }
 
-  int intValue() const {
-    if (isCalculated()) {
+  int IntValue() const {
+    if (IsCalculated()) {
       ASSERT_NOT_REACHED();
       return 0;
     }
-    return getIntValue();
+    return GetIntValue();
   }
 
-  float pixels() const {
-    ASSERT(type() == Fixed);
-    return getFloatValue();
+  float Pixels() const {
+    ASSERT(GetType() == kFixed);
+    return GetFloatValue();
   }
 
-  float percent() const {
-    ASSERT(type() == Percent);
-    return getFloatValue();
+  float Percent() const {
+    ASSERT(GetType() == kPercent);
+    return GetFloatValue();
   }
 
-  PixelsAndPercent getPixelsAndPercent() const;
+  PixelsAndPercent GetPixelsAndPercent() const;
 
-  CalculationValue& getCalculationValue() const;
+  CalculationValue& GetCalculationValue() const;
 
-  LengthType type() const { return static_cast<LengthType>(m_type); }
-  bool quirk() const { return m_quirk; }
+  LengthType GetType() const { return static_cast<LengthType>(type_); }
+  bool Quirk() const { return quirk_; }
 
-  void setQuirk(bool quirk) { m_quirk = quirk; }
+  void SetQuirk(bool quirk) { quirk_ = quirk; }
 
-  void setValue(LengthType t, int value) {
-    m_type = t;
-    m_intValue = value;
-    m_isFloat = false;
+  void SetValue(LengthType t, int value) {
+    type_ = t;
+    int_value_ = value;
+    is_float_ = false;
   }
 
-  void setValue(int value) {
-    if (isCalculated()) {
+  void SetValue(int value) {
+    if (IsCalculated()) {
       ASSERT_NOT_REACHED();
       return;
     }
-    setValue(Fixed, value);
+    SetValue(kFixed, value);
   }
 
-  void setValue(LengthType t, float value) {
-    m_type = t;
-    m_floatValue = value;
-    m_isFloat = true;
+  void SetValue(LengthType t, float value) {
+    type_ = t;
+    float_value_ = value;
+    is_float_ = true;
   }
 
-  void setValue(LengthType t, LayoutUnit value) {
-    m_type = t;
-    m_floatValue = value.toFloat();
-    m_isFloat = true;
+  void SetValue(LengthType t, LayoutUnit value) {
+    type_ = t;
+    float_value_ = value.ToFloat();
+    is_float_ = true;
   }
 
-  void setValue(float value) { *this = Length(value, Fixed); }
+  void SetValue(float value) { *this = Length(value, kFixed); }
 
-  bool isMaxSizeNone() const { return type() == MaxSizeNone; }
+  bool IsMaxSizeNone() const { return GetType() == kMaxSizeNone; }
 
   // FIXME calc: https://bugs.webkit.org/show_bug.cgi?id=80357. A calculated
   // Length always contains a percentage, and without a maxValue passed to these
   // functions it's impossible to determine the sign or zero-ness. We assume all
   // calc values are positive and non-zero for now.
-  bool isZero() const {
-    ASSERT(!isMaxSizeNone());
-    if (isCalculated())
+  bool IsZero() const {
+    ASSERT(!IsMaxSizeNone());
+    if (IsCalculated())
       return false;
 
-    return m_isFloat ? !m_floatValue : !m_intValue;
+    return is_float_ ? !float_value_ : !int_value_;
   }
-  bool isPositive() const {
-    if (isMaxSizeNone())
+  bool IsPositive() const {
+    if (IsMaxSizeNone())
       return false;
-    if (isCalculated())
+    if (IsCalculated())
       return true;
 
-    return getFloatValue() > 0;
+    return GetFloatValue() > 0;
   }
-  bool isNegative() const {
-    if (isMaxSizeNone() || isCalculated())
+  bool IsNegative() const {
+    if (IsMaxSizeNone() || IsCalculated())
       return false;
 
-    return getFloatValue() < 0;
+    return GetFloatValue() < 0;
   }
 
-  bool isAuto() const { return type() == Auto; }
-  bool isFixed() const { return type() == Fixed; }
-  bool isIntrinsicOrAuto() const { return type() == Auto || isIntrinsic(); }
-  bool isIntrinsic() const {
-    return type() == MinContent || type() == MaxContent ||
-           type() == FillAvailable || type() == FitContent;
+  bool IsAuto() const { return GetType() == kAuto; }
+  bool IsFixed() const { return GetType() == kFixed; }
+  bool IsIntrinsicOrAuto() const { return GetType() == kAuto || IsIntrinsic(); }
+  bool IsIntrinsic() const {
+    return GetType() == kMinContent || GetType() == kMaxContent ||
+           GetType() == kFillAvailable || GetType() == kFitContent;
   }
-  bool isSpecified() const {
-    return type() == Fixed || type() == Percent || type() == Calculated;
+  bool IsSpecified() const {
+    return GetType() == kFixed || GetType() == kPercent ||
+           GetType() == kCalculated;
   }
-  bool isSpecifiedOrIntrinsic() const { return isSpecified() || isIntrinsic(); }
-  bool isCalculated() const { return type() == Calculated; }
-  bool isCalculatedEqual(const Length&) const;
-  bool isMinContent() const { return type() == MinContent; }
-  bool isMaxContent() const { return type() == MaxContent; }
-  bool isFillAvailable() const { return type() == FillAvailable; }
-  bool isFitContent() const { return type() == FitContent; }
-  bool isPercent() const { return type() == Percent; }
-  bool isPercentOrCalc() const {
-    return type() == Percent || type() == Calculated;
+  bool IsSpecifiedOrIntrinsic() const { return IsSpecified() || IsIntrinsic(); }
+  bool IsCalculated() const { return GetType() == kCalculated; }
+  bool IsCalculatedEqual(const Length&) const;
+  bool IsMinContent() const { return GetType() == kMinContent; }
+  bool IsMaxContent() const { return GetType() == kMaxContent; }
+  bool IsFillAvailable() const { return GetType() == kFillAvailable; }
+  bool IsFitContent() const { return GetType() == kFitContent; }
+  bool IsPercent() const { return GetType() == kPercent; }
+  bool IsPercentOrCalc() const {
+    return GetType() == kPercent || GetType() == kCalculated;
   }
 
-  Length blend(const Length& from, double progress, ValueRange range) const {
-    ASSERT(isSpecified() && from.isSpecified());
+  Length Blend(const Length& from, double progress, ValueRange range) const {
+    ASSERT(IsSpecified() && from.IsSpecified());
 
     if (progress == 0.0)
       return from;
@@ -259,57 +260,57 @@ class PLATFORM_EXPORT Length {
     if (progress == 1.0)
       return *this;
 
-    if (from.type() == Calculated || type() == Calculated)
-      return blendMixedTypes(from, progress, range);
+    if (from.GetType() == kCalculated || GetType() == kCalculated)
+      return BlendMixedTypes(from, progress, range);
 
-    if (!from.isZero() && !isZero() && from.type() != type())
-      return blendMixedTypes(from, progress, range);
+    if (!from.IsZero() && !IsZero() && from.GetType() != GetType())
+      return BlendMixedTypes(from, progress, range);
 
-    if (from.isZero() && isZero())
+    if (from.IsZero() && IsZero())
       return *this;
 
-    LengthType resultType = type();
-    if (isZero())
-      resultType = from.type();
+    LengthType result_type = GetType();
+    if (IsZero())
+      result_type = from.GetType();
 
-    float blendedValue = blink::blend(from.value(), value(), progress);
-    if (range == ValueRangeNonNegative)
-      blendedValue = clampTo<float>(blendedValue, 0);
-    return Length(blendedValue, resultType);
+    float blended_value = blink::Blend(from.Value(), Value(), progress);
+    if (range == kValueRangeNonNegative)
+      blended_value = clampTo<float>(blended_value, 0);
+    return Length(blended_value, result_type);
   }
 
-  float getFloatValue() const {
-    ASSERT(!isMaxSizeNone());
-    return m_isFloat ? m_floatValue : m_intValue;
+  float GetFloatValue() const {
+    ASSERT(!IsMaxSizeNone());
+    return is_float_ ? float_value_ : int_value_;
   }
-  float nonNanCalculatedValue(LayoutUnit maxValue) const;
+  float NonNanCalculatedValue(LayoutUnit max_value) const;
 
-  Length subtractFromOneHundredPercent() const;
+  Length SubtractFromOneHundredPercent() const;
 
-  Length zoom(double factor) const;
+  Length Zoom(double factor) const;
 
  private:
-  int getIntValue() const {
-    ASSERT(!isMaxSizeNone());
-    return m_isFloat ? static_cast<int>(m_floatValue) : m_intValue;
+  int GetIntValue() const {
+    ASSERT(!IsMaxSizeNone());
+    return is_float_ ? static_cast<int>(float_value_) : int_value_;
   }
 
-  Length blendMixedTypes(const Length& from, double progress, ValueRange) const;
+  Length BlendMixedTypes(const Length& from, double progress, ValueRange) const;
 
-  int calculationHandle() const {
-    ASSERT(isCalculated());
-    return getIntValue();
+  int CalculationHandle() const {
+    ASSERT(IsCalculated());
+    return GetIntValue();
   }
-  void incrementCalculatedRef() const;
-  void decrementCalculatedRef() const;
+  void IncrementCalculatedRef() const;
+  void DecrementCalculatedRef() const;
 
   union {
-    int m_intValue;
-    float m_floatValue;
+    int int_value_;
+    float float_value_;
   };
-  bool m_quirk;
-  unsigned char m_type;
-  bool m_isFloat;
+  bool quirk_;
+  unsigned char type_;
+  bool is_float_;
 };
 
 }  // namespace blink

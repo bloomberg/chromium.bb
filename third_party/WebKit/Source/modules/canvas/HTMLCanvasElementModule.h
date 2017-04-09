@@ -30,7 +30,7 @@ class MODULES_EXPORT HTMLCanvasElementModule {
                                                      ExceptionState&);
 
  private:
-  static OffscreenCanvas* transferControlToOffscreenInternal(HTMLCanvasElement&,
+  static OffscreenCanvas* TransferControlToOffscreenInternal(HTMLCanvasElement&,
                                                              ExceptionState&);
 };
 }

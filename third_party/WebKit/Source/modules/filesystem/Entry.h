@@ -50,35 +50,35 @@ class MODULES_EXPORT Entry : public EntryBase, public ScriptWrappable {
 
  public:
   DOMFileSystem* filesystem() const {
-    return static_cast<DOMFileSystem*>(m_fileSystem.get());
+    return static_cast<DOMFileSystem*>(file_system_.Get());
   }
   DOMFileSystem* filesystem(ScriptState*) const;
 
   void getMetadata(ScriptState*,
-                   MetadataCallback* successCallback = nullptr,
+                   MetadataCallback* success_callback = nullptr,
                    ErrorCallback* = nullptr);
   void moveTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
-              EntryCallback* successCallback = nullptr,
+              EntryCallback* success_callback = nullptr,
               ErrorCallback* = nullptr) const;
   void copyTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
-              EntryCallback* successCallback = nullptr,
+              EntryCallback* success_callback = nullptr,
               ErrorCallback* = nullptr) const;
   void remove(ScriptState*,
-              VoidCallback* successCallback = nullptr,
+              VoidCallback* success_callback = nullptr,
               ErrorCallback* = nullptr) const;
   void getParent(ScriptState*,
-                 EntryCallback* successCallback = nullptr,
+                 EntryCallback* success_callback = nullptr,
                  ErrorCallback* = nullptr) const;
   String toURL(ScriptState*) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  Entry(DOMFileSystemBase*, const String& fullPath);
+  Entry(DOMFileSystemBase*, const String& full_path);
 };
 
 }  // namespace blink

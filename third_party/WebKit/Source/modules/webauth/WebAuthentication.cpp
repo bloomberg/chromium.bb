@@ -12,21 +12,21 @@ WebAuthentication::WebAuthentication(LocalFrame& frame) {}
 
 WebAuthentication::~WebAuthentication() {}
 
-void WebAuthentication::dispose() {}
+void WebAuthentication::Dispose() {}
 
 ScriptPromise WebAuthentication::makeCredential(
-    ScriptState* scriptState,
-    const RelyingPartyAccount& accountInformation,
-    const HeapVector<ScopedCredentialParameters> cryptoParameters,
-    const BufferSource& attestationChallenge,
+    ScriptState* script_state,
+    const RelyingPartyAccount& account_information,
+    const HeapVector<ScopedCredentialParameters> crypto_parameters,
+    const BufferSource& attestation_challenge,
     ScopedCredentialOptions& options) {
   NOTREACHED();
   return ScriptPromise();
 }
 
 ScriptPromise WebAuthentication::getAssertion(
-    ScriptState* scriptState,
-    const BufferSource& assertionChallenge,
+    ScriptState* script_state,
+    const BufferSource& assertion_challenge,
     const AuthenticationAssertionOptions& options) {
   NOTREACHED();
   return ScriptPromise();

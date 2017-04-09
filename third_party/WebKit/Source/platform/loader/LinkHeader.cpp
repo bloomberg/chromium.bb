@@ -12,75 +12,75 @@ namespace blink {
 
 // Verify that the parameter is a link-extension which according to spec doesn't
 // have to have a value.
-static bool isExtensionParameter(LinkHeader::LinkParameterName name) {
-  return name >= LinkHeader::LinkParameterUnknown;
+static bool IsExtensionParameter(LinkHeader::LinkParameterName name) {
+  return name >= LinkHeader::kLinkParameterUnknown;
 }
 
-static LinkHeader::LinkParameterName parameterNameFromString(
+static LinkHeader::LinkParameterName ParameterNameFromString(
     base::StringPiece name) {
   if (base::EqualsCaseInsensitiveASCII(name, "rel"))
-    return LinkHeader::LinkParameterRel;
+    return LinkHeader::kLinkParameterRel;
   if (base::EqualsCaseInsensitiveASCII(name, "anchor"))
-    return LinkHeader::LinkParameterAnchor;
+    return LinkHeader::kLinkParameterAnchor;
   if (base::EqualsCaseInsensitiveASCII(name, "crossorigin"))
-    return LinkHeader::LinkParameterCrossOrigin;
+    return LinkHeader::kLinkParameterCrossOrigin;
   if (base::EqualsCaseInsensitiveASCII(name, "title"))
-    return LinkHeader::LinkParameterTitle;
+    return LinkHeader::kLinkParameterTitle;
   if (base::EqualsCaseInsensitiveASCII(name, "media"))
-    return LinkHeader::LinkParameterMedia;
+    return LinkHeader::kLinkParameterMedia;
   if (base::EqualsCaseInsensitiveASCII(name, "type"))
-    return LinkHeader::LinkParameterType;
+    return LinkHeader::kLinkParameterType;
   if (base::EqualsCaseInsensitiveASCII(name, "rev"))
-    return LinkHeader::LinkParameterRev;
+    return LinkHeader::kLinkParameterRev;
   if (base::EqualsCaseInsensitiveASCII(name, "hreflang"))
-    return LinkHeader::LinkParameterHreflang;
+    return LinkHeader::kLinkParameterHreflang;
   if (base::EqualsCaseInsensitiveASCII(name, "as"))
-    return LinkHeader::LinkParameterAs;
-  return LinkHeader::LinkParameterUnknown;
+    return LinkHeader::kLinkParameterAs;
+  return LinkHeader::kLinkParameterUnknown;
 }
 
-void LinkHeader::setValue(LinkParameterName name, const String& value) {
-  if (name == LinkParameterRel && !m_rel)
-    m_rel = value.lower();
-  else if (name == LinkParameterAnchor)
-    m_isValid = false;
-  else if (name == LinkParameterCrossOrigin)
-    m_crossOrigin = value;
-  else if (name == LinkParameterAs)
-    m_as = value.lower();
-  else if (name == LinkParameterType)
-    m_mimeType = value.lower();
-  else if (name == LinkParameterMedia)
-    m_media = value.lower();
+void LinkHeader::SetValue(LinkParameterName name, const String& value) {
+  if (name == kLinkParameterRel && !rel_)
+    rel_ = value.Lower();
+  else if (name == kLinkParameterAnchor)
+    is_valid_ = false;
+  else if (name == kLinkParameterCrossOrigin)
+    cross_origin_ = value;
+  else if (name == kLinkParameterAs)
+    as_ = value.Lower();
+  else if (name == kLinkParameterType)
+    mime_type_ = value.Lower();
+  else if (name == kLinkParameterMedia)
+    media_ = value.Lower();
 }
 
 template <typename Iterator>
-LinkHeader::LinkHeader(Iterator begin, Iterator end) : m_isValid(true) {
+LinkHeader::LinkHeader(Iterator begin, Iterator end) : is_valid_(true) {
   std::string url;
   std::unordered_map<std::string, base::Optional<std::string>> params;
-  m_isValid = link_header_util::ParseLinkHeaderValue(begin, end, &url, &params);
-  if (!m_isValid)
+  is_valid_ = link_header_util::ParseLinkHeaderValue(begin, end, &url, &params);
+  if (!is_valid_)
     return;
 
-  m_url = String(&url[0], url.length());
+  url_ = String(&url[0], url.length());
   for (const auto& param : params) {
-    LinkParameterName name = parameterNameFromString(param.first);
-    if (!isExtensionParameter(name) && !param.second)
-      m_isValid = false;
+    LinkParameterName name = ParameterNameFromString(param.first);
+    if (!IsExtensionParameter(name) && !param.second)
+      is_valid_ = false;
     std::string value = param.second.value_or("");
-    setValue(name, String(&value[0], value.length()));
+    SetValue(name, String(&value[0], value.length()));
   }
 }
 
 LinkHeaderSet::LinkHeaderSet(const String& header) {
-  if (header.isNull())
+  if (header.IsNull())
     return;
 
-  DCHECK(header.is8Bit()) << "Headers should always be 8 bit";
-  std::string headerString(reinterpret_cast<const char*>(header.characters8()),
-                           header.length());
-  for (const auto& value : link_header_util::SplitLinkHeader(headerString))
-    m_headerSet.push_back(LinkHeader(value.first, value.second));
+  DCHECK(header.Is8Bit()) << "Headers should always be 8 bit";
+  std::string header_string(reinterpret_cast<const char*>(header.Characters8()),
+                            header.length());
+  for (const auto& value : link_header_util::SplitLinkHeader(header_string))
+    header_set_.push_back(LinkHeader(value.first, value.second));
 }
 
 }  // namespace blink

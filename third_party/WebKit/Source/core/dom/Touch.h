@@ -45,42 +45,42 @@ class CORE_EXPORT Touch final : public GarbageCollectedFinalized<Touch>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Touch* create(LocalFrame* frame,
+  static Touch* Create(LocalFrame* frame,
                        EventTarget* target,
                        int identifier,
-                       const FloatPoint& screenPos,
-                       const FloatPoint& pagePos,
+                       const FloatPoint& screen_pos,
+                       const FloatPoint& page_pos,
                        const FloatSize& radius,
-                       float rotationAngle,
+                       float rotation_angle,
                        float force,
                        String region) {
-    return new Touch(frame, target, identifier, screenPos, pagePos, radius,
-                     rotationAngle, force, region);
+    return new Touch(frame, target, identifier, screen_pos, page_pos, radius,
+                     rotation_angle, force, region);
   }
 
-  static Touch* create(const Document& document, const TouchInit& initializer) {
-    return new Touch(document.frame(), initializer);
+  static Touch* Create(const Document& document, const TouchInit& initializer) {
+    return new Touch(document.GetFrame(), initializer);
   }
 
   // DOM Touch implementation
-  EventTarget* target() const { return m_target.get(); }
-  int identifier() const { return m_identifier; }
-  double clientX() const { return m_clientPos.x(); }
-  double clientY() const { return m_clientPos.y(); }
-  double screenX() const { return m_screenPos.x(); }
-  double screenY() const { return m_screenPos.y(); }
-  double pageX() const { return m_pagePos.x(); }
-  double pageY() const { return m_pagePos.y(); }
-  float radiusX() const { return m_radius.width(); }
-  float radiusY() const { return m_radius.height(); }
-  float rotationAngle() const { return m_rotationAngle; }
-  float force() const { return m_force; }
-  const String& region() const { return m_region; }
+  EventTarget* target() const { return target_.Get(); }
+  int identifier() const { return identifier_; }
+  double clientX() const { return client_pos_.X(); }
+  double clientY() const { return client_pos_.Y(); }
+  double screenX() const { return screen_pos_.X(); }
+  double screenY() const { return screen_pos_.Y(); }
+  double pageX() const { return page_pos_.X(); }
+  double pageY() const { return page_pos_.Y(); }
+  float radiusX() const { return radius_.Width(); }
+  float radiusY() const { return radius_.Height(); }
+  float rotationAngle() const { return rotation_angle_; }
+  float force() const { return force_; }
+  const String& region() const { return region_; }
 
   // Blink-internal methods
-  const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
-  const FloatPoint& screenLocation() const { return m_screenPos; }
-  Touch* cloneWithNewTarget(EventTarget*) const;
+  const LayoutPoint& AbsoluteLocation() const { return absolute_location_; }
+  const FloatPoint& ScreenLocation() const { return screen_pos_; }
+  Touch* CloneWithNewTarget(EventTarget*) const;
 
   DECLARE_TRACE();
 
@@ -88,43 +88,43 @@ class CORE_EXPORT Touch final : public GarbageCollectedFinalized<Touch>,
   Touch(LocalFrame*,
         EventTarget*,
         int identifier,
-        const FloatPoint& screenPos,
-        const FloatPoint& pagePos,
+        const FloatPoint& screen_pos,
+        const FloatPoint& page_pos,
         const FloatSize& radius,
-        float rotationAngle,
+        float rotation_angle,
         float force,
         String region);
 
   Touch(EventTarget*,
         int identifier,
-        const FloatPoint& clientPos,
-        const FloatPoint& screenPos,
-        const FloatPoint& pagePos,
+        const FloatPoint& client_pos,
+        const FloatPoint& screen_pos,
+        const FloatPoint& page_pos,
         const FloatSize& radius,
-        float rotationAngle,
+        float rotation_angle,
         float force,
         String region,
-        LayoutPoint absoluteLocation);
+        LayoutPoint absolute_location);
 
   Touch(LocalFrame*, const TouchInit&);
 
-  Member<EventTarget> m_target;
-  int m_identifier;
+  Member<EventTarget> target_;
+  int identifier_;
   // Position relative to the viewport in CSS px.
-  FloatPoint m_clientPos;
+  FloatPoint client_pos_;
   // Position relative to the screen in DIPs.
-  FloatPoint m_screenPos;
+  FloatPoint screen_pos_;
   // Position relative to the page in CSS px.
-  FloatPoint m_pagePos;
+  FloatPoint page_pos_;
   // Radius in CSS px.
-  FloatSize m_radius;
-  float m_rotationAngle;
-  float m_force;
-  String m_region;
+  FloatSize radius_;
+  float rotation_angle_;
+  float force_;
+  String region_;
   // FIXME(rbyers): Shouldn't we be able to migrate callers to relying on
   // screenPos, pagePos or clientPos? absoluteLocation appears to be the same as
   // pagePos but without browser scale applied.
-  LayoutPoint m_absoluteLocation;
+  LayoutPoint absolute_location_;
 };
 
 }  // namespace blink

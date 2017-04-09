@@ -60,7 +60,7 @@ class GamingSeat : public WMHelper::FocusObserver {
   GamingSeatDelegate* const delegate_;
 
   // The delegate instances that all other events are dispatched to.
-  GamepadDelegate* gamepad_delegates_[blink::WebGamepads::itemsLengthCap];
+  GamepadDelegate* gamepad_delegates_[blink::WebGamepads::kItemsLengthCap];
 
   // The current state of the gamepad represented by this instance.
   blink::WebGamepads pad_state_;

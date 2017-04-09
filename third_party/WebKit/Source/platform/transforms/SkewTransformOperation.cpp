@@ -25,30 +25,31 @@
 
 namespace blink {
 
-PassRefPtr<TransformOperation> SkewTransformOperation::blend(
+PassRefPtr<TransformOperation> SkewTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
-    bool blendToIdentity) {
-  if (from && !from->canBlendWith(*this))
+    bool blend_to_identity) {
+  if (from && !from->CanBlendWith(*this))
     return this;
 
-  if (blendToIdentity)
-    return SkewTransformOperation::create(blink::blend(m_angleX, 0.0, progress),
-                                          blink::blend(m_angleY, 0.0, progress),
-                                          m_type);
+  if (blend_to_identity)
+    return SkewTransformOperation::Create(blink::Blend(angle_x_, 0.0, progress),
+                                          blink::Blend(angle_y_, 0.0, progress),
+                                          type_);
 
-  const SkewTransformOperation* fromOp =
+  const SkewTransformOperation* from_op =
       static_cast<const SkewTransformOperation*>(from);
-  double fromAngleX = fromOp ? fromOp->m_angleX : 0;
-  double fromAngleY = fromOp ? fromOp->m_angleY : 0;
-  return SkewTransformOperation::create(
-      blink::blend(fromAngleX, m_angleX, progress),
-      blink::blend(fromAngleY, m_angleY, progress), m_type);
+  double from_angle_x = from_op ? from_op->angle_x_ : 0;
+  double from_angle_y = from_op ? from_op->angle_y_ : 0;
+  return SkewTransformOperation::Create(
+      blink::Blend(from_angle_x, angle_x_, progress),
+      blink::Blend(from_angle_y, angle_y_, progress), type_);
 }
 
-bool SkewTransformOperation::canBlendWith(
+bool SkewTransformOperation::CanBlendWith(
     const TransformOperation& other) const {
-  return other.type() == Skew || other.type() == SkewX || other.type() == SkewY;
+  return other.GetType() == kSkew || other.GetType() == kSkewX ||
+         other.GetType() == kSkewY;
 }
 
 }  // namespace blink

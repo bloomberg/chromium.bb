@@ -20,30 +20,30 @@ class HTMLEmbedElementTest : public testing::Test {
 
   void SetUp() override;
 
-  Document& document() const { return *m_document; }
+  Document& GetDocument() const { return *document_; }
 
-  void setHtmlInnerHTML(const char* htmlContent);
+  void SetHtmlInnerHTML(const char* html_content);
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<Document> m_document;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<Document> document_;
 };
 
 void HTMLEmbedElementTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-  m_document = &m_dummyPageHolder->document();
-  DCHECK(m_document);
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  document_ = &dummy_page_holder_->GetDocument();
+  DCHECK(document_);
 }
 
-void HTMLEmbedElementTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
-  document().view()->updateAllLifecyclePhases();
+void HTMLEmbedElementTest::SetHtmlInnerHTML(const char* html_content) {
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 TEST_F(HTMLEmbedElementTest, FallbackState) {
   // Load <object> element with a <embed> child.
   // This can be seen on sites with Flash cookies,
   // for example on www.yandex.ru
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<div>"
       "<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000' width='1' "
       "height='1' id='fco'>"
@@ -53,39 +53,39 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
       "width='1' height='1' id='fce'>"
       "</object></div>");
 
-  auto* objectElement = document().getElementById("fco");
-  ASSERT_TRUE(objectElement);
-  ASSERT_TRUE(isHTMLObjectElement(objectElement));
-  HTMLObjectElement* object = toHTMLObjectElement(objectElement);
+  auto* object_element = GetDocument().GetElementById("fco");
+  ASSERT_TRUE(object_element);
+  ASSERT_TRUE(isHTMLObjectElement(object_element));
+  HTMLObjectElement* object = toHTMLObjectElement(object_element);
 
   // At this moment updatePlugin() function is not called, so
   // useFallbackContent() will return false.
   // But the element will likely to use fallback content after updatePlugin().
-  EXPECT_TRUE(object->hasFallbackContent());
-  EXPECT_FALSE(object->useFallbackContent());
-  EXPECT_TRUE(object->willUseFallbackContentAtLayout());
+  EXPECT_TRUE(object->HasFallbackContent());
+  EXPECT_FALSE(object->UseFallbackContent());
+  EXPECT_TRUE(object->WillUseFallbackContentAtLayout());
 
-  auto* embedElement = document().getElementById("fce");
-  ASSERT_TRUE(embedElement);
-  ASSERT_TRUE(isHTMLEmbedElement(embedElement));
-  HTMLEmbedElement* embed = toHTMLEmbedElement(embedElement);
+  auto* embed_element = GetDocument().GetElementById("fce");
+  ASSERT_TRUE(embed_element);
+  ASSERT_TRUE(isHTMLEmbedElement(embed_element));
+  HTMLEmbedElement* embed = toHTMLEmbedElement(embed_element);
 
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // We should get |true| as a result and don't trigger a DCHECK.
-  EXPECT_TRUE(static_cast<Element*>(embed)->layoutObjectIsNeeded(
-      ComputedStyle::initialStyle()));
+  EXPECT_TRUE(static_cast<Element*>(embed)->LayoutObjectIsNeeded(
+      ComputedStyle::InitialStyle()));
 
   // This call will update fallback state of the object.
-  object->updatePlugin();
+  object->UpdatePlugin();
 
-  EXPECT_TRUE(object->hasFallbackContent());
-  EXPECT_TRUE(object->useFallbackContent());
-  EXPECT_TRUE(object->willUseFallbackContentAtLayout());
+  EXPECT_TRUE(object->HasFallbackContent());
+  EXPECT_TRUE(object->UseFallbackContent());
+  EXPECT_TRUE(object->WillUseFallbackContentAtLayout());
 
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_TRUE(static_cast<Element*>(embed)->layoutObjectIsNeeded(
-      ComputedStyle::initialStyle()));
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(static_cast<Element*>(embed)->LayoutObjectIsNeeded(
+      ComputedStyle::InitialStyle()));
 }
 
 }  // namespace blink

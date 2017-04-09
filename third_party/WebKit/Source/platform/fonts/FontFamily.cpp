@@ -28,15 +28,15 @@
 namespace blink {
 
 bool operator==(const FontFamily& a, const FontFamily& b) {
-  if (a.family() != b.family())
+  if (a.Family() != b.Family())
     return false;
   const FontFamily* ap;
   const FontFamily* bp;
-  for (ap = a.next(), bp = b.next(); ap != bp;
-       ap = ap->next(), bp = bp->next()) {
+  for (ap = a.Next(), bp = b.Next(); ap != bp;
+       ap = ap->Next(), bp = bp->Next()) {
     if (!ap || !bp)
       return false;
-    if (ap->family() != bp->family())
+    if (ap->Family() != bp->Family())
       return false;
   }
   return true;

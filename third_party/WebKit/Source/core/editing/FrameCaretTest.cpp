@@ -18,56 +18,56 @@ namespace blink {
 class FrameCaretTest : public EditingTestBase {
  public:
   FrameCaretTest()
-      : m_wasRunningLayoutTest(LayoutTestSupport::isRunningLayoutTest()) {
+      : was_running_layout_test_(LayoutTestSupport::IsRunningLayoutTest()) {
     // The caret blink timer doesn't work if isRunningLayoutTest() because
     // LayoutTheme::caretBlinkInterval() returns 0.
-    LayoutTestSupport::setIsRunningLayoutTest(false);
+    LayoutTestSupport::SetIsRunningLayoutTest(false);
   }
   ~FrameCaretTest() override {
-    LayoutTestSupport::setIsRunningLayoutTest(m_wasRunningLayoutTest);
+    LayoutTestSupport::SetIsRunningLayoutTest(was_running_layout_test_);
   }
 
  private:
-  const bool m_wasRunningLayoutTest;
+  const bool was_running_layout_test_;
 };
 
 TEST_F(FrameCaretTest, BlinkAfterTyping) {
-  FrameCaret& caret = selection().frameCaretForTesting();
-  RefPtr<scheduler::FakeWebTaskRunner> taskRunner =
-      adoptRef(new scheduler::FakeWebTaskRunner);
-  taskRunner->setTime(0);
-  caret.recreateCaretBlinkTimerForTesting(taskRunner.get());
+  FrameCaret& caret = Selection().FrameCaretForTesting();
+  RefPtr<scheduler::FakeWebTaskRunner> task_runner =
+      AdoptRef(new scheduler::FakeWebTaskRunner);
+  task_runner->SetTime(0);
+  caret.RecreateCaretBlinkTimerForTesting(task_runner.Get());
   const double kInterval = 10;
-  LayoutTheme::theme().setCaretBlinkInterval(kInterval);
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
-  document().body()->setInnerHTML("<textarea>");
-  Element* editor = toElement(document().body()->firstChild());
+  LayoutTheme::GetTheme().SetCaretBlinkInterval(kInterval);
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+  GetDocument().body()->setInnerHTML("<textarea>");
+  Element* editor = ToElement(GetDocument().body()->FirstChild());
   editor->focus();
-  document().view()->updateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(caret.isActive());
-  EXPECT_FALSE(caret.shouldShowBlockCursor());
-  EXPECT_TRUE(caret.shouldPaintCaretForTesting())
+  EXPECT_TRUE(caret.IsActive());
+  EXPECT_FALSE(caret.ShouldShowBlockCursor());
+  EXPECT_TRUE(caret.ShouldPaintCaretForTesting())
       << "Initially a caret should be in visible cycle.";
 
-  taskRunner->advanceTimeAndRun(kInterval);
-  EXPECT_FALSE(caret.shouldPaintCaretForTesting())
+  task_runner->AdvanceTimeAndRun(kInterval);
+  EXPECT_FALSE(caret.ShouldPaintCaretForTesting())
       << "The caret blinks normally.";
 
-  TypingCommand::insertLineBreak(document());
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_TRUE(caret.shouldPaintCaretForTesting())
+  TypingCommand::InsertLineBreak(GetDocument());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(caret.ShouldPaintCaretForTesting())
       << "The caret should be in visible cycle just after a typing command.";
 
-  taskRunner->advanceTimeAndRun(kInterval - 1);
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_TRUE(caret.shouldPaintCaretForTesting())
+  task_runner->AdvanceTimeAndRun(kInterval - 1);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(caret.ShouldPaintCaretForTesting())
       << "The typing command reset the timer. The caret is still visible.";
 
-  taskRunner->advanceTimeAndRun(1);
-  document().view()->updateAllLifecyclePhases();
-  EXPECT_FALSE(caret.shouldPaintCaretForTesting())
+  task_runner->AdvanceTimeAndRun(1);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(caret.ShouldPaintCaretForTesting())
       << "The caret should blink after the typing command.";
 }
 

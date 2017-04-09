@@ -32,20 +32,20 @@ class SVGTextQuery {
   STACK_ALLOCATED();
 
  public:
-  SVGTextQuery(LayoutObject* layoutObject)
-      : m_queryRootLayoutObject(layoutObject) {}
+  SVGTextQuery(LayoutObject* layout_object)
+      : query_root_layout_object_(layout_object) {}
 
-  unsigned numberOfCharacters() const;
-  float textLength() const;
-  float subStringLength(unsigned startPosition, unsigned length) const;
-  FloatPoint startPositionOfCharacter(unsigned position) const;
-  FloatPoint endPositionOfCharacter(unsigned position) const;
-  float rotationOfCharacter(unsigned position) const;
-  FloatRect extentOfCharacter(unsigned position) const;
-  int characterNumberAtPosition(const FloatPoint&) const;
+  unsigned NumberOfCharacters() const;
+  float TextLength() const;
+  float SubStringLength(unsigned start_position, unsigned length) const;
+  FloatPoint StartPositionOfCharacter(unsigned position) const;
+  FloatPoint EndPositionOfCharacter(unsigned position) const;
+  float RotationOfCharacter(unsigned position) const;
+  FloatRect ExtentOfCharacter(unsigned position) const;
+  int CharacterNumberAtPosition(const FloatPoint&) const;
 
  private:
-  LayoutObject* m_queryRootLayoutObject;
+  LayoutObject* query_root_layout_object_;
 };
 
 }  // namespace blink

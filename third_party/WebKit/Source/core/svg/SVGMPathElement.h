@@ -36,26 +36,26 @@ class SVGMPathElement final : public SVGElement, public SVGURIReference {
 
   ~SVGMPathElement() override;
 
-  SVGPathElement* pathElement();
+  SVGPathElement* PathElement();
 
-  void targetPathChanged();
+  void TargetPathChanged();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGMPathElement(Document&);
 
-  void buildPendingResource() override;
-  void clearResourceReferences();
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  void BuildPendingResource() override;
+  void ClearResourceReferences();
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
-  void notifyParentOfPathChange(ContainerNode*);
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void NotifyParentOfPathChange(ContainerNode*);
 
-  Member<IdTargetObserver> m_targetIdObserver;
+  Member<IdTargetObserver> target_id_observer_;
 };
 
 }  // namespace blink

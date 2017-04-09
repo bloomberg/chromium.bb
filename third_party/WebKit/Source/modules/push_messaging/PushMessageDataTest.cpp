@@ -15,27 +15,27 @@ const char kPushMessageData[] = "Push Message valid data string.";
 TEST(PushMessageDataTest, ValidPayload) {
   // Create a WebString with the test message, then create a
   // PushMessageData from that.
-  WebString s(blink::WebString::fromUTF8(kPushMessageData));
-  PushMessageData* data = PushMessageData::create(s);
+  WebString s(blink::WebString::FromUTF8(kPushMessageData));
+  PushMessageData* data = PushMessageData::Create(s);
 
   ASSERT_NE(data, nullptr);
-  EXPECT_STREQ(kPushMessageData, data->text().utf8().data());
+  EXPECT_STREQ(kPushMessageData, data->text().Utf8().Data());
 }
 
 TEST(PushMessageDataTest, ValidEmptyPayload) {
   // Create a WebString with a valid but empty test message, then create
   // a PushMessageData from that.
   WebString s("");
-  PushMessageData* data = PushMessageData::create(s);
+  PushMessageData* data = PushMessageData::Create(s);
 
   ASSERT_NE(data, nullptr);
-  EXPECT_STREQ("", data->text().utf8().data());
+  EXPECT_STREQ("", data->text().Utf8().Data());
 }
 
 TEST(PushMessageDataTest, NullPayload) {
   // Create a PushMessageData with a null payload.
   WebString s;
-  PushMessageData* data = PushMessageData::create(s);
+  PushMessageData* data = PushMessageData::Create(s);
 
   EXPECT_EQ(data, nullptr);
 }

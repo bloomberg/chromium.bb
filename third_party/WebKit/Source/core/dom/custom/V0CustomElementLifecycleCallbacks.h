@@ -44,31 +44,31 @@ class V0CustomElementLifecycleCallbacks
   virtual ~V0CustomElementLifecycleCallbacks() {}
 
   enum CallbackType {
-    None = 0,
-    CreatedCallback = 1 << 0,
-    AttachedCallback = 1 << 1,
-    DetachedCallback = 1 << 2,
-    AttributeChangedCallback = 1 << 3
+    kNone = 0,
+    kCreatedCallback = 1 << 0,
+    kAttachedCallback = 1 << 1,
+    kDetachedCallback = 1 << 2,
+    kAttributeChangedCallback = 1 << 3
   };
 
-  bool hasCallback(CallbackType type) const { return m_callbackType & type; }
+  bool HasCallback(CallbackType type) const { return callback_type_ & type; }
 
-  virtual void created(Element*) = 0;
-  virtual void attached(Element*) = 0;
-  virtual void detached(Element*) = 0;
-  virtual void attributeChanged(Element*,
+  virtual void Created(Element*) = 0;
+  virtual void Attached(Element*) = 0;
+  virtual void Detached(Element*) = 0;
+  virtual void AttributeChanged(Element*,
                                 const AtomicString& name,
-                                const AtomicString& oldValue,
-                                const AtomicString& newValue) = 0;
+                                const AtomicString& old_value,
+                                const AtomicString& new_value) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
   explicit V0CustomElementLifecycleCallbacks(CallbackType type)
-      : m_callbackType(type) {}
+      : callback_type_(type) {}
 
  private:
-  CallbackType m_callbackType;
+  CallbackType callback_type_;
 };
 
 }  // namespace blink

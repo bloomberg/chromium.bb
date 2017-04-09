@@ -41,33 +41,33 @@ class SVGImage;
 
 class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
  public:
-  static SVGImageChromeClient* create(SVGImage*);
+  static SVGImageChromeClient* Create(SVGImage*);
 
-  bool isSVGImageChromeClient() const override;
+  bool IsSVGImageChromeClient() const override;
 
-  SVGImage* image() const { return m_image; }
+  SVGImage* GetImage() const { return image_; }
 
-  void suspendAnimation();
-  void resumeAnimation();
-  bool isSuspended() const { return m_timelineState >= Suspended; }
+  void SuspendAnimation();
+  void ResumeAnimation();
+  bool IsSuspended() const { return timeline_state_ >= kSuspended; }
 
  private:
   explicit SVGImageChromeClient(SVGImage*);
 
-  void chromeDestroyed() override;
-  void invalidateRect(const IntRect&) override;
-  void scheduleAnimation(FrameViewBase*) override;
+  void ChromeDestroyed() override;
+  void InvalidateRect(const IntRect&) override;
+  void ScheduleAnimation(FrameViewBase*) override;
 
-  void setTimer(std::unique_ptr<TimerBase>);
-  void animationTimerFired(TimerBase*);
+  void SetTimer(std::unique_ptr<TimerBase>);
+  void AnimationTimerFired(TimerBase*);
 
-  SVGImage* m_image;
-  std::unique_ptr<TimerBase> m_animationTimer;
+  SVGImage* image_;
+  std::unique_ptr<TimerBase> animation_timer_;
   enum {
-    Running,
-    Suspended,
-    SuspendedWithAnimationPending,
-  } m_timelineState;
+    kRunning,
+    kSuspended,
+    kSuspendedWithAnimationPending,
+  } timeline_state_;
 
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, TimelineSuspendAndResume);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, ResetAnimation);
@@ -76,8 +76,8 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
 DEFINE_TYPE_CASTS(SVGImageChromeClient,
                   ChromeClient,
                   client,
-                  client->isSVGImageChromeClient(),
-                  client.isSVGImageChromeClient());
+                  client->IsSVGImageChromeClient(),
+                  client.IsSVGImageChromeClient());
 
 }  // namespace blink
 

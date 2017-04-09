@@ -269,7 +269,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
                           base::UTF8ToUTF16("file type")));
     m_value3 = IndexedDBValue("value3", m_blob_info);
 
-    m_key1 = IndexedDBKey(99, blink::WebIDBKeyTypeNumber);
+    m_key1 = IndexedDBKey(99, blink::kWebIDBKeyTypeNumber);
     m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
     m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
   }

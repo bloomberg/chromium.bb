@@ -41,10 +41,10 @@ class WebUserMediaClient {
  public:
   virtual ~WebUserMediaClient() {}
 
-  virtual void requestUserMedia(const WebUserMediaRequest&) = 0;
-  virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
-  virtual void requestMediaDevices(const WebMediaDevicesRequest&) = 0;
-  virtual void setMediaDeviceChangeObserver(
+  virtual void RequestUserMedia(const WebUserMediaRequest&) = 0;
+  virtual void CancelUserMediaRequest(const WebUserMediaRequest&) = 0;
+  virtual void RequestMediaDevices(const WebMediaDevicesRequest&) = 0;
+  virtual void SetMediaDeviceChangeObserver(
       const WebMediaDeviceChangeObserver&) = 0;
 };
 

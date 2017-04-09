@@ -235,9 +235,9 @@ bool PepperToVideoTrackAdapter::Open(MediaStreamRegistryInterface* registry,
     stream = registry->GetMediaStream(url);
   } else {
     stream =
-        blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
+        blink::WebMediaStreamRegistry::LookupMediaStreamDescriptor(GURL(url));
   }
-  if (stream.isNull()) {
+  if (stream.IsNull()) {
     LOG(ERROR) << "PepperToVideoTrackAdapter::Open - invalid url: " << url;
     return false;
   }
@@ -256,14 +256,14 @@ bool PepperToVideoTrackAdapter::Open(MediaStreamRegistryInterface* registry,
   // Create a new webkit video track.
   blink::WebMediaStreamSource webkit_source;
   blink::WebMediaStreamSource::Type type =
-      blink::WebMediaStreamSource::TypeVideo;
-  blink::WebString webkit_track_id = blink::WebString::fromUTF8(track_id);
-  webkit_source.initialize(webkit_track_id, type, webkit_track_id,
+      blink::WebMediaStreamSource::kTypeVideo;
+  blink::WebString webkit_track_id = blink::WebString::FromUTF8(track_id);
+  webkit_source.Initialize(webkit_track_id, type, webkit_track_id,
                            false /* remote */);
-  webkit_source.setExtraData(writer);
+  webkit_source.SetExtraData(writer);
 
   bool track_enabled = true;
-  stream.addTrack(MediaStreamVideoTrack::CreateVideoTrack(
+  stream.AddTrack(MediaStreamVideoTrack::CreateVideoTrack(
       writer, MediaStreamVideoSource::ConstraintsCallback(), track_enabled));
 
   *frame_writer = new PpFrameWriterProxy(writer->AsWeakPtr());

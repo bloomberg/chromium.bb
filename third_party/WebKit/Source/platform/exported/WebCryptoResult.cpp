@@ -35,67 +35,67 @@
 
 namespace blink {
 
-void WebCryptoResult::completeWithError(WebCryptoErrorType errorType,
-                                        const WebString& errorDetails) {
-  if (!cancelled())
-    m_impl->completeWithError(errorType, errorDetails);
-  reset();
+void WebCryptoResult::CompleteWithError(WebCryptoErrorType error_type,
+                                        const WebString& error_details) {
+  if (!Cancelled())
+    impl_->CompleteWithError(error_type, error_details);
+  Reset();
 }
 
-void WebCryptoResult::completeWithBuffer(const void* bytes,
-                                         unsigned bytesSize) {
-  if (!cancelled())
-    m_impl->completeWithBuffer(bytes, bytesSize);
-  reset();
+void WebCryptoResult::CompleteWithBuffer(const void* bytes,
+                                         unsigned bytes_size) {
+  if (!Cancelled())
+    impl_->CompleteWithBuffer(bytes, bytes_size);
+  Reset();
 }
 
-void WebCryptoResult::completeWithJson(const char* utf8Data, unsigned length) {
-  if (!cancelled())
-    m_impl->completeWithJson(utf8Data, length);
-  reset();
+void WebCryptoResult::CompleteWithJson(const char* utf8_data, unsigned length) {
+  if (!Cancelled())
+    impl_->CompleteWithJson(utf8_data, length);
+  Reset();
 }
 
-void WebCryptoResult::completeWithBoolean(bool b) {
-  if (!cancelled())
-    m_impl->completeWithBoolean(b);
-  reset();
+void WebCryptoResult::CompleteWithBoolean(bool b) {
+  if (!Cancelled())
+    impl_->CompleteWithBoolean(b);
+  Reset();
 }
 
-void WebCryptoResult::completeWithKey(const WebCryptoKey& key) {
-  ASSERT(!key.isNull());
-  if (!cancelled())
-    m_impl->completeWithKey(key);
-  reset();
+void WebCryptoResult::CompleteWithKey(const WebCryptoKey& key) {
+  ASSERT(!key.IsNull());
+  if (!Cancelled())
+    impl_->CompleteWithKey(key);
+  Reset();
 }
 
-void WebCryptoResult::completeWithKeyPair(const WebCryptoKey& publicKey,
-                                          const WebCryptoKey& privateKey) {
-  ASSERT(!publicKey.isNull());
-  ASSERT(!privateKey.isNull());
-  if (!cancelled())
-    m_impl->completeWithKeyPair(publicKey, privateKey);
-  reset();
+void WebCryptoResult::CompleteWithKeyPair(const WebCryptoKey& public_key,
+                                          const WebCryptoKey& private_key) {
+  ASSERT(!public_key.IsNull());
+  ASSERT(!private_key.IsNull());
+  if (!Cancelled())
+    impl_->CompleteWithKeyPair(public_key, private_key);
+  Reset();
 }
 
-bool WebCryptoResult::cancelled() const {
-  return m_cancel->cancelled();
+bool WebCryptoResult::Cancelled() const {
+  return cancel_->Cancelled();
 }
 
 WebCryptoResult::WebCryptoResult(CryptoResult* impl,
                                  PassRefPtr<CryptoResultCancel> cancel)
-    : m_impl(impl), m_cancel(cancel) {
-  ASSERT(m_impl.get());
-  ASSERT(m_cancel.get());
+    : impl_(impl), cancel_(cancel) {
+  ASSERT(impl_.Get());
+  ASSERT(cancel_.Get());
 }
 
-void WebCryptoResult::reset() {
-  m_impl.reset();
-  m_cancel.reset();
+void WebCryptoResult::Reset() {
+  impl_.Reset();
+  cancel_.Reset();
 }
 
-void WebCryptoResult::assign(const WebCryptoResult& o) {
-  m_impl = o.m_impl;
-  m_cancel = o.m_cancel;
+void WebCryptoResult::Assign(const WebCryptoResult& o) {
+  impl_ = o.impl_;
+  cancel_ = o.cancel_;
 }
 
 }  // namespace blink

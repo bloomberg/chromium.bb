@@ -9,134 +9,134 @@
 namespace blink {
 
 ResourceLoadTiming::ResourceLoadTiming()
-    : m_requestTime(0),
-      m_proxyStart(0),
-      m_proxyEnd(0),
-      m_dnsStart(0),
-      m_dnsEnd(0),
-      m_connectStart(0),
-      m_connectEnd(0),
-      m_workerStart(0),
-      m_workerReady(0),
-      m_sendStart(0),
-      m_sendEnd(0),
-      m_receiveHeadersEnd(0),
-      m_sslStart(0),
-      m_sslEnd(0),
-      m_pushStart(0),
-      m_pushEnd(0) {}
+    : request_time_(0),
+      proxy_start_(0),
+      proxy_end_(0),
+      dns_start_(0),
+      dns_end_(0),
+      connect_start_(0),
+      connect_end_(0),
+      worker_start_(0),
+      worker_ready_(0),
+      send_start_(0),
+      send_end_(0),
+      receive_headers_end_(0),
+      ssl_start_(0),
+      ssl_end_(0),
+      push_start_(0),
+      push_end_(0) {}
 
-PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::create() {
-  return adoptRef(new ResourceLoadTiming);
+PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::Create() {
+  return AdoptRef(new ResourceLoadTiming);
 }
 
-PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::deepCopy() {
-  RefPtr<ResourceLoadTiming> timing = create();
-  timing->m_requestTime = m_requestTime;
-  timing->m_proxyStart = m_proxyStart;
-  timing->m_proxyEnd = m_proxyEnd;
-  timing->m_dnsStart = m_dnsStart;
-  timing->m_dnsEnd = m_dnsEnd;
-  timing->m_connectStart = m_connectStart;
-  timing->m_connectEnd = m_connectEnd;
-  timing->m_workerStart = m_workerStart;
-  timing->m_workerReady = m_workerReady;
-  timing->m_sendStart = m_sendStart;
-  timing->m_sendEnd = m_sendEnd;
-  timing->m_receiveHeadersEnd = m_receiveHeadersEnd;
-  timing->m_sslStart = m_sslStart;
-  timing->m_sslEnd = m_sslEnd;
-  timing->m_pushStart = m_pushStart;
-  timing->m_pushEnd = m_pushEnd;
-  return timing.release();
+PassRefPtr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
+  RefPtr<ResourceLoadTiming> timing = Create();
+  timing->request_time_ = request_time_;
+  timing->proxy_start_ = proxy_start_;
+  timing->proxy_end_ = proxy_end_;
+  timing->dns_start_ = dns_start_;
+  timing->dns_end_ = dns_end_;
+  timing->connect_start_ = connect_start_;
+  timing->connect_end_ = connect_end_;
+  timing->worker_start_ = worker_start_;
+  timing->worker_ready_ = worker_ready_;
+  timing->send_start_ = send_start_;
+  timing->send_end_ = send_end_;
+  timing->receive_headers_end_ = receive_headers_end_;
+  timing->ssl_start_ = ssl_start_;
+  timing->ssl_end_ = ssl_end_;
+  timing->push_start_ = push_start_;
+  timing->push_end_ = push_end_;
+  return timing.Release();
 }
 
 bool ResourceLoadTiming::operator==(const ResourceLoadTiming& other) const {
-  return m_requestTime == other.m_requestTime &&
-         m_proxyStart == other.m_proxyStart && m_proxyEnd == other.m_proxyEnd &&
-         m_dnsStart == other.m_dnsStart && m_dnsEnd == other.m_dnsEnd &&
-         m_connectStart == other.m_connectStart &&
-         m_connectEnd == other.m_connectEnd &&
-         m_workerStart == other.m_workerStart &&
-         m_workerReady == other.m_workerReady &&
-         m_sendStart == other.m_sendStart && m_sendEnd == other.m_sendEnd &&
-         m_receiveHeadersEnd == other.m_receiveHeadersEnd &&
-         m_sslStart == other.m_sslStart && m_sslEnd == other.m_sslEnd &&
-         m_pushStart == other.m_pushStart && m_pushEnd == other.m_pushEnd;
+  return request_time_ == other.request_time_ &&
+         proxy_start_ == other.proxy_start_ && proxy_end_ == other.proxy_end_ &&
+         dns_start_ == other.dns_start_ && dns_end_ == other.dns_end_ &&
+         connect_start_ == other.connect_start_ &&
+         connect_end_ == other.connect_end_ &&
+         worker_start_ == other.worker_start_ &&
+         worker_ready_ == other.worker_ready_ &&
+         send_start_ == other.send_start_ && send_end_ == other.send_end_ &&
+         receive_headers_end_ == other.receive_headers_end_ &&
+         ssl_start_ == other.ssl_start_ && ssl_end_ == other.ssl_end_ &&
+         push_start_ == other.push_start_ && push_end_ == other.push_end_;
 }
 
 bool ResourceLoadTiming::operator!=(const ResourceLoadTiming& other) const {
   return !(*this == other);
 }
 
-void ResourceLoadTiming::setDnsStart(double dnsStart) {
-  m_dnsStart = dnsStart;
+void ResourceLoadTiming::SetDnsStart(double dns_start) {
+  dns_start_ = dns_start;
 }
 
-void ResourceLoadTiming::setRequestTime(double requestTime) {
-  m_requestTime = requestTime;
+void ResourceLoadTiming::SetRequestTime(double request_time) {
+  request_time_ = request_time;
 }
 
-void ResourceLoadTiming::setProxyStart(double proxyStart) {
-  m_proxyStart = proxyStart;
+void ResourceLoadTiming::SetProxyStart(double proxy_start) {
+  proxy_start_ = proxy_start;
 }
 
-void ResourceLoadTiming::setProxyEnd(double proxyEnd) {
-  m_proxyEnd = proxyEnd;
+void ResourceLoadTiming::SetProxyEnd(double proxy_end) {
+  proxy_end_ = proxy_end;
 }
 
-void ResourceLoadTiming::setDnsEnd(double dnsEnd) {
-  m_dnsEnd = dnsEnd;
+void ResourceLoadTiming::SetDnsEnd(double dns_end) {
+  dns_end_ = dns_end;
 }
 
-void ResourceLoadTiming::setConnectStart(double connectStart) {
-  m_connectStart = connectStart;
+void ResourceLoadTiming::SetConnectStart(double connect_start) {
+  connect_start_ = connect_start;
 }
 
-void ResourceLoadTiming::setConnectEnd(double connectEnd) {
-  m_connectEnd = connectEnd;
+void ResourceLoadTiming::SetConnectEnd(double connect_end) {
+  connect_end_ = connect_end;
 }
 
-void ResourceLoadTiming::setWorkerStart(double workerStart) {
-  m_workerStart = workerStart;
+void ResourceLoadTiming::SetWorkerStart(double worker_start) {
+  worker_start_ = worker_start;
 }
 
-void ResourceLoadTiming::setWorkerReady(double workerReady) {
-  m_workerReady = workerReady;
+void ResourceLoadTiming::SetWorkerReady(double worker_ready) {
+  worker_ready_ = worker_ready;
 }
 
-void ResourceLoadTiming::setSendStart(double sendStart) {
+void ResourceLoadTiming::SetSendStart(double send_start) {
   TRACE_EVENT_MARK_WITH_TIMESTAMP0("blink.user_timing", "requestStart",
-                                   TraceEvent::toTraceTimestamp(sendStart));
-  m_sendStart = sendStart;
+                                   TraceEvent::ToTraceTimestamp(send_start));
+  send_start_ = send_start;
 }
 
-void ResourceLoadTiming::setSendEnd(double sendEnd) {
-  m_sendEnd = sendEnd;
+void ResourceLoadTiming::SetSendEnd(double send_end) {
+  send_end_ = send_end;
 }
 
-void ResourceLoadTiming::setReceiveHeadersEnd(double receiveHeadersEnd) {
-  m_receiveHeadersEnd = receiveHeadersEnd;
+void ResourceLoadTiming::SetReceiveHeadersEnd(double receive_headers_end) {
+  receive_headers_end_ = receive_headers_end;
 }
 
-void ResourceLoadTiming::setSslStart(double sslStart) {
-  m_sslStart = sslStart;
+void ResourceLoadTiming::SetSslStart(double ssl_start) {
+  ssl_start_ = ssl_start;
 }
 
-void ResourceLoadTiming::setSslEnd(double sslEnd) {
-  m_sslEnd = sslEnd;
+void ResourceLoadTiming::SetSslEnd(double ssl_end) {
+  ssl_end_ = ssl_end;
 }
 
-void ResourceLoadTiming::setPushStart(double pushStart) {
-  m_pushStart = pushStart;
+void ResourceLoadTiming::SetPushStart(double push_start) {
+  push_start_ = push_start;
 }
 
-void ResourceLoadTiming::setPushEnd(double pushEnd) {
-  m_pushEnd = pushEnd;
+void ResourceLoadTiming::SetPushEnd(double push_end) {
+  push_end_ = push_end;
 }
 
-double ResourceLoadTiming::calculateMillisecondDelta(double time) const {
-  return time ? (time - m_requestTime) * 1000 : -1;
+double ResourceLoadTiming::CalculateMillisecondDelta(double time) const {
+  return time ? (time - request_time_) * 1000 : -1;
 }
 
 }  // namespace blink

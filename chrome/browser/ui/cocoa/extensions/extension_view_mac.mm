@@ -69,7 +69,7 @@ void ExtensionViewMac::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser ||
-      event.type() == content::NativeWebKeyboardEvent::Char ||
+      event.GetType() == content::NativeWebKeyboardEvent::kChar ||
       extension_host_->extension_host_type() !=
           extensions::VIEW_TYPE_EXTENSION_POPUP)
     return;

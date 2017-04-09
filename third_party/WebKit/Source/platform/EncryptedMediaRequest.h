@@ -21,14 +21,14 @@ class EncryptedMediaRequest
  public:
   virtual ~EncryptedMediaRequest() {}
 
-  virtual WebString keySystem() const = 0;
+  virtual WebString KeySystem() const = 0;
   virtual const WebVector<WebMediaKeySystemConfiguration>&
-  supportedConfigurations() const = 0;
+  SupportedConfigurations() const = 0;
 
-  virtual SecurityOrigin* getSecurityOrigin() const = 0;
+  virtual SecurityOrigin* GetSecurityOrigin() const = 0;
 
-  virtual void requestSucceeded(WebContentDecryptionModuleAccess*) = 0;
-  virtual void requestNotSupported(const WebString& errorMessage) = 0;
+  virtual void RequestSucceeded(WebContentDecryptionModuleAccess*) = 0;
+  virtual void RequestNotSupported(const WebString& error_message) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

@@ -31,15 +31,15 @@ namespace blink {
 // FIXME: This really should be broken up into more than one concept.
 // LocalFrame doesn't need the 3 boundaries in this enum.
 enum TextGranularity {
-  CharacterGranularity,
-  WordGranularity,
-  SentenceGranularity,
-  LineGranularity,
-  ParagraphGranularity,
-  SentenceBoundary,
-  LineBoundary,
-  ParagraphBoundary,
-  DocumentBoundary
+  kCharacterGranularity,
+  kWordGranularity,
+  kSentenceGranularity,
+  kLineGranularity,
+  kParagraphGranularity,
+  kSentenceBoundary,
+  kLineBoundary,
+  kParagraphBoundary,
+  kDocumentBoundary
 };
 
 }  // namespace blink

@@ -214,7 +214,7 @@ def interface_context(interface, interfaces):
     # as in the WebIDL spec?
     is_immutable_prototype = is_global or 'ImmutablePrototype' in extended_attributes
 
-    wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
+    wrapper_class_id = ('kNodeClassId' if inherits_interface(interface.name, 'Node') else 'kObjectClassId')
 
     # [ActiveScriptWrappable] must be accompanied with [DependentLifetime].
     if active_scriptwrappable and not is_dependent_lifetime:
@@ -250,7 +250,7 @@ def interface_context(interface, interfaces):
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,
-        'lifetime': 'Dependent' if is_dependent_lifetime else 'Independent',
+        'lifetime': 'kDependent' if is_dependent_lifetime else 'kIndependent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface),
@@ -551,7 +551,7 @@ def methods_context(interface):
                 implemented_as=implemented_as)
 
         if not interface.has_indexed_elements:
-            iterator_method = generated_iterator_method('iterator', implemented_as='iterator')
+            iterator_method = generated_iterator_method('iterator', implemented_as='GetIterator')
 
         if interface.iterable or interface.maplike or interface.setlike:
             non_overridable_methods = []
@@ -1037,7 +1037,7 @@ def resolution_tests_methods(effective_overloads):
     try:
         method = next(method for idl_type, method in idl_types_methods
                       if idl_type.is_nullable)
-        test = 'isUndefinedOrNull(%s)' % cpp_value
+        test = 'IsUndefinedOrNull(%s)' % cpp_value
         yield test, method
     except StopIteration:
         pass
@@ -1286,11 +1286,11 @@ def property_getter(getter, cpp_arguments):
         if idl_type.use_output_parameter_for_result:
             return 'result.isNull()'
         if idl_type.is_string_type:
-            return 'result.isNull()'
+            return 'result.IsNull()'
         if idl_type.is_interface_type:
             return '!result'
         if idl_type.base_type in ('any', 'object'):
-            return 'result.isEmpty()'
+            return 'result.IsEmpty()'
         return ''
 
     extended_attributes = getter.extended_attributes

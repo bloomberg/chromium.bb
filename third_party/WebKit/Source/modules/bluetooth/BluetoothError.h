@@ -14,20 +14,20 @@ namespace blink {
 // Used when generating DOMExceptions specific to each operation.
 // TODO(crbug.com/684445): Add DescriptorsRetrieval.
 enum class BluetoothOperation {
-  ServicesRetrieval,
-  CharacteristicsRetrieval,
-  DescriptorsRetrieval,
+  kServicesRetrieval,
+  kCharacteristicsRetrieval,
+  kDescriptorsRetrieval,
   GATT,
 };
 
 // These error codes requires detailed error messages.
 enum class BluetoothErrorCode {
-  InvalidService,
-  InvalidCharacteristic,
-  InvalidDescriptor,
-  ServiceNotFound,
-  CharacteristicNotFound,
-  DescriptorNotFound
+  kInvalidService,
+  kInvalidCharacteristic,
+  kInvalidDescriptor,
+  kServiceNotFound,
+  kCharacteristicNotFound,
+  kDescriptorNotFound
 };
 
 class DOMException;
@@ -40,7 +40,7 @@ class BluetoothError {
  public:
   static DOMException* CreateNotConnectedException(BluetoothOperation);
   static DOMException* CreateDOMException(BluetoothErrorCode,
-                                          const String& detailedMessage);
+                                          const String& detailed_message);
 
   static DOMException* CreateDOMException(
       mojom::blink::WebBluetoothResult error);

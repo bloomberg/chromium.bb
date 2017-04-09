@@ -37,9 +37,9 @@ namespace blink {
 
 // FIXME: This code is taken from libexslt 1.1.11; should sync with newer
 // versions.
-static void exsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs) {
+static void ExsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs) {
   xmlChar* strval;
-  xmlNodePtr retNode;
+  xmlNodePtr ret_node;
   xmlXPathObjectPtr ret;
 
   if (nargs != 1) {
@@ -63,9 +63,9 @@ static void exsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs) {
 
   // Create the text node and wrap it in a result set.
   strval = xmlXPathPopString(ctxt);
-  retNode = xmlNewDocText(fragment, strval);
-  xmlAddChild(reinterpret_cast<xmlNodePtr>(fragment), retNode);
-  ret = xmlXPathNewNodeSet(retNode);
+  ret_node = xmlNewDocText(fragment, strval);
+  xmlAddChild(reinterpret_cast<xmlNodePtr>(fragment), ret_node);
+  ret = xmlXPathNewNodeSet(ret_node);
   CHECK(ret);
 
   if (strval)
@@ -74,11 +74,11 @@ static void exsltNodeSetFunction(xmlXPathParserContextPtr ctxt, int nargs) {
   valuePush(ctxt, ret);
 }
 
-void registerXSLTExtensions(xsltTransformContextPtr ctxt) {
+void RegisterXSLTExtensions(xsltTransformContextPtr ctxt) {
   DCHECK(RuntimeEnabledFeatures::xsltEnabled());
   xsltRegisterExtFunction(ctxt, (const xmlChar*)"node-set",
                           (const xmlChar*)"http://exslt.org/common",
-                          exsltNodeSetFunction);
+                          ExsltNodeSetFunction);
 }
 
 }  // namespace blink

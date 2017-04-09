@@ -78,7 +78,7 @@ WebIDBCursorImpl::~WebIDBCursorImpl() {
   io_runner_->DeleteSoon(FROM_HERE, helper_);
 }
 
-void WebIDBCursorImpl::advance(unsigned long count,
+void WebIDBCursorImpl::Advance(unsigned long count,
                                WebIDBCallbacks* callbacks_ptr) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   if (count <= prefetch_keys_.size()) {
@@ -101,16 +101,16 @@ void WebIDBCursorImpl::advance(unsigned long count,
 
 void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
                                         WebIDBCallbacks* callbacks_ptr) {
-  continueFunction(key, WebIDBKey::createNull(), callbacks_ptr);
+  ContinueFunction(key, WebIDBKey::CreateNull(), callbacks_ptr);
 }
 
-void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
+void WebIDBCursorImpl::ContinueFunction(const WebIDBKey& key,
                                         const WebIDBKey& primary_key,
                                         WebIDBCallbacks* callbacks_ptr) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key.keyType() == blink::WebIDBKeyTypeNull &&
-      primary_key.keyType() == blink::WebIDBKeyTypeNull) {
+  if (key.KeyType() == blink::kWebIDBKeyTypeNull &&
+      primary_key.KeyType() == blink::kWebIDBKeyTypeNull) {
     // No key(s), so this would qualify for a prefetch.
     ++continue_count_;
 
@@ -159,7 +159,7 @@ void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
                  base::Passed(&callbacks_impl)));
 }
 
-void WebIDBCursorImpl::postSuccessHandlerCallback() {
+void WebIDBCursorImpl::PostSuccessHandlerCallback() {
   pending_onsuccess_callbacks_--;
 
   // If the onsuccess callback called continue()/advance() on the cursor
@@ -225,7 +225,7 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
     ResetPrefetchCache();
   }
 
-  callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
+  callbacks->OnSuccess(WebIDBKeyBuilder::Build(key),
                        WebIDBKeyBuilder::Build(primary_key), value);
 }
 
@@ -241,8 +241,8 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   // Ack any unused blobs.
   std::vector<std::string> uuids;
   for (const auto& value : prefetch_values_) {
-    for (size_t i = 0, size = value.webBlobInfo.size(); i < size; ++i)
-      uuids.push_back(value.webBlobInfo[i].uuid().latin1());
+    for (size_t i = 0, size = value.web_blob_info.size(); i < size; ++i)
+      uuids.push_back(value.web_blob_info[i].Uuid().Latin1());
   }
 
   // Reset the back-end cursor.

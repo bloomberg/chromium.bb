@@ -13,51 +13,51 @@
 
 namespace blink {
 
-enum class TestParam { Audio, Video };
+enum class TestParam { kAudio, kVideo };
 
 class HTMLMediaElementTest : public ::testing::TestWithParam<TestParam> {
  protected:
   void SetUp() {
-    m_dummyPageHolder = DummyPageHolder::create();
+    dummy_page_holder_ = DummyPageHolder::Create();
 
-    if (GetParam() == TestParam::Audio)
-      m_media = HTMLAudioElement::create(m_dummyPageHolder->document());
+    if (GetParam() == TestParam::kAudio)
+      media_ = HTMLAudioElement::Create(dummy_page_holder_->GetDocument());
     else
-      m_media = HTMLVideoElement::create(m_dummyPageHolder->document());
+      media_ = HTMLVideoElement::Create(dummy_page_holder_->GetDocument());
   }
 
-  HTMLMediaElement* media() { return m_media.get(); }
-  void setCurrentSrc(const String& src) {
-    KURL url(ParsedURLString, src);
-    media()->m_currentSrc = url;
+  HTMLMediaElement* Media() { return media_.Get(); }
+  void SetCurrentSrc(const String& src) {
+    KURL url(kParsedURLString, src);
+    Media()->current_src_ = url;
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<HTMLMediaElement> m_media;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<HTMLMediaElement> media_;
 };
 
 INSTANTIATE_TEST_CASE_P(Audio,
                         HTMLMediaElementTest,
-                        ::testing::Values(TestParam::Audio));
+                        ::testing::Values(TestParam::kAudio));
 INSTANTIATE_TEST_CASE_P(Video,
                         HTMLMediaElementTest,
-                        ::testing::Values(TestParam::Video));
+                        ::testing::Values(TestParam::kVideo));
 
 TEST_P(HTMLMediaElementTest, effectiveMediaVolume) {
   struct TestData {
     double volume;
     bool muted;
-    double effectiveVolume;
+    double effective_volume;
   } test_data[] = {
       {0.0, false, 0.0}, {0.5, false, 0.5}, {1.0, false, 1.0},
       {0.0, true, 0.0},  {0.5, true, 0.0},  {1.0, true, 0.0},
   };
 
   for (const auto& data : test_data) {
-    media()->setVolume(data.volume);
-    media()->setMuted(data.muted);
-    EXPECT_EQ(data.effectiveVolume, media()->effectiveMediaVolume());
+    Media()->setVolume(data.volume);
+    Media()->setMuted(data.muted);
+    EXPECT_EQ(data.effective_volume, Media()->EffectiveMediaVolume());
   }
 }
 
@@ -70,7 +70,7 @@ enum class TestURLScheme {
   kBlob,
 };
 
-String srcSchemeToURL(TestURLScheme scheme) {
+String SrcSchemeToURL(TestURLScheme scheme) {
   switch (scheme) {
     case TestURLScheme::kHttp:
       return "http://example.com/foo.mp4";
@@ -87,18 +87,18 @@ String srcSchemeToURL(TestURLScheme scheme) {
     default:
       NOTREACHED();
   }
-  return emptyString;
+  return g_empty_string;
 }
 
 TEST_P(HTMLMediaElementTest, preloadType) {
   struct TestData {
-    bool dataSaverEnabled;
-    bool forcePreloadNoneForMediaElements;
-    bool isCellular;
-    TestURLScheme srcScheme;
-    AtomicString preloadToSet;
-    AtomicString preloadExpected;
-  } testData[] = {
+    bool data_saver_enabled;
+    bool force_preload_none_for_media_elements;
+    bool is_cellular;
+    TestURLScheme src_scheme;
+    AtomicString preload_to_set;
+    AtomicString preload_expected;
+  } test_data[] = {
       // Tests for conditions in which preload type should be overriden to
       // "none".
       {false, true, false, TestURLScheme::kHttp, "auto", "none"},
@@ -119,20 +119,21 @@ TEST_P(HTMLMediaElementTest, preloadType) {
   };
 
   int index = 0;
-  for (const auto& data : testData) {
-    media()->document().settings()->setDataSaverEnabled(data.dataSaverEnabled);
-    media()->document().settings()->setForcePreloadNoneForMediaElements(
-        data.forcePreloadNoneForMediaElements);
-    if (data.isCellular) {
-      networkStateNotifier().setOverride(
-          true, WebConnectionType::WebConnectionTypeCellular3G, 2.0);
+  for (const auto& data : test_data) {
+    Media()->GetDocument().GetSettings()->SetDataSaverEnabled(
+        data.data_saver_enabled);
+    Media()->GetDocument().GetSettings()->SetForcePreloadNoneForMediaElements(
+        data.force_preload_none_for_media_elements);
+    if (data.is_cellular) {
+      GetNetworkStateNotifier().SetOverride(
+          true, WebConnectionType::kWebConnectionTypeCellular3G, 2.0);
     } else {
-      networkStateNotifier().clearOverride();
+      GetNetworkStateNotifier().ClearOverride();
     }
-    setCurrentSrc(srcSchemeToURL(data.srcScheme));
-    media()->setPreload(data.preloadToSet);
+    SetCurrentSrc(SrcSchemeToURL(data.src_scheme));
+    Media()->setPreload(data.preload_to_set);
 
-    EXPECT_EQ(data.preloadExpected, media()->preload())
+    EXPECT_EQ(data.preload_expected, Media()->preload())
         << "preload type differs at index" << index;
     ++index;
   }

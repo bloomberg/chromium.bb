@@ -97,155 +97,155 @@ class PLATFORM_EXPORT DrawingBuffer
   };
 
   enum PreserveDrawingBuffer {
-    Preserve,
-    Discard,
+    kPreserve,
+    kDiscard,
   };
   enum WebGLVersion {
-    WebGL1,
-    WebGL2,
+    kWebGL1,
+    kWebGL2,
   };
 
   enum ChromiumImageUsage {
-    AllowChromiumImage,
-    DisallowChromiumImage,
+    kAllowChromiumImage,
+    kDisallowChromiumImage,
   };
 
-  static PassRefPtr<DrawingBuffer> create(
+  static PassRefPtr<DrawingBuffer> Create(
       std::unique_ptr<WebGraphicsContext3DProvider>,
       Client*,
       const IntSize&,
-      bool premultipliedAlpha,
-      bool wantAlphaChannel,
-      bool wantDepthBuffer,
-      bool wantStencilBuffer,
-      bool wantAntialiasing,
+      bool premultiplied_alpha,
+      bool want_alpha_channel,
+      bool want_depth_buffer,
+      bool want_stencil_buffer,
+      bool want_antialiasing,
       PreserveDrawingBuffer,
       WebGLVersion,
       ChromiumImageUsage);
-  static void forceNextDrawingBufferCreationToFail();
+  static void ForceNextDrawingBufferCreationToFail();
 
   ~DrawingBuffer() override;
 
   // Destruction will be completed after all mailboxes are released.
-  void beginDestruction();
+  void BeginDestruction();
 
   // Issues a glClear() on all framebuffers associated with this DrawingBuffer.
-  void clearFramebuffers(GLbitfield clearMask);
+  void ClearFramebuffers(GLbitfield clear_mask);
 
   // Indicates whether the DrawingBuffer internally allocated a packed
   // depth-stencil renderbuffer in the situation where the end user only asked
   // for a depth buffer. In this case, we need to upgrade clears of the depth
   // buffer to clears of the depth and stencil buffers in order to avoid
   // performance problems on some GPUs.
-  bool hasImplicitStencilBuffer() const { return m_hasImplicitStencilBuffer; }
-  bool hasDepthBuffer() const { return !!m_depthStencilBuffer; }
-  bool hasStencilBuffer() const { return !!m_depthStencilBuffer; }
+  bool HasImplicitStencilBuffer() const { return has_implicit_stencil_buffer_; }
+  bool HasDepthBuffer() const { return !!depth_stencil_buffer_; }
+  bool HasStencilBuffer() const { return !!depth_stencil_buffer_; }
 
   // Given the desired buffer size, provides the largest dimensions that will
   // fit in the pixel budget.
-  static IntSize adjustSize(const IntSize& desiredSize,
-                            const IntSize& curSize,
-                            int maxTextureSize);
+  static IntSize AdjustSize(const IntSize& desired_size,
+                            const IntSize& cur_size,
+                            int max_texture_size);
 
   // Resizes (or allocates if necessary) all buffers attached to the default
   // framebuffer. Returns whether the operation was successful.
-  bool resize(const IntSize&);
+  bool Resize(const IntSize&);
 
   // Bind the default framebuffer to |target|. |target| must be
   // GL_FRAMEBUFFER, GL_READ_FRAMEBUFFER, or GL_DRAW_FRAMEBUFFER.
-  void bind(GLenum target);
-  IntSize size() const { return m_size; }
+  void Bind(GLenum target);
+  IntSize size() const { return size_; }
 
   // Resolves the multisample color buffer to the normal color buffer and leaves
   // the resolved color buffer bound to GL_READ_FRAMEBUFFER and
   // GL_DRAW_FRAMEBUFFER.
-  void resolveAndBindForReadAndDraw();
+  void ResolveAndBindForReadAndDraw();
 
-  bool multisample() const;
+  bool Multisample() const;
 
-  bool discardFramebufferSupported() const {
-    return m_discardFramebufferSupported;
+  bool DiscardFramebufferSupported() const {
+    return discard_framebuffer_supported_;
   }
 
   // Returns false if the contents had previously been marked as changed and
   // have not yet been resolved.
-  bool markContentsChanged();
-  void setBufferClearNeeded(bool);
-  bool bufferClearNeeded() const;
-  void setIsHidden(bool);
-  void setFilterQuality(SkFilterQuality);
+  bool MarkContentsChanged();
+  void SetBufferClearNeeded(bool);
+  bool BufferClearNeeded() const;
+  void SetIsHidden(bool);
+  void SetFilterQuality(SkFilterQuality);
 
   // Whether the target for draw operations has format GL_RGBA, but is
   // emulating format GL_RGB. When the target's storage is first
   // allocated, its alpha channel must be cleared to 1. All future drawing
   // operations must use a color mask with alpha=GL_FALSE.
-  bool requiresAlphaChannelToBePreserved();
+  bool RequiresAlphaChannelToBePreserved();
 
   // Similar to requiresAlphaChannelToBePreserved(), but always targets the
   // default framebuffer.
-  bool defaultBufferRequiresAlphaChannelToBePreserved();
+  bool DefaultBufferRequiresAlphaChannelToBePreserved();
 
-  WebLayer* platformLayer();
+  WebLayer* PlatformLayer();
 
-  gpu::gles2::GLES2Interface* contextGL();
-  WebGraphicsContext3DProvider* contextProvider();
+  gpu::gles2::GLES2Interface* ContextGL();
+  WebGraphicsContext3DProvider* ContextProvider();
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(
-      cc::TextureMailbox* outMailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) override;
+  bool PrepareTextureMailbox(cc::TextureMailbox* out_mailbox,
+                             std::unique_ptr<cc::SingleReleaseCallback>*
+                                 out_release_callback) override;
 
   // Returns a StaticBitmapImage backed by a texture containing the current
   // contents of the front buffer. This is done without any pixel copies. The
   // texture in the ImageBitmap is from the active ContextProvider on the
   // DrawingBuffer.
-  PassRefPtr<StaticBitmapImage> transferToStaticBitmapImage();
+  PassRefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
 
-  bool copyToPlatformTexture(gpu::gles2::GLES2Interface*,
+  bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLuint texture,
-                             GLenum internalFormat,
-                             GLenum destType,
+                             GLenum internal_format,
+                             GLenum dest_type,
                              GLint level,
-                             bool premultiplyAlpha,
-                             bool flipY,
-                             const IntPoint& destTextureOffset,
-                             const IntRect& sourceSubRectangle,
+                             bool premultiply_alpha,
+                             bool flip_y,
+                             const IntPoint& dest_texture_offset,
+                             const IntRect& source_sub_rectangle,
                              SourceDrawingBuffer);
 
-  bool paintRenderingResultsToImageData(int&,
+  bool PaintRenderingResultsToImageData(int&,
                                         int&,
                                         SourceDrawingBuffer,
                                         WTF::ArrayBufferContents&);
 
-  int sampleCount() const { return m_sampleCount; }
-  bool explicitResolveOfMultisampleData() const {
-    return m_antiAliasingMode == MSAAExplicitResolve;
+  int SampleCount() const { return sample_count_; }
+  bool ExplicitResolveOfMultisampleData() const {
+    return anti_aliasing_mode_ == kMSAAExplicitResolve;
   }
 
   // Rebind the read and draw framebuffers that WebGL is expecting.
-  void restoreFramebufferBindings();
+  void RestoreFramebufferBindings();
 
   // Restore all state that may have been dirtied by any call.
-  void restoreAllState();
+  void RestoreAllState();
 
-  void addNewMailboxCallback(std::unique_ptr<WTF::Closure> closure) {
-    m_newMailboxCallback = std::move(closure);
+  void AddNewMailboxCallback(std::unique_ptr<WTF::Closure> closure) {
+    new_mailbox_callback_ = std::move(closure);
   }
 
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,
                 std::unique_ptr<Extensions3DUtil>,
                 Client*,
-                bool discardFramebufferSupported,
-                bool wantAlphaChannel,
-                bool premultipliedAlpha,
+                bool discard_framebuffer_supported,
+                bool want_alpha_channel,
+                bool premultiplied_alpha,
                 PreserveDrawingBuffer,
                 WebGLVersion,
-                bool wantsDepth,
-                bool wantsStencil,
+                bool wants_depth,
+                bool wants_stencil,
                 ChromiumImageUsage);
 
-  bool initialize(const IntSize&, bool useMultisampling);
+  bool Initialize(const IntSize&, bool use_multisampling);
 
   // Shared memory bitmaps that were released by the compositor and can be used
   // again by this DrawingBuffer.
@@ -253,7 +253,7 @@ class PLATFORM_EXPORT DrawingBuffer
     std::unique_ptr<cc::SharedBitmap> bitmap;
     IntSize size;
   };
-  Vector<RecycledBitmap> m_recycledBitmaps;
+  Vector<RecycledBitmap> recycled_bitmaps_;
 
  private:
   friend class ScopedStateRestorer;
@@ -267,271 +267,271 @@ class PLATFORM_EXPORT DrawingBuffer
     ~ScopedStateRestorer();
 
     // Mark parts of the state that are dirty and need to be restored.
-    void setClearStateDirty() { m_clearStateDirty = true; }
-    void setPixelPackAlignmentDirty() { m_pixelPackAlignmentDirty = true; }
-    void setTextureBindingDirty() { m_textureBindingDirty = true; }
-    void setRenderbufferBindingDirty() { m_renderbufferBindingDirty = true; }
-    void setFramebufferBindingDirty() { m_framebufferBindingDirty = true; }
-    void setPixelUnpackBufferBindingDirty() {
-      m_pixelUnpackBufferBindingDirty = true;
+    void SetClearStateDirty() { clear_state_dirty_ = true; }
+    void SetPixelPackAlignmentDirty() { pixel_pack_alignment_dirty_ = true; }
+    void SetTextureBindingDirty() { texture_binding_dirty_ = true; }
+    void SetRenderbufferBindingDirty() { renderbuffer_binding_dirty_ = true; }
+    void SetFramebufferBindingDirty() { framebuffer_binding_dirty_ = true; }
+    void SetPixelUnpackBufferBindingDirty() {
+      pixel_unpack_buffer_binding_dirty_ = true;
     }
 
    private:
-    RefPtr<DrawingBuffer> m_drawingBuffer;
+    RefPtr<DrawingBuffer> drawing_buffer_;
     // The previous state restorer, in case restorers are nested.
-    ScopedStateRestorer* m_previousStateRestorer = nullptr;
-    bool m_clearStateDirty = false;
-    bool m_pixelPackAlignmentDirty = false;
-    bool m_textureBindingDirty = false;
-    bool m_renderbufferBindingDirty = false;
-    bool m_framebufferBindingDirty = false;
-    bool m_pixelUnpackBufferBindingDirty = false;
+    ScopedStateRestorer* previous_state_restorer_ = nullptr;
+    bool clear_state_dirty_ = false;
+    bool pixel_pack_alignment_dirty_ = false;
+    bool texture_binding_dirty_ = false;
+    bool renderbuffer_binding_dirty_ = false;
+    bool framebuffer_binding_dirty_ = false;
+    bool pixel_unpack_buffer_binding_dirty_ = false;
   };
 
   // All parameters necessary to generate the texture for the ColorBuffer.
   struct ColorBufferParameters {
     DISALLOW_NEW();
     GLenum target = 0;
-    GLenum internalColorFormat = 0;
+    GLenum internal_color_format = 0;
 
     // The internal color format used when allocating storage for the
     // texture. This may be different from internalColorFormat if RGB
     // emulation is required.
-    GLenum creationInternalColorFormat = 0;
-    GLenum colorFormat = 0;
+    GLenum creation_internal_color_format = 0;
+    GLenum color_format = 0;
   };
 
   struct ColorBuffer : public RefCounted<ColorBuffer> {
     ColorBuffer(DrawingBuffer*,
                 const ColorBufferParameters&,
                 const IntSize&,
-                GLuint textureId,
-                GLuint imageId,
+                GLuint texture_id,
+                GLuint image_id,
                 std::unique_ptr<gfx::GpuMemoryBuffer>);
     ~ColorBuffer();
 
     // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
     // by the beginDestruction method, which will eventually drain all of its
     // ColorBuffers.
-    RefPtr<DrawingBuffer> drawingBuffer;
+    RefPtr<DrawingBuffer> drawing_buffer;
 
     const ColorBufferParameters parameters;
     const IntSize size;
 
-    const GLuint textureId = 0;
-    const GLuint imageId = 0;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer;
+    const GLuint texture_id = 0;
+    const GLuint image_id = 0;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
 
     // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;
 
     // The sync token for when this buffer was sent to the compositor.
-    gpu::SyncToken produceSyncToken;
+    gpu::SyncToken produce_sync_token;
 
     // The sync token for when this buffer was received back from the
     // compositor.
-    gpu::SyncToken receiveSyncToken;
+    gpu::SyncToken receive_sync_token;
 
    private:
     WTF_MAKE_NONCOPYABLE(ColorBuffer);
   };
 
   // The same as clearFramebuffers(), but leaves GL state dirty.
-  void clearFramebuffersInternal(GLbitfield clearMask);
+  void ClearFramebuffersInternal(GLbitfield clear_mask);
 
   // The same as reset(), but leaves GL state dirty.
-  bool resizeFramebufferInternal(const IntSize&);
+  bool ResizeFramebufferInternal(const IntSize&);
 
   // The same as resolveAndBindForReadAndDraw(), but leaves GL state dirty.
-  void resolveMultisampleFramebufferInternal();
+  void ResolveMultisampleFramebufferInternal();
 
   // Resolves m_multisampleFBO into m_fbo, if multisampling.
-  void resolveIfNeeded();
+  void ResolveIfNeeded();
 
-  bool prepareTextureMailboxInternal(
-      cc::TextureMailbox* outMailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
-      bool forceGpuResult);
+  bool PrepareTextureMailboxInternal(
+      cc::TextureMailbox* out_mailbox,
+      std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback,
+      bool force_gpu_result);
 
   // Helper functions to be called only by prepareTextureMailboxInternal.
-  bool finishPrepareTextureMailboxGpu(
-      cc::TextureMailbox* outMailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback);
-  bool finishPrepareTextureMailboxSoftware(
-      cc::TextureMailbox* outMailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback);
+  bool FinishPrepareTextureMailboxGpu(
+      cc::TextureMailbox* out_mailbox,
+      std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback);
+  bool FinishPrepareTextureMailboxSoftware(
+      cc::TextureMailbox* out_mailbox,
+      std::unique_ptr<cc::SingleReleaseCallback>* out_release_callback);
 
   // Callbacks for mailboxes given to the compositor from
   // finishPrepareTextureMailboxGpu and finishPrepareTextureMailboxSoftware.
-  void mailboxReleasedGpu(RefPtr<ColorBuffer>,
+  void MailboxReleasedGpu(RefPtr<ColorBuffer>,
                           const gpu::SyncToken&,
-                          bool lostResource);
-  void mailboxReleasedSoftware(std::unique_ptr<cc::SharedBitmap>,
+                          bool lost_resource);
+  void MailboxReleasedSoftware(std::unique_ptr<cc::SharedBitmap>,
                                const IntSize&,
                                const gpu::SyncToken&,
-                               bool lostResource);
+                               bool lost_resource);
 
   // The texture parameters to use for a texture that will be backed by a
   // CHROMIUM_image, backed by a GpuMemoryBuffer.
-  ColorBufferParameters gpuMemoryBufferColorBufferParameters();
+  ColorBufferParameters GpuMemoryBufferColorBufferParameters();
 
   // The texture parameters to use for an ordinary GL texture.
-  ColorBufferParameters textureColorBufferParameters();
+  ColorBufferParameters TextureColorBufferParameters();
 
   // Attempts to allocator storage for, or resize all buffers. Returns whether
   // the operation was successful.
-  bool resizeDefaultFramebuffer(const IntSize&);
+  bool ResizeDefaultFramebuffer(const IntSize&);
 
-  void clearPlatformLayer();
+  void ClearPlatformLayer();
 
-  std::unique_ptr<cc::SharedBitmap> createOrRecycleBitmap();
+  std::unique_ptr<cc::SharedBitmap> CreateOrRecycleBitmap();
 
   // Updates the current size of the buffer, ensuring that
   // s_currentResourceUsePixels is updated.
-  void setSize(const IntSize& size);
+  void SetSize(const IntSize& size);
 
   // This is the order of bytes to use when doing a readback.
-  enum ReadbackOrder { ReadbackRGBA, ReadbackSkia };
+  enum ReadbackOrder { kReadbackRGBA, kReadbackSkia };
 
   // Helper function which does a readback from the currently-bound
   // framebuffer into a buffer of a certain size with 4-byte pixels.
-  void readBackFramebuffer(unsigned char* pixels,
+  void ReadBackFramebuffer(unsigned char* pixels,
                            int width,
                            int height,
                            ReadbackOrder,
                            WebGLImageConversion::AlphaOp);
 
   // Helper function to flip a bitmap vertically.
-  void flipVertically(uint8_t* data, int width, int height);
+  void FlipVertically(uint8_t* data, int width, int height);
 
   // If RGB emulation is required, then the CHROMIUM image's alpha channel
   // must be immediately cleared after it is bound to a texture. Nothing
   // should be allowed to change the alpha channel after this.
-  void clearChromiumImageAlpha(const ColorBuffer&);
+  void ClearChromiumImageAlpha(const ColorBuffer&);
 
   // Tries to create a CHROMIUM_image backed texture if
   // RuntimeEnabledFeatures::webGLImageChromiumEnabled() is true. On failure,
   // or if the flag is false, creates a default texture. Always returns a valid
   // ColorBuffer.
-  RefPtr<ColorBuffer> createColorBuffer(const IntSize&);
+  RefPtr<ColorBuffer> CreateColorBuffer(const IntSize&);
 
   // Creates or recycles a ColorBuffer of size |m_size|.
-  PassRefPtr<ColorBuffer> createOrRecycleColorBuffer();
+  PassRefPtr<ColorBuffer> CreateOrRecycleColorBuffer();
 
   // Attaches |m_backColorBuffer| to |m_fbo|, which is always the source for
   // read operations.
-  void attachColorBufferToReadFramebuffer();
+  void AttachColorBufferToReadFramebuffer();
 
   // Whether the WebGL client desires an explicit resolve. This is
   // implemented by forwarding all draw operations to a multisample
   // renderbuffer, which is resolved before any read operations or swaps.
-  bool wantExplicitResolve();
+  bool WantExplicitResolve();
 
   // Whether the WebGL client wants a depth or stencil buffer.
-  bool wantDepthOrStencil();
+  bool WantDepthOrStencil();
 
   // The format to use when creating a multisampled renderbuffer.
-  GLenum getMultisampledRenderbufferFormat();
+  GLenum GetMultisampledRenderbufferFormat();
 
   // Weak, reset by beginDestruction.
-  Client* m_client = nullptr;
+  Client* client_ = nullptr;
 
-  const PreserveDrawingBuffer m_preserveDrawingBuffer;
-  const WebGLVersion m_webGLVersion;
+  const PreserveDrawingBuffer preserve_drawing_buffer_;
+  const WebGLVersion web_gl_version_;
 
-  std::unique_ptr<WebGraphicsContext3DProviderWrapper> m_contextProvider;
+  std::unique_ptr<WebGraphicsContext3DProviderWrapper> context_provider_;
   // Lifetime is tied to the m_contextProvider.
-  gpu::gles2::GLES2Interface* m_gl;
-  std::unique_ptr<Extensions3DUtil> m_extensionsUtil;
-  IntSize m_size = {-1, -1};
-  const bool m_discardFramebufferSupported;
-  const bool m_wantAlphaChannel;
-  const bool m_premultipliedAlpha;
-  const bool m_softwareRendering;
-  bool m_hasImplicitStencilBuffer = false;
-  bool m_storageTextureSupported = false;
+  gpu::gles2::GLES2Interface* gl_;
+  std::unique_ptr<Extensions3DUtil> extensions_util_;
+  IntSize size_ = {-1, -1};
+  const bool discard_framebuffer_supported_;
+  const bool want_alpha_channel_;
+  const bool premultiplied_alpha_;
+  const bool software_rendering_;
+  bool has_implicit_stencil_buffer_ = false;
+  bool storage_texture_supported_ = false;
 
-  std::unique_ptr<WTF::Closure> m_newMailboxCallback;
+  std::unique_ptr<WTF::Closure> new_mailbox_callback_;
 
   // The current state restorer, which is used to track state dirtying. It is in
   // error to dirty state shared with WebGL while there is no existing state
   // restorer. It is also in error to instantiate two state restorers at once.
-  ScopedStateRestorer* m_stateRestorer = nullptr;
+  ScopedStateRestorer* state_restorer_ = nullptr;
 
   // This is used when the user requests either a depth or stencil buffer.
-  GLuint m_depthStencilBuffer = 0;
+  GLuint depth_stencil_buffer_ = 0;
 
   // When wantExplicitResolve() returns true, the target of all draw
   // operations.
-  GLuint m_multisampleFBO = 0;
+  GLuint multisample_fbo_ = 0;
 
   // The id of the renderbuffer storage for |m_multisampleFBO|.
-  GLuint m_multisampleRenderbuffer = 0;
+  GLuint multisample_renderbuffer_ = 0;
 
   // When wantExplicitResolve() returns false, the target of all draw and
   // read operations. When wantExplicitResolve() returns true, the target of
   // all read operations.
-  GLuint m_fbo = 0;
+  GLuint fbo_ = 0;
 
   // The ColorBuffer that backs |m_fbo|.
-  RefPtr<ColorBuffer> m_backColorBuffer;
+  RefPtr<ColorBuffer> back_color_buffer_;
 
   // The ColorBuffer that was most recently presented to the compositor by
   // prepareTextureMailboxInternal.
-  RefPtr<ColorBuffer> m_frontColorBuffer;
+  RefPtr<ColorBuffer> front_color_buffer_;
 
   // True if our contents have been modified since the last presentation of this
   // buffer.
-  bool m_contentsChanged = true;
+  bool contents_changed_ = true;
 
   // True if resolveIfNeeded() has been called since the last time
   // markContentsChanged() had been called.
-  bool m_contentsChangeResolved = false;
-  bool m_bufferClearNeeded = false;
+  bool contents_change_resolved_ = false;
+  bool buffer_clear_needed_ = false;
 
   // Whether the client wants a depth or stencil buffer.
-  const bool m_wantDepth;
-  const bool m_wantStencil;
+  const bool want_depth_;
+  const bool want_stencil_;
 
   // The color space of this buffer. All buffers are assumed to be sRGB until
   // a mechanism for creating otherwise is exposed to the web.
-  const gfx::ColorSpace m_colorSpace;
+  const gfx::ColorSpace color_space_;
 
   enum AntialiasingMode {
-    None,
-    MSAAImplicitResolve,
-    MSAAExplicitResolve,
-    ScreenSpaceAntialiasing,
+    kNone,
+    kMSAAImplicitResolve,
+    kMSAAExplicitResolve,
+    kScreenSpaceAntialiasing,
   };
 
-  AntialiasingMode m_antiAliasingMode = None;
+  AntialiasingMode anti_aliasing_mode_ = kNone;
 
-  int m_maxTextureSize = 0;
-  int m_sampleCount = 0;
-  bool m_destructionInProgress = false;
-  bool m_isHidden = false;
-  SkFilterQuality m_filterQuality = kLow_SkFilterQuality;
+  int max_texture_size_ = 0;
+  int sample_count_ = 0;
+  bool destruction_in_progress_ = false;
+  bool is_hidden_ = false;
+  SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
-  std::unique_ptr<WebExternalTextureLayer> m_layer;
+  std::unique_ptr<WebExternalTextureLayer> layer_;
 
   // Mailboxes that were released by the compositor can be used again by this
   // DrawingBuffer.
-  Deque<RefPtr<ColorBuffer>> m_recycledColorBufferQueue;
+  Deque<RefPtr<ColorBuffer>> recycled_color_buffer_queue_;
 
   // If the width and height of the Canvas's backing store don't
   // match those that we were given in the most recent call to
   // reshape(), then we need an intermediate bitmap to read back the
   // frame buffer into. This seems to happen when CSS styles are
   // used to resize the Canvas.
-  SkBitmap m_resizingBitmap;
+  SkBitmap resizing_bitmap_;
 
   // In the case of OffscreenCanvas, we do not want to enable the
   // WebGLImageChromium flag, so we replace all the
   // RuntimeEnabledFeatures::webGLImageChromiumEnabled() call with
   // shouldUseChromiumImage() calls, and set m_chromiumImageUsage to
   // DisallowChromiumImage in the case of OffscreenCanvas.
-  ChromiumImageUsage m_chromiumImageUsage;
-  bool shouldUseChromiumImage();
+  ChromiumImageUsage chromium_image_usage_;
+  bool ShouldUseChromiumImage();
 };
 
 }  // namespace blink

@@ -33,76 +33,77 @@
 namespace blink {
 
 XSLImportRule::XSLImportRule(XSLStyleSheet* parent, const String& href)
-    : m_parentStyleSheet(parent), m_strHref(href), m_loading(false) {}
+    : parent_style_sheet_(parent), str_href_(href), loading_(false) {}
 
 XSLImportRule::~XSLImportRule() {}
 
-void XSLImportRule::setXSLStyleSheet(const String& href,
-                                     const KURL& baseURL,
+void XSLImportRule::SetXSLStyleSheet(const String& href,
+                                     const KURL& base_url,
                                      const String& sheet) {
-  if (m_styleSheet)
-    m_styleSheet->setParentStyleSheet(0);
+  if (style_sheet_)
+    style_sheet_->SetParentStyleSheet(0);
 
-  m_styleSheet = XSLStyleSheet::create(this, href, baseURL);
+  style_sheet_ = XSLStyleSheet::Create(this, href, base_url);
 
-  XSLStyleSheet* parent = parentStyleSheet();
+  XSLStyleSheet* parent = ParentStyleSheet();
   if (parent)
-    m_styleSheet->setParentStyleSheet(parent);
+    style_sheet_->SetParentStyleSheet(parent);
 
-  m_styleSheet->parseString(sheet);
-  m_loading = false;
+  style_sheet_->ParseString(sheet);
+  loading_ = false;
 
   if (parent)
-    parent->checkLoaded();
+    parent->CheckLoaded();
 }
 
-bool XSLImportRule::isLoading() {
-  return m_loading || (m_styleSheet && m_styleSheet->isLoading());
+bool XSLImportRule::IsLoading() {
+  return loading_ || (style_sheet_ && style_sheet_->IsLoading());
 }
 
-void XSLImportRule::loadSheet() {
-  Document* ownerDocument = nullptr;
-  XSLStyleSheet* rootSheet = parentStyleSheet();
+void XSLImportRule::LoadSheet() {
+  Document* owner_document = nullptr;
+  XSLStyleSheet* root_sheet = ParentStyleSheet();
 
-  if (rootSheet) {
-    while (XSLStyleSheet* parentSheet = rootSheet->parentStyleSheet())
-      rootSheet = parentSheet;
+  if (root_sheet) {
+    while (XSLStyleSheet* parent_sheet = root_sheet->parentStyleSheet())
+      root_sheet = parent_sheet;
   }
 
-  if (rootSheet)
-    ownerDocument = rootSheet->ownerDocument();
+  if (root_sheet)
+    owner_document = root_sheet->OwnerDocument();
 
-  String absHref = m_strHref;
-  XSLStyleSheet* parentSheet = parentStyleSheet();
-  if (!parentSheet->baseURL().isNull()) {
+  String abs_href = str_href_;
+  XSLStyleSheet* parent_sheet = ParentStyleSheet();
+  if (!parent_sheet->BaseURL().IsNull()) {
     // Use parent styleheet's URL as the base URL
-    absHref = KURL(parentSheet->baseURL(), m_strHref).getString();
+    abs_href = KURL(parent_sheet->BaseURL(), str_href_).GetString();
   }
 
   // Check for a cycle in our import chain. If we encounter a stylesheet in
   // our parent chain with the same URL, then just bail.
-  for (XSLStyleSheet* parentSheet = parentStyleSheet(); parentSheet;
-       parentSheet = parentSheet->parentStyleSheet()) {
-    if (absHref == parentSheet->baseURL().getString())
+  for (XSLStyleSheet* parent_sheet = ParentStyleSheet(); parent_sheet;
+       parent_sheet = parent_sheet->parentStyleSheet()) {
+    if (abs_href == parent_sheet->BaseURL().GetString())
       return;
   }
 
-  ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
-  FetchRequest request(ResourceRequest(ownerDocument->completeURL(absHref)),
-                       FetchInitiatorTypeNames::xml, fetchOptions);
-  request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-  XSLStyleSheetResource* resource = XSLStyleSheetResource::fetchSynchronously(
-      request, ownerDocument->fetcher());
-  if (!resource || !resource->sheet())
+  ResourceLoaderOptions fetch_options(
+      ResourceFetcher::DefaultResourceOptions());
+  FetchRequest request(ResourceRequest(owner_document->CompleteURL(abs_href)),
+                       FetchInitiatorTypeNames::xml, fetch_options);
+  request.SetOriginRestriction(FetchRequest::kRestrictToSameOrigin);
+  XSLStyleSheetResource* resource = XSLStyleSheetResource::FetchSynchronously(
+      request, owner_document->Fetcher());
+  if (!resource || !resource->Sheet())
     return;
 
-  DCHECK(!m_styleSheet);
-  setXSLStyleSheet(absHref, resource->response().url(), resource->sheet());
+  DCHECK(!style_sheet_);
+  SetXSLStyleSheet(abs_href, resource->GetResponse().Url(), resource->Sheet());
 }
 
 DEFINE_TRACE(XSLImportRule) {
-  visitor->trace(m_parentStyleSheet);
-  visitor->trace(m_styleSheet);
+  visitor->Trace(parent_style_sheet_);
+  visitor->Trace(style_sheet_);
 }
 
 }  // namespace blink

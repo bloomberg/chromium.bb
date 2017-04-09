@@ -31,7 +31,7 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CORE_EXPORT static MojoHandle* create(mojo::ScopedHandle);
+  CORE_EXPORT static MojoHandle* Create(mojo::ScopedHandle);
 
   void close();
   MojoWatcher* watch(ScriptState*,
@@ -48,7 +48,7 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
                  const MojoWriteDataOptions&,
                  MojoWriteDataResult&);
   void queryData(MojoReadDataResult&);
-  void discardData(unsigned numBytes,
+  void discardData(unsigned num_bytes,
                    const MojoDiscardDataOptions&,
                    MojoReadDataResult&);
   void readData(ArrayBufferOrArrayBufferView&,
@@ -56,7 +56,7 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
                 MojoReadDataResult&);
 
   // SharedBuffer handle.
-  void mapBuffer(unsigned offset, unsigned numBytes, MojoMapBufferResult&);
+  void mapBuffer(unsigned offset, unsigned num_bytes, MojoMapBufferResult&);
   void duplicateBufferHandle(const MojoDuplicateBufferHandleOptions&,
                              MojoCreateSharedBufferResult&);
 
@@ -65,7 +65,7 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
  private:
   explicit MojoHandle(mojo::ScopedHandle);
 
-  mojo::ScopedHandle m_handle;
+  mojo::ScopedHandle handle_;
 };
 
 }  // namespace blink

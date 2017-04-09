@@ -15,8 +15,8 @@ namespace blink {
 class BLINK_PLATFORM_EXPORT WebCanvasCaptureHandler {
  public:
   virtual ~WebCanvasCaptureHandler() = default;
-  virtual void sendNewFrame(const SkImage*) {}
-  virtual bool needsNewFrame() const { return false; }
+  virtual void SendNewFrame(const SkImage*) {}
+  virtual bool NeedsNewFrame() const { return false; }
 };
 
 }  // namespace blink

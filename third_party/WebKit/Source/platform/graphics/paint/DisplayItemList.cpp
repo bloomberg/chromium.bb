@@ -15,101 +15,101 @@
 
 namespace blink {
 
-DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item) {
+DisplayItem& DisplayItemList::AppendByMoving(DisplayItem& item) {
 #ifndef NDEBUG
-  String originalDebugString = item.asDebugString();
+  String original_debug_string = item.AsDebugString();
 #endif
-  ASSERT(item.hasValidClient());
+  ASSERT(item.HasValidClient());
   DisplayItem& result =
-      ContiguousContainer::appendByMoving(item, item.derivedSize());
+      ContiguousContainer::AppendByMoving(item, item.DerivedSize());
   // ContiguousContainer::appendByMoving() calls an in-place constructor
   // on item which replaces it with a tombstone/"dead display item" that
   // can be safely destructed but should never be used.
-  ASSERT(!item.hasValidClient());
+  ASSERT(!item.HasValidClient());
 #ifndef NDEBUG
   // Save original debug string in the old item to help debugging.
-  item.setClientDebugString(originalDebugString);
+  item.SetClientDebugString(original_debug_string);
 #endif
   return result;
 }
 
-void DisplayItemList::appendVisualRect(const IntRect& visualRect) {
-  m_visualRects.push_back(visualRect);
+void DisplayItemList::AppendVisualRect(const IntRect& visual_rect) {
+  visual_rects_.push_back(visual_rect);
 }
 
 DisplayItemList::Range<DisplayItemList::iterator>
-DisplayItemList::itemsInPaintChunk(const PaintChunk& paintChunk) {
-  return Range<iterator>(begin() + paintChunk.beginIndex,
-                         begin() + paintChunk.endIndex);
+DisplayItemList::ItemsInPaintChunk(const PaintChunk& paint_chunk) {
+  return Range<iterator>(begin() + paint_chunk.begin_index,
+                         begin() + paint_chunk.end_index);
 }
 
 DisplayItemList::Range<DisplayItemList::const_iterator>
-DisplayItemList::itemsInPaintChunk(const PaintChunk& paintChunk) const {
-  return Range<const_iterator>(begin() + paintChunk.beginIndex,
-                               begin() + paintChunk.endIndex);
+DisplayItemList::ItemsInPaintChunk(const PaintChunk& paint_chunk) const {
+  return Range<const_iterator>(begin() + paint_chunk.begin_index,
+                               begin() + paint_chunk.end_index);
 }
 
-std::unique_ptr<JSONArray> DisplayItemList::subsequenceAsJSON(
-    size_t beginIndex,
-    size_t endIndex,
+std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
+    size_t begin_index,
+    size_t end_index,
     JsonFlags options) const {
-  std::unique_ptr<JSONArray> jsonArray = JSONArray::create();
+  std::unique_ptr<JSONArray> json_array = JSONArray::Create();
   size_t i = 0;
-  for (auto it = begin() + beginIndex; it != begin() + endIndex; ++it, ++i) {
-    std::unique_ptr<JSONObject> json = JSONObject::create();
+  for (auto it = begin() + begin_index; it != begin() + end_index; ++it, ++i) {
+    std::unique_ptr<JSONObject> json = JSONObject::Create();
 
-    const DisplayItem& displayItem = *it;
-    if ((options & SkipNonDrawings) && !displayItem.isDrawing())
+    const DisplayItem& display_item = *it;
+    if ((options & kSkipNonDrawings) && !display_item.IsDrawing())
       continue;
 
-    json->setInteger("index", i);
+    json->SetInteger("index", i);
 #ifndef NDEBUG
-    StringBuilder stringBuilder;
-    displayItem.dumpPropertiesAsDebugString(stringBuilder);
+    StringBuilder string_builder;
+    display_item.DumpPropertiesAsDebugString(string_builder);
 
-    if (options & ShownOnlyDisplayItemTypes) {
-      json->setString("type",
-                      DisplayItem::typeAsDebugString(displayItem.getType()));
+    if (options & kShownOnlyDisplayItemTypes) {
+      json->SetString("type",
+                      DisplayItem::TypeAsDebugString(display_item.GetType()));
     } else {
-      json->setString("properties", stringBuilder.toString());
+      json->SetString("properties", string_builder.ToString());
     }
 
 #endif
-    if (displayItem.hasValidClient()) {
+    if (display_item.HasValidClient()) {
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-      if (!displayItem.client().isAlive()) {
-        json->setBoolean("clientIsAlive", true);
+      if (!display_item.Client().IsAlive()) {
+        json->SetBoolean("clientIsAlive", true);
       } else {
 #else
 
-      if (options & ShowClientDebugName) {
+      if (options & kShowClientDebugName) {
 #endif
-        json->setString(
+        json->SetString(
             "clientDebugName",
-            String::format("clientDebugName: \"%s\"",
-                           displayItem.client().debugName().ascii().data()));
+            String::Format("clientDebugName: \"%s\"",
+                           display_item.Client().DebugName().Ascii().Data()));
       }
 #ifndef NDEBUG
-      if ((options & ShowPaintRecords) && displayItem.isDrawing()) {
+      if ((options & kShowPaintRecords) && display_item.IsDrawing()) {
         const DrawingDisplayItem& item =
-            static_cast<const DrawingDisplayItem&>(displayItem);
+            static_cast<const DrawingDisplayItem&>(display_item);
         if (const PaintRecord* record = item.GetPaintRecord().get()) {
-          json->setString("record", recordAsDebugString(record));
+          json->SetString("record", RecordAsDebugString(record));
         }
       }
 #endif
     }
-    if (hasVisualRect(i)) {
-      IntRect localVisualRect = visualRect(i);
-      json->setString(
+    if (HasVisualRect(i)) {
+      IntRect local_visual_rect = VisualRect(i);
+      json->SetString(
           "visualRect",
-          String::format("[%d,%d %dx%d]", localVisualRect.x(),
-                         localVisualRect.y(), localVisualRect.width(),
-                         localVisualRect.height()));
+          String::Format("[%d,%d %dx%d]", local_visual_rect.X(),
+                         local_visual_rect.Y(), local_visual_rect.Width(),
+                         local_visual_rect.Height()));
     }
-    jsonArray->pushObject(std::move(json));
+    json_array->PushObject(std::move(json));
   }
-  return jsonArray;
+  return json_array;
 }
 
 }  // namespace blink

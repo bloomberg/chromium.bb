@@ -15,12 +15,12 @@ class LayoutObject;
 // need access to the underlying LayoutObject.
 class LineLayoutAPIShim {
  public:
-  static LayoutObject* layoutObjectFrom(LineLayoutItem item) {
-    return item.layoutObject();
+  static LayoutObject* LayoutObjectFrom(LineLayoutItem item) {
+    return item.GetLayoutObject();
   }
 
-  static const LayoutObject* constLayoutObjectFrom(LineLayoutItem item) {
-    return item.layoutObject();
+  static const LayoutObject* ConstLayoutObjectFrom(LineLayoutItem item) {
+    return item.GetLayoutObject();
   }
 };
 

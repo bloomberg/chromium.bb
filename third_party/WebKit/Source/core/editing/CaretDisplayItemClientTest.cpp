@@ -20,332 +20,339 @@ class CaretDisplayItemClientTest : public RenderingTest {
  protected:
   void SetUp() override {
     RenderingTest::SetUp();
-    enableCompositing();
-    selection().setCaretBlinkingSuspended(true);
+    EnableCompositing();
+    Selection().SetCaretBlinkingSuspended(true);
   }
 
-  const RasterInvalidationTracking* getRasterInvalidationTracking() const {
+  const RasterInvalidationTracking* GetRasterInvalidationTracking() const {
     // TODO(wangxianzhu): Test SPv2.
-    return layoutView()
-        .layer()
-        ->graphicsLayerBacking()
-        ->getRasterInvalidationTracking();
+    return GetLayoutView()
+        .Layer()
+        ->GraphicsLayerBacking()
+        ->GetRasterInvalidationTracking();
   }
 
-  FrameSelection& selection() const {
-    return document().view()->frame().selection();
+  FrameSelection& Selection() const {
+    return GetDocument().View()->GetFrame().Selection();
   }
 
-  const DisplayItemClient& getCaretDisplayItemClient() const {
-    return selection().caretDisplayItemClientForTesting();
+  const DisplayItemClient& GetCaretDisplayItemClient() const {
+    return Selection().CaretDisplayItemClientForTesting();
   }
 
-  const LayoutBlock* caretLayoutBlock() const {
+  const LayoutBlock* CaretLayoutBlock() const {
     return static_cast<const CaretDisplayItemClient&>(
-               getCaretDisplayItemClient())
-        .m_layoutBlock;
+               GetCaretDisplayItemClient())
+        .layout_block_;
   }
 
-  const LayoutBlock* previousCaretLayoutBlock() const {
+  const LayoutBlock* PreviousCaretLayoutBlock() const {
     return static_cast<const CaretDisplayItemClient&>(
-               getCaretDisplayItemClient())
-        .m_previousLayoutBlock;
+               GetCaretDisplayItemClient())
+        .previous_layout_block_;
   }
 
-  Text* appendTextNode(const String& data) {
-    Text* text = document().createTextNode(data);
-    document().body()->appendChild(text);
+  Text* AppendTextNode(const String& data) {
+    Text* text = GetDocument().createTextNode(data);
+    GetDocument().body()->AppendChild(text);
     return text;
   }
 
-  Element* appendBlock(const String& data) {
-    Element* block = document().createElement("div");
-    Text* text = document().createTextNode(data);
-    block->appendChild(text);
-    document().body()->appendChild(block);
+  Element* AppendBlock(const String& data) {
+    Element* block = GetDocument().createElement("div");
+    Text* text = GetDocument().createTextNode(data);
+    block->AppendChild(text);
+    GetDocument().body()->AppendChild(block);
     return block;
   }
 
-  void updateAllLifecyclePhases() {
+  void UpdateAllLifecyclePhases() {
     // Partial lifecycle updates should not affect caret paint invalidation.
-    document().view()->updateLifecycleToLayoutClean();
-    document().view()->updateAllLifecyclePhases();
+    GetDocument().View()->UpdateLifecycleToLayoutClean();
+    GetDocument().View()->UpdateAllLifecyclePhases();
     // Partial lifecycle updates should not affect caret paint invalidation.
-    document().view()->updateLifecycleToLayoutClean();
+    GetDocument().View()->UpdateLifecycleToLayoutClean();
   }
 };
 
 TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
-  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
+  GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
 
-  Text* text = appendTextNode("Hello, World!");
-  updateAllLifecyclePhases();
-  const auto* block = toLayoutBlock(document().body()->layoutObject());
+  Text* text = AppendTextNode("Hello, World!");
+  UpdateAllLifecyclePhases();
+  const auto* block = ToLayoutBlock(GetDocument().body()->GetLayoutObject());
 
   // Focus the body. Should invalidate the new caret.
-  document().view()->setTracksPaintInvalidations(true);
-  document().body()->focus();
-  updateAllLifecyclePhases();
-  EXPECT_TRUE(block->shouldPaintCursorCaret());
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().body()->focus();
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(block->ShouldPaintCursorCaret());
 
-  LayoutRect caretVisualRect = getCaretDisplayItemClient().visualRect();
-  EXPECT_EQ(1, caretVisualRect.width());
-  EXPECT_EQ(block->location(), caretVisualRect.location());
+  LayoutRect caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
+  EXPECT_EQ(1, caret_visual_rect.Width());
+  EXPECT_EQ(block->Location(), caret_visual_rect.Location());
 
-  const auto* rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  ASSERT_EQ(1u, rasterInvalidations->size());
-  EXPECT_EQ(enclosingIntRect(caretVisualRect), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(block, (*rasterInvalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[0].reason);
+  const auto* raster_invalidations =
+      &GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(1u, raster_invalidations->size());
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
+            (*raster_invalidations)[0].rect);
+  EXPECT_EQ(block, (*raster_invalidations)[0].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
 
-  std::unique_ptr<JSONArray> objectInvalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, objectInvalidations->size());
+  std::unique_ptr<JSONArray> object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, object_invalidations->size());
   String s;
-  JSONObject::cast(objectInvalidations->at(0))->get("object")->asString(&s);
+  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
   EXPECT_EQ("Caret", s);
-  document().view()->setTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Move the caret to the end of the text. Should invalidate both the old and
   // new carets.
-  document().view()->setTracksPaintInvalidations(true);
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(Position(text, 5)).build());
-  updateAllLifecyclePhases();
-  EXPECT_TRUE(block->shouldPaintCursorCaret());
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(block->ShouldPaintCursorCaret());
 
-  LayoutRect newCaretVisualRect = getCaretDisplayItemClient().visualRect();
-  EXPECT_EQ(caretVisualRect.size(), newCaretVisualRect.size());
-  EXPECT_EQ(caretVisualRect.y(), newCaretVisualRect.y());
-  EXPECT_LT(caretVisualRect.x(), newCaretVisualRect.x());
+  LayoutRect new_caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
+  EXPECT_EQ(caret_visual_rect.size(), new_caret_visual_rect.size());
+  EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
+  EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
-  rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  ASSERT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(enclosingIntRect(caretVisualRect), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(block, (*rasterInvalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(enclosingIntRect(newCaretVisualRect),
-            (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(block, (*rasterInvalidations)[1].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[1].reason);
+  raster_invalidations =
+      &GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(2u, raster_invalidations->size());
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
+            (*raster_invalidations)[0].rect);
+  EXPECT_EQ(block, (*raster_invalidations)[0].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(EnclosingIntRect(new_caret_visual_rect),
+            (*raster_invalidations)[1].rect);
+  EXPECT_EQ(block, (*raster_invalidations)[1].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[1].reason);
 
-  objectInvalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, objectInvalidations->size());
-  JSONObject::cast(objectInvalidations->at(0))->get("object")->asString(&s);
+  object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, object_invalidations->size());
+  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
   EXPECT_EQ("Caret", s);
-  document().view()->setTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Remove selection. Should invalidate the old caret.
-  LayoutRect oldCaretVisualRect = newCaretVisualRect;
-  document().view()->setTracksPaintInvalidations(true);
-  selection().setSelection(SelectionInDOMTree());
-  updateAllLifecyclePhases();
-  EXPECT_FALSE(block->shouldPaintCursorCaret());
-  EXPECT_EQ(LayoutRect(), getCaretDisplayItemClient().visualRect());
+  LayoutRect old_caret_visual_rect = new_caret_visual_rect;
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  Selection().SetSelection(SelectionInDOMTree());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(block->ShouldPaintCursorCaret());
+  EXPECT_EQ(LayoutRect(), GetCaretDisplayItemClient().VisualRect());
 
-  rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  ASSERT_EQ(1u, rasterInvalidations->size());
-  EXPECT_EQ(enclosingIntRect(oldCaretVisualRect),
-            (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(block, (*rasterInvalidations)[0].client);
+  raster_invalidations =
+      &GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(1u, raster_invalidations->size());
+  EXPECT_EQ(EnclosingIntRect(old_caret_visual_rect),
+            (*raster_invalidations)[0].rect);
+  EXPECT_EQ(block, (*raster_invalidations)[0].client);
 
-  objectInvalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, objectInvalidations->size());
-  JSONObject::cast(objectInvalidations->at(0))->get("object")->asString(&s);
+  object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, object_invalidations->size());
+  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
   EXPECT_EQ("Caret", s);
-  document().view()->setTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
-  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
-  auto* blockElement1 = appendBlock("Block1");
-  auto* blockElement2 = appendBlock("Block2");
-  updateAllLifecyclePhases();
-  auto* block1 = toLayoutBlock(blockElement1->layoutObject());
-  auto* block2 = toLayoutBlock(blockElement2->layoutObject());
+  GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+  auto* block_element1 = AppendBlock("Block1");
+  auto* block_element2 = AppendBlock("Block2");
+  UpdateAllLifecyclePhases();
+  auto* block1 = ToLayoutBlock(block_element1->GetLayoutObject());
+  auto* block2 = ToLayoutBlock(block_element2->GetLayoutObject());
 
   // Focus the body.
-  document().body()->focus();
-  updateAllLifecyclePhases();
-  LayoutRect caretVisualRect1 = getCaretDisplayItemClient().visualRect();
-  EXPECT_EQ(1, caretVisualRect1.width());
-  EXPECT_EQ(block1->visualRect().location(), caretVisualRect1.location());
-  EXPECT_TRUE(block1->shouldPaintCursorCaret());
-  EXPECT_FALSE(block2->shouldPaintCursorCaret());
+  GetDocument().body()->focus();
+  UpdateAllLifecyclePhases();
+  LayoutRect caret_visual_rect1 = GetCaretDisplayItemClient().VisualRect();
+  EXPECT_EQ(1, caret_visual_rect1.Width());
+  EXPECT_EQ(block1->VisualRect().Location(), caret_visual_rect1.Location());
+  EXPECT_TRUE(block1->ShouldPaintCursorCaret());
+  EXPECT_FALSE(block2->ShouldPaintCursorCaret());
 
   // Move the caret into block2. Should invalidate both the old and new carets.
-  document().view()->setTracksPaintInvalidations(true);
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(blockElement2, 0))
-                               .build());
-  updateAllLifecyclePhases();
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(block_element2, 0))
+                               .Build());
+  UpdateAllLifecyclePhases();
 
-  LayoutRect caretVisualRect2 = getCaretDisplayItemClient().visualRect();
-  EXPECT_EQ(1, caretVisualRect2.width());
-  EXPECT_EQ(block2->visualRect().location(), caretVisualRect2.location());
-  EXPECT_FALSE(block1->shouldPaintCursorCaret());
-  EXPECT_TRUE(block2->shouldPaintCursorCaret());
+  LayoutRect caret_visual_rect2 = GetCaretDisplayItemClient().VisualRect();
+  EXPECT_EQ(1, caret_visual_rect2.Width());
+  EXPECT_EQ(block2->VisualRect().Location(), caret_visual_rect2.Location());
+  EXPECT_FALSE(block1->ShouldPaintCursorCaret());
+  EXPECT_TRUE(block2->ShouldPaintCursorCaret());
 
-  const auto* rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  ASSERT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(enclosingIntRect(caretVisualRect1), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(block1, (*rasterInvalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(enclosingIntRect(caretVisualRect2), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(block2, (*rasterInvalidations)[1].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[1].reason);
+  const auto* raster_invalidations =
+      &GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(2u, raster_invalidations->size());
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
+            (*raster_invalidations)[0].rect);
+  EXPECT_EQ(block1, (*raster_invalidations)[0].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect2),
+            (*raster_invalidations)[1].rect);
+  EXPECT_EQ(block2, (*raster_invalidations)[1].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[1].reason);
 
-  std::unique_ptr<JSONArray> objectInvalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(2u, objectInvalidations->size());
-  document().view()->setTracksPaintInvalidations(false);
+  std::unique_ptr<JSONArray> object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(2u, object_invalidations->size());
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Move the caret back into block1.
-  document().view()->setTracksPaintInvalidations(true);
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(blockElement1, 0))
-                               .build());
-  updateAllLifecyclePhases();
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(block_element1, 0))
+                               .Build());
+  UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(caretVisualRect1, getCaretDisplayItemClient().visualRect());
-  EXPECT_TRUE(block1->shouldPaintCursorCaret());
-  EXPECT_FALSE(block2->shouldPaintCursorCaret());
+  EXPECT_EQ(caret_visual_rect1, GetCaretDisplayItemClient().VisualRect());
+  EXPECT_TRUE(block1->ShouldPaintCursorCaret());
+  EXPECT_FALSE(block2->ShouldPaintCursorCaret());
 
-  rasterInvalidations =
-      &getRasterInvalidationTracking()->trackedRasterInvalidations;
-  ASSERT_EQ(2u, rasterInvalidations->size());
-  EXPECT_EQ(enclosingIntRect(caretVisualRect1), (*rasterInvalidations)[0].rect);
-  EXPECT_EQ(block1, (*rasterInvalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[0].reason);
-  EXPECT_EQ(enclosingIntRect(caretVisualRect2), (*rasterInvalidations)[1].rect);
-  EXPECT_EQ(block2, (*rasterInvalidations)[1].client);
-  EXPECT_EQ(PaintInvalidationCaret, (*rasterInvalidations)[1].reason);
+  raster_invalidations =
+      &GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(2u, raster_invalidations->size());
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
+            (*raster_invalidations)[0].rect);
+  EXPECT_EQ(block1, (*raster_invalidations)[0].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[0].reason);
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect2),
+            (*raster_invalidations)[1].rect);
+  EXPECT_EQ(block2, (*raster_invalidations)[1].client);
+  EXPECT_EQ(kPaintInvalidationCaret, (*raster_invalidations)[1].reason);
 
-  objectInvalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(2u, objectInvalidations->size());
-  document().view()->setTracksPaintInvalidations(false);
+  object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(2u, object_invalidations->size());
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_F(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
-  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
-  auto* blockElement1 = appendBlock("Block1");
-  auto* blockElement2 = appendBlock("Block2");
-  updateAllLifecyclePhases();
-  auto* block1 = toLayoutBlock(blockElement1->layoutObject());
-  auto* block2 = toLayoutBlock(blockElement2->layoutObject());
+  GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+  auto* block_element1 = AppendBlock("Block1");
+  auto* block_element2 = AppendBlock("Block2");
+  UpdateAllLifecyclePhases();
+  auto* block1 = ToLayoutBlock(block_element1->GetLayoutObject());
+  auto* block2 = ToLayoutBlock(block_element2->GetLayoutObject());
 
   // Set caret into block2.
-  document().body()->focus();
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(blockElement2, 0))
-                               .build());
-  document().view()->updateLifecycleToLayoutClean();
-  EXPECT_TRUE(block2->shouldPaintCursorCaret());
-  EXPECT_EQ(block2, caretLayoutBlock());
-  EXPECT_FALSE(block1->shouldPaintCursorCaret());
-  EXPECT_FALSE(previousCaretLayoutBlock());
+  GetDocument().body()->focus();
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(block_element2, 0))
+                               .Build());
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(block2->ShouldPaintCursorCaret());
+  EXPECT_EQ(block2, CaretLayoutBlock());
+  EXPECT_FALSE(block1->ShouldPaintCursorCaret());
+  EXPECT_FALSE(PreviousCaretLayoutBlock());
 
   // Move caret into block1. Should set previousCaretLayoutBlock to block2.
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(blockElement1, 0))
-                               .build());
-  document().view()->updateLifecycleToLayoutClean();
-  EXPECT_TRUE(block1->shouldPaintCursorCaret());
-  EXPECT_EQ(block1, caretLayoutBlock());
-  EXPECT_FALSE(block2->shouldPaintCursorCaret());
-  EXPECT_EQ(block2, previousCaretLayoutBlock());
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(block_element1, 0))
+                               .Build());
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(block1->ShouldPaintCursorCaret());
+  EXPECT_EQ(block1, CaretLayoutBlock());
+  EXPECT_FALSE(block2->ShouldPaintCursorCaret());
+  EXPECT_EQ(block2, PreviousCaretLayoutBlock());
 
   // Move caret into block2. Partial update should not change
   // previousCaretLayoutBlock.
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(blockElement2, 0))
-                               .build());
-  document().view()->updateLifecycleToLayoutClean();
-  EXPECT_TRUE(block2->shouldPaintCursorCaret());
-  EXPECT_EQ(block2, caretLayoutBlock());
-  EXPECT_FALSE(block1->shouldPaintCursorCaret());
-  EXPECT_EQ(block2, previousCaretLayoutBlock());
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(block_element2, 0))
+                               .Build());
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_TRUE(block2->ShouldPaintCursorCaret());
+  EXPECT_EQ(block2, CaretLayoutBlock());
+  EXPECT_FALSE(block1->ShouldPaintCursorCaret());
+  EXPECT_EQ(block2, PreviousCaretLayoutBlock());
 
   // Remove block2. Should clear caretLayoutBlock and previousCaretLayoutBlock.
-  blockElement2->parentNode()->removeChild(blockElement2);
-  EXPECT_FALSE(caretLayoutBlock());
-  EXPECT_FALSE(previousCaretLayoutBlock());
+  block_element2->parentNode()->RemoveChild(block_element2);
+  EXPECT_FALSE(CaretLayoutBlock());
+  EXPECT_FALSE(PreviousCaretLayoutBlock());
 
   // Set caret into block1.
-  selection().setSelection(SelectionInDOMTree::Builder()
-                               .collapse(Position(blockElement1, 0))
-                               .build());
-  updateAllLifecyclePhases();
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .Collapse(Position(block_element1, 0))
+                               .Build());
+  UpdateAllLifecyclePhases();
   // Remove selection.
-  selection().setSelection(SelectionInDOMTree());
-  document().view()->updateLifecycleToLayoutClean();
-  EXPECT_EQ(block1, previousCaretLayoutBlock());
+  Selection().SetSelection(SelectionInDOMTree());
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+  EXPECT_EQ(block1, PreviousCaretLayoutBlock());
 }
 
 TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
-  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
+  GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
 
-  Text* text = appendTextNode("Hello, World!");
-  document().body()->focus();
-  updateAllLifecyclePhases();
-  const auto* block = toLayoutBlock(document().body()->layoutObject());
+  Text* text = AppendTextNode("Hello, World!");
+  GetDocument().body()->focus();
+  UpdateAllLifecyclePhases();
+  const auto* block = ToLayoutBlock(GetDocument().body()->GetLayoutObject());
 
-  LayoutRect caretVisualRect = getCaretDisplayItemClient().visualRect();
-  EXPECT_EQ(1, caretVisualRect.width());
-  EXPECT_EQ(block->location(), caretVisualRect.location());
+  LayoutRect caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
+  EXPECT_EQ(1, caret_visual_rect.Width());
+  EXPECT_EQ(block->Location(), caret_visual_rect.Location());
 
   // Simulate that the blinking cursor becomes invisible.
-  selection().setCaretVisible(false);
+  Selection().SetCaretVisible(false);
   // Move the caret to the end of the text.
-  document().view()->setTracksPaintInvalidations(true);
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(Position(text, 5)).build());
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(Position(text, 5)).Build());
   // Simulate that the cursor blinking is restarted.
-  selection().setCaretVisible(true);
-  updateAllLifecyclePhases();
+  Selection().SetCaretVisible(true);
+  UpdateAllLifecyclePhases();
 
-  LayoutRect newCaretVisualRect = getCaretDisplayItemClient().visualRect();
-  EXPECT_EQ(caretVisualRect.size(), newCaretVisualRect.size());
-  EXPECT_EQ(caretVisualRect.y(), newCaretVisualRect.y());
-  EXPECT_LT(caretVisualRect.x(), newCaretVisualRect.x());
+  LayoutRect new_caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
+  EXPECT_EQ(caret_visual_rect.size(), new_caret_visual_rect.size());
+  EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
+  EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
-  const auto& rasterInvalidations =
-      getRasterInvalidationTracking()->trackedRasterInvalidations;
-  ASSERT_EQ(2u, rasterInvalidations.size());
-  EXPECT_EQ(enclosingIntRect(caretVisualRect), rasterInvalidations[0].rect);
-  EXPECT_EQ(block, rasterInvalidations[0].client);
-  EXPECT_EQ(PaintInvalidationCaret, rasterInvalidations[0].reason);
-  EXPECT_EQ(enclosingIntRect(newCaretVisualRect), rasterInvalidations[1].rect);
-  EXPECT_EQ(block, rasterInvalidations[1].client);
-  EXPECT_EQ(PaintInvalidationCaret, rasterInvalidations[1].reason);
+  const auto& raster_invalidations =
+      GetRasterInvalidationTracking()->tracked_raster_invalidations;
+  ASSERT_EQ(2u, raster_invalidations.size());
+  EXPECT_EQ(EnclosingIntRect(caret_visual_rect), raster_invalidations[0].rect);
+  EXPECT_EQ(block, raster_invalidations[0].client);
+  EXPECT_EQ(kPaintInvalidationCaret, raster_invalidations[0].reason);
+  EXPECT_EQ(EnclosingIntRect(new_caret_visual_rect),
+            raster_invalidations[1].rect);
+  EXPECT_EQ(block, raster_invalidations[1].client);
+  EXPECT_EQ(kPaintInvalidationCaret, raster_invalidations[1].reason);
 
-  auto objectInvalidations =
-      document().view()->trackedObjectPaintInvalidationsAsJSON();
-  ASSERT_EQ(1u, objectInvalidations->size());
+  auto object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, object_invalidations->size());
   String s;
-  JSONObject::cast(objectInvalidations->at(0))->get("object")->asString(&s);
+  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
   EXPECT_EQ("Caret", s);
-  document().view()->setTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_F(CaretDisplayItemClientTest, CompositingChange) {
-  enableCompositing();
-  setBodyInnerHTML(
+  EnableCompositing();
+  SetBodyInnerHTML(
       "<style>"
       "  body { margin: 0 }"
       "  #container { position: absolute; top: 55px; left: 66px; }"
@@ -354,30 +361,30 @@ TEST_F(CaretDisplayItemClientTest, CompositingChange) {
       "  <div id='editor' contenteditable style='padding: 50px'>ABCDE</div>"
       "</div>");
 
-  document().page()->focusController().setActive(true);
-  document().page()->focusController().setFocused(true);
-  auto* container = document().getElementById("container");
-  auto* editor = document().getElementById("editor");
-  auto* editorBlock = toLayoutBlock(editor->layoutObject());
-  selection().setSelection(
-      SelectionInDOMTree::Builder().collapse(Position(editor, 0)).build());
-  updateAllLifecyclePhases();
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+  auto* container = GetDocument().GetElementById("container");
+  auto* editor = GetDocument().GetElementById("editor");
+  auto* editor_block = ToLayoutBlock(editor->GetLayoutObject());
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(Position(editor, 0)).Build());
+  UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(editorBlock->shouldPaintCursorCaret());
-  EXPECT_EQ(editorBlock, caretLayoutBlock());
+  EXPECT_TRUE(editor_block->ShouldPaintCursorCaret());
+  EXPECT_EQ(editor_block, CaretLayoutBlock());
   EXPECT_EQ(LayoutRect(116, 105, 1, 1),
-            getCaretDisplayItemClient().visualRect());
+            GetCaretDisplayItemClient().VisualRect());
 
   // Composite container.
   container->setAttribute(HTMLNames::styleAttr, "will-change: transform");
-  updateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(50, 50, 1, 1), getCaretDisplayItemClient().visualRect());
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(50, 50, 1, 1), GetCaretDisplayItemClient().VisualRect());
 
   // Uncomposite container.
   container->setAttribute(HTMLNames::styleAttr, "");
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(116, 105, 1, 1),
-            getCaretDisplayItemClient().visualRect());
+            GetCaretDisplayItemClient().VisualRect());
 }
 
 }  // namespace blink

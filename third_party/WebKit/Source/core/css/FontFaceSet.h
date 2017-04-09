@@ -82,108 +82,108 @@ class CORE_EXPORT FontFaceSet final : public EventTargetWithInlineData,
   size_t size() const;
   AtomicString status() const;
 
-  ExecutionContext* getExecutionContext() const override;
-  const AtomicString& interfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
 
-  Document* document() const;
+  Document* GetDocument() const;
 
-  void didLayout();
-  void beginFontLoading(FontFace*);
+  void DidLayout();
+  void BeginFontLoading(FontFace*);
 
   // FontFace::LoadFontCallback
-  void notifyLoaded(FontFace*) override;
-  void notifyError(FontFace*) override;
+  void NotifyLoaded(FontFace*) override;
+  void NotifyError(FontFace*) override;
 
-  size_t approximateBlankCharacterCount() const;
+  size_t ApproximateBlankCharacterCount() const;
 
   // SuspendableObject
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  static FontFaceSet* from(Document&);
-  static void didLayout(Document&);
-  static size_t approximateBlankCharacterCount(Document&);
+  static FontFaceSet* From(Document&);
+  static void DidLayout(Document&);
+  static size_t ApproximateBlankCharacterCount(Document&);
 
-  static const char* supplementName() { return "FontFaceSet"; }
+  static const char* SupplementName() { return "FontFaceSet"; }
 
-  void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
+  void AddFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  static FontFaceSet* create(Document& document) {
+  static FontFaceSet* Create(Document& document) {
     return new FontFaceSet(document);
   }
 
-  FontFaceSetIterable::IterationSource* startIteration(
+  FontFaceSetIterable::IterationSource* StartIteration(
       ScriptState*,
       ExceptionState&) override;
 
   class IterationSource final : public FontFaceSetIterable::IterationSource {
    public:
-    explicit IterationSource(const HeapVector<Member<FontFace>>& fontFaces)
-        : m_index(0), m_fontFaces(fontFaces) {}
-    bool next(ScriptState*,
+    explicit IterationSource(const HeapVector<Member<FontFace>>& font_faces)
+        : index_(0), font_faces_(font_faces) {}
+    bool Next(ScriptState*,
               Member<FontFace>&,
               Member<FontFace>&,
               ExceptionState&) override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_fontFaces);
-      FontFaceSetIterable::IterationSource::trace(visitor);
+      visitor->Trace(font_faces_);
+      FontFaceSetIterable::IterationSource::Trace(visitor);
     }
 
    private:
-    size_t m_index;
-    HeapVector<Member<FontFace>> m_fontFaces;
+    size_t index_;
+    HeapVector<Member<FontFace>> font_faces_;
   };
 
   class FontLoadHistogram {
     DISALLOW_NEW();
 
    public:
-    enum Status { NoWebFonts, HadBlankText, DidNotHaveBlankText, Reported };
-    FontLoadHistogram() : m_status(NoWebFonts), m_count(0), m_recorded(false) {}
-    void incrementCount() { m_count++; }
-    void updateStatus(FontFace*);
-    void record();
+    enum Status { kNoWebFonts, kHadBlankText, kDidNotHaveBlankText, kReported };
+    FontLoadHistogram() : status_(kNoWebFonts), count_(0), recorded_(false) {}
+    void IncrementCount() { count_++; }
+    void UpdateStatus(FontFace*);
+    void Record();
 
    private:
-    Status m_status;
-    int m_count;
-    bool m_recorded;
+    Status status_;
+    int count_;
+    bool recorded_;
   };
 
   explicit FontFaceSet(Document&);
 
-  bool inActiveDocumentContext() const;
-  void addToLoadingFonts(FontFace*);
-  void removeFromLoadingFonts(FontFace*);
-  void fireLoadingEvent();
-  void fireDoneEventIfPossible();
-  bool resolveFontStyle(const String&, Font&);
-  void handlePendingEventsAndPromisesSoon();
-  void handlePendingEventsAndPromises();
-  const HeapListHashSet<Member<FontFace>>& cssConnectedFontFaceList() const;
-  bool isCSSConnectedFontFace(FontFace*) const;
-  bool shouldSignalReady() const;
+  bool InActiveDocumentContext() const;
+  void AddToLoadingFonts(FontFace*);
+  void RemoveFromLoadingFonts(FontFace*);
+  void FireLoadingEvent();
+  void FireDoneEventIfPossible();
+  bool ResolveFontStyle(const String&, Font&);
+  void HandlePendingEventsAndPromisesSoon();
+  void HandlePendingEventsAndPromises();
+  const HeapListHashSet<Member<FontFace>>& CssConnectedFontFaceList() const;
+  bool IsCSSConnectedFontFace(FontFace*) const;
+  bool ShouldSignalReady() const;
 
   using ReadyProperty = ScriptPromiseProperty<Member<FontFaceSet>,
                                               Member<FontFaceSet>,
                                               Member<DOMException>>;
 
-  HeapHashSet<Member<FontFace>> m_loadingFonts;
-  bool m_shouldFireLoadingEvent;
-  bool m_isLoading;
-  Member<ReadyProperty> m_ready;
-  FontFaceArray m_loadedFonts;
-  FontFaceArray m_failedFonts;
-  HeapListHashSet<Member<FontFace>> m_nonCSSConnectedFaces;
+  HeapHashSet<Member<FontFace>> loading_fonts_;
+  bool should_fire_loading_event_;
+  bool is_loading_;
+  Member<ReadyProperty> ready_;
+  FontFaceArray loaded_fonts_;
+  FontFaceArray failed_fonts_;
+  HeapListHashSet<Member<FontFace>> non_css_connected_faces_;
 
-  Member<AsyncMethodRunner<FontFaceSet>> m_asyncRunner;
+  Member<AsyncMethodRunner<FontFaceSet>> async_runner_;
 
-  FontLoadHistogram m_histogram;
+  FontLoadHistogram histogram_;
 };
 
 }  // namespace blink

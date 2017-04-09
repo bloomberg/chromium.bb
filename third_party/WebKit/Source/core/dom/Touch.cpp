@@ -31,81 +31,81 @@
 
 namespace blink {
 
-static FloatPoint contentsOffset(LocalFrame* frame) {
+static FloatPoint ContentsOffset(LocalFrame* frame) {
   if (!frame)
     return FloatPoint();
-  FrameView* frameView = frame->view();
-  if (!frameView)
+  FrameView* frame_view = frame->View();
+  if (!frame_view)
     return FloatPoint();
-  float scale = 1.0f / frame->pageZoomFactor();
-  return FloatPoint(frameView->getScrollOffset()).scaledBy(scale);
+  float scale = 1.0f / frame->PageZoomFactor();
+  return FloatPoint(frame_view->GetScrollOffset()).ScaledBy(scale);
 }
 
 Touch::Touch(LocalFrame* frame,
              EventTarget* target,
              int identifier,
-             const FloatPoint& screenPos,
-             const FloatPoint& pagePos,
+             const FloatPoint& screen_pos,
+             const FloatPoint& page_pos,
              const FloatSize& radius,
-             float rotationAngle,
+             float rotation_angle,
              float force,
              String region)
-    : m_target(target),
-      m_identifier(identifier),
-      m_clientPos(pagePos - contentsOffset(frame)),
-      m_screenPos(screenPos),
-      m_pagePos(pagePos),
-      m_radius(radius),
-      m_rotationAngle(rotationAngle),
-      m_force(force),
-      m_region(region) {
-  float scaleFactor = frame ? frame->pageZoomFactor() : 1.0f;
-  m_absoluteLocation = LayoutPoint(pagePos.scaledBy(scaleFactor));
+    : target_(target),
+      identifier_(identifier),
+      client_pos_(page_pos - ContentsOffset(frame)),
+      screen_pos_(screen_pos),
+      page_pos_(page_pos),
+      radius_(radius),
+      rotation_angle_(rotation_angle),
+      force_(force),
+      region_(region) {
+  float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
+  absolute_location_ = LayoutPoint(page_pos.ScaledBy(scale_factor));
 }
 
 Touch::Touch(EventTarget* target,
              int identifier,
-             const FloatPoint& clientPos,
-             const FloatPoint& screenPos,
-             const FloatPoint& pagePos,
+             const FloatPoint& client_pos,
+             const FloatPoint& screen_pos,
+             const FloatPoint& page_pos,
              const FloatSize& radius,
-             float rotationAngle,
+             float rotation_angle,
              float force,
              String region,
-             LayoutPoint absoluteLocation)
-    : m_target(target),
-      m_identifier(identifier),
-      m_clientPos(clientPos),
-      m_screenPos(screenPos),
-      m_pagePos(pagePos),
-      m_radius(radius),
-      m_rotationAngle(rotationAngle),
-      m_force(force),
-      m_region(region),
-      m_absoluteLocation(absoluteLocation) {}
+             LayoutPoint absolute_location)
+    : target_(target),
+      identifier_(identifier),
+      client_pos_(client_pos),
+      screen_pos_(screen_pos),
+      page_pos_(page_pos),
+      radius_(radius),
+      rotation_angle_(rotation_angle),
+      force_(force),
+      region_(region),
+      absolute_location_(absolute_location) {}
 
 Touch::Touch(LocalFrame* frame, const TouchInit& initializer)
-    : m_target(initializer.target()),
-      m_identifier(initializer.identifier()),
-      m_clientPos(FloatPoint(initializer.clientX(), initializer.clientY())),
-      m_screenPos(FloatPoint(initializer.screenX(), initializer.screenY())),
-      m_pagePos(FloatPoint(initializer.pageX(), initializer.pageY())),
-      m_radius(FloatSize(initializer.radiusX(), initializer.radiusY())),
-      m_rotationAngle(initializer.rotationAngle()),
-      m_force(initializer.force()),
-      m_region(initializer.region()) {
-  float scaleFactor = frame ? frame->pageZoomFactor() : 1.0f;
-  m_absoluteLocation = LayoutPoint(m_pagePos.scaledBy(scaleFactor));
+    : target_(initializer.target()),
+      identifier_(initializer.identifier()),
+      client_pos_(FloatPoint(initializer.clientX(), initializer.clientY())),
+      screen_pos_(FloatPoint(initializer.screenX(), initializer.screenY())),
+      page_pos_(FloatPoint(initializer.pageX(), initializer.pageY())),
+      radius_(FloatSize(initializer.radiusX(), initializer.radiusY())),
+      rotation_angle_(initializer.rotationAngle()),
+      force_(initializer.force()),
+      region_(initializer.region()) {
+  float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
+  absolute_location_ = LayoutPoint(page_pos_.ScaledBy(scale_factor));
 }
 
-Touch* Touch::cloneWithNewTarget(EventTarget* eventTarget) const {
-  return new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos,
-                   m_pagePos, m_radius, m_rotationAngle, m_force, m_region,
-                   m_absoluteLocation);
+Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
+  return new Touch(event_target, identifier_, client_pos_, screen_pos_,
+                   page_pos_, radius_, rotation_angle_, force_, region_,
+                   absolute_location_);
 }
 
 DEFINE_TRACE(Touch) {
-  visitor->trace(m_target);
+  visitor->Trace(target_);
 }
 
 }  // namespace blink

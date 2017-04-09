@@ -34,82 +34,82 @@ using namespace HTMLNames;
 
 inline HTMLOListElement::HTMLOListElement(Document& document)
     : HTMLElement(olTag, document),
-      m_start(0xBADBEEF),
-      m_itemCount(0),
-      m_hasExplicitStart(false),
-      m_isReversed(false),
-      m_shouldRecalculateItemCount(false) {}
+      start_(0xBADBEEF),
+      item_count_(0),
+      has_explicit_start_(false),
+      is_reversed_(false),
+      should_recalculate_item_count_(false) {}
 
 DEFINE_NODE_FACTORY(HTMLOListElement)
 
-bool HTMLOListElement::isPresentationAttribute(
+bool HTMLOListElement::IsPresentationAttribute(
     const QualifiedName& name) const {
   if (name == typeAttr)
     return true;
-  return HTMLElement::isPresentationAttribute(name);
+  return HTMLElement::IsPresentationAttribute(name);
 }
 
-void HTMLOListElement::collectStyleForPresentationAttribute(
+void HTMLOListElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == typeAttr) {
     if (value == "a")
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueLowerAlpha);
     else if (value == "A")
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueUpperAlpha);
     else if (value == "i")
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueLowerRoman);
     else if (value == "I")
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueUpperRoman);
     else if (value == "1")
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
                                               CSSValueDecimal);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 
-void HTMLOListElement::parseAttribute(
+void HTMLOListElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == startAttr) {
-    int oldStart = start();
-    int parsedStart = 0;
-    bool canParse = parseHTMLInteger(params.newValue, parsedStart);
-    m_hasExplicitStart = canParse;
-    m_start = canParse ? parsedStart : 0xBADBEEF;
-    if (oldStart == start())
+    int old_start = start();
+    int parsed_start = 0;
+    bool can_parse = ParseHTMLInteger(params.new_value, parsed_start);
+    has_explicit_start_ = can_parse;
+    start_ = can_parse ? parsed_start : 0xBADBEEF;
+    if (old_start == start())
       return;
-    updateItemValues();
+    UpdateItemValues();
   } else if (params.name == reversedAttr) {
-    bool reversed = !params.newValue.isNull();
-    if (reversed == m_isReversed)
+    bool reversed = !params.new_value.IsNull();
+    if (reversed == is_reversed_)
       return;
-    m_isReversed = reversed;
-    updateItemValues();
+    is_reversed_ = reversed;
+    UpdateItemValues();
   } else {
-    HTMLElement::parseAttribute(params);
+    HTMLElement::ParseAttribute(params);
   }
 }
 
 void HTMLOListElement::setStart(int start) {
-  setIntegralAttribute(startAttr, start);
+  SetIntegralAttribute(startAttr, start);
 }
 
-void HTMLOListElement::updateItemValues() {
-  if (!layoutObject())
+void HTMLOListElement::UpdateItemValues() {
+  if (!GetLayoutObject())
     return;
-  updateDistribution();
-  LayoutListItem::updateItemValuesForOrderedList(this);
+  UpdateDistribution();
+  LayoutListItem::UpdateItemValuesForOrderedList(this);
 }
 
-void HTMLOListElement::recalculateItemCount() {
-  m_itemCount = LayoutListItem::itemCountForOrderedList(this);
-  m_shouldRecalculateItemCount = false;
+void HTMLOListElement::RecalculateItemCount() {
+  item_count_ = LayoutListItem::ItemCountForOrderedList(this);
+  should_recalculate_item_count_ = false;
 }
 
 }  // namespace blink

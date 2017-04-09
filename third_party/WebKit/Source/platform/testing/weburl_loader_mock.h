@@ -41,20 +41,20 @@ class WebURLLoaderMock : public WebURLLoader {
 
   // Simulates the redirect being served.
   WebURLRequest ServeRedirect(const WebURLRequest& request,
-                              const WebURLResponse& redirectResponse);
+                              const WebURLResponse& redirect_response);
 
   // WebURLLoader methods:
-  void loadSynchronously(const WebURLRequest& request,
+  void LoadSynchronously(const WebURLRequest& request,
                          WebURLResponse& response,
                          WebURLError& error,
                          WebData& data,
                          int64_t& encoded_data_length,
                          int64_t& encoded_body_length) override;
-  void loadAsynchronously(const WebURLRequest& request,
+  void LoadAsynchronously(const WebURLRequest& request,
                           WebURLLoaderClient* client) override;
-  void cancel() override;
-  void setDefersLoading(bool defer) override;
-  void setLoadingTaskRunner(base::SingleThreadTaskRunner*) override;
+  void Cancel() override;
+  void SetDefersLoading(bool defer) override;
+  void SetLoadingTaskRunner(base::SingleThreadTaskRunner*) override;
 
   bool is_deferred() { return is_deferred_; }
   bool is_cancelled() { return !client_; }

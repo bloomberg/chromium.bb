@@ -32,23 +32,23 @@
 
 namespace blink {
 
-const Length& LengthBox::logicalLeft(WritingMode writingMode,
+const Length& LengthBox::LogicalLeft(WritingMode writing_mode,
                                      const Length& left,
                                      const Length& top) {
-  return isHorizontalWritingMode(writingMode) ? left : top;
+  return IsHorizontalWritingMode(writing_mode) ? left : top;
 }
 
-const Length& LengthBox::logicalRight(WritingMode writingMode,
+const Length& LengthBox::LogicalRight(WritingMode writing_mode,
                                       const Length& right,
                                       const Length& bottom) {
-  return isHorizontalWritingMode(writingMode) ? right : bottom;
+  return IsHorizontalWritingMode(writing_mode) ? right : bottom;
 }
 
-const Length& LengthBox::before(WritingMode writingMode,
+const Length& LengthBox::Before(WritingMode writing_mode,
                                 const Length& top,
                                 const Length& left,
                                 const Length& right) {
-  switch (writingMode) {
+  switch (writing_mode) {
     case WritingMode::kHorizontalTb:
       return top;
     case WritingMode::kVerticalLr:
@@ -60,11 +60,11 @@ const Length& LengthBox::before(WritingMode writingMode,
   return top;
 }
 
-const Length& LengthBox::after(WritingMode writingMode,
+const Length& LengthBox::After(WritingMode writing_mode,
                                const Length& bottom,
                                const Length& left,
                                const Length& right) {
-  switch (writingMode) {
+  switch (writing_mode) {
     case WritingMode::kHorizontalTb:
       return bottom;
     case WritingMode::kVerticalLr:
@@ -76,42 +76,42 @@ const Length& LengthBox::after(WritingMode writingMode,
   return bottom;
 }
 
-const Length& LengthBox::logicalLeft(WritingMode writingMode) const {
-  return LengthBox::logicalLeft(writingMode, m_left, m_top);
+const Length& LengthBox::LogicalLeft(WritingMode writing_mode) const {
+  return LengthBox::LogicalLeft(writing_mode, left_, top_);
 }
 
-const Length& LengthBox::logicalRight(WritingMode writingMode) const {
-  return LengthBox::logicalRight(writingMode, m_right, m_bottom);
+const Length& LengthBox::LogicalRight(WritingMode writing_mode) const {
+  return LengthBox::LogicalRight(writing_mode, right_, bottom_);
 }
 
-const Length& LengthBox::before(WritingMode writingMode) const {
-  return LengthBox::before(writingMode, m_top, m_left, m_right);
+const Length& LengthBox::Before(WritingMode writing_mode) const {
+  return LengthBox::Before(writing_mode, top_, left_, right_);
 }
 
-const Length& LengthBox::after(WritingMode writingMode) const {
-  return LengthBox::after(writingMode, m_bottom, m_left, m_right);
+const Length& LengthBox::After(WritingMode writing_mode) const {
+  return LengthBox::After(writing_mode, bottom_, left_, right_);
 }
 
-const Length& LengthBox::start(WritingMode writingMode,
+const Length& LengthBox::Start(WritingMode writing_mode,
                                TextDirection direction) const {
-  if (isHorizontalWritingMode(writingMode))
-    return isLeftToRightDirection(direction) ? m_left : m_right;
-  return isLeftToRightDirection(direction) ? m_top : m_bottom;
+  if (IsHorizontalWritingMode(writing_mode))
+    return IsLeftToRightDirection(direction) ? left_ : right_;
+  return IsLeftToRightDirection(direction) ? top_ : bottom_;
 }
 
-const Length& LengthBox::end(WritingMode writingMode,
+const Length& LengthBox::end(WritingMode writing_mode,
                              TextDirection direction) const {
-  if (isHorizontalWritingMode(writingMode))
-    return isLeftToRightDirection(direction) ? m_right : m_left;
-  return isLeftToRightDirection(direction) ? m_bottom : m_top;
+  if (IsHorizontalWritingMode(writing_mode))
+    return IsLeftToRightDirection(direction) ? right_ : left_;
+  return IsLeftToRightDirection(direction) ? bottom_ : top_;
 }
 
-const Length& LengthBox::over(WritingMode writingMode) const {
-  return isHorizontalWritingMode(writingMode) ? m_top : m_right;
+const Length& LengthBox::Over(WritingMode writing_mode) const {
+  return IsHorizontalWritingMode(writing_mode) ? top_ : right_;
 }
 
-const Length& LengthBox::under(WritingMode writingMode) const {
-  return isHorizontalWritingMode(writingMode) ? m_bottom : m_left;
+const Length& LengthBox::Under(WritingMode writing_mode) const {
+  return IsHorizontalWritingMode(writing_mode) ? bottom_ : left_;
 }
 
 }  // namespace blink

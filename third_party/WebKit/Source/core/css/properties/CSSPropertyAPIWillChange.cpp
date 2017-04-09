@@ -14,29 +14,29 @@ namespace blink {
 const CSSValue* CSSPropertyAPIWillChange::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  CSSValueList* values = CSSValueList::createCommaSeparated();
+  CSSValueList* values = CSSValueList::CreateCommaSeparated();
   // Every comma-separated list of identifiers is a valid will-change value,
   // unless the list includes an explicitly disallowed identifier.
   while (true) {
-    if (range.peek().type() != IdentToken)
+    if (range.Peek().GetType() != kIdentToken)
       return nullptr;
-    CSSPropertyID unresolvedProperty =
-        unresolvedCSSPropertyID(range.peek().value());
-    if (unresolvedProperty != CSSPropertyInvalid &&
-        unresolvedProperty != CSSPropertyVariable) {
-      DCHECK(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
+    CSSPropertyID unresolved_property =
+        UnresolvedCSSPropertyID(range.Peek().Value());
+    if (unresolved_property != CSSPropertyInvalid &&
+        unresolved_property != CSSPropertyVariable) {
+      DCHECK(CSSPropertyMetadata::IsEnabledProperty(unresolved_property));
       // Now "all" is used by both CSSValue and CSSPropertyValue.
       // Need to return nullptr when currentValue is CSSPropertyAll.
-      if (unresolvedProperty == CSSPropertyWillChange ||
-          unresolvedProperty == CSSPropertyAll)
+      if (unresolved_property == CSSPropertyWillChange ||
+          unresolved_property == CSSPropertyAll)
         return nullptr;
-      values->append(*CSSCustomIdentValue::create(unresolvedProperty));
-      range.consumeIncludingWhitespace();
+      values->Append(*CSSCustomIdentValue::Create(unresolved_property));
+      range.ConsumeIncludingWhitespace();
     } else {
-      switch (range.peek().id()) {
+      switch (range.Peek().Id()) {
         case CSSValueNone:
         case CSSValueAll:
         case CSSValueAuto:
@@ -46,17 +46,17 @@ const CSSValue* CSSPropertyAPIWillChange::parseSingleValue(
           return nullptr;
         case CSSValueContents:
         case CSSValueScrollPosition:
-          values->append(*CSSPropertyParserHelpers::consumeIdent(range));
+          values->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
           break;
         default:
-          range.consumeIncludingWhitespace();
+          range.ConsumeIncludingWhitespace();
           break;
       }
     }
 
-    if (range.atEnd())
+    if (range.AtEnd())
       break;
-    if (!CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(range))
+    if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range))
       return nullptr;
   }
 

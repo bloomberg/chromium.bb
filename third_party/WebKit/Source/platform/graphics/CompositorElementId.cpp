@@ -6,10 +6,10 @@
 
 namespace blink {
 
-CompositorElementId createCompositorElementId(
-    int domNodeId,
-    CompositorSubElementId subElementId) {
-  return CompositorElementId(domNodeId, static_cast<int>(subElementId));
+CompositorElementId CreateCompositorElementId(
+    int dom_node_id,
+    CompositorSubElementId sub_element_id) {
+  return CompositorElementId(dom_node_id, static_cast<int>(sub_element_id));
 }
 
 }  // namespace blink

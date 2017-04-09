@@ -42,80 +42,80 @@ namespace blink {
 using namespace HTMLNames;
 
 DEFINE_TRACE(BaseCheckableInputType) {
-  InputTypeView::trace(visitor);
-  InputType::trace(visitor);
+  InputTypeView::Trace(visitor);
+  InputType::Trace(visitor);
 }
 
-InputTypeView* BaseCheckableInputType::createView() {
+InputTypeView* BaseCheckableInputType::CreateView() {
   return this;
 }
 
-FormControlState BaseCheckableInputType::saveFormControlState() const {
-  return FormControlState(element().checked() ? "on" : "off");
+FormControlState BaseCheckableInputType::SaveFormControlState() const {
+  return FormControlState(GetElement().checked() ? "on" : "off");
 }
 
-void BaseCheckableInputType::restoreFormControlState(
+void BaseCheckableInputType::RestoreFormControlState(
     const FormControlState& state) {
-  element().setChecked(state[0] == "on");
+  GetElement().setChecked(state[0] == "on");
 }
 
-void BaseCheckableInputType::appendToFormData(FormData& formData) const {
-  if (element().checked())
-    formData.append(element().name(), element().value());
+void BaseCheckableInputType::AppendToFormData(FormData& form_data) const {
+  if (GetElement().checked())
+    form_data.append(GetElement().GetName(), GetElement().value());
 }
 
-void BaseCheckableInputType::handleKeydownEvent(KeyboardEvent* event) {
+void BaseCheckableInputType::HandleKeydownEvent(KeyboardEvent* event) {
   const String& key = event->key();
   if (key == " ") {
-    element().setActive(true);
+    GetElement().SetActive(true);
     // No setDefaultHandled(), because IE dispatches a keypress in this case
     // and the caller will only dispatch a keypress if we don't call
     // setDefaultHandled().
   }
 }
 
-void BaseCheckableInputType::handleKeypressEvent(KeyboardEvent* event) {
+void BaseCheckableInputType::HandleKeypressEvent(KeyboardEvent* event) {
   if (event->charCode() == ' ') {
     // Prevent scrolling down the page.
-    event->setDefaultHandled();
+    event->SetDefaultHandled();
   }
 }
 
-bool BaseCheckableInputType::canSetStringValue() const {
+bool BaseCheckableInputType::CanSetStringValue() const {
   return false;
 }
 
 // FIXME: Could share this with KeyboardClickableInputTypeView and
 // RangeInputType if we had a common base class.
-void BaseCheckableInputType::accessKeyAction(bool sendMouseEvents) {
-  InputTypeView::accessKeyAction(sendMouseEvents);
+void BaseCheckableInputType::AccessKeyAction(bool send_mouse_events) {
+  InputTypeView::AccessKeyAction(send_mouse_events);
 
-  element().dispatchSimulatedClick(
-      0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
+  GetElement().DispatchSimulatedClick(
+      0, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
 }
 
-bool BaseCheckableInputType::matchesDefaultPseudoClass() {
-  return element().fastHasAttribute(checkedAttr);
+bool BaseCheckableInputType::MatchesDefaultPseudoClass() {
+  return GetElement().FastHasAttribute(checkedAttr);
 }
 
-InputType::ValueMode BaseCheckableInputType::valueMode() const {
+InputType::ValueMode BaseCheckableInputType::GetValueMode() const {
   return ValueMode::kDefaultOn;
 }
 
-void BaseCheckableInputType::setValue(const String& sanitizedValue,
+void BaseCheckableInputType::SetValue(const String& sanitized_value,
                                       bool,
                                       TextFieldEventBehavior,
                                       TextControlSetValueSelection) {
-  element().setAttribute(valueAttr, AtomicString(sanitizedValue));
+  GetElement().setAttribute(valueAttr, AtomicString(sanitized_value));
 }
 
-void BaseCheckableInputType::readingChecked() const {
-  if (m_isInClickHandler)
-    UseCounter::count(element().document(),
-                      UseCounter::ReadingCheckedInClickHandler);
+void BaseCheckableInputType::ReadingChecked() const {
+  if (is_in_click_handler_)
+    UseCounter::Count(GetElement().GetDocument(),
+                      UseCounter::kReadingCheckedInClickHandler);
 }
 
-bool BaseCheckableInputType::isCheckable() {
+bool BaseCheckableInputType::IsCheckable() {
   return true;
 }
 

@@ -17,15 +17,15 @@ using ActiveStyleSheet = std::pair<Member<CSSStyleSheet>, Member<RuleSet>>;
 using ActiveStyleSheetVector = HeapVector<ActiveStyleSheet>;
 
 enum ActiveSheetsChange {
-  NoActiveSheetsChanged,  // Nothing changed.
-  ActiveSheetsChanged,    // Sheets were added and/or inserted.
-  ActiveSheetsAppended    // Only additions, and all appended.
+  kNoActiveSheetsChanged,  // Nothing changed.
+  kActiveSheetsChanged,    // Sheets were added and/or inserted.
+  kActiveSheetsAppended    // Only additions, and all appended.
 };
 
 CORE_EXPORT ActiveSheetsChange
-compareActiveStyleSheets(const ActiveStyleSheetVector& oldStyleSheets,
-                         const ActiveStyleSheetVector& newStyleSheets,
-                         HeapHashSet<Member<RuleSet>>& changedRuleSets);
+CompareActiveStyleSheets(const ActiveStyleSheetVector& old_style_sheets,
+                         const ActiveStyleSheetVector& new_style_sheets,
+                         HeapHashSet<Member<RuleSet>>& changed_rule_sets);
 
 }  // namespace blink
 

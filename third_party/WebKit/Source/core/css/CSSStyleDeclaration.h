@@ -45,24 +45,24 @@ class CORE_EXPORT CSSStyleDeclaration
   virtual ~CSSStyleDeclaration() {}
 
   virtual CSSRule* parentRule() const = 0;
-  String cssFloat() { return getPropertyValueInternal(CSSPropertyFloat); }
-  void setCSSFloat(const String& value, ExceptionState& exceptionState) {
-    setPropertyInternal(CSSPropertyFloat, String(), value, false,
-                        exceptionState);
+  String cssFloat() { return GetPropertyValueInternal(CSSPropertyFloat); }
+  void setCSSFloat(const String& value, ExceptionState& exception_state) {
+    SetPropertyInternal(CSSPropertyFloat, String(), value, false,
+                        exception_state);
   }
   virtual String cssText() const = 0;
   virtual void setCSSText(const String&, ExceptionState&) = 0;
   virtual unsigned length() const = 0;
   virtual String item(unsigned index) const = 0;
-  virtual String getPropertyValue(const String& propertyName) = 0;
-  virtual String getPropertyPriority(const String& propertyName) = 0;
-  virtual String getPropertyShorthand(const String& propertyName) = 0;
-  virtual bool isPropertyImplicit(const String& propertyName) = 0;
-  virtual void setProperty(const String& propertyName,
+  virtual String getPropertyValue(const String& property_name) = 0;
+  virtual String getPropertyPriority(const String& property_name) = 0;
+  virtual String GetPropertyShorthand(const String& property_name) = 0;
+  virtual bool IsPropertyImplicit(const String& property_name) = 0;
+  virtual void setProperty(const String& property_name,
                            const String& value,
                            const String& priority,
                            ExceptionState&) = 0;
-  virtual String removeProperty(const String& propertyName,
+  virtual String removeProperty(const String& property_name,
                                 ExceptionState&) = 0;
 
   // CSSPropertyID versions of the CSSOM functions to support bindings and
@@ -70,18 +70,18 @@ class CORE_EXPORT CSSStyleDeclaration
   // Use the non-virtual methods in the concrete subclasses when possible.
   // The CSSValue returned by this function should not be exposed to the web as
   // it may be used by multiple documents at the same time.
-  virtual const CSSValue* getPropertyCSSValueInternal(CSSPropertyID) = 0;
-  virtual const CSSValue* getPropertyCSSValueInternal(
-      AtomicString customPropertyName) = 0;
-  virtual String getPropertyValueInternal(CSSPropertyID) = 0;
-  virtual void setPropertyInternal(CSSPropertyID,
-                                   const String& propertyValue,
+  virtual const CSSValue* GetPropertyCSSValueInternal(CSSPropertyID) = 0;
+  virtual const CSSValue* GetPropertyCSSValueInternal(
+      AtomicString custom_property_name) = 0;
+  virtual String GetPropertyValueInternal(CSSPropertyID) = 0;
+  virtual void SetPropertyInternal(CSSPropertyID,
+                                   const String& property_value,
                                    const String& value,
                                    bool important,
                                    ExceptionState&) = 0;
 
-  virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
-  virtual CSSStyleSheet* parentStyleSheet() const { return 0; }
+  virtual bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
+  virtual CSSStyleSheet* ParentStyleSheet() const { return 0; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

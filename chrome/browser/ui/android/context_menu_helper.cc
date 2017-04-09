@@ -110,7 +110,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
   bool image_was_fetched_lo_fi =
       it != params.properties.end() &&
       it->second == data_reduction_proxy::empty_image_directive();
-  bool can_save = params.media_flags & blink::WebContextMenuData::MediaCanSave;
+  bool can_save = params.media_flags & blink::WebContextMenuData::kMediaCanSave;
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(

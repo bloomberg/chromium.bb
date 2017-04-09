@@ -36,15 +36,15 @@
 
 namespace blink {
 
-HTMLImport* HTMLImport::root() {
+HTMLImport* HTMLImport::Root() {
   HTMLImport* i = this;
-  while (i->parent())
-    i = i->parent();
+  while (i->Parent())
+    i = i->Parent();
   return i;
 }
 
-bool HTMLImport::precedes(HTMLImport* import) {
-  for (HTMLImport* i = this; i; i = traverseNext(i)) {
+bool HTMLImport::Precedes(HTMLImport* import) {
+  for (HTMLImport* i = this; i; i = TraverseNext(i)) {
     if (i == import)
       return true;
   }
@@ -52,40 +52,40 @@ bool HTMLImport::precedes(HTMLImport* import) {
   return false;
 }
 
-bool HTMLImport::formsCycle() const {
-  for (const HTMLImport* i = this->parent(); i; i = i->parent()) {
-    if (i->document() == this->document())
+bool HTMLImport::FormsCycle() const {
+  for (const HTMLImport* i = this->Parent(); i; i = i->Parent()) {
+    if (i->GetDocument() == this->GetDocument())
       return true;
   }
 
   return false;
 }
 
-void HTMLImport::appendImport(HTMLImport* child) {
-  appendChild(child);
+void HTMLImport::AppendImport(HTMLImport* child) {
+  AppendChild(child);
 
   // This prevents HTML parser from going beyond the
   // blockage line before the precise state is computed by recalcState().
-  if (child->isSync())
-    m_state = HTMLImportState::blockedState();
+  if (child->IsSync())
+    state_ = HTMLImportState::BlockedState();
 
-  stateWillChange();
+  StateWillChange();
 }
 
-void HTMLImport::stateDidChange() {
-  if (!state().shouldBlockScriptExecution()) {
-    if (Document* document = this->document())
-      document->didLoadAllImports();
+void HTMLImport::StateDidChange() {
+  if (!GetState().ShouldBlockScriptExecution()) {
+    if (Document* document = this->GetDocument())
+      document->DidLoadAllImports();
   }
 }
 
-void HTMLImport::recalcTreeState(HTMLImport* root) {
+void HTMLImport::RecalcTreeState(HTMLImport* root) {
   HeapHashMap<Member<HTMLImport>, HTMLImportState> snapshot;
   HeapVector<Member<HTMLImport>> updated;
 
-  for (HTMLImport* i = root; i; i = traverseNext(i)) {
-    snapshot.insert(i, i->state());
-    i->m_state = HTMLImportState::invalidState();
+  for (HTMLImport* i = root; i; i = TraverseNext(i)) {
+    snapshot.insert(i, i->GetState());
+    i->state_ = HTMLImportState::InvalidState();
   }
 
   // The post-visit DFS order matters here because
@@ -93,41 +93,41 @@ void HTMLImport::recalcTreeState(HTMLImport* root) {
   // |m_state| of its children and precedents of ancestors.
   // Accidental cycle dependency of state computation is prevented
   // by invalidateCachedState() and isStateCacheValid() check.
-  for (HTMLImport* i = traverseFirstPostOrder(root); i;
-       i = traverseNextPostOrder(i)) {
-    DCHECK(!i->m_state.isValid());
-    i->m_state = HTMLImportStateResolver(i).resolve();
+  for (HTMLImport* i = TraverseFirstPostOrder(root); i;
+       i = TraverseNextPostOrder(i)) {
+    DCHECK(!i->state_.IsValid());
+    i->state_ = HTMLImportStateResolver(i).Resolve();
 
-    HTMLImportState newState = i->state();
-    HTMLImportState oldState = snapshot.at(i);
+    HTMLImportState new_state = i->GetState();
+    HTMLImportState old_state = snapshot.at(i);
     // Once the state reaches Ready, it shouldn't go back.
-    DCHECK(!oldState.isReady() || oldState <= newState);
-    if (newState != oldState)
+    DCHECK(!old_state.IsReady() || old_state <= new_state);
+    if (new_state != old_state)
       updated.push_back(i);
   }
 
   for (const auto& import : updated)
-    import->stateDidChange();
+    import->StateDidChange();
 }
 
 #if !defined(NDEBUG)
-void HTMLImport::show() {
-  root()->showTree(this, 0);
+void HTMLImport::Show() {
+  Root()->ShowTree(this, 0);
 }
 
-void HTMLImport::showTree(HTMLImport* highlight, unsigned depth) {
+void HTMLImport::ShowTree(HTMLImport* highlight, unsigned depth) {
   for (unsigned i = 0; i < depth * 4; ++i)
     fprintf(stderr, " ");
 
   fprintf(stderr, "%s", this == highlight ? "*" : " ");
-  showThis();
+  ShowThis();
   fprintf(stderr, "\n");
-  for (HTMLImport* child = firstChild(); child; child = child->next())
-    child->showTree(highlight, depth + 1);
+  for (HTMLImport* child = FirstChild(); child; child = child->Next())
+    child->ShowTree(highlight, depth + 1);
 }
 
-void HTMLImport::showThis() {
-  fprintf(stderr, "%p state=%d", this, m_state.peekValueForDebug());
+void HTMLImport::ShowThis() {
+  fprintf(stderr, "%p state=%d", this, state_.PeekValueForDebug());
 }
 #endif
 

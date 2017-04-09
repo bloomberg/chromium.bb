@@ -88,12 +88,12 @@ bool RequestSender::StartRequest(Source* source,
 
   GURL source_url;
   if (blink::WebLocalFrame* webframe = context->web_frame())
-    source_url = webframe->document().url();
+    source_url = webframe->GetDocument().Url();
 
   InsertRequest(request_id,
                 base::MakeUnique<PendingRequest>(
                     name, source,
-                    blink::WebUserGestureIndicator::currentUserGestureToken()));
+                    blink::WebUserGestureIndicator::CurrentUserGestureToken()));
 
   ExtensionHostMsg_Request_Params params;
   params.name = name;
@@ -103,7 +103,7 @@ bool RequestSender::StartRequest(Source* source,
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =
-      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
+      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe();
 
   // Set Service Worker specific params to default values.
   params.worker_thread_id = -1;

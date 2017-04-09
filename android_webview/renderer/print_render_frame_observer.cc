@@ -35,7 +35,7 @@ void PrintRenderFrameObserver::OnPrintNodeUnderContextMenu() {
   printing::PrintWebViewHelper* helper =
       printing::PrintWebViewHelper::Get(render_frame());
   if (helper)
-    helper->PrintNode(render_frame()->GetWebFrame()->contextMenuNode());
+    helper->PrintNode(render_frame()->GetWebFrame()->ContextMenuNode());
 }
 
 void PrintRenderFrameObserver::OnDestruct() {

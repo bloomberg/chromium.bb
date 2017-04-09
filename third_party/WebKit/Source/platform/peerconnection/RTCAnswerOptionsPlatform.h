@@ -12,19 +12,19 @@ namespace blink {
 class RTCAnswerOptionsPlatform final
     : public GarbageCollected<RTCAnswerOptionsPlatform> {
  public:
-  static RTCAnswerOptionsPlatform* create(bool voiceActivityDetection) {
-    return new RTCAnswerOptionsPlatform(voiceActivityDetection);
+  static RTCAnswerOptionsPlatform* Create(bool voice_activity_detection) {
+    return new RTCAnswerOptionsPlatform(voice_activity_detection);
   }
 
-  bool voiceActivityDetection() const { return m_voiceActivityDetection; }
+  bool VoiceActivityDetection() const { return voice_activity_detection_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit RTCAnswerOptionsPlatform(bool voiceActivityDetection)
-      : m_voiceActivityDetection(voiceActivityDetection) {}
+  explicit RTCAnswerOptionsPlatform(bool voice_activity_detection)
+      : voice_activity_detection_(voice_activity_detection) {}
 
-  bool m_voiceActivityDetection;
+  bool voice_activity_detection_;
 };
 
 }  // namespace blink

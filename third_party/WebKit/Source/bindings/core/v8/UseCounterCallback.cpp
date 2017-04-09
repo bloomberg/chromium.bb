@@ -11,115 +11,115 @@
 
 namespace blink {
 
-void useCounterCallback(v8::Isolate* isolate,
+void UseCounterCallback(v8::Isolate* isolate,
                         v8::Isolate::UseCounterFeature feature) {
-  if (V8PerIsolateData::from(isolate)->isUseCounterDisabled())
+  if (V8PerIsolateData::From(isolate)->IsUseCounterDisabled())
     return;
 
-  UseCounter::Feature blinkFeature;
+  UseCounter::Feature blink_feature;
   bool deprecated = false;
   switch (feature) {
     case v8::Isolate::kUseAsm:
-      blinkFeature = UseCounter::UseAsm;
+      blink_feature = UseCounter::kUseAsm;
       break;
     case v8::Isolate::kBreakIterator:
-      blinkFeature = UseCounter::BreakIterator;
+      blink_feature = UseCounter::kBreakIterator;
       break;
     case v8::Isolate::kLegacyConst:
-      blinkFeature = UseCounter::LegacyConst;
+      blink_feature = UseCounter::kLegacyConst;
       break;
     case v8::Isolate::kSloppyMode:
-      blinkFeature = UseCounter::V8SloppyMode;
+      blink_feature = UseCounter::kV8SloppyMode;
       break;
     case v8::Isolate::kStrictMode:
-      blinkFeature = UseCounter::V8StrictMode;
+      blink_feature = UseCounter::kV8StrictMode;
       break;
     case v8::Isolate::kStrongMode:
-      blinkFeature = UseCounter::V8StrongMode;
+      blink_feature = UseCounter::kV8StrongMode;
       break;
     case v8::Isolate::kRegExpPrototypeStickyGetter:
-      blinkFeature = UseCounter::V8RegExpPrototypeStickyGetter;
+      blink_feature = UseCounter::kV8RegExpPrototypeStickyGetter;
       break;
     case v8::Isolate::kRegExpPrototypeToString:
-      blinkFeature = UseCounter::V8RegExpPrototypeToString;
+      blink_feature = UseCounter::kV8RegExpPrototypeToString;
       break;
     case v8::Isolate::kRegExpPrototypeUnicodeGetter:
-      blinkFeature = UseCounter::V8RegExpPrototypeUnicodeGetter;
+      blink_feature = UseCounter::kV8RegExpPrototypeUnicodeGetter;
       break;
     case v8::Isolate::kIntlV8Parse:
-      blinkFeature = UseCounter::V8IntlV8Parse;
+      blink_feature = UseCounter::kV8IntlV8Parse;
       break;
     case v8::Isolate::kIntlPattern:
-      blinkFeature = UseCounter::V8IntlPattern;
+      blink_feature = UseCounter::kV8IntlPattern;
       break;
     case v8::Isolate::kIntlResolved:
-      blinkFeature = UseCounter::V8IntlResolved;
+      blink_feature = UseCounter::kV8IntlResolved;
       break;
     case v8::Isolate::kPromiseChain:
-      blinkFeature = UseCounter::V8PromiseChain;
+      blink_feature = UseCounter::kV8PromiseChain;
       break;
     case v8::Isolate::kPromiseAccept:
-      blinkFeature = UseCounter::V8PromiseAccept;
+      blink_feature = UseCounter::kV8PromiseAccept;
       break;
     case v8::Isolate::kPromiseDefer:
-      blinkFeature = UseCounter::V8PromiseDefer;
+      blink_feature = UseCounter::kV8PromiseDefer;
       break;
     case v8::Isolate::kHtmlCommentInExternalScript:
-      blinkFeature = UseCounter::V8HTMLCommentInExternalScript;
+      blink_feature = UseCounter::kV8HTMLCommentInExternalScript;
       break;
     case v8::Isolate::kHtmlComment:
-      blinkFeature = UseCounter::V8HTMLComment;
+      blink_feature = UseCounter::kV8HTMLComment;
       break;
     case v8::Isolate::kSloppyModeBlockScopedFunctionRedefinition:
-      blinkFeature = UseCounter::V8SloppyModeBlockScopedFunctionRedefinition;
+      blink_feature = UseCounter::kV8SloppyModeBlockScopedFunctionRedefinition;
       break;
     case v8::Isolate::kForInInitializer:
-      blinkFeature = UseCounter::V8ForInInitializer;
+      blink_feature = UseCounter::kV8ForInInitializer;
       break;
     case v8::Isolate::kArrayProtectorDirtied:
-      blinkFeature = UseCounter::V8ArrayProtectorDirtied;
+      blink_feature = UseCounter::kV8ArrayProtectorDirtied;
       break;
     case v8::Isolate::kArraySpeciesModified:
-      blinkFeature = UseCounter::V8ArraySpeciesModified;
+      blink_feature = UseCounter::kV8ArraySpeciesModified;
       break;
     case v8::Isolate::kArrayPrototypeConstructorModified:
-      blinkFeature = UseCounter::V8ArrayPrototypeConstructorModified;
+      blink_feature = UseCounter::kV8ArrayPrototypeConstructorModified;
       break;
     case v8::Isolate::kArrayInstanceProtoModified:
-      blinkFeature = UseCounter::V8ArrayInstanceProtoModified;
+      blink_feature = UseCounter::kV8ArrayInstanceProtoModified;
       break;
     case v8::Isolate::kArrayInstanceConstructorModified:
-      blinkFeature = UseCounter::V8ArrayInstanceConstructorModified;
+      blink_feature = UseCounter::kV8ArrayInstanceConstructorModified;
       break;
     case v8::Isolate::kLegacyFunctionDeclaration:
-      blinkFeature = UseCounter::V8LegacyFunctionDeclaration;
+      blink_feature = UseCounter::kV8LegacyFunctionDeclaration;
       break;
     case v8::Isolate::kRegExpPrototypeSourceGetter:
-      blinkFeature = UseCounter::V8RegExpPrototypeSourceGetter;
+      blink_feature = UseCounter::kV8RegExpPrototypeSourceGetter;
       break;
     case v8::Isolate::kRegExpPrototypeOldFlagGetter:
-      blinkFeature = UseCounter::V8RegExpPrototypeOldFlagGetter;
+      blink_feature = UseCounter::kV8RegExpPrototypeOldFlagGetter;
       break;
     case v8::Isolate::kDecimalWithLeadingZeroInStrictMode:
-      blinkFeature = UseCounter::V8DecimalWithLeadingZeroInStrictMode;
+      blink_feature = UseCounter::kV8DecimalWithLeadingZeroInStrictMode;
       break;
     case v8::Isolate::kLegacyDateParser:
-      blinkFeature = UseCounter::V8LegacyDateParser;
+      blink_feature = UseCounter::kV8LegacyDateParser;
       break;
     case v8::Isolate::kDefineGetterOrSetterWouldThrow:
-      blinkFeature = UseCounter::V8DefineGetterOrSetterWouldThrow;
+      blink_feature = UseCounter::kV8DefineGetterOrSetterWouldThrow;
       break;
     case v8::Isolate::kFunctionConstructorReturnedUndefined:
-      blinkFeature = UseCounter::V8FunctionConstructorReturnedUndefined;
+      blink_feature = UseCounter::kV8FunctionConstructorReturnedUndefined;
       break;
     case v8::Isolate::kAssigmentExpressionLHSIsCallInSloppy:
-      blinkFeature = UseCounter::V8AssigmentExpressionLHSIsCallInSloppy;
+      blink_feature = UseCounter::kV8AssigmentExpressionLHSIsCallInSloppy;
       break;
     case v8::Isolate::kAssigmentExpressionLHSIsCallInStrict:
-      blinkFeature = UseCounter::V8AssigmentExpressionLHSIsCallInStrict;
+      blink_feature = UseCounter::kV8AssigmentExpressionLHSIsCallInStrict;
       break;
     case v8::Isolate::kPromiseConstructorReturnedUndefined:
-      blinkFeature = UseCounter::V8PromiseConstructorReturnedUndefined;
+      blink_feature = UseCounter::kV8PromiseConstructorReturnedUndefined;
       break;
     default:
       // This can happen if V8 has added counters that this version of Blink
@@ -127,10 +127,10 @@ void useCounterCallback(v8::Isolate* isolate,
       return;
   }
   if (deprecated) {
-    Deprecation::countDeprecation(currentExecutionContext(isolate),
-                                  blinkFeature);
+    Deprecation::CountDeprecation(CurrentExecutionContext(isolate),
+                                  blink_feature);
   } else {
-    UseCounter::count(currentExecutionContext(isolate), blinkFeature);
+    UseCounter::Count(CurrentExecutionContext(isolate), blink_feature);
   }
 }
 

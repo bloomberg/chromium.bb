@@ -8,7 +8,7 @@
 
 namespace blink {
 
-WebGLContextAttributes toWebGLContextAttributes(
+WebGLContextAttributes ToWebGLContextAttributes(
     const CanvasContextCreationAttributes& attrs) {
   WebGLContextAttributes result;
   result.setAlpha(attrs.alpha());
@@ -21,20 +21,21 @@ WebGLContextAttributes toWebGLContextAttributes(
   return result;
 }
 
-Platform::ContextAttributes toPlatformContextAttributes(
+Platform::ContextAttributes ToPlatformContextAttributes(
     const CanvasContextCreationAttributes& attrs,
-    unsigned webGLVersion,
-    bool supportOwnOffscreenSurface) {
+    unsigned web_gl_version,
+    bool support_own_offscreen_surface) {
   Platform::ContextAttributes result;
-  result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
-  result.webGLVersion = webGLVersion;
-  if (supportOwnOffscreenSurface) {
+  result.fail_if_major_performance_caveat =
+      attrs.failIfMajorPerformanceCaveat();
+  result.web_gl_version = web_gl_version;
+  if (support_own_offscreen_surface) {
     // Only ask for alpha/depth/stencil/antialias if we may be using the default
     // framebuffer. They are not needed for standard offscreen rendering.
-    result.supportAlpha = attrs.alpha();
-    result.supportDepth = attrs.depth();
-    result.supportStencil = attrs.stencil();
-    result.supportAntialias = attrs.antialias();
+    result.support_alpha = attrs.alpha();
+    result.support_depth = attrs.depth();
+    result.support_stencil = attrs.stencil();
+    result.support_antialias = attrs.antialias();
   }
   return result;
 }

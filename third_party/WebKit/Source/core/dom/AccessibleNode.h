@@ -51,7 +51,7 @@ class CORE_EXPORT AccessibleNode
 
   // Returns the given string property if the Element has an AccessibleNode,
   // otherwise returns the equivalent ARIA attribute.
-  static const AtomicString& getProperty(Element*, AOMStringProperty);
+  static const AtomicString& GetProperty(Element*, AOMStringProperty);
 
   AtomicString autocomplete() const;
   void setAutocomplete(const AtomicString&);
@@ -98,14 +98,14 @@ class CORE_EXPORT AccessibleNode
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void setStringProperty(AOMStringProperty, const AtomicString&);
-  void notifyAttributeChanged(const blink::QualifiedName&);
-  AXObjectCache* getAXObjectCache();
+  void SetStringProperty(AOMStringProperty, const AtomicString&);
+  void NotifyAttributeChanged(const blink::QualifiedName&);
+  AXObjectCache* GetAXObjectCache();
 
-  Vector<std::pair<AOMStringProperty, AtomicString>> m_stringProperties;
+  Vector<std::pair<AOMStringProperty, AtomicString>> string_properties_;
 
   // This object's owner Element.
-  Member<Element> m_element;
+  Member<Element> element_;
 };
 
 }  // namespace blink

@@ -16,12 +16,12 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
  public:
   ~DeviceOrientationAbsoluteController() override;
 
-  static const char* supplementName();
-  static DeviceOrientationAbsoluteController& from(Document&);
+  static const char* SupplementName();
+  static DeviceOrientationAbsoluteController& From(Document&);
 
   // Inherited from DeviceSingleWindowEventController.
-  void didAddEventListener(LocalDOMWindow*,
-                           const AtomicString& eventType) override;
+  void DidAddEventListener(LocalDOMWindow*,
+                           const AtomicString& event_type) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -29,8 +29,8 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
   explicit DeviceOrientationAbsoluteController(Document&);
 
   // Inherited from DeviceOrientationController.
-  DeviceOrientationDispatcher& dispatcherInstance() const override;
-  const AtomicString& eventTypeName() const override;
+  DeviceOrientationDispatcher& DispatcherInstance() const override;
+  const AtomicString& EventTypeName() const override;
 };
 
 }  // namespace blink

@@ -14,7 +14,7 @@ const CSSValue* CSSPropertyAPITextDecorationColor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-  return CSSPropertyParserHelpers::consumeColor(range, context.mode());
+  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
 
 }  // namespace blink

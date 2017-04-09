@@ -201,7 +201,7 @@ void MacHistorySwiperTest::endGestureAtPoint(NSPoint point) {
 
 void MacHistorySwiperTest::rendererACKForBeganEvent() {
   blink::WebMouseWheelEvent event;
-  event.phase = blink::WebMouseWheelEvent::PhaseBegan;
+  event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   [historySwiper_ rendererHandledWheelEvent:event consumed:NO];
 }
 

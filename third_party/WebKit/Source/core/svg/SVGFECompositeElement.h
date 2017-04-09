@@ -31,7 +31,7 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<CompositeOperationType>();
+GetStaticStringEntries<CompositeOperationType>();
 
 class SVGFECompositeElement final
     : public SVGFilterPrimitiveStandardAttributes {
@@ -40,14 +40,14 @@ class SVGFECompositeElement final
  public:
   DECLARE_NODE_FACTORY(SVGFECompositeElement);
 
-  SVGAnimatedNumber* k1() { return m_k1.get(); }
-  SVGAnimatedNumber* k2() { return m_k2.get(); }
-  SVGAnimatedNumber* k3() { return m_k3.get(); }
-  SVGAnimatedNumber* k4() { return m_k4.get(); }
-  SVGAnimatedString* in1() { return m_in1.get(); }
-  SVGAnimatedString* in2() { return m_in2.get(); }
+  SVGAnimatedNumber* k1() { return k1_.Get(); }
+  SVGAnimatedNumber* k2() { return k2_.Get(); }
+  SVGAnimatedNumber* k3() { return k3_.Get(); }
+  SVGAnimatedNumber* k4() { return k4_.Get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
+  SVGAnimatedString* in2() { return in2_.Get(); }
   SVGAnimatedEnumeration<CompositeOperationType>* svgOperator() {
-    return m_svgOperator.get();
+    return svg_operator_.Get();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -55,17 +55,17 @@ class SVGFECompositeElement final
  private:
   explicit SVGFECompositeElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
 
-  Member<SVGAnimatedNumber> m_k1;
-  Member<SVGAnimatedNumber> m_k2;
-  Member<SVGAnimatedNumber> m_k3;
-  Member<SVGAnimatedNumber> m_k4;
-  Member<SVGAnimatedString> m_in1;
-  Member<SVGAnimatedString> m_in2;
-  Member<SVGAnimatedEnumeration<CompositeOperationType>> m_svgOperator;
+  Member<SVGAnimatedNumber> k1_;
+  Member<SVGAnimatedNumber> k2_;
+  Member<SVGAnimatedNumber> k3_;
+  Member<SVGAnimatedNumber> k4_;
+  Member<SVGAnimatedString> in1_;
+  Member<SVGAnimatedString> in2_;
+  Member<SVGAnimatedEnumeration<CompositeOperationType>> svg_operator_;
 };
 
 }  // namespace blink

@@ -29,18 +29,18 @@ inline SVGSymbolElement::SVGSymbolElement(Document& document)
     : SVGElement(SVGNames::symbolTag, document), SVGFitToViewBox(this) {}
 
 DEFINE_TRACE(SVGSymbolElement) {
-  SVGElement::trace(visitor);
-  SVGFitToViewBox::trace(visitor);
+  SVGElement::Trace(visitor);
+  SVGFitToViewBox::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGSymbolElement)
 
-void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (SVGFitToViewBox::isKnownAttribute(attrName))
-    invalidateInstances();
+void SVGSymbolElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (SVGFitToViewBox::IsKnownAttribute(attr_name))
+    InvalidateInstances();
 }
 
-LayoutObject* SVGSymbolElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGSymbolElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGHiddenContainer(this);
 }
 

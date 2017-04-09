@@ -9,14 +9,14 @@
 namespace blink {
 
 BackgroundFetchFetch::BackgroundFetchFetch(Request* request)
-    : m_request(request) {}
+    : request_(request) {}
 
 Request* BackgroundFetchFetch::request() const {
-  return m_request;
+  return request_;
 }
 
 DEFINE_TRACE(BackgroundFetchFetch) {
-  visitor->trace(m_request);
+  visitor->Trace(request_);
 }
 
 }  // namespace blink

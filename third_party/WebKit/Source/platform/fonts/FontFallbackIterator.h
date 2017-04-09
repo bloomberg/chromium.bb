@@ -26,58 +26,58 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
   WTF_MAKE_NONCOPYABLE(FontFallbackIterator);
 
  public:
-  static PassRefPtr<FontFallbackIterator> create(const FontDescription&,
+  static PassRefPtr<FontFallbackIterator> Create(const FontDescription&,
                                                  PassRefPtr<FontFallbackList>,
                                                  FontFallbackPriority);
 
-  bool hasNext() const { return m_fallbackStage != OutOfLuck; };
+  bool HasNext() const { return fallback_stage_ != kOutOfLuck; };
 
   // Some system fallback APIs (Windows, Android) require a character, or a
   // portion of the string to be passed.  On Mac and Linux, we get a list of
   // fonts without passing in characters.
-  PassRefPtr<FontDataForRangeSet> next(const Vector<UChar32>& hintList);
+  PassRefPtr<FontDataForRangeSet> Next(const Vector<UChar32>& hint_list);
 
  private:
   FontFallbackIterator(const FontDescription&,
                        PassRefPtr<FontFallbackList>,
                        FontFallbackPriority);
-  bool rangeSetContributesForHint(const Vector<UChar32> hintList,
+  bool RangeSetContributesForHint(const Vector<UChar32> hint_list,
                                   const FontDataForRangeSet*);
-  bool alreadyLoadingRangeForHintChar(UChar32 hintChar);
-  void willUseRange(const AtomicString& family, const FontDataForRangeSet&);
+  bool AlreadyLoadingRangeForHintChar(UChar32 hint_char);
+  void WillUseRange(const AtomicString& family, const FontDataForRangeSet&);
 
-  PassRefPtr<FontDataForRangeSet> uniqueOrNext(
+  PassRefPtr<FontDataForRangeSet> UniqueOrNext(
       PassRefPtr<FontDataForRangeSet> candidate,
-      const Vector<UChar32>& hintList);
+      const Vector<UChar32>& hint_list);
 
-  PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
-  PassRefPtr<SimpleFontData> uniqueSystemFontForHintList(
-      const Vector<UChar32>& hintList);
+  PassRefPtr<SimpleFontData> FallbackPriorityFont(UChar32 hint);
+  PassRefPtr<SimpleFontData> UniqueSystemFontForHintList(
+      const Vector<UChar32>& hint_list);
 
-  const FontDescription& m_fontDescription;
-  RefPtr<FontFallbackList> m_fontFallbackList;
-  int m_currentFontDataIndex;
-  unsigned m_segmentedFaceIndex;
+  const FontDescription& font_description_;
+  RefPtr<FontFallbackList> font_fallback_list_;
+  int current_font_data_index_;
+  unsigned segmented_face_index_;
 
   enum FallbackStage {
-    FallbackPriorityFonts,
-    FontGroupFonts,
-    SegmentedFace,
-    PreferencesFonts,
-    SystemFonts,
-    OutOfLuck
+    kFallbackPriorityFonts,
+    kFontGroupFonts,
+    kSegmentedFace,
+    kPreferencesFonts,
+    kSystemFonts,
+    kOutOfLuck
   };
 
-  FallbackStage m_fallbackStage;
-  HashSet<UChar32> m_previouslyAskedForHint;
+  FallbackStage fallback_stage_;
+  HashSet<UChar32> previously_asked_for_hint_;
   // FontFallbackIterator is meant for single use by HarfBuzzShaper,
   // traversing through the fonts for shaping only once. We must not return
   // duplicate FontDataForRangeSet objects from the next() iteration functions
   // as returning a duplicate value causes a shaping run that won't return any
   // results.
-  HashSet<uint32_t> m_uniqueFontDataForRangeSetsReturned;
-  Vector<RefPtr<FontDataForRangeSet>> m_trackedLoadingRangeSets;
-  FontFallbackPriority m_fontFallbackPriority;
+  HashSet<uint32_t> unique_font_data_for_range_sets_returned_;
+  Vector<RefPtr<FontDataForRangeSet>> tracked_loading_range_sets_;
+  FontFallbackPriority font_fallback_priority_;
 };
 
 }  // namespace blink

@@ -33,250 +33,258 @@ struct SameSizeAsCSSProperty {
 static_assert(sizeof(CSSProperty) == sizeof(SameSizeAsCSSProperty),
               "CSSProperty should stay small");
 
-CSSPropertyID StylePropertyMetadata::shorthandID() const {
-  if (!m_isSetFromShorthand)
+CSSPropertyID StylePropertyMetadata::ShorthandID() const {
+  if (!is_set_from_shorthand_)
     return CSSPropertyInvalid;
 
   Vector<StylePropertyShorthand, 4> shorthands;
-  getMatchingShorthandsForLonghand(static_cast<CSSPropertyID>(m_propertyID),
+  getMatchingShorthandsForLonghand(static_cast<CSSPropertyID>(property_id_),
                                    &shorthands);
   DCHECK(shorthands.size());
-  DCHECK_GE(m_indexInShorthandsVector, 0u);
-  DCHECK_LT(m_indexInShorthandsVector, shorthands.size());
-  return shorthands.at(m_indexInShorthandsVector).id();
+  DCHECK_GE(index_in_shorthands_vector_, 0u);
+  DCHECK_LT(index_in_shorthands_vector_, shorthands.size());
+  return shorthands.at(index_in_shorthands_vector_).id();
 }
 
-enum LogicalBoxSide { BeforeSide, EndSide, AfterSide, StartSide };
-enum PhysicalBoxSide { TopSide, RightSide, BottomSide, LeftSide };
+enum LogicalBoxSide { kBeforeSide, kEndSide, kAfterSide, kStartSide };
+enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
 
-static CSSPropertyID resolveToPhysicalProperty(
+static CSSPropertyID ResolveToPhysicalProperty(
     TextDirection direction,
-    WritingMode writingMode,
-    LogicalBoxSide logicalSide,
+    WritingMode writing_mode,
+    LogicalBoxSide logical_side,
     const StylePropertyShorthand& shorthand) {
   if (direction == TextDirection::kLtr) {
-    if (isHorizontalWritingMode(writingMode)) {
+    if (IsHorizontalWritingMode(writing_mode)) {
       // The common case. The logical and physical box sides match.
       // Left = Start, Right = End, Before = Top, After = Bottom
-      return shorthand.properties()[logicalSide];
+      return shorthand.properties()[logical_side];
     }
 
-    if (isFlippedLinesWritingMode(writingMode)) {
+    if (IsFlippedLinesWritingMode(writing_mode)) {
       // Start = Top, End = Bottom, Before = Left, After = Right.
-      switch (logicalSide) {
-        case StartSide:
-          return shorthand.properties()[TopSide];
-        case EndSide:
-          return shorthand.properties()[BottomSide];
-        case BeforeSide:
-          return shorthand.properties()[LeftSide];
+      switch (logical_side) {
+        case kStartSide:
+          return shorthand.properties()[kTopSide];
+        case kEndSide:
+          return shorthand.properties()[kBottomSide];
+        case kBeforeSide:
+          return shorthand.properties()[kLeftSide];
         default:
-          return shorthand.properties()[RightSide];
+          return shorthand.properties()[kRightSide];
       }
     }
 
     // Start = Top, End = Bottom, Before = Right, After = Left
-    switch (logicalSide) {
-      case StartSide:
-        return shorthand.properties()[TopSide];
-      case EndSide:
-        return shorthand.properties()[BottomSide];
-      case BeforeSide:
-        return shorthand.properties()[RightSide];
+    switch (logical_side) {
+      case kStartSide:
+        return shorthand.properties()[kTopSide];
+      case kEndSide:
+        return shorthand.properties()[kBottomSide];
+      case kBeforeSide:
+        return shorthand.properties()[kRightSide];
       default:
-        return shorthand.properties()[LeftSide];
+        return shorthand.properties()[kLeftSide];
     }
   }
 
-  if (isHorizontalWritingMode(writingMode)) {
+  if (IsHorizontalWritingMode(writing_mode)) {
     // Start = Right, End = Left, Before = Top, After = Bottom
-    switch (logicalSide) {
-      case StartSide:
-        return shorthand.properties()[RightSide];
-      case EndSide:
-        return shorthand.properties()[LeftSide];
-      case BeforeSide:
-        return shorthand.properties()[TopSide];
+    switch (logical_side) {
+      case kStartSide:
+        return shorthand.properties()[kRightSide];
+      case kEndSide:
+        return shorthand.properties()[kLeftSide];
+      case kBeforeSide:
+        return shorthand.properties()[kTopSide];
       default:
-        return shorthand.properties()[BottomSide];
+        return shorthand.properties()[kBottomSide];
     }
   }
 
-  if (isFlippedLinesWritingMode(writingMode)) {
+  if (IsFlippedLinesWritingMode(writing_mode)) {
     // Start = Bottom, End = Top, Before = Left, After = Right
-    switch (logicalSide) {
-      case StartSide:
-        return shorthand.properties()[BottomSide];
-      case EndSide:
-        return shorthand.properties()[TopSide];
-      case BeforeSide:
-        return shorthand.properties()[LeftSide];
+    switch (logical_side) {
+      case kStartSide:
+        return shorthand.properties()[kBottomSide];
+      case kEndSide:
+        return shorthand.properties()[kTopSide];
+      case kBeforeSide:
+        return shorthand.properties()[kLeftSide];
       default:
-        return shorthand.properties()[RightSide];
+        return shorthand.properties()[kRightSide];
     }
   }
 
   // Start = Bottom, End = Top, Before = Right, After = Left
-  switch (logicalSide) {
-    case StartSide:
-      return shorthand.properties()[BottomSide];
-    case EndSide:
-      return shorthand.properties()[TopSide];
-    case BeforeSide:
-      return shorthand.properties()[RightSide];
+  switch (logical_side) {
+    case kStartSide:
+      return shorthand.properties()[kBottomSide];
+    case kEndSide:
+      return shorthand.properties()[kTopSide];
+    case kBeforeSide:
+      return shorthand.properties()[kRightSide];
     default:
-      return shorthand.properties()[LeftSide];
+      return shorthand.properties()[kLeftSide];
   }
 }
 
-enum LogicalExtent { LogicalWidth, LogicalHeight };
+enum LogicalExtent { kLogicalWidth, kLogicalHeight };
 
-static CSSPropertyID resolveToPhysicalProperty(
-    WritingMode writingMode,
-    LogicalExtent logicalSide,
+static CSSPropertyID ResolveToPhysicalProperty(
+    WritingMode writing_mode,
+    LogicalExtent logical_side,
     const CSSPropertyID* properties) {
-  if (isHorizontalWritingMode(writingMode))
-    return properties[logicalSide];
-  return logicalSide == LogicalWidth ? properties[1] : properties[0];
+  if (IsHorizontalWritingMode(writing_mode))
+    return properties[logical_side];
+  return logical_side == kLogicalWidth ? properties[1] : properties[0];
 }
 
-static const StylePropertyShorthand& borderDirections() {
-  static const CSSPropertyID properties[4] = {
+static const StylePropertyShorthand& BorderDirections() {
+  static const CSSPropertyID kProperties[4] = {
       CSSPropertyBorderTop, CSSPropertyBorderRight, CSSPropertyBorderBottom,
       CSSPropertyBorderLeft};
   DEFINE_STATIC_LOCAL(
-      StylePropertyShorthand, borderDirections,
-      (CSSPropertyBorder, properties, WTF_ARRAY_LENGTH(properties)));
-  return borderDirections;
+      StylePropertyShorthand, border_directions,
+      (CSSPropertyBorder, kProperties, WTF_ARRAY_LENGTH(kProperties)));
+  return border_directions;
 }
 
-CSSPropertyID CSSProperty::resolveDirectionAwareProperty(
-    CSSPropertyID propertyID,
+CSSPropertyID CSSProperty::ResolveDirectionAwareProperty(
+    CSSPropertyID property_id,
     TextDirection direction,
-    WritingMode writingMode) {
-  switch (propertyID) {
+    WritingMode writing_mode) {
+  switch (property_id) {
     case CSSPropertyWebkitMarginEnd:
-      return resolveToPhysicalProperty(direction, writingMode, EndSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
                                        marginShorthand());
     case CSSPropertyWebkitMarginStart:
-      return resolveToPhysicalProperty(direction, writingMode, StartSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
                                        marginShorthand());
     case CSSPropertyWebkitMarginBefore:
-      return resolveToPhysicalProperty(direction, writingMode, BeforeSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
                                        marginShorthand());
     case CSSPropertyWebkitMarginAfter:
-      return resolveToPhysicalProperty(direction, writingMode, AfterSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
                                        marginShorthand());
     case CSSPropertyWebkitPaddingEnd:
-      return resolveToPhysicalProperty(direction, writingMode, EndSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
                                        paddingShorthand());
     case CSSPropertyWebkitPaddingStart:
-      return resolveToPhysicalProperty(direction, writingMode, StartSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
                                        paddingShorthand());
     case CSSPropertyWebkitPaddingBefore:
-      return resolveToPhysicalProperty(direction, writingMode, BeforeSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
                                        paddingShorthand());
     case CSSPropertyWebkitPaddingAfter:
-      return resolveToPhysicalProperty(direction, writingMode, AfterSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
                                        paddingShorthand());
     case CSSPropertyWebkitBorderEnd:
-      return resolveToPhysicalProperty(direction, writingMode, EndSide,
-                                       borderDirections());
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
+                                       BorderDirections());
     case CSSPropertyWebkitBorderStart:
-      return resolveToPhysicalProperty(direction, writingMode, StartSide,
-                                       borderDirections());
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
+                                       BorderDirections());
     case CSSPropertyWebkitBorderBefore:
-      return resolveToPhysicalProperty(direction, writingMode, BeforeSide,
-                                       borderDirections());
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
+                                       BorderDirections());
     case CSSPropertyWebkitBorderAfter:
-      return resolveToPhysicalProperty(direction, writingMode, AfterSide,
-                                       borderDirections());
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
+                                       BorderDirections());
     case CSSPropertyWebkitBorderEndColor:
-      return resolveToPhysicalProperty(direction, writingMode, EndSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
                                        borderColorShorthand());
     case CSSPropertyWebkitBorderStartColor:
-      return resolveToPhysicalProperty(direction, writingMode, StartSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
                                        borderColorShorthand());
     case CSSPropertyWebkitBorderBeforeColor:
-      return resolveToPhysicalProperty(direction, writingMode, BeforeSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
                                        borderColorShorthand());
     case CSSPropertyWebkitBorderAfterColor:
-      return resolveToPhysicalProperty(direction, writingMode, AfterSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
                                        borderColorShorthand());
     case CSSPropertyWebkitBorderEndStyle:
-      return resolveToPhysicalProperty(direction, writingMode, EndSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
                                        borderStyleShorthand());
     case CSSPropertyWebkitBorderStartStyle:
-      return resolveToPhysicalProperty(direction, writingMode, StartSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
                                        borderStyleShorthand());
     case CSSPropertyWebkitBorderBeforeStyle:
-      return resolveToPhysicalProperty(direction, writingMode, BeforeSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
                                        borderStyleShorthand());
     case CSSPropertyWebkitBorderAfterStyle:
-      return resolveToPhysicalProperty(direction, writingMode, AfterSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
                                        borderStyleShorthand());
     case CSSPropertyWebkitBorderEndWidth:
-      return resolveToPhysicalProperty(direction, writingMode, EndSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
                                        borderWidthShorthand());
     case CSSPropertyWebkitBorderStartWidth:
-      return resolveToPhysicalProperty(direction, writingMode, StartSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
                                        borderWidthShorthand());
     case CSSPropertyWebkitBorderBeforeWidth:
-      return resolveToPhysicalProperty(direction, writingMode, BeforeSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
                                        borderWidthShorthand());
     case CSSPropertyWebkitBorderAfterWidth:
-      return resolveToPhysicalProperty(direction, writingMode, AfterSide,
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
                                        borderWidthShorthand());
     case CSSPropertyInlineSize:
     case CSSPropertyWebkitLogicalWidth: {
-      const CSSPropertyID properties[2] = {CSSPropertyWidth, CSSPropertyHeight};
-      return resolveToPhysicalProperty(writingMode, LogicalWidth, properties);
+      const CSSPropertyID kProperties[2] = {CSSPropertyWidth,
+                                            CSSPropertyHeight};
+      return ResolveToPhysicalProperty(writing_mode, kLogicalWidth,
+                                       kProperties);
     }
     case CSSPropertyBlockSize:
     case CSSPropertyWebkitLogicalHeight: {
-      const CSSPropertyID properties[2] = {CSSPropertyWidth, CSSPropertyHeight};
-      return resolveToPhysicalProperty(writingMode, LogicalHeight, properties);
+      const CSSPropertyID kProperties[2] = {CSSPropertyWidth,
+                                            CSSPropertyHeight};
+      return ResolveToPhysicalProperty(writing_mode, kLogicalHeight,
+                                       kProperties);
     }
     case CSSPropertyMinInlineSize:
     case CSSPropertyWebkitMinLogicalWidth: {
-      const CSSPropertyID properties[2] = {CSSPropertyMinWidth,
-                                           CSSPropertyMinHeight};
-      return resolveToPhysicalProperty(writingMode, LogicalWidth, properties);
+      const CSSPropertyID kProperties[2] = {CSSPropertyMinWidth,
+                                            CSSPropertyMinHeight};
+      return ResolveToPhysicalProperty(writing_mode, kLogicalWidth,
+                                       kProperties);
     }
     case CSSPropertyMinBlockSize:
     case CSSPropertyWebkitMinLogicalHeight: {
-      const CSSPropertyID properties[2] = {CSSPropertyMinWidth,
-                                           CSSPropertyMinHeight};
-      return resolveToPhysicalProperty(writingMode, LogicalHeight, properties);
+      const CSSPropertyID kProperties[2] = {CSSPropertyMinWidth,
+                                            CSSPropertyMinHeight};
+      return ResolveToPhysicalProperty(writing_mode, kLogicalHeight,
+                                       kProperties);
     }
     case CSSPropertyMaxInlineSize:
     case CSSPropertyWebkitMaxLogicalWidth: {
-      const CSSPropertyID properties[2] = {CSSPropertyMaxWidth,
-                                           CSSPropertyMaxHeight};
-      return resolveToPhysicalProperty(writingMode, LogicalWidth, properties);
+      const CSSPropertyID kProperties[2] = {CSSPropertyMaxWidth,
+                                            CSSPropertyMaxHeight};
+      return ResolveToPhysicalProperty(writing_mode, kLogicalWidth,
+                                       kProperties);
     }
     case CSSPropertyMaxBlockSize:
     case CSSPropertyWebkitMaxLogicalHeight: {
-      const CSSPropertyID properties[2] = {CSSPropertyMaxWidth,
-                                           CSSPropertyMaxHeight};
-      return resolveToPhysicalProperty(writingMode, LogicalHeight, properties);
+      const CSSPropertyID kProperties[2] = {CSSPropertyMaxWidth,
+                                            CSSPropertyMaxHeight};
+      return ResolveToPhysicalProperty(writing_mode, kLogicalHeight,
+                                       kProperties);
     }
     default:
-      return propertyID;
+      return property_id;
   }
 }
 
-bool CSSProperty::isAffectedByAllProperty(CSSPropertyID propertyID) {
-  if (propertyID == CSSPropertyAll)
+bool CSSProperty::IsAffectedByAllProperty(CSSPropertyID property_id) {
+  if (property_id == CSSPropertyAll)
     return false;
 
-  if (!CSSPropertyMetadata::isEnabledProperty(propertyID))
+  if (!CSSPropertyMetadata::IsEnabledProperty(property_id))
     return false;
 
-  if (propertyID == CSSPropertyVariable)
+  if (property_id == CSSPropertyVariable)
     return false;
 
-  if (!CSSPropertyMetadata::isProperty(propertyID))
+  if (!CSSPropertyMetadata::IsProperty(property_id))
     return false;
 
   // all shorthand spec says:
@@ -285,13 +293,13 @@ bool CSSProperty::isAffectedByAllProperty(CSSPropertyID propertyID) {
   // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
   // So CSSPropertyUnicodeBidi and CSSPropertyDirection are not
   // affected by all property.
-  return propertyID != CSSPropertyUnicodeBidi &&
-         propertyID != CSSPropertyDirection;
+  return property_id != CSSPropertyUnicodeBidi &&
+         property_id != CSSPropertyDirection;
 }
 
 bool CSSProperty::operator==(const CSSProperty& other) const {
-  return dataEquivalent(m_value, other.m_value) &&
-         isImportant() == other.isImportant();
+  return DataEquivalent(value_, other.value_) &&
+         IsImportant() == other.IsImportant();
 }
 
 }  // namespace blink

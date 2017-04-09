@@ -36,34 +36,34 @@ class NavigatorUserMediaError final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Name { NamePermissionDenied, NameConstraintNotSatisfied };
+  enum Name { kNamePermissionDenied, kNameConstraintNotSatisfied };
 
-  static NavigatorUserMediaError* create(Name,
+  static NavigatorUserMediaError* Create(Name,
                                          const String& message,
-                                         const String& constraintName);
-  static NavigatorUserMediaError* create(const String& name,
+                                         const String& constraint_name);
+  static NavigatorUserMediaError* Create(const String& name,
                                          const String& message,
-                                         const String& constraintName) {
-    return new NavigatorUserMediaError(name, message, constraintName);
+                                         const String& constraint_name) {
+    return new NavigatorUserMediaError(name, message, constraint_name);
   }
 
-  String name() const { return m_name; }
-  const String& message() const { return m_message; }
-  const String& constraintName() const { return m_constraintName; }
+  String name() const { return name_; }
+  const String& message() const { return message_; }
+  const String& constraintName() const { return constraint_name_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   NavigatorUserMediaError(const String& name,
                           const String& message,
-                          const String& constraintName)
-      : m_name(name), m_message(message), m_constraintName(constraintName) {
-    DCHECK(!name.isEmpty());
+                          const String& constraint_name)
+      : name_(name), message_(message), constraint_name_(constraint_name) {
+    DCHECK(!name.IsEmpty());
   }
 
-  String m_name;
-  String m_message;
-  String m_constraintName;
+  String name_;
+  String message_;
+  String constraint_name_;
 };
 
 }  // namespace blink

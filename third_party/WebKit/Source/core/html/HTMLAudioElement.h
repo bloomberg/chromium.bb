@@ -38,11 +38,11 @@ class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLAudioElement* create(Document&);
-  static HTMLAudioElement* createForJSConstructor(Document&,
+  static HTMLAudioElement* Create(Document&);
+  static HTMLAudioElement* CreateForJSConstructor(Document&,
                                                   const AtomicString& src);
 
-  bool isHTMLAudioElement() const override { return true; }
+  bool IsHTMLAudioElement() const override { return true; }
 
  private:
   HTMLAudioElement(Document&);

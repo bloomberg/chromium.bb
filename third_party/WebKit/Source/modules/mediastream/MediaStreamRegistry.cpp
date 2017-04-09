@@ -30,41 +30,41 @@
 
 namespace blink {
 
-MediaStreamRegistry& MediaStreamRegistry::registry() {
+MediaStreamRegistry& MediaStreamRegistry::Registry() {
   // Since WebWorkers cannot obtain MediaStream objects, we should be on the
   // main thread.
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(MediaStreamRegistry, instance, ());
   return instance;
 }
 
-void MediaStreamRegistry::registerURL(SecurityOrigin*,
+void MediaStreamRegistry::RegisterURL(SecurityOrigin*,
                                       const KURL& url,
                                       URLRegistrable* stream) {
-  DCHECK(&stream->registry() == this);
-  DCHECK(isMainThread());
-  m_streamDescriptors.set(url.getString(),
-                          static_cast<MediaStream*>(stream)->descriptor());
+  DCHECK(&stream->Registry() == this);
+  DCHECK(IsMainThread());
+  stream_descriptors_.Set(url.GetString(),
+                          static_cast<MediaStream*>(stream)->Descriptor());
 }
 
-void MediaStreamRegistry::unregisterURL(const KURL& url) {
-  DCHECK(isMainThread());
-  m_streamDescriptors.erase(url.getString());
+void MediaStreamRegistry::UnregisterURL(const KURL& url) {
+  DCHECK(IsMainThread());
+  stream_descriptors_.erase(url.GetString());
 }
 
-bool MediaStreamRegistry::contains(const String& url) {
-  DCHECK(isMainThread());
-  return m_streamDescriptors.contains(url);
+bool MediaStreamRegistry::Contains(const String& url) {
+  DCHECK(IsMainThread());
+  return stream_descriptors_.Contains(url);
 }
 
-MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(
+MediaStreamDescriptor* MediaStreamRegistry::LookupMediaStreamDescriptor(
     const String& url) {
-  DCHECK(isMainThread());
-  return m_streamDescriptors.at(url);
+  DCHECK(IsMainThread());
+  return stream_descriptors_.at(url);
 }
 
 MediaStreamRegistry::MediaStreamRegistry() {
-  HTMLMediaElement::setMediaStreamRegistry(this);
+  HTMLMediaElement::SetMediaStreamRegistry(this);
 }
 
 }  // namespace blink

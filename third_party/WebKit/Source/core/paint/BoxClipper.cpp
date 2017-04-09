@@ -23,86 +23,86 @@ namespace blink {
 //
 // An exception is control clip, which is currently never applied by
 // PaintLayerClipper.
-static bool boxNeedsClip(const LayoutBox& box) {
-  if (box.hasLayer() && box.layer()->isSelfPaintingLayer())
+static bool BoxNeedsClip(const LayoutBox& box) {
+  if (box.HasLayer() && box.Layer()->IsSelfPaintingLayer())
     return false;
-  return box.shouldClipOverflow();
+  return box.ShouldClipOverflow();
 }
 
 DISABLE_CFI_PERF
 BoxClipper::BoxClipper(const LayoutBox& box,
-                       const PaintInfo& paintInfo,
-                       const LayoutPoint& accumulatedOffset,
-                       ContentsClipBehavior contentsClipBehavior)
-    : m_box(box),
-      m_paintInfo(paintInfo),
-      m_clipType(DisplayItem::kUninitializedType) {
-  DCHECK(m_paintInfo.phase != PaintPhaseSelfBlockBackgroundOnly &&
-         m_paintInfo.phase != PaintPhaseSelfOutlineOnly);
+                       const PaintInfo& paint_info,
+                       const LayoutPoint& accumulated_offset,
+                       ContentsClipBehavior contents_clip_behavior)
+    : box_(box),
+      paint_info_(paint_info),
+      clip_type_(DisplayItem::kUninitializedType) {
+  DCHECK(paint_info_.phase != kPaintPhaseSelfBlockBackgroundOnly &&
+         paint_info_.phase != kPaintPhaseSelfOutlineOnly);
 
-  if (m_paintInfo.phase == PaintPhaseMask)
+  if (paint_info_.phase == kPaintPhaseMask)
     return;
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    const auto* objectProperties = m_box.paintProperties();
-    if (objectProperties && objectProperties->overflowClip()) {
-      PaintChunkProperties properties(
-          paintInfo.context.getPaintController().currentPaintChunkProperties());
-      properties.propertyTreeState.setClip(objectProperties->overflowClip());
-      m_scopedClipProperty.emplace(paintInfo.context.getPaintController(), box,
-                                   paintInfo.displayItemTypeForClipping(),
-                                   properties);
+    const auto* object_properties = box_.PaintProperties();
+    if (object_properties && object_properties->OverflowClip()) {
+      PaintChunkProperties properties(paint_info.context.GetPaintController()
+                                          .CurrentPaintChunkProperties());
+      properties.property_tree_state.SetClip(object_properties->OverflowClip());
+      scoped_clip_property_.emplace(
+          paint_info.context.GetPaintController(), box,
+          paint_info.DisplayItemTypeForClipping(), properties);
     }
     return;
   }
 
-  if (!boxNeedsClip(m_box))
+  if (!BoxNeedsClip(box_))
     return;
 
-  LayoutRect clipRect = m_box.overflowClipRect(accumulatedOffset);
-  FloatRoundedRect clipRoundedRect(0, 0, 0, 0);
-  bool hasBorderRadius = m_box.style()->hasBorderRadius();
-  if (hasBorderRadius)
-    clipRoundedRect = m_box.style()->getRoundedInnerBorderFor(
-        LayoutRect(accumulatedOffset, m_box.size()));
+  LayoutRect clip_rect = box_.OverflowClipRect(accumulated_offset);
+  FloatRoundedRect clip_rounded_rect(0, 0, 0, 0);
+  bool has_border_radius = box_.Style()->HasBorderRadius();
+  if (has_border_radius)
+    clip_rounded_rect = box_.Style()->GetRoundedInnerBorderFor(
+        LayoutRect(accumulated_offset, box_.size()));
 
   // Selection may extend beyond visual overflow, so this optimization is
   // invalid if selection is present.
-  if (contentsClipBehavior == SkipContentsClipIfPossible &&
-      box.getSelectionState() == SelectionNone) {
-    LayoutRect contentsVisualOverflow = m_box.contentsVisualOverflowRect();
-    if (contentsVisualOverflow.isEmpty())
+  if (contents_clip_behavior == kSkipContentsClipIfPossible &&
+      box.GetSelectionState() == SelectionNone) {
+    LayoutRect contents_visual_overflow = box_.ContentsVisualOverflowRect();
+    if (contents_visual_overflow.IsEmpty())
       return;
 
-    LayoutRect conservativeClipRect = clipRect;
-    if (hasBorderRadius)
-      conservativeClipRect.intersect(
-          LayoutRect(clipRoundedRect.radiusCenterRect()));
-    conservativeClipRect.moveBy(-accumulatedOffset);
-    if (m_box.hasLayer())
-      conservativeClipRect.move(m_box.scrolledContentOffset());
-    if (conservativeClipRect.contains(contentsVisualOverflow))
+    LayoutRect conservative_clip_rect = clip_rect;
+    if (has_border_radius)
+      conservative_clip_rect.Intersect(
+          LayoutRect(clip_rounded_rect.RadiusCenterRect()));
+    conservative_clip_rect.MoveBy(-accumulated_offset);
+    if (box_.HasLayer())
+      conservative_clip_rect.Move(box_.ScrolledContentOffset());
+    if (conservative_clip_rect.Contains(contents_visual_overflow))
       return;
   }
 
-  if (!m_paintInfo.context.getPaintController()
-           .displayItemConstructionIsDisabled()) {
-    m_clipType = m_paintInfo.displayItemTypeForClipping();
-    Vector<FloatRoundedRect> roundedRects;
-    if (hasBorderRadius)
-      roundedRects.push_back(clipRoundedRect);
-    m_paintInfo.context.getPaintController().createAndAppend<ClipDisplayItem>(
-        m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
+  if (!paint_info_.context.GetPaintController()
+           .DisplayItemConstructionIsDisabled()) {
+    clip_type_ = paint_info_.DisplayItemTypeForClipping();
+    Vector<FloatRoundedRect> rounded_rects;
+    if (has_border_radius)
+      rounded_rects.push_back(clip_rounded_rect);
+    paint_info_.context.GetPaintController().CreateAndAppend<ClipDisplayItem>(
+        box_, clip_type_, PixelSnappedIntRect(clip_rect), rounded_rects);
   }
 }
 
 BoxClipper::~BoxClipper() {
-  if (m_clipType == DisplayItem::kUninitializedType)
+  if (clip_type_ == DisplayItem::kUninitializedType)
     return;
 
-  DCHECK(boxNeedsClip(m_box));
-  m_paintInfo.context.getPaintController().endItem<EndClipDisplayItem>(
-      m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
+  DCHECK(BoxNeedsClip(box_));
+  paint_info_.context.GetPaintController().EndItem<EndClipDisplayItem>(
+      box_, DisplayItem::ClipTypeToEndClipType(clip_type_));
 }
 
 }  // namespace blink

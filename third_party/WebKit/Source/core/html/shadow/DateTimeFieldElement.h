@@ -40,8 +40,8 @@ class DateTimeFieldElement : public HTMLSpanElement {
 
  public:
   enum EventBehavior {
-    DispatchNoEvent,
-    DispatchEvent,
+    kDispatchNoEvent,
+    kDispatchEvent,
   };
 
   // FieldOwner implementer must call removeEventHandler when
@@ -49,61 +49,61 @@ class DateTimeFieldElement : public HTMLSpanElement {
   class FieldOwner : public GarbageCollectedMixin {
    public:
     virtual ~FieldOwner();
-    virtual void didBlurFromField() = 0;
-    virtual void didFocusOnField() = 0;
-    virtual void fieldValueChanged() = 0;
-    virtual bool focusOnNextField(const DateTimeFieldElement&) = 0;
-    virtual bool focusOnPreviousField(const DateTimeFieldElement&) = 0;
-    virtual bool isFieldOwnerDisabled() const = 0;
-    virtual bool isFieldOwnerReadOnly() const = 0;
-    virtual AtomicString localeIdentifier() const = 0;
-    virtual void fieldDidChangeValueByKeyboard() = 0;
+    virtual void DidBlurFromField() = 0;
+    virtual void DidFocusOnField() = 0;
+    virtual void FieldValueChanged() = 0;
+    virtual bool FocusOnNextField(const DateTimeFieldElement&) = 0;
+    virtual bool FocusOnPreviousField(const DateTimeFieldElement&) = 0;
+    virtual bool IsFieldOwnerDisabled() const = 0;
+    virtual bool IsFieldOwnerReadOnly() const = 0;
+    virtual AtomicString LocaleIdentifier() const = 0;
+    virtual void FieldDidChangeValueByKeyboard() = 0;
   };
 
-  void defaultEventHandler(Event*) override;
-  virtual bool hasValue() const = 0;
-  bool isDisabled() const;
-  virtual float maximumWidth(const ComputedStyle&);
-  virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
-  void removeEventHandler() { m_fieldOwner = nullptr; }
-  void setDisabled();
-  virtual void setEmptyValue(EventBehavior = DispatchNoEvent) = 0;
-  virtual void setValueAsDate(const DateComponents&) = 0;
-  virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) = 0;
-  virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) = 0;
-  virtual void stepDown() = 0;
-  virtual void stepUp() = 0;
-  virtual String value() const = 0;
-  virtual String visibleValue() const = 0;
+  void DefaultEventHandler(Event*) override;
+  virtual bool HasValue() const = 0;
+  bool IsDisabled() const;
+  virtual float MaximumWidth(const ComputedStyle&);
+  virtual void PopulateDateTimeFieldsState(DateTimeFieldsState&) = 0;
+  void RemoveEventHandler() { field_owner_ = nullptr; }
+  void SetDisabled();
+  virtual void SetEmptyValue(EventBehavior = kDispatchNoEvent) = 0;
+  virtual void SetValueAsDate(const DateComponents&) = 0;
+  virtual void SetValueAsDateTimeFieldsState(const DateTimeFieldsState&) = 0;
+  virtual void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) = 0;
+  virtual void StepDown() = 0;
+  virtual void StepUp() = 0;
+  virtual String Value() const = 0;
+  virtual String VisibleValue() const = 0;
   DECLARE_VIRTUAL_TRACE();
 
-  static float computeTextWidth(const ComputedStyle&, const String&);
+  static float ComputeTextWidth(const ComputedStyle&, const String&);
 
  protected:
   DateTimeFieldElement(Document&, FieldOwner&);
-  void focusOnNextField();
-  virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
-  void initialize(const AtomicString& pseudo,
-                  const String& axHelpText,
-                  int axMinimum,
-                  int axMaximum);
-  Locale& localeForOwner() const;
-  AtomicString localeIdentifier() const;
-  void updateVisibleValue(EventBehavior);
-  virtual int valueAsInteger() const = 0;
-  virtual int valueForARIAValueNow() const;
+  void FocusOnNextField();
+  virtual void HandleKeyboardEvent(KeyboardEvent*) = 0;
+  void Initialize(const AtomicString& pseudo,
+                  const String& ax_help_text,
+                  int ax_minimum,
+                  int ax_maximum);
+  Locale& LocaleForOwner() const;
+  AtomicString LocaleIdentifier() const;
+  void UpdateVisibleValue(EventBehavior);
+  virtual int ValueAsInteger() const = 0;
+  virtual int ValueForARIAValueNow() const;
 
   // Node functions.
-  void setFocused(bool) override;
+  void SetFocused(bool) override;
 
  private:
-  void defaultKeyboardEventHandler(KeyboardEvent*);
-  bool isDateTimeFieldElement() const final;
-  bool isFieldOwnerDisabled() const;
-  bool isFieldOwnerReadOnly() const;
-  bool supportsFocus() const final;
+  void DefaultKeyboardEventHandler(KeyboardEvent*);
+  bool IsDateTimeFieldElement() const final;
+  bool IsFieldOwnerDisabled() const;
+  bool IsFieldOwnerReadOnly() const;
+  bool SupportsFocus() const final;
 
-  Member<FieldOwner> m_fieldOwner;
+  Member<FieldOwner> field_owner_;
 };
 
 }  // namespace blink

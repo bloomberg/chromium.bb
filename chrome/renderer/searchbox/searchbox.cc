@@ -258,7 +258,7 @@ SearchBox::~SearchBox() = default;
 void SearchBox::LogEvent(NTPLoggingEventType event) {
   // navigation_start in ms.
   uint64_t start =
-      1000 * (render_frame()->GetWebFrame()->performance().navigationStart());
+      1000 * (render_frame()->GetWebFrame()->Performance().NavigationStart());
   uint64_t now =
       (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InMilliseconds();
   DCHECK(now >= start);

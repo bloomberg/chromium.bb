@@ -49,53 +49,53 @@ struct WebSize;
 // A container for an ARGB bitmap.
 class WebImage {
  public:
-  ~WebImage() { reset(); }
+  ~WebImage() { Reset(); }
 
-  WebImage() { init(); }
+  WebImage() { Init(); }
   WebImage(const WebImage& image) {
-    init();
-    assign(image);
+    Init();
+    Assign(image);
   }
 
   WebImage& operator=(const WebImage& image) {
-    assign(image);
+    Assign(image);
     return *this;
   }
 
   // Decodes the given image data. If the image has multiple frames,
   // then the frame whose size is desiredSize is returned. Otherwise,
   // the first frame is returned.
-  BLINK_PLATFORM_EXPORT static WebImage fromData(const WebData&,
-                                                 const WebSize& desiredSize);
+  BLINK_PLATFORM_EXPORT static WebImage FromData(const WebData&,
+                                                 const WebSize& desired_size);
 
   // Returns a list of all frames in the image. Only the first frame at each
   // pixel size will be returned.
-  BLINK_PLATFORM_EXPORT static WebVector<WebImage> framesFromData(
+  BLINK_PLATFORM_EXPORT static WebVector<WebImage> FramesFromData(
       const WebData&);
 
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebImage&);
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebImage&);
 
-  BLINK_PLATFORM_EXPORT bool isNull() const;
+  BLINK_PLATFORM_EXPORT bool IsNull() const;
   BLINK_PLATFORM_EXPORT WebSize size() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebImage(WTF::PassRefPtr<Image>);
 #endif
 
-  WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) {}
+  WebImage(const SkBitmap& bitmap) : bitmap_(bitmap) {}
 
   WebImage& operator=(const SkBitmap& bitmap) {
-    m_bitmap = bitmap;
+    bitmap_ = bitmap;
     return *this;
   }
 
-  SkBitmap& getSkBitmap() { return m_bitmap; }
-  const SkBitmap& getSkBitmap() const { return m_bitmap; }
+  SkBitmap& GetSkBitmap() { return bitmap_; }
+  const SkBitmap& GetSkBitmap() const { return bitmap_; }
 
  private:
-  void init() {}
-  SkBitmap m_bitmap;
+  void Init() {}
+  SkBitmap bitmap_;
 };
 
 }  // namespace blink

@@ -16,9 +16,9 @@ TEST_F(WindowProxyTest, ReinitializedAfterNavigation) {
   // TODO(dcheng): It's nicer to use TestingPlatformSupportWithMockScheduler,
   // but that leads to random DCHECKs in loading code.
 
-  SimRequest mainResource("https://example.com/index.html", "text/html");
-  loadURL("https://example.com/index.html");
-  mainResource.complete(
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  LoadURL("https://example.com/index.html");
+  main_resource.Complete(
       "<!DOCTYPE html>"
       "<html><head><script>"
       "var childWindow;"
@@ -40,12 +40,12 @@ TEST_F(WindowProxyTest, ReinitializedAfterNavigation) {
       "<iframe></iframe></body></html>");
 
   // Wait for the first data: URL to load
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
   // Wait for the second data: URL to load.
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
 
-  ASSERT_GT(consoleMessages().size(), 0U);
-  EXPECT_EQ("PASSED", consoleMessages()[0]);
+  ASSERT_GT(ConsoleMessages().size(), 0U);
+  EXPECT_EQ("PASSED", ConsoleMessages()[0]);
 }
 }

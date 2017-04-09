@@ -46,34 +46,34 @@ class SourceBufferList final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 
  public:
-  static SourceBufferList* create(ExecutionContext* context,
-                                  GenericEventQueue* asyncEventQueue) {
-    return new SourceBufferList(context, asyncEventQueue);
+  static SourceBufferList* Create(ExecutionContext* context,
+                                  GenericEventQueue* async_event_queue) {
+    return new SourceBufferList(context, async_event_queue);
   }
   ~SourceBufferList() override;
 
-  unsigned length() const { return m_list.size(); }
+  unsigned length() const { return list_.size(); }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(addsourcebuffer);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(removesourcebuffer);
 
   SourceBuffer* item(unsigned index) const {
-    return (index < m_list.size()) ? m_list[index].get() : 0;
+    return (index < list_.size()) ? list_[index].Get() : 0;
   }
 
-  void add(SourceBuffer*);
+  void Add(SourceBuffer*);
   void insert(size_t position, SourceBuffer*);
-  void remove(SourceBuffer*);
-  size_t find(SourceBuffer* buffer) { return m_list.find(buffer); }
-  bool contains(SourceBuffer* buffer) {
-    return m_list.find(buffer) != kNotFound;
+  void Remove(SourceBuffer*);
+  size_t Find(SourceBuffer* buffer) { return list_.Find(buffer); }
+  bool Contains(SourceBuffer* buffer) {
+    return list_.Find(buffer) != kNotFound;
   }
-  void clear();
+  void Clear();
 
   // EventTarget interface
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override {
-    return ContextClient::getExecutionContext();
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextClient::GetExecutionContext();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -81,11 +81,11 @@ class SourceBufferList final : public EventTargetWithInlineData,
  private:
   SourceBufferList(ExecutionContext*, GenericEventQueue*);
 
-  void scheduleEvent(const AtomicString&);
+  void ScheduleEvent(const AtomicString&);
 
-  Member<GenericEventQueue> m_asyncEventQueue;
+  Member<GenericEventQueue> async_event_queue_;
 
-  HeapVector<Member<SourceBuffer>> m_list;
+  HeapVector<Member<SourceBuffer>> list_;
 };
 
 }  // namespace blink

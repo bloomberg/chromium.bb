@@ -19,38 +19,38 @@ class PLATFORM_EXPORT OpenTypeCapsSupport {
  public:
   OpenTypeCapsSupport();
   OpenTypeCapsSupport(const HarfBuzzFace*,
-                      FontDescription::FontVariantCaps requestedCaps,
+                      FontDescription::FontVariantCaps requested_caps,
                       hb_script_t);
 
-  bool needsRunCaseSplitting();
-  bool needsSyntheticFont(SmallCapsIterator::SmallCapsBehavior runCase);
-  FontDescription::FontVariantCaps fontFeatureToUse(
-      SmallCapsIterator::SmallCapsBehavior runCase);
-  CaseMapIntend needsCaseChange(SmallCapsIterator::SmallCapsBehavior runCase);
+  bool NeedsRunCaseSplitting();
+  bool NeedsSyntheticFont(SmallCapsIterator::SmallCapsBehavior run_case);
+  FontDescription::FontVariantCaps FontFeatureToUse(
+      SmallCapsIterator::SmallCapsBehavior run_case);
+  CaseMapIntend NeedsCaseChange(SmallCapsIterator::SmallCapsBehavior run_case);
 
  private:
-  void determineFontSupport(hb_script_t);
-  bool supportsOpenTypeFeature(hb_script_t, uint32_t tag) const;
+  void DetermineFontSupport(hb_script_t);
+  bool SupportsOpenTypeFeature(hb_script_t, uint32_t tag) const;
 
-  const HarfBuzzFace* m_harfBuzzFace;
-  FontDescription::FontVariantCaps m_requestedCaps;
-  SmallCapsIterator::SmallCapsBehavior m_runCase;
+  const HarfBuzzFace* harf_buzz_face_;
+  FontDescription::FontVariantCaps requested_caps_;
+  SmallCapsIterator::SmallCapsBehavior run_case_;
 
   enum class FontSupport {
-    Full,
-    Fallback,  // Fall back to 'smcp' or 'smcp' + 'c2sc'
-    None
+    kFull,
+    kFallback,  // Fall back to 'smcp' or 'smcp' + 'c2sc'
+    kNone
   };
 
   enum class CapsSynthesis {
-    None,
-    LowerToSmallCaps,
-    UpperToSmallCaps,
-    BothToSmallCaps
+    kNone,
+    kLowerToSmallCaps,
+    kUpperToSmallCaps,
+    kBothToSmallCaps
   };
 
-  FontSupport m_fontSupport;
-  CapsSynthesis m_capsSynthesis;
+  FontSupport font_support_;
+  CapsSynthesis caps_synthesis_;
 };
 
 };  // namespace blink

@@ -19,69 +19,69 @@ namespace blink {
 
 namespace {
 
-WebAudioConfiguration toWebAudioConfiguration(
+WebAudioConfiguration ToWebAudioConfiguration(
     const AudioConfiguration& configuration) {
-  WebAudioConfiguration webConfiguration;
+  WebAudioConfiguration web_configuration;
 
   // contentType is mandatory.
   DCHECK(configuration.hasContentType());
-  webConfiguration.contentType = configuration.contentType();
+  web_configuration.content_type = configuration.contentType();
 
   // channels is optional and will be set to a null WebString if not present.
-  webConfiguration.channels = configuration.hasChannels()
-                                  ? WebString(configuration.channels())
-                                  : WebString();
+  web_configuration.channels = configuration.hasChannels()
+                                   ? WebString(configuration.channels())
+                                   : WebString();
 
   if (configuration.hasBitrate())
-    webConfiguration.bitrate = configuration.bitrate();
+    web_configuration.bitrate = configuration.bitrate();
 
   if (configuration.hasSamplerate())
-    webConfiguration.samplerate = configuration.samplerate();
+    web_configuration.samplerate = configuration.samplerate();
 
-  return webConfiguration;
+  return web_configuration;
 }
 
-WebVideoConfiguration toWebVideoConfiguration(
+WebVideoConfiguration ToWebVideoConfiguration(
     const VideoConfiguration& configuration) {
-  WebVideoConfiguration webConfiguration;
+  WebVideoConfiguration web_configuration;
 
   // All the properties are mandatory.
   DCHECK(configuration.hasContentType());
-  webConfiguration.contentType = configuration.contentType();
+  web_configuration.content_type = configuration.contentType();
 
   DCHECK(configuration.hasWidth());
-  webConfiguration.width = configuration.width();
+  web_configuration.width = configuration.width();
 
   DCHECK(configuration.hasHeight());
-  webConfiguration.height = configuration.height();
+  web_configuration.height = configuration.height();
 
   DCHECK(configuration.hasBitrate());
-  webConfiguration.bitrate = configuration.bitrate();
+  web_configuration.bitrate = configuration.bitrate();
 
   DCHECK(configuration.hasFramerate());
-  webConfiguration.framerate = configuration.framerate();
+  web_configuration.framerate = configuration.framerate();
 
-  return webConfiguration;
+  return web_configuration;
 }
 
-WebMediaConfiguration toWebMediaConfiguration(
+WebMediaConfiguration ToWebMediaConfiguration(
     const MediaConfiguration& configuration) {
-  WebMediaConfiguration webConfiguration;
+  WebMediaConfiguration web_configuration;
 
   // type is mandatory.
   DCHECK(configuration.hasType());
 
   if (configuration.hasAudio()) {
-    webConfiguration.audioConfiguration =
-        toWebAudioConfiguration(configuration.audio());
+    web_configuration.audio_configuration =
+        ToWebAudioConfiguration(configuration.audio());
   }
 
   if (configuration.hasVideo()) {
-    webConfiguration.videoConfiguration =
-        toWebVideoConfiguration(configuration.video());
+    web_configuration.video_configuration =
+        ToWebVideoConfiguration(configuration.video());
   }
 
-  return webConfiguration;
+  return web_configuration;
 }
 
 }  // anonymous namespace
@@ -89,14 +89,14 @@ WebMediaConfiguration toWebMediaConfiguration(
 MediaCapabilities::MediaCapabilities() = default;
 
 ScriptPromise MediaCapabilities::query(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const MediaConfiguration& configuration) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  Platform::current()->mediaCapabilitiesClient()->query(
-      toWebMediaConfiguration(configuration),
-      WTF::makeUnique<CallbackPromiseAdapter<MediaDecodingAbility, void>>(
+  Platform::Current()->MediaCapabilitiesClient()->Query(
+      ToWebMediaConfiguration(configuration),
+      WTF::MakeUnique<CallbackPromiseAdapter<MediaDecodingAbility, void>>(
           resolver));
 
   return promise;

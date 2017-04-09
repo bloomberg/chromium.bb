@@ -18,260 +18,261 @@ namespace blink {
 
 class SurroundingTextTest : public ::testing::Test {
  protected:
-  Document& document() const { return m_dummyPageHolder->document(); }
-  void setHTML(const String&);
-  VisibleSelection select(int offset) { return select(offset, offset); }
-  VisibleSelection select(int start, int end);
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  void SetHTML(const String&);
+  VisibleSelection Select(int offset) { return Select(offset, offset); }
+  VisibleSelection Select(int start, int end);
 
  private:
   void SetUp() override;
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void SurroundingTextTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
-void SurroundingTextTest::setHTML(const String& content) {
-  document().body()->setInnerHTML(content);
-  document().updateStyleAndLayout();
+void SurroundingTextTest::SetHTML(const String& content) {
+  GetDocument().body()->setInnerHTML(content);
+  GetDocument().UpdateStyleAndLayout();
 }
 
-VisibleSelection SurroundingTextTest::select(int start, int end) {
-  Element* element = document().getElementById("selection");
-  return createVisibleSelection(
+VisibleSelection SurroundingTextTest::Select(int start, int end) {
+  Element* element = GetDocument().GetElementById("selection");
+  return CreateVisibleSelection(
       SelectionInDOMTree::Builder()
-          .collapse(Position(toText(element->firstChild()), start))
-          .extend(Position(toText(element->firstChild()), end))
-          .build());
+          .Collapse(Position(ToText(element->FirstChild()), start))
+          .Extend(Position(ToText(element->FirstChild()), end))
+          .Build());
 }
 
 TEST_F(SurroundingTextTest, BasicCaretSelection) {
-  setHTML(String("<p id='selection'>foo bar</p>"));
+  SetHTML(String("<p id='selection'>foo bar</p>"));
 
   {
-    VisibleSelection selection = select(0);
-    SurroundingText surroundingText(selection.start(), 1);
+    VisibleSelection selection = Select(0);
+    SurroundingText surrounding_text(selection.Start(), 1);
 
-    EXPECT_EQ("f", surroundingText.content());
-    EXPECT_EQ(0u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(0u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("f", surrounding_text.Content());
+    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(0u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0);
-    SurroundingText surroundingText(selection.start(), 5);
+    VisibleSelection selection = Select(0);
+    SurroundingText surrounding_text(selection.Start(), 5);
 
     // maxlength/2 is used on the left and right.
-    EXPECT_EQ("foo", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("foo", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0);
-    SurroundingText surroundingText(selection.start(), 42);
+    VisibleSelection selection = Select(0);
+    SurroundingText surrounding_text(selection.Start(), 42);
 
-    EXPECT_EQ("foo bar", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
   }
 
   {
     // FIXME: if the selection is at the end of the text, SurroundingText
     // will return nothing.
-    VisibleSelection selection = select(7);
-    SurroundingText surroundingText(selection.start(), 42);
+    VisibleSelection selection = Select(7);
+    SurroundingText surrounding_text(selection.Start(), 42);
 
-    EXPECT_EQ(0u, surroundingText.content().length());
-    EXPECT_EQ(0u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(0u, surroundingText.endOffsetInContent());
+    EXPECT_EQ(0u, surrounding_text.Content().length());
+    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(0u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(6);
-    SurroundingText surroundingText(selection.start(), 2);
+    VisibleSelection selection = Select(6);
+    SurroundingText surrounding_text(selection.Start(), 2);
 
-    EXPECT_EQ("ar", surroundingText.content());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("ar", surrounding_text.Content());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(6);
-    SurroundingText surroundingText(selection.start(), 42);
+    VisibleSelection selection = Select(6);
+    SurroundingText surrounding_text(selection.Start(), 42);
 
-    EXPECT_EQ("foo bar", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(7u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(7u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(7u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(7u, surrounding_text.EndOffsetInContent());
   }
 }
 
 TEST_F(SurroundingTextTest, BasicRangeSelection) {
-  setHTML(String("<p id='selection'>Lorem ipsum dolor sit amet</p>"));
+  SetHTML(String("<p id='selection'>Lorem ipsum dolor sit amet</p>"));
 
   {
-    VisibleSelection selection = select(0, 5);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 1);
+    VisibleSelection selection = Select(0, 5);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 1);
 
-    EXPECT_EQ("Lorem ", surroundingText.content());
-    EXPECT_EQ(0u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(5u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("Lorem ", surrounding_text.Content());
+    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(5u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0, 5);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 5);
+    VisibleSelection selection = Select(0, 5);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 5);
 
-    EXPECT_EQ("Lorem ip", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(6u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("Lorem ip", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(6u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0, 5);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 42);
+    VisibleSelection selection = Select(0, 5);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
-              surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(6u, surroundingText.endOffsetInContent());
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(6u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(6, 11);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 2);
+    VisibleSelection selection = Select(6, 11);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 2);
 
-    EXPECT_EQ(" ipsum ", surroundingText.content());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(6u, surroundingText.endOffsetInContent());
+    EXPECT_EQ(" ipsum ", surrounding_text.Content());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(6u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(6, 11);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 42);
+    VisibleSelection selection = Select(6, 11);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
-              surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(7u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(12u, surroundingText.endOffsetInContent());
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(7u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(12u, surrounding_text.EndOffsetInContent());
   }
 }
 
 TEST_F(SurroundingTextTest, TreeCaretSelection) {
-  setHTML(
+  SetHTML(
       String("<div>This is outside of <p id='selection'>foo bar</p> the "
              "selected node</div>"));
 
   {
-    VisibleSelection selection = select(0);
-    SurroundingText surroundingText(selection.start(), 1);
+    VisibleSelection selection = Select(0);
+    SurroundingText surrounding_text(selection.Start(), 1);
 
-    EXPECT_EQ("f", surroundingText.content());
-    EXPECT_EQ(0u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(0u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("f", surrounding_text.Content());
+    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(0u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0);
-    SurroundingText surroundingText(selection.start(), 5);
+    VisibleSelection selection = Select(0);
+    SurroundingText surrounding_text(selection.Start(), 5);
 
-    EXPECT_EQ("foo", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("foo", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0);
-    SurroundingText surroundingText(selection.start(), 1337);
+    VisibleSelection selection = Select(0);
+    SurroundingText surrounding_text(selection.Start(), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
-              surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(20u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(20u, surroundingText.endOffsetInContent());
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(20u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(20u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(6);
-    SurroundingText surroundingText(selection.start(), 2);
+    VisibleSelection selection = Select(6);
+    SurroundingText surrounding_text(selection.Start(), 2);
 
-    EXPECT_EQ("ar", surroundingText.content());
-    EXPECT_EQ(1u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("ar", surrounding_text.Content());
+    EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(6);
-    SurroundingText surroundingText(selection.start(), 1337);
+    VisibleSelection selection = Select(6);
+    SurroundingText surrounding_text(selection.Start(), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
-              surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(26u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(26u, surroundingText.endOffsetInContent());
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(26u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(26u, surrounding_text.EndOffsetInContent());
   }
 }
 
 TEST_F(SurroundingTextTest, TreeRangeSelection) {
-  setHTML(
+  SetHTML(
       String("<div>This is outside of <p id='selection'>foo bar</p> the "
              "selected node</div>"));
 
   {
-    VisibleSelection selection = select(0, 1);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 1);
+    VisibleSelection selection = Select(0, 1);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 1);
 
-    EXPECT_EQ("fo", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(0u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(1u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("fo", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(1u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0, 3);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 12);
+    VisibleSelection selection = Select(0, 3);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 12);
 
-    EXPECT_EQ("e of foo bar", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(5u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(8u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("e of foo bar", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(5u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(8u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0, 3);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 1337);
+    VisibleSelection selection = Select(0, 3);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
-              surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(20u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(23u, surroundingText.endOffsetInContent());
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(20u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(23u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(4, 7);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 12);
+    VisibleSelection selection = Select(4, 7);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 12);
 
-    EXPECT_EQ("foo bar the se", surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(5u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(8u, surroundingText.endOffsetInContent());
+    EXPECT_EQ("foo bar the se",
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(5u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(8u, surrounding_text.EndOffsetInContent());
   }
 
   {
-    VisibleSelection selection = select(0, 7);
-    SurroundingText surroundingText(
-        *createRange(firstEphemeralRangeOf(selection)), 1337);
+    VisibleSelection selection = Select(0, 7);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
-              surroundingText.content().simplifyWhiteSpace());
-    EXPECT_EQ(20u, surroundingText.startOffsetInContent());
-    EXPECT_EQ(27u, surroundingText.endOffsetInContent());
+              surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(20u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(27u, surrounding_text.EndOffsetInContent());
   }
 }
 

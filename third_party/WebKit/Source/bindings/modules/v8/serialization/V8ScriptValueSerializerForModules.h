@@ -18,16 +18,16 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
     : public V8ScriptValueSerializer {
  public:
   explicit V8ScriptValueSerializerForModules(
-      RefPtr<ScriptState> scriptState,
+      RefPtr<ScriptState> script_state,
       const SerializedScriptValue::SerializeOptions& options)
-      : V8ScriptValueSerializer(scriptState, options) {}
+      : V8ScriptValueSerializer(script_state, options) {}
 
  protected:
-  bool writeDOMObject(ScriptWrappable*, ExceptionState&) override;
+  bool WriteDOMObject(ScriptWrappable*, ExceptionState&) override;
 
  private:
-  void writeOneByte(uint8_t byte) { writeRawBytes(&byte, 1); }
-  bool writeCryptoKey(const WebCryptoKey&, ExceptionState&);
+  void WriteOneByte(uint8_t byte) { WriteRawBytes(&byte, 1); }
+  bool WriteCryptoKey(const WebCryptoKey&, ExceptionState&);
 };
 
 }  // namespace blink

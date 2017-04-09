@@ -15,7 +15,7 @@ class DocumentAnimation {
 
  public:
   static DocumentTimeline* timeline(Document& document) {
-    return &document.timeline();
+    return &document.Timeline();
   }
 };
 

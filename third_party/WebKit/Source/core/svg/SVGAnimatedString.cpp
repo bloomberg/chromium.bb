@@ -11,8 +11,8 @@ String SVGAnimatedString::baseVal() {
 }
 
 void SVGAnimatedString::setBaseVal(const String& value,
-                                   ExceptionState& exceptionState) {
-  return SVGAnimatedProperty<SVGString>::setBaseVal(value, exceptionState);
+                                   ExceptionState& exception_state) {
+  return SVGAnimatedProperty<SVGString>::setBaseVal(value, exception_state);
 }
 
 String SVGAnimatedString::animVal() {
@@ -20,7 +20,7 @@ String SVGAnimatedString::animVal() {
 }
 
 DEFINE_TRACE_WRAPPERS(SVGAnimatedString) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink

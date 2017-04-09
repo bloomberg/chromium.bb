@@ -31,11 +31,10 @@
 namespace blink {
 
 IntSize::IntSize(const CGSize& s)
-    : m_width(static_cast<int>(s.width)),
-      m_height(static_cast<int>(s.height)) {}
+    : width_(static_cast<int>(s.width)), height_(static_cast<int>(s.height)) {}
 
 IntSize::operator CGSize() const {
-  return CGSizeMake(m_width, m_height);
+  return CGSizeMake(width_, height_);
 }
 
 }  // namespace blink

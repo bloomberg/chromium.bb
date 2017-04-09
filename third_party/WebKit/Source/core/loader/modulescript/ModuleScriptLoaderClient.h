@@ -23,7 +23,7 @@ class ModuleScriptLoaderClient : public GarbageCollectedMixin {
   friend class ModuleScriptLoader;
   friend class ModuleMapTestModulator;
 
-  virtual void notifyNewSingleModuleFinished(ModuleScript*) = 0;
+  virtual void NotifyNewSingleModuleFinished(ModuleScript*) = 0;
 };
 
 }  // namespace blink

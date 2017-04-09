@@ -33,103 +33,103 @@
 namespace blink {
 
 LayoutSVGEllipse::LayoutSVGEllipse(SVGGeometryElement* node)
-    : LayoutSVGShape(node), m_usePathFallback(false) {}
+    : LayoutSVGShape(node), use_path_fallback_(false) {}
 
 LayoutSVGEllipse::~LayoutSVGEllipse() {}
 
-void LayoutSVGEllipse::updateShapeFromElement() {
+void LayoutSVGEllipse::UpdateShapeFromElement() {
   // Before creating a new object we need to clear the cached bounding box
   // to avoid using garbage.
-  m_fillBoundingBox = FloatRect();
-  m_strokeBoundingBox = FloatRect();
-  m_center = FloatPoint();
-  m_radii = FloatSize();
-  m_usePathFallback = false;
+  fill_bounding_box_ = FloatRect();
+  stroke_bounding_box_ = FloatRect();
+  center_ = FloatPoint();
+  radii_ = FloatSize();
+  use_path_fallback_ = false;
 
-  calculateRadiiAndCenter();
+  CalculateRadiiAndCenter();
 
   // Spec: "A negative value is an error. A value of zero disables rendering of
   // the element."
-  if (m_radii.width() < 0 || m_radii.height() < 0)
+  if (radii_.Width() < 0 || radii_.Height() < 0)
     return;
 
-  if (!m_radii.isEmpty()) {
+  if (!radii_.IsEmpty()) {
     // Fall back to LayoutSVGShape and path-based hit detection if the ellipse
     // has a non-scaling or discontinuous stroke.
-    if (hasNonScalingStroke() || !hasContinuousStroke()) {
-      LayoutSVGShape::updateShapeFromElement();
-      m_usePathFallback = true;
+    if (HasNonScalingStroke() || !HasContinuousStroke()) {
+      LayoutSVGShape::UpdateShapeFromElement();
+      use_path_fallback_ = true;
       return;
     }
   }
 
-  clearPath();
+  ClearPath();
 
-  m_fillBoundingBox =
-      FloatRect(m_center.x() - m_radii.width(), m_center.y() - m_radii.height(),
-                2 * m_radii.width(), 2 * m_radii.height());
-  m_strokeBoundingBox = m_fillBoundingBox;
-  if (style()->svgStyle().hasStroke())
-    m_strokeBoundingBox.inflate(strokeWidth() / 2);
-  if (element())
-    element()->setNeedsResizeObserverUpdate();
+  fill_bounding_box_ =
+      FloatRect(center_.X() - radii_.Width(), center_.Y() - radii_.Height(),
+                2 * radii_.Width(), 2 * radii_.Height());
+  stroke_bounding_box_ = fill_bounding_box_;
+  if (Style()->SvgStyle().HasStroke())
+    stroke_bounding_box_.Inflate(StrokeWidth() / 2);
+  if (GetElement())
+    GetElement()->SetNeedsResizeObserverUpdate();
 }
 
-void LayoutSVGEllipse::calculateRadiiAndCenter() {
-  DCHECK(element());
-  SVGLengthContext lengthContext(element());
-  m_center = FloatPoint(
-      lengthContext.valueForLength(style()->svgStyle().cx(), styleRef(),
-                                   SVGLengthMode::Width),
-      lengthContext.valueForLength(style()->svgStyle().cy(), styleRef(),
-                                   SVGLengthMode::Height));
+void LayoutSVGEllipse::CalculateRadiiAndCenter() {
+  DCHECK(GetElement());
+  SVGLengthContext length_context(GetElement());
+  center_ = FloatPoint(
+      length_context.ValueForLength(Style()->SvgStyle().Cx(), StyleRef(),
+                                    SVGLengthMode::kWidth),
+      length_context.ValueForLength(Style()->SvgStyle().Cy(), StyleRef(),
+                                    SVGLengthMode::kHeight));
 
-  if (isSVGCircleElement(*element())) {
-    float radius = lengthContext.valueForLength(
-        style()->svgStyle().r(), styleRef(), SVGLengthMode::Other);
-    m_radii = FloatSize(radius, radius);
+  if (isSVGCircleElement(*GetElement())) {
+    float radius = length_context.ValueForLength(
+        Style()->SvgStyle().R(), StyleRef(), SVGLengthMode::kOther);
+    radii_ = FloatSize(radius, radius);
   } else {
-    m_radii = FloatSize(
-        lengthContext.valueForLength(style()->svgStyle().rx(), styleRef(),
-                                     SVGLengthMode::Width),
-        lengthContext.valueForLength(style()->svgStyle().ry(), styleRef(),
-                                     SVGLengthMode::Height));
+    radii_ = FloatSize(
+        length_context.ValueForLength(Style()->SvgStyle().Rx(), StyleRef(),
+                                      SVGLengthMode::kWidth),
+        length_context.ValueForLength(Style()->SvgStyle().Ry(), StyleRef(),
+                                      SVGLengthMode::kHeight));
   }
 }
 
-bool LayoutSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point) {
+bool LayoutSVGEllipse::ShapeDependentStrokeContains(const FloatPoint& point) {
   // The optimized check below for circles does not support non-scaling or
   // discontinuous strokes.
-  if (m_usePathFallback || !hasContinuousStroke() ||
-      m_radii.width() != m_radii.height()) {
-    if (!hasPath())
-      createPath();
-    return LayoutSVGShape::shapeDependentStrokeContains(point);
+  if (use_path_fallback_ || !HasContinuousStroke() ||
+      radii_.Width() != radii_.Height()) {
+    if (!HasPath())
+      CreatePath();
+    return LayoutSVGShape::ShapeDependentStrokeContains(point);
   }
 
   const FloatPoint center =
-      FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
-  const float halfStrokeWidth = strokeWidth() / 2;
-  const float r = m_radii.width();
-  return std::abs(center.length() - r) <= halfStrokeWidth;
+      FloatPoint(center_.X() - point.X(), center_.Y() - point.Y());
+  const float half_stroke_width = StrokeWidth() / 2;
+  const float r = radii_.Width();
+  return std::abs(center.length() - r) <= half_stroke_width;
 }
 
-bool LayoutSVGEllipse::shapeDependentFillContains(
+bool LayoutSVGEllipse::ShapeDependentFillContains(
     const FloatPoint& point,
-    const WindRule fillRule) const {
+    const WindRule fill_rule) const {
   const FloatPoint center =
-      FloatPoint(m_center.x() - point.x(), m_center.y() - point.y());
+      FloatPoint(center_.X() - point.X(), center_.Y() - point.Y());
 
   // This works by checking if the point satisfies the ellipse equation.
   // (x/rX)^2 + (y/rY)^2 <= 1
-  const float xrX = center.x() / m_radii.width();
-  const float yrY = center.y() / m_radii.height();
-  return xrX * xrX + yrY * yrY <= 1.0;
+  const float xr_x = center.X() / radii_.Width();
+  const float yr_y = center.Y() / radii_.Height();
+  return xr_x * xr_x + yr_y * yr_y <= 1.0;
 }
 
-bool LayoutSVGEllipse::hasContinuousStroke() const {
-  const SVGComputedStyle& svgStyle = style()->svgStyle();
-  return svgStyle.strokeDashArray()->isEmpty();
+bool LayoutSVGEllipse::HasContinuousStroke() const {
+  const SVGComputedStyle& svg_style = Style()->SvgStyle();
+  return svg_style.StrokeDashArray()->IsEmpty();
 }
 
 }  // namespace blink

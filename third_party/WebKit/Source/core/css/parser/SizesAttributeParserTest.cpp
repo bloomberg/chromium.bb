@@ -12,11 +12,11 @@ namespace blink {
 
 typedef struct {
   const char* input;
-  const float effectiveSize;
+  const float effective_size;
 } TestCase;
 
 TEST(SizesAttributeParserTest, Basic) {
-  TestCase testCases[] = {
+  TestCase test_cases[] = {
       {"screen", 500},
       {"(min-width:500px)", 500},
       {"(min-width:500px) 200px", 200},
@@ -75,29 +75,29 @@ TEST(SizesAttributeParserTest, Basic) {
   };
 
   MediaValuesCached::MediaValuesCachedData data;
-  data.viewportWidth = 500;
-  data.viewportHeight = 600;
-  data.deviceWidth = 500;
-  data.deviceHeight = 500;
-  data.devicePixelRatio = 2.0;
-  data.colorBitsPerComponent = 24;
-  data.monochromeBitsPerComponent = 0;
-  data.primaryPointerType = PointerTypeFine;
-  data.defaultFontSize = 16;
-  data.threeDEnabled = true;
-  data.mediaType = MediaTypeNames::screen;
-  data.strictMode = true;
-  data.displayMode = WebDisplayModeBrowser;
-  MediaValues* mediaValues = MediaValuesCached::create(data);
+  data.viewport_width = 500;
+  data.viewport_height = 600;
+  data.device_width = 500;
+  data.device_height = 500;
+  data.device_pixel_ratio = 2.0;
+  data.color_bits_per_component = 24;
+  data.monochrome_bits_per_component = 0;
+  data.primary_pointer_type = kPointerTypeFine;
+  data.default_font_size = 16;
+  data.three_d_enabled = true;
+  data.media_type = MediaTypeNames::screen;
+  data.strict_mode = true;
+  data.display_mode = kWebDisplayModeBrowser;
+  MediaValues* media_values = MediaValuesCached::Create(data);
 
-  for (unsigned i = 0; testCases[i].input; ++i) {
-    SizesAttributeParser parser(mediaValues, testCases[i].input);
-    ASSERT_EQ(testCases[i].effectiveSize, parser.length());
+  for (unsigned i = 0; test_cases[i].input; ++i) {
+    SizesAttributeParser parser(media_values, test_cases[i].input);
+    ASSERT_EQ(test_cases[i].effective_size, parser.length());
   }
 }
 
 TEST(SizesAttributeParserTest, FloatViewportWidth) {
-  TestCase testCases[] = {
+  TestCase test_cases[] = {
       {"screen", 500.5},
       {"(min-width:500px)", 500.5},
       {"(min-width:500px) 200px", 200},
@@ -156,24 +156,24 @@ TEST(SizesAttributeParserTest, FloatViewportWidth) {
   };
 
   MediaValuesCached::MediaValuesCachedData data;
-  data.viewportWidth = 500.5;
-  data.viewportHeight = 600;
-  data.deviceWidth = 500;
-  data.deviceHeight = 500;
-  data.devicePixelRatio = 2.0;
-  data.colorBitsPerComponent = 24;
-  data.monochromeBitsPerComponent = 0;
-  data.primaryPointerType = PointerTypeFine;
-  data.defaultFontSize = 16;
-  data.threeDEnabled = true;
-  data.mediaType = MediaTypeNames::screen;
-  data.strictMode = true;
-  data.displayMode = WebDisplayModeBrowser;
-  MediaValues* mediaValues = MediaValuesCached::create(data);
+  data.viewport_width = 500.5;
+  data.viewport_height = 600;
+  data.device_width = 500;
+  data.device_height = 500;
+  data.device_pixel_ratio = 2.0;
+  data.color_bits_per_component = 24;
+  data.monochrome_bits_per_component = 0;
+  data.primary_pointer_type = kPointerTypeFine;
+  data.default_font_size = 16;
+  data.three_d_enabled = true;
+  data.media_type = MediaTypeNames::screen;
+  data.strict_mode = true;
+  data.display_mode = kWebDisplayModeBrowser;
+  MediaValues* media_values = MediaValuesCached::Create(data);
 
-  for (unsigned i = 0; testCases[i].input; ++i) {
-    SizesAttributeParser parser(mediaValues, testCases[i].input);
-    ASSERT_EQ(testCases[i].effectiveSize, parser.length());
+  for (unsigned i = 0; test_cases[i].input; ++i) {
+    SizesAttributeParser parser(media_values, test_cases[i].input);
+    ASSERT_EQ(test_cases[i].effective_size, parser.length());
   }
 }
 

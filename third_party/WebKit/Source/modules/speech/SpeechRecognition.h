@@ -54,28 +54,28 @@ class MODULES_EXPORT SpeechRecognition final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognition* create(ExecutionContext*);
+  static SpeechRecognition* Create(ExecutionContext*);
   ~SpeechRecognition() override;
 
   // SpeechRecognition.idl implemementation.
   // Attributes.
-  SpeechGrammarList* grammars() { return m_grammars; }
-  void setGrammars(SpeechGrammarList* grammars) { m_grammars = grammars; }
-  String lang() { return m_lang; }
-  void setLang(const String& lang) { m_lang = lang; }
-  bool continuous() { return m_continuous; }
-  void setContinuous(bool continuous) { m_continuous = continuous; }
-  bool interimResults() { return m_interimResults; }
-  void setInterimResults(bool interimResults) {
-    m_interimResults = interimResults;
+  SpeechGrammarList* grammars() { return grammars_; }
+  void setGrammars(SpeechGrammarList* grammars) { grammars_ = grammars; }
+  String lang() { return lang_; }
+  void setLang(const String& lang) { lang_ = lang; }
+  bool continuous() { return continuous_; }
+  void setContinuous(bool continuous) { continuous_ = continuous; }
+  bool interimResults() { return interim_results_; }
+  void setInterimResults(bool interim_results) {
+    interim_results_ = interim_results;
   }
-  unsigned maxAlternatives() { return m_maxAlternatives; }
-  void setMaxAlternatives(unsigned maxAlternatives) {
-    m_maxAlternatives = maxAlternatives;
+  unsigned maxAlternatives() { return max_alternatives_; }
+  void setMaxAlternatives(unsigned max_alternatives) {
+    max_alternatives_ = max_alternatives;
   }
-  MediaStreamTrack* audioTrack() { return m_audioTrack; }
-  void setAudioTrack(MediaStreamTrack* audioTrack) {
-    m_audioTrack = audioTrack;
+  MediaStreamTrack* audioTrack() { return audio_track_; }
+  void setAudioTrack(MediaStreamTrack* audio_track) {
+    audio_track_ = audio_track;
   }
 
   // Callable by the user.
@@ -84,29 +84,30 @@ class MODULES_EXPORT SpeechRecognition final
   void abort();
 
   // Called by the SpeechRecognitionClient.
-  void didStartAudio();
-  void didStartSound();
-  void didStartSpeech();
-  void didEndSpeech();
-  void didEndSound();
-  void didEndAudio();
-  void didReceiveResults(
-      const HeapVector<Member<SpeechRecognitionResult>>& newFinalResults,
-      const HeapVector<Member<SpeechRecognitionResult>>& currentInterimResults);
-  void didReceiveNoMatch(SpeechRecognitionResult*);
-  void didReceiveError(SpeechRecognitionError*);
-  void didStart();
-  void didEnd();
+  void DidStartAudio();
+  void DidStartSound();
+  void DidStartSpeech();
+  void DidEndSpeech();
+  void DidEndSound();
+  void DidEndAudio();
+  void DidReceiveResults(
+      const HeapVector<Member<SpeechRecognitionResult>>& new_final_results,
+      const HeapVector<Member<SpeechRecognitionResult>>&
+          current_interim_results);
+  void DidReceiveNoMatch(SpeechRecognitionResult*);
+  void DidReceiveError(SpeechRecognitionError*);
+  void DidStart();
+  void DidEnd();
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart);
@@ -125,17 +126,17 @@ class MODULES_EXPORT SpeechRecognition final
  private:
   SpeechRecognition(Page*, ExecutionContext*);
 
-  Member<SpeechGrammarList> m_grammars;
-  Member<MediaStreamTrack> m_audioTrack;
-  String m_lang;
-  bool m_continuous;
-  bool m_interimResults;
-  unsigned long m_maxAlternatives;
+  Member<SpeechGrammarList> grammars_;
+  Member<MediaStreamTrack> audio_track_;
+  String lang_;
+  bool continuous_;
+  bool interim_results_;
+  unsigned long max_alternatives_;
 
-  Member<SpeechRecognitionController> m_controller;
-  bool m_started;
-  bool m_stopping;
-  HeapVector<Member<SpeechRecognitionResult>> m_finalResults;
+  Member<SpeechRecognitionController> controller_;
+  bool started_;
+  bool stopping_;
+  HeapVector<Member<SpeechRecognitionResult>> final_results_;
 };
 
 }  // namespace blink

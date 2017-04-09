@@ -19,93 +19,94 @@
 
 namespace blink {
 
-IDBObserver* IDBObserver::create(IDBObserverCallback* callback) {
+IDBObserver* IDBObserver::Create(IDBObserverCallback* callback) {
   return new IDBObserver(callback);
 }
 
-IDBObserver::IDBObserver(IDBObserverCallback* callback)
-    : m_callback(callback) {}
+IDBObserver::IDBObserver(IDBObserverCallback* callback) : callback_(callback) {}
 
 void IDBObserver::observe(IDBDatabase* database,
                           IDBTransaction* transaction,
                           const IDBObserverInit& options,
-                          ExceptionState& exceptionState) {
-  if (transaction->isFinished() || transaction->isFinishing()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+                          ExceptionState& exception_state) {
+  if (transaction->IsFinished() || transaction->IsFinishing()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionFinishedErrorMessage);
     return;
   }
-  if (!transaction->isActive()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+  if (!transaction->IsActive()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kTransactionInactiveErrorMessage);
     return;
   }
-  if (transaction->isVersionChange()) {
-    exceptionState.throwDOMException(
-        TransactionInactiveError,
-        IDBDatabase::cannotObserveVersionChangeTransaction);
+  if (transaction->IsVersionChange()) {
+    exception_state.ThrowDOMException(
+        kTransactionInactiveError,
+        IDBDatabase::kCannotObserveVersionChangeTransaction);
     return;
   }
-  if (!database->backend()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::databaseClosedErrorMessage);
+  if (!database->Backend()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kDatabaseClosedErrorMessage);
     return;
   }
   if (!options.hasOperationTypes()) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "operationTypes not specified in observe options.");
     return;
   }
-  if (options.operationTypes().isEmpty()) {
-    exceptionState.throwTypeError("operationTypes must be populated.");
+  if (options.operationTypes().IsEmpty()) {
+    exception_state.ThrowTypeError("operationTypes must be populated.");
     return;
   }
 
-  std::bitset<WebIDBOperationTypeCount> types;
-  for (const auto& operationType : options.operationTypes()) {
-    if (operationType == IndexedDBNames::add) {
-      types[WebIDBAdd] = true;
-    } else if (operationType == IndexedDBNames::put) {
-      types[WebIDBPut] = true;
-    } else if (operationType == IndexedDBNames::kDelete) {
-      types[WebIDBDelete] = true;
-    } else if (operationType == IndexedDBNames::clear) {
-      types[WebIDBClear] = true;
+  std::bitset<kWebIDBOperationTypeCount> types;
+  for (const auto& operation_type : options.operationTypes()) {
+    if (operation_type == IndexedDBNames::add) {
+      types[kWebIDBAdd] = true;
+    } else if (operation_type == IndexedDBNames::put) {
+      types[kWebIDBPut] = true;
+    } else if (operation_type == IndexedDBNames::kDelete) {
+      types[kWebIDBDelete] = true;
+    } else if (operation_type == IndexedDBNames::clear) {
+      types[kWebIDBClear] = true;
     } else {
-      exceptionState.throwTypeError(
-          "Unknown operation type in observe options: " + operationType);
+      exception_state.ThrowTypeError(
+          "Unknown operation type in observe options: " + operation_type);
       return;
     }
   }
 
-  int32_t observerId =
-      database->addObserver(this, transaction->id(), options.transaction(),
+  int32_t observer_id =
+      database->AddObserver(this, transaction->Id(), options.transaction(),
                             options.noRecords(), options.values(), types);
-  m_observerIds.insert(observerId, database);
+  observer_ids_.insert(observer_id, database);
 }
 
 void IDBObserver::unobserve(IDBDatabase* database,
-                            ExceptionState& exceptionState) {
-  if (!database->backend()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     IDBDatabase::databaseClosedErrorMessage);
+                            ExceptionState& exception_state) {
+  if (!database->Backend()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      IDBDatabase::kDatabaseClosedErrorMessage);
     return;
   }
 
-  Vector<int32_t> observerIdsToRemove;
-  for (const auto& it : m_observerIds) {
+  Vector<int32_t> observer_ids_to_remove;
+  for (const auto& it : observer_ids_) {
     if (it.value == database)
-      observerIdsToRemove.push_back(it.key);
+      observer_ids_to_remove.push_back(it.key);
   }
-  m_observerIds.removeAll(observerIdsToRemove);
+  observer_ids_.RemoveAll(observer_ids_to_remove);
 
-  if (!observerIdsToRemove.isEmpty())
-    database->removeObservers(observerIdsToRemove);
+  if (!observer_ids_to_remove.IsEmpty())
+    database->RemoveObservers(observer_ids_to_remove);
 }
 
 DEFINE_TRACE(IDBObserver) {
-  visitor->trace(m_callback);
-  visitor->trace(m_observerIds);
+  visitor->Trace(callback_);
+  visitor->Trace(observer_ids_);
 }
 
 }  // namespace blink

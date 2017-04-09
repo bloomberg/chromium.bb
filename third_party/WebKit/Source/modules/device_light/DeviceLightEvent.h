@@ -17,31 +17,32 @@ class DeviceLightEvent final : public Event {
  public:
   ~DeviceLightEvent() override;
 
-  static DeviceLightEvent* create(const AtomicString& eventType, double value) {
-    return new DeviceLightEvent(eventType, value);
+  static DeviceLightEvent* Create(const AtomicString& event_type,
+                                  double value) {
+    return new DeviceLightEvent(event_type, value);
   }
-  static DeviceLightEvent* create(const AtomicString& eventType,
+  static DeviceLightEvent* Create(const AtomicString& event_type,
                                   const DeviceLightEventInit& initializer) {
-    return new DeviceLightEvent(eventType, initializer);
+    return new DeviceLightEvent(event_type, initializer);
   }
 
-  double value() const { return m_value; }
+  double value() const { return value_; }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
  private:
-  DeviceLightEvent(const AtomicString& eventType, double value);
-  DeviceLightEvent(const AtomicString& eventType,
+  DeviceLightEvent(const AtomicString& event_type, double value);
+  DeviceLightEvent(const AtomicString& event_type,
                    const DeviceLightEventInit& initializer);
 
-  double m_value;
+  double value_;
 };
 
 DEFINE_TYPE_CASTS(DeviceLightEvent,
                   Event,
                   event,
-                  event->interfaceName() == EventNames::DeviceLightEvent,
-                  event.interfaceName() == EventNames::DeviceLightEvent);
+                  event->InterfaceName() == EventNames::DeviceLightEvent,
+                  event.InterfaceName() == EventNames::DeviceLightEvent);
 
 }  // namespace blink
 

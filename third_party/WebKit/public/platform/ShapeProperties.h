@@ -9,8 +9,8 @@ namespace blink {
 
 // Bit field values indicating available display shapes.
 enum DisplayShape {
-  DisplayShapeRect = 1 << 0,
-  DisplayShapeRound = 1 << 1,
+  kDisplayShapeRect = 1 << 0,
+  kDisplayShapeRound = 1 << 1,
 };
 
 }  // namespace blink

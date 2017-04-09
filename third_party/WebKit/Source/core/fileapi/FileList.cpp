@@ -30,19 +30,19 @@ namespace blink {
 FileList::FileList() {}
 
 File* FileList::item(unsigned index) const {
-  if (index >= m_files.size())
+  if (index >= files_.size())
     return 0;
-  return m_files[index].get();
+  return files_[index].Get();
 }
 
-Vector<String> FileList::pathsForUserVisibleFiles() const {
+Vector<String> FileList::PathsForUserVisibleFiles() const {
   Vector<String> paths;
-  for (unsigned i = 0; i < m_files.size(); ++i) {
-    if (m_files[i]->getUserVisibility() == File::IsUserVisible) {
-      if (m_files[i]->hasBackingFile())
-        paths.push_back(m_files[i]->path());
+  for (unsigned i = 0; i < files_.size(); ++i) {
+    if (files_[i]->GetUserVisibility() == File::kIsUserVisible) {
+      if (files_[i]->HasBackingFile())
+        paths.push_back(files_[i]->GetPath());
       else
-        paths.push_back(m_files[i]->name());
+        paths.push_back(files_[i]->name());
     }
   }
 
@@ -50,7 +50,7 @@ Vector<String> FileList::pathsForUserVisibleFiles() const {
 }
 
 DEFINE_TRACE(FileList) {
-  visitor->trace(m_files);
+  visitor->Trace(files_);
 }
 
 }  // namespace blink

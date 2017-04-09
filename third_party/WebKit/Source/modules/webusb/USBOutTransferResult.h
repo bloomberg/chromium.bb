@@ -17,28 +17,28 @@ class USBOutTransferResult final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBOutTransferResult* create(const String& status) {
+  static USBOutTransferResult* Create(const String& status) {
     return new USBOutTransferResult(status, 0);
   }
 
-  static USBOutTransferResult* create(const String& status,
-                                      unsigned bytesWritten) {
-    return new USBOutTransferResult(status, bytesWritten);
+  static USBOutTransferResult* Create(const String& status,
+                                      unsigned bytes_written) {
+    return new USBOutTransferResult(status, bytes_written);
   }
 
-  USBOutTransferResult(const String& status, unsigned bytesWritten)
-      : m_status(status), m_bytesWritten(bytesWritten) {}
+  USBOutTransferResult(const String& status, unsigned bytes_written)
+      : status_(status), bytes_written_(bytes_written) {}
 
   virtual ~USBOutTransferResult() {}
 
-  String status() const { return m_status; }
-  unsigned bytesWritten() const { return m_bytesWritten; }
+  String status() const { return status_; }
+  unsigned bytesWritten() const { return bytes_written_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  const String m_status;
-  const unsigned m_bytesWritten;
+  const String status_;
+  const unsigned bytes_written_;
 };
 
 }  // namespace blink

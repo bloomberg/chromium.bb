@@ -30,24 +30,24 @@
 
 namespace blink {
 
-String CSSReflectValue::customCSSText() const {
-  if (m_mask)
-    return m_direction->cssText() + ' ' + m_offset->cssText() + ' ' +
-           m_mask->cssText();
-  return m_direction->cssText() + ' ' + m_offset->cssText();
+String CSSReflectValue::CustomCSSText() const {
+  if (mask_)
+    return direction_->CssText() + ' ' + offset_->CssText() + ' ' +
+           mask_->CssText();
+  return direction_->CssText() + ' ' + offset_->CssText();
 }
 
-bool CSSReflectValue::equals(const CSSReflectValue& other) const {
-  return m_direction == other.m_direction &&
-         dataEquivalent(m_offset, other.m_offset) &&
-         dataEquivalent(m_mask, other.m_mask);
+bool CSSReflectValue::Equals(const CSSReflectValue& other) const {
+  return direction_ == other.direction_ &&
+         DataEquivalent(offset_, other.offset_) &&
+         DataEquivalent(mask_, other.mask_);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSReflectValue) {
-  visitor->trace(m_direction);
-  visitor->trace(m_offset);
-  visitor->trace(m_mask);
-  CSSValue::traceAfterDispatch(visitor);
+  visitor->Trace(direction_);
+  visitor->Trace(offset_);
+  visitor->Trace(mask_);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

@@ -34,18 +34,18 @@ class PLATFORM_EXPORT SegmentReader
   // This version is thread-safe so long as no thread is modifying the
   // underlying SharedBuffer. This class does not modify it, so that would
   // mean modifying it in another way.
-  static PassRefPtr<SegmentReader> createFromSharedBuffer(
+  static PassRefPtr<SegmentReader> CreateFromSharedBuffer(
       PassRefPtr<SharedBuffer>);
 
   // These versions use thread-safe input, so they are always thread-safe.
-  static PassRefPtr<SegmentReader> createFromSkData(sk_sp<SkData>);
-  static PassRefPtr<SegmentReader> createFromSkROBuffer(sk_sp<SkROBuffer>);
+  static PassRefPtr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
+  static PassRefPtr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
 
   SegmentReader() {}
   virtual ~SegmentReader() {}
   virtual size_t size() const = 0;
-  virtual size_t getSomeData(const char*& data, size_t position) const = 0;
-  virtual sk_sp<SkData> getAsSkData() const = 0;
+  virtual size_t GetSomeData(const char*& data, size_t position) const = 0;
+  virtual sk_sp<SkData> GetAsSkData() const = 0;
 };
 
 }  // namespace blink

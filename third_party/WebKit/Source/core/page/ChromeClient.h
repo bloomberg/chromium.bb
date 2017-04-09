@@ -45,6 +45,9 @@
 #include "wtf/Vector.h"
 #include <memory>
 
+// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+#undef CreateWindow
+
 namespace blink {
 
 class AXObject;
@@ -85,33 +88,33 @@ struct WindowFeatures;
 
 class CORE_EXPORT ChromeClient : public HostWindow {
  public:
-  virtual void chromeDestroyed() = 0;
+  virtual void ChromeDestroyed() = 0;
 
   // The specified rectangle is adjusted for the minimum window size and the
   // screen, then setWindowRect with the adjusted rectangle is called.
-  void setWindowRectWithAdjustment(const IntRect&, LocalFrame&);
-  virtual IntRect rootWindowRect() = 0;
+  void SetWindowRectWithAdjustment(const IntRect&, LocalFrame&);
+  virtual IntRect RootWindowRect() = 0;
 
-  virtual IntRect pageRect() = 0;
+  virtual IntRect PageRect() = 0;
 
-  virtual void focus() = 0;
+  virtual void Focus() = 0;
 
-  virtual bool canTakeFocus(WebFocusType) = 0;
-  virtual void takeFocus(WebFocusType) = 0;
+  virtual bool CanTakeFocus(WebFocusType) = 0;
+  virtual void TakeFocus(WebFocusType) = 0;
 
-  virtual void focusedNodeChanged(Node*, Node*) = 0;
+  virtual void FocusedNodeChanged(Node*, Node*) = 0;
 
-  virtual bool hadFormInteraction() const = 0;
+  virtual bool HadFormInteraction() const = 0;
 
-  virtual void beginLifecycleUpdates() = 0;
+  virtual void BeginLifecycleUpdates() = 0;
 
   // Start a system drag and drop operation.
-  virtual void startDragging(LocalFrame*,
+  virtual void StartDragging(LocalFrame*,
                              const WebDragData&,
                              WebDragOperationsMask,
-                             const WebImage& dragImage,
-                             const WebPoint& dragImageOffset) = 0;
-  virtual bool acceptsLoadDrops() const = 0;
+                             const WebImage& drag_image,
+                             const WebPoint& drag_image_offset) = 0;
+  virtual bool AcceptsLoadDrops() const = 0;
 
   // The LocalFrame pointer provides the ChromeClient with context about which
   // LocalFrame wants to create the new Page. Also, the newly created window
@@ -119,100 +122,100 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   // created Page has its show method called.
   // The FrameLoadRequest parameter is only for ChromeClient to check if the
   // request could be fulfilled. The ChromeClient should not load the request.
-  virtual Page* createWindow(LocalFrame*,
+  virtual Page* CreateWindow(LocalFrame*,
                              const FrameLoadRequest&,
                              const WindowFeatures&,
                              NavigationPolicy) = 0;
-  virtual void show(NavigationPolicy = NavigationPolicyIgnore) = 0;
+  virtual void Show(NavigationPolicy = kNavigationPolicyIgnore) = 0;
 
-  void setWindowFeatures(const WindowFeatures&);
+  void SetWindowFeatures(const WindowFeatures&);
 
   // All the parameters should be in viewport space. That is, if an event
   // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
   // root frame, all of which is handled as overscroll, we should return 10px
   // as the overscrollDelta.
-  virtual void didOverscroll(const FloatSize& overscrollDelta,
-                             const FloatSize& accumulatedOverscroll,
-                             const FloatPoint& positionInViewport,
-                             const FloatSize& velocityInViewport) = 0;
+  virtual void DidOverscroll(const FloatSize& overscroll_delta,
+                             const FloatSize& accumulated_overscroll,
+                             const FloatPoint& position_in_viewport,
+                             const FloatSize& velocity_in_viewport) = 0;
 
-  virtual void setToolbarsVisible(bool) = 0;
-  virtual bool toolbarsVisible() = 0;
+  virtual void SetToolbarsVisible(bool) = 0;
+  virtual bool ToolbarsVisible() = 0;
 
-  virtual void setStatusbarVisible(bool) = 0;
-  virtual bool statusbarVisible() = 0;
+  virtual void SetStatusbarVisible(bool) = 0;
+  virtual bool StatusbarVisible() = 0;
 
-  virtual void setScrollbarsVisible(bool) = 0;
-  virtual bool scrollbarsVisible() = 0;
+  virtual void SetScrollbarsVisible(bool) = 0;
+  virtual bool ScrollbarsVisible() = 0;
 
-  virtual void setMenubarVisible(bool) = 0;
-  virtual bool menubarVisible() = 0;
+  virtual void SetMenubarVisible(bool) = 0;
+  virtual bool MenubarVisible() = 0;
 
-  virtual void setResizable(bool) = 0;
+  virtual void SetResizable(bool) = 0;
 
-  virtual bool shouldReportDetailedMessageForSource(LocalFrame&,
+  virtual bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                                     const String& source) = 0;
-  virtual void addMessageToConsole(LocalFrame*,
+  virtual void AddMessageToConsole(LocalFrame*,
                                    MessageSource,
                                    MessageLevel,
                                    const String& message,
-                                   unsigned lineNumber,
-                                   const String& sourceID,
-                                   const String& stackTrace) = 0;
+                                   unsigned line_number,
+                                   const String& source_id,
+                                   const String& stack_trace) = 0;
 
-  virtual bool canOpenBeforeUnloadConfirmPanel() = 0;
-  bool openBeforeUnloadConfirmPanel(const String& message,
+  virtual bool CanOpenBeforeUnloadConfirmPanel() = 0;
+  bool OpenBeforeUnloadConfirmPanel(const String& message,
                                     LocalFrame*,
-                                    bool isReload);
+                                    bool is_reload);
 
-  virtual void closeWindowSoon() = 0;
+  virtual void CloseWindowSoon() = 0;
 
-  bool openJavaScriptAlert(LocalFrame*, const String&);
-  bool openJavaScriptConfirm(LocalFrame*, const String&);
-  bool openJavaScriptPrompt(LocalFrame*,
+  bool OpenJavaScriptAlert(LocalFrame*, const String&);
+  bool OpenJavaScriptConfirm(LocalFrame*, const String&);
+  bool OpenJavaScriptPrompt(LocalFrame*,
                             const String& message,
-                            const String& defaultValue,
+                            const String& default_value,
                             String& result);
-  virtual void setStatusbarText(const String&) = 0;
-  virtual bool tabsToLinks() = 0;
+  virtual void SetStatusbarText(const String&) = 0;
+  virtual bool TabsToLinks() = 0;
 
-  virtual void* webView() const = 0;
+  virtual void* WebView() const = 0;
 
   // Methods used by HostWindow.
-  virtual WebScreenInfo screenInfo() const = 0;
-  virtual void setCursor(const Cursor&, LocalFrame* localRoot) = 0;
+  virtual WebScreenInfo GetScreenInfo() const = 0;
+  virtual void SetCursor(const Cursor&, LocalFrame* local_root) = 0;
   // End methods used by HostWindow.
 
-  virtual Cursor lastSetCursorForTesting() const = 0;
-  Node* lastSetTooltipNodeForTesting() const {
-    return m_lastMouseOverNode.get();
+  virtual Cursor LastSetCursorForTesting() const = 0;
+  Node* LastSetTooltipNodeForTesting() const {
+    return last_mouse_over_node_.Get();
   }
 
   // Returns a custom visible content rect if a viewport override is active.
-  virtual WTF::Optional<IntRect> visibleContentRectForPainting() const {
-    return WTF::nullopt;
+  virtual WTF::Optional<IntRect> VisibleContentRectForPainting() const {
+    return WTF::kNullopt;
   }
 
-  virtual void dispatchViewportPropertiesDidChange(
+  virtual void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const {}
 
-  virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
-  virtual void pageScaleFactorChanged() const {}
-  virtual float clampPageScaleFactorToLimits(float scale) const {
+  virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
+  virtual void PageScaleFactorChanged() const {}
+  virtual float ClampPageScaleFactorToLimits(float scale) const {
     return scale;
   }
-  virtual void mainFrameScrollOffsetChanged() const {}
-  virtual void layoutUpdated(LocalFrame*) const {}
+  virtual void MainFrameScrollOffsetChanged() const {}
+  virtual void LayoutUpdated(LocalFrame*) const {}
 
-  void mouseDidMoveOverElement(LocalFrame&, const HitTestResult&);
-  virtual void setToolTip(LocalFrame&, const String&, TextDirection) = 0;
-  void clearToolTip(LocalFrame&);
+  void MouseDidMoveOverElement(LocalFrame&, const HitTestResult&);
+  virtual void SetToolTip(LocalFrame&, const String&, TextDirection) = 0;
+  void ClearToolTip(LocalFrame&);
 
-  bool print(LocalFrame*);
+  bool Print(LocalFrame*);
 
-  virtual void annotatedRegionsChanged() = 0;
+  virtual void AnnotatedRegionsChanged() = 0;
 
-  virtual ColorChooser* openColorChooser(LocalFrame*,
+  virtual ColorChooser* OpenColorChooser(LocalFrame*,
                                          ColorChooserClient*,
                                          const Color&) = 0;
 
@@ -223,69 +226,69 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
   //  - <datalist> UI for date/time input types regardless of
   //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-  virtual DateTimeChooser* openDateTimeChooser(
+  virtual DateTimeChooser* OpenDateTimeChooser(
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) = 0;
 
-  virtual void openTextDataListChooser(HTMLInputElement&) = 0;
+  virtual void OpenTextDataListChooser(HTMLInputElement&) = 0;
 
-  virtual void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) = 0;
+  virtual void OpenFileChooser(LocalFrame*, PassRefPtr<FileChooser>) = 0;
 
   // Asychronous request to enumerate all files in a directory chosen by the
   // user.
-  virtual void enumerateChosenDirectory(FileChooser*) = 0;
+  virtual void EnumerateChosenDirectory(FileChooser*) = 0;
 
   // Pass nullptr as the GraphicsLayer to detach the root layer.
   // This sets the graphics layer for the LocalFrame's WebWidget, if it has
   // one. Otherwise it sets it for the WebViewImpl.
-  virtual void attachRootGraphicsLayer(GraphicsLayer*,
-                                       LocalFrame* localRoot) = 0;
+  virtual void AttachRootGraphicsLayer(GraphicsLayer*,
+                                       LocalFrame* local_root) = 0;
 
   // Pass nullptr as the WebLayer to detach the root layer.
   // This sets the WebLayer for the LocalFrame's WebWidget, if it has
   // one. Otherwise it sets it for the WebViewImpl.
-  virtual void attachRootLayer(WebLayer*, LocalFrame* localRoot) = 0;
+  virtual void AttachRootLayer(WebLayer*, LocalFrame* local_root) = 0;
 
-  virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*,
-                                                 LocalFrame* localRoot) {}
-  virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*,
-                                                 LocalFrame* localRoot) {}
+  virtual void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+                                                 LocalFrame* local_root) {}
+  virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+                                                 LocalFrame* local_root) {}
 
-  virtual void enterFullscreen(LocalFrame&) {}
-  virtual void exitFullscreen(LocalFrame&) {}
-  virtual void fullscreenElementChanged(Element*, Element*) {}
+  virtual void EnterFullscreen(LocalFrame&) {}
+  virtual void ExitFullscreen(LocalFrame&) {}
+  virtual void FullscreenElementChanged(Element*, Element*) {}
 
-  virtual void clearCompositedSelection(LocalFrame*) {}
-  virtual void updateCompositedSelection(LocalFrame*,
+  virtual void ClearCompositedSelection(LocalFrame*) {}
+  virtual void UpdateCompositedSelection(LocalFrame*,
                                          const CompositedSelection&) {}
 
-  virtual void setEventListenerProperties(LocalFrame*,
+  virtual void SetEventListenerProperties(LocalFrame*,
                                           WebEventListenerClass,
                                           WebEventListenerProperties) = 0;
-  virtual WebEventListenerProperties eventListenerProperties(
+  virtual WebEventListenerProperties EventListenerProperties(
       LocalFrame*,
       WebEventListenerClass) const = 0;
-  virtual void updateEventRectsForSubframeIfNecessary(LocalFrame*) = 0;
-  virtual void setHasScrollEventHandlers(LocalFrame*, bool) = 0;
+  virtual void UpdateEventRectsForSubframeIfNecessary(LocalFrame*) = 0;
+  virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
 
-  virtual void setTouchAction(LocalFrame*, TouchAction) = 0;
+  virtual void SetTouchAction(LocalFrame*, TouchAction) = 0;
 
   // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
-  virtual bool hasOpenedPopup() const = 0;
-  virtual PopupMenu* openPopupMenu(LocalFrame&, HTMLSelectElement&) = 0;
-  virtual DOMWindow* pagePopupWindowForTesting() const = 0;
+  virtual bool HasOpenedPopup() const = 0;
+  virtual PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) = 0;
+  virtual DOMWindow* PagePopupWindowForTesting() const = 0;
 
-  virtual void postAccessibilityNotification(AXObject*,
+  virtual void PostAccessibilityNotification(AXObject*,
                                              AXObjectCache::AXNotification) {}
-  virtual String acceptLanguages() = 0;
+  virtual String AcceptLanguages() = 0;
 
   enum DialogType {
-    AlertDialog = 0,
-    ConfirmDialog = 1,
-    PromptDialog = 2,
-    HTMLDialog = 3
+    kAlertDialog = 0,
+    kConfirmDialog = 1,
+    kPromptDialog = 2,
+    kHTMLDialog = 3
   };
-  virtual bool shouldOpenModalDialogDuringPageDismissal(
+  virtual bool ShouldOpenModalDialogDuringPageDismissal(
       LocalFrame&,
       DialogType,
       const String&,
@@ -293,88 +296,88 @@ class CORE_EXPORT ChromeClient : public HostWindow {
     return true;
   }
 
-  virtual bool isSVGImageChromeClient() const { return false; }
+  virtual bool IsSVGImageChromeClient() const { return false; }
 
-  virtual bool requestPointerLock(LocalFrame*) { return false; }
-  virtual void requestPointerUnlock(LocalFrame*) {}
+  virtual bool RequestPointerLock(LocalFrame*) { return false; }
+  virtual void RequestPointerUnlock(LocalFrame*) {}
 
-  virtual IntSize minimumWindowSize() const { return IntSize(100, 100); }
+  virtual IntSize MinimumWindowSize() const { return IntSize(100, 100); }
 
-  virtual bool isChromeClientImpl() const { return false; }
+  virtual bool IsChromeClientImpl() const { return false; }
 
-  virtual void didAssociateFormControlsAfterLoad(LocalFrame*) {}
-  virtual void didChangeValueInTextField(HTMLFormControlElement&) {}
-  virtual void didEndEditingOnTextField(HTMLInputElement&) {}
-  virtual void handleKeyboardEventOnTextField(HTMLInputElement&,
+  virtual void DidAssociateFormControlsAfterLoad(LocalFrame*) {}
+  virtual void DidChangeValueInTextField(HTMLFormControlElement&) {}
+  virtual void DidEndEditingOnTextField(HTMLInputElement&) {}
+  virtual void HandleKeyboardEventOnTextField(HTMLInputElement&,
                                               KeyboardEvent&) {}
-  virtual void textFieldDataListChanged(HTMLInputElement&) {}
-  virtual void ajaxSucceeded(LocalFrame*) {}
+  virtual void TextFieldDataListChanged(HTMLInputElement&) {}
+  virtual void AjaxSucceeded(LocalFrame*) {}
 
   // Input method editor related functions.
-  virtual void resetInputMethod() {}
-  virtual void didUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) {}
-  virtual void showVirtualKeyboardOnElementFocus(LocalFrame&) {}
+  virtual void ResetInputMethod() {}
+  virtual void DidUpdateTextOfFocusedElementByNonUserInput(LocalFrame&) {}
+  virtual void ShowVirtualKeyboardOnElementFocus(LocalFrame&) {}
 
-  virtual void registerViewportLayers() const {}
+  virtual void RegisterViewportLayers() const {}
 
-  virtual void showUnhandledTapUIIfNeeded(IntPoint, Node*, bool) {}
+  virtual void ShowUnhandledTapUIIfNeeded(IntPoint, Node*, bool) {}
 
-  virtual void onMouseDown(Node*) {}
+  virtual void OnMouseDown(Node*) {}
 
-  virtual void didUpdateBrowserControls() const {}
+  virtual void DidUpdateBrowserControls() const {}
 
-  virtual void registerPopupOpeningObserver(PopupOpeningObserver*) = 0;
-  virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
+  virtual void RegisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
+  virtual void UnregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
 
-  virtual CompositorWorkerProxyClient* createCompositorWorkerProxyClient(
+  virtual CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(
       LocalFrame*) = 0;
-  virtual AnimationWorkletProxyClient* createAnimationWorkletProxyClient(
+  virtual AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient(
       LocalFrame*) = 0;
 
-  virtual FloatSize elasticOverscroll() const { return FloatSize(); }
+  virtual FloatSize ElasticOverscroll() const { return FloatSize(); }
 
   // Called when observed XHR, fetch, and other fetch request with non-GET
   // method is initiated from javascript. At this time, it is not guaranteed
   // that this is comprehensive.
-  virtual void didObserveNonGetFetchFromScript() const {}
+  virtual void DidObserveNonGetFetchFromScript() const {}
 
-  virtual std::unique_ptr<WebFrameScheduler> createFrameScheduler(
+  virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext*) = 0;
 
   // Returns the time of the beginning of the last beginFrame, in seconds, if
   // any, and 0.0 otherwise.
-  virtual double lastFrameTimeMonotonic() const { return 0.0; }
+  virtual double LastFrameTimeMonotonic() const { return 0.0; }
 
-  virtual void installSupplements(LocalFrame&) {}
+  virtual void InstallSupplements(LocalFrame&) {}
 
-  virtual WebLayerTreeView* getWebLayerTreeView(LocalFrame*) { return nullptr; }
+  virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
 
   DECLARE_TRACE();
 
  protected:
   ~ChromeClient() override {}
 
-  virtual void showMouseOverURL(const HitTestResult&) = 0;
-  virtual void setWindowRect(const IntRect&, LocalFrame&) = 0;
-  virtual bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*,
-                                                    bool isReload) = 0;
-  virtual bool openJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;
-  virtual bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) = 0;
-  virtual bool openJavaScriptPromptDelegate(LocalFrame*,
+  virtual void ShowMouseOverURL(const HitTestResult&) = 0;
+  virtual void SetWindowRect(const IntRect&, LocalFrame&) = 0;
+  virtual bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*,
+                                                    bool is_reload) = 0;
+  virtual bool OpenJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;
+  virtual bool OpenJavaScriptConfirmDelegate(LocalFrame*, const String&) = 0;
+  virtual bool OpenJavaScriptPromptDelegate(LocalFrame*,
                                             const String& message,
-                                            const String& defaultValue,
+                                            const String& default_value,
                                             String& result) = 0;
-  virtual void printDelegate(LocalFrame*) = 0;
+  virtual void PrintDelegate(LocalFrame*) = 0;
 
  private:
-  bool canOpenModalIfDuringPageDismissal(Frame* mainFrame,
+  bool CanOpenModalIfDuringPageDismissal(Frame* main_frame,
                                          DialogType,
                                          const String& message);
-  void setToolTip(LocalFrame&, const HitTestResult&);
+  void SetToolTip(LocalFrame&, const HitTestResult&);
 
-  WeakMember<Node> m_lastMouseOverNode;
-  LayoutPoint m_lastToolTipPoint;
-  String m_lastToolTipText;
+  WeakMember<Node> last_mouse_over_node_;
+  LayoutPoint last_tool_tip_point_;
+  String last_tool_tip_text_;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
 };

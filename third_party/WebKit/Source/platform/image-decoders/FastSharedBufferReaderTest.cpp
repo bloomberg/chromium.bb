@@ -39,98 +39,101 @@ namespace {
 
 const unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
 
-void prepareReferenceData(char* buffer, size_t size) {
+void PrepareReferenceData(char* buffer, size_t size) {
   for (size_t i = 0; i < size; ++i)
     buffer[i] = static_cast<char>(i);
 }
 
-PassRefPtr<SegmentReader> copyToROBufferSegmentReader(
+PassRefPtr<SegmentReader> CopyToROBufferSegmentReader(
     PassRefPtr<SegmentReader> input) {
-  SkRWBuffer rwBuffer;
+  SkRWBuffer rw_buffer;
   const char* segment = 0;
   size_t position = 0;
-  while (size_t length = input->getSomeData(segment, position)) {
-    rwBuffer.append(segment, length);
+  while (size_t length = input->GetSomeData(segment, position)) {
+    rw_buffer.append(segment, length);
     position += length;
   }
-  return SegmentReader::createFromSkROBuffer(
-      sk_sp<SkROBuffer>(rwBuffer.newRBufferSnapshot()));
+  return SegmentReader::CreateFromSkROBuffer(
+      sk_sp<SkROBuffer>(rw_buffer.newRBufferSnapshot()));
 }
 
-PassRefPtr<SegmentReader> copyToDataSegmentReader(
+PassRefPtr<SegmentReader> CopyToDataSegmentReader(
     PassRefPtr<SegmentReader> input) {
-  return SegmentReader::createFromSkData(input->getAsSkData());
+  return SegmentReader::CreateFromSkData(input->GetAsSkData());
 }
 
 struct SegmentReaders {
-  RefPtr<SegmentReader> segmentReaders[3];
+  RefPtr<SegmentReader> segment_readers[3];
 
   SegmentReaders(PassRefPtr<SharedBuffer> input) {
-    segmentReaders[0] = SegmentReader::createFromSharedBuffer(std::move(input));
-    segmentReaders[1] = copyToROBufferSegmentReader(segmentReaders[0]);
-    segmentReaders[2] = copyToDataSegmentReader(segmentReaders[0]);
+    segment_readers[0] =
+        SegmentReader::CreateFromSharedBuffer(std::move(input));
+    segment_readers[1] = CopyToROBufferSegmentReader(segment_readers[0]);
+    segment_readers[2] = CopyToDataSegmentReader(segment_readers[0]);
   }
 };
 
 }  // namespace
 
 TEST(FastSharedBufferReaderTest, nonSequentialReads) {
-  char referenceData[kDefaultTestSize];
-  prepareReferenceData(referenceData, sizeof(referenceData));
-  RefPtr<SharedBuffer> data = SharedBuffer::create();
-  data->append(referenceData, sizeof(referenceData));
+  char reference_data[kDefaultTestSize];
+  PrepareReferenceData(reference_data, sizeof(reference_data));
+  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(reference_data, sizeof(reference_data));
 
-  SegmentReaders readerStruct(data);
-  for (auto segmentReader : readerStruct.segmentReaders) {
-    FastSharedBufferReader reader(segmentReader);
+  SegmentReaders reader_struct(data);
+  for (auto segment_reader : reader_struct.segment_readers) {
+    FastSharedBufferReader reader(segment_reader);
     // Read size is prime such there will be a segment-spanning
     // read eventually.
-    char tempBuffer[17];
-    for (size_t dataPosition = 0;
-         dataPosition + sizeof(tempBuffer) < sizeof(referenceData);
-         dataPosition += sizeof(tempBuffer)) {
-      const char* block = reader.getConsecutiveData(
-          dataPosition, sizeof(tempBuffer), tempBuffer);
+    char temp_buffer[17];
+    for (size_t data_position = 0;
+         data_position + sizeof(temp_buffer) < sizeof(reference_data);
+         data_position += sizeof(temp_buffer)) {
+      const char* block = reader.GetConsecutiveData(
+          data_position, sizeof(temp_buffer), temp_buffer);
       ASSERT_FALSE(
-          memcmp(block, referenceData + dataPosition, sizeof(tempBuffer)));
+          memcmp(block, reference_data + data_position, sizeof(temp_buffer)));
     }
   }
 }
 
 TEST(FastSharedBufferReaderTest, readBackwards) {
-  char referenceData[kDefaultTestSize];
-  prepareReferenceData(referenceData, sizeof(referenceData));
-  RefPtr<SharedBuffer> data = SharedBuffer::create();
-  data->append(referenceData, sizeof(referenceData));
+  char reference_data[kDefaultTestSize];
+  PrepareReferenceData(reference_data, sizeof(reference_data));
+  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(reference_data, sizeof(reference_data));
 
-  SegmentReaders readerStruct(data);
-  for (auto segmentReader : readerStruct.segmentReaders) {
-    FastSharedBufferReader reader(segmentReader);
+  SegmentReaders reader_struct(data);
+  for (auto segment_reader : reader_struct.segment_readers) {
+    FastSharedBufferReader reader(segment_reader);
     // Read size is prime such there will be a segment-spanning
     // read eventually.
-    char tempBuffer[17];
-    for (size_t dataOffset = sizeof(tempBuffer);
-         dataOffset < sizeof(referenceData); dataOffset += sizeof(tempBuffer)) {
-      const char* block = reader.getConsecutiveData(
-          sizeof(referenceData) - dataOffset, sizeof(tempBuffer), tempBuffer);
+    char temp_buffer[17];
+    for (size_t data_offset = sizeof(temp_buffer);
+         data_offset < sizeof(reference_data);
+         data_offset += sizeof(temp_buffer)) {
+      const char* block =
+          reader.GetConsecutiveData(sizeof(reference_data) - data_offset,
+                                    sizeof(temp_buffer), temp_buffer);
       ASSERT_FALSE(memcmp(block,
-                          referenceData + sizeof(referenceData) - dataOffset,
-                          sizeof(tempBuffer)));
+                          reference_data + sizeof(reference_data) - data_offset,
+                          sizeof(temp_buffer)));
     }
   }
 }
 
 TEST(FastSharedBufferReaderTest, byteByByte) {
-  char referenceData[kDefaultTestSize];
-  prepareReferenceData(referenceData, sizeof(referenceData));
-  RefPtr<SharedBuffer> data = SharedBuffer::create();
-  data->append(referenceData, sizeof(referenceData));
+  char reference_data[kDefaultTestSize];
+  PrepareReferenceData(reference_data, sizeof(reference_data));
+  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(reference_data, sizeof(reference_data));
 
-  SegmentReaders readerStruct(data);
-  for (auto segmentReader : readerStruct.segmentReaders) {
-    FastSharedBufferReader reader(segmentReader);
-    for (size_t i = 0; i < sizeof(referenceData); ++i) {
-      ASSERT_EQ(referenceData[i], reader.getOneByte(i));
+  SegmentReaders reader_struct(data);
+  for (auto segment_reader : reader_struct.segment_readers) {
+    FastSharedBufferReader reader(segment_reader);
+    for (size_t i = 0; i < sizeof(reference_data); ++i) {
+      ASSERT_EQ(reference_data[i], reader.GetOneByte(i));
     }
   }
 }
@@ -138,69 +141,69 @@ TEST(FastSharedBufferReaderTest, byteByByte) {
 // Tests that a read from inside the penultimate segment to the very end of the
 // buffer doesn't try to read off the end of the buffer.
 TEST(FastSharedBufferReaderTest, readAllOverlappingLastSegmentBoundary) {
-  const unsigned dataSize = 2 * SharedBuffer::kSegmentSize;
-  char referenceData[dataSize];
-  prepareReferenceData(referenceData, dataSize);
-  RefPtr<SharedBuffer> data = SharedBuffer::create();
-  data->append(referenceData, dataSize);
+  const unsigned kDataSize = 2 * SharedBuffer::kSegmentSize;
+  char reference_data[kDataSize];
+  PrepareReferenceData(reference_data, kDataSize);
+  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(reference_data, kDataSize);
 
-  SegmentReaders readerStruct(data);
-  for (auto segmentReader : readerStruct.segmentReaders) {
-    FastSharedBufferReader reader(segmentReader);
-    char buffer[dataSize];
-    reader.getConsecutiveData(0, dataSize, buffer);
-    ASSERT_FALSE(memcmp(buffer, referenceData, dataSize));
+  SegmentReaders reader_struct(data);
+  for (auto segment_reader : reader_struct.segment_readers) {
+    FastSharedBufferReader reader(segment_reader);
+    char buffer[kDataSize];
+    reader.GetConsecutiveData(0, kDataSize, buffer);
+    ASSERT_FALSE(memcmp(buffer, reference_data, kDataSize));
   }
 }
 
 // Verify that reading past the end of the buffer does not break future reads.
 TEST(SegmentReaderTest, readPastEndThenRead) {
-  const unsigned dataSize = 2 * SharedBuffer::kSegmentSize;
-  char referenceData[dataSize];
-  prepareReferenceData(referenceData, dataSize);
-  RefPtr<SharedBuffer> data = SharedBuffer::create();
-  data->append(referenceData, dataSize);
+  const unsigned kDataSize = 2 * SharedBuffer::kSegmentSize;
+  char reference_data[kDataSize];
+  PrepareReferenceData(reference_data, kDataSize);
+  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(reference_data, kDataSize);
 
-  SegmentReaders readerStruct(data);
-  for (auto segmentReader : readerStruct.segmentReaders) {
+  SegmentReaders reader_struct(data);
+  for (auto segment_reader : reader_struct.segment_readers) {
     const char* contents;
-    size_t length = segmentReader->getSomeData(contents, dataSize);
+    size_t length = segment_reader->GetSomeData(contents, kDataSize);
     EXPECT_EQ(0u, length);
 
-    length = segmentReader->getSomeData(contents, 0);
+    length = segment_reader->GetSomeData(contents, 0);
     EXPECT_LE(SharedBuffer::kSegmentSize, length);
   }
 }
 
 TEST(SegmentReaderTest, getAsSkData) {
-  const unsigned dataSize = 4 * SharedBuffer::kSegmentSize;
-  char referenceData[dataSize];
-  prepareReferenceData(referenceData, dataSize);
-  RefPtr<SharedBuffer> data = SharedBuffer::create();
-  data->append(referenceData, dataSize);
+  const unsigned kDataSize = 4 * SharedBuffer::kSegmentSize;
+  char reference_data[kDataSize];
+  PrepareReferenceData(reference_data, kDataSize);
+  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append(reference_data, kDataSize);
 
-  SegmentReaders readerStruct(data);
-  for (auto segmentReader : readerStruct.segmentReaders) {
-    sk_sp<SkData> skdata = segmentReader->getAsSkData();
+  SegmentReaders reader_struct(data);
+  for (auto segment_reader : reader_struct.segment_readers) {
+    sk_sp<SkData> skdata = segment_reader->GetAsSkData();
     EXPECT_EQ(data->size(), skdata->size());
 
     const char* segment;
     size_t position = 0;
-    for (size_t length = segmentReader->getSomeData(segment, position); length;
-         length = segmentReader->getSomeData(segment, position)) {
+    for (size_t length = segment_reader->GetSomeData(segment, position); length;
+         length = segment_reader->GetSomeData(segment, position)) {
       ASSERT_FALSE(memcmp(segment, skdata->bytes() + position, length));
       position += length;
     }
-    EXPECT_EQ(position, dataSize);
+    EXPECT_EQ(position, kDataSize);
   }
 }
 
 TEST(SegmentReaderTest, variableSegments) {
-  const size_t dataSize = 3.5 * SharedBuffer::kSegmentSize;
-  char referenceData[dataSize];
-  prepareReferenceData(referenceData, dataSize);
+  const size_t kDataSize = 3.5 * SharedBuffer::kSegmentSize;
+  char reference_data[kDataSize];
+  PrepareReferenceData(reference_data, kDataSize);
 
-  RefPtr<SegmentReader> segmentReader;
+  RefPtr<SegmentReader> segment_reader;
   {
     // Create a SegmentReader with difference sized segments, to test that
     // the SkROBuffer implementation works when two consecutive segments
@@ -209,32 +212,32 @@ TEST(SegmentReaderTest, variableSegments) {
     // 4096 (though the actual data may be smaller, if it has not been
     // written to yet), but when appending a larger amount it may create a
     // larger segment.
-    SkRWBuffer rwBuffer;
-    rwBuffer.append(referenceData, SharedBuffer::kSegmentSize);
-    rwBuffer.append(referenceData + SharedBuffer::kSegmentSize,
-                    2 * SharedBuffer::kSegmentSize);
-    rwBuffer.append(referenceData + 3 * SharedBuffer::kSegmentSize,
-                    .5 * SharedBuffer::kSegmentSize);
+    SkRWBuffer rw_buffer;
+    rw_buffer.append(reference_data, SharedBuffer::kSegmentSize);
+    rw_buffer.append(reference_data + SharedBuffer::kSegmentSize,
+                     2 * SharedBuffer::kSegmentSize);
+    rw_buffer.append(reference_data + 3 * SharedBuffer::kSegmentSize,
+                     .5 * SharedBuffer::kSegmentSize);
 
-    segmentReader = SegmentReader::createFromSkROBuffer(
-        sk_sp<SkROBuffer>(rwBuffer.newRBufferSnapshot()));
+    segment_reader = SegmentReader::CreateFromSkROBuffer(
+        sk_sp<SkROBuffer>(rw_buffer.newRBufferSnapshot()));
   }
 
   const char* segment;
   size_t position = 0;
-  size_t lastLength = 0;
-  for (size_t length = segmentReader->getSomeData(segment, position); length;
-       length = segmentReader->getSomeData(segment, position)) {
+  size_t last_length = 0;
+  for (size_t length = segment_reader->GetSomeData(segment, position); length;
+       length = segment_reader->GetSomeData(segment, position)) {
     // It is not a bug to have consecutive segments of the same length, but
     // it does mean that the following test does not actually test what it
     // is intended to test.
-    ASSERT_NE(length, lastLength);
-    lastLength = length;
+    ASSERT_NE(length, last_length);
+    last_length = length;
 
-    ASSERT_FALSE(memcmp(segment, referenceData + position, length));
+    ASSERT_FALSE(memcmp(segment, reference_data + position, length));
     position += length;
   }
-  EXPECT_EQ(position, dataSize);
+  EXPECT_EQ(position, kDataSize);
 }
 
 }  // namespace blink

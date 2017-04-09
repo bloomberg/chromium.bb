@@ -33,67 +33,69 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   RuntimeEnabledFeatures::setCSSAdditiveAnimationsEnabled(true);
   RuntimeEnabledFeatures::setStackedCSSPropertyAnimationsEnabled(true);
 
-  webView().page()->animator().clock().disableSyntheticTimeForTesting();
+  WebView().GetPage()->Animator().Clock().DisableSyntheticTimeForTesting();
 
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
-  mainResource.complete("<div id=\"target\"></div>");
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete("<div id=\"target\"></div>");
 
-  Element* target = document().getElementById("target");
+  Element* target = GetDocument().GetElementById("target");
 
   // CSS.registerProperty({
   //   name: '--x',
   //   syntax: '<percentage>',
   //   initialValue: '0%',
   // })
-  DummyExceptionStateForTesting exceptionState;
-  PropertyDescriptor propertyDescriptor;
-  propertyDescriptor.setName("--x");
-  propertyDescriptor.setSyntax("<percentage>");
-  propertyDescriptor.setInitialValue("0%");
-  PropertyRegistration::registerProperty(&document(), propertyDescriptor,
-                                         exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  DummyExceptionStateForTesting exception_state;
+  PropertyDescriptor property_descriptor;
+  property_descriptor.setName("--x");
+  property_descriptor.setSyntax("<percentage>");
+  property_descriptor.setInitialValue("0%");
+  PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
+                                         exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
   // target.style.setProperty('--x', '100%');
-  target->style()->setProperty("--x", "100%", emptyString, exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  target->style()->setProperty("--x", "100%", g_empty_string, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
-  RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
-  keyframe->setCSSPropertyValue("--x", document().propertyRegistry(), "100%",
-                                document().elementSheet().contents());
+  RefPtr<StringKeyframe> keyframe = StringKeyframe::Create();
+  keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
+                                "100%",
+                                GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
-  keyframes.push_back(keyframe.release());
+  keyframes.push_back(keyframe.Release());
   Timing timing;
-  timing.iterationDuration = 1;  // Seconds.
+  timing.iteration_duration = 1;  // Seconds.
   ElementAnimation::animate(
-      *target, StringKeyframeEffectModel::create(keyframes), timing);
+      *target, StringKeyframeEffectModel::Create(keyframes), timing);
 
   // This sets the baseComputedStyle on the animation exit frame.
-  compositor().beginFrame(1);
-  compositor().beginFrame(1);
+  Compositor().BeginFrame(1);
+  Compositor().BeginFrame(1);
 
   // target.style.setProperty('--x', '0%');
-  target->style()->setProperty("--x", "0%", emptyString, exceptionState);
-  EXPECT_FALSE(exceptionState.hadException());
+  target->style()->setProperty("--x", "0%", g_empty_string, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
-  keyframe = StringKeyframe::create();
-  keyframe->setCSSPropertyValue("--x", document().propertyRegistry(), "100%",
-                                document().elementSheet().contents());
-  keyframes.clear();
-  keyframes.push_back(keyframe.release());
-  timing = Timing::defaults();
-  timing.iterationDuration = 1;  // Seconds.
+  keyframe = StringKeyframe::Create();
+  keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
+                                "100%",
+                                GetDocument().ElementSheet().Contents());
+  keyframes.Clear();
+  keyframes.push_back(keyframe.Release());
+  timing = Timing::Defaults();
+  timing.iteration_duration = 1;  // Seconds.
   ElementAnimation::animate(
-      *target, StringKeyframeEffectModel::create(keyframes), timing);
+      *target, StringKeyframeEffectModel::Create(keyframes), timing);
 
   // This (previously) would not clear the existing baseComputedStyle and would
   // crash on the equality assertion in the exit frame when it tried to update
   // it.
-  compositor().beginFrame(1);
-  compositor().beginFrame(1);
+  Compositor().BeginFrame(1);
+  Compositor().BeginFrame(1);
 }
 
 }  // namespace blink

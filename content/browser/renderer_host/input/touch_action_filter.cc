@@ -34,19 +34,19 @@ TouchActionFilter::TouchActionFilter()
       allowed_touch_action_(TOUCH_ACTION_AUTO) {}
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
-  if (gesture_event->sourceDevice != blink::WebGestureDeviceTouchscreen)
+  if (gesture_event->source_device != blink::kWebGestureDeviceTouchscreen)
     return false;
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
-  switch (gesture_event->type()) {
-    case WebInputEvent::GestureScrollBegin:
+  switch (gesture_event->GetType()) {
+    case WebInputEvent::kGestureScrollBegin:
       DCHECK(!suppress_manipulation_events_);
       suppress_manipulation_events_ =
           ShouldSuppressManipulation(*gesture_event);
       return suppress_manipulation_events_;
 
-    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::kGestureScrollUpdate:
       if (suppress_manipulation_events_)
         return true;
 
@@ -59,75 +59,75 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       // doesn't.
       // TODO(mustaq): Add it to spec?
       if (IsYAxisActionDisallowed(allowed_touch_action_)) {
-        gesture_event->data.scrollUpdate.deltaY = 0;
-        gesture_event->data.scrollUpdate.velocityY = 0;
+        gesture_event->data.scroll_update.delta_y = 0;
+        gesture_event->data.scroll_update.velocity_y = 0;
       } else if (IsXAxisActionDisallowed(allowed_touch_action_)) {
-        gesture_event->data.scrollUpdate.deltaX = 0;
-        gesture_event->data.scrollUpdate.velocityX = 0;
+        gesture_event->data.scroll_update.delta_x = 0;
+        gesture_event->data.scroll_update.velocity_x = 0;
       }
       break;
 
-    case WebInputEvent::GestureFlingStart:
+    case WebInputEvent::kGestureFlingStart:
       // Touchscreen flings should always have non-zero velocity.
-      DCHECK(gesture_event->data.flingStart.velocityX ||
-             gesture_event->data.flingStart.velocityY);
+      DCHECK(gesture_event->data.fling_start.velocity_x ||
+             gesture_event->data.fling_start.velocity_y);
       if (!suppress_manipulation_events_) {
         // Flings restricted to a specific axis shouldn't permit velocity
         // in the perpendicular axis.
         if (IsYAxisActionDisallowed(allowed_touch_action_))
-          gesture_event->data.flingStart.velocityY = 0;
+          gesture_event->data.fling_start.velocity_y = 0;
         else if (IsXAxisActionDisallowed(allowed_touch_action_))
-          gesture_event->data.flingStart.velocityX = 0;
+          gesture_event->data.fling_start.velocity_x = 0;
         // As the renderer expects a scroll-ending event, but does not expect a
         // zero-velocity fling, convert the now zero-velocity fling accordingly.
-        if (!gesture_event->data.flingStart.velocityX &&
-            !gesture_event->data.flingStart.velocityY) {
-          gesture_event->setType(WebInputEvent::GestureScrollEnd);
+        if (!gesture_event->data.fling_start.velocity_x &&
+            !gesture_event->data.fling_start.velocity_y) {
+          gesture_event->SetType(WebInputEvent::kGestureScrollEnd);
         }
       }
       return FilterManipulationEventAndResetState();
 
-    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::kGestureScrollEnd:
       return FilterManipulationEventAndResetState();
 
-    case WebInputEvent::GesturePinchBegin:
-    case WebInputEvent::GesturePinchUpdate:
-    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::kGesturePinchEnd:
       return suppress_manipulation_events_;
 
     // The double tap gesture is a tap ending event. If a double tap gesture is
     // filtered out, replace it with a tap event.
-    case WebInputEvent::GestureDoubleTap:
-      DCHECK_EQ(1, gesture_event->data.tap.tapCount);
+    case WebInputEvent::kGestureDoubleTap:
+      DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       if (!allow_current_double_tap_event_)
-        gesture_event->setType(WebInputEvent::GestureTap);
+        gesture_event->SetType(WebInputEvent::kGestureTap);
       allow_current_double_tap_event_ = true;
       break;
 
     // If double tap is disabled, there's no reason for the tap delay.
-    case WebInputEvent::GestureTapUnconfirmed:
-      DCHECK_EQ(1, gesture_event->data.tap.tapCount);
+    case WebInputEvent::kGestureTapUnconfirmed:
+      DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       allow_current_double_tap_event_ =
           (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
       if (!allow_current_double_tap_event_) {
-        gesture_event->setType(WebInputEvent::GestureTap);
+        gesture_event->SetType(WebInputEvent::kGestureTap);
         drop_current_tap_ending_event_ = true;
       }
       break;
 
-    case WebInputEvent::GestureTap:
+    case WebInputEvent::kGestureTap:
       allow_current_double_tap_event_ =
           (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
       // Fall through.
 
-    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::kGestureTapCancel:
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;
         return true;
       }
       break;
 
-    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::kGestureTapDown:
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
@@ -171,17 +171,17 @@ void TouchActionFilter::ResetTouchAction() {
 
 bool TouchActionFilter::ShouldSuppressManipulation(
     const blink::WebGestureEvent& gesture_event) {
-  DCHECK_EQ(gesture_event.type(), WebInputEvent::GestureScrollBegin);
+  DCHECK_EQ(gesture_event.GetType(), WebInputEvent::kGestureScrollBegin);
 
-  if (gesture_event.data.scrollBegin.pointerCount >= 2) {
+  if (gesture_event.data.scroll_begin.pointer_count >= 2) {
     // Any GestureScrollBegin with more than one fingers is like a pinch-zoom
     // for touch-actions, see crbug.com/632525. Therefore, we switch to
     // blocked-manipulation mode iff pinch-zoom is disallowed.
     return (allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) == 0;
   }
 
-  const float& deltaXHint = gesture_event.data.scrollBegin.deltaXHint;
-  const float& deltaYHint = gesture_event.data.scrollBegin.deltaYHint;
+  const float& deltaXHint = gesture_event.data.scroll_begin.delta_x_hint;
+  const float& deltaYHint = gesture_event.data.scroll_begin.delta_y_hint;
 
   if (deltaXHint == 0.0 && deltaYHint == 0.0)
     return false;

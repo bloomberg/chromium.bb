@@ -9,23 +9,23 @@
 
 namespace blink {
 
-void v8ConstructorAttributeGetter(
-    v8::Local<v8::Name> propertyName,
+void V8ConstructorAttributeGetter(
+    v8::Local<v8::Name> property_name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> data = info.Data();
   DCHECK(data->IsExternal());
-  V8PerContextData* perContextData =
-      V8PerContextData::from(info.Holder()->CreationContext());
-  if (!perContextData)
+  V8PerContextData* per_context_data =
+      V8PerContextData::From(info.Holder()->CreationContext());
+  if (!per_context_data)
     return;
-  v8SetReturnValue(
-      info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+  V8SetReturnValue(info, per_context_data->ConstructorForType(
+                             WrapperTypeInfo::Unwrap(data)));
 }
 
-v8::Local<v8::Value> v8Deserialize(v8::Isolate* isolate,
+v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,
                                    PassRefPtr<SerializedScriptValue> value) {
   if (value)
-    return value->deserialize(isolate);
+    return value->Deserialize(isolate);
   return v8::Null(isolate);
 }
 

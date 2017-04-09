@@ -344,8 +344,8 @@ blink::WebWorkerCreationError SharedWorkerServiceImpl::CreateWorker(
     pending->AddRequest(std::move(request));
     if (params.creation_context_type !=
         pending->instance()->creation_context_type())
-      return blink::WebWorkerCreationErrorSecureContextMismatch;
-    return blink::WebWorkerCreationErrorNone;
+      return blink::kWebWorkerCreationErrorSecureContextMismatch;
+    return blink::kWebWorkerCreationErrorNone;
   }
 
   std::unique_ptr<SharedWorkerPendingInstance> pending_instance(
@@ -518,18 +518,18 @@ SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!FindPendingInstance(*pending_instance->instance()));
   if (!pending_instance->requests()->size())
-    return blink::WebWorkerCreationErrorNone;
+    return blink::kWebWorkerCreationErrorNone;
 
   int worker_process_id = -1;
   int worker_route_id = MSG_ROUTING_NONE;
   bool is_new_worker = true;
   blink::WebWorkerCreationError creation_error =
-      blink::WebWorkerCreationErrorNone;
+      blink::kWebWorkerCreationErrorNone;
   SharedWorkerHost* host = FindSharedWorkerHost(*pending_instance->instance());
   if (host) {
     if (pending_instance->instance()->creation_context_type() !=
         host->instance()->creation_context_type()) {
-      creation_error = blink::WebWorkerCreationErrorSecureContextMismatch;
+      creation_error = blink::kWebWorkerCreationErrorSecureContextMismatch;
     }
     worker_process_id = host->process_id();
     worker_route_id = host->worker_route_id();

@@ -31,24 +31,24 @@ namespace blink {
 
 namespace AudioUtilities {
 
-float decibelsToLinear(float decibels) {
+float DecibelsToLinear(float decibels) {
   return powf(10, 0.05f * decibels);
 }
 
-float linearToDecibels(float linear) {
+float LinearToDecibels(float linear) {
   DCHECK_GE(linear, 0);
 
   return 20 * log10f(linear);
 }
 
-double discreteTimeConstantForSampleRate(double timeConstant,
-                                         double sampleRate) {
-  return 1 - exp(-1 / (sampleRate * timeConstant));
+double DiscreteTimeConstantForSampleRate(double time_constant,
+                                         double sample_rate) {
+  return 1 - exp(-1 / (sample_rate * time_constant));
 }
 
-size_t timeToSampleFrame(double time, double sampleRate) {
+size_t TimeToSampleFrame(double time, double sample_rate) {
   DCHECK_GE(time, 0);
-  double frame = round(time * sampleRate);
+  double frame = round(time * sample_rate);
 
   // Just return the largest possible size_t value if necessary.
   if (frame >= std::numeric_limits<size_t>::max()) {
@@ -58,23 +58,23 @@ size_t timeToSampleFrame(double time, double sampleRate) {
   return static_cast<size_t>(frame);
 }
 
-bool isValidAudioBufferSampleRate(float sampleRate) {
-  return sampleRate >= minAudioBufferSampleRate() &&
-         sampleRate <= maxAudioBufferSampleRate();
+bool IsValidAudioBufferSampleRate(float sample_rate) {
+  return sample_rate >= MinAudioBufferSampleRate() &&
+         sample_rate <= MaxAudioBufferSampleRate();
 }
 
-float minAudioBufferSampleRate() {
+float MinAudioBufferSampleRate() {
   // crbug.com/344375
   return 3000;
 }
 
-float maxAudioBufferSampleRate() {
+float MaxAudioBufferSampleRate() {
   // <video> tags support sample rates up 384 kHz so audio context
   // should too.
   return 384000;
 }
 
-bool isPowerOfTwo(size_t x) {
+bool IsPowerOfTwo(size_t x) {
   // From Hacker's Delight.  x & (x - 1) turns off (zeroes) the
   // rightmost 1-bit in the word x.  If x is a power of two, then the
   // result is, of course, 0.

@@ -32,9 +32,9 @@ namespace blink {
 
 struct QualifiedNameComponents {
   DISALLOW_NEW();
-  StringImpl* m_prefix;
-  StringImpl* m_localName;
-  StringImpl* m_namespace;
+  StringImpl* prefix_;
+  StringImpl* local_name_;
+  StringImpl* namespace_;
 };
 
 // This struct is used to pass data between QualifiedName and the
@@ -42,11 +42,11 @@ struct QualifiedNameComponents {
 // fields are used.
 struct QualifiedNameData {
   DISALLOW_NEW();
-  QualifiedNameComponents m_components;
-  bool m_isStatic;
+  QualifiedNameComponents components_;
+  bool is_static_;
 };
 
-CORE_EXPORT extern const class QualifiedName& nullName;
+CORE_EXPORT extern const class QualifiedName& g_null_name;
 
 class CORE_EXPORT QualifiedName {
   USING_FAST_MALLOC(QualifiedName);
@@ -54,175 +54,177 @@ class CORE_EXPORT QualifiedName {
  public:
   class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
    public:
-    static PassRefPtr<QualifiedNameImpl> create(
+    static PassRefPtr<QualifiedNameImpl> Create(
         const AtomicString& prefix,
-        const AtomicString& localName,
-        const AtomicString& namespaceURI,
-        bool isStatic) {
-      return adoptRef(
-          new QualifiedNameImpl(prefix, localName, namespaceURI, isStatic));
+        const AtomicString& local_name,
+        const AtomicString& namespace_uri,
+        bool is_static) {
+      return AdoptRef(
+          new QualifiedNameImpl(prefix, local_name, namespace_uri, is_static));
     }
 
     ~QualifiedNameImpl();
 
-    unsigned computeHash() const;
+    unsigned ComputeHash() const;
 
-    void ref() {
-      if (m_isStatic)
+    void Ref() {
+      if (is_static_)
         return;
-      RefCounted<QualifiedNameImpl>::ref();
+      RefCounted<QualifiedNameImpl>::Ref();
     }
 
-    void deref() {
-      if (m_isStatic)
+    void Deref() {
+      if (is_static_)
         return;
-      RefCounted<QualifiedNameImpl>::deref();
+      RefCounted<QualifiedNameImpl>::Deref();
     }
 
     // We rely on StringHasher's hashMemory clearing out the top 8 bits when
     // doing hashing and use one of the bits for the m_isStatic value.
-    mutable unsigned m_existingHash : 24;
-    unsigned m_isStatic : 1;
-    const AtomicString m_prefix;
-    const AtomicString m_localName;
-    const AtomicString m_namespace;
-    mutable AtomicString m_localNameUpper;
+    mutable unsigned existing_hash_ : 24;
+    unsigned is_static_ : 1;
+    const AtomicString prefix_;
+    const AtomicString local_name_;
+    const AtomicString namespace_;
+    mutable AtomicString local_name_upper_;
 
    private:
     QualifiedNameImpl(const AtomicString& prefix,
-                      const AtomicString& localName,
-                      const AtomicString& namespaceURI,
-                      bool isStatic)
-        : m_existingHash(0),
-          m_isStatic(isStatic),
-          m_prefix(prefix),
-          m_localName(localName),
-          m_namespace(namespaceURI)
+                      const AtomicString& local_name,
+                      const AtomicString& namespace_uri,
+                      bool is_static)
+        : existing_hash_(0),
+          is_static_(is_static),
+          prefix_(prefix),
+          local_name_(local_name),
+          namespace_(namespace_uri)
 
     {
-      DCHECK(!namespaceURI.isEmpty() || namespaceURI.isNull());
+      DCHECK(!namespace_uri.IsEmpty() || namespace_uri.IsNull());
     }
   };
 
   QualifiedName(const AtomicString& prefix,
-                const AtomicString& localName,
-                const AtomicString& namespaceURI);
+                const AtomicString& local_name,
+                const AtomicString& namespace_uri);
   ~QualifiedName();
 
-  QualifiedName(const QualifiedName& other) : m_impl(other.m_impl) {}
+  QualifiedName(const QualifiedName& other) : impl_(other.impl_) {}
   const QualifiedName& operator=(const QualifiedName& other) {
-    m_impl = other.m_impl;
+    impl_ = other.impl_;
     return *this;
   }
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
   QualifiedName(WTF::HashTableDeletedValueType)
-      : m_impl(WTF::HashTableDeletedValue) {}
-  bool isHashTableDeletedValue() const {
-    return m_impl.isHashTableDeletedValue();
+      : impl_(WTF::kHashTableDeletedValue) {}
+  bool IsHashTableDeletedValue() const {
+    return impl_.IsHashTableDeletedValue();
   }
 
   bool operator==(const QualifiedName& other) const {
-    return m_impl == other.m_impl;
+    return impl_ == other.impl_;
   }
   bool operator!=(const QualifiedName& other) const {
     return !(*this == other);
   }
 
-  bool matches(const QualifiedName& other) const {
-    return m_impl == other.m_impl || (localName() == other.localName() &&
-                                      namespaceURI() == other.namespaceURI());
+  bool Matches(const QualifiedName& other) const {
+    return impl_ == other.impl_ || (LocalName() == other.LocalName() &&
+                                    NamespaceURI() == other.NamespaceURI());
   }
 
-  bool matchesPossiblyIgnoringCase(const QualifiedName& other,
-                                   bool shouldIgnoreCase) const {
-    return m_impl == other.m_impl ||
-           (equalPossiblyIgnoringCase(localName(), other.localName(),
-                                      shouldIgnoreCase) &&
-            namespaceURI() == other.namespaceURI());
+  bool MatchesPossiblyIgnoringCase(const QualifiedName& other,
+                                   bool should_ignore_case) const {
+    return impl_ == other.impl_ ||
+           (EqualPossiblyIgnoringCase(LocalName(), other.LocalName(),
+                                      should_ignore_case) &&
+            NamespaceURI() == other.NamespaceURI());
   }
 
-  bool hasPrefix() const { return m_impl->m_prefix != nullAtom; }
-  void setPrefix(const AtomicString& prefix) {
-    *this = QualifiedName(prefix, localName(), namespaceURI());
+  bool HasPrefix() const { return impl_->prefix_ != g_null_atom; }
+  void SetPrefix(const AtomicString& prefix) {
+    *this = QualifiedName(prefix, LocalName(), NamespaceURI());
   }
 
-  const AtomicString& prefix() const { return m_impl->m_prefix; }
-  const AtomicString& localName() const { return m_impl->m_localName; }
-  const AtomicString& namespaceURI() const { return m_impl->m_namespace; }
+  const AtomicString& Prefix() const { return impl_->prefix_; }
+  const AtomicString& LocalName() const { return impl_->local_name_; }
+  const AtomicString& NamespaceURI() const { return impl_->namespace_; }
 
   // Uppercased localName, cached for efficiency
-  const AtomicString& localNameUpper() const;
+  const AtomicString& LocalNameUpper() const;
 
-  String toString() const;
+  String ToString() const;
 
-  QualifiedNameImpl* impl() const { return m_impl.get(); }
+  QualifiedNameImpl* Impl() const { return impl_.Get(); }
 
   // Init routine for globals
-  static void initAndReserveCapacityForSize(unsigned size);
+  static void InitAndReserveCapacityForSize(unsigned size);
 
-  static const QualifiedName& null() { return nullName; }
+  static const QualifiedName& Null() { return g_null_name; }
 
   // The below methods are only for creating static global QNames that need no
   // ref counting.
-  static void createStatic(void* targetAddress, StringImpl* name);
-  static void createStatic(void* targetAddress,
+  static void CreateStatic(void* target_address, StringImpl* name);
+  static void CreateStatic(void* target_address,
                            StringImpl* name,
-                           const AtomicString& nameNamespace);
+                           const AtomicString& name_namespace);
 
  private:
   // This constructor is used only to create global/static QNames that don't
   // require any ref counting.
   QualifiedName(const AtomicString& prefix,
-                const AtomicString& localName,
-                const AtomicString& namespaceURI,
-                bool isStatic);
+                const AtomicString& local_name,
+                const AtomicString& namespace_uri,
+                bool is_static);
 
-  RefPtr<QualifiedNameImpl> m_impl;
+  RefPtr<QualifiedNameImpl> impl_;
 };
 
-extern const QualifiedName& anyName;
-inline const QualifiedName& anyQName() {
-  return anyName;
+extern const QualifiedName& g_any_name;
+inline const QualifiedName& AnyQName() {
+  return g_any_name;
 }
 
 inline bool operator==(const AtomicString& a, const QualifiedName& q) {
-  return a == q.localName();
+  return a == q.LocalName();
 }
 inline bool operator!=(const AtomicString& a, const QualifiedName& q) {
-  return a != q.localName();
+  return a != q.LocalName();
 }
 inline bool operator==(const QualifiedName& q, const AtomicString& a) {
-  return a == q.localName();
+  return a == q.LocalName();
 }
 inline bool operator!=(const QualifiedName& q, const AtomicString& a) {
-  return a != q.localName();
+  return a != q.LocalName();
 }
 
-inline unsigned hashComponents(const QualifiedNameComponents& buf) {
-  return StringHasher::hashMemory<sizeof(QualifiedNameComponents)>(&buf);
+inline unsigned HashComponents(const QualifiedNameComponents& buf) {
+  return StringHasher::HashMemory<sizeof(QualifiedNameComponents)>(&buf);
 }
 
 struct CORE_EXPORT QualifiedNameHash {
   STATIC_ONLY(QualifiedNameHash);
-  static unsigned hash(const QualifiedName& name) { return hash(name.impl()); }
-
-  static unsigned hash(const QualifiedName::QualifiedNameImpl* name) {
-    if (!name->m_existingHash)
-      name->m_existingHash = name->computeHash();
-    return name->m_existingHash;
+  static unsigned GetHash(const QualifiedName& name) {
+    return GetHash(name.Impl());
   }
 
-  static bool equal(const QualifiedName& a, const QualifiedName& b) {
+  static unsigned GetHash(const QualifiedName::QualifiedNameImpl* name) {
+    if (!name->existing_hash_)
+      name->existing_hash_ = name->ComputeHash();
+    return name->existing_hash_;
+  }
+
+  static bool Equal(const QualifiedName& a, const QualifiedName& b) {
     return a == b;
   }
-  static bool equal(const QualifiedName::QualifiedNameImpl* a,
+  static bool Equal(const QualifiedName::QualifiedNameImpl* a,
                     const QualifiedName::QualifiedNameImpl* b) {
     return a == b;
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safe_to_compare_to_empty_or_deleted = false;
 };
 
 }  // namespace blink
@@ -237,9 +239,9 @@ struct DefaultHash<blink::QualifiedName> {
 template <>
 struct HashTraits<blink::QualifiedName>
     : SimpleClassHashTraits<blink::QualifiedName> {
-  static const bool emptyValueIsZero = false;
-  static const blink::QualifiedName& emptyValue() {
-    return blink::QualifiedName::null();
+  static const bool kEmptyValueIsZero = false;
+  static const blink::QualifiedName& EmptyValue() {
+    return blink::QualifiedName::Null();
   }
 };
 }  // namespace WTF

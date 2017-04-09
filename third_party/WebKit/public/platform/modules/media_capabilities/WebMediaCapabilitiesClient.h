@@ -18,7 +18,7 @@ class WebMediaCapabilitiesClient {
  public:
   virtual ~WebMediaCapabilitiesClient() = default;
 
-  virtual void query(const WebMediaConfiguration&,
+  virtual void Query(const WebMediaConfiguration&,
                      std::unique_ptr<WebMediaCapabilitiesQueryCallbacks>) = 0;
 };
 

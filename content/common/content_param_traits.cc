@@ -45,7 +45,7 @@ bool ParamTraits<WebInputEventPointer>::Read(const base::Pickle* m,
     return false;
   }
   const size_t expected_size_for_type =
-      ui::WebInputEventTraits::GetSize(event->type());
+      ui::WebInputEventTraits::GetSize(event->GetType());
   if (data_length != static_cast<int>(expected_size_for_type)) {
     NOTREACHED();
     return false;
@@ -59,9 +59,9 @@ void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
   l->append("(");
   LogParam(p->size(), l);
   l->append(", ");
-  LogParam(p->type(), l);
+  LogParam(p->GetType(), l);
   l->append(", ");
-  LogParam(p->timeStampSeconds(), l);
+  LogParam(p->TimeStampSeconds(), l);
   l->append(")");
 }
 

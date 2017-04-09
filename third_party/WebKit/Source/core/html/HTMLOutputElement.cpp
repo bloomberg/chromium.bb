@@ -37,64 +37,64 @@ namespace blink {
 
 inline HTMLOutputElement::HTMLOutputElement(Document& document)
     : HTMLFormControlElement(HTMLNames::outputTag, document),
-      m_isDefaultValueMode(true),
-      m_defaultValue(""),
-      m_tokens(DOMTokenList::create(this)) {}
+      is_default_value_mode_(true),
+      default_value_(""),
+      tokens_(DOMTokenList::Create(this)) {}
 
 HTMLOutputElement::~HTMLOutputElement() {}
 
-HTMLOutputElement* HTMLOutputElement::create(Document& document) {
+HTMLOutputElement* HTMLOutputElement::Create(Document& document) {
   return new HTMLOutputElement(document);
 }
 
-const AtomicString& HTMLOutputElement::formControlType() const {
+const AtomicString& HTMLOutputElement::FormControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, output, ("output"));
   return output;
 }
 
-bool HTMLOutputElement::isDisabledFormControl() const {
+bool HTMLOutputElement::IsDisabledFormControl() const {
   return false;
 }
 
-bool HTMLOutputElement::matchesEnabledPseudoClass() const {
+bool HTMLOutputElement::MatchesEnabledPseudoClass() const {
   return false;
 }
 
-bool HTMLOutputElement::supportsFocus() const {
-  return HTMLElement::supportsFocus();
+bool HTMLOutputElement::SupportsFocus() const {
+  return HTMLElement::SupportsFocus();
 }
 
-void HTMLOutputElement::parseAttribute(
+void HTMLOutputElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == HTMLNames::forAttr)
-    setFor(params.newValue);
+    SetFor(params.new_value);
   else
-    HTMLFormControlElement::parseAttribute(params);
+    HTMLFormControlElement::ParseAttribute(params);
 }
 
 DOMTokenList* HTMLOutputElement::htmlFor() const {
-  return m_tokens.get();
+  return tokens_.Get();
 }
 
-void HTMLOutputElement::setFor(const AtomicString& value) {
-  m_tokens->setValue(value);
+void HTMLOutputElement::SetFor(const AtomicString& value) {
+  tokens_->setValue(value);
 }
 
-void HTMLOutputElement::childrenChanged(const ChildrenChange& change) {
-  HTMLFormControlElement::childrenChanged(change);
+void HTMLOutputElement::ChildrenChanged(const ChildrenChange& change) {
+  HTMLFormControlElement::ChildrenChanged(change);
 
-  if (m_isDefaultValueMode)
-    m_defaultValue = textContent();
+  if (is_default_value_mode_)
+    default_value_ = textContent();
 }
 
-void HTMLOutputElement::resetImpl() {
+void HTMLOutputElement::ResetImpl() {
   // The reset algorithm for output elements is to set the element's
   // value mode flag to "default" and then to set the element's textContent
   // attribute to the default value.
-  if (m_defaultValue == value())
+  if (default_value_ == value())
     return;
-  setTextContent(m_defaultValue);
-  m_isDefaultValueMode = true;
+  setTextContent(default_value_);
+  is_default_value_mode_ = true;
 }
 
 String HTMLOutputElement::value() const {
@@ -103,27 +103,27 @@ String HTMLOutputElement::value() const {
 
 void HTMLOutputElement::setValue(const String& value) {
   // The value mode flag set to "value" when the value attribute is set.
-  m_isDefaultValueMode = false;
+  is_default_value_mode_ = false;
   if (value == this->value())
     return;
   setTextContent(value);
 }
 
-void HTMLOutputElement::valueWasSet() {
-  setSynchronizedLazyAttribute(HTMLNames::forAttr, m_tokens->value());
+void HTMLOutputElement::ValueWasSet() {
+  SetSynchronizedLazyAttribute(HTMLNames::forAttr, tokens_->value());
 }
 
 String HTMLOutputElement::defaultValue() const {
-  return m_defaultValue;
+  return default_value_;
 }
 
 void HTMLOutputElement::setDefaultValue(const String& value) {
-  if (m_defaultValue == value)
+  if (default_value_ == value)
     return;
-  m_defaultValue = value;
+  default_value_ = value;
   // The spec requires the value attribute set to the default value
   // when the element's value mode flag to "default".
-  if (m_isDefaultValueMode)
+  if (is_default_value_mode_)
     setTextContent(value);
 }
 
@@ -132,9 +132,9 @@ int HTMLOutputElement::tabIndex() const {
 }
 
 DEFINE_TRACE(HTMLOutputElement) {
-  visitor->trace(m_tokens);
-  HTMLFormControlElement::trace(visitor);
-  DOMTokenListObserver::trace(visitor);
+  visitor->Trace(tokens_);
+  HTMLFormControlElement::Trace(visitor);
+  DOMTokenListObserver::Trace(visitor);
 }
 
 }  // namespace blink

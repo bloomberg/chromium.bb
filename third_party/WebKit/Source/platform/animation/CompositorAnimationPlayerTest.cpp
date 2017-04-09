@@ -20,34 +20,34 @@ namespace blink {
 class CompositorAnimationDelegateForTesting
     : public CompositorAnimationDelegate {
  public:
-  CompositorAnimationDelegateForTesting() { resetFlags(); }
+  CompositorAnimationDelegateForTesting() { ResetFlags(); }
 
-  void resetFlags() {
-    m_started = false;
-    m_finished = false;
-    m_aborted = false;
+  void ResetFlags() {
+    started_ = false;
+    finished_ = false;
+    aborted_ = false;
   }
 
-  void notifyAnimationStarted(double, int) override { m_started = true; }
-  void notifyAnimationFinished(double, int) override { m_finished = true; }
-  void notifyAnimationAborted(double, int) override { m_aborted = true; }
+  void NotifyAnimationStarted(double, int) override { started_ = true; }
+  void NotifyAnimationFinished(double, int) override { finished_ = true; }
+  void NotifyAnimationAborted(double, int) override { aborted_ = true; }
 
-  bool m_started;
-  bool m_finished;
-  bool m_aborted;
+  bool started_;
+  bool finished_;
+  bool aborted_;
 };
 
 class CompositorAnimationPlayerTestClient
     : public CompositorAnimationPlayerClient {
  public:
   CompositorAnimationPlayerTestClient()
-      : m_player(CompositorAnimationPlayer::create()) {}
+      : player_(CompositorAnimationPlayer::Create()) {}
 
-  CompositorAnimationPlayer* compositorPlayer() const override {
-    return m_player.get();
+  CompositorAnimationPlayer* CompositorPlayer() const override {
+    return player_.get();
   }
 
-  std::unique_ptr<CompositorAnimationPlayer> m_player;
+  std::unique_ptr<CompositorAnimationPlayer> player_;
 };
 
 class CompositorAnimationPlayerTest : public CompositorTest {};
@@ -59,28 +59,28 @@ TEST_F(CompositorAnimationPlayerTest, NullDelegate) {
       new CompositorAnimationDelegateForTesting);
 
   std::unique_ptr<CompositorAnimationPlayer> player =
-      CompositorAnimationPlayer::create();
-  cc::AnimationPlayer* ccPlayer = player->ccAnimationPlayer();
+      CompositorAnimationPlayer::Create();
+  cc::AnimationPlayer* cc_player = player->CcAnimationPlayer();
 
   std::unique_ptr<CompositorAnimationCurve> curve =
-      CompositorFloatAnimationCurve::create();
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
       *curve, CompositorTargetProperty::TRANSFORM, 1, 0);
-  player->addAnimation(std::move(animation));
+  player->AddAnimation(std::move(animation));
 
-  player->setAnimationDelegate(delegate.get());
-  EXPECT_FALSE(delegate->m_finished);
+  player->SetAnimationDelegate(delegate.get());
+  EXPECT_FALSE(delegate->finished_);
 
-  ccPlayer->NotifyAnimationFinishedForTesting(
+  cc_player->NotifyAnimationFinishedForTesting(
       CompositorTargetProperty::TRANSFORM, 1);
-  EXPECT_TRUE(delegate->m_finished);
+  EXPECT_TRUE(delegate->finished_);
 
-  delegate->resetFlags();
+  delegate->ResetFlags();
 
-  player->setAnimationDelegate(nullptr);
-  ccPlayer->NotifyAnimationFinishedForTesting(
+  player->SetAnimationDelegate(nullptr);
+  cc_player->NotifyAnimationFinishedForTesting(
       CompositorTargetProperty::TRANSFORM, 1);
-  EXPECT_FALSE(delegate->m_finished);
+  EXPECT_FALSE(delegate->finished_);
 }
 
 TEST_F(CompositorAnimationPlayerTest,
@@ -89,54 +89,54 @@ TEST_F(CompositorAnimationPlayerTest,
       new CompositorAnimationDelegateForTesting);
 
   std::unique_ptr<CompositorAnimationPlayer> player =
-      CompositorAnimationPlayer::create();
-  scoped_refptr<cc::AnimationPlayer> ccPlayer = player->ccAnimationPlayer();
+      CompositorAnimationPlayer::Create();
+  scoped_refptr<cc::AnimationPlayer> cc_player = player->CcAnimationPlayer();
 
   std::unique_ptr<CompositorAnimationCurve> curve =
-      CompositorFloatAnimationCurve::create();
-  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::create(
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
       *curve, CompositorTargetProperty::OPACITY, 1, 0);
-  player->addAnimation(std::move(animation));
+  player->AddAnimation(std::move(animation));
 
-  player->setAnimationDelegate(delegate.get());
-  EXPECT_FALSE(delegate->m_finished);
+  player->SetAnimationDelegate(delegate.get());
+  EXPECT_FALSE(delegate->finished_);
 
-  ccPlayer->NotifyAnimationFinishedForTesting(CompositorTargetProperty::OPACITY,
-                                              1);
-  EXPECT_TRUE(delegate->m_finished);
-  delegate->m_finished = false;
+  cc_player->NotifyAnimationFinishedForTesting(
+      CompositorTargetProperty::OPACITY, 1);
+  EXPECT_TRUE(delegate->finished_);
+  delegate->finished_ = false;
 
   // Delete CompositorAnimationPlayer. ccPlayer stays alive.
   player = nullptr;
 
   // No notifications. Doesn't crash.
-  ccPlayer->NotifyAnimationFinishedForTesting(CompositorTargetProperty::OPACITY,
-                                              1);
-  EXPECT_FALSE(delegate->m_finished);
+  cc_player->NotifyAnimationFinishedForTesting(
+      CompositorTargetProperty::OPACITY, 1);
+  EXPECT_FALSE(delegate->finished_);
 }
 
 TEST_F(CompositorAnimationPlayerTest,
        CompositorPlayerDeletionDetachesFromCCTimeline) {
   std::unique_ptr<CompositorAnimationTimeline> timeline =
-      CompositorAnimationTimeline::create();
+      CompositorAnimationTimeline::Create();
   std::unique_ptr<CompositorAnimationPlayerTestClient> client(
       new CompositorAnimationPlayerTestClient);
 
-  scoped_refptr<cc::AnimationTimeline> ccTimeline =
-      timeline->animationTimeline();
-  scoped_refptr<cc::AnimationPlayer> ccPlayer =
-      client->m_player->ccAnimationPlayer();
-  EXPECT_FALSE(ccPlayer->animation_timeline());
+  scoped_refptr<cc::AnimationTimeline> cc_timeline =
+      timeline->GetAnimationTimeline();
+  scoped_refptr<cc::AnimationPlayer> cc_player =
+      client->player_->CcAnimationPlayer();
+  EXPECT_FALSE(cc_player->animation_timeline());
 
-  timeline->playerAttached(*client);
-  EXPECT_TRUE(ccPlayer->animation_timeline());
-  EXPECT_TRUE(ccTimeline->GetPlayerById(ccPlayer->id()));
+  timeline->PlayerAttached(*client);
+  EXPECT_TRUE(cc_player->animation_timeline());
+  EXPECT_TRUE(cc_timeline->GetPlayerById(cc_player->id()));
 
   // Delete client and CompositorAnimationPlayer while attached to timeline.
   client = nullptr;
 
-  EXPECT_FALSE(ccPlayer->animation_timeline());
-  EXPECT_FALSE(ccTimeline->GetPlayerById(ccPlayer->id()));
+  EXPECT_FALSE(cc_player->animation_timeline());
+  EXPECT_FALSE(cc_timeline->GetPlayerById(cc_player->id()));
 }
 
 }  // namespace blink

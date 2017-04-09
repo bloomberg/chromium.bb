@@ -20,23 +20,23 @@ class PLATFORM_EXPORT SmallCapsIterator {
 
  public:
   enum SmallCapsBehavior {
-    SmallCapsSameCase,
-    SmallCapsUppercaseNeeded,
-    SmallCapsInvalid
+    kSmallCapsSameCase,
+    kSmallCapsUppercaseNeeded,
+    kSmallCapsInvalid
   };
 
-  SmallCapsIterator(const UChar* buffer, unsigned bufferSize);
+  SmallCapsIterator(const UChar* buffer, unsigned buffer_size);
 
-  bool consume(unsigned* capsLimit, SmallCapsBehavior*);
+  bool Consume(unsigned* caps_limit, SmallCapsBehavior*);
 
  private:
-  std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
-  unsigned m_bufferSize;
-  UChar32 m_nextUChar32;
-  bool m_atEnd;
+  std::unique_ptr<UTF16TextIterator> utf16_iterator_;
+  unsigned buffer_size_;
+  UChar32 next_u_char32_;
+  bool at_end_;
 
-  SmallCapsBehavior m_currentSmallCapsBehavior;
-  SmallCapsBehavior m_previousSmallCapsBehavior;
+  SmallCapsBehavior current_small_caps_behavior_;
+  SmallCapsBehavior previous_small_caps_behavior_;
 };
 
 }  // namespace blink

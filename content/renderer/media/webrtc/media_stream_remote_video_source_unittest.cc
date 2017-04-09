@@ -48,17 +48,17 @@ class MediaStreamRemoteVideoSourceTest
                                   webrtc_video_track_.get())))),
         number_of_successful_track_starts_(0),
         number_of_failed_track_starts_(0) {
-    webkit_source_.initialize(blink::WebString::fromASCII("dummy_source_id"),
-                              blink::WebMediaStreamSource::TypeVideo,
-                              blink::WebString::fromASCII("dummy_source_name"),
+    webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
+                              blink::WebMediaStreamSource::kTypeVideo,
+                              blink::WebString::FromASCII("dummy_source_name"),
                               true /* remote */);
-    webkit_source_.setExtraData(remote_source_);
+    webkit_source_.SetExtraData(remote_source_);
   }
 
   void TearDown() override {
     remote_source_->OnSourceTerminated();
-    webkit_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    webkit_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   MediaStreamRemoteVideoSourceUnderTest* source() {
@@ -140,14 +140,14 @@ TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
 
   MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
-            webkit_source().getReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive, sink.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
+            webkit_source().GetReadyState());
   StopWebRtcTrack();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
-            webkit_source().getReadyState());
-  EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded, sink.state());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
+            webkit_source().GetReadyState());
+  EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded, sink.state());
 
   track->RemoveSink(&sink);
 }

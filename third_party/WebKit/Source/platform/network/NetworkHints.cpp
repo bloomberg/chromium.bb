@@ -31,17 +31,17 @@
 
 namespace blink {
 
-void prefetchDNS(const String& hostname) {
-  if (WebPrescientNetworking* prescientNetworking =
-          Platform::current()->prescientNetworking())
-    prescientNetworking->prefetchDNS(hostname);
+void PrefetchDNS(const String& hostname) {
+  if (WebPrescientNetworking* prescient_networking =
+          Platform::Current()->PrescientNetworking())
+    prescient_networking->PrefetchDNS(hostname);
 }
 
-void preconnect(const KURL& url, const CrossOriginAttributeValue crossOrigin) {
-  if (WebPrescientNetworking* prescientNetworking =
-          Platform::current()->prescientNetworking()) {
-    bool allowCredentials = (crossOrigin != CrossOriginAttributeAnonymous);
-    prescientNetworking->preconnect(url, allowCredentials);
+void Preconnect(const KURL& url, const CrossOriginAttributeValue cross_origin) {
+  if (WebPrescientNetworking* prescient_networking =
+          Platform::Current()->PrescientNetworking()) {
+    bool allow_credentials = (cross_origin != kCrossOriginAttributeAnonymous);
+    prescient_networking->Preconnect(url, allow_credentials);
   }
 }
 

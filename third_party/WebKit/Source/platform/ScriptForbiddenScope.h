@@ -19,8 +19,8 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
   WTF_MAKE_NONCOPYABLE(ScriptForbiddenScope);
 
  public:
-  ScriptForbiddenScope() { enter(); }
-  ~ScriptForbiddenScope() { exit(); }
+  ScriptForbiddenScope() { Enter(); }
+  ~ScriptForbiddenScope() { Exit(); }
 
   class PLATFORM_EXPORT AllowUserAgentScript final {
     STACK_ALLOCATED();
@@ -28,31 +28,31 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
 
    public:
     AllowUserAgentScript() {
-      if (isMainThread())
-        m_change.emplace(&s_scriptForbiddenCount, 0);
+      if (IsMainThread())
+        change_.emplace(&script_forbidden_count_, 0);
     }
     ~AllowUserAgentScript() {
-      DCHECK(!isMainThread() || !s_scriptForbiddenCount);
+      DCHECK(!IsMainThread() || !script_forbidden_count_);
     }
 
    private:
-    Optional<AutoReset<unsigned>> m_change;
+    Optional<AutoReset<unsigned>> change_;
   };
 
-  static void enter() {
-    DCHECK(isMainThread());
-    ++s_scriptForbiddenCount;
+  static void Enter() {
+    DCHECK(IsMainThread());
+    ++script_forbidden_count_;
   }
-  static void exit() {
-    DCHECK(s_scriptForbiddenCount);
-    --s_scriptForbiddenCount;
+  static void Exit() {
+    DCHECK(script_forbidden_count_);
+    --script_forbidden_count_;
   }
-  static bool isScriptForbidden() {
-    return isMainThread() && s_scriptForbiddenCount;
+  static bool IsScriptForbidden() {
+    return IsMainThread() && script_forbidden_count_;
   }
 
  private:
-  static unsigned s_scriptForbiddenCount;
+  static unsigned script_forbidden_count_;
 };
 
 // Scoped disabling of script execution on the main thread,
@@ -68,15 +68,15 @@ class PLATFORM_EXPORT ScriptForbiddenIfMainThreadScope final {
 
  public:
   ScriptForbiddenIfMainThreadScope() {
-    m_IsMainThread = isMainThread();
-    if (m_IsMainThread)
-      ScriptForbiddenScope::enter();
+    is_main_thread_ = IsMainThread();
+    if (is_main_thread_)
+      ScriptForbiddenScope::Enter();
   }
   ~ScriptForbiddenIfMainThreadScope() {
-    if (m_IsMainThread)
-      ScriptForbiddenScope::exit();
+    if (is_main_thread_)
+      ScriptForbiddenScope::Exit();
   }
-  bool m_IsMainThread;
+  bool is_main_thread_;
 };
 
 }  // namespace blink

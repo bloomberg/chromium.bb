@@ -30,10 +30,10 @@
 namespace blink {
 
 IntPoint::IntPoint(const CGPoint& p)
-    : m_x(static_cast<int>(p.x)), m_y(static_cast<int>(p.y)) {}
+    : x_(static_cast<int>(p.x)), y_(static_cast<int>(p.y)) {}
 
 IntPoint::operator CGPoint() const {
-  return CGPointMake(m_x, m_y);
+  return CGPointMake(x_, y_);
 }
 
 }  // namespace blink

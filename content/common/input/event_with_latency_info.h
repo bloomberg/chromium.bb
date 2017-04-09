@@ -38,7 +38,7 @@ class EventWithLatencyInfo {
 
   bool CanCoalesceWith(const EventWithLatencyInfo& other)
       const WARN_UNUSED_RESULT {
-    if (other.event.type() != event.type())
+    if (other.event.GetType() != event.GetType())
       return false;
 
     DCHECK_EQ(sizeof(T), event.size());
@@ -54,9 +54,9 @@ class EventWithLatencyInfo {
 
     // New events get coalesced into older events, and the newer timestamp
     // should always be preserved.
-    const double time_stamp_seconds = other.event.timeStampSeconds();
+    const double time_stamp_seconds = other.event.TimeStampSeconds();
     ui::Coalesce(other.event, &event);
-    event.setTimeStampSeconds(time_stamp_seconds);
+    event.SetTimeStampSeconds(time_stamp_seconds);
 
     // When coalescing two input events, we keep the oldest LatencyInfo
     // for Telemetry latency tests, since it will represent the longest

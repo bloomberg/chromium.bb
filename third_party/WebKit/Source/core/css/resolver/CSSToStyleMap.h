@@ -42,54 +42,54 @@ class CSSToStyleMap {
   STATIC_ONLY(CSSToStyleMap);
 
  public:
-  static void mapFillAttachment(StyleResolverState&,
+  static void MapFillAttachment(StyleResolverState&,
                                 FillLayer*,
                                 const CSSValue&);
-  static void mapFillClip(StyleResolverState&, FillLayer*, const CSSValue&);
-  static void mapFillComposite(StyleResolverState&,
+  static void MapFillClip(StyleResolverState&, FillLayer*, const CSSValue&);
+  static void MapFillComposite(StyleResolverState&,
                                FillLayer*,
                                const CSSValue&);
-  static void mapFillBlendMode(StyleResolverState&,
+  static void MapFillBlendMode(StyleResolverState&,
                                FillLayer*,
                                const CSSValue&);
-  static void mapFillOrigin(StyleResolverState&, FillLayer*, const CSSValue&);
-  static void mapFillImage(StyleResolverState&, FillLayer*, const CSSValue&);
-  static void mapFillRepeatX(StyleResolverState&, FillLayer*, const CSSValue&);
-  static void mapFillRepeatY(StyleResolverState&, FillLayer*, const CSSValue&);
-  static void mapFillSize(StyleResolverState&, FillLayer*, const CSSValue&);
-  static void mapFillXPosition(StyleResolverState&,
+  static void MapFillOrigin(StyleResolverState&, FillLayer*, const CSSValue&);
+  static void MapFillImage(StyleResolverState&, FillLayer*, const CSSValue&);
+  static void MapFillRepeatX(StyleResolverState&, FillLayer*, const CSSValue&);
+  static void MapFillRepeatY(StyleResolverState&, FillLayer*, const CSSValue&);
+  static void MapFillSize(StyleResolverState&, FillLayer*, const CSSValue&);
+  static void MapFillXPosition(StyleResolverState&,
                                FillLayer*,
                                const CSSValue&);
-  static void mapFillYPosition(StyleResolverState&,
+  static void MapFillYPosition(StyleResolverState&,
                                FillLayer*,
                                const CSSValue&);
-  static void mapFillMaskSourceType(StyleResolverState&,
+  static void MapFillMaskSourceType(StyleResolverState&,
                                     FillLayer*,
                                     const CSSValue&);
 
-  static double mapAnimationDelay(const CSSValue&);
-  static Timing::PlaybackDirection mapAnimationDirection(const CSSValue&);
-  static double mapAnimationDuration(const CSSValue&);
-  static Timing::FillMode mapAnimationFillMode(const CSSValue&);
-  static double mapAnimationIterationCount(const CSSValue&);
-  static AtomicString mapAnimationName(const CSSValue&);
-  static EAnimPlayState mapAnimationPlayState(const CSSValue&);
-  static CSSTransitionData::TransitionProperty mapAnimationProperty(
+  static double MapAnimationDelay(const CSSValue&);
+  static Timing::PlaybackDirection MapAnimationDirection(const CSSValue&);
+  static double MapAnimationDuration(const CSSValue&);
+  static Timing::FillMode MapAnimationFillMode(const CSSValue&);
+  static double MapAnimationIterationCount(const CSSValue&);
+  static AtomicString MapAnimationName(const CSSValue&);
+  static EAnimPlayState MapAnimationPlayState(const CSSValue&);
+  static CSSTransitionData::TransitionProperty MapAnimationProperty(
       const CSSValue&);
-  static PassRefPtr<TimingFunction> mapAnimationTimingFunction(
+  static PassRefPtr<TimingFunction> MapAnimationTimingFunction(
       const CSSValue&,
-      bool allowStepMiddle = false);
+      bool allow_step_middle = false);
 
-  static void mapNinePieceImage(StyleResolverState&,
+  static void MapNinePieceImage(StyleResolverState&,
                                 CSSPropertyID,
                                 const CSSValue&,
                                 NinePieceImage&);
-  static void mapNinePieceImageSlice(StyleResolverState&,
+  static void MapNinePieceImageSlice(StyleResolverState&,
                                      const CSSValue&,
                                      NinePieceImage&);
-  static BorderImageLengthBox mapNinePieceImageQuad(StyleResolverState&,
+  static BorderImageLengthBox MapNinePieceImageQuad(StyleResolverState&,
                                                     const CSSValue&);
-  static void mapNinePieceImageRepeat(StyleResolverState&,
+  static void MapNinePieceImageRepeat(StyleResolverState&,
                                       const CSSValue&,
                                       NinePieceImage&);
 };

@@ -38,26 +38,26 @@ namespace blink {
 #define STATIC_ASSERT_MATCHING_ENUM(enum_name1, enum_name2)                   \
   static_assert(static_cast<int>(enum_name1) == static_cast<int>(enum_name2), \
                 "mismatching enums: " #enum_name1)
-STATIC_ASSERT_MATCHING_ENUM(LocalStorage,
+STATIC_ASSERT_MATCHING_ENUM(kLocalStorage,
                             ContentSettingsClient::StorageType::kLocal);
-STATIC_ASSERT_MATCHING_ENUM(SessionStorage,
+STATIC_ASSERT_MATCHING_ENUM(kSessionStorage,
                             ContentSettingsClient::StorageType::kSession);
 
-StorageClientImpl::StorageClientImpl(WebViewImpl* webView)
-    : m_webView(webView) {}
+StorageClientImpl::StorageClientImpl(WebViewImpl* web_view)
+    : web_view_(web_view) {}
 
 std::unique_ptr<StorageNamespace>
-StorageClientImpl::createSessionStorageNamespace() {
-  if (!m_webView->client())
+StorageClientImpl::CreateSessionStorageNamespace() {
+  if (!web_view_->Client())
     return nullptr;
-  return WTF::wrapUnique(new StorageNamespace(
-      WTF::wrapUnique(m_webView->client()->createSessionStorageNamespace())));
+  return WTF::WrapUnique(new StorageNamespace(
+      WTF::WrapUnique(web_view_->Client()->CreateSessionStorageNamespace())));
 }
 
-bool StorageClientImpl::canAccessStorage(LocalFrame* frame,
+bool StorageClientImpl::CanAccessStorage(LocalFrame* frame,
                                          StorageType type) const {
-  DCHECK(frame->contentSettingsClient());
-  return frame->contentSettingsClient()->allowStorage(
+  DCHECK(frame->GetContentSettingsClient());
+  return frame->GetContentSettingsClient()->AllowStorage(
       static_cast<ContentSettingsClient::StorageType>(type));
 }
 

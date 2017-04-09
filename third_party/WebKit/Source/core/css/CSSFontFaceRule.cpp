@@ -28,42 +28,42 @@
 
 namespace blink {
 
-CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* fontFaceRule,
+CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* font_face_rule,
                                  CSSStyleSheet* parent)
-    : CSSRule(parent), m_fontFaceRule(fontFaceRule) {}
+    : CSSRule(parent), font_face_rule_(font_face_rule) {}
 
 CSSFontFaceRule::~CSSFontFaceRule() {}
 
 CSSStyleDeclaration* CSSFontFaceRule::style() const {
-  if (!m_propertiesCSSOMWrapper)
-    m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(
-        m_fontFaceRule->mutableProperties(),
+  if (!properties_cssom_wrapper_)
+    properties_cssom_wrapper_ = StyleRuleCSSStyleDeclaration::Create(
+        font_face_rule_->MutableProperties(),
         const_cast<CSSFontFaceRule*>(this));
-  return m_propertiesCSSOMWrapper.get();
+  return properties_cssom_wrapper_.Get();
 }
 
 String CSSFontFaceRule::cssText() const {
   StringBuilder result;
-  result.append("@font-face { ");
-  String descs = m_fontFaceRule->properties().asText();
-  result.append(descs);
-  if (!descs.isEmpty())
-    result.append(' ');
-  result.append('}');
-  return result.toString();
+  result.Append("@font-face { ");
+  String descs = font_face_rule_->Properties().AsText();
+  result.Append(descs);
+  if (!descs.IsEmpty())
+    result.Append(' ');
+  result.Append('}');
+  return result.ToString();
 }
 
-void CSSFontFaceRule::reattach(StyleRuleBase* rule) {
+void CSSFontFaceRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  m_fontFaceRule = toStyleRuleFontFace(rule);
-  if (m_propertiesCSSOMWrapper)
-    m_propertiesCSSOMWrapper->reattach(m_fontFaceRule->mutableProperties());
+  font_face_rule_ = ToStyleRuleFontFace(rule);
+  if (properties_cssom_wrapper_)
+    properties_cssom_wrapper_->Reattach(font_face_rule_->MutableProperties());
 }
 
 DEFINE_TRACE(CSSFontFaceRule) {
-  visitor->trace(m_fontFaceRule);
-  visitor->trace(m_propertiesCSSOMWrapper);
-  CSSRule::trace(visitor);
+  visitor->Trace(font_face_rule_);
+  visitor->Trace(properties_cssom_wrapper_);
+  CSSRule::Trace(visitor);
 }
 
 }  // namespace blink

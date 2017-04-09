@@ -11,13 +11,13 @@ namespace blink {
 
 TEST(CSSVariableReferenceValueTest, EmptyList) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
+  CSSUnparsedValue* unparsed_value = CSSUnparsedValue::Create(fragments);
 
-  CSSStyleVariableReferenceValue* variableReferenceValue =
-      CSSStyleVariableReferenceValue::create("test", unparsedValue);
+  CSSStyleVariableReferenceValue* variable_reference_value =
+      CSSStyleVariableReferenceValue::Create("test", unparsed_value);
 
-  EXPECT_EQ(variableReferenceValue->variable(), "test");
-  EXPECT_EQ(variableReferenceValue->fallback(), unparsedValue);
+  EXPECT_EQ(variable_reference_value->variable(), "test");
+  EXPECT_EQ(variable_reference_value->fallback(), unparsed_value);
 }
 
 TEST(CSSVariableReferenceValueTest, MixedList) {
@@ -25,17 +25,17 @@ TEST(CSSVariableReferenceValueTest, MixedList) {
   fragments.push_back(StringOrCSSVariableReferenceValue::fromString("string"));
   fragments.push_back(
       StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
-          CSSStyleVariableReferenceValue::create(
-              "Variable", CSSUnparsedValue::fromString("Fallback"))));
+          CSSStyleVariableReferenceValue::Create(
+              "Variable", CSSUnparsedValue::FromString("Fallback"))));
   fragments.push_back(StringOrCSSVariableReferenceValue());
 
-  CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
+  CSSUnparsedValue* unparsed_value = CSSUnparsedValue::Create(fragments);
 
-  CSSStyleVariableReferenceValue* variableReferenceValue =
-      CSSStyleVariableReferenceValue::create("test", unparsedValue);
+  CSSStyleVariableReferenceValue* variable_reference_value =
+      CSSStyleVariableReferenceValue::Create("test", unparsed_value);
 
-  EXPECT_EQ(variableReferenceValue->variable(), "test");
-  EXPECT_EQ(variableReferenceValue->fallback(), unparsedValue);
+  EXPECT_EQ(variable_reference_value->variable(), "test");
+  EXPECT_EQ(variable_reference_value->fallback(), unparsed_value);
 }
 
 }  // namespace blink

@@ -17,13 +17,13 @@ namespace content {
 // blink::WebWidget::BrowserControlsState
 // are kept in sync.
 static_assert(int(BROWSER_CONTROLS_STATE_SHOWN) ==
-                  int(blink::WebBrowserControlsShown),
+                  int(blink::kWebBrowserControlsShown),
               "mismatching enums: SHOWN");
 static_assert(int(BROWSER_CONTROLS_STATE_HIDDEN) ==
-                  int(blink::WebBrowserControlsHidden),
+                  int(blink::kWebBrowserControlsHidden),
               "mismatching enums: HIDDEN");
 static_assert(int(BROWSER_CONTROLS_STATE_BOTH) ==
-                  int(blink::WebBrowserControlsBoth),
+                  int(blink::kWebBrowserControlsBoth),
               "mismatching enums: BOTH");
 
 blink::WebBrowserControlsState ContentToBlink(BrowserControlsState state) {
@@ -54,7 +54,7 @@ void RenderViewImpl::UpdateBrowserControlsState(
     BrowserControlsState current,
     bool animate) {
   if (GetWebWidget())
-    GetWebWidget()->updateBrowserControlsState(
+    GetWebWidget()->UpdateBrowserControlsState(
         ContentToBlink(constraints), ContentToBlink(current), animate);
 
   top_controls_constraints_ = constraints;

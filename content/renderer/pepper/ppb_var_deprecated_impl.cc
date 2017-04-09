@@ -60,7 +60,7 @@ class ObjectAccessor {
       return false;
     if (instance_)
       return !instance_->is_deleted() ||
-             !blink::WebPluginScriptForbiddenScope::isForbidden();
+             !blink::WebPluginScriptForbiddenScope::IsForbidden();
     if (exception)
       *exception = ppapi::StringVar::StringToPPVar(kInvalidObjectException);
     return false;
@@ -263,14 +263,14 @@ PP_Var CallDeprecatedInternal(PP_Var var,
   blink::WebPluginContainer* container = accessor.instance()->container();
   blink::WebLocalFrame* frame = NULL;
   if (container)
-    frame = container->document().frame();
+    frame = container->GetDocument().GetFrame();
 
   if (!frame) {
     try_catch.SetException("No frame to execute script in.");
     return PP_MakeUndefined();
   }
 
-  v8::Local<v8::Value> result = frame->callFunctionEvenIfScriptDisabled(
+  v8::Local<v8::Value> result = frame->CallFunctionEvenIfScriptDisabled(
       function.As<v8::Function>(), recv, argc, converted_args.get());
   ScopedPPVar result_var = try_catch.FromV8(result);
 

@@ -21,88 +21,88 @@ namespace blink {
 PresentationReceiver::PresentationReceiver(LocalFrame* frame,
                                            WebPresentationClient* client)
     : ContextClient(frame) {
-  recordOriginTypeAccess(frame->document());
-  m_connectionList = new PresentationConnectionList(frame->document());
+  RecordOriginTypeAccess(frame->GetDocument());
+  connection_list_ = new PresentationConnectionList(frame->GetDocument());
 
   if (client)
-    client->setReceiver(this);
+    client->SetReceiver(this);
 }
 
-ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState) {
-  if (!m_connectionListProperty)
-    m_connectionListProperty =
-        new ConnectionListProperty(scriptState->getExecutionContext(), this,
-                                   ConnectionListProperty::Ready);
+ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
+  if (!connection_list_property_)
+    connection_list_property_ =
+        new ConnectionListProperty(script_state->GetExecutionContext(), this,
+                                   ConnectionListProperty::kReady);
 
-  if (!m_connectionList->isEmpty() &&
-      m_connectionListProperty->getState() ==
-          ScriptPromisePropertyBase::Pending)
-    m_connectionListProperty->resolve(m_connectionList);
+  if (!connection_list_->IsEmpty() && connection_list_property_->GetState() ==
+                                          ScriptPromisePropertyBase::kPending)
+    connection_list_property_->Resolve(connection_list_);
 
-  return m_connectionListProperty->promise(scriptState->world());
+  return connection_list_property_->Promise(script_state->World());
 }
 
-WebPresentationConnection* PresentationReceiver::onReceiverConnectionAvailable(
-    const WebPresentationInfo& presentationInfo) {
+WebPresentationConnection* PresentationReceiver::OnReceiverConnectionAvailable(
+    const WebPresentationInfo& presentation_info) {
   // take() will call PresentationReceiver::registerConnection()
   // and register the connection.
-  auto connection = PresentationConnection::take(this, presentationInfo);
+  auto connection = PresentationConnection::Take(this, presentation_info);
 
   // receiver.connectionList property not accessed
-  if (!m_connectionListProperty)
+  if (!connection_list_property_)
     return connection;
 
-  if (m_connectionListProperty->getState() ==
-      ScriptPromisePropertyBase::Pending) {
-    m_connectionListProperty->resolve(m_connectionList);
-  } else if (m_connectionListProperty->getState() ==
-             ScriptPromisePropertyBase::Resolved) {
-    m_connectionList->dispatchConnectionAvailableEvent(connection);
+  if (connection_list_property_->GetState() ==
+      ScriptPromisePropertyBase::kPending) {
+    connection_list_property_->Resolve(connection_list_);
+  } else if (connection_list_property_->GetState() ==
+             ScriptPromisePropertyBase::kResolved) {
+    connection_list_->DispatchConnectionAvailableEvent(connection);
   }
 
   return connection;
 }
 
-void PresentationReceiver::didChangeConnectionState(
+void PresentationReceiver::DidChangeConnectionState(
     WebPresentationConnectionState state) {
   // TODO(zhaobin): remove or modify DCHECK when receiver supports more
   // connection state change.
-  DCHECK(state == WebPresentationConnectionState::Terminated);
+  DCHECK(state == WebPresentationConnectionState::kTerminated);
 
-  for (auto connection : m_connectionList->connections())
-    connection->didChangeState(state, false /* shouldDispatchEvent */);
+  for (auto connection : connection_list_->connections())
+    connection->DidChangeState(state, false /* shouldDispatchEvent */);
 }
 
-void PresentationReceiver::terminateConnection() {
-  if (!frame())
+void PresentationReceiver::TerminateConnection() {
+  if (!GetFrame())
     return;
 
-  auto* window = frame()->domWindow();
+  auto* window = GetFrame()->DomWindow();
   if (!window || window->closed())
     return;
 
-  window->close(frame()->document());
+  window->close(GetFrame()->GetDocument());
 }
 
-void PresentationReceiver::registerConnection(
+void PresentationReceiver::RegisterConnection(
     PresentationConnection* connection) {
-  DCHECK(m_connectionList);
-  m_connectionList->addConnection(connection);
+  DCHECK(connection_list_);
+  connection_list_->AddConnection(connection);
 }
 
-void PresentationReceiver::recordOriginTypeAccess(Document* document) const {
+void PresentationReceiver::RecordOriginTypeAccess(Document* document) const {
   DCHECK(document);
-  if (document->isSecureContext()) {
-    UseCounter::count(document, UseCounter::PresentationReceiverSecureOrigin);
+  if (document->IsSecureContext()) {
+    UseCounter::Count(document, UseCounter::kPresentationReceiverSecureOrigin);
   } else {
-    UseCounter::count(document, UseCounter::PresentationReceiverInsecureOrigin);
+    UseCounter::Count(document,
+                      UseCounter::kPresentationReceiverInsecureOrigin);
   }
 }
 
 DEFINE_TRACE(PresentationReceiver) {
-  visitor->trace(m_connectionList);
-  visitor->trace(m_connectionListProperty);
-  ContextClient::trace(visitor);
+  visitor->Trace(connection_list_);
+  visitor->Trace(connection_list_property_);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

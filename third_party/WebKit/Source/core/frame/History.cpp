@@ -43,43 +43,43 @@ namespace blink {
 
 namespace {
 
-bool equalIgnoringPathQueryAndFragment(const KURL& a, const KURL& b) {
-  return StringView(a.getString(), 0, a.pathStart()) ==
-         StringView(b.getString(), 0, b.pathStart());
+bool EqualIgnoringPathQueryAndFragment(const KURL& a, const KURL& b) {
+  return StringView(a.GetString(), 0, a.PathStart()) ==
+         StringView(b.GetString(), 0, b.PathStart());
 }
 
-bool equalIgnoringQueryAndFragment(const KURL& a, const KURL& b) {
-  return StringView(a.getString(), 0, a.pathEnd()) ==
-         StringView(b.getString(), 0, b.pathEnd());
+bool EqualIgnoringQueryAndFragment(const KURL& a, const KURL& b) {
+  return StringView(a.GetString(), 0, a.PathEnd()) ==
+         StringView(b.GetString(), 0, b.PathEnd());
 }
 
 }  // namespace
 
 History::History(LocalFrame* frame)
-    : DOMWindowClient(frame), m_lastStateObjectRequested(nullptr) {}
+    : DOMWindowClient(frame), last_state_object_requested_(nullptr) {}
 
 DEFINE_TRACE(History) {
-  DOMWindowClient::trace(visitor);
+  DOMWindowClient::Trace(visitor);
 }
 
 unsigned History::length() const {
-  if (!frame() || !frame()->loader().client())
+  if (!GetFrame() || !GetFrame()->Loader().Client())
     return 0;
-  return frame()->loader().client()->backForwardLength();
+  return GetFrame()->Loader().Client()->BackForwardLength();
 }
 
 SerializedScriptValue* History::state() {
-  m_lastStateObjectRequested = stateInternal();
-  return m_lastStateObjectRequested.get();
+  last_state_object_requested_ = StateInternal();
+  return last_state_object_requested_.Get();
 }
 
-SerializedScriptValue* History::stateInternal() const {
-  if (!frame())
+SerializedScriptValue* History::StateInternal() const {
+  if (!GetFrame())
     return 0;
 
-  if (HistoryItem* historyItem =
-          frame()->loader().documentLoader()->historyItem()) {
-    return historyItem->stateObject();
+  if (HistoryItem* history_item =
+          GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()) {
+    return history_item->StateObject();
   }
 
   return 0;
@@ -87,148 +87,151 @@ SerializedScriptValue* History::stateInternal() const {
 
 void History::setScrollRestoration(const String& value) {
   DCHECK(value == "manual" || value == "auto");
-  if (!frame() || !frame()->loader().client())
+  if (!GetFrame() || !GetFrame()->Loader().Client())
     return;
 
-  HistoryScrollRestorationType scrollRestoration =
-      value == "manual" ? ScrollRestorationManual : ScrollRestorationAuto;
-  if (scrollRestoration == scrollRestorationInternal())
+  HistoryScrollRestorationType scroll_restoration =
+      value == "manual" ? kScrollRestorationManual : kScrollRestorationAuto;
+  if (scroll_restoration == ScrollRestorationInternal())
     return;
 
-  if (HistoryItem* historyItem =
-          frame()->loader().documentLoader()->historyItem()) {
-    historyItem->setScrollRestorationType(scrollRestoration);
-    frame()->loader().client()->didUpdateCurrentHistoryItem();
+  if (HistoryItem* history_item =
+          GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()) {
+    history_item->SetScrollRestorationType(scroll_restoration);
+    GetFrame()->Loader().Client()->DidUpdateCurrentHistoryItem();
   }
 }
 
 String History::scrollRestoration() {
-  return scrollRestorationInternal() == ScrollRestorationManual ? "manual"
-                                                                : "auto";
+  return ScrollRestorationInternal() == kScrollRestorationManual ? "manual"
+                                                                 : "auto";
 }
 
-HistoryScrollRestorationType History::scrollRestorationInternal() const {
-  HistoryItem* historyItem =
-      frame() ? frame()->loader().documentLoader()->historyItem() : nullptr;
-  return historyItem ? historyItem->scrollRestorationType()
-                     : ScrollRestorationAuto;
+HistoryScrollRestorationType History::ScrollRestorationInternal() const {
+  HistoryItem* history_item =
+      GetFrame() ? GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()
+                 : nullptr;
+  return history_item ? history_item->ScrollRestorationType()
+                      : kScrollRestorationAuto;
 }
 
 bool History::stateChanged() const {
-  return m_lastStateObjectRequested != stateInternal();
+  return last_state_object_requested_ != StateInternal();
 }
 
-bool History::isSameAsCurrentState(SerializedScriptValue* state) const {
-  return state == stateInternal();
+bool History::IsSameAsCurrentState(SerializedScriptValue* state) const {
+  return state == StateInternal();
 }
 
-void History::back(ScriptState* scriptState) {
-  go(scriptState, -1);
+void History::back(ScriptState* script_state) {
+  go(script_state, -1);
 }
 
-void History::forward(ScriptState* scriptState) {
-  go(scriptState, 1);
+void History::forward(ScriptState* script_state) {
+  go(script_state, 1);
 }
 
-void History::go(ScriptState* scriptState, int delta) {
-  if (!frame() || !frame()->loader().client())
+void History::go(ScriptState* script_state, int delta) {
+  if (!GetFrame() || !GetFrame()->Loader().Client())
     return;
 
-  DCHECK(isMainThread());
-  Document* activeDocument = toDocument(scriptState->getExecutionContext());
-  if (!activeDocument)
+  DCHECK(IsMainThread());
+  Document* active_document = ToDocument(script_state->GetExecutionContext());
+  if (!active_document)
     return;
 
-  if (!activeDocument->frame() ||
-      !activeDocument->frame()->canNavigate(*frame()) ||
-      !activeDocument->frame()->isNavigationAllowed() ||
-      !NavigationDisablerForBeforeUnload::isNavigationAllowed()) {
+  if (!active_document->GetFrame() ||
+      !active_document->GetFrame()->CanNavigate(*GetFrame()) ||
+      !active_document->GetFrame()->IsNavigationAllowed() ||
+      !NavigationDisablerForBeforeUnload::IsNavigationAllowed()) {
     return;
   }
 
   if (delta) {
-    frame()->loader().client()->navigateBackForward(delta);
+    GetFrame()->Loader().Client()->NavigateBackForward(delta);
   } else {
     // We intentionally call reload() for the current frame if delta is zero.
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
-    frame()->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
+    GetFrame()->Reload(kFrameLoadTypeReload,
+                       ClientRedirectPolicy::kClientRedirect);
   }
 }
 
 void History::pushState(PassRefPtr<SerializedScriptValue> data,
                         const String& title,
                         const String& url,
-                        ExceptionState& exceptionState) {
-  stateObjectAdded(std::move(data), title, url, scrollRestorationInternal(),
-                   FrameLoadTypeStandard, exceptionState);
+                        ExceptionState& exception_state) {
+  StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
+                   kFrameLoadTypeStandard, exception_state);
 }
 
-KURL History::urlForState(const String& urlString) {
-  Document* document = frame()->document();
+KURL History::UrlForState(const String& url_string) {
+  Document* document = GetFrame()->GetDocument();
 
-  if (urlString.isNull())
-    return document->url();
-  if (urlString.isEmpty())
-    return document->baseURL();
+  if (url_string.IsNull())
+    return document->Url();
+  if (url_string.IsEmpty())
+    return document->BaseURL();
 
-  return KURL(document->baseURL(), urlString);
+  return KURL(document->BaseURL(), url_string);
 }
 
-bool History::canChangeToUrl(const KURL& url,
-                             SecurityOrigin* documentOrigin,
-                             const KURL& documentURL) {
-  if (!url.isValid())
+bool History::CanChangeToUrl(const KURL& url,
+                             SecurityOrigin* document_origin,
+                             const KURL& document_url) {
+  if (!url.IsValid())
     return false;
 
-  if (documentOrigin->isGrantedUniversalAccess())
+  if (document_origin->IsGrantedUniversalAccess())
     return true;
 
   // We allow sandboxed documents, `data:`/`file:` URLs, etc. to use
   // 'pushState'/'replaceState' to modify the URL fragment: see
   // https://crbug.com/528681 for the compatibility concerns.
-  if (documentOrigin->isUnique() || documentOrigin->isLocal())
-    return equalIgnoringQueryAndFragment(url, documentURL);
+  if (document_origin->IsUnique() || document_origin->IsLocal())
+    return EqualIgnoringQueryAndFragment(url, document_url);
 
-  if (!equalIgnoringPathQueryAndFragment(url, documentURL))
+  if (!EqualIgnoringPathQueryAndFragment(url, document_url))
     return false;
 
-  RefPtr<SecurityOrigin> requestedOrigin = SecurityOrigin::create(url);
-  if (requestedOrigin->isUnique() ||
-      !requestedOrigin->isSameSchemeHostPort(documentOrigin)) {
+  RefPtr<SecurityOrigin> requested_origin = SecurityOrigin::Create(url);
+  if (requested_origin->IsUnique() ||
+      !requested_origin->IsSameSchemeHostPort(document_origin)) {
     return false;
   }
 
   return true;
 }
 
-void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data,
+void History::StateObjectAdded(PassRefPtr<SerializedScriptValue> data,
                                const String& /* title */,
-                               const String& urlString,
-                               HistoryScrollRestorationType restorationType,
+                               const String& url_string,
+                               HistoryScrollRestorationType restoration_type,
                                FrameLoadType type,
-                               ExceptionState& exceptionState) {
-  if (!frame() || !frame()->page() || !frame()->loader().documentLoader())
+                               ExceptionState& exception_state) {
+  if (!GetFrame() || !GetFrame()->GetPage() ||
+      !GetFrame()->Loader().GetDocumentLoader())
     return;
 
-  KURL fullURL = urlForState(urlString);
-  if (!canChangeToUrl(fullURL, frame()->document()->getSecurityOrigin(),
-                      frame()->document()->url())) {
+  KURL full_url = UrlForState(url_string);
+  if (!CanChangeToUrl(full_url, GetFrame()->GetDocument()->GetSecurityOrigin(),
+                      GetFrame()->GetDocument()->Url())) {
     // We can safely expose the URL to JavaScript, as a) no redirection takes
     // place: JavaScript already had this URL, b) JavaScript can only access a
     // same-origin History object.
-    exceptionState.throwSecurityError(
-        "A history state object with URL '" + fullURL.elidedString() +
+    exception_state.ThrowSecurityError(
+        "A history state object with URL '" + full_url.ElidedString() +
         "' cannot be created in a document with origin '" +
-        frame()->document()->getSecurityOrigin()->toString() + "' and URL '" +
-        frame()->document()->url().elidedString() + "'.");
+        GetFrame()->GetDocument()->GetSecurityOrigin()->ToString() +
+        "' and URL '" + GetFrame()->GetDocument()->Url().ElidedString() + "'.");
     return;
   }
 
-  frame()->loader().updateForSameDocumentNavigation(
-      fullURL, SameDocumentNavigationHistoryApi, std::move(data),
-      restorationType, type, frame()->document());
+  GetFrame()->Loader().UpdateForSameDocumentNavigation(
+      full_url, kSameDocumentNavigationHistoryApi, std::move(data),
+      restoration_type, type, GetFrame()->GetDocument());
 }
 
 }  // namespace blink

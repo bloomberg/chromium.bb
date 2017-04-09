@@ -70,34 +70,34 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
                                     WebServiceWorkerGetRegistrationCallbacks {
  public:
   explicit GetRegistrationCallback(ScriptPromiseResolver* resolver)
-      : m_resolver(resolver) {}
+      : resolver_(resolver) {}
   ~GetRegistrationCallback() override {}
 
-  void onSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle>
-                     webPassHandle) override {
+  void OnSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle>
+                     web_pass_handle) override {
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle =
-        WTF::wrapUnique(webPassHandle.release());
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
+        WTF::WrapUnique(web_pass_handle.release());
+    if (!resolver_->GetExecutionContext() ||
+        resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
     if (!handle) {
       // Resolve the promise with undefined.
-      m_resolver->resolve();
+      resolver_->Resolve();
       return;
     }
-    m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(
-        m_resolver->getExecutionContext(), std::move(handle)));
+    resolver_->Resolve(ServiceWorkerRegistration::GetOrCreate(
+        resolver_->GetExecutionContext(), std::move(handle)));
   }
 
-  void onError(const WebServiceWorkerError& error) override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
+  void OnError(const WebServiceWorkerError& error) override {
+    if (!resolver_->GetExecutionContext() ||
+        resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+    resolver_->Reject(ServiceWorkerError::Take(resolver_.Get(), error));
   }
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ScriptPromiseResolver> resolver_;
   WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
 };
 
@@ -106,195 +106,196 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
           WebServiceWorkerGetRegistrationForReadyCallbacks {
  public:
   explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
-      : m_ready(ready) {}
+      : ready_(ready) {}
   ~GetRegistrationForReadyCallback() override {}
 
-  void onSuccess(
+  void OnSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
-    ASSERT(m_ready->getState() == ReadyProperty::Pending);
+    ASSERT(ready_->GetState() == ReadyProperty::kPending);
 
-    if (m_ready->getExecutionContext() &&
-        !m_ready->getExecutionContext()->isContextDestroyed()) {
-      m_ready->resolve(ServiceWorkerRegistration::getOrCreate(
-          m_ready->getExecutionContext(), WTF::wrapUnique(handle.release())));
+    if (ready_->GetExecutionContext() &&
+        !ready_->GetExecutionContext()->IsContextDestroyed()) {
+      ready_->Resolve(ServiceWorkerRegistration::GetOrCreate(
+          ready_->GetExecutionContext(), WTF::WrapUnique(handle.release())));
     }
   }
 
  private:
-  Persistent<ReadyProperty> m_ready;
+  Persistent<ReadyProperty> ready_;
   WTF_MAKE_NONCOPYABLE(GetRegistrationForReadyCallback);
 };
 
-ServiceWorkerContainer* ServiceWorkerContainer::create(
-    ExecutionContext* executionContext,
+ServiceWorkerContainer* ServiceWorkerContainer::Create(
+    ExecutionContext* execution_context,
     NavigatorServiceWorker* navigator) {
-  return new ServiceWorkerContainer(executionContext, navigator);
+  return new ServiceWorkerContainer(execution_context, navigator);
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer() {
-  ASSERT(!m_provider);
+  ASSERT(!provider_);
 }
 
-void ServiceWorkerContainer::contextDestroyed(ExecutionContext*) {
-  if (m_provider) {
-    m_provider->setClient(0);
-    m_provider = nullptr;
+void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
+  if (provider_) {
+    provider_->SetClient(0);
+    provider_ = nullptr;
   }
-  m_navigator->clearServiceWorker();
+  navigator_->ClearServiceWorker();
 }
 
 DEFINE_TRACE(ServiceWorkerContainer) {
-  visitor->trace(m_controller);
-  visitor->trace(m_ready);
-  visitor->trace(m_navigator);
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(controller_);
+  visitor->Trace(ready_);
+  visitor->Trace(navigator_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
-void ServiceWorkerContainer::registerServiceWorkerImpl(
-    ExecutionContext* executionContext,
-    const KURL& rawScriptURL,
+void ServiceWorkerContainer::RegisterServiceWorkerImpl(
+    ExecutionContext* execution_context,
+    const KURL& raw_script_url,
     const KURL& scope,
     std::unique_ptr<RegistrationCallbacks> callbacks) {
-  if (!m_provider) {
-    callbacks->onError(
-        WebServiceWorkerError(WebServiceWorkerError::ErrorTypeState,
+  if (!provider_) {
+    callbacks->OnError(
+        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeState,
                               "Failed to register a ServiceWorker: The "
                               "document is in an invalid state."));
     return;
   }
 
-  RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
-  String errorMessage;
+  RefPtr<SecurityOrigin> document_origin =
+      execution_context->GetSecurityOrigin();
+  String error_message;
   // Restrict to secure origins:
   // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
-  if (!executionContext->isSecureContext(errorMessage)) {
-    callbacks->onError(WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity, errorMessage));
+  if (!execution_context->IsSecureContext(error_message)) {
+    callbacks->OnError(WebServiceWorkerError(
+        WebServiceWorkerError::kErrorTypeSecurity, error_message));
     return;
   }
 
-  KURL pageURL = KURL(KURL(), documentOrigin->toString());
-  if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
-          pageURL.protocol())) {
-    callbacks->onError(WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity,
+  KURL page_url = KURL(KURL(), document_origin->ToString());
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          page_url.Protocol())) {
+    callbacks->OnError(WebServiceWorkerError(
+        WebServiceWorkerError::kErrorTypeSecurity,
         String("Failed to register a ServiceWorker: The URL protocol of the "
                "current origin ('" +
-               documentOrigin->toString() + "') is not supported.")));
+               document_origin->ToString() + "') is not supported.")));
     return;
   }
 
-  KURL scriptURL = rawScriptURL;
-  scriptURL.removeFragmentIdentifier();
-  if (!documentOrigin->canRequest(scriptURL)) {
-    RefPtr<SecurityOrigin> scriptOrigin = SecurityOrigin::create(scriptURL);
-    callbacks->onError(
-        WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
+  KURL script_url = raw_script_url;
+  script_url.RemoveFragmentIdentifier();
+  if (!document_origin->CanRequest(script_url)) {
+    RefPtr<SecurityOrigin> script_origin = SecurityOrigin::Create(script_url);
+    callbacks->OnError(
+        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
                               String("Failed to register a ServiceWorker: The "
                                      "origin of the provided scriptURL ('" +
-                                     scriptOrigin->toString() +
+                                     script_origin->ToString() +
                                      "') does not match the current origin ('" +
-                                     documentOrigin->toString() + "').")));
+                                     document_origin->ToString() + "').")));
     return;
   }
-  if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
-          scriptURL.protocol())) {
-    callbacks->onError(WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity,
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          script_url.Protocol())) {
+    callbacks->OnError(WebServiceWorkerError(
+        WebServiceWorkerError::kErrorTypeSecurity,
         String("Failed to register a ServiceWorker: The URL protocol of the "
                "script ('" +
-               scriptURL.getString() + "') is not supported.")));
+               script_url.GetString() + "') is not supported.")));
     return;
   }
 
-  KURL patternURL = scope;
-  patternURL.removeFragmentIdentifier();
+  KURL pattern_url = scope;
+  pattern_url.RemoveFragmentIdentifier();
 
-  if (!documentOrigin->canRequest(patternURL)) {
-    RefPtr<SecurityOrigin> patternOrigin = SecurityOrigin::create(patternURL);
-    callbacks->onError(
-        WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
+  if (!document_origin->CanRequest(pattern_url)) {
+    RefPtr<SecurityOrigin> pattern_origin = SecurityOrigin::Create(pattern_url);
+    callbacks->OnError(
+        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
                               String("Failed to register a ServiceWorker: The "
                                      "origin of the provided scope ('" +
-                                     patternOrigin->toString() +
+                                     pattern_origin->ToString() +
                                      "') does not match the current origin ('" +
-                                     documentOrigin->toString() + "').")));
+                                     document_origin->ToString() + "').")));
     return;
   }
-  if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
-          patternURL.protocol())) {
-    callbacks->onError(WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity,
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          pattern_url.Protocol())) {
+    callbacks->OnError(WebServiceWorkerError(
+        WebServiceWorkerError::kErrorTypeSecurity,
         String("Failed to register a ServiceWorker: The URL protocol of the "
                "scope ('" +
-               patternURL.getString() + "') is not supported.")));
+               pattern_url.GetString() + "') is not supported.")));
     return;
   }
 
-  WebString webErrorMessage;
-  if (!m_provider->validateScopeAndScriptURL(patternURL, scriptURL,
-                                             &webErrorMessage)) {
-    callbacks->onError(WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeType,
-        WebString::fromUTF8("Failed to register a ServiceWorker: " +
-                            webErrorMessage.utf8())));
+  WebString web_error_message;
+  if (!provider_->ValidateScopeAndScriptURL(pattern_url, script_url,
+                                            &web_error_message)) {
+    callbacks->OnError(WebServiceWorkerError(
+        WebServiceWorkerError::kErrorTypeType,
+        WebString::FromUTF8("Failed to register a ServiceWorker: " +
+                            web_error_message.Utf8())));
     return;
   }
 
-  ContentSecurityPolicy* csp = executionContext->contentSecurityPolicy();
+  ContentSecurityPolicy* csp = execution_context->GetContentSecurityPolicy();
   if (csp) {
-    if (!(csp->allowRequestWithoutIntegrity(
-              WebURLRequest::RequestContextServiceWorker, scriptURL) &&
-          csp->allowWorkerContextFromSource(
-              scriptURL, ResourceRequest::RedirectStatus::NoRedirect,
-              SecurityViolationReportingPolicy::Report))) {
-      callbacks->onError(WebServiceWorkerError(
-          WebServiceWorkerError::ErrorTypeSecurity,
+    if (!(csp->AllowRequestWithoutIntegrity(
+              WebURLRequest::kRequestContextServiceWorker, script_url) &&
+          csp->AllowWorkerContextFromSource(
+              script_url, ResourceRequest::RedirectStatus::kNoRedirect,
+              SecurityViolationReportingPolicy::kReport))) {
+      callbacks->OnError(WebServiceWorkerError(
+          WebServiceWorkerError::kErrorTypeSecurity,
           String(
               "Failed to register a ServiceWorker: The provided scriptURL ('" +
-              scriptURL.getString() +
+              script_url.GetString() +
               "') violates the Content Security Policy.")));
       return;
     }
   }
 
-  m_provider->registerServiceWorker(patternURL, scriptURL,
-                                    std::move(callbacks));
+  provider_->RegisterServiceWorker(pattern_url, script_url,
+                                   std::move(callbacks));
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const String& url,
     const RegistrationOptions& options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  if (!m_provider) {
-    resolver->reject(DOMException::create(InvalidStateError,
+  if (!provider_) {
+    resolver->Reject(DOMException::Create(kInvalidStateError,
                                           "Failed to register a ServiceWorker: "
                                           "The document is in an invalid "
                                           "state."));
     return promise;
   }
 
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
-  if (!executionContext)
+  if (!execution_context)
     return ScriptPromise();
 
-  KURL scriptURL = executionContext->completeURL(url);
-  scriptURL.removeFragmentIdentifier();
+  KURL script_url = execution_context->CompleteURL(url);
+  script_url.RemoveFragmentIdentifier();
 
-  KURL patternURL;
-  if (options.scope().isNull())
-    patternURL = KURL(scriptURL, "./");
+  KURL pattern_url;
+  if (options.scope().IsNull())
+    pattern_url = KURL(script_url, "./");
   else
-    patternURL = executionContext->completeURL(options.scope());
+    pattern_url = execution_context->CompleteURL(options.scope());
 
-  registerServiceWorkerImpl(
-      executionContext, scriptURL, patternURL,
-      WTF::makeUnique<CallbackPromiseAdapter<ServiceWorkerRegistration,
+  RegisterServiceWorkerImpl(
+      execution_context, script_url, pattern_url,
+      WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerRegistration,
                                              ServiceWorkerErrorForUpdate>>(
           resolver));
 
@@ -302,190 +303,192 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 }
 
 ScriptPromise ServiceWorkerContainer::getRegistration(
-    ScriptState* scriptState,
-    const String& documentURL) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+    ScriptState* script_state,
+    const String& document_url) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  if (!m_provider) {
-    resolver->reject(DOMException::create(InvalidStateError,
+  if (!provider_) {
+    resolver->Reject(DOMException::Create(kInvalidStateError,
                                           "Failed to get a "
                                           "ServiceWorkerRegistration: The "
                                           "document is in an invalid state."));
     return promise;
   }
 
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
-  if (!executionContext)
+  if (!execution_context)
     return ScriptPromise();
 
-  RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage)) {
-    resolver->reject(DOMException::create(SecurityError, errorMessage));
+  RefPtr<SecurityOrigin> document_origin =
+      execution_context->GetSecurityOrigin();
+  String error_message;
+  if (!execution_context->IsSecureContext(error_message)) {
+    resolver->Reject(DOMException::Create(kSecurityError, error_message));
     return promise;
   }
 
-  KURL pageURL = KURL(KURL(), documentOrigin->toString());
-  if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
-          pageURL.protocol())) {
-    resolver->reject(DOMException::create(
-        SecurityError,
+  KURL page_url = KURL(KURL(), document_origin->ToString());
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          page_url.Protocol())) {
+    resolver->Reject(DOMException::Create(
+        kSecurityError,
         "Failed to get a ServiceWorkerRegistration: The URL protocol of the "
         "current origin ('" +
-            documentOrigin->toString() + "') is not supported."));
+            document_origin->ToString() + "') is not supported."));
     return promise;
   }
 
-  KURL completedURL = executionContext->completeURL(documentURL);
-  completedURL.removeFragmentIdentifier();
-  if (!documentOrigin->canRequest(completedURL)) {
-    RefPtr<SecurityOrigin> documentURLOrigin =
-        SecurityOrigin::create(completedURL);
-    resolver->reject(
-        DOMException::create(SecurityError,
+  KURL completed_url = execution_context->CompleteURL(document_url);
+  completed_url.RemoveFragmentIdentifier();
+  if (!document_origin->CanRequest(completed_url)) {
+    RefPtr<SecurityOrigin> document_url_origin =
+        SecurityOrigin::Create(completed_url);
+    resolver->Reject(
+        DOMException::Create(kSecurityError,
                              "Failed to get a ServiceWorkerRegistration: The "
                              "origin of the provided documentURL ('" +
-                                 documentURLOrigin->toString() +
+                                 document_url_origin->ToString() +
                                  "') does not match the current origin ('" +
-                                 documentOrigin->toString() + "')."));
+                                 document_origin->ToString() + "')."));
     return promise;
   }
-  m_provider->getRegistration(
-      completedURL, WTF::makeUnique<GetRegistrationCallback>(resolver));
+  provider_->GetRegistration(
+      completed_url, WTF::MakeUnique<GetRegistrationCallback>(resolver));
 
   return promise;
 }
 
 ScriptPromise ServiceWorkerContainer::getRegistrations(
-    ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+    ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  if (!m_provider) {
-    resolver->reject(
-        DOMException::create(InvalidStateError,
+  if (!provider_) {
+    resolver->Reject(
+        DOMException::Create(kInvalidStateError,
                              "Failed to get ServiceWorkerRegistration objects: "
                              "The document is in an invalid state."));
     return promise;
   }
 
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
-  String errorMessage;
-  if (!executionContext->isSecureContext(errorMessage)) {
-    resolver->reject(DOMException::create(SecurityError, errorMessage));
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  RefPtr<SecurityOrigin> document_origin =
+      execution_context->GetSecurityOrigin();
+  String error_message;
+  if (!execution_context->IsSecureContext(error_message)) {
+    resolver->Reject(DOMException::Create(kSecurityError, error_message));
     return promise;
   }
 
-  KURL pageURL = KURL(KURL(), documentOrigin->toString());
-  if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
-          pageURL.protocol())) {
-    resolver->reject(DOMException::create(
-        SecurityError,
+  KURL page_url = KURL(KURL(), document_origin->ToString());
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          page_url.Protocol())) {
+    resolver->Reject(DOMException::Create(
+        kSecurityError,
         "Failed to get ServiceWorkerRegistration objects: The URL protocol of "
         "the current origin ('" +
-            documentOrigin->toString() + "') is not supported."));
+            document_origin->ToString() + "') is not supported."));
     return promise;
   }
 
-  m_provider->getRegistrations(
-      WTF::makeUnique<CallbackPromiseAdapter<ServiceWorkerRegistrationArray,
+  provider_->GetRegistrations(
+      WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerRegistrationArray,
                                              ServiceWorkerError>>(resolver));
 
   return promise;
 }
 
 ServiceWorkerContainer::ReadyProperty*
-ServiceWorkerContainer::createReadyProperty() {
-  return new ReadyProperty(getExecutionContext(), this, ReadyProperty::Ready);
+ServiceWorkerContainer::CreateReadyProperty() {
+  return new ReadyProperty(GetExecutionContext(), this, ReadyProperty::kReady);
 }
 
-ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState) {
-  if (!getExecutionContext())
+ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
+  if (!GetExecutionContext())
     return ScriptPromise();
 
-  if (!callerState->world().isMainWorld()) {
+  if (!caller_state->World().IsMainWorld()) {
     // FIXME: Support .ready from isolated worlds when
     // ScriptPromiseProperty can vend Promises in isolated worlds.
-    return ScriptPromise::rejectWithDOMException(
-        callerState,
-        DOMException::create(NotSupportedError,
+    return ScriptPromise::RejectWithDOMException(
+        caller_state,
+        DOMException::Create(kNotSupportedError,
                              "'ready' is only supported in pages."));
   }
 
-  if (!m_ready) {
-    m_ready = createReadyProperty();
-    if (m_provider) {
-      m_provider->getRegistrationForReady(
-          WTF::makeUnique<GetRegistrationForReadyCallback>(m_ready.get()));
+  if (!ready_) {
+    ready_ = CreateReadyProperty();
+    if (provider_) {
+      provider_->GetRegistrationForReady(
+          WTF::MakeUnique<GetRegistrationForReadyCallback>(ready_.Get()));
     }
   }
 
-  return m_ready->promise(callerState->world());
+  return ready_->Promise(caller_state->World());
 }
 
-void ServiceWorkerContainer::setController(
+void ServiceWorkerContainer::SetController(
     std::unique_ptr<WebServiceWorker::Handle> handle,
-    bool shouldNotifyControllerChange) {
-  if (!getExecutionContext())
+    bool should_notify_controller_change) {
+  if (!GetExecutionContext())
     return;
-  m_controller = ServiceWorker::from(getExecutionContext(),
-                                     WTF::wrapUnique(handle.release()));
-  if (m_controller)
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::ServiceWorkerControlledPage);
-  if (shouldNotifyControllerChange)
-    dispatchEvent(Event::create(EventTypeNames::controllerchange));
+  controller_ = ServiceWorker::From(GetExecutionContext(),
+                                    WTF::WrapUnique(handle.release()));
+  if (controller_)
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kServiceWorkerControlledPage);
+  if (should_notify_controller_change)
+    DispatchEvent(Event::Create(EventTypeNames::controllerchange));
 }
 
-void ServiceWorkerContainer::dispatchMessageEvent(
+void ServiceWorkerContainer::DispatchMessageEvent(
     std::unique_ptr<WebServiceWorker::Handle> handle,
     const WebString& message,
-    WebMessagePortChannelArray webChannels) {
-  if (!getExecutionContext() || !getExecutionContext()->executingWindow())
+    WebMessagePortChannelArray web_channels) {
+  if (!GetExecutionContext() || !GetExecutionContext()->ExecutingWindow())
     return;
 
-  MessagePortArray* ports = MessagePort::toMessagePortArray(
-      getExecutionContext(), std::move(webChannels));
-  RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(message);
-  ServiceWorker* source = ServiceWorker::from(
-      getExecutionContext(), WTF::wrapUnique(handle.release()));
-  dispatchEvent(MessageEvent::create(
-      ports, value, getExecutionContext()->getSecurityOrigin()->toString(),
+  MessagePortArray* ports = MessagePort::ToMessagePortArray(
+      GetExecutionContext(), std::move(web_channels));
+  RefPtr<SerializedScriptValue> value = SerializedScriptValue::Create(message);
+  ServiceWorker* source = ServiceWorker::From(
+      GetExecutionContext(), WTF::WrapUnique(handle.release()));
+  DispatchEvent(MessageEvent::Create(
+      ports, value, GetExecutionContext()->GetSecurityOrigin()->ToString(),
       String() /* lastEventId */, source, String() /* suborigin */));
 }
 
-void ServiceWorkerContainer::countFeature(uint32_t feature) {
-  if (!getExecutionContext())
+void ServiceWorkerContainer::CountFeature(uint32_t feature) {
+  if (!GetExecutionContext())
     return;
-  UseCounter::Feature useCounterFeature =
+  UseCounter::Feature use_counter_feature =
       static_cast<UseCounter::Feature>(feature);
-  if (Deprecation::deprecationMessage(useCounterFeature).isEmpty())
-    UseCounter::count(getExecutionContext(), useCounterFeature);
+  if (Deprecation::DeprecationMessage(use_counter_feature).IsEmpty())
+    UseCounter::Count(GetExecutionContext(), use_counter_feature);
   else
-    Deprecation::countDeprecation(getExecutionContext(), useCounterFeature);
+    Deprecation::CountDeprecation(GetExecutionContext(), use_counter_feature);
 }
 
-const AtomicString& ServiceWorkerContainer::interfaceName() const {
+const AtomicString& ServiceWorkerContainer::InterfaceName() const {
   return EventTargetNames::ServiceWorkerContainer;
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     NavigatorServiceWorker* navigator)
-    : ContextLifecycleObserver(executionContext),
-      m_provider(0),
-      m_navigator(navigator) {
-  if (!executionContext)
+    : ContextLifecycleObserver(execution_context),
+      provider_(0),
+      navigator_(navigator) {
+  if (!execution_context)
     return;
 
   if (ServiceWorkerContainerClient* client =
-          ServiceWorkerContainerClient::from(executionContext)) {
-    m_provider = client->provider();
-    if (m_provider)
-      m_provider->setClient(this);
+          ServiceWorkerContainerClient::From(execution_context)) {
+    provider_ = client->Provider();
+    if (provider_)
+      provider_->SetClient(this);
   }
 }
 

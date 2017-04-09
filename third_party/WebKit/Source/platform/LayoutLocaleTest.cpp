@@ -9,23 +9,23 @@
 namespace blink {
 
 TEST(LayoutLocaleTest, Get) {
-  LayoutLocale::clearForTesting();
+  LayoutLocale::ClearForTesting();
 
-  EXPECT_EQ(nullptr, LayoutLocale::get(nullAtom));
+  EXPECT_EQ(nullptr, LayoutLocale::Get(g_null_atom));
 
-  EXPECT_EQ(emptyAtom, LayoutLocale::get(emptyAtom)->localeString());
+  EXPECT_EQ(g_empty_atom, LayoutLocale::Get(g_empty_atom)->LocaleString());
 
   EXPECT_STRCASEEQ("en-us",
-                   LayoutLocale::get("en-us")->localeString().ascii().data());
+                   LayoutLocale::Get("en-us")->LocaleString().Ascii().Data());
   EXPECT_STRCASEEQ("ja-jp",
-                   LayoutLocale::get("ja-jp")->localeString().ascii().data());
+                   LayoutLocale::Get("ja-jp")->LocaleString().Ascii().Data());
 
-  LayoutLocale::clearForTesting();
+  LayoutLocale::ClearForTesting();
 }
 
 TEST(LayoutLocaleTest, GetCaseInsensitive) {
-  const LayoutLocale* enUS = LayoutLocale::get("en-us");
-  EXPECT_EQ(enUS, LayoutLocale::get("en-US"));
+  const LayoutLocale* en_us = LayoutLocale::Get("en-us");
+  EXPECT_EQ(en_us, LayoutLocale::Get("en-US"));
 }
 
 TEST(LayoutLocaleTest, ScriptTest) {
@@ -34,8 +34,8 @@ TEST(LayoutLocaleTest, ScriptTest) {
   struct {
     const char* locale;
     UScriptCode script;
-    bool hasScriptForHan;
-    UScriptCode scriptForHan;
+    bool has_script_for_han;
+    UScriptCode script_for_han;
   } tests[] = {
       {"en-US", USCRIPT_LATIN},
 
@@ -100,15 +100,16 @@ TEST(LayoutLocaleTest, ScriptTest) {
   };
 
   for (const auto& test : tests) {
-    RefPtr<LayoutLocale> locale = LayoutLocale::createForTesting(test.locale);
-    EXPECT_EQ(test.script, locale->script()) << test.locale;
-    EXPECT_EQ(test.hasScriptForHan, locale->hasScriptForHan()) << test.locale;
-    if (!test.hasScriptForHan)
-      EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN, locale->scriptForHan()) << test.locale;
-    else if (test.scriptForHan)
-      EXPECT_EQ(test.scriptForHan, locale->scriptForHan()) << test.locale;
+    RefPtr<LayoutLocale> locale = LayoutLocale::CreateForTesting(test.locale);
+    EXPECT_EQ(test.script, locale->Script()) << test.locale;
+    EXPECT_EQ(test.has_script_for_han, locale->HasScriptForHan())
+        << test.locale;
+    if (!test.has_script_for_han)
+      EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN, locale->ScriptForHan()) << test.locale;
+    else if (test.script_for_han)
+      EXPECT_EQ(test.script_for_han, locale->ScriptForHan()) << test.locale;
     else
-      EXPECT_EQ(test.script, locale->scriptForHan()) << test.locale;
+      EXPECT_EQ(test.script, locale->ScriptForHan()) << test.locale;
   }
 }
 
@@ -118,19 +119,19 @@ TEST(LayoutLocaleTest, BreakKeyword) {
     const char* locale;
     LineBreakIteratorMode mode;
   } tests[] = {
-      {nullptr, nullptr, LineBreakIteratorMode::Default},
-      {"", "", LineBreakIteratorMode::Default},
-      {nullptr, nullptr, LineBreakIteratorMode::Strict},
-      {"", "", LineBreakIteratorMode::Strict},
-      {"ja", "ja", LineBreakIteratorMode::Default},
-      {"ja@lb=normal", "ja", LineBreakIteratorMode::Normal},
-      {"ja@lb=strict", "ja", LineBreakIteratorMode::Strict},
-      {"ja@lb=loose", "ja", LineBreakIteratorMode::Loose},
+      {nullptr, nullptr, LineBreakIteratorMode::kDefault},
+      {"", "", LineBreakIteratorMode::kDefault},
+      {nullptr, nullptr, LineBreakIteratorMode::kStrict},
+      {"", "", LineBreakIteratorMode::kStrict},
+      {"ja", "ja", LineBreakIteratorMode::kDefault},
+      {"ja@lb=normal", "ja", LineBreakIteratorMode::kNormal},
+      {"ja@lb=strict", "ja", LineBreakIteratorMode::kStrict},
+      {"ja@lb=loose", "ja", LineBreakIteratorMode::kLoose},
   };
   for (const auto& test : tests) {
-    RefPtr<LayoutLocale> locale = LayoutLocale::createForTesting(test.locale);
-    EXPECT_EQ(test.expected, locale->localeWithBreakKeyword(test.mode))
-        << String::format("'%s' with line-break %d should be '%s'", test.locale,
+    RefPtr<LayoutLocale> locale = LayoutLocale::CreateForTesting(test.locale);
+    EXPECT_EQ(test.expected, locale->LocaleWithBreakKeyword(test.mode))
+        << String::Format("'%s' with line-break %d should be '%s'", test.locale,
                           static_cast<int>(test.mode), test.expected);
   }
 }
@@ -140,9 +141,9 @@ TEST(LayoutLocaleTest, ExistingKeywordName) {
       "en@x=", "en@lb=xyz", "en@ =",
   };
   for (const auto& test : tests) {
-    RefPtr<LayoutLocale> locale = LayoutLocale::createForTesting(test);
+    RefPtr<LayoutLocale> locale = LayoutLocale::CreateForTesting(test);
     EXPECT_EQ(test,
-              locale->localeWithBreakKeyword(LineBreakIteratorMode::Normal));
+              locale->LocaleWithBreakKeyword(LineBreakIteratorMode::kNormal));
   }
 }
 

@@ -12,12 +12,12 @@ namespace blink {
 const CSSValue* CSSPropertyAPITabSize::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSPrimitiveValue* parsedValue =
-      CSSPropertyParserHelpers::consumeInteger(range, 0);
-  if (parsedValue)
-    return parsedValue;
-  return CSSPropertyParserHelpers::consumeLength(range, context.mode(),
-                                                 ValueRangeNonNegative);
+  CSSPrimitiveValue* parsed_value =
+      CSSPropertyParserHelpers::ConsumeInteger(range, 0);
+  if (parsed_value)
+    return parsed_value;
+  return CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
+                                                 kValueRangeNonNegative);
 }
 
 }  // namespace blink

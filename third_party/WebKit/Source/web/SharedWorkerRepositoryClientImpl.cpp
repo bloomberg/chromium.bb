@@ -60,101 +60,102 @@ class SharedWorkerConnectListener final
     : public WebSharedWorkerConnectListener {
  public:
   explicit SharedWorkerConnectListener(SharedWorker* worker)
-      : m_worker(worker) {}
+      : worker_(worker) {}
 
   ~SharedWorkerConnectListener() override {
-    DCHECK(!m_worker->isBeingConnected());
+    DCHECK(!worker_->IsBeingConnected());
   }
 
   // WebSharedWorkerConnectListener overrides.
 
-  void workerCreated(WebWorkerCreationError creationError) override {
-    m_worker->setIsBeingConnected(true);
+  void WorkerCreated(WebWorkerCreationError creation_error) override {
+    worker_->SetIsBeingConnected(true);
 
     // No nested workers (for now) - connect() should only be called from
     // document context.
-    DCHECK(m_worker->getExecutionContext()->isDocument());
-    Document* document = toDocument(m_worker->getExecutionContext());
-    bool isSecureContext = m_worker->getExecutionContext()->isSecureContext();
-    switch (creationError) {
-      case WebWorkerCreationErrorNone:
+    DCHECK(worker_->GetExecutionContext()->IsDocument());
+    Document* document = ToDocument(worker_->GetExecutionContext());
+    bool is_secure_context = worker_->GetExecutionContext()->IsSecureContext();
+    switch (creation_error) {
+      case kWebWorkerCreationErrorNone:
         return;
-      case WebWorkerCreationErrorSecureContextMismatch:
+      case kWebWorkerCreationErrorSecureContextMismatch:
         UseCounter::Feature feature =
-            isSecureContext
-                ? UseCounter::NonSecureSharedWorkerAccessedFromSecureContext
-                : UseCounter::SecureSharedWorkerAccessedFromNonSecureContext;
-        UseCounter::count(document, feature);
+            is_secure_context
+                ? UseCounter::kNonSecureSharedWorkerAccessedFromSecureContext
+                : UseCounter::kSecureSharedWorkerAccessedFromNonSecureContext;
+        UseCounter::Count(document, feature);
         return;
     }
   }
 
-  void scriptLoadFailed() override {
-    m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
-    m_worker->setIsBeingConnected(false);
+  void ScriptLoadFailed() override {
+    worker_->DispatchEvent(Event::CreateCancelable(EventTypeNames::error));
+    worker_->SetIsBeingConnected(false);
   }
 
-  void connected() override { m_worker->setIsBeingConnected(false); }
+  void Connected() override { worker_->SetIsBeingConnected(false); }
 
-  void countFeature(uint32_t feature) override {
-    UseCounter::count(m_worker->getExecutionContext(),
+  void CountFeature(uint32_t feature) override {
+    UseCounter::Count(worker_->GetExecutionContext(),
                       static_cast<UseCounter::Feature>(feature));
   }
 
-  Persistent<SharedWorker> m_worker;
+  Persistent<SharedWorker> worker_;
 };
 
-static WebSharedWorkerRepositoryClient::DocumentID getId(void* document) {
+static WebSharedWorkerRepositoryClient::DocumentID GetId(void* document) {
   DCHECK(document);
   return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(
       document);
 }
 
-void SharedWorkerRepositoryClientImpl::connect(
+void SharedWorkerRepositoryClientImpl::Connect(
     SharedWorker* worker,
     std::unique_ptr<WebMessagePortChannel> port,
     const KURL& url,
     const String& name) {
-  DCHECK(m_client);
+  DCHECK(client_);
 
   // No nested workers (for now) - connect() should only be called from document
   // context.
-  DCHECK(worker->getExecutionContext()->isDocument());
-  Document* document = toDocument(worker->getExecutionContext());
+  DCHECK(worker->GetExecutionContext()->IsDocument());
+  Document* document = ToDocument(worker->GetExecutionContext());
 
   // TODO(estark): this is broken, as it only uses the first header
   // when multiple might have been sent. Fix by making the
   // SharedWorkerConnectListener interface take a map that can contain
   // multiple headers.
   std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-      worker->getExecutionContext()->contentSecurityPolicy()->headers();
+      worker->GetExecutionContext()->GetContentSecurityPolicy()->Headers();
   WebString header;
-  WebContentSecurityPolicyType headerType = WebContentSecurityPolicyTypeReport;
+  WebContentSecurityPolicyType header_type =
+      kWebContentSecurityPolicyTypeReport;
 
   if (headers->size() > 0) {
     header = (*headers)[0].first;
-    headerType =
+    header_type =
         static_cast<WebContentSecurityPolicyType>((*headers)[0].second);
   }
 
-  bool isSecureContext = worker->getExecutionContext()->isSecureContext();
+  bool is_secure_context = worker->GetExecutionContext()->IsSecureContext();
   std::unique_ptr<WebSharedWorkerConnectListener> listener =
-      WTF::makeUnique<SharedWorkerConnectListener>(worker);
-  m_client->connect(
-      url, name, getId(document), header, headerType,
-      worker->getExecutionContext()->securityContext().addressSpace(),
-      isSecureContext ? WebSharedWorkerCreationContextTypeSecure
-                      : WebSharedWorkerCreationContextTypeNonsecure,
+      WTF::MakeUnique<SharedWorkerConnectListener>(worker);
+  client_->Connect(
+      url, name, GetId(document), header, header_type,
+      worker->GetExecutionContext()->GetSecurityContext().AddressSpace(),
+      is_secure_context ? kWebSharedWorkerCreationContextTypeSecure
+                        : kWebSharedWorkerCreationContextTypeNonsecure,
       std::move(port), std::move(listener));
 }
 
-void SharedWorkerRepositoryClientImpl::documentDetached(Document* document) {
-  DCHECK(m_client);
-  m_client->documentDetached(getId(document));
+void SharedWorkerRepositoryClientImpl::DocumentDetached(Document* document) {
+  DCHECK(client_);
+  client_->DocumentDetached(GetId(document));
 }
 
 SharedWorkerRepositoryClientImpl::SharedWorkerRepositoryClientImpl(
     WebSharedWorkerRepositoryClient* client)
-    : m_client(client) {}
+    : client_(client) {}
 
 }  // namespace blink

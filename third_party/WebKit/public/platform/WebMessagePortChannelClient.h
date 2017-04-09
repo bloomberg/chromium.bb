@@ -42,7 +42,7 @@ class BLINK_PLATFORM_EXPORT WebMessagePortChannelClient {
   // Alerts that new messages have arrived, which are retrieved by calling
   // WebMessagePortChannel::tryGetMessage. Note that this may be called
   // on any thread.
-  virtual void messageAvailable() = 0;
+  virtual void MessageAvailable() = 0;
 
  protected:
   ~WebMessagePortChannelClient() {}

@@ -49,61 +49,61 @@ class WebHTTPBodyPrivate;
 class WebHTTPBody {
  public:
   struct Element {
-    enum Type { TypeData, TypeFile, TypeBlob, TypeFileSystemURL } type;
+    enum Type { kTypeData, kTypeFile, kTypeBlob, kTypeFileSystemURL } type;
     WebData data;
-    WebString filePath;
-    long long fileStart;
-    long long fileLength;  // -1 means to the end of the file.
-    double modificationTime;
-    WebURL fileSystemURL;
-    WebString blobUUID;
+    WebString file_path;
+    long long file_start;
+    long long file_length;  // -1 means to the end of the file.
+    double modification_time;
+    WebURL file_system_url;
+    WebString blob_uuid;
   };
 
-  ~WebHTTPBody() { reset(); }
+  ~WebHTTPBody() { Reset(); }
 
-  WebHTTPBody() : m_private(0) {}
-  WebHTTPBody(const WebHTTPBody& b) : m_private(0) { assign(b); }
+  WebHTTPBody() : private_(0) {}
+  WebHTTPBody(const WebHTTPBody& b) : private_(0) { Assign(b); }
   WebHTTPBody& operator=(const WebHTTPBody& b) {
-    assign(b);
+    Assign(b);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void initialize();
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebHTTPBody&);
+  BLINK_PLATFORM_EXPORT void Initialize();
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebHTTPBody&);
 
-  bool isNull() const { return !m_private; }
+  bool IsNull() const { return !private_; }
 
   // Returns the number of elements comprising the http body.
-  BLINK_PLATFORM_EXPORT size_t elementCount() const;
+  BLINK_PLATFORM_EXPORT size_t ElementCount() const;
 
   // Sets the values of the element at the given index. Returns false if
   // index is out of bounds.
-  BLINK_PLATFORM_EXPORT bool elementAt(size_t index, Element&) const;
+  BLINK_PLATFORM_EXPORT bool ElementAt(size_t index, Element&) const;
 
   // Append to the list of elements.
-  BLINK_PLATFORM_EXPORT void appendData(const WebData&);
-  BLINK_PLATFORM_EXPORT void appendFile(const WebString&);
+  BLINK_PLATFORM_EXPORT void AppendData(const WebData&);
+  BLINK_PLATFORM_EXPORT void AppendFile(const WebString&);
   // Passing -1 to fileLength means to the end of the file.
-  BLINK_PLATFORM_EXPORT void appendFileRange(const WebString&,
-                                             long long fileStart,
-                                             long long fileLength,
-                                             double modificationTime);
-  BLINK_PLATFORM_EXPORT void appendBlob(const WebString& uuid);
+  BLINK_PLATFORM_EXPORT void AppendFileRange(const WebString&,
+                                             long long file_start,
+                                             long long file_length,
+                                             double modification_time);
+  BLINK_PLATFORM_EXPORT void AppendBlob(const WebString& uuid);
 
   // Append a resource which is identified by the FileSystem URL.
-  BLINK_PLATFORM_EXPORT void appendFileSystemURLRange(const WebURL&,
+  BLINK_PLATFORM_EXPORT void AppendFileSystemURLRange(const WebURL&,
                                                       long long start,
                                                       long long length,
-                                                      double modificationTime);
+                                                      double modification_time);
 
   // Identifies a particular form submission instance. A value of 0 is
   // used to indicate an unspecified identifier.
-  BLINK_PLATFORM_EXPORT long long identifier() const;
-  BLINK_PLATFORM_EXPORT void setIdentifier(long long);
+  BLINK_PLATFORM_EXPORT long long Identifier() const;
+  BLINK_PLATFORM_EXPORT void SetIdentifier(long long);
 
-  BLINK_PLATFORM_EXPORT bool containsPasswordData() const;
-  BLINK_PLATFORM_EXPORT void setContainsPasswordData(bool);
+  BLINK_PLATFORM_EXPORT bool ContainsPasswordData() const;
+  BLINK_PLATFORM_EXPORT void SetContainsPasswordData(bool);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebHTTPBody(WTF::PassRefPtr<EncodedFormData>);
@@ -113,10 +113,10 @@ class WebHTTPBody {
 #endif
 
  private:
-  BLINK_PLATFORM_EXPORT void assign(WebHTTPBodyPrivate*);
-  BLINK_PLATFORM_EXPORT void ensureMutable();
+  BLINK_PLATFORM_EXPORT void Assign(WebHTTPBodyPrivate*);
+  BLINK_PLATFORM_EXPORT void EnsureMutable();
 
-  WebHTTPBodyPrivate* m_private;
+  WebHTTPBodyPrivate* private_;
 };
 
 }  // namespace blink

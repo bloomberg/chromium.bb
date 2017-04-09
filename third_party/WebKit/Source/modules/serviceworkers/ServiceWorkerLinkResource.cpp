@@ -26,87 +26,88 @@ namespace {
 class RegistrationCallback
     : public WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks {
  public:
-  explicit RegistrationCallback(LinkLoaderClient* client) : m_client(client) {}
+  explicit RegistrationCallback(LinkLoaderClient* client) : client_(client) {}
   ~RegistrationCallback() override {}
 
-  void onSuccess(
+  void OnSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
-    Platform::current()
-        ->currentThread()
-        ->scheduler()
-        ->timerTaskRunner()
-        ->postTask(BLINK_FROM_HERE,
-                   WTF::bind(&LinkLoaderClient::linkLoaded, m_client));
+    Platform::Current()
+        ->CurrentThread()
+        ->Scheduler()
+        ->TimerTaskRunner()
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&LinkLoaderClient::LinkLoaded, client_));
   }
 
-  void onError(const WebServiceWorkerError& error) override {
-    Platform::current()
-        ->currentThread()
-        ->scheduler()
-        ->timerTaskRunner()
-        ->postTask(BLINK_FROM_HERE,
-                   WTF::bind(&LinkLoaderClient::linkLoadingErrored, m_client));
+  void OnError(const WebServiceWorkerError& error) override {
+    Platform::Current()
+        ->CurrentThread()
+        ->Scheduler()
+        ->TimerTaskRunner()
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&LinkLoaderClient::LinkLoadingErrored, client_));
   }
 
  private:
   WTF_MAKE_NONCOPYABLE(RegistrationCallback);
 
-  Persistent<LinkLoaderClient> m_client;
+  Persistent<LinkLoaderClient> client_;
 };
 }
 
-ServiceWorkerLinkResource* ServiceWorkerLinkResource::create(
+ServiceWorkerLinkResource* ServiceWorkerLinkResource::Create(
     HTMLLinkElement* owner) {
   return new ServiceWorkerLinkResource(owner);
 }
 
 ServiceWorkerLinkResource::~ServiceWorkerLinkResource() {}
 
-void ServiceWorkerLinkResource::process() {
-  if (!m_owner || !m_owner->document().frame())
+void ServiceWorkerLinkResource::Process() {
+  if (!owner_ || !owner_->GetDocument().GetFrame())
     return;
 
-  if (!m_owner->shouldLoadLink())
+  if (!owner_->ShouldLoadLink())
     return;
 
-  Document& document = m_owner->document();
+  Document& document = owner_->GetDocument();
 
-  KURL scriptURL = m_owner->href();
+  KURL script_url = owner_->Href();
 
-  String scope = m_owner->scope();
-  KURL scopeURL;
-  if (scope.isNull())
-    scopeURL = KURL(scriptURL, "./");
+  String scope = owner_->Scope();
+  KURL scope_url;
+  if (scope.IsNull())
+    scope_url = KURL(script_url, "./");
   else
-    scopeURL = document.completeURL(scope);
-  scopeURL.removeFragmentIdentifier();
+    scope_url = document.CompleteURL(scope);
+  scope_url.RemoveFragmentIdentifier();
 
-  String errorMessage;
+  String error_message;
   ServiceWorkerContainer* container = NavigatorServiceWorker::serviceWorker(
-      toScriptStateForMainWorld(m_owner->document().frame()),
-      *document.frame()->domWindow()->navigator(), errorMessage);
+      ToScriptStateForMainWorld(owner_->GetDocument().GetFrame()),
+      *document.GetFrame()->DomWindow()->navigator(), error_message);
 
   if (!container) {
-    document.addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, ErrorMessageLevel,
-        "Cannot register service worker with <link> element. " + errorMessage));
-    WTF::makeUnique<RegistrationCallback>(m_owner)->onError(
-        WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
-                              errorMessage));
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "Cannot register service worker with <link> element. " +
+            error_message));
+    WTF::MakeUnique<RegistrationCallback>(owner_)->OnError(
+        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
+                              error_message));
     return;
   }
 
-  container->registerServiceWorkerImpl(
-      &document, scriptURL, scopeURL,
-      WTF::makeUnique<RegistrationCallback>(m_owner));
+  container->RegisterServiceWorkerImpl(
+      &document, script_url, scope_url,
+      WTF::MakeUnique<RegistrationCallback>(owner_));
 }
 
-bool ServiceWorkerLinkResource::hasLoaded() const {
+bool ServiceWorkerLinkResource::HasLoaded() const {
   return false;
 }
 
-void ServiceWorkerLinkResource::ownerRemoved() {
-  process();
+void ServiceWorkerLinkResource::OwnerRemoved() {
+  Process();
 }
 
 ServiceWorkerLinkResource::ServiceWorkerLinkResource(HTMLLinkElement* owner)

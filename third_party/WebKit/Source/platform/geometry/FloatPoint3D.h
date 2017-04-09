@@ -33,125 +33,125 @@ class PLATFORM_EXPORT FloatPoint3D {
   DISALLOW_NEW();
 
  public:
-  FloatPoint3D() : m_x(0), m_y(0), m_z(0) {}
+  FloatPoint3D() : x_(0), y_(0), z_(0) {}
 
-  FloatPoint3D(float x, float y, float z) : m_x(x), m_y(y), m_z(z) {}
+  FloatPoint3D(float x, float y, float z) : x_(x), y_(y), z_(z) {}
 
-  FloatPoint3D(const FloatPoint& p) : m_x(p.x()), m_y(p.y()), m_z(0) {}
+  FloatPoint3D(const FloatPoint& p) : x_(p.X()), y_(p.Y()), z_(0) {}
 
-  FloatPoint3D(const FloatPoint3D& p) : m_x(p.x()), m_y(p.y()), m_z(p.z()) {}
+  FloatPoint3D(const FloatPoint3D& p) : x_(p.X()), y_(p.Y()), z_(p.Z()) {}
 
-  float x() const { return m_x; }
-  void setX(float x) { m_x = x; }
+  float X() const { return x_; }
+  void SetX(float x) { x_ = x; }
 
-  float y() const { return m_y; }
-  void setY(float y) { m_y = y; }
+  float Y() const { return y_; }
+  void SetY(float y) { y_ = y; }
 
-  float z() const { return m_z; }
-  void setZ(float z) { m_z = z; }
-  void set(float x, float y, float z) {
-    m_x = x;
-    m_y = y;
-    m_z = z;
+  float Z() const { return z_; }
+  void SetZ(float z) { z_ = z; }
+  void Set(float x, float y, float z) {
+    x_ = x;
+    y_ = y;
+    z_ = z;
   }
-  void move(float dx, float dy, float dz) {
-    m_x += dx;
-    m_y += dy;
-    m_z += dz;
+  void Move(float dx, float dy, float dz) {
+    x_ += dx;
+    y_ += dy;
+    z_ += dz;
   }
-  void scale(float sx, float sy, float sz) {
-    m_x *= sx;
-    m_y *= sy;
-    m_z *= sz;
+  void Scale(float sx, float sy, float sz) {
+    x_ *= sx;
+    y_ *= sy;
+    z_ *= sz;
   }
 
-  bool isZero() const { return !m_x && !m_y && !m_z; }
+  bool IsZero() const { return !x_ && !y_ && !z_; }
 
-  void normalize();
+  void Normalize();
 
-  float dot(const FloatPoint3D& a) const {
-    return m_x * a.x() + m_y * a.y() + m_z * a.z();
+  float Dot(const FloatPoint3D& a) const {
+    return x_ * a.X() + y_ * a.Y() + z_ * a.Z();
   }
 
   // Compute the angle (in radians) between this and y.  If either vector is the
   // zero vector, return an angle of 0.
-  float angleBetween(const FloatPoint3D& y) const;
+  float AngleBetween(const FloatPoint3D& y) const;
 
   // Sets this FloatPoint3D to the cross product of the passed two.
   // It is safe for "this" to be the same as either or both of the
   // arguments.
-  void cross(const FloatPoint3D& a, const FloatPoint3D& b) {
-    float x = a.y() * b.z() - a.z() * b.y();
-    float y = a.z() * b.x() - a.x() * b.z();
-    float z = a.x() * b.y() - a.y() * b.x();
-    m_x = x;
-    m_y = y;
-    m_z = z;
+  void Cross(const FloatPoint3D& a, const FloatPoint3D& b) {
+    float x = a.Y() * b.Z() - a.Z() * b.Y();
+    float y = a.Z() * b.X() - a.X() * b.Z();
+    float z = a.X() * b.Y() - a.Y() * b.X();
+    x_ = x;
+    y_ = y;
+    z_ = z;
   }
 
   // Convenience function returning "this cross point" as a
   // stack-allocated result.
-  FloatPoint3D cross(const FloatPoint3D& point) const {
+  FloatPoint3D Cross(const FloatPoint3D& point) const {
     FloatPoint3D result;
-    result.cross(*this, point);
+    result.Cross(*this, point);
     return result;
   }
 
-  float lengthSquared() const { return this->dot(*this); }
-  float length() const { return sqrtf(lengthSquared()); }
+  float LengthSquared() const { return this->Dot(*this); }
+  float length() const { return sqrtf(LengthSquared()); }
 
-  float distanceTo(const FloatPoint3D& a) const;
+  float DistanceTo(const FloatPoint3D& a) const;
 
-  operator SkPoint3() const { return SkPoint3::Make(m_x, m_y, m_z); }
+  operator SkPoint3() const { return SkPoint3::Make(x_, y_, z_); }
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  float m_x;
-  float m_y;
-  float m_z;
+  float x_;
+  float y_;
+  float z_;
 };
 
 inline FloatPoint3D& operator+=(FloatPoint3D& a, const FloatPoint3D& b) {
-  a.move(b.x(), b.y(), b.z());
+  a.Move(b.X(), b.Y(), b.Z());
   return a;
 }
 
 inline FloatPoint3D& operator-=(FloatPoint3D& a, const FloatPoint3D& b) {
-  a.move(-b.x(), -b.y(), -b.z());
+  a.Move(-b.X(), -b.Y(), -b.Z());
   return a;
 }
 
 inline FloatPoint3D operator+(const FloatPoint3D& a, const FloatPoint3D& b) {
-  return FloatPoint3D(a.x() + b.x(), a.y() + b.y(), a.z() + b.z());
+  return FloatPoint3D(a.X() + b.X(), a.Y() + b.Y(), a.Z() + b.Z());
 }
 
 inline FloatPoint3D operator-(const FloatPoint3D& a, const FloatPoint3D& b) {
-  return FloatPoint3D(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
+  return FloatPoint3D(a.X() - b.X(), a.Y() - b.Y(), a.Z() - b.Z());
 }
 
 inline bool operator==(const FloatPoint3D& a, const FloatPoint3D& b) {
-  return a.x() == b.x() && a.y() == b.y() && a.z() == b.z();
+  return a.X() == b.X() && a.Y() == b.Y() && a.Z() == b.Z();
 }
 
 inline bool operator!=(const FloatPoint3D& a, const FloatPoint3D& b) {
-  return a.x() != b.x() || a.y() != b.y() || a.z() != b.z();
+  return a.X() != b.X() || a.Y() != b.Y() || a.Z() != b.Z();
 }
 
 inline float operator*(const FloatPoint3D& a, const FloatPoint3D& b) {
   // dot product
-  return a.dot(b);
+  return a.Dot(b);
 }
 
 inline FloatPoint3D operator*(float k, const FloatPoint3D& v) {
-  return FloatPoint3D(k * v.x(), k * v.y(), k * v.z());
+  return FloatPoint3D(k * v.X(), k * v.Y(), k * v.Z());
 }
 
 inline FloatPoint3D operator*(const FloatPoint3D& v, float k) {
-  return FloatPoint3D(k * v.x(), k * v.y(), k * v.z());
+  return FloatPoint3D(k * v.X(), k * v.Y(), k * v.Z());
 }
 
-inline float FloatPoint3D::distanceTo(const FloatPoint3D& a) const {
+inline float FloatPoint3D::DistanceTo(const FloatPoint3D& a) const {
   return (*this - a).length();
 }
 

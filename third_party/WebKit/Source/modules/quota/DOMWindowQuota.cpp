@@ -40,17 +40,17 @@ namespace blink {
 DOMWindowQuota::DOMWindowQuota(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-const char* DOMWindowQuota::supplementName() {
+const char* DOMWindowQuota::SupplementName() {
   return "DOMWindowQuota";
 }
 
 // static
-DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window) {
+DOMWindowQuota& DOMWindowQuota::From(LocalDOMWindow& window) {
   DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(
-      Supplement<LocalDOMWindow>::from(window, supplementName()));
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
     supplement = new DOMWindowQuota(window);
-    provideTo(window, supplementName(), supplement);
+    ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
@@ -58,18 +58,18 @@ DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window) {
 // static
 DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(
     LocalDOMWindow& window) {
-  return DOMWindowQuota::from(window).webkitStorageInfo();
+  return DOMWindowQuota::From(window).webkitStorageInfo();
 }
 
 DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const {
-  if (!m_storageInfo)
-    m_storageInfo = DeprecatedStorageInfo::create();
-  return m_storageInfo.get();
+  if (!storage_info_)
+    storage_info_ = DeprecatedStorageInfo::Create();
+  return storage_info_.Get();
 }
 
 DEFINE_TRACE(DOMWindowQuota) {
-  visitor->trace(m_storageInfo);
-  Supplement<LocalDOMWindow>::trace(visitor);
+  visitor->Trace(storage_info_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 }  // namespace blink

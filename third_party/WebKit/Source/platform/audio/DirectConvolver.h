@@ -41,19 +41,19 @@ class PLATFORM_EXPORT DirectConvolver {
   WTF_MAKE_NONCOPYABLE(DirectConvolver);
 
  public:
-  DirectConvolver(size_t inputBlockSize);
+  DirectConvolver(size_t input_block_size);
 
-  void process(AudioFloatArray* convolutionKernel,
-               const float* sourceP,
-               float* destP,
-               size_t framesToProcess);
+  void Process(AudioFloatArray* convolution_kernel,
+               const float* source_p,
+               float* dest_p,
+               size_t frames_to_process);
 
-  void reset();
+  void Reset();
 
  private:
-  size_t m_inputBlockSize;
+  size_t input_block_size_;
 
-  AudioFloatArray m_buffer;
+  AudioFloatArray buffer_;
 };
 
 }  // namespace blink

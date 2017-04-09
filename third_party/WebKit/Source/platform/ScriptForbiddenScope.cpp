@@ -8,6 +8,6 @@
 
 namespace blink {
 
-unsigned ScriptForbiddenScope::s_scriptForbiddenCount = 0;
+unsigned ScriptForbiddenScope::script_forbidden_count_ = 0;
 
 }  // namespace blink

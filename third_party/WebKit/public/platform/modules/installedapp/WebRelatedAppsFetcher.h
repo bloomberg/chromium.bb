@@ -22,7 +22,7 @@ class WebRelatedAppsFetcher {
   virtual ~WebRelatedAppsFetcher() {}
 
   // Gets the list of related applications from the web frame's manifest.
-  virtual void getManifestRelatedApplications(
+  virtual void GetManifestRelatedApplications(
       std::unique_ptr<AppInstalledCallbacks>) = 0;
 };
 

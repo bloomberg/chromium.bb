@@ -36,8 +36,8 @@ class HTMLPreElement final : public HTMLElement {
  private:
   HTMLPreElement(const QualifiedName&, Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 };

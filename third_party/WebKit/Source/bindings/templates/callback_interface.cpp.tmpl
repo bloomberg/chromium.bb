@@ -11,29 +11,29 @@ namespace blink {
 
 {{v8_class}}::{{v8_class}}(v8::Local<v8::Function> callback, ScriptState* scriptState)
     : m_scriptState(scriptState) {
-  m_callback.set(scriptState->isolate(), callback);
+  m_callback.Set(scriptState->GetIsolate(), callback);
 }
 
 {{v8_class}}::~{{v8_class}}() {}
 
 DEFINE_TRACE({{v8_class}}) {
-  {{cpp_class}}::trace(visitor);
+  {{cpp_class}}::Trace(visitor);
 }
 
 {% for method in methods if not method.is_custom %}
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}) {
   {% set return_default = 'return true'
          if method.idl_type == 'boolean' else 'return' %}{# void #}
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  ExecutionContext* executionContext = m_scriptState->GetExecutionContext();
+  if (!executionContext || executionContext->IsContextSuspended() ||
+      executionContext->IsContextDestroyed())
     {{return_default}};
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     {{return_default}};
 
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
   {% if method.call_with_this_handle %}
-  v8::Local<v8::Value> thisHandle = thisValue.v8Value();
+  v8::Local<v8::Value> thisHandle = thisValue.V8Value();
   {% endif %}
 
   {% for argument in method.arguments %}
@@ -46,13 +46,13 @@ DEFINE_TRACE({{v8_class}}) {
   v8::Local<v8::Value> *argv = 0;
   {% endif %}
 
-  v8::Isolate* isolate = m_scriptState->isolate();
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
   {% set this_handle_parameter = 'thisHandle'
          if method.call_with_this_handle else 'v8::Undefined(isolate)' %}
   {% if method.idl_type == 'boolean' %}
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
                                executionContext,
                                {{this_handle_parameter}},
                                {{method.arguments | length}},
@@ -60,8 +60,8 @@ DEFINE_TRACE({{v8_class}}) {
                                isolate);
   return !exceptionCatcher.HasCaught();
   {% else %}{# void #}
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(),
+  V8ScriptRunner::CallFunction(m_callback.NewLocal(isolate),
+                               m_scriptState->GetExecutionContext(),
                                {{this_handle_parameter}},
                                {{method.arguments | length}},
                                argv,

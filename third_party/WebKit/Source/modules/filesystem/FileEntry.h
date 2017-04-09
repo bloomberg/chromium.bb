@@ -45,9 +45,9 @@ class MODULES_EXPORT FileEntry final : public Entry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FileEntry* create(DOMFileSystemBase* fileSystem,
-                           const String& fullPath) {
-    return new FileEntry(fileSystem, fullPath);
+  static FileEntry* Create(DOMFileSystemBase* file_system,
+                           const String& full_path) {
+    return new FileEntry(file_system, full_path);
   }
 
   void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
@@ -58,7 +58,7 @@ class MODULES_EXPORT FileEntry final : public Entry {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  FileEntry(DOMFileSystemBase*, const String& fullPath);
+  FileEntry(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());

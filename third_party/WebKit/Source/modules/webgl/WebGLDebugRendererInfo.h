@@ -39,11 +39,11 @@ class WebGLDebugRendererInfo final : public WebGLExtension {
     kUnmaskedRendererWebgl = 0x9246
   };
 
-  static WebGLDebugRendererInfo* create(WebGLRenderingContextBase*);
-  static bool supported(WebGLRenderingContextBase*);
-  static const char* extensionName();
+  static WebGLDebugRendererInfo* Create(WebGLRenderingContextBase*);
+  static bool Supported(WebGLRenderingContextBase*);
+  static const char* ExtensionName();
 
-  WebGLExtensionName name() const override;
+  WebGLExtensionName GetName() const override;
 
  private:
   explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);

@@ -254,94 +254,93 @@ class CONTENT_EXPORT RenderViewImpl
   // blink::WebWidgetClient implementation ------------------------------------
 
   // Most methods are handled by RenderWidget.
-  void show(blink::WebNavigationPolicy policy) override;
-  void didHandleGestureEvent(const blink::WebGestureEvent& event,
+  void Show(blink::WebNavigationPolicy policy) override;
+  void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
-  void onMouseDown(const blink::WebNode& mouse_down_node) override;
-  blink::WebLayerTreeView* initializeLayerTreeView() override;
+  void OnMouseDown(const blink::WebNode& mouse_down_node) override;
+  blink::WebLayerTreeView* InitializeLayerTreeView() override;
 
-  bool canHandleGestureEvent() override;
-  bool canUpdateLayout() override;
+  bool CanHandleGestureEvent() override;
+  bool CanUpdateLayout() override;
 
   // TODO(lfg): Remove once WebViewClient no longer inherits from
   // WebWidgetClient.
-  void closeWidgetSoon() override;
-  void convertViewportToWindow(blink::WebRect* rect) override;
-  void convertWindowToViewport(blink::WebFloatRect* rect) override;
-  void didOverscroll(const blink::WebFloatSize& overscrollDelta,
+  void CloseWidgetSoon() override;
+  void ConvertViewportToWindow(blink::WebRect* rect) override;
+  void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
+  void DidOverscroll(const blink::WebFloatSize& overscrollDelta,
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& positionInViewport,
                      const blink::WebFloatSize& velocityInViewport) override;
-  void hasTouchEventHandlers(bool has_handlers) override;
-  blink::WebScreenInfo screenInfo() override;
-  void setToolTipText(const blink::WebString&,
+  void HasTouchEventHandlers(bool has_handlers) override;
+  blink::WebScreenInfo GetScreenInfo() override;
+  void SetToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
-  void setTouchAction(blink::WebTouchAction touchAction) override;
-  void showUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
+  void SetTouchAction(blink::WebTouchAction touchAction) override;
+  void ShowUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
                                   const blink::WebNode& tappedNode,
                                   bool pageChanged) override;
-  blink::WebWidgetClient* widgetClient() override;
+  blink::WebWidgetClient* WidgetClient() override;
 
   // blink::WebViewClient implementation --------------------------------------
 
-  blink::WebView* createView(blink::WebLocalFrame* creator,
+  blink::WebView* CreateView(blink::WebLocalFrame* creator,
                              const blink::WebURLRequest& request,
                              const blink::WebWindowFeatures& features,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener) override;
-  blink::WebWidget* createPopupMenu(blink::WebPopupType popup_type) override;
-  blink::WebStorageNamespace* createSessionStorageNamespace() override;
-  void printPage(blink::WebLocalFrame* frame) override;
-  bool enumerateChosenDirectory(
+  blink::WebWidget* CreatePopupMenu(blink::WebPopupType popup_type) override;
+  blink::WebStorageNamespace* CreateSessionStorageNamespace() override;
+  void PrintPage(blink::WebLocalFrame* frame) override;
+  bool EnumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion) override;
   void SetValidationMessageDirection(base::string16* main_text,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
                                      blink::WebTextDirection sub_text_hint);
-  void showValidationMessage(const blink::WebRect& anchor_in_viewport,
+  void ShowValidationMessage(const blink::WebRect& anchor_in_viewport,
                              const blink::WebString& main_text,
                              blink::WebTextDirection main_text_hint,
                              const blink::WebString& sub_text,
                              blink::WebTextDirection hint) override;
-  void hideValidationMessage() override;
-  void moveValidationMessage(
-      const blink::WebRect& anchor_in_viewport) override;
-  void setStatusText(const blink::WebString& text) override;
-  void setMouseOverURL(const blink::WebURL& url) override;
-  void setKeyboardFocusURL(const blink::WebURL& url) override;
-  bool acceptsLoadDrops() override;
-  void focusNext() override;
-  void focusPrevious() override;
-  void focusedNodeChanged(const blink::WebNode& fromNode,
+  void HideValidationMessage() override;
+  void MoveValidationMessage(const blink::WebRect& anchor_in_viewport) override;
+  void SetStatusText(const blink::WebString& text) override;
+  void SetMouseOverURL(const blink::WebURL& url) override;
+  void SetKeyboardFocusURL(const blink::WebURL& url) override;
+  bool AcceptsLoadDrops() override;
+  void FocusNext() override;
+  void FocusPrevious() override;
+  void FocusedNodeChanged(const blink::WebNode& fromNode,
                           const blink::WebNode& toNode) override;
-  void didUpdateLayout() override;
+  void DidUpdateLayout() override;
 #if defined(OS_ANDROID)
-  bool didTapMultipleTargets(
+  bool DidTapMultipleTargets(
       const blink::WebSize& inner_viewport_offset,
       const blink::WebRect& touch_rect,
       const blink::WebVector<blink::WebRect>& target_rects) override;
 #endif
-  blink::WebString acceptLanguages() override;
-  void navigateBackForwardSoon(int offset) override;
-  int historyBackListCount() override;
-  int historyForwardListCount() override;
-  blink::WebSpeechRecognizer* speechRecognizer() override;
-  void zoomLimitsChanged(double minimum_level, double maximum_level) override;
-  void pageScaleFactorChanged() override;
+  blink::WebString AcceptLanguages() override;
+  void NavigateBackForwardSoon(int offset) override;
+  int HistoryBackListCount() override;
+  int HistoryForwardListCount() override;
+  blink::WebSpeechRecognizer* SpeechRecognizer() override;
+  void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
+  void PageScaleFactorChanged() override;
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
-  void draggableRegionsChanged() override;
-  void pageImportanceSignalsChanged() override;
-  void didAutoResize(const blink::WebSize& newSize) override;
-  blink::WebRect rootWindowRect() override;
-  void didFocus() override;
+  void DraggableRegionsChanged() override;
+  void PageImportanceSignalsChanged() override;
+  void DidAutoResize(const blink::WebSize& newSize) override;
+  blink::WebRect RootWindowRect() override;
+  void DidFocus() override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement
   // date and time input fields using MULTIPLE_FIELDS_UI
-  bool openDateTimeChooser(const blink::WebDateTimeChooserParams&,
+  bool OpenDateTimeChooser(const blink::WebDateTimeChooserParams&,
                            blink::WebDateTimeChooserCompletion*) override;
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif

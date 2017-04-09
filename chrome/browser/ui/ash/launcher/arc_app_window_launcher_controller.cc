@@ -49,19 +49,19 @@ blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
   DCHECK_NE(arc::mojom::OrientationLock::CURRENT, orientation_lock);
   switch (orientation_lock) {
     case arc::mojom::OrientationLock::PORTRAIT:
-      return blink::WebScreenOrientationLockPortrait;
+      return blink::kWebScreenOrientationLockPortrait;
     case arc::mojom::OrientationLock::LANDSCAPE:
-      return blink::WebScreenOrientationLockLandscape;
+      return blink::kWebScreenOrientationLockLandscape;
     case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
-      return blink::WebScreenOrientationLockPortraitPrimary;
+      return blink::kWebScreenOrientationLockPortraitPrimary;
     case arc::mojom::OrientationLock::LANDSCAPE_PRIMARY:
-      return blink::WebScreenOrientationLockLandscapePrimary;
+      return blink::kWebScreenOrientationLockLandscapePrimary;
     case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
-      return blink::WebScreenOrientationLockPortraitSecondary;
+      return blink::kWebScreenOrientationLockPortraitSecondary;
     case arc::mojom::OrientationLock::LANDSCAPE_SECONDARY:
-      return blink::WebScreenOrientationLockLandscapeSecondary;
+      return blink::kWebScreenOrientationLockLandscapeSecondary;
     default:
-      return blink::WebScreenOrientationLockAny;
+      return blink::kWebScreenOrientationLockAny;
   }
 }
 

@@ -32,7 +32,7 @@ namespace blink {
 
 class CORE_EXPORT PopupOpeningObserver {
  public:
-  virtual void willOpenPopup() = 0;
+  virtual void WillOpenPopup() = 0;
 
  protected:
   virtual ~PopupOpeningObserver() {}

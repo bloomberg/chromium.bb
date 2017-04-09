@@ -35,16 +35,16 @@
 
 namespace blink {
 
-std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::create(
+std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::Create(
     v8::Isolate* isolate,
     v8::Local<v8::Object> prototype) {
-  return WTF::wrapUnique(new V0CustomElementBinding(isolate, prototype));
+  return WTF::WrapUnique(new V0CustomElementBinding(isolate, prototype));
 }
 
 V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate,
                                                v8::Local<v8::Object> prototype)
-    : m_prototype(isolate, prototype) {
-  ASSERT(!m_prototype.isEmpty());
+    : prototype_(isolate, prototype) {
+  ASSERT(!prototype_.IsEmpty());
 }
 
 V0CustomElementBinding::~V0CustomElementBinding() {}

@@ -11,24 +11,24 @@ namespace blink {
 PresentationConnectionAvailableEvent::~PresentationConnectionAvailableEvent() {}
 
 PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     PresentationConnection* connection)
-    : Event(eventType, false /* canBubble */, false /* cancelable */),
-      m_connection(connection) {}
+    : Event(event_type, false /* canBubble */, false /* cancelable */),
+      connection_(connection) {}
 
 PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     const PresentationConnectionAvailableEventInit& initializer)
-    : Event(eventType, initializer), m_connection(initializer.connection()) {}
+    : Event(event_type, initializer), connection_(initializer.connection()) {}
 
-const AtomicString& PresentationConnectionAvailableEvent::interfaceName()
+const AtomicString& PresentationConnectionAvailableEvent::InterfaceName()
     const {
   return EventNames::PresentationConnectionAvailableEvent;
 }
 
 DEFINE_TRACE(PresentationConnectionAvailableEvent) {
-  visitor->trace(m_connection);
-  Event::trace(visitor);
+  visitor->Trace(connection_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

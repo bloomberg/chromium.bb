@@ -16,12 +16,12 @@ public:
 };
 
 namespace WTF {
-  inline void adopted(const SkRefCnt* object) {}
-  inline void requireAdoption(const SkRefCnt* object) {}
+inline void Adopted(const SkRefCnt* object) {}
+inline void RequireAdoption(const SkRefCnt* object) {}
 };
 
-using WTF::adopted;
-using WTF::requireAdoption;
+using WTF::Adopted;
+using WTF::RequireAdoption;
 
 #endif
 

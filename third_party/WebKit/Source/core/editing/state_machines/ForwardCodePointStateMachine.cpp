@@ -7,63 +7,63 @@
 namespace blink {
 
 enum class ForwardCodePointStateMachine::ForwardCodePointState {
-  NotSurrogate,
-  LeadSurrogate,
-  Invalid,
+  kNotSurrogate,
+  kLeadSurrogate,
+  kInvalid,
 };
 
 ForwardCodePointStateMachine::ForwardCodePointStateMachine()
-    : m_state(ForwardCodePointState::NotSurrogate) {}
+    : state_(ForwardCodePointState::kNotSurrogate) {}
 
 TextSegmentationMachineState
-ForwardCodePointStateMachine::feedFollowingCodeUnit(UChar codeUnit) {
-  switch (m_state) {
-    case ForwardCodePointState::NotSurrogate:
-      if (U16_IS_TRAIL(codeUnit)) {
-        m_codeUnitsToBeDeleted = 0;
-        m_state = ForwardCodePointState::Invalid;
-        return TextSegmentationMachineState::Invalid;
+ForwardCodePointStateMachine::FeedFollowingCodeUnit(UChar code_unit) {
+  switch (state_) {
+    case ForwardCodePointState::kNotSurrogate:
+      if (U16_IS_TRAIL(code_unit)) {
+        code_units_to_be_deleted_ = 0;
+        state_ = ForwardCodePointState::kInvalid;
+        return TextSegmentationMachineState::kInvalid;
       }
-      ++m_codeUnitsToBeDeleted;
-      if (U16_IS_LEAD(codeUnit)) {
-        m_state = ForwardCodePointState::LeadSurrogate;
-        return TextSegmentationMachineState::NeedMoreCodeUnit;
+      ++code_units_to_be_deleted_;
+      if (U16_IS_LEAD(code_unit)) {
+        state_ = ForwardCodePointState::kLeadSurrogate;
+        return TextSegmentationMachineState::kNeedMoreCodeUnit;
       }
-      return TextSegmentationMachineState::Finished;
-    case ForwardCodePointState::LeadSurrogate:
-      if (U16_IS_TRAIL(codeUnit)) {
-        ++m_codeUnitsToBeDeleted;
-        m_state = ForwardCodePointState::NotSurrogate;
-        return TextSegmentationMachineState::Finished;
+      return TextSegmentationMachineState::kFinished;
+    case ForwardCodePointState::kLeadSurrogate:
+      if (U16_IS_TRAIL(code_unit)) {
+        ++code_units_to_be_deleted_;
+        state_ = ForwardCodePointState::kNotSurrogate;
+        return TextSegmentationMachineState::kFinished;
       }
-      m_codeUnitsToBeDeleted = 0;
-      m_state = ForwardCodePointState::Invalid;
-      return TextSegmentationMachineState::Invalid;
-    case ForwardCodePointState::Invalid:
-      m_codeUnitsToBeDeleted = 0;
-      return TextSegmentationMachineState::Invalid;
+      code_units_to_be_deleted_ = 0;
+      state_ = ForwardCodePointState::kInvalid;
+      return TextSegmentationMachineState::kInvalid;
+    case ForwardCodePointState::kInvalid:
+      code_units_to_be_deleted_ = 0;
+      return TextSegmentationMachineState::kInvalid;
   }
   NOTREACHED();
-  return TextSegmentationMachineState::Invalid;
+  return TextSegmentationMachineState::kInvalid;
 }
 
 TextSegmentationMachineState
-ForwardCodePointStateMachine::feedPrecedingCodeUnit(UChar codeUnit) {
+ForwardCodePointStateMachine::FeedPrecedingCodeUnit(UChar code_unit) {
   NOTREACHED();
-  return TextSegmentationMachineState::Invalid;
+  return TextSegmentationMachineState::kInvalid;
 }
 
-bool ForwardCodePointStateMachine::atCodePointBoundary() {
-  return m_state == ForwardCodePointState::NotSurrogate;
+bool ForwardCodePointStateMachine::AtCodePointBoundary() {
+  return state_ == ForwardCodePointState::kNotSurrogate;
 }
 
-int ForwardCodePointStateMachine::getBoundaryOffset() {
-  return m_codeUnitsToBeDeleted;
+int ForwardCodePointStateMachine::GetBoundaryOffset() {
+  return code_units_to_be_deleted_;
 }
 
-void ForwardCodePointStateMachine::reset() {
-  m_codeUnitsToBeDeleted = 0;
-  m_state = ForwardCodePointState::NotSurrogate;
+void ForwardCodePointStateMachine::Reset() {
+  code_units_to_be_deleted_ = 0;
+  state_ = ForwardCodePointState::kNotSurrogate;
 }
 
 }  // namespace blink

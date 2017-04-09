@@ -49,71 +49,71 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   USING_FAST_MALLOC(DeferredImageDecoder);
 
  public:
-  static std::unique_ptr<DeferredImageDecoder> create(
+  static std::unique_ptr<DeferredImageDecoder> Create(
       PassRefPtr<SharedBuffer> data,
-      bool dataComplete,
+      bool data_complete,
       ImageDecoder::AlphaOption,
       const ColorBehavior&);
 
-  static std::unique_ptr<DeferredImageDecoder> createForTesting(
+  static std::unique_ptr<DeferredImageDecoder> CreateForTesting(
       std::unique_ptr<ImageDecoder>);
 
   ~DeferredImageDecoder();
 
-  String filenameExtension() const;
+  String FilenameExtension() const;
 
-  sk_sp<SkImage> createFrameAtIndex(size_t);
+  sk_sp<SkImage> CreateFrameAtIndex(size_t);
 
-  PassRefPtr<SharedBuffer> data();
-  void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
+  PassRefPtr<SharedBuffer> Data();
+  void SetData(PassRefPtr<SharedBuffer> data, bool all_data_received);
 
-  bool isSizeAvailable();
-  bool hasEmbeddedColorSpace() const;
+  bool IsSizeAvailable();
+  bool HasEmbeddedColorSpace() const;
   IntSize size() const;
-  IntSize frameSizeAtIndex(size_t index) const;
-  size_t frameCount();
-  int repetitionCount() const;
-  size_t clearCacheExceptFrame(size_t index);
-  bool frameHasAlphaAtIndex(size_t index) const;
-  bool frameIsCompleteAtIndex(size_t index) const;
-  float frameDurationAtIndex(size_t index) const;
-  size_t frameBytesAtIndex(size_t index) const;
-  ImageOrientation orientationAtIndex(size_t index) const;
-  bool hotSpot(IntPoint&) const;
+  IntSize FrameSizeAtIndex(size_t index) const;
+  size_t FrameCount();
+  int RepetitionCount() const;
+  size_t ClearCacheExceptFrame(size_t index);
+  bool FrameHasAlphaAtIndex(size_t index) const;
+  bool FrameIsCompleteAtIndex(size_t index) const;
+  float FrameDurationAtIndex(size_t index) const;
+  size_t FrameBytesAtIndex(size_t index) const;
+  ImageOrientation OrientationAtIndex(size_t index) const;
+  bool HotSpot(IntPoint&) const;
 
  private:
-  explicit DeferredImageDecoder(std::unique_ptr<ImageDecoder> actualDecoder);
+  explicit DeferredImageDecoder(std::unique_ptr<ImageDecoder> actual_decoder);
 
   friend class DeferredImageDecoderTest;
-  ImageFrameGenerator* frameGenerator() { return m_frameGenerator.get(); }
+  ImageFrameGenerator* FrameGenerator() { return frame_generator_.Get(); }
 
-  void activateLazyDecoding();
-  void prepareLazyDecodedFrames();
+  void ActivateLazyDecoding();
+  void PrepareLazyDecodedFrames();
 
-  sk_sp<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque);
+  sk_sp<SkImage> CreateFrameImageAtIndex(size_t index, bool known_to_be_opaque);
 
-  void setDataInternal(PassRefPtr<SharedBuffer> data,
-                       bool allDataReceived,
-                       bool pushDataToDecoder);
+  void SetDataInternal(PassRefPtr<SharedBuffer> data,
+                       bool all_data_received,
+                       bool push_data_to_decoder);
 
   // Copy of the data that is passed in, used by deferred decoding.
   // Allows creating readonly snapshots that may be read in another thread.
-  std::unique_ptr<SkRWBuffer> m_rwBuffer;
-  bool m_allDataReceived;
-  std::unique_ptr<ImageDecoder> m_actualDecoder;
+  std::unique_ptr<SkRWBuffer> rw_buffer_;
+  bool all_data_received_;
+  std::unique_ptr<ImageDecoder> actual_decoder_;
 
-  String m_filenameExtension;
-  IntSize m_size;
-  int m_repetitionCount;
-  bool m_hasEmbeddedColorSpace = false;
-  sk_sp<SkColorSpace> m_colorSpaceForSkImages;
-  bool m_canYUVDecode;
-  bool m_hasHotSpot;
-  IntPoint m_hotSpot;
+  String filename_extension_;
+  IntSize size_;
+  int repetition_count_;
+  bool has_embedded_color_space_ = false;
+  sk_sp<SkColorSpace> color_space_for_sk_images_;
+  bool can_yuv_decode_;
+  bool has_hot_spot_;
+  IntPoint hot_spot_;
 
   // Caches frame state information.
-  Vector<DeferredFrameData> m_frameData;
-  RefPtr<ImageFrameGenerator> m_frameGenerator;
+  Vector<DeferredFrameData> frame_data_;
+  RefPtr<ImageFrameGenerator> frame_generator_;
 };
 
 }  // namespace blink

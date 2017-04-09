@@ -12,96 +12,109 @@ namespace blink {
 class SetCharacterDataCommandTest : public EditingTestBase {};
 
 TEST_F(SetCharacterDataCommandTest, replaceTextWithSameLength) {
-  setBodyContent("<div contenteditable>This is a good test case</div>");
+  SetBodyContent("<div contenteditable>This is a good test case</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::create(
-      toText(document().body()->firstChild()->firstChild()), 10, 4, "lame");
+  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+      ToText(GetDocument().body()->FirstChild()->firstChild()), 10, 4, "lame");
 
-  command->doReapply();
-  EXPECT_EQ("This is a lame test case",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoReapply();
+  EXPECT_EQ(
+      "This is a lame test case",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 
-  command->doUnapply();
-  EXPECT_EQ("This is a good test case",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoUnapply();
+  EXPECT_EQ(
+      "This is a good test case",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 }
 
 TEST_F(SetCharacterDataCommandTest, replaceTextWithLongerText) {
-  setBodyContent("<div contenteditable>This is a good test case</div>");
+  SetBodyContent("<div contenteditable>This is a good test case</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::create(
-      toText(document().body()->firstChild()->firstChild()), 10, 4, "lousy");
+  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+      ToText(GetDocument().body()->FirstChild()->firstChild()), 10, 4, "lousy");
 
-  command->doReapply();
-  EXPECT_EQ("This is a lousy test case",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoReapply();
+  EXPECT_EQ(
+      "This is a lousy test case",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 
-  command->doUnapply();
-  EXPECT_EQ("This is a good test case",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoUnapply();
+  EXPECT_EQ(
+      "This is a good test case",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 }
 
 TEST_F(SetCharacterDataCommandTest, replaceTextWithShorterText) {
-  setBodyContent("<div contenteditable>This is a good test case</div>");
+  SetBodyContent("<div contenteditable>This is a good test case</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::create(
-      toText(document().body()->firstChild()->firstChild()), 10, 4, "meh");
+  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+      ToText(GetDocument().body()->FirstChild()->firstChild()), 10, 4, "meh");
 
-  command->doReapply();
-  EXPECT_EQ("This is a meh test case",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoReapply();
+  EXPECT_EQ(
+      "This is a meh test case",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 
-  command->doUnapply();
-  EXPECT_EQ("This is a good test case",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoUnapply();
+  EXPECT_EQ(
+      "This is a good test case",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 }
 
 TEST_F(SetCharacterDataCommandTest, insertTextIntoEmptyNode) {
-  setBodyContent("<div contenteditable />");
+  SetBodyContent("<div contenteditable />");
 
-  document().body()->firstChild()->appendChild(
-      document().createEditingTextNode(""));
+  GetDocument().body()->FirstChild()->appendChild(
+      GetDocument().CreateEditingTextNode(""));
 
-  SimpleEditCommand* command = SetCharacterDataCommand::create(
-      toText(document().body()->firstChild()->firstChild()), 0, 0, "hello");
+  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+      ToText(GetDocument().body()->FirstChild()->firstChild()), 0, 0, "hello");
 
-  command->doReapply();
-  EXPECT_EQ("hello",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoReapply();
+  EXPECT_EQ(
+      "hello",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 
-  command->doUnapply();
-  EXPECT_EQ("",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoUnapply();
+  EXPECT_EQ(
+      "",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 }
 
 TEST_F(SetCharacterDataCommandTest, insertTextAtEndOfNonEmptyNode) {
-  setBodyContent("<div contenteditable>Hello</div>");
+  SetBodyContent("<div contenteditable>Hello</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::create(
-      toText(document().body()->firstChild()->firstChild()), 5, 0, ", world!");
+  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+      ToText(GetDocument().body()->FirstChild()->firstChild()), 5, 0,
+      ", world!");
 
-  command->doReapply();
-  EXPECT_EQ("Hello, world!",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoReapply();
+  EXPECT_EQ(
+      "Hello, world!",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 
-  command->doUnapply();
-  EXPECT_EQ("Hello",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoUnapply();
+  EXPECT_EQ(
+      "Hello",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 }
 
 TEST_F(SetCharacterDataCommandTest, replaceEntireNode) {
-  setBodyContent("<div contenteditable>Hello</div>");
+  SetBodyContent("<div contenteditable>Hello</div>");
 
-  SimpleEditCommand* command = SetCharacterDataCommand::create(
-      toText(document().body()->firstChild()->firstChild()), 0, 5, "Bye");
+  SimpleEditCommand* command = SetCharacterDataCommand::Create(
+      ToText(GetDocument().body()->FirstChild()->firstChild()), 0, 5, "Bye");
 
-  command->doReapply();
-  EXPECT_EQ("Bye",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoReapply();
+  EXPECT_EQ(
+      "Bye",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 
-  command->doUnapply();
-  EXPECT_EQ("Hello",
-            toText(document().body()->firstChild()->firstChild())->wholeText());
+  command->DoUnapply();
+  EXPECT_EQ(
+      "Hello",
+      ToText(GetDocument().body()->FirstChild()->firstChild())->wholeText());
 }
 
 }  // namespace blink

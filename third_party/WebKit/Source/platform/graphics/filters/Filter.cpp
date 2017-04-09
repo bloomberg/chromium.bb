@@ -35,67 +35,67 @@
 
 namespace blink {
 
-Filter::Filter(const FloatRect& referenceBox,
-               const FloatRect& filterRegion,
+Filter::Filter(const FloatRect& reference_box,
+               const FloatRect& filter_region,
                float scale,
-               UnitScaling unitScaling)
-    : m_referenceBox(referenceBox),
-      m_filterRegion(filterRegion),
-      m_scale(scale),
-      m_unitScaling(unitScaling),
-      m_sourceGraphic(SourceGraphic::create(this)) {}
+               UnitScaling unit_scaling)
+    : reference_box_(reference_box),
+      filter_region_(filter_region),
+      scale_(scale),
+      unit_scaling_(unit_scaling),
+      source_graphic_(SourceGraphic::Create(this)) {}
 
-Filter* Filter::create(const FloatRect& referenceBox,
-                       const FloatRect& filterRegion,
+Filter* Filter::Create(const FloatRect& reference_box,
+                       const FloatRect& filter_region,
                        float scale,
-                       UnitScaling unitScaling) {
-  return new Filter(referenceBox, filterRegion, scale, unitScaling);
+                       UnitScaling unit_scaling) {
+  return new Filter(reference_box, filter_region, scale, unit_scaling);
 }
 
-Filter* Filter::create(float scale) {
-  return new Filter(FloatRect(), FloatRect(), scale, UserSpace);
+Filter* Filter::Create(float scale) {
+  return new Filter(FloatRect(), FloatRect(), scale, kUserSpace);
 }
 
 DEFINE_TRACE(Filter) {
-  visitor->trace(m_sourceGraphic);
-  visitor->trace(m_lastEffect);
+  visitor->Trace(source_graphic_);
+  visitor->Trace(last_effect_);
 }
 
-FloatRect Filter::mapLocalRectToAbsoluteRect(const FloatRect& rect) const {
+FloatRect Filter::MapLocalRectToAbsoluteRect(const FloatRect& rect) const {
   FloatRect result(rect);
-  result.scale(m_scale);
+  result.Scale(scale_);
   return result;
 }
 
-FloatRect Filter::mapAbsoluteRectToLocalRect(const FloatRect& rect) const {
+FloatRect Filter::MapAbsoluteRectToLocalRect(const FloatRect& rect) const {
   FloatRect result(rect);
-  result.scale(1.0f / m_scale);
+  result.Scale(1.0f / scale_);
   return result;
 }
 
-float Filter::applyHorizontalScale(float value) const {
-  if (m_unitScaling == BoundingBox)
-    value *= referenceBox().width();
-  return m_scale * value;
+float Filter::ApplyHorizontalScale(float value) const {
+  if (unit_scaling_ == kBoundingBox)
+    value *= ReferenceBox().Width();
+  return scale_ * value;
 }
 
-float Filter::applyVerticalScale(float value) const {
-  if (m_unitScaling == BoundingBox)
-    value *= referenceBox().height();
-  return m_scale * value;
+float Filter::ApplyVerticalScale(float value) const {
+  if (unit_scaling_ == kBoundingBox)
+    value *= ReferenceBox().Height();
+  return scale_ * value;
 }
 
-FloatPoint3D Filter::resolve3dPoint(const FloatPoint3D& point) const {
-  if (m_unitScaling != BoundingBox)
+FloatPoint3D Filter::Resolve3dPoint(const FloatPoint3D& point) const {
+  if (unit_scaling_ != kBoundingBox)
     return point;
   return FloatPoint3D(
-      point.x() * referenceBox().width() + referenceBox().x(),
-      point.y() * referenceBox().height() + referenceBox().y(),
-      point.z() * sqrtf(referenceBox().size().diagonalLengthSquared() / 2));
+      point.X() * ReferenceBox().Width() + ReferenceBox().X(),
+      point.Y() * ReferenceBox().Height() + ReferenceBox().Y(),
+      point.Z() * sqrtf(ReferenceBox().size().DiagonalLengthSquared() / 2));
 }
 
-void Filter::setLastEffect(FilterEffect* effect) {
-  m_lastEffect = effect;
+void Filter::SetLastEffect(FilterEffect* effect) {
+  last_effect_ = effect;
 }
 
 }  // namespace blink

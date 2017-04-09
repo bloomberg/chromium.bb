@@ -13,28 +13,28 @@ namespace WTF {
 TEST(RefPtrTest, Basic) {
   RefPtr<StringImpl> string;
   EXPECT_TRUE(!string);
-  string = StringImpl::create("test");
+  string = StringImpl::Create("test");
   EXPECT_TRUE(!!string);
-  string.clear();
+  string.Clear();
   EXPECT_TRUE(!string);
 }
 
 TEST(RefPtrTest, LeakRef) {
-  RefPtr<StringImpl> string = StringImpl::create("test");
+  RefPtr<StringImpl> string = StringImpl::Create("test");
   EXPECT_TRUE(string);
-  EXPECT_TRUE(string->hasOneRef());
-  StringImpl* raw = string.get();
-  StringImpl* leaked = string.leakRef();
+  EXPECT_TRUE(string->HasOneRef());
+  StringImpl* raw = string.Get();
+  StringImpl* leaked = string.LeakRef();
   EXPECT_TRUE(!string);
   EXPECT_TRUE(leaked);
-  EXPECT_TRUE(leaked->hasOneRef());
+  EXPECT_TRUE(leaked->HasOneRef());
   EXPECT_EQ(raw, leaked);
-  leaked->deref();
+  leaked->Deref();
 }
 
 TEST(RefPtrTest, MoveAssignmentOperator) {
-  RefPtr<StringImpl> a = StringImpl::create("a");
-  RefPtr<StringImpl> b = StringImpl::create("b");
+  RefPtr<StringImpl> a = StringImpl::Create("a");
+  RefPtr<StringImpl> b = StringImpl::Create("b");
   b = std::move(a);
   EXPECT_TRUE(!!b);
   EXPECT_TRUE(!a);
@@ -45,7 +45,7 @@ class RefCountedClass : public RefCounted<RefCountedClass> {};
 TEST(RefPtrTest, ConstObject) {
   // This test is only to ensure we force the compilation of a const RefCounted
   // object to ensure the generated code compiles.
-  RefPtr<const RefCountedClass> ptrToConst = adoptRef(new RefCountedClass());
+  RefPtr<const RefCountedClass> ptr_to_const = AdoptRef(new RefCountedClass());
 }
 
 }  // namespace WTF

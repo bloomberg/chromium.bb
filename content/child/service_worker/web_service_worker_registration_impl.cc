@@ -28,7 +28,7 @@ class HandleImpl : public blink::WebServiceWorkerRegistration::Handle {
       : registration_(registration) {}
   ~HandleImpl() override {}
 
-  blink::WebServiceWorkerRegistration* registration() override {
+  blink::WebServiceWorkerRegistration* Registration() override {
     return registration_.get();
   }
 
@@ -65,7 +65,7 @@ WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
 void WebServiceWorkerRegistrationImpl::SetInstalling(
     const scoped_refptr<WebServiceWorkerImpl>& service_worker) {
   if (proxy_)
-    proxy_->setInstalling(WebServiceWorkerImpl::CreateHandle(service_worker));
+    proxy_->SetInstalling(WebServiceWorkerImpl::CreateHandle(service_worker));
   else
     queued_tasks_.push_back(QueuedTask(INSTALLING, service_worker));
 }
@@ -73,7 +73,7 @@ void WebServiceWorkerRegistrationImpl::SetInstalling(
 void WebServiceWorkerRegistrationImpl::SetWaiting(
     const scoped_refptr<WebServiceWorkerImpl>& service_worker) {
   if (proxy_)
-    proxy_->setWaiting(WebServiceWorkerImpl::CreateHandle(service_worker));
+    proxy_->SetWaiting(WebServiceWorkerImpl::CreateHandle(service_worker));
   else
     queued_tasks_.push_back(QueuedTask(WAITING, service_worker));
 }
@@ -81,19 +81,19 @@ void WebServiceWorkerRegistrationImpl::SetWaiting(
 void WebServiceWorkerRegistrationImpl::SetActive(
     const scoped_refptr<WebServiceWorkerImpl>& service_worker) {
   if (proxy_)
-    proxy_->setActive(WebServiceWorkerImpl::CreateHandle(service_worker));
+    proxy_->SetActive(WebServiceWorkerImpl::CreateHandle(service_worker));
   else
     queued_tasks_.push_back(QueuedTask(ACTIVE, service_worker));
 }
 
 void WebServiceWorkerRegistrationImpl::OnUpdateFound() {
   if (proxy_)
-    proxy_->dispatchUpdateFoundEvent();
+    proxy_->DispatchUpdateFoundEvent();
   else
     queued_tasks_.push_back(QueuedTask(UPDATE_FOUND, nullptr));
 }
 
-void WebServiceWorkerRegistrationImpl::setProxy(
+void WebServiceWorkerRegistrationImpl::SetProxy(
     blink::WebServiceWorkerRegistrationProxy* proxy) {
   proxy_ = proxy;
   RunQueuedTasks();
@@ -103,27 +103,27 @@ void WebServiceWorkerRegistrationImpl::RunQueuedTasks() {
   DCHECK(proxy_);
   for (const QueuedTask& task : queued_tasks_) {
     if (task.type == INSTALLING)
-      proxy_->setInstalling(WebServiceWorkerImpl::CreateHandle(task.worker));
+      proxy_->SetInstalling(WebServiceWorkerImpl::CreateHandle(task.worker));
     else if (task.type == WAITING)
-      proxy_->setWaiting(WebServiceWorkerImpl::CreateHandle(task.worker));
+      proxy_->SetWaiting(WebServiceWorkerImpl::CreateHandle(task.worker));
     else if (task.type == ACTIVE)
-      proxy_->setActive(WebServiceWorkerImpl::CreateHandle(task.worker));
+      proxy_->SetActive(WebServiceWorkerImpl::CreateHandle(task.worker));
     else if (task.type == UPDATE_FOUND)
-      proxy_->dispatchUpdateFoundEvent();
+      proxy_->DispatchUpdateFoundEvent();
   }
   queued_tasks_.clear();
 }
 
 blink::WebServiceWorkerRegistrationProxy*
-WebServiceWorkerRegistrationImpl::proxy() {
+WebServiceWorkerRegistrationImpl::Proxy() {
   return proxy_;
 }
 
-blink::WebURL WebServiceWorkerRegistrationImpl::scope() const {
+blink::WebURL WebServiceWorkerRegistrationImpl::Scope() const {
   return handle_ref_->scope();
 }
 
-void WebServiceWorkerRegistrationImpl::update(
+void WebServiceWorkerRegistrationImpl::Update(
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) {
   WebServiceWorkerProviderImpl* provider_impl =
@@ -132,10 +132,10 @@ void WebServiceWorkerRegistrationImpl::update(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->UpdateServiceWorker(provider_impl->provider_id(),
-                                  registrationId(), std::move(callbacks));
+                                  RegistrationId(), std::move(callbacks));
 }
 
-void WebServiceWorkerRegistrationImpl::unregister(
+void WebServiceWorkerRegistrationImpl::Unregister(
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks) {
   WebServiceWorkerProviderImpl* provider_impl =
@@ -144,10 +144,10 @@ void WebServiceWorkerRegistrationImpl::unregister(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->UnregisterServiceWorker(provider_impl->provider_id(),
-                                      registrationId(), std::move(callbacks));
+                                      RegistrationId(), std::move(callbacks));
 }
 
-void WebServiceWorkerRegistrationImpl::enableNavigationPreload(
+void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
     bool enable,
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) {
@@ -157,11 +157,11 @@ void WebServiceWorkerRegistrationImpl::enableNavigationPreload(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->EnableNavigationPreload(provider_impl->provider_id(),
-                                      registrationId(), enable,
+                                      RegistrationId(), enable,
                                       std::move(callbacks));
 }
 
-void WebServiceWorkerRegistrationImpl::getNavigationPreloadState(
+void WebServiceWorkerRegistrationImpl::GetNavigationPreloadState(
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks) {
   WebServiceWorkerProviderImpl* provider_impl =
@@ -170,10 +170,10 @@ void WebServiceWorkerRegistrationImpl::getNavigationPreloadState(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->GetNavigationPreloadState(provider_impl->provider_id(),
-                                        registrationId(), std::move(callbacks));
+                                        RegistrationId(), std::move(callbacks));
 }
 
-void WebServiceWorkerRegistrationImpl::setNavigationPreloadHeader(
+void WebServiceWorkerRegistrationImpl::SetNavigationPreloadHeader(
     const blink::WebString& value,
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
@@ -183,11 +183,11 @@ void WebServiceWorkerRegistrationImpl::setNavigationPreloadHeader(
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
   dispatcher->SetNavigationPreloadHeader(provider_impl->provider_id(),
-                                         registrationId(), value.utf8(),
+                                         RegistrationId(), value.Utf8(),
                                          std::move(callbacks));
 }
 
-int64_t WebServiceWorkerRegistrationImpl::registrationId() const {
+int64_t WebServiceWorkerRegistrationImpl::RegistrationId() const {
   return handle_ref_->registration_id();
 }
 

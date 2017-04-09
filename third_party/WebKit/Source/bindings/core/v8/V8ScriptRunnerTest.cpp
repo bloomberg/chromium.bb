@@ -25,108 +25,110 @@ class V8ScriptRunnerTest : public ::testing::Test {
   void SetUp() override {
     // To trick various layers of caching, increment a counter for each
     // test and use it in code(), fielname() and url().
-    counter++;
+    counter_++;
   }
 
   void TearDown() override {
-    m_resourceRequest = ResourceRequest();
-    m_resource.clear();
+    resource_request_ = ResourceRequest();
+    resource_.Clear();
   }
 
-  WTF::String code() const {
+  WTF::String Code() const {
     // Simple function for testing. Note:
     // - Add counter to trick V8 code cache.
     // - Pad counter to 1000 digits, to trick minimal cacheability threshold.
-    return WTF::String::format("a = function() { 1 + 1; } // %01000d\n",
-                               counter);
+    return WTF::String::Format("a = function() { 1 + 1; } // %01000d\n",
+                               counter_);
   }
-  WTF::String filename() const {
-    return WTF::String::format("whatever%d.js", counter);
+  WTF::String Filename() const {
+    return WTF::String::Format("whatever%d.js", counter_);
   }
-  WTF::String url() const {
-    return WTF::String::format("http://bla.com/bla%d", counter);
+  WTF::String Url() const {
+    return WTF::String::Format("http://bla.com/bla%d", counter_);
   }
-  unsigned tagForParserCache(CachedMetadataHandler* cacheHandler) const {
-    return V8ScriptRunner::tagForParserCache(cacheHandler);
+  unsigned TagForParserCache(CachedMetadataHandler* cache_handler) const {
+    return V8ScriptRunner::TagForParserCache(cache_handler);
   }
-  unsigned tagForCodeCache(CachedMetadataHandler* cacheHandler) const {
-    return V8ScriptRunner::tagForCodeCache(cacheHandler);
+  unsigned TagForCodeCache(CachedMetadataHandler* cache_handler) const {
+    return V8ScriptRunner::TagForCodeCache(cache_handler);
   }
-  void setCacheTimeStamp(CachedMetadataHandler* cacheHandler) {
-    V8ScriptRunner::setCacheTimeStamp(cacheHandler);
+  void SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
+    V8ScriptRunner::SetCacheTimeStamp(cache_handler);
   }
 
-  bool compileScript(v8::Isolate* isolate, V8CacheOptions cacheOptions) {
-    return !V8ScriptRunner::compileScript(
-                v8String(isolate, code()), filename(), String(),
-                WTF::TextPosition(), isolate, m_resource.get(), nullptr,
-                m_resource.get() ? m_resource->cacheHandler() : nullptr,
-                NotSharableCrossOrigin, cacheOptions)
+  bool CompileScript(v8::Isolate* isolate, V8CacheOptions cache_options) {
+    return !V8ScriptRunner::CompileScript(
+                V8String(isolate, Code()), Filename(), String(),
+                WTF::TextPosition(), isolate, resource_.Get(), nullptr,
+                resource_.Get() ? resource_->CacheHandler() : nullptr,
+                kNotSharableCrossOrigin, cache_options)
                 .IsEmpty();
   }
 
-  void setEmptyResource() {
-    m_resourceRequest = ResourceRequest();
-    m_resource = ScriptResource::create(m_resourceRequest, "UTF-8");
+  void SetEmptyResource() {
+    resource_request_ = ResourceRequest();
+    resource_ = ScriptResource::Create(resource_request_, "UTF-8");
   }
 
-  void setResource() {
-    m_resourceRequest = ResourceRequest(url());
-    m_resource = ScriptResource::create(m_resourceRequest, "UTF-8");
+  void SetResource() {
+    resource_request_ = ResourceRequest(Url());
+    resource_ = ScriptResource::Create(resource_request_, "UTF-8");
   }
 
-  CachedMetadataHandler* cacheHandler() { return m_resource->cacheHandler(); }
+  CachedMetadataHandler* CacheHandler() { return resource_->CacheHandler(); }
 
  protected:
-  ResourceRequest m_resourceRequest;
-  Persistent<ScriptResource> m_resource;
+  ResourceRequest resource_request_;
+  Persistent<ScriptResource> resource_;
 
-  static int counter;
+  static int counter_;
 };
 
-int V8ScriptRunnerTest::counter = 0;
+int V8ScriptRunnerTest::counter_ = 0;
 
 TEST_F(V8ScriptRunnerTest, resourcelessShouldPass) {
   V8TestingScope scope;
-  EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsNone));
-  EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsParse));
-  EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsCode));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), kV8CacheOptionsNone));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), kV8CacheOptionsParse));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), kV8CacheOptionsCode));
 }
 
 TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
-  setEmptyResource();
-  EXPECT_FALSE(cacheHandler());
+  SetEmptyResource();
+  EXPECT_FALSE(CacheHandler());
 }
 
 TEST_F(V8ScriptRunnerTest, parseOption) {
   V8TestingScope scope;
-  setResource();
-  EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsParse));
+  SetResource();
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), kV8CacheOptionsParse));
   EXPECT_TRUE(
-      cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
-  EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
+      CacheHandler()->GetCachedMetadata(TagForParserCache(CacheHandler())));
+  EXPECT_FALSE(
+      CacheHandler()->GetCachedMetadata(TagForCodeCache(CacheHandler())));
   // The cached data is associated with the encoding.
-  ResourceRequest request(url());
-  ScriptResource* anotherResource = ScriptResource::create(request, "UTF-16");
-  EXPECT_FALSE(cacheHandler()->cachedMetadata(
-      tagForParserCache(anotherResource->cacheHandler())));
+  ResourceRequest request(Url());
+  ScriptResource* another_resource = ScriptResource::Create(request, "UTF-16");
+  EXPECT_FALSE(CacheHandler()->GetCachedMetadata(
+      TagForParserCache(another_resource->CacheHandler())));
 }
 
 TEST_F(V8ScriptRunnerTest, codeOption) {
   V8TestingScope scope;
-  setResource();
-  setCacheTimeStamp(cacheHandler());
+  SetResource();
+  SetCacheTimeStamp(CacheHandler());
 
-  EXPECT_TRUE(compileScript(scope.isolate(), V8CacheOptionsCode));
+  EXPECT_TRUE(CompileScript(scope.GetIsolate(), kV8CacheOptionsCode));
 
   EXPECT_FALSE(
-      cacheHandler()->cachedMetadata(tagForParserCache(cacheHandler())));
-  EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
+      CacheHandler()->GetCachedMetadata(TagForParserCache(CacheHandler())));
+  EXPECT_TRUE(
+      CacheHandler()->GetCachedMetadata(TagForCodeCache(CacheHandler())));
   // The cached data is associated with the encoding.
-  ResourceRequest request(url());
-  ScriptResource* anotherResource = ScriptResource::create(request, "UTF-16");
-  EXPECT_FALSE(cacheHandler()->cachedMetadata(
-      tagForCodeCache(anotherResource->cacheHandler())));
+  ResourceRequest request(Url());
+  ScriptResource* another_resource = ScriptResource::Create(request, "UTF-16");
+  EXPECT_FALSE(CacheHandler()->GetCachedMetadata(
+      TagForCodeCache(another_resource->CacheHandler())));
 }
 
 }  // namespace

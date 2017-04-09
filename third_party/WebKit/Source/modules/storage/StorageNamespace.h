@@ -43,13 +43,13 @@ class MODULES_EXPORT StorageNamespace {
   explicit StorageNamespace(std::unique_ptr<WebStorageNamespace>);
   ~StorageNamespace();
 
-  static StorageArea* localStorageArea(SecurityOrigin*);
+  static StorageArea* LocalStorageArea(SecurityOrigin*);
 
-  StorageArea* storageArea(SecurityOrigin*);
-  bool isSameNamespace(const WebStorageNamespace& sessionNamespace) const;
+  StorageArea* GetStorageArea(SecurityOrigin*);
+  bool IsSameNamespace(const WebStorageNamespace& session_namespace) const;
 
  private:
-  std::unique_ptr<WebStorageNamespace> m_webStorageNamespace;
+  std::unique_ptr<WebStorageNamespace> web_storage_namespace_;
 };
 
 }  // namespace blink

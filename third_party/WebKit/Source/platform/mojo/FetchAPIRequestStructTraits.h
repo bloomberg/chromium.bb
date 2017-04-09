@@ -74,22 +74,22 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
 
   static blink::WebURLRequest::FetchRequestMode mode(
       const blink::WebServiceWorkerRequest& request) {
-    return request.mode();
+    return request.Mode();
   }
 
   static bool is_main_resource_load(
       const blink::WebServiceWorkerRequest& request) {
-    return request.isMainResourceLoad();
+    return request.IsMainResourceLoad();
   }
 
   static blink::WebURLRequest::RequestContext request_context_type(
       const blink::WebServiceWorkerRequest& request) {
-    return request.requestContext();
+    return request.GetRequestContext();
   }
 
   static blink::WebURLRequest::FrameType frame_type(
       const blink::WebServiceWorkerRequest& request) {
-    return request.frameType();
+    return request.GetFrameType();
   }
 
   static blink::KURL url(const blink::WebServiceWorkerRequest&);
@@ -108,18 +108,18 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
 
   static blink::WebURLRequest::FetchCredentialsMode credentials_mode(
       const blink::WebServiceWorkerRequest& request) {
-    return request.credentialsMode();
+    return request.CredentialsMode();
   }
 
   static blink::WebURLRequest::FetchRedirectMode redirect_mode(
       const blink::WebServiceWorkerRequest& request) {
-    return request.redirectMode();
+    return request.RedirectMode();
   }
 
   static WTF::String client_id(const blink::WebServiceWorkerRequest&);
 
   static bool is_reload(const blink::WebServiceWorkerRequest& request) {
-    return request.isReload();
+    return request.IsReload();
   }
 
   // The |fetch_type| is not used by Blink yet.

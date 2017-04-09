@@ -38,157 +38,158 @@ namespace blink {
 
 // Salt to separate otherwise identical string hashes so a class-selector like
 // .article won't match <article> elements.
-enum { TagNameSalt = 13, IdAttributeSalt = 17, ClassAttributeSalt = 19 };
+enum { kTagNameSalt = 13, kIdAttributeSalt = 17, kClassAttributeSalt = 19 };
 
-static inline void collectElementIdentifierHashes(
+static inline void CollectElementIdentifierHashes(
     const Element& element,
-    Vector<unsigned, 4>& identifierHashes) {
-  identifierHashes.push_back(
-      element.localNameForSelectorMatching().impl()->existingHash() *
-      TagNameSalt);
-  if (element.hasID())
-    identifierHashes.push_back(
-        element.idForStyleResolution().impl()->existingHash() *
-        IdAttributeSalt);
-  if (element.isStyledElement() && element.hasClass()) {
-    const SpaceSplitString& classNames = element.classNames();
-    size_t count = classNames.size();
+    Vector<unsigned, 4>& identifier_hashes) {
+  identifier_hashes.push_back(
+      element.LocalNameForSelectorMatching().Impl()->ExistingHash() *
+      kTagNameSalt);
+  if (element.HasID())
+    identifier_hashes.push_back(
+        element.IdForStyleResolution().Impl()->ExistingHash() *
+        kIdAttributeSalt);
+  if (element.IsStyledElement() && element.HasClass()) {
+    const SpaceSplitString& class_names = element.ClassNames();
+    size_t count = class_names.size();
     for (size_t i = 0; i < count; ++i) {
-      DCHECK(classNames[i].impl());
+      DCHECK(class_names[i].Impl());
       // Speculative fix for https://crbug.com/646026
-      if (classNames[i].impl())
-        identifierHashes.push_back(classNames[i].impl()->existingHash() *
-                                   ClassAttributeSalt);
+      if (class_names[i].Impl())
+        identifier_hashes.push_back(class_names[i].Impl()->ExistingHash() *
+                                    kClassAttributeSalt);
     }
   }
 }
 
-void SelectorFilter::pushParentStackFrame(Element& parent) {
-  DCHECK(m_ancestorIdentifierFilter);
-  DCHECK(m_parentStack.isEmpty() ||
-         m_parentStack.back().element == parent.parentOrShadowHostElement());
-  DCHECK(!m_parentStack.isEmpty() || !parent.parentOrShadowHostElement());
-  m_parentStack.push_back(ParentStackFrame(parent));
-  ParentStackFrame& parentFrame = m_parentStack.back();
+void SelectorFilter::PushParentStackFrame(Element& parent) {
+  DCHECK(ancestor_identifier_filter_);
+  DCHECK(parent_stack_.IsEmpty() ||
+         parent_stack_.back().element == parent.ParentOrShadowHostElement());
+  DCHECK(!parent_stack_.IsEmpty() || !parent.ParentOrShadowHostElement());
+  parent_stack_.push_back(ParentStackFrame(parent));
+  ParentStackFrame& parent_frame = parent_stack_.back();
   // Mix tags, class names and ids into some sort of weird bouillabaisse.
   // The filter is used for fast rejection of child and descendant selectors.
-  collectElementIdentifierHashes(parent, parentFrame.identifierHashes);
-  size_t count = parentFrame.identifierHashes.size();
+  CollectElementIdentifierHashes(parent, parent_frame.identifier_hashes);
+  size_t count = parent_frame.identifier_hashes.size();
   for (size_t i = 0; i < count; ++i)
-    m_ancestorIdentifierFilter->add(parentFrame.identifierHashes[i]);
+    ancestor_identifier_filter_->Add(parent_frame.identifier_hashes[i]);
 }
 
-void SelectorFilter::popParentStackFrame() {
-  DCHECK(!m_parentStack.isEmpty());
-  DCHECK(m_ancestorIdentifierFilter);
-  const ParentStackFrame& parentFrame = m_parentStack.back();
-  size_t count = parentFrame.identifierHashes.size();
+void SelectorFilter::PopParentStackFrame() {
+  DCHECK(!parent_stack_.IsEmpty());
+  DCHECK(ancestor_identifier_filter_);
+  const ParentStackFrame& parent_frame = parent_stack_.back();
+  size_t count = parent_frame.identifier_hashes.size();
   for (size_t i = 0; i < count; ++i)
-    m_ancestorIdentifierFilter->remove(parentFrame.identifierHashes[i]);
-  m_parentStack.pop_back();
-  if (m_parentStack.isEmpty()) {
-    ASSERT(m_ancestorIdentifierFilter->likelyEmpty());
-    m_ancestorIdentifierFilter.reset();
+    ancestor_identifier_filter_->Remove(parent_frame.identifier_hashes[i]);
+  parent_stack_.pop_back();
+  if (parent_stack_.IsEmpty()) {
+    ASSERT(ancestor_identifier_filter_->LikelyEmpty());
+    ancestor_identifier_filter_.reset();
   }
 }
 
-void SelectorFilter::pushParent(Element& parent) {
-  DCHECK(parent.document().inStyleRecalc());
-  DCHECK(parent.inActiveDocument());
-  if (m_parentStack.isEmpty()) {
-    DCHECK_EQ(parent, parent.document().documentElement());
-    DCHECK(!m_ancestorIdentifierFilter);
-    m_ancestorIdentifierFilter = WTF::wrapUnique(new IdentifierFilter);
-    pushParentStackFrame(parent);
+void SelectorFilter::PushParent(Element& parent) {
+  DCHECK(parent.GetDocument().InStyleRecalc());
+  DCHECK(parent.InActiveDocument());
+  if (parent_stack_.IsEmpty()) {
+    DCHECK_EQ(parent, parent.GetDocument().documentElement());
+    DCHECK(!ancestor_identifier_filter_);
+    ancestor_identifier_filter_ = WTF::WrapUnique(new IdentifierFilter);
+    PushParentStackFrame(parent);
     return;
   }
-  DCHECK(m_ancestorIdentifierFilter);
+  DCHECK(ancestor_identifier_filter_);
   // We may get invoked for some random elements in some wacky cases during
   // style resolve. Pause maintaining the stack in this case.
-  if (m_parentStack.back().element != parent.parentOrShadowHostElement())
+  if (parent_stack_.back().element != parent.ParentOrShadowHostElement())
     return;
-  pushParentStackFrame(parent);
+  PushParentStackFrame(parent);
 }
 
-void SelectorFilter::popParent(Element& parent) {
-  DCHECK(parent.document().inStyleRecalc());
-  DCHECK(parent.inActiveDocument());
+void SelectorFilter::PopParent(Element& parent) {
+  DCHECK(parent.GetDocument().InStyleRecalc());
+  DCHECK(parent.InActiveDocument());
   // Note that we may get invoked for some random elements in some wacky cases
   // during style resolve. Pause maintaining the stack in this case.
-  if (!parentStackIsConsistent(&parent))
+  if (!ParentStackIsConsistent(&parent))
     return;
-  popParentStackFrame();
+  PopParentStackFrame();
 }
 
-static inline void collectDescendantSelectorIdentifierHashes(
+static inline void CollectDescendantSelectorIdentifierHashes(
     const CSSSelector& selector,
     unsigned*& hash) {
-  switch (selector.match()) {
-    case CSSSelector::Id:
-      if (!selector.value().isEmpty())
-        (*hash++) = selector.value().impl()->existingHash() * IdAttributeSalt;
+  switch (selector.Match()) {
+    case CSSSelector::kId:
+      if (!selector.Value().IsEmpty())
+        (*hash++) = selector.Value().Impl()->ExistingHash() * kIdAttributeSalt;
       break;
-    case CSSSelector::Class:
-      if (!selector.value().isEmpty())
+    case CSSSelector::kClass:
+      if (!selector.Value().IsEmpty())
         (*hash++) =
-            selector.value().impl()->existingHash() * ClassAttributeSalt;
+            selector.Value().Impl()->ExistingHash() * kClassAttributeSalt;
       break;
-    case CSSSelector::Tag:
-      if (selector.tagQName().localName() != starAtom)
-        (*hash++) = selector.tagQName().localName().impl()->existingHash() *
-                    TagNameSalt;
+    case CSSSelector::kTag:
+      if (selector.TagQName().LocalName() != g_star_atom)
+        (*hash++) = selector.TagQName().LocalName().Impl()->ExistingHash() *
+                    kTagNameSalt;
       break;
     default:
       break;
   }
 }
 
-void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector,
-                                             unsigned* identifierHashes,
-                                             unsigned maximumIdentifierCount) {
-  unsigned* hash = identifierHashes;
-  unsigned* end = identifierHashes + maximumIdentifierCount;
-  CSSSelector::RelationType relation = selector.relation();
-  if (selector.relationIsAffectedByPseudoContent()) {
+void SelectorFilter::CollectIdentifierHashes(
+    const CSSSelector& selector,
+    unsigned* identifier_hashes,
+    unsigned maximum_identifier_count) {
+  unsigned* hash = identifier_hashes;
+  unsigned* end = identifier_hashes + maximum_identifier_count;
+  CSSSelector::RelationType relation = selector.Relation();
+  if (selector.RelationIsAffectedByPseudoContent()) {
     // Disable fastRejectSelector.
-    *identifierHashes = 0;
+    *identifier_hashes = 0;
     return;
   }
 
   // Skip the topmost selector. It is handled quickly by the rule hashes.
-  bool skipOverSubselectors = true;
-  for (const CSSSelector* current = selector.tagHistory(); current;
-       current = current->tagHistory()) {
+  bool skip_over_subselectors = true;
+  for (const CSSSelector* current = selector.TagHistory(); current;
+       current = current->TagHistory()) {
     // Only collect identifiers that match ancestors.
     switch (relation) {
-      case CSSSelector::SubSelector:
-        if (!skipOverSubselectors)
-          collectDescendantSelectorIdentifierHashes(*current, hash);
+      case CSSSelector::kSubSelector:
+        if (!skip_over_subselectors)
+          CollectDescendantSelectorIdentifierHashes(*current, hash);
         break;
-      case CSSSelector::DirectAdjacent:
-      case CSSSelector::IndirectAdjacent:
-        skipOverSubselectors = true;
+      case CSSSelector::kDirectAdjacent:
+      case CSSSelector::kIndirectAdjacent:
+        skip_over_subselectors = true;
         break;
-      case CSSSelector::ShadowSlot:
+      case CSSSelector::kShadowSlot:
         // Disable fastRejectSelector.
-        *identifierHashes = 0;
+        *identifier_hashes = 0;
         return;
-      case CSSSelector::Descendant:
-      case CSSSelector::Child:
+      case CSSSelector::kDescendant:
+      case CSSSelector::kChild:
       // Fall through.
-      case CSSSelector::ShadowPseudo:
-      case CSSSelector::ShadowDeep:
-      case CSSSelector::ShadowPiercingDescendant:
-        skipOverSubselectors = false;
-        collectDescendantSelectorIdentifierHashes(*current, hash);
+      case CSSSelector::kShadowPseudo:
+      case CSSSelector::kShadowDeep:
+      case CSSSelector::kShadowPiercingDescendant:
+        skip_over_subselectors = false;
+        CollectDescendantSelectorIdentifierHashes(*current, hash);
         break;
     }
     if (hash == end)
       return;
-    relation = current->relation();
-    if (current->relationIsAffectedByPseudoContent()) {
+    relation = current->Relation();
+    if (current->RelationIsAffectedByPseudoContent()) {
       // Disable fastRejectSelector.
-      *identifierHashes = 0;
+      *identifier_hashes = 0;
       return;
     }
   }
@@ -196,11 +197,11 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector,
 }
 
 DEFINE_TRACE(SelectorFilter::ParentStackFrame) {
-  visitor->trace(element);
+  visitor->Trace(element);
 }
 
 DEFINE_TRACE(SelectorFilter) {
-  visitor->trace(m_parentStack);
+  visitor->Trace(parent_stack_);
 }
 
 }  // namespace blink

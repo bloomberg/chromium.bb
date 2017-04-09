@@ -8,15 +8,15 @@
 namespace blink {
 
 enum WebScreenOrientationLockType {
-  WebScreenOrientationLockDefault = 0,  // Equivalent to unlock.
-  WebScreenOrientationLockPortraitPrimary,
-  WebScreenOrientationLockPortraitSecondary,
-  WebScreenOrientationLockLandscapePrimary,
-  WebScreenOrientationLockLandscapeSecondary,
-  WebScreenOrientationLockAny,
-  WebScreenOrientationLockLandscape,
-  WebScreenOrientationLockPortrait,
-  WebScreenOrientationLockNatural,
+  kWebScreenOrientationLockDefault = 0,  // Equivalent to unlock.
+  kWebScreenOrientationLockPortraitPrimary,
+  kWebScreenOrientationLockPortraitSecondary,
+  kWebScreenOrientationLockLandscapePrimary,
+  kWebScreenOrientationLockLandscapeSecondary,
+  kWebScreenOrientationLockAny,
+  kWebScreenOrientationLockLandscape,
+  kWebScreenOrientationLockPortrait,
+  kWebScreenOrientationLockNatural,
 };
 
 }  // namespace blink

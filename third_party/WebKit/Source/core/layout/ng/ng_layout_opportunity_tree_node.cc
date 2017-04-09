@@ -21,10 +21,10 @@ NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
       combined_exclusion(nullptr) {}
 
 String NGLayoutOpportunityTreeNode::ToString() const {
-  return String::format("Opportunity: '%s' Exclusion: '%s'",
-                        opportunity.ToString().ascii().data(),
+  return String::Format("Opportunity: '%s' Exclusion: '%s'",
+                        opportunity.ToString().Ascii().Data(),
                         combined_exclusion
-                            ? combined_exclusion->ToString().ascii().data()
+                            ? combined_exclusion->ToString().Ascii().Data()
                             : "null");
 }
 

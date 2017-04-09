@@ -9,44 +9,44 @@
 
 namespace blink {
 
-InspectedFrames::InspectedFrames(LocalFrame* root) : m_root(root) {}
+InspectedFrames::InspectedFrames(LocalFrame* root) : root_(root) {}
 
 InspectedFrames::Iterator InspectedFrames::begin() {
-  return Iterator(m_root, m_root);
+  return Iterator(root_, root_);
 }
 
 InspectedFrames::Iterator InspectedFrames::end() {
-  return Iterator(m_root, nullptr);
+  return Iterator(root_, nullptr);
 }
 
-bool InspectedFrames::contains(LocalFrame* frame) const {
-  return frame->instrumentingAgents() == m_root->instrumentingAgents();
+bool InspectedFrames::Contains(LocalFrame* frame) const {
+  return frame->InstrumentingAgents() == root_->InstrumentingAgents();
 }
 
-LocalFrame* InspectedFrames::frameWithSecurityOrigin(
-    const String& originRawString) {
+LocalFrame* InspectedFrames::FrameWithSecurityOrigin(
+    const String& origin_raw_string) {
   for (LocalFrame* frame : *this) {
-    if (frame->document()->getSecurityOrigin()->toRawString() ==
-        originRawString)
+    if (frame->GetDocument()->GetSecurityOrigin()->ToRawString() ==
+        origin_raw_string)
       return frame;
   }
   return nullptr;
 }
 
 InspectedFrames::Iterator::Iterator(LocalFrame* root, LocalFrame* current)
-    : m_root(root), m_current(current) {}
+    : root_(root), current_(current) {}
 
 InspectedFrames::Iterator& InspectedFrames::Iterator::operator++() {
-  if (!m_current)
+  if (!current_)
     return *this;
-  Frame* frame = m_current->tree().traverseNext(m_root);
-  m_current = nullptr;
-  for (; frame; frame = frame->tree().traverseNext(m_root)) {
-    if (!frame->isLocalFrame())
+  Frame* frame = current_->Tree().TraverseNext(root_);
+  current_ = nullptr;
+  for (; frame; frame = frame->Tree().TraverseNext(root_)) {
+    if (!frame->IsLocalFrame())
       continue;
-    LocalFrame* local = toLocalFrame(frame);
-    if (local->instrumentingAgents() == m_root->instrumentingAgents()) {
-      m_current = local;
+    LocalFrame* local = ToLocalFrame(frame);
+    if (local->InstrumentingAgents() == root_->InstrumentingAgents()) {
+      current_ = local;
       break;
     }
   }
@@ -54,13 +54,13 @@ InspectedFrames::Iterator& InspectedFrames::Iterator::operator++() {
 }
 
 InspectedFrames::Iterator InspectedFrames::Iterator::operator++(int) {
-  LocalFrame* old = m_current;
+  LocalFrame* old = current_;
   ++*this;
-  return Iterator(m_root, old);
+  return Iterator(root_, old);
 }
 
 bool InspectedFrames::Iterator::operator==(const Iterator& other) {
-  return m_current == other.m_current && m_root == other.m_root;
+  return current_ == other.current_ && root_ == other.root_;
 }
 
 bool InspectedFrames::Iterator::operator!=(const Iterator& other) {
@@ -68,7 +68,7 @@ bool InspectedFrames::Iterator::operator!=(const Iterator& other) {
 }
 
 DEFINE_TRACE(InspectedFrames) {
-  visitor->trace(m_root);
+  visitor->Trace(root_);
 }
 
 }  // namespace blink

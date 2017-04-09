@@ -46,23 +46,23 @@ class CORE_EXPORT TextResourceDecoderBuilder {
   DISALLOW_NEW();
 
  public:
-  TextResourceDecoderBuilder(const AtomicString& mimeType,
+  TextResourceDecoderBuilder(const AtomicString& mime_type,
                              const AtomicString& encoding);
   ~TextResourceDecoderBuilder();
 
-  std::unique_ptr<TextResourceDecoder> buildFor(Document*);
+  std::unique_ptr<TextResourceDecoder> BuildFor(Document*);
 
-  const AtomicString& mimeType() const { return m_mimeType; }
-  const AtomicString& encoding() const { return m_encoding; }
+  const AtomicString& MimeType() const { return mime_type_; }
+  const AtomicString& Encoding() const { return encoding_; }
 
-  void clear();
+  void Clear();
 
  private:
-  std::unique_ptr<TextResourceDecoder> createDecoderInstance(Document*);
-  void setupEncoding(TextResourceDecoder*, Document*);
+  std::unique_ptr<TextResourceDecoder> CreateDecoderInstance(Document*);
+  void SetupEncoding(TextResourceDecoder*, Document*);
 
-  AtomicString m_mimeType;
-  AtomicString m_encoding;
+  AtomicString mime_type_;
+  AtomicString encoding_;
 };
 
 }  // namespace blink

@@ -14,60 +14,60 @@ SetCharacterDataCommand::SetCharacterDataCommand(Text* node,
                                                  unsigned offset,
                                                  unsigned count,
                                                  const String& text)
-    : SimpleEditCommand(node->document()),
-      m_node(node),
-      m_offset(offset),
-      m_count(count),
-      m_newText(text) {
-  DCHECK(m_node);
-  DCHECK_LE(m_offset, m_node->length());
-  DCHECK_LE(m_offset + m_count, m_node->length());
+    : SimpleEditCommand(node->GetDocument()),
+      node_(node),
+      offset_(offset),
+      count_(count),
+      new_text_(text) {
+  DCHECK(node_);
+  DCHECK_LE(offset_, node_->length());
+  DCHECK_LE(offset_ + count_, node_->length());
   // Callers shouldn't be trying to perform no-op replacements
   DCHECK(!(count == 0 && text.length() == 0));
 }
 
-void SetCharacterDataCommand::doApply(EditingState*) {
+void SetCharacterDataCommand::DoApply(EditingState*) {
   // TODO(editing-dev): The use of updateStyleAndLayoutTree()
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  document().updateStyleAndLayoutTree();
-  if (!hasEditableStyle(*m_node))
+  GetDocument().UpdateStyleAndLayoutTree();
+  if (!HasEditableStyle(*node_))
     return;
 
-  DummyExceptionStateForTesting exceptionState;
-  m_previousTextForUndo =
-      m_node->substringData(m_offset, m_count, exceptionState);
-  if (exceptionState.hadException())
+  DummyExceptionStateForTesting exception_state;
+  previous_text_for_undo_ =
+      node_->substringData(offset_, count_, exception_state);
+  if (exception_state.HadException())
     return;
 
-  const bool passwordEchoEnabled =
-      document().settings() && document().settings()->getPasswordEchoEnabled();
+  const bool password_echo_enabled =
+      GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetPasswordEchoEnabled();
 
-  if (passwordEchoEnabled) {
-    LayoutText* layoutText = m_node->layoutObject();
-    if (layoutText && layoutText->isSecure()) {
-      layoutText->momentarilyRevealLastTypedCharacter(m_offset +
-                                                      m_newText.length() - 1);
+  if (password_echo_enabled) {
+    LayoutText* layout_text = node_->GetLayoutObject();
+    if (layout_text && layout_text->IsSecure()) {
+      layout_text->MomentarilyRevealLastTypedCharacter(offset_ +
+                                                       new_text_.length() - 1);
     }
   }
 
-  m_node->replaceData(m_offset, m_count, m_newText,
-                      IGNORE_EXCEPTION_FOR_TESTING);
+  node_->replaceData(offset_, count_, new_text_, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void SetCharacterDataCommand::doUnapply() {
+void SetCharacterDataCommand::DoUnapply() {
   // TODO(editing-dev): The use of updateStyleAndLayoutTree()
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  document().updateStyleAndLayoutTree();
-  if (!hasEditableStyle(*m_node))
+  GetDocument().UpdateStyleAndLayoutTree();
+  if (!HasEditableStyle(*node_))
     return;
 
-  m_node->replaceData(m_offset, m_newText.length(), m_previousTextForUndo,
-                      IGNORE_EXCEPTION_FOR_TESTING);
+  node_->replaceData(offset_, new_text_.length(), previous_text_for_undo_,
+                     IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(SetCharacterDataCommand) {
-  visitor->trace(m_node);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(node_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

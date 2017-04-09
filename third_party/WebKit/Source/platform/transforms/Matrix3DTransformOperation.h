@@ -33,42 +33,40 @@ namespace blink {
 class PLATFORM_EXPORT Matrix3DTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<Matrix3DTransformOperation> create(
+  static PassRefPtr<Matrix3DTransformOperation> Create(
       const TransformationMatrix& matrix) {
-    return adoptRef(new Matrix3DTransformOperation(matrix));
+    return AdoptRef(new Matrix3DTransformOperation(matrix));
   }
 
-  TransformationMatrix matrix() const { return m_matrix; }
+  TransformationMatrix Matrix() const { return matrix_; }
 
-  virtual bool canBlendWith(const TransformOperation& other) const {
+  virtual bool CanBlendWith(const TransformOperation& other) const {
     return false;
   }
 
  private:
-  OperationType type() const override { return Matrix3D; }
+  OperationType GetType() const override { return kMatrix3D; }
 
   bool operator==(const TransformOperation& o) const override {
-    if (!isSameType(o))
+    if (!IsSameType(o))
       return false;
     const Matrix3DTransformOperation* m =
         static_cast<const Matrix3DTransformOperation*>(&o);
-    return m_matrix == m->m_matrix;
+    return matrix_ == m->matrix_;
   }
 
-  void apply(TransformationMatrix& transform, const FloatSize&) const override {
-    transform.multiply(TransformationMatrix(m_matrix));
+  void Apply(TransformationMatrix& transform, const FloatSize&) const override {
+    transform.Multiply(TransformationMatrix(matrix_));
   }
 
-  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
                                        double progress,
-                                       bool blendToIdentity = false) override;
-  PassRefPtr<TransformOperation> zoom(double factor) final;
+                                       bool blend_to_identity = false) override;
+  PassRefPtr<TransformOperation> Zoom(double factor) final;
 
-  Matrix3DTransformOperation(const TransformationMatrix& mat) {
-    m_matrix = mat;
-  }
+  Matrix3DTransformOperation(const TransformationMatrix& mat) { matrix_ = mat; }
 
-  TransformationMatrix m_matrix;
+  TransformationMatrix matrix_;
 };
 
 }  // namespace blink

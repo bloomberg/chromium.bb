@@ -14,19 +14,19 @@
 
 namespace blink {
 
-static void runWatchCallback(MojoWatchCallback* callback,
+static void RunWatchCallback(MojoWatchCallback* callback,
                              ScriptWrappable* wrappable,
                              MojoResult result) {
   callback->call(wrappable, result);
 }
 
 // static
-MojoWatcher* MojoWatcher::create(mojo::Handle handle,
-                                 const MojoHandleSignals& signalsDict,
+MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
+                                 const MojoHandleSignals& signals_dict,
                                  MojoWatchCallback* callback,
                                  ExecutionContext* context) {
   MojoWatcher* watcher = new MojoWatcher(context, callback);
-  MojoResult result = watcher->watch(handle, signalsDict);
+  MojoResult result = watcher->Watch(handle, signals_dict);
   // TODO(alokp): Consider raising an exception.
   // Current clients expect to recieve the initial error returned by MojoWatch
   // via watch callback.
@@ -36,105 +36,105 @@ MojoWatcher* MojoWatcher::create(mojo::Handle handle,
   // handle is invalid and garbage collection happens before the callback
   // is scheduled.
   if (result != MOJO_RESULT_OK) {
-    watcher->m_taskRunner->postTask(
-        BLINK_FROM_HERE, WTF::bind(&runWatchCallback, wrapPersistent(callback),
-                                   wrapPersistent(watcher), result));
+    watcher->task_runner_->PostTask(
+        BLINK_FROM_HERE, WTF::Bind(&RunWatchCallback, WrapPersistent(callback),
+                                   WrapPersistent(watcher), result));
   }
   return watcher;
 }
 
 MojoWatcher::~MojoWatcher() {
-  DCHECK(!m_handle.is_valid());
+  DCHECK(!handle_.is_valid());
 }
 
 MojoResult MojoWatcher::cancel() {
-  if (!m_watcherHandle.is_valid())
+  if (!watcher_handle_.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  m_watcherHandle.reset();
+  watcher_handle_.reset();
   return MOJO_RESULT_OK;
 }
 
 DEFINE_TRACE(MojoWatcher) {
-  visitor->trace(m_callback);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(callback_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(MojoWatcher) {
-  visitor->traceWrappers(m_callback);
+  visitor->TraceWrappers(callback_);
 }
 
-bool MojoWatcher::hasPendingActivity() const {
-  return m_handle.is_valid();
+bool MojoWatcher::HasPendingActivity() const {
+  return handle_.is_valid();
 }
 
-void MojoWatcher::contextDestroyed(ExecutionContext*) {
+void MojoWatcher::ContextDestroyed(ExecutionContext*) {
   cancel();
 }
 
 MojoWatcher::MojoWatcher(ExecutionContext* context, MojoWatchCallback* callback)
     : ContextLifecycleObserver(context),
-      m_taskRunner(TaskRunnerHelper::get(TaskType::UnspecedTimer, context)),
-      m_callback(this, callback) {}
+      task_runner_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context)),
+      callback_(this, callback) {}
 
-MojoResult MojoWatcher::watch(mojo::Handle handle,
-                              const MojoHandleSignals& signalsDict) {
+MojoResult MojoWatcher::Watch(mojo::Handle handle,
+                              const MojoHandleSignals& signals_dict) {
   ::MojoHandleSignals signals = MOJO_HANDLE_SIGNAL_NONE;
-  if (signalsDict.readable())
+  if (signals_dict.readable())
     signals |= MOJO_HANDLE_SIGNAL_READABLE;
-  if (signalsDict.writable())
+  if (signals_dict.writable())
     signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
-  if (signalsDict.peerClosed())
+  if (signals_dict.peerClosed())
     signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
   MojoResult result =
-      mojo::CreateWatcher(&MojoWatcher::onHandleReady, &m_watcherHandle);
+      mojo::CreateWatcher(&MojoWatcher::OnHandleReady, &watcher_handle_);
   DCHECK_EQ(MOJO_RESULT_OK, result);
 
-  result = MojoWatch(m_watcherHandle.get().value(), handle.value(), signals,
+  result = MojoWatch(watcher_handle_.get().value(), handle.value(), signals,
                      reinterpret_cast<uintptr_t>(this));
   if (result != MOJO_RESULT_OK)
     return result;
 
-  m_handle = handle;
+  handle_ = handle;
 
-  MojoResult readyResult;
-  result = arm(&readyResult);
+  MojoResult ready_result;
+  result = Arm(&ready_result);
   if (result == MOJO_RESULT_OK)
     return result;
 
   // We couldn't arm the watcher because the handle is already ready to
   // trigger a success notification. Post a notification manually.
   DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-  m_taskRunner->postTask(BLINK_FROM_HERE,
-                         WTF::bind(&MojoWatcher::runReadyCallback,
-                                   wrapPersistent(this), readyResult));
+  task_runner_->PostTask(BLINK_FROM_HERE,
+                         WTF::Bind(&MojoWatcher::RunReadyCallback,
+                                   WrapPersistent(this), ready_result));
   return MOJO_RESULT_OK;
 }
 
-MojoResult MojoWatcher::arm(MojoResult* readyResult) {
+MojoResult MojoWatcher::Arm(MojoResult* ready_result) {
   // Nothing to do if the watcher is inactive.
-  if (!m_handle.is_valid())
+  if (!handle_.is_valid())
     return MOJO_RESULT_OK;
 
-  uint32_t numReadyContexts = 1;
-  uintptr_t readyContext;
-  MojoResult localReadyResult;
-  MojoHandleSignalsState readySignals;
+  uint32_t num_ready_contexts = 1;
+  uintptr_t ready_context;
+  MojoResult local_ready_result;
+  MojoHandleSignalsState ready_signals;
   MojoResult result =
-      MojoArmWatcher(m_watcherHandle.get().value(), &numReadyContexts,
-                     &readyContext, &localReadyResult, &readySignals);
+      MojoArmWatcher(watcher_handle_.get().value(), &num_ready_contexts,
+                     &ready_context, &local_ready_result, &ready_signals);
   if (result == MOJO_RESULT_OK)
     return MOJO_RESULT_OK;
 
   DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-  DCHECK_EQ(1u, numReadyContexts);
-  DCHECK_EQ(reinterpret_cast<uintptr_t>(this), readyContext);
-  *readyResult = localReadyResult;
+  DCHECK_EQ(1u, num_ready_contexts);
+  DCHECK_EQ(reinterpret_cast<uintptr_t>(this), ready_context);
+  *ready_result = local_ready_result;
   return result;
 }
 
-void MojoWatcher::onHandleReady(uintptr_t context,
+void MojoWatcher::OnHandleReady(uintptr_t context,
                                 MojoResult result,
                                 MojoHandleSignalsState,
                                 MojoWatcherNotificationFlags) {
@@ -143,48 +143,48 @@ void MojoWatcher::onHandleReady(uintptr_t context,
   // dispatch a |MOJO_RESULT_CANCELLED| notification. That is always the last
   // notification received by this callback.
   MojoWatcher* watcher = reinterpret_cast<MojoWatcher*>(context);
-  watcher->m_taskRunner->postTask(
+  watcher->task_runner_->PostTask(
       BLINK_FROM_HERE,
-      crossThreadBind(&MojoWatcher::runReadyCallback,
-                      wrapCrossThreadWeakPersistent(watcher), result));
+      CrossThreadBind(&MojoWatcher::RunReadyCallback,
+                      WrapCrossThreadWeakPersistent(watcher), result));
 }
 
-void MojoWatcher::runReadyCallback(MojoResult result) {
+void MojoWatcher::RunReadyCallback(MojoResult result) {
   if (result == MOJO_RESULT_CANCELLED) {
     // Last notification.
-    m_handle = mojo::Handle();
+    handle_ = mojo::Handle();
 
     // Only dispatch to the callback if this cancellation was implicit due to
     // |m_handle| closure. If it was explicit, |m_watcherHandle| has already
     // been reset.
-    if (m_watcherHandle.is_valid()) {
-      m_watcherHandle.reset();
-      runWatchCallback(m_callback, this, result);
+    if (watcher_handle_.is_valid()) {
+      watcher_handle_.reset();
+      RunWatchCallback(callback_, this, result);
     }
     return;
   }
 
   // Ignore callbacks if not watching.
-  if (!m_watcherHandle.is_valid())
+  if (!watcher_handle_.is_valid())
     return;
 
-  runWatchCallback(m_callback, this, result);
+  RunWatchCallback(callback_, this, result);
 
   // Rearm the watcher so another notification can fire.
   //
   // TODO(rockot): MojoWatcher should expose some better approximation of the
   // new watcher API, including explicit add and removal of handles from the
   // watcher, as well as explicit arming.
-  MojoResult readyResult;
-  MojoResult armResult = arm(&readyResult);
-  if (armResult == MOJO_RESULT_OK)
+  MojoResult ready_result;
+  MojoResult arm_result = Arm(&ready_result);
+  if (arm_result == MOJO_RESULT_OK)
     return;
 
-  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, armResult);
+  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, arm_result);
 
-  m_taskRunner->postTask(BLINK_FROM_HERE,
-                         WTF::bind(&MojoWatcher::runReadyCallback,
-                                   wrapWeakPersistent(this), readyResult));
+  task_runner_->PostTask(BLINK_FROM_HERE,
+                         WTF::Bind(&MojoWatcher::RunReadyCallback,
+                                   WrapWeakPersistent(this), ready_result));
 }
 
 }  // namespace blink

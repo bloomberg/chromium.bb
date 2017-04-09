@@ -32,38 +32,38 @@ namespace blink {
 
 class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
  public:
-  enum EIndentType { Indent, Outdent };
-  static IndentOutdentCommand* create(Document& document, EIndentType type) {
+  enum EIndentType { kIndent, kOutdent };
+  static IndentOutdentCommand* Create(Document& document, EIndentType type) {
     return new IndentOutdentCommand(document, type);
   }
 
-  bool preservesTypingStyle() const override { return true; }
+  bool PreservesTypingStyle() const override { return true; }
 
  private:
   IndentOutdentCommand(Document&, EIndentType);
 
-  InputEvent::InputType inputType() const override;
+  InputEvent::InputType GetInputType() const override;
 
-  void outdentRegion(const VisiblePosition&,
+  void OutdentRegion(const VisiblePosition&,
                      const VisiblePosition&,
                      EditingState*);
-  void outdentParagraph(EditingState*);
-  bool tryIndentingAsListItem(const Position&, const Position&, EditingState*);
-  void indentIntoBlockquote(const Position&,
+  void OutdentParagraph(EditingState*);
+  bool TryIndentingAsListItem(const Position&, const Position&, EditingState*);
+  void IndentIntoBlockquote(const Position&,
                             const Position&,
                             HTMLElement*&,
                             EditingState*);
 
-  void formatSelection(const VisiblePosition& startOfSelection,
-                       const VisiblePosition& endOfSelection,
+  void FormatSelection(const VisiblePosition& start_of_selection,
+                       const VisiblePosition& end_of_selection,
                        EditingState*) override;
-  void formatRange(const Position& start,
+  void FormatRange(const Position& start,
                    const Position& end,
-                   const Position& endOfSelection,
-                   HTMLElement*& blockquoteForNextIndent,
+                   const Position& end_of_selection,
+                   HTMLElement*& blockquote_for_next_indent,
                    EditingState*) override;
 
-  EIndentType m_typeOfAction;
+  EIndentType type_of_action_;
 };
 
 }  // namespace blink

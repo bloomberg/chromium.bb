@@ -278,11 +278,11 @@ Point ResolutionSet::SelectClosestPointToIdeal(
 
   DCHECK(!IsEmpty());
   int num_ideals = 0;
-  if (constraint_set.height.hasIdeal())
+  if (constraint_set.height.HasIdeal())
     ++num_ideals;
-  if (constraint_set.width.hasIdeal())
+  if (constraint_set.width.HasIdeal())
     ++num_ideals;
-  if (constraint_set.aspectRatio.hasIdeal())
+  if (constraint_set.aspect_ratio.HasIdeal())
     ++num_ideals;
 
   switch (num_ideals) {
@@ -300,8 +300,8 @@ Point ResolutionSet::SelectClosestPointToIdeal(
       // select that vertex. If a polygon side, select the point on that side
       // that is closest to preserving the default aspect ratio or a default
       // dimension.
-      if (constraint_set.height.hasIdeal()) {
-        int ideal_height = ToValidDimension(constraint_set.height.ideal());
+      if (constraint_set.height.HasIdeal()) {
+        int ideal_height = ToValidDimension(constraint_set.height.Ideal());
         ResolutionSet ideal_line = ResolutionSet::FromExactHeight(ideal_height);
         ResolutionSet intersection = Intersection(ideal_line);
         if (!intersection.IsEmpty()) {
@@ -313,8 +313,8 @@ Point ResolutionSet::SelectClosestPointToIdeal(
         Point ideal_point(closest_vertices[0].height(),
                           closest_vertices[0].height() * default_aspect_ratio);
         return GetClosestPointToVertexOrSide(closest_vertices, ideal_point);
-      } else if (constraint_set.width.hasIdeal()) {
-        int ideal_width = ToValidDimension(constraint_set.width.ideal());
+      } else if (constraint_set.width.HasIdeal()) {
+        int ideal_width = ToValidDimension(constraint_set.width.Ideal());
         ResolutionSet ideal_line = ResolutionSet::FromExactWidth(ideal_width);
         ResolutionSet intersection = Intersection(ideal_line);
         if (!intersection.IsEmpty()) {
@@ -327,9 +327,9 @@ Point ResolutionSet::SelectClosestPointToIdeal(
                           closest_vertices[0].width());
         return GetClosestPointToVertexOrSide(closest_vertices, ideal_point);
       } else {
-        DCHECK(constraint_set.aspectRatio.hasIdeal());
+        DCHECK(constraint_set.aspect_ratio.HasIdeal());
         double ideal_aspect_ratio =
-            ToValidAspectRatio(constraint_set.aspectRatio.ideal());
+            ToValidAspectRatio(constraint_set.aspect_ratio.Ideal());
         return SelectClosestPointToIdealAspectRatio(
             ideal_aspect_ratio, default_height, default_width);
       }
@@ -338,19 +338,19 @@ Point ResolutionSet::SelectClosestPointToIdeal(
     case 3:
       double ideal_height;
       double ideal_width;
-      if (constraint_set.height.hasIdeal()) {
-        ideal_height = ToValidDimension(constraint_set.height.ideal());
+      if (constraint_set.height.HasIdeal()) {
+        ideal_height = ToValidDimension(constraint_set.height.Ideal());
         ideal_width =
-            constraint_set.width.hasIdeal()
-                ? ToValidDimension(constraint_set.width.ideal())
+            constraint_set.width.HasIdeal()
+                ? ToValidDimension(constraint_set.width.Ideal())
                 : ideal_height *
-                      ToValidAspectRatio(constraint_set.aspectRatio.ideal());
+                      ToValidAspectRatio(constraint_set.aspect_ratio.Ideal());
       } else {
-        DCHECK(constraint_set.width.hasIdeal());
-        DCHECK(constraint_set.aspectRatio.hasIdeal());
-        ideal_width = ToValidDimension(constraint_set.width.ideal());
+        DCHECK(constraint_set.width.HasIdeal());
+        DCHECK(constraint_set.aspect_ratio.HasIdeal());
+        ideal_width = ToValidDimension(constraint_set.width.Ideal());
         ideal_height = ideal_width /
-                       ToValidAspectRatio(constraint_set.aspectRatio.ideal());
+                       ToValidAspectRatio(constraint_set.aspect_ratio.Ideal());
       }
       return ClosestPointTo(Point(ideal_height, ideal_width));
 
@@ -529,8 +529,8 @@ ResolutionSet ResolutionSet::FromConstraintSet(
       MaxDimensionFromConstraint(constraint_set.height),
       MinDimensionFromConstraint(constraint_set.width),
       MaxDimensionFromConstraint(constraint_set.width),
-      MinAspectRatioFromConstraint(constraint_set.aspectRatio),
-      MaxAspectRatioFromConstraint(constraint_set.aspectRatio));
+      MinAspectRatioFromConstraint(constraint_set.aspect_ratio),
+      MaxAspectRatioFromConstraint(constraint_set.aspect_ratio));
 }
 
 }  // namespace content

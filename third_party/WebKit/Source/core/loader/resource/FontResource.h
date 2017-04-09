@@ -45,38 +45,38 @@ class CORE_EXPORT FontResource final : public Resource {
  public:
   using ClientType = FontResourceClient;
 
-  static FontResource* fetch(FetchRequest&, ResourceFetcher*);
+  static FontResource* Fetch(FetchRequest&, ResourceFetcher*);
   ~FontResource() override;
 
-  void didAddClient(ResourceClient*) override;
+  void DidAddClient(ResourceClient*) override;
 
-  void setRevalidatingRequest(const ResourceRequest&) override;
+  void SetRevalidatingRequest(const ResourceRequest&) override;
 
-  void allClientsAndObserversRemoved() override;
-  void startLoadLimitTimers();
+  void AllClientsAndObserversRemoved() override;
+  void StartLoadLimitTimers();
 
-  void setCORSFailed() override { m_corsFailed = true; }
-  bool isCORSFailed() const { return m_corsFailed; }
-  String otsParsingMessage() const { return m_otsParsingMessage; }
+  void SetCORSFailed() override { cors_failed_ = true; }
+  bool IsCORSFailed() const { return cors_failed_; }
+  String OtsParsingMessage() const { return ots_parsing_message_; }
 
-  PassRefPtr<FontCustomPlatformData> getCustomFontData();
+  PassRefPtr<FontCustomPlatformData> GetCustomFontData();
 
   // Returns true if the loading priority of the remote font resource can be
   // lowered. The loading priority of the font can be lowered only if the
   // font is not needed for painting the text.
-  bool isLowPriorityLoadingAllowedForRemoteFont() const;
+  bool IsLowPriorityLoadingAllowedForRemoteFont() const;
 
-  void willReloadAfterDiskCacheMiss() override;
+  void WillReloadAfterDiskCacheMiss() override;
 
-  void onMemoryDump(WebMemoryDumpLevelOfDetail,
+  void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
  private:
   class FontResourceFactory : public ResourceFactory {
    public:
-    FontResourceFactory() : ResourceFactory(Resource::Font) {}
+    FontResourceFactory() : ResourceFactory(Resource::kFont) {}
 
-    Resource* create(const ResourceRequest& request,
+    Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options,
                      const String& charset) const override {
       return new FontResource(request, options);
@@ -84,27 +84,27 @@ class CORE_EXPORT FontResource final : public Resource {
   };
   FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
-  void checkNotify() override;
-  void fontLoadShortLimitCallback(TimerBase*);
-  void fontLoadLongLimitCallback(TimerBase*);
-  void notifyClientsShortLimitExceeded();
-  void notifyClientsLongLimitExceeded();
+  void CheckNotify() override;
+  void FontLoadShortLimitCallback(TimerBase*);
+  void FontLoadLongLimitCallback(TimerBase*);
+  void NotifyClientsShortLimitExceeded();
+  void NotifyClientsLongLimitExceeded();
 
   // This is used in UMA histograms, should not change order.
   enum LoadLimitState {
-    LoadNotStarted,
-    UnderLimit,
-    ShortLimitExceeded,
-    LongLimitExceeded,
-    LoadLimitStateEnumMax
+    kLoadNotStarted,
+    kUnderLimit,
+    kShortLimitExceeded,
+    kLongLimitExceeded,
+    kLoadLimitStateEnumMax
   };
 
-  RefPtr<FontCustomPlatformData> m_fontData;
-  String m_otsParsingMessage;
-  LoadLimitState m_loadLimitState;
-  bool m_corsFailed;
-  Timer<FontResource> m_fontLoadShortLimitTimer;
-  Timer<FontResource> m_fontLoadLongLimitTimer;
+  RefPtr<FontCustomPlatformData> font_data_;
+  String ots_parsing_message_;
+  LoadLimitState load_limit_state_;
+  bool cors_failed_;
+  Timer<FontResource> font_load_short_limit_timer_;
+  Timer<FontResource> font_load_long_limit_timer_;
 
   friend class MemoryCache;
   FRIEND_TEST_ALL_PREFIXES(FontResourceTest, CacheAwareFontLoading);
@@ -115,19 +115,19 @@ DEFINE_RESOURCE_TYPE_CASTS(Font);
 class FontResourceClient : public ResourceClient {
  public:
   ~FontResourceClient() override {}
-  static bool isExpectedType(ResourceClient* client) {
-    return client->getResourceClientType() == FontType;
+  static bool IsExpectedType(ResourceClient* client) {
+    return client->GetResourceClientType() == kFontType;
   }
-  ResourceClientType getResourceClientType() const final { return FontType; }
+  ResourceClientType GetResourceClientType() const final { return kFontType; }
 
   // If cache-aware loading is activated, both callbacks will be blocked until
   // disk cache miss. Calls to addClient() and removeClient() in both callbacks
   // are prohibited to prevent race issues regarding current loading state.
-  virtual void fontLoadShortLimitExceeded(FontResource*) {}
-  virtual void fontLoadLongLimitExceeded(FontResource*) {}
+  virtual void FontLoadShortLimitExceeded(FontResource*) {}
+  virtual void FontLoadLongLimitExceeded(FontResource*) {}
 
   // Returns true if loading priority of remote font resources can be lowered.
-  virtual bool isLowPriorityLoadingAllowedForRemoteFont() const {
+  virtual bool IsLowPriorityLoadingAllowedForRemoteFont() const {
     // Only the RemoteFontFaceSources clients can prevent lowering of loading
     // priority of the remote fonts.  Set the default to true to prevent
     // other clients from incorrectly returning false.

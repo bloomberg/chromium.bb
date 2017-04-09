@@ -45,9 +45,9 @@ class CORE_EXPORT StyleSheetResource : public TextResource {
   StyleSheetResource(const ResourceRequest& request,
                      Type type,
                      const ResourceLoaderOptions& options,
-                     const String& mimeType,
+                     const String& mime_type,
                      const String& charset)
-      : TextResource(request, type, options, mimeType, charset) {}
+      : TextResource(request, type, options, mime_type, charset) {}
 };
 
 }  // namespace blink

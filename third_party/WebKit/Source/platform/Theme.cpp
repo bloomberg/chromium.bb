@@ -27,34 +27,34 @@
 
 namespace blink {
 
-LengthBox Theme::controlBorder(ControlPart part,
+LengthBox Theme::ControlBorder(ControlPart part,
                                const FontDescription&,
-                               const LengthBox& zoomedBox,
+                               const LengthBox& zoomed_box,
                                float) const {
   switch (part) {
-    case PushButtonPart:
-    case MenulistPart:
-    case SearchFieldPart:
-    case CheckboxPart:
-    case RadioPart:
+    case kPushButtonPart:
+    case kMenulistPart:
+    case kSearchFieldPart:
+    case kCheckboxPart:
+    case kRadioPart:
       return LengthBox(0);
     default:
-      return zoomedBox;
+      return zoomed_box;
   }
 }
 
-LengthBox Theme::controlPadding(ControlPart part,
+LengthBox Theme::ControlPadding(ControlPart part,
                                 const FontDescription&,
-                                const LengthBox& zoomedBox,
+                                const LengthBox& zoomed_box,
                                 float) const {
   switch (part) {
-    case MenulistPart:
-    case MenulistButtonPart:
-    case CheckboxPart:
-    case RadioPart:
+    case kMenulistPart:
+    case kMenulistButtonPart:
+    case kCheckboxPart:
+    case kRadioPart:
       return LengthBox(0);
     default:
-      return zoomedBox;
+      return zoomed_box;
   }
 }
 

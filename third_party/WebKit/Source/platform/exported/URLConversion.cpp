@@ -11,19 +11,19 @@
 
 namespace blink {
 
-GURL WebStringToGURL(const WebString& webString) {
-  if (webString.isEmpty())
+GURL WebStringToGURL(const WebString& web_string) {
+  if (web_string.IsEmpty())
     return GURL();
 
-  String str = webString;
-  if (str.is8Bit()) {
+  String str = web_string;
+  if (str.Is8Bit()) {
     // Ensure the (possibly Latin-1) 8-bit string is UTF-8 for GURL.
     StringUTF8Adaptor utf8(str);
-    return GURL(utf8.asStringPiece());
+    return GURL(utf8.AsStringPiece());
   }
 
   // GURL can consume UTF-16 directly.
-  return GURL(base::StringPiece16(str.characters16(), str.length()));
+  return GURL(base::StringPiece16(str.Characters16(), str.length()));
 }
 
 }  // namespace blink

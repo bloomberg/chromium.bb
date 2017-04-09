@@ -44,22 +44,22 @@ class V0CustomElementException {
 
  public:
   enum Reason {
-    CannotRegisterFromExtension,
-    ConstructorPropertyNotConfigurable,
-    ContextDestroyedCheckingPrototype,
-    ContextDestroyedCreatingCallbacks,
-    ContextDestroyedRegisteringDefinition,
-    ExtendsIsInvalidName,
-    ExtendsIsCustomElementName,
-    InvalidName,
-    PrototypeInUse,
-    TypeAlreadyRegistered
+    kCannotRegisterFromExtension,
+    kConstructorPropertyNotConfigurable,
+    kContextDestroyedCheckingPrototype,
+    kContextDestroyedCreatingCallbacks,
+    kContextDestroyedRegisteringDefinition,
+    kExtendsIsInvalidName,
+    kExtendsIsCustomElementName,
+    kInvalidName,
+    kPrototypeInUse,
+    kTypeAlreadyRegistered
   };
 
-  static void throwException(Reason, const AtomicString& type, ExceptionState&);
+  static void ThrowException(Reason, const AtomicString& type, ExceptionState&);
 
  private:
-  static String preamble(const AtomicString& type);
+  static String Preamble(const AtomicString& type);
 };
 
 }  // namespace blink

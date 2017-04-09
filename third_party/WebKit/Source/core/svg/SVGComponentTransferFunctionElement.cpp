@@ -29,9 +29,9 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<ComponentTransferType>() {
+GetStaticStringEntries<ComponentTransferType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
+  if (entries.IsEmpty()) {
     entries.push_back(
         std::make_pair(FECOMPONENTTRANSFER_TYPE_IDENTITY, "identity"));
     entries.push_back(std::make_pair(FECOMPONENTTRANSFER_TYPE_TABLE, "table"));
@@ -45,75 +45,78 @@ getStaticStringEntries<ComponentTransferType>() {
 }
 
 SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(
-    const QualifiedName& tagName,
+    const QualifiedName& tag_name,
     Document& document)
-    : SVGElement(tagName, document),
-      m_tableValues(
-          SVGAnimatedNumberList::create(this, SVGNames::tableValuesAttr)),
-      m_slope(SVGAnimatedNumber::create(this,
-                                        SVGNames::slopeAttr,
-                                        SVGNumber::create(1))),
-      m_intercept(SVGAnimatedNumber::create(this,
-                                            SVGNames::interceptAttr,
-                                            SVGNumber::create())),
-      m_amplitude(SVGAnimatedNumber::create(this,
-                                            SVGNames::amplitudeAttr,
-                                            SVGNumber::create(1))),
-      m_exponent(SVGAnimatedNumber::create(this,
-                                           SVGNames::exponentAttr,
-                                           SVGNumber::create(1))),
-      m_offset(SVGAnimatedNumber::create(this,
-                                         SVGNames::offsetAttr,
-                                         SVGNumber::create())),
-      m_type(SVGAnimatedEnumeration<ComponentTransferType>::create(
+    : SVGElement(tag_name, document),
+      table_values_(
+          SVGAnimatedNumberList::Create(this, SVGNames::tableValuesAttr)),
+      slope_(SVGAnimatedNumber::Create(this,
+                                       SVGNames::slopeAttr,
+                                       SVGNumber::Create(1))),
+      intercept_(SVGAnimatedNumber::Create(this,
+                                           SVGNames::interceptAttr,
+                                           SVGNumber::Create())),
+      amplitude_(SVGAnimatedNumber::Create(this,
+                                           SVGNames::amplitudeAttr,
+                                           SVGNumber::Create(1))),
+      exponent_(SVGAnimatedNumber::Create(this,
+                                          SVGNames::exponentAttr,
+                                          SVGNumber::Create(1))),
+      offset_(SVGAnimatedNumber::Create(this,
+                                        SVGNames::offsetAttr,
+                                        SVGNumber::Create())),
+      type_(SVGAnimatedEnumeration<ComponentTransferType>::Create(
           this,
           SVGNames::typeAttr,
           FECOMPONENTTRANSFER_TYPE_IDENTITY)) {
-  addToPropertyMap(m_tableValues);
-  addToPropertyMap(m_slope);
-  addToPropertyMap(m_intercept);
-  addToPropertyMap(m_amplitude);
-  addToPropertyMap(m_exponent);
-  addToPropertyMap(m_offset);
-  addToPropertyMap(m_type);
+  AddToPropertyMap(table_values_);
+  AddToPropertyMap(slope_);
+  AddToPropertyMap(intercept_);
+  AddToPropertyMap(amplitude_);
+  AddToPropertyMap(exponent_);
+  AddToPropertyMap(offset_);
+  AddToPropertyMap(type_);
 }
 
 DEFINE_TRACE(SVGComponentTransferFunctionElement) {
-  visitor->trace(m_tableValues);
-  visitor->trace(m_slope);
-  visitor->trace(m_intercept);
-  visitor->trace(m_amplitude);
-  visitor->trace(m_exponent);
-  visitor->trace(m_offset);
-  visitor->trace(m_type);
-  SVGElement::trace(visitor);
+  visitor->Trace(table_values_);
+  visitor->Trace(slope_);
+  visitor->Trace(intercept_);
+  visitor->Trace(amplitude_);
+  visitor->Trace(exponent_);
+  visitor->Trace(offset_);
+  visitor->Trace(type_);
+  SVGElement::Trace(visitor);
 }
 
-void SVGComponentTransferFunctionElement::svgAttributeChanged(
-    const QualifiedName& attrName) {
-  if (attrName == SVGNames::typeAttr || attrName == SVGNames::tableValuesAttr ||
-      attrName == SVGNames::slopeAttr || attrName == SVGNames::interceptAttr ||
-      attrName == SVGNames::amplitudeAttr ||
-      attrName == SVGNames::exponentAttr || attrName == SVGNames::offsetAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGComponentTransferFunctionElement::SvgAttributeChanged(
+    const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::typeAttr ||
+      attr_name == SVGNames::tableValuesAttr ||
+      attr_name == SVGNames::slopeAttr ||
+      attr_name == SVGNames::interceptAttr ||
+      attr_name == SVGNames::amplitudeAttr ||
+      attr_name == SVGNames::exponentAttr ||
+      attr_name == SVGNames::offsetAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
 
-    invalidateFilterPrimitiveParent(this);
+    InvalidateFilterPrimitiveParent(this);
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
 ComponentTransferFunction
-SVGComponentTransferFunctionElement::transferFunction() const {
+SVGComponentTransferFunctionElement::TransferFunction() const {
   ComponentTransferFunction func;
-  func.type = m_type->currentValue()->enumValue();
-  func.slope = m_slope->currentValue()->value();
-  func.intercept = m_intercept->currentValue()->value();
-  func.amplitude = m_amplitude->currentValue()->value();
-  func.exponent = m_exponent->currentValue()->value();
-  func.offset = m_offset->currentValue()->value();
-  func.tableValues = m_tableValues->currentValue()->toFloatVector();
+  func.type = type_->CurrentValue()->EnumValue();
+  func.slope = slope_->CurrentValue()->Value();
+  func.intercept = intercept_->CurrentValue()->Value();
+  func.amplitude = amplitude_->CurrentValue()->Value();
+  func.exponent = exponent_->CurrentValue()->Value();
+  func.offset = offset_->CurrentValue()->Value();
+  func.table_values = table_values_->CurrentValue()->ToFloatVector();
   return func;
 }
 

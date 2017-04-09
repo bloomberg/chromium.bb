@@ -22,10 +22,10 @@ class CORE_EXPORT RelocatablePosition final {
   explicit RelocatablePosition(const Position&);
   ~RelocatablePosition();
 
-  Position position() const;
+  Position GetPosition() const;
 
  private:
-  const Member<Range> m_range;
+  const Member<Range> range_;
 
   DISALLOW_COPY_AND_ASSIGN(RelocatablePosition);
 };

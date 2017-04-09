@@ -40,132 +40,134 @@ namespace blink {
 using namespace HTMLNames;
 
 template <typename CharType>
-static String stripLeadingAndTrailingHTMLSpaces(String string,
+static String StripLeadingAndTrailingHTMLSpaces(String string,
                                                 const CharType* characters,
                                                 unsigned length) {
-  unsigned numLeadingSpaces = 0;
-  unsigned numTrailingSpaces = 0;
+  unsigned num_leading_spaces = 0;
+  unsigned num_trailing_spaces = 0;
 
-  for (; numLeadingSpaces < length; ++numLeadingSpaces) {
-    if (isNotHTMLSpace<CharType>(characters[numLeadingSpaces]))
+  for (; num_leading_spaces < length; ++num_leading_spaces) {
+    if (IsNotHTMLSpace<CharType>(characters[num_leading_spaces]))
       break;
   }
 
-  if (numLeadingSpaces == length)
-    return string.isNull() ? string : emptyAtom.getString();
+  if (num_leading_spaces == length)
+    return string.IsNull() ? string : g_empty_atom.GetString();
 
-  for (; numTrailingSpaces < length; ++numTrailingSpaces) {
-    if (isNotHTMLSpace<CharType>(characters[length - numTrailingSpaces - 1]))
+  for (; num_trailing_spaces < length; ++num_trailing_spaces) {
+    if (IsNotHTMLSpace<CharType>(characters[length - num_trailing_spaces - 1]))
       break;
   }
 
-  DCHECK_LT(numLeadingSpaces + numTrailingSpaces, length);
+  DCHECK_LT(num_leading_spaces + num_trailing_spaces, length);
 
-  if (!(numLeadingSpaces | numTrailingSpaces))
+  if (!(num_leading_spaces | num_trailing_spaces))
     return string;
 
-  return string.substring(numLeadingSpaces,
-                          length - (numLeadingSpaces + numTrailingSpaces));
+  return string.Substring(num_leading_spaces,
+                          length - (num_leading_spaces + num_trailing_spaces));
 }
 
-String stripLeadingAndTrailingHTMLSpaces(const String& string) {
+String StripLeadingAndTrailingHTMLSpaces(const String& string) {
   unsigned length = string.length();
 
   if (!length)
-    return string.isNull() ? string : emptyAtom.getString();
+    return string.IsNull() ? string : g_empty_atom.GetString();
 
-  if (string.is8Bit())
-    return stripLeadingAndTrailingHTMLSpaces<LChar>(
-        string, string.characters8(), length);
+  if (string.Is8Bit())
+    return StripLeadingAndTrailingHTMLSpaces<LChar>(
+        string, string.Characters8(), length);
 
-  return stripLeadingAndTrailingHTMLSpaces<UChar>(string, string.characters16(),
+  return StripLeadingAndTrailingHTMLSpaces<UChar>(string, string.Characters16(),
                                                   length);
 }
 
-String serializeForNumberType(const Decimal& number) {
-  if (number.isZero()) {
+String SerializeForNumberType(const Decimal& number) {
+  if (number.IsZero()) {
     // Decimal::toString appends exponent, e.g. "0e-18"
-    return number.isNegative() ? "-0" : "0";
+    return number.IsNegative() ? "-0" : "0";
   }
-  return number.toString();
+  return number.ToString();
 }
 
-String serializeForNumberType(double number) {
+String SerializeForNumberType(double number) {
   // According to HTML5, "the best representation of the number n as a floating
   // point number" is a string produced by applying ToString() to n.
-  return String::numberToStringECMAScript(number);
+  return String::NumberToStringECMAScript(number);
 }
 
-Decimal parseToDecimalForNumberType(const String& string,
-                                    const Decimal& fallbackValue) {
+Decimal ParseToDecimalForNumberType(const String& string,
+                                    const Decimal& fallback_value) {
   // http://www.whatwg.org/specs/web-apps/current-work/#floating-point-numbers
   // and parseToDoubleForNumberType String::toDouble() accepts leading + and
   // whitespace characters, which are not valid here.
-  const UChar firstCharacter = string[0];
-  if (firstCharacter != '-' && firstCharacter != '.' &&
-      !isASCIIDigit(firstCharacter))
-    return fallbackValue;
+  const UChar first_character = string[0];
+  if (first_character != '-' && first_character != '.' &&
+      !IsASCIIDigit(first_character))
+    return fallback_value;
 
-  const Decimal value = Decimal::fromString(string);
-  if (!value.isFinite())
-    return fallbackValue;
+  const Decimal value = Decimal::FromString(string);
+  if (!value.IsFinite())
+    return fallback_value;
 
   // Numbers are considered finite IEEE 754 Double-precision floating point
   // values.
-  const Decimal doubleMax =
-      Decimal::fromDouble(std::numeric_limits<double>::max());
-  if (value < -doubleMax || value > doubleMax)
-    return fallbackValue;
+  const Decimal double_max =
+      Decimal::FromDouble(std::numeric_limits<double>::max());
+  if (value < -double_max || value > double_max)
+    return fallback_value;
 
   // We return +0 for -0 case.
-  return value.isZero() ? Decimal(0) : value;
+  return value.IsZero() ? Decimal(0) : value;
 }
 
-static double checkDoubleValue(double value, bool valid, double fallbackValue) {
+static double CheckDoubleValue(double value,
+                               bool valid,
+                               double fallback_value) {
   if (!valid)
-    return fallbackValue;
+    return fallback_value;
 
   // NaN and infinity are considered valid by String::toDouble, but not valid
   // here.
   if (!std::isfinite(value))
-    return fallbackValue;
+    return fallback_value;
 
   // Numbers are considered finite IEEE 754 Double-precision floating point
   // values.
   if (-std::numeric_limits<double>::max() > value ||
       value > std::numeric_limits<double>::max())
-    return fallbackValue;
+    return fallback_value;
 
   // The following expression converts -0 to +0.
   return value ? value : 0;
 }
 
-double parseToDoubleForNumberType(const String& string, double fallbackValue) {
+double ParseToDoubleForNumberType(const String& string, double fallback_value) {
   // http://www.whatwg.org/specs/web-apps/current-work/#floating-point-numbers
   // String::toDouble() accepts leading + and whitespace characters, which are
   // not valid here.
-  UChar firstCharacter = string[0];
-  if (firstCharacter != '-' && firstCharacter != '.' &&
-      !isASCIIDigit(firstCharacter))
-    return fallbackValue;
-  if (string.endsWith('.'))
-    return fallbackValue;
+  UChar first_character = string[0];
+  if (first_character != '-' && first_character != '.' &&
+      !IsASCIIDigit(first_character))
+    return fallback_value;
+  if (string.EndsWith('.'))
+    return fallback_value;
 
   bool valid = false;
-  double value = string.toDouble(&valid);
-  return checkDoubleValue(value, valid, fallbackValue);
+  double value = string.ToDouble(&valid);
+  return CheckDoubleValue(value, valid, fallback_value);
 }
 
 template <typename CharacterType>
-static bool parseHTMLIntegerInternal(const CharacterType* position,
+static bool ParseHTMLIntegerInternal(const CharacterType* position,
                                      const CharacterType* end,
                                      int& value) {
   // Step 3
-  bool isNegative = false;
+  bool is_negative = false;
 
   // Step 4
   while (position < end) {
-    if (!isHTMLSpace<CharacterType>(*position))
+    if (!IsHTMLSpace<CharacterType>(*position))
       break;
     ++position;
   }
@@ -177,7 +179,7 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
 
   // Step 6
   if (*position == '-') {
-    isNegative = true;
+    is_negative = true;
     ++position;
   } else if (*position == '+')
     ++position;
@@ -186,44 +188,45 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
   DCHECK_LT(position, end);
 
   // Step 7
-  if (!isASCIIDigit(*position))
+  if (!IsASCIIDigit(*position))
     return false;
 
   // Step 8
-  static const int intMax = std::numeric_limits<int>::max();
-  const int base = 10;
-  const int maxMultiplier = intMax / base;
+  static const int kIntMax = std::numeric_limits<int>::max();
+  const int kBase = 10;
+  const int kMaxMultiplier = kIntMax / kBase;
 
   unsigned temp = 0;
   do {
-    int digitValue = *position - '0';
-    if (temp > maxMultiplier ||
-        (temp == maxMultiplier && digitValue > (intMax % base) + isNegative))
+    int digit_value = *position - '0';
+    if (temp > kMaxMultiplier ||
+        (temp == kMaxMultiplier &&
+         digit_value > (kIntMax % kBase) + is_negative))
       return false;
-    temp = temp * base + digitValue;
+    temp = temp * kBase + digit_value;
     ++position;
-  } while (position < end && isASCIIDigit(*position));
+  } while (position < end && IsASCIIDigit(*position));
   // Step 9
-  value = isNegative ? (0 - temp) : temp;
+  value = is_negative ? (0 - temp) : temp;
   return true;
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers
-bool parseHTMLInteger(const String& input, int& value) {
+bool ParseHTMLInteger(const String& input, int& value) {
   // Step 1
   // Step 2
   unsigned length = input.length();
-  if (!length || input.is8Bit()) {
-    const LChar* start = input.characters8();
-    return parseHTMLIntegerInternal(start, start + length, value);
+  if (!length || input.Is8Bit()) {
+    const LChar* start = input.Characters8();
+    return ParseHTMLIntegerInternal(start, start + length, value);
   }
 
-  const UChar* start = input.characters16();
-  return parseHTMLIntegerInternal(start, start + length, value);
+  const UChar* start = input.Characters16();
+  return ParseHTMLIntegerInternal(start, start + length, value);
 }
 
 template <typename CharacterType>
-static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position,
+static bool ParseHTMLNonNegativeIntegerInternal(const CharacterType* position,
                                                 const CharacterType* end,
                                                 unsigned& value) {
   // This function is an implementation of the following algorithm:
@@ -239,7 +242,7 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position,
 
   // Step 4: Skip whitespace.
   while (position < end) {
-    if (!isHTMLSpace<CharacterType>(*position))
+    if (!IsHTMLSpace<CharacterType>(*position))
       break;
     ++position;
   }
@@ -264,102 +267,102 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position,
 
   // Step 7: If the character indicated by position is not an ASCII digit,
   // then return an error.
-  if (!isASCIIDigit(*position))
+  if (!IsASCIIDigit(*position))
     return false;
 
   // Step 8: Collect a sequence of characters ...
   StringBuilder digits;
   while (position < end) {
-    if (!isASCIIDigit(*position))
+    if (!IsASCIIDigit(*position))
       break;
-    digits.append(*position++);
+    digits.Append(*position++);
   }
 
   bool ok;
-  unsigned digitsValue;
-  if (digits.is8Bit())
-    digitsValue =
-        charactersToUIntStrict(digits.characters8(), digits.length(), &ok);
+  unsigned digits_value;
+  if (digits.Is8Bit())
+    digits_value =
+        CharactersToUIntStrict(digits.Characters8(), digits.length(), &ok);
   else
-    digitsValue =
-        charactersToUIntStrict(digits.characters16(), digits.length(), &ok);
+    digits_value =
+        CharactersToUIntStrict(digits.Characters16(), digits.length(), &ok);
   if (!ok)
     return false;
-  if (sign < 0 && digitsValue != 0)
+  if (sign < 0 && digits_value != 0)
     return false;
-  value = digitsValue;
+  value = digits_value;
   return true;
 }
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-non-negative-integers
-bool parseHTMLNonNegativeInteger(const String& input, unsigned& value) {
+bool ParseHTMLNonNegativeInteger(const String& input, unsigned& value) {
   unsigned length = input.length();
-  if (length && input.is8Bit()) {
-    const LChar* start = input.characters8();
-    return parseHTMLNonNegativeIntegerInternal(start, start + length, value);
+  if (length && input.Is8Bit()) {
+    const LChar* start = input.Characters8();
+    return ParseHTMLNonNegativeIntegerInternal(start, start + length, value);
   }
 
-  const UChar* start = input.characters16();
-  return parseHTMLNonNegativeIntegerInternal(start, start + length, value);
+  const UChar* start = input.Characters16();
+  return ParseHTMLNonNegativeIntegerInternal(start, start + length, value);
 }
 
 template <typename CharacterType>
-static bool isSpaceOrDelimiter(CharacterType c) {
-  return isHTMLSpace(c) || c == ',' || c == ';';
+static bool IsSpaceOrDelimiter(CharacterType c) {
+  return IsHTMLSpace(c) || c == ',' || c == ';';
 }
 
 template <typename CharacterType>
-static bool isNotSpaceDelimiterOrNumberStart(CharacterType c) {
-  return !(isSpaceOrDelimiter(c) || isASCIIDigit(c) || c == '.' || c == '-');
+static bool IsNotSpaceDelimiterOrNumberStart(CharacterType c) {
+  return !(IsSpaceOrDelimiter(c) || IsASCIIDigit(c) || c == '.' || c == '-');
 }
 
 template <typename CharacterType>
-static Vector<double> parseHTMLListOfFloatingPointNumbersInternal(
+static Vector<double> ParseHTMLListOfFloatingPointNumbersInternal(
     const CharacterType* position,
     const CharacterType* end) {
   Vector<double> numbers;
-  skipWhile<CharacterType, isSpaceOrDelimiter>(position, end);
+  skipWhile<CharacterType, IsSpaceOrDelimiter>(position, end);
 
   while (position < end) {
-    skipWhile<CharacterType, isNotSpaceDelimiterOrNumberStart>(position, end);
+    skipWhile<CharacterType, IsNotSpaceDelimiterOrNumberStart>(position, end);
 
-    const CharacterType* unparsedNumberStart = position;
-    skipUntil<CharacterType, isSpaceOrDelimiter>(position, end);
+    const CharacterType* unparsed_number_start = position;
+    skipUntil<CharacterType, IsSpaceOrDelimiter>(position, end);
 
-    size_t parsedLength = 0;
-    double number = charactersToDouble(
-        unparsedNumberStart, position - unparsedNumberStart, parsedLength);
-    numbers.push_back(checkDoubleValue(number, parsedLength != 0, 0));
+    size_t parsed_length = 0;
+    double number = CharactersToDouble(
+        unparsed_number_start, position - unparsed_number_start, parsed_length);
+    numbers.push_back(CheckDoubleValue(number, parsed_length != 0, 0));
 
-    skipWhile<CharacterType, isSpaceOrDelimiter>(position, end);
+    skipWhile<CharacterType, IsSpaceOrDelimiter>(position, end);
   }
   return numbers;
 }
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-a-list-of-floating-point-numbers
-Vector<double> parseHTMLListOfFloatingPointNumbers(const String& input) {
+Vector<double> ParseHTMLListOfFloatingPointNumbers(const String& input) {
   unsigned length = input.length();
-  if (!length || input.is8Bit())
-    return parseHTMLListOfFloatingPointNumbersInternal(
-        input.characters8(), input.characters8() + length);
-  return parseHTMLListOfFloatingPointNumbersInternal(
-      input.characters16(), input.characters16() + length);
+  if (!length || input.Is8Bit())
+    return ParseHTMLListOfFloatingPointNumbersInternal(
+        input.Characters8(), input.Characters8() + length);
+  return ParseHTMLListOfFloatingPointNumbersInternal(
+      input.Characters16(), input.Characters16() + length);
 }
 
-static const char charsetString[] = "charset";
-static const size_t charsetLength = sizeof("charset") - 1;
+static const char kCharsetString[] = "charset";
+static const size_t kCharsetLength = sizeof("charset") - 1;
 
 // https://html.spec.whatwg.org/multipage/infrastructure.html#extracting-character-encodings-from-meta-elements
-String extractCharset(const String& value) {
+String ExtractCharset(const String& value) {
   size_t pos = 0;
   unsigned length = value.length();
 
   while (pos < length) {
-    pos = value.find(charsetString, pos, TextCaseASCIIInsensitive);
+    pos = value.Find(kCharsetString, pos, kTextCaseASCIIInsensitive);
     if (pos == kNotFound)
       break;
 
-    pos += charsetLength;
+    pos += kCharsetLength;
 
     // Skip whitespace.
     while (pos < length && value[pos] <= ' ')
@@ -373,10 +376,10 @@ String extractCharset(const String& value) {
     while (pos < length && value[pos] <= ' ')
       ++pos;
 
-    char quoteMark = 0;
+    char quote_mark = 0;
     if (pos < length && (value[pos] == '"' || value[pos] == '\'')) {
-      quoteMark = static_cast<char>(value[pos++]);
-      DCHECK(!(quoteMark & 0x80));
+      quote_mark = static_cast<char>(value[pos++]);
+      DCHECK(!(quote_mark & 0x80));
     }
 
     if (pos == length)
@@ -384,114 +387,114 @@ String extractCharset(const String& value) {
 
     unsigned end = pos;
     while (end < length &&
-           ((quoteMark && value[end] != quoteMark) ||
-            (!quoteMark && value[end] > ' ' && value[end] != '"' &&
+           ((quote_mark && value[end] != quote_mark) ||
+            (!quote_mark && value[end] > ' ' && value[end] != '"' &&
              value[end] != '\'' && value[end] != ';')))
       ++end;
 
-    if (quoteMark && (end == length))
+    if (quote_mark && (end == length))
       break;  // Close quote not found.
 
-    return value.substring(pos, end - pos);
+    return value.Substring(pos, end - pos);
   }
 
   return "";
 }
 
 enum class MetaAttribute {
-  None,
-  Charset,
-  Pragma,
+  kNone,
+  kCharset,
+  kPragma,
 };
 
-WTF::TextEncoding encodingFromMetaAttributes(
+WTF::TextEncoding EncodingFromMetaAttributes(
     const HTMLAttributeList& attributes) {
-  bool gotPragma = false;
-  MetaAttribute mode = MetaAttribute::None;
+  bool got_pragma = false;
+  MetaAttribute mode = MetaAttribute::kNone;
   String charset;
 
-  for (const auto& htmlAttribute : attributes) {
-    const String& attributeName = htmlAttribute.first;
-    const String& attributeValue = AtomicString(htmlAttribute.second);
+  for (const auto& html_attribute : attributes) {
+    const String& attribute_name = html_attribute.first;
+    const String& attribute_value = AtomicString(html_attribute.second);
 
-    if (threadSafeMatch(attributeName, http_equivAttr)) {
-      if (equalIgnoringCase(attributeValue, "content-type"))
-        gotPragma = true;
-    } else if (charset.isEmpty()) {
-      if (threadSafeMatch(attributeName, charsetAttr)) {
-        charset = attributeValue;
-        mode = MetaAttribute::Charset;
-      } else if (threadSafeMatch(attributeName, contentAttr)) {
-        charset = extractCharset(attributeValue);
+    if (ThreadSafeMatch(attribute_name, http_equivAttr)) {
+      if (EqualIgnoringCase(attribute_value, "content-type"))
+        got_pragma = true;
+    } else if (charset.IsEmpty()) {
+      if (ThreadSafeMatch(attribute_name, charsetAttr)) {
+        charset = attribute_value;
+        mode = MetaAttribute::kCharset;
+      } else if (ThreadSafeMatch(attribute_name, contentAttr)) {
+        charset = ExtractCharset(attribute_value);
         if (charset.length())
-          mode = MetaAttribute::Pragma;
+          mode = MetaAttribute::kPragma;
       }
     }
   }
 
-  if (mode == MetaAttribute::Charset ||
-      (mode == MetaAttribute::Pragma && gotPragma))
-    return WTF::TextEncoding(stripLeadingAndTrailingHTMLSpaces(charset));
+  if (mode == MetaAttribute::kCharset ||
+      (mode == MetaAttribute::kPragma && got_pragma))
+    return WTF::TextEncoding(StripLeadingAndTrailingHTMLSpaces(charset));
 
   return WTF::TextEncoding();
 }
 
-static bool threadSafeEqual(const StringImpl* a, const StringImpl* b) {
+static bool ThreadSafeEqual(const StringImpl* a, const StringImpl* b) {
   if (a == b)
     return true;
-  if (a->hash() != b->hash())
+  if (a->GetHash() != b->GetHash())
     return false;
-  return equalNonNull(a, b);
+  return EqualNonNull(a, b);
 }
 
-bool threadSafeMatch(const QualifiedName& a, const QualifiedName& b) {
-  return threadSafeEqual(a.localName().impl(), b.localName().impl());
+bool ThreadSafeMatch(const QualifiedName& a, const QualifiedName& b) {
+  return ThreadSafeEqual(a.LocalName().Impl(), b.LocalName().Impl());
 }
 
-bool threadSafeMatch(const String& localName, const QualifiedName& qName) {
-  return threadSafeEqual(localName.impl(), qName.localName().impl());
+bool ThreadSafeMatch(const String& local_name, const QualifiedName& q_name) {
+  return ThreadSafeEqual(local_name.Impl(), q_name.LocalName().Impl());
 }
 
 template <typename CharType>
-inline StringImpl* findStringIfStatic(const CharType* characters,
+inline StringImpl* FindStringIfStatic(const CharType* characters,
                                       unsigned length) {
   // We don't need to try hashing if we know the string is too long.
-  if (length > StringImpl::highestStaticStringLength())
+  if (length > StringImpl::HighestStaticStringLength())
     return nullptr;
   // computeHashAndMaskTop8Bits is the function StringImpl::hash() uses.
-  unsigned hash = StringHasher::computeHashAndMaskTop8Bits(characters, length);
-  const WTF::StaticStringsTable& table = StringImpl::allStaticStrings();
-  DCHECK(!table.isEmpty());
+  unsigned hash = StringHasher::ComputeHashAndMaskTop8Bits(characters, length);
+  const WTF::StaticStringsTable& table = StringImpl::AllStaticStrings();
+  DCHECK(!table.IsEmpty());
 
-  WTF::StaticStringsTable::const_iterator it = table.find(hash);
+  WTF::StaticStringsTable::const_iterator it = table.Find(hash);
   if (it == table.end())
     return nullptr;
   // It's possible to have hash collisions between arbitrary strings and known
   // identifiers (e.g. "bvvfg" collides with "script"). However ASSERTs in
   // StringImpl::createStatic guard against there ever being collisions between
   // static strings.
-  if (!equal(it->value, characters, length))
+  if (!Equal(it->value, characters, length))
     return nullptr;
   return it->value;
 }
 
-String attemptStaticStringCreation(const LChar* characters, size_t size) {
-  String string(findStringIfStatic(characters, size));
-  if (string.impl())
+String AttemptStaticStringCreation(const LChar* characters, size_t size) {
+  String string(FindStringIfStatic(characters, size));
+  if (string.Impl())
     return string;
   return String(characters, size);
 }
 
-String attemptStaticStringCreation(const UChar* characters,
+String AttemptStaticStringCreation(const UChar* characters,
                                    size_t size,
                                    CharacterWidth width) {
-  String string(findStringIfStatic(characters, size));
-  if (string.impl())
+  String string(FindStringIfStatic(characters, size));
+  if (string.Impl())
     return string;
-  if (width == Likely8Bit)
-    string = StringImpl::create8BitIfPossible(characters, size);
-  else if (width == Force8Bit)
-    string = String::make8BitFrom16BitSource(characters, size);
+  if (width == kLikely8Bit)
+    string = StringImpl::Create8BitIfPossible(characters, size);
+  else if (width == kForce8Bit)
+    string = String::Make8BitFrom16BitSource(characters, size);
   else
     string = String(characters, size);
 

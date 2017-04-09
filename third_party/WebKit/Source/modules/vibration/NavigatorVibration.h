@@ -36,13 +36,13 @@ class Navigator;
 class VibrationController;
 
 enum NavigatorVibrationType {
-  MainFrameNoUserGesture = 0,
-  MainFrameWithUserGesture = 1,
-  SameOriginSubFrameNoUserGesture = 2,
-  SameOriginSubFrameWithUserGesture = 3,
-  CrossOriginSubFrameNoUserGesture = 4,
-  CrossOriginSubFrameWithUserGesture = 5,
-  EnumMax = 6
+  kMainFrameNoUserGesture = 0,
+  kMainFrameWithUserGesture = 1,
+  kSameOriginSubFrameNoUserGesture = 2,
+  kSameOriginSubFrameWithUserGesture = 3,
+  kCrossOriginSubFrameNoUserGesture = 4,
+  kCrossOriginSubFrameWithUserGesture = 5,
+  kEnumMax = 6
 };
 
 class MODULES_EXPORT NavigatorVibration final
@@ -57,26 +57,26 @@ class MODULES_EXPORT NavigatorVibration final
 
   virtual ~NavigatorVibration();
 
-  static NavigatorVibration& from(Navigator&);
+  static NavigatorVibration& From(Navigator&);
 
   static bool vibrate(Navigator&, unsigned time);
   static bool vibrate(Navigator&, const VibrationPattern&);
 
-  VibrationController* controller(const LocalFrame&);
+  VibrationController* Controller(const LocalFrame&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  static const char* supplementName();
+  static const char* SupplementName();
 
   explicit NavigatorVibration(Navigator&);
 
   // Inherited from ContextLifecycleObserver.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  static void collectHistogramMetrics(const LocalFrame&);
+  static void CollectHistogramMetrics(const LocalFrame&);
 
-  Member<VibrationController> m_controller;
+  Member<VibrationController> controller_;
 };
 
 }  // namespace blink

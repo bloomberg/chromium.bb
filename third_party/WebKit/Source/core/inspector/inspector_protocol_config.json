@@ -102,8 +102,8 @@
 
     "imported": {
         "header": "<v8-inspector-protocol.h>",
-        "to_imported_string": "toV8InspectorStringView(%s)",
-        "from_imported_string": "toCoreString(%s)",
+        "to_imported_string": "ToV8InspectorStringView(%s)",
+        "from_imported_string": "ToCoreString(%s)",
         "namespace": ["v8_inspector", "protocol"],
         "options": [
             {

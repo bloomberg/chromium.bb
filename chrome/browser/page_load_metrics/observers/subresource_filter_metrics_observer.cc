@@ -276,7 +276,7 @@ void SubresourceFilterMetricsObserver::OnLoadingBehaviorObserved(
   subresource_filter_observed_ =
       page_load_metrics::DidObserveLoadingBehaviorInAnyFrame(
           info, blink::WebLoadingBehaviorFlag::
-                    WebLoadingBehaviorSubresourceFilterMatch);
+                    kWebLoadingBehaviorSubresourceFilterMatch);
 
   if (subresource_filter_observed_) {
     UMA_HISTOGRAM_BOOLEAN(internal::kHistogramSubresourceFilterCount, true);

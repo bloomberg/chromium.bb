@@ -40,40 +40,40 @@ TEST(SegmentedStringTest, CurrentChar) {
     SegmentedString copied(original);
     SegmentedString assigned;
     assigned = original;
-    EXPECT_EQ("cde", original.toString());
-    EXPECT_EQ('c', original.currentChar());
-    EXPECT_EQ('c', copied.currentChar());
-    EXPECT_EQ('c', assigned.currentChar());
+    EXPECT_EQ("cde", original.ToString());
+    EXPECT_EQ('c', original.CurrentChar());
+    EXPECT_EQ('c', copied.CurrentChar());
+    EXPECT_EQ('c', assigned.CurrentChar());
   }
-  original.push('b');
+  original.Push('b');
   {
     SegmentedString copied(original);
     SegmentedString assigned;
     assigned = original;
-    EXPECT_EQ("bcde", original.toString());
-    EXPECT_EQ('b', original.currentChar());
-    EXPECT_EQ('b', copied.currentChar());
-    EXPECT_EQ('b', assigned.currentChar());
+    EXPECT_EQ("bcde", original.ToString());
+    EXPECT_EQ('b', original.CurrentChar());
+    EXPECT_EQ('b', copied.CurrentChar());
+    EXPECT_EQ('b', assigned.CurrentChar());
   }
-  original.push('a');
+  original.Push('a');
   {
     SegmentedString copied(original);
     SegmentedString assigned;
     assigned = original;
-    EXPECT_EQ("abcde", original.toString());
-    EXPECT_EQ('a', original.currentChar());
-    EXPECT_EQ('a', copied.currentChar());
-    EXPECT_EQ('a', assigned.currentChar());
+    EXPECT_EQ("abcde", original.ToString());
+    EXPECT_EQ('a', original.CurrentChar());
+    EXPECT_EQ('a', copied.CurrentChar());
+    EXPECT_EQ('a', assigned.CurrentChar());
   }
-  original.advance();
+  original.Advance();
   {
     SegmentedString copied(original);
     SegmentedString assigned;
     assigned = original;
-    EXPECT_EQ("bcde", original.toString());
-    EXPECT_EQ('b', original.currentChar());
-    EXPECT_EQ('b', copied.currentChar());
-    EXPECT_EQ('b', assigned.currentChar());
+    EXPECT_EQ("bcde", original.ToString());
+    EXPECT_EQ('b', original.CurrentChar());
+    EXPECT_EQ('b', copied.CurrentChar());
+    EXPECT_EQ('b', assigned.CurrentChar());
   }
 }
 

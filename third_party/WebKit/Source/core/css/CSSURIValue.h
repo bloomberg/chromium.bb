@@ -16,41 +16,42 @@ class SVGElementProxy;
 
 class CSSURIValue : public CSSValue {
  public:
-  static CSSURIValue* create(const String& relativeUrl, const KURL& url) {
-    return new CSSURIValue(AtomicString(relativeUrl), url);
+  static CSSURIValue* Create(const String& relative_url, const KURL& url) {
+    return new CSSURIValue(AtomicString(relative_url), url);
   }
-  static CSSURIValue* create(const AtomicString& absoluteUrl) {
-    return new CSSURIValue(absoluteUrl, absoluteUrl);
+  static CSSURIValue* Create(const AtomicString& absolute_url) {
+    return new CSSURIValue(absolute_url, absolute_url);
   }
   ~CSSURIValue();
 
-  SVGElementProxy& ensureElementProxy(const Document&) const;
-  void reResolveUrl(const Document&) const;
+  SVGElementProxy& EnsureElementProxy(const Document&) const;
+  void ReResolveUrl(const Document&) const;
 
-  const String& value() const { return m_relativeUrl; }
+  const String& Value() const { return relative_url_; }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool isLocal(const Document&) const;
-  bool equals(const CSSURIValue&) const;
+  bool IsLocal(const Document&) const;
+  bool Equals(const CSSURIValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
   CSSURIValue(const AtomicString&, const KURL&);
-  CSSURIValue(const AtomicString& relativeUrl, const AtomicString& absoluteUrl);
+  CSSURIValue(const AtomicString& relative_url,
+              const AtomicString& absolute_url);
 
-  KURL absoluteUrl() const;
-  AtomicString fragmentIdentifier() const;
+  KURL AbsoluteUrl() const;
+  AtomicString FragmentIdentifier() const;
 
-  AtomicString m_relativeUrl;
-  bool m_isLocal;
+  AtomicString relative_url_;
+  bool is_local_;
 
-  mutable Member<SVGElementProxy> m_proxy;
-  mutable AtomicString m_absoluteUrl;
+  mutable Member<SVGElementProxy> proxy_;
+  mutable AtomicString absolute_url_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSURIValue, isURIValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSURIValue, IsURIValue());
 
 }  // namespace blink
 

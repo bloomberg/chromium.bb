@@ -9,12 +9,12 @@ namespace content {
 CSPSource BuildCSPSource(
     const blink::WebContentSecurityPolicySourceExpression& source) {
   return CSPSource(
-      source.scheme.utf8(),  // scheme
-      source.host.utf8(),    // host
-      source.isHostWildcard == blink::WebWildcardDispositionHasWildcard,
+      source.scheme.Utf8(),  // scheme
+      source.host.Utf8(),    // host
+      source.is_host_wildcard == blink::kWebWildcardDispositionHasWildcard,
       source.port == 0 ? url::PORT_UNSPECIFIED : source.port,  // port
-      source.isPortWildcard == blink::WebWildcardDispositionHasWildcard,
-      source.path.utf8());  // path
+      source.is_port_wildcard == blink::kWebWildcardDispositionHasWildcard,
+      source.path.Utf8());  // path
 }
 
 CSPSourceList BuildCSPSourceList(
@@ -24,16 +24,16 @@ CSPSourceList BuildCSPSourceList(
     sources.push_back(BuildCSPSource(source));
   }
 
-  return CSPSourceList(source_list.allowSelf,  // allow_self
-                       source_list.allowStar,  // allow_star
-                       sources);               // source_list
+  return CSPSourceList(source_list.allow_self,  // allow_self
+                       source_list.allow_star,  // allow_star
+                       sources);                // source_list
 }
 
 CSPDirective BuildCSPDirective(
     const blink::WebContentSecurityPolicyDirective& directive) {
   return CSPDirective(
-      CSPDirective::StringToName(directive.name.utf8()),  // name
-      BuildCSPSourceList(directive.sourceList));          // source_list
+      CSPDirective::StringToName(directive.name.Utf8()),  // name
+      BuildCSPSourceList(directive.source_list));         // source_list
 }
 
 ContentSecurityPolicy BuildContentSecurityPolicy(
@@ -43,11 +43,11 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
     directives.push_back(BuildCSPDirective(directive));
 
   std::vector<std::string> report_endpoints;
-  for (const blink::WebString& endpoint : policy.reportEndpoints)
-    report_endpoints.push_back(endpoint.utf8());
+  for (const blink::WebString& endpoint : policy.report_endpoints)
+    report_endpoints.push_back(endpoint.Utf8());
 
   return ContentSecurityPolicy(
-      ContentSecurityPolicyHeader(policy.header.utf8(), policy.disposition,
+      ContentSecurityPolicyHeader(policy.header.Utf8(), policy.disposition,
                                   policy.source),
       directives, report_endpoints);
 }
@@ -55,26 +55,26 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
 blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
     const content::CSPViolationParams& violation_params) {
   blink::WebContentSecurityPolicyViolation violation;
-  violation.directive = blink::WebString::fromASCII(violation_params.directive);
-  violation.effectiveDirective =
-      blink::WebString::fromASCII(violation_params.effective_directive);
-  violation.consoleMessage =
-      blink::WebString::fromASCII(violation_params.console_message);
-  violation.blockedUrl = violation_params.blocked_url;
-  violation.reportEndpoints = blink::WebVector<blink::WebString>(
+  violation.directive = blink::WebString::FromASCII(violation_params.directive);
+  violation.effective_directive =
+      blink::WebString::FromASCII(violation_params.effective_directive);
+  violation.console_message =
+      blink::WebString::FromASCII(violation_params.console_message);
+  violation.blocked_url = violation_params.blocked_url;
+  violation.report_endpoints = blink::WebVector<blink::WebString>(
       violation_params.report_endpoints.size());
   for (size_t i = 0; i < violation_params.report_endpoints.size(); ++i) {
-    violation.reportEndpoints[i] =
-        blink::WebString::fromASCII(violation_params.report_endpoints[i]);
+    violation.report_endpoints[i] =
+        blink::WebString::FromASCII(violation_params.report_endpoints[i]);
   }
-  violation.header = blink::WebString::fromASCII(violation_params.header);
+  violation.header = blink::WebString::FromASCII(violation_params.header);
   violation.disposition = violation_params.disposition;
-  violation.afterRedirect = violation_params.after_redirect;
-  violation.sourceLocation.url =
-      blink::WebString::fromLatin1(violation_params.source_location.url);
-  violation.sourceLocation.lineNumber =
+  violation.after_redirect = violation_params.after_redirect;
+  violation.source_location.url =
+      blink::WebString::FromLatin1(violation_params.source_location.url);
+  violation.source_location.line_number =
       violation_params.source_location.line_number;
-  violation.sourceLocation.columnNumber =
+  violation.source_location.column_number =
       violation_params.source_location.column_number;
   return violation;
 }

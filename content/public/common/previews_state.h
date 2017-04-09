@@ -46,16 +46,18 @@ enum PreviewsTypes {
 // Ensure that content::PreviewsState and blink::WebURLRequest::PreviewsState
 // are kept in sync.
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_UNSPECIFIED,
-                            blink::WebURLRequest::PreviewsUnspecified);
-STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LOFI_ON, blink::WebURLRequest::ServerLoFiOn);
-STATIC_ASSERT_PREVIEWS_ENUM(CLIENT_LOFI_ON, blink::WebURLRequest::ClientLoFiOn);
+                            blink::WebURLRequest::kPreviewsUnspecified);
+STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LOFI_ON,
+                            blink::WebURLRequest::kServerLoFiOn);
+STATIC_ASSERT_PREVIEWS_ENUM(CLIENT_LOFI_ON,
+                            blink::WebURLRequest::kClientLoFiOn);
 STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LITE_PAGE_ON,
-                            blink::WebURLRequest::ServerLitePageOn);
+                            blink::WebURLRequest::kServerLitePageOn);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_NO_TRANSFORM,
-                            blink::WebURLRequest::PreviewsNoTransform);
-STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_OFF, blink::WebURLRequest::PreviewsOff);
+                            blink::WebURLRequest::kPreviewsNoTransform);
+STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_OFF, blink::WebURLRequest::kPreviewsOff);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_STATE_LAST,
-                            blink::WebURLRequest::PreviewsStateLast);
+                            blink::WebURLRequest::kPreviewsStateLast);
 
 }  // namespace content
 

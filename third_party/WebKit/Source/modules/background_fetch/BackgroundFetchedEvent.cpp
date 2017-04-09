@@ -21,24 +21,24 @@ BackgroundFetchedEvent::BackgroundFetchedEvent(
     const AtomicString& type,
     const BackgroundFetchedEventInit& initializer)
     : BackgroundFetchEvent(type, initializer, nullptr /* observer */),
-      m_fetches(initializer.fetches()) {}
+      fetches_(initializer.fetches()) {}
 
 BackgroundFetchedEvent::BackgroundFetchedEvent(
     const AtomicString& type,
     const BackgroundFetchedEventInit& initializer,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches,
-    ScriptState* scriptState,
+    ScriptState* script_state,
     WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
     : BackgroundFetchEvent(type, initializer, observer),
-      m_registration(registration) {
-  m_fetches.reserveInitialCapacity(fetches.size());
+      registration_(registration) {
+  fetches_.ReserveInitialCapacity(fetches.size());
   for (const WebBackgroundFetchSettledFetch& fetch : fetches) {
-    auto* settledFetch = BackgroundFetchSettledFetch::create(
-        Request::create(scriptState, fetch.request),
-        Response::create(scriptState, fetch.response));
+    auto* settled_fetch = BackgroundFetchSettledFetch::Create(
+        Request::Create(script_state, fetch.request),
+        Response::Create(script_state, fetch.response));
 
-    m_fetches.push_back(settledFetch);
+    fetches_.push_back(settled_fetch);
   }
 }
 
@@ -46,35 +46,35 @@ BackgroundFetchedEvent::~BackgroundFetchedEvent() = default;
 
 HeapVector<Member<BackgroundFetchSettledFetch>>
 BackgroundFetchedEvent::fetches() const {
-  return m_fetches;
+  return fetches_;
 }
 
-ScriptPromise BackgroundFetchedEvent::updateUI(ScriptState* scriptState,
+ScriptPromise BackgroundFetchedEvent::updateUI(ScriptState* script_state,
                                                const String& title) {
-  if (!m_registration) {
+  if (!registration_) {
     // Return a Promise that will never settle when a developer calls this
     // method on a BackgroundFetchedEvent instance they created themselves.
     return ScriptPromise();
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  BackgroundFetchBridge::from(m_registration)
-      ->updateUI(tag(), title,
-                 WTF::bind(&BackgroundFetchedEvent::didUpdateUI,
-                           wrapPersistent(this), wrapPersistent(resolver)));
+  BackgroundFetchBridge::From(registration_)
+      ->UpdateUI(tag(), title,
+                 WTF::Bind(&BackgroundFetchedEvent::DidUpdateUI,
+                           WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
-void BackgroundFetchedEvent::didUpdateUI(
+void BackgroundFetchedEvent::DidUpdateUI(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
     case mojom::blink::BackgroundFetchError::INVALID_TAG:
-      resolver->resolve();
+      resolver->Resolve();
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -85,14 +85,14 @@ void BackgroundFetchedEvent::didUpdateUI(
   NOTREACHED();
 }
 
-const AtomicString& BackgroundFetchedEvent::interfaceName() const {
+const AtomicString& BackgroundFetchedEvent::InterfaceName() const {
   return EventNames::BackgroundFetchedEvent;
 }
 
 DEFINE_TRACE(BackgroundFetchedEvent) {
-  visitor->trace(m_fetches);
-  visitor->trace(m_registration);
-  BackgroundFetchEvent::trace(visitor);
+  visitor->Trace(fetches_);
+  visitor->Trace(registration_);
+  BackgroundFetchEvent::Trace(visitor);
 }
 
 }  // namespace blink

@@ -18,7 +18,7 @@ class CSSPropertyCounterUtils {
   static const int kResetDefaultValue = 0;
   static const int kIncrementDefaultValue = 1;
 
-  static CSSValue* consumeCounter(CSSParserTokenRange&, int);
+  static CSSValue* ConsumeCounter(CSSParserTokenRange&, int);
 };
 
 }  // namespace blink

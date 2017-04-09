@@ -29,47 +29,47 @@ class CORE_EXPORT WorkletGlobalScope
 
  public:
   ~WorkletGlobalScope() override;
-  void dispose() override;
+  void Dispose() override;
 
-  bool isWorkletGlobalScope() const final { return true; }
+  bool IsWorkletGlobalScope() const final { return true; }
 
   // WorkerOrWorkletGlobalScope
-  ScriptWrappable* getScriptWrappable() const final {
+  ScriptWrappable* GetScriptWrappable() const final {
     return const_cast<WorkletGlobalScope*>(this);
   }
-  WorkerOrWorkletScriptController* scriptController() final {
-    return m_scriptController.get();
+  WorkerOrWorkletScriptController* ScriptController() final {
+    return script_controller_.Get();
   }
 
   // Always returns false here as worklets don't have a #close() method on
   // the global.
-  bool isClosing() const final { return false; }
+  bool IsClosing() const final { return false; }
 
   // ScriptWrappable
-  v8::Local<v8::Object> wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creationContext) final;
-  v8::Local<v8::Object> associateWithWrapper(
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) final;
+  v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper) final;
 
   // ExecutionContext
-  void disableEval(const String& errorMessage) final;
-  bool isJSExecutionForbidden() const final;
-  String userAgent() const final { return m_userAgent; }
-  SecurityContext& securityContext() final { return *this; }
-  EventQueue* getEventQueue() const final {
+  void DisableEval(const String& error_message) final;
+  bool IsJSExecutionForbidden() const final;
+  String UserAgent() const final { return user_agent_; }
+  SecurityContext& GetSecurityContext() final { return *this; }
+  EventQueue* GetEventQueue() const final {
     NOTREACHED();
     return nullptr;
   }  // WorkletGlobalScopes don't have an event queue.
-  bool isSecureContext(
-      String& errorMessage,
-      const SecureContextCheck = StandardSecureContextCheck) const final;
+  bool IsSecureContext(
+      String& error_message,
+      const SecureContextCheck = kStandardSecureContextCheck) const final;
 
-  using SecurityContext::getSecurityOrigin;
-  using SecurityContext::contentSecurityPolicy;
+  using SecurityContext::GetSecurityOrigin;
+  using SecurityContext::GetContentSecurityPolicy;
 
-  DOMTimerCoordinator* timers() final {
+  DOMTimerCoordinator* Timers() final {
     NOTREACHED();
     return nullptr;
   }  // WorkletGlobalScopes don't have timers.
@@ -80,27 +80,27 @@ class CORE_EXPORT WorkletGlobalScope
   // The url, userAgent and securityOrigin arguments are inherited from the
   // parent ExecutionContext for Worklets.
   WorkletGlobalScope(const KURL&,
-                     const String& userAgent,
+                     const String& user_agent,
                      PassRefPtr<SecurityOrigin>,
                      v8::Isolate*);
 
  private:
-  const KURL& virtualURL() const final { return m_url; }
-  KURL virtualCompleteURL(const String&) const final;
+  const KURL& VirtualURL() const final { return url_; }
+  KURL VirtualCompleteURL(const String&) const final;
 
-  EventTarget* errorEventTarget() final { return nullptr; }
-  void didUpdateSecurityOrigin() final {}
+  EventTarget* ErrorEventTarget() final { return nullptr; }
+  void DidUpdateSecurityOrigin() final {}
 
-  KURL m_url;
-  String m_userAgent;
-  Member<WorkerOrWorkletScriptController> m_scriptController;
+  KURL url_;
+  String user_agent_;
+  Member<WorkerOrWorkletScriptController> script_controller_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,
                   ExecutionContext,
                   context,
-                  context->isWorkletGlobalScope(),
-                  context.isWorkletGlobalScope());
+                  context->IsWorkletGlobalScope(),
+                  context.IsWorkletGlobalScope());
 
 }  // namespace blink
 

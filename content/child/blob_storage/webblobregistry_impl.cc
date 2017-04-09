@@ -50,93 +50,93 @@ WebBlobRegistryImpl::WebBlobRegistryImpl(
 WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 }
 
-std::unique_ptr<WebBlobRegistry::Builder> WebBlobRegistryImpl::createBuilder(
+std::unique_ptr<WebBlobRegistry::Builder> WebBlobRegistryImpl::CreateBuilder(
     const blink::WebString& uuid,
     const blink::WebString& content_type) {
   return base::WrapUnique(new BuilderImpl(uuid, content_type, sender_.get(),
                                           io_runner_, main_runner_));
 }
 
-void WebBlobRegistryImpl::registerBlobData(const blink::WebString& uuid,
+void WebBlobRegistryImpl::RegisterBlobData(const blink::WebString& uuid,
                                            const blink::WebBlobData& data) {
   TRACE_EVENT0("Blob", "Registry::RegisterBlob");
-  std::unique_ptr<Builder> builder(createBuilder(uuid, data.contentType()));
+  std::unique_ptr<Builder> builder(CreateBuilder(uuid, data.ContentType()));
 
   // This is temporary until we move to createBuilder() as our blob creation
   // method.
   size_t i = 0;
   WebBlobData::Item data_item;
-  while (data.itemAt(i++, data_item)) {
+  while (data.ItemAt(i++, data_item)) {
     if (data_item.length == 0) {
       continue;
     }
     switch (data_item.type) {
-      case WebBlobData::Item::TypeData: {
+      case WebBlobData::Item::kTypeData: {
         // WebBlobData does not allow partial data items.
         DCHECK(!data_item.offset && data_item.length == -1);
-        builder->appendData(data_item.data);
+        builder->AppendData(data_item.data);
         break;
       }
-      case WebBlobData::Item::TypeFile:
-        builder->appendFile(data_item.filePath,
+      case WebBlobData::Item::kTypeFile:
+        builder->AppendFile(data_item.file_path,
                             static_cast<uint64_t>(data_item.offset),
                             static_cast<uint64_t>(data_item.length),
-                            data_item.expectedModificationTime);
+                            data_item.expected_modification_time);
         break;
-      case WebBlobData::Item::TypeBlob:
-        builder->appendBlob(data_item.blobUUID, data_item.offset,
+      case WebBlobData::Item::kTypeBlob:
+        builder->AppendBlob(data_item.blob_uuid, data_item.offset,
                             data_item.length);
         break;
-      case WebBlobData::Item::TypeFileSystemURL:
+      case WebBlobData::Item::kTypeFileSystemURL:
         // We only support filesystem URL as of now.
-        DCHECK(GURL(data_item.fileSystemURL).SchemeIsFileSystem());
-        builder->appendFileSystemURL(data_item.fileSystemURL,
+        DCHECK(GURL(data_item.file_system_url).SchemeIsFileSystem());
+        builder->AppendFileSystemURL(data_item.file_system_url,
                                      static_cast<uint64_t>(data_item.offset),
                                      static_cast<uint64_t>(data_item.length),
-                                     data_item.expectedModificationTime);
+                                     data_item.expected_modification_time);
         break;
       default:
         NOTREACHED();
     }
   }
-  builder->build();
+  builder->Build();
 }
 
-void WebBlobRegistryImpl::addBlobDataRef(const WebString& uuid) {
-  sender_->Send(new BlobHostMsg_IncrementRefCount(uuid.utf8()));
+void WebBlobRegistryImpl::AddBlobDataRef(const WebString& uuid) {
+  sender_->Send(new BlobHostMsg_IncrementRefCount(uuid.Utf8()));
 }
 
-void WebBlobRegistryImpl::removeBlobDataRef(const WebString& uuid) {
-  sender_->Send(new BlobHostMsg_DecrementRefCount(uuid.utf8()));
+void WebBlobRegistryImpl::RemoveBlobDataRef(const WebString& uuid) {
+  sender_->Send(new BlobHostMsg_DecrementRefCount(uuid.Utf8()));
 }
 
-void WebBlobRegistryImpl::registerPublicBlobURL(const WebURL& url,
+void WebBlobRegistryImpl::RegisterPublicBlobURL(const WebURL& url,
                                                 const WebString& uuid) {
   // Measure how much jank the following synchronous IPC introduces.
   SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterPublicURLTime");
 
-  sender_->Send(new BlobHostMsg_RegisterPublicURL(url, uuid.utf8()));
+  sender_->Send(new BlobHostMsg_RegisterPublicURL(url, uuid.Utf8()));
 }
 
-void WebBlobRegistryImpl::revokePublicBlobURL(const WebURL& url) {
+void WebBlobRegistryImpl::RevokePublicBlobURL(const WebURL& url) {
   sender_->Send(new BlobHostMsg_RevokePublicURL(url));
 }
 
 // ------ streams stuff -----
 
-void WebBlobRegistryImpl::registerStreamURL(const WebURL& url,
+void WebBlobRegistryImpl::RegisterStreamURL(const WebURL& url,
                                             const WebString& content_type) {
   DCHECK(ChildThreadImpl::current());
-  sender_->Send(new StreamHostMsg_StartBuilding(url, content_type.utf8()));
+  sender_->Send(new StreamHostMsg_StartBuilding(url, content_type.Utf8()));
 }
 
-void WebBlobRegistryImpl::registerStreamURL(const WebURL& url,
+void WebBlobRegistryImpl::RegisterStreamURL(const WebURL& url,
                                             const WebURL& src_url) {
   DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_Clone(url, src_url));
 }
 
-void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
+void WebBlobRegistryImpl::AddDataToStream(const WebURL& url,
                                           const char* data,
                                           size_t length) {
   DCHECK(ChildThreadImpl::current());
@@ -171,22 +171,22 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
   }
 }
 
-void WebBlobRegistryImpl::flushStream(const WebURL& url) {
+void WebBlobRegistryImpl::FlushStream(const WebURL& url) {
   DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_Flush(url));
 }
 
-void WebBlobRegistryImpl::finalizeStream(const WebURL& url) {
+void WebBlobRegistryImpl::FinalizeStream(const WebURL& url) {
   DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_FinishBuilding(url));
 }
 
-void WebBlobRegistryImpl::abortStream(const WebURL& url) {
+void WebBlobRegistryImpl::AbortStream(const WebURL& url) {
   DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_AbortBuilding(url));
 }
 
-void WebBlobRegistryImpl::unregisterStreamURL(const WebURL& url) {
+void WebBlobRegistryImpl::UnregisterStreamURL(const WebURL& url) {
   DCHECK(ChildThreadImpl::current());
   sender_->Send(new StreamHostMsg_Remove(url));
 }
@@ -197,8 +197,8 @@ WebBlobRegistryImpl::BuilderImpl::BuilderImpl(
     ThreadSafeSender* sender,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner)
-    : uuid_(uuid.utf8()),
-      content_type_(content_type.utf8()),
+    : uuid_(uuid.Utf8()),
+      content_type_(content_type.Utf8()),
       consolidation_(new BlobConsolidation()),
       sender_(sender),
       io_runner_(std::move(io_runner)),
@@ -207,18 +207,18 @@ WebBlobRegistryImpl::BuilderImpl::BuilderImpl(
 WebBlobRegistryImpl::BuilderImpl::~BuilderImpl() {
 }
 
-void WebBlobRegistryImpl::BuilderImpl::appendData(
+void WebBlobRegistryImpl::BuilderImpl::AppendData(
     const WebThreadSafeData& data) {
   consolidation_->AddDataItem(data);
 }
 
-void WebBlobRegistryImpl::BuilderImpl::appendBlob(const WebString& uuid,
+void WebBlobRegistryImpl::BuilderImpl::AppendBlob(const WebString& uuid,
                                                   uint64_t offset,
                                                   uint64_t length) {
-  consolidation_->AddBlobItem(uuid.utf8(), offset, length);
+  consolidation_->AddBlobItem(uuid.Utf8(), offset, length);
 }
 
-void WebBlobRegistryImpl::BuilderImpl::appendFile(
+void WebBlobRegistryImpl::BuilderImpl::AppendFile(
     const WebString& path,
     uint64_t offset,
     uint64_t length,
@@ -227,7 +227,7 @@ void WebBlobRegistryImpl::BuilderImpl::appendFile(
                               expected_modification_time);
 }
 
-void WebBlobRegistryImpl::BuilderImpl::appendFileSystemURL(
+void WebBlobRegistryImpl::BuilderImpl::AppendFileSystemURL(
     const WebURL& fileSystemURL,
     uint64_t offset,
     uint64_t length,
@@ -237,7 +237,7 @@ void WebBlobRegistryImpl::BuilderImpl::appendFileSystemURL(
                                     expected_modification_time);
 }
 
-void WebBlobRegistryImpl::BuilderImpl::build() {
+void WebBlobRegistryImpl::BuilderImpl::Build() {
   BlobTransportController::InitiateBlobTransfer(
       uuid_, content_type_, std::move(consolidation_), sender_,
       io_runner_.get(), main_runner_);

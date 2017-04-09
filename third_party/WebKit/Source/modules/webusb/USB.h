@@ -27,14 +27,14 @@ class USB final : public EventTargetWithInlineData,
                   public device::usb::blink::DeviceManagerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(USB);
-  USING_PRE_FINALIZER(USB, dispose);
+  USING_PRE_FINALIZER(USB, Dispose);
 
  public:
-  static USB* create(LocalFrame& frame) { return new USB(frame); }
+  static USB* Create(LocalFrame& frame) { return new USB(frame); }
 
   virtual ~USB();
 
-  void dispose();
+  void Dispose();
 
   // USB.idl
   ScriptPromise getDevices(ScriptState*);
@@ -43,48 +43,48 @@ class USB final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
   // EventTarget overrides.
-  ExecutionContext* getExecutionContext() const override;
-  const AtomicString& interfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  USBDevice* getOrCreateDevice(device::usb::blink::DeviceInfoPtr);
+  USBDevice* GetOrCreateDevice(device::usb::blink::DeviceInfoPtr);
 
-  device::usb::blink::DeviceManager* deviceManager() const {
-    return m_deviceManager.get();
+  device::usb::blink::DeviceManager* GetDeviceManager() const {
+    return device_manager_.get();
   }
 
-  void onGetDevices(ScriptPromiseResolver*,
+  void OnGetDevices(ScriptPromiseResolver*,
                     Vector<device::usb::blink::DeviceInfoPtr>);
-  void onGetPermission(ScriptPromiseResolver*,
+  void OnGetPermission(ScriptPromiseResolver*,
                        device::usb::blink::DeviceInfoPtr);
 
   // DeviceManagerClient implementation.
   void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
   void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
 
-  void onDeviceManagerConnectionError();
-  void onChooserServiceConnectionError();
+  void OnDeviceManagerConnectionError();
+  void OnChooserServiceConnectionError();
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   // EventTarget protected overrides.
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
   explicit USB(LocalFrame& frame);
 
-  void ensureDeviceManagerConnection();
+  void EnsureDeviceManagerConnection();
 
-  device::usb::blink::DeviceManagerPtr m_deviceManager;
-  HeapHashSet<Member<ScriptPromiseResolver>> m_deviceManagerRequests;
-  device::usb::blink::ChooserServicePtr m_chooserService;
-  HeapHashSet<Member<ScriptPromiseResolver>> m_chooserServiceRequests;
-  mojo::Binding<device::usb::blink::DeviceManagerClient> m_clientBinding;
-  HeapHashMap<String, WeakMember<USBDevice>> m_deviceCache;
+  device::usb::blink::DeviceManagerPtr device_manager_;
+  HeapHashSet<Member<ScriptPromiseResolver>> device_manager_requests_;
+  device::usb::blink::ChooserServicePtr chooser_service_;
+  HeapHashSet<Member<ScriptPromiseResolver>> chooser_service_requests_;
+  mojo::Binding<device::usb::blink::DeviceManagerClient> client_binding_;
+  HeapHashMap<String, WeakMember<USBDevice>> device_cache_;
 };
 
 }  // namespace blink

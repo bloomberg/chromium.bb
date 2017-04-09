@@ -55,45 +55,46 @@ class SelectorFilter {
     DECLARE_TRACE();
 
     Member<Element> element;
-    Vector<unsigned, 4> identifierHashes;
+    Vector<unsigned, 4> identifier_hashes;
   };
 
   SelectorFilter() {}
 
-  void pushParent(Element& parent);
-  void popParent(Element& parent);
+  void PushParent(Element& parent);
+  void PopParent(Element& parent);
 
-  bool parentStackIsConsistent(const ContainerNode* parentNode) const {
-    return !m_parentStack.isEmpty() &&
-           m_parentStack.back().element == parentNode;
+  bool ParentStackIsConsistent(const ContainerNode* parent_node) const {
+    return !parent_stack_.IsEmpty() &&
+           parent_stack_.back().element == parent_node;
   }
 
   template <unsigned maximumIdentifierCount>
-  inline bool fastRejectSelector(const unsigned* identifierHashes) const;
-  static void collectIdentifierHashes(const CSSSelector&,
-                                      unsigned* identifierHashes,
-                                      unsigned maximumIdentifierCount);
+  inline bool FastRejectSelector(const unsigned* identifier_hashes) const;
+  static void CollectIdentifierHashes(const CSSSelector&,
+                                      unsigned* identifier_hashes,
+                                      unsigned maximum_identifier_count);
 
   DECLARE_TRACE();
 
  private:
-  void pushParentStackFrame(Element& parent);
-  void popParentStackFrame();
+  void PushParentStackFrame(Element& parent);
+  void PopParentStackFrame();
 
-  HeapVector<ParentStackFrame> m_parentStack;
+  HeapVector<ParentStackFrame> parent_stack_;
 
   // With 100 unique strings in the filter, 2^12 slot table has false positive
   // rate of ~0.2%.
   using IdentifierFilter = BloomFilter<12>;
-  std::unique_ptr<IdentifierFilter> m_ancestorIdentifierFilter;
+  std::unique_ptr<IdentifierFilter> ancestor_identifier_filter_;
 };
 
 template <unsigned maximumIdentifierCount>
-inline bool SelectorFilter::fastRejectSelector(
-    const unsigned* identifierHashes) const {
-  DCHECK(m_ancestorIdentifierFilter);
-  for (unsigned n = 0; n < maximumIdentifierCount && identifierHashes[n]; ++n) {
-    if (!m_ancestorIdentifierFilter->mayContain(identifierHashes[n]))
+inline bool SelectorFilter::FastRejectSelector(
+    const unsigned* identifier_hashes) const {
+  DCHECK(ancestor_identifier_filter_);
+  for (unsigned n = 0; n < maximumIdentifierCount && identifier_hashes[n];
+       ++n) {
+    if (!ancestor_identifier_filter_->MayContain(identifier_hashes[n]))
       return true;
   }
   return false;

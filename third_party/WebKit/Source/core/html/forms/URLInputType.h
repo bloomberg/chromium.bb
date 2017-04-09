@@ -37,17 +37,17 @@ namespace blink {
 
 class URLInputType final : public BaseTextInputType {
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
 
  private:
   URLInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
-  void countUsage() override;
-  const AtomicString& formControlType() const override;
-  bool typeMismatchFor(const String&) const override;
-  bool typeMismatch() const override;
-  String typeMismatchText() const override;
-  String sanitizeValue(const String&) const override;
-  String sanitizeUserInputValue(const String&) const override;
+  void CountUsage() override;
+  const AtomicString& FormControlType() const override;
+  bool TypeMismatchFor(const String&) const override;
+  bool TypeMismatch() const override;
+  String TypeMismatchText() const override;
+  String SanitizeValue(const String&) const override;
+  String SanitizeUserInputValue(const String&) const override;
 };
 
 }  // namespace blink

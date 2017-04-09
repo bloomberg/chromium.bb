@@ -18,54 +18,54 @@ using CSSCursorImageValue = cssvalue::CSSCursorImageValue;
 const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  bool inQuirksMode = isQuirksModeBehavior(context.mode());
+  bool in_quirks_mode = IsQuirksModeBehavior(context.Mode());
   CSSValueList* list = nullptr;
-  while (CSSValue* image = CSSPropertyParserHelpers::consumeImage(
+  while (CSSValue* image = CSSPropertyParserHelpers::ConsumeImage(
              range, &context,
-             CSSPropertyParserHelpers::ConsumeGeneratedImagePolicy::Forbid)) {
+             CSSPropertyParserHelpers::ConsumeGeneratedImagePolicy::kForbid)) {
     double num;
-    IntPoint hotSpot(-1, -1);
-    bool hotSpotSpecified = false;
-    if (CSSPropertyParserHelpers::consumeNumberRaw(range, num)) {
-      hotSpot.setX(int(num));
-      if (!CSSPropertyParserHelpers::consumeNumberRaw(range, num))
+    IntPoint hot_spot(-1, -1);
+    bool hot_spot_specified = false;
+    if (CSSPropertyParserHelpers::ConsumeNumberRaw(range, num)) {
+      hot_spot.SetX(int(num));
+      if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, num))
         return nullptr;
-      hotSpot.setY(int(num));
-      hotSpotSpecified = true;
+      hot_spot.SetY(int(num));
+      hot_spot_specified = true;
     }
 
     if (!list)
-      list = CSSValueList::createCommaSeparated();
+      list = CSSValueList::CreateCommaSeparated();
 
-    list->append(
-        *CSSCursorImageValue::create(*image, hotSpotSpecified, hotSpot));
-    if (!CSSPropertyParserHelpers::consumeCommaIncludingWhitespace(range))
+    list->Append(
+        *CSSCursorImageValue::Create(*image, hot_spot_specified, hot_spot));
+    if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range))
       return nullptr;
   }
 
-  CSSValueID id = range.peek().id();
-  if (!range.atEnd()) {
+  CSSValueID id = range.Peek().Id();
+  if (!range.AtEnd()) {
     if (id == CSSValueWebkitZoomIn)
-      context.count(UseCounter::PrefixedCursorZoomIn);
+      context.Count(UseCounter::kPrefixedCursorZoomIn);
     else if (id == CSSValueWebkitZoomOut)
-      context.count(UseCounter::PrefixedCursorZoomOut);
+      context.Count(UseCounter::kPrefixedCursorZoomOut);
   }
-  CSSValue* cursorType = nullptr;
+  CSSValue* cursor_type = nullptr;
   if (id == CSSValueHand) {
-    if (!inQuirksMode)  // Non-standard behavior
+    if (!in_quirks_mode)  // Non-standard behavior
       return nullptr;
-    cursorType = CSSIdentifierValue::create(CSSValuePointer);
-    range.consumeIncludingWhitespace();
+    cursor_type = CSSIdentifierValue::Create(CSSValuePointer);
+    range.ConsumeIncludingWhitespace();
   } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) ||
              id == CSSValueCopy || id == CSSValueNone) {
-    cursorType = CSSPropertyParserHelpers::consumeIdent(range);
+    cursor_type = CSSPropertyParserHelpers::ConsumeIdent(range);
   } else {
     return nullptr;
   }
 
   if (!list)
-    return cursorType;
-  list->append(*cursorType);
+    return cursor_type;
+  list->Append(*cursor_type);
   return list;
 }
 

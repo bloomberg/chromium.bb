@@ -105,7 +105,7 @@ namespace internal {
 template <typename T>
 struct CallbackPromiseAdapterTrivialWebTypeHolder {
   using WebType = T;
-  static T take(ScriptPromiseResolver*, const T& x) { return x; }
+  static T Take(ScriptPromiseResolver*, const T& x) { return x; }
 };
 template <>
 struct CallbackPromiseAdapterTrivialWebTypeHolder<void> {
@@ -115,22 +115,22 @@ struct CallbackPromiseAdapterTrivialWebTypeHolder<void> {
 class CallbackPromiseAdapterInternal {
  private:
   template <typename T>
-  static T webTypeHolderMatcher(
+  static T WebTypeHolderMatcher(
       typename std::remove_reference<typename T::WebType>::type*);
   template <typename T>
-  static CallbackPromiseAdapterTrivialWebTypeHolder<T> webTypeHolderMatcher(
+  static CallbackPromiseAdapterTrivialWebTypeHolder<T> WebTypeHolderMatcher(
       ...);
   template <typename T>
-  using WebTypeHolder = decltype(webTypeHolderMatcher<T>(nullptr));
+  using WebTypeHolder = decltype(WebTypeHolderMatcher<T>(nullptr));
 
   template <typename S, typename T>
   class Base : public WebCallbacks<typename S::WebType, typename T::WebType> {
    public:
-    explicit Base(ScriptPromiseResolver* resolver) : m_resolver(resolver) {}
-    ScriptPromiseResolver* resolver() { return m_resolver; }
+    explicit Base(ScriptPromiseResolver* resolver) : resolver_(resolver) {}
+    ScriptPromiseResolver* Resolver() { return resolver_; }
 
    private:
-    Persistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ScriptPromiseResolver> resolver_;
   };
 
   template <typename S, typename T>
@@ -138,12 +138,12 @@ class CallbackPromiseAdapterInternal {
    public:
     explicit OnSuccessAdapter(ScriptPromiseResolver* resolver)
         : Base<S, T>(resolver) {}
-    void onSuccess(typename S::WebType result) override {
-      ScriptPromiseResolver* resolver = this->resolver();
-      if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->isContextDestroyed())
+    void OnSuccess(typename S::WebType result) override {
+      ScriptPromiseResolver* resolver = this->Resolver();
+      if (!resolver->GetExecutionContext() ||
+          resolver->GetExecutionContext()->IsContextDestroyed())
         return;
-      resolver->resolve(S::take(resolver, std::move(result)));
+      resolver->Resolve(S::Take(resolver, std::move(result)));
     }
   };
   template <typename T>
@@ -152,12 +152,12 @@ class CallbackPromiseAdapterInternal {
    public:
     explicit OnSuccessAdapter(ScriptPromiseResolver* resolver)
         : Base<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T>(resolver) {}
-    void onSuccess() override {
-      ScriptPromiseResolver* resolver = this->resolver();
-      if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->isContextDestroyed())
+    void OnSuccess() override {
+      ScriptPromiseResolver* resolver = this->Resolver();
+      if (!resolver->GetExecutionContext() ||
+          resolver->GetExecutionContext()->IsContextDestroyed())
         return;
-      resolver->resolve();
+      resolver->Resolve();
     }
   };
   template <typename S, typename T>
@@ -165,13 +165,13 @@ class CallbackPromiseAdapterInternal {
    public:
     explicit OnErrorAdapter(ScriptPromiseResolver* resolver)
         : OnSuccessAdapter<S, T>(resolver) {}
-    void onError(typename T::WebType e) override {
-      ScriptPromiseResolver* resolver = this->resolver();
-      if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->isContextDestroyed())
+    void OnError(typename T::WebType e) override {
+      ScriptPromiseResolver* resolver = this->Resolver();
+      if (!resolver->GetExecutionContext() ||
+          resolver->GetExecutionContext()->IsContextDestroyed())
         return;
-      ScriptState::Scope scope(resolver->getScriptState());
-      resolver->reject(T::take(resolver, std::move(e)));
+      ScriptState::Scope scope(resolver->GetScriptState());
+      resolver->Reject(T::Take(resolver, std::move(e)));
     }
   };
   template <typename S>
@@ -183,12 +183,12 @@ class CallbackPromiseAdapterInternal {
     explicit OnErrorAdapter(ScriptPromiseResolver* resolver)
         : OnSuccessAdapter<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>>(
               resolver) {}
-    void onError() override {
-      ScriptPromiseResolver* resolver = this->resolver();
-      if (!resolver->getExecutionContext() ||
-          resolver->getExecutionContext()->isContextDestroyed())
+    void OnError() override {
+      ScriptPromiseResolver* resolver = this->Resolver();
+      if (!resolver->GetExecutionContext() ||
+          resolver->GetExecutionContext()->IsContextDestroyed())
         return;
-      resolver->reject();
+      resolver->Reject();
     }
   };
 

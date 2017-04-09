@@ -49,10 +49,10 @@ class PLATFORM_EXPORT ReverbInputBuffer {
   // The assumption is that the buffer's length is evenly divisible by
   // numberOfFrames (for nearly all cases this will be fine).
   // FIXME: remove numberOfFrames restriction...
-  void write(const float* sourceP, size_t numberOfFrames);
+  void Write(const float* source_p, size_t number_of_frames);
 
   // Background threads can call this to check if there's anything to read...
-  size_t writeIndex() const { return m_writeIndex; }
+  size_t WriteIndex() const { return write_index_; }
 
   // The individual background threads read here (and hope that they can keep up
   // with the buffer writing).
@@ -60,13 +60,13 @@ class PLATFORM_EXPORT ReverbInputBuffer {
   // The assumption is that the buffer's length is evenly divisible by
   // numberOfFrames.
   // FIXME: remove numberOfFrames restriction...
-  float* directReadFrom(int* readIndex, size_t numberOfFrames);
+  float* DirectReadFrom(int* read_index, size_t number_of_frames);
 
-  void reset();
+  void Reset();
 
  private:
-  AudioFloatArray m_buffer;
-  size_t m_writeIndex;
+  AudioFloatArray buffer_;
+  size_t write_index_;
 };
 
 }  // namespace blink

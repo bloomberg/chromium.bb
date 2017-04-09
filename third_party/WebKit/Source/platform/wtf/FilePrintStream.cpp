@@ -30,30 +30,30 @@
 
 namespace WTF {
 
-FilePrintStream::FilePrintStream(FILE* file, AdoptionMode adoptionMode)
-    : m_file(file), m_adoptionMode(adoptionMode) {}
+FilePrintStream::FilePrintStream(FILE* file, AdoptionMode adoption_mode)
+    : file_(file), adoption_mode_(adoption_mode) {}
 
 FilePrintStream::~FilePrintStream() {
-  if (m_adoptionMode == Borrow)
+  if (adoption_mode_ == kBorrow)
     return;
-  fclose(m_file);
+  fclose(file_);
 }
 
-std::unique_ptr<FilePrintStream> FilePrintStream::open(const char* filename,
+std::unique_ptr<FilePrintStream> FilePrintStream::Open(const char* filename,
                                                        const char* mode) {
   FILE* file = fopen(filename, mode);
   if (!file)
     return std::unique_ptr<FilePrintStream>();
 
-  return WTF::makeUnique<FilePrintStream>(file);
+  return WTF::MakeUnique<FilePrintStream>(file);
 }
 
-void FilePrintStream::vprintf(const char* format, va_list argList) {
-  vfprintf(m_file, format, argList);
+void FilePrintStream::Vprintf(const char* format, va_list arg_list) {
+  vfprintf(file_, format, arg_list);
 }
 
-void FilePrintStream::flush() {
-  fflush(m_file);
+void FilePrintStream::Flush() {
+  fflush(file_);
 }
 
 }  // namespace WTF

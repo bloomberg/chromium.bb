@@ -36,48 +36,48 @@ class SecurityPolicyViolationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SecurityPolicyViolationEvent* create(
+  static SecurityPolicyViolationEvent* Create(
       const AtomicString& type,
       const SecurityPolicyViolationEventInit& initializer) {
     return new SecurityPolicyViolationEvent(type, initializer);
   }
 
-  const String& documentURI() const { return m_documentURI; }
-  const String& referrer() const { return m_referrer; }
-  const String& blockedURI() const { return m_blockedURI; }
-  const String& violatedDirective() const { return m_violatedDirective; }
-  const String& effectiveDirective() const { return m_effectiveDirective; }
-  const String& originalPolicy() const { return m_originalPolicy; }
+  const String& documentURI() const { return document_uri_; }
+  const String& referrer() const { return referrer_; }
+  const String& blockedURI() const { return blocked_uri_; }
+  const String& violatedDirective() const { return violated_directive_; }
+  const String& effectiveDirective() const { return effective_directive_; }
+  const String& originalPolicy() const { return original_policy_; }
   const String& disposition() const;
-  const String& sourceFile() const { return m_sourceFile; }
-  const String& sample() const { return m_sample; }
-  int lineNumber() const { return m_lineNumber; }
-  int columnNumber() const { return m_columnNumber; }
-  uint16_t statusCode() const { return m_statusCode; }
+  const String& sourceFile() const { return source_file_; }
+  const String& sample() const { return sample_; }
+  int lineNumber() const { return line_number_; }
+  int columnNumber() const { return column_number_; }
+  uint16_t statusCode() const { return status_code_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::SecurityPolicyViolationEvent;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::Trace(visitor); }
 
  private:
   SecurityPolicyViolationEvent(
       const AtomicString& type,
       const SecurityPolicyViolationEventInit& initializer);
 
-  String m_documentURI;
-  String m_referrer;
-  String m_blockedURI;
-  String m_violatedDirective;
-  String m_effectiveDirective;
-  String m_originalPolicy;
-  ContentSecurityPolicyHeaderType m_disposition;
-  String m_sourceFile;
-  String m_sample;
-  int m_lineNumber;
-  int m_columnNumber;
-  int m_statusCode;
+  String document_uri_;
+  String referrer_;
+  String blocked_uri_;
+  String violated_directive_;
+  String effective_directive_;
+  String original_policy_;
+  ContentSecurityPolicyHeaderType disposition_;
+  String source_file_;
+  String sample_;
+  int line_number_;
+  int column_number_;
+  int status_code_;
 };
 
 }  // namespace blink

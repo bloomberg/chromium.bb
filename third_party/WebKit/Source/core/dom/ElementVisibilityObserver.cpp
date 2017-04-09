@@ -14,46 +14,47 @@ namespace blink {
 ElementVisibilityObserver::ElementVisibilityObserver(
     Element* element,
     std::unique_ptr<VisibilityCallback> callback)
-    : m_element(element), m_callback(std::move(callback)) {}
+    : element_(element), callback_(std::move(callback)) {}
 
 ElementVisibilityObserver::~ElementVisibilityObserver() = default;
 
-void ElementVisibilityObserver::start() {
-  DCHECK(!m_intersectionObserver);
+void ElementVisibilityObserver::Start() {
+  DCHECK(!intersection_observer_);
 
-  ExecutionContext* context = m_element->getExecutionContext();
-  DCHECK(context->isDocument());
-  Document& document = toDocument(*context);
+  ExecutionContext* context = element_->GetExecutionContext();
+  DCHECK(context->IsDocument());
+  Document& document = ToDocument(*context);
 
-  m_intersectionObserver = IntersectionObserver::create(
+  intersection_observer_ = IntersectionObserver::Create(
       Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}),
-      &document, WTF::bind(&ElementVisibilityObserver::onVisibilityChanged,
-                           wrapWeakPersistent(this)));
-  DCHECK(m_intersectionObserver);
+      &document,
+      WTF::Bind(&ElementVisibilityObserver::OnVisibilityChanged,
+                WrapWeakPersistent(this)));
+  DCHECK(intersection_observer_);
 
-  m_intersectionObserver->observe(m_element.release());
+  intersection_observer_->observe(element_.Release());
 }
 
-void ElementVisibilityObserver::stop() {
-  DCHECK(m_intersectionObserver);
+void ElementVisibilityObserver::Stop() {
+  DCHECK(intersection_observer_);
 
-  m_intersectionObserver->disconnect();
-  m_intersectionObserver = nullptr;
+  intersection_observer_->disconnect();
+  intersection_observer_ = nullptr;
 }
 
-void ElementVisibilityObserver::deliverObservationsForTesting() {
-  m_intersectionObserver->deliver();
+void ElementVisibilityObserver::DeliverObservationsForTesting() {
+  intersection_observer_->Deliver();
 }
 
 DEFINE_TRACE(ElementVisibilityObserver) {
-  visitor->trace(m_element);
-  visitor->trace(m_intersectionObserver);
+  visitor->Trace(element_);
+  visitor->Trace(intersection_observer_);
 }
 
-void ElementVisibilityObserver::onVisibilityChanged(
+void ElementVisibilityObserver::OnVisibilityChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  bool isVisible = entries.back()->intersectionRatio() > 0.f;
-  (*m_callback.get())(isVisible);
+  bool is_visible = entries.back()->intersectionRatio() > 0.f;
+  (*callback_.get())(is_visible);
 }
 
 }  // namespace blink

@@ -11,30 +11,30 @@
 namespace blink {
 
 CompositorAnimationHost::CompositorAnimationHost(cc::AnimationHost* host)
-    : m_animationHost(host) {
-  DCHECK(m_animationHost);
+    : animation_host_(host) {
+  DCHECK(animation_host_);
 }
 
-void CompositorAnimationHost::addTimeline(
+void CompositorAnimationHost::AddTimeline(
     const CompositorAnimationTimeline& timeline) {
-  m_animationHost->AddAnimationTimeline(timeline.animationTimeline());
+  animation_host_->AddAnimationTimeline(timeline.GetAnimationTimeline());
 }
 
-void CompositorAnimationHost::removeTimeline(
+void CompositorAnimationHost::RemoveTimeline(
     const CompositorAnimationTimeline& timeline) {
-  m_animationHost->RemoveAnimationTimeline(timeline.animationTimeline());
+  animation_host_->RemoveAnimationTimeline(timeline.GetAnimationTimeline());
 }
 
-void CompositorAnimationHost::adjustImplOnlyScrollOffsetAnimation(
-    CompositorElementId elementId,
+void CompositorAnimationHost::AdjustImplOnlyScrollOffsetAnimation(
+    CompositorElementId element_id,
     const gfx::Vector2dF& adjustment) {
-  m_animationHost->scroll_offset_animations().AddAdjustmentUpdate(elementId,
+  animation_host_->scroll_offset_animations().AddAdjustmentUpdate(element_id,
                                                                   adjustment);
 }
 
-void CompositorAnimationHost::takeOverImplOnlyScrollOffsetAnimation(
-    CompositorElementId elementId) {
-  m_animationHost->scroll_offset_animations().AddTakeoverUpdate(elementId);
+void CompositorAnimationHost::TakeOverImplOnlyScrollOffsetAnimation(
+    CompositorElementId element_id) {
+  animation_host_->scroll_offset_animations().AddTakeoverUpdate(element_id);
 }
 
 }  // namespace blink

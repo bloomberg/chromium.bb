@@ -31,18 +31,18 @@ class SVGTitleElement final : public SVGElement {
  public:
   DECLARE_NODE_FACTORY(SVGTitleElement);
 
-  void setText(const String&);
+  void SetText(const String&);
 
  private:
   explicit SVGTitleElement(Document&);
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  void childrenChanged(const ChildrenChange&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-  bool m_ignoreTitleUpdatesWhenChildrenChange;
+  bool ignore_title_updates_when_children_change_;
 };
 
 }  // namespace blink

@@ -34,8 +34,8 @@
 
 namespace blink {
 
-void WebScriptController::registerExtension(v8::Extension* extension) {
-  ScriptController::registerExtensionIfNeeded(extension);
+void WebScriptController::RegisterExtension(v8::Extension* extension) {
+  ScriptController::RegisterExtensionIfNeeded(extension);
 }
 
 }  // namespace blink

@@ -14,8 +14,8 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   WTF_MAKE_NONCOPYABLE(InlineStylePropertyMap);
 
  public:
-  explicit InlineStylePropertyMap(Element* ownerElement)
-      : m_ownerElement(ownerElement) {}
+  explicit InlineStylePropertyMap(Element* owner_element)
+      : owner_element_(owner_element) {}
 
   Vector<String> getProperties() override;
 
@@ -28,18 +28,19 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   void remove(CSSPropertyID, ExceptionState&) override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_ownerElement);
-    StylePropertyMap::trace(visitor);
+    visitor->Trace(owner_element_);
+    StylePropertyMap::Trace(visitor);
   }
 
  protected:
-  CSSStyleValueVector getAllInternal(CSSPropertyID) override;
-  CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
+  CSSStyleValueVector GetAllInternal(CSSPropertyID) override;
+  CSSStyleValueVector GetAllInternal(
+      AtomicString custom_property_name) override;
 
-  HeapVector<StylePropertyMapEntry> getIterationEntries() override;
+  HeapVector<StylePropertyMapEntry> GetIterationEntries() override;
 
  private:
-  Member<Element> m_ownerElement;
+  Member<Element> owner_element_;
 };
 
 }  // namespace blink

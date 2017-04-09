@@ -42,68 +42,68 @@ static inline SkScalar WebCoreFloatToSkScalar(float f) {
   return SkFloatToScalar(std::isfinite(f) ? f : 0);
 }
 
-FloatPoint::FloatPoint(const IntPoint& p) : m_x(p.x()), m_y(p.y()) {}
+FloatPoint::FloatPoint(const IntPoint& p) : x_(p.X()), y_(p.Y()) {}
 
-FloatPoint::FloatPoint(const DoublePoint& p) : m_x(p.x()), m_y(p.y()) {}
+FloatPoint::FloatPoint(const DoublePoint& p) : x_(p.X()), y_(p.Y()) {}
 
 FloatPoint::FloatPoint(const LayoutPoint& p)
-    : m_x(p.x().toFloat()), m_y(p.y().toFloat()) {}
+    : x_(p.X().ToFloat()), y_(p.Y().ToFloat()) {}
 
 FloatPoint::FloatPoint(const LayoutSize& size)
-    : m_x(size.width().toFloat()), m_y(size.height().toFloat()) {}
+    : x_(size.Width().ToFloat()), y_(size.Height().ToFloat()) {}
 
-float FloatPoint::slopeAngleRadians() const {
-  return atan2f(m_y, m_x);
+float FloatPoint::SlopeAngleRadians() const {
+  return atan2f(y_, x_);
 }
 
 float FloatPoint::length() const {
-  return hypotf(m_x, m_y);
+  return hypotf(x_, y_);
 }
 
-void FloatPoint::move(const LayoutSize& size) {
-  m_x += size.width();
-  m_y += size.height();
+void FloatPoint::Move(const LayoutSize& size) {
+  x_ += size.Width();
+  y_ += size.Height();
 }
 
-void FloatPoint::moveBy(const LayoutPoint& point) {
-  m_x += point.x();
-  m_y += point.y();
+void FloatPoint::MoveBy(const LayoutPoint& point) {
+  x_ += point.X();
+  y_ += point.Y();
 }
 
-SkPoint FloatPoint::data() const {
-  SkPoint p = {WebCoreFloatToSkScalar(m_x), WebCoreFloatToSkScalar(m_y)};
+SkPoint FloatPoint::Data() const {
+  SkPoint p = {WebCoreFloatToSkScalar(x_), WebCoreFloatToSkScalar(y_)};
   return p;
 }
 
-FloatPoint FloatPoint::narrowPrecision(double x, double y) {
+FloatPoint FloatPoint::NarrowPrecision(double x, double y) {
   return FloatPoint(clampTo<float>(x), clampTo<float>(y));
 }
 
-bool findIntersection(const FloatPoint& p1,
+bool FindIntersection(const FloatPoint& p1,
                       const FloatPoint& p2,
                       const FloatPoint& d1,
                       const FloatPoint& d2,
                       FloatPoint& intersection) {
-  float pxLength = p2.x() - p1.x();
-  float pyLength = p2.y() - p1.y();
+  float px_length = p2.X() - p1.X();
+  float py_length = p2.Y() - p1.Y();
 
-  float dxLength = d2.x() - d1.x();
-  float dyLength = d2.y() - d1.y();
+  float dx_length = d2.X() - d1.X();
+  float dy_length = d2.Y() - d1.Y();
 
-  float denom = pxLength * dyLength - pyLength * dxLength;
+  float denom = px_length * dy_length - py_length * dx_length;
   if (!denom)
     return false;
 
   float param =
-      ((d1.x() - p1.x()) * dyLength - (d1.y() - p1.y()) * dxLength) / denom;
+      ((d1.X() - p1.X()) * dy_length - (d1.Y() - p1.Y()) * dx_length) / denom;
 
-  intersection.setX(p1.x() + param * pxLength);
-  intersection.setY(p1.y() + param * pyLength);
+  intersection.SetX(p1.X() + param * px_length);
+  intersection.SetY(p1.Y() + param * py_length);
   return true;
 }
 
-String FloatPoint::toString() const {
-  return String::format("%lg,%lg", x(), y());
+String FloatPoint::ToString() const {
+  return String::Format("%lg,%lg", X(), Y());
 }
 
 }  // namespace blink

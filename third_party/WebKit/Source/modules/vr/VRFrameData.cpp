@@ -16,39 +16,39 @@ namespace blink {
 // provide the projection and view matrices directly.
 
 // Build a projection matrix from a field of view and near/far planes.
-void projectionFromFieldOfView(DOMFloat32Array* outArray,
+void ProjectionFromFieldOfView(DOMFloat32Array* out_array,
                                VRFieldOfView* fov,
-                               float depthNear,
-                               float depthFar) {
-  float upTan = tanf(fov->upDegrees() * M_PI / 180.0);
-  float downTan = tanf(fov->downDegrees() * M_PI / 180.0);
-  float leftTan = tanf(fov->leftDegrees() * M_PI / 180.0);
-  float rightTan = tanf(fov->rightDegrees() * M_PI / 180.0);
-  float xScale = 2.0f / (leftTan + rightTan);
-  float yScale = 2.0f / (upTan + downTan);
+                               float depth_near,
+                               float depth_far) {
+  float up_tan = tanf(fov->UpDegrees() * M_PI / 180.0);
+  float down_tan = tanf(fov->DownDegrees() * M_PI / 180.0);
+  float left_tan = tanf(fov->LeftDegrees() * M_PI / 180.0);
+  float right_tan = tanf(fov->RightDegrees() * M_PI / 180.0);
+  float x_scale = 2.0f / (left_tan + right_tan);
+  float y_scale = 2.0f / (up_tan + down_tan);
 
-  float* out = outArray->data();
-  out[0] = xScale;
+  float* out = out_array->Data();
+  out[0] = x_scale;
   out[1] = 0.0f;
   out[2] = 0.0f;
   out[3] = 0.0f;
   out[4] = 0.0f;
-  out[5] = yScale;
+  out[5] = y_scale;
   out[6] = 0.0f;
   out[7] = 0.0f;
-  out[8] = -((leftTan - rightTan) * xScale * 0.5);
-  out[9] = ((upTan - downTan) * yScale * 0.5);
-  out[10] = (depthNear + depthFar) / (depthNear - depthFar);
+  out[8] = -((left_tan - right_tan) * x_scale * 0.5);
+  out[9] = ((up_tan - down_tan) * y_scale * 0.5);
+  out[10] = (depth_near + depth_far) / (depth_near - depth_far);
   out[11] = -1.0f;
   out[12] = 0.0f;
   out[13] = 0.0f;
-  out[14] = (2 * depthFar * depthNear) / (depthNear - depthFar);
+  out[14] = (2 * depth_far * depth_near) / (depth_near - depth_far);
   out[15] = 0.0f;
 }
 
 // Create a matrix from a rotation and translation.
-void matrixfromRotationTranslation(
-    DOMFloat32Array* outArray,
+void MatrixfromRotationTranslation(
+    DOMFloat32Array* out_array,
     const WTF::Optional<WTF::Vector<float>>& rotation,
     const WTF::Optional<WTF::Vector<float>>& translation) {
   // Quaternion math
@@ -70,7 +70,7 @@ void matrixfromRotationTranslation(
   float wy = w * y2;
   float wz = w * z2;
 
-  float* out = outArray->data();
+  float* out = out_array->Data();
   out[0] = 1 - (yy + zz);
   out[1] = xy + wz;
   out[2] = xz - wy;
@@ -90,24 +90,24 @@ void matrixfromRotationTranslation(
 }
 
 // Translate a matrix
-void matrixTranslate(DOMFloat32Array* outArray,
+void MatrixTranslate(DOMFloat32Array* out_array,
                      const DOMFloat32Array* translation) {
   if (!translation)
     return;
 
-  float x = translation->data()[0];
-  float y = translation->data()[1];
-  float z = translation->data()[2];
+  float x = translation->Data()[0];
+  float y = translation->Data()[1];
+  float z = translation->Data()[2];
 
-  float* out = outArray->data();
+  float* out = out_array->Data();
   out[12] = out[0] * x + out[4] * y + out[8] * z + out[12];
   out[13] = out[1] * x + out[5] * y + out[9] * z + out[13];
   out[14] = out[2] * x + out[6] * y + out[10] * z + out[14];
   out[15] = out[3] * x + out[7] * y + out[11] * z + out[15];
 }
 
-bool matrixInvert(DOMFloat32Array* outArray) {
-  float* out = outArray->data();
+bool MatrixInvert(DOMFloat32Array* out_array) {
+  float* out = out_array->Data();
   float a00 = out[0];
   float a01 = out[1];
   float a02 = out[2];
@@ -168,49 +168,49 @@ bool matrixInvert(DOMFloat32Array* outArray) {
 };
 
 VRFrameData::VRFrameData() {
-  m_leftProjectionMatrix = DOMFloat32Array::create(16);
-  m_leftViewMatrix = DOMFloat32Array::create(16);
-  m_rightProjectionMatrix = DOMFloat32Array::create(16);
-  m_rightViewMatrix = DOMFloat32Array::create(16);
-  m_pose = VRPose::create();
+  left_projection_matrix_ = DOMFloat32Array::Create(16);
+  left_view_matrix_ = DOMFloat32Array::Create(16);
+  right_projection_matrix_ = DOMFloat32Array::Create(16);
+  right_view_matrix_ = DOMFloat32Array::Create(16);
+  pose_ = VRPose::Create();
 }
 
-bool VRFrameData::update(const device::mojom::blink::VRPosePtr& pose,
-                         VREyeParameters* leftEye,
-                         VREyeParameters* rightEye,
-                         float depthNear,
-                         float depthFar) {
+bool VRFrameData::Update(const device::mojom::blink::VRPosePtr& pose,
+                         VREyeParameters* left_eye,
+                         VREyeParameters* right_eye,
+                         float depth_near,
+                         float depth_far) {
   // Build the projection matrices
-  projectionFromFieldOfView(m_leftProjectionMatrix, leftEye->fieldOfView(),
-                            depthNear, depthFar);
-  projectionFromFieldOfView(m_rightProjectionMatrix, rightEye->fieldOfView(),
-                            depthNear, depthFar);
+  ProjectionFromFieldOfView(left_projection_matrix_, left_eye->FieldOfView(),
+                            depth_near, depth_far);
+  ProjectionFromFieldOfView(right_projection_matrix_, right_eye->FieldOfView(),
+                            depth_near, depth_far);
 
   // Build the view matrices
-  matrixfromRotationTranslation(m_leftViewMatrix, pose->orientation,
+  MatrixfromRotationTranslation(left_view_matrix_, pose->orientation,
                                 pose->position);
-  matrixTranslate(m_leftViewMatrix, leftEye->offset());
-  if (!matrixInvert(m_leftViewMatrix))
+  MatrixTranslate(left_view_matrix_, left_eye->offset());
+  if (!MatrixInvert(left_view_matrix_))
     return false;
 
-  matrixfromRotationTranslation(m_rightViewMatrix, pose->orientation,
+  MatrixfromRotationTranslation(right_view_matrix_, pose->orientation,
                                 pose->position);
-  matrixTranslate(m_rightViewMatrix, rightEye->offset());
-  if (!matrixInvert(m_rightViewMatrix))
+  MatrixTranslate(right_view_matrix_, right_eye->offset());
+  if (!MatrixInvert(right_view_matrix_))
     return false;
 
   // Set the pose
-  m_pose->setPose(pose);
+  pose_->SetPose(pose);
 
   return true;
 }
 
 DEFINE_TRACE(VRFrameData) {
-  visitor->trace(m_leftProjectionMatrix);
-  visitor->trace(m_leftViewMatrix);
-  visitor->trace(m_rightProjectionMatrix);
-  visitor->trace(m_rightViewMatrix);
-  visitor->trace(m_pose);
+  visitor->Trace(left_projection_matrix_);
+  visitor->Trace(left_view_matrix_);
+  visitor->Trace(right_projection_matrix_);
+  visitor->Trace(right_view_matrix_);
+  visitor->Trace(pose_);
 }
 
 }  // namespace blink

@@ -71,34 +71,34 @@ class CORE_EXPORT InspectorDOMAgent final
  public:
   struct CORE_EXPORT DOMListener : public GarbageCollectedMixin {
     virtual ~DOMListener() {}
-    virtual void didAddDocument(Document*) = 0;
-    virtual void didRemoveDocument(Document*) = 0;
-    virtual void didRemoveDOMNode(Node*) = 0;
-    virtual void didModifyDOMAttr(Element*) = 0;
+    virtual void DidAddDocument(Document*) = 0;
+    virtual void DidRemoveDocument(Document*) = 0;
+    virtual void DidRemoveDOMNode(Node*) = 0;
+    virtual void DidModifyDOMAttr(Element*) = 0;
   };
 
   enum SearchMode {
-    NotSearching,
-    SearchingForNormal,
-    SearchingForUAShadow,
+    kNotSearching,
+    kSearchingForNormal,
+    kSearchingForUAShadow,
   };
 
   class Client {
    public:
     virtual ~Client() {}
-    virtual void hideHighlight() {}
-    virtual void highlightNode(Node*,
+    virtual void HideHighlight() {}
+    virtual void HighlightNode(Node*,
                                const InspectorHighlightConfig&,
-                               bool omitTooltip) {}
-    virtual void highlightQuad(std::unique_ptr<FloatQuad>,
+                               bool omit_tooltip) {}
+    virtual void HighlightQuad(std::unique_ptr<FloatQuad>,
                                const InspectorHighlightConfig&) {}
-    virtual void setInspectMode(SearchMode searchMode,
+    virtual void SetInspectMode(SearchMode search_mode,
                                 std::unique_ptr<InspectorHighlightConfig>) {}
   };
 
-  static protocol::Response toResponse(ExceptionState&);
-  static bool getPseudoElementType(PseudoId, String*);
-  static ShadowRoot* userAgentShadowRoot(Node*);
+  static protocol::Response ToResponse(ExceptionState&);
+  static bool GetPseudoElementType(PseudoId, String*);
+  static ShadowRoot* UserAgentShadowRoot(Node*);
 
   InspectorDOMAgent(v8::Isolate*,
                     InspectedFrames*,
@@ -107,63 +107,64 @@ class CORE_EXPORT InspectorDOMAgent final
   ~InspectorDOMAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void restore() override;
+  void Restore() override;
 
-  HeapVector<Member<Document>> documents();
-  void reset();
+  HeapVector<Member<Document>> Documents();
+  void Reset();
 
   // Methods called from the frontend for DOM nodes inspection.
   protocol::Response enable() override;
   protocol::Response disable() override;
   protocol::Response getDocument(
       protocol::Maybe<int> depth,
-      protocol::Maybe<bool> traverseFrames,
+      protocol::Maybe<bool> traverse_frames,
       std::unique_ptr<protocol::DOM::Node>* root) override;
   protocol::Response getFlattenedDocument(
       protocol::Maybe<int> depth,
       protocol::Maybe<bool> pierce,
       std::unique_ptr<protocol::Array<protocol::DOM::Node>>* nodes) override;
   protocol::Response collectClassNamesFromSubtree(
-      int nodeId,
-      std::unique_ptr<protocol::Array<String>>* classNames) override;
+      int node_id,
+      std::unique_ptr<protocol::Array<String>>* class_names) override;
   protocol::Response requestChildNodes(
-      int nodeId,
+      int node_id,
       protocol::Maybe<int> depth,
-      protocol::Maybe<bool> traverseFrames) override;
-  protocol::Response querySelector(int nodeId,
+      protocol::Maybe<bool> traverse_frames) override;
+  protocol::Response querySelector(int node_id,
                                    const String& selector,
-                                   int* outNodeId) override;
+                                   int* out_node_id) override;
   protocol::Response querySelectorAll(
-      int nodeId,
+      int node_id,
       const String& selector,
-      std::unique_ptr<protocol::Array<int>>* nodeIds) override;
-  protocol::Response setNodeName(int nodeId,
+      std::unique_ptr<protocol::Array<int>>* node_ids) override;
+  protocol::Response setNodeName(int node_id,
                                  const String& name,
-                                 int* outNodeId) override;
-  protocol::Response setNodeValue(int nodeId, const String& value) override;
-  protocol::Response removeNode(int nodeId) override;
-  protocol::Response setAttributeValue(int nodeId,
+                                 int* out_node_id) override;
+  protocol::Response setNodeValue(int node_id, const String& value) override;
+  protocol::Response removeNode(int node_id) override;
+  protocol::Response setAttributeValue(int node_id,
                                        const String& name,
                                        const String& value) override;
-  protocol::Response setAttributesAsText(int nodeId,
+  protocol::Response setAttributesAsText(int node_id,
                                          const String& text,
                                          protocol::Maybe<String> name) override;
-  protocol::Response removeAttribute(int nodeId, const String& name) override;
-  protocol::Response getOuterHTML(int nodeId, String* outerHTML) override;
-  protocol::Response setOuterHTML(int nodeId, const String& outerHTML) override;
+  protocol::Response removeAttribute(int node_id, const String& name) override;
+  protocol::Response getOuterHTML(int node_id, String* outer_html) override;
+  protocol::Response setOuterHTML(int node_id,
+                                  const String& outer_html) override;
   protocol::Response performSearch(
       const String& query,
-      protocol::Maybe<bool> includeUserAgentShadowDOM,
-      String* searchId,
-      int* resultCount) override;
+      protocol::Maybe<bool> include_user_agent_shadow_dom,
+      String* search_id,
+      int* result_count) override;
   protocol::Response getSearchResults(
-      const String& searchId,
-      int fromIndex,
-      int toIndex,
-      std::unique_ptr<protocol::Array<int>>* nodeIds) override;
-  protocol::Response discardSearchResults(const String& searchId) override;
-  protocol::Response requestNode(const String& objectId,
-                                 int* outNodeId) override;
+      const String& search_id,
+      int from_index,
+      int to_index,
+      std::unique_ptr<protocol::Array<int>>* node_ids) override;
+  protocol::Response discardSearchResults(const String& search_id) override;
+  protocol::Response requestNode(const String& object_id,
+                                 int* out_node_id) override;
   protocol::Response setInspectMode(
       const String& mode,
       protocol::Maybe<protocol::DOM::HighlightConfig>) override;
@@ -173,209 +174,211 @@ class CORE_EXPORT InspectorDOMAgent final
       int width,
       int height,
       protocol::Maybe<protocol::DOM::RGBA> color,
-      protocol::Maybe<protocol::DOM::RGBA> outlineColor) override;
+      protocol::Maybe<protocol::DOM::RGBA> outline_color) override;
   protocol::Response highlightQuad(
       std::unique_ptr<protocol::Array<double>> quad,
       protocol::Maybe<protocol::DOM::RGBA> color,
-      protocol::Maybe<protocol::DOM::RGBA> outlineColor) override;
+      protocol::Maybe<protocol::DOM::RGBA> outline_color) override;
   protocol::Response highlightNode(
       std::unique_ptr<protocol::DOM::HighlightConfig>,
-      protocol::Maybe<int> nodeId,
-      protocol::Maybe<int> backendNodeId,
-      protocol::Maybe<String> objectId) override;
+      protocol::Maybe<int> node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id) override;
   protocol::Response hideHighlight() override;
   protocol::Response highlightFrame(
-      const String& frameId,
-      protocol::Maybe<protocol::DOM::RGBA> contentColor,
-      protocol::Maybe<protocol::DOM::RGBA> contentOutlineColor) override;
+      const String& frame_id,
+      protocol::Maybe<protocol::DOM::RGBA> content_color,
+      protocol::Maybe<protocol::DOM::RGBA> content_outline_color) override;
   protocol::Response pushNodeByPathToFrontend(const String& path,
-                                              int* outNodeId) override;
+                                              int* out_node_id) override;
   protocol::Response pushNodesByBackendIdsToFrontend(
-      std::unique_ptr<protocol::Array<int>> backendNodeIds,
-      std::unique_ptr<protocol::Array<int>>* nodeIds) override;
-  protocol::Response setInspectedNode(int nodeId) override;
+      std::unique_ptr<protocol::Array<int>> backend_node_ids,
+      std::unique_ptr<protocol::Array<int>>* node_ids) override;
+  protocol::Response setInspectedNode(int node_id) override;
   protocol::Response resolveNode(
-      int nodeId,
-      protocol::Maybe<String> objectGroup,
+      int node_id,
+      protocol::Maybe<String> object_group,
       std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*)
       override;
   protocol::Response getAttributes(
-      int nodeId,
+      int node_id,
       std::unique_ptr<protocol::Array<String>>* attributes) override;
-  protocol::Response copyTo(int nodeId,
-                            int targetNodeId,
-                            protocol::Maybe<int> insertBeforeNodeId,
-                            int* outNodeId) override;
-  protocol::Response moveTo(int nodeId,
-                            int targetNodeId,
-                            protocol::Maybe<int> insertBeforeNodeId,
-                            int* outNodeId) override;
+  protocol::Response copyTo(int node_id,
+                            int target_node_id,
+                            protocol::Maybe<int> insert_before_node_id,
+                            int* out_node_id) override;
+  protocol::Response moveTo(int node_id,
+                            int target_node_id,
+                            protocol::Maybe<int> insert_before_node_id,
+                            int* out_node_id) override;
   protocol::Response undo() override;
   protocol::Response redo() override;
   protocol::Response markUndoableState() override;
-  protocol::Response focus(int nodeId) override;
+  protocol::Response focus(int node_id) override;
   protocol::Response setFileInputFiles(
-      int nodeId,
+      int node_id,
       std::unique_ptr<protocol::Array<String>> files) override;
   protocol::Response getBoxModel(
-      int nodeId,
+      int node_id,
       std::unique_ptr<protocol::DOM::BoxModel>*) override;
   protocol::Response getNodeForLocation(
       int x,
       int y,
-      protocol::Maybe<bool> includeUserAgentShadowDOM,
-      int* outNodeId) override;
-  protocol::Response getRelayoutBoundary(int nodeId, int* outNodeId) override;
+      protocol::Maybe<bool> include_user_agent_shadow_dom,
+      int* out_node_id) override;
+  protocol::Response getRelayoutBoundary(int node_id,
+                                         int* out_node_id) override;
   protocol::Response getHighlightObjectForTest(
-      int nodeId,
+      int node_id,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
 
-  bool enabled() const;
-  void releaseDanglingNodes();
+  bool Enabled() const;
+  void ReleaseDanglingNodes();
 
   // Methods called from the InspectorInstrumentation.
-  void domContentLoadedEventFired(LocalFrame*);
-  void didCommitLoad(LocalFrame*, DocumentLoader*);
-  void didInsertDOMNode(Node*);
-  void willRemoveDOMNode(Node*);
-  void willModifyDOMAttr(Element*,
-                         const AtomicString& oldValue,
-                         const AtomicString& newValue);
-  void didModifyDOMAttr(Element*,
+  void DomContentLoadedEventFired(LocalFrame*);
+  void DidCommitLoad(LocalFrame*, DocumentLoader*);
+  void DidInsertDOMNode(Node*);
+  void WillRemoveDOMNode(Node*);
+  void WillModifyDOMAttr(Element*,
+                         const AtomicString& old_value,
+                         const AtomicString& new_value);
+  void DidModifyDOMAttr(Element*,
                         const QualifiedName&,
                         const AtomicString& value);
-  void didRemoveDOMAttr(Element*, const QualifiedName&);
-  void styleAttributeInvalidated(const HeapVector<Member<Element>>& elements);
-  void characterDataModified(CharacterData*);
-  void didInvalidateStyleAttr(Node*);
-  void didPushShadowRoot(Element* host, ShadowRoot*);
-  void willPopShadowRoot(Element* host, ShadowRoot*);
-  void didPerformElementShadowDistribution(Element*);
-  void didPerformSlotDistribution(HTMLSlotElement*);
-  void frameDocumentUpdated(LocalFrame*);
-  void pseudoElementCreated(PseudoElement*);
-  void pseudoElementDestroyed(PseudoElement*);
+  void DidRemoveDOMAttr(Element*, const QualifiedName&);
+  void StyleAttributeInvalidated(const HeapVector<Member<Element>>& elements);
+  void CharacterDataModified(CharacterData*);
+  void DidInvalidateStyleAttr(Node*);
+  void DidPushShadowRoot(Element* host, ShadowRoot*);
+  void WillPopShadowRoot(Element* host, ShadowRoot*);
+  void DidPerformElementShadowDistribution(Element*);
+  void DidPerformSlotDistribution(HTMLSlotElement*);
+  void FrameDocumentUpdated(LocalFrame*);
+  void PseudoElementCreated(PseudoElement*);
+  void PseudoElementDestroyed(PseudoElement*);
 
-  Node* nodeForId(int nodeId);
-  int boundNodeId(Node*);
-  void setDOMListener(DOMListener*);
-  void inspect(Node*);
-  void nodeHighlightedInOverlay(Node*);
-  int pushNodePathToFrontend(Node*);
+  Node* NodeForId(int node_id);
+  int BoundNodeId(Node*);
+  void SetDOMListener(DOMListener*);
+  void Inspect(Node*);
+  void NodeHighlightedInOverlay(Node*);
+  int PushNodePathToFrontend(Node*);
 
-  static String documentURLString(Document*);
+  static String DocumentURLString(Document*);
 
   std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
-  resolveNode(Node*, const String& objectGroup);
+  ResolveNode(Node*, const String& object_group);
 
-  InspectorHistory* history() { return m_history.get(); }
+  InspectorHistory* History() { return history_.Get(); }
 
   // We represent embedded doms as a part of the same hierarchy. Hence we treat
   // children of frame owners differently.  We also skip whitespace text nodes
   // conditionally. Following methods encapsulate these specifics.
-  static Node* innerFirstChild(Node*);
-  static Node* innerNextSibling(Node*);
-  static Node* innerPreviousSibling(Node*);
-  static unsigned innerChildNodeCount(Node*);
-  static Node* innerParentNode(Node*);
-  static bool isWhitespace(Node*);
-  static v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context>, Node*);
-  static void collectNodes(Node* root,
+  static Node* InnerFirstChild(Node*);
+  static Node* InnerNextSibling(Node*);
+  static Node* InnerPreviousSibling(Node*);
+  static unsigned InnerChildNodeCount(Node*);
+  static Node* InnerParentNode(Node*);
+  static bool IsWhitespace(Node*);
+  static v8::Local<v8::Value> NodeV8Value(v8::Local<v8::Context>, Node*);
+  static void CollectNodes(Node* root,
                            int depth,
                            bool pierce,
                            Function<bool(Node*)>*,
                            HeapVector<Member<Node>>* result);
 
-  protocol::Response assertNode(int nodeId, Node*&);
-  protocol::Response assertElement(int nodeId, Element*&);
-  Document* document() const { return m_document.get(); }
+  protocol::Response AssertNode(int node_id, Node*&);
+  protocol::Response AssertElement(int node_id, Element*&);
+  Document* GetDocument() const { return document_.Get(); }
 
  private:
-  void setDocument(Document*);
-  void innerEnable();
+  void SetDocument(Document*);
+  void InnerEnable();
 
-  protocol::Response setSearchingForNode(
+  protocol::Response SetSearchingForNode(
       SearchMode,
       protocol::Maybe<protocol::DOM::HighlightConfig>);
-  protocol::Response highlightConfigFromInspectorObject(
-      protocol::Maybe<protocol::DOM::HighlightConfig> highlightInspectorObject,
+  protocol::Response HighlightConfigFromInspectorObject(
+      protocol::Maybe<protocol::DOM::HighlightConfig>
+          highlight_inspector_object,
       std::unique_ptr<InspectorHighlightConfig>*);
 
   // Node-related methods.
   typedef HeapHashMap<Member<Node>, int> NodeToIdMap;
-  int bind(Node*, NodeToIdMap*);
-  void unbind(Node*, NodeToIdMap*);
+  int Bind(Node*, NodeToIdMap*);
+  void Unbind(Node*, NodeToIdMap*);
 
-  protocol::Response assertEditableNode(int nodeId, Node*&);
-  protocol::Response assertEditableChildNode(Element* parentElement,
-                                             int nodeId,
+  protocol::Response AssertEditableNode(int node_id, Node*&);
+  protocol::Response AssertEditableChildNode(Element* parent_element,
+                                             int node_id,
                                              Node*&);
-  protocol::Response assertEditableElement(int nodeId, Element*&);
+  protocol::Response AssertEditableElement(int node_id, Element*&);
 
-  int pushNodePathToFrontend(Node*, NodeToIdMap* nodeMap);
-  void pushChildNodesToFrontend(int nodeId,
+  int PushNodePathToFrontend(Node*, NodeToIdMap* node_map);
+  void PushChildNodesToFrontend(int node_id,
                                 int depth = 1,
-                                bool traverseFrames = false);
+                                bool traverse_frames = false);
 
-  void invalidateFrameOwnerElement(LocalFrame*);
+  void InvalidateFrameOwnerElement(LocalFrame*);
 
-  std::unique_ptr<protocol::DOM::Node> buildObjectForNode(
+  std::unique_ptr<protocol::DOM::Node> BuildObjectForNode(
       Node*,
       int depth,
-      bool traverseFrames,
+      bool traverse_frames,
       NodeToIdMap*,
-      protocol::Array<protocol::DOM::Node>* flattenResult = nullptr);
-  std::unique_ptr<protocol::Array<String>> buildArrayForElementAttributes(
+      protocol::Array<protocol::DOM::Node>* flatten_result = nullptr);
+  std::unique_ptr<protocol::Array<String>> BuildArrayForElementAttributes(
       Element*);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
-  buildArrayForContainerChildren(
+  BuildArrayForContainerChildren(
       Node* container,
       int depth,
-      bool traverseFrames,
-      NodeToIdMap* nodesMap,
-      protocol::Array<protocol::DOM::Node>* flattenResult);
+      bool traverse_frames,
+      NodeToIdMap* nodes_map,
+      protocol::Array<protocol::DOM::Node>* flatten_result);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
-  buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
+  BuildArrayForPseudoElements(Element*, NodeToIdMap* nodes_map);
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
-  buildArrayForDistributedNodes(InsertionPoint*);
+  BuildArrayForDistributedNodes(InsertionPoint*);
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
-  buildDistributedNodesForSlot(HTMLSlotElement*);
+  BuildDistributedNodesForSlot(HTMLSlotElement*);
 
-  Node* nodeForPath(const String& path);
-  protocol::Response nodeForRemoteId(const String& id, Node*&);
+  Node* NodeForPath(const String& path);
+  protocol::Response NodeForRemoteId(const String& id, Node*&);
 
-  void discardFrontendBindings();
+  void DiscardFrontendBindings();
 
-  void innerHighlightQuad(std::unique_ptr<FloatQuad>,
+  void InnerHighlightQuad(std::unique_ptr<FloatQuad>,
                           protocol::Maybe<protocol::DOM::RGBA> color,
-                          protocol::Maybe<protocol::DOM::RGBA> outlineColor);
+                          protocol::Maybe<protocol::DOM::RGBA> outline_color);
 
-  protocol::Response pushDocumentUponHandlelessOperation();
+  protocol::Response PushDocumentUponHandlelessOperation();
 
-  InspectorRevalidateDOMTask* revalidateTask();
+  InspectorRevalidateDOMTask* RevalidateTask();
 
-  v8::Isolate* m_isolate;
-  Member<InspectedFrames> m_inspectedFrames;
-  v8_inspector::V8InspectorSession* m_v8Session;
-  Client* m_client;
-  Member<DOMListener> m_domListener;
-  Member<NodeToIdMap> m_documentNodeToIdMap;
+  v8::Isolate* isolate_;
+  Member<InspectedFrames> inspected_frames_;
+  v8_inspector::V8InspectorSession* v8_session_;
+  Client* client_;
+  Member<DOMListener> dom_listener_;
+  Member<NodeToIdMap> document_node_to_id_map_;
   // Owns node mappings for dangling nodes.
-  HeapVector<Member<NodeToIdMap>> m_danglingNodeToIdMaps;
-  HeapHashMap<int, Member<Node>> m_idToNode;
-  HeapHashMap<int, Member<NodeToIdMap>> m_idToNodesMap;
-  HashSet<int> m_childrenRequested;
-  HashSet<int> m_distributedNodesRequested;
-  HashMap<int, int> m_cachedChildCount;
-  int m_lastNodeId;
-  Member<Document> m_document;
+  HeapVector<Member<NodeToIdMap>> dangling_node_to_id_maps_;
+  HeapHashMap<int, Member<Node>> id_to_node_;
+  HeapHashMap<int, Member<NodeToIdMap>> id_to_nodes_map_;
+  HashSet<int> children_requested_;
+  HashSet<int> distributed_nodes_requested_;
+  HashMap<int, int> cached_child_count_;
+  int last_node_id_;
+  Member<Document> document_;
   typedef HeapHashMap<String, HeapVector<Member<Node>>> SearchResults;
-  SearchResults m_searchResults;
-  Member<InspectorRevalidateDOMTask> m_revalidateTask;
-  Member<InspectorHistory> m_history;
-  Member<DOMEditor> m_domEditor;
-  bool m_suppressAttributeModifiedEvent;
-  int m_backendNodeIdToInspect;
+  SearchResults search_results_;
+  Member<InspectorRevalidateDOMTask> revalidate_task_;
+  Member<InspectorHistory> history_;
+  Member<DOMEditor> dom_editor_;
+  bool suppress_attribute_modified_event_;
+  int backend_node_id_to_inspect_;
 };
 
 }  // namespace blink

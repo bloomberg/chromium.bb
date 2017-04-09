@@ -701,11 +701,11 @@ void ServiceWorkerMetrics::RecordStatusZeroResponseError(
   if (is_main_resource) {
     UMA_HISTOGRAM_ENUMERATION(
         "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error,
-        blink::WebServiceWorkerResponseErrorLast + 1);
+        blink::kWebServiceWorkerResponseErrorLast + 1);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error,
-        blink::WebServiceWorkerResponseErrorLast + 1);
+        blink::kWebServiceWorkerResponseErrorLast + 1);
   }
 }
 

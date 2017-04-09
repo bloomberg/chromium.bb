@@ -37,16 +37,16 @@ class MediaEncryptedEvent final : public Event {
  public:
   ~MediaEncryptedEvent() override;
 
-  static MediaEncryptedEvent* create(
+  static MediaEncryptedEvent* Create(
       const AtomicString& type,
       const MediaEncryptedEventInit& initializer) {
     return new MediaEncryptedEvent(type, initializer);
   }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  String initDataType() const { return m_initDataType; }
-  DOMArrayBuffer* initData() const { return m_initData.get(); }
+  String initDataType() const { return init_data_type_; }
+  DOMArrayBuffer* initData() const { return init_data_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -54,8 +54,8 @@ class MediaEncryptedEvent final : public Event {
   MediaEncryptedEvent(const AtomicString& type,
                       const MediaEncryptedEventInit& initializer);
 
-  String m_initDataType;
-  Member<DOMArrayBuffer> m_initData;
+  String init_data_type_;
+  Member<DOMArrayBuffer> init_data_;
 };
 
 }  // namespace blink

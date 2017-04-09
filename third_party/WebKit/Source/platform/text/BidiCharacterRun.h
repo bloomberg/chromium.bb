@@ -33,70 +33,66 @@ struct BidiCharacterRun {
                    int start,
                    int stop,
                    WTF::Unicode::CharDirection dir,
-                   WTF::Unicode::CharDirection overrideDir)
-      : m_override(override),
-        m_level(level),
-        m_next(0),
-        m_start(start),
-        m_stop(stop) {
-    ASSERT(m_start <= m_stop);
-    if (dir == WTF::Unicode::OtherNeutral)
-      dir = overrideDir;
+                   WTF::Unicode::CharDirection override_dir)
+      : override_(override),
+        level_(level),
+        next_(0),
+        start_(start),
+        stop_(stop) {
+    ASSERT(start_ <= stop_);
+    if (dir == WTF::Unicode::kOtherNeutral)
+      dir = override_dir;
 
-    m_level = level;
+    level_ = level;
 
     // add level of run (cases I1 & I2)
-    if (m_level % 2) {
-      if (dir == WTF::Unicode::LeftToRight ||
-          dir == WTF::Unicode::ArabicNumber ||
-          dir == WTF::Unicode::EuropeanNumber)
-        m_level++;
+    if (level_ % 2) {
+      if (dir == WTF::Unicode::kLeftToRight ||
+          dir == WTF::Unicode::kArabicNumber ||
+          dir == WTF::Unicode::kEuropeanNumber)
+        level_++;
     } else {
-      if (dir == WTF::Unicode::RightToLeft)
-        m_level++;
-      else if (dir == WTF::Unicode::ArabicNumber ||
-               dir == WTF::Unicode::EuropeanNumber)
-        m_level += 2;
+      if (dir == WTF::Unicode::kRightToLeft)
+        level_++;
+      else if (dir == WTF::Unicode::kArabicNumber ||
+               dir == WTF::Unicode::kEuropeanNumber)
+        level_ += 2;
     }
   }
 
   BidiCharacterRun(int start, int stop, unsigned char level)
-      : m_override(false),
-        m_level(level),
-        m_next(0),
-        m_start(start),
-        m_stop(stop) {}
+      : override_(false), level_(level), next_(0), start_(start), stop_(stop) {}
 
   // BidiCharacterRun are allocated out of the rendering partition.
   PLATFORM_EXPORT void* operator new(size_t);
   PLATFORM_EXPORT void operator delete(void*);
 
-  int start() const { return m_start; }
-  int stop() const { return m_stop; }
-  unsigned char level() const { return m_level; }
-  bool reversed(bool visuallyOrdered) const {
-    return m_level % 2 && !visuallyOrdered;
+  int Start() const { return start_; }
+  int Stop() const { return stop_; }
+  unsigned char Level() const { return level_; }
+  bool Reversed(bool visually_ordered) const {
+    return level_ % 2 && !visually_ordered;
   }
-  bool dirOverride(bool visuallyOrdered) {
-    return m_override || visuallyOrdered;
+  bool DirOverride(bool visually_ordered) {
+    return override_ || visually_ordered;
   }
-  TextDirection direction() const {
-    return reversed(false) ? TextDirection::kRtl : TextDirection::kLtr;
+  TextDirection Direction() const {
+    return Reversed(false) ? TextDirection::kRtl : TextDirection::kLtr;
   }
 
-  BidiCharacterRun* next() const { return m_next; }
-  void setNext(BidiCharacterRun* next) { m_next = next; }
+  BidiCharacterRun* Next() const { return next_; }
+  void SetNext(BidiCharacterRun* next) { next_ = next; }
 
   // Do not add anything apart from bitfields until after m_next. See
   // https://bugs.webkit.org/show_bug.cgi?id=100173
-  bool m_override : 1;
+  bool override_ : 1;
   // Used by BidiRun subclass which is a layering violation but enables us to
   // save 8 bytes per object on 64-bit.
-  bool m_hasHyphen : 1;
-  unsigned char m_level;
-  BidiCharacterRun* m_next;
-  int m_start;
-  int m_stop;
+  bool has_hyphen_ : 1;
+  unsigned char level_;
+  BidiCharacterRun* next_;
+  int start_;
+  int stop_;
 };
 
 }  // namespace blink

@@ -20,66 +20,73 @@ namespace blink {
 class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
                                      public RenderingTest {
  public:
-  PaintControllerPaintTestBase(bool enableSlimmingPaintV2)
-      : ScopedSlimmingPaintV2ForTest(enableSlimmingPaintV2) {}
+  PaintControllerPaintTestBase(bool enable_slimming_paint_v2)
+      : ScopedSlimmingPaintV2ForTest(enable_slimming_paint_v2) {}
 
  protected:
-  LayoutView& layoutView() { return *document().layoutView(); }
-  PaintController& rootPaintController() {
+  LayoutView& GetLayoutView() { return *GetDocument().GetLayoutView(); }
+  PaintController& RootPaintController() {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-      return *document().view()->paintController();
-    return layoutView().layer()->graphicsLayerBacking()->getPaintController();
+      return *GetDocument().View()->GetPaintController();
+    return GetLayoutView()
+        .Layer()
+        ->GraphicsLayerBacking()
+        ->GetPaintController();
   }
 
   void SetUp() override {
     RenderingTest::SetUp();
-    enableCompositing();
+    EnableCompositing();
   }
 
-  bool paintWithoutCommit(const IntRect* interestRect = nullptr) {
-    document().view()->lifecycle().advanceTo(DocumentLifecycle::InPaint);
+  bool PaintWithoutCommit(const IntRect* interest_rect = nullptr) {
+    GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      if (layoutView().layer()->needsRepaint()) {
-        GraphicsContext graphicsContext(rootPaintController());
-        document().view()->paint(graphicsContext,
-                                 CullRect(LayoutRect::infiniteIntRect()));
+      if (GetLayoutView().Layer()->NeedsRepaint()) {
+        GraphicsContext graphics_context(RootPaintController());
+        GetDocument().View()->Paint(graphics_context,
+                                    CullRect(LayoutRect::InfiniteIntRect()));
         return true;
       }
-      document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+      GetDocument().View()->Lifecycle().AdvanceTo(
+          DocumentLifecycle::kPaintClean);
       return false;
     }
     // Only root graphics layer is supported.
-    if (!layoutView().layer()->graphicsLayerBacking()->paintWithoutCommit(
-            interestRect)) {
-      document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+    if (!GetLayoutView().Layer()->GraphicsLayerBacking()->PaintWithoutCommit(
+            interest_rect)) {
+      GetDocument().View()->Lifecycle().AdvanceTo(
+          DocumentLifecycle::kPaintClean);
       return false;
     }
     return true;
   }
 
-  void commit() {
+  void Commit() {
     // Only root graphics layer is supported.
-    rootPaintController().commitNewDisplayItems();
-    document().view()->lifecycle().advanceTo(DocumentLifecycle::PaintClean);
+    RootPaintController().CommitNewDisplayItems();
+    GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
   }
 
-  void paint(const IntRect* interestRect = nullptr) {
+  void Paint(const IntRect* interest_rect = nullptr) {
     // Only root graphics layer is supported.
-    if (paintWithoutCommit(interestRect))
-      commit();
+    if (PaintWithoutCommit(interest_rect))
+      Commit();
   }
 
-  bool displayItemListContains(const DisplayItemList& displayItemList,
+  bool DisplayItemListContains(const DisplayItemList& display_item_list,
                                DisplayItemClient& client,
                                DisplayItem::Type type) {
-    for (auto& item : displayItemList) {
-      if (item.client() == client && item.getType() == type)
+    for (auto& item : display_item_list) {
+      if (item.Client() == client && item.GetType() == type)
         return true;
     }
     return false;
   }
 
-  int numCachedNewItems() { return rootPaintController().m_numCachedNewItems; }
+  int NumCachedNewItems() {
+    return RootPaintController().num_cached_new_items_;
+  }
 };
 
 class PaintControllerPaintTest : public PaintControllerPaintTestBase {
@@ -110,19 +117,19 @@ class TestDisplayItem final : public DisplayItem {
   TestDisplayItem(const DisplayItemClient& client, Type type)
       : DisplayItem(client, type, sizeof(*this)) {}
 
-  void replay(GraphicsContext&) const final { ASSERT_NOT_REACHED(); }
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const final { ASSERT_NOT_REACHED(); }
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const final {
     ASSERT_NOT_REACHED();
   }
 };
 
 #ifndef NDEBUG
-#define TRACE_DISPLAY_ITEMS(i, expected, actual)                 \
-  String trace = String::format("%d: ", (int)i) + "Expected: " + \
-                 (expected).asDebugString() + " Actual: " +      \
-                 (actual).asDebugString();                       \
-  SCOPED_TRACE(trace.utf8().data());
+#define TRACE_DISPLAY_ITEMS(i, expected, actual)             \
+  String trace = String::Format("%d: ", (int)i) +            \
+                 "Expected: " + (expected).AsDebugString() + \
+                 " Actual: " + (actual).AsDebugString();     \
+  SCOPED_TRACE(trace.Utf8().Data());
 #else
 #define TRACE_DISPLAY_ITEMS(i, expected, actual)
 #endif
@@ -136,16 +143,16 @@ class TestDisplayItem final : public DisplayItem {
     for (size_t index = 0;                                                 \
          index < std::min<size_t>(actual.size(), expectedSize); index++) { \
       TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]);          \
-      EXPECT_EQ(expected[index].client(), actual[index].client());         \
-      EXPECT_EQ(expected[index].getType(), actual[index].getType());       \
+      EXPECT_EQ(expected[index].Client(), actual[index].Client());         \
+      EXPECT_EQ(expected[index].GetType(), actual[index].GetType());       \
     }                                                                      \
   } while (false);
 
 // Shorter names for frequently used display item types in tests.
-const DisplayItem::Type backgroundType = DisplayItem::kBoxDecorationBackground;
-const DisplayItem::Type foregroundType =
-    DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground);
-const DisplayItem::Type documentBackgroundType =
+const DisplayItem::Type kBackgroundType = DisplayItem::kBoxDecorationBackground;
+const DisplayItem::Type kForegroundType =
+    DisplayItem::PaintPhaseToDrawingType(kPaintPhaseForeground);
+const DisplayItem::Type kDocumentBackgroundType =
     DisplayItem::kDocumentBackground;
 
 }  // namespace blink

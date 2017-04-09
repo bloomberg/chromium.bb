@@ -20,23 +20,23 @@ namespace {
 // provide the shipping option, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectMissingShippingOption) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
-      buildPaymentResponseForTest();
+      BuildPaymentResponseForTest();
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
   response->shipping_address->language_code = "en";
   response->shipping_address->script_code = "Latn";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -46,20 +46,20 @@ TEST(OnPaymentResponseTest, RejectMissingShippingOption) {
 // provide a shipping address, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectMissingAddress) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
-      buildPaymentResponseForTest();
+      BuildPaymentResponseForTest();
   response->shipping_option = "standardShipping";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -69,19 +69,19 @@ TEST(OnPaymentResponseTest, RejectMissingAddress) {
 // reject the show() promise.
 TEST(OnPaymentResponseTest, RejectMissingName) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerName(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -91,19 +91,19 @@ TEST(OnPaymentResponseTest, RejectMissingName) {
 // it, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectMissingEmail) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerEmail(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -113,19 +113,19 @@ TEST(OnPaymentResponseTest, RejectMissingEmail) {
 // reject the show() promise.
 TEST(OnPaymentResponseTest, RejectMissingPhone) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerPhone(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -135,24 +135,24 @@ TEST(OnPaymentResponseTest, RejectMissingPhone) {
 // empty string for shipping option, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectEmptyShippingOption) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
-      buildPaymentResponseForTest();
+      BuildPaymentResponseForTest();
   response->shipping_option = "";
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
   response->shipping_address->language_code = "en";
   response->shipping_address->script_code = "Latn";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -162,21 +162,21 @@ TEST(OnPaymentResponseTest, RejectEmptyShippingOption) {
 // empty shipping address, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectEmptyAddress) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
-      buildPaymentResponseForTest();
+      BuildPaymentResponseForTest();
   response->shipping_option = "standardShipping";
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -186,20 +186,20 @@ TEST(OnPaymentResponseTest, RejectEmptyAddress) {
 // string for name, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectEmptyName) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerName(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_name = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -209,20 +209,20 @@ TEST(OnPaymentResponseTest, RejectEmptyName) {
 // for email, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectEmptyEmail) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerEmail(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_email = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -232,20 +232,20 @@ TEST(OnPaymentResponseTest, RejectEmptyEmail) {
 // string for the phone number, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectEmptyPhone) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerPhone(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_phone = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -255,14 +255,14 @@ TEST(OnPaymentResponseTest, RejectEmptyPhone) {
 // provides a shipping address, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectNotRequestedAddress) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
@@ -270,8 +270,8 @@ TEST(OnPaymentResponseTest, RejectNotRequestedAddress) {
   response->shipping_address->language_code = "en";
   response->shipping_address->script_code = "Latn";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -281,20 +281,20 @@ TEST(OnPaymentResponseTest, RejectNotRequestedAddress) {
 // provides a shipping option, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectNotRequestedShippingOption) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->shipping_option = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -304,20 +304,20 @@ TEST(OnPaymentResponseTest, RejectNotRequestedShippingOption) {
 // reject the show() promise.
 TEST(OnPaymentResponseTest, RejectNotRequestedName) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerName(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_name = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -327,20 +327,20 @@ TEST(OnPaymentResponseTest, RejectNotRequestedName) {
 // reject the show() promise.
 TEST(OnPaymentResponseTest, RejectNotRequestedEmail) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerEmail(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_email = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -350,20 +350,20 @@ TEST(OnPaymentResponseTest, RejectNotRequestedEmail) {
 // reject the show() promise.
 TEST(OnPaymentResponseTest, RejectNotRequestedPhone) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerPhone(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_phone = "";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -373,22 +373,22 @@ TEST(OnPaymentResponseTest, RejectNotRequestedPhone) {
 // invalid shipping address, reject the show() promise.
 TEST(OnPaymentResponseTest, RejectInvalidAddress) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
-      buildPaymentResponseForTest();
+      BuildPaymentResponseForTest();
   response->shipping_option = "standardShipping";
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "Atlantis";
 
-  request->show(scope.getScriptState())
-      .then(funcs.expectNoCall(), funcs.expectCall());
+  request->show(scope.GetScriptState())
+      .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
@@ -396,58 +396,58 @@ TEST(OnPaymentResponseTest, RejectInvalidAddress) {
 
 class PaymentResponseFunction : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> create(ScriptState* scriptState,
-                                        ScriptValue* outValue) {
+  static v8::Local<v8::Function> Create(ScriptState* script_state,
+                                        ScriptValue* out_value) {
     PaymentResponseFunction* self =
-        new PaymentResponseFunction(scriptState, outValue);
-    return self->bindToV8Function();
+        new PaymentResponseFunction(script_state, out_value);
+    return self->BindToV8Function();
   }
 
  private:
-  PaymentResponseFunction(ScriptState* scriptState, ScriptValue* outValue)
-      : ScriptFunction(scriptState), m_value(outValue) {
-    DCHECK(m_value);
+  PaymentResponseFunction(ScriptState* script_state, ScriptValue* out_value)
+      : ScriptFunction(script_state), value_(out_value) {
+    DCHECK(value_);
   }
 
-  ScriptValue call(ScriptValue value) override {
-    DCHECK(!value.isEmpty());
-    *m_value = value;
+  ScriptValue Call(ScriptValue value) override {
+    DCHECK(!value.IsEmpty());
+    *value_ = value;
     return value;
   }
 
-  ScriptValue* const m_value;
+  ScriptValue* const value_;
 };
 
 // If the merchant requests shipping information, the resolved show() promise
 // should contain a shipping option and an address.
 TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
-      buildPaymentResponseForTest();
+      BuildPaymentResponseForTest();
   response->shipping_option = "standardShipping";
   response->shipping_address = payments::mojom::blink::PaymentAddress::New();
   response->shipping_address->country = "US";
   response->shipping_address->language_code = "en";
   response->shipping_address->script_code = "Latn";
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* resp = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
+      scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("standardShipping", resp->shippingOption());
   EXPECT_EQ("US", resp->shippingAddress()->country());
   EXPECT_EQ("en-Latn", resp->shippingAddress()->languageCode());
@@ -457,28 +457,28 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
 // contain a payer name.
 TEST(OnPaymentResponseTest, CanRequestName) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerName(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_name = "Jon Doe";
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
+      scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("Jon Doe", pr->payerName());
 }
 
@@ -486,28 +486,28 @@ TEST(OnPaymentResponseTest, CanRequestName) {
 // contain an email address.
 TEST(OnPaymentResponseTest, CanRequestEmail) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerEmail(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_email = "abc@gmail.com";
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
+      scope.GetIsolate(), out_value.V8Value());
   EXPECT_EQ("abc@gmail.com", pr->payerEmail());
 }
 
@@ -515,28 +515,28 @@ TEST(OnPaymentResponseTest, CanRequestEmail) {
 // contain a phone number.
 TEST(OnPaymentResponseTest, CanRequestPhone) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerPhone(true);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_phone = "0123";
 
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
+      scope.GetIsolate(), out_value.V8Value());
 
   EXPECT_EQ("0123", pr->payerPhone());
 }
@@ -545,26 +545,26 @@ TEST(OnPaymentResponseTest, CanRequestPhone) {
 // promise should contain null shipping option and address.
 TEST(OnPaymentResponseTest, ShippingInformationNotRequired) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestShipping(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
-      ->OnPaymentResponse(buildPaymentResponseForTest());
+      ->OnPaymentResponse(BuildPaymentResponseForTest());
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* resp = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
-  EXPECT_TRUE(resp->shippingOption().isNull());
+      scope.GetIsolate(), out_value.V8Value());
+  EXPECT_TRUE(resp->shippingOption().IsNull());
   EXPECT_EQ(nullptr, resp->shippingAddress());
 }
 
@@ -572,87 +572,87 @@ TEST(OnPaymentResponseTest, ShippingInformationNotRequired) {
 // should contain null phone number.
 TEST(OnPaymentResponseTest, PhoneNotRequred) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerPhone(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_phone = String();
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
-  EXPECT_TRUE(pr->payerPhone().isNull());
+      scope.GetIsolate(), out_value.V8Value());
+  EXPECT_TRUE(pr->payerPhone().IsNull());
 }
 
 // If the merchant does not request a payer name, the resolved show() promise
 // should contain null payer name.
 TEST(OnPaymentResponseTest, NameNotRequired) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerName(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_name = String();
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
-  EXPECT_TRUE(pr->payerName().isNull());
+      scope.GetIsolate(), out_value.V8Value());
+  EXPECT_TRUE(pr->payerName().IsNull());
 }
 
 // If the merchant does not request an email address, the resolved show()
 // promise should contain null email address.
 TEST(OnPaymentResponseTest, EmailNotRequired) {
   V8TestingScope scope;
-  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
   PaymentOptions options;
   options.setRequestPayerEmail(false);
-  PaymentRequest* request = PaymentRequest::create(
-      scope.getExecutionContext(), buildPaymentMethodDataForTest(),
-      buildPaymentDetailsInitForTest(), options, scope.getExceptionState());
-  EXPECT_FALSE(scope.getExceptionState().hadException());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), options, scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
   payments::mojom::blink::PaymentResponsePtr response =
       payments::mojom::blink::PaymentResponse::New();
   response->payer_email = String();
-  ScriptValue outValue;
-  request->show(scope.getScriptState())
-      .then(PaymentResponseFunction::create(scope.getScriptState(), &outValue),
-            funcs.expectNoCall());
+  ScriptValue out_value;
+  request->show(scope.GetScriptState())
+      .Then(PaymentResponseFunction::Create(scope.GetScriptState(), &out_value),
+            funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(std::move(response));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   PaymentResponse* pr = V8PaymentResponse::toImplWithTypeCheck(
-      scope.isolate(), outValue.v8Value());
-  EXPECT_TRUE(pr->payerEmail().isNull());
+      scope.GetIsolate(), out_value.V8Value());
+  EXPECT_TRUE(pr->payerEmail().IsNull());
 }
 
 }  // namespace

@@ -22,22 +22,22 @@ namespace {
 class TestIntersectionObserverCallback : public IntersectionObserverCallback {
  public:
   TestIntersectionObserverCallback(Document& document)
-      : m_document(document), m_callCount(0) {}
-  void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
+      : document_(document), call_count_(0) {}
+  void HandleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
                    IntersectionObserver&) override {
-    m_callCount++;
+    call_count_++;
   }
-  ExecutionContext* getExecutionContext() const override { return m_document; }
-  int callCount() const { return m_callCount; }
+  ExecutionContext* GetExecutionContext() const override { return document_; }
+  int CallCount() const { return call_count_; }
 
   DEFINE_INLINE_TRACE() {
-    IntersectionObserverCallback::trace(visitor);
-    visitor->trace(m_document);
+    IntersectionObserverCallback::Trace(visitor);
+    visitor->Trace(document_);
   }
 
  private:
-  Member<Document> m_document;
-  int m_callCount;
+  Member<Document> document_;
+  int call_count_;
 };
 
 }  // namespace
@@ -45,121 +45,121 @@ class TestIntersectionObserverCallback : public IntersectionObserverCallback {
 class IntersectionObserverTest : public SimTest {};
 
 TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
-  mainResource.complete("<div id='target'></div>");
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete("<div id='target'></div>");
 
-  IntersectionObserverInit observerInit;
-  DummyExceptionStateForTesting exceptionState;
-  TestIntersectionObserverCallback* observerCallback =
-      new TestIntersectionObserverCallback(document());
-  IntersectionObserver* observer = IntersectionObserver::create(
-      observerInit, *observerCallback, exceptionState);
-  ASSERT_FALSE(exceptionState.hadException());
+  IntersectionObserverInit observer_init;
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverCallback* observer_callback =
+      new TestIntersectionObserverCallback(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_callback, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
 
-  compositor().beginFrame();
-  ASSERT_FALSE(compositor().needsBeginFrame());
-  EXPECT_TRUE(observer->takeRecords(exceptionState).isEmpty());
-  EXPECT_EQ(observerCallback->callCount(), 0);
+  Compositor().BeginFrame();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_TRUE(observer->takeRecords(exception_state).IsEmpty());
+  EXPECT_EQ(observer_callback->CallCount(), 0);
 
-  Element* target = document().getElementById("target");
+  Element* target = GetDocument().GetElementById("target");
   ASSERT_TRUE(target);
-  observer->observe(target, exceptionState);
-  EXPECT_TRUE(compositor().needsBeginFrame());
+  observer->observe(target, exception_state);
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
 }
 
 TEST_F(IntersectionObserverTest, ResumePostsTask) {
-  webView().resize(WebSize(800, 600));
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
-  mainResource.complete(
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
       "<div id='leading-space' style='height: 700px;'></div>"
       "<div id='target'></div>"
       "<div id='trailing-space' style='height: 700px;'></div>");
 
-  IntersectionObserverInit observerInit;
-  DummyExceptionStateForTesting exceptionState;
-  TestIntersectionObserverCallback* observerCallback =
-      new TestIntersectionObserverCallback(document());
-  IntersectionObserver* observer = IntersectionObserver::create(
-      observerInit, *observerCallback, exceptionState);
-  ASSERT_FALSE(exceptionState.hadException());
+  IntersectionObserverInit observer_init;
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverCallback* observer_callback =
+      new TestIntersectionObserverCallback(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_callback, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
 
-  Element* target = document().getElementById("target");
+  Element* target = GetDocument().GetElementById("target");
   ASSERT_TRUE(target);
-  observer->observe(target, exceptionState);
+  observer->observe(target, exception_state);
 
-  compositor().beginFrame();
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 1);
+  Compositor().BeginFrame();
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 1);
 
   // When document is not suspended, beginFrame() will generate notifications
   // and post a task to deliver them.
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0, 300), ProgrammaticScroll);
-  compositor().beginFrame();
-  EXPECT_EQ(observerCallback->callCount(), 1);
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 2);
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 300), kProgrammaticScroll);
+  Compositor().BeginFrame();
+  EXPECT_EQ(observer_callback->CallCount(), 1);
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 2);
 
   // When a document is suspended, beginFrame() will generate a notification,
   // but it will not be delivered.  The notification will, however, be
   // available via takeRecords();
-  document().suspendScheduledTasks();
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0, 0), ProgrammaticScroll);
-  compositor().beginFrame();
-  EXPECT_EQ(observerCallback->callCount(), 2);
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 2);
-  EXPECT_FALSE(observer->takeRecords(exceptionState).isEmpty());
+  GetDocument().SuspendScheduledTasks();
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 0), kProgrammaticScroll);
+  Compositor().BeginFrame();
+  EXPECT_EQ(observer_callback->CallCount(), 2);
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 2);
+  EXPECT_FALSE(observer->takeRecords(exception_state).IsEmpty());
 
   // Generate a notification while document is suspended; then resume document.
   // Notification should happen in a post task.
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0, 300), ProgrammaticScroll);
-  compositor().beginFrame();
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 2);
-  document().resumeScheduledTasks();
-  EXPECT_EQ(observerCallback->callCount(), 2);
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 3);
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 300), kProgrammaticScroll);
+  Compositor().BeginFrame();
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 2);
+  GetDocument().ResumeScheduledTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 2);
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 3);
 }
 
 TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
-  webView().resize(WebSize(800, 600));
-  SimRequest mainResource("https://example.com/", "text/html");
-  loadURL("https://example.com/");
-  mainResource.complete(
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
       "<div id='leading-space' style='height: 700px;'></div>"
       "<div id='target'></div>"
       "<div id='trailing-space' style='height: 700px;'></div>");
 
-  IntersectionObserverInit observerInit;
-  DummyExceptionStateForTesting exceptionState;
-  TestIntersectionObserverCallback* observerCallback =
-      new TestIntersectionObserverCallback(document());
-  IntersectionObserver* observer = IntersectionObserver::create(
-      observerInit, *observerCallback, exceptionState);
-  ASSERT_FALSE(exceptionState.hadException());
+  IntersectionObserverInit observer_init;
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverCallback* observer_callback =
+      new TestIntersectionObserverCallback(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_callback, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
 
-  Element* target = document().getElementById("target");
+  Element* target = GetDocument().GetElementById("target");
   ASSERT_TRUE(target);
-  observer->observe(target, exceptionState);
+  observer->observe(target, exception_state);
 
-  compositor().beginFrame();
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 1);
+  Compositor().BeginFrame();
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 1);
 
   // If disconnect() is called while an observer has unsent notifications,
   // those notifications should be discarded.
-  document().view()->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0, 300), ProgrammaticScroll);
-  compositor().beginFrame();
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 300), kProgrammaticScroll);
+  Compositor().BeginFrame();
   observer->disconnect();
-  testing::runPendingTasks();
-  EXPECT_EQ(observerCallback->callCount(), 1);
+  testing::RunPendingTasks();
+  EXPECT_EQ(observer_callback->CallCount(), 1);
 }
 
 }  // namespace blink

@@ -11,17 +11,17 @@ namespace content {
                 "mismatching enums: " #a)
 
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
-                   blink::WebEffectiveConnectionType::TypeUnknown);
+                   blink::WebEffectiveConnectionType::kTypeUnknown);
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
-                   blink::WebEffectiveConnectionType::TypeOffline);
+                   blink::WebEffectiveConnectionType::kTypeOffline);
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-                   blink::WebEffectiveConnectionType::TypeSlow2G);
+                   blink::WebEffectiveConnectionType::kTypeSlow2G);
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_2G,
-                   blink::WebEffectiveConnectionType::Type2G);
+                   blink::WebEffectiveConnectionType::kType2G);
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_3G,
-                   blink::WebEffectiveConnectionType::Type3G);
+                   blink::WebEffectiveConnectionType::kType3G);
 STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_4G,
-                   blink::WebEffectiveConnectionType::Type4G);
+                   blink::WebEffectiveConnectionType::kType4G);
 
 blink::WebEffectiveConnectionType
 EffectiveConnectionTypeToWebEffectiveConnectionType(

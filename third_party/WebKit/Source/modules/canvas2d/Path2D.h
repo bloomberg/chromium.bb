@@ -44,19 +44,21 @@ class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
   WTF_MAKE_NONCOPYABLE(Path2D);
 
  public:
-  static Path2D* create() { return new Path2D; }
-  static Path2D* create(const String& pathData) { return new Path2D(pathData); }
-  static Path2D* create(Path2D* path) { return new Path2D(path); }
-  static Path2D* create(const Path& path) { return new Path2D(path); }
+  static Path2D* Create() { return new Path2D; }
+  static Path2D* Create(const String& path_data) {
+    return new Path2D(path_data);
+  }
+  static Path2D* Create(Path2D* path) { return new Path2D(path); }
+  static Path2D* Create(const Path& path) { return new Path2D(path); }
 
-  const Path& path() const { return m_path; }
+  const Path& GetPath() const { return path_; }
 
   void addPath(Path2D* path) { addPath(path, 0); }
 
   void addPath(Path2D* path, SVGMatrixTearOff* transform) {
-    Path src = path->path();
-    m_path.addPath(src, transform ? transform->value()
-                                  : AffineTransform(1, 0, 0, 1, 0, 0));
+    Path src = path->GetPath();
+    path_.AddPath(src, transform ? transform->Value()
+                                 : AffineTransform(1, 0, 0, 1, 0, 0));
   }
 
   ~Path2D() override {}
@@ -67,10 +69,10 @@ class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
 
   Path2D(const Path& path) : CanvasPathMethods(path) {}
 
-  Path2D(Path2D* path) : CanvasPathMethods(path->path()) {}
+  Path2D(Path2D* path) : CanvasPathMethods(path->GetPath()) {}
 
-  Path2D(const String& pathData) : CanvasPathMethods() {
-    buildPathFromString(pathData, m_path);
+  Path2D(const String& path_data) : CanvasPathMethods() {
+    BuildPathFromString(path_data, path_);
   }
 };
 

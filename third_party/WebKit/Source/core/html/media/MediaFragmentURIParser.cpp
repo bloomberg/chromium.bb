@@ -31,21 +31,21 @@
 
 namespace blink {
 
-const unsigned nptIdentiferLength = 4;  // "npt:"
+const unsigned kNptIdentiferLength = 4;  // "npt:"
 
-static String collectDigits(const LChar* input,
+static String CollectDigits(const LChar* input,
                             unsigned length,
                             unsigned& position) {
   StringBuilder digits;
 
   // http://www.ietf.org/rfc/rfc2326.txt
   // DIGIT ; any positive number
-  while (position < length && isASCIIDigit(input[position]))
-    digits.append(input[position++]);
-  return digits.toString();
+  while (position < length && IsASCIIDigit(input[position]))
+    digits.Append(input[position++]);
+  return digits.ToString();
 }
 
-static String collectFraction(const LChar* input,
+static String CollectFraction(const LChar* input,
                               unsigned length,
                               unsigned& position) {
   StringBuilder digits;
@@ -55,57 +55,57 @@ static String collectFraction(const LChar* input,
   if (input[position] != '.')
     return String();
 
-  digits.append(input[position++]);
-  while (position < length && isASCIIDigit(input[position]))
-    digits.append(input[position++]);
-  return digits.toString();
+  digits.Append(input[position++]);
+  while (position < length && IsASCIIDigit(input[position]))
+    digits.Append(input[position++]);
+  return digits.ToString();
 }
 
 MediaFragmentURIParser::MediaFragmentURIParser(const KURL& url)
-    : m_url(url),
-      m_timeFormat(None),
-      m_startTime(std::numeric_limits<double>::quiet_NaN()),
-      m_endTime(std::numeric_limits<double>::quiet_NaN()) {}
+    : url_(url),
+      time_format_(kNone),
+      start_time_(std::numeric_limits<double>::quiet_NaN()),
+      end_time_(std::numeric_limits<double>::quiet_NaN()) {}
 
-double MediaFragmentURIParser::startTime() {
-  if (!m_url.isValid())
+double MediaFragmentURIParser::StartTime() {
+  if (!url_.IsValid())
     return std::numeric_limits<double>::quiet_NaN();
-  if (m_timeFormat == None)
-    parseTimeFragment();
-  return m_startTime;
+  if (time_format_ == kNone)
+    ParseTimeFragment();
+  return start_time_;
 }
 
-double MediaFragmentURIParser::endTime() {
-  if (!m_url.isValid())
+double MediaFragmentURIParser::EndTime() {
+  if (!url_.IsValid())
     return std::numeric_limits<double>::quiet_NaN();
-  if (m_timeFormat == None)
-    parseTimeFragment();
-  return m_endTime;
+  if (time_format_ == kNone)
+    ParseTimeFragment();
+  return end_time_;
 }
 
-void MediaFragmentURIParser::parseFragments() {
-  if (!m_url.hasFragmentIdentifier())
+void MediaFragmentURIParser::ParseFragments() {
+  if (!url_.HasFragmentIdentifier())
     return;
-  String fragmentString = m_url.fragmentIdentifier();
-  if (fragmentString.isEmpty())
+  String fragment_string = url_.FragmentIdentifier();
+  if (fragment_string.IsEmpty())
     return;
 
   unsigned offset = 0;
-  unsigned end = fragmentString.length();
+  unsigned end = fragment_string.length();
   while (offset < end) {
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#processing-name-value-components
     // 1. Parse the octet string according to the namevalues syntax, yielding a
     //    list of name-value pairs, where name and value are both octet string.
     //    In accordance with RFC 3986, the name and value components must be
     //    parsed and separated before percent-encoded octets are decoded.
-    size_t parameterStart = offset;
-    size_t parameterEnd = fragmentString.find('&', offset);
-    if (parameterEnd == kNotFound)
-      parameterEnd = end;
+    size_t parameter_start = offset;
+    size_t parameter_end = fragment_string.Find('&', offset);
+    if (parameter_end == kNotFound)
+      parameter_end = end;
 
-    size_t equalOffset = fragmentString.find('=', offset);
-    if (equalOffset == kNotFound || equalOffset > parameterEnd) {
-      offset = parameterEnd + 1;
+    size_t equal_offset = fragment_string.Find('=', offset);
+    if (equal_offset == kNotFound || equal_offset > parameter_end) {
+      offset = parameter_end + 1;
       continue;
     }
 
@@ -113,45 +113,45 @@ void MediaFragmentURIParser::parseFragments() {
     //  a. Decode percent-encoded octets in name and value as defined by RFC
     //     3986. If either name or value are not valid percent-encoded strings,
     //     then remove the name-value pair from the list.
-    String name = decodeURLEscapeSequences(
-        fragmentString.substring(parameterStart, equalOffset - parameterStart));
+    String name = DecodeURLEscapeSequences(fragment_string.Substring(
+        parameter_start, equal_offset - parameter_start));
     String value;
-    if (equalOffset != parameterEnd) {
-      value = decodeURLEscapeSequences(fragmentString.substring(
-          equalOffset + 1, parameterEnd - equalOffset - 1));
+    if (equal_offset != parameter_end) {
+      value = DecodeURLEscapeSequences(fragment_string.Substring(
+          equal_offset + 1, parameter_end - equal_offset - 1));
     }
 
     //  b. Convert name and value to Unicode strings by interpreting them as
     //     UTF-8. If either name or value are not valid UTF-8 strings, then
     //     remove the name-value pair from the list.
-    bool validUTF8 = true;
-    if (!name.isEmpty()) {
-      name = name.utf8(StrictUTF8Conversion).data();
-      validUTF8 = !name.isEmpty();
+    bool valid_utf8 = true;
+    if (!name.IsEmpty()) {
+      name = name.Utf8(kStrictUTF8Conversion).Data();
+      valid_utf8 = !name.IsEmpty();
     }
-    if (validUTF8 && !value.isEmpty()) {
-      value = value.utf8(StrictUTF8Conversion).data();
-      validUTF8 = !value.isEmpty();
+    if (valid_utf8 && !value.IsEmpty()) {
+      value = value.Utf8(kStrictUTF8Conversion).Data();
+      valid_utf8 = !value.IsEmpty();
     }
 
-    if (validUTF8)
-      m_fragments.push_back(std::make_pair(name, value));
+    if (valid_utf8)
+      fragments_.push_back(std::make_pair(name, value));
 
-    offset = parameterEnd + 1;
+    offset = parameter_end + 1;
   }
 }
 
-void MediaFragmentURIParser::parseTimeFragment() {
-  DCHECK_EQ(m_timeFormat, None);
+void MediaFragmentURIParser::ParseTimeFragment() {
+  DCHECK_EQ(time_format_, kNone);
 
-  if (m_fragments.isEmpty())
-    parseFragments();
+  if (fragments_.IsEmpty())
+    ParseFragments();
 
-  m_timeFormat = Invalid;
+  time_format_ = kInvalid;
 
-  for (const auto& fragment : m_fragments) {
-    DCHECK(fragment.first.is8Bit());
-    DCHECK(fragment.second.is8Bit());
+  for (const auto& fragment : fragments_) {
+    DCHECK(fragment.first.Is8Bit());
+    DCHECK(fragment.second.Is8Bit());
 
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
     // Temporal clipping is denoted by the name t, and specified as an interval
@@ -168,11 +168,11 @@ void MediaFragmentURIParser::parseTimeFragment() {
 
     double start = std::numeric_limits<double>::quiet_NaN();
     double end = std::numeric_limits<double>::quiet_NaN();
-    if (parseNPTFragment(fragment.second.characters8(),
+    if (ParseNPTFragment(fragment.second.Characters8(),
                          fragment.second.length(), start, end)) {
-      m_startTime = start;
-      m_endTime = end;
-      m_timeFormat = NormalPlayTime;
+      start_time_ = start;
+      end_time_ = end;
+      time_format_ = kNormalPlayTime;
 
       // Although we have a valid fragment, don't return yet because when a
       // fragment dimensions occurs multiple times, only the last occurrence of
@@ -183,17 +183,17 @@ void MediaFragmentURIParser::parseTimeFragment() {
       // previous occurrences (valid or invalid) SHOULD be ignored by the UA.
     }
   }
-  m_fragments.clear();
+  fragments_.Clear();
 }
 
-bool MediaFragmentURIParser::parseNPTFragment(const LChar* timeString,
+bool MediaFragmentURIParser::ParseNPTFragment(const LChar* time_string,
                                               unsigned length,
-                                              double& startTime,
-                                              double& endTime) {
+                                              double& start_time,
+                                              double& end_time) {
   unsigned offset = 0;
-  if (length >= nptIdentiferLength && timeString[0] == 'n' &&
-      timeString[1] == 'p' && timeString[2] == 't' && timeString[3] == ':')
-    offset += nptIdentiferLength;
+  if (length >= kNptIdentiferLength && time_string[0] == 'n' &&
+      time_string[1] == 'p' && time_string[2] == 't' && time_string[3] == ':')
+    offset += kNptIdentiferLength;
 
   if (offset == length)
     return false;
@@ -201,41 +201,41 @@ bool MediaFragmentURIParser::parseNPTFragment(const LChar* timeString,
   // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
   // If a single number only is given, this corresponds to the begin time except
   // if it is preceded by a comma that would in this case indicate the end time.
-  if (timeString[offset] == ',') {
-    startTime = 0;
+  if (time_string[offset] == ',') {
+    start_time = 0;
   } else {
-    if (!parseNPTTime(timeString, length, offset, startTime))
+    if (!ParseNPTTime(time_string, length, offset, start_time))
       return false;
   }
 
   if (offset == length)
     return true;
 
-  if (timeString[offset] != ',')
+  if (time_string[offset] != ',')
     return false;
   if (++offset == length)
     return false;
 
-  if (!parseNPTTime(timeString, length, offset, endTime))
+  if (!ParseNPTTime(time_string, length, offset, end_time))
     return false;
 
   if (offset != length)
     return false;
 
-  if (startTime >= endTime)
+  if (start_time >= end_time)
     return false;
 
   return true;
 }
 
-bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString,
+bool MediaFragmentURIParser::ParseNPTTime(const LChar* time_string,
                                           unsigned length,
                                           unsigned& offset,
                                           double& time) {
-  enum Mode { Minutes, Hours };
-  Mode mode = Minutes;
+  enum Mode { kMinutes, kHours };
+  Mode mode = kMinutes;
 
-  if (offset >= length || !isASCIIDigit(timeString[offset]))
+  if (offset >= length || !IsASCIIDigit(time_string[offset]))
     return false;
 
   // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#npttimedef
@@ -257,19 +257,19 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString,
   // npt-mm        =   2DIGIT      ; 0-59
   // npt-ss        =   2DIGIT      ; 0-59
 
-  String digits1 = collectDigits(timeString, length, offset);
-  int value1 = digits1.toInt();
-  if (offset >= length || timeString[offset] == ',') {
+  String digits1 = CollectDigits(time_string, length, offset);
+  int value1 = digits1.ToInt();
+  if (offset >= length || time_string[offset] == ',') {
     time = value1;
     return true;
   }
 
   double fraction = 0;
-  if (timeString[offset] == '.') {
+  if (time_string[offset] == '.') {
     if (offset == length)
       return true;
-    String digits = collectFraction(timeString, length, offset);
-    fraction = digits.toDouble();
+    String digits = CollectFraction(time_string, length, offset);
+    fraction = digits.ToDouble();
     time = value1 + fraction;
     return true;
   }
@@ -277,41 +277,41 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString,
   if (digits1.length() < 2)
     return false;
   if (digits1.length() > 2)
-    mode = Hours;
+    mode = kHours;
 
   // Collect the next sequence of 0-9 after ':'
-  if (offset >= length || timeString[offset++] != ':')
+  if (offset >= length || time_string[offset++] != ':')
     return false;
-  if (offset >= length || !isASCIIDigit(timeString[(offset)]))
+  if (offset >= length || !IsASCIIDigit(time_string[(offset)]))
     return false;
-  String digits2 = collectDigits(timeString, length, offset);
-  int value2 = digits2.toInt();
+  String digits2 = CollectDigits(time_string, length, offset);
+  int value2 = digits2.ToInt();
   if (digits2.length() != 2)
     return false;
 
   // Detect whether this timestamp includes hours.
   int value3;
-  if (mode == Hours || (offset < length && timeString[offset] == ':')) {
-    if (offset >= length || timeString[offset++] != ':')
+  if (mode == kHours || (offset < length && time_string[offset] == ':')) {
+    if (offset >= length || time_string[offset++] != ':')
       return false;
-    if (offset >= length || !isASCIIDigit(timeString[offset]))
+    if (offset >= length || !IsASCIIDigit(time_string[offset]))
       return false;
-    String digits3 = collectDigits(timeString, length, offset);
+    String digits3 = CollectDigits(time_string, length, offset);
     if (digits3.length() != 2)
       return false;
-    value3 = digits3.toInt();
+    value3 = digits3.ToInt();
   } else {
     value3 = value2;
     value2 = value1;
     value1 = 0;
   }
 
-  if (offset < length && timeString[offset] == '.')
-    fraction = collectFraction(timeString, length, offset).toDouble();
+  if (offset < length && time_string[offset] == '.')
+    fraction = CollectFraction(time_string, length, offset).ToDouble();
 
-  const int secondsPerHour = 3600;
-  const int secondsPerMinute = 60;
-  time = (value1 * secondsPerHour) + (value2 * secondsPerMinute) + value3 +
+  const int kSecondsPerHour = 3600;
+  const int kSecondsPerMinute = 60;
+  time = (value1 * kSecondsPerHour) + (value2 * kSecondsPerMinute) + value3 +
          fraction;
   return true;
 }

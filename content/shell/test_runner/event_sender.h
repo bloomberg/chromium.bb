@@ -295,7 +295,7 @@ class EventSender {
     int modifiers_;
 
     PointerState()
-        : pressed_button_(blink::WebMouseEvent::Button::NoButton),
+        : pressed_button_(blink::WebMouseEvent::Button::kNoButton),
           current_buttons_(0),
           last_pos_(blink::WebPoint(0, 0)),
           modifiers_(0) {}

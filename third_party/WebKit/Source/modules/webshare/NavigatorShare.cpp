@@ -21,7 +21,7 @@ namespace {
 
 // Gets the human-friendly error message for a ShareError. |error| must not be
 // ShareError::OK.
-String errorToString(mojom::blink::ShareError error) {
+String ErrorToString(mojom::blink::ShareError error) {
   switch (error) {
     case mojom::blink::ShareError::OK:
       NOTREACHED();
@@ -42,116 +42,116 @@ class NavigatorShare::ShareClientImpl final
  public:
   ShareClientImpl(NavigatorShare*, ScriptPromiseResolver*);
 
-  void callback(mojom::blink::ShareError);
+  void Callback(mojom::blink::ShareError);
 
-  void onConnectionError();
+  void OnConnectionError();
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_navigator);
-    visitor->trace(m_resolver);
+    visitor->Trace(navigator_);
+    visitor->Trace(resolver_);
   }
 
  private:
-  WeakMember<NavigatorShare> m_navigator;
-  Member<ScriptPromiseResolver> m_resolver;
+  WeakMember<NavigatorShare> navigator_;
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 NavigatorShare::ShareClientImpl::ShareClientImpl(
     NavigatorShare* navigator_share,
     ScriptPromiseResolver* resolver)
-    : m_navigator(navigator_share), m_resolver(resolver) {}
+    : navigator_(navigator_share), resolver_(resolver) {}
 
-void NavigatorShare::ShareClientImpl::callback(mojom::blink::ShareError error) {
-  if (m_navigator)
-    m_navigator->m_clients.erase(this);
+void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
+  if (navigator_)
+    navigator_->clients_.erase(this);
 
   if (error == mojom::blink::ShareError::OK) {
-    m_resolver->resolve();
+    resolver_->Resolve();
   } else {
     // TODO(mgiuca): Work out which error type to use.
-    m_resolver->reject(DOMException::create(AbortError, errorToString(error)));
+    resolver_->Reject(DOMException::Create(kAbortError, ErrorToString(error)));
   }
 }
 
-void NavigatorShare::ShareClientImpl::onConnectionError() {
-  m_resolver->reject(
-      DOMException::create(SecurityError, "WebShare is disabled."));
+void NavigatorShare::ShareClientImpl::OnConnectionError() {
+  resolver_->Reject(
+      DOMException::Create(kSecurityError, "WebShare is disabled."));
 }
 
 NavigatorShare::~NavigatorShare() = default;
 
-NavigatorShare& NavigatorShare::from(Navigator& navigator) {
+NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   NavigatorShare* supplement = static_cast<NavigatorShare*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorShare();
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 DEFINE_TRACE(NavigatorShare) {
-  visitor->trace(m_clients);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(clients_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 NavigatorShare::NavigatorShare() {}
 
-const char* NavigatorShare::supplementName() {
+const char* NavigatorShare::SupplementName() {
   return "NavigatorShare";
 }
 
-ScriptPromise NavigatorShare::share(ScriptState* scriptState,
-                                    const ShareData& shareData) {
-  String errorMessage;
-  if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
-    DOMException* error = DOMException::create(SecurityError, errorMessage);
-    return ScriptPromise::rejectWithDOMException(scriptState, error);
+ScriptPromise NavigatorShare::share(ScriptState* script_state,
+                                    const ShareData& share_data) {
+  String error_message;
+  if (!script_state->GetExecutionContext()->IsSecureContext(error_message)) {
+    DOMException* error = DOMException::Create(kSecurityError, error_message);
+    return ScriptPromise::RejectWithDOMException(script_state, error);
   }
-  if (!UserGestureIndicator::utilizeUserGesture()) {
-    DOMException* error = DOMException::create(
-        SecurityError,
+  if (!UserGestureIndicator::UtilizeUserGesture()) {
+    DOMException* error = DOMException::Create(
+        kSecurityError,
         "Must be handling a user gesture to perform a share request.");
-    return ScriptPromise::rejectWithDOMException(scriptState, error);
+    return ScriptPromise::RejectWithDOMException(script_state, error);
   }
 
-  Document* doc = toDocument(scriptState->getExecutionContext());
+  Document* doc = ToDocument(script_state->GetExecutionContext());
   DCHECK(doc);
-  if (!m_service) {
-    LocalFrame* frame = doc->frame();
+  if (!service_) {
+    LocalFrame* frame = doc->GetFrame();
     DCHECK(frame);
-    frame->interfaceProvider()->getInterface(mojo::MakeRequest(&m_service));
-    m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
-        &NavigatorShare::onConnectionError, wrapWeakPersistent(this))));
-    DCHECK(m_service);
+    frame->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&service_));
+    service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
+        &NavigatorShare::OnConnectionError, WrapWeakPersistent(this))));
+    DCHECK(service_);
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ShareClientImpl* client = new ShareClientImpl(this, resolver);
-  m_clients.insert(client);
-  ScriptPromise promise = resolver->promise();
+  clients_.insert(client);
+  ScriptPromise promise = resolver->Promise();
 
-  m_service->Share(shareData.hasTitle() ? shareData.title() : emptyString,
-                   shareData.hasText() ? shareData.text() : emptyString,
-                   doc->completeURL(shareData.url()),
-                   convertToBaseCallback(WTF::bind(&ShareClientImpl::callback,
-                                                   wrapPersistent(client))));
+  service_->Share(share_data.hasTitle() ? share_data.title() : g_empty_string,
+                  share_data.hasText() ? share_data.text() : g_empty_string,
+                  doc->CompleteURL(share_data.url()),
+                  ConvertToBaseCallback(WTF::Bind(&ShareClientImpl::Callback,
+                                                  WrapPersistent(client))));
 
   return promise;
 }
 
-ScriptPromise NavigatorShare::share(ScriptState* scriptState,
+ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     Navigator& navigator,
-                                    const ShareData& shareData) {
-  return from(navigator).share(scriptState, shareData);
+                                    const ShareData& share_data) {
+  return From(navigator).share(script_state, share_data);
 }
 
-void NavigatorShare::onConnectionError() {
-  for (auto& client : m_clients) {
-    client->onConnectionError();
+void NavigatorShare::OnConnectionError() {
+  for (auto& client : clients_) {
+    client->OnConnectionError();
   }
-  m_clients.clear();
-  m_service.reset();
+  clients_.Clear();
+  service_.reset();
 }
 
 }  // namespace blink

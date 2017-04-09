@@ -9,16 +9,16 @@
 namespace blink {
 
 VRGetDevicesCallback::VRGetDevicesCallback(ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {}
+    : resolver_(resolver) {}
 
 VRGetDevicesCallback::~VRGetDevicesCallback() {}
 
-void VRGetDevicesCallback::onSuccess(VRDisplayVector displays) {
-  m_resolver->resolve(displays);
+void VRGetDevicesCallback::OnSuccess(VRDisplayVector displays) {
+  resolver_->Resolve(displays);
 }
 
-void VRGetDevicesCallback::onError() {
-  m_resolver->reject();
+void VRGetDevicesCallback::OnError() {
+  resolver_->Reject();
 }
 
 }  // namespace blink

@@ -87,7 +87,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
  protected:
   // blink::WebAutofillClient:
-  void didAssociateFormControlsDynamically() override;
+  void DidAssociateFormControlsDynamically() override;
 
  private:
   // Functor used as a simplified comparison function for FormData. Only
@@ -179,15 +179,15 @@ class AutofillAgent : public content::RenderFrameObserver,
                                  bool was_focused) override;
 
   // blink::WebAutofillClient:
-  void textFieldDidEndEditing(const blink::WebInputElement& element) override;
-  void textFieldDidChange(const blink::WebFormControlElement& element) override;
-  void textFieldDidReceiveKeyDown(
+  void TextFieldDidEndEditing(const blink::WebInputElement& element) override;
+  void TextFieldDidChange(const blink::WebFormControlElement& element) override;
+  void TextFieldDidReceiveKeyDown(
       const blink::WebInputElement& element,
       const blink::WebKeyboardEvent& event) override;
-  void openTextDataListChooser(const blink::WebInputElement& element) override;
-  void dataListOptionsChanged(const blink::WebInputElement& element) override;
-  void firstUserGestureObserved() override;
-  void ajaxSucceeded() override;
+  void OpenTextDataListChooser(const blink::WebInputElement& element) override;
+  void DataListOptionsChanged(const blink::WebInputElement& element) override;
+  void FirstUserGestureObserved() override;
+  void AjaxSucceeded() override;
 
   // Called when a same-document navigation is detected.
   void OnSameDocumentNavigationCompleted();

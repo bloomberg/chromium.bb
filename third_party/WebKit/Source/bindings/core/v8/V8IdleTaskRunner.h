@@ -43,12 +43,12 @@ class V8IdleTaskAdapter : public WebThread::IdleTask {
   WTF_MAKE_NONCOPYABLE(V8IdleTaskAdapter);
 
  public:
-  V8IdleTaskAdapter(v8::IdleTask* task) : m_task(WTF::wrapUnique(task)) {}
+  V8IdleTaskAdapter(v8::IdleTask* task) : task_(WTF::WrapUnique(task)) {}
   ~V8IdleTaskAdapter() override {}
-  void run(double delaySeconds) override { m_task->Run(delaySeconds); }
+  void Run(double delay_seconds) override { task_->Run(delay_seconds); }
 
  private:
-  std::unique_ptr<v8::IdleTask> m_task;
+  std::unique_ptr<v8::IdleTask> task_;
 };
 
 class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
@@ -56,15 +56,15 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   WTF_MAKE_NONCOPYABLE(V8IdleTaskRunner);
 
  public:
-  V8IdleTaskRunner(WebScheduler* scheduler) : m_scheduler(scheduler) {}
+  V8IdleTaskRunner(WebScheduler* scheduler) : scheduler_(scheduler) {}
   ~V8IdleTaskRunner() override {}
   void PostIdleTask(v8::IdleTask* task) override {
     ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
-    m_scheduler->postIdleTask(BLINK_FROM_HERE, new V8IdleTaskAdapter(task));
+    scheduler_->PostIdleTask(BLINK_FROM_HERE, new V8IdleTaskAdapter(task));
   }
 
  private:
-  WebScheduler* m_scheduler;
+  WebScheduler* scheduler_;
 };
 
 }  // namespace blink

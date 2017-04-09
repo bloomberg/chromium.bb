@@ -145,13 +145,13 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
                             std::vector<uint8_t>* buffer) {
-  const blink::WebCryptoAesCtrParams* params = algorithm.aesCtrParams();
+  const blink::WebCryptoAesCtrParams* params = algorithm.AesCtrParams();
   const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(key);
 
-  if (params->counter().size() != 16)
+  if (params->Counter().size() != 16)
     return Status::ErrorIncorrectSizeAesCtrCounter();
 
-  unsigned int counter_length_bits = params->lengthBits();
+  unsigned int counter_length_bits = params->LengthBits();
   if (counter_length_bits < 1 || counter_length_bits > 128)
     return Status::ErrorInvalidAesCtrCounterLength();
 
@@ -165,7 +165,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
   if (!cipher)
     return Status::ErrorUnexpected();
 
-  const CryptoData counter_block(params->counter());
+  const CryptoData counter_block(params->Counter());
   buffer->resize(base::ValueOrDieForType<size_t>(output_max_len));
 
   // The total number of possible counter values is pow(2, counter_length_bits)

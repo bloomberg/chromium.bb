@@ -15,7 +15,7 @@ class OrientationSensor : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  Vector<double> quaternion(bool& isNull);
+  Vector<double> quaternion(bool& is_null);
   void populateMatrix(Float32ArrayOrFloat64ArrayOrDOMMatrix&, ExceptionState&);
 
   bool isReadingDirty() const;
@@ -30,11 +30,11 @@ class OrientationSensor : public Sensor {
 
  private:
   // SensorProxy override.
-  void onSensorReadingChanged() override;
+  void OnSensorReadingChanged() override;
   template <typename Matrix>
-  void populateMatrixInternal(Matrix*, ExceptionState&);
+  void PopulateMatrixInternal(Matrix*, ExceptionState&);
 
-  bool m_readingDirty;
+  bool reading_dirty_;
 };
 
 }  // namespace blink

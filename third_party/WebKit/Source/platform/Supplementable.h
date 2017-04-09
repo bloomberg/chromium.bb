@@ -99,33 +99,33 @@ class Supplement : public GarbageCollectedMixin {
   // All Supplement objects should be instantiated with m_host.
   Supplement() {}
 
-  explicit Supplement(T& supplementable) : m_supplementable(&supplementable) {}
+  explicit Supplement(T& supplementable) : supplementable_(&supplementable) {}
 
   // Supplementable and its supplements live and die together.
   // Thus supplementable() should never return null (if the default constructor
   // is completely removed).
-  T* supplementable() const { return m_supplementable; }
+  T* GetSupplementable() const { return supplementable_; }
 
-  static void provideTo(Supplementable<T>& supplementable,
+  static void ProvideTo(Supplementable<T>& supplementable,
                         const char* key,
                         Supplement<T>* supplement) {
-    supplementable.provideSupplement(key, supplement);
+    supplementable.ProvideSupplement(key, supplement);
   }
 
-  static Supplement<T>* from(Supplementable<T>& supplementable,
+  static Supplement<T>* From(Supplementable<T>& supplementable,
                              const char* key) {
-    return supplementable.requireSupplement(key);
+    return supplementable.RequireSupplement(key);
   }
 
-  static Supplement<T>* from(Supplementable<T>* supplementable,
+  static Supplement<T>* From(Supplementable<T>* supplementable,
                              const char* key) {
-    return supplementable ? supplementable->requireSupplement(key) : 0;
+    return supplementable ? supplementable->RequireSupplement(key) : 0;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_supplementable); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(supplementable_); }
 
  private:
-  Member<T> m_supplementable;
+  Member<T> supplementable_;
 };
 
 // Supplementable<T> inherits from GarbageCollectedMixin virtually
@@ -135,63 +135,63 @@ class Supplementable : public virtual GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(Supplementable);
 
  public:
-  void provideSupplement(const char* key, Supplement<T>* supplement) {
+  void ProvideSupplement(const char* key, Supplement<T>* supplement) {
 #if DCHECK_IS_ON()
-    DCHECK_EQ(m_creationThreadId, currentThread());
+    DCHECK_EQ(creation_thread_id_, CurrentThread());
 #endif
-    this->m_supplements.set(key, supplement);
+    this->supplements_.Set(key, supplement);
   }
 
-  void removeSupplement(const char* key) {
+  void RemoveSupplement(const char* key) {
 #if DCHECK_IS_ON()
-    DCHECK_EQ(m_creationThreadId, currentThread());
+    DCHECK_EQ(creation_thread_id_, CurrentThread());
 #endif
-    this->m_supplements.erase(key);
+    this->supplements_.erase(key);
   }
 
-  Supplement<T>* requireSupplement(const char* key) {
+  Supplement<T>* RequireSupplement(const char* key) {
 #if DCHECK_IS_ON()
-    DCHECK_EQ(m_attachedThreadId, currentThread());
+    DCHECK_EQ(attached_thread_id_, CurrentThread());
 #endif
-    return this->m_supplements.at(key);
+    return this->supplements_.at(key);
   }
 
-  void reattachThread() {
+  void ReattachThread() {
 #if DCHECK_IS_ON()
-    m_attachedThreadId = currentThread();
+    attached_thread_id_ = CurrentThread();
 #endif
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_supplements); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(supplements_); }
 
  protected:
   using SupplementMap =
       HeapHashMap<const char*, Member<Supplement<T>>, PtrHash<const char>>;
-  SupplementMap m_supplements;
+  SupplementMap supplements_;
 
   Supplementable()
 #if DCHECK_IS_ON()
-      : m_attachedThreadId(currentThread()),
-        m_creationThreadId(currentThread())
+      : attached_thread_id_(CurrentThread()),
+        creation_thread_id_(CurrentThread())
 #endif
   {
   }
 
 #if DCHECK_IS_ON()
  private:
-  ThreadIdentifier m_attachedThreadId;
-  ThreadIdentifier m_creationThreadId;
+  ThreadIdentifier attached_thread_id_;
+  ThreadIdentifier creation_thread_id_;
 #endif
 };
 
 template <typename T>
 struct ThreadingTrait<Supplement<T>> {
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
 };
 
 template <typename T>
 struct ThreadingTrait<Supplementable<T>> {
-  static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
+  static const ThreadAffinity kAffinity = ThreadingTrait<T>::Affinity;
 };
 
 }  // namespace blink

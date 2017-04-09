@@ -22,220 +22,220 @@ class DocumentLoadingRenderingTest : public SimTest {};
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldResumeCommitsAfterBodyParsedWithoutSheets) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Still in the head, should not resume commits.
-  mainResource.write("<!DOCTYPE html>");
-  EXPECT_TRUE(compositor().deferCommits());
-  mainResource.write("<title>Test</title><style>div { color red; }</style>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<!DOCTYPE html>");
+  EXPECT_TRUE(Compositor().DeferCommits());
+  main_resource.Write("<title>Test</title><style>div { color red; }</style>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Implicitly inserts the body. Since there's no loading stylesheets we
   // should resume commits.
-  mainResource.write("<p>Hello World</p>");
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Write("<p>Hello World</p>");
+  EXPECT_FALSE(Compositor().DeferCommits());
 
   // Finish the load, should stay resumed.
-  mainResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldResumeCommitsAfterBodyIfSheetsLoaded) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest cssResource("https://example.com/test.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Still in the head, should not resume commits.
-  mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet is streaming in, but not ready yet.
-  cssResource.start();
-  cssResource.write("a { color: red; }");
-  EXPECT_TRUE(compositor().deferCommits());
+  css_resource.Start();
+  css_resource.Write("a { color: red; }");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet finished, but no body yet, so don't resume.
-  cssResource.finish();
-  EXPECT_TRUE(compositor().deferCommits());
+  css_resource.Finish();
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Body inserted and sheet is loaded so resume commits.
-  mainResource.write("<body>");
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Write("<body>");
+  EXPECT_FALSE(Compositor().DeferCommits());
 
   // Finish the load, should stay resumed.
-  mainResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest cssResource("https://example.com/test.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Still in the head, should not resume commits.
-  mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet is streaming in, but not ready yet.
-  cssResource.start();
-  cssResource.write("a { color: red; }");
-  EXPECT_TRUE(compositor().deferCommits());
+  css_resource.Start();
+  css_resource.Write("a { color: red; }");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Body inserted, but sheet is still loading so don't resume.
-  mainResource.write("<body>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<body>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet finished and there's a body so resume.
-  cssResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  css_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 
   // Finish the load, should stay resumed.
-  mainResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldResumeCommitsAfterDocumentElementWithNoSheets) {
-  SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
-  SimRequest cssResource("https://example.com/test.css", "text/css");
+  SimRequest main_resource("https://example.com/test.svg", "image/svg+xml");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
 
-  loadURL("https://example.com/test.svg");
+  LoadURL("https://example.com/test.svg");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Sheet loading and no documentElement, so don't resume.
-  mainResource.write("<?xml-stylesheet type='text/css' href='test.css'?>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<?xml-stylesheet type='text/css' href='test.css'?>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet finishes loading, but no documentElement yet so don't resume.
-  cssResource.complete("a { color: red; }");
-  EXPECT_TRUE(compositor().deferCommits());
+  css_resource.Complete("a { color: red; }");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Root inserted so resume.
-  mainResource.write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+  EXPECT_FALSE(Compositor().DeferCommits());
 
   // Finish the load, should stay resumed.
-  mainResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoadForXml) {
-  SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
-  SimRequest cssResource("https://example.com/test.css", "text/css");
+  SimRequest main_resource("https://example.com/test.svg", "image/svg+xml");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
 
-  loadURL("https://example.com/test.svg");
+  LoadURL("https://example.com/test.svg");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Not done parsing.
-  mainResource.write("<?xml-stylesheet type='text/css' href='test.css'?>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<?xml-stylesheet type='text/css' href='test.css'?>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet is streaming in, but not ready yet.
-  cssResource.start();
-  cssResource.write("a { color: red; }");
-  EXPECT_TRUE(compositor().deferCommits());
+  css_resource.Start();
+  css_resource.Write("a { color: red; }");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Root inserted, but sheet is still loading so don't resume.
-  mainResource.write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Write("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Finish the load, but sheets still loading so don't resume.
-  mainResource.finish();
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Sheet finished, so resume commits.
-  cssResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  css_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterFinishParsingXml) {
-  SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
+  SimRequest main_resource("https://example.com/test.svg", "image/svg+xml");
 
-  loadURL("https://example.com/test.svg");
+  LoadURL("https://example.com/test.svg");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Finish parsing, no sheets loading so resume.
-  mainResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeImmediatelyForImageDocuments) {
-  SimRequest mainResource("https://example.com/test.png", "image/png");
+  SimRequest main_resource("https://example.com/test.png", "image/png");
 
-  loadURL("https://example.com/test.png");
+  LoadURL("https://example.com/test.png");
 
-  mainResource.start();
-  EXPECT_TRUE(compositor().deferCommits());
+  main_resource.Start();
+  EXPECT_TRUE(Compositor().DeferCommits());
 
   // Not really a valid image but enough for the test. ImageDocuments should
   // resume painting as soon as the first bytes arrive.
-  mainResource.write("image data");
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Write("image data");
+  EXPECT_FALSE(Compositor().DeferCommits());
 
-  mainResource.finish();
-  EXPECT_FALSE(compositor().deferCommits());
+  main_resource.Finish();
+  EXPECT_FALSE(Compositor().DeferCommits());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest firstCssResource("https://example.com/first.css", "text/css");
-  SimRequest secondCssResource("https://example.com/second.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest first_css_resource("https://example.com/first.css", "text/css");
+  SimRequest second_css_resource("https://example.com/second.css", "text/css");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Load a stylesheet.
-  mainResource.write(
+  main_resource.Write(
       "<!DOCTYPE html><link id=link rel=stylesheet href=first.css>");
-  EXPECT_TRUE(compositor().deferCommits());
+  EXPECT_TRUE(Compositor().DeferCommits());
 
-  firstCssResource.start();
-  firstCssResource.write("body { color: red; }");
-  mainResource.write("<body>");
-  firstCssResource.finish();
+  first_css_resource.Start();
+  first_css_resource.Write("body { color: red; }");
+  main_resource.Write("<body>");
+  first_css_resource.Finish();
 
   // Sheet finished and there's a body so resume.
-  EXPECT_FALSE(compositor().deferCommits());
+  EXPECT_FALSE(Compositor().DeferCommits());
 
-  mainResource.finish();
-  compositor().beginFrame();
+  main_resource.Finish();
+  Compositor().BeginFrame();
 
   // Replace the stylesheet by changing href.
-  auto* element = document().getElementById("link");
+  auto* element = GetDocument().GetElementById("link");
   EXPECT_NE(nullptr, element);
   element->setAttribute(hrefAttr, "second.css");
-  EXPECT_FALSE(compositor().needsBeginFrame());
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
 
-  secondCssResource.complete("body { color: red; }");
-  EXPECT_TRUE(compositor().needsBeginFrame());
+  second_css_resource.Complete("body { color: red; }");
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
 }
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldNotPaintIframeContentWithPendingSheets) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest frameResource("https://example.com/frame.html", "text/html");
-  SimRequest cssResource("https://example.com/test.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  webView().resize(WebSize(800, 600));
+  WebView().Resize(WebSize(800, 600));
 
-  mainResource.complete(
+  main_resource.Complete(
       "<!DOCTYPE html>"
       "<body style='background: red'>"
       "<iframe id=frame src=frame.html style='border: none'></iframe>"
@@ -243,10 +243,10 @@ TEST_F(DocumentLoadingRenderingTest,
 
   // Main page is ready to begin painting as there's no pending sheets.
   // The frame is not yet loaded, so we only paint the top level page.
-  auto frame1 = compositor().beginFrame();
-  EXPECT_TRUE(frame1.contains(SimCanvas::Text));
+  auto frame1 = Compositor().BeginFrame();
+  EXPECT_TRUE(frame1.Contains(SimCanvas::kText));
 
-  frameResource.complete(
+  frame_resource.Complete(
       "<!DOCTYPE html>"
       "<style>html { background: pink }</style>"
       "<link rel=stylesheet href=test.css>"
@@ -259,140 +259,143 @@ TEST_F(DocumentLoadingRenderingTest,
   // Trigger a layout with pending sheets. For example a page could trigger
   // this by doing offsetTop in a setTimeout, or by a parent frame executing
   // script that touched offsetTop in the child frame.
-  auto* childFrame = toHTMLIFrameElement(document().getElementById("frame"));
-  childFrame->contentDocument()->updateStyleAndLayoutIgnorePendingStylesheets();
+  auto* child_frame =
+      toHTMLIFrameElement(GetDocument().GetElementById("frame"));
+  child_frame->contentDocument()
+      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  auto frame2 = compositor().beginFrame();
+  auto frame2 = Compositor().BeginFrame();
 
   // The child frame still has pending sheets, and the parent frame has no
   // invalid paint so we shouldn't draw any text.
-  EXPECT_FALSE(frame2.contains(SimCanvas::Text));
+  EXPECT_FALSE(frame2.Contains(SimCanvas::kText));
 
   // 1 for the main frame background (red).
   // TODO(esprehn): If we were super smart we'd notice that the nested iframe is
   // actually composited and not repaint the main frame, but that likely
   // requires doing compositing and paint invalidation bottom up.
-  EXPECT_EQ(1, frame2.drawCount());
-  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "red"));
+  EXPECT_EQ(1, frame2.DrawCount());
+  EXPECT_TRUE(frame2.Contains(SimCanvas::kRect, "red"));
 
   // Finish loading the sheets in the child frame. After it should issue a
   // paint invalidation for every layer when the frame becomes unthrottled.
-  cssResource.complete();
+  css_resource.Complete();
 
   // First frame where all frames are loaded, should paint the text in the
   // child frame.
-  auto frame3 = compositor().beginFrame();
-  EXPECT_TRUE(frame3.contains(SimCanvas::Text));
+  auto frame3 = Compositor().BeginFrame();
+  EXPECT_TRUE(frame3.Contains(SimCanvas::kText));
 }
 
 namespace {
 
 class CheckRafCallback final : public FrameRequestCallback {
  public:
-  void handleEvent(double highResTimeMs) override { m_wasCalled = true; }
-  bool wasCalled() const { return m_wasCalled; }
+  void handleEvent(double high_res_time_ms) override { was_called_ = true; }
+  bool WasCalled() const { return was_called_; }
 
  private:
-  bool m_wasCalled = false;
+  bool was_called_ = false;
 };
 };
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldThrottleIframeLifecycleUntilPendingSheetsLoaded) {
-  SimRequest mainResource("https://example.com/main.html", "text/html");
-  SimRequest frameResource("https://example.com/frame.html", "text/html");
-  SimRequest cssResource("https://example.com/frame.css", "text/css");
+  SimRequest main_resource("https://example.com/main.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+  SimRequest css_resource("https://example.com/frame.css", "text/css");
 
-  loadURL("https://example.com/main.html");
+  LoadURL("https://example.com/main.html");
 
-  webView().resize(WebSize(800, 600));
+  WebView().Resize(WebSize(800, 600));
 
-  mainResource.complete(
+  main_resource.Complete(
       "<!DOCTYPE html>"
       "<body style='background: red'>"
       "<iframe id=frame src=frame.html></iframe>");
 
-  frameResource.complete(
+  frame_resource.Complete(
       "<!DOCTYPE html>"
       "<link rel=stylesheet href=frame.css>"
       "<body style='background: blue'>");
 
-  auto* childFrame = toHTMLIFrameElement(document().getElementById("frame"));
+  auto* child_frame =
+      toHTMLIFrameElement(GetDocument().GetElementById("frame"));
 
   // Frame while the child frame still has pending sheets.
-  auto* frame1Callback = new CheckRafCallback();
-  childFrame->contentDocument()->requestAnimationFrame(frame1Callback);
-  auto frame1 = compositor().beginFrame();
-  EXPECT_FALSE(frame1Callback->wasCalled());
-  EXPECT_TRUE(frame1.contains(SimCanvas::Rect, "red"));
-  EXPECT_FALSE(frame1.contains(SimCanvas::Rect, "blue"));
+  auto* frame1_callback = new CheckRafCallback();
+  child_frame->contentDocument()->RequestAnimationFrame(frame1_callback);
+  auto frame1 = Compositor().BeginFrame();
+  EXPECT_FALSE(frame1_callback->WasCalled());
+  EXPECT_TRUE(frame1.Contains(SimCanvas::kRect, "red"));
+  EXPECT_FALSE(frame1.Contains(SimCanvas::kRect, "blue"));
 
   // Finish loading the sheets in the child frame. Should enable lifecycle
   // updates and raf callbacks.
-  cssResource.complete();
+  css_resource.Complete();
 
   // Frame with all lifecycle updates enabled.
-  auto* frame2Callback = new CheckRafCallback();
-  childFrame->contentDocument()->requestAnimationFrame(frame2Callback);
-  auto frame2 = compositor().beginFrame();
-  EXPECT_TRUE(frame1Callback->wasCalled());
-  EXPECT_TRUE(frame2Callback->wasCalled());
-  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "red"));
-  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "blue"));
+  auto* frame2_callback = new CheckRafCallback();
+  child_frame->contentDocument()->RequestAnimationFrame(frame2_callback);
+  auto frame2 = Compositor().BeginFrame();
+  EXPECT_TRUE(frame1_callback->WasCalled());
+  EXPECT_TRUE(frame2_callback->WasCalled());
+  EXPECT_TRUE(frame2.Contains(SimCanvas::kRect, "red"));
+  EXPECT_TRUE(frame2.Contains(SimCanvas::kRect, "blue"));
 }
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldContinuePaintingWhenSheetsStartedAfterBody) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest cssHeadResource("https://example.com/testHead.css", "text/css");
-  SimRequest cssBodyResource("https://example.com/testBody.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest css_head_resource("https://example.com/testHead.css", "text/css");
+  SimRequest css_body_resource("https://example.com/testBody.css", "text/css");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  mainResource.start();
+  main_resource.Start();
 
   // Still in the head, should not paint.
-  mainResource.write("<!DOCTYPE html><link rel=stylesheet href=testHead.css>");
-  EXPECT_FALSE(document().isRenderingReady());
+  main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=testHead.css>");
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Sheet is streaming in, but not ready yet.
-  cssHeadResource.start();
-  cssHeadResource.write("a { color: red; }");
-  EXPECT_FALSE(document().isRenderingReady());
+  css_head_resource.Start();
+  css_head_resource.Write("a { color: red; }");
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Body inserted but sheet is still pending so don't paint.
-  mainResource.write("<body>");
-  EXPECT_FALSE(document().isRenderingReady());
+  main_resource.Write("<body>");
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // Sheet finished and body inserted, ok to paint.
-  cssHeadResource.finish();
-  EXPECT_TRUE(document().isRenderingReady());
+  css_head_resource.Finish();
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 
   // In the body, should not stop painting.
-  mainResource.write("<link rel=stylesheet href=testBody.css>");
-  EXPECT_TRUE(document().isRenderingReady());
+  main_resource.Write("<link rel=stylesheet href=testBody.css>");
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 
   // Finish loading the CSS resource (no change to painting).
-  cssBodyResource.complete("a { color: red; }");
-  EXPECT_TRUE(document().isRenderingReady());
+  css_body_resource.Complete("a { color: red; }");
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 
   // Finish the load, painting should stay enabled.
-  mainResource.finish();
-  EXPECT_TRUE(document().isRenderingReady());
+  main_resource.Finish();
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 }
 
 TEST_F(DocumentLoadingRenderingTest,
        returnBoundingClientRectCorrectlyWhileLoadingImport) {
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest importResource("https://example.com/import.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest import_resource("https://example.com/import.css", "text/css");
 
-  loadURL("https://example.com/test.html");
+  LoadURL("https://example.com/test.html");
 
-  webView().resize(WebSize(800, 600));
+  WebView().Resize(WebSize(800, 600));
 
-  mainResource.start();
+  main_resource.Start();
 
-  mainResource.write(
+  main_resource.Write(
       "<html><body>"
       "  <div id='test' style='font-size: 16px'>test</div>"
       "  <script>"
@@ -401,23 +404,23 @@ TEST_F(DocumentLoadingRenderingTest,
       "    link.href = 'import.css';"
       "    document.head.appendChild(link);"
       "  </script>");
-  importResource.start();
+  import_resource.Start();
 
   // Import loader isn't finish, shoudn't paint.
-  EXPECT_FALSE(document().isRenderingReady());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   // If ignoringPendingStylesheets==true, element should get non-empty rect.
-  Element* element = document().getElementById("test");
+  Element* element = GetDocument().GetElementById("test");
   ClientRect* rect = element->getBoundingClientRect();
   EXPECT_TRUE(rect->width() > 0.f);
   EXPECT_TRUE(rect->height() > 0.f);
 
   // After reset ignoringPendingStylesheets, we should block rendering again.
-  EXPECT_FALSE(document().isRenderingReady());
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
-  importResource.write("div { color: red; }");
-  importResource.finish();
-  mainResource.finish();
+  import_resource.Write("div { color: red; }");
+  import_resource.Finish();
+  main_resource.Finish();
 }
 
 }  // namespace blink

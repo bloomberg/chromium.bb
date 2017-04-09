@@ -54,101 +54,101 @@ class CORE_EXPORT Fullscreen final
 
  public:
   virtual ~Fullscreen();
-  static const char* supplementName();
-  static Fullscreen& from(Document&);
-  static Fullscreen* fromIfExists(Document&);
-  static Element* fullscreenElementFrom(Document&);
-  static Element* fullscreenElementForBindingFrom(TreeScope&);
-  static Element* currentFullScreenElementFrom(Document&);
-  static Element* currentFullScreenElementForBindingFrom(Document&);
-  static bool isCurrentFullScreenElement(const Element&);
+  static const char* SupplementName();
+  static Fullscreen& From(Document&);
+  static Fullscreen* FromIfExists(Document&);
+  static Element* FullscreenElementFrom(Document&);
+  static Element* FullscreenElementForBindingFrom(TreeScope&);
+  static Element* CurrentFullScreenElementFrom(Document&);
+  static Element* CurrentFullScreenElementForBindingFrom(Document&);
+  static bool IsCurrentFullScreenElement(const Element&);
 
   enum class RequestType {
     // Element.requestFullscreen()
-    Unprefixed,
+    kUnprefixed,
     // Element.webkitRequestFullscreen()/webkitRequestFullScreen() and
     // HTMLVideoElement.webkitEnterFullscreen()/webkitEnterFullScreen()
-    Prefixed,
+    kPrefixed,
   };
 
-  static void requestFullscreen(Element&);
+  static void RequestFullscreen(Element&);
 
   // |forCrossProcessDescendant| is used in OOPIF scenarios and is set to
   // true when fullscreen is requested for an out-of-process descendant
   // element.
-  static void requestFullscreen(Element&,
+  static void RequestFullscreen(Element&,
                                 RequestType,
-                                bool forCrossProcessDescendant = false);
+                                bool for_cross_process_descendant = false);
 
-  static void fullyExitFullscreen(Document&);
-  static void exitFullscreen(Document&);
+  static void FullyExitFullscreen(Document&);
+  static void ExitFullscreen(Document&);
 
-  static bool fullscreenEnabled(Document&);
+  static bool FullscreenEnabled(Document&);
   // TODO(foolip): The fullscreen element stack is modified synchronously in
   // requestFullscreen(), which is not per spec and means that
   // |fullscreenElement()| is not always the same as
   // |currentFullScreenElement()|, see https://crbug.com/402421.
-  Element* fullscreenElement() const {
-    return !m_fullscreenElementStack.isEmpty()
-               ? m_fullscreenElementStack.back().first.get()
+  Element* FullscreenElement() const {
+    return !fullscreen_element_stack_.IsEmpty()
+               ? fullscreen_element_stack_.back().first.Get()
                : nullptr;
   }
 
   // Called by FullscreenController to notify that we've entered or exited
   // fullscreen. All frames are notified, so there may be no pending request.
-  void didEnterFullscreen();
-  void didExitFullscreen();
+  void DidEnterFullscreen();
+  void DidExitFullscreen();
 
-  void setFullScreenLayoutObject(LayoutFullScreen*);
-  LayoutFullScreen* fullScreenLayoutObject() const {
-    return m_fullScreenLayoutObject;
+  void SetFullScreenLayoutObject(LayoutFullScreen*);
+  LayoutFullScreen* FullScreenLayoutObject() const {
+    return full_screen_layout_object_;
   }
-  void fullScreenLayoutObjectDestroyed();
+  void FullScreenLayoutObjectDestroyed();
 
-  void elementRemoved(Element&);
+  void ElementRemoved(Element&);
 
   // Returns true if the current fullscreen element stack corresponds to a
   // container for an actual fullscreen element in a descendant
   // out-of-process iframe.
-  bool forCrossProcessDescendant() { return m_forCrossProcessDescendant; }
+  bool ForCrossProcessDescendant() { return for_cross_process_descendant_; }
 
   // Mozilla API
   // TODO(foolip): |currentFullScreenElement()| is a remnant from before the
   // fullscreen element stack. It is still maintained separately from the
   // stack and is is what the :-webkit-full-screen pseudo-class depends on. It
   // should be removed, see https://crbug.com/402421.
-  Element* currentFullScreenElement() const {
-    return m_currentFullScreenElement.get();
+  Element* CurrentFullScreenElement() const {
+    return current_full_screen_element_.Get();
   }
 
   // ContextLifecycleObserver:
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  static Fullscreen* fromIfExistsSlow(Document&);
+  static Fullscreen* FromIfExistsSlow(Document&);
 
   explicit Fullscreen(Document&);
 
-  Document* document();
+  Document* GetDocument();
 
-  void clearFullscreenElementStack();
-  void popFullscreenElementStack();
-  void pushFullscreenElementStack(Element&, RequestType);
+  void ClearFullscreenElementStack();
+  void PopFullscreenElementStack();
+  void PushFullscreenElementStack(Element&, RequestType);
 
-  void enqueueChangeEvent(Document&, RequestType);
-  void enqueueErrorEvent(Element&, RequestType);
-  void eventQueueTimerFired(TimerBase*);
+  void EnqueueChangeEvent(Document&, RequestType);
+  void EnqueueErrorEvent(Element&, RequestType);
+  void EventQueueTimerFired(TimerBase*);
 
-  Member<Element> m_pendingFullscreenElement;
-  HeapVector<std::pair<Member<Element>, RequestType>> m_fullscreenElementStack;
-  Member<Element> m_currentFullScreenElement;
-  LayoutFullScreen* m_fullScreenLayoutObject;
-  TaskRunnerTimer<Fullscreen> m_eventQueueTimer;
-  HeapDeque<Member<Event>> m_eventQueue;
-  LayoutRect m_savedPlaceholderFrameRect;
-  RefPtr<ComputedStyle> m_savedPlaceholderComputedStyle;
+  Member<Element> pending_fullscreen_element_;
+  HeapVector<std::pair<Member<Element>, RequestType>> fullscreen_element_stack_;
+  Member<Element> current_full_screen_element_;
+  LayoutFullScreen* full_screen_layout_object_;
+  TaskRunnerTimer<Fullscreen> event_queue_timer_;
+  HeapDeque<Member<Event>> event_queue_;
+  LayoutRect saved_placeholder_frame_rect_;
+  RefPtr<ComputedStyle> saved_placeholder_computed_style_;
 
   // TODO(alexmos, dcheng): Currently, this assumes that if fullscreen was
   // entered for an element in an out-of-process iframe, then it's not
@@ -159,18 +159,18 @@ class CORE_EXPORT Fullscreen final
   // change if https://crbug.com/161068 is fixed so that cross-process
   // postMessage can carry user gestures.  If that happens, this should be
   // moved to be part of |m_fullscreenElementStack|.
-  bool m_forCrossProcessDescendant;
+  bool for_cross_process_descendant_;
 };
 
-inline Fullscreen* Fullscreen::fromIfExists(Document& document) {
-  if (!document.hasFullscreenSupplement())
+inline Fullscreen* Fullscreen::FromIfExists(Document& document) {
+  if (!document.HasFullscreenSupplement())
     return nullptr;
-  return fromIfExistsSlow(document);
+  return FromIfExistsSlow(document);
 }
 
-inline bool Fullscreen::isCurrentFullScreenElement(const Element& element) {
-  if (Fullscreen* found = fromIfExists(element.document()))
-    return found->currentFullScreenElement() == &element;
+inline bool Fullscreen::IsCurrentFullScreenElement(const Element& element) {
+  if (Fullscreen* found = FromIfExists(element.GetDocument()))
+    return found->CurrentFullScreenElement() == &element;
   return false;
 }
 

@@ -32,13 +32,13 @@ class LayoutBR final : public LayoutText {
   explicit LayoutBR(Node*);
   ~LayoutBR() override;
 
-  const char* name() const override { return "LayoutBR"; }
+  const char* GetName() const override { return "LayoutBR"; }
 
   // Although line breaks contain no actual text, if we're selected we need
   // to return a rect that includes space to illustrate a newline.
-  using LayoutText::localSelectionRect;
+  using LayoutText::LocalSelectionRect;
 
-  float width(unsigned /* from */,
+  float Width(unsigned /* from */,
               unsigned /* len */,
               const Font&,
               LayoutUnit /* xpos */,
@@ -47,7 +47,7 @@ class LayoutBR final : public LayoutText {
               FloatRect* /* glyphBounds */ = nullptr) const override {
     return 0;
   }
-  float width(unsigned /* from */,
+  float Width(unsigned /* from */,
               unsigned /* len */,
               LayoutUnit /* xpos */,
               TextDirection,
@@ -57,22 +57,22 @@ class LayoutBR final : public LayoutText {
     return 0;
   }
 
-  int lineHeight(bool firstLine) const;
+  int LineHeight(bool first_line) const;
 
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectBr || LayoutText::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectBr || LayoutText::IsOfType(type);
   }
 
-  int caretMinOffset() const override;
-  int caretMaxOffset() const override;
+  int CaretMinOffset() const override;
+  int CaretMaxOffset() const override;
 
-  PositionWithAffinity positionForPoint(const LayoutPoint&) final;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) final;
 
  protected:
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, isBR());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, IsBR());
 
 }  // namespace blink
 

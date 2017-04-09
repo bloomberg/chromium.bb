@@ -12,20 +12,20 @@ namespace blink {
 
 namespace {
 
-static bool consumePan(CSSParserTokenRange& range,
-                       CSSValue*& panX,
-                       CSSValue*& panY,
-                       CSSValue*& pinchZoom) {
-  CSSValueID id = range.peek().id();
+static bool ConsumePan(CSSParserTokenRange& range,
+                       CSSValue*& pan_x,
+                       CSSValue*& pan_y,
+                       CSSValue*& pinch_zoom) {
+  CSSValueID id = range.Peek().Id();
   if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) &&
-      !panX) {
-    panX = CSSPropertyParserHelpers::consumeIdent(range);
+      !pan_x) {
+    pan_x = CSSPropertyParserHelpers::ConsumeIdent(range);
   } else if ((id == CSSValuePanY || id == CSSValuePanDown ||
               id == CSSValuePanUp) &&
-             !panY) {
-    panY = CSSPropertyParserHelpers::consumeIdent(range);
-  } else if (id == CSSValuePinchZoom && !pinchZoom) {
-    pinchZoom = CSSPropertyParserHelpers::consumeIdent(range);
+             !pan_y) {
+    pan_y = CSSPropertyParserHelpers::ConsumeIdent(range);
+  } else if (id == CSSValuePinchZoom && !pinch_zoom) {
+    pinch_zoom = CSSPropertyParserHelpers::ConsumeIdent(range);
   } else {
     return false;
   }
@@ -37,29 +37,29 @@ static bool consumePan(CSSParserTokenRange& range,
 const CSSValue* CSSPropertyAPITouchAction::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  CSSValueID id = range.peek().id();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  CSSValueID id = range.Peek().Id();
   if (id == CSSValueAuto || id == CSSValueNone || id == CSSValueManipulation) {
-    list->append(*CSSPropertyParserHelpers::consumeIdent(range));
+    list->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
     return list;
   }
 
-  CSSValue* panX = nullptr;
-  CSSValue* panY = nullptr;
-  CSSValue* pinchZoom = nullptr;
-  if (!consumePan(range, panX, panY, pinchZoom))
+  CSSValue* pan_x = nullptr;
+  CSSValue* pan_y = nullptr;
+  CSSValue* pinch_zoom = nullptr;
+  if (!ConsumePan(range, pan_x, pan_y, pinch_zoom))
     return nullptr;
-  if (!range.atEnd() && !consumePan(range, panX, panY, pinchZoom))
+  if (!range.AtEnd() && !ConsumePan(range, pan_x, pan_y, pinch_zoom))
     return nullptr;
-  if (!range.atEnd() && !consumePan(range, panX, panY, pinchZoom))
+  if (!range.AtEnd() && !ConsumePan(range, pan_x, pan_y, pinch_zoom))
     return nullptr;
 
-  if (panX)
-    list->append(*panX);
-  if (panY)
-    list->append(*panY);
-  if (pinchZoom)
-    list->append(*pinchZoom);
+  if (pan_x)
+    list->Append(*pan_x);
+  if (pan_y)
+    list->Append(*pan_y);
+  if (pinch_zoom)
+    list->Append(*pinch_zoom);
   return list;
 }
 

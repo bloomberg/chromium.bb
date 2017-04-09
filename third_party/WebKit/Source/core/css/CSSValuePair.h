@@ -29,29 +29,29 @@ namespace blink {
 
 class CORE_EXPORT CSSValuePair : public CSSValue {
  public:
-  enum IdenticalValuesPolicy { DropIdenticalValues, KeepIdenticalValues };
+  enum IdenticalValuesPolicy { kDropIdenticalValues, kKeepIdenticalValues };
 
-  static CSSValuePair* create(const CSSValue* first,
+  static CSSValuePair* Create(const CSSValue* first,
                               const CSSValue* second,
-                              IdenticalValuesPolicy identicalValuesPolicy) {
-    return new CSSValuePair(first, second, identicalValuesPolicy);
+                              IdenticalValuesPolicy identical_values_policy) {
+    return new CSSValuePair(first, second, identical_values_policy);
   }
 
-  const CSSValue& first() const { return *m_first; }
-  const CSSValue& second() const { return *m_second; }
+  const CSSValue& First() const { return *first_; }
+  const CSSValue& Second() const { return *second_; }
 
-  String customCSSText() const {
-    String first = m_first->cssText();
-    String second = m_second->cssText();
-    if (m_identicalValuesPolicy == DropIdenticalValues && first == second)
+  String CustomCSSText() const {
+    String first = first_->CssText();
+    String second = second_->CssText();
+    if (identical_values_policy_ == kDropIdenticalValues && first == second)
       return first;
     return first + ' ' + second;
   }
 
-  bool equals(const CSSValuePair& other) const {
-    DCHECK_EQ(m_identicalValuesPolicy, other.m_identicalValuesPolicy);
-    return dataEquivalent(m_first, other.m_first) &&
-           dataEquivalent(m_second, other.m_second);
+  bool Equals(const CSSValuePair& other) const {
+    DCHECK_EQ(identical_values_policy_, other.identical_values_policy_);
+    return DataEquivalent(first_, other.first_) &&
+           DataEquivalent(second_, other.second_);
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();
@@ -59,21 +59,21 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
  private:
   CSSValuePair(const CSSValue* first,
                const CSSValue* second,
-               IdenticalValuesPolicy identicalValuesPolicy)
-      : CSSValue(ValuePairClass),
-        m_first(first),
-        m_second(second),
-        m_identicalValuesPolicy(identicalValuesPolicy) {
-    DCHECK(m_first);
-    DCHECK(m_second);
+               IdenticalValuesPolicy identical_values_policy)
+      : CSSValue(kValuePairClass),
+        first_(first),
+        second_(second),
+        identical_values_policy_(identical_values_policy) {
+    DCHECK(first_);
+    DCHECK(second_);
   }
 
-  Member<const CSSValue> m_first;
-  Member<const CSSValue> m_second;
-  IdenticalValuesPolicy m_identicalValuesPolicy;
+  Member<const CSSValue> first_;
+  Member<const CSSValue> second_;
+  IdenticalValuesPolicy identical_values_policy_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSValuePair, isValuePair());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSValuePair, IsValuePair());
 
 }  // namespace blink
 

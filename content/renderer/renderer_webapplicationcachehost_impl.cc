@@ -31,17 +31,17 @@ void RendererWebApplicationCacheHostImpl::OnLogMessage(
 
   RenderViewImpl* render_view = GetRenderView();
   if (!render_view || !render_view->webview() ||
-      !render_view->webview()->mainFrame())
+      !render_view->webview()->MainFrame())
     return;
 
-  blink::WebFrame* frame = render_view->webview()->mainFrame();
-  if (!frame->isWebLocalFrame())
+  blink::WebFrame* frame = render_view->webview()->MainFrame();
+  if (!frame->IsWebLocalFrame())
     return;
   // TODO(michaeln): Make app cache host per-frame and correctly report to the
   // involved frame.
-  frame->toWebLocalFrame()->addMessageToConsole(
+  frame->ToWebLocalFrame()->AddMessageToConsole(
       WebConsoleMessage(static_cast<WebConsoleMessage::Level>(log_level),
-                        blink::WebString::fromUTF8(message.c_str())));
+                        blink::WebString::FromUTF8(message.c_str())));
 }
 
 void RendererWebApplicationCacheHostImpl::OnContentBlocked(

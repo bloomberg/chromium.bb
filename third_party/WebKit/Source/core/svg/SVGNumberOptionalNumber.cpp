@@ -35,94 +35,95 @@
 
 namespace blink {
 
-SVGNumberOptionalNumber::SVGNumberOptionalNumber(SVGNumber* firstNumber,
-                                                 SVGNumber* secondNumber)
-    : m_firstNumber(firstNumber), m_secondNumber(secondNumber) {}
+SVGNumberOptionalNumber::SVGNumberOptionalNumber(SVGNumber* first_number,
+                                                 SVGNumber* second_number)
+    : first_number_(first_number), second_number_(second_number) {}
 
 DEFINE_TRACE(SVGNumberOptionalNumber) {
-  visitor->trace(m_firstNumber);
-  visitor->trace(m_secondNumber);
-  SVGPropertyBase::trace(visitor);
+  visitor->Trace(first_number_);
+  visitor->Trace(second_number_);
+  SVGPropertyBase::Trace(visitor);
 }
 
-SVGNumberOptionalNumber* SVGNumberOptionalNumber::clone() const {
-  return SVGNumberOptionalNumber::create(m_firstNumber->clone(),
-                                         m_secondNumber->clone());
+SVGNumberOptionalNumber* SVGNumberOptionalNumber::Clone() const {
+  return SVGNumberOptionalNumber::Create(first_number_->Clone(),
+                                         second_number_->Clone());
 }
 
-SVGPropertyBase* SVGNumberOptionalNumber::cloneForAnimation(
+SVGPropertyBase* SVGNumberOptionalNumber::CloneForAnimation(
     const String& value) const {
   float x, y;
-  if (!parseNumberOptionalNumber(value, x, y)) {
+  if (!ParseNumberOptionalNumber(value, x, y)) {
     x = y = 0;
   }
 
-  return SVGNumberOptionalNumber::create(SVGNumber::create(x),
-                                         SVGNumber::create(y));
+  return SVGNumberOptionalNumber::Create(SVGNumber::Create(x),
+                                         SVGNumber::Create(y));
 }
 
-String SVGNumberOptionalNumber::valueAsString() const {
-  if (m_firstNumber->value() == m_secondNumber->value()) {
-    return String::number(m_firstNumber->value());
+String SVGNumberOptionalNumber::ValueAsString() const {
+  if (first_number_->Value() == second_number_->Value()) {
+    return String::Number(first_number_->Value());
   }
 
-  return String::number(m_firstNumber->value()) + " " +
-         String::number(m_secondNumber->value());
+  return String::Number(first_number_->Value()) + " " +
+         String::Number(second_number_->Value());
 }
 
-SVGParsingError SVGNumberOptionalNumber::setValueAsString(const String& value) {
+SVGParsingError SVGNumberOptionalNumber::SetValueAsString(const String& value) {
   float x, y;
-  SVGParsingError parseStatus;
-  if (!parseNumberOptionalNumber(value, x, y)) {
-    parseStatus = SVGParseStatus::ExpectedNumber;
+  SVGParsingError parse_status;
+  if (!ParseNumberOptionalNumber(value, x, y)) {
+    parse_status = SVGParseStatus::kExpectedNumber;
     x = y = 0;
   }
 
-  m_firstNumber->setValue(x);
-  m_secondNumber->setValue(y);
-  return parseStatus;
+  first_number_->SetValue(x);
+  second_number_->SetValue(y);
+  return parse_status;
 }
 
-void SVGNumberOptionalNumber::add(SVGPropertyBase* other, SVGElement*) {
-  SVGNumberOptionalNumber* otherNumberOptionalNumber =
-      toSVGNumberOptionalNumber(other);
+void SVGNumberOptionalNumber::Add(SVGPropertyBase* other, SVGElement*) {
+  SVGNumberOptionalNumber* other_number_optional_number =
+      ToSVGNumberOptionalNumber(other);
 
-  m_firstNumber->setValue(m_firstNumber->value() +
-                          otherNumberOptionalNumber->m_firstNumber->value());
-  m_secondNumber->setValue(m_secondNumber->value() +
-                           otherNumberOptionalNumber->m_secondNumber->value());
+  first_number_->SetValue(first_number_->Value() +
+                          other_number_optional_number->first_number_->Value());
+  second_number_->SetValue(
+      second_number_->Value() +
+      other_number_optional_number->second_number_->Value());
 }
 
-void SVGNumberOptionalNumber::calculateAnimatedValue(
-    SVGAnimationElement* animationElement,
+void SVGNumberOptionalNumber::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
     float percentage,
-    unsigned repeatCount,
+    unsigned repeat_count,
     SVGPropertyBase* from,
     SVGPropertyBase* to,
-    SVGPropertyBase* toAtEndOfDuration,
+    SVGPropertyBase* to_at_end_of_duration,
     SVGElement*) {
-  DCHECK(animationElement);
+  DCHECK(animation_element);
 
-  SVGNumberOptionalNumber* fromNumber = toSVGNumberOptionalNumber(from);
-  SVGNumberOptionalNumber* toNumber = toSVGNumberOptionalNumber(to);
-  SVGNumberOptionalNumber* toAtEndOfDurationNumber =
-      toSVGNumberOptionalNumber(toAtEndOfDuration);
+  SVGNumberOptionalNumber* from_number = ToSVGNumberOptionalNumber(from);
+  SVGNumberOptionalNumber* to_number = ToSVGNumberOptionalNumber(to);
+  SVGNumberOptionalNumber* to_at_end_of_duration_number =
+      ToSVGNumberOptionalNumber(to_at_end_of_duration);
 
-  float x = m_firstNumber->value();
-  float y = m_secondNumber->value();
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromNumber->firstNumber()->value(),
-      toNumber->firstNumber()->value(),
-      toAtEndOfDurationNumber->firstNumber()->value(), x);
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromNumber->secondNumber()->value(),
-      toNumber->secondNumber()->value(),
-      toAtEndOfDurationNumber->secondNumber()->value(), y);
-  m_firstNumber->setValue(x);
-  m_secondNumber->setValue(y);
+  float x = first_number_->Value();
+  float y = second_number_->Value();
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_number->FirstNumber()->Value(),
+      to_number->FirstNumber()->Value(),
+      to_at_end_of_duration_number->FirstNumber()->Value(), x);
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_number->SecondNumber()->Value(),
+      to_number->SecondNumber()->Value(),
+      to_at_end_of_duration_number->SecondNumber()->Value(), y);
+  first_number_->SetValue(x);
+  second_number_->SetValue(y);
 }
 
-float SVGNumberOptionalNumber::calculateDistance(SVGPropertyBase* other,
+float SVGNumberOptionalNumber::CalculateDistance(SVGPropertyBase* other,
                                                  SVGElement*) {
   // FIXME: Distance calculation is not possible for SVGNumberOptionalNumber
   // right now. We need the distance for every single value.

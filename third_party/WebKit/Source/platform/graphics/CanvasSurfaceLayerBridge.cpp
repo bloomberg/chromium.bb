@@ -31,7 +31,7 @@ class OffscreenCanvasSurfaceReferenceFactory
  public:
   OffscreenCanvasSurfaceReferenceFactory(
       base::WeakPtr<CanvasSurfaceLayerBridge> bridge)
-      : m_bridge(bridge) {}
+      : bridge_(bridge) {}
 
  private:
   ~OffscreenCanvasSurfaceReferenceFactory() override = default;
@@ -39,16 +39,16 @@ class OffscreenCanvasSurfaceReferenceFactory
   // cc::SequenceSurfaceReferenceFactory implementation:
   void RequireSequence(const cc::SurfaceId& id,
                        const cc::SurfaceSequence& sequence) const override {
-    DCHECK(m_bridge);
-    m_bridge->requireCallback(id, sequence);
+    DCHECK(bridge_);
+    bridge_->RequireCallback(id, sequence);
   }
 
   void SatisfySequence(const cc::SurfaceSequence& sequence) const override {
-    DCHECK(m_bridge);
-    m_bridge->satisfyCallback(sequence);
+    DCHECK(bridge_);
+    bridge_->SatisfyCallback(sequence);
   }
 
-  base::WeakPtr<CanvasSurfaceLayerBridge> m_bridge;
+  base::WeakPtr<CanvasSurfaceLayerBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceReferenceFactory);
 };
@@ -57,79 +57,79 @@ class OffscreenCanvasSurfaceReferenceFactory
 
 CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
     CanvasSurfaceLayerBridgeObserver* observer,
-    WebLayerTreeView* layerTreeView)
-    : m_weakFactory(this),
-      m_observer(observer),
-      m_binding(this),
-      m_frameSinkId(Platform::current()->generateFrameSinkId()),
-      m_parentFrameSinkId(layerTreeView->getFrameSinkId()) {
-  m_refFactory =
-      new OffscreenCanvasSurfaceReferenceFactory(m_weakFactory.GetWeakPtr());
+    WebLayerTreeView* layer_tree_view)
+    : weak_factory_(this),
+      observer_(observer),
+      binding_(this),
+      frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
+      parent_frame_sink_id_(layer_tree_view->GetFrameSinkId()) {
+  ref_factory_ =
+      new OffscreenCanvasSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
 
-  DCHECK(!m_service.is_bound());
-  mojom::blink::OffscreenCanvasSurfaceFactoryPtr serviceFactory;
-  Platform::current()->interfaceProvider()->getInterface(
-      mojo::MakeRequest(&serviceFactory));
+  DCHECK(!service_.is_bound());
+  mojom::blink::OffscreenCanvasSurfaceFactoryPtr service_factory;
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&service_factory));
   // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
   // frame-less HTML canvas's document is reparenting under another frame.
   // See crbug.com/683172.
-  serviceFactory->CreateOffscreenCanvasSurface(
-      m_parentFrameSinkId, m_frameSinkId, m_binding.CreateInterfacePtrAndBind(),
-      mojo::MakeRequest(&m_service));
+  service_factory->CreateOffscreenCanvasSurface(
+      parent_frame_sink_id_, frame_sink_id_,
+      binding_.CreateInterfacePtrAndBind(), mojo::MakeRequest(&service_));
 }
 
 CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {
-  m_observer = nullptr;
+  observer_ = nullptr;
 }
 
-void CanvasSurfaceLayerBridge::createSolidColorLayer() {
-  m_CCLayer = cc::SolidColorLayer::Create();
-  m_CCLayer->SetBackgroundColor(SK_ColorTRANSPARENT);
-  m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
-      m_CCLayer.get());
-  GraphicsLayer::registerContentsLayer(m_webLayer.get());
+void CanvasSurfaceLayerBridge::CreateSolidColorLayer() {
+  cc_layer_ = cc::SolidColorLayer::Create();
+  cc_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+      cc_layer_.get());
+  GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 
 void CanvasSurfaceLayerBridge::OnSurfaceCreated(
-    const cc::SurfaceInfo& surfaceInfo) {
-  if (!m_currentSurfaceId.is_valid() && surfaceInfo.is_valid()) {
+    const cc::SurfaceInfo& surface_info) {
+  if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
     // First time a SurfaceId is received
-    m_currentSurfaceId = surfaceInfo.id();
-    GraphicsLayer::unregisterContentsLayer(m_webLayer.get());
-    m_webLayer->removeFromParent();
+    current_surface_id_ = surface_info.id();
+    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+    web_layer_->RemoveFromParent();
 
-    scoped_refptr<cc::SurfaceLayer> surfaceLayer =
-        cc::SurfaceLayer::Create(m_refFactory);
-    surfaceLayer->SetPrimarySurfaceInfo(surfaceInfo);
-    surfaceLayer->SetStretchContentToFillBounds(true);
-    m_CCLayer = surfaceLayer;
+    scoped_refptr<cc::SurfaceLayer> surface_layer =
+        cc::SurfaceLayer::Create(ref_factory_);
+    surface_layer->SetPrimarySurfaceInfo(surface_info);
+    surface_layer->SetStretchContentToFillBounds(true);
+    cc_layer_ = surface_layer;
 
-    m_webLayer =
-        Platform::current()->compositorSupport()->createLayerFromCCLayer(
-            m_CCLayer.get());
-    GraphicsLayer::registerContentsLayer(m_webLayer.get());
-  } else if (m_currentSurfaceId != surfaceInfo.id()) {
+    web_layer_ =
+        Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
+            cc_layer_.get());
+    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
+  } else if (current_surface_id_ != surface_info.id()) {
     // A different SurfaceId is received, prompting change to existing
     // SurfaceLayer
-    m_currentSurfaceId = surfaceInfo.id();
-    cc::SurfaceLayer* surfaceLayer =
-        static_cast<cc::SurfaceLayer*>(m_CCLayer.get());
-    surfaceLayer->SetPrimarySurfaceInfo(surfaceInfo);
+    current_surface_id_ = surface_info.id();
+    cc::SurfaceLayer* surface_layer =
+        static_cast<cc::SurfaceLayer*>(cc_layer_.get());
+    surface_layer->SetPrimarySurfaceInfo(surface_info);
   }
 
-  m_observer->OnWebLayerReplaced();
-  m_CCLayer->SetBounds(surfaceInfo.size_in_pixels());
+  observer_->OnWebLayerReplaced();
+  cc_layer_->SetBounds(surface_info.size_in_pixels());
 }
 
-void CanvasSurfaceLayerBridge::satisfyCallback(
+void CanvasSurfaceLayerBridge::SatisfyCallback(
     const cc::SurfaceSequence& sequence) {
-  m_service->Satisfy(sequence);
+  service_->Satisfy(sequence);
 }
 
-void CanvasSurfaceLayerBridge::requireCallback(
-    const cc::SurfaceId& surfaceId,
+void CanvasSurfaceLayerBridge::RequireCallback(
+    const cc::SurfaceId& surface_id,
     const cc::SurfaceSequence& sequence) {
-  m_service->Require(surfaceId, sequence);
+  service_->Require(surface_id, sequence);
 }
 
 }  // namespace blink

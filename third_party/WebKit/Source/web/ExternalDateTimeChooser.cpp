@@ -39,125 +39,125 @@ namespace blink {
 class WebDateTimeChooserCompletionImpl : public WebDateTimeChooserCompletion {
  public:
   WebDateTimeChooserCompletionImpl(ExternalDateTimeChooser* chooser)
-      : m_chooser(chooser) {}
+      : chooser_(chooser) {}
 
  private:
-  void didChooseValue(double value) override {
-    m_chooser->didChooseValue(value);
+  void DidChooseValue(double value) override {
+    chooser_->DidChooseValue(value);
     delete this;
   }
 
-  void didCancelChooser() override {
-    m_chooser->didCancelChooser();
+  void DidCancelChooser() override {
+    chooser_->DidCancelChooser();
     delete this;
   }
 
-  Persistent<ExternalDateTimeChooser> m_chooser;
+  Persistent<ExternalDateTimeChooser> chooser_;
 };
 
 ExternalDateTimeChooser::~ExternalDateTimeChooser() {}
 
 DEFINE_TRACE(ExternalDateTimeChooser) {
-  visitor->trace(m_client);
-  DateTimeChooser::trace(visitor);
+  visitor->Trace(client_);
+  DateTimeChooser::Trace(visitor);
 }
 
 ExternalDateTimeChooser::ExternalDateTimeChooser(DateTimeChooserClient* client)
-    : m_client(client) {
+    : client_(client) {
   DCHECK(!RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled());
   DCHECK(client);
 }
 
-ExternalDateTimeChooser* ExternalDateTimeChooser::create(
-    ChromeClientImpl* chromeClient,
-    WebViewClient* webViewClient,
+ExternalDateTimeChooser* ExternalDateTimeChooser::Create(
+    ChromeClientImpl* chrome_client,
+    WebViewClient* web_view_client,
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
-  DCHECK(chromeClient);
+  DCHECK(chrome_client);
   ExternalDateTimeChooser* chooser = new ExternalDateTimeChooser(client);
-  if (!chooser->openDateTimeChooser(chromeClient, webViewClient, parameters))
+  if (!chooser->OpenDateTimeChooser(chrome_client, web_view_client, parameters))
     chooser = nullptr;
   return chooser;
 }
 
-static WebDateTimeInputType toWebDateTimeInputType(const AtomicString& source) {
+static WebDateTimeInputType ToWebDateTimeInputType(const AtomicString& source) {
   if (source == InputTypeNames::date)
-    return WebDateTimeInputTypeDate;
+    return kWebDateTimeInputTypeDate;
   if (source == InputTypeNames::datetime)
-    return WebDateTimeInputTypeDateTime;
+    return kWebDateTimeInputTypeDateTime;
   if (source == InputTypeNames::datetime_local)
-    return WebDateTimeInputTypeDateTimeLocal;
+    return kWebDateTimeInputTypeDateTimeLocal;
   if (source == InputTypeNames::month)
-    return WebDateTimeInputTypeMonth;
+    return kWebDateTimeInputTypeMonth;
   if (source == InputTypeNames::time)
-    return WebDateTimeInputTypeTime;
+    return kWebDateTimeInputTypeTime;
   if (source == InputTypeNames::week)
-    return WebDateTimeInputTypeWeek;
-  return WebDateTimeInputTypeNone;
+    return kWebDateTimeInputTypeWeek;
+  return kWebDateTimeInputTypeNone;
 }
 
-bool ExternalDateTimeChooser::openDateTimeChooser(
-    ChromeClientImpl* chromeClient,
-    WebViewClient* webViewClient,
+bool ExternalDateTimeChooser::OpenDateTimeChooser(
+    ChromeClientImpl* chrome_client,
+    WebViewClient* web_view_client,
     const DateTimeChooserParameters& parameters) {
-  if (!webViewClient)
+  if (!web_view_client)
     return false;
 
-  WebDateTimeChooserParams webParams;
-  webParams.type = toWebDateTimeInputType(parameters.type);
-  webParams.anchorRectInScreen = parameters.anchorRectInScreen;
-  webParams.doubleValue = parameters.doubleValue;
-  webParams.suggestions = parameters.suggestions;
-  webParams.minimum = parameters.minimum;
-  webParams.maximum = parameters.maximum;
-  webParams.step = parameters.step;
-  webParams.stepBase = parameters.stepBase;
-  webParams.isRequired = parameters.required;
-  webParams.isAnchorElementRTL = parameters.isAnchorElementRTL;
+  WebDateTimeChooserParams web_params;
+  web_params.type = ToWebDateTimeInputType(parameters.type);
+  web_params.anchor_rect_in_screen = parameters.anchor_rect_in_screen;
+  web_params.double_value = parameters.double_value;
+  web_params.suggestions = parameters.suggestions;
+  web_params.minimum = parameters.minimum;
+  web_params.maximum = parameters.maximum;
+  web_params.step = parameters.step;
+  web_params.step_base = parameters.step_base;
+  web_params.is_required = parameters.required;
+  web_params.is_anchor_element_rtl = parameters.is_anchor_element_rtl;
 
   WebDateTimeChooserCompletion* completion =
       new WebDateTimeChooserCompletionImpl(this);
-  if (webViewClient->openDateTimeChooser(webParams, completion))
+  if (web_view_client->OpenDateTimeChooser(web_params, completion))
     return true;
   // We can't open a chooser. Calling
   // WebDateTimeChooserCompletionImpl::didCancelChooser to delete the
   // WebDateTimeChooserCompletionImpl object and deref this.
-  completion->didCancelChooser();
+  completion->DidCancelChooser();
   return false;
 }
 
-void ExternalDateTimeChooser::didChooseValue(const WebString& value) {
-  if (m_client)
-    m_client->didChooseValue(value);
+void ExternalDateTimeChooser::DidChooseValue(const WebString& value) {
+  if (client_)
+    client_->DidChooseValue(value);
   // didChooseValue might run JavaScript code, and endChooser() might be
   // called. However DateTimeChooserCompletionImpl still has one reference to
   // this object.
-  if (m_client)
-    m_client->didEndChooser();
+  if (client_)
+    client_->DidEndChooser();
 }
 
-void ExternalDateTimeChooser::didChooseValue(double value) {
-  if (m_client)
-    m_client->didChooseValue(value);
+void ExternalDateTimeChooser::DidChooseValue(double value) {
+  if (client_)
+    client_->DidChooseValue(value);
   // didChooseValue might run JavaScript code, and endChooser() might be
   // called. However DateTimeChooserCompletionImpl still has one reference to
   // this object.
-  if (m_client)
-    m_client->didEndChooser();
+  if (client_)
+    client_->DidEndChooser();
 }
 
-void ExternalDateTimeChooser::didCancelChooser() {
-  if (m_client)
-    m_client->didEndChooser();
+void ExternalDateTimeChooser::DidCancelChooser() {
+  if (client_)
+    client_->DidEndChooser();
 }
 
-void ExternalDateTimeChooser::endChooser() {
-  DateTimeChooserClient* client = m_client;
-  m_client = nullptr;
-  client->didEndChooser();
+void ExternalDateTimeChooser::EndChooser() {
+  DateTimeChooserClient* client = client_;
+  client_ = nullptr;
+  client->DidEndChooser();
 }
 
-AXObject* ExternalDateTimeChooser::rootAXObject() {
+AXObject* ExternalDateTimeChooser::RootAXObject() {
   return nullptr;
 }
 

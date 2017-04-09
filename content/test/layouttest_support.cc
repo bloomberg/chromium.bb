@@ -147,7 +147,7 @@ RenderFrameImpl* CreateWebFrameTestProxy(
 
 float GetWindowToViewportScale(RenderWidget* render_widget) {
   blink::WebFloatRect rect(0, 0, 1.0f, 0.0);
-  render_widget->convertWindowToViewport(&rect);
+  render_widget->ConvertWindowToViewport(&rect);
   return rect.width;
 }
 
@@ -160,7 +160,7 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
        i != files.end();
        ++i) {
     SkTypeface* typeface = fontmgr->createFromFile(i->c_str());
-    blink::WebFontRendering::addSideloadedFontForTesting(typeface);
+    blink::WebFontRendering::AddSideloadedFontForTesting(typeface);
   }
 }
 #endif  // OS_WIN
@@ -184,7 +184,7 @@ test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
 test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
     blink::WebLocalFrame* frame) {
   DCHECK(frame);
-  RenderFrame* local_root = RenderFrame::FromWebFrame(frame->localRoot());
+  RenderFrame* local_root = RenderFrame::FromWebFrame(frame->LocalRoot());
   DCHECK(local_root);
   // TODO(lfg): Simplify once RenderView no longer inherits from RenderWidget.
   if (local_root->IsMainFrame()) {
@@ -193,7 +193,7 @@ test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
     auto* web_widget_test_proxy_base =
         static_cast<test_runner::WebWidgetTestProxyBase*>(
             web_view_test_proxy_base);
-    DCHECK(web_widget_test_proxy_base->web_widget()->isWebView());
+    DCHECK(web_widget_test_proxy_base->web_widget()->IsWebView());
     return web_widget_test_proxy_base;
   } else {
     RenderWidget* render_widget =
@@ -203,7 +203,7 @@ test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
         static_cast<WebWidgetTestProxyType*>(render_widget);
     auto* web_widget_test_proxy_base =
         static_cast<test_runner::WebWidgetTestProxyBase*>(render_widget_proxy);
-    DCHECK(web_widget_test_proxy_base->web_widget()->isWebFrameWidget());
+    DCHECK(web_widget_test_proxy_base->web_widget()->IsWebFrameWidget());
     return web_widget_test_proxy_base;
   }
 }
@@ -214,13 +214,13 @@ RenderWidget* GetRenderWidget(
 
   blink::WebWidget* widget = web_widget_test_proxy_base->web_widget();
   // TODO(lfg): Simplify once RenderView no longer inherits from RenderWidget.
-  if (widget->isWebView()) {
+  if (widget->IsWebView()) {
     WebViewTestProxyType* render_view_proxy =
         static_cast<WebViewTestProxyType*>(web_widget_test_proxy_base);
     RenderViewImpl* render_view_impl =
         static_cast<RenderViewImpl*>(render_view_proxy);
     return render_view_impl;
-  } else if (widget->isWebFrameWidget()) {
+  } else if (widget->IsWebFrameWidget()) {
     WebWidgetTestProxyType* render_widget_proxy =
         static_cast<WebWidgetTestProxyType*>(web_widget_test_proxy_base);
     return static_cast<RenderWidget*>(render_widget_proxy);
@@ -260,17 +260,15 @@ void FetchManifest(blink::WebView* view, const GURL& url,
   // A raw pointer is used instead of a scoped_ptr as base::Passes passes
   // ownership and thus nulls the scoped_ptr. On MSVS this happens before
   // the call to Start, resulting in a crash.
-  fetcher->Start(view->mainFrame(),
-                 false,
+  fetcher->Start(view->MainFrame(), false,
                  base::Bind(&FetchManifestDoneCallback,
-                            base::Passed(&autodeleter),
-                            callback));
+                            base::Passed(&autodeleter), callback));
 }
 
 void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider) {
   RenderThreadImpl::current()
       ->blink_platform_impl()
-      ->SetPlatformEventObserverForTesting(blink::WebPlatformEventTypeGamepad,
+      ->SetPlatformEventObserverForTesting(blink::kWebPlatformEventTypeGamepad,
                                            std::move(provider));
 }
 
@@ -490,7 +488,7 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
   DCHECK(web_widget_test_proxy_base);
   RenderWidget* render_widget = GetRenderWidget(web_widget_test_proxy_base);
 
-  blink::WebRect view_rect = render_widget->viewRect();
+  blink::WebRect view_rect = render_widget->ViewRect();
   float scale = GetWindowToViewportScale(render_widget);
   gfx::Vector2d delta(-view_rect.x, -view_rect.y);
   return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
@@ -539,8 +537,8 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
 // Returns True if node1 < node2.
 bool HistoryEntryCompareLess(HistoryEntry::HistoryNode* node1,
                              HistoryEntry::HistoryNode* node2) {
-  base::string16 target1 = node1->item().target().utf16();
-  base::string16 target2 = node2->item().target().utf16();
+  base::string16 target1 = node1->item().Target().Utf16();
+  base::string16 target2 = node2->item().Target().Utf16();
   return base::CompareCaseInsensitiveASCII(target1, target2) < 0;
 }
 
@@ -558,11 +556,11 @@ std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
   }
 
   std::string url =
-      test_runner::NormalizeLayoutTestURL(item.urlString().utf8());
+      test_runner::NormalizeLayoutTestURL(item.UrlString().Utf8());
   result.append(url);
-  if (!item.target().isEmpty()) {
+  if (!item.Target().IsEmpty()) {
     result.append(" (in frame \"");
-    result.append(item.target().utf8());
+    result.append(item.Target().Utf8());
     result.append("\")");
   }
   result.append("\n");
@@ -607,8 +605,8 @@ void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {
 }
 
 bool IsNavigationInitiatedByRenderer(const blink::WebURLRequest& request) {
-  RequestExtraData* extra_data = static_cast<RequestExtraData*>(
-      request.getExtraData());
+  RequestExtraData* extra_data =
+      static_cast<RequestExtraData*>(request.GetExtraData());
   return extra_data && extra_data->navigation_initiated_by_renderer();
 }
 

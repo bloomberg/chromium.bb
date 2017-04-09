@@ -24,7 +24,7 @@ class NGOutOfFlowLayoutPartTest : public RenderingTest {
 // inside NGOutOfFlowLayoutPart::Run.
 // This test exercises this loop by placing two fixed elements inside abs.
 TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       R"HTML(
       <style>
         body{ padding:0px; margin:0px}
@@ -62,25 +62,25 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
       )HTML");
 
   // Test whether the oof fragments have been collected at NG->Legacy boundary.
-  Element* rel = document().getElementById("rel");
-  LayoutNGBlockFlow* block_flow = toLayoutNGBlockFlow(rel->layoutObject());
+  Element* rel = GetDocument().GetElementById("rel");
+  LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlow(rel->GetLayoutObject());
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   NGBlockNode* node = new NGBlockNode(block_flow);
-  RefPtr<NGLayoutResult> result = node->Layout(space.get());
+  RefPtr<NGLayoutResult> result = node->Layout(space.Get());
   EXPECT_EQ(result->OutOfFlowDescendants().size(), (size_t)2);
 
   // Test the final result.
-  Element* fixed_1 = document().getElementById("fixed1");
-  Element* fixed_2 = document().getElementById("fixed2");
+  Element* fixed_1 = GetDocument().GetElementById("fixed1");
+  Element* fixed_2 = GetDocument().GetElementById("fixed2");
   // fixed1 top is static: #abs.top + #pad.height
-  EXPECT_EQ(fixed_1->offsetTop(), LayoutUnit(99));
+  EXPECT_EQ(fixed_1->OffsetTop(), LayoutUnit(99));
   // fixed2 top is positioned: #fixed2.top
-  EXPECT_EQ(fixed_2->offsetTop(), LayoutUnit(9));
+  EXPECT_EQ(fixed_2->OffsetTop(), LayoutUnit(9));
 };
 
 TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode1) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       R"HTML(
     <style>
       #container {
@@ -103,23 +103,23 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode1) {
     )HTML");
 
   LayoutNGBlockFlow* block_flow =
-      toLayoutNGBlockFlow(getLayoutObjectByElementId("container"));
+      ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
   auto* node = new NGBlockNode(block_flow);
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<const NGPhysicalFragment> fragment =
-      node->Layout(space.get())->PhysicalFragment();
+      node->Layout(space.Get())->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
-  fragment = toNGPhysicalBoxFragment(fragment.get())->Children()[0];
+  fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(0), LayoutUnit(30)), fragment->Size());
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(10)),
             fragment->Offset());
 };
 
 TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode2) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       R"HTML(
     <style>
       #container {
@@ -142,16 +142,16 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode2) {
     )HTML");
 
   LayoutNGBlockFlow* block_flow =
-      toLayoutNGBlockFlow(getLayoutObjectByElementId("container"));
+      ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
   auto* node = new NGBlockNode(block_flow);
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<const NGPhysicalFragment> fragment =
-      node->Layout(space.get())->PhysicalFragment();
+      node->Layout(space.Get())->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
-  fragment = toNGPhysicalBoxFragment(fragment.get())->Children()[0];
+  fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(40), LayoutUnit(30)), fragment->Size());
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(10)),
             fragment->Offset());

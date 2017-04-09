@@ -42,35 +42,35 @@ class MODULES_EXPORT AXTableRow : public AXLayoutObject {
   AXTableRow(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXTableRow* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXTableRow* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXTableRow() override;
 
-  void addChildren() final;
-  bool isTableRow() const final;
+  void AddChildren() final;
+  bool IsTableRow() const final;
 
   // retrieves the "row" header (a th tag in the rightmost column)
-  virtual AXObject* headerObject();
+  virtual AXObject* HeaderObject();
   // Retrieves the "row" headers (th, scope) from left to right for the each
   // row.
-  virtual void headerObjectsForRow(AXObjectVector&);
-  AXObject* parentTable() const;
+  virtual void HeaderObjectsForRow(AXObjectVector&);
+  AXObject* ParentTable() const;
 
-  void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }
-  int rowIndex() const { return m_rowIndex; }
+  void SetRowIndex(int row_index) { row_index_ = row_index; }
+  int RowIndex() const { return row_index_; }
 
-  unsigned ariaColumnIndex() const;
-  unsigned ariaRowIndex() const;
+  unsigned AriaColumnIndex() const;
+  unsigned AriaRowIndex() const;
 
  protected:
-  AccessibilityRole determineAccessibilityRole() final;
+  AccessibilityRole DetermineAccessibilityRole() final;
 
  private:
-  int m_rowIndex;
+  int row_index_;
 
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXTableRow, isTableRow());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXTableRow, IsTableRow());
 
 }  // namespace blink
 

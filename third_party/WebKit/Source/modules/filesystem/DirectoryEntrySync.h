@@ -45,9 +45,9 @@ class DirectoryEntrySync final : public EntrySync {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DirectoryEntrySync* create(DOMFileSystemBase* fileSystem,
-                                    const String& fullPath) {
-    return new DirectoryEntrySync(fileSystem, fullPath);
+  static DirectoryEntrySync* Create(DOMFileSystemBase* file_system,
+                                    const String& full_path) {
+    return new DirectoryEntrySync(file_system, full_path);
   }
   bool isDirectory() const override { return true; }
 
@@ -63,7 +63,7 @@ class DirectoryEntrySync final : public EntrySync {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  DirectoryEntrySync(DOMFileSystemBase*, const String& fullPath);
+  DirectoryEntrySync(DOMFileSystemBase*, const String& full_path);
 };
 
 DEFINE_TYPE_CASTS(DirectoryEntrySync,

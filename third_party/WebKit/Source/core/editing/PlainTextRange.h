@@ -48,35 +48,35 @@ class CORE_EXPORT PlainTextRange {
   PlainTextRange(int start, int end);
 
   size_t end() const {
-    DCHECK(isNotNull());
-    return m_end;
+    DCHECK(IsNotNull());
+    return end_;
   }
-  size_t start() const {
-    DCHECK(isNotNull());
-    return m_start;
+  size_t Start() const {
+    DCHECK(IsNotNull());
+    return start_;
   }
-  bool isNull() const { return m_start == kNotFound; }
-  bool isNotNull() const { return m_start != kNotFound; }
+  bool IsNull() const { return start_ == kNotFound; }
+  bool IsNotNull() const { return start_ != kNotFound; }
   size_t length() const {
-    DCHECK(isNotNull());
-    return m_end - m_start;
+    DCHECK(IsNotNull());
+    return end_ - start_;
   }
 
-  EphemeralRange createRange(const ContainerNode& scope) const;
-  EphemeralRange createRangeForSelection(const ContainerNode& scope) const;
+  EphemeralRange CreateRange(const ContainerNode& scope) const;
+  EphemeralRange CreateRangeForSelection(const ContainerNode& scope) const;
 
-  static PlainTextRange create(const ContainerNode& scope,
+  static PlainTextRange Create(const ContainerNode& scope,
                                const EphemeralRange&);
-  static PlainTextRange create(const ContainerNode& scope, const Range&);
+  static PlainTextRange Create(const ContainerNode& scope, const Range&);
 
  private:
   PlainTextRange& operator=(const PlainTextRange&) = delete;
 
-  enum GetRangeFor { ForGeneric, ForSelection };
-  EphemeralRange createRangeFor(const ContainerNode& scope, GetRangeFor) const;
+  enum GetRangeFor { kForGeneric, kForSelection };
+  EphemeralRange CreateRangeFor(const ContainerNode& scope, GetRangeFor) const;
 
-  const size_t m_start;
-  const size_t m_end;
+  const size_t start_;
+  const size_t end_;
 };
 
 }  // namespace blink

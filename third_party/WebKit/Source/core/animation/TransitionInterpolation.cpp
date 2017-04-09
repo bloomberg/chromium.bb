@@ -11,57 +11,57 @@
 
 namespace blink {
 
-void TransitionInterpolation::interpolate(int iteration, double fraction) {
-  if (m_cachedFraction != fraction || m_cachedIteration != iteration) {
+void TransitionInterpolation::Interpolate(int iteration, double fraction) {
+  if (cached_fraction_ != fraction || cached_iteration_ != iteration) {
     if (fraction != 0 && fraction != 1) {
-      m_merge.startInterpolableValue->interpolate(
-          *m_merge.endInterpolableValue, fraction, *m_cachedInterpolableValue);
+      merge_.start_interpolable_value->Interpolate(
+          *merge_.end_interpolable_value, fraction,
+          *cached_interpolable_value_);
     }
-    m_cachedIteration = iteration;
-    m_cachedFraction = fraction;
+    cached_iteration_ = iteration;
+    cached_fraction_ = fraction;
   }
 }
 
-const InterpolableValue& TransitionInterpolation::currentInterpolableValue()
+const InterpolableValue& TransitionInterpolation::CurrentInterpolableValue()
     const {
-  if (m_cachedFraction == 0) {
-    return *m_start.interpolableValue;
+  if (cached_fraction_ == 0) {
+    return *start_.interpolable_value;
   }
-  if (m_cachedFraction == 1) {
-    return *m_end.interpolableValue;
+  if (cached_fraction_ == 1) {
+    return *end_.interpolable_value;
   }
-  return *m_cachedInterpolableValue;
+  return *cached_interpolable_value_;
 }
 
-NonInterpolableValue* TransitionInterpolation::currentNonInterpolableValue()
+NonInterpolableValue* TransitionInterpolation::CurrentNonInterpolableValue()
     const {
-  if (m_cachedFraction == 0) {
-    return m_start.nonInterpolableValue.get();
+  if (cached_fraction_ == 0) {
+    return start_.non_interpolable_value.Get();
   }
-  if (m_cachedFraction == 1) {
-    return m_end.nonInterpolableValue.get();
+  if (cached_fraction_ == 1) {
+    return end_.non_interpolable_value.Get();
   }
-  return m_merge.nonInterpolableValue.get();
+  return merge_.non_interpolable_value.Get();
 }
 
-void TransitionInterpolation::apply(StyleResolverState& state) const {
-  CSSInterpolationTypesMap map(state.document().propertyRegistry());
+void TransitionInterpolation::Apply(StyleResolverState& state) const {
+  CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry());
   InterpolationEnvironment environment(map, state);
-  m_type.apply(currentInterpolableValue(), currentNonInterpolableValue(),
-               environment);
+  type_.Apply(CurrentInterpolableValue(), CurrentNonInterpolableValue(),
+              environment);
 }
 
 std::unique_ptr<TypedInterpolationValue>
-TransitionInterpolation::getInterpolatedValue() const {
-  return TypedInterpolationValue::create(m_type,
-                                         currentInterpolableValue().clone(),
-                                         currentNonInterpolableValue());
+TransitionInterpolation::GetInterpolatedValue() const {
+  return TypedInterpolationValue::Create(
+      type_, CurrentInterpolableValue().Clone(), CurrentNonInterpolableValue());
 }
 
 RefPtr<AnimatableValue>
-TransitionInterpolation::getInterpolatedCompositorValue() const {
-  return AnimatableValue::interpolate(m_compositorStart.get(),
-                                      m_compositorEnd.get(), m_cachedFraction);
+TransitionInterpolation::GetInterpolatedCompositorValue() const {
+  return AnimatableValue::Interpolate(compositor_start_.Get(),
+                                      compositor_end_.Get(), cached_fraction_);
 }
 
 }  // namespace blink

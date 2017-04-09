@@ -35,23 +35,21 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_.reset(AssociatedResourceFetcher::Create(image_url));
 
   WebAssociatedURLLoaderOptions options;
-  options.allowCredentials = true;
-  options.crossOriginRequestPolicy =
-      WebAssociatedURLLoaderOptions::CrossOriginRequestPolicyAllow;
+  options.allow_credentials = true;
+  options.cross_origin_request_policy =
+      WebAssociatedURLLoaderOptions::kCrossOriginRequestPolicyAllow;
   fetcher_->SetLoaderOptions(options);
 
   // To prevent cache tainting, the favicon requests have to by-pass the service
   // workers. This should ideally not happen or at least not all the time.
   // See https://crbug.com/448427
-  if (request_context == WebURLRequest::RequestContextFavicon)
-    fetcher_->SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::None);
+  if (request_context == WebURLRequest::kRequestContextFavicon)
+    fetcher_->SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
 
   fetcher_->SetCachePolicy(cache_policy);
 
   fetcher_->Start(
-      frame,
-      request_context,
-      WebURLRequest::FrameTypeNone,
+      frame, request_context, WebURLRequest::kFrameTypeNone,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this)));
 }
@@ -63,9 +61,9 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     const WebURLResponse& response,
     const std::string& data) {
   std::vector<SkBitmap> bitmaps;
-  if (!response.isNull()) {
-    http_status_code_ = response.httpStatusCode();
-    GURL url(response.url());
+  if (!response.IsNull()) {
+    http_status_code_ = response.HttpStatusCode();
+    GURL url(response.Url());
     if (http_status_code_ == 200 || url.SchemeIsFile()) {
       // Request succeeded, try to convert it to an image.
       bitmaps = ImageDecoder::DecodeAll(

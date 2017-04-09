@@ -48,13 +48,14 @@ class InlineTextBox;
 class CORE_EXPORT AbstractInlineTextBox
     : public RefCounted<AbstractInlineTextBox> {
  private:
-  AbstractInlineTextBox(LineLayoutText lineLayoutItem,
-                        InlineTextBox* inlineTextBox)
-      : m_lineLayoutItem(lineLayoutItem), m_inlineTextBox(inlineTextBox) {}
+  AbstractInlineTextBox(LineLayoutText line_layout_item,
+                        InlineTextBox* inline_text_box)
+      : line_layout_item_(line_layout_item),
+        inline_text_box_(inline_text_box) {}
 
-  static PassRefPtr<AbstractInlineTextBox> getOrCreate(LineLayoutText,
+  static PassRefPtr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
                                                        InlineTextBox*);
-  static void willDestroy(InlineTextBox*);
+  static void WillDestroy(InlineTextBox*);
 
   friend class LayoutText;
   friend class InlineTextBox;
@@ -62,41 +63,41 @@ class CORE_EXPORT AbstractInlineTextBox
  public:
   struct WordBoundaries {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    WordBoundaries(int startIndex, int endIndex)
-        : startIndex(startIndex), endIndex(endIndex) {}
-    int startIndex;
-    int endIndex;
+    WordBoundaries(int start_index, int end_index)
+        : start_index(start_index), end_index(end_index) {}
+    int start_index;
+    int end_index;
   };
 
-  enum Direction { LeftToRight, RightToLeft, TopToBottom, BottomToTop };
+  enum Direction { kLeftToRight, kRightToLeft, kTopToBottom, kBottomToTop };
 
   ~AbstractInlineTextBox();
 
-  LineLayoutText getLineLayoutItem() const { return m_lineLayoutItem; }
+  LineLayoutText GetLineLayoutItem() const { return line_layout_item_; }
 
-  PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
-  LayoutRect localBounds() const;
-  unsigned len() const;
-  Direction getDirection() const;
-  void characterWidths(Vector<float>&) const;
-  void wordBoundaries(Vector<WordBoundaries>&) const;
-  String text() const;
-  bool isFirst() const;
-  bool isLast() const;
-  PassRefPtr<AbstractInlineTextBox> nextOnLine() const;
-  PassRefPtr<AbstractInlineTextBox> previousOnLine() const;
+  PassRefPtr<AbstractInlineTextBox> NextInlineTextBox() const;
+  LayoutRect LocalBounds() const;
+  unsigned Len() const;
+  Direction GetDirection() const;
+  void CharacterWidths(Vector<float>&) const;
+  void GetWordBoundaries(Vector<WordBoundaries>&) const;
+  String GetText() const;
+  bool IsFirst() const;
+  bool IsLast() const;
+  PassRefPtr<AbstractInlineTextBox> NextOnLine() const;
+  PassRefPtr<AbstractInlineTextBox> PreviousOnLine() const;
 
  private:
-  void detach();
+  void Detach();
 
   // Weak ptrs; these are nulled when InlineTextBox::destroy() calls
   // AbstractInlineTextBox::willDestroy.
-  LineLayoutText m_lineLayoutItem;
-  InlineTextBox* m_inlineTextBox;
+  LineLayoutText line_layout_item_;
+  InlineTextBox* inline_text_box_;
 
   typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>>
       InlineToAbstractInlineTextBoxHashMap;
-  static InlineToAbstractInlineTextBoxHashMap* gAbstractInlineTextBoxMap;
+  static InlineToAbstractInlineTextBoxHashMap* g_abstract_inline_text_box_map_;
 };
 
 }  // namespace blink

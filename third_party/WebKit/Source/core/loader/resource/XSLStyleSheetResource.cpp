@@ -35,66 +35,67 @@
 
 namespace blink {
 
-static void applyXSLRequestProperties(FetchRequest& request) {
-  request.setRequestContext(WebURLRequest::RequestContextXSLT);
+static void ApplyXSLRequestProperties(FetchRequest& request) {
+  request.SetRequestContext(WebURLRequest::kRequestContextXSLT);
   // TODO(japhet): Accept: headers can be set manually on XHRs from script, in
   // the browser process, and... here. The browser process can't tell the
   // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
   // stylesheets are all CSS unless they already have an Accept: header set.
   // Should we teach the browser process the difference?
-  DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT,
+  DEFINE_STATIC_LOCAL(const AtomicString, accept_xslt,
                       ("text/xml, application/xml, application/xhtml+xml, "
                        "text/xsl, application/rss+xml, application/atom+xml"));
-  request.mutableResourceRequest().setHTTPAccept(acceptXSLT);
+  request.MutableResourceRequest().SetHTTPAccept(accept_xslt);
 }
 
-XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(
+XSLStyleSheetResource* XSLStyleSheetResource::FetchSynchronously(
     FetchRequest& request,
     ResourceFetcher* fetcher) {
-  applyXSLRequestProperties(request);
-  request.makeSynchronous();
-  XSLStyleSheetResource* resource = toXSLStyleSheetResource(
-      fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
-  if (resource && resource->data())
-    resource->m_sheet = resource->decodedText();
+  ApplyXSLRequestProperties(request);
+  request.MakeSynchronous();
+  XSLStyleSheetResource* resource = ToXSLStyleSheetResource(
+      fetcher->RequestResource(request, XSLStyleSheetResourceFactory()));
+  if (resource && resource->Data())
+    resource->sheet_ = resource->DecodedText();
   return resource;
 }
 
-XSLStyleSheetResource* XSLStyleSheetResource::fetch(FetchRequest& request,
+XSLStyleSheetResource* XSLStyleSheetResource::Fetch(FetchRequest& request,
                                                     ResourceFetcher* fetcher) {
   DCHECK(RuntimeEnabledFeatures::xsltEnabled());
-  applyXSLRequestProperties(request);
-  return toXSLStyleSheetResource(
-      fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
+  ApplyXSLRequestProperties(request);
+  return ToXSLStyleSheetResource(
+      fetcher->RequestResource(request, XSLStyleSheetResourceFactory()));
 }
 
 XSLStyleSheetResource::XSLStyleSheetResource(
-    const ResourceRequest& resourceRequest,
+    const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
     const String& charset)
-    : StyleSheetResource(resourceRequest,
-                         XSLStyleSheet,
+    : StyleSheetResource(resource_request,
+                         kXSLStyleSheet,
                          options,
                          "text/xsl",
                          charset) {}
 
-void XSLStyleSheetResource::didAddClient(ResourceClient* c) {
-  DCHECK(StyleSheetResourceClient::isExpectedType(c));
-  Resource::didAddClient(c);
-  if (!isLoading()) {
-    static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(
-        resourceRequest().url(), response().url(), m_sheet);
+void XSLStyleSheetResource::DidAddClient(ResourceClient* c) {
+  DCHECK(StyleSheetResourceClient::IsExpectedType(c));
+  Resource::DidAddClient(c);
+  if (!IsLoading()) {
+    static_cast<StyleSheetResourceClient*>(c)->SetXSLStyleSheet(
+        GetResourceRequest().Url(), GetResponse().Url(), sheet_);
   }
 }
 
-void XSLStyleSheetResource::checkNotify() {
-  if (data())
-    m_sheet = decodedText();
+void XSLStyleSheetResource::CheckNotify() {
+  if (Data())
+    sheet_ = DecodedText();
 
-  ResourceClientWalker<StyleSheetResourceClient> w(clients());
-  while (StyleSheetResourceClient* c = w.next()) {
-    markClientFinished(c);
-    c->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);
+  ResourceClientWalker<StyleSheetResourceClient> w(Clients());
+  while (StyleSheetResourceClient* c = w.Next()) {
+    MarkClientFinished(c);
+    c->SetXSLStyleSheet(GetResourceRequest().Url(), GetResponse().Url(),
+                        sheet_);
   }
 }
 

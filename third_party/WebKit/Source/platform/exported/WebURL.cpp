@@ -35,27 +35,28 @@
 
 namespace blink {
 
-bool WebURL::protocolIs(const char* protocol) const {
-  const url::Component& scheme = m_parsed.scheme;
-  StringView urlView = m_string;
+bool WebURL::ProtocolIs(const char* protocol) const {
+  const url::Component& scheme = parsed_.scheme;
+  StringView url_view = string_;
   // For subtlety why this works in all cases, see KURL::componentString.
-  return m_isValid && StringView(urlView, scheme.begin, scheme.len) == protocol;
+  return is_valid_ &&
+         StringView(url_view, scheme.begin, scheme.len) == protocol;
 }
 
 WebURL::WebURL(const KURL& url)
-    : m_string(url.getString()),
-      m_parsed(url.parsed()),
-      m_isValid(url.isValid()) {}
+    : string_(url.GetString()),
+      parsed_(url.GetParsed()),
+      is_valid_(url.IsValid()) {}
 
 WebURL& WebURL::operator=(const KURL& url) {
-  m_string = url.getString();
-  m_parsed = url.parsed();
-  m_isValid = url.isValid();
+  string_ = url.GetString();
+  parsed_ = url.GetParsed();
+  is_valid_ = url.IsValid();
   return *this;
 }
 
 WebURL::operator KURL() const {
-  return KURL(m_string, m_parsed, m_isValid);
+  return KURL(string_, parsed_, is_valid_);
 }
 
 }  // namespace blink

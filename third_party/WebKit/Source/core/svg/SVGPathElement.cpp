@@ -31,130 +31,130 @@ namespace blink {
 
 inline SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(SVGNames::pathTag, document),
-      m_path(SVGAnimatedPath::create(this, SVGNames::dAttr, CSSPropertyD)) {
-  addToPropertyMap(m_path);
+      path_(SVGAnimatedPath::Create(this, SVGNames::dAttr, CSSPropertyD)) {
+  AddToPropertyMap(path_);
 }
 
 DEFINE_TRACE(SVGPathElement) {
-  visitor->trace(m_path);
-  SVGGeometryElement::trace(visitor);
+  visitor->Trace(path_);
+  SVGGeometryElement::Trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGPathElement)
 
-Path SVGPathElement::attributePath() const {
-  return m_path->currentValue()->stylePath()->path();
+Path SVGPathElement::AttributePath() const {
+  return path_->CurrentValue()->GetStylePath()->GetPath();
 }
 
-const StylePath* SVGPathElement::stylePath() const {
-  if (LayoutObject* layoutObject = this->layoutObject()) {
-    const StylePath* stylePath = layoutObject->styleRef().svgStyle().d();
-    if (stylePath)
-      return stylePath;
-    return StylePath::emptyPath();
+const StylePath* SVGPathElement::GetStylePath() const {
+  if (LayoutObject* layout_object = this->GetLayoutObject()) {
+    const StylePath* style_path = layout_object->StyleRef().SvgStyle().D();
+    if (style_path)
+      return style_path;
+    return StylePath::EmptyPath();
   }
-  return m_path->currentValue()->stylePath();
+  return path_->CurrentValue()->GetStylePath();
 }
 
-float SVGPathElement::computePathLength() const {
-  return stylePath()->length();
+float SVGPathElement::ComputePathLength() const {
+  return GetStylePath()->length();
 }
 
-Path SVGPathElement::asPath() const {
-  return stylePath()->path();
+Path SVGPathElement::AsPath() const {
+  return GetStylePath()->GetPath();
 }
 
 float SVGPathElement::getTotalLength() {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  return SVGPathQuery(pathByteStream()).getTotalLength();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  return SVGPathQuery(PathByteStream()).GetTotalLength();
 }
 
 SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);
-  return SVGPointTearOff::create(SVGPoint::create(point), 0,
-                                 PropertyIsNotAnimVal);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  FloatPoint point = SVGPathQuery(PathByteStream()).GetPointAtLength(length);
+  return SVGPointTearOff::Create(SVGPoint::Create(point), 0,
+                                 kPropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length) {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  return SVGPathQuery(pathByteStream()).getPathSegIndexAtLength(length);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  return SVGPathQuery(PathByteStream()).GetPathSegIndexAtLength(length);
 }
 
-void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (attrName == SVGNames::dAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidateSVGPresentationAttributeStyle();
-    setNeedsStyleRecalc(LocalStyleChange,
-                        StyleChangeReasonForTracing::fromAttribute(attrName));
+void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::dAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    InvalidateSVGPresentationAttributeStyle();
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::FromAttribute(attr_name));
 
-    if (LayoutSVGShape* layoutPath = toLayoutSVGShape(this->layoutObject()))
-      layoutPath->setNeedsShapeUpdate();
+    if (LayoutSVGShape* layout_path = ToLayoutSVGShape(this->GetLayoutObject()))
+      layout_path->SetNeedsShapeUpdate();
 
-    invalidateMPathDependencies();
-    if (layoutObject())
-      markForLayoutAndParentResourceInvalidation(layoutObject());
+    InvalidateMPathDependencies();
+    if (GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(GetLayoutObject());
 
     return;
   }
 
-  if (attrName == SVGNames::pathLengthAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    if (layoutObject())
-      markForLayoutAndParentResourceInvalidation(layoutObject());
+  if (attr_name == SVGNames::pathLengthAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    if (GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(GetLayoutObject());
     return;
   }
 
-  SVGGeometryElement::svgAttributeChanged(attrName);
+  SVGGeometryElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGPathElement::collectStyleForPresentationAttribute(
+void SVGPathElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
-  SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-  if (property == m_path) {
-    SVGAnimatedPath* path = this->path();
+  SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
+  if (property == path_) {
+    SVGAnimatedPath* path = this->GetPath();
     // If this is a <use> instance, return the referenced path to maximize
     // geometry sharing.
-    if (const SVGElement* element = correspondingElement())
-      path = toSVGPathElement(element)->path();
-    addPropertyToPresentationAttributeStyle(style, property->cssPropertyId(),
-                                            path->cssValue());
+    if (const SVGElement* element = CorrespondingElement())
+      path = toSVGPathElement(element)->GetPath();
+    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+                                            path->CssValue());
     return;
   }
-  SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
+  SVGGeometryElement::CollectStyleForPresentationAttribute(name, value, style);
 }
 
-void SVGPathElement::invalidateMPathDependencies() {
+void SVGPathElement::InvalidateMPathDependencies() {
   // <mpath> can only reference <path> but this dependency is not handled in
   // markForLayoutAndParentResourceInvalidation so we update any mpath
   // dependencies manually.
-  if (SVGElementSet* dependencies = setOfIncomingReferences()) {
+  if (SVGElementSet* dependencies = SetOfIncomingReferences()) {
     for (SVGElement* element : *dependencies) {
       if (isSVGMPathElement(*element))
-        toSVGMPathElement(element)->targetPathChanged();
+        toSVGMPathElement(element)->TargetPathChanged();
     }
   }
 }
 
-Node::InsertionNotificationRequest SVGPathElement::insertedInto(
-    ContainerNode* rootParent) {
-  SVGGeometryElement::insertedInto(rootParent);
-  invalidateMPathDependencies();
-  return InsertionDone;
+Node::InsertionNotificationRequest SVGPathElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGGeometryElement::InsertedInto(root_parent);
+  InvalidateMPathDependencies();
+  return kInsertionDone;
 }
 
-void SVGPathElement::removedFrom(ContainerNode* rootParent) {
-  SVGGeometryElement::removedFrom(rootParent);
-  invalidateMPathDependencies();
+void SVGPathElement::RemovedFrom(ContainerNode* root_parent) {
+  SVGGeometryElement::RemovedFrom(root_parent);
+  InvalidateMPathDependencies();
 }
 
-FloatRect SVGPathElement::getBBox() {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+FloatRect SVGPathElement::GetBBox() {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // We want the exact bounds.
-  return SVGPathElement::asPath().boundingRect(Path::BoundsType::Exact);
+  return SVGPathElement::AsPath().BoundingRect(Path::BoundsType::kExact);
 }
 
 }  // namespace blink

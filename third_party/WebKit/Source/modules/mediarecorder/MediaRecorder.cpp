@@ -23,7 +23,7 @@ namespace blink {
 
 namespace {
 
-const char* kDefaultMimeType = "video/webm";
+const char* g_k_default_mime_type = "video/webm";
 
 // Boundaries of Opus bitrate from https://www.opus-codec.org/.
 const int kSmallestPossibleOpusBitRate = 6000;
@@ -32,13 +32,13 @@ const int kLargestAutoAllocatedOpusBitRate = 128000;
 // Smallest Vpx bitrate that can be requested.
 const int kSmallestPossibleVpxBitRate = 100000;
 
-String stateToString(MediaRecorder::State state) {
+String StateToString(MediaRecorder::State state) {
   switch (state) {
-    case MediaRecorder::State::Inactive:
+    case MediaRecorder::State::kInactive:
       return "inactive";
-    case MediaRecorder::State::Recording:
+    case MediaRecorder::State::kRecording:
       return "recording";
-    case MediaRecorder::State::Paused:
+    case MediaRecorder::State::kPaused:
       return "paused";
   }
 
@@ -53,106 +53,106 @@ String stateToString(MediaRecorder::State state) {
 // here a 90%/10% video/audio is used. In all cases where a value is explicited
 // or calculated, values are clamped in sane ranges.
 // This method throws NotSupportedError.
-void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState,
+void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
                                    ExecutionContext* context,
                                    const MediaRecorderOptions& options,
                                    MediaStream* stream,
-                                   int* audioBitsPerSecond,
-                                   int* videoBitsPerSecond) {
-  const bool useVideo = !stream->getVideoTracks().isEmpty();
-  const bool useAudio = !stream->getAudioTracks().isEmpty();
+                                   int* audio_bits_per_second,
+                                   int* video_bits_per_second) {
+  const bool use_video = !stream->getVideoTracks().IsEmpty();
+  const bool use_audio = !stream->getAudioTracks().IsEmpty();
 
   // Clamp incoming values into a signed integer's range.
   // TODO(mcasas): This section would no be needed if the bit rates are signed
   // or double, see https://github.com/w3c/mediacapture-record/issues/48.
-  const unsigned kMaxIntAsUnsigned = std::numeric_limits<int>::max();
+  const unsigned k_max_int_as_unsigned = std::numeric_limits<int>::max();
 
-  int overallBps = 0;
+  int overall_bps = 0;
   if (options.hasBitsPerSecond())
-    overallBps = std::min(options.bitsPerSecond(), kMaxIntAsUnsigned);
-  int videoBps = 0;
-  if (options.hasVideoBitsPerSecond() && useVideo)
-    videoBps = std::min(options.videoBitsPerSecond(), kMaxIntAsUnsigned);
-  int audioBps = 0;
-  if (options.hasAudioBitsPerSecond() && useAudio)
-    audioBps = std::min(options.audioBitsPerSecond(), kMaxIntAsUnsigned);
+    overall_bps = std::min(options.bitsPerSecond(), k_max_int_as_unsigned);
+  int video_bps = 0;
+  if (options.hasVideoBitsPerSecond() && use_video)
+    video_bps = std::min(options.videoBitsPerSecond(), k_max_int_as_unsigned);
+  int audio_bps = 0;
+  if (options.hasAudioBitsPerSecond() && use_audio)
+    audio_bps = std::min(options.audioBitsPerSecond(), k_max_int_as_unsigned);
 
-  if (useAudio) {
+  if (use_audio) {
     // |overallBps| overrides the specific audio and video bit rates.
     if (options.hasBitsPerSecond()) {
-      if (useVideo)
-        audioBps = overallBps / 10;
+      if (use_video)
+        audio_bps = overall_bps / 10;
       else
-        audioBps = overallBps;
+        audio_bps = overall_bps;
     }
     // Limit audio bitrate values if set explicitly or calculated.
     if (options.hasAudioBitsPerSecond() || options.hasBitsPerSecond()) {
-      if (audioBps > kLargestAutoAllocatedOpusBitRate) {
-        context->addConsoleMessage(ConsoleMessage::create(
-            JSMessageSource, WarningMessageLevel,
-            "Clamping calculated audio bitrate (" + String::number(audioBps) +
+      if (audio_bps > kLargestAutoAllocatedOpusBitRate) {
+        context->AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel,
+            "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
                 "bps) to the maximum (" +
-                String::number(kLargestAutoAllocatedOpusBitRate) + "bps)"));
-        audioBps = kLargestAutoAllocatedOpusBitRate;
+                String::Number(kLargestAutoAllocatedOpusBitRate) + "bps)"));
+        audio_bps = kLargestAutoAllocatedOpusBitRate;
       }
 
-      if (audioBps < kSmallestPossibleOpusBitRate) {
-        context->addConsoleMessage(ConsoleMessage::create(
-            JSMessageSource, WarningMessageLevel,
-            "Clamping calculated audio bitrate (" + String::number(audioBps) +
+      if (audio_bps < kSmallestPossibleOpusBitRate) {
+        context->AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel,
+            "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
                 "bps) to the minimum (" +
-                String::number(kSmallestPossibleOpusBitRate) + "bps)"));
-        audioBps = kSmallestPossibleOpusBitRate;
+                String::Number(kSmallestPossibleOpusBitRate) + "bps)"));
+        audio_bps = kSmallestPossibleOpusBitRate;
       }
     } else {
-      DCHECK(!audioBps);
+      DCHECK(!audio_bps);
     }
   }
 
-  if (useVideo) {
+  if (use_video) {
     // Allocate the remaining |overallBps|, if any, to video.
     if (options.hasBitsPerSecond())
-      videoBps = overallBps - audioBps;
+      video_bps = overall_bps - audio_bps;
     // Clamp the video bit rate. Avoid clamping if the user has not set it
     // explicitly.
     if (options.hasVideoBitsPerSecond() || options.hasBitsPerSecond()) {
-      if (videoBps < kSmallestPossibleVpxBitRate) {
-        context->addConsoleMessage(ConsoleMessage::create(
-            JSMessageSource, WarningMessageLevel,
-            "Clamping calculated video bitrate (" + String::number(videoBps) +
+      if (video_bps < kSmallestPossibleVpxBitRate) {
+        context->AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel,
+            "Clamping calculated video bitrate (" + String::Number(video_bps) +
                 "bps) to the minimum (" +
-                String::number(kSmallestPossibleVpxBitRate) + "bps)"));
-        videoBps = kSmallestPossibleVpxBitRate;
+                String::Number(kSmallestPossibleVpxBitRate) + "bps)"));
+        video_bps = kSmallestPossibleVpxBitRate;
       }
     } else {
-      DCHECK(!videoBps);
+      DCHECK(!video_bps);
     }
   }
 
-  *videoBitsPerSecond = videoBps;
-  *audioBitsPerSecond = audioBps;
+  *video_bits_per_second = video_bps;
+  *audio_bits_per_second = audio_bps;
   return;
 }
 
 }  // namespace
 
-MediaRecorder* MediaRecorder::create(ExecutionContext* context,
+MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
-                                     ExceptionState& exceptionState) {
+                                     ExceptionState& exception_state) {
   MediaRecorder* recorder = new MediaRecorder(
-      context, stream, MediaRecorderOptions(), exceptionState);
-  recorder->suspendIfNeeded();
+      context, stream, MediaRecorderOptions(), exception_state);
+  recorder->SuspendIfNeeded();
 
   return recorder;
 }
 
-MediaRecorder* MediaRecorder::create(ExecutionContext* context,
+MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
                                      const MediaRecorderOptions& options,
-                                     ExceptionState& exceptionState) {
+                                     ExceptionState& exception_state) {
   MediaRecorder* recorder =
-      new MediaRecorder(context, stream, options, exceptionState);
-  recorder->suspendIfNeeded();
+      new MediaRecorder(context, stream, options, exception_state);
+  recorder->SuspendIfNeeded();
 
   return recorder;
 }
@@ -160,131 +160,133 @@ MediaRecorder* MediaRecorder::create(ExecutionContext* context,
 MediaRecorder::MediaRecorder(ExecutionContext* context,
                              MediaStream* stream,
                              const MediaRecorderOptions& options,
-                             ExceptionState& exceptionState)
+                             ExceptionState& exception_state)
     : SuspendableObject(context),
-      m_stream(stream),
-      m_mimeType(options.hasMimeType() ? options.mimeType() : kDefaultMimeType),
-      m_stopped(true),
-      m_audioBitsPerSecond(0),
-      m_videoBitsPerSecond(0),
-      m_state(State::Inactive),
-      m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaRecorder>::create(
+      stream_(stream),
+      mime_type_(options.hasMimeType() ? options.mimeType()
+                                       : g_k_default_mime_type),
+      stopped_(true),
+      audio_bits_per_second_(0),
+      video_bits_per_second_(0),
+      state_(State::kInactive),
+      dispatch_scheduled_event_runner_(AsyncMethodRunner<MediaRecorder>::Create(
           this,
-          &MediaRecorder::dispatchScheduledEvent)) {
-  DCHECK(m_stream->getTracks().size());
+          &MediaRecorder::DispatchScheduledEvent)) {
+  DCHECK(stream_->getTracks().size());
 
-  m_recorderHandler =
-      WTF::wrapUnique(Platform::current()->createMediaRecorderHandler());
-  DCHECK(m_recorderHandler);
+  recorder_handler_ =
+      WTF::WrapUnique(Platform::Current()->CreateMediaRecorderHandler());
+  DCHECK(recorder_handler_);
 
-  if (!m_recorderHandler) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "No MediaRecorder handler can be created.");
+  if (!recorder_handler_) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "No MediaRecorder handler can be created.");
     return;
   }
 
-  AllocateVideoAndAudioBitrates(exceptionState, context, options, stream,
-                                &m_audioBitsPerSecond, &m_videoBitsPerSecond);
+  AllocateVideoAndAudioBitrates(exception_state, context, options, stream,
+                                &audio_bits_per_second_,
+                                &video_bits_per_second_);
 
-  const ContentType contentType(m_mimeType);
-  if (!m_recorderHandler->initialize(
-          this, stream->descriptor(), contentType.type(),
-          contentType.parameter("codecs"), m_audioBitsPerSecond,
-          m_videoBitsPerSecond)) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
+  const ContentType content_type(mime_type_);
+  if (!recorder_handler_->Initialize(
+          this, stream->Descriptor(), content_type.GetType(),
+          content_type.Parameter("codecs"), audio_bits_per_second_,
+          video_bits_per_second_)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
         "Failed to initialize native MediaRecorder the type provided (" +
-            m_mimeType + ") is not supported.");
+            mime_type_ + ") is not supported.");
     return;
   }
-  m_stopped = false;
+  stopped_ = false;
 }
 
 String MediaRecorder::state() const {
-  return stateToString(m_state);
+  return StateToString(state_);
 }
 
-void MediaRecorder::start(ExceptionState& exceptionState) {
-  start(std::numeric_limits<int>::max() /* timeSlice */, exceptionState);
+void MediaRecorder::start(ExceptionState& exception_state) {
+  start(std::numeric_limits<int>::max() /* timeSlice */, exception_state);
 }
 
-void MediaRecorder::start(int timeSlice, ExceptionState& exceptionState) {
-  if (m_state != State::Inactive) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
+void MediaRecorder::start(int time_slice, ExceptionState& exception_state) {
+  if (state_ != State::kInactive) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
-  m_state = State::Recording;
+  state_ = State::kRecording;
 
-  if (!m_recorderHandler->start(timeSlice)) {
-    exceptionState.throwDOMException(UnknownError,
-                                     "The MediaRecorder failed to start "
-                                     "because there are no audio or video "
-                                     "tracks available.");
+  if (!recorder_handler_->Start(time_slice)) {
+    exception_state.ThrowDOMException(kUnknownError,
+                                      "The MediaRecorder failed to start "
+                                      "because there are no audio or video "
+                                      "tracks available.");
     return;
   }
-  scheduleDispatchEvent(Event::create(EventTypeNames::start));
+  ScheduleDispatchEvent(Event::Create(EventTypeNames::start));
 }
 
-void MediaRecorder::stop(ExceptionState& exceptionState) {
-  if (m_state == State::Inactive) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
+void MediaRecorder::stop(ExceptionState& exception_state) {
+  if (state_ == State::kInactive) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
 
-  stopRecording();
+  StopRecording();
 }
 
-void MediaRecorder::pause(ExceptionState& exceptionState) {
-  if (m_state == State::Inactive) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
+void MediaRecorder::pause(ExceptionState& exception_state) {
+  if (state_ == State::kInactive) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
-  if (m_state == State::Paused)
+  if (state_ == State::kPaused)
     return;
 
-  m_state = State::Paused;
+  state_ = State::kPaused;
 
-  m_recorderHandler->pause();
+  recorder_handler_->Pause();
 
-  scheduleDispatchEvent(Event::create(EventTypeNames::pause));
+  ScheduleDispatchEvent(Event::Create(EventTypeNames::pause));
 }
 
-void MediaRecorder::resume(ExceptionState& exceptionState) {
-  if (m_state == State::Inactive) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
+void MediaRecorder::resume(ExceptionState& exception_state) {
+  if (state_ == State::kInactive) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
-  if (m_state == State::Recording)
+  if (state_ == State::kRecording)
     return;
 
-  m_state = State::Recording;
+  state_ = State::kRecording;
 
-  m_recorderHandler->resume();
-  scheduleDispatchEvent(Event::create(EventTypeNames::resume));
+  recorder_handler_->Resume();
+  ScheduleDispatchEvent(Event::Create(EventTypeNames::resume));
 }
 
-void MediaRecorder::requestData(ExceptionState& exceptionState) {
-  if (m_state == State::Inactive) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
+void MediaRecorder::requestData(ExceptionState& exception_state) {
+  if (state_ == State::kInactive) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "The MediaRecorder's state is '" + StateToString(state_) + "'.");
     return;
   }
-  writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
-            WTF::currentTimeMS());
+  WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
+            WTF::CurrentTimeMS());
 }
 
 bool MediaRecorder::isTypeSupported(const String& type) {
   WebMediaRecorderHandler* handler =
-      Platform::current()->createMediaRecorderHandler();
+      Platform::Current()->CreateMediaRecorderHandler();
   if (!handler)
     return false;
 
@@ -293,104 +295,104 @@ bool MediaRecorder::isTypeSupported(const String& type) {
   // specified MIME type. Recording may still fail if sufficient resources are
   // not available to support the concrete media encoding.
   // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
-  ContentType contentType(type);
-  return handler->canSupportMimeType(contentType.type(),
-                                     contentType.parameter("codecs"));
+  ContentType content_type(type);
+  return handler->CanSupportMimeType(content_type.GetType(),
+                                     content_type.Parameter("codecs"));
 }
 
-const AtomicString& MediaRecorder::interfaceName() const {
+const AtomicString& MediaRecorder::InterfaceName() const {
   return EventTargetNames::MediaRecorder;
 }
 
-ExecutionContext* MediaRecorder::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+ExecutionContext* MediaRecorder::GetExecutionContext() const {
+  return SuspendableObject::GetExecutionContext();
 }
 
-void MediaRecorder::suspend() {
-  m_dispatchScheduledEventRunner->suspend();
+void MediaRecorder::Suspend() {
+  dispatch_scheduled_event_runner_->Suspend();
 }
 
-void MediaRecorder::resume() {
-  m_dispatchScheduledEventRunner->resume();
+void MediaRecorder::Resume() {
+  dispatch_scheduled_event_runner_->Resume();
 }
 
-void MediaRecorder::contextDestroyed(ExecutionContext*) {
-  if (m_stopped)
+void MediaRecorder::ContextDestroyed(ExecutionContext*) {
+  if (stopped_)
     return;
 
-  m_stopped = true;
-  m_stream.clear();
-  m_recorderHandler.reset();
+  stopped_ = true;
+  stream_.Clear();
+  recorder_handler_.reset();
 }
 
-void MediaRecorder::writeData(const char* data,
+void MediaRecorder::WriteData(const char* data,
                               size_t length,
-                              bool lastInSlice,
+                              bool last_in_slice,
                               double timecode) {
-  if (m_stopped && !lastInSlice) {
-    m_stopped = false;
-    scheduleDispatchEvent(Event::create(EventTypeNames::start));
+  if (stopped_ && !last_in_slice) {
+    stopped_ = false;
+    ScheduleDispatchEvent(Event::Create(EventTypeNames::start));
   }
 
-  if (!m_blobData) {
-    m_blobData = BlobData::create();
-    m_blobData->setContentType(m_mimeType);
+  if (!blob_data_) {
+    blob_data_ = BlobData::Create();
+    blob_data_->SetContentType(mime_type_);
   }
   if (data)
-    m_blobData->appendBytes(data, length);
+    blob_data_->AppendBytes(data, length);
 
-  if (!lastInSlice)
+  if (!last_in_slice)
     return;
 
   // Cache |m_blobData->length()| before release()ng it.
-  const long long blobDataLength = m_blobData->length();
-  createBlobEvent(Blob::create(BlobDataHandle::create(std::move(m_blobData),
-                                                      blobDataLength)),
+  const long long blob_data_length = blob_data_->length();
+  CreateBlobEvent(Blob::Create(BlobDataHandle::Create(std::move(blob_data_),
+                                                      blob_data_length)),
                   timecode);
 }
 
-void MediaRecorder::onError(const WebString& message) {
-  DLOG(ERROR) << message.ascii();
-  stopRecording();
-  scheduleDispatchEvent(Event::create(EventTypeNames::error));
+void MediaRecorder::OnError(const WebString& message) {
+  DLOG(ERROR) << message.Ascii();
+  StopRecording();
+  ScheduleDispatchEvent(Event::Create(EventTypeNames::error));
 }
 
-void MediaRecorder::createBlobEvent(Blob* blob, double timecode) {
-  scheduleDispatchEvent(
-      BlobEvent::create(EventTypeNames::dataavailable, blob, timecode));
+void MediaRecorder::CreateBlobEvent(Blob* blob, double timecode) {
+  ScheduleDispatchEvent(
+      BlobEvent::Create(EventTypeNames::dataavailable, blob, timecode));
 }
 
-void MediaRecorder::stopRecording() {
-  DCHECK(m_state != State::Inactive);
-  m_state = State::Inactive;
+void MediaRecorder::StopRecording() {
+  DCHECK(state_ != State::kInactive);
+  state_ = State::kInactive;
 
-  m_recorderHandler->stop();
+  recorder_handler_->Stop();
 
-  writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
-            WTF::currentTimeMS());
-  scheduleDispatchEvent(Event::create(EventTypeNames::stop));
+  WriteData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
+            WTF::CurrentTimeMS());
+  ScheduleDispatchEvent(Event::Create(EventTypeNames::stop));
 }
 
-void MediaRecorder::scheduleDispatchEvent(Event* event) {
-  m_scheduledEvents.push_back(event);
+void MediaRecorder::ScheduleDispatchEvent(Event* event) {
+  scheduled_events_.push_back(event);
 
-  m_dispatchScheduledEventRunner->runAsync();
+  dispatch_scheduled_event_runner_->RunAsync();
 }
 
-void MediaRecorder::dispatchScheduledEvent() {
+void MediaRecorder::DispatchScheduledEvent() {
   HeapVector<Member<Event>> events;
-  events.swap(m_scheduledEvents);
+  events.Swap(scheduled_events_);
 
   for (const auto& event : events)
-    dispatchEvent(event);
+    DispatchEvent(event);
 }
 
 DEFINE_TRACE(MediaRecorder) {
-  visitor->trace(m_stream);
-  visitor->trace(m_dispatchScheduledEventRunner);
-  visitor->trace(m_scheduledEvents);
-  EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  visitor->Trace(stream_);
+  visitor->Trace(dispatch_scheduled_event_runner_);
+  visitor->Trace(scheduled_events_);
+  EventTargetWithInlineData::Trace(visitor);
+  SuspendableObject::Trace(visitor);
 }
 
 }  // namespace blink

@@ -39,101 +39,101 @@
 
 namespace blink {
 
-static void fixNANs(double& x) {
+static void FixNANs(double& x) {
   if (std::isnan(x) || std::isinf(x))
     x = 0.0;
 }
 
 PannerHandler::PannerHandler(AudioNode& node,
-                             float sampleRate,
-                             AudioParamHandler& positionX,
-                             AudioParamHandler& positionY,
-                             AudioParamHandler& positionZ,
-                             AudioParamHandler& orientationX,
-                             AudioParamHandler& orientationY,
-                             AudioParamHandler& orientationZ)
-    : AudioHandler(NodeTypePanner, node, sampleRate),
-      m_listener(node.context()->listener()),
-      m_distanceModel(DistanceEffect::ModelInverse),
-      m_isAzimuthElevationDirty(true),
-      m_isDistanceConeGainDirty(true),
-      m_lastGain(-1.0),
-      m_cachedAzimuth(0),
-      m_cachedElevation(0),
-      m_cachedDistanceConeGain(1.0f),
-      m_positionX(positionX),
-      m_positionY(positionY),
-      m_positionZ(positionZ),
-      m_orientationX(orientationX),
-      m_orientationY(orientationY),
-      m_orientationZ(orientationZ) {
-  addInput();
-  addOutput(2);
+                             float sample_rate,
+                             AudioParamHandler& position_x,
+                             AudioParamHandler& position_y,
+                             AudioParamHandler& position_z,
+                             AudioParamHandler& orientation_x,
+                             AudioParamHandler& orientation_y,
+                             AudioParamHandler& orientation_z)
+    : AudioHandler(kNodeTypePanner, node, sample_rate),
+      listener_(node.context()->listener()),
+      distance_model_(DistanceEffect::kModelInverse),
+      is_azimuth_elevation_dirty_(true),
+      is_distance_cone_gain_dirty_(true),
+      last_gain_(-1.0),
+      cached_azimuth_(0),
+      cached_elevation_(0),
+      cached_distance_cone_gain_(1.0f),
+      position_x_(position_x),
+      position_y_(position_y),
+      position_z_(position_z),
+      orientation_x_(orientation_x),
+      orientation_y_(orientation_y),
+      orientation_z_(orientation_z) {
+  AddInput();
+  AddOutput(2);
 
   // Node-specific default mixing rules.
-  m_channelCount = 2;
-  setInternalChannelCountMode(ClampedMax);
-  setInternalChannelInterpretation(AudioBus::Speakers);
+  channel_count_ = 2;
+  SetInternalChannelCountMode(kClampedMax);
+  SetInternalChannelInterpretation(AudioBus::kSpeakers);
 
   // Explicitly set the default panning model here so that the histograms
   // include the default value.
-  setPanningModel("equalpower");
+  SetPanningModel("equalpower");
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<PannerHandler> PannerHandler::create(
+PassRefPtr<PannerHandler> PannerHandler::Create(
     AudioNode& node,
-    float sampleRate,
-    AudioParamHandler& positionX,
-    AudioParamHandler& positionY,
-    AudioParamHandler& positionZ,
-    AudioParamHandler& orientationX,
-    AudioParamHandler& orientationY,
-    AudioParamHandler& orientationZ) {
-  return adoptRef(new PannerHandler(node, sampleRate, positionX, positionY,
-                                    positionZ, orientationX, orientationY,
-                                    orientationZ));
+    float sample_rate,
+    AudioParamHandler& position_x,
+    AudioParamHandler& position_y,
+    AudioParamHandler& position_z,
+    AudioParamHandler& orientation_x,
+    AudioParamHandler& orientation_y,
+    AudioParamHandler& orientation_z) {
+  return AdoptRef(new PannerHandler(node, sample_rate, position_x, position_y,
+                                    position_z, orientation_x, orientation_y,
+                                    orientation_z));
 }
 
 PannerHandler::~PannerHandler() {
-  uninitialize();
+  Uninitialize();
 }
 
-void PannerHandler::process(size_t framesToProcess) {
-  AudioBus* destination = output(0).bus();
+void PannerHandler::Process(size_t frames_to_process) {
+  AudioBus* destination = Output(0).Bus();
 
-  if (!isInitialized() || !input(0).isConnected() || !m_panner.get()) {
-    destination->zero();
+  if (!IsInitialized() || !Input(0).IsConnected() || !panner_.get()) {
+    destination->Zero();
     return;
   }
 
-  AudioBus* source = input(0).bus();
+  AudioBus* source = Input(0).Bus();
   if (!source) {
-    destination->zero();
+    destination->Zero();
     return;
   }
 
   // The audio thread can't block on this lock, so we call tryLock() instead.
-  MutexTryLocker tryLocker(m_processLock);
-  MutexTryLocker tryListenerLocker(listener()->listenerLock());
+  MutexTryLocker try_locker(process_lock_);
+  MutexTryLocker try_listener_locker(Listener()->ListenerLock());
 
-  if (tryLocker.locked() && tryListenerLocker.locked()) {
-    if (!context()->hasRealtimeConstraint() &&
-        m_panningModel == Panner::PanningModelHRTF) {
+  if (try_locker.Locked() && try_listener_locker.Locked()) {
+    if (!Context()->HasRealtimeConstraint() &&
+        panning_model_ == Panner::kPanningModelHRTF) {
       // For an OfflineAudioContext, we need to make sure the HRTFDatabase
       // is loaded before proceeding.  For realtime contexts, we don't
       // have to wait.  The HRTF panner handles that case itself.
-      listener()->waitForHRTFDatabaseLoaderThreadCompletion();
+      Listener()->WaitForHRTFDatabaseLoaderThreadCompletion();
     }
 
-    if (hasSampleAccurateValues() || listener()->hasSampleAccurateValues()) {
+    if (HasSampleAccurateValues() || Listener()->HasSampleAccurateValues()) {
       // It's tempting to skip sample-accurate processing if
       // isAzimuthElevationDirty() and isDistanceConeGain() both return false.
       // But in general we can't because something may scheduled to start in the
       // middle of the rendering quantum.  On the other hand, the audible effect
       // may be small enough that we can afford to do this optimization.
-      processSampleAccurateValues(destination, source, framesToProcess);
+      ProcessSampleAccurateValues(destination, source, frames_to_process);
     } else {
       // Apply the panning effect.
       double azimuth;
@@ -141,148 +141,152 @@ void PannerHandler::process(size_t framesToProcess) {
 
       // Update dirty state in case something has moved; this can happen if the
       // AudioParam for the position or orientation component is set directly.
-      updateDirtyState();
+      UpdateDirtyState();
 
-      azimuthElevation(&azimuth, &elevation);
+      AzimuthElevation(&azimuth, &elevation);
 
-      m_panner->pan(azimuth, elevation, source, destination, framesToProcess,
-                    internalChannelInterpretation());
+      panner_->Pan(azimuth, elevation, source, destination, frames_to_process,
+                   InternalChannelInterpretation());
 
       // Get the distance and cone gain.
-      float totalGain = distanceConeGain();
+      float total_gain = DistanceConeGain();
 
-      m_lastGain = totalGain;
+      last_gain_ = total_gain;
 
       // Apply gain in-place with de-zippering.
-      destination->copyWithGainFrom(*destination, &m_lastGain, totalGain);
+      destination->CopyWithGainFrom(*destination, &last_gain_, total_gain);
     }
   } else {
     // Too bad - The tryLock() failed.  We must be in the middle of changing the
     // properties of the panner or the listener.
-    destination->zero();
+    destination->Zero();
   }
 }
 
-void PannerHandler::processSampleAccurateValues(AudioBus* destination,
+void PannerHandler::ProcessSampleAccurateValues(AudioBus* destination,
                                                 const AudioBus* source,
-                                                size_t framesToProcess) {
-  RELEASE_ASSERT(framesToProcess <= AudioUtilities::kRenderQuantumFrames);
+                                                size_t frames_to_process) {
+  RELEASE_ASSERT(frames_to_process <= AudioUtilities::kRenderQuantumFrames);
 
   // Get the sample accurate values from all of the AudioParams, including the
   // values from the AudioListener.
-  float pannerX[AudioUtilities::kRenderQuantumFrames];
-  float pannerY[AudioUtilities::kRenderQuantumFrames];
-  float pannerZ[AudioUtilities::kRenderQuantumFrames];
+  float panner_x[AudioUtilities::kRenderQuantumFrames];
+  float panner_y[AudioUtilities::kRenderQuantumFrames];
+  float panner_z[AudioUtilities::kRenderQuantumFrames];
 
-  float orientationX[AudioUtilities::kRenderQuantumFrames];
-  float orientationY[AudioUtilities::kRenderQuantumFrames];
-  float orientationZ[AudioUtilities::kRenderQuantumFrames];
+  float orientation_x[AudioUtilities::kRenderQuantumFrames];
+  float orientation_y[AudioUtilities::kRenderQuantumFrames];
+  float orientation_z[AudioUtilities::kRenderQuantumFrames];
 
-  m_positionX->calculateSampleAccurateValues(pannerX, framesToProcess);
-  m_positionY->calculateSampleAccurateValues(pannerY, framesToProcess);
-  m_positionZ->calculateSampleAccurateValues(pannerZ, framesToProcess);
-  m_orientationX->calculateSampleAccurateValues(orientationX, framesToProcess);
-  m_orientationY->calculateSampleAccurateValues(orientationY, framesToProcess);
-  m_orientationZ->calculateSampleAccurateValues(orientationZ, framesToProcess);
+  position_x_->CalculateSampleAccurateValues(panner_x, frames_to_process);
+  position_y_->CalculateSampleAccurateValues(panner_y, frames_to_process);
+  position_z_->CalculateSampleAccurateValues(panner_z, frames_to_process);
+  orientation_x_->CalculateSampleAccurateValues(orientation_x,
+                                                frames_to_process);
+  orientation_y_->CalculateSampleAccurateValues(orientation_y,
+                                                frames_to_process);
+  orientation_z_->CalculateSampleAccurateValues(orientation_z,
+                                                frames_to_process);
 
   // Get the automation values from the listener.
-  const float* listenerX =
-      listener()->getPositionXValues(AudioUtilities::kRenderQuantumFrames);
-  const float* listenerY =
-      listener()->getPositionYValues(AudioUtilities::kRenderQuantumFrames);
-  const float* listenerZ =
-      listener()->getPositionZValues(AudioUtilities::kRenderQuantumFrames);
+  const float* listener_x =
+      Listener()->GetPositionXValues(AudioUtilities::kRenderQuantumFrames);
+  const float* listener_y =
+      Listener()->GetPositionYValues(AudioUtilities::kRenderQuantumFrames);
+  const float* listener_z =
+      Listener()->GetPositionZValues(AudioUtilities::kRenderQuantumFrames);
 
-  const float* forwardX =
-      listener()->getForwardXValues(AudioUtilities::kRenderQuantumFrames);
-  const float* forwardY =
-      listener()->getForwardYValues(AudioUtilities::kRenderQuantumFrames);
-  const float* forwardZ =
-      listener()->getForwardZValues(AudioUtilities::kRenderQuantumFrames);
+  const float* forward_x =
+      Listener()->GetForwardXValues(AudioUtilities::kRenderQuantumFrames);
+  const float* forward_y =
+      Listener()->GetForwardYValues(AudioUtilities::kRenderQuantumFrames);
+  const float* forward_z =
+      Listener()->GetForwardZValues(AudioUtilities::kRenderQuantumFrames);
 
-  const float* upX =
-      listener()->getUpXValues(AudioUtilities::kRenderQuantumFrames);
-  const float* upY =
-      listener()->getUpYValues(AudioUtilities::kRenderQuantumFrames);
-  const float* upZ =
-      listener()->getUpZValues(AudioUtilities::kRenderQuantumFrames);
+  const float* up_x =
+      Listener()->GetUpXValues(AudioUtilities::kRenderQuantumFrames);
+  const float* up_y =
+      Listener()->GetUpYValues(AudioUtilities::kRenderQuantumFrames);
+  const float* up_z =
+      Listener()->GetUpZValues(AudioUtilities::kRenderQuantumFrames);
 
   // Compute the azimuth, elevation, and total gains for each position.
   double azimuth[AudioUtilities::kRenderQuantumFrames];
   double elevation[AudioUtilities::kRenderQuantumFrames];
-  float totalGain[AudioUtilities::kRenderQuantumFrames];
+  float total_gain[AudioUtilities::kRenderQuantumFrames];
 
-  for (unsigned k = 0; k < framesToProcess; ++k) {
-    FloatPoint3D pannerPosition(pannerX[k], pannerY[k], pannerZ[k]);
-    FloatPoint3D orientation(orientationX[k], orientationY[k], orientationZ[k]);
-    FloatPoint3D listenerPosition(listenerX[k], listenerY[k], listenerZ[k]);
-    FloatPoint3D listenerForward(forwardX[k], forwardY[k], forwardZ[k]);
-    FloatPoint3D listenerUp(upX[k], upY[k], upZ[k]);
+  for (unsigned k = 0; k < frames_to_process; ++k) {
+    FloatPoint3D panner_position(panner_x[k], panner_y[k], panner_z[k]);
+    FloatPoint3D orientation(orientation_x[k], orientation_y[k],
+                             orientation_z[k]);
+    FloatPoint3D listener_position(listener_x[k], listener_y[k], listener_z[k]);
+    FloatPoint3D listener_forward(forward_x[k], forward_y[k], forward_z[k]);
+    FloatPoint3D listener_up(up_x[k], up_y[k], up_z[k]);
 
-    calculateAzimuthElevation(&azimuth[k], &elevation[k], pannerPosition,
-                              listenerPosition, listenerForward, listenerUp);
+    CalculateAzimuthElevation(&azimuth[k], &elevation[k], panner_position,
+                              listener_position, listener_forward, listener_up);
 
     // Get distance and cone gain
-    totalGain[k] = calculateDistanceConeGain(pannerPosition, orientation,
-                                             listenerPosition);
+    total_gain[k] = CalculateDistanceConeGain(panner_position, orientation,
+                                              listener_position);
   }
 
-  m_panner->panWithSampleAccurateValues(azimuth, elevation, source, destination,
-                                        framesToProcess,
-                                        internalChannelInterpretation());
-  destination->copyWithSampleAccurateGainValuesFrom(*destination, totalGain,
-                                                    framesToProcess);
+  panner_->PanWithSampleAccurateValues(azimuth, elevation, source, destination,
+                                       frames_to_process,
+                                       InternalChannelInterpretation());
+  destination->CopyWithSampleAccurateGainValuesFrom(*destination, total_gain,
+                                                    frames_to_process);
 }
 
-void PannerHandler::processOnlyAudioParams(size_t framesToProcess) {
+void PannerHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
   float values[AudioUtilities::kRenderQuantumFrames];
 
-  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+  DCHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
 
-  m_positionX->calculateSampleAccurateValues(values, framesToProcess);
-  m_positionY->calculateSampleAccurateValues(values, framesToProcess);
-  m_positionZ->calculateSampleAccurateValues(values, framesToProcess);
+  position_x_->CalculateSampleAccurateValues(values, frames_to_process);
+  position_y_->CalculateSampleAccurateValues(values, frames_to_process);
+  position_z_->CalculateSampleAccurateValues(values, frames_to_process);
 
-  m_orientationX->calculateSampleAccurateValues(values, framesToProcess);
-  m_orientationY->calculateSampleAccurateValues(values, framesToProcess);
-  m_orientationZ->calculateSampleAccurateValues(values, framesToProcess);
+  orientation_x_->CalculateSampleAccurateValues(values, frames_to_process);
+  orientation_y_->CalculateSampleAccurateValues(values, frames_to_process);
+  orientation_z_->CalculateSampleAccurateValues(values, frames_to_process);
 }
 
-void PannerHandler::initialize() {
-  if (isInitialized())
+void PannerHandler::Initialize() {
+  if (IsInitialized())
     return;
 
-  m_panner = Panner::create(m_panningModel, context()->sampleRate(),
-                            listener()->hrtfDatabaseLoader());
-  listener()->addPanner(*this);
+  panner_ = Panner::Create(panning_model_, Context()->sampleRate(),
+                           Listener()->HrtfDatabaseLoader());
+  Listener()->AddPanner(*this);
 
   // Set the cached values to the current values to start things off.  The
   // panner is already marked as dirty, so this won't matter.
-  m_lastPosition = position();
-  m_lastOrientation = orientation();
+  last_position_ = GetPosition();
+  last_orientation_ = Orientation();
 
-  AudioHandler::initialize();
+  AudioHandler::Initialize();
 }
 
-void PannerHandler::uninitialize() {
-  if (!isInitialized())
+void PannerHandler::Uninitialize() {
+  if (!IsInitialized())
     return;
 
-  m_panner.reset();
-  listener()->removePanner(*this);
+  panner_.reset();
+  Listener()->RemovePanner(*this);
 
-  AudioHandler::uninitialize();
+  AudioHandler::Uninitialize();
 }
 
-AudioListener* PannerHandler::listener() {
-  return m_listener;
+AudioListener* PannerHandler::Listener() {
+  return listener_;
 }
 
-String PannerHandler::panningModel() const {
-  switch (m_panningModel) {
-    case Panner::PanningModelEqualPower:
+String PannerHandler::PanningModel() const {
+  switch (panning_model_) {
+    case Panner::kPanningModelEqualPower:
       return "equalpower";
-    case Panner::PanningModelHRTF:
+    case Panner::kPanningModelHRTF:
       return "HRTF";
     default:
       ASSERT_NOT_REACHED();
@@ -290,48 +294,48 @@ String PannerHandler::panningModel() const {
   }
 }
 
-void PannerHandler::setPanningModel(const String& model) {
+void PannerHandler::SetPanningModel(const String& model) {
   // WebIDL should guarantee that we are never called with an invalid string
   // for the model.
   if (model == "equalpower")
-    setPanningModel(Panner::PanningModelEqualPower);
+    SetPanningModel(Panner::kPanningModelEqualPower);
   else if (model == "HRTF")
-    setPanningModel(Panner::PanningModelHRTF);
+    SetPanningModel(Panner::kPanningModelHRTF);
   else
     NOTREACHED();
 }
 
 // This method should only be called from setPanningModel(const String&)!
-bool PannerHandler::setPanningModel(unsigned model) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, panningModelHistogram,
+bool PannerHandler::SetPanningModel(unsigned model) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, panning_model_histogram,
                       ("WebAudio.PannerNode.PanningModel", 2));
-  panningModelHistogram.count(model);
+  panning_model_histogram.Count(model);
 
-  if (model == Panner::PanningModelHRTF) {
+  if (model == Panner::kPanningModelHRTF) {
     // Load the HRTF database asynchronously so we don't block the
     // Javascript thread while creating the HRTF database. It's ok to call
     // this multiple times; we won't be constantly loading the database over
     // and over.
-    listener()->createAndLoadHRTFDatabaseLoader(context()->sampleRate());
+    Listener()->CreateAndLoadHRTFDatabaseLoader(Context()->sampleRate());
   }
 
-  if (!m_panner.get() || model != m_panningModel) {
+  if (!panner_.get() || model != panning_model_) {
     // This synchronizes with process().
-    MutexLocker processLocker(m_processLock);
-    m_panner = Panner::create(model, context()->sampleRate(),
-                              listener()->hrtfDatabaseLoader());
-    m_panningModel = model;
+    MutexLocker process_locker(process_lock_);
+    panner_ = Panner::Create(model, Context()->sampleRate(),
+                             Listener()->HrtfDatabaseLoader());
+    panning_model_ = model;
   }
   return true;
 }
 
-String PannerHandler::distanceModel() const {
-  switch (const_cast<PannerHandler*>(this)->m_distanceEffect.model()) {
-    case DistanceEffect::ModelLinear:
+String PannerHandler::DistanceModel() const {
+  switch (const_cast<PannerHandler*>(this)->distance_effect_.Model()) {
+    case DistanceEffect::kModelLinear:
       return "linear";
-    case DistanceEffect::ModelInverse:
+    case DistanceEffect::kModelInverse:
       return "inverse";
-    case DistanceEffect::ModelExponential:
+    case DistanceEffect::kModelExponential:
       return "exponential";
     default:
       ASSERT_NOT_REACHED();
@@ -339,26 +343,26 @@ String PannerHandler::distanceModel() const {
   }
 }
 
-void PannerHandler::setDistanceModel(const String& model) {
+void PannerHandler::SetDistanceModel(const String& model) {
   if (model == "linear")
-    setDistanceModel(DistanceEffect::ModelLinear);
+    SetDistanceModel(DistanceEffect::kModelLinear);
   else if (model == "inverse")
-    setDistanceModel(DistanceEffect::ModelInverse);
+    SetDistanceModel(DistanceEffect::kModelInverse);
   else if (model == "exponential")
-    setDistanceModel(DistanceEffect::ModelExponential);
+    SetDistanceModel(DistanceEffect::kModelExponential);
 }
 
-bool PannerHandler::setDistanceModel(unsigned model) {
+bool PannerHandler::SetDistanceModel(unsigned model) {
   switch (model) {
-    case DistanceEffect::ModelLinear:
-    case DistanceEffect::ModelInverse:
-    case DistanceEffect::ModelExponential:
-      if (model != m_distanceModel) {
+    case DistanceEffect::kModelLinear:
+    case DistanceEffect::kModelInverse:
+    case DistanceEffect::kModelExponential:
+      if (model != distance_model_) {
         // This synchronizes with process().
-        MutexLocker processLocker(m_processLock);
-        m_distanceEffect.setModel(
+        MutexLocker process_locker(process_lock_);
+        distance_effect_.SetModel(
             static_cast<DistanceEffect::ModelType>(model));
-        m_distanceModel = model;
+        distance_model_ = model;
       }
       break;
     default:
@@ -369,123 +373,123 @@ bool PannerHandler::setDistanceModel(unsigned model) {
   return true;
 }
 
-void PannerHandler::setRefDistance(double distance) {
-  if (refDistance() == distance)
+void PannerHandler::SetRefDistance(double distance) {
+  if (RefDistance() == distance)
     return;
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
-  m_distanceEffect.setRefDistance(distance);
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MutexLocker process_locker(process_lock_);
+  distance_effect_.SetRefDistance(distance);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setMaxDistance(double distance) {
-  if (maxDistance() == distance)
+void PannerHandler::SetMaxDistance(double distance) {
+  if (MaxDistance() == distance)
     return;
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
-  m_distanceEffect.setMaxDistance(distance);
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MutexLocker process_locker(process_lock_);
+  distance_effect_.SetMaxDistance(distance);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setRolloffFactor(double factor) {
-  if (rolloffFactor() == factor)
+void PannerHandler::SetRolloffFactor(double factor) {
+  if (RolloffFactor() == factor)
     return;
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
-  m_distanceEffect.setRolloffFactor(factor);
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MutexLocker process_locker(process_lock_);
+  distance_effect_.SetRolloffFactor(factor);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setConeInnerAngle(double angle) {
-  if (coneInnerAngle() == angle)
+void PannerHandler::SetConeInnerAngle(double angle) {
+  if (ConeInnerAngle() == angle)
     return;
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
-  m_coneEffect.setInnerAngle(angle);
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MutexLocker process_locker(process_lock_);
+  cone_effect_.SetInnerAngle(angle);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setConeOuterAngle(double angle) {
-  if (coneOuterAngle() == angle)
+void PannerHandler::SetConeOuterAngle(double angle) {
+  if (ConeOuterAngle() == angle)
     return;
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
-  m_coneEffect.setOuterAngle(angle);
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MutexLocker process_locker(process_lock_);
+  cone_effect_.SetOuterAngle(angle);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setConeOuterGain(double angle) {
-  if (coneOuterGain() == angle)
+void PannerHandler::SetConeOuterGain(double angle) {
+  if (ConeOuterGain() == angle)
     return;
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
-  m_coneEffect.setOuterGain(angle);
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MutexLocker process_locker(process_lock_);
+  cone_effect_.SetOuterGain(angle);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setPosition(float x, float y, float z) {
+void PannerHandler::SetPosition(float x, float y, float z) {
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
+  MutexLocker process_locker(process_lock_);
 
-  m_positionX->setValue(x);
-  m_positionY->setValue(y);
-  m_positionZ->setValue(z);
+  position_x_->SetValue(x);
+  position_y_->SetValue(y);
+  position_z_->SetValue(z);
 
-  markPannerAsDirty(PannerHandler::AzimuthElevationDirty |
-                    PannerHandler::DistanceConeGainDirty);
+  MarkPannerAsDirty(PannerHandler::kAzimuthElevationDirty |
+                    PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::setOrientation(float x, float y, float z) {
+void PannerHandler::SetOrientation(float x, float y, float z) {
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
+  MutexLocker process_locker(process_lock_);
 
-  m_orientationX->setValue(x);
-  m_orientationY->setValue(y);
-  m_orientationZ->setValue(z);
+  orientation_x_->SetValue(x);
+  orientation_y_->SetValue(y);
+  orientation_z_->SetValue(z);
 
-  markPannerAsDirty(PannerHandler::DistanceConeGainDirty);
+  MarkPannerAsDirty(PannerHandler::kDistanceConeGainDirty);
 }
 
-void PannerHandler::calculateAzimuthElevation(
-    double* outAzimuth,
-    double* outElevation,
+void PannerHandler::CalculateAzimuthElevation(
+    double* out_azimuth,
+    double* out_elevation,
     const FloatPoint3D& position,
-    const FloatPoint3D& listenerPosition,
-    const FloatPoint3D& listenerForward,
-    const FloatPoint3D& listenerUp) {
+    const FloatPoint3D& listener_position,
+    const FloatPoint3D& listener_forward,
+    const FloatPoint3D& listener_up) {
   double azimuth = 0.0;
 
   // Calculate the source-listener vector
-  FloatPoint3D sourceListener = position - listenerPosition;
+  FloatPoint3D source_listener = position - listener_position;
 
   // normalize() does nothing if the length of |sourceListener| is zero.
-  sourceListener.normalize();
+  source_listener.Normalize();
 
   // Align axes
-  FloatPoint3D listenerRight = listenerForward.cross(listenerUp);
-  listenerRight.normalize();
+  FloatPoint3D listener_right = listener_forward.Cross(listener_up);
+  listener_right.Normalize();
 
-  FloatPoint3D listenerForwardNorm = listenerForward;
-  listenerForwardNorm.normalize();
+  FloatPoint3D listener_forward_norm = listener_forward;
+  listener_forward_norm.Normalize();
 
-  FloatPoint3D up = listenerRight.cross(listenerForwardNorm);
+  FloatPoint3D up = listener_right.Cross(listener_forward_norm);
 
-  float upProjection = sourceListener.dot(up);
+  float up_projection = source_listener.Dot(up);
 
-  FloatPoint3D projectedSource = sourceListener - upProjection * up;
+  FloatPoint3D projected_source = source_listener - up_projection * up;
 
-  azimuth = rad2deg(projectedSource.angleBetween(listenerRight));
-  fixNANs(azimuth);  // avoid illegal values
+  azimuth = rad2deg(projected_source.AngleBetween(listener_right));
+  FixNANs(azimuth);  // avoid illegal values
 
   // Source  in front or behind the listener
-  double frontBack = projectedSource.dot(listenerForwardNorm);
-  if (frontBack < 0.0)
+  double front_back = projected_source.Dot(listener_forward_norm);
+  if (front_back < 0.0)
     azimuth = 360.0 - azimuth;
 
   // Make azimuth relative to "front" and not "right" listener vector
@@ -495,182 +499,185 @@ void PannerHandler::calculateAzimuthElevation(
     azimuth = 450.0 - azimuth;
 
   // Elevation
-  double elevation = 90 - rad2deg(sourceListener.angleBetween(up));
-  fixNANs(elevation);  // avoid illegal values
+  double elevation = 90 - rad2deg(source_listener.AngleBetween(up));
+  FixNANs(elevation);  // avoid illegal values
 
   if (elevation > 90.0)
     elevation = 180.0 - elevation;
   else if (elevation < -90.0)
     elevation = -180.0 - elevation;
 
-  if (outAzimuth)
-    *outAzimuth = azimuth;
-  if (outElevation)
-    *outElevation = elevation;
+  if (out_azimuth)
+    *out_azimuth = azimuth;
+  if (out_elevation)
+    *out_elevation = elevation;
 }
 
-float PannerHandler::calculateDistanceConeGain(
+float PannerHandler::CalculateDistanceConeGain(
     const FloatPoint3D& position,
     const FloatPoint3D& orientation,
-    const FloatPoint3D& listenerPosition) {
-  double listenerDistance = position.distanceTo(listenerPosition);
-  double distanceGain = m_distanceEffect.gain(listenerDistance);
-  double coneGain = m_coneEffect.gain(position, orientation, listenerPosition);
+    const FloatPoint3D& listener_position) {
+  double listener_distance = position.DistanceTo(listener_position);
+  double distance_gain = distance_effect_.Gain(listener_distance);
+  double cone_gain =
+      cone_effect_.Gain(position, orientation, listener_position);
 
-  return float(distanceGain * coneGain);
+  return float(distance_gain * cone_gain);
 }
 
-void PannerHandler::azimuthElevation(double* outAzimuth, double* outElevation) {
-  DCHECK(context()->isAudioThread());
+void PannerHandler::AzimuthElevation(double* out_azimuth,
+                                     double* out_elevation) {
+  DCHECK(Context()->IsAudioThread());
 
   // Calculate new azimuth and elevation if the panner or the listener changed
   // position or orientation in any way.
-  if (isAzimuthElevationDirty() || listener()->isListenerDirty()) {
-    calculateAzimuthElevation(&m_cachedAzimuth, &m_cachedElevation, position(),
-                              listener()->position(), listener()->orientation(),
-                              listener()->upVector());
-    m_isAzimuthElevationDirty = false;
+  if (IsAzimuthElevationDirty() || Listener()->IsListenerDirty()) {
+    CalculateAzimuthElevation(&cached_azimuth_, &cached_elevation_,
+                              GetPosition(), Listener()->GetPosition(),
+                              Listener()->Orientation(),
+                              Listener()->UpVector());
+    is_azimuth_elevation_dirty_ = false;
   }
 
-  *outAzimuth = m_cachedAzimuth;
-  *outElevation = m_cachedElevation;
+  *out_azimuth = cached_azimuth_;
+  *out_elevation = cached_elevation_;
 }
 
-float PannerHandler::distanceConeGain() {
-  DCHECK(context()->isAudioThread());
+float PannerHandler::DistanceConeGain() {
+  DCHECK(Context()->IsAudioThread());
 
   // Calculate new distance and cone gain if the panner or the listener
   // changed position or orientation in any way.
-  if (isDistanceConeGainDirty() || listener()->isListenerDirty()) {
-    m_cachedDistanceConeGain = calculateDistanceConeGain(
-        position(), orientation(), listener()->position());
-    m_isDistanceConeGainDirty = false;
+  if (IsDistanceConeGainDirty() || Listener()->IsListenerDirty()) {
+    cached_distance_cone_gain_ = CalculateDistanceConeGain(
+        GetPosition(), Orientation(), Listener()->GetPosition());
+    is_distance_cone_gain_dirty_ = false;
   }
 
-  return m_cachedDistanceConeGain;
+  return cached_distance_cone_gain_;
 }
 
-void PannerHandler::markPannerAsDirty(unsigned dirty) {
-  if (dirty & PannerHandler::AzimuthElevationDirty)
-    m_isAzimuthElevationDirty = true;
+void PannerHandler::MarkPannerAsDirty(unsigned dirty) {
+  if (dirty & PannerHandler::kAzimuthElevationDirty)
+    is_azimuth_elevation_dirty_ = true;
 
-  if (dirty & PannerHandler::DistanceConeGainDirty)
-    m_isDistanceConeGainDirty = true;
+  if (dirty & PannerHandler::kDistanceConeGainDirty)
+    is_distance_cone_gain_dirty_ = true;
 }
 
-void PannerHandler::setChannelCount(unsigned long channelCount,
-                                    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void PannerHandler::SetChannelCount(unsigned long channel_count,
+                                    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // A PannerNode only supports 1 or 2 channels
-  if (channelCount > 0 && channelCount <= 2) {
-    if (m_channelCount != channelCount) {
-      m_channelCount = channelCount;
-      if (internalChannelCountMode() != Max)
-        updateChannelsForInputs();
+  if (channel_count > 0 && channel_count <= 2) {
+    if (channel_count_ != channel_count) {
+      channel_count_ = channel_count;
+      if (InternalChannelCountMode() != kMax)
+        UpdateChannelsForInputs();
     }
   } else {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        ExceptionMessages::indexOutsideRange<unsigned long>(
-            "channelCount", channelCount, 1, ExceptionMessages::InclusiveBound,
-            2, ExceptionMessages::InclusiveBound));
+    exception_state.ThrowDOMException(
+        kNotSupportedError, ExceptionMessages::IndexOutsideRange<unsigned long>(
+                                "channelCount", channel_count, 1,
+                                ExceptionMessages::kInclusiveBound, 2,
+                                ExceptionMessages::kInclusiveBound));
   }
 }
 
-void PannerHandler::setChannelCountMode(const String& mode,
-                                        ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void PannerHandler::SetChannelCountMode(const String& mode,
+                                        ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
-  ChannelCountMode oldMode = internalChannelCountMode();
+  ChannelCountMode old_mode = InternalChannelCountMode();
 
   if (mode == "clamped-max") {
-    m_newChannelCountMode = ClampedMax;
+    new_channel_count_mode_ = kClampedMax;
   } else if (mode == "explicit") {
-    m_newChannelCountMode = Explicit;
+    new_channel_count_mode_ = kExplicit;
   } else if (mode == "max") {
     // This is not supported for a PannerNode, which can only handle 1 or 2
     // channels.
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Panner: 'max' is not allowed");
-    m_newChannelCountMode = oldMode;
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Panner: 'max' is not allowed");
+    new_channel_count_mode_ = old_mode;
   } else {
     // Do nothing for other invalid values.
-    m_newChannelCountMode = oldMode;
+    new_channel_count_mode_ = old_mode;
   }
 
-  if (m_newChannelCountMode != oldMode)
-    context()->deferredTaskHandler().addChangedChannelCountMode(this);
+  if (new_channel_count_mode_ != old_mode)
+    Context()->GetDeferredTaskHandler().AddChangedChannelCountMode(this);
 }
 
-bool PannerHandler::hasSampleAccurateValues() const {
-  return m_positionX->hasSampleAccurateValues() ||
-         m_positionY->hasSampleAccurateValues() ||
-         m_positionZ->hasSampleAccurateValues() ||
-         m_orientationX->hasSampleAccurateValues() ||
-         m_orientationY->hasSampleAccurateValues() ||
-         m_orientationZ->hasSampleAccurateValues();
+bool PannerHandler::HasSampleAccurateValues() const {
+  return position_x_->HasSampleAccurateValues() ||
+         position_y_->HasSampleAccurateValues() ||
+         position_z_->HasSampleAccurateValues() ||
+         orientation_x_->HasSampleAccurateValues() ||
+         orientation_y_->HasSampleAccurateValues() ||
+         orientation_z_->HasSampleAccurateValues();
 }
 
-void PannerHandler::updateDirtyState() {
-  DCHECK(context()->isAudioThread());
+void PannerHandler::UpdateDirtyState() {
+  DCHECK(Context()->IsAudioThread());
 
-  FloatPoint3D currentPosition = position();
-  FloatPoint3D currentOrientation = orientation();
+  FloatPoint3D current_position = GetPosition();
+  FloatPoint3D current_orientation = Orientation();
 
-  bool hasMoved = currentPosition != m_lastPosition ||
-                  currentOrientation != m_lastOrientation;
+  bool has_moved = current_position != last_position_ ||
+                   current_orientation != last_orientation_;
 
-  if (hasMoved) {
-    m_lastPosition = currentPosition;
-    m_lastOrientation = currentOrientation;
+  if (has_moved) {
+    last_position_ = current_position;
+    last_orientation_ = current_orientation;
 
-    markPannerAsDirty(PannerHandler::AzimuthElevationDirty |
-                      PannerHandler::DistanceConeGainDirty);
+    MarkPannerAsDirty(PannerHandler::kAzimuthElevationDirty |
+                      PannerHandler::kDistanceConeGainDirty);
   }
 }
 // ----------------------------------------------------------------
 
 PannerNode::PannerNode(BaseAudioContext& context)
     : AudioNode(context),
-      m_positionX(AudioParam::create(context, ParamTypePannerPositionX, 0.0)),
-      m_positionY(AudioParam::create(context, ParamTypePannerPositionY, 0.0)),
-      m_positionZ(AudioParam::create(context, ParamTypePannerPositionZ, 0.0)),
-      m_orientationX(
-          AudioParam::create(context, ParamTypePannerOrientationX, 1.0)),
-      m_orientationY(
-          AudioParam::create(context, ParamTypePannerOrientationY, 0.0)),
-      m_orientationZ(
-          AudioParam::create(context, ParamTypePannerOrientationZ, 0.0)) {
-  setHandler(PannerHandler::create(
-      *this, context.sampleRate(), m_positionX->handler(),
-      m_positionY->handler(), m_positionZ->handler(), m_orientationX->handler(),
-      m_orientationY->handler(), m_orientationZ->handler()));
+      position_x_(AudioParam::Create(context, kParamTypePannerPositionX, 0.0)),
+      position_y_(AudioParam::Create(context, kParamTypePannerPositionY, 0.0)),
+      position_z_(AudioParam::Create(context, kParamTypePannerPositionZ, 0.0)),
+      orientation_x_(
+          AudioParam::Create(context, kParamTypePannerOrientationX, 1.0)),
+      orientation_y_(
+          AudioParam::Create(context, kParamTypePannerOrientationY, 0.0)),
+      orientation_z_(
+          AudioParam::Create(context, kParamTypePannerOrientationZ, 0.0)) {
+  SetHandler(PannerHandler::Create(
+      *this, context.sampleRate(), position_x_->Handler(),
+      position_y_->Handler(), position_z_->Handler(), orientation_x_->Handler(),
+      orientation_y_->Handler(), orientation_z_->Handler()));
 }
 
-PannerNode* PannerNode::create(BaseAudioContext& context,
-                               ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+PannerNode* PannerNode::Create(BaseAudioContext& context,
+                               ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
   return new PannerNode(context);
 }
 
-PannerNode* PannerNode::create(BaseAudioContext* context,
+PannerNode* PannerNode::Create(BaseAudioContext* context,
                                const PannerOptions& options,
-                               ExceptionState& exceptionState) {
-  PannerNode* node = create(*context, exceptionState);
+                               ExceptionState& exception_state) {
+  PannerNode* node = Create(*context, exception_state);
 
   if (!node)
     return nullptr;
 
-  node->handleChannelOptions(options, exceptionState);
+  node->HandleChannelOptions(options, exception_state);
 
   if (options.hasPanningModel())
     node->setPanningModel(options.panningModel());
@@ -692,9 +699,9 @@ PannerNode* PannerNode::create(BaseAudioContext* context,
     node->orientationZ()->setValue(options.orientationZ());
 
   if (options.hasRefDistance())
-    node->setRefDistance(options.refDistance(), exceptionState);
+    node->setRefDistance(options.refDistance(), exception_state);
   if (options.hasMaxDistance())
-    node->setMaxDistance(options.maxDistance(), exceptionState);
+    node->setMaxDistance(options.maxDistance(), exception_state);
   if (options.hasRolloffFactor())
     node->setRolloffFactor(options.rolloffFactor());
   if (options.hasConeInnerAngle())
@@ -707,108 +714,108 @@ PannerNode* PannerNode::create(BaseAudioContext* context,
   return node;
 }
 
-PannerHandler& PannerNode::pannerHandler() const {
-  return static_cast<PannerHandler&>(handler());
+PannerHandler& PannerNode::GetPannerHandler() const {
+  return static_cast<PannerHandler&>(Handler());
 }
 
 String PannerNode::panningModel() const {
-  return pannerHandler().panningModel();
+  return GetPannerHandler().PanningModel();
 }
 
 void PannerNode::setPanningModel(const String& model) {
-  pannerHandler().setPanningModel(model);
+  GetPannerHandler().SetPanningModel(model);
 }
 
 void PannerNode::setPosition(float x, float y, float z) {
-  pannerHandler().setPosition(x, y, z);
+  GetPannerHandler().SetPosition(x, y, z);
 }
 
 void PannerNode::setOrientation(float x, float y, float z) {
-  pannerHandler().setOrientation(x, y, z);
+  GetPannerHandler().SetOrientation(x, y, z);
 }
 
 String PannerNode::distanceModel() const {
-  return pannerHandler().distanceModel();
+  return GetPannerHandler().DistanceModel();
 }
 
 void PannerNode::setDistanceModel(const String& model) {
-  pannerHandler().setDistanceModel(model);
+  GetPannerHandler().SetDistanceModel(model);
 }
 
 double PannerNode::refDistance() const {
-  return pannerHandler().refDistance();
+  return GetPannerHandler().RefDistance();
 }
 
 void PannerNode::setRefDistance(double distance,
-                                ExceptionState& exceptionState) {
+                                ExceptionState& exception_state) {
   if (distance <= 0) {
-    exceptionState.throwDOMException(
-        V8RangeError, ExceptionMessages::indexExceedsMinimumBound<double>(
-                          "refDistance", distance, 0));
+    exception_state.ThrowDOMException(
+        kV8RangeError, ExceptionMessages::IndexExceedsMinimumBound<double>(
+                           "refDistance", distance, 0));
     return;
   }
 
-  pannerHandler().setRefDistance(distance);
+  GetPannerHandler().SetRefDistance(distance);
 }
 
 double PannerNode::maxDistance() const {
-  return pannerHandler().maxDistance();
+  return GetPannerHandler().MaxDistance();
 }
 
 void PannerNode::setMaxDistance(double distance,
-                                ExceptionState& exceptionState) {
+                                ExceptionState& exception_state) {
   if (distance <= 0) {
-    exceptionState.throwDOMException(
-        V8RangeError, ExceptionMessages::indexExceedsMinimumBound<double>(
-                          "maxDistance", distance, 0));
+    exception_state.ThrowDOMException(
+        kV8RangeError, ExceptionMessages::IndexExceedsMinimumBound<double>(
+                           "maxDistance", distance, 0));
     return;
   }
 
-  pannerHandler().setMaxDistance(distance);
+  GetPannerHandler().SetMaxDistance(distance);
 }
 
 double PannerNode::rolloffFactor() const {
-  return pannerHandler().rolloffFactor();
+  return GetPannerHandler().RolloffFactor();
 }
 
 void PannerNode::setRolloffFactor(double factor) {
-  pannerHandler().setRolloffFactor(factor);
+  GetPannerHandler().SetRolloffFactor(factor);
 }
 
 double PannerNode::coneInnerAngle() const {
-  return pannerHandler().coneInnerAngle();
+  return GetPannerHandler().ConeInnerAngle();
 }
 
 void PannerNode::setConeInnerAngle(double angle) {
-  pannerHandler().setConeInnerAngle(angle);
+  GetPannerHandler().SetConeInnerAngle(angle);
 }
 
 double PannerNode::coneOuterAngle() const {
-  return pannerHandler().coneOuterAngle();
+  return GetPannerHandler().ConeOuterAngle();
 }
 
 void PannerNode::setConeOuterAngle(double angle) {
-  pannerHandler().setConeOuterAngle(angle);
+  GetPannerHandler().SetConeOuterAngle(angle);
 }
 
 double PannerNode::coneOuterGain() const {
-  return pannerHandler().coneOuterGain();
+  return GetPannerHandler().ConeOuterGain();
 }
 
 void PannerNode::setConeOuterGain(double gain) {
-  pannerHandler().setConeOuterGain(gain);
+  GetPannerHandler().SetConeOuterGain(gain);
 }
 
 DEFINE_TRACE(PannerNode) {
-  visitor->trace(m_positionX);
-  visitor->trace(m_positionY);
-  visitor->trace(m_positionZ);
+  visitor->Trace(position_x_);
+  visitor->Trace(position_y_);
+  visitor->Trace(position_z_);
 
-  visitor->trace(m_orientationX);
-  visitor->trace(m_orientationY);
-  visitor->trace(m_orientationZ);
+  visitor->Trace(orientation_x_);
+  visitor->Trace(orientation_y_);
+  visitor->Trace(orientation_z_);
 
-  AudioNode::trace(visitor);
+  AudioNode::Trace(visitor);
 }
 
 }  // namespace blink

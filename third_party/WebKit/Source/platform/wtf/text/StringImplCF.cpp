@@ -32,69 +32,69 @@ namespace WTF {
 
 namespace StringWrapperCFAllocator {
 
-static StringImpl* currentString;
+static StringImpl* g_current_string;
 
-static const void* retain(const void* info) {
+static const void* Retain(const void* info) {
   return info;
 }
 
-static void release(const void*) {
+static void Release(const void*) {
   NOTREACHED();
 }
 
-static CFStringRef copyDescription(const void*) {
+static CFStringRef CopyDescription(const void*) {
   return CFSTR("WTF::String-based allocator");
 }
 
-static void* allocate(CFIndex size, CFOptionFlags, void*) {
-  StringImpl* underlyingString = 0;
-  if (isMainThread()) {
-    underlyingString = currentString;
-    if (underlyingString) {
-      currentString = 0;
-      underlyingString
-          ->ref();  // Balanced by call to deref in deallocate below.
+static void* Allocate(CFIndex size, CFOptionFlags, void*) {
+  StringImpl* underlying_string = 0;
+  if (IsMainThread()) {
+    underlying_string = g_current_string;
+    if (underlying_string) {
+      g_current_string = 0;
+      underlying_string
+          ->Ref();  // Balanced by call to deref in deallocate below.
     }
   }
-  StringImpl** header = static_cast<StringImpl**>(WTF::Partitions::fastMalloc(
+  StringImpl** header = static_cast<StringImpl**>(WTF::Partitions::FastMalloc(
       sizeof(StringImpl*) + size, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl*)));
-  *header = underlyingString;
+  *header = underlying_string;
   return header + 1;
 }
 
-static void* reallocate(void* pointer, CFIndex newSize, CFOptionFlags, void*) {
-  size_t newAllocationSize = sizeof(StringImpl*) + newSize;
+static void* Reallocate(void* pointer, CFIndex new_size, CFOptionFlags, void*) {
+  size_t new_allocation_size = sizeof(StringImpl*) + new_size;
   StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
   ASSERT(!*header);
-  header = static_cast<StringImpl**>(WTF::Partitions::fastRealloc(
-      header, newAllocationSize, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl*)));
+  header = static_cast<StringImpl**>(WTF::Partitions::FastRealloc(
+      header, new_allocation_size, WTF_HEAP_PROFILER_TYPE_NAME(StringImpl*)));
   return header + 1;
 }
 
-static void deallocateOnMainThread(void* headerPointer) {
-  StringImpl** header = static_cast<StringImpl**>(headerPointer);
-  StringImpl* underlyingString = *header;
-  DCHECK(underlyingString);
-  underlyingString->deref();  // Balanced by call to ref in allocate above.
-  WTF::Partitions::fastFree(header);
+static void DeallocateOnMainThread(void* header_pointer) {
+  StringImpl** header = static_cast<StringImpl**>(header_pointer);
+  StringImpl* underlying_string = *header;
+  DCHECK(underlying_string);
+  underlying_string->Deref();  // Balanced by call to ref in allocate above.
+  WTF::Partitions::FastFree(header);
 }
 
-static void deallocate(void* pointer, void*) {
+static void Deallocate(void* pointer, void*) {
   StringImpl** header = static_cast<StringImpl**>(pointer) - 1;
-  StringImpl* underlyingString = *header;
-  if (!underlyingString) {
-    WTF::Partitions::fastFree(header);
+  StringImpl* underlying_string = *header;
+  if (!underlying_string) {
+    WTF::Partitions::FastFree(header);
   } else {
-    if (!isMainThread()) {
-      internal::callOnMainThread(&deallocateOnMainThread, header);
+    if (!IsMainThread()) {
+      internal::CallOnMainThread(&DeallocateOnMainThread, header);
     } else {
-      underlyingString->deref();  // Balanced by call to ref in allocate above.
-      WTF::Partitions::fastFree(header);
+      underlying_string->Deref();  // Balanced by call to ref in allocate above.
+      WTF::Partitions::FastFree(header);
     }
   }
 }
 
-static CFIndex preferredSize(CFIndex size, CFOptionFlags, void*) {
+static CFIndex PreferredSize(CFIndex size, CFOptionFlags, void*) {
   // FIXME: If FastMalloc provided a "good size" callback, we'd want to use it
   // here.  Note that this optimization would help performance for strings
   // created with the allocator that are mutable, and those typically are only
@@ -103,52 +103,52 @@ static CFIndex preferredSize(CFIndex size, CFOptionFlags, void*) {
   return size;
 }
 
-static CFAllocatorRef create() {
+static CFAllocatorRef Create() {
   CFAllocatorContext context = {
-      0,        0,          retain,     release,      copyDescription,
-      allocate, reallocate, deallocate, preferredSize};
+      0,        0,          Retain,     Release,      CopyDescription,
+      Allocate, Reallocate, Deallocate, PreferredSize};
   return CFAllocatorCreate(0, &context);
 }
 
-static CFAllocatorRef allocator() {
-  static CFAllocatorRef allocator = create();
+static CFAllocatorRef Allocator() {
+  static CFAllocatorRef allocator = Create();
   return allocator;
 }
 
 }  // namespace StringWrapperCFAllocator
 
-RetainPtr<CFStringRef> StringImpl::createCFString() {
+RetainPtr<CFStringRef> StringImpl::CreateCFString() {
   // Since garbage collection isn't compatible with custom allocators, we
   // can't use the NoCopy variants of CFStringCreate*() when GC is enabled.
-  if (!m_length || !isMainThread()) {
-    if (is8Bit())
-      return adoptCF(CFStringCreateWithBytes(
-          0, reinterpret_cast<const UInt8*>(characters8()), m_length,
+  if (!length_ || !IsMainThread()) {
+    if (Is8Bit())
+      return AdoptCF(CFStringCreateWithBytes(
+          0, reinterpret_cast<const UInt8*>(Characters8()), length_,
           kCFStringEncodingISOLatin1, false));
-    return adoptCF(CFStringCreateWithCharacters(
-        0, reinterpret_cast<const UniChar*>(characters16()), m_length));
+    return AdoptCF(CFStringCreateWithCharacters(
+        0, reinterpret_cast<const UniChar*>(Characters16()), length_));
   }
-  CFAllocatorRef allocator = StringWrapperCFAllocator::allocator();
+  CFAllocatorRef allocator = StringWrapperCFAllocator::Allocator();
 
   // Put pointer to the StringImpl in a global so the allocator can store it
   // with the CFString.
-  DCHECK(!StringWrapperCFAllocator::currentString);
-  StringWrapperCFAllocator::currentString = this;
+  DCHECK(!StringWrapperCFAllocator::g_current_string);
+  StringWrapperCFAllocator::g_current_string = this;
 
   CFStringRef string;
-  if (is8Bit())
+  if (Is8Bit())
     string = CFStringCreateWithBytesNoCopy(
-        allocator, reinterpret_cast<const UInt8*>(characters8()), m_length,
+        allocator, reinterpret_cast<const UInt8*>(Characters8()), length_,
         kCFStringEncodingISOLatin1, false, kCFAllocatorNull);
   else
     string = CFStringCreateWithCharactersNoCopy(
-        allocator, reinterpret_cast<const UniChar*>(characters16()), m_length,
+        allocator, reinterpret_cast<const UniChar*>(Characters16()), length_,
         kCFAllocatorNull);
   // CoreFoundation might not have to allocate anything, we clear currentString
   // in case we did not execute allocate().
-  StringWrapperCFAllocator::currentString = 0;
+  StringWrapperCFAllocator::g_current_string = 0;
 
-  return adoptCF(string);
+  return AdoptCF(string);
 }
 
 // On StringImpl creation we could check if the allocator is the

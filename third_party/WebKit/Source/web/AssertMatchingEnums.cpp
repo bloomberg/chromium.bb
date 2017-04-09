@@ -143,738 +143,754 @@ namespace blink {
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum: " #a)
 
-STATIC_ASSERT_ENUM(WebAXEventActiveDescendantChanged,
-                   AXObjectCache::AXActiveDescendantChanged);
-STATIC_ASSERT_ENUM(WebAXEventAlert, AXObjectCache::AXAlert);
-STATIC_ASSERT_ENUM(WebAXEventAriaAttributeChanged,
-                   AXObjectCache::AXAriaAttributeChanged);
-STATIC_ASSERT_ENUM(WebAXEventAutocorrectionOccured,
-                   AXObjectCache::AXAutocorrectionOccured);
-STATIC_ASSERT_ENUM(WebAXEventBlur, AXObjectCache::AXBlur);
-STATIC_ASSERT_ENUM(WebAXEventCheckedStateChanged,
-                   AXObjectCache::AXCheckedStateChanged);
-STATIC_ASSERT_ENUM(WebAXEventChildrenChanged, AXObjectCache::AXChildrenChanged);
-STATIC_ASSERT_ENUM(WebAXEventClicked, AXObjectCache::AXClicked);
-STATIC_ASSERT_ENUM(WebAXEventDocumentSelectionChanged,
-                   AXObjectCache::AXDocumentSelectionChanged);
-STATIC_ASSERT_ENUM(WebAXEventExpandedChanged, AXObjectCache::AXExpandedChanged);
-STATIC_ASSERT_ENUM(WebAXEventFocus, AXObjectCache::AXFocusedUIElementChanged);
-STATIC_ASSERT_ENUM(WebAXEventHide, AXObjectCache::AXHide);
-STATIC_ASSERT_ENUM(WebAXEventHover, AXObjectCache::AXHover);
-STATIC_ASSERT_ENUM(WebAXEventInvalidStatusChanged,
-                   AXObjectCache::AXInvalidStatusChanged);
-STATIC_ASSERT_ENUM(WebAXEventLayoutComplete, AXObjectCache::AXLayoutComplete);
-STATIC_ASSERT_ENUM(WebAXEventLiveRegionChanged,
-                   AXObjectCache::AXLiveRegionChanged);
-STATIC_ASSERT_ENUM(WebAXEventLoadComplete, AXObjectCache::AXLoadComplete);
-STATIC_ASSERT_ENUM(WebAXEventLocationChanged, AXObjectCache::AXLocationChanged);
-STATIC_ASSERT_ENUM(WebAXEventMenuListItemSelected,
-                   AXObjectCache::AXMenuListItemSelected);
-STATIC_ASSERT_ENUM(WebAXEventMenuListItemUnselected,
-                   AXObjectCache::AXMenuListItemUnselected);
-STATIC_ASSERT_ENUM(WebAXEventMenuListValueChanged,
-                   AXObjectCache::AXMenuListValueChanged);
-STATIC_ASSERT_ENUM(WebAXEventRowCollapsed, AXObjectCache::AXRowCollapsed);
-STATIC_ASSERT_ENUM(WebAXEventRowCountChanged, AXObjectCache::AXRowCountChanged);
-STATIC_ASSERT_ENUM(WebAXEventRowExpanded, AXObjectCache::AXRowExpanded);
-STATIC_ASSERT_ENUM(WebAXEventScrollPositionChanged,
-                   AXObjectCache::AXScrollPositionChanged);
-STATIC_ASSERT_ENUM(WebAXEventScrolledToAnchor,
-                   AXObjectCache::AXScrolledToAnchor);
-STATIC_ASSERT_ENUM(WebAXEventSelectedChildrenChanged,
-                   AXObjectCache::AXSelectedChildrenChanged);
-STATIC_ASSERT_ENUM(WebAXEventSelectedTextChanged,
-                   AXObjectCache::AXSelectedTextChanged);
-STATIC_ASSERT_ENUM(WebAXEventShow, AXObjectCache::AXShow);
-STATIC_ASSERT_ENUM(WebAXEventTextChanged, AXObjectCache::AXTextChanged);
-STATIC_ASSERT_ENUM(WebAXEventTextInserted, AXObjectCache::AXTextInserted);
-STATIC_ASSERT_ENUM(WebAXEventTextRemoved, AXObjectCache::AXTextRemoved);
-STATIC_ASSERT_ENUM(WebAXEventValueChanged, AXObjectCache::AXValueChanged);
+STATIC_ASSERT_ENUM(kWebAXEventActiveDescendantChanged,
+                   AXObjectCache::kAXActiveDescendantChanged);
+STATIC_ASSERT_ENUM(kWebAXEventAlert, AXObjectCache::kAXAlert);
+STATIC_ASSERT_ENUM(kWebAXEventAriaAttributeChanged,
+                   AXObjectCache::kAXAriaAttributeChanged);
+STATIC_ASSERT_ENUM(kWebAXEventAutocorrectionOccured,
+                   AXObjectCache::kAXAutocorrectionOccured);
+STATIC_ASSERT_ENUM(kWebAXEventBlur, AXObjectCache::kAXBlur);
+STATIC_ASSERT_ENUM(kWebAXEventCheckedStateChanged,
+                   AXObjectCache::kAXCheckedStateChanged);
+STATIC_ASSERT_ENUM(kWebAXEventChildrenChanged,
+                   AXObjectCache::kAXChildrenChanged);
+STATIC_ASSERT_ENUM(kWebAXEventClicked, AXObjectCache::kAXClicked);
+STATIC_ASSERT_ENUM(kWebAXEventDocumentSelectionChanged,
+                   AXObjectCache::kAXDocumentSelectionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventExpandedChanged,
+                   AXObjectCache::kAXExpandedChanged);
+STATIC_ASSERT_ENUM(kWebAXEventFocus, AXObjectCache::kAXFocusedUIElementChanged);
+STATIC_ASSERT_ENUM(kWebAXEventHide, AXObjectCache::kAXHide);
+STATIC_ASSERT_ENUM(kWebAXEventHover, AXObjectCache::kAXHover);
+STATIC_ASSERT_ENUM(kWebAXEventInvalidStatusChanged,
+                   AXObjectCache::kAXInvalidStatusChanged);
+STATIC_ASSERT_ENUM(kWebAXEventLayoutComplete, AXObjectCache::kAXLayoutComplete);
+STATIC_ASSERT_ENUM(kWebAXEventLiveRegionChanged,
+                   AXObjectCache::kAXLiveRegionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventLoadComplete, AXObjectCache::kAXLoadComplete);
+STATIC_ASSERT_ENUM(kWebAXEventLocationChanged,
+                   AXObjectCache::kAXLocationChanged);
+STATIC_ASSERT_ENUM(kWebAXEventMenuListItemSelected,
+                   AXObjectCache::kAXMenuListItemSelected);
+STATIC_ASSERT_ENUM(kWebAXEventMenuListItemUnselected,
+                   AXObjectCache::kAXMenuListItemUnselected);
+STATIC_ASSERT_ENUM(kWebAXEventMenuListValueChanged,
+                   AXObjectCache::kAXMenuListValueChanged);
+STATIC_ASSERT_ENUM(kWebAXEventRowCollapsed, AXObjectCache::kAXRowCollapsed);
+STATIC_ASSERT_ENUM(kWebAXEventRowCountChanged,
+                   AXObjectCache::kAXRowCountChanged);
+STATIC_ASSERT_ENUM(kWebAXEventRowExpanded, AXObjectCache::kAXRowExpanded);
+STATIC_ASSERT_ENUM(kWebAXEventScrollPositionChanged,
+                   AXObjectCache::kAXScrollPositionChanged);
+STATIC_ASSERT_ENUM(kWebAXEventScrolledToAnchor,
+                   AXObjectCache::kAXScrolledToAnchor);
+STATIC_ASSERT_ENUM(kWebAXEventSelectedChildrenChanged,
+                   AXObjectCache::kAXSelectedChildrenChanged);
+STATIC_ASSERT_ENUM(kWebAXEventSelectedTextChanged,
+                   AXObjectCache::kAXSelectedTextChanged);
+STATIC_ASSERT_ENUM(kWebAXEventShow, AXObjectCache::kAXShow);
+STATIC_ASSERT_ENUM(kWebAXEventTextChanged, AXObjectCache::kAXTextChanged);
+STATIC_ASSERT_ENUM(kWebAXEventTextInserted, AXObjectCache::kAXTextInserted);
+STATIC_ASSERT_ENUM(kWebAXEventTextRemoved, AXObjectCache::kAXTextRemoved);
+STATIC_ASSERT_ENUM(kWebAXEventValueChanged, AXObjectCache::kAXValueChanged);
 
-STATIC_ASSERT_ENUM(WebAXRoleAbbr, AbbrRole);
-STATIC_ASSERT_ENUM(WebAXRoleAlertDialog, AlertDialogRole);
-STATIC_ASSERT_ENUM(WebAXRoleAlert, AlertRole);
-STATIC_ASSERT_ENUM(WebAXRoleAnchor, AnchorRole);
-STATIC_ASSERT_ENUM(WebAXRoleAnnotation, AnnotationRole);
-STATIC_ASSERT_ENUM(WebAXRoleApplication, ApplicationRole);
-STATIC_ASSERT_ENUM(WebAXRoleArticle, ArticleRole);
-STATIC_ASSERT_ENUM(WebAXRoleAudio, AudioRole);
-STATIC_ASSERT_ENUM(WebAXRoleBanner, BannerRole);
-STATIC_ASSERT_ENUM(WebAXRoleBlockquote, BlockquoteRole);
-STATIC_ASSERT_ENUM(WebAXRoleBusyIndicator, BusyIndicatorRole);
-STATIC_ASSERT_ENUM(WebAXRoleButton, ButtonRole);
-STATIC_ASSERT_ENUM(WebAXRoleCanvas, CanvasRole);
-STATIC_ASSERT_ENUM(WebAXRoleCaption, CaptionRole);
-STATIC_ASSERT_ENUM(WebAXRoleCell, CellRole);
-STATIC_ASSERT_ENUM(WebAXRoleCheckBox, CheckBoxRole);
-STATIC_ASSERT_ENUM(WebAXRoleColorWell, ColorWellRole);
-STATIC_ASSERT_ENUM(WebAXRoleColumnHeader, ColumnHeaderRole);
-STATIC_ASSERT_ENUM(WebAXRoleColumn, ColumnRole);
-STATIC_ASSERT_ENUM(WebAXRoleComboBox, ComboBoxRole);
-STATIC_ASSERT_ENUM(WebAXRoleComplementary, ComplementaryRole);
-STATIC_ASSERT_ENUM(WebAXRoleContentInfo, ContentInfoRole);
-STATIC_ASSERT_ENUM(WebAXRoleDate, DateRole);
-STATIC_ASSERT_ENUM(WebAXRoleDateTime, DateTimeRole);
-STATIC_ASSERT_ENUM(WebAXRoleDefinition, DefinitionRole);
-STATIC_ASSERT_ENUM(WebAXRoleDescriptionListDetail, DescriptionListDetailRole);
-STATIC_ASSERT_ENUM(WebAXRoleDescriptionList, DescriptionListRole);
-STATIC_ASSERT_ENUM(WebAXRoleDescriptionListTerm, DescriptionListTermRole);
-STATIC_ASSERT_ENUM(WebAXRoleDetails, DetailsRole);
-STATIC_ASSERT_ENUM(WebAXRoleDialog, DialogRole);
-STATIC_ASSERT_ENUM(WebAXRoleDirectory, DirectoryRole);
-STATIC_ASSERT_ENUM(WebAXRoleDisclosureTriangle, DisclosureTriangleRole);
-STATIC_ASSERT_ENUM(WebAXRoleDiv, DivRole);
-STATIC_ASSERT_ENUM(WebAXRoleDocument, DocumentRole);
-STATIC_ASSERT_ENUM(WebAXRoleEmbeddedObject, EmbeddedObjectRole);
-STATIC_ASSERT_ENUM(WebAXRoleFeed, FeedRole);
-STATIC_ASSERT_ENUM(WebAXRoleFigcaption, FigcaptionRole);
-STATIC_ASSERT_ENUM(WebAXRoleFigure, FigureRole);
-STATIC_ASSERT_ENUM(WebAXRoleFooter, FooterRole);
-STATIC_ASSERT_ENUM(WebAXRoleForm, FormRole);
-STATIC_ASSERT_ENUM(WebAXRoleGrid, GridRole);
-STATIC_ASSERT_ENUM(WebAXRoleGroup, GroupRole);
-STATIC_ASSERT_ENUM(WebAXRoleHeading, HeadingRole);
-STATIC_ASSERT_ENUM(WebAXRoleIframe, IframeRole);
-STATIC_ASSERT_ENUM(WebAXRoleIframePresentational, IframePresentationalRole);
-STATIC_ASSERT_ENUM(WebAXRoleIgnored, IgnoredRole);
-STATIC_ASSERT_ENUM(WebAXRoleImageMapLink, ImageMapLinkRole);
-STATIC_ASSERT_ENUM(WebAXRoleImageMap, ImageMapRole);
-STATIC_ASSERT_ENUM(WebAXRoleImage, ImageRole);
-STATIC_ASSERT_ENUM(WebAXRoleInlineTextBox, InlineTextBoxRole);
-STATIC_ASSERT_ENUM(WebAXRoleInputTime, InputTimeRole);
-STATIC_ASSERT_ENUM(WebAXRoleLabel, LabelRole);
-STATIC_ASSERT_ENUM(WebAXRoleLegend, LegendRole);
-STATIC_ASSERT_ENUM(WebAXRoleLineBreak, LineBreakRole);
-STATIC_ASSERT_ENUM(WebAXRoleLink, LinkRole);
-STATIC_ASSERT_ENUM(WebAXRoleListBoxOption, ListBoxOptionRole);
-STATIC_ASSERT_ENUM(WebAXRoleListBox, ListBoxRole);
-STATIC_ASSERT_ENUM(WebAXRoleListItem, ListItemRole);
-STATIC_ASSERT_ENUM(WebAXRoleListMarker, ListMarkerRole);
-STATIC_ASSERT_ENUM(WebAXRoleList, ListRole);
-STATIC_ASSERT_ENUM(WebAXRoleLog, LogRole);
-STATIC_ASSERT_ENUM(WebAXRoleMain, MainRole);
-STATIC_ASSERT_ENUM(WebAXRoleMark, MarkRole);
-STATIC_ASSERT_ENUM(WebAXRoleMarquee, MarqueeRole);
-STATIC_ASSERT_ENUM(WebAXRoleMath, MathRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuBar, MenuBarRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuButton, MenuButtonRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuItem, MenuItemRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuItemCheckBox, MenuItemCheckBoxRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuItemRadio, MenuItemRadioRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuListOption, MenuListOptionRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenuListPopup, MenuListPopupRole);
-STATIC_ASSERT_ENUM(WebAXRoleMenu, MenuRole);
-STATIC_ASSERT_ENUM(WebAXRoleMeter, MeterRole);
-STATIC_ASSERT_ENUM(WebAXRoleNavigation, NavigationRole);
-STATIC_ASSERT_ENUM(WebAXRoleNone, NoneRole);
-STATIC_ASSERT_ENUM(WebAXRoleNote, NoteRole);
-STATIC_ASSERT_ENUM(WebAXRoleOutline, OutlineRole);
-STATIC_ASSERT_ENUM(WebAXRoleParagraph, ParagraphRole);
-STATIC_ASSERT_ENUM(WebAXRolePopUpButton, PopUpButtonRole);
-STATIC_ASSERT_ENUM(WebAXRolePre, PreRole);
-STATIC_ASSERT_ENUM(WebAXRolePresentational, PresentationalRole);
-STATIC_ASSERT_ENUM(WebAXRoleProgressIndicator, ProgressIndicatorRole);
-STATIC_ASSERT_ENUM(WebAXRoleRadioButton, RadioButtonRole);
-STATIC_ASSERT_ENUM(WebAXRoleRadioGroup, RadioGroupRole);
-STATIC_ASSERT_ENUM(WebAXRoleRegion, RegionRole);
-STATIC_ASSERT_ENUM(WebAXRoleRootWebArea, RootWebAreaRole);
-STATIC_ASSERT_ENUM(WebAXRoleRowHeader, RowHeaderRole);
-STATIC_ASSERT_ENUM(WebAXRoleRow, RowRole);
-STATIC_ASSERT_ENUM(WebAXRoleRuby, RubyRole);
-STATIC_ASSERT_ENUM(WebAXRoleRuler, RulerRole);
-STATIC_ASSERT_ENUM(WebAXRoleSVGRoot, SVGRootRole);
-STATIC_ASSERT_ENUM(WebAXRoleScrollArea, ScrollAreaRole);
-STATIC_ASSERT_ENUM(WebAXRoleScrollBar, ScrollBarRole);
-STATIC_ASSERT_ENUM(WebAXRoleSeamlessWebArea, SeamlessWebAreaRole);
-STATIC_ASSERT_ENUM(WebAXRoleSearch, SearchRole);
-STATIC_ASSERT_ENUM(WebAXRoleSearchBox, SearchBoxRole);
-STATIC_ASSERT_ENUM(WebAXRoleSlider, SliderRole);
-STATIC_ASSERT_ENUM(WebAXRoleSliderThumb, SliderThumbRole);
-STATIC_ASSERT_ENUM(WebAXRoleSpinButtonPart, SpinButtonPartRole);
-STATIC_ASSERT_ENUM(WebAXRoleSpinButton, SpinButtonRole);
-STATIC_ASSERT_ENUM(WebAXRoleSplitter, SplitterRole);
-STATIC_ASSERT_ENUM(WebAXRoleStaticText, StaticTextRole);
-STATIC_ASSERT_ENUM(WebAXRoleStatus, StatusRole);
-STATIC_ASSERT_ENUM(WebAXRoleSwitch, SwitchRole);
-STATIC_ASSERT_ENUM(WebAXRoleTabGroup, TabGroupRole);
-STATIC_ASSERT_ENUM(WebAXRoleTabList, TabListRole);
-STATIC_ASSERT_ENUM(WebAXRoleTabPanel, TabPanelRole);
-STATIC_ASSERT_ENUM(WebAXRoleTab, TabRole);
-STATIC_ASSERT_ENUM(WebAXRoleTableHeaderContainer, TableHeaderContainerRole);
-STATIC_ASSERT_ENUM(WebAXRoleTable, TableRole);
-STATIC_ASSERT_ENUM(WebAXRoleTerm, TermRole);
-STATIC_ASSERT_ENUM(WebAXRoleTextField, TextFieldRole);
-STATIC_ASSERT_ENUM(WebAXRoleTime, TimeRole);
-STATIC_ASSERT_ENUM(WebAXRoleTimer, TimerRole);
-STATIC_ASSERT_ENUM(WebAXRoleToggleButton, ToggleButtonRole);
-STATIC_ASSERT_ENUM(WebAXRoleToolbar, ToolbarRole);
-STATIC_ASSERT_ENUM(WebAXRoleTreeGrid, TreeGridRole);
-STATIC_ASSERT_ENUM(WebAXRoleTreeItem, TreeItemRole);
-STATIC_ASSERT_ENUM(WebAXRoleTree, TreeRole);
-STATIC_ASSERT_ENUM(WebAXRoleUnknown, UnknownRole);
-STATIC_ASSERT_ENUM(WebAXRoleUserInterfaceTooltip, UserInterfaceTooltipRole);
-STATIC_ASSERT_ENUM(WebAXRoleVideo, VideoRole);
-STATIC_ASSERT_ENUM(WebAXRoleWebArea, WebAreaRole);
-STATIC_ASSERT_ENUM(WebAXRoleWindow, WindowRole);
+STATIC_ASSERT_ENUM(kWebAXRoleAbbr, kAbbrRole);
+STATIC_ASSERT_ENUM(kWebAXRoleAlertDialog, kAlertDialogRole);
+STATIC_ASSERT_ENUM(kWebAXRoleAlert, kAlertRole);
+STATIC_ASSERT_ENUM(kWebAXRoleAnchor, kAnchorRole);
+STATIC_ASSERT_ENUM(kWebAXRoleAnnotation, kAnnotationRole);
+STATIC_ASSERT_ENUM(kWebAXRoleApplication, kApplicationRole);
+STATIC_ASSERT_ENUM(kWebAXRoleArticle, kArticleRole);
+STATIC_ASSERT_ENUM(kWebAXRoleAudio, kAudioRole);
+STATIC_ASSERT_ENUM(kWebAXRoleBanner, kBannerRole);
+STATIC_ASSERT_ENUM(kWebAXRoleBlockquote, kBlockquoteRole);
+STATIC_ASSERT_ENUM(kWebAXRoleBusyIndicator, kBusyIndicatorRole);
+STATIC_ASSERT_ENUM(kWebAXRoleButton, kButtonRole);
+STATIC_ASSERT_ENUM(kWebAXRoleCanvas, kCanvasRole);
+STATIC_ASSERT_ENUM(kWebAXRoleCaption, kCaptionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleCell, kCellRole);
+STATIC_ASSERT_ENUM(kWebAXRoleCheckBox, kCheckBoxRole);
+STATIC_ASSERT_ENUM(kWebAXRoleColorWell, kColorWellRole);
+STATIC_ASSERT_ENUM(kWebAXRoleColumnHeader, kColumnHeaderRole);
+STATIC_ASSERT_ENUM(kWebAXRoleColumn, kColumnRole);
+STATIC_ASSERT_ENUM(kWebAXRoleComboBox, kComboBoxRole);
+STATIC_ASSERT_ENUM(kWebAXRoleComplementary, kComplementaryRole);
+STATIC_ASSERT_ENUM(kWebAXRoleContentInfo, kContentInfoRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDate, kDateRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDateTime, kDateTimeRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDefinition, kDefinitionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDescriptionListDetail, kDescriptionListDetailRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDescriptionList, kDescriptionListRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDescriptionListTerm, kDescriptionListTermRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDetails, kDetailsRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDialog, kDialogRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDirectory, kDirectoryRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDisclosureTriangle, kDisclosureTriangleRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDiv, kDivRole);
+STATIC_ASSERT_ENUM(kWebAXRoleDocument, kDocumentRole);
+STATIC_ASSERT_ENUM(kWebAXRoleEmbeddedObject, kEmbeddedObjectRole);
+STATIC_ASSERT_ENUM(kWebAXRoleFeed, kFeedRole);
+STATIC_ASSERT_ENUM(kWebAXRoleFigcaption, kFigcaptionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleFigure, kFigureRole);
+STATIC_ASSERT_ENUM(kWebAXRoleFooter, kFooterRole);
+STATIC_ASSERT_ENUM(kWebAXRoleForm, kFormRole);
+STATIC_ASSERT_ENUM(kWebAXRoleGrid, kGridRole);
+STATIC_ASSERT_ENUM(kWebAXRoleGroup, kGroupRole);
+STATIC_ASSERT_ENUM(kWebAXRoleHeading, kHeadingRole);
+STATIC_ASSERT_ENUM(kWebAXRoleIframe, kIframeRole);
+STATIC_ASSERT_ENUM(kWebAXRoleIframePresentational, kIframePresentationalRole);
+STATIC_ASSERT_ENUM(kWebAXRoleIgnored, kIgnoredRole);
+STATIC_ASSERT_ENUM(kWebAXRoleImageMapLink, kImageMapLinkRole);
+STATIC_ASSERT_ENUM(kWebAXRoleImageMap, kImageMapRole);
+STATIC_ASSERT_ENUM(kWebAXRoleImage, kImageRole);
+STATIC_ASSERT_ENUM(kWebAXRoleInlineTextBox, kInlineTextBoxRole);
+STATIC_ASSERT_ENUM(kWebAXRoleInputTime, kInputTimeRole);
+STATIC_ASSERT_ENUM(kWebAXRoleLabel, kLabelRole);
+STATIC_ASSERT_ENUM(kWebAXRoleLegend, kLegendRole);
+STATIC_ASSERT_ENUM(kWebAXRoleLineBreak, kLineBreakRole);
+STATIC_ASSERT_ENUM(kWebAXRoleLink, kLinkRole);
+STATIC_ASSERT_ENUM(kWebAXRoleListBoxOption, kListBoxOptionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleListBox, kListBoxRole);
+STATIC_ASSERT_ENUM(kWebAXRoleListItem, kListItemRole);
+STATIC_ASSERT_ENUM(kWebAXRoleListMarker, kListMarkerRole);
+STATIC_ASSERT_ENUM(kWebAXRoleList, kListRole);
+STATIC_ASSERT_ENUM(kWebAXRoleLog, kLogRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMain, kMainRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMark, kMarkRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMarquee, kMarqueeRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMath, kMathRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuBar, kMenuBarRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuButton, kMenuButtonRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuItem, kMenuItemRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuItemCheckBox, kMenuItemCheckBoxRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuItemRadio, kMenuItemRadioRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuListOption, kMenuListOptionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenuListPopup, kMenuListPopupRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMenu, kMenuRole);
+STATIC_ASSERT_ENUM(kWebAXRoleMeter, kMeterRole);
+STATIC_ASSERT_ENUM(kWebAXRoleNavigation, kNavigationRole);
+STATIC_ASSERT_ENUM(kWebAXRoleNone, kNoneRole);
+STATIC_ASSERT_ENUM(kWebAXRoleNote, kNoteRole);
+STATIC_ASSERT_ENUM(kWebAXRoleOutline, kOutlineRole);
+STATIC_ASSERT_ENUM(kWebAXRoleParagraph, kParagraphRole);
+STATIC_ASSERT_ENUM(kWebAXRolePopUpButton, kPopUpButtonRole);
+STATIC_ASSERT_ENUM(kWebAXRolePre, kPreRole);
+STATIC_ASSERT_ENUM(kWebAXRolePresentational, kPresentationalRole);
+STATIC_ASSERT_ENUM(kWebAXRoleProgressIndicator, kProgressIndicatorRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRadioButton, kRadioButtonRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRadioGroup, kRadioGroupRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRegion, kRegionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRootWebArea, kRootWebAreaRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRowHeader, kRowHeaderRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRow, kRowRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRuby, kRubyRole);
+STATIC_ASSERT_ENUM(kWebAXRoleRuler, kRulerRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSVGRoot, kSVGRootRole);
+STATIC_ASSERT_ENUM(kWebAXRoleScrollArea, kScrollAreaRole);
+STATIC_ASSERT_ENUM(kWebAXRoleScrollBar, kScrollBarRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSeamlessWebArea, kSeamlessWebAreaRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSearch, kSearchRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSearchBox, kSearchBoxRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSlider, kSliderRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSliderThumb, kSliderThumbRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSpinButtonPart, kSpinButtonPartRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSpinButton, kSpinButtonRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSplitter, kSplitterRole);
+STATIC_ASSERT_ENUM(kWebAXRoleStaticText, kStaticTextRole);
+STATIC_ASSERT_ENUM(kWebAXRoleStatus, kStatusRole);
+STATIC_ASSERT_ENUM(kWebAXRoleSwitch, kSwitchRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTabGroup, kTabGroupRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTabList, kTabListRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTabPanel, kTabPanelRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTab, kTabRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTableHeaderContainer, kTableHeaderContainerRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTable, kTableRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTerm, kTermRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTextField, kTextFieldRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTime, kTimeRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTimer, kTimerRole);
+STATIC_ASSERT_ENUM(kWebAXRoleToggleButton, kToggleButtonRole);
+STATIC_ASSERT_ENUM(kWebAXRoleToolbar, kToolbarRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTreeGrid, kTreeGridRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTreeItem, kTreeItemRole);
+STATIC_ASSERT_ENUM(kWebAXRoleTree, kTreeRole);
+STATIC_ASSERT_ENUM(kWebAXRoleUnknown, kUnknownRole);
+STATIC_ASSERT_ENUM(kWebAXRoleUserInterfaceTooltip, kUserInterfaceTooltipRole);
+STATIC_ASSERT_ENUM(kWebAXRoleVideo, kVideoRole);
+STATIC_ASSERT_ENUM(kWebAXRoleWebArea, kWebAreaRole);
+STATIC_ASSERT_ENUM(kWebAXRoleWindow, kWindowRole);
 
-STATIC_ASSERT_ENUM(WebAXStateBusy, AXBusyState);
-STATIC_ASSERT_ENUM(WebAXStateChecked, AXCheckedState);
-STATIC_ASSERT_ENUM(WebAXStateEnabled, AXEnabledState);
-STATIC_ASSERT_ENUM(WebAXStateExpanded, AXExpandedState);
-STATIC_ASSERT_ENUM(WebAXStateFocusable, AXFocusableState);
-STATIC_ASSERT_ENUM(WebAXStateFocused, AXFocusedState);
-STATIC_ASSERT_ENUM(WebAXStateHaspopup, AXHaspopupState);
-STATIC_ASSERT_ENUM(WebAXStateHovered, AXHoveredState);
-STATIC_ASSERT_ENUM(WebAXStateInvisible, AXInvisibleState);
-STATIC_ASSERT_ENUM(WebAXStateLinked, AXLinkedState);
-STATIC_ASSERT_ENUM(WebAXStateMultiline, AXMultilineState);
-STATIC_ASSERT_ENUM(WebAXStateMultiselectable, AXMultiselectableState);
-STATIC_ASSERT_ENUM(WebAXStateOffscreen, AXOffscreenState);
-STATIC_ASSERT_ENUM(WebAXStatePressed, AXPressedState);
-STATIC_ASSERT_ENUM(WebAXStateProtected, AXProtectedState);
-STATIC_ASSERT_ENUM(WebAXStateReadonly, AXReadonlyState);
-STATIC_ASSERT_ENUM(WebAXStateRequired, AXRequiredState);
-STATIC_ASSERT_ENUM(WebAXStateSelectable, AXSelectableState);
-STATIC_ASSERT_ENUM(WebAXStateSelected, AXSelectedState);
-STATIC_ASSERT_ENUM(WebAXStateVertical, AXVerticalState);
-STATIC_ASSERT_ENUM(WebAXStateVisited, AXVisitedState);
+STATIC_ASSERT_ENUM(kWebAXStateBusy, kAXBusyState);
+STATIC_ASSERT_ENUM(kWebAXStateChecked, kAXCheckedState);
+STATIC_ASSERT_ENUM(kWebAXStateEnabled, kAXEnabledState);
+STATIC_ASSERT_ENUM(kWebAXStateExpanded, kAXExpandedState);
+STATIC_ASSERT_ENUM(kWebAXStateFocusable, kAXFocusableState);
+STATIC_ASSERT_ENUM(kWebAXStateFocused, kAXFocusedState);
+STATIC_ASSERT_ENUM(kWebAXStateHaspopup, kAXHaspopupState);
+STATIC_ASSERT_ENUM(kWebAXStateHovered, kAXHoveredState);
+STATIC_ASSERT_ENUM(kWebAXStateInvisible, kAXInvisibleState);
+STATIC_ASSERT_ENUM(kWebAXStateLinked, kAXLinkedState);
+STATIC_ASSERT_ENUM(kWebAXStateMultiline, kAXMultilineState);
+STATIC_ASSERT_ENUM(kWebAXStateMultiselectable, kAXMultiselectableState);
+STATIC_ASSERT_ENUM(kWebAXStateOffscreen, kAXOffscreenState);
+STATIC_ASSERT_ENUM(kWebAXStatePressed, kAXPressedState);
+STATIC_ASSERT_ENUM(kWebAXStateProtected, kAXProtectedState);
+STATIC_ASSERT_ENUM(kWebAXStateReadonly, kAXReadonlyState);
+STATIC_ASSERT_ENUM(kWebAXStateRequired, kAXRequiredState);
+STATIC_ASSERT_ENUM(kWebAXStateSelectable, kAXSelectableState);
+STATIC_ASSERT_ENUM(kWebAXStateSelected, kAXSelectedState);
+STATIC_ASSERT_ENUM(kWebAXStateVertical, kAXVerticalState);
+STATIC_ASSERT_ENUM(kWebAXStateVisited, kAXVisitedState);
 
-STATIC_ASSERT_ENUM(WebAXSupportedAction::None, AXSupportedAction::None);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Activate, AXSupportedAction::Activate);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Check, AXSupportedAction::Check);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Click, AXSupportedAction::Click);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Jump, AXSupportedAction::Jump);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Open, AXSupportedAction::Open);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Press, AXSupportedAction::Press);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Select, AXSupportedAction::Select);
-STATIC_ASSERT_ENUM(WebAXSupportedAction::Uncheck, AXSupportedAction::Uncheck);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kNone, AXSupportedAction::kNone);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kActivate,
+                   AXSupportedAction::kActivate);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kCheck, AXSupportedAction::kCheck);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kClick, AXSupportedAction::kClick);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kJump, AXSupportedAction::kJump);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kOpen, AXSupportedAction::kOpen);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kPress, AXSupportedAction::kPress);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kSelect, AXSupportedAction::kSelect);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::kUncheck, AXSupportedAction::kUncheck);
 
-STATIC_ASSERT_ENUM(WebAXTextDirectionLR, AccessibilityTextDirectionLTR);
-STATIC_ASSERT_ENUM(WebAXTextDirectionRL, AccessibilityTextDirectionRTL);
-STATIC_ASSERT_ENUM(WebAXTextDirectionTB, AccessibilityTextDirectionTTB);
-STATIC_ASSERT_ENUM(WebAXTextDirectionBT, AccessibilityTextDirectionBTT);
+STATIC_ASSERT_ENUM(kWebAXTextDirectionLR, kAccessibilityTextDirectionLTR);
+STATIC_ASSERT_ENUM(kWebAXTextDirectionRL, kAccessibilityTextDirectionRTL);
+STATIC_ASSERT_ENUM(kWebAXTextDirectionTB, kAccessibilityTextDirectionTTB);
+STATIC_ASSERT_ENUM(kWebAXTextDirectionBT, kAccessibilityTextDirectionBTT);
 
-STATIC_ASSERT_ENUM(WebAXSortDirectionUndefined, SortDirectionUndefined);
-STATIC_ASSERT_ENUM(WebAXSortDirectionNone, SortDirectionNone);
-STATIC_ASSERT_ENUM(WebAXSortDirectionAscending, SortDirectionAscending);
-STATIC_ASSERT_ENUM(WebAXSortDirectionDescending, SortDirectionDescending);
-STATIC_ASSERT_ENUM(WebAXSortDirectionOther, SortDirectionOther);
+STATIC_ASSERT_ENUM(kWebAXSortDirectionUndefined, kSortDirectionUndefined);
+STATIC_ASSERT_ENUM(kWebAXSortDirectionNone, kSortDirectionNone);
+STATIC_ASSERT_ENUM(kWebAXSortDirectionAscending, kSortDirectionAscending);
+STATIC_ASSERT_ENUM(kWebAXSortDirectionDescending, kSortDirectionDescending);
+STATIC_ASSERT_ENUM(kWebAXSortDirectionOther, kSortDirectionOther);
 
-STATIC_ASSERT_ENUM(WebAXExpandedUndefined, ExpandedUndefined);
-STATIC_ASSERT_ENUM(WebAXExpandedCollapsed, ExpandedCollapsed);
-STATIC_ASSERT_ENUM(WebAXExpandedExpanded, ExpandedExpanded);
+STATIC_ASSERT_ENUM(kWebAXExpandedUndefined, kExpandedUndefined);
+STATIC_ASSERT_ENUM(kWebAXExpandedCollapsed, kExpandedCollapsed);
+STATIC_ASSERT_ENUM(kWebAXExpandedExpanded, kExpandedExpanded);
 
-STATIC_ASSERT_ENUM(WebAXOrientationUndefined,
-                   AccessibilityOrientationUndefined);
-STATIC_ASSERT_ENUM(WebAXOrientationVertical, AccessibilityOrientationVertical);
-STATIC_ASSERT_ENUM(WebAXOrientationHorizontal,
-                   AccessibilityOrientationHorizontal);
+STATIC_ASSERT_ENUM(kWebAXOrientationUndefined,
+                   kAccessibilityOrientationUndefined);
+STATIC_ASSERT_ENUM(kWebAXOrientationVertical,
+                   kAccessibilityOrientationVertical);
+STATIC_ASSERT_ENUM(kWebAXOrientationHorizontal,
+                   kAccessibilityOrientationHorizontal);
 
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateUndefined, AriaCurrentStateUndefined);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateFalse, AriaCurrentStateFalse);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateTrue, AriaCurrentStateTrue);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStatePage, AriaCurrentStatePage);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateStep, AriaCurrentStateStep);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateLocation, AriaCurrentStateLocation);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateDate, AriaCurrentStateDate);
-STATIC_ASSERT_ENUM(WebAXAriaCurrentStateTime, AriaCurrentStateTime);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateUndefined, kAriaCurrentStateUndefined);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateFalse, kAriaCurrentStateFalse);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateTrue, kAriaCurrentStateTrue);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStatePage, kAriaCurrentStatePage);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateStep, kAriaCurrentStateStep);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateLocation, kAriaCurrentStateLocation);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateDate, kAriaCurrentStateDate);
+STATIC_ASSERT_ENUM(kWebAXAriaCurrentStateTime, kAriaCurrentStateTime);
 
-STATIC_ASSERT_ENUM(WebAXInvalidStateUndefined, InvalidStateUndefined);
-STATIC_ASSERT_ENUM(WebAXInvalidStateFalse, InvalidStateFalse);
-STATIC_ASSERT_ENUM(WebAXInvalidStateTrue, InvalidStateTrue);
-STATIC_ASSERT_ENUM(WebAXInvalidStateSpelling, InvalidStateSpelling);
-STATIC_ASSERT_ENUM(WebAXInvalidStateGrammar, InvalidStateGrammar);
-STATIC_ASSERT_ENUM(WebAXInvalidStateOther, InvalidStateOther);
+STATIC_ASSERT_ENUM(kWebAXInvalidStateUndefined, kInvalidStateUndefined);
+STATIC_ASSERT_ENUM(kWebAXInvalidStateFalse, kInvalidStateFalse);
+STATIC_ASSERT_ENUM(kWebAXInvalidStateTrue, kInvalidStateTrue);
+STATIC_ASSERT_ENUM(kWebAXInvalidStateSpelling, kInvalidStateSpelling);
+STATIC_ASSERT_ENUM(kWebAXInvalidStateGrammar, kInvalidStateGrammar);
+STATIC_ASSERT_ENUM(kWebAXInvalidStateOther, kInvalidStateOther);
 
-STATIC_ASSERT_ENUM(WebAXMarkerTypeSpelling, DocumentMarker::Spelling);
-STATIC_ASSERT_ENUM(WebAXMarkerTypeGrammar, DocumentMarker::Grammar);
-STATIC_ASSERT_ENUM(WebAXMarkerTypeTextMatch, DocumentMarker::TextMatch);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeSpelling, DocumentMarker::kSpelling);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeGrammar, DocumentMarker::kGrammar);
+STATIC_ASSERT_ENUM(kWebAXMarkerTypeTextMatch, DocumentMarker::kTextMatch);
 
-STATIC_ASSERT_ENUM(WebAXTextStyleNone, TextStyleNone);
-STATIC_ASSERT_ENUM(WebAXTextStyleBold, TextStyleBold);
-STATIC_ASSERT_ENUM(WebAXTextStyleItalic, TextStyleItalic);
-STATIC_ASSERT_ENUM(WebAXTextStyleUnderline, TextStyleUnderline);
-STATIC_ASSERT_ENUM(WebAXTextStyleLineThrough, TextStyleLineThrough);
+STATIC_ASSERT_ENUM(kWebAXTextStyleNone, kTextStyleNone);
+STATIC_ASSERT_ENUM(kWebAXTextStyleBold, kTextStyleBold);
+STATIC_ASSERT_ENUM(kWebAXTextStyleItalic, kTextStyleItalic);
+STATIC_ASSERT_ENUM(kWebAXTextStyleUnderline, kTextStyleUnderline);
+STATIC_ASSERT_ENUM(kWebAXTextStyleLineThrough, kTextStyleLineThrough);
 
-STATIC_ASSERT_ENUM(WebAXNameFromUninitialized, AXNameFromUninitialized);
-STATIC_ASSERT_ENUM(WebAXNameFromAttribute, AXNameFromAttribute);
-STATIC_ASSERT_ENUM(WebAXNameFromCaption, AXNameFromCaption);
-STATIC_ASSERT_ENUM(WebAXNameFromContents, AXNameFromContents);
-STATIC_ASSERT_ENUM(WebAXNameFromPlaceholder, AXNameFromPlaceholder);
-STATIC_ASSERT_ENUM(WebAXNameFromRelatedElement, AXNameFromRelatedElement);
-STATIC_ASSERT_ENUM(WebAXNameFromValue, AXNameFromValue);
-STATIC_ASSERT_ENUM(WebAXNameFromTitle, AXNameFromTitle);
+STATIC_ASSERT_ENUM(kWebAXNameFromUninitialized, kAXNameFromUninitialized);
+STATIC_ASSERT_ENUM(kWebAXNameFromAttribute, kAXNameFromAttribute);
+STATIC_ASSERT_ENUM(kWebAXNameFromCaption, kAXNameFromCaption);
+STATIC_ASSERT_ENUM(kWebAXNameFromContents, kAXNameFromContents);
+STATIC_ASSERT_ENUM(kWebAXNameFromPlaceholder, kAXNameFromPlaceholder);
+STATIC_ASSERT_ENUM(kWebAXNameFromRelatedElement, kAXNameFromRelatedElement);
+STATIC_ASSERT_ENUM(kWebAXNameFromValue, kAXNameFromValue);
+STATIC_ASSERT_ENUM(kWebAXNameFromTitle, kAXNameFromTitle);
 
-STATIC_ASSERT_ENUM(WebAXDescriptionFromUninitialized,
-                   AXDescriptionFromUninitialized);
-STATIC_ASSERT_ENUM(WebAXDescriptionFromAttribute, AXDescriptionFromAttribute);
-STATIC_ASSERT_ENUM(WebAXDescriptionFromContents, AXDescriptionFromContents);
-STATIC_ASSERT_ENUM(WebAXDescriptionFromRelatedElement,
-                   AXDescriptionFromRelatedElement);
+STATIC_ASSERT_ENUM(kWebAXDescriptionFromUninitialized,
+                   kAXDescriptionFromUninitialized);
+STATIC_ASSERT_ENUM(kWebAXDescriptionFromAttribute, kAXDescriptionFromAttribute);
+STATIC_ASSERT_ENUM(kWebAXDescriptionFromContents, kAXDescriptionFromContents);
+STATIC_ASSERT_ENUM(kWebAXDescriptionFromRelatedElement,
+                   kAXDescriptionFromRelatedElement);
 
-STATIC_ASSERT_ENUM(WebAXTextAffinityUpstream, TextAffinity::Upstream);
-STATIC_ASSERT_ENUM(WebAXTextAffinityDownstream, TextAffinity::Downstream);
+STATIC_ASSERT_ENUM(kWebAXTextAffinityUpstream, TextAffinity::kUpstream);
+STATIC_ASSERT_ENUM(kWebAXTextAffinityDownstream, TextAffinity::kDownstream);
 
-STATIC_ASSERT_ENUM(WebAXStringAttribute::AriaKeyShortcuts,
-                   AXStringAttribute::AriaKeyShortcuts);
-STATIC_ASSERT_ENUM(WebAXStringAttribute::AriaRoleDescription,
-                   AXStringAttribute::AriaRoleDescription);
-STATIC_ASSERT_ENUM(WebAXObjectAttribute::AriaActiveDescendant,
-                   AXObjectAttribute::AriaActiveDescendant);
-STATIC_ASSERT_ENUM(WebAXObjectAttribute::AriaErrorMessage,
-                   AXObjectAttribute::AriaErrorMessage);
-STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::AriaControls,
-                   AXObjectVectorAttribute::AriaControls);
-STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::AriaDetails,
-                   AXObjectVectorAttribute::AriaDetails);
-STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::AriaFlowTo,
-                   AXObjectVectorAttribute::AriaFlowTo);
+STATIC_ASSERT_ENUM(WebAXStringAttribute::kAriaKeyShortcuts,
+                   AXStringAttribute::kAriaKeyShortcuts);
+STATIC_ASSERT_ENUM(WebAXStringAttribute::kAriaRoleDescription,
+                   AXStringAttribute::kAriaRoleDescription);
+STATIC_ASSERT_ENUM(WebAXObjectAttribute::kAriaActiveDescendant,
+                   AXObjectAttribute::kAriaActiveDescendant);
+STATIC_ASSERT_ENUM(WebAXObjectAttribute::kAriaErrorMessage,
+                   AXObjectAttribute::kAriaErrorMessage);
+STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::kAriaControls,
+                   AXObjectVectorAttribute::kAriaControls);
+STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::kAriaDetails,
+                   AXObjectVectorAttribute::kAriaDetails);
+STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::kAriaFlowTo,
+                   AXObjectVectorAttribute::kAriaFlowTo);
 
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Uncached,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
                    ApplicationCacheHost::kUncached);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::kIdle);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Checking,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, ApplicationCacheHost::kIdle);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
                    ApplicationCacheHost::kChecking);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Downloading,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
                    ApplicationCacheHost::kDownloading);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::UpdateReady,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
                    ApplicationCacheHost::kUpdateready);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::Obsolete,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
                    ApplicationCacheHost::kObsolete);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::CheckingEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
                    ApplicationCacheHost::kCheckingEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ErrorEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent,
                    ApplicationCacheHost::kErrorEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::NoUpdateEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
                    ApplicationCacheHost::kNoupdateEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::DownloadingEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
                    ApplicationCacheHost::kDownloadingEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ProgressEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
                    ApplicationCacheHost::kProgressEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::UpdateReadyEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
                    ApplicationCacheHost::kUpdatereadyEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::CachedEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
                    ApplicationCacheHost::kCachedEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::ObsoleteEvent,
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
                    ApplicationCacheHost::kObsoleteEvent);
 
-STATIC_ASSERT_ENUM(WebClientRedirectPolicy::NotClientRedirect,
-                   ClientRedirectPolicy::NotClientRedirect);
-STATIC_ASSERT_ENUM(WebClientRedirectPolicy::ClientRedirect,
-                   ClientRedirectPolicy::ClientRedirect);
+STATIC_ASSERT_ENUM(WebClientRedirectPolicy::kNotClientRedirect,
+                   ClientRedirectPolicy::kNotClientRedirect);
+STATIC_ASSERT_ENUM(WebClientRedirectPolicy::kClientRedirect,
+                   ClientRedirectPolicy::kClientRedirect);
 
-STATIC_ASSERT_ENUM(WebCursorInfo::TypePointer, Cursor::Pointer);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeCross, Cursor::Cross);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeHand, Cursor::Hand);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeIBeam, Cursor::IBeam);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeWait, Cursor::Wait);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeHelp, Cursor::Help);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeEastResize, Cursor::EastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthResize, Cursor::NorthResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthEastResize, Cursor::NorthEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthWestResize, Cursor::NorthWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeSouthResize, Cursor::SouthResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeSouthEastResize, Cursor::SouthEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeSouthWestResize, Cursor::SouthWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeWestResize, Cursor::WestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthSouthResize,
-                   Cursor::NorthSouthResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeEastWestResize, Cursor::EastWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthEastSouthWestResize,
-                   Cursor::NorthEastSouthWestResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthWestSouthEastResize,
-                   Cursor::NorthWestSouthEastResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeColumnResize, Cursor::ColumnResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeRowResize, Cursor::RowResize);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeMiddlePanning, Cursor::MiddlePanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeEastPanning, Cursor::EastPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthPanning, Cursor::NorthPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthEastPanning,
-                   Cursor::NorthEastPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNorthWestPanning,
-                   Cursor::NorthWestPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeSouthPanning, Cursor::SouthPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeSouthEastPanning,
-                   Cursor::SouthEastPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeSouthWestPanning,
-                   Cursor::SouthWestPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeWestPanning, Cursor::WestPanning);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeMove, Cursor::Move);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeVerticalText, Cursor::VerticalText);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeCell, Cursor::Cell);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeContextMenu, Cursor::ContextMenu);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeAlias, Cursor::Alias);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeProgress, Cursor::Progress);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNoDrop, Cursor::NoDrop);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeCopy, Cursor::Copy);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNone, Cursor::None);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeNotAllowed, Cursor::NotAllowed);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeZoomIn, Cursor::ZoomIn);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeZoomOut, Cursor::ZoomOut);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeGrab, Cursor::Grab);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeGrabbing, Cursor::Grabbing);
-STATIC_ASSERT_ENUM(WebCursorInfo::TypeCustom, Cursor::Custom);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypePointer, Cursor::kPointer);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCross, Cursor::kCross);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeHand, Cursor::kHand);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeIBeam, Cursor::kIBeam);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWait, Cursor::kWait);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeHelp, Cursor::kHelp);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastResize, Cursor::kEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthResize, Cursor::kNorthResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastResize,
+                   Cursor::kNorthEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestResize,
+                   Cursor::kNorthWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthResize, Cursor::kSouthResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthEastResize,
+                   Cursor::kSouthEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthWestResize,
+                   Cursor::kSouthWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWestResize, Cursor::kWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthSouthResize,
+                   Cursor::kNorthSouthResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastWestResize, Cursor::kEastWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastSouthWestResize,
+                   Cursor::kNorthEastSouthWestResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestSouthEastResize,
+                   Cursor::kNorthWestSouthEastResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeColumnResize, Cursor::kColumnResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeRowResize, Cursor::kRowResize);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMiddlePanning, Cursor::kMiddlePanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeEastPanning, Cursor::kEastPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthPanning, Cursor::kNorthPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthEastPanning,
+                   Cursor::kNorthEastPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNorthWestPanning,
+                   Cursor::kNorthWestPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthPanning, Cursor::kSouthPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthEastPanning,
+                   Cursor::kSouthEastPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeSouthWestPanning,
+                   Cursor::kSouthWestPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeWestPanning, Cursor::kWestPanning);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeMove, Cursor::kMove);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeVerticalText, Cursor::kVerticalText);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCell, Cursor::kCell);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeContextMenu, Cursor::kContextMenu);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeAlias, Cursor::kAlias);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeProgress, Cursor::kProgress);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNoDrop, Cursor::kNoDrop);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCopy, Cursor::kCopy);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNone, Cursor::kNone);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeNotAllowed, Cursor::kNotAllowed);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomIn, Cursor::kZoomIn);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeZoomOut, Cursor::kZoomOut);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrab, Cursor::kGrab);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeGrabbing, Cursor::kGrabbing);
+STATIC_ASSERT_ENUM(WebCursorInfo::kTypeCustom, Cursor::kCustom);
 
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilyNone,
-                   FontDescription::NoFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilyStandard,
-                   FontDescription::StandardFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilySerif,
-                   FontDescription::SerifFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilySansSerif,
-                   FontDescription::SansSerifFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilyMonospace,
-                   FontDescription::MonospaceFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilyCursive,
-                   FontDescription::CursiveFamily);
-STATIC_ASSERT_ENUM(WebFontDescription::GenericFamilyFantasy,
-                   FontDescription::FantasyFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyNone,
+                   FontDescription::kNoFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyStandard,
+                   FontDescription::kStandardFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilySerif,
+                   FontDescription::kSerifFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilySansSerif,
+                   FontDescription::kSansSerifFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyMonospace,
+                   FontDescription::kMonospaceFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyCursive,
+                   FontDescription::kCursiveFamily);
+STATIC_ASSERT_ENUM(WebFontDescription::kGenericFamilyFantasy,
+                   FontDescription::kFantasyFamily);
 
-STATIC_ASSERT_ENUM(WebFontDescription::SmoothingAuto, AutoSmoothing);
-STATIC_ASSERT_ENUM(WebFontDescription::SmoothingNone, NoSmoothing);
-STATIC_ASSERT_ENUM(WebFontDescription::SmoothingGrayscale, Antialiased);
-STATIC_ASSERT_ENUM(WebFontDescription::SmoothingSubpixel, SubpixelAntialiased);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingAuto, kAutoSmoothing);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingNone, kNoSmoothing);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingGrayscale, kAntialiased);
+STATIC_ASSERT_ENUM(WebFontDescription::kSmoothingSubpixel,
+                   kSubpixelAntialiased);
 
-STATIC_ASSERT_ENUM(WebFontDescription::Weight100, FontWeight100);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight200, FontWeight200);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight300, FontWeight300);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight400, FontWeight400);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight500, FontWeight500);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight600, FontWeight600);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight700, FontWeight700);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight800, FontWeight800);
-STATIC_ASSERT_ENUM(WebFontDescription::Weight900, FontWeight900);
-STATIC_ASSERT_ENUM(WebFontDescription::WeightNormal, FontWeightNormal);
-STATIC_ASSERT_ENUM(WebFontDescription::WeightBold, FontWeightBold);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight100, kFontWeight100);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight200, kFontWeight200);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight300, kFontWeight300);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight400, kFontWeight400);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight500, kFontWeight500);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight600, kFontWeight600);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight700, kFontWeight700);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight800, kFontWeight800);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeight900, kFontWeight900);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeightNormal, kFontWeightNormal);
+STATIC_ASSERT_ENUM(WebFontDescription::kWeightBold, kFontWeightBold);
 
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::Auto, ScrollbarAuto);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::AlwaysOff,
-                   ScrollbarAlwaysOff);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::AlwaysOn,
-                   ScrollbarAlwaysOn);
+STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
+                   kScrollbarAuto);
+STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOff,
+                   kScrollbarAlwaysOff);
+STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOn,
+                   kScrollbarAlwaysOn);
 
-STATIC_ASSERT_ENUM(WebIconURL::TypeInvalid, InvalidIcon);
-STATIC_ASSERT_ENUM(WebIconURL::TypeFavicon, Favicon);
-STATIC_ASSERT_ENUM(WebIconURL::TypeTouch, TouchIcon);
-STATIC_ASSERT_ENUM(WebIconURL::TypeTouchPrecomposed, TouchPrecomposedIcon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeInvalid, kInvalidIcon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeFavicon, kFavicon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeTouch, kTouchIcon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeTouchPrecomposed, kTouchPrecomposedIcon);
 
-STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveNothing,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,
                    HTMLMediaElement::kHaveNothing);
-STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveMetadata,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveMetadata,
                    HTMLMediaElement::kHaveMetadata);
-STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveCurrentData,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveCurrentData,
                    HTMLMediaElement::kHaveCurrentData);
-STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveFutureData,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveFutureData,
                    HTMLMediaElement::kHaveFutureData);
-STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveEnoughData,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveEnoughData,
                    HTMLMediaElement::kHaveEnoughData);
 
-STATIC_ASSERT_ENUM(WebScrollbar::Horizontal, HorizontalScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::Vertical, VerticalScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kHorizontal, kHorizontalScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kVertical, kVerticalScrollbar);
 
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollByLine, ScrollByLine);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollByPage, ScrollByPage);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollByDocument, ScrollByDocument);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollByPixel, ScrollByPixel);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByLine, kScrollByLine);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPage, kScrollByPage);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByDocument, kScrollByDocument);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPixel, kScrollByPixel);
 
-STATIC_ASSERT_ENUM(WebScrollbar::RegularScrollbar, RegularScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::SmallScrollbar, SmallScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::NoPart, NoPart);
-STATIC_ASSERT_ENUM(WebScrollbar::BackButtonStartPart, BackButtonStartPart);
-STATIC_ASSERT_ENUM(WebScrollbar::ForwardButtonStartPart,
-                   ForwardButtonStartPart);
-STATIC_ASSERT_ENUM(WebScrollbar::BackTrackPart, BackTrackPart);
-STATIC_ASSERT_ENUM(WebScrollbar::ThumbPart, ThumbPart);
-STATIC_ASSERT_ENUM(WebScrollbar::ForwardTrackPart, ForwardTrackPart);
-STATIC_ASSERT_ENUM(WebScrollbar::BackButtonEndPart, BackButtonEndPart);
-STATIC_ASSERT_ENUM(WebScrollbar::ForwardButtonEndPart, ForwardButtonEndPart);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollbarBGPart, ScrollbarBGPart);
-STATIC_ASSERT_ENUM(WebScrollbar::TrackBGPart, TrackBGPart);
-STATIC_ASSERT_ENUM(WebScrollbar::AllParts, AllParts);
-STATIC_ASSERT_ENUM(WebScrollbarOverlayColorThemeDark,
-                   ScrollbarOverlayColorThemeDark);
-STATIC_ASSERT_ENUM(WebScrollbarOverlayColorThemeLight,
-                   ScrollbarOverlayColorThemeLight);
+STATIC_ASSERT_ENUM(WebScrollbar::kRegularScrollbar, kRegularScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kSmallScrollbar, kSmallScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kNoPart, kNoPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonStartPart, kBackButtonStartPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonStartPart,
+                   kForwardButtonStartPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kBackTrackPart, kBackTrackPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kThumbPart, kThumbPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kForwardTrackPart, kForwardTrackPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonEndPart, kBackButtonEndPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonEndPart, kForwardButtonEndPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollbarBGPart, kScrollbarBGPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kTrackBGPart, kTrackBGPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kAllParts, kAllParts);
+STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
+                   kScrollbarOverlayColorThemeDark);
+STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,
+                   kScrollbarOverlayColorThemeLight);
 
-STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorMac, EditingMacBehavior);
-STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehavior);
-STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorUnix, EditingUnixBehavior);
-STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorAndroid, EditingAndroidBehavior);
+STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorMac, kEditingMacBehavior);
+STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorWin, kEditingWindowsBehavior);
+STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorUnix, kEditingUnixBehavior);
+STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorAndroid,
+                   kEditingAndroidBehavior);
 
-STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::False,
-                   PassiveListenerDefault::False);
-STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::True,
-                   PassiveListenerDefault::True);
-STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::ForceAllTrue,
-                   PassiveListenerDefault::ForceAllTrue);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,
+                   PassiveListenerDefault::kFalse);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kTrue,
+                   PassiveListenerDefault::kTrue);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kForceAllTrue,
+                   PassiveListenerDefault::kForceAllTrue);
 
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionUnknownError, UnknownError);
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionConstraintError, ConstraintError);
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionDataError, DataError);
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionVersionError, VersionError);
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionAbortError, AbortError);
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionQuotaError, QuotaExceededError);
-STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionTimeoutError, TimeoutError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError, kUnknownError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError, kConstraintError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionDataError, kDataError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionVersionError, kVersionError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionAbortError, kAbortError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionQuotaError, kQuotaExceededError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionTimeoutError, kTimeoutError);
 
-STATIC_ASSERT_ENUM(WebIDBKeyTypeInvalid, IDBKey::InvalidType);
-STATIC_ASSERT_ENUM(WebIDBKeyTypeArray, IDBKey::ArrayType);
-STATIC_ASSERT_ENUM(WebIDBKeyTypeBinary, IDBKey::BinaryType);
-STATIC_ASSERT_ENUM(WebIDBKeyTypeString, IDBKey::StringType);
-STATIC_ASSERT_ENUM(WebIDBKeyTypeDate, IDBKey::DateType);
-STATIC_ASSERT_ENUM(WebIDBKeyTypeNumber, IDBKey::NumberType);
+STATIC_ASSERT_ENUM(kWebIDBKeyTypeInvalid, IDBKey::kInvalidType);
+STATIC_ASSERT_ENUM(kWebIDBKeyTypeArray, IDBKey::kArrayType);
+STATIC_ASSERT_ENUM(kWebIDBKeyTypeBinary, IDBKey::kBinaryType);
+STATIC_ASSERT_ENUM(kWebIDBKeyTypeString, IDBKey::kStringType);
+STATIC_ASSERT_ENUM(kWebIDBKeyTypeDate, IDBKey::kDateType);
+STATIC_ASSERT_ENUM(kWebIDBKeyTypeNumber, IDBKey::kNumberType);
 
-STATIC_ASSERT_ENUM(WebIDBKeyPathTypeNull, IDBKeyPath::NullType);
-STATIC_ASSERT_ENUM(WebIDBKeyPathTypeString, IDBKeyPath::StringType);
-STATIC_ASSERT_ENUM(WebIDBKeyPathTypeArray, IDBKeyPath::ArrayType);
+STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeNull, IDBKeyPath::kNullType);
+STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeString, IDBKeyPath::kStringType);
+STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeArray, IDBKeyPath::kArrayType);
 
-STATIC_ASSERT_ENUM(WebIDBMetadata::NoVersion, IDBDatabaseMetadata::NoVersion);
+STATIC_ASSERT_ENUM(WebIDBMetadata::kNoVersion, IDBDatabaseMetadata::kNoVersion);
 
-STATIC_ASSERT_ENUM(WebFileSystem::TypeTemporary, FileSystemTypeTemporary);
-STATIC_ASSERT_ENUM(WebFileSystem::TypePersistent, FileSystemTypePersistent);
-STATIC_ASSERT_ENUM(WebFileSystem::TypeExternal, FileSystemTypeExternal);
-STATIC_ASSERT_ENUM(WebFileSystem::TypeIsolated, FileSystemTypeIsolated);
-STATIC_ASSERT_ENUM(WebFileInfo::TypeUnknown, FileMetadata::TypeUnknown);
-STATIC_ASSERT_ENUM(WebFileInfo::TypeFile, FileMetadata::TypeFile);
-STATIC_ASSERT_ENUM(WebFileInfo::TypeDirectory, FileMetadata::TypeDirectory);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeTemporary, kFileSystemTypeTemporary);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypePersistent, kFileSystemTypePersistent);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeExternal, kFileSystemTypeExternal);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeIsolated, kFileSystemTypeIsolated);
+STATIC_ASSERT_ENUM(WebFileInfo::kTypeUnknown, FileMetadata::kTypeUnknown);
+STATIC_ASSERT_ENUM(WebFileInfo::kTypeFile, FileMetadata::kTypeFile);
+STATIC_ASSERT_ENUM(WebFileInfo::kTypeDirectory, FileMetadata::kTypeDirectory);
 
-STATIC_ASSERT_ENUM(WebFileErrorNotFound, FileError::kNotFoundErr);
-STATIC_ASSERT_ENUM(WebFileErrorSecurity, FileError::kSecurityErr);
-STATIC_ASSERT_ENUM(WebFileErrorAbort, FileError::kAbortErr);
-STATIC_ASSERT_ENUM(WebFileErrorNotReadable, FileError::kNotReadableErr);
-STATIC_ASSERT_ENUM(WebFileErrorEncoding, FileError::kEncodingErr);
-STATIC_ASSERT_ENUM(WebFileErrorNoModificationAllowed,
+STATIC_ASSERT_ENUM(kWebFileErrorNotFound, FileError::kNotFoundErr);
+STATIC_ASSERT_ENUM(kWebFileErrorSecurity, FileError::kSecurityErr);
+STATIC_ASSERT_ENUM(kWebFileErrorAbort, FileError::kAbortErr);
+STATIC_ASSERT_ENUM(kWebFileErrorNotReadable, FileError::kNotReadableErr);
+STATIC_ASSERT_ENUM(kWebFileErrorEncoding, FileError::kEncodingErr);
+STATIC_ASSERT_ENUM(kWebFileErrorNoModificationAllowed,
                    FileError::kNoModificationAllowedErr);
-STATIC_ASSERT_ENUM(WebFileErrorInvalidState, FileError::kInvalidStateErr);
-STATIC_ASSERT_ENUM(WebFileErrorSyntax, FileError::kSyntaxErr);
-STATIC_ASSERT_ENUM(WebFileErrorInvalidModification,
+STATIC_ASSERT_ENUM(kWebFileErrorInvalidState, FileError::kInvalidStateErr);
+STATIC_ASSERT_ENUM(kWebFileErrorSyntax, FileError::kSyntaxErr);
+STATIC_ASSERT_ENUM(kWebFileErrorInvalidModification,
                    FileError::kInvalidModificationErr);
-STATIC_ASSERT_ENUM(WebFileErrorQuotaExceeded, FileError::kQuotaExceededErr);
-STATIC_ASSERT_ENUM(WebFileErrorTypeMismatch, FileError::kTypeMismatchErr);
-STATIC_ASSERT_ENUM(WebFileErrorPathExists, FileError::kPathExistsErr);
+STATIC_ASSERT_ENUM(kWebFileErrorQuotaExceeded, FileError::kQuotaExceededErr);
+STATIC_ASSERT_ENUM(kWebFileErrorTypeMismatch, FileError::kTypeMismatchErr);
+STATIC_ASSERT_ENUM(kWebFileErrorPathExists, FileError::kPathExistsErr);
 
-STATIC_ASSERT_ENUM(WebTextDecorationTypeSpelling, TextDecorationTypeSpelling);
-STATIC_ASSERT_ENUM(WebTextDecorationTypeGrammar, TextDecorationTypeGrammar);
+STATIC_ASSERT_ENUM(kWebTextDecorationTypeSpelling, kTextDecorationTypeSpelling);
+STATIC_ASSERT_ENUM(kWebTextDecorationTypeGrammar, kTextDecorationTypeGrammar);
 
-STATIC_ASSERT_ENUM(WebStorageQuotaErrorNotSupported, NotSupportedError);
-STATIC_ASSERT_ENUM(WebStorageQuotaErrorInvalidModification,
-                   InvalidModificationError);
-STATIC_ASSERT_ENUM(WebStorageQuotaErrorInvalidAccess, InvalidAccessError);
-STATIC_ASSERT_ENUM(WebStorageQuotaErrorAbort, AbortError);
+STATIC_ASSERT_ENUM(kWebStorageQuotaErrorNotSupported, kNotSupportedError);
+STATIC_ASSERT_ENUM(kWebStorageQuotaErrorInvalidModification,
+                   kInvalidModificationError);
+STATIC_ASSERT_ENUM(kWebStorageQuotaErrorInvalidAccess, kInvalidAccessError);
+STATIC_ASSERT_ENUM(kWebStorageQuotaErrorAbort, kAbortError);
 
-STATIC_ASSERT_ENUM(WebStorageQuotaTypeTemporary,
-                   DeprecatedStorageQuota::Temporary);
-STATIC_ASSERT_ENUM(WebStorageQuotaTypePersistent,
-                   DeprecatedStorageQuota::Persistent);
+STATIC_ASSERT_ENUM(kWebStorageQuotaTypeTemporary,
+                   DeprecatedStorageQuota::kTemporary);
+STATIC_ASSERT_ENUM(kWebStorageQuotaTypePersistent,
+                   DeprecatedStorageQuota::kPersistent);
 
-STATIC_ASSERT_ENUM(WebPageVisibilityStateVisible, PageVisibilityStateVisible);
-STATIC_ASSERT_ENUM(WebPageVisibilityStateHidden, PageVisibilityStateHidden);
-STATIC_ASSERT_ENUM(WebPageVisibilityStatePrerender,
-                   PageVisibilityStatePrerender);
+STATIC_ASSERT_ENUM(kWebPageVisibilityStateVisible, kPageVisibilityStateVisible);
+STATIC_ASSERT_ENUM(kWebPageVisibilityStateHidden, kPageVisibilityStateHidden);
+STATIC_ASSERT_ENUM(kWebPageVisibilityStatePrerender,
+                   kPageVisibilityStatePrerender);
 
-STATIC_ASSERT_ENUM(WebMediaStreamSource::TypeAudio,
-                   MediaStreamSource::TypeAudio);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::TypeVideo,
-                   MediaStreamSource::TypeVideo);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::ReadyStateLive,
-                   MediaStreamSource::ReadyStateLive);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::ReadyStateMuted,
-                   MediaStreamSource::ReadyStateMuted);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::ReadyStateEnded,
-                   MediaStreamSource::ReadyStateEnded);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeAudio,
+                   MediaStreamSource::kTypeAudio);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeVideo,
+                   MediaStreamSource::kTypeVideo);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateLive,
+                   MediaStreamSource::kReadyStateLive);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateMuted,
+                   MediaStreamSource::kReadyStateMuted);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
+                   MediaStreamSource::kReadyStateEnded);
 
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::OtherError,
-                   SpeechRecognitionError::ErrorCodeOther);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::NoSpeechError,
-                   SpeechRecognitionError::ErrorCodeNoSpeech);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::AbortedError,
-                   SpeechRecognitionError::ErrorCodeAborted);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::AudioCaptureError,
-                   SpeechRecognitionError::ErrorCodeAudioCapture);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::NetworkError,
-                   SpeechRecognitionError::ErrorCodeNetwork);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::NotAllowedError,
-                   SpeechRecognitionError::ErrorCodeNotAllowed);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::ServiceNotAllowedError,
-                   SpeechRecognitionError::ErrorCodeServiceNotAllowed);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::BadGrammarError,
-                   SpeechRecognitionError::ErrorCodeBadGrammar);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::LanguageNotSupportedError,
-                   SpeechRecognitionError::ErrorCodeLanguageNotSupported);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kOtherError,
+                   SpeechRecognitionError::kErrorCodeOther);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNoSpeechError,
+                   SpeechRecognitionError::kErrorCodeNoSpeech);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kAbortedError,
+                   SpeechRecognitionError::kErrorCodeAborted);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kAudioCaptureError,
+                   SpeechRecognitionError::kErrorCodeAudioCapture);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNetworkError,
+                   SpeechRecognitionError::kErrorCodeNetwork);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNotAllowedError,
+                   SpeechRecognitionError::kErrorCodeNotAllowed);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kServiceNotAllowedError,
+                   SpeechRecognitionError::kErrorCodeServiceNotAllowed);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kBadGrammarError,
+                   SpeechRecognitionError::kErrorCodeBadGrammar);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kLanguageNotSupportedError,
+                   SpeechRecognitionError::kErrorCodeLanguageNotSupported);
 
-STATIC_ASSERT_ENUM(WebReferrerPolicyAlways, ReferrerPolicyAlways);
-STATIC_ASSERT_ENUM(WebReferrerPolicyDefault, ReferrerPolicyDefault);
-STATIC_ASSERT_ENUM(WebReferrerPolicyNoReferrerWhenDowngrade,
-                   ReferrerPolicyNoReferrerWhenDowngrade);
-STATIC_ASSERT_ENUM(WebReferrerPolicyNever, ReferrerPolicyNever);
-STATIC_ASSERT_ENUM(WebReferrerPolicyOrigin, ReferrerPolicyOrigin);
-STATIC_ASSERT_ENUM(WebReferrerPolicyOriginWhenCrossOrigin,
-                   ReferrerPolicyOriginWhenCrossOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyAlways, kReferrerPolicyAlways);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyDefault, kReferrerPolicyDefault);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyNoReferrerWhenDowngrade,
+                   kReferrerPolicyNoReferrerWhenDowngrade);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyNever, kReferrerPolicyNever);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyOrigin, kReferrerPolicyOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyOriginWhenCrossOrigin,
+                   kReferrerPolicyOriginWhenCrossOrigin);
 STATIC_ASSERT_ENUM(
-    WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-    ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin);
+    kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin);
 
-STATIC_ASSERT_ENUM(WebContentSecurityPolicyTypeReport,
-                   ContentSecurityPolicyHeaderTypeReport);
-STATIC_ASSERT_ENUM(WebContentSecurityPolicyTypeEnforce,
-                   ContentSecurityPolicyHeaderTypeEnforce);
+STATIC_ASSERT_ENUM(kWebContentSecurityPolicyTypeReport,
+                   kContentSecurityPolicyHeaderTypeReport);
+STATIC_ASSERT_ENUM(kWebContentSecurityPolicyTypeEnforce,
+                   kContentSecurityPolicyHeaderTypeEnforce);
 
-STATIC_ASSERT_ENUM(WebContentSecurityPolicySourceHTTP,
-                   ContentSecurityPolicyHeaderSourceHTTP);
-STATIC_ASSERT_ENUM(WebContentSecurityPolicySourceMeta,
-                   ContentSecurityPolicyHeaderSourceMeta);
+STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceHTTP,
+                   kContentSecurityPolicyHeaderSourceHTTP);
+STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceMeta,
+                   kContentSecurityPolicyHeaderSourceMeta);
 
-STATIC_ASSERT_ENUM(WebWildcardDispositionNoWildcard, CSPSource::NoWildcard);
-STATIC_ASSERT_ENUM(WebWildcardDispositionHasWildcard, CSPSource::HasWildcard);
+STATIC_ASSERT_ENUM(kWebWildcardDispositionNoWildcard, CSPSource::kNoWildcard);
+STATIC_ASSERT_ENUM(kWebWildcardDispositionHasWildcard, CSPSource::kHasWildcard);
 
-STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersionUnknown,
-                   ResourceResponse::HTTPVersionUnknown);
-STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersion_0_9,
-                   ResourceResponse::HTTPVersion_0_9);
-STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersion_1_0,
-                   ResourceResponse::HTTPVersion_1_0);
-STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersion_1_1,
-                   ResourceResponse::HTTPVersion_1_1);
-STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersion_2_0,
-                   ResourceResponse::HTTPVersion_2_0);
+STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersionUnknown,
+                   ResourceResponse::kHTTPVersionUnknown);
+STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_0_9,
+                   ResourceResponse::kHTTPVersion_0_9);
+STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_1_0,
+                   ResourceResponse::kHTTPVersion_1_0);
+STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_1_1,
+                   ResourceResponse::kHTTPVersion_1_1);
+STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_2_0,
+                   ResourceResponse::kHTTPVersion_2_0);
 
-STATIC_ASSERT_ENUM(WebURLRequest::PriorityUnresolved,
-                   ResourceLoadPriorityUnresolved);
-STATIC_ASSERT_ENUM(WebURLRequest::PriorityVeryLow, ResourceLoadPriorityVeryLow);
-STATIC_ASSERT_ENUM(WebURLRequest::PriorityLow, ResourceLoadPriorityLow);
-STATIC_ASSERT_ENUM(WebURLRequest::PriorityMedium, ResourceLoadPriorityMedium);
-STATIC_ASSERT_ENUM(WebURLRequest::PriorityHigh, ResourceLoadPriorityHigh);
-STATIC_ASSERT_ENUM(WebURLRequest::PriorityVeryHigh,
-                   ResourceLoadPriorityVeryHigh);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityUnresolved,
+                   kResourceLoadPriorityUnresolved);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryLow,
+                   kResourceLoadPriorityVeryLow);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityLow, kResourceLoadPriorityLow);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityMedium, kResourceLoadPriorityMedium);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityHigh, kResourceLoadPriorityHigh);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryHigh,
+                   kResourceLoadPriorityVeryHigh);
 
-STATIC_ASSERT_ENUM(WebNavigationPolicyIgnore, NavigationPolicyIgnore);
-STATIC_ASSERT_ENUM(WebNavigationPolicyDownload, NavigationPolicyDownload);
-STATIC_ASSERT_ENUM(WebNavigationPolicyCurrentTab, NavigationPolicyCurrentTab);
-STATIC_ASSERT_ENUM(WebNavigationPolicyNewBackgroundTab,
-                   NavigationPolicyNewBackgroundTab);
-STATIC_ASSERT_ENUM(WebNavigationPolicyNewForegroundTab,
-                   NavigationPolicyNewForegroundTab);
-STATIC_ASSERT_ENUM(WebNavigationPolicyNewWindow, NavigationPolicyNewWindow);
-STATIC_ASSERT_ENUM(WebNavigationPolicyNewPopup, NavigationPolicyNewPopup);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyDownload, kNavigationPolicyDownload);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyCurrentTab, kNavigationPolicyCurrentTab);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyNewBackgroundTab,
+                   kNavigationPolicyNewBackgroundTab);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyNewForegroundTab,
+                   kNavigationPolicyNewForegroundTab);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyNewWindow, kNavigationPolicyNewWindow);
+STATIC_ASSERT_ENUM(kWebNavigationPolicyNewPopup, kNavigationPolicyNewPopup);
 
-STATIC_ASSERT_ENUM(WebStandardCommit, StandardCommit);
-STATIC_ASSERT_ENUM(WebBackForwardCommit, BackForwardCommit);
-STATIC_ASSERT_ENUM(WebInitialCommitInChildFrame, InitialCommitInChildFrame);
-STATIC_ASSERT_ENUM(WebHistoryInertCommit, HistoryInertCommit);
+STATIC_ASSERT_ENUM(kWebStandardCommit, kStandardCommit);
+STATIC_ASSERT_ENUM(kWebBackForwardCommit, kBackForwardCommit);
+STATIC_ASSERT_ENUM(kWebInitialCommitInChildFrame, kInitialCommitInChildFrame);
+STATIC_ASSERT_ENUM(kWebHistoryInertCommit, kHistoryInertCommit);
 
-STATIC_ASSERT_ENUM(WebHistorySameDocumentLoad, HistorySameDocumentLoad);
-STATIC_ASSERT_ENUM(WebHistoryDifferentDocumentLoad,
-                   HistoryDifferentDocumentLoad);
+STATIC_ASSERT_ENUM(kWebHistorySameDocumentLoad, kHistorySameDocumentLoad);
+STATIC_ASSERT_ENUM(kWebHistoryDifferentDocumentLoad,
+                   kHistoryDifferentDocumentLoad);
 
-STATIC_ASSERT_ENUM(WebHistoryScrollRestorationManual, ScrollRestorationManual);
-STATIC_ASSERT_ENUM(WebHistoryScrollRestorationAuto, ScrollRestorationAuto);
+STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationManual,
+                   kScrollRestorationManual);
+STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationAuto, kScrollRestorationAuto);
 
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelVerbose, VerboseMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelInfo, InfoMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelWarning, WarningMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::LevelError, ErrorMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, kVerboseMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, kInfoMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, kWarningMessageLevel);
+STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelError, kErrorMessageLevel);
 
-STATIC_ASSERT_ENUM(WebCustomHandlersNew,
-                   NavigatorContentUtilsClient::CustomHandlersNew);
-STATIC_ASSERT_ENUM(WebCustomHandlersRegistered,
-                   NavigatorContentUtilsClient::CustomHandlersRegistered);
-STATIC_ASSERT_ENUM(WebCustomHandlersDeclined,
-                   NavigatorContentUtilsClient::CustomHandlersDeclined);
+STATIC_ASSERT_ENUM(kWebCustomHandlersNew,
+                   NavigatorContentUtilsClient::kCustomHandlersNew);
+STATIC_ASSERT_ENUM(kWebCustomHandlersRegistered,
+                   NavigatorContentUtilsClient::kCustomHandlersRegistered);
+STATIC_ASSERT_ENUM(kWebCustomHandlersDeclined,
+                   NavigatorContentUtilsClient::kCustomHandlersDeclined);
 
-STATIC_ASSERT_ENUM(WebTouchActionNone, TouchActionNone);
-STATIC_ASSERT_ENUM(WebTouchActionPanLeft, TouchActionPanLeft);
-STATIC_ASSERT_ENUM(WebTouchActionPanRight, TouchActionPanRight);
-STATIC_ASSERT_ENUM(WebTouchActionPanX, TouchActionPanX);
-STATIC_ASSERT_ENUM(WebTouchActionPanUp, TouchActionPanUp);
-STATIC_ASSERT_ENUM(WebTouchActionPanDown, TouchActionPanDown);
-STATIC_ASSERT_ENUM(WebTouchActionPanY, TouchActionPanY);
-STATIC_ASSERT_ENUM(WebTouchActionPan, TouchActionPan);
-STATIC_ASSERT_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
-STATIC_ASSERT_ENUM(WebTouchActionManipulation, TouchActionManipulation);
-STATIC_ASSERT_ENUM(WebTouchActionDoubleTapZoom, TouchActionDoubleTapZoom);
-STATIC_ASSERT_ENUM(WebTouchActionAuto, TouchActionAuto);
+STATIC_ASSERT_ENUM(kWebTouchActionNone, kTouchActionNone);
+STATIC_ASSERT_ENUM(kWebTouchActionPanLeft, kTouchActionPanLeft);
+STATIC_ASSERT_ENUM(kWebTouchActionPanRight, kTouchActionPanRight);
+STATIC_ASSERT_ENUM(kWebTouchActionPanX, kTouchActionPanX);
+STATIC_ASSERT_ENUM(kWebTouchActionPanUp, kTouchActionPanUp);
+STATIC_ASSERT_ENUM(kWebTouchActionPanDown, kTouchActionPanDown);
+STATIC_ASSERT_ENUM(kWebTouchActionPanY, kTouchActionPanY);
+STATIC_ASSERT_ENUM(kWebTouchActionPan, kTouchActionPan);
+STATIC_ASSERT_ENUM(kWebTouchActionPinchZoom, kTouchActionPinchZoom);
+STATIC_ASSERT_ENUM(kWebTouchActionManipulation, kTouchActionManipulation);
+STATIC_ASSERT_ENUM(kWebTouchActionDoubleTapZoom, kTouchActionDoubleTapZoom);
+STATIC_ASSERT_ENUM(kWebTouchActionAuto, kTouchActionAuto);
 
-STATIC_ASSERT_ENUM(WebSelection::NoSelection, NoSelection);
-STATIC_ASSERT_ENUM(WebSelection::CaretSelection, CaretSelection);
-STATIC_ASSERT_ENUM(WebSelection::RangeSelection, RangeSelection);
+STATIC_ASSERT_ENUM(WebSelection::kNoSelection, kNoSelection);
+STATIC_ASSERT_ENUM(WebSelection::kCaretSelection, kCaretSelection);
+STATIC_ASSERT_ENUM(WebSelection::kRangeSelection, kRangeSelection);
 
-STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicyAllowed,
-                   ImageAnimationPolicyAllowed);
-STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicyAnimateOnce,
-                   ImageAnimationPolicyAnimateOnce);
-STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicyNoAnimation,
-                   ImageAnimationPolicyNoAnimation);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAllowed,
+                   kImageAnimationPolicyAllowed);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAnimateOnce,
+                   kImageAnimationPolicyAnimateOnce);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyNoAnimation,
+                   kImageAnimationPolicyNoAnimation);
 
-STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsDefault, V8CacheOptionsDefault);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsNone, V8CacheOptionsNone);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);
+STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsDefault, kV8CacheOptionsDefault);
+STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsNone, kV8CacheOptionsNone);
+STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsParse, kV8CacheOptionsParse);
+STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsCode, kV8CacheOptionsCode);
 
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Default,
-                   V8CacheStrategiesForCacheStorage::Default);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::None,
-                   V8CacheStrategiesForCacheStorage::None);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Normal,
-                   V8CacheStrategiesForCacheStorage::Normal);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Aggressive,
-                   V8CacheStrategiesForCacheStorage::Aggressive);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kDefault,
+                   V8CacheStrategiesForCacheStorage::kDefault);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kNone,
+                   V8CacheStrategiesForCacheStorage::kNone);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kNormal,
+                   V8CacheStrategiesForCacheStorage::kNormal);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kAggressive,
+                   V8CacheStrategiesForCacheStorage::kAggressive);
 
-STATIC_ASSERT_ENUM(WebSandboxFlags::None, SandboxNone);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Navigation, SandboxNavigation);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Plugins, SandboxPlugins);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Origin, SandboxOrigin);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Forms, SandboxForms);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Scripts, SandboxScripts);
-STATIC_ASSERT_ENUM(WebSandboxFlags::TopNavigation, SandboxTopNavigation);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Popups, SandboxPopups);
-STATIC_ASSERT_ENUM(WebSandboxFlags::AutomaticFeatures,
-                   SandboxAutomaticFeatures);
-STATIC_ASSERT_ENUM(WebSandboxFlags::PointerLock, SandboxPointerLock);
-STATIC_ASSERT_ENUM(WebSandboxFlags::DocumentDomain, SandboxDocumentDomain);
-STATIC_ASSERT_ENUM(WebSandboxFlags::OrientationLock, SandboxOrientationLock);
-STATIC_ASSERT_ENUM(WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts,
-                   SandboxPropagatesToAuxiliaryBrowsingContexts);
-STATIC_ASSERT_ENUM(WebSandboxFlags::Modals, SandboxModals);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kNone, kSandboxNone);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kNavigation, kSandboxNavigation);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kPlugins, kSandboxPlugins);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kOrigin, kSandboxOrigin);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kForms, kSandboxForms);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kScripts, kSandboxScripts);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kTopNavigation, kSandboxTopNavigation);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kPopups, kSandboxPopups);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kAutomaticFeatures,
+                   kSandboxAutomaticFeatures);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kPointerLock, kSandboxPointerLock);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kDocumentDomain, kSandboxDocumentDomain);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kOrientationLock, kSandboxOrientationLock);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts,
+                   kSandboxPropagatesToAuxiliaryBrowsingContexts);
+STATIC_ASSERT_ENUM(WebSandboxFlags::kModals, kSandboxModals);
 
-STATIC_ASSERT_ENUM(LocalFrameClient::BeforeUnloadHandler,
-                   WebFrameClient::BeforeUnloadHandler);
-STATIC_ASSERT_ENUM(LocalFrameClient::UnloadHandler,
-                   WebFrameClient::UnloadHandler);
+STATIC_ASSERT_ENUM(LocalFrameClient::kBeforeUnloadHandler,
+                   WebFrameClient::kBeforeUnloadHandler);
+STATIC_ASSERT_ENUM(LocalFrameClient::kUnloadHandler,
+                   WebFrameClient::kUnloadHandler);
 
-STATIC_ASSERT_ENUM(WebFrameLoadType::Standard, FrameLoadTypeStandard);
-STATIC_ASSERT_ENUM(WebFrameLoadType::BackForward, FrameLoadTypeBackForward);
-STATIC_ASSERT_ENUM(WebFrameLoadType::Reload, FrameLoadTypeReload);
-STATIC_ASSERT_ENUM(WebFrameLoadType::ReplaceCurrentItem,
-                   FrameLoadTypeReplaceCurrentItem);
-STATIC_ASSERT_ENUM(WebFrameLoadType::InitialInChildFrame,
-                   FrameLoadTypeInitialInChildFrame);
-STATIC_ASSERT_ENUM(WebFrameLoadType::InitialHistoryLoad,
-                   FrameLoadTypeInitialHistoryLoad);
-STATIC_ASSERT_ENUM(WebFrameLoadType::ReloadBypassingCache,
-                   FrameLoadTypeReloadBypassingCache);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kStandard, kFrameLoadTypeStandard);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kBackForward, kFrameLoadTypeBackForward);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kReload, kFrameLoadTypeReload);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kReplaceCurrentItem,
+                   kFrameLoadTypeReplaceCurrentItem);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kInitialInChildFrame,
+                   kFrameLoadTypeInitialInChildFrame);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kInitialHistoryLoad,
+                   kFrameLoadTypeInitialHistoryLoad);
+STATIC_ASSERT_ENUM(WebFrameLoadType::kReloadBypassingCache,
+                   kFrameLoadTypeReloadBypassingCache);
 
-STATIC_ASSERT_ENUM(FrameDetachType::Remove, WebFrameClient::DetachType::Remove);
-STATIC_ASSERT_ENUM(FrameDetachType::Swap, WebFrameClient::DetachType::Swap);
-STATIC_ASSERT_ENUM(FrameDetachType::Remove,
-                   WebRemoteFrameClient::DetachType::Remove);
-STATIC_ASSERT_ENUM(FrameDetachType::Swap,
-                   WebRemoteFrameClient::DetachType::Swap);
+STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
+                   WebFrameClient::DetachType::kRemove);
+STATIC_ASSERT_ENUM(FrameDetachType::kSwap, WebFrameClient::DetachType::kSwap);
+STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
+                   WebRemoteFrameClient::DetachType::kRemove);
+STATIC_ASSERT_ENUM(FrameDetachType::kSwap,
+                   WebRemoteFrameClient::DetachType::kSwap);
 
-STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::LoadEvent,
-                   ProgressBarCompletion::LoadEvent);
-STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::ResourcesBeforeDCL,
-                   ProgressBarCompletion::ResourcesBeforeDCL);
-STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::DOMContentLoaded,
-                   ProgressBarCompletion::DOMContentLoaded);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kLoadEvent,
+                   ProgressBarCompletion::kLoadEvent);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kResourcesBeforeDCL,
+                   ProgressBarCompletion::kResourcesBeforeDCL);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kDOMContentLoaded,
+                   ProgressBarCompletion::kDOMContentLoaded);
 STATIC_ASSERT_ENUM(
-    WebSettings::ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames,
-    ProgressBarCompletion::ResourcesBeforeDCLAndSameOriginIFrames);
+    WebSettings::ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames,
+    ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames);
 
 // This ensures that the version number published in
 // WebSerializedScriptValueVersion.h matches the serializer's understanding.
 // TODO(jbroman): Fix this to also account for the V8-side version. See
 // https://crbug.com/704293.
 static_assert(kSerializedScriptValueVersion ==
-                  SerializedScriptValue::wireFormatVersion,
+                  SerializedScriptValue::kWireFormatVersion,
               "Update WebSerializedScriptValueVersion.h.");
 
 }  // namespace blink

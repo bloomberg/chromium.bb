@@ -30,43 +30,43 @@ namespace blink {
 
 class PLATFORM_EXPORT SpotLightSource final : public LightSource {
  public:
-  static PassRefPtr<SpotLightSource> create(const FloatPoint3D& position,
+  static PassRefPtr<SpotLightSource> Create(const FloatPoint3D& position,
                                             const FloatPoint3D& direction,
-                                            float specularExponent,
-                                            float limitingConeAngle) {
-    return adoptRef(new SpotLightSource(position, direction, specularExponent,
-                                        limitingConeAngle));
+                                            float specular_exponent,
+                                            float limiting_cone_angle) {
+    return AdoptRef(new SpotLightSource(position, direction, specular_exponent,
+                                        limiting_cone_angle));
   }
 
-  const FloatPoint3D& position() const { return m_position; }
-  const FloatPoint3D& direction() const { return m_direction; }
-  float specularExponent() const { return m_specularExponent; }
-  float limitingConeAngle() const { return m_limitingConeAngle; }
+  const FloatPoint3D& GetPosition() const { return position_; }
+  const FloatPoint3D& Direction() const { return direction_; }
+  float SpecularExponent() const { return specular_exponent_; }
+  float LimitingConeAngle() const { return limiting_cone_angle_; }
 
-  bool setPosition(const FloatPoint3D&) override;
-  bool setPointsAt(const FloatPoint3D&) override;
+  bool SetPosition(const FloatPoint3D&) override;
+  bool SetPointsAt(const FloatPoint3D&) override;
 
-  bool setSpecularExponent(float) override;
-  bool setLimitingConeAngle(float) override;
+  bool SetSpecularExponent(float) override;
+  bool SetLimitingConeAngle(float) override;
 
-  TextStream& externalRepresentation(TextStream&) const override;
+  TextStream& ExternalRepresentation(TextStream&) const override;
 
  private:
   SpotLightSource(const FloatPoint3D& position,
                   const FloatPoint3D& direction,
-                  float specularExponent,
-                  float limitingConeAngle)
+                  float specular_exponent,
+                  float limiting_cone_angle)
       : LightSource(LS_SPOT),
-        m_position(position),
-        m_direction(direction),
-        m_specularExponent(clampTo(specularExponent, 1.0f, 128.0f)),
-        m_limitingConeAngle(limitingConeAngle) {}
+        position_(position),
+        direction_(direction),
+        specular_exponent_(clampTo(specular_exponent, 1.0f, 128.0f)),
+        limiting_cone_angle_(limiting_cone_angle) {}
 
-  FloatPoint3D m_position;
-  FloatPoint3D m_direction;
+  FloatPoint3D position_;
+  FloatPoint3D direction_;
 
-  float m_specularExponent;
-  float m_limitingConeAngle;
+  float specular_exponent_;
+  float limiting_cone_angle_;
 };
 
 }  // namespace blink

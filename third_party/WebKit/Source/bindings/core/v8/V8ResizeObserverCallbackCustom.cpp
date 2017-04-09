@@ -15,36 +15,38 @@ namespace blink {
 void V8ResizeObserverCallback::handleEvent(
     const HeapVector<Member<ResizeObserverEntry>>& entries,
     ResizeObserver* observer) {
-  v8::Isolate* isolate = m_scriptState->isolate();
-  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-  if (!executionContext || executionContext->isContextSuspended() ||
-      executionContext->isContextDestroyed())
+  v8::Isolate* isolate = m_scriptState->GetIsolate();
+  ExecutionContext* execution_context = m_scriptState->GetExecutionContext();
+  if (!execution_context || execution_context->IsContextSuspended() ||
+      execution_context->IsContextDestroyed())
     return;
-  if (!m_scriptState->contextIsValid())
+  if (!m_scriptState->ContextIsValid())
     return;
-  ScriptState::Scope scope(m_scriptState.get());
+  ScriptState::Scope scope(m_scriptState.Get());
 
-  if (m_callback.isEmpty())
-    return;
-
-  v8::Local<v8::Value> observerHandle = ToV8(
-      observer, m_scriptState->context()->Global(), m_scriptState->isolate());
-  if (!observerHandle->IsObject())
+  if (m_callback.IsEmpty())
     return;
 
-  v8::Local<v8::Object> thisObject =
-      v8::Local<v8::Object>::Cast(observerHandle);
-  v8::Local<v8::Value> entriesHandle = ToV8(
-      entries, m_scriptState->context()->Global(), m_scriptState->isolate());
-  if (entriesHandle.IsEmpty())
+  v8::Local<v8::Value> observer_handle =
+      ToV8(observer, m_scriptState->GetContext()->Global(),
+           m_scriptState->GetIsolate());
+  if (!observer_handle->IsObject())
     return;
-  v8::Local<v8::Value> argv[] = {entriesHandle, observerHandle};
 
-  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
-  exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
-                               m_scriptState->getExecutionContext(), thisObject,
-                               WTF_ARRAY_LENGTH(argv), argv, isolate);
+  v8::Local<v8::Object> this_object =
+      v8::Local<v8::Object>::Cast(observer_handle);
+  v8::Local<v8::Value> entries_handle =
+      ToV8(entries, m_scriptState->GetContext()->Global(),
+           m_scriptState->GetIsolate());
+  if (entries_handle.IsEmpty())
+    return;
+  v8::Local<v8::Value> argv[] = {entries_handle, observer_handle};
+
+  v8::TryCatch exception_catcher(m_scriptState->GetIsolate());
+  exception_catcher.SetVerbose(true);
+  V8ScriptRunner::CallFunction(
+      m_callback.NewLocal(isolate), m_scriptState->GetExecutionContext(),
+      this_object, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 }  // namespace blink

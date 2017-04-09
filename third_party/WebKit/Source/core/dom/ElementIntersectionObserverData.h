@@ -21,24 +21,24 @@ class ElementIntersectionObserverData
  public:
   ElementIntersectionObserverData();
 
-  IntersectionObservation* getObservationFor(IntersectionObserver&);
-  void addObserver(IntersectionObserver&);
-  void removeObserver(IntersectionObserver&);
-  void addObservation(IntersectionObservation&);
-  void removeObservation(IntersectionObserver&);
-  void activateValidIntersectionObservers(Node&);
-  void deactivateAllIntersectionObservers(Node&);
+  IntersectionObservation* GetObservationFor(IntersectionObserver&);
+  void AddObserver(IntersectionObserver&);
+  void RemoveObserver(IntersectionObserver&);
+  void AddObservation(IntersectionObservation&);
+  void RemoveObservation(IntersectionObserver&);
+  void ActivateValidIntersectionObservers(Node&);
+  void DeactivateAllIntersectionObservers(Node&);
 
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
  private:
   // IntersectionObservers for which the Node owning this data is root.
-  HeapHashSet<WeakMember<IntersectionObserver>> m_intersectionObservers;
+  HeapHashSet<WeakMember<IntersectionObserver>> intersection_observers_;
   // IntersectionObservations for which the Node owning this data is target.
   HeapHashMap<TraceWrapperMember<IntersectionObserver>,
               Member<IntersectionObservation>>
-      m_intersectionObservations;
+      intersection_observations_;
 };
 
 }  // namespace blink

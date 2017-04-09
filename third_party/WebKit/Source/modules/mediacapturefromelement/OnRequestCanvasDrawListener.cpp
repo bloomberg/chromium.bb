@@ -16,14 +16,14 @@ OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(
 OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() {}
 
 // static
-OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::create(
+OnRequestCanvasDrawListener* OnRequestCanvasDrawListener::Create(
     std::unique_ptr<WebCanvasCaptureHandler> handler) {
   return new OnRequestCanvasDrawListener(std::move(handler));
 }
 
-void OnRequestCanvasDrawListener::sendNewFrame(sk_sp<SkImage> image) {
-  m_frameCaptureRequested = false;
-  CanvasDrawListener::sendNewFrame(std::move(image));
+void OnRequestCanvasDrawListener::SendNewFrame(sk_sp<SkImage> image) {
+  frame_capture_requested_ = false;
+  CanvasDrawListener::SendNewFrame(std::move(image));
 }
 
 }  // namespace blink

@@ -66,8 +66,8 @@ void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
       // Send the start event.
       target->DispatchInputEventToPlatform(
           SyntheticWebGestureEventBuilder::Build(
-              blink::WebGestureEvent::GesturePinchBegin,
-              blink::WebGestureDeviceTouchpad));
+              blink::WebGestureEvent::kGesturePinchBegin,
+              blink::kWebGestureDeviceTouchpad));
       state_ = IN_PROGRESS;
       break;
     case IN_PROGRESS: {
@@ -81,13 +81,13 @@ void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
       target->DispatchInputEventToPlatform(
           SyntheticWebGestureEventBuilder::BuildPinchUpdate(
               incremental_scale, params_.anchor.x(), params_.anchor.y(),
-              0 /* modifierFlags */, blink::WebGestureDeviceTouchpad));
+              0 /* modifierFlags */, blink::kWebGestureDeviceTouchpad));
 
       if (HasReachedTarget(event_timestamp)) {
         target->DispatchInputEventToPlatform(
             SyntheticWebGestureEventBuilder::Build(
-                blink::WebGestureEvent::GesturePinchEnd,
-                blink::WebGestureDeviceTouchpad));
+                blink::WebGestureEvent::kGesturePinchEnd,
+                blink::kWebGestureDeviceTouchpad));
         state_ = DONE;
       }
       break;

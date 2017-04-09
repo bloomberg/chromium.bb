@@ -30,45 +30,45 @@
 
 namespace blink {
 
-void DistributedNodes::swap(DistributedNodes& other) {
-  m_nodes.swap(other.m_nodes);
-  m_indices.swap(other.m_indices);
+void DistributedNodes::Swap(DistributedNodes& other) {
+  nodes_.Swap(other.nodes_);
+  indices_.Swap(other.indices_);
 }
 
-void DistributedNodes::append(Node* node) {
+void DistributedNodes::Append(Node* node) {
   DCHECK(node);
-  DCHECK(!node->isActiveSlotOrActiveInsertionPoint());
-  size_t size = m_nodes.size();
-  m_indices.set(node, size);
-  m_nodes.push_back(node);
+  DCHECK(!node->IsActiveSlotOrActiveInsertionPoint());
+  size_t size = nodes_.size();
+  indices_.Set(node, size);
+  nodes_.push_back(node);
 }
 
-size_t DistributedNodes::find(const Node* node) const {
+size_t DistributedNodes::Find(const Node* node) const {
   HeapHashMap<Member<const Node>, size_t>::const_iterator it =
-      m_indices.find(node);
-  if (it == m_indices.end())
+      indices_.Find(node);
+  if (it == indices_.end())
     return kNotFound;
 
-  return it.get()->value;
+  return it.Get()->value;
 }
 
-Node* DistributedNodes::nextTo(const Node* node) const {
-  size_t index = find(node);
+Node* DistributedNodes::NextTo(const Node* node) const {
+  size_t index = Find(node);
   if (index == kNotFound || index + 1 == size())
     return 0;
   return at(index + 1);
 }
 
-Node* DistributedNodes::previousTo(const Node* node) const {
-  size_t index = find(node);
+Node* DistributedNodes::PreviousTo(const Node* node) const {
+  size_t index = Find(node);
   if (index == kNotFound || !index)
     return 0;
   return at(index - 1);
 }
 
 DEFINE_TRACE(DistributedNodes) {
-  visitor->trace(m_nodes);
-  visitor->trace(m_indices);
+  visitor->Trace(nodes_);
+  visitor->Trace(indices_);
 }
 
 }  // namespace blink

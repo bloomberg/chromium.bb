@@ -13,27 +13,27 @@
 
 TEST(TextCodecLatin1Test, QuestionMarksAndSurrogates) {
   WTF::TextEncoding encoding("windows-1252");
-  std::unique_ptr<WTF::TextCodec> codec(newTextCodec(encoding));
+  std::unique_ptr<WTF::TextCodec> codec(NewTextCodec(encoding));
 
   {
     const LChar testCase[] = {0xd1, 0x16, 0x86};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("\xd1\x16?", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("\xd1\x16?", result.Data());
   }
   {
     const UChar testCase[] = {0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("?", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("?", result.Data());
   }
   {
     const UChar testCase[] = {0xd9f0, 0xdcd9, 0xd9f0, 0xdcd9};
     size_t testCaseSize = WTF_ARRAY_LENGTH(testCase);
-    CString result = codec->encode(testCase, testCaseSize,
-                                   WTF::QuestionMarksForUnencodables);
-    EXPECT_STREQ("??", result.data());
+    CString result = codec->Encode(testCase, testCaseSize,
+                                   WTF::kQuestionMarksForUnencodables);
+    EXPECT_STREQ("??", result.Data());
   }
 }

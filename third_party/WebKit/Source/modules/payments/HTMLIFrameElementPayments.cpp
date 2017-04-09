@@ -13,48 +13,48 @@ namespace blink {
 HTMLIFrameElementPayments::HTMLIFrameElementPayments() {}
 
 // static
-const char* HTMLIFrameElementPayments::supplementName() {
+const char* HTMLIFrameElementPayments::SupplementName() {
   return "HTMLIFrameElementPayments";
 }
 
 // static
-bool HTMLIFrameElementPayments::fastHasAttribute(
+bool HTMLIFrameElementPayments::FastHasAttribute(
     const QualifiedName& name,
     const HTMLIFrameElement& element) {
   DCHECK(name == HTMLNames::allowpaymentrequestAttr);
-  return element.fastHasAttribute(name);
+  return element.FastHasAttribute(name);
 }
 
 // static
-void HTMLIFrameElementPayments::setBooleanAttribute(const QualifiedName& name,
+void HTMLIFrameElementPayments::SetBooleanAttribute(const QualifiedName& name,
                                                     HTMLIFrameElement& element,
                                                     bool value) {
   DCHECK(name == HTMLNames::allowpaymentrequestAttr);
-  element.setBooleanAttribute(name, value);
+  element.SetBooleanAttribute(name, value);
 }
 
 // static
-HTMLIFrameElementPayments& HTMLIFrameElementPayments::from(
+HTMLIFrameElementPayments& HTMLIFrameElementPayments::From(
     HTMLIFrameElement& iframe) {
   HTMLIFrameElementPayments* supplement =
       static_cast<HTMLIFrameElementPayments*>(
-          Supplement<HTMLIFrameElement>::from(iframe, supplementName()));
+          Supplement<HTMLIFrameElement>::From(iframe, SupplementName()));
   if (!supplement) {
     supplement = new HTMLIFrameElementPayments();
-    provideTo(iframe, supplementName(), supplement);
+    ProvideTo(iframe, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 // static
-bool HTMLIFrameElementPayments::allowPaymentRequest(
+bool HTMLIFrameElementPayments::AllowPaymentRequest(
     HTMLIFrameElement& element) {
   return RuntimeEnabledFeatures::paymentRequestEnabled() &&
-         element.fastHasAttribute(HTMLNames::allowpaymentrequestAttr);
+         element.FastHasAttribute(HTMLNames::allowpaymentrequestAttr);
 }
 
 DEFINE_TRACE(HTMLIFrameElementPayments) {
-  Supplement<HTMLIFrameElement>::trace(visitor);
+  Supplement<HTMLIFrameElement>::Trace(visitor);
 }
 
 }  // namespace blink

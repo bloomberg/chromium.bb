@@ -13,49 +13,49 @@
 
 namespace blink {
 
-StylePath::StylePath(std::unique_ptr<SVGPathByteStream> pathByteStream)
-    : m_byteStream(std::move(pathByteStream)),
-      m_pathLength(std::numeric_limits<float>::quiet_NaN()) {
-  DCHECK(m_byteStream);
+StylePath::StylePath(std::unique_ptr<SVGPathByteStream> path_byte_stream)
+    : byte_stream_(std::move(path_byte_stream)),
+      path_length_(std::numeric_limits<float>::quiet_NaN()) {
+  DCHECK(byte_stream_);
 }
 
 StylePath::~StylePath() {}
 
-PassRefPtr<StylePath> StylePath::create(
-    std::unique_ptr<SVGPathByteStream> pathByteStream) {
-  return adoptRef(new StylePath(std::move(pathByteStream)));
+PassRefPtr<StylePath> StylePath::Create(
+    std::unique_ptr<SVGPathByteStream> path_byte_stream) {
+  return AdoptRef(new StylePath(std::move(path_byte_stream)));
 }
 
-StylePath* StylePath::emptyPath() {
-  DEFINE_STATIC_REF(StylePath, emptyPath,
-                    StylePath::create(SVGPathByteStream::create()));
-  return emptyPath;
+StylePath* StylePath::EmptyPath() {
+  DEFINE_STATIC_REF(StylePath, empty_path,
+                    StylePath::Create(SVGPathByteStream::Create()));
+  return empty_path;
 }
 
-const Path& StylePath::path() const {
-  if (!m_path) {
-    m_path = WTF::wrapUnique(new Path);
-    buildPathFromByteStream(*m_byteStream, *m_path);
+const Path& StylePath::GetPath() const {
+  if (!path_) {
+    path_ = WTF::WrapUnique(new Path);
+    BuildPathFromByteStream(*byte_stream_, *path_);
   }
-  return *m_path;
+  return *path_;
 }
 
 float StylePath::length() const {
-  if (std::isnan(m_pathLength))
-    m_pathLength = path().length();
-  return m_pathLength;
+  if (std::isnan(path_length_))
+    path_length_ = GetPath().length();
+  return path_length_;
 }
 
-bool StylePath::isClosed() const {
-  return path().isClosed();
+bool StylePath::IsClosed() const {
+  return GetPath().IsClosed();
 }
 
-CSSValue* StylePath::computedCSSValue() const {
-  return CSSPathValue::create(const_cast<StylePath*>(this));
+CSSValue* StylePath::ComputedCSSValue() const {
+  return CSSPathValue::Create(const_cast<StylePath*>(this));
 }
 
 bool StylePath::operator==(const StylePath& other) const {
-  return *m_byteStream == *other.m_byteStream;
+  return *byte_stream_ == *other.byte_stream_;
 }
 
 }  // namespace blink

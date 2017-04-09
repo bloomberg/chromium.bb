@@ -403,9 +403,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
             "domAutomationController.send("
             "    Math.floor(bounds.top + bounds.height / 2));",
         &y));
-    content::SimulateMouseClickAt(GetWebContents(),
-                                  0,
-                                  blink::WebMouseEvent::Button::Left,
+    content::SimulateMouseClickAt(GetWebContents(), 0,
+                                  blink::WebMouseEvent::Button::kLeft,
                                   gfx::Point(x, y));
   }
 
@@ -475,12 +474,12 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
                              ui::KeyboardCode key_code,
                              content::RenderWidgetHost* widget) {
     // Route popup-targeted key presses via the render view host.
-    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::RawKeyDown,
-                                          blink::WebInputEvent::NoModifiers,
+    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
+                                          blink::WebInputEvent::kNoModifiers,
                                           ui::EventTimeForNow());
-    event.windowsKeyCode = key_code;
-    event.domCode = static_cast<int>(code);
-    event.domKey = key;
+    event.windows_key_code = key_code;
+    event.dom_code = static_cast<int>(code);
+    event.dom_key = key;
     test_delegate_.Reset();
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
@@ -502,12 +501,12 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
                               ui::DomCode code,
                               ui::KeyboardCode key_code) {
     // Route popup-targeted key presses via the render view host.
-    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::RawKeyDown,
-                                          blink::WebInputEvent::NoModifiers,
+    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::kRawKeyDown,
+                                          blink::WebInputEvent::kNoModifiers,
                                           ui::EventTimeForNow());
-    event.windowsKeyCode = key_code;
-    event.domCode = static_cast<int>(code);
-    event.domKey = key;
+    event.windows_key_code = key_code;
+    event.dom_code = static_cast<int>(code);
+    event.dom_key = key;
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
     GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(

@@ -16,8 +16,8 @@
 #define IPC_MESSAGE_START ManifestManagerMsgStart
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
-                              blink::WebScreenOrientationLockDefault,
-                              blink::WebScreenOrientationLockNatural)
+                              blink::kWebScreenOrientationLockDefault,
+                              blink::kWebScreenOrientationLockNatural)
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::Manifest::Icon::IconPurpose,
     content::Manifest::Icon::IconPurpose::ICON_PURPOSE_LAST)

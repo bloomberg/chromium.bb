@@ -36,69 +36,69 @@ class ImageResource;
 
 class CORE_EXPORT ImageDocument final : public HTMLDocument {
  public:
-  static ImageDocument* create(
+  static ImageDocument* Create(
       const DocumentInit& initializer = DocumentInit()) {
     return new ImageDocument(initializer);
   }
 
-  ImageResourceContent* cachedImage();
+  ImageResourceContent* CachedImage();
 
   // TODO(hiroshige): Remove this.
-  ImageResource* cachedImageResourceDeprecated();
+  ImageResource* CachedImageResourceDeprecated();
 
-  HTMLImageElement* imageElement() const { return m_imageElement.get(); }
+  HTMLImageElement* ImageElement() const { return image_element_.Get(); }
 
-  void windowSizeChanged();
-  void imageUpdated();
-  void imageClicked(int x, int y);
-  void imageLoaded();
-  void updateImageStyle();
-  bool shouldShrinkToFit() const;
+  void WindowSizeChanged();
+  void ImageUpdated();
+  void ImageClicked(int x, int y);
+  void ImageLoaded();
+  void UpdateImageStyle();
+  bool ShouldShrinkToFit() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit ImageDocument(const DocumentInit&);
 
-  DocumentParser* createParser() override;
+  DocumentParser* CreateParser() override;
 
-  void createDocumentStructure();
+  void CreateDocumentStructure();
 
   // Calculates how large the div needs to be to properly center the image.
-  int calculateDivWidth();
+  int CalculateDivWidth();
 
   // These methods are for m_shrinkToFitMode == Desktop.
-  void resizeImageToFit();
-  void restoreImageSize();
-  bool imageFitsInWindow() const;
+  void ResizeImageToFit();
+  void RestoreImageSize();
+  bool ImageFitsInWindow() const;
   // Calculates the image size multiplier that's needed to fit the image to
   // the window, taking into account page zoom and device scale.
-  float scale() const;
+  float Scale() const;
 
-  Member<HTMLDivElement> m_divElement;
-  Member<HTMLImageElement> m_imageElement;
+  Member<HTMLDivElement> div_element_;
+  Member<HTMLImageElement> image_element_;
 
   // Whether enough of the image has been loaded to determine its size
-  bool m_imageSizeIsKnown;
+  bool image_size_is_known_;
 
   // Whether the image is shrunk to fit or not
-  bool m_didShrinkImage;
+  bool did_shrink_image_;
 
   // Whether the image should be shrunk or not
-  bool m_shouldShrinkImage;
+  bool should_shrink_image_;
 
   // Whether the image has finished loading or not
-  bool m_imageIsLoaded;
+  bool image_is_loaded_;
 
   // Size of the checkerboard background tiles
-  int m_styleCheckerSize;
+  int style_checker_size_;
 
   // Desktop: State of the mouse cursor in the image style
-  enum MouseCursorMode { Default, ZoomIn, ZoomOut };
-  MouseCursorMode m_styleMouseCursorMode;
+  enum MouseCursorMode { kDefault, kZoomIn, kZoomOut };
+  MouseCursorMode style_mouse_cursor_mode_;
 
-  enum ShrinkToFitMode { Viewport, Desktop };
-  ShrinkToFitMode m_shrinkToFitMode;
+  enum ShrinkToFitMode { kViewport, kDesktop };
+  ShrinkToFitMode shrink_to_fit_mode_;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);

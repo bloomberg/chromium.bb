@@ -42,22 +42,22 @@ bool IsNewFormattingContextForBlockLevelChild(const ComputedStyle& parent_style,
     return false;
 
   const ComputedStyle& style = node.Style();
-  if (style.isFloating() || IsOutOfFlowPositioned(style.position()))
+  if (style.IsFloating() || IsOutOfFlowPositioned(style.GetPosition()))
     return true;
 
-  if (style.specifiesColumns() || style.containsPaint() ||
-      style.containsLayout())
+  if (style.SpecifiesColumns() || style.ContainsPaint() ||
+      style.ContainsLayout())
     return true;
 
-  if (!style.isOverflowVisible())
+  if (!style.IsOverflowVisible())
     return true;
 
-  EDisplay display = style.display();
+  EDisplay display = style.Display();
   if (display == EDisplay::kGrid || display == EDisplay::kFlex ||
       display == EDisplay::kWebkitBox)
     return true;
 
-  if (parent_style.getWritingMode() != style.getWritingMode())
+  if (parent_style.GetWritingMode() != style.GetWritingMode())
     return true;
 
   return false;
@@ -78,9 +78,9 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
     right_offset = right_exclusion->rect.BlockEndOffset();
   }
 
-  switch (style.clear()) {
+  switch (style.Clear()) {
     case EClear::kNone:
-      return WTF::nullopt;  // nothing to do here.
+      return WTF::kNullopt;  // nothing to do here.
     case EClear::kLeft:
       return left_offset;
     case EClear::kRight:
@@ -90,7 +90,7 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
     default:
       ASSERT_NOT_REACHED();
   }
-  return WTF::nullopt;
+  return WTF::kNullopt;
 }
 
 bool ShouldShrinkToFit(const ComputedStyle& parent_style,
@@ -98,10 +98,10 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
   bool is_in_parallel_flow = IsParallelWritingMode(
-      FromPlatformWritingMode(parent_style.getWritingMode()),
-      FromPlatformWritingMode(style.getWritingMode()));
+      FromPlatformWritingMode(parent_style.GetWritingMode()),
+      FromPlatformWritingMode(style.GetWritingMode()));
 
-  return style.display() == EDisplay::kInlineBlock || style.isFloating() ||
+  return style.Display() == EDisplay::kInlineBlock || style.IsFloating() ||
          !is_in_parallel_flow;
 }
 

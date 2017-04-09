@@ -16,30 +16,30 @@ class AXRadioInput final : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AXRadioInput);
 
  public:
-  static AXRadioInput* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXRadioInput* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXRadioInput() override {}
 
-  bool isAXRadioInput() const override { return true; }
-  void updatePosAndSetSize(int position = 0);
-  void requestUpdateToNextNode(bool forward);
-  HTMLInputElement* findFirstRadioButtonInGroup(
+  bool IsAXRadioInput() const override { return true; }
+  void UpdatePosAndSetSize(int position = 0);
+  void RequestUpdateToNextNode(bool forward);
+  HTMLInputElement* FindFirstRadioButtonInGroup(
       HTMLInputElement* current) const;
 
-  int posInSet() const final;
-  int setSize() const final;
+  int PosInSet() const final;
+  int SetSize() const final;
 
  private:
   AXRadioInput(LayoutObject*, AXObjectCacheImpl&);
-  bool calculatePosInSet();
-  int countFromFirstElement() const;
-  HTMLInputElement* element() const;
-  int sizeOfRadioGroup() const;
+  bool CalculatePosInSet();
+  int CountFromFirstElement() const;
+  HTMLInputElement* GetElement() const;
+  int SizeOfRadioGroup() const;
 
-  int m_posInSet;
-  int m_setSize;
+  int pos_in_set_;
+  int set_size_;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXRadioInput, isAXRadioInput());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXRadioInput, IsAXRadioInput());
 
 }  // namespace blink
 

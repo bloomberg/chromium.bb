@@ -32,7 +32,7 @@
 
 namespace blink {
 
-enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
+enum WhitespacePosition { kLeadingWhitespace, kTrailingWhitespace };
 
 struct LayoutTextInfo;
 
@@ -41,28 +41,28 @@ class LineBreaker {
 
  public:
   friend class BreakingContext;
-  LineBreaker(LineLayoutBlockFlow block) : m_block(block) { reset(); }
+  LineBreaker(LineLayoutBlockFlow block) : block_(block) { Reset(); }
 
-  InlineIterator nextLineBreak(InlineBidiResolver&,
+  InlineIterator NextLineBreak(InlineBidiResolver&,
                                LineInfo&,
                                LayoutTextInfo&,
                                WordMeasurements&);
 
-  bool lineWasHyphenated() { return m_hyphenated; }
-  const Vector<LineLayoutBox>& positionedObjects() {
-    return m_positionedObjects;
+  bool LineWasHyphenated() { return hyphenated_; }
+  const Vector<LineLayoutBox>& PositionedObjects() {
+    return positioned_objects_;
   }
-  EClear clear() { return m_clear; }
+  EClear Clear() { return clear_; }
 
  private:
-  void reset();
+  void Reset();
 
-  void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, LineWidth&);
+  void SkipLeadingWhitespace(InlineBidiResolver&, LineInfo&, LineWidth&);
 
-  LineLayoutBlockFlow m_block;
-  bool m_hyphenated;
-  EClear m_clear;
-  Vector<LineLayoutBox> m_positionedObjects;
+  LineLayoutBlockFlow block_;
+  bool hyphenated_;
+  EClear clear_;
+  Vector<LineLayoutBox> positioned_objects_;
 };
 
 }  // namespace blink

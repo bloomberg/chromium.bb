@@ -15,28 +15,28 @@ typedef struct {
   const char* output;
 } TestCase;
 
-static void testMediaQuery(TestCase test, MediaQuerySet& querySet) {
+static void TestMediaQuery(TestCase test, MediaQuerySet& query_set) {
   StringBuilder output;
   size_t j = 0;
-  while (j < querySet.queryVector().size()) {
-    String queryText = querySet.queryVector()[j]->cssText();
-    output.append(queryText);
+  while (j < query_set.QueryVector().size()) {
+    String query_text = query_set.QueryVector()[j]->CssText();
+    output.Append(query_text);
     ++j;
-    if (j >= querySet.queryVector().size())
+    if (j >= query_set.QueryVector().size())
       break;
-    output.append(", ");
+    output.Append(", ");
   }
   if (test.output)
-    ASSERT_STREQ(test.output, output.toString().ascii().data());
+    ASSERT_STREQ(test.output, output.ToString().Ascii().Data());
   else
-    ASSERT_STREQ(test.input, output.toString().ascii().data());
+    ASSERT_STREQ(test.input, output.ToString().Ascii().Data());
 }
 
 TEST(MediaQuerySetTest, Basic) {
   // The first string represents the input string.
   // The second string represents the output string, if present.
   // Otherwise, the output string is identical to the first string.
-  TestCase testCases[] = {
+  TestCase test_cases[] = {
       {"", nullptr},
       {" ", ""},
       {"screen", nullptr},
@@ -181,9 +181,9 @@ TEST(MediaQuerySetTest, Basic) {
       {nullptr, nullptr}  // Do not remove the terminator line.
   };
 
-  for (unsigned i = 0; testCases[i].input; ++i) {
-    MediaQuerySet* querySet = MediaQuerySet::create(testCases[i].input);
-    testMediaQuery(testCases[i], *querySet);
+  for (unsigned i = 0; test_cases[i].input; ++i) {
+    MediaQuerySet* query_set = MediaQuerySet::Create(test_cases[i].input);
+    TestMediaQuery(test_cases[i], *query_set);
   }
 }
 

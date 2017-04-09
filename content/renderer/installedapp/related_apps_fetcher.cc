@@ -18,7 +18,7 @@ RelatedAppsFetcher::RelatedAppsFetcher(ManifestManager* manifest_manager)
 
 RelatedAppsFetcher::~RelatedAppsFetcher() {}
 
-void RelatedAppsFetcher::getManifestRelatedApplications(
+void RelatedAppsFetcher::GetManifestRelatedApplications(
     std::unique_ptr<blink::WebCallbacks<
         const blink::WebVector<blink::WebRelatedApplication>&,
         void>> callbacks) {
@@ -38,16 +38,16 @@ void RelatedAppsFetcher::OnGetManifestForRelatedApplications(
   for (const auto& relatedApplication : manifest.related_applications) {
     blink::WebRelatedApplication webRelatedApplication;
     webRelatedApplication.platform =
-        blink::WebString::fromUTF16(relatedApplication.platform);
+        blink::WebString::FromUTF16(relatedApplication.platform);
     webRelatedApplication.id =
-        blink::WebString::fromUTF16(relatedApplication.id);
+        blink::WebString::FromUTF16(relatedApplication.id);
     if (!relatedApplication.url.is_empty()) {
       webRelatedApplication.url =
-          blink::WebString::fromUTF8(relatedApplication.url.spec());
+          blink::WebString::FromUTF8(relatedApplication.url.spec());
     }
     related_apps.push_back(std::move(webRelatedApplication));
   }
-  callbacks->onSuccess(std::move(related_apps));
+  callbacks->OnSuccess(std::move(related_apps));
 }
 
 }  // namespace content

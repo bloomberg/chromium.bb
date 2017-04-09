@@ -112,7 +112,7 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
 WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {
 }
 
-void WebAudioSourceProviderImpl::setClient(
+void WebAudioSourceProviderImpl::SetClient(
     blink::WebAudioSourceProviderClient* client) {
   // Skip taking the lock if unnecessary. This function is the only setter for
   // |client_| so it's safe to check |client_| outside of the lock.
@@ -151,8 +151,9 @@ void WebAudioSourceProviderImpl::setClient(
   }
 }
 
-void WebAudioSourceProviderImpl::provideInput(
-    const WebVector<float*>& audio_data, size_t number_of_frames) {
+void WebAudioSourceProviderImpl::ProvideInput(
+    const WebVector<float*>& audio_data,
+    size_t number_of_frames) {
   if (!bus_wrapper_ ||
       static_cast<size_t>(bus_wrapper_->channels()) != audio_data.size()) {
     bus_wrapper_ = AudioBus::CreateWrapper(static_cast<int>(audio_data.size()));
@@ -300,7 +301,7 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
     return;
 
   // Inform Blink about the audio stream format.
-  client_->setFormat(tee_filter_->channels(), tee_filter_->sample_rate());
+  client_->SetFormat(tee_filter_->channels(), tee_filter_->sample_rate());
 }
 
 scoped_refptr<SwitchableAudioRendererSink>

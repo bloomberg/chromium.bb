@@ -15,56 +15,57 @@ namespace {
 
 class DataView final : public ArrayBufferView {
  public:
-  static PassRefPtr<DataView> create(ArrayBuffer* buffer,
-                                     unsigned byteOffset,
-                                     unsigned byteLength) {
-    CheckedNumeric<uint32_t> checkedMax = byteOffset;
-    checkedMax += byteLength;
-    CHECK_LE(checkedMax.ValueOrDie(), buffer->byteLength());
-    return adoptRef(new DataView(buffer, byteOffset, byteLength));
+  static PassRefPtr<DataView> Create(ArrayBuffer* buffer,
+                                     unsigned byte_offset,
+                                     unsigned byte_length) {
+    CheckedNumeric<uint32_t> checked_max = byte_offset;
+    checked_max += byte_length;
+    CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLength());
+    return AdoptRef(new DataView(buffer, byte_offset, byte_length));
   }
 
-  unsigned byteLength() const override { return m_byteLength; }
-  ViewType type() const override { return TypeDataView; }
-  unsigned typeSize() const override { return 1; }
+  unsigned ByteLength() const override { return byte_length_; }
+  ViewType GetType() const override { return kTypeDataView; }
+  unsigned TypeSize() const override { return 1; }
 
  protected:
-  void neuter() override {
-    ArrayBufferView::neuter();
-    m_byteLength = 0;
+  void Neuter() override {
+    ArrayBufferView::Neuter();
+    byte_length_ = 0;
   }
 
  private:
-  DataView(ArrayBuffer* buffer, unsigned byteOffset, unsigned byteLength)
-      : ArrayBufferView(buffer, byteOffset), m_byteLength(byteLength) {}
+  DataView(ArrayBuffer* buffer, unsigned byte_offset, unsigned byte_length)
+      : ArrayBufferView(buffer, byte_offset), byte_length_(byte_length) {}
 
-  unsigned m_byteLength;
+  unsigned byte_length_;
 };
 
 }  // anonymous namespace
 
-DOMDataView* DOMDataView::create(DOMArrayBufferBase* buffer,
-                                 unsigned byteOffset,
-                                 unsigned byteLength) {
-  RefPtr<DataView> dataView =
-      DataView::create(buffer->buffer(), byteOffset, byteLength);
-  return new DOMDataView(dataView, buffer);
+DOMDataView* DOMDataView::Create(DOMArrayBufferBase* buffer,
+                                 unsigned byte_offset,
+                                 unsigned byte_length) {
+  RefPtr<DataView> data_view =
+      DataView::Create(buffer->Buffer(), byte_offset, byte_length);
+  return new DOMDataView(data_view, buffer);
 }
 
-v8::Local<v8::Object> DOMDataView::wrap(v8::Isolate* isolate,
-                                        v8::Local<v8::Object> creationContext) {
-  DCHECK(!DOMDataStore::containsWrapper(this, isolate));
+v8::Local<v8::Object> DOMDataView::Wrap(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creation_context) {
+  DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
 
-  const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
-  v8::Local<v8::Value> v8Buffer = ToV8(buffer(), creationContext, isolate);
-  if (v8Buffer.IsEmpty())
+  const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
+  v8::Local<v8::Value> v8_buffer = ToV8(buffer(), creation_context, isolate);
+  if (v8_buffer.IsEmpty())
     return v8::Local<v8::Object>();
-  DCHECK(v8Buffer->IsArrayBuffer());
+  DCHECK(v8_buffer->IsArrayBuffer());
 
   v8::Local<v8::Object> wrapper = v8::DataView::New(
-      v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
+      v8_buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
 
-  return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
+  return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }
 
 }  // namespace blink

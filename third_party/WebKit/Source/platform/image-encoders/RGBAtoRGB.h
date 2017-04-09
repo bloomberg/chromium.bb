@@ -17,11 +17,11 @@
 
 namespace blink {
 PLATFORM_EXPORT void RGBAtoRGBScalar(const unsigned char* pixels,
-                                     unsigned pixelCount,
+                                     unsigned pixel_count,
                                      unsigned char* output);
 #ifdef __ARM_NEON__
 PLATFORM_EXPORT void RGBAtoRGBNeon(const unsigned char* input,
-                                   const unsigned pixelCount,
+                                   const unsigned pixel_count,
                                    unsigned char* output);
 #endif
 

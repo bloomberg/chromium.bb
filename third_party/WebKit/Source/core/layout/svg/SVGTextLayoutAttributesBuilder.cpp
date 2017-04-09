@@ -29,106 +29,106 @@ namespace blink {
 
 namespace {
 
-void updateLayoutAttributes(LayoutSVGInlineText& text,
-                            unsigned& valueListPosition,
-                            const SVGCharacterDataMap& allCharactersMap) {
-  SVGCharacterDataMap& characterDataMap = text.characterDataMap();
-  characterDataMap.clear();
+void UpdateLayoutAttributes(LayoutSVGInlineText& text,
+                            unsigned& value_list_position,
+                            const SVGCharacterDataMap& all_characters_map) {
+  SVGCharacterDataMap& character_data_map = text.CharacterDataMap();
+  character_data_map.Clear();
 
-  LineLayoutSVGInlineText textLineLayout(&text);
-  for (SVGInlineTextMetricsIterator iterator(textLineLayout);
-       !iterator.isAtEnd(); iterator.next()) {
-    if (iterator.metrics().isEmpty())
+  LineLayoutSVGInlineText text_line_layout(&text);
+  for (SVGInlineTextMetricsIterator iterator(text_line_layout);
+       !iterator.IsAtEnd(); iterator.Next()) {
+    if (iterator.Metrics().IsEmpty())
       continue;
 
-    auto it = allCharactersMap.find(valueListPosition + 1);
-    if (it != allCharactersMap.end())
-      characterDataMap.set(iterator.characterOffset() + 1, it->value);
+    auto it = all_characters_map.Find(value_list_position + 1);
+    if (it != all_characters_map.end())
+      character_data_map.Set(iterator.CharacterOffset() + 1, it->value);
 
     // Increase the position in the value/attribute list with one for each
     // "character unit" (that will be displayed.)
-    valueListPosition++;
+    value_list_position++;
   }
 }
 
 }  // namespace
 
 SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder(
-    LayoutSVGText& textRoot)
-    : m_textRoot(textRoot), m_characterCount(0) {}
+    LayoutSVGText& text_root)
+    : text_root_(text_root), character_count_(0) {}
 
-void SVGTextLayoutAttributesBuilder::buildLayoutAttributes() {
-  m_characterDataMap.clear();
+void SVGTextLayoutAttributesBuilder::BuildLayoutAttributes() {
+  character_data_map_.Clear();
 
-  if (m_textPositions.isEmpty()) {
-    m_characterCount = 0;
-    collectTextPositioningElements(m_textRoot);
+  if (text_positions_.IsEmpty()) {
+    character_count_ = 0;
+    CollectTextPositioningElements(text_root_);
   }
 
-  if (!m_characterCount)
+  if (!character_count_)
     return;
 
-  buildCharacterDataMap(m_textRoot);
+  BuildCharacterDataMap(text_root_);
 
-  unsigned valueListPosition = 0;
-  LayoutObject* child = m_textRoot.firstChild();
+  unsigned value_list_position = 0;
+  LayoutObject* child = text_root_.FirstChild();
   while (child) {
-    if (child->isSVGInlineText()) {
-      updateLayoutAttributes(toLayoutSVGInlineText(*child), valueListPosition,
-                             m_characterDataMap);
-    } else if (child->isSVGInline()) {
+    if (child->IsSVGInlineText()) {
+      UpdateLayoutAttributes(ToLayoutSVGInlineText(*child), value_list_position,
+                             character_data_map_);
+    } else if (child->IsSVGInline()) {
       // Visit children of text content elements.
-      if (LayoutObject* inlineChild = toLayoutSVGInline(child)->firstChild()) {
-        child = inlineChild;
+      if (LayoutObject* inline_child = ToLayoutSVGInline(child)->FirstChild()) {
+        child = inline_child;
         continue;
       }
     }
-    child = child->nextInPreOrderAfterChildren(&m_textRoot);
+    child = child->NextInPreOrderAfterChildren(&text_root_);
   }
 }
 
-static inline unsigned countCharactersInTextNode(
+static inline unsigned CountCharactersInTextNode(
     const LayoutSVGInlineText& text) {
-  unsigned numCharacters = 0;
-  for (const SVGTextMetrics& metrics : text.metricsList()) {
-    if (metrics.isEmpty())
+  unsigned num_characters = 0;
+  for (const SVGTextMetrics& metrics : text.MetricsList()) {
+    if (metrics.IsEmpty())
       continue;
-    numCharacters++;
+    num_characters++;
   }
-  return numCharacters;
+  return num_characters;
 }
 
-static SVGTextPositioningElement* positioningElementFromLayoutObject(
-    LayoutObject& layoutObject) {
-  DCHECK(layoutObject.isSVGText() || layoutObject.isSVGInline());
+static SVGTextPositioningElement* PositioningElementFromLayoutObject(
+    LayoutObject& layout_object) {
+  DCHECK(layout_object.IsSVGText() || layout_object.IsSVGInline());
 
-  Node* node = layoutObject.node();
+  Node* node = layout_object.GetNode();
   DCHECK(node);
-  DCHECK(node->isSVGElement());
+  DCHECK(node->IsSVGElement());
 
-  return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node)
+  return IsSVGTextPositioningElement(*node) ? ToSVGTextPositioningElement(node)
                                             : nullptr;
 }
 
-void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(
+void SVGTextLayoutAttributesBuilder::CollectTextPositioningElements(
     LayoutBoxModelObject& start) {
-  DCHECK(!start.isSVGText() || m_textPositions.isEmpty());
+  DCHECK(!start.IsSVGText() || text_positions_.IsEmpty());
   SVGTextPositioningElement* element =
-      positioningElementFromLayoutObject(start);
-  unsigned atPosition = m_textPositions.size();
+      PositioningElementFromLayoutObject(start);
+  unsigned at_position = text_positions_.size();
   if (element)
-    m_textPositions.push_back(TextPosition(element, m_characterCount));
+    text_positions_.push_back(TextPosition(element, character_count_));
 
-  for (LayoutObject* child = start.slowFirstChild(); child;
-       child = child->nextSibling()) {
-    if (child->isSVGInlineText()) {
-      m_characterCount +=
-          countCharactersInTextNode(toLayoutSVGInlineText(*child));
+  for (LayoutObject* child = start.SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (child->IsSVGInlineText()) {
+      character_count_ +=
+          CountCharactersInTextNode(ToLayoutSVGInlineText(*child));
       continue;
     }
 
-    if (child->isSVGInline()) {
-      collectTextPositioningElements(toLayoutSVGInline(*child));
+    if (child->IsSVGInline()) {
+      CollectTextPositioningElements(ToLayoutSVGInline(*child));
       continue;
     }
   }
@@ -137,23 +137,23 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(
     return;
 
   // Compute the length of the subtree after all children have been visited.
-  TextPosition& position = m_textPositions[atPosition];
+  TextPosition& position = text_positions_[at_position];
   DCHECK(!position.length);
-  position.length = m_characterCount - position.start;
+  position.length = character_count_ - position.start;
 }
 
-void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(
-    LayoutSVGText& textRoot) {
+void SVGTextLayoutAttributesBuilder::BuildCharacterDataMap(
+    LayoutSVGText& text_root) {
   // Fill character data map using text positioning elements in top-down order.
-  for (const TextPosition& position : m_textPositions)
-    fillCharacterDataMap(position);
+  for (const TextPosition& position : text_positions_)
+    FillCharacterDataMap(position);
 
   // Handle x/y default attributes.
   SVGCharacterData& data =
-      m_characterDataMap.insert(1, SVGCharacterData()).storedValue->value;
-  if (!data.hasX())
+      character_data_map_.insert(1, SVGCharacterData()).stored_value->value;
+  if (!data.HasX())
     data.x = 0;
-  if (!data.hasY())
+  if (!data.HasY())
     data.y = 0;
 }
 
@@ -165,83 +165,83 @@ class AttributeListsIterator {
  public:
   AttributeListsIterator(SVGTextPositioningElement*);
 
-  bool hasAttributes() const {
-    return m_xListRemaining || m_yListRemaining || m_dxListRemaining ||
-           m_dyListRemaining || m_rotateListRemaining;
+  bool HasAttributes() const {
+    return x_list_remaining_ || y_list_remaining_ || dx_list_remaining_ ||
+           dy_list_remaining_ || rotate_list_remaining_;
   }
-  void updateCharacterData(size_t index, SVGCharacterData&);
+  void UpdateCharacterData(size_t index, SVGCharacterData&);
 
  private:
-  SVGLengthContext m_lengthContext;
-  Member<SVGLengthList> m_xList;
-  unsigned m_xListRemaining;
-  Member<SVGLengthList> m_yList;
-  unsigned m_yListRemaining;
-  Member<SVGLengthList> m_dxList;
-  unsigned m_dxListRemaining;
-  Member<SVGLengthList> m_dyList;
-  unsigned m_dyListRemaining;
-  Member<SVGNumberList> m_rotateList;
-  unsigned m_rotateListRemaining;
+  SVGLengthContext length_context_;
+  Member<SVGLengthList> x_list_;
+  unsigned x_list_remaining_;
+  Member<SVGLengthList> y_list_;
+  unsigned y_list_remaining_;
+  Member<SVGLengthList> dx_list_;
+  unsigned dx_list_remaining_;
+  Member<SVGLengthList> dy_list_;
+  unsigned dy_list_remaining_;
+  Member<SVGNumberList> rotate_list_;
+  unsigned rotate_list_remaining_;
 };
 
 AttributeListsIterator::AttributeListsIterator(
     SVGTextPositioningElement* element)
-    : m_lengthContext(element),
-      m_xList(element->x()->currentValue()),
-      m_xListRemaining(m_xList->length()),
-      m_yList(element->y()->currentValue()),
-      m_yListRemaining(m_yList->length()),
-      m_dxList(element->dx()->currentValue()),
-      m_dxListRemaining(m_dxList->length()),
-      m_dyList(element->dy()->currentValue()),
-      m_dyListRemaining(m_dyList->length()),
-      m_rotateList(element->rotate()->currentValue()),
-      m_rotateListRemaining(m_rotateList->length()) {}
+    : length_context_(element),
+      x_list_(element->x()->CurrentValue()),
+      x_list_remaining_(x_list_->length()),
+      y_list_(element->y()->CurrentValue()),
+      y_list_remaining_(y_list_->length()),
+      dx_list_(element->dx()->CurrentValue()),
+      dx_list_remaining_(dx_list_->length()),
+      dy_list_(element->dy()->CurrentValue()),
+      dy_list_remaining_(dy_list_->length()),
+      rotate_list_(element->rotate()->CurrentValue()),
+      rotate_list_remaining_(rotate_list_->length()) {}
 
-inline void AttributeListsIterator::updateCharacterData(
+inline void AttributeListsIterator::UpdateCharacterData(
     size_t index,
     SVGCharacterData& data) {
-  if (m_xListRemaining) {
-    data.x = m_xList->at(index)->value(m_lengthContext);
-    --m_xListRemaining;
+  if (x_list_remaining_) {
+    data.x = x_list_->at(index)->Value(length_context_);
+    --x_list_remaining_;
   }
-  if (m_yListRemaining) {
-    data.y = m_yList->at(index)->value(m_lengthContext);
-    --m_yListRemaining;
+  if (y_list_remaining_) {
+    data.y = y_list_->at(index)->Value(length_context_);
+    --y_list_remaining_;
   }
-  if (m_dxListRemaining) {
-    data.dx = m_dxList->at(index)->value(m_lengthContext);
-    --m_dxListRemaining;
+  if (dx_list_remaining_) {
+    data.dx = dx_list_->at(index)->Value(length_context_);
+    --dx_list_remaining_;
   }
-  if (m_dyListRemaining) {
-    data.dy = m_dyList->at(index)->value(m_lengthContext);
-    --m_dyListRemaining;
+  if (dy_list_remaining_) {
+    data.dy = dy_list_->at(index)->Value(length_context_);
+    --dy_list_remaining_;
   }
-  if (m_rotateListRemaining) {
+  if (rotate_list_remaining_) {
     data.rotate =
-        m_rotateList->at(std::min(index, m_rotateList->length() - 1))->value();
+        rotate_list_->at(std::min(index, rotate_list_->length() - 1))->Value();
     // The last rotation value spans the whole scope.
-    if (m_rotateListRemaining > 1)
-      --m_rotateListRemaining;
+    if (rotate_list_remaining_ > 1)
+      --rotate_list_remaining_;
   }
 }
 
 }  // namespace
 
-void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(
+void SVGTextLayoutAttributesBuilder::FillCharacterDataMap(
     const TextPosition& position) {
-  AttributeListsIterator attrLists(position.element);
-  for (unsigned i = 0; attrLists.hasAttributes() && i < position.length; ++i) {
+  AttributeListsIterator attr_lists(position.element);
+  for (unsigned i = 0; attr_lists.HasAttributes() && i < position.length; ++i) {
     SVGCharacterData& data =
-        m_characterDataMap.insert(position.start + i + 1, SVGCharacterData())
-            .storedValue->value;
-    attrLists.updateCharacterData(i, data);
+        character_data_map_.insert(position.start + i + 1, SVGCharacterData())
+            .stored_value->value;
+    attr_lists.UpdateCharacterData(i, data);
   }
 }
 
 DEFINE_TRACE(SVGTextLayoutAttributesBuilder::TextPosition) {
-  visitor->trace(element);
+  visitor->Trace(element);
 }
 
 }  // namespace blink

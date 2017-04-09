@@ -41,66 +41,66 @@
 
 namespace blink {
 
-void WebImageDecoder::reset() {
-  delete m_private;
+void WebImageDecoder::Reset() {
+  delete private_;
 }
 
-void WebImageDecoder::init(Type type) {
-  size_t maxDecodedBytes = Platform::current()->maxDecodedImageBytes();
+void WebImageDecoder::Init(Type type) {
+  size_t max_decoded_bytes = Platform::Current()->MaxDecodedImageBytes();
 
   switch (type) {
-    case TypeBMP:
-      m_private = new BMPImageDecoder(
-          ImageDecoder::AlphaPremultiplied,
-          ColorBehavior::transformToTargetForTesting(), maxDecodedBytes);
+    case kTypeBMP:
+      private_ = new BMPImageDecoder(
+          ImageDecoder::kAlphaPremultiplied,
+          ColorBehavior::TransformToTargetForTesting(), max_decoded_bytes);
       break;
-    case TypeICO:
-      m_private = new ICOImageDecoder(
-          ImageDecoder::AlphaPremultiplied,
-          ColorBehavior::transformToTargetForTesting(), maxDecodedBytes);
+    case kTypeICO:
+      private_ = new ICOImageDecoder(
+          ImageDecoder::kAlphaPremultiplied,
+          ColorBehavior::TransformToTargetForTesting(), max_decoded_bytes);
       break;
   }
 }
 
-void WebImageDecoder::setData(const WebData& data, bool allDataReceived) {
-  DCHECK(m_private);
-  m_private->setData(PassRefPtr<SharedBuffer>(data).get(), allDataReceived);
+void WebImageDecoder::SetData(const WebData& data, bool all_data_received) {
+  DCHECK(private_);
+  private_->SetData(PassRefPtr<SharedBuffer>(data).Get(), all_data_received);
 }
 
-bool WebImageDecoder::isFailed() const {
-  DCHECK(m_private);
-  return m_private->failed();
+bool WebImageDecoder::IsFailed() const {
+  DCHECK(private_);
+  return private_->Failed();
 }
 
-bool WebImageDecoder::isSizeAvailable() const {
-  DCHECK(m_private);
-  return m_private->isSizeAvailable();
+bool WebImageDecoder::IsSizeAvailable() const {
+  DCHECK(private_);
+  return private_->IsSizeAvailable();
 }
 
 WebSize WebImageDecoder::size() const {
-  DCHECK(m_private);
-  return m_private->size();
+  DCHECK(private_);
+  return private_->size();
 }
 
-size_t WebImageDecoder::frameCount() const {
-  DCHECK(m_private);
-  return m_private->frameCount();
+size_t WebImageDecoder::FrameCount() const {
+  DCHECK(private_);
+  return private_->FrameCount();
 }
 
-bool WebImageDecoder::isFrameCompleteAtIndex(int index) const {
-  DCHECK(m_private);
-  ImageFrame* const frameBuffer = m_private->frameBufferAtIndex(index);
-  if (!frameBuffer)
+bool WebImageDecoder::IsFrameCompleteAtIndex(int index) const {
+  DCHECK(private_);
+  ImageFrame* const frame_buffer = private_->FrameBufferAtIndex(index);
+  if (!frame_buffer)
     return false;
-  return frameBuffer->getStatus() == ImageFrame::FrameComplete;
+  return frame_buffer->GetStatus() == ImageFrame::kFrameComplete;
 }
 
-WebImage WebImageDecoder::getFrameAtIndex(int index = 0) const {
-  DCHECK(m_private);
-  ImageFrame* const frameBuffer = m_private->frameBufferAtIndex(index);
-  if (!frameBuffer)
+WebImage WebImageDecoder::GetFrameAtIndex(int index = 0) const {
+  DCHECK(private_);
+  ImageFrame* const frame_buffer = private_->FrameBufferAtIndex(index);
+  if (!frame_buffer)
     return WebImage();
-  return WebImage(frameBuffer->bitmap());
+  return WebImage(frame_buffer->Bitmap());
 }
 
 }  // namespace blink

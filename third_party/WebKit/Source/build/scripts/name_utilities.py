@@ -148,11 +148,12 @@ def enum_value_name(name):
 
 
 def class_member_name(name):
-    return 'm_' + lower_camel_case(name)
+    lower_case_words = [word.lower() for word in split_name(name)]
+    return "_".join(lower_case_words) + "_"
 
 
 def method_name(name):
-    return lower_camel_case(name)
+    return upper_camel_case(name)
 
 
 def join_name(*names):

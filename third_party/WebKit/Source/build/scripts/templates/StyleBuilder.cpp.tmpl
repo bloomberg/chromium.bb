@@ -12,7 +12,7 @@
 
 namespace blink {
 
-void StyleBuilder::applyProperty(CSSPropertyID property,
+void StyleBuilder::ApplyProperty(CSSPropertyID property,
                                  StyleResolverState& state,
                                  const CSSValue& value,
                                  bool isInitial,
@@ -40,9 +40,9 @@ void StyleBuilder::applyProperty(CSSPropertyID property,
     case {{property_id}}:
     {% endfor %}
     {
-      CSSPropertyID resolvedProperty = CSSProperty::resolveDirectionAwareProperty(property, state.style()->direction(), state.style()->getWritingMode());
+      CSSPropertyID resolvedProperty = CSSProperty::ResolveDirectionAwareProperty(property, state.Style()->Direction(), state.Style()->GetWritingMode());
       ASSERT(resolvedProperty != property);
-      applyProperty(resolvedProperty, state, value);
+      ApplyProperty(resolvedProperty, state, value);
       return;
     }
     {% for property_id, property in properties.items() if property.builder_skip %}

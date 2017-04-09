@@ -33,31 +33,31 @@
 namespace blink {
 
 // static
-void LayoutThemeFontProvider::setDefaultFontSize(int fontSize) {
-  s_defaultFontSize = static_cast<float>(fontSize);
+void LayoutThemeFontProvider::SetDefaultFontSize(int font_size) {
+  default_font_size_ = static_cast<float>(font_size);
 }
 
 // static
-void LayoutThemeFontProvider::systemFont(CSSValueID systemFontID,
-                                         FontStyle& fontStyle,
-                                         FontWeight& fontWeight,
-                                         float& fontSize,
-                                         AtomicString& fontFamily) {
-  fontWeight = FontWeightNormal;
-  fontStyle = FontStyleNormal;
-  fontSize = s_defaultFontSize;
-  fontFamily = defaultGUIFont();
+void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
+                                         FontStyle& font_style,
+                                         FontWeight& font_weight,
+                                         float& font_size,
+                                         AtomicString& font_family) {
+  font_weight = kFontWeightNormal;
+  font_style = kFontStyleNormal;
+  font_size = default_font_size_;
+  font_family = DefaultGUIFont();
 
-  switch (systemFontID) {
+  switch (system_font_id) {
     case CSSValueWebkitMiniControl:
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
       // Why 2 points smaller? Because that's what Gecko does. Note that we
       // are assuming a 96dpi screen, which is the default that we use on
       // Windows.
-      static const float pointsPerInch = 72.0f;
-      static const float pixelsPerInch = 96.0f;
-      fontSize -= (2.0f / pointsPerInch) * pixelsPerInch;
+      static const float kPointsPerInch = 72.0f;
+      static const float kPixelsPerInch = 96.0f;
+      font_size -= (2.0f / kPointsPerInch) * kPixelsPerInch;
       break;
     default:
       break;

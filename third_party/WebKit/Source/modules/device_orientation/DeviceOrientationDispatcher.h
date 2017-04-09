@@ -54,15 +54,15 @@ class DeviceOrientationDispatcher final
   USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationDispatcher);
 
  public:
-  static DeviceOrientationDispatcher& instance(bool absolute);
+  static DeviceOrientationDispatcher& Instance(bool absolute);
   ~DeviceOrientationDispatcher() override;
 
   // Note that the returned object is owned by this class.
   // FIXME: make the return value const, see crbug.com/233174.
-  DeviceOrientationData* latestDeviceOrientationData();
+  DeviceOrientationData* LatestDeviceOrientationData();
 
   // Inherited from WebDeviceOrientationListener.
-  void didChangeDeviceOrientation(const device::OrientationData&) override;
+  void DidChangeDeviceOrientation(const device::OrientationData&) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -70,13 +70,13 @@ class DeviceOrientationDispatcher final
   explicit DeviceOrientationDispatcher(bool absolute);
 
   // Inherited from PlatformEventDispatcher.
-  void startListening() override;
-  void stopListening() override;
+  void StartListening() override;
+  void StopListening() override;
 
-  WebPlatformEventType getWebPlatformEventType() const;
+  WebPlatformEventType GetWebPlatformEventType() const;
 
-  const bool m_absolute;
-  Member<DeviceOrientationData> m_lastDeviceOrientationData;
+  const bool absolute_;
+  Member<DeviceOrientationData> last_device_orientation_data_;
 };
 
 }  // namespace blink

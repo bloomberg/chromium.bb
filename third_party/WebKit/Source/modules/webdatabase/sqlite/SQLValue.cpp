@@ -31,21 +31,21 @@
 namespace blink {
 
 SQLValue::SQLValue(const SQLValue& val)
-    : m_type(val.m_type),
-      m_number(val.m_number),
-      m_string(val.m_string.isolatedCopy()) {}
+    : type_(val.type_),
+      number_(val.number_),
+      string_(val.string_.IsolatedCopy()) {}
 
-String SQLValue::string() const {
-  ASSERT(m_type == StringValue);
+String SQLValue::GetString() const {
+  ASSERT(type_ == kStringValue);
 
   // Must return a copy since ref-shared Strings are not thread safe
-  return m_string.isolatedCopy();
+  return string_.IsolatedCopy();
 }
 
-double SQLValue::number() const {
-  ASSERT(m_type == NumberValue);
+double SQLValue::Number() const {
+  ASSERT(type_ == kNumberValue);
 
-  return m_number;
+  return number_;
 }
 
 }  // namespace blink

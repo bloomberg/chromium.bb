@@ -16,33 +16,33 @@
 namespace blink {
 
 CompositorMutableStateProvider::CompositorMutableStateProvider(
-    cc::LayerTreeImpl* treeImpl,
+    cc::LayerTreeImpl* tree_impl,
     CompositorMutations* mutations)
-    : m_tree(treeImpl), m_mutations(mutations) {}
+    : tree_(tree_impl), mutations_(mutations) {}
 
 CompositorMutableStateProvider::~CompositorMutableStateProvider() {}
 
 std::unique_ptr<CompositorMutableState>
-CompositorMutableStateProvider::getMutableStateFor(uint64_t elementId) {
-  cc::LayerImpl* mainLayer = m_tree->LayerByElementId(
-      createCompositorElementId(elementId, CompositorSubElementId::Primary));
-  cc::LayerImpl* scrollLayer = m_tree->LayerByElementId(
-      createCompositorElementId(elementId, CompositorSubElementId::Scroll));
+CompositorMutableStateProvider::GetMutableStateFor(uint64_t element_id) {
+  cc::LayerImpl* main_layer = tree_->LayerByElementId(
+      CreateCompositorElementId(element_id, CompositorSubElementId::kPrimary));
+  cc::LayerImpl* scroll_layer = tree_->LayerByElementId(
+      CreateCompositorElementId(element_id, CompositorSubElementId::kScroll));
 
-  if (!mainLayer && !scrollLayer)
+  if (!main_layer && !scroll_layer)
     return nullptr;
 
   // Ensure that we have an entry in the map for |elementId| but do as few
   // allocations and queries as possible. This will update the map only if we
   // have not added a value for |elementId|.
-  auto result = m_mutations->map.insert(elementId, nullptr);
+  auto result = mutations_->map.insert(element_id, nullptr);
 
   // Only if this is a new entry do we want to allocate a new mutation.
-  if (result.isNewEntry)
-    result.storedValue->value = WTF::wrapUnique(new CompositorMutation);
+  if (result.is_new_entry)
+    result.stored_value->value = WTF::WrapUnique(new CompositorMutation);
 
-  return WTF::wrapUnique(new CompositorMutableState(
-      result.storedValue->value.get(), mainLayer, scrollLayer));
+  return WTF::WrapUnique(new CompositorMutableState(
+      result.stored_value->value.get(), main_layer, scroll_layer));
 }
 
 }  // namespace blink

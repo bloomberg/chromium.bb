@@ -38,71 +38,72 @@ namespace blink {
 // Number of bits in .BMP used to store the file header (doesn't match
 // "sizeof(BMPImageDecoder::BitmapFileHeader)" since we omit some fields and
 // don't pack).
-static const size_t sizeOfFileHeader = 14;
+static const size_t kSizeOfFileHeader = 14;
 
-BMPImageDecoder::BMPImageDecoder(AlphaOption alphaOption,
-                                 const ColorBehavior& colorBehavior,
-                                 size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorBehavior, maxDecodedBytes),
-      m_decodedOffset(0) {}
+BMPImageDecoder::BMPImageDecoder(AlphaOption alpha_option,
+                                 const ColorBehavior& color_behavior,
+                                 size_t max_decoded_bytes)
+    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+      decoded_offset_(0) {}
 
-void BMPImageDecoder::onSetData(SegmentReader* data) {
-  if (m_reader)
-    m_reader->setData(data);
+void BMPImageDecoder::OnSetData(SegmentReader* data) {
+  if (reader_)
+    reader_->SetData(data);
 }
 
-bool BMPImageDecoder::setFailed() {
-  m_reader.reset();
-  return ImageDecoder::setFailed();
+bool BMPImageDecoder::SetFailed() {
+  reader_.reset();
+  return ImageDecoder::SetFailed();
 }
 
-void BMPImageDecoder::decode(bool onlySize) {
-  if (failed())
+void BMPImageDecoder::Decode(bool only_size) {
+  if (Failed())
     return;
 
   // If we couldn't decode the image but we've received all the data, decoding
   // has failed.
-  if (!decodeHelper(onlySize) && isAllDataReceived())
-    setFailed();
+  if (!DecodeHelper(only_size) && IsAllDataReceived())
+    SetFailed();
   // If we're done decoding the image, we don't need the BMPImageReader
   // anymore.  (If we failed, |m_reader| has already been cleared.)
-  else if (!m_frameBufferCache.isEmpty() &&
-           (m_frameBufferCache.front().getStatus() ==
-            ImageFrame::FrameComplete))
-    m_reader.reset();
+  else if (!frame_buffer_cache_.IsEmpty() &&
+           (frame_buffer_cache_.front().GetStatus() ==
+            ImageFrame::kFrameComplete))
+    reader_.reset();
 }
 
-bool BMPImageDecoder::decodeHelper(bool onlySize) {
-  size_t imgDataOffset = 0;
-  if ((m_decodedOffset < sizeOfFileHeader) && !processFileHeader(imgDataOffset))
+bool BMPImageDecoder::DecodeHelper(bool only_size) {
+  size_t img_data_offset = 0;
+  if ((decoded_offset_ < kSizeOfFileHeader) &&
+      !ProcessFileHeader(img_data_offset))
     return false;
 
-  if (!m_reader) {
-    m_reader = WTF::wrapUnique(
-        new BMPImageReader(this, m_decodedOffset, imgDataOffset, false));
-    m_reader->setData(m_data.get());
+  if (!reader_) {
+    reader_ = WTF::WrapUnique(
+        new BMPImageReader(this, decoded_offset_, img_data_offset, false));
+    reader_->SetData(data_.Get());
   }
 
-  if (!m_frameBufferCache.isEmpty())
-    m_reader->setBuffer(&m_frameBufferCache.front());
+  if (!frame_buffer_cache_.IsEmpty())
+    reader_->SetBuffer(&frame_buffer_cache_.front());
 
-  return m_reader->decodeBMP(onlySize);
+  return reader_->DecodeBMP(only_size);
 }
 
-bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset) {
+bool BMPImageDecoder::ProcessFileHeader(size_t& img_data_offset) {
   // Read file header.
-  DCHECK(!m_decodedOffset);
-  if (m_data->size() < sizeOfFileHeader)
+  DCHECK(!decoded_offset_);
+  if (data_->size() < kSizeOfFileHeader)
     return false;
 
-  char buffer[sizeOfFileHeader];
-  FastSharedBufferReader fastReader(m_data);
-  const char* fileHeader =
-      fastReader.getConsecutiveData(0, sizeOfFileHeader, buffer);
-  const uint16_t fileType =
-      (fileHeader[0] << 8) | static_cast<uint8_t>(fileHeader[1]);
-  imgDataOffset = BMPImageReader::readUint32(&fileHeader[10]);
-  m_decodedOffset = sizeOfFileHeader;
+  char buffer[kSizeOfFileHeader];
+  FastSharedBufferReader fast_reader(data_);
+  const char* file_header =
+      fast_reader.GetConsecutiveData(0, kSizeOfFileHeader, buffer);
+  const uint16_t file_type =
+      (file_header[0] << 8) | static_cast<uint8_t>(file_header[1]);
+  img_data_offset = BMPImageReader::ReadUint32(&file_header[10]);
+  decoded_offset_ = kSizeOfFileHeader;
 
   // See if this is a bitmap filetype we understand.
   enum {
@@ -118,7 +119,7 @@ bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset) {
         BITMAPARRAY = 0x4241,  // "BA"
         */
   };
-  return (fileType == BMAP) || setFailed();
+  return (file_type == BMAP) || SetFailed();
 }
 
 }  // namespace blink

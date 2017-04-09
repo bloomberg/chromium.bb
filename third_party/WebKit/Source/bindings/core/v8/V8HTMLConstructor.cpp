@@ -24,39 +24,39 @@
 namespace blink {
 
 // https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
-void V8HTMLConstructor::htmlConstructor(
+void V8HTMLConstructor::HtmlConstructor(
     const v8::FunctionCallbackInfo<v8::Value>& info,
-    const WrapperTypeInfo& wrapperTypeInfo,
-    const HTMLElementType elementInterfaceName) {
+    const WrapperTypeInfo& wrapper_type_info,
+    const HTMLElementType element_interface_name) {
   TRACE_EVENT0("blink", "HTMLConstructor");
   DCHECK(info.IsConstructCall());
 
   v8::Isolate* isolate = info.GetIsolate();
-  ScriptState* scriptState = ScriptState::current(isolate);
-  v8::Local<v8::Value> newTarget = info.NewTarget();
+  ScriptState* script_state = ScriptState::Current(isolate);
+  v8::Local<v8::Value> new_target = info.NewTarget();
 
-  if (!scriptState->contextIsValid()) {
-    V8ThrowException::throwError(isolate, "The context has been destroyed");
+  if (!script_state->ContextIsValid()) {
+    V8ThrowException::ThrowError(isolate, "The context has been destroyed");
     return;
   }
 
   if (!RuntimeEnabledFeatures::customElementsV1Enabled() ||
-      !scriptState->world().isMainWorld()) {
-    V8ThrowException::throwTypeError(isolate, "Illegal constructor");
+      !script_state->World().IsMainWorld()) {
+    V8ThrowException::ThrowTypeError(isolate, "Illegal constructor");
     return;
   }
 
   // 2. If NewTarget is equal to the active function object, then
   // throw a TypeError and abort these steps.
-  v8::Local<v8::Function> activeFunctionObject =
-      scriptState->perContextData()->constructorForType(
+  v8::Local<v8::Function> active_function_object =
+      script_state->PerContextData()->ConstructorForType(
           &V8HTMLElement::wrapperTypeInfo);
-  if (newTarget == activeFunctionObject) {
-    V8ThrowException::throwTypeError(isolate, "Illegal constructor");
+  if (new_target == active_function_object) {
+    V8ThrowException::ThrowTypeError(isolate, "Illegal constructor");
     return;
   }
 
-  LocalDOMWindow* window = LocalDOMWindow::from(scriptState);
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   CustomElementRegistry* registry = window->customElements();
 
   // 3. Let definition be the entry in registry with constructor equal to
@@ -64,22 +64,22 @@ void V8HTMLConstructor::htmlConstructor(
   // If there is no such definition, then throw a TypeError and abort these
   // steps.
   ScriptCustomElementDefinition* definition =
-      ScriptCustomElementDefinition::forConstructor(scriptState, registry,
-                                                    newTarget);
+      ScriptCustomElementDefinition::ForConstructor(script_state, registry,
+                                                    new_target);
   if (!definition) {
-    V8ThrowException::throwTypeError(isolate, "Illegal constructor");
+    V8ThrowException::ThrowTypeError(isolate, "Illegal constructor");
     return;
   }
 
-  const AtomicString& localName = definition->descriptor().localName();
-  const AtomicString& name = definition->descriptor().name();
+  const AtomicString& local_name = definition->Descriptor().LocalName();
+  const AtomicString& name = definition->Descriptor().GetName();
 
-  if (localName == name) {
+  if (local_name == name) {
     // Autonomous custom element
     // 4.1. If the active function object is not HTMLElement, then throw a
     // TypeError
-    if (!V8HTMLElement::wrapperTypeInfo.equals(&wrapperTypeInfo)) {
-      V8ThrowException::throwTypeError(isolate,
+    if (!V8HTMLElement::wrapperTypeInfo.Equals(&wrapper_type_info)) {
+      V8ThrowException::ThrowTypeError(isolate,
                                        "Illegal constructor: autonomous custom "
                                        "elements must extend HTMLElement");
       return;
@@ -87,68 +87,68 @@ void V8HTMLConstructor::htmlConstructor(
   } else {
     // Customized built-in element
     // 5. If local name is not valid for interface, throw TypeError
-    if (htmlElementTypeForTag(localName) != elementInterfaceName) {
-      V8ThrowException::throwTypeError(isolate,
+    if (htmlElementTypeForTag(local_name) != element_interface_name) {
+      V8ThrowException::ThrowTypeError(isolate,
                                        "Illegal constructor: localName does "
                                        "not match the HTML element interface");
       return;
     }
   }
 
-  ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
-                                "HTMLElement");
-  v8::TryCatch tryCatch(isolate);
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 "HTMLElement");
+  v8::TryCatch try_catch(isolate);
 
   // 6. Let prototype be Get(NewTarget, "prototype"). Rethrow any exceptions.
   v8::Local<v8::Value> prototype;
-  v8::Local<v8::String> prototypeString = v8AtomicString(isolate, "prototype");
-  if (!v8Call(newTarget.As<v8::Object>()->Get(scriptState->context(),
-                                              prototypeString),
+  v8::Local<v8::String> prototype_string = V8AtomicString(isolate, "prototype");
+  if (!V8Call(new_target.As<v8::Object>()->Get(script_state->GetContext(),
+                                               prototype_string),
               prototype)) {
     return;
   }
 
   // 7. If Type(prototype) is not Object, then: ...
   if (!prototype->IsObject()) {
-    if (V8PerContextData* perContextData = V8PerContextData::from(
-            newTarget.As<v8::Object>()->CreationContext())) {
+    if (V8PerContextData* per_context_data = V8PerContextData::From(
+            new_target.As<v8::Object>()->CreationContext())) {
       prototype =
-          perContextData->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
+          per_context_data->PrototypeForType(&V8HTMLElement::wrapperTypeInfo);
     } else {
-      V8ThrowException::throwError(isolate, "The context has been destroyed");
+      V8ThrowException::ThrowError(isolate, "The context has been destroyed");
       return;
     }
   }
 
   // 8. If definition's construction stack is empty...
   Element* element;
-  if (definition->constructionStack().isEmpty()) {
+  if (definition->GetConstructionStack().IsEmpty()) {
     // This is an element being created with 'new' from script
-    element = definition->createElementForConstructor(*window->document());
+    element = definition->CreateElementForConstructor(*window->document());
   } else {
-    element = definition->constructionStack().back();
+    element = definition->GetConstructionStack().back();
     if (element) {
       // This is an element being upgraded that has called super
-      definition->constructionStack().back().clear();
+      definition->GetConstructionStack().back().Clear();
     } else {
       // During upgrade an element has invoked the same constructor
       // before calling 'super' and that invocation has poached the
       // element.
-      exceptionState.throwDOMException(InvalidStateError,
-                                       "this instance is already constructed");
+      exception_state.ThrowDOMException(kInvalidStateError,
+                                        "this instance is already constructed");
       return;
     }
   }
-  const WrapperTypeInfo* wrapperType = element->wrapperTypeInfo();
-  v8::Local<v8::Object> wrapper = V8DOMWrapper::associateObjectWithWrapper(
-      isolate, element, wrapperType, info.Holder());
+  const WrapperTypeInfo* wrapper_type = element->GetWrapperTypeInfo();
+  v8::Local<v8::Object> wrapper = V8DOMWrapper::AssociateObjectWithWrapper(
+      isolate, element, wrapper_type, info.Holder());
   // If the element had a wrapper, we now update and return that
   // instead.
-  v8SetReturnValue(info, wrapper);
+  V8SetReturnValue(info, wrapper);
 
   // 11. Perform element.[[SetPrototypeOf]](prototype). Rethrow any exceptions.
   // Note: I don't think this prototype set *can* throw exceptions.
-  wrapper->SetPrototype(scriptState->context(), prototype.As<v8::Object>())
+  wrapper->SetPrototype(script_state->GetContext(), prototype.As<v8::Object>())
       .ToChecked();
 }
 }  // namespace blink

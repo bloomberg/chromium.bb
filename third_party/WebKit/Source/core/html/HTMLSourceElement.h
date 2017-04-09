@@ -42,37 +42,37 @@ class HTMLSourceElement final : public HTMLElement {
   ~HTMLSourceElement() override;
 
   const AtomicString& type() const;
-  void setSrc(const String&);
+  void SetSrc(const String&);
   void setType(const AtomicString&);
 
-  void scheduleErrorEvent();
-  void cancelPendingErrorEvent();
+  void ScheduleErrorEvent();
+  void CancelPendingErrorEvent();
 
-  bool mediaQueryMatches() const;
+  bool MediaQueryMatches() const;
 
-  void removeMediaQueryListListener();
-  void addMediaQueryListListener();
+  void RemoveMediaQueryListListener();
+  void AddMediaQueryListListener();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit HTMLSourceElement(Document&);
 
-  void dispatchPendingEvent();
+  void DispatchPendingEvent();
 
-  void didMoveToNewDocument(Document& oldDocument) override;
+  void DidMoveToNewDocument(Document& old_document) override;
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  bool isURLAttribute(const Attribute&) const override;
-  void parseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  bool IsURLAttribute(const Attribute&) const override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void notifyMediaQueryChanged();
-  void createMediaQueryList(const AtomicString& media);
+  void NotifyMediaQueryChanged();
+  void CreateMediaQueryList(const AtomicString& media);
 
-  Member<MediaQueryList> m_mediaQueryList;
-  Member<Listener> m_listener;
-  TaskHandle m_pendingErrorEvent;
+  Member<MediaQueryList> media_query_list_;
+  Member<Listener> listener_;
+  TaskHandle pending_error_event_;
 };
 
 }  // namespace blink

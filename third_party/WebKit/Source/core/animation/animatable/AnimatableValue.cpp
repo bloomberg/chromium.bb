@@ -35,17 +35,17 @@
 
 namespace blink {
 
-PassRefPtr<AnimatableValue> AnimatableValue::interpolate(
+PassRefPtr<AnimatableValue> AnimatableValue::Interpolate(
     const AnimatableValue* left,
     const AnimatableValue* right,
     double fraction) {
   DCHECK(left);
   DCHECK(right);
 
-  if (fraction && fraction != 1 && left->isSameType(right))
-    return left->interpolateTo(right, fraction);
+  if (fraction && fraction != 1 && left->IsSameType(right))
+    return left->InterpolateTo(right, fraction);
 
-  return defaultInterpolateTo(left, right, fraction);
+  return DefaultInterpolateTo(left, right, fraction);
 }
 
 }  // namespace blink

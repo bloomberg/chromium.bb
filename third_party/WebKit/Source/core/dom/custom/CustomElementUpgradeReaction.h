@@ -22,7 +22,7 @@ class CORE_EXPORT CustomElementUpgradeReaction final
   CustomElementUpgradeReaction(CustomElementDefinition*);
 
  private:
-  void invoke(Element*) override;
+  void Invoke(Element*) override;
 };
 
 }  // namespace blink

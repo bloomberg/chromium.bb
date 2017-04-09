@@ -20,14 +20,14 @@ namespace blink {
 inline CompositorWorker::CompositorWorker(ExecutionContext* context)
     : InProcessWorkerBase(context) {}
 
-CompositorWorker* CompositorWorker::create(ExecutionContext* context,
+CompositorWorker* CompositorWorker::Create(ExecutionContext* context,
                                            const String& url,
-                                           ExceptionState& exceptionState) {
-  ASSERT(isMainThread());
-  Document* document = toDocument(context);
-  if (!document->page()) {
-    exceptionState.throwDOMException(InvalidAccessError,
-                                     "The context provided is invalid.");
+                                           ExceptionState& exception_state) {
+  ASSERT(IsMainThread());
+  Document* document = ToDocument(context);
+  if (!document->GetPage()) {
+    exception_state.ThrowDOMException(kInvalidAccessError,
+                                      "The context provided is invalid.");
     return nullptr;
   }
   CompositorWorker* worker = new CompositorWorker(context);
@@ -35,31 +35,31 @@ CompositorWorker* CompositorWorker::create(ExecutionContext* context,
   // Ensure the compositor worker backing thread is ready before we try to
   // initialize the CompositorWorker so that we can construct oilpan
   // objects on the compositor thread referenced from the worker clients.
-  CompositorWorkerThread::ensureSharedBackingThread();
+  CompositorWorkerThread::EnsureSharedBackingThread();
 
-  if (worker->initialize(context, url, exceptionState))
+  if (worker->Initialize(context, url, exception_state))
     return worker;
   return nullptr;
 }
 
 CompositorWorker::~CompositorWorker() {
-  ASSERT(isMainThread());
+  ASSERT(IsMainThread());
 }
 
-const AtomicString& CompositorWorker::interfaceName() const {
+const AtomicString& CompositorWorker::InterfaceName() const {
   return EventTargetNames::CompositorWorker;
 }
 
 InProcessWorkerMessagingProxy*
-CompositorWorker::createInProcessWorkerMessagingProxy(
+CompositorWorker::CreateInProcessWorkerMessagingProxy(
     ExecutionContext* context) {
-  Document* document = toDocument(context);
-  WorkerClients* workerClients = WorkerClients::create();
+  Document* document = ToDocument(context);
+  WorkerClients* worker_clients = WorkerClients::Create();
   CompositorWorkerProxyClient* client =
-      document->frame()->chromeClient().createCompositorWorkerProxyClient(
-          document->frame());
-  provideCompositorWorkerProxyClientTo(workerClients, client);
-  return new CompositorWorkerMessagingProxy(this, workerClients);
+      document->GetFrame()->GetChromeClient().CreateCompositorWorkerProxyClient(
+          document->GetFrame());
+  ProvideCompositorWorkerProxyClientTo(worker_clients, client);
+  return new CompositorWorkerMessagingProxy(this, worker_clients);
 }
 
 }  // namespace blink

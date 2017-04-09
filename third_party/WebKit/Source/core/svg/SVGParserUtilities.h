@@ -27,42 +27,42 @@
 namespace blink {
 
 enum WhitespaceMode {
-  DisallowWhitespace = 0,
-  AllowLeadingWhitespace = 0x1,
-  AllowTrailingWhitespace = 0x2,
-  AllowLeadingAndTrailingWhitespace =
-      AllowLeadingWhitespace | AllowTrailingWhitespace
+  kDisallowWhitespace = 0,
+  kAllowLeadingWhitespace = 0x1,
+  kAllowTrailingWhitespace = 0x2,
+  kAllowLeadingAndTrailingWhitespace =
+      kAllowLeadingWhitespace | kAllowTrailingWhitespace
 };
 
-bool parseNumber(const LChar*& ptr,
+bool ParseNumber(const LChar*& ptr,
                  const LChar* end,
                  float& number,
-                 WhitespaceMode = AllowLeadingAndTrailingWhitespace);
-bool parseNumber(const UChar*& ptr,
+                 WhitespaceMode = kAllowLeadingAndTrailingWhitespace);
+bool ParseNumber(const UChar*& ptr,
                  const UChar* end,
                  float& number,
-                 WhitespaceMode = AllowLeadingAndTrailingWhitespace);
-bool parseNumberOptionalNumber(const String& s, float& h, float& v);
-bool parseArcFlag(const LChar*& ptr, const LChar* end, bool& flag);
-bool parseArcFlag(const UChar*& ptr, const UChar* end, bool& flag);
+                 WhitespaceMode = kAllowLeadingAndTrailingWhitespace);
+bool ParseNumberOptionalNumber(const String& s, float& h, float& v);
+bool ParseArcFlag(const LChar*& ptr, const LChar* end, bool& flag);
+bool ParseArcFlag(const UChar*& ptr, const UChar* end, bool& flag);
 
 template <typename CharType>
-inline bool skipOptionalSVGSpaces(const CharType*& ptr, const CharType* end) {
-  while (ptr < end && isHTMLSpace<CharType>(*ptr))
+inline bool SkipOptionalSVGSpaces(const CharType*& ptr, const CharType* end) {
+  while (ptr < end && IsHTMLSpace<CharType>(*ptr))
     ptr++;
   return ptr < end;
 }
 
 template <typename CharType>
-inline bool skipOptionalSVGSpacesOrDelimiter(const CharType*& ptr,
+inline bool SkipOptionalSVGSpacesOrDelimiter(const CharType*& ptr,
                                              const CharType* end,
                                              char delimiter = ',') {
-  if (ptr < end && !isHTMLSpace<CharType>(*ptr) && *ptr != delimiter)
+  if (ptr < end && !IsHTMLSpace<CharType>(*ptr) && *ptr != delimiter)
     return false;
-  if (skipOptionalSVGSpaces(ptr, end)) {
+  if (SkipOptionalSVGSpaces(ptr, end)) {
     if (ptr < end && *ptr == delimiter) {
       ptr++;
-      skipOptionalSVGSpaces(ptr, end);
+      SkipOptionalSVGSpaces(ptr, end);
     }
   }
   return ptr < end;

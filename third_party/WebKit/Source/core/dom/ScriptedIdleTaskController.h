@@ -23,7 +23,7 @@ class ScriptedIdleTaskController
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
  public:
-  static ScriptedIdleTaskController* create(ExecutionContext* context) {
+  static ScriptedIdleTaskController* Create(ExecutionContext* context) {
     return new ScriptedIdleTaskController(context);
   }
   ~ScriptedIdleTaskController();
@@ -32,38 +32,38 @@ class ScriptedIdleTaskController
 
   using CallbackId = int;
 
-  int registerCallback(IdleRequestCallback*, const IdleRequestOptions&);
-  void cancelCallback(CallbackId);
+  int RegisterCallback(IdleRequestCallback*, const IdleRequestOptions&);
+  void CancelCallback(CallbackId);
 
   // SuspendableObject interface.
-  void contextDestroyed(ExecutionContext*) override;
-  void suspend() override;
-  void resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
 
-  void callbackFired(CallbackId,
-                     double deadlineSeconds,
+  void CallbackFired(CallbackId,
+                     double deadline_seconds,
                      IdleDeadline::CallbackType);
 
  private:
   explicit ScriptedIdleTaskController(ExecutionContext*);
 
-  int nextCallbackId();
+  int NextCallbackId();
 
-  bool isValidCallbackId(int id) {
+  bool IsValidCallbackId(int id) {
     using Traits = HashTraits<CallbackId>;
-    return !Traits::isDeletedValue(id) &&
-           !WTF::isHashTraitsEmptyValue<Traits, CallbackId>(id);
+    return !Traits::IsDeletedValue(id) &&
+           !WTF::IsHashTraitsEmptyValue<Traits, CallbackId>(id);
   }
 
-  void runCallback(CallbackId,
-                   double deadlineSeconds,
+  void RunCallback(CallbackId,
+                   double deadline_seconds,
                    IdleDeadline::CallbackType);
 
-  WebScheduler* m_scheduler;  // Not owned.
-  HeapHashMap<CallbackId, Member<IdleRequestCallback>> m_callbacks;
-  Vector<CallbackId> m_pendingTimeouts;
-  CallbackId m_nextCallbackId;
-  bool m_suspended;
+  WebScheduler* scheduler_;  // Not owned.
+  HeapHashMap<CallbackId, Member<IdleRequestCallback>> callbacks_;
+  Vector<CallbackId> pending_timeouts_;
+  CallbackId next_callback_id_;
+  bool suspended_;
 };
 
 }  // namespace blink

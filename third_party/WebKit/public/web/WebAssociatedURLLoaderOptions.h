@@ -35,30 +35,34 @@ namespace blink {
 
 struct WebAssociatedURLLoaderOptions {
   enum CrossOriginRequestPolicy {
-    CrossOriginRequestPolicyDeny,
-    CrossOriginRequestPolicyUseAccessControl,
-    CrossOriginRequestPolicyAllow
+    kCrossOriginRequestPolicyDeny,
+    kCrossOriginRequestPolicyUseAccessControl,
+    kCrossOriginRequestPolicyAllow
   };
 
-  enum PreflightPolicy { ConsiderPreflight, ForcePreflight, PreventPreflight };
+  enum PreflightPolicy {
+    kConsiderPreflight,
+    kForcePreflight,
+    kPreventPreflight
+  };
 
   WebAssociatedURLLoaderOptions()
-      : untrustedHTTP(false),
-        allowCredentials(false),
-        exposeAllResponseHeaders(false),
-        preflightPolicy(ConsiderPreflight),
-        crossOriginRequestPolicy(CrossOriginRequestPolicyDeny) {}
+      : untrusted_http(false),
+        allow_credentials(false),
+        expose_all_response_headers(false),
+        preflight_policy(kConsiderPreflight),
+        cross_origin_request_policy(kCrossOriginRequestPolicyDeny) {}
 
   // Whether to validate the method and headers as if this was an
   // XMLHttpRequest.
-  bool untrustedHTTP;
+  bool untrusted_http;
   // Whether to send HTTP credentials and cookies with the request.
-  bool allowCredentials;
+  bool allow_credentials;
   // If policy is to use access control, whether to expose non-whitelisted
   // response headers to the client.
-  bool exposeAllResponseHeaders;
-  PreflightPolicy preflightPolicy;
-  CrossOriginRequestPolicy crossOriginRequestPolicy;
+  bool expose_all_response_headers;
+  PreflightPolicy preflight_policy;
+  CrossOriginRequestPolicy cross_origin_request_policy;
 };
 
 }  // namespace blink

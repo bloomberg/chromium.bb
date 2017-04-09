@@ -23,12 +23,12 @@ class CORE_EXPORT Deprecation {
   Deprecation();
   ~Deprecation();
 
-  static void warnOnDeprecatedProperties(const LocalFrame*,
-                                         CSSPropertyID unresolvedProperty);
-  void clearSuppression();
+  static void WarnOnDeprecatedProperties(const LocalFrame*,
+                                         CSSPropertyID unresolved_property);
+  void ClearSuppression();
 
-  void muteForInspector();
-  void unmuteForInspector();
+  void MuteForInspector();
+  void UnmuteForInspector();
 
   // "countDeprecation" sets the bit for this feature to 1, and sends a
   // deprecation warning to the console. Repeated calls are ignored.
@@ -39,28 +39,28 @@ class CORE_EXPORT Deprecation {
   //
   // For shared workers and service workers, the ExecutionContext* overload
   // doesn't count the usage but only sends a console warning.
-  static void countDeprecation(const LocalFrame*, UseCounter::Feature);
-  static void countDeprecation(ExecutionContext*, UseCounter::Feature);
-  static void countDeprecation(const Document&, UseCounter::Feature);
+  static void CountDeprecation(const LocalFrame*, UseCounter::Feature);
+  static void CountDeprecation(ExecutionContext*, UseCounter::Feature);
+  static void CountDeprecation(const Document&, UseCounter::Feature);
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
-  static void countDeprecationCrossOriginIframe(const LocalFrame*,
+  static void CountDeprecationCrossOriginIframe(const LocalFrame*,
                                                 UseCounter::Feature);
-  static void countDeprecationCrossOriginIframe(const Document&,
+  static void CountDeprecationCrossOriginIframe(const Document&,
                                                 UseCounter::Feature);
-  static String deprecationMessage(UseCounter::Feature);
+  static String DeprecationMessage(UseCounter::Feature);
 
   // Note: this is only public for tests.
-  bool isSuppressed(CSSPropertyID unresolvedProperty);
+  bool IsSuppressed(CSSPropertyID unresolved_property);
 
  protected:
-  void suppress(CSSPropertyID unresolvedProperty);
+  void Suppress(CSSPropertyID unresolved_property);
   // CSSPropertyIDs that aren't deprecated return an empty string.
-  static String deprecationMessage(CSSPropertyID unresolvedProperty);
+  static String DeprecationMessage(CSSPropertyID unresolved_property);
 
-  BitVector m_cssPropertyDeprecationBits;
-  unsigned m_muteCount;
+  BitVector css_property_deprecation_bits_;
+  unsigned mute_count_;
 };
 
 }  // namespace blink

@@ -36,92 +36,92 @@ namespace blink {
 
 class AnimationAnimationClockTest : public ::testing::Test {
  public:
-  AnimationAnimationClockTest() : animationClock(mockTimeFunction) {}
+  AnimationAnimationClockTest() : animation_clock(MockTimeFunction) {}
 
  protected:
   void SetUp() override {
-    mockTime = 0;
-    animationClock.resetTimeForTesting();
+    mock_time_ = 0;
+    animation_clock.ResetTimeForTesting();
   }
 
-  static double mockTimeFunction() { return mockTime; }
+  static double MockTimeFunction() { return mock_time_; }
 
-  static double mockTime;
-  AnimationClock animationClock;
+  static double mock_time_;
+  AnimationClock animation_clock;
 };
 
-double AnimationAnimationClockTest::mockTime;
+double AnimationAnimationClockTest::mock_time_;
 
 TEST_F(AnimationAnimationClockTest, TimeIsGreaterThanZeroForUnitTests) {
   AnimationClock clock;
   // unit tests outside core/animation shouldn't need to do anything to get
   // a non-zero currentTime().
-  EXPECT_GT(clock.currentTime(), 0);
+  EXPECT_GT(clock.CurrentTime(), 0);
 }
 
 TEST_F(AnimationAnimationClockTest, TimeDoesNotChange) {
-  animationClock.updateTime(100);
-  EXPECT_EQ(100, animationClock.currentTime());
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(100);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 }
 
 TEST_F(AnimationAnimationClockTest, TimeAdvancesWhenUpdated) {
-  animationClock.updateTime(100);
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(100);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  animationClock.updateTime(200);
-  EXPECT_EQ(200, animationClock.currentTime());
+  animation_clock.UpdateTime(200);
+  EXPECT_EQ(200, animation_clock.CurrentTime());
 }
 
 TEST_F(AnimationAnimationClockTest, TimeAdvancesToTaskTime) {
-  animationClock.updateTime(100);
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(100);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  mockTime = 150;
-  AnimationClock::notifyTaskStart();
-  EXPECT_GE(animationClock.currentTime(), mockTime);
+  mock_time_ = 150;
+  AnimationClock::NotifyTaskStart();
+  EXPECT_GE(animation_clock.CurrentTime(), mock_time_);
 }
 
 TEST_F(AnimationAnimationClockTest, TimeAdvancesToTaskTimeOnlyWhenRequired) {
-  animationClock.updateTime(100);
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(100);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  AnimationClock::notifyTaskStart();
-  animationClock.updateTime(125);
-  EXPECT_EQ(125, animationClock.currentTime());
+  AnimationClock::NotifyTaskStart();
+  animation_clock.UpdateTime(125);
+  EXPECT_EQ(125, animation_clock.CurrentTime());
 }
 
 TEST_F(AnimationAnimationClockTest, UpdateTimeIsMonotonic) {
-  animationClock.updateTime(100);
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(100);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
   // Update can't go backwards.
-  animationClock.updateTime(50);
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(50);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  mockTime = 50;
-  AnimationClock::notifyTaskStart();
-  EXPECT_EQ(100, animationClock.currentTime());
+  mock_time_ = 50;
+  AnimationClock::NotifyTaskStart();
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  mockTime = 150;
-  AnimationClock::notifyTaskStart();
-  EXPECT_GE(animationClock.currentTime(), mockTime);
+  mock_time_ = 150;
+  AnimationClock::NotifyTaskStart();
+  EXPECT_GE(animation_clock.CurrentTime(), mock_time_);
 
   // Update can't go backwards after advance to estimate.
-  animationClock.updateTime(100);
-  EXPECT_GE(animationClock.currentTime(), mockTime);
+  animation_clock.UpdateTime(100);
+  EXPECT_GE(animation_clock.CurrentTime(), mock_time_);
 }
 
 TEST_F(AnimationAnimationClockTest, CurrentTimeUpdatesTask) {
-  animationClock.updateTime(100);
-  EXPECT_EQ(100, animationClock.currentTime());
+  animation_clock.UpdateTime(100);
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  mockTime = 100;
-  AnimationClock::notifyTaskStart();
-  EXPECT_EQ(100, animationClock.currentTime());
+  mock_time_ = 100;
+  AnimationClock::NotifyTaskStart();
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 
-  mockTime = 150;
-  EXPECT_EQ(100, animationClock.currentTime());
+  mock_time_ = 150;
+  EXPECT_EQ(100, animation_clock.CurrentTime());
 }
 
 }  // namespace blink

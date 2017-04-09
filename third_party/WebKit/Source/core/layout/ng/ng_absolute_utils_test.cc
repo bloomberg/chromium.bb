@@ -17,13 +17,13 @@ namespace {
 class NGAbsoluteUtilsTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    style_ = ComputedStyle::create();
+    style_ = ComputedStyle::Create();
     // If not set, border widths will always be 0.
-    style_->setBorderLeftStyle(EBorderStyle::BorderStyleSolid);
-    style_->setBorderRightStyle(EBorderStyle::BorderStyleSolid);
-    style_->setBorderTopStyle(EBorderStyle::BorderStyleSolid);
-    style_->setBorderBottomStyle(EBorderStyle::BorderStyleSolid);
-    style_->setBoxSizing(EBoxSizing::kBorderBox);
+    style_->SetBorderLeftStyle(EBorderStyle::kBorderStyleSolid);
+    style_->SetBorderRightStyle(EBorderStyle::kBorderStyleSolid);
+    style_->SetBorderTopStyle(EBorderStyle::kBorderStyleSolid);
+    style_->SetBorderBottomStyle(EBorderStyle::kBorderStyleSolid);
+    style_->SetBoxSizing(EBoxSizing::kBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
     NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
     builder.SetAvailableSize(container_size_);
@@ -42,20 +42,20 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
                           LayoutUnit width,
                           LayoutUnit margin_right,
                           LayoutUnit right) {
-    style_->setLeft(left == NGAuto ? Length(LengthType::Auto)
-                                   : Length(left.toInt(), LengthType::Fixed));
-    style_->setMarginLeft(margin_left == NGAuto
-                              ? Length(LengthType::Auto)
-                              : Length(margin_left.toInt(), LengthType::Fixed));
-    style_->setWidth(width == NGAuto
-                         ? Length(LengthType::Auto)
-                         : Length(width.toInt(), LengthType::Fixed));
-    style_->setMarginRight(margin_right == NGAuto ? Length(LengthType::Auto)
-                                                  : Length(margin_right.toInt(),
-                                                           LengthType::Fixed));
-    style_->setRight(right == NGAuto
-                         ? Length(LengthType::Auto)
-                         : Length(right.toInt(), LengthType::Fixed));
+    style_->SetLeft(left == NGAuto ? Length(LengthType::kAuto)
+                                   : Length(left.ToInt(), LengthType::kFixed));
+    style_->SetMarginLeft(margin_left == NGAuto ? Length(LengthType::kAuto)
+                                                : Length(margin_left.ToInt(),
+                                                         LengthType::kFixed));
+    style_->SetWidth(width == NGAuto
+                         ? Length(LengthType::kAuto)
+                         : Length(width.ToInt(), LengthType::kFixed));
+    style_->SetMarginRight(margin_right == NGAuto ? Length(LengthType::kAuto)
+                                                  : Length(margin_right.ToInt(),
+                                                           LengthType::kFixed));
+    style_->SetRight(right == NGAuto
+                         ? Length(LengthType::kAuto)
+                         : Length(right.ToInt(), LengthType::kFixed));
   }
 
   void SetVerticalStyle(LayoutUnit top,
@@ -63,21 +63,21 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
                         LayoutUnit height,
                         LayoutUnit margin_bottom,
                         LayoutUnit bottom) {
-    style_->setTop(top == NGAuto ? Length(LengthType::Auto)
-                                 : Length(top.toInt(), LengthType::Fixed));
-    style_->setMarginTop(margin_top == NGAuto
-                             ? Length(LengthType::Auto)
-                             : Length(margin_top.toInt(), LengthType::Fixed));
-    style_->setHeight(height == NGAuto
-                          ? Length(LengthType::Auto)
-                          : Length(height.toInt(), LengthType::Fixed));
-    style_->setMarginBottom(
+    style_->SetTop(top == NGAuto ? Length(LengthType::kAuto)
+                                 : Length(top.ToInt(), LengthType::kFixed));
+    style_->SetMarginTop(margin_top == NGAuto
+                             ? Length(LengthType::kAuto)
+                             : Length(margin_top.ToInt(), LengthType::kFixed));
+    style_->SetHeight(height == NGAuto
+                          ? Length(LengthType::kAuto)
+                          : Length(height.ToInt(), LengthType::kFixed));
+    style_->SetMarginBottom(
         margin_bottom == NGAuto
-            ? Length(LengthType::Auto)
-            : Length(margin_bottom.toInt(), LengthType::Fixed));
-    style_->setBottom(bottom == NGAuto
-                          ? Length(LengthType::Auto)
-                          : Length(bottom.toInt(), LengthType::Fixed));
+            ? Length(LengthType::kAuto)
+            : Length(margin_bottom.ToInt(), LengthType::kFixed));
+    style_->SetBottom(bottom == NGAuto
+                          ? Length(LengthType::kAuto)
+                          : Length(bottom.ToInt(), LengthType::kFixed));
   }
 
   RefPtr<ComputedStyle> style_;
@@ -110,14 +110,14 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   Optional<MinMaxContentSize> estimated_inline;
   MinMaxContentSize minmax_60{LayoutUnit(60), LayoutUnit(60)};
 
-  style_->setBorderLeftWidth(border_left.toInt());
-  style_->setBorderRightWidth(border_right.toInt());
-  style_->setPaddingLeft(Length(padding_left.toInt(), LengthType::Fixed));
-  style_->setPaddingRight(Length(padding_right.toInt(), LengthType::Fixed));
+  style_->SetBorderLeftWidth(border_left.ToInt());
+  style_->SetBorderRightWidth(border_right.ToInt());
+  style_->SetPaddingLeft(Length(padding_left.ToInt(), LengthType::kFixed));
+  style_->SetPaddingRight(Length(padding_right.ToInt(), LengthType::kFixed));
 
   // These default to 3 which is not what we want.
-  style_->setBorderBottomWidth(0);
-  style_->setBorderTopWidth(0);
+  style_->SetBorderBottomWidth(0);
+  style_->SetBorderTopWidth(0);
 
   NGAbsolutePhysicalPosition p;
 
@@ -159,10 +159,10 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   estimated_inline.reset();
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline);
-  LayoutUnit marginSpace =
+  LayoutUnit margin_space =
       (container_size_.inline_size - left - right - p.size.width) / 2;
-  EXPECT_EQ(left + marginSpace, p.inset.left);
-  EXPECT_EQ(right + marginSpace, p.inset.right);
+  EXPECT_EQ(left + margin_space, p.inset.left);
+  EXPECT_EQ(right + margin_space, p.inset.right);
 
   // left, right, and left are known, compute margins, writing mode vertical_lr.
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
@@ -170,8 +170,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   estimated_inline.reset();
   p = ComputePartialAbsoluteWithChildInlineSize(
       *vertical_lr_space_, *style_, static_position, estimated_inline);
-  EXPECT_EQ(left + marginSpace, p.inset.left);
-  EXPECT_EQ(right + marginSpace, p.inset.right);
+  EXPECT_EQ(left + margin_space, p.inset.left);
+  EXPECT_EQ(right + margin_space, p.inset.right);
 
   // left, right, and left are known, compute margins, writing mode vertical_rl.
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
@@ -179,8 +179,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   estimated_inline.reset();
   p = ComputePartialAbsoluteWithChildInlineSize(
       *vertical_rl_space_, *style_, static_position, estimated_inline);
-  EXPECT_EQ(left + marginSpace, p.inset.left);
-  EXPECT_EQ(right + marginSpace, p.inset.right);
+  EXPECT_EQ(left + margin_space, p.inset.left);
+  EXPECT_EQ(right + margin_space, p.inset.right);
 
   // left, right, and width are known, not enough space for margins LTR.
   SetHorizontalStyle(left, NGAuto, LayoutUnit(200), NGAuto, right);
@@ -244,7 +244,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   EXPECT_EQ(left + margin_left, p.inset.left);
 
   // Rule 4: left is auto, EBoxSizing::kContentBox
-  style_->setBoxSizing(EBoxSizing::kContentBox);
+  style_->SetBoxSizing(EBoxSizing::kContentBox);
   SetHorizontalStyle(NGAuto, margin_left, width - border_left - border_right -
                                               padding_left - padding_right,
                      margin_right, right);
@@ -253,7 +253,7 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + margin_left, p.inset.left);
-  style_->setBoxSizing(EBoxSizing::kBorderBox);
+  style_->SetBoxSizing(EBoxSizing::kBorderBox);
 
   // Rule 5: right is auto.
   SetHorizontalStyle(left, margin_left, width, margin_right, NGAuto);
@@ -291,13 +291,13 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   LayoutUnit height =
       container_size_.block_size - top - margin_top - bottom - margin_bottom;
 
-  style_->setBorderTopWidth(border_top.toInt());
-  style_->setBorderBottomWidth(border_bottom.toInt());
-  style_->setPaddingTop(Length(padding_top.toInt(), LengthType::Fixed));
-  style_->setPaddingBottom(Length(padding_bottom.toInt(), LengthType::Fixed));
+  style_->SetBorderTopWidth(border_top.ToInt());
+  style_->SetBorderBottomWidth(border_bottom.ToInt());
+  style_->SetPaddingTop(Length(padding_top.ToInt(), LengthType::kFixed));
+  style_->SetPaddingBottom(Length(padding_bottom.ToInt(), LengthType::kFixed));
   // These default to 3 which is not what we want.
-  style_->setBorderLeftWidth(0);
-  style_->setBorderRightWidth(0);
+  style_->SetBorderLeftWidth(0);
+  style_->SetBorderRightWidth(0);
 
   NGAbsolutePhysicalPosition p;
   Optional<LayoutUnit> auto_height;
@@ -423,10 +423,10 @@ TEST_F(NGAbsoluteUtilsTest, MinMax) {
   LayoutUnit min{50};
   LayoutUnit max{150};
 
-  style_->setMinWidth(Length(min.toInt(), LengthType::Fixed));
-  style_->setMaxWidth(Length(max.toInt(), LengthType::Fixed));
-  style_->setMinHeight(Length(min.toInt(), LengthType::Fixed));
-  style_->setMaxHeight(Length(max.toInt(), LengthType::Fixed));
+  style_->SetMinWidth(Length(min.ToInt(), LengthType::kFixed));
+  style_->SetMaxWidth(Length(max.ToInt(), LengthType::kFixed));
+  style_->SetMinHeight(Length(min.ToInt(), LengthType::kFixed));
+  style_->SetMaxHeight(Length(max.ToInt(), LengthType::kFixed));
 
   NGStaticPosition static_position{NGStaticPosition::kTopLeft,
                                    {LayoutUnit(), LayoutUnit()}};

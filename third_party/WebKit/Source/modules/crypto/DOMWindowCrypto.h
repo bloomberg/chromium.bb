@@ -44,7 +44,7 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
 
  public:
-  static DOMWindowCrypto& from(LocalDOMWindow&);
+  static DOMWindowCrypto& From(LocalDOMWindow&);
   static Crypto* crypto(LocalDOMWindow&);
   Crypto* crypto() const;
 
@@ -52,9 +52,9 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
 
  private:
   explicit DOMWindowCrypto(LocalDOMWindow&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  mutable Member<Crypto> m_crypto;
+  mutable Member<Crypto> crypto_;
 };
 
 }  // namespace blink

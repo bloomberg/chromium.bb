@@ -36,7 +36,7 @@ void {{cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
   {% if member.enum_values %}
   NonThrowableExceptionState exceptionState;
   {{declare_enum_validation_variable(member.enum_values) | indent(2)}}
-  if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.type_name}}", exceptionState)) {
+  if (!IsValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.type_name}}", exceptionState)) {
     NOTREACHED();
     return;
   }
@@ -58,7 +58,7 @@ void {{cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
 
 DEFINE_TRACE({{cpp_class}}) {
   {% for member in members if member.is_traceable %}
-  visitor->trace(m_{{member.cpp_name}});
+  visitor->Trace(m_{{member.cpp_name}});
   {% endfor %}
 }
 
@@ -69,12 +69,12 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# The numbers in the following comments refer to the steps described in
      http://heycam.github.io/webidl/#es-union #}
   {# 1. null or undefined #}
-  if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
+  if (conversionMode == UnionTypeConversionMode::kNullable && IsUndefinedOrNull(v8Value))
     return;
 
   {% if dictionary_type %}
   {# 3. Dictionaries for null or undefined #}
-  if (isUndefinedOrNull(v8Value)) {
+  if (IsUndefinedOrNull(v8Value)) {
     {{v8_value_to_local_cpp_value(dictionary_type) | indent}}
     impl.set{{dictionary_type.type_name}}(cppValue);
     return;
@@ -130,7 +130,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
   {# TODO(bashi): Support 11.5 Callback interface when we need it #}
   {# 11.6. Objects #}
   {% if object_type %}
-  if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
+  if (IsUndefinedOrNull(v8Value) || v8Value->IsObject()) {
     {{v8_value_to_local_cpp_value(object_type) | indent}}
     impl.set{{object_type.type_name}}(cppValue);
     return;
@@ -162,7 +162,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {{v8_value_to_local_cpp_value(string_type) | indent}}
     {% if string_type.enum_values %}
     {{declare_enum_validation_variable(string_type.enum_values) | indent}}
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{string_type.type_name}}", exceptionState))
+    if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{string_type.type_name}}", exceptionState))
       return;
     {% endif %}
     impl.set{{string_type.type_name}}(cppValue);
@@ -186,7 +186,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 
   {% else %}
   {# 17. TypeError #}
-  exceptionState.throwTypeError("The provided value is not of type '{{type_string}}'");
+  exceptionState.ThrowTypeError("The provided value is not of type '{{type_string}}'");
   {% endif %}
 }
 
@@ -205,9 +205,9 @@ v8::Local<v8::Value> ToV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creat
   return v8::Local<v8::Value>();
 }
 
-{{cpp_class}} NativeValueTraits<{{cpp_class}}>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
+{{cpp_class}} NativeValueTraits<{{cpp_class}}>::NativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {
   {{cpp_class}} impl;
-  {{v8_class}}::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
+  {{v8_class}}::toImpl(isolate, value, impl, UnionTypeConversionMode::kNotNullable, exceptionState);
   return impl;
 }
 

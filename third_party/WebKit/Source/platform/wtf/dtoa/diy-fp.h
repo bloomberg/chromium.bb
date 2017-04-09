@@ -82,8 +82,8 @@ class DiyFp {
 
     // This method is mainly called for normalizing boundaries. In general
     // boundaries need to be shifted by 10 bits. We thus optimize for this case.
-    const uint64_t k10MSBits = UINT64_2PART_C(0xFFC00000, 00000000);
-    while ((f & k10MSBits) == 0) {
+    const uint64_t kK10MSBits = UINT64_2PART_C(0xFFC00000, 00000000);
+    while ((f & kK10MSBits) == 0) {
       f <<= 10;
       e -= 10;
     }
@@ -101,8 +101,8 @@ class DiyFp {
     return result;
   }
 
-  uint64_t f() const { return f_; }
-  int e() const { return e_; }
+  uint64_t F() const { return f_; }
+  int E() const { return e_; }
 
   void set_f(uint64_t new_value) { f_ = new_value; }
   void set_e(int new_value) { e_ = new_value; }

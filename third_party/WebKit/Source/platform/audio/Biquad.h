@@ -49,37 +49,37 @@ class PLATFORM_EXPORT Biquad final {
   Biquad();
   ~Biquad();
 
-  void process(const float* sourceP, float* destP, size_t framesToProcess);
+  void Process(const float* source_p, float* dest_p, size_t frames_to_process);
 
-  bool hasSampleAccurateValues() const { return m_hasSampleAccurateValues; }
-  void setHasSampleAccurateValues(bool isSampleAccurate) {
-    m_hasSampleAccurateValues = isSampleAccurate;
+  bool HasSampleAccurateValues() const { return has_sample_accurate_values_; }
+  void SetHasSampleAccurateValues(bool is_sample_accurate) {
+    has_sample_accurate_values_ = is_sample_accurate;
   }
 
   // frequency is 0 - 1 normalized, resonance and dbGain are in decibels.
   // Q is a unitless quality factor.
-  void setLowpassParams(int, double frequency, double resonance);
-  void setHighpassParams(int, double frequency, double resonance);
-  void setBandpassParams(int, double frequency, double Q);
-  void setLowShelfParams(int, double frequency, double dbGain);
-  void setHighShelfParams(int, double frequency, double dbGain);
-  void setPeakingParams(int, double frequency, double Q, double dbGain);
-  void setAllpassParams(int, double frequency, double Q);
-  void setNotchParams(int, double frequency, double Q);
+  void SetLowpassParams(int, double frequency, double resonance);
+  void SetHighpassParams(int, double frequency, double resonance);
+  void SetBandpassParams(int, double frequency, double q);
+  void SetLowShelfParams(int, double frequency, double db_gain);
+  void SetHighShelfParams(int, double frequency, double db_gain);
+  void SetPeakingParams(int, double frequency, double q, double db_gain);
+  void SetAllpassParams(int, double frequency, double q);
+  void SetNotchParams(int, double frequency, double q);
 
   // Resets filter state
-  void reset();
+  void Reset();
 
   // Filter response at a set of n frequencies. The magnitude and
   // phase response are returned in magResponse and phaseResponse.
   // The phase response is in radians.
-  void getFrequencyResponse(int nFrequencies,
+  void GetFrequencyResponse(int n_frequencies,
                             const float* frequency,
-                            float* magResponse,
-                            float* phaseResponse);
+                            float* mag_response,
+                            float* phase_response);
 
  private:
-  void setNormalizedCoefficients(int,
+  void SetNormalizedCoefficients(int,
                                  double b0,
                                  double b1,
                                  double b2,
@@ -89,33 +89,35 @@ class PLATFORM_EXPORT Biquad final {
 
   // If true, the filter coefficients are (possibly) time-varying due to a
   // timeline automation on at least one filter parameter.
-  bool m_hasSampleAccurateValues;
+  bool has_sample_accurate_values_;
 
   // Filter coefficients. The filter is defined as
   //
   // y[n] + m_a1*y[n-1] + m_a2*y[n-2] = m_b0*x[n] + m_b1*x[n-1] + m_b2*x[n-2].
-  AudioDoubleArray m_b0;
-  AudioDoubleArray m_b1;
-  AudioDoubleArray m_b2;
-  AudioDoubleArray m_a1;
-  AudioDoubleArray m_a2;
+  AudioDoubleArray b0_;
+  AudioDoubleArray b1_;
+  AudioDoubleArray b2_;
+  AudioDoubleArray a1_;
+  AudioDoubleArray a2_;
 
 #if OS(MACOSX)
-  void processFast(const float* sourceP, float* destP, size_t framesToProcess);
-  void processSliceFast(double* sourceP,
-                        double* destP,
-                        double* coefficientsP,
-                        size_t framesToProcess);
+  void ProcessFast(const float* source_p,
+                   float* dest_p,
+                   size_t frames_to_process);
+  void ProcessSliceFast(double* source_p,
+                        double* dest_p,
+                        double* coefficients_p,
+                        size_t frames_to_process);
 
-  AudioDoubleArray m_inputBuffer;
-  AudioDoubleArray m_outputBuffer;
+  AudioDoubleArray input_buffer_;
+  AudioDoubleArray output_buffer_;
 
 #endif
   // Filter memory
-  double m_x1;  // input delayed by 1 sample
-  double m_x2;  // input delayed by 2 samples
-  double m_y1;  // output delayed by 1 sample
-  double m_y2;  // output delayed by 2 samples
+  double x1_;  // input delayed by 1 sample
+  double x2_;  // input delayed by 2 samples
+  double y1_;  // output delayed by 1 sample
+  double y2_;  // output delayed by 2 samples
 };
 
 }  // namespace blink

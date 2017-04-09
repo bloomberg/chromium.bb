@@ -35,29 +35,29 @@ class OutlineValue final : public BorderValue {
   friend class ComputedStyle;
 
  public:
-  OutlineValue() : m_offset(0) {}
+  OutlineValue() : offset_(0) {}
 
   bool operator==(const OutlineValue& o) const {
-    return BorderValue::operator==(o) && m_offset == o.m_offset &&
-           m_isAuto == o.m_isAuto;
+    return BorderValue::operator==(o) && offset_ == o.offset_ &&
+           is_auto_ == o.is_auto_;
   }
 
   bool operator!=(const OutlineValue& o) const { return !(*this == o); }
 
-  bool visuallyEqual(const OutlineValue& o) const {
-    if (m_style == BorderStyleNone && o.m_style == BorderStyleNone)
+  bool VisuallyEqual(const OutlineValue& o) const {
+    if (style_ == kBorderStyleNone && o.style_ == kBorderStyleNone)
       return true;
     return *this == o;
   }
 
-  int offset() const { return m_offset; }
-  void setOffset(int offset) { m_offset = offset; }
+  int Offset() const { return offset_; }
+  void SetOffset(int offset) { offset_ = offset; }
 
-  OutlineIsAuto isAuto() const { return static_cast<OutlineIsAuto>(m_isAuto); }
-  void setIsAuto(OutlineIsAuto isAuto) { m_isAuto = isAuto; }
+  OutlineIsAuto IsAuto() const { return static_cast<OutlineIsAuto>(is_auto_); }
+  void SetIsAuto(OutlineIsAuto is_auto) { is_auto_ = is_auto; }
 
  private:
-  int m_offset;
+  int offset_;
 };
 
 }  // namespace blink

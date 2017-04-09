@@ -64,17 +64,17 @@ class CORE_EXPORT FrameSerializer final {
 
  public:
   enum ResourceHasCacheControlNoStoreHeader {
-    NoCacheControlNoStoreHeader,
-    HasCacheControlNoStoreHeader
+    kNoCacheControlNoStoreHeader,
+    kHasCacheControlNoStoreHeader
   };
 
   class Delegate {
    public:
     // Controls whether HTML serialization should skip the given element.
-    virtual bool shouldIgnoreElement(const Element&) { return false; }
+    virtual bool ShouldIgnoreElement(const Element&) { return false; }
 
     // Controls whether HTML serialization should skip the given attribute.
-    virtual bool shouldIgnoreAttribute(const Element&, const Attribute&) {
+    virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) {
       return false;
     }
 
@@ -87,22 +87,22 @@ class CORE_EXPORT FrameSerializer final {
     // (i.e. in place of img.src or iframe.src or object.data).
     //
     // If no link rewriting is desired, this method should return false.
-    virtual bool rewriteLink(const Element&, String& rewrittenLink) {
+    virtual bool RewriteLink(const Element&, String& rewritten_link) {
       return false;
     }
 
     // Tells whether to skip serialization of a subresource or CSSStyleSheet
     // with a given URI. Used to deduplicate resources across multiple frames.
-    virtual bool shouldSkipResourceWithURL(const KURL&) { return false; }
+    virtual bool ShouldSkipResourceWithURL(const KURL&) { return false; }
 
     // Tells whether to skip serialization of a subresource.
-    virtual bool shouldSkipResource(ResourceHasCacheControlNoStoreHeader) {
+    virtual bool ShouldSkipResource(ResourceHasCacheControlNoStoreHeader) {
       return false;
     }
 
     // Returns custom attributes that need to add in order to serialize the
     // element.
-    virtual Vector<Attribute> getCustomAttributes(const Element&) {
+    virtual Vector<Attribute> GetCustomAttributes(const Element&) {
       return Vector<Attribute>();
     }
   };
@@ -117,38 +117,38 @@ class CORE_EXPORT FrameSerializer final {
   // retrieved resources are added to the Deque passed to the constructor.
   // The first resource in that deque is the frame's serialized content.
   // Subsequent resources are images, css, etc.
-  void serializeFrame(const LocalFrame&);
+  void SerializeFrame(const LocalFrame&);
 
-  static String markOfTheWebDeclaration(const KURL&);
+  static String MarkOfTheWebDeclaration(const KURL&);
 
  private:
   // Serializes the stylesheet back to text and adds it to the resources if URL
   // is not-empty.  It also adds any resources included in that stylesheet
   // (including any imported stylesheets and their own resources).
-  void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
+  void SerializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
 
   // Serializes the css rule (including any imported stylesheets), adding
   // referenced resources.
-  void serializeCSSRule(CSSRule*);
+  void SerializeCSSRule(CSSRule*);
 
-  bool shouldAddURL(const KURL&);
+  bool ShouldAddURL(const KURL&);
 
-  void addToResources(const String& mimeType,
+  void AddToResources(const String& mime_type,
                       ResourceHasCacheControlNoStoreHeader,
                       PassRefPtr<const SharedBuffer>,
                       const KURL&);
-  void addImageToResources(ImageResourceContent*, const KURL&);
-  void addFontToResources(FontResource*);
+  void AddImageToResources(ImageResourceContent*, const KURL&);
+  void AddFontToResources(FontResource*);
 
-  void retrieveResourcesForProperties(const StylePropertySet*, Document&);
-  void retrieveResourcesForCSSValue(const CSSValue&, Document&);
+  void RetrieveResourcesForProperties(const StylePropertySet*, Document&);
+  void RetrieveResourcesForCSSValue(const CSSValue&, Document&);
 
-  Deque<SerializedResource>* m_resources;
-  HashSet<KURL> m_resourceURLs;
+  Deque<SerializedResource>* resources_;
+  HashSet<KURL> resource_ur_ls_;
 
-  bool m_isSerializingCss;
+  bool is_serializing_css_;
 
-  Delegate& m_delegate;
+  Delegate& delegate_;
 };
 
 }  // namespace blink

@@ -22,7 +22,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(MediaPlayerHostMsg_Initialize_Type,
                           MEDIA_PLAYER_TYPE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebRemotePlaybackAvailability,
-                          blink::WebRemotePlaybackAvailability::Last)
+                          blink::WebRemotePlaybackAvailability::kLast)
 
 // Parameters to describe a media player
 IPC_STRUCT_BEGIN(MediaPlayerHostMsg_Initialize_Params)

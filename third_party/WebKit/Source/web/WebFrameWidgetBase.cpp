@@ -28,8 +28,8 @@ namespace {
 
 // Helper to get LocalFrame* from WebLocalFrame*.
 // TODO(dcheng): This should be moved into WebLocalFrame.
-LocalFrame* toCoreFrame(WebLocalFrame* frame) {
-  return toWebLocalFrameImpl(frame)->frame();
+LocalFrame* ToCoreFrame(WebLocalFrame* frame) {
+  return ToWebLocalFrameImpl(frame)->GetFrame();
 }
 
 }  // namespace
@@ -39,73 +39,75 @@ LocalFrame* toCoreFrame(WebLocalFrame* frame) {
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum : " #a)
-STATIC_ASSERT_ENUM(DragOperationNone, WebDragOperationNone);
-STATIC_ASSERT_ENUM(DragOperationCopy, WebDragOperationCopy);
-STATIC_ASSERT_ENUM(DragOperationLink, WebDragOperationLink);
-STATIC_ASSERT_ENUM(DragOperationGeneric, WebDragOperationGeneric);
-STATIC_ASSERT_ENUM(DragOperationPrivate, WebDragOperationPrivate);
-STATIC_ASSERT_ENUM(DragOperationMove, WebDragOperationMove);
-STATIC_ASSERT_ENUM(DragOperationDelete, WebDragOperationDelete);
-STATIC_ASSERT_ENUM(DragOperationEvery, WebDragOperationEvery);
+STATIC_ASSERT_ENUM(kDragOperationNone, kWebDragOperationNone);
+STATIC_ASSERT_ENUM(kDragOperationCopy, kWebDragOperationCopy);
+STATIC_ASSERT_ENUM(kDragOperationLink, kWebDragOperationLink);
+STATIC_ASSERT_ENUM(kDragOperationGeneric, kWebDragOperationGeneric);
+STATIC_ASSERT_ENUM(kDragOperationPrivate, kWebDragOperationPrivate);
+STATIC_ASSERT_ENUM(kDragOperationMove, kWebDragOperationMove);
+STATIC_ASSERT_ENUM(kDragOperationDelete, kWebDragOperationDelete);
+STATIC_ASSERT_ENUM(kDragOperationEvery, kWebDragOperationEvery);
 
-bool WebFrameWidgetBase::s_ignoreInputEvents = false;
+bool WebFrameWidgetBase::ignore_input_events_ = false;
 
-WebDragOperation WebFrameWidgetBase::dragTargetDragEnter(
-    const WebDragData& webDragData,
-    const WebPoint& pointInViewport,
-    const WebPoint& screenPoint,
-    WebDragOperationsMask operationsAllowed,
+WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
+    const WebDragData& web_drag_data,
+    const WebPoint& point_in_viewport,
+    const WebPoint& screen_point,
+    WebDragOperationsMask operations_allowed,
     int modifiers) {
-  DCHECK(!m_currentDragData);
+  DCHECK(!current_drag_data_);
 
-  m_currentDragData = DataObject::create(webDragData);
-  m_operationsAllowed = operationsAllowed;
+  current_drag_data_ = DataObject::Create(web_drag_data);
+  operations_allowed_ = operations_allowed;
 
-  return dragTargetDragEnterOrOver(pointInViewport, screenPoint, DragEnter,
+  return DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragEnter,
                                    modifiers);
 }
 
-WebDragOperation WebFrameWidgetBase::dragTargetDragOver(
-    const WebPoint& pointInViewport,
-    const WebPoint& screenPoint,
-    WebDragOperationsMask operationsAllowed,
+WebDragOperation WebFrameWidgetBase::DragTargetDragOver(
+    const WebPoint& point_in_viewport,
+    const WebPoint& screen_point,
+    WebDragOperationsMask operations_allowed,
     int modifiers) {
-  m_operationsAllowed = operationsAllowed;
+  operations_allowed_ = operations_allowed;
 
-  return dragTargetDragEnterOrOver(pointInViewport, screenPoint, DragOver,
+  return DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragOver,
                                    modifiers);
 }
 
-void WebFrameWidgetBase::dragTargetDragLeave(const WebPoint& pointInViewport,
-                                             const WebPoint& screenPoint) {
-  DCHECK(m_currentDragData);
+void WebFrameWidgetBase::DragTargetDragLeave(const WebPoint& point_in_viewport,
+                                             const WebPoint& screen_point) {
+  DCHECK(current_drag_data_);
 
-  if (ignoreInputEvents()) {
-    cancelDrag();
+  if (IgnoreInputEvents()) {
+    CancelDrag();
     return;
   }
 
-  WebPoint pointInRootFrame(viewportToRootFrame(pointInViewport));
-  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
-                    static_cast<DragOperation>(m_operationsAllowed));
+  WebPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
+  DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
+                     screen_point,
+                     static_cast<DragOperation>(operations_allowed_));
 
-  page()->dragController().dragExited(&dragData, *toCoreFrame(localRoot()));
+  GetPage()->GetDragController().DragExited(&drag_data,
+                                            *ToCoreFrame(LocalRoot()));
 
   // FIXME: why is the drag scroll timer not stopped here?
 
-  m_dragOperation = WebDragOperationNone;
-  m_currentDragData = nullptr;
+  drag_operation_ = kWebDragOperationNone;
+  current_drag_data_ = nullptr;
 }
 
-void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
-                                        const WebPoint& pointInViewport,
-                                        const WebPoint& screenPoint,
+void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
+                                        const WebPoint& point_in_viewport,
+                                        const WebPoint& screen_point,
                                         int modifiers) {
-  WebPoint pointInRootFrame(viewportToRootFrame(pointInViewport));
+  WebPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
-  DCHECK(m_currentDragData);
-  m_currentDragData = DataObject::create(webDragData);
-  WebViewImpl::UserGestureNotifier notifier(view());
+  DCHECK(current_drag_data_);
+  current_drag_data_ = DataObject::Create(web_drag_data);
+  WebViewImpl::UserGestureNotifier notifier(View());
 
   // If this webview transitions from the "drop accepting" state to the "not
   // accepting" state, then our IPC message reply indicating that may be in-
@@ -114,163 +116,169 @@ void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
   // the browser forwards the drop to this webview.  So only allow a drop to
   // proceed if our webview m_dragOperation state is not DragOperationNone.
 
-  if (m_dragOperation == WebDragOperationNone) {
+  if (drag_operation_ == kWebDragOperationNone) {
     // IPC RACE CONDITION: do not allow this drop.
-    dragTargetDragLeave(pointInViewport, screenPoint);
+    DragTargetDragLeave(point_in_viewport, screen_point);
     return;
   }
 
-  if (!ignoreInputEvents()) {
-    m_currentDragData->setModifiers(modifiers);
-    DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
-                      static_cast<DragOperation>(m_operationsAllowed));
+  if (!IgnoreInputEvents()) {
+    current_drag_data_->SetModifiers(modifiers);
+    DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
+                       screen_point,
+                       static_cast<DragOperation>(operations_allowed_));
 
-    page()->dragController().performDrag(&dragData, *toCoreFrame(localRoot()));
+    GetPage()->GetDragController().PerformDrag(&drag_data,
+                                               *ToCoreFrame(LocalRoot()));
   }
-  m_dragOperation = WebDragOperationNone;
-  m_currentDragData = nullptr;
+  drag_operation_ = kWebDragOperationNone;
+  current_drag_data_ = nullptr;
 }
 
-void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
-                                           const WebPoint& screenPoint,
+void WebFrameWidgetBase::DragSourceEndedAt(const WebPoint& point_in_viewport,
+                                           const WebPoint& screen_point,
                                            WebDragOperation operation) {
-  if (ignoreInputEvents()) {
-    cancelDrag();
+  if (IgnoreInputEvents()) {
+    CancelDrag();
     return;
   }
-  WebFloatPoint pointInRootFrame(
-      page()->visualViewport().viewportToRootFrame(pointInViewport));
+  WebFloatPoint point_in_root_frame(
+      GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport));
 
-  WebMouseEvent fakeMouseMove(WebInputEvent::MouseMove, pointInRootFrame,
-                              WebFloatPoint(screenPoint.x, screenPoint.y),
-                              WebPointerProperties::Button::Left, 0,
-                              WebInputEvent::NoModifiers,
-                              TimeTicks::Now().InSeconds());
-  fakeMouseMove.setFrameScale(1);
-  toCoreFrame(localRoot())
-      ->eventHandler()
-      .dragSourceEndedAt(fakeMouseMove, static_cast<DragOperation>(operation));
+  WebMouseEvent fake_mouse_move(WebInputEvent::kMouseMove, point_in_root_frame,
+                                WebFloatPoint(screen_point.x, screen_point.y),
+                                WebPointerProperties::Button::kLeft, 0,
+                                WebInputEvent::kNoModifiers,
+                                TimeTicks::Now().InSeconds());
+  fake_mouse_move.SetFrameScale(1);
+  ToCoreFrame(LocalRoot())
+      ->GetEventHandler()
+      .DragSourceEndedAt(fake_mouse_move,
+                         static_cast<DragOperation>(operation));
 }
 
-void WebFrameWidgetBase::dragSourceSystemDragEnded() {
-  cancelDrag();
+void WebFrameWidgetBase::DragSourceSystemDragEnded() {
+  CancelDrag();
 }
 
-void WebFrameWidgetBase::cancelDrag() {
+void WebFrameWidgetBase::CancelDrag() {
   // It's possible for us this to be callback while we're not doing a drag if
   // it's from a previous page that got unloaded.
-  if (!m_doingDragAndDrop)
+  if (!doing_drag_and_drop_)
     return;
-  page()->dragController().dragEnded();
-  m_doingDragAndDrop = false;
+  GetPage()->GetDragController().DragEnded();
+  doing_drag_and_drop_ = false;
 }
 
-void WebFrameWidgetBase::startDragging(WebReferrerPolicy policy,
+void WebFrameWidgetBase::StartDragging(WebReferrerPolicy policy,
                                        const WebDragData& data,
                                        WebDragOperationsMask mask,
-                                       const WebImage& dragImage,
-                                       const WebPoint& dragImageOffset) {
-  m_doingDragAndDrop = true;
-  client()->startDragging(policy, data, mask, dragImage, dragImageOffset);
+                                       const WebImage& drag_image,
+                                       const WebPoint& drag_image_offset) {
+  doing_drag_and_drop_ = true;
+  Client()->StartDragging(policy, data, mask, drag_image, drag_image_offset);
 }
 
-WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(
-    const WebPoint& pointInViewport,
-    const WebPoint& screenPoint,
-    DragAction dragAction,
+WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
+    const WebPoint& point_in_viewport,
+    const WebPoint& screen_point,
+    DragAction drag_action,
     int modifiers) {
-  DCHECK(m_currentDragData);
+  DCHECK(current_drag_data_);
   // TODO(paulmeyer): It shouldn't be possible for |m_currentDragData| to be
   // null here, but this is somehow happening (rarely). This suggests that in
   // some cases drag-over is happening before drag-enter, which should be
   // impossible. This needs to be investigated further. Once fixed, the extra
   // check for |!m_currentDragData| should be removed. (crbug.com/671504)
-  if (ignoreInputEvents() || !m_currentDragData) {
-    cancelDrag();
-    return WebDragOperationNone;
+  if (IgnoreInputEvents() || !current_drag_data_) {
+    CancelDrag();
+    return kWebDragOperationNone;
   }
 
-  WebPoint pointInRootFrame(viewportToRootFrame(pointInViewport));
+  WebPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
 
-  m_currentDragData->setModifiers(modifiers);
-  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
-                    static_cast<DragOperation>(m_operationsAllowed));
+  current_drag_data_->SetModifiers(modifiers);
+  DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
+                     screen_point,
+                     static_cast<DragOperation>(operations_allowed_));
 
-  DragSession dragSession;
-  dragSession = page()->dragController().dragEnteredOrUpdated(
-      &dragData, *toCoreFrame(localRoot()));
+  DragSession drag_session;
+  drag_session = GetPage()->GetDragController().DragEnteredOrUpdated(
+      &drag_data, *ToCoreFrame(LocalRoot()));
 
-  DragOperation dropEffect = dragSession.operation;
+  DragOperation drop_effect = drag_session.operation;
 
   // Mask the drop effect operation against the drag source's allowed
   // operations.
-  if (!(dropEffect & dragData.draggingSourceOperationMask()))
-    dropEffect = DragOperationNone;
+  if (!(drop_effect & drag_data.DraggingSourceOperationMask()))
+    drop_effect = kDragOperationNone;
 
-  m_dragOperation = static_cast<WebDragOperation>(dropEffect);
+  drag_operation_ = static_cast<WebDragOperation>(drop_effect);
 
-  return m_dragOperation;
+  return drag_operation_;
 }
 
-WebPoint WebFrameWidgetBase::viewportToRootFrame(
-    const WebPoint& pointInViewport) const {
-  return page()->visualViewport().viewportToRootFrame(pointInViewport);
+WebPoint WebFrameWidgetBase::ViewportToRootFrame(
+    const WebPoint& point_in_viewport) const {
+  return GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport);
 }
 
-WebViewImpl* WebFrameWidgetBase::view() const {
-  return toWebLocalFrameImpl(localRoot())->viewImpl();
+WebViewImpl* WebFrameWidgetBase::View() const {
+  return ToWebLocalFrameImpl(LocalRoot())->ViewImpl();
 }
 
-Page* WebFrameWidgetBase::page() const {
-  return view()->page();
+Page* WebFrameWidgetBase::GetPage() const {
+  return View()->GetPage();
 }
 
-void WebFrameWidgetBase::didAcquirePointerLock() {
-  page()->pointerLockController().didAcquirePointerLock();
+void WebFrameWidgetBase::DidAcquirePointerLock() {
+  GetPage()->GetPointerLockController().DidAcquirePointerLock();
 }
 
-void WebFrameWidgetBase::didNotAcquirePointerLock() {
-  page()->pointerLockController().didNotAcquirePointerLock();
+void WebFrameWidgetBase::DidNotAcquirePointerLock() {
+  GetPage()->GetPointerLockController().DidNotAcquirePointerLock();
 }
 
-void WebFrameWidgetBase::didLosePointerLock() {
-  m_pointerLockGestureToken.clear();
-  page()->pointerLockController().didLosePointerLock();
+void WebFrameWidgetBase::DidLosePointerLock() {
+  pointer_lock_gesture_token_.Clear();
+  GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 
-void WebFrameWidgetBase::pointerLockMouseEvent(const WebInputEvent& event) {
-  std::unique_ptr<UserGestureIndicator> gestureIndicator;
-  AtomicString eventType;
-  switch (event.type()) {
-    case WebInputEvent::MouseDown:
-      eventType = EventTypeNames::mousedown;
-      if (!page() || !page()->pointerLockController().element())
+void WebFrameWidgetBase::PointerLockMouseEvent(const WebInputEvent& event) {
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  AtomicString event_type;
+  switch (event.GetType()) {
+    case WebInputEvent::kMouseDown:
+      event_type = EventTypeNames::mousedown;
+      if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
-      gestureIndicator = WTF::wrapUnique(
-          new UserGestureIndicator(DocumentUserGestureToken::create(
-              &page()->pointerLockController().element()->document(),
-              UserGestureToken::NewGesture)));
-      m_pointerLockGestureToken = gestureIndicator->currentToken();
+      gesture_indicator = WTF::WrapUnique(new UserGestureIndicator(
+          DocumentUserGestureToken::Create(&GetPage()
+                                                ->GetPointerLockController()
+                                                .GetElement()
+                                                ->GetDocument(),
+                                           UserGestureToken::kNewGesture)));
+      pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
       break;
-    case WebInputEvent::MouseUp:
-      eventType = EventTypeNames::mouseup;
-      gestureIndicator = WTF::wrapUnique(
-          new UserGestureIndicator(m_pointerLockGestureToken.release()));
+    case WebInputEvent::kMouseUp:
+      event_type = EventTypeNames::mouseup;
+      gesture_indicator = WTF::WrapUnique(
+          new UserGestureIndicator(pointer_lock_gesture_token_.Release()));
       break;
-    case WebInputEvent::MouseMove:
-      eventType = EventTypeNames::mousemove;
+    case WebInputEvent::kMouseMove:
+      event_type = EventTypeNames::mousemove;
       break;
     default:
       NOTREACHED();
   }
 
-  const WebMouseEvent& mouseEvent = static_cast<const WebMouseEvent&>(event);
+  const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
 
-  if (page()) {
-    WebMouseEvent transformedEvent = TransformWebMouseEvent(
-        toWebLocalFrameImpl(localRoot())->frameView(), mouseEvent);
-    page()->pointerLockController().dispatchLockedMouseEvent(transformedEvent,
-                                                             eventType);
+  if (GetPage()) {
+    WebMouseEvent transformed_event = TransformWebMouseEvent(
+        ToWebLocalFrameImpl(LocalRoot())->GetFrameView(), mouse_event);
+    GetPage()->GetPointerLockController().DispatchLockedMouseEvent(
+        transformed_event, event_type);
   }
 }
 

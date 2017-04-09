@@ -40,107 +40,107 @@
 
 namespace blink {
 
-PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
-                                 const ColorBehavior& colorBehavior,
-                                 size_t maxDecodedBytes,
+PNGImageDecoder::PNGImageDecoder(AlphaOption alpha_option,
+                                 const ColorBehavior& color_behavior,
+                                 size_t max_decoded_bytes,
                                  size_t offset)
-    : ImageDecoder(alphaOption, colorBehavior, maxDecodedBytes),
-      m_offset(offset),
-      m_currentFrame(0),
+    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+      offset_(offset),
+      current_frame_(0),
       // It would be logical to default to cAnimationNone, but BitmapImage uses
       // that as a signal to never check again, meaning the actual count will
       // never be respected.
-      m_repetitionCount(cAnimationLoopOnce),
-      m_hasAlphaChannel(false),
-      m_currentBufferSawAlpha(false) {}
+      repetition_count_(kCAnimationLoopOnce),
+      has_alpha_channel_(false),
+      current_buffer_saw_alpha_(false) {}
 
 PNGImageDecoder::~PNGImageDecoder() {}
 
-bool PNGImageDecoder::setFailed() {
-  m_reader.reset();
-  return ImageDecoder::setFailed();
+bool PNGImageDecoder::SetFailed() {
+  reader_.reset();
+  return ImageDecoder::SetFailed();
 }
 
-size_t PNGImageDecoder::decodeFrameCount() {
-  parse(ParseQuery::MetaData);
-  return failed() ? m_frameBufferCache.size() : m_reader->frameCount();
+size_t PNGImageDecoder::DecodeFrameCount() {
+  Parse(ParseQuery::kMetaData);
+  return Failed() ? frame_buffer_cache_.size() : reader_->FrameCount();
 }
 
-void PNGImageDecoder::decode(size_t index) {
-  parse(ParseQuery::MetaData);
+void PNGImageDecoder::Decode(size_t index) {
+  Parse(ParseQuery::kMetaData);
 
-  if (failed())
+  if (Failed())
     return;
 
-  updateAggressivePurging(index);
+  UpdateAggressivePurging(index);
 
-  Vector<size_t> framesToDecode = findFramesToDecode(index);
-  for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); i++) {
-    m_currentFrame = *i;
-    if (!m_reader->decode(*m_data, *i)) {
-      setFailed();
+  Vector<size_t> frames_to_decode = FindFramesToDecode(index);
+  for (auto i = frames_to_decode.rbegin(); i != frames_to_decode.rend(); i++) {
+    current_frame_ = *i;
+    if (!reader_->Decode(*data_, *i)) {
+      SetFailed();
       return;
     }
 
     // If this returns false, we need more data to continue decoding.
-    if (!postDecodeProcessing(*i))
+    if (!PostDecodeProcessing(*i))
       break;
   }
 
   // It is also a fatal error if all data is received and we have decoded all
   // frames available but the file is truncated.
-  if (index >= m_frameBufferCache.size() - 1 && isAllDataReceived() &&
-      m_reader && !m_reader->parseCompleted())
-    setFailed();
+  if (index >= frame_buffer_cache_.size() - 1 && IsAllDataReceived() &&
+      reader_ && !reader_->ParseCompleted())
+    SetFailed();
 }
 
-void PNGImageDecoder::parse(ParseQuery query) {
-  if (failed() || (m_reader && m_reader->parseCompleted()))
+void PNGImageDecoder::Parse(ParseQuery query) {
+  if (Failed() || (reader_ && reader_->ParseCompleted()))
     return;
 
-  if (!m_reader)
-    m_reader = WTF::makeUnique<PNGImageReader>(this, m_offset);
+  if (!reader_)
+    reader_ = WTF::MakeUnique<PNGImageReader>(this, offset_);
 
-  if (!m_reader->parse(*m_data, query))
-    setFailed();
+  if (!reader_->Parse(*data_, query))
+    SetFailed();
 }
 
-void PNGImageDecoder::clearFrameBuffer(size_t index) {
-  if (m_reader)
-    m_reader->clearDecodeState(index);
-  ImageDecoder::clearFrameBuffer(index);
+void PNGImageDecoder::ClearFrameBuffer(size_t index) {
+  if (reader_)
+    reader_->ClearDecodeState(index);
+  ImageDecoder::ClearFrameBuffer(index);
 }
 
-bool PNGImageDecoder::canReusePreviousFrameBuffer(size_t index) const {
-  DCHECK(index < m_frameBufferCache.size());
-  return m_frameBufferCache[index].getDisposalMethod() !=
-         ImageFrame::DisposeOverwritePrevious;
+bool PNGImageDecoder::CanReusePreviousFrameBuffer(size_t index) const {
+  DCHECK(index < frame_buffer_cache_.size());
+  return frame_buffer_cache_[index].GetDisposalMethod() !=
+         ImageFrame::kDisposeOverwritePrevious;
 }
 
-void PNGImageDecoder::setRepetitionCount(int repetitionCount) {
-  m_repetitionCount = repetitionCount;
+void PNGImageDecoder::SetRepetitionCount(int repetition_count) {
+  repetition_count_ = repetition_count;
 }
 
-int PNGImageDecoder::repetitionCount() const {
-  return failed() ? cAnimationLoopOnce : m_repetitionCount;
+int PNGImageDecoder::RepetitionCount() const {
+  return Failed() ? kCAnimationLoopOnce : repetition_count_;
 }
 
-void PNGImageDecoder::initializeNewFrame(size_t index) {
-  const PNGImageReader::FrameInfo& frameInfo = m_reader->frameInfo(index);
-  ImageFrame& buffer = m_frameBufferCache[index];
+void PNGImageDecoder::InitializeNewFrame(size_t index) {
+  const PNGImageReader::FrameInfo& frame_info = reader_->GetFrameInfo(index);
+  ImageFrame& buffer = frame_buffer_cache_[index];
 
-  DCHECK(IntRect(IntPoint(), size()).contains(frameInfo.frameRect));
-  buffer.setOriginalFrameRect(frameInfo.frameRect);
+  DCHECK(IntRect(IntPoint(), size()).Contains(frame_info.frame_rect));
+  buffer.SetOriginalFrameRect(frame_info.frame_rect);
 
-  buffer.setDuration(frameInfo.duration);
-  buffer.setDisposalMethod(frameInfo.disposalMethod);
-  buffer.setAlphaBlendSource(frameInfo.alphaBlend);
+  buffer.SetDuration(frame_info.duration);
+  buffer.SetDisposalMethod(frame_info.disposal_method);
+  buffer.SetAlphaBlendSource(frame_info.alpha_blend);
 
-  size_t previousFrameIndex = findRequiredPreviousFrame(index, false);
-  buffer.setRequiredPreviousFrameIndex(previousFrameIndex);
+  size_t previous_frame_index = FindRequiredPreviousFrame(index, false);
+  buffer.SetRequiredPreviousFrameIndex(previous_frame_index);
 }
 
-inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
+inline sk_sp<SkColorSpace> ReadColorSpace(png_structp png, png_infop info) {
   if (png_get_valid(png, info, PNG_INFO_sRGB))
     return SkColorSpace::MakeSRGB();
 
@@ -156,8 +156,8 @@ inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
                           &chrm[4], &chrm[5], &chrm[6], &chrm[7]))
     return nullptr;
 
-  png_fixed_point inverseGamma;
-  if (!png_get_gAMA_fixed(png, info, &inverseGamma))
+  png_fixed_point inverse_gamma;
+  if (!png_get_gAMA_fixed(png, info, &inverse_gamma))
     return nullptr;
 
   // cHRM and gAMA tags are both present. The PNG spec states that cHRM is
@@ -167,9 +167,9 @@ inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
 
   struct pngFixedToFloat {
     explicit pngFixedToFloat(png_fixed_point value)
-        : floatValue(.00001f * value) {}
-    operator float() { return floatValue; }
-    float floatValue;
+        : float_value(.00001f * value) {}
+    operator float() { return float_value; }
+    float float_value;
   };
 
   SkColorSpacePrimaries primaries;
@@ -182,87 +182,87 @@ inline sk_sp<SkColorSpace> readColorSpace(png_structp png, png_infop info) {
   primaries.fWX = pngFixedToFloat(chrm[0]);
   primaries.fWY = pngFixedToFloat(chrm[1]);
 
-  SkMatrix44 toXYZD50(SkMatrix44::kUninitialized_Constructor);
-  if (!primaries.toXYZD50(&toXYZD50))
+  SkMatrix44 to_xyzd50(SkMatrix44::kUninitialized_Constructor);
+  if (!primaries.toXYZD50(&to_xyzd50))
     return nullptr;
 
   SkColorSpaceTransferFn fn;
-  fn.fG = 1.0f / pngFixedToFloat(inverseGamma);
+  fn.fG = 1.0f / pngFixedToFloat(inverse_gamma);
   fn.fA = 1.0f;
   fn.fB = fn.fC = fn.fD = fn.fE = fn.fF = 0.0f;
 
-  return SkColorSpace::MakeRGB(fn, toXYZD50);
+  return SkColorSpace::MakeRGB(fn, to_xyzd50);
 }
 
-void PNGImageDecoder::setColorSpace() {
-  if (ignoresColorSpace())
+void PNGImageDecoder::SetColorSpace() {
+  if (IgnoresColorSpace())
     return;
-  png_structp png = m_reader->pngPtr();
-  png_infop info = m_reader->infoPtr();
-  const int colorType = png_get_color_type(png, info);
-  if (!(colorType & PNG_COLOR_MASK_COLOR))
+  png_structp png = reader_->PngPtr();
+  png_infop info = reader_->InfoPtr();
+  const int color_type = png_get_color_type(png, info);
+  if (!(color_type & PNG_COLOR_MASK_COLOR))
     return;
   // We only support color profiles for color PALETTE and RGB[A] PNG.
   // TODO(msarett): Add GRAY profile support, block CYMK?
-  sk_sp<SkColorSpace> colorSpace = readColorSpace(png, info);
-  if (colorSpace)
-    setEmbeddedColorSpace(colorSpace);
+  sk_sp<SkColorSpace> color_space = ReadColorSpace(png, info);
+  if (color_space)
+    SetEmbeddedColorSpace(color_space);
 }
 
-bool PNGImageDecoder::setSize(unsigned width, unsigned height) {
-  DCHECK(!isDecodedSizeAvailable());
+bool PNGImageDecoder::SetSize(unsigned width, unsigned height) {
+  DCHECK(!IsDecodedSizeAvailable());
   // Protect against large PNGs. See http://bugzil.la/251381 for more details.
-  const unsigned long maxPNGSize = 1000000UL;
-  return (width <= maxPNGSize) && (height <= maxPNGSize) &&
-         ImageDecoder::setSize(width, height);
+  const unsigned long kMaxPNGSize = 1000000UL;
+  return (width <= kMaxPNGSize) && (height <= kMaxPNGSize) &&
+         ImageDecoder::SetSize(width, height);
 }
 
-void PNGImageDecoder::headerAvailable() {
-  DCHECK(isDecodedSizeAvailable());
+void PNGImageDecoder::HeaderAvailable() {
+  DCHECK(IsDecodedSizeAvailable());
 
-  png_structp png = m_reader->pngPtr();
-  png_infop info = m_reader->infoPtr();
+  png_structp png = reader_->PngPtr();
+  png_infop info = reader_->InfoPtr();
 
   png_uint_32 width, height;
-  int bitDepth, colorType, interlaceType, compressionType;
-  png_get_IHDR(png, info, &width, &height, &bitDepth, &colorType,
-               &interlaceType, &compressionType, nullptr);
+  int bit_depth, color_type, interlace_type, compression_type;
+  png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type,
+               &interlace_type, &compression_type, nullptr);
 
   // The options we set here match what Mozilla does.
 
   // Expand to ensure we use 24-bit for RGB and 32-bit for RGBA.
-  if (colorType == PNG_COLOR_TYPE_PALETTE ||
-      (colorType == PNG_COLOR_TYPE_GRAY && bitDepth < 8))
+  if (color_type == PNG_COLOR_TYPE_PALETTE ||
+      (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8))
     png_set_expand(png);
 
   if (png_get_valid(png, info, PNG_INFO_tRNS))
     png_set_expand(png);
 
-  if (bitDepth == 16)
+  if (bit_depth == 16)
     png_set_strip_16(png);
 
-  if (colorType == PNG_COLOR_TYPE_GRAY ||
-      colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
+  if (color_type == PNG_COLOR_TYPE_GRAY ||
+      color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
-  if (!hasEmbeddedColorSpace()) {
-    const double inverseGamma = 0.45455;
-    const double defaultGamma = 2.2;
+  if (!HasEmbeddedColorSpace()) {
+    const double kInverseGamma = 0.45455;
+    const double kDefaultGamma = 2.2;
     double gamma;
-    if (!ignoresColorSpace() && png_get_gAMA(png, info, &gamma)) {
-      const double maxGamma = 21474.83;
-      if ((gamma <= 0.0) || (gamma > maxGamma)) {
-        gamma = inverseGamma;
+    if (!IgnoresColorSpace() && png_get_gAMA(png, info, &gamma)) {
+      const double kMaxGamma = 21474.83;
+      if ((gamma <= 0.0) || (gamma > kMaxGamma)) {
+        gamma = kInverseGamma;
         png_set_gAMA(png, info, gamma);
       }
-      png_set_gamma(png, defaultGamma, gamma);
+      png_set_gamma(png, kDefaultGamma, gamma);
     } else {
-      png_set_gamma(png, defaultGamma, inverseGamma);
+      png_set_gamma(png, kDefaultGamma, kInverseGamma);
     }
   }
 
   // Tell libpng to send us rows for interlaced pngs.
-  if (interlaceType == PNG_INTERLACE_ADAM7)
+  if (interlace_type == PNG_INTERLACE_ADAM7)
     png_set_interlace_handling(png);
 
   // Update our info now (so we can get color channel info).
@@ -270,40 +270,40 @@ void PNGImageDecoder::headerAvailable() {
 
   int channels = png_get_channels(png, info);
   DCHECK(channels == 3 || channels == 4);
-  m_hasAlphaChannel = (channels == 4);
+  has_alpha_channel_ = (channels == 4);
 }
 
-void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
-                                   unsigned rowIndex,
+void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
+                                   unsigned row_index,
                                    int) {
-  if (m_currentFrame >= m_frameBufferCache.size())
+  if (current_frame_ >= frame_buffer_cache_.size())
     return;
 
-  ImageFrame& buffer = m_frameBufferCache[m_currentFrame];
-  if (buffer.getStatus() == ImageFrame::FrameEmpty) {
-    png_structp png = m_reader->pngPtr();
-    if (!initFrameBuffer(m_currentFrame)) {
+  ImageFrame& buffer = frame_buffer_cache_[current_frame_];
+  if (buffer.GetStatus() == ImageFrame::kFrameEmpty) {
+    png_structp png = reader_->PngPtr();
+    if (!InitFrameBuffer(current_frame_)) {
       longjmp(JMPBUF(png), 1);
       return;
     }
 
-    DCHECK_EQ(ImageFrame::FramePartial, buffer.getStatus());
+    DCHECK_EQ(ImageFrame::kFramePartial, buffer.GetStatus());
 
     if (PNG_INTERLACE_ADAM7 ==
-        png_get_interlace_type(png, m_reader->infoPtr())) {
-      unsigned colorChannels = m_hasAlphaChannel ? 4 : 3;
-      m_reader->createInterlaceBuffer(colorChannels * size().area());
-      if (!m_reader->interlaceBuffer()) {
+        png_get_interlace_type(png, reader_->InfoPtr())) {
+      unsigned color_channels = has_alpha_channel_ ? 4 : 3;
+      reader_->CreateInterlaceBuffer(color_channels * size().Area());
+      if (!reader_->InterlaceBuffer()) {
         longjmp(JMPBUF(png), 1);
         return;
       }
     }
 
-    m_currentBufferSawAlpha = false;
+    current_buffer_saw_alpha_ = false;
   }
 
-  const IntRect& frameRect = buffer.originalFrameRect();
-  DCHECK(IntRect(IntPoint(), size()).contains(frameRect));
+  const IntRect& frame_rect = buffer.OriginalFrameRect();
+  DCHECK(IntRect(IntPoint(), size()).Contains(frame_rect));
 
   /* libpng comments (here to explain what follows).
    *
@@ -322,17 +322,17 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
   // frame size, ignore the extra rows and use the frame size as the source
   // of truth. libpng can send extra rows: ignore them too, this to prevent
   // memory writes outside of the image bounds (security).
-  if (!rowBuffer)
+  if (!row_buffer)
     return;
 
-  DCHECK_GT(frameRect.height(), 0);
-  if (rowIndex >= static_cast<unsigned>(frameRect.height()))
+  DCHECK_GT(frame_rect.Height(), 0);
+  if (row_index >= static_cast<unsigned>(frame_rect.Height()))
     return;
 
-  int y = rowIndex + frameRect.y();
+  int y = row_index + frame_rect.Y();
   if (y < 0)
     return;
-  DCHECK_LT(y, size().height());
+  DCHECK_LT(y, size().Height());
 
   /* libpng comments (continued).
    *
@@ -353,22 +353,22 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
    * old row and the new row.
    */
 
-  bool hasAlpha = m_hasAlphaChannel;
-  png_bytep row = rowBuffer;
+  bool has_alpha = has_alpha_channel_;
+  png_bytep row = row_buffer;
 
-  if (png_bytep interlaceBuffer = m_reader->interlaceBuffer()) {
-    unsigned colorChannels = hasAlpha ? 4 : 3;
-    row = interlaceBuffer + (rowIndex * colorChannels * size().width());
-    png_progressive_combine_row(m_reader->pngPtr(), row, rowBuffer);
+  if (png_bytep interlace_buffer = reader_->InterlaceBuffer()) {
+    unsigned color_channels = has_alpha ? 4 : 3;
+    row = interlace_buffer + (row_index * color_channels * size().Width());
+    png_progressive_combine_row(reader_->PngPtr(), row, row_buffer);
   }
 
   // Write the decoded row pixels to the frame buffer. The repetitive
   // form of the row write loops is for speed.
-  ImageFrame::PixelData* const dstRow = buffer.getAddr(frameRect.x(), y);
-  const int width = frameRect.width();
+  ImageFrame::PixelData* const dst_row = buffer.GetAddr(frame_rect.X(), y);
+  const int width = frame_rect.Width();
 
-  png_bytep srcPtr = row;
-  if (hasAlpha) {
+  png_bytep src_ptr = row;
+  if (has_alpha) {
     // Here we apply the color space transformation to the dst space.
     // It does not really make sense to transform to a gamma-encoded
     // space and then immediately after, perform a linear premultiply.
@@ -379,30 +379,30 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
     // the premultiply, we will very likely end up with valid pixels
     // where R, G, and/or B are greater than A.  The legacy drawing
     // pipeline does not know how to handle this.
-    if (SkColorSpaceXform* xform = colorTransform()) {
-      SkColorSpaceXform::ColorFormat colorFormat =
+    if (SkColorSpaceXform* xform = ColorTransform()) {
+      SkColorSpaceXform::ColorFormat color_format =
           SkColorSpaceXform::kRGBA_8888_ColorFormat;
-      xform->apply(colorFormat, dstRow, colorFormat, srcPtr, width,
+      xform->apply(color_format, dst_row, color_format, src_ptr, width,
                    kUnpremul_SkAlphaType);
-      srcPtr = png_bytep(dstRow);
+      src_ptr = png_bytep(dst_row);
     }
 
-    unsigned alphaMask = 255;
-    if (m_frameBufferCache[m_currentFrame].getAlphaBlendSource() ==
-        ImageFrame::BlendAtopBgcolor) {
-      if (buffer.premultiplyAlpha()) {
-        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-             dstPixel++, srcPtr += 4) {
-          buffer.setRGBAPremultiply(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
-                                    srcPtr[3]);
-          alphaMask &= srcPtr[3];
+    unsigned alpha_mask = 255;
+    if (frame_buffer_cache_[current_frame_].GetAlphaBlendSource() ==
+        ImageFrame::kBlendAtopBgcolor) {
+      if (buffer.PremultiplyAlpha()) {
+        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+             dst_pixel++, src_ptr += 4) {
+          buffer.SetRGBAPremultiply(dst_pixel, src_ptr[0], src_ptr[1],
+                                    src_ptr[2], src_ptr[3]);
+          alpha_mask &= src_ptr[3];
         }
       } else {
-        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-             dstPixel++, srcPtr += 4) {
-          buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
-                            srcPtr[3]);
-          alphaMask &= srcPtr[3];
+        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+             dst_pixel++, src_ptr += 4) {
+          buffer.SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
+                            src_ptr[3]);
+          alpha_mask &= src_ptr[3];
         }
       }
     } else {
@@ -410,81 +410,81 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
       // frame data of the previous frame is copied at initFrameBuffer, we can
       // blend the pixel of this frame, stored in |srcPtr|, over the previous
       // pixel stored in |dstPixel|.
-      if (buffer.premultiplyAlpha()) {
-        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-             dstPixel++, srcPtr += 4) {
-          buffer.blendRGBAPremultiplied(dstPixel, srcPtr[0], srcPtr[1],
-                                        srcPtr[2], srcPtr[3]);
-          alphaMask &= srcPtr[3];
+      if (buffer.PremultiplyAlpha()) {
+        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+             dst_pixel++, src_ptr += 4) {
+          buffer.BlendRGBAPremultiplied(dst_pixel, src_ptr[0], src_ptr[1],
+                                        src_ptr[2], src_ptr[3]);
+          alpha_mask &= src_ptr[3];
         }
       } else {
-        for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-             dstPixel++, srcPtr += 4) {
-          buffer.blendRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
-                              srcPtr[3]);
-          alphaMask &= srcPtr[3];
+        for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+             dst_pixel++, src_ptr += 4) {
+          buffer.BlendRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
+                              src_ptr[3]);
+          alpha_mask &= src_ptr[3];
         }
       }
     }
 
-    if (alphaMask != 255)
-      m_currentBufferSawAlpha = true;
+    if (alpha_mask != 255)
+      current_buffer_saw_alpha_ = true;
 
   } else {
-    for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
-         srcPtr += 3, ++dstPixel) {
-      buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2], 255);
+    for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
+         src_ptr += 3, ++dst_pixel) {
+      buffer.SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2], 255);
     }
 
     // We'll apply the color space xform to opaque pixels after they have been
     // written to the ImageFrame, purely because SkColorSpaceXform supports
     // RGBA (and not RGB).
-    if (SkColorSpaceXform* xform = colorTransform()) {
-      xform->apply(xformColorFormat(), dstRow, xformColorFormat(), dstRow,
+    if (SkColorSpaceXform* xform = ColorTransform()) {
+      xform->apply(XformColorFormat(), dst_row, XformColorFormat(), dst_row,
                    width, kOpaque_SkAlphaType);
     }
   }
 
-  buffer.setPixelsChanged(true);
+  buffer.SetPixelsChanged(true);
 }
 
-void PNGImageDecoder::frameComplete() {
-  if (m_currentFrame >= m_frameBufferCache.size())
+void PNGImageDecoder::FrameComplete() {
+  if (current_frame_ >= frame_buffer_cache_.size())
     return;
 
-  if (m_reader->interlaceBuffer())
-    m_reader->clearInterlaceBuffer();
+  if (reader_->InterlaceBuffer())
+    reader_->ClearInterlaceBuffer();
 
-  ImageFrame& buffer = m_frameBufferCache[m_currentFrame];
-  if (buffer.getStatus() == ImageFrame::FrameEmpty) {
-    longjmp(JMPBUF(m_reader->pngPtr()), 1);
+  ImageFrame& buffer = frame_buffer_cache_[current_frame_];
+  if (buffer.GetStatus() == ImageFrame::kFrameEmpty) {
+    longjmp(JMPBUF(reader_->PngPtr()), 1);
     return;
   }
 
-  if (!m_currentBufferSawAlpha)
-    correctAlphaWhenFrameBufferSawNoAlpha(m_currentFrame);
+  if (!current_buffer_saw_alpha_)
+    CorrectAlphaWhenFrameBufferSawNoAlpha(current_frame_);
 
-  buffer.setStatus(ImageFrame::FrameComplete);
+  buffer.SetStatus(ImageFrame::kFrameComplete);
 }
 
-bool PNGImageDecoder::frameIsCompleteAtIndex(size_t index) const {
-  if (!isDecodedSizeAvailable())
+bool PNGImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
+  if (!IsDecodedSizeAvailable())
     return false;
 
-  DCHECK(!failed() && m_reader);
+  DCHECK(!Failed() && reader_);
 
   // For non-animated images, return whether the status of the frame is
   // ImageFrame::FrameComplete with ImageDecoder::frameIsCompleteAtIndex.
   // This matches the behavior of WEBPImageDecoder.
-  if (m_reader->parseCompleted() && m_reader->frameCount() == 1)
-    return ImageDecoder::frameIsCompleteAtIndex(index);
+  if (reader_->ParseCompleted() && reader_->FrameCount() == 1)
+    return ImageDecoder::FrameIsCompleteAtIndex(index);
 
-  return m_reader->frameIsReceivedAtIndex(index);
+  return reader_->FrameIsReceivedAtIndex(index);
 }
 
-float PNGImageDecoder::frameDurationAtIndex(size_t index) const {
-  if (index < m_frameBufferCache.size())
-    return m_frameBufferCache[index].duration();
+float PNGImageDecoder::FrameDurationAtIndex(size_t index) const {
+  if (index < frame_buffer_cache_.size())
+    return frame_buffer_cache_[index].Duration();
   return 0;
 }
 

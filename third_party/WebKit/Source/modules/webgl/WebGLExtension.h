@@ -42,11 +42,11 @@ class WebGLExtensionScopedContext final {
   explicit WebGLExtensionScopedContext(WebGLExtension*);
   ~WebGLExtensionScopedContext();
 
-  bool isLost() const { return !m_context; }
-  WebGLRenderingContextBase* context() const { return m_context.get(); }
+  bool IsLost() const { return !context_; }
+  WebGLRenderingContextBase* Context() const { return context_.Get(); }
 
  private:
-  Member<WebGLRenderingContextBase> m_context;
+  Member<WebGLRenderingContextBase> context_;
 };
 
 class WebGLExtension : public GarbageCollected<WebGLExtension>,
@@ -54,14 +54,14 @@ class WebGLExtension : public GarbageCollected<WebGLExtension>,
   WTF_MAKE_NONCOPYABLE(WebGLExtension);
 
  public:
-  virtual WebGLExtensionName name() const = 0;
+  virtual WebGLExtensionName GetName() const = 0;
 
   // Lose this extension. Passing true = force loss. Some extensions
   // like WEBGL_lose_context are not normally lost when the context
   // is lost but must be lost when destroying their WebGLRenderingContextBase.
-  virtual void lose(bool) { m_context = nullptr; }
+  virtual void Lose(bool) { context_ = nullptr; }
 
-  bool isLost() { return !m_context; }
+  bool IsLost() { return !context_; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -71,7 +71,7 @@ class WebGLExtension : public GarbageCollected<WebGLExtension>,
  private:
   friend WebGLExtensionScopedContext;
 
-  WeakMember<WebGLRenderingContextBase> m_context;
+  WeakMember<WebGLRenderingContextBase> context_;
 };
 
 }  // namespace blink

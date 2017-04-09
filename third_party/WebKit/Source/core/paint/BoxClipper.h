@@ -16,7 +16,7 @@ namespace blink {
 class LayoutBox;
 struct PaintInfo;
 
-enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
+enum ContentsClipBehavior { kForceContentsClip, kSkipContentsClipIfPossible };
 
 class BoxClipper {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -24,16 +24,16 @@ class BoxClipper {
  public:
   BoxClipper(const LayoutBox&,
              const PaintInfo&,
-             const LayoutPoint& accumulatedOffset,
+             const LayoutPoint& accumulated_offset,
              ContentsClipBehavior);
   ~BoxClipper();
 
  private:
-  const LayoutBox& m_box;
-  const PaintInfo& m_paintInfo;
-  DisplayItem::Type m_clipType;
+  const LayoutBox& box_;
+  const PaintInfo& paint_info_;
+  DisplayItem::Type clip_type_;
 
-  Optional<ScopedPaintChunkProperties> m_scopedClipProperty;
+  Optional<ScopedPaintChunkProperties> scoped_clip_property_;
 };
 
 }  // namespace blink

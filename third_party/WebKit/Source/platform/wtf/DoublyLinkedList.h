@@ -36,37 +36,37 @@ class DoublyLinkedListNode {
  public:
   DoublyLinkedListNode();
 
-  void setPrev(T*);
-  void setNext(T*);
+  void SetPrev(T*);
+  void SetNext(T*);
 
-  T* prev() const;
-  T* next() const;
+  T* Prev() const;
+  T* Next() const;
 };
 
 template <typename T>
 inline DoublyLinkedListNode<T>::DoublyLinkedListNode() {
-  setPrev(0);
-  setNext(0);
+  SetPrev(0);
+  SetNext(0);
 }
 
 template <typename T>
-inline void DoublyLinkedListNode<T>::setPrev(T* prev) {
-  static_cast<T*>(this)->m_prev = prev;
+inline void DoublyLinkedListNode<T>::SetPrev(T* prev) {
+  static_cast<T*>(this)->prev_ = prev;
 }
 
 template <typename T>
-inline void DoublyLinkedListNode<T>::setNext(T* next) {
-  static_cast<T*>(this)->m_next = next;
+inline void DoublyLinkedListNode<T>::SetNext(T* next) {
+  static_cast<T*>(this)->next_ = next;
 }
 
 template <typename T>
-inline T* DoublyLinkedListNode<T>::prev() const {
-  return static_cast<const T*>(this)->m_prev;
+inline T* DoublyLinkedListNode<T>::Prev() const {
+  return static_cast<const T*>(this)->prev_;
 }
 
 template <typename T>
-inline T* DoublyLinkedListNode<T>::next() const {
-  return static_cast<const T*>(this)->m_next;
+inline T* DoublyLinkedListNode<T>::Next() const {
+  return static_cast<const T*>(this)->next_;
 }
 
 template <typename T>
@@ -76,116 +76,116 @@ class DoublyLinkedList {
  public:
   DoublyLinkedList();
 
-  bool isEmpty() const;
+  bool IsEmpty() const;
   size_t size() const;  // This is O(n).
-  void clear();
+  void Clear();
 
-  T* head() const;
-  T* removeHead();
+  T* Head() const;
+  T* RemoveHead();
 
-  T* tail() const;
+  T* Tail() const;
 
-  void push(T*);
-  void append(T*);
-  void remove(T*);
+  void Push(T*);
+  void Append(T*);
+  void Remove(T*);
 
  private:
-  T* m_head;
-  T* m_tail;
+  T* head_;
+  T* tail_;
 };
 
 template <typename T>
-inline DoublyLinkedList<T>::DoublyLinkedList() : m_head(0), m_tail(0) {}
+inline DoublyLinkedList<T>::DoublyLinkedList() : head_(0), tail_(0) {}
 
 template <typename T>
-inline bool DoublyLinkedList<T>::isEmpty() const {
-  return !m_head;
+inline bool DoublyLinkedList<T>::IsEmpty() const {
+  return !head_;
 }
 
 template <typename T>
 inline size_t DoublyLinkedList<T>::size() const {
   size_t size = 0;
-  for (T* node = m_head; node; node = node->next())
+  for (T* node = head_; node; node = node->Next())
     ++size;
   return size;
 }
 
 template <typename T>
-inline void DoublyLinkedList<T>::clear() {
-  m_head = 0;
-  m_tail = 0;
+inline void DoublyLinkedList<T>::Clear() {
+  head_ = 0;
+  tail_ = 0;
 }
 
 template <typename T>
-inline T* DoublyLinkedList<T>::head() const {
-  return m_head;
+inline T* DoublyLinkedList<T>::Head() const {
+  return head_;
 }
 
 template <typename T>
-inline T* DoublyLinkedList<T>::tail() const {
-  return m_tail;
+inline T* DoublyLinkedList<T>::Tail() const {
+  return tail_;
 }
 
 template <typename T>
-inline void DoublyLinkedList<T>::push(T* node) {
-  if (!m_head) {
-    DCHECK(!m_tail);
-    m_head = node;
-    m_tail = node;
-    node->setPrev(0);
-    node->setNext(0);
+inline void DoublyLinkedList<T>::Push(T* node) {
+  if (!head_) {
+    DCHECK(!tail_);
+    head_ = node;
+    tail_ = node;
+    node->SetPrev(0);
+    node->SetNext(0);
     return;
   }
 
-  DCHECK(m_tail);
-  m_head->setPrev(node);
-  node->setNext(m_head);
-  node->setPrev(0);
-  m_head = node;
+  DCHECK(tail_);
+  head_->SetPrev(node);
+  node->SetNext(head_);
+  node->SetPrev(0);
+  head_ = node;
 }
 
 template <typename T>
-inline void DoublyLinkedList<T>::append(T* node) {
-  if (!m_tail) {
-    DCHECK(!m_head);
-    m_head = node;
-    m_tail = node;
-    node->setPrev(0);
-    node->setNext(0);
+inline void DoublyLinkedList<T>::Append(T* node) {
+  if (!tail_) {
+    DCHECK(!head_);
+    head_ = node;
+    tail_ = node;
+    node->SetPrev(0);
+    node->SetNext(0);
     return;
   }
 
-  DCHECK(m_head);
-  m_tail->setNext(node);
-  node->setPrev(m_tail);
-  node->setNext(0);
-  m_tail = node;
+  DCHECK(head_);
+  tail_->SetNext(node);
+  node->SetPrev(tail_);
+  node->SetNext(0);
+  tail_ = node;
 }
 
 template <typename T>
-inline void DoublyLinkedList<T>::remove(T* node) {
-  if (node->prev()) {
-    DCHECK_NE(node, m_head);
-    node->prev()->setNext(node->next());
+inline void DoublyLinkedList<T>::Remove(T* node) {
+  if (node->Prev()) {
+    DCHECK_NE(node, head_);
+    node->Prev()->SetNext(node->Next());
   } else {
-    DCHECK_EQ(node, m_head);
-    m_head = node->next();
+    DCHECK_EQ(node, head_);
+    head_ = node->Next();
   }
 
-  if (node->next()) {
-    DCHECK_NE(node, m_tail);
-    node->next()->setPrev(node->prev());
+  if (node->Next()) {
+    DCHECK_NE(node, tail_);
+    node->Next()->SetPrev(node->Prev());
   } else {
-    DCHECK_EQ(node, m_tail);
-    m_tail = node->prev();
+    DCHECK_EQ(node, tail_);
+    tail_ = node->Prev();
   }
 }
 
 template <typename T>
-inline T* DoublyLinkedList<T>::removeHead() {
-  T* node = head();
+inline T* DoublyLinkedList<T>::RemoveHead() {
+  T* node = Head();
   if (node)
-    remove(node);
+    Remove(node);
   return node;
 }
 

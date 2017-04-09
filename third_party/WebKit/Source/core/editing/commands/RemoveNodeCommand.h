@@ -32,10 +32,12 @@ namespace blink {
 
 class RemoveNodeCommand final : public SimpleEditCommand {
  public:
-  static RemoveNodeCommand* create(
+  static RemoveNodeCommand* Create(
       Node* node,
-      ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable) {
-    return new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable);
+      ShouldAssumeContentIsAlwaysEditable
+          should_assume_content_is_always_editable) {
+    return new RemoveNodeCommand(node,
+                                 should_assume_content_is_always_editable);
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -43,13 +45,13 @@ class RemoveNodeCommand final : public SimpleEditCommand {
  private:
   explicit RemoveNodeCommand(Node*, ShouldAssumeContentIsAlwaysEditable);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
 
-  Member<Node> m_node;
-  Member<ContainerNode> m_parent;
-  Member<Node> m_refChild;
-  ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
+  Member<Node> node_;
+  Member<ContainerNode> parent_;
+  Member<Node> ref_child_;
+  ShouldAssumeContentIsAlwaysEditable should_assume_content_is_always_editable_;
 };
 
 }  // namespace blink

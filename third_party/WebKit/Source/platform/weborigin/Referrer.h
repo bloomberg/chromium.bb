@@ -40,15 +40,15 @@ namespace blink {
 
 struct Referrer {
   DISALLOW_NEW();
-  Referrer(const String& referrer, ReferrerPolicy referrerPolicy)
-      : referrer(referrer), referrerPolicy(referrerPolicy) {
-    ASSERT(referrer == noReferrer() || KURL(KURL(), referrer).isValid());
+  Referrer(const String& referrer, ReferrerPolicy referrer_policy)
+      : referrer(referrer), referrer_policy(referrer_policy) {
+    ASSERT(referrer == NoReferrer() || KURL(KURL(), referrer).IsValid());
   }
-  Referrer() : referrerPolicy(ReferrerPolicyDefault) {}
-  static String noReferrer() { return String(); }
+  Referrer() : referrer_policy(kReferrerPolicyDefault) {}
+  static String NoReferrer() { return String(); }
 
   AtomicString referrer;
-  ReferrerPolicy referrerPolicy;
+  ReferrerPolicy referrer_policy;
 };
 
 }  // namespace blink

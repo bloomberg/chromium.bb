@@ -48,13 +48,13 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
           state(state) {}
   };
 
-  static ScriptPromise start(ScriptState* scriptState,
+  static ScriptPromise Start(ScriptState* script_state,
                              const MIDIOptions& options) {
     MIDIAccessInitializer* resolver =
-        new MIDIAccessInitializer(scriptState, options);
-    resolver->keepAliveWhilePending();
-    resolver->suspendIfNeeded();
-    return resolver->start();
+        new MIDIAccessInitializer(script_state, options);
+    resolver->KeepAliveWhilePending();
+    resolver->SuspendIfNeeded();
+    return resolver->Start();
   }
 
   ~MIDIAccessInitializer() override = default;
@@ -64,42 +64,42 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   EAGERLY_FINALIZE();
 
   // MIDIAccessorClient
-  void didAddInputPort(const String& id,
+  void DidAddInputPort(const String& id,
                        const String& manufacturer,
                        const String& name,
                        const String& version,
                        midi::mojom::PortState) override;
-  void didAddOutputPort(const String& id,
+  void DidAddOutputPort(const String& id,
                         const String& manufacturer,
                         const String& name,
                         const String& version,
                         midi::mojom::PortState) override;
-  void didSetInputPortState(unsigned portIndex,
+  void DidSetInputPortState(unsigned port_index,
                             midi::mojom::PortState) override;
-  void didSetOutputPortState(unsigned portIndex,
+  void DidSetOutputPortState(unsigned port_index,
                              midi::mojom::PortState) override;
-  void didStartSession(midi::mojom::Result) override;
-  void didReceiveMIDIData(unsigned portIndex,
+  void DidStartSession(midi::mojom::Result) override;
+  void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           size_t length,
-                          double timeStamp) override {}
+                          double time_stamp) override {}
 
  private:
   MIDIAccessInitializer(ScriptState*, const MIDIOptions&);
 
-  ExecutionContext* getExecutionContext() const;
-  ScriptPromise start();
+  ExecutionContext* GetExecutionContext() const;
+  ScriptPromise Start();
 
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  void onPermissionsUpdated(mojom::blink::PermissionStatus);
-  void onPermissionUpdated(mojom::blink::PermissionStatus);
+  void OnPermissionsUpdated(mojom::blink::PermissionStatus);
+  void OnPermissionUpdated(mojom::blink::PermissionStatus);
 
-  std::unique_ptr<MIDIAccessor> m_accessor;
-  Vector<PortDescriptor> m_portDescriptors;
-  MIDIOptions m_options;
+  std::unique_ptr<MIDIAccessor> accessor_;
+  Vector<PortDescriptor> port_descriptors_;
+  MIDIOptions options_;
 
-  mojom::blink::PermissionServicePtr m_permissionService;
+  mojom::blink::PermissionServicePtr permission_service_;
 };
 
 }  // namespace blink

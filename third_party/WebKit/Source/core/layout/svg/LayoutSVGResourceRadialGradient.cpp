@@ -28,50 +28,52 @@ namespace blink {
 LayoutSVGResourceRadialGradient::LayoutSVGResourceRadialGradient(
     SVGRadialGradientElement* node)
     : LayoutSVGResourceGradient(node),
-      m_attributesWrapper(RadialGradientAttributesWrapper::create()) {}
+      attributes_wrapper_(RadialGradientAttributesWrapper::Create()) {}
 
 LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient() {}
 
-bool LayoutSVGResourceRadialGradient::collectGradientAttributes() {
-  DCHECK(element());
-  m_attributesWrapper->set(RadialGradientAttributes());
-  return toSVGRadialGradientElement(element())->collectGradientAttributes(
-      mutableAttributes());
+bool LayoutSVGResourceRadialGradient::CollectGradientAttributes() {
+  DCHECK(GetElement());
+  attributes_wrapper_->Set(RadialGradientAttributes());
+  return toSVGRadialGradientElement(GetElement())
+      ->CollectGradientAttributes(MutableAttributes());
 }
 
-FloatPoint LayoutSVGResourceRadialGradient::centerPoint(
+FloatPoint LayoutSVGResourceRadialGradient::CenterPoint(
     const RadialGradientAttributes& attributes) const {
-  return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(),
-                                        *attributes.cx(), *attributes.cy());
+  return SVGLengthContext::ResolvePoint(GetElement(),
+                                        attributes.GradientUnits(),
+                                        *attributes.Cx(), *attributes.Cy());
 }
 
-FloatPoint LayoutSVGResourceRadialGradient::focalPoint(
+FloatPoint LayoutSVGResourceRadialGradient::FocalPoint(
     const RadialGradientAttributes& attributes) const {
-  return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(),
-                                        *attributes.fx(), *attributes.fy());
+  return SVGLengthContext::ResolvePoint(GetElement(),
+                                        attributes.GradientUnits(),
+                                        *attributes.Fx(), *attributes.Fy());
 }
 
-float LayoutSVGResourceRadialGradient::radius(
+float LayoutSVGResourceRadialGradient::Radius(
     const RadialGradientAttributes& attributes) const {
-  return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(),
-                                         *attributes.r());
+  return SVGLengthContext::ResolveLength(
+      GetElement(), attributes.GradientUnits(), *attributes.R());
 }
 
-float LayoutSVGResourceRadialGradient::focalRadius(
+float LayoutSVGResourceRadialGradient::FocalRadius(
     const RadialGradientAttributes& attributes) const {
-  return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(),
-                                         *attributes.fr());
+  return SVGLengthContext::ResolveLength(
+      GetElement(), attributes.GradientUnits(), *attributes.Fr());
 }
 
-PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::buildGradient() const {
-  const RadialGradientAttributes& attributes = this->attributes();
-  RefPtr<Gradient> gradient = Gradient::createRadial(
-      focalPoint(attributes), focalRadius(attributes), centerPoint(attributes),
-      radius(attributes), 1,
-      platformSpreadMethodFromSVGType(attributes.spreadMethod()),
-      Gradient::ColorInterpolation::Unpremultiplied);
-  gradient->addColorStops(attributes.stops());
-  return gradient.release();
+PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::BuildGradient() const {
+  const RadialGradientAttributes& attributes = this->Attributes();
+  RefPtr<Gradient> gradient = Gradient::CreateRadial(
+      FocalPoint(attributes), FocalRadius(attributes), CenterPoint(attributes),
+      Radius(attributes), 1,
+      PlatformSpreadMethodFromSVGType(attributes.SpreadMethod()),
+      Gradient::ColorInterpolation::kUnpremultiplied);
+  gradient->AddColorStops(attributes.Stops());
+  return gradient.Release();
 }
 
 }  // namespace blink

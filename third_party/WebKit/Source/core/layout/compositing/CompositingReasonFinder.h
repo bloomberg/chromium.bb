@@ -25,35 +25,38 @@ class CORE_EXPORT CompositingReasonFinder {
  public:
   explicit CompositingReasonFinder(LayoutView&);
 
-  CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject&) const;
+  CompositingReasons PotentialCompositingReasonsFromStyle(LayoutObject&) const;
 
   // Returns the direct reasons for compositing the given layer. If
   // |ignoreLCDText| is true promotion will not try to preserve subpixel text
   // rendering (i.e. partially transparent layers will be promoted).
-  CompositingReasons directReasons(const PaintLayer*, bool ignoreLCDText) const;
+  CompositingReasons DirectReasons(const PaintLayer*,
+                                   bool ignore_lcd_text) const;
 
-  void updateTriggers();
+  void UpdateTriggers();
 
-  bool requiresCompositingForScrollableFrame() const;
-  static bool requiresCompositingForAnimation(const ComputedStyle&);
-  static bool requiresCompositingForOpacityAnimation(const ComputedStyle&);
-  static bool requiresCompositingForFilterAnimation(const ComputedStyle&);
-  static bool requiresCompositingForBackdropFilterAnimation(
+  bool RequiresCompositingForScrollableFrame() const;
+  static bool RequiresCompositingForAnimation(const ComputedStyle&);
+  static bool RequiresCompositingForOpacityAnimation(const ComputedStyle&);
+  static bool RequiresCompositingForFilterAnimation(const ComputedStyle&);
+  static bool RequiresCompositingForBackdropFilterAnimation(
       const ComputedStyle&);
-  static bool requiresCompositingForEffectAnimation(const ComputedStyle&);
-  static bool requiresCompositingForTransformAnimation(const ComputedStyle&);
-  static bool requiresCompositingForTransform(const LayoutObject&);
+  static bool RequiresCompositingForEffectAnimation(const ComputedStyle&);
+  static bool RequiresCompositingForTransformAnimation(const ComputedStyle&);
+  static bool RequiresCompositingForTransform(const LayoutObject&);
 
  private:
-  bool isMainFrame() const;
+  bool IsMainFrame() const;
 
-  CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*,
-                                                     bool ignoreLCDText) const;
-  bool requiresCompositingForScrollDependentPosition(const PaintLayer*,
-                                                     bool ignoreLCDText) const;
+  CompositingReasons NonStyleDeterminedDirectReasons(
+      const PaintLayer*,
+      bool ignore_lcd_text) const;
+  bool RequiresCompositingForScrollDependentPosition(
+      const PaintLayer*,
+      bool ignore_lcd_text) const;
 
-  LayoutView& m_layoutView;
-  CompositingTriggerFlags m_compositingTriggers;
+  LayoutView& layout_view_;
+  CompositingTriggerFlags compositing_triggers_;
 };
 
 }  // namespace blink

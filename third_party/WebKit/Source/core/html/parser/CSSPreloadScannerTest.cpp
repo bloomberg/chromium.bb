@@ -29,21 +29,22 @@ class MockHTMLResourcePreloader : public HTMLResourcePreloader {
 
  public:
   explicit MockHTMLResourcePreloader(Document& document,
-                                     const char* expectedReferrer = nullptr)
-      : HTMLResourcePreloader(document), m_expectedReferrer(expectedReferrer) {}
+                                     const char* expected_referrer = nullptr)
+      : HTMLResourcePreloader(document),
+        expected_referrer_(expected_referrer) {}
 
-  void preload(std::unique_ptr<PreloadRequest> preloadRequest,
+  void Preload(std::unique_ptr<PreloadRequest> preload_request,
                const NetworkHintsInterface&) override {
-    if (m_expectedReferrer) {
-      Resource* resource = preloadRequest->start(document());
+    if (expected_referrer_) {
+      Resource* resource = preload_request->Start(GetDocument());
       if (resource) {
-        EXPECT_EQ(m_expectedReferrer,
-                  resource->resourceRequest().httpReferrer());
+        EXPECT_EQ(expected_referrer_,
+                  resource->GetResourceRequest().HttpReferrer());
       }
     }
   }
 
-  const char* m_expectedReferrer;
+  const char* expected_referrer_;
 };
 
 class PreloadRecordingCSSPreloaderResourceClient final
@@ -53,16 +54,16 @@ class PreloadRecordingCSSPreloaderResourceClient final
                                              HTMLResourcePreloader* preloader)
       : CSSPreloaderResourceClient(resource, preloader) {}
 
-  void fetchPreloads(PreloadRequestStream& preloads) override {
+  void FetchPreloads(PreloadRequestStream& preloads) override {
     for (const auto& it : preloads) {
-      m_preloadUrls.push_back(it->resourceURL());
-      m_preloadReferrerPolicies.push_back(it->getReferrerPolicy());
+      preload_urls_.push_back(it->ResourceURL());
+      preload_referrer_policies_.push_back(it->GetReferrerPolicy());
     }
-    CSSPreloaderResourceClient::fetchPreloads(preloads);
+    CSSPreloaderResourceClient::FetchPreloads(preloads);
   }
 
-  Vector<String> m_preloadUrls;
-  Vector<ReferrerPolicy> m_preloadReferrerPolicies;
+  Vector<String> preload_urls_;
+  Vector<ReferrerPolicy> preload_referrer_policies_;
 };
 
 class CSSPreloadScannerTest : public ::testing::Test {};
@@ -70,143 +71,152 @@ class CSSPreloadScannerTest : public ::testing::Test {};
 }  // namespace
 
 TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  dummy_page_holder->GetDocument()
+      .GetSettings()
+      ->SetCSSExternalScannerNoPreload(true);
 
   MockHTMLResourcePreloader* preloader =
-      new MockHTMLResourcePreloader(dummyPageHolder->document());
+      new MockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
-      CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(ResourceStatus::Pending);
+      CSSStyleSheetResource::CreateForTest(ResourceRequest(url), "utf-8");
+  resource->SetStatus(ResourceStatus::kPending);
 
-  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+  PreloadRecordingCSSPreloaderResourceClient* resource_client =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
-  resource->appendData(data, strlen(data));
+  resource->AppendData(data, strlen(data));
 
-  EXPECT_EQ(Resource::PreloadNotReferenced, resource->getPreloadResult());
-  EXPECT_EQ(1u, resourceClient->m_preloadUrls.size());
+  EXPECT_EQ(Resource::kPreloadNotReferenced, resource->GetPreloadResult());
+  EXPECT_EQ(1u, resource_client->preload_urls_.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
-            resourceClient->m_preloadUrls.front());
+            resource_client->preload_urls_.front());
 }
 
 // Regression test for crbug.com/608310 where the client is destroyed but was
 // not removed from the resource's client list.
 TEST_F(CSSPreloadScannerTest, DestroyClientBeforeDataSent) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  dummy_page_holder->GetDocument()
+      .GetSettings()
+      ->SetCSSExternalScannerNoPreload(true);
 
   Persistent<MockHTMLResourcePreloader> preloader =
-      new MockHTMLResourcePreloader(dummyPageHolder->document());
+      new MockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
   Persistent<CSSStyleSheetResource> resource =
-      CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(ResourceStatus::Pending);
+      CSSStyleSheetResource::CreateForTest(ResourceRequest(url), "utf-8");
+  resource->SetStatus(ResourceStatus::kPending);
 
   new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
   // Destroys the resourceClient.
-  ThreadState::current()->collectAllGarbage();
+  ThreadState::Current()->CollectAllGarbage();
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   // Should not crash.
-  resource->appendData(data, strlen(data));
+  resource->AppendData(data, strlen(data));
 }
 
 // Regression test for crbug.com/646869 where the client's data is cleared
 // before didAppendFirstData is called.
 TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  dummy_page_holder->GetDocument()
+      .GetSettings()
+      ->SetCSSExternalScannerNoPreload(true);
 
   MockHTMLResourcePreloader* preloader =
-      new MockHTMLResourcePreloader(dummyPageHolder->document());
+      new MockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
-      CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
+      CSSStyleSheetResource::CreateForTest(ResourceRequest(url), "utf-8");
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
-  resource->appendData(data, strlen(data));
-  ResourceError error(errorDomainBlinkInternal, 0, url.getString(), "");
-  resource->error(error);
+  resource->AppendData(data, strlen(data));
+  ResourceError error(kErrorDomainBlinkInternal, 0, url.GetString(), "");
+  resource->GetError(error);
 
   // Should not crash.
-  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+  PreloadRecordingCSSPreloaderResourceClient* resource_client =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
-  EXPECT_EQ(0u, resourceClient->m_preloadUrls.size());
+  EXPECT_EQ(0u, resource_client->preload_urls_.size());
 }
 
 // Regression test for crbug.com/645331, where a resource client gets callbacks
 // after the document is shutdown and we have no frame.
 TEST_F(CSSPreloadScannerTest, DoNotExpectValidDocument) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  dummyPageHolder->document().settings()->setCSSExternalScannerNoPreload(true);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  dummy_page_holder->GetDocument()
+      .GetSettings()
+      ->SetCSSExternalScannerNoPreload(true);
 
   MockHTMLResourcePreloader* preloader =
-      new MockHTMLResourcePreloader(dummyPageHolder->document());
+      new MockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
-      CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(ResourceStatus::Pending);
+      CSSStyleSheetResource::CreateForTest(ResourceRequest(url), "utf-8");
+  resource->SetStatus(ResourceStatus::kPending);
 
-  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+  PreloadRecordingCSSPreloaderResourceClient* resource_client =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
-  dummyPageHolder->document().shutdown();
+  dummy_page_holder->GetDocument().Shutdown();
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
-  resource->appendData(data, strlen(data));
+  resource->AppendData(data, strlen(data));
 
   // Do not expect to gather any preloads, as the document loader is invalid,
   // which means we can't notify WebLoadingBehaviorData of the preloads.
-  EXPECT_EQ(0u, resourceClient->m_preloadUrls.size());
+  EXPECT_EQ(0u, resource_client->preload_urls_.size());
 }
 
 TEST_F(CSSPreloadScannerTest, ReferrerPolicyHeader) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(500, 500));
-  dummyPageHolder->document().settings()->setCSSExternalScannerPreload(true);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  dummy_page_holder->GetDocument().GetSettings()->SetCSSExternalScannerPreload(
+      true);
 
   MockHTMLResourcePreloader* preloader = new MockHTMLResourcePreloader(
-      dummyPageHolder->document(), "http://127.0.0.1/foo.css");
+      dummy_page_holder->GetDocument(), "http://127.0.0.1/foo.css");
 
-  KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
   ResourceResponse response;
-  response.setURL(url);
-  response.setHTTPStatusCode(200);
-  response.setHTTPHeaderField("referrer-policy", "unsafe-url");
+  response.SetURL(url);
+  response.SetHTTPStatusCode(200);
+  response.SetHTTPHeaderField("referrer-policy", "unsafe-url");
   CSSStyleSheetResource* resource =
-      CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
-  resource->setStatus(ResourceStatus::Pending);
-  resource->setResponse(response);
+      CSSStyleSheetResource::CreateForTest(ResourceRequest(url), "utf-8");
+  resource->SetStatus(ResourceStatus::kPending);
+  resource->SetResponse(response);
 
-  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+  PreloadRecordingCSSPreloaderResourceClient* resource_client =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
-  KURL preloadURL(ParsedURLString, "http://127.0.0.1/preload.css");
-  Platform::current()->getURLLoaderMockFactory()->registerURL(
-      preloadURL, WrappedResourceResponse(ResourceResponse()), "");
+  KURL preload_url(kParsedURLString, "http://127.0.0.1/preload.css");
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+      preload_url, WrappedResourceResponse(ResourceResponse()), "");
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
-  resource->appendData(data, strlen(data));
+  resource->AppendData(data, strlen(data));
 
-  EXPECT_EQ(Resource::PreloadNotReferenced, resource->getPreloadResult());
-  EXPECT_EQ(1u, resourceClient->m_preloadUrls.size());
+  EXPECT_EQ(Resource::kPreloadNotReferenced, resource->GetPreloadResult());
+  EXPECT_EQ(1u, resource_client->preload_urls_.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
-            resourceClient->m_preloadUrls.front());
-  EXPECT_EQ(ReferrerPolicyAlways,
-            resourceClient->m_preloadReferrerPolicies.front());
+            resource_client->preload_urls_.front());
+  EXPECT_EQ(kReferrerPolicyAlways,
+            resource_client->preload_referrer_policies_.front());
 }
 
 }  // namespace blink

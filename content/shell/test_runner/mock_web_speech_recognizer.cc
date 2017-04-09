@@ -58,9 +58,9 @@ class ResultTask : public MockWebSpeechRecognizer::Task {
     blink::WebVector<blink::WebSpeechRecognitionResult> final_results(
         static_cast<size_t>(1));
     blink::WebVector<blink::WebSpeechRecognitionResult> interim_results;
-    final_results[0].assign(transcripts, confidences, true);
+    final_results[0].Assign(transcripts, confidences, true);
 
-    recognizer_->Client()->didReceiveResults(recognizer_->Handle(),
+    recognizer_->Client()->DidReceiveResults(recognizer_->Handle(),
                                              final_results, interim_results);
   }
 
@@ -80,7 +80,7 @@ class NoMatchTask : public MockWebSpeechRecognizer::Task {
   ~NoMatchTask() override {}
 
   void run() override {
-    recognizer_->Client()->didReceiveNoMatch(
+    recognizer_->Client()->DidReceiveNoMatch(
         recognizer_->Handle(), blink::WebSpeechRecognitionResult());
   }
 
@@ -99,7 +99,7 @@ class ErrorTask : public MockWebSpeechRecognizer::Task {
   ~ErrorTask() override {}
 
   void run() override {
-    recognizer_->Client()->didReceiveError(recognizer_->Handle(), message_,
+    recognizer_->Client()->DidReceiveError(recognizer_->Handle(), message_,
                                            code_);
   }
 
@@ -122,7 +122,7 @@ class EndedTask : public MockWebSpeechRecognizer::Task {
     blink::WebSpeechRecognitionHandle handle = recognizer_->Handle();
     blink::WebSpeechRecognizerClient* client = recognizer_->Client();
     recognizer_->SetClientContext(blink::WebSpeechRecognitionHandle(), nullptr);
-    client->didEnd(handle);
+    client->DidEnd(handle);
   }
 
  private:
@@ -181,7 +181,7 @@ void MockWebSpeechRecognizer::SetClientContext(
   client_ = client;
 }
 
-void MockWebSpeechRecognizer::start(
+void MockWebSpeechRecognizer::Start(
     const blink::WebSpeechRecognitionHandle& handle,
     const blink::WebSpeechRecognitionParams& params,
     blink::WebSpeechRecognizerClient* client) {
@@ -194,11 +194,11 @@ void MockWebSpeechRecognizer::start(
   }
 
   task_queue_.push_back(
-      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didStart));
+      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::DidStart));
   task_queue_.push_back(new ClientCallTask(
-      this, &blink::WebSpeechRecognizerClient::didStartAudio));
+      this, &blink::WebSpeechRecognizerClient::DidStartAudio));
   task_queue_.push_back(new ClientCallTask(
-      this, &blink::WebSpeechRecognizerClient::didStartSound));
+      this, &blink::WebSpeechRecognizerClient::DidStartSound));
 
   if (!mock_transcripts_.empty()) {
     DCHECK_EQ(mock_transcripts_.size(), mock_confidences_.size());
@@ -213,15 +213,15 @@ void MockWebSpeechRecognizer::start(
     task_queue_.push_back(new NoMatchTask(this));
 
   task_queue_.push_back(
-      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEndSound));
+      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::DidEndSound));
   task_queue_.push_back(
-      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEndAudio));
+      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::DidEndAudio));
   task_queue_.push_back(new EndedTask(this));
 
   StartTaskQueue();
 }
 
-void MockWebSpeechRecognizer::stop(
+void MockWebSpeechRecognizer::Stop(
     const blink::WebSpeechRecognitionHandle& handle,
     blink::WebSpeechRecognizerClient* client) {
   SetClientContext(handle, client);
@@ -230,7 +230,7 @@ void MockWebSpeechRecognizer::stop(
   NOTREACHED();
 }
 
-void MockWebSpeechRecognizer::abort(
+void MockWebSpeechRecognizer::Abort(
     const blink::WebSpeechRecognitionHandle& handle,
     blink::WebSpeechRecognizerClient* client) {
   was_aborted_ = true;
@@ -251,23 +251,23 @@ void MockWebSpeechRecognizer::SetError(const blink::WebString& error,
                                        const blink::WebString& message) {
   blink::WebSpeechRecognizerClient::ErrorCode code;
   if (error == "OtherError")
-    code = blink::WebSpeechRecognizerClient::OtherError;
+    code = blink::WebSpeechRecognizerClient::kOtherError;
   else if (error == "NoSpeechError")
-    code = blink::WebSpeechRecognizerClient::NoSpeechError;
+    code = blink::WebSpeechRecognizerClient::kNoSpeechError;
   else if (error == "AbortedError")
-    code = blink::WebSpeechRecognizerClient::AbortedError;
+    code = blink::WebSpeechRecognizerClient::kAbortedError;
   else if (error == "AudioCaptureError")
-    code = blink::WebSpeechRecognizerClient::AudioCaptureError;
+    code = blink::WebSpeechRecognizerClient::kAudioCaptureError;
   else if (error == "NetworkError")
-    code = blink::WebSpeechRecognizerClient::NetworkError;
+    code = blink::WebSpeechRecognizerClient::kNetworkError;
   else if (error == "NotAllowedError")
-    code = blink::WebSpeechRecognizerClient::NotAllowedError;
+    code = blink::WebSpeechRecognizerClient::kNotAllowedError;
   else if (error == "ServiceNotAllowedError")
-    code = blink::WebSpeechRecognizerClient::ServiceNotAllowedError;
+    code = blink::WebSpeechRecognizerClient::kServiceNotAllowedError;
   else if (error == "BadGrammarError")
-    code = blink::WebSpeechRecognizerClient::BadGrammarError;
+    code = blink::WebSpeechRecognizerClient::kBadGrammarError;
   else if (error == "LanguageNotSupportedError")
-    code = blink::WebSpeechRecognizerClient::LanguageNotSupportedError;
+    code = blink::WebSpeechRecognizerClient::kLanguageNotSupportedError;
   else
     return;
 

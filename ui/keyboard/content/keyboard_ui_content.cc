@@ -98,14 +98,14 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
   // Overridden from content::WebContentsDelegate:
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override {
-    switch (event.type()) {
+    switch (event.GetType()) {
       // Scroll events are not suppressed because the menu to select IME should
       // be scrollable.
-      case blink::WebInputEvent::GestureScrollBegin:
-      case blink::WebInputEvent::GestureScrollEnd:
-      case blink::WebInputEvent::GestureScrollUpdate:
-      case blink::WebInputEvent::GestureFlingStart:
-      case blink::WebInputEvent::GestureFlingCancel:
+      case blink::WebInputEvent::kGestureScrollBegin:
+      case blink::WebInputEvent::kGestureScrollEnd:
+      case blink::WebInputEvent::kGestureScrollUpdate:
+      case blink::WebInputEvent::kGestureFlingStart:
+      case blink::WebInputEvent::kGestureFlingCancel:
         return false;
       default:
         // Stop gesture events from being passed to renderer to suppress the

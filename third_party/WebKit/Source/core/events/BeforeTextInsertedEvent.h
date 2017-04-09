@@ -34,22 +34,22 @@ class BeforeTextInsertedEvent final : public Event {
  public:
   ~BeforeTextInsertedEvent() override;
 
-  static BeforeTextInsertedEvent* create(const String& text) {
+  static BeforeTextInsertedEvent* Create(const String& text) {
     return new BeforeTextInsertedEvent(text);
   }
 
-  const AtomicString& interfaceName() const override;
-  bool isBeforeTextInsertedEvent() const override { return true; }
+  const AtomicString& InterfaceName() const override;
+  bool IsBeforeTextInsertedEvent() const override { return true; }
 
-  const String& text() const { return m_text; }
-  void setText(const String& s) { m_text = s; }
+  const String& GetText() const { return text_; }
+  void SetText(const String& s) { text_ = s; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit BeforeTextInsertedEvent(const String&);
 
-  String m_text;
+  String text_;
 };
 
 }  // namespace blink

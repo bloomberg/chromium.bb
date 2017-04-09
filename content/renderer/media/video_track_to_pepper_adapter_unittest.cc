@@ -26,7 +26,7 @@ class VideoTrackToPepperAdapterTest : public ::testing::Test,
     handler_.reset(new VideoTrackToPepperAdapter(registry_.get()));
     registry_->Init(kTestStreamUrl);
     registry_->AddVideoTrack(kTestVideoTrackId);
-    EXPECT_FALSE(handler_->GetFirstVideoTrack(kTestStreamUrl).isNull());
+    EXPECT_FALSE(handler_->GetFirstVideoTrack(kTestStreamUrl).IsNull());
   }
 
   MOCK_METHOD1(GotFrame, void(const scoped_refptr<media::VideoFrame>&));
@@ -34,7 +34,7 @@ class VideoTrackToPepperAdapterTest : public ::testing::Test,
   void TearDown() override {
     registry_.reset();
     handler_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   void DeliverFrameForTesting(const scoped_refptr<media::VideoFrame>& frame) {

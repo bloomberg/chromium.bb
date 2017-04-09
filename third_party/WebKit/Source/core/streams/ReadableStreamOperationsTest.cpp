@@ -26,133 +26,135 @@ namespace {
 
 class NotReached : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> createFunction(ScriptState* scriptState) {
-    NotReached* self = new NotReached(scriptState);
-    return self->bindToV8Function();
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
+    NotReached* self = new NotReached(script_state);
+    return self->BindToV8Function();
   }
 
  private:
-  explicit NotReached(ScriptState* scriptState) : ScriptFunction(scriptState) {}
+  explicit NotReached(ScriptState* script_state)
+      : ScriptFunction(script_state) {}
 
-  ScriptValue call(ScriptValue) override;
+  ScriptValue Call(ScriptValue) override;
 };
 
-ScriptValue NotReached::call(ScriptValue) {
+ScriptValue NotReached::Call(ScriptValue) {
   EXPECT_TRUE(false) << "'Unreachable' code was reached";
   return ScriptValue();
 }
 
 class Iteration final : public GarbageCollectedFinalized<Iteration> {
  public:
-  Iteration() : m_isSet(false), m_isDone(false), m_isValid(true) {}
+  Iteration() : is_set_(false), is_done_(false), is_valid_(true) {}
 
-  void set(ScriptValue v) {
-    ASSERT(!v.isEmpty());
-    m_isSet = true;
-    v8::TryCatch block(v.getScriptState()->isolate());
+  void Set(ScriptValue v) {
+    ASSERT(!v.IsEmpty());
+    is_set_ = true;
+    v8::TryCatch block(v.GetScriptState()->GetIsolate());
     v8::Local<v8::Value> value;
-    v8::Local<v8::Value> item = v.v8Value();
+    v8::Local<v8::Value> item = v.V8Value();
     if (!item->IsObject() ||
-        !v8Call(v8UnpackIteratorResult(v.getScriptState(),
-                                       item.As<v8::Object>(), &m_isDone),
+        !V8Call(V8UnpackIteratorResult(v.GetScriptState(),
+                                       item.As<v8::Object>(), &is_done_),
                 value)) {
-      m_isValid = false;
+      is_valid_ = false;
       return;
     }
-    m_value = toCoreString(value->ToString());
+    value_ = ToCoreString(value->ToString());
   }
 
-  bool isSet() const { return m_isSet; }
-  bool isDone() const { return m_isDone; }
-  bool isValid() const { return m_isValid; }
-  const String& value() const { return m_value; }
+  bool IsSet() const { return is_set_; }
+  bool IsDone() const { return is_done_; }
+  bool IsValid() const { return is_valid_; }
+  const String& Value() const { return value_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  bool m_isSet;
-  bool m_isDone;
-  bool m_isValid;
-  String m_value;
+  bool is_set_;
+  bool is_done_;
+  bool is_valid_;
+  String value_;
 };
 
 class Function : public ScriptFunction {
  public:
-  static v8::Local<v8::Function> createFunction(ScriptState* scriptState,
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 Iteration* iteration) {
-    Function* self = new Function(scriptState, iteration);
-    return self->bindToV8Function();
+    Function* self = new Function(script_state, iteration);
+    return self->BindToV8Function();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_iteration);
-    ScriptFunction::trace(visitor);
+    visitor->Trace(iteration_);
+    ScriptFunction::Trace(visitor);
   }
 
  private:
-  Function(ScriptState* scriptState, Iteration* iteration)
-      : ScriptFunction(scriptState), m_iteration(iteration) {}
+  Function(ScriptState* script_state, Iteration* iteration)
+      : ScriptFunction(script_state), iteration_(iteration) {}
 
-  ScriptValue call(ScriptValue value) override {
-    m_iteration->set(value);
+  ScriptValue Call(ScriptValue value) override {
+    iteration_->Set(value);
     return value;
   }
 
-  Member<Iteration> m_iteration;
+  Member<Iteration> iteration_;
 };
 
 class TestUnderlyingSource final : public UnderlyingSourceBase {
  public:
-  explicit TestUnderlyingSource(ScriptState* scriptState)
-      : UnderlyingSourceBase(scriptState) {}
+  explicit TestUnderlyingSource(ScriptState* script_state)
+      : UnderlyingSourceBase(script_state) {}
 
   // Just expose the controller methods for easy testing
-  void enqueue(ScriptValue value) { controller()->enqueue(value); }
-  void close() { controller()->close(); }
-  void error(ScriptValue value) { controller()->error(value); }
-  double desiredSize() { return controller()->desiredSize(); }
+  void Enqueue(ScriptValue value) { Controller()->Enqueue(value); }
+  void Close() { Controller()->Close(); }
+  void GetError(ScriptValue value) { Controller()->GetError(value); }
+  double DesiredSize() { return Controller()->DesiredSize(); }
 };
 
 class TryCatchScope {
  public:
   explicit TryCatchScope(v8::Isolate* isolate)
-      : m_isolate(isolate), m_trycatch(isolate) {}
+      : isolate_(isolate), trycatch_(isolate) {}
 
   ~TryCatchScope() {
-    v8::MicrotasksScope::PerformCheckpoint(m_isolate);
-    EXPECT_FALSE(m_trycatch.HasCaught());
+    v8::MicrotasksScope::PerformCheckpoint(isolate_);
+    EXPECT_FALSE(trycatch_.HasCaught());
   }
 
  private:
-  v8::Isolate* m_isolate;
-  v8::TryCatch m_trycatch;
+  v8::Isolate* isolate_;
+  v8::TryCatch trycatch_;
 };
 
-ScriptValue eval(V8TestingScope* scope, const char* s) {
+ScriptValue Eval(V8TestingScope* scope, const char* s) {
   v8::Local<v8::String> source;
   v8::Local<v8::Script> script;
-  v8::MicrotasksScope microtasks(scope->isolate(),
+  v8::MicrotasksScope microtasks(scope->GetIsolate(),
                                  v8::MicrotasksScope::kDoNotRunMicrotasks);
-  if (!v8Call(v8::String::NewFromUtf8(scope->isolate(), s,
+  if (!V8Call(v8::String::NewFromUtf8(scope->GetIsolate(), s,
                                       v8::NewStringType::kNormal),
               source)) {
     ADD_FAILURE();
     return ScriptValue();
   }
-  if (!v8Call(v8::Script::Compile(scope->context(), source), script)) {
+  if (!V8Call(v8::Script::Compile(scope->GetContext(), source), script)) {
     ADD_FAILURE() << "Compilation fails";
     return ScriptValue();
   }
-  return ScriptValue(scope->getScriptState(), script->Run(scope->context()));
+  return ScriptValue(scope->GetScriptState(), script->Run(scope->GetContext()));
 }
 
-ScriptValue evalWithPrintingError(V8TestingScope* scope, const char* s) {
-  v8::TryCatch block(scope->isolate());
-  ScriptValue r = eval(scope, s);
+ScriptValue EvalWithPrintingError(V8TestingScope* scope, const char* s) {
+  v8::TryCatch block(scope->GetIsolate());
+  ScriptValue r = Eval(scope, s);
   if (block.HasCaught()) {
-    ADD_FAILURE() << toCoreString(block.Exception()->ToString(scope->isolate()))
-                         .utf8()
-                         .data();
+    ADD_FAILURE() << ToCoreString(
+                         block.Exception()->ToString(scope->GetIsolate()))
+                         .Utf8()
+                         .Data();
     block.ReThrow();
   }
   return r;
@@ -160,337 +162,340 @@ ScriptValue evalWithPrintingError(V8TestingScope* scope, const char* s) {
 
 TEST(ReadableStreamOperationsTest, IsReadableStream) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStream(
-      scope.getScriptState(),
-      ScriptValue(scope.getScriptState(), v8::Undefined(scope.isolate()))));
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStream(
-      scope.getScriptState(), ScriptValue::createNull(scope.getScriptState())));
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStream(
-      scope.getScriptState(),
-      ScriptValue(scope.getScriptState(), v8::Object::New(scope.isolate()))));
-  ScriptValue stream = evalWithPrintingError(&scope, "new ReadableStream()");
-  EXPECT_FALSE(stream.isEmpty());
-  EXPECT_TRUE(ReadableStreamOperations::isReadableStream(scope.getScriptState(),
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
+      scope.GetScriptState(),
+      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate()))));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
+      scope.GetScriptState(), ScriptValue::CreateNull(scope.GetScriptState())));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
+      scope.GetScriptState(),
+      ScriptValue(scope.GetScriptState(),
+                  v8::Object::New(scope.GetIsolate()))));
+  ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
+  EXPECT_FALSE(stream.IsEmpty());
+  EXPECT_TRUE(ReadableStreamOperations::IsReadableStream(scope.GetScriptState(),
                                                          stream));
 }
 
 TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStreamDefaultReader(
-      scope.getScriptState(),
-      ScriptValue(scope.getScriptState(), v8::Undefined(scope.isolate()))));
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStreamDefaultReader(
-      scope.getScriptState(), ScriptValue::createNull(scope.getScriptState())));
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStreamDefaultReader(
-      scope.getScriptState(),
-      ScriptValue(scope.getScriptState(), v8::Object::New(scope.isolate()))));
-  ScriptValue stream = evalWithPrintingError(&scope, "new ReadableStream()");
-  EXPECT_FALSE(stream.isEmpty());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
+      scope.GetScriptState(),
+      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate()))));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
+      scope.GetScriptState(), ScriptValue::CreateNull(scope.GetScriptState())));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
+      scope.GetScriptState(),
+      ScriptValue(scope.GetScriptState(),
+                  v8::Object::New(scope.GetIsolate()))));
+  ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
+  EXPECT_FALSE(stream.IsEmpty());
 
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStreamDefaultReader(
-      scope.getScriptState(), stream));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
+      scope.GetScriptState(), stream));
 }
 
 TEST(ReadableStreamOperationsTest, GetReader) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  ScriptValue stream = evalWithPrintingError(&scope, "new ReadableStream()");
-  EXPECT_FALSE(stream.isEmpty());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
+  EXPECT_FALSE(stream.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::isLocked(scope.getScriptState(), stream));
+      ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream));
   ScriptValue reader;
   {
     DummyExceptionStateForTesting es;
     reader =
-        ReadableStreamOperations::getReader(scope.getScriptState(), stream, es);
-    ASSERT_FALSE(es.hadException());
+        ReadableStreamOperations::GetReader(scope.GetScriptState(), stream, es);
+    ASSERT_FALSE(es.HadException());
   }
   EXPECT_TRUE(
-      ReadableStreamOperations::isLocked(scope.getScriptState(), stream));
-  ASSERT_FALSE(reader.isEmpty());
+      ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream));
+  ASSERT_FALSE(reader.IsEmpty());
 
-  EXPECT_FALSE(ReadableStreamOperations::isReadableStream(
-      scope.getScriptState(), reader));
-  EXPECT_TRUE(ReadableStreamOperations::isReadableStreamDefaultReader(
-      scope.getScriptState(), reader));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
+      scope.GetScriptState(), reader));
+  EXPECT_TRUE(ReadableStreamOperations::IsReadableStreamDefaultReader(
+      scope.GetScriptState(), reader));
 
   // Already locked!
   {
     DummyExceptionStateForTesting es;
     reader =
-        ReadableStreamOperations::getReader(scope.getScriptState(), stream, es);
-    ASSERT_TRUE(es.hadException());
+        ReadableStreamOperations::GetReader(scope.GetScriptState(), stream, es);
+    ASSERT_TRUE(es.HadException());
   }
-  ASSERT_TRUE(reader.isEmpty());
+  ASSERT_TRUE(reader.IsEmpty());
 }
 
 TEST(ReadableStreamOperationsTest, IsDisturbed) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue stream =
-      evalWithPrintingError(&scope, "stream = new ReadableStream()");
-  EXPECT_FALSE(stream.isEmpty());
+      EvalWithPrintingError(&scope, "stream = new ReadableStream()");
+  EXPECT_FALSE(stream.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::isDisturbed(scope.getScriptState(), stream));
+      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream));
 
-  ASSERT_FALSE(evalWithPrintingError(&scope, "stream.cancel()").isEmpty());
+  ASSERT_FALSE(EvalWithPrintingError(&scope, "stream.cancel()").IsEmpty());
 
   EXPECT_TRUE(
-      ReadableStreamOperations::isDisturbed(scope.getScriptState(), stream));
+      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream));
 }
 
 TEST(ReadableStreamOperationsTest, Read) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue reader =
-      evalWithPrintingError(&scope,
+      EvalWithPrintingError(&scope,
                             "var controller;"
                             "function start(c) { controller = c; }"
                             "new ReadableStream({start}).getReader()");
-  EXPECT_FALSE(reader.isEmpty());
-  ASSERT_TRUE(ReadableStreamOperations::isReadableStreamDefaultReader(
-      scope.getScriptState(), reader));
+  EXPECT_FALSE(reader.IsEmpty());
+  ASSERT_TRUE(ReadableStreamOperations::IsReadableStreamDefaultReader(
+      scope.GetScriptState(), reader));
 
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader)
-      .then(Function::createFunction(scope.getScriptState(), it1),
-            NotReached::createFunction(scope.getScriptState()));
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader)
-      .then(Function::createFunction(scope.getScriptState(), it2),
-            NotReached::createFunction(scope.getScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it1),
+            NotReached::CreateFunction(scope.GetScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it2),
+            NotReached::CreateFunction(scope.GetScriptState()));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
-  EXPECT_FALSE(it1->isSet());
-  EXPECT_FALSE(it2->isSet());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_FALSE(it1->IsSet());
+  EXPECT_FALSE(it2->IsSet());
 
   ASSERT_FALSE(
-      evalWithPrintingError(&scope, "controller.enqueue('hello')").isEmpty());
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
-  EXPECT_TRUE(it1->isSet());
-  EXPECT_TRUE(it1->isValid());
-  EXPECT_FALSE(it1->isDone());
-  EXPECT_EQ("hello", it1->value());
-  EXPECT_FALSE(it2->isSet());
+      EvalWithPrintingError(&scope, "controller.enqueue('hello')").IsEmpty());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_TRUE(it1->IsSet());
+  EXPECT_TRUE(it1->IsValid());
+  EXPECT_FALSE(it1->IsDone());
+  EXPECT_EQ("hello", it1->Value());
+  EXPECT_FALSE(it2->IsSet());
 
-  ASSERT_FALSE(evalWithPrintingError(&scope, "controller.close()").isEmpty());
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
-  EXPECT_TRUE(it1->isSet());
-  EXPECT_TRUE(it1->isValid());
-  EXPECT_FALSE(it1->isDone());
-  EXPECT_EQ("hello", it1->value());
-  EXPECT_TRUE(it2->isSet());
-  EXPECT_TRUE(it2->isValid());
-  EXPECT_TRUE(it2->isDone());
+  ASSERT_FALSE(EvalWithPrintingError(&scope, "controller.close()").IsEmpty());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_TRUE(it1->IsSet());
+  EXPECT_TRUE(it1->IsValid());
+  EXPECT_FALSE(it1->IsDone());
+  EXPECT_EQ("hello", it1->Value());
+  EXPECT_TRUE(it2->IsSet());
+  EXPECT_TRUE(it2->IsValid());
+  EXPECT_TRUE(it2->IsDone());
 }
 
 TEST(ReadableStreamOperationsTest,
      CreateReadableStreamWithCustomUnderlyingSourceAndStrategy) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  auto underlyingSource = new TestUnderlyingSource(scope.getScriptState());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  auto underlying_source = new TestUnderlyingSource(scope.GetScriptState());
 
-  ScriptValue strategy = ReadableStreamOperations::createCountQueuingStrategy(
-      scope.getScriptState(), 10);
-  ASSERT_FALSE(strategy.isEmpty());
+  ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
+      scope.GetScriptState(), 10);
+  ASSERT_FALSE(strategy.IsEmpty());
 
-  ScriptValue stream = ReadableStreamOperations::createReadableStream(
-      scope.getScriptState(), underlyingSource, strategy);
-  ASSERT_FALSE(stream.isEmpty());
+  ScriptValue stream = ReadableStreamOperations::CreateReadableStream(
+      scope.GetScriptState(), underlying_source, strategy);
+  ASSERT_FALSE(stream.IsEmpty());
 
-  EXPECT_EQ(10, underlyingSource->desiredSize());
+  EXPECT_EQ(10, underlying_source->DesiredSize());
 
-  underlyingSource->enqueue(ScriptValue::from(scope.getScriptState(), "a"));
-  EXPECT_EQ(9, underlyingSource->desiredSize());
+  underlying_source->Enqueue(ScriptValue::From(scope.GetScriptState(), "a"));
+  EXPECT_EQ(9, underlying_source->DesiredSize());
 
-  underlyingSource->enqueue(ScriptValue::from(scope.getScriptState(), "b"));
-  EXPECT_EQ(8, underlyingSource->desiredSize());
+  underlying_source->Enqueue(ScriptValue::From(scope.GetScriptState(), "b"));
+  EXPECT_EQ(8, underlying_source->DesiredSize());
 
   ScriptValue reader;
   {
     DummyExceptionStateForTesting es;
     reader =
-        ReadableStreamOperations::getReader(scope.getScriptState(), stream, es);
-    ASSERT_FALSE(es.hadException());
+        ReadableStreamOperations::GetReader(scope.GetScriptState(), stream, es);
+    ASSERT_FALSE(es.HadException());
   }
-  ASSERT_FALSE(reader.isEmpty());
+  ASSERT_FALSE(reader.IsEmpty());
 
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();
   Iteration* it3 = new Iteration();
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader)
-      .then(Function::createFunction(scope.getScriptState(), it1),
-            NotReached::createFunction(scope.getScriptState()));
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader)
-      .then(Function::createFunction(scope.getScriptState(), it2),
-            NotReached::createFunction(scope.getScriptState()));
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader)
-      .then(Function::createFunction(scope.getScriptState(), it3),
-            NotReached::createFunction(scope.getScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it1),
+            NotReached::CreateFunction(scope.GetScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it2),
+            NotReached::CreateFunction(scope.GetScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it3),
+            NotReached::CreateFunction(scope.GetScriptState()));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
 
-  EXPECT_EQ(10, underlyingSource->desiredSize());
+  EXPECT_EQ(10, underlying_source->DesiredSize());
 
-  EXPECT_TRUE(it1->isSet());
-  EXPECT_TRUE(it1->isValid());
-  EXPECT_FALSE(it1->isDone());
-  EXPECT_EQ("a", it1->value());
+  EXPECT_TRUE(it1->IsSet());
+  EXPECT_TRUE(it1->IsValid());
+  EXPECT_FALSE(it1->IsDone());
+  EXPECT_EQ("a", it1->Value());
 
-  EXPECT_TRUE(it2->isSet());
-  EXPECT_TRUE(it2->isValid());
-  EXPECT_FALSE(it2->isDone());
-  EXPECT_EQ("b", it2->value());
+  EXPECT_TRUE(it2->IsSet());
+  EXPECT_TRUE(it2->IsValid());
+  EXPECT_FALSE(it2->IsDone());
+  EXPECT_EQ("b", it2->Value());
 
-  EXPECT_FALSE(it3->isSet());
+  EXPECT_FALSE(it3->IsSet());
 
-  underlyingSource->close();
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+  underlying_source->Close();
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
 
-  EXPECT_TRUE(it3->isSet());
-  EXPECT_TRUE(it3->isValid());
-  EXPECT_TRUE(it3->isDone());
+  EXPECT_TRUE(it3->IsSet());
+  EXPECT_TRUE(it3->IsValid());
+  EXPECT_TRUE(it3->IsDone());
 }
 
 TEST(ReadableStreamOperationsTest,
      UnderlyingSourceShouldHavePendingActivityWhenLockedAndControllerIsActive) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  auto underlyingSource = new TestUnderlyingSource(scope.getScriptState());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  auto underlying_source = new TestUnderlyingSource(scope.GetScriptState());
 
-  ScriptValue strategy = ReadableStreamOperations::createCountQueuingStrategy(
-      scope.getScriptState(), 10);
-  ASSERT_FALSE(strategy.isEmpty());
+  ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
+      scope.GetScriptState(), 10);
+  ASSERT_FALSE(strategy.IsEmpty());
 
-  ScriptValue stream = ReadableStreamOperations::createReadableStream(
-      scope.getScriptState(), underlyingSource, strategy);
-  ASSERT_FALSE(stream.isEmpty());
+  ScriptValue stream = ReadableStreamOperations::CreateReadableStream(
+      scope.GetScriptState(), underlying_source, strategy);
+  ASSERT_FALSE(stream.IsEmpty());
 
-  v8::Local<v8::Object> global = scope.getScriptState()->context()->Global();
+  v8::Local<v8::Object> global = scope.GetScriptState()->GetContext()->Global();
   ASSERT_TRUE(global
-                  ->Set(scope.context(), v8String(scope.isolate(), "stream"),
-                        stream.v8Value())
+                  ->Set(scope.GetContext(),
+                        V8String(scope.GetIsolate(), "stream"),
+                        stream.V8Value())
                   .IsJust());
 
-  EXPECT_FALSE(underlyingSource->hasPendingActivity());
-  evalWithPrintingError(&scope, "let reader = stream.getReader();");
-  EXPECT_TRUE(underlyingSource->hasPendingActivity());
-  evalWithPrintingError(&scope, "reader.releaseLock();");
-  EXPECT_FALSE(underlyingSource->hasPendingActivity());
-  evalWithPrintingError(&scope, "reader = stream.getReader();");
-  EXPECT_TRUE(underlyingSource->hasPendingActivity());
-  underlyingSource->enqueue(
-      ScriptValue(scope.getScriptState(), v8::Undefined(scope.isolate())));
-  underlyingSource->close();
-  EXPECT_FALSE(underlyingSource->hasPendingActivity());
+  EXPECT_FALSE(underlying_source->HasPendingActivity());
+  EvalWithPrintingError(&scope, "let reader = stream.getReader();");
+  EXPECT_TRUE(underlying_source->HasPendingActivity());
+  EvalWithPrintingError(&scope, "reader.releaseLock();");
+  EXPECT_FALSE(underlying_source->HasPendingActivity());
+  EvalWithPrintingError(&scope, "reader = stream.getReader();");
+  EXPECT_TRUE(underlying_source->HasPendingActivity());
+  underlying_source->Enqueue(
+      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+  underlying_source->Close();
+  EXPECT_FALSE(underlying_source->HasPendingActivity());
 }
 
 TEST(ReadableStreamOperationsTest, IsReadable) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  ScriptValue readable = evalWithPrintingError(&scope, "new ReadableStream()");
-  ScriptValue closed = evalWithPrintingError(
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  ScriptValue readable = EvalWithPrintingError(&scope, "new ReadableStream()");
+  ScriptValue closed = EvalWithPrintingError(
       &scope, "new ReadableStream({start: c => c.close()})");
-  ScriptValue errored = evalWithPrintingError(
+  ScriptValue errored = EvalWithPrintingError(
       &scope, "new ReadableStream({start: c => c.error()})");
-  ASSERT_FALSE(readable.isEmpty());
-  ASSERT_FALSE(closed.isEmpty());
-  ASSERT_FALSE(errored.isEmpty());
+  ASSERT_FALSE(readable.IsEmpty());
+  ASSERT_FALSE(closed.IsEmpty());
+  ASSERT_FALSE(errored.IsEmpty());
 
   EXPECT_TRUE(
-      ReadableStreamOperations::isReadable(scope.getScriptState(), readable));
+      ReadableStreamOperations::IsReadable(scope.GetScriptState(), readable));
   EXPECT_FALSE(
-      ReadableStreamOperations::isReadable(scope.getScriptState(), closed));
+      ReadableStreamOperations::IsReadable(scope.GetScriptState(), closed));
   EXPECT_FALSE(
-      ReadableStreamOperations::isReadable(scope.getScriptState(), errored));
+      ReadableStreamOperations::IsReadable(scope.GetScriptState(), errored));
 }
 
 TEST(ReadableStreamOperationsTest, IsClosed) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  ScriptValue readable = evalWithPrintingError(&scope, "new ReadableStream()");
-  ScriptValue closed = evalWithPrintingError(
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  ScriptValue readable = EvalWithPrintingError(&scope, "new ReadableStream()");
+  ScriptValue closed = EvalWithPrintingError(
       &scope, "new ReadableStream({start: c => c.close()})");
-  ScriptValue errored = evalWithPrintingError(
+  ScriptValue errored = EvalWithPrintingError(
       &scope, "new ReadableStream({start: c => c.error()})");
-  ASSERT_FALSE(readable.isEmpty());
-  ASSERT_FALSE(closed.isEmpty());
-  ASSERT_FALSE(errored.isEmpty());
+  ASSERT_FALSE(readable.IsEmpty());
+  ASSERT_FALSE(closed.IsEmpty());
+  ASSERT_FALSE(errored.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::isClosed(scope.getScriptState(), readable));
+      ReadableStreamOperations::IsClosed(scope.GetScriptState(), readable));
   EXPECT_TRUE(
-      ReadableStreamOperations::isClosed(scope.getScriptState(), closed));
+      ReadableStreamOperations::IsClosed(scope.GetScriptState(), closed));
   EXPECT_FALSE(
-      ReadableStreamOperations::isClosed(scope.getScriptState(), errored));
+      ReadableStreamOperations::IsClosed(scope.GetScriptState(), errored));
 }
 
 TEST(ReadableStreamOperationsTest, IsErrored) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
-  ScriptValue readable = evalWithPrintingError(&scope, "new ReadableStream()");
-  ScriptValue closed = evalWithPrintingError(
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  ScriptValue readable = EvalWithPrintingError(&scope, "new ReadableStream()");
+  ScriptValue closed = EvalWithPrintingError(
       &scope, "new ReadableStream({start: c => c.close()})");
-  ScriptValue errored = evalWithPrintingError(
+  ScriptValue errored = EvalWithPrintingError(
       &scope, "new ReadableStream({start: c => c.error()})");
-  ASSERT_FALSE(readable.isEmpty());
-  ASSERT_FALSE(closed.isEmpty());
-  ASSERT_FALSE(errored.isEmpty());
+  ASSERT_FALSE(readable.IsEmpty());
+  ASSERT_FALSE(closed.IsEmpty());
+  ASSERT_FALSE(errored.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::isErrored(scope.getScriptState(), readable));
+      ReadableStreamOperations::IsErrored(scope.GetScriptState(), readable));
   EXPECT_FALSE(
-      ReadableStreamOperations::isErrored(scope.getScriptState(), closed));
+      ReadableStreamOperations::IsErrored(scope.GetScriptState(), closed));
   EXPECT_TRUE(
-      ReadableStreamOperations::isErrored(scope.getScriptState(), errored));
+      ReadableStreamOperations::IsErrored(scope.GetScriptState(), errored));
 }
 
 TEST(ReadableStreamOperationsTest, Tee) {
   V8TestingScope scope;
-  TryCatchScope tryCatchScope(scope.isolate());
+  TryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue original =
-      evalWithPrintingError(&scope,
+      EvalWithPrintingError(&scope,
                             "var controller;"
                             "new ReadableStream({start: c => controller = c})");
-  ASSERT_FALSE(original.isEmpty());
+  ASSERT_FALSE(original.IsEmpty());
   ScriptValue new1, new2;
-  ReadableStreamOperations::tee(scope.getScriptState(), original, &new1, &new2);
+  ReadableStreamOperations::Tee(scope.GetScriptState(), original, &new1, &new2);
 
   NonThrowableExceptionState ec;
   ScriptValue reader1 =
-      ReadableStreamOperations::getReader(scope.getScriptState(), new1, ec);
+      ReadableStreamOperations::GetReader(scope.GetScriptState(), new1, ec);
   ScriptValue reader2 =
-      ReadableStreamOperations::getReader(scope.getScriptState(), new2, ec);
+      ReadableStreamOperations::GetReader(scope.GetScriptState(), new2, ec);
 
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader1)
-      .then(Function::createFunction(scope.getScriptState(), it1),
-            NotReached::createFunction(scope.getScriptState()));
-  ReadableStreamOperations::defaultReaderRead(scope.getScriptState(), reader2)
-      .then(Function::createFunction(scope.getScriptState(), it2),
-            NotReached::createFunction(scope.getScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader1)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it1),
+            NotReached::CreateFunction(scope.GetScriptState()));
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader2)
+      .Then(Function::CreateFunction(scope.GetScriptState(), it2),
+            NotReached::CreateFunction(scope.GetScriptState()));
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
-  EXPECT_FALSE(it1->isSet());
-  EXPECT_FALSE(it2->isSet());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_FALSE(it1->IsSet());
+  EXPECT_FALSE(it2->IsSet());
 
   ASSERT_FALSE(
-      evalWithPrintingError(&scope, "controller.enqueue('hello')").isEmpty());
-  v8::MicrotasksScope::PerformCheckpoint(scope.isolate());
+      EvalWithPrintingError(&scope, "controller.enqueue('hello')").IsEmpty());
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
 
-  EXPECT_TRUE(it1->isSet());
-  EXPECT_TRUE(it1->isValid());
-  EXPECT_FALSE(it1->isDone());
-  EXPECT_EQ("hello", it1->value());
-  EXPECT_TRUE(it2->isSet());
-  EXPECT_TRUE(it2->isValid());
-  EXPECT_FALSE(it2->isDone());
-  EXPECT_EQ("hello", it2->value());
+  EXPECT_TRUE(it1->IsSet());
+  EXPECT_TRUE(it1->IsValid());
+  EXPECT_FALSE(it1->IsDone());
+  EXPECT_EQ("hello", it1->Value());
+  EXPECT_TRUE(it2->IsSet());
+  EXPECT_TRUE(it2->IsValid());
+  EXPECT_FALSE(it2->IsDone());
+  EXPECT_EQ("hello", it2->Value());
 }
 
 }  // namespace

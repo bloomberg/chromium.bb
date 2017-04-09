@@ -64,48 +64,51 @@ namespace {
 
 // Add new scheduled navigation types before ScheduledLastEntry
 enum ScheduledNavigationType {
-  ScheduledReload,
-  ScheduledFormSubmission,
-  ScheduledURLNavigation,
-  ScheduledRedirect,
-  ScheduledLocationChange,
-  ScheduledPageBlock,
+  kScheduledReload,
+  kScheduledFormSubmission,
+  kScheduledURLNavigation,
+  kScheduledRedirect,
+  kScheduledLocationChange,
+  kScheduledPageBlock,
 
-  ScheduledLastEntry
+  kScheduledLastEntry
 };
 
 // If the current frame has a provisional document loader, a scheduled
 // navigation might abort that load. Log those occurrences until
 // crbug.com/557430 is resolved.
-void maybeLogScheduledNavigationClobber(ScheduledNavigationType type,
+void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
                                         LocalFrame* frame) {
-  if (!frame->loader().provisionalDocumentLoader())
+  if (!frame->Loader().ProvisionalDocumentLoader())
     return;
   // Include enumeration values userGesture variants.
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, scheduledNavigationClobberHistogram,
+  DEFINE_STATIC_LOCAL(EnumerationHistogram,
+                      scheduled_navigation_clobber_histogram,
                       ("Navigation.Scheduled.MaybeCausedAbort",
-                       ScheduledNavigationType::ScheduledLastEntry * 2));
+                       ScheduledNavigationType::kScheduledLastEntry * 2));
 
-  UserGestureToken* gestureToken = UserGestureIndicator::currentToken();
-  int value = gestureToken && gestureToken->hasGestures()
-                  ? type + ScheduledLastEntry
+  UserGestureToken* gesture_token = UserGestureIndicator::CurrentToken();
+  int value = gesture_token && gesture_token->HasGestures()
+                  ? type + kScheduledLastEntry
                   : type;
-  scheduledNavigationClobberHistogram.count(value);
+  scheduled_navigation_clobber_histogram.Count(value);
 
   DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, scheduledClobberAbortTimeHistogram,
+      CustomCountHistogram, scheduled_clobber_abort_time_histogram,
       ("Navigation.Scheduled.MaybeCausedAbort.Time", 1, 10000, 50));
-  double navigationStart =
-      frame->loader().provisionalDocumentLoader()->timing().navigationStart();
-  if (navigationStart) {
-    scheduledClobberAbortTimeHistogram.count(monotonicallyIncreasingTime() -
-                                             navigationStart);
+  double navigation_start = frame->Loader()
+                                .ProvisionalDocumentLoader()
+                                ->GetTiming()
+                                .NavigationStart();
+  if (navigation_start) {
+    scheduled_clobber_abort_time_histogram.Count(MonotonicallyIncreasingTime() -
+                                                 navigation_start);
   }
 }
 
 }  // namespace
 
-unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
+unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
 class ScheduledNavigation
     : public GarbageCollectedFinalized<ScheduledNavigation> {
@@ -113,165 +116,166 @@ class ScheduledNavigation
 
  public:
   ScheduledNavigation(double delay,
-                      Document* originDocument,
-                      bool replacesCurrentItem,
-                      bool isLocationChange)
-      : m_delay(delay),
-        m_originDocument(originDocument),
-        m_replacesCurrentItem(replacesCurrentItem),
-        m_isLocationChange(isLocationChange) {
-    if (UserGestureIndicator::processingUserGesture())
-      m_userGestureToken = UserGestureIndicator::currentToken();
+                      Document* origin_document,
+                      bool replaces_current_item,
+                      bool is_location_change)
+      : delay_(delay),
+        origin_document_(origin_document),
+        replaces_current_item_(replaces_current_item),
+        is_location_change_(is_location_change) {
+    if (UserGestureIndicator::ProcessingUserGesture())
+      user_gesture_token_ = UserGestureIndicator::CurrentToken();
   }
   virtual ~ScheduledNavigation() {}
 
-  virtual void fire(LocalFrame*) = 0;
+  virtual void Fire(LocalFrame*) = 0;
 
-  virtual bool shouldStartTimer(LocalFrame*) { return true; }
+  virtual bool ShouldStartTimer(LocalFrame*) { return true; }
 
-  double delay() const { return m_delay; }
-  Document* originDocument() const { return m_originDocument.get(); }
-  bool replacesCurrentItem() const { return m_replacesCurrentItem; }
-  bool isLocationChange() const { return m_isLocationChange; }
-  std::unique_ptr<UserGestureIndicator> createUserGestureIndicator() {
-    return WTF::makeUnique<UserGestureIndicator>(m_userGestureToken);
+  double Delay() const { return delay_; }
+  Document* OriginDocument() const { return origin_document_.Get(); }
+  bool ReplacesCurrentItem() const { return replaces_current_item_; }
+  bool IsLocationChange() const { return is_location_change_; }
+  std::unique_ptr<UserGestureIndicator> CreateUserGestureIndicator() {
+    return WTF::MakeUnique<UserGestureIndicator>(user_gesture_token_);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_originDocument); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(origin_document_); }
 
  protected:
-  void clearUserGesture() { m_userGestureToken.clear(); }
+  void ClearUserGesture() { user_gesture_token_.Clear(); }
 
  private:
-  double m_delay;
-  Member<Document> m_originDocument;
-  bool m_replacesCurrentItem;
-  bool m_isLocationChange;
-  RefPtr<UserGestureToken> m_userGestureToken;
+  double delay_;
+  Member<Document> origin_document_;
+  bool replaces_current_item_;
+  bool is_location_change_;
+  RefPtr<UserGestureToken> user_gesture_token_;
 };
 
 class ScheduledURLNavigation : public ScheduledNavigation {
  protected:
   ScheduledURLNavigation(double delay,
-                         Document* originDocument,
+                         Document* origin_document,
                          const KURL& url,
-                         bool replacesCurrentItem,
-                         bool isLocationChange)
+                         bool replaces_current_item,
+                         bool is_location_change)
       : ScheduledNavigation(delay,
-                            originDocument,
-                            replacesCurrentItem,
-                            isLocationChange),
-        m_url(url),
-        m_shouldCheckMainWorldContentSecurityPolicy(
-            CheckContentSecurityPolicy) {
-    if (ContentSecurityPolicy::shouldBypassMainWorld(originDocument)) {
-      m_shouldCheckMainWorldContentSecurityPolicy =
-          DoNotCheckContentSecurityPolicy;
+                            origin_document,
+                            replaces_current_item,
+                            is_location_change),
+        url_(url),
+        should_check_main_world_content_security_policy_(
+            kCheckContentSecurityPolicy) {
+    if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
+      should_check_main_world_content_security_policy_ =
+          kDoNotCheckContentSecurityPolicy;
     }
   }
 
-  void fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gestureIndicator =
-        createUserGestureIndicator();
-    FrameLoadRequest request(originDocument(), m_url, "_self",
-                             m_shouldCheckMainWorldContentSecurityPolicy);
-    request.setReplacesCurrentItem(replacesCurrentItem());
-    request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
+  void Fire(LocalFrame* frame) override {
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        CreateUserGestureIndicator();
+    FrameLoadRequest request(OriginDocument(), url_, "_self",
+                             should_check_main_world_content_security_policy_);
+    request.SetReplacesCurrentItem(ReplacesCurrentItem());
+    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
 
     ScheduledNavigationType type =
-        isLocationChange() ? ScheduledNavigationType::ScheduledLocationChange
-                           : ScheduledNavigationType::ScheduledURLNavigation;
-    maybeLogScheduledNavigationClobber(type, frame);
-    frame->loader().load(request);
+        IsLocationChange() ? ScheduledNavigationType::kScheduledLocationChange
+                           : ScheduledNavigationType::kScheduledURLNavigation;
+    MaybeLogScheduledNavigationClobber(type, frame);
+    frame->Loader().Load(request);
   }
 
-  KURL url() const { return m_url; }
+  KURL Url() const { return url_; }
 
  private:
-  KURL m_url;
-  ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;
+  KURL url_;
+  ContentSecurityPolicyDisposition
+      should_check_main_world_content_security_policy_;
 };
 
 class ScheduledRedirect final : public ScheduledURLNavigation {
  public:
-  static ScheduledRedirect* create(double delay,
-                                   Document* originDocument,
+  static ScheduledRedirect* Create(double delay,
+                                   Document* origin_document,
                                    const KURL& url,
-                                   bool replacesCurrentItem) {
-    return new ScheduledRedirect(delay, originDocument, url,
-                                 replacesCurrentItem);
+                                   bool replaces_current_item) {
+    return new ScheduledRedirect(delay, origin_document, url,
+                                 replaces_current_item);
   }
 
-  bool shouldStartTimer(LocalFrame* frame) override {
-    return frame->document()->loadEventFinished();
+  bool ShouldStartTimer(LocalFrame* frame) override {
+    return frame->GetDocument()->LoadEventFinished();
   }
 
-  void fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gestureIndicator =
-        createUserGestureIndicator();
-    FrameLoadRequest request(originDocument(), url(), "_self");
-    request.setReplacesCurrentItem(replacesCurrentItem());
-    if (equalIgnoringFragmentIdentifier(frame->document()->url(),
-                                        request.resourceRequest().url())) {
-      request.resourceRequest().setCachePolicy(
-          WebCachePolicy::ValidatingCacheData);
+  void Fire(LocalFrame* frame) override {
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        CreateUserGestureIndicator();
+    FrameLoadRequest request(OriginDocument(), Url(), "_self");
+    request.SetReplacesCurrentItem(ReplacesCurrentItem());
+    if (EqualIgnoringFragmentIdentifier(frame->GetDocument()->Url(),
+                                        request.GetResourceRequest().Url())) {
+      request.GetResourceRequest().SetCachePolicy(
+          WebCachePolicy::kValidatingCacheData);
     }
-    request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
-    maybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::ScheduledRedirect, frame);
-    frame->loader().load(request);
+    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    MaybeLogScheduledNavigationClobber(
+        ScheduledNavigationType::kScheduledRedirect, frame);
+    frame->Loader().Load(request);
   }
 
  private:
   ScheduledRedirect(double delay,
-                    Document* originDocument,
+                    Document* origin_document,
                     const KURL& url,
-                    bool replacesCurrentItem)
+                    bool replaces_current_item)
       : ScheduledURLNavigation(delay,
-                               originDocument,
+                               origin_document,
                                url,
-                               replacesCurrentItem,
+                               replaces_current_item,
                                false) {
-    clearUserGesture();
+    ClearUserGesture();
   }
 };
 
 class ScheduledLocationChange final : public ScheduledURLNavigation {
  public:
-  static ScheduledLocationChange* create(Document* originDocument,
+  static ScheduledLocationChange* Create(Document* origin_document,
                                          const KURL& url,
-                                         bool replacesCurrentItem) {
-    return new ScheduledLocationChange(originDocument, url,
-                                       replacesCurrentItem);
+                                         bool replaces_current_item) {
+    return new ScheduledLocationChange(origin_document, url,
+                                       replaces_current_item);
   }
 
  private:
-  ScheduledLocationChange(Document* originDocument,
+  ScheduledLocationChange(Document* origin_document,
                           const KURL& url,
-                          bool replacesCurrentItem)
+                          bool replaces_current_item)
       : ScheduledURLNavigation(0.0,
-                               originDocument,
+                               origin_document,
                                url,
-                               replacesCurrentItem,
-                               !url.protocolIsJavaScript()) {}
+                               replaces_current_item,
+                               !url.ProtocolIsJavaScript()) {}
 };
 
 class ScheduledReload final : public ScheduledNavigation {
  public:
-  static ScheduledReload* create() { return new ScheduledReload; }
+  static ScheduledReload* Create() { return new ScheduledReload; }
 
-  void fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gestureIndicator =
-        createUserGestureIndicator();
-    ResourceRequest resourceRequest = frame->loader().resourceRequestForReload(
-        FrameLoadTypeReload, KURL(), ClientRedirectPolicy::ClientRedirect);
-    if (resourceRequest.isNull())
+  void Fire(LocalFrame* frame) override {
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        CreateUserGestureIndicator();
+    ResourceRequest resource_request = frame->Loader().ResourceRequestForReload(
+        kFrameLoadTypeReload, KURL(), ClientRedirectPolicy::kClientRedirect);
+    if (resource_request.IsNull())
       return;
-    FrameLoadRequest request = FrameLoadRequest(nullptr, resourceRequest);
-    request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
-    maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledReload,
-                                       frame);
-    frame->loader().load(request, FrameLoadTypeReload);
+    FrameLoadRequest request = FrameLoadRequest(nullptr, resource_request);
+    request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    MaybeLogScheduledNavigationClobber(
+        ScheduledNavigationType::kScheduledReload, frame);
+    frame->Loader().Load(request, kFrameLoadTypeReload);
   }
 
  private:
@@ -280,78 +284,78 @@ class ScheduledReload final : public ScheduledNavigation {
 
 class ScheduledPageBlock final : public ScheduledNavigation {
  public:
-  static ScheduledPageBlock* create(Document* originDocument, int reason) {
-    return new ScheduledPageBlock(originDocument, reason);
+  static ScheduledPageBlock* Create(Document* origin_document, int reason) {
+    return new ScheduledPageBlock(origin_document, reason);
   }
 
-  void fire(LocalFrame* frame) override {
-    frame->loader().client()->loadErrorPage(m_reason);
+  void Fire(LocalFrame* frame) override {
+    frame->Loader().Client()->LoadErrorPage(reason_);
   }
 
  private:
-  ScheduledPageBlock(Document* originDocument, int reason)
-      : ScheduledNavigation(0.0, originDocument, true, true),
-        m_reason(reason) {}
+  ScheduledPageBlock(Document* origin_document, int reason)
+      : ScheduledNavigation(0.0, origin_document, true, true),
+        reason_(reason) {}
 
-  int m_reason;
+  int reason_;
 };
 
 class ScheduledFormSubmission final : public ScheduledNavigation {
  public:
-  static ScheduledFormSubmission* create(Document* document,
+  static ScheduledFormSubmission* Create(Document* document,
                                          FormSubmission* submission,
-                                         bool replacesCurrentItem) {
+                                         bool replaces_current_item) {
     return new ScheduledFormSubmission(document, submission,
-                                       replacesCurrentItem);
+                                       replaces_current_item);
   }
 
-  void fire(LocalFrame* frame) override {
-    std::unique_ptr<UserGestureIndicator> gestureIndicator =
-        createUserGestureIndicator();
-    FrameLoadRequest frameRequest =
-        m_submission->createFrameLoadRequest(originDocument());
-    frameRequest.setReplacesCurrentItem(replacesCurrentItem());
-    maybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::ScheduledFormSubmission, frame);
-    frame->loader().load(frameRequest);
+  void Fire(LocalFrame* frame) override {
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        CreateUserGestureIndicator();
+    FrameLoadRequest frame_request =
+        submission_->CreateFrameLoadRequest(OriginDocument());
+    frame_request.SetReplacesCurrentItem(ReplacesCurrentItem());
+    MaybeLogScheduledNavigationClobber(
+        ScheduledNavigationType::kScheduledFormSubmission, frame);
+    frame->Loader().Load(frame_request);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_submission);
-    ScheduledNavigation::trace(visitor);
+    visitor->Trace(submission_);
+    ScheduledNavigation::Trace(visitor);
   }
 
  private:
   ScheduledFormSubmission(Document* document,
                           FormSubmission* submission,
-                          bool replacesCurrentItem)
-      : ScheduledNavigation(0, document, replacesCurrentItem, true),
-        m_submission(submission) {
-    DCHECK(m_submission->form());
+                          bool replaces_current_item)
+      : ScheduledNavigation(0, document, replaces_current_item, true),
+        submission_(submission) {
+    DCHECK(submission_->Form());
   }
 
-  Member<FormSubmission> m_submission;
+  Member<FormSubmission> submission_;
 };
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
-    : m_frame(frame),
-      m_frameType(m_frame->isMainFrame()
+    : frame_(frame),
+      frame_type_(frame_->IsMainFrame()
                       ? WebScheduler::NavigatingFrameType::kMainFrame
                       : WebScheduler::NavigatingFrameType::kChildFrame) {}
 
 NavigationScheduler::~NavigationScheduler() {
-  if (m_navigateTaskHandle.isActive()) {
-    Platform::current()->currentThread()->scheduler()->removePendingNavigation(
-        m_frameType);
+  if (navigate_task_handle_.IsActive()) {
+    Platform::Current()->CurrentThread()->Scheduler()->RemovePendingNavigation(
+        frame_type_);
   }
 }
 
-bool NavigationScheduler::locationChangePending() {
-  return m_redirect && m_redirect->isLocationChange();
+bool NavigationScheduler::LocationChangePending() {
+  return redirect_ && redirect_->IsLocationChange();
 }
 
-bool NavigationScheduler::isNavigationScheduledWithin(double interval) const {
-  return m_redirect && m_redirect->delay() <= interval;
+bool NavigationScheduler::IsNavigationScheduledWithin(double interval) const {
+  return redirect_ && redirect_->Delay() <= interval;
 }
 
 // TODO(dcheng): There are really two different load blocking concepts at work
@@ -372,39 +376,39 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const {
 //    can cause bugs with security origin confusion. This is primarily intended
 //    to block /synchronous/ navigations during things lke
 //    Document::detachLayoutTree().
-inline bool NavigationScheduler::shouldScheduleReload() const {
-  return m_frame->page() && m_frame->isNavigationAllowed() &&
-         NavigationDisablerForBeforeUnload::isNavigationAllowed();
+inline bool NavigationScheduler::ShouldScheduleReload() const {
+  return frame_->GetPage() && frame_->IsNavigationAllowed() &&
+         NavigationDisablerForBeforeUnload::IsNavigationAllowed();
 }
 
-inline bool NavigationScheduler::shouldScheduleNavigation(
+inline bool NavigationScheduler::ShouldScheduleNavigation(
     const KURL& url) const {
-  return m_frame->page() && m_frame->isNavigationAllowed() &&
-         (url.protocolIsJavaScript() ||
-          NavigationDisablerForBeforeUnload::isNavigationAllowed());
+  return frame_->GetPage() && frame_->IsNavigationAllowed() &&
+         (url.ProtocolIsJavaScript() ||
+          NavigationDisablerForBeforeUnload::IsNavigationAllowed());
 }
 
-void NavigationScheduler::scheduleRedirect(double delay, const KURL& url) {
-  if (!shouldScheduleNavigation(url))
+void NavigationScheduler::ScheduleRedirect(double delay, const KURL& url) {
+  if (!ShouldScheduleNavigation(url))
     return;
   if (delay < 0 || delay > INT_MAX / 1000)
     return;
-  if (url.isEmpty())
+  if (url.IsEmpty())
     return;
 
   // We want a new back/forward list item if the refresh timeout is > 1 second.
-  if (!m_redirect || delay <= m_redirect->delay()) {
-    schedule(
-        ScheduledRedirect::create(delay, m_frame->document(), url, delay <= 1));
+  if (!redirect_ || delay <= redirect_->Delay()) {
+    Schedule(ScheduledRedirect::Create(delay, frame_->GetDocument(), url,
+                                       delay <= 1));
   }
 }
 
-bool NavigationScheduler::mustReplaceCurrentItem(LocalFrame* targetFrame) {
+bool NavigationScheduler::MustReplaceCurrentItem(LocalFrame* target_frame) {
   // Non-user navigation before the page has finished firing onload should not
   // create a new back/forward item. See https://webkit.org/b/42861 for the
   // original motivation for this.
-  if (!targetFrame->document()->loadEventFinished() &&
-      !UserGestureIndicator::utilizeUserGesture())
+  if (!target_frame->GetDocument()->LoadEventFinished() &&
+      !UserGestureIndicator::UtilizeUserGesture())
     return true;
 
   // Navigation of a subframe during loading of an ancestor frame does not
@@ -412,79 +416,80 @@ bool NavigationScheduler::mustReplaceCurrentItem(LocalFrame* targetFrame) {
   // before all handlers for the load event have been run. See
   // https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation
   // for this.
-  Frame* parentFrame = targetFrame->tree().parent();
-  return parentFrame && parentFrame->isLocalFrame() &&
-         !toLocalFrame(parentFrame)->loader().allAncestorsAreComplete();
+  Frame* parent_frame = target_frame->Tree().Parent();
+  return parent_frame && parent_frame->IsLocalFrame() &&
+         !ToLocalFrame(parent_frame)->Loader().AllAncestorsAreComplete();
 }
 
-void NavigationScheduler::scheduleLocationChange(Document* originDocument,
+void NavigationScheduler::ScheduleLocationChange(Document* origin_document,
                                                  const KURL& url,
-                                                 bool replacesCurrentItem) {
-  if (!shouldScheduleNavigation(url))
+                                                 bool replaces_current_item) {
+  if (!ShouldScheduleNavigation(url))
     return;
 
-  replacesCurrentItem = replacesCurrentItem || mustReplaceCurrentItem(m_frame);
+  replaces_current_item =
+      replaces_current_item || MustReplaceCurrentItem(frame_);
 
   // If the URL we're going to navigate to is the same as the current one,
   // except for the fragment part, we don't need to schedule the location
   // change. We'll skip this optimization for cross-origin navigations to
   // minimize the navigator's ability to execute timing attacks.
-  if (originDocument->getSecurityOrigin()->canAccess(
-          m_frame->document()->getSecurityOrigin())) {
-    if (url.hasFragmentIdentifier() &&
-        equalIgnoringFragmentIdentifier(m_frame->document()->url(), url)) {
-      FrameLoadRequest request(originDocument, url, "_self");
-      request.setReplacesCurrentItem(replacesCurrentItem);
-      if (replacesCurrentItem)
-        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
-      m_frame->loader().load(request);
+  if (origin_document->GetSecurityOrigin()->CanAccess(
+          frame_->GetDocument()->GetSecurityOrigin())) {
+    if (url.HasFragmentIdentifier() &&
+        EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
+      FrameLoadRequest request(origin_document, url, "_self");
+      request.SetReplacesCurrentItem(replaces_current_item);
+      if (replaces_current_item)
+        request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+      frame_->Loader().Load(request);
       return;
     }
   }
 
-  schedule(ScheduledLocationChange::create(originDocument, url,
-                                           replacesCurrentItem));
+  Schedule(ScheduledLocationChange::Create(origin_document, url,
+                                           replaces_current_item));
 }
 
-void NavigationScheduler::schedulePageBlock(Document* originDocument,
+void NavigationScheduler::SchedulePageBlock(Document* origin_document,
                                             int reason) {
-  DCHECK(m_frame->page());
-  schedule(ScheduledPageBlock::create(originDocument, reason));
+  DCHECK(frame_->GetPage());
+  Schedule(ScheduledPageBlock::Create(origin_document, reason));
 }
 
-void NavigationScheduler::scheduleFormSubmission(Document* document,
+void NavigationScheduler::ScheduleFormSubmission(Document* document,
                                                  FormSubmission* submission) {
-  DCHECK(m_frame->page());
-  schedule(ScheduledFormSubmission::create(document, submission,
-                                           mustReplaceCurrentItem(m_frame)));
+  DCHECK(frame_->GetPage());
+  Schedule(ScheduledFormSubmission::Create(document, submission,
+                                           MustReplaceCurrentItem(frame_)));
 }
 
-void NavigationScheduler::scheduleReload() {
-  if (!shouldScheduleReload())
+void NavigationScheduler::ScheduleReload() {
+  if (!ShouldScheduleReload())
     return;
-  if (m_frame->document()->url().isEmpty())
+  if (frame_->GetDocument()->Url().IsEmpty())
     return;
-  schedule(ScheduledReload::create());
+  Schedule(ScheduledReload::Create());
 }
 
-void NavigationScheduler::navigateTask() {
-  Platform::current()->currentThread()->scheduler()->removePendingNavigation(
-      m_frameType);
+void NavigationScheduler::NavigateTask() {
+  Platform::Current()->CurrentThread()->Scheduler()->RemovePendingNavigation(
+      frame_type_);
 
-  if (!m_frame->page())
+  if (!frame_->GetPage())
     return;
-  if (m_frame->page()->suspended()) {
-    probe::frameClearedScheduledNavigation(m_frame);
+  if (frame_->GetPage()->Suspended()) {
+    probe::frameClearedScheduledNavigation(frame_);
     return;
   }
 
-  ScheduledNavigation* redirect(m_redirect.release());
-  redirect->fire(m_frame);
-  probe::frameClearedScheduledNavigation(m_frame);
+  ScheduledNavigation* redirect(redirect_.Release());
+  redirect->Fire(frame_);
+  probe::frameClearedScheduledNavigation(frame_);
 }
 
-void NavigationScheduler::schedule(ScheduledNavigation* redirect) {
-  DCHECK(m_frame->page());
+void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
+  DCHECK(frame_->GetPage());
 
   // In a back/forward navigation, we sometimes restore history state to
   // iframes, even though the state was generated dynamically and JS will try to
@@ -492,56 +497,57 @@ void NavigationScheduler::schedule(ScheduledNavigation* redirect) {
   // things and/or confuse the JS when it shortly thereafter tries to schedule a
   // location change. Let the JS have its way.
   // FIXME: This check seems out of place.
-  if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() &&
-      m_frame->loader().provisionalDocumentLoader() &&
-      m_frame->loader().provisionalDocumentLoader()->didStart()) {
-    m_frame->loader().stopAllLoaders();
-    if (!m_frame->page())
+  if (!frame_->Loader().StateMachine()->CommittedFirstRealDocumentLoad() &&
+      frame_->Loader().ProvisionalDocumentLoader() &&
+      frame_->Loader().ProvisionalDocumentLoader()->DidStart()) {
+    frame_->Loader().StopAllLoaders();
+    if (!frame_->GetPage())
       return;
   }
 
-  cancel();
-  m_redirect = redirect;
-  startTimer();
+  Cancel();
+  redirect_ = redirect;
+  StartTimer();
 }
 
-void NavigationScheduler::startTimer() {
-  if (!m_redirect)
+void NavigationScheduler::StartTimer() {
+  if (!redirect_)
     return;
 
-  DCHECK(m_frame->page());
-  if (m_navigateTaskHandle.isActive())
+  DCHECK(frame_->GetPage());
+  if (navigate_task_handle_.IsActive())
     return;
-  if (!m_redirect->shouldStartTimer(m_frame))
+  if (!redirect_->ShouldStartTimer(frame_))
     return;
 
-  WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
-  scheduler->addPendingNavigation(m_frameType);
+  WebScheduler* scheduler = Platform::Current()->CurrentThread()->Scheduler();
+  scheduler->AddPendingNavigation(frame_type_);
 
   // wrapWeakPersistent(this) is safe because a posted task is canceled when the
   // task handle is destroyed on the dtor of this NavigationScheduler.
-  m_navigateTaskHandle =
-      scheduler->loadingTaskRunner()->postDelayedCancellableTask(
-          BLINK_FROM_HERE, WTF::bind(&NavigationScheduler::navigateTask,
-                                     wrapWeakPersistent(this)),
-          m_redirect->delay() * 1000.0);
+  navigate_task_handle_ =
+      scheduler->LoadingTaskRunner()->PostDelayedCancellableTask(
+          BLINK_FROM_HERE,
+          WTF::Bind(&NavigationScheduler::NavigateTask,
+                    WrapWeakPersistent(this)),
+          redirect_->Delay() * 1000.0);
 
-  probe::frameScheduledNavigation(m_frame, m_redirect->delay());
+  probe::frameScheduledNavigation(frame_, redirect_->Delay());
 }
 
-void NavigationScheduler::cancel() {
-  if (m_navigateTaskHandle.isActive()) {
-    Platform::current()->currentThread()->scheduler()->removePendingNavigation(
-        m_frameType);
-    probe::frameClearedScheduledNavigation(m_frame);
+void NavigationScheduler::Cancel() {
+  if (navigate_task_handle_.IsActive()) {
+    Platform::Current()->CurrentThread()->Scheduler()->RemovePendingNavigation(
+        frame_type_);
+    probe::frameClearedScheduledNavigation(frame_);
   }
-  m_navigateTaskHandle.cancel();
-  m_redirect.clear();
+  navigate_task_handle_.Cancel();
+  redirect_.Clear();
 }
 
 DEFINE_TRACE(NavigationScheduler) {
-  visitor->trace(m_frame);
-  visitor->trace(m_redirect);
+  visitor->Trace(frame_);
+  visitor->Trace(redirect_);
 }
 
 }  // namespace blink

@@ -31,44 +31,44 @@ namespace blink {
 inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document),
       SVGURIReference(this),
-      m_x(SVGAnimatedLength::create(this,
-                                    SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
-      m_y(SVGAnimatedLength::create(this,
-                                    SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
+      x_(SVGAnimatedLength::Create(this,
+                                   SVGNames::xAttr,
+                                   SVGLength::Create(SVGLengthMode::kWidth))),
+      y_(SVGAnimatedLength::Create(this,
+                                   SVGNames::yAttr,
+                                   SVGLength::Create(SVGLengthMode::kHeight))),
+      width_(
+          SVGAnimatedLength::Create(this,
                                     SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
-      m_height(
-          SVGAnimatedLength::create(this,
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      height_(
+          SVGAnimatedLength::Create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_filterUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
+                                    SVGLength::Create(SVGLengthMode::kHeight))),
+      filter_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
           SVGNames::filterUnitsAttr,
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox)),
-      m_primitiveUnits(
-          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
+      primitive_units_(
+          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
               this,
               SVGNames::primitiveUnitsAttr,
               SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
   // Spec: If the x/y attribute is not specified, the effect is as if a value of
   // "-10%" were specified.
-  m_x->setDefaultValueAsString("-10%");
-  m_y->setDefaultValueAsString("-10%");
+  x_->SetDefaultValueAsString("-10%");
+  y_->SetDefaultValueAsString("-10%");
   // Spec: If the width/height attribute is not specified, the effect is as if a
   // value of "120%" were specified.
-  m_width->setDefaultValueAsString("120%");
-  m_height->setDefaultValueAsString("120%");
+  width_->SetDefaultValueAsString("120%");
+  height_->SetDefaultValueAsString("120%");
 
-  addToPropertyMap(m_x);
-  addToPropertyMap(m_y);
-  addToPropertyMap(m_width);
-  addToPropertyMap(m_height);
-  addToPropertyMap(m_filterUnits);
-  addToPropertyMap(m_primitiveUnits);
+  AddToPropertyMap(x_);
+  AddToPropertyMap(y_);
+  AddToPropertyMap(width_);
+  AddToPropertyMap(height_);
+  AddToPropertyMap(filter_units_);
+  AddToPropertyMap(primitive_units_);
 }
 
 SVGFilterElement::~SVGFilterElement() {}
@@ -76,57 +76,56 @@ SVGFilterElement::~SVGFilterElement() {}
 DEFINE_NODE_FACTORY(SVGFilterElement)
 
 DEFINE_TRACE(SVGFilterElement) {
-  visitor->trace(m_x);
-  visitor->trace(m_y);
-  visitor->trace(m_width);
-  visitor->trace(m_height);
-  visitor->trace(m_filterUnits);
-  visitor->trace(m_primitiveUnits);
-  SVGElement::trace(visitor);
-  SVGURIReference::trace(visitor);
+  visitor->Trace(x_);
+  visitor->Trace(y_);
+  visitor->Trace(width_);
+  visitor->Trace(height_);
+  visitor->Trace(filter_units_);
+  visitor->Trace(primitive_units_);
+  SVGElement::Trace(visitor);
+  SVGURIReference::Trace(visitor);
 }
 
-void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName) {
-  bool isXYWH = attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-                attrName == SVGNames::widthAttr ||
-                attrName == SVGNames::heightAttr;
-  if (isXYWH)
-    updateRelativeLengthsInformation();
+void SVGFilterElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  bool is_xywh = attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
+                 attr_name == SVGNames::widthAttr ||
+                 attr_name == SVGNames::heightAttr;
+  if (is_xywh)
+    UpdateRelativeLengthsInformation();
 
-  if (isXYWH || attrName == SVGNames::filterUnitsAttr ||
-      attrName == SVGNames::primitiveUnitsAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    LayoutSVGResourceContainer* layoutObject =
-        toLayoutSVGResourceContainer(this->layoutObject());
-    if (layoutObject)
-      layoutObject->invalidateCacheAndMarkForLayout();
+  if (is_xywh || attr_name == SVGNames::filterUnitsAttr ||
+      attr_name == SVGNames::primitiveUnitsAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    LayoutSVGResourceContainer* layout_object =
+        ToLayoutSVGResourceContainer(this->GetLayoutObject());
+    if (layout_object)
+      layout_object->InvalidateCacheAndMarkForLayout();
 
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGFilterElement::childrenChanged(const ChildrenChange& change) {
-  SVGElement::childrenChanged(change);
+void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {
+  SVGElement::ChildrenChanged(change);
 
-  if (change.byParser)
+  if (change.by_parser)
     return;
 
-  if (LayoutObject* object = layoutObject())
-    object->setNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::ChildChanged);
+  if (LayoutObject* object = GetLayoutObject())
+    object->SetNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::kChildChanged);
 }
 
-LayoutObject* SVGFilterElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGFilterElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGResourceFilter(this);
 }
 
-bool SVGFilterElement::selfHasRelativeLengths() const {
-  return m_x->currentValue()->isRelative() ||
-         m_y->currentValue()->isRelative() ||
-         m_width->currentValue()->isRelative() ||
-         m_height->currentValue()->isRelative();
+bool SVGFilterElement::SelfHasRelativeLengths() const {
+  return x_->CurrentValue()->IsRelative() || y_->CurrentValue()->IsRelative() ||
+         width_->CurrentValue()->IsRelative() ||
+         height_->CurrentValue()->IsRelative();
 }
 
 }  // namespace blink

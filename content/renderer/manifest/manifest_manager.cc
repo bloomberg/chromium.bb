@@ -117,7 +117,7 @@ void ManifestManager::DidCommitProvisionalLoad(
 }
 
 void ManifestManager::FetchManifest() {
-  manifest_url_ = render_frame()->GetWebFrame()->document().manifestURL();
+  manifest_url_ = render_frame()->GetWebFrame()->GetDocument().ManifestURL();
 
   if (manifest_url_.is_empty()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_EMPTY_URL);
@@ -128,10 +128,10 @@ void ManifestManager::FetchManifest() {
   fetcher_.reset(new ManifestFetcher(manifest_url_));
   fetcher_->Start(
       render_frame()->GetWebFrame(),
-      render_frame()->GetWebFrame()->document().manifestUseCredentials(),
+      render_frame()->GetWebFrame()->GetDocument().ManifestUseCredentials(),
       base::Bind(&ManifestManager::OnManifestFetchComplete,
                  base::Unretained(this),
-                 render_frame()->GetWebFrame()->document().url()));
+                 render_frame()->GetWebFrame()->GetDocument().Url()));
 }
 
 static const std::string& GetMessagePrefix() {
@@ -143,14 +143,14 @@ void ManifestManager::OnManifestFetchComplete(
     const GURL& document_url,
     const blink::WebURLResponse& response,
     const std::string& data) {
-  if (response.isNull() && data.empty()) {
+  if (response.IsNull() && data.empty()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_UNSPECIFIED_REASON);
     ResolveCallbacks(ResolveStateFailure);
     return;
   }
 
   ManifestUmaUtil::FetchSucceeded();
-  GURL response_url = response.url();
+  GURL response_url = response.Url();
   base::StringPiece data_piece(data);
   ManifestParser parser(data_piece, response_url, document_url);
   parser.Parse();
@@ -161,15 +161,15 @@ void ManifestManager::OnManifestFetchComplete(
 
   for (const auto& error : manifest_debug_info_.errors) {
     blink::WebConsoleMessage message;
-    message.level = error.critical ? blink::WebConsoleMessage::LevelError :
-        blink::WebConsoleMessage::LevelWarning;
+    message.level = error.critical ? blink::WebConsoleMessage::kLevelError
+                                   : blink::WebConsoleMessage::kLevelWarning;
     message.text =
-        blink::WebString::fromUTF8(GetMessagePrefix() + error.message);
+        blink::WebString::FromUTF8(GetMessagePrefix() + error.message);
     message.url =
-        render_frame()->GetWebFrame()->document().manifestURL().string();
-    message.lineNumber = error.line;
-    message.columnNumber = error.column;
-    render_frame()->GetWebFrame()->addMessageToConsole(message);
+        render_frame()->GetWebFrame()->GetDocument().ManifestURL().GetString();
+    message.line_number = error.line;
+    message.column_number = error.column;
+    render_frame()->GetWebFrame()->AddMessageToConsole(message);
   }
 
   // Having errors while parsing the manifest doesn't mean the manifest parsing
@@ -179,7 +179,7 @@ void ManifestManager::OnManifestFetchComplete(
     return;
   }
 
-  manifest_url_ = response.url();
+  manifest_url_ = response.Url();
   manifest_ = parser.manifest();
   ResolveCallbacks(ResolveStateSuccess);
 }

@@ -41,139 +41,139 @@
 namespace blink {
 
 // FIXME: Broken with OOPI.
-static Document* parentDocument(LocalFrame* frame) {
+static Document* ParentDocument(LocalFrame* frame) {
   if (!frame)
     return 0;
-  Element* ownerElement = frame->deprecatedLocalOwner();
-  if (!ownerElement)
+  Element* owner_element = frame->DeprecatedLocalOwner();
+  if (!owner_element)
     return 0;
-  return &ownerElement->document();
+  return &owner_element->GetDocument();
 }
 
 DocumentInit::DocumentInit(const KURL& url,
                            LocalFrame* frame,
-                           Document* contextDocument,
-                           HTMLImportsController* importsController)
-    : DocumentInit(nullptr, url, frame, contextDocument, importsController) {}
+                           Document* context_document,
+                           HTMLImportsController* imports_controller)
+    : DocumentInit(nullptr, url, frame, context_document, imports_controller) {}
 
-DocumentInit::DocumentInit(Document* ownerDocument,
+DocumentInit::DocumentInit(Document* owner_document,
                            const KURL& url,
                            LocalFrame* frame,
-                           Document* contextDocument,
-                           HTMLImportsController* importsController)
-    : m_url(url),
-      m_frame(frame),
-      m_parent(parentDocument(frame)),
-      m_owner(ownerDocument),
-      m_contextDocument(contextDocument),
-      m_importsController(importsController),
-      m_createNewRegistrationContext(false),
-      m_shouldReuseDefaultView(frame && frame->shouldReuseDefaultView(url)) {}
+                           Document* context_document,
+                           HTMLImportsController* imports_controller)
+    : url_(url),
+      frame_(frame),
+      parent_(ParentDocument(frame)),
+      owner_(owner_document),
+      context_document_(context_document),
+      imports_controller_(imports_controller),
+      create_new_registration_context_(false),
+      should_reuse_default_view_(frame && frame->ShouldReuseDefaultView(url)) {}
 
 DocumentInit::DocumentInit(const DocumentInit&) = default;
 
 DocumentInit::~DocumentInit() {}
 
-bool DocumentInit::shouldSetURL() const {
-  LocalFrame* frame = frameForSecurityContext();
-  return (frame && frame->owner()) || !m_url.isEmpty();
+bool DocumentInit::ShouldSetURL() const {
+  LocalFrame* frame = FrameForSecurityContext();
+  return (frame && frame->Owner()) || !url_.IsEmpty();
 }
 
-bool DocumentInit::shouldTreatURLAsSrcdocDocument() const {
-  return m_parent && m_frame->loader().shouldTreatURLAsSrcdocDocument(m_url);
+bool DocumentInit::ShouldTreatURLAsSrcdocDocument() const {
+  return parent_ && frame_->Loader().ShouldTreatURLAsSrcdocDocument(url_);
 }
 
-LocalFrame* DocumentInit::frameForSecurityContext() const {
-  if (m_frame)
-    return m_frame;
-  if (m_importsController)
-    return m_importsController->master()->frame();
+LocalFrame* DocumentInit::FrameForSecurityContext() const {
+  if (frame_)
+    return frame_;
+  if (imports_controller_)
+    return imports_controller_->Master()->GetFrame();
   return 0;
 }
 
-SandboxFlags DocumentInit::getSandboxFlags() const {
-  DCHECK(frameForSecurityContext());
-  FrameLoader* loader = &frameForSecurityContext()->loader();
-  SandboxFlags flags = loader->effectiveSandboxFlags();
+SandboxFlags DocumentInit::GetSandboxFlags() const {
+  DCHECK(FrameForSecurityContext());
+  FrameLoader* loader = &FrameForSecurityContext()->Loader();
+  SandboxFlags flags = loader->EffectiveSandboxFlags();
 
   // If the load was blocked by CSP, force the Document's origin to be unique,
   // so that the blocked document appears to be a normal cross-origin document's
   // load per CSP spec: https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
-  if (loader->documentLoader() &&
-      loader->documentLoader()->wasBlockedAfterCSP()) {
-    flags |= SandboxOrigin;
+  if (loader->GetDocumentLoader() &&
+      loader->GetDocumentLoader()->WasBlockedAfterCSP()) {
+    flags |= kSandboxOrigin;
   }
 
   return flags;
 }
 
-WebInsecureRequestPolicy DocumentInit::getInsecureRequestPolicy() const {
-  DCHECK(frameForSecurityContext());
-  return frameForSecurityContext()->loader().getInsecureRequestPolicy();
+WebInsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy() const {
+  DCHECK(FrameForSecurityContext());
+  return FrameForSecurityContext()->Loader().GetInsecureRequestPolicy();
 }
 
 SecurityContext::InsecureNavigationsSet*
-DocumentInit::insecureNavigationsToUpgrade() const {
-  DCHECK(frameForSecurityContext());
-  return frameForSecurityContext()->loader().insecureNavigationsToUpgrade();
+DocumentInit::InsecureNavigationsToUpgrade() const {
+  DCHECK(FrameForSecurityContext());
+  return FrameForSecurityContext()->Loader().InsecureNavigationsToUpgrade();
 }
 
-bool DocumentInit::isHostedInReservedIPRange() const {
-  if (LocalFrame* frame = frameForSecurityContext()) {
+bool DocumentInit::IsHostedInReservedIPRange() const {
+  if (LocalFrame* frame = FrameForSecurityContext()) {
     if (DocumentLoader* loader =
-            frame->loader().provisionalDocumentLoader()
-                ? frame->loader().provisionalDocumentLoader()
-                : frame->loader().documentLoader()) {
-      if (!loader->response().remoteIPAddress().isEmpty())
-        return NetworkUtils::isReservedIPAddress(
-            loader->response().remoteIPAddress());
+            frame->Loader().ProvisionalDocumentLoader()
+                ? frame->Loader().ProvisionalDocumentLoader()
+                : frame->Loader().GetDocumentLoader()) {
+      if (!loader->GetResponse().RemoteIPAddress().IsEmpty())
+        return NetworkUtils::IsReservedIPAddress(
+            loader->GetResponse().RemoteIPAddress());
     }
   }
   return false;
 }
 
-Settings* DocumentInit::settings() const {
-  DCHECK(frameForSecurityContext());
-  return frameForSecurityContext()->settings();
+Settings* DocumentInit::GetSettings() const {
+  DCHECK(FrameForSecurityContext());
+  return FrameForSecurityContext()->GetSettings();
 }
 
-KURL DocumentInit::parentBaseURL() const {
-  return m_parent->baseURL();
+KURL DocumentInit::ParentBaseURL() const {
+  return parent_->BaseURL();
 }
 
-DocumentInit& DocumentInit::withRegistrationContext(
-    V0CustomElementRegistrationContext* registrationContext) {
-  DCHECK(!m_createNewRegistrationContext);
-  DCHECK(!m_registrationContext);
-  m_registrationContext = registrationContext;
+DocumentInit& DocumentInit::WithRegistrationContext(
+    V0CustomElementRegistrationContext* registration_context) {
+  DCHECK(!create_new_registration_context_);
+  DCHECK(!registration_context_);
+  registration_context_ = registration_context;
   return *this;
 }
 
-DocumentInit& DocumentInit::withNewRegistrationContext() {
-  DCHECK(!m_createNewRegistrationContext);
-  DCHECK(!m_registrationContext);
-  m_createNewRegistrationContext = true;
+DocumentInit& DocumentInit::WithNewRegistrationContext() {
+  DCHECK(!create_new_registration_context_);
+  DCHECK(!registration_context_);
+  create_new_registration_context_ = true;
   return *this;
 }
 
-V0CustomElementRegistrationContext* DocumentInit::registrationContext(
+V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
     Document* document) const {
-  if (!document->isHTMLDocument() && !document->isXHTMLDocument())
+  if (!document->IsHTMLDocument() && !document->IsXHTMLDocument())
     return nullptr;
 
-  if (m_createNewRegistrationContext)
-    return V0CustomElementRegistrationContext::create();
+  if (create_new_registration_context_)
+    return V0CustomElementRegistrationContext::Create();
 
-  return m_registrationContext.get();
+  return registration_context_.Get();
 }
 
-Document* DocumentInit::contextDocument() const {
-  return m_contextDocument;
+Document* DocumentInit::ContextDocument() const {
+  return context_document_;
 }
 
-DocumentInit DocumentInit::fromContext(Document* contextDocument,
+DocumentInit DocumentInit::FromContext(Document* context_document,
                                        const KURL& url) {
-  return DocumentInit(url, 0, contextDocument, 0);
+  return DocumentInit(url, 0, context_document, 0);
 }
 
 }  // namespace blink

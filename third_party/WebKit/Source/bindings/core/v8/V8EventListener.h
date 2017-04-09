@@ -44,19 +44,19 @@ class Event;
 // the event.
 class V8EventListener : public V8AbstractEventListener {
  public:
-  static V8EventListener* create(v8::Local<v8::Object> listener,
-                                 bool isAttribute,
-                                 ScriptState* scriptState) {
-    V8EventListener* eventListener =
-        new V8EventListener(isAttribute, scriptState);
-    eventListener->setListenerObject(listener);
-    return eventListener;
+  static V8EventListener* Create(v8::Local<v8::Object> listener,
+                                 bool is_attribute,
+                                 ScriptState* script_state) {
+    V8EventListener* event_listener =
+        new V8EventListener(is_attribute, script_state);
+    event_listener->SetListenerObject(listener);
+    return event_listener;
   }
 
  protected:
-  V8EventListener(bool isAttribute, ScriptState*);
-  v8::Local<v8::Function> getListenerFunction(ScriptState*);
-  v8::Local<v8::Value> callListenerFunction(ScriptState*,
+  V8EventListener(bool is_attribute, ScriptState*);
+  v8::Local<v8::Function> GetListenerFunction(ScriptState*);
+  v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
                                             Event*) override;
 };

@@ -53,313 +53,320 @@ class DateTimeEditBuilder : private DateTimeFormat::TokenHandler {
                       const DateTimeEditElement::LayoutParameters&,
                       const DateComponents&);
 
-  bool build(const String&);
+  bool Build(const String&);
 
  private:
-  bool needMillisecondField() const;
-  bool shouldAMPMFieldDisabled() const;
-  bool shouldDayOfMonthFieldDisabled() const;
-  bool shouldHourFieldDisabled() const;
-  bool shouldMillisecondFieldDisabled() const;
-  bool shouldMinuteFieldDisabled() const;
-  bool shouldSecondFieldDisabled() const;
-  bool shouldYearFieldDisabled() const;
-  inline const StepRange& stepRange() const { return m_parameters.stepRange; }
-  DateTimeNumericFieldElement::Step createStep(double msPerFieldUnit,
-                                               double msPerFieldSize) const;
+  bool NeedMillisecondField() const;
+  bool ShouldAMPMFieldDisabled() const;
+  bool ShouldDayOfMonthFieldDisabled() const;
+  bool ShouldHourFieldDisabled() const;
+  bool ShouldMillisecondFieldDisabled() const;
+  bool ShouldMinuteFieldDisabled() const;
+  bool ShouldSecondFieldDisabled() const;
+  bool ShouldYearFieldDisabled() const;
+  inline const StepRange& GetStepRange() const {
+    return parameters_.step_range;
+  }
+  DateTimeNumericFieldElement::Step CreateStep(double ms_per_field_unit,
+                                               double ms_per_field_size) const;
 
   // DateTimeFormat::TokenHandler functions.
-  void visitField(DateTimeFormat::FieldType, int) final;
-  void visitLiteral(const String&) final;
+  void VisitField(DateTimeFormat::FieldType, int) final;
+  void VisitLiteral(const String&) final;
 
-  DateTimeEditElement& editElement() const;
+  DateTimeEditElement& EditElement() const;
 
-  Member<DateTimeEditElement> m_editElement;
-  const DateComponents m_dateValue;
-  const DateTimeEditElement::LayoutParameters& m_parameters;
-  DateTimeNumericFieldElement::Range m_dayRange;
-  DateTimeNumericFieldElement::Range m_hour23Range;
-  DateTimeNumericFieldElement::Range m_minuteRange;
-  DateTimeNumericFieldElement::Range m_secondRange;
-  DateTimeNumericFieldElement::Range m_millisecondRange;
+  Member<DateTimeEditElement> edit_element_;
+  const DateComponents date_value_;
+  const DateTimeEditElement::LayoutParameters& parameters_;
+  DateTimeNumericFieldElement::Range day_range_;
+  DateTimeNumericFieldElement::Range hour23_range_;
+  DateTimeNumericFieldElement::Range minute_range_;
+  DateTimeNumericFieldElement::Range second_range_;
+  DateTimeNumericFieldElement::Range millisecond_range_;
 };
 
 DateTimeEditBuilder::DateTimeEditBuilder(
     DateTimeEditElement& element,
-    const DateTimeEditElement::LayoutParameters& layoutParameters,
-    const DateComponents& dateValue)
-    : m_editElement(&element),
-      m_dateValue(dateValue),
-      m_parameters(layoutParameters),
-      m_dayRange(1, 31),
-      m_hour23Range(0, 23),
-      m_minuteRange(0, 59),
-      m_secondRange(0, 59),
-      m_millisecondRange(0, 999) {
-  if (m_dateValue.getType() == DateComponents::Date ||
-      m_dateValue.getType() == DateComponents::DateTimeLocal) {
-    if (m_parameters.minimum.getType() != DateComponents::Invalid &&
-        m_parameters.maximum.getType() != DateComponents::Invalid &&
-        m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear() &&
-        m_parameters.minimum.month() == m_parameters.maximum.month() &&
-        m_parameters.minimum.monthDay() <= m_parameters.maximum.monthDay()) {
-      m_dayRange.minimum = m_parameters.minimum.monthDay();
-      m_dayRange.maximum = m_parameters.maximum.monthDay();
+    const DateTimeEditElement::LayoutParameters& layout_parameters,
+    const DateComponents& date_value)
+    : edit_element_(&element),
+      date_value_(date_value),
+      parameters_(layout_parameters),
+      day_range_(1, 31),
+      hour23_range_(0, 23),
+      minute_range_(0, 59),
+      second_range_(0, 59),
+      millisecond_range_(0, 999) {
+  if (date_value_.GetType() == DateComponents::kDate ||
+      date_value_.GetType() == DateComponents::kDateTimeLocal) {
+    if (parameters_.minimum.GetType() != DateComponents::kInvalid &&
+        parameters_.maximum.GetType() != DateComponents::kInvalid &&
+        parameters_.minimum.FullYear() == parameters_.maximum.FullYear() &&
+        parameters_.minimum.Month() == parameters_.maximum.Month() &&
+        parameters_.minimum.MonthDay() <= parameters_.maximum.MonthDay()) {
+      day_range_.minimum = parameters_.minimum.MonthDay();
+      day_range_.maximum = parameters_.maximum.MonthDay();
     }
   }
 
-  if (m_dateValue.getType() == DateComponents::Time ||
-      m_dayRange.isSingleton()) {
-    if (m_parameters.minimum.getType() != DateComponents::Invalid &&
-        m_parameters.maximum.getType() != DateComponents::Invalid &&
-        m_parameters.minimum.hour() <= m_parameters.maximum.hour()) {
-      m_hour23Range.minimum = m_parameters.minimum.hour();
-      m_hour23Range.maximum = m_parameters.maximum.hour();
+  if (date_value_.GetType() == DateComponents::kTime ||
+      day_range_.IsSingleton()) {
+    if (parameters_.minimum.GetType() != DateComponents::kInvalid &&
+        parameters_.maximum.GetType() != DateComponents::kInvalid &&
+        parameters_.minimum.Hour() <= parameters_.maximum.Hour()) {
+      hour23_range_.minimum = parameters_.minimum.Hour();
+      hour23_range_.maximum = parameters_.maximum.Hour();
     }
   }
 
-  if (m_hour23Range.isSingleton() &&
-      m_parameters.minimum.minute() <= m_parameters.maximum.minute()) {
-    m_minuteRange.minimum = m_parameters.minimum.minute();
-    m_minuteRange.maximum = m_parameters.maximum.minute();
+  if (hour23_range_.IsSingleton() &&
+      parameters_.minimum.Minute() <= parameters_.maximum.Minute()) {
+    minute_range_.minimum = parameters_.minimum.Minute();
+    minute_range_.maximum = parameters_.maximum.Minute();
   }
-  if (m_minuteRange.isSingleton() &&
-      m_parameters.minimum.second() <= m_parameters.maximum.second()) {
-    m_secondRange.minimum = m_parameters.minimum.second();
-    m_secondRange.maximum = m_parameters.maximum.second();
+  if (minute_range_.IsSingleton() &&
+      parameters_.minimum.Second() <= parameters_.maximum.Second()) {
+    second_range_.minimum = parameters_.minimum.Second();
+    second_range_.maximum = parameters_.maximum.Second();
   }
-  if (m_secondRange.isSingleton() &&
-      m_parameters.minimum.millisecond() <=
-          m_parameters.maximum.millisecond()) {
-    m_millisecondRange.minimum = m_parameters.minimum.millisecond();
-    m_millisecondRange.maximum = m_parameters.maximum.millisecond();
+  if (second_range_.IsSingleton() &&
+      parameters_.minimum.Millisecond() <= parameters_.maximum.Millisecond()) {
+    millisecond_range_.minimum = parameters_.minimum.Millisecond();
+    millisecond_range_.maximum = parameters_.maximum.Millisecond();
   }
 }
 
-bool DateTimeEditBuilder::build(const String& formatString) {
-  editElement().resetFields();
-  return DateTimeFormat::parse(formatString, *this);
+bool DateTimeEditBuilder::Build(const String& format_string) {
+  EditElement().ResetFields();
+  return DateTimeFormat::Parse(format_string, *this);
 }
 
-bool DateTimeEditBuilder::needMillisecondField() const {
-  return m_dateValue.millisecond() ||
-         !stepRange()
-              .minimum()
-              .remainder(static_cast<int>(msPerSecond))
-              .isZero() ||
-         !stepRange().step().remainder(static_cast<int>(msPerSecond)).isZero();
+bool DateTimeEditBuilder::NeedMillisecondField() const {
+  return date_value_.Millisecond() ||
+         !GetStepRange()
+              .Minimum()
+              .Remainder(static_cast<int>(kMsPerSecond))
+              .IsZero() ||
+         !GetStepRange()
+              .Step()
+              .Remainder(static_cast<int>(kMsPerSecond))
+              .IsZero();
 }
 
-void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType,
+void DateTimeEditBuilder::VisitField(DateTimeFormat::FieldType field_type,
                                      int count) {
-  const int countForAbbreviatedMonth = 3;
-  const int countForFullMonth = 4;
-  const int countForNarrowMonth = 5;
-  Document& document = editElement().document();
+  const int kCountForAbbreviatedMonth = 3;
+  const int kCountForFullMonth = 4;
+  const int kCountForNarrowMonth = 5;
+  Document& document = EditElement().GetDocument();
 
-  switch (fieldType) {
-    case DateTimeFormat::FieldTypeDayOfMonth: {
-      DateTimeFieldElement* field = DateTimeDayFieldElement::create(
-          document, editElement(), m_parameters.placeholderForDay, m_dayRange);
-      editElement().addField(field);
-      if (shouldDayOfMonthFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+  switch (field_type) {
+    case DateTimeFormat::kFieldTypeDayOfMonth: {
+      DateTimeFieldElement* field = DateTimeDayFieldElement::Create(
+          document, EditElement(), parameters_.placeholder_for_day, day_range_);
+      EditElement().AddField(field);
+      if (ShouldDayOfMonthFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeHour11: {
+    case DateTimeFormat::kFieldTypeHour11: {
       DateTimeNumericFieldElement::Step step =
-          createStep(msPerHour, msPerHour * 12);
-      DateTimeFieldElement* field = DateTimeHour11FieldElement::create(
-          document, editElement(), m_hour23Range, step);
-      editElement().addField(field);
-      if (shouldHourFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+          CreateStep(kMsPerHour, kMsPerHour * 12);
+      DateTimeFieldElement* field = DateTimeHour11FieldElement::Create(
+          document, EditElement(), hour23_range_, step);
+      EditElement().AddField(field);
+      if (ShouldHourFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeHour12: {
+    case DateTimeFormat::kFieldTypeHour12: {
       DateTimeNumericFieldElement::Step step =
-          createStep(msPerHour, msPerHour * 12);
-      DateTimeFieldElement* field = DateTimeHour12FieldElement::create(
-          document, editElement(), m_hour23Range, step);
-      editElement().addField(field);
-      if (shouldHourFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+          CreateStep(kMsPerHour, kMsPerHour * 12);
+      DateTimeFieldElement* field = DateTimeHour12FieldElement::Create(
+          document, EditElement(), hour23_range_, step);
+      EditElement().AddField(field);
+      if (ShouldHourFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeHour23: {
-      DateTimeNumericFieldElement::Step step = createStep(msPerHour, msPerDay);
-      DateTimeFieldElement* field = DateTimeHour23FieldElement::create(
-          document, editElement(), m_hour23Range, step);
-      editElement().addField(field);
-      if (shouldHourFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
-      }
-      return;
-    }
-
-    case DateTimeFormat::FieldTypeHour24: {
-      DateTimeNumericFieldElement::Step step = createStep(msPerHour, msPerDay);
-      DateTimeFieldElement* field = DateTimeHour24FieldElement::create(
-          document, editElement(), m_hour23Range, step);
-      editElement().addField(field);
-      if (shouldHourFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
-      }
-      return;
-    }
-
-    case DateTimeFormat::FieldTypeMinute: {
+    case DateTimeFormat::kFieldTypeHour23: {
       DateTimeNumericFieldElement::Step step =
-          createStep(msPerMinute, msPerHour);
-      DateTimeNumericFieldElement* field = DateTimeMinuteFieldElement::create(
-          document, editElement(), m_minuteRange, step);
-      editElement().addField(field);
-      if (shouldMinuteFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+          CreateStep(kMsPerHour, kMsPerDay);
+      DateTimeFieldElement* field = DateTimeHour23FieldElement::Create(
+          document, EditElement(), hour23_range_, step);
+      EditElement().AddField(field);
+      if (ShouldHourFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeMonth:  // Fallthrough.
-    case DateTimeFormat::FieldTypeMonthStandAlone: {
-      int minMonth = 0, maxMonth = 11;
-      if (m_parameters.minimum.getType() != DateComponents::Invalid &&
-          m_parameters.maximum.getType() != DateComponents::Invalid &&
-          m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear() &&
-          m_parameters.minimum.month() <= m_parameters.maximum.month()) {
-        minMonth = m_parameters.minimum.month();
-        maxMonth = m_parameters.maximum.month();
+    case DateTimeFormat::kFieldTypeHour24: {
+      DateTimeNumericFieldElement::Step step =
+          CreateStep(kMsPerHour, kMsPerDay);
+      DateTimeFieldElement* field = DateTimeHour24FieldElement::Create(
+          document, EditElement(), hour23_range_, step);
+      EditElement().AddField(field);
+      if (ShouldHourFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
+      }
+      return;
+    }
+
+    case DateTimeFormat::kFieldTypeMinute: {
+      DateTimeNumericFieldElement::Step step =
+          CreateStep(kMsPerMinute, kMsPerHour);
+      DateTimeNumericFieldElement* field = DateTimeMinuteFieldElement::Create(
+          document, EditElement(), minute_range_, step);
+      EditElement().AddField(field);
+      if (ShouldMinuteFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
+      }
+      return;
+    }
+
+    case DateTimeFormat::kFieldTypeMonth:  // Fallthrough.
+    case DateTimeFormat::kFieldTypeMonthStandAlone: {
+      int min_month = 0, max_month = 11;
+      if (parameters_.minimum.GetType() != DateComponents::kInvalid &&
+          parameters_.maximum.GetType() != DateComponents::kInvalid &&
+          parameters_.minimum.FullYear() == parameters_.maximum.FullYear() &&
+          parameters_.minimum.Month() <= parameters_.maximum.Month()) {
+        min_month = parameters_.minimum.Month();
+        max_month = parameters_.maximum.Month();
       }
       DateTimeFieldElement* field;
       switch (count) {
-        case countForNarrowMonth:  // Fallthrough.
-        case countForAbbreviatedMonth:
-          field = DateTimeSymbolicMonthFieldElement::create(
-              document, editElement(),
-              fieldType == DateTimeFormat::FieldTypeMonth
-                  ? m_parameters.locale.shortMonthLabels()
-                  : m_parameters.locale.shortStandAloneMonthLabels(),
-              minMonth, maxMonth);
+        case kCountForNarrowMonth:  // Fallthrough.
+        case kCountForAbbreviatedMonth:
+          field = DateTimeSymbolicMonthFieldElement::Create(
+              document, EditElement(),
+              field_type == DateTimeFormat::kFieldTypeMonth
+                  ? parameters_.locale.ShortMonthLabels()
+                  : parameters_.locale.ShortStandAloneMonthLabels(),
+              min_month, max_month);
           break;
-        case countForFullMonth:
-          field = DateTimeSymbolicMonthFieldElement::create(
-              document, editElement(),
-              fieldType == DateTimeFormat::FieldTypeMonth
-                  ? m_parameters.locale.monthLabels()
-                  : m_parameters.locale.standAloneMonthLabels(),
-              minMonth, maxMonth);
+        case kCountForFullMonth:
+          field = DateTimeSymbolicMonthFieldElement::Create(
+              document, EditElement(),
+              field_type == DateTimeFormat::kFieldTypeMonth
+                  ? parameters_.locale.MonthLabels()
+                  : parameters_.locale.StandAloneMonthLabels(),
+              min_month, max_month);
           break;
         default:
-          field = DateTimeMonthFieldElement::create(
-              document, editElement(), m_parameters.placeholderForMonth,
-              DateTimeNumericFieldElement::Range(minMonth + 1, maxMonth + 1));
+          field = DateTimeMonthFieldElement::Create(
+              document, EditElement(), parameters_.placeholder_for_month,
+              DateTimeNumericFieldElement::Range(min_month + 1, max_month + 1));
           break;
       }
-      editElement().addField(field);
-      if (minMonth == maxMonth && minMonth == m_dateValue.month() &&
-          m_dateValue.getType() != DateComponents::Month) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+      EditElement().AddField(field);
+      if (min_month == max_month && min_month == date_value_.Month() &&
+          date_value_.GetType() != DateComponents::kMonth) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypePeriod: {
-      DateTimeFieldElement* field = DateTimeAMPMFieldElement::create(
-          document, editElement(), m_parameters.locale.timeAMPMLabels());
-      editElement().addField(field);
-      if (shouldAMPMFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+    case DateTimeFormat::kFieldTypePeriod: {
+      DateTimeFieldElement* field = DateTimeAMPMFieldElement::Create(
+          document, EditElement(), parameters_.locale.TimeAMPMLabels());
+      EditElement().AddField(field);
+      if (ShouldAMPMFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeSecond: {
+    case DateTimeFormat::kFieldTypeSecond: {
       DateTimeNumericFieldElement::Step step =
-          createStep(msPerSecond, msPerMinute);
-      DateTimeNumericFieldElement* field = DateTimeSecondFieldElement::create(
-          document, editElement(), m_secondRange, step);
-      editElement().addField(field);
-      if (shouldSecondFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+          CreateStep(kMsPerSecond, kMsPerMinute);
+      DateTimeNumericFieldElement* field = DateTimeSecondFieldElement::Create(
+          document, EditElement(), second_range_, step);
+      EditElement().AddField(field);
+      if (ShouldSecondFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
 
-      if (needMillisecondField()) {
-        visitLiteral(m_parameters.locale.localizedDecimalSeparator());
-        visitField(DateTimeFormat::FieldTypeFractionalSecond, 3);
+      if (NeedMillisecondField()) {
+        VisitLiteral(parameters_.locale.LocalizedDecimalSeparator());
+        VisitField(DateTimeFormat::kFieldTypeFractionalSecond, 3);
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeFractionalSecond: {
-      DateTimeNumericFieldElement::Step step = createStep(1, msPerSecond);
+    case DateTimeFormat::kFieldTypeFractionalSecond: {
+      DateTimeNumericFieldElement::Step step = CreateStep(1, kMsPerSecond);
       DateTimeNumericFieldElement* field =
-          DateTimeMillisecondFieldElement::create(document, editElement(),
-                                                  m_millisecondRange, step);
-      editElement().addField(field);
-      if (shouldMillisecondFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+          DateTimeMillisecondFieldElement::Create(document, EditElement(),
+                                                  millisecond_range_, step);
+      EditElement().AddField(field);
+      if (ShouldMillisecondFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
 
-    case DateTimeFormat::FieldTypeWeekOfYear: {
+    case DateTimeFormat::kFieldTypeWeekOfYear: {
       DateTimeNumericFieldElement::Range range(
-          DateComponents::minimumWeekNumber, DateComponents::maximumWeekNumber);
-      if (m_parameters.minimum.getType() != DateComponents::Invalid &&
-          m_parameters.maximum.getType() != DateComponents::Invalid &&
-          m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear() &&
-          m_parameters.minimum.week() <= m_parameters.maximum.week()) {
-        range.minimum = m_parameters.minimum.week();
-        range.maximum = m_parameters.maximum.week();
+          DateComponents::kMinimumWeekNumber,
+          DateComponents::kMaximumWeekNumber);
+      if (parameters_.minimum.GetType() != DateComponents::kInvalid &&
+          parameters_.maximum.GetType() != DateComponents::kInvalid &&
+          parameters_.minimum.FullYear() == parameters_.maximum.FullYear() &&
+          parameters_.minimum.Week() <= parameters_.maximum.Week()) {
+        range.minimum = parameters_.minimum.Week();
+        range.maximum = parameters_.maximum.Week();
       }
-      editElement().addField(
-          DateTimeWeekFieldElement::create(document, editElement(), range));
+      EditElement().AddField(
+          DateTimeWeekFieldElement::Create(document, EditElement(), range));
       return;
     }
 
-    case DateTimeFormat::FieldTypeYear: {
-      DateTimeYearFieldElement::Parameters yearParams;
-      if (m_parameters.minimum.getType() == DateComponents::Invalid) {
-        yearParams.minimumYear = DateComponents::minimumYear();
-        yearParams.minIsSpecified = false;
+    case DateTimeFormat::kFieldTypeYear: {
+      DateTimeYearFieldElement::Parameters year_params;
+      if (parameters_.minimum.GetType() == DateComponents::kInvalid) {
+        year_params.minimum_year = DateComponents::MinimumYear();
+        year_params.min_is_specified = false;
       } else {
-        yearParams.minimumYear = m_parameters.minimum.fullYear();
-        yearParams.minIsSpecified = true;
+        year_params.minimum_year = parameters_.minimum.FullYear();
+        year_params.min_is_specified = true;
       }
-      if (m_parameters.maximum.getType() == DateComponents::Invalid) {
-        yearParams.maximumYear = DateComponents::maximumYear();
-        yearParams.maxIsSpecified = false;
+      if (parameters_.maximum.GetType() == DateComponents::kInvalid) {
+        year_params.maximum_year = DateComponents::MaximumYear();
+        year_params.max_is_specified = false;
       } else {
-        yearParams.maximumYear = m_parameters.maximum.fullYear();
-        yearParams.maxIsSpecified = true;
+        year_params.maximum_year = parameters_.maximum.FullYear();
+        year_params.max_is_specified = true;
       }
-      if (yearParams.minimumYear > yearParams.maximumYear) {
-        std::swap(yearParams.minimumYear, yearParams.maximumYear);
-        std::swap(yearParams.minIsSpecified, yearParams.maxIsSpecified);
+      if (year_params.minimum_year > year_params.maximum_year) {
+        std::swap(year_params.minimum_year, year_params.maximum_year);
+        std::swap(year_params.min_is_specified, year_params.max_is_specified);
       }
-      yearParams.placeholder = m_parameters.placeholderForYear;
-      DateTimeFieldElement* field =
-          DateTimeYearFieldElement::create(document, editElement(), yearParams);
-      editElement().addField(field);
-      if (shouldYearFieldDisabled()) {
-        field->setValueAsDate(m_dateValue);
-        field->setDisabled();
+      year_params.placeholder = parameters_.placeholder_for_year;
+      DateTimeFieldElement* field = DateTimeYearFieldElement::Create(
+          document, EditElement(), year_params);
+      EditElement().AddField(field);
+      if (ShouldYearFieldDisabled()) {
+        field->SetValueAsDate(date_value_);
+        field->SetDisabled();
       }
       return;
     }
@@ -369,137 +376,137 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType,
   }
 }
 
-bool DateTimeEditBuilder::shouldAMPMFieldDisabled() const {
-  return shouldHourFieldDisabled() ||
-         (m_hour23Range.minimum < 12 && m_hour23Range.maximum < 12 &&
-          m_dateValue.hour() < 12) ||
-         (m_hour23Range.minimum >= 12 && m_hour23Range.maximum >= 12 &&
-          m_dateValue.hour() >= 12);
+bool DateTimeEditBuilder::ShouldAMPMFieldDisabled() const {
+  return ShouldHourFieldDisabled() ||
+         (hour23_range_.minimum < 12 && hour23_range_.maximum < 12 &&
+          date_value_.Hour() < 12) ||
+         (hour23_range_.minimum >= 12 && hour23_range_.maximum >= 12 &&
+          date_value_.Hour() >= 12);
 }
 
-bool DateTimeEditBuilder::shouldDayOfMonthFieldDisabled() const {
-  return m_dayRange.isSingleton() &&
-         m_dayRange.minimum == m_dateValue.monthDay() &&
-         m_dateValue.getType() != DateComponents::Date;
+bool DateTimeEditBuilder::ShouldDayOfMonthFieldDisabled() const {
+  return day_range_.IsSingleton() &&
+         day_range_.minimum == date_value_.MonthDay() &&
+         date_value_.GetType() != DateComponents::kDate;
 }
 
-bool DateTimeEditBuilder::shouldHourFieldDisabled() const {
-  if (m_hour23Range.isSingleton() &&
-      m_hour23Range.minimum == m_dateValue.hour() &&
-      !(shouldMinuteFieldDisabled() && shouldSecondFieldDisabled() &&
-        shouldMillisecondFieldDisabled()))
+bool DateTimeEditBuilder::ShouldHourFieldDisabled() const {
+  if (hour23_range_.IsSingleton() &&
+      hour23_range_.minimum == date_value_.Hour() &&
+      !(ShouldMinuteFieldDisabled() && ShouldSecondFieldDisabled() &&
+        ShouldMillisecondFieldDisabled()))
     return true;
 
-  if (m_dateValue.getType() == DateComponents::Time)
+  if (date_value_.GetType() == DateComponents::kTime)
     return false;
-  DCHECK_EQ(m_dateValue.getType(), DateComponents::DateTimeLocal);
+  DCHECK_EQ(date_value_.GetType(), DateComponents::kDateTimeLocal);
 
-  if (shouldDayOfMonthFieldDisabled()) {
-    DCHECK_EQ(m_parameters.minimum.fullYear(), m_parameters.maximum.fullYear());
-    DCHECK_EQ(m_parameters.minimum.month(), m_parameters.maximum.month());
+  if (ShouldDayOfMonthFieldDisabled()) {
+    DCHECK_EQ(parameters_.minimum.FullYear(), parameters_.maximum.FullYear());
+    DCHECK_EQ(parameters_.minimum.Month(), parameters_.maximum.Month());
     return false;
   }
 
-  const Decimal decimalMsPerDay(static_cast<int>(msPerDay));
-  Decimal hourPartOfMinimum =
-      (stepRange().stepBase().abs().remainder(decimalMsPerDay) /
-       static_cast<int>(msPerHour))
-          .floor();
-  return hourPartOfMinimum == m_dateValue.hour() &&
-         stepRange().step().remainder(decimalMsPerDay).isZero();
+  const Decimal decimal_ms_per_day(static_cast<int>(kMsPerDay));
+  Decimal hour_part_of_minimum =
+      (GetStepRange().StepBase().Abs().Remainder(decimal_ms_per_day) /
+       static_cast<int>(kMsPerHour))
+          .Floor();
+  return hour_part_of_minimum == date_value_.Hour() &&
+         GetStepRange().Step().Remainder(decimal_ms_per_day).IsZero();
 }
 
-bool DateTimeEditBuilder::shouldMillisecondFieldDisabled() const {
-  if (m_millisecondRange.isSingleton() &&
-      m_millisecondRange.minimum == m_dateValue.millisecond())
+bool DateTimeEditBuilder::ShouldMillisecondFieldDisabled() const {
+  if (millisecond_range_.IsSingleton() &&
+      millisecond_range_.minimum == date_value_.Millisecond())
     return true;
 
-  const Decimal decimalMsPerSecond(static_cast<int>(msPerSecond));
-  return stepRange().stepBase().abs().remainder(decimalMsPerSecond) ==
-             m_dateValue.millisecond() &&
-         stepRange().step().remainder(decimalMsPerSecond).isZero();
+  const Decimal decimal_ms_per_second(static_cast<int>(kMsPerSecond));
+  return GetStepRange().StepBase().Abs().Remainder(decimal_ms_per_second) ==
+             date_value_.Millisecond() &&
+         GetStepRange().Step().Remainder(decimal_ms_per_second).IsZero();
 }
 
-bool DateTimeEditBuilder::shouldMinuteFieldDisabled() const {
-  if (m_minuteRange.isSingleton() &&
-      m_minuteRange.minimum == m_dateValue.minute())
+bool DateTimeEditBuilder::ShouldMinuteFieldDisabled() const {
+  if (minute_range_.IsSingleton() &&
+      minute_range_.minimum == date_value_.Minute())
     return true;
 
-  const Decimal decimalMsPerHour(static_cast<int>(msPerHour));
-  Decimal minutePartOfMinimum =
-      (stepRange().stepBase().abs().remainder(decimalMsPerHour) /
-       static_cast<int>(msPerMinute))
-          .floor();
-  return minutePartOfMinimum == m_dateValue.minute() &&
-         stepRange().step().remainder(decimalMsPerHour).isZero();
+  const Decimal decimal_ms_per_hour(static_cast<int>(kMsPerHour));
+  Decimal minute_part_of_minimum =
+      (GetStepRange().StepBase().Abs().Remainder(decimal_ms_per_hour) /
+       static_cast<int>(kMsPerMinute))
+          .Floor();
+  return minute_part_of_minimum == date_value_.Minute() &&
+         GetStepRange().Step().Remainder(decimal_ms_per_hour).IsZero();
 }
 
-bool DateTimeEditBuilder::shouldSecondFieldDisabled() const {
-  if (m_secondRange.isSingleton() &&
-      m_secondRange.minimum == m_dateValue.second())
+bool DateTimeEditBuilder::ShouldSecondFieldDisabled() const {
+  if (second_range_.IsSingleton() &&
+      second_range_.minimum == date_value_.Second())
     return true;
 
-  const Decimal decimalMsPerMinute(static_cast<int>(msPerMinute));
-  Decimal secondPartOfMinimum =
-      (stepRange().stepBase().abs().remainder(decimalMsPerMinute) /
-       static_cast<int>(msPerSecond))
-          .floor();
-  return secondPartOfMinimum == m_dateValue.second() &&
-         stepRange().step().remainder(decimalMsPerMinute).isZero();
+  const Decimal decimal_ms_per_minute(static_cast<int>(kMsPerMinute));
+  Decimal second_part_of_minimum =
+      (GetStepRange().StepBase().Abs().Remainder(decimal_ms_per_minute) /
+       static_cast<int>(kMsPerSecond))
+          .Floor();
+  return second_part_of_minimum == date_value_.Second() &&
+         GetStepRange().Step().Remainder(decimal_ms_per_minute).IsZero();
 }
 
-bool DateTimeEditBuilder::shouldYearFieldDisabled() const {
-  return m_parameters.minimum.getType() != DateComponents::Invalid &&
-         m_parameters.maximum.getType() != DateComponents::Invalid &&
-         m_parameters.minimum.fullYear() == m_parameters.maximum.fullYear() &&
-         m_parameters.minimum.fullYear() == m_dateValue.fullYear();
+bool DateTimeEditBuilder::ShouldYearFieldDisabled() const {
+  return parameters_.minimum.GetType() != DateComponents::kInvalid &&
+         parameters_.maximum.GetType() != DateComponents::kInvalid &&
+         parameters_.minimum.FullYear() == parameters_.maximum.FullYear() &&
+         parameters_.minimum.FullYear() == date_value_.FullYear();
 }
 
-void DateTimeEditBuilder::visitLiteral(const String& text) {
-  DEFINE_STATIC_LOCAL(AtomicString, textPseudoId,
+void DateTimeEditBuilder::VisitLiteral(const String& text) {
+  DEFINE_STATIC_LOCAL(AtomicString, text_pseudo_id,
                       ("-webkit-datetime-edit-text"));
   DCHECK_GT(text.length(), 0u);
-  HTMLDivElement* element = HTMLDivElement::create(editElement().document());
-  element->setShadowPseudoId(textPseudoId);
-  if (m_parameters.locale.isRTL() && text.length()) {
-    CharDirection dir = direction(text[0]);
-    if (dir == SegmentSeparator || dir == WhiteSpaceNeutral ||
-        dir == OtherNeutral)
-      element->appendChild(Text::create(editElement().document(),
-                                        String(&rightToLeftMarkCharacter, 1)));
+  HTMLDivElement* element = HTMLDivElement::Create(EditElement().GetDocument());
+  element->SetShadowPseudoId(text_pseudo_id);
+  if (parameters_.locale.IsRTL() && text.length()) {
+    CharDirection dir = Direction(text[0]);
+    if (dir == kSegmentSeparator || dir == kWhiteSpaceNeutral ||
+        dir == kOtherNeutral)
+      element->AppendChild(Text::Create(EditElement().GetDocument(),
+                                        String(&kRightToLeftMarkCharacter, 1)));
   }
-  element->appendChild(Text::create(editElement().document(), text));
-  editElement().fieldsWrapperElement()->appendChild(element);
+  element->AppendChild(Text::Create(EditElement().GetDocument(), text));
+  EditElement().FieldsWrapperElement()->AppendChild(element);
 }
 
-DateTimeEditElement& DateTimeEditBuilder::editElement() const {
-  return *m_editElement;
+DateTimeEditElement& DateTimeEditBuilder::EditElement() const {
+  return *edit_element_;
 }
 
-DateTimeNumericFieldElement::Step DateTimeEditBuilder::createStep(
-    double msPerFieldUnit,
-    double msPerFieldSize) const {
-  const Decimal msPerFieldUnitDecimal(static_cast<int>(msPerFieldUnit));
-  const Decimal msPerFieldSizeDecimal(static_cast<int>(msPerFieldSize));
-  Decimal stepMilliseconds = stepRange().step();
-  DCHECK(!msPerFieldUnitDecimal.isZero());
-  DCHECK(!msPerFieldSizeDecimal.isZero());
-  DCHECK(!stepMilliseconds.isZero());
+DateTimeNumericFieldElement::Step DateTimeEditBuilder::CreateStep(
+    double ms_per_field_unit,
+    double ms_per_field_size) const {
+  const Decimal ms_per_field_unit_decimal(static_cast<int>(ms_per_field_unit));
+  const Decimal ms_per_field_size_decimal(static_cast<int>(ms_per_field_size));
+  Decimal step_milliseconds = GetStepRange().Step();
+  DCHECK(!ms_per_field_unit_decimal.IsZero());
+  DCHECK(!ms_per_field_size_decimal.IsZero());
+  DCHECK(!step_milliseconds.IsZero());
 
   DateTimeNumericFieldElement::Step step(1, 0);
 
-  if (stepMilliseconds.remainder(msPerFieldSizeDecimal).isZero())
-    stepMilliseconds = msPerFieldSizeDecimal;
+  if (step_milliseconds.Remainder(ms_per_field_size_decimal).IsZero())
+    step_milliseconds = ms_per_field_size_decimal;
 
-  if (msPerFieldSizeDecimal.remainder(stepMilliseconds).isZero() &&
-      stepMilliseconds.remainder(msPerFieldUnitDecimal).isZero()) {
-    step.step =
-        static_cast<int>((stepMilliseconds / msPerFieldUnitDecimal).toDouble());
-    step.stepBase = static_cast<int>(
-        (stepRange().stepBase() / msPerFieldUnitDecimal)
-            .floor()
-            .remainder(msPerFieldSizeDecimal / msPerFieldUnitDecimal)
-            .toDouble());
+  if (ms_per_field_size_decimal.Remainder(step_milliseconds).IsZero() &&
+      step_milliseconds.Remainder(ms_per_field_unit_decimal).IsZero()) {
+    step.step = static_cast<int>(
+        (step_milliseconds / ms_per_field_unit_decimal).ToDouble());
+    step.step_base = static_cast<int>(
+        (GetStepRange().StepBase() / ms_per_field_unit_decimal)
+            .Floor()
+            .Remainder(ms_per_field_size_decimal / ms_per_field_unit_decimal)
+            .ToDouble());
   }
   return step;
 }
@@ -509,353 +516,357 @@ DateTimeNumericFieldElement::Step DateTimeEditBuilder::createStep(
 DateTimeEditElement::EditControlOwner::~EditControlOwner() {}
 
 DateTimeEditElement::DateTimeEditElement(Document& document,
-                                         EditControlOwner& editControlOwner)
-    : HTMLDivElement(document), m_editControlOwner(&editControlOwner) {
-  setHasCustomStyleCallbacks();
+                                         EditControlOwner& edit_control_owner)
+    : HTMLDivElement(document), edit_control_owner_(&edit_control_owner) {
+  SetHasCustomStyleCallbacks();
 }
 
 DateTimeEditElement::~DateTimeEditElement() {}
 
 DEFINE_TRACE(DateTimeEditElement) {
-  visitor->trace(m_fields);
-  visitor->trace(m_editControlOwner);
-  HTMLDivElement::trace(visitor);
+  visitor->Trace(fields_);
+  visitor->Trace(edit_control_owner_);
+  HTMLDivElement::Trace(visitor);
 }
 
-inline Element* DateTimeEditElement::fieldsWrapperElement() const {
-  DCHECK(firstChild());
-  return toElementOrDie(firstChild());
+inline Element* DateTimeEditElement::FieldsWrapperElement() const {
+  DCHECK(FirstChild());
+  return ToElementOrDie(FirstChild());
 }
 
-void DateTimeEditElement::addField(DateTimeFieldElement* field) {
-  if (m_fields.size() >= maximumNumberOfFields)
+void DateTimeEditElement::AddField(DateTimeFieldElement* field) {
+  if (fields_.size() >= kMaximumNumberOfFields)
     return;
-  m_fields.push_back(field);
-  fieldsWrapperElement()->appendChild(field);
+  fields_.push_back(field);
+  FieldsWrapperElement()->AppendChild(field);
 }
 
-bool DateTimeEditElement::anyEditableFieldsHaveValues() const {
-  for (const auto& field : m_fields) {
-    if (!field->isDisabled() && field->hasValue())
+bool DateTimeEditElement::AnyEditableFieldsHaveValues() const {
+  for (const auto& field : fields_) {
+    if (!field->IsDisabled() && field->HasValue())
       return true;
   }
   return false;
 }
 
-void DateTimeEditElement::blurByOwner() {
-  if (DateTimeFieldElement* field = focusedField())
+void DateTimeEditElement::BlurByOwner() {
+  if (DateTimeFieldElement* field = FocusedField())
     field->blur();
 }
 
-DateTimeEditElement* DateTimeEditElement::create(
+DateTimeEditElement* DateTimeEditElement::Create(
     Document& document,
-    EditControlOwner& editControlOwner) {
+    EditControlOwner& edit_control_owner) {
   DateTimeEditElement* container =
-      new DateTimeEditElement(document, editControlOwner);
-  container->setShadowPseudoId(AtomicString("-webkit-datetime-edit"));
-  container->setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
+      new DateTimeEditElement(document, edit_control_owner);
+  container->SetShadowPseudoId(AtomicString("-webkit-datetime-edit"));
+  container->setAttribute(idAttr, ShadowElementNames::DateTimeEdit());
   return container;
 }
 
-PassRefPtr<ComputedStyle> DateTimeEditElement::customStyleForLayoutObject() {
+PassRefPtr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   // FIXME: This is a kind of layout. We might want to introduce new
   // layoutObject.
-  RefPtr<ComputedStyle> originalStyle = originalStyleForLayoutObject();
-  RefPtr<ComputedStyle> style = ComputedStyle::clone(*originalStyle);
+  RefPtr<ComputedStyle> original_style = OriginalStyleForLayoutObject();
+  RefPtr<ComputedStyle> style = ComputedStyle::Clone(*original_style);
   float width = 0;
-  for (Node* child = fieldsWrapperElement()->firstChild(); child;
+  for (Node* child = FieldsWrapperElement()->FirstChild(); child;
        child = child->nextSibling()) {
-    if (!child->isElementNode())
+    if (!child->IsElementNode())
       continue;
-    Element* childElement = toElement(child);
-    if (childElement->isDateTimeFieldElement()) {
+    Element* child_element = ToElement(child);
+    if (child_element->IsDateTimeFieldElement()) {
       // We need to pass the ComputedStyle of this element because child
       // elements can't resolve inherited style at this timing.
-      width += static_cast<DateTimeFieldElement*>(childElement)
-                   ->maximumWidth(*style);
+      width += static_cast<DateTimeFieldElement*>(child_element)
+                   ->MaximumWidth(*style);
     } else {
       // ::-webkit-datetime-edit-text case. It has no
       // border/padding/margin in html.css.
-      width += DateTimeFieldElement::computeTextWidth(
-          *style, childElement->textContent());
+      width += DateTimeFieldElement::ComputeTextWidth(
+          *style, child_element->textContent());
     }
   }
-  style->setWidth(Length(ceilf(width), Fixed));
-  style->setUnique();
-  return style.release();
+  style->SetWidth(Length(ceilf(width), kFixed));
+  style->SetUnique();
+  return style.Release();
 }
 
-void DateTimeEditElement::didBlurFromField() {
-  if (m_editControlOwner)
-    m_editControlOwner->didBlurFromControl();
+void DateTimeEditElement::DidBlurFromField() {
+  if (edit_control_owner_)
+    edit_control_owner_->DidBlurFromControl();
 }
 
-void DateTimeEditElement::didFocusOnField() {
-  if (m_editControlOwner)
-    m_editControlOwner->didFocusOnControl();
+void DateTimeEditElement::DidFocusOnField() {
+  if (edit_control_owner_)
+    edit_control_owner_->DidFocusOnControl();
 }
 
-void DateTimeEditElement::disabledStateChanged() {
-  updateUIState();
+void DateTimeEditElement::DisabledStateChanged() {
+  UpdateUIState();
 }
 
-DateTimeFieldElement* DateTimeEditElement::fieldAt(size_t fieldIndex) const {
-  return fieldIndex < m_fields.size() ? m_fields[fieldIndex].get() : 0;
+DateTimeFieldElement* DateTimeEditElement::FieldAt(size_t field_index) const {
+  return field_index < fields_.size() ? fields_[field_index].Get() : 0;
 }
 
-size_t DateTimeEditElement::fieldIndexOf(
+size_t DateTimeEditElement::FieldIndexOf(
     const DateTimeFieldElement& field) const {
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex) {
-    if (m_fields[fieldIndex] == &field)
-      return fieldIndex;
+  for (size_t field_index = 0; field_index < fields_.size(); ++field_index) {
+    if (fields_[field_index] == &field)
+      return field_index;
   }
-  return invalidFieldIndex;
+  return kInvalidFieldIndex;
 }
 
-void DateTimeEditElement::focusIfNoFocus() {
-  if (focusedFieldIndex() != invalidFieldIndex)
+void DateTimeEditElement::FocusIfNoFocus() {
+  if (FocusedFieldIndex() != kInvalidFieldIndex)
     return;
-  focusOnNextFocusableField(0);
+  FocusOnNextFocusableField(0);
 }
 
-void DateTimeEditElement::focusByOwner(Element* oldFocusedElement) {
-  if (oldFocusedElement && oldFocusedElement->isDateTimeFieldElement()) {
-    DateTimeFieldElement* oldFocusedField =
-        static_cast<DateTimeFieldElement*>(oldFocusedElement);
-    size_t index = fieldIndexOf(*oldFocusedField);
-    document().updateStyleAndLayoutTreeForNode(oldFocusedField);
-    if (index != invalidFieldIndex && oldFocusedField->isFocusable()) {
-      oldFocusedField->focus();
+void DateTimeEditElement::FocusByOwner(Element* old_focused_element) {
+  if (old_focused_element && old_focused_element->IsDateTimeFieldElement()) {
+    DateTimeFieldElement* old_focused_field =
+        static_cast<DateTimeFieldElement*>(old_focused_element);
+    size_t index = FieldIndexOf(*old_focused_field);
+    GetDocument().UpdateStyleAndLayoutTreeForNode(old_focused_field);
+    if (index != kInvalidFieldIndex && old_focused_field->IsFocusable()) {
+      old_focused_field->focus();
       return;
     }
   }
-  focusOnNextFocusableField(0);
+  FocusOnNextFocusableField(0);
 }
 
-DateTimeFieldElement* DateTimeEditElement::focusedField() const {
-  return fieldAt(focusedFieldIndex());
+DateTimeFieldElement* DateTimeEditElement::FocusedField() const {
+  return FieldAt(FocusedFieldIndex());
 }
 
-size_t DateTimeEditElement::focusedFieldIndex() const {
-  Element* const focusedFieldElement = document().focusedElement();
-  for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex) {
-    if (m_fields[fieldIndex] == focusedFieldElement)
-      return fieldIndex;
+size_t DateTimeEditElement::FocusedFieldIndex() const {
+  Element* const focused_field_element = GetDocument().FocusedElement();
+  for (size_t field_index = 0; field_index < fields_.size(); ++field_index) {
+    if (fields_[field_index] == focused_field_element)
+      return field_index;
   }
-  return invalidFieldIndex;
+  return kInvalidFieldIndex;
 }
 
-void DateTimeEditElement::fieldValueChanged() {
-  if (m_editControlOwner)
-    m_editControlOwner->editControlValueChanged();
+void DateTimeEditElement::FieldValueChanged() {
+  if (edit_control_owner_)
+    edit_control_owner_->EditControlValueChanged();
 }
 
-bool DateTimeEditElement::focusOnNextFocusableField(size_t startIndex) {
-  document().updateStyleAndLayoutTreeIgnorePendingStylesheets();
-  for (size_t fieldIndex = startIndex; fieldIndex < m_fields.size();
-       ++fieldIndex) {
-    if (m_fields[fieldIndex]->isFocusable()) {
-      m_fields[fieldIndex]->focus();
+bool DateTimeEditElement::FocusOnNextFocusableField(size_t start_index) {
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  for (size_t field_index = start_index; field_index < fields_.size();
+       ++field_index) {
+    if (fields_[field_index]->IsFocusable()) {
+      fields_[field_index]->focus();
       return true;
     }
   }
   return false;
 }
 
-bool DateTimeEditElement::focusOnNextField(const DateTimeFieldElement& field) {
-  const size_t startFieldIndex = fieldIndexOf(field);
-  if (startFieldIndex == invalidFieldIndex)
+bool DateTimeEditElement::FocusOnNextField(const DateTimeFieldElement& field) {
+  const size_t start_field_index = FieldIndexOf(field);
+  if (start_field_index == kInvalidFieldIndex)
     return false;
-  return focusOnNextFocusableField(startFieldIndex + 1);
+  return FocusOnNextFocusableField(start_field_index + 1);
 }
 
-bool DateTimeEditElement::focusOnPreviousField(
+bool DateTimeEditElement::FocusOnPreviousField(
     const DateTimeFieldElement& field) {
-  const size_t startFieldIndex = fieldIndexOf(field);
-  if (startFieldIndex == invalidFieldIndex)
+  const size_t start_field_index = FieldIndexOf(field);
+  if (start_field_index == kInvalidFieldIndex)
     return false;
-  document().updateStyleAndLayoutTreeIgnorePendingStylesheets();
-  size_t fieldIndex = startFieldIndex;
-  while (fieldIndex > 0) {
-    --fieldIndex;
-    if (m_fields[fieldIndex]->isFocusable()) {
-      m_fields[fieldIndex]->focus();
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  size_t field_index = start_field_index;
+  while (field_index > 0) {
+    --field_index;
+    if (fields_[field_index]->IsFocusable()) {
+      fields_[field_index]->focus();
       return true;
     }
   }
   return false;
 }
 
-bool DateTimeEditElement::isDateTimeEditElement() const {
+bool DateTimeEditElement::IsDateTimeEditElement() const {
   return true;
 }
 
-bool DateTimeEditElement::isDisabled() const {
-  return m_editControlOwner && m_editControlOwner->isEditControlOwnerDisabled();
+bool DateTimeEditElement::IsDisabled() const {
+  return edit_control_owner_ &&
+         edit_control_owner_->IsEditControlOwnerDisabled();
 }
 
-bool DateTimeEditElement::isFieldOwnerDisabled() const {
-  return isDisabled();
+bool DateTimeEditElement::IsFieldOwnerDisabled() const {
+  return IsDisabled();
 }
 
-bool DateTimeEditElement::isFieldOwnerReadOnly() const {
-  return isReadOnly();
+bool DateTimeEditElement::IsFieldOwnerReadOnly() const {
+  return IsReadOnly();
 }
 
-bool DateTimeEditElement::isReadOnly() const {
-  return m_editControlOwner && m_editControlOwner->isEditControlOwnerReadOnly();
+bool DateTimeEditElement::IsReadOnly() const {
+  return edit_control_owner_ &&
+         edit_control_owner_->IsEditControlOwnerReadOnly();
 }
 
-void DateTimeEditElement::layout(const LayoutParameters& layoutParameters,
-                                 const DateComponents& dateValue) {
+void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
+                                    const DateComponents& date_value) {
   // TODO(tkent): We assume this function never dispatches events. However this
   // can dispatch 'blur' event in Node::removeChild().
 
-  DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId,
+  DEFINE_STATIC_LOCAL(AtomicString, fields_wrapper_pseudo_id,
                       ("-webkit-datetime-edit-fields-wrapper"));
-  if (!hasChildren()) {
-    HTMLDivElement* element = HTMLDivElement::create(document());
-    element->setShadowPseudoId(fieldsWrapperPseudoId);
-    appendChild(element);
+  if (!HasChildren()) {
+    HTMLDivElement* element = HTMLDivElement::Create(GetDocument());
+    element->SetShadowPseudoId(fields_wrapper_pseudo_id);
+    AppendChild(element);
   }
-  Element* fieldsWrapper = fieldsWrapperElement();
+  Element* fields_wrapper = FieldsWrapperElement();
 
-  size_t focusedFieldIndex = this->focusedFieldIndex();
-  DateTimeFieldElement* const focusedField = fieldAt(focusedFieldIndex);
-  const AtomicString focusedFieldId =
-      focusedField ? focusedField->shadowPseudoId() : nullAtom;
+  size_t focused_field_index = this->FocusedFieldIndex();
+  DateTimeFieldElement* const focused_field = FieldAt(focused_field_index);
+  const AtomicString focused_field_id =
+      focused_field ? focused_field->ShadowPseudoId() : g_null_atom;
 
-  DateTimeEditBuilder builder(*this, layoutParameters, dateValue);
-  Node* lastChildToBeRemoved = fieldsWrapper->lastChild();
-  if (!builder.build(layoutParameters.dateTimeFormat) || m_fields.isEmpty()) {
-    lastChildToBeRemoved = fieldsWrapper->lastChild();
-    builder.build(layoutParameters.fallbackDateTimeFormat);
+  DateTimeEditBuilder builder(*this, layout_parameters, date_value);
+  Node* last_child_to_be_removed = fields_wrapper->LastChild();
+  if (!builder.Build(layout_parameters.date_time_format) || fields_.IsEmpty()) {
+    last_child_to_be_removed = fields_wrapper->LastChild();
+    builder.Build(layout_parameters.fallback_date_time_format);
   }
 
-  if (focusedFieldIndex != invalidFieldIndex) {
-    for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex) {
-      if (m_fields[fieldIndex]->shadowPseudoId() == focusedFieldId) {
-        focusedFieldIndex = fieldIndex;
+  if (focused_field_index != kInvalidFieldIndex) {
+    for (size_t field_index = 0; field_index < fields_.size(); ++field_index) {
+      if (fields_[field_index]->ShadowPseudoId() == focused_field_id) {
+        focused_field_index = field_index;
         break;
       }
     }
     if (DateTimeFieldElement* field =
-            fieldAt(std::min(focusedFieldIndex, m_fields.size() - 1)))
+            FieldAt(std::min(focused_field_index, fields_.size() - 1)))
       field->focus();
   }
 
-  if (lastChildToBeRemoved) {
-    for (Node* childNode = fieldsWrapper->firstChild(); childNode;
-         childNode = fieldsWrapper->firstChild()) {
-      fieldsWrapper->removeChild(childNode);
-      if (childNode == lastChildToBeRemoved)
+  if (last_child_to_be_removed) {
+    for (Node* child_node = fields_wrapper->FirstChild(); child_node;
+         child_node = fields_wrapper->FirstChild()) {
+      fields_wrapper->RemoveChild(child_node);
+      if (child_node == last_child_to_be_removed)
         break;
     }
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(
-                                                StyleChangeReason::Control));
+    SetNeedsStyleRecalc(
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(StyleChangeReason::kControl));
   }
 }
 
-AtomicString DateTimeEditElement::localeIdentifier() const {
-  return m_editControlOwner ? m_editControlOwner->localeIdentifier() : nullAtom;
+AtomicString DateTimeEditElement::LocaleIdentifier() const {
+  return edit_control_owner_ ? edit_control_owner_->LocaleIdentifier()
+                             : g_null_atom;
 }
 
-void DateTimeEditElement::fieldDidChangeValueByKeyboard() {
-  if (m_editControlOwner)
-    m_editControlOwner->editControlDidChangeValueByKeyboard();
+void DateTimeEditElement::FieldDidChangeValueByKeyboard() {
+  if (edit_control_owner_)
+    edit_control_owner_->EditControlDidChangeValueByKeyboard();
 }
 
-void DateTimeEditElement::readOnlyStateChanged() {
-  updateUIState();
+void DateTimeEditElement::ReadOnlyStateChanged() {
+  UpdateUIState();
 }
 
-void DateTimeEditElement::resetFields() {
-  for (const auto& field : m_fields)
-    field->removeEventHandler();
-  m_fields.shrink(0);
+void DateTimeEditElement::ResetFields() {
+  for (const auto& field : fields_)
+    field->RemoveEventHandler();
+  fields_.Shrink(0);
 }
 
-void DateTimeEditElement::defaultEventHandler(Event* event) {
+void DateTimeEditElement::DefaultEventHandler(Event* event) {
   // In case of control owner forward event to control, e.g. DOM
   // dispatchEvent method.
-  if (DateTimeFieldElement* field = focusedField()) {
-    field->defaultEventHandler(event);
-    if (event->defaultHandled())
+  if (DateTimeFieldElement* field = FocusedField()) {
+    field->DefaultEventHandler(event);
+    if (event->DefaultHandled())
       return;
   }
 
-  HTMLDivElement::defaultEventHandler(event);
+  HTMLDivElement::DefaultEventHandler(event);
 }
 
-void DateTimeEditElement::setValueAsDate(
-    const LayoutParameters& layoutParameters,
+void DateTimeEditElement::SetValueAsDate(
+    const LayoutParameters& layout_parameters,
     const DateComponents& date) {
-  layout(layoutParameters, date);
-  for (const auto& field : m_fields)
-    field->setValueAsDate(date);
+  GetLayout(layout_parameters, date);
+  for (const auto& field : fields_)
+    field->SetValueAsDate(date);
 }
 
-void DateTimeEditElement::setValueAsDateTimeFieldsState(
-    const DateTimeFieldsState& dateTimeFieldsState) {
-  for (const auto& field : m_fields)
-    field->setValueAsDateTimeFieldsState(dateTimeFieldsState);
+void DateTimeEditElement::SetValueAsDateTimeFieldsState(
+    const DateTimeFieldsState& date_time_fields_state) {
+  for (const auto& field : fields_)
+    field->SetValueAsDateTimeFieldsState(date_time_fields_state);
 }
 
-void DateTimeEditElement::setEmptyValue(
-    const LayoutParameters& layoutParameters,
-    const DateComponents& dateForReadOnlyField) {
-  layout(layoutParameters, dateForReadOnlyField);
-  for (const auto& field : m_fields)
-    field->setEmptyValue(DateTimeFieldElement::DispatchNoEvent);
+void DateTimeEditElement::SetEmptyValue(
+    const LayoutParameters& layout_parameters,
+    const DateComponents& date_for_read_only_field) {
+  GetLayout(layout_parameters, date_for_read_only_field);
+  for (const auto& field : fields_)
+    field->SetEmptyValue(DateTimeFieldElement::kDispatchNoEvent);
 }
 
-bool DateTimeEditElement::hasFocusedField() {
-  return focusedFieldIndex() != invalidFieldIndex;
+bool DateTimeEditElement::HasFocusedField() {
+  return FocusedFieldIndex() != kInvalidFieldIndex;
 }
 
-void DateTimeEditElement::setOnlyYearMonthDay(const DateComponents& date) {
-  DCHECK_EQ(date.getType(), DateComponents::Date);
+void DateTimeEditElement::SetOnlyYearMonthDay(const DateComponents& date) {
+  DCHECK_EQ(date.GetType(), DateComponents::kDate);
 
-  if (!m_editControlOwner)
+  if (!edit_control_owner_)
     return;
 
-  DateTimeFieldsState dateTimeFieldsState = valueAsDateTimeFieldsState();
-  dateTimeFieldsState.setYear(date.fullYear());
-  dateTimeFieldsState.setMonth(date.month() + 1);
-  dateTimeFieldsState.setDayOfMonth(date.monthDay());
-  setValueAsDateTimeFieldsState(dateTimeFieldsState);
-  m_editControlOwner->editControlValueChanged();
+  DateTimeFieldsState date_time_fields_state = ValueAsDateTimeFieldsState();
+  date_time_fields_state.SetYear(date.FullYear());
+  date_time_fields_state.SetMonth(date.Month() + 1);
+  date_time_fields_state.SetDayOfMonth(date.MonthDay());
+  SetValueAsDateTimeFieldsState(date_time_fields_state);
+  edit_control_owner_->EditControlValueChanged();
 }
 
-void DateTimeEditElement::stepDown() {
-  if (DateTimeFieldElement* const field = focusedField())
-    field->stepDown();
+void DateTimeEditElement::StepDown() {
+  if (DateTimeFieldElement* const field = FocusedField())
+    field->StepDown();
 }
 
-void DateTimeEditElement::stepUp() {
-  if (DateTimeFieldElement* const field = focusedField())
-    field->stepUp();
+void DateTimeEditElement::StepUp() {
+  if (DateTimeFieldElement* const field = FocusedField())
+    field->StepUp();
 }
 
-void DateTimeEditElement::updateUIState() {
-  if (isDisabled()) {
-    if (DateTimeFieldElement* field = focusedField())
+void DateTimeEditElement::UpdateUIState() {
+  if (IsDisabled()) {
+    if (DateTimeFieldElement* field = FocusedField())
       field->blur();
   }
 }
 
-String DateTimeEditElement::value() const {
-  if (!m_editControlOwner)
-    return emptyString;
-  return m_editControlOwner->formatDateTimeFieldsState(
-      valueAsDateTimeFieldsState());
+String DateTimeEditElement::Value() const {
+  if (!edit_control_owner_)
+    return g_empty_string;
+  return edit_control_owner_->FormatDateTimeFieldsState(
+      ValueAsDateTimeFieldsState());
 }
 
-DateTimeFieldsState DateTimeEditElement::valueAsDateTimeFieldsState() const {
-  DateTimeFieldsState dateTimeFieldsState;
-  for (const auto& field : m_fields)
-    field->populateDateTimeFieldsState(dateTimeFieldsState);
-  return dateTimeFieldsState;
+DateTimeFieldsState DateTimeEditElement::ValueAsDateTimeFieldsState() const {
+  DateTimeFieldsState date_time_fields_state;
+  for (const auto& field : fields_)
+    field->PopulateDateTimeFieldsState(date_time_fields_state);
+  return date_time_fields_state;
 }
 
 }  // namespace blink

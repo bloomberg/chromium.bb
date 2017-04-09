@@ -29,7 +29,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
 
   TestRenderViewContextMenu* CreateContextMenu(GURL url) {
     content::ContextMenuParams params;
-    params.media_type = blink::WebContextMenuData::MediaTypeNone;
+    params.media_type = blink::WebContextMenuData::kMediaTypeNone;
     params.link_url = url;
     params.unfiltered_link_url = url;
     WebContents* web_contents =

@@ -49,129 +49,128 @@ class PLATFORM_EXPORT FloatRoundedRect {
 
    public:
     Radii() {}
-    Radii(const FloatSize& topLeft,
-          const FloatSize& topRight,
-          const FloatSize& bottomLeft,
-          const FloatSize& bottomRight)
-        : m_topLeft(topLeft),
-          m_topRight(topRight),
-          m_bottomLeft(bottomLeft),
-          m_bottomRight(bottomRight) {}
+    Radii(const FloatSize& top_left,
+          const FloatSize& top_right,
+          const FloatSize& bottom_left,
+          const FloatSize& bottom_right)
+        : top_left_(top_left),
+          top_right_(top_right),
+          bottom_left_(bottom_left),
+          bottom_right_(bottom_right) {}
 
-    Radii(const FloatRoundedRect::Radii& intRadii)
-        : m_topLeft(intRadii.topLeft()),
-          m_topRight(intRadii.topRight()),
-          m_bottomLeft(intRadii.bottomLeft()),
-          m_bottomRight(intRadii.bottomRight()) {}
+    Radii(const FloatRoundedRect::Radii& int_radii)
+        : top_left_(int_radii.TopLeft()),
+          top_right_(int_radii.TopRight()),
+          bottom_left_(int_radii.BottomLeft()),
+          bottom_right_(int_radii.BottomRight()) {}
 
-    void setTopLeft(const FloatSize& size) { m_topLeft = size; }
-    void setTopRight(const FloatSize& size) { m_topRight = size; }
-    void setBottomLeft(const FloatSize& size) { m_bottomLeft = size; }
-    void setBottomRight(const FloatSize& size) { m_bottomRight = size; }
-    const FloatSize& topLeft() const { return m_topLeft; }
-    const FloatSize& topRight() const { return m_topRight; }
-    const FloatSize& bottomLeft() const { return m_bottomLeft; }
-    const FloatSize& bottomRight() const { return m_bottomRight; }
+    void SetTopLeft(const FloatSize& size) { top_left_ = size; }
+    void SetTopRight(const FloatSize& size) { top_right_ = size; }
+    void SetBottomLeft(const FloatSize& size) { bottom_left_ = size; }
+    void SetBottomRight(const FloatSize& size) { bottom_right_ = size; }
+    const FloatSize& TopLeft() const { return top_left_; }
+    const FloatSize& TopRight() const { return top_right_; }
+    const FloatSize& BottomLeft() const { return bottom_left_; }
+    const FloatSize& BottomRight() const { return bottom_right_; }
 
-    bool isZero() const;
+    bool IsZero() const;
 
-    void scale(float factor);
+    void Scale(float factor);
     // Multiply all radii by |factor| and floor the result to the nearest
     // integer.
-    void scaleAndFloor(float factor);
+    void ScaleAndFloor(float factor);
 
-    void expand(float topWidth,
-                float bottomWidth,
-                float leftWidth,
-                float rightWidth);
-    void expand(float size) { expand(size, size, size, size); }
+    void Expand(float top_width,
+                float bottom_width,
+                float left_width,
+                float right_width);
+    void Expand(float size) { Expand(size, size, size, size); }
 
-    void shrink(float topWidth,
-                float bottomWidth,
-                float leftWidth,
-                float rightWidth);
-    void shrink(float size) { shrink(size, size, size, size); }
+    void Shrink(float top_width,
+                float bottom_width,
+                float left_width,
+                float right_width);
+    void Shrink(float size) { Shrink(size, size, size, size); }
 
-    void includeLogicalEdges(const Radii& edges,
-                             bool isHorizontal,
-                             bool includeLogicalLeftEdge,
-                             bool includeLogicalRightEdge);
+    void IncludeLogicalEdges(const Radii& edges,
+                             bool is_horizontal,
+                             bool include_logical_left_edge,
+                             bool include_logical_right_edge);
 
-    String toString() const;
+    String ToString() const;
 
    private:
-    FloatSize m_topLeft;
-    FloatSize m_topRight;
-    FloatSize m_bottomLeft;
-    FloatSize m_bottomRight;
+    FloatSize top_left_;
+    FloatSize top_right_;
+    FloatSize bottom_left_;
+    FloatSize bottom_right_;
   };
 
   FloatRoundedRect() {}
   explicit FloatRoundedRect(const FloatRect&, const Radii& = Radii());
   FloatRoundedRect(float x, float y, float width, float height);
   FloatRoundedRect(const FloatRect&,
-                   const FloatSize& topLeft,
-                   const FloatSize& topRight,
-                   const FloatSize& bottomLeft,
-                   const FloatSize& bottomRight);
+                   const FloatSize& top_left,
+                   const FloatSize& top_right,
+                   const FloatSize& bottom_left,
+                   const FloatSize& bottom_right);
 
-  const FloatRect& rect() const { return m_rect; }
-  const Radii& getRadii() const { return m_radii; }
-  bool isRounded() const { return !m_radii.isZero(); }
-  bool isEmpty() const { return m_rect.isEmpty(); }
+  const FloatRect& Rect() const { return rect_; }
+  const Radii& GetRadii() const { return radii_; }
+  bool IsRounded() const { return !radii_.IsZero(); }
+  bool IsEmpty() const { return rect_.IsEmpty(); }
 
-  void setRect(const FloatRect& rect) { m_rect = rect; }
-  void setRadii(const Radii& radii) { m_radii = radii; }
+  void SetRect(const FloatRect& rect) { rect_ = rect; }
+  void SetRadii(const Radii& radii) { radii_ = radii; }
 
-  void move(const FloatSize& size) { m_rect.move(size); }
-  void inflateWithRadii(int size);
-  void inflate(float size) { m_rect.inflate(size); }
+  void Move(const FloatSize& size) { rect_.Move(size); }
+  void InflateWithRadii(int size);
+  void Inflate(float size) { rect_.Inflate(size); }
 
   // expandRadii() does not have any effect on corner radii which have zero
   // width or height. This is because the process of expanding the radius of a
   // corner is not allowed to make sharp corners non-sharp. This applies when
   // "spreading" a shadow or a box shape.
-  void expandRadii(float size) { m_radii.expand(size); }
-  void shrinkRadii(float size) { m_radii.shrink(size); }
+  void ExpandRadii(float size) { radii_.Expand(size); }
+  void ShrinkRadii(float size) { radii_.Shrink(size); }
 
   // Returns a quickly computed rect enclosed by the rounded rect.
-  FloatRect radiusCenterRect() const;
+  FloatRect RadiusCenterRect() const;
 
-  FloatRect topLeftCorner() const {
-    return FloatRect(m_rect.x(), m_rect.y(), m_radii.topLeft().width(),
-                     m_radii.topLeft().height());
+  FloatRect TopLeftCorner() const {
+    return FloatRect(rect_.X(), rect_.Y(), radii_.TopLeft().Width(),
+                     radii_.TopLeft().Height());
   }
-  FloatRect topRightCorner() const {
-    return FloatRect(m_rect.maxX() - m_radii.topRight().width(), m_rect.y(),
-                     m_radii.topRight().width(), m_radii.topRight().height());
+  FloatRect TopRightCorner() const {
+    return FloatRect(rect_.MaxX() - radii_.TopRight().Width(), rect_.Y(),
+                     radii_.TopRight().Width(), radii_.TopRight().Height());
   }
-  FloatRect bottomLeftCorner() const {
-    return FloatRect(m_rect.x(), m_rect.maxY() - m_radii.bottomLeft().height(),
-                     m_radii.bottomLeft().width(),
-                     m_radii.bottomLeft().height());
+  FloatRect BottomLeftCorner() const {
+    return FloatRect(rect_.X(), rect_.MaxY() - radii_.BottomLeft().Height(),
+                     radii_.BottomLeft().Width(), radii_.BottomLeft().Height());
   }
-  FloatRect bottomRightCorner() const {
-    return FloatRect(m_rect.maxX() - m_radii.bottomRight().width(),
-                     m_rect.maxY() - m_radii.bottomRight().height(),
-                     m_radii.bottomRight().width(),
-                     m_radii.bottomRight().height());
+  FloatRect BottomRightCorner() const {
+    return FloatRect(rect_.MaxX() - radii_.BottomRight().Width(),
+                     rect_.MaxY() - radii_.BottomRight().Height(),
+                     radii_.BottomRight().Width(),
+                     radii_.BottomRight().Height());
   }
 
-  bool xInterceptsAtY(float y,
-                      float& minXIntercept,
-                      float& maxXIntercept) const;
+  bool XInterceptsAtY(float y,
+                      float& min_x_intercept,
+                      float& max_x_intercept) const;
 
-  void includeLogicalEdges(const Radii& edges,
-                           bool isHorizontal,
-                           bool includeLogicalLeftEdge,
-                           bool includeLogicalRightEdge);
+  void IncludeLogicalEdges(const Radii& edges,
+                           bool is_horizontal,
+                           bool include_logical_left_edge,
+                           bool include_logical_right_edge);
 
   // Tests whether the quad intersects any part of this rounded rectangle.
   // This only works for convex quads.
-  bool intersectsQuad(const FloatQuad&) const;
+  bool IntersectsQuad(const FloatQuad&) const;
 
-  void adjustRadii();
-  bool isRenderable() const;
+  void AdjustRadii();
+  bool IsRenderable() const;
 
   // Constrains the radii to be no more than the size of rect(); radii outside
   // of this range are not defined.  In addition, the radii of the corners are
@@ -180,34 +179,34 @@ class PLATFORM_EXPORT FloatRoundedRect {
   // background bleed in some cases.
   // FIXME: this code is almost the same as adjustRadii()/isRenderable(). Get
   // rid of one of them.
-  void constrainRadii();
+  void ConstrainRadii();
 
   operator SkRRect() const;
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  FloatRect m_rect;
-  Radii m_radii;
+  FloatRect rect_;
+  Radii radii_;
 };
 
 inline FloatRoundedRect::operator SkRRect() const {
   SkRRect rrect;
 
-  if (isRounded()) {
+  if (IsRounded()) {
     SkVector radii[4];
-    radii[SkRRect::kUpperLeft_Corner].set(topLeftCorner().width(),
-                                          topLeftCorner().height());
-    radii[SkRRect::kUpperRight_Corner].set(topRightCorner().width(),
-                                           topRightCorner().height());
-    radii[SkRRect::kLowerRight_Corner].set(bottomRightCorner().width(),
-                                           bottomRightCorner().height());
-    radii[SkRRect::kLowerLeft_Corner].set(bottomLeftCorner().width(),
-                                          bottomLeftCorner().height());
+    radii[SkRRect::kUpperLeft_Corner].set(TopLeftCorner().Width(),
+                                          TopLeftCorner().Height());
+    radii[SkRRect::kUpperRight_Corner].set(TopRightCorner().Width(),
+                                           TopRightCorner().Height());
+    radii[SkRRect::kLowerRight_Corner].set(BottomRightCorner().Width(),
+                                           BottomRightCorner().Height());
+    radii[SkRRect::kLowerLeft_Corner].set(BottomLeftCorner().Width(),
+                                          BottomLeftCorner().Height());
 
-    rrect.setRectRadii(rect(), radii);
+    rrect.setRectRadii(Rect(), radii);
   } else {
-    rrect.setRect(rect());
+    rrect.setRect(Rect());
   }
 
   return rrect;
@@ -215,8 +214,8 @@ inline FloatRoundedRect::operator SkRRect() const {
 
 inline bool operator==(const FloatRoundedRect::Radii& a,
                        const FloatRoundedRect::Radii& b) {
-  return a.topLeft() == b.topLeft() && a.topRight() == b.topRight() &&
-         a.bottomLeft() == b.bottomLeft() && a.bottomRight() == b.bottomRight();
+  return a.TopLeft() == b.TopLeft() && a.TopRight() == b.TopRight() &&
+         a.BottomLeft() == b.BottomLeft() && a.BottomRight() == b.BottomRight();
 }
 
 inline bool operator!=(const FloatRoundedRect::Radii& a,
@@ -225,7 +224,7 @@ inline bool operator!=(const FloatRoundedRect::Radii& a,
 }
 
 inline bool operator==(const FloatRoundedRect& a, const FloatRoundedRect& b) {
-  return a.rect() == b.rect() && a.getRadii() == b.getRadii();
+  return a.Rect() == b.Rect() && a.GetRadii() == b.GetRadii();
 }
 
 // Redeclared here to avoid ODR issues.

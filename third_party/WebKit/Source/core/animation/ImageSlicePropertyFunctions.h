@@ -21,36 +21,36 @@ struct ImageSlice {
 
 class ImageSlicePropertyFunctions {
  public:
-  static ImageSlice getInitialImageSlice(CSSPropertyID property) {
-    return getImageSlice(property, ComputedStyle::initialStyle());
+  static ImageSlice GetInitialImageSlice(CSSPropertyID property) {
+    return GetImageSlice(property, ComputedStyle::InitialStyle());
   }
 
-  static ImageSlice getImageSlice(CSSPropertyID property,
+  static ImageSlice GetImageSlice(CSSPropertyID property,
                                   const ComputedStyle& style) {
     switch (property) {
       default:
         NOTREACHED();
       // Fall through.
       case CSSPropertyBorderImageSlice:
-        return ImageSlice(style.borderImageSlices(),
-                          style.borderImageSlicesFill());
+        return ImageSlice(style.BorderImageSlices(),
+                          style.BorderImageSlicesFill());
       case CSSPropertyWebkitMaskBoxImageSlice:
-        return ImageSlice(style.maskBoxImageSlices(),
-                          style.maskBoxImageSlicesFill());
+        return ImageSlice(style.MaskBoxImageSlices(),
+                          style.MaskBoxImageSlicesFill());
     }
   }
 
-  static void setImageSlice(CSSPropertyID property,
+  static void SetImageSlice(CSSPropertyID property,
                             ComputedStyle& style,
                             const ImageSlice& slice) {
     switch (property) {
       case CSSPropertyBorderImageSlice:
-        style.setBorderImageSlices(slice.slices);
-        style.setBorderImageSlicesFill(slice.fill);
+        style.SetBorderImageSlices(slice.slices);
+        style.SetBorderImageSlicesFill(slice.fill);
         break;
       case CSSPropertyWebkitMaskBoxImageSlice:
-        style.setMaskBoxImageSlices(slice.slices);
-        style.setMaskBoxImageSlicesFill(slice.fill);
+        style.SetMaskBoxImageSlices(slice.slices);
+        style.SetMaskBoxImageSlicesFill(slice.fill);
         break;
       default:
         NOTREACHED();

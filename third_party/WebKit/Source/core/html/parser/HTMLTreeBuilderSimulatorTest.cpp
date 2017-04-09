@@ -14,52 +14,52 @@ namespace blink {
 TEST(HTMLTreeBuilderSimulatorTest, SelfClosingSVGFollowedByScript) {
   HTMLParserOptions options;
   HTMLTreeBuilderSimulator simulator(options);
-  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::create(options);
+  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   SegmentedString input("<svg/><script></script>");
   HTMLToken token;
-  EXPECT_TRUE(tokenizer->nextToken(input, token));
-  EXPECT_EQ(HTMLTreeBuilderSimulator::OtherToken,
-            simulator.simulate(CompactHTMLToken(&token, TextPosition()),
+  EXPECT_TRUE(tokenizer->NextToken(input, token));
+  EXPECT_EQ(HTMLTreeBuilderSimulator::kOtherToken,
+            simulator.Simulate(CompactHTMLToken(&token, TextPosition()),
                                tokenizer.get()));
 
-  token.clear();
-  EXPECT_TRUE(tokenizer->nextToken(input, token));
-  EXPECT_EQ(HTMLTreeBuilderSimulator::ScriptStart,
-            simulator.simulate(CompactHTMLToken(&token, TextPosition()),
+  token.Clear();
+  EXPECT_TRUE(tokenizer->NextToken(input, token));
+  EXPECT_EQ(HTMLTreeBuilderSimulator::kScriptStart,
+            simulator.Simulate(CompactHTMLToken(&token, TextPosition()),
                                tokenizer.get()));
 
-  EXPECT_EQ(HTMLTokenizer::ScriptDataState, tokenizer->getState());
+  EXPECT_EQ(HTMLTokenizer::kScriptDataState, tokenizer->GetState());
 
-  token.clear();
-  EXPECT_TRUE(tokenizer->nextToken(input, token));
-  EXPECT_EQ(HTMLTreeBuilderSimulator::ScriptEnd,
-            simulator.simulate(CompactHTMLToken(&token, TextPosition()),
+  token.Clear();
+  EXPECT_TRUE(tokenizer->NextToken(input, token));
+  EXPECT_EQ(HTMLTreeBuilderSimulator::kScriptEnd,
+            simulator.Simulate(CompactHTMLToken(&token, TextPosition()),
                                tokenizer.get()));
 }
 
 TEST(HTMLTreeBuilderSimulatorTest, SelfClosingMathFollowedByScript) {
   HTMLParserOptions options;
   HTMLTreeBuilderSimulator simulator(options);
-  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::create(options);
+  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   SegmentedString input("<math/><script></script>");
   HTMLToken token;
-  EXPECT_TRUE(tokenizer->nextToken(input, token));
-  EXPECT_EQ(HTMLTreeBuilderSimulator::OtherToken,
-            simulator.simulate(CompactHTMLToken(&token, TextPosition()),
+  EXPECT_TRUE(tokenizer->NextToken(input, token));
+  EXPECT_EQ(HTMLTreeBuilderSimulator::kOtherToken,
+            simulator.Simulate(CompactHTMLToken(&token, TextPosition()),
                                tokenizer.get()));
 
-  token.clear();
-  EXPECT_TRUE(tokenizer->nextToken(input, token));
-  EXPECT_EQ(HTMLTreeBuilderSimulator::ScriptStart,
-            simulator.simulate(CompactHTMLToken(&token, TextPosition()),
+  token.Clear();
+  EXPECT_TRUE(tokenizer->NextToken(input, token));
+  EXPECT_EQ(HTMLTreeBuilderSimulator::kScriptStart,
+            simulator.Simulate(CompactHTMLToken(&token, TextPosition()),
                                tokenizer.get()));
 
-  EXPECT_EQ(HTMLTokenizer::ScriptDataState, tokenizer->getState());
+  EXPECT_EQ(HTMLTokenizer::kScriptDataState, tokenizer->GetState());
 
-  token.clear();
-  EXPECT_TRUE(tokenizer->nextToken(input, token));
-  EXPECT_EQ(HTMLTreeBuilderSimulator::ScriptEnd,
-            simulator.simulate(CompactHTMLToken(&token, TextPosition()),
+  token.Clear();
+  EXPECT_TRUE(tokenizer->NextToken(input, token));
+  EXPECT_EQ(HTMLTreeBuilderSimulator::kScriptEnd,
+            simulator.Simulate(CompactHTMLToken(&token, TextPosition()),
                                tokenizer.get()));
 }
 

@@ -98,44 +98,44 @@ class CORE_EXPORT PaintLayerStackingNode {
   explicit PaintLayerStackingNode(PaintLayer*);
   ~PaintLayerStackingNode();
 
-  int zIndex() const { return layoutObject().style()->zIndex(); }
+  int ZIndex() const { return GetLayoutObject().Style()->ZIndex(); }
 
-  bool isStackingContext() const {
-    return layoutObject().style()->isStackingContext();
+  bool IsStackingContext() const {
+    return GetLayoutObject().Style()->IsStackingContext();
   }
 
   // Whether the node is stacked. See documentation for the class about
   // "stacked".  For now every PaintLayer has a PaintLayerStackingNode, even if
   // the layer is not stacked (e.g. a scrollable layer which is statically
   // positioned and is not a stacking context).
-  bool isStacked() const { return m_isStacked; }
+  bool IsStacked() const { return is_stacked_; }
 
   // Update our normal and z-index lists.
-  void updateLayerListsIfNeeded();
+  void UpdateLayerListsIfNeeded();
 
-  bool zOrderListsDirty() const { return m_zOrderListsDirty; }
-  void dirtyZOrderLists();
-  void updateZOrderLists();
-  void clearZOrderLists();
-  void dirtyStackingContextZOrderLists();
+  bool ZOrderListsDirty() const { return z_order_lists_dirty_; }
+  void DirtyZOrderLists();
+  void UpdateZOrderLists();
+  void ClearZOrderLists();
+  void DirtyStackingContextZOrderLists();
 
-  bool hasPositiveZOrderList() const {
-    return posZOrderList() && posZOrderList()->size();
+  bool HasPositiveZOrderList() const {
+    return PosZOrderList() && PosZOrderList()->size();
   }
-  bool hasNegativeZOrderList() const {
-    return negZOrderList() && negZOrderList()->size();
+  bool HasNegativeZOrderList() const {
+    return NegZOrderList() && NegZOrderList()->size();
   }
 
-  void styleDidChange(const ComputedStyle* oldStyle);
+  void StyleDidChange(const ComputedStyle* old_style);
 
-  PaintLayerStackingNode* ancestorStackingContextNode() const;
+  PaintLayerStackingNode* AncestorStackingContextNode() const;
 
-  PaintLayer* layer() const { return m_layer; }
+  PaintLayer* Layer() const { return layer_; }
 
 #if DCHECK_IS_ON()
-  bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
-  void setLayerListMutationAllowed(bool flag) {
-    m_layerListMutationAllowed = flag;
+  bool LayerListMutationAllowed() const { return layer_list_mutation_allowed_; }
+  void SetLayerListMutationAllowed(bool flag) {
+    layer_list_mutation_allowed_ = flag;
   }
 #endif
 
@@ -144,108 +144,109 @@ class CORE_EXPORT PaintLayerStackingNode {
   friend class PaintLayerStackingNodeReverseIterator;
   friend class LayoutTreeAsText;
 
-  Vector<PaintLayerStackingNode*>* posZOrderList() const {
-    DCHECK(!m_zOrderListsDirty);
-    DCHECK(isStackingContext() || !m_posZOrderList);
-    return m_posZOrderList.get();
+  Vector<PaintLayerStackingNode*>* PosZOrderList() const {
+    DCHECK(!z_order_lists_dirty_);
+    DCHECK(IsStackingContext() || !pos_z_order_list_);
+    return pos_z_order_list_.get();
   }
 
-  Vector<PaintLayerStackingNode*>* negZOrderList() const {
-    DCHECK(!m_zOrderListsDirty);
-    DCHECK(isStackingContext() || !m_negZOrderList);
-    return m_negZOrderList.get();
+  Vector<PaintLayerStackingNode*>* NegZOrderList() const {
+    DCHECK(!z_order_lists_dirty_);
+    DCHECK(IsStackingContext() || !neg_z_order_list_);
+    return neg_z_order_list_.get();
   }
 
-  void rebuildZOrderLists();
-  void collectLayers(
-      std::unique_ptr<Vector<PaintLayerStackingNode*>>& posZOrderList,
-      std::unique_ptr<Vector<PaintLayerStackingNode*>>& negZOrderList);
+  void RebuildZOrderLists();
+  void CollectLayers(
+      std::unique_ptr<Vector<PaintLayerStackingNode*>>& pos_z_order_list,
+      std::unique_ptr<Vector<PaintLayerStackingNode*>>& neg_z_order_list);
 
 #if DCHECK_IS_ON()
-  bool isInStackingParentZOrderLists() const;
-  void updateStackingParentForZOrderLists(
-      PaintLayerStackingNode* stackingParent);
-  void setStackingParent(PaintLayerStackingNode* stackingParent) {
-    m_stackingParent = stackingParent;
+  bool IsInStackingParentZOrderLists() const;
+  void UpdateStackingParentForZOrderLists(
+      PaintLayerStackingNode* stacking_parent);
+  void SetStackingParent(PaintLayerStackingNode* stacking_parent) {
+    stacking_parent_ = stacking_parent;
   }
 #endif
 
-  bool isDirtyStackingContext() const {
-    return m_zOrderListsDirty && isStackingContext();
+  bool IsDirtyStackingContext() const {
+    return z_order_lists_dirty_ && IsStackingContext();
   }
 
-  PaintLayerCompositor* compositor() const;
+  PaintLayerCompositor* Compositor() const;
   // We can't return a LayoutBox as LayoutInline can be a stacking context.
-  LayoutBoxModelObject& layoutObject() const;
+  LayoutBoxModelObject& GetLayoutObject() const;
 
-  PaintLayer* m_layer;
+  PaintLayer* layer_;
 
   // m_posZOrderList holds a sorted list of all the descendant nodes within
   // that have z-indices of 0 (or is treated as 0 for positioned objects) or
   // greater.
-  std::unique_ptr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
+  std::unique_ptr<Vector<PaintLayerStackingNode*>> pos_z_order_list_;
   // m_negZOrderList holds descendants within our stacking context with
   // negative z-indices.
-  std::unique_ptr<Vector<PaintLayerStackingNode*>> m_negZOrderList;
+  std::unique_ptr<Vector<PaintLayerStackingNode*>> neg_z_order_list_;
 
   // This boolean caches whether the z-order lists above are dirty.
   // It is only ever set for stacking contexts, as no other element can
   // have z-order lists.
-  bool m_zOrderListsDirty : 1;
+  bool z_order_lists_dirty_ : 1;
 
   // This attribute caches whether the element was stacked. It's needed to check
   // the current stacked status (instead of the new stacked status determined by
   // the new style which has not been realized yet) when a layer is removed due
   // to style change.
-  bool m_isStacked : 1;
+  bool is_stacked_ : 1;
 
 #if DCHECK_IS_ON()
-  bool m_layerListMutationAllowed : 1;
-  PaintLayerStackingNode* m_stackingParent;
+  bool layer_list_mutation_allowed_ : 1;
+  PaintLayerStackingNode* stacking_parent_;
 #endif
 };
 
-inline void PaintLayerStackingNode::clearZOrderLists() {
-  DCHECK(!isStackingContext());
+inline void PaintLayerStackingNode::ClearZOrderLists() {
+  DCHECK(!IsStackingContext());
 
 #if DCHECK_IS_ON()
-  updateStackingParentForZOrderLists(0);
+  UpdateStackingParentForZOrderLists(0);
 #endif
 
-  m_posZOrderList.reset();
-  m_negZOrderList.reset();
+  pos_z_order_list_.reset();
+  neg_z_order_list_.reset();
 }
 
-inline void PaintLayerStackingNode::updateZOrderLists() {
-  if (!m_zOrderListsDirty)
+inline void PaintLayerStackingNode::UpdateZOrderLists() {
+  if (!z_order_lists_dirty_)
     return;
 
-  if (!isStackingContext()) {
-    clearZOrderLists();
-    m_zOrderListsDirty = false;
+  if (!IsStackingContext()) {
+    ClearZOrderLists();
+    z_order_lists_dirty_ = false;
     return;
   }
 
-  rebuildZOrderLists();
+  RebuildZOrderLists();
 }
 
 #if DCHECK_IS_ON()
 class LayerListMutationDetector {
  public:
-  explicit LayerListMutationDetector(PaintLayerStackingNode* stackingNode)
-      : m_stackingNode(stackingNode),
-        m_previousMutationAllowedState(
-            stackingNode->layerListMutationAllowed()) {
-    m_stackingNode->setLayerListMutationAllowed(false);
+  explicit LayerListMutationDetector(PaintLayerStackingNode* stacking_node)
+      : stacking_node_(stacking_node),
+        previous_mutation_allowed_state_(
+            stacking_node->LayerListMutationAllowed()) {
+    stacking_node_->SetLayerListMutationAllowed(false);
   }
 
   ~LayerListMutationDetector() {
-    m_stackingNode->setLayerListMutationAllowed(m_previousMutationAllowedState);
+    stacking_node_->SetLayerListMutationAllowed(
+        previous_mutation_allowed_state_);
   }
 
  private:
-  PaintLayerStackingNode* m_stackingNode;
-  bool m_previousMutationAllowedState;
+  PaintLayerStackingNode* stacking_node_;
+  bool previous_mutation_allowed_state_;
 };
 #endif
 

@@ -36,218 +36,219 @@ namespace blink {
 
 LayoutFlowThread::LayoutFlowThread()
     : LayoutBlockFlow(nullptr),
-      m_columnSetsInvalidated(false),
-      m_pageLogicalSizeChanged(false) {}
+      column_sets_invalidated_(false),
+      page_logical_size_changed_(false) {}
 
-LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
+LayoutFlowThread* LayoutFlowThread::LocateFlowThreadContainingBlockOf(
     const LayoutObject& descendant,
     AncestorSearchConstraint constraint) {
-  DCHECK(descendant.isInsideFlowThread());
+  DCHECK(descendant.IsInsideFlowThread());
   LayoutObject* curr = const_cast<LayoutObject*>(&descendant);
   while (curr) {
-    if (curr->isSVGChild())
+    if (curr->IsSVGChild())
       return nullptr;
-    if (curr->isLayoutFlowThread())
-      return toLayoutFlowThread(curr);
-    LayoutObject* container = curr->container();
+    if (curr->IsLayoutFlowThread())
+      return ToLayoutFlowThread(curr);
+    LayoutObject* container = curr->Container();
     // If we're inside something strictly unbreakable (due to having scrollbars
     // or being writing mode roots, for instance), it's also strictly
     // unbreakable in any outer fragmentation context. As such, what goes on
     // inside any fragmentation context on the inside of this is completely
     // opaque to ancestor fragmentation contexts.
-    if (constraint == IsolateUnbreakableContainers && container &&
-        container->isBox() &&
-        toLayoutBox(container)->getPaginationBreakability() == ForbidBreaks)
+    if (constraint == kIsolateUnbreakableContainers && container &&
+        container->IsBox() &&
+        ToLayoutBox(container)->GetPaginationBreakability() == kForbidBreaks)
       return nullptr;
-    curr = curr->parent();
+    curr = curr->Parent();
     while (curr != container) {
-      if (curr->isLayoutFlowThread()) {
+      if (curr->IsLayoutFlowThread()) {
         // The nearest ancestor flow thread isn't in our containing block chain.
         // Then we aren't really part of any flow thread, and we should stop
         // looking. This happens when there are out-of-flow objects or column
         // spanners.
         return nullptr;
       }
-      curr = curr->parent();
+      curr = curr->Parent();
     }
   }
   return nullptr;
 }
 
-void LayoutFlowThread::removeColumnSetFromThread(
-    LayoutMultiColumnSet* columnSet) {
-  DCHECK(columnSet);
-  m_multiColumnSetList.erase(columnSet);
-  invalidateColumnSets();
+void LayoutFlowThread::RemoveColumnSetFromThread(
+    LayoutMultiColumnSet* column_set) {
+  DCHECK(column_set);
+  multi_column_set_list_.erase(column_set);
+  InvalidateColumnSets();
   // Clear the interval tree right away, instead of leaving it around with dead
   // objects. Not that anyone _should_ try to access the interval tree when the
   // column sets are marked as invalid, but this is actually possible if other
   // parts of the engine has bugs that cause us to not lay out everything that
   // was marked for layout, so that LayoutObject::assertLaidOut() (and a LOT
   // of other assertions) fails.
-  m_multiColumnSetIntervalTree.clear();
+  multi_column_set_interval_tree_.Clear();
 }
 
-void LayoutFlowThread::validateColumnSets() {
-  m_columnSetsInvalidated = false;
+void LayoutFlowThread::ValidateColumnSets() {
+  column_sets_invalidated_ = false;
   // Called to get the maximum logical width for the columnSet.
-  updateLogicalWidth();
-  generateColumnSetIntervalTree();
+  UpdateLogicalWidth();
+  GenerateColumnSetIntervalTree();
 }
 
-bool LayoutFlowThread::mapToVisualRectInAncestorSpaceInternal(
+bool LayoutFlowThread::MapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    TransformState& transformState,
-    VisualRectFlags visualRectFlags) const {
+    TransformState& transform_state,
+    VisualRectFlags visual_rect_flags) const {
   // A flow thread should never be an invalidation container.
   DCHECK_NE(ancestor, this);
-  transformState.flatten();
-  LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
-  rect = fragmentsBoundingBox(rect);
-  transformState.setQuad(FloatQuad(FloatRect(rect)));
-  return LayoutBlockFlow::mapToVisualRectInAncestorSpaceInternal(
-      ancestor, transformState, visualRectFlags);
+  transform_state.Flatten();
+  LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
+  rect = FragmentsBoundingBox(rect);
+  transform_state.SetQuad(FloatQuad(FloatRect(rect)));
+  return LayoutBlockFlow::MapToVisualRectInAncestorSpaceInternal(
+      ancestor, transform_state, visual_rect_flags);
 }
 
-void LayoutFlowThread::layout() {
-  m_pageLogicalSizeChanged = m_columnSetsInvalidated && everHadLayout();
-  LayoutBlockFlow::layout();
-  m_pageLogicalSizeChanged = false;
+void LayoutFlowThread::GetLayout() {
+  page_logical_size_changed_ = column_sets_invalidated_ && EverHadLayout();
+  LayoutBlockFlow::GetLayout();
+  page_logical_size_changed_ = false;
 }
 
-void LayoutFlowThread::computeLogicalHeight(
+void LayoutFlowThread::ComputeLogicalHeight(
     LayoutUnit,
-    LayoutUnit logicalTop,
-    LogicalExtentComputedValues& computedValues) const {
-  computedValues.m_position = logicalTop;
-  computedValues.m_extent = LayoutUnit();
+    LayoutUnit logical_top,
+    LogicalExtentComputedValues& computed_values) const {
+  computed_values.position_ = logical_top;
+  computed_values.extent_ = LayoutUnit();
 
   for (LayoutMultiColumnSetList::const_iterator iter =
-           m_multiColumnSetList.begin();
-       iter != m_multiColumnSetList.end(); ++iter) {
-    LayoutMultiColumnSet* columnSet = *iter;
-    computedValues.m_extent += columnSet->logicalHeightInFlowThread();
+           multi_column_set_list_.begin();
+       iter != multi_column_set_list_.end(); ++iter) {
+    LayoutMultiColumnSet* column_set = *iter;
+    computed_values.extent_ += column_set->LogicalHeightInFlowThread();
   }
 }
 
-void LayoutFlowThread::absoluteQuadsForDescendant(const LayoutBox& descendant,
+void LayoutFlowThread::AbsoluteQuadsForDescendant(const LayoutBox& descendant,
                                                   Vector<FloatQuad>& quads,
                                                   MapCoordinatesFlags mode) {
-  LayoutPoint offsetFromFlowThread;
+  LayoutPoint offset_from_flow_thread;
   for (const LayoutObject* object = &descendant; object != this;) {
-    const LayoutObject* container = object->container();
-    offsetFromFlowThread += object->offsetFromContainer(container);
+    const LayoutObject* container = object->Container();
+    offset_from_flow_thread += object->OffsetFromContainer(container);
     object = container;
   }
-  LayoutRect boundingRectInFlowThread(offsetFromFlowThread,
-                                      descendant.frameRect().size());
+  LayoutRect bounding_rect_in_flow_thread(offset_from_flow_thread,
+                                          descendant.FrameRect().size());
   // Set up a fragments relative to the descendant, in the flow thread
   // coordinate space, and convert each of them, individually, to absolute
   // coordinates.
-  for (FragmentainerIterator iterator(*this, boundingRectInFlowThread);
-       !iterator.atEnd(); iterator.advance()) {
-    LayoutRect fragment = boundingRectInFlowThread;
+  for (FragmentainerIterator iterator(*this, bounding_rect_in_flow_thread);
+       !iterator.AtEnd(); iterator.Advance()) {
+    LayoutRect fragment = bounding_rect_in_flow_thread;
     // We use inclusiveIntersect() because intersect() would reset the
     // coordinates for zero-height objects.
-    LayoutRect clipRect = iterator.clipRectInFlowThread(
-        MultiColumnFragmentainerGroup::BlockDirectionAxis);
-    fragment.inclusiveIntersect(clipRect);
-    fragment.moveBy(-offsetFromFlowThread);
-    quads.push_back(descendant.localToAbsoluteQuad(FloatRect(fragment), mode));
+    LayoutRect clip_rect = iterator.ClipRectInFlowThread(
+        MultiColumnFragmentainerGroup::kBlockDirectionAxis);
+    fragment.InclusiveIntersect(clip_rect);
+    fragment.MoveBy(-offset_from_flow_thread);
+    quads.push_back(descendant.LocalToAbsoluteQuad(FloatRect(fragment), mode));
   }
 }
 
-bool LayoutFlowThread::nodeAtPoint(HitTestResult& result,
-                                   const HitTestLocation& locationInContainer,
-                                   const LayoutPoint& accumulatedOffset,
-                                   HitTestAction hitTestAction) {
-  if (hitTestAction == HitTestBlockBackground)
+bool LayoutFlowThread::NodeAtPoint(HitTestResult& result,
+                                   const HitTestLocation& location_in_container,
+                                   const LayoutPoint& accumulated_offset,
+                                   HitTestAction hit_test_action) {
+  if (hit_test_action == kHitTestBlockBackground)
     return false;
-  return LayoutBlockFlow::nodeAtPoint(result, locationInContainer,
-                                      accumulatedOffset, hitTestAction);
+  return LayoutBlockFlow::NodeAtPoint(result, location_in_container,
+                                      accumulated_offset, hit_test_action);
 }
 
-LayoutUnit LayoutFlowThread::pageLogicalHeightForOffset(LayoutUnit offset) {
-  LayoutMultiColumnSet* columnSet =
-      columnSetAtBlockOffset(offset, AssociateWithLatterPage);
-  if (!columnSet)
+LayoutUnit LayoutFlowThread::PageLogicalHeightForOffset(LayoutUnit offset) {
+  LayoutMultiColumnSet* column_set =
+      ColumnSetAtBlockOffset(offset, kAssociateWithLatterPage);
+  if (!column_set)
     return LayoutUnit();
 
-  return columnSet->pageLogicalHeightForOffset(offset);
+  return column_set->PageLogicalHeightForOffset(offset);
 }
 
-LayoutUnit LayoutFlowThread::pageRemainingLogicalHeightForOffset(
+LayoutUnit LayoutFlowThread::PageRemainingLogicalHeightForOffset(
     LayoutUnit offset,
-    PageBoundaryRule pageBoundaryRule) {
-  LayoutMultiColumnSet* columnSet =
-      columnSetAtBlockOffset(offset, pageBoundaryRule);
-  if (!columnSet)
+    PageBoundaryRule page_boundary_rule) {
+  LayoutMultiColumnSet* column_set =
+      ColumnSetAtBlockOffset(offset, page_boundary_rule);
+  if (!column_set)
     return LayoutUnit();
 
-  return columnSet->pageRemainingLogicalHeightForOffset(offset,
-                                                        pageBoundaryRule);
+  return column_set->PageRemainingLogicalHeightForOffset(offset,
+                                                         page_boundary_rule);
 }
 
-void LayoutFlowThread::generateColumnSetIntervalTree() {
+void LayoutFlowThread::GenerateColumnSetIntervalTree() {
   // FIXME: Optimize not to clear the interval all the time. This implies
   // manually managing the tree nodes lifecycle.
-  m_multiColumnSetIntervalTree.clear();
-  m_multiColumnSetIntervalTree.initIfNeeded();
-  for (auto columnSet : m_multiColumnSetList)
-    m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(
-        columnSet->logicalTopInFlowThread(),
-        columnSet->logicalBottomInFlowThread(), columnSet));
+  multi_column_set_interval_tree_.Clear();
+  multi_column_set_interval_tree_.InitIfNeeded();
+  for (auto column_set : multi_column_set_list_)
+    multi_column_set_interval_tree_.Add(
+        MultiColumnSetIntervalTree::CreateInterval(
+            column_set->LogicalTopInFlowThread(),
+            column_set->LogicalBottomInFlowThread(), column_set));
 }
 
-LayoutUnit LayoutFlowThread::nextLogicalTopForUnbreakableContent(
-    LayoutUnit flowThreadOffset,
-    LayoutUnit contentLogicalHeight) const {
-  LayoutMultiColumnSet* columnSet =
-      columnSetAtBlockOffset(flowThreadOffset, AssociateWithLatterPage);
-  if (!columnSet)
-    return flowThreadOffset;
-  return columnSet->nextLogicalTopForUnbreakableContent(flowThreadOffset,
-                                                        contentLogicalHeight);
+LayoutUnit LayoutFlowThread::NextLogicalTopForUnbreakableContent(
+    LayoutUnit flow_thread_offset,
+    LayoutUnit content_logical_height) const {
+  LayoutMultiColumnSet* column_set =
+      ColumnSetAtBlockOffset(flow_thread_offset, kAssociateWithLatterPage);
+  if (!column_set)
+    return flow_thread_offset;
+  return column_set->NextLogicalTopForUnbreakableContent(
+      flow_thread_offset, content_logical_height);
 }
 
-LayoutRect LayoutFlowThread::fragmentsBoundingBox(
-    const LayoutRect& layerBoundingBox) const {
+LayoutRect LayoutFlowThread::FragmentsBoundingBox(
+    const LayoutRect& layer_bounding_box) const {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled() ||
-         !m_columnSetsInvalidated);
+         !column_sets_invalidated_);
 
   LayoutRect result;
-  for (auto* columnSet : m_multiColumnSetList)
-    result.unite(columnSet->fragmentsBoundingBox(layerBoundingBox));
+  for (auto* column_set : multi_column_set_list_)
+    result.Unite(column_set->FragmentsBoundingBox(layer_bounding_box));
 
   return result;
 }
 
-void LayoutFlowThread::flowThreadToContainingCoordinateSpace(
-    LayoutUnit& blockPosition,
-    LayoutUnit& inlinePosition) const {
-  LayoutPoint position(inlinePosition, blockPosition);
+void LayoutFlowThread::FlowThreadToContainingCoordinateSpace(
+    LayoutUnit& block_position,
+    LayoutUnit& inline_position) const {
+  LayoutPoint position(inline_position, block_position);
   // First we have to make |position| physical, because that's what offsetLeft()
   // expects and returns.
-  if (!isHorizontalWritingMode())
-    position = position.transposedPoint();
-  position = flipForWritingMode(position);
+  if (!IsHorizontalWritingMode())
+    position = position.TransposedPoint();
+  position = FlipForWritingMode(position);
 
-  position.move(columnOffset(position));
+  position.Move(ColumnOffset(position));
 
   // Make |position| logical again, and read out the values.
-  position = flipForWritingMode(position);
-  if (!isHorizontalWritingMode())
-    position = position.transposedPoint();
-  blockPosition = position.y();
-  inlinePosition = position.x();
+  position = FlipForWritingMode(position);
+  if (!IsHorizontalWritingMode())
+    position = position.TransposedPoint();
+  block_position = position.Y();
+  inline_position = position.X();
 }
 
-void LayoutFlowThread::MultiColumnSetSearchAdapter::collectIfNeeded(
+void LayoutFlowThread::MultiColumnSetSearchAdapter::CollectIfNeeded(
     const MultiColumnSetInterval& interval) {
-  if (m_result)
+  if (result_)
     return;
-  if (interval.low() <= m_offset && interval.high() > m_offset)
-    m_result = interval.data();
+  if (interval.Low() <= offset_ && interval.High() > offset_)
+    result_ = interval.Data();
 }
 
 }  // namespace blink

@@ -59,16 +59,16 @@ class MODULES_EXPORT EventSource final
       public EventSourceParser::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EventSource);
-  USING_PRE_FINALIZER(EventSource, dispose);
+  USING_PRE_FINALIZER(EventSource, Dispose);
 
  public:
-  static EventSource* create(ExecutionContext*,
+  static EventSource* Create(ExecutionContext*,
                              const String& url,
                              const EventSourceInit&,
                              ExceptionState&);
   ~EventSource() override;
 
-  static const unsigned long long defaultReconnectDelay;
+  static const unsigned long long kDefaultReconnectDelay;
 
   String url() const;
   bool withCredentials() const;
@@ -83,8 +83,8 @@ class MODULES_EXPORT EventSource final
 
   void close();
 
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleObserver
   //
@@ -93,54 +93,54 @@ class MODULES_EXPORT EventSource final
   // it defers delivery of events from the loader, and therefore
   // the methods of this class for receiving asynchronous events
   // from the loader won't be invoked.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
-  void dispose();
+  void Dispose();
 
-  void didReceiveResponse(unsigned long,
+  void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didReceiveData(const char*, unsigned) override;
-  void didFinishLoading(unsigned long, double) override;
-  void didFail(const ResourceError&) override;
-  void didFailAccessControlCheck(const ResourceError&) override;
-  void didFailRedirectCheck() override;
+  void DidReceiveData(const char*, unsigned) override;
+  void DidFinishLoading(unsigned long, double) override;
+  void DidFail(const ResourceError&) override;
+  void DidFailAccessControlCheck(const ResourceError&) override;
+  void DidFailRedirectCheck() override;
 
-  void onMessageEvent(const AtomicString& event,
+  void OnMessageEvent(const AtomicString& event,
                       const String& data,
                       const AtomicString& id) override;
-  void onReconnectionTimeSet(unsigned long long reconnectionTime) override;
+  void OnReconnectionTimeSet(unsigned long long reconnection_time) override;
 
-  void scheduleInitialConnect();
-  void connect();
-  void networkRequestEnded();
-  void scheduleReconnect();
-  void connectTimerFired(TimerBase*);
-  void abortConnectionAttempt();
+  void ScheduleInitialConnect();
+  void Connect();
+  void NetworkRequestEnded();
+  void ScheduleReconnect();
+  void ConnectTimerFired(TimerBase*);
+  void AbortConnectionAttempt();
 
   // The original URL specified when constructing EventSource instance. Used
   // for the 'url' attribute getter.
-  const KURL m_url;
+  const KURL url_;
   // The URL used to connect to the server, which may be different from
   // |m_url| as it may be redirected.
-  KURL m_currentURL;
-  bool m_withCredentials;
-  State m_state;
+  KURL current_url_;
+  bool with_credentials_;
+  State state_;
 
-  Member<EventSourceParser> m_parser;
-  Member<ThreadableLoader> m_loader;
-  TaskRunnerTimer<EventSource> m_connectTimer;
+  Member<EventSourceParser> parser_;
+  Member<ThreadableLoader> loader_;
+  TaskRunnerTimer<EventSource> connect_timer_;
 
-  unsigned long long m_reconnectDelay;
-  String m_eventStreamOrigin;
+  unsigned long long reconnect_delay_;
+  String event_stream_origin_;
 };
 
 }  // namespace blink

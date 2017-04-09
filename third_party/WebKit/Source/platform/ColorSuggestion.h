@@ -42,8 +42,8 @@ struct ColorSuggestion {
   Color color;
   String label;
 
-  ColorSuggestion(const Color& colorValue, const String& label)
-      : color(colorValue), label(label) {}
+  ColorSuggestion(const Color& color_value, const String& label)
+      : color(color_value), label(label) {}
 };
 
 }  // namespace blink

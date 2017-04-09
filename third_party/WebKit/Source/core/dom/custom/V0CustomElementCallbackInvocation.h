@@ -41,26 +41,26 @@ class V0CustomElementCallbackInvocation : public V0CustomElementProcessingStep {
   WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackInvocation);
 
  public:
-  static V0CustomElementCallbackInvocation* createInvocation(
+  static V0CustomElementCallbackInvocation* CreateInvocation(
       V0CustomElementLifecycleCallbacks*,
       V0CustomElementLifecycleCallbacks::CallbackType);
-  static V0CustomElementCallbackInvocation* createAttributeChangedInvocation(
+  static V0CustomElementCallbackInvocation* CreateAttributeChangedInvocation(
       V0CustomElementLifecycleCallbacks*,
       const AtomicString& name,
-      const AtomicString& oldValue,
-      const AtomicString& newValue);
+      const AtomicString& old_value,
+      const AtomicString& new_value);
 
  protected:
   V0CustomElementCallbackInvocation(
       V0CustomElementLifecycleCallbacks* callbacks)
-      : m_callbacks(callbacks) {}
+      : callbacks_(callbacks) {}
 
-  V0CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
+  V0CustomElementLifecycleCallbacks* Callbacks() { return callbacks_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Member<V0CustomElementLifecycleCallbacks> m_callbacks;
+  Member<V0CustomElementLifecycleCallbacks> callbacks_;
 };
 
 }  // namespace blink

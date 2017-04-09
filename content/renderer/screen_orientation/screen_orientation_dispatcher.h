@@ -43,10 +43,10 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
   void OnDestruct() override;
 
   // blink::WebScreenOrientationClient implementation.
-  void lockOrientation(
+  void LockOrientation(
       blink::WebScreenOrientationLockType orientation,
       std::unique_ptr<blink::WebLockOrientationCallback> callback) override;
-  void unlockOrientation() override;
+  void UnlockOrientation() override;
 
   void OnLockOrientationResult(int request_id,
                                ScreenOrientationLockResult result);

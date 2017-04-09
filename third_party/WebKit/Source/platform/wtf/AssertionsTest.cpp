@@ -34,17 +34,17 @@ TEST(AssertionsTest, Assertions) {
 
 #if !LOG_DISABLED
 static const int kPrinterBufferSize = 256;
-static char gBuffer[kPrinterBufferSize];
-static StringBuilder gBuilder;
+static char g_buffer[kPrinterBufferSize];
+static StringBuilder g_builder;
 
-static void vprint(const char* format, va_list args) {
-  int written = vsnprintf(gBuffer, kPrinterBufferSize, format, args);
+static void Vprint(const char* format, va_list args) {
+  int written = vsnprintf(g_buffer, kPrinterBufferSize, format, args);
   if (written > 0 && written < kPrinterBufferSize)
-    gBuilder.append(gBuffer);
+    g_builder.Append(g_buffer);
 }
 
 TEST(AssertionsTest, ScopedLogger) {
-  ScopedLogger::setPrintFuncForTests(vprint);
+  ScopedLogger::SetPrintFuncForTests(Vprint);
   {
     WTF_CREATE_SCOPED_LOGGER(a, "a1");
     {
@@ -65,7 +65,7 @@ TEST(AssertionsTest, ScopedLogger) {
       "  )\n"
       "  a2 0.5\n"
       ")\n",
-      gBuilder.toString());
+      g_builder.ToString());
 };
 #endif  // !LOG_DISABLED
 

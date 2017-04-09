@@ -171,7 +171,8 @@ void WebContentsViewChildFrame::TakeFocus(bool reverse) {
       outer_node->parent()->render_manager()->current_frame_host();
 
   rfhi->AdvanceFocus(
-      reverse ? blink::WebFocusTypeBackward : blink::WebFocusTypeForward, rfp);
+      reverse ? blink::kWebFocusTypeBackward : blink::kWebFocusTypeForward,
+      rfp);
 }
 
 void WebContentsViewChildFrame::ShowContextMenu(

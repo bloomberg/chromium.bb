@@ -7,32 +7,32 @@
 namespace blink {
 
 // static
-PhotoCapabilities* PhotoCapabilities::create() {
+PhotoCapabilities* PhotoCapabilities::Create() {
   return new PhotoCapabilities();
 }
 
 Vector<String> PhotoCapabilities::fillLightMode() const {
-  Vector<String> fillLightModes;
-  for (const auto& mode : m_fillLightModes) {
+  Vector<String> fill_light_modes;
+  for (const auto& mode : fill_light_modes_) {
     switch (mode) {
       case media::mojom::blink::FillLightMode::OFF:
-        fillLightModes.push_back("off");
+        fill_light_modes.push_back("off");
         break;
       case media::mojom::blink::FillLightMode::AUTO:
-        fillLightModes.push_back("auto");
+        fill_light_modes.push_back("auto");
         break;
       case media::mojom::blink::FillLightMode::FLASH:
-        fillLightModes.push_back("flash");
+        fill_light_modes.push_back("flash");
         break;
       default:
         NOTREACHED();
     }
   }
-  return fillLightModes;
+  return fill_light_modes;
 }
 
 String PhotoCapabilities::redEyeReduction() const {
-  switch (m_redEyeReduction) {
+  switch (red_eye_reduction_) {
     case media::mojom::blink::RedEyeReduction::NEVER:
       return "never";
     case media::mojom::blink::RedEyeReduction::ALWAYS:
@@ -46,8 +46,8 @@ String PhotoCapabilities::redEyeReduction() const {
 }
 
 DEFINE_TRACE(PhotoCapabilities) {
-  visitor->trace(m_imageHeight);
-  visitor->trace(m_imageWidth);
+  visitor->Trace(image_height_);
+  visitor->Trace(image_width_);
 }
 
 }  // namespace blink

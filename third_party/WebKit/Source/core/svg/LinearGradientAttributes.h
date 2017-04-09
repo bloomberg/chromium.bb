@@ -31,83 +31,83 @@ struct LinearGradientAttributes : GradientAttributes {
 
  public:
   LinearGradientAttributes()
-      : m_x1(SVGLength::create(SVGLengthMode::Width)),
-        m_y1(SVGLength::create(SVGLengthMode::Height)),
-        m_x2(SVGLength::create(SVGLengthMode::Width)),
-        m_y2(SVGLength::create(SVGLengthMode::Height)),
-        m_x1Set(false),
-        m_y1Set(false),
-        m_x2Set(false),
-        m_y2Set(false) {
-    m_x2->setValueAsString("100%");
+      : x1_(SVGLength::Create(SVGLengthMode::kWidth)),
+        y1_(SVGLength::Create(SVGLengthMode::kHeight)),
+        x2_(SVGLength::Create(SVGLengthMode::kWidth)),
+        y2_(SVGLength::Create(SVGLengthMode::kHeight)),
+        x1_set_(false),
+        y1_set_(false),
+        x2_set_(false),
+        y2_set_(false) {
+    x2_->SetValueAsString("100%");
   }
 
-  SVGLength* x1() const { return m_x1.get(); }
-  SVGLength* y1() const { return m_y1.get(); }
-  SVGLength* x2() const { return m_x2.get(); }
-  SVGLength* y2() const { return m_y2.get(); }
+  SVGLength* X1() const { return x1_.Get(); }
+  SVGLength* Y1() const { return y1_.Get(); }
+  SVGLength* X2() const { return x2_.Get(); }
+  SVGLength* Y2() const { return y2_.Get(); }
 
-  void setX1(SVGLength* value) {
-    m_x1 = value;
-    m_x1Set = true;
+  void SetX1(SVGLength* value) {
+    x1_ = value;
+    x1_set_ = true;
   }
-  void setY1(SVGLength* value) {
-    m_y1 = value;
-    m_y1Set = true;
+  void SetY1(SVGLength* value) {
+    y1_ = value;
+    y1_set_ = true;
   }
-  void setX2(SVGLength* value) {
-    m_x2 = value;
-    m_x2Set = true;
+  void SetX2(SVGLength* value) {
+    x2_ = value;
+    x2_set_ = true;
   }
-  void setY2(SVGLength* value) {
-    m_y2 = value;
-    m_y2Set = true;
+  void SetY2(SVGLength* value) {
+    y2_ = value;
+    y2_set_ = true;
   }
 
-  bool hasX1() const { return m_x1Set; }
-  bool hasY1() const { return m_y1Set; }
-  bool hasX2() const { return m_x2Set; }
-  bool hasY2() const { return m_y2Set; }
+  bool HasX1() const { return x1_set_; }
+  bool HasY1() const { return y1_set_; }
+  bool HasX2() const { return x2_set_; }
+  bool HasY2() const { return y2_set_; }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_x1);
-    visitor->trace(m_y1);
-    visitor->trace(m_x2);
-    visitor->trace(m_y2);
+    visitor->Trace(x1_);
+    visitor->Trace(y1_);
+    visitor->Trace(x2_);
+    visitor->Trace(y2_);
   }
 
  private:
   // Properties
-  Member<SVGLength> m_x1;
-  Member<SVGLength> m_y1;
-  Member<SVGLength> m_x2;
-  Member<SVGLength> m_y2;
+  Member<SVGLength> x1_;
+  Member<SVGLength> y1_;
+  Member<SVGLength> x2_;
+  Member<SVGLength> y2_;
 
   // Property states
-  bool m_x1Set : 1;
-  bool m_y1Set : 1;
-  bool m_x2Set : 1;
-  bool m_y2Set : 1;
+  bool x1_set_ : 1;
+  bool y1_set_ : 1;
+  bool x2_set_ : 1;
+  bool y2_set_ : 1;
 };
 
 // Wrapper object for the LinearGradientAttributes part object.
 class LinearGradientAttributesWrapper
     : public GarbageCollectedFinalized<LinearGradientAttributesWrapper> {
  public:
-  static LinearGradientAttributesWrapper* create() {
+  static LinearGradientAttributesWrapper* Create() {
     return new LinearGradientAttributesWrapper;
   }
 
-  LinearGradientAttributes& attributes() { return m_attributes; }
-  void set(const LinearGradientAttributes& attributes) {
-    m_attributes = attributes;
+  LinearGradientAttributes& Attributes() { return attributes_; }
+  void Set(const LinearGradientAttributes& attributes) {
+    attributes_ = attributes;
   }
-  DEFINE_INLINE_TRACE() { visitor->trace(m_attributes); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(attributes_); }
 
  private:
   LinearGradientAttributesWrapper() {}
 
-  LinearGradientAttributes m_attributes;
+  LinearGradientAttributes attributes_;
 };
 
 }  // namespace blink

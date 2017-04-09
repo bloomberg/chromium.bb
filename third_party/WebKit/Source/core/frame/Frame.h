@@ -57,10 +57,10 @@ class WindowProxy;
 class WindowProxyManager;
 struct FrameLoadRequest;
 
-enum class FrameDetachType { Remove, Swap };
+enum class FrameDetachType { kRemove, kSwap };
 
 // Status of user gesture.
-enum class UserGestureStatus { Active, None };
+enum class UserGestureStatus { kActive, kNone };
 
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
@@ -71,120 +71,120 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   DECLARE_VIRTUAL_TRACE();
 
-  virtual bool isLocalFrame() const = 0;
-  virtual bool isRemoteFrame() const = 0;
+  virtual bool IsLocalFrame() const = 0;
+  virtual bool IsRemoteFrame() const = 0;
 
-  virtual void navigate(Document& originDocument,
+  virtual void Navigate(Document& origin_document,
                         const KURL&,
-                        bool replaceCurrentItem,
+                        bool replace_current_item,
                         UserGestureStatus) = 0;
   // This version of Frame::navigate assumes the resulting navigation is not
   // to be started on a timer. Use the method above in such cases.
-  virtual void navigate(const FrameLoadRequest&) = 0;
-  virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
+  virtual void Navigate(const FrameLoadRequest&) = 0;
+  virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
-  virtual void detach(FrameDetachType);
-  void disconnectOwnerElement();
-  virtual bool shouldClose() = 0;
+  virtual void Detach(FrameDetachType);
+  void DisconnectOwnerElement();
+  virtual bool ShouldClose() = 0;
 
-  FrameClient* client() const;
+  FrameClient* Client() const;
 
-  Page* page() const;  // Null when the frame is detached.
+  Page* GetPage() const;  // Null when the frame is detached.
 
-  bool isMainFrame() const;
-  bool isLocalRoot() const;
+  bool IsMainFrame() const;
+  bool IsLocalRoot() const;
 
-  FrameOwner* owner() const;
-  void setOwner(FrameOwner* owner) { m_owner = owner; }
-  HTMLFrameOwnerElement* deprecatedLocalOwner() const;
+  FrameOwner* Owner() const;
+  void SetOwner(FrameOwner* owner) { owner_ = owner; }
+  HTMLFrameOwnerElement* DeprecatedLocalOwner() const;
 
-  DOMWindow* domWindow() const { return m_domWindow; }
+  DOMWindow* DomWindow() const { return dom_window_; }
 
-  FrameTree& tree() const;
-  ChromeClient& chromeClient() const;
+  FrameTree& Tree() const;
+  ChromeClient& GetChromeClient() const;
 
-  virtual SecurityContext* securityContext() const = 0;
+  virtual SecurityContext* GetSecurityContext() const = 0;
 
-  Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
-  Frame* findUnsafeParentScrollPropagationBoundary();
+  Frame* FindFrameForNavigation(const AtomicString& name, Frame& active_frame);
+  Frame* FindUnsafeParentScrollPropagationBoundary();
 
   // This prepares the Frame for the next commit. It will detach children,
   // dispatch unload events, abort XHR requests and detach the document.
   // Returns true if the frame is ready to receive the next commit, or false
   // otherwise.
-  virtual bool prepareForCommit() = 0;
+  virtual bool PrepareForCommit() = 0;
 
   // TODO(japhet): These should all move to LocalFrame.
-  bool canNavigate(const Frame&);
-  virtual void printNavigationErrorMessage(const Frame&,
+  bool CanNavigate(const Frame&);
+  virtual void PrintNavigationErrorMessage(const Frame&,
                                            const char* reason) = 0;
-  virtual void printNavigationWarning(const String&) = 0;
+  virtual void PrintNavigationWarning(const String&) = 0;
 
   // TODO(pilgrim): Replace all instances of ownerLayoutObject() with
   // ownerLayoutItem(), https://crbug.com/499321
-  LayoutPart* ownerLayoutObject()
+  LayoutPart* OwnerLayoutObject()
       const;  // LayoutObject for the element that contains this frame.
-  LayoutPartItem ownerLayoutItem() const;
+  LayoutPartItem OwnerLayoutItem() const;
 
-  Settings* settings() const;  // can be null
+  Settings* GetSettings() const;  // can be null
 
   // isLoading() is true when the embedder should think a load is in progress.
   // In the case of LocalFrames, it means that the frame has sent a
   // didStartLoading() callback, but not the matching didStopLoading(). Inside
   // blink, you probably want Document::loadEventFinished() instead.
-  void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
-  bool isLoading() const { return m_isLoading; }
+  void SetIsLoading(bool is_loading) { is_loading_ = is_loading; }
+  bool IsLoading() const { return is_loading_; }
 
-  WindowProxyManager* getWindowProxyManager() const {
-    return m_windowProxyManager;
+  WindowProxyManager* GetWindowProxyManager() const {
+    return window_proxy_manager_;
   }
-  WindowProxy* windowProxy(DOMWrapperWorld&);
+  WindowProxy* GetWindowProxy(DOMWrapperWorld&);
 
-  virtual void didChangeVisibilityState();
+  virtual void DidChangeVisibilityState();
 
-  void setDocumentHasReceivedUserGesture();
-  bool hasReceivedUserGesture() const { return m_hasReceivedUserGesture; }
+  void SetDocumentHasReceivedUserGesture();
+  bool HasReceivedUserGesture() const { return has_received_user_gesture_; }
 
-  bool isAttached() const {
-    return m_lifecycle.state() == FrameLifecycle::Attached;
+  bool IsAttached() const {
+    return lifecycle_.GetState() == FrameLifecycle::kAttached;
   }
 
   // Tests whether the feature-policy controlled feature is enabled by policy in
   // the given frame.
-  bool isFeatureEnabled(WebFeaturePolicyFeature) const;
+  bool IsFeatureEnabled(WebFeaturePolicyFeature) const;
 
  protected:
   Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
 
-  mutable FrameTree m_treeNode;
+  mutable FrameTree tree_node_;
 
-  Member<Page> m_page;
-  Member<FrameOwner> m_owner;
-  Member<DOMWindow> m_domWindow;
+  Member<Page> page_;
+  Member<FrameOwner> owner_;
+  Member<DOMWindow> dom_window_;
 
-  bool m_hasReceivedUserGesture = false;
+  bool has_received_user_gesture_ = false;
 
-  FrameLifecycle m_lifecycle;
+  FrameLifecycle lifecycle_;
 
  private:
-  bool canNavigateWithoutFramebusting(const Frame&, String& errorReason);
+  bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
 
-  Member<FrameClient> m_client;
-  const Member<WindowProxyManager> m_windowProxyManager;
+  Member<FrameClient> client_;
+  const Member<WindowProxyManager> window_proxy_manager_;
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
-  bool m_isLoading;
+  bool is_loading_;
 };
 
-inline FrameClient* Frame::client() const {
-  return m_client;
+inline FrameClient* Frame::Client() const {
+  return client_;
 }
 
-inline FrameOwner* Frame::owner() const {
-  return m_owner;
+inline FrameOwner* Frame::Owner() const {
+  return owner_;
 }
 
-inline FrameTree& Frame::tree() const {
-  return m_treeNode;
+inline FrameTree& Frame::Tree() const {
+  return tree_node_;
 }
 
 // Allow equality comparisons of Frames by reference or pointer,

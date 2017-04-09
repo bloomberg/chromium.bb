@@ -105,7 +105,7 @@ class InputHandlerProxy
                            const gfx::Point& anchor) override;
 
   // blink::WebGestureCurveTarget implementation.
-  bool scrollBy(const blink::WebFloatSize& offset,
+  bool ScrollBy(const blink::WebFloatSize& offset,
                 const blink::WebFloatSize& velocity) override;
 
   bool gesture_scroll_on_impl_thread_for_testing() const {

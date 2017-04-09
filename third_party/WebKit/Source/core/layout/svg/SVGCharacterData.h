@@ -30,14 +30,14 @@ struct SVGCharacterData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   SVGCharacterData();
 
-  static float emptyValue() { return std::numeric_limits<float>::quiet_NaN(); }
-  static bool isEmptyValue(float value) { return std::isnan(value); }
+  static float EmptyValue() { return std::numeric_limits<float>::quiet_NaN(); }
+  static bool IsEmptyValue(float value) { return std::isnan(value); }
 
-  bool hasX() const { return !isEmptyValue(x); }
-  bool hasY() const { return !isEmptyValue(y); }
-  bool hasDx() const { return !isEmptyValue(dx); }
-  bool hasDy() const { return !isEmptyValue(dy); }
-  bool hasRotate() const { return !isEmptyValue(rotate); }
+  bool HasX() const { return !IsEmptyValue(x); }
+  bool HasY() const { return !IsEmptyValue(y); }
+  bool HasDx() const { return !IsEmptyValue(dx); }
+  bool HasDy() const { return !IsEmptyValue(dy); }
+  bool HasRotate() const { return !IsEmptyValue(rotate); }
 
   float x;
   float y;
@@ -47,11 +47,11 @@ struct SVGCharacterData {
 };
 
 inline SVGCharacterData::SVGCharacterData()
-    : x(emptyValue()),
-      y(emptyValue()),
-      dx(emptyValue()),
-      dy(emptyValue()),
-      rotate(emptyValue()) {}
+    : x(EmptyValue()),
+      y(EmptyValue()),
+      dx(EmptyValue()),
+      dy(EmptyValue()),
+      rotate(EmptyValue()) {}
 
 typedef HashMap<unsigned, SVGCharacterData> SVGCharacterDataMap;
 

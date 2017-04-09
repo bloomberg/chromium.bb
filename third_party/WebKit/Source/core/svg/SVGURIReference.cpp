@@ -33,119 +33,120 @@ namespace {
 
 class SVGElementReferenceObserver : public IdTargetObserver {
  public:
-  SVGElementReferenceObserver(TreeScope& treeScope,
+  SVGElementReferenceObserver(TreeScope& tree_scope,
                               const AtomicString& id,
                               std::unique_ptr<WTF::Closure> closure)
-      : IdTargetObserver(treeScope.idTargetObserverRegistry(), id),
-        m_closure(std::move(closure)) {}
+      : IdTargetObserver(tree_scope.GetIdTargetObserverRegistry(), id),
+        closure_(std::move(closure)) {}
 
  private:
-  void idTargetChanged() override { (*m_closure)(); }
-  std::unique_ptr<WTF::Closure> m_closure;
+  void IdTargetChanged() override { (*closure_)(); }
+  std::unique_ptr<WTF::Closure> closure_;
 };
 }
 
 SVGURIReference::SVGURIReference(SVGElement* element)
-    : m_href(SVGAnimatedHref::create(element)) {
+    : href_(SVGAnimatedHref::Create(element)) {
   DCHECK(element);
-  m_href->addToPropertyMap(element);
+  href_->AddToPropertyMap(element);
 }
 
 DEFINE_TRACE(SVGURIReference) {
-  visitor->trace(m_href);
+  visitor->Trace(href_);
 }
 
-bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName) {
-  return SVGAnimatedHref::isKnownAttribute(attrName);
+bool SVGURIReference::IsKnownAttribute(const QualifiedName& attr_name) {
+  return SVGAnimatedHref::IsKnownAttribute(attr_name);
 }
 
-const AtomicString& SVGURIReference::legacyHrefString(
+const AtomicString& SVGURIReference::LegacyHrefString(
     const SVGElement& element) {
   if (element.hasAttribute(SVGNames::hrefAttr))
     return element.getAttribute(SVGNames::hrefAttr);
   return element.getAttribute(XLinkNames::hrefAttr);
 }
 
-KURL SVGURIReference::legacyHrefURL(const Document& document) const {
-  return document.completeURL(stripLeadingAndTrailingHTMLSpaces(hrefString()));
+KURL SVGURIReference::LegacyHrefURL(const Document& document) const {
+  return document.CompleteURL(StripLeadingAndTrailingHTMLSpaces(HrefString()));
 }
 
-SVGURLReferenceResolver::SVGURLReferenceResolver(const String& urlString,
+SVGURLReferenceResolver::SVGURLReferenceResolver(const String& url_string,
                                                  const Document& document)
-    : m_relativeUrl(urlString),
-      m_document(&document),
-      m_isLocal(urlString.startsWith('#')) {}
+    : relative_url_(url_string),
+      document_(&document),
+      is_local_(url_string.StartsWith('#')) {}
 
-KURL SVGURLReferenceResolver::absoluteUrl() const {
-  if (m_absoluteUrl.isNull())
-    m_absoluteUrl = m_document->completeURL(m_relativeUrl);
-  return m_absoluteUrl;
+KURL SVGURLReferenceResolver::AbsoluteUrl() const {
+  if (absolute_url_.IsNull())
+    absolute_url_ = document_->CompleteURL(relative_url_);
+  return absolute_url_;
 }
 
-bool SVGURLReferenceResolver::isLocal() const {
-  return m_isLocal ||
-         equalIgnoringFragmentIdentifier(absoluteUrl(), m_document->url());
+bool SVGURLReferenceResolver::IsLocal() const {
+  return is_local_ ||
+         EqualIgnoringFragmentIdentifier(AbsoluteUrl(), document_->Url());
 }
 
-AtomicString SVGURLReferenceResolver::fragmentIdentifier() const {
+AtomicString SVGURLReferenceResolver::FragmentIdentifier() const {
   // If this is a "fragment-only" URL, then the reference is always local, so
   // just return what's after the '#' as the fragment.
-  if (m_isLocal)
-    return AtomicString(m_relativeUrl.substring(1));
-  return AtomicString(absoluteUrl().fragmentIdentifier());
+  if (is_local_)
+    return AtomicString(relative_url_.Substring(1));
+  return AtomicString(AbsoluteUrl().FragmentIdentifier());
 }
 
-AtomicString SVGURIReference::fragmentIdentifierFromIRIString(
-    const String& urlString,
-    const TreeScope& treeScope) {
-  SVGURLReferenceResolver resolver(urlString, treeScope.document());
-  if (!resolver.isLocal())
-    return emptyAtom;
-  return resolver.fragmentIdentifier();
+AtomicString SVGURIReference::FragmentIdentifierFromIRIString(
+    const String& url_string,
+    const TreeScope& tree_scope) {
+  SVGURLReferenceResolver resolver(url_string, tree_scope.GetDocument());
+  if (!resolver.IsLocal())
+    return g_empty_atom;
+  return resolver.FragmentIdentifier();
 }
 
-Element* SVGURIReference::targetElementFromIRIString(
-    const String& urlString,
-    const TreeScope& treeScope,
-    AtomicString* fragmentIdentifier) {
-  AtomicString id = fragmentIdentifierFromIRIString(urlString, treeScope);
-  if (id.isEmpty())
+Element* SVGURIReference::TargetElementFromIRIString(
+    const String& url_string,
+    const TreeScope& tree_scope,
+    AtomicString* fragment_identifier) {
+  AtomicString id = FragmentIdentifierFromIRIString(url_string, tree_scope);
+  if (id.IsEmpty())
     return nullptr;
-  if (fragmentIdentifier)
-    *fragmentIdentifier = id;
-  return treeScope.getElementById(id);
+  if (fragment_identifier)
+    *fragment_identifier = id;
+  return tree_scope.GetElementById(id);
 }
 
-Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
-                                        SVGElement& contextElement) {
-  return observeTarget(observer, contextElement, hrefString());
+Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
+                                        SVGElement& context_element) {
+  return ObserveTarget(observer, context_element, HrefString());
 }
 
-Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
-                                        SVGElement& contextElement,
-                                        const String& hrefString) {
-  TreeScope& treeScope = contextElement.treeScope();
-  AtomicString id = fragmentIdentifierFromIRIString(hrefString, treeScope);
-  return observeTarget(observer, treeScope, id,
-                       WTF::bind(&SVGElement::buildPendingResource,
-                                 wrapWeakPersistent(&contextElement)));
+Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
+                                        SVGElement& context_element,
+                                        const String& href_string) {
+  TreeScope& tree_scope = context_element.GetTreeScope();
+  AtomicString id = FragmentIdentifierFromIRIString(href_string, tree_scope);
+  return ObserveTarget(observer, tree_scope, id,
+                       WTF::Bind(&SVGElement::BuildPendingResource,
+                                 WrapWeakPersistent(&context_element)));
 }
 
-Element* SVGURIReference::observeTarget(Member<IdTargetObserver>& observer,
-                                        TreeScope& treeScope,
+Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
+                                        TreeScope& tree_scope,
                                         const AtomicString& id,
                                         std::unique_ptr<WTF::Closure> closure) {
   DCHECK(!observer);
-  if (id.isEmpty())
+  if (id.IsEmpty())
     return nullptr;
-  observer = new SVGElementReferenceObserver(treeScope, id, std::move(closure));
-  return treeScope.getElementById(id);
+  observer =
+      new SVGElementReferenceObserver(tree_scope, id, std::move(closure));
+  return tree_scope.GetElementById(id);
 }
 
-void SVGURIReference::unobserveTarget(Member<IdTargetObserver>& observer) {
+void SVGURIReference::UnobserveTarget(Member<IdTargetObserver>& observer) {
   if (!observer)
     return;
-  observer->unregister();
+  observer->Unregister();
   observer = nullptr;
 }
 

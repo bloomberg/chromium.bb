@@ -43,122 +43,122 @@
 
 namespace blink {
 
-FrameConsole::FrameConsole(LocalFrame& frame) : m_frame(&frame) {}
+FrameConsole::FrameConsole(LocalFrame& frame) : frame_(&frame) {}
 
-void FrameConsole::addMessage(ConsoleMessage* consoleMessage) {
+void FrameConsole::AddMessage(ConsoleMessage* console_message) {
   // PlzNavigate: when trying to commit a navigation, the SourceLocation
   // information for how the request was triggered has been stored in the
   // provisional DocumentLoader. Use it instead.
-  DocumentLoader* provisionalLoader =
-      m_frame->loader().provisionalDocumentLoader();
-  if (provisionalLoader) {
-    std::unique_ptr<SourceLocation> sourceLocation =
-        provisionalLoader->copySourceLocation();
-    if (sourceLocation) {
-      consoleMessage = ConsoleMessage::create(
-          consoleMessage->source(), consoleMessage->level(),
-          consoleMessage->message(), std::move(sourceLocation));
+  DocumentLoader* provisional_loader =
+      frame_->Loader().ProvisionalDocumentLoader();
+  if (provisional_loader) {
+    std::unique_ptr<SourceLocation> source_location =
+        provisional_loader->CopySourceLocation();
+    if (source_location) {
+      console_message = ConsoleMessage::Create(
+          console_message->Source(), console_message->Level(),
+          console_message->Message(), std::move(source_location));
     }
   }
 
-  if (addMessageToStorage(consoleMessage))
-    reportMessageToClient(consoleMessage->source(), consoleMessage->level(),
-                          consoleMessage->message(),
-                          consoleMessage->location());
+  if (AddMessageToStorage(console_message))
+    ReportMessageToClient(console_message->Source(), console_message->Level(),
+                          console_message->Message(),
+                          console_message->Location());
 }
 
-bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage) {
-  if (!m_frame->document() || !m_frame->page())
+bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message) {
+  if (!frame_->GetDocument() || !frame_->GetPage())
     return false;
-  m_frame->page()->consoleMessageStorage().addConsoleMessage(
-      m_frame->document(), consoleMessage);
+  frame_->GetPage()->GetConsoleMessageStorage().AddConsoleMessage(
+      frame_->GetDocument(), console_message);
   return true;
 }
 
-void FrameConsole::reportMessageToClient(MessageSource source,
+void FrameConsole::ReportMessageToClient(MessageSource source,
                                          MessageLevel level,
                                          const String& message,
                                          SourceLocation* location) {
-  if (source == NetworkMessageSource)
+  if (source == kNetworkMessageSource)
     return;
 
-  String url = location->url();
-  String stackTrace;
-  if (source == ConsoleAPIMessageSource) {
-    if (!m_frame->page())
+  String url = location->Url();
+  String stack_trace;
+  if (source == kConsoleAPIMessageSource) {
+    if (!frame_->GetPage())
       return;
-    if (m_frame->chromeClient().shouldReportDetailedMessageForSource(*m_frame,
-                                                                     url)) {
-      std::unique_ptr<SourceLocation> fullLocation =
-          SourceLocation::captureWithFullStackTrace();
-      if (!fullLocation->isUnknown())
-        stackTrace = fullLocation->toString();
+    if (frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
+                                                                       url)) {
+      std::unique_ptr<SourceLocation> full_location =
+          SourceLocation::CaptureWithFullStackTrace();
+      if (!full_location->IsUnknown())
+        stack_trace = full_location->ToString();
     }
   } else {
-    if (!location->isUnknown() &&
-        m_frame->chromeClient().shouldReportDetailedMessageForSource(*m_frame,
-                                                                     url))
-      stackTrace = location->toString();
+    if (!location->IsUnknown() &&
+        frame_->GetChromeClient().ShouldReportDetailedMessageForSource(*frame_,
+                                                                       url))
+      stack_trace = location->ToString();
   }
 
-  m_frame->chromeClient().addMessageToConsole(
-      m_frame, source, level, message, location->lineNumber(), url, stackTrace);
+  frame_->GetChromeClient().AddMessageToConsole(
+      frame_, source, level, message, location->LineNumber(), url, stack_trace);
 }
 
-void FrameConsole::addMessageFromWorker(
+void FrameConsole::AddMessageFromWorker(
     MessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location,
-    const String& workerId) {
-  reportMessageToClient(WorkerMessageSource, level, message, location.get());
-  addMessageToStorage(ConsoleMessage::createFromWorker(
-      level, message, std::move(location), workerId));
+    const String& worker_id) {
+  ReportMessageToClient(kWorkerMessageSource, level, message, location.get());
+  AddMessageToStorage(ConsoleMessage::CreateFromWorker(
+      level, message, std::move(location), worker_id));
 }
 
-void FrameConsole::addSingletonMessage(ConsoleMessage* consoleMessage) {
-  if (m_singletonMessages.contains(consoleMessage->message()))
+void FrameConsole::AddSingletonMessage(ConsoleMessage* console_message) {
+  if (singleton_messages_.Contains(console_message->Message()))
     return;
-  m_singletonMessages.insert(consoleMessage->message());
-  addMessage(consoleMessage);
+  singleton_messages_.insert(console_message->Message());
+  AddMessage(console_message);
 }
 
-void FrameConsole::reportResourceResponseReceived(
+void FrameConsole::ReportResourceResponseReceived(
     DocumentLoader* loader,
-    unsigned long requestIdentifier,
+    unsigned long request_identifier,
     const ResourceResponse& response) {
   if (!loader)
     return;
-  if (response.httpStatusCode() < 400)
+  if (response.HttpStatusCode() < 400)
     return;
-  if (response.wasFallbackRequiredByServiceWorker())
+  if (response.WasFallbackRequiredByServiceWorker())
     return;
   String message =
       "Failed to load resource: the server responded with a status of " +
-      String::number(response.httpStatusCode()) + " (" +
-      response.httpStatusText() + ')';
-  ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
-      NetworkMessageSource, ErrorMessageLevel, message,
-      response.url().getString(), requestIdentifier);
-  addMessage(consoleMessage);
+      String::Number(response.HttpStatusCode()) + " (" +
+      response.HttpStatusText() + ')';
+  ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
+      kNetworkMessageSource, kErrorMessageLevel, message,
+      response.Url().GetString(), request_identifier);
+  AddMessage(console_message);
 }
 
-void FrameConsole::didFailLoading(unsigned long requestIdentifier,
+void FrameConsole::DidFailLoading(unsigned long request_identifier,
                                   const ResourceError& error) {
-  if (error.isCancellation())  // Report failures only.
+  if (error.IsCancellation())  // Report failures only.
     return;
   StringBuilder message;
-  message.append("Failed to load resource");
-  if (!error.localizedDescription().isEmpty()) {
-    message.append(": ");
-    message.append(error.localizedDescription());
+  message.Append("Failed to load resource");
+  if (!error.LocalizedDescription().IsEmpty()) {
+    message.Append(": ");
+    message.Append(error.LocalizedDescription());
   }
-  addMessageToStorage(ConsoleMessage::createForRequest(
-      NetworkMessageSource, ErrorMessageLevel, message.toString(),
-      error.failingURL(), requestIdentifier));
+  AddMessageToStorage(ConsoleMessage::CreateForRequest(
+      kNetworkMessageSource, kErrorMessageLevel, message.ToString(),
+      error.FailingURL(), request_identifier));
 }
 
 DEFINE_TRACE(FrameConsole) {
-  visitor->trace(m_frame);
+  visitor->Trace(frame_);
 }
 
 }  // namespace blink

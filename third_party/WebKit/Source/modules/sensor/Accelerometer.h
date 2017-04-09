@@ -13,14 +13,14 @@ class Accelerometer final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Accelerometer* create(ExecutionContext*,
+  static Accelerometer* Create(ExecutionContext*,
                                const SensorOptions&,
                                ExceptionState&);
-  static Accelerometer* create(ExecutionContext*, ExceptionState&);
+  static Accelerometer* Create(ExecutionContext*, ExceptionState&);
 
-  double x(bool& isNull) const;
-  double y(bool& isNull) const;
-  double z(bool& isNull) const;
+  double x(bool& is_null) const;
+  double y(bool& is_null) const;
+  double z(bool& is_null) const;
 
   DECLARE_VIRTUAL_TRACE();
 

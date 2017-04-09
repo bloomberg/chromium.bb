@@ -32,92 +32,93 @@ namespace {
 // for example, a frame with no parent will return null for WebFrame::parent().
 // TODO(dcheng): Remove duplication between LocalFrameClientImpl and
 // RemoteFrameClientImpl somehow...
-Frame* toCoreFrame(WebFrame* frame) {
-  return frame ? frame->toImplBase()->frame() : nullptr;
+Frame* ToCoreFrame(WebFrame* frame) {
+  return frame ? frame->ToImplBase()->GetFrame() : nullptr;
 }
 
 }  // namespace
 
-RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
-    : m_webFrame(webFrame) {}
+RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
+    : web_frame_(web_frame) {}
 
-RemoteFrameClientImpl* RemoteFrameClientImpl::create(
-    WebRemoteFrameImpl* webFrame) {
-  return new RemoteFrameClientImpl(webFrame);
+RemoteFrameClientImpl* RemoteFrameClientImpl::Create(
+    WebRemoteFrameImpl* web_frame) {
+  return new RemoteFrameClientImpl(web_frame);
 }
 
 DEFINE_TRACE(RemoteFrameClientImpl) {
-  visitor->trace(m_webFrame);
-  RemoteFrameClient::trace(visitor);
+  visitor->Trace(web_frame_);
+  RemoteFrameClient::Trace(visitor);
 }
 
-bool RemoteFrameClientImpl::inShadowTree() const {
-  return m_webFrame->inShadowTree();
+bool RemoteFrameClientImpl::InShadowTree() const {
+  return web_frame_->InShadowTree();
 }
 
-void RemoteFrameClientImpl::willBeDetached() {}
+void RemoteFrameClientImpl::WillBeDetached() {}
 
-void RemoteFrameClientImpl::detached(FrameDetachType type) {
+void RemoteFrameClientImpl::Detached(FrameDetachType type) {
   // Alert the client that the frame is being detached.
-  WebRemoteFrameClient* client = m_webFrame->client();
+  WebRemoteFrameClient* client = web_frame_->Client();
   if (!client)
     return;
 
-  client->frameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
+  client->FrameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
   // Clear our reference to RemoteFrame at the very end, in case the client
   // refers to it.
-  m_webFrame->setCoreFrame(nullptr);
+  web_frame_->SetCoreFrame(nullptr);
 }
 
-Frame* RemoteFrameClientImpl::opener() const {
-  return toCoreFrame(m_webFrame->opener());
+Frame* RemoteFrameClientImpl::Opener() const {
+  return ToCoreFrame(web_frame_->Opener());
 }
 
-void RemoteFrameClientImpl::setOpener(Frame* opener) {
-  WebFrame* openerFrame = WebFrame::fromFrame(opener);
-  if (m_webFrame->client() && m_webFrame->opener() != openerFrame)
-    m_webFrame->client()->didChangeOpener(openerFrame);
-  m_webFrame->setOpener(openerFrame);
+void RemoteFrameClientImpl::SetOpener(Frame* opener) {
+  WebFrame* opener_frame = WebFrame::FromFrame(opener);
+  if (web_frame_->Client() && web_frame_->Opener() != opener_frame)
+    web_frame_->Client()->DidChangeOpener(opener_frame);
+  web_frame_->SetOpener(opener_frame);
 }
 
-Frame* RemoteFrameClientImpl::parent() const {
-  return toCoreFrame(m_webFrame->parent());
+Frame* RemoteFrameClientImpl::Parent() const {
+  return ToCoreFrame(web_frame_->Parent());
 }
 
-Frame* RemoteFrameClientImpl::top() const {
-  return toCoreFrame(m_webFrame->top());
+Frame* RemoteFrameClientImpl::Top() const {
+  return ToCoreFrame(web_frame_->Top());
 }
 
-Frame* RemoteFrameClientImpl::nextSibling() const {
-  return toCoreFrame(m_webFrame->nextSibling());
+Frame* RemoteFrameClientImpl::NextSibling() const {
+  return ToCoreFrame(web_frame_->NextSibling());
 }
 
-Frame* RemoteFrameClientImpl::firstChild() const {
-  return toCoreFrame(m_webFrame->firstChild());
+Frame* RemoteFrameClientImpl::FirstChild() const {
+  return ToCoreFrame(web_frame_->FirstChild());
 }
 
-void RemoteFrameClientImpl::frameFocused() const {
-  if (m_webFrame->client())
-    m_webFrame->client()->frameFocused();
+void RemoteFrameClientImpl::FrameFocused() const {
+  if (web_frame_->Client())
+    web_frame_->Client()->FrameFocused();
 }
 
-void RemoteFrameClientImpl::navigate(const ResourceRequest& request,
-                                     bool shouldReplaceCurrentEntry) {
-  if (m_webFrame->client())
-    m_webFrame->client()->navigate(WrappedResourceRequest(request),
-                                   shouldReplaceCurrentEntry);
+void RemoteFrameClientImpl::Navigate(const ResourceRequest& request,
+                                     bool should_replace_current_entry) {
+  if (web_frame_->Client())
+    web_frame_->Client()->Navigate(WrappedResourceRequest(request),
+                                   should_replace_current_entry);
 }
 
-void RemoteFrameClientImpl::reload(FrameLoadType loadType,
-                                   ClientRedirectPolicy clientRedirectPolicy) {
-  DCHECK(isReloadLoadType(loadType));
-  if (m_webFrame->client())
-    m_webFrame->client()->reload(
-        static_cast<WebFrameLoadType>(loadType),
-        static_cast<WebClientRedirectPolicy>(clientRedirectPolicy));
+void RemoteFrameClientImpl::Reload(
+    FrameLoadType load_type,
+    ClientRedirectPolicy client_redirect_policy) {
+  DCHECK(IsReloadLoadType(load_type));
+  if (web_frame_->Client())
+    web_frame_->Client()->Reload(
+        static_cast<WebFrameLoadType>(load_type),
+        static_cast<WebClientRedirectPolicy>(client_redirect_policy));
 }
 
-unsigned RemoteFrameClientImpl::backForwardLength() {
+unsigned RemoteFrameClientImpl::BackForwardLength() {
   // TODO(creis,japhet): This method should return the real value for the
   // session history length. For now, return static value for the initial
   // navigation and the subsequent one moving the frame out-of-process.
@@ -125,33 +126,33 @@ unsigned RemoteFrameClientImpl::backForwardLength() {
   return 2;
 }
 
-void RemoteFrameClientImpl::forwardPostMessage(
+void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     PassRefPtr<SecurityOrigin> target,
-    LocalFrame* sourceFrame) const {
-  if (m_webFrame->client())
-    m_webFrame->client()->forwardPostMessage(
-        WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame,
+    LocalFrame* source_frame) const {
+  if (web_frame_->Client())
+    web_frame_->Client()->ForwardPostMessage(
+        WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
         WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
 }
 
-void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect) {
-  m_webFrame->client()->frameRectsChanged(frameRect);
+void RemoteFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
+  web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
-void RemoteFrameClientImpl::updateRemoteViewportIntersection(
-    const IntRect& viewportIntersection) {
-  m_webFrame->client()->updateRemoteViewportIntersection(viewportIntersection);
+void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
+    const IntRect& viewport_intersection) {
+  web_frame_->Client()->UpdateRemoteViewportIntersection(viewport_intersection);
 }
 
-void RemoteFrameClientImpl::advanceFocus(WebFocusType type,
+void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
                                          LocalFrame* source) {
-  m_webFrame->client()->advanceFocus(type,
-                                     WebLocalFrameImpl::fromFrame(source));
+  web_frame_->Client()->AdvanceFocus(type,
+                                     WebLocalFrameImpl::FromFrame(source));
 }
 
-void RemoteFrameClientImpl::visibilityChanged(bool visible) {
-  m_webFrame->client()->visibilityChanged(visible);
+void RemoteFrameClientImpl::VisibilityChanged(bool visible) {
+  web_frame_->Client()->VisibilityChanged(visible);
 }
 
 }  // namespace blink

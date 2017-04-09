@@ -27,7 +27,7 @@ class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
   WTF_MAKE_NONCOPYABLE(PartitionAllocMemoryDumpProvider);
 
  public:
-  static PartitionAllocMemoryDumpProvider* instance();
+  static PartitionAllocMemoryDumpProvider* Instance();
   ~PartitionAllocMemoryDumpProvider() override;
 
   // MemoryDumpProvider implementation.
@@ -37,14 +37,14 @@ class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
 
   // These methods are called only from PartitionAllocHooks' callbacks.
   void insert(void*, size_t, const char*);
-  void remove(void*);
+  void Remove(void*);
 
  private:
   PartitionAllocMemoryDumpProvider();
 
-  Mutex m_allocationRegisterMutex;
-  std::unique_ptr<base::trace_event::AllocationRegister> m_allocationRegister;
-  bool m_isHeapProfilingEnabled;
+  Mutex allocation_register_mutex_;
+  std::unique_ptr<base::trace_event::AllocationRegister> allocation_register_;
+  bool is_heap_profiling_enabled_;
 };
 
 }  // namespace blink

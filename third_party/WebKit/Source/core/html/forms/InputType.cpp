@@ -85,637 +85,640 @@ using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
 using InputTypeFactoryMap =
     HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash>;
 
-static std::unique_ptr<InputTypeFactoryMap> createInputTypeFactoryMap() {
+static std::unique_ptr<InputTypeFactoryMap> CreateInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
-      WTF::wrapUnique(new InputTypeFactoryMap);
-  map->insert(InputTypeNames::button, ButtonInputType::create);
-  map->insert(InputTypeNames::checkbox, CheckboxInputType::create);
-  map->insert(InputTypeNames::color, ColorInputType::create);
-  map->insert(InputTypeNames::date, DateInputType::create);
-  map->insert(InputTypeNames::datetime_local, DateTimeLocalInputType::create);
-  map->insert(InputTypeNames::email, EmailInputType::create);
-  map->insert(InputTypeNames::file, FileInputType::create);
-  map->insert(InputTypeNames::hidden, HiddenInputType::create);
-  map->insert(InputTypeNames::image, ImageInputType::create);
-  map->insert(InputTypeNames::month, MonthInputType::create);
-  map->insert(InputTypeNames::number, NumberInputType::create);
-  map->insert(InputTypeNames::password, PasswordInputType::create);
-  map->insert(InputTypeNames::radio, RadioInputType::create);
-  map->insert(InputTypeNames::range, RangeInputType::create);
-  map->insert(InputTypeNames::reset, ResetInputType::create);
-  map->insert(InputTypeNames::search, SearchInputType::create);
-  map->insert(InputTypeNames::submit, SubmitInputType::create);
-  map->insert(InputTypeNames::tel, TelephoneInputType::create);
-  map->insert(InputTypeNames::time, TimeInputType::create);
-  map->insert(InputTypeNames::url, URLInputType::create);
-  map->insert(InputTypeNames::week, WeekInputType::create);
+      WTF::WrapUnique(new InputTypeFactoryMap);
+  map->insert(InputTypeNames::button, ButtonInputType::Create);
+  map->insert(InputTypeNames::checkbox, CheckboxInputType::Create);
+  map->insert(InputTypeNames::color, ColorInputType::Create);
+  map->insert(InputTypeNames::date, DateInputType::Create);
+  map->insert(InputTypeNames::datetime_local, DateTimeLocalInputType::Create);
+  map->insert(InputTypeNames::email, EmailInputType::Create);
+  map->insert(InputTypeNames::file, FileInputType::Create);
+  map->insert(InputTypeNames::hidden, HiddenInputType::Create);
+  map->insert(InputTypeNames::image, ImageInputType::Create);
+  map->insert(InputTypeNames::month, MonthInputType::Create);
+  map->insert(InputTypeNames::number, NumberInputType::Create);
+  map->insert(InputTypeNames::password, PasswordInputType::Create);
+  map->insert(InputTypeNames::radio, RadioInputType::Create);
+  map->insert(InputTypeNames::range, RangeInputType::Create);
+  map->insert(InputTypeNames::reset, ResetInputType::Create);
+  map->insert(InputTypeNames::search, SearchInputType::Create);
+  map->insert(InputTypeNames::submit, SubmitInputType::Create);
+  map->insert(InputTypeNames::tel, TelephoneInputType::Create);
+  map->insert(InputTypeNames::time, TimeInputType::Create);
+  map->insert(InputTypeNames::url, URLInputType::Create);
+  map->insert(InputTypeNames::week, WeekInputType::Create);
   // No need to register "text" because it is the default type.
   return map;
 }
 
-static const InputTypeFactoryMap* factoryMap() {
-  static const InputTypeFactoryMap* factoryMap =
-      createInputTypeFactoryMap().release();
-  return factoryMap;
+static const InputTypeFactoryMap* FactoryMap() {
+  static const InputTypeFactoryMap* factory_map =
+      CreateInputTypeFactoryMap().release();
+  return factory_map;
 }
 
-InputType* InputType::create(HTMLInputElement& element,
-                             const AtomicString& typeName) {
+InputType* InputType::Create(HTMLInputElement& element,
+                             const AtomicString& type_name) {
   InputTypeFactoryFunction factory =
-      typeName.isEmpty() ? 0 : factoryMap()->at(typeName);
+      type_name.IsEmpty() ? 0 : FactoryMap()->at(type_name);
   if (!factory)
-    factory = TextInputType::create;
+    factory = TextInputType::Create;
   return factory(element);
 }
 
-InputType* InputType::createText(HTMLInputElement& element) {
-  return TextInputType::create(element);
+InputType* InputType::CreateText(HTMLInputElement& element) {
+  return TextInputType::Create(element);
 }
 
-const AtomicString& InputType::normalizeTypeName(const AtomicString& typeName) {
-  if (typeName.isEmpty())
+const AtomicString& InputType::NormalizeTypeName(
+    const AtomicString& type_name) {
+  if (type_name.IsEmpty())
     return InputTypeNames::text;
-  InputTypeFactoryMap::const_iterator it = factoryMap()->find(typeName);
-  return it == factoryMap()->end() ? InputTypeNames::text : it->key;
+  InputTypeFactoryMap::const_iterator it = FactoryMap()->Find(type_name);
+  return it == FactoryMap()->end() ? InputTypeNames::text : it->key;
 }
 
 InputType::~InputType() {}
 
 DEFINE_TRACE(InputType) {
-  visitor->trace(m_element);
+  visitor->Trace(element_);
 }
 
-bool InputType::isTextField() const {
+bool InputType::IsTextField() const {
   return false;
 }
 
-bool InputType::shouldSaveAndRestoreFormControlState() const {
+bool InputType::ShouldSaveAndRestoreFormControlState() const {
   return true;
 }
 
-bool InputType::isFormDataAppendable() const {
+bool InputType::IsFormDataAppendable() const {
   // There is no form data unless there's a name for non-image types.
-  return !element().name().isEmpty();
+  return !GetElement().GetName().IsEmpty();
 }
 
-void InputType::appendToFormData(FormData& formData) const {
-  formData.append(element().name(), element().value());
+void InputType::AppendToFormData(FormData& form_data) const {
+  form_data.append(GetElement().GetName(), GetElement().value());
 }
 
-String InputType::resultForDialogSubmit() const {
-  return element().fastGetAttribute(valueAttr);
+String InputType::ResultForDialogSubmit() const {
+  return GetElement().FastGetAttribute(valueAttr);
 }
 
-double InputType::valueAsDate() const {
-  return DateComponents::invalidMilliseconds();
+double InputType::ValueAsDate() const {
+  return DateComponents::InvalidMilliseconds();
 }
 
-void InputType::setValueAsDate(double, ExceptionState& exceptionState) const {
-  exceptionState.throwDOMException(
-      InvalidStateError, "This input element does not support Date values.");
+void InputType::SetValueAsDate(double, ExceptionState& exception_state) const {
+  exception_state.ThrowDOMException(
+      kInvalidStateError, "This input element does not support Date values.");
 }
 
-double InputType::valueAsDouble() const {
+double InputType::ValueAsDouble() const {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-void InputType::setValueAsDouble(double doubleValue,
-                                 TextFieldEventBehavior eventBehavior,
-                                 ExceptionState& exceptionState) const {
-  exceptionState.throwDOMException(
-      InvalidStateError, "This input element does not support Number values.");
+void InputType::SetValueAsDouble(double double_value,
+                                 TextFieldEventBehavior event_behavior,
+                                 ExceptionState& exception_state) const {
+  exception_state.ThrowDOMException(
+      kInvalidStateError, "This input element does not support Number values.");
 }
 
-void InputType::setValueAsDecimal(const Decimal& newValue,
-                                  TextFieldEventBehavior eventBehavior,
+void InputType::SetValueAsDecimal(const Decimal& new_value,
+                                  TextFieldEventBehavior event_behavior,
                                   ExceptionState&) const {
-  element().setValue(serialize(newValue), eventBehavior);
+  GetElement().setValue(Serialize(new_value), event_behavior);
 }
 
-void InputType::readingChecked() const {}
+void InputType::ReadingChecked() const {}
 
-bool InputType::supportsValidation() const {
+bool InputType::SupportsValidation() const {
   return true;
 }
 
-bool InputType::typeMismatchFor(const String&) const {
+bool InputType::TypeMismatchFor(const String&) const {
   return false;
 }
 
-bool InputType::typeMismatch() const {
+bool InputType::TypeMismatch() const {
   return false;
 }
 
-bool InputType::supportsRequired() const {
+bool InputType::SupportsRequired() const {
   // Almost all validatable types support @required.
-  return supportsValidation();
+  return SupportsValidation();
 }
 
-bool InputType::valueMissing(const String&) const {
+bool InputType::ValueMissing(const String&) const {
   return false;
 }
 
-bool InputType::tooLong(const String&,
+bool InputType::TooLong(const String&,
                         TextControlElement::NeedsToCheckDirtyFlag) const {
   return false;
 }
 
-bool InputType::tooShort(const String&,
+bool InputType::TooShort(const String&,
                          TextControlElement::NeedsToCheckDirtyFlag) const {
   return false;
 }
 
-bool InputType::patternMismatch(const String&) const {
+bool InputType::PatternMismatch(const String&) const {
   return false;
 }
 
-bool InputType::rangeUnderflow(const String& value) const {
-  if (!isSteppable())
+bool InputType::RangeUnderflow(const String& value) const {
+  if (!IsSteppable())
     return false;
 
-  const Decimal numericValue = parseToNumberOrNaN(value);
-  if (!numericValue.isFinite())
+  const Decimal numeric_value = ParseToNumberOrNaN(value);
+  if (!numeric_value.IsFinite())
     return false;
 
-  return numericValue < createStepRange(RejectAny).minimum();
+  return numeric_value < CreateStepRange(kRejectAny).Minimum();
 }
 
-bool InputType::rangeOverflow(const String& value) const {
-  if (!isSteppable())
+bool InputType::RangeOverflow(const String& value) const {
+  if (!IsSteppable())
     return false;
 
-  const Decimal numericValue = parseToNumberOrNaN(value);
-  if (!numericValue.isFinite())
+  const Decimal numeric_value = ParseToNumberOrNaN(value);
+  if (!numeric_value.IsFinite())
     return false;
 
-  return numericValue > createStepRange(RejectAny).maximum();
+  return numeric_value > CreateStepRange(kRejectAny).Maximum();
 }
 
-Decimal InputType::defaultValueForStepUp() const {
+Decimal InputType::DefaultValueForStepUp() const {
   return 0;
 }
 
-double InputType::minimum() const {
-  return createStepRange(RejectAny).minimum().toDouble();
+double InputType::Minimum() const {
+  return CreateStepRange(kRejectAny).Minimum().ToDouble();
 }
 
-double InputType::maximum() const {
-  return createStepRange(RejectAny).maximum().toDouble();
+double InputType::Maximum() const {
+  return CreateStepRange(kRejectAny).Maximum().ToDouble();
 }
 
-bool InputType::isInRange(const String& value) const {
-  if (!isSteppable())
+bool InputType::IsInRange(const String& value) const {
+  if (!IsSteppable())
     return false;
 
   // This function should return true if both of validity.rangeUnderflow and
   // validity.rangeOverflow are false.
   // If the INPUT has no value, they are false.
-  const Decimal numericValue = parseToNumberOrNaN(value);
-  if (!numericValue.isFinite())
+  const Decimal numeric_value = ParseToNumberOrNaN(value);
+  if (!numeric_value.IsFinite())
     return true;
 
-  StepRange stepRange(createStepRange(RejectAny));
-  return stepRange.hasRangeLimitations() &&
-         numericValue >= stepRange.minimum() &&
-         numericValue <= stepRange.maximum();
+  StepRange step_range(CreateStepRange(kRejectAny));
+  return step_range.HasRangeLimitations() &&
+         numeric_value >= step_range.Minimum() &&
+         numeric_value <= step_range.Maximum();
 }
 
-bool InputType::isOutOfRange(const String& value) const {
-  if (!isSteppable())
+bool InputType::IsOutOfRange(const String& value) const {
+  if (!IsSteppable())
     return false;
 
   // This function should return true if either validity.rangeUnderflow or
   // validity.rangeOverflow are true.
   // If the INPUT has no value, they are false.
-  const Decimal numericValue = parseToNumberOrNaN(value);
-  if (!numericValue.isFinite())
+  const Decimal numeric_value = ParseToNumberOrNaN(value);
+  if (!numeric_value.IsFinite())
     return false;
 
-  StepRange stepRange(createStepRange(RejectAny));
-  return stepRange.hasRangeLimitations() &&
-         (numericValue < stepRange.minimum() ||
-          numericValue > stepRange.maximum());
+  StepRange step_range(CreateStepRange(kRejectAny));
+  return step_range.HasRangeLimitations() &&
+         (numeric_value < step_range.Minimum() ||
+          numeric_value > step_range.Maximum());
 }
 
-void InputType::inRangeChanged() const {
-  if (isSteppable()) {
-    element().pseudoStateChanged(CSSSelector::PseudoInRange);
-    element().pseudoStateChanged(CSSSelector::PseudoOutOfRange);
+void InputType::InRangeChanged() const {
+  if (IsSteppable()) {
+    GetElement().PseudoStateChanged(CSSSelector::kPseudoInRange);
+    GetElement().PseudoStateChanged(CSSSelector::kPseudoOutOfRange);
   }
 }
 
-bool InputType::stepMismatch(const String& value) const {
-  if (!isSteppable())
+bool InputType::StepMismatch(const String& value) const {
+  if (!IsSteppable())
     return false;
 
-  const Decimal numericValue = parseToNumberOrNaN(value);
-  if (!numericValue.isFinite())
+  const Decimal numeric_value = ParseToNumberOrNaN(value);
+  if (!numeric_value.IsFinite())
     return false;
 
-  return createStepRange(RejectAny).stepMismatch(numericValue);
+  return CreateStepRange(kRejectAny).StepMismatch(numeric_value);
 }
 
-String InputType::badInputText() const {
+String InputType::BadInputText() const {
   NOTREACHED();
-  return locale().queryString(WebLocalizedString::ValidationTypeMismatch);
+  return GetLocale().QueryString(WebLocalizedString::kValidationTypeMismatch);
 }
 
-String InputType::rangeOverflowText(const Decimal&) const {
+String InputType::RangeOverflowText(const Decimal&) const {
   NOTREACHED();
   return String();
 }
 
-String InputType::rangeUnderflowText(const Decimal&) const {
+String InputType::RangeUnderflowText(const Decimal&) const {
   NOTREACHED();
   return String();
 }
 
-String InputType::typeMismatchText() const {
-  return locale().queryString(WebLocalizedString::ValidationTypeMismatch);
+String InputType::TypeMismatchText() const {
+  return GetLocale().QueryString(WebLocalizedString::kValidationTypeMismatch);
 }
 
-String InputType::valueMissingText() const {
-  return locale().queryString(WebLocalizedString::ValidationValueMissing);
+String InputType::ValueMissingText() const {
+  return GetLocale().QueryString(WebLocalizedString::kValidationValueMissing);
 }
 
-std::pair<String, String> InputType::validationMessage(
-    const InputTypeView& inputTypeView) const {
-  const String value = element().value();
+std::pair<String, String> InputType::ValidationMessage(
+    const InputTypeView& input_type_view) const {
+  const String value = GetElement().value();
 
   // The order of the following checks is meaningful. e.g. We'd like to show the
   // badInput message even if the control has other validation errors.
-  if (inputTypeView.hasBadInput())
-    return std::make_pair(badInputText(), emptyString);
+  if (input_type_view.HasBadInput())
+    return std::make_pair(BadInputText(), g_empty_string);
 
-  if (valueMissing(value))
-    return std::make_pair(valueMissingText(), emptyString);
+  if (ValueMissing(value))
+    return std::make_pair(ValueMissingText(), g_empty_string);
 
-  if (typeMismatch())
-    return std::make_pair(typeMismatchText(), emptyString);
+  if (TypeMismatch())
+    return std::make_pair(TypeMismatchText(), g_empty_string);
 
-  if (patternMismatch(value)) {
+  if (PatternMismatch(value)) {
     // https://html.spec.whatwg.org/multipage/forms.html#attr-input-pattern
     //   When an input element has a pattern attribute specified, authors
     //   should include a title attribute to give a description of the
     //   pattern. User agents may use the contents of this attribute, if it
     //   is present, when informing the user that the pattern is not matched
     return std::make_pair(
-        locale().queryString(WebLocalizedString::ValidationPatternMismatch),
-        element().fastGetAttribute(titleAttr).getString());
+        GetLocale().QueryString(WebLocalizedString::kValidationPatternMismatch),
+        GetElement().FastGetAttribute(titleAttr).GetString());
   }
 
-  if (element().tooLong()) {
-    return std::make_pair(locale().validationMessageTooLongText(
-                              value.length(), element().maxLength()),
-                          emptyString);
+  if (GetElement().TooLong()) {
+    return std::make_pair(GetLocale().ValidationMessageTooLongText(
+                              value.length(), GetElement().maxLength()),
+                          g_empty_string);
   }
 
-  if (element().tooShort()) {
-    return std::make_pair(locale().validationMessageTooShortText(
-                              value.length(), element().minLength()),
-                          emptyString);
+  if (GetElement().TooShort()) {
+    return std::make_pair(GetLocale().ValidationMessageTooShortText(
+                              value.length(), GetElement().minLength()),
+                          g_empty_string);
   }
 
-  if (!isSteppable())
-    return std::make_pair(emptyString, emptyString);
+  if (!IsSteppable())
+    return std::make_pair(g_empty_string, g_empty_string);
 
-  const Decimal numericValue = parseToNumberOrNaN(value);
-  if (!numericValue.isFinite())
-    return std::make_pair(emptyString, emptyString);
+  const Decimal numeric_value = ParseToNumberOrNaN(value);
+  if (!numeric_value.IsFinite())
+    return std::make_pair(g_empty_string, g_empty_string);
 
-  StepRange stepRange(createStepRange(RejectAny));
+  StepRange step_range(CreateStepRange(kRejectAny));
 
-  if (numericValue < stepRange.minimum())
-    return std::make_pair(rangeUnderflowText(stepRange.minimum()), emptyString);
+  if (numeric_value < step_range.Minimum())
+    return std::make_pair(RangeUnderflowText(step_range.Minimum()),
+                          g_empty_string);
 
-  if (numericValue > stepRange.maximum())
-    return std::make_pair(rangeOverflowText(stepRange.maximum()), emptyString);
+  if (numeric_value > step_range.Maximum())
+    return std::make_pair(RangeOverflowText(step_range.Maximum()),
+                          g_empty_string);
 
-  if (stepRange.stepMismatch(numericValue)) {
-    DCHECK(stepRange.hasStep());
-    Decimal candidate1 = stepRange.clampValue(numericValue);
-    String localizedCandidate1 = localizeValue(serialize(candidate1));
-    Decimal candidate2 = candidate1 < numericValue
-                             ? candidate1 + stepRange.step()
-                             : candidate1 - stepRange.step();
-    if (!candidate2.isFinite() || candidate2 < stepRange.minimum() ||
-        candidate2 > stepRange.maximum()) {
+  if (step_range.StepMismatch(numeric_value)) {
+    DCHECK(step_range.HasStep());
+    Decimal candidate1 = step_range.ClampValue(numeric_value);
+    String localized_candidate1 = LocalizeValue(Serialize(candidate1));
+    Decimal candidate2 = candidate1 < numeric_value
+                             ? candidate1 + step_range.Step()
+                             : candidate1 - step_range.Step();
+    if (!candidate2.IsFinite() || candidate2 < step_range.Minimum() ||
+        candidate2 > step_range.Maximum()) {
       return std::make_pair(
-          locale().queryString(
-              WebLocalizedString::ValidationStepMismatchCloseToLimit,
-              localizedCandidate1),
-          emptyString);
+          GetLocale().QueryString(
+              WebLocalizedString::kValidationStepMismatchCloseToLimit,
+              localized_candidate1),
+          g_empty_string);
     }
-    String localizedCandidate2 = localizeValue(serialize(candidate2));
+    String localized_candidate2 = LocalizeValue(Serialize(candidate2));
     if (candidate1 < candidate2) {
       return std::make_pair(
-          locale().queryString(WebLocalizedString::ValidationStepMismatch,
-                               localizedCandidate1, localizedCandidate2),
-          emptyString);
+          GetLocale().QueryString(WebLocalizedString::kValidationStepMismatch,
+                                  localized_candidate1, localized_candidate2),
+          g_empty_string);
     }
     return std::make_pair(
-        locale().queryString(WebLocalizedString::ValidationStepMismatch,
-                             localizedCandidate2, localizedCandidate1),
-        emptyString);
+        GetLocale().QueryString(WebLocalizedString::kValidationStepMismatch,
+                                localized_candidate2, localized_candidate1),
+        g_empty_string);
   }
 
-  return std::make_pair(emptyString, emptyString);
+  return std::make_pair(g_empty_string, g_empty_string);
 }
 
-Decimal InputType::parseToNumber(const String&,
-                                 const Decimal& defaultValue) const {
+Decimal InputType::ParseToNumber(const String&,
+                                 const Decimal& default_value) const {
   NOTREACHED();
-  return defaultValue;
+  return default_value;
 }
 
-Decimal InputType::parseToNumberOrNaN(const String& string) const {
-  return parseToNumber(string, Decimal::nan());
+Decimal InputType::ParseToNumberOrNaN(const String& string) const {
+  return ParseToNumber(string, Decimal::Nan());
 }
 
-String InputType::serialize(const Decimal&) const {
+String InputType::Serialize(const Decimal&) const {
   NOTREACHED();
   return String();
 }
 
-ChromeClient* InputType::chromeClient() const {
-  if (Page* page = element().document().page())
-    return &page->chromeClient();
+ChromeClient* InputType::GetChromeClient() const {
+  if (Page* page = GetElement().GetDocument().GetPage())
+    return &page->GetChromeClient();
   return nullptr;
 }
 
-Locale& InputType::locale() const {
-  return element().locale();
+Locale& InputType::GetLocale() const {
+  return GetElement().GetLocale();
 }
 
-bool InputType::canSetStringValue() const {
+bool InputType::CanSetStringValue() const {
   return true;
 }
 
-bool InputType::isKeyboardFocusable() const {
-  return element().isFocusable();
+bool InputType::IsKeyboardFocusable() const {
+  return GetElement().IsFocusable();
 }
 
-bool InputType::shouldShowFocusRingOnMouseFocus() const {
+bool InputType::ShouldShowFocusRingOnMouseFocus() const {
   return false;
 }
 
-void InputType::enableSecureTextInput() {}
+void InputType::EnableSecureTextInput() {}
 
-void InputType::disableSecureTextInput() {}
+void InputType::DisableSecureTextInput() {}
 
-void InputType::countUsage() {}
+void InputType::CountUsage() {}
 
-bool InputType::shouldRespectAlignAttribute() {
+bool InputType::ShouldRespectAlignAttribute() {
   return false;
 }
 
-void InputType::sanitizeValueInResponseToMinOrMaxAttributeChange() {}
+void InputType::SanitizeValueInResponseToMinOrMaxAttributeChange() {}
 
-bool InputType::canBeSuccessfulSubmitButton() {
+bool InputType::CanBeSuccessfulSubmitButton() {
   return false;
 }
 
-bool InputType::matchesDefaultPseudoClass() {
+bool InputType::MatchesDefaultPseudoClass() {
   return false;
 }
 
-bool InputType::layoutObjectIsNeeded() {
+bool InputType::LayoutObjectIsNeeded() {
   return true;
 }
 
-FileList* InputType::files() {
+FileList* InputType::Files() {
   return nullptr;
 }
 
-void InputType::setFiles(FileList*) {}
+void InputType::SetFiles(FileList*) {}
 
-void InputType::setFilesFromPaths(const Vector<String>& paths) {}
+void InputType::SetFilesFromPaths(const Vector<String>& paths) {}
 
-String InputType::valueInFilenameValueMode() const {
+String InputType::ValueInFilenameValueMode() const {
   NOTREACHED();
   return String();
 }
 
-String InputType::defaultLabel() const {
+String InputType::DefaultLabel() const {
   return String();
 }
 
-bool InputType::canSetSuggestedValue() {
+bool InputType::CanSetSuggestedValue() {
   return false;
 }
 
-bool InputType::shouldSendChangeEventAfterCheckedChanged() {
+bool InputType::ShouldSendChangeEventAfterCheckedChanged() {
   return true;
 }
 
-void InputType::dispatchSearchEvent() {}
+void InputType::DispatchSearchEvent() {}
 
-void InputType::setValue(const String& sanitizedValue,
-                         bool valueChanged,
-                         TextFieldEventBehavior eventBehavior,
+void InputType::SetValue(const String& sanitized_value,
+                         bool value_changed,
+                         TextFieldEventBehavior event_behavior,
                          TextControlSetValueSelection) {
   // This setValue() implementation is used only for ValueMode::kValue except
   // TextFieldInputType. That is to say, type=color, type=range, and temporal
   // input types.
-  DCHECK_EQ(valueMode(), ValueMode::kValue);
-  if (eventBehavior == DispatchNoEvent)
-    element().setNonAttributeValue(sanitizedValue);
+  DCHECK_EQ(GetValueMode(), ValueMode::kValue);
+  if (event_behavior == kDispatchNoEvent)
+    GetElement().SetNonAttributeValue(sanitized_value);
   else
-    element().setNonAttributeValueByUserEdit(sanitizedValue);
-  if (!valueChanged)
+    GetElement().SetNonAttributeValueByUserEdit(sanitized_value);
+  if (!value_changed)
     return;
-  switch (eventBehavior) {
-    case DispatchChangeEvent:
-      element().dispatchFormControlChangeEvent();
+  switch (event_behavior) {
+    case kDispatchChangeEvent:
+      GetElement().DispatchFormControlChangeEvent();
       break;
-    case DispatchInputAndChangeEvent:
-      element().dispatchInputEvent();
-      element().dispatchFormControlChangeEvent();
+    case kDispatchInputAndChangeEvent:
+      GetElement().DispatchInputEvent();
+      GetElement().DispatchFormControlChangeEvent();
       break;
-    case DispatchNoEvent:
+    case kDispatchNoEvent:
       break;
   }
 }
 
-bool InputType::canSetValue(const String&) {
+bool InputType::CanSetValue(const String&) {
   return true;
 }
 
-String InputType::localizeValue(const String& proposedValue) const {
-  return proposedValue;
+String InputType::LocalizeValue(const String& proposed_value) const {
+  return proposed_value;
 }
 
-String InputType::visibleValue() const {
-  return element().value();
+String InputType::VisibleValue() const {
+  return GetElement().value();
 }
 
-String InputType::sanitizeValue(const String& proposedValue) const {
-  return proposedValue;
+String InputType::SanitizeValue(const String& proposed_value) const {
+  return proposed_value;
 }
 
-String InputType::sanitizeUserInputValue(const String& proposedValue) const {
-  return sanitizeValue(proposedValue);
+String InputType::SanitizeUserInputValue(const String& proposed_value) const {
+  return SanitizeValue(proposed_value);
 }
 
-void InputType::warnIfValueIsInvalidAndElementIsVisible(
+void InputType::WarnIfValueIsInvalidAndElementIsVisible(
     const String& value) const {
   // Don't warn if the value is set in Modernizr.
-  const ComputedStyle* style = element().computedStyle();
-  if (style && style->visibility() != EVisibility::kHidden)
-    warnIfValueIsInvalid(value);
+  const ComputedStyle* style = GetElement().GetComputedStyle();
+  if (style && style->Visibility() != EVisibility::kHidden)
+    WarnIfValueIsInvalid(value);
 }
 
-void InputType::warnIfValueIsInvalid(const String&) const {}
+void InputType::WarnIfValueIsInvalid(const String&) const {}
 
-bool InputType::receiveDroppedFiles(const DragData*) {
+bool InputType::ReceiveDroppedFiles(const DragData*) {
   NOTREACHED();
   return false;
 }
 
-String InputType::droppedFileSystemId() {
+String InputType::DroppedFileSystemId() {
   NOTREACHED();
   return String();
 }
 
-bool InputType::shouldRespectListAttribute() {
+bool InputType::ShouldRespectListAttribute() {
   return false;
 }
 
-bool InputType::isTextButton() const {
+bool InputType::IsTextButton() const {
   return false;
 }
 
-bool InputType::isInteractiveContent() const {
+bool InputType::IsInteractiveContent() const {
   return true;
 }
 
-bool InputType::isEnumeratable() {
+bool InputType::IsEnumeratable() {
   return true;
 }
 
-bool InputType::isCheckable() {
+bool InputType::IsCheckable() {
   return false;
 }
 
-bool InputType::isSteppable() const {
+bool InputType::IsSteppable() const {
   return false;
 }
 
-bool InputType::shouldRespectHeightAndWidthAttributes() {
+bool InputType::ShouldRespectHeightAndWidthAttributes() {
   return false;
 }
 
-int InputType::maxLength() const {
+int InputType::MaxLength() const {
   return -1;
 }
 
-int InputType::minLength() const {
+int InputType::MinLength() const {
   return 0;
 }
 
-bool InputType::supportsPlaceholder() const {
+bool InputType::SupportsPlaceholder() const {
   return false;
 }
 
-bool InputType::supportsReadOnly() const {
+bool InputType::SupportsReadOnly() const {
   return false;
 }
 
-String InputType::defaultToolTip(const InputTypeView& inputTypeView) const {
-  if (element().form() && element().form()->noValidate())
+String InputType::DefaultToolTip(const InputTypeView& input_type_view) const {
+  if (GetElement().Form() && GetElement().Form()->NoValidate())
     return String();
-  return validationMessage(inputTypeView).first;
+  return ValidationMessage(input_type_view).first;
 }
 
-Decimal InputType::findClosestTickMarkValue(const Decimal&) {
+Decimal InputType::FindClosestTickMarkValue(const Decimal&) {
   NOTREACHED();
-  return Decimal::nan();
+  return Decimal::Nan();
 }
 
-bool InputType::hasLegalLinkAttribute(const QualifiedName&) const {
+bool InputType::HasLegalLinkAttribute(const QualifiedName&) const {
   return false;
 }
 
-const QualifiedName& InputType::subResourceAttributeName() const {
-  return QualifiedName::null();
+const QualifiedName& InputType::SubResourceAttributeName() const {
+  return QualifiedName::Null();
 }
 
-bool InputType::supportsAutocapitalize() const {
+bool InputType::SupportsAutocapitalize() const {
   return false;
 }
 
-const AtomicString& InputType::defaultAutocapitalize() const {
+const AtomicString& InputType::DefaultAutocapitalize() const {
   DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
   return none;
 }
 
-void InputType::copyNonAttributeProperties(const HTMLInputElement&) {}
+void InputType::CopyNonAttributeProperties(const HTMLInputElement&) {}
 
-void InputType::onAttachWithLayoutObject() {}
+void InputType::OnAttachWithLayoutObject() {}
 
-void InputType::onDetachWithLayoutObject() {}
+void InputType::OnDetachWithLayoutObject() {}
 
-bool InputType::shouldAppearIndeterminate() const {
+bool InputType::ShouldAppearIndeterminate() const {
   return false;
 }
 
-bool InputType::supportsInputModeAttribute() const {
+bool InputType::SupportsInputModeAttribute() const {
   return false;
 }
 
-bool InputType::supportsSelectionAPI() const {
+bool InputType::SupportsSelectionAPI() const {
   return false;
 }
 
-unsigned InputType::height() const {
+unsigned InputType::Height() const {
   return 0;
 }
 
-unsigned InputType::width() const {
+unsigned InputType::Width() const {
   return 0;
 }
 
-ColorChooserClient* InputType::colorChooserClient() {
+ColorChooserClient* InputType::GetColorChooserClient() {
   return nullptr;
 }
 
-void InputType::applyStep(const Decimal& current,
+void InputType::ApplyStep(const Decimal& current,
                           double count,
-                          AnyStepHandling anyStepHandling,
-                          TextFieldEventBehavior eventBehavior,
-                          ExceptionState& exceptionState) {
+                          AnyStepHandling any_step_handling,
+                          TextFieldEventBehavior event_behavior,
+                          ExceptionState& exception_state) {
   // https://html.spec.whatwg.org/multipage/forms.html#dom-input-stepup
 
-  StepRange stepRange(createStepRange(anyStepHandling));
+  StepRange step_range(CreateStepRange(any_step_handling));
   // 2. If the element has no allowed value step, then throw an
   // InvalidStateError exception, and abort these steps.
-  if (!stepRange.hasStep()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+  if (!step_range.HasStep()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "This form element does not have an allowed value step.");
     return;
   }
 
   // 3. If the element has a minimum and a maximum and the minimum is greater
   // than the maximum, then abort these steps.
-  if (stepRange.minimum() > stepRange.maximum())
+  if (step_range.Minimum() > step_range.Maximum())
     return;
 
   // 4. If the element has a minimum and a maximum and there is no value
   // greater than or equal to the element's minimum and less than or equal to
   // the element's maximum that, when subtracted from the step base, is an
   // integral multiple of the allowed value step, then abort these steps.
-  Decimal alignedMaximum = stepRange.stepSnappedMaximum();
-  if (!alignedMaximum.isFinite())
+  Decimal aligned_maximum = step_range.StepSnappedMaximum();
+  if (!aligned_maximum.IsFinite())
     return;
 
-  Decimal base = stepRange.stepBase();
-  Decimal step = stepRange.step();
+  Decimal base = step_range.StepBase();
+  Decimal step = step_range.Step();
   EventQueueScope scope;
-  Decimal newValue = current;
-  const AtomicString& stepString = element().fastGetAttribute(stepAttr);
-  if (!equalIgnoringCase(stepString, "any") &&
-      stepRange.stepMismatch(current)) {
+  Decimal new_value = current;
+  const AtomicString& step_string = GetElement().FastGetAttribute(stepAttr);
+  if (!EqualIgnoringCase(step_string, "any") &&
+      step_range.StepMismatch(current)) {
     // Snap-to-step / clamping steps
     // If the current value is not matched to step value:
     // - The value should be the larger matched value nearest to 0 if count > 0
@@ -724,70 +727,70 @@ void InputType::applyStep(const Decimal& current,
     //   e.g. <input type=number value=3 min=-100 step=3> -> 2
     //
 
-    DCHECK(!step.isZero());
+    DCHECK(!step.IsZero());
     if (count < 0) {
-      newValue = base + ((newValue - base) / step).floor() * step;
+      new_value = base + ((new_value - base) / step).Floor() * step;
       ++count;
     } else if (count > 0) {
-      newValue = base + ((newValue - base) / step).ceil() * step;
+      new_value = base + ((new_value - base) / step).Ceil() * step;
       --count;
     }
   }
-  newValue = newValue + stepRange.step() * Decimal::fromDouble(count);
+  new_value = new_value + step_range.Step() * Decimal::FromDouble(count);
 
-  if (!equalIgnoringCase(stepString, "any"))
-    newValue = stepRange.alignValueForStep(current, newValue);
+  if (!EqualIgnoringCase(step_string, "any"))
+    new_value = step_range.AlignValueForStep(current, new_value);
 
   // 7. If the element has a minimum, and value is less than that minimum,
   // then set value to the smallest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is more
   // than or equal to minimum.
-  if (newValue < stepRange.minimum()) {
-    const Decimal alignedMinimum =
-        base + ((stepRange.minimum() - base) / step).ceil() * step;
-    DCHECK_GE(alignedMinimum, stepRange.minimum());
-    newValue = alignedMinimum;
+  if (new_value < step_range.Minimum()) {
+    const Decimal aligned_minimum =
+        base + ((step_range.Minimum() - base) / step).Ceil() * step;
+    DCHECK_GE(aligned_minimum, step_range.Minimum());
+    new_value = aligned_minimum;
   }
 
   // 8. If the element has a maximum, and value is greater than that maximum,
   // then set value to the largest value that, when subtracted from the step
   // base, is an integral multiple of the allowed value step, and that is less
   // than or equal to maximum.
-  if (newValue > stepRange.maximum())
-    newValue = alignedMaximum;
+  if (new_value > step_range.Maximum())
+    new_value = aligned_maximum;
 
   // 9. Let value as string be the result of running the algorithm to convert
   // a number to a string, as defined for the input element's type attribute's
   // current state, on value.
   // 10. Set the value of the element to value as string.
-  setValueAsDecimal(newValue, eventBehavior, exceptionState);
+  SetValueAsDecimal(new_value, event_behavior, exception_state);
 
-  if (AXObjectCache* cache = element().document().existingAXObjectCache())
-    cache->handleValueChanged(&element());
+  if (AXObjectCache* cache = GetElement().GetDocument().ExistingAXObjectCache())
+    cache->HandleValueChanged(&GetElement());
 }
 
-bool InputType::getAllowedValueStep(Decimal* step) const {
-  StepRange stepRange(createStepRange(RejectAny));
-  *step = stepRange.step();
-  return stepRange.hasStep();
+bool InputType::GetAllowedValueStep(Decimal* step) const {
+  StepRange step_range(CreateStepRange(kRejectAny));
+  *step = step_range.Step();
+  return step_range.HasStep();
 }
 
-StepRange InputType::createStepRange(AnyStepHandling) const {
+StepRange InputType::CreateStepRange(AnyStepHandling) const {
   NOTREACHED();
   return StepRange();
 }
 
-void InputType::stepUp(double n, ExceptionState& exceptionState) {
-  if (!isSteppable()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "This form element is not steppable.");
+void InputType::StepUp(double n, ExceptionState& exception_state) {
+  if (!IsSteppable()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "This form element is not steppable.");
     return;
   }
-  const Decimal current = parseToNumber(element().value(), 0);
-  applyStep(current, n, RejectAny, DispatchNoEvent, exceptionState);
+  const Decimal current = ParseToNumber(GetElement().value(), 0);
+  ApplyStep(current, n, kRejectAny, kDispatchNoEvent, exception_state);
 }
 
-void InputType::stepUpFromLayoutObject(int n) {
+void InputType::StepUpFromLayoutObject(int n) {
   // The only difference from stepUp()/stepDown() is the extra treatment
   // of the current value before applying the step:
   //
@@ -819,24 +822,24 @@ void InputType::stepUpFromLayoutObject(int n) {
   //
   // n is assumed as -n if step < 0.
 
-  DCHECK(isSteppable());
-  if (!isSteppable())
+  DCHECK(IsSteppable());
+  if (!IsSteppable())
     return;
   DCHECK(n);
   if (!n)
     return;
 
-  StepRange stepRange(createStepRange(AnyIsDefaultStep));
+  StepRange step_range(CreateStepRange(kAnyIsDefaultStep));
 
   // FIXME: Not any changes after stepping, even if it is an invalid value, may
   // be better.
   // (e.g. Stepping-up for <input type="number" value="foo" step="any" /> =>
   // "foo")
-  if (!stepRange.hasStep())
+  if (!step_range.HasStep())
     return;
 
   EventQueueScope scope;
-  const Decimal step = stepRange.step();
+  const Decimal step = step_range.Step();
 
   int sign;
   if (step > 0)
@@ -846,75 +849,76 @@ void InputType::stepUpFromLayoutObject(int n) {
   else
     sign = 0;
 
-  Decimal current = parseToNumberOrNaN(element().value());
-  if (!current.isFinite()) {
-    current = defaultValueForStepUp();
-    const Decimal nextDiff = step * n;
-    if (current < stepRange.minimum() - nextDiff)
-      current = stepRange.minimum() - nextDiff;
-    if (current > stepRange.maximum() - nextDiff)
-      current = stepRange.maximum() - nextDiff;
-    setValueAsDecimal(current, DispatchNoEvent, IGNORE_EXCEPTION_FOR_TESTING);
+  Decimal current = ParseToNumberOrNaN(GetElement().value());
+  if (!current.IsFinite()) {
+    current = DefaultValueForStepUp();
+    const Decimal next_diff = step * n;
+    if (current < step_range.Minimum() - next_diff)
+      current = step_range.Minimum() - next_diff;
+    if (current > step_range.Maximum() - next_diff)
+      current = step_range.Maximum() - next_diff;
+    SetValueAsDecimal(current, kDispatchNoEvent, IGNORE_EXCEPTION_FOR_TESTING);
   }
-  if ((sign > 0 && current < stepRange.minimum()) ||
-      (sign < 0 && current > stepRange.maximum())) {
-    setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(),
-                      DispatchChangeEvent, IGNORE_EXCEPTION_FOR_TESTING);
+  if ((sign > 0 && current < step_range.Minimum()) ||
+      (sign < 0 && current > step_range.Maximum())) {
+    SetValueAsDecimal(sign > 0 ? step_range.Minimum() : step_range.Maximum(),
+                      kDispatchChangeEvent, IGNORE_EXCEPTION_FOR_TESTING);
     return;
   }
-  if ((sign > 0 && current >= stepRange.maximum()) ||
-      (sign < 0 && current <= stepRange.minimum()))
+  if ((sign > 0 && current >= step_range.Maximum()) ||
+      (sign < 0 && current <= step_range.Minimum()))
     return;
-  applyStep(current, n, AnyIsDefaultStep, DispatchChangeEvent,
+  ApplyStep(current, n, kAnyIsDefaultStep, kDispatchChangeEvent,
             IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void InputType::countUsageIfVisible(UseCounter::Feature feature) const {
-  if (const ComputedStyle* style = element().computedStyle()) {
-    if (style->visibility() != EVisibility::kHidden)
-      UseCounter::count(element().document(), feature);
+void InputType::CountUsageIfVisible(UseCounter::Feature feature) const {
+  if (const ComputedStyle* style = GetElement().GetComputedStyle()) {
+    if (style->Visibility() != EVisibility::kHidden)
+      UseCounter::Count(GetElement().GetDocument(), feature);
   }
 }
 
-Decimal InputType::findStepBase(const Decimal& defaultValue) const {
-  Decimal stepBase =
-      parseToNumber(element().fastGetAttribute(minAttr), Decimal::nan());
-  if (!stepBase.isFinite())
-    stepBase =
-        parseToNumber(element().fastGetAttribute(valueAttr), defaultValue);
-  return stepBase;
+Decimal InputType::FindStepBase(const Decimal& default_value) const {
+  Decimal step_base =
+      ParseToNumber(GetElement().FastGetAttribute(minAttr), Decimal::Nan());
+  if (!step_base.IsFinite())
+    step_base =
+        ParseToNumber(GetElement().FastGetAttribute(valueAttr), default_value);
+  return step_base;
 }
 
-StepRange InputType::createStepRange(
-    AnyStepHandling anyStepHandling,
-    const Decimal& stepBaseDefault,
-    const Decimal& minimumDefault,
-    const Decimal& maximumDefault,
-    const StepRange::StepDescription& stepDescription) const {
-  bool hasRangeLimitations = false;
-  const Decimal stepBase = findStepBase(stepBaseDefault);
-  Decimal minimum = parseToNumberOrNaN(element().fastGetAttribute(minAttr));
-  if (minimum.isFinite())
-    hasRangeLimitations = true;
+StepRange InputType::CreateStepRange(
+    AnyStepHandling any_step_handling,
+    const Decimal& step_base_default,
+    const Decimal& minimum_default,
+    const Decimal& maximum_default,
+    const StepRange::StepDescription& step_description) const {
+  bool has_range_limitations = false;
+  const Decimal step_base = FindStepBase(step_base_default);
+  Decimal minimum = ParseToNumberOrNaN(GetElement().FastGetAttribute(minAttr));
+  if (minimum.IsFinite())
+    has_range_limitations = true;
   else
-    minimum = minimumDefault;
-  Decimal maximum = parseToNumberOrNaN(element().fastGetAttribute(maxAttr));
-  if (maximum.isFinite())
-    hasRangeLimitations = true;
+    minimum = minimum_default;
+  Decimal maximum = ParseToNumberOrNaN(GetElement().FastGetAttribute(maxAttr));
+  if (maximum.IsFinite())
+    has_range_limitations = true;
   else
-    maximum = maximumDefault;
-  const Decimal step = StepRange::parseStep(
-      anyStepHandling, stepDescription, element().fastGetAttribute(stepAttr));
-  return StepRange(stepBase, minimum, maximum, hasRangeLimitations, step,
-                   stepDescription);
+    maximum = maximum_default;
+  const Decimal step =
+      StepRange::ParseStep(any_step_handling, step_description,
+                           GetElement().FastGetAttribute(stepAttr));
+  return StepRange(step_base, minimum, maximum, has_range_limitations, step,
+                   step_description);
 }
 
-void InputType::addWarningToConsole(const char* messageFormat,
+void InputType::AddWarningToConsole(const char* message_format,
                                     const String& value) const {
-  element().document().addConsoleMessage(ConsoleMessage::create(
-      RenderingMessageSource, WarningMessageLevel,
-      String::format(messageFormat,
-                     JSONValue::quoteString(value).utf8().data())));
+  GetElement().GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+      kRenderingMessageSource, kWarningMessageLevel,
+      String::Format(message_format,
+                     JSONValue::QuoteString(value).Utf8().Data())));
 }
 
 }  // namespace blink

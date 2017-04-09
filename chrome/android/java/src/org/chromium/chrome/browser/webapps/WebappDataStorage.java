@@ -199,19 +199,16 @@ public class WebappDataStorage {
         // Use "standalone" as the default display mode as this was the original assumed default for
         // all web apps.
         return ShortcutHelper.createWebappShortcutIntent(mId,
-                mPreferences.getString(KEY_ACTION, null),
-                mPreferences.getString(KEY_URL, null),
-                mPreferences.getString(KEY_SCOPE, null),
-                mPreferences.getString(KEY_NAME, null),
+                mPreferences.getString(KEY_ACTION, null), mPreferences.getString(KEY_URL, null),
+                mPreferences.getString(KEY_SCOPE, null), mPreferences.getString(KEY_NAME, null),
                 mPreferences.getString(KEY_SHORT_NAME, null),
-                ShortcutHelper.decodeBitmapFromString(
-                        mPreferences.getString(KEY_ICON, null)), version,
-                mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.Standalone),
+                ShortcutHelper.decodeBitmapFromString(mPreferences.getString(KEY_ICON, null)),
+                version, mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.kStandalone),
                 mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
-                mPreferences.getLong(KEY_THEME_COLOR,
-                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
-                mPreferences.getLong(KEY_BACKGROUND_COLOR,
-                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
+                mPreferences.getLong(
+                        KEY_THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
+                mPreferences.getLong(
+                        KEY_BACKGROUND_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
                 mPreferences.getBoolean(KEY_IS_ICON_GENERATED, false));
     }
 
@@ -259,9 +256,9 @@ public class WebappDataStorage {
             editor.putInt(KEY_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
 
             // "Standalone" was the original assumed default for all web apps.
-            editor.putInt(KEY_DISPLAY_MODE, IntentUtils.safeGetIntExtra(
-                        shortcutIntent, ShortcutHelper.EXTRA_DISPLAY_MODE,
-                        WebDisplayMode.Standalone));
+            editor.putInt(KEY_DISPLAY_MODE,
+                    IntentUtils.safeGetIntExtra(shortcutIntent, ShortcutHelper.EXTRA_DISPLAY_MODE,
+                            WebDisplayMode.kStandalone));
             editor.putInt(KEY_ORIENTATION, IntentUtils.safeGetIntExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_ORIENTATION,
                         ScreenOrientationValues.DEFAULT));

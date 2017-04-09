@@ -20,102 +20,102 @@ namespace {
 
 TEST(ServiceWorkerRequestTest, FromString) {
   V8TestingScope scope;
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
 
-  KURL url(ParsedURLString, "http://www.example.com/");
+  KURL url(kParsedURLString, "http://www.example.com/");
   Request* request =
-      Request::create(scope.getScriptState(), url, exceptionState);
-  ASSERT_FALSE(exceptionState.hadException());
+      Request::Create(scope.GetScriptState(), url, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
   ASSERT(request);
   EXPECT_EQ(url, request->url());
 }
 
 TEST(ServiceWorkerRequestTest, FromRequest) {
   V8TestingScope scope;
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
 
-  KURL url(ParsedURLString, "http://www.example.com/");
+  KURL url(kParsedURLString, "http://www.example.com/");
   Request* request1 =
-      Request::create(scope.getScriptState(), url, exceptionState);
+      Request::Create(scope.GetScriptState(), url, exception_state);
   ASSERT(request1);
 
   Request* request2 =
-      Request::create(scope.getScriptState(), request1, exceptionState);
-  ASSERT_FALSE(exceptionState.hadException());
+      Request::Create(scope.GetScriptState(), request1, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
   ASSERT(request2);
   EXPECT_EQ(url, request2->url());
 }
 
 TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   V8TestingScope scope;
-  WebServiceWorkerRequest webRequest;
+  WebServiceWorkerRequest web_request;
 
-  const KURL url(ParsedURLString, "http://www.example.com/");
+  const KURL url(kParsedURLString, "http://www.example.com/");
   const String method = "GET";
   struct {
     const char* key;
     const char* value;
   } headers[] = {{"X-Foo", "bar"}, {"X-Quux", "foop"}, {0, 0}};
   const String referrer = "http://www.referrer.com/";
-  const WebReferrerPolicy referrerPolicy = WebReferrerPolicyAlways;
-  const WebURLRequest::RequestContext context =
-      WebURLRequest::RequestContextAudio;
-  const WebURLRequest::FetchRequestMode mode =
-      WebURLRequest::FetchRequestModeNavigate;
+  const WebReferrerPolicy kReferrerPolicy = kWebReferrerPolicyAlways;
+  const WebURLRequest::RequestContext kContext =
+      WebURLRequest::kRequestContextAudio;
+  const WebURLRequest::FetchRequestMode kMode =
+      WebURLRequest::kFetchRequestModeNavigate;
 
-  webRequest.setURL(url);
-  webRequest.setMethod(method);
-  webRequest.setRequestContext(context);
-  webRequest.setMode(mode);
+  web_request.SetURL(url);
+  web_request.SetMethod(method);
+  web_request.SetRequestContext(kContext);
+  web_request.SetMode(kMode);
   for (int i = 0; headers[i].key; ++i)
-    webRequest.setHeader(WebString::fromUTF8(headers[i].key),
-                         WebString::fromUTF8(headers[i].value));
-  webRequest.setReferrer(referrer, referrerPolicy);
+    web_request.SetHeader(WebString::FromUTF8(headers[i].key),
+                          WebString::FromUTF8(headers[i].value));
+  web_request.SetReferrer(referrer, kReferrerPolicy);
 
-  Request* request = Request::create(scope.getScriptState(), webRequest);
+  Request* request = Request::Create(scope.GetScriptState(), web_request);
   ASSERT(request);
   EXPECT_EQ(url, request->url());
   EXPECT_EQ(method, request->method());
-  EXPECT_EQ("audio", request->context());
+  EXPECT_EQ("audio", request->Context());
   EXPECT_EQ(referrer, request->referrer());
   EXPECT_EQ("navigate", request->mode());
 
-  Headers* requestHeaders = request->getHeaders();
+  Headers* request_headers = request->getHeaders();
 
-  WTF::HashMap<String, String> headersMap;
+  WTF::HashMap<String, String> headers_map;
   for (int i = 0; headers[i].key; ++i)
-    headersMap.insert(headers[i].key, headers[i].value);
-  EXPECT_EQ(headersMap.size(), requestHeaders->headerList()->size());
-  for (WTF::HashMap<String, String>::iterator iter = headersMap.begin();
-       iter != headersMap.end(); ++iter) {
-    DummyExceptionStateForTesting exceptionState;
-    EXPECT_EQ(iter->value, requestHeaders->get(iter->key, exceptionState));
-    EXPECT_FALSE(exceptionState.hadException());
+    headers_map.insert(headers[i].key, headers[i].value);
+  EXPECT_EQ(headers_map.size(), request_headers->HeaderList()->size());
+  for (WTF::HashMap<String, String>::iterator iter = headers_map.begin();
+       iter != headers_map.end(); ++iter) {
+    DummyExceptionStateForTesting exception_state;
+    EXPECT_EQ(iter->value, request_headers->get(iter->key, exception_state));
+    EXPECT_FALSE(exception_state.HadException());
   }
 
-  WebServiceWorkerRequest secondWebRequest;
-  request->populateWebServiceWorkerRequest(secondWebRequest);
-  EXPECT_EQ(url, KURL(secondWebRequest.url()));
-  EXPECT_EQ(method, String(secondWebRequest.method()));
-  EXPECT_EQ(context, secondWebRequest.requestContext());
-  EXPECT_EQ(referrer, KURL(secondWebRequest.referrerUrl()));
-  EXPECT_EQ(WebReferrerPolicyAlways, secondWebRequest.getReferrerPolicy());
-  EXPECT_EQ(webRequest.headers(), secondWebRequest.headers());
-  EXPECT_EQ(WebURLRequest::FetchRequestModeNoCORS, secondWebRequest.mode());
+  WebServiceWorkerRequest second_web_request;
+  request->PopulateWebServiceWorkerRequest(second_web_request);
+  EXPECT_EQ(url, KURL(second_web_request.Url()));
+  EXPECT_EQ(method, String(second_web_request.Method()));
+  EXPECT_EQ(kContext, second_web_request.GetRequestContext());
+  EXPECT_EQ(referrer, KURL(second_web_request.ReferrerUrl()));
+  EXPECT_EQ(kWebReferrerPolicyAlways, second_web_request.GetReferrerPolicy());
+  EXPECT_EQ(web_request.Headers(), second_web_request.Headers());
+  EXPECT_EQ(WebURLRequest::kFetchRequestModeNoCORS, second_web_request.Mode());
 }
 
 TEST(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment) {
   V8TestingScope scope;
-  DummyExceptionStateForTesting exceptionState;
-  String urlWithoutFragment = "http://www.example.com/";
-  String url = urlWithoutFragment + "#fragment";
+  DummyExceptionStateForTesting exception_state;
+  String url_without_fragment = "http://www.example.com/";
+  String url = url_without_fragment + "#fragment";
   Request* request =
-      Request::create(scope.getScriptState(), url, exceptionState);
+      Request::Create(scope.GetScriptState(), url, exception_state);
   ASSERT(request);
 
-  WebServiceWorkerRequest webRequest;
-  request->populateWebServiceWorkerRequest(webRequest);
-  EXPECT_EQ(urlWithoutFragment, KURL(webRequest.url()));
+  WebServiceWorkerRequest web_request;
+  request->PopulateWebServiceWorkerRequest(web_request);
+  EXPECT_EQ(url_without_fragment, KURL(web_request.Url()));
 }
 
 }  // namespace

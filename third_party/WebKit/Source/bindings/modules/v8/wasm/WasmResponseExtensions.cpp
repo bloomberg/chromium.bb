@@ -24,48 +24,48 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
 
  public:
   FetchDataLoaderAsWasmModule(ScriptPromiseResolver* resolver,
-                              ScriptState* scriptState)
-      : m_resolver(resolver),
-        m_builder(scriptState->isolate()),
-        m_scriptState(scriptState) {}
+                              ScriptState* script_state)
+      : resolver_(resolver),
+        builder_(script_state->GetIsolate()),
+        script_state_(script_state) {}
 
-  void start(BytesConsumer* consumer,
+  void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
-    DCHECK(!m_consumer);
-    DCHECK(!m_client);
-    m_client = client;
-    m_consumer = consumer;
-    m_consumer->setClient(this);
-    onStateChange();
+    DCHECK(!consumer_);
+    DCHECK(!client_);
+    client_ = client;
+    consumer_ = consumer;
+    consumer_->SetClient(this);
+    OnStateChange();
   }
 
-  void onStateChange() override {
+  void OnStateChange() override {
     while (true) {
       // {buffer} is owned by {m_consumer}.
       const char* buffer = nullptr;
       size_t available = 0;
-      BytesConsumer::Result result = m_consumer->beginRead(&buffer, &available);
+      BytesConsumer::Result result = consumer_->BeginRead(&buffer, &available);
 
-      if (result == BytesConsumer::Result::ShouldWait)
+      if (result == BytesConsumer::Result::kShouldWait)
         return;
-      if (result == BytesConsumer::Result::Ok) {
+      if (result == BytesConsumer::Result::kOk) {
         if (available > 0) {
           DCHECK_NE(buffer, nullptr);
-          m_builder.OnBytesReceived(reinterpret_cast<const uint8_t*>(buffer),
-                                    available);
+          builder_.OnBytesReceived(reinterpret_cast<const uint8_t*>(buffer),
+                                   available);
         }
-        result = m_consumer->endRead(available);
+        result = consumer_->EndRead(available);
       }
       switch (result) {
-        case BytesConsumer::Result::ShouldWait:
+        case BytesConsumer::Result::kShouldWait:
           NOTREACHED();
           return;
-        case BytesConsumer::Result::Ok: {
+        case BytesConsumer::Result::kOk: {
           break;
         }
-        case BytesConsumer::Result::Done: {
-          v8::Isolate* isolate = m_scriptState->isolate();
-          ScriptState::Scope scope(m_scriptState.get());
+        case BytesConsumer::Result::kDone: {
+          v8::Isolate* isolate = script_state_->GetIsolate();
+          ScriptState::Scope scope(script_state_.Get());
 
           {
             // The TryCatch destructor will clear the exception. We
@@ -73,53 +73,53 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
             // lifetime of the exception.
             v8::TryCatch trycatch(isolate);
             v8::Local<v8::WasmCompiledModule> module;
-            if (m_builder.Finish().ToLocal(&module)) {
+            if (builder_.Finish().ToLocal(&module)) {
               DCHECK(!trycatch.HasCaught());
-              ScriptValue scriptValue(m_scriptState.get(), module);
-              m_resolver->resolve(scriptValue);
+              ScriptValue script_value(script_state_.Get(), module);
+              resolver_->Resolve(script_value);
             } else {
               DCHECK(trycatch.HasCaught());
-              m_resolver->reject(trycatch.Exception());
+              resolver_->Reject(trycatch.Exception());
             }
           }
 
-          m_client->didFetchDataLoadedCustomFormat();
+          client_->DidFetchDataLoadedCustomFormat();
           return;
         }
-        case BytesConsumer::Result::Error: {
+        case BytesConsumer::Result::kError: {
           // TODO(mtrofin): do we need an abort on the wasm side?
           // Something like "m_outStream->abort()" maybe?
-          return rejectPromise();
+          return RejectPromise();
         }
       }
     }
   }
 
-  void cancel() override {
-    m_consumer->cancel();
-    return rejectPromise();
+  void Cancel() override {
+    consumer_->Cancel();
+    return RejectPromise();
   }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_consumer);
-    visitor->trace(m_resolver);
-    visitor->trace(m_client);
-    FetchDataLoader::trace(visitor);
-    BytesConsumer::Client::trace(visitor);
+    visitor->Trace(consumer_);
+    visitor->Trace(resolver_);
+    visitor->Trace(client_);
+    FetchDataLoader::Trace(visitor);
+    BytesConsumer::Client::Trace(visitor);
   }
 
  private:
   // TODO(mtrofin): replace with spec-ed error types, once spec clarifies
   // what they are.
-  void rejectPromise() {
-    m_resolver->reject(V8ThrowException::createTypeError(
-        m_scriptState->isolate(), "Could not download wasm module"));
+  void RejectPromise() {
+    resolver_->Reject(V8ThrowException::CreateTypeError(
+        script_state_->GetIsolate(), "Could not download wasm module"));
   }
-  Member<BytesConsumer> m_consumer;
-  Member<ScriptPromiseResolver> m_resolver;
-  Member<FetchDataLoader::Client> m_client;
-  v8::WasmModuleObjectBuilder m_builder;
-  const RefPtr<ScriptState> m_scriptState;
+  Member<BytesConsumer> consumer_;
+  Member<ScriptPromiseResolver> resolver_;
+  Member<FetchDataLoader::Client> client_;
+  v8::WasmModuleObjectBuilder builder_;
+  const RefPtr<ScriptState> script_state_;
 };
 
 // TODO(mtrofin): WasmDataLoaderClient is necessary so we may provide an
@@ -133,67 +133,67 @@ class WasmDataLoaderClient final
 
  public:
   explicit WasmDataLoaderClient() {}
-  void didFetchDataLoadedCustomFormat() override {}
-  void didFetchDataLoadFailed() override { NOTREACHED(); }
+  void DidFetchDataLoadedCustomFormat() override {}
+  void DidFetchDataLoadFailed() override { NOTREACHED(); }
 };
 
 // This callback may be entered as a promise is resolved, or directly
 // from the overload callback.
 // See
 // https://github.com/WebAssembly/design/blob/master/Web.md#webassemblycompile
-void compileFromResponseCallback(
+void CompileFromResponseCallback(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ExceptionState exceptionState(args.GetIsolate(),
-                                ExceptionState::ExecutionContext, "WebAssembly",
-                                "compile");
-  ExceptionToRejectPromiseScope rejectPromiseScope(args, exceptionState);
+  ExceptionState exception_state(args.GetIsolate(),
+                                 ExceptionState::kExecutionContext,
+                                 "WebAssembly", "compile");
+  ExceptionToRejectPromiseScope reject_promise_scope(args, exception_state);
 
-  ScriptState* scriptState = ScriptState::forReceiverObject(args);
-  if (!scriptState->getExecutionContext()) {
-    v8SetReturnValue(args, ScriptPromise().v8Value());
+  ScriptState* script_state = ScriptState::ForReceiverObject(args);
+  if (!script_state->GetExecutionContext()) {
+    V8SetReturnValue(args, ScriptPromise().V8Value());
     return;
   }
 
   if (args.Length() < 1 || !args[0]->IsObject() ||
       !V8Response::hasInstance(args[0], args.GetIsolate())) {
-    v8SetReturnValue(
-        args, ScriptPromise::reject(
-                  scriptState, V8ThrowException::createTypeError(
-                                   scriptState->isolate(),
-                                   "Promise argument must be called with a "
-                                   "Promise<Response> object"))
-                  .v8Value());
+    V8SetReturnValue(
+        args, ScriptPromise::Reject(
+                  script_state, V8ThrowException::CreateTypeError(
+                                    script_state->GetIsolate(),
+                                    "Promise argument must be called with a "
+                                    "Promise<Response> object"))
+                  .V8Value());
     return;
   }
 
   Response* response = V8Response::toImpl(v8::Local<v8::Object>::Cast(args[0]));
   ScriptPromise promise;
-  if (response->isBodyLocked() || response->bodyUsed()) {
-    promise = ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(
-            scriptState->isolate(),
+  if (response->IsBodyLocked() || response->bodyUsed()) {
+    promise = ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(),
             "Cannot compile WebAssembly.Module from an already read Response"));
   } else {
     ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::create(scriptState);
-    if (response->bodyBuffer()) {
-      promise = resolver->promise();
-      response->bodyBuffer()->startLoading(
-          new FetchDataLoaderAsWasmModule(resolver, scriptState),
+        ScriptPromiseResolver::Create(script_state);
+    if (response->BodyBuffer()) {
+      promise = resolver->Promise();
+      response->BodyBuffer()->StartLoading(
+          new FetchDataLoaderAsWasmModule(resolver, script_state),
           new WasmDataLoaderClient());
     } else {
-      promise = ScriptPromise::reject(
-          scriptState,
-          V8ThrowException::createTypeError(
-              scriptState->isolate(), "Response object has a null body."));
+      promise = ScriptPromise::Reject(
+          script_state,
+          V8ThrowException::CreateTypeError(
+              script_state->GetIsolate(), "Response object has a null body."));
     }
   }
-  v8SetReturnValue(args, promise.v8Value());
+  V8SetReturnValue(args, promise.V8Value());
 }
 
 // See https://crbug.com/708238 for tracking avoiding the hand-generated code.
-bool wasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
+bool WasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() < 1 || !args[0]->IsObject())
     return false;
 
@@ -202,33 +202,33 @@ bool wasmCompileOverload(const v8::FunctionCallbackInfo<v8::Value>& args) {
     return false;
 
   v8::Isolate* isolate = args.GetIsolate();
-  ScriptState* scriptState = ScriptState::forReceiverObject(args);
+  ScriptState* script_state = ScriptState::ForReceiverObject(args);
 
-  v8::Local<v8::Function> compileCallback =
-      v8::Function::New(isolate, compileFromResponseCallback);
+  v8::Local<v8::Function> compile_callback =
+      v8::Function::New(isolate, CompileFromResponseCallback);
 
-  ScriptPromiseResolver* scriptPromiseResolver =
-      ScriptPromiseResolver::create(scriptState);
+  ScriptPromiseResolver* script_promise_resolver =
+      ScriptPromiseResolver::Create(script_state);
   // treat either case of parameter as
   // Promise.resolve(parameter)
   // as per https://www.w3.org/2001/tag/doc/promises-guide#resolve-arguments
 
   // Ending with:
   //    return Promise.resolve(parameter).then(compileCallback);
-  ScriptPromise parameterAsPromise = scriptPromiseResolver->promise();
-  v8SetReturnValue(args, ScriptPromise::cast(scriptState, args[0])
-                             .then(compileCallback)
-                             .v8Value());
+  ScriptPromise parameter_as_promise = script_promise_resolver->Promise();
+  V8SetReturnValue(args, ScriptPromise::Cast(script_state, args[0])
+                             .Then(compile_callback)
+                             .V8Value());
 
   // resolve the first parameter promise.
-  scriptPromiseResolver->resolve(ScriptValue::from(scriptState, args[0]));
+  script_promise_resolver->Resolve(ScriptValue::From(script_state, args[0]));
   return true;
 }
 
 }  // namespace
 
-void WasmResponseExtensions::initialize(v8::Isolate* isolate) {
-  isolate->SetWasmCompileCallback(wasmCompileOverload);
+void WasmResponseExtensions::Initialize(v8::Isolate* isolate) {
+  isolate->SetWasmCompileCallback(WasmCompileOverload);
 }
 
 }  // namespace blink

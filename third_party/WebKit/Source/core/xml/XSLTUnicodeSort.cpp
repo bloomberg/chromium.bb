@@ -35,13 +35,13 @@
 
 namespace blink {
 
-inline const xmlChar* toXMLChar(const char* string) {
+inline const xmlChar* ToXMLChar(const char* string) {
   return reinterpret_cast<const xmlChar*>(string);
 }
 
 // Based on default implementation from libxslt 1.1.22 and xsltICUSort.c
 // example.
-void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
+void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
                              xmlNodePtr* sorts,
                              int nbsorts) {
 #ifdef XSLT_REFACTORED
@@ -49,7 +49,7 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
 #else
   xsltStylePreCompPtr comp;
 #endif
-  xmlXPathObjectPtr* resultsTab[XSLT_MAX_SORT];
+  xmlXPathObjectPtr* results_tab[XSLT_MAX_SORT];
   xmlXPathObjectPtr* results = nullptr;
   xmlNodeSetPtr list = nullptr;
   int depth;
@@ -73,12 +73,12 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
     tempstype[j] = 0;
     if (!comp->stype && comp->has_stype) {
       comp->stype = xsltEvalAttrValueTemplate(
-          ctxt, sorts[j], toXMLChar("data-type"), XSLT_NAMESPACE);
+          ctxt, sorts[j], ToXMLChar("data-type"), XSLT_NAMESPACE);
       if (comp->stype) {
         tempstype[j] = 1;
-        if (xmlStrEqual(comp->stype, toXMLChar("text"))) {
+        if (xmlStrEqual(comp->stype, ToXMLChar("text"))) {
           comp->number = 0;
-        } else if (xmlStrEqual(comp->stype, toXMLChar("number"))) {
+        } else if (xmlStrEqual(comp->stype, ToXMLChar("number"))) {
           comp->number = 1;
         } else {
           xsltTransformError(
@@ -92,12 +92,12 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
     temporder[j] = 0;
     if (!comp->order && comp->has_order) {
       comp->order = xsltEvalAttrValueTemplate(
-          ctxt, sorts[j], toXMLChar("order"), XSLT_NAMESPACE);
+          ctxt, sorts[j], ToXMLChar("order"), XSLT_NAMESPACE);
       if (comp->order) {
         temporder[j] = 1;
-        if (xmlStrEqual(comp->order, toXMLChar("ascending"))) {
+        if (xmlStrEqual(comp->order, ToXMLChar("ascending"))) {
           comp->descending = 0;
-        } else if (xmlStrEqual(comp->order, toXMLChar("descending"))) {
+        } else if (xmlStrEqual(comp->order, ToXMLChar("descending"))) {
           comp->descending = 1;
         } else {
           xsltTransformError(ctxt, 0, sorts[j],
@@ -111,11 +111,11 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
 
   int len = list->nodeNr;
 
-  resultsTab[0] = xsltComputeSortResult(ctxt, sorts[0]);
+  results_tab[0] = xsltComputeSortResult(ctxt, sorts[0]);
   for (int i = 1; i < XSLT_MAX_SORT; ++i)
-    resultsTab[i] = 0;
+    results_tab[i] = 0;
 
-  results = resultsTab[0];
+  results = results_tab[0];
 
   comp = static_cast<xsltStylePreComp*>(sorts[0]->psvi);
   int descending = comp->descending;
@@ -130,7 +130,7 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
   // possible with language alone.
   Collator collator(comp->has_lang ? reinterpret_cast<const char*>(comp->lang)
                                    : "en");
-  collator.setOrderLowerFirst(comp->lower_first);
+  collator.SetOrderLowerFirst(comp->lower_first);
 
   // Shell's sort of node-set.
   for (int incr = len / 2; incr > 0; incr /= 2) {
@@ -164,14 +164,14 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
           } else {
             Vector<UChar> string1;
             Vector<UChar> string2;
-            String::fromUTF8(
+            String::FromUTF8(
                 reinterpret_cast<const char*>(results[j]->stringval))
-                .appendTo(string1);
-            String::fromUTF8(
+                .AppendTo(string1);
+            String::FromUTF8(
                 reinterpret_cast<const char*>(results[j + incr]->stringval))
-                .appendTo(string2);
-            tst = collator.collate(string1.data(), string1.size(),
-                                   string2.data(), string2.size());
+                .AppendTo(string2);
+            tst = collator.Collate(string1.Data(), string1.size(),
+                                   string2.Data(), string2.size());
           }
           if (descending)
             tst = -tst;
@@ -190,9 +190,9 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
 
             // Compute the result of the next level for the full
             // set, this might be optimized ... or not
-            if (!resultsTab[depth])
-              resultsTab[depth] = xsltComputeSortResult(ctxt, sorts[depth]);
-            xmlXPathObjectPtr* res = resultsTab[depth];
+            if (!results_tab[depth])
+              results_tab[depth] = xsltComputeSortResult(ctxt, sorts[depth]);
+            xmlXPathObjectPtr* res = results_tab[depth];
             if (!res)
               break;
             if (!res[j]) {
@@ -219,14 +219,14 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
               } else {
                 Vector<UChar> string1;
                 Vector<UChar> string2;
-                String::fromUTF8(
+                String::FromUTF8(
                     reinterpret_cast<const char*>(res[j]->stringval))
-                    .appendTo(string1);
-                String::fromUTF8(
+                    .AppendTo(string1);
+                String::FromUTF8(
                     reinterpret_cast<const char*>(res[j + incr]->stringval))
-                    .appendTo(string2);
-                tst = collator.collate(string1.data(), string1.size(),
-                                       string2.data(), string2.size());
+                    .AppendTo(string2);
+                tst = collator.Collate(string1.Data(), string1.size(),
+                                       string2.Data(), string2.size());
               }
               if (desc)
                 tst = -tst;
@@ -253,9 +253,9 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
           while (depth < nbsorts) {
             if (!sorts[depth])
               break;
-            if (!resultsTab[depth])
+            if (!results_tab[depth])
               break;
-            xmlXPathObjectPtr* res = resultsTab[depth];
+            xmlXPathObjectPtr* res = results_tab[depth];
             tmp = res[j];
             res[j] = res[j + incr];
             res[j + incr] = tmp;
@@ -281,10 +281,10 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
       xmlFree(const_cast<xmlChar*>(comp->order));
       comp->order = 0;
     }
-    if (resultsTab[j]) {
+    if (results_tab[j]) {
       for (int i = 0; i < len; ++i)
-        xmlXPathFreeObject(resultsTab[j][i]);
-      xmlFree(resultsTab[j]);
+        xmlXPathFreeObject(results_tab[j][i]);
+      xmlFree(results_tab[j]);
     }
   }
 }

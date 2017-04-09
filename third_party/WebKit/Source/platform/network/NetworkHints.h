@@ -34,8 +34,8 @@
 
 namespace blink {
 
-PLATFORM_EXPORT void prefetchDNS(const String& hostname);
-PLATFORM_EXPORT void preconnect(const KURL&, const CrossOriginAttributeValue);
+PLATFORM_EXPORT void PrefetchDNS(const String& hostname);
+PLATFORM_EXPORT void Preconnect(const KURL&, const CrossOriginAttributeValue);
 
 }  // namespace blink
 

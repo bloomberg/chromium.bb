@@ -27,7 +27,7 @@ Status GetPKeyAndDigest(const blink::WebCryptoKey& key,
                         const EVP_MD** digest) {
   *pkey = GetEVP_PKEY(key);
 
-  *digest = GetDigest(key.algorithm().rsaHashedParams()->hash());
+  *digest = GetDigest(key.Algorithm().RsaHashedParams()->GetHash());
   if (!*digest)
     return Status::ErrorUnsupported();
 
@@ -42,9 +42,10 @@ Status ApplyRsaPssOptions(const blink::WebCryptoKey& key,
                           unsigned int salt_length_bytes,
                           EVP_PKEY_CTX* pctx) {
   // Only apply RSA-PSS options if the key is for RSA-PSS.
-  if (key.algorithm().id() != blink::WebCryptoAlgorithmIdRsaPss) {
+  if (key.Algorithm().Id() != blink::kWebCryptoAlgorithmIdRsaPss) {
     DCHECK_EQ(0u, salt_length_bytes);
-    DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, key.algorithm().id());
+    DCHECK_EQ(blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+              key.Algorithm().Id());
     return Status::Success();
   }
 
@@ -72,7 +73,7 @@ Status RsaSign(const blink::WebCryptoKey& key,
                unsigned int pss_salt_length_bytes,
                const CryptoData& data,
                std::vector<uint8_t>* buffer) {
-  if (key.type() != blink::WebCryptoKeyTypePrivate)
+  if (key.GetType() != blink::kWebCryptoKeyTypePrivate)
     return Status::ErrorUnexpectedKeyType();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -116,7 +117,7 @@ Status RsaVerify(const blink::WebCryptoKey& key,
                  const CryptoData& signature,
                  const CryptoData& data,
                  bool* signature_match) {
-  if (key.type() != blink::WebCryptoKeyTypePublic)
+  if (key.GetType() != blink::kWebCryptoKeyTypePublic)
     return Status::ErrorUnexpectedKeyType();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);

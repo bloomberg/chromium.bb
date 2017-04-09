@@ -20,9 +20,9 @@ class LocalStorageNamespace : public blink::WebStorageNamespace {
   ~LocalStorageNamespace() override;
 
   // blink::WebStorageNamespace:
-  blink::WebStorageArea* createStorageArea(
+  blink::WebStorageArea* CreateStorageArea(
       const blink::WebSecurityOrigin& origin) override;
-  bool isSameNamespace(const WebStorageNamespace&) const override;
+  bool IsSameNamespace(const WebStorageNamespace&) const override;
 
  private:
   LocalStorageCachedAreas* const local_storage_cached_areas_;

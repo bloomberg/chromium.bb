@@ -37,14 +37,14 @@ namespace blink {
 class ExceptionState;
 
 enum TextFieldSelectionDirection {
-  SelectionHasNoDirection,
-  SelectionHasForwardDirection,
-  SelectionHasBackwardDirection
+  kSelectionHasNoDirection,
+  kSelectionHasForwardDirection,
+  kSelectionHasBackwardDirection
 };
 enum TextFieldEventBehavior {
-  DispatchNoEvent,
-  DispatchChangeEvent,
-  DispatchInputAndChangeEvent
+  kDispatchNoEvent,
+  kDispatchChangeEvent,
+  kDispatchInputAndChangeEvent
 };
 
 enum class TextControlSetValueSelection {
@@ -57,24 +57,24 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   // Common flag for HTMLInputElement::tooLong(),
   // HTMLTextAreaElement::tooLong(),
   // HTMLInputElement::tooShort() and HTMLTextAreaElement::tooShort().
-  enum NeedsToCheckDirtyFlag { CheckDirtyFlag, IgnoreDirtyFlag };
+  enum NeedsToCheckDirtyFlag { kCheckDirtyFlag, kIgnoreDirtyFlag };
 
   ~TextControlElement() override;
 
-  void forwardEvent(Event*);
+  void ForwardEvent(Event*);
 
-  void setFocused(bool flag) override;
+  void SetFocused(bool flag) override;
 
   // The derived class should return true if placeholder processing is needed.
-  virtual bool isPlaceholderVisible() const = 0;
-  virtual void setPlaceholderVisibility(bool) = 0;
-  virtual bool supportsPlaceholder() const = 0;
-  String strippedPlaceholder() const;
-  HTMLElement* placeholderElement() const;
-  void updatePlaceholderVisibility();
+  virtual bool IsPlaceholderVisible() const = 0;
+  virtual void SetPlaceholderVisibility(bool) = 0;
+  virtual bool SupportsPlaceholder() const = 0;
+  String StrippedPlaceholder() const;
+  HTMLElement* PlaceholderElement() const;
+  void UpdatePlaceholderVisibility();
 
-  VisiblePosition visiblePositionForIndex(int) const;
-  int indexForVisiblePosition(const VisiblePosition&) const;
+  VisiblePosition VisiblePositionForIndex(int) const;
+  int IndexForVisiblePosition(const VisiblePosition&) const;
   unsigned selectionStart() const;
   unsigned selectionEnd() const;
   const AtomicString& selectionDirection() const;
@@ -86,7 +86,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   virtual void setRangeText(const String& replacement,
                             unsigned start,
                             unsigned end,
-                            const String& selectionMode,
+                            const String& selection_mode,
                             ExceptionState&);
   // Web-exposed setSelectionRange() function. This schedule to dispatch
   // 'select' event.
@@ -96,13 +96,14 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   // Blink-internal version of setSelectionRange(). This translates "none"
   // direction to "forward" on platforms without "none" direction.
   // This returns true if it updated cached selection and/or FrameSelection.
-  bool setSelectionRange(unsigned start,
-                         unsigned end,
-                         TextFieldSelectionDirection = SelectionHasNoDirection);
-  SelectionInDOMTree selection() const;
+  bool SetSelectionRange(
+      unsigned start,
+      unsigned end,
+      TextFieldSelectionDirection = kSelectionHasNoDirection);
+  SelectionInDOMTree Selection() const;
 
-  virtual bool supportsAutocapitalize() const = 0;
-  virtual const AtomicString& defaultAutocapitalize() const = 0;
+  virtual bool SupportsAutocapitalize() const = 0;
+  virtual const AtomicString& DefaultAutocapitalize() const = 0;
   const AtomicString& autocapitalize() const;
   void setAutocapitalize(const AtomicString&);
 
@@ -112,106 +113,106 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   void setMinLength(int, ExceptionState&);
 
   // Dispatch 'change' event if the value is updated.
-  void dispatchFormControlChangeEvent();
+  void DispatchFormControlChangeEvent();
   // Enqueue 'change' event if the value is updated.
-  void enqueueChangeEvent();
+  void EnqueueChangeEvent();
   // This should be called on every user-input, before the user-input changes
   // the value.
-  void setValueBeforeFirstUserEditIfNotSet();
+  void SetValueBeforeFirstUserEditIfNotSet();
   // This should be called on every user-input, after the user-input changed the
   // value. The argument is the updated value.
-  void checkIfValueWasReverted(const String&);
-  void clearValueBeforeFirstUserEdit();
+  void CheckIfValueWasReverted(const String&);
+  void ClearValueBeforeFirstUserEdit();
 
   virtual String value() const = 0;
   virtual void setValue(
       const String&,
-      TextFieldEventBehavior = DispatchNoEvent,
+      TextFieldEventBehavior = kDispatchNoEvent,
       TextControlSetValueSelection =
           TextControlSetValueSelection::kSetSelectionToEnd) = 0;
 
-  HTMLElement* innerEditorElement() const;
+  HTMLElement* InnerEditorElement() const;
 
-  void selectionChanged(bool userTriggered);
-  bool lastChangeWasUserEdit() const;
-  virtual void setInnerEditorValue(const String&);
-  String innerEditorValue() const;
-  Node* createPlaceholderBreakElement() const;
+  void SelectionChanged(bool user_triggered);
+  bool LastChangeWasUserEdit() const;
+  virtual void SetInnerEditorValue(const String&);
+  String InnerEditorValue() const;
+  Node* CreatePlaceholderBreakElement() const;
 
-  String directionForFormData() const;
+  String DirectionForFormData() const;
 
  protected:
   TextControlElement(const QualifiedName&, Document&);
-  bool isPlaceholderEmpty() const;
-  virtual void updatePlaceholderText() = 0;
+  bool IsPlaceholderEmpty() const;
+  virtual void UpdatePlaceholderText() = 0;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void restoreCachedSelection();
+  void RestoreCachedSelection();
 
-  void defaultEventHandler(Event*) override;
-  virtual void subtreeHasChanged() = 0;
+  void DefaultEventHandler(Event*) override;
+  virtual void SubtreeHasChanged() = 0;
 
-  void setLastChangeWasNotUserEdit() { m_lastChangeWasUserEdit = false; }
-  void addPlaceholderBreakElementIfNecessary();
-  String valueWithHardLineBreaks() const;
+  void SetLastChangeWasNotUserEdit() { last_change_was_user_edit_ = false; }
+  void AddPlaceholderBreakElementIfNecessary();
+  String ValueWithHardLineBreaks() const;
 
-  void copyNonAttributePropertiesFromElement(const Element&) override;
+  void CopyNonAttributePropertiesFromElement(const Element&) override;
 
  private:
-  unsigned computeSelectionStart() const;
-  unsigned computeSelectionEnd() const;
-  TextFieldSelectionDirection computeSelectionDirection() const;
+  unsigned ComputeSelectionStart() const;
+  unsigned ComputeSelectionEnd() const;
+  TextFieldSelectionDirection ComputeSelectionDirection() const;
   // Returns true if cached values and arguments are not same.
-  bool cacheSelection(unsigned start,
+  bool CacheSelection(unsigned start,
                       unsigned end,
                       TextFieldSelectionDirection);
-  static unsigned indexForPosition(HTMLElement* innerEditor, const Position&);
+  static unsigned IndexForPosition(HTMLElement* inner_editor, const Position&);
 
-  void dispatchFocusEvent(Element* oldFocusedElement,
+  void DispatchFocusEvent(Element* old_focused_element,
                           WebFocusType,
-                          InputDeviceCapabilities* sourceCapabilities) final;
-  void dispatchBlurEvent(Element* newFocusedElement,
+                          InputDeviceCapabilities* source_capabilities) final;
+  void DispatchBlurEvent(Element* new_focused_element,
                          WebFocusType,
-                         InputDeviceCapabilities* sourceCapabilities) final;
-  void scheduleSelectEvent();
+                         InputDeviceCapabilities* source_capabilities) final;
+  void ScheduleSelectEvent();
 
   // Returns true if user-editable value is empty. Used to check placeholder
   // visibility.
-  virtual bool isEmptyValue() const = 0;
+  virtual bool IsEmptyValue() const = 0;
   // Returns true if suggested value is empty. Used to check placeholder
   // visibility.
-  virtual bool isEmptySuggestedValue() const { return true; }
+  virtual bool IsEmptySuggestedValue() const { return true; }
   // Called in dispatchFocusEvent(), after placeholder process, before calling
   // parent's dispatchFocusEvent().
-  virtual void handleFocusEvent(Element* /* oldFocusedNode */, WebFocusType) {}
+  virtual void HandleFocusEvent(Element* /* oldFocusedNode */, WebFocusType) {}
   // Called in dispatchBlurEvent(), after placeholder process, before calling
   // parent's dispatchBlurEvent().
-  virtual void handleBlurEvent() {}
+  virtual void HandleBlurEvent() {}
 
-  bool placeholderShouldBeVisible() const;
+  bool PlaceholderShouldBeVisible() const;
 
   // In m_valueBeforeFirstUserEdit, we distinguish a null String and zero-length
   // String. Null String means the field doesn't have any data yet, and
   // zero-length String is a valid data.
-  String m_valueBeforeFirstUserEdit;
-  bool m_lastChangeWasUserEdit;
+  String value_before_first_user_edit_;
+  bool last_change_was_user_edit_;
 
-  unsigned m_cachedSelectionStart;
-  unsigned m_cachedSelectionEnd;
-  TextFieldSelectionDirection m_cachedSelectionDirection;
+  unsigned cached_selection_start_;
+  unsigned cached_selection_end_;
+  TextFieldSelectionDirection cached_selection_direction_;
 
   FRIEND_TEST_ALL_PREFIXES(TextControlElementTest, IndexForPosition);
 };
 
-inline bool isTextControlElement(const Element& element) {
-  return element.isTextControl();
+inline bool IsTextControlElement(const Element& element) {
+  return element.IsTextControl();
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(TextControlElement);
 
-TextControlElement* enclosingTextControl(const Position&);
-TextControlElement* enclosingTextControl(const Node*);
+TextControlElement* EnclosingTextControl(const Position&);
+TextControlElement* EnclosingTextControl(const Node*);
 
 }  // namespace blink
 

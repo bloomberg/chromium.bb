@@ -15,68 +15,68 @@ namespace blink {
 namespace {
 
 struct Scale {
-  Scale(double x, double y, double z) { init(x, y, z, false); }
-  explicit Scale() { init(1, 1, 1, true); }
+  Scale(double x, double y, double z) { Init(x, y, z, false); }
+  explicit Scale() { Init(1, 1, 1, true); }
   explicit Scale(const ScaleTransformOperation* scale) {
     if (scale)
-      init(scale->x(), scale->y(), scale->z(), false);
+      Init(scale->X(), scale->Y(), scale->Z(), false);
     else
-      init(1, 1, 1, true);
+      Init(1, 1, 1, true);
   }
   explicit Scale(const InterpolableValue& value) {
-    const InterpolableList& list = toInterpolableList(value);
+    const InterpolableList& list = ToInterpolableList(value);
     if (list.length() == 0) {
-      init(1, 1, 1, true);
+      Init(1, 1, 1, true);
       return;
     }
-    init(toInterpolableNumber(*list.get(0)).value(),
-         toInterpolableNumber(*list.get(1)).value(),
-         toInterpolableNumber(*list.get(2)).value(), false);
+    Init(ToInterpolableNumber(*list.Get(0)).Value(),
+         ToInterpolableNumber(*list.Get(1)).Value(),
+         ToInterpolableNumber(*list.Get(2)).Value(), false);
   }
 
-  void init(double x, double y, double z, bool isValueNone) {
+  void Init(double x, double y, double z, bool is_value_none) {
     array[0] = x;
     array[1] = y;
     array[2] = z;
-    isNone = isValueNone;
+    is_none = is_value_none;
   }
 
-  InterpolationValue createInterpolationValue() const;
+  InterpolationValue CreateInterpolationValue() const;
 
   bool operator==(const Scale& other) const {
     for (size_t i = 0; i < 3; i++) {
       if (array[i] != other.array[i])
         return false;
     }
-    return isNone == other.isNone;
+    return is_none == other.is_none;
   }
 
   double array[3];
-  bool isNone;
+  bool is_none;
 };
 
-std::unique_ptr<InterpolableValue> createScaleIdentity() {
-  std::unique_ptr<InterpolableList> list = InterpolableList::create(3);
+std::unique_ptr<InterpolableValue> CreateScaleIdentity() {
+  std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
   for (size_t i = 0; i < 3; i++)
-    list->set(i, InterpolableNumber::create(1));
+    list->Set(i, InterpolableNumber::Create(1));
   return std::move(list);
 }
 
 class InheritedScaleChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<InheritedScaleChecker> create(const Scale& scale) {
-    return WTF::wrapUnique(new InheritedScaleChecker(scale));
+  static std::unique_ptr<InheritedScaleChecker> Create(const Scale& scale) {
+    return WTF::WrapUnique(new InheritedScaleChecker(scale));
   }
 
  private:
-  InheritedScaleChecker(const Scale& scale) : m_scale(scale) {}
+  InheritedScaleChecker(const Scale& scale) : scale_(scale) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    return m_scale == Scale(environment.state().parentStyle()->scale());
+    return scale_ == Scale(environment.GetState().ParentStyle()->Scale());
   }
 
-  const Scale m_scale;
+  const Scale scale_;
 };
 
 }  // namespace
@@ -85,27 +85,27 @@ class CSSScaleNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSScaleNonInterpolableValue() final {}
 
-  static PassRefPtr<CSSScaleNonInterpolableValue> create(const Scale& scale) {
-    return adoptRef(
+  static PassRefPtr<CSSScaleNonInterpolableValue> Create(const Scale& scale) {
+    return AdoptRef(
         new CSSScaleNonInterpolableValue(scale, scale, false, false));
   }
 
-  static PassRefPtr<CSSScaleNonInterpolableValue> merge(
+  static PassRefPtr<CSSScaleNonInterpolableValue> Merge(
       const CSSScaleNonInterpolableValue& start,
       const CSSScaleNonInterpolableValue& end) {
-    return adoptRef(new CSSScaleNonInterpolableValue(start.start(), end.end(),
-                                                     start.isStartAdditive(),
-                                                     end.isEndAdditive()));
+    return AdoptRef(new CSSScaleNonInterpolableValue(start.Start(), end.end(),
+                                                     start.IsStartAdditive(),
+                                                     end.IsEndAdditive()));
   }
 
-  const Scale& start() const { return m_start; }
-  const Scale& end() const { return m_end; }
-  bool isStartAdditive() const { return m_isStartAdditive; }
-  bool isEndAdditive() const { return m_isEndAdditive; }
+  const Scale& Start() const { return start_; }
+  const Scale& end() const { return end_; }
+  bool IsStartAdditive() const { return is_start_additive_; }
+  bool IsEndAdditive() const { return is_end_additive_; }
 
-  void setIsAdditive() {
-    m_isStartAdditive = true;
-    m_isEndAdditive = true;
+  void SetIsAdditive() {
+    is_start_additive_ = true;
+    is_end_additive_ = true;
   }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
@@ -113,144 +113,145 @@ class CSSScaleNonInterpolableValue : public NonInterpolableValue {
  private:
   CSSScaleNonInterpolableValue(const Scale& start,
                                const Scale& end,
-                               bool isStartAdditive,
-                               bool isEndAdditive)
-      : m_start(start),
-        m_end(end),
-        m_isStartAdditive(isStartAdditive),
-        m_isEndAdditive(isEndAdditive) {}
+                               bool is_start_additive,
+                               bool is_end_additive)
+      : start_(start),
+        end_(end),
+        is_start_additive_(is_start_additive),
+        is_end_additive_(is_end_additive) {}
 
-  const Scale m_start;
-  const Scale m_end;
-  bool m_isStartAdditive;
-  bool m_isEndAdditive;
+  const Scale start_;
+  const Scale end_;
+  bool is_start_additive_;
+  bool is_end_additive_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSScaleNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSScaleNonInterpolableValue);
 
-InterpolationValue Scale::createInterpolationValue() const {
-  if (isNone) {
-    return InterpolationValue(InterpolableList::create(0),
-                              CSSScaleNonInterpolableValue::create(*this));
+InterpolationValue Scale::CreateInterpolationValue() const {
+  if (is_none) {
+    return InterpolationValue(InterpolableList::Create(0),
+                              CSSScaleNonInterpolableValue::Create(*this));
   }
 
-  std::unique_ptr<InterpolableList> list = InterpolableList::create(3);
+  std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
   for (size_t i = 0; i < 3; i++)
-    list->set(i, InterpolableNumber::create(array[i]));
+    list->Set(i, InterpolableNumber::Create(array[i]));
   return InterpolationValue(std::move(list),
-                            CSSScaleNonInterpolableValue::create(*this));
+                            CSSScaleNonInterpolableValue::Create(*this));
 }
 
-InterpolationValue CSSScaleInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSScaleInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return Scale(1, 1, 1).createInterpolationValue();
+  return Scale(1, 1, 1).CreateInterpolationValue();
 }
 
-InterpolationValue CSSScaleInterpolationType::maybeConvertInitial(
+InterpolationValue CSSScaleInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return Scale().createInterpolationValue();
+  return Scale().CreateInterpolationValue();
 }
 
-InterpolationValue CSSScaleInterpolationType::maybeConvertInherit(
+InterpolationValue CSSScaleInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  Scale inheritedScale(state.parentStyle()->scale());
-  conversionCheckers.push_back(InheritedScaleChecker::create(inheritedScale));
-  return inheritedScale.createInterpolationValue();
+    ConversionCheckers& conversion_checkers) const {
+  Scale inherited_scale(state.ParentStyle()->Scale());
+  conversion_checkers.push_back(InheritedScaleChecker::Create(inherited_scale));
+  return inherited_scale.CreateInterpolationValue();
 }
 
-InterpolationValue CSSScaleInterpolationType::maybeConvertValue(
+InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.isBaseValueList())
-    return Scale().createInterpolationValue();
+  if (!value.IsBaseValueList())
+    return Scale().CreateInterpolationValue();
 
-  const CSSValueList& list = toCSSValueList(value);
+  const CSSValueList& list = ToCSSValueList(value);
   DCHECK(list.length() >= 1 && list.length() <= 3);
 
   Scale scale(1, 1, 1);
   for (size_t i = 0; i < list.length(); i++) {
-    const CSSValue& item = list.item(i);
-    scale.array[i] = toCSSPrimitiveValue(item).getDoubleValue();
+    const CSSValue& item = list.Item(i);
+    scale.array[i] = ToCSSPrimitiveValue(item).GetDoubleValue();
   }
 
-  return scale.createInterpolationValue();
+  return scale.CreateInterpolationValue();
 }
 
-void CSSScaleInterpolationType::additiveKeyframeHook(
+void CSSScaleInterpolationType::AdditiveKeyframeHook(
     InterpolationValue& value) const {
-  toCSSScaleNonInterpolableValue(*value.nonInterpolableValue).setIsAdditive();
+  ToCSSScaleNonInterpolableValue(*value.non_interpolable_value).SetIsAdditive();
 }
 
-PairwiseInterpolationValue CSSScaleInterpolationType::maybeMergeSingles(
+PairwiseInterpolationValue CSSScaleInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  size_t startListLength =
-      toInterpolableList(*start.interpolableValue).length();
-  size_t endListLength = toInterpolableList(*end.interpolableValue).length();
-  if (startListLength < endListLength)
-    start.interpolableValue = createScaleIdentity();
-  else if (endListLength < startListLength)
-    end.interpolableValue = createScaleIdentity();
+  size_t start_list_length =
+      ToInterpolableList(*start.interpolable_value).length();
+  size_t end_list_length = ToInterpolableList(*end.interpolable_value).length();
+  if (start_list_length < end_list_length)
+    start.interpolable_value = CreateScaleIdentity();
+  else if (end_list_length < start_list_length)
+    end.interpolable_value = CreateScaleIdentity();
 
   return PairwiseInterpolationValue(
-      std::move(start.interpolableValue), std::move(end.interpolableValue),
-      CSSScaleNonInterpolableValue::merge(
-          toCSSScaleNonInterpolableValue(*start.nonInterpolableValue),
-          toCSSScaleNonInterpolableValue(*end.nonInterpolableValue)));
+      std::move(start.interpolable_value), std::move(end.interpolable_value),
+      CSSScaleNonInterpolableValue::Merge(
+          ToCSSScaleNonInterpolableValue(*start.non_interpolable_value),
+          ToCSSScaleNonInterpolableValue(*end.non_interpolable_value)));
 }
 
 InterpolationValue
-CSSScaleInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSScaleInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return Scale(style.scale()).createInterpolationValue();
+  return Scale(style.Scale()).CreateInterpolationValue();
 }
 
-void CSSScaleInterpolationType::composite(
-    UnderlyingValueOwner& underlyingValueOwner,
-    double underlyingFraction,
+void CSSScaleInterpolationType::Composite(
+    UnderlyingValueOwner& underlying_value_owner,
+    double underlying_fraction,
     const InterpolationValue& value,
-    double interpolationFraction) const {
-  if (toInterpolableList(*underlyingValueOwner.mutableValue().interpolableValue)
+    double interpolation_fraction) const {
+  if (ToInterpolableList(
+          *underlying_value_owner.MutableValue().interpolable_value)
           .length() == 0) {
-    underlyingValueOwner.mutableValue().interpolableValue =
-        createScaleIdentity();
+    underlying_value_owner.MutableValue().interpolable_value =
+        CreateScaleIdentity();
   }
 
   const CSSScaleNonInterpolableValue& metadata =
-      toCSSScaleNonInterpolableValue(*value.nonInterpolableValue);
-  DCHECK(metadata.isStartAdditive() || metadata.isEndAdditive());
+      ToCSSScaleNonInterpolableValue(*value.non_interpolable_value);
+  DCHECK(metadata.IsStartAdditive() || metadata.IsEndAdditive());
 
-  InterpolableList& underlyingList = toInterpolableList(
-      *underlyingValueOwner.mutableValue().interpolableValue);
+  InterpolableList& underlying_list = ToInterpolableList(
+      *underlying_value_owner.MutableValue().interpolable_value);
   for (size_t i = 0; i < 3; i++) {
     InterpolableNumber& underlying =
-        toInterpolableNumber(*underlyingList.getMutable(i));
+        ToInterpolableNumber(*underlying_list.GetMutable(i));
 
-    double start = metadata.start().array[i] *
-                   (metadata.isStartAdditive() ? underlying.value() : 1);
+    double start = metadata.Start().array[i] *
+                   (metadata.IsStartAdditive() ? underlying.Value() : 1);
     double end = metadata.end().array[i] *
-                 (metadata.isEndAdditive() ? underlying.value() : 1);
-    underlying.set(blend(start, end, interpolationFraction));
+                 (metadata.IsEndAdditive() ? underlying.Value() : 1);
+    underlying.Set(Blend(start, end, interpolation_fraction));
   }
 }
 
-void CSSScaleInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
+void CSSScaleInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*,
     StyleResolverState& state) const {
-  Scale scale(interpolableValue);
-  if (scale.isNone) {
-    state.style()->setScale(nullptr);
+  Scale scale(interpolable_value);
+  if (scale.is_none) {
+    state.Style()->SetScale(nullptr);
     return;
   }
-  state.style()->setScale(ScaleTransformOperation::create(
+  state.Style()->SetScale(ScaleTransformOperation::Create(
       scale.array[0], scale.array[1], scale.array[2],
-      TransformOperation::Scale3D));
+      TransformOperation::kScale3D));
 }
 
 }  // namespace blink

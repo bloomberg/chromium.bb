@@ -13,21 +13,21 @@ namespace blink {
 class AnimatableDoubleAndBool final : public AnimatableValue {
  public:
   ~AnimatableDoubleAndBool() override {}
-  static PassRefPtr<AnimatableDoubleAndBool> create(double number, bool flag) {
-    return adoptRef(new AnimatableDoubleAndBool(number, flag));
+  static PassRefPtr<AnimatableDoubleAndBool> Create(double number, bool flag) {
+    return AdoptRef(new AnimatableDoubleAndBool(number, flag));
   }
 
  private:
   AnimatableDoubleAndBool(double number, bool flag)
-      : m_number(number), m_flag(flag) {}
-  AnimatableType type() const override { return TypeDoubleAndBool; }
-  bool equalTo(const AnimatableValue*) const override;
+      : number_(number), flag_(flag) {}
+  AnimatableType GetType() const override { return kTypeDoubleAndBool; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  double m_number;
-  bool m_flag;
+  double number_;
+  bool flag_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDoubleAndBool, isDoubleAndBool());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDoubleAndBool, IsDoubleAndBool());
 
 }  // namespace blink
 

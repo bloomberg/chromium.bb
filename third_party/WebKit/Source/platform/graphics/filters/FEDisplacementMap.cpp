@@ -32,70 +32,70 @@
 namespace blink {
 
 FEDisplacementMap::FEDisplacementMap(Filter* filter,
-                                     ChannelSelectorType xChannelSelector,
-                                     ChannelSelectorType yChannelSelector,
+                                     ChannelSelectorType x_channel_selector,
+                                     ChannelSelectorType y_channel_selector,
                                      float scale)
     : FilterEffect(filter),
-      m_xChannelSelector(xChannelSelector),
-      m_yChannelSelector(yChannelSelector),
-      m_scale(scale) {}
+      x_channel_selector_(x_channel_selector),
+      y_channel_selector_(y_channel_selector),
+      scale_(scale) {}
 
-FEDisplacementMap* FEDisplacementMap::create(
+FEDisplacementMap* FEDisplacementMap::Create(
     Filter* filter,
-    ChannelSelectorType xChannelSelector,
-    ChannelSelectorType yChannelSelector,
+    ChannelSelectorType x_channel_selector,
+    ChannelSelectorType y_channel_selector,
     float scale) {
-  return new FEDisplacementMap(filter, xChannelSelector, yChannelSelector,
+  return new FEDisplacementMap(filter, x_channel_selector, y_channel_selector,
                                scale);
 }
 
-FloatRect FEDisplacementMap::mapEffect(const FloatRect& rect) const {
+FloatRect FEDisplacementMap::MapEffect(const FloatRect& rect) const {
   FloatRect result = rect;
-  result.inflateX(getFilter()->applyHorizontalScale(std::abs(m_scale) / 2));
-  result.inflateY(getFilter()->applyVerticalScale(std::abs(m_scale) / 2));
+  result.InflateX(GetFilter()->ApplyHorizontalScale(std::abs(scale_) / 2));
+  result.InflateY(GetFilter()->ApplyVerticalScale(std::abs(scale_) / 2));
   return result;
 }
 
-FloatRect FEDisplacementMap::mapInputs(const FloatRect& rect) const {
-  return inputEffect(0)->mapRect(rect);
+FloatRect FEDisplacementMap::MapInputs(const FloatRect& rect) const {
+  return InputEffect(0)->MapRect(rect);
 }
 
-ChannelSelectorType FEDisplacementMap::xChannelSelector() const {
-  return m_xChannelSelector;
+ChannelSelectorType FEDisplacementMap::XChannelSelector() const {
+  return x_channel_selector_;
 }
 
-bool FEDisplacementMap::setXChannelSelector(
-    const ChannelSelectorType xChannelSelector) {
-  if (m_xChannelSelector == xChannelSelector)
+bool FEDisplacementMap::SetXChannelSelector(
+    const ChannelSelectorType x_channel_selector) {
+  if (x_channel_selector_ == x_channel_selector)
     return false;
-  m_xChannelSelector = xChannelSelector;
+  x_channel_selector_ = x_channel_selector;
   return true;
 }
 
-ChannelSelectorType FEDisplacementMap::yChannelSelector() const {
-  return m_yChannelSelector;
+ChannelSelectorType FEDisplacementMap::YChannelSelector() const {
+  return y_channel_selector_;
 }
 
-bool FEDisplacementMap::setYChannelSelector(
-    const ChannelSelectorType yChannelSelector) {
-  if (m_yChannelSelector == yChannelSelector)
+bool FEDisplacementMap::SetYChannelSelector(
+    const ChannelSelectorType y_channel_selector) {
+  if (y_channel_selector_ == y_channel_selector)
     return false;
-  m_yChannelSelector = yChannelSelector;
+  y_channel_selector_ = y_channel_selector;
   return true;
 }
 
-float FEDisplacementMap::scale() const {
-  return m_scale;
+float FEDisplacementMap::Scale() const {
+  return scale_;
 }
 
-bool FEDisplacementMap::setScale(float scale) {
-  if (m_scale == scale)
+bool FEDisplacementMap::SetScale(float scale) {
+  if (scale_ == scale)
     return false;
-  m_scale = scale;
+  scale_ = scale;
   return true;
 }
 
-static SkDisplacementMapEffect::ChannelSelectorType toSkiaMode(
+static SkDisplacementMapEffect::ChannelSelectorType ToSkiaMode(
     ChannelSelectorType type) {
   switch (type) {
     case CHANNEL_R:
@@ -112,22 +112,23 @@ static SkDisplacementMapEffect::ChannelSelectorType toSkiaMode(
   }
 }
 
-sk_sp<SkImageFilter> FEDisplacementMap::createImageFilter() {
+sk_sp<SkImageFilter> FEDisplacementMap::CreateImageFilter() {
   sk_sp<SkImageFilter> color =
-      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace());
+      SkiaImageFilterBuilder::Build(InputEffect(0), OperatingColorSpace());
   sk_sp<SkImageFilter> displ =
-      SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace());
-  SkDisplacementMapEffect::ChannelSelectorType typeX =
-      toSkiaMode(m_xChannelSelector);
-  SkDisplacementMapEffect::ChannelSelectorType typeY =
-      toSkiaMode(m_yChannelSelector);
-  SkImageFilter::CropRect cropRect = getCropRect();
+      SkiaImageFilterBuilder::Build(InputEffect(1), OperatingColorSpace());
+  SkDisplacementMapEffect::ChannelSelectorType type_x =
+      ToSkiaMode(x_channel_selector_);
+  SkDisplacementMapEffect::ChannelSelectorType type_y =
+      ToSkiaMode(y_channel_selector_);
+  SkImageFilter::CropRect crop_rect = GetCropRect();
   // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
   // This can be fixed by adding a 2nd scale parameter to
   // SkDisplacementMapEffect.
   return SkDisplacementMapEffect::Make(
-      typeX, typeY, SkFloatToScalar(getFilter()->applyHorizontalScale(m_scale)),
-      std::move(displ), std::move(color), &cropRect);
+      type_x, type_y,
+      SkFloatToScalar(GetFilter()->ApplyHorizontalScale(scale_)),
+      std::move(displ), std::move(color), &crop_rect);
 }
 
 static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type) {
@@ -151,16 +152,16 @@ static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type) {
   return ts;
 }
 
-TextStream& FEDisplacementMap::externalRepresentation(TextStream& ts,
+TextStream& FEDisplacementMap::ExternalRepresentation(TextStream& ts,
                                                       int indent) const {
-  writeIndent(ts, indent);
+  WriteIndent(ts, indent);
   ts << "[feDisplacementMap";
-  FilterEffect::externalRepresentation(ts);
-  ts << " scale=\"" << m_scale << "\" "
-     << "xChannelSelector=\"" << m_xChannelSelector << "\" "
-     << "yChannelSelector=\"" << m_yChannelSelector << "\"]\n";
-  inputEffect(0)->externalRepresentation(ts, indent + 1);
-  inputEffect(1)->externalRepresentation(ts, indent + 1);
+  FilterEffect::ExternalRepresentation(ts);
+  ts << " scale=\"" << scale_ << "\" "
+     << "xChannelSelector=\"" << x_channel_selector_ << "\" "
+     << "yChannelSelector=\"" << y_channel_selector_ << "\"]\n";
+  InputEffect(0)->ExternalRepresentation(ts, indent + 1);
+  InputEffect(1)->ExternalRepresentation(ts, indent + 1);
   return ts;
 }
 

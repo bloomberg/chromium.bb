@@ -19,27 +19,27 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceLongTaskTiming* create(double startTime,
-                                           double endTime,
+  static PerformanceLongTaskTiming* Create(double start_time,
+                                           double end_time,
                                            String name,
-                                           String frameSrc,
-                                           String frameId,
-                                           String frameName);
+                                           String frame_src,
+                                           String frame_id,
+                                           String frame_name);
 
   TaskAttributionVector attribution() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PerformanceLongTaskTiming(double startTime,
-                            double endTime,
+  PerformanceLongTaskTiming(double start_time,
+                            double end_time,
                             String name,
-                            String frameSrc,
-                            String frameId,
-                            String frameName);
+                            String frame_src,
+                            String frame_id,
+                            String frame_name);
   ~PerformanceLongTaskTiming() override;
 
-  TaskAttributionVector m_attribution;
+  TaskAttributionVector attribution_;
 };
 
 }  // namespace blink

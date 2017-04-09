@@ -36,27 +36,27 @@
 
 namespace blink {
 
-bool detectTextEncoding(const char* data,
+bool DetectTextEncoding(const char* data,
                         size_t length,
-                        const char* hintEncodingName,
-                        const KURL& hintUrl,
-                        const char* hintUserLanguage,
-                        WTF::TextEncoding* detectedEncoding) {
-  *detectedEncoding = WTF::TextEncoding();
+                        const char* hint_encoding_name,
+                        const KURL& hint_url,
+                        const char* hint_user_language,
+                        WTF::TextEncoding* detected_encoding) {
+  *detected_encoding = WTF::TextEncoding();
   // In general, do not use language hint. This helps get more
   // deterministic encoding detection results across devices. Note that local
   // file resources can still benefit from the hint.
   Language language = UNKNOWN_LANGUAGE;
-  if (hintUrl.protocol() == "file")
-    LanguageFromCode(hintUserLanguage, &language);
-  int consumedBytes;
-  bool isReliable;
+  if (hint_url.Protocol() == "file")
+    LanguageFromCode(hint_user_language, &language);
+  int consumed_bytes;
+  bool is_reliable;
   Encoding encoding = CompactEncDet::DetectEncoding(
-      data, length, hintUrl.getString().ascii().data(), nullptr, nullptr,
-      EncodingNameAliasToEncoding(hintEncodingName), language,
+      data, length, hint_url.GetString().Ascii().Data(), nullptr, nullptr,
+      EncodingNameAliasToEncoding(hint_encoding_name), language,
       CompactEncDet::WEB_CORPUS,
       false,  // Include 7-bit encodings to detect ISO-2022-JP
-      &consumedBytes, &isReliable);
+      &consumed_bytes, &is_reliable);
 
   // Should return false if the detected encoding is UTF8. This helps prevent
   // modern web sites from neglecting proper encoding labelling and simply
@@ -66,10 +66,10 @@ bool detectTextEncoding(const char* data,
   // Detection failure leads |TextResourceDecoder| to use its default encoding
   // determined from system locale or TLD.
   if (encoding == UNKNOWN_ENCODING ||
-      (hintUrl.protocol() != "file" && encoding == UTF8))
+      (hint_url.Protocol() != "file" && encoding == UTF8))
     return false;
 
-  *detectedEncoding = WTF::TextEncoding(MimeEncodingName(encoding));
+  *detected_encoding = WTF::TextEncoding(MimeEncodingName(encoding));
   return true;
 }
 

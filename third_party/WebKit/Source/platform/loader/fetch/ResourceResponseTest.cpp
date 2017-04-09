@@ -14,31 +14,31 @@ namespace blink {
 
 namespace {
 
-ResourceResponse createTestResponse() {
+ResourceResponse CreateTestResponse() {
   ResourceResponse response;
-  response.addHTTPHeaderField("age", "0");
-  response.addHTTPHeaderField("cache-control", "no-cache");
-  response.addHTTPHeaderField("date", "Tue, 17 Jan 2017 04:01:00 GMT");
-  response.addHTTPHeaderField("expires", "Tue, 17 Jan 2017 04:11:00 GMT");
-  response.addHTTPHeaderField("last-modified", "Tue, 17 Jan 2017 04:00:00 GMT");
-  response.addHTTPHeaderField("pragma", "public");
-  response.addHTTPHeaderField("etag", "abc");
-  response.addHTTPHeaderField("content-disposition",
+  response.AddHTTPHeaderField("age", "0");
+  response.AddHTTPHeaderField("cache-control", "no-cache");
+  response.AddHTTPHeaderField("date", "Tue, 17 Jan 2017 04:01:00 GMT");
+  response.AddHTTPHeaderField("expires", "Tue, 17 Jan 2017 04:11:00 GMT");
+  response.AddHTTPHeaderField("last-modified", "Tue, 17 Jan 2017 04:00:00 GMT");
+  response.AddHTTPHeaderField("pragma", "public");
+  response.AddHTTPHeaderField("etag", "abc");
+  response.AddHTTPHeaderField("content-disposition",
                               "attachment; filename=a.txt");
   return response;
 }
 
-void runHeaderRelatedTest(const ResourceResponse& response) {
-  EXPECT_EQ(0, response.age());
-  EXPECT_NE(0, response.date());
-  EXPECT_NE(0, response.expires());
-  EXPECT_NE(0, response.lastModified());
-  EXPECT_EQ(true, response.cacheControlContainsNoCache());
+void RunHeaderRelatedTest(const ResourceResponse& response) {
+  EXPECT_EQ(0, response.Age());
+  EXPECT_NE(0, response.Date());
+  EXPECT_NE(0, response.Expires());
+  EXPECT_NE(0, response.LastModified());
+  EXPECT_EQ(true, response.CacheControlContainsNoCache());
 }
 
-void runInThread() {
-  ResourceResponse response(createTestResponse());
-  runHeaderRelatedTest(response);
+void RunInThread() {
+  ResourceResponse response(CreateTestResponse());
+  RunHeaderRelatedTest(response);
 }
 
 }  // namespace
@@ -48,34 +48,34 @@ TEST(ResourceResponseTest, SignedCertificateTimestampIsolatedCopy) {
       "status", "origin", "logDescription", "logId", 7, "hashAlgorithm",
       "signatureAlgorithm", "signatureData");
 
-  ResourceResponse::SignedCertificateTimestamp dest = src.isolatedCopy();
+  ResourceResponse::SignedCertificateTimestamp dest = src.IsolatedCopy();
 
-  EXPECT_EQ(src.m_status, dest.m_status);
-  EXPECT_NE(src.m_status.impl(), dest.m_status.impl());
-  EXPECT_EQ(src.m_origin, dest.m_origin);
-  EXPECT_NE(src.m_origin.impl(), dest.m_origin.impl());
-  EXPECT_EQ(src.m_logDescription, dest.m_logDescription);
-  EXPECT_NE(src.m_logDescription.impl(), dest.m_logDescription.impl());
-  EXPECT_EQ(src.m_logId, dest.m_logId);
-  EXPECT_NE(src.m_logId.impl(), dest.m_logId.impl());
-  EXPECT_EQ(src.m_timestamp, dest.m_timestamp);
-  EXPECT_EQ(src.m_hashAlgorithm, dest.m_hashAlgorithm);
-  EXPECT_NE(src.m_hashAlgorithm.impl(), dest.m_hashAlgorithm.impl());
-  EXPECT_EQ(src.m_signatureAlgorithm, dest.m_signatureAlgorithm);
-  EXPECT_NE(src.m_signatureAlgorithm.impl(), dest.m_signatureAlgorithm.impl());
-  EXPECT_EQ(src.m_signatureData, dest.m_signatureData);
-  EXPECT_NE(src.m_signatureData.impl(), dest.m_signatureData.impl());
+  EXPECT_EQ(src.status_, dest.status_);
+  EXPECT_NE(src.status_.Impl(), dest.status_.Impl());
+  EXPECT_EQ(src.origin_, dest.origin_);
+  EXPECT_NE(src.origin_.Impl(), dest.origin_.Impl());
+  EXPECT_EQ(src.log_description_, dest.log_description_);
+  EXPECT_NE(src.log_description_.Impl(), dest.log_description_.Impl());
+  EXPECT_EQ(src.log_id_, dest.log_id_);
+  EXPECT_NE(src.log_id_.Impl(), dest.log_id_.Impl());
+  EXPECT_EQ(src.timestamp_, dest.timestamp_);
+  EXPECT_EQ(src.hash_algorithm_, dest.hash_algorithm_);
+  EXPECT_NE(src.hash_algorithm_.Impl(), dest.hash_algorithm_.Impl());
+  EXPECT_EQ(src.signature_algorithm_, dest.signature_algorithm_);
+  EXPECT_NE(src.signature_algorithm_.Impl(), dest.signature_algorithm_.Impl());
+  EXPECT_EQ(src.signature_data_, dest.signature_data_);
+  EXPECT_NE(src.signature_data_.Impl(), dest.signature_data_.Impl());
 }
 
 TEST(ResourceResponseTest, CrossThreadAtomicStrings) {
   // This test checks that AtomicStrings in ResourceResponse doesn't cause the
   // failure of ThreadRestrictionVerifier check.
-  ResourceResponse response(createTestResponse());
-  runHeaderRelatedTest(response);
+  ResourceResponse response(CreateTestResponse());
+  RunHeaderRelatedTest(response);
   std::unique_ptr<WebThread> thread =
-      WTF::wrapUnique(Platform::current()->createThread("WorkerThread"));
-  thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE,
-                                       crossThreadBind(&runInThread));
+      WTF::WrapUnique(Platform::Current()->CreateThread("WorkerThread"));
+  thread->GetWebTaskRunner()->PostTask(BLINK_FROM_HERE,
+                                       CrossThreadBind(&RunInThread));
   thread.reset();
 }
 

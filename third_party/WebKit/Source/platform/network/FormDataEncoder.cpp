@@ -34,69 +34,69 @@
 namespace blink {
 
 // Helper functions
-static inline void append(Vector<char>& buffer, char string) {
+static inline void Append(Vector<char>& buffer, char string) {
   buffer.push_back(string);
 }
 
-static inline void append(Vector<char>& buffer, const char* string) {
-  buffer.append(string, strlen(string));
+static inline void Append(Vector<char>& buffer, const char* string) {
+  buffer.Append(string, strlen(string));
 }
 
-static inline void append(Vector<char>& buffer, const CString& string) {
-  buffer.append(string.data(), string.length());
+static inline void Append(Vector<char>& buffer, const CString& string) {
+  buffer.Append(string.Data(), string.length());
 }
 
-static inline void appendPercentEncoded(Vector<char>& buffer, unsigned char c) {
-  append(buffer, '%');
-  HexNumber::appendByteAsHex(c, buffer);
+static inline void AppendPercentEncoded(Vector<char>& buffer, unsigned char c) {
+  Append(buffer, '%');
+  HexNumber::AppendByteAsHex(c, buffer);
 }
 
-static void appendQuotedString(Vector<char>& buffer, const CString& string) {
+static void AppendQuotedString(Vector<char>& buffer, const CString& string) {
   // Append a string as a quoted value, escaping quotes and line breaks.
   // FIXME: Is it correct to use percent escaping here? Other browsers do not
   // encode these characters yet, so we should test popular servers to find out
   // if there is an encoding form they can handle.
   size_t length = string.length();
   for (size_t i = 0; i < length; ++i) {
-    char c = string.data()[i];
+    char c = string.Data()[i];
 
     switch (c) {
       case 0x0a:
-        append(buffer, "%0A");
+        Append(buffer, "%0A");
         break;
       case 0x0d:
-        append(buffer, "%0D");
+        Append(buffer, "%0D");
         break;
       case '"':
-        append(buffer, "%22");
+        Append(buffer, "%22");
         break;
       default:
-        append(buffer, c);
+        Append(buffer, c);
     }
   }
 }
 
-WTF::TextEncoding FormDataEncoder::encodingFromAcceptCharset(
-    const String& acceptCharset,
-    const WTF::TextEncoding& fallbackEncoding) {
-  ASSERT(fallbackEncoding.isValid());
+WTF::TextEncoding FormDataEncoder::EncodingFromAcceptCharset(
+    const String& accept_charset,
+    const WTF::TextEncoding& fallback_encoding) {
+  ASSERT(fallback_encoding.IsValid());
 
-  String normalizedAcceptCharset = acceptCharset;
-  normalizedAcceptCharset.replace(',', ' ');
+  String normalized_accept_charset = accept_charset;
+  normalized_accept_charset.Replace(',', ' ');
 
   Vector<String> charsets;
-  normalizedAcceptCharset.split(' ', charsets);
+  normalized_accept_charset.Split(' ', charsets);
 
   for (const String& name : charsets) {
     WTF::TextEncoding encoding(name);
-    if (encoding.isValid())
+    if (encoding.IsValid())
       return encoding;
   }
 
-  return fallbackEncoding;
+  return fallback_encoding;
 }
 
-Vector<char> FormDataEncoder::generateUniqueBoundaryString() {
+Vector<char> FormDataEncoder::GenerateUniqueBoundaryString() {
   Vector<char> boundary;
 
   // TODO(rsleevi): crbug.com/575779: Follow the spec or fix the spec.
@@ -108,7 +108,7 @@ Vector<char> FormDataEncoder::generateUniqueBoundaryString() {
   // Note that our algorithm makes it twice as much likely for 'A' or 'B'
   // to appear in the boundary string, because 0x41 and 0x42 are present in
   // the below array twice.
-  static const char alphaNumericEncodingMap[64] = {
+  static const char kAlphaNumericEncodingMap[64] = {
       0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B,
       0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56,
       0x57, 0x58, 0x59, 0x5A, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
@@ -117,117 +117,118 @@ Vector<char> FormDataEncoder::generateUniqueBoundaryString() {
       0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42};
 
   // Start with an informative prefix.
-  append(boundary, "----WebKitFormBoundary");
+  Append(boundary, "----WebKitFormBoundary");
 
   // Append 16 random 7bit ascii AlphaNumeric characters.
-  Vector<char> randomBytes;
+  Vector<char> random_bytes;
 
   for (unsigned i = 0; i < 4; ++i) {
-    uint32_t randomness = cryptographicallyRandomNumber();
-    randomBytes.push_back(alphaNumericEncodingMap[(randomness >> 24) & 0x3F]);
-    randomBytes.push_back(alphaNumericEncodingMap[(randomness >> 16) & 0x3F]);
-    randomBytes.push_back(alphaNumericEncodingMap[(randomness >> 8) & 0x3F]);
-    randomBytes.push_back(alphaNumericEncodingMap[randomness & 0x3F]);
+    uint32_t randomness = CryptographicallyRandomNumber();
+    random_bytes.push_back(kAlphaNumericEncodingMap[(randomness >> 24) & 0x3F]);
+    random_bytes.push_back(kAlphaNumericEncodingMap[(randomness >> 16) & 0x3F]);
+    random_bytes.push_back(kAlphaNumericEncodingMap[(randomness >> 8) & 0x3F]);
+    random_bytes.push_back(kAlphaNumericEncodingMap[randomness & 0x3F]);
   }
 
-  boundary.appendVector(randomBytes);
+  boundary.AppendVector(random_bytes);
   boundary.push_back(
       0);  // Add a 0 at the end so we can use this as a C-style string.
   return boundary;
 }
 
-void FormDataEncoder::beginMultiPartHeader(Vector<char>& buffer,
+void FormDataEncoder::BeginMultiPartHeader(Vector<char>& buffer,
                                            const CString& boundary,
                                            const CString& name) {
-  addBoundaryToMultiPartHeader(buffer, boundary);
+  AddBoundaryToMultiPartHeader(buffer, boundary);
 
   // FIXME: This loses data irreversibly if the input name includes characters
   // you can't encode in the website's character set.
-  append(buffer, "Content-Disposition: form-data; name=\"");
-  appendQuotedString(buffer, name);
-  append(buffer, '"');
+  Append(buffer, "Content-Disposition: form-data; name=\"");
+  AppendQuotedString(buffer, name);
+  Append(buffer, '"');
 }
 
-void FormDataEncoder::addBoundaryToMultiPartHeader(Vector<char>& buffer,
+void FormDataEncoder::AddBoundaryToMultiPartHeader(Vector<char>& buffer,
                                                    const CString& boundary,
-                                                   bool isLastBoundary) {
-  append(buffer, "--");
-  append(buffer, boundary);
+                                                   bool is_last_boundary) {
+  Append(buffer, "--");
+  Append(buffer, boundary);
 
-  if (isLastBoundary)
-    append(buffer, "--");
+  if (is_last_boundary)
+    Append(buffer, "--");
 
-  append(buffer, "\r\n");
+  Append(buffer, "\r\n");
 }
 
-void FormDataEncoder::addFilenameToMultiPartHeader(
+void FormDataEncoder::AddFilenameToMultiPartHeader(
     Vector<char>& buffer,
     const WTF::TextEncoding& encoding,
     const String& filename) {
   // FIXME: This loses data irreversibly if the filename includes characters you
   // can't encode in the website's character set.
-  append(buffer, "; filename=\"");
-  appendQuotedString(
-      buffer, encoding.encode(filename, WTF::QuestionMarksForUnencodables));
-  append(buffer, '"');
+  Append(buffer, "; filename=\"");
+  AppendQuotedString(
+      buffer, encoding.Encode(filename, WTF::kQuestionMarksForUnencodables));
+  Append(buffer, '"');
 }
 
-void FormDataEncoder::addContentTypeToMultiPartHeader(Vector<char>& buffer,
-                                                      const CString& mimeType) {
-  append(buffer, "\r\nContent-Type: ");
-  append(buffer, mimeType);
+void FormDataEncoder::AddContentTypeToMultiPartHeader(
+    Vector<char>& buffer,
+    const CString& mime_type) {
+  Append(buffer, "\r\nContent-Type: ");
+  Append(buffer, mime_type);
 }
 
-void FormDataEncoder::finishMultiPartHeader(Vector<char>& buffer) {
-  append(buffer, "\r\n\r\n");
+void FormDataEncoder::FinishMultiPartHeader(Vector<char>& buffer) {
+  Append(buffer, "\r\n\r\n");
 }
 
-void FormDataEncoder::addKeyValuePairAsFormData(
+void FormDataEncoder::AddKeyValuePairAsFormData(
     Vector<char>& buffer,
     const CString& key,
     const CString& value,
-    EncodedFormData::EncodingType encodingType,
+    EncodedFormData::EncodingType encoding_type,
     Mode mode) {
-  if (encodingType == EncodedFormData::TextPlain) {
-    append(buffer, key);
-    append(buffer, '=');
-    append(buffer, value);
-    append(buffer, "\r\n");
+  if (encoding_type == EncodedFormData::kTextPlain) {
+    Append(buffer, key);
+    Append(buffer, '=');
+    Append(buffer, value);
+    Append(buffer, "\r\n");
   } else {
-    if (!buffer.isEmpty())
-      append(buffer, '&');
-    encodeStringAsFormData(buffer, key, mode);
-    append(buffer, '=');
-    encodeStringAsFormData(buffer, value, mode);
+    if (!buffer.IsEmpty())
+      Append(buffer, '&');
+    EncodeStringAsFormData(buffer, key, mode);
+    Append(buffer, '=');
+    EncodeStringAsFormData(buffer, value, mode);
   }
 }
 
-void FormDataEncoder::encodeStringAsFormData(Vector<char>& buffer,
+void FormDataEncoder::EncodeStringAsFormData(Vector<char>& buffer,
                                              const CString& string,
                                              Mode mode) {
   // Same safe characters as Netscape for compatibility.
-  static const char safeCharacters[] = "-._*";
+  static const char kSafeCharacters[] = "-._*";
 
   // http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.1
   unsigned length = string.length();
   for (unsigned i = 0; i < length; ++i) {
-    unsigned char c = string.data()[i];
+    unsigned char c = string.Data()[i];
 
     if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-        (c >= '0' && c <= '9') || (c != '\0' && strchr(safeCharacters, c))) {
-      append(buffer, c);
+        (c >= '0' && c <= '9') || (c != '\0' && strchr(kSafeCharacters, c))) {
+      Append(buffer, c);
     } else if (c == ' ') {
-      append(buffer, '+');
+      Append(buffer, '+');
     } else {
-      if (mode == NormalizeCRLF) {
+      if (mode == kNormalizeCRLF) {
         if (c == '\n' ||
-            (c == '\r' && (i + 1 >= length || string.data()[i + 1] != '\n'))) {
-          append(buffer, "%0D%0A");
+            (c == '\r' && (i + 1 >= length || string.Data()[i + 1] != '\n'))) {
+          Append(buffer, "%0D%0A");
         } else if (c != '\r') {
-          appendPercentEncoded(buffer, c);
+          AppendPercentEncoded(buffer, c);
         }
       } else {
-        appendPercentEncoded(buffer, c);
+        AppendPercentEncoded(buffer, c);
       }
     }
   }

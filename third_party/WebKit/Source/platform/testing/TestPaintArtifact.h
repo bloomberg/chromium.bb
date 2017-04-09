@@ -47,30 +47,30 @@ class TestPaintArtifact {
   ~TestPaintArtifact();
 
   // Add to the artifact.
-  TestPaintArtifact& chunk(PassRefPtr<const TransformPaintPropertyNode>,
+  TestPaintArtifact& Chunk(PassRefPtr<const TransformPaintPropertyNode>,
                            PassRefPtr<const ClipPaintPropertyNode>,
                            PassRefPtr<const EffectPaintPropertyNode>);
-  TestPaintArtifact& chunk(const PaintChunkProperties&);
-  TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
-  TestPaintArtifact& foreignLayer(const FloatPoint&,
+  TestPaintArtifact& Chunk(const PaintChunkProperties&);
+  TestPaintArtifact& RectDrawing(const FloatRect& bounds, Color);
+  TestPaintArtifact& ForeignLayer(const FloatPoint&,
                                   const IntSize&,
                                   scoped_refptr<cc::Layer>);
 
   // Can't add more things once this is called.
-  const PaintArtifact& build();
+  const PaintArtifact& Build();
 
  private:
   class DummyRectClient;
-  Vector<std::unique_ptr<DummyRectClient>> m_dummyClients;
+  Vector<std::unique_ptr<DummyRectClient>> dummy_clients_;
 
   // Exists if m_built is false.
-  DisplayItemList m_displayItemList;
-  Vector<PaintChunk> m_paintChunks;
+  DisplayItemList display_item_list_;
+  Vector<PaintChunk> paint_chunks_;
 
   // Exists if m_built is true.
-  PaintArtifact m_paintArtifact;
+  PaintArtifact paint_artifact_;
 
-  bool m_built;
+  bool built_;
 };
 
 }  // namespace blink

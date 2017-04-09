@@ -38,28 +38,28 @@ class RTCDataChannelEvent final : public Event {
  public:
   ~RTCDataChannelEvent() override;
 
-  static RTCDataChannelEvent* create(const AtomicString& type,
-                                     bool canBubble,
+  static RTCDataChannelEvent* Create(const AtomicString& type,
+                                     bool can_bubble,
                                      bool cancelable,
                                      RTCDataChannel*);
 
-  static RTCDataChannelEvent* create(const AtomicString& type,
+  static RTCDataChannelEvent* Create(const AtomicString& type,
                                      const RTCDataChannelEventInit&);
 
   RTCDataChannel* channel() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   RTCDataChannelEvent(const AtomicString& type,
-                      bool canBubble,
+                      bool can_bubble,
                       bool cancelable,
                       RTCDataChannel*);
 
   RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit&);
-  Member<RTCDataChannel> m_channel;
+  Member<RTCDataChannel> channel_;
 };
 
 }  // namespace blink

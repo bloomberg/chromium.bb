@@ -15,46 +15,46 @@ namespace blink {
 
 WebEncryptedMediaRequest::WebEncryptedMediaRequest(
     const WebEncryptedMediaRequest& request) {
-  assign(request);
+  Assign(request);
 }
 
 WebEncryptedMediaRequest::WebEncryptedMediaRequest(
     EncryptedMediaRequest* request)
-    : m_private(request) {}
+    : private_(request) {}
 
 WebEncryptedMediaRequest::~WebEncryptedMediaRequest() {
-  reset();
+  Reset();
 }
 
-WebString WebEncryptedMediaRequest::keySystem() const {
-  return m_private->keySystem();
+WebString WebEncryptedMediaRequest::KeySystem() const {
+  return private_->KeySystem();
 }
 
 const WebVector<WebMediaKeySystemConfiguration>&
-WebEncryptedMediaRequest::supportedConfigurations() const {
-  return m_private->supportedConfigurations();
+WebEncryptedMediaRequest::SupportedConfigurations() const {
+  return private_->SupportedConfigurations();
 }
 
-WebSecurityOrigin WebEncryptedMediaRequest::getSecurityOrigin() const {
-  return WebSecurityOrigin(m_private->getSecurityOrigin());
+WebSecurityOrigin WebEncryptedMediaRequest::GetSecurityOrigin() const {
+  return WebSecurityOrigin(private_->GetSecurityOrigin());
 }
 
-void WebEncryptedMediaRequest::requestSucceeded(
+void WebEncryptedMediaRequest::RequestSucceeded(
     WebContentDecryptionModuleAccess* access) {
-  m_private->requestSucceeded(access);
+  private_->RequestSucceeded(access);
 }
 
-void WebEncryptedMediaRequest::requestNotSupported(
-    const WebString& errorMessage) {
-  m_private->requestNotSupported(errorMessage);
+void WebEncryptedMediaRequest::RequestNotSupported(
+    const WebString& error_message) {
+  private_->RequestNotSupported(error_message);
 }
 
-void WebEncryptedMediaRequest::assign(const WebEncryptedMediaRequest& other) {
-  m_private = other.m_private;
+void WebEncryptedMediaRequest::Assign(const WebEncryptedMediaRequest& other) {
+  private_ = other.private_;
 }
 
-void WebEncryptedMediaRequest::reset() {
-  m_private.reset();
+void WebEncryptedMediaRequest::Reset() {
+  private_.Reset();
 }
 
 }  // namespace blink

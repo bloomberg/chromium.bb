@@ -19,14 +19,14 @@ class MODULES_EXPORT CopylessPasteServer final
  public:
   explicit CopylessPasteServer(LocalFrame&);
 
-  static void bindMojoRequest(
+  static void BindMojoRequest(
       LocalFrame*,
       mojom::document_metadata::blink::CopylessPasteRequest);
 
   void GetEntities(const GetEntitiesCallback&) override;
 
  private:
-  WeakPersistent<LocalFrame> m_frame;
+  WeakPersistent<LocalFrame> frame_;
 };
 
 }  // namespace blink

@@ -528,7 +528,7 @@ class IdlLiteral(object):
             if self.value:
                 return '"%s"' % self.value
             else:
-                return 'WTF::emptyString'
+                return 'WTF::g_empty_string'
         if self.idl_type == 'integer':
             return '%d' % self.value
         if self.idl_type == 'float':

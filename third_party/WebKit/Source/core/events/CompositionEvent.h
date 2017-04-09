@@ -36,15 +36,15 @@ class CompositionEvent final : public UIEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CompositionEvent* create() { return new CompositionEvent; }
+  static CompositionEvent* Create() { return new CompositionEvent; }
 
-  static CompositionEvent* create(const AtomicString& type,
+  static CompositionEvent* Create(const AtomicString& type,
                                   AbstractView* view,
                                   const String& data) {
     return new CompositionEvent(type, view, data);
   }
 
-  static CompositionEvent* create(const AtomicString& type,
+  static CompositionEvent* Create(const AtomicString& type,
                                   const CompositionEventInit& initializer) {
     return new CompositionEvent(type, initializer);
   }
@@ -52,14 +52,14 @@ class CompositionEvent final : public UIEvent {
   ~CompositionEvent() override;
 
   void initCompositionEvent(const AtomicString& type,
-                            bool canBubble,
+                            bool can_bubble,
                             bool cancelable,
                             AbstractView*,
                             const String& data);
 
-  String data() const { return m_data; }
+  String data() const { return data_; }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -68,7 +68,7 @@ class CompositionEvent final : public UIEvent {
   CompositionEvent(const AtomicString& type, AbstractView*, const String&);
   CompositionEvent(const AtomicString& type, const CompositionEventInit&);
 
-  String m_data;
+  String data_;
 };
 
 }  // namespace blink

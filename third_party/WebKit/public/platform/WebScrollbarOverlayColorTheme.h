@@ -7,8 +7,8 @@
 
 namespace blink {
 enum WebScrollbarOverlayColorTheme {
-  WebScrollbarOverlayColorThemeDark,
-  WebScrollbarOverlayColorThemeLight
+  kWebScrollbarOverlayColorThemeDark,
+  kWebScrollbarOverlayColorThemeLight
 };
 }  // namespace blink
 

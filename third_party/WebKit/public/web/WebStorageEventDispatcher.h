@@ -42,23 +42,23 @@ class WebURL;
 class WebStorageEventDispatcher {
  public:
   // Dispatch a local storage event to appropiate documents.
-  BLINK_EXPORT static void dispatchLocalStorageEvent(
+  BLINK_EXPORT static void DispatchLocalStorageEvent(
       const WebString& key,
-      const WebString& oldValue,
-      const WebString& newValue,
+      const WebString& old_value,
+      const WebString& new_value,
       const WebURL& origin,
-      const WebURL& pageUrl,
-      WebStorageArea* sourceAreaInstance);
+      const WebURL& page_url,
+      WebStorageArea* source_area_instance);
 
   // Dispatch a session storage event to appropiate documents.
-  BLINK_EXPORT static void dispatchSessionStorageEvent(
+  BLINK_EXPORT static void DispatchSessionStorageEvent(
       const WebString& key,
-      const WebString& oldValue,
-      const WebString& newValue,
+      const WebString& old_value,
+      const WebString& new_value,
       const WebURL& origin,
-      const WebURL& pageUrl,
+      const WebURL& page_url,
       const WebStorageNamespace&,
-      WebStorageArea* sourceAreaInstance);
+      WebStorageArea* source_area_instance);
 
  private:
   WebStorageEventDispatcher() {}

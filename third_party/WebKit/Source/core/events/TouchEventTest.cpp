@@ -20,122 +20,122 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
   ConsoleCapturingChromeClient() : EmptyChromeClient() {}
 
   // ChromeClient methods:
-  void addMessageToConsole(LocalFrame*,
-                           MessageSource messageSource,
+  void AddMessageToConsole(LocalFrame*,
+                           MessageSource message_source,
                            MessageLevel,
                            const String& message,
-                           unsigned lineNumber,
-                           const String& sourceID,
-                           const String& stackTrace) override {
-    m_messages.push_back(message);
-    m_messageSources.push_back(messageSource);
+                           unsigned line_number,
+                           const String& source_id,
+                           const String& stack_trace) override {
+    messages_.push_back(message);
+    message_sources_.push_back(message_source);
   }
 
   // Expose console output.
-  const std::vector<String>& messages() { return m_messages; }
-  const std::vector<MessageSource>& messageSources() {
-    return m_messageSources;
+  const std::vector<String>& Messages() { return messages_; }
+  const std::vector<MessageSource>& MessageSources() {
+    return message_sources_;
   }
 
  private:
-  std::vector<String> m_messages;
-  std::vector<MessageSource> m_messageSources;
+  std::vector<String> messages_;
+  std::vector<MessageSource> message_sources_;
 };
 
 class TouchEventTest : public testing::Test {
  public:
   TouchEventTest() {
-    m_chromeClient = new ConsoleCapturingChromeClient();
+    chrome_client_ = new ConsoleCapturingChromeClient();
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = m_chromeClient.get();
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
   }
 
-  const std::vector<String>& messages() { return m_chromeClient->messages(); }
-  const std::vector<MessageSource>& messageSources() {
-    return m_chromeClient->messageSources();
+  const std::vector<String>& Messages() { return chrome_client_->Messages(); }
+  const std::vector<MessageSource>& MessageSources() {
+    return chrome_client_->MessageSources();
   }
 
-  LocalDOMWindow& window() { return *m_pageHolder->frame().domWindow(); }
+  LocalDOMWindow& Window() { return *page_holder_->GetFrame().DomWindow(); }
 
-  Document& document() { return m_pageHolder->document(); }
+  Document& GetDocument() { return page_holder_->GetDocument(); }
 
-  TouchEvent* eventWithDispatchType(WebInputEvent::DispatchType dispatchType) {
-    WebTouchEvent webTouchEvent(WebInputEvent::TouchStart, 0, 0);
-    webTouchEvent.dispatchType = dispatchType;
-    return TouchEvent::create(webTouchEvent, nullptr, nullptr, nullptr,
-                              "touchstart", &window(), TouchActionAuto);
+  TouchEvent* EventWithDispatchType(WebInputEvent::DispatchType dispatch_type) {
+    WebTouchEvent web_touch_event(WebInputEvent::kTouchStart, 0, 0);
+    web_touch_event.dispatch_type = dispatch_type;
+    return TouchEvent::Create(web_touch_event, nullptr, nullptr, nullptr,
+                              "touchstart", &Window(), kTouchActionAuto);
   }
 
  private:
-  Persistent<ConsoleCapturingChromeClient> m_chromeClient;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  Persistent<ConsoleCapturingChromeClient> chrome_client_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(TouchEventTest, PreventDefaultUncancelable) {
-  TouchEvent* event = eventWithDispatchType(WebInputEvent::EventNonBlocking);
-  event->setHandlingPassive(Event::PassiveMode::NotPassiveDefault);
+  TouchEvent* event = EventWithDispatchType(WebInputEvent::kEventNonBlocking);
+  event->SetHandlingPassive(Event::PassiveMode::kNotPassiveDefault);
 
-  EXPECT_THAT(messages(), ElementsAre());
+  EXPECT_THAT(Messages(), ElementsAre());
   event->preventDefault();
-  EXPECT_THAT(messages(),
+  EXPECT_THAT(Messages(),
               ElementsAre("Ignored attempt to cancel a touchstart event with "
                           "cancelable=false, for example because scrolling is "
                           "in progress and cannot be interrupted."));
-  EXPECT_THAT(messageSources(), ElementsAre(JSMessageSource));
+  EXPECT_THAT(MessageSources(), ElementsAre(kJSMessageSource));
 
-  EXPECT_TRUE(UseCounter::isCounted(
-      document(), UseCounter::UncancellableTouchEventPreventDefaulted));
-  EXPECT_FALSE(UseCounter::isCounted(
-      document(),
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), UseCounter::kUncancellableTouchEventPreventDefaulted));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(),
       UseCounter::
-          UncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
+          kUncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
 }
 
 TEST_F(TouchEventTest,
        PreventDefaultUncancelableDueToMainThreadResponsiveness) {
-  TouchEvent* event = eventWithDispatchType(
-      WebInputEvent::ListenersForcedNonBlockingDueToMainThreadResponsiveness);
-  event->setHandlingPassive(Event::PassiveMode::NotPassiveDefault);
+  TouchEvent* event = EventWithDispatchType(
+      WebInputEvent::kListenersForcedNonBlockingDueToMainThreadResponsiveness);
+  event->SetHandlingPassive(Event::PassiveMode::kNotPassiveDefault);
 
-  EXPECT_THAT(messages(), ElementsAre());
+  EXPECT_THAT(Messages(), ElementsAre());
   event->preventDefault();
-  EXPECT_THAT(messages(),
+  EXPECT_THAT(Messages(),
               ElementsAre("Ignored attempt to cancel a touchstart event with "
                           "cancelable=false. This event was forced to be "
                           "non-cancellable because the page was too busy to "
                           "handle the event promptly."));
-  EXPECT_THAT(messageSources(), ElementsAre(InterventionMessageSource));
+  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
 
-  EXPECT_TRUE(UseCounter::isCounted(
-      document(), UseCounter::UncancellableTouchEventPreventDefaulted));
-  EXPECT_TRUE(UseCounter::isCounted(
-      document(),
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), UseCounter::kUncancellableTouchEventPreventDefaulted));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(),
       UseCounter::
-          UncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
+          kUncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted));
 }
 
 TEST_F(TouchEventTest,
        PreventDefaultPassiveDueToDocumentLevelScrollerIntervention) {
   TouchEvent* event =
-      eventWithDispatchType(WebInputEvent::ListenersNonBlockingPassive);
-  event->setHandlingPassive(Event::PassiveMode::PassiveForcedDocumentLevel);
+      EventWithDispatchType(WebInputEvent::kListenersNonBlockingPassive);
+  event->SetHandlingPassive(Event::PassiveMode::kPassiveForcedDocumentLevel);
 
-  EXPECT_THAT(messages(), ElementsAre());
+  EXPECT_THAT(Messages(), ElementsAre());
   event->preventDefault();
   EXPECT_THAT(
-      messages(),
+      Messages(),
       ElementsAre("Unable to preventDefault inside passive event listener due "
                   "to target being treated as passive. See "
                   "https://www.chromestatus.com/features/5093566007214080"));
-  EXPECT_THAT(messageSources(), ElementsAre(InterventionMessageSource));
+  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
 }
 
 class TouchEventTestNoFrame : public testing::Test {};
 
 TEST_F(TouchEventTestNoFrame, PreventDefaultDoesntRequireFrame) {
-  TouchEvent::create()->preventDefault();
+  TouchEvent::Create()->preventDefault();
 }
 
 }  // namespace blink

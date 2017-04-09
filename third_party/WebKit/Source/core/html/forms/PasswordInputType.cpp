@@ -43,59 +43,59 @@
 
 namespace blink {
 
-InputType* PasswordInputType::create(HTMLInputElement& element) {
+InputType* PasswordInputType::Create(HTMLInputElement& element) {
   return new PasswordInputType(element);
 }
 
-void PasswordInputType::countUsage() {
-  countUsageIfVisible(UseCounter::InputTypePassword);
-  if (element().fastHasAttribute(HTMLNames::maxlengthAttr))
-    countUsageIfVisible(UseCounter::InputTypePasswordMaxLength);
+void PasswordInputType::CountUsage() {
+  CountUsageIfVisible(UseCounter::kInputTypePassword);
+  if (GetElement().FastHasAttribute(HTMLNames::maxlengthAttr))
+    CountUsageIfVisible(UseCounter::kInputTypePasswordMaxLength);
 }
 
-const AtomicString& PasswordInputType::formControlType() const {
+const AtomicString& PasswordInputType::FormControlType() const {
   return InputTypeNames::password;
 }
 
-bool PasswordInputType::shouldSaveAndRestoreFormControlState() const {
+bool PasswordInputType::ShouldSaveAndRestoreFormControlState() const {
   return false;
 }
 
-FormControlState PasswordInputType::saveFormControlState() const {
+FormControlState PasswordInputType::SaveFormControlState() const {
   // Should never save/restore password fields.
   NOTREACHED();
   return FormControlState();
 }
 
-void PasswordInputType::restoreFormControlState(const FormControlState&) {
+void PasswordInputType::RestoreFormControlState(const FormControlState&) {
   // Should never save/restore password fields.
   NOTREACHED();
 }
 
-bool PasswordInputType::shouldRespectListAttribute() {
+bool PasswordInputType::ShouldRespectListAttribute() {
   return false;
 }
 
-void PasswordInputType::enableSecureTextInput() {
-  LocalFrame* frame = element().document().frame();
+void PasswordInputType::EnableSecureTextInput() {
+  LocalFrame* frame = GetElement().GetDocument().GetFrame();
   if (!frame)
     return;
-  frame->selection().setUseSecureKeyboardEntryWhenActive(true);
+  frame->Selection().SetUseSecureKeyboardEntryWhenActive(true);
 }
 
-void PasswordInputType::disableSecureTextInput() {
-  LocalFrame* frame = element().document().frame();
+void PasswordInputType::DisableSecureTextInput() {
+  LocalFrame* frame = GetElement().GetDocument().GetFrame();
   if (!frame)
     return;
-  frame->selection().setUseSecureKeyboardEntryWhenActive(false);
+  frame->Selection().SetUseSecureKeyboardEntryWhenActive(false);
 }
 
-void PasswordInputType::onAttachWithLayoutObject() {
-  element().document().incrementPasswordCount();
+void PasswordInputType::OnAttachWithLayoutObject() {
+  GetElement().GetDocument().IncrementPasswordCount();
 }
 
-void PasswordInputType::onDetachWithLayoutObject() {
-  element().document().decrementPasswordCount();
+void PasswordInputType::OnDetachWithLayoutObject() {
+  GetElement().GetDocument().DecrementPasswordCount();
 }
 
 }  // namespace blink

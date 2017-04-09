@@ -48,50 +48,50 @@ class CORE_EXPORT WorkerReportingProxy {
  public:
   virtual ~WorkerReportingProxy() {}
 
-  virtual void countFeature(UseCounter::Feature) {}
-  virtual void countDeprecation(UseCounter::Feature) {}
-  virtual void reportException(const String& errorMessage,
+  virtual void CountFeature(UseCounter::Feature) {}
+  virtual void CountDeprecation(UseCounter::Feature) {}
+  virtual void ReportException(const String& error_message,
                                std::unique_ptr<SourceLocation>,
-                               int exceptionId) {}
-  virtual void reportConsoleMessage(MessageSource,
+                               int exception_id) {}
+  virtual void ReportConsoleMessage(MessageSource,
                                     MessageLevel,
                                     const String& message,
                                     SourceLocation*) {}
-  virtual void postMessageToPageInspector(const String&) {}
+  virtual void PostMessageToPageInspector(const String&) {}
 
   // Invoked when the new WorkerGlobalScope is created. This is called after
   // didLoadWorkerScript().
-  virtual void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) {}
+  virtual void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) {}
 
   // Invoked when the WorkerGlobalScope is initialized. This is called after
   // didCreateWorkerGlobalScope().
-  virtual void didInitializeWorkerContext() {}
+  virtual void DidInitializeWorkerContext() {}
 
   // Invoked when the worker script is about to be evaluated. This is called
   // after didInitializeWorkerContext().
-  virtual void willEvaluateWorkerScript(size_t scriptSize,
-                                        size_t cachedMetadataSize) {}
+  virtual void WillEvaluateWorkerScript(size_t script_size,
+                                        size_t cached_metadata_size) {}
 
   // Invoked when an imported script is about to be evaluated. This is called
   // after willEvaluateWorkerScript().
-  virtual void willEvaluateImportedScript(size_t scriptSize,
-                                          size_t cachedMetadataSize) {}
+  virtual void WillEvaluateImportedScript(size_t script_size,
+                                          size_t cached_metadata_size) {}
 
   // Invoked when the worker script is evaluated. |success| is true if the
   // evaluation completed with no uncaught exception.
-  virtual void didEvaluateWorkerScript(bool success) {}
+  virtual void DidEvaluateWorkerScript(bool success) {}
 
   // Invoked when close() is invoked on the worker context.
-  virtual void didCloseWorkerGlobalScope() {}
+  virtual void DidCloseWorkerGlobalScope() {}
 
   // Invoked when the thread is about to be stopped and WorkerGlobalScope
   // is to be destructed. When this is called, it is guaranteed that
   // WorkerGlobalScope is still alive.
-  virtual void willDestroyWorkerGlobalScope() {}
+  virtual void WillDestroyWorkerGlobalScope() {}
 
   // Invoked when the thread is stopped and WorkerGlobalScope is being
   // destructed. This is the last method that is called on this interface.
-  virtual void didTerminateWorkerThread() {}
+  virtual void DidTerminateWorkerThread() {}
 };
 
 }  // namespace blink

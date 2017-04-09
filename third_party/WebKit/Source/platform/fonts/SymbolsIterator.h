@@ -20,20 +20,20 @@ class PLATFORM_EXPORT SymbolsIterator {
   WTF_MAKE_NONCOPYABLE(SymbolsIterator);
 
  public:
-  SymbolsIterator(const UChar* buffer, unsigned bufferSize);
+  SymbolsIterator(const UChar* buffer, unsigned buffer_size);
 
-  bool consume(unsigned* symbolsLimit, FontFallbackPriority*);
+  bool Consume(unsigned* symbols_limit, FontFallbackPriority*);
 
  private:
-  FontFallbackPriority fontFallbackPriorityForCharacter(UChar32);
+  FontFallbackPriority FontFallbackPriorityForCharacter(UChar32);
 
-  std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
-  unsigned m_bufferSize;
-  UChar32 m_nextChar;
-  bool m_atEnd;
+  std::unique_ptr<UTF16TextIterator> utf16_iterator_;
+  unsigned buffer_size_;
+  UChar32 next_char_;
+  bool at_end_;
 
-  FontFallbackPriority m_currentFontFallbackPriority;
-  FontFallbackPriority m_previousFontFallbackPriority;
+  FontFallbackPriority current_font_fallback_priority_;
+  FontFallbackPriority previous_font_fallback_priority_;
 };
 
 }  // namespace blink

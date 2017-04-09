@@ -16,9 +16,9 @@ TEST(DragUpdateTest, AffectedByDragUpdate) {
   // Check that when dragging the div in the document below, you only get a
   // single element style recalc.
 
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(800, 600));
-  Document& document = dummyPageHolder->document();
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
   document.documentElement()->setInnerHTML(
       "<style>div {width:100px;height:100px} div:-webkit-drag { "
       "background-color: green }</style>"
@@ -29,25 +29,25 @@ TEST(DragUpdateTest, AffectedByDragUpdate) {
       "<span></span>"
       "</div>");
 
-  document.view()->updateAllLifecyclePhases();
-  unsigned startCount = document.styleEngine().styleForElementCount();
+  document.View()->UpdateAllLifecyclePhases();
+  unsigned start_count = document.GetStyleEngine().StyleForElementCount();
 
-  document.getElementById("div")->setDragged(true);
-  document.view()->updateAllLifecyclePhases();
+  document.GetElementById("div")->SetDragged(true);
+  document.View()->UpdateAllLifecyclePhases();
 
-  unsigned elementCount =
-      document.styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      document.GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(1U, elementCount);
+  ASSERT_EQ(1U, element_count);
 }
 
 TEST(DragUpdateTest, ChildAffectedByDragUpdate) {
   // Check that when dragging the div in the document below, you get a
   // single element style recalc.
 
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(800, 600));
-  Document& document = dummyPageHolder->document();
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
   document.documentElement()->setInnerHTML(
       "<style>div {width:100px;height:100px} div:-webkit-drag .drag { "
       "background-color: green }</style>"
@@ -58,25 +58,25 @@ TEST(DragUpdateTest, ChildAffectedByDragUpdate) {
       "<span></span>"
       "</div>");
 
-  document.updateStyleAndLayout();
-  unsigned startCount = document.styleEngine().styleForElementCount();
+  document.UpdateStyleAndLayout();
+  unsigned start_count = document.GetStyleEngine().StyleForElementCount();
 
-  document.getElementById("div")->setDragged(true);
-  document.updateStyleAndLayout();
+  document.GetElementById("div")->SetDragged(true);
+  document.UpdateStyleAndLayout();
 
-  unsigned elementCount =
-      document.styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      document.GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(1U, elementCount);
+  ASSERT_EQ(1U, element_count);
 }
 
 TEST(DragUpdateTest, SiblingAffectedByDragUpdate) {
   // Check that when dragging the div in the document below, you get a
   // single element style recalc.
 
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(800, 600));
-  Document& document = dummyPageHolder->document();
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
   document.documentElement()->setInnerHTML(
       "<style>div {width:100px;height:100px} div:-webkit-drag + .drag { "
       "background-color: green }</style>"
@@ -88,16 +88,16 @@ TEST(DragUpdateTest, SiblingAffectedByDragUpdate) {
       "</div>"
       "<span class='drag'></span>");
 
-  document.updateStyleAndLayout();
-  unsigned startCount = document.styleEngine().styleForElementCount();
+  document.UpdateStyleAndLayout();
+  unsigned start_count = document.GetStyleEngine().StyleForElementCount();
 
-  document.getElementById("div")->setDragged(true);
-  document.updateStyleAndLayout();
+  document.GetElementById("div")->SetDragged(true);
+  document.UpdateStyleAndLayout();
 
-  unsigned elementCount =
-      document.styleEngine().styleForElementCount() - startCount;
+  unsigned element_count =
+      document.GetStyleEngine().StyleForElementCount() - start_count;
 
-  ASSERT_EQ(1U, elementCount);
+  ASSERT_EQ(1U, element_count);
 }
 
 }  // namespace blink

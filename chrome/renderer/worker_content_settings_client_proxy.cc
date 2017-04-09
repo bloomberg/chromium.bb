@@ -19,19 +19,19 @@ WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
     blink::WebFrame* frame)
     : routing_id_(render_frame->GetRoutingID()),
       is_unique_origin_(false) {
-  if (frame->document().getSecurityOrigin().isUnique() ||
-      frame->top()->getSecurityOrigin().isUnique())
+  if (frame->GetDocument().GetSecurityOrigin().IsUnique() ||
+      frame->Top()->GetSecurityOrigin().IsUnique())
     is_unique_origin_ = true;
   sync_message_filter_ = content::RenderThread::Get()->GetSyncMessageFilter();
   document_origin_url_ =
-      url::Origin(frame->document().getSecurityOrigin()).GetURL();
+      url::Origin(frame->GetDocument().GetSecurityOrigin()).GetURL();
   top_frame_origin_url_ =
-      url::Origin(frame->top()->getSecurityOrigin()).GetURL();
+      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL();
 }
 
 WorkerContentSettingsClientProxy::~WorkerContentSettingsClientProxy() {}
 
-bool WorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
+bool WorkerContentSettingsClientProxy::RequestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
 
@@ -41,14 +41,14 @@ bool WorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
   return result;
 }
 
-bool WorkerContentSettingsClientProxy::allowIndexedDB(
+bool WorkerContentSettingsClientProxy::AllowIndexedDB(
     const blink::WebString& name) {
   if (is_unique_origin_)
     return false;
 
   bool result = false;
   sync_message_filter_->Send(new ChromeViewHostMsg_AllowIndexedDB(
-      routing_id_, document_origin_url_, top_frame_origin_url_, name.utf16(),
+      routing_id_, document_origin_url_, top_frame_origin_url_, name.Utf16(),
       &result));
   return result;
 }

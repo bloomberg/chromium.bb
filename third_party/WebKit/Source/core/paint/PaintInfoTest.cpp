@@ -13,76 +13,80 @@ namespace blink {
 class PaintInfoTest : public testing::Test {
  protected:
   PaintInfoTest()
-      : m_paintController(PaintController::create()),
-        m_context(*m_paintController) {}
+      : paint_controller_(PaintController::Create()),
+        context_(*paint_controller_) {}
 
-  std::unique_ptr<PaintController> m_paintController;
-  GraphicsContext m_context;
+  std::unique_ptr<PaintController> paint_controller_;
+  GraphicsContext context_;
 };
 
 TEST_F(PaintInfoTest, intersectsCullRect) {
-  PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50),
-                      PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
+  PaintInfo paint_info(context_, IntRect(0, 0, 50, 50),
+                       kPaintPhaseSelfBlockBackgroundOnly,
+                       kGlobalPaintNormalPhase, kPaintLayerNoFlag);
 
-  EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(IntRect(0, 0, 1, 1)));
-  EXPECT_FALSE(paintInfo.cullRect().intersectsCullRect(IntRect(51, 51, 1, 1)));
+  EXPECT_TRUE(paint_info.GetCullRect().IntersectsCullRect(IntRect(0, 0, 1, 1)));
+  EXPECT_FALSE(
+      paint_info.GetCullRect().IntersectsCullRect(IntRect(51, 51, 1, 1)));
 }
 
 TEST_F(PaintInfoTest, intersectsCullRectWithLayoutRect) {
-  PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50),
-                      PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
+  PaintInfo paint_info(context_, IntRect(0, 0, 50, 50),
+                       kPaintPhaseSelfBlockBackgroundOnly,
+                       kGlobalPaintNormalPhase, kPaintLayerNoFlag);
 
-  EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0, 0, 1, 1)));
-  EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(
+  EXPECT_TRUE(
+      paint_info.GetCullRect().IntersectsCullRect(LayoutRect(0, 0, 1, 1)));
+  EXPECT_TRUE(paint_info.GetCullRect().IntersectsCullRect(LayoutRect(
       LayoutUnit(0.1), LayoutUnit(0.1), LayoutUnit(0.1), LayoutUnit(0.1))));
 }
 
 TEST_F(PaintInfoTest, intersectsCullRectWithTransform) {
-  PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50),
-                      PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
+  PaintInfo paint_info(context_, IntRect(0, 0, 50, 50),
+                       kPaintPhaseSelfBlockBackgroundOnly,
+                       kGlobalPaintNormalPhase, kPaintLayerNoFlag);
   AffineTransform transform;
-  transform.translate(-2, -2);
+  transform.Translate(-2, -2);
 
-  EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(transform,
-                                                      IntRect(51, 51, 1, 1)));
-  EXPECT_FALSE(paintInfo.cullRect().intersectsCullRect(IntRect(52, 52, 1, 1)));
+  EXPECT_TRUE(paint_info.GetCullRect().IntersectsCullRect(
+      transform, IntRect(51, 51, 1, 1)));
+  EXPECT_FALSE(
+      paint_info.GetCullRect().IntersectsCullRect(IntRect(52, 52, 1, 1)));
 }
 
 TEST_F(PaintInfoTest, updateCullRect) {
-  PaintInfo paintInfo(m_context, IntRect(1, 1, 50, 50),
-                      PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
+  PaintInfo paint_info(context_, IntRect(1, 1, 50, 50),
+                       kPaintPhaseSelfBlockBackgroundOnly,
+                       kGlobalPaintNormalPhase, kPaintLayerNoFlag);
   AffineTransform transform;
-  transform.translate(1, 1);
-  paintInfo.updateCullRect(transform);
+  transform.Translate(1, 1);
+  paint_info.UpdateCullRect(transform);
 
-  EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(IntRect(0, 0, 1, 1)));
-  EXPECT_FALSE(paintInfo.cullRect().intersectsCullRect(IntRect(51, 51, 1, 1)));
+  EXPECT_TRUE(paint_info.GetCullRect().IntersectsCullRect(IntRect(0, 0, 1, 1)));
+  EXPECT_FALSE(
+      paint_info.GetCullRect().IntersectsCullRect(IntRect(51, 51, 1, 1)));
 }
 
 TEST_F(PaintInfoTest, intersectsVerticalRange) {
-  PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100),
-                      PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
+  PaintInfo paint_info(context_, IntRect(0, 0, 50, 100),
+                       kPaintPhaseSelfBlockBackgroundOnly,
+                       kGlobalPaintNormalPhase, kPaintLayerNoFlag);
 
-  EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(),
-                                                           LayoutUnit(1)));
-  EXPECT_FALSE(paintInfo.cullRect().intersectsVerticalRange(LayoutUnit(100),
-                                                            LayoutUnit(101)));
+  EXPECT_TRUE(paint_info.GetCullRect().IntersectsVerticalRange(LayoutUnit(),
+                                                               LayoutUnit(1)));
+  EXPECT_FALSE(paint_info.GetCullRect().IntersectsVerticalRange(
+      LayoutUnit(100), LayoutUnit(101)));
 }
 
 TEST_F(PaintInfoTest, intersectsHorizontalRange) {
-  PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100),
-                      PaintPhaseSelfBlockBackgroundOnly, GlobalPaintNormalPhase,
-                      PaintLayerNoFlag);
+  PaintInfo paint_info(context_, IntRect(0, 0, 50, 100),
+                       kPaintPhaseSelfBlockBackgroundOnly,
+                       kGlobalPaintNormalPhase, kPaintLayerNoFlag);
 
-  EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(),
-                                                             LayoutUnit(1)));
-  EXPECT_FALSE(paintInfo.cullRect().intersectsHorizontalRange(LayoutUnit(50),
-                                                              LayoutUnit(51)));
+  EXPECT_TRUE(paint_info.GetCullRect().IntersectsHorizontalRange(
+      LayoutUnit(), LayoutUnit(1)));
+  EXPECT_FALSE(paint_info.GetCullRect().IntersectsHorizontalRange(
+      LayoutUnit(50), LayoutUnit(51)));
 }
 
 }  // namespace blink

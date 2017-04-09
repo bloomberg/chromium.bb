@@ -14,7 +14,7 @@ struct WebDistillabilityFeatures;
 
 class CORE_EXPORT DocumentStatisticsCollector {
  public:
-  static WebDistillabilityFeatures collectStatistics(Document&);
+  static WebDistillabilityFeatures CollectStatistics(Document&);
 };
 
 }  // namespace blink

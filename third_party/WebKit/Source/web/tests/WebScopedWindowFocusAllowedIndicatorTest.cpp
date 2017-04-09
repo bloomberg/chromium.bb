@@ -37,20 +37,20 @@
 namespace blink {
 
 TEST(WebScopedWindowFocusAllowedIndicatorTest, Basic) {
-  Persistent<Document> document = Document::create();
-  WebDocument webDocument(document);
+  Persistent<Document> document = Document::Create();
+  WebDocument web_document(document);
 
-  EXPECT_FALSE(document->isWindowInteractionAllowed());
+  EXPECT_FALSE(document->IsWindowInteractionAllowed());
   {
-    WebScopedWindowFocusAllowedIndicator indicator1(&webDocument);
-    EXPECT_TRUE(document->isWindowInteractionAllowed());
+    WebScopedWindowFocusAllowedIndicator indicator1(&web_document);
+    EXPECT_TRUE(document->IsWindowInteractionAllowed());
     {
-      WebScopedWindowFocusAllowedIndicator indicator2(&webDocument);
-      EXPECT_TRUE(document->isWindowInteractionAllowed());
+      WebScopedWindowFocusAllowedIndicator indicator2(&web_document);
+      EXPECT_TRUE(document->IsWindowInteractionAllowed());
     }
-    EXPECT_TRUE(document->isWindowInteractionAllowed());
+    EXPECT_TRUE(document->IsWindowInteractionAllowed());
   }
-  EXPECT_FALSE(document->isWindowInteractionAllowed());
+  EXPECT_FALSE(document->IsWindowInteractionAllowed());
 }
 
 }  // namespace blink

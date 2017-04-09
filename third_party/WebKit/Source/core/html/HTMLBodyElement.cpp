@@ -49,212 +49,212 @@ DEFINE_NODE_FACTORY(HTMLBodyElement)
 
 HTMLBodyElement::~HTMLBodyElement() {}
 
-bool HTMLBodyElement::isPresentationAttribute(const QualifiedName& name) const {
+bool HTMLBodyElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == backgroundAttr || name == marginwidthAttr ||
       name == leftmarginAttr || name == marginheightAttr ||
       name == topmarginAttr || name == bgcolorAttr || name == textAttr)
     return true;
-  return HTMLElement::isPresentationAttribute(name);
+  return HTMLElement::IsPresentationAttribute(name);
 }
 
-void HTMLBodyElement::collectStyleForPresentationAttribute(
+void HTMLBodyElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == backgroundAttr) {
-    String url = stripLeadingAndTrailingHTMLSpaces(value);
-    if (!url.isEmpty()) {
-      CSSImageValue* imageValue =
-          CSSImageValue::create(url, document().completeURL(url),
-                                Referrer(document().outgoingReferrer(),
-                                         document().getReferrerPolicy()));
-      imageValue->setInitiator(localName());
-      style->setProperty(CSSProperty(CSSPropertyBackgroundImage, *imageValue));
+    String url = StripLeadingAndTrailingHTMLSpaces(value);
+    if (!url.IsEmpty()) {
+      CSSImageValue* image_value =
+          CSSImageValue::Create(url, GetDocument().CompleteURL(url),
+                                Referrer(GetDocument().OutgoingReferrer(),
+                                         GetDocument().GetReferrerPolicy()));
+      image_value->SetInitiator(localName());
+      style->SetProperty(CSSProperty(CSSPropertyBackgroundImage, *image_value));
     }
   } else if (name == marginwidthAttr || name == leftmarginAttr) {
-    addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
-    addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
   } else if (name == marginheightAttr || name == topmarginAttr) {
-    addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
-    addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
   } else if (name == bgcolorAttr) {
-    addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (name == textAttr) {
-    addHTMLColorToStyle(style, CSSPropertyColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyColor, value);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 
-void HTMLBodyElement::parseAttribute(
+void HTMLBodyElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  const AtomicString& value = params.newValue;
+  const AtomicString& value = params.new_value;
   if (name == vlinkAttr || name == alinkAttr || name == linkAttr) {
-    if (value.isNull()) {
+    if (value.IsNull()) {
       if (name == linkAttr)
-        document().textLinkColors().resetLinkColor();
+        GetDocument().GetTextLinkColors().ResetLinkColor();
       else if (name == vlinkAttr)
-        document().textLinkColors().resetVisitedLinkColor();
+        GetDocument().GetTextLinkColors().ResetVisitedLinkColor();
       else
-        document().textLinkColors().resetActiveLinkColor();
+        GetDocument().GetTextLinkColors().ResetActiveLinkColor();
     } else {
       Color color;
-      String stringValue = value;
-      if (!HTMLElement::parseColorWithLegacyRules(stringValue, color))
+      String string_value = value;
+      if (!HTMLElement::ParseColorWithLegacyRules(string_value, color))
         return;
 
       if (name == linkAttr)
-        document().textLinkColors().setLinkColor(color);
+        GetDocument().GetTextLinkColors().SetLinkColor(color);
       else if (name == vlinkAttr)
-        document().textLinkColors().setVisitedLinkColor(color);
+        GetDocument().GetTextLinkColors().SetVisitedLinkColor(color);
       else
-        document().textLinkColors().setActiveLinkColor(color);
+        GetDocument().GetTextLinkColors().SetActiveLinkColor(color);
     }
 
-    setNeedsStyleRecalc(SubtreeStyleChange,
-                        StyleChangeReasonForTracing::create(
-                            StyleChangeReason::LinkColorChange));
+    SetNeedsStyleRecalc(kSubtreeStyleChange,
+                        StyleChangeReasonForTracing::Create(
+                            StyleChangeReason::kLinkColorChange));
   } else if (name == onloadAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::load,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onbeforeunloadAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::beforeunload,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onunloadAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::unload,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onpagehideAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::pagehide,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onpageshowAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::pageshow,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onpopstateAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::popstate,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onblurAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::blur,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onerrorAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onfocusAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::focus,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (RuntimeEnabledFeatures::orientationEventEnabled() &&
              name == onorientationchangeAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::orientationchange,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onhashchangeAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::hashchange,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onmessageAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::message,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onresizeAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::resize,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onscrollAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::scroll,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onselectionchangeAttr) {
-    UseCounter::count(document(),
-                      UseCounter::HTMLBodyElementOnSelectionChangeAttribute);
-    document().setAttributeEventListener(
+    UseCounter::Count(GetDocument(),
+                      UseCounter::kHTMLBodyElementOnSelectionChangeAttribute);
+    GetDocument().SetAttributeEventListener(
         EventTypeNames::selectionchange,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onstorageAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::storage,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == ononlineAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::online,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onofflineAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::offline,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onlanguagechangeAttr) {
-    document().setWindowAttributeEventListener(
+    GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::languagechange,
-        createAttributeEventListener(document().frame(), name, value,
-                                     eventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else {
-    HTMLElement::parseAttribute(params);
+    HTMLElement::ParseAttribute(params);
   }
 }
 
-Node::InsertionNotificationRequest HTMLBodyElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLElement::insertedInto(insertionPoint);
-  return InsertionShouldCallDidNotifySubtreeInsertions;
+Node::InsertionNotificationRequest HTMLBodyElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
+  return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void HTMLBodyElement::didNotifySubtreeInsertionsToDocument() {
+void HTMLBodyElement::DidNotifySubtreeInsertionsToDocument() {
   // FIXME: It's surprising this is web compatible since it means a
   // marginwidth and marginheight attribute can magically appear on the <body>
   // of all documents embedded through <iframe> or <frame>.
-  if (document().frame() && document().frame()->owner()) {
-    int marginWidth = document().frame()->owner()->marginWidth();
-    int marginHeight = document().frame()->owner()->marginHeight();
-    if (marginWidth != -1)
-      setIntegralAttribute(marginwidthAttr, marginWidth);
-    if (marginHeight != -1)
-      setIntegralAttribute(marginheightAttr, marginHeight);
+  if (GetDocument().GetFrame() && GetDocument().GetFrame()->Owner()) {
+    int margin_width = GetDocument().GetFrame()->Owner()->MarginWidth();
+    int margin_height = GetDocument().GetFrame()->Owner()->MarginHeight();
+    if (margin_width != -1)
+      SetIntegralAttribute(marginwidthAttr, margin_width);
+    if (margin_height != -1)
+      SetIntegralAttribute(marginheightAttr, margin_height);
   }
 }
 
-bool HTMLBodyElement::isURLAttribute(const Attribute& attribute) const {
-  return attribute.name() == backgroundAttr ||
-         HTMLElement::isURLAttribute(attribute);
+bool HTMLBodyElement::IsURLAttribute(const Attribute& attribute) const {
+  return attribute.GetName() == backgroundAttr ||
+         HTMLElement::IsURLAttribute(attribute);
 }
 
-bool HTMLBodyElement::hasLegalLinkAttribute(const QualifiedName& name) const {
-  return name == backgroundAttr || HTMLElement::hasLegalLinkAttribute(name);
+bool HTMLBodyElement::HasLegalLinkAttribute(const QualifiedName& name) const {
+  return name == backgroundAttr || HTMLElement::HasLegalLinkAttribute(name);
 }
 
-const QualifiedName& HTMLBodyElement::subResourceAttributeName() const {
+const QualifiedName& HTMLBodyElement::SubResourceAttributeName() const {
   return backgroundAttr;
 }
 
-bool HTMLBodyElement::supportsFocus() const {
+bool HTMLBodyElement::SupportsFocus() const {
   // This override is needed because the inherited method bails if the parent is
   // editable.  The <body> should be focusable even if <html> is editable.
-  return hasEditableStyle(*this) || HTMLElement::supportsFocus();
+  return HasEditableStyle(*this) || HTMLElement::SupportsFocus();
 }
 
 }  // namespace blink

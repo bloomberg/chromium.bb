@@ -35,7 +35,7 @@ namespace blink {
 LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
     : LayoutBlockFlow(element) {}
 
-bool LayoutSVGBlock::allowsOverflowClip() const {
+bool LayoutSVGBlock::AllowsOverflowClip() const {
   // LayoutSVGBlock, used by Layout(SVGText|ForeignObject), is not allowed to
   // have overflow clip.
   // LayoutBlock assumes a layer to be present when the overflow clip
@@ -59,94 +59,94 @@ bool LayoutSVGBlock::allowsOverflowClip() const {
   return false;
 }
 
-void LayoutSVGBlock::absoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
+void LayoutSVGBlock::AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
   // This code path should never be taken for SVG, as we're assuming
   // useTransforms=true everywhere, absoluteQuads should be used.
   NOTREACHED();
 }
 
-void LayoutSVGBlock::willBeDestroyed() {
-  SVGResourcesCache::clientDestroyed(this);
-  LayoutBlockFlow::willBeDestroyed();
+void LayoutSVGBlock::WillBeDestroyed() {
+  SVGResourcesCache::ClientDestroyed(this);
+  LayoutBlockFlow::WillBeDestroyed();
 }
 
-void LayoutSVGBlock::updateFromStyle() {
-  LayoutBlockFlow::updateFromStyle();
-  setFloating(false);
+void LayoutSVGBlock::UpdateFromStyle() {
+  LayoutBlockFlow::UpdateFromStyle();
+  SetFloating(false);
 }
 
-void LayoutSVGBlock::styleDidChange(StyleDifference diff,
-                                    const ComputedStyle* oldStyle) {
-  if (diff.needsFullLayout()) {
-    setNeedsBoundariesUpdate();
-    if (diff.transformChanged())
-      setNeedsTransformUpdate();
+void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  if (diff.NeedsFullLayout()) {
+    SetNeedsBoundariesUpdate();
+    if (diff.TransformChanged())
+      SetNeedsTransformUpdate();
   }
 
-  if (isBlendingAllowed()) {
-    bool hasBlendModeChanged =
-        (oldStyle && oldStyle->hasBlendMode()) == !style()->hasBlendMode();
-    if (parent() && hasBlendModeChanged)
-      parent()->descendantIsolationRequirementsChanged(
-          style()->hasBlendMode() ? DescendantIsolationRequired
-                                  : DescendantIsolationNeedsUpdate);
+  if (IsBlendingAllowed()) {
+    bool has_blend_mode_changed =
+        (old_style && old_style->HasBlendMode()) == !Style()->HasBlendMode();
+    if (Parent() && has_blend_mode_changed)
+      Parent()->DescendantIsolationRequirementsChanged(
+          Style()->HasBlendMode() ? kDescendantIsolationRequired
+                                  : kDescendantIsolationNeedsUpdate);
   }
 
-  LayoutBlock::styleDidChange(diff, oldStyle);
-  SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
+  LayoutBlock::StyleDidChange(diff, old_style);
+  SVGResourcesCache::ClientStyleChanged(this, diff, StyleRef());
 }
 
-void LayoutSVGBlock::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
-                                        TransformState& transformState,
+void LayoutSVGBlock::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                                        TransformState& transform_state,
                                         MapCoordinatesFlags flags) const {
   // Convert from local HTML coordinates to local SVG coordinates.
-  transformState.move(locationOffset());
+  transform_state.Move(LocationOffset());
   // Apply other mappings on local SVG coordinates.
-  SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, flags);
+  SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
 
-void LayoutSVGBlock::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
-                                        TransformState& transformState,
+void LayoutSVGBlock::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
+                                        TransformState& transform_state,
                                         MapCoordinatesFlags flags) const {
   if (this == ancestor)
     return;
 
   // Map to local SVG coordinates.
-  SVGLayoutSupport::mapAncestorToLocal(*this, ancestor, transformState, flags);
+  SVGLayoutSupport::MapAncestorToLocal(*this, ancestor, transform_state, flags);
   // Convert from local SVG coordinates to local HTML coordinates.
-  transformState.move(locationOffset());
+  transform_state.Move(LocationOffset());
 }
 
-const LayoutObject* LayoutSVGBlock::pushMappingToContainer(
-    const LayoutBoxModelObject* ancestorToStopAt,
-    LayoutGeometryMap& geometryMap) const {
+const LayoutObject* LayoutSVGBlock::PushMappingToContainer(
+    const LayoutBoxModelObject* ancestor_to_stop_at,
+    LayoutGeometryMap& geometry_map) const {
   // Convert from local HTML coordinates to local SVG coordinates.
-  geometryMap.push(this, locationOffset());
+  geometry_map.Push(this, LocationOffset());
   // Apply other mappings on local SVG coordinates.
-  return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt,
-                                                  geometryMap);
+  return SVGLayoutSupport::PushMappingToContainer(this, ancestor_to_stop_at,
+                                                  geometry_map);
 }
 
-LayoutRect LayoutSVGBlock::absoluteVisualRect() const {
-  return SVGLayoutSupport::visualRectInAncestorSpace(*this, *view());
+LayoutRect LayoutSVGBlock::AbsoluteVisualRect() const {
+  return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View());
 }
 
-bool LayoutSVGBlock::mapToVisualRectInAncestorSpaceInternal(
+bool LayoutSVGBlock::MapToVisualRectInAncestorSpaceInternal(
     const LayoutBoxModelObject* ancestor,
-    TransformState& transformState,
+    TransformState& transform_state,
     VisualRectFlags) const {
-  transformState.flatten();
-  LayoutRect rect(transformState.lastPlanarQuad().boundingBox());
+  transform_state.Flatten();
+  LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
   // Convert from local HTML coordinates to local SVG coordinates.
-  rect.moveBy(location());
+  rect.MoveBy(Location());
   // Apply other mappings on local SVG coordinates.
-  bool retval = SVGLayoutSupport::mapToVisualRectInAncestorSpace(
+  bool retval = SVGLayoutSupport::MapToVisualRectInAncestorSpace(
       *this, ancestor, FloatRect(rect), rect);
-  transformState.setQuad(FloatQuad(FloatRect(rect)));
+  transform_state.SetQuad(FloatQuad(FloatRect(rect)));
   return retval;
 }
 
-bool LayoutSVGBlock::nodeAtPoint(HitTestResult&,
+bool LayoutSVGBlock::NodeAtPoint(HitTestResult&,
                                  const HitTestLocation&,
                                  const LayoutPoint&,
                                  HitTestAction) {

@@ -44,7 +44,7 @@ enum PaintPhase {
   // Background phase
   //
   // Paint background of the current object and non-self-painting descendants.
-  PaintPhaseBlockBackground = 0,
+  kPaintPhaseBlockBackground = 0,
   //
   // The following two values are added besides the normal
   // PaintPhaseBlockBackground to distinguish backgrounds for the object itself
@@ -52,81 +52,81 @@ enum PaintPhase {
   // different scroll offsets and clips.
   //
   // Paint background of the current object only.
-  PaintPhaseSelfBlockBackgroundOnly = 1,
+  kPaintPhaseSelfBlockBackgroundOnly = 1,
   // Paint backgrounds of non-self-painting descendants only. The painter should
   // call each non-self-painting child's paint method by passing
   // paintInfo.forDescendants() which converts
   // PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
-  PaintPhaseDescendantBlockBackgroundsOnly = 2,
+  kPaintPhaseDescendantBlockBackgroundsOnly = 2,
 
   // Float phase
-  PaintPhaseFloat = 3,
+  kPaintPhaseFloat = 3,
 
   // Foreground phase
-  PaintPhaseForeground = 4,
+  kPaintPhaseForeground = 4,
 
   // Outline phase
   //
   // Paint outline for the current object and non-self-painting descendants.
-  PaintPhaseOutline = 5,
+  kPaintPhaseOutline = 5,
   //
   // Similar to the background phase, the following two values are added for
   // painting outlines of the object itself and for descendants.
   //
   // Paint outline for the current object only.
-  PaintPhaseSelfOutlineOnly = 6,
+  kPaintPhaseSelfOutlineOnly = 6,
   // Paint outlines of non-self-painting descendants only. The painter should
   // call each non-self-painting child's paint method by passing
   // paintInfo.forDescendants() which
   // converts PaintPhaseDescendantsOutlinesOnly to PaintPhaseBlockOutline.
-  PaintPhaseDescendantOutlinesOnly = 7,
+  kPaintPhaseDescendantOutlinesOnly = 7,
 
   // The below are auxiliary phases which are used to paint special effects.
-  PaintPhaseSelection = 8,
-  PaintPhaseTextClip = 9,
-  PaintPhaseMask = 10,
-  PaintPhaseClippingMask = 11,
+  kPaintPhaseSelection = 8,
+  kPaintPhaseTextClip = 9,
+  kPaintPhaseMask = 10,
+  kPaintPhaseClippingMask = 11,
 
-  PaintPhaseMax = PaintPhaseClippingMask,
+  kPaintPhaseMax = kPaintPhaseClippingMask,
   // These values must be kept in sync with DisplayItem::Type and
   // DisplayItem::typeAsDebugString().
 };
 
-inline bool shouldPaintSelfBlockBackground(PaintPhase phase) {
-  return phase == PaintPhaseBlockBackground ||
-         phase == PaintPhaseSelfBlockBackgroundOnly;
+inline bool ShouldPaintSelfBlockBackground(PaintPhase phase) {
+  return phase == kPaintPhaseBlockBackground ||
+         phase == kPaintPhaseSelfBlockBackgroundOnly;
 }
 
-inline bool shouldPaintSelfOutline(PaintPhase phase) {
-  return phase == PaintPhaseOutline || phase == PaintPhaseSelfOutlineOnly;
+inline bool ShouldPaintSelfOutline(PaintPhase phase) {
+  return phase == kPaintPhaseOutline || phase == kPaintPhaseSelfOutlineOnly;
 }
 
-inline bool shouldPaintDescendantBlockBackgrounds(PaintPhase phase) {
-  return phase == PaintPhaseBlockBackground ||
-         phase == PaintPhaseDescendantBlockBackgroundsOnly;
+inline bool ShouldPaintDescendantBlockBackgrounds(PaintPhase phase) {
+  return phase == kPaintPhaseBlockBackground ||
+         phase == kPaintPhaseDescendantBlockBackgroundsOnly;
 }
 
-inline bool shouldPaintDescendantOutlines(PaintPhase phase) {
-  return phase == PaintPhaseOutline ||
-         phase == PaintPhaseDescendantOutlinesOnly;
+inline bool ShouldPaintDescendantOutlines(PaintPhase phase) {
+  return phase == kPaintPhaseOutline ||
+         phase == kPaintPhaseDescendantOutlinesOnly;
 }
 
 // Those flags are meant as global tree operations. This means
 // that they should be constant for a paint phase.
 enum GlobalPaintFlag {
-  GlobalPaintNormalPhase = 0,
+  kGlobalPaintNormalPhase = 0,
   // Used when painting selection as part of a drag-image. This
   // flag disables a lot of the painting code and specifically
   // triggers a PaintPhaseSelection.
-  GlobalPaintSelectionOnly = 1 << 0,
+  kGlobalPaintSelectionOnly = 1 << 0,
   // Used when painting a drag-image or printing in order to
   // ignore the hardware layers and paint the whole tree
   // into the topmost layer.
-  GlobalPaintFlattenCompositingLayers = 1 << 1,
+  kGlobalPaintFlattenCompositingLayers = 1 << 1,
   // Used when printing in order to adapt the output to the medium, for
   // instance by not painting shadows and selections on text, and add
   // URL metadata for links.
-  GlobalPaintPrinting = 1 << 2
+  kGlobalPaintPrinting = 1 << 2
 };
 
 typedef unsigned GlobalPaintFlags;

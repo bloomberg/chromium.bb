@@ -30,56 +30,57 @@ namespace WTF {
 
 // Size = 80 for sizeof(DtoaBuffer) + some sign bits, decimal point, 'e',
 // exponent digits.
-const unsigned NumberToStringBufferLength = 96;
-typedef char NumberToStringBuffer[NumberToStringBufferLength];
+const unsigned kNumberToStringBufferLength = 96;
+typedef char NumberToStringBuffer[kNumberToStringBufferLength];
 
-WTF_EXPORT const char* numberToString(double, NumberToStringBuffer);
-WTF_EXPORT const char* numberToFixedPrecisionString(double,
-                                                    unsigned significantFigures,
-                                                    NumberToStringBuffer);
-WTF_EXPORT const char* numberToFixedWidthString(double,
-                                                unsigned decimalPlaces,
+WTF_EXPORT const char* NumberToString(double, NumberToStringBuffer);
+WTF_EXPORT const char* NumberToFixedPrecisionString(
+    double,
+    unsigned significant_figures,
+    NumberToStringBuffer);
+WTF_EXPORT const char* NumberToFixedWidthString(double,
+                                                unsigned decimal_places,
                                                 NumberToStringBuffer);
 
-WTF_EXPORT double parseDouble(const LChar* string,
+WTF_EXPORT double ParseDouble(const LChar* string,
                               size_t length,
-                              size_t& parsedLength);
-WTF_EXPORT double parseDouble(const UChar* string,
+                              size_t& parsed_length);
+WTF_EXPORT double ParseDouble(const UChar* string,
                               size_t length,
-                              size_t& parsedLength);
+                              size_t& parsed_length);
 
 namespace Internal {
-double parseDoubleFromLongString(const UChar* string,
+double ParseDoubleFromLongString(const UChar* string,
                                  size_t length,
-                                 size_t& parsedLength);
+                                 size_t& parsed_length);
 }
 
-inline double parseDouble(const LChar* string,
+inline double ParseDouble(const LChar* string,
                           size_t length,
-                          size_t& parsedLength) {
+                          size_t& parsed_length) {
   return double_conversion::StringToDoubleConverter::StringToDouble(
-      reinterpret_cast<const char*>(string), length, &parsedLength);
+      reinterpret_cast<const char*>(string), length, &parsed_length);
 }
 
-inline double parseDouble(const UChar* string,
+inline double ParseDouble(const UChar* string,
                           size_t length,
-                          size_t& parsedLength) {
-  const size_t conversionBufferSize = 64;
-  if (length > conversionBufferSize)
-    return Internal::parseDoubleFromLongString(string, length, parsedLength);
-  LChar conversionBuffer[conversionBufferSize];
+                          size_t& parsed_length) {
+  const size_t kConversionBufferSize = 64;
+  if (length > kConversionBufferSize)
+    return Internal::ParseDoubleFromLongString(string, length, parsed_length);
+  LChar conversion_buffer[kConversionBufferSize];
   for (size_t i = 0; i < length; ++i)
-    conversionBuffer[i] =
-        isASCII(string[i]) ? static_cast<LChar>(string[i]) : 0;
-  return parseDouble(conversionBuffer, length, parsedLength);
+    conversion_buffer[i] =
+        IsASCII(string[i]) ? static_cast<LChar>(string[i]) : 0;
+  return ParseDouble(conversion_buffer, length, parsed_length);
 }
 
 }  // namespace WTF
 
 using WTF::NumberToStringBuffer;
-using WTF::numberToString;
-using WTF::numberToFixedPrecisionString;
-using WTF::numberToFixedWidthString;
-using WTF::parseDouble;
+using WTF::NumberToString;
+using WTF::NumberToFixedPrecisionString;
+using WTF::NumberToFixedWidthString;
+using WTF::ParseDouble;
 
 #endif  // WTF_dtoa_h

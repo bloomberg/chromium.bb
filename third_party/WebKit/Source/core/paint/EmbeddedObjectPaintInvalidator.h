@@ -17,15 +17,15 @@ class EmbeddedObjectPaintInvalidator {
   STACK_ALLOCATED();
 
  public:
-  EmbeddedObjectPaintInvalidator(const LayoutEmbeddedObject& embeddedObject,
+  EmbeddedObjectPaintInvalidator(const LayoutEmbeddedObject& embedded_object,
                                  const PaintInvalidatorContext& context)
-      : m_embeddedObject(embeddedObject), m_context(context) {}
+      : embedded_object_(embedded_object), context_(context) {}
 
-  PaintInvalidationReason invalidatePaintIfNeeded();
+  PaintInvalidationReason InvalidatePaintIfNeeded();
 
  private:
-  const LayoutEmbeddedObject& m_embeddedObject;
-  const PaintInvalidatorContext& m_context;
+  const LayoutEmbeddedObject& embedded_object_;
+  const PaintInvalidatorContext& context_;
 };
 
 }  // namespace blink

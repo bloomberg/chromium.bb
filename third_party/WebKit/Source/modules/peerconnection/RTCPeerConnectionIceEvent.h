@@ -38,27 +38,27 @@ class RTCPeerConnectionIceEvent final : public Event {
  public:
   ~RTCPeerConnectionIceEvent() override;
 
-  static RTCPeerConnectionIceEvent* create(bool canBubble,
+  static RTCPeerConnectionIceEvent* Create(bool can_bubble,
                                            bool cancelable,
                                            RTCIceCandidate*);
 
-  static RTCPeerConnectionIceEvent* create(
+  static RTCPeerConnectionIceEvent* Create(
       const AtomicString& type,
       const RTCPeerConnectionIceEventInit&);
 
   RTCIceCandidate* candidate() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  RTCPeerConnectionIceEvent(bool canBubble, bool cancelable, RTCIceCandidate*);
+  RTCPeerConnectionIceEvent(bool can_bubble, bool cancelable, RTCIceCandidate*);
 
   RTCPeerConnectionIceEvent(const AtomicString& type,
                             const RTCPeerConnectionIceEventInit&);
 
-  Member<RTCIceCandidate> m_candidate;
+  Member<RTCIceCandidate> candidate_;
 };
 
 }  // namespace blink

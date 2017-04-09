@@ -21,106 +21,106 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 
  public:
-  static Entry* create(ModuleMap* map) { return new Entry(map); }
+  static Entry* Create(ModuleMap* map) { return new Entry(map); }
   ~Entry() override {}
 
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
   // Notify fetched |m_moduleScript| to the client asynchronously.
-  void addClient(SingleModuleClient*);
+  void AddClient(SingleModuleClient*);
 
   // This is only to be used from ScriptModuleResolver implementations.
-  ModuleScript* getModuleScript() const;
+  ModuleScript* GetModuleScript() const;
 
  private:
   explicit Entry(ModuleMap*);
 
-  void dispatchFinishedNotificationAsync(SingleModuleClient*);
+  void DispatchFinishedNotificationAsync(SingleModuleClient*);
 
   // Implements ModuleScriptLoaderClient
-  void notifyNewSingleModuleFinished(ModuleScript*) override;
+  void NotifyNewSingleModuleFinished(ModuleScript*) override;
 
-  TraceWrapperMember<ModuleScript> m_moduleScript;
-  Member<ModuleMap> m_map;
+  TraceWrapperMember<ModuleScript> module_script_;
+  Member<ModuleMap> map_;
 
   // Correspond to the HTML spec: "fetching" state.
-  bool m_isFetching = true;
+  bool is_fetching_ = true;
 
-  HeapHashSet<Member<SingleModuleClient>> m_clients;
+  HeapHashSet<Member<SingleModuleClient>> clients_;
 };
 
 ModuleMap::Entry::Entry(ModuleMap* map)
-    : m_moduleScript(this, nullptr), m_map(map) {
-  DCHECK(m_map);
+    : module_script_(this, nullptr), map_(map) {
+  DCHECK(map_);
 }
 
 DEFINE_TRACE(ModuleMap::Entry) {
-  visitor->trace(m_moduleScript);
-  visitor->trace(m_map);
-  visitor->trace(m_clients);
+  visitor->Trace(module_script_);
+  visitor->Trace(map_);
+  visitor->Trace(clients_);
 }
 
 DEFINE_TRACE_WRAPPERS(ModuleMap::Entry) {
-  visitor->traceWrappers(m_moduleScript);
+  visitor->TraceWrappers(module_script_);
 }
 
-void ModuleMap::Entry::dispatchFinishedNotificationAsync(
+void ModuleMap::Entry::DispatchFinishedNotificationAsync(
     SingleModuleClient* client) {
-  m_map->modulator()->taskRunner()->postTask(
+  map_->GetModulator()->TaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      WTF::bind(&SingleModuleClient::notifyModuleLoadFinished,
-                wrapPersistent(client), wrapPersistent(m_moduleScript.get())));
+      WTF::Bind(&SingleModuleClient::NotifyModuleLoadFinished,
+                WrapPersistent(client), WrapPersistent(module_script_.Get())));
 }
 
-void ModuleMap::Entry::addClient(SingleModuleClient* newClient) {
-  DCHECK(!m_clients.contains(newClient));
-  if (!m_isFetching) {
-    DCHECK(m_clients.isEmpty());
-    dispatchFinishedNotificationAsync(newClient);
+void ModuleMap::Entry::AddClient(SingleModuleClient* new_client) {
+  DCHECK(!clients_.Contains(new_client));
+  if (!is_fetching_) {
+    DCHECK(clients_.IsEmpty());
+    DispatchFinishedNotificationAsync(new_client);
     return;
   }
 
-  m_clients.insert(newClient);
+  clients_.insert(new_client);
 }
 
-void ModuleMap::Entry::notifyNewSingleModuleFinished(
-    ModuleScript* moduleScript) {
-  CHECK(m_isFetching);
-  m_moduleScript = moduleScript;
-  m_isFetching = false;
+void ModuleMap::Entry::NotifyNewSingleModuleFinished(
+    ModuleScript* module_script) {
+  CHECK(is_fetching_);
+  module_script_ = module_script;
+  is_fetching_ = false;
 
-  if (m_moduleScript) {
-    m_map->modulator()->scriptModuleResolver()->registerModuleScript(
-        m_moduleScript);
+  if (module_script_) {
+    map_->GetModulator()->GetScriptModuleResolver()->RegisterModuleScript(
+        module_script_);
   }
 
-  for (const auto& client : m_clients) {
-    dispatchFinishedNotificationAsync(client);
+  for (const auto& client : clients_) {
+    DispatchFinishedNotificationAsync(client);
   }
-  m_clients.clear();
+  clients_.Clear();
 }
 
-ModuleScript* ModuleMap::Entry::getModuleScript() const {
-  DCHECK(!m_isFetching);
-  return m_moduleScript.get();
+ModuleScript* ModuleMap::Entry::GetModuleScript() const {
+  DCHECK(!is_fetching_);
+  return module_script_.Get();
 }
 
-ModuleMap::ModuleMap(Modulator* modulator) : m_modulator(modulator) {
+ModuleMap::ModuleMap(Modulator* modulator) : modulator_(modulator) {
   DCHECK(modulator);
 }
 
 DEFINE_TRACE(ModuleMap) {
-  visitor->trace(m_map);
-  visitor->trace(m_modulator);
+  visitor->Trace(map_);
+  visitor->Trace(modulator_);
 }
 
 DEFINE_TRACE_WRAPPERS(ModuleMap) {
-  for (const auto& it : m_map)
-    visitor->traceWrappers(it.value);
+  for (const auto& it : map_)
+    visitor->TraceWrappers(it.value);
 }
 
-void ModuleMap::fetchSingleModuleScript(const ModuleScriptFetchRequest& request,
+void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
                                         ModuleGraphLevel level,
                                         SingleModuleClient* client) {
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
@@ -132,14 +132,14 @@ void ModuleMap::fetchSingleModuleScript(const ModuleScriptFetchRequest& request,
   // entry's value changes, then queue a task on the networking task source to
   // proceed with running the following steps.
   MapImpl::AddResult result =
-      m_map.insert(request.url(), TraceWrapperMember<Entry>(this, nullptr));
-  TraceWrapperMember<Entry>& entry = result.storedValue->value;
-  if (result.isNewEntry) {
-    entry = TraceWrapperMember<Entry>(this, Entry::create(this));
+      map_.insert(request.Url(), TraceWrapperMember<Entry>(this, nullptr));
+  TraceWrapperMember<Entry>& entry = result.stored_value->value;
+  if (result.is_new_entry) {
+    entry = TraceWrapperMember<Entry>(this, Entry::Create(this));
 
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.
-    m_modulator->fetchNewSingleModule(request, level, entry);
+    modulator_->FetchNewSingleModule(request, level, entry);
   }
   DCHECK(entry);
 
@@ -147,13 +147,13 @@ void ModuleMap::fetchSingleModuleScript(const ModuleScriptFetchRequest& request,
   // with moduleMap[url], and abort these steps.
   // Step 10. Set moduleMap[url] to module script, and asynchronously complete
   // this algorithm with module script.
-  entry->addClient(client);
+  entry->AddClient(client);
 }
 
-ModuleScript* ModuleMap::getFetchedModuleScript(const KURL& url) const {
-  MapImpl::const_iterator it = m_map.find(url);
-  CHECK_NE(it, m_map.end());
-  return it->value->getModuleScript();
+ModuleScript* ModuleMap::GetFetchedModuleScript(const KURL& url) const {
+  MapImpl::const_iterator it = map_.Find(url);
+  CHECK_NE(it, map_.end());
+  return it->value->GetModuleScript();
 }
 
 }  // namespace blink

@@ -37,29 +37,29 @@ class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
   WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
 
  public:
-  static CSSDefaultStyleSheets& instance();
+  static CSSDefaultStyleSheets& Instance();
 
-  bool ensureDefaultStyleSheetsForElement(const Element&);
-  void ensureDefaultStyleSheetForFullscreen();
+  bool EnsureDefaultStyleSheetsForElement(const Element&);
+  void EnsureDefaultStyleSheetForFullscreen();
 
-  RuleSet* defaultStyle() { return m_defaultStyle.get(); }
-  RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
-  RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
-  RuleSet* defaultViewSourceStyle();
+  RuleSet* DefaultStyle() { return default_style_.Get(); }
+  RuleSet* DefaultQuirksStyle() { return default_quirks_style_.Get(); }
+  RuleSet* DefaultPrintStyle() { return default_print_style_.Get(); }
+  RuleSet* DefaultViewSourceStyle();
 
-  StyleSheetContents* ensureMobileViewportStyleSheet();
-  StyleSheetContents* ensureTelevisionViewportStyleSheet();
-  StyleSheetContents* ensureXHTMLMobileProfileStyleSheet();
+  StyleSheetContents* EnsureMobileViewportStyleSheet();
+  StyleSheetContents* EnsureTelevisionViewportStyleSheet();
+  StyleSheetContents* EnsureXHTMLMobileProfileStyleSheet();
 
-  StyleSheetContents* defaultStyleSheet() { return m_defaultStyleSheet.get(); }
-  StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
-  StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
-  StyleSheetContents* mathmlStyleSheet() { return m_mathmlStyleSheet.get(); }
-  StyleSheetContents* mediaControlsStyleSheet() {
-    return m_mediaControlsStyleSheet.get();
+  StyleSheetContents* DefaultStyleSheet() { return default_style_sheet_.Get(); }
+  StyleSheetContents* QuirksStyleSheet() { return quirks_style_sheet_.Get(); }
+  StyleSheetContents* SvgStyleSheet() { return svg_style_sheet_.Get(); }
+  StyleSheetContents* MathmlStyleSheet() { return mathml_style_sheet_.Get(); }
+  StyleSheetContents* MediaControlsStyleSheet() {
+    return media_controls_style_sheet_.Get();
   }
-  StyleSheetContents* fullscreenStyleSheet() {
-    return m_fullscreenStyleSheet.get();
+  StyleSheetContents* FullscreenStyleSheet() {
+    return fullscreen_style_sheet_.Get();
   }
 
   DECLARE_TRACE();
@@ -67,20 +67,20 @@ class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
  private:
   CSSDefaultStyleSheets();
 
-  Member<RuleSet> m_defaultStyle;
-  Member<RuleSet> m_defaultQuirksStyle;
-  Member<RuleSet> m_defaultPrintStyle;
-  Member<RuleSet> m_defaultViewSourceStyle;
+  Member<RuleSet> default_style_;
+  Member<RuleSet> default_quirks_style_;
+  Member<RuleSet> default_print_style_;
+  Member<RuleSet> default_view_source_style_;
 
-  Member<StyleSheetContents> m_defaultStyleSheet;
-  Member<StyleSheetContents> m_mobileViewportStyleSheet;
-  Member<StyleSheetContents> m_televisionViewportStyleSheet;
-  Member<StyleSheetContents> m_xhtmlMobileProfileStyleSheet;
-  Member<StyleSheetContents> m_quirksStyleSheet;
-  Member<StyleSheetContents> m_svgStyleSheet;
-  Member<StyleSheetContents> m_mathmlStyleSheet;
-  Member<StyleSheetContents> m_mediaControlsStyleSheet;
-  Member<StyleSheetContents> m_fullscreenStyleSheet;
+  Member<StyleSheetContents> default_style_sheet_;
+  Member<StyleSheetContents> mobile_viewport_style_sheet_;
+  Member<StyleSheetContents> television_viewport_style_sheet_;
+  Member<StyleSheetContents> xhtml_mobile_profile_style_sheet_;
+  Member<StyleSheetContents> quirks_style_sheet_;
+  Member<StyleSheetContents> svg_style_sheet_;
+  Member<StyleSheetContents> mathml_style_sheet_;
+  Member<StyleSheetContents> media_controls_style_sheet_;
+  Member<StyleSheetContents> fullscreen_style_sheet_;
 };
 
 }  // namespace blink

@@ -54,22 +54,22 @@ class WebEntities {
   //
   // If xmlEntities is true, WebEntities will only contain standard XML
   // entities.
-  explicit WebEntities(bool xmlEntities);
+  explicit WebEntities(bool xml_entities);
 
   // Check whether specified unicode has corresponding html or xml built-in
   // entity name. If yes, return the entity notation. If not, returns an
   // empty string. Parameter isHTML indicates check the code in html entity
   // map or in xml entity map.
-  WTF::String entityNameByCode(int code) const;
+  WTF::String EntityNameByCode(int code) const;
 
   // Returns a new string with corresponding entity names replaced.
-  WTF::String convertEntitiesInString(const WTF::String&) const;
+  WTF::String ConvertEntitiesInString(const WTF::String&) const;
 
  private:
   typedef HashMap<int, WTF::String> EntitiesMapType;
   // An internal object that maps the Unicode character to corresponding
   // entity notation.
-  EntitiesMapType m_entitiesMap;
+  EntitiesMapType entities_map_;
 };
 
 }  // namespace blink

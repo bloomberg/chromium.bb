@@ -9,30 +9,30 @@
 namespace blink {
 
 MockFontResourceClient::MockFontResourceClient(Resource* resource)
-    : m_resource(resource),
-      m_fontLoadShortLimitExceededCalled(false),
-      m_fontLoadLongLimitExceededCalled(false) {
-  m_resource->addClient(this);
+    : resource_(resource),
+      font_load_short_limit_exceeded_called_(false),
+      font_load_long_limit_exceeded_called_(false) {
+  resource_->AddClient(this);
 }
 
 MockFontResourceClient::~MockFontResourceClient() {}
 
-void MockFontResourceClient::fontLoadShortLimitExceeded(FontResource*) {
-  ASSERT_FALSE(m_fontLoadShortLimitExceededCalled);
-  ASSERT_FALSE(m_fontLoadLongLimitExceededCalled);
-  m_fontLoadShortLimitExceededCalled = true;
+void MockFontResourceClient::FontLoadShortLimitExceeded(FontResource*) {
+  ASSERT_FALSE(font_load_short_limit_exceeded_called_);
+  ASSERT_FALSE(font_load_long_limit_exceeded_called_);
+  font_load_short_limit_exceeded_called_ = true;
 }
 
-void MockFontResourceClient::fontLoadLongLimitExceeded(FontResource*) {
-  ASSERT_TRUE(m_fontLoadShortLimitExceededCalled);
-  ASSERT_FALSE(m_fontLoadLongLimitExceededCalled);
-  m_fontLoadLongLimitExceededCalled = true;
+void MockFontResourceClient::FontLoadLongLimitExceeded(FontResource*) {
+  ASSERT_TRUE(font_load_short_limit_exceeded_called_);
+  ASSERT_FALSE(font_load_long_limit_exceeded_called_);
+  font_load_long_limit_exceeded_called_ = true;
 }
 
-void MockFontResourceClient::dispose() {
-  if (m_resource) {
-    m_resource->removeClient(this);
-    m_resource = nullptr;
+void MockFontResourceClient::Dispose() {
+  if (resource_) {
+    resource_->RemoveClient(this);
+    resource_ = nullptr;
   }
 }
 

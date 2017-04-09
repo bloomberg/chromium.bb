@@ -38,14 +38,14 @@ class HTMLQuoteElement final : public HTMLElement {
  private:
   HTMLQuoteElement(const QualifiedName&, Document&);
 
-  bool isURLAttribute(const Attribute&) const override;
-  bool hasLegalLinkAttribute(const QualifiedName&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
+  bool IsURLAttribute(const Attribute&) const override;
+  bool HasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
 };
 
-inline bool isHTMLQuoteElement(const HTMLElement& element) {
-  return element.hasTagName(HTMLNames::qTag) ||
-         element.hasTagName(HTMLNames::blockquoteTag);
+inline bool IsHTMLQuoteElement(const HTMLElement& element) {
+  return element.HasTagName(HTMLNames::qTag) ||
+         element.HasTagName(HTMLNames::blockquoteTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);

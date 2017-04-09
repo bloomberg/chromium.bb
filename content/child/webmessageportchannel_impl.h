@@ -41,10 +41,10 @@ class WebMessagePortChannelImpl : public blink::WebMessagePortChannel {
   explicit WebMessagePortChannelImpl(mojo::ScopedMessagePipeHandle handle);
 
   // WebMessagePortChannel implementation.
-  void setClient(blink::WebMessagePortChannelClient* client) override;
-  void postMessage(const blink::WebString& encoded_message,
+  void SetClient(blink::WebMessagePortChannelClient* client) override;
+  void PostMessage(const blink::WebString& encoded_message,
                    blink::WebMessagePortChannelArray channels) override;
-  bool tryGetMessage(blink::WebString* encoded_message,
+  bool TryGetMessage(blink::WebString* encoded_message,
                      blink::WebMessagePortChannelArray& channels) override;
 
   MessagePort port_;

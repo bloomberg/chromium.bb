@@ -25,29 +25,29 @@ class LayoutAnalyzer {
 
  public:
   enum Counter {
-    LayoutBlockWidthChanged,
-    LayoutBlockHeightChanged,
-    LayoutBlockSizeChanged,
-    LayoutBlockSizeDidNotChange,
-    LayoutObjectsThatSpecifyColumns,
-    LayoutAnalyzerStackMaximumDepth,
-    LayoutObjectsThatAreFloating,
-    LayoutObjectsThatHaveALayer,
-    LayoutInlineObjectsThatAlwaysCreateLineBoxes,
-    LayoutObjectsThatHadNeverHadLayout,
-    LayoutObjectsThatAreOutOfFlowPositioned,
-    LayoutObjectsThatNeedPositionedMovementLayout,
-    PerformLayoutRootLayoutObjects,
-    LayoutObjectsThatNeedLayoutForThemselves,
-    LayoutObjectsThatNeedSimplifiedLayout,
-    LayoutObjectsThatAreTableCells,
-    LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
-    CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
-    LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
-    CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
-    TotalLayoutObjectsThatWereLaidOut,
+    kLayoutBlockWidthChanged,
+    kLayoutBlockHeightChanged,
+    kLayoutBlockSizeChanged,
+    kLayoutBlockSizeDidNotChange,
+    kLayoutObjectsThatSpecifyColumns,
+    kLayoutAnalyzerStackMaximumDepth,
+    kLayoutObjectsThatAreFloating,
+    kLayoutObjectsThatHaveALayer,
+    kLayoutInlineObjectsThatAlwaysCreateLineBoxes,
+    kLayoutObjectsThatHadNeverHadLayout,
+    kLayoutObjectsThatAreOutOfFlowPositioned,
+    kLayoutObjectsThatNeedPositionedMovementLayout,
+    kPerformLayoutRootLayoutObjects,
+    kLayoutObjectsThatNeedLayoutForThemselves,
+    kLayoutObjectsThatNeedSimplifiedLayout,
+    kLayoutObjectsThatAreTableCells,
+    kLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+    kCharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+    kLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
+    kCharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
+    kTotalLayoutObjectsThatWereLaidOut,
   };
-  static const size_t NumCounters = 21;
+  static const size_t kNumCounters = 21;
 
   class Scope {
     STACK_ALLOCATED();
@@ -57,8 +57,8 @@ class LayoutAnalyzer {
     ~Scope();
 
    private:
-    const LayoutObject& m_layoutObject;
-    LayoutAnalyzer* m_analyzer;
+    const LayoutObject& layout_object_;
+    LayoutAnalyzer* analyzer_;
   };
 
   class BlockScope {
@@ -69,29 +69,29 @@ class LayoutAnalyzer {
     ~BlockScope();
 
    private:
-    const LayoutBlock& m_block;
-    LayoutUnit m_width;
-    LayoutUnit m_height;
+    const LayoutBlock& block_;
+    LayoutUnit width_;
+    LayoutUnit height_;
   };
 
   LayoutAnalyzer() {}
 
-  void reset();
-  void push(const LayoutObject&);
-  void pop(const LayoutObject&);
+  void Reset();
+  void Push(const LayoutObject&);
+  void Pop(const LayoutObject&);
 
-  void increment(Counter counter, unsigned delta = 1) {
-    m_counters[counter] += delta;
+  void Increment(Counter counter, unsigned delta = 1) {
+    counters_[counter] += delta;
   }
 
-  std::unique_ptr<TracedValue> toTracedValue();
+  std::unique_ptr<TracedValue> ToTracedValue();
 
  private:
-  const char* nameForCounter(Counter) const;
+  const char* NameForCounter(Counter) const;
 
-  double m_startMs;
-  unsigned m_depth;
-  unsigned m_counters[NumCounters];
+  double start_ms_;
+  unsigned depth_;
+  unsigned counters_[kNumCounters];
 };
 
 }  // namespace blink

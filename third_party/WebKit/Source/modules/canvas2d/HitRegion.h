@@ -17,50 +17,50 @@ namespace blink {
 
 class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
  public:
-  static HitRegion* create(const Path& path, const HitRegionOptions& options) {
+  static HitRegion* Create(const Path& path, const HitRegionOptions& options) {
     return new HitRegion(path, options);
   }
 
   virtual ~HitRegion() {}
 
-  void removePixels(const Path&);
+  void RemovePixels(const Path&);
 
-  bool contains(const FloatPoint&) const;
+  bool Contains(const FloatPoint&) const;
 
-  const String& id() const { return m_id; }
-  const Path& path() const { return m_path; }
-  Element* control() const { return m_control.get(); }
+  const String& Id() const { return id_; }
+  const Path& GetPath() const { return path_; }
+  Element* Control() const { return control_.Get(); }
 
   DECLARE_TRACE();
 
  private:
   HitRegion(const Path&, const HitRegionOptions&);
 
-  String m_id;
-  Member<Element> m_control;
-  Path m_path;
-  WindRule m_fillRule;
+  String id_;
+  Member<Element> control_;
+  Path path_;
+  WindRule fill_rule_;
 };
 
 class HitRegionManager final : public GarbageCollected<HitRegionManager> {
   WTF_MAKE_NONCOPYABLE(HitRegionManager);
 
  public:
-  static HitRegionManager* create() { return new HitRegionManager; }
+  static HitRegionManager* Create() { return new HitRegionManager; }
 
-  void addHitRegion(HitRegion*);
+  void AddHitRegion(HitRegion*);
 
-  void removeHitRegion(HitRegion*);
-  void removeHitRegionById(const String& id);
-  void removeHitRegionByControl(const Element*);
-  void removeHitRegionsInRect(const FloatRect&, const AffineTransform&);
-  void removeAllHitRegions();
+  void RemoveHitRegion(HitRegion*);
+  void RemoveHitRegionById(const String& id);
+  void RemoveHitRegionByControl(const Element*);
+  void RemoveHitRegionsInRect(const FloatRect&, const AffineTransform&);
+  void RemoveAllHitRegions();
 
-  HitRegion* getHitRegionById(const String& id) const;
-  HitRegion* getHitRegionByControl(const Element*) const;
-  HitRegion* getHitRegionAtPoint(const FloatPoint&) const;
+  HitRegion* GetHitRegionById(const String& id) const;
+  HitRegion* GetHitRegionByControl(const Element*) const;
+  HitRegion* GetHitRegionAtPoint(const FloatPoint&) const;
 
-  unsigned getHitRegionsCount() const;
+  unsigned GetHitRegionsCount() const;
 
   DECLARE_TRACE();
 
@@ -73,9 +73,9 @@ class HitRegionManager final : public GarbageCollected<HitRegionManager> {
   typedef HeapHashMap<Member<const Element>, Member<HitRegion>>
       HitRegionControlMap;
 
-  HitRegionList m_hitRegionList;
-  HitRegionIdMap m_hitRegionIdMap;
-  HitRegionControlMap m_hitRegionControlMap;
+  HitRegionList hit_region_list_;
+  HitRegionIdMap hit_region_id_map_;
+  HitRegionControlMap hit_region_control_map_;
 };
 
 }  // namespace blink

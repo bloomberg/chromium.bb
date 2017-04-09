@@ -33,22 +33,22 @@ inline SVGFEMergeElement::SVGFEMergeElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEMergeElement)
 
-FilterEffect* SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder,
+FilterEffect* SVGFEMergeElement::Build(SVGFilterBuilder* filter_builder,
                                        Filter* filter) {
-  FilterEffect* effect = FEMerge::create(filter);
-  FilterEffectVector& mergeInputs = effect->inputEffects();
-  for (SVGFEMergeNodeElement& mergeNode :
-       Traversal<SVGFEMergeNodeElement>::childrenOf(*this)) {
-    FilterEffect* mergeEffect = filterBuilder->getEffectById(
-        AtomicString(mergeNode.in1()->currentValue()->value()));
-    DCHECK(mergeEffect);
-    mergeInputs.push_back(mergeEffect);
+  FilterEffect* effect = FEMerge::Create(filter);
+  FilterEffectVector& merge_inputs = effect->InputEffects();
+  for (SVGFEMergeNodeElement& merge_node :
+       Traversal<SVGFEMergeNodeElement>::ChildrenOf(*this)) {
+    FilterEffect* merge_effect = filter_builder->GetEffectById(
+        AtomicString(merge_node.in1()->CurrentValue()->Value()));
+    DCHECK(merge_effect);
+    merge_inputs.push_back(merge_effect);
   }
   return effect;
 }
 
-bool SVGFEMergeElement::taintsOrigin(bool inputsTaintOrigin) const {
-  return inputsTaintOrigin;
+bool SVGFEMergeElement::TaintsOrigin(bool inputs_taint_origin) const {
+  return inputs_taint_origin;
 }
 
 }  // namespace blink

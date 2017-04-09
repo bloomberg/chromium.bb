@@ -6,11 +6,10 @@
 
 namespace blink {
 
-GamepadButton* GamepadButton::create() {
+GamepadButton* GamepadButton::Create() {
   return new GamepadButton();
 }
 
-GamepadButton::GamepadButton()
-    : m_value(0.), m_pressed(false), m_touched(false) {}
+GamepadButton::GamepadButton() : value_(0.), pressed_(false), touched_(false) {}
 
 }  // namespace blink

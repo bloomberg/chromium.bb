@@ -21,12 +21,12 @@ class MODULES_EXPORT DeviceMotionController final
  public:
   ~DeviceMotionController() override;
 
-  static const char* supplementName();
-  static DeviceMotionController& from(Document&);
+  static const char* SupplementName();
+  static DeviceMotionController& From(Document&);
 
   // DeviceSingleWindowEventController
-  void didAddEventListener(LocalDOMWindow*,
-                           const AtomicString& eventType) override;
+  void DidAddEventListener(LocalDOMWindow*,
+                           const AtomicString& event_type) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -34,14 +34,14 @@ class MODULES_EXPORT DeviceMotionController final
   explicit DeviceMotionController(Document&);
 
   // Inherited from DeviceEventControllerBase.
-  void registerWithDispatcher() override;
-  void unregisterWithDispatcher() override;
-  bool hasLastData() override;
+  void RegisterWithDispatcher() override;
+  void UnregisterWithDispatcher() override;
+  bool HasLastData() override;
 
   // Inherited from DeviceSingleWindowEventController.
-  Event* lastEvent() const override;
-  const AtomicString& eventTypeName() const override;
-  bool isNullEvent(Event*) const override;
+  Event* LastEvent() const override;
+  const AtomicString& EventTypeName() const override;
+  bool IsNullEvent(Event*) const override;
 };
 
 }  // namespace blink

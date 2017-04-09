@@ -10,36 +10,36 @@
 
 namespace blink {
 
-CSSAngleValue* CSSAngleValue::create(double value,
+CSSAngleValue* CSSAngleValue::Create(double value,
                                      CSSPrimitiveValue::UnitType unit) {
-  DCHECK(CSSPrimitiveValue::isAngle(unit));
+  DCHECK(CSSPrimitiveValue::IsAngle(unit));
   return new CSSAngleValue(value, unit);
 }
 
-CSSAngleValue* CSSAngleValue::create(double value, const String& unit) {
-  CSSPrimitiveValue::UnitType primitiveUnit =
-      CSSPrimitiveValue::stringToUnitType(unit);
-  return create(value, primitiveUnit);
+CSSAngleValue* CSSAngleValue::Create(double value, const String& unit) {
+  CSSPrimitiveValue::UnitType primitive_unit =
+      CSSPrimitiveValue::StringToUnitType(unit);
+  return Create(value, primitive_unit);
 }
 
-CSSAngleValue* CSSAngleValue::fromCSSValue(const CSSPrimitiveValue& value) {
-  DCHECK(value.isAngle());
-  if (value.isCalculated())
+CSSAngleValue* CSSAngleValue::FromCSSValue(const CSSPrimitiveValue& value) {
+  DCHECK(value.IsAngle());
+  if (value.IsCalculated())
     return nullptr;
-  return new CSSAngleValue(value.getDoubleValue(),
-                           value.typeWithCalcResolved());
+  return new CSSAngleValue(value.GetDoubleValue(),
+                           value.TypeWithCalcResolved());
 }
 
 double CSSAngleValue::degrees() const {
-  switch (m_unit) {
-    case CSSPrimitiveValue::UnitType::Degrees:
-      return m_value;
-    case CSSPrimitiveValue::UnitType::Radians:
-      return rad2deg(m_value);
-    case CSSPrimitiveValue::UnitType::Gradians:
-      return grad2deg(m_value);
-    case CSSPrimitiveValue::UnitType::Turns:
-      return turn2deg(m_value);
+  switch (unit_) {
+    case CSSPrimitiveValue::UnitType::kDegrees:
+      return value_;
+    case CSSPrimitiveValue::UnitType::kRadians:
+      return rad2deg(value_);
+    case CSSPrimitiveValue::UnitType::kGradians:
+      return grad2deg(value_);
+    case CSSPrimitiveValue::UnitType::kTurns:
+      return turn2deg(value_);
     default:
       NOTREACHED();
       return 0;
@@ -58,8 +58,8 @@ double CSSAngleValue::turns() const {
   return deg2turn(degrees());
 }
 
-CSSValue* CSSAngleValue::toCSSValue() const {
-  return CSSPrimitiveValue::create(m_value, m_unit);
+CSSValue* CSSAngleValue::ToCSSValue() const {
+  return CSSPrimitiveValue::Create(value_, unit_);
 }
 
 }  // namespace blink

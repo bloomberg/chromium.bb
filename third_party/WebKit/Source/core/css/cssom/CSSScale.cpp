@@ -10,69 +10,69 @@ namespace blink {
 
 namespace {
 
-CSSScale* fromScale(const CSSFunctionValue& value) {
+CSSScale* FromScale(const CSSFunctionValue& value) {
   DCHECK(value.length() == 1U || value.length() == 2U);
-  double x = toCSSPrimitiveValue(value.item(0)).getDoubleValue();
+  double x = ToCSSPrimitiveValue(value.Item(0)).GetDoubleValue();
   if (value.length() == 1U)
-    return CSSScale::create(x, 1);
+    return CSSScale::Create(x, 1);
 
-  double y = toCSSPrimitiveValue(value.item(1)).getDoubleValue();
-  return CSSScale::create(x, y);
+  double y = ToCSSPrimitiveValue(value.Item(1)).GetDoubleValue();
+  return CSSScale::Create(x, y);
 }
 
-CSSScale* fromScaleXYZ(const CSSFunctionValue& value) {
+CSSScale* FromScaleXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1U);
-  double doubleValue = toCSSPrimitiveValue(value.item(0)).getDoubleValue();
-  switch (value.functionType()) {
+  double double_value = ToCSSPrimitiveValue(value.Item(0)).GetDoubleValue();
+  switch (value.FunctionType()) {
     case CSSValueScaleX:
-      return CSSScale::create(doubleValue, 1);
+      return CSSScale::Create(double_value, 1);
     case CSSValueScaleY:
-      return CSSScale::create(1, doubleValue);
+      return CSSScale::Create(1, double_value);
     case CSSValueScaleZ:
-      return CSSScale::create(1, 1, doubleValue);
+      return CSSScale::Create(1, 1, double_value);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-CSSScale* fromScale3d(const CSSFunctionValue& value) {
+CSSScale* FromScale3d(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 3U);
-  double x = toCSSPrimitiveValue(value.item(0)).getDoubleValue();
-  double y = toCSSPrimitiveValue(value.item(1)).getDoubleValue();
-  double z = toCSSPrimitiveValue(value.item(2)).getDoubleValue();
-  return CSSScale::create(x, y, z);
+  double x = ToCSSPrimitiveValue(value.Item(0)).GetDoubleValue();
+  double y = ToCSSPrimitiveValue(value.Item(1)).GetDoubleValue();
+  double z = ToCSSPrimitiveValue(value.Item(2)).GetDoubleValue();
+  return CSSScale::Create(x, y, z);
 }
 
 }  // namespace
 
-CSSScale* CSSScale::fromCSSValue(const CSSFunctionValue& value) {
-  switch (value.functionType()) {
+CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
+  switch (value.FunctionType()) {
     case CSSValueScale:
-      return fromScale(value);
+      return FromScale(value);
     case CSSValueScaleX:
     case CSSValueScaleY:
     case CSSValueScaleZ:
-      return fromScaleXYZ(value);
+      return FromScaleXYZ(value);
     case CSSValueScale3d:
-      return fromScale3d(value);
+      return FromScale3d(value);
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-CSSFunctionValue* CSSScale::toCSSValue() const {
+CSSFunctionValue* CSSScale::ToCSSValue() const {
   CSSFunctionValue* result =
-      CSSFunctionValue::create(m_is2D ? CSSValueScale : CSSValueScale3d);
+      CSSFunctionValue::Create(is2d_ ? CSSValueScale : CSSValueScale3d);
 
-  result->append(
-      *CSSPrimitiveValue::create(m_x, CSSPrimitiveValue::UnitType::Number));
-  result->append(
-      *CSSPrimitiveValue::create(m_y, CSSPrimitiveValue::UnitType::Number));
-  if (!m_is2D)
-    result->append(
-        *CSSPrimitiveValue::create(m_z, CSSPrimitiveValue::UnitType::Number));
+  result->Append(
+      *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
+  result->Append(
+      *CSSPrimitiveValue::Create(y_, CSSPrimitiveValue::UnitType::kNumber));
+  if (!is2d_)
+    result->Append(
+        *CSSPrimitiveValue::Create(z_, CSSPrimitiveValue::UnitType::kNumber));
 
   return result;
 }

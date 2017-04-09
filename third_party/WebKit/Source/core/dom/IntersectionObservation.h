@@ -22,24 +22,24 @@ class IntersectionObservation final
  public:
   IntersectionObservation(IntersectionObserver&, Element&);
 
-  IntersectionObserver* observer() const { return m_observer.get(); }
-  Element* target() const { return m_target; }
-  unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
-  void computeIntersectionObservations(DOMHighResTimeStamp);
-  void disconnect();
-  void updateShouldReportRootBoundsAfterDomChange();
+  IntersectionObserver* Observer() const { return observer_.Get(); }
+  Element* Target() const { return target_; }
+  unsigned LastThresholdIndex() const { return last_threshold_index_; }
+  void ComputeIntersectionObservations(DOMHighResTimeStamp);
+  void Disconnect();
+  void UpdateShouldReportRootBoundsAfterDomChange();
 
   DECLARE_TRACE();
 
  private:
-  void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
+  void SetLastThresholdIndex(unsigned index) { last_threshold_index_ = index; }
 
-  Member<IntersectionObserver> m_observer;
-  WeakMember<Element> m_target;
+  Member<IntersectionObserver> observer_;
+  WeakMember<Element> target_;
 
-  unsigned m_shouldReportRootBounds : 1;
+  unsigned should_report_root_bounds_ : 1;
 
-  unsigned m_lastThresholdIndex : 30;
+  unsigned last_threshold_index_ : 30;
   static const unsigned kMaxThresholdIndex = (unsigned)0x40000000;
 };
 

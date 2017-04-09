@@ -32,12 +32,12 @@
 namespace blink {
 
 enum SVGMarkerUnitsType {
-  SVGMarkerUnitsUnknown = 0,
-  SVGMarkerUnitsUserSpaceOnUse,
-  SVGMarkerUnitsStrokeWidth
+  kSVGMarkerUnitsUnknown = 0,
+  kSVGMarkerUnitsUserSpaceOnUse,
+  kSVGMarkerUnitsStrokeWidth
 };
 template <>
-const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUnitsType>();
+const SVGEnumerationStringEntries& GetStaticStringEntries<SVGMarkerUnitsType>();
 
 class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
   DEFINE_WRAPPERTYPEINFO();
@@ -46,35 +46,35 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
  public:
   // Forward declare enumerations in the W3C naming scheme, for IDL generation.
   enum {
-    kSvgMarkerunitsUnknown = SVGMarkerUnitsUnknown,
-    kSvgMarkerunitsUserspaceonuse = SVGMarkerUnitsUserSpaceOnUse,
-    kSvgMarkerunitsStrokewidth = SVGMarkerUnitsStrokeWidth
+    kSvgMarkerunitsUnknown = kSVGMarkerUnitsUnknown,
+    kSvgMarkerunitsUserspaceonuse = kSVGMarkerUnitsUserSpaceOnUse,
+    kSvgMarkerunitsStrokewidth = kSVGMarkerUnitsStrokeWidth
   };
 
   enum {
-    kSvgMarkerOrientUnknown = SVGMarkerOrientUnknown,
-    kSvgMarkerOrientAuto = SVGMarkerOrientAuto,
-    kSvgMarkerOrientAngle = SVGMarkerOrientAngle
+    kSvgMarkerOrientUnknown = kSVGMarkerOrientUnknown,
+    kSvgMarkerOrientAuto = kSVGMarkerOrientAuto,
+    kSvgMarkerOrientAngle = kSVGMarkerOrientAngle
   };
 
   DECLARE_NODE_FACTORY(SVGMarkerElement);
 
-  AffineTransform viewBoxToViewTransform(float viewWidth,
-                                         float viewHeight) const;
+  AffineTransform ViewBoxToViewTransform(float view_width,
+                                         float view_height) const;
 
   void setOrientToAuto();
   void setOrientToAngle(SVGAngleTearOff*);
 
-  SVGAnimatedLength* refX() const { return m_refX.get(); }
-  SVGAnimatedLength* refY() const { return m_refY.get(); }
-  SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }
-  SVGAnimatedLength* markerHeight() const { return m_markerHeight.get(); }
+  SVGAnimatedLength* refX() const { return ref_x_.Get(); }
+  SVGAnimatedLength* refY() const { return ref_y_.Get(); }
+  SVGAnimatedLength* markerWidth() const { return marker_width_.Get(); }
+  SVGAnimatedLength* markerHeight() const { return marker_height_.Get(); }
   SVGAnimatedEnumeration<SVGMarkerUnitsType>* markerUnits() {
-    return m_markerUnits.get();
+    return marker_units_.Get();
   }
-  SVGAnimatedAngle* orientAngle() { return m_orientAngle.get(); }
+  SVGAnimatedAngle* orientAngle() { return orient_angle_.Get(); }
   SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() {
-    return m_orientAngle->orientType();
+    return orient_angle_->OrientType();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -82,22 +82,22 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
  private:
   explicit SVGMarkerElement(Document&);
 
-  bool needsPendingResourceHandling() const override { return false; }
+  bool NeedsPendingResourceHandling() const override { return false; }
 
-  void svgAttributeChanged(const QualifiedName&) override;
-  void childrenChanged(const ChildrenChange&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  Member<SVGAnimatedLength> m_refX;
-  Member<SVGAnimatedLength> m_refY;
-  Member<SVGAnimatedLength> m_markerWidth;
-  Member<SVGAnimatedLength> m_markerHeight;
-  Member<SVGAnimatedAngle> m_orientAngle;
-  Member<SVGAnimatedEnumeration<SVGMarkerUnitsType>> m_markerUnits;
+  Member<SVGAnimatedLength> ref_x_;
+  Member<SVGAnimatedLength> ref_y_;
+  Member<SVGAnimatedLength> marker_width_;
+  Member<SVGAnimatedLength> marker_height_;
+  Member<SVGAnimatedAngle> orient_angle_;
+  Member<SVGAnimatedEnumeration<SVGMarkerUnitsType>> marker_units_;
 };
 
 }  // namespace blink

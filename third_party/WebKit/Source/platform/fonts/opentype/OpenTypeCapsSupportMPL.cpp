@@ -12,9 +12,9 @@
 
 namespace blink {
 
-bool OpenTypeCapsSupport::supportsOpenTypeFeature(hb_script_t script,
+bool OpenTypeCapsSupport::SupportsOpenTypeFeature(hb_script_t script,
                                                   uint32_t tag) const {
-  hb_face_t* face = hb_font_get_face(m_harfBuzzFace->getScaledFont());
+  hb_face_t* face = hb_font_get_face(harf_buzz_face_->GetScaledFont());
   ASSERT(face);
 
   ASSERT(
@@ -28,19 +28,19 @@ bool OpenTypeCapsSupport::supportsOpenTypeFeature(hb_script_t script,
     return false;
 
   // Get the OpenType tag(s) that match this script code
-  hb_tag_t scriptTags[] = {
+  hb_tag_t script_tags[] = {
       HB_TAG_NONE, HB_TAG_NONE, HB_TAG_NONE,
   };
-  hb_ot_tags_from_script(static_cast<hb_script_t>(script), &scriptTags[0],
-                         &scriptTags[1]);
+  hb_ot_tags_from_script(static_cast<hb_script_t>(script), &script_tags[0],
+                         &script_tags[1]);
 
   const hb_tag_t kGSUB = HB_TAG('G', 'S', 'U', 'B');
-  unsigned scriptIndex = 0;
+  unsigned script_index = 0;
   // Identify for which script a GSUB table is available.
-  hb_ot_layout_table_choose_script(face, kGSUB, scriptTags, &scriptIndex,
+  hb_ot_layout_table_choose_script(face, kGSUB, script_tags, &script_index,
                                    nullptr);
 
-  if (hb_ot_layout_language_find_feature(face, kGSUB, scriptIndex,
+  if (hb_ot_layout_language_find_feature(face, kGSUB, script_index,
                                          HB_OT_LAYOUT_DEFAULT_LANGUAGE_INDEX,
                                          tag, nullptr)) {
     return true;

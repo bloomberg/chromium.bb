@@ -39,26 +39,26 @@ namespace blink {
 
 class MIDIAccessorClient {
  public:
-  virtual void didAddInputPort(const String& id,
+  virtual void DidAddInputPort(const String& id,
                                const String& manufacturer,
                                const String& name,
                                const String& version,
                                midi::mojom::PortState) = 0;
-  virtual void didAddOutputPort(const String& id,
+  virtual void DidAddOutputPort(const String& id,
                                 const String& manufacturer,
                                 const String& name,
                                 const String& version,
                                 midi::mojom::PortState) = 0;
-  virtual void didSetInputPortState(unsigned portIndex,
+  virtual void DidSetInputPortState(unsigned port_index,
                                     midi::mojom::PortState) = 0;
-  virtual void didSetOutputPortState(unsigned portIndex,
+  virtual void DidSetOutputPortState(unsigned port_index,
                                      midi::mojom::PortState) = 0;
 
-  virtual void didStartSession(midi::mojom::Result) = 0;
-  virtual void didReceiveMIDIData(unsigned portIndex,
+  virtual void DidStartSession(midi::mojom::Result) = 0;
+  virtual void DidReceiveMIDIData(unsigned port_index,
                                   const unsigned char* data,
                                   size_t length,
-                                  double timeStamp) = 0;
+                                  double time_stamp) = 0;
 };
 
 }  // namespace blink

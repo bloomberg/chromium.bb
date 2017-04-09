@@ -30,7 +30,7 @@
 
 namespace blink {
 
-RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context,
+RTCStatsRequestImpl* RTCStatsRequestImpl::Create(ExecutionContext* context,
                                                  RTCPeerConnection* requester,
                                                  RTCStatsCallback* callback,
                                                  MediaStreamTrack* selector) {
@@ -42,49 +42,49 @@ RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context,
                                          RTCStatsCallback* callback,
                                          MediaStreamTrack* selector)
     : ContextLifecycleObserver(context),
-      m_successCallback(callback),
-      m_component(selector ? selector->component() : 0),
-      m_requester(requester) {
-  DCHECK(m_requester);
+      success_callback_(callback),
+      component_(selector ? selector->Component() : 0),
+      requester_(requester) {
+  DCHECK(requester_);
 }
 
 RTCStatsRequestImpl::~RTCStatsRequestImpl() {}
 
-RTCStatsResponseBase* RTCStatsRequestImpl::createResponse() {
-  return RTCStatsResponse::create();
+RTCStatsResponseBase* RTCStatsRequestImpl::CreateResponse() {
+  return RTCStatsResponse::Create();
 }
 
-bool RTCStatsRequestImpl::hasSelector() {
-  return m_component;
+bool RTCStatsRequestImpl::HasSelector() {
+  return component_;
 }
 
-MediaStreamComponent* RTCStatsRequestImpl::component() {
-  return m_component;
+MediaStreamComponent* RTCStatsRequestImpl::Component() {
+  return component_;
 }
 
-void RTCStatsRequestImpl::requestSucceeded(RTCStatsResponseBase* response) {
-  bool shouldFireCallback =
-      m_requester ? m_requester->shouldFireGetStatsCallback() : false;
-  if (shouldFireCallback && m_successCallback)
-    m_successCallback->handleEvent(static_cast<RTCStatsResponse*>(response));
-  clear();
+void RTCStatsRequestImpl::RequestSucceeded(RTCStatsResponseBase* response) {
+  bool should_fire_callback =
+      requester_ ? requester_->ShouldFireGetStatsCallback() : false;
+  if (should_fire_callback && success_callback_)
+    success_callback_->handleEvent(static_cast<RTCStatsResponse*>(response));
+  Clear();
 }
 
-void RTCStatsRequestImpl::contextDestroyed(ExecutionContext*) {
-  clear();
+void RTCStatsRequestImpl::ContextDestroyed(ExecutionContext*) {
+  Clear();
 }
 
-void RTCStatsRequestImpl::clear() {
-  m_successCallback.clear();
-  m_requester.clear();
+void RTCStatsRequestImpl::Clear() {
+  success_callback_.Clear();
+  requester_.Clear();
 }
 
 DEFINE_TRACE(RTCStatsRequestImpl) {
-  visitor->trace(m_successCallback);
-  visitor->trace(m_component);
-  visitor->trace(m_requester);
-  RTCStatsRequest::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(success_callback_);
+  visitor->Trace(component_);
+  visitor->Trace(requester_);
+  RTCStatsRequest::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

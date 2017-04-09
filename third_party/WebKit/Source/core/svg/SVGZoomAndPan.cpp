@@ -25,37 +25,37 @@
 
 namespace blink {
 
-SVGZoomAndPan::SVGZoomAndPan() : m_zoomAndPan(SVGZoomAndPanMagnify) {}
+SVGZoomAndPan::SVGZoomAndPan() : zoom_and_pan_(kSVGZoomAndPanMagnify) {}
 
-void SVGZoomAndPan::resetZoomAndPan() {
-  m_zoomAndPan = SVGZoomAndPanMagnify;
+void SVGZoomAndPan::ResetZoomAndPan() {
+  zoom_and_pan_ = kSVGZoomAndPanMagnify;
 }
 
-bool SVGZoomAndPan::isKnownAttribute(const QualifiedName& attrName) {
-  return attrName == SVGNames::zoomAndPanAttr;
+bool SVGZoomAndPan::IsKnownAttribute(const QualifiedName& attr_name) {
+  return attr_name == SVGNames::zoomAndPanAttr;
 }
 
 template <typename CharType>
-static bool parseZoomAndPanInternal(const CharType*& start,
+static bool ParseZoomAndPanInternal(const CharType*& start,
                                     const CharType* end,
-                                    SVGZoomAndPanType& zoomAndPan) {
+                                    SVGZoomAndPanType& zoom_and_pan) {
   if (skipToken(start, end, "disable")) {
-    zoomAndPan = SVGZoomAndPanDisable;
+    zoom_and_pan = kSVGZoomAndPanDisable;
     return true;
   }
   if (skipToken(start, end, "magnify")) {
-    zoomAndPan = SVGZoomAndPanMagnify;
+    zoom_and_pan = kSVGZoomAndPanMagnify;
     return true;
   }
   return false;
 }
 
-bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end) {
-  return parseZoomAndPanInternal(start, end, m_zoomAndPan);
+bool SVGZoomAndPan::ParseZoomAndPan(const LChar*& start, const LChar* end) {
+  return ParseZoomAndPanInternal(start, end, zoom_and_pan_);
 }
 
-bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end) {
-  return parseZoomAndPanInternal(start, end, m_zoomAndPan);
+bool SVGZoomAndPan::ParseZoomAndPan(const UChar*& start, const UChar* end) {
+  return ParseZoomAndPanInternal(start, end, zoom_and_pan_);
 }
 
 }  // namespace blink

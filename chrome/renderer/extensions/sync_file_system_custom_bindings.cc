@@ -50,13 +50,12 @@ void SyncFileSystemCustomBindings::GetSyncFileSystemObject(
   }
 
   blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::frameForContext(context()->v8_context());
+      blink::WebLocalFrame::FrameForContext(context()->v8_context());
   args.GetReturnValue().Set(
-      blink::WebDOMFileSystem::create(webframe,
-                                      blink::WebFileSystemTypeExternal,
-                                      blink::WebString::fromUTF8(name),
-                                      GURL(root_url))
-          .toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
+      blink::WebDOMFileSystem::Create(
+          webframe, blink::kWebFileSystemTypeExternal,
+          blink::WebString::FromUTF8(name), GURL(root_url))
+          .ToV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 }  // namespace extensions

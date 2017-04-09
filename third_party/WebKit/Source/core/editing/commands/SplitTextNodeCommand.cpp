@@ -35,76 +35,76 @@
 namespace blink {
 
 SplitTextNodeCommand::SplitTextNodeCommand(Text* text, int offset)
-    : SimpleEditCommand(text->document()), m_text2(text), m_offset(offset) {
+    : SimpleEditCommand(text->GetDocument()), text2_(text), offset_(offset) {
   // NOTE: Various callers rely on the fact that the original node becomes
   // the second node (i.e. the new node is inserted before the existing one).
   // That is not a fundamental dependency (i.e. it could be re-coded), but
   // rather is based on how this code happens to work.
-  DCHECK(m_text2);
-  DCHECK_GT(m_text2->length(), 0u);
-  DCHECK_GT(m_offset, 0u);
-  DCHECK_LT(m_offset, m_text2->length());
+  DCHECK(text2_);
+  DCHECK_GT(text2_->length(), 0u);
+  DCHECK_GT(offset_, 0u);
+  DCHECK_LT(offset_, text2_->length());
 }
 
-void SplitTextNodeCommand::doApply(EditingState*) {
-  ContainerNode* parent = m_text2->parentNode();
-  if (!parent || !hasEditableStyle(*parent))
+void SplitTextNodeCommand::DoApply(EditingState*) {
+  ContainerNode* parent = text2_->parentNode();
+  if (!parent || !HasEditableStyle(*parent))
     return;
 
-  String prefixText =
-      m_text2->substringData(0, m_offset, IGNORE_EXCEPTION_FOR_TESTING);
-  if (prefixText.isEmpty())
+  String prefix_text =
+      text2_->substringData(0, offset_, IGNORE_EXCEPTION_FOR_TESTING);
+  if (prefix_text.IsEmpty())
     return;
 
-  m_text1 = Text::create(document(), prefixText);
-  DCHECK(m_text1);
-  document().markers().copyMarkers(m_text2.get(), 0, m_offset, m_text1.get(),
-                                   0);
+  text1_ = Text::Create(GetDocument(), prefix_text);
+  DCHECK(text1_);
+  GetDocument().Markers().CopyMarkers(text2_.Get(), 0, offset_, text1_.Get(),
+                                      0);
 
-  insertText1AndTrimText2();
+  InsertText1AndTrimText2();
 }
 
-void SplitTextNodeCommand::doUnapply() {
-  if (!m_text1 || !hasEditableStyle(*m_text1))
+void SplitTextNodeCommand::DoUnapply() {
+  if (!text1_ || !HasEditableStyle(*text1_))
     return;
 
-  DCHECK_EQ(m_text1->document(), document());
+  DCHECK_EQ(text1_->GetDocument(), GetDocument());
 
-  String prefixText = m_text1->data();
+  String prefix_text = text1_->data();
 
-  m_text2->insertData(0, prefixText, ASSERT_NO_EXCEPTION);
-  document().updateStyleAndLayout();
+  text2_->insertData(0, prefix_text, ASSERT_NO_EXCEPTION);
+  GetDocument().UpdateStyleAndLayout();
 
-  document().markers().copyMarkers(m_text1.get(), 0, prefixText.length(),
-                                   m_text2.get(), 0);
-  m_text1->remove(ASSERT_NO_EXCEPTION);
+  GetDocument().Markers().CopyMarkers(text1_.Get(), 0, prefix_text.length(),
+                                      text2_.Get(), 0);
+  text1_->remove(ASSERT_NO_EXCEPTION);
 }
 
-void SplitTextNodeCommand::doReapply() {
-  if (!m_text1 || !m_text2)
+void SplitTextNodeCommand::DoReapply() {
+  if (!text1_ || !text2_)
     return;
 
-  ContainerNode* parent = m_text2->parentNode();
-  if (!parent || !hasEditableStyle(*parent))
+  ContainerNode* parent = text2_->parentNode();
+  if (!parent || !HasEditableStyle(*parent))
     return;
 
-  insertText1AndTrimText2();
+  InsertText1AndTrimText2();
 }
 
-void SplitTextNodeCommand::insertText1AndTrimText2() {
-  DummyExceptionStateForTesting exceptionState;
-  m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(),
-                                      exceptionState);
-  if (exceptionState.hadException())
+void SplitTextNodeCommand::InsertText1AndTrimText2() {
+  DummyExceptionStateForTesting exception_state;
+  text2_->parentNode()->InsertBefore(text1_.Get(), text2_.Get(),
+                                     exception_state);
+  if (exception_state.HadException())
     return;
-  m_text2->deleteData(0, m_offset, exceptionState);
-  document().updateStyleAndLayout();
+  text2_->deleteData(0, offset_, exception_state);
+  GetDocument().UpdateStyleAndLayout();
 }
 
 DEFINE_TRACE(SplitTextNodeCommand) {
-  visitor->trace(m_text1);
-  visitor->trace(m_text2);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(text1_);
+  visitor->Trace(text2_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

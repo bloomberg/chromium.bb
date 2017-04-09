@@ -44,16 +44,16 @@ class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>,
     kMediaErrSrcNotSupported,
   };
 
-  static MediaError* create(ErrorCode code) { return new MediaError(code); }
+  static MediaError* Create(ErrorCode code) { return new MediaError(code); }
 
-  ErrorCode code() const { return m_code; }
+  ErrorCode code() const { return code_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  MediaError(ErrorCode code) : m_code(code) {}
+  MediaError(ErrorCode code) : code_(code) {}
 
-  ErrorCode m_code;
+  ErrorCode code_;
 };
 
 }  // namespace blink

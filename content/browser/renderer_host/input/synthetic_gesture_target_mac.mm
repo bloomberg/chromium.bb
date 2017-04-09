@@ -77,7 +77,7 @@ SyntheticGestureTargetMac::SyntheticGestureTargetMac(
 
 void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
     const WebInputEvent& event) {
-  if (WebInputEvent::isGestureEventType(event.type())) {
+  if (WebInputEvent::IsGestureEventType(event.GetType())) {
     // Create an autorelease pool so that we clean up any synthetic events we
     // generate.
     base::mac::ScopedNSAutoreleasePool pool;
@@ -85,8 +85,8 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
     const WebGestureEvent* gesture_event =
         static_cast<const WebGestureEvent*>(&event);
 
-    switch (event.type()) {
-      case WebInputEvent::GesturePinchBegin: {
+    switch (event.GetType()) {
+      case WebInputEvent::kGesturePinchBegin: {
         id event = [SyntheticPinchEvent
             eventWithMagnification:0.0f
                   locationInWindow:NSMakePoint(gesture_event->x,
@@ -94,7 +94,7 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
         [cocoa_view_ beginGestureWithEvent:event];
         return;
       }
-      case WebInputEvent::GesturePinchEnd: {
+      case WebInputEvent::kGesturePinchEnd: {
         id event = [SyntheticPinchEvent
             eventWithMagnification:0.0f
                   locationInWindow:NSMakePoint(gesture_event->x,
@@ -102,9 +102,9 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
         [cocoa_view_ endGestureWithEvent:event];
         return;
       }
-      case WebInputEvent::GesturePinchUpdate: {
+      case WebInputEvent::kGesturePinchUpdate: {
         id event = [SyntheticPinchEvent
-            eventWithMagnification:gesture_event->data.pinchUpdate.scale - 1.0f
+            eventWithMagnification:gesture_event->data.pinch_update.scale - 1.0f
                   locationInWindow:NSMakePoint(gesture_event->x,
                                                gesture_event->y)];
         [cocoa_view_ magnifyWithEvent:event];

@@ -23,38 +23,38 @@ WebLayerImplFixedBounds::WebLayerImplFixedBounds(scoped_refptr<Layer> layer)
 WebLayerImplFixedBounds::~WebLayerImplFixedBounds() {
 }
 
-void WebLayerImplFixedBounds::invalidateRect(const blink::WebRect& rect) {
+void WebLayerImplFixedBounds::InvalidateRect(const blink::WebRect& rect) {
   // Partial invalidations seldom occur for such layers.
   // Simply invalidate the whole layer to avoid transformation of coordinates.
-  invalidate();
+  Invalidate();
 }
 
-void WebLayerImplFixedBounds::setTransformOrigin(
+void WebLayerImplFixedBounds::SetTransformOrigin(
     const blink::WebFloatPoint3D& transform_origin) {
-  if (transform_origin != this->transformOrigin()) {
+  if (transform_origin != this->TransformOrigin()) {
     layer_->SetTransformOrigin(transform_origin);
     UpdateLayerBoundsAndTransform();
   }
 }
 
-void WebLayerImplFixedBounds::setBounds(const blink::WebSize& bounds) {
+void WebLayerImplFixedBounds::SetBounds(const blink::WebSize& bounds) {
   if (original_bounds_ != gfx::Size(bounds)) {
     original_bounds_ = bounds;
     UpdateLayerBoundsAndTransform();
   }
 }
 
-blink::WebSize WebLayerImplFixedBounds::bounds() const {
+blink::WebSize WebLayerImplFixedBounds::Bounds() const {
   return original_bounds_;
 }
 
-void WebLayerImplFixedBounds::setTransform(const SkMatrix44& matrix) {
+void WebLayerImplFixedBounds::SetTransform(const SkMatrix44& matrix) {
   gfx::Transform transform;
   transform.matrix() = matrix;
   SetTransformInternal(transform);
 }
 
-SkMatrix44 WebLayerImplFixedBounds::transform() const {
+SkMatrix44 WebLayerImplFixedBounds::Transform() const {
   return original_transform_.matrix();
 }
 
@@ -78,8 +78,7 @@ void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform() {
       fixed_bounds_ == original_bounds_ ||
       // For now fall back to non-fixed bounds for non-zero transform origin.
       // TODO(wangxianzhu): Support non-zero anchor point for fixed bounds.
-      transformOrigin().x ||
-      transformOrigin().y) {
+      TransformOrigin().x || TransformOrigin().y) {
     layer_->SetBounds(original_bounds_);
     layer_->SetTransform(original_transform_);
     return;

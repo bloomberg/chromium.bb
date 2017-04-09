@@ -11,60 +11,63 @@ namespace blink {
 
 class GCObject : public GarbageCollectedFinalized<GCObject> {
  public:
-  static int s_counter;
-  GCObject() { ++s_counter; }
-  ~GCObject() { --s_counter; }
+  static int counter_;
+  GCObject() { ++counter_; }
+  ~GCObject() { --counter_; }
   DEFINE_INLINE_TRACE() {}
-  void run(GCObject*) {}
+  void Run(GCObject*) {}
 };
 
-int GCObject::s_counter = 0;
+int GCObject::counter_ = 0;
 
-static void functionWithGarbageCollected(GCObject*) {}
+static void FunctionWithGarbageCollected(GCObject*) {}
 
-static void functionWithExecutionContext(GCObject*, ExecutionContext*) {}
+static void FunctionWithExecutionContext(GCObject*, ExecutionContext*) {}
 
 class CrossThreadTaskTest : public testing::Test {
  protected:
-  void SetUp() override { GCObject::s_counter = 0; }
+  void SetUp() override { GCObject::counter_ = 0; }
   void TearDown() override {
-    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack,
-                                           BlinkGC::GCWithSweep,
-                                           BlinkGC::ForcedGC);
-    ASSERT_EQ(0, GCObject::s_counter);
+    ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                           BlinkGC::kGCWithSweep,
+                                           BlinkGC::kForcedGC);
+    ASSERT_EQ(0, GCObject::counter_);
   }
 };
 
 TEST_F(CrossThreadTaskTest, CreateForGarbageCollectedMethod) {
-  std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(
-      &GCObject::run, wrapCrossThreadPersistent(new GCObject),
-      wrapCrossThreadPersistent(new GCObject));
-  std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(
-      &GCObject::run, wrapCrossThreadPersistent(new GCObject),
-      wrapCrossThreadPersistent(new GCObject));
-  ThreadState::current()->collectGarbage(
-      BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
-  EXPECT_EQ(4, GCObject::s_counter);
+  std::unique_ptr<ExecutionContextTask> task1 = CreateCrossThreadTask(
+      &GCObject::Run, WrapCrossThreadPersistent(new GCObject),
+      WrapCrossThreadPersistent(new GCObject));
+  std::unique_ptr<ExecutionContextTask> task2 = CreateCrossThreadTask(
+      &GCObject::Run, WrapCrossThreadPersistent(new GCObject),
+      WrapCrossThreadPersistent(new GCObject));
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithSweep,
+                                         BlinkGC::kForcedGC);
+  EXPECT_EQ(4, GCObject::counter_);
 }
 
 TEST_F(CrossThreadTaskTest, CreateForFunctionWithGarbageCollected) {
-  std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(
-      &functionWithGarbageCollected, wrapCrossThreadPersistent(new GCObject));
-  std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(
-      &functionWithGarbageCollected, wrapCrossThreadPersistent(new GCObject));
-  ThreadState::current()->collectGarbage(
-      BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
-  EXPECT_EQ(2, GCObject::s_counter);
+  std::unique_ptr<ExecutionContextTask> task1 = CreateCrossThreadTask(
+      &FunctionWithGarbageCollected, WrapCrossThreadPersistent(new GCObject));
+  std::unique_ptr<ExecutionContextTask> task2 = CreateCrossThreadTask(
+      &FunctionWithGarbageCollected, WrapCrossThreadPersistent(new GCObject));
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithSweep,
+                                         BlinkGC::kForcedGC);
+  EXPECT_EQ(2, GCObject::counter_);
 }
 
 TEST_F(CrossThreadTaskTest, CreateForFunctionWithExecutionContext) {
-  std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(
-      &functionWithExecutionContext, wrapCrossThreadPersistent(new GCObject));
-  std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(
-      &functionWithExecutionContext, wrapCrossThreadPersistent(new GCObject));
-  ThreadState::current()->collectGarbage(
-      BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
-  EXPECT_EQ(2, GCObject::s_counter);
+  std::unique_ptr<ExecutionContextTask> task1 = CreateCrossThreadTask(
+      &FunctionWithExecutionContext, WrapCrossThreadPersistent(new GCObject));
+  std::unique_ptr<ExecutionContextTask> task2 = CreateCrossThreadTask(
+      &FunctionWithExecutionContext, WrapCrossThreadPersistent(new GCObject));
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithSweep,
+                                         BlinkGC::kForcedGC);
+  EXPECT_EQ(2, GCObject::counter_);
 }
 
 }  // namespace blink

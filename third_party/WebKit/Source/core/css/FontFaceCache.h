@@ -49,23 +49,23 @@ class FontFaceCache final {
 
   // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
   // a result of egregious spaghettification in FontFace/FontFaceSet.
-  void add(CSSFontSelector*, const StyleRuleFontFace*, FontFace*);
-  void remove(const StyleRuleFontFace*);
-  void clearCSSConnected();
-  void clearAll();
-  void addFontFace(CSSFontSelector*, FontFace*, bool cssConnected);
-  void removeFontFace(FontFace*, bool cssConnected);
+  void Add(CSSFontSelector*, const StyleRuleFontFace*, FontFace*);
+  void Remove(const StyleRuleFontFace*);
+  void ClearCSSConnected();
+  void ClearAll();
+  void AddFontFace(CSSFontSelector*, FontFace*, bool css_connected);
+  void RemoveFontFace(FontFace*, bool css_connected);
 
   // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
   // but this function uses FontDescription/family pair.
-  CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
+  CSSSegmentedFontFace* Get(const FontDescription&, const AtomicString& family);
 
-  const HeapListHashSet<Member<FontFace>>& cssConnectedFontFaces() const {
-    return m_cssConnectedFontFaces;
+  const HeapListHashSet<Member<FontFace>>& CssConnectedFontFaces() const {
+    return css_connected_font_faces_;
   }
 
-  unsigned version() const { return m_version; }
-  void incrementVersion();
+  unsigned Version() const { return version_; }
+  void IncrementVersion();
 
   DECLARE_TRACE();
 
@@ -75,14 +75,14 @@ class FontFaceCache final {
       HeapHashMap<String, Member<TraitsMap>, CaseFoldingHash>;
   using StyleRuleToFontFace =
       HeapHashMap<Member<const StyleRuleFontFace>, Member<FontFace>>;
-  FamilyToTraitsMap m_fontFaces;
-  FamilyToTraitsMap m_fonts;
-  StyleRuleToFontFace m_styleRuleToFontFace;
-  HeapListHashSet<Member<FontFace>> m_cssConnectedFontFaces;
+  FamilyToTraitsMap font_faces_;
+  FamilyToTraitsMap fonts_;
+  StyleRuleToFontFace style_rule_to_font_face_;
+  HeapListHashSet<Member<FontFace>> css_connected_font_faces_;
 
   // FIXME: See if this could be ditched
   // Used to compare Font instances, and the usage seems suspect.
-  unsigned m_version;
+  unsigned version_;
 };
 
 }  // namespace blink

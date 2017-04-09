@@ -22,160 +22,162 @@
 
 namespace blink {
 
-void ImagePainter::paint(const PaintInfo& paintInfo,
-                         const LayoutPoint& paintOffset) {
-  m_layoutImage.LayoutReplaced::paint(paintInfo, paintOffset);
+void ImagePainter::Paint(const PaintInfo& paint_info,
+                         const LayoutPoint& paint_offset) {
+  layout_image_.LayoutReplaced::Paint(paint_info, paint_offset);
 
-  if (paintInfo.phase == PaintPhaseOutline)
-    paintAreaElementFocusRing(paintInfo, paintOffset);
+  if (paint_info.phase == kPaintPhaseOutline)
+    PaintAreaElementFocusRing(paint_info, paint_offset);
 }
 
-void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo,
-                                             const LayoutPoint& paintOffset) {
-  Document& document = m_layoutImage.document();
+void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
+                                             const LayoutPoint& paint_offset) {
+  Document& document = layout_image_.GetDocument();
 
-  if (paintInfo.isPrinting() ||
-      !document.frame()->selection().isFocusedAndActive())
+  if (paint_info.IsPrinting() ||
+      !document.GetFrame()->Selection().IsFocusedAndActive())
     return;
 
-  Element* focusedElement = document.focusedElement();
-  if (!isHTMLAreaElement(focusedElement))
+  Element* focused_element = document.FocusedElement();
+  if (!isHTMLAreaElement(focused_element))
     return;
 
-  HTMLAreaElement& areaElement = toHTMLAreaElement(*focusedElement);
-  if (areaElement.imageElement() != m_layoutImage.node())
+  HTMLAreaElement& area_element = toHTMLAreaElement(*focused_element);
+  if (area_element.ImageElement() != layout_image_.GetNode())
     return;
 
   // Even if the theme handles focus ring drawing for entire elements, it won't
   // do it for an area within an image, so we don't call
   // LayoutTheme::themeDrawsFocusRing here.
 
-  const ComputedStyle& areaElementStyle = *areaElement.ensureComputedStyle();
+  const ComputedStyle& area_element_style = *area_element.EnsureComputedStyle();
   // If the outline width is 0 we want to avoid drawing anything even if we
   // don't use the value directly.
-  if (!areaElementStyle.outlineWidth())
+  if (!area_element_style.OutlineWidth())
     return;
 
-  Path path = areaElement.getPath(&m_layoutImage);
-  if (path.isEmpty())
+  Path path = area_element.GetPath(&layout_image_);
+  if (path.IsEmpty())
     return;
 
-  LayoutPoint adjustedPaintOffset = paintOffset;
-  adjustedPaintOffset.moveBy(m_layoutImage.location());
-  path.translate(FloatSize(adjustedPaintOffset.x(), adjustedPaintOffset.y()));
+  LayoutPoint adjusted_paint_offset = paint_offset;
+  adjusted_paint_offset.MoveBy(layout_image_.Location());
+  path.Translate(
+      FloatSize(adjusted_paint_offset.X(), adjusted_paint_offset.Y()));
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutImage, DisplayItem::kImageAreaFocusRing))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_image_, DisplayItem::kImageAreaFocusRing))
     return;
 
-  LayoutRect focusRect = m_layoutImage.contentBoxRect();
-  focusRect.moveBy(adjustedPaintOffset);
-  LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutImage,
-                                              DisplayItem::kImageAreaFocusRing,
-                                              focusRect);
+  LayoutRect focus_rect = layout_image_.ContentBoxRect();
+  focus_rect.MoveBy(adjusted_paint_offset);
+  LayoutObjectDrawingRecorder drawing_recorder(
+      paint_info.context, layout_image_, DisplayItem::kImageAreaFocusRing,
+      focus_rect);
 
   // FIXME: Clip path instead of context when Skia pathops is ready.
   // https://crbug.com/251206
 
-  paintInfo.context.save();
-  paintInfo.context.clip(pixelSnappedIntRect(focusRect));
-  paintInfo.context.drawFocusRing(
-      path, areaElementStyle.getOutlineStrokeWidthForFocusRing(),
-      areaElementStyle.outlineOffset(),
-      m_layoutImage.resolveColor(areaElementStyle, CSSPropertyOutlineColor));
-  paintInfo.context.restore();
+  paint_info.context.Save();
+  paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
+  paint_info.context.DrawFocusRing(
+      path, area_element_style.GetOutlineStrokeWidthForFocusRing(),
+      area_element_style.OutlineOffset(),
+      layout_image_.ResolveColor(area_element_style, CSSPropertyOutlineColor));
+  paint_info.context.Restore();
 }
 
-void ImagePainter::paintReplaced(const PaintInfo& paintInfo,
-                                 const LayoutPoint& paintOffset) {
-  LayoutUnit cWidth = m_layoutImage.contentWidth();
-  LayoutUnit cHeight = m_layoutImage.contentHeight();
+void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
+                                 const LayoutPoint& paint_offset) {
+  LayoutUnit c_width = layout_image_.ContentWidth();
+  LayoutUnit c_height = layout_image_.ContentHeight();
 
-  GraphicsContext& context = paintInfo.context;
+  GraphicsContext& context = paint_info.context;
 
-  if (!m_layoutImage.imageResource()->hasImage()) {
-    if (paintInfo.phase == PaintPhaseSelection)
+  if (!layout_image_.ImageResource()->HasImage()) {
+    if (paint_info.phase == kPaintPhaseSelection)
       return;
-    if (cWidth > 2 && cHeight > 2) {
-      if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-              context, m_layoutImage, paintInfo.phase))
+    if (c_width > 2 && c_height > 2) {
+      if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+              context, layout_image_, paint_info.phase))
         return;
       // Draw an outline rect where the image should be.
-      IntRect paintRect = pixelSnappedIntRect(
-          LayoutRect(paintOffset.x() + m_layoutImage.borderLeft() +
-                         m_layoutImage.paddingLeft(),
-                     paintOffset.y() + m_layoutImage.borderTop() +
-                         m_layoutImage.paddingTop(),
-                     cWidth, cHeight));
-      LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage,
-                                                  paintInfo.phase, paintRect);
-      context.setStrokeStyle(SolidStroke);
-      context.setStrokeColor(Color::lightGray);
-      context.setFillColor(Color::transparent);
-      context.drawRect(paintRect);
+      IntRect paint_rect = PixelSnappedIntRect(
+          LayoutRect(paint_offset.X() + layout_image_.BorderLeft() +
+                         layout_image_.PaddingLeft(),
+                     paint_offset.Y() + layout_image_.BorderTop() +
+                         layout_image_.PaddingTop(),
+                     c_width, c_height));
+      LayoutObjectDrawingRecorder drawing_recorder(
+          context, layout_image_, paint_info.phase, paint_rect);
+      context.SetStrokeStyle(kSolidStroke);
+      context.SetStrokeColor(Color::kLightGray);
+      context.SetFillColor(Color::kTransparent);
+      context.DrawRect(paint_rect);
     }
-  } else if (cWidth > 0 && cHeight > 0) {
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-            context, m_layoutImage, paintInfo.phase))
+  } else if (c_width > 0 && c_height > 0) {
+    if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+            context, layout_image_, paint_info.phase))
       return;
 
-    LayoutRect contentRect = m_layoutImage.contentBoxRect();
-    contentRect.moveBy(paintOffset);
-    LayoutRect paintRect = m_layoutImage.replacedContentRect();
-    paintRect.moveBy(paintOffset);
+    LayoutRect content_rect = layout_image_.ContentBoxRect();
+    content_rect.MoveBy(paint_offset);
+    LayoutRect paint_rect = layout_image_.ReplacedContentRect();
+    paint_rect.MoveBy(paint_offset);
 
-    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage,
-                                                paintInfo.phase, contentRect);
-    paintIntoRect(context, paintRect, contentRect);
+    LayoutObjectDrawingRecorder drawing_recorder(
+        context, layout_image_, paint_info.phase, content_rect);
+    PaintIntoRect(context, paint_rect, content_rect);
   }
 }
 
-void ImagePainter::paintIntoRect(GraphicsContext& context,
-                                 const LayoutRect& destRect,
-                                 const LayoutRect& contentRect) {
-  if (!m_layoutImage.imageResource()->hasImage() ||
-      m_layoutImage.imageResource()->errorOccurred())
+void ImagePainter::PaintIntoRect(GraphicsContext& context,
+                                 const LayoutRect& dest_rect,
+                                 const LayoutRect& content_rect) {
+  if (!layout_image_.ImageResource()->HasImage() ||
+      layout_image_.ImageResource()->ErrorOccurred())
     return;  // FIXME: should we just ASSERT these conditions? (audit all
              // callers).
 
-  IntRect pixelSnappedDestRect = pixelSnappedIntRect(destRect);
-  if (pixelSnappedDestRect.isEmpty())
+  IntRect pixel_snapped_dest_rect = PixelSnappedIntRect(dest_rect);
+  if (pixel_snapped_dest_rect.IsEmpty())
     return;
 
-  RefPtr<Image> image = m_layoutImage.imageResource()->image(
-      pixelSnappedDestRect.size(), m_layoutImage.style()->effectiveZoom());
-  if (!image || image->isNull())
+  RefPtr<Image> image = layout_image_.ImageResource()->GetImage(
+      pixel_snapped_dest_rect.size(), layout_image_.Style()->EffectiveZoom());
+  if (!image || image->IsNull())
     return;
 
   // FIXME: why is interpolation quality selection not included in the
   // Instrumentation reported cost of drawing an image?
-  InterpolationQuality interpolationQuality =
-      BoxPainter::chooseInterpolationQuality(
-          m_layoutImage, image.get(), image.get(),
-          LayoutSize(pixelSnappedDestRect.size()));
+  InterpolationQuality interpolation_quality =
+      BoxPainter::ChooseInterpolationQuality(
+          layout_image_, image.Get(), image.Get(),
+          LayoutSize(pixel_snapped_dest_rect.size()));
 
-  FloatRect srcRect = image->rect();
+  FloatRect src_rect = image->Rect();
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
-  if (!contentRect.contains(destRect)) {
-    IntRect pixelSnappedContentRect = pixelSnappedIntRect(contentRect);
-    pixelSnappedContentRect.intersect(pixelSnappedDestRect);
-    if (pixelSnappedContentRect.isEmpty())
+  if (!content_rect.Contains(dest_rect)) {
+    IntRect pixel_snapped_content_rect = PixelSnappedIntRect(content_rect);
+    pixel_snapped_content_rect.Intersect(pixel_snapped_dest_rect);
+    if (pixel_snapped_content_rect.IsEmpty())
       return;
-    srcRect = mapRect(pixelSnappedContentRect, pixelSnappedDestRect, srcRect);
-    pixelSnappedDestRect = pixelSnappedContentRect;
+    src_rect =
+        MapRect(pixel_snapped_content_rect, pixel_snapped_dest_rect, src_rect);
+    pixel_snapped_dest_rect = pixel_snapped_content_rect;
   }
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data", InspectorPaintImageEvent::data(m_layoutImage));
+               "data", InspectorPaintImageEvent::Data(layout_image_));
 
-  InterpolationQuality previousInterpolationQuality =
-      context.imageInterpolationQuality();
-  context.setImageInterpolationQuality(interpolationQuality);
-  context.drawImage(
-      image.get(), pixelSnappedDestRect, &srcRect, SkBlendMode::kSrcOver,
-      LayoutObject::shouldRespectImageOrientation(&m_layoutImage));
-  context.setImageInterpolationQuality(previousInterpolationQuality);
+  InterpolationQuality previous_interpolation_quality =
+      context.ImageInterpolationQuality();
+  context.SetImageInterpolationQuality(interpolation_quality);
+  context.DrawImage(
+      image.Get(), pixel_snapped_dest_rect, &src_rect, SkBlendMode::kSrcOver,
+      LayoutObject::ShouldRespectImageOrientation(&layout_image_));
+  context.SetImageInterpolationQuality(previous_interpolation_quality);
 }
 
 }  // namespace blink

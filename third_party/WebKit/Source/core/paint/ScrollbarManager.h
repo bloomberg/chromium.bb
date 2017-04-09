@@ -17,38 +17,38 @@ class CORE_EXPORT ScrollbarManager {
  public:
   ScrollbarManager(ScrollableArea&);
 
-  void dispose();
+  void Dispose();
 
-  Scrollbar* horizontalScrollbar() const {
-    return m_hBarIsAttached ? m_hBar.get() : nullptr;
+  Scrollbar* HorizontalScrollbar() const {
+    return h_bar_is_attached_ ? h_bar_.Get() : nullptr;
   }
-  Scrollbar* verticalScrollbar() const {
-    return m_vBarIsAttached ? m_vBar.get() : nullptr;
+  Scrollbar* VerticalScrollbar() const {
+    return v_bar_is_attached_ ? v_bar_.Get() : nullptr;
   }
-  bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
-  bool hasVerticalScrollbar() const { return verticalScrollbar(); }
+  bool HasHorizontalScrollbar() const { return HorizontalScrollbar(); }
+  bool HasVerticalScrollbar() const { return VerticalScrollbar(); }
 
   // These functions are used to create/destroy scrollbars.
-  virtual void setHasHorizontalScrollbar(bool hasScrollbar) = 0;
-  virtual void setHasVerticalScrollbar(bool hasScrollbar) = 0;
+  virtual void SetHasHorizontalScrollbar(bool has_scrollbar) = 0;
+  virtual void SetHasVerticalScrollbar(bool has_scrollbar) = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   // TODO(ymalik): This can be made non-virtual since there's a lot of
   // common code in subclasses.
-  virtual Scrollbar* createScrollbar(ScrollbarOrientation) = 0;
-  virtual void destroyScrollbar(ScrollbarOrientation) = 0;
+  virtual Scrollbar* CreateScrollbar(ScrollbarOrientation) = 0;
+  virtual void DestroyScrollbar(ScrollbarOrientation) = 0;
 
  protected:
-  Member<ScrollableArea> m_scrollableArea;
+  Member<ScrollableArea> scrollable_area_;
 
   // The scrollbars associated with m_scrollableArea. Both can nullptr.
-  Member<Scrollbar> m_hBar;
-  Member<Scrollbar> m_vBar;
+  Member<Scrollbar> h_bar_;
+  Member<Scrollbar> v_bar_;
 
-  unsigned m_hBarIsAttached : 1;
-  unsigned m_vBarIsAttached : 1;
+  unsigned h_bar_is_attached_ : 1;
+  unsigned v_bar_is_attached_ : 1;
 };
 
 }  // namespace blink

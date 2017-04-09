@@ -34,7 +34,7 @@ class Text;
 
 class InsertIntoTextNodeCommand final : public SimpleEditCommand {
  public:
-  static InsertIntoTextNodeCommand* create(Text* node,
+  static InsertIntoTextNodeCommand* Create(Text* node,
                                            unsigned offset,
                                            const String& text) {
     return new InsertIntoTextNodeCommand(node, offset, text);
@@ -45,12 +45,12 @@ class InsertIntoTextNodeCommand final : public SimpleEditCommand {
  private:
   InsertIntoTextNodeCommand(Text* node, unsigned offset, const String& text);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
 
-  Member<Text> m_node;
-  unsigned m_offset;
-  String m_text;
+  Member<Text> node_;
+  unsigned offset_;
+  String text_;
 };
 
 }  // namespace blink

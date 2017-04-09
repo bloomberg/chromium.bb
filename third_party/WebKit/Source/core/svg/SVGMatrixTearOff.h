@@ -52,20 +52,20 @@ class CORE_EXPORT SVGMatrixTearOff final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGMatrixTearOff* create(const AffineTransform& value) {
+  static SVGMatrixTearOff* Create(const AffineTransform& value) {
     return new SVGMatrixTearOff(value);
   }
 
-  static SVGMatrixTearOff* create(SVGTransformTearOff* target) {
+  static SVGMatrixTearOff* Create(SVGTransformTearOff* target) {
     return new SVGMatrixTearOff(target);
   }
 
-  double a() { return value().a(); }
-  double b() { return value().b(); }
-  double c() { return value().c(); }
-  double d() { return value().d(); }
-  double e() { return value().e(); }
-  double f() { return value().f(); }
+  double a() { return Value().A(); }
+  double b() { return Value().B(); }
+  double c() { return Value().C(); }
+  double d() { return Value().D(); }
+  double e() { return Value().E(); }
+  double f() { return Value().F(); }
 
   void setA(double, ExceptionState&);
   void setB(double, ExceptionState&);
@@ -86,9 +86,9 @@ class CORE_EXPORT SVGMatrixTearOff final
   SVGMatrixTearOff* inverse(ExceptionState&);
   SVGMatrixTearOff* rotateFromVector(double x, double y, ExceptionState&);
 
-  SVGTransformTearOff* contextTransform() { return m_contextTransform; }
+  SVGTransformTearOff* ContextTransform() { return context_transform_; }
 
-  const AffineTransform& value() const;
+  const AffineTransform& Value() const;
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -97,12 +97,12 @@ class CORE_EXPORT SVGMatrixTearOff final
   explicit SVGMatrixTearOff(const AffineTransform&);
   explicit SVGMatrixTearOff(SVGTransformTearOff*);
 
-  AffineTransform* mutableValue();
-  void commitChange();
+  AffineTransform* MutableValue();
+  void CommitChange();
 
-  AffineTransform m_staticValue;
+  AffineTransform static_value_;
 
-  TraceWrapperMember<SVGTransformTearOff> m_contextTransform;
+  TraceWrapperMember<SVGTransformTearOff> context_transform_;
 };
 
 }  // namespace blink

@@ -41,12 +41,12 @@ class WorkerLocation final : public GarbageCollectedFinalized<WorkerLocation>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WorkerLocation* create(const KURL& url) {
+  static WorkerLocation* Create(const KURL& url) {
     return new WorkerLocation(url);
   }
 
-  KURL url() const override { return m_url; }
-  String input() const override {
+  KURL Url() const override { return url_; }
+  String Input() const override {
     NOTREACHED();
     return String();
   }
@@ -54,9 +54,9 @@ class WorkerLocation final : public GarbageCollectedFinalized<WorkerLocation>,
   DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit WorkerLocation(const KURL& url) : m_url(url) {}
+  explicit WorkerLocation(const KURL& url) : url_(url) {}
 
-  KURL m_url;
+  KURL url_;
 };
 
 }  // namespace blink

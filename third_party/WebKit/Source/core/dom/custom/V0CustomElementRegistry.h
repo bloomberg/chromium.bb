@@ -52,34 +52,34 @@ class V0CustomElementRegistry final {
 
  public:
   DECLARE_TRACE();
-  void documentWasDetached() { m_documentWasDetached = true; }
+  void DocumentWasDetached() { document_was_detached_ = true; }
 
  protected:
   friend class V0CustomElementRegistrationContext;
 
-  V0CustomElementRegistry() : m_documentWasDetached(false) {}
+  V0CustomElementRegistry() : document_was_detached_(false) {}
 
-  V0CustomElementDefinition* registerElement(
+  V0CustomElementDefinition* RegisterElement(
       Document*,
       V0CustomElementConstructorBuilder*,
       const AtomicString& name,
-      V0CustomElement::NameSet validNames,
+      V0CustomElement::NameSet valid_names,
       ExceptionState&);
-  V0CustomElementDefinition* find(const V0CustomElementDescriptor&) const;
+  V0CustomElementDefinition* Find(const V0CustomElementDescriptor&) const;
 
-  bool nameIsDefined(const AtomicString& name) const;
-  void setV1(const CustomElementRegistry*);
+  bool NameIsDefined(const AtomicString& name) const;
+  void SetV1(const CustomElementRegistry*);
 
  private:
-  bool v1NameIsDefined(const AtomicString& name) const;
+  bool V1NameIsDefined(const AtomicString& name) const;
 
   typedef HeapHashMap<V0CustomElementDescriptor,
                       Member<V0CustomElementDefinition>>
       DefinitionMap;
-  DefinitionMap m_definitions;
-  HashSet<AtomicString> m_registeredTypeNames;
-  Member<const CustomElementRegistry> m_v1;
-  bool m_documentWasDetached;
+  DefinitionMap definitions_;
+  HashSet<AtomicString> registered_type_names_;
+  Member<const CustomElementRegistry> v1_;
+  bool document_was_detached_;
 };
 
 }  // namespace blink

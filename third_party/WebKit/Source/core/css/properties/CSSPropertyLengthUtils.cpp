@@ -12,23 +12,23 @@ namespace blink {
 
 namespace {
 
-bool validWidthOrHeightKeyword(CSSValueID id, const CSSParserContext* context) {
+bool ValidWidthOrHeightKeyword(CSSValueID id, const CSSParserContext* context) {
   if (id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent ||
       id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent ||
       id == CSSValueMinContent || id == CSSValueMaxContent ||
       id == CSSValueFitContent) {
     switch (id) {
       case CSSValueWebkitMinContent:
-        context->count(UseCounter::CSSValuePrefixedMinContent);
+        context->Count(UseCounter::kCSSValuePrefixedMinContent);
         break;
       case CSSValueWebkitMaxContent:
-        context->count(UseCounter::CSSValuePrefixedMaxContent);
+        context->Count(UseCounter::kCSSValuePrefixedMaxContent);
         break;
       case CSSValueWebkitFillAvailable:
-        context->count(UseCounter::CSSValuePrefixedFillAvailable);
+        context->Count(UseCounter::kCSSValuePrefixedFillAvailable);
         break;
       case CSSValueWebkitFitContent:
-        context->count(UseCounter::CSSValuePrefixedFitContent);
+        context->Count(UseCounter::kCSSValuePrefixedFitContent);
         break;
       default:
         break;
@@ -40,26 +40,26 @@ bool validWidthOrHeightKeyword(CSSValueID id, const CSSParserContext* context) {
 
 }  // namespace
 
-CSSValue* CSSPropertyLengthUtils::consumeMaxWidthOrHeight(
+CSSValue* CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(
     CSSParserTokenRange& range,
     const CSSParserContext* context,
     CSSPropertyParserHelpers::UnitlessQuirk unitless) {
-  if (range.peek().id() == CSSValueNone ||
-      validWidthOrHeightKeyword(range.peek().id(), context))
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context->mode(), ValueRangeNonNegative, unitless);
+  if (range.Peek().Id() == CSSValueNone ||
+      ValidWidthOrHeightKeyword(range.Peek().Id(), context))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, context->Mode(), kValueRangeNonNegative, unitless);
 }
 
-CSSValue* CSSPropertyLengthUtils::consumeWidthOrHeight(
+CSSValue* CSSPropertyLengthUtils::ConsumeWidthOrHeight(
     CSSParserTokenRange& range,
     const CSSParserContext* context,
     CSSPropertyParserHelpers::UnitlessQuirk unitless) {
-  if (range.peek().id() == CSSValueAuto ||
-      validWidthOrHeightKeyword(range.peek().id(), context))
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, context->mode(), ValueRangeNonNegative, unitless);
+  if (range.Peek().Id() == CSSValueAuto ||
+      ValidWidthOrHeightKeyword(range.Peek().Id(), context))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, context->Mode(), kValueRangeNonNegative, unitless);
 }
 
 }  // namespace blink

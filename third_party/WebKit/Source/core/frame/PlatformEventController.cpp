@@ -9,53 +9,53 @@
 namespace blink {
 
 PlatformEventController::PlatformEventController(LocalFrame* frame)
-    : PageVisibilityObserver(frame ? frame->page() : nullptr),
-      m_hasEventListener(false),
-      m_isActive(false),
-      m_timer(TaskRunnerHelper::get(TaskType::UnspecedTimer, frame),
-              this,
-              &PlatformEventController::oneShotCallback) {}
+    : PageVisibilityObserver(frame ? frame->GetPage() : nullptr),
+      has_event_listener_(false),
+      is_active_(false),
+      timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, frame),
+             this,
+             &PlatformEventController::OneShotCallback) {}
 
 PlatformEventController::~PlatformEventController() {}
 
-void PlatformEventController::oneShotCallback(TimerBase* timer) {
-  DCHECK_EQ(timer, &m_timer);
-  ASSERT(hasLastData());
-  ASSERT(!m_timer.isActive());
+void PlatformEventController::OneShotCallback(TimerBase* timer) {
+  DCHECK_EQ(timer, &timer_);
+  ASSERT(HasLastData());
+  ASSERT(!timer_.IsActive());
 
-  didUpdateData();
+  DidUpdateData();
 }
 
-void PlatformEventController::startUpdating() {
-  if (m_isActive)
+void PlatformEventController::StartUpdating() {
+  if (is_active_)
     return;
 
-  if (hasLastData() && !m_timer.isActive()) {
+  if (HasLastData() && !timer_.IsActive()) {
     // Make sure to fire the data as soon as possible.
-    m_timer.startOneShot(0, BLINK_FROM_HERE);
+    timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
 
-  registerWithDispatcher();
-  m_isActive = true;
+  RegisterWithDispatcher();
+  is_active_ = true;
 }
 
-void PlatformEventController::stopUpdating() {
-  if (!m_isActive)
+void PlatformEventController::StopUpdating() {
+  if (!is_active_)
     return;
 
-  m_timer.stop();
-  unregisterWithDispatcher();
-  m_isActive = false;
+  timer_.Stop();
+  UnregisterWithDispatcher();
+  is_active_ = false;
 }
 
-void PlatformEventController::pageVisibilityChanged() {
-  if (!m_hasEventListener)
+void PlatformEventController::PageVisibilityChanged() {
+  if (!has_event_listener_)
     return;
 
-  if (page()->isPageVisible())
-    startUpdating();
+  if (GetPage()->IsPageVisible())
+    StartUpdating();
   else
-    stopUpdating();
+    StopUpdating();
 }
 
 }  // namespace blink

@@ -42,14 +42,14 @@
 
 namespace blink {
 
-static const double TwentyMinutesInSeconds = 20 * 60;
+static const double kTwentyMinutesInSeconds = 20 * 60;
 
-static void getHeapSize(HeapInfo& info) {
-  v8::HeapStatistics heapStatistics;
-  v8::Isolate::GetCurrent()->GetHeapStatistics(&heapStatistics);
-  info.usedJSHeapSize = heapStatistics.used_heap_size();
-  info.totalJSHeapSize = heapStatistics.total_physical_size();
-  info.jsHeapSizeLimit = heapStatistics.heap_size_limit();
+static void GetHeapSize(HeapInfo& info) {
+  v8::HeapStatistics heap_statistics;
+  v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_statistics);
+  info.used_js_heap_size = heap_statistics.used_heap_size();
+  info.total_js_heap_size = heap_statistics.total_physical_size();
+  info.js_heap_size_limit = heap_statistics.heap_size_limit();
 }
 
 class HeapSizeCache {
@@ -58,99 +58,102 @@ class HeapSizeCache {
 
  public:
   HeapSizeCache()
-      : m_lastUpdateTime(monotonicallyIncreasingTime() -
-                         TwentyMinutesInSeconds) {}
+      : last_update_time_(MonotonicallyIncreasingTime() -
+                          kTwentyMinutesInSeconds) {}
 
-  void getCachedHeapSize(HeapInfo& info) {
-    maybeUpdate();
-    info = m_info;
+  void GetCachedHeapSize(HeapInfo& info) {
+    MaybeUpdate();
+    info = info_;
   }
 
-  static HeapSizeCache& forCurrentThread() {
+  static HeapSizeCache& ForCurrentThread() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<HeapSizeCache>,
-                                    heapSizeCache,
+                                    heap_size_cache,
                                     new ThreadSpecific<HeapSizeCache>);
-    return *heapSizeCache;
+    return *heap_size_cache;
   }
 
  private:
-  void maybeUpdate() {
+  void MaybeUpdate() {
     // We rate-limit queries to once every twenty minutes to make it more
     // difficult for attackers to compare memory usage before and after some
     // event.
-    double now = monotonicallyIncreasingTime();
-    if (now - m_lastUpdateTime >= TwentyMinutesInSeconds) {
-      update();
-      m_lastUpdateTime = now;
+    double now = MonotonicallyIncreasingTime();
+    if (now - last_update_time_ >= kTwentyMinutesInSeconds) {
+      Update();
+      last_update_time_ = now;
     }
   }
 
-  void update() {
-    getHeapSize(m_info);
-    m_info.usedJSHeapSize = quantizeMemorySize(m_info.usedJSHeapSize);
-    m_info.totalJSHeapSize = quantizeMemorySize(m_info.totalJSHeapSize);
-    m_info.jsHeapSizeLimit = quantizeMemorySize(m_info.jsHeapSizeLimit);
+  void Update() {
+    GetHeapSize(info_);
+    info_.used_js_heap_size = QuantizeMemorySize(info_.used_js_heap_size);
+    info_.total_js_heap_size = QuantizeMemorySize(info_.total_js_heap_size);
+    info_.js_heap_size_limit = QuantizeMemorySize(info_.js_heap_size_limit);
   }
 
-  double m_lastUpdateTime;
+  double last_update_time_;
 
-  HeapInfo m_info;
+  HeapInfo info_;
 };
 
 // We quantize the sizes to make it more difficult for an attacker to see
 // precise impact of operations on memory. The values are used for performance
 // tuning, and hence don't need to be as refined when the value is large, so we
 // threshold at a list of exponentially separated buckets.
-size_t quantizeMemorySize(size_t size) {
-  const int numberOfBuckets = 100;
-  DEFINE_STATIC_LOCAL(Vector<size_t>, bucketSizeList, ());
+size_t QuantizeMemorySize(size_t size) {
+  const int kNumberOfBuckets = 100;
+  DEFINE_STATIC_LOCAL(Vector<size_t>, bucket_size_list, ());
 
-  if (bucketSizeList.isEmpty()) {
-    bucketSizeList.resize(numberOfBuckets);
+  if (bucket_size_list.IsEmpty()) {
+    bucket_size_list.Resize(kNumberOfBuckets);
 
-    float sizeOfNextBucket = 10000000.0;  // First bucket size is roughly 10M.
-    const float largestBucketSize = 4000000000.0;  // Roughly 4GB.
+    float size_of_next_bucket =
+        10000000.0;  // First bucket size is roughly 10M.
+    const float kLargestBucketSize = 4000000000.0;  // Roughly 4GB.
     // We scale with the Nth root of the ratio, so that we use all the bucktes.
-    const float scalingFactor =
-        exp(log(largestBucketSize / sizeOfNextBucket) / numberOfBuckets);
+    const float scaling_factor =
+        exp(log(kLargestBucketSize / size_of_next_bucket) / kNumberOfBuckets);
 
-    size_t nextPowerOfTen =
-        static_cast<size_t>(pow(10, floor(log10(sizeOfNextBucket)) + 1) + 0.5);
-    size_t granularity = nextPowerOfTen / 1000;  // We want 3 signficant digits.
+    size_t next_power_of_ten = static_cast<size_t>(
+        pow(10, floor(log10(size_of_next_bucket)) + 1) + 0.5);
+    size_t granularity =
+        next_power_of_ten / 1000;  // We want 3 signficant digits.
 
-    for (int i = 0; i < numberOfBuckets; ++i) {
-      size_t currentBucketSize = static_cast<size_t>(sizeOfNextBucket);
-      bucketSizeList[i] = currentBucketSize - (currentBucketSize % granularity);
+    for (int i = 0; i < kNumberOfBuckets; ++i) {
+      size_t current_bucket_size = static_cast<size_t>(size_of_next_bucket);
+      bucket_size_list[i] =
+          current_bucket_size - (current_bucket_size % granularity);
 
-      sizeOfNextBucket *= scalingFactor;
-      if (sizeOfNextBucket >= nextPowerOfTen) {
-        if (std::numeric_limits<size_t>::max() / 10 <= nextPowerOfTen) {
-          nextPowerOfTen = std::numeric_limits<size_t>::max();
+      size_of_next_bucket *= scaling_factor;
+      if (size_of_next_bucket >= next_power_of_ten) {
+        if (std::numeric_limits<size_t>::max() / 10 <= next_power_of_ten) {
+          next_power_of_ten = std::numeric_limits<size_t>::max();
         } else {
-          nextPowerOfTen *= 10;
+          next_power_of_ten *= 10;
           granularity *= 10;
         }
       }
 
       // Watch out for overflow, if the range is too large for size_t.
-      if (i > 0 && bucketSizeList[i] < bucketSizeList[i - 1])
-        bucketSizeList[i] = std::numeric_limits<size_t>::max();
+      if (i > 0 && bucket_size_list[i] < bucket_size_list[i - 1])
+        bucket_size_list[i] = std::numeric_limits<size_t>::max();
     }
   }
 
-  for (int i = 0; i < numberOfBuckets; ++i) {
-    if (size <= bucketSizeList[i])
-      return bucketSizeList[i];
+  for (int i = 0; i < kNumberOfBuckets; ++i) {
+    if (size <= bucket_size_list[i])
+      return bucket_size_list[i];
   }
 
-  return bucketSizeList[numberOfBuckets - 1];
+  return bucket_size_list[kNumberOfBuckets - 1];
 }
 
 MemoryInfo::MemoryInfo() {
   if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled())
-    getHeapSize(m_info);
+    GetHeapSize(info_);
   else
-    HeapSizeCache::forCurrentThread().getCachedHeapSize(m_info);
+    HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_);
 }
 
 }  // namespace blink

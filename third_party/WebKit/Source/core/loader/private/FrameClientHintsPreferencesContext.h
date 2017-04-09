@@ -19,12 +19,12 @@ class FrameClientHintsPreferencesContext final
  public:
   explicit FrameClientHintsPreferencesContext(Frame*);
 
-  void countClientHintsDPR() override;
-  void countClientHintsResourceWidth() override;
-  void countClientHintsViewportWidth() override;
+  void CountClientHintsDPR() override;
+  void CountClientHintsResourceWidth() override;
+  void CountClientHintsViewportWidth() override;
 
  private:
-  Member<Frame> m_frame;
+  Member<Frame> frame_;
 };
 
 }  // namespace blink

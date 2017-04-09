@@ -17,22 +17,22 @@ BackgroundFetchFailEvent::BackgroundFetchFailEvent(
     const AtomicString& type,
     const BackgroundFetchFailEventInit& initializer)
     : BackgroundFetchEvent(type, initializer, nullptr /* observer */),
-      m_fetches(initializer.fetches()) {}
+      fetches_(initializer.fetches()) {}
 
 BackgroundFetchFailEvent::BackgroundFetchFailEvent(
     const AtomicString& type,
     const BackgroundFetchFailEventInit& initializer,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches,
-    ScriptState* scriptState,
+    ScriptState* script_state,
     WaitUntilObserver* observer)
     : BackgroundFetchEvent(type, initializer, observer) {
-  m_fetches.reserveInitialCapacity(fetches.size());
+  fetches_.ReserveInitialCapacity(fetches.size());
   for (const WebBackgroundFetchSettledFetch& fetch : fetches) {
-    auto* settledFetch = BackgroundFetchSettledFetch::create(
-        Request::create(scriptState, fetch.request),
-        Response::create(scriptState, fetch.response));
+    auto* settled_fetch = BackgroundFetchSettledFetch::Create(
+        Request::Create(script_state, fetch.request),
+        Response::Create(script_state, fetch.response));
 
-    m_fetches.push_back(settledFetch);
+    fetches_.push_back(settled_fetch);
   }
 }
 
@@ -40,16 +40,16 @@ BackgroundFetchFailEvent::~BackgroundFetchFailEvent() = default;
 
 HeapVector<Member<BackgroundFetchSettledFetch>>
 BackgroundFetchFailEvent::fetches() const {
-  return m_fetches;
+  return fetches_;
 }
 
-const AtomicString& BackgroundFetchFailEvent::interfaceName() const {
+const AtomicString& BackgroundFetchFailEvent::InterfaceName() const {
   return EventNames::BackgroundFetchFailEvent;
 }
 
 DEFINE_TRACE(BackgroundFetchFailEvent) {
-  visitor->trace(m_fetches);
-  BackgroundFetchEvent::trace(visitor);
+  visitor->Trace(fetches_);
+  BackgroundFetchEvent::Trace(visitor);
 }
 
 }  // namespace blink

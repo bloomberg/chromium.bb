@@ -11,17 +11,17 @@ namespace blink {
 // or reordered.
 // New entries must be added immediately before the end.
 enum class WebOriginTrialTokenStatus {
-  Success = 0,
-  NotSupported = 1,
-  Insecure = 2,
-  Expired = 3,
-  WrongOrigin = 4,
-  InvalidSignature = 5,
-  Malformed = 6,
-  WrongVersion = 7,
-  FeatureDisabled = 8,
-  TokenDisabled = 9,
-  Last = TokenDisabled
+  kSuccess = 0,
+  kNotSupported = 1,
+  kInsecure = 2,
+  kExpired = 3,
+  kWrongOrigin = 4,
+  kInvalidSignature = 5,
+  kMalformed = 6,
+  kWrongVersion = 7,
+  kFeatureDisabled = 8,
+  kTokenDisabled = 9,
+  kLast = kTokenDisabled
 };
 
 }  // namespace blink

@@ -21,23 +21,23 @@ inline bool is{{tag.interface}}(const {{namespace}}Element& element) {
   if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
     return false;
   {% endif %}
-  return element.hasTagName({{namespace}}Names::{{tag|symbol}}Tag);
+  return element.HasTagName({{namespace}}Names::{{tag|symbol}}Tag);
 }
 inline bool is{{tag.interface}}(const {{namespace}}Element* element) {
   return element && is{{tag.interface}}(*element);
 }
 inline bool is{{tag.interface}}(const Node& node) {
-  return node.is{{namespace}}Element() && is{{tag.interface}}(to{{namespace}}Element(node));
+  return node.Is{{namespace}}Element() && is{{tag.interface}}(To{{namespace}}Element(node));
 }
 inline bool is{{tag.interface}}(const Node* node) {
   return node && is{{tag.interface}}(*node);
 }
 template <>
-inline bool isElementOfType<const {{tag.interface}}>(const Node& node) {
+inline bool IsElementOfType<const {{tag.interface}}>(const Node& node) {
   return is{{tag.interface}}(node);
 }
 template <>
-inline bool isElementOfType<const {{tag.interface}}>(const {{namespace}}Element& element) {
+inline bool IsElementOfType<const {{tag.interface}}>(const {{namespace}}Element& element) {
   return is{{tag.interface}}(element);
 }
 
@@ -47,8 +47,8 @@ inline bool isElementOfType<const {{tag.interface}}>(const {{namespace}}Element&
 // unsafe due to multiple inheritence.
 
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
-#define to{{tag.interface}}(x) blink::toElement<blink::{{tag.interface}}>(x)
-#define to{{tag.interface}}OrDie(x) blink::toElementOrDie<blink::{{tag.interface}}>(x)
+#define to{{tag.interface}}(x) blink::ToElement<blink::{{tag.interface}}>(x)
+#define to{{tag.interface}}OrDie(x) blink::ToElementOrDie<blink::{{tag.interface}}>(x)
 {% endfor %}
 
 {% if namespace == "HTML" %}

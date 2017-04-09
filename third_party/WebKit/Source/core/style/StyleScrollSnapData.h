@@ -35,9 +35,9 @@ namespace blink {
 
 struct ScrollSnapPoints {
   DISALLOW_NEW();
-  Length repeatOffset;
-  bool hasRepeat;
-  bool usesElements;
+  Length repeat_offset;
+  bool has_repeat;
+  bool uses_elements;
   ScrollSnapPoints();
 };
 
@@ -48,17 +48,17 @@ inline bool operator!=(const ScrollSnapPoints& a, const ScrollSnapPoints& b) {
 
 class StyleScrollSnapData : public RefCounted<StyleScrollSnapData> {
  public:
-  static PassRefPtr<StyleScrollSnapData> create() {
-    return adoptRef(new StyleScrollSnapData);
+  static PassRefPtr<StyleScrollSnapData> Create() {
+    return AdoptRef(new StyleScrollSnapData);
   }
-  PassRefPtr<StyleScrollSnapData> copy() {
-    return adoptRef(new StyleScrollSnapData(*this));
+  PassRefPtr<StyleScrollSnapData> Copy() {
+    return AdoptRef(new StyleScrollSnapData(*this));
   }
 
-  ScrollSnapPoints m_xPoints;
-  ScrollSnapPoints m_yPoints;
-  LengthPoint m_destination;
-  Vector<LengthPoint> m_coordinates;
+  ScrollSnapPoints x_points_;
+  ScrollSnapPoints y_points_;
+  LengthPoint destination_;
+  Vector<LengthPoint> coordinates_;
 
  private:
   StyleScrollSnapData();

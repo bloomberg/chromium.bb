@@ -51,58 +51,58 @@ class WaitableEvent;
 
 class ScriptProcessorHandler final : public AudioHandler {
  public:
-  static PassRefPtr<ScriptProcessorHandler> create(
+  static PassRefPtr<ScriptProcessorHandler> Create(
       AudioNode&,
-      float sampleRate,
-      size_t bufferSize,
-      unsigned numberOfInputChannels,
-      unsigned numberOfOutputChannels);
+      float sample_rate,
+      size_t buffer_size,
+      unsigned number_of_input_channels,
+      unsigned number_of_output_channels);
   ~ScriptProcessorHandler() override;
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
-  void initialize() override;
+  void Process(size_t frames_to_process) override;
+  void Initialize() override;
 
-  size_t bufferSize() const { return m_bufferSize; }
+  size_t BufferSize() const { return buffer_size_; }
 
-  void setChannelCount(unsigned long, ExceptionState&) override;
-  void setChannelCountMode(const String&, ExceptionState&) override;
+  void SetChannelCount(unsigned long, ExceptionState&) override;
+  void SetChannelCountMode(const String&, ExceptionState&) override;
 
-  virtual unsigned numberOfOutputChannels() const {
-    return m_numberOfOutputChannels;
+  virtual unsigned NumberOfOutputChannels() const {
+    return number_of_output_channels_;
   }
 
  private:
   ScriptProcessorHandler(AudioNode&,
-                         float sampleRate,
-                         size_t bufferSize,
-                         unsigned numberOfInputChannels,
-                         unsigned numberOfOutputChannels);
-  double tailTime() const override;
-  double latencyTime() const override;
+                         float sample_rate,
+                         size_t buffer_size,
+                         unsigned number_of_input_channels,
+                         unsigned number_of_output_channels);
+  double TailTime() const override;
+  double LatencyTime() const override;
 
-  void fireProcessEvent(unsigned);
-  void fireProcessEventForOfflineAudioContext(unsigned, WaitableEvent*);
+  void FireProcessEvent(unsigned);
+  void FireProcessEventForOfflineAudioContext(unsigned, WaitableEvent*);
 
   // Double buffering
-  unsigned doubleBufferIndex() const { return m_doubleBufferIndex; }
-  void swapBuffers() { m_doubleBufferIndex = 1 - m_doubleBufferIndex; }
-  unsigned m_doubleBufferIndex;
+  unsigned DoubleBufferIndex() const { return double_buffer_index_; }
+  void SwapBuffers() { double_buffer_index_ = 1 - double_buffer_index_; }
+  unsigned double_buffer_index_;
 
   // These Persistent don't make reference cycles including the owner
   // ScriptProcessorNode.
-  PersistentHeapVector<Member<AudioBuffer>> m_inputBuffers;
-  PersistentHeapVector<Member<AudioBuffer>> m_outputBuffers;
+  PersistentHeapVector<Member<AudioBuffer>> input_buffers_;
+  PersistentHeapVector<Member<AudioBuffer>> output_buffers_;
 
-  size_t m_bufferSize;
-  unsigned m_bufferReadWriteIndex;
+  size_t buffer_size_;
+  unsigned buffer_read_write_index_;
 
-  unsigned m_numberOfInputChannels;
-  unsigned m_numberOfOutputChannels;
+  unsigned number_of_input_channels_;
+  unsigned number_of_output_channels_;
 
-  RefPtr<AudioBus> m_internalInputBus;
+  RefPtr<AudioBus> internal_input_bus_;
   // Synchronize process() with fireProcessEvent().
-  mutable Mutex m_processEventLock;
+  mutable Mutex process_event_lock_;
 
   FRIEND_TEST_ALL_PREFIXES(ScriptProcessorNodeTest, BufferLifetime);
 };
@@ -122,34 +122,34 @@ class ScriptProcessorNode final
   // latency. Higher numbers will be necessary to avoid audio breakup and
   // glitches.
   // The value chosen must carefully balance between latency and audio quality.
-  static ScriptProcessorNode* create(BaseAudioContext&, ExceptionState&);
-  static ScriptProcessorNode* create(BaseAudioContext&,
-                                     size_t bufferSize,
+  static ScriptProcessorNode* Create(BaseAudioContext&, ExceptionState&);
+  static ScriptProcessorNode* Create(BaseAudioContext&,
+                                     size_t buffer_size,
                                      ExceptionState&);
-  static ScriptProcessorNode* create(BaseAudioContext&,
-                                     size_t bufferSize,
-                                     unsigned numberOfInputChannels,
+  static ScriptProcessorNode* Create(BaseAudioContext&,
+                                     size_t buffer_size,
+                                     unsigned number_of_input_channels,
                                      ExceptionState&);
-  static ScriptProcessorNode* create(BaseAudioContext&,
-                                     size_t bufferSize,
-                                     unsigned numberOfInputChannels,
-                                     unsigned numberOfOutputChannels,
+  static ScriptProcessorNode* Create(BaseAudioContext&,
+                                     size_t buffer_size,
+                                     unsigned number_of_input_channels,
+                                     unsigned number_of_output_channels,
                                      ExceptionState&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
   size_t bufferSize() const;
 
   // ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::Trace(visitor); }
 
  private:
   ScriptProcessorNode(BaseAudioContext&,
-                      float sampleRate,
-                      size_t bufferSize,
-                      unsigned numberOfInputChannels,
-                      unsigned numberOfOutputChannels);
+                      float sample_rate,
+                      size_t buffer_size,
+                      unsigned number_of_input_channels,
+                      unsigned number_of_output_channels);
 };
 
 }  // namespace blink

@@ -44,20 +44,20 @@ class HTMLSourceTracker {
   // FIXME: Once we move "end" into HTMLTokenizer, rename "start" to
   // something that makes it obvious that this method can be called multiple
   // times.
-  void start(SegmentedString&, HTMLTokenizer*, HTMLToken&);
+  void Start(SegmentedString&, HTMLTokenizer*, HTMLToken&);
   void end(SegmentedString&, HTMLTokenizer*, HTMLToken&);
 
-  String sourceForToken(const HTMLToken&);
+  String SourceForToken(const HTMLToken&);
 
  private:
-  bool needToCheckTokenizerBuffer(HTMLTokenizer*);
+  bool NeedToCheckTokenizerBuffer(HTMLTokenizer*);
 
-  SegmentedString m_previousSource;
-  SegmentedString m_currentSource;
+  SegmentedString previous_source_;
+  SegmentedString current_source_;
 
-  String m_cachedSourceForToken;
+  String cached_source_for_token_;
 
-  bool m_isStarted;
+  bool is_started_;
 };
 
 }  // namespace blink

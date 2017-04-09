@@ -42,77 +42,77 @@ class CORE_EXPORT DocumentLoadTiming final {
  public:
   explicit DocumentLoadTiming(DocumentLoader&);
 
-  double monotonicTimeToZeroBasedDocumentTime(double) const;
-  double monotonicTimeToPseudoWallTime(double) const;
-  double pseudoWallTimeToMonotonicTime(double) const;
+  double MonotonicTimeToZeroBasedDocumentTime(double) const;
+  double MonotonicTimeToPseudoWallTime(double) const;
+  double PseudoWallTimeToMonotonicTime(double) const;
 
-  void markNavigationStart();
-  void setNavigationStart(double);
+  void MarkNavigationStart();
+  void SetNavigationStart(double);
 
-  void addRedirect(const KURL& redirectingUrl, const KURL& redirectedUrl);
-  void setRedirectStart(double);
-  void setRedirectEnd(double);
-  void setRedirectCount(short value) { m_redirectCount = value; }
-  void setHasCrossOriginRedirect(bool value) {
-    m_hasCrossOriginRedirect = value;
+  void AddRedirect(const KURL& redirecting_url, const KURL& redirected_url);
+  void SetRedirectStart(double);
+  void SetRedirectEnd(double);
+  void SetRedirectCount(short value) { redirect_count_ = value; }
+  void SetHasCrossOriginRedirect(bool value) {
+    has_cross_origin_redirect_ = value;
   }
 
-  void markUnloadEventStart();
-  void markUnloadEventEnd();
+  void MarkUnloadEventStart();
+  void MarkUnloadEventEnd();
 
-  void markFetchStart();
-  void setFetchStart(double);
+  void MarkFetchStart();
+  void SetFetchStart(double);
 
-  void setResponseEnd(double);
+  void SetResponseEnd(double);
 
-  void markLoadEventStart();
-  void markLoadEventEnd();
+  void MarkLoadEventStart();
+  void MarkLoadEventEnd();
 
-  void setHasSameOriginAsPreviousDocument(bool value) {
-    m_hasSameOriginAsPreviousDocument = value;
+  void SetHasSameOriginAsPreviousDocument(bool value) {
+    has_same_origin_as_previous_document_ = value;
   }
 
-  double navigationStart() const { return m_navigationStart; }
-  double unloadEventStart() const { return m_unloadEventStart; }
-  double unloadEventEnd() const { return m_unloadEventEnd; }
-  double redirectStart() const { return m_redirectStart; }
-  double redirectEnd() const { return m_redirectEnd; }
-  short redirectCount() const { return m_redirectCount; }
-  double fetchStart() const { return m_fetchStart; }
-  double responseEnd() const { return m_responseEnd; }
-  double loadEventStart() const { return m_loadEventStart; }
-  double loadEventEnd() const { return m_loadEventEnd; }
-  bool hasCrossOriginRedirect() const { return m_hasCrossOriginRedirect; }
-  bool hasSameOriginAsPreviousDocument() const {
-    return m_hasSameOriginAsPreviousDocument;
+  double NavigationStart() const { return navigation_start_; }
+  double UnloadEventStart() const { return unload_event_start_; }
+  double UnloadEventEnd() const { return unload_event_end_; }
+  double RedirectStart() const { return redirect_start_; }
+  double RedirectEnd() const { return redirect_end_; }
+  short RedirectCount() const { return redirect_count_; }
+  double FetchStart() const { return fetch_start_; }
+  double ResponseEnd() const { return response_end_; }
+  double LoadEventStart() const { return load_event_start_; }
+  double LoadEventEnd() const { return load_event_end_; }
+  bool HasCrossOriginRedirect() const { return has_cross_origin_redirect_; }
+  bool HasSameOriginAsPreviousDocument() const {
+    return has_same_origin_as_previous_document_;
   }
 
-  double referenceMonotonicTime() const { return m_referenceMonotonicTime; }
+  double ReferenceMonotonicTime() const { return reference_monotonic_time_; }
 
   DECLARE_TRACE();
 
  private:
-  void markRedirectEnd();
-  void notifyDocumentTimingChanged();
-  void ensureReferenceTimesSet();
-  LocalFrame* frame() const;
+  void MarkRedirectEnd();
+  void NotifyDocumentTimingChanged();
+  void EnsureReferenceTimesSet();
+  LocalFrame* GetFrame() const;
 
-  double m_referenceMonotonicTime;
-  double m_referenceWallTime;
-  double m_navigationStart;
-  double m_unloadEventStart;
-  double m_unloadEventEnd;
-  double m_redirectStart;
-  double m_redirectEnd;
-  short m_redirectCount;
-  double m_fetchStart;
-  double m_responseEnd;
-  double m_loadEventStart;
-  double m_loadEventEnd;
-  bool m_hasCrossOriginRedirect;
-  bool m_hasSameOriginAsPreviousDocument;
+  double reference_monotonic_time_;
+  double reference_wall_time_;
+  double navigation_start_;
+  double unload_event_start_;
+  double unload_event_end_;
+  double redirect_start_;
+  double redirect_end_;
+  short redirect_count_;
+  double fetch_start_;
+  double response_end_;
+  double load_event_start_;
+  double load_event_end_;
+  bool has_cross_origin_redirect_;
+  bool has_same_origin_as_previous_document_;
 
-  Member<DocumentLoader> m_documentLoader;
+  Member<DocumentLoader> document_loader_;
 };
 
 }  // namespace blink

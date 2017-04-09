@@ -52,14 +52,14 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
    public:
     ReaderImpl(scoped_refptr<Context> context, Client* client);
     ~ReaderImpl() override;
-    Result read(void* data,
+    Result Read(void* data,
                 size_t size,
                 Flags flags,
                 size_t* readSize) override;
-    Result beginRead(const void** buffer,
+    Result BeginRead(const void** buffer,
                      Flags flags,
                      size_t* available) override;
-    Result endRead(size_t readSize) override;
+    Result EndRead(size_t readSize) override;
 
    private:
     scoped_refptr<Context> context_;
@@ -81,10 +81,10 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
                                  std::unique_ptr<Writer>* writer);
   ~SharedMemoryDataConsumerHandle() override;
 
-  std::unique_ptr<Reader> obtainReader(Client* client) override;
+  std::unique_ptr<Reader> ObtainReader(Client* client) override;
 
  private:
-  const char* debugName() const override;
+  const char* DebugName() const override;
 
   scoped_refptr<Context> context_;
 

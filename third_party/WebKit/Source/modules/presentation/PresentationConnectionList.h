@@ -27,30 +27,30 @@ class MODULES_EXPORT PresentationConnectionList final
   ~PresentationConnectionList() = default;
 
   // EventTarget implementation.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override {
-    return ContextClient::getExecutionContext();
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextClient::GetExecutionContext();
   }
 
   // PresentationConnectionList.idl implementation.
   const HeapVector<Member<PresentationConnection>>& connections() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
 
-  void addConnection(PresentationConnection*);
-  void dispatchConnectionAvailableEvent(PresentationConnection*);
-  bool isEmpty();
+  void AddConnection(PresentationConnection*);
+  void DispatchConnectionAvailableEvent(PresentationConnection*);
+  bool IsEmpty();
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   // EventTarget implementation.
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
   friend class PresentationReceiverTest;
 
-  HeapVector<Member<PresentationConnection>> m_connections;
+  HeapVector<Member<PresentationConnection>> connections_;
 };
 
 }  // namespace blink

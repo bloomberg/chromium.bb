@@ -33,53 +33,53 @@ const char kNullRequestErrorMessage[] = "Requests must not be null.";
 
 BackgroundFetchManager::BackgroundFetchManager(
     ServiceWorkerRegistration* registration)
-    : m_registration(registration) {
+    : registration_(registration) {
   DCHECK(registration);
-  m_bridge = BackgroundFetchBridge::from(m_registration);
+  bridge_ = BackgroundFetchBridge::From(registration_);
 }
 
 ScriptPromise BackgroundFetchManager::fetch(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     const String& tag,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
     const BackgroundFetchOptions& options,
-    ExceptionState& exceptionState) {
-  if (!m_registration->active()) {
-    return ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(scriptState->isolate(),
+    ExceptionState& exception_state) {
+  if (!registration_->active()) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
                                           "No active registration available on "
                                           "the ServiceWorkerRegistration."));
   }
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scriptState, requests, exceptionState);
-  if (exceptionState.hadException())
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(script_state, requests, exception_state);
+  if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  m_bridge->fetch(tag, std::move(webRequests), options,
-                  WTF::bind(&BackgroundFetchManager::didFetch,
-                            wrapPersistent(this), wrapPersistent(resolver)));
+  bridge_->Fetch(tag, std::move(web_requests), options,
+                 WTF::Bind(&BackgroundFetchManager::DidFetch,
+                           WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
-void BackgroundFetchManager::didFetch(
+void BackgroundFetchManager::DidFetch(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error,
     BackgroundFetchRegistration* registration) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
       DCHECK(registration);
-      resolver->resolve(registration);
+      resolver->Resolve(registration);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
       DCHECK(!registration);
-      resolver->reject(DOMException::create(
-          InvalidStateError,
+      resolver->Reject(DOMException::Create(
+          kInvalidStateError,
           "There already is a registration for the given tag."));
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -91,93 +91,93 @@ void BackgroundFetchManager::didFetch(
   NOTREACHED();
 }
 
-ScriptPromise BackgroundFetchManager::get(ScriptState* scriptState,
+ScriptPromise BackgroundFetchManager::get(ScriptState* script_state,
                                           const String& tag) {
-  if (!m_registration->active()) {
-    return ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(scriptState->isolate(),
+  if (!registration_->active()) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
                                           "No active registration available on "
                                           "the ServiceWorkerRegistration."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  m_bridge->getRegistration(
-      tag, WTF::bind(&BackgroundFetchManager::didGetRegistration,
-                     wrapPersistent(this), wrapPersistent(resolver)));
+  bridge_->GetRegistration(
+      tag, WTF::Bind(&BackgroundFetchManager::DidGetRegistration,
+                     WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
 // static
-Vector<WebServiceWorkerRequest> BackgroundFetchManager::createWebRequestVector(
-    ScriptState* scriptState,
+Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
+    ScriptState* script_state,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
-    ExceptionState& exceptionState) {
-  Vector<WebServiceWorkerRequest> webRequests;
+    ExceptionState& exception_state) {
+  Vector<WebServiceWorkerRequest> web_requests;
 
   if (requests.isRequestOrUSVStringSequence()) {
-    HeapVector<RequestOrUSVString> requestVector =
+    HeapVector<RequestOrUSVString> request_vector =
         requests.getAsRequestOrUSVStringSequence();
 
     // Throw a TypeError when the developer has passed an empty sequence.
-    if (!requestVector.size()) {
-      exceptionState.throwTypeError(kEmptyRequestSequenceErrorMessage);
+    if (!request_vector.size()) {
+      exception_state.ThrowTypeError(kEmptyRequestSequenceErrorMessage);
       return Vector<WebServiceWorkerRequest>();
     }
 
-    webRequests.resize(requestVector.size());
+    web_requests.Resize(request_vector.size());
 
-    for (size_t i = 0; i < requestVector.size(); ++i) {
-      const RequestOrUSVString& requestOrUrl = requestVector[i];
+    for (size_t i = 0; i < request_vector.size(); ++i) {
+      const RequestOrUSVString& request_or_url = request_vector[i];
 
       Request* request = nullptr;
-      if (requestOrUrl.isRequest()) {
-        request = requestOrUrl.getAsRequest();
-      } else if (requestOrUrl.isUSVString()) {
-        request = Request::create(scriptState, requestOrUrl.getAsUSVString(),
-                                  exceptionState);
-        if (exceptionState.hadException())
+      if (request_or_url.isRequest()) {
+        request = request_or_url.getAsRequest();
+      } else if (request_or_url.isUSVString()) {
+        request = Request::Create(script_state, request_or_url.getAsUSVString(),
+                                  exception_state);
+        if (exception_state.HadException())
           return Vector<WebServiceWorkerRequest>();
       } else {
-        exceptionState.throwTypeError(kNullRequestErrorMessage);
+        exception_state.ThrowTypeError(kNullRequestErrorMessage);
         return Vector<WebServiceWorkerRequest>();
       }
 
       DCHECK(request);
-      request->populateWebServiceWorkerRequest(webRequests[i]);
+      request->PopulateWebServiceWorkerRequest(web_requests[i]);
     }
   } else if (requests.isRequest()) {
     DCHECK(requests.getAsRequest());
-    webRequests.resize(1);
-    requests.getAsRequest()->populateWebServiceWorkerRequest(webRequests[0]);
+    web_requests.Resize(1);
+    requests.getAsRequest()->PopulateWebServiceWorkerRequest(web_requests[0]);
   } else if (requests.isUSVString()) {
-    Request* request =
-        Request::create(scriptState, requests.getAsUSVString(), exceptionState);
-    if (exceptionState.hadException())
+    Request* request = Request::Create(script_state, requests.getAsUSVString(),
+                                       exception_state);
+    if (exception_state.HadException())
       return Vector<WebServiceWorkerRequest>();
 
     DCHECK(request);
-    webRequests.resize(1);
-    request->populateWebServiceWorkerRequest(webRequests[0]);
+    web_requests.Resize(1);
+    request->PopulateWebServiceWorkerRequest(web_requests[0]);
   } else {
-    exceptionState.throwTypeError(kNullRequestErrorMessage);
+    exception_state.ThrowTypeError(kNullRequestErrorMessage);
     return Vector<WebServiceWorkerRequest>();
   }
 
-  return webRequests;
+  return web_requests;
 }
 
-void BackgroundFetchManager::didGetRegistration(
+void BackgroundFetchManager::DidGetRegistration(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error,
     BackgroundFetchRegistration* registration) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
     case mojom::blink::BackgroundFetchError::INVALID_TAG:
-      resolver->resolve(registration);
+      resolver->Resolve(registration);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -188,31 +188,31 @@ void BackgroundFetchManager::didGetRegistration(
   NOTREACHED();
 }
 
-ScriptPromise BackgroundFetchManager::getTags(ScriptState* scriptState) {
-  if (!m_registration->active()) {
-    return ScriptPromise::reject(
-        scriptState,
-        V8ThrowException::createTypeError(scriptState->isolate(),
+ScriptPromise BackgroundFetchManager::getTags(ScriptState* script_state) {
+  if (!registration_->active()) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
                                           "No active registration available on "
                                           "the ServiceWorkerRegistration."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  m_bridge->getTags(WTF::bind(&BackgroundFetchManager::didGetTags,
-                              wrapPersistent(this), wrapPersistent(resolver)));
+  bridge_->GetTags(WTF::Bind(&BackgroundFetchManager::DidGetTags,
+                             WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
 
-void BackgroundFetchManager::didGetTags(
+void BackgroundFetchManager::DidGetTags(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundFetchError error,
     const Vector<String>& tags) {
   switch (error) {
     case mojom::blink::BackgroundFetchError::NONE:
-      resolver->resolve(tags);
+      resolver->Resolve(tags);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
@@ -225,8 +225,8 @@ void BackgroundFetchManager::didGetTags(
 }
 
 DEFINE_TRACE(BackgroundFetchManager) {
-  visitor->trace(m_registration);
-  visitor->trace(m_bridge);
+  visitor->Trace(registration_);
+  visitor->Trace(bridge_);
 }
 
 }  // namespace blink

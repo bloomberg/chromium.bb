@@ -12,14 +12,14 @@ namespace blink {
 TEST(SelectionStateTest, StreamOutput) {
   // Just explicitly sanity check a couple of values.
   {
-    std::stringstream stringStream;
-    stringStream << SelectionNone;
-    EXPECT_EQ("None", stringStream.str());
+    std::stringstream string_stream;
+    string_stream << SelectionNone;
+    EXPECT_EQ("None", string_stream.str());
   }
   {
-    std::stringstream stringStream;
-    stringStream << SelectionBoth;
-    EXPECT_EQ("Both", stringStream.str());
+    std::stringstream string_stream;
+    string_stream << SelectionBoth;
+    EXPECT_EQ("Both", string_stream.str());
   }
 }
 

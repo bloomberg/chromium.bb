@@ -51,6 +51,6 @@ int MacOSXMinorVersionInternal() {
 // Returns the running system's Mac OS X minor version. This is the |y| value
 // in 10.y or 10.y.z.
 int blink::internal::MacOSXMinorVersion() {
-  static int minorVersion = MacOSXMinorVersionInternal();
-  return minorVersion;
+  static int minor_version = MacOSXMinorVersionInternal();
+  return minor_version;
 }

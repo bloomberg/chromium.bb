@@ -33,21 +33,21 @@ class LengthSize {
   LengthSize() {}
 
   LengthSize(const Length& width, const Length& height)
-      : m_width(width), m_height(height) {}
+      : width_(width), height_(height) {}
 
   bool operator==(const LengthSize& o) const {
-    return m_width == o.m_width && m_height == o.m_height;
+    return width_ == o.width_ && height_ == o.height_;
   }
 
-  void setWidth(const Length& width) { m_width = width; }
-  const Length& width() const { return m_width; }
+  void SetWidth(const Length& width) { width_ = width; }
+  const Length& Width() const { return width_; }
 
-  void setHeight(const Length& height) { m_height = height; }
-  const Length& height() const { return m_height; }
+  void SetHeight(const Length& height) { height_ = height; }
+  const Length& Height() const { return height_; }
 
  private:
-  Length m_width;
-  Length m_height;
+  Length width_;
+  Length height_;
 };
 
 }  // namespace blink

@@ -38,17 +38,17 @@ class GamepadList final : public GarbageCollected<GamepadList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GamepadList* create() { return new GamepadList(); }
+  static GamepadList* Create() { return new GamepadList(); }
 
-  void set(unsigned index, Gamepad*);
+  void Set(unsigned index, Gamepad*);
   Gamepad* item(unsigned index);
-  unsigned length() const { return WebGamepads::itemsLengthCap; }
+  unsigned length() const { return WebGamepads::kItemsLengthCap; }
 
   DECLARE_TRACE();
 
  private:
   GamepadList();
-  Member<Gamepad> m_items[WebGamepads::itemsLengthCap];
+  Member<Gamepad> items_[WebGamepads::kItemsLengthCap];
 };
 
 }  // namespace blink

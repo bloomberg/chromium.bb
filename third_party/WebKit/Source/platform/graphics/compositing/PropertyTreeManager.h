@@ -33,13 +33,13 @@ class PropertyTreeManager {
 
  public:
   PropertyTreeManager(cc::PropertyTrees&,
-                      cc::Layer* rootLayer,
-                      int sequenceNumber);
+                      cc::Layer* root_layer,
+                      int sequence_number);
 
-  void setupRootTransformNode();
-  void setupRootClipNode();
-  void setupRootEffectNode();
-  void setupRootScrollNode();
+  void SetupRootTransformNode();
+  void SetupRootClipNode();
+  void SetupRootEffectNode();
+  void SetupRootScrollNode();
 
   // A brief discourse on cc property tree nodes, identifiers, and current and
   // future design evolution envisioned:
@@ -73,43 +73,43 @@ class PropertyTreeManager {
   // if none yet exists, and return the compositor node's 'node id', a.k.a.,
   // 'node index'.
 
-  int ensureCompositorTransformNode(const TransformPaintPropertyNode*);
-  int ensureCompositorClipNode(const ClipPaintPropertyNode*);
+  int EnsureCompositorTransformNode(const TransformPaintPropertyNode*);
+  int EnsureCompositorClipNode(const ClipPaintPropertyNode*);
   // Update the layer->scroll and scroll->layer mapping. The latter is temporary
   // until |owning_layer_id| is removed from the scroll node.
-  void updateLayerScrollMapping(cc::Layer*, const TransformPaintPropertyNode*);
+  void UpdateLayerScrollMapping(cc::Layer*, const TransformPaintPropertyNode*);
 
-  int switchToEffectNode(const EffectPaintPropertyNode& nextEffect);
-  int getCurrentCompositorEffectNodeIndex() const {
-    return m_effectStack.back().id;
+  int SwitchToEffectNode(const EffectPaintPropertyNode& next_effect);
+  int GetCurrentCompositorEffectNodeIndex() const {
+    return effect_stack_.back().id;
   }
 
  private:
-  void buildEffectNodesRecursively(const EffectPaintPropertyNode* nextEffect);
+  void BuildEffectNodesRecursively(const EffectPaintPropertyNode* next_effect);
 
-  cc::TransformTree& transformTree();
-  cc::ClipTree& clipTree();
-  cc::EffectTree& effectTree();
-  cc::ScrollTree& scrollTree();
+  cc::TransformTree& GetTransformTree();
+  cc::ClipTree& GetClipTree();
+  cc::EffectTree& GetEffectTree();
+  cc::ScrollTree& GetScrollTree();
 
-  int ensureCompositorScrollNode(const ScrollPaintPropertyNode*);
+  int EnsureCompositorScrollNode(const ScrollPaintPropertyNode*);
 
-  const EffectPaintPropertyNode* currentEffectNode() const;
+  const EffectPaintPropertyNode* CurrentEffectNode() const;
 
   // Scroll translation has special treatment in the transform and scroll trees.
-  void updateScrollAndScrollTranslationNodes(const TransformPaintPropertyNode*);
+  void UpdateScrollAndScrollTranslationNodes(const TransformPaintPropertyNode*);
 
   // Property trees which should be updated by the manager.
-  cc::PropertyTrees& m_propertyTrees;
+  cc::PropertyTrees& property_trees_;
 
   // Layer to which transform "owner" layers should be added. These will not
   // have any actual children, but at present must exist in the tree.
-  cc::Layer* m_rootLayer;
+  cc::Layer* root_layer_;
 
   // Maps from Blink-side property tree nodes to cc property node indices.
-  HashMap<const TransformPaintPropertyNode*, int> m_transformNodeMap;
-  HashMap<const ClipPaintPropertyNode*, int> m_clipNodeMap;
-  HashMap<const ScrollPaintPropertyNode*, int> m_scrollNodeMap;
+  HashMap<const TransformPaintPropertyNode*, int> transform_node_map_;
+  HashMap<const ClipPaintPropertyNode*, int> clip_node_map_;
+  HashMap<const ScrollPaintPropertyNode*, int> scroll_node_map_;
 
   struct BlinkEffectAndCcIdPair {
     const EffectPaintPropertyNode* effect;
@@ -117,11 +117,11 @@ class PropertyTreeManager {
     // node corresponding to the above Blink effect paint property node.
     int id;
   };
-  Vector<BlinkEffectAndCcIdPair> m_effectStack;
-  int m_sequenceNumber;
+  Vector<BlinkEffectAndCcIdPair> effect_stack_;
+  int sequence_number_;
 
 #if DCHECK_IS_ON()
-  HashSet<const EffectPaintPropertyNode*> m_effectNodesConverted;
+  HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;
 #endif
 };
 

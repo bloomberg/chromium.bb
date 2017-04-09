@@ -53,19 +53,19 @@ namespace WTF {
 #if COMPILER(MSVC)
 
 // atomicAdd returns the result of the addition.
-ALWAYS_INLINE int atomicAdd(int volatile* addend, int increment) {
+ALWAYS_INLINE int AtomicAdd(int volatile* addend, int increment) {
   return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend),
                                 static_cast<long>(increment)) +
          increment;
 }
-ALWAYS_INLINE unsigned atomicAdd(unsigned volatile* addend,
+ALWAYS_INLINE unsigned AtomicAdd(unsigned volatile* addend,
                                  unsigned increment) {
   return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend),
                                 static_cast<long>(increment)) +
          increment;
 }
 #if defined(_WIN64)
-ALWAYS_INLINE unsigned long long atomicAdd(unsigned long long volatile* addend,
+ALWAYS_INLINE unsigned long long AtomicAdd(unsigned long long volatile* addend,
                                            unsigned long long increment) {
   return InterlockedExchangeAdd64(reinterpret_cast<long long volatile*>(addend),
                                   static_cast<long long>(increment)) +
@@ -74,19 +74,19 @@ ALWAYS_INLINE unsigned long long atomicAdd(unsigned long long volatile* addend,
 #endif
 
 // atomicSubtract returns the result of the subtraction.
-ALWAYS_INLINE int atomicSubtract(int volatile* addend, int decrement) {
+ALWAYS_INLINE int AtomicSubtract(int volatile* addend, int decrement) {
   return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend),
                                 static_cast<long>(-decrement)) -
          decrement;
 }
-ALWAYS_INLINE unsigned atomicSubtract(unsigned volatile* addend,
+ALWAYS_INLINE unsigned AtomicSubtract(unsigned volatile* addend,
                                       unsigned decrement) {
   return InterlockedExchangeAdd(reinterpret_cast<long volatile*>(addend),
                                 -static_cast<long>(decrement)) -
          decrement;
 }
 #if defined(_WIN64)
-ALWAYS_INLINE unsigned long long atomicSubtract(
+ALWAYS_INLINE unsigned long long AtomicSubtract(
     unsigned long long volatile* addend,
     unsigned long long decrement) {
   return InterlockedExchangeAdd64(reinterpret_cast<long long volatile*>(addend),
@@ -95,27 +95,27 @@ ALWAYS_INLINE unsigned long long atomicSubtract(
 }
 #endif
 
-ALWAYS_INLINE int atomicIncrement(int volatile* addend) {
+ALWAYS_INLINE int AtomicIncrement(int volatile* addend) {
   return InterlockedIncrement(reinterpret_cast<long volatile*>(addend));
 }
-ALWAYS_INLINE int atomicDecrement(int volatile* addend) {
+ALWAYS_INLINE int AtomicDecrement(int volatile* addend) {
   return InterlockedDecrement(reinterpret_cast<long volatile*>(addend));
 }
 
-ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) {
+ALWAYS_INLINE int64_t AtomicIncrement(int64_t volatile* addend) {
   return InterlockedIncrement64(reinterpret_cast<long long volatile*>(addend));
 }
-ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) {
+ALWAYS_INLINE int64_t AtomicDecrement(int64_t volatile* addend) {
   return InterlockedDecrement64(reinterpret_cast<long long volatile*>(addend));
 }
 
-ALWAYS_INLINE int atomicTestAndSetToOne(int volatile* ptr) {
+ALWAYS_INLINE int AtomicTestAndSetToOne(int volatile* ptr) {
   int ret = InterlockedExchange(reinterpret_cast<long volatile*>(ptr), 1);
   DCHECK(!ret || ret == 1);
   return ret;
 }
 
-ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr) {
+ALWAYS_INLINE void AtomicSetOneToZero(int volatile* ptr) {
   DCHECK_EQ(*ptr, 1);
   InterlockedExchange(reinterpret_cast<long volatile*>(ptr), 0);
 }
@@ -123,51 +123,51 @@ ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr) {
 #else
 
 // atomicAdd returns the result of the addition.
-ALWAYS_INLINE int atomicAdd(int volatile* addend, int increment) {
+ALWAYS_INLINE int AtomicAdd(int volatile* addend, int increment) {
   return __sync_add_and_fetch(addend, increment);
 }
-ALWAYS_INLINE unsigned atomicAdd(unsigned volatile* addend,
+ALWAYS_INLINE unsigned AtomicAdd(unsigned volatile* addend,
                                  unsigned increment) {
   return __sync_add_and_fetch(addend, increment);
 }
-ALWAYS_INLINE unsigned long atomicAdd(unsigned long volatile* addend,
+ALWAYS_INLINE unsigned long AtomicAdd(unsigned long volatile* addend,
                                       unsigned long increment) {
   return __sync_add_and_fetch(addend, increment);
 }
 // atomicSubtract returns the result of the subtraction.
-ALWAYS_INLINE int atomicSubtract(int volatile* addend, int decrement) {
+ALWAYS_INLINE int AtomicSubtract(int volatile* addend, int decrement) {
   return __sync_sub_and_fetch(addend, decrement);
 }
-ALWAYS_INLINE unsigned atomicSubtract(unsigned volatile* addend,
+ALWAYS_INLINE unsigned AtomicSubtract(unsigned volatile* addend,
                                       unsigned decrement) {
   return __sync_sub_and_fetch(addend, decrement);
 }
-ALWAYS_INLINE unsigned long atomicSubtract(unsigned long volatile* addend,
+ALWAYS_INLINE unsigned long AtomicSubtract(unsigned long volatile* addend,
                                            unsigned long decrement) {
   return __sync_sub_and_fetch(addend, decrement);
 }
 
-ALWAYS_INLINE int atomicIncrement(int volatile* addend) {
-  return atomicAdd(addend, 1);
+ALWAYS_INLINE int AtomicIncrement(int volatile* addend) {
+  return AtomicAdd(addend, 1);
 }
-ALWAYS_INLINE int atomicDecrement(int volatile* addend) {
-  return atomicSubtract(addend, 1);
+ALWAYS_INLINE int AtomicDecrement(int volatile* addend) {
+  return AtomicSubtract(addend, 1);
 }
 
-ALWAYS_INLINE int64_t atomicIncrement(int64_t volatile* addend) {
+ALWAYS_INLINE int64_t AtomicIncrement(int64_t volatile* addend) {
   return __sync_add_and_fetch(addend, 1);
 }
-ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) {
+ALWAYS_INLINE int64_t AtomicDecrement(int64_t volatile* addend) {
   return __sync_sub_and_fetch(addend, 1);
 }
 
-ALWAYS_INLINE int atomicTestAndSetToOne(int volatile* ptr) {
+ALWAYS_INLINE int AtomicTestAndSetToOne(int volatile* ptr) {
   int ret = __sync_lock_test_and_set(ptr, 1);
   DCHECK(!ret || ret == 1);
   return ret;
 }
 
-ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr) {
+ALWAYS_INLINE void AtomicSetOneToZero(int volatile* ptr) {
   DCHECK_EQ(*ptr, 1);
   __sync_lock_release(ptr);
 }
@@ -272,75 +272,75 @@ ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr) {
 #define MEMORY_BARRIER() __sync_synchronize()
 #endif
 
-ALWAYS_INLINE void releaseStore(volatile int* ptr, int value) {
+ALWAYS_INLINE void ReleaseStore(volatile int* ptr, int value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
-ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value) {
+ALWAYS_INLINE void ReleaseStore(volatile unsigned* ptr, unsigned value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
-ALWAYS_INLINE void releaseStore(volatile long* ptr, long value) {
+ALWAYS_INLINE void ReleaseStore(volatile long* ptr, long value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
-ALWAYS_INLINE void releaseStore(volatile unsigned long* ptr,
+ALWAYS_INLINE void ReleaseStore(volatile unsigned long* ptr,
                                 unsigned long value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
 #if CPU(64BIT)
-ALWAYS_INLINE void releaseStore(volatile unsigned long long* ptr,
+ALWAYS_INLINE void ReleaseStore(volatile unsigned long long* ptr,
                                 unsigned long long value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
 #endif
-ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value) {
+ALWAYS_INLINE void ReleaseStore(void* volatile* ptr, void* value) {
   MEMORY_BARRIER();
   *ptr = value;
 }
 
-ALWAYS_INLINE int acquireLoad(volatile const int* ptr) {
+ALWAYS_INLINE int AcquireLoad(volatile const int* ptr) {
   int value = *ptr;
   MEMORY_BARRIER();
   return value;
 }
-ALWAYS_INLINE unsigned acquireLoad(volatile const unsigned* ptr) {
+ALWAYS_INLINE unsigned AcquireLoad(volatile const unsigned* ptr) {
   unsigned value = *ptr;
   MEMORY_BARRIER();
   return value;
 }
-ALWAYS_INLINE long acquireLoad(volatile const long* ptr) {
+ALWAYS_INLINE long AcquireLoad(volatile const long* ptr) {
   long value = *ptr;
   MEMORY_BARRIER();
   return value;
 }
-ALWAYS_INLINE unsigned long acquireLoad(volatile const unsigned long* ptr) {
+ALWAYS_INLINE unsigned long AcquireLoad(volatile const unsigned long* ptr) {
   unsigned long value = *ptr;
   MEMORY_BARRIER();
   return value;
 }
 #if CPU(64BIT)
-ALWAYS_INLINE unsigned long long acquireLoad(
+ALWAYS_INLINE unsigned long long AcquireLoad(
     volatile const unsigned long long* ptr) {
   unsigned long long value = *ptr;
   MEMORY_BARRIER();
   return value;
 }
 #endif
-ALWAYS_INLINE void* acquireLoad(void* volatile const* ptr) {
+ALWAYS_INLINE void* AcquireLoad(void* volatile const* ptr) {
   void* value = *ptr;
   MEMORY_BARRIER();
   return value;
 }
 
 // Do not use noBarrierStore/noBarrierLoad for synchronization.
-ALWAYS_INLINE void noBarrierStore(volatile float* ptr, float value) {
+ALWAYS_INLINE void NoBarrierStore(volatile float* ptr, float value) {
   *ptr = value;
 }
 
-ALWAYS_INLINE float noBarrierLoad(volatile const float* ptr) {
+ALWAYS_INLINE float NoBarrierLoad(volatile const float* ptr) {
   float value = *ptr;
   return value;
 }
@@ -369,34 +369,34 @@ NO_SANITIZE_ADDRESS ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(
 
 #if !defined(ADDRESS_SANITIZER)
 
-ALWAYS_INLINE void asanUnsafeReleaseStore(volatile unsigned* ptr,
+ALWAYS_INLINE void AsanUnsafeReleaseStore(volatile unsigned* ptr,
                                           unsigned value) {
-  releaseStore(ptr, value);
+  ReleaseStore(ptr, value);
 }
 
-ALWAYS_INLINE unsigned asanUnsafeAcquireLoad(volatile const unsigned* ptr) {
-  return acquireLoad(ptr);
+ALWAYS_INLINE unsigned AsanUnsafeAcquireLoad(volatile const unsigned* ptr) {
+  return AcquireLoad(ptr);
 }
 
 #endif
 
 }  // namespace WTF
 
-using WTF::atomicAdd;
-using WTF::atomicSubtract;
-using WTF::atomicDecrement;
-using WTF::atomicIncrement;
-using WTF::atomicTestAndSetToOne;
-using WTF::atomicSetOneToZero;
-using WTF::acquireLoad;
-using WTF::releaseStore;
-using WTF::noBarrierLoad;
-using WTF::noBarrierStore;
+using WTF::AtomicAdd;
+using WTF::AtomicSubtract;
+using WTF::AtomicDecrement;
+using WTF::AtomicIncrement;
+using WTF::AtomicTestAndSetToOne;
+using WTF::AtomicSetOneToZero;
+using WTF::AcquireLoad;
+using WTF::ReleaseStore;
+using WTF::NoBarrierLoad;
+using WTF::NoBarrierStore;
 
 // These methods allow loading from and storing to poisoned memory. Only
 // use these methods if you know what you are doing since they will
 // silence use-after-poison errors from ASan.
-using WTF::asanUnsafeAcquireLoad;
-using WTF::asanUnsafeReleaseStore;
+using WTF::AsanUnsafeAcquireLoad;
+using WTF::AsanUnsafeReleaseStore;
 
 #endif  // Atomics_h

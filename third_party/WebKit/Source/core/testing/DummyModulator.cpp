@@ -11,37 +11,37 @@ DummyModulator::DummyModulator() {}
 DummyModulator::~DummyModulator() {}
 
 DEFINE_TRACE(DummyModulator) {
-  Modulator::trace(visitor);
+  Modulator::Trace(visitor);
 }
 
-ReferrerPolicy DummyModulator::referrerPolicy() {
+ReferrerPolicy DummyModulator::GetReferrerPolicy() {
   NOTREACHED();
-  return ReferrerPolicyDefault;
+  return kReferrerPolicyDefault;
 }
 
-SecurityOrigin* DummyModulator::securityOrigin() {
-  NOTREACHED();
-  return nullptr;
-}
-
-ScriptModuleResolver* DummyModulator::scriptModuleResolver() {
+SecurityOrigin* DummyModulator::GetSecurityOrigin() {
   NOTREACHED();
   return nullptr;
 }
 
-WebTaskRunner* DummyModulator::taskRunner() {
+ScriptModuleResolver* DummyModulator::GetScriptModuleResolver() {
+  NOTREACHED();
+  return nullptr;
+}
+
+WebTaskRunner* DummyModulator::TaskRunner() {
   NOTREACHED();
   return nullptr;
 };
 
-void DummyModulator::fetchNewSingleModule(const ModuleScriptFetchRequest&,
+void DummyModulator::FetchNewSingleModule(const ModuleScriptFetchRequest&,
                                           ModuleGraphLevel,
                                           ModuleScriptLoaderClient*) {
   NOTREACHED();
 }
 
-ScriptModule DummyModulator::compileModule(const String& script,
-                                           const String& urlStr,
+ScriptModule DummyModulator::CompileModule(const String& script,
+                                           const String& url_str,
                                            AccessControlStatus) {
   NOTREACHED();
   return ScriptModule();

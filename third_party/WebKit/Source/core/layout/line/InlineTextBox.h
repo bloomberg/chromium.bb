@@ -45,198 +45,200 @@ class GraphicsContext;
 // Thus the maximum possible length of the text displayed before an ellipsis in
 // a single InlineTextBox is |USHRT_MAX - 2| to allow for the no-truncation and
 // full-truncation states.
-const unsigned short cNoTruncation = USHRT_MAX;
-const unsigned short cFullTruncation = USHRT_MAX - 1;
+const unsigned short kCNoTruncation = USHRT_MAX;
+const unsigned short kCFullTruncation = USHRT_MAX - 1;
 
 class CORE_EXPORT InlineTextBox : public InlineBox {
  public:
   InlineTextBox(LineLayoutItem item, int start, unsigned short length)
       : InlineBox(item),
-        m_prevTextBox(nullptr),
-        m_nextTextBox(nullptr),
-        m_start(start),
-        m_len(length),
-        m_truncation(cNoTruncation) {
-    setIsText(true);
+        prev_text_box_(nullptr),
+        next_text_box_(nullptr),
+        start_(start),
+        len_(length),
+        truncation_(kCNoTruncation) {
+    SetIsText(true);
   }
 
-  LineLayoutText getLineLayoutItem() const {
-    return LineLayoutText(InlineBox::getLineLayoutItem());
+  LineLayoutText GetLineLayoutItem() const {
+    return LineLayoutText(InlineBox::GetLineLayoutItem());
   }
 
-  void destroy() final;
+  void Destroy() final;
 
-  InlineTextBox* prevTextBox() const { return m_prevTextBox; }
-  InlineTextBox* nextTextBox() const { return m_nextTextBox; }
-  void setNextTextBox(InlineTextBox* n) { m_nextTextBox = n; }
-  void setPreviousTextBox(InlineTextBox* p) { m_prevTextBox = p; }
+  InlineTextBox* PrevTextBox() const { return prev_text_box_; }
+  InlineTextBox* NextTextBox() const { return next_text_box_; }
+  void SetNextTextBox(InlineTextBox* n) { next_text_box_ = n; }
+  void SetPreviousTextBox(InlineTextBox* p) { prev_text_box_ = p; }
 
   // FIXME: These accessors should DCHECK(!isDirty()). See
   // https://bugs.webkit.org/show_bug.cgi?id=97264
-  unsigned start() const { return m_start; }
-  unsigned end() const { return m_len ? m_start + m_len - 1 : m_start; }
-  unsigned len() const { return m_len; }
+  unsigned Start() const { return start_; }
+  unsigned end() const { return len_ ? start_ + len_ - 1 : start_; }
+  unsigned Len() const { return len_; }
 
-  void offsetRun(int delta);
+  void OffsetRun(int delta);
 
-  unsigned short truncation() const { return m_truncation; }
+  unsigned short Truncation() const { return truncation_; }
 
-  void markDirty() final;
+  void MarkDirty() final;
 
-  using InlineBox::hasHyphen;
-  using InlineBox::setHasHyphen;
-  using InlineBox::canHaveLeadingExpansion;
-  using InlineBox::setCanHaveLeadingExpansion;
+  using InlineBox::HasHyphen;
+  using InlineBox::SetHasHyphen;
+  using InlineBox::CanHaveLeadingExpansion;
+  using InlineBox::SetCanHaveLeadingExpansion;
 
-  static inline bool compareByStart(const InlineTextBox* first,
+  static inline bool CompareByStart(const InlineTextBox* first,
                                     const InlineTextBox* second) {
-    return first->start() < second->start();
+    return first->Start() < second->Start();
   }
 
-  int baselinePosition(FontBaseline) const final;
-  LayoutUnit lineHeight() const final;
+  int BaselinePosition(FontBaseline) const final;
+  LayoutUnit LineHeight() const final;
 
-  bool getEmphasisMarkPosition(const ComputedStyle&,
+  bool GetEmphasisMarkPosition(const ComputedStyle&,
                                TextEmphasisPosition&) const;
 
-  LayoutRect logicalOverflowRect() const;
-  void setLogicalOverflowRect(const LayoutRect&);
-  LayoutUnit logicalTopVisualOverflow() const {
-    return logicalOverflowRect().y();
+  LayoutRect LogicalOverflowRect() const;
+  void SetLogicalOverflowRect(const LayoutRect&);
+  LayoutUnit LogicalTopVisualOverflow() const {
+    return LogicalOverflowRect().Y();
   }
-  LayoutUnit logicalBottomVisualOverflow() const {
-    return logicalOverflowRect().maxY();
+  LayoutUnit LogicalBottomVisualOverflow() const {
+    return LogicalOverflowRect().MaxY();
   }
 
   // charactersWithHyphen, if provided, must not be destroyed before the
   // TextRun.
-  TextRun constructTextRun(const ComputedStyle&,
-                           StringBuilder* charactersWithHyphen = nullptr) const;
-  TextRun constructTextRun(const ComputedStyle&,
-                           StringView,
-                           int maximumLength,
-                           StringBuilder* charactersWithHyphen = nullptr) const;
+  TextRun ConstructTextRun(
+      const ComputedStyle&,
+      StringBuilder* characters_with_hyphen = nullptr) const;
+  TextRun ConstructTextRun(
+      const ComputedStyle&,
+      StringView,
+      int maximum_length,
+      StringBuilder* characters_with_hyphen = nullptr) const;
 
 #ifndef NDEBUG
-  void showBox(int = 0) const override;
+  void ShowBox(int = 0) const override;
 #endif
-  const char* boxName() const override;
-  String debugName() const override;
+  const char* BoxName() const override;
+  String DebugName() const override;
 
-  String text() const;
+  String GetText() const;
 
  public:
-  TextRun constructTextRunForInspector(const ComputedStyle&) const;
-  LayoutRect frameRect() const {
-    return LayoutRect(x(), y(), width(), height());
+  TextRun ConstructTextRunForInspector(const ComputedStyle&) const;
+  LayoutRect FrameRect() const {
+    return LayoutRect(X(), Y(), Width(), Height());
   }
 
-  virtual LayoutRect localSelectionRect(int startPos, int endPos) const;
-  bool isSelected(int startPos, int endPos) const;
-  void selectionStartEnd(int& sPos, int& ePos) const;
+  virtual LayoutRect LocalSelectionRect(int start_pos, int end_pos) const;
+  bool IsSelected(int start_pos, int end_pos) const;
+  void SelectionStartEnd(int& s_pos, int& e_pos) const;
 
-  virtual void paintDocumentMarker(GraphicsContext&,
-                                   const LayoutPoint& boxOrigin,
+  virtual void PaintDocumentMarker(GraphicsContext&,
+                                   const LayoutPoint& box_origin,
                                    const DocumentMarker&,
                                    const ComputedStyle&,
                                    const Font&,
                                    bool grammar) const;
-  virtual void paintTextMatchMarkerForeground(const PaintInfo&,
-                                              const LayoutPoint& boxOrigin,
+  virtual void PaintTextMatchMarkerForeground(const PaintInfo&,
+                                              const LayoutPoint& box_origin,
                                               const DocumentMarker&,
                                               const ComputedStyle&,
                                               const Font&) const;
-  virtual void paintTextMatchMarkerBackground(const PaintInfo&,
-                                              const LayoutPoint& boxOrigin,
+  virtual void PaintTextMatchMarkerBackground(const PaintInfo&,
+                                              const LayoutPoint& box_origin,
                                               const DocumentMarker&,
                                               const ComputedStyle&,
                                               const Font&) const;
 
-  void move(const LayoutSize&) final;
+  void Move(const LayoutSize&) final;
 
  protected:
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom) const override;
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
-                   LayoutUnit lineTop,
-                   LayoutUnit lineBottom) override;
+             LayoutUnit line_top,
+             LayoutUnit line_bottom) const override;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
+                   LayoutUnit line_top,
+                   LayoutUnit line_bottom) override;
 
  private:
-  void deleteLine() final;
-  void extractLine() final;
-  void attachLine() final;
+  void DeleteLine() final;
+  void ExtractLine() final;
+  void AttachLine() final;
 
  public:
-  SelectionState getSelectionState() const final;
-  bool hasWrappedSelectionNewline() const;
-  float newlineSpaceWidth() const;
+  SelectionState GetSelectionState() const final;
+  bool HasWrappedSelectionNewline() const;
+  float NewlineSpaceWidth() const;
 
  private:
-  void setTruncation(unsigned);
+  void SetTruncation(unsigned);
 
-  void clearTruncation() final;
-  LayoutUnit placeEllipsisBox(bool flowIsLTR,
-                              LayoutUnit visibleLeftEdge,
-                              LayoutUnit visibleRightEdge,
-                              LayoutUnit ellipsisWidth,
-                              LayoutUnit& truncatedWidth,
-                              bool& foundBox,
-                              LayoutUnit logicalLeftOffset) final;
+  void ClearTruncation() final;
+  LayoutUnit PlaceEllipsisBox(bool flow_is_ltr,
+                              LayoutUnit visible_left_edge,
+                              LayoutUnit visible_right_edge,
+                              LayoutUnit ellipsis_width,
+                              LayoutUnit& truncated_width,
+                              bool& found_box,
+                              LayoutUnit logical_left_offset) final;
 
  public:
-  bool isLineBreak() const final;
+  bool IsLineBreak() const final;
 
-  void setExpansion(int newExpansion) {
-    m_logicalWidth -= expansion();
-    InlineBox::setExpansion(newExpansion);
-    m_logicalWidth += newExpansion;
+  void SetExpansion(int new_expansion) {
+    logical_width_ -= Expansion();
+    InlineBox::SetExpansion(new_expansion);
+    logical_width_ += new_expansion;
   }
 
  private:
-  bool isInlineTextBox() const final { return true; }
+  bool IsInlineTextBox() const final { return true; }
 
  public:
-  int caretMinOffset() const final;
-  int caretMaxOffset() const final;
+  int CaretMinOffset() const final;
+  int CaretMaxOffset() const final;
 
   // Returns the x position relative to the left start of the text line.
-  LayoutUnit textPos() const;
+  LayoutUnit TextPos() const;
 
  public:
-  virtual int offsetForPosition(LayoutUnit x,
-                                bool includePartialGlyphs = true) const;
-  virtual LayoutUnit positionForOffset(int offset) const;
+  virtual int OffsetForPosition(LayoutUnit x,
+                                bool include_partial_glyphs = true) const;
+  virtual LayoutUnit PositionForOffset(int offset) const;
 
   // Returns false for offset after line break.
-  bool containsCaretOffset(int offset) const;
+  bool ContainsCaretOffset(int offset) const;
 
   // Fills a vector with the pixel width of each character.
-  void characterWidths(Vector<float>&) const;
+  void CharacterWidths(Vector<float>&) const;
 
  private:
   // The previous box that also uses our LayoutObject.
-  InlineTextBox* m_prevTextBox;
+  InlineTextBox* prev_text_box_;
   // The next box that also uses our LayoutObject.
-  InlineTextBox* m_nextTextBox;
+  InlineTextBox* next_text_box_;
 
-  int m_start;
-  unsigned short m_len;
+  int start_;
+  unsigned short len_;
 
   // Where to truncate when text overflow is applied.  We use special constants
   // to denote no truncation (the whole run paints) and full truncation (nothing
   // paints at all).
-  unsigned short m_truncation;
+  unsigned short truncation_;
 
  private:
-  TextRun::ExpansionBehavior expansionBehavior() const {
-    return (canHaveLeadingExpansion() ? TextRun::AllowLeadingExpansion
-                                      : TextRun::ForbidLeadingExpansion) |
-           (expansion() && nextLeafChild() ? TextRun::AllowTrailingExpansion
-                                           : TextRun::ForbidTrailingExpansion);
+  TextRun::ExpansionBehavior GetExpansionBehavior() const {
+    return (CanHaveLeadingExpansion() ? TextRun::kAllowLeadingExpansion
+                                      : TextRun::kForbidLeadingExpansion) |
+           (Expansion() && NextLeafChild() ? TextRun::kAllowTrailingExpansion
+                                           : TextRun::kForbidTrailingExpansion);
   }
 };
 

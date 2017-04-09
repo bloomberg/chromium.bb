@@ -53,7 +53,7 @@ content::RenderFrame* GetRenderFrame(v8::Handle<v8::Value> value) {
       v8::Local<v8::Object>::Cast(value)->CreationContext();
   if (context.IsEmpty())
     return nullptr;
-  blink::WebLocalFrame* frame = blink::WebLocalFrame::frameForContext(context);
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::FrameForContext(context);
   if (!frame)
     return nullptr;
   return content::RenderFrame::FromWebFrame(frame);
@@ -262,9 +262,9 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
 
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
   // Parent must exist.
-  blink::WebFrame* parent_frame = frame->parent();
+  blink::WebFrame* parent_frame = frame->Parent();
   DCHECK(parent_frame);
-  DCHECK(parent_frame->isWebLocalFrame());
+  DCHECK(parent_frame->IsWebLocalFrame());
 
   // Add flag to |params| to indicate that the element size is specified in
   // logical units.
@@ -341,14 +341,14 @@ void GuestViewInternalCustomBindings::GetContentWindow(
   if (!view)
     return;
 
-  blink::WebFrame* frame = view->GetWebView()->mainFrame();
+  blink::WebFrame* frame = view->GetWebView()->MainFrame();
   // TODO(lazyboy,nasko): The WebLocalFrame branch is not used when running
   // on top of out-of-process iframes. Remove it once the code is converted.
   v8::Local<v8::Value> window;
-  if (frame->isWebLocalFrame()) {
-    window = frame->mainWorldScriptContext()->Global();
+  if (frame->IsWebLocalFrame()) {
+    window = frame->MainWorldScriptContext()->Global();
   } else {
-    window = frame->toWebRemoteFrame()->globalProxy();
+    window = frame->ToWebRemoteFrame()->GlobalProxy();
   }
   args.GetReturnValue().Set(window);
 }

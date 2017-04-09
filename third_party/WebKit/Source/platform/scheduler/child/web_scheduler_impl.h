@@ -31,26 +31,26 @@ class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   ~WebSchedulerImpl() override;
 
   // WebScheduler implementation:
-  void shutdown() override;
-  bool shouldYieldForHighPriorityWork() override;
-  bool canExceedIdleDeadlineIfRequired() override;
-  void postIdleTask(const WebTraceLocation& location,
+  void Shutdown() override;
+  bool ShouldYieldForHighPriorityWork() override;
+  bool CanExceedIdleDeadlineIfRequired() override;
+  void PostIdleTask(const WebTraceLocation& location,
                     WebThread::IdleTask* task) override;
-  void postNonNestableIdleTask(const WebTraceLocation& location,
+  void PostNonNestableIdleTask(const WebTraceLocation& location,
                                WebThread::IdleTask* task) override;
-  WebTaskRunner* loadingTaskRunner() override;
-  WebTaskRunner* timerTaskRunner() override;
-  std::unique_ptr<WebViewScheduler> createWebViewScheduler(
+  WebTaskRunner* LoadingTaskRunner() override;
+  WebTaskRunner* TimerTaskRunner() override;
+  std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,
       WebViewScheduler::WebViewSchedulerSettings*) override;
-  void suspendTimerQueue() override {}
-  void resumeTimerQueue() override {}
-  void addPendingNavigation(WebScheduler::NavigatingFrameType type) override {}
-  void removePendingNavigation(
+  void SuspendTimerQueue() override {}
+  void ResumeTimerQueue() override {}
+  void AddPendingNavigation(WebScheduler::NavigatingFrameType type) override {}
+  void RemovePendingNavigation(
       WebScheduler::NavigatingFrameType type) override {}
 
  private:
-  static void runIdleTask(std::unique_ptr<WebThread::IdleTask> task,
+  static void RunIdleTask(std::unique_ptr<WebThread::IdleTask> task,
                           base::TimeTicks deadline);
 
   ChildScheduler* child_scheduler_;  // NOT OWNED

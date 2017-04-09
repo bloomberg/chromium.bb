@@ -40,24 +40,24 @@ class DeviceOrientationEventInit;
 class DeviceOrientationData final
     : public GarbageCollected<DeviceOrientationData> {
  public:
-  static DeviceOrientationData* create();
-  static DeviceOrientationData* create(const Nullable<double>& alpha,
+  static DeviceOrientationData* Create();
+  static DeviceOrientationData* Create(const Nullable<double>& alpha,
                                        const Nullable<double>& beta,
                                        const Nullable<double>& gamma,
                                        bool absolute);
-  static DeviceOrientationData* create(const DeviceOrientationEventInit&);
-  static DeviceOrientationData* create(const device::OrientationData&);
+  static DeviceOrientationData* Create(const DeviceOrientationEventInit&);
+  static DeviceOrientationData* Create(const device::OrientationData&);
   DEFINE_INLINE_TRACE() {}
 
-  double alpha() const;
-  double beta() const;
-  double gamma() const;
-  bool absolute() const;
-  bool canProvideAlpha() const;
-  bool canProvideBeta() const;
-  bool canProvideGamma() const;
+  double Alpha() const;
+  double Beta() const;
+  double Gamma() const;
+  bool Absolute() const;
+  bool CanProvideAlpha() const;
+  bool CanProvideBeta() const;
+  bool CanProvideGamma() const;
 
-  bool canProvideEventData() const;
+  bool CanProvideEventData() const;
 
  private:
   DeviceOrientationData();
@@ -66,10 +66,10 @@ class DeviceOrientationData final
                         const Nullable<double>& gamma,
                         bool absolute);
 
-  Nullable<double> m_alpha;
-  Nullable<double> m_beta;
-  Nullable<double> m_gamma;
-  bool m_absolute;
+  Nullable<double> alpha_;
+  Nullable<double> beta_;
+  Nullable<double> gamma_;
+  bool absolute_;
 };
 
 }  // namespace blink

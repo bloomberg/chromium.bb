@@ -21,20 +21,20 @@ class WebTextCheckClient {
   // will indicates its length. Otherwise, if there was not a spelling
   // error, then upon return misspelledLength is 0. If optional_suggestions
   // is given, then it will be filled with suggested words (not a cheap step).
-  virtual void checkSpelling(const WebString& text,
-                             int& misspelledOffset,
-                             int& misspelledLength,
-                             WebVector<WebString>* optionalSuggestions) {}
+  virtual void CheckSpelling(const WebString& text,
+                             int& misspelled_offset,
+                             int& misspelled_length,
+                             WebVector<WebString>* optional_suggestions) {}
 
   // Requests asynchronous spelling and grammar checking, whose result should be
   // returned by passed completion object.
-  virtual void requestCheckingOfText(
-      const WebString& textToCheck,
-      WebTextCheckingCompletion* completionCallback) {}
+  virtual void RequestCheckingOfText(
+      const WebString& text_to_check,
+      WebTextCheckingCompletion* completion_callback) {}
 
   // Clear all stored references to requests, so that it will not become a
   // leak source.
-  virtual void cancelAllPendingRequests() {}
+  virtual void CancelAllPendingRequests() {}
 
  protected:
   virtual ~WebTextCheckClient() {}

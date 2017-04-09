@@ -51,28 +51,28 @@ SkPaint::Hinting RendererPreferencesToSkiaHinting(
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   const RendererPreferences& prefs = renderer_preferences_;
-  WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
-  WebFontRendering::setAutoHint(prefs.use_autohinter);
-  WebFontRendering::setUseBitmaps(prefs.use_bitmaps);
+  WebFontRendering::SetHinting(RendererPreferencesToSkiaHinting(prefs));
+  WebFontRendering::SetAutoHint(prefs.use_autohinter);
+  WebFontRendering::SetUseBitmaps(prefs.use_bitmaps);
   SkFontLCDConfig::SetSubpixelOrder(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
           prefs.subpixel_rendering));
   SkFontLCDConfig::SetSubpixelOrientation(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           prefs.subpixel_rendering));
-  WebFontRendering::setAntiAlias(prefs.should_antialias_text);
-  WebFontRendering::setSubpixelRendering(
+  WebFontRendering::SetAntiAlias(prefs.should_antialias_text);
+  WebFontRendering::SetSubpixelRendering(
       prefs.subpixel_rendering !=
       gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
-  WebFontRendering::setSubpixelPositioning(prefs.use_subpixel_positioning);
+  WebFontRendering::SetSubpixelPositioning(prefs.use_subpixel_positioning);
   if (prefs.default_font_size > 0 &&
       prefs.default_font_size <= kMaxDefaultFontSize) {
-    WebFontRendering::setDefaultFontSize(prefs.default_font_size);
+    WebFontRendering::SetDefaultFontSize(prefs.default_font_size);
   }
 #if !defined(OS_ANDROID)
   if (!prefs.system_font_family_name.empty()) {
-    WebFontRendering::setSystemFontFamily(
-        blink::WebString::fromUTF8(prefs.system_font_family_name));
+    WebFontRendering::SetSystemFontFamily(
+        blink::WebString::FromUTF8(prefs.system_font_family_name));
   }
 #endif
 }

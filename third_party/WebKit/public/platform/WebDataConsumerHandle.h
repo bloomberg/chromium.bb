@@ -27,15 +27,15 @@ namespace blink {
 class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
  public:
   using Flags = unsigned;
-  static const Flags FlagNone = 0;
+  static const Flags kFlagNone = 0;
 
   enum Result {
-    Ok,
-    Done,
-    Busy,
-    ShouldWait,
-    ResourceExhausted,
-    UnexpectedError,
+    kOk,
+    kDone,
+    kBusy,
+    kShouldWait,
+    kResourceExhausted,
+    kUnexpectedError,
   };
 
   // Client gets notification from the pipe.
@@ -51,7 +51,7 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
     // It is not guaranteed that the handle is not waiting when this
     // function is called, i.e. it can be called more than needed.
     // One can use / destruct the associated reader in this function.
-    virtual void didGetReadable() = 0;
+    virtual void DidGetReadable() = 0;
   };
 
   // This class provides a means to read data from the associated handle. A
@@ -74,7 +74,10 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
     // Returns ShouldWait when the handle does not have data to read but
     // it is not closed or errored.
     // The default implementation uses beginRead and endRead.
-    virtual Result read(void* data, size_t /* size */, Flags, size_t* readSize);
+    virtual Result Read(void* data,
+                        size_t /* size */,
+                        Flags,
+                        size_t* read_size);
 
     // Begins a two-phase read. On success, the function stores a buffer
     // that contains the read data of length |*available| into |*buffer|.
@@ -83,11 +86,11 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
     // it is not closed or errored.
     // On fail, you don't have to (and should not) call endRead, because the
     // read session implicitly ends in that case.
-    virtual Result beginRead(const void** buffer, Flags, size_t* available) = 0;
+    virtual Result BeginRead(const void** buffer, Flags, size_t* available) = 0;
 
     // Ends a two-phase read.
     // |readSize| indicates the actual read size.
-    virtual Result endRead(size_t readSize) = 0;
+    virtual Result EndRead(size_t read_size) = 0;
   };
 
   WebDataConsumerHandle();
@@ -100,10 +103,10 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
   // if |client| is not null.
   // If |client| is not null and the handle is not waiting, client
   // notification is called asynchronously.
-  virtual std::unique_ptr<Reader> obtainReader(Client*) = 0;
+  virtual std::unique_ptr<Reader> ObtainReader(Client*) = 0;
 
   // Returns a string literal (e.g. class name) for debugging only.
-  virtual const char* debugName() const = 0;
+  virtual const char* DebugName() const = 0;
 };
 
 }  // namespace blink

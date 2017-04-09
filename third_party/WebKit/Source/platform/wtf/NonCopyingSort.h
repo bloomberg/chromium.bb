@@ -32,18 +32,18 @@ namespace WTF {
 using std::swap;
 
 template <typename RandomAccessIterator, typename Predicate>
-inline void siftDown(RandomAccessIterator array,
+inline void SiftDown(RandomAccessIterator array,
                      ptrdiff_t start,
                      ptrdiff_t end,
-                     Predicate compareLess) {
+                     Predicate compare_less) {
   ptrdiff_t root = start;
 
   while (root * 2 + 1 <= end) {
     ptrdiff_t child = root * 2 + 1;
-    if (child < end && compareLess(array[child], array[child + 1]))
+    if (child < end && compare_less(array[child], array[child + 1]))
       child++;
 
-    if (compareLess(array[root], array[child])) {
+    if (compare_less(array[root], array[child])) {
       swap(array[root], array[child]);
       root = child;
     } else {
@@ -53,44 +53,44 @@ inline void siftDown(RandomAccessIterator array,
 }
 
 template <typename RandomAccessIterator, typename Predicate>
-inline void heapify(RandomAccessIterator array,
+inline void Heapify(RandomAccessIterator array,
                     ptrdiff_t count,
-                    Predicate compareLess) {
+                    Predicate compare_less) {
   ptrdiff_t start = (count - 2) / 2;
 
   while (start >= 0) {
-    siftDown(array, start, count - 1, compareLess);
+    SiftDown(array, start, count - 1, compare_less);
     start--;
   }
 }
 
 template <typename RandomAccessIterator, typename Predicate>
-void heapSort(RandomAccessIterator start,
+void HeapSort(RandomAccessIterator start,
               RandomAccessIterator end,
-              Predicate compareLess) {
+              Predicate compare_less) {
   ptrdiff_t count = end - start;
-  heapify(start, count, compareLess);
+  Heapify(start, count, compare_less);
 
-  ptrdiff_t endIndex = count - 1;
-  while (endIndex > 0) {
-    swap(start[endIndex], start[0]);
-    siftDown(start, 0, endIndex - 1, compareLess);
-    endIndex--;
+  ptrdiff_t end_index = count - 1;
+  while (end_index > 0) {
+    swap(start[end_index], start[0]);
+    SiftDown(start, 0, end_index - 1, compare_less);
+    end_index--;
   }
 }
 
 template <typename RandomAccessIterator, typename Predicate>
-inline void nonCopyingSort(RandomAccessIterator start,
+inline void NonCopyingSort(RandomAccessIterator start,
                            RandomAccessIterator end,
-                           Predicate compareLess) {
+                           Predicate compare_less) {
   // heapsort happens to use only swaps, not copies, but the essential thing
   // about this function is the fact that it does not copy, not the specific
   // algorithm
-  heapSort(start, end, compareLess);
+  HeapSort(start, end, compare_less);
 }
 
 }  // namespace WTF
 
-using WTF::nonCopyingSort;
+using WTF::NonCopyingSort;
 
 #endif  // WTF_NonCopyingSort_h

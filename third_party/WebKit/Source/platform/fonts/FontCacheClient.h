@@ -41,7 +41,7 @@ class PLATFORM_EXPORT FontCacheClient
  public:
   virtual ~FontCacheClient() {}
 
-  virtual void fontCacheInvalidated() = 0;
+  virtual void FontCacheInvalidated() = 0;
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 

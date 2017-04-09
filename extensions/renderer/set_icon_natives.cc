@@ -97,9 +97,9 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   IPC::Message bitmap_pickle;
   IPC::WriteParam(&bitmap_pickle, bitmap);
   blink::WebArrayBuffer buffer =
-      blink::WebArrayBuffer::create(bitmap_pickle.size(), 1);
-  memcpy(buffer.data(), bitmap_pickle.data(), bitmap_pickle.size());
-  *image_data_bitmap = blink::WebArrayBufferConverter::toV8Value(
+      blink::WebArrayBuffer::Create(bitmap_pickle.size(), 1);
+  memcpy(buffer.Data(), bitmap_pickle.data(), bitmap_pickle.size());
+  *image_data_bitmap = blink::WebArrayBufferConverter::ToV8Value(
       &buffer, context()->v8_context()->Global(), isolate);
 
   return true;

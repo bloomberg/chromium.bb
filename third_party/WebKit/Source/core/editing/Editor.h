@@ -60,84 +60,84 @@ class UndoStack;
 class UndoStep;
 
 enum class DeleteDirection;
-enum class DeleteMode { Simple, Smart };
-enum class InsertMode { Simple, Smart };
-enum class DragSourceType { HTMLSource, PlainTextSource };
+enum class DeleteMode { kSimple, kSmart };
+enum class InsertMode { kSimple, kSmart };
+enum class DragSourceType { kHTMLSource, kPlainTextSource };
 
-enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
+enum EditorCommandSource { kCommandFromMenuOrKeyBinding, kCommandFromDOM };
 enum EditorParagraphSeparator {
-  EditorParagraphSeparatorIsDiv,
-  EditorParagraphSeparatorIsP
+  kEditorParagraphSeparatorIsDiv,
+  kEditorParagraphSeparatorIsP
 };
 
 class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   WTF_MAKE_NONCOPYABLE(Editor);
 
  public:
-  static Editor* create(LocalFrame&);
+  static Editor* Create(LocalFrame&);
   ~Editor();
 
-  EditorClient& client() const;
+  EditorClient& Client() const;
 
-  CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
-  TypingCommand* lastTypingCommandIfStillOpenForTyping() const;
+  CompositeEditCommand* LastEditCommand() { return last_edit_command_.Get(); }
+  TypingCommand* LastTypingCommandIfStillOpenForTyping() const;
 
-  void handleKeyboardEvent(KeyboardEvent*);
-  bool handleTextEvent(TextEvent*);
+  void HandleKeyboardEvent(KeyboardEvent*);
+  bool HandleTextEvent(TextEvent*);
 
-  bool canEdit() const;
-  bool canEditRichly() const;
+  bool CanEdit() const;
+  bool CanEditRichly() const;
 
-  bool canDHTMLCut();
-  bool canDHTMLCopy();
+  bool CanDHTMLCut();
+  bool CanDHTMLCopy();
 
-  bool canCut() const;
-  bool canCopy() const;
-  bool canPaste() const;
-  bool canDelete() const;
-  bool canSmartCopyOrDelete() const;
+  bool CanCut() const;
+  bool CanCopy() const;
+  bool CanPaste() const;
+  bool CanDelete() const;
+  bool CanSmartCopyOrDelete() const;
 
-  void cut(EditorCommandSource);
-  void copy();
-  void paste(EditorCommandSource);
-  void pasteAsPlainText(EditorCommandSource);
-  void performDelete();
+  void Cut(EditorCommandSource);
+  void Copy();
+  void Paste(EditorCommandSource);
+  void PasteAsPlainText(EditorCommandSource);
+  void PerformDelete();
 
-  static void countEvent(ExecutionContext*, const Event*);
-  void copyImage(const HitTestResult&);
+  static void CountEvent(ExecutionContext*, const Event*);
+  void CopyImage(const HitTestResult&);
 
-  void transpose();
+  void Transpose();
 
-  void respondToChangedContents(const Position&);
+  void RespondToChangedContents(const Position&);
 
-  bool selectionStartHasStyle(CSSPropertyID, const String& value) const;
-  TriState selectionHasStyle(CSSPropertyID, const String& value) const;
-  String selectionStartCSSPropertyValue(CSSPropertyID);
+  bool SelectionStartHasStyle(CSSPropertyID, const String& value) const;
+  TriState SelectionHasStyle(CSSPropertyID, const String& value) const;
+  String SelectionStartCSSPropertyValue(CSSPropertyID);
 
-  void removeFormattingAndStyle();
+  void RemoveFormattingAndStyle();
 
-  void registerCommandGroup(CompositeEditCommand* commandGroupWrapper);
+  void RegisterCommandGroup(CompositeEditCommand* command_group_wrapper);
 
-  bool deleteWithDirection(DeleteDirection,
+  bool DeleteWithDirection(DeleteDirection,
                            TextGranularity,
-                           bool killRing,
-                           bool isTypingAction);
-  void deleteSelectionWithSmartDelete(
+                           bool kill_ring,
+                           bool is_typing_action);
+  void DeleteSelectionWithSmartDelete(
       DeleteMode,
       InputEvent::InputType,
-      const Position& referenceMovePosition = Position());
+      const Position& reference_move_position = Position());
 
-  void applyStyle(StylePropertySet*, InputEvent::InputType);
-  void applyParagraphStyle(StylePropertySet*, InputEvent::InputType);
-  void applyStyleToSelection(StylePropertySet*, InputEvent::InputType);
-  void applyParagraphStyleToSelection(StylePropertySet*, InputEvent::InputType);
+  void ApplyStyle(StylePropertySet*, InputEvent::InputType);
+  void ApplyParagraphStyle(StylePropertySet*, InputEvent::InputType);
+  void ApplyStyleToSelection(StylePropertySet*, InputEvent::InputType);
+  void ApplyParagraphStyleToSelection(StylePropertySet*, InputEvent::InputType);
 
-  void appliedEditing(CompositeEditCommand*);
-  void unappliedEditing(UndoStep*);
-  void reappliedEditing(UndoStep*);
+  void AppliedEditing(CompositeEditCommand*);
+  void UnappliedEditing(UndoStep*);
+  void ReappliedEditing(UndoStep*);
 
-  void setShouldStyleWithCSS(bool flag) { m_shouldStyleWithCSS = flag; }
-  bool shouldStyleWithCSS() const { return m_shouldStyleWithCSS; }
+  void SetShouldStyleWithCSS(bool flag) { should_style_with_css_ = flag; }
+  bool ShouldStyleWithCSS() const { return should_style_with_css_; }
 
   class CORE_EXPORT Command {
     STACK_ALLOCATED();
@@ -146,157 +146,157 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     Command();
     Command(const EditorInternalCommand*, EditorCommandSource, LocalFrame*);
 
-    bool execute(const String& parameter = String(),
-                 Event* triggeringEvent = nullptr) const;
-    bool execute(Event* triggeringEvent) const;
+    bool Execute(const String& parameter = String(),
+                 Event* triggering_event = nullptr) const;
+    bool Execute(Event* triggering_event) const;
 
-    bool isSupported() const;
-    bool isEnabled(Event* triggeringEvent = nullptr) const;
+    bool IsSupported() const;
+    bool IsEnabled(Event* triggering_event = nullptr) const;
 
-    TriState state(Event* triggeringEvent = nullptr) const;
-    String value(Event* triggeringEvent = nullptr) const;
+    TriState GetState(Event* triggering_event = nullptr) const;
+    String Value(Event* triggering_event = nullptr) const;
 
-    bool isTextInsertion() const;
+    bool IsTextInsertion() const;
 
     // Returns 0 if this Command is not supported.
-    int idForHistogram() const;
+    int IdForHistogram() const;
 
    private:
-    LocalFrame& frame() const {
-      DCHECK(m_frame);
-      return *m_frame;
+    LocalFrame& GetFrame() const {
+      DCHECK(frame_);
+      return *frame_;
     }
 
     // Returns target ranges for the command, currently only supports delete
     // related commands. Used by InputEvent.
-    const StaticRangeVector* getTargetRanges() const;
+    const StaticRangeVector* GetTargetRanges() const;
 
-    const EditorInternalCommand* m_command;
-    EditorCommandSource m_source;
-    Member<LocalFrame> m_frame;
+    const EditorInternalCommand* command_;
+    EditorCommandSource source_;
+    Member<LocalFrame> frame_;
   };
-  Command createCommand(
+  Command CreateCommand(
       const String&
-          commandName);  // Command source is CommandFromMenuOrKeyBinding.
-  Command createCommand(const String& commandName, EditorCommandSource);
+          command_name);  // Command source is CommandFromMenuOrKeyBinding.
+  Command CreateCommand(const String& command_name, EditorCommandSource);
 
   // |Editor::executeCommand| is implementation of |WebFrame::executeCommand|
   // rather than |Document::execCommand|.
-  bool executeCommand(const String&);
-  bool executeCommand(const String& commandName, const String& value);
+  bool ExecuteCommand(const String&);
+  bool ExecuteCommand(const String& command_name, const String& value);
 
-  bool insertText(const String&, KeyboardEvent* triggeringEvent);
-  bool insertTextWithoutSendingTextEvent(
+  bool InsertText(const String&, KeyboardEvent* triggering_event);
+  bool InsertTextWithoutSendingTextEvent(
       const String&,
-      bool selectInsertedText,
-      TextEvent* triggeringEvent,
-      InputEvent::InputType = InputEvent::InputType::InsertText);
-  bool insertLineBreak();
-  bool insertParagraphSeparator();
+      bool select_inserted_text,
+      TextEvent* triggering_event,
+      InputEvent::InputType = InputEvent::InputType::kInsertText);
+  bool InsertLineBreak();
+  bool InsertParagraphSeparator();
 
-  bool isOverwriteModeEnabled() const { return m_overwriteModeEnabled; }
-  void toggleOverwriteModeEnabled();
+  bool IsOverwriteModeEnabled() const { return overwrite_mode_enabled_; }
+  void ToggleOverwriteModeEnabled();
 
-  bool canUndo();
-  void undo();
-  bool canRedo();
-  void redo();
+  bool CanUndo();
+  void Undo();
+  bool CanRedo();
+  void Redo();
 
   // Exposed for IdleSpellCheckCallback only.
   // Supposed to be used as |const UndoStack&|.
-  UndoStack& undoStack() const { return *m_undoStack; }
+  UndoStack& GetUndoStack() const { return *undo_stack_; }
 
-  void setBaseWritingDirection(WritingDirection);
+  void SetBaseWritingDirection(WritingDirection);
 
   // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are
   // mutually exclusive, meaning that enabling one will disable the other.
-  bool smartInsertDeleteEnabled() const;
-  bool isSelectTrailingWhitespaceEnabled() const;
+  bool SmartInsertDeleteEnabled() const;
+  bool IsSelectTrailingWhitespaceEnabled() const;
 
-  bool preventRevealSelection() const { return m_preventRevealSelection; }
+  bool PreventRevealSelection() const { return prevent_reveal_selection_; }
 
-  void setStartNewKillRingSequence(bool);
+  void SetStartNewKillRingSequence(bool);
 
-  void clear();
+  void Clear();
 
-  VisibleSelection selectionForCommand(Event*);
+  VisibleSelection SelectionForCommand(Event*);
 
-  KillRing& killRing() const { return *m_killRing; }
+  KillRing& GetKillRing() const { return *kill_ring_; }
 
-  EditingBehavior behavior() const;
+  EditingBehavior Behavior() const;
 
-  EphemeralRange selectedRange();
+  EphemeralRange SelectedRange();
 
-  void addToKillRing(const EphemeralRange&);
+  void AddToKillRing(const EphemeralRange&);
 
-  void pasteAsFragment(DocumentFragment*, bool smartReplace, bool matchStyle);
-  void pasteAsPlainText(const String&, bool smartReplace);
+  void PasteAsFragment(DocumentFragment*, bool smart_replace, bool match_style);
+  void PasteAsPlainText(const String&, bool smart_replace);
 
-  Element* findEventTargetFrom(const VisibleSelection&) const;
-  Element* findEventTargetFromSelection() const;
+  Element* FindEventTargetFrom(const VisibleSelection&) const;
+  Element* FindEventTargetFromSelection() const;
 
-  bool findString(const String&, FindOptions);
+  bool FindString(const String&, FindOptions);
 
-  Range* findStringAndScrollToVisible(const String&, Range*, FindOptions);
-  Range* findRangeOfString(const String& target,
-                           const EphemeralRange& referenceRange,
+  Range* FindStringAndScrollToVisible(const String&, Range*, FindOptions);
+  Range* FindRangeOfString(const String& target,
+                           const EphemeralRange& reference_range,
                            FindOptions);
-  Range* findRangeOfString(const String& target,
-                           const EphemeralRangeInFlatTree& referenceRange,
+  Range* FindRangeOfString(const String& target,
+                           const EphemeralRangeInFlatTree& reference_range,
                            FindOptions);
 
-  const VisibleSelection& mark() const;  // Mark, to be used as emacs uses it.
-  void setMark(const VisibleSelection&);
+  const VisibleSelection& Mark() const;  // Mark, to be used as emacs uses it.
+  void SetMark(const VisibleSelection&);
 
-  void computeAndSetTypingStyle(StylePropertySet*, InputEvent::InputType);
+  void ComputeAndSetTypingStyle(StylePropertySet*, InputEvent::InputType);
 
   // |firstRectForRange| requires up-to-date layout.
-  IntRect firstRectForRange(const EphemeralRange&) const;
+  IntRect FirstRectForRange(const EphemeralRange&) const;
 
-  void respondToChangedSelection(const Position& oldSelectionStart,
+  void RespondToChangedSelection(const Position& old_selection_start,
                                  FrameSelection::SetSelectionOptions);
 
-  bool markedTextMatchesAreHighlighted() const;
-  void setMarkedTextMatchesAreHighlighted(bool);
+  bool MarkedTextMatchesAreHighlighted() const;
+  void SetMarkedTextMatchesAreHighlighted(bool);
 
-  void replaceSelectionWithFragment(DocumentFragment*,
-                                    bool selectReplacement,
-                                    bool smartReplace,
-                                    bool matchStyle,
+  void ReplaceSelectionWithFragment(DocumentFragment*,
+                                    bool select_replacement,
+                                    bool smart_replace,
+                                    bool match_style,
                                     InputEvent::InputType);
-  void replaceSelectionWithText(const String&,
-                                bool selectReplacement,
-                                bool smartReplace,
+  void ReplaceSelectionWithText(const String&,
+                                bool select_replacement,
+                                bool smart_replace,
                                 InputEvent::InputType);
 
   // Implementation of WebLocalFrameImpl::replaceSelection.
-  void replaceSelection(const String&);
+  void ReplaceSelection(const String&);
 
-  void replaceSelectionAfterDragging(DocumentFragment*,
+  void ReplaceSelectionAfterDragging(DocumentFragment*,
                                      InsertMode,
                                      DragSourceType);
 
   // Return false if frame was destroyed by event handler, should stop executing
   // remaining actions.
-  bool deleteSelectionAfterDraggingWithEvents(
-      Element* dragSource,
+  bool DeleteSelectionAfterDraggingWithEvents(
+      Element* drag_source,
       DeleteMode,
-      const Position& referenceMovePosition);
-  bool replaceSelectionAfterDraggingWithEvents(Element* dropTarget,
+      const Position& reference_move_position);
+  bool ReplaceSelectionAfterDraggingWithEvents(Element* drop_target,
                                                DragData*,
                                                DocumentFragment*,
-                                               Range* dropCaretRange,
+                                               Range* drop_caret_range,
                                                InsertMode,
                                                DragSourceType);
 
-  EditorParagraphSeparator defaultParagraphSeparator() const {
-    return m_defaultParagraphSeparator;
+  EditorParagraphSeparator DefaultParagraphSeparator() const {
+    return default_paragraph_separator_;
   }
-  void setDefaultParagraphSeparator(EditorParagraphSeparator separator) {
-    m_defaultParagraphSeparator = separator;
+  void SetDefaultParagraphSeparator(EditorParagraphSeparator separator) {
+    default_paragraph_separator_ = separator;
   }
 
-  static void tidyUpHTMLStructure(Document&);
+  static void TidyUpHTMLStructure(Document&);
 
   class RevealSelectionScope {
     WTF_MAKE_NONCOPYABLE(RevealSelectionScope);
@@ -309,88 +309,88 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     DECLARE_TRACE();
 
    private:
-    Member<Editor> m_editor;
+    Member<Editor> editor_;
   };
   friend class RevealSelectionScope;
 
-  EditingStyle* typingStyle() const;
-  void setTypingStyle(EditingStyle*);
-  void clearTypingStyle();
+  EditingStyle* TypingStyle() const;
+  void SetTypingStyle(EditingStyle*);
+  void ClearTypingStyle();
 
   DECLARE_TRACE();
 
  private:
-  Member<LocalFrame> m_frame;
-  Member<CompositeEditCommand> m_lastEditCommand;
-  const Member<UndoStack> m_undoStack;
-  int m_preventRevealSelection;
-  bool m_shouldStartNewKillRingSequence;
-  bool m_shouldStyleWithCSS;
-  const std::unique_ptr<KillRing> m_killRing;
-  VisibleSelection m_mark;
-  bool m_areMarkedTextMatchesHighlighted;
-  EditorParagraphSeparator m_defaultParagraphSeparator;
-  bool m_overwriteModeEnabled;
-  Member<EditingStyle> m_typingStyle;
+  Member<LocalFrame> frame_;
+  Member<CompositeEditCommand> last_edit_command_;
+  const Member<UndoStack> undo_stack_;
+  int prevent_reveal_selection_;
+  bool should_start_new_kill_ring_sequence_;
+  bool should_style_with_css_;
+  const std::unique_ptr<KillRing> kill_ring_;
+  VisibleSelection mark_;
+  bool are_marked_text_matches_highlighted_;
+  EditorParagraphSeparator default_paragraph_separator_;
+  bool overwrite_mode_enabled_;
+  Member<EditingStyle> typing_style_;
 
   explicit Editor(LocalFrame&);
 
-  LocalFrame& frame() const {
-    DCHECK(m_frame);
-    return *m_frame;
+  LocalFrame& GetFrame() const {
+    DCHECK(frame_);
+    return *frame_;
   }
 
-  bool canDeleteRange(const EphemeralRange&) const;
+  bool CanDeleteRange(const EphemeralRange&) const;
 
-  bool tryDHTMLCopy();
-  bool tryDHTMLCut();
-  bool tryDHTMLPaste(PasteMode);
+  bool TryDHTMLCopy();
+  bool TryDHTMLCut();
+  bool TryDHTMLPaste(PasteMode);
 
-  bool canSmartReplaceWithPasteboard(Pasteboard*);
-  void pasteAsPlainTextWithPasteboard(Pasteboard*);
-  void pasteWithPasteboard(Pasteboard*);
-  void writeSelectionToPasteboard();
-  bool dispatchCPPEvent(const AtomicString&,
+  bool CanSmartReplaceWithPasteboard(Pasteboard*);
+  void PasteAsPlainTextWithPasteboard(Pasteboard*);
+  void PasteWithPasteboard(Pasteboard*);
+  void WriteSelectionToPasteboard();
+  bool DispatchCPPEvent(const AtomicString&,
                         DataTransferAccessPolicy,
-                        PasteMode = AllMimeTypes);
+                        PasteMode = kAllMimeTypes);
 
-  void revealSelectionAfterEditingOperation(
-      const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded,
-      RevealExtentOption = DoNotRevealExtent);
-  void changeSelectionAfterCommand(const SelectionInDOMTree&,
+  void RevealSelectionAfterEditingOperation(
+      const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded,
+      RevealExtentOption = kDoNotRevealExtent);
+  void ChangeSelectionAfterCommand(const SelectionInDOMTree&,
                                    FrameSelection::SetSelectionOptions);
 
-  SpellChecker& spellChecker() const;
+  SpellChecker& GetSpellChecker() const;
 
-  bool handleEditingKeyboardEvent(KeyboardEvent*);
+  bool HandleEditingKeyboardEvent(KeyboardEvent*);
 };
 
-inline void Editor::setStartNewKillRingSequence(bool flag) {
-  m_shouldStartNewKillRingSequence = flag;
+inline void Editor::SetStartNewKillRingSequence(bool flag) {
+  should_start_new_kill_ring_sequence_ = flag;
 }
 
-inline const VisibleSelection& Editor::mark() const {
-  return m_mark;
+inline const VisibleSelection& Editor::Mark() const {
+  return mark_;
 }
 
-inline void Editor::setMark(const VisibleSelection& selection) {
-  m_mark = selection;
+inline void Editor::SetMark(const VisibleSelection& selection) {
+  mark_ = selection;
 }
 
-inline bool Editor::markedTextMatchesAreHighlighted() const {
-  return m_areMarkedTextMatchesHighlighted;
+inline bool Editor::MarkedTextMatchesAreHighlighted() const {
+  return are_marked_text_matches_highlighted_;
 }
 
-inline EditingStyle* Editor::typingStyle() const {
-  return m_typingStyle.get();
+inline EditingStyle* Editor::TypingStyle() const {
+  return typing_style_.Get();
 }
 
-inline void Editor::clearTypingStyle() {
-  m_typingStyle.clear();
+inline void Editor::ClearTypingStyle() {
+  typing_style_.Clear();
 }
 
-inline void Editor::setTypingStyle(EditingStyle* style) {
-  m_typingStyle = style;
+inline void Editor::SetTypingStyle(EditingStyle* style) {
+  typing_style_ = style;
 }
 
 }  // namespace blink

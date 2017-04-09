@@ -64,13 +64,13 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     const WebURLResponse& response)
     : client_(client),
       loader_(loader) {
-  if (response.getExtraData()) {
+  if (response.GetExtraData()) {
     // extraData can be NULL during tests.
     WebURLResponseExtraDataImpl* extra_data =
-        static_cast<WebURLResponseExtraDataImpl*>(response.getExtraData());
+        static_cast<WebURLResponseExtraDataImpl*>(response.GetExtraData());
     extra_data->set_is_ftp_directory_listing(true);
   }
-  Init(response.url());
+  Init(response.Url());
 }
 
 void FtpDirectoryListingResponseDelegate::Cancel() {
@@ -131,7 +131,7 @@ void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
 void FtpDirectoryListingResponseDelegate::SendDataToClient(
     const std::string& data) {
   if (client_) {
-    client_->didReceiveData(data.data(), data.length());
+    client_->DidReceiveData(data.data(), data.length());
   }
 }
 

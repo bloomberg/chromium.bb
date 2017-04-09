@@ -125,7 +125,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   void SetObserver(Observer* observer);
 
   // Returns the delegate used by the TaskQueueManager.
-  const scoped_refptr<TaskQueueManagerDelegate>& delegate() const;
+  const scoped_refptr<TaskQueueManagerDelegate>& Delegate() const;
 
   // Time domains must be registered for the task queues to get updated.
   void RegisterTimeDomain(TimeDomain* time_domain);
@@ -180,7 +180,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
       DCHECK(time_domain);
     }
 
-    base::TimeDelta delay() const { return delay_; }
+    base::TimeDelta Delay() const { return delay_; }
     TimeDomain* time_domain() const { return time_domain_; }
 
     bool operator>(const NextTaskDelay& other) const {

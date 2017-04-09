@@ -35,14 +35,14 @@ class CORE_EXPORT HTMLHtmlElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLHtmlElement);
 
-  void insertedByParser();
+  void InsertedByParser();
 
  private:
   explicit HTMLHtmlElement(Document&);
 
-  void maybeSetupApplicationCache();
+  void MaybeSetupApplicationCache();
 
-  bool isURLAttribute(const Attribute&) const override;
+  bool IsURLAttribute(const Attribute&) const override;
 };
 
 }  // namespace blink

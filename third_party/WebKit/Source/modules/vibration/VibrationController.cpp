@@ -42,7 +42,7 @@ blink::VibrationController::VibrationPattern sanitizeVibrationPatternInternal(
 
   // If the pattern is too long then truncate it.
   if (length > kVibrationPatternLengthMax) {
-    sanitized.shrink(kVibrationPatternLengthMax);
+    sanitized.Shrink(kVibrationPatternLengthMax);
     length = kVibrationPatternLengthMax;
   }
 
@@ -63,7 +63,7 @@ namespace blink {
 
 // static
 VibrationController::VibrationPattern
-VibrationController::sanitizeVibrationPattern(
+VibrationController::SanitizeVibrationPattern(
     const UnsignedLongOrUnsignedLongSequence& pattern) {
   VibrationPattern sanitized;
 
@@ -77,123 +77,123 @@ VibrationController::sanitizeVibrationPattern(
 
 VibrationController::VibrationController(Document& document)
     : ContextLifecycleObserver(&document),
-      PageVisibilityObserver(document.page()),
-      m_timerDoVibrate(
-          TaskRunnerHelper::get(TaskType::MiscPlatformAPI, &document),
+      PageVisibilityObserver(document.GetPage()),
+      timer_do_vibrate_(
+          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, &document),
           this,
-          &VibrationController::doVibrate),
-      m_isRunning(false),
-      m_isCallingCancel(false),
-      m_isCallingVibrate(false) {
-  Platform::current()->connector()->BindInterface(
+          &VibrationController::DoVibrate),
+      is_running_(false),
+      is_calling_cancel_(false),
+      is_calling_vibrate_(false) {
+  Platform::Current()->GetConnector()->BindInterface(
       device::mojom::blink::kServiceName,
-      mojo::MakeRequest(&m_vibrationManager));
+      mojo::MakeRequest(&vibration_manager_));
 }
 
 VibrationController::~VibrationController() {}
 
-bool VibrationController::vibrate(const VibrationPattern& pattern) {
+bool VibrationController::Vibrate(const VibrationPattern& pattern) {
   // Cancel clears the stored pattern and cancels any ongoing vibration.
-  cancel();
+  Cancel();
 
-  m_pattern = sanitizeVibrationPatternInternal(pattern);
+  pattern_ = sanitizeVibrationPatternInternal(pattern);
 
-  if (!m_pattern.size())
+  if (!pattern_.size())
     return true;
 
-  if (m_pattern.size() == 1 && !m_pattern[0]) {
-    m_pattern.clear();
+  if (pattern_.size() == 1 && !pattern_[0]) {
+    pattern_.Clear();
     return true;
   }
 
-  m_isRunning = true;
+  is_running_ = true;
 
   // This may be a bit racy with |didCancel| being called as a mojo callback,
   // it also starts the timer. This is not a problem as calling |startOneShot|
   // repeatedly will just update the time at which to run |doVibrate|, it will
   // not be called more than once.
-  m_timerDoVibrate.startOneShot(0, BLINK_FROM_HERE);
+  timer_do_vibrate_.StartOneShot(0, BLINK_FROM_HERE);
 
   return true;
 }
 
-void VibrationController::doVibrate(TimerBase* timer) {
-  DCHECK(timer == &m_timerDoVibrate);
+void VibrationController::DoVibrate(TimerBase* timer) {
+  DCHECK(timer == &timer_do_vibrate_);
 
-  if (m_pattern.isEmpty())
-    m_isRunning = false;
+  if (pattern_.IsEmpty())
+    is_running_ = false;
 
-  if (!m_isRunning || m_isCallingCancel || m_isCallingVibrate ||
-      !getExecutionContext() || !page()->isPageVisible())
+  if (!is_running_ || is_calling_cancel_ || is_calling_vibrate_ ||
+      !GetExecutionContext() || !GetPage()->IsPageVisible())
     return;
 
-  if (m_vibrationManager) {
-    m_isCallingVibrate = true;
-    m_vibrationManager->Vibrate(
-        m_pattern[0],
-        convertToBaseCallback(
-            WTF::bind(&VibrationController::didVibrate, wrapPersistent(this))));
+  if (vibration_manager_) {
+    is_calling_vibrate_ = true;
+    vibration_manager_->Vibrate(
+        pattern_[0],
+        ConvertToBaseCallback(
+            WTF::Bind(&VibrationController::DidVibrate, WrapPersistent(this))));
   }
 }
 
-void VibrationController::didVibrate() {
-  m_isCallingVibrate = false;
+void VibrationController::DidVibrate() {
+  is_calling_vibrate_ = false;
 
   // If the pattern is empty here, it was probably cleared by a fresh call to
   // |vibrate| while the mojo call was in flight.
-  if (m_pattern.isEmpty())
+  if (pattern_.IsEmpty())
     return;
 
   // Use the current vibration entry of the pattern as the initial interval.
-  unsigned interval = m_pattern[0];
-  m_pattern.erase(0);
+  unsigned interval = pattern_[0];
+  pattern_.erase(0);
 
   // If there is another entry it is for a pause.
-  if (!m_pattern.isEmpty()) {
-    interval += m_pattern[0];
-    m_pattern.erase(0);
+  if (!pattern_.IsEmpty()) {
+    interval += pattern_[0];
+    pattern_.erase(0);
   }
 
-  m_timerDoVibrate.startOneShot(interval / 1000.0, BLINK_FROM_HERE);
+  timer_do_vibrate_.StartOneShot(interval / 1000.0, BLINK_FROM_HERE);
 }
 
-void VibrationController::cancel() {
-  m_pattern.clear();
-  m_timerDoVibrate.stop();
+void VibrationController::Cancel() {
+  pattern_.Clear();
+  timer_do_vibrate_.Stop();
 
-  if (m_isRunning && !m_isCallingCancel && m_vibrationManager) {
-    m_isCallingCancel = true;
-    m_vibrationManager->Cancel(convertToBaseCallback(
-        WTF::bind(&VibrationController::didCancel, wrapPersistent(this))));
+  if (is_running_ && !is_calling_cancel_ && vibration_manager_) {
+    is_calling_cancel_ = true;
+    vibration_manager_->Cancel(ConvertToBaseCallback(
+        WTF::Bind(&VibrationController::DidCancel, WrapPersistent(this))));
   }
 
-  m_isRunning = false;
+  is_running_ = false;
 }
 
-void VibrationController::didCancel() {
-  m_isCallingCancel = false;
+void VibrationController::DidCancel() {
+  is_calling_cancel_ = false;
 
   // A new vibration pattern may have been set while the mojo call for
   // |cancel| was in flight, so kick the timer to let |doVibrate| process the
   // pattern.
-  m_timerDoVibrate.startOneShot(0, BLINK_FROM_HERE);
+  timer_do_vibrate_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-void VibrationController::contextDestroyed(ExecutionContext*) {
-  cancel();
+void VibrationController::ContextDestroyed(ExecutionContext*) {
+  Cancel();
 
   // If the document context was destroyed, never call the mojo service again.
-  m_vibrationManager.reset();
+  vibration_manager_.reset();
 }
 
-void VibrationController::pageVisibilityChanged() {
-  if (!page()->isPageVisible())
-    cancel();
+void VibrationController::PageVisibilityChanged() {
+  if (!GetPage()->IsPageVisible())
+    Cancel();
 }
 
 DEFINE_TRACE(VibrationController) {
-  ContextLifecycleObserver::trace(visitor);
-  PageVisibilityObserver::trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
 }
 
 }  // namespace blink

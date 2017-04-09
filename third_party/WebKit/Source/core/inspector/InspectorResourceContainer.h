@@ -27,18 +27,18 @@ class CORE_EXPORT InspectorResourceContainer
   ~InspectorResourceContainer();
   DECLARE_TRACE();
 
-  void didCommitLoadForLocalFrame(LocalFrame*);
+  void DidCommitLoadForLocalFrame(LocalFrame*);
 
-  void storeStyleSheetContent(const String& url, const String& content);
-  bool loadStyleSheetContent(const String& url, String* content);
+  void StoreStyleSheetContent(const String& url, const String& content);
+  bool LoadStyleSheetContent(const String& url, String* content);
 
-  void storeStyleElementContent(int backendNodeId, const String& content);
-  bool loadStyleElementContent(int backendNodeId, String* content);
+  void StoreStyleElementContent(int backend_node_id, const String& content);
+  bool LoadStyleElementContent(int backend_node_id, String* content);
 
  private:
-  Member<InspectedFrames> m_inspectedFrames;
-  HashMap<String, String> m_styleSheetContents;
-  HashMap<int, String> m_styleElementContents;
+  Member<InspectedFrames> inspected_frames_;
+  HashMap<String, String> style_sheet_contents_;
+  HashMap<int, String> style_element_contents_;
 };
 
 }  // namespace blink

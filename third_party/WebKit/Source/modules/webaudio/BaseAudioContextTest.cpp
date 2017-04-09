@@ -30,54 +30,54 @@ const char* const kCrossOriginMetric = "WebAudio.Autoplay.CrossOrigin";
 
 class MockCrossOriginLocalFrameClient final : public EmptyLocalFrameClient {
  public:
-  static MockCrossOriginLocalFrameClient* create(Frame* parent) {
+  static MockCrossOriginLocalFrameClient* Create(Frame* parent) {
     return new MockCrossOriginLocalFrameClient(parent);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_parent);
-    EmptyLocalFrameClient::trace(visitor);
+    visitor->Trace(parent_);
+    EmptyLocalFrameClient::Trace(visitor);
   }
 
-  Frame* parent() const override { return m_parent.get(); }
-  Frame* top() const override { return m_parent.get(); }
+  Frame* Parent() const override { return parent_.Get(); }
+  Frame* Top() const override { return parent_.Get(); }
 
  private:
-  explicit MockCrossOriginLocalFrameClient(Frame* parent) : m_parent(parent) {}
+  explicit MockCrossOriginLocalFrameClient(Frame* parent) : parent_(parent) {}
 
-  Member<Frame> m_parent;
+  Member<Frame> parent_;
 };
 
 class MockWebAudioDevice : public WebAudioDevice {
  public:
-  explicit MockWebAudioDevice(double sampleRate, int framesPerBuffer)
-      : m_sampleRate(sampleRate), m_framesPerBuffer(framesPerBuffer) {}
+  explicit MockWebAudioDevice(double sample_rate, int frames_per_buffer)
+      : sample_rate_(sample_rate), frames_per_buffer_(frames_per_buffer) {}
   ~MockWebAudioDevice() override = default;
 
-  void start() override {}
-  void stop() override {}
-  double sampleRate() override { return m_sampleRate; }
-  int framesPerBuffer() override { return m_framesPerBuffer; }
+  void Start() override {}
+  void Stop() override {}
+  double SampleRate() override { return sample_rate_; }
+  int FramesPerBuffer() override { return frames_per_buffer_; }
 
  private:
-  double m_sampleRate;
-  int m_framesPerBuffer;
+  double sample_rate_;
+  int frames_per_buffer_;
 };
 
 class BaseAudioContextTestPlatform : public TestingPlatformSupport {
  public:
-  WebAudioDevice* createAudioDevice(unsigned numberOfInputChannels,
-                                    unsigned numberOfChannels,
-                                    const WebAudioLatencyHint& latencyHint,
+  WebAudioDevice* CreateAudioDevice(unsigned number_of_input_channels,
+                                    unsigned number_of_channels,
+                                    const WebAudioLatencyHint& latency_hint,
                                     WebAudioDevice::RenderCallback*,
-                                    const WebString& deviceId,
+                                    const WebString& device_id,
                                     const WebSecurityOrigin&) override {
-    return new MockWebAudioDevice(audioHardwareSampleRate(),
-                                  audioHardwareBufferSize());
+    return new MockWebAudioDevice(AudioHardwareSampleRate(),
+                                  AudioHardwareBufferSize());
   }
 
-  double audioHardwareSampleRate() override { return 44100; }
-  size_t audioHardwareBufferSize() override { return 128; }
+  double AudioHardwareSampleRate() override { return 44100; }
+  size_t AudioHardwareBufferSize() override { return 128; }
 };
 
 }  // anonymous namespace
@@ -87,207 +87,207 @@ class BaseAudioContextTest : public ::testing::Test {
   using AutoplayStatus = BaseAudioContext::AutoplayStatus;
 
   void SetUp() override {
-    m_dummyPageHolder = DummyPageHolder::create();
-    m_dummyFrameOwner = DummyFrameOwner::create();
-    document().updateSecurityOrigin(
-        SecurityOrigin::create("https", "example.com", 80));
+    dummy_page_holder_ = DummyPageHolder::Create();
+    dummy_frame_owner_ = DummyFrameOwner::Create();
+    GetDocument().UpdateSecurityOrigin(
+        SecurityOrigin::Create("https", "example.com", 80));
   }
 
   void TearDown() override {
-    if (m_childFrame)
-      m_childFrame->detach(FrameDetachType::Remove);
+    if (child_frame_)
+      child_frame_->Detach(FrameDetachType::kRemove);
   }
 
-  void createChildFrame() {
-    m_childFrame = LocalFrame::create(
-        MockCrossOriginLocalFrameClient::create(document().frame()),
-        *document().frame()->page(), m_dummyFrameOwner.get());
-    m_childFrame->setView(FrameView::create(*m_childFrame, IntSize(500, 500)));
-    m_childFrame->init();
+  void CreateChildFrame() {
+    child_frame_ = LocalFrame::Create(
+        MockCrossOriginLocalFrameClient::Create(GetDocument().GetFrame()),
+        *GetDocument().GetFrame()->GetPage(), dummy_frame_owner_.Get());
+    child_frame_->SetView(FrameView::Create(*child_frame_, IntSize(500, 500)));
+    child_frame_->Init();
 
-    childDocument().updateSecurityOrigin(
-        SecurityOrigin::create("https", "cross-origin.com", 80));
+    ChildDocument().UpdateSecurityOrigin(
+        SecurityOrigin::Create("https", "cross-origin.com", 80));
   }
 
-  Document& document() { return m_dummyPageHolder->document(); }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
-  Document& childDocument() { return *m_childFrame->document(); }
+  Document& ChildDocument() { return *child_frame_->GetDocument(); }
 
-  ScriptState* getScriptStateFrom(const Document& document) {
-    return toScriptStateForMainWorld(document.frame());
+  ScriptState* GetScriptStateFrom(const Document& document) {
+    return ToScriptStateForMainWorld(document.GetFrame());
   }
 
-  void rejectPendingResolvers(BaseAudioContext* audioContext) {
-    audioContext->rejectPendingResolvers();
+  void RejectPendingResolvers(BaseAudioContext* audio_context) {
+    audio_context->RejectPendingResolvers();
   }
 
-  void recordAutoplayStatus(BaseAudioContext* audioContext) {
-    audioContext->recordAutoplayStatus();
+  void RecordAutoplayStatus(BaseAudioContext* audio_context) {
+    audio_context->RecordAutoplayStatus();
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<DummyFrameOwner> m_dummyFrameOwner;
-  Persistent<LocalFrame> m_childFrame;
-  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> m_platform;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<DummyFrameOwner> dummy_frame_owner_;
+  Persistent<LocalFrame> child_frame_;
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform_;
 };
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NoRestriction) {
-  HistogramTester histogramTester;
+  HistogramTester histogram_tester;
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      document(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
-  recordAutoplayStatus(audioContext);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      GetDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectTotalCount(kCrossOriginMetric, 0);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 0);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateNoGesture) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
-  recordAutoplayStatus(audioContext);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusFailed, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(kCrossOriginMetric,
+                                     AutoplayStatus::kAutoplayStatusFailed, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeNoGesture) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  ScriptState::Scope scope(getScriptStateFrom(childDocument()));
+  ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
-  audioContext->resumeContext(getScriptStateFrom(childDocument()));
-  rejectPendingResolvers(audioContext);
-  recordAutoplayStatus(audioContext);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
+  RejectPendingResolvers(audio_context);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusFailed, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(kCrossOriginMetric,
+                                     AutoplayStatus::kAutoplayStatusFailed, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateGesture) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  UserGestureIndicator userGestureScope(DocumentUserGestureToken::create(
-      &childDocument(), UserGestureToken::NewGesture));
+  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+      &ChildDocument(), UserGestureToken::kNewGesture));
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
-  recordAutoplayStatus(audioContext);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusSucceeded, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOriginMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeGesture) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  ScriptState::Scope scope(getScriptStateFrom(childDocument()));
+  ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator userGestureScope(DocumentUserGestureToken::create(
-      &childDocument(), UserGestureToken::NewGesture));
+  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+      &ChildDocument(), UserGestureToken::kNewGesture));
 
-  audioContext->resumeContext(getScriptStateFrom(childDocument()));
-  rejectPendingResolvers(audioContext);
-  recordAutoplayStatus(audioContext);
+  audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
+  RejectPendingResolvers(audio_context);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusSucceeded, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOriginMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGesture) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
-  audioContext->maybeRecordStartAttempt();
-  recordAutoplayStatus(audioContext);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  audio_context->MaybeRecordStartAttempt();
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusFailed, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(kCrossOriginMetric,
+                                     AutoplayStatus::kAutoplayStatusFailed, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGesture) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator userGestureScope(DocumentUserGestureToken::create(
-      &childDocument(), UserGestureToken::NewGesture));
-  audioContext->maybeRecordStartAttempt();
-  recordAutoplayStatus(audioContext);
+  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+      &ChildDocument(), UserGestureToken::kNewGesture));
+  audio_context->MaybeRecordStartAttempt();
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(
-      kCrossOriginMetric, AutoplayStatus::AutoplayStatusFailedWithStart, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOriginMetric, AutoplayStatus::kAutoplayStatusFailedWithStart, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGestureThenSuccess) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  ScriptState::Scope scope(getScriptStateFrom(childDocument()));
+  ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
-  audioContext->maybeRecordStartAttempt();
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  audio_context->MaybeRecordStartAttempt();
 
-  UserGestureIndicator userGestureScope(DocumentUserGestureToken::create(
-      &childDocument(), UserGestureToken::NewGesture));
-  audioContext->resumeContext(getScriptStateFrom(childDocument()));
-  rejectPendingResolvers(audioContext);
-  recordAutoplayStatus(audioContext);
+  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+      &ChildDocument(), UserGestureToken::kNewGesture));
+  audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
+  RejectPendingResolvers(audio_context);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusSucceeded, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOriginMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGestureThenSucces) {
-  HistogramTester histogramTester;
-  createChildFrame();
-  childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
+  HistogramTester histogram_tester;
+  CreateChildFrame();
+  ChildDocument().GetSettings()->SetMediaPlaybackRequiresUserGesture(true);
 
-  ScriptState::Scope scope(getScriptStateFrom(childDocument()));
+  ScriptState::Scope scope(GetScriptStateFrom(ChildDocument()));
 
-  BaseAudioContext* audioContext = BaseAudioContext::create(
-      childDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
+  BaseAudioContext* audio_context = BaseAudioContext::Create(
+      ChildDocument(), AudioContextOptions(), ASSERT_NO_EXCEPTION);
 
-  UserGestureIndicator userGestureScope(DocumentUserGestureToken::create(
-      &childDocument(), UserGestureToken::NewGesture));
-  audioContext->maybeRecordStartAttempt();
-  audioContext->resumeContext(getScriptStateFrom(childDocument()));
-  rejectPendingResolvers(audioContext);
-  recordAutoplayStatus(audioContext);
+  UserGestureIndicator user_gesture_scope(DocumentUserGestureToken::Create(
+      &ChildDocument(), UserGestureToken::kNewGesture));
+  audio_context->MaybeRecordStartAttempt();
+  audio_context->resumeContext(GetScriptStateFrom(ChildDocument()));
+  RejectPendingResolvers(audio_context);
+  RecordAutoplayStatus(audio_context);
 
-  histogramTester.expectBucketCount(kCrossOriginMetric,
-                                    AutoplayStatus::AutoplayStatusSucceeded, 1);
-  histogramTester.expectTotalCount(kCrossOriginMetric, 1);
+  histogram_tester.ExpectBucketCount(
+      kCrossOriginMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
+  histogram_tester.ExpectTotalCount(kCrossOriginMetric, 1);
 }
 
 }  // namespace blink

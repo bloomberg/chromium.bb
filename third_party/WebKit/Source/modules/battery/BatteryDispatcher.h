@@ -20,26 +20,26 @@ class MODULES_EXPORT BatteryDispatcher final
   WTF_MAKE_NONCOPYABLE(BatteryDispatcher);
 
  public:
-  static BatteryDispatcher& instance();
+  static BatteryDispatcher& Instance();
 
-  const BatteryStatus* latestData() const {
-    return m_hasLatestData ? &m_batteryStatus : nullptr;
+  const BatteryStatus* LatestData() const {
+    return has_latest_data_ ? &battery_status_ : nullptr;
   }
 
  private:
   BatteryDispatcher();
 
-  void queryNextStatus();
-  void onDidChange(device::mojom::blink::BatteryStatusPtr);
-  void updateBatteryStatus(const BatteryStatus&);
+  void QueryNextStatus();
+  void OnDidChange(device::mojom::blink::BatteryStatusPtr);
+  void UpdateBatteryStatus(const BatteryStatus&);
 
   // Inherited from PlatformEventDispatcher.
-  void startListening() override;
-  void stopListening() override;
+  void StartListening() override;
+  void StopListening() override;
 
-  device::mojom::blink::BatteryMonitorPtr m_monitor;
-  BatteryStatus m_batteryStatus;
-  bool m_hasLatestData;
+  device::mojom::blink::BatteryMonitorPtr monitor_;
+  BatteryStatus battery_status_;
+  bool has_latest_data_;
 };
 
 }  // namespace blink

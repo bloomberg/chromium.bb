@@ -13,49 +13,49 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(
     WebGLRenderingContextBase* ctx,
     VaoType type)
     : WebGLContextObject(ctx),
-      m_object(0),
-      m_type(type),
-      m_hasEverBeenBound(false),
-      m_boundElementArrayBuffer(this, nullptr),
-      m_isAllEnabledAttribBufferBound(true) {
-  m_arrayBufferList.resize(ctx->maxVertexAttribs());
-  m_attribEnabled.resize(ctx->maxVertexAttribs());
-  for (size_t i = 0; i < m_attribEnabled.size(); ++i) {
-    m_attribEnabled[i] = false;
+      object_(0),
+      type_(type),
+      has_ever_been_bound_(false),
+      bound_element_array_buffer_(this, nullptr),
+      is_all_enabled_attrib_buffer_bound_(true) {
+  array_buffer_list_.Resize(ctx->MaxVertexAttribs());
+  attrib_enabled_.Resize(ctx->MaxVertexAttribs());
+  for (size_t i = 0; i < attrib_enabled_.size(); ++i) {
+    attrib_enabled_[i] = false;
   }
 
-  switch (m_type) {
-    case VaoTypeDefault:
+  switch (type_) {
+    case kVaoTypeDefault:
       break;
     default:
-      context()->contextGL()->GenVertexArraysOES(1, &m_object);
+      Context()->ContextGL()->GenVertexArraysOES(1, &object_);
       break;
   }
 }
 
 WebGLVertexArrayObjectBase::~WebGLVertexArrayObjectBase() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLVertexArrayObjectBase::dispatchDetached(
+void WebGLVertexArrayObjectBase::DispatchDetached(
     gpu::gles2::GLES2Interface* gl) {
-  if (m_boundElementArrayBuffer)
-    m_boundElementArrayBuffer->onDetached(gl);
+  if (bound_element_array_buffer_)
+    bound_element_array_buffer_->OnDetached(gl);
 
-  for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
-    if (m_arrayBufferList[i])
-      m_arrayBufferList[i]->onDetached(gl);
+  for (size_t i = 0; i < array_buffer_list_.size(); ++i) {
+    if (array_buffer_list_[i])
+      array_buffer_list_[i]->OnDetached(gl);
   }
 }
 
-void WebGLVertexArrayObjectBase::deleteObjectImpl(
+void WebGLVertexArrayObjectBase::DeleteObjectImpl(
     gpu::gles2::GLES2Interface* gl) {
-  switch (m_type) {
-    case VaoTypeDefault:
+  switch (type_) {
+    case kVaoTypeDefault:
       break;
     default:
-      gl->DeleteVertexArraysOES(1, &m_object);
-      m_object = 0;
+      gl->DeleteVertexArraysOES(1, &object_);
+      object_ = 0;
       break;
   }
 
@@ -63,82 +63,82 @@ void WebGLVertexArrayObjectBase::deleteObjectImpl(
   // since they could have been already finalized.
   // The finalizers of these objects will handle their detachment
   // by themselves.
-  if (!destructionInProgress())
-    dispatchDetached(gl);
+  if (!DestructionInProgress())
+    DispatchDetached(gl);
 }
 
-void WebGLVertexArrayObjectBase::setElementArrayBuffer(WebGLBuffer* buffer) {
+void WebGLVertexArrayObjectBase::SetElementArrayBuffer(WebGLBuffer* buffer) {
   if (buffer)
-    buffer->onAttached();
-  if (m_boundElementArrayBuffer)
-    m_boundElementArrayBuffer->onDetached(context()->contextGL());
-  m_boundElementArrayBuffer = buffer;
+    buffer->OnAttached();
+  if (bound_element_array_buffer_)
+    bound_element_array_buffer_->OnDetached(Context()->ContextGL());
+  bound_element_array_buffer_ = buffer;
 }
 
-WebGLBuffer* WebGLVertexArrayObjectBase::getArrayBufferForAttrib(size_t index) {
-  DCHECK(index < context()->maxVertexAttribs());
-  return m_arrayBufferList[index].get();
+WebGLBuffer* WebGLVertexArrayObjectBase::GetArrayBufferForAttrib(size_t index) {
+  DCHECK(index < Context()->MaxVertexAttribs());
+  return array_buffer_list_[index].Get();
 }
 
-void WebGLVertexArrayObjectBase::setArrayBufferForAttrib(GLuint index,
+void WebGLVertexArrayObjectBase::SetArrayBufferForAttrib(GLuint index,
                                                          WebGLBuffer* buffer) {
   if (buffer)
-    buffer->onAttached();
-  if (m_arrayBufferList[index])
-    m_arrayBufferList[index]->onDetached(context()->contextGL());
+    buffer->OnAttached();
+  if (array_buffer_list_[index])
+    array_buffer_list_[index]->OnDetached(Context()->ContextGL());
 
-  m_arrayBufferList[index] = TraceWrapperMember<WebGLBuffer>(this, buffer);
-  updateAttribBufferBoundStatus();
+  array_buffer_list_[index] = TraceWrapperMember<WebGLBuffer>(this, buffer);
+  UpdateAttribBufferBoundStatus();
 }
 
-void WebGLVertexArrayObjectBase::setAttribEnabled(GLuint index, bool enabled) {
-  DCHECK(index < context()->maxVertexAttribs());
-  m_attribEnabled[index] = enabled;
-  updateAttribBufferBoundStatus();
+void WebGLVertexArrayObjectBase::SetAttribEnabled(GLuint index, bool enabled) {
+  DCHECK(index < Context()->MaxVertexAttribs());
+  attrib_enabled_[index] = enabled;
+  UpdateAttribBufferBoundStatus();
 }
 
-bool WebGLVertexArrayObjectBase::getAttribEnabled(GLuint index) const {
-  DCHECK(index < context()->maxVertexAttribs());
-  return m_attribEnabled[index];
+bool WebGLVertexArrayObjectBase::GetAttribEnabled(GLuint index) const {
+  DCHECK(index < Context()->MaxVertexAttribs());
+  return attrib_enabled_[index];
 }
 
-void WebGLVertexArrayObjectBase::updateAttribBufferBoundStatus() {
-  m_isAllEnabledAttribBufferBound = true;
-  for (size_t i = 0; i < m_attribEnabled.size(); ++i) {
-    if (m_attribEnabled[i] && !m_arrayBufferList[i]) {
-      m_isAllEnabledAttribBufferBound = false;
+void WebGLVertexArrayObjectBase::UpdateAttribBufferBoundStatus() {
+  is_all_enabled_attrib_buffer_bound_ = true;
+  for (size_t i = 0; i < attrib_enabled_.size(); ++i) {
+    if (attrib_enabled_[i] && !array_buffer_list_[i]) {
+      is_all_enabled_attrib_buffer_bound_ = false;
       return;
     }
   }
 }
 
-void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer) {
-  if (m_boundElementArrayBuffer == buffer) {
-    m_boundElementArrayBuffer->onDetached(context()->contextGL());
-    m_boundElementArrayBuffer = nullptr;
+void WebGLVertexArrayObjectBase::UnbindBuffer(WebGLBuffer* buffer) {
+  if (bound_element_array_buffer_ == buffer) {
+    bound_element_array_buffer_->OnDetached(Context()->ContextGL());
+    bound_element_array_buffer_ = nullptr;
   }
 
-  for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
-    if (m_arrayBufferList[i] == buffer) {
-      m_arrayBufferList[i]->onDetached(context()->contextGL());
-      m_arrayBufferList[i] = nullptr;
+  for (size_t i = 0; i < array_buffer_list_.size(); ++i) {
+    if (array_buffer_list_[i] == buffer) {
+      array_buffer_list_[i]->OnDetached(Context()->ContextGL());
+      array_buffer_list_[i] = nullptr;
     }
   }
-  updateAttribBufferBoundStatus();
+  UpdateAttribBufferBoundStatus();
 }
 
 DEFINE_TRACE(WebGLVertexArrayObjectBase) {
-  visitor->trace(m_boundElementArrayBuffer);
-  visitor->trace(m_arrayBufferList);
-  WebGLContextObject::trace(visitor);
+  visitor->Trace(bound_element_array_buffer_);
+  visitor->Trace(array_buffer_list_);
+  WebGLContextObject::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLVertexArrayObjectBase) {
-  visitor->traceWrappers(m_boundElementArrayBuffer);
-  for (size_t i = 0; i < m_arrayBufferList.size(); ++i) {
-    visitor->traceWrappers(m_arrayBufferList[i]);
+  visitor->TraceWrappers(bound_element_array_buffer_);
+  for (size_t i = 0; i < array_buffer_list_.size(); ++i) {
+    visitor->TraceWrappers(array_buffer_list_[i]);
   }
-  WebGLContextObject::traceWrappers(visitor);
+  WebGLContextObject::TraceWrappers(visitor);
 }
 
 }  // namespace blink

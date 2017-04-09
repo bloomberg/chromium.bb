@@ -37,11 +37,11 @@
 namespace blink {
 
 long NavigatorEvents::maxTouchPoints(Navigator& navigator) {
-  LocalFrame* frame = navigator.frame();
+  LocalFrame* frame = navigator.GetFrame();
   if (!frame)
     return 0;
-  if (Settings* settings = frame->settings())
-    return settings->getMaxTouchPoints();
+  if (Settings* settings = frame->GetSettings())
+    return settings->GetMaxTouchPoints();
   return 0;
 }
 

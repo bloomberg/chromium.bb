@@ -49,7 +49,7 @@ class HTMLTrackElement final : public HTMLElement,
 
   enum ReadyState { kNone = 0, kLoading = 1, kLoaded = 2, kError = 3 };
   ReadyState getReadyState();
-  void scheduleLoad();
+  void ScheduleLoad();
 
   TextTrack* track();
 
@@ -59,34 +59,34 @@ class HTMLTrackElement final : public HTMLElement,
   explicit HTMLTrackElement(Document&);
   ~HTMLTrackElement() override;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
 
-  void removedFrom(ContainerNode*) override;
-  bool isURLAttribute(const Attribute&) const override;
+  void RemovedFrom(ContainerNode*) override;
+  bool IsURLAttribute(const Attribute&) const override;
 
   // TextTrackLoaderClient
-  void newCuesAvailable(TextTrackLoader*) override;
-  void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) override;
+  void NewCuesAvailable(TextTrackLoader*) override;
+  void CueLoadingCompleted(TextTrackLoader*, bool loading_failed) override;
 
-  void setReadyState(ReadyState);
+  void SetReadyState(ReadyState);
 
-  const AtomicString& mediaElementCrossOriginAttribute() const;
-  bool canLoadUrl(const KURL&);
-  void loadTimerFired(TimerBase*);
+  const AtomicString& MediaElementCrossOriginAttribute() const;
+  bool CanLoadUrl(const KURL&);
+  void LoadTimerFired(TimerBase*);
 
-  enum LoadStatus { Failure, Success };
-  void didCompleteLoad(LoadStatus);
+  enum LoadStatus { kFailure, kSuccess };
+  void DidCompleteLoad(LoadStatus);
 
-  HTMLMediaElement* mediaElement() const;
+  HTMLMediaElement* MediaElement() const;
 
-  LoadableTextTrack* ensureTrack();
+  LoadableTextTrack* EnsureTrack();
 
-  Member<LoadableTextTrack> m_track;
-  Member<TextTrackLoader> m_loader;
-  TaskRunnerTimer<HTMLTrackElement> m_loadTimer;
-  KURL m_url;
+  Member<LoadableTextTrack> track_;
+  Member<TextTrackLoader> loader_;
+  TaskRunnerTimer<HTMLTrackElement> load_timer_;
+  KURL url_;
 };
 
 }  // namespace blink

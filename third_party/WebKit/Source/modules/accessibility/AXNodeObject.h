@@ -47,203 +47,203 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXNodeObject(Node*, AXObjectCacheImpl&);
 
  public:
-  static AXNodeObject* create(Node*, AXObjectCacheImpl&);
+  static AXNodeObject* Create(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   // Protected data.
-  AccessibilityRole m_ariaRole;
-  bool m_childrenDirty;
+  AccessibilityRole aria_role_;
+  bool children_dirty_;
 #if DCHECK_IS_ON()
-  bool m_initialized = false;
+  bool initialized_ = false;
 #endif
 
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-  const AXObject* inheritsPresentationalRoleFrom() const override;
-  virtual AccessibilityRole determineAccessibilityRole();
-  virtual AccessibilityRole nativeAccessibilityRoleIgnoringAria() const;
-  String accessibilityDescriptionForElements(
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  const AXObject* InheritsPresentationalRoleFrom() const override;
+  virtual AccessibilityRole DetermineAccessibilityRole();
+  virtual AccessibilityRole NativeAccessibilityRoleIgnoringAria() const;
+  String AccessibilityDescriptionForElements(
       HeapVector<Member<Element>>& elements) const;
-  void alterSliderValue(bool increase);
-  AXObject* activeDescendant() override;
-  String ariaAccessibilityDescription() const;
-  String ariaAutoComplete() const;
-  AccessibilityRole determineAriaRoleAttribute() const;
-  void accessibilityChildrenFromAttribute(QualifiedName attr,
+  void AlterSliderValue(bool increase);
+  AXObject* ActiveDescendant() override;
+  String AriaAccessibilityDescription() const;
+  String AriaAutoComplete() const;
+  AccessibilityRole DetermineAriaRoleAttribute() const;
+  void AccessibilityChildrenFromAttribute(QualifiedName attr,
                                           AXObject::AXObjectVector&) const;
 
-  bool hasContentEditableAttributeSet() const;
-  bool isTextControl() const override;
+  bool HasContentEditableAttributeSet() const;
+  bool IsTextControl() const override;
   // This returns true if it's focusable but it's not content editable and it's
   // not a control or ARIA control.
-  bool isGenericFocusableElement() const;
-  AXObject* menuButtonForMenu() const;
-  Element* menuItemElementForMenu() const;
-  Element* mouseButtonListener() const;
-  AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
-  bool isNativeCheckboxOrRadio() const;
-  void setNode(Node*);
-  AXObject* correspondingControlForLabelElement() const;
-  HTMLLabelElement* labelElementContainer() const;
+  bool IsGenericFocusableElement() const;
+  AXObject* MenuButtonForMenu() const;
+  Element* MenuItemElementForMenu() const;
+  Element* MouseButtonListener() const;
+  AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
+  bool IsNativeCheckboxOrRadio() const;
+  void SetNode(Node*);
+  AXObject* CorrespondingControlForLabelElement() const;
+  HTMLLabelElement* LabelElementContainer() const;
 
   //
   // Overridden from AXObject.
   //
 
-  void init() override;
-  void detach() override;
-  bool isDetached() const override { return !m_node; }
-  bool isAXNodeObject() const final { return true; }
+  void Init() override;
+  void Detach() override;
+  bool IsDetached() const override { return !node_; }
+  bool IsAXNodeObject() const final { return true; }
 
-  void getSparseAXAttributes(AXSparseAttributeClient&) const override;
+  void GetSparseAXAttributes(AXSparseAttributeClient&) const override;
 
   // Check object role or purpose.
-  bool isAnchor() const final;
-  bool isControl() const override;
-  bool isControllingVideoElement() const;
-  bool isEditable() const override { return isNativeTextControl(); }
-  bool isEmbeddedObject() const final;
-  bool isFieldset() const final;
-  bool isHeading() const final;
-  bool isHovered() const final;
-  bool isImage() const final;
-  bool isImageButton() const;
-  bool isInputImage() const final;
-  bool isLink() const override;
-  bool isInPageLinkTarget() const override;
-  bool isMenu() const final;
-  bool isMenuButton() const final;
-  bool isMeter() const final;
-  bool isMultiSelectable() const override;
-  bool isNativeImage() const;
-  bool isNativeTextControl() const final;
-  bool isNonNativeTextControl() const final;
-  bool isPasswordField() const final;
-  bool isProgressIndicator() const override;
-  bool isRichlyEditable() const override;
-  bool isSlider() const override;
-  bool isNativeSlider() const override;
+  bool IsAnchor() const final;
+  bool IsControl() const override;
+  bool IsControllingVideoElement() const;
+  bool IsEditable() const override { return IsNativeTextControl(); }
+  bool IsEmbeddedObject() const final;
+  bool IsFieldset() const final;
+  bool IsHeading() const final;
+  bool IsHovered() const final;
+  bool IsImage() const final;
+  bool IsImageButton() const;
+  bool IsInputImage() const final;
+  bool IsLink() const override;
+  bool IsInPageLinkTarget() const override;
+  bool IsMenu() const final;
+  bool IsMenuButton() const final;
+  bool IsMeter() const final;
+  bool IsMultiSelectable() const override;
+  bool IsNativeImage() const;
+  bool IsNativeTextControl() const final;
+  bool IsNonNativeTextControl() const final;
+  bool IsPasswordField() const final;
+  bool IsProgressIndicator() const override;
+  bool IsRichlyEditable() const override;
+  bool IsSlider() const override;
+  bool IsNativeSlider() const override;
 
   // Check object state.
-  bool isChecked() const final;
-  bool isClickable() const final;
-  bool isEnabled() const override;
-  AccessibilityExpanded isExpanded() const override;
-  bool isModal() const final;
-  bool isPressed() const final;
-  bool isReadOnly() const override;
-  bool isRequired() const final;
+  bool IsChecked() const final;
+  bool IsClickable() const final;
+  bool IsEnabled() const override;
+  AccessibilityExpanded IsExpanded() const override;
+  bool IsModal() const final;
+  bool IsPressed() const final;
+  bool IsReadOnly() const override;
+  bool IsRequired() const final;
 
   // Check whether certain properties can be modified.
-  bool canSetFocusAttribute() const override;
-  bool canSetValueAttribute() const override;
-  bool canSetSelectedAttribute() const override;
+  bool CanSetFocusAttribute() const override;
+  bool CanSetValueAttribute() const override;
+  bool CanSetSelectedAttribute() const override;
 
   // Properties of static elements.
-  RGBA32 colorValue() const final;
-  bool canvasHasFallbackContent() const final;
-  int headingLevel() const final;
-  unsigned hierarchicalLevel() const final;
-  void markers(Vector<DocumentMarker::MarkerType>&,
+  RGBA32 ColorValue() const final;
+  bool CanvasHasFallbackContent() const final;
+  int HeadingLevel() const final;
+  unsigned HierarchicalLevel() const final;
+  void Markers(Vector<DocumentMarker::MarkerType>&,
                Vector<AXRange>&) const override;
-  AXObject* inPageLinkTarget() const override;
-  AccessibilityOrientation orientation() const override;
-  AXObjectVector radioButtonsInGroup() const override;
-  static HeapVector<Member<HTMLInputElement>> findAllRadioButtonsWithSameName(
-      HTMLInputElement* radioButton);
-  String text() const override;
+  AXObject* InPageLinkTarget() const override;
+  AccessibilityOrientation Orientation() const override;
+  AXObjectVector RadioButtonsInGroup() const override;
+  static HeapVector<Member<HTMLInputElement>> FindAllRadioButtonsWithSameName(
+      HTMLInputElement* radio_button);
+  String GetText() const override;
 
   // Properties of interactive elements.
-  AccessibilityButtonState checkboxOrRadioValue() const final;
-  AriaCurrentState ariaCurrentState() const final;
-  InvalidState getInvalidState() const final;
+  AccessibilityButtonState CheckboxOrRadioValue() const final;
+  AriaCurrentState GetAriaCurrentState() const final;
+  InvalidState GetInvalidState() const final;
   // Only used when invalidState() returns InvalidStateOther.
-  String ariaInvalidValue() const final;
-  String valueDescription() const override;
-  float valueForRange() const override;
-  float maxValueForRange() const override;
-  float minValueForRange() const override;
-  String stringValue() const override;
+  String AriaInvalidValue() const final;
+  String ValueDescription() const override;
+  float ValueForRange() const override;
+  float MaxValueForRange() const override;
+  float MinValueForRange() const override;
+  String StringValue() const override;
 
   // ARIA attributes.
-  AccessibilityRole ariaRoleAttribute() const final;
+  AccessibilityRole AriaRoleAttribute() const final;
 
   // AX name calculation.
-  String textAlternative(bool recursive,
-                         bool inAriaLabelledByTraversal,
+  String TextAlternative(bool recursive,
+                         bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
                          AXNameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String description(AXNameFrom,
+  String Description(AXNameFrom,
                      AXDescriptionFrom&,
-                     AXObjectVector* descriptionObjects) const override;
-  String description(AXNameFrom,
+                     AXObjectVector* description_objects) const override;
+  String Description(AXNameFrom,
                      AXDescriptionFrom&,
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
-  String placeholder(AXNameFrom) const override;
-  bool nameFromLabelElement() const override;
-  bool nameFromContents() const override;
+  String Placeholder(AXNameFrom) const override;
+  bool NameFromLabelElement() const override;
+  bool NameFromContents() const override;
 
   // Location
-  void getRelativeBounds(AXObject** outContainer,
-                         FloatRect& outBoundsInContainer,
-                         SkMatrix44& outContainerTransform) const override;
+  void GetRelativeBounds(AXObject** out_container,
+                         FloatRect& out_bounds_in_container,
+                         SkMatrix44& out_container_transform) const override;
 
   // High-level accessibility tree access.
-  AXObject* computeParent() const override;
-  AXObject* computeParentIfExists() const override;
+  AXObject* ComputeParent() const override;
+  AXObject* ComputeParentIfExists() const override;
 
   // Low-level accessibility tree exploration.
-  AXObject* rawFirstChild() const override;
-  AXObject* rawNextSibling() const override;
-  void addChildren() override;
-  bool canHaveChildren() const override;
-  void addChild(AXObject*);
-  void insertChild(AXObject*, unsigned index);
+  AXObject* RawFirstChild() const override;
+  AXObject* RawNextSibling() const override;
+  void AddChildren() override;
+  bool CanHaveChildren() const override;
+  void AddChild(AXObject*);
+  void InsertChild(AXObject*, unsigned index);
 
   // DOM and Render tree access.
-  Element* actionElement() const override;
-  Element* anchorElement() const override;
-  Document* getDocument() const override;
-  Node* getNode() const override { return m_node; }
+  Element* ActionElement() const override;
+  Element* AnchorElement() const override;
+  Document* GetDocument() const override;
+  Node* GetNode() const override { return node_; }
 
   // Modify or take an action on an object.
-  void setFocused(bool) final;
-  void increment() final;
-  void decrement() final;
-  void setSequentialFocusNavigationStartingPoint() final;
+  void SetFocused(bool) final;
+  void Increment() final;
+  void Decrement() final;
+  void SetSequentialFocusNavigationStartingPoint() final;
 
   // Notifications that this object may have changed.
-  void childrenChanged() override;
-  void selectionChanged() final;
-  void textChanged() override;
-  void updateAccessibilityRole() final;
+  void ChildrenChanged() override;
+  void SelectionChanged() final;
+  void TextChanged() override;
+  void UpdateAccessibilityRole() final;
 
   // Position in set and Size of set
-  int posInSet() const override;
-  int setSize() const override;
+  int PosInSet() const override;
+  int SetSize() const override;
 
   // Aria-owns.
-  void computeAriaOwnsChildren(
-      HeapVector<Member<AXObject>>& ownedChildren) const;
+  void ComputeAriaOwnsChildren(
+      HeapVector<Member<AXObject>>& owned_children) const;
 
  private:
-  Member<Node> m_node;
+  Member<Node> node_;
 
-  bool isNativeCheckboxInMixedState() const;
-  String textFromDescendants(AXObjectSet& visited,
+  bool IsNativeCheckboxInMixedState() const;
+  String TextFromDescendants(AXObjectSet& visited,
                              bool recursive) const override;
-  String nativeTextAlternative(AXObjectSet& visited,
+  String NativeTextAlternative(AXObjectSet& visited,
                                AXNameFrom&,
                                AXRelatedObjectVector*,
                                NameSources*,
-                               bool* foundTextAlternative) const;
-  float stepValueForRange() const;
-  bool isDescendantOfElementType(HashSet<QualifiedName>& tagNames) const;
-  String placeholderFromNativeAttribute() const;
+                               bool* found_text_alternative) const;
+  float StepValueForRange() const;
+  bool IsDescendantOfElementType(HashSet<QualifiedName>& tag_names) const;
+  String PlaceholderFromNativeAttribute() const;
 };
 
 }  // namespace blink

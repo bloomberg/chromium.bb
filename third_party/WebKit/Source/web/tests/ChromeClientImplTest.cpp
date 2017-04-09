@@ -43,21 +43,21 @@
 
 namespace blink {
 
-void setCurrentInputEventForTest(const WebInputEvent* event) {
-  WebViewImpl::m_currentInputEvent = event;
+void SetCurrentInputEventForTest(const WebInputEvent* event) {
+  WebViewImpl::current_input_event_ = event;
 }
 
 namespace {
 
 class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
-  explicit TestWebViewClient(WebNavigationPolicy* target) : m_target(target) {}
+  explicit TestWebViewClient(WebNavigationPolicy* target) : target_(target) {}
   ~TestWebViewClient() override {}
 
-  void show(WebNavigationPolicy policy) override { *m_target = policy; }
+  void Show(WebNavigationPolicy policy) override { *target_ = policy; }
 
  private:
-  WebNavigationPolicy* m_target;
+  WebNavigationPolicy* target_;
 };
 
 }  // anonymous namespace
@@ -65,216 +65,218 @@ class TestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 class GetNavigationPolicyTest : public testing::Test {
  public:
   GetNavigationPolicyTest()
-      : m_result(WebNavigationPolicyIgnore), m_webViewClient(&m_result) {}
+      : result_(kWebNavigationPolicyIgnore), web_view_client_(&result_) {}
 
  protected:
   void SetUp() override {
-    m_webView = toWebViewImpl(
-        WebView::create(&m_webViewClient, WebPageVisibilityStateVisible));
-    m_webView->setMainFrame(WebLocalFrame::create(
-        WebTreeScopeType::Document, &m_webFrameClient, nullptr, nullptr));
-    m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
-    m_result = WebNavigationPolicyIgnore;
+    web_view_ = ToWebViewImpl(
+        WebView::Create(&web_view_client_, kWebPageVisibilityStateVisible));
+    web_view_->SetMainFrame(WebLocalFrame::Create(
+        WebTreeScopeType::kDocument, &web_frame_client_, nullptr, nullptr));
+    chrome_client_impl_ =
+        ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
+    result_ = kWebNavigationPolicyIgnore;
   }
 
-  void TearDown() override { m_webView->close(); }
+  void TearDown() override { web_view_->Close(); }
 
-  WebNavigationPolicy getNavigationPolicyWithMouseEvent(
+  WebNavigationPolicy GetNavigationPolicyWithMouseEvent(
       int modifiers,
       WebMouseEvent::Button button,
-      bool asPopup) {
-    WebMouseEvent event(WebInputEvent::MouseUp, modifiers,
-                        WebInputEvent::TimeStampForTesting);
+      bool as_popup) {
+    WebMouseEvent event(WebInputEvent::kMouseUp, modifiers,
+                        WebInputEvent::kTimeStampForTesting);
     event.button = button;
-    setCurrentInputEventForTest(&event);
-    m_chromeClientImpl->setToolbarsVisible(!asPopup);
-    m_chromeClientImpl->show(NavigationPolicyIgnore);
-    setCurrentInputEventForTest(0);
-    return m_result;
+    SetCurrentInputEventForTest(&event);
+    chrome_client_impl_->SetToolbarsVisible(!as_popup);
+    chrome_client_impl_->Show(kNavigationPolicyIgnore);
+    SetCurrentInputEventForTest(0);
+    return result_;
   }
 
-  bool isNavigationPolicyPopup() {
-    m_chromeClientImpl->show(NavigationPolicyIgnore);
-    return m_result == WebNavigationPolicyNewPopup;
+  bool IsNavigationPolicyPopup() {
+    chrome_client_impl_->Show(kNavigationPolicyIgnore);
+    return result_ == kWebNavigationPolicyNewPopup;
   }
 
  protected:
-  WebNavigationPolicy m_result;
-  TestWebViewClient m_webViewClient;
-  WebViewImpl* m_webView;
-  FrameTestHelpers::TestWebFrameClient m_webFrameClient;
-  Persistent<ChromeClientImpl> m_chromeClientImpl;
+  WebNavigationPolicy result_;
+  TestWebViewClient web_view_client_;
+  WebViewImpl* web_view_;
+  FrameTestHelpers::TestWebFrameClient web_frame_client_;
+  Persistent<ChromeClientImpl> chrome_client_impl_;
 };
 
 TEST_F(GetNavigationPolicyTest, LeftClick) {
   int modifiers = 0;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = false;
-  EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = false;
+  EXPECT_EQ(kWebNavigationPolicyNewForegroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, LeftClickPopup) {
   int modifiers = 0;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = true;
-  EXPECT_EQ(WebNavigationPolicyNewPopup,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = true;
+  EXPECT_EQ(kWebNavigationPolicyNewPopup,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, ShiftLeftClick) {
-  int modifiers = WebInputEvent::ShiftKey;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = false;
-  EXPECT_EQ(WebNavigationPolicyNewWindow,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  int modifiers = WebInputEvent::kShiftKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = false;
+  EXPECT_EQ(kWebNavigationPolicyNewWindow,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, ShiftLeftClickPopup) {
-  int modifiers = WebInputEvent::ShiftKey;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = true;
-  EXPECT_EQ(WebNavigationPolicyNewPopup,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  int modifiers = WebInputEvent::kShiftKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = true;
+  EXPECT_EQ(kWebNavigationPolicyNewPopup,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClick) {
 #if OS(MACOSX)
-  int modifiers = WebInputEvent::MetaKey;
+  int modifiers = WebInputEvent::kMetaKey;
 #else
-  int modifiers = WebInputEvent::ControlKey;
+  int modifiers = WebInputEvent::kControlKey;
 #endif
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = false;
-  EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = false;
+  EXPECT_EQ(kWebNavigationPolicyNewBackgroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaLeftClickPopup) {
 #if OS(MACOSX)
-  int modifiers = WebInputEvent::MetaKey;
+  int modifiers = WebInputEvent::kMetaKey;
 #else
-  int modifiers = WebInputEvent::ControlKey;
+  int modifiers = WebInputEvent::kControlKey;
 #endif
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = true;
-  EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = true;
+  EXPECT_EQ(kWebNavigationPolicyNewBackgroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
 #if OS(MACOSX)
-  int modifiers = WebInputEvent::MetaKey;
+  int modifiers = WebInputEvent::kMetaKey;
 #else
-  int modifiers = WebInputEvent::ControlKey;
+  int modifiers = WebInputEvent::kControlKey;
 #endif
-  modifiers |= WebInputEvent::ShiftKey;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = false;
-  EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  modifiers |= WebInputEvent::kShiftKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = false;
+  EXPECT_EQ(kWebNavigationPolicyNewForegroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup) {
 #if OS(MACOSX)
-  int modifiers = WebInputEvent::MetaKey;
+  int modifiers = WebInputEvent::kMetaKey;
 #else
-  int modifiers = WebInputEvent::ControlKey;
+  int modifiers = WebInputEvent::kControlKey;
 #endif
-  modifiers |= WebInputEvent::ShiftKey;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Left;
-  bool asPopup = true;
-  EXPECT_EQ(WebNavigationPolicyNewForegroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  modifiers |= WebInputEvent::kShiftKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  bool as_popup = true;
+  EXPECT_EQ(kWebNavigationPolicyNewForegroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, MiddleClick) {
   int modifiers = 0;
-  bool asPopup = false;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Middle;
-  EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  bool as_popup = false;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
+  EXPECT_EQ(kWebNavigationPolicyNewBackgroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, MiddleClickPopup) {
   int modifiers = 0;
-  bool asPopup = true;
-  WebMouseEvent::Button button = WebMouseEvent::Button::Middle;
-  EXPECT_EQ(WebNavigationPolicyNewBackgroundTab,
-            getNavigationPolicyWithMouseEvent(modifiers, button, asPopup));
+  bool as_popup = true;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
+  EXPECT_EQ(kWebNavigationPolicyNewBackgroundTab,
+            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
 }
 
 TEST_F(GetNavigationPolicyTest, NoToolbarsForcesPopup) {
-  m_chromeClientImpl->setToolbarsVisible(false);
-  EXPECT_TRUE(isNavigationPolicyPopup());
-  m_chromeClientImpl->setToolbarsVisible(true);
-  EXPECT_FALSE(isNavigationPolicyPopup());
+  chrome_client_impl_->SetToolbarsVisible(false);
+  EXPECT_TRUE(IsNavigationPolicyPopup());
+  chrome_client_impl_->SetToolbarsVisible(true);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
 }
 
 TEST_F(GetNavigationPolicyTest, NoStatusbarIsNotPopup) {
-  m_chromeClientImpl->setStatusbarVisible(false);
-  EXPECT_FALSE(isNavigationPolicyPopup());
-  m_chromeClientImpl->setStatusbarVisible(true);
-  EXPECT_FALSE(isNavigationPolicyPopup());
+  chrome_client_impl_->SetStatusbarVisible(false);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
+  chrome_client_impl_->SetStatusbarVisible(true);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
 }
 
 TEST_F(GetNavigationPolicyTest, NoMenubarIsNotPopup) {
-  m_chromeClientImpl->setMenubarVisible(false);
-  EXPECT_FALSE(isNavigationPolicyPopup());
-  m_chromeClientImpl->setMenubarVisible(true);
-  EXPECT_FALSE(isNavigationPolicyPopup());
+  chrome_client_impl_->SetMenubarVisible(false);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
+  chrome_client_impl_->SetMenubarVisible(true);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
 }
 
 TEST_F(GetNavigationPolicyTest, NotResizableIsNotPopup) {
-  m_chromeClientImpl->setResizable(false);
-  EXPECT_FALSE(isNavigationPolicyPopup());
-  m_chromeClientImpl->setResizable(true);
-  EXPECT_FALSE(isNavigationPolicyPopup());
+  chrome_client_impl_->SetResizable(false);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
+  chrome_client_impl_->SetResizable(true);
+  EXPECT_FALSE(IsNavigationPolicyPopup());
 }
 
 class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
  public:
-  WebView* createView(WebLocalFrame* opener,
+  WebView* CreateView(WebLocalFrame* opener,
                       const WebURLRequest&,
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
                       bool) override {
-    return m_webViewHelper.initializeWithOpener(opener, true);
+    return web_view_helper_.InitializeWithOpener(opener, true);
   }
 
  private:
-  FrameTestHelpers::WebViewHelper m_webViewHelper;
+  FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
 class CreateWindowTest : public testing::Test {
  protected:
   void SetUp() override {
-    m_webView = toWebViewImpl(
-        WebView::create(&m_webViewClient, WebPageVisibilityStateVisible));
-    m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document,
-                                        &m_webFrameClient, nullptr, nullptr);
-    m_webView->setMainFrame(m_mainFrame);
-    m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
+    web_view_ = ToWebViewImpl(
+        WebView::Create(&web_view_client_, kWebPageVisibilityStateVisible));
+    main_frame_ = WebLocalFrame::Create(WebTreeScopeType::kDocument,
+                                        &web_frame_client_, nullptr, nullptr);
+    web_view_->SetMainFrame(main_frame_);
+    chrome_client_impl_ =
+        ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
   }
 
-  void TearDown() override { m_webView->close(); }
+  void TearDown() override { web_view_->Close(); }
 
-  ViewCreatingClient m_webViewClient;
-  WebViewImpl* m_webView;
-  WebLocalFrame* m_mainFrame;
-  FrameTestHelpers::TestWebFrameClient m_webFrameClient;
-  Persistent<ChromeClientImpl> m_chromeClientImpl;
+  ViewCreatingClient web_view_client_;
+  WebViewImpl* web_view_;
+  WebLocalFrame* main_frame_;
+  FrameTestHelpers::TestWebFrameClient web_frame_client_;
+  Persistent<ChromeClientImpl> chrome_client_impl_;
 };
 
 TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
   ScopedPageSuspender suspender;
-  LocalFrame* frame = toWebLocalFrameImpl(m_mainFrame)->frame();
-  FrameLoadRequest request(frame->document());
+  LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+  FrameLoadRequest request(frame->GetDocument());
   WindowFeatures features;
   EXPECT_EQ(nullptr,
-            m_chromeClientImpl->createWindow(frame, request, features,
-                                             NavigationPolicyNewForegroundTab));
+            chrome_client_impl_->CreateWindow(
+                frame, request, features, kNavigationPolicyNewForegroundTab));
 }
 
 }  // namespace blink

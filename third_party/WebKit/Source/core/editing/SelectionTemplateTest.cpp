@@ -14,61 +14,61 @@ class SelectionTest : public EditingTestBase {};
 TEST_F(SelectionTest, defaultConstructor) {
   SelectionInDOMTree selection;
 
-  EXPECT_EQ(TextAffinity::Downstream, selection.affinity());
-  EXPECT_EQ(CharacterGranularity, selection.granularity());
-  EXPECT_FALSE(selection.hasTrailingWhitespace());
-  EXPECT_FALSE(selection.isDirectional());
-  EXPECT_FALSE(selection.isHandleVisible());
-  EXPECT_TRUE(selection.isNone());
-  EXPECT_EQ(Position(), selection.base());
-  EXPECT_EQ(Position(), selection.extent());
+  EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_EQ(kCharacterGranularity, selection.Granularity());
+  EXPECT_FALSE(selection.HasTrailingWhitespace());
+  EXPECT_FALSE(selection.IsDirectional());
+  EXPECT_FALSE(selection.IsHandleVisible());
+  EXPECT_TRUE(selection.IsNone());
+  EXPECT_EQ(Position(), selection.Base());
+  EXPECT_EQ(Position(), selection.Extent());
 }
 
 TEST_F(SelectionTest, caret) {
-  setBodyContent("<div id='sample'>abcdef</div>");
+  SetBodyContent("<div id='sample'>abcdef</div>");
 
-  Element* sample = document().getElementById("sample");
-  Position position(Position(sample->firstChild(), 2));
+  Element* sample = GetDocument().GetElementById("sample");
+  Position position(Position(sample->FirstChild(), 2));
   SelectionInDOMTree::Builder builder;
-  builder.collapse(position);
-  const SelectionInDOMTree& selection = builder.build();
+  builder.Collapse(position);
+  const SelectionInDOMTree& selection = builder.Build();
 
-  EXPECT_EQ(TextAffinity::Downstream, selection.affinity());
-  EXPECT_EQ(CharacterGranularity, selection.granularity());
-  EXPECT_FALSE(selection.hasTrailingWhitespace());
-  EXPECT_FALSE(selection.isDirectional());
-  EXPECT_FALSE(selection.isHandleVisible());
-  EXPECT_FALSE(selection.isNone());
-  EXPECT_EQ(position, selection.base());
-  EXPECT_EQ(position, selection.extent());
+  EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_EQ(kCharacterGranularity, selection.Granularity());
+  EXPECT_FALSE(selection.HasTrailingWhitespace());
+  EXPECT_FALSE(selection.IsDirectional());
+  EXPECT_FALSE(selection.IsHandleVisible());
+  EXPECT_FALSE(selection.IsNone());
+  EXPECT_EQ(position, selection.Base());
+  EXPECT_EQ(position, selection.Extent());
 }
 
 TEST_F(SelectionTest, range) {
-  setBodyContent("<div id='sample'>abcdef</div>");
+  SetBodyContent("<div id='sample'>abcdef</div>");
 
-  Element* sample = document().getElementById("sample");
-  Position base(Position(sample->firstChild(), 2));
-  Position extent(Position(sample->firstChild(), 4));
+  Element* sample = GetDocument().GetElementById("sample");
+  Position base(Position(sample->FirstChild(), 2));
+  Position extent(Position(sample->FirstChild(), 4));
   SelectionInDOMTree::Builder builder;
-  builder.collapse(base);
-  builder.extend(extent);
-  const SelectionInDOMTree& selection = builder.build();
+  builder.Collapse(base);
+  builder.Extend(extent);
+  const SelectionInDOMTree& selection = builder.Build();
 
-  EXPECT_EQ(TextAffinity::Downstream, selection.affinity());
-  EXPECT_EQ(CharacterGranularity, selection.granularity());
-  EXPECT_FALSE(selection.hasTrailingWhitespace());
-  EXPECT_FALSE(selection.isDirectional());
-  EXPECT_FALSE(selection.isHandleVisible());
-  EXPECT_FALSE(selection.isNone());
-  EXPECT_EQ(base, selection.base());
-  EXPECT_EQ(extent, selection.extent());
+  EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_EQ(kCharacterGranularity, selection.Granularity());
+  EXPECT_FALSE(selection.HasTrailingWhitespace());
+  EXPECT_FALSE(selection.IsDirectional());
+  EXPECT_FALSE(selection.IsHandleVisible());
+  EXPECT_FALSE(selection.IsNone());
+  EXPECT_EQ(base, selection.Base());
+  EXPECT_EQ(extent, selection.Extent());
 }
 
 TEST_F(SelectionTest, setIsHandleVisible) {
   SelectionInDOMTree::Builder builder;
-  builder.setIsHandleVisible(true);
-  const SelectionInDOMTree& selection = builder.build();
-  EXPECT_TRUE(selection.isHandleVisible());
+  builder.SetIsHandleVisible(true);
+  const SelectionInDOMTree& selection = builder.Build();
+  EXPECT_TRUE(selection.IsHandleVisible());
 }
 
 }  // namespace blink

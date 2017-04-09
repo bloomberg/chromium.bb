@@ -47,15 +47,15 @@ class WebHelperPlugin {
  public:
   // May return null if initialization fails. If the returned pointer is
   // non-null, the caller must free it by calling destroy().
-  BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType,
+  BLINK_EXPORT static WebHelperPlugin* Create(const WebString& plugin_type,
                                               WebLocalFrame*);
 
   // Returns a WebPlugin corresponding to the instantiated plugin. This will
   // never return null.
-  virtual WebPlugin* getPlugin() = 0;
+  virtual WebPlugin* GetPlugin() = 0;
 
   // Initiates destruction of the WebHelperPlugin.
-  virtual void destroy() = 0;
+  virtual void Destroy() = 0;
 
  protected:
   virtual ~WebHelperPlugin() {}
@@ -65,7 +65,7 @@ class WebHelperPlugin {
 struct WebHelperPluginDeleter {
   void operator()(WebHelperPlugin* plugin) {
     if (plugin)
-      plugin->destroy();
+      plugin->Destroy();
   }
 };
 

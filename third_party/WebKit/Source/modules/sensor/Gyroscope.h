@@ -13,14 +13,14 @@ class Gyroscope final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Gyroscope* create(ExecutionContext*,
+  static Gyroscope* Create(ExecutionContext*,
                            const SensorOptions&,
                            ExceptionState&);
-  static Gyroscope* create(ExecutionContext*, ExceptionState&);
+  static Gyroscope* Create(ExecutionContext*, ExceptionState&);
 
-  double x(bool& isNull) const;
-  double y(bool& isNull) const;
-  double z(bool& isNull) const;
+  double x(bool& is_null) const;
+  double y(bool& is_null) const;
+  double z(bool& is_null) const;
 
   DECLARE_VIRTUAL_TRACE();
 

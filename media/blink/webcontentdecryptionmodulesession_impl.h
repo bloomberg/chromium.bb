@@ -33,22 +33,22 @@ class WebContentDecryptionModuleSessionImpl
   ~WebContentDecryptionModuleSessionImpl() override;
 
   // blink::WebContentDecryptionModuleSession implementation.
-  void setClientInterface(Client* client) override;
-  blink::WebString sessionId() const override;
+  void SetClientInterface(Client* client) override;
+  blink::WebString SessionId() const override;
 
-  void initializeNewSession(
+  void InitializeNewSession(
       blink::WebEncryptedMediaInitDataType init_data_type,
       const unsigned char* initData,
       size_t initDataLength,
       blink::WebEncryptedMediaSessionType session_type,
       blink::WebContentDecryptionModuleResult result) override;
-  void load(const blink::WebString& session_id,
+  void Load(const blink::WebString& session_id,
             blink::WebContentDecryptionModuleResult result) override;
-  void update(const uint8_t* response,
+  void Update(const uint8_t* response,
               size_t response_length,
               blink::WebContentDecryptionModuleResult result) override;
-  void close(blink::WebContentDecryptionModuleResult result) override;
-  void remove(blink::WebContentDecryptionModuleResult result) override;
+  void Close(blink::WebContentDecryptionModuleResult result) override;
+  void Remove(blink::WebContentDecryptionModuleResult result) override;
 
   // Callbacks.
   void OnSessionMessage(ContentDecryptionModule::MessageType message_type,

@@ -17,135 +17,137 @@ namespace blink {
 
 TEST(ResourceRequestTest, RequestorOriginNonNull) {
   ResourceRequest req;
-  EXPECT_NE(nullptr, req.requestorOrigin().get());
-  EXPECT_TRUE(req.requestorOrigin()->isUnique());
+  EXPECT_NE(nullptr, req.RequestorOrigin().Get());
+  EXPECT_TRUE(req.RequestorOrigin()->IsUnique());
 }
 
 TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   ResourceRequest original;
-  original.setURL(KURL(ParsedURLString, "http://www.example.com/test.htm"));
-  original.setCachePolicy(WebCachePolicy::UseProtocolCachePolicy);
-  original.setTimeoutInterval(10);
-  original.setFirstPartyForCookies(
-      KURL(ParsedURLString, "http://www.example.com/first_party.htm"));
-  original.setRequestorOrigin(SecurityOrigin::create(
-      KURL(ParsedURLString, "http://www.example.com/first_party.htm")));
-  original.setHTTPMethod(HTTPNames::GET);
-  original.setHTTPHeaderField(AtomicString("Foo"), AtomicString("Bar"));
-  original.setHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));
-  original.setPriority(ResourceLoadPriorityLow, 20);
+  original.SetURL(KURL(kParsedURLString, "http://www.example.com/test.htm"));
+  original.SetCachePolicy(WebCachePolicy::kUseProtocolCachePolicy);
+  original.SetTimeoutInterval(10);
+  original.SetFirstPartyForCookies(
+      KURL(kParsedURLString, "http://www.example.com/first_party.htm"));
+  original.SetRequestorOrigin(SecurityOrigin::Create(
+      KURL(kParsedURLString, "http://www.example.com/first_party.htm")));
+  original.SetHTTPMethod(HTTPNames::GET);
+  original.SetHTTPHeaderField(AtomicString("Foo"), AtomicString("Bar"));
+  original.SetHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));
+  original.SetPriority(kResourceLoadPriorityLow, 20);
 
-  RefPtr<EncodedFormData> originalBody(EncodedFormData::create("Test Body"));
-  original.setHTTPBody(originalBody);
-  original.setAllowStoredCredentials(false);
-  original.setReportUploadProgress(false);
-  original.setHasUserGesture(false);
-  original.setDownloadToFile(false);
-  original.setServiceWorkerMode(WebURLRequest::ServiceWorkerMode::All);
-  original.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
-  original.setFetchCredentialsMode(
-      WebURLRequest::FetchCredentialsModeSameOrigin);
-  original.setRequestorID(30);
-  original.setRequestorProcessID(40);
-  original.setAppCacheHostID(50);
-  original.setRequestContext(WebURLRequest::RequestContextAudio);
-  original.setFrameType(WebURLRequest::FrameTypeNested);
-  original.setHTTPReferrer(
-      Referrer("http://www.example.com/referrer.htm", ReferrerPolicyDefault));
+  RefPtr<EncodedFormData> original_body(EncodedFormData::Create("Test Body"));
+  original.SetHTTPBody(original_body);
+  original.SetAllowStoredCredentials(false);
+  original.SetReportUploadProgress(false);
+  original.SetHasUserGesture(false);
+  original.SetDownloadToFile(false);
+  original.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kAll);
+  original.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  original.SetFetchCredentialsMode(
+      WebURLRequest::kFetchCredentialsModeSameOrigin);
+  original.SetRequestorID(30);
+  original.SetRequestorProcessID(40);
+  original.SetAppCacheHostID(50);
+  original.SetRequestContext(WebURLRequest::kRequestContextAudio);
+  original.SetFrameType(WebURLRequest::kFrameTypeNested);
+  original.SetHTTPReferrer(
+      Referrer("http://www.example.com/referrer.htm", kReferrerPolicyDefault));
 
   EXPECT_STREQ("http://www.example.com/test.htm",
-               original.url().getString().utf8().data());
-  EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy, original.getCachePolicy());
-  EXPECT_EQ(10, original.timeoutInterval());
+               original.Url().GetString().Utf8().Data());
+  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy, original.GetCachePolicy());
+  EXPECT_EQ(10, original.TimeoutInterval());
   EXPECT_STREQ("http://www.example.com/first_party.htm",
-               original.firstPartyForCookies().getString().utf8().data());
+               original.FirstPartyForCookies().GetString().Utf8().Data());
   EXPECT_STREQ("www.example.com",
-               original.requestorOrigin()->host().utf8().data());
-  EXPECT_STREQ("GET", original.httpMethod().utf8().data());
-  EXPECT_STREQ("Bar", original.httpHeaderFields().get("Foo").utf8().data());
-  EXPECT_STREQ("Fuga", original.httpHeaderFields().get("Piyo").utf8().data());
-  EXPECT_EQ(ResourceLoadPriorityLow, original.priority());
+               original.RequestorOrigin()->Host().Utf8().Data());
+  EXPECT_STREQ("GET", original.HttpMethod().Utf8().Data());
+  EXPECT_STREQ("Bar", original.HttpHeaderFields().Get("Foo").Utf8().Data());
+  EXPECT_STREQ("Fuga", original.HttpHeaderFields().Get("Piyo").Utf8().Data());
+  EXPECT_EQ(kResourceLoadPriorityLow, original.Priority());
   EXPECT_STREQ("Test Body",
-               original.httpBody()->flattenToString().utf8().data());
-  EXPECT_FALSE(original.allowStoredCredentials());
-  EXPECT_FALSE(original.reportUploadProgress());
-  EXPECT_FALSE(original.hasUserGesture());
-  EXPECT_FALSE(original.downloadToFile());
-  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::All,
-            original.getServiceWorkerMode());
-  EXPECT_EQ(WebURLRequest::FetchRequestModeCORS, original.fetchRequestMode());
-  EXPECT_EQ(WebURLRequest::FetchCredentialsModeSameOrigin,
-            original.fetchCredentialsMode());
-  EXPECT_EQ(30, original.requestorID());
-  EXPECT_EQ(40, original.requestorProcessID());
-  EXPECT_EQ(50, original.appCacheHostID());
-  EXPECT_EQ(WebURLRequest::RequestContextAudio, original.requestContext());
-  EXPECT_EQ(WebURLRequest::FrameTypeNested, original.frameType());
+               original.HttpBody()->FlattenToString().Utf8().Data());
+  EXPECT_FALSE(original.AllowStoredCredentials());
+  EXPECT_FALSE(original.ReportUploadProgress());
+  EXPECT_FALSE(original.HasUserGesture());
+  EXPECT_FALSE(original.DownloadToFile());
+  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kAll,
+            original.GetServiceWorkerMode());
+  EXPECT_EQ(WebURLRequest::kFetchRequestModeCORS,
+            original.GetFetchRequestMode());
+  EXPECT_EQ(WebURLRequest::kFetchCredentialsModeSameOrigin,
+            original.GetFetchCredentialsMode());
+  EXPECT_EQ(30, original.RequestorID());
+  EXPECT_EQ(40, original.RequestorProcessID());
+  EXPECT_EQ(50, original.AppCacheHostID());
+  EXPECT_EQ(WebURLRequest::kRequestContextAudio, original.GetRequestContext());
+  EXPECT_EQ(WebURLRequest::kFrameTypeNested, original.GetFrameType());
   EXPECT_STREQ("http://www.example.com/referrer.htm",
-               original.httpReferrer().utf8().data());
-  EXPECT_EQ(ReferrerPolicyDefault, original.getReferrerPolicy());
+               original.HttpReferrer().Utf8().Data());
+  EXPECT_EQ(kReferrerPolicyDefault, original.GetReferrerPolicy());
 
-  std::unique_ptr<CrossThreadResourceRequestData> data1(original.copyData());
+  std::unique_ptr<CrossThreadResourceRequestData> data1(original.CopyData());
   ResourceRequest copy1(data1.get());
 
   EXPECT_STREQ("http://www.example.com/test.htm",
-               copy1.url().getString().utf8().data());
-  EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy, copy1.getCachePolicy());
-  EXPECT_EQ(10, copy1.timeoutInterval());
+               copy1.Url().GetString().Utf8().Data());
+  EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy, copy1.GetCachePolicy());
+  EXPECT_EQ(10, copy1.TimeoutInterval());
   EXPECT_STREQ("http://www.example.com/first_party.htm",
-               copy1.firstPartyForCookies().getString().utf8().data());
+               copy1.FirstPartyForCookies().GetString().Utf8().Data());
   EXPECT_STREQ("www.example.com",
-               copy1.requestorOrigin()->host().utf8().data());
-  EXPECT_STREQ("GET", copy1.httpMethod().utf8().data());
-  EXPECT_STREQ("Bar", copy1.httpHeaderFields().get("Foo").utf8().data());
-  EXPECT_EQ(ResourceLoadPriorityLow, copy1.priority());
-  EXPECT_STREQ("Test Body", copy1.httpBody()->flattenToString().utf8().data());
-  EXPECT_FALSE(copy1.allowStoredCredentials());
-  EXPECT_FALSE(copy1.reportUploadProgress());
-  EXPECT_FALSE(copy1.hasUserGesture());
-  EXPECT_FALSE(copy1.downloadToFile());
-  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::All,
-            copy1.getServiceWorkerMode());
-  EXPECT_EQ(WebURLRequest::FetchRequestModeCORS, copy1.fetchRequestMode());
-  EXPECT_EQ(WebURLRequest::FetchCredentialsModeSameOrigin,
-            copy1.fetchCredentialsMode());
-  EXPECT_EQ(30, copy1.requestorID());
-  EXPECT_EQ(40, copy1.requestorProcessID());
-  EXPECT_EQ(50, copy1.appCacheHostID());
-  EXPECT_EQ(WebURLRequest::RequestContextAudio, copy1.requestContext());
-  EXPECT_EQ(WebURLRequest::FrameTypeNested, copy1.frameType());
+               copy1.RequestorOrigin()->Host().Utf8().Data());
+  EXPECT_STREQ("GET", copy1.HttpMethod().Utf8().Data());
+  EXPECT_STREQ("Bar", copy1.HttpHeaderFields().Get("Foo").Utf8().Data());
+  EXPECT_EQ(kResourceLoadPriorityLow, copy1.Priority());
+  EXPECT_STREQ("Test Body", copy1.HttpBody()->FlattenToString().Utf8().Data());
+  EXPECT_FALSE(copy1.AllowStoredCredentials());
+  EXPECT_FALSE(copy1.ReportUploadProgress());
+  EXPECT_FALSE(copy1.HasUserGesture());
+  EXPECT_FALSE(copy1.DownloadToFile());
+  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kAll,
+            copy1.GetServiceWorkerMode());
+  EXPECT_EQ(WebURLRequest::kFetchRequestModeCORS, copy1.GetFetchRequestMode());
+  EXPECT_EQ(WebURLRequest::kFetchCredentialsModeSameOrigin,
+            copy1.GetFetchCredentialsMode());
+  EXPECT_EQ(30, copy1.RequestorID());
+  EXPECT_EQ(40, copy1.RequestorProcessID());
+  EXPECT_EQ(50, copy1.AppCacheHostID());
+  EXPECT_EQ(WebURLRequest::kRequestContextAudio, copy1.GetRequestContext());
+  EXPECT_EQ(WebURLRequest::kFrameTypeNested, copy1.GetFrameType());
   EXPECT_STREQ("http://www.example.com/referrer.htm",
-               copy1.httpReferrer().utf8().data());
-  EXPECT_EQ(ReferrerPolicyDefault, copy1.getReferrerPolicy());
+               copy1.HttpReferrer().Utf8().Data());
+  EXPECT_EQ(kReferrerPolicyDefault, copy1.GetReferrerPolicy());
 
-  copy1.setAllowStoredCredentials(true);
-  copy1.setReportUploadProgress(true);
-  copy1.setHasUserGesture(true);
-  copy1.setDownloadToFile(true);
-  copy1.setServiceWorkerMode(WebURLRequest::ServiceWorkerMode::None);
-  copy1.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
-  copy1.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
+  copy1.SetAllowStoredCredentials(true);
+  copy1.SetReportUploadProgress(true);
+  copy1.SetHasUserGesture(true);
+  copy1.SetDownloadToFile(true);
+  copy1.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+  copy1.SetFetchRequestMode(WebURLRequest::kFetchRequestModeNoCORS);
+  copy1.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeInclude);
 
-  std::unique_ptr<CrossThreadResourceRequestData> data2(copy1.copyData());
+  std::unique_ptr<CrossThreadResourceRequestData> data2(copy1.CopyData());
   ResourceRequest copy2(data2.get());
-  EXPECT_TRUE(copy2.allowStoredCredentials());
-  EXPECT_TRUE(copy2.reportUploadProgress());
-  EXPECT_TRUE(copy2.hasUserGesture());
-  EXPECT_TRUE(copy2.downloadToFile());
-  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::None,
-            copy2.getServiceWorkerMode());
-  EXPECT_EQ(WebURLRequest::FetchRequestModeNoCORS, copy1.fetchRequestMode());
-  EXPECT_EQ(WebURLRequest::FetchCredentialsModeInclude,
-            copy1.fetchCredentialsMode());
+  EXPECT_TRUE(copy2.AllowStoredCredentials());
+  EXPECT_TRUE(copy2.ReportUploadProgress());
+  EXPECT_TRUE(copy2.HasUserGesture());
+  EXPECT_TRUE(copy2.DownloadToFile());
+  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kNone,
+            copy2.GetServiceWorkerMode());
+  EXPECT_EQ(WebURLRequest::kFetchRequestModeNoCORS,
+            copy1.GetFetchRequestMode());
+  EXPECT_EQ(WebURLRequest::kFetchCredentialsModeInclude,
+            copy1.GetFetchCredentialsMode());
 }
 
 TEST(ResourceRequestTest, SetHasUserGesture) {
   ResourceRequest original;
-  EXPECT_FALSE(original.hasUserGesture());
-  original.setHasUserGesture(true);
-  EXPECT_TRUE(original.hasUserGesture());
-  original.setHasUserGesture(false);
-  EXPECT_TRUE(original.hasUserGesture());
+  EXPECT_FALSE(original.HasUserGesture());
+  original.SetHasUserGesture(true);
+  EXPECT_TRUE(original.HasUserGesture());
+  original.SetHasUserGesture(false);
+  EXPECT_TRUE(original.HasUserGesture());
 }
 
 }  // namespace blink

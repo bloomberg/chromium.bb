@@ -45,8 +45,8 @@ class CORE_EXPORT InspectorInputAgent final
   WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 
  public:
-  static InspectorInputAgent* create(InspectedFrames* inspectedFrames) {
-    return new InspectorInputAgent(inspectedFrames);
+  static InspectorInputAgent* Create(InspectedFrames* inspected_frames) {
+    return new InspectorInputAgent(inspected_frames);
   }
 
   ~InspectorInputAgent() override;
@@ -55,14 +55,15 @@ class CORE_EXPORT InspectorInputAgent final
   // Methods called from the frontend for simulating input.
   protocol::Response dispatchTouchEvent(
       const String& type,
-      std::unique_ptr<protocol::Array<protocol::Input::TouchPoint>> touchPoints,
+      std::unique_ptr<protocol::Array<protocol::Input::TouchPoint>>
+          touch_points,
       protocol::Maybe<int> modifiers,
       protocol::Maybe<double> timestamp) override;
 
  private:
   explicit InspectorInputAgent(InspectedFrames*);
 
-  Member<InspectedFrames> m_inspectedFrames;
+  Member<InspectedFrames> inspected_frames_;
 };
 
 }  // namespace blink

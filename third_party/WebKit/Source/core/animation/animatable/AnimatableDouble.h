@@ -40,25 +40,25 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
  public:
   ~AnimatableDouble() override {}
 
-  static PassRefPtr<AnimatableDouble> create(double number) {
-    return adoptRef(new AnimatableDouble(number));
+  static PassRefPtr<AnimatableDouble> Create(double number) {
+    return AdoptRef(new AnimatableDouble(number));
   }
 
-  double toDouble() const { return m_number; }
+  double ToDouble() const { return number_; }
 
  protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+  PassRefPtr<AnimatableValue> InterpolateTo(const AnimatableValue*,
                                             double fraction) const override;
 
  private:
-  AnimatableDouble(double number) : m_number(number) {}
-  AnimatableType type() const override { return TypeDouble; }
-  bool equalTo(const AnimatableValue*) const override;
+  AnimatableDouble(double number) : number_(number) {}
+  AnimatableType GetType() const override { return kTypeDouble; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  double m_number;
+  double number_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, isDouble());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, IsDouble());
 
 }  // namespace blink
 

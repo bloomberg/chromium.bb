@@ -9,43 +9,44 @@
 namespace blink {
 
 OrientationIterator::OrientationIterator(const UChar* buffer,
-                                         unsigned bufferSize,
-                                         FontOrientation runOrientation)
-    : m_utf16Iterator(WTF::makeUnique<UTF16TextIterator>(buffer, bufferSize)),
-      m_bufferSize(bufferSize),
-      m_atEnd(bufferSize == 0) {
+                                         unsigned buffer_size,
+                                         FontOrientation run_orientation)
+    : utf16_iterator_(WTF::MakeUnique<UTF16TextIterator>(buffer, buffer_size)),
+      buffer_size_(buffer_size),
+      at_end_(buffer_size == 0) {
   // There's not much point in segmenting by isUprightInVertical if the text
   // orientation is not "mixed".
-  ASSERT(runOrientation == FontOrientation::VerticalMixed);
+  ASSERT(run_orientation == FontOrientation::kVerticalMixed);
 }
 
-bool OrientationIterator::consume(unsigned* orientationLimit,
-                                  RenderOrientation* renderOrientation) {
-  if (m_atEnd)
+bool OrientationIterator::Consume(unsigned* orientation_limit,
+                                  RenderOrientation* render_orientation) {
+  if (at_end_)
     return false;
 
-  RenderOrientation currentRenderOrientation = OrientationInvalid;
-  UChar32 nextUChar32;
-  while (m_utf16Iterator->consume(nextUChar32)) {
-    if (currentRenderOrientation == OrientationInvalid ||
-        !Character::isGraphemeExtended(nextUChar32)) {
-      RenderOrientation previousRenderOrientation = currentRenderOrientation;
-      currentRenderOrientation =
-          Character::isUprightInMixedVertical(nextUChar32)
-              ? OrientationKeep
-              : OrientationRotateSideways;
-      if (previousRenderOrientation != currentRenderOrientation &&
-          previousRenderOrientation != OrientationInvalid) {
-        *orientationLimit = m_utf16Iterator->offset();
-        *renderOrientation = previousRenderOrientation;
+  RenderOrientation current_render_orientation = kOrientationInvalid;
+  UChar32 next_u_char32;
+  while (utf16_iterator_->Consume(next_u_char32)) {
+    if (current_render_orientation == kOrientationInvalid ||
+        !Character::IsGraphemeExtended(next_u_char32)) {
+      RenderOrientation previous_render_orientation =
+          current_render_orientation;
+      current_render_orientation =
+          Character::IsUprightInMixedVertical(next_u_char32)
+              ? kOrientationKeep
+              : kOrientationRotateSideways;
+      if (previous_render_orientation != current_render_orientation &&
+          previous_render_orientation != kOrientationInvalid) {
+        *orientation_limit = utf16_iterator_->Offset();
+        *render_orientation = previous_render_orientation;
         return true;
       }
     }
-    m_utf16Iterator->advance();
+    utf16_iterator_->Advance();
   }
-  *orientationLimit = m_bufferSize;
-  *renderOrientation = currentRenderOrientation;
-  m_atEnd = true;
+  *orientation_limit = buffer_size_;
+  *render_orientation = current_render_orientation;
+  at_end_ = true;
   return true;
 }
 

@@ -21,18 +21,18 @@ template <typename P, typename T>
 bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
                                   P picker,
                                   T* value) {
-  if (constraints.isNull())
+  if (constraints.IsNull())
     return false;
 
-  const auto& the_field = constraints.basic().*picker;
-  if (the_field.hasExact()) {
-    *value = the_field.exact();
+  const auto& the_field = constraints.Basic().*picker;
+  if (the_field.HasExact()) {
+    *value = the_field.Exact();
     return true;
   }
-  for (const auto& advanced_constraint : constraints.advanced()) {
+  for (const auto& advanced_constraint : constraints.Advanced()) {
     const auto& the_field = advanced_constraint.*picker;
-    if (the_field.hasExact()) {
-      *value = the_field.exact();
+    if (the_field.HasExact()) {
+      *value = the_field.Exact();
       return true;
     }
   }
@@ -43,26 +43,26 @@ template <typename P, typename T>
 bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
                                 P picker,
                                 T* value) {
-  if (constraints.isNull())
+  if (constraints.IsNull())
     return false;
 
-  const auto& the_field = constraints.basic().*picker;
-  if (the_field.hasMax()) {
-    *value = the_field.max();
+  const auto& the_field = constraints.Basic().*picker;
+  if (the_field.HasMax()) {
+    *value = the_field.Max();
     return true;
   }
-  if (the_field.hasExact()) {
-    *value = the_field.exact();
+  if (the_field.HasExact()) {
+    *value = the_field.Exact();
     return true;
   }
-  for (const auto& advanced_constraint : constraints.advanced()) {
+  for (const auto& advanced_constraint : constraints.Advanced()) {
     const auto& the_field = advanced_constraint.*picker;
-    if (the_field.hasMax()) {
-      *value = the_field.max();
+    if (the_field.HasMax()) {
+      *value = the_field.Max();
       return true;
     }
-    if (the_field.hasExact()) {
-      *value = the_field.exact();
+    if (the_field.HasExact()) {
+      *value = the_field.Exact();
       return true;
     }
   }
@@ -73,26 +73,26 @@ template <typename P, typename T>
 bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
                                 P picker,
                                 T* value) {
-  if (constraints.isNull())
+  if (constraints.IsNull())
     return false;
 
-  const auto& the_field = constraints.basic().*picker;
-  if (the_field.hasMin()) {
-    *value = the_field.min();
+  const auto& the_field = constraints.Basic().*picker;
+  if (the_field.HasMin()) {
+    *value = the_field.Min();
     return true;
   }
-  if (the_field.hasExact()) {
-    *value = the_field.exact();
+  if (the_field.HasExact()) {
+    *value = the_field.Exact();
     return true;
   }
-  for (const auto& advanced_constraint : constraints.advanced()) {
+  for (const auto& advanced_constraint : constraints.Advanced()) {
     const auto& the_field = advanced_constraint.*picker;
-    if (the_field.hasMin()) {
-      *value = the_field.min();
+    if (the_field.HasMin()) {
+      *value = the_field.Min();
       return true;
     }
-    if (the_field.hasExact()) {
-      *value = the_field.exact();
+    if (the_field.HasExact()) {
+      *value = the_field.Exact();
       return true;
     }
   }
@@ -192,7 +192,7 @@ bool GetConstraintValueAsString(
     std::string* value) {
   blink::WebVector<blink::WebString> return_value;
   if (ScanConstraintsForExactValue(constraints, picker, &return_value)) {
-    *value = return_value[0].utf8();
+    *value = return_value[0].Utf8();
     return true;
   }
   return false;
@@ -227,10 +227,10 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
                static_cast<double>(resolution_set.max_width()) /
                    static_cast<double>(resolution_set.min_height()));
   double track_max_frame_rate = frame_rate_set.Max();
-  if (basic_constraint_set.frameRate.hasIdeal()) {
+  if (basic_constraint_set.frame_rate.HasIdeal()) {
     track_max_frame_rate = std::min(
-        track_max_frame_rate,
-        std::max(basic_constraint_set.frameRate.ideal(), frame_rate_set.Min()));
+        track_max_frame_rate, std::max(basic_constraint_set.frame_rate.Ideal(),
+                                       frame_rate_set.Min()));
   }
   // VideoTrackAdapter uses a frame rate of 0.0 to disable frame-rate
   // adjustment.

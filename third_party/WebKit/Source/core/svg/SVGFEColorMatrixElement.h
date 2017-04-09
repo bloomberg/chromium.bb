@@ -30,7 +30,7 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrixType>();
+const SVGEnumerationStringEntries& GetStaticStringEntries<ColorMatrixType>();
 
 class SVGFEColorMatrixElement final
     : public SVGFilterPrimitiveStandardAttributes {
@@ -39,23 +39,23 @@ class SVGFEColorMatrixElement final
  public:
   DECLARE_NODE_FACTORY(SVGFEColorMatrixElement);
 
-  SVGAnimatedNumberList* values() { return m_values.get(); }
-  SVGAnimatedString* in1() { return m_in1.get(); }
-  SVGAnimatedEnumeration<ColorMatrixType>* type() { return m_type.get(); }
+  SVGAnimatedNumberList* values() { return values_.Get(); }
+  SVGAnimatedString* in1() { return in1_.Get(); }
+  SVGAnimatedEnumeration<ColorMatrixType>* type() { return type_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGFEColorMatrixElement(Document&);
 
-  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
-  bool taintsOrigin(bool inputsTaintOrigin) const override;
+  bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin(bool inputs_taint_origin) const override;
 
-  Member<SVGAnimatedNumberList> m_values;
-  Member<SVGAnimatedString> m_in1;
-  Member<SVGAnimatedEnumeration<ColorMatrixType>> m_type;
+  Member<SVGAnimatedNumberList> values_;
+  Member<SVGAnimatedString> in1_;
+  Member<SVGAnimatedEnumeration<ColorMatrixType>> type_;
 };
 
 }  // namespace blink

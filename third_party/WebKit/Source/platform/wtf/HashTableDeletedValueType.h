@@ -33,7 +33,7 @@
 
 namespace WTF {
 
-enum HashTableDeletedValueType { HashTableDeletedValue };
+enum HashTableDeletedValueType { kHashTableDeletedValue };
 
 }  // namespace WTF
 

@@ -33,7 +33,7 @@ class MockInterfaceProvider : public blink::InterfaceProvider {
   MockInterfaceProvider() : m_wakeLockStatus(false) {}
   ~MockInterfaceProvider() {}
 
-  void getInterface(const char* name, mojo::ScopedMessagePipeHandle) override;
+  void GetInterface(const char* name, mojo::ScopedMessagePipeHandle) override;
 
   bool wakeLockStatus() const { return m_wakeLockStatus; }
   void setWakeLockStatus(bool status) { m_wakeLockStatus = status; }
@@ -60,7 +60,7 @@ class MockInterfaceProvider : public blink::InterfaceProvider {
   bool m_wakeLockStatus;
 };
 
-void MockInterfaceProvider::getInterface(const char* name,
+void MockInterfaceProvider::GetInterface(const char* name,
                                          mojo::ScopedMessagePipeHandle handle) {
   m_mockWakeLockService.reset(new MockWakeLockService(
       this, mojo::MakeRequest<WakeLockService>(std::move(handle))));
@@ -70,7 +70,7 @@ void MockInterfaceProvider::getInterface(const char* name,
 class TestWebFrameClient : public blink::FrameTestHelpers::TestWebFrameClient {
  public:
   ~TestWebFrameClient() override = default;
-  blink::InterfaceProvider* interfaceProvider() override {
+  blink::InterfaceProvider* GetInterfaceProvider() override {
     return &m_interfaceProvider;
   }
 
@@ -81,37 +81,37 @@ class TestWebFrameClient : public blink::FrameTestHelpers::TestWebFrameClient {
 class ScreenWakeLockTest : public testing::Test {
  protected:
   void SetUp() override {
-    m_webViewHelper.initialize(true, &m_testWebFrameClient);
-    blink::URLTestHelpers::registerMockedURLLoadFromBase(
-        blink::WebString::fromUTF8("http://example.com/"),
-        blink::testing::webTestDataPath(),
-        blink::WebString::fromUTF8("foo.html"));
+    m_webViewHelper.Initialize(true, &m_testWebFrameClient);
+    blink::URLTestHelpers::RegisterMockedURLLoadFromBase(
+        blink::WebString::FromUTF8("http://example.com/"),
+        blink::testing::WebTestDataPath(),
+        blink::WebString::FromUTF8("foo.html"));
     loadFrame();
   }
 
   void TearDown() override {
-    blink::Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
-    blink::testing::runPendingTasks();
+    blink::Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
+    blink::testing::RunPendingTasks();
   }
 
   void loadFrame() {
-    blink::FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
+    blink::FrameTestHelpers::LoadFrame(m_webViewHelper.WebView()->MainFrame(),
                                        "http://example.com/foo.html");
-    m_webViewHelper.webView()->updateAllLifecyclePhases();
+    m_webViewHelper.WebView()->UpdateAllLifecyclePhases();
   }
 
   blink::LocalFrame* frame() {
-    DCHECK(m_webViewHelper.webView());
-    DCHECK(m_webViewHelper.webView()->mainFrameImpl());
-    return m_webViewHelper.webView()->mainFrameImpl()->frame();
+    DCHECK(m_webViewHelper.WebView());
+    DCHECK(m_webViewHelper.WebView()->MainFrameImpl());
+    return m_webViewHelper.WebView()->MainFrameImpl()->GetFrame();
   }
 
   blink::Screen* screen() {
     DCHECK(frame());
-    DCHECK(frame()->domWindow());
-    return frame()->domWindow()->screen();
+    DCHECK(frame()->DomWindow());
+    return frame()->DomWindow()->screen();
   }
 
   bool screenKeepAwake() {
@@ -121,7 +121,7 @@ class ScreenWakeLockTest : public testing::Test {
 
   bool clientKeepScreenAwake() {
     return static_cast<MockInterfaceProvider*>(
-               m_testWebFrameClient.interfaceProvider())
+               m_testWebFrameClient.GetInterfaceProvider())
         ->wakeLockStatus();
   }
 
@@ -129,23 +129,23 @@ class ScreenWakeLockTest : public testing::Test {
     DCHECK(screen());
     ScreenWakeLock::setKeepAwake(*screen(), keepAwake);
     // Let the notification sink through the mojo pipes.
-    blink::testing::runPendingTasks();
+    blink::testing::RunPendingTasks();
   }
 
   void show() {
-    DCHECK(m_webViewHelper.webView());
-    m_webViewHelper.webView()->setVisibilityState(
-        blink::WebPageVisibilityStateVisible, false);
+    DCHECK(m_webViewHelper.WebView());
+    m_webViewHelper.WebView()->SetVisibilityState(
+        blink::kWebPageVisibilityStateVisible, false);
     // Let the notification sink through the mojo pipes.
-    blink::testing::runPendingTasks();
+    blink::testing::RunPendingTasks();
   }
 
   void hide() {
-    DCHECK(m_webViewHelper.webView());
-    m_webViewHelper.webView()->setVisibilityState(
-        blink::WebPageVisibilityStateHidden, false);
+    DCHECK(m_webViewHelper.WebView());
+    m_webViewHelper.WebView()->SetVisibilityState(
+        blink::kWebPageVisibilityStateHidden, false);
     // Let the notification sink through the mojo pipes.
-    blink::testing::runPendingTasks();
+    blink::testing::RunPendingTasks();
   }
 
   // Order of these members is important as we need to make sure that

@@ -25,15 +25,15 @@ class PLATFORM_EXPORT CompositorAnimationHost {
  public:
   explicit CompositorAnimationHost(cc::AnimationHost*);
 
-  void addTimeline(const CompositorAnimationTimeline&);
-  void removeTimeline(const CompositorAnimationTimeline&);
+  void AddTimeline(const CompositorAnimationTimeline&);
+  void RemoveTimeline(const CompositorAnimationTimeline&);
 
-  void adjustImplOnlyScrollOffsetAnimation(CompositorElementId,
+  void AdjustImplOnlyScrollOffsetAnimation(CompositorElementId,
                                            const gfx::Vector2dF& adjustment);
-  void takeOverImplOnlyScrollOffsetAnimation(CompositorElementId);
+  void TakeOverImplOnlyScrollOffsetAnimation(CompositorElementId);
 
  private:
-  cc::AnimationHost* m_animationHost;
+  cc::AnimationHost* animation_host_;
 };
 
 }  // namespace blink

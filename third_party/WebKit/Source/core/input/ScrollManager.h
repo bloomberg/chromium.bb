@@ -39,11 +39,11 @@ class CORE_EXPORT ScrollManager
   explicit ScrollManager(LocalFrame&);
   DECLARE_TRACE();
 
-  void clear();
+  void Clear();
 
-  bool middleClickAutoscrollInProgress() const;
-  AutoscrollController* autoscrollController() const;
-  void stopAutoscroll();
+  bool MiddleClickAutoscrollInProgress() const;
+  AutoscrollController* GetAutoscrollController() const;
+  void StopAutoscroll();
 
   // Performs a chaining logical scroll, within a *single* frame, starting
   // from either a provided starting node or a default based on the focused or
@@ -55,93 +55,93 @@ class CORE_EXPORT ScrollManager
   // granularity - The units that the  scroll delta parameter is in.
   // startNode - Optional. If provided, start chaining from the given node.
   //             If not, use the current focus or last clicked node.
-  bool logicalScroll(ScrollDirection,
+  bool LogicalScroll(ScrollDirection,
                      ScrollGranularity,
-                     Node* startNode,
-                     Node* mousePressNode);
+                     Node* start_node,
+                     Node* mouse_press_node);
 
   // Performs a logical scroll that chains, crossing frames, starting from
   // the given node or a reasonable default (focus/last clicked).
-  bool bubblingScroll(ScrollDirection,
+  bool BubblingScroll(ScrollDirection,
                       ScrollGranularity,
-                      Node* startingNode,
-                      Node* mousePressNode);
+                      Node* starting_node,
+                      Node* mouse_press_node);
 
-  void setFrameWasScrolledByUser();
+  void SetFrameWasScrolledByUser();
 
   // TODO(crbug.com/616491): Consider moving all gesture related functions to
   // another class.
 
   // Handle the provided scroll gesture event, propagating down to child frames
   // as necessary.
-  WebInputEventResult handleGestureScrollEvent(const WebGestureEvent&);
+  WebInputEventResult HandleGestureScrollEvent(const WebGestureEvent&);
 
-  WebInputEventResult handleGestureScrollEnd(const WebGestureEvent&);
+  WebInputEventResult HandleGestureScrollEnd(const WebGestureEvent&);
 
-  bool isScrollbarHandlingGestures() const;
+  bool IsScrollbarHandlingGestures() const;
 
   // Returns true if the gesture event should be handled in ScrollManager.
-  bool canHandleGestureEvent(const GestureEventWithHitTestResults&);
+  bool CanHandleGestureEvent(const GestureEventWithHitTestResults&);
 
   // These functions are related to |m_resizeScrollableArea|.
-  bool inResizeMode() const;
-  void resize(const WebMouseEvent&);
+  bool InResizeMode() const;
+  void Resize(const WebMouseEvent&);
   // Clears |m_resizeScrollableArea|. if |shouldNotBeNull| is true this
   // function DCHECKs to make sure that variable is indeed not null.
-  void clearResizeScrollableArea(bool shouldNotBeNull);
-  void setResizeScrollableArea(PaintLayer*, IntPoint);
+  void ClearResizeScrollableArea(bool should_not_be_null);
+  void SetResizeScrollableArea(PaintLayer*, IntPoint);
 
  private:
-  WebInputEventResult handleGestureScrollUpdate(const WebGestureEvent&);
-  WebInputEventResult handleGestureScrollBegin(const WebGestureEvent&);
+  WebInputEventResult HandleGestureScrollUpdate(const WebGestureEvent&);
+  WebInputEventResult HandleGestureScrollBegin(const WebGestureEvent&);
 
-  WebInputEventResult passScrollGestureEvent(const WebGestureEvent&,
+  WebInputEventResult PassScrollGestureEvent(const WebGestureEvent&,
                                              LayoutObject*);
 
-  void clearGestureScrollState();
+  void ClearGestureScrollState();
 
-  void customizedScroll(const Node& startNode, ScrollState&);
+  void CustomizedScroll(const Node& start_node, ScrollState&);
 
-  Page* page() const;
+  Page* GetPage() const;
 
-  bool isViewportScrollingElement(const Element&) const;
+  bool IsViewportScrollingElement(const Element&) const;
 
-  bool handleScrollGestureOnResizer(Node*, const WebGestureEvent&);
+  bool HandleScrollGestureOnResizer(Node*, const WebGestureEvent&);
 
-  void recomputeScrollChain(const Node& startNode,
-                            std::deque<int>& scrollChain);
+  void RecomputeScrollChain(const Node& start_node,
+                            std::deque<int>& scroll_chain);
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.
 
-  const Member<LocalFrame> m_frame;
+  const Member<LocalFrame> frame_;
 
   // Only used with the ScrollCustomization runtime enabled feature.
-  std::deque<int> m_currentScrollChain;
+  std::deque<int> current_scroll_chain_;
 
-  Member<Node> m_scrollGestureHandlingNode;
+  Member<Node> scroll_gesture_handling_node_;
 
-  bool m_lastGestureScrollOverFrameViewBase;
+  bool last_gesture_scroll_over_frame_view_base_;
 
   // The most recent element to scroll natively during this scroll
   // sequence. Null if no native element has scrolled this scroll
   // sequence, or if the most recent element to scroll used scroll
   // customization.
-  Member<Element> m_previousGestureScrolledElement;
+  Member<Element> previous_gesture_scrolled_element_;
 
   // True iff some of the delta has been consumed for the current
   // scroll sequence in this frame, or any child frames. Only used
   // with ScrollCustomization. If some delta has been consumed, a
   // scroll which shouldn't propagate can't cause any element to
   // scroll other than the |m_previousGestureScrolledNode|.
-  bool m_deltaConsumedForScrollSequence;
+  bool delta_consumed_for_scroll_sequence_;
 
-  Member<Scrollbar> m_scrollbarHandlingScrollGesture;
+  Member<Scrollbar> scrollbar_handling_scroll_gesture_;
 
-  Member<PaintLayerScrollableArea> m_resizeScrollableArea;
+  Member<PaintLayerScrollableArea> resize_scrollable_area_;
 
   LayoutSize
-      m_offsetFromResizeCorner;  // In the coords of m_resizeScrollableArea.
+      offset_from_resize_corner_;  // In the coords of m_resizeScrollableArea.
 };
 
 }  // namespace blink

@@ -172,7 +172,7 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
 
 blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
     const WebContents* web_contents) const {
-  return blink::WebDisplayModeBrowser;
+  return blink::kWebDisplayModeBrowser;
 }
 
 content::ColorChooser* WebContentsDelegate::OpenColorChooser(
@@ -266,7 +266,7 @@ bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
 blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
     WebContents* web_contents,
     SecurityStyleExplanations* security_style_explanations) {
-  return blink::WebSecurityStyleUnknown;
+  return blink::kWebSecurityStyleUnknown;
 }
 
 void WebContentsDelegate::ShowCertificateViewerInDevTools(

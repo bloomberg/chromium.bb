@@ -8,24 +8,24 @@ namespace blink {
 
 namespace {
 
-DOMFloat32Array* vecToFloat32Array(const WebGamepadVector& vec) {
-  if (vec.notNull) {
-    DOMFloat32Array* out = DOMFloat32Array::create(3);
-    out->data()[0] = vec.x;
-    out->data()[1] = vec.y;
-    out->data()[2] = vec.z;
+DOMFloat32Array* VecToFloat32Array(const WebGamepadVector& vec) {
+  if (vec.not_null) {
+    DOMFloat32Array* out = DOMFloat32Array::Create(3);
+    out->Data()[0] = vec.x;
+    out->Data()[1] = vec.y;
+    out->Data()[2] = vec.z;
     return out;
   }
   return nullptr;
 }
 
-DOMFloat32Array* quatToFloat32Array(const WebGamepadQuaternion& quat) {
-  if (quat.notNull) {
-    DOMFloat32Array* out = DOMFloat32Array::create(4);
-    out->data()[0] = quat.x;
-    out->data()[1] = quat.y;
-    out->data()[2] = quat.z;
-    out->data()[3] = quat.w;
+DOMFloat32Array* QuatToFloat32Array(const WebGamepadQuaternion& quat) {
+  if (quat.not_null) {
+    DOMFloat32Array* out = DOMFloat32Array::Create(4);
+    out->Data()[0] = quat.x;
+    out->Data()[1] = quat.y;
+    out->Data()[2] = quat.z;
+    out->Data()[3] = quat.w;
     return out;
   }
   return nullptr;
@@ -35,27 +35,27 @@ DOMFloat32Array* quatToFloat32Array(const WebGamepadQuaternion& quat) {
 
 GamepadPose::GamepadPose() {}
 
-void GamepadPose::setPose(const WebGamepadPose& state) {
-  if (state.notNull) {
-    m_hasOrientation = state.hasOrientation;
-    m_hasPosition = state.hasPosition;
+void GamepadPose::SetPose(const WebGamepadPose& state) {
+  if (state.not_null) {
+    has_orientation_ = state.has_orientation;
+    has_position_ = state.has_position;
 
-    m_orientation = quatToFloat32Array(state.orientation);
-    m_position = vecToFloat32Array(state.position);
-    m_angularVelocity = vecToFloat32Array(state.angularVelocity);
-    m_linearVelocity = vecToFloat32Array(state.linearVelocity);
-    m_angularAcceleration = vecToFloat32Array(state.angularAcceleration);
-    m_linearAcceleration = vecToFloat32Array(state.linearAcceleration);
+    orientation_ = QuatToFloat32Array(state.orientation);
+    position_ = VecToFloat32Array(state.position);
+    angular_velocity_ = VecToFloat32Array(state.angular_velocity);
+    linear_velocity_ = VecToFloat32Array(state.linear_velocity);
+    angular_acceleration_ = VecToFloat32Array(state.angular_acceleration);
+    linear_acceleration_ = VecToFloat32Array(state.linear_acceleration);
   }
 }
 
 DEFINE_TRACE(GamepadPose) {
-  visitor->trace(m_orientation);
-  visitor->trace(m_position);
-  visitor->trace(m_angularVelocity);
-  visitor->trace(m_linearVelocity);
-  visitor->trace(m_angularAcceleration);
-  visitor->trace(m_linearAcceleration);
+  visitor->Trace(orientation_);
+  visitor->Trace(position_);
+  visitor->Trace(angular_velocity_);
+  visitor->Trace(linear_velocity_);
+  visitor->Trace(angular_acceleration_);
+  visitor->Trace(linear_acceleration_);
 }
 
 }  // namespace blink

@@ -47,7 +47,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   void ReadDeviceData(size_t index);
 
   // File descriptor for the /dev/input/js* devices. -1 if not in use.
-  int device_fd_[blink::WebGamepads::itemsLengthCap];
+  int device_fd_[blink::WebGamepads::kItemsLengthCap];
 
   std::unique_ptr<device::UdevLinux> udev_;
 

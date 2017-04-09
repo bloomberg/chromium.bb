@@ -22,13 +22,13 @@ class CORE_EXPORT AnimationInputHelpers {
   STATIC_ONLY(AnimationInputHelpers);
 
  public:
-  static CSSPropertyID keyframeAttributeToCSSProperty(const String&,
+  static CSSPropertyID KeyframeAttributeToCSSProperty(const String&,
                                                       const Document&);
-  static CSSPropertyID keyframeAttributeToPresentationAttribute(const String&,
+  static CSSPropertyID KeyframeAttributeToPresentationAttribute(const String&,
                                                                 const Element&);
-  static const QualifiedName* keyframeAttributeToSVGAttribute(const String&,
+  static const QualifiedName* KeyframeAttributeToSVGAttribute(const String&,
                                                               Element&);
-  static PassRefPtr<TimingFunction> parseTimingFunction(const String&,
+  static PassRefPtr<TimingFunction> ParseTimingFunction(const String&,
                                                         Document*,
                                                         ExceptionState&);
 };

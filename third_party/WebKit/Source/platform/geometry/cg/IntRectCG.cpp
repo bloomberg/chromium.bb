@@ -30,10 +30,10 @@
 namespace blink {
 
 IntRect::operator CGRect() const {
-  return CGRectMake(x(), y(), width(), height());
+  return CGRectMake(X(), Y(), Width(), Height());
 }
 
-IntRect enclosingIntRect(const CGRect& rect) {
+IntRect EnclosingIntRect(const CGRect& rect) {
   int l = static_cast<int>(floorf(rect.origin.x));
   int t = static_cast<int>(floorf(rect.origin.y));
   int r = static_cast<int>(ceilf(CGRectGetMaxX(rect)));

@@ -23,25 +23,25 @@ class BackgroundFetchManagerTest : public ::testing::Test {
   // Creates a vector of WebServiceWorkerRequest entries for the given
   // |requests| based on the |scope|. Proxied in the fixture to reduce the
   // number of friend declarations necessary in the BackgroundFetchManager.
-  Vector<WebServiceWorkerRequest> createWebRequestVector(
+  Vector<WebServiceWorkerRequest> CreateWebRequestVector(
       V8TestingScope& scope,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests) {
-    return BackgroundFetchManager::createWebRequestVector(
-        scope.getScriptState(), requests, scope.getExceptionState());
+    return BackgroundFetchManager::CreateWebRequestVector(
+        scope.GetScriptState(), requests, scope.GetExceptionState());
   }
 
   // Returns a Dictionary object that represents a JavaScript dictionary with
   // a single key-value pair, where the key always is "method" with the value
   // set to |method|.
-  Dictionary getDictionaryForMethod(V8TestingScope& scope, const char* method) {
-    v8::Isolate* isolate = scope.isolate();
+  Dictionary GetDictionaryForMethod(V8TestingScope& scope, const char* method) {
+    v8::Isolate* isolate = scope.GetIsolate();
     v8::Local<v8::Object> data = v8::Object::New(isolate);
 
-    data->Set(isolate->GetCurrentContext(), v8String(isolate, "method"),
-              v8String(isolate, method))
+    data->Set(isolate->GetCurrentContext(), V8String(isolate, "method"),
+              V8String(isolate, method))
         .ToChecked();
 
-    return Dictionary(scope.isolate(), data, scope.getExceptionState());
+    return Dictionary(scope.GetIsolate(), data, scope.GetExceptionState());
   }
 };
 
@@ -50,136 +50,138 @@ TEST_F(BackgroundFetchManagerTest, NullValue) {
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests;
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scope, requests);
-  ASSERT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(scope.getExceptionState().code(), V8TypeError);
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(scope, requests);
+  ASSERT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(scope.GetExceptionState().Code(), kV8TypeError);
 }
 
 TEST_F(BackgroundFetchManagerTest, SingleUSVString) {
   V8TestingScope scope;
 
-  KURL imageUrl(ParsedURLString, "https://www.example.com/my_image.png");
+  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::fromUSVString(
-          imageUrl.getString());
+          image_url.GetString());
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scope, requests);
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(scope, requests);
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(webRequests.size(), 1u);
+  ASSERT_EQ(web_requests.size(), 1u);
 
-  WebServiceWorkerRequest& webRequest = webRequests[0];
-  EXPECT_EQ(webRequest.url(), WebURL(imageUrl));
-  EXPECT_EQ(webRequest.method(), "GET");
+  WebServiceWorkerRequest& web_request = web_requests[0];
+  EXPECT_EQ(web_request.Url(), WebURL(image_url));
+  EXPECT_EQ(web_request.Method(), "GET");
 }
 
 TEST_F(BackgroundFetchManagerTest, SingleRequest) {
   V8TestingScope scope;
 
-  KURL imageUrl(ParsedURLString, "https://www.example.com/my_image.png");
+  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
 
-  Request* request = Request::create(
-      scope.getScriptState(), imageUrl.getString(),
-      getDictionaryForMethod(scope, "POST"), scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  Request* request = Request::Create(
+      scope.GetScriptState(), image_url.GetString(),
+      GetDictionaryForMethod(scope, "POST"), scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   ASSERT_TRUE(request);
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::fromRequest(request);
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scope, requests);
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(scope, requests);
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(webRequests.size(), 1u);
+  ASSERT_EQ(web_requests.size(), 1u);
 
-  WebServiceWorkerRequest& webRequest = webRequests[0];
-  EXPECT_EQ(webRequest.url(), WebURL(imageUrl));
-  EXPECT_EQ(webRequest.method(), "POST");
+  WebServiceWorkerRequest& web_request = web_requests[0];
+  EXPECT_EQ(web_request.Url(), WebURL(image_url));
+  EXPECT_EQ(web_request.Method(), "POST");
 }
 
 TEST_F(BackgroundFetchManagerTest, Sequence) {
   V8TestingScope scope;
 
-  KURL imageUrl(ParsedURLString, "https://www.example.com/my_image.png");
-  KURL iconUrl(ParsedURLString, "https://www.example.com/my_icon.jpg");
-  KURL catVideoUrl(ParsedURLString, "https://www.example.com/my_cat_video.avi");
+  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
+  KURL icon_url(kParsedURLString, "https://www.example.com/my_icon.jpg");
+  KURL cat_video_url(kParsedURLString,
+                     "https://www.example.com/my_cat_video.avi");
 
-  RequestOrUSVString imageRequest =
-      RequestOrUSVString::fromUSVString(imageUrl.getString());
-  RequestOrUSVString iconRequest =
-      RequestOrUSVString::fromUSVString(iconUrl.getString());
+  RequestOrUSVString image_request =
+      RequestOrUSVString::fromUSVString(image_url.GetString());
+  RequestOrUSVString icon_request =
+      RequestOrUSVString::fromUSVString(icon_url.GetString());
 
-  Request* request = Request::create(
-      scope.getScriptState(), catVideoUrl.getString(),
-      getDictionaryForMethod(scope, "DELETE"), scope.getExceptionState());
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  Request* request = Request::Create(
+      scope.GetScriptState(), cat_video_url.GetString(),
+      GetDictionaryForMethod(scope, "DELETE"), scope.GetExceptionState());
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
   ASSERT_TRUE(request);
 
-  RequestOrUSVString catVideoRequest = RequestOrUSVString::fromRequest(request);
+  RequestOrUSVString cat_video_request =
+      RequestOrUSVString::fromRequest(request);
 
-  HeapVector<RequestOrUSVString> requestSequence;
-  requestSequence.push_back(imageRequest);
-  requestSequence.push_back(iconRequest);
-  requestSequence.push_back(catVideoRequest);
+  HeapVector<RequestOrUSVString> request_sequence;
+  request_sequence.push_back(image_request);
+  request_sequence.push_back(icon_request);
+  request_sequence.push_back(cat_video_request);
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::
-          fromRequestOrUSVStringSequence(requestSequence);
+          fromRequestOrUSVStringSequence(request_sequence);
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scope, requests);
-  ASSERT_FALSE(scope.getExceptionState().hadException());
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(scope, requests);
+  ASSERT_FALSE(scope.GetExceptionState().HadException());
 
-  ASSERT_EQ(webRequests.size(), 3u);
-  EXPECT_EQ(webRequests[0].url(), WebURL(imageUrl));
-  EXPECT_EQ(webRequests[0].method(), "GET");
+  ASSERT_EQ(web_requests.size(), 3u);
+  EXPECT_EQ(web_requests[0].Url(), WebURL(image_url));
+  EXPECT_EQ(web_requests[0].Method(), "GET");
 
-  EXPECT_EQ(webRequests[1].url(), WebURL(iconUrl));
-  EXPECT_EQ(webRequests[1].method(), "GET");
+  EXPECT_EQ(web_requests[1].Url(), WebURL(icon_url));
+  EXPECT_EQ(web_requests[1].Method(), "GET");
 
-  EXPECT_EQ(webRequests[2].url(), WebURL(catVideoUrl));
-  EXPECT_EQ(webRequests[2].method(), "DELETE");
+  EXPECT_EQ(web_requests[2].Url(), WebURL(cat_video_url));
+  EXPECT_EQ(web_requests[2].Method(), "DELETE");
 }
 
 TEST_F(BackgroundFetchManagerTest, SequenceEmpty) {
   V8TestingScope scope;
 
-  HeapVector<RequestOrUSVString> requestSequence;
+  HeapVector<RequestOrUSVString> request_sequence;
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::
-          fromRequestOrUSVStringSequence(requestSequence);
+          fromRequestOrUSVStringSequence(request_sequence);
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scope, requests);
-  ASSERT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(scope.getExceptionState().code(), V8TypeError);
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(scope, requests);
+  ASSERT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(scope.GetExceptionState().Code(), kV8TypeError);
 }
 
 TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
   V8TestingScope scope;
 
-  KURL imageUrl(ParsedURLString, "https://www.example.com/my_image.png");
+  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
 
-  RequestOrUSVString nullRequest;
-  RequestOrUSVString imageRequest =
-      RequestOrUSVString::fromUSVString(imageUrl.getString());
+  RequestOrUSVString null_request;
+  RequestOrUSVString image_request =
+      RequestOrUSVString::fromUSVString(image_url.GetString());
 
-  HeapVector<RequestOrUSVString> requestSequence;
-  requestSequence.push_back(imageRequest);
-  requestSequence.push_back(nullRequest);
+  HeapVector<RequestOrUSVString> request_sequence;
+  request_sequence.push_back(image_request);
+  request_sequence.push_back(null_request);
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::
-          fromRequestOrUSVStringSequence(requestSequence);
+          fromRequestOrUSVStringSequence(request_sequence);
 
-  Vector<WebServiceWorkerRequest> webRequests =
-      createWebRequestVector(scope, requests);
-  ASSERT_TRUE(scope.getExceptionState().hadException());
-  EXPECT_EQ(scope.getExceptionState().code(), V8TypeError);
+  Vector<WebServiceWorkerRequest> web_requests =
+      CreateWebRequestVector(scope, requests);
+  ASSERT_TRUE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(scope.GetExceptionState().Code(), kV8TypeError);
 }
 
 }  // namespace blink

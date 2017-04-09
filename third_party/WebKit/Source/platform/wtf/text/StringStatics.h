@@ -40,7 +40,7 @@ class StringStatics {
   STATIC_ONLY(StringStatics);
 
  public:
-  WTF_EXPORT static void init();
+  WTF_EXPORT static void Init();
 };
 }
 

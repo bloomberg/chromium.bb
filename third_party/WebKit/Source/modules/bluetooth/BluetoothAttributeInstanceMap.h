@@ -32,12 +32,12 @@ class BluetoothAttributeInstanceMap final
   // in the map.
   BluetoothRemoteGATTService* GetOrCreateRemoteGATTService(
       mojom::blink::WebBluetoothRemoteGATTServicePtr,
-      bool isPrimary,
-      const String& deviceInstanceId);
+      bool is_primary,
+      const String& device_instance_id);
 
   // Returns true if a BluetoothRemoteGATTService with |serviceInstanceId|
   // is in the map.
-  bool ContainsService(const String& serviceInstanceId);
+  bool ContainsService(const String& service_instance_id);
 
   // Constructs a new BluetoothRemoteGATTCharacteristic object if there was no
   // characteristic with the same instance id and adds it to the map.
@@ -50,7 +50,7 @@ class BluetoothAttributeInstanceMap final
 
   // Returns true if a BluetoothRemoteGATTCharacteristic with
   // |characteristicInstanceId| is in the map.
-  bool ContainsCharacteristic(const String& characteristicInstanceId);
+  bool ContainsCharacteristic(const String& characteristic_instance_id);
 
   // Constructs a new BluetoothRemoteGATTDescriptor object if there was no
   // descriptor with the same instance id and adds it to the map.
@@ -62,7 +62,7 @@ class BluetoothAttributeInstanceMap final
 
   // Returns true if a BluetoothRemoteGATTDescriptor with
   // |descriptorInstanceId| is in the map.
-  bool ContainsDescriptor(const String& descriptorInstanceId);
+  bool ContainsDescriptor(const String& descriptor_instance_id);
 
   // Removes all Attributes from the map.
   // TODO(crbug.com/654950): Remove descriptors when implemented.
@@ -72,15 +72,15 @@ class BluetoothAttributeInstanceMap final
 
  private:
   // BluetoothDevice that owns this map.
-  Member<BluetoothDevice> m_device;
+  Member<BluetoothDevice> device_;
   // Map of service instance ids to objects.
-  HeapHashMap<String, Member<BluetoothRemoteGATTService>> m_serviceIdToObject;
+  HeapHashMap<String, Member<BluetoothRemoteGATTService>> service_id_to_object_;
   // Map of characteristic instance ids to objects.
   HeapHashMap<String, Member<BluetoothRemoteGATTCharacteristic>>
-      m_characteristicIdToObject;
+      characteristic_id_to_object_;
   // Map of descriptor instance ids to objects.
   HeapHashMap<String, Member<BluetoothRemoteGATTDescriptor>>
-      m_descriptorIdToObject;
+      descriptor_id_to_object_;
 };
 
 }  // namespace blink

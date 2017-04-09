@@ -42,8 +42,8 @@ class FloatSize;
 
 struct SizeAndCount {
   DISALLOW_NEW();
-  SizeAndCount(IntSize newSize = IntSize(), int newCount = 0)
-      : size(newSize), count(newCount) {}
+  SizeAndCount(IntSize new_size = IntSize(), int new_count = 0)
+      : size(new_size), count(new_count) {}
 
   IntSize size;
   int count;
@@ -55,46 +55,46 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
  public:
   ~CSSImageGeneratorValue();
 
-  void addClient(const LayoutObject*, const IntSize&);
-  void removeClient(const LayoutObject*);
-  PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float zoom);
+  void AddClient(const LayoutObject*, const IntSize&);
+  void RemoveClient(const LayoutObject*);
+  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&, float zoom);
 
-  bool isFixedSize() const;
-  IntSize fixedSize(const LayoutObject&, const FloatSize& defaultObjectSize);
+  bool IsFixedSize() const;
+  IntSize FixedSize(const LayoutObject&, const FloatSize& default_object_size);
 
-  bool isPending() const;
-  bool knownToBeOpaque(const LayoutObject&) const;
+  bool IsPending() const;
+  bool KnownToBeOpaque(const LayoutObject&) const;
 
-  void loadSubimages(const Document&);
+  void LoadSubimages(const Document&);
 
-  CSSImageGeneratorValue* valueWithURLsMadeAbsolute();
+  CSSImageGeneratorValue* ValueWithURLsMadeAbsolute();
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValue::traceAfterDispatch(visitor);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  protected:
   explicit CSSImageGeneratorValue(ClassType);
 
-  Image* getImage(const LayoutObject*, const IntSize&);
-  void putImage(const IntSize&, PassRefPtr<Image>);
-  const LayoutObjectSizeCountMap& clients() const { return m_clients; }
+  Image* GetImage(const LayoutObject*, const IntSize&);
+  void PutImage(const IntSize&, PassRefPtr<Image>);
+  const LayoutObjectSizeCountMap& Clients() const { return clients_; }
 
   HashCountedSet<IntSize>
-      m_sizes;  // A count of how many times a given image size is in use.
+      sizes_;  // A count of how many times a given image size is in use.
   LayoutObjectSizeCountMap
-      m_clients;  // A map from LayoutObjects (with entry count) to image sizes.
+      clients_;  // A map from LayoutObjects (with entry count) to image sizes.
   HashMap<IntSize, RefPtr<Image>>
-      m_images;  // A cache of Image objects by image size.
+      images_;  // A cache of Image objects by image size.
 
   // TODO(Oilpan): when/if we can make the layoutObject point directly to the
   // CSSImageGenerator value using a member we don't need to have this hack
   // where we keep a persistent to the instance as long as there are clients in
   // the LayoutObjectSizeCountMap.
-  SelfKeepAlive<CSSImageGeneratorValue> m_keepAlive;
+  SelfKeepAlive<CSSImageGeneratorValue> keep_alive_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageGeneratorValue, isImageGeneratorValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageGeneratorValue, IsImageGeneratorValue());
 
 }  // namespace blink
 

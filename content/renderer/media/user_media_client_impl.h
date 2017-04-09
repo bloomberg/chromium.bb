@@ -67,13 +67,13 @@ class CONTENT_EXPORT UserMediaClientImpl
   }
 
   // blink::WebUserMediaClient implementation
-  void requestUserMedia(
+  void RequestUserMedia(
       const blink::WebUserMediaRequest& user_media_request) override;
-  void cancelUserMediaRequest(
+  void CancelUserMediaRequest(
       const blink::WebUserMediaRequest& user_media_request) override;
-  void requestMediaDevices(
+  void RequestMediaDevices(
       const blink::WebMediaDevicesRequest& media_devices_request) override;
-  void setMediaDeviceChangeObserver(
+  void SetMediaDeviceChangeObserver(
       const blink::WebMediaDeviceChangeObserver& observer) override;
 
   // MediaStreamDispatcherEventHandler implementation.

@@ -42,11 +42,11 @@ class SelectRuleFeatureSet : public RuleFeatureSet {
   DISALLOW_NEW();
 
  public:
-  void collectFeaturesFromSelectorList(const CSSSelectorList&);
-  bool checkSelectorsForClassChange(
-      const SpaceSplitString& changedClasses) const;
-  bool checkSelectorsForClassChange(const SpaceSplitString& oldClasses,
-                                    const SpaceSplitString& newClasses) const;
+  void CollectFeaturesFromSelectorList(const CSSSelectorList&);
+  bool CheckSelectorsForClassChange(
+      const SpaceSplitString& changed_classes) const;
+  bool CheckSelectorsForClassChange(const SpaceSplitString& old_classes,
+                                    const SpaceSplitString& new_classes) const;
 };
 
 }  // namespace blink

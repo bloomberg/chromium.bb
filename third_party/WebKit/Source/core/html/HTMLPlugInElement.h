@@ -37,8 +37,8 @@ class LayoutEmbeddedItem;
 class PluginView;
 
 enum PreferPlugInsForImagesOption {
-  ShouldPreferPlugInsForImages,
-  ShouldNotPreferPlugInsForImages
+  kShouldPreferPlugInsForImages,
+  kShouldNotPreferPlugInsForImages
 };
 
 class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
@@ -46,152 +46,152 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   ~HTMLPlugInElement() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void resetInstance();
+  void ResetInstance();
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.
-  SharedPersistent<v8::Object>* pluginWrapper();
+  SharedPersistent<v8::Object>* PluginWrapper();
   // TODO(joelhockey): Clean up pluginWidget and plugin (maybe also
   // pluginWrapper).  It would be good to remove and/or rename some of these.
   // pluginWidget and plugin both return the plugin that is stored on this
   // element.  However pluginWidget will synchronously create the plugin if
   // required by calling layoutPartForJSBindings.  Possibly the pluginWidget
   // code can be inlined into pluginWrapper.
-  PluginView* pluginWidget() const;
-  PluginView* plugin() const;
-  bool canProcessDrag() const;
-  const String& url() const { return m_url; }
+  PluginView* PluginWidget() const;
+  PluginView* Plugin() const;
+  bool CanProcessDrag() const;
+  const String& Url() const { return url_; }
 
   // Public for FrameView::addPartToUpdate()
-  bool needsPluginUpdate() const { return m_needsPluginUpdate; }
-  void setNeedsPluginUpdate(bool needsPluginUpdate) {
-    m_needsPluginUpdate = needsPluginUpdate;
+  bool NeedsPluginUpdate() const { return needs_plugin_update_; }
+  void SetNeedsPluginUpdate(bool needs_plugin_update) {
+    needs_plugin_update_ = needs_plugin_update;
   }
-  void updatePlugin();
+  void UpdatePlugin();
 
-  bool shouldAccelerate() const;
+  bool ShouldAccelerate() const;
 
-  void requestPluginCreationWithoutLayoutObjectIfPossible();
-  void createPluginWithoutLayoutObject();
+  void RequestPluginCreationWithoutLayoutObjectIfPossible();
+  void CreatePluginWithoutLayoutObject();
 
  protected:
-  HTMLPlugInElement(const QualifiedName& tagName,
+  HTMLPlugInElement(const QualifiedName& tag_name,
                     Document&,
-                    bool createdByParser,
+                    bool created_by_parser,
                     PreferPlugInsForImagesOption);
 
   // Node functions:
-  void removedFrom(ContainerNode* insertionPoint) override;
-  void didMoveToNewDocument(Document& oldDocument) override;
+  void RemovedFrom(ContainerNode* insertion_point) override;
+  void DidMoveToNewDocument(Document& old_document) override;
 
   // Element functions:
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  virtual bool hasFallbackContent() const;
-  virtual bool useFallbackContent() const;
+  virtual bool HasFallbackContent() const;
+  virtual bool UseFallbackContent() const;
   // Create or update the LayoutPart and return it, triggering layout if
   // necessary.
-  virtual LayoutPart* layoutPartForJSBindings() const;
+  virtual LayoutPart* LayoutPartForJSBindings() const;
 
-  bool isImageType();
-  bool shouldPreferPlugInsForImages() const {
-    return m_shouldPreferPlugInsForImages;
+  bool IsImageType();
+  bool ShouldPreferPlugInsForImages() const {
+    return should_prefer_plug_ins_for_images_;
   }
-  LayoutEmbeddedItem layoutEmbeddedItem() const;
-  bool allowedToLoadFrameURL(const String& url);
-  bool requestObject(const String& url,
-                     const String& mimeType,
-                     const Vector<String>& paramNames,
-                     const Vector<String>& paramValues);
-  bool shouldUsePlugin(const KURL&,
-                       const String& mimeType,
-                       bool hasFallback,
-                       bool& useFallback);
+  LayoutEmbeddedItem GetLayoutEmbeddedItem() const;
+  bool AllowedToLoadFrameURL(const String& url);
+  bool RequestObject(const String& url,
+                     const String& mime_type,
+                     const Vector<String>& param_names,
+                     const Vector<String>& param_values);
+  bool ShouldUsePlugin(const KURL&,
+                       const String& mime_type,
+                       bool has_fallback,
+                       bool& use_fallback);
 
-  void dispatchErrorEvent();
-  void lazyReattachIfNeeded();
+  void DispatchErrorEvent();
+  void LazyReattachIfNeeded();
 
-  String m_serviceType;
-  String m_url;
-  KURL m_loadedUrl;
-  Member<HTMLImageLoader> m_imageLoader;
-  bool m_isDelayingLoadEvent;
+  String service_type_;
+  String url_;
+  KURL loaded_url_;
+  Member<HTMLImageLoader> image_loader_;
+  bool is_delaying_load_event_;
 
  private:
   // EventTarget overrides:
-  void removeAllEventListeners() final;
+  void RemoveAllEventListeners() final;
 
   // Node overrides:
-  bool canContainRangeEndPoint() const override { return false; }
-  bool canStartSelection() const override;
-  bool willRespondToMouseClickEvents() final;
-  void defaultEventHandler(Event*) final;
-  void attachLayoutTree(const AttachContext& = AttachContext()) final;
-  void detachLayoutTree(const AttachContext& = AttachContext()) final;
-  void finishParsingChildren() final;
+  bool CanContainRangeEndPoint() const override { return false; }
+  bool CanStartSelection() const override;
+  bool WillRespondToMouseClickEvents() final;
+  void DefaultEventHandler(Event*) final;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) final;
+  void DetachLayoutTree(const AttachContext& = AttachContext()) final;
+  void FinishParsingChildren() final;
 
   // Element overrides:
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  bool supportsFocus() const final { return true; }
-  bool layoutObjectIsFocusable() const final;
-  bool isKeyboardFocusable() const final;
-  void didAddUserAgentShadowRoot(ShadowRoot&) final;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  bool SupportsFocus() const final { return true; }
+  bool LayoutObjectIsFocusable() const final;
+  bool IsKeyboardFocusable() const final;
+  void DidAddUserAgentShadowRoot(ShadowRoot&) final;
 
   // HTMLElement overrides:
-  bool hasCustomFocusLogic() const override;
-  bool isPluginElement() const final;
+  bool HasCustomFocusLogic() const override;
+  bool IsPluginElement() const final;
 
   // HTMLFrameOwnerElement overrides:
-  void disconnectContentFrame() override;
+  void DisconnectContentFrame() override;
 
   // Return any existing LayoutPart without triggering relayout, or 0 if it
   // doesn't yet exist.
-  virtual LayoutPart* existingLayoutPart() const = 0;
-  virtual void updatePluginInternal() = 0;
+  virtual LayoutPart* ExistingLayoutPart() const = 0;
+  virtual void UpdatePluginInternal() = 0;
 
-  bool loadPlugin(const KURL&,
-                  const String& mimeType,
-                  const Vector<String>& paramNames,
-                  const Vector<String>& paramValues,
-                  bool useFallback,
-                  bool requireLayoutObject);
+  bool LoadPlugin(const KURL&,
+                  const String& mime_type,
+                  const Vector<String>& param_names,
+                  const Vector<String>& param_values,
+                  bool use_fallback,
+                  bool require_layout_object);
   // Perform checks after we have determined that a plugin will be used to
   // show the object (i.e after allowedToLoadObject).
-  bool allowedToLoadPlugin(const KURL&, const String& mimeType);
+  bool AllowedToLoadPlugin(const KURL&, const String& mime_type);
   // Perform checks based on the URL and MIME-type of the object to load.
-  bool allowedToLoadObject(const KURL&, const String& mimeType);
-  bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
+  bool AllowedToLoadObject(const KURL&, const String& mime_type);
+  bool WouldLoadAsNetscapePlugin(const String& url, const String& service_type);
 
-  void setPlugin(PluginView*);
-  PluginView* releasePlugin();
-  void setPersistedPlugin(PluginView*);
+  void SetPlugin(PluginView*);
+  PluginView* ReleasePlugin();
+  void SetPersistedPlugin(PluginView*);
 
-  bool requestObjectInternal(const String& url,
-                             const String& mimeType,
-                             const Vector<String>& paramNames,
-                             const Vector<String>& paramValues);
+  bool RequestObjectInternal(const String& url,
+                             const String& mime_type,
+                             const Vector<String>& param_names,
+                             const Vector<String>& param_values);
 
-  mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
-  bool m_needsPluginUpdate;
-  bool m_shouldPreferPlugInsForImages;
+  mutable RefPtr<SharedPersistent<v8::Object>> plugin_wrapper_;
+  bool needs_plugin_update_;
+  bool should_prefer_plug_ins_for_images_;
   // Represents |layoutObject() && layoutObject()->isEmbeddedObject() &&
   // !layoutEmbeddedItem().showsUnavailablePluginIndicator()|.  We want to
   // avoid accessing |layoutObject()| in layoutObjectIsFocusable().
-  bool m_pluginIsAvailable = false;
+  bool plugin_is_available_ = false;
 
-  Member<PluginView> m_plugin;
+  Member<PluginView> plugin_;
   // Normally the plugin is stored in HTMLFrameOwnerElement::m_widget.
   // However, plugins can persist even when not rendered. In order to
   // prevent confusing code which may assume that ownedWidget() != null
   // means the frame is active, we save off m_widget here while
   // the plugin is persisting but not being displayed.
-  Member<PluginView> m_persistedPlugin;
+  Member<PluginView> persisted_plugin_;
 };
 
-inline bool isHTMLPlugInElement(const HTMLElement& element) {
-  return element.isPluginElement();
+inline bool IsHTMLPlugInElement(const HTMLElement& element) {
+  return element.IsPluginElement();
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLPlugInElement);

@@ -45,53 +45,53 @@ class CORE_EXPORT CompactHTMLToken {
 
    public:
     Attribute(const String& name, const String& value)
-        : m_name(name), m_value(value) {}
+        : name_(name), value_(value) {}
 
-    const String& name() const { return m_name; }
-    const String& value() const { return m_value; }
+    const String& GetName() const { return name_; }
+    const String& Value() const { return value_; }
 
     // We don't create a new 8-bit String because it doesn't save memory.
-    const String& value8BitIfNecessary() const { return m_value; }
+    const String& Value8BitIfNecessary() const { return value_; }
 
-    bool isSafeToSendToAnotherThread() const {
-      return m_name.isSafeToSendToAnotherThread() &&
-             m_value.isSafeToSendToAnotherThread();
+    bool IsSafeToSendToAnotherThread() const {
+      return name_.IsSafeToSendToAnotherThread() &&
+             value_.IsSafeToSendToAnotherThread();
     }
 
    private:
-    String m_name;
-    String m_value;
+    String name_;
+    String value_;
   };
 
   CompactHTMLToken(const HTMLToken*, const TextPosition&);
 
-  bool isSafeToSendToAnotherThread() const;
+  bool IsSafeToSendToAnotherThread() const;
 
-  HTMLToken::TokenType type() const {
-    return static_cast<HTMLToken::TokenType>(m_type);
+  HTMLToken::TokenType GetType() const {
+    return static_cast<HTMLToken::TokenType>(type_);
   }
-  const String& data() const { return m_data; }
-  bool selfClosing() const { return m_selfClosing; }
-  bool isAll8BitData() const { return m_isAll8BitData; }
-  const Vector<Attribute>& attributes() const { return m_attributes; }
-  const Attribute* getAttributeItem(const QualifiedName&) const;
-  const TextPosition& textPosition() const { return m_textPosition; }
+  const String& Data() const { return data_; }
+  bool SelfClosing() const { return self_closing_; }
+  bool IsAll8BitData() const { return is_all8_bit_data_; }
+  const Vector<Attribute>& Attributes() const { return attributes_; }
+  const Attribute* GetAttributeItem(const QualifiedName&) const;
+  const TextPosition& GetTextPosition() const { return text_position_; }
 
   // There is only 1 DOCTYPE token per document, so to avoid increasing the
   // size of CompactHTMLToken, we just use the m_attributes vector.
-  const String& publicIdentifier() const { return m_attributes[0].name(); }
-  const String& systemIdentifier() const { return m_attributes[0].value(); }
-  bool doctypeForcesQuirks() const { return m_doctypeForcesQuirks; }
+  const String& PublicIdentifier() const { return attributes_[0].GetName(); }
+  const String& SystemIdentifier() const { return attributes_[0].Value(); }
+  bool DoctypeForcesQuirks() const { return doctype_forces_quirks_; }
 
  private:
-  unsigned m_type : 4;
-  unsigned m_selfClosing : 1;
-  unsigned m_isAll8BitData : 1;
-  unsigned m_doctypeForcesQuirks : 1;
+  unsigned type_ : 4;
+  unsigned self_closing_ : 1;
+  unsigned is_all8_bit_data_ : 1;
+  unsigned doctype_forces_quirks_ : 1;
 
-  String m_data;  // "name", "characters", or "data" depending on m_type
-  Vector<Attribute> m_attributes;
-  TextPosition m_textPosition;
+  String data_;  // "name", "characters", or "data" depending on m_type
+  Vector<Attribute> attributes_;
+  TextPosition text_position_;
 };
 
 typedef Vector<CompactHTMLToken> CompactHTMLTokenStream;

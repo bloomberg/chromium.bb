@@ -15,83 +15,83 @@ namespace blink {
 
 class FocusControllerTest : public testing::Test {
  public:
-  Document& document() const { return m_pageHolder->document(); }
-  FocusController& focusController() const {
-    return document().page()->focusController();
+  Document& GetDocument() const { return page_holder_->GetDocument(); }
+  FocusController& GetFocusController() const {
+    return GetDocument().GetPage()->GetFocusController();
   }
-  DummyPageHolder* pageHolder() const { return m_pageHolder.get(); }
+  DummyPageHolder* PageHolder() const { return page_holder_.get(); }
 
  private:
-  void SetUp() override { m_pageHolder = DummyPageHolder::create(); }
+  void SetUp() override { page_holder_ = DummyPageHolder::Create(); }
 
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(FocusControllerTest, SetInitialFocus) {
-  document().body()->setInnerHTML("<input><textarea>");
-  Element* input = toElement(document().body()->firstChild());
+  GetDocument().body()->setInnerHTML("<input><textarea>");
+  Element* input = ToElement(GetDocument().body()->FirstChild());
   // Set sequential focus navigation point before the initial focus.
   input->focus();
   input->blur();
-  focusController().setInitialFocus(WebFocusTypeForward);
-  EXPECT_EQ(input, document().focusedElement())
+  GetFocusController().SetInitialFocus(kWebFocusTypeForward);
+  EXPECT_EQ(input, GetDocument().FocusedElement())
       << "We should ignore sequential focus navigation starting point in "
          "setInitialFocus().";
 }
 
 TEST_F(FocusControllerTest, DoNotCrash1) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<div id='host'></div>This test is for crbug.com/609012<p id='target' "
       "tabindex='0'></p>");
   // <div> with shadow root
-  Element* host = toElement(document().body()->firstChild());
+  Element* host = ToElement(GetDocument().body()->FirstChild());
   ShadowRootInit init;
   init.setMode("open");
-  host->attachShadow(toScriptStateForMainWorld(document().frame()), init,
+  host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()), init,
                      ASSERT_NO_EXCEPTION);
   // "This test is for crbug.com/609012"
   Node* text = host->nextSibling();
   // <p>
-  Element* target = toElement(text->nextSibling());
+  Element* target = ToElement(text->nextSibling());
 
   // Set sequential focus navigation point at text node.
-  document().setSequentialFocusNavigationStartingPoint(text);
+  GetDocument().SetSequentialFocusNavigationStartingPoint(text);
 
-  focusController().advanceFocus(WebFocusTypeForward);
-  EXPECT_EQ(target, document().focusedElement())
+  GetFocusController().AdvanceFocus(kWebFocusTypeForward);
+  EXPECT_EQ(target, GetDocument().FocusedElement())
       << "This should not hit assertion and finish properly.";
 }
 
 TEST_F(FocusControllerTest, DoNotCrash2) {
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<p id='target' tabindex='0'></p>This test is for crbug.com/609012<div "
       "id='host'></div>");
   // <p>
-  Element* target = toElement(document().body()->firstChild());
+  Element* target = ToElement(GetDocument().body()->FirstChild());
   // "This test is for crbug.com/609012"
   Node* text = target->nextSibling();
   // <div> with shadow root
-  Element* host = toElement(text->nextSibling());
+  Element* host = ToElement(text->nextSibling());
   ShadowRootInit init;
   init.setMode("open");
-  host->attachShadow(toScriptStateForMainWorld(document().frame()), init,
+  host->attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()), init,
                      ASSERT_NO_EXCEPTION);
 
   // Set sequential focus navigation point at text node.
-  document().setSequentialFocusNavigationStartingPoint(text);
+  GetDocument().SetSequentialFocusNavigationStartingPoint(text);
 
-  focusController().advanceFocus(WebFocusTypeBackward);
-  EXPECT_EQ(target, document().focusedElement())
+  GetFocusController().AdvanceFocus(kWebFocusTypeBackward);
+  EXPECT_EQ(target, GetDocument().FocusedElement())
       << "This should not hit assertion and finish properly.";
 }
 
 TEST_F(FocusControllerTest, SetActiveOnInactiveDocument) {
   // Test for crbug.com/700334
-  document().shutdown();
+  GetDocument().Shutdown();
   // Document::shutdown() detaches document from its frame, and thus
   // document().page() becomes nullptr.
   // Use DummyPageHolder's page to retrieve FocusController.
-  pageHolder()->page().focusController().setActive(true);
+  PageHolder()->GetPage().GetFocusController().SetActive(true);
 }
 
 }  // namespace blink

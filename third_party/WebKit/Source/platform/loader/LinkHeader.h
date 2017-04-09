@@ -15,26 +15,26 @@ class LinkHeader {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  const String& url() const { return m_url; }
-  const String& rel() const { return m_rel; }
-  const String& as() const { return m_as; }
-  const String& mimeType() const { return m_mimeType; }
-  const String& media() const { return m_media; }
-  const String& crossOrigin() const { return m_crossOrigin; }
-  bool valid() const { return m_isValid; }
+  const String& Url() const { return url_; }
+  const String& Rel() const { return rel_; }
+  const String& As() const { return as_; }
+  const String& MimeType() const { return mime_type_; }
+  const String& Media() const { return media_; }
+  const String& CrossOrigin() const { return cross_origin_; }
+  bool Valid() const { return is_valid_; }
 
   enum LinkParameterName {
-    LinkParameterRel,
-    LinkParameterAnchor,
-    LinkParameterTitle,
-    LinkParameterMedia,
-    LinkParameterType,
-    LinkParameterRev,
-    LinkParameterHreflang,
+    kLinkParameterRel,
+    kLinkParameterAnchor,
+    kLinkParameterTitle,
+    kLinkParameterMedia,
+    kLinkParameterType,
+    kLinkParameterRev,
+    kLinkParameterHreflang,
     // Beyond this point, only link-extension parameters
-    LinkParameterUnknown,
-    LinkParameterCrossOrigin,
-    LinkParameterAs,
+    kLinkParameterUnknown,
+    kLinkParameterCrossOrigin,
+    kLinkParameterAs,
   };
 
  private:
@@ -42,15 +42,15 @@ class LinkHeader {
 
   template <typename Iterator>
   LinkHeader(Iterator begin, Iterator end);
-  void setValue(LinkParameterName, const String& value);
+  void SetValue(LinkParameterName, const String& value);
 
-  String m_url;
-  String m_rel;
-  String m_as;
-  String m_mimeType;
-  String m_media;
-  String m_crossOrigin;
-  bool m_isValid;
+  String url_;
+  String rel_;
+  String as_;
+  String mime_type_;
+  String media_;
+  String cross_origin_;
+  bool is_valid_;
 };
 
 class PLATFORM_EXPORT LinkHeaderSet {
@@ -60,14 +60,14 @@ class PLATFORM_EXPORT LinkHeaderSet {
   LinkHeaderSet(const String& header);
 
   Vector<LinkHeader>::const_iterator begin() const {
-    return m_headerSet.begin();
+    return header_set_.begin();
   }
-  Vector<LinkHeader>::const_iterator end() const { return m_headerSet.end(); }
-  LinkHeader& operator[](size_t i) { return m_headerSet[i]; }
-  size_t size() { return m_headerSet.size(); }
+  Vector<LinkHeader>::const_iterator end() const { return header_set_.end(); }
+  LinkHeader& operator[](size_t i) { return header_set_[i]; }
+  size_t size() { return header_set_.size(); }
 
  private:
-  Vector<LinkHeader> m_headerSet;
+  Vector<LinkHeader> header_set_;
 };
 
 }  // namespace blink

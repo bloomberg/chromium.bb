@@ -35,31 +35,31 @@ WebGLCompressedTextureASTC::WebGLCompressedTextureASTC(
        i < WTF_ARRAY_LENGTH(WebGLCompressedTextureASTC::kBlockSizeCompressASTC);
        i++) {
     /* GL_COMPRESSED_RGBA_ASTC(0x93B0 ~ 0x93BD) */
-    context->addCompressedTextureFormat(
-        WebGLCompressedTextureASTC::kBlockSizeCompressASTC[i].CompressType);
+    context->AddCompressedTextureFormat(
+        WebGLCompressedTextureASTC::kBlockSizeCompressASTC[i].compress_type);
     /* GL_COMPRESSED_SRGB8_ALPHA8_ASTC(0x93D0 ~ 0x93DD) */
-    context->addCompressedTextureFormat(
-        WebGLCompressedTextureASTC::kBlockSizeCompressASTC[i].CompressType +
+    context->AddCompressedTextureFormat(
+        WebGLCompressedTextureASTC::kBlockSizeCompressASTC[i].compress_type +
         kAlphaFormatGap);
   }
 }
 
-WebGLExtensionName WebGLCompressedTextureASTC::name() const {
-  return WebGLCompressedTextureASTCName;
+WebGLExtensionName WebGLCompressedTextureASTC::GetName() const {
+  return kWebGLCompressedTextureASTCName;
 }
 
-WebGLCompressedTextureASTC* WebGLCompressedTextureASTC::create(
+WebGLCompressedTextureASTC* WebGLCompressedTextureASTC::Create(
     WebGLRenderingContextBase* context) {
   return new WebGLCompressedTextureASTC(context);
 }
 
-bool WebGLCompressedTextureASTC::supported(WebGLRenderingContextBase* context) {
-  Extensions3DUtil* extensionsUtil = context->extensionsUtil();
-  return extensionsUtil->supportsExtension(
+bool WebGLCompressedTextureASTC::Supported(WebGLRenderingContextBase* context) {
+  Extensions3DUtil* extensions_util = context->ExtensionsUtil();
+  return extensions_util->SupportsExtension(
       "GL_KHR_texture_compression_astc_ldr");
 }
 
-const char* WebGLCompressedTextureASTC::extensionName() {
+const char* WebGLCompressedTextureASTC::ExtensionName() {
   // TODO(cyzero.kim): implement extension for
   // GL_KHR_texture_compression_astc_hdr.
   return "WEBGL_compressed_texture_astc";

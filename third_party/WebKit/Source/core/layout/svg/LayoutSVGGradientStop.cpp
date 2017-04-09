@@ -30,37 +30,37 @@ LayoutSVGGradientStop::LayoutSVGGradientStop(SVGStopElement* element)
 
 LayoutSVGGradientStop::~LayoutSVGGradientStop() {}
 
-void LayoutSVGGradientStop::styleDidChange(StyleDifference diff,
-                                           const ComputedStyle* oldStyle) {
-  LayoutObject::styleDidChange(diff, oldStyle);
-  if (!diff.hasDifference())
+void LayoutSVGGradientStop::StyleDidChange(StyleDifference diff,
+                                           const ComputedStyle* old_style) {
+  LayoutObject::StyleDidChange(diff, old_style);
+  if (!diff.HasDifference())
     return;
 
   // <stop> elements should only be allowed to make layoutObjects under gradient
   // elements but I can imagine a few cases we might not be catching, so let's
   // not crash if our parent isn't a gradient.
-  SVGGradientElement* gradient = gradientElement();
+  SVGGradientElement* gradient = GradientElement();
   if (!gradient)
     return;
 
-  LayoutObject* layoutObject = gradient->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = gradient->GetLayoutObject();
+  if (!layout_object)
     return;
 
   LayoutSVGResourceContainer* container =
-      toLayoutSVGResourceContainer(layoutObject);
-  container->removeAllClientsFromCache();
+      ToLayoutSVGResourceContainer(layout_object);
+  container->RemoveAllClientsFromCache();
 }
 
-void LayoutSVGGradientStop::layout() {
-  clearNeedsLayout();
+void LayoutSVGGradientStop::GetLayout() {
+  ClearNeedsLayout();
 }
 
-SVGGradientElement* LayoutSVGGradientStop::gradientElement() const {
-  ContainerNode* parentNode = node()->parentNode();
-  DCHECK(parentNode);
-  return isSVGGradientElement(*parentNode) ? toSVGGradientElement(parentNode)
-                                           : 0;
+SVGGradientElement* LayoutSVGGradientStop::GradientElement() const {
+  ContainerNode* parent_node = GetNode()->parentNode();
+  DCHECK(parent_node);
+  return IsSVGGradientElement(*parent_node) ? ToSVGGradientElement(parent_node)
+                                            : 0;
 }
 
 }  // namespace blink

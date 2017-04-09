@@ -11,11 +11,11 @@
 namespace blink {
 
 enum class WebSetSinkIdError {
-  NotFound = 1,
-  NotAuthorized,
-  Aborted,
-  NotSupported,
-  Last = NotSupported
+  kNotFound = 1,
+  kNotAuthorized,
+  kAborted,
+  kNotSupported,
+  kLast = kNotSupported
 };
 
 using WebSetSinkIdCallbacks = WebCallbacks<void, WebSetSinkIdError>;

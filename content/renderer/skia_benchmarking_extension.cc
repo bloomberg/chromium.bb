@@ -144,9 +144,9 @@ gin::WrapperInfo SkiaBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
 void SkiaBenchmarking::Install(blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -246,9 +246,9 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   picture->picture->playback(&benchmarking_canvas, &controller);
 
   blink::WebArrayBuffer buffer =
-      blink::WebArrayBuffer::create(bitmap.getSize(), 1);
+      blink::WebArrayBuffer::Create(bitmap.getSize(), 1);
   uint32_t* packed_pixels = reinterpret_cast<uint32_t*>(bitmap.getPixels());
-  uint8_t* buffer_pixels = reinterpret_cast<uint8_t*>(buffer.data());
+  uint8_t* buffer_pixels = reinterpret_cast<uint8_t*>(buffer.Data());
   // Swizzle from native Skia format to RGBA as we copy out.
   for (size_t i = 0; i < bitmap.getSize(); i += 4) {
     uint32_t c = packed_pixels[i >> 2];
@@ -264,7 +264,7 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   result->Set(v8::String::NewFromUtf8(isolate, "height"),
               v8::Number::New(isolate, snapped_clip.height()));
   result->Set(v8::String::NewFromUtf8(isolate, "data"),
-              blink::WebArrayBufferConverter::toV8Value(
+              blink::WebArrayBufferConverter::ToV8Value(
                   &buffer, context->Global(), isolate));
 
   args->Return(result);

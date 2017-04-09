@@ -15,33 +15,33 @@ template <>
 struct StructTraits<url::mojom::blink::Origin::DataView,
                     RefPtr<::blink::SecurityOrigin>> {
   static WTF::String scheme(const RefPtr<::blink::SecurityOrigin>& origin) {
-    return origin->protocol();
+    return origin->Protocol();
   }
   static WTF::String host(const RefPtr<::blink::SecurityOrigin>& origin) {
-    return origin->host();
+    return origin->Host();
   }
   static uint16_t port(const RefPtr<::blink::SecurityOrigin>& origin) {
-    return origin->effectivePort();
+    return origin->EffectivePort();
   }
   static bool unique(const RefPtr<::blink::SecurityOrigin>& origin) {
-    return origin->isUnique();
+    return origin->IsUnique();
   }
   static bool Read(url::mojom::blink::Origin::DataView data,
                    RefPtr<::blink::SecurityOrigin>* out) {
     if (data.unique()) {
-      *out = ::blink::SecurityOrigin::createUnique();
+      *out = ::blink::SecurityOrigin::CreateUnique();
     } else {
       WTF::String scheme;
       WTF::String host;
       if (!data.ReadScheme(&scheme) || !data.ReadHost(&host))
         return false;
 
-      *out = ::blink::SecurityOrigin::create(scheme, host, data.port());
+      *out = ::blink::SecurityOrigin::Create(scheme, host, data.port());
     }
 
     // If a unique origin was created, but the unique flag wasn't set, then
     // the values provided to 'create' were invalid.
-    if (!data.unique() && (*out)->isUnique())
+    if (!data.unique() && (*out)->IsUnique())
       return false;
 
     return true;

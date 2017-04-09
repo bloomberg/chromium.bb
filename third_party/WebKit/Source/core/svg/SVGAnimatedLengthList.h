@@ -44,24 +44,24 @@ class SVGAnimatedLengthList final : public SVGAnimatedProperty<SVGLengthList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedLengthList* create(SVGElement* contextElement,
-                                       const QualifiedName& attributeName,
-                                       SVGLengthList* initialValue) {
-    return new SVGAnimatedLengthList(contextElement, attributeName,
-                                     initialValue);
+  static SVGAnimatedLengthList* Create(SVGElement* context_element,
+                                       const QualifiedName& attribute_name,
+                                       SVGLengthList* initial_value) {
+    return new SVGAnimatedLengthList(context_element, attribute_name,
+                                     initial_value);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-    visitor->traceWrappers(contextElement());
+    visitor->TraceWrappers(contextElement());
   }
 
  protected:
-  SVGAnimatedLengthList(SVGElement* contextElement,
-                        const QualifiedName& attributeName,
-                        SVGLengthList* initialValue)
-      : SVGAnimatedProperty<SVGLengthList>(contextElement,
-                                           attributeName,
-                                           initialValue) {}
+  SVGAnimatedLengthList(SVGElement* context_element,
+                        const QualifiedName& attribute_name,
+                        SVGLengthList* initial_value)
+      : SVGAnimatedProperty<SVGLengthList>(context_element,
+                                           attribute_name,
+                                           initial_value) {}
 };
 
 }  // namespace blink

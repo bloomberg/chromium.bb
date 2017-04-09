@@ -18,21 +18,21 @@ class V0CustomElementMicrotaskQueueBase
  public:
   virtual ~V0CustomElementMicrotaskQueueBase() {}
 
-  bool isEmpty() const { return m_queue.isEmpty(); }
-  void dispatch();
+  bool IsEmpty() const { return queue_.IsEmpty(); }
+  void Dispatch();
 
   DECLARE_TRACE();
 
 #if !defined(NDEBUG)
-  void show(unsigned indent);
+  void Show(unsigned indent);
 #endif
 
  protected:
-  V0CustomElementMicrotaskQueueBase() : m_inDispatch(false) {}
-  virtual void doDispatch() = 0;
+  V0CustomElementMicrotaskQueueBase() : in_dispatch_(false) {}
+  virtual void DoDispatch() = 0;
 
-  HeapVector<Member<V0CustomElementMicrotaskStep>> m_queue;
-  bool m_inDispatch;
+  HeapVector<Member<V0CustomElementMicrotaskStep>> queue_;
+  bool in_dispatch_;
 };
 
 }  // namespace blink

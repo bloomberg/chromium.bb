@@ -25,44 +25,44 @@ class CORE_EXPORT CanvasFontCache final
     : public GarbageCollectedFinalized<CanvasFontCache>,
       public WebThread::TaskObserver {
  public:
-  static CanvasFontCache* create(Document& document) {
+  static CanvasFontCache* Create(Document& document) {
     return new CanvasFontCache(document);
   }
 
-  MutableStylePropertySet* parseFont(const String&);
-  void pruneAll();
+  MutableStylePropertySet* ParseFont(const String&);
+  void PruneAll();
   unsigned size();
 
   DECLARE_VIRTUAL_TRACE();
 
-  static unsigned maxFonts();
-  unsigned hardMaxFonts();
+  static unsigned MaxFonts();
+  unsigned HardMaxFonts();
 
-  void willUseCurrentFont() { schedulePruningIfNeeded(); }
-  bool getFontUsingDefaultStyle(const String&, Font&);
+  void WillUseCurrentFont() { SchedulePruningIfNeeded(); }
+  bool GetFontUsingDefaultStyle(const String&, Font&);
 
   // TaskObserver implementation
-  void didProcessTask() override;
-  void willProcessTask() override {}
+  void DidProcessTask() override;
+  void WillProcessTask() override {}
 
   // For testing
-  bool isInCache(const String&);
+  bool IsInCache(const String&);
 
   ~CanvasFontCache();
 
  private:
   explicit CanvasFontCache(Document&);
-  void schedulePruningIfNeeded();
+  void SchedulePruningIfNeeded();
   typedef HeapHashMap<String, Member<MutableStylePropertySet>>
       MutableStylePropertyMap;
 
-  HashMap<String, Font> m_fontsResolvedUsingDefaultStyle;
-  MutableStylePropertyMap m_fetchedFonts;
-  ListHashSet<String> m_fontLRUList;
-  std::unique_ptr<FontCachePurgePreventer> m_mainCachePurgePreventer;
-  Member<Document> m_document;
-  RefPtr<ComputedStyle> m_defaultFontStyle;
-  bool m_pruningScheduled;
+  HashMap<String, Font> fonts_resolved_using_default_style_;
+  MutableStylePropertyMap fetched_fonts_;
+  ListHashSet<String> font_lru_list_;
+  std::unique_ptr<FontCachePurgePreventer> main_cache_purge_preventer_;
+  Member<Document> document_;
+  RefPtr<ComputedStyle> default_font_style_;
+  bool pruning_scheduled_;
 };
 
 }  // namespace blink

@@ -61,9 +61,9 @@ gin::WrapperInfo GamepadControllerBindings::kWrapperInfo = {
 void GamepadControllerBindings::Install(
     base::WeakPtr<GamepadController> controller,
     WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -174,67 +174,67 @@ void GamepadController::SetListener(blink::WebGamepadListener* listener) {
 }
 
 void GamepadController::Connect(int index) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
   gamepads_.items[index].connected = true;
 }
 
 void GamepadController::DispatchConnected(int index) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap) ||
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap) ||
       !gamepads_.items[index].connected)
     return;
   const WebGamepad& pad = gamepads_.items[index];
   if (listener_)
-    listener_->didConnectGamepad(index, pad);
+    listener_->DidConnectGamepad(index, pad);
 }
 
 void GamepadController::Disconnect(int index) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
   WebGamepad& pad = gamepads_.items[index];
   pad.connected = false;
   if (listener_)
-    listener_->didDisconnectGamepad(index, pad);
+    listener_->DidDisconnectGamepad(index, pad);
 }
 
 void GamepadController::SetId(int index, const std::string& src) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
   const char* p = src.c_str();
   memset(gamepads_.items[index].id, 0, sizeof(gamepads_.items[index].id));
-  for (unsigned i = 0; *p && i < WebGamepad::idLengthCap - 1; ++i)
+  for (unsigned i = 0; *p && i < WebGamepad::kIdLengthCap - 1; ++i)
     gamepads_.items[index].id[i] = *p++;
 }
 
 void GamepadController::SetButtonCount(int index, int buttons) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
-  if (buttons < 0 || buttons >= static_cast<int>(WebGamepad::buttonsLengthCap))
+  if (buttons < 0 || buttons >= static_cast<int>(WebGamepad::kButtonsLengthCap))
     return;
-  gamepads_.items[index].buttonsLength = buttons;
+  gamepads_.items[index].buttons_length = buttons;
 }
 
 void GamepadController::SetButtonData(int index, int button, double data) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
-  if (button < 0 || button >= static_cast<int>(WebGamepad::buttonsLengthCap))
+  if (button < 0 || button >= static_cast<int>(WebGamepad::kButtonsLengthCap))
     return;
   gamepads_.items[index].buttons[button].value = data;
   gamepads_.items[index].buttons[button].pressed = data > 0.1f;
 }
 
 void GamepadController::SetAxisCount(int index, int axes) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
-  if (axes < 0 || axes >= static_cast<int>(WebGamepad::axesLengthCap))
+  if (axes < 0 || axes >= static_cast<int>(WebGamepad::kAxesLengthCap))
     return;
-  gamepads_.items[index].axesLength = axes;
+  gamepads_.items[index].axes_length = axes;
 }
 
 void GamepadController::SetAxisData(int index, int axis, double data) {
-  if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
+  if (index < 0 || index >= static_cast<int>(WebGamepads::kItemsLengthCap))
     return;
-  if (axis < 0 || axis >= static_cast<int>(WebGamepad::axesLengthCap))
+  if (axis < 0 || axis >= static_cast<int>(WebGamepad::kAxesLengthCap))
     return;
   gamepads_.items[index].axes[axis] = data;
 }

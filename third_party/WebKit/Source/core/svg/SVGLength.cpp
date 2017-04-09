@@ -32,100 +32,102 @@
 namespace blink {
 
 SVGLength::SVGLength(SVGLengthMode mode)
-    : m_value(
-          CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits)),
-      m_unitMode(static_cast<unsigned>(mode)) {
-  DCHECK_EQ(unitMode(), mode);
+    : value_(
+          CSSPrimitiveValue::Create(0,
+                                    CSSPrimitiveValue::UnitType::kUserUnits)),
+      unit_mode_(static_cast<unsigned>(mode)) {
+  DCHECK_EQ(UnitMode(), mode);
 }
 
 SVGLength::SVGLength(const SVGLength& o)
-    : m_value(o.m_value), m_unitMode(o.m_unitMode) {}
+    : value_(o.value_), unit_mode_(o.unit_mode_) {}
 
 DEFINE_TRACE(SVGLength) {
-  visitor->trace(m_value);
-  SVGPropertyBase::trace(visitor);
+  visitor->Trace(value_);
+  SVGPropertyBase::Trace(visitor);
 }
 
-SVGLength* SVGLength::clone() const {
+SVGLength* SVGLength::Clone() const {
   return new SVGLength(*this);
 }
 
-SVGPropertyBase* SVGLength::cloneForAnimation(const String& value) const {
-  SVGLength* length = create();
-  length->m_unitMode = m_unitMode;
+SVGPropertyBase* SVGLength::CloneForAnimation(const String& value) const {
+  SVGLength* length = Create();
+  length->unit_mode_ = unit_mode_;
 
-  if (length->setValueAsString(value) != SVGParseStatus::NoError)
-    length->m_value =
-        CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits);
+  if (length->SetValueAsString(value) != SVGParseStatus::kNoError)
+    length->value_ =
+        CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kUserUnits);
 
   return length;
 }
 
 bool SVGLength::operator==(const SVGLength& other) const {
-  return m_unitMode == other.m_unitMode && m_value == other.m_value;
+  return unit_mode_ == other.unit_mode_ && value_ == other.value_;
 }
 
-float SVGLength::value(const SVGLengthContext& context) const {
-  if (isCalculated())
-    return context.resolveValue(asCSSPrimitiveValue(), unitMode());
+float SVGLength::Value(const SVGLengthContext& context) const {
+  if (IsCalculated())
+    return context.ResolveValue(AsCSSPrimitiveValue(), UnitMode());
 
-  return context.convertValueToUserUnits(m_value->getFloatValue(), unitMode(),
-                                         m_value->typeWithCalcResolved());
+  return context.ConvertValueToUserUnits(value_->GetFloatValue(), UnitMode(),
+                                         value_->TypeWithCalcResolved());
 }
 
-void SVGLength::setValueAsNumber(float value) {
-  m_value =
-      CSSPrimitiveValue::create(value, CSSPrimitiveValue::UnitType::UserUnits);
+void SVGLength::SetValueAsNumber(float value) {
+  value_ =
+      CSSPrimitiveValue::Create(value, CSSPrimitiveValue::UnitType::kUserUnits);
 }
 
-void SVGLength::setValue(float value, const SVGLengthContext& context) {
-  m_value = CSSPrimitiveValue::create(
-      context.convertValueFromUserUnits(value, unitMode(),
-                                        m_value->typeWithCalcResolved()),
-      m_value->typeWithCalcResolved());
+void SVGLength::SetValue(float value, const SVGLengthContext& context) {
+  value_ = CSSPrimitiveValue::Create(
+      context.ConvertValueFromUserUnits(value, UnitMode(),
+                                        value_->TypeWithCalcResolved()),
+      value_->TypeWithCalcResolved());
 }
 
-static bool isCalcCSSUnitType(CSSPrimitiveValue::UnitType type) {
-  return type >= CSSPrimitiveValue::UnitType::Calc &&
-         type <= CSSPrimitiveValue::UnitType::CalcPercentageWithLengthAndNumber;
+static bool IsCalcCSSUnitType(CSSPrimitiveValue::UnitType type) {
+  return type >= CSSPrimitiveValue::UnitType::kCalc &&
+         type <=
+             CSSPrimitiveValue::UnitType::kCalcPercentageWithLengthAndNumber;
 }
 
-static bool isSupportedCSSUnitType(CSSPrimitiveValue::UnitType type) {
-  return (CSSPrimitiveValue::isLength(type) ||
-          type == CSSPrimitiveValue::UnitType::Number ||
-          type == CSSPrimitiveValue::UnitType::Percentage ||
-          isCalcCSSUnitType(type)) &&
-         type != CSSPrimitiveValue::UnitType::QuirkyEms;
+static bool IsSupportedCSSUnitType(CSSPrimitiveValue::UnitType type) {
+  return (CSSPrimitiveValue::IsLength(type) ||
+          type == CSSPrimitiveValue::UnitType::kNumber ||
+          type == CSSPrimitiveValue::UnitType::kPercentage ||
+          IsCalcCSSUnitType(type)) &&
+         type != CSSPrimitiveValue::UnitType::kQuirkyEms;
 }
 
-void SVGLength::setUnitType(CSSPrimitiveValue::UnitType type) {
-  DCHECK(isSupportedCSSUnitType(type));
-  m_value = CSSPrimitiveValue::create(m_value->getFloatValue(), type);
+void SVGLength::SetUnitType(CSSPrimitiveValue::UnitType type) {
+  DCHECK(IsSupportedCSSUnitType(type));
+  value_ = CSSPrimitiveValue::Create(value_->GetFloatValue(), type);
 }
 
-float SVGLength::valueAsPercentage() const {
+float SVGLength::ValueAsPercentage() const {
   // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy
   // but could eventually be changed.
-  if (m_value->isPercentage()) {
+  if (value_->IsPercentage()) {
     // Note: This division is a source of floating point inaccuracy.
-    return m_value->getFloatValue() / 100;
+    return value_->GetFloatValue() / 100;
   }
 
-  return m_value->getFloatValue();
+  return value_->GetFloatValue();
 }
 
-float SVGLength::valueAsPercentage100() const {
+float SVGLength::ValueAsPercentage100() const {
   // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy
   // but could eventually be changed.
-  if (m_value->isPercentage())
-    return m_value->getFloatValue();
+  if (value_->IsPercentage())
+    return value_->GetFloatValue();
 
-  return m_value->getFloatValue() * 100;
+  return value_->GetFloatValue() * 100;
 }
 
-float SVGLength::scaleByPercentage(float input) const {
-  float result = input * m_value->getFloatValue();
-  if (m_value->isPercentage()) {
+float SVGLength::ScaleByPercentage(float input) const {
+  float result = input * value_->GetFloatValue();
+  if (value_->IsPercentage()) {
     // Delaying division by 100 as long as possible since it introduces floating
     // point errors.
     result = result / 100;
@@ -133,145 +135,148 @@ float SVGLength::scaleByPercentage(float input) const {
   return result;
 }
 
-SVGParsingError SVGLength::setValueAsString(const String& string) {
-  if (string.isEmpty()) {
-    m_value =
-        CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::UserUnits);
-    return SVGParseStatus::NoError;
+SVGParsingError SVGLength::SetValueAsString(const String& string) {
+  if (string.IsEmpty()) {
+    value_ =
+        CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kUserUnits);
+    return SVGParseStatus::kNoError;
   }
 
-  CSSParserContext* svgParserContext =
-      CSSParserContext::create(SVGAttributeMode);
+  CSSParserContext* svg_parser_context =
+      CSSParserContext::Create(kSVGAttributeMode);
   const CSSValue* parsed =
-      CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
-  if (!parsed || !parsed->isPrimitiveValue())
-    return SVGParseStatus::ExpectedLength;
+      CSSParser::ParseSingleValue(CSSPropertyX, string, svg_parser_context);
+  if (!parsed || !parsed->IsPrimitiveValue())
+    return SVGParseStatus::kExpectedLength;
 
-  const CSSPrimitiveValue* newValue = toCSSPrimitiveValue(parsed);
-  if (!isSupportedCSSUnitType(newValue->typeWithCalcResolved()))
-    return SVGParseStatus::ExpectedLength;
+  const CSSPrimitiveValue* new_value = ToCSSPrimitiveValue(parsed);
+  if (!IsSupportedCSSUnitType(new_value->TypeWithCalcResolved()))
+    return SVGParseStatus::kExpectedLength;
 
-  m_value = newValue;
-  return SVGParseStatus::NoError;
+  value_ = new_value;
+  return SVGParseStatus::kNoError;
 }
 
-String SVGLength::valueAsString() const {
-  return m_value->customCSSText();
+String SVGLength::ValueAsString() const {
+  return value_->CustomCSSText();
 }
 
-void SVGLength::newValueSpecifiedUnits(CSSPrimitiveValue::UnitType type,
+void SVGLength::NewValueSpecifiedUnits(CSSPrimitiveValue::UnitType type,
                                        float value) {
-  m_value = CSSPrimitiveValue::create(value, type);
+  value_ = CSSPrimitiveValue::Create(value, type);
 }
 
-void SVGLength::convertToSpecifiedUnits(CSSPrimitiveValue::UnitType type,
+void SVGLength::ConvertToSpecifiedUnits(CSSPrimitiveValue::UnitType type,
                                         const SVGLengthContext& context) {
-  DCHECK(isSupportedCSSUnitType(type));
+  DCHECK(IsSupportedCSSUnitType(type));
 
-  float valueInUserUnits = value(context);
-  m_value = CSSPrimitiveValue::create(
-      context.convertValueFromUserUnits(valueInUserUnits, unitMode(), type),
+  float value_in_user_units = Value(context);
+  value_ = CSSPrimitiveValue::Create(
+      context.ConvertValueFromUserUnits(value_in_user_units, UnitMode(), type),
       type);
 }
 
-SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(
-    const QualifiedName& attrName) {
+SVGLengthMode SVGLength::LengthModeForAnimatedLengthAttribute(
+    const QualifiedName& attr_name) {
   typedef HashMap<QualifiedName, SVGLengthMode> LengthModeForLengthAttributeMap;
-  DEFINE_STATIC_LOCAL(LengthModeForLengthAttributeMap, s_lengthModeMap, ());
+  DEFINE_STATIC_LOCAL(LengthModeForLengthAttributeMap, length_mode_map, ());
 
-  if (s_lengthModeMap.isEmpty()) {
-    s_lengthModeMap.set(SVGNames::xAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::yAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::cxAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::cyAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::dxAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::dyAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::frAttr, SVGLengthMode::Other);
-    s_lengthModeMap.set(SVGNames::fxAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::fyAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::rAttr, SVGLengthMode::Other);
-    s_lengthModeMap.set(SVGNames::rxAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::ryAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::widthAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::heightAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::x1Attr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::x2Attr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::y1Attr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::y2Attr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::refXAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::refYAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::markerWidthAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::markerHeightAttr, SVGLengthMode::Height);
-    s_lengthModeMap.set(SVGNames::textLengthAttr, SVGLengthMode::Width);
-    s_lengthModeMap.set(SVGNames::startOffsetAttr, SVGLengthMode::Width);
+  if (length_mode_map.IsEmpty()) {
+    length_mode_map.Set(SVGNames::xAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::yAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::cxAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::cyAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::dxAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::dyAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::frAttr, SVGLengthMode::kOther);
+    length_mode_map.Set(SVGNames::fxAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::fyAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::rAttr, SVGLengthMode::kOther);
+    length_mode_map.Set(SVGNames::rxAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::ryAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::widthAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::heightAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::x1Attr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::x2Attr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::y1Attr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::y2Attr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::refXAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::refYAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::markerWidthAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::markerHeightAttr, SVGLengthMode::kHeight);
+    length_mode_map.Set(SVGNames::textLengthAttr, SVGLengthMode::kWidth);
+    length_mode_map.Set(SVGNames::startOffsetAttr, SVGLengthMode::kWidth);
   }
 
-  if (s_lengthModeMap.contains(attrName))
-    return s_lengthModeMap.at(attrName);
+  if (length_mode_map.Contains(attr_name))
+    return length_mode_map.at(attr_name);
 
-  return SVGLengthMode::Other;
+  return SVGLengthMode::kOther;
 }
 
-bool SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(
-    const QualifiedName& attrName) {
+bool SVGLength::NegativeValuesForbiddenForAnimatedLengthAttribute(
+    const QualifiedName& attr_name) {
   DEFINE_STATIC_LOCAL(
-      HashSet<QualifiedName>, noNegativeValuesSet,
+      HashSet<QualifiedName>, no_negative_values_set,
       ({
           SVGNames::frAttr, SVGNames::rAttr, SVGNames::rxAttr, SVGNames::ryAttr,
           SVGNames::widthAttr, SVGNames::heightAttr, SVGNames::markerWidthAttr,
           SVGNames::markerHeightAttr, SVGNames::textLengthAttr,
       }));
-  return noNegativeValuesSet.contains(attrName);
+  return no_negative_values_set.Contains(attr_name);
 }
 
-void SVGLength::add(SVGPropertyBase* other, SVGElement* contextElement) {
-  SVGLengthContext lengthContext(contextElement);
-  setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext),
-           lengthContext);
+void SVGLength::Add(SVGPropertyBase* other, SVGElement* context_element) {
+  SVGLengthContext length_context(context_element);
+  SetValue(Value(length_context) + ToSVGLength(other)->Value(length_context),
+           length_context);
 }
 
-void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement,
-                                       float percentage,
-                                       unsigned repeatCount,
-                                       SVGPropertyBase* fromValue,
-                                       SVGPropertyBase* toValue,
-                                       SVGPropertyBase* toAtEndOfDurationValue,
-                                       SVGElement* contextElement) {
-  SVGLength* fromLength = toSVGLength(fromValue);
-  SVGLength* toLength = toSVGLength(toValue);
-  SVGLength* toAtEndOfDurationLength = toSVGLength(toAtEndOfDurationValue);
+void SVGLength::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
+    float percentage,
+    unsigned repeat_count,
+    SVGPropertyBase* from_value,
+    SVGPropertyBase* to_value,
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement* context_element) {
+  SVGLength* from_length = ToSVGLength(from_value);
+  SVGLength* to_length = ToSVGLength(to_value);
+  SVGLength* to_at_end_of_duration_length =
+      ToSVGLength(to_at_end_of_duration_value);
 
-  SVGLengthContext lengthContext(contextElement);
-  float animatedNumber = value(lengthContext);
-  animationElement->animateAdditiveNumber(
-      percentage, repeatCount, fromLength->value(lengthContext),
-      toLength->value(lengthContext),
-      toAtEndOfDurationLength->value(lengthContext), animatedNumber);
+  SVGLengthContext length_context(context_element);
+  float animated_number = Value(length_context);
+  animation_element->AnimateAdditiveNumber(
+      percentage, repeat_count, from_length->Value(length_context),
+      to_length->Value(length_context),
+      to_at_end_of_duration_length->Value(length_context), animated_number);
 
-  DCHECK_EQ(unitMode(), lengthModeForAnimatedLengthAttribute(
-                            animationElement->attributeName()));
+  DCHECK_EQ(UnitMode(), LengthModeForAnimatedLengthAttribute(
+                            animation_element->AttributeName()));
 
   // TODO(shanmuga.m): Construct a calc() expression if the units fall in
   // different categories.
-  CSSPrimitiveValue::UnitType newUnit = CSSPrimitiveValue::UnitType::UserUnits;
+  CSSPrimitiveValue::UnitType new_unit =
+      CSSPrimitiveValue::UnitType::kUserUnits;
   if (percentage < 0.5) {
-    if (!fromLength->isCalculated())
-      newUnit = fromLength->typeWithCalcResolved();
+    if (!from_length->IsCalculated())
+      new_unit = from_length->TypeWithCalcResolved();
   } else {
-    if (!toLength->isCalculated())
-      newUnit = toLength->typeWithCalcResolved();
+    if (!to_length->IsCalculated())
+      new_unit = to_length->TypeWithCalcResolved();
   }
-  animatedNumber = lengthContext.convertValueFromUserUnits(animatedNumber,
-                                                           unitMode(), newUnit);
-  m_value = CSSPrimitiveValue::create(animatedNumber, newUnit);
+  animated_number = length_context.ConvertValueFromUserUnits(
+      animated_number, UnitMode(), new_unit);
+  value_ = CSSPrimitiveValue::Create(animated_number, new_unit);
 }
 
-float SVGLength::calculateDistance(SVGPropertyBase* toValue,
-                                   SVGElement* contextElement) {
-  SVGLengthContext lengthContext(contextElement);
-  SVGLength* toLength = toSVGLength(toValue);
+float SVGLength::CalculateDistance(SVGPropertyBase* to_value,
+                                   SVGElement* context_element) {
+  SVGLengthContext length_context(context_element);
+  SVGLength* to_length = ToSVGLength(to_value);
 
-  return fabsf(toLength->value(lengthContext) - value(lengthContext));
+  return fabsf(to_length->Value(length_context) - Value(length_context));
 }
 
 }  // namespace blink

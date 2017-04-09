@@ -34,39 +34,39 @@ class HTMLOListElement final : public HTMLElement {
   DECLARE_NODE_FACTORY(HTMLOListElement);
 
   int start() const {
-    return m_hasExplicitStart ? m_start : (m_isReversed ? itemCount() : 1);
+    return has_explicit_start_ ? start_ : (is_reversed_ ? ItemCount() : 1);
   }
   void setStart(int);
 
-  bool isReversed() const { return m_isReversed; }
+  bool IsReversed() const { return is_reversed_; }
 
-  void itemCountChanged() { m_shouldRecalculateItemCount = true; }
+  void ItemCountChanged() { should_recalculate_item_count_ = true; }
 
  private:
   explicit HTMLOListElement(Document&);
 
-  void updateItemValues();
+  void UpdateItemValues();
 
-  unsigned itemCount() const {
-    if (m_shouldRecalculateItemCount)
-      const_cast<HTMLOListElement*>(this)->recalculateItemCount();
-    return m_itemCount;
+  unsigned ItemCount() const {
+    if (should_recalculate_item_count_)
+      const_cast<HTMLOListElement*>(this)->RecalculateItemCount();
+    return item_count_;
   }
 
-  void recalculateItemCount();
+  void RecalculateItemCount();
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void ParseAttribute(const AttributeModificationParams&) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  int m_start;
-  unsigned m_itemCount;
+  int start_;
+  unsigned item_count_;
 
-  bool m_hasExplicitStart : 1;
-  bool m_isReversed : 1;
-  bool m_shouldRecalculateItemCount : 1;
+  bool has_explicit_start_ : 1;
+  bool is_reversed_ : 1;
+  bool should_recalculate_item_count_ : 1;
 };
 
 }  // namespace blink

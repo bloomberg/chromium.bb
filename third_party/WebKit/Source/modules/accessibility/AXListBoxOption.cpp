@@ -37,152 +37,152 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXListBoxOption::AXListBoxOption(LayoutObject* layoutObject,
-                                 AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache) {}
+AXListBoxOption::AXListBoxOption(LayoutObject* layout_object,
+                                 AXObjectCacheImpl& ax_object_cache)
+    : AXLayoutObject(layout_object, ax_object_cache) {}
 
 AXListBoxOption::~AXListBoxOption() {}
 
-AXListBoxOption* AXListBoxOption::create(LayoutObject* layoutObject,
-                                         AXObjectCacheImpl& axObjectCache) {
-  return new AXListBoxOption(layoutObject, axObjectCache);
+AXListBoxOption* AXListBoxOption::Create(LayoutObject* layout_object,
+                                         AXObjectCacheImpl& ax_object_cache) {
+  return new AXListBoxOption(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXListBoxOption::determineAccessibilityRole() {
-  if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-    return m_ariaRole;
+AccessibilityRole AXListBoxOption::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+    return aria_role_;
 
   // http://www.w3.org/TR/wai-aria/complete#presentation
   // ARIA spec says that the presentation role causes a given element to be
   // treated as having no role or to be removed from the accessibility tree, but
   // does not cause the content contained within the element to be removed from
   // the accessibility tree.
-  if (isParentPresentationalRole())
-    return StaticTextRole;
+  if (IsParentPresentationalRole())
+    return kStaticTextRole;
 
-  return ListBoxOptionRole;
+  return kListBoxOptionRole;
 }
 
-bool AXListBoxOption::isParentPresentationalRole() const {
-  AXObject* parent = parentObject();
+bool AXListBoxOption::IsParentPresentationalRole() const {
+  AXObject* parent = ParentObject();
   if (!parent)
     return false;
 
-  LayoutObject* layoutObject = parent->getLayoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = parent->GetLayoutObject();
+  if (!layout_object)
     return false;
 
-  if (layoutObject->isListBox() && parent->hasInheritedPresentationalRole())
+  if (layout_object->IsListBox() && parent->HasInheritedPresentationalRole())
     return true;
 
   return false;
 }
 
-bool AXListBoxOption::isEnabled() const {
-  if (!getNode())
+bool AXListBoxOption::IsEnabled() const {
+  if (!GetNode())
     return false;
 
-  if (equalIgnoringASCIICase(getAttribute(aria_disabledAttr), "true"))
+  if (EqualIgnoringASCIICase(GetAttribute(aria_disabledAttr), "true"))
     return false;
 
-  if (toElement(getNode())->hasAttribute(disabledAttr))
+  if (ToElement(GetNode())->hasAttribute(disabledAttr))
     return false;
 
   return true;
 }
 
-bool AXListBoxOption::isSelected() const {
-  return isHTMLOptionElement(getNode()) &&
-         toHTMLOptionElement(getNode())->selected();
+bool AXListBoxOption::IsSelected() const {
+  return isHTMLOptionElement(GetNode()) &&
+         toHTMLOptionElement(GetNode())->Selected();
 }
 
-bool AXListBoxOption::isSelectedOptionActive() const {
-  HTMLSelectElement* listBoxParentNode = listBoxOptionParentNode();
-  if (!listBoxParentNode)
+bool AXListBoxOption::IsSelectedOptionActive() const {
+  HTMLSelectElement* list_box_parent_node = ListBoxOptionParentNode();
+  if (!list_box_parent_node)
     return false;
 
-  return listBoxParentNode->activeSelectionEnd() == getNode();
+  return list_box_parent_node->ActiveSelectionEnd() == GetNode();
 }
 
-bool AXListBoxOption::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  if (!getNode())
+bool AXListBoxOption::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  if (!GetNode())
     return true;
 
-  if (accessibilityIsIgnoredByDefault(ignoredReasons))
+  if (AccessibilityIsIgnoredByDefault(ignored_reasons))
     return true;
 
   return false;
 }
 
-bool AXListBoxOption::canSetSelectedAttribute() const {
-  if (!isHTMLOptionElement(getNode()))
+bool AXListBoxOption::CanSetSelectedAttribute() const {
+  if (!isHTMLOptionElement(GetNode()))
     return false;
 
-  if (toHTMLOptionElement(getNode())->isDisabledFormControl())
+  if (toHTMLOptionElement(GetNode())->IsDisabledFormControl())
     return false;
 
-  HTMLSelectElement* selectElement = listBoxOptionParentNode();
-  if (selectElement && selectElement->isDisabledFormControl())
+  HTMLSelectElement* select_element = ListBoxOptionParentNode();
+  if (select_element && select_element->IsDisabledFormControl())
     return false;
 
   return true;
 }
 
-String AXListBoxOption::textAlternative(bool recursive,
-                                        bool inAriaLabelledByTraversal,
+String AXListBoxOption::TextAlternative(bool recursive,
+                                        bool in_aria_labelled_by_traversal,
                                         AXObjectSet& visited,
-                                        AXNameFrom& nameFrom,
-                                        AXRelatedObjectVector* relatedObjects,
-                                        NameSources* nameSources) const {
+                                        AXNameFrom& name_from,
+                                        AXRelatedObjectVector* related_objects,
+                                        NameSources* name_sources) const {
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
-  if (nameSources)
-    DCHECK(relatedObjects);
+  if (name_sources)
+    DCHECK(related_objects);
 
-  if (!getNode())
+  if (!GetNode())
     return String();
 
-  bool foundTextAlternative = false;
-  String textAlternative = ariaTextAlternative(
-      recursive, inAriaLabelledByTraversal, visited, nameFrom, relatedObjects,
-      nameSources, &foundTextAlternative);
-  if (foundTextAlternative && !nameSources)
-    return textAlternative;
+  bool found_text_alternative = false;
+  String text_alternative = AriaTextAlternative(
+      recursive, in_aria_labelled_by_traversal, visited, name_from,
+      related_objects, name_sources, &found_text_alternative);
+  if (found_text_alternative && !name_sources)
+    return text_alternative;
 
-  nameFrom = AXNameFromContents;
-  textAlternative = toHTMLOptionElement(getNode())->displayLabel();
-  if (nameSources) {
-    nameSources->push_back(NameSource(foundTextAlternative));
-    nameSources->back().type = nameFrom;
-    nameSources->back().text = textAlternative;
-    foundTextAlternative = true;
+  name_from = kAXNameFromContents;
+  text_alternative = toHTMLOptionElement(GetNode())->DisplayLabel();
+  if (name_sources) {
+    name_sources->push_back(NameSource(found_text_alternative));
+    name_sources->back().type = name_from;
+    name_sources->back().text = text_alternative;
+    found_text_alternative = true;
   }
 
-  return textAlternative;
+  return text_alternative;
 }
 
-void AXListBoxOption::setSelected(bool selected) {
-  HTMLSelectElement* selectElement = listBoxOptionParentNode();
-  if (!selectElement)
+void AXListBoxOption::SetSelected(bool selected) {
+  HTMLSelectElement* select_element = ListBoxOptionParentNode();
+  if (!select_element)
     return;
 
-  if (!canSetSelectedAttribute())
+  if (!CanSetSelectedAttribute())
     return;
 
-  bool isOptionSelected = isSelected();
-  if ((isOptionSelected && selected) || (!isOptionSelected && !selected))
+  bool is_option_selected = IsSelected();
+  if ((is_option_selected && selected) || (!is_option_selected && !selected))
     return;
 
-  selectElement->selectOptionByAccessKey(toHTMLOptionElement(getNode()));
+  select_element->SelectOptionByAccessKey(toHTMLOptionElement(GetNode()));
 }
 
-HTMLSelectElement* AXListBoxOption::listBoxOptionParentNode() const {
-  if (!getNode())
+HTMLSelectElement* AXListBoxOption::ListBoxOptionParentNode() const {
+  if (!GetNode())
     return 0;
 
-  if (isHTMLOptionElement(getNode()))
-    return toHTMLOptionElement(getNode())->ownerSelectElement();
+  if (isHTMLOptionElement(GetNode()))
+    return toHTMLOptionElement(GetNode())->OwnerSelectElement();
 
   return 0;
 }

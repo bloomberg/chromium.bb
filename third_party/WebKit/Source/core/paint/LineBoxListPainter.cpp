@@ -15,70 +15,71 @@
 
 namespace blink {
 
-static void addPDFURLRectsForInlineChildrenRecursively(
-    const LayoutObject& layoutObject,
-    const PaintInfo& paintInfo,
-    const LayoutPoint& paintOffset) {
-  for (LayoutObject* child = layoutObject.slowFirstChild(); child;
-       child = child->nextSibling()) {
-    if (!child->isLayoutInline() ||
-        toLayoutBoxModelObject(child)->hasSelfPaintingLayer())
+static void AddPDFURLRectsForInlineChildrenRecursively(
+    const LayoutObject& layout_object,
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) {
+  for (LayoutObject* child = layout_object.SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (!child->IsLayoutInline() ||
+        ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
       continue;
-    ObjectPainter(*child).addPDFURLRectIfNeeded(paintInfo, paintOffset);
-    addPDFURLRectsForInlineChildrenRecursively(*child, paintInfo, paintOffset);
+    ObjectPainter(*child).AddPDFURLRectIfNeeded(paint_info, paint_offset);
+    AddPDFURLRectsForInlineChildrenRecursively(*child, paint_info,
+                                               paint_offset);
   }
 }
 
-void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject,
-                               const PaintInfo& paintInfo,
-                               const LayoutPoint& paintOffset) const {
-  DCHECK(!shouldPaintSelfOutline(paintInfo.phase) &&
-         !shouldPaintDescendantOutlines(paintInfo.phase));
+void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
+                               const PaintInfo& paint_info,
+                               const LayoutPoint& paint_offset) const {
+  DCHECK(!ShouldPaintSelfOutline(paint_info.phase) &&
+         !ShouldPaintDescendantOutlines(paint_info.phase));
 
   // Only paint during the foreground/selection phases.
-  if (paintInfo.phase != PaintPhaseForeground &&
-      paintInfo.phase != PaintPhaseSelection &&
-      paintInfo.phase != PaintPhaseTextClip &&
-      paintInfo.phase != PaintPhaseMask)
+  if (paint_info.phase != kPaintPhaseForeground &&
+      paint_info.phase != kPaintPhaseSelection &&
+      paint_info.phase != kPaintPhaseTextClip &&
+      paint_info.phase != kPaintPhaseMask)
     return;
 
   // The only way an inline could paint like this is if it has a layer.
-  DCHECK(layoutObject.isLayoutBlock() ||
-         (layoutObject.isLayoutInline() && layoutObject.hasLayer()));
+  DCHECK(layout_object.IsLayoutBlock() ||
+         (layout_object.IsLayoutInline() && layout_object.HasLayer()));
 
-  if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())
-    addPDFURLRectsForInlineChildrenRecursively(layoutObject, paintInfo,
-                                               paintOffset);
+  if (paint_info.phase == kPaintPhaseForeground && paint_info.IsPrinting())
+    AddPDFURLRectsForInlineChildrenRecursively(layout_object, paint_info,
+                                               paint_offset);
 
   // If we have no lines then we have no work to do.
-  if (!m_lineBoxList.firstLineBox())
+  if (!line_box_list_.FirstLineBox())
     return;
 
-  if (!m_lineBoxList.anyLineIntersectsRect(
-          LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layoutObject)),
-          paintInfo.cullRect(), paintOffset))
+  if (!line_box_list_.AnyLineIntersectsRect(
+          LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layout_object)),
+          paint_info.GetCullRect(), paint_offset))
     return;
 
-  PaintInfo info(paintInfo);
+  PaintInfo info(paint_info);
 
   // See if our root lines intersect with the dirty rect. If so, then we paint
   // them. Note that boxes can easily overlap, so we can't make any assumptions
   // based off positions of our first line box or our last line box.
-  for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr;
-       curr = curr->nextLineBox()) {
-    if (m_lineBoxList.lineIntersectsDirtyRect(
+  for (InlineFlowBox* curr = line_box_list_.FirstLineBox(); curr;
+       curr = curr->NextLineBox()) {
+    if (line_box_list_.LineIntersectsDirtyRect(
             LineLayoutBoxModel(
-                const_cast<LayoutBoxModelObject*>(&layoutObject)),
-            curr, info.cullRect(), paintOffset)) {
-      RootInlineBox& root = curr->root();
-      curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
+                const_cast<LayoutBoxModelObject*>(&layout_object)),
+            curr, info.GetCullRect(), paint_offset)) {
+      RootInlineBox& root = curr->Root();
+      curr->Paint(info, paint_offset, root.LineTop(), root.LineBottom());
     }
   }
 }
 
-static void invalidateLineBoxPaintOffsetsInternal(
-    PaintController& paintController,
-    InlineFlowBox* inlineBox) {
+static void InvalidateLineBoxPaintOffsetsInternal(
+    PaintController& paint_controller,
+    InlineFlowBox* inline_box) {
 #if 0
     // TODO(wangxianzhu): Implement this with PaintInvalidator.
     paintController.invalidatePaintOffset(*inlineBox);
@@ -93,12 +94,12 @@ static void invalidateLineBoxPaintOffsetsInternal(
 #endif
 }
 
-void LineBoxListPainter::invalidateLineBoxPaintOffsets(
-    const PaintInfo& paintInfo) const {
-  PaintController& paintController = paintInfo.context.getPaintController();
-  for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr;
-       curr = curr->nextLineBox())
-    invalidateLineBoxPaintOffsetsInternal(paintController, curr);
+void LineBoxListPainter::InvalidateLineBoxPaintOffsets(
+    const PaintInfo& paint_info) const {
+  PaintController& paint_controller = paint_info.context.GetPaintController();
+  for (InlineFlowBox* curr = line_box_list_.FirstLineBox(); curr;
+       curr = curr->NextLineBox())
+    InvalidateLineBoxPaintOffsetsInternal(paint_controller, curr);
 }
 
 }  // namespace blink

@@ -372,10 +372,10 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     EXPECT_EQ(fetches[i].response.status_code, 200);
     EXPECT_TRUE(fetches[i].response.status_text.empty());
     EXPECT_EQ(fetches[i].response.response_type,
-              blink::WebServiceWorkerResponseTypeDefault);
+              blink::kWebServiceWorkerResponseTypeDefault);
     EXPECT_FALSE(fetches[i].response.headers.empty());
     EXPECT_EQ(fetches[i].response.error,
-              blink::WebServiceWorkerResponseErrorUnknown);
+              blink::kWebServiceWorkerResponseErrorUnknown);
 
     // Verify that all properties have a sensible value.
     EXPECT_FALSE(fetches[i].response.response_time.is_null());

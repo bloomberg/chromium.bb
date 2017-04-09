@@ -34,50 +34,50 @@
 namespace blink {
 
 SecurityContext::SecurityContext()
-    : m_sandboxFlags(SandboxNone),
-      m_addressSpace(WebAddressSpacePublic),
-      m_insecureRequestPolicy(kLeaveInsecureRequestsAlone) {}
+    : sandbox_flags_(kSandboxNone),
+      address_space_(kWebAddressSpacePublic),
+      insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
 SecurityContext::~SecurityContext() {}
 
 DEFINE_TRACE(SecurityContext) {
-  visitor->trace(m_contentSecurityPolicy);
+  visitor->Trace(content_security_policy_);
 }
 
-void SecurityContext::setSecurityOrigin(
-    PassRefPtr<SecurityOrigin> securityOrigin) {
-  m_securityOrigin = std::move(securityOrigin);
-  updateFeaturePolicyOrigin();
+void SecurityContext::SetSecurityOrigin(
+    PassRefPtr<SecurityOrigin> security_origin) {
+  security_origin_ = std::move(security_origin);
+  UpdateFeaturePolicyOrigin();
 }
 
-void SecurityContext::setContentSecurityPolicy(
-    ContentSecurityPolicy* contentSecurityPolicy) {
-  m_contentSecurityPolicy = contentSecurityPolicy;
+void SecurityContext::SetContentSecurityPolicy(
+    ContentSecurityPolicy* content_security_policy) {
+  content_security_policy_ = content_security_policy;
 }
 
-void SecurityContext::enforceSandboxFlags(SandboxFlags mask) {
-  applySandboxFlags(mask);
+void SecurityContext::EnforceSandboxFlags(SandboxFlags mask) {
+  ApplySandboxFlags(mask);
 }
 
-void SecurityContext::applySandboxFlags(SandboxFlags mask) {
-  m_sandboxFlags |= mask;
+void SecurityContext::ApplySandboxFlags(SandboxFlags mask) {
+  sandbox_flags_ |= mask;
 
-  if (isSandboxed(SandboxOrigin) && getSecurityOrigin() &&
-      !getSecurityOrigin()->isUnique()) {
-    setSecurityOrigin(SecurityOrigin::createUnique());
-    didUpdateSecurityOrigin();
+  if (IsSandboxed(kSandboxOrigin) && GetSecurityOrigin() &&
+      !GetSecurityOrigin()->IsUnique()) {
+    SetSecurityOrigin(SecurityOrigin::CreateUnique());
+    DidUpdateSecurityOrigin();
   }
 }
 
 String SecurityContext::addressSpaceForBindings() const {
-  switch (m_addressSpace) {
-    case WebAddressSpacePublic:
+  switch (address_space_) {
+    case kWebAddressSpacePublic:
       return "public";
 
-    case WebAddressSpacePrivate:
+    case kWebAddressSpacePrivate:
       return "private";
 
-    case WebAddressSpaceLocal:
+    case kWebAddressSpaceLocal:
       return "local";
   }
   NOTREACHED();
@@ -88,34 +88,34 @@ String SecurityContext::addressSpaceForBindings() const {
 // security context. |name| must not be empty, although it may be null. A null
 // name represents a lack of a suborigin.
 // See: https://w3c.github.io/webappsec-suborigins/index.html
-void SecurityContext::enforceSuborigin(const Suborigin& suborigin) {
+void SecurityContext::EnforceSuborigin(const Suborigin& suborigin) {
   if (!RuntimeEnabledFeatures::suboriginsEnabled())
     return;
 
-  DCHECK(!suborigin.name().isEmpty());
+  DCHECK(!suborigin.GetName().IsEmpty());
   DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
-  DCHECK(m_securityOrigin.get());
-  DCHECK(!m_securityOrigin->hasSuborigin() ||
-         m_securityOrigin->suborigin()->name() == suborigin.name());
-  m_securityOrigin->addSuborigin(suborigin);
-  didUpdateSecurityOrigin();
+  DCHECK(security_origin_.Get());
+  DCHECK(!security_origin_->HasSuborigin() ||
+         security_origin_->GetSuborigin()->GetName() == suborigin.GetName());
+  security_origin_->AddSuborigin(suborigin);
+  DidUpdateSecurityOrigin();
 }
 
-void SecurityContext::initializeFeaturePolicy(
-    const WebParsedFeaturePolicy& parsedHeader,
-    const WebParsedFeaturePolicy& containerPolicy,
-    const WebFeaturePolicy* parentFeaturePolicy) {
-  DCHECK(!m_featurePolicy);
-  WebSecurityOrigin origin = WebSecurityOrigin(m_securityOrigin);
-  m_featurePolicy.reset(Platform::current()->createFeaturePolicy(
-      parentFeaturePolicy, containerPolicy, parsedHeader, origin));
+void SecurityContext::InitializeFeaturePolicy(
+    const WebParsedFeaturePolicy& parsed_header,
+    const WebParsedFeaturePolicy& container_policy,
+    const WebFeaturePolicy* parent_feature_policy) {
+  DCHECK(!feature_policy_);
+  WebSecurityOrigin origin = WebSecurityOrigin(security_origin_);
+  feature_policy_.reset(Platform::Current()->CreateFeaturePolicy(
+      parent_feature_policy, container_policy, parsed_header, origin));
 }
 
-void SecurityContext::updateFeaturePolicyOrigin() {
-  if (!m_featurePolicy)
+void SecurityContext::UpdateFeaturePolicyOrigin() {
+  if (!feature_policy_)
     return;
-  m_featurePolicy.reset(Platform::current()->duplicateFeaturePolicyWithOrigin(
-      *m_featurePolicy, WebSecurityOrigin(m_securityOrigin)));
+  feature_policy_.reset(Platform::Current()->DuplicateFeaturePolicyWithOrigin(
+      *feature_policy_, WebSecurityOrigin(security_origin_)));
 }
 
 }  // namespace blink

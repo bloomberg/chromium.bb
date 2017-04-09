@@ -76,8 +76,8 @@ TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
   memset(&test_data, 0, sizeof(WebGamepads));
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
-  test_data.items[0].buttonsLength = 1;
-  test_data.items[0].axesLength = 2;
+  test_data.items[0].buttons_length = 1;
+  test_data.items[0].axes_length = 2;
   test_data.items[0].buttons[0].value = 1.f;
   test_data.items[0].buttons[0].pressed = true;
   test_data.items[0].axes[0] = -1.f;
@@ -103,10 +103,10 @@ TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
   WebGamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
-  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(1u, output.items[0].buttons_length);
   EXPECT_EQ(1.f, output.items[0].buttons[0].value);
   EXPECT_EQ(true, output.items[0].buttons[0].pressed);
-  EXPECT_EQ(2u, output.items[0].axesLength);
+  EXPECT_EQ(2u, output.items[0].axes_length);
   EXPECT_EQ(-1.f, output.items[0].axes[0]);
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
 }
@@ -116,20 +116,20 @@ TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
   WebGamepads test_data;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
-  test_data.items[0].axesLength = 2;
+  test_data.items[0].axes_length = 2;
   test_data.items[0].axes[0] = -1.f;
   test_data.items[0].axes[1] = .5f;
 
   test_data.items[1].connected = true;
   test_data.items[1].timestamp = 0;
-  test_data.items[1].axesLength = 2;
+  test_data.items[1].axes_length = 2;
   test_data.items[1].axes[0] = 1.f;
   test_data.items[1].axes[1] = -.5f;
 
   WebGamepads test_data_onedisconnected;
   test_data_onedisconnected.items[1].connected = true;
   test_data_onedisconnected.items[1].timestamp = 0;
-  test_data_onedisconnected.items[1].axesLength = 2;
+  test_data_onedisconnected.items[1].axes_length = 2;
   test_data_onedisconnected.items[1].axes[0] = 1.f;
   test_data_onedisconnected.items[1].axes[1] = -.5f;
 
@@ -153,10 +153,10 @@ TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
   WebGamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
-  EXPECT_EQ(2u, output.items[0].axesLength);
+  EXPECT_EQ(2u, output.items[0].axes_length);
   EXPECT_EQ(-1.f, output.items[0].axes[0]);
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
-  EXPECT_EQ(2u, output.items[1].axesLength);
+  EXPECT_EQ(2u, output.items[1].axes_length);
   EXPECT_EQ(1.f, output.items[1].axes[0]);
   EXPECT_EQ(-0.5f, output.items[1].axes[1]);
 
@@ -164,8 +164,8 @@ TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
   mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
   ReadGamepadHardwareBuffer(buffer, &output);
 
-  EXPECT_EQ(0u, output.items[0].axesLength);
-  EXPECT_EQ(2u, output.items[1].axesLength);
+  EXPECT_EQ(0u, output.items[0].axes_length);
+  EXPECT_EQ(2u, output.items[1].axes_length);
   EXPECT_EQ(1.f, output.items[1].axes[0]);
   EXPECT_EQ(-0.5f, output.items[1].axes[1]);
 }
@@ -175,8 +175,8 @@ TEST_F(GamepadProviderTest, UserGesture) {
   WebGamepads no_button_data;
   no_button_data.items[0].connected = true;
   no_button_data.items[0].timestamp = 0;
-  no_button_data.items[0].buttonsLength = 1;
-  no_button_data.items[0].axesLength = 2;
+  no_button_data.items[0].buttons_length = 1;
+  no_button_data.items[0].axes_length = 2;
   no_button_data.items[0].buttons[0].value = 0.f;
   no_button_data.items[0].buttons[0].pressed = false;
   no_button_data.items[0].axes[0] = 0.f;
@@ -218,8 +218,8 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   WebGamepads active_data;
   active_data.items[0].connected = true;
   active_data.items[0].timestamp = 0;
-  active_data.items[0].buttonsLength = 1;
-  active_data.items[0].axesLength = 1;
+  active_data.items[0].buttons_length = 1;
+  active_data.items[0].axes_length = 1;
   active_data.items[0].buttons[0].value = 1.f;
   active_data.items[0].buttons[0].pressed = true;
   active_data.items[0].axes[0] = -1.f;
@@ -227,8 +227,8 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   WebGamepads zero_data;
   zero_data.items[0].connected = true;
   zero_data.items[0].timestamp = 0;
-  zero_data.items[0].buttonsLength = 1;
-  zero_data.items[0].axesLength = 1;
+  zero_data.items[0].buttons_length = 1;
+  zero_data.items[0].axes_length = 1;
   zero_data.items[0].buttons[0].value = 0.f;
   zero_data.items[0].buttons[0].pressed = false;
   zero_data.items[0].axes[0] = 0.f;
@@ -256,10 +256,10 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
 
   // Initial data should all be zeroed out due to sanitization, even though the
   // gamepad reported input
-  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(1u, output.items[0].buttons_length);
   EXPECT_EQ(0.f, output.items[0].buttons[0].value);
   EXPECT_FALSE(output.items[0].buttons[0].pressed);
-  EXPECT_EQ(1u, output.items[0].axesLength);
+  EXPECT_EQ(1u, output.items[0].axes_length);
   EXPECT_EQ(0.f, output.items[0].axes[0]);
 
   // Zero out the inputs
@@ -270,10 +270,10 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   ReadGamepadHardwareBuffer(buffer, &output);
 
   // Should still read zero, which is now an accurate reflection of the data
-  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(1u, output.items[0].buttons_length);
   EXPECT_EQ(0.f, output.items[0].buttons[0].value);
   EXPECT_FALSE(output.items[0].buttons[0].pressed);
-  EXPECT_EQ(1u, output.items[0].axesLength);
+  EXPECT_EQ(1u, output.items[0].axes_length);
   EXPECT_EQ(0.f, output.items[0].axes[0]);
 
   // Re-set the active inputs
@@ -284,10 +284,10 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   ReadGamepadHardwareBuffer(buffer, &output);
 
   // Should now accurately reflect the reported data.
-  EXPECT_EQ(1u, output.items[0].buttonsLength);
+  EXPECT_EQ(1u, output.items[0].buttons_length);
   EXPECT_EQ(1.f, output.items[0].buttons[0].value);
   EXPECT_TRUE(output.items[0].buttons[0].pressed);
-  EXPECT_EQ(1u, output.items[0].axesLength);
+  EXPECT_EQ(1u, output.items[0].axes_length);
   EXPECT_EQ(-1.f, output.items[0].axes[0]);
 }
 

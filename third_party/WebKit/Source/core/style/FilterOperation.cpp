@@ -35,73 +35,73 @@
 
 namespace blink {
 
-FilterOperation* FilterOperation::blend(const FilterOperation* from,
+FilterOperation* FilterOperation::Blend(const FilterOperation* from,
                                         const FilterOperation* to,
                                         double progress) {
   DCHECK(from || to);
   if (to)
-    return to->blend(from, progress);
-  return from->blend(0, 1 - progress);
+    return to->Blend(from, progress);
+  return from->Blend(0, 1 - progress);
 }
 
 DEFINE_TRACE(ReferenceFilterOperation) {
-  visitor->trace(m_elementProxy);
-  visitor->trace(m_filter);
-  FilterOperation::trace(visitor);
+  visitor->Trace(element_proxy_);
+  visitor->Trace(filter_);
+  FilterOperation::Trace(visitor);
 }
 
-FloatRect ReferenceFilterOperation::mapRect(const FloatRect& rect) const {
-  const auto* lastEffect = m_filter ? m_filter->lastEffect() : nullptr;
-  if (!lastEffect)
+FloatRect ReferenceFilterOperation::MapRect(const FloatRect& rect) const {
+  const auto* last_effect = filter_ ? filter_->LastEffect() : nullptr;
+  if (!last_effect)
     return rect;
-  return lastEffect->mapRect(rect);
+  return last_effect->MapRect(rect);
 }
 
 ReferenceFilterOperation::ReferenceFilterOperation(
     const String& url,
-    SVGElementProxy& elementProxy)
-    : FilterOperation(REFERENCE), m_url(url), m_elementProxy(&elementProxy) {}
+    SVGElementProxy& element_proxy)
+    : FilterOperation(REFERENCE), url_(url), element_proxy_(&element_proxy) {}
 
-void ReferenceFilterOperation::addClient(SVGResourceClient* client) {
-  m_elementProxy->addClient(client);
+void ReferenceFilterOperation::AddClient(SVGResourceClient* client) {
+  element_proxy_->AddClient(client);
 }
 
-void ReferenceFilterOperation::removeClient(SVGResourceClient* client) {
-  m_elementProxy->removeClient(client);
+void ReferenceFilterOperation::RemoveClient(SVGResourceClient* client) {
+  element_proxy_->RemoveClient(client);
 }
 
 bool ReferenceFilterOperation::operator==(const FilterOperation& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
-  const ReferenceFilterOperation& other = toReferenceFilterOperation(o);
-  return m_url == other.m_url && m_elementProxy == other.m_elementProxy;
+  const ReferenceFilterOperation& other = ToReferenceFilterOperation(o);
+  return url_ == other.url_ && element_proxy_ == other.element_proxy_;
 }
 
-FilterOperation* BasicColorMatrixFilterOperation::blend(
+FilterOperation* BasicColorMatrixFilterOperation::Blend(
     const FilterOperation* from,
     double progress) const {
-  double fromAmount;
+  double from_amount;
   if (from) {
-    SECURITY_DCHECK(from->isSameType(*this));
-    fromAmount = toBasicColorMatrixFilterOperation(from)->amount();
+    SECURITY_DCHECK(from->IsSameType(*this));
+    from_amount = ToBasicColorMatrixFilterOperation(from)->Amount();
   } else {
-    switch (m_type) {
+    switch (type_) {
       case GRAYSCALE:
       case SEPIA:
       case HUE_ROTATE:
-        fromAmount = 0;
+        from_amount = 0;
         break;
       case SATURATE:
-        fromAmount = 1;
+        from_amount = 1;
         break;
       default:
-        fromAmount = 0;
+        from_amount = 0;
         NOTREACHED();
     }
   }
 
-  double result = blink::blend(fromAmount, m_amount, progress);
-  switch (m_type) {
+  double result = blink::Blend(from_amount, amount_, progress);
+  switch (type_) {
     case HUE_ROTATE:
       break;
     case GRAYSCALE:
@@ -114,34 +114,34 @@ FilterOperation* BasicColorMatrixFilterOperation::blend(
     default:
       NOTREACHED();
   }
-  return BasicColorMatrixFilterOperation::create(result, m_type);
+  return BasicColorMatrixFilterOperation::Create(result, type_);
 }
 
-FilterOperation* BasicComponentTransferFilterOperation::blend(
+FilterOperation* BasicComponentTransferFilterOperation::Blend(
     const FilterOperation* from,
     double progress) const {
-  double fromAmount;
+  double from_amount;
   if (from) {
-    SECURITY_DCHECK(from->isSameType(*this));
-    fromAmount = toBasicComponentTransferFilterOperation(from)->amount();
+    SECURITY_DCHECK(from->IsSameType(*this));
+    from_amount = ToBasicComponentTransferFilterOperation(from)->Amount();
   } else {
-    switch (m_type) {
+    switch (type_) {
       case OPACITY:
       case CONTRAST:
       case BRIGHTNESS:
-        fromAmount = 1;
+        from_amount = 1;
         break;
       case INVERT:
-        fromAmount = 0;
+        from_amount = 0;
         break;
       default:
-        fromAmount = 0;
+        from_amount = 0;
         NOTREACHED();
     }
   }
 
-  double result = blink::blend(fromAmount, m_amount, progress);
-  switch (m_type) {
+  double result = blink::Blend(from_amount, amount_, progress);
+  switch (type_) {
     case BRIGHTNESS:
     case CONTRAST:
       result = clampTo<double>(result, 0);
@@ -153,58 +153,59 @@ FilterOperation* BasicComponentTransferFilterOperation::blend(
     default:
       NOTREACHED();
   }
-  return BasicComponentTransferFilterOperation::create(result, m_type);
+  return BasicComponentTransferFilterOperation::Create(result, type_);
 }
 
-FloatRect BlurFilterOperation::mapRect(const FloatRect& rect) const {
-  float stdDeviation = floatValueForLength(m_stdDeviation, 0);
-  return FEGaussianBlur::mapEffect(FloatSize(stdDeviation, stdDeviation), rect);
+FloatRect BlurFilterOperation::MapRect(const FloatRect& rect) const {
+  float std_deviation = FloatValueForLength(std_deviation_, 0);
+  return FEGaussianBlur::MapEffect(FloatSize(std_deviation, std_deviation),
+                                   rect);
 }
 
-FilterOperation* BlurFilterOperation::blend(const FilterOperation* from,
+FilterOperation* BlurFilterOperation::Blend(const FilterOperation* from,
                                             double progress) const {
-  LengthType lengthType = m_stdDeviation.type();
+  LengthType length_type = std_deviation_.GetType();
   if (!from)
-    return BlurFilterOperation::create(m_stdDeviation.blend(
-        Length(lengthType), progress, ValueRangeNonNegative));
+    return BlurFilterOperation::Create(std_deviation_.Blend(
+        Length(length_type), progress, kValueRangeNonNegative));
 
-  const BlurFilterOperation* fromOp = toBlurFilterOperation(from);
-  return BlurFilterOperation::create(m_stdDeviation.blend(
-      fromOp->m_stdDeviation, progress, ValueRangeNonNegative));
+  const BlurFilterOperation* from_op = ToBlurFilterOperation(from);
+  return BlurFilterOperation::Create(std_deviation_.Blend(
+      from_op->std_deviation_, progress, kValueRangeNonNegative));
 }
 
-FloatRect DropShadowFilterOperation::mapRect(const FloatRect& rect) const {
-  float stdDeviation = m_shadow.blur();
-  return FEDropShadow::mapEffect(FloatSize(stdDeviation, stdDeviation),
-                                 m_shadow.location(), rect);
+FloatRect DropShadowFilterOperation::MapRect(const FloatRect& rect) const {
+  float std_deviation = shadow_.Blur();
+  return FEDropShadow::MapEffect(FloatSize(std_deviation, std_deviation),
+                                 shadow_.Location(), rect);
 }
 
-FilterOperation* DropShadowFilterOperation::blend(const FilterOperation* from,
+FilterOperation* DropShadowFilterOperation::Blend(const FilterOperation* from,
                                                   double progress) const {
   if (!from) {
-    return create(m_shadow.blend(ShadowData::neutralValue(), progress,
-                                 Color::transparent));
+    return Create(shadow_.Blend(ShadowData::NeutralValue(), progress,
+                                Color::kTransparent));
   }
 
-  const auto& fromOp = toDropShadowFilterOperation(*from);
-  return create(m_shadow.blend(fromOp.m_shadow, progress, Color::transparent));
+  const auto& from_op = ToDropShadowFilterOperation(*from);
+  return Create(shadow_.Blend(from_op.shadow_, progress, Color::kTransparent));
 }
 
-FloatRect BoxReflectFilterOperation::mapRect(const FloatRect& rect) const {
-  return m_reflection.mapRect(rect);
+FloatRect BoxReflectFilterOperation::MapRect(const FloatRect& rect) const {
+  return reflection_.MapRect(rect);
 }
 
-FilterOperation* BoxReflectFilterOperation::blend(const FilterOperation* from,
+FilterOperation* BoxReflectFilterOperation::Blend(const FilterOperation* from,
                                                   double progress) const {
   NOTREACHED();
   return nullptr;
 }
 
 bool BoxReflectFilterOperation::operator==(const FilterOperation& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
   const auto& other = static_cast<const BoxReflectFilterOperation&>(o);
-  return m_reflection == other.m_reflection;
+  return reflection_ == other.reflection_;
 }
 
 }  // namespace blink

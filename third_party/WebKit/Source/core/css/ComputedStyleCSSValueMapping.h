@@ -29,29 +29,29 @@ class ComputedStyleCSSValueMapping {
  public:
   // FIXME: Resolve computed auto alignment in applyProperty/ComputedStyle and
   // remove this non-const styledNode parameter.
-  static const CSSValue* get(CSSPropertyID,
+  static const CSSValue* Get(CSSPropertyID,
                              const ComputedStyle&,
                              const LayoutObject* = nullptr,
-                             Node* styledNode = nullptr,
-                             bool allowVisitedStyle = false);
-  static const CSSValue* get(const AtomicString customPropertyName,
+                             Node* styled_node = nullptr,
+                             bool allow_visited_style = false);
+  static const CSSValue* Get(const AtomicString custom_property_name,
                              const ComputedStyle&,
                              const PropertyRegistry*);
   static std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
-  getVariables(const ComputedStyle&);
+  GetVariables(const ComputedStyle&);
 
  private:
-  static CSSValue* currentColorOrValidColor(const ComputedStyle&,
+  static CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
                                             const StyleColor&);
-  static CSSValue* valueForShadowData(const ShadowData&,
+  static CSSValue* ValueForShadowData(const ShadowData&,
                                       const ComputedStyle&,
-                                      bool useSpread);
-  static CSSValue* valueForShadowList(const ShadowList*,
+                                      bool use_spread);
+  static CSSValue* ValueForShadowList(const ShadowList*,
                                       const ComputedStyle&,
-                                      bool useSpread);
-  static CSSValue* valueForFilter(const ComputedStyle&,
+                                      bool use_spread);
+  static CSSValue* ValueForFilter(const ComputedStyle&,
                                   const FilterOperations&);
-  static CSSValue* valueForFont(const ComputedStyle&);
+  static CSSValue* ValueForFont(const ComputedStyle&);
 };
 
 }  // namespace blink

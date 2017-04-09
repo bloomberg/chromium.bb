@@ -9,49 +9,49 @@
 namespace blink {
 
 TEST(WebScreenInfoTest, Equality) {
-  WebScreenInfo screenInfo1;
-  WebScreenInfo screenInfo2;
+  WebScreenInfo screen_info1;
+  WebScreenInfo screen_info2;
 
-  EXPECT_EQ(screenInfo1, screenInfo2);
+  EXPECT_EQ(screen_info1, screen_info2);
 
   // Change same values in screenInfo1.
-  screenInfo1.deviceScaleFactor = 10.f;
-  screenInfo1.depth = 3;
-  screenInfo1.depthPerComponent = 2;
-  screenInfo1.isMonochrome = false;
+  screen_info1.device_scale_factor = 10.f;
+  screen_info1.depth = 3;
+  screen_info1.depth_per_component = 2;
+  screen_info1.is_monochrome = false;
 
-  EXPECT_NE(screenInfo1, screenInfo2);
+  EXPECT_NE(screen_info1, screen_info2);
 
   // Set the same values to screenInfo2, they should be equal now.
-  screenInfo2.deviceScaleFactor = 10.f;
-  screenInfo2.depth = 3;
-  screenInfo2.depthPerComponent = 2;
-  screenInfo2.isMonochrome = false;
+  screen_info2.device_scale_factor = 10.f;
+  screen_info2.depth = 3;
+  screen_info2.depth_per_component = 2;
+  screen_info2.is_monochrome = false;
 
-  EXPECT_EQ(screenInfo1, screenInfo2);
+  EXPECT_EQ(screen_info1, screen_info2);
 
   // Set all the known members.
-  screenInfo1.deviceScaleFactor = 2.f;
-  screenInfo1.depth = 1;
-  screenInfo1.depthPerComponent = 1;
-  screenInfo1.isMonochrome = false;
-  screenInfo1.rect = WebRect(0, 0, 1024, 1024);
-  screenInfo1.availableRect = WebRect(0, 0, 1024, 1024);
-  screenInfo1.orientationType = blink::WebScreenOrientationLandscapePrimary;
-  screenInfo1.orientationAngle = 90;
+  screen_info1.device_scale_factor = 2.f;
+  screen_info1.depth = 1;
+  screen_info1.depth_per_component = 1;
+  screen_info1.is_monochrome = false;
+  screen_info1.rect = WebRect(0, 0, 1024, 1024);
+  screen_info1.available_rect = WebRect(0, 0, 1024, 1024);
+  screen_info1.orientation_type = blink::kWebScreenOrientationLandscapePrimary;
+  screen_info1.orientation_angle = 90;
 
-  EXPECT_NE(screenInfo1, screenInfo2);
+  EXPECT_NE(screen_info1, screen_info2);
 
-  screenInfo2.deviceScaleFactor = 2.f;
-  screenInfo2.depth = 1;
-  screenInfo2.depthPerComponent = 1;
-  screenInfo2.isMonochrome = false;
-  screenInfo2.rect = WebRect(0, 0, 1024, 1024);
-  screenInfo2.availableRect = WebRect(0, 0, 1024, 1024);
-  screenInfo2.orientationType = blink::WebScreenOrientationLandscapePrimary;
-  screenInfo2.orientationAngle = 90;
+  screen_info2.device_scale_factor = 2.f;
+  screen_info2.depth = 1;
+  screen_info2.depth_per_component = 1;
+  screen_info2.is_monochrome = false;
+  screen_info2.rect = WebRect(0, 0, 1024, 1024);
+  screen_info2.available_rect = WebRect(0, 0, 1024, 1024);
+  screen_info2.orientation_type = blink::kWebScreenOrientationLandscapePrimary;
+  screen_info2.orientation_angle = 90;
 
-  EXPECT_EQ(screenInfo1, screenInfo2);
+  EXPECT_EQ(screen_info1, screen_info2);
 }
 
 }  // namespace blink

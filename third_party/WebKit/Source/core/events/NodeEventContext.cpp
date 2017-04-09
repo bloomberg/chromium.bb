@@ -35,32 +35,32 @@
 
 namespace blink {
 
-NodeEventContext::NodeEventContext(Node* node, EventTarget* currentTarget)
-    : m_node(node), m_currentTarget(currentTarget) {
-  DCHECK(m_node);
+NodeEventContext::NodeEventContext(Node* node, EventTarget* current_target)
+    : node_(node), current_target_(current_target) {
+  DCHECK(node_);
 }
 
 DEFINE_TRACE(NodeEventContext) {
-  visitor->trace(m_node);
-  visitor->trace(m_currentTarget);
-  visitor->trace(m_treeScopeEventContext);
+  visitor->Trace(node_);
+  visitor->Trace(current_target_);
+  visitor->Trace(tree_scope_event_context_);
 }
 
-void NodeEventContext::handleLocalEvents(Event& event) const {
-  if (TouchEventContext* touchContext = touchEventContext()) {
-    touchContext->handleLocalEvents(event);
-  } else if (relatedTarget()) {
-    if (event.isMouseEvent()) {
-      toMouseEvent(event).setRelatedTarget(relatedTarget());
-    } else if (event.isPointerEvent()) {
-      toPointerEvent(event).setRelatedTarget(relatedTarget());
-    } else if (event.isFocusEvent()) {
-      toFocusEvent(event).setRelatedTarget(relatedTarget());
+void NodeEventContext::HandleLocalEvents(Event& event) const {
+  if (TouchEventContext* touch_context = GetTouchEventContext()) {
+    touch_context->HandleLocalEvents(event);
+  } else if (RelatedTarget()) {
+    if (event.IsMouseEvent()) {
+      ToMouseEvent(event).SetRelatedTarget(RelatedTarget());
+    } else if (event.IsPointerEvent()) {
+      ToPointerEvent(event).SetRelatedTarget(RelatedTarget());
+    } else if (event.IsFocusEvent()) {
+      ToFocusEvent(event).SetRelatedTarget(RelatedTarget());
     }
   }
-  event.setTarget(target());
-  event.setCurrentTarget(m_currentTarget.get());
-  m_node->handleLocalEvents(event);
+  event.SetTarget(Target());
+  event.SetCurrentTarget(current_target_.Get());
+  node_->HandleLocalEvents(event);
 }
 
 }  // namespace blink

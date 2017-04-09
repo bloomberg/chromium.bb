@@ -8,42 +8,42 @@
 
 namespace blink {
 
-void InterpolationEffect::getActiveInterpolations(
+void InterpolationEffect::GetActiveInterpolations(
     double fraction,
-    double iterationDuration,
+    double iteration_duration,
     Vector<RefPtr<Interpolation>>& result) const {
-  size_t existingSize = result.size();
-  size_t resultIndex = 0;
+  size_t existing_size = result.size();
+  size_t result_index = 0;
 
-  for (const auto& record : m_interpolations) {
-    if (fraction >= record.m_applyFrom && fraction < record.m_applyTo) {
-      RefPtr<Interpolation> interpolation = record.m_interpolation;
-      double recordLength = record.m_end - record.m_start;
-      double localFraction =
-          recordLength ? (fraction - record.m_start) / recordLength : 0.0;
-      if (record.m_easing)
-        localFraction = record.m_easing->evaluate(
-            localFraction, accuracyForDuration(iterationDuration));
-      interpolation->interpolate(0, localFraction);
-      if (resultIndex < existingSize)
-        result[resultIndex++] = interpolation;
+  for (const auto& record : interpolations_) {
+    if (fraction >= record.apply_from_ && fraction < record.apply_to_) {
+      RefPtr<Interpolation> interpolation = record.interpolation_;
+      double record_length = record.end_ - record.start_;
+      double local_fraction =
+          record_length ? (fraction - record.start_) / record_length : 0.0;
+      if (record.easing_)
+        local_fraction = record.easing_->Evaluate(
+            local_fraction, AccuracyForDuration(iteration_duration));
+      interpolation->Interpolate(0, local_fraction);
+      if (result_index < existing_size)
+        result[result_index++] = interpolation;
       else
         result.push_back(interpolation);
     }
   }
-  if (resultIndex < existingSize)
-    result.shrink(resultIndex);
+  if (result_index < existing_size)
+    result.Shrink(result_index);
 }
 
-void InterpolationEffect::addInterpolationsFromKeyframes(
+void InterpolationEffect::AddInterpolationsFromKeyframes(
     const PropertyHandle& property,
-    const Keyframe::PropertySpecificKeyframe& keyframeA,
-    const Keyframe::PropertySpecificKeyframe& keyframeB,
-    double applyFrom,
-    double applyTo) {
-  addInterpolation(keyframeA.createInterpolation(property, keyframeB),
-                   &keyframeA.easing(), keyframeA.offset(), keyframeB.offset(),
-                   applyFrom, applyTo);
+    const Keyframe::PropertySpecificKeyframe& keyframe_a,
+    const Keyframe::PropertySpecificKeyframe& keyframe_b,
+    double apply_from,
+    double apply_to) {
+  AddInterpolation(keyframe_a.CreateInterpolation(property, keyframe_b),
+                   &keyframe_a.Easing(), keyframe_a.Offset(),
+                   keyframe_b.Offset(), apply_from, apply_to);
 }
 
 }  // namespace blink

@@ -47,18 +47,18 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 
  public:
-  static RTCVoidRequestImpl* create(ExecutionContext*,
+  static RTCVoidRequestImpl* Create(ExecutionContext*,
                                     RTCPeerConnection*,
                                     VoidCallback*,
                                     RTCPeerConnectionErrorCallback*);
   ~RTCVoidRequestImpl() override;
 
   // RTCVoidRequest
-  void requestSucceeded() override;
-  void requestFailed(const String& error) override;
+  void RequestSucceeded() override;
+  void RequestFailed(const String& error) override;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -68,11 +68,11 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
                      VoidCallback*,
                      RTCPeerConnectionErrorCallback*);
 
-  void clear();
+  void Clear();
 
-  Member<VoidCallback> m_successCallback;
-  Member<RTCPeerConnectionErrorCallback> m_errorCallback;
-  Member<RTCPeerConnection> m_requester;
+  Member<VoidCallback> success_callback_;
+  Member<RTCPeerConnectionErrorCallback> error_callback_;
+  Member<RTCPeerConnection> requester_;
 };
 
 }  // namespace blink

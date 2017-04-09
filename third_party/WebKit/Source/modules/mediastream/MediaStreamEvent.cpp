@@ -26,12 +26,12 @@
 
 namespace blink {
 
-MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type,
+MediaStreamEvent* MediaStreamEvent::Create(const AtomicString& type,
                                            MediaStream* stream) {
   return new MediaStreamEvent(type, stream);
 }
 
-MediaStreamEvent* MediaStreamEvent::create(
+MediaStreamEvent* MediaStreamEvent::Create(
     const AtomicString& type,
     const MediaStreamEventInit& initializer) {
   return new MediaStreamEvent(type, initializer);
@@ -39,33 +39,33 @@ MediaStreamEvent* MediaStreamEvent::create(
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
                                    MediaStream* stream)
-    : Event(type, false, false), m_stream(stream) {}
+    : Event(type, false, false), stream_(stream) {}
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
                                    const MediaStreamEventInit& initializer)
     : Event(type, initializer) {
   if (initializer.hasStream())
-    m_stream = initializer.stream();
+    stream_ = initializer.stream();
 }
 
 MediaStreamEvent::~MediaStreamEvent() {}
 
 MediaStream* MediaStreamEvent::stream() const {
-  return m_stream.get();
+  return stream_.Get();
 }
 
-MediaStream* MediaStreamEvent::stream(bool& isNull) const {
-  isNull = !m_stream;
-  return m_stream.get();
+MediaStream* MediaStreamEvent::stream(bool& is_null) const {
+  is_null = !stream_;
+  return stream_.Get();
 }
 
-const AtomicString& MediaStreamEvent::interfaceName() const {
+const AtomicString& MediaStreamEvent::InterfaceName() const {
   return EventNames::MediaStreamEvent;
 }
 
 DEFINE_TRACE(MediaStreamEvent) {
-  visitor->trace(m_stream);
-  Event::trace(visitor);
+  visitor->Trace(stream_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

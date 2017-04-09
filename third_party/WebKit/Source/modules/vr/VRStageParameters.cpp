@@ -6,25 +6,25 @@
 
 namespace blink {
 
-VRStageParameters::VRStageParameters() : m_sizeX(0.0f), m_sizeZ(0.0f) {
+VRStageParameters::VRStageParameters() : size_x_(0.0f), size_z_(0.0f) {
   // Set the sitting to standing transform to identity matrix
-  m_standingTransform = DOMFloat32Array::create(16);
-  m_standingTransform->data()[0] = 1.0f;
-  m_standingTransform->data()[5] = 1.0f;
-  m_standingTransform->data()[10] = 1.0f;
-  m_standingTransform->data()[15] = 1.0f;
+  standing_transform_ = DOMFloat32Array::Create(16);
+  standing_transform_->Data()[0] = 1.0f;
+  standing_transform_->Data()[5] = 1.0f;
+  standing_transform_->Data()[10] = 1.0f;
+  standing_transform_->Data()[15] = 1.0f;
 }
 
-void VRStageParameters::update(
+void VRStageParameters::Update(
     const device::mojom::blink::VRStageParametersPtr& stage) {
-  m_standingTransform =
-      DOMFloat32Array::create(&(stage->standingTransform.front()), 16);
-  m_sizeX = stage->sizeX;
-  m_sizeZ = stage->sizeZ;
+  standing_transform_ =
+      DOMFloat32Array::Create(&(stage->standingTransform.front()), 16);
+  size_x_ = stage->sizeX;
+  size_z_ = stage->sizeZ;
 }
 
 DEFINE_TRACE(VRStageParameters) {
-  visitor->trace(m_standingTransform);
+  visitor->Trace(standing_transform_);
 }
 
 }  // namespace blink

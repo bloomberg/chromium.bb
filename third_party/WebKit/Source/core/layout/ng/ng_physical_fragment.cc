@@ -21,7 +21,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       type_(type),
       is_placed_(false) {}
 
-void NGPhysicalFragment::destroy() const {
+void NGPhysicalFragment::Destroy() const {
   switch (Type()) {
     case kFragmentBox:
       delete static_cast<const NGPhysicalBoxFragment*>(this);
@@ -40,13 +40,13 @@ void NGPhysicalFragment::destroy() const {
 
 const ComputedStyle& NGPhysicalFragment::Style() const {
   DCHECK(layout_object_);
-  return layout_object_->styleRef();
+  return layout_object_->StyleRef();
 }
 
 String NGPhysicalFragment::ToString() const {
-  return String::format("Type: '%d' Size: '%s' Offset: '%s' Placed: '%d'",
-                        Type(), Size().ToString().ascii().data(),
-                        Offset().ToString().ascii().data(), IsPlaced());
+  return String::Format("Type: '%d' Size: '%s' Offset: '%s' Placed: '%d'",
+                        Type(), Size().ToString().Ascii().Data(),
+                        Offset().ToString().Ascii().Data(), IsPlaced());
 }
 
 }  // namespace blink

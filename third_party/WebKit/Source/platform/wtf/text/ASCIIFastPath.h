@@ -37,107 +37,108 @@ namespace WTF {
 // Assuming that a pointer is the size of a "machine word", then
 // uintptr_t is an integer type that is also a machine word.
 typedef uintptr_t MachineWord;
-const uintptr_t machineWordAlignmentMask = sizeof(MachineWord) - 1;
+const uintptr_t kMachineWordAlignmentMask = sizeof(MachineWord) - 1;
 
-inline bool isAlignedToMachineWord(const void* pointer) {
-  return !(reinterpret_cast<uintptr_t>(pointer) & machineWordAlignmentMask);
+inline bool IsAlignedToMachineWord(const void* pointer) {
+  return !(reinterpret_cast<uintptr_t>(pointer) & kMachineWordAlignmentMask);
 }
 
 template <typename T>
-inline T* alignToMachineWord(T* pointer) {
+inline T* AlignToMachineWord(T* pointer) {
   return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(pointer) &
-                              ~machineWordAlignmentMask);
+                              ~kMachineWordAlignmentMask);
 }
 
 template <size_t size, typename CharacterType>
 struct NonASCIIMask;
 template <>
 struct NonASCIIMask<4, UChar> {
-  static inline uint32_t value() { return 0xFF80FF80U; }
+  static inline uint32_t Value() { return 0xFF80FF80U; }
 };
 template <>
 struct NonASCIIMask<4, LChar> {
-  static inline uint32_t value() { return 0x80808080U; }
+  static inline uint32_t Value() { return 0x80808080U; }
 };
 template <>
 struct NonASCIIMask<8, UChar> {
-  static inline uint64_t value() { return 0xFF80FF80FF80FF80ULL; }
+  static inline uint64_t Value() { return 0xFF80FF80FF80FF80ULL; }
 };
 template <>
 struct NonASCIIMask<8, LChar> {
-  static inline uint64_t value() { return 0x8080808080808080ULL; }
+  static inline uint64_t Value() { return 0x8080808080808080ULL; }
 };
 
 template <typename CharacterType>
-inline bool isAllASCII(MachineWord word) {
-  return !(word & NonASCIIMask<sizeof(MachineWord), CharacterType>::value());
+inline bool IsAllASCII(MachineWord word) {
+  return !(word & NonASCIIMask<sizeof(MachineWord), CharacterType>::Value());
 }
 
 // Note: This function assume the input is likely all ASCII, and
 // does not leave early if it is not the case.
 template <typename CharacterType>
-inline bool charactersAreAllASCII(const CharacterType* characters,
+inline bool CharactersAreAllASCII(const CharacterType* characters,
                                   size_t length) {
   DCHECK_GT(length, 0u);
-  MachineWord allCharBits = 0;
+  MachineWord all_char_bits = 0;
   const CharacterType* end = characters + length;
 
   // Prologue: align the input.
-  while (!isAlignedToMachineWord(characters) && characters != end) {
-    allCharBits |= *characters;
+  while (!IsAlignedToMachineWord(characters) && characters != end) {
+    all_char_bits |= *characters;
     ++characters;
   }
 
   // Compare the values of CPU word size.
-  const CharacterType* wordEnd = alignToMachineWord(end);
-  const size_t loopIncrement = sizeof(MachineWord) / sizeof(CharacterType);
-  while (characters < wordEnd) {
-    allCharBits |= *(reinterpret_cast_ptr<const MachineWord*>(characters));
-    characters += loopIncrement;
+  const CharacterType* word_end = AlignToMachineWord(end);
+  const size_t kLoopIncrement = sizeof(MachineWord) / sizeof(CharacterType);
+  while (characters < word_end) {
+    all_char_bits |= *(reinterpret_cast_ptr<const MachineWord*>(characters));
+    characters += kLoopIncrement;
   }
 
   // Process the remaining bytes.
   while (characters != end) {
-    allCharBits |= *characters;
+    all_char_bits |= *characters;
     ++characters;
   }
 
-  MachineWord nonASCIIBitMask =
-      NonASCIIMask<sizeof(MachineWord), CharacterType>::value();
-  return !(allCharBits & nonASCIIBitMask);
+  MachineWord non_ascii_bit_mask =
+      NonASCIIMask<sizeof(MachineWord), CharacterType>::Value();
+  return !(all_char_bits & non_ascii_bit_mask);
 }
 
-inline void copyLCharsFromUCharSource(LChar* destination,
+inline void CopyLCharsFromUCharSource(LChar* destination,
                                       const UChar* source,
                                       size_t length) {
 #if OS(MACOSX) && (CPU(X86) || CPU(X86_64))
-  const uintptr_t memoryAccessSize =
+  const uintptr_t kMemoryAccessSize =
       16;  // Memory accesses on 16 byte (128 bit) alignment
-  const uintptr_t memoryAccessMask = memoryAccessSize - 1;
+  const uintptr_t kMemoryAccessMask = kMemoryAccessSize - 1;
 
   size_t i = 0;
-  for (; i < length && !isAlignedTo<memoryAccessMask>(&source[i]); ++i) {
+  for (; i < length && !IsAlignedTo<kMemoryAccessMask>(&source[i]); ++i) {
     DCHECK(!(source[i] & 0xff00));
     destination[i] = static_cast<LChar>(source[i]);
   }
 
-  const uintptr_t sourceLoadSize =
+  const uintptr_t kSourceLoadSize =
       32;  // Process 32 bytes (16 UChars) each iteration
-  const size_t ucharsPerLoop = sourceLoadSize / sizeof(UChar);
-  if (length > ucharsPerLoop) {
-    const size_t endLength = length - ucharsPerLoop + 1;
-    for (; i < endLength; i += ucharsPerLoop) {
+  const size_t kUcharsPerLoop = kSourceLoadSize / sizeof(UChar);
+  if (length > kUcharsPerLoop) {
+    const size_t end_length = length - kUcharsPerLoop + 1;
+    for (; i < end_length; i += kUcharsPerLoop) {
 #if DCHECK_IS_ON()
-      for (unsigned checkIndex = 0; checkIndex < ucharsPerLoop; ++checkIndex)
-        DCHECK(!(source[i + checkIndex] & 0xff00));
+      for (unsigned check_index = 0; check_index < kUcharsPerLoop;
+           ++check_index)
+        DCHECK(!(source[i + check_index] & 0xff00));
 #endif
-      __m128i first8UChars =
+      __m128i first8u_chars =
           _mm_load_si128(reinterpret_cast<const __m128i*>(&source[i]));
-      __m128i second8UChars =
+      __m128i second8u_chars =
           _mm_load_si128(reinterpret_cast<const __m128i*>(&source[i + 8]));
-      __m128i packedChars = _mm_packus_epi16(first8UChars, second8UChars);
+      __m128i packed_chars = _mm_packus_epi16(first8u_chars, second8u_chars);
       _mm_storeu_si128(reinterpret_cast<__m128i*>(&destination[i]),
-                       packedChars);
+                       packed_chars);
     }
   }
 
@@ -148,24 +149,24 @@ inline void copyLCharsFromUCharSource(LChar* destination,
 #elif COMPILER(GCC) && CPU(ARM_NEON) && \
     !(CPU(BIG_ENDIAN) || CPU(MIDDLE_ENDIAN)) && defined(NDEBUG)
   const LChar* const end = destination + length;
-  const uintptr_t memoryAccessSize = 8;
+  const uintptr_t kMemoryAccessSize = 8;
 
-  if (length >= (2 * memoryAccessSize) - 1) {
+  if (length >= (2 * kMemoryAccessSize) - 1) {
     // Prefix: align dst on 64 bits.
-    const uintptr_t memoryAccessMask = memoryAccessSize - 1;
-    while (!isAlignedTo<memoryAccessMask>(destination))
+    const uintptr_t kMemoryAccessMask = kMemoryAccessSize - 1;
+    while (!IsAlignedTo<kMemoryAccessMask>(destination))
       *destination++ = static_cast<LChar>(*source++);
 
     // Vector interleaved unpack, we only store the lower 8 bits.
-    const uintptr_t lengthLeft = end - destination;
-    const LChar* const simdEnd = end - (lengthLeft % memoryAccessSize);
+    const uintptr_t length_left = end - destination;
+    const LChar* const simd_end = end - (length_left % kMemoryAccessSize);
     do {
       asm("vld2.8   { d0-d1 }, [%[SOURCE]] !\n\t"
           "vst1.8   { d0 }, [%[DESTINATION],:64] !\n\t"
           : [SOURCE] "+r"(source), [DESTINATION] "+r"(destination)
           :
           : "memory", "d0", "d1");
-    } while (destination != simdEnd);
+    } while (destination != simd_end);
   }
 
   while (destination != end)

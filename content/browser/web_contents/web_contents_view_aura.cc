@@ -365,46 +365,46 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
 // ui::DragDropTypes.
 int ConvertFromWeb(blink::WebDragOperationsMask ops) {
   int drag_op = ui::DragDropTypes::DRAG_NONE;
-  if (ops & blink::WebDragOperationCopy)
+  if (ops & blink::kWebDragOperationCopy)
     drag_op |= ui::DragDropTypes::DRAG_COPY;
-  if (ops & blink::WebDragOperationMove)
+  if (ops & blink::kWebDragOperationMove)
     drag_op |= ui::DragDropTypes::DRAG_MOVE;
-  if (ops & blink::WebDragOperationLink)
+  if (ops & blink::kWebDragOperationLink)
     drag_op |= ui::DragDropTypes::DRAG_LINK;
   return drag_op;
 }
 
 blink::WebDragOperationsMask ConvertToWeb(int drag_op) {
-  int web_drag_op = blink::WebDragOperationNone;
+  int web_drag_op = blink::kWebDragOperationNone;
   if (drag_op & ui::DragDropTypes::DRAG_COPY)
-    web_drag_op |= blink::WebDragOperationCopy;
+    web_drag_op |= blink::kWebDragOperationCopy;
   if (drag_op & ui::DragDropTypes::DRAG_MOVE)
-    web_drag_op |= blink::WebDragOperationMove;
+    web_drag_op |= blink::kWebDragOperationMove;
   if (drag_op & ui::DragDropTypes::DRAG_LINK)
-    web_drag_op |= blink::WebDragOperationLink;
+    web_drag_op |= blink::kWebDragOperationLink;
   return (blink::WebDragOperationsMask) web_drag_op;
 }
 
 int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
   int web_input_event_modifiers = 0;
   if (aura_event_flags & ui::EF_SHIFT_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::ShiftKey;
+    web_input_event_modifiers |= blink::WebInputEvent::kShiftKey;
   if (aura_event_flags & ui::EF_CONTROL_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::ControlKey;
+    web_input_event_modifiers |= blink::WebInputEvent::kControlKey;
   if (aura_event_flags & ui::EF_ALT_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::AltKey;
+    web_input_event_modifiers |= blink::WebInputEvent::kAltKey;
   if (aura_event_flags & ui::EF_COMMAND_DOWN)
-    web_input_event_modifiers |= blink::WebInputEvent::MetaKey;
+    web_input_event_modifiers |= blink::WebInputEvent::kMetaKey;
   if (aura_event_flags & ui::EF_LEFT_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::LeftButtonDown;
+    web_input_event_modifiers |= blink::WebInputEvent::kLeftButtonDown;
   if (aura_event_flags & ui::EF_MIDDLE_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::MiddleButtonDown;
+    web_input_event_modifiers |= blink::WebInputEvent::kMiddleButtonDown;
   if (aura_event_flags & ui::EF_RIGHT_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::RightButtonDown;
+    web_input_event_modifiers |= blink::WebInputEvent::kRightButtonDown;
   if (aura_event_flags & ui::EF_BACK_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::BackButtonDown;
+    web_input_event_modifiers |= blink::WebInputEvent::kBackButtonDown;
   if (aura_event_flags & ui::EF_FORWARD_MOUSE_BUTTON)
-    web_input_event_modifiers |= blink::WebInputEvent::ForwardButtonDown;
+    web_input_event_modifiers |= blink::WebInputEvent::kForwardButtonDown;
   return web_input_event_modifiers;
 }
 
@@ -532,7 +532,7 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
                                          WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      current_drag_op_(blink::WebDragOperationNone),
+      current_drag_op_(blink::kWebDragOperationNone),
       drag_dest_delegate_(nullptr),
       current_rvh_for_drag_(ChildProcessHost::kInvalidUniqueID,
                             MSG_ROUTING_NONE),

@@ -34,65 +34,65 @@ BackwardsCharacterIteratorAlgorithm<Strategy>::
     BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start,
                                         const PositionTemplate<Strategy>& end,
                                         const TextIteratorBehavior& behavior)
-    : m_offset(0),
-      m_runOffset(0),
-      m_atBreak(true),
-      m_textIterator(start, end, behavior) {
-  while (!atEnd() && !m_textIterator.length())
-    m_textIterator.advance();
+    : offset_(0),
+      run_offset_(0),
+      at_break_(true),
+      text_iterator_(start, end, behavior) {
+  while (!AtEnd() && !text_iterator_.length())
+    text_iterator_.Advance();
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy>
-BackwardsCharacterIteratorAlgorithm<Strategy>::endPosition() const {
-  if (!m_textIterator.atEnd()) {
-    if (m_textIterator.length() > 1) {
-      Node* n = m_textIterator.startContainer();
-      return PositionTemplate<Strategy>::editingPositionOf(
-          n, m_textIterator.endOffset() - m_runOffset);
+BackwardsCharacterIteratorAlgorithm<Strategy>::EndPosition() const {
+  if (!text_iterator_.AtEnd()) {
+    if (text_iterator_.length() > 1) {
+      Node* n = text_iterator_.StartContainer();
+      return PositionTemplate<Strategy>::EditingPositionOf(
+          n, text_iterator_.EndOffset() - run_offset_);
     }
-    DCHECK(!m_runOffset);
+    DCHECK(!run_offset_);
   }
-  return m_textIterator.endPosition();
+  return text_iterator_.EndPosition();
 }
 
 template <typename Strategy>
-void BackwardsCharacterIteratorAlgorithm<Strategy>::advance(int count) {
+void BackwardsCharacterIteratorAlgorithm<Strategy>::Advance(int count) {
   if (count <= 0) {
     DCHECK(!count);
     return;
   }
 
-  m_atBreak = false;
+  at_break_ = false;
 
-  int remaining = m_textIterator.length() - m_runOffset;
+  int remaining = text_iterator_.length() - run_offset_;
   if (count < remaining) {
-    m_runOffset += count;
-    m_offset += count;
+    run_offset_ += count;
+    offset_ += count;
     return;
   }
 
   count -= remaining;
-  m_offset += remaining;
+  offset_ += remaining;
 
-  for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
-    int runLength = m_textIterator.length();
-    if (!runLength) {
-      m_atBreak = true;
+  for (text_iterator_.Advance(); !AtEnd(); text_iterator_.Advance()) {
+    int run_length = text_iterator_.length();
+    if (!run_length) {
+      at_break_ = true;
     } else {
-      if (count < runLength) {
-        m_runOffset = count;
-        m_offset += count;
+      if (count < run_length) {
+        run_offset_ = count;
+        offset_ += count;
         return;
       }
 
-      count -= runLength;
-      m_offset += runLength;
+      count -= run_length;
+      offset_ += run_length;
     }
   }
 
-  m_atBreak = true;
-  m_runOffset = 0;
+  at_break_ = true;
+  run_offset_ = 0;
 }
 
 template class CORE_TEMPLATE_EXPORT

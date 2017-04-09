@@ -20,103 +20,105 @@ using LayoutObjectDrawingRecorderTest = PaintControllerPaintTest;
 
 namespace {
 
-void drawNothing(GraphicsContext& context,
-                 const LayoutView& layoutView,
+void DrawNothing(GraphicsContext& context,
+                 const LayoutView& layout_view,
                  PaintPhase phase,
                  const LayoutRect& bound) {
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          context, layoutView, phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          context, layout_view, phase))
     return;
 
-  LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase,
-                                              bound);
+  LayoutObjectDrawingRecorder drawing_recorder(context, layout_view, phase,
+                                               bound);
 }
 
-void drawRect(GraphicsContext& context,
-              LayoutView& layoutView,
+void DrawRect(GraphicsContext& context,
+              LayoutView& layout_view,
               PaintPhase phase,
               const LayoutRect& bound) {
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          context, layoutView, phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          context, layout_view, phase))
     return;
-  LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase,
-                                              bound);
+  LayoutObjectDrawingRecorder drawing_recorder(context, layout_view, phase,
+                                               bound);
   IntRect rect(0, 0, 10, 10);
-  context.drawRect(rect);
+  context.DrawRect(rect);
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing) {
-  rootPaintController().invalidateAll();
-  GraphicsContext context(rootPaintController());
-  LayoutRect bound = layoutView().viewRect();
-  drawNothing(context, layoutView(), PaintPhaseForeground, bound);
-  rootPaintController().commitNewDisplayItems();
+  RootPaintController().InvalidateAll();
+  GraphicsContext context(RootPaintController());
+  LayoutRect bound = GetLayoutView().ViewRect();
+  DrawNothing(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  RootPaintController().CommitNewDisplayItems();
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 1,
-      TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(
-                                        PaintPhaseForeground)));
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
+                                           kPaintPhaseForeground)));
   EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(
-                   rootPaintController().getDisplayItemList()[0])
+                   RootPaintController().GetDisplayItemList()[0])
                    .GetPaintRecord());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect) {
-  rootPaintController().invalidateAll();
-  GraphicsContext context(rootPaintController());
-  LayoutRect bound = layoutView().viewRect();
-  drawRect(context, layoutView(), PaintPhaseForeground, bound);
-  rootPaintController().commitNewDisplayItems();
+  RootPaintController().InvalidateAll();
+  GraphicsContext context(RootPaintController());
+  LayoutRect bound = GetLayoutView().ViewRect();
+  DrawRect(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  RootPaintController().CommitNewDisplayItems();
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 1,
-      TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(
-                                        PaintPhaseForeground)));
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
+                                           kPaintPhaseForeground)));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached) {
-  rootPaintController().invalidateAll();
-  GraphicsContext context(rootPaintController());
-  LayoutRect bound = layoutView().viewRect();
-  drawNothing(context, layoutView(), PaintPhaseSelfBlockBackgroundOnly, bound);
-  drawRect(context, layoutView(), PaintPhaseForeground, bound);
-  rootPaintController().commitNewDisplayItems();
+  RootPaintController().InvalidateAll();
+  GraphicsContext context(RootPaintController());
+  LayoutRect bound = GetLayoutView().ViewRect();
+  DrawNothing(context, GetLayoutView(), kPaintPhaseSelfBlockBackgroundOnly,
+              bound);
+  DrawRect(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  RootPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 2,
-      TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(
-                                        PaintPhaseSelfBlockBackgroundOnly)),
-      TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(
-                                        PaintPhaseForeground)));
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
+                                           kPaintPhaseSelfBlockBackgroundOnly)),
+      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
+                                           kPaintPhaseForeground)));
 
-  drawNothing(context, layoutView(), PaintPhaseSelfBlockBackgroundOnly, bound);
-  drawRect(context, layoutView(), PaintPhaseForeground, bound);
+  DrawNothing(context, GetLayoutView(), kPaintPhaseSelfBlockBackgroundOnly,
+              bound);
+  DrawRect(context, GetLayoutView(), kPaintPhaseForeground, bound);
 
-  EXPECT_EQ(2, numCachedNewItems());
+  EXPECT_EQ(2, NumCachedNewItems());
 
-  rootPaintController().commitNewDisplayItems();
+  RootPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 2,
-      TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(
-                                        PaintPhaseSelfBlockBackgroundOnly)),
-      TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(
-                                        PaintPhaseForeground)));
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
+                                           kPaintPhaseSelfBlockBackgroundOnly)),
+      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
+                                           kPaintPhaseForeground)));
 }
 
 template <typename T>
-FloatRect drawAndGetCullRect(PaintController& controller,
-                             const LayoutObject& layoutObject,
+FloatRect DrawAndGetCullRect(PaintController& controller,
+                             const LayoutObject& layout_object,
                              const T& bounds) {
-  controller.invalidateAll();
+  controller.InvalidateAll();
   {
     // Draw some things which will produce a non-null picture.
     GraphicsContext context(controller);
     LayoutObjectDrawingRecorder recorder(
-        context, layoutObject, DisplayItem::kBoxDecorationBackground, bounds);
-    context.drawRect(enclosedIntRect(FloatRect(bounds)));
+        context, layout_object, DisplayItem::kBoxDecorationBackground, bounds);
+    context.DrawRect(EnclosedIntRect(FloatRect(bounds)));
   }
-  controller.commitNewDisplayItems();
+  controller.CommitNewDisplayItems();
   const auto& drawing = static_cast<const DrawingDisplayItem&>(
-      controller.getDisplayItemList()[0]);
+      controller.GetDisplayItemList()[0]);
   return drawing.GetPaintRecord()->cullRect();
 }
 
@@ -132,10 +134,10 @@ TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip) {
   //
   // The final cull rect should be the enclosing int rect of this rect.
   FloatRect rect(20.75, -5.5, 5.375, 10);
-  EXPECT_EQ(enclosingIntRect(rect),
-            drawAndGetCullRect(rootPaintController(), layoutView(), rect));
-  EXPECT_EQ(enclosingIntRect(rect),
-            drawAndGetCullRect(rootPaintController(), layoutView(),
+  EXPECT_EQ(EnclosingIntRect(rect),
+            DrawAndGetCullRect(RootPaintController(), GetLayoutView(), rect));
+  EXPECT_EQ(EnclosingIntRect(rect),
+            DrawAndGetCullRect(RootPaintController(), GetLayoutView(),
                                LayoutRect(rect)));
 }
 

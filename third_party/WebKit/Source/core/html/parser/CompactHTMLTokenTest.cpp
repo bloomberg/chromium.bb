@@ -10,35 +10,35 @@ namespace blink {
 
 TEST(CompactHTMLTokenTest, EmptyAttributeValueFromHTMLToken) {
   HTMLToken token;
-  token.beginStartTag('a');
-  token.addNewAttribute();
-  token.beginAttributeName(3);
-  token.appendToAttributeName('b');
-  token.endAttributeName(4);
-  token.addNewAttribute();
-  token.beginAttributeName(5);
-  token.appendToAttributeName('c');
-  token.endAttributeName(6);
-  token.beginAttributeValue(8);
-  token.endAttributeValue(8);
+  token.BeginStartTag('a');
+  token.AddNewAttribute();
+  token.BeginAttributeName(3);
+  token.AppendToAttributeName('b');
+  token.EndAttributeName(4);
+  token.AddNewAttribute();
+  token.BeginAttributeName(5);
+  token.AppendToAttributeName('c');
+  token.EndAttributeName(6);
+  token.BeginAttributeValue(8);
+  token.EndAttributeValue(8);
 
   CompactHTMLToken ctoken(&token, TextPosition());
 
-  const CompactHTMLToken::Attribute* attributeB = ctoken.getAttributeItem(
+  const CompactHTMLToken::Attribute* attribute_b = ctoken.GetAttributeItem(
       QualifiedName(AtomicString(), "b", AtomicString()));
-  ASSERT_TRUE(attributeB);
-  EXPECT_FALSE(attributeB->value().isNull());
-  EXPECT_TRUE(attributeB->value().isEmpty());
+  ASSERT_TRUE(attribute_b);
+  EXPECT_FALSE(attribute_b->Value().IsNull());
+  EXPECT_TRUE(attribute_b->Value().IsEmpty());
 
-  const CompactHTMLToken::Attribute* attributeC = ctoken.getAttributeItem(
+  const CompactHTMLToken::Attribute* attribute_c = ctoken.GetAttributeItem(
       QualifiedName(AtomicString(), "c", AtomicString()));
-  ASSERT_TRUE(attributeC);
-  EXPECT_FALSE(attributeC->value().isNull());
-  EXPECT_TRUE(attributeC->value().isEmpty());
+  ASSERT_TRUE(attribute_c);
+  EXPECT_FALSE(attribute_c->Value().IsNull());
+  EXPECT_TRUE(attribute_c->Value().IsEmpty());
 
-  const CompactHTMLToken::Attribute* attributeD = ctoken.getAttributeItem(
+  const CompactHTMLToken::Attribute* attribute_d = ctoken.GetAttributeItem(
       QualifiedName(AtomicString(), "d", AtomicString()));
-  EXPECT_FALSE(attributeD);
+  EXPECT_FALSE(attribute_d);
 }
 
 }  // namespace blink

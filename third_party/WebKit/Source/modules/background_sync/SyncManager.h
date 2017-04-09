@@ -22,7 +22,7 @@ class SyncManager final : public GarbageCollectedFinalized<SyncManager>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SyncManager* create(ServiceWorkerRegistration* registration) {
+  static SyncManager* Create(ServiceWorkerRegistration* registration) {
     return new SyncManager(registration);
   }
 
@@ -39,19 +39,19 @@ class SyncManager final : public GarbageCollectedFinalized<SyncManager>,
   // Returns an initialized BackgroundSyncServicePtr. A connection with the
   // the browser's BackgroundSyncService is created the first time this method
   // is called.
-  const mojom::blink::BackgroundSyncServicePtr& getBackgroundSyncServicePtr();
+  const mojom::blink::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
 
   // Callbacks
-  static void registerCallback(ScriptPromiseResolver*,
+  static void RegisterCallback(ScriptPromiseResolver*,
                                mojom::blink::BackgroundSyncError,
                                mojom::blink::SyncRegistrationPtr options);
-  static void getRegistrationsCallback(
+  static void GetRegistrationsCallback(
       ScriptPromiseResolver*,
       mojom::blink::BackgroundSyncError,
       WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations);
 
-  Member<ServiceWorkerRegistration> m_registration;
-  mojom::blink::BackgroundSyncServicePtr m_backgroundSyncService;
+  Member<ServiceWorkerRegistration> registration_;
+  mojom::blink::BackgroundSyncServicePtr background_sync_service_;
 };
 
 }  // namespace blink

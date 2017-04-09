@@ -168,7 +168,7 @@ void StartupObserver::Start() {
     contents = browser->tab_strip_model()->GetActiveWebContents();
     if (contents && contents->GetMainFrame() &&
         contents->GetMainFrame()->GetVisibilityState() ==
-            blink::WebPageVisibilityStateVisible) {
+            blink::kWebPageVisibilityStateVisible) {
       break;
     }
   }

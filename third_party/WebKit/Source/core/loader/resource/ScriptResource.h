@@ -34,7 +34,7 @@
 
 namespace blink {
 
-enum class ScriptIntegrityDisposition { NotChecked = 0, Failed, Passed };
+enum class ScriptIntegrityDisposition { kNotChecked = 0, kFailed, kPassed };
 
 class FetchRequest;
 class ResourceFetcher;
@@ -43,47 +43,47 @@ class ScriptResource;
 class CORE_EXPORT ScriptResourceClient : public ResourceClient {
  public:
   ~ScriptResourceClient() override {}
-  static bool isExpectedType(ResourceClient* client) {
-    return client->getResourceClientType() == ScriptType;
+  static bool IsExpectedType(ResourceClient* client) {
+    return client->GetResourceClientType() == kScriptType;
   }
-  ResourceClientType getResourceClientType() const final { return ScriptType; }
+  ResourceClientType GetResourceClientType() const final { return kScriptType; }
 
-  virtual void notifyAppendData(ScriptResource* resource) {}
+  virtual void NotifyAppendData(ScriptResource* resource) {}
 };
 
 class CORE_EXPORT ScriptResource final : public TextResource {
  public:
   using ClientType = ScriptResourceClient;
-  static ScriptResource* fetch(FetchRequest&, ResourceFetcher*);
+  static ScriptResource* Fetch(FetchRequest&, ResourceFetcher*);
 
   // Public for testing
-  static ScriptResource* create(const ResourceRequest& request,
+  static ScriptResource* Create(const ResourceRequest& request,
                                 const String& charset) {
     return new ScriptResource(request, ResourceLoaderOptions(), charset);
   }
 
   ~ScriptResource() override;
 
-  void didAddClient(ResourceClient*) override;
-  void appendData(const char*, size_t) override;
+  void DidAddClient(ResourceClient*) override;
+  void AppendData(const char*, size_t) override;
 
-  void onMemoryDump(WebMemoryDumpLevelOfDetail,
+  void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
-  void destroyDecodedDataForFailedRevalidation() override;
+  void DestroyDecodedDataForFailedRevalidation() override;
 
-  const String& script();
+  const String& Script();
 
-  static bool mimeTypeAllowedByNosniff(const ResourceResponse&);
+  static bool MimeTypeAllowedByNosniff(const ResourceResponse&);
 
-  AccessControlStatus calculateAccessControlStatus(const SecurityOrigin*) const;
+  AccessControlStatus CalculateAccessControlStatus(const SecurityOrigin*) const;
 
  private:
   class ScriptResourceFactory : public ResourceFactory {
    public:
-    ScriptResourceFactory() : ResourceFactory(Resource::Script) {}
+    ScriptResourceFactory() : ResourceFactory(Resource::kScript) {}
 
-    Resource* create(const ResourceRequest& request,
+    Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options,
                      const String& charset) const override {
       return new ScriptResource(request, options, charset);
@@ -94,7 +94,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
                  const ResourceLoaderOptions&,
                  const String& charset);
 
-  AtomicString m_script;
+  AtomicString script_;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

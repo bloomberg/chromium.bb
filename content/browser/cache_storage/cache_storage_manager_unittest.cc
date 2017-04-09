@@ -378,10 +378,10 @@ class CacheStorageManagerTest : public testing::Test {
     url_list->push_back(request.url);
     ServiceWorkerResponse response(
         std::move(url_list), status_code, "OK",
-        blink::WebServiceWorkerResponseTypeDefault,
+        blink::kWebServiceWorkerResponseTypeDefault,
         base::MakeUnique<ServiceWorkerHeaderMap>(response_headers),
         blob_handle->uuid(), request.url.spec().size(), GURL(),
-        blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+        blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
         false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,
         base::MakeUnique<

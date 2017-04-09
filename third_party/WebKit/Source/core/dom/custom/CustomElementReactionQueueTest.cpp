@@ -16,8 +16,8 @@ namespace blink {
 TEST(CustomElementReactionQueueTest, invokeReactions_one) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-  queue->add(new TestReaction({new Log('a', log)}));
-  queue->invokeReactions(nullptr);
+  queue->Add(new TestReaction({new Log('a', log)}));
+  queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a'}))
       << "the reaction should have been invoked";
 }
@@ -25,10 +25,10 @@ TEST(CustomElementReactionQueueTest, invokeReactions_one) {
 TEST(CustomElementReactionQueueTest, invokeReactions_many) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-  queue->add(new TestReaction({new Log('a', log)}));
-  queue->add(new TestReaction({new Log('b', log)}));
-  queue->add(new TestReaction({new Log('c', log)}));
-  queue->invokeReactions(nullptr);
+  queue->Add(new TestReaction({new Log('a', log)}));
+  queue->Add(new TestReaction({new Log('b', log)}));
+  queue->Add(new TestReaction({new Log('c', log)}));
+  queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
       << "the reaction should have been invoked";
 }
@@ -48,8 +48,8 @@ TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
       new TestReaction({new Log('a', log), new Enqueue(queue, second),
                         new Recurse(queue)});  // Non-empty recursion
 
-  queue->add(first);
-  queue->invokeReactions(nullptr);
+  queue->Add(first);
+  queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
       << "the reactions should have been invoked";
 }
@@ -58,13 +58,13 @@ TEST(CustomElementReactionQueueTest, clear_duringInvoke) {
   std::vector<char> log;
   CustomElementReactionQueue* queue = new CustomElementReactionQueue();
 
-  queue->add(new TestReaction({new Log('a', log)}));
-  queue->add(new TestReaction({new Call(WTF::bind(
-      [](CustomElementReactionQueue* queue, Element*) { queue->clear(); },
-      wrapPersistent(queue)))}));
-  queue->add(new TestReaction({new Log('b', log)}));
+  queue->Add(new TestReaction({new Log('a', log)}));
+  queue->Add(new TestReaction({new Call(WTF::Bind(
+      [](CustomElementReactionQueue* queue, Element*) { queue->Clear(); },
+      WrapPersistent(queue)))}));
+  queue->Add(new TestReaction({new Log('b', log)}));
 
-  queue->invokeReactions(nullptr);
+  queue->InvokeReactions(nullptr);
   EXPECT_EQ(log, std::vector<char>({'a'}))
       << "only 'a' should be logged; the second log should have been cleared";
 }

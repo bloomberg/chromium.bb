@@ -62,20 +62,20 @@ enum {
 
 SkBlendMode PLATFORM_EXPORT
     WebCoreCompositeToSkiaComposite(CompositeOperator,
-                                    WebBlendMode = WebBlendModeNormal);
-CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkBlendMode);
-WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkBlendMode);
+                                    WebBlendMode = kWebBlendModeNormal);
+CompositeOperator PLATFORM_EXPORT CompositeOperatorFromSkia(SkBlendMode);
+WebBlendMode PLATFORM_EXPORT BlendModeFromSkia(SkBlendMode);
 
 // Map alpha values from [0, 1] to [0, 256] for alpha blending.
-int PLATFORM_EXPORT clampedAlphaForBlending(float);
+int PLATFORM_EXPORT ClampedAlphaForBlending(float);
 
 // Multiply a color's alpha channel by an additional alpha factor where
 // alpha is in the range [0, 1].
-SkColor PLATFORM_EXPORT scaleAlpha(SkColor, float);
+SkColor PLATFORM_EXPORT ScaleAlpha(SkColor, float);
 
 // Multiply a color's alpha channel by an additional alpha factor where
 // alpha is in the range [0, 256].
-SkColor PLATFORM_EXPORT scaleAlpha(SkColor, int);
+SkColor PLATFORM_EXPORT ScaleAlpha(SkColor, int);
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.
 inline SkScalar WebCoreFloatToSkScalar(float f) {
@@ -95,11 +95,11 @@ inline SkPath::FillType WebCoreWindRuleToSkFillType(WindRule rule) {
   return static_cast<SkPath::FillType>(rule);
 }
 
-inline WindRule SkFillTypeToWindRule(SkPath::FillType fillType) {
-  switch (fillType) {
+inline WindRule SkFillTypeToWindRule(SkPath::FillType fill_type) {
+  switch (fill_type) {
     case SkPath::kWinding_FillType:
     case SkPath::kEvenOdd_FillType:
-      return static_cast<WindRule>(fillType);
+      return static_cast<WindRule>(fill_type);
     default:
       ASSERT_NOT_REACHED();
       break;
@@ -107,22 +107,22 @@ inline WindRule SkFillTypeToWindRule(SkPath::FillType fillType) {
   return RULE_NONZERO;
 }
 
-SkMatrix PLATFORM_EXPORT affineTransformToSkMatrix(const AffineTransform&);
+SkMatrix PLATFORM_EXPORT AffineTransformToSkMatrix(const AffineTransform&);
 
-bool nearlyIntegral(float value);
+bool NearlyIntegral(float value);
 
-InterpolationQuality limitInterpolationQuality(const GraphicsContext&,
+InterpolationQuality LimitInterpolationQuality(const GraphicsContext&,
                                                InterpolationQuality resampling);
 
-InterpolationQuality computeInterpolationQuality(float srcWidth,
-                                                 float srcHeight,
-                                                 float destWidth,
-                                                 float destHeight,
-                                                 bool isDataComplete = true);
+InterpolationQuality ComputeInterpolationQuality(float src_width,
+                                                 float src_height,
+                                                 float dest_width,
+                                                 float dest_height,
+                                                 bool is_data_complete = true);
 
 // This replicates the old skia behavior when it used to take radius for blur.
 // Now it takes sigma.
-inline SkScalar skBlurRadiusToSigma(SkScalar radius) {
+inline SkScalar SkBlurRadiusToSigma(SkScalar radius) {
   SkASSERT(radius >= 0);
   if (radius == 0)
     return 0.0f;
@@ -130,15 +130,15 @@ inline SkScalar skBlurRadiusToSigma(SkScalar radius) {
 }
 
 template <typename PrimitiveType>
-void drawPlatformFocusRing(const PrimitiveType&,
+void DrawPlatformFocusRing(const PrimitiveType&,
                            PaintCanvas*,
                            SkColor,
                            float width);
 
 // TODO(fmalita): remove in favor of direct SrcRectConstraint use.
 inline PaintCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(
-    Image::ImageClampingMode clampMode) {
-  return clampMode == Image::ClampImageToSourceRect
+    Image::ImageClampingMode clamp_mode) {
+  return clamp_mode == Image::kClampImageToSourceRect
              ? PaintCanvas::kStrict_SrcRectConstraint
              : PaintCanvas::kFast_SrcRectConstraint;
 }

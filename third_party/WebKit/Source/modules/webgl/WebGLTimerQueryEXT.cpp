@@ -11,93 +11,93 @@
 
 namespace blink {
 
-WebGLTimerQueryEXT* WebGLTimerQueryEXT::create(WebGLRenderingContextBase* ctx) {
+WebGLTimerQueryEXT* WebGLTimerQueryEXT::Create(WebGLRenderingContextBase* ctx) {
   return new WebGLTimerQueryEXT(ctx);
 }
 
 WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx),
-      m_target(0),
-      m_queryId(0),
-      m_canUpdateAvailability(false),
-      m_queryResultAvailable(false),
-      m_queryResult(0),
-      m_taskRunner(TaskRunnerHelper::get(TaskType::Unthrottled,
-                                         &ctx->canvas()->document())) {
-  context()->contextGL()->GenQueriesEXT(1, &m_queryId);
+      target_(0),
+      query_id_(0),
+      can_update_availability_(false),
+      query_result_available_(false),
+      query_result_(0),
+      task_runner_(TaskRunnerHelper::Get(TaskType::kUnthrottled,
+                                         &ctx->canvas()->GetDocument())) {
+  Context()->ContextGL()->GenQueriesEXT(1, &query_id_);
 }
 
 WebGLTimerQueryEXT::~WebGLTimerQueryEXT() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLTimerQueryEXT::resetCachedResult() {
-  m_canUpdateAvailability = false;
-  m_queryResultAvailable = false;
-  m_queryResult = 0;
+void WebGLTimerQueryEXT::ResetCachedResult() {
+  can_update_availability_ = false;
+  query_result_available_ = false;
+  query_result_ = 0;
   // When this is called, the implication is that we should start
   // keeping track of whether we can update the cached availability
   // and result.
-  scheduleAllowAvailabilityUpdate();
+  ScheduleAllowAvailabilityUpdate();
 }
 
-void WebGLTimerQueryEXT::updateCachedResult(gpu::gles2::GLES2Interface* gl) {
-  if (m_queryResultAvailable)
+void WebGLTimerQueryEXT::UpdateCachedResult(gpu::gles2::GLES2Interface* gl) {
+  if (query_result_available_)
     return;
 
-  if (!m_canUpdateAvailability)
+  if (!can_update_availability_)
     return;
 
-  if (!hasTarget())
+  if (!HasTarget())
     return;
 
   // If this is a timestamp query, set the result to 0 and make it available as
   // we don't support timestamps in WebGL due to very poor driver support for
   // them.
-  if (m_target == GL_TIMESTAMP_EXT) {
-    m_queryResult = 0;
-    m_queryResultAvailable = true;
+  if (target_ == GL_TIMESTAMP_EXT) {
+    query_result_ = 0;
+    query_result_available_ = true;
     return;
   }
 
   // We can only update the cached result when control returns to the browser.
-  m_canUpdateAvailability = false;
+  can_update_availability_ = false;
   GLuint available = 0;
-  gl->GetQueryObjectuivEXT(object(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-  m_queryResultAvailable = !!available;
-  if (m_queryResultAvailable) {
+  gl->GetQueryObjectuivEXT(Object(), GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  query_result_available_ = !!available;
+  if (query_result_available_) {
     GLuint64 result = 0;
-    gl->GetQueryObjectui64vEXT(object(), GL_QUERY_RESULT_EXT, &result);
-    m_queryResult = result;
-    m_taskHandle.cancel();
+    gl->GetQueryObjectui64vEXT(Object(), GL_QUERY_RESULT_EXT, &result);
+    query_result_ = result;
+    task_handle_.Cancel();
   } else {
-    scheduleAllowAvailabilityUpdate();
+    ScheduleAllowAvailabilityUpdate();
   }
 }
 
-bool WebGLTimerQueryEXT::isQueryResultAvailable() {
-  return m_queryResultAvailable;
+bool WebGLTimerQueryEXT::IsQueryResultAvailable() {
+  return query_result_available_;
 }
 
-GLuint64 WebGLTimerQueryEXT::getQueryResult() {
-  return m_queryResult;
+GLuint64 WebGLTimerQueryEXT::GetQueryResult() {
+  return query_result_;
 }
 
-void WebGLTimerQueryEXT::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteQueriesEXT(1, &m_queryId);
-  m_queryId = 0;
+void WebGLTimerQueryEXT::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteQueriesEXT(1, &query_id_);
+  query_id_ = 0;
 }
 
-void WebGLTimerQueryEXT::scheduleAllowAvailabilityUpdate() {
-  if (m_taskHandle.isActive())
+void WebGLTimerQueryEXT::ScheduleAllowAvailabilityUpdate() {
+  if (task_handle_.IsActive())
     return;
-  m_taskHandle = m_taskRunner->postCancellableTask(
-      BLINK_FROM_HERE, WTF::bind(&WebGLTimerQueryEXT::allowAvailabilityUpdate,
-                                 wrapWeakPersistent(this)));
+  task_handle_ = task_runner_->PostCancellableTask(
+      BLINK_FROM_HERE, WTF::Bind(&WebGLTimerQueryEXT::AllowAvailabilityUpdate,
+                                 WrapWeakPersistent(this)));
 }
 
-void WebGLTimerQueryEXT::allowAvailabilityUpdate() {
-  m_canUpdateAvailability = true;
+void WebGLTimerQueryEXT::AllowAvailabilityUpdate() {
+  can_update_availability_ = true;
 }
 
 }  // namespace blink

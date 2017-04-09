@@ -15,24 +15,24 @@ const CSSValue* CSSPropertyAPIGridAutoFlow::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-  CSSIdentifierValue* rowOrColumnValue =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueRow, CSSValueColumn>(
+  CSSIdentifierValue* row_or_column_value =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
           range);
-  CSSIdentifierValue* denseAlgorithm =
-      CSSPropertyParserHelpers::consumeIdent<CSSValueDense>(range);
-  if (!rowOrColumnValue) {
-    rowOrColumnValue =
-        CSSPropertyParserHelpers::consumeIdent<CSSValueRow, CSSValueColumn>(
+  CSSIdentifierValue* dense_algorithm =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueDense>(range);
+  if (!row_or_column_value) {
+    row_or_column_value =
+        CSSPropertyParserHelpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
             range);
-    if (!rowOrColumnValue && !denseAlgorithm)
+    if (!row_or_column_value && !dense_algorithm)
       return nullptr;
   }
-  CSSValueList* parsedValues = CSSValueList::createSpaceSeparated();
-  if (rowOrColumnValue)
-    parsedValues->append(*rowOrColumnValue);
-  if (denseAlgorithm)
-    parsedValues->append(*denseAlgorithm);
-  return parsedValues;
+  CSSValueList* parsed_values = CSSValueList::CreateSpaceSeparated();
+  if (row_or_column_value)
+    parsed_values->Append(*row_or_column_value);
+  if (dense_algorithm)
+    parsed_values->Append(*dense_algorithm);
+  return parsed_values;
 }
 
 }  // namespace blink

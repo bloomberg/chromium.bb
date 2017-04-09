@@ -13,7 +13,7 @@ using blink::WebString;
 namespace content {
 
 RequestExtraData::RequestExtraData()
-    : visibility_state_(blink::WebPageVisibilityStateVisible),
+    : visibility_state_(blink::kWebPageVisibilityStateVisible),
       render_frame_id_(MSG_ROUTING_NONE),
       is_main_frame_(false),
       parent_is_main_frame_(false),

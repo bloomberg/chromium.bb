@@ -42,15 +42,15 @@ class WebFontRendering {
  public:
   // Set global font renderering preferences.
 
-  BLINK_EXPORT static void setSkiaFontManager(sk_sp<SkFontMgr>);
-  BLINK_EXPORT static void setHinting(SkPaint::Hinting);
-  BLINK_EXPORT static void setAutoHint(bool);
-  BLINK_EXPORT static void setUseBitmaps(bool);
-  BLINK_EXPORT static void setAntiAlias(bool);
-  BLINK_EXPORT static void setSubpixelRendering(bool);
-  BLINK_EXPORT static void setSubpixelPositioning(bool);
-  BLINK_EXPORT static void setDefaultFontSize(int);
-  BLINK_EXPORT static void setSystemFontFamily(const WebString&);
+  BLINK_EXPORT static void SetSkiaFontManager(sk_sp<SkFontMgr>);
+  BLINK_EXPORT static void SetHinting(SkPaint::Hinting);
+  BLINK_EXPORT static void SetAutoHint(bool);
+  BLINK_EXPORT static void SetUseBitmaps(bool);
+  BLINK_EXPORT static void SetAntiAlias(bool);
+  BLINK_EXPORT static void SetSubpixelRendering(bool);
+  BLINK_EXPORT static void SetSubpixelPositioning(bool);
+  BLINK_EXPORT static void SetDefaultFontSize(int);
+  BLINK_EXPORT static void SetSystemFontFamily(const WebString&);
 };
 
 }  // namespace blink

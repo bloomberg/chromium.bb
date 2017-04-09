@@ -81,78 +81,78 @@ using namespace std;
 namespace {
 
 // https://w3c.github.io/editing/execCommand.html#editing-host
-bool isEditingHost(const Node& node) {
-  if (!node.isHTMLElement())
+bool IsEditingHost(const Node& node) {
+  if (!node.IsHTMLElement())
     return false;
-  String normalizedValue = toHTMLElement(node).contentEditable();
-  if (normalizedValue == "true" || normalizedValue == "plaintext-only")
+  String normalized_value = ToHTMLElement(node).contentEditable();
+  if (normalized_value == "true" || normalized_value == "plaintext-only")
     return true;
-  return node.document().inDesignMode() &&
-         node.document().documentElement() == &node;
+  return node.GetDocument().InDesignMode() &&
+         node.GetDocument().documentElement() == &node;
 }
 
 // https://w3c.github.io/editing/execCommand.html#editable
-bool isEditable(const Node& node) {
-  if (isEditingHost(node))
+bool IsEditable(const Node& node) {
+  if (IsEditingHost(node))
     return false;
-  if (node.isHTMLElement() && toHTMLElement(node).contentEditable() == "false")
+  if (node.IsHTMLElement() && ToHTMLElement(node).contentEditable() == "false")
     return false;
   if (!node.parentNode())
     return false;
-  if (!isEditingHost(*node.parentNode()) && !isEditable(*node.parentNode()))
+  if (!IsEditingHost(*node.parentNode()) && !IsEditable(*node.parentNode()))
     return false;
-  if (node.isHTMLElement())
+  if (node.IsHTMLElement())
     return true;
   if (isSVGSVGElement(node))
     return true;
-  if (node.isElementNode() && toElement(node).hasTagName(MathMLNames::mathTag))
+  if (node.IsElementNode() && ToElement(node).HasTagName(MathMLNames::mathTag))
     return true;
-  return !node.isElementNode() && node.parentNode()->isHTMLElement();
+  return !node.IsElementNode() && node.parentNode()->IsHTMLElement();
 }
 
 }  // anonymous namespace
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
-String HTMLElement::debugNodeName() const {
-  if (document().isHTMLDocument()) {
-    return tagQName().hasPrefix() ? Element::nodeName().upperASCII()
-                                  : tagQName().localName().upperASCII();
+String HTMLElement::DebugNodeName() const {
+  if (GetDocument().IsHTMLDocument()) {
+    return TagQName().HasPrefix() ? Element::nodeName().UpperASCII()
+                                  : TagQName().LocalName().UpperASCII();
   }
   return Element::nodeName();
 }
 
 String HTMLElement::nodeName() const {
   // localNameUpper may intern and cache an AtomicString.
-  DCHECK(isMainThread());
+  DCHECK(IsMainThread());
 
   // FIXME: Would be nice to have an atomicstring lookup based off uppercase
   // chars that does not have to copy the string on a hit in the hash.
   // FIXME: We should have a way to detect XHTML elements and replace the
   // hasPrefix() check with it.
-  if (document().isHTMLDocument()) {
-    if (!tagQName().hasPrefix())
-      return tagQName().localNameUpper();
-    return Element::nodeName().upperASCII();
+  if (GetDocument().IsHTMLDocument()) {
+    if (!TagQName().HasPrefix())
+      return TagQName().LocalNameUpper();
+    return Element::nodeName().UpperASCII();
   }
   return Element::nodeName();
 }
 
-bool HTMLElement::shouldSerializeEndTag() const {
+bool HTMLElement::ShouldSerializeEndTag() const {
   // See https://www.w3.org/TR/DOM-Parsing/
-  if (hasTagName(areaTag) || hasTagName(baseTag) || hasTagName(basefontTag) ||
-      hasTagName(bgsoundTag) || hasTagName(brTag) || hasTagName(colTag) ||
-      hasTagName(embedTag) || hasTagName(frameTag) || hasTagName(hrTag) ||
-      hasTagName(imgTag) || hasTagName(inputTag) || hasTagName(keygenTag) ||
-      hasTagName(linkTag) || hasTagName(menuitemTag) || hasTagName(metaTag) ||
-      hasTagName(paramTag) || hasTagName(sourceTag) || hasTagName(trackTag) ||
-      hasTagName(wbrTag))
+  if (HasTagName(areaTag) || HasTagName(baseTag) || HasTagName(basefontTag) ||
+      HasTagName(bgsoundTag) || HasTagName(brTag) || HasTagName(colTag) ||
+      HasTagName(embedTag) || HasTagName(frameTag) || HasTagName(hrTag) ||
+      HasTagName(imgTag) || HasTagName(inputTag) || HasTagName(keygenTag) ||
+      HasTagName(linkTag) || HasTagName(menuitemTag) || HasTagName(metaTag) ||
+      HasTagName(paramTag) || HasTagName(sourceTag) || HasTagName(trackTag) ||
+      HasTagName(wbrTag))
     return false;
   return true;
 }
 
-static inline CSSValueID unicodeBidiAttributeForDirAuto(HTMLElement* element) {
-  if (element->hasTagName(preTag) || element->hasTagName(textareaTag))
+static inline CSSValueID UnicodeBidiAttributeForDirAuto(HTMLElement* element) {
+  if (element->HasTagName(preTag) || element->HasTagName(textareaTag))
     return CSSValueWebkitPlaintext;
   // FIXME: For bdo element, dir="auto" should result in "bidi-override isolate"
   // but we don't support having multiple values in unicode-bidi yet.
@@ -160,164 +160,166 @@ static inline CSSValueID unicodeBidiAttributeForDirAuto(HTMLElement* element) {
   return CSSValueWebkitIsolate;
 }
 
-unsigned HTMLElement::parseBorderWidthAttribute(
+unsigned HTMLElement::ParseBorderWidthAttribute(
     const AtomicString& value) const {
-  unsigned borderWidth = 0;
-  if (value.isEmpty() || !parseHTMLNonNegativeInteger(value, borderWidth)) {
-    if (hasTagName(tableTag) && !value.isNull())
+  unsigned border_width = 0;
+  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, border_width)) {
+    if (HasTagName(tableTag) && !value.IsNull())
       return 1;
   }
-  return borderWidth;
+  return border_width;
 }
 
-void HTMLElement::applyBorderAttributeToStyle(const AtomicString& value,
+void HTMLElement::ApplyBorderAttributeToStyle(const AtomicString& value,
                                               MutableStylePropertySet* style) {
-  addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderWidth,
-                                          parseBorderWidthAttribute(value),
-                                          CSSPrimitiveValue::UnitType::Pixels);
-  addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
+  AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderWidth,
+                                          ParseBorderWidthAttribute(value),
+                                          CSSPrimitiveValue::UnitType::kPixels);
+  AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
                                           CSSValueSolid);
 }
 
-void HTMLElement::mapLanguageAttributeToLocale(const AtomicString& value,
+void HTMLElement::MapLanguageAttributeToLocale(const AtomicString& value,
                                                MutableStylePropertySet* style) {
-  if (!value.isEmpty()) {
+  if (!value.IsEmpty()) {
     // Have to quote so the locale id is treated as a string instead of as a CSS
     // keyword.
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
-                                            serializeString(value));
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
+                                            SerializeString(value));
 
     // FIXME: Remove the following UseCounter code when we collect enough
     // data.
-    UseCounter::count(document(), UseCounter::LangAttribute);
+    UseCounter::Count(GetDocument(), UseCounter::kLangAttribute);
     if (isHTMLHtmlElement(*this))
-      UseCounter::count(document(), UseCounter::LangAttributeOnHTML);
+      UseCounter::Count(GetDocument(), UseCounter::kLangAttributeOnHTML);
     else if (isHTMLBodyElement(*this))
-      UseCounter::count(document(), UseCounter::LangAttributeOnBody);
-    String htmlLanguage = value.getString();
-    size_t firstSeparator = htmlLanguage.find('-');
-    if (firstSeparator != kNotFound)
-      htmlLanguage = htmlLanguage.left(firstSeparator);
-    String uiLanguage = defaultLanguage();
-    firstSeparator = uiLanguage.find('-');
-    if (firstSeparator != kNotFound)
-      uiLanguage = uiLanguage.left(firstSeparator);
-    firstSeparator = uiLanguage.find('_');
-    if (firstSeparator != kNotFound)
-      uiLanguage = uiLanguage.left(firstSeparator);
-    if (!equalIgnoringCase(htmlLanguage, uiLanguage))
-      UseCounter::count(document(),
-                        UseCounter::LangAttributeDoesNotMatchToUILocale);
+      UseCounter::Count(GetDocument(), UseCounter::kLangAttributeOnBody);
+    String html_language = value.GetString();
+    size_t first_separator = html_language.Find('-');
+    if (first_separator != kNotFound)
+      html_language = html_language.Left(first_separator);
+    String ui_language = DefaultLanguage();
+    first_separator = ui_language.Find('-');
+    if (first_separator != kNotFound)
+      ui_language = ui_language.Left(first_separator);
+    first_separator = ui_language.Find('_');
+    if (first_separator != kNotFound)
+      ui_language = ui_language.Left(first_separator);
+    if (!EqualIgnoringCase(html_language, ui_language))
+      UseCounter::Count(GetDocument(),
+                        UseCounter::kLangAttributeDoesNotMatchToUILocale);
   } else {
     // The empty string means the language is explicitly unknown.
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
                                             CSSValueAuto);
   }
 }
 
-bool HTMLElement::isPresentationAttribute(const QualifiedName& name) const {
+bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (name == alignAttr || name == contenteditableAttr || name == hiddenAttr ||
-      name == langAttr || name.matches(XMLNames::langAttr) ||
+      name == langAttr || name.Matches(XMLNames::langAttr) ||
       name == draggableAttr || name == dirAttr)
     return true;
-  return Element::isPresentationAttribute(name);
+  return Element::IsPresentationAttribute(name);
 }
 
-static inline bool isValidDirAttribute(const AtomicString& value) {
-  return equalIgnoringCase(value, "auto") || equalIgnoringCase(value, "ltr") ||
-         equalIgnoringCase(value, "rtl");
+static inline bool IsValidDirAttribute(const AtomicString& value) {
+  return EqualIgnoringCase(value, "auto") || EqualIgnoringCase(value, "ltr") ||
+         EqualIgnoringCase(value, "rtl");
 }
 
-void HTMLElement::collectStyleForPresentationAttribute(
+void HTMLElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == alignAttr) {
-    if (equalIgnoringCase(value, "middle"))
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+    if (EqualIgnoringCase(value, "middle"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               CSSValueCenter);
     else
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
   } else if (name == contenteditableAttr) {
-    if (value.isEmpty() || equalIgnoringCase(value, "true")) {
-      addPropertyToPresentationAttributeStyle(
+    if (value.IsEmpty() || EqualIgnoringCase(value, "true")) {
+      AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWrite);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
                                               CSSValueBreakWord);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
                                               CSSValueAfterWhiteSpace);
-      UseCounter::count(document(), UseCounter::ContentEditableTrue);
-      if (hasTagName(htmlTag))
-        UseCounter::count(document(), UseCounter::ContentEditableTrueOnHTML);
-    } else if (equalIgnoringCase(value, "plaintext-only")) {
-      addPropertyToPresentationAttributeStyle(
+      UseCounter::Count(GetDocument(), UseCounter::kContentEditableTrue);
+      if (HasTagName(htmlTag))
+        UseCounter::Count(GetDocument(),
+                          UseCounter::kContentEditableTrueOnHTML);
+    } else if (EqualIgnoringCase(value, "plaintext-only")) {
+      AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWritePlaintextOnly);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
                                               CSSValueBreakWord);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
                                               CSSValueAfterWhiteSpace);
-      UseCounter::count(document(), UseCounter::ContentEditablePlainTextOnly);
-    } else if (equalIgnoringCase(value, "false")) {
-      addPropertyToPresentationAttributeStyle(
+      UseCounter::Count(GetDocument(),
+                        UseCounter::kContentEditablePlainTextOnly);
+    } else if (EqualIgnoringCase(value, "false")) {
+      AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadOnly);
     }
   } else if (name == hiddenAttr) {
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyDisplay,
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyDisplay,
                                             CSSValueNone);
   } else if (name == draggableAttr) {
-    UseCounter::count(document(), UseCounter::DraggableAttribute);
-    if (equalIgnoringCase(value, "true")) {
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
+    UseCounter::Count(GetDocument(), UseCounter::kDraggableAttribute);
+    if (EqualIgnoringCase(value, "true")) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
                                               CSSValueElement);
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyUserSelect,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyUserSelect,
                                               CSSValueNone);
-    } else if (equalIgnoringCase(value, "false")) {
-      addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
+    } else if (EqualIgnoringCase(value, "false")) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
                                               CSSValueNone);
     }
   } else if (name == dirAttr) {
-    if (equalIgnoringCase(value, "auto")) {
-      addPropertyToPresentationAttributeStyle(
-          style, CSSPropertyUnicodeBidi, unicodeBidiAttributeForDirAuto(this));
+    if (EqualIgnoringCase(value, "auto")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyUnicodeBidi, UnicodeBidiAttributeForDirAuto(this));
     } else {
-      if (isValidDirAttribute(value))
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
+      if (IsValidDirAttribute(value))
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
                                                 value);
       else if (isHTMLBodyElement(*this))
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
                                                 "ltr");
-      if (!hasTagName(bdiTag) && !hasTagName(bdoTag) && !hasTagName(outputTag))
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi,
+      if (!HasTagName(bdiTag) && !HasTagName(bdoTag) && !HasTagName(outputTag))
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi,
                                                 CSSValueIsolate);
     }
-  } else if (name.matches(XMLNames::langAttr)) {
-    mapLanguageAttributeToLocale(value, style);
+  } else if (name.Matches(XMLNames::langAttr)) {
+    MapLanguageAttributeToLocale(value, style);
   } else if (name == langAttr) {
     // xml:lang has a higher priority than lang.
-    if (!fastHasAttribute(XMLNames::langAttr))
-      mapLanguageAttributeToLocale(value, style);
+    if (!FastHasAttribute(XMLNames::langAttr))
+      MapLanguageAttributeToLocale(value, style);
   } else {
-    Element::collectStyleForPresentationAttribute(name, value, style);
+    Element::CollectStyleForPresentationAttribute(name, value, style);
   }
 }
 
-const AtomicString& HTMLElement::eventNameForAttributeName(
-    const QualifiedName& attrName) {
-  if (!attrName.namespaceURI().isNull())
-    return nullAtom;
+const AtomicString& HTMLElement::EventNameForAttributeName(
+    const QualifiedName& attr_name) {
+  if (!attr_name.NamespaceURI().IsNull())
+    return g_null_atom;
 
-  if (!attrName.localName().startsWith("on", TextCaseASCIIInsensitive))
-    return nullAtom;
+  if (!attr_name.LocalName().StartsWith("on", kTextCaseASCIIInsensitive))
+    return g_null_atom;
 
   typedef HashMap<AtomicString, AtomicString> StringToStringMap;
-  DEFINE_STATIC_LOCAL(StringToStringMap, attributeNameToEventNameMap, ());
-  if (!attributeNameToEventNameMap.size()) {
+  DEFINE_STATIC_LOCAL(StringToStringMap, attribute_name_to_event_name_map, ());
+  if (!attribute_name_to_event_name_map.size()) {
     struct AttrToEventName {
       const QualifiedName& attr;
       const AtomicString& event;
     };
-    AttrToEventName attrToEventNames[] = {
+    AttrToEventName attr_to_event_names[] = {
         {onabortAttr, EventTypeNames::abort},
         {onanimationendAttr, EventTypeNames::animationend},
         {onanimationiterationAttr, EventTypeNames::animationiteration},
@@ -415,62 +417,65 @@ const AtomicString& HTMLElement::eventNameForAttributeName(
         {onwheelAttr, EventTypeNames::wheel},
     };
 
-    for (const auto& name : attrToEventNames)
-      attributeNameToEventNameMap.set(name.attr.localName(), name.event);
+    for (const auto& name : attr_to_event_names)
+      attribute_name_to_event_name_map.Set(name.attr.LocalName(), name.event);
   }
 
-  return attributeNameToEventNameMap.at(attrName.localName());
+  return attribute_name_to_event_name_map.at(attr_name.LocalName());
 }
 
-void HTMLElement::attributeChanged(const AttributeModificationParams& params) {
-  Element::attributeChanged(params);
+void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
+  Element::AttributeChanged(params);
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
   // adjustedFocusedElementInTreeScope() is not trivial. We should check
   // attribute names, then call adjustedFocusedElementInTreeScope().
-  if (params.name == hiddenAttr && !params.newValue.isNull()) {
-    if (adjustedFocusedElementInTreeScope() == this)
+  if (params.name == hiddenAttr && !params.new_value.IsNull()) {
+    if (AdjustedFocusedElementInTreeScope() == this)
       blur();
   } else if (params.name == contenteditableAttr) {
-    if (document().frame()) {
-      document().frame()->spellChecker().removeSpellingAndGrammarMarkers(
-          *this, SpellChecker::ElementsType::kOnlyNonEditable);
+    if (GetDocument().GetFrame()) {
+      GetDocument()
+          .GetFrame()
+          ->GetSpellChecker()
+          .RemoveSpellingAndGrammarMarkers(
+              *this, SpellChecker::ElementsType::kOnlyNonEditable);
     }
-    if (adjustedFocusedElementInTreeScope() != this)
+    if (AdjustedFocusedElementInTreeScope() != this)
       return;
     // The attribute change may cause supportsFocus() to return false
     // for the element which had focus.
     //
     // TODO(tkent): We should avoid updating style.  We'd like to check only
     // DOM-level focusability here.
-    document().updateStyleAndLayoutTreeForNode(this);
-    if (!supportsFocus())
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+    if (!SupportsFocus())
       blur();
   }
 }
 
-void HTMLElement::parseAttribute(const AttributeModificationParams& params) {
+void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
   if (params.name == tabindexAttr || params.name == XMLNames::langAttr)
-    return Element::parseAttribute(params);
+    return Element::ParseAttribute(params);
 
   if (params.name == dirAttr) {
-    dirAttributeChanged(params.newValue);
+    DirAttributeChanged(params.new_value);
   } else if (params.name == langAttr) {
-    pseudoStateChanged(CSSSelector::PseudoLang);
+    PseudoStateChanged(CSSSelector::kPseudoLang);
   } else {
-    const AtomicString& eventName = eventNameForAttributeName(params.name);
-    if (!eventName.isNull()) {
-      setAttributeEventListener(
-          eventName,
-          createAttributeEventListener(this, params.name, params.newValue,
-                                       eventParameterName()));
+    const AtomicString& event_name = EventNameForAttributeName(params.name);
+    if (!event_name.IsNull()) {
+      SetAttributeEventListener(
+          event_name,
+          CreateAttributeEventListener(this, params.name, params.new_value,
+                                       EventParameterName()));
     }
   }
 }
 
-DocumentFragment* HTMLElement::textToFragment(const String& text,
-                                              ExceptionState& exceptionState) {
-  DocumentFragment* fragment = DocumentFragment::create(document());
+DocumentFragment* HTMLElement::TextToFragment(const String& text,
+                                              ExceptionState& exception_state) {
+  DocumentFragment* fragment = DocumentFragment::Create(GetDocument());
   unsigned i, length = text.length();
   UChar c = 0;
   for (unsigned start = 0; start < length;) {
@@ -481,15 +486,16 @@ DocumentFragment* HTMLElement::textToFragment(const String& text,
         break;
     }
 
-    fragment->appendChild(
-        Text::create(document(), text.substring(start, i - start)),
-        exceptionState);
-    if (exceptionState.hadException())
+    fragment->AppendChild(
+        Text::Create(GetDocument(), text.Substring(start, i - start)),
+        exception_state);
+    if (exception_state.HadException())
       return nullptr;
 
     if (c == '\r' || c == '\n') {
-      fragment->appendChild(HTMLBRElement::create(document()), exceptionState);
-      if (exceptionState.hadException())
+      fragment->AppendChild(HTMLBRElement::Create(GetDocument()),
+                            exception_state);
+      if (exception_state.HadException())
         return nullptr;
       // Make sure \r\n doesn't result in two line breaks.
       if (c == '\r' && i + 1 < length && text[i + 1] == '\n')
@@ -503,15 +509,15 @@ DocumentFragment* HTMLElement::textToFragment(const String& text,
 }
 
 void HTMLElement::setInnerText(const String& text,
-                               ExceptionState& exceptionState) {
+                               ExceptionState& exception_state) {
   // FIXME: This doesn't take whitespace collapsing into account at all.
 
-  if (!text.contains('\n') && !text.contains('\r')) {
-    if (text.isEmpty()) {
-      removeChildren();
+  if (!text.Contains('\n') && !text.Contains('\r')) {
+    if (text.IsEmpty()) {
+      RemoveChildren();
       return;
     }
-    replaceChildrenWithText(this, text, exceptionState);
+    ReplaceChildrenWithText(this, text, exception_state);
     return;
   }
 
@@ -520,143 +526,144 @@ void HTMLElement::setInnerText(const String& text,
   // FIXME: Can the layoutObject be out of date here? Do we need to call
   // updateStyleIfNeeded?  For example, for the contents of textarea elements
   // that are display:none?
-  LayoutObject* r = layoutObject();
-  if (r && r->style()->preserveNewline()) {
-    if (!text.contains('\r')) {
-      replaceChildrenWithText(this, text, exceptionState);
+  LayoutObject* r = GetLayoutObject();
+  if (r && r->Style()->PreserveNewline()) {
+    if (!text.Contains('\r')) {
+      ReplaceChildrenWithText(this, text, exception_state);
       return;
     }
-    String textWithConsistentLineBreaks = text;
-    textWithConsistentLineBreaks.replace("\r\n", "\n");
-    textWithConsistentLineBreaks.replace('\r', '\n');
-    replaceChildrenWithText(this, textWithConsistentLineBreaks, exceptionState);
+    String text_with_consistent_line_breaks = text;
+    text_with_consistent_line_breaks.Replace("\r\n", "\n");
+    text_with_consistent_line_breaks.Replace('\r', '\n');
+    ReplaceChildrenWithText(this, text_with_consistent_line_breaks,
+                            exception_state);
     return;
   }
 
   // Add text nodes and <br> elements.
-  DocumentFragment* fragment = textToFragment(text, exceptionState);
-  if (!exceptionState.hadException())
-    replaceChildrenWithFragment(this, fragment, exceptionState);
+  DocumentFragment* fragment = TextToFragment(text, exception_state);
+  if (!exception_state.HadException())
+    ReplaceChildrenWithFragment(this, fragment, exception_state);
 }
 
 void HTMLElement::setOuterText(const String& text,
-                               ExceptionState& exceptionState) {
+                               ExceptionState& exception_state) {
   ContainerNode* parent = parentNode();
   if (!parent) {
-    exceptionState.throwDOMException(NoModificationAllowedError,
-                                     "The element has no parent.");
+    exception_state.ThrowDOMException(kNoModificationAllowedError,
+                                      "The element has no parent.");
     return;
   }
 
   Node* prev = previousSibling();
   Node* next = nextSibling();
-  Node* newChild = nullptr;
+  Node* new_child = nullptr;
 
   // Convert text to fragment with <br> tags instead of linebreaks if needed.
-  if (text.contains('\r') || text.contains('\n'))
-    newChild = textToFragment(text, exceptionState);
+  if (text.Contains('\r') || text.Contains('\n'))
+    new_child = TextToFragment(text, exception_state);
   else
-    newChild = Text::create(document(), text);
+    new_child = Text::Create(GetDocument(), text);
 
   // textToFragment might cause mutation events.
   if (!parentNode())
-    exceptionState.throwDOMException(HierarchyRequestError,
-                                     "The element has no parent.");
+    exception_state.ThrowDOMException(kHierarchyRequestError,
+                                      "The element has no parent.");
 
-  if (exceptionState.hadException())
+  if (exception_state.HadException())
     return;
 
-  parent->replaceChild(newChild, this, exceptionState);
+  parent->ReplaceChild(new_child, this, exception_state);
 
   Node* node = next ? next->previousSibling() : nullptr;
-  if (!exceptionState.hadException() && node && node->isTextNode())
-    mergeWithNextTextNode(toText(node), exceptionState);
+  if (!exception_state.HadException() && node && node->IsTextNode())
+    MergeWithNextTextNode(ToText(node), exception_state);
 
-  if (!exceptionState.hadException() && prev && prev->isTextNode())
-    mergeWithNextTextNode(toText(prev), exceptionState);
+  if (!exception_state.HadException() && prev && prev->IsTextNode())
+    MergeWithNextTextNode(ToText(prev), exception_state);
 }
 
-void HTMLElement::applyAlignmentAttributeToStyle(
+void HTMLElement::ApplyAlignmentAttributeToStyle(
     const AtomicString& alignment,
     MutableStylePropertySet* style) {
   // Vertical alignment with respect to the current baseline of the text
   // right or left means floating images.
-  CSSValueID floatValue = CSSValueInvalid;
-  CSSValueID verticalAlignValue = CSSValueInvalid;
+  CSSValueID float_value = CSSValueInvalid;
+  CSSValueID vertical_align_value = CSSValueInvalid;
 
-  if (equalIgnoringCase(alignment, "absmiddle")) {
-    verticalAlignValue = CSSValueMiddle;
-  } else if (equalIgnoringCase(alignment, "absbottom")) {
-    verticalAlignValue = CSSValueBottom;
-  } else if (equalIgnoringCase(alignment, "left")) {
-    floatValue = CSSValueLeft;
-    verticalAlignValue = CSSValueTop;
-  } else if (equalIgnoringCase(alignment, "right")) {
-    floatValue = CSSValueRight;
-    verticalAlignValue = CSSValueTop;
-  } else if (equalIgnoringCase(alignment, "top")) {
-    verticalAlignValue = CSSValueTop;
-  } else if (equalIgnoringCase(alignment, "middle")) {
-    verticalAlignValue = CSSValueWebkitBaselineMiddle;
-  } else if (equalIgnoringCase(alignment, "center")) {
-    verticalAlignValue = CSSValueMiddle;
-  } else if (equalIgnoringCase(alignment, "bottom")) {
-    verticalAlignValue = CSSValueBaseline;
-  } else if (equalIgnoringCase(alignment, "texttop")) {
-    verticalAlignValue = CSSValueTextTop;
+  if (EqualIgnoringCase(alignment, "absmiddle")) {
+    vertical_align_value = CSSValueMiddle;
+  } else if (EqualIgnoringCase(alignment, "absbottom")) {
+    vertical_align_value = CSSValueBottom;
+  } else if (EqualIgnoringCase(alignment, "left")) {
+    float_value = CSSValueLeft;
+    vertical_align_value = CSSValueTop;
+  } else if (EqualIgnoringCase(alignment, "right")) {
+    float_value = CSSValueRight;
+    vertical_align_value = CSSValueTop;
+  } else if (EqualIgnoringCase(alignment, "top")) {
+    vertical_align_value = CSSValueTop;
+  } else if (EqualIgnoringCase(alignment, "middle")) {
+    vertical_align_value = CSSValueWebkitBaselineMiddle;
+  } else if (EqualIgnoringCase(alignment, "center")) {
+    vertical_align_value = CSSValueMiddle;
+  } else if (EqualIgnoringCase(alignment, "bottom")) {
+    vertical_align_value = CSSValueBaseline;
+  } else if (EqualIgnoringCase(alignment, "texttop")) {
+    vertical_align_value = CSSValueTextTop;
   }
 
-  if (floatValue != CSSValueInvalid)
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyFloat,
-                                            floatValue);
+  if (float_value != CSSValueInvalid)
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyFloat,
+                                            float_value);
 
-  if (verticalAlignValue != CSSValueInvalid)
-    addPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
-                                            verticalAlignValue);
+  if (vertical_align_value != CSSValueInvalid)
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                            vertical_align_value);
 }
 
-bool HTMLElement::hasCustomFocusLogic() const {
+bool HTMLElement::HasCustomFocusLogic() const {
   return false;
 }
 
 String HTMLElement::contentEditable() const {
-  const AtomicString& value = fastGetAttribute(contenteditableAttr);
+  const AtomicString& value = FastGetAttribute(contenteditableAttr);
 
-  if (value.isNull())
+  if (value.IsNull())
     return "inherit";
-  if (value.isEmpty() || equalIgnoringCase(value, "true"))
+  if (value.IsEmpty() || EqualIgnoringCase(value, "true"))
     return "true";
-  if (equalIgnoringCase(value, "false"))
+  if (EqualIgnoringCase(value, "false"))
     return "false";
-  if (equalIgnoringCase(value, "plaintext-only"))
+  if (EqualIgnoringCase(value, "plaintext-only"))
     return "plaintext-only";
 
   return "inherit";
 }
 
 void HTMLElement::setContentEditable(const String& enabled,
-                                     ExceptionState& exceptionState) {
-  if (equalIgnoringCase(enabled, "true"))
+                                     ExceptionState& exception_state) {
+  if (EqualIgnoringCase(enabled, "true"))
     setAttribute(contenteditableAttr, "true");
-  else if (equalIgnoringCase(enabled, "false"))
+  else if (EqualIgnoringCase(enabled, "false"))
     setAttribute(contenteditableAttr, "false");
-  else if (equalIgnoringCase(enabled, "plaintext-only"))
+  else if (EqualIgnoringCase(enabled, "plaintext-only"))
     setAttribute(contenteditableAttr, "plaintext-only");
-  else if (equalIgnoringCase(enabled, "inherit"))
+  else if (EqualIgnoringCase(enabled, "inherit"))
     removeAttribute(contenteditableAttr);
   else
-    exceptionState.throwDOMException(SyntaxError,
-                                     "The value provided ('" + enabled +
-                                         "') is not one of 'true', 'false', "
-                                         "'plaintext-only', or 'inherit'.");
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "The value provided ('" + enabled +
+                                          "') is not one of 'true', 'false', "
+                                          "'plaintext-only', or 'inherit'.");
 }
 
 bool HTMLElement::isContentEditableForBinding() const {
-  return isEditingHost(*this) || isEditable(*this);
+  return IsEditingHost(*this) || IsEditable(*this);
 }
 
 bool HTMLElement::draggable() const {
-  return equalIgnoringCase(getAttribute(draggableAttr), "true");
+  return EqualIgnoringCase(getAttribute(draggableAttr), "true");
 }
 
 void HTMLElement::setDraggable(bool value) {
@@ -664,7 +671,7 @@ void HTMLElement::setDraggable(bool value) {
 }
 
 bool HTMLElement::spellcheck() const {
-  return isSpellCheckingEnabled();
+  return IsSpellCheckingEnabled();
 }
 
 void HTMLElement::setSpellcheck(bool enable) {
@@ -672,45 +679,45 @@ void HTMLElement::setSpellcheck(bool enable) {
 }
 
 void HTMLElement::click() {
-  dispatchSimulatedClick(0, SendNoEvents,
-                         SimulatedClickCreationScope::FromScript);
+  DispatchSimulatedClick(0, kSendNoEvents,
+                         SimulatedClickCreationScope::kFromScript);
 }
 
-void HTMLElement::accessKeyAction(bool sendMouseEvents) {
-  dispatchSimulatedClick(
-      0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
+void HTMLElement::AccessKeyAction(bool send_mouse_events) {
+  DispatchSimulatedClick(
+      0, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
 }
 
 String HTMLElement::title() const {
-  return fastGetAttribute(titleAttr);
+  return FastGetAttribute(titleAttr);
 }
 
 int HTMLElement::tabIndex() const {
-  if (supportsFocus())
+  if (SupportsFocus())
     return Element::tabIndex();
   return -1;
 }
 
-TranslateAttributeMode HTMLElement::translateAttributeMode() const {
+TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
   const AtomicString& value = getAttribute(translateAttr);
 
-  if (value == nullAtom)
-    return TranslateAttributeInherit;
-  if (equalIgnoringCase(value, "yes") || equalIgnoringCase(value, ""))
-    return TranslateAttributeYes;
-  if (equalIgnoringCase(value, "no"))
-    return TranslateAttributeNo;
+  if (value == g_null_atom)
+    return kTranslateAttributeInherit;
+  if (EqualIgnoringCase(value, "yes") || EqualIgnoringCase(value, ""))
+    return kTranslateAttributeYes;
+  if (EqualIgnoringCase(value, "no"))
+    return kTranslateAttributeNo;
 
-  return TranslateAttributeInherit;
+  return kTranslateAttributeInherit;
 }
 
 bool HTMLElement::translate() const {
   for (const HTMLElement* element = this; element;
-       element = Traversal<HTMLElement>::firstAncestor(*element)) {
-    TranslateAttributeMode mode = element->translateAttributeMode();
-    if (mode != TranslateAttributeInherit) {
-      DCHECK(mode == TranslateAttributeYes || mode == TranslateAttributeNo);
-      return mode == TranslateAttributeYes;
+       element = Traversal<HTMLElement>::FirstAncestor(*element)) {
+    TranslateAttributeMode mode = element->GetTranslateAttributeMode();
+    if (mode != kTranslateAttributeInherit) {
+      DCHECK(mode == kTranslateAttributeYes || mode == kTranslateAttributeNo);
+      return mode == kTranslateAttributeYes;
     }
   }
 
@@ -728,277 +735,281 @@ void HTMLElement::setTranslate(bool enable) {
 // a defined state (e.g. the attribute is missing and there is no missing value
 // default).
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#limited-to-only-known-values
-static inline const AtomicString& toValidDirValue(const AtomicString& value) {
-  DEFINE_STATIC_LOCAL(const AtomicString, ltrValue, ("ltr"));
-  DEFINE_STATIC_LOCAL(const AtomicString, rtlValue, ("rtl"));
-  DEFINE_STATIC_LOCAL(const AtomicString, autoValue, ("auto"));
+static inline const AtomicString& ToValidDirValue(const AtomicString& value) {
+  DEFINE_STATIC_LOCAL(const AtomicString, ltr_value, ("ltr"));
+  DEFINE_STATIC_LOCAL(const AtomicString, rtl_value, ("rtl"));
+  DEFINE_STATIC_LOCAL(const AtomicString, auto_value, ("auto"));
 
-  if (equalIgnoringCase(value, ltrValue))
-    return ltrValue;
-  if (equalIgnoringCase(value, rtlValue))
-    return rtlValue;
-  if (equalIgnoringCase(value, autoValue))
-    return autoValue;
-  return nullAtom;
+  if (EqualIgnoringCase(value, ltr_value))
+    return ltr_value;
+  if (EqualIgnoringCase(value, rtl_value))
+    return rtl_value;
+  if (EqualIgnoringCase(value, auto_value))
+    return auto_value;
+  return g_null_atom;
 }
 
 const AtomicString& HTMLElement::dir() {
-  return toValidDirValue(fastGetAttribute(dirAttr));
+  return ToValidDirValue(FastGetAttribute(dirAttr));
 }
 
 void HTMLElement::setDir(const AtomicString& value) {
   setAttribute(dirAttr, value);
 }
 
-HTMLFormElement* HTMLElement::findFormAncestor() const {
-  return Traversal<HTMLFormElement>::firstAncestor(*this);
+HTMLFormElement* HTMLElement::FindFormAncestor() const {
+  return Traversal<HTMLFormElement>::FirstAncestor(*this);
 }
 
-static inline bool elementAffectsDirectionality(const Node* node) {
-  return node->isHTMLElement() && (isHTMLBDIElement(toHTMLElement(*node)) ||
-                                   toHTMLElement(*node).hasAttribute(dirAttr));
+static inline bool ElementAffectsDirectionality(const Node* node) {
+  return node->IsHTMLElement() && (isHTMLBDIElement(ToHTMLElement(*node)) ||
+                                   ToHTMLElement(*node).hasAttribute(dirAttr));
 }
 
-void HTMLElement::childrenChanged(const ChildrenChange& change) {
-  Element::childrenChanged(change);
-  adjustDirectionalityIfNeededAfterChildrenChanged(change);
+void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
+  Element::ChildrenChanged(change);
+  AdjustDirectionalityIfNeededAfterChildrenChanged(change);
 }
 
-bool HTMLElement::hasDirectionAuto() const {
+bool HTMLElement::HasDirectionAuto() const {
   // <bdi> defaults to dir="auto"
   // https://html.spec.whatwg.org/multipage/semantics.html#the-bdi-element
-  const AtomicString& direction = fastGetAttribute(dirAttr);
-  return (isHTMLBDIElement(*this) && direction == nullAtom) ||
-         equalIgnoringCase(direction, "auto");
+  const AtomicString& direction = FastGetAttribute(dirAttr);
+  return (isHTMLBDIElement(*this) && direction == g_null_atom) ||
+         EqualIgnoringCase(direction, "auto");
 }
 
-TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(
-    bool& isAuto) const {
-  isAuto = hasDirectionAuto();
-  if (!isAuto)
+TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
+    bool& is_auto) const {
+  is_auto = HasDirectionAuto();
+  if (!is_auto)
     return TextDirection::kLtr;
-  return directionality();
+  return Directionality();
 }
 
-TextDirection HTMLElement::directionality(
-    Node** strongDirectionalityTextNode) const {
+TextDirection HTMLElement::Directionality(
+    Node** strong_directionality_text_node) const {
   if (isHTMLInputElement(*this)) {
-    HTMLInputElement* inputElement =
+    HTMLInputElement* input_element =
         toHTMLInputElement(const_cast<HTMLElement*>(this));
-    bool hasStrongDirectionality;
-    TextDirection textDirection = determineDirectionality(
-        inputElement->value(), &hasStrongDirectionality);
-    if (strongDirectionalityTextNode)
-      *strongDirectionalityTextNode =
-          hasStrongDirectionality ? inputElement : 0;
-    return textDirection;
+    bool has_strong_directionality;
+    TextDirection text_direction = DetermineDirectionality(
+        input_element->value(), &has_strong_directionality);
+    if (strong_directionality_text_node)
+      *strong_directionality_text_node =
+          has_strong_directionality ? input_element : 0;
+    return text_direction;
   }
 
-  Node* node = FlatTreeTraversal::firstChild(*this);
+  Node* node = FlatTreeTraversal::FirstChild(*this);
   while (node) {
     // Skip bdi, script, style and text form controls.
-    if (equalIgnoringCase(node->nodeName(), "bdi") ||
+    if (EqualIgnoringCase(node->nodeName(), "bdi") ||
         isHTMLScriptElement(*node) || isHTMLStyleElement(*node) ||
-        (node->isElementNode() && toElement(node)->isTextControl()) ||
-        (node->isElementNode() &&
-         toElement(node)->shadowPseudoId() == "-webkit-input-placeholder")) {
-      node = FlatTreeTraversal::nextSkippingChildren(*node, this);
+        (node->IsElementNode() && ToElement(node)->IsTextControl()) ||
+        (node->IsElementNode() &&
+         ToElement(node)->ShadowPseudoId() == "-webkit-input-placeholder")) {
+      node = FlatTreeTraversal::NextSkippingChildren(*node, this);
       continue;
     }
 
     // Skip elements with valid dir attribute
-    if (node->isElementNode()) {
-      AtomicString dirAttributeValue =
-          toElement(node)->fastGetAttribute(dirAttr);
-      if (isValidDirAttribute(dirAttributeValue)) {
-        node = FlatTreeTraversal::nextSkippingChildren(*node, this);
+    if (node->IsElementNode()) {
+      AtomicString dir_attribute_value =
+          ToElement(node)->FastGetAttribute(dirAttr);
+      if (IsValidDirAttribute(dir_attribute_value)) {
+        node = FlatTreeTraversal::NextSkippingChildren(*node, this);
         continue;
       }
     }
 
-    if (node->isTextNode()) {
-      bool hasStrongDirectionality;
-      TextDirection textDirection = determineDirectionality(
-          node->textContent(true), &hasStrongDirectionality);
-      if (hasStrongDirectionality) {
-        if (strongDirectionalityTextNode)
-          *strongDirectionalityTextNode = node;
-        return textDirection;
+    if (node->IsTextNode()) {
+      bool has_strong_directionality;
+      TextDirection text_direction = DetermineDirectionality(
+          node->textContent(true), &has_strong_directionality);
+      if (has_strong_directionality) {
+        if (strong_directionality_text_node)
+          *strong_directionality_text_node = node;
+        return text_direction;
       }
     }
-    node = FlatTreeTraversal::next(*node, this);
+    node = FlatTreeTraversal::Next(*node, this);
   }
-  if (strongDirectionalityTextNode)
-    *strongDirectionalityTextNode = 0;
+  if (strong_directionality_text_node)
+    *strong_directionality_text_node = 0;
   return TextDirection::kLtr;
 }
 
-bool HTMLElement::selfOrAncestorHasDirAutoAttribute() const {
+bool HTMLElement::SelfOrAncestorHasDirAutoAttribute() const {
   // TODO(esprehn): Storing this state in the computed style is bad, we
   // should be able to answer questions about the shape of the DOM and the
   // text contained inside it without having style.
-  if (const ComputedStyle* style = computedStyle())
-    return style->selfOrAncestorHasDirAutoAttribute();
+  if (const ComputedStyle* style = GetComputedStyle())
+    return style->SelfOrAncestorHasDirAutoAttribute();
   return false;
 }
 
-void HTMLElement::dirAttributeChanged(const AtomicString& value) {
+void HTMLElement::DirAttributeChanged(const AtomicString& value) {
   // If an ancestor has dir=auto, and this node has the first character,
   // changes to dir attribute may affect the ancestor.
-  if (!canParticipateInFlatTree())
+  if (!CanParticipateInFlatTree())
     return;
-  updateDistribution();
-  Element* parent = FlatTreeTraversal::parentElement(*this);
-  if (parent && parent->isHTMLElement() &&
-      toHTMLElement(parent)->selfOrAncestorHasDirAutoAttribute())
-    toHTMLElement(parent)
-        ->adjustDirectionalityIfNeededAfterChildAttributeChanged(this);
+  UpdateDistribution();
+  Element* parent = FlatTreeTraversal::ParentElement(*this);
+  if (parent && parent->IsHTMLElement() &&
+      ToHTMLElement(parent)->SelfOrAncestorHasDirAutoAttribute())
+    ToHTMLElement(parent)
+        ->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
 
-  if (equalIgnoringCase(value, "auto"))
-    calculateAndAdjustDirectionality();
+  if (EqualIgnoringCase(value, "auto"))
+    CalculateAndAdjustDirectionality();
 }
 
-void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(
+void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
     Element* child) {
-  DCHECK(selfOrAncestorHasDirAutoAttribute());
-  const ComputedStyle* style = computedStyle();
-  if (style && style->direction() != directionality()) {
-    for (Element* elementToAdjust = this; elementToAdjust;
-         elementToAdjust = FlatTreeTraversal::parentElement(*elementToAdjust)) {
-      if (elementAffectsDirectionality(elementToAdjust)) {
-        elementToAdjust->setNeedsStyleRecalc(
-            LocalStyleChange, StyleChangeReasonForTracing::create(
-                                  StyleChangeReason::WritingModeChange));
+  DCHECK(SelfOrAncestorHasDirAutoAttribute());
+  const ComputedStyle* style = GetComputedStyle();
+  if (style && style->Direction() != Directionality()) {
+    for (Element* element_to_adjust = this; element_to_adjust;
+         element_to_adjust =
+             FlatTreeTraversal::ParentElement(*element_to_adjust)) {
+      if (ElementAffectsDirectionality(element_to_adjust)) {
+        element_to_adjust->SetNeedsStyleRecalc(
+            kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                   StyleChangeReason::kWritingModeChange));
         return;
       }
     }
   }
 }
 
-void HTMLElement::calculateAndAdjustDirectionality() {
-  TextDirection textDirection = directionality();
-  const ComputedStyle* style = computedStyle();
-  if (style && style->direction() != textDirection)
-    setNeedsStyleRecalc(LocalStyleChange,
-                        StyleChangeReasonForTracing::create(
-                            StyleChangeReason::WritingModeChange));
+void HTMLElement::CalculateAndAdjustDirectionality() {
+  TextDirection text_direction = Directionality();
+  const ComputedStyle* style = GetComputedStyle();
+  if (style && style->Direction() != text_direction)
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::Create(
+                            StyleChangeReason::kWritingModeChange));
 }
 
-void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(
+void HTMLElement::AdjustDirectionalityIfNeededAfterChildrenChanged(
     const ChildrenChange& change) {
-  if (!selfOrAncestorHasDirAutoAttribute())
+  if (!SelfOrAncestorHasDirAutoAttribute())
     return;
 
-  updateDistribution();
+  UpdateDistribution();
 
-  for (Element* elementToAdjust = this; elementToAdjust;
-       elementToAdjust = FlatTreeTraversal::parentElement(*elementToAdjust)) {
-    if (elementAffectsDirectionality(elementToAdjust)) {
-      toHTMLElement(elementToAdjust)->calculateAndAdjustDirectionality();
+  for (Element* element_to_adjust = this; element_to_adjust;
+       element_to_adjust =
+           FlatTreeTraversal::ParentElement(*element_to_adjust)) {
+    if (ElementAffectsDirectionality(element_to_adjust)) {
+      ToHTMLElement(element_to_adjust)->CalculateAndAdjustDirectionality();
       return;
     }
   }
 }
 
-void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style,
-                                       CSSPropertyID propertyID,
+void HTMLElement::AddHTMLLengthToStyle(MutableStylePropertySet* style,
+                                       CSSPropertyID property_id,
                                        const String& value,
-                                       AllowPercentage allowPercentage) {
+                                       AllowPercentage allow_percentage) {
   HTMLDimension dimension;
-  if (!parseDimensionValue(value, dimension))
+  if (!ParseDimensionValue(value, dimension))
     return;
-  if (propertyID == CSSPropertyWidth &&
-      (dimension.isPercentage() || dimension.isRelative())) {
-    UseCounter::count(document(), UseCounter::HTMLElementDeprecatedWidth);
+  if (property_id == CSSPropertyWidth &&
+      (dimension.IsPercentage() || dimension.IsRelative())) {
+    UseCounter::Count(GetDocument(), UseCounter::kHTMLElementDeprecatedWidth);
   }
-  if (dimension.isRelative())
+  if (dimension.IsRelative())
     return;
-  if (dimension.isPercentage() && allowPercentage != AllowPercentageValues)
+  if (dimension.IsPercentage() && allow_percentage != kAllowPercentageValues)
     return;
   CSSPrimitiveValue::UnitType unit =
-      dimension.isPercentage() ? CSSPrimitiveValue::UnitType::Percentage
-                               : CSSPrimitiveValue::UnitType::Pixels;
-  addPropertyToPresentationAttributeStyle(style, propertyID, dimension.value(),
+      dimension.IsPercentage() ? CSSPrimitiveValue::UnitType::kPercentage
+                               : CSSPrimitiveValue::UnitType::kPixels;
+  AddPropertyToPresentationAttributeStyle(style, property_id, dimension.Value(),
                                           unit);
 }
 
-static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
+static RGBA32 ParseColorStringWithCrazyLegacyRules(const String& color_string) {
   // Per spec, only look at the first 128 digits of the string.
-  const size_t maxColorLength = 128;
+  const size_t kMaxColorLength = 128;
   // We'll pad the buffer with two extra 0s later, so reserve two more than the
   // max.
-  Vector<char, maxColorLength + 2> digitBuffer;
+  Vector<char, kMaxColorLength + 2> digit_buffer;
 
   size_t i = 0;
   // Skip a leading #.
-  if (colorString[0] == '#')
+  if (color_string[0] == '#')
     i = 1;
 
   // Grab the first 128 characters, replacing non-hex characters with 0.
   // Non-BMP characters are replaced with "00" due to them appearing as two
   // "characters" in the String.
-  for (; i < colorString.length() && digitBuffer.size() < maxColorLength; i++) {
-    if (!isASCIIHexDigit(colorString[i]))
-      digitBuffer.push_back('0');
+  for (; i < color_string.length() && digit_buffer.size() < kMaxColorLength;
+       i++) {
+    if (!IsASCIIHexDigit(color_string[i]))
+      digit_buffer.push_back('0');
     else
-      digitBuffer.push_back(colorString[i]);
+      digit_buffer.push_back(color_string[i]);
   }
 
-  if (!digitBuffer.size())
-    return Color::black;
+  if (!digit_buffer.size())
+    return Color::kBlack;
 
   // Pad the buffer out to at least the next multiple of three in size.
-  digitBuffer.push_back('0');
-  digitBuffer.push_back('0');
+  digit_buffer.push_back('0');
+  digit_buffer.push_back('0');
 
-  if (digitBuffer.size() < 6)
-    return makeRGB(toASCIIHexValue(digitBuffer[0]),
-                   toASCIIHexValue(digitBuffer[1]),
-                   toASCIIHexValue(digitBuffer[2]));
+  if (digit_buffer.size() < 6)
+    return MakeRGB(ToASCIIHexValue(digit_buffer[0]),
+                   ToASCIIHexValue(digit_buffer[1]),
+                   ToASCIIHexValue(digit_buffer[2]));
 
   // Split the digits into three components, then search the last 8 digits of
   // each component.
-  DCHECK_GE(digitBuffer.size(), 6u);
-  size_t componentLength = digitBuffer.size() / 3;
-  size_t componentSearchWindowLength = min<size_t>(componentLength, 8);
-  size_t redIndex = componentLength - componentSearchWindowLength;
-  size_t greenIndex = componentLength * 2 - componentSearchWindowLength;
-  size_t blueIndex = componentLength * 3 - componentSearchWindowLength;
+  DCHECK_GE(digit_buffer.size(), 6u);
+  size_t component_length = digit_buffer.size() / 3;
+  size_t component_search_window_length = min<size_t>(component_length, 8);
+  size_t red_index = component_length - component_search_window_length;
+  size_t green_index = component_length * 2 - component_search_window_length;
+  size_t blue_index = component_length * 3 - component_search_window_length;
   // Skip digits until one of them is non-zero, or we've only got two digits
   // left in the component.
-  while (digitBuffer[redIndex] == '0' && digitBuffer[greenIndex] == '0' &&
-         digitBuffer[blueIndex] == '0' && (componentLength - redIndex) > 2) {
-    redIndex++;
-    greenIndex++;
-    blueIndex++;
+  while (digit_buffer[red_index] == '0' && digit_buffer[green_index] == '0' &&
+         digit_buffer[blue_index] == '0' &&
+         (component_length - red_index) > 2) {
+    red_index++;
+    green_index++;
+    blue_index++;
   }
-  DCHECK_LT(redIndex + 1, componentLength);
-  DCHECK_GE(greenIndex, componentLength);
-  DCHECK_LT(greenIndex + 1, componentLength * 2);
-  DCHECK_GE(blueIndex, componentLength * 2);
-  SECURITY_DCHECK(blueIndex + 1 < digitBuffer.size());
+  DCHECK_LT(red_index + 1, component_length);
+  DCHECK_GE(green_index, component_length);
+  DCHECK_LT(green_index + 1, component_length * 2);
+  DCHECK_GE(blue_index, component_length * 2);
+  SECURITY_DCHECK(blue_index + 1 < digit_buffer.size());
 
-  int redValue =
-      toASCIIHexValue(digitBuffer[redIndex], digitBuffer[redIndex + 1]);
-  int greenValue =
-      toASCIIHexValue(digitBuffer[greenIndex], digitBuffer[greenIndex + 1]);
-  int blueValue =
-      toASCIIHexValue(digitBuffer[blueIndex], digitBuffer[blueIndex + 1]);
-  return makeRGB(redValue, greenValue, blueValue);
+  int red_value =
+      ToASCIIHexValue(digit_buffer[red_index], digit_buffer[red_index + 1]);
+  int green_value =
+      ToASCIIHexValue(digit_buffer[green_index], digit_buffer[green_index + 1]);
+  int blue_value =
+      ToASCIIHexValue(digit_buffer[blue_index], digit_buffer[blue_index + 1]);
+  return MakeRGB(red_value, green_value, blue_value);
 }
 
 // Color parsing that matches HTML's "rules for parsing a legacy color value"
-bool HTMLElement::parseColorWithLegacyRules(const String& attributeValue,
-                                            Color& parsedColor) {
+bool HTMLElement::ParseColorWithLegacyRules(const String& attribute_value,
+                                            Color& parsed_color) {
   // An empty string doesn't apply a color. (One containing only whitespace
   // does, which is why this check occurs before stripping.)
-  if (attributeValue.isEmpty())
+  if (attribute_value.IsEmpty())
     return false;
 
-  String colorString = attributeValue.stripWhiteSpace();
+  String color_string = attribute_value.StripWhiteSpace();
 
   // "transparent" doesn't apply a color either.
-  if (equalIgnoringCase(colorString, "transparent"))
+  if (EqualIgnoringCase(color_string, "transparent"))
     return false;
 
   // If the string is a 3/6-digit hex color or a named CSS color, use that.
@@ -1007,56 +1018,56 @@ bool HTMLElement::parseColorWithLegacyRules(const String& attributeValue,
   // HTML attributes.
 
   bool success = false;
-  if ((colorString.length() == 4 || colorString.length() == 7) &&
-      colorString[0] == '#')
-    success = parsedColor.setFromString(colorString);
+  if ((color_string.length() == 4 || color_string.length() == 7) &&
+      color_string[0] == '#')
+    success = parsed_color.SetFromString(color_string);
   if (!success)
-    success = parsedColor.setNamedColor(colorString);
+    success = parsed_color.SetNamedColor(color_string);
   if (!success) {
-    parsedColor.setRGB(parseColorStringWithCrazyLegacyRules(colorString));
+    parsed_color.SetRGB(ParseColorStringWithCrazyLegacyRules(color_string));
     success = true;
   }
 
   return success;
 }
 
-void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style,
-                                      CSSPropertyID propertyID,
-                                      const String& attributeValue) {
-  Color parsedColor;
-  if (!parseColorWithLegacyRules(attributeValue, parsedColor))
+void HTMLElement::AddHTMLColorToStyle(MutableStylePropertySet* style,
+                                      CSSPropertyID property_id,
+                                      const String& attribute_value) {
+  Color parsed_color;
+  if (!ParseColorWithLegacyRules(attribute_value, parsed_color))
     return;
 
-  style->setProperty(propertyID, *CSSColorValue::create(parsedColor.rgb()));
+  style->SetProperty(property_id, *CSSColorValue::Create(parsed_color.Rgb()));
 }
 
-bool HTMLElement::isInteractiveContent() const {
+bool HTMLElement::IsInteractiveContent() const {
   return false;
 }
 
-HTMLMenuElement* HTMLElement::assignedContextMenu() const {
+HTMLMenuElement* HTMLElement::AssignedContextMenu() const {
   if (HTMLMenuElement* menu = contextMenu())
     return menu;
 
-  return parentElement() && parentElement()->isHTMLElement()
-             ? toHTMLElement(parentElement())->assignedContextMenu()
+  return parentElement() && parentElement()->IsHTMLElement()
+             ? ToHTMLElement(parentElement())->AssignedContextMenu()
              : nullptr;
 }
 
 HTMLMenuElement* HTMLElement::contextMenu() const {
-  const AtomicString& contextMenuId(fastGetAttribute(contextmenuAttr));
-  if (contextMenuId.isNull())
+  const AtomicString& context_menu_id(FastGetAttribute(contextmenuAttr));
+  if (context_menu_id.IsNull())
     return nullptr;
 
-  Element* element = treeScope().getElementById(contextMenuId);
+  Element* element = GetTreeScope().GetElementById(context_menu_id);
   // Not checking if the menu element is of type "popup".
   // Ignoring menu element type attribute is intentional according to the
   // standard.
   return isHTMLMenuElement(element) ? toHTMLMenuElement(element) : nullptr;
 }
 
-void HTMLElement::setContextMenu(HTMLMenuElement* contextMenu) {
-  if (!contextMenu) {
+void HTMLElement::setContextMenu(HTMLMenuElement* context_menu) {
+  if (!context_menu) {
     setAttribute(contextmenuAttr, "");
     return;
   }
@@ -1068,115 +1079,117 @@ void HTMLElement::setContextMenu(HTMLMenuElement* contextMenu) {
   // attribute, then the content attribute must be set to the value of that id
   // attribute.  Otherwise, the content attribute must be set to the empty
   // string.
-  const AtomicString& contextMenuId(contextMenu->fastGetAttribute(idAttr));
+  const AtomicString& context_menu_id(context_menu->FastGetAttribute(idAttr));
 
-  if (!contextMenuId.isNull() &&
-      contextMenu == treeScope().getElementById(contextMenuId))
-    setAttribute(contextmenuAttr, contextMenuId);
+  if (!context_menu_id.IsNull() &&
+      context_menu == GetTreeScope().GetElementById(context_menu_id))
+    setAttribute(contextmenuAttr, context_menu_id);
   else
     setAttribute(contextmenuAttr, "");
 }
 
-void HTMLElement::defaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::keypress && event->isKeyboardEvent()) {
-    handleKeypressEvent(toKeyboardEvent(event));
-    if (event->defaultHandled())
+void HTMLElement::DefaultEventHandler(Event* event) {
+  if (event->type() == EventTypeNames::keypress && event->IsKeyboardEvent()) {
+    HandleKeypressEvent(ToKeyboardEvent(event));
+    if (event->DefaultHandled())
       return;
   }
 
-  Element::defaultEventHandler(event);
+  Element::DefaultEventHandler(event);
 }
 
-bool HTMLElement::matchesReadOnlyPseudoClass() const {
-  return !matchesReadWritePseudoClass();
+bool HTMLElement::MatchesReadOnlyPseudoClass() const {
+  return !MatchesReadWritePseudoClass();
 }
 
-bool HTMLElement::matchesReadWritePseudoClass() const {
-  if (fastHasAttribute(contenteditableAttr)) {
-    const AtomicString& value = fastGetAttribute(contenteditableAttr);
+bool HTMLElement::MatchesReadWritePseudoClass() const {
+  if (FastHasAttribute(contenteditableAttr)) {
+    const AtomicString& value = FastGetAttribute(contenteditableAttr);
 
-    if (value.isEmpty() || equalIgnoringCase(value, "true") ||
-        equalIgnoringCase(value, "plaintext-only"))
+    if (value.IsEmpty() || EqualIgnoringCase(value, "true") ||
+        EqualIgnoringCase(value, "plaintext-only"))
       return true;
-    if (equalIgnoringCase(value, "false"))
+    if (EqualIgnoringCase(value, "false"))
       return false;
     // All other values should be treated as "inherit".
   }
 
-  return parentElement() && hasEditableStyle(*parentElement());
+  return parentElement() && HasEditableStyle(*parentElement());
 }
 
-void HTMLElement::handleKeypressEvent(KeyboardEvent* event) {
-  if (!isSpatialNavigationEnabled(document().frame()) || !supportsFocus())
+void HTMLElement::HandleKeypressEvent(KeyboardEvent* event) {
+  if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) || !SupportsFocus())
     return;
-  document().updateStyleAndLayoutTree();
+  GetDocument().UpdateStyleAndLayoutTree();
   // if the element is a text form control (like <input type=text> or
   // <textarea>) or has contentEditable attribute on, we should enter a space or
   // newline even in spatial navigation mode instead of handling it as a "click"
   // action.
-  if (isTextControl() || hasEditableStyle(*this))
+  if (IsTextControl() || HasEditableStyle(*this))
     return;
-  int charCode = event->charCode();
-  if (charCode == '\r' || charCode == ' ') {
-    dispatchSimulatedClick(event);
-    event->setDefaultHandled();
+  int char_code = event->charCode();
+  if (char_code == '\r' || char_code == ' ') {
+    DispatchSimulatedClick(event);
+    event->SetDefaultHandled();
   }
 }
 
-const AtomicString& HTMLElement::eventParameterName() {
-  DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event"));
-  return eventString;
+const AtomicString& HTMLElement::EventParameterName() {
+  DEFINE_STATIC_LOCAL(const AtomicString, event_string, ("event"));
+  return event_string;
 }
 
 int HTMLElement::offsetLeftForBinding() {
-  Element* offsetParent = unclosedOffsetParent();
-  if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-    return adjustLayoutUnitForAbsoluteZoom(
-               LayoutUnit(layoutObject->pixelSnappedOffsetLeft(offsetParent)),
-               layoutObject->styleRef())
-        .round();
+  Element* offset_parent = unclosedOffsetParent();
+  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
+    return AdjustLayoutUnitForAbsoluteZoom(
+               LayoutUnit(layout_object->PixelSnappedOffsetLeft(offset_parent)),
+               layout_object->StyleRef())
+        .Round();
   return 0;
 }
 
 int HTMLElement::offsetTopForBinding() {
-  Element* offsetParent = unclosedOffsetParent();
-  if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-    return adjustLayoutUnitForAbsoluteZoom(
-               LayoutUnit(layoutObject->pixelSnappedOffsetTop(offsetParent)),
-               layoutObject->styleRef())
-        .round();
+  Element* offset_parent = unclosedOffsetParent();
+  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
+    return AdjustLayoutUnitForAbsoluteZoom(
+               LayoutUnit(layout_object->PixelSnappedOffsetTop(offset_parent)),
+               layout_object->StyleRef())
+        .Round();
   return 0;
 }
 
 int HTMLElement::offsetWidthForBinding() {
-  Element* offsetParent = unclosedOffsetParent();
-  if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-    return adjustLayoutUnitForAbsoluteZoom(
-               LayoutUnit(layoutObject->pixelSnappedOffsetWidth(offsetParent)),
-               layoutObject->styleRef())
-        .round();
+  Element* offset_parent = unclosedOffsetParent();
+  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
+    return AdjustLayoutUnitForAbsoluteZoom(
+               LayoutUnit(
+                   layout_object->PixelSnappedOffsetWidth(offset_parent)),
+               layout_object->StyleRef())
+        .Round();
   return 0;
 }
 
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
-  Element* offsetParent = unclosedOffsetParent();
-  if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-    return adjustLayoutUnitForAbsoluteZoom(
-               LayoutUnit(layoutObject->pixelSnappedOffsetHeight(offsetParent)),
-               layoutObject->styleRef())
-        .round();
+  Element* offset_parent = unclosedOffsetParent();
+  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
+    return AdjustLayoutUnitForAbsoluteZoom(
+               LayoutUnit(
+                   layout_object->PixelSnappedOffsetHeight(offset_parent)),
+               layout_object->StyleRef())
+        .Round();
   return 0;
 }
 
 Element* HTMLElement::unclosedOffsetParent() {
-  document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  LayoutObject* layoutObject = this->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = this->GetLayoutObject();
+  if (!layout_object)
     return nullptr;
 
-  return layoutObject->offsetParent(this);
+  return layout_object->OffsetParent(this);
 }
 
 }  // namespace blink
@@ -1187,6 +1200,6 @@ Element* HTMLElement::unclosedOffsetParent() {
 void dumpInnerHTML(blink::HTMLElement*);
 
 void dumpInnerHTML(blink::HTMLElement* element) {
-  printf("%s\n", element->innerHTML().ascii().data());
+  printf("%s\n", element->innerHTML().Ascii().Data());
 }
 #endif

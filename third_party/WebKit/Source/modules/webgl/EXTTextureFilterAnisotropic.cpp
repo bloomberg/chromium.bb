@@ -30,26 +30,26 @@ namespace blink {
 EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(
     WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_EXT_texture_filter_anisotropic");
 }
 
-WebGLExtensionName EXTTextureFilterAnisotropic::name() const {
-  return EXTTextureFilterAnisotropicName;
+WebGLExtensionName EXTTextureFilterAnisotropic::GetName() const {
+  return kEXTTextureFilterAnisotropicName;
 }
 
-EXTTextureFilterAnisotropic* EXTTextureFilterAnisotropic::create(
+EXTTextureFilterAnisotropic* EXTTextureFilterAnisotropic::Create(
     WebGLRenderingContextBase* context) {
   return new EXTTextureFilterAnisotropic(context);
 }
 
-bool EXTTextureFilterAnisotropic::supported(
+bool EXTTextureFilterAnisotropic::Supported(
     WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_EXT_texture_filter_anisotropic");
 }
 
-const char* EXTTextureFilterAnisotropic::extensionName() {
+const char* EXTTextureFilterAnisotropic::ExtensionName() {
   return "EXT_texture_filter_anisotropic";
 }
 

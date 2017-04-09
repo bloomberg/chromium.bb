@@ -36,35 +36,35 @@ class ChannelSplitterOptions;
 
 class ChannelSplitterHandler final : public AudioHandler {
  public:
-  static PassRefPtr<ChannelSplitterHandler> create(AudioNode&,
-                                                   float sampleRate,
-                                                   unsigned numberOfOutputs);
+  static PassRefPtr<ChannelSplitterHandler> Create(AudioNode&,
+                                                   float sample_rate,
+                                                   unsigned number_of_outputs);
 
   // AudioHandler
-  void process(size_t framesToProcess) override;
-  void setChannelCount(unsigned long, ExceptionState&) final;
-  void setChannelCountMode(const String&, ExceptionState&) final;
+  void Process(size_t frames_to_process) override;
+  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCountMode(const String&, ExceptionState&) final;
 
  private:
   ChannelSplitterHandler(AudioNode&,
-                         float sampleRate,
-                         unsigned numberOfOutputs);
+                         float sample_rate,
+                         unsigned number_of_outputs);
 };
 
 class ChannelSplitterNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ChannelSplitterNode* create(BaseAudioContext&, ExceptionState&);
-  static ChannelSplitterNode* create(BaseAudioContext&,
-                                     unsigned numberOfOutputs,
+  static ChannelSplitterNode* Create(BaseAudioContext&, ExceptionState&);
+  static ChannelSplitterNode* Create(BaseAudioContext&,
+                                     unsigned number_of_outputs,
                                      ExceptionState&);
-  static ChannelSplitterNode* create(BaseAudioContext*,
+  static ChannelSplitterNode* Create(BaseAudioContext*,
                                      const ChannelSplitterOptions&,
                                      ExceptionState&);
 
  private:
-  ChannelSplitterNode(BaseAudioContext&, unsigned numberOfOutputs);
+  ChannelSplitterNode(BaseAudioContext&, unsigned number_of_outputs);
 };
 
 }  // namespace blink

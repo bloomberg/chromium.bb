@@ -36,23 +36,23 @@
 namespace blink {
 
 FloatRect::FloatRect(const IntRect& r)
-    : m_location(r.location()), m_size(r.size()) {}
+    : location_(r.Location()), size_(r.size()) {}
 
 FloatRect::FloatRect(const LayoutRect& r)
-    : m_location(r.location()), m_size(r.size()) {}
+    : location_(r.Location()), size_(r.size()) {}
 
 FloatRect::FloatRect(const SkRect& r)
-    : m_location(r.fLeft, r.fTop), m_size(r.width(), r.height()) {}
+    : location_(r.fLeft, r.fTop), size_(r.width(), r.height()) {}
 
-void FloatRect::move(const LayoutSize& delta) {
-  m_location.move(delta.width().toFloat(), delta.height().toFloat());
+void FloatRect::Move(const LayoutSize& delta) {
+  location_.Move(delta.Width().ToFloat(), delta.Height().ToFloat());
 }
 
-void FloatRect::move(const IntSize& delta) {
-  m_location.move(delta.width(), delta.height());
+void FloatRect::Move(const IntSize& delta) {
+  location_.Move(delta.Width(), delta.Height());
 }
 
-FloatRect FloatRect::narrowPrecision(double x,
+FloatRect FloatRect::NarrowPrecision(double x,
                                      double y,
                                      double width,
                                      double height) {
@@ -61,47 +61,47 @@ FloatRect FloatRect::narrowPrecision(double x,
 }
 
 #if DCHECK_IS_ON()
-bool FloatRect::mayNotHaveExactIntRectRepresentation() const {
-  static const float maxExactlyExpressible = 1 << FLT_MANT_DIG;
-  return fabs(x()) > maxExactlyExpressible ||
-         fabs(y()) > maxExactlyExpressible ||
-         fabs(width()) > maxExactlyExpressible ||
-         fabs(height()) > maxExactlyExpressible ||
-         fabs(maxX()) > maxExactlyExpressible ||
-         fabs(maxY()) > maxExactlyExpressible;
+bool FloatRect::MayNotHaveExactIntRectRepresentation() const {
+  static const float kMaxExactlyExpressible = 1 << FLT_MANT_DIG;
+  return fabs(X()) > kMaxExactlyExpressible ||
+         fabs(Y()) > kMaxExactlyExpressible ||
+         fabs(Width()) > kMaxExactlyExpressible ||
+         fabs(Height()) > kMaxExactlyExpressible ||
+         fabs(MaxX()) > kMaxExactlyExpressible ||
+         fabs(MaxY()) > kMaxExactlyExpressible;
 }
 #endif
 
-bool FloatRect::isExpressibleAsIntRect() const {
-  return isWithinIntRange(x()) && isWithinIntRange(y()) &&
-         isWithinIntRange(width()) && isWithinIntRange(height()) &&
-         isWithinIntRange(maxX()) && isWithinIntRange(maxY());
+bool FloatRect::IsExpressibleAsIntRect() const {
+  return isWithinIntRange(X()) && isWithinIntRange(Y()) &&
+         isWithinIntRange(Width()) && isWithinIntRange(Height()) &&
+         isWithinIntRange(MaxX()) && isWithinIntRange(MaxY());
 }
 
-bool FloatRect::intersects(const FloatRect& other) const {
+bool FloatRect::Intersects(const FloatRect& other) const {
   // Checking emptiness handles negative widths as well as zero.
-  return !isEmpty() && !other.isEmpty() && x() < other.maxX() &&
-         other.x() < maxX() && y() < other.maxY() && other.y() < maxY();
+  return !IsEmpty() && !other.IsEmpty() && X() < other.MaxX() &&
+         other.X() < MaxX() && Y() < other.MaxY() && other.Y() < MaxY();
 }
 
-bool FloatRect::contains(const FloatRect& other) const {
-  return x() <= other.x() && maxX() >= other.maxX() && y() <= other.y() &&
-         maxY() >= other.maxY();
+bool FloatRect::Contains(const FloatRect& other) const {
+  return X() <= other.X() && MaxX() >= other.MaxX() && Y() <= other.Y() &&
+         MaxY() >= other.MaxY();
 }
 
-bool FloatRect::contains(const FloatPoint& point,
-                         ContainsMode containsMode) const {
-  if (containsMode == InsideOrOnStroke)
-    return contains(point.x(), point.y());
-  return x() < point.x() && maxX() > point.x() && y() < point.y() &&
-         maxY() > point.y();
+bool FloatRect::Contains(const FloatPoint& point,
+                         ContainsMode contains_mode) const {
+  if (contains_mode == kInsideOrOnStroke)
+    return Contains(point.X(), point.Y());
+  return X() < point.X() && MaxX() > point.X() && Y() < point.Y() &&
+         MaxY() > point.Y();
 }
 
-void FloatRect::intersect(const FloatRect& other) {
-  float left = std::max(x(), other.x());
-  float top = std::max(y(), other.y());
-  float right = std::min(maxX(), other.maxX());
-  float bottom = std::min(maxY(), other.maxY());
+void FloatRect::Intersect(const FloatRect& other) {
+  float left = std::max(X(), other.X());
+  float top = std::max(Y(), other.Y());
+  float right = std::min(MaxX(), other.MaxX());
+  float bottom = std::min(MaxY(), other.MaxY());
 
   // Return a clean empty rectangle for non-intersecting cases.
   if (left >= right || top >= bottom) {
@@ -111,108 +111,108 @@ void FloatRect::intersect(const FloatRect& other) {
     bottom = 0;
   }
 
-  setLocationAndSizeFromEdges(left, top, right, bottom);
+  SetLocationAndSizeFromEdges(left, top, right, bottom);
 }
 
-void FloatRect::unite(const FloatRect& other) {
+void FloatRect::Unite(const FloatRect& other) {
   // Handle empty special cases first.
-  if (other.isEmpty())
+  if (other.IsEmpty())
     return;
-  if (isEmpty()) {
+  if (IsEmpty()) {
     *this = other;
     return;
   }
 
-  uniteEvenIfEmpty(other);
+  UniteEvenIfEmpty(other);
 }
 
-void FloatRect::uniteEvenIfEmpty(const FloatRect& other) {
-  float minX = std::min(x(), other.x());
-  float minY = std::min(y(), other.y());
-  float maxX = std::max(this->maxX(), other.maxX());
-  float maxY = std::max(this->maxY(), other.maxY());
+void FloatRect::UniteEvenIfEmpty(const FloatRect& other) {
+  float min_x = std::min(X(), other.X());
+  float min_y = std::min(Y(), other.Y());
+  float max_x = std::max(this->MaxX(), other.MaxX());
+  float max_y = std::max(this->MaxY(), other.MaxY());
 
-  setLocationAndSizeFromEdges(minX, minY, maxX, maxY);
+  SetLocationAndSizeFromEdges(min_x, min_y, max_x, max_y);
 }
 
-void FloatRect::uniteIfNonZero(const FloatRect& other) {
+void FloatRect::UniteIfNonZero(const FloatRect& other) {
   // Handle empty special cases first.
-  if (other.isZero())
+  if (other.IsZero())
     return;
-  if (isZero()) {
+  if (IsZero()) {
     *this = other;
     return;
   }
 
-  uniteEvenIfEmpty(other);
+  UniteEvenIfEmpty(other);
 }
 
-void FloatRect::extend(const FloatPoint& p) {
-  float minX = std::min(x(), p.x());
-  float minY = std::min(y(), p.y());
-  float maxX = std::max(this->maxX(), p.x());
-  float maxY = std::max(this->maxY(), p.y());
+void FloatRect::Extend(const FloatPoint& p) {
+  float min_x = std::min(X(), p.X());
+  float min_y = std::min(Y(), p.Y());
+  float max_x = std::max(this->MaxX(), p.X());
+  float max_y = std::max(this->MaxY(), p.Y());
 
-  setLocationAndSizeFromEdges(minX, minY, maxX, maxY);
+  SetLocationAndSizeFromEdges(min_x, min_y, max_x, max_y);
 }
 
-void FloatRect::scale(float sx, float sy) {
-  m_location.setX(x() * sx);
-  m_location.setY(y() * sy);
-  m_size.setWidth(width() * sx);
-  m_size.setHeight(height() * sy);
+void FloatRect::Scale(float sx, float sy) {
+  location_.SetX(X() * sx);
+  location_.SetY(Y() * sy);
+  size_.SetWidth(Width() * sx);
+  size_.SetHeight(Height() * sy);
 }
 
-float FloatRect::squaredDistanceTo(const FloatPoint& point) const {
-  FloatPoint closestPoint;
-  closestPoint.setX(clampTo<float>(point.x(), x(), maxX()));
-  closestPoint.setY(clampTo<float>(point.y(), y(), maxY()));
-  return (point - closestPoint).diagonalLengthSquared();
+float FloatRect::SquaredDistanceTo(const FloatPoint& point) const {
+  FloatPoint closest_point;
+  closest_point.SetX(clampTo<float>(point.X(), X(), MaxX()));
+  closest_point.SetY(clampTo<float>(point.Y(), Y(), MaxY()));
+  return (point - closest_point).DiagonalLengthSquared();
 }
 
 FloatRect::operator gfx::RectF() const {
-  return gfx::RectF(x(), y(), width(), height());
+  return gfx::RectF(X(), Y(), Width(), Height());
 }
 
-FloatRect unionRect(const Vector<FloatRect>& rects) {
+FloatRect UnionRect(const Vector<FloatRect>& rects) {
   FloatRect result;
 
   size_t count = rects.size();
   for (size_t i = 0; i < count; ++i)
-    result.unite(rects[i]);
+    result.Unite(rects[i]);
 
   return result;
 }
 
-IntRect enclosedIntRect(const FloatRect& rect) {
-  IntPoint location = ceiledIntPoint(rect.minXMinYCorner());
-  IntPoint maxPoint = flooredIntPoint(rect.maxXMaxYCorner());
-  IntSize size = maxPoint - location;
-  size.clampNegativeToZero();
+IntRect EnclosedIntRect(const FloatRect& rect) {
+  IntPoint location = CeiledIntPoint(rect.MinXMinYCorner());
+  IntPoint max_point = FlooredIntPoint(rect.MaxXMaxYCorner());
+  IntSize size = max_point - location;
+  size.ClampNegativeToZero();
 
   return IntRect(location, size);
 }
 
-IntRect roundedIntRect(const FloatRect& rect) {
-  return IntRect(roundedIntPoint(rect.location()), roundedIntSize(rect.size()));
+IntRect RoundedIntRect(const FloatRect& rect) {
+  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.size()));
 }
 
-FloatRect mapRect(const FloatRect& r,
-                  const FloatRect& srcRect,
-                  const FloatRect& destRect) {
-  if (!srcRect.width() || !srcRect.height())
+FloatRect MapRect(const FloatRect& r,
+                  const FloatRect& src_rect,
+                  const FloatRect& dest_rect) {
+  if (!src_rect.Width() || !src_rect.Height())
     return FloatRect();
 
-  float widthScale = destRect.width() / srcRect.width();
-  float heightScale = destRect.height() / srcRect.height();
-  return FloatRect(destRect.x() + (r.x() - srcRect.x()) * widthScale,
-                   destRect.y() + (r.y() - srcRect.y()) * heightScale,
-                   r.width() * widthScale, r.height() * heightScale);
+  float width_scale = dest_rect.Width() / src_rect.Width();
+  float height_scale = dest_rect.Height() / src_rect.Height();
+  return FloatRect(dest_rect.X() + (r.X() - src_rect.X()) * width_scale,
+                   dest_rect.Y() + (r.Y() - src_rect.Y()) * height_scale,
+                   r.Width() * width_scale, r.Height() * height_scale);
 }
 
-String FloatRect::toString() const {
-  return String::format("%s %s", location().toString().ascii().data(),
-                        size().toString().ascii().data());
+String FloatRect::ToString() const {
+  return String::Format("%s %s", Location().ToString().Ascii().Data(),
+                        size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

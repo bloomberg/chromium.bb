@@ -16,22 +16,22 @@ namespace {
 
 struct EventOrReconnectionTimeSetting {
   enum Type {
-    Event,
-    ReconnectionTimeSetting,
+    kEvent,
+    kReconnectionTimeSetting,
   };
 
   EventOrReconnectionTimeSetting(const AtomicString& event,
                                  const String& data,
                                  const AtomicString& id)
-      : type(Event), event(event), data(data), id(id), reconnectionTime(0) {}
-  explicit EventOrReconnectionTimeSetting(unsigned long long reconnectionTime)
-      : type(ReconnectionTimeSetting), reconnectionTime(reconnectionTime) {}
+      : type(kEvent), event(event), data(data), id(id), reconnection_time(0) {}
+  explicit EventOrReconnectionTimeSetting(unsigned long long reconnection_time)
+      : type(kReconnectionTimeSetting), reconnection_time(reconnection_time) {}
 
   const Type type;
   const AtomicString event;
   const String data;
   const AtomicString id;
-  const unsigned long long reconnectionTime;
+  const unsigned long long reconnection_time;
 };
 
 class Client : public GarbageCollectedFinalized<Client>,
@@ -40,20 +40,20 @@ class Client : public GarbageCollectedFinalized<Client>,
 
  public:
   ~Client() override {}
-  const Vector<EventOrReconnectionTimeSetting>& events() const {
-    return m_events;
+  const Vector<EventOrReconnectionTimeSetting>& Events() const {
+    return events_;
   }
-  void onMessageEvent(const AtomicString& event,
+  void OnMessageEvent(const AtomicString& event,
                       const String& data,
                       const AtomicString& id) override {
-    m_events.push_back(EventOrReconnectionTimeSetting(event, data, id));
+    events_.push_back(EventOrReconnectionTimeSetting(event, data, id));
   }
-  void onReconnectionTimeSet(unsigned long long reconnectionTime) override {
-    m_events.push_back(EventOrReconnectionTimeSetting(reconnectionTime));
+  void OnReconnectionTimeSet(unsigned long long reconnection_time) override {
+    events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 
  private:
-  Vector<EventOrReconnectionTimeSetting> m_events;
+  Vector<EventOrReconnectionTimeSetting> events_;
 };
 
 class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
@@ -62,330 +62,330 @@ class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
 
  public:
   ~StoppingClient() override {}
-  const Vector<EventOrReconnectionTimeSetting>& events() const {
-    return m_events;
+  const Vector<EventOrReconnectionTimeSetting>& Events() const {
+    return events_;
   }
-  void setParser(EventSourceParser* parser) { m_parser = parser; }
-  void onMessageEvent(const AtomicString& event,
+  void SetParser(EventSourceParser* parser) { parser_ = parser; }
+  void OnMessageEvent(const AtomicString& event,
                       const String& data,
                       const AtomicString& id) override {
-    m_parser->stop();
-    m_events.push_back(EventOrReconnectionTimeSetting(event, data, id));
+    parser_->Stop();
+    events_.push_back(EventOrReconnectionTimeSetting(event, data, id));
   }
-  void onReconnectionTimeSet(unsigned long long reconnectionTime) override {
-    m_events.push_back(EventOrReconnectionTimeSetting(reconnectionTime));
+  void OnReconnectionTimeSet(unsigned long long reconnection_time) override {
+    events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_parser);
-    EventSourceParser::Client::trace(visitor);
+    visitor->Trace(parser_);
+    EventSourceParser::Client::Trace(visitor);
   }
 
  private:
-  Member<EventSourceParser> m_parser;
-  Vector<EventOrReconnectionTimeSetting> m_events;
+  Member<EventSourceParser> parser_;
+  Vector<EventOrReconnectionTimeSetting> events_;
 };
 
 class EventSourceParserTest : public ::testing::Test {
  protected:
   using Type = EventOrReconnectionTimeSetting::Type;
   EventSourceParserTest()
-      : m_client(new Client),
-        m_parser(new EventSourceParser(AtomicString(), m_client)) {}
+      : client_(new Client),
+        parser_(new EventSourceParser(AtomicString(), client_)) {}
   ~EventSourceParserTest() override {}
 
-  void enqueue(const char* data) { m_parser->addBytes(data, strlen(data)); }
-  void enqueueOneByOne(const char* data) {
+  void Enqueue(const char* data) { parser_->AddBytes(data, strlen(data)); }
+  void EnqueueOneByOne(const char* data) {
     const char* p = data;
     while (*p != '\0')
-      m_parser->addBytes(p++, 1);
+      parser_->AddBytes(p++, 1);
   }
 
-  const Vector<EventOrReconnectionTimeSetting>& events() {
-    return m_client->events();
+  const Vector<EventOrReconnectionTimeSetting>& Events() {
+    return client_->Events();
   }
 
-  EventSourceParser* parser() { return m_parser; }
+  EventSourceParser* Parser() { return parser_; }
 
-  Persistent<Client> m_client;
-  Persistent<EventSourceParser> m_parser;
+  Persistent<Client> client_;
+  Persistent<EventSourceParser> parser_;
 };
 
 TEST_F(EventSourceParserTest, EmptyMessageEventShouldNotBeDispatched) {
-  enqueue("\n");
+  Enqueue("\n");
 
-  EXPECT_EQ(0u, events().size());
-  EXPECT_EQ(String(), parser()->lastEventId());
+  EXPECT_EQ(0u, Events().size());
+  EXPECT_EQ(String(), Parser()->LastEventId());
 }
 
 TEST_F(EventSourceParserTest, DispatchSimpleMessageEvent) {
-  enqueue("data:hello\n\n");
+  Enqueue("data:hello\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
-  EXPECT_EQ(String(), events()[0].id);
-  EXPECT_EQ(AtomicString(), parser()->lastEventId());
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
+  EXPECT_EQ(String(), Events()[0].id);
+  EXPECT_EQ(AtomicString(), Parser()->LastEventId());
 }
 
 TEST_F(EventSourceParserTest, ConstructWithLastEventId) {
-  m_parser = new EventSourceParser("hoge", m_client);
-  EXPECT_EQ("hoge", parser()->lastEventId());
+  parser_ = new EventSourceParser("hoge", client_);
+  EXPECT_EQ("hoge", Parser()->LastEventId());
 
-  enqueue("data:hello\n\n");
+  Enqueue("data:hello\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
-  EXPECT_EQ("hoge", events()[0].id);
-  EXPECT_EQ("hoge", parser()->lastEventId());
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
+  EXPECT_EQ("hoge", Events()[0].id);
+  EXPECT_EQ("hoge", Parser()->LastEventId());
 }
 
 TEST_F(EventSourceParserTest, DispatchMessageEventWithLastEventId) {
-  enqueue("id:99\ndata:hello\n");
-  EXPECT_EQ(String(), parser()->lastEventId());
+  Enqueue("id:99\ndata:hello\n");
+  EXPECT_EQ(String(), Parser()->LastEventId());
 
-  enqueue("\n");
+  Enqueue("\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
-  EXPECT_EQ("99", events()[0].id);
-  EXPECT_EQ("99", parser()->lastEventId());
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
+  EXPECT_EQ("99", Events()[0].id);
+  EXPECT_EQ("99", Parser()->LastEventId());
 }
 
 TEST_F(EventSourceParserTest, LastEventIdCanBeUpdatedEvenWhenDataIsEmpty) {
-  enqueue("id:99\n");
-  EXPECT_EQ(String(), parser()->lastEventId());
+  Enqueue("id:99\n");
+  EXPECT_EQ(String(), Parser()->LastEventId());
 
-  enqueue("\n");
+  Enqueue("\n");
 
-  ASSERT_EQ(0u, events().size());
-  EXPECT_EQ("99", parser()->lastEventId());
+  ASSERT_EQ(0u, Events().size());
+  EXPECT_EQ("99", Parser()->LastEventId());
 }
 
 TEST_F(EventSourceParserTest, DispatchMessageEventWithCustomEventType) {
-  enqueue("event:foo\ndata:hello\n\n");
+  Enqueue("event:foo\ndata:hello\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("foo", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("foo", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, RetryTakesEffectEvenWhenNotDispatching) {
-  enqueue("retry:999\n");
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::ReconnectionTimeSetting, events()[0].type);
-  ASSERT_EQ(999u, events()[0].reconnectionTime);
+  Enqueue("retry:999\n");
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kReconnectionTimeSetting, Events()[0].type);
+  ASSERT_EQ(999u, Events()[0].reconnection_time);
 }
 
 TEST_F(EventSourceParserTest, EventTypeShouldBeReset) {
-  enqueue("event:foo\ndata:hello\n\ndata:bye\n\n");
+  Enqueue("event:foo\ndata:hello\n\ndata:bye\n\n");
 
-  ASSERT_EQ(2u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("foo", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(2u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("foo", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 
-  ASSERT_EQ(Type::Event, events()[1].type);
-  EXPECT_EQ("message", events()[1].event);
-  EXPECT_EQ("bye", events()[1].data);
+  ASSERT_EQ(Type::kEvent, Events()[1].type);
+  EXPECT_EQ("message", Events()[1].event);
+  EXPECT_EQ("bye", Events()[1].data);
 }
 
 TEST_F(EventSourceParserTest, DataShouldBeReset) {
-  enqueue("data:hello\n\n\n");
+  Enqueue("data:hello\n\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, LastEventIdShouldNotBeReset) {
-  enqueue("id:99\ndata:hello\n\ndata:bye\n\n");
+  Enqueue("id:99\ndata:hello\n\ndata:bye\n\n");
 
-  EXPECT_EQ("99", parser()->lastEventId());
-  ASSERT_EQ(2u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
-  EXPECT_EQ("99", events()[0].id);
+  EXPECT_EQ("99", Parser()->LastEventId());
+  ASSERT_EQ(2u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
+  EXPECT_EQ("99", Events()[0].id);
 
-  ASSERT_EQ(Type::Event, events()[1].type);
-  EXPECT_EQ("message", events()[1].event);
-  EXPECT_EQ("bye", events()[1].data);
-  EXPECT_EQ("99", events()[1].id);
+  ASSERT_EQ(Type::kEvent, Events()[1].type);
+  EXPECT_EQ("message", Events()[1].event);
+  EXPECT_EQ("bye", Events()[1].data);
+  EXPECT_EQ("99", Events()[1].id);
 }
 
 TEST_F(EventSourceParserTest, VariousNewLinesShouldBeAllowed) {
-  enqueueOneByOne("data:hello\r\n\rdata:bye\r\r");
+  EnqueueOneByOne("data:hello\r\n\rdata:bye\r\r");
 
-  ASSERT_EQ(2u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(2u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 
-  ASSERT_EQ(Type::Event, events()[1].type);
-  EXPECT_EQ("message", events()[1].event);
-  EXPECT_EQ("bye", events()[1].data);
+  ASSERT_EQ(Type::kEvent, Events()[1].type);
+  EXPECT_EQ("message", Events()[1].event);
+  EXPECT_EQ("bye", Events()[1].data);
 }
 
 TEST_F(EventSourceParserTest, RetryWithEmptyValueShouldRestoreDefaultValue) {
   // TODO(yhirano): This is unspecified in the spec. We need to update
   // the implementation or the spec. See https://crbug.com/587980.
-  enqueue("retry\n");
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::ReconnectionTimeSetting, events()[0].type);
-  EXPECT_EQ(EventSource::defaultReconnectDelay, events()[0].reconnectionTime);
+  Enqueue("retry\n");
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kReconnectionTimeSetting, Events()[0].type);
+  EXPECT_EQ(EventSource::kDefaultReconnectDelay, Events()[0].reconnection_time);
 }
 
 TEST_F(EventSourceParserTest, NonDigitRetryShouldBeIgnored) {
-  enqueue("retry:a0\n");
-  enqueue("retry:xi\n");
-  enqueue("retry:2a\n");
-  enqueue("retry:09a\n");
-  enqueue("retry:1\b\n");
-  enqueue("retry:  1234\n");
-  enqueue("retry:456 \n");
+  Enqueue("retry:a0\n");
+  Enqueue("retry:xi\n");
+  Enqueue("retry:2a\n");
+  Enqueue("retry:09a\n");
+  Enqueue("retry:1\b\n");
+  Enqueue("retry:  1234\n");
+  Enqueue("retry:456 \n");
 
-  EXPECT_EQ(0u, events().size());
+  EXPECT_EQ(0u, Events().size());
 }
 
 TEST_F(EventSourceParserTest, UnrecognizedFieldShouldBeIgnored) {
-  enqueue("data:hello\nhoge:fuga\npiyo\n\n");
+  Enqueue("data:hello\nhoge:fuga\npiyo\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, CommentShouldBeIgnored) {
-  enqueue("data:hello\n:event:a\n\n");
+  Enqueue("data:hello\n:event:a\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, BOMShouldBeIgnored) {
   // This line is recognized because "\xef\xbb\xbf" is a BOM.
-  enqueue(
+  Enqueue(
       "\xef\xbb\xbf"
       "data:hello\n");
   // This line is ignored because "\xef\xbb\xbf" is part of the field name.
-  enqueue(
+  Enqueue(
       "\xef\xbb\xbf"
       "data:bye\n");
-  enqueue("\n");
+  Enqueue("\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, BOMShouldBeIgnored_OneByOne) {
   // This line is recognized because "\xef\xbb\xbf" is a BOM.
-  enqueueOneByOne(
+  EnqueueOneByOne(
       "\xef\xbb\xbf"
       "data:hello\n");
   // This line is ignored because "\xef\xbb\xbf" is part of the field name.
-  enqueueOneByOne(
+  EnqueueOneByOne(
       "\xef\xbb\xbf"
       "data:bye\n");
-  enqueueOneByOne("\n");
+  EnqueueOneByOne("\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, ColonlessLineShouldBeTreatedAsNameOnlyField) {
-  enqueue("data:hello\nevent:a\nevent\n\n");
+  Enqueue("data:hello\nevent:a\nevent\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, AtMostOneLeadingSpaceCanBeSkipped) {
-  enqueue("data:  hello  \nevent:  type \n\n");
+  Enqueue("data:  hello  \nevent:  type \n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ(" type ", events()[0].event);
-  EXPECT_EQ(" hello  ", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ(" type ", Events()[0].event);
+  EXPECT_EQ(" hello  ", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, DataShouldAccumulate) {
-  enqueue("data\ndata:hello\ndata: world\ndata\n\n");
+  Enqueue("data\ndata:hello\ndata: world\ndata\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  EXPECT_EQ("\nhello\nworld\n", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  EXPECT_EQ("\nhello\nworld\n", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, EventShouldNotAccumulate) {
-  enqueue("data:hello\nevent:a\nevent:b\n\n");
+  Enqueue("data:hello\nevent:a\nevent:b\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("b", events()[0].event);
-  EXPECT_EQ("hello", events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("b", Events()[0].event);
+  EXPECT_EQ("hello", Events()[0].data);
 }
 
 TEST_F(EventSourceParserTest, FeedDataOneByOne) {
-  enqueueOneByOne(
+  EnqueueOneByOne(
       "data:hello\r\ndata:world\revent:a\revent:b\nid:4\n\nid:8\ndata:"
       "bye\r\n\r");
 
-  ASSERT_EQ(2u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("b", events()[0].event);
-  EXPECT_EQ("hello\nworld", events()[0].data);
-  EXPECT_EQ("4", events()[0].id);
+  ASSERT_EQ(2u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("b", Events()[0].event);
+  EXPECT_EQ("hello\nworld", Events()[0].data);
+  EXPECT_EQ("4", Events()[0].id);
 
-  ASSERT_EQ(Type::Event, events()[1].type);
-  EXPECT_EQ("message", events()[1].event);
-  EXPECT_EQ("bye", events()[1].data);
-  EXPECT_EQ("8", events()[1].id);
+  ASSERT_EQ(Type::kEvent, Events()[1].type);
+  EXPECT_EQ("message", Events()[1].event);
+  EXPECT_EQ("bye", Events()[1].data);
+  EXPECT_EQ("8", Events()[1].id);
 }
 
 TEST_F(EventSourceParserTest, InvalidUTF8Sequence) {
-  enqueue("data:\xffhello\xc2\ndata:bye\n\n");
+  Enqueue("data:\xffhello\xc2\ndata:bye\n\n");
 
-  ASSERT_EQ(1u, events().size());
-  ASSERT_EQ(Type::Event, events()[0].type);
-  EXPECT_EQ("message", events()[0].event);
-  String expected = String() + replacementCharacter + "hello" +
-                    replacementCharacter + "\nbye";
-  EXPECT_EQ(expected, events()[0].data);
+  ASSERT_EQ(1u, Events().size());
+  ASSERT_EQ(Type::kEvent, Events()[0].type);
+  EXPECT_EQ("message", Events()[0].event);
+  String expected = String() + kReplacementCharacter + "hello" +
+                    kReplacementCharacter + "\nbye";
+  EXPECT_EQ(expected, Events()[0].data);
 }
 
 TEST(EventSourceParserStoppingTest, StopWhileParsing) {
   StoppingClient* client = new StoppingClient();
   EventSourceParser* parser = new EventSourceParser(AtomicString(), client);
-  client->setParser(parser);
+  client->SetParser(parser);
 
-  const char input[] = "data:hello\nid:99\n\nid:44\ndata:bye\n\n";
-  parser->addBytes(input, strlen(input));
+  const char kInput[] = "data:hello\nid:99\n\nid:44\ndata:bye\n\n";
+  parser->AddBytes(kInput, strlen(kInput));
 
-  const auto& events = client->events();
+  const auto& events = client->Events();
 
   ASSERT_EQ(1u, events.size());
-  ASSERT_EQ(EventOrReconnectionTimeSetting::Type::Event, events[0].type);
+  ASSERT_EQ(EventOrReconnectionTimeSetting::Type::kEvent, events[0].type);
   EXPECT_EQ("message", events[0].event);
   EXPECT_EQ("hello", events[0].data);
-  EXPECT_EQ("99", parser->lastEventId());
+  EXPECT_EQ("99", parser->LastEventId());
 }
 
 }  // namespace

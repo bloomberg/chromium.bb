@@ -18,32 +18,33 @@
 namespace blink {
 namespace {
 
-void dumpMemoryTotals(base::trace_event::ProcessMemoryDump* memoryDump) {
-  base::trace_event::MemoryAllocatorDump* allocatorDump =
-      memoryDump->CreateAllocatorDump("blink_gc");
-  allocatorDump->AddScalar("size", "bytes", ProcessHeap::totalAllocatedSpace());
+void DumpMemoryTotals(base::trace_event::ProcessMemoryDump* memory_dump) {
+  base::trace_event::MemoryAllocatorDump* allocator_dump =
+      memory_dump->CreateAllocatorDump("blink_gc");
+  allocator_dump->AddScalar("size", "bytes",
+                            ProcessHeap::TotalAllocatedSpace());
 
-  base::trace_event::MemoryAllocatorDump* objectsDump =
-      memoryDump->CreateAllocatorDump("blink_gc/allocated_objects");
+  base::trace_event::MemoryAllocatorDump* objects_dump =
+      memory_dump->CreateAllocatorDump("blink_gc/allocated_objects");
 
   // ThreadHeap::markedObjectSize() can be underestimated if we're still in the
   // process of lazy sweeping.
-  objectsDump->AddScalar("size", "bytes",
-                         ProcessHeap::totalAllocatedObjectSize() +
-                             ProcessHeap::totalMarkedObjectSize());
+  objects_dump->AddScalar("size", "bytes",
+                          ProcessHeap::TotalAllocatedObjectSize() +
+                              ProcessHeap::TotalMarkedObjectSize());
 }
 
-void reportAllocation(Address address, size_t size, const char* typeName) {
-  BlinkGCMemoryDumpProvider::instance()->insert(address, size, typeName);
+void ReportAllocation(Address address, size_t size, const char* type_name) {
+  BlinkGCMemoryDumpProvider::Instance()->insert(address, size, type_name);
 }
 
-void reportFree(Address address) {
-  BlinkGCMemoryDumpProvider::instance()->remove(address);
+void ReportFree(Address address) {
+  BlinkGCMemoryDumpProvider::Instance()->Remove(address);
 }
 
 }  // namespace
 
-BlinkGCMemoryDumpProvider* BlinkGCMemoryDumpProvider::instance() {
+BlinkGCMemoryDumpProvider* BlinkGCMemoryDumpProvider::Instance() {
   DEFINE_STATIC_LOCAL(BlinkGCMemoryDumpProvider, instance, ());
   return &instance;
 }
@@ -52,96 +53,96 @@ BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider() {}
 
 bool BlinkGCMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* memoryDump) {
+    base::trace_event::ProcessMemoryDump* memory_dump) {
   using base::trace_event::MemoryDumpLevelOfDetail;
-  MemoryDumpLevelOfDetail levelOfDetail = args.level_of_detail;
+  MemoryDumpLevelOfDetail level_of_detail = args.level_of_detail;
   // In the case of a detailed dump perform a mark-only GC pass to collect
   // more detailed stats.
-  if (levelOfDetail == MemoryDumpLevelOfDetail::DETAILED)
-    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack,
-                                           BlinkGC::TakeSnapshot,
-                                           BlinkGC::ForcedGC);
-  dumpMemoryTotals(memoryDump);
+  if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED)
+    ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                           BlinkGC::kTakeSnapshot,
+                                           BlinkGC::kForcedGC);
+  DumpMemoryTotals(memory_dump);
 
-  if (m_isHeapProfilingEnabled) {
+  if (is_heap_profiling_enabled_) {
     // Overhead should always be reported, regardless of light vs. heavy.
     base::trace_event::TraceEventMemoryOverhead overhead;
     base::hash_map<base::trace_event::AllocationContext,
                    base::trace_event::AllocationMetrics>
-        metricsByContext;
+        metrics_by_context;
     {
-      MutexLocker locker(m_allocationRegisterMutex);
-      if (levelOfDetail == MemoryDumpLevelOfDetail::DETAILED) {
-        for (const auto& allocSize : *m_allocationRegister) {
+      MutexLocker locker(allocation_register_mutex_);
+      if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+        for (const auto& alloc_size : *allocation_register_) {
           base::trace_event::AllocationMetrics& metrics =
-              metricsByContext[allocSize.context];
-          metrics.size += allocSize.size;
+              metrics_by_context[alloc_size.context];
+          metrics.size += alloc_size.size;
           metrics.count++;
         }
       }
-      m_allocationRegister->EstimateTraceMemoryOverhead(&overhead);
+      allocation_register_->EstimateTraceMemoryOverhead(&overhead);
     }
-    memoryDump->DumpHeapUsage(metricsByContext, overhead, "blink_gc");
+    memory_dump->DumpHeapUsage(metrics_by_context, overhead, "blink_gc");
   }
 
   // Merge all dumps collected by ThreadHeap::collectGarbage.
-  if (levelOfDetail == MemoryDumpLevelOfDetail::DETAILED)
-    memoryDump->TakeAllDumpsFrom(m_currentProcessMemoryDump.get());
+  if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED)
+    memory_dump->TakeAllDumpsFrom(current_process_memory_dump_.get());
   return true;
 }
 
 void BlinkGCMemoryDumpProvider::OnHeapProfilingEnabled(bool enabled) {
   if (enabled) {
     {
-      MutexLocker locker(m_allocationRegisterMutex);
-      if (!m_allocationRegister)
-        m_allocationRegister.reset(new base::trace_event::AllocationRegister());
+      MutexLocker locker(allocation_register_mutex_);
+      if (!allocation_register_)
+        allocation_register_.reset(new base::trace_event::AllocationRegister());
     }
-    HeapAllocHooks::setAllocationHook(reportAllocation);
-    HeapAllocHooks::setFreeHook(reportFree);
+    HeapAllocHooks::SetAllocationHook(ReportAllocation);
+    HeapAllocHooks::SetFreeHook(ReportFree);
   } else {
-    HeapAllocHooks::setAllocationHook(nullptr);
-    HeapAllocHooks::setFreeHook(nullptr);
+    HeapAllocHooks::SetAllocationHook(nullptr);
+    HeapAllocHooks::SetFreeHook(nullptr);
   }
-  m_isHeapProfilingEnabled = enabled;
+  is_heap_profiling_enabled_ = enabled;
 }
 
 base::trace_event::MemoryAllocatorDump*
-BlinkGCMemoryDumpProvider::createMemoryAllocatorDumpForCurrentGC(
-    const String& absoluteName) {
+BlinkGCMemoryDumpProvider::CreateMemoryAllocatorDumpForCurrentGC(
+    const String& absolute_name) {
   // TODO(bashi): Change type name of |absoluteName|.
-  return m_currentProcessMemoryDump->CreateAllocatorDump(
-      absoluteName.utf8().data());
+  return current_process_memory_dump_->CreateAllocatorDump(
+      absolute_name.Utf8().Data());
 }
 
-void BlinkGCMemoryDumpProvider::clearProcessDumpForCurrentGC() {
-  m_currentProcessMemoryDump->Clear();
+void BlinkGCMemoryDumpProvider::ClearProcessDumpForCurrentGC() {
+  current_process_memory_dump_->Clear();
 }
 
 BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
-    : m_currentProcessMemoryDump(new base::trace_event::ProcessMemoryDump(
+    : current_process_memory_dump_(new base::trace_event::ProcessMemoryDump(
           nullptr,
           {base::trace_event::MemoryDumpLevelOfDetail::DETAILED})),
-      m_isHeapProfilingEnabled(false) {}
+      is_heap_profiling_enabled_(false) {}
 
 void BlinkGCMemoryDumpProvider::insert(Address address,
                                        size_t size,
-                                       const char* typeName) {
+                                       const char* type_name) {
   base::trace_event::AllocationContext context;
   if (!base::trace_event::AllocationContextTracker::
            GetInstanceForCurrentThread()
                ->GetContextSnapshot(&context))
     return;
-  context.type_name = typeName;
-  MutexLocker locker(m_allocationRegisterMutex);
-  if (m_allocationRegister)
-    m_allocationRegister->Insert(address, size, context);
+  context.type_name = type_name;
+  MutexLocker locker(allocation_register_mutex_);
+  if (allocation_register_)
+    allocation_register_->Insert(address, size, context);
 }
 
-void BlinkGCMemoryDumpProvider::remove(Address address) {
-  MutexLocker locker(m_allocationRegisterMutex);
-  if (m_allocationRegister)
-    m_allocationRegister->Remove(address);
+void BlinkGCMemoryDumpProvider::Remove(Address address) {
+  MutexLocker locker(allocation_register_mutex_);
+  if (allocation_register_)
+    allocation_register_->Remove(address);
 }
 
 }  // namespace blink

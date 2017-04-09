@@ -109,17 +109,17 @@ namespace blink {
 // untouched. size_t must be 32-bits to avoid overflow.
 //
 // See http://www.microsoft.com/opentype/otspec/vdmx.htm
-bool parseVDMX(int* yMax,
-               int* yMin,
+bool ParseVDMX(int* y_max,
+               int* y_min,
                const uint8_t* vdmx,
-               size_t vdmxLength,
-               unsigned targetPixelSize) {
-  Buffer buf(vdmx, vdmxLength);
+               size_t vdmx_length,
+               unsigned target_pixel_size) {
+  Buffer buf(vdmx, vdmx_length);
 
   // We ignore the version. Future tables should be backwards compatible with
   // this layout.
-  uint16_t numRatios;
-  if (!buf.skip(4) || !buf.readU16(&numRatios))
+  uint16_t num_ratios;
+  if (!buf.skip(4) || !buf.readU16(&num_ratios))
     return false;
 
   // Now we have two tables. Firstly we have @numRatios Ratio records, then a
@@ -127,60 +127,60 @@ bool parseVDMX(int* yMax,
   // of this second table.
   //
   // Range 6 <= x <= 262146
-  unsigned long offsetTableOffset =
-      buf.offset() + 4 /* sizeof struct ratio */ * numRatios;
+  unsigned long offset_table_offset =
+      buf.offset() + 4 /* sizeof struct ratio */ * num_ratios;
 
-  unsigned desiredRatio = 0xffffffff;
+  unsigned desired_ratio = 0xffffffff;
   // We read 4 bytes per record, so the offset range is
   //   6 <= x <= 524286
-  for (unsigned i = 0; i < numRatios; ++i) {
-    uint8_t xRatio, yRatio1, yRatio2;
+  for (unsigned i = 0; i < num_ratios; ++i) {
+    uint8_t x_ratio, y_ratio1, y_ratio2;
 
-    if (!buf.skip(1) || !buf.readU8(&xRatio) || !buf.readU8(&yRatio1) ||
-        !buf.readU8(&yRatio2))
+    if (!buf.skip(1) || !buf.readU8(&x_ratio) || !buf.readU8(&y_ratio1) ||
+        !buf.readU8(&y_ratio2))
       return false;
 
     // This either covers 1:1, or this is the default entry (0, 0, 0)
-    if ((xRatio == 1 && yRatio1 <= 1 && yRatio2 >= 1) ||
-        (xRatio == 0 && yRatio1 == 0 && yRatio2 == 0)) {
-      desiredRatio = i;
+    if ((x_ratio == 1 && y_ratio1 <= 1 && y_ratio2 >= 1) ||
+        (x_ratio == 0 && y_ratio1 == 0 && y_ratio2 == 0)) {
+      desired_ratio = i;
       break;
     }
   }
 
-  if (desiredRatio == 0xffffffff)  // no ratio found
+  if (desired_ratio == 0xffffffff)  // no ratio found
     return false;
 
   // Range 10 <= x <= 393216
-  buf.setOffset(offsetTableOffset + sizeof(uint16_t) * desiredRatio);
+  buf.setOffset(offset_table_offset + sizeof(uint16_t) * desired_ratio);
 
   // Now we read from the offset table to get the offset of another array
-  uint16_t groupOffset;
-  if (!buf.readU16(&groupOffset))
+  uint16_t group_offset;
+  if (!buf.readU16(&group_offset))
     return false;
   // Range 0 <= x <= 65535
-  buf.setOffset(groupOffset);
+  buf.setOffset(group_offset);
 
-  uint16_t numRecords;
-  if (!buf.readU16(&numRecords) || !buf.skip(sizeof(uint16_t)))
+  uint16_t num_records;
+  if (!buf.readU16(&num_records) || !buf.skip(sizeof(uint16_t)))
     return false;
 
   // We read 6 bytes per record, so the offset range is
   //   4 <= x <= 458749
-  for (unsigned i = 0; i < numRecords; ++i) {
-    uint16_t pixelSize;
-    if (!buf.readU16(&pixelSize))
+  for (unsigned i = 0; i < num_records; ++i) {
+    uint16_t pixel_size;
+    if (!buf.readU16(&pixel_size))
       return false;
     // the entries are sorted, so we can abort early if need be
-    if (pixelSize > targetPixelSize)
+    if (pixel_size > target_pixel_size)
       return false;
 
-    if (pixelSize == targetPixelSize) {
-      int16_t tempYMax, tempYMin;
-      if (!buf.readS16(&tempYMax) || !buf.readS16(&tempYMin))
+    if (pixel_size == target_pixel_size) {
+      int16_t temp_y_max, temp_y_min;
+      if (!buf.readS16(&temp_y_max) || !buf.readS16(&temp_y_min))
         return false;
-      *yMin = tempYMin;
-      *yMax = tempYMax;
+      *y_min = temp_y_min;
+      *y_max = temp_y_max;
       return true;
     }
     if (!buf.skip(2 * sizeof(int16_t)))

@@ -38,40 +38,40 @@
 
 namespace blink {
 
-TextEncoder* TextEncoder::create(ExecutionContext* context,
-                                 ExceptionState& exceptionState) {
+TextEncoder* TextEncoder::Create(ExecutionContext* context,
+                                 ExceptionState& exception_state) {
   WTF::TextEncoding encoding("UTF-8");
   return new TextEncoder(encoding);
 }
 
 TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)
-    : m_encoding(encoding), m_codec(newTextCodec(encoding)) {
-  String name(m_encoding.name());
+    : encoding_(encoding), codec_(NewTextCodec(encoding)) {
+  String name(encoding_.GetName());
   DCHECK_EQ(name, "UTF-8");
 }
 
 TextEncoder::~TextEncoder() {}
 
 String TextEncoder::encoding() const {
-  String name = String(m_encoding.name()).lower();
+  String name = String(encoding_.GetName()).Lower();
   DCHECK_EQ(name, "utf-8");
   return name;
 }
 
 DOMUint8Array* TextEncoder::encode(const String& input) {
   CString result;
-  if (input.is8Bit())
-    result = m_codec->encode(input.characters8(), input.length(),
-                             WTF::QuestionMarksForUnencodables);
+  if (input.Is8Bit())
+    result = codec_->Encode(input.Characters8(), input.length(),
+                            WTF::kQuestionMarksForUnencodables);
   else
-    result = m_codec->encode(input.characters16(), input.length(),
-                             WTF::QuestionMarksForUnencodables);
+    result = codec_->Encode(input.Characters16(), input.length(),
+                            WTF::kQuestionMarksForUnencodables);
 
-  const char* buffer = result.data();
-  const unsigned char* unsignedBuffer =
+  const char* buffer = result.Data();
+  const unsigned char* unsigned_buffer =
       reinterpret_cast<const unsigned char*>(buffer);
 
-  return DOMUint8Array::create(unsignedBuffer, result.length());
+  return DOMUint8Array::Create(unsigned_buffer, result.length());
 }
 
 }  // namespace blink

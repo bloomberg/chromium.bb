@@ -32,25 +32,25 @@ namespace blink {
 
 class SimplifyMarkupCommand final : public CompositeEditCommand {
  public:
-  static SimplifyMarkupCommand* create(Document& document,
-                                       Node* firstNode,
-                                       Node* nodeAfterLast) {
-    return new SimplifyMarkupCommand(document, firstNode, nodeAfterLast);
+  static SimplifyMarkupCommand* Create(Document& document,
+                                       Node* first_node,
+                                       Node* node_after_last) {
+    return new SimplifyMarkupCommand(document, first_node, node_after_last);
   }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  SimplifyMarkupCommand(Document&, Node* firstNode, Node* nodeAfterLast);
+  SimplifyMarkupCommand(Document&, Node* first_node, Node* node_after_last);
 
-  void doApply(EditingState*) override;
-  int pruneSubsequentAncestorsToRemove(
-      HeapVector<Member<ContainerNode>>& nodesToRemove,
-      size_t startNodeIndex,
+  void DoApply(EditingState*) override;
+  int PruneSubsequentAncestorsToRemove(
+      HeapVector<Member<ContainerNode>>& nodes_to_remove,
+      size_t start_node_index,
       EditingState*);
 
-  Member<Node> m_firstNode;
-  Member<Node> m_nodeAfterLast;
+  Member<Node> first_node_;
+  Member<Node> node_after_last_;
 };
 
 }  // namespace blink

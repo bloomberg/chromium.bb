@@ -24,17 +24,17 @@ class CORE_EXPORT ScrollRecorder {
   ScrollRecorder(GraphicsContext&,
                  const DisplayItemClient&,
                  DisplayItem::Type,
-                 const IntSize& currentOffset);
+                 const IntSize& current_offset);
   ScrollRecorder(GraphicsContext&,
                  const DisplayItemClient&,
                  PaintPhase,
-                 const IntSize& currentOffset);
+                 const IntSize& current_offset);
   ~ScrollRecorder();
 
  private:
-  const DisplayItemClient& m_client;
-  DisplayItem::Type m_beginItemType;
-  GraphicsContext& m_context;
+  const DisplayItemClient& client_;
+  DisplayItem::Type begin_item_type_;
+  GraphicsContext& context_;
 };
 
 }  // namespace blink

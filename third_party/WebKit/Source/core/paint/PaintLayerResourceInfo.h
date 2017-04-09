@@ -58,23 +58,23 @@ class PaintLayerResourceInfo final
   explicit PaintLayerResourceInfo(PaintLayer*);
   ~PaintLayerResourceInfo() override;
 
-  void setLastEffect(FilterEffect*);
-  FilterEffect* lastEffect() const;
-  void invalidateFilterChain();
+  void SetLastEffect(FilterEffect*);
+  FilterEffect* LastEffect() const;
+  void InvalidateFilterChain();
 
-  void clearLayer() { m_layer = nullptr; }
+  void ClearLayer() { layer_ = nullptr; }
 
-  TreeScope* treeScope() override;
+  TreeScope* GetTreeScope() override;
 
-  void resourceContentChanged() override;
-  void resourceElementChanged() override;
+  void ResourceContentChanged() override;
+  void ResourceElementChanged() override;
 
   DECLARE_TRACE();
 
  private:
   // |clearLayer| must be called before *m_layer becomes invalid.
-  PaintLayer* m_layer;
-  Member<FilterEffect> m_lastEffect;
+  PaintLayer* layer_;
+  Member<FilterEffect> last_effect_;
 };
 
 }  // namespace blink

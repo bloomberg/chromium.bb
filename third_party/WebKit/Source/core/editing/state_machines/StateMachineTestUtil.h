@@ -18,14 +18,14 @@ class GraphemeStateMachineTestBase : public ::testing::Test {
   GraphemeStateMachineTestBase() = default;
   ~GraphemeStateMachineTestBase() override = default;
 
-  Vector<UChar32> asCodePoints() { return Vector<UChar32>(); }
+  Vector<UChar32> AsCodePoints() { return Vector<UChar32>(); }
 
   template <typename... Args>
-  Vector<UChar32> asCodePoints(Args... args) {
-    UChar32 codePoints[] = {args...};
+  Vector<UChar32> AsCodePoints(Args... args) {
+    UChar32 code_points[] = {args...};
     Vector<UChar32> result(sizeof...(args));
     for (size_t index = 0; index < sizeof...(args); ++index)
-      result[index] = codePoints[index];
+      result[index] = code_points[index];
     return result;
   }
 
@@ -40,10 +40,10 @@ class GraphemeStateMachineTestBase : public ::testing::Test {
   // For example, if a state machine returns following sequence:
   //   NeedMoreCodeUnit, NeedFollowingCodeUnit, Finished
   // the returned string will be "RSF".
-  String processSequenceBackward(BackwardGraphemeBoundaryStateMachine*,
+  String ProcessSequenceBackward(BackwardGraphemeBoundaryStateMachine*,
                                  const Vector<UChar32>& preceding);
 
-  String processSequenceForward(ForwardGraphemeBoundaryStateMachine*,
+  String ProcessSequenceForward(ForwardGraphemeBoundaryStateMachine*,
                                 const Vector<UChar32>& preceding,
                                 const Vector<UChar32>& following);
 

@@ -48,16 +48,16 @@ class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
   void* operator new(size_t, void* ptr) { return ptr; }
   void operator delete(void*);
 
-  static PassRefPtr<CStringImpl> createUninitialized(size_t length,
+  static PassRefPtr<CStringImpl> CreateUninitialized(size_t length,
                                                      char*& data);
 
-  const char* data() const { return reinterpret_cast<const char*>(this + 1); }
-  size_t length() const { return m_length; }
+  const char* Data() const { return reinterpret_cast<const char*>(this + 1); }
+  size_t length() const { return length_; }
 
  private:
-  explicit CStringImpl(size_t length) : m_length(length) {}
+  explicit CStringImpl(size_t length) : length_(length) {}
 
-  const unsigned m_length;
+  const unsigned length_;
 };
 
 // A container for an immutable ref-counted null-terminated char array. This is
@@ -75,27 +75,27 @@ class WTF_EXPORT CString {
   CString(const char*, size_t length);
 
   // Construct a string referencing an existing buffer.
-  CString(CStringImpl* buffer) : m_buffer(buffer) {}
-  CString(PassRefPtr<CStringImpl> buffer) : m_buffer(std::move(buffer)) {}
+  CString(CStringImpl* buffer) : buffer_(buffer) {}
+  CString(PassRefPtr<CStringImpl> buffer) : buffer_(std::move(buffer)) {}
 
-  static CString createUninitialized(size_t length, char*& data) {
-    return CStringImpl::createUninitialized(length, data);
+  static CString CreateUninitialized(size_t length, char*& data) {
+    return CStringImpl::CreateUninitialized(length, data);
   }
 
   // The bytes of the string, always NUL terminated. May be null.
-  const char* data() const { return m_buffer ? m_buffer->data() : 0; }
+  const char* Data() const { return buffer_ ? buffer_->Data() : 0; }
 
   // The length of the data(), *not* including the NUL terminator.
-  size_t length() const { return m_buffer ? m_buffer->length() : 0; }
+  size_t length() const { return buffer_ ? buffer_->length() : 0; }
 
-  bool isNull() const { return !m_buffer; }
+  bool IsNull() const { return !buffer_; }
 
-  bool isSafeToSendToAnotherThread() const;
+  bool IsSafeToSendToAnotherThread() const;
 
-  CStringImpl* impl() const { return m_buffer.get(); }
+  CStringImpl* Impl() const { return buffer_.Get(); }
 
  private:
-  RefPtr<CStringImpl> m_buffer;
+  RefPtr<CStringImpl> buffer_;
 };
 
 WTF_EXPORT bool operator==(const CString& a, const CString& b);

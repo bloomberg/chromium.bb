@@ -8,16 +8,16 @@
 
 namespace blink {
 
-String LayoutUnit::toString() const {
-  if (m_value == LayoutUnit::max().rawValue())
-    return "LayoutUnit::max(" + String::number(toDouble()) + ")";
-  if (m_value == LayoutUnit::min().rawValue())
-    return "LayoutUnit::min(" + String::number(toDouble()) + ")";
-  if (m_value == LayoutUnit::nearlyMax().rawValue())
-    return "LayoutUnit::nearlyMax(" + String::number(toDouble()) + ")";
-  if (m_value == LayoutUnit::nearlyMin().rawValue())
-    return "LayoutUnit::nearlyMin(" + String::number(toDouble()) + ")";
-  return String::number(toDouble());
+String LayoutUnit::ToString() const {
+  if (value_ == LayoutUnit::Max().RawValue())
+    return "LayoutUnit::max(" + String::Number(ToDouble()) + ")";
+  if (value_ == LayoutUnit::Min().RawValue())
+    return "LayoutUnit::min(" + String::Number(ToDouble()) + ")";
+  if (value_ == LayoutUnit::NearlyMax().RawValue())
+    return "LayoutUnit::nearlyMax(" + String::Number(ToDouble()) + ")";
+  if (value_ == LayoutUnit::NearlyMin().RawValue())
+    return "LayoutUnit::nearlyMin(" + String::Number(ToDouble()) + ")";
+  return String::Number(ToDouble());
 }
 
 }  // namespace blink

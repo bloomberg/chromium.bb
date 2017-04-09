@@ -46,52 +46,52 @@ class CORE_EXPORT HitTestLocation {
   HitTestLocation(const FloatPoint&);
   HitTestLocation(const FloatPoint&, const FloatQuad&);
   // Pass non-zero padding values to perform a rect-based hit test.
-  HitTestLocation(const LayoutPoint& centerPoint,
-                  unsigned topPadding,
-                  unsigned rightPadding,
-                  unsigned bottomPadding,
-                  unsigned leftPadding);
+  HitTestLocation(const LayoutPoint& center_point,
+                  unsigned top_padding,
+                  unsigned right_padding,
+                  unsigned bottom_padding,
+                  unsigned left_padding);
   HitTestLocation(const HitTestLocation&, const LayoutSize& offset);
   HitTestLocation(const HitTestLocation&);
   ~HitTestLocation();
   HitTestLocation& operator=(const HitTestLocation&);
 
-  const LayoutPoint& point() const { return m_point; }
-  IntPoint roundedPoint() const { return roundedIntPoint(m_point); }
+  const LayoutPoint& Point() const { return point_; }
+  IntPoint RoundedPoint() const { return RoundedIntPoint(point_); }
 
   // Rect-based hit test related methods.
-  bool isRectBasedTest() const { return m_isRectBased; }
-  bool isRectilinear() const { return m_isRectilinear; }
-  IntRect boundingBox() const { return m_boundingBox; }
+  bool IsRectBasedTest() const { return is_rect_based_; }
+  bool IsRectilinear() const { return is_rectilinear_; }
+  IntRect BoundingBox() const { return bounding_box_; }
 
-  static IntRect rectForPoint(const LayoutPoint&,
-                              unsigned topPadding,
-                              unsigned rightPadding,
-                              unsigned bottomPadding,
-                              unsigned leftPadding);
+  static IntRect RectForPoint(const LayoutPoint&,
+                              unsigned top_padding,
+                              unsigned right_padding,
+                              unsigned bottom_padding,
+                              unsigned left_padding);
 
-  bool intersects(const LayoutRect&) const;
-  bool intersects(const FloatRect&) const;
-  bool intersects(const FloatRoundedRect&) const;
-  bool containsPoint(const FloatPoint&) const;
+  bool Intersects(const LayoutRect&) const;
+  bool Intersects(const FloatRect&) const;
+  bool Intersects(const FloatRoundedRect&) const;
+  bool ContainsPoint(const FloatPoint&) const;
 
-  const FloatPoint& transformedPoint() const { return m_transformedPoint; }
-  const FloatQuad& transformedRect() const { return m_transformedRect; }
+  const FloatPoint& TransformedPoint() const { return transformed_point_; }
+  const FloatQuad& TransformedRect() const { return transformed_rect_; }
 
  private:
   template <typename RectType>
-  bool intersectsRect(const RectType&, const RectType& boundingBox) const;
-  void move(const LayoutSize& offset);
+  bool IntersectsRect(const RectType&, const RectType& bounding_box) const;
+  void Move(const LayoutSize& offset);
 
   // This is cached forms of the more accurate point and area below.
-  LayoutPoint m_point;
-  IntRect m_boundingBox;
+  LayoutPoint point_;
+  IntRect bounding_box_;
 
-  FloatPoint m_transformedPoint;
-  FloatQuad m_transformedRect;
+  FloatPoint transformed_point_;
+  FloatQuad transformed_rect_;
 
-  bool m_isRectBased;
-  bool m_isRectilinear;
+  bool is_rect_based_;
+  bool is_rectilinear_;
 };
 
 }  // namespace blink

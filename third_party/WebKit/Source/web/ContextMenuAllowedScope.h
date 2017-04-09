@@ -16,7 +16,7 @@ class ContextMenuAllowedScope {
   ContextMenuAllowedScope();
   ~ContextMenuAllowedScope();
 
-  static bool isContextMenuAllowed();
+  static bool IsContextMenuAllowed();
 };
 
 }  // namespace blink

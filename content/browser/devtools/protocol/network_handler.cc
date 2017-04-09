@@ -310,9 +310,9 @@ String resourcePriority(net::RequestPriority priority) {
 
 String referrerPolicy(blink::WebReferrerPolicy referrer_policy) {
   switch (referrer_policy) {
-    case blink::WebReferrerPolicyAlways:
+    case blink::kWebReferrerPolicyAlways:
       return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
-    case blink::WebReferrerPolicyDefault:
+    case blink::kWebReferrerPolicyDefault:
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kReducedReferrerGranularity)) {
         return Network::Request::ReferrerPolicyEnum::
@@ -320,15 +320,15 @@ String referrerPolicy(blink::WebReferrerPolicy referrer_policy) {
       } else {
         return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
       }
-    case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
+    case blink::kWebReferrerPolicyNoReferrerWhenDowngrade:
       return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-    case blink::WebReferrerPolicyNever:
+    case blink::kWebReferrerPolicyNever:
       return Network::Request::ReferrerPolicyEnum::NoReferrer;
-    case blink::WebReferrerPolicyOrigin:
+    case blink::kWebReferrerPolicyOrigin:
       return Network::Request::ReferrerPolicyEnum::Origin;
-    case blink::WebReferrerPolicyOriginWhenCrossOrigin:
+    case blink::kWebReferrerPolicyOriginWhenCrossOrigin:
       return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
-    case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       return Network::Request::ReferrerPolicyEnum::
           NoReferrerWhenDowngradeOriginWhenCrossOrigin;
   }

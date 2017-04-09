@@ -11,17 +11,17 @@ namespace blink {
 
 FocusChangedObserver::FocusChangedObserver(Page* page) {
   DCHECK(page);
-  page->focusController().registerFocusChangedObserver(this);
+  page->GetFocusController().RegisterFocusChangedObserver(this);
 }
 
-bool FocusChangedObserver::isFrameFocused(LocalFrame* frame) {
+bool FocusChangedObserver::IsFrameFocused(LocalFrame* frame) {
   if (!frame)
     return false;
-  Page* page = frame->page();
+  Page* page = frame->GetPage();
   if (!page)
     return false;
-  const FocusController& controller = page->focusController();
-  return controller.isFocused() && (controller.focusedFrame() == frame);
+  const FocusController& controller = page->GetFocusController();
+  return controller.IsFocused() && (controller.FocusedFrame() == frame);
 }
 
 }  // namespace blink

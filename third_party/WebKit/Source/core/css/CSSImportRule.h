@@ -34,14 +34,14 @@ class CSSImportRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSImportRule* create(StyleRuleImport* rule, CSSStyleSheet* sheet) {
+  static CSSImportRule* Create(StyleRuleImport* rule, CSSStyleSheet* sheet) {
     return new CSSImportRule(rule, sheet);
   }
 
   ~CSSImportRule() override;
 
   String cssText() const override;
-  void reattach(StyleRuleBase*) override;
+  void Reattach(StyleRuleBase*) override;
 
   String href() const;
   MediaList* media() const;
@@ -54,9 +54,9 @@ class CSSImportRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kImportRule; }
 
-  Member<StyleRuleImport> m_importRule;
-  mutable Member<MediaList> m_mediaCSSOMWrapper;
-  mutable Member<CSSStyleSheet> m_styleSheetCSSOMWrapper;
+  Member<StyleRuleImport> import_rule_;
+  mutable Member<MediaList> media_cssom_wrapper_;
+  mutable Member<CSSStyleSheet> style_sheet_cssom_wrapper_;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, kImportRule);

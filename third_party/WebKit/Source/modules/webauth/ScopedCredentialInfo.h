@@ -16,27 +16,27 @@ class ScopedCredentialInfo final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ScopedCredentialInfo* create(DOMArrayBuffer* clientData,
+  static ScopedCredentialInfo* Create(DOMArrayBuffer* client_data,
                                       DOMArrayBuffer* attestation) {
-    return new ScopedCredentialInfo(clientData, attestation);
+    return new ScopedCredentialInfo(client_data, attestation);
   }
 
-  ScopedCredentialInfo(DOMArrayBuffer* clientData, DOMArrayBuffer* attestation)
-      : m_clientData(clientData), m_attestation(attestation) {}
+  ScopedCredentialInfo(DOMArrayBuffer* client_data, DOMArrayBuffer* attestation)
+      : client_data_(client_data), attestation_(attestation) {}
 
   virtual ~ScopedCredentialInfo() {}
 
-  DOMArrayBuffer* clientData() const { return m_clientData.get(); }
-  DOMArrayBuffer* attestation() const { return m_attestation.get(); }
+  DOMArrayBuffer* clientData() const { return client_data_.Get(); }
+  DOMArrayBuffer* attestation() const { return attestation_.Get(); }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_clientData);
-    visitor->trace(m_attestation);
+    visitor->Trace(client_data_);
+    visitor->Trace(attestation_);
   }
 
  private:
-  const Member<DOMArrayBuffer> m_clientData;
-  const Member<DOMArrayBuffer> m_attestation;
+  const Member<DOMArrayBuffer> client_data_;
+  const Member<DOMArrayBuffer> attestation_;
 };
 
 }  // namespace blink

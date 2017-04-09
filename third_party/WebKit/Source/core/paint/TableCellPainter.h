@@ -22,30 +22,31 @@ class TableCellPainter {
   STACK_ALLOCATED();
 
  public:
-  TableCellPainter(const LayoutTableCell& layoutTableCell)
-      : m_layoutTableCell(layoutTableCell) {}
+  TableCellPainter(const LayoutTableCell& layout_table_cell)
+      : layout_table_cell_(layout_table_cell) {}
 
-  void paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
-  void paintCollapsedBorders(const PaintInfo&,
+  void PaintCollapsedBorders(const PaintInfo&,
                              const LayoutPoint&,
                              const CollapsedBorderValue&);
-  void paintContainerBackgroundBehindCell(const PaintInfo&,
-                                          const LayoutPoint&,
-                                          const LayoutObject& backgroundObject);
-  void paintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paintOffset);
-  void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
+  void PaintContainerBackgroundBehindCell(
+      const PaintInfo&,
+      const LayoutPoint&,
+      const LayoutObject& background_object);
+  void PaintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint& paint_offset);
+  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  const DisplayItemClient& displayItemClientForBorders() const;
-  LayoutRect paintRectNotIncludingVisualOverflow(
-      const LayoutPoint& paintOffset);
-  void paintBackground(const PaintInfo&,
+  const DisplayItemClient& DisplayItemClientForBorders() const;
+  LayoutRect PaintRectNotIncludingVisualOverflow(
+      const LayoutPoint& paint_offset);
+  void PaintBackground(const PaintInfo&,
                        const LayoutRect&,
-                       const LayoutObject& backgroundObject);
+                       const LayoutObject& background_object);
 
-  const LayoutTableCell& m_layoutTableCell;
+  const LayoutTableCell& layout_table_cell_;
 };
 
 }  // namespace blink

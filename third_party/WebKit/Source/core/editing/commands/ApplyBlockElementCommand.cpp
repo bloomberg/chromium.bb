@@ -43,28 +43,29 @@ using namespace HTMLNames;
 
 ApplyBlockElementCommand::ApplyBlockElementCommand(
     Document& document,
-    const QualifiedName& tagName,
-    const AtomicString& inlineStyle)
+    const QualifiedName& tag_name,
+    const AtomicString& inline_style)
     : CompositeEditCommand(document),
-      m_tagName(tagName),
-      m_inlineStyle(inlineStyle) {}
+      tag_name_(tag_name),
+      inline_style_(inline_style) {}
 
-ApplyBlockElementCommand::ApplyBlockElementCommand(Document& document,
-                                                   const QualifiedName& tagName)
-    : CompositeEditCommand(document), m_tagName(tagName) {}
+ApplyBlockElementCommand::ApplyBlockElementCommand(
+    Document& document,
+    const QualifiedName& tag_name)
+    : CompositeEditCommand(document), tag_name_(tag_name) {}
 
-void ApplyBlockElementCommand::doApply(EditingState* editingState) {
-  if (!endingSelection().rootEditableElement())
+void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
+  if (!EndingSelection().RootEditableElement())
     return;
 
   // ApplyBlockElementCommands are only created directly by editor commands'
   // execution, which updates layout before entering doApply().
-  DCHECK(!document().needsLayoutTreeUpdate());
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
-  VisiblePosition visibleEnd = endingSelection().visibleEnd();
-  VisiblePosition visibleStart = endingSelection().visibleStart();
-  if (visibleStart.isNull() || visibleStart.isOrphan() || visibleEnd.isNull() ||
-      visibleEnd.isOrphan())
+  VisiblePosition visible_end = EndingSelection().VisibleEnd();
+  VisiblePosition visible_start = EndingSelection().VisibleStart();
+  if (visible_start.IsNull() || visible_start.IsOrphan() ||
+      visible_end.IsNull() || visible_end.IsOrphan())
     return;
 
   // When a selection ends at the start of a paragraph, we rarely paint
@@ -75,336 +76,344 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState) {
   // FIXME: We paint the gap before some paragraphs that are indented with left
   // margin/padding, but not others.  We should make the gap painting more
   // consistent and then use a left margin/padding rule here.
-  if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() &&
-      isStartOfParagraph(visibleEnd)) {
-    const Position& newEnd =
-        previousPositionOf(visibleEnd, CannotCrossEditingBoundary)
-            .deepEquivalent();
+  if (visible_end.DeepEquivalent() != visible_start.DeepEquivalent() &&
+      IsStartOfParagraph(visible_end)) {
+    const Position& new_end =
+        PreviousPositionOf(visible_end, kCannotCrossEditingBoundary)
+            .DeepEquivalent();
     SelectionInDOMTree::Builder builder;
-    builder.collapse(visibleStart.toPositionWithAffinity());
-    if (newEnd.isNotNull())
-      builder.extend(newEnd);
-    builder.setIsDirectional(endingSelection().isDirectional());
-    const SelectionInDOMTree& newSelection = builder.build();
-    if (newSelection.isNone())
+    builder.Collapse(visible_start.ToPositionWithAffinity());
+    if (new_end.IsNotNull())
+      builder.Extend(new_end);
+    builder.SetIsDirectional(EndingSelection().IsDirectional());
+    const SelectionInDOMTree& new_selection = builder.Build();
+    if (new_selection.IsNone())
       return;
-    setEndingSelection(newSelection);
+    SetEndingSelection(new_selection);
   }
 
   VisibleSelection selection =
-      selectionForParagraphIteration(endingSelection());
-  VisiblePosition startOfSelection = selection.visibleStart();
-  VisiblePosition endOfSelection = selection.visibleEnd();
-  DCHECK(!startOfSelection.isNull());
-  DCHECK(!endOfSelection.isNull());
-  ContainerNode* startScope = nullptr;
-  int startIndex = indexForVisiblePosition(startOfSelection, startScope);
-  ContainerNode* endScope = nullptr;
-  int endIndex = indexForVisiblePosition(endOfSelection, endScope);
+      SelectionForParagraphIteration(EndingSelection());
+  VisiblePosition start_of_selection = selection.VisibleStart();
+  VisiblePosition end_of_selection = selection.VisibleEnd();
+  DCHECK(!start_of_selection.IsNull());
+  DCHECK(!end_of_selection.IsNull());
+  ContainerNode* start_scope = nullptr;
+  int start_index = IndexForVisiblePosition(start_of_selection, start_scope);
+  ContainerNode* end_scope = nullptr;
+  int end_index = IndexForVisiblePosition(end_of_selection, end_scope);
 
-  formatSelection(startOfSelection, endOfSelection, editingState);
-  if (editingState->isAborted())
+  FormatSelection(start_of_selection, end_of_selection, editing_state);
+  if (editing_state->IsAborted())
     return;
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  DCHECK_EQ(startScope, endScope);
-  DCHECK_GE(startIndex, 0);
-  DCHECK_LE(startIndex, endIndex);
-  if (startScope == endScope && startIndex >= 0 && startIndex <= endIndex) {
-    VisiblePosition start(visiblePositionForIndex(startIndex, startScope));
-    VisiblePosition end(visiblePositionForIndex(endIndex, endScope));
-    if (start.isNotNull() && end.isNotNull()) {
-      setEndingSelection(
+  DCHECK_EQ(start_scope, end_scope);
+  DCHECK_GE(start_index, 0);
+  DCHECK_LE(start_index, end_index);
+  if (start_scope == end_scope && start_index >= 0 &&
+      start_index <= end_index) {
+    VisiblePosition start(VisiblePositionForIndex(start_index, start_scope));
+    VisiblePosition end(VisiblePositionForIndex(end_index, end_scope));
+    if (start.IsNotNull() && end.IsNotNull()) {
+      SetEndingSelection(
           SelectionInDOMTree::Builder()
-              .collapse(start.toPositionWithAffinity())
-              .extend(end.deepEquivalent())
-              .setIsDirectional(endingSelection().isDirectional())
-              .build());
+              .Collapse(start.ToPositionWithAffinity())
+              .Extend(end.DeepEquivalent())
+              .SetIsDirectional(EndingSelection().IsDirectional())
+              .Build());
     }
   }
 }
 
-static bool isAtUnsplittableElement(const Position& pos) {
-  Node* node = pos.anchorNode();
-  return node == rootEditableElementOf(pos) ||
-         node == enclosingNodeOfType(pos, &isTableCell);
+static bool IsAtUnsplittableElement(const Position& pos) {
+  Node* node = pos.AnchorNode();
+  return node == RootEditableElementOf(pos) ||
+         node == EnclosingNodeOfType(pos, &IsTableCell);
 }
 
-void ApplyBlockElementCommand::formatSelection(
-    const VisiblePosition& startOfSelection,
-    const VisiblePosition& endOfSelection,
-    EditingState* editingState) {
+void ApplyBlockElementCommand::FormatSelection(
+    const VisiblePosition& start_of_selection,
+    const VisiblePosition& end_of_selection,
+    EditingState* editing_state) {
   // Special case empty unsplittable elements because there's nothing to split
   // and there's nothing to move.
-  const Position& caretPosition =
-      mostForwardCaretPosition(startOfSelection.deepEquivalent());
-  if (isAtUnsplittableElement(caretPosition)) {
-    HTMLElement* blockquote = createBlockElement();
-    insertNodeAt(blockquote, caretPosition, editingState);
-    if (editingState->isAborted())
+  const Position& caret_position =
+      MostForwardCaretPosition(start_of_selection.DeepEquivalent());
+  if (IsAtUnsplittableElement(caret_position)) {
+    HTMLElement* blockquote = CreateBlockElement();
+    InsertNodeAt(blockquote, caret_position, editing_state);
+    if (editing_state->IsAborted())
       return;
-    HTMLBRElement* placeholder = HTMLBRElement::create(document());
-    appendNode(placeholder, blockquote, editingState);
-    if (editingState->isAborted())
+    HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
+    AppendNode(placeholder, blockquote, editing_state);
+    if (editing_state->IsAborted())
       return;
-    setEndingSelection(SelectionInDOMTree::Builder()
-                           .collapse(Position::beforeNode(placeholder))
-                           .setIsDirectional(endingSelection().isDirectional())
-                           .build());
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(Position::BeforeNode(placeholder))
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
     return;
   }
 
-  HTMLElement* blockquoteForNextIndent = nullptr;
-  VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
-  const VisiblePosition& visibleEndOfLastParagraph =
-      endOfParagraph(endOfSelection);
-  const Position& endOfNextLastParagraph =
-      endOfParagraph(nextPositionOf(visibleEndOfLastParagraph))
-          .deepEquivalent();
-  Position endOfLastParagraph = visibleEndOfLastParagraph.deepEquivalent();
+  HTMLElement* blockquote_for_next_indent = nullptr;
+  VisiblePosition end_of_current_paragraph = EndOfParagraph(start_of_selection);
+  const VisiblePosition& visible_end_of_last_paragraph =
+      EndOfParagraph(end_of_selection);
+  const Position& end_of_next_last_paragraph =
+      EndOfParagraph(NextPositionOf(visible_end_of_last_paragraph))
+          .DeepEquivalent();
+  Position end_of_last_paragraph =
+      visible_end_of_last_paragraph.DeepEquivalent();
 
-  bool atEnd = false;
-  while (endOfCurrentParagraph.deepEquivalent() != endOfNextLastParagraph &&
-         !atEnd) {
-    if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph)
-      atEnd = true;
+  bool at_end = false;
+  while (end_of_current_paragraph.DeepEquivalent() !=
+             end_of_next_last_paragraph &&
+         !at_end) {
+    if (end_of_current_paragraph.DeepEquivalent() == end_of_last_paragraph)
+      at_end = true;
 
     Position start, end;
-    rangeForParagraphSplittingTextNodesIfNeeded(endOfCurrentParagraph,
-                                                endOfLastParagraph, start, end);
-    endOfCurrentParagraph = createVisiblePosition(end);
+    RangeForParagraphSplittingTextNodesIfNeeded(
+        end_of_current_paragraph, end_of_last_paragraph, start, end);
+    end_of_current_paragraph = CreateVisiblePosition(end);
 
-    Node* enclosingCell = enclosingNodeOfType(start, &isTableCell);
-    PositionWithAffinity endOfNextParagraph =
-        endOfNextParagrahSplittingTextNodesIfNeeded(
-            endOfCurrentParagraph, endOfLastParagraph, start, end)
-            .toPositionWithAffinity();
+    Node* enclosing_cell = EnclosingNodeOfType(start, &IsTableCell);
+    PositionWithAffinity end_of_next_paragraph =
+        EndOfNextParagrahSplittingTextNodesIfNeeded(
+            end_of_current_paragraph, end_of_last_paragraph, start, end)
+            .ToPositionWithAffinity();
 
-    formatRange(start, end, endOfLastParagraph, blockquoteForNextIndent,
-                editingState);
-    if (editingState->isAborted())
+    FormatRange(start, end, end_of_last_paragraph, blockquote_for_next_indent,
+                editing_state);
+    if (editing_state->IsAborted())
       return;
 
     // Don't put the next paragraph in the blockquote we just created for this
     // paragraph unless the next paragraph is in the same cell.
-    if (enclosingCell &&
-        enclosingCell !=
-            enclosingNodeOfType(endOfNextParagraph.position(), &isTableCell))
-      blockquoteForNextIndent = nullptr;
+    if (enclosing_cell &&
+        enclosing_cell !=
+            EnclosingNodeOfType(end_of_next_paragraph.GetPosition(),
+                                &IsTableCell))
+      blockquote_for_next_indent = nullptr;
 
     // indentIntoBlockquote could move more than one paragraph if the paragraph
     // is in a list item or a table. As a result,
     // |endOfNextLastParagraph| could refer to a position no longer in the
     // document.
-    if (endOfNextLastParagraph.isNotNull() &&
-        !endOfNextLastParagraph.isConnected())
+    if (end_of_next_last_paragraph.IsNotNull() &&
+        !end_of_next_last_paragraph.IsConnected())
       break;
     // Sanity check: Make sure our moveParagraph calls didn't remove
     // endOfNextParagraph.anchorNode() If somehow, e.g. mutation
     // event handler, we did, return to prevent crashes.
-    if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.isConnected())
+    if (end_of_next_paragraph.IsNotNull() &&
+        !end_of_next_paragraph.IsConnected())
       return;
 
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    endOfCurrentParagraph = createVisiblePosition(endOfNextParagraph);
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    end_of_current_paragraph = CreateVisiblePosition(end_of_next_paragraph);
   }
 }
 
-static bool isNewLineAtPosition(const Position& position) {
-  Node* textNode = position.computeContainerNode();
-  int offset = position.offsetInContainerNode();
-  if (!textNode || !textNode->isTextNode() || offset < 0 ||
-      offset >= textNode->maxCharacterOffset())
+static bool IsNewLineAtPosition(const Position& position) {
+  Node* text_node = position.ComputeContainerNode();
+  int offset = position.OffsetInContainerNode();
+  if (!text_node || !text_node->IsTextNode() || offset < 0 ||
+      offset >= text_node->MaxCharacterOffset())
     return false;
 
-  DummyExceptionStateForTesting exceptionState;
-  String textAtPosition =
-      toText(textNode)->substringData(offset, 1, exceptionState);
-  if (exceptionState.hadException())
+  DummyExceptionStateForTesting exception_state;
+  String text_at_position =
+      ToText(text_node)->substringData(offset, 1, exception_state);
+  if (exception_state.HadException())
     return false;
 
-  return textAtPosition[0] == '\n';
+  return text_at_position[0] == '\n';
 }
 
-static const ComputedStyle* computedStyleOfEnclosingTextNode(
+static const ComputedStyle* ComputedStyleOfEnclosingTextNode(
     const Position& position) {
-  if (!position.isOffsetInAnchor() || !position.computeContainerNode() ||
-      !position.computeContainerNode()->isTextNode())
+  if (!position.IsOffsetInAnchor() || !position.ComputeContainerNode() ||
+      !position.ComputeContainerNode()->IsTextNode())
     return 0;
-  return position.computeContainerNode()->computedStyle();
+  return position.ComputeContainerNode()->GetComputedStyle();
 }
 
-void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(
-    const VisiblePosition& endOfCurrentParagraph,
-    Position& endOfLastParagraph,
+void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
+    const VisiblePosition& end_of_current_paragraph,
+    Position& end_of_last_paragraph,
     Position& start,
     Position& end) {
-  start = startOfParagraph(endOfCurrentParagraph).deepEquivalent();
-  end = endOfCurrentParagraph.deepEquivalent();
+  start = StartOfParagraph(end_of_current_paragraph).DeepEquivalent();
+  end = end_of_current_paragraph.DeepEquivalent();
 
-  bool isStartAndEndOnSameNode = false;
-  if (const ComputedStyle* startStyle =
-          computedStyleOfEnclosingTextNode(start)) {
-    isStartAndEndOnSameNode =
-        computedStyleOfEnclosingTextNode(end) &&
-        start.computeContainerNode() == end.computeContainerNode();
-    bool isStartAndEndOfLastParagraphOnSameNode =
-        computedStyleOfEnclosingTextNode(endOfLastParagraph) &&
-        start.computeContainerNode() ==
-            endOfLastParagraph.computeContainerNode();
+  bool is_start_and_end_on_same_node = false;
+  if (const ComputedStyle* start_style =
+          ComputedStyleOfEnclosingTextNode(start)) {
+    is_start_and_end_on_same_node =
+        ComputedStyleOfEnclosingTextNode(end) &&
+        start.ComputeContainerNode() == end.ComputeContainerNode();
+    bool is_start_and_end_of_last_paragraph_on_same_node =
+        ComputedStyleOfEnclosingTextNode(end_of_last_paragraph) &&
+        start.ComputeContainerNode() ==
+            end_of_last_paragraph.ComputeContainerNode();
 
     // Avoid obtanining the start of next paragraph for start
     // TODO(yosin) We should use |PositionMoveType::CodePoint| for
     // |previousPositionOf()|.
-    if (startStyle->preserveNewline() && isNewLineAtPosition(start) &&
-        !isNewLineAtPosition(
-            previousPositionOf(start, PositionMoveType::CodeUnit)) &&
-        start.offsetInContainerNode() > 0)
-      start = startOfParagraph(createVisiblePosition(previousPositionOf(
-                                   end, PositionMoveType::CodeUnit)))
-                  .deepEquivalent();
+    if (start_style->PreserveNewline() && IsNewLineAtPosition(start) &&
+        !IsNewLineAtPosition(
+            PreviousPositionOf(start, PositionMoveType::kCodeUnit)) &&
+        start.OffsetInContainerNode() > 0)
+      start = StartOfParagraph(CreateVisiblePosition(PreviousPositionOf(
+                                   end, PositionMoveType::kCodeUnit)))
+                  .DeepEquivalent();
 
     // If start is in the middle of a text node, split.
-    if (!startStyle->collapseWhiteSpace() &&
-        start.offsetInContainerNode() > 0) {
-      int startOffset = start.offsetInContainerNode();
-      Text* startText = toText(start.computeContainerNode());
-      splitTextNode(startText, startOffset);
-      document().updateStyleAndLayoutTree();
+    if (!start_style->CollapseWhiteSpace() &&
+        start.OffsetInContainerNode() > 0) {
+      int start_offset = start.OffsetInContainerNode();
+      Text* start_text = ToText(start.ComputeContainerNode());
+      SplitTextNode(start_text, start_offset);
+      GetDocument().UpdateStyleAndLayoutTree();
 
-      start = Position::firstPositionInNode(startText);
-      if (isStartAndEndOnSameNode) {
-        DCHECK_GE(end.offsetInContainerNode(), startOffset);
-        end = Position(startText, end.offsetInContainerNode() - startOffset);
+      start = Position::FirstPositionInNode(start_text);
+      if (is_start_and_end_on_same_node) {
+        DCHECK_GE(end.OffsetInContainerNode(), start_offset);
+        end = Position(start_text, end.OffsetInContainerNode() - start_offset);
       }
-      if (isStartAndEndOfLastParagraphOnSameNode) {
-        DCHECK_GE(endOfLastParagraph.offsetInContainerNode(), startOffset);
-        endOfLastParagraph =
-            Position(startText,
-                     endOfLastParagraph.offsetInContainerNode() - startOffset);
+      if (is_start_and_end_of_last_paragraph_on_same_node) {
+        DCHECK_GE(end_of_last_paragraph.OffsetInContainerNode(), start_offset);
+        end_of_last_paragraph =
+            Position(start_text, end_of_last_paragraph.OffsetInContainerNode() -
+                                     start_offset);
       }
     }
   }
 
-  if (const ComputedStyle* endStyle = computedStyleOfEnclosingTextNode(end)) {
-    bool isEndAndEndOfLastParagraphOnSameNode =
-        computedStyleOfEnclosingTextNode(endOfLastParagraph) &&
-        end.anchorNode() == endOfLastParagraph.anchorNode();
+  if (const ComputedStyle* end_style = ComputedStyleOfEnclosingTextNode(end)) {
+    bool is_end_and_end_of_last_paragraph_on_same_node =
+        ComputedStyleOfEnclosingTextNode(end_of_last_paragraph) &&
+        end.AnchorNode() == end_of_last_paragraph.AnchorNode();
     // Include \n at the end of line if we're at an empty paragraph
-    if (endStyle->preserveNewline() && start == end &&
-        end.offsetInContainerNode() <
-            end.computeContainerNode()->maxCharacterOffset()) {
-      int endOffset = end.offsetInContainerNode();
+    if (end_style->PreserveNewline() && start == end &&
+        end.OffsetInContainerNode() <
+            end.ComputeContainerNode()->MaxCharacterOffset()) {
+      int end_offset = end.OffsetInContainerNode();
       // TODO(yosin) We should use |PositionMoveType::CodePoint| for
       // |previousPositionOf()|.
-      if (!isNewLineAtPosition(
-              previousPositionOf(end, PositionMoveType::CodeUnit)) &&
-          isNewLineAtPosition(end))
-        end = Position(end.computeContainerNode(), endOffset + 1);
-      if (isEndAndEndOfLastParagraphOnSameNode &&
-          end.offsetInContainerNode() >=
-              endOfLastParagraph.offsetInContainerNode())
-        endOfLastParagraph = end;
+      if (!IsNewLineAtPosition(
+              PreviousPositionOf(end, PositionMoveType::kCodeUnit)) &&
+          IsNewLineAtPosition(end))
+        end = Position(end.ComputeContainerNode(), end_offset + 1);
+      if (is_end_and_end_of_last_paragraph_on_same_node &&
+          end.OffsetInContainerNode() >=
+              end_of_last_paragraph.OffsetInContainerNode())
+        end_of_last_paragraph = end;
     }
 
     // If end is in the middle of a text node, split.
-    if (endStyle->userModify() != READ_ONLY &&
-        !endStyle->collapseWhiteSpace() && end.offsetInContainerNode() &&
-        end.offsetInContainerNode() <
-            end.computeContainerNode()->maxCharacterOffset()) {
-      Text* endContainer = toText(end.computeContainerNode());
-      splitTextNode(endContainer, end.offsetInContainerNode());
-      document().updateStyleAndLayoutTree();
+    if (end_style->UserModify() != READ_ONLY &&
+        !end_style->CollapseWhiteSpace() && end.OffsetInContainerNode() &&
+        end.OffsetInContainerNode() <
+            end.ComputeContainerNode()->MaxCharacterOffset()) {
+      Text* end_container = ToText(end.ComputeContainerNode());
+      SplitTextNode(end_container, end.OffsetInContainerNode());
+      GetDocument().UpdateStyleAndLayoutTree();
 
-      if (isStartAndEndOnSameNode)
-        start = firstPositionInOrBeforeNode(endContainer->previousSibling());
-      if (isEndAndEndOfLastParagraphOnSameNode) {
-        if (endOfLastParagraph.offsetInContainerNode() ==
-            end.offsetInContainerNode())
-          endOfLastParagraph =
-              lastPositionInOrAfterNode(endContainer->previousSibling());
+      if (is_start_and_end_on_same_node)
+        start = FirstPositionInOrBeforeNode(end_container->previousSibling());
+      if (is_end_and_end_of_last_paragraph_on_same_node) {
+        if (end_of_last_paragraph.OffsetInContainerNode() ==
+            end.OffsetInContainerNode())
+          end_of_last_paragraph =
+              LastPositionInOrAfterNode(end_container->previousSibling());
         else
-          endOfLastParagraph = Position(
-              endContainer, endOfLastParagraph.offsetInContainerNode() -
-                                end.offsetInContainerNode());
+          end_of_last_paragraph = Position(
+              end_container, end_of_last_paragraph.OffsetInContainerNode() -
+                                 end.OffsetInContainerNode());
       }
-      end = Position::lastPositionInNode(endContainer->previousSibling());
+      end = Position::LastPositionInNode(end_container->previousSibling());
     }
   }
 }
 
 VisiblePosition
-ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfNeeded(
-    VisiblePosition& endOfCurrentParagraph,
-    Position& endOfLastParagraph,
+ApplyBlockElementCommand::EndOfNextParagrahSplittingTextNodesIfNeeded(
+    VisiblePosition& end_of_current_paragraph,
+    Position& end_of_last_paragraph,
     Position& start,
     Position& end) {
-  const VisiblePosition& endOfNextParagraph =
-      endOfParagraph(nextPositionOf(endOfCurrentParagraph));
-  const Position& endOfNextParagraphPosition =
-      endOfNextParagraph.deepEquivalent();
+  const VisiblePosition& end_of_next_paragraph =
+      EndOfParagraph(NextPositionOf(end_of_current_paragraph));
+  const Position& end_of_next_paragraph_position =
+      end_of_next_paragraph.DeepEquivalent();
   const ComputedStyle* style =
-      computedStyleOfEnclosingTextNode(endOfNextParagraphPosition);
+      ComputedStyleOfEnclosingTextNode(end_of_next_paragraph_position);
   if (!style)
-    return endOfNextParagraph;
+    return end_of_next_paragraph;
 
-  Text* const endOfNextParagraphText =
-      toText(endOfNextParagraphPosition.computeContainerNode());
-  if (!style->preserveNewline() ||
-      !endOfNextParagraphPosition.offsetInContainerNode() ||
-      !isNewLineAtPosition(
-          Position::firstPositionInNode(endOfNextParagraphText)))
-    return endOfNextParagraph;
+  Text* const end_of_next_paragraph_text =
+      ToText(end_of_next_paragraph_position.ComputeContainerNode());
+  if (!style->PreserveNewline() ||
+      !end_of_next_paragraph_position.OffsetInContainerNode() ||
+      !IsNewLineAtPosition(
+          Position::FirstPositionInNode(end_of_next_paragraph_text)))
+    return end_of_next_paragraph;
 
   // \n at the beginning of the text node immediately following the current
   // paragraph is trimmed by moveParagraphWithClones. If endOfNextParagraph was
   // pointing at this same text node, endOfNextParagraph will be shifted by one
   // paragraph. Avoid this by splitting "\n"
-  splitTextNode(endOfNextParagraphText, 1);
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
-  Text* const previousText =
-      endOfNextParagraphText->previousSibling() &&
-              endOfNextParagraphText->previousSibling()->isTextNode()
-          ? toText(endOfNextParagraphText->previousSibling())
+  SplitTextNode(end_of_next_paragraph_text, 1);
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  Text* const previous_text =
+      end_of_next_paragraph_text->previousSibling() &&
+              end_of_next_paragraph_text->previousSibling()->IsTextNode()
+          ? ToText(end_of_next_paragraph_text->previousSibling())
           : nullptr;
-  if (endOfNextParagraphText == start.computeContainerNode() && previousText) {
-    DCHECK_LT(start.offsetInContainerNode(),
-              endOfNextParagraphPosition.offsetInContainerNode());
-    start = Position(previousText, start.offsetInContainerNode());
+  if (end_of_next_paragraph_text == start.ComputeContainerNode() &&
+      previous_text) {
+    DCHECK_LT(start.OffsetInContainerNode(),
+              end_of_next_paragraph_position.OffsetInContainerNode());
+    start = Position(previous_text, start.OffsetInContainerNode());
   }
-  if (endOfNextParagraphText == end.computeContainerNode() && previousText) {
-    DCHECK_LT(end.offsetInContainerNode(),
-              endOfNextParagraphPosition.offsetInContainerNode());
-    end = Position(previousText, end.offsetInContainerNode());
+  if (end_of_next_paragraph_text == end.ComputeContainerNode() &&
+      previous_text) {
+    DCHECK_LT(end.OffsetInContainerNode(),
+              end_of_next_paragraph_position.OffsetInContainerNode());
+    end = Position(previous_text, end.OffsetInContainerNode());
   }
-  if (endOfNextParagraphText == endOfLastParagraph.computeContainerNode()) {
-    if (endOfLastParagraph.offsetInContainerNode() <
-        endOfNextParagraphPosition.offsetInContainerNode()) {
+  if (end_of_next_paragraph_text ==
+      end_of_last_paragraph.ComputeContainerNode()) {
+    if (end_of_last_paragraph.OffsetInContainerNode() <
+        end_of_next_paragraph_position.OffsetInContainerNode()) {
       // We can only fix endOfLastParagraph if the previous node was still text
       // and hasn't been modified by script.
-      if (previousText &&
-          static_cast<unsigned>(endOfLastParagraph.offsetInContainerNode()) <=
-              previousText->length()) {
-        endOfLastParagraph =
-            Position(previousText, endOfLastParagraph.offsetInContainerNode());
+      if (previous_text && static_cast<unsigned>(
+                               end_of_last_paragraph.OffsetInContainerNode()) <=
+                               previous_text->length()) {
+        end_of_last_paragraph = Position(
+            previous_text, end_of_last_paragraph.OffsetInContainerNode());
       }
     } else {
-      endOfLastParagraph =
-          Position(endOfNextParagraphText,
-                   endOfLastParagraph.offsetInContainerNode() - 1);
+      end_of_last_paragraph =
+          Position(end_of_next_paragraph_text,
+                   end_of_last_paragraph.OffsetInContainerNode() - 1);
     }
   }
 
-  return createVisiblePosition(
-      Position(endOfNextParagraphText,
-               endOfNextParagraphPosition.offsetInContainerNode() - 1));
+  return CreateVisiblePosition(
+      Position(end_of_next_paragraph_text,
+               end_of_next_paragraph_position.OffsetInContainerNode() - 1));
 }
 
-HTMLElement* ApplyBlockElementCommand::createBlockElement() const {
-  HTMLElement* element = createHTMLElement(document(), m_tagName);
-  if (m_inlineStyle.length())
-    element->setAttribute(styleAttr, m_inlineStyle);
+HTMLElement* ApplyBlockElementCommand::CreateBlockElement() const {
+  HTMLElement* element = CreateHTMLElement(GetDocument(), tag_name_);
+  if (inline_style_.length())
+    element->setAttribute(styleAttr, inline_style_);
   return element;
 }
 

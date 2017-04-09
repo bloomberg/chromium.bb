@@ -10,6 +10,6 @@
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   webcrypto::ImportEcKeyFromDerFuzzData(data, size,
-                                        blink::WebCryptoKeyFormatSpki);
+                                        blink::kWebCryptoKeyFormatSpki);
   return 0;
 }

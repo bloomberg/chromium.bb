@@ -27,60 +27,60 @@
 
 namespace blink {
 
-SpeechRecognitionEvent* SpeechRecognitionEvent::create(
-    const AtomicString& eventName,
+SpeechRecognitionEvent* SpeechRecognitionEvent::Create(
+    const AtomicString& event_name,
     const SpeechRecognitionEventInit& initializer) {
-  return new SpeechRecognitionEvent(eventName, initializer);
+  return new SpeechRecognitionEvent(event_name, initializer);
 }
 
-SpeechRecognitionEvent* SpeechRecognitionEvent::createResult(
-    unsigned long resultIndex,
+SpeechRecognitionEvent* SpeechRecognitionEvent::CreateResult(
+    unsigned long result_index,
     const HeapVector<Member<SpeechRecognitionResult>>& results) {
   return new SpeechRecognitionEvent(
-      EventTypeNames::result, resultIndex,
-      SpeechRecognitionResultList::create(results));
+      EventTypeNames::result, result_index,
+      SpeechRecognitionResultList::Create(results));
 }
 
-SpeechRecognitionEvent* SpeechRecognitionEvent::createNoMatch(
+SpeechRecognitionEvent* SpeechRecognitionEvent::CreateNoMatch(
     SpeechRecognitionResult* result) {
   if (result) {
     HeapVector<Member<SpeechRecognitionResult>> results;
     results.push_back(result);
     return new SpeechRecognitionEvent(
         EventTypeNames::nomatch, 0,
-        SpeechRecognitionResultList::create(results));
+        SpeechRecognitionResultList::Create(results));
   }
 
   return new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr);
 }
 
-const AtomicString& SpeechRecognitionEvent::interfaceName() const {
+const AtomicString& SpeechRecognitionEvent::InterfaceName() const {
   return EventNames::SpeechRecognitionEvent;
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(
-    const AtomicString& eventName,
+    const AtomicString& event_name,
     const SpeechRecognitionEventInit& initializer)
-    : Event(eventName, initializer), m_resultIndex(0) {
+    : Event(event_name, initializer), result_index_(0) {
   if (initializer.hasResultIndex())
-    m_resultIndex = initializer.resultIndex();
+    result_index_ = initializer.resultIndex();
   if (initializer.hasResults())
-    m_results = initializer.results();
+    results_ = initializer.results();
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(
-    const AtomicString& eventName,
-    unsigned long resultIndex,
+    const AtomicString& event_name,
+    unsigned long result_index,
     SpeechRecognitionResultList* results)
-    : Event(eventName, /*canBubble=*/false, /*cancelable=*/false),
-      m_resultIndex(resultIndex),
-      m_results(results) {}
+    : Event(event_name, /*canBubble=*/false, /*cancelable=*/false),
+      result_index_(result_index),
+      results_(results) {}
 
 SpeechRecognitionEvent::~SpeechRecognitionEvent() {}
 
 DEFINE_TRACE(SpeechRecognitionEvent) {
-  visitor->trace(m_results);
-  Event::trace(visitor);
+  visitor->Trace(results_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

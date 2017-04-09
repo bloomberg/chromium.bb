@@ -40,34 +40,34 @@ namespace blink {
 class PLATFORM_EXPORT ArchiveResource final
     : public GarbageCollectedFinalized<ArchiveResource> {
  public:
-  static ArchiveResource* create(PassRefPtr<SharedBuffer>,
+  static ArchiveResource* Create(PassRefPtr<SharedBuffer>,
                                  const KURL&,
-                                 const String& contentId,
-                                 const AtomicString& mimeType,
-                                 const AtomicString& textEncoding);
+                                 const String& content_id,
+                                 const AtomicString& mime_type,
+                                 const AtomicString& text_encoding);
 
   ~ArchiveResource();
 
-  const KURL& url() const { return m_url; }
-  const String& contentID() const { return m_contentID; }
-  SharedBuffer* data() const { return m_data.get(); }
-  const AtomicString& mimeType() const { return m_mimeType; }
-  const AtomicString& textEncoding() const { return m_textEncoding; }
+  const KURL& Url() const { return url_; }
+  const String& ContentID() const { return content_id_; }
+  SharedBuffer* Data() const { return data_.Get(); }
+  const AtomicString& MimeType() const { return mime_type_; }
+  const AtomicString& TextEncoding() const { return text_encoding_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   ArchiveResource(PassRefPtr<SharedBuffer>,
                   const KURL&,
-                  const String& contentID,
-                  const AtomicString& mimeType,
-                  const AtomicString& textEncoding);
+                  const String& content_id,
+                  const AtomicString& mime_type,
+                  const AtomicString& text_encoding);
 
-  KURL m_url;
-  String m_contentID;
-  RefPtr<SharedBuffer> m_data;
-  AtomicString m_mimeType;
-  AtomicString m_textEncoding;
+  KURL url_;
+  String content_id_;
+  RefPtr<SharedBuffer> data_;
+  AtomicString mime_type_;
+  AtomicString text_encoding_;
 };
 
 }  // namespace blink

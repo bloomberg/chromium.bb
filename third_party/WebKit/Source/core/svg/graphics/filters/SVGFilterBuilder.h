@@ -42,26 +42,26 @@ class SVGFilterElement;
 class SVGFilterGraphNodeMap final
     : public GarbageCollected<SVGFilterGraphNodeMap> {
  public:
-  static SVGFilterGraphNodeMap* create() { return new SVGFilterGraphNodeMap; }
+  static SVGFilterGraphNodeMap* Create() { return new SVGFilterGraphNodeMap; }
 
   typedef HeapHashSet<Member<FilterEffect>> FilterEffectSet;
 
-  void addBuiltinEffect(FilterEffect*);
-  void addPrimitive(LayoutObject*, FilterEffect*);
+  void AddBuiltinEffect(FilterEffect*);
+  void AddPrimitive(LayoutObject*, FilterEffect*);
 
-  inline FilterEffectSet& effectReferences(FilterEffect* effect) {
+  inline FilterEffectSet& EffectReferences(FilterEffect* effect) {
     // Only allowed for effects belongs to this builder.
-    DCHECK(m_effectReferences.contains(effect));
-    return m_effectReferences.find(effect)->value;
+    DCHECK(effect_references_.Contains(effect));
+    return effect_references_.Find(effect)->value;
   }
 
   // Required to change the attributes of a filter during an
   // svgAttributeChanged.
-  inline FilterEffect* effectByRenderer(LayoutObject* object) {
-    return m_effectRenderer.at(object);
+  inline FilterEffect* EffectByRenderer(LayoutObject* object) {
+    return effect_renderer_.at(object);
   }
 
-  void invalidateDependentEffects(FilterEffect*);
+  void InvalidateDependentEffects(FilterEffect*);
 
   DECLARE_TRACE();
 
@@ -70,37 +70,37 @@ class SVGFilterGraphNodeMap final
 
   // The value is a list, which contains those filter effects,
   // which depends on the key filter effect.
-  HeapHashMap<Member<FilterEffect>, FilterEffectSet> m_effectReferences;
-  HeapHashMap<LayoutObject*, Member<FilterEffect>> m_effectRenderer;
+  HeapHashMap<Member<FilterEffect>, FilterEffectSet> effect_references_;
+  HeapHashMap<LayoutObject*, Member<FilterEffect>> effect_renderer_;
 };
 
 class SVGFilterBuilder {
   STACK_ALLOCATED();
 
  public:
-  SVGFilterBuilder(FilterEffect* sourceGraphic,
+  SVGFilterBuilder(FilterEffect* source_graphic,
                    SVGFilterGraphNodeMap* = nullptr,
-                   const PaintFlags* fillFlags = nullptr,
-                   const PaintFlags* strokeFlags = nullptr);
+                   const PaintFlags* fill_flags = nullptr,
+                   const PaintFlags* stroke_flags = nullptr);
 
-  void buildGraph(Filter*, SVGFilterElement&, const FloatRect&);
+  void BuildGraph(Filter*, SVGFilterElement&, const FloatRect&);
 
-  FilterEffect* getEffectById(const AtomicString& id) const;
-  FilterEffect* lastEffect() const { return m_lastEffect.get(); }
+  FilterEffect* GetEffectById(const AtomicString& id) const;
+  FilterEffect* LastEffect() const { return last_effect_.Get(); }
 
-  static ColorSpace resolveColorSpace(EColorInterpolation);
+  static ColorSpace ResolveColorSpace(EColorInterpolation);
 
  private:
-  void add(const AtomicString& id, FilterEffect*);
-  void addBuiltinEffects();
+  void Add(const AtomicString& id, FilterEffect*);
+  void AddBuiltinEffects();
 
   typedef HeapHashMap<AtomicString, Member<FilterEffect>> NamedFilterEffectMap;
 
-  NamedFilterEffectMap m_builtinEffects;
-  NamedFilterEffectMap m_namedEffects;
+  NamedFilterEffectMap builtin_effects_;
+  NamedFilterEffectMap named_effects_;
 
-  Member<FilterEffect> m_lastEffect;
-  Member<SVGFilterGraphNodeMap> m_nodeMap;
+  Member<FilterEffect> last_effect_;
+  Member<SVGFilterGraphNodeMap> node_map_;
 };
 
 }  // namespace blink

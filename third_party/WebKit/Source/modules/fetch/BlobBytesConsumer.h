@@ -29,7 +29,7 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
                                                public BytesConsumer::Client,
                                                public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(BlobBytesConsumer);
-  USING_PRE_FINALIZER(BlobBytesConsumer, cancel);
+  USING_PRE_FINALIZER(BlobBytesConsumer, Cancel);
 
  public:
   // |handle| can be null. In that case this consumer gets closed.
@@ -37,34 +37,34 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
   ~BlobBytesConsumer() override;
 
   // BytesConsumer implementation
-  Result beginRead(const char** buffer, size_t* available) override;
-  Result endRead(size_t readSize) override;
-  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy) override;
-  PassRefPtr<EncodedFormData> drainAsFormData() override;
-  void setClient(BytesConsumer::Client*) override;
-  void clearClient() override;
-  void cancel() override;
-  PublicState getPublicState() const override;
-  Error getError() const override;
-  String debugName() const override { return "BlobBytesConsumer"; }
+  Result BeginRead(const char** buffer, size_t* available) override;
+  Result EndRead(size_t read_size) override;
+  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy) override;
+  PassRefPtr<EncodedFormData> DrainAsFormData() override;
+  void SetClient(BytesConsumer::Client*) override;
+  void ClearClient() override;
+  void Cancel() override;
+  PublicState GetPublicState() const override;
+  Error GetError() const override;
+  String DebugName() const override { return "BlobBytesConsumer"; }
 
   // ContextLifecycleObserver implementation
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // BytesConsumer::Client implementation
-  void onStateChange() override;
+  void OnStateChange() override;
 
   // ThreadableLoaderClient implementation
-  void didReceiveResponse(unsigned long identifier,
+  void DidReceiveResponse(unsigned long identifier,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didFinishLoading(unsigned long identifier, double finishTime) override;
-  void didFail(const ResourceError&) override;
-  void didFailRedirectCheck() override;
+  void DidFinishLoading(unsigned long identifier, double finish_time) override;
+  void DidFail(const ResourceError&) override;
+  void DidFailRedirectCheck() override;
 
   DECLARE_TRACE();
 
-  static BlobBytesConsumer* createForTesting(ExecutionContext*,
+  static BlobBytesConsumer* CreateForTesting(ExecutionContext*,
                                              PassRefPtr<BlobDataHandle>,
                                              ThreadableLoader*);
 
@@ -72,23 +72,23 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
   BlobBytesConsumer(ExecutionContext*,
                     PassRefPtr<BlobDataHandle>,
                     ThreadableLoader*);
-  ThreadableLoader* createLoader();
-  void didFailInternal();
-  bool isClean() const { return m_blobDataHandle.get(); }
-  void close();
-  void error();
-  void clear();
+  ThreadableLoader* CreateLoader();
+  void DidFailInternal();
+  bool IsClean() const { return blob_data_handle_.Get(); }
+  void Close();
+  void GetError();
+  void Clear();
 
-  KURL m_blobURL;
-  RefPtr<BlobDataHandle> m_blobDataHandle;
-  Member<BytesConsumer> m_body;
-  Member<BytesConsumer::Client> m_client;
-  Member<ThreadableLoader> m_loader;
+  KURL blob_url_;
+  RefPtr<BlobDataHandle> blob_data_handle_;
+  Member<BytesConsumer> body_;
+  Member<BytesConsumer::Client> client_;
+  Member<ThreadableLoader> loader_;
 
-  PublicState m_state = PublicState::ReadableOrWaiting;
+  PublicState state_ = PublicState::kReadableOrWaiting;
   // These two booleans are meaningful only when m_state is ReadableOrWaiting.
-  bool m_hasSeenEndOfData = false;
-  bool m_hasFinishedLoading = false;
+  bool has_seen_end_of_data_ = false;
+  bool has_finished_loading_ = false;
 };
 
 }  // namespace blink

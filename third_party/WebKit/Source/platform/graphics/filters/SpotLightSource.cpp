@@ -36,46 +36,46 @@
 
 namespace blink {
 
-bool SpotLightSource::setPosition(const FloatPoint3D& position) {
-  if (m_position == position)
+bool SpotLightSource::SetPosition(const FloatPoint3D& position) {
+  if (position_ == position)
     return false;
-  m_position = position;
+  position_ = position;
   return true;
 }
 
-bool SpotLightSource::setPointsAt(const FloatPoint3D& direction) {
-  if (m_direction == direction)
+bool SpotLightSource::SetPointsAt(const FloatPoint3D& direction) {
+  if (direction_ == direction)
     return false;
-  m_direction = direction;
+  direction_ = direction;
   return true;
 }
 
-bool SpotLightSource::setSpecularExponent(float specularExponent) {
-  specularExponent = clampTo(specularExponent, 1.0f, 128.0f);
-  if (m_specularExponent == specularExponent)
+bool SpotLightSource::SetSpecularExponent(float specular_exponent) {
+  specular_exponent = clampTo(specular_exponent, 1.0f, 128.0f);
+  if (specular_exponent_ == specular_exponent)
     return false;
-  m_specularExponent = specularExponent;
+  specular_exponent_ = specular_exponent;
   return true;
 }
 
-bool SpotLightSource::setLimitingConeAngle(float limitingConeAngle) {
-  if (m_limitingConeAngle == limitingConeAngle)
+bool SpotLightSource::SetLimitingConeAngle(float limiting_cone_angle) {
+  if (limiting_cone_angle_ == limiting_cone_angle)
     return false;
-  m_limitingConeAngle = limitingConeAngle;
+  limiting_cone_angle_ = limiting_cone_angle;
   return true;
 }
 
 static TextStream& operator<<(TextStream& ts, const FloatPoint3D& p) {
-  ts << "x=" << p.x() << " y=" << p.y() << " z=" << p.z();
+  ts << "x=" << p.X() << " y=" << p.Y() << " z=" << p.Z();
   return ts;
 }
 
-TextStream& SpotLightSource::externalRepresentation(TextStream& ts) const {
+TextStream& SpotLightSource::ExternalRepresentation(TextStream& ts) const {
   ts << "[type=SPOT-LIGHT] ";
-  ts << "[position=\"" << position() << "\"]";
-  ts << "[direction=\"" << direction() << "\"]";
-  ts << "[specularExponent=\"" << specularExponent() << "\"]";
-  ts << "[limitingConeAngle=\"" << limitingConeAngle() << "\"]";
+  ts << "[position=\"" << GetPosition() << "\"]";
+  ts << "[direction=\"" << Direction() << "\"]";
+  ts << "[specularExponent=\"" << SpecularExponent() << "\"]";
+  ts << "[limitingConeAngle=\"" << LimitingConeAngle() << "\"]";
   return ts;
 }
 

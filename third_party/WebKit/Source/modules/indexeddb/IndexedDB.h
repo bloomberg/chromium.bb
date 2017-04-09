@@ -30,7 +30,7 @@ namespace blink {
 
 namespace IndexedDB {
 
-enum CursorType { CursorKeyAndValue = 0, CursorKeyOnly };
+enum CursorType { kCursorKeyAndValue = 0, kCursorKeyOnly };
 
 }  // namespace IndexedDB
 

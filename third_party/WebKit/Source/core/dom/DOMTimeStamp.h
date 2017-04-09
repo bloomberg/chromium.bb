@@ -35,11 +35,11 @@ namespace blink {
 
 typedef unsigned long long DOMTimeStamp;
 
-inline DOMTimeStamp convertSecondsToDOMTimeStamp(double seconds) {
+inline DOMTimeStamp ConvertSecondsToDOMTimeStamp(double seconds) {
   return static_cast<DOMTimeStamp>(seconds * 1000.0);
 }
 
-inline double convertDOMTimeStampToSeconds(DOMTimeStamp milliseconds) {
+inline double ConvertDOMTimeStampToSeconds(DOMTimeStamp milliseconds) {
   return milliseconds / 1000.0;
 }
 

@@ -51,18 +51,18 @@ bool EmbeddedWorkerDevToolsAgent::OnMessageReceived(
 
 void EmbeddedWorkerDevToolsAgent::OnAttach(const std::string& host_id,
                                            int session_id) {
-  webworker_->attachDevTools(WebString::fromUTF8(host_id), session_id);
+  webworker_->AttachDevTools(WebString::FromUTF8(host_id), session_id);
 }
 
 void EmbeddedWorkerDevToolsAgent::OnReattach(const std::string& host_id,
                                              int session_id,
                                              const std::string& state) {
-  webworker_->reattachDevTools(WebString::fromUTF8(host_id), session_id,
-                               WebString::fromUTF8(state));
+  webworker_->ReattachDevTools(WebString::FromUTF8(host_id), session_id,
+                               WebString::FromUTF8(state));
 }
 
 void EmbeddedWorkerDevToolsAgent::OnDetach() {
-  webworker_->detachDevTools();
+  webworker_->DetachDevTools();
 }
 
 void EmbeddedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
@@ -70,9 +70,9 @@ void EmbeddedWorkerDevToolsAgent::OnDispatchOnInspectorBackend(
     int call_id,
     const std::string& method,
     const std::string& message) {
-  webworker_->dispatchDevToolsMessage(session_id, call_id,
-                                      WebString::fromUTF8(method),
-                                      WebString::fromUTF8(message));
+  webworker_->DispatchDevToolsMessage(session_id, call_id,
+                                      WebString::FromUTF8(method),
+                                      WebString::FromUTF8(message));
 }
 
 }  // namespace content

@@ -34,10 +34,10 @@ void GinWrapper::Loader::DidClearWindowObject() {
 }
 
 void GinWrapper::Loader::InstallGinWrapper() {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
-      render_frame()->GetWebFrame()->mainWorldScriptContext();
+      render_frame()->GetWebFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
   v8::Context::Scope context_scope(context);
@@ -74,7 +74,7 @@ GinWrapper::~GinWrapper() {}
 
 bool GinWrapper::RequestPermission(
     v8::Local<v8::Function> setRequestStatusCallback) {
-  setRequestStatusCallback_.Reset(blink::mainThreadIsolate(),
+  setRequestStatusCallback_.Reset(blink::MainThreadIsolate(),
                                   setRequestStatusCallback);
   web_restrictions_service_->RequestPermission(
       url_, base::Bind(&GinWrapper::OnAccessRequestAdded,
@@ -87,7 +87,7 @@ void GinWrapper::OnAccessRequestAdded(bool success) {
     return;
   }
 
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::Local<v8::Value> args = v8::Boolean::New(isolate, success);
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Function> callback =

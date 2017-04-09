@@ -45,68 +45,68 @@ class ExceptionState;
 class Node;
 class StylePropertySet;
 
-enum EChildrenOnly { IncludeNode, ChildrenOnly };
-enum EAbsoluteURLs { DoNotResolveURLs, ResolveAllURLs, ResolveNonLocalURLs };
-enum class ConvertBlocksToInlines { NotConvert, Convert };
+enum EChildrenOnly { kIncludeNode, kChildrenOnly };
+enum EAbsoluteURLs { kDoNotResolveURLs, kResolveAllURLs, kResolveNonLocalURLs };
+enum class ConvertBlocksToInlines { kNotConvert, kConvert };
 
-DocumentFragment* createFragmentFromText(const EphemeralRange& context,
+DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
                                          const String& text);
-DocumentFragment* createFragmentFromMarkup(
+DocumentFragment* CreateFragmentFromMarkup(
     Document&,
     const String& markup,
-    const String& baseURL,
-    ParserContentPolicy = AllowScriptingContent);
-DocumentFragment* createFragmentFromMarkupWithContext(Document&,
+    const String& base_url,
+    ParserContentPolicy = kAllowScriptingContent);
+DocumentFragment* CreateFragmentFromMarkupWithContext(Document&,
                                                       const String& markup,
-                                                      unsigned fragmentStart,
-                                                      unsigned fragmentEnd,
-                                                      const String& baseURL,
+                                                      unsigned fragment_start,
+                                                      unsigned fragment_end,
+                                                      const String& base_url,
                                                       ParserContentPolicy);
-DocumentFragment* createFragmentForInnerOuterHTML(const String&,
+DocumentFragment* CreateFragmentForInnerOuterHTML(const String&,
                                                   Element*,
                                                   ParserContentPolicy,
                                                   const char* method,
                                                   ExceptionState&);
-DocumentFragment* createFragmentForTransformToFragment(
+DocumentFragment* CreateFragmentForTransformToFragment(
     const String&,
-    const String& sourceMIMEType,
-    Document& outputDoc);
-DocumentFragment* createContextualFragment(const String&,
+    const String& source_mime_type,
+    Document& output_doc);
+DocumentFragment* CreateContextualFragment(const String&,
                                            Element*,
                                            ParserContentPolicy,
                                            ExceptionState&);
 
-bool isPlainTextMarkup(Node*);
+bool IsPlainTextMarkup(Node*);
 
 // These methods are used by HTMLElement & ShadowRoot to replace the
 // children with respected fragment/text.
-void replaceChildrenWithFragment(ContainerNode*,
+void ReplaceChildrenWithFragment(ContainerNode*,
                                  DocumentFragment*,
                                  ExceptionState&);
-void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
+void ReplaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
-CORE_EXPORT String createMarkup(const Node*,
-                                EChildrenOnly = IncludeNode,
-                                EAbsoluteURLs = DoNotResolveURLs);
+CORE_EXPORT String CreateMarkup(const Node*,
+                                EChildrenOnly = kIncludeNode,
+                                EAbsoluteURLs = kDoNotResolveURLs);
 
 CORE_EXPORT String
-createMarkup(const Position& start,
+CreateMarkup(const Position& start,
              const Position& end,
-             EAnnotateForInterchange = DoNotAnnotateForInterchange,
-             ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert,
-             EAbsoluteURLs = DoNotResolveURLs,
-             Node* constrainingAncestor = nullptr);
+             EAnnotateForInterchange = kDoNotAnnotateForInterchange,
+             ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
+             EAbsoluteURLs = kDoNotResolveURLs,
+             Node* constraining_ancestor = nullptr);
 CORE_EXPORT String
-createMarkup(const PositionInFlatTree& start,
+CreateMarkup(const PositionInFlatTree& start,
              const PositionInFlatTree& end,
-             EAnnotateForInterchange = DoNotAnnotateForInterchange,
-             ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert,
-             EAbsoluteURLs = DoNotResolveURLs,
-             Node* constrainingAncestor = nullptr);
+             EAnnotateForInterchange = kDoNotAnnotateForInterchange,
+             ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
+             EAbsoluteURLs = kDoNotResolveURLs,
+             Node* constraining_ancestor = nullptr);
 
-void mergeWithNextTextNode(Text*, ExceptionState&);
+void MergeWithNextTextNode(Text*, ExceptionState&);
 
-bool propertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);
+bool PropertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);
 
 }  // namespace blink
 

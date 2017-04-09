@@ -46,7 +46,7 @@ namespace blink {
 class PLATFORM_EXPORT UserGestureUtilizedCallback {
  public:
   virtual ~UserGestureUtilizedCallback() = default;
-  virtual void userGestureUtilized() = 0;
+  virtual void UserGestureUtilized() = 0;
 };
 
 // A UserGestureToken represents a user gesture. It can be referenced and saved
@@ -57,15 +57,15 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   WTF_MAKE_NONCOPYABLE(UserGestureToken);
 
  public:
-  enum Status { NewGesture, PossiblyExistingGesture };
-  enum TimeoutPolicy { Default, OutOfProcess, HasPaused };
+  enum Status { kNewGesture, kPossiblyExistingGesture };
+  enum TimeoutPolicy { kDefault, kOutOfProcess, kHasPaused };
 
   ~UserGestureToken() {}
-  bool hasGestures() const;
-  void transferGestureTo(UserGestureToken*);
-  bool consumeGesture();
-  void setTimeoutPolicy(TimeoutPolicy);
-  void resetTimestamp();
+  bool HasGestures() const;
+  void TransferGestureTo(UserGestureToken*);
+  bool ConsumeGesture();
+  void SetTimeoutPolicy(TimeoutPolicy);
+  void ResetTimestamp();
 
   // If this UserGestureToken is wrapped in a UserGestureIndicator, and the
   // UserGestureIndicator is the lowest on the callstack (and therefore this
@@ -74,19 +74,19 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   // Calling setUserGestureUtilizedCallback() on a UserGestureToken that is not
   // UserGestureIndicator::s_rootToken would be unsafe and never result in a
   // callback, so it will fail a CHECK() instead.
-  void setUserGestureUtilizedCallback(UserGestureUtilizedCallback*);
-  void userGestureUtilized();
+  void SetUserGestureUtilizedCallback(UserGestureUtilizedCallback*);
+  void UserGestureUtilized();
 
  protected:
   UserGestureToken(Status);
 
  private:
-  bool hasTimedOut() const;
+  bool HasTimedOut() const;
 
-  size_t m_consumableGestures;
-  double m_timestamp;
-  TimeoutPolicy m_timeoutPolicy;
-  UserGestureUtilizedCallback* m_usageCallback;
+  size_t consumable_gestures_;
+  double timestamp_;
+  TimeoutPolicy timeout_policy_;
+  UserGestureUtilizedCallback* usage_callback_;
 };
 
 class PLATFORM_EXPORT UserGestureIndicator final {
@@ -103,32 +103,32 @@ class PLATFORM_EXPORT UserGestureIndicator final {
   // Does not invoke the UserGestureUtilizedCallback.  Consider calling
   // utilizeUserGesture instead if you know for sure that the return value
   // will have an effect.
-  static bool processingUserGesture();
-  static bool processingUserGestureThreadSafe();
+  static bool ProcessingUserGesture();
+  static bool ProcessingUserGestureThreadSafe();
 
   // Indicates that a user gesture (if any) is being used, without preventing it
   // from being used again.  Returns whether a user gesture is currently in
   // progress.  If true, invokes (and then clears) any
   // UserGestureUtilizedCallback.
-  static bool utilizeUserGesture();
+  static bool UtilizeUserGesture();
 
   // Mark the current user gesture (if any) as having been used, such that
   // it cannot be used again.  This is done only for very security-sensitive
   // operations like creating a new process.
   // Like utilizeUserGesture, may invoke/clear any UserGestureUtilizedCallback.
-  static bool consumeUserGesture();
-  static bool consumeUserGestureThreadSafe();
+  static bool ConsumeUserGesture();
+  static bool ConsumeUserGestureThreadSafe();
 
-  static UserGestureToken* currentToken();
-  static UserGestureToken* currentTokenThreadSafe();
+  static UserGestureToken* CurrentToken();
+  static UserGestureToken* CurrentTokenThreadSafe();
 
   explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
   ~UserGestureIndicator();
 
  private:
-  static UserGestureToken* s_rootToken;
+  static UserGestureToken* root_token_;
 
-  RefPtr<UserGestureToken> m_token;
+  RefPtr<UserGestureToken> token_;
 };
 
 }  // namespace blink

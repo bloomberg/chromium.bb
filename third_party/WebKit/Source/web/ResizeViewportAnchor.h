@@ -24,36 +24,36 @@ class ResizeViewportAnchor final
   WTF_MAKE_NONCOPYABLE(ResizeViewportAnchor);
 
  public:
-  ResizeViewportAnchor(Page& page) : m_page(page), m_scopeCount(0) {}
+  ResizeViewportAnchor(Page& page) : page_(page), scope_count_(0) {}
 
   class ResizeScope {
     STACK_ALLOCATED();
 
    public:
-    explicit ResizeScope(ResizeViewportAnchor& anchor) : m_anchor(anchor) {
-      m_anchor->beginScope();
+    explicit ResizeScope(ResizeViewportAnchor& anchor) : anchor_(anchor) {
+      anchor_->BeginScope();
     }
-    ~ResizeScope() { m_anchor->endScope(); }
+    ~ResizeScope() { anchor_->EndScope(); }
 
    private:
-    Member<ResizeViewportAnchor> m_anchor;
+    Member<ResizeViewportAnchor> anchor_;
   };
 
-  void resizeFrameView(IntSize);
+  void ResizeFrameView(IntSize);
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_page); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(page_); }
 
  private:
-  void beginScope() { m_scopeCount++; }
-  void endScope();
-  FrameView* rootFrameView();
+  void BeginScope() { scope_count_++; }
+  void EndScope();
+  FrameView* RootFrameView();
 
   // The amount of resize-induced clamping drift accumulated during the
   // ResizeScope.  Note that this should NOT include other kinds of scrolling
   // that may occur during layout, such as from ScrollAnchor.
-  ScrollOffset m_drift;
-  Member<Page> m_page;
-  int m_scopeCount;
+  ScrollOffset drift_;
+  Member<Page> page_;
+  int scope_count_;
 };
 
 }  // namespace blink

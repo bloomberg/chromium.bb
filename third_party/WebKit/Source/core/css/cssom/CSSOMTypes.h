@@ -15,8 +15,8 @@ class CSSOMTypes {
   STATIC_ONLY(CSSOMTypes);
 
  public:
-  static bool propertyCanTake(CSSPropertyID, const CSSStyleValue&);
-  static bool propertyCanTakeType(CSSPropertyID, CSSStyleValue::StyleValueType);
+  static bool PropertyCanTake(CSSPropertyID, const CSSStyleValue&);
+  static bool PropertyCanTakeType(CSSPropertyID, CSSStyleValue::StyleValueType);
 };
 
 }  // namespace blink

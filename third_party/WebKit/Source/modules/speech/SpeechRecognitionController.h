@@ -42,35 +42,35 @@ class SpeechRecognitionController final
  public:
   virtual ~SpeechRecognitionController();
 
-  void start(SpeechRecognition* recognition,
+  void Start(SpeechRecognition* recognition,
              const SpeechGrammarList* grammars,
              const String& lang,
              bool continuous,
-             bool interimResults,
-             unsigned long maxAlternatives,
-             MediaStreamTrack* audioTrack) {
-    m_client->start(recognition, grammars, lang, continuous, interimResults,
-                    maxAlternatives, audioTrack);
+             bool interim_results,
+             unsigned long max_alternatives,
+             MediaStreamTrack* audio_track) {
+    client_->Start(recognition, grammars, lang, continuous, interim_results,
+                   max_alternatives, audio_track);
   }
 
-  void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
-  void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
+  void Stop(SpeechRecognition* recognition) { client_->Stop(recognition); }
+  void Abort(SpeechRecognition* recognition) { client_->Abort(recognition); }
 
-  static SpeechRecognitionController* create(
+  static SpeechRecognitionController* Create(
       std::unique_ptr<SpeechRecognitionClient>);
-  static const char* supplementName();
-  static SpeechRecognitionController* from(Page* page) {
+  static const char* SupplementName();
+  static SpeechRecognitionController* From(Page* page) {
     return static_cast<SpeechRecognitionController*>(
-        Supplement<Page>::from(page, supplementName()));
+        Supplement<Page>::From(page, SupplementName()));
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::Trace(visitor); }
 
  private:
   explicit SpeechRecognitionController(
       std::unique_ptr<SpeechRecognitionClient>);
 
-  std::unique_ptr<SpeechRecognitionClient> m_client;
+  std::unique_ptr<SpeechRecognitionClient> client_;
 };
 
 }  // namespace blink

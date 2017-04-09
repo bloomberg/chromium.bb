@@ -18,15 +18,15 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerSource {
   explicit WebMediaPlayerSource(const WebMediaStream&);
   ~WebMediaPlayerSource();
 
-  bool isURL() const;
-  WebURL getAsURL() const;
+  bool IsURL() const;
+  WebURL GetAsURL() const;
 
-  bool isMediaStream() const;
-  WebMediaStream getAsMediaStream() const;
+  bool IsMediaStream() const;
+  WebMediaStream GetAsMediaStream() const;
 
  private:
-  WebURL m_url;
-  WebMediaStream m_mediaStream;
+  WebURL url_;
+  WebMediaStream media_stream_;
 };
 
 }  // namespace blink

@@ -41,7 +41,7 @@ class GraphicsLayerTreeBuilder {
   GraphicsLayerTreeBuilder();
   ~GraphicsLayerTreeBuilder();
 
-  void rebuild(PaintLayer&, GraphicsLayerVector&);
+  void Rebuild(PaintLayer&, GraphicsLayerVector&);
 };
 
 }  // namespace blink

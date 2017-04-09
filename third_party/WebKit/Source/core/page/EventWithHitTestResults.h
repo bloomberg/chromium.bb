@@ -35,25 +35,25 @@ class EventWithHitTestResults {
 
  public:
   EventWithHitTestResults(const EventType& event,
-                          const HitTestResult& hitTestResult)
-      : m_event(event), m_hitTestResult(hitTestResult) {}
+                          const HitTestResult& hit_test_result)
+      : event_(event), hit_test_result_(hit_test_result) {}
 
-  const EventType& event() const { return m_event; }
-  const HitTestResult& hitTestResult() const { return m_hitTestResult; }
-  LayoutPoint localPoint() const { return m_hitTestResult.localPoint(); }
-  Scrollbar* scrollbar() const { return m_hitTestResult.scrollbar(); }
-  bool isOverLink() const { return m_hitTestResult.isOverLink(); }
-  bool isOverFrameViewBase() const {
-    return m_hitTestResult.isOverFrameViewBase();
+  const EventType& Event() const { return event_; }
+  const HitTestResult& GetHitTestResult() const { return hit_test_result_; }
+  LayoutPoint LocalPoint() const { return hit_test_result_.LocalPoint(); }
+  Scrollbar* GetScrollbar() const { return hit_test_result_.GetScrollbar(); }
+  bool IsOverLink() const { return hit_test_result_.IsOverLink(); }
+  bool IsOverFrameViewBase() const {
+    return hit_test_result_.IsOverFrameViewBase();
   }
-  Node* innerNode() const { return m_hitTestResult.innerNode(); }
-  const String& canvasRegionId() const {
-    return m_hitTestResult.canvasRegionId();
+  Node* InnerNode() const { return hit_test_result_.InnerNode(); }
+  const String& CanvasRegionId() const {
+    return hit_test_result_.CanvasRegionId();
   }
 
  private:
-  EventType m_event;
-  HitTestResult m_hitTestResult;
+  EventType event_;
+  HitTestResult hit_test_result_;
 };
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;

@@ -23,15 +23,15 @@ WebRtcMediaStreamAdapter::WebRtcMediaStreamAdapter(
     : web_stream_(web_stream),
       factory_(factory) {
   webrtc_media_stream_ =
-      factory_->CreateLocalMediaStream(web_stream.id().utf8());
+      factory_->CreateLocalMediaStream(web_stream.Id().Utf8());
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream_.audioTracks(audio_tracks);
+  web_stream_.AudioTracks(audio_tracks);
   for (blink::WebMediaStreamTrack& audio_track : audio_tracks)
     AddAudioSinkToTrack(audio_track);
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream_.videoTracks(video_tracks);
+  web_stream_.VideoTracks(video_tracks);
   for (blink::WebMediaStreamTrack& video_track : video_tracks)
     AddVideoSinkToTrack(video_track);
 
@@ -44,12 +44,12 @@ WebRtcMediaStreamAdapter::~WebRtcMediaStreamAdapter() {
   native_stream->RemoveObserver(this);
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream_.audioTracks(audio_tracks);
+  web_stream_.AudioTracks(audio_tracks);
   for (blink::WebMediaStreamTrack& audio_track : audio_tracks)
     TrackRemoved(audio_track);
   DCHECK(audio_sinks_.empty());
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream_.videoTracks(video_tracks);
+  web_stream_.VideoTracks(video_tracks);
   for (blink::WebMediaStreamTrack& video_track : video_tracks)
     TrackRemoved(video_track);
   DCHECK(video_sinks_.empty());
@@ -57,7 +57,7 @@ WebRtcMediaStreamAdapter::~WebRtcMediaStreamAdapter() {
 
 void WebRtcMediaStreamAdapter::TrackAdded(
     const blink::WebMediaStreamTrack& track) {
-  if (track.source().getType() == blink::WebMediaStreamSource::TypeAudio)
+  if (track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio)
     AddAudioSinkToTrack(track);
   else
     AddVideoSinkToTrack(track);
@@ -65,8 +65,8 @@ void WebRtcMediaStreamAdapter::TrackAdded(
 
 void WebRtcMediaStreamAdapter::TrackRemoved(
     const blink::WebMediaStreamTrack& track) {
-  const std::string track_id = track.id().utf8();
-  if (track.source().getType() == blink::WebMediaStreamSource::TypeAudio) {
+  const std::string track_id = track.Id().Utf8();
+  if (track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio) {
     scoped_refptr<webrtc::AudioTrackInterface> webrtc_track =
         make_scoped_refptr(
             webrtc_media_stream_->FindAudioTrack(track_id).get());
@@ -83,7 +83,8 @@ void WebRtcMediaStreamAdapter::TrackRemoved(
       }
     }
   } else {
-    DCHECK_EQ(track.source().getType(), blink::WebMediaStreamSource::TypeVideo);
+    DCHECK_EQ(track.Source().GetType(),
+              blink::WebMediaStreamSource::kTypeVideo);
     scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
         make_scoped_refptr(
             webrtc_media_stream_->FindVideoTrack(track_id).get());
@@ -112,12 +113,12 @@ void WebRtcMediaStreamAdapter::AddAudioSinkToTrack(
   // the webrtc::AudioSourceInterface, and also do not need references to the
   // audio level calculator or audio processor passed to the sink.
   webrtc::AudioSourceInterface* source_interface = nullptr;
-  WebRtcAudioSink* audio_sink = new WebRtcAudioSink(
-      track.id().utf8(), source_interface,
-      factory_->GetWebRtcSignalingThread());
+  WebRtcAudioSink* audio_sink =
+      new WebRtcAudioSink(track.Id().Utf8(), source_interface,
+                          factory_->GetWebRtcSignalingThread());
 
   if (auto* media_stream_source = ProcessedLocalAudioSource::From(
-          MediaStreamAudioSource::From(track.source()))) {
+          MediaStreamAudioSource::From(track.Source()))) {
     audio_sink->SetLevel(media_stream_source->audio_level());
     // The sink only grabs stats from the audio processor. Stats are only
     // available if audio processing is turned on. Therefore, only provide the
@@ -135,7 +136,7 @@ void WebRtcMediaStreamAdapter::AddAudioSinkToTrack(
 
 void WebRtcMediaStreamAdapter::AddVideoSinkToTrack(
     const blink::WebMediaStreamTrack& track) {
-  DCHECK_EQ(track.source().getType(), blink::WebMediaStreamSource::TypeVideo);
+  DCHECK_EQ(track.Source().GetType(), blink::WebMediaStreamSource::kTypeVideo);
   MediaStreamVideoWebRtcSink* video_sink =
       new MediaStreamVideoWebRtcSink(track, factory_);
   video_sinks_.push_back(

@@ -20,7 +20,7 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
   // The second <div> below is redundant from Blink's perspective (no siblings
   // && no attributes) and will be removed by
   // |DeleteSelectionCommand::removeRedundantBlocks()|.
-  setBodyContent(
+  SetBodyContent(
       "<div><div>"
       "<div></div>"
       "<ul>"
@@ -31,21 +31,21 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
       "</li>"
       "</ul></div></div>");
 
-  Element* li = document().querySelector("li");
+  Element* li = GetDocument().QuerySelector("li");
 
-  LocalFrame* frame = document().frame();
-  frame->selection().setSelection(
+  LocalFrame* frame = GetDocument().GetFrame();
+  frame->Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .collapse(Position(li, PositionAnchorType::BeforeAnchor))
-          .build());
+          .Collapse(Position(li, PositionAnchorType::kBeforeAnchor))
+          .Build());
 
   MutableStylePropertySet* style =
-      MutableStylePropertySet::create(HTMLQuirksMode);
-  style->setProperty(CSSPropertyTextAlign, "center");
-  ApplyStyleCommand::create(document(), EditingStyle::create(style),
-                            InputEvent::InputType::FormatJustifyCenter,
-                            ApplyStyleCommand::ForceBlockProperties)
-      ->apply();
+      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  style->SetProperty(CSSPropertyTextAlign, "center");
+  ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
+                            InputEvent::InputType::kFormatJustifyCenter,
+                            ApplyStyleCommand::kForceBlockProperties)
+      ->Apply();
   // Shouldn't crash.
 }
 

@@ -38,12 +38,12 @@
 
 namespace blink {
 
-const double DefaultGrainDuration = 0.020;  // 20ms
+const double kDefaultGrainDuration = 0.020;  // 20ms
 
 // Arbitrary upper limit on playback rate.
 // Higher than expected rates can be useful when playing back oversampled
 // buffers to minimize linear interpolation aliasing.
-const double MaxRate = 1024;
+const double kMaxRate = 1024;
 
 // Number of extra frames to use when determining if a source node can be
 // stopped.  This should be at least one rendering quantum, but we add one more
@@ -55,55 +55,57 @@ const int kExtraStopFrames = 256;
 
 AudioBufferSourceHandler::AudioBufferSourceHandler(
     AudioNode& node,
-    float sampleRate,
-    AudioParamHandler& playbackRate,
+    float sample_rate,
+    AudioParamHandler& playback_rate,
     AudioParamHandler& detune)
-    : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, node, sampleRate),
-      m_buffer(nullptr),
-      m_playbackRate(playbackRate),
-      m_detune(detune),
-      m_isLooping(false),
-      m_didSetLooping(false),
-      m_loopStart(0),
-      m_loopEnd(0),
-      m_virtualReadIndex(0),
-      m_isGrain(false),
-      m_grainOffset(0.0),
-      m_grainDuration(DefaultGrainDuration),
-      m_minPlaybackRate(1.0) {
+    : AudioScheduledSourceHandler(kNodeTypeAudioBufferSource,
+                                  node,
+                                  sample_rate),
+      buffer_(nullptr),
+      playback_rate_(playback_rate),
+      detune_(detune),
+      is_looping_(false),
+      did_set_looping_(false),
+      loop_start_(0),
+      loop_end_(0),
+      virtual_read_index_(0),
+      is_grain_(false),
+      grain_offset_(0.0),
+      grain_duration_(kDefaultGrainDuration),
+      min_playback_rate_(1.0) {
   // Default to mono. A call to setBuffer() will set the number of output
   // channels to that of the buffer.
-  addOutput(1);
+  AddOutput(1);
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::create(
+PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::Create(
     AudioNode& node,
-    float sampleRate,
-    AudioParamHandler& playbackRate,
+    float sample_rate,
+    AudioParamHandler& playback_rate,
     AudioParamHandler& detune) {
-  return adoptRef(
-      new AudioBufferSourceHandler(node, sampleRate, playbackRate, detune));
+  return AdoptRef(
+      new AudioBufferSourceHandler(node, sample_rate, playback_rate, detune));
 }
 
 AudioBufferSourceHandler::~AudioBufferSourceHandler() {
-  uninitialize();
+  Uninitialize();
 }
 
-void AudioBufferSourceHandler::process(size_t framesToProcess) {
-  AudioBus* outputBus = output(0).bus();
+void AudioBufferSourceHandler::Process(size_t frames_to_process) {
+  AudioBus* output_bus = Output(0).Bus();
 
-  if (!isInitialized()) {
-    outputBus->zero();
+  if (!IsInitialized()) {
+    output_bus->Zero();
     return;
   }
 
   // The audio thread can't block on this lock, so we call tryLock() instead.
-  MutexTryLocker tryLocker(m_processLock);
-  if (tryLocker.locked()) {
-    if (!buffer()) {
-      outputBus->zero();
+  MutexTryLocker try_locker(process_lock_);
+  if (try_locker.Locked()) {
+    if (!Buffer()) {
+      output_bus->Zero();
       return;
     }
 
@@ -112,357 +114,360 @@ void AudioBufferSourceHandler::process(size_t framesToProcess) {
     // is updated to the new number of channels because of use of tryLocks() in
     // the context's updating system.  In this case, if the the buffer has just
     // been changed and we're not quite ready yet, then just output silence.
-    if (numberOfChannels() != buffer()->numberOfChannels()) {
-      outputBus->zero();
+    if (NumberOfChannels() != Buffer()->numberOfChannels()) {
+      output_bus->Zero();
       return;
     }
 
-    size_t quantumFrameOffset;
-    size_t bufferFramesToProcess;
-    double startTimeOffset;
+    size_t quantum_frame_offset;
+    size_t buffer_frames_to_process;
+    double start_time_offset;
 
-    updateSchedulingInfo(framesToProcess, outputBus, quantumFrameOffset,
-                         bufferFramesToProcess, startTimeOffset);
+    UpdateSchedulingInfo(frames_to_process, output_bus, quantum_frame_offset,
+                         buffer_frames_to_process, start_time_offset);
 
-    if (!bufferFramesToProcess) {
-      outputBus->zero();
+    if (!buffer_frames_to_process) {
+      output_bus->Zero();
       return;
     }
 
-    for (unsigned i = 0; i < outputBus->numberOfChannels(); ++i)
-      m_destinationChannels[i] = outputBus->channel(i)->mutableData();
+    for (unsigned i = 0; i < output_bus->NumberOfChannels(); ++i)
+      destination_channels_[i] = output_bus->Channel(i)->MutableData();
 
     // Render by reading directly from the buffer.
-    if (!renderFromBuffer(outputBus, quantumFrameOffset,
-                          bufferFramesToProcess)) {
-      outputBus->zero();
+    if (!RenderFromBuffer(output_bus, quantum_frame_offset,
+                          buffer_frames_to_process)) {
+      output_bus->Zero();
       return;
     }
 
-    outputBus->clearSilentFlag();
+    output_bus->ClearSilentFlag();
   } else {
     // Too bad - the tryLock() failed.  We must be in the middle of changing
     // buffers and were already outputting silence anyway.
-    outputBus->zero();
+    output_bus->Zero();
   }
 }
 
 // Returns true if we're finished.
-bool AudioBufferSourceHandler::renderSilenceAndFinishIfNotLooping(
+bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
     AudioBus*,
     unsigned index,
-    size_t framesToProcess) {
-  if (!loop()) {
+    size_t frames_to_process) {
+  if (!Loop()) {
     // If we're not looping, then stop playing when we get to the end.
 
-    if (framesToProcess > 0) {
+    if (frames_to_process > 0) {
       // We're not looping and we've reached the end of the sample data, but we
       // still need to provide more output, so generate silence for the
       // remaining.
-      for (unsigned i = 0; i < numberOfChannels(); ++i)
-        memset(m_destinationChannels[i] + index, 0,
-               sizeof(float) * framesToProcess);
+      for (unsigned i = 0; i < NumberOfChannels(); ++i)
+        memset(destination_channels_[i] + index, 0,
+               sizeof(float) * frames_to_process);
     }
 
-    finish();
+    Finish();
     return true;
   }
   return false;
 }
 
-bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus,
-                                                unsigned destinationFrameOffset,
-                                                size_t numberOfFrames) {
-  DCHECK(context()->isAudioThread());
+bool AudioBufferSourceHandler::RenderFromBuffer(
+    AudioBus* bus,
+    unsigned destination_frame_offset,
+    size_t number_of_frames) {
+  DCHECK(Context()->IsAudioThread());
 
   // Basic sanity checking
   DCHECK(bus);
-  DCHECK(buffer());
-  if (!bus || !buffer())
+  DCHECK(Buffer());
+  if (!bus || !Buffer())
     return false;
 
-  unsigned numberOfChannels = this->numberOfChannels();
-  unsigned busNumberOfChannels = bus->numberOfChannels();
+  unsigned number_of_channels = this->NumberOfChannels();
+  unsigned bus_number_of_channels = bus->NumberOfChannels();
 
-  bool channelCountGood =
-      numberOfChannels && numberOfChannels == busNumberOfChannels;
-  DCHECK(channelCountGood);
-  if (!channelCountGood)
+  bool channel_count_good =
+      number_of_channels && number_of_channels == bus_number_of_channels;
+  DCHECK(channel_count_good);
+  if (!channel_count_good)
     return false;
 
   // Sanity check destinationFrameOffset, numberOfFrames.
-  size_t destinationLength = bus->length();
+  size_t destination_length = bus->length();
 
-  bool isLengthGood =
-      destinationLength <= AudioUtilities::kRenderQuantumFrames &&
-      numberOfFrames <= AudioUtilities::kRenderQuantumFrames;
-  DCHECK(isLengthGood);
-  if (!isLengthGood)
+  bool is_length_good =
+      destination_length <= AudioUtilities::kRenderQuantumFrames &&
+      number_of_frames <= AudioUtilities::kRenderQuantumFrames;
+  DCHECK(is_length_good);
+  if (!is_length_good)
     return false;
 
-  bool isOffsetGood =
-      destinationFrameOffset <= destinationLength &&
-      destinationFrameOffset + numberOfFrames <= destinationLength;
-  DCHECK(isOffsetGood);
-  if (!isOffsetGood)
+  bool is_offset_good =
+      destination_frame_offset <= destination_length &&
+      destination_frame_offset + number_of_frames <= destination_length;
+  DCHECK(is_offset_good);
+  if (!is_offset_good)
     return false;
 
   // Potentially zero out initial frames leading up to the offset.
-  if (destinationFrameOffset) {
-    for (unsigned i = 0; i < numberOfChannels; ++i)
-      memset(m_destinationChannels[i], 0,
-             sizeof(float) * destinationFrameOffset);
+  if (destination_frame_offset) {
+    for (unsigned i = 0; i < number_of_channels; ++i)
+      memset(destination_channels_[i], 0,
+             sizeof(float) * destination_frame_offset);
   }
 
   // Offset the pointers to the correct offset frame.
-  unsigned writeIndex = destinationFrameOffset;
+  unsigned write_index = destination_frame_offset;
 
-  size_t bufferLength = buffer()->length();
-  double bufferSampleRate = buffer()->sampleRate();
+  size_t buffer_length = Buffer()->length();
+  double buffer_sample_rate = Buffer()->sampleRate();
 
   // Avoid converting from time to sample-frames twice by computing
   // the grain end time first before computing the sample frame.
-  unsigned endFrame =
-      m_isGrain ? AudioUtilities::timeToSampleFrame(
-                      m_grainOffset + m_grainDuration, bufferSampleRate)
-                : bufferLength;
+  unsigned end_frame =
+      is_grain_ ? AudioUtilities::TimeToSampleFrame(
+                      grain_offset_ + grain_duration_, buffer_sample_rate)
+                : buffer_length;
 
   // This is a HACK to allow for HRTF tail-time - avoids glitch at end.
   // FIXME: implement tailTime for each AudioNode for a more general solution to
   // this problem, https://bugs.webkit.org/show_bug.cgi?id=77224
-  if (m_isGrain)
-    endFrame += 512;
+  if (is_grain_)
+    end_frame += 512;
 
   // Do some sanity checking.
-  if (endFrame > bufferLength)
-    endFrame = bufferLength;
+  if (end_frame > buffer_length)
+    end_frame = buffer_length;
 
   // If the .loop attribute is true, then values of
   // m_loopStart == 0 && m_loopEnd == 0 implies that we should use the entire
   // buffer as the loop, otherwise use the loop values in m_loopStart and
   // m_loopEnd.
-  double virtualEndFrame = endFrame;
-  double virtualDeltaFrames = endFrame;
+  double virtual_end_frame = end_frame;
+  double virtual_delta_frames = end_frame;
 
-  if (loop() && (m_loopStart || m_loopEnd) && m_loopStart >= 0 &&
-      m_loopEnd > 0 && m_loopStart < m_loopEnd) {
+  if (Loop() && (loop_start_ || loop_end_) && loop_start_ >= 0 &&
+      loop_end_ > 0 && loop_start_ < loop_end_) {
     // Convert from seconds to sample-frames.
-    double loopStartFrame = m_loopStart * buffer()->sampleRate();
-    double loopEndFrame = m_loopEnd * buffer()->sampleRate();
+    double loop_start_frame = loop_start_ * Buffer()->sampleRate();
+    double loop_end_frame = loop_end_ * Buffer()->sampleRate();
 
-    virtualEndFrame = std::min(loopEndFrame, virtualEndFrame);
-    virtualDeltaFrames = virtualEndFrame - loopStartFrame;
+    virtual_end_frame = std::min(loop_end_frame, virtual_end_frame);
+    virtual_delta_frames = virtual_end_frame - loop_start_frame;
   }
 
   // If we're looping and the offset (virtualReadIndex) is past the end of the
   // loop, wrap back to the beginning of the loop. For other cases, nothing
   // needs to be done.
-  if (loop() && m_virtualReadIndex >= virtualEndFrame) {
-    m_virtualReadIndex =
-        (m_loopStart < 0) ? 0 : (m_loopStart * buffer()->sampleRate());
-    m_virtualReadIndex =
-        std::min(m_virtualReadIndex, static_cast<double>(bufferLength - 1));
+  if (Loop() && virtual_read_index_ >= virtual_end_frame) {
+    virtual_read_index_ =
+        (loop_start_ < 0) ? 0 : (loop_start_ * Buffer()->sampleRate());
+    virtual_read_index_ =
+        std::min(virtual_read_index_, static_cast<double>(buffer_length - 1));
   }
 
-  double computedPlaybackRate = computePlaybackRate();
+  double computed_playback_rate = ComputePlaybackRate();
 
   // Sanity check that our playback rate isn't larger than the loop size.
-  if (computedPlaybackRate > virtualDeltaFrames)
+  if (computed_playback_rate > virtual_delta_frames)
     return false;
 
   // Get local copy.
-  double virtualReadIndex = m_virtualReadIndex;
+  double virtual_read_index = virtual_read_index_;
 
   // Render loop - reading from the source buffer to the destination using
   // linear interpolation.
-  int framesToProcess = numberOfFrames;
+  int frames_to_process = number_of_frames;
 
-  const float** sourceChannels = m_sourceChannels.get();
-  float** destinationChannels = m_destinationChannels.get();
+  const float** source_channels = source_channels_.get();
+  float** destination_channels = destination_channels_.get();
 
-  DCHECK_GE(virtualReadIndex, 0);
-  DCHECK_GE(virtualDeltaFrames, 0);
-  DCHECK_GE(virtualEndFrame, 0);
+  DCHECK_GE(virtual_read_index, 0);
+  DCHECK_GE(virtual_delta_frames, 0);
+  DCHECK_GE(virtual_end_frame, 0);
 
   // Optimize for the very common case of playing back with
   // computedPlaybackRate == 1.  We can avoid the linear interpolation.
-  if (computedPlaybackRate == 1 &&
-      virtualReadIndex == floor(virtualReadIndex) &&
-      virtualDeltaFrames == floor(virtualDeltaFrames) &&
-      virtualEndFrame == floor(virtualEndFrame)) {
-    unsigned readIndex = static_cast<unsigned>(virtualReadIndex);
-    unsigned deltaFrames = static_cast<unsigned>(virtualDeltaFrames);
-    endFrame = static_cast<unsigned>(virtualEndFrame);
-    while (framesToProcess > 0) {
-      int framesToEnd = endFrame - readIndex;
-      int framesThisTime = std::min(framesToProcess, framesToEnd);
-      framesThisTime = std::max(0, framesThisTime);
+  if (computed_playback_rate == 1 &&
+      virtual_read_index == floor(virtual_read_index) &&
+      virtual_delta_frames == floor(virtual_delta_frames) &&
+      virtual_end_frame == floor(virtual_end_frame)) {
+    unsigned read_index = static_cast<unsigned>(virtual_read_index);
+    unsigned delta_frames = static_cast<unsigned>(virtual_delta_frames);
+    end_frame = static_cast<unsigned>(virtual_end_frame);
+    while (frames_to_process > 0) {
+      int frames_to_end = end_frame - read_index;
+      int frames_this_time = std::min(frames_to_process, frames_to_end);
+      frames_this_time = std::max(0, frames_this_time);
 
-      DCHECK_LE(writeIndex + framesThisTime, destinationLength);
-      DCHECK_LE(readIndex + framesThisTime, bufferLength);
+      DCHECK_LE(write_index + frames_this_time, destination_length);
+      DCHECK_LE(read_index + frames_this_time, buffer_length);
 
-      for (unsigned i = 0; i < numberOfChannels; ++i)
-        memcpy(destinationChannels[i] + writeIndex,
-               sourceChannels[i] + readIndex, sizeof(float) * framesThisTime);
+      for (unsigned i = 0; i < number_of_channels; ++i)
+        memcpy(destination_channels[i] + write_index,
+               source_channels[i] + read_index,
+               sizeof(float) * frames_this_time);
 
-      writeIndex += framesThisTime;
-      readIndex += framesThisTime;
-      framesToProcess -= framesThisTime;
+      write_index += frames_this_time;
+      read_index += frames_this_time;
+      frames_to_process -= frames_this_time;
 
       // It can happen that framesThisTime is 0. DCHECK that we will actually
       // exit the loop in this case.  framesThisTime is 0 only if
       // readIndex >= endFrame;
-      DCHECK(framesThisTime ? true : readIndex >= endFrame);
+      DCHECK(frames_this_time ? true : read_index >= end_frame);
 
       // Wrap-around.
-      if (readIndex >= endFrame) {
-        readIndex -= deltaFrames;
-        if (renderSilenceAndFinishIfNotLooping(bus, writeIndex,
-                                               framesToProcess))
+      if (read_index >= end_frame) {
+        read_index -= delta_frames;
+        if (RenderSilenceAndFinishIfNotLooping(bus, write_index,
+                                               frames_to_process))
           break;
       }
     }
-    virtualReadIndex = readIndex;
+    virtual_read_index = read_index;
   } else {
-    while (framesToProcess--) {
-      unsigned readIndex = static_cast<unsigned>(virtualReadIndex);
-      double interpolationFactor = virtualReadIndex - readIndex;
+    while (frames_to_process--) {
+      unsigned read_index = static_cast<unsigned>(virtual_read_index);
+      double interpolation_factor = virtual_read_index - read_index;
 
       // For linear interpolation we need the next sample-frame too.
-      unsigned readIndex2 = readIndex + 1;
-      if (readIndex2 >= bufferLength) {
-        if (loop()) {
+      unsigned read_index2 = read_index + 1;
+      if (read_index2 >= buffer_length) {
+        if (Loop()) {
           // Make sure to wrap around at the end of the buffer.
-          readIndex2 =
-              static_cast<unsigned>(virtualReadIndex + 1 - virtualDeltaFrames);
+          read_index2 = static_cast<unsigned>(virtual_read_index + 1 -
+                                              virtual_delta_frames);
         } else {
-          readIndex2 = readIndex;
+          read_index2 = read_index;
         }
       }
 
       // Final sanity check on buffer access.
       // FIXME: as an optimization, try to get rid of this inner-loop check and
       // put assertions and guards before the loop.
-      if (readIndex >= bufferLength || readIndex2 >= bufferLength)
+      if (read_index >= buffer_length || read_index2 >= buffer_length)
         break;
 
       // Linear interpolation.
-      for (unsigned i = 0; i < numberOfChannels; ++i) {
-        float* destination = destinationChannels[i];
-        const float* source = sourceChannels[i];
+      for (unsigned i = 0; i < number_of_channels; ++i) {
+        float* destination = destination_channels[i];
+        const float* source = source_channels[i];
 
-        double sample1 = source[readIndex];
-        double sample2 = source[readIndex2];
-        double sample = (1.0 - interpolationFactor) * sample1 +
-                        interpolationFactor * sample2;
+        double sample1 = source[read_index];
+        double sample2 = source[read_index2];
+        double sample = (1.0 - interpolation_factor) * sample1 +
+                        interpolation_factor * sample2;
 
-        destination[writeIndex] = clampTo<float>(sample);
+        destination[write_index] = clampTo<float>(sample);
       }
-      writeIndex++;
+      write_index++;
 
-      virtualReadIndex += computedPlaybackRate;
+      virtual_read_index += computed_playback_rate;
 
       // Wrap-around, retaining sub-sample position since virtualReadIndex is
       // floating-point.
-      if (virtualReadIndex >= virtualEndFrame) {
-        virtualReadIndex -= virtualDeltaFrames;
-        if (renderSilenceAndFinishIfNotLooping(bus, writeIndex,
-                                               framesToProcess))
+      if (virtual_read_index >= virtual_end_frame) {
+        virtual_read_index -= virtual_delta_frames;
+        if (RenderSilenceAndFinishIfNotLooping(bus, write_index,
+                                               frames_to_process))
           break;
       }
     }
   }
 
-  bus->clearSilentFlag();
+  bus->ClearSilentFlag();
 
-  m_virtualReadIndex = virtualReadIndex;
+  virtual_read_index_ = virtual_read_index;
 
   return true;
 }
 
-void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer,
-                                         ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
+                                         ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (m_buffer) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+  if (buffer_) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "Cannot set buffer after it has been already been set");
     return;
   }
 
   // The context must be locked since changing the buffer can re-configure the
   // number of channels that are output.
-  BaseAudioContext::AutoLocker contextLocker(context());
+  BaseAudioContext::AutoLocker context_locker(Context());
 
   // This synchronizes with process().
-  MutexLocker processLocker(m_processLock);
+  MutexLocker process_locker(process_lock_);
 
   if (buffer) {
     // Do any necesssary re-configuration to the buffer's number of channels.
-    unsigned numberOfChannels = buffer->numberOfChannels();
+    unsigned number_of_channels = buffer->numberOfChannels();
 
     // This should not be possible since AudioBuffers can't be created with too
     // many channels either.
-    if (numberOfChannels > BaseAudioContext::maxNumberOfChannels()) {
-      exceptionState.throwDOMException(
-          NotSupportedError, ExceptionMessages::indexOutsideRange(
-                                 "number of input channels", numberOfChannels,
-                                 1u, ExceptionMessages::InclusiveBound,
-                                 BaseAudioContext::maxNumberOfChannels(),
-                                 ExceptionMessages::InclusiveBound));
+    if (number_of_channels > BaseAudioContext::MaxNumberOfChannels()) {
+      exception_state.ThrowDOMException(
+          kNotSupportedError,
+          ExceptionMessages::IndexOutsideRange(
+              "number of input channels", number_of_channels, 1u,
+              ExceptionMessages::kInclusiveBound,
+              BaseAudioContext::MaxNumberOfChannels(),
+              ExceptionMessages::kInclusiveBound));
       return;
     }
 
-    output(0).setNumberOfChannels(numberOfChannels);
+    Output(0).SetNumberOfChannels(number_of_channels);
 
-    m_sourceChannels = wrapArrayUnique(new const float*[numberOfChannels]);
-    m_destinationChannels = wrapArrayUnique(new float*[numberOfChannels]);
+    source_channels_ = WrapArrayUnique(new const float*[number_of_channels]);
+    destination_channels_ = WrapArrayUnique(new float*[number_of_channels]);
 
-    for (unsigned i = 0; i < numberOfChannels; ++i)
-      m_sourceChannels[i] = buffer->getChannelData(i)->data();
+    for (unsigned i = 0; i < number_of_channels; ++i)
+      source_channels_[i] = buffer->getChannelData(i)->Data();
 
     // If this is a grain (as set by a previous call to start()), validate the
     // grain parameters now since it wasn't validated when start was called
     // (because there was no buffer then).
-    if (m_isGrain)
-      clampGrainParameters(buffer);
+    if (is_grain_)
+      ClampGrainParameters(buffer);
   }
 
-  m_virtualReadIndex = 0;
-  m_buffer = buffer;
+  virtual_read_index_ = 0;
+  buffer_ = buffer;
 }
 
-unsigned AudioBufferSourceHandler::numberOfChannels() {
-  return output(0).numberOfChannels();
+unsigned AudioBufferSourceHandler::NumberOfChannels() {
+  return Output(0).NumberOfChannels();
 }
 
-void AudioBufferSourceHandler::clampGrainParameters(const AudioBuffer* buffer) {
+void AudioBufferSourceHandler::ClampGrainParameters(const AudioBuffer* buffer) {
   DCHECK(buffer);
 
   // We have a buffer so we can clip the offset and duration to lie within the
   // buffer.
-  double bufferDuration = buffer->duration();
+  double buffer_duration = buffer->duration();
 
-  m_grainOffset = clampTo(m_grainOffset, 0.0, bufferDuration);
+  grain_offset_ = clampTo(grain_offset_, 0.0, buffer_duration);
 
   // If the duration was not explicitly given, use the buffer duration to set
   // the grain duration. Otherwise, we want to use the user-specified value, of
   // course.
-  if (!m_isDurationGiven)
-    m_grainDuration = bufferDuration - m_grainOffset;
+  if (!is_duration_given_)
+    grain_duration_ = buffer_duration - grain_offset_;
 
-  if (m_isDurationGiven && loop()) {
+  if (is_duration_given_ && Loop()) {
     // We're looping a grain with a grain duration specified. Schedule the loop
     // to stop after grainDuration seconds after starting, possibly running the
     // loop multiple times if grainDuration is larger than the buffer duration.
     // The net effect is as if the user called stop(when + grainDuration).
-    m_grainDuration =
-        clampTo(m_grainDuration, 0.0, std::numeric_limits<double>::infinity());
-    m_endTime = m_startTime + m_grainDuration;
+    grain_duration_ =
+        clampTo(grain_duration_, 0.0, std::numeric_limits<double>::infinity());
+    end_time_ = start_time_ + grain_duration_;
   } else {
-    m_grainDuration =
-        clampTo(m_grainDuration, 0.0, bufferDuration - m_grainOffset);
+    grain_duration_ =
+        clampTo(grain_duration_, 0.0, buffer_duration - grain_offset_);
   }
 
   // We call timeToSampleFrame here since at playbackRate == 1 we don't want to
@@ -470,62 +475,62 @@ void AudioBufferSourceHandler::clampGrainParameters(const AudioBuffer* buffer) {
   // degrade the quality. When aligned to the sample-frame the playback will be
   // identical to the PCM data stored in the buffer. Since playbackRate == 1 is
   // very common, it's worth considering quality.
-  m_virtualReadIndex =
-      AudioUtilities::timeToSampleFrame(m_grainOffset, buffer->sampleRate());
+  virtual_read_index_ =
+      AudioUtilities::TimeToSampleFrame(grain_offset_, buffer->sampleRate());
 }
 
-void AudioBufferSourceHandler::start(double when,
-                                     ExceptionState& exceptionState) {
-  AudioScheduledSourceHandler::start(when, exceptionState);
+void AudioBufferSourceHandler::Start(double when,
+                                     ExceptionState& exception_state) {
+  AudioScheduledSourceHandler::Start(when, exception_state);
 }
 
-void AudioBufferSourceHandler::start(double when,
-                                     double grainOffset,
-                                     ExceptionState& exceptionState) {
-  startSource(when, grainOffset, buffer() ? buffer()->duration() : 0, false,
-              exceptionState);
+void AudioBufferSourceHandler::Start(double when,
+                                     double grain_offset,
+                                     ExceptionState& exception_state) {
+  StartSource(when, grain_offset, Buffer() ? Buffer()->duration() : 0, false,
+              exception_state);
 }
 
-void AudioBufferSourceHandler::start(double when,
-                                     double grainOffset,
-                                     double grainDuration,
-                                     ExceptionState& exceptionState) {
-  startSource(when, grainOffset, grainDuration, true, exceptionState);
+void AudioBufferSourceHandler::Start(double when,
+                                     double grain_offset,
+                                     double grain_duration,
+                                     ExceptionState& exception_state) {
+  StartSource(when, grain_offset, grain_duration, true, exception_state);
 }
 
-void AudioBufferSourceHandler::startSource(double when,
-                                           double grainOffset,
-                                           double grainDuration,
-                                           bool isDurationGiven,
-                                           ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+void AudioBufferSourceHandler::StartSource(double when,
+                                           double grain_offset,
+                                           double grain_duration,
+                                           bool is_duration_given,
+                                           ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  context()->maybeRecordStartAttempt();
+  Context()->MaybeRecordStartAttempt();
 
-  if (playbackState() != UNSCHEDULED_STATE) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "cannot call start more than once.");
+  if (GetPlaybackState() != UNSCHEDULED_STATE) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "cannot call start more than once.");
     return;
   }
 
   if (when < 0) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        ExceptionMessages::indexExceedsMinimumBound("start time", when, 0.0));
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        ExceptionMessages::IndexExceedsMinimumBound("start time", when, 0.0));
     return;
   }
 
-  if (grainOffset < 0) {
-    exceptionState.throwDOMException(
-        InvalidStateError, ExceptionMessages::indexExceedsMinimumBound(
-                               "offset", grainOffset, 0.0));
+  if (grain_offset < 0) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, ExceptionMessages::IndexExceedsMinimumBound(
+                                "offset", grain_offset, 0.0));
     return;
   }
 
-  if (grainDuration < 0) {
-    exceptionState.throwDOMException(
-        InvalidStateError, ExceptionMessages::indexExceedsMinimumBound(
-                               "duration", grainDuration, 0.0));
+  if (grain_duration < 0) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, ExceptionMessages::IndexExceedsMinimumBound(
+                                "duration", grain_duration, 0.0));
     return;
   }
 
@@ -533,69 +538,69 @@ void AudioBufferSourceHandler::startSource(double when,
   // will eventually get played even if Javascript should drop all references
   // to this node. The reference will get dropped when the source has finished
   // playing.
-  context()->notifySourceNodeStartedProcessing(node());
+  Context()->NotifySourceNodeStartedProcessing(GetNode());
 
   // This synchronizes with process(). updateSchedulingInfo will read some of
   // the variables being set here.
-  MutexLocker processLocker(m_processLock);
+  MutexLocker process_locker(process_lock_);
 
-  m_isDurationGiven = isDurationGiven;
-  m_isGrain = true;
-  m_grainOffset = grainOffset;
-  m_grainDuration = grainDuration;
+  is_duration_given_ = is_duration_given;
+  is_grain_ = true;
+  grain_offset_ = grain_offset;
+  grain_duration_ = grain_duration;
 
   // If |when| < currentTime, the source must start now according to the spec.
   // So just set startTime to currentTime in this case to start the source now.
-  m_startTime = std::max(when, context()->currentTime());
+  start_time_ = std::max(when, Context()->currentTime());
 
-  if (buffer())
-    clampGrainParameters(buffer());
+  if (Buffer())
+    ClampGrainParameters(Buffer());
 
-  setPlaybackState(SCHEDULED_STATE);
+  SetPlaybackState(SCHEDULED_STATE);
 }
 
-double AudioBufferSourceHandler::computePlaybackRate() {
+double AudioBufferSourceHandler::ComputePlaybackRate() {
   // Incorporate buffer's sample-rate versus BaseAudioContext's sample-rate.
   // Normally it's not an issue because buffers are loaded at the
   // BaseAudioContext's sample-rate, but we can handle it in any case.
-  double sampleRateFactor = 1.0;
-  if (buffer()) {
+  double sample_rate_factor = 1.0;
+  if (Buffer()) {
     // Use doubles to compute this to full accuracy.
-    sampleRateFactor =
-        buffer()->sampleRate() / static_cast<double>(context()->sampleRate());
+    sample_rate_factor =
+        Buffer()->sampleRate() / static_cast<double>(Context()->sampleRate());
   }
 
   // Use finalValue() to incorporate changes of AudioParamTimeline and
   // AudioSummingJunction from m_playbackRate AudioParam.
-  double basePlaybackRate = m_playbackRate->finalValue();
+  double base_playback_rate = playback_rate_->FinalValue();
 
-  double finalPlaybackRate = sampleRateFactor * basePlaybackRate;
+  double final_playback_rate = sample_rate_factor * base_playback_rate;
 
   // Take the detune value into account for the final playback rate.
-  finalPlaybackRate *= pow(2, m_detune->finalValue() / 1200);
+  final_playback_rate *= pow(2, detune_->FinalValue() / 1200);
 
   // Sanity check the total rate.  It's very important that the resampler not
   // get any bad rate values.
-  finalPlaybackRate = clampTo(finalPlaybackRate, 0.0, MaxRate);
+  final_playback_rate = clampTo(final_playback_rate, 0.0, kMaxRate);
 
-  bool isPlaybackRateValid =
-      !std::isnan(finalPlaybackRate) && !std::isinf(finalPlaybackRate);
-  DCHECK(isPlaybackRateValid);
+  bool is_playback_rate_valid =
+      !std::isnan(final_playback_rate) && !std::isinf(final_playback_rate);
+  DCHECK(is_playback_rate_valid);
 
-  if (!isPlaybackRateValid)
-    finalPlaybackRate = 1.0;
+  if (!is_playback_rate_valid)
+    final_playback_rate = 1.0;
 
   // Record the minimum playback rate for use by handleStoppableSourceNode.
-  m_minPlaybackRate = std::min(finalPlaybackRate, m_minPlaybackRate);
+  min_playback_rate_ = std::min(final_playback_rate, min_playback_rate_);
 
-  return finalPlaybackRate;
+  return final_playback_rate;
 }
 
-bool AudioBufferSourceHandler::propagatesSilence() const {
-  return !isPlayingOrScheduled() || hasFinished() || !m_buffer;
+bool AudioBufferSourceHandler::PropagatesSilence() const {
+  return !IsPlayingOrScheduled() || HasFinished() || !buffer_;
 }
 
-void AudioBufferSourceHandler::handleStoppableSourceNode() {
+void AudioBufferSourceHandler::HandleStoppableSourceNode() {
   // If the source node is not looping, and we have a buffer, we can determine
   // when the source would stop playing.  This is intended to handle the
   // (uncommon) scenario where start() has been called but is never connected to
@@ -606,14 +611,14 @@ void AudioBufferSourceHandler::handleStoppableSourceNode() {
   // If looping was ever done (m_didSetLooping = true), give up.  We can't
   // easily determine how long we looped so we don't know the actual duration
   // thus far, so don't try to do anything fancy.
-  if (!didSetLooping() && buffer() && isPlayingOrScheduled() &&
-      m_minPlaybackRate > 0) {
+  if (!DidSetLooping() && Buffer() && IsPlayingOrScheduled() &&
+      min_playback_rate_ > 0) {
     // Adjust the duration to include the playback rate. Only need to account
     // for rate < 1 which makes the sound last longer.  For rate >= 1, the
     // source stops sooner, but that's ok.
-    double actualDuration = buffer()->duration() / m_minPlaybackRate;
+    double actual_duration = Buffer()->duration() / min_playback_rate_;
 
-    double stopTime = m_startTime + actualDuration;
+    double stop_time = start_time_ + actual_duration;
 
     // See crbug.com/478301. If a source node is started via start(), the source
     // may not start at that time but one quantum (128 frames) later.  But we
@@ -621,15 +626,15 @@ void AudioBufferSourceHandler::handleStoppableSourceNode() {
     // up stopping one quantum early.  Thus, add a little extra time; we just
     // need to stop the source sometime after it should have stopped if it
     // hadn't already.  We don't need to be super precise on when to stop.
-    double extraStopTime =
-        kExtraStopFrames / static_cast<double>(context()->sampleRate());
+    double extra_stop_time =
+        kExtraStopFrames / static_cast<double>(Context()->sampleRate());
 
-    stopTime += extraStopTime;
-    if (context()->currentTime() > stopTime) {
+    stop_time += extra_stop_time;
+    if (Context()->currentTime() > stop_time) {
       // The context time has passed the time when the source nodes should have
       // stopped playing. Stop the node now and deref it. (But don't run the
       // onEnded event because the source never actually played.)
-      finishWithoutOnEnded();
+      FinishWithoutOnEnded();
     }
   }
 }
@@ -637,42 +642,42 @@ void AudioBufferSourceHandler::handleStoppableSourceNode() {
 // ----------------------------------------------------------------
 AudioBufferSourceNode::AudioBufferSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
-      m_playbackRate(AudioParam::create(context,
-                                        ParamTypeAudioBufferSourcePlaybackRate,
+      playback_rate_(AudioParam::Create(context,
+                                        kParamTypeAudioBufferSourcePlaybackRate,
                                         1.0)),
-      m_detune(
-          AudioParam::create(context, ParamTypeAudioBufferSourceDetune, 0.0)) {
-  setHandler(AudioBufferSourceHandler::create(*this, context.sampleRate(),
-                                              m_playbackRate->handler(),
-                                              m_detune->handler()));
+      detune_(
+          AudioParam::Create(context, kParamTypeAudioBufferSourceDetune, 0.0)) {
+  SetHandler(AudioBufferSourceHandler::Create(*this, context.sampleRate(),
+                                              playback_rate_->Handler(),
+                                              detune_->Handler()));
 }
 
-AudioBufferSourceNode* AudioBufferSourceNode::create(
+AudioBufferSourceNode* AudioBufferSourceNode::Create(
     BaseAudioContext& context,
-    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
   return new AudioBufferSourceNode(context);
 }
 
-AudioBufferSourceNode* AudioBufferSourceNode::create(
+AudioBufferSourceNode* AudioBufferSourceNode::Create(
     BaseAudioContext* context,
     AudioBufferSourceOptions& options,
-    ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  AudioBufferSourceNode* node = create(*context, exceptionState);
+  AudioBufferSourceNode* node = Create(*context, exception_state);
 
   if (!node)
     return nullptr;
 
   if (options.hasBuffer())
-    node->setBuffer(options.buffer(), exceptionState);
+    node->setBuffer(options.buffer(), exception_state);
   if (options.hasDetune())
     node->detune()->setValue(options.detune());
   if (options.hasLoop())
@@ -688,77 +693,78 @@ AudioBufferSourceNode* AudioBufferSourceNode::create(
 }
 
 DEFINE_TRACE(AudioBufferSourceNode) {
-  visitor->trace(m_playbackRate);
-  visitor->trace(m_detune);
-  AudioScheduledSourceNode::trace(visitor);
+  visitor->Trace(playback_rate_);
+  visitor->Trace(detune_);
+  AudioScheduledSourceNode::Trace(visitor);
 }
 
-AudioBufferSourceHandler& AudioBufferSourceNode::audioBufferSourceHandler()
+AudioBufferSourceHandler& AudioBufferSourceNode::GetAudioBufferSourceHandler()
     const {
-  return static_cast<AudioBufferSourceHandler&>(handler());
+  return static_cast<AudioBufferSourceHandler&>(Handler());
 }
 
 AudioBuffer* AudioBufferSourceNode::buffer() const {
-  return audioBufferSourceHandler().buffer();
+  return GetAudioBufferSourceHandler().Buffer();
 }
 
-void AudioBufferSourceNode::setBuffer(AudioBuffer* newBuffer,
-                                      ExceptionState& exceptionState) {
-  audioBufferSourceHandler().setBuffer(newBuffer, exceptionState);
+void AudioBufferSourceNode::setBuffer(AudioBuffer* new_buffer,
+                                      ExceptionState& exception_state) {
+  GetAudioBufferSourceHandler().SetBuffer(new_buffer, exception_state);
 }
 
 AudioParam* AudioBufferSourceNode::playbackRate() const {
-  return m_playbackRate;
+  return playback_rate_;
 }
 
 AudioParam* AudioBufferSourceNode::detune() const {
-  return m_detune;
+  return detune_;
 }
 
 bool AudioBufferSourceNode::loop() const {
-  return audioBufferSourceHandler().loop();
+  return GetAudioBufferSourceHandler().Loop();
 }
 
 void AudioBufferSourceNode::setLoop(bool loop) {
-  audioBufferSourceHandler().setLoop(loop);
+  GetAudioBufferSourceHandler().SetLoop(loop);
 }
 
 double AudioBufferSourceNode::loopStart() const {
-  return audioBufferSourceHandler().loopStart();
+  return GetAudioBufferSourceHandler().LoopStart();
 }
 
-void AudioBufferSourceNode::setLoopStart(double loopStart) {
-  audioBufferSourceHandler().setLoopStart(loopStart);
+void AudioBufferSourceNode::setLoopStart(double loop_start) {
+  GetAudioBufferSourceHandler().SetLoopStart(loop_start);
 }
 
 double AudioBufferSourceNode::loopEnd() const {
-  return audioBufferSourceHandler().loopEnd();
+  return GetAudioBufferSourceHandler().LoopEnd();
 }
 
-void AudioBufferSourceNode::setLoopEnd(double loopEnd) {
-  audioBufferSourceHandler().setLoopEnd(loopEnd);
+void AudioBufferSourceNode::setLoopEnd(double loop_end) {
+  GetAudioBufferSourceHandler().SetLoopEnd(loop_end);
 }
 
-void AudioBufferSourceNode::start(ExceptionState& exceptionState) {
-  audioBufferSourceHandler().start(0, exceptionState);
-}
-
-void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState) {
-  audioBufferSourceHandler().start(when, exceptionState);
+void AudioBufferSourceNode::start(ExceptionState& exception_state) {
+  GetAudioBufferSourceHandler().Start(0, exception_state);
 }
 
 void AudioBufferSourceNode::start(double when,
-                                  double grainOffset,
-                                  ExceptionState& exceptionState) {
-  audioBufferSourceHandler().start(when, grainOffset, exceptionState);
+                                  ExceptionState& exception_state) {
+  GetAudioBufferSourceHandler().Start(when, exception_state);
 }
 
 void AudioBufferSourceNode::start(double when,
-                                  double grainOffset,
-                                  double grainDuration,
-                                  ExceptionState& exceptionState) {
-  audioBufferSourceHandler().start(when, grainOffset, grainDuration,
-                                   exceptionState);
+                                  double grain_offset,
+                                  ExceptionState& exception_state) {
+  GetAudioBufferSourceHandler().Start(when, grain_offset, exception_state);
+}
+
+void AudioBufferSourceNode::start(double when,
+                                  double grain_offset,
+                                  double grain_duration,
+                                  ExceptionState& exception_state) {
+  GetAudioBufferSourceHandler().Start(when, grain_offset, grain_duration,
+                                      exception_state);
 }
 
 }  // namespace blink

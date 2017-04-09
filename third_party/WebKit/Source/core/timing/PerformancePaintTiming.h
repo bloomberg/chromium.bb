@@ -14,12 +14,12 @@ class CORE_EXPORT PerformancePaintTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class PaintType { FirstPaint, FirstContentfulPaint };
+  enum class PaintType { kFirstPaint, kFirstContentfulPaint };
 
-  PerformancePaintTiming(PaintType, double startTime);
+  PerformancePaintTiming(PaintType, double start_time);
   ~PerformancePaintTiming() override;
 
-  static String fromPaintTypeToString(PaintType);
+  static String FromPaintTypeToString(PaintType);
 };
 }  // namespace blink
 

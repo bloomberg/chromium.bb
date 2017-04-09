@@ -11,35 +11,36 @@ using device::nfc::mojom::blink::NFCErrorType;
 
 namespace blink {
 
-DOMException* NFCError::take(ScriptPromiseResolver*,
-                             const NFCErrorType& errorType) {
-  switch (errorType) {
+DOMException* NFCError::Take(ScriptPromiseResolver*,
+                             const NFCErrorType& error_type) {
+  switch (error_type) {
     case NFCErrorType::SECURITY:
-      return DOMException::create(SecurityError, "NFC operation not allowed.");
+      return DOMException::Create(kSecurityError, "NFC operation not allowed.");
     case NFCErrorType::NOT_SUPPORTED:
     case NFCErrorType::DEVICE_DISABLED:
-      return DOMException::create(NotSupportedError,
+      return DOMException::Create(kNotSupportedError,
                                   "NFC operation not supported.");
     case NFCErrorType::NOT_FOUND:
-      return DOMException::create(NotFoundError,
+      return DOMException::Create(kNotFoundError,
                                   "Invalid NFC watch Id was provided.");
     case NFCErrorType::INVALID_MESSAGE:
-      return DOMException::create(SyntaxError,
+      return DOMException::Create(kSyntaxError,
                                   "Invalid NFC message was provided.");
     case NFCErrorType::OPERATION_CANCELLED:
-      return DOMException::create(AbortError,
+      return DOMException::Create(kAbortError,
                                   "The NFC operation was cancelled.");
     case NFCErrorType::TIMER_EXPIRED:
-      return DOMException::create(TimeoutError, "NFC operation has timed-out.");
+      return DOMException::Create(kTimeoutError,
+                                  "NFC operation has timed-out.");
     case NFCErrorType::CANNOT_CANCEL:
-      return DOMException::create(NoModificationAllowedError,
+      return DOMException::Create(kNoModificationAllowedError,
                                   "NFC operation cannot be canceled.");
     case NFCErrorType::IO_ERROR:
-      return DOMException::create(NetworkError,
+      return DOMException::Create(kNetworkError,
                                   "NFC data transfer error has occurred.");
   }
   NOTREACHED();
-  return DOMException::create(UnknownError,
+  return DOMException::Create(kUnknownError,
                               "An unknown NFC error has occurred.");
 }
 

@@ -32,11 +32,11 @@
 
 namespace blink {
 
-bool AnimatableClipPathOperation::equalTo(const AnimatableValue* value) const {
+bool AnimatableClipPathOperation::EqualTo(const AnimatableValue* value) const {
   const ClipPathOperation* operation =
-      toAnimatableClipPathOperation(value)->m_operation.get();
-  return m_operation == operation ||
-         (m_operation && operation && *m_operation == *operation);
+      ToAnimatableClipPathOperation(value)->operation_.Get();
+  return operation_ == operation ||
+         (operation_ && operation && *operation_ == *operation);
 }
 
 }  // namespace blink

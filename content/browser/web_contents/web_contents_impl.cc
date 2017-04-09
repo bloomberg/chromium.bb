@@ -661,7 +661,7 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   if (opener) {
     blink::WebSandboxFlags opener_flags = opener->effective_sandbox_flags();
     const blink::WebSandboxFlags inherit_flag =
-        blink::WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts;
+        blink::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
     if ((opener_flags & inherit_flag) == inherit_flag) {
       new_root->SetPendingSandboxFlags(opener_flags);
       new_root->CommitPendingSandboxFlags();
@@ -1875,11 +1875,11 @@ bool WebContentsImpl::HandleWheelEvent(
   //   -if a user starts an inertial scroll, let's go, and presses control
   //      (i.e. control+tab) then the OS's buffered scroll events will come in
   //      with control key set which isn't what the user wants
-  if (delegate_ && event.wheelTicksY &&
+  if (delegate_ && event.wheel_ticks_y &&
       !ui::WebInputEventTraits::CanCauseScroll(event)) {
     // Count only integer cumulative scrolls as zoom events; this handles
     // smooth scroll and regular scroll device behavior.
-    zoom_scroll_remainder_ += event.wheelTicksY;
+    zoom_scroll_remainder_ += event.wheel_ticks_y;
     int whole_zoom_scroll_remainder_ = std::lround(zoom_scroll_remainder_);
     zoom_scroll_remainder_ -= whole_zoom_scroll_remainder_;
     if (whole_zoom_scroll_remainder_ != 0) {
@@ -2019,10 +2019,10 @@ bool WebContentsImpl::IsFullscreen() {
 blink::WebDisplayMode WebContentsImpl::GetDisplayMode(
     RenderWidgetHostImpl* render_widget_host) const {
   if (!RenderViewHostImpl::From(render_widget_host))
-    return blink::WebDisplayModeBrowser;
+    return blink::kWebDisplayModeBrowser;
 
   return delegate_ ? delegate_->GetDisplayMode(this)
-                   : blink::WebDisplayModeBrowser;
+                   : blink::kWebDisplayModeBrowser;
 }
 
 void WebContentsImpl::RequestToLockMouse(
@@ -2291,7 +2291,7 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
 
 void WebContentsImpl::CreateNewFullscreenWidget(int32_t render_process_id,
                                                 int32_t route_id) {
-  CreateNewWidget(render_process_id, route_id, true, blink::WebPopupTypeNone);
+  CreateNewWidget(render_process_id, route_id, true, blink::kWebPopupTypeNone);
 }
 
 void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
@@ -3200,7 +3200,7 @@ void WebContentsImpl::SystemDragEnded(RenderWidgetHost* source_rwh) {
 
 void WebContentsImpl::UserGestureDone() {
   OnUserInteraction(GetRenderViewHost()->GetWidget(),
-                    blink::WebInputEvent::Undefined);
+                    blink::WebInputEvent::kUndefined);
 }
 
 void WebContentsImpl::SetClosedByUserGesture(bool value) {
@@ -4900,7 +4900,7 @@ void WebContentsImpl::OnUserInteraction(
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   // Exclude scroll events as user gestures for resource load dispatches.
   // rdh is NULL in unittests.
-  if (rdh && type != blink::WebInputEvent::MouseWheel)
+  if (rdh && type != blink::WebInputEvent::kMouseWheel)
     rdh->OnUserGesture();
 }
 

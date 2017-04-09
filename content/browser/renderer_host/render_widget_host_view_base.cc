@@ -34,15 +34,14 @@ const int kFlushInputRateInUs = 16666;
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
     : is_fullscreen_(false),
-      popup_type_(blink::WebPopupTypeNone),
+      popup_type_(blink::kWebPopupTypeNone),
       mouse_locked_(false),
       showing_context_menu_(false),
       current_device_scale_factor_(0),
       current_display_rotation_(display::Display::ROTATE_0),
       text_input_manager_(nullptr),
       renderer_frame_number_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
   DCHECK(!mouse_locked_);

@@ -16,111 +16,111 @@ class LayoutBox;
 
 class LineLayoutBox : public LineLayoutBoxModel {
  public:
-  explicit LineLayoutBox(LayoutBox* layoutBox)
-      : LineLayoutBoxModel(layoutBox) {}
+  explicit LineLayoutBox(LayoutBox* layout_box)
+      : LineLayoutBoxModel(layout_box) {}
 
   explicit LineLayoutBox(const LineLayoutItem& item)
       : LineLayoutBoxModel(item) {
-    SECURITY_DCHECK(!item || item.isBox());
+    SECURITY_DCHECK(!item || item.IsBox());
   }
 
   explicit LineLayoutBox(std::nullptr_t) : LineLayoutBoxModel(nullptr) {}
 
   LineLayoutBox() {}
 
-  LayoutPoint location() const { return toBox()->location(); }
+  LayoutPoint Location() const { return ToBox()->Location(); }
 
-  LayoutSize size() const { return toBox()->size(); }
+  LayoutSize size() const { return ToBox()->size(); }
 
-  void setLogicalHeight(LayoutUnit size) { toBox()->setLogicalHeight(size); }
+  void SetLogicalHeight(LayoutUnit size) { ToBox()->SetLogicalHeight(size); }
 
-  LayoutUnit logicalHeight() const { return toBox()->logicalHeight(); }
+  LayoutUnit LogicalHeight() const { return ToBox()->LogicalHeight(); }
 
-  LayoutUnit logicalTop() const { return toBox()->logicalTop(); }
+  LayoutUnit LogicalTop() const { return ToBox()->LogicalTop(); }
 
-  LayoutUnit logicalBottom() const { return toBox()->logicalBottom(); }
+  LayoutUnit LogicalBottom() const { return ToBox()->LogicalBottom(); }
 
-  LayoutUnit flipForWritingMode(LayoutUnit unit) const {
-    return toBox()->flipForWritingMode(unit);
+  LayoutUnit FlipForWritingMode(LayoutUnit unit) const {
+    return ToBox()->FlipForWritingMode(unit);
   }
 
-  void flipForWritingMode(FloatRect& rect) const {
-    toBox()->flipForWritingMode(rect);
+  void FlipForWritingMode(FloatRect& rect) const {
+    ToBox()->FlipForWritingMode(rect);
   }
 
-  FloatPoint flipForWritingMode(const FloatPoint& point) const {
-    return toBox()->flipForWritingMode(point);
+  FloatPoint FlipForWritingMode(const FloatPoint& point) const {
+    return ToBox()->FlipForWritingMode(point);
   }
 
-  void flipForWritingMode(LayoutRect& rect) const {
-    toBox()->flipForWritingMode(rect);
+  void FlipForWritingMode(LayoutRect& rect) const {
+    ToBox()->FlipForWritingMode(rect);
   }
 
-  LayoutPoint flipForWritingMode(const LayoutPoint& point) const {
-    return toBox()->flipForWritingMode(point);
+  LayoutPoint FlipForWritingMode(const LayoutPoint& point) const {
+    return ToBox()->FlipForWritingMode(point);
   }
 
-  LayoutPoint flipForWritingModeForChild(const LineLayoutBox& child,
-                                         LayoutPoint childPoint) const {
-    return toBox()->flipForWritingModeForChild(
-        toLayoutBox(child.layoutObject()), childPoint);
+  LayoutPoint FlipForWritingModeForChild(const LineLayoutBox& child,
+                                         LayoutPoint child_point) const {
+    return ToBox()->FlipForWritingModeForChild(
+        ToLayoutBox(child.GetLayoutObject()), child_point);
   }
 
-  void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal) {
-    toBox()->moveWithEdgeOfInlineContainerIfNecessary(isHorizontal);
+  void MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
+    ToBox()->MoveWithEdgeOfInlineContainerIfNecessary(is_horizontal);
   }
 
-  void move(const LayoutUnit& width, const LayoutUnit& height) {
-    toBox()->move(width, height);
+  void Move(const LayoutUnit& width, const LayoutUnit& height) {
+    ToBox()->Move(width, height);
   }
 
-  bool hasOverflowModel() const { return toBox()->hasOverflowModel(); }
-  LayoutRect logicalVisualOverflowRectForPropagation(
+  bool HasOverflowModel() const { return ToBox()->HasOverflowModel(); }
+  LayoutRect LogicalVisualOverflowRectForPropagation(
       const ComputedStyle& style) const {
-    return toBox()->logicalVisualOverflowRectForPropagation(style);
+    return ToBox()->LogicalVisualOverflowRectForPropagation(style);
   }
-  LayoutRect logicalLayoutOverflowRectForPropagation(
+  LayoutRect LogicalLayoutOverflowRectForPropagation(
       const ComputedStyle& style) const {
-    return toBox()->logicalLayoutOverflowRectForPropagation(style);
+    return ToBox()->LogicalLayoutOverflowRectForPropagation(style);
   }
 
-  void setLocation(const LayoutPoint& location) {
-    return toBox()->setLocation(location);
+  void SetLocation(const LayoutPoint& location) {
+    return ToBox()->SetLocation(location);
   }
 
-  void setSize(const LayoutSize& size) { return toBox()->setSize(size); }
+  void SetSize(const LayoutSize& size) { return ToBox()->SetSize(size); }
 
-  IntSize scrolledContentOffset() const {
-    return toBox()->scrolledContentOffset();
+  IntSize ScrolledContentOffset() const {
+    return ToBox()->ScrolledContentOffset();
   }
 
-  InlineBox* createInlineBox() { return toBox()->createInlineBox(); }
+  InlineBox* CreateInlineBox() { return ToBox()->CreateInlineBox(); }
 
-  InlineBox* inlineBoxWrapper() const { return toBox()->inlineBoxWrapper(); }
+  InlineBox* InlineBoxWrapper() const { return ToBox()->InlineBoxWrapper(); }
 
-  void setInlineBoxWrapper(InlineBox* box) {
-    return toBox()->setInlineBoxWrapper(box);
+  void SetInlineBoxWrapper(InlineBox* box) {
+    return ToBox()->SetInlineBoxWrapper(box);
   }
 
 #ifndef NDEBUG
 
-  void showLineTreeAndMark(const InlineBox* markedBox1,
-                           const char* markedLabel1) const {
-    if (layoutObject()->isLayoutBlockFlow())
-      toLayoutBlockFlow(layoutObject())
-          ->showLineTreeAndMark(markedBox1, markedLabel1);
+  void ShowLineTreeAndMark(const InlineBox* marked_box1,
+                           const char* marked_label1) const {
+    if (GetLayoutObject()->IsLayoutBlockFlow())
+      ToLayoutBlockFlow(GetLayoutObject())
+          ->ShowLineTreeAndMark(marked_box1, marked_label1);
   }
 
 #endif
 
  private:
-  LayoutBox* toBox() { return toLayoutBox(layoutObject()); }
+  LayoutBox* ToBox() { return ToLayoutBox(GetLayoutObject()); }
 
-  const LayoutBox* toBox() const { return toLayoutBox(layoutObject()); }
+  const LayoutBox* ToBox() const { return ToLayoutBox(GetLayoutObject()); }
 };
 
-inline LineLayoutBox LineLayoutItem::containingBlock() const {
-  return LineLayoutBox(layoutObject()->containingBlock());
+inline LineLayoutBox LineLayoutItem::ContainingBlock() const {
+  return LineLayoutBox(GetLayoutObject()->ContainingBlock());
 }
 
 }  // namespace blink

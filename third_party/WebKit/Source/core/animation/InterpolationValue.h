@@ -19,37 +19,37 @@ struct InterpolationValue {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
   explicit InterpolationValue(
-      std::unique_ptr<InterpolableValue> interpolableValue,
-      PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-      : interpolableValue(std::move(interpolableValue)),
-        nonInterpolableValue(std::move(nonInterpolableValue)) {}
+      std::unique_ptr<InterpolableValue> interpolable_value,
+      PassRefPtr<NonInterpolableValue> non_interpolable_value = nullptr)
+      : interpolable_value(std::move(interpolable_value)),
+        non_interpolable_value(std::move(non_interpolable_value)) {}
 
   InterpolationValue(std::nullptr_t) {}
 
   InterpolationValue(InterpolationValue&& other)
-      : interpolableValue(std::move(other.interpolableValue)),
-        nonInterpolableValue(std::move(other.nonInterpolableValue)) {}
+      : interpolable_value(std::move(other.interpolable_value)),
+        non_interpolable_value(std::move(other.non_interpolable_value)) {}
 
   void operator=(InterpolationValue&& other) {
-    interpolableValue = std::move(other.interpolableValue);
-    nonInterpolableValue = std::move(other.nonInterpolableValue);
+    interpolable_value = std::move(other.interpolable_value);
+    non_interpolable_value = std::move(other.non_interpolable_value);
   }
 
-  operator bool() const { return interpolableValue.get(); }
+  operator bool() const { return interpolable_value.get(); }
 
-  InterpolationValue clone() const {
+  InterpolationValue Clone() const {
     return InterpolationValue(
-        interpolableValue ? interpolableValue->clone() : nullptr,
-        nonInterpolableValue);
+        interpolable_value ? interpolable_value->Clone() : nullptr,
+        non_interpolable_value);
   }
 
-  void clear() {
-    interpolableValue.reset();
-    nonInterpolableValue.clear();
+  void Clear() {
+    interpolable_value.reset();
+    non_interpolable_value.Clear();
   }
 
-  std::unique_ptr<InterpolableValue> interpolableValue;
-  RefPtr<NonInterpolableValue> nonInterpolableValue;
+  std::unique_ptr<InterpolableValue> interpolable_value;
+  RefPtr<NonInterpolableValue> non_interpolable_value;
 };
 
 }  // namespace blink

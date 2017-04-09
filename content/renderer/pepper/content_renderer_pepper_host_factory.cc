@@ -61,7 +61,7 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
   if (!container)
     return false;
 
-  GURL document_url = container->document().url();
+  GURL document_url = container->GetDocument().Url();
   ContentRendererClient* content_renderer_client =
       GetContentClient()->renderer();
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
@@ -75,7 +75,7 @@ static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
   if (!container)
     return false;
 
-  GURL document_url = container->document().url();
+  GURL document_url = container->GetDocument().Url();
   ContentRendererClient* content_renderer_client =
       GetContentClient()->renderer();
   return content_renderer_client->IsPluginAllowedToUseCameraDeviceAPI(
@@ -88,7 +88,7 @@ bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
   if (!container)
     return false;
 
-  GURL document_url = container->document().url();
+  GURL document_url = container->GetDocument().Url();
   ContentRendererClient* content_renderer_client =
       GetContentClient()->renderer();
   return content_renderer_client->IsPluginAllowedToUseCompositorAPI(

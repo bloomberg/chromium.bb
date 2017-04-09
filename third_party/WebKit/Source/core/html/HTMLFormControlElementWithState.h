@@ -37,29 +37,29 @@ class CORE_EXPORT HTMLFormControlElementWithState
  public:
   ~HTMLFormControlElementWithState() override;
 
-  bool canContainRangeEndPoint() const final { return false; }
+  bool CanContainRangeEndPoint() const final { return false; }
 
-  virtual bool shouldAutocomplete() const;
-  virtual bool shouldSaveAndRestoreFormControlState() const;
-  virtual FormControlState saveFormControlState() const;
+  virtual bool ShouldAutocomplete() const;
+  virtual bool ShouldSaveAndRestoreFormControlState() const;
+  virtual FormControlState SaveFormControlState() const;
   // The specified FormControlState must have at least one string value.
-  virtual void restoreFormControlState(const FormControlState&) {}
-  void notifyFormStateChanged();
+  virtual void RestoreFormControlState(const FormControlState&) {}
+  void NotifyFormStateChanged();
 
  protected:
-  HTMLFormControlElementWithState(const QualifiedName& tagName, Document&);
+  HTMLFormControlElementWithState(const QualifiedName& tag_name, Document&);
 
-  void finishParsingChildren() override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
-  bool isFormControlElementWithState() const final;
+  void FinishParsingChildren() override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
+  bool IsFormControlElementWithState() const final;
 };
 
 DEFINE_TYPE_CASTS(HTMLFormControlElementWithState,
                   ListedElement,
                   control,
-                  control->isFormControlElementWithState(),
-                  control.isFormControlElementWithState());
+                  control->IsFormControlElementWithState(),
+                  control.IsFormControlElementWithState());
 
 }  // namespace blink
 

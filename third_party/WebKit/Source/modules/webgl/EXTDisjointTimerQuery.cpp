@@ -11,214 +11,215 @@
 
 namespace blink {
 
-WebGLExtensionName EXTDisjointTimerQuery::name() const {
-  return EXTDisjointTimerQueryName;
+WebGLExtensionName EXTDisjointTimerQuery::GetName() const {
+  return kEXTDisjointTimerQueryName;
 }
 
-EXTDisjointTimerQuery* EXTDisjointTimerQuery::create(
+EXTDisjointTimerQuery* EXTDisjointTimerQuery::Create(
     WebGLRenderingContextBase* context) {
   return new EXTDisjointTimerQuery(context);
 }
 
-bool EXTDisjointTimerQuery::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+bool EXTDisjointTimerQuery::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_EXT_disjoint_timer_query");
 }
 
-const char* EXTDisjointTimerQuery::extensionName() {
+const char* EXTDisjointTimerQuery::ExtensionName() {
   return "EXT_disjoint_timer_query";
 }
 
 WebGLTimerQueryEXT* EXTDisjointTimerQuery::createQueryEXT() {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
+  if (scoped.IsLost())
     return nullptr;
 
-  return WebGLTimerQueryEXT::create(scoped.context());
+  return WebGLTimerQueryEXT::Create(scoped.Context());
 }
 
 void EXTDisjointTimerQuery::deleteQueryEXT(WebGLTimerQueryEXT* query) {
   WebGLExtensionScopedContext scoped(this);
-  if (!query || scoped.isLost())
+  if (!query || scoped.IsLost())
     return;
-  query->deleteObject(scoped.context()->contextGL());
+  query->DeleteObject(scoped.Context()->ContextGL());
 
-  if (query == m_currentElapsedQuery)
-    m_currentElapsedQuery.clear();
+  if (query == current_elapsed_query_)
+    current_elapsed_query_.Clear();
 }
 
 GLboolean EXTDisjointTimerQuery::isQueryEXT(WebGLTimerQueryEXT* query) {
   WebGLExtensionScopedContext scoped(this);
-  if (!query || scoped.isLost() || query->isDeleted() ||
-      !query->validate(0, scoped.context())) {
+  if (!query || scoped.IsLost() || query->IsDeleted() ||
+      !query->Validate(0, scoped.Context())) {
     return false;
   }
 
-  return scoped.context()->contextGL()->IsQueryEXT(query->object());
+  return scoped.Context()->ContextGL()->IsQueryEXT(query->Object());
 }
 
 void EXTDisjointTimerQuery::beginQueryEXT(GLenum target,
                                           WebGLTimerQueryEXT* query) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
+  if (scoped.IsLost())
     return;
 
   DCHECK(query);
-  if (query->isDeleted() || !query->validate(0, scoped.context())) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
+  if (query->IsDeleted() || !query->Validate(0, scoped.Context())) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
                                         "invalid query");
     return;
   }
 
   if (target != GL_TIME_ELAPSED_EXT) {
-    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "beginQueryEXT",
+    scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "beginQueryEXT",
                                         "invalid target");
     return;
   }
 
-  if (m_currentElapsedQuery) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
+  if (current_elapsed_query_) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
                                         "a query is already active for target");
     return;
   }
 
-  if (query->hasTarget() && query->target() != target) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
+  if (query->HasTarget() && query->Target() != target) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
                                         "target does not match query");
     return;
   }
 
-  scoped.context()->contextGL()->BeginQueryEXT(target, query->object());
-  query->setTarget(target);
-  m_currentElapsedQuery = query;
+  scoped.Context()->ContextGL()->BeginQueryEXT(target, query->Object());
+  query->SetTarget(target);
+  current_elapsed_query_ = query;
 }
 
 void EXTDisjointTimerQuery::endQueryEXT(GLenum target) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
+  if (scoped.IsLost())
     return;
 
   if (target != GL_TIME_ELAPSED_EXT) {
-    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "endQueryEXT",
+    scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "endQueryEXT",
                                         "invalid target");
     return;
   }
 
-  if (!m_currentElapsedQuery) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "endQueryEXT",
+  if (!current_elapsed_query_) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "endQueryEXT",
                                         "no current query");
     return;
   }
 
-  scoped.context()->contextGL()->EndQueryEXT(target);
-  m_currentElapsedQuery->resetCachedResult();
-  m_currentElapsedQuery.clear();
+  scoped.Context()->ContextGL()->EndQueryEXT(target);
+  current_elapsed_query_->ResetCachedResult();
+  current_elapsed_query_.Clear();
 }
 
 void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query,
                                             GLenum target) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
+  if (scoped.IsLost())
     return;
 
   DCHECK(query);
-  if (query->isDeleted() || !query->validate(0, scoped.context())) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
+  if (query->IsDeleted() || !query->Validate(0, scoped.Context())) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
                                         "invalid query");
     return;
   }
 
   if (target != GL_TIMESTAMP_EXT) {
-    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT",
+    scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT",
                                         "invalid target");
     return;
   }
 
-  if (query->hasTarget() && query->target() != target) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
+  if (query->HasTarget() && query->Target() != target) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
                                         "target does not match query");
     return;
   }
 
   // Timestamps are disabled in WebGL due to lack of driver support on multiple
   // platforms, so we don't actually perform a GL call.
-  query->setTarget(target);
-  query->resetCachedResult();
+  query->SetTarget(target);
+  query->ResetCachedResult();
 }
 
-ScriptValue EXTDisjointTimerQuery::getQueryEXT(ScriptState* scriptState,
+ScriptValue EXTDisjointTimerQuery::getQueryEXT(ScriptState* script_state,
                                                GLenum target,
                                                GLenum pname) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
-    return ScriptValue::createNull(scriptState);
+  if (scoped.IsLost())
+    return ScriptValue::CreateNull(script_state);
 
   if (pname == GL_QUERY_COUNTER_BITS_EXT) {
     if (target == GL_TIMESTAMP_EXT || target == GL_TIME_ELAPSED_EXT) {
       GLint value = 0;
-      scoped.context()->contextGL()->GetQueryivEXT(target, pname, &value);
-      return WebGLAny(scriptState, value);
+      scoped.Context()->ContextGL()->GetQueryivEXT(target, pname, &value);
+      return WebGLAny(script_state, value);
     }
-    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQuery",
+    scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "getQuery",
                                         "invalid target/pname combination");
-    return ScriptValue::createNull(scriptState);
+    return ScriptValue::CreateNull(script_state);
   }
 
   if (target == GL_TIME_ELAPSED_EXT && pname == GL_CURRENT_QUERY) {
-    return m_currentElapsedQuery ? WebGLAny(scriptState, m_currentElapsedQuery)
-                                 : ScriptValue::createNull(scriptState);
+    return current_elapsed_query_
+               ? WebGLAny(script_state, current_elapsed_query_)
+               : ScriptValue::CreateNull(script_state);
   }
 
   if (target == GL_TIMESTAMP_EXT && pname == GL_CURRENT_QUERY) {
-    return ScriptValue::createNull(scriptState);
+    return ScriptValue::CreateNull(script_state);
   }
 
-  scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQuery",
+  scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "getQuery",
                                       "invalid target/pname combination");
-  return ScriptValue::createNull(scriptState);
+  return ScriptValue::CreateNull(script_state);
 }
 
-ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* scriptState,
+ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* script_state,
                                                      WebGLTimerQueryEXT* query,
                                                      GLenum pname) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
-    return ScriptValue::createNull(scriptState);
+  if (scoped.IsLost())
+    return ScriptValue::CreateNull(script_state);
 
   DCHECK(query);
-  if (query->isDeleted() || !query->validate(0, scoped.context()) ||
-      m_currentElapsedQuery == query) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION,
+  if (query->IsDeleted() || !query->Validate(0, scoped.Context()) ||
+      current_elapsed_query_ == query) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION,
                                         "getQueryObjectEXT", "invalid query");
-    return ScriptValue::createNull(scriptState);
+    return ScriptValue::CreateNull(script_state);
   }
 
   switch (pname) {
     case GL_QUERY_RESULT_EXT: {
-      query->updateCachedResult(scoped.context()->contextGL());
-      return WebGLAny(scriptState, query->getQueryResult());
+      query->UpdateCachedResult(scoped.Context()->ContextGL());
+      return WebGLAny(script_state, query->GetQueryResult());
     }
     case GL_QUERY_RESULT_AVAILABLE_EXT: {
-      query->updateCachedResult(scoped.context()->contextGL());
-      return WebGLAny(scriptState, query->isQueryResultAvailable());
+      query->UpdateCachedResult(scoped.Context()->ContextGL());
+      return WebGLAny(script_state, query->IsQueryResultAvailable());
     }
     default:
-      scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQueryObjectEXT",
+      scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "getQueryObjectEXT",
                                           "invalid pname");
       break;
   }
 
-  return ScriptValue::createNull(scriptState);
+  return ScriptValue::CreateNull(script_state);
 }
 
 DEFINE_TRACE(EXTDisjointTimerQuery) {
-  visitor->trace(m_currentElapsedQuery);
-  WebGLExtension::trace(visitor);
+  visitor->Trace(current_elapsed_query_);
+  WebGLExtension::Trace(visitor);
 }
 
 EXTDisjointTimerQuery::EXTDisjointTimerQuery(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_EXT_disjoint_timer_query");
 }
 

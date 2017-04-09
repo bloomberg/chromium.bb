@@ -35,103 +35,103 @@
 namespace blink {
 namespace XPath {
 
-const Value::AdoptTag Value::adopt = {};
+const Value::AdoptTag Value::kAdopt = {};
 
 DEFINE_TRACE(ValueData) {
-  visitor->trace(m_nodeSet);
+  visitor->Trace(node_set_);
 }
 
 DEFINE_TRACE(Value) {
-  visitor->trace(m_data);
+  visitor->Trace(data_);
 }
 
-const NodeSet& Value::toNodeSet(EvaluationContext* context) const {
-  if (!isNodeSet() && context)
-    context->hadTypeConversionError = true;
+const NodeSet& Value::ToNodeSet(EvaluationContext* context) const {
+  if (!IsNodeSet() && context)
+    context->had_type_conversion_error = true;
 
-  if (!m_data) {
-    DEFINE_STATIC_LOCAL(NodeSet, emptyNodeSet, (NodeSet::create()));
-    return emptyNodeSet;
+  if (!data_) {
+    DEFINE_STATIC_LOCAL(NodeSet, empty_node_set, (NodeSet::Create()));
+    return empty_node_set;
   }
 
-  return m_data->nodeSet();
+  return data_->GetNodeSet();
 }
 
-NodeSet& Value::modifiableNodeSet(EvaluationContext& context) {
-  if (!isNodeSet())
-    context.hadTypeConversionError = true;
+NodeSet& Value::ModifiableNodeSet(EvaluationContext& context) {
+  if (!IsNodeSet())
+    context.had_type_conversion_error = true;
 
-  if (!m_data)
-    m_data = ValueData::create();
+  if (!data_)
+    data_ = ValueData::Create();
 
-  m_type = NodeSetValue;
-  return m_data->nodeSet();
+  type_ = kNodeSetValue;
+  return data_->GetNodeSet();
 }
 
-bool Value::toBoolean() const {
-  switch (m_type) {
-    case NodeSetValue:
-      return !m_data->nodeSet().isEmpty();
-    case BooleanValue:
-      return m_bool;
-    case NumberValue:
-      return m_number && !std::isnan(m_number);
-    case StringValue:
-      return !m_data->m_string.isEmpty();
+bool Value::ToBoolean() const {
+  switch (type_) {
+    case kNodeSetValue:
+      return !data_->GetNodeSet().IsEmpty();
+    case kBooleanValue:
+      return bool_;
+    case kNumberValue:
+      return number_ && !std::isnan(number_);
+    case kStringValue:
+      return !data_->string_.IsEmpty();
   }
   NOTREACHED();
   return false;
 }
 
-double Value::toNumber() const {
-  switch (m_type) {
-    case NodeSetValue:
-      return Value(toString()).toNumber();
-    case NumberValue:
-      return m_number;
-    case StringValue: {
-      const String& str = m_data->m_string.simplifyWhiteSpace();
+double Value::ToNumber() const {
+  switch (type_) {
+    case kNodeSetValue:
+      return Value(ToString()).ToNumber();
+    case kNumberValue:
+      return number_;
+    case kStringValue: {
+      const String& str = data_->string_.SimplifyWhiteSpace();
 
       // String::toDouble() supports exponential notation, which is not
       // allowed in XPath.
       unsigned len = str.length();
       for (unsigned i = 0; i < len; ++i) {
         UChar c = str[i];
-        if (!isASCIIDigit(c) && c != '.' && c != '-')
+        if (!IsASCIIDigit(c) && c != '.' && c != '-')
           return std::numeric_limits<double>::quiet_NaN();
       }
 
-      bool canConvert;
-      double value = str.toDouble(&canConvert);
-      if (canConvert)
+      bool can_convert;
+      double value = str.ToDouble(&can_convert);
+      if (can_convert)
         return value;
       return std::numeric_limits<double>::quiet_NaN();
     }
-    case BooleanValue:
-      return m_bool;
+    case kBooleanValue:
+      return bool_;
   }
   NOTREACHED();
   return 0.0;
 }
 
-String Value::toString() const {
-  switch (m_type) {
-    case NodeSetValue:
-      if (m_data->nodeSet().isEmpty())
+String Value::ToString() const {
+  switch (type_) {
+    case kNodeSetValue:
+      if (data_->GetNodeSet().IsEmpty())
         return "";
-      return stringValue(m_data->nodeSet().firstNode());
-    case StringValue:
-      return m_data->m_string;
-    case NumberValue:
-      if (std::isnan(m_number))
+      return StringValue(data_->GetNodeSet().FirstNode());
+    case kStringValue:
+      return data_->string_;
+    case kNumberValue:
+      if (std::isnan(number_))
         return "NaN";
-      if (m_number == 0)
+      if (number_ == 0)
         return "0";
-      if (std::isinf(m_number))
-        return std::signbit(m_number) ? "-Infinity" : "Infinity";
-      return String::number(m_number);
-    case BooleanValue:
-      return m_bool ? "true" : "false";
+      if (std::isinf(number_))
+        return std::signbit(number_) ? "-Infinity" : "Infinity";
+      return String::Number(number_);
+    case kBooleanValue:
+      return bool_ ? "true" : "false";
   }
   NOTREACHED();
   return String();

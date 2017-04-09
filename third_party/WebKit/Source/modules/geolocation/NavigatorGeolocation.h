@@ -35,7 +35,7 @@ class NavigatorGeolocation final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 
  public:
-  static NavigatorGeolocation& from(Navigator&);
+  static NavigatorGeolocation& From(Navigator&);
   static Geolocation* geolocation(Navigator&);
   Geolocation* geolocation();
 
@@ -44,9 +44,9 @@ class NavigatorGeolocation final
  private:
   explicit NavigatorGeolocation(Navigator&);
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<Geolocation> m_geolocation;
+  Member<Geolocation> geolocation_;
 };
 
 }  // namespace blink

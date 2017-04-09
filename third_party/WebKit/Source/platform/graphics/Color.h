@@ -38,153 +38,153 @@ class Color;
 
 typedef unsigned RGBA32;  // RGBA quadruplet
 
-PLATFORM_EXPORT RGBA32 makeRGB(int r, int g, int b);
-PLATFORM_EXPORT RGBA32 makeRGBA(int r, int g, int b, int a);
+PLATFORM_EXPORT RGBA32 MakeRGB(int r, int g, int b);
+PLATFORM_EXPORT RGBA32 MakeRGBA(int r, int g, int b, int a);
 
-PLATFORM_EXPORT RGBA32 makeRGBA32FromFloats(float r, float g, float b, float a);
-PLATFORM_EXPORT RGBA32 makeRGBAFromHSLA(double h, double s, double l, double a);
+PLATFORM_EXPORT RGBA32 MakeRGBA32FromFloats(float r, float g, float b, float a);
+PLATFORM_EXPORT RGBA32 MakeRGBAFromHSLA(double h, double s, double l, double a);
 PLATFORM_EXPORT RGBA32
-makeRGBAFromCMYKA(float c, float m, float y, float k, float a);
+MakeRGBAFromCMYKA(float c, float m, float y, float k, float a);
 
-PLATFORM_EXPORT int differenceSquared(const Color&, const Color&);
+PLATFORM_EXPORT int DifferenceSquared(const Color&, const Color&);
 
-inline int redChannel(RGBA32 color) {
+inline int RedChannel(RGBA32 color) {
   return (color >> 16) & 0xFF;
 }
-inline int greenChannel(RGBA32 color) {
+inline int GreenChannel(RGBA32 color) {
   return (color >> 8) & 0xFF;
 }
-inline int blueChannel(RGBA32 color) {
+inline int BlueChannel(RGBA32 color) {
   return color & 0xFF;
 }
-inline int alphaChannel(RGBA32 color) {
+inline int AlphaChannel(RGBA32 color) {
   return (color >> 24) & 0xFF;
 }
 
 struct NamedColor {
   DISALLOW_NEW();
   const char* name;
-  unsigned ARGBValue;
+  unsigned argb_value;
 };
 
-PLATFORM_EXPORT const NamedColor* findColor(register const char* str,
+PLATFORM_EXPORT const NamedColor* FindColor(register const char* str,
                                             register unsigned len);
 
 class PLATFORM_EXPORT Color {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  Color() : m_color(Color::transparent) {}
-  Color(RGBA32 color) : m_color(color) {}
-  Color(int r, int g, int b) : m_color(makeRGB(r, g, b)) {}
-  Color(int r, int g, int b, int a) : m_color(makeRGBA(r, g, b, a)) {}
+  Color() : color_(Color::kTransparent) {}
+  Color(RGBA32 color) : color_(color) {}
+  Color(int r, int g, int b) : color_(MakeRGB(r, g, b)) {}
+  Color(int r, int g, int b, int a) : color_(MakeRGBA(r, g, b, a)) {}
   // Color is currently limited to 32bit RGBA. Perhaps some day we'll support
   // better colors.
   Color(float r, float g, float b, float a)
-      : m_color(makeRGBA32FromFloats(r, g, b, a)) {}
+      : color_(MakeRGBA32FromFloats(r, g, b, a)) {}
   // Creates a new color from the specific CMYK and alpha values.
   Color(float c, float m, float y, float k, float a)
-      : m_color(makeRGBAFromCMYKA(c, m, y, k, a)) {}
+      : color_(MakeRGBAFromCMYKA(c, m, y, k, a)) {}
 
-  static Color createUnchecked(int r, int g, int b) {
+  static Color CreateUnchecked(int r, int g, int b) {
     RGBA32 color = 0xFF000000 | r << 16 | g << 8 | b;
     return Color(color);
   }
-  static Color createUnchecked(int r, int g, int b, int a) {
+  static Color CreateUnchecked(int r, int g, int b, int a) {
     RGBA32 color = a << 24 | r << 16 | g << 8 | b;
     return Color(color);
   }
 
   // Returns the color serialized according to HTML5:
   // http://www.whatwg.org/specs/web-apps/current-work/#serialization-of-a-color
-  String serialized() const;
+  String Serialized() const;
 
   // Returns the color serialized according to CSSOM:
   // http://dev.w3.org/csswg/cssom/#serialize-a-css-component-value
-  String serializedAsCSSComponentValue() const;
+  String SerializedAsCSSComponentValue() const;
 
   // Returns the color serialized as either #RRGGBB or #RRGGBBAA. The latter
   // format is not a valid CSS color, and should only be seen in DRT dumps.
-  String nameForLayoutTreeAsText() const;
+  String NameForLayoutTreeAsText() const;
 
   // Returns whether parsing succeeded. The resulting Color is arbitrary
   // if parsing fails.
-  bool setFromString(const String&);
-  bool setNamedColor(const String&);
+  bool SetFromString(const String&);
+  bool SetNamedColor(const String&);
 
-  bool hasAlpha() const { return alpha() < 255; }
+  bool HasAlpha() const { return Alpha() < 255; }
 
-  int red() const { return redChannel(m_color); }
-  int green() const { return greenChannel(m_color); }
-  int blue() const { return blueChannel(m_color); }
-  int alpha() const { return alphaChannel(m_color); }
+  int Red() const { return RedChannel(color_); }
+  int Green() const { return GreenChannel(color_); }
+  int Blue() const { return BlueChannel(color_); }
+  int Alpha() const { return AlphaChannel(color_); }
 
-  RGBA32 rgb() const { return m_color; }  // Preserve the alpha.
-  void setRGB(int r, int g, int b) { m_color = makeRGB(r, g, b); }
-  void setRGB(RGBA32 rgb) { m_color = rgb; }
-  void getRGBA(float& r, float& g, float& b, float& a) const;
-  void getRGBA(double& r, double& g, double& b, double& a) const;
-  void getHSL(double& h, double& s, double& l) const;
+  RGBA32 Rgb() const { return color_; }  // Preserve the alpha.
+  void SetRGB(int r, int g, int b) { color_ = MakeRGB(r, g, b); }
+  void SetRGB(RGBA32 rgb) { color_ = rgb; }
+  void GetRGBA(float& r, float& g, float& b, float& a) const;
+  void GetRGBA(double& r, double& g, double& b, double& a) const;
+  void GetHSL(double& h, double& s, double& l) const;
 
-  Color light() const;
-  Color dark() const;
+  Color Light() const;
+  Color Dark() const;
 
-  Color combineWithAlpha(float otherAlpha) const;
+  Color CombineWithAlpha(float other_alpha) const;
 
   // This is an implementation of Porter-Duff's "source-over" equation
-  Color blend(const Color&) const;
-  Color blendWithWhite() const;
+  Color Blend(const Color&) const;
+  Color BlendWithWhite() const;
 
-  static bool parseHexColor(const StringView&, RGBA32&);
-  static bool parseHexColor(const LChar*, unsigned, RGBA32&);
-  static bool parseHexColor(const UChar*, unsigned, RGBA32&);
+  static bool ParseHexColor(const StringView&, RGBA32&);
+  static bool ParseHexColor(const LChar*, unsigned, RGBA32&);
+  static bool ParseHexColor(const UChar*, unsigned, RGBA32&);
 
-  static const RGBA32 black = 0xFF000000;
-  static const RGBA32 white = 0xFFFFFFFF;
-  static const RGBA32 darkGray = 0xFF808080;
-  static const RGBA32 gray = 0xFFA0A0A0;
-  static const RGBA32 lightGray = 0xFFC0C0C0;
-  static const RGBA32 transparent = 0x00000000;
+  static const RGBA32 kBlack = 0xFF000000;
+  static const RGBA32 kWhite = 0xFFFFFFFF;
+  static const RGBA32 kDarkGray = 0xFF808080;
+  static const RGBA32 kGray = 0xFFA0A0A0;
+  static const RGBA32 kLightGray = 0xFFC0C0C0;
+  static const RGBA32 kTransparent = 0x00000000;
 
  private:
-  RGBA32 m_color;
+  RGBA32 color_;
 };
 
 inline bool operator==(const Color& a, const Color& b) {
-  return a.rgb() == b.rgb();
+  return a.Rgb() == b.Rgb();
 }
 
 inline bool operator!=(const Color& a, const Color& b) {
   return !(a == b);
 }
 
-PLATFORM_EXPORT Color colorFromPremultipliedARGB(RGBA32);
-PLATFORM_EXPORT RGBA32 premultipliedARGBFromColor(const Color&);
+PLATFORM_EXPORT Color ColorFromPremultipliedARGB(RGBA32);
+PLATFORM_EXPORT RGBA32 PremultipliedARGBFromColor(const Color&);
 
-inline Color blend(const Color& from,
+inline Color Blend(const Color& from,
                    const Color& to,
                    double progress,
-                   bool blendPremultiplied = true) {
-  if (blendPremultiplied) {
+                   bool blend_premultiplied = true) {
+  if (blend_premultiplied) {
     // Contrary to the name, RGBA32 actually stores ARGB, so we can initialize
     // Color directly from premultipliedARGBFromColor(). Also,
     // premultipliedARGBFromColor() bails on zero alpha, so special-case that.
-    Color premultFrom = from.alpha() ? premultipliedARGBFromColor(from) : 0;
-    Color premultTo = to.alpha() ? premultipliedARGBFromColor(to) : 0;
+    Color premult_from = from.Alpha() ? PremultipliedARGBFromColor(from) : 0;
+    Color premult_to = to.Alpha() ? PremultipliedARGBFromColor(to) : 0;
 
-    Color premultBlended(
-        blend(premultFrom.red(), premultTo.red(), progress),
-        blend(premultFrom.green(), premultTo.green(), progress),
-        blend(premultFrom.blue(), premultTo.blue(), progress),
-        blend(premultFrom.alpha(), premultTo.alpha(), progress));
+    Color premult_blended(
+        Blend(premult_from.Red(), premult_to.Red(), progress),
+        Blend(premult_from.Green(), premult_to.Green(), progress),
+        Blend(premult_from.Blue(), premult_to.Blue(), progress),
+        Blend(premult_from.Alpha(), premult_to.Alpha(), progress));
 
-    return Color(colorFromPremultipliedARGB(premultBlended.rgb()));
+    return Color(ColorFromPremultipliedARGB(premult_blended.Rgb()));
   }
 
-  return Color(blend(from.red(), to.red(), progress),
-               blend(from.green(), to.green(), progress),
-               blend(from.blue(), to.blue(), progress),
-               blend(from.alpha(), to.alpha(), progress));
+  return Color(Blend(from.Red(), to.Red(), progress),
+               Blend(from.Green(), to.Green(), progress),
+               Blend(from.Blue(), to.Blue(), progress),
+               Blend(from.Alpha(), to.Alpha(), progress));
 }
 }  // namespace blink
 

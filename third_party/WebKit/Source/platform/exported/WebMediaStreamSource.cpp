@@ -45,178 +45,180 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamSource::ExtraData {
  public:
-  ExtraDataContainer(std::unique_ptr<WebMediaStreamSource::ExtraData> extraData)
-      : m_extraData(std::move(extraData)) {}
+  ExtraDataContainer(
+      std::unique_ptr<WebMediaStreamSource::ExtraData> extra_data)
+      : extra_data_(std::move(extra_data)) {}
 
-  WebMediaStreamSource::ExtraData* getExtraData() { return m_extraData.get(); }
+  WebMediaStreamSource::ExtraData* GetExtraData() { return extra_data_.get(); }
 
  private:
-  std::unique_ptr<WebMediaStreamSource::ExtraData> m_extraData;
+  std::unique_ptr<WebMediaStreamSource::ExtraData> extra_data_;
 };
 
 }  // namespace
 
-WebMediaStreamSource WebMediaStreamSource::ExtraData::owner() {
-  DCHECK(m_owner);
-  return WebMediaStreamSource(m_owner);
+WebMediaStreamSource WebMediaStreamSource::ExtraData::Owner() {
+  DCHECK(owner_);
+  return WebMediaStreamSource(owner_);
 }
 
-void WebMediaStreamSource::ExtraData::setOwner(MediaStreamSource* owner) {
-  DCHECK(!m_owner);
-  m_owner = owner;
+void WebMediaStreamSource::ExtraData::SetOwner(MediaStreamSource* owner) {
+  DCHECK(!owner_);
+  owner_ = owner;
 }
 
-WebMediaStreamSource::WebMediaStreamSource(MediaStreamSource* mediaStreamSource)
-    : m_private(mediaStreamSource) {}
+WebMediaStreamSource::WebMediaStreamSource(
+    MediaStreamSource* media_stream_source)
+    : private_(media_stream_source) {}
 
 WebMediaStreamSource& WebMediaStreamSource::operator=(
-    MediaStreamSource* mediaStreamSource) {
-  m_private = mediaStreamSource;
+    MediaStreamSource* media_stream_source) {
+  private_ = media_stream_source;
   return *this;
 }
 
-void WebMediaStreamSource::assign(const WebMediaStreamSource& other) {
-  m_private = other.m_private;
+void WebMediaStreamSource::Assign(const WebMediaStreamSource& other) {
+  private_ = other.private_;
 }
 
-void WebMediaStreamSource::reset() {
-  m_private.reset();
+void WebMediaStreamSource::Reset() {
+  private_.Reset();
 }
 
 WebMediaStreamSource::operator MediaStreamSource*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
-void WebMediaStreamSource::initialize(const WebString& id,
+void WebMediaStreamSource::Initialize(const WebString& id,
                                       Type type,
                                       const WebString& name) {
-  m_private = MediaStreamSource::create(
+  private_ = MediaStreamSource::Create(
       id, static_cast<MediaStreamSource::StreamType>(type), name, false);
 }
 
-void WebMediaStreamSource::initialize(const WebString& id,
+void WebMediaStreamSource::Initialize(const WebString& id,
                                       Type type,
                                       const WebString& name,
                                       bool remote) {
-  m_private = MediaStreamSource::create(
+  private_ = MediaStreamSource::Create(
       id, static_cast<MediaStreamSource::StreamType>(type), name, remote);
 }
 
-WebString WebMediaStreamSource::id() const {
-  DCHECK(!m_private.isNull());
-  return m_private.get()->id();
+WebString WebMediaStreamSource::Id() const {
+  DCHECK(!private_.IsNull());
+  return private_.Get()->Id();
 }
 
-WebMediaStreamSource::Type WebMediaStreamSource::getType() const {
-  DCHECK(!m_private.isNull());
-  return static_cast<Type>(m_private.get()->type());
+WebMediaStreamSource::Type WebMediaStreamSource::GetType() const {
+  DCHECK(!private_.IsNull());
+  return static_cast<Type>(private_.Get()->GetType());
 }
 
-WebString WebMediaStreamSource::name() const {
-  DCHECK(!m_private.isNull());
-  return m_private.get()->name();
+WebString WebMediaStreamSource::GetName() const {
+  DCHECK(!private_.IsNull());
+  return private_.Get()->GetName();
 }
 
-bool WebMediaStreamSource::remote() const {
-  DCHECK(!m_private.isNull());
-  return m_private.get()->remote();
+bool WebMediaStreamSource::Remote() const {
+  DCHECK(!private_.IsNull());
+  return private_.Get()->Remote();
 }
 
-void WebMediaStreamSource::setReadyState(ReadyState state) {
-  DCHECK(!m_private.isNull());
-  m_private->setReadyState(static_cast<MediaStreamSource::ReadyState>(state));
+void WebMediaStreamSource::SetReadyState(ReadyState state) {
+  DCHECK(!private_.IsNull());
+  private_->SetReadyState(static_cast<MediaStreamSource::ReadyState>(state));
 }
 
-WebMediaStreamSource::ReadyState WebMediaStreamSource::getReadyState() const {
-  DCHECK(!m_private.isNull());
-  return static_cast<ReadyState>(m_private->getReadyState());
+WebMediaStreamSource::ReadyState WebMediaStreamSource::GetReadyState() const {
+  DCHECK(!private_.IsNull());
+  return static_cast<ReadyState>(private_->GetReadyState());
 }
 
-WebMediaStreamSource::ExtraData* WebMediaStreamSource::getExtraData() const {
-  DCHECK(!m_private.isNull());
-  MediaStreamSource::ExtraData* data = m_private->getExtraData();
+WebMediaStreamSource::ExtraData* WebMediaStreamSource::GetExtraData() const {
+  DCHECK(!private_.IsNull());
+  MediaStreamSource::ExtraData* data = private_->GetExtraData();
   if (!data)
     return 0;
-  return static_cast<ExtraDataContainer*>(data)->getExtraData();
+  return static_cast<ExtraDataContainer*>(data)->GetExtraData();
 }
 
-void WebMediaStreamSource::setExtraData(ExtraData* extraData) {
-  DCHECK(!m_private.isNull());
+void WebMediaStreamSource::SetExtraData(ExtraData* extra_data) {
+  DCHECK(!private_.IsNull());
 
-  if (extraData)
-    extraData->setOwner(m_private.get());
+  if (extra_data)
+    extra_data->SetOwner(private_.Get());
 
-  m_private->setExtraData(
-      WTF::wrapUnique(new ExtraDataContainer(WTF::wrapUnique(extraData))));
+  private_->SetExtraData(
+      WTF::WrapUnique(new ExtraDataContainer(WTF::WrapUnique(extra_data))));
 }
 
-WebMediaConstraints WebMediaStreamSource::constraints() {
-  DCHECK(!m_private.isNull());
-  return m_private->constraints();
+WebMediaConstraints WebMediaStreamSource::Constraints() {
+  DCHECK(!private_.IsNull());
+  return private_->Constraints();
 }
 
-bool WebMediaStreamSource::requiresAudioConsumer() const {
-  DCHECK(!m_private.isNull());
-  return m_private->requiresAudioConsumer();
+bool WebMediaStreamSource::RequiresAudioConsumer() const {
+  DCHECK(!private_.IsNull());
+  return private_->RequiresAudioConsumer();
 }
 
 class ConsumerWrapper final : public AudioDestinationConsumer {
   USING_FAST_MALLOC(ConsumerWrapper);
 
  public:
-  static ConsumerWrapper* create(WebAudioDestinationConsumer* consumer) {
+  static ConsumerWrapper* Create(WebAudioDestinationConsumer* consumer) {
     return new ConsumerWrapper(consumer);
   }
 
-  void setFormat(size_t numberOfChannels, float sampleRate) override;
-  void consumeAudio(AudioBus*, size_t numberOfFrames) override;
+  void SetFormat(size_t number_of_channels, float sample_rate) override;
+  void ConsumeAudio(AudioBus*, size_t number_of_frames) override;
 
-  WebAudioDestinationConsumer* consumer() { return m_consumer; }
+  WebAudioDestinationConsumer* Consumer() { return consumer_; }
 
  private:
   explicit ConsumerWrapper(WebAudioDestinationConsumer* consumer)
-      : m_consumer(consumer) {}
+      : consumer_(consumer) {}
 
   // m_consumer is not owned by this class.
-  WebAudioDestinationConsumer* m_consumer;
+  WebAudioDestinationConsumer* consumer_;
 };
 
-void ConsumerWrapper::setFormat(size_t numberOfChannels, float sampleRate) {
-  m_consumer->setFormat(numberOfChannels, sampleRate);
+void ConsumerWrapper::SetFormat(size_t number_of_channels, float sample_rate) {
+  consumer_->SetFormat(number_of_channels, sample_rate);
 }
 
-void ConsumerWrapper::consumeAudio(AudioBus* bus, size_t numberOfFrames) {
+void ConsumerWrapper::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
   if (!bus)
     return;
 
   // Wrap AudioBus.
-  size_t numberOfChannels = bus->numberOfChannels();
-  WebVector<const float*> busVector(numberOfChannels);
-  for (size_t i = 0; i < numberOfChannels; ++i)
-    busVector[i] = bus->channel(i)->data();
+  size_t number_of_channels = bus->NumberOfChannels();
+  WebVector<const float*> bus_vector(number_of_channels);
+  for (size_t i = 0; i < number_of_channels; ++i)
+    bus_vector[i] = bus->Channel(i)->Data();
 
-  m_consumer->consumeAudio(busVector, numberOfFrames);
+  consumer_->ConsumeAudio(bus_vector, number_of_frames);
 }
 
-void WebMediaStreamSource::addAudioConsumer(
+void WebMediaStreamSource::AddAudioConsumer(
     WebAudioDestinationConsumer* consumer) {
-  DCHECK(isMainThread());
-  DCHECK(!m_private.isNull() && consumer);
+  DCHECK(IsMainThread());
+  DCHECK(!private_.IsNull() && consumer);
 
-  m_private->addAudioConsumer(ConsumerWrapper::create(consumer));
+  private_->AddAudioConsumer(ConsumerWrapper::Create(consumer));
 }
 
-bool WebMediaStreamSource::removeAudioConsumer(
+bool WebMediaStreamSource::RemoveAudioConsumer(
     WebAudioDestinationConsumer* consumer) {
-  DCHECK(isMainThread());
-  DCHECK(!m_private.isNull() && consumer);
+  DCHECK(IsMainThread());
+  DCHECK(!private_.IsNull() && consumer);
 
   const HashSet<AudioDestinationConsumer*>& consumers =
-      m_private->audioConsumers();
+      private_->AudioConsumers();
   for (AudioDestinationConsumer* it : consumers) {
     ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>(it);
-    if (wrapper->consumer() == consumer) {
-      m_private->removeAudioConsumer(wrapper);
+    if (wrapper->Consumer() == consumer) {
+      private_->RemoveAudioConsumer(wrapper);
       return true;
     }
   }

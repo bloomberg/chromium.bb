@@ -39,53 +39,53 @@ class FrameViewBase;
 
 class PLATFORM_EXPORT ScrollbarThemeClient {
  public:
-  virtual int x() const = 0;
-  virtual int y() const = 0;
-  virtual int width() const = 0;
-  virtual int height() const = 0;
+  virtual int X() const = 0;
+  virtual int Y() const = 0;
+  virtual int Width() const = 0;
+  virtual int Height() const = 0;
   virtual IntSize size() const = 0;
-  virtual IntPoint location() const = 0;
+  virtual IntPoint Location() const = 0;
 
-  virtual FrameViewBase* parent() const = 0;
-  virtual FrameViewBase* root() const = 0;
+  virtual FrameViewBase* Parent() const = 0;
+  virtual FrameViewBase* Root() const = 0;
 
-  virtual void setFrameRect(const IntRect&) = 0;
-  virtual IntRect frameRect() const = 0;
+  virtual void SetFrameRect(const IntRect&) = 0;
+  virtual IntRect FrameRect() const = 0;
 
-  virtual void invalidate() = 0;
-  virtual void invalidateRect(const IntRect&) = 0;
+  virtual void Invalidate() = 0;
+  virtual void InvalidateRect(const IntRect&) = 0;
 
-  virtual ScrollbarOverlayColorTheme getScrollbarOverlayColorTheme() const = 0;
-  virtual void getTickmarks(Vector<IntRect>&) const = 0;
-  virtual bool isScrollableAreaActive() const = 0;
+  virtual ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const = 0;
+  virtual void GetTickmarks(Vector<IntRect>&) const = 0;
+  virtual bool IsScrollableAreaActive() const = 0;
 
-  virtual IntPoint convertFromRootFrame(
-      const IntPoint& pointInRootFrame) const = 0;
+  virtual IntPoint ConvertFromRootFrame(
+      const IntPoint& point_in_root_frame) const = 0;
 
-  virtual bool isCustomScrollbar() const = 0;
-  virtual ScrollbarOrientation orientation() const = 0;
-  virtual bool isLeftSideVerticalScrollbar() const = 0;
+  virtual bool IsCustomScrollbar() const = 0;
+  virtual ScrollbarOrientation Orientation() const = 0;
+  virtual bool IsLeftSideVerticalScrollbar() const = 0;
 
-  virtual int value() const = 0;
-  virtual float currentPos() const = 0;
-  virtual int visibleSize() const = 0;
-  virtual int totalSize() const = 0;
-  virtual int maximum() const = 0;
-  virtual ScrollbarControlSize controlSize() const = 0;
+  virtual int Value() const = 0;
+  virtual float CurrentPos() const = 0;
+  virtual int VisibleSize() const = 0;
+  virtual int TotalSize() const = 0;
+  virtual int Maximum() const = 0;
+  virtual ScrollbarControlSize GetControlSize() const = 0;
 
-  virtual ScrollbarPart pressedPart() const = 0;
-  virtual ScrollbarPart hoveredPart() const = 0;
+  virtual ScrollbarPart PressedPart() const = 0;
+  virtual ScrollbarPart HoveredPart() const = 0;
 
-  virtual void styleChanged() = 0;
-  virtual void setScrollbarsHidden(bool) = 0;
+  virtual void StyleChanged() = 0;
+  virtual void SetScrollbarsHidden(bool) = 0;
 
-  virtual bool enabled() const = 0;
-  virtual void setEnabled(bool) = 0;
+  virtual bool Enabled() const = 0;
+  virtual void SetEnabled(bool) = 0;
 
-  virtual bool isOverlayScrollbar() const = 0;
+  virtual bool IsOverlayScrollbar() const = 0;
 
-  virtual float elasticOverscroll() const = 0;
-  virtual void setElasticOverscroll(float) = 0;
+  virtual float ElasticOverscroll() const = 0;
+  virtual void SetElasticOverscroll(float) = 0;
 
  protected:
   virtual ~ScrollbarThemeClient() {}

@@ -45,7 +45,7 @@ class SVGUnitTypes final : public GarbageCollected<SVGUnitTypes>,
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGUnitTypes::SVGUnitType>();
+GetStaticStringEntries<SVGUnitTypes::SVGUnitType>();
 
 }  // namespace blink
 

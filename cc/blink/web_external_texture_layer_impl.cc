@@ -22,30 +22,30 @@ WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl() {
   static_cast<TextureLayer*>(layer_->layer())->ClearClient();
 }
 
-blink::WebLayer* WebExternalTextureLayerImpl::layer() {
+blink::WebLayer* WebExternalTextureLayerImpl::Layer() {
   return layer_.get();
 }
 
-void WebExternalTextureLayerImpl::clearTexture() {
+void WebExternalTextureLayerImpl::ClearTexture() {
   TextureLayer* layer = static_cast<TextureLayer*>(layer_->layer());
   layer->ClearTexture();
 }
 
-void WebExternalTextureLayerImpl::setOpaque(bool opaque) {
+void WebExternalTextureLayerImpl::SetOpaque(bool opaque) {
   static_cast<TextureLayer*>(layer_->layer())->SetContentsOpaque(opaque);
 }
 
-void WebExternalTextureLayerImpl::setPremultipliedAlpha(
+void WebExternalTextureLayerImpl::SetPremultipliedAlpha(
     bool premultiplied_alpha) {
   static_cast<TextureLayer*>(layer_->layer())
       ->SetPremultipliedAlpha(premultiplied_alpha);
 }
 
-void WebExternalTextureLayerImpl::setBlendBackgroundColor(bool blend) {
+void WebExternalTextureLayerImpl::SetBlendBackgroundColor(bool blend) {
   static_cast<TextureLayer*>(layer_->layer())->SetBlendBackgroundColor(blend);
 }
 
-void WebExternalTextureLayerImpl::setNearestNeighbor(bool nearest_neighbor) {
+void WebExternalTextureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
   static_cast<TextureLayer*>(layer_->layer())
       ->SetNearestNeighbor(nearest_neighbor);
 }

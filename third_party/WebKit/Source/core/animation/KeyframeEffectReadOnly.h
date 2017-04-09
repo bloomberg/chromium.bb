@@ -25,68 +25,69 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Priority { DefaultPriority, TransitionPriority };
+  enum Priority { kDefaultPriority, kTransitionPriority };
 
-  static KeyframeEffectReadOnly* create(Element*,
+  static KeyframeEffectReadOnly* Create(Element*,
                                         EffectModel*,
                                         const Timing&,
-                                        Priority = DefaultPriority,
+                                        Priority = kDefaultPriority,
                                         EventDelegate* = nullptr);
   // Web Animations API Bindings constructors.
-  static KeyframeEffectReadOnly* create(
+  static KeyframeEffectReadOnly* Create(
       ExecutionContext*,
       Element*,
-      const DictionarySequenceOrDictionary& effectInput,
+      const DictionarySequenceOrDictionary& effect_input,
       double duration,
       ExceptionState&);
-  static KeyframeEffectReadOnly* create(
+  static KeyframeEffectReadOnly* Create(
       ExecutionContext*,
       Element*,
-      const DictionarySequenceOrDictionary& effectInput,
-      const KeyframeEffectOptions& timingInput,
+      const DictionarySequenceOrDictionary& effect_input,
+      const KeyframeEffectOptions& timing_input,
       ExceptionState&);
-  static KeyframeEffectReadOnly* create(
+  static KeyframeEffectReadOnly* Create(
       ExecutionContext*,
       Element*,
-      const DictionarySequenceOrDictionary& effectInput,
+      const DictionarySequenceOrDictionary& effect_input,
       ExceptionState&);
 
   ~KeyframeEffectReadOnly() override {}
 
-  bool isKeyframeEffectReadOnly() const override { return true; }
+  bool IsKeyframeEffectReadOnly() const override { return true; }
 
-  bool affects(const PropertyHandle&) const;
-  const EffectModel* model() const { return m_model.get(); }
-  EffectModel* model() { return m_model.get(); }
-  void setModel(EffectModel* model) { m_model = model; }
-  Priority getPriority() const { return m_priority; }
-  Element* target() const { return m_target; }
+  bool Affects(const PropertyHandle&) const;
+  const EffectModel* Model() const { return model_.Get(); }
+  EffectModel* Model() { return model_.Get(); }
+  void SetModel(EffectModel* model) { model_ = model; }
+  Priority GetPriority() const { return priority_; }
+  Element* Target() const { return target_; }
 
-  void notifySampledEffectRemovedFromEffectStack();
+  void NotifySampledEffectRemovedFromEffectStack();
 
-  bool isCandidateForAnimationOnCompositor(double animationPlaybackRate) const;
+  bool IsCandidateForAnimationOnCompositor(
+      double animation_playback_rate) const;
   // Must only be called once.
-  bool maybeStartAnimationOnCompositor(int group,
-                                       double startTime,
-                                       double timeOffset,
-                                       double animationPlaybackRate);
-  bool hasActiveAnimationsOnCompositor() const;
-  bool hasActiveAnimationsOnCompositor(const PropertyHandle&) const;
-  bool cancelAnimationOnCompositor();
-  void restartAnimationOnCompositor();
-  void cancelIncompatibleAnimationsOnCompositor();
-  void pauseAnimationForTestingOnCompositor(double pauseTime);
+  bool MaybeStartAnimationOnCompositor(int group,
+                                       double start_time,
+                                       double time_offset,
+                                       double animation_playback_rate);
+  bool HasActiveAnimationsOnCompositor() const;
+  bool HasActiveAnimationsOnCompositor(const PropertyHandle&) const;
+  bool CancelAnimationOnCompositor();
+  void RestartAnimationOnCompositor();
+  void CancelIncompatibleAnimationsOnCompositor();
+  void PauseAnimationForTestingOnCompositor(double pause_time);
 
-  void attachCompositedLayers();
+  void AttachCompositedLayers();
 
-  void setCompositorAnimationIdsForTesting(
-      const Vector<int>& compositorAnimationIds) {
-    m_compositorAnimationIds = compositorAnimationIds;
+  void SetCompositorAnimationIdsForTesting(
+      const Vector<int>& compositor_animation_ids) {
+    compositor_animation_ids_ = compositor_animation_ids;
   }
 
   DECLARE_VIRTUAL_TRACE();
 
-  void downgradeToNormal() { m_priority = DefaultPriority; }
+  void DowngradeToNormal() { priority_ = kDefaultPriority; }
 
  protected:
   KeyframeEffectReadOnly(Element*,
@@ -95,33 +96,34 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
                          Priority,
                          EventDelegate*);
 
-  void applyEffects();
-  void clearEffects();
-  void updateChildrenAndEffects() const override;
-  void attach(Animation*) override;
-  void detach() override;
-  void specifiedTimingChanged() override;
-  double calculateTimeToEffectChange(bool forwards,
-                                     double inheritedTime,
-                                     double timeToNextIteration) const override;
-  virtual bool hasIncompatibleStyle();
-  bool hasMultipleTransformProperties() const;
+  void ApplyEffects();
+  void ClearEffects();
+  void UpdateChildrenAndEffects() const override;
+  void Attach(Animation*) override;
+  void Detach() override;
+  void SpecifiedTimingChanged() override;
+  double CalculateTimeToEffectChange(
+      bool forwards,
+      double inherited_time,
+      double time_to_next_iteration) const override;
+  virtual bool HasIncompatibleStyle();
+  bool HasMultipleTransformProperties() const;
 
  private:
-  Member<Element> m_target;
-  Member<EffectModel> m_model;
-  Member<SampledEffect> m_sampledEffect;
+  Member<Element> target_;
+  Member<EffectModel> model_;
+  Member<SampledEffect> sampled_effect_;
 
-  Priority m_priority;
+  Priority priority_;
 
-  Vector<int> m_compositorAnimationIds;
+  Vector<int> compositor_animation_ids_;
 };
 
 DEFINE_TYPE_CASTS(KeyframeEffectReadOnly,
                   AnimationEffectReadOnly,
                   animationNode,
-                  animationNode->isKeyframeEffectReadOnly(),
-                  animationNode.isKeyframeEffectReadOnly());
+                  animationNode->IsKeyframeEffectReadOnly(),
+                  animationNode.IsKeyframeEffectReadOnly());
 
 }  // namespace blink
 

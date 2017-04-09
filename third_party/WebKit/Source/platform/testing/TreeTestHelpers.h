@@ -37,12 +37,12 @@ namespace blink {
 namespace TreeTestHelpers {
 
 // Initializes the pseudo-random number generator with a specific seed.
-void initRandom(const int32_t seed);
+void InitRandom(const int32_t seed);
 
 // Produces the next pseudo-random number in the sequence, in the
 // range from [0..maximumValue). Negative numbers are not allowed and will
 // produce undefined results.
-int32_t nextRandom(const int32_t maximumValue);
+int32_t NextRandom(const int32_t maximum_value);
 
 }  // namespace TreeTestHelpers
 }  // namespace blink

@@ -47,7 +47,7 @@ TEST(DOMMatrixTest, Fixup) {
   EXPECT_FALSE(init.hasM41());
   EXPECT_FALSE(init.hasM42());
 
-  DOMMatrix::fromMatrix(init, scope.getExceptionState());
+  DOMMatrix::fromMatrix(init, scope.GetExceptionState());
 
   EXPECT_TRUE(init.hasA());
   EXPECT_TRUE(init.hasB());
@@ -86,7 +86,7 @@ TEST(DOMMatrixTest, FixupWithFallback) {
   EXPECT_FALSE(init.hasM41());
   EXPECT_FALSE(init.hasM42());
 
-  DOMMatrix::fromMatrix(init, scope.getExceptionState());
+  DOMMatrix::fromMatrix(init, scope.GetExceptionState());
 
   EXPECT_TRUE(init.hasM11());
   EXPECT_TRUE(init.hasM12());
@@ -108,43 +108,43 @@ TEST(DOMMatrixTest, ThrowExceptionIfTwoValuesAreDifferent) {
     DOMMatrixInit init;
     init.setA(1.0);
     init.setM11(2.0);
-    DOMMatrix::fromMatrix(init, scope.getExceptionState());
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+    DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+    EXPECT_TRUE(scope.GetExceptionState().HadException());
   }
   {
     DOMMatrixInit init;
     init.setB(1.0);
     init.setM12(2.0);
-    DOMMatrix::fromMatrix(init, scope.getExceptionState());
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+    DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+    EXPECT_TRUE(scope.GetExceptionState().HadException());
   }
   {
     DOMMatrixInit init;
     init.setC(1.0);
     init.setM21(2.0);
-    DOMMatrix::fromMatrix(init, scope.getExceptionState());
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+    DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+    EXPECT_TRUE(scope.GetExceptionState().HadException());
   }
   {
     DOMMatrixInit init;
     init.setD(1.0);
     init.setM22(2.0);
-    DOMMatrix::fromMatrix(init, scope.getExceptionState());
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+    DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+    EXPECT_TRUE(scope.GetExceptionState().HadException());
   }
   {
     DOMMatrixInit init;
     init.setE(1.0);
     init.setM41(2.0);
-    DOMMatrix::fromMatrix(init, scope.getExceptionState());
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+    DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+    EXPECT_TRUE(scope.GetExceptionState().HadException());
   }
   {
     DOMMatrixInit init;
     init.setF(1.0);
     init.setM42(2.0);
-    DOMMatrix::fromMatrix(init, scope.getExceptionState());
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+    DOMMatrix::fromMatrix(init, scope.GetExceptionState());
+    EXPECT_TRUE(scope.GetExceptionState().HadException());
   }
 }
 

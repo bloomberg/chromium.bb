@@ -17,191 +17,191 @@ namespace blink {
 
 namespace {
 
-bool isContainingBlockChainDescendant(LayoutObject* descendant,
+bool IsContainingBlockChainDescendant(LayoutObject* descendant,
                                       LayoutObject* ancestor) {
-  LocalFrame* ancestorFrame = ancestor->document().frame();
-  LocalFrame* descendantFrame = descendant->document().frame();
-  if (ancestorFrame != descendantFrame)
+  LocalFrame* ancestor_frame = ancestor->GetDocument().GetFrame();
+  LocalFrame* descendant_frame = descendant->GetDocument().GetFrame();
+  if (ancestor_frame != descendant_frame)
     return false;
 
   while (descendant && descendant != ancestor)
-    descendant = descendant->containingBlock();
+    descendant = descendant->ContainingBlock();
   return descendant;
 }
 
-void mapRectUpToDocument(LayoutRect& rect,
+void MapRectUpToDocument(LayoutRect& rect,
                          const LayoutObject& descendant,
                          const Document& document) {
-  FloatQuad mappedQuad = descendant.localToAncestorQuad(
-      FloatQuad(FloatRect(rect)), document.layoutView(),
-      UseTransforms | ApplyContainerFlip);
-  rect = LayoutRect(mappedQuad.boundingBox());
+  FloatQuad mapped_quad = descendant.LocalToAncestorQuad(
+      FloatQuad(FloatRect(rect)), document.GetLayoutView(),
+      kUseTransforms | kApplyContainerFlip);
+  rect = LayoutRect(mapped_quad.BoundingBox());
 }
 
-void mapRectDownToDocument(LayoutRect& rect,
+void MapRectDownToDocument(LayoutRect& rect,
                            LayoutBoxModelObject* ancestor,
                            const Document& document) {
-  FloatQuad mappedQuad = document.layoutView()->ancestorToLocalQuad(
+  FloatQuad mapped_quad = document.GetLayoutView()->AncestorToLocalQuad(
       ancestor, FloatQuad(FloatRect(rect)),
-      UseTransforms | ApplyContainerFlip | TraverseDocumentBoundaries);
-  rect = LayoutRect(mappedQuad.boundingBox());
+      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries);
+  rect = LayoutRect(mapped_quad.BoundingBox());
 }
 
-LayoutUnit computeMargin(const Length& length, LayoutUnit referenceLength) {
-  if (length.type() == Percent) {
-    return LayoutUnit(
-        static_cast<int>(referenceLength.toFloat() * length.percent() / 100.0));
+LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
+  if (length.GetType() == kPercent) {
+    return LayoutUnit(static_cast<int>(reference_length.ToFloat() *
+                                       length.Percent() / 100.0));
   }
-  DCHECK_EQ(length.type(), Fixed);
-  return LayoutUnit(length.intValue());
+  DCHECK_EQ(length.GetType(), kFixed);
+  return LayoutUnit(length.IntValue());
 }
 
-LayoutView* localRootView(Element& element) {
-  LocalFrame* frame = element.document().frame();
-  LocalFrame* frameRoot = frame ? frame->localFrameRoot() : nullptr;
-  return frameRoot ? frameRoot->contentLayoutObject() : nullptr;
+LayoutView* LocalRootView(Element& element) {
+  LocalFrame* frame = element.GetDocument().GetFrame();
+  LocalFrame* frame_root = frame ? frame->LocalFrameRoot() : nullptr;
+  return frame_root ? frame_root->ContentLayoutObject() : nullptr;
 }
 
 }  // namespace
 
 IntersectionGeometry::IntersectionGeometry(Element* root,
                                            Element& target,
-                                           const Vector<Length>& rootMargin,
-                                           bool shouldReportRootBounds)
-    : m_root(root ? root->layoutObject() : localRootView(target)),
-      m_target(target.layoutObject()),
-      m_rootMargin(rootMargin),
-      m_doesIntersect(0),
-      m_shouldReportRootBounds(shouldReportRootBounds),
-      m_rootIsImplicit(!root),
-      m_canComputeGeometry(initializeCanComputeGeometry(root, target)) {
-  if (m_canComputeGeometry)
-    initializeGeometry();
+                                           const Vector<Length>& root_margin,
+                                           bool should_report_root_bounds)
+    : root_(root ? root->GetLayoutObject() : LocalRootView(target)),
+      target_(target.GetLayoutObject()),
+      root_margin_(root_margin),
+      does_intersect_(0),
+      should_report_root_bounds_(should_report_root_bounds),
+      root_is_implicit_(!root),
+      can_compute_geometry_(InitializeCanComputeGeometry(root, target)) {
+  if (can_compute_geometry_)
+    InitializeGeometry();
 }
 
 IntersectionGeometry::~IntersectionGeometry() {}
 
-bool IntersectionGeometry::initializeCanComputeGeometry(Element* root,
+bool IntersectionGeometry::InitializeCanComputeGeometry(Element* root,
                                                         Element& target) const {
-  DCHECK(m_rootMargin.isEmpty() || m_rootMargin.size() == 4);
+  DCHECK(root_margin_.IsEmpty() || root_margin_.size() == 4);
   if (root && !root->isConnected())
     return false;
-  if (!m_root || !m_root->isBox())
+  if (!root_ || !root_->IsBox())
     return false;
   if (!target.isConnected())
     return false;
-  if (!m_target || (!m_target->isBoxModelObject() && !m_target->isText()))
+  if (!target_ || (!target_->IsBoxModelObject() && !target_->IsText()))
     return false;
-  if (root && !isContainingBlockChainDescendant(m_target, m_root))
+  if (root && !IsContainingBlockChainDescendant(target_, root_))
     return false;
   return true;
 }
 
-void IntersectionGeometry::initializeGeometry() {
-  initializeTargetRect();
-  m_intersectionRect = m_targetRect;
-  initializeRootRect();
+void IntersectionGeometry::InitializeGeometry() {
+  InitializeTargetRect();
+  intersection_rect_ = target_rect_;
+  InitializeRootRect();
 }
 
-void IntersectionGeometry::initializeTargetRect() {
-  m_targetRect =
-      LayoutRect(toLayoutBoxModelObject(target())->borderBoundingBox());
+void IntersectionGeometry::InitializeTargetRect() {
+  target_rect_ =
+      LayoutRect(ToLayoutBoxModelObject(Target())->BorderBoundingBox());
 }
 
-void IntersectionGeometry::initializeRootRect() {
-  if (m_root->isLayoutView()) {
-    m_rootRect =
-        LayoutRect(toLayoutView(m_root)->frameView()->visibleContentRect());
-    m_root->mapToVisualRectInAncestorSpace(nullptr, m_rootRect);
-  } else if (m_root->isBox() && m_root->hasOverflowClip()) {
-    m_rootRect = LayoutRect(toLayoutBox(m_root)->contentBoxRect());
+void IntersectionGeometry::InitializeRootRect() {
+  if (root_->IsLayoutView()) {
+    root_rect_ =
+        LayoutRect(ToLayoutView(root_)->GetFrameView()->VisibleContentRect());
+    root_->MapToVisualRectInAncestorSpace(nullptr, root_rect_);
+  } else if (root_->IsBox() && root_->HasOverflowClip()) {
+    root_rect_ = LayoutRect(ToLayoutBox(root_)->ContentBoxRect());
   } else {
-    m_rootRect =
-        LayoutRect(toLayoutBoxModelObject(m_root)->borderBoundingBox());
+    root_rect_ = LayoutRect(ToLayoutBoxModelObject(root_)->BorderBoundingBox());
   }
-  applyRootMargin();
+  ApplyRootMargin();
 }
 
-void IntersectionGeometry::applyRootMargin() {
-  if (m_rootMargin.isEmpty())
+void IntersectionGeometry::ApplyRootMargin() {
+  if (root_margin_.IsEmpty())
     return;
 
   // TODO(szager): Make sure the spec is clear that left/right margins are
   // resolved against width and not height.
-  LayoutUnit topMargin = computeMargin(m_rootMargin[0], m_rootRect.height());
-  LayoutUnit rightMargin = computeMargin(m_rootMargin[1], m_rootRect.width());
-  LayoutUnit bottomMargin = computeMargin(m_rootMargin[2], m_rootRect.height());
-  LayoutUnit leftMargin = computeMargin(m_rootMargin[3], m_rootRect.width());
+  LayoutUnit top_margin = ComputeMargin(root_margin_[0], root_rect_.Height());
+  LayoutUnit right_margin = ComputeMargin(root_margin_[1], root_rect_.Width());
+  LayoutUnit bottom_margin =
+      ComputeMargin(root_margin_[2], root_rect_.Height());
+  LayoutUnit left_margin = ComputeMargin(root_margin_[3], root_rect_.Width());
 
-  m_rootRect.setX(m_rootRect.x() - leftMargin);
-  m_rootRect.setWidth(m_rootRect.width() + leftMargin + rightMargin);
-  m_rootRect.setY(m_rootRect.y() - topMargin);
-  m_rootRect.setHeight(m_rootRect.height() + topMargin + bottomMargin);
+  root_rect_.SetX(root_rect_.X() - left_margin);
+  root_rect_.SetWidth(root_rect_.Width() + left_margin + right_margin);
+  root_rect_.SetY(root_rect_.Y() - top_margin);
+  root_rect_.SetHeight(root_rect_.Height() + top_margin + bottom_margin);
 }
 
-void IntersectionGeometry::clipToRoot() {
+void IntersectionGeometry::ClipToRoot() {
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
-  LayoutBox* ancestor = toLayoutBox(m_root);
-  m_doesIntersect = m_target->mapToVisualRectInAncestorSpace(
-      (rootIsImplicit() ? nullptr : ancestor), m_intersectionRect,
-      EdgeInclusive);
-  if (ancestor && ancestor->hasOverflowClip())
-    m_intersectionRect.move(-ancestor->scrolledContentOffset());
-  if (!m_doesIntersect)
+  LayoutBox* ancestor = ToLayoutBox(root_);
+  does_intersect_ = target_->MapToVisualRectInAncestorSpace(
+      (RootIsImplicit() ? nullptr : ancestor), intersection_rect_,
+      kEdgeInclusive);
+  if (ancestor && ancestor->HasOverflowClip())
+    intersection_rect_.Move(-ancestor->ScrolledContentOffset());
+  if (!does_intersect_)
     return;
-  LayoutRect rootClipRect(m_rootRect);
+  LayoutRect root_clip_rect(root_rect_);
   if (ancestor)
-    ancestor->flipForWritingMode(rootClipRect);
-  m_doesIntersect &= m_intersectionRect.inclusiveIntersect(rootClipRect);
+    ancestor->FlipForWritingMode(root_clip_rect);
+  does_intersect_ &= intersection_rect_.InclusiveIntersect(root_clip_rect);
 }
 
-void IntersectionGeometry::mapTargetRectToTargetFrameCoordinates() {
-  Document& targetDocument = m_target->document();
-  LayoutSize scrollPosition =
-      LayoutSize(targetDocument.view()->getScrollOffset());
-  mapRectUpToDocument(m_targetRect, *m_target, targetDocument);
-  m_targetRect.move(-scrollPosition);
+void IntersectionGeometry::MapTargetRectToTargetFrameCoordinates() {
+  Document& target_document = target_->GetDocument();
+  LayoutSize scroll_position =
+      LayoutSize(target_document.View()->GetScrollOffset());
+  MapRectUpToDocument(target_rect_, *target_, target_document);
+  target_rect_.Move(-scroll_position);
 }
 
-void IntersectionGeometry::mapRootRectToRootFrameCoordinates() {
-  m_root->frameView()->mapQuadToAncestorFrameIncludingScrollOffset(
-      m_rootRect, m_root,
-      rootIsImplicit() ? nullptr : m_root->document().layoutView(),
-      UseTransforms | ApplyContainerFlip);
+void IntersectionGeometry::MapRootRectToRootFrameCoordinates() {
+  root_->GetFrameView()->MapQuadToAncestorFrameIncludingScrollOffset(
+      root_rect_, root_,
+      RootIsImplicit() ? nullptr : root_->GetDocument().GetLayoutView(),
+      kUseTransforms | kApplyContainerFlip);
 }
 
-void IntersectionGeometry::mapIntersectionRectToTargetFrameCoordinates() {
-  Document& targetDocument = m_target->document();
-  if (rootIsImplicit()) {
-    LocalFrame* targetFrame = targetDocument.frame();
-    Frame* rootFrame = targetFrame->tree().top();
-    LayoutSize scrollPosition =
-        LayoutSize(targetDocument.view()->getScrollOffset());
-    if (targetFrame != rootFrame)
-      mapRectDownToDocument(m_intersectionRect, nullptr, targetDocument);
-    m_intersectionRect.move(-scrollPosition);
+void IntersectionGeometry::MapIntersectionRectToTargetFrameCoordinates() {
+  Document& target_document = target_->GetDocument();
+  if (RootIsImplicit()) {
+    LocalFrame* target_frame = target_document.GetFrame();
+    Frame* root_frame = target_frame->Tree().Top();
+    LayoutSize scroll_position =
+        LayoutSize(target_document.View()->GetScrollOffset());
+    if (target_frame != root_frame)
+      MapRectDownToDocument(intersection_rect_, nullptr, target_document);
+    intersection_rect_.Move(-scroll_position);
   } else {
-    LayoutSize scrollPosition =
-        LayoutSize(targetDocument.view()->getScrollOffset());
-    mapRectUpToDocument(m_intersectionRect, *m_root, m_root->document());
-    m_intersectionRect.move(-scrollPosition);
+    LayoutSize scroll_position =
+        LayoutSize(target_document.View()->GetScrollOffset());
+    MapRectUpToDocument(intersection_rect_, *root_, root_->GetDocument());
+    intersection_rect_.Move(-scroll_position);
   }
 }
 
-void IntersectionGeometry::computeGeometry() {
-  if (!canComputeGeometry())
+void IntersectionGeometry::ComputeGeometry() {
+  if (!CanComputeGeometry())
     return;
-  clipToRoot();
-  mapTargetRectToTargetFrameCoordinates();
-  if (m_doesIntersect)
-    mapIntersectionRectToTargetFrameCoordinates();
+  ClipToRoot();
+  MapTargetRectToTargetFrameCoordinates();
+  if (does_intersect_)
+    MapIntersectionRectToTargetFrameCoordinates();
   else
-    m_intersectionRect = LayoutRect();
+    intersection_rect_ = LayoutRect();
   // Small optimization: if we're not going to report root bounds, don't bother
   // transforming them to the frame.
-  if (shouldReportRootBounds())
-    mapRootRectToRootFrameCoordinates();
+  if (ShouldReportRootBounds())
+    MapRootRectToRootFrameCoordinates();
 }
 
 }  // namespace blink

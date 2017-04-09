@@ -12,62 +12,62 @@
 
 namespace blink {
 
-ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* scriptState,
-                                                 ScriptValue jsController) {
+ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* script_state,
+                                                 ScriptValue js_controller) {
   // Cannot call start twice (e.g., cannot use the same UnderlyingSourceBase to
   // construct multiple streams).
-  ASSERT(!m_controller);
+  ASSERT(!controller_);
 
-  m_controller = new ReadableStreamController(jsController);
+  controller_ = new ReadableStreamController(js_controller);
 
-  return start(scriptState);
+  return Start(script_state);
 }
 
-ScriptPromise UnderlyingSourceBase::start(ScriptState* scriptState) {
-  return ScriptPromise::castUndefined(scriptState);
+ScriptPromise UnderlyingSourceBase::Start(ScriptState* script_state) {
+  return ScriptPromise::CastUndefined(script_state);
 }
 
-ScriptPromise UnderlyingSourceBase::pull(ScriptState* scriptState) {
-  return ScriptPromise::castUndefined(scriptState);
+ScriptPromise UnderlyingSourceBase::pull(ScriptState* script_state) {
+  return ScriptPromise::CastUndefined(script_state);
 }
 
-ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* scriptState,
+ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* script_state,
                                                   ScriptValue reason) {
-  m_controller->noteHasBeenCanceled();
-  return cancel(scriptState, reason);
+  controller_->NoteHasBeenCanceled();
+  return Cancel(script_state, reason);
 }
 
-ScriptPromise UnderlyingSourceBase::cancel(ScriptState* scriptState,
+ScriptPromise UnderlyingSourceBase::Cancel(ScriptState* script_state,
                                            ScriptValue reason) {
-  return ScriptPromise::castUndefined(scriptState);
+  return ScriptPromise::CastUndefined(script_state);
 }
 
 void UnderlyingSourceBase::notifyLockAcquired() {
-  m_isStreamLocked = true;
+  is_stream_locked_ = true;
 }
 
 void UnderlyingSourceBase::notifyLockReleased() {
-  m_isStreamLocked = false;
+  is_stream_locked_ = false;
 }
 
-bool UnderlyingSourceBase::hasPendingActivity() const {
+bool UnderlyingSourceBase::HasPendingActivity() const {
   // This will return false within a finite time period _assuming_ that
   // consumers use the controller to close or error the stream.
   // Browser-created readable streams should always close or error within a
   // finite time period, due to timeouts etc.
-  return m_controller && m_controller->isActive() && m_isStreamLocked;
+  return controller_ && controller_->IsActive() && is_stream_locked_;
 }
 
-void UnderlyingSourceBase::contextDestroyed(ExecutionContext*) {
-  if (m_controller) {
-    m_controller->noteHasBeenCanceled();
-    m_controller.clear();
+void UnderlyingSourceBase::ContextDestroyed(ExecutionContext*) {
+  if (controller_) {
+    controller_->NoteHasBeenCanceled();
+    controller_.Clear();
   }
 }
 
 DEFINE_TRACE(UnderlyingSourceBase) {
-  ContextLifecycleObserver::trace(visitor);
-  visitor->trace(m_controller);
+  ContextLifecycleObserver::Trace(visitor);
+  visitor->Trace(controller_);
 }
 
 }  // namespace blink

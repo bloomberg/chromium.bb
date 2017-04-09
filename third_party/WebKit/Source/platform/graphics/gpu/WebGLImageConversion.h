@@ -31,100 +31,100 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // by non-member functions.
   // "_S" postfix indicates signed type.
   enum DataFormat {
-    DataFormatRGBA8 = 0,
-    DataFormatRGBA8_S,
-    DataFormatRGBA16,
-    DataFormatRGBA16_S,
-    DataFormatRGBA32,
-    DataFormatRGBA32_S,
-    DataFormatRGBA16F,
-    DataFormatRGBA32F,
-    DataFormatRGBA2_10_10_10,
-    DataFormatRGB8,
-    DataFormatRGB8_S,
-    DataFormatRGB16,
-    DataFormatRGB16_S,
-    DataFormatRGB32,
-    DataFormatRGB32_S,
-    DataFormatRGB16F,
-    DataFormatRGB32F,
-    DataFormatBGR8,
-    DataFormatBGRA8,
-    DataFormatARGB8,
-    DataFormatABGR8,
-    DataFormatRGBA5551,
-    DataFormatRGBA4444,
-    DataFormatRGB565,
-    DataFormatRGB10F11F11F,
-    DataFormatRGB5999,
-    DataFormatRG8,
-    DataFormatRG8_S,
-    DataFormatRG16,
-    DataFormatRG16_S,
-    DataFormatRG32,
-    DataFormatRG32_S,
-    DataFormatRG16F,
-    DataFormatRG32F,
-    DataFormatR8,
-    DataFormatR8_S,
-    DataFormatR16,
-    DataFormatR16_S,
-    DataFormatR32,
-    DataFormatR32_S,
-    DataFormatR16F,
-    DataFormatR32F,
-    DataFormatRA8,
-    DataFormatRA16F,
-    DataFormatRA32F,
-    DataFormatAR8,
-    DataFormatA8,
-    DataFormatA16F,
-    DataFormatA32F,
-    DataFormatD16,
-    DataFormatD32,
-    DataFormatD32F,
-    DataFormatDS24_8,
-    DataFormatNumFormats
+    kDataFormatRGBA8 = 0,
+    kDataFormatRGBA8_S,
+    kDataFormatRGBA16,
+    kDataFormatRGBA16_S,
+    kDataFormatRGBA32,
+    kDataFormatRGBA32_S,
+    kDataFormatRGBA16F,
+    kDataFormatRGBA32F,
+    kDataFormatRGBA2_10_10_10,
+    kDataFormatRGB8,
+    kDataFormatRGB8_S,
+    kDataFormatRGB16,
+    kDataFormatRGB16_S,
+    kDataFormatRGB32,
+    kDataFormatRGB32_S,
+    kDataFormatRGB16F,
+    kDataFormatRGB32F,
+    kDataFormatBGR8,
+    kDataFormatBGRA8,
+    kDataFormatARGB8,
+    kDataFormatABGR8,
+    kDataFormatRGBA5551,
+    kDataFormatRGBA4444,
+    kDataFormatRGB565,
+    kDataFormatRGB10F11F11F,
+    kDataFormatRGB5999,
+    kDataFormatRG8,
+    kDataFormatRG8_S,
+    kDataFormatRG16,
+    kDataFormatRG16_S,
+    kDataFormatRG32,
+    kDataFormatRG32_S,
+    kDataFormatRG16F,
+    kDataFormatRG32F,
+    kDataFormatR8,
+    kDataFormatR8_S,
+    kDataFormatR16,
+    kDataFormatR16_S,
+    kDataFormatR32,
+    kDataFormatR32_S,
+    kDataFormatR16F,
+    kDataFormatR32F,
+    kDataFormatRA8,
+    kDataFormatRA16F,
+    kDataFormatRA32F,
+    kDataFormatAR8,
+    kDataFormatA8,
+    kDataFormatA16F,
+    kDataFormatA32F,
+    kDataFormatD16,
+    kDataFormatD32,
+    kDataFormatD32F,
+    kDataFormatDS24_8,
+    kDataFormatNumFormats
   };
 
   enum ChannelBits {
-    ChannelRed = 1,
-    ChannelGreen = 2,
-    ChannelBlue = 4,
-    ChannelAlpha = 8,
-    ChannelDepth = 16,
-    ChannelStencil = 32,
-    ChannelRG = ChannelRed | ChannelGreen,
-    ChannelRGB = ChannelRed | ChannelGreen | ChannelBlue,
-    ChannelRGBA = ChannelRGB | ChannelAlpha,
-    ChannelDepthStencil = ChannelDepth | ChannelStencil,
+    kChannelRed = 1,
+    kChannelGreen = 2,
+    kChannelBlue = 4,
+    kChannelAlpha = 8,
+    kChannelDepth = 16,
+    kChannelStencil = 32,
+    kChannelRG = kChannelRed | kChannelGreen,
+    kChannelRGB = kChannelRed | kChannelGreen | kChannelBlue,
+    kChannelRGBA = kChannelRGB | kChannelAlpha,
+    kChannelDepthStencil = kChannelDepth | kChannelStencil,
   };
 
   // Possible alpha operations that may need to occur during
   // pixel packing. FIXME: kAlphaDoUnmultiply is lossy and must
   // be removed.
   enum AlphaOp {
-    AlphaDoNothing = 0,
-    AlphaDoPremultiply = 1,
-    AlphaDoUnmultiply = 2
+    kAlphaDoNothing = 0,
+    kAlphaDoPremultiply = 1,
+    kAlphaDoUnmultiply = 2
   };
 
   enum ImageHtmlDomSource {
-    HtmlDomImage = 0,
-    HtmlDomCanvas = 1,
-    HtmlDomVideo = 2,
-    HtmlDomNone = 3
+    kHtmlDomImage = 0,
+    kHtmlDomCanvas = 1,
+    kHtmlDomVideo = 2,
+    kHtmlDomNone = 3
   };
 
   struct PLATFORM_EXPORT PixelStoreParams final {
     PixelStoreParams();
 
     GLint alignment;
-    GLint rowLength;
-    GLint imageHeight;
-    GLint skipPixels;
-    GLint skipRows;
-    GLint skipImages;
+    GLint row_length;
+    GLint image_height;
+    GLint skip_pixels;
+    GLint skip_rows;
+    GLint skip_images;
   };
 
   class PLATFORM_EXPORT ImageExtractor final {
@@ -134,43 +134,43 @@ class PLATFORM_EXPORT WebGLImageConversion final {
    public:
     ImageExtractor(Image*,
                    ImageHtmlDomSource,
-                   bool premultiplyAlpha,
-                   bool ignoreColorSpace);
+                   bool premultiply_alpha,
+                   bool ignore_color_space);
 
-    const void* imagePixelData() {
-      return m_imagePixelLocker ? m_imagePixelLocker->pixels() : nullptr;
+    const void* ImagePixelData() {
+      return image_pixel_locker_ ? image_pixel_locker_->Pixels() : nullptr;
     }
-    unsigned imageWidth() { return m_imageWidth; }
-    unsigned imageHeight() { return m_imageHeight; }
-    DataFormat imageSourceFormat() { return m_imageSourceFormat; }
-    AlphaOp imageAlphaOp() { return m_alphaOp; }
-    unsigned imageSourceUnpackAlignment() {
-      return m_imageSourceUnpackAlignment;
+    unsigned ImageWidth() { return image_width_; }
+    unsigned ImageHeight() { return image_height_; }
+    DataFormat ImageSourceFormat() { return image_source_format_; }
+    AlphaOp ImageAlphaOp() { return alpha_op_; }
+    unsigned ImageSourceUnpackAlignment() {
+      return image_source_unpack_alignment_;
     }
 
    private:
     // Extracts the image and keeps track of its status, such as width, height,
     // Source Alignment, format, AlphaOp, etc. This needs to lock the resources
     // or relevant data if needed.
-    void extractImage(bool premultiplyAlpha, bool ignoreColorSpace);
+    void ExtractImage(bool premultiply_alpha, bool ignore_color_space);
 
-    Image* m_image;
-    Optional<ImagePixelLocker> m_imagePixelLocker;
-    ImageHtmlDomSource m_imageHtmlDomSource;
-    unsigned m_imageWidth;
-    unsigned m_imageHeight;
-    DataFormat m_imageSourceFormat;
-    AlphaOp m_alphaOp;
-    unsigned m_imageSourceUnpackAlignment;
+    Image* image_;
+    Optional<ImagePixelLocker> image_pixel_locker_;
+    ImageHtmlDomSource image_html_dom_source_;
+    unsigned image_width_;
+    unsigned image_height_;
+    DataFormat image_source_format_;
+    AlphaOp alpha_op_;
+    unsigned image_source_unpack_alignment_;
   };
 
   // Computes the components per pixel and bytes per component
   // for the given format and type combination. Returns false if
   // either was an invalid enum.
-  static bool computeFormatAndTypeParameters(GLenum format,
+  static bool ComputeFormatAndTypeParameters(GLenum format,
                                              GLenum type,
-                                             unsigned* componentsPerPixel,
-                                             unsigned* bytesPerComponent);
+                                             unsigned* components_per_pixel,
+                                             unsigned* bytes_per_component);
 
   // Computes the image size in bytes. If paddingInBytes is not null, padding
   // is also calculated in return. Returns NO_ERROR if succeed, otherwise
@@ -182,26 +182,26 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // overflow.
   // |paddingInBytes| and |skipSizeInBytes| are optional and can be null, but
   // the overflow validation is still performed.
-  static GLenum computeImageSizeInBytes(GLenum format,
+  static GLenum ComputeImageSizeInBytes(GLenum format,
                                         GLenum type,
                                         GLsizei width,
                                         GLsizei height,
                                         GLsizei depth,
                                         const PixelStoreParams&,
-                                        unsigned* imageSizeInBytes,
-                                        unsigned* paddingInBytes,
-                                        unsigned* skipSizeInBytes);
+                                        unsigned* image_size_in_bytes,
+                                        unsigned* padding_in_bytes,
+                                        unsigned* skip_size_in_bytes);
 
   // Check if the format is one of the formats from the ImageData or DOM
   // elements. The format from ImageData is always RGBA8. The formats from DOM
   // elements vary with Graphics ports, but can only be RGBA8 or BGRA8.
-  static ALWAYS_INLINE bool srcFormatComeFromDOMElementOrImageData(
-      DataFormat SrcFormat) {
-    return SrcFormat == DataFormatBGRA8 || SrcFormat == DataFormatRGBA8;
+  static ALWAYS_INLINE bool SrcFormatComeFromDOMElementOrImageData(
+      DataFormat src_format) {
+    return src_format == kDataFormatBGRA8 || src_format == kDataFormatRGBA8;
   }
 
   // The input can be either format or internalformat.
-  static unsigned getChannelBitsByFormat(GLenum);
+  static unsigned GetChannelBitsByFormat(GLenum);
 
   // The Following functions are implemented in
   // GraphicsContext3DImagePacking.cpp.
@@ -209,35 +209,35 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // Packs the contents of the given Image, which is passed in |pixels|, into
   // the passed Vector according to the given format and type, and obeying the
   // flipY and AlphaOp flags. Returns true upon success.
-  static bool packImageData(Image*,
+  static bool PackImageData(Image*,
                             const void* pixels,
                             GLenum format,
                             GLenum type,
-                            bool flipY,
+                            bool flip_y,
                             AlphaOp,
-                            DataFormat sourceFormat,
-                            unsigned sourceImageWidth,
-                            unsigned sourceImageHeight,
-                            const IntRect& sourceImageSubRectangle,
+                            DataFormat source_format,
+                            unsigned source_image_width,
+                            unsigned source_image_height,
+                            const IntRect& source_image_sub_rectangle,
                             int depth,
-                            unsigned sourceUnpackAlignment,
-                            int unpackImageHeight,
+                            unsigned source_unpack_alignment,
+                            int unpack_image_height,
                             Vector<uint8_t>& data);
 
   // Extracts the contents of the given ImageData into the passed Vector,
   // packing the pixel data according to the given format and type,
   // and obeying the flipY and premultiplyAlpha flags. Returns true
   // upon success.
-  static bool extractImageData(const uint8_t* imageData,
-                               DataFormat sourceDataFormat,
-                               const IntSize& imageDataSize,
-                               const IntRect& sourceImageSubRectangle,
+  static bool ExtractImageData(const uint8_t* image_data,
+                               DataFormat source_data_format,
+                               const IntSize& image_data_size,
+                               const IntRect& source_image_sub_rectangle,
                                int depth,
-                               int unpackImageHeight,
+                               int unpack_image_height,
                                GLenum format,
                                GLenum type,
-                               bool flipY,
-                               bool premultiplyAlpha,
+                               bool flip_y,
+                               bool premultiply_alpha,
                                Vector<uint8_t>& data);
 
   // Helper function which extracts the user-supplied texture
@@ -245,13 +245,13 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // If the data is not tightly packed according to the passed
   // unpackAlignment, the output data will be tightly packed.
   // Returns true if successful, false if any error occurred.
-  static bool extractTextureData(unsigned width,
+  static bool ExtractTextureData(unsigned width,
                                  unsigned height,
                                  GLenum format,
                                  GLenum type,
-                                 unsigned unpackAlignment,
-                                 bool flipY,
-                                 bool premultiplyAlpha,
+                                 unsigned unpack_alignment,
+                                 bool flip_y,
+                                 bool premultiply_alpha,
                                  const void* pixels,
                                  Vector<uint8_t>& data);
 
@@ -265,27 +265,27 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // data is tightly packed. Non-zero values may take a slow path. Destination
   // data will have no gaps between rows. Implemented in
   // GraphicsContext3DImagePacking.cpp.
-  static bool packPixels(const uint8_t* sourceData,
-                         DataFormat sourceDataFormat,
-                         unsigned sourceDataWidth,
-                         unsigned sourceDataHeight,
-                         const IntRect& sourceDataSubRectangle,
+  static bool PackPixels(const uint8_t* source_data,
+                         DataFormat source_data_format,
+                         unsigned source_data_width,
+                         unsigned source_data_height,
+                         const IntRect& source_data_sub_rectangle,
                          int depth,
-                         unsigned sourceUnpackAlignment,
-                         int unpackImageHeight,
-                         unsigned destinationFormat,
-                         unsigned destinationType,
+                         unsigned source_unpack_alignment,
+                         int unpack_image_height,
+                         unsigned destination_format,
+                         unsigned destination_type,
                          AlphaOp,
-                         void* destinationData,
-                         bool flipY);
-  static void unpackPixels(const uint16_t* sourceData,
-                           DataFormat sourceDataFormat,
-                           unsigned pixelsPerRow,
-                           uint8_t* destinationData);
-  static void packPixels(const uint8_t* sourceData,
-                         DataFormat sourceDataFormat,
-                         unsigned pixelsPerRow,
-                         uint8_t* destinationData);
+                         void* destination_data,
+                         bool flip_y);
+  static void UnpackPixels(const uint16_t* source_data,
+                           DataFormat source_data_format,
+                           unsigned pixels_per_row,
+                           uint8_t* destination_data);
+  static void PackPixels(const uint8_t* source_data,
+                         DataFormat source_data_format,
+                         unsigned pixels_per_row,
+                         uint8_t* destination_data);
 };
 
 }  // namespace blink

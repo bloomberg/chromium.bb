@@ -10,17 +10,17 @@ namespace blink {
 WebPasswordCredential::WebPasswordCredential(const WebString& id,
                                              const WebString& password,
                                              const WebString& name,
-                                             const WebURL& iconURL)
+                                             const WebURL& icon_url)
     : WebCredential(
-          PlatformPasswordCredential::create(id, password, name, iconURL)) {}
+          PlatformPasswordCredential::Create(id, password, name, icon_url)) {}
 
-void WebPasswordCredential::assign(const WebPasswordCredential& other) {
-  m_platformCredential = other.m_platformCredential;
+void WebPasswordCredential::Assign(const WebPasswordCredential& other) {
+  platform_credential_ = other.platform_credential_;
 }
 
-WebString WebPasswordCredential::password() const {
-  return static_cast<PlatformPasswordCredential*>(m_platformCredential.get())
-      ->password();
+WebString WebPasswordCredential::Password() const {
+  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
+      ->Password();
 }
 
 WebPasswordCredential::WebPasswordCredential(PlatformCredential* credential)
@@ -28,7 +28,7 @@ WebPasswordCredential::WebPasswordCredential(PlatformCredential* credential)
 
 WebPasswordCredential& WebPasswordCredential::operator=(
     PlatformCredential* credential) {
-  m_platformCredential = credential;
+  platform_credential_ = credential;
   return *this;
 }
 

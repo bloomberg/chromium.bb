@@ -43,261 +43,265 @@ namespace {
 // Websites will be able to run code when `name()` is called, changing the
 // current context. The caller should make sure that no assumption is made
 // after this has been called.
-PermissionDescriptorPtr parsePermission(ScriptState* scriptState,
-                                        const Dictionary rawPermission,
-                                        ExceptionState& exceptionState) {
+PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
+                                        const Dictionary raw_permission,
+                                        ExceptionState& exception_state) {
   PermissionDescriptor permission =
-      NativeValueTraits<PermissionDescriptor>::nativeValue(
-          scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+      NativeValueTraits<PermissionDescriptor>::NativeValue(
+          script_state->GetIsolate(), raw_permission.V8Value(),
+          exception_state);
 
-  if (exceptionState.hadException()) {
-    exceptionState.throwTypeError(exceptionState.message());
+  if (exception_state.HadException()) {
+    exception_state.ThrowTypeError(exception_state.Message());
     return nullptr;
   }
 
   const String& name = permission.name();
   if (name == "geolocation")
-    return createPermissionDescriptor(PermissionName::GEOLOCATION);
+    return CreatePermissionDescriptor(PermissionName::GEOLOCATION);
   if (name == "notifications")
-    return createPermissionDescriptor(PermissionName::NOTIFICATIONS);
+    return CreatePermissionDescriptor(PermissionName::NOTIFICATIONS);
   if (name == "push") {
-    PushPermissionDescriptor pushPermission =
-        NativeValueTraits<PushPermissionDescriptor>::nativeValue(
-            scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-    if (exceptionState.hadException()) {
-      exceptionState.throwTypeError(exceptionState.message());
+    PushPermissionDescriptor push_permission =
+        NativeValueTraits<PushPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    if (exception_state.HadException()) {
+      exception_state.ThrowTypeError(exception_state.Message());
       return nullptr;
     }
 
     // Only "userVisibleOnly" push is supported for now.
-    if (!pushPermission.userVisibleOnly()) {
-      exceptionState.throwDOMException(
-          NotSupportedError,
+    if (!push_permission.userVisibleOnly()) {
+      exception_state.ThrowDOMException(
+          kNotSupportedError,
           "Push Permission without userVisibleOnly:true isn't supported yet.");
       return nullptr;
     }
 
-    return createPermissionDescriptor(PermissionName::PUSH_NOTIFICATIONS);
+    return CreatePermissionDescriptor(PermissionName::PUSH_NOTIFICATIONS);
   }
   if (name == "midi") {
-    MidiPermissionDescriptor midiPermission =
-        NativeValueTraits<MidiPermissionDescriptor>::nativeValue(
-            scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-    return createMidiPermissionDescriptor(midiPermission.sysex());
+    MidiPermissionDescriptor midi_permission =
+        NativeValueTraits<MidiPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    return CreateMidiPermissionDescriptor(midi_permission.sysex());
   }
   if (name == "background-sync")
-    return createPermissionDescriptor(PermissionName::BACKGROUND_SYNC);
+    return CreatePermissionDescriptor(PermissionName::BACKGROUND_SYNC);
 
   return nullptr;
 }
 
 }  // anonymous namespace
 
-ScriptPromise Permissions::query(ScriptState* scriptState,
-                                 const Dictionary& rawPermission) {
-  ExceptionState exceptionState(scriptState->isolate(),
-                                ExceptionState::GetterContext, "Permissions",
-                                "query");
+ScriptPromise Permissions::query(ScriptState* script_state,
+                                 const Dictionary& raw_permission) {
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kGetterContext, "Permissions",
+                                 "query");
   PermissionDescriptorPtr descriptor =
-      parsePermission(scriptState, rawPermission, exceptionState);
-  if (exceptionState.hadException())
-    return exceptionState.reject(scriptState);
+      ParsePermission(script_state, raw_permission, exception_state);
+  if (exception_state.HadException())
+    return exception_state.Reject(script_state);
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = getService(scriptState->getExecutionContext());
+  PermissionService* service = GetService(script_state->GetExecutionContext());
   if (!service)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(
-            InvalidStateError,
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidStateError,
             "In its current state, the global scope can't query permissions."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // If the current origin is a file scheme, it will unlikely return a
   // meaningful value because most APIs are broken on file scheme and no
   // permission prompt will be shown even if the returned permission will most
   // likely be "prompt".
-  PermissionDescriptorPtr descriptorCopy = descriptor->Clone();
+  PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   service->HasPermission(
       std::move(descriptor),
-      scriptState->getExecutionContext()->getSecurityOrigin(),
-      convertToBaseCallback(WTF::bind(
-          &Permissions::taskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ConvertToBaseCallback(WTF::Bind(
+          &Permissions::TaskComplete, WrapPersistent(this),
+          WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
   return promise;
 }
 
-ScriptPromise Permissions::request(ScriptState* scriptState,
-                                   const Dictionary& rawPermission) {
-  ExceptionState exceptionState(scriptState->isolate(),
-                                ExceptionState::GetterContext, "Permissions",
-                                "request");
+ScriptPromise Permissions::request(ScriptState* script_state,
+                                   const Dictionary& raw_permission) {
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kGetterContext, "Permissions",
+                                 "request");
   PermissionDescriptorPtr descriptor =
-      parsePermission(scriptState, rawPermission, exceptionState);
-  if (exceptionState.hadException())
-    return exceptionState.reject(scriptState);
+      ParsePermission(script_state, raw_permission, exception_state);
+  if (exception_state.HadException())
+    return exception_state.Reject(script_state);
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = getService(scriptState->getExecutionContext());
+  PermissionService* service = GetService(script_state->GetExecutionContext());
   if (!service)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError,
-                                          "In its current state, the global "
-                                          "scope can't request permissions."));
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError,
+                                           "In its current state, the global "
+                                           "scope can't request permissions."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  PermissionDescriptorPtr descriptorCopy = descriptor->Clone();
+  PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   service->RequestPermission(
       std::move(descriptor),
-      scriptState->getExecutionContext()->getSecurityOrigin(),
-      UserGestureIndicator::processingUserGestureThreadSafe(),
-      convertToBaseCallback(WTF::bind(
-          &Permissions::taskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      UserGestureIndicator::ProcessingUserGestureThreadSafe(),
+      ConvertToBaseCallback(WTF::Bind(
+          &Permissions::TaskComplete, WrapPersistent(this),
+          WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
   return promise;
 }
 
-ScriptPromise Permissions::revoke(ScriptState* scriptState,
-                                  const Dictionary& rawPermission) {
-  ExceptionState exceptionState(scriptState->isolate(),
-                                ExceptionState::GetterContext, "Permissions",
-                                "revoke");
+ScriptPromise Permissions::revoke(ScriptState* script_state,
+                                  const Dictionary& raw_permission) {
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kGetterContext, "Permissions",
+                                 "revoke");
   PermissionDescriptorPtr descriptor =
-      parsePermission(scriptState, rawPermission, exceptionState);
-  if (exceptionState.hadException())
-    return exceptionState.reject(scriptState);
+      ParsePermission(script_state, raw_permission, exception_state);
+  if (exception_state.HadException())
+    return exception_state.Reject(script_state);
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = getService(scriptState->getExecutionContext());
+  PermissionService* service = GetService(script_state->GetExecutionContext());
   if (!service)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError,
-                                          "In its current state, the global "
-                                          "scope can't revoke permissions."));
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError,
+                                           "In its current state, the global "
+                                           "scope can't revoke permissions."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  PermissionDescriptorPtr descriptorCopy = descriptor->Clone();
+  PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   service->RevokePermission(
       std::move(descriptor),
-      scriptState->getExecutionContext()->getSecurityOrigin(),
-      convertToBaseCallback(WTF::bind(
-          &Permissions::taskComplete, wrapPersistent(this),
-          wrapPersistent(resolver), WTF::passed(std::move(descriptorCopy)))));
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ConvertToBaseCallback(WTF::Bind(
+          &Permissions::TaskComplete, WrapPersistent(this),
+          WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
   return promise;
 }
 
 ScriptPromise Permissions::requestAll(
-    ScriptState* scriptState,
-    const Vector<Dictionary>& rawPermissions) {
-  ExceptionState exceptionState(scriptState->isolate(),
-                                ExceptionState::GetterContext, "Permissions",
-                                "requestAll");
-  Vector<PermissionDescriptorPtr> internalPermissions;
-  Vector<int> callerIndexToInternalIndex;
-  callerIndexToInternalIndex.resize(rawPermissions.size());
-  for (size_t i = 0; i < rawPermissions.size(); ++i) {
-    const Dictionary& rawPermission = rawPermissions[i];
+    ScriptState* script_state,
+    const Vector<Dictionary>& raw_permissions) {
+  ExceptionState exception_state(script_state->GetIsolate(),
+                                 ExceptionState::kGetterContext, "Permissions",
+                                 "requestAll");
+  Vector<PermissionDescriptorPtr> internal_permissions;
+  Vector<int> caller_index_to_internal_index;
+  caller_index_to_internal_index.Resize(raw_permissions.size());
+  for (size_t i = 0; i < raw_permissions.size(); ++i) {
+    const Dictionary& raw_permission = raw_permissions[i];
 
     auto descriptor =
-        parsePermission(scriptState, rawPermission, exceptionState);
-    if (exceptionState.hadException())
-      return exceptionState.reject(scriptState);
+        ParsePermission(script_state, raw_permission, exception_state);
+    if (exception_state.HadException())
+      return exception_state.Reject(script_state);
 
     // Only append permissions types that are not already present in the vector.
-    size_t internalIndex = kNotFound;
-    for (size_t j = 0; j < internalPermissions.size(); ++j) {
-      if (internalPermissions[j]->name == descriptor->name) {
-        internalIndex = j;
+    size_t internal_index = kNotFound;
+    for (size_t j = 0; j < internal_permissions.size(); ++j) {
+      if (internal_permissions[j]->name == descriptor->name) {
+        internal_index = j;
         break;
       }
     }
-    if (internalIndex == kNotFound) {
-      internalIndex = internalPermissions.size();
-      internalPermissions.push_back(std::move(descriptor));
+    if (internal_index == kNotFound) {
+      internal_index = internal_permissions.size();
+      internal_permissions.push_back(std::move(descriptor));
     }
-    callerIndexToInternalIndex[i] = internalIndex;
+    caller_index_to_internal_index[i] = internal_index;
   }
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = getService(scriptState->getExecutionContext());
+  PermissionService* service = GetService(script_state->GetExecutionContext());
   if (!service)
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError,
-                                          "In its current state, the global "
-                                          "scope can't request permissions."));
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError,
+                                           "In its current state, the global "
+                                           "scope can't request permissions."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
-  Vector<PermissionDescriptorPtr> internalPermissionsCopy;
-  internalPermissionsCopy.reserveCapacity(internalPermissions.size());
-  for (const auto& descriptor : internalPermissions)
-    internalPermissionsCopy.push_back(descriptor->Clone());
+  Vector<PermissionDescriptorPtr> internal_permissions_copy;
+  internal_permissions_copy.ReserveCapacity(internal_permissions.size());
+  for (const auto& descriptor : internal_permissions)
+    internal_permissions_copy.push_back(descriptor->Clone());
 
   service->RequestPermissions(
-      std::move(internalPermissions),
-      scriptState->getExecutionContext()->getSecurityOrigin(),
-      UserGestureIndicator::processingUserGestureThreadSafe(),
-      convertToBaseCallback(
-          WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this),
-                    wrapPersistent(resolver),
-                    WTF::passed(std::move(internalPermissionsCopy)),
-                    WTF::passed(std::move(callerIndexToInternalIndex)))));
+      std::move(internal_permissions),
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      UserGestureIndicator::ProcessingUserGestureThreadSafe(),
+      ConvertToBaseCallback(
+          WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
+                    WrapPersistent(resolver),
+                    WTF::Passed(std::move(internal_permissions_copy)),
+                    WTF::Passed(std::move(caller_index_to_internal_index)))));
   return promise;
 }
 
-PermissionService* Permissions::getService(ExecutionContext* executionContext) {
-  if (!m_service && connectToPermissionService(executionContext,
-                                               mojo::MakeRequest(&m_service)))
-    m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
-        &Permissions::serviceConnectionError, wrapWeakPersistent(this))));
-  return m_service.get();
+PermissionService* Permissions::GetService(
+    ExecutionContext* execution_context) {
+  if (!service_ && ConnectToPermissionService(execution_context,
+                                              mojo::MakeRequest(&service_)))
+    service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
+        &Permissions::ServiceConnectionError, WrapWeakPersistent(this))));
+  return service_.get();
 }
 
-void Permissions::serviceConnectionError() {
-  m_service.reset();
+void Permissions::ServiceConnectionError() {
+  service_.reset();
 }
 
-void Permissions::taskComplete(ScriptPromiseResolver* resolver,
+void Permissions::TaskComplete(ScriptPromiseResolver* resolver,
                                mojom::blink::PermissionDescriptorPtr descriptor,
                                mojom::blink::PermissionStatus result) {
-  if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
     return;
-  resolver->resolve(
-      PermissionStatus::take(resolver, result, std::move(descriptor)));
+  resolver->Resolve(
+      PermissionStatus::Take(resolver, result, std::move(descriptor)));
 }
 
-void Permissions::batchTaskComplete(
+void Permissions::BatchTaskComplete(
     ScriptPromiseResolver* resolver,
     Vector<mojom::blink::PermissionDescriptorPtr> descriptors,
-    Vector<int> callerIndexToInternalIndex,
+    Vector<int> caller_index_to_internal_index,
     const Vector<mojom::blink::PermissionStatus>& results) {
-  if (!resolver->getExecutionContext() ||
-      resolver->getExecutionContext()->isContextDestroyed())
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
     return;
 
   // Create the response vector by finding the status for each index by
   // using the caller to internal index mapping and looking up the status
   // using the internal index obtained.
   HeapVector<Member<PermissionStatus>> result;
-  result.reserveInitialCapacity(callerIndexToInternalIndex.size());
-  for (int internalIndex : callerIndexToInternalIndex) {
-    result.push_back(PermissionStatus::createAndListen(
-        resolver->getExecutionContext(), results[internalIndex],
-        descriptors[internalIndex]->Clone()));
+  result.ReserveInitialCapacity(caller_index_to_internal_index.size());
+  for (int internal_index : caller_index_to_internal_index) {
+    result.push_back(PermissionStatus::CreateAndListen(
+        resolver->GetExecutionContext(), results[internal_index],
+        descriptors[internal_index]->Clone()));
   }
-  resolver->resolve(result);
+  resolver->Resolve(result);
 }
 
 }  // namespace blink

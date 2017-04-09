@@ -22,15 +22,15 @@ class MODULES_EXPORT BlobEvent final : public Event {
  public:
   ~BlobEvent() override {}
 
-  static BlobEvent* create(const AtomicString& type,
+  static BlobEvent* Create(const AtomicString& type,
                            const BlobEventInit& initializer);
-  static BlobEvent* create(const AtomicString& type, Blob*, double);
+  static BlobEvent* Create(const AtomicString& type, Blob*, double);
 
-  Blob* data() const { return m_blob.get(); }
-  DOMHighResTimeStamp timecode() const { return m_timecode; }
+  Blob* data() const { return blob_.Get(); }
+  DOMHighResTimeStamp timecode() const { return timecode_; }
 
   // Event
-  const AtomicString& interfaceName() const final;
+  const AtomicString& InterfaceName() const final;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -38,8 +38,8 @@ class MODULES_EXPORT BlobEvent final : public Event {
   BlobEvent(const AtomicString& type, const BlobEventInit& initializer);
   BlobEvent(const AtomicString& type, Blob*, double);
 
-  Member<Blob> m_blob;
-  DOMHighResTimeStamp m_timecode;
+  Member<Blob> blob_;
+  DOMHighResTimeStamp timecode_;
 };
 
 }  // namespace blink

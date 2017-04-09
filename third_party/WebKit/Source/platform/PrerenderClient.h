@@ -41,10 +41,10 @@ class PLATFORM_EXPORT PrerenderClient : public GarbageCollectedMixin {
  public:
   virtual ~PrerenderClient() {}
 
-  virtual void didStartPrerender() = 0;
-  virtual void didStopPrerender() = 0;
-  virtual void didSendLoadForPrerender() = 0;
-  virtual void didSendDOMContentLoadedForPrerender() = 0;
+  virtual void DidStartPrerender() = 0;
+  virtual void DidStopPrerender() = 0;
+  virtual void DidSendLoadForPrerender() = 0;
+  virtual void DidSendDOMContentLoadedForPrerender() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

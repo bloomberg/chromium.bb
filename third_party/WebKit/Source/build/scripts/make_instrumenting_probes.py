@@ -24,6 +24,7 @@ third_party_dir = os.path.normpath(os.path.join(module_path, os.pardir, os.pardi
 sys.path.insert(1, third_party_dir)
 import jinja2
 
+from name_utilities import method_name
 
 def _json5_loads(lines):
     # Use json5.loads when json5 is available. Currently we use simple
@@ -245,6 +246,7 @@ template_context = {
     "files": files,
     "agents": build_observers(),
     "config": config,
+    "method_name": method_name,
     "name": base_name,
     "input_file": os.path.basename(input_path)
 }

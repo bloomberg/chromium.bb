@@ -54,31 +54,31 @@ class WebLayerTreeView {
   // Initialization and lifecycle --------------------------------------
 
   // Sets the root of the tree. The root is set by way of the constructor.
-  virtual void setRootLayer(const WebLayer&) {}
-  virtual void clearRootLayer() {}
+  virtual void SetRootLayer(const WebLayer&) {}
+  virtual void ClearRootLayer() {}
 
   // TODO(loyso): This should use CompositorAnimationHost. crbug.com/584551
-  virtual cc::AnimationHost* compositorAnimationHost() { return nullptr; }
+  virtual cc::AnimationHost* CompositorAnimationHost() { return nullptr; }
 
   // View properties ---------------------------------------------------
 
   // Viewport size is given in physical pixels.
-  virtual void setViewportSize(const WebSize& deviceViewportSize) {}
-  virtual WebSize getViewportSize() const { return WebSize(); }
+  virtual void SetViewportSize(const WebSize& device_viewport_size) {}
+  virtual WebSize GetViewportSize() const { return WebSize(); }
 
-  virtual void setDeviceScaleFactor(float) {}
+  virtual void SetDeviceScaleFactor(float) {}
 
   // Sets the background color for the viewport.
-  virtual void setBackgroundColor(WebColor) {}
+  virtual void SetBackgroundColor(WebColor) {}
 
   // Sets whether this view is visible. In threaded mode, a view that is not
   // visible will not composite or trigger updateAnimations() or layout() calls
   // until it becomes visible.
-  virtual void setVisible(bool) {}
+  virtual void SetVisible(bool) {}
 
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
-  virtual void setPageScaleFactorAndLimits(float pageScaleFactor,
+  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
                                            float minimum,
                                            float maximum) {}
 
@@ -87,100 +87,100 @@ class WebLayerTreeView {
   // If useAnchor is true, destination is a point on the screen that will remain
   // fixed for the duration of the animation.
   // If useAnchor is false, destination is the final top-left scroll position.
-  virtual void startPageScaleAnimation(const WebPoint& destination,
-                                       bool useAnchor,
-                                       float newPageScale,
-                                       double durationSec) {}
+  virtual void StartPageScaleAnimation(const WebPoint& destination,
+                                       bool use_anchor,
+                                       float new_page_scale,
+                                       double duration_sec) {}
 
   // Returns true if the page scale animation had started.
-  virtual bool hasPendingPageScaleAnimation() const { return false; }
+  virtual bool HasPendingPageScaleAnimation() const { return false; }
 
-  virtual void heuristicsForGpuRasterizationUpdated(bool) {}
+  virtual void HeuristicsForGpuRasterizationUpdated(bool) {}
 
   // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
   // (fully shown).
-  virtual void setBrowserControlsShownRatio(float) {}
+  virtual void SetBrowserControlsShownRatio(float) {}
 
   // Update browser controls permitted and current states
-  virtual void updateBrowserControlsState(WebBrowserControlsState constraints,
+  virtual void UpdateBrowserControlsState(WebBrowserControlsState constraints,
                                           WebBrowserControlsState current,
                                           bool animate) {}
 
   // Set browser controls height. If |shrinkViewport| is set to true, then Blink
   // shrunk the viewport clip layers by the browser controls height.
-  virtual void setBrowserControlsHeight(float height, bool shrinkViewport) {}
+  virtual void SetBrowserControlsHeight(float height, bool shrink_viewport) {}
 
   // Flow control and scheduling ---------------------------------------
 
   // Indicates that blink needs a BeginFrame, but that nothing might actually be
   // dirty.
-  virtual void setNeedsBeginFrame() {}
+  virtual void SetNeedsBeginFrame() {}
 
   // Relays the end of a fling animation.
-  virtual void didStopFlinging() {}
+  virtual void DidStopFlinging() {}
 
   // Run layout and paint of all pending document changes asynchronously.
   // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback
   // object alive until it is called.
-  virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) {}
+  virtual void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) {}
 
   // The caller is responsible for keeping the
   // WebCompositeAndReadbackAsyncCallback object alive until it is called.
-  virtual void compositeAndReadbackAsync(
+  virtual void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) {}
 
   // Prevents updates to layer tree from becoming visible.
-  virtual void setDeferCommits(bool deferCommits) {}
+  virtual void SetDeferCommits(bool defer_commits) {}
 
   // Identify key viewport layers to the compositor.
-  virtual void registerViewportLayers(
-      const WebLayer* overscrollElasticityLayer,
-      const WebLayer* pageScaleLayer,
-      const WebLayer* innerViewportScrollLayer,
-      const WebLayer* outerViewportScrollLayer) {}
-  virtual void clearViewportLayers() {}
+  virtual void RegisterViewportLayers(
+      const WebLayer* overscroll_elasticity_layer,
+      const WebLayer* page_scale_layer,
+      const WebLayer* inner_viewport_scroll_layer,
+      const WebLayer* outer_viewport_scroll_layer) {}
+  virtual void ClearViewportLayers() {}
 
   // Used to update the active selection bounds.
-  virtual void registerSelection(const WebSelection&) {}
-  virtual void clearSelection() {}
+  virtual void RegisterSelection(const WebSelection&) {}
+  virtual void ClearSelection() {}
 
   // Mutations are plumbed back to the layer tree via the mutator client.
-  virtual void setMutatorClient(std::unique_ptr<WebCompositorMutatorClient>) {}
+  virtual void SetMutatorClient(std::unique_ptr<WebCompositorMutatorClient>) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.
-  virtual void forceRecalculateRasterScales() {}
+  virtual void ForceRecalculateRasterScales() {}
 
   // Input properties ---------------------------------------------------
-  virtual void setEventListenerProperties(WebEventListenerClass,
+  virtual void SetEventListenerProperties(WebEventListenerClass,
                                           WebEventListenerProperties) {}
-  virtual void updateEventRectsForSubframeIfNecessary() {}
-  virtual void setHaveScrollEventHandlers(bool) {}
+  virtual void UpdateEventRectsForSubframeIfNecessary() {}
+  virtual void SetHaveScrollEventHandlers(bool) {}
 
   // Returns the FrameSinkId of the widget associated with this layer tree view.
-  virtual cc::FrameSinkId getFrameSinkId() { return cc::FrameSinkId(); }
+  virtual cc::FrameSinkId GetFrameSinkId() { return cc::FrameSinkId(); }
 
   // Debugging / dangerous ---------------------------------------------
 
-  virtual WebEventListenerProperties eventListenerProperties(
+  virtual WebEventListenerProperties EventListenerProperties(
       WebEventListenerClass) const {
-    return WebEventListenerProperties::Nothing;
+    return WebEventListenerProperties::kNothing;
   }
-  virtual bool haveScrollEventHandlers() const { return false; }
+  virtual bool HaveScrollEventHandlers() const { return false; }
 
-  virtual int layerTreeId() const { return 0; }
+  virtual int LayerTreeId() const { return 0; }
 
   // Toggles the FPS counter in the HUD layer
-  virtual void setShowFPSCounter(bool) {}
+  virtual void SetShowFPSCounter(bool) {}
 
   // Toggles the paint rects in the HUD layer
-  virtual void setShowPaintRects(bool) {}
+  virtual void SetShowPaintRects(bool) {}
 
   // Toggles the debug borders on layers
-  virtual void setShowDebugBorders(bool) {}
+  virtual void SetShowDebugBorders(bool) {}
 
   // Toggles scroll bottleneck rects on the HUD layer
-  virtual void setShowScrollBottleneckRects(bool) {}
+  virtual void SetShowScrollBottleneckRects(bool) {}
 };
 
 }  // namespace blink

@@ -40,8 +40,8 @@ static double dummyCurrentTime() {
 }
 
 int main(int argc, char** argv) {
-  WTF::Partitions::initialize(nullptr);
-  WTF::setTimeFunctionsForTesting(dummyCurrentTime);
-  WTF::initialize(nullptr);
+  WTF::Partitions::Initialize(nullptr);
+  WTF::SetTimeFunctionsForTesting(dummyCurrentTime);
+  WTF::Initialize(nullptr);
   return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 }

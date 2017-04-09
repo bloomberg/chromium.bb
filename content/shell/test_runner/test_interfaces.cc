@@ -29,7 +29,7 @@ TestInterfaces::TestInterfaces()
     : test_runner_(new TestRunner(this)),
       delegate_(nullptr),
       main_view_(nullptr) {
-  blink::setLayoutTestMode(true);
+  blink::SetLayoutTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to RuntimeEnabledFeatures.json5
 
@@ -68,7 +68,7 @@ void TestInterfaces::BindTo(blink::WebFrame* frame) {
 void TestInterfaces::ResetTestHelperControllers() {
   if (gamepad_controller_)
     gamepad_controller_->Reset();
-  blink::WebCache::clear();
+  blink::WebCache::Clear();
 
   for (WebViewTestProxyBase* web_view_test_proxy_base : window_list_)
     web_view_test_proxy_base->Reset();

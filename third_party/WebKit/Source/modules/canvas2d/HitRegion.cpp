@@ -9,119 +9,119 @@
 namespace blink {
 
 HitRegion::HitRegion(const Path& path, const HitRegionOptions& options)
-    : m_id(options.id().isEmpty() ? String() : options.id()),
-      m_control(options.control()),
-      m_path(path) {
+    : id_(options.id().IsEmpty() ? String() : options.id()),
+      control_(options.control()),
+      path_(path) {
   if (options.fillRule() != "evenodd")
-    m_fillRule = RULE_NONZERO;
+    fill_rule_ = RULE_NONZERO;
   else
-    m_fillRule = RULE_EVENODD;
+    fill_rule_ = RULE_EVENODD;
 }
 
-bool HitRegion::contains(const FloatPoint& point) const {
-  return m_path.contains(point, m_fillRule);
+bool HitRegion::Contains(const FloatPoint& point) const {
+  return path_.Contains(point, fill_rule_);
 }
 
-void HitRegion::removePixels(const Path& clearArea) {
-  m_path.subtractPath(clearArea);
+void HitRegion::RemovePixels(const Path& clear_area) {
+  path_.SubtractPath(clear_area);
 }
 
 DEFINE_TRACE(HitRegion) {
-  visitor->trace(m_control);
+  visitor->Trace(control_);
 }
 
-void HitRegionManager::addHitRegion(HitRegion* hitRegion) {
-  m_hitRegionList.insert(hitRegion);
+void HitRegionManager::AddHitRegion(HitRegion* hit_region) {
+  hit_region_list_.insert(hit_region);
 
-  if (!hitRegion->id().isEmpty())
-    m_hitRegionIdMap.set(hitRegion->id(), hitRegion);
+  if (!hit_region->Id().IsEmpty())
+    hit_region_id_map_.Set(hit_region->Id(), hit_region);
 
-  if (hitRegion->control())
-    m_hitRegionControlMap.set(hitRegion->control(), hitRegion);
+  if (hit_region->Control())
+    hit_region_control_map_.Set(hit_region->Control(), hit_region);
 }
 
-void HitRegionManager::removeHitRegion(HitRegion* hitRegion) {
-  if (!hitRegion)
+void HitRegionManager::RemoveHitRegion(HitRegion* hit_region) {
+  if (!hit_region)
     return;
 
-  if (!hitRegion->id().isEmpty())
-    m_hitRegionIdMap.erase(hitRegion->id());
+  if (!hit_region->Id().IsEmpty())
+    hit_region_id_map_.erase(hit_region->Id());
 
-  if (hitRegion->control())
-    m_hitRegionControlMap.erase(hitRegion->control());
+  if (hit_region->Control())
+    hit_region_control_map_.erase(hit_region->Control());
 
-  m_hitRegionList.erase(hitRegion);
+  hit_region_list_.erase(hit_region);
 }
 
-void HitRegionManager::removeHitRegionById(const String& id) {
-  if (!id.isEmpty())
-    removeHitRegion(getHitRegionById(id));
+void HitRegionManager::RemoveHitRegionById(const String& id) {
+  if (!id.IsEmpty())
+    RemoveHitRegion(GetHitRegionById(id));
 }
 
-void HitRegionManager::removeHitRegionByControl(const Element* control) {
-  removeHitRegion(getHitRegionByControl(control));
+void HitRegionManager::RemoveHitRegionByControl(const Element* control) {
+  RemoveHitRegion(GetHitRegionByControl(control));
 }
 
-void HitRegionManager::removeHitRegionsInRect(const FloatRect& rect,
+void HitRegionManager::RemoveHitRegionsInRect(const FloatRect& rect,
                                               const AffineTransform& ctm) {
-  Path clearArea;
-  clearArea.addRect(rect);
-  clearArea.transform(ctm);
+  Path clear_area;
+  clear_area.AddRect(rect);
+  clear_area.Transform(ctm);
 
-  HitRegionIterator itEnd = m_hitRegionList.rend();
-  HitRegionList toBeRemoved;
+  HitRegionIterator it_end = hit_region_list_.rend();
+  HitRegionList to_be_removed;
 
-  for (HitRegionIterator it = m_hitRegionList.rbegin(); it != itEnd; ++it) {
-    HitRegion* hitRegion = *it;
-    hitRegion->removePixels(clearArea);
-    if (hitRegion->path().isEmpty())
-      toBeRemoved.insert(hitRegion);
+  for (HitRegionIterator it = hit_region_list_.rbegin(); it != it_end; ++it) {
+    HitRegion* hit_region = *it;
+    hit_region->RemovePixels(clear_area);
+    if (hit_region->GetPath().IsEmpty())
+      to_be_removed.insert(hit_region);
   }
 
-  itEnd = toBeRemoved.rend();
-  for (HitRegionIterator it = toBeRemoved.rbegin(); it != itEnd; ++it)
-    removeHitRegion(it->get());
+  it_end = to_be_removed.rend();
+  for (HitRegionIterator it = to_be_removed.rbegin(); it != it_end; ++it)
+    RemoveHitRegion(it->Get());
 }
 
-void HitRegionManager::removeAllHitRegions() {
-  m_hitRegionList.clear();
-  m_hitRegionIdMap.clear();
-  m_hitRegionControlMap.clear();
+void HitRegionManager::RemoveAllHitRegions() {
+  hit_region_list_.Clear();
+  hit_region_id_map_.Clear();
+  hit_region_control_map_.Clear();
 }
 
-HitRegion* HitRegionManager::getHitRegionById(const String& id) const {
-  return m_hitRegionIdMap.at(id);
+HitRegion* HitRegionManager::GetHitRegionById(const String& id) const {
+  return hit_region_id_map_.at(id);
 }
 
-HitRegion* HitRegionManager::getHitRegionByControl(
+HitRegion* HitRegionManager::GetHitRegionByControl(
     const Element* control) const {
   if (control)
-    return m_hitRegionControlMap.at(control);
+    return hit_region_control_map_.at(control);
 
   return nullptr;
 }
 
-HitRegion* HitRegionManager::getHitRegionAtPoint(
+HitRegion* HitRegionManager::GetHitRegionAtPoint(
     const FloatPoint& point) const {
-  HitRegionIterator itEnd = m_hitRegionList.rend();
+  HitRegionIterator it_end = hit_region_list_.rend();
 
-  for (HitRegionIterator it = m_hitRegionList.rbegin(); it != itEnd; ++it) {
-    HitRegion* hitRegion = *it;
-    if (hitRegion->contains(point))
-      return hitRegion;
+  for (HitRegionIterator it = hit_region_list_.rbegin(); it != it_end; ++it) {
+    HitRegion* hit_region = *it;
+    if (hit_region->Contains(point))
+      return hit_region;
   }
 
   return nullptr;
 }
 
-unsigned HitRegionManager::getHitRegionsCount() const {
-  return m_hitRegionList.size();
+unsigned HitRegionManager::GetHitRegionsCount() const {
+  return hit_region_list_.size();
 }
 
 DEFINE_TRACE(HitRegionManager) {
-  visitor->trace(m_hitRegionList);
-  visitor->trace(m_hitRegionIdMap);
-  visitor->trace(m_hitRegionControlMap);
+  visitor->Trace(hit_region_list_);
+  visitor->Trace(hit_region_id_map_);
+  visitor->Trace(hit_region_control_map_);
 }
 
 }  // namespace blink

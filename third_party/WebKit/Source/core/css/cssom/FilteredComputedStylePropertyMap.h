@@ -16,31 +16,31 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
   WTF_MAKE_NONCOPYABLE(FilteredComputedStylePropertyMap);
 
  public:
-  static FilteredComputedStylePropertyMap* create(
-      CSSComputedStyleDeclaration* computedStyleDeclaration,
-      const Vector<CSSPropertyID>& nativeProperties,
-      const Vector<AtomicString>& customProperties,
+  static FilteredComputedStylePropertyMap* Create(
+      CSSComputedStyleDeclaration* computed_style_declaration,
+      const Vector<CSSPropertyID>& native_properties,
+      const Vector<AtomicString>& custom_properties,
       Node* node) {
     return new FilteredComputedStylePropertyMap(
-        computedStyleDeclaration, nativeProperties, customProperties, node);
+        computed_style_declaration, native_properties, custom_properties, node);
   }
 
-  CSSStyleValue* get(const String& propertyName, ExceptionState&) override;
-  CSSStyleValueVector getAll(const String& propertyName,
+  CSSStyleValue* get(const String& property_name, ExceptionState&) override;
+  CSSStyleValueVector getAll(const String& property_name,
                              ExceptionState&) override;
-  bool has(const String& propertyName, ExceptionState&) override;
+  bool has(const String& property_name, ExceptionState&) override;
 
   Vector<String> getProperties() override;
 
  private:
   FilteredComputedStylePropertyMap(
       CSSComputedStyleDeclaration*,
-      const Vector<CSSPropertyID>& nativeProperties,
-      const Vector<AtomicString>& customProperties,
+      const Vector<CSSPropertyID>& native_properties,
+      const Vector<AtomicString>& custom_properties,
       Node*);
 
-  HashSet<CSSPropertyID> m_nativeProperties;
-  HashSet<AtomicString> m_customProperties;
+  HashSet<CSSPropertyID> native_properties_;
+  HashSet<AtomicString> custom_properties_;
 };
 
 }  // namespace blink

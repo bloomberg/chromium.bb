@@ -42,29 +42,29 @@ class Metadata final : public GarbageCollectedFinalized<Metadata>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Metadata* create(const FileMetadata& platformMetadata) {
-    return new Metadata(platformMetadata);
+  static Metadata* Create(const FileMetadata& platform_metadata) {
+    return new Metadata(platform_metadata);
   }
 
-  static Metadata* create(Metadata* metadata) {
-    return new Metadata(metadata->m_platformMetadata);
+  static Metadata* Create(Metadata* metadata) {
+    return new Metadata(metadata->platform_metadata_);
   }
 
   // Return Epoch time in milliseconds for Date.
   double modificationTime() const {
-    return m_platformMetadata.modificationTime;
+    return platform_metadata_.modification_time;
   }
   unsigned long long size() const {
-    return static_cast<unsigned long long>(m_platformMetadata.length);
+    return static_cast<unsigned long long>(platform_metadata_.length);
   }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit Metadata(const FileMetadata& platformMetadata)
-      : m_platformMetadata(platformMetadata) {}
+  explicit Metadata(const FileMetadata& platform_metadata)
+      : platform_metadata_(platform_metadata) {}
 
-  FileMetadata m_platformMetadata;
+  FileMetadata platform_metadata_;
 };
 
 }  // namespace blink

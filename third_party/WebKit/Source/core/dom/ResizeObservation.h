@@ -20,24 +20,24 @@ class CORE_EXPORT ResizeObservation final
  public:
   ResizeObservation(Element* target, ResizeObserver*);
 
-  Element* target() const { return m_target; }
-  size_t targetDepth();
+  Element* Target() const { return target_; }
+  size_t TargetDepth();
   // True if observationSize differs from target's current size.
-  bool observationSizeOutOfSync();
-  void setObservationSize(const LayoutSize&);
-  void elementSizeChanged();
+  bool ObservationSizeOutOfSync();
+  void SetObservationSize(const LayoutSize&);
+  void ElementSizeChanged();
 
-  LayoutSize computeTargetSize() const;
-  LayoutPoint computeTargetLocation() const;
+  LayoutSize ComputeTargetSize() const;
+  LayoutPoint ComputeTargetLocation() const;
 
   DECLARE_TRACE();
 
  private:
-  WeakMember<Element> m_target;
-  Member<ResizeObserver> m_observer;
+  WeakMember<Element> target_;
+  Member<ResizeObserver> observer_;
   // Target size sent in last observation notification.
-  LayoutSize m_observationSize;
-  bool m_elementSizeChanged;
+  LayoutSize observation_size_;
+  bool element_size_changed_;
 };
 
 }  // namespace blink

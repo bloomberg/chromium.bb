@@ -7,12 +7,12 @@
 namespace blink {
 // This enum represents the security state of a resource.
 enum WebSecurityStyle {
-  WebSecurityStyleUnknown,
-  WebSecurityStyleNeutral,
-  WebSecurityStyleInsecure,
-  WebSecurityStyleWarning,
-  WebSecurityStyleSecure,
-  WebSecurityStyleLast = WebSecurityStyleSecure
+  kWebSecurityStyleUnknown,
+  kWebSecurityStyleNeutral,
+  kWebSecurityStyleInsecure,
+  kWebSecurityStyleWarning,
+  kWebSecurityStyleSecure,
+  kWebSecurityStyleLast = kWebSecurityStyleSecure
 };
 }  // namespace blink
 #endif

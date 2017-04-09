@@ -14,33 +14,33 @@ namespace blink {
 
 using namespace protocol::Accessibility;
 
-std::unique_ptr<AXProperty> createProperty(const String& name,
+std::unique_ptr<AXProperty> CreateProperty(const String& name,
                                            std::unique_ptr<AXValue>);
-std::unique_ptr<AXProperty> createProperty(IgnoredReason);
+std::unique_ptr<AXProperty> CreateProperty(IgnoredReason);
 
-std::unique_ptr<AXValue> createValue(
+std::unique_ptr<AXValue> CreateValue(
     const String& value,
     const String& type = AXValueTypeEnum::String);
-std::unique_ptr<AXValue> createValue(
+std::unique_ptr<AXValue> CreateValue(
     int value,
     const String& type = AXValueTypeEnum::Integer);
-std::unique_ptr<AXValue> createValue(
+std::unique_ptr<AXValue> CreateValue(
     float value,
-    const String& valueType = AXValueTypeEnum::Number);
-std::unique_ptr<AXValue> createBooleanValue(
+    const String& value_type = AXValueTypeEnum::Number);
+std::unique_ptr<AXValue> CreateBooleanValue(
     bool value,
-    const String& valueType = AXValueTypeEnum::Boolean);
-std::unique_ptr<AXValue> createRelatedNodeListValue(
+    const String& value_type = AXValueTypeEnum::Boolean);
+std::unique_ptr<AXValue> CreateRelatedNodeListValue(
     const AXObject&,
     String* name = nullptr,
-    const String& valueType = AXValueTypeEnum::Idref);
-std::unique_ptr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector&,
-                                                    const String& valueType);
-std::unique_ptr<AXValue> createRelatedNodeListValue(
-    AXObject::AXObjectVector& axObjects,
-    const String& valueType = AXValueTypeEnum::IdrefList);
+    const String& value_type = AXValueTypeEnum::Idref);
+std::unique_ptr<AXValue> CreateRelatedNodeListValue(AXRelatedObjectVector&,
+                                                    const String& value_type);
+std::unique_ptr<AXValue> CreateRelatedNodeListValue(
+    AXObject::AXObjectVector& ax_objects,
+    const String& value_type = AXValueTypeEnum::IdrefList);
 
-std::unique_ptr<AXValueSource> createValueSource(NameSource&);
+std::unique_ptr<AXValueSource> CreateValueSource(NameSource&);
 
 }  // namespace blink
 

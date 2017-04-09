@@ -27,18 +27,18 @@ namespace blink {
 
 struct Property {
   DISALLOW_NEW();
-  int nameOffset;
+  int name_offset;
   int id;
 };
 
 struct Value {
   DISALLOW_NEW();
-  int nameOffset;
+  int name_offset;
   int id;
 };
 
-const Property* findProperty(register const char* str, register unsigned len);
-const Value* findValue(register const char* str, register unsigned len);
+const Property* FindProperty(register const char* str, register unsigned len);
+const Value* FindValue(register const char* str, register unsigned len);
 
 }  // namespace blink
 

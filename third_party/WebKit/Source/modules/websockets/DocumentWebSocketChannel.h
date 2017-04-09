@@ -67,41 +67,41 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   // In the usual case, they are set automatically and you don't have to
   // pass it.
   // Specify handle explicitly only in tests.
-  static DocumentWebSocketChannel* create(
+  static DocumentWebSocketChannel* Create(
       Document* document,
       WebSocketChannelClient* client,
       std::unique_ptr<SourceLocation> location,
       WebSocketHandle* handle = 0) {
     DCHECK(document);
-    return create(ThreadableLoadingContext::create(*document), client,
+    return Create(ThreadableLoadingContext::Create(*document), client,
                   std::move(location), handle);
   }
-  static DocumentWebSocketChannel* create(
-      ThreadableLoadingContext* loadingContext,
+  static DocumentWebSocketChannel* Create(
+      ThreadableLoadingContext* loading_context,
       WebSocketChannelClient* client,
       std::unique_ptr<SourceLocation> location,
       WebSocketHandle* handle = 0) {
-    return new DocumentWebSocketChannel(loadingContext, client,
+    return new DocumentWebSocketChannel(loading_context, client,
                                         std::move(location), handle);
   }
   ~DocumentWebSocketChannel() override;
 
   // WebSocketChannel functions.
-  bool connect(const KURL&, const String& protocol) override;
-  void send(const CString& message) override;
-  void send(const DOMArrayBuffer&,
-            unsigned byteOffset,
-            unsigned byteLength) override;
-  void send(PassRefPtr<BlobDataHandle>) override;
-  void sendTextAsCharVector(std::unique_ptr<Vector<char>> data) override;
-  void sendBinaryAsCharVector(std::unique_ptr<Vector<char>> data) override;
+  bool Connect(const KURL&, const String& protocol) override;
+  void Send(const CString& message) override;
+  void Send(const DOMArrayBuffer&,
+            unsigned byte_offset,
+            unsigned byte_length) override;
+  void Send(PassRefPtr<BlobDataHandle>) override;
+  void SendTextAsCharVector(std::unique_ptr<Vector<char>> data) override;
+  void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> data) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
   // argument to omit payload.
-  void close(int code, const String& reason) override;
-  void fail(const String& reason,
+  void Close(int code, const String& reason) override;
+  void Fail(const String& reason,
             MessageLevel,
             std::unique_ptr<SourceLocation>) override;
-  void disconnect() override;
+  void Disconnect() override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -110,16 +110,16 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   class Message;
 
   enum MessageType {
-    MessageTypeText,
-    MessageTypeBlob,
-    MessageTypeArrayBuffer,
-    MessageTypeTextAsCharVector,
-    MessageTypeBinaryAsCharVector,
-    MessageTypeClose,
+    kMessageTypeText,
+    kMessageTypeBlob,
+    kMessageTypeArrayBuffer,
+    kMessageTypeTextAsCharVector,
+    kMessageTypeBinaryAsCharVector,
+    kMessageTypeClose,
   };
 
   struct ReceivedMessage {
-    bool isMessageText;
+    bool is_message_text;
     Vector<char> data;
   };
 
@@ -127,77 +127,79 @@ class MODULES_EXPORT DocumentWebSocketChannel final
                            WebSocketChannelClient*,
                            std::unique_ptr<SourceLocation>,
                            WebSocketHandle*);
-  void sendInternal(WebSocketHandle::MessageType,
+  void SendInternal(WebSocketHandle::MessageType,
                     const char* data,
-                    size_t totalSize,
-                    uint64_t* consumedBufferedAmount);
-  void processSendQueue();
-  void flowControlIfNecessary();
-  void failAsError(const String& reason) {
-    fail(reason, ErrorMessageLevel, m_locationAtConstruction->clone());
+                    size_t total_size,
+                    uint64_t* consumed_buffered_amount);
+  void ProcessSendQueue();
+  void FlowControlIfNecessary();
+  void FailAsError(const String& reason) {
+    Fail(reason, kErrorMessageLevel, location_at_construction_->Clone());
   }
-  void abortAsyncOperations();
-  void handleDidClose(bool wasClean, unsigned short code, const String& reason);
-  ThreadableLoadingContext* loadingContext();
+  void AbortAsyncOperations();
+  void HandleDidClose(bool was_clean,
+                      unsigned short code,
+                      const String& reason);
+  ThreadableLoadingContext* LoadingContext();
 
   // This may return nullptr.
   // TODO(kinuko): Remove dependency to document.
-  Document* document();
+  Document* GetDocument();
 
   // WebSocketHandleClient functions.
-  void didConnect(WebSocketHandle*,
-                  const String& selectedProtocol,
+  void DidConnect(WebSocketHandle*,
+                  const String& selected_protocol,
                   const String& extensions) override;
-  void didStartOpeningHandshake(WebSocketHandle*,
+  void DidStartOpeningHandshake(WebSocketHandle*,
                                 PassRefPtr<WebSocketHandshakeRequest>) override;
-  void didFinishOpeningHandshake(WebSocketHandle*,
+  void DidFinishOpeningHandshake(WebSocketHandle*,
                                  const WebSocketHandshakeResponse*) override;
-  void didFail(WebSocketHandle*, const String& message) override;
-  void didReceiveData(WebSocketHandle*,
+  void DidFail(WebSocketHandle*, const String& message) override;
+  void DidReceiveData(WebSocketHandle*,
                       bool fin,
                       WebSocketHandle::MessageType,
                       const char* data,
                       size_t) override;
-  void didClose(WebSocketHandle*,
-                bool wasClean,
+  void DidClose(WebSocketHandle*,
+                bool was_clean,
                 unsigned short code,
                 const String& reason) override;
-  void didReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
-  void didStartClosingHandshake(WebSocketHandle*) override;
+  void DidReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
+  void DidStartClosingHandshake(WebSocketHandle*) override;
 
   // Methods for BlobLoader.
-  void didFinishLoadingBlob(DOMArrayBuffer*);
-  void didFailLoadingBlob(FileError::ErrorCode);
+  void DidFinishLoadingBlob(DOMArrayBuffer*);
+  void DidFailLoadingBlob(FileError::ErrorCode);
 
-  void tearDownFailedConnection();
-  bool shouldDisallowConnection(const KURL&);
+  void TearDownFailedConnection();
+  bool ShouldDisallowConnection(const KURL&);
 
   // m_handle is a handle of the connection.
   // m_handle == 0 means this channel is closed.
-  std::unique_ptr<WebSocketHandle> m_handle;
+  std::unique_ptr<WebSocketHandle> handle_;
 
   // m_client can be deleted while this channel is alive, but this class
   // expects that disconnect() is called before the deletion.
-  Member<WebSocketChannelClient> m_client;
-  KURL m_url;
+  Member<WebSocketChannelClient> client_;
+  KURL url_;
   // m_identifier > 0 means calling scriptContextExecution() returns a Document.
-  unsigned long m_identifier;
-  Member<BlobLoader> m_blobLoader;
-  HeapDeque<Member<Message>> m_messages;
-  Vector<char> m_receivingMessageData;
-  Member<ThreadableLoadingContext> m_loadingContext;
+  unsigned long identifier_;
+  Member<BlobLoader> blob_loader_;
+  HeapDeque<Member<Message>> messages_;
+  Vector<char> receiving_message_data_;
+  Member<ThreadableLoadingContext> loading_context_;
 
-  bool m_receivingMessageTypeIsText;
-  uint64_t m_sendingQuota;
-  uint64_t m_receivedDataSizeForFlowControl;
-  size_t m_sentSizeOfTopMessage;
+  bool receiving_message_type_is_text_;
+  uint64_t sending_quota_;
+  uint64_t received_data_size_for_flow_control_;
+  size_t sent_size_of_top_message_;
   std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
       connection_handle_for_scheduler_;
 
-  std::unique_ptr<SourceLocation> m_locationAtConstruction;
-  RefPtr<WebSocketHandshakeRequest> m_handshakeRequest;
+  std::unique_ptr<SourceLocation> location_at_construction_;
+  RefPtr<WebSocketHandshakeRequest> handshake_request_;
 
-  static const uint64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;
+  static const uint64_t kReceivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };
 
 std::ostream& operator<<(std::ostream&, const DocumentWebSocketChannel*);

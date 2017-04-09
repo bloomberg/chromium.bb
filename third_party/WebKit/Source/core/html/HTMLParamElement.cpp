@@ -35,25 +35,25 @@ inline HTMLParamElement::HTMLParamElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLParamElement)
 
-const AtomicString& HTMLParamElement::name() const {
-  if (hasName())
-    return getNameAttribute();
-  return document().isHTMLDocument() ? emptyAtom : getIdAttribute();
+const AtomicString& HTMLParamElement::GetName() const {
+  if (HasName())
+    return GetNameAttribute();
+  return GetDocument().IsHTMLDocument() ? g_empty_atom : GetIdAttribute();
 }
 
-const AtomicString& HTMLParamElement::value() const {
-  return fastGetAttribute(valueAttr);
+const AtomicString& HTMLParamElement::Value() const {
+  return FastGetAttribute(valueAttr);
 }
 
-bool HTMLParamElement::isURLParameter(const String& name) {
-  return equalIgnoringCase(name, "data") || equalIgnoringCase(name, "movie") ||
-         equalIgnoringCase(name, "src");
+bool HTMLParamElement::IsURLParameter(const String& name) {
+  return EqualIgnoringCase(name, "data") || EqualIgnoringCase(name, "movie") ||
+         EqualIgnoringCase(name, "src");
 }
 
-bool HTMLParamElement::isURLAttribute(const Attribute& attribute) const {
-  if (attribute.name() == valueAttr && isURLParameter(name()))
+bool HTMLParamElement::IsURLAttribute(const Attribute& attribute) const {
+  if (attribute.GetName() == valueAttr && IsURLParameter(GetName()))
     return true;
-  return HTMLElement::isURLAttribute(attribute);
+  return HTMLElement::IsURLAttribute(attribute);
 }
 
 }  // namespace blink

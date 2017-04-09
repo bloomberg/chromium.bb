@@ -25,29 +25,29 @@
 namespace blink {
 
 SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font,
-                                                       float effectiveZoom)
-    : m_font(font), m_lastCharacter(0), m_effectiveZoom(effectiveZoom) {
-  DCHECK(m_effectiveZoom);
+                                                       float effective_zoom)
+    : font_(font), last_character_(0), effective_zoom_(effective_zoom) {
+  DCHECK(effective_zoom_);
 }
 
-float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter) {
-  UChar lastCharacter = m_lastCharacter;
-  m_lastCharacter = currentCharacter;
+float SVGTextLayoutEngineSpacing::CalculateCSSSpacing(UChar current_character) {
+  UChar last_character = last_character_;
+  last_character_ = current_character;
 
-  if (!m_font.getFontDescription().letterSpacing() &&
-      !m_font.getFontDescription().wordSpacing())
+  if (!font_.GetFontDescription().LetterSpacing() &&
+      !font_.GetFontDescription().WordSpacing())
     return 0;
 
-  float spacing = m_font.getFontDescription().letterSpacing();
-  if (currentCharacter && lastCharacter &&
-      m_font.getFontDescription().wordSpacing()) {
-    if (Character::treatAsSpace(currentCharacter) &&
-        !Character::treatAsSpace(lastCharacter))
-      spacing += m_font.getFontDescription().wordSpacing();
+  float spacing = font_.GetFontDescription().LetterSpacing();
+  if (current_character && last_character &&
+      font_.GetFontDescription().WordSpacing()) {
+    if (Character::TreatAsSpace(current_character) &&
+        !Character::TreatAsSpace(last_character))
+      spacing += font_.GetFontDescription().WordSpacing();
   }
 
-  if (m_effectiveZoom != 1)
-    spacing = spacing / m_effectiveZoom;
+  if (effective_zoom_ != 1)
+    spacing = spacing / effective_zoom_;
 
   return spacing;
 }

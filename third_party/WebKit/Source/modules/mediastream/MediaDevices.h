@@ -26,10 +26,10 @@ class MODULES_EXPORT MediaDevices final
       public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(MediaDevices, dispose);
+  USING_PRE_FINALIZER(MediaDevices, Dispose);
 
  public:
-  static MediaDevices* create(ExecutionContext*);
+  static MediaDevices* Create(ExecutionContext*);
   ~MediaDevices() override;
 
   ScriptPromise enumerateDevices(ScriptState*);
@@ -37,20 +37,20 @@ class MODULES_EXPORT MediaDevices final
   ScriptPromise getUserMedia(ScriptState*,
                              const MediaStreamConstraints&,
                              ExceptionState&);
-  void didChangeMediaDevices();
+  void DidChangeMediaDevices();
 
   // EventTarget overrides.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
-  void removeAllEventListeners() override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+  void RemoveAllEventListeners() override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const override;
+  bool HasPendingActivity() const override;
 
   // SuspendableObject overrides.
-  void contextDestroyed(ExecutionContext*) override;
-  void suspend() override;
-  void resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -58,24 +58,24 @@ class MODULES_EXPORT MediaDevices final
 
  protected:
   // EventTarget overrides.
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
-  void removedEventListener(const AtomicString& eventType,
+  void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) override;
 
  private:
   explicit MediaDevices(ExecutionContext*);
-  void scheduleDispatchEvent(Event*);
-  void dispatchScheduledEvent();
-  void startObserving();
-  void stopObserving();
-  UserMediaController* getUserMediaController();
-  void dispose();
+  void ScheduleDispatchEvent(Event*);
+  void DispatchScheduledEvent();
+  void StartObserving();
+  void StopObserving();
+  UserMediaController* GetUserMediaController();
+  void Dispose();
 
-  bool m_observing;
-  bool m_stopped;
-  Member<AsyncMethodRunner<MediaDevices>> m_dispatchScheduledEventRunner;
-  HeapVector<Member<Event>> m_scheduledEvents;
+  bool observing_;
+  bool stopped_;
+  Member<AsyncMethodRunner<MediaDevices>> dispatch_scheduled_event_runner_;
+  HeapVector<Member<Event>> scheduled_events_;
 };
 
 }  // namespace blink

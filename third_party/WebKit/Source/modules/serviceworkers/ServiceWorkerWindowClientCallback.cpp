@@ -12,28 +12,28 @@
 
 namespace blink {
 
-void NavigateClientCallback::onSuccess(
-    std::unique_ptr<WebServiceWorkerClientInfo> clientInfo) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void NavigateClientCallback::OnSuccess(
+    std::unique_ptr<WebServiceWorkerClientInfo> client_info) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->resolve(ServiceWorkerWindowClient::take(
-      m_resolver.get(), WTF::wrapUnique(clientInfo.release())));
+  resolver_->Resolve(ServiceWorkerWindowClient::Take(
+      resolver_.Get(), WTF::WrapUnique(client_info.release())));
 }
 
-void NavigateClientCallback::onError(const WebServiceWorkerError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void NavigateClientCallback::OnError(const WebServiceWorkerError& error) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
 
-  if (error.errorType == WebServiceWorkerError::ErrorTypeNavigation) {
-    ScriptState::Scope scope(m_resolver->getScriptState());
-    m_resolver->reject(V8ThrowException::createTypeError(
-        m_resolver->getScriptState()->isolate(), error.message));
+  if (error.error_type == WebServiceWorkerError::kErrorTypeNavigation) {
+    ScriptState::Scope scope(resolver_->GetScriptState());
+    resolver_->Reject(V8ThrowException::CreateTypeError(
+        resolver_->GetScriptState()->GetIsolate(), error.message));
     return;
   }
 
-  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+  resolver_->Reject(ServiceWorkerError::Take(resolver_.Get(), error));
 }
 
 }  // namespace blink

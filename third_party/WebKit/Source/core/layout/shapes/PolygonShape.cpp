@@ -34,145 +34,146 @@
 
 namespace blink {
 
-static inline FloatSize inwardEdgeNormal(const FloatPolygonEdge& edge) {
-  FloatSize edgeDelta = edge.vertex2() - edge.vertex1();
-  if (!edgeDelta.width())
-    return FloatSize((edgeDelta.height() > 0 ? -1 : 1), 0);
-  if (!edgeDelta.height())
-    return FloatSize(0, (edgeDelta.width() > 0 ? 1 : -1));
-  float edgeLength = edgeDelta.diagonalLength();
-  return FloatSize(-edgeDelta.height() / edgeLength,
-                   edgeDelta.width() / edgeLength);
+static inline FloatSize InwardEdgeNormal(const FloatPolygonEdge& edge) {
+  FloatSize edge_delta = edge.Vertex2() - edge.Vertex1();
+  if (!edge_delta.Width())
+    return FloatSize((edge_delta.Height() > 0 ? -1 : 1), 0);
+  if (!edge_delta.Height())
+    return FloatSize(0, (edge_delta.Width() > 0 ? 1 : -1));
+  float edge_length = edge_delta.DiagonalLength();
+  return FloatSize(-edge_delta.Height() / edge_length,
+                   edge_delta.Width() / edge_length);
 }
 
-static inline FloatSize outwardEdgeNormal(const FloatPolygonEdge& edge) {
-  return -inwardEdgeNormal(edge);
+static inline FloatSize OutwardEdgeNormal(const FloatPolygonEdge& edge) {
+  return -InwardEdgeNormal(edge);
 }
 
-static inline bool overlapsYRange(const FloatRect& rect, float y1, float y2) {
-  return !rect.isEmpty() && y2 >= y1 && y2 >= rect.y() && y1 <= rect.maxY();
+static inline bool OverlapsYRange(const FloatRect& rect, float y1, float y2) {
+  return !rect.IsEmpty() && y2 >= y1 && y2 >= rect.Y() && y1 <= rect.MaxY();
 }
 
-float OffsetPolygonEdge::xIntercept(float y) const {
-  DCHECK_GE(y, minY());
-  DCHECK_LE(y, maxY());
+float OffsetPolygonEdge::XIntercept(float y) const {
+  DCHECK_GE(y, MinY());
+  DCHECK_LE(y, MaxY());
 
-  if (vertex1().y() == vertex2().y() || vertex1().x() == vertex2().x())
-    return minX();
-  if (y == minY())
-    return vertex1().y() < vertex2().y() ? vertex1().x() : vertex2().x();
-  if (y == maxY())
-    return vertex1().y() > vertex2().y() ? vertex1().x() : vertex2().x();
+  if (Vertex1().Y() == Vertex2().Y() || Vertex1().X() == Vertex2().X())
+    return MinX();
+  if (y == MinY())
+    return Vertex1().Y() < Vertex2().Y() ? Vertex1().X() : Vertex2().X();
+  if (y == MaxY())
+    return Vertex1().Y() > Vertex2().Y() ? Vertex1().X() : Vertex2().X();
 
-  return vertex1().x() +
-         ((y - vertex1().y()) * (vertex2().x() - vertex1().x()) /
-          (vertex2().y() - vertex1().y()));
+  return Vertex1().X() +
+         ((y - Vertex1().Y()) * (Vertex2().X() - Vertex1().X()) /
+          (Vertex2().Y() - Vertex1().Y()));
 }
 
-FloatShapeInterval OffsetPolygonEdge::clippedEdgeXRange(float y1,
+FloatShapeInterval OffsetPolygonEdge::ClippedEdgeXRange(float y1,
                                                         float y2) const {
-  if (!overlapsYRange(y1, y2) || (y1 == maxY() && minY() <= y1) ||
-      (y2 == minY() && maxY() >= y2))
+  if (!OverlapsYRange(y1, y2) || (y1 == MaxY() && MinY() <= y1) ||
+      (y2 == MinY() && MaxY() >= y2))
     return FloatShapeInterval();
 
-  if (isWithinYRange(y1, y2))
-    return FloatShapeInterval(minX(), maxX());
+  if (IsWithinYRange(y1, y2))
+    return FloatShapeInterval(MinX(), MaxX());
 
   // Clip the edge line segment to the vertical range y1,y2 and then return
   // the clipped line segment's horizontal range.
 
-  FloatPoint minYVertex;
-  FloatPoint maxYVertex;
-  if (vertex1().y() < vertex2().y()) {
-    minYVertex = vertex1();
-    maxYVertex = vertex2();
+  FloatPoint min_y_vertex;
+  FloatPoint max_y_vertex;
+  if (Vertex1().Y() < Vertex2().Y()) {
+    min_y_vertex = Vertex1();
+    max_y_vertex = Vertex2();
   } else {
-    minYVertex = vertex2();
-    maxYVertex = vertex1();
+    min_y_vertex = Vertex2();
+    max_y_vertex = Vertex1();
   }
-  float xForY1 = (minYVertex.y() < y1) ? xIntercept(y1) : minYVertex.x();
-  float xForY2 = (maxYVertex.y() > y2) ? xIntercept(y2) : maxYVertex.x();
-  return FloatShapeInterval(std::min(xForY1, xForY2), std::max(xForY1, xForY2));
+  float x_for_y1 = (min_y_vertex.Y() < y1) ? XIntercept(y1) : min_y_vertex.X();
+  float x_for_y2 = (max_y_vertex.Y() > y2) ? XIntercept(y2) : max_y_vertex.X();
+  return FloatShapeInterval(std::min(x_for_y1, x_for_y2),
+                            std::max(x_for_y1, x_for_y2));
 }
 
-static float circleXIntercept(float y, float radius) {
+static float CircleXIntercept(float y, float radius) {
   DCHECK_GT(radius, 0);
   return radius * sqrt(1 - (y * y) / (radius * radius));
 }
 
-static FloatShapeInterval clippedCircleXRange(const FloatPoint& center,
+static FloatShapeInterval ClippedCircleXRange(const FloatPoint& center,
                                               float radius,
                                               float y1,
                                               float y2) {
-  if (y1 >= center.y() + radius || y2 <= center.y() - radius)
+  if (y1 >= center.Y() + radius || y2 <= center.Y() - radius)
     return FloatShapeInterval();
 
-  if (center.y() >= y1 && center.y() <= y2)
-    return FloatShapeInterval(center.x() - radius, center.x() + radius);
+  if (center.Y() >= y1 && center.Y() <= y2)
+    return FloatShapeInterval(center.X() - radius, center.X() + radius);
 
   // Clip the circle to the vertical range y1,y2 and return the extent of the
   // clipped circle's projection on the X axis
 
-  float xi = circleXIntercept((y2 < center.y() ? y2 : y1) - center.y(), radius);
-  return FloatShapeInterval(center.x() - xi, center.x() + xi);
+  float xi = CircleXIntercept((y2 < center.Y() ? y2 : y1) - center.Y(), radius);
+  return FloatShapeInterval(center.X() - xi, center.X() + xi);
 }
 
-LayoutRect PolygonShape::shapeMarginLogicalBoundingBox() const {
-  FloatRect box = m_polygon.boundingBox();
-  box.inflate(shapeMargin());
+LayoutRect PolygonShape::ShapeMarginLogicalBoundingBox() const {
+  FloatRect box = polygon_.BoundingBox();
+  box.Inflate(ShapeMargin());
   return LayoutRect(box);
 }
 
-LineSegment PolygonShape::getExcludedInterval(LayoutUnit logicalTop,
-                                              LayoutUnit logicalHeight) const {
-  float y1 = logicalTop.toFloat();
-  float y2 = logicalTop.toFloat() + logicalHeight.toFloat();
+LineSegment PolygonShape::GetExcludedInterval(LayoutUnit logical_top,
+                                              LayoutUnit logical_height) const {
+  float y1 = logical_top.ToFloat();
+  float y2 = logical_top.ToFloat() + logical_height.ToFloat();
 
-  if (m_polygon.isEmpty() ||
-      !overlapsYRange(m_polygon.boundingBox(), y1 - shapeMargin(),
-                      y2 + shapeMargin()))
+  if (polygon_.IsEmpty() ||
+      !OverlapsYRange(polygon_.BoundingBox(), y1 - ShapeMargin(),
+                      y2 + ShapeMargin()))
     return LineSegment();
 
-  Vector<const FloatPolygonEdge*> overlappingEdges;
-  if (!m_polygon.overlappingEdges(y1 - shapeMargin(), y2 + shapeMargin(),
-                                  overlappingEdges))
+  Vector<const FloatPolygonEdge*> overlapping_edges;
+  if (!polygon_.OverlappingEdges(y1 - ShapeMargin(), y2 + ShapeMargin(),
+                                 overlapping_edges))
     return LineSegment();
 
-  FloatShapeInterval excludedInterval;
-  for (unsigned i = 0; i < overlappingEdges.size(); i++) {
-    const FloatPolygonEdge& edge = *(overlappingEdges[i]);
-    if (edge.maxY() == edge.minY())
+  FloatShapeInterval excluded_interval;
+  for (unsigned i = 0; i < overlapping_edges.size(); i++) {
+    const FloatPolygonEdge& edge = *(overlapping_edges[i]);
+    if (edge.MaxY() == edge.MinY())
       continue;
-    if (!shapeMargin()) {
-      excludedInterval.unite(
-          OffsetPolygonEdge(edge, FloatSize()).clippedEdgeXRange(y1, y2));
+    if (!ShapeMargin()) {
+      excluded_interval.Unite(
+          OffsetPolygonEdge(edge, FloatSize()).ClippedEdgeXRange(y1, y2));
     } else {
-      excludedInterval.unite(
-          OffsetPolygonEdge(edge, outwardEdgeNormal(edge) * shapeMargin())
-              .clippedEdgeXRange(y1, y2));
-      excludedInterval.unite(
-          OffsetPolygonEdge(edge, inwardEdgeNormal(edge) * shapeMargin())
-              .clippedEdgeXRange(y1, y2));
-      excludedInterval.unite(
-          clippedCircleXRange(edge.vertex1(), shapeMargin(), y1, y2));
-      excludedInterval.unite(
-          clippedCircleXRange(edge.vertex2(), shapeMargin(), y1, y2));
+      excluded_interval.Unite(
+          OffsetPolygonEdge(edge, OutwardEdgeNormal(edge) * ShapeMargin())
+              .ClippedEdgeXRange(y1, y2));
+      excluded_interval.Unite(
+          OffsetPolygonEdge(edge, InwardEdgeNormal(edge) * ShapeMargin())
+              .ClippedEdgeXRange(y1, y2));
+      excluded_interval.Unite(
+          ClippedCircleXRange(edge.Vertex1(), ShapeMargin(), y1, y2));
+      excluded_interval.Unite(
+          ClippedCircleXRange(edge.Vertex2(), ShapeMargin(), y1, y2));
     }
   }
 
-  if (excludedInterval.isEmpty())
+  if (excluded_interval.IsEmpty())
     return LineSegment();
 
-  return LineSegment(excludedInterval.x1(), excludedInterval.x2());
+  return LineSegment(excluded_interval.X1(), excluded_interval.X2());
 }
 
-void PolygonShape::buildDisplayPaths(DisplayPaths& paths) const {
-  if (!m_polygon.numberOfVertices())
+void PolygonShape::BuildDisplayPaths(DisplayPaths& paths) const {
+  if (!polygon_.NumberOfVertices())
     return;
-  paths.shape.moveTo(m_polygon.vertexAt(0));
-  for (size_t i = 1; i < m_polygon.numberOfVertices(); ++i)
-    paths.shape.addLineTo(m_polygon.vertexAt(i));
-  paths.shape.closeSubpath();
+  paths.shape.MoveTo(polygon_.VertexAt(0));
+  for (size_t i = 1; i < polygon_.NumberOfVertices(); ++i)
+    paths.shape.AddLineTo(polygon_.VertexAt(i));
+  paths.shape.CloseSubpath();
 }
 
 }  // namespace blink

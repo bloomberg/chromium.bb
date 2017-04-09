@@ -51,7 +51,7 @@ class CORE_EXPORT DataTransferItem final
   WTF_MAKE_NONCOPYABLE(DataTransferItem);
 
  public:
-  static DataTransferItem* create(DataTransfer*, DataObjectItem*);
+  static DataTransferItem* Create(DataTransfer*, DataObjectItem*);
 
   String kind() const;
   String type() const;
@@ -59,16 +59,16 @@ class CORE_EXPORT DataTransferItem final
   void getAsString(ScriptState*, StringCallback*) const;
   File* getAsFile() const;
 
-  DataTransfer* getDataTransfer() { return m_dataTransfer.get(); }
-  DataObjectItem* getDataObjectItem() { return m_item.get(); }
+  DataTransfer* GetDataTransfer() { return data_transfer_.Get(); }
+  DataObjectItem* GetDataObjectItem() { return item_.Get(); }
 
   DECLARE_TRACE();
 
  private:
   DataTransferItem(DataTransfer*, DataObjectItem*);
 
-  Member<DataTransfer> m_dataTransfer;
-  Member<DataObjectItem> m_item;
+  Member<DataTransfer> data_transfer_;
+  Member<DataObjectItem> item_;
 };
 
 }  // namespace blink

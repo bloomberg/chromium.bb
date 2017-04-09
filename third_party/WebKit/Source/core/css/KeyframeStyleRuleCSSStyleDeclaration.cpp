@@ -10,13 +10,13 @@
 namespace blink {
 
 KeyframeStyleRuleCSSStyleDeclaration::KeyframeStyleRuleCSSStyleDeclaration(
-    MutableStylePropertySet& propertySetArg,
-    CSSKeyframeRule* parentRule)
-    : StyleRuleCSSStyleDeclaration(propertySetArg, parentRule) {}
+    MutableStylePropertySet& property_set_arg,
+    CSSKeyframeRule* parent_rule)
+    : StyleRuleCSSStyleDeclaration(property_set_arg, parent_rule) {}
 
-void KeyframeStyleRuleCSSStyleDeclaration::didMutate(MutationType type) {
-  StyleRuleCSSStyleDeclaration::didMutate(type);
-  toCSSKeyframesRule(m_parentRule->parentRule())->styleChanged();
+void KeyframeStyleRuleCSSStyleDeclaration::DidMutate(MutationType type) {
+  StyleRuleCSSStyleDeclaration::DidMutate(type);
+  ToCSSKeyframesRule(parent_rule_->parentRule())->StyleChanged();
 }
 
 }  // namespace blink

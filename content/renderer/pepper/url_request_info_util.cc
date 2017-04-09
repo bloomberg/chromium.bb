@@ -87,7 +87,7 @@ bool AppendFileRefToBody(PP_Instance instance,
     default:
       NOTREACHED();
   }
-  http_body->appendFileRange(blink::FilePathToWebString(platform_path),
+  http_body->AppendFileRange(blink::FilePathToWebString(platform_path),
                              start_offset, number_of_bytes,
                              expected_last_modified_time);
   return true;
@@ -169,28 +169,29 @@ bool CreateWebURLRequest(PP_Instance instance,
      name_version = "internal_testing_only";
    }
 
-  dest->setURL(frame->document().completeURL(WebString::fromUTF8(data->url)));
-  dest->setDownloadToFile(data->stream_to_file);
-  dest->setReportUploadProgress(data->record_upload_progress);
+   dest->SetURL(
+       frame->GetDocument().CompleteURL(WebString::FromUTF8(data->url)));
+   dest->SetDownloadToFile(data->stream_to_file);
+   dest->SetReportUploadProgress(data->record_upload_progress);
 
-  if (!data->method.empty())
-    dest->setHTTPMethod(WebString::fromUTF8(data->method));
+   if (!data->method.empty())
+     dest->SetHTTPMethod(WebString::FromUTF8(data->method));
 
-  dest->setFirstPartyForCookies(frame->document().firstPartyForCookies());
+   dest->SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
 
-  const std::string& headers = data->headers;
-  if (!headers.empty()) {
-    net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");
-    while (it.GetNext()) {
-      dest->addHTTPHeaderField(WebString::fromUTF8(it.name()),
-                               WebString::fromUTF8(it.values()));
-    }
+   const std::string& headers = data->headers;
+   if (!headers.empty()) {
+     net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");
+     while (it.GetNext()) {
+       dest->AddHTTPHeaderField(WebString::FromUTF8(it.name()),
+                                WebString::FromUTF8(it.values()));
+     }
   }
 
   // Append the upload data.
   if (!data->body.empty()) {
     WebHTTPBody http_body;
-    http_body.initialize();
+    http_body.Initialize();
     int file_index = 0;
     for (size_t i = 0; i < data->body.size(); ++i) {
       const URLRequestInfoData::BodyItem& item = data->body[i];
@@ -205,35 +206,35 @@ bool CreateWebURLRequest(PP_Instance instance,
         file_index++;
       } else {
         DCHECK(!item.data.empty());
-        http_body.appendData(WebData(item.data));
+        http_body.AppendData(WebData(item.data));
       }
     }
-    dest->setHTTPBody(http_body);
+    dest->SetHTTPBody(http_body);
   }
 
   // Add the "Referer" header if there is a custom referrer. Such requests
   // require universal access. For all other requests, "Referer" will be set
   // after header security checks are done in AssociatedURLLoader.
   if (data->has_custom_referrer_url && !data->custom_referrer_url.empty())
-    frame->setReferrerForRequest(*dest, GURL(data->custom_referrer_url));
+    frame->SetReferrerForRequest(*dest, GURL(data->custom_referrer_url));
 
   if (data->has_custom_content_transfer_encoding &&
       !data->custom_content_transfer_encoding.empty()) {
-    dest->addHTTPHeaderField(
-        WebString::fromUTF8("Content-Transfer-Encoding"),
-        WebString::fromUTF8(data->custom_content_transfer_encoding));
+    dest->AddHTTPHeaderField(
+        WebString::FromUTF8("Content-Transfer-Encoding"),
+        WebString::FromUTF8(data->custom_content_transfer_encoding));
   }
 
   if (data->has_custom_user_agent || !name_version.empty()) {
     RequestExtraData* extra_data = new RequestExtraData();
     if (data->has_custom_user_agent) {
       extra_data->set_custom_user_agent(
-          WebString::fromUTF8(data->custom_user_agent));
+          WebString::FromUTF8(data->custom_user_agent));
     }
     if (!name_version.empty()) {
-      extra_data->set_requested_with(WebString::fromUTF8(name_version));
+      extra_data->set_requested_with(WebString::FromUTF8(name_version));
     }
-    dest->setExtraData(extra_data);
+    dest->SetExtraData(extra_data);
   }
 
   return true;

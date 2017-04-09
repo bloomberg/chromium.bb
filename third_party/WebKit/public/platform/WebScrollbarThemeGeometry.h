@@ -37,16 +37,16 @@ class BLINK_PLATFORM_EXPORT WebScrollbarThemeGeometry {
  public:
   virtual ~WebScrollbarThemeGeometry() {}
 
-  virtual bool hasButtons(WebScrollbar*) = 0;
-  virtual bool hasThumb(WebScrollbar*) = 0;
-  virtual WebRect trackRect(WebScrollbar*) = 0;
-  virtual WebRect thumbRect(WebScrollbar*) = 0;
-  virtual WebRect backButtonStartRect(WebScrollbar*) = 0;
-  virtual WebRect backButtonEndRect(WebScrollbar*) = 0;
-  virtual WebRect forwardButtonStartRect(WebScrollbar*) = 0;
-  virtual WebRect forwardButtonEndRect(WebScrollbar*) = 0;
-  virtual WebSize ninePatchThumbCanvasSize(WebScrollbar*) = 0;
-  virtual WebRect ninePatchThumbAperture(WebScrollbar*) = 0;
+  virtual bool HasButtons(WebScrollbar*) = 0;
+  virtual bool HasThumb(WebScrollbar*) = 0;
+  virtual WebRect TrackRect(WebScrollbar*) = 0;
+  virtual WebRect ThumbRect(WebScrollbar*) = 0;
+  virtual WebRect BackButtonStartRect(WebScrollbar*) = 0;
+  virtual WebRect BackButtonEndRect(WebScrollbar*) = 0;
+  virtual WebRect ForwardButtonStartRect(WebScrollbar*) = 0;
+  virtual WebRect ForwardButtonEndRect(WebScrollbar*) = 0;
+  virtual WebSize NinePatchThumbCanvasSize(WebScrollbar*) = 0;
+  virtual WebRect NinePatchThumbAperture(WebScrollbar*) = 0;
 };
 
 }  // namespace blink

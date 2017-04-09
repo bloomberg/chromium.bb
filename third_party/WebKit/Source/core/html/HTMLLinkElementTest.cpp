@@ -16,26 +16,26 @@ namespace blink {
 class HTMLLinkElementTest : public ::testing::Test {
  protected:
   void SetUp() override;
-  Document& document() const { return m_dummyPageHolder->document(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void HTMLLinkElementTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 // This tests that we should ignore empty string value
 // in href attribute value of the link element.
 TEST_F(HTMLLinkElementTest, EmptyHrefAttribute) {
-  document().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->setInnerHTML(
       "<head>"
       "<link rel=\"icon\" type=\"image/ico\" href=\"\" />"
       "</head>");
-  HTMLLinkElement* linkElement =
-      toElement<HTMLLinkElement>(document().head()->firstChild());
-  EXPECT_EQ(KURL(), linkElement->href());
+  HTMLLinkElement* link_element =
+      ToElement<HTMLLinkElement>(GetDocument().head()->FirstChild());
+  EXPECT_EQ(KURL(), link_element->Href());
 }
 
 }  // namespace blink

@@ -47,7 +47,7 @@ class CORE_EXPORT Navigator final : public GarbageCollected<Navigator>,
   USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 
  public:
-  static Navigator* create(LocalFrame* frame) { return new Navigator(frame); }
+  static Navigator* Create(LocalFrame* frame) { return new Navigator(frame); }
 
   // NavigatorCookies
   bool cookieEnabled() const;

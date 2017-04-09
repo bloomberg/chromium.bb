@@ -14,72 +14,71 @@
 #define WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING() ((void)0)
 #endif
 
-void WTF::StringTypeAdapter<char*>::writeTo(LChar* destination) const {
-  for (unsigned i = 0; i < m_length; ++i)
-    destination[i] = static_cast<LChar>(m_buffer[i]);
+void WTF::StringTypeAdapter<char*>::WriteTo(LChar* destination) const {
+  for (unsigned i = 0; i < length_; ++i)
+    destination[i] = static_cast<LChar>(buffer_[i]);
 }
 
-void WTF::StringTypeAdapter<char*>::writeTo(UChar* destination) const {
-  for (unsigned i = 0; i < m_length; ++i) {
-    unsigned char c = m_buffer[i];
+void WTF::StringTypeAdapter<char*>::WriteTo(UChar* destination) const {
+  for (unsigned i = 0; i < length_; ++i) {
+    unsigned char c = buffer_[i];
     destination[i] = c;
   }
 }
 
 WTF::StringTypeAdapter<LChar*>::StringTypeAdapter(LChar* buffer)
-    : m_buffer(buffer), m_length(strlen(reinterpret_cast<char*>(buffer))) {}
+    : buffer_(buffer), length_(strlen(reinterpret_cast<char*>(buffer))) {}
 
-void WTF::StringTypeAdapter<LChar*>::writeTo(LChar* destination) const {
-  memcpy(destination, m_buffer, m_length * sizeof(LChar));
+void WTF::StringTypeAdapter<LChar*>::WriteTo(LChar* destination) const {
+  memcpy(destination, buffer_, length_ * sizeof(LChar));
 }
 
-void WTF::StringTypeAdapter<LChar*>::writeTo(UChar* destination) const {
-  StringImpl::copyChars(destination, m_buffer, m_length);
+void WTF::StringTypeAdapter<LChar*>::WriteTo(UChar* destination) const {
+  StringImpl::CopyChars(destination, buffer_, length_);
 }
 
 WTF::StringTypeAdapter<const UChar*>::StringTypeAdapter(const UChar* buffer)
-    : m_buffer(buffer), m_length(lengthOfNullTerminatedString(buffer)) {}
+    : buffer_(buffer), length_(LengthOfNullTerminatedString(buffer)) {}
 
-void WTF::StringTypeAdapter<const UChar*>::writeTo(UChar* destination) const {
-  memcpy(destination, m_buffer, m_length * sizeof(UChar));
+void WTF::StringTypeAdapter<const UChar*>::WriteTo(UChar* destination) const {
+  memcpy(destination, buffer_, length_ * sizeof(UChar));
 }
 
 WTF::StringTypeAdapter<const char*>::StringTypeAdapter(const char* buffer)
-    : m_buffer(buffer), m_length(strlen(buffer)) {}
+    : buffer_(buffer), length_(strlen(buffer)) {}
 
-void WTF::StringTypeAdapter<const char*>::writeTo(LChar* destination) const {
-  memcpy(destination, m_buffer, static_cast<size_t>(m_length) * sizeof(LChar));
+void WTF::StringTypeAdapter<const char*>::WriteTo(LChar* destination) const {
+  memcpy(destination, buffer_, static_cast<size_t>(length_) * sizeof(LChar));
 }
 
-void WTF::StringTypeAdapter<const char*>::writeTo(UChar* destination) const {
-  for (unsigned i = 0; i < m_length; ++i) {
-    unsigned char c = m_buffer[i];
+void WTF::StringTypeAdapter<const char*>::WriteTo(UChar* destination) const {
+  for (unsigned i = 0; i < length_; ++i) {
+    unsigned char c = buffer_[i];
     destination[i] = c;
   }
 }
 
 WTF::StringTypeAdapter<const LChar*>::StringTypeAdapter(const LChar* buffer)
-    : m_buffer(buffer),
-      m_length(strlen(reinterpret_cast<const char*>(buffer))) {}
+    : buffer_(buffer), length_(strlen(reinterpret_cast<const char*>(buffer))) {}
 
-void WTF::StringTypeAdapter<const LChar*>::writeTo(LChar* destination) const {
-  memcpy(destination, m_buffer, static_cast<size_t>(m_length) * sizeof(LChar));
+void WTF::StringTypeAdapter<const LChar*>::WriteTo(LChar* destination) const {
+  memcpy(destination, buffer_, static_cast<size_t>(length_) * sizeof(LChar));
 }
 
-void WTF::StringTypeAdapter<const LChar*>::writeTo(UChar* destination) const {
-  StringImpl::copyChars(destination, m_buffer, m_length);
+void WTF::StringTypeAdapter<const LChar*>::WriteTo(UChar* destination) const {
+  StringImpl::CopyChars(destination, buffer_, length_);
 }
 
-void WTF::StringTypeAdapter<StringView>::writeTo(LChar* destination) const {
-  DCHECK(is8Bit());
-  StringImpl::copyChars(destination, m_view.characters8(), m_view.length());
+void WTF::StringTypeAdapter<StringView>::WriteTo(LChar* destination) const {
+  DCHECK(Is8Bit());
+  StringImpl::CopyChars(destination, view_.Characters8(), view_.length());
   WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
 }
 
-void WTF::StringTypeAdapter<StringView>::writeTo(UChar* destination) const {
-  if (is8Bit())
-    StringImpl::copyChars(destination, m_view.characters8(), m_view.length());
+void WTF::StringTypeAdapter<StringView>::WriteTo(UChar* destination) const {
+  if (Is8Bit())
+    StringImpl::CopyChars(destination, view_.Characters8(), view_.length());
   else
-    StringImpl::copyChars(destination, m_view.characters16(), m_view.length());
+    StringImpl::CopyChars(destination, view_.Characters16(), view_.length());
   WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
 }

@@ -15,78 +15,78 @@ class LayoutInline;
 
 class LineLayoutInline : public LineLayoutBoxModel {
  public:
-  explicit LineLayoutInline(LayoutInline* layoutInline)
-      : LineLayoutBoxModel(layoutInline) {}
+  explicit LineLayoutInline(LayoutInline* layout_inline)
+      : LineLayoutBoxModel(layout_inline) {}
 
   explicit LineLayoutInline(const LineLayoutItem& item)
       : LineLayoutBoxModel(item) {
-    SECURITY_DCHECK(!item || item.isLayoutInline());
+    SECURITY_DCHECK(!item || item.IsLayoutInline());
   }
 
   explicit LineLayoutInline(std::nullptr_t) : LineLayoutBoxModel(nullptr) {}
 
   LineLayoutInline() {}
 
-  LineLayoutItem firstChild() const {
-    return LineLayoutItem(toInline()->firstChild());
+  LineLayoutItem FirstChild() const {
+    return LineLayoutItem(ToInline()->FirstChild());
   }
 
-  LineLayoutItem lastChild() const {
-    return LineLayoutItem(toInline()->lastChild());
+  LineLayoutItem LastChild() const {
+    return LineLayoutItem(ToInline()->LastChild());
   }
 
-  LayoutUnit marginStart() const { return toInline()->marginStart(); }
+  LayoutUnit MarginStart() const { return ToInline()->MarginStart(); }
 
-  LayoutUnit marginEnd() const { return toInline()->marginEnd(); }
+  LayoutUnit MarginEnd() const { return ToInline()->MarginEnd(); }
 
-  LayoutUnit borderStart() const { return toInline()->borderStart(); }
+  LayoutUnit BorderStart() const { return ToInline()->BorderStart(); }
 
-  LayoutUnit borderEnd() const { return toInline()->borderEnd(); }
+  LayoutUnit BorderEnd() const { return ToInline()->BorderEnd(); }
 
-  LayoutUnit paddingStart() const { return toInline()->paddingStart(); }
+  LayoutUnit PaddingStart() const { return ToInline()->PaddingStart(); }
 
-  LayoutUnit paddingEnd() const { return toInline()->paddingEnd(); }
+  LayoutUnit PaddingEnd() const { return ToInline()->PaddingEnd(); }
 
-  bool hasInlineDirectionBordersPaddingOrMargin() const {
-    return toInline()->hasInlineDirectionBordersPaddingOrMargin();
+  bool HasInlineDirectionBordersPaddingOrMargin() const {
+    return ToInline()->HasInlineDirectionBordersPaddingOrMargin();
   }
 
-  bool alwaysCreateLineBoxes() const {
-    return toInline()->alwaysCreateLineBoxes();
+  bool AlwaysCreateLineBoxes() const {
+    return ToInline()->AlwaysCreateLineBoxes();
   }
 
-  InlineBox* firstLineBoxIncludingCulling() const {
-    return toInline()->firstLineBoxIncludingCulling();
+  InlineBox* FirstLineBoxIncludingCulling() const {
+    return ToInline()->FirstLineBoxIncludingCulling();
   }
 
-  InlineBox* lastLineBoxIncludingCulling() const {
-    return toInline()->lastLineBoxIncludingCulling();
+  InlineBox* LastLineBoxIncludingCulling() const {
+    return ToInline()->LastLineBoxIncludingCulling();
   }
 
-  LineBoxList* lineBoxes() { return toInline()->lineBoxes(); }
+  LineBoxList* LineBoxes() { return ToInline()->LineBoxes(); }
 
-  bool hitTestCulledInline(HitTestResult& result,
-                           const HitTestLocation& locationInContainer,
-                           const LayoutPoint& accumulatedOffset) {
-    return toInline()->hitTestCulledInline(result, locationInContainer,
-                                           accumulatedOffset);
+  bool HitTestCulledInline(HitTestResult& result,
+                           const HitTestLocation& location_in_container,
+                           const LayoutPoint& accumulated_offset) {
+    return ToInline()->HitTestCulledInline(result, location_in_container,
+                                           accumulated_offset);
   }
 
-  LayoutBoxModelObject* continuation() const {
-    return toInline()->continuation();
+  LayoutBoxModelObject* Continuation() const {
+    return ToInline()->Continuation();
   }
 
-  InlineBox* createAndAppendInlineFlowBox() {
-    return toInline()->createAndAppendInlineFlowBox();
+  InlineBox* CreateAndAppendInlineFlowBox() {
+    return ToInline()->CreateAndAppendInlineFlowBox();
   }
 
-  InlineFlowBox* lastLineBox() { return toInline()->lastLineBox(); }
+  InlineFlowBox* LastLineBox() { return ToInline()->LastLineBox(); }
 
  protected:
-  LayoutInline* toInline() { return toLayoutInline(layoutObject()); }
+  LayoutInline* ToInline() { return ToLayoutInline(GetLayoutObject()); }
 
-  const LayoutInline* toInline() const {
-    return toLayoutInline(layoutObject());
+  const LayoutInline* ToInline() const {
+    return ToLayoutInline(GetLayoutObject());
   }
 };
 

@@ -18,20 +18,20 @@ struct PLATFORM_EXPORT Rotation {
   // normalized axes this function returns true and the "non-zero" axis is
   // returned as resultAxis and the effective angles are returned as
   // resultAngleA and resultAngleB.  Otherwise false is returned.
-  static bool getCommonAxis(const Rotation& /*a*/,
+  static bool GetCommonAxis(const Rotation& /*a*/,
                             const Rotation& /*b*/,
-                            FloatPoint3D& resultAxis,
-                            double& resultAngleA,
-                            double& resultAngleB);
+                            FloatPoint3D& result_axis,
+                            double& result_angle_a,
+                            double& result_angle_b);
 
   // A progress of 0 corresponds to "from" and a progress of 1 corresponds to
   // "to".
-  static Rotation slerp(const Rotation& from,
+  static Rotation Slerp(const Rotation& from,
                         const Rotation& to,
                         double progress);
 
   // Returns a rotation whose effect is equivalent to applying a followed by b.
-  static Rotation add(const Rotation& /*a*/, const Rotation& /*b*/);
+  static Rotation Add(const Rotation& /*a*/, const Rotation& /*b*/);
 
   // No restrictions on the axis vector.
   FloatPoint3D axis;

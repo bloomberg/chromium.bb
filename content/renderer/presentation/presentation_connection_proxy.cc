@@ -37,11 +37,11 @@ void PresentationConnectionProxy::OnMessage(
   DCHECK(!callback.is_null());
 
   if (message.is_binary()) {
-    source_connection_->didReceiveBinaryMessage(&(message.data->front()),
+    source_connection_->DidReceiveBinaryMessage(&(message.data->front()),
                                                 message.data->size());
   } else {
-    source_connection_->didReceiveTextMessage(
-        blink::WebString::fromUTF8(*(message.message)));
+    source_connection_->DidReceiveTextMessage(
+        blink::WebString::FromUTF8(*(message.message)));
   }
 
   callback.Run(true);
@@ -52,10 +52,10 @@ void PresentationConnectionProxy::OnMessage(
 void PresentationConnectionProxy::DidChangeState(
     content::PresentationConnectionState state) {
   if (state == content::PRESENTATION_CONNECTION_STATE_CONNECTED) {
-    source_connection_->didChangeState(
-        blink::WebPresentationConnectionState::Connected);
+    source_connection_->DidChangeState(
+        blink::WebPresentationConnectionState::kConnected);
   } else if (state == content::PRESENTATION_CONNECTION_STATE_CLOSED) {
-    source_connection_->didClose();
+    source_connection_->DidClose();
   } else {
     NOTREACHED();
   }
@@ -63,12 +63,12 @@ void PresentationConnectionProxy::DidChangeState(
 
 void PresentationConnectionProxy::OnClose() {
   DCHECK(target_connection_ptr_);
-  source_connection_->didClose();
+  source_connection_->DidClose();
   target_connection_ptr_->DidChangeState(
       content::PRESENTATION_CONNECTION_STATE_CLOSED);
 }
 
-void PresentationConnectionProxy::close() const {
+void PresentationConnectionProxy::Close() const {
   DCHECK(target_connection_ptr_);
   target_connection_ptr_->OnClose();
 }

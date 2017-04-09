@@ -29,42 +29,42 @@ class PLATFORM_EXPORT ImageLayerBridge
   ImageLayerBridge(OpacityMode);
   ~ImageLayerBridge();
 
-  void setImage(PassRefPtr<StaticBitmapImage>);
-  void dispose();
+  void SetImage(PassRefPtr<StaticBitmapImage>);
+  void Dispose();
 
   // cc::TextureLayerClient implementation.
-  bool PrepareTextureMailbox(
-      cc::TextureMailbox* outMailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) override;
+  bool PrepareTextureMailbox(cc::TextureMailbox* out_mailbox,
+                             std::unique_ptr<cc::SingleReleaseCallback>*
+                                 out_release_callback) override;
 
-  void mailboxReleasedGpu(RefPtr<StaticBitmapImage>,
+  void MailboxReleasedGpu(RefPtr<StaticBitmapImage>,
                           const gpu::SyncToken&,
-                          bool lostResource);
+                          bool lost_resource);
 
-  void mailboxReleasedSoftware(std::unique_ptr<cc::SharedBitmap>,
+  void MailboxReleasedSoftware(std::unique_ptr<cc::SharedBitmap>,
                                const IntSize&,
                                const gpu::SyncToken&,
-                               bool lostResource);
+                               bool lost_resource);
 
-  RefPtr<StaticBitmapImage> image() { return m_image; }
+  RefPtr<StaticBitmapImage> GetImage() { return image_; }
 
-  WebLayer* platformLayer() const;
+  WebLayer* PlatformLayer() const;
 
-  void setFilterQuality(SkFilterQuality filterQuality) {
-    m_filterQuality = filterQuality;
+  void SetFilterQuality(SkFilterQuality filter_quality) {
+    filter_quality_ = filter_quality;
   }
 
-  bool isAccelerated() { return m_image->isTextureBacked(); }
+  bool IsAccelerated() { return image_->IsTextureBacked(); }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  std::unique_ptr<cc::SharedBitmap> createOrRecycleBitmap();
+  std::unique_ptr<cc::SharedBitmap> CreateOrRecycleBitmap();
 
-  WeakPtrFactory<ImageLayerBridge> m_weakPtrFactory;
-  RefPtr<StaticBitmapImage> m_image;
-  std::unique_ptr<WebExternalTextureLayer> m_layer;
-  SkFilterQuality m_filterQuality = kLow_SkFilterQuality;
+  WeakPtrFactory<ImageLayerBridge> weak_ptr_factory_;
+  RefPtr<StaticBitmapImage> image_;
+  std::unique_ptr<WebExternalTextureLayer> layer_;
+  SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   // Shared memory bitmaps that were released by the compositor and can be used
   // again by this ImageLayerBridge.
@@ -72,11 +72,11 @@ class PLATFORM_EXPORT ImageLayerBridge
     std::unique_ptr<cc::SharedBitmap> bitmap;
     IntSize size;
   };
-  Vector<RecycledBitmap> m_recycledBitmaps;
+  Vector<RecycledBitmap> recycled_bitmaps_;
 
-  bool m_disposed = false;
-  bool m_hasPresentedSinceLastSetImage = false;
-  OpacityMode m_opacityMode = NonOpaque;
+  bool disposed_ = false;
+  bool has_presented_since_last_set_image_ = false;
+  OpacityMode opacity_mode_ = kNonOpaque;
 };
 
 }  // namespace blink

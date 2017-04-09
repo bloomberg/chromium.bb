@@ -55,15 +55,15 @@ namespace blink {
 class BlobOriginMap : public URLSecurityOriginMap {
  public:
   BlobOriginMap();
-  SecurityOrigin* getOrigin(const KURL&) override;
+  SecurityOrigin* GetOrigin(const KURL&) override;
 };
 
-static WebBlobRegistry* getBlobRegistry() {
-  return Platform::current()->getBlobRegistry();
+static WebBlobRegistry* GetBlobRegistry() {
+  return Platform::Current()->GetBlobRegistry();
 }
 
 typedef HashMap<String, RefPtr<SecurityOrigin>> BlobURLOriginMap;
-static ThreadSpecific<BlobURLOriginMap>& originMap() {
+static ThreadSpecific<BlobURLOriginMap>& OriginMap() {
   // We want to create the BlobOriginMap exactly once because it is shared by
   // all the threads.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(BlobOriginMap, cache, new BlobOriginMap);
@@ -74,154 +74,154 @@ static ThreadSpecific<BlobURLOriginMap>& originMap() {
   return map;
 }
 
-static void saveToOriginMap(SecurityOrigin* origin, const KURL& url) {
+static void SaveToOriginMap(SecurityOrigin* origin, const KURL& url) {
   // If the blob URL contains null origin, as in the context with unique
   // security origin or file URL, save the mapping between url and origin so
   // that the origin can be retrieved when doing security origin check.
   //
   // See the definition of the origin of a Blob URL in the File API spec.
-  if (origin && BlobURL::getOrigin(url) == "null")
-    originMap()->insert(url.getString(), origin);
+  if (origin && BlobURL::GetOrigin(url) == "null")
+    OriginMap()->insert(url.GetString(), origin);
 }
 
-static void removeFromOriginMap(const KURL& url) {
-  if (BlobURL::getOrigin(url) == "null")
-    originMap()->erase(url.getString());
+static void RemoveFromOriginMap(const KURL& url) {
+  if (BlobURL::GetOrigin(url) == "null")
+    OriginMap()->erase(url.GetString());
 }
 
-void BlobRegistry::registerBlobData(const String& uuid,
+void BlobRegistry::RegisterBlobData(const String& uuid,
                                     std::unique_ptr<BlobData> data) {
-  getBlobRegistry()->registerBlobData(uuid, WebBlobData(std::move(data)));
+  GetBlobRegistry()->RegisterBlobData(uuid, WebBlobData(std::move(data)));
 }
 
-void BlobRegistry::addBlobDataRef(const String& uuid) {
-  getBlobRegistry()->addBlobDataRef(uuid);
+void BlobRegistry::AddBlobDataRef(const String& uuid) {
+  GetBlobRegistry()->AddBlobDataRef(uuid);
 }
 
-void BlobRegistry::removeBlobDataRef(const String& uuid) {
-  getBlobRegistry()->removeBlobDataRef(uuid);
+void BlobRegistry::RemoveBlobDataRef(const String& uuid) {
+  GetBlobRegistry()->RemoveBlobDataRef(uuid);
 }
 
-void BlobRegistry::registerPublicBlobURL(SecurityOrigin* origin,
+void BlobRegistry::RegisterPublicBlobURL(SecurityOrigin* origin,
                                          const KURL& url,
                                          PassRefPtr<BlobDataHandle> handle) {
-  saveToOriginMap(origin, url);
-  getBlobRegistry()->registerPublicBlobURL(url, handle->uuid());
+  SaveToOriginMap(origin, url);
+  GetBlobRegistry()->RegisterPublicBlobURL(url, handle->Uuid());
 }
 
-void BlobRegistry::revokePublicBlobURL(const KURL& url) {
-  removeFromOriginMap(url);
-  getBlobRegistry()->revokePublicBlobURL(url);
+void BlobRegistry::RevokePublicBlobURL(const KURL& url) {
+  RemoveFromOriginMap(url);
+  GetBlobRegistry()->RevokePublicBlobURL(url);
 }
 
-static void registerStreamURLTask(const KURL& url, const String& type) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->registerStreamURL(url, type);
+static void RegisterStreamURLTask(const KURL& url, const String& type) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->RegisterStreamURL(url, type);
 }
 
-void BlobRegistry::registerStreamURL(const KURL& url, const String& type) {
-  if (isMainThread())
-    registerStreamURLTask(url, type);
+void BlobRegistry::RegisterStreamURL(const KURL& url, const String& type) {
+  if (IsMainThread())
+    RegisterStreamURLTask(url, type);
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(&registerStreamURLTask, url, type));
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, CrossThreadBind(&RegisterStreamURLTask, url, type));
 }
 
-static void registerStreamURLFromTask(const KURL& url, const KURL& srcURL) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->registerStreamURL(url, srcURL);
+static void RegisterStreamURLFromTask(const KURL& url, const KURL& src_url) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->RegisterStreamURL(url, src_url);
 }
 
-void BlobRegistry::registerStreamURL(SecurityOrigin* origin,
+void BlobRegistry::RegisterStreamURL(SecurityOrigin* origin,
                                      const KURL& url,
-                                     const KURL& srcURL) {
-  saveToOriginMap(origin, url);
+                                     const KURL& src_url) {
+  SaveToOriginMap(origin, url);
 
-  if (isMainThread())
-    registerStreamURLFromTask(url, srcURL);
+  if (IsMainThread())
+    RegisterStreamURLFromTask(url, src_url);
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&registerStreamURLFromTask, url, srcURL));
+        CrossThreadBind(&RegisterStreamURLFromTask, url, src_url));
 }
 
-static void addDataToStreamTask(const KURL& url,
-                                PassRefPtr<RawData> streamData) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->addDataToStream(url, streamData->data(), streamData->length());
+static void AddDataToStreamTask(const KURL& url,
+                                PassRefPtr<RawData> stream_data) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->AddDataToStream(url, stream_data->Data(), stream_data->length());
 }
 
-void BlobRegistry::addDataToStream(const KURL& url,
-                                   PassRefPtr<RawData> streamData) {
-  if (isMainThread())
-    addDataToStreamTask(url, std::move(streamData));
+void BlobRegistry::AddDataToStream(const KURL& url,
+                                   PassRefPtr<RawData> stream_data) {
+  if (IsMainThread())
+    AddDataToStreamTask(url, std::move(stream_data));
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&addDataToStreamTask, url, std::move(streamData)));
+        CrossThreadBind(&AddDataToStreamTask, url, std::move(stream_data)));
 }
 
-static void flushStreamTask(const KURL& url) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->flushStream(url);
+static void FlushStreamTask(const KURL& url) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->FlushStream(url);
 }
 
-void BlobRegistry::flushStream(const KURL& url) {
-  if (isMainThread())
-    flushStreamTask(url);
+void BlobRegistry::FlushStream(const KURL& url) {
+  if (IsMainThread())
+    FlushStreamTask(url);
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(&flushStreamTask, url));
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, CrossThreadBind(&FlushStreamTask, url));
 }
 
-static void finalizeStreamTask(const KURL& url) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->finalizeStream(url);
+static void FinalizeStreamTask(const KURL& url) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->FinalizeStream(url);
 }
 
-void BlobRegistry::finalizeStream(const KURL& url) {
-  if (isMainThread())
-    finalizeStreamTask(url);
+void BlobRegistry::FinalizeStream(const KURL& url) {
+  if (IsMainThread())
+    FinalizeStreamTask(url);
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(&finalizeStreamTask, url));
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, CrossThreadBind(&FinalizeStreamTask, url));
 }
 
-static void abortStreamTask(const KURL& url) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->abortStream(url);
+static void AbortStreamTask(const KURL& url) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->AbortStream(url);
 }
 
-void BlobRegistry::abortStream(const KURL& url) {
-  if (isMainThread())
-    abortStreamTask(url);
+void BlobRegistry::AbortStream(const KURL& url) {
+  if (IsMainThread())
+    AbortStreamTask(url);
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(&abortStreamTask, url));
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, CrossThreadBind(&AbortStreamTask, url));
 }
 
-static void unregisterStreamURLTask(const KURL& url) {
-  if (WebBlobRegistry* registry = getBlobRegistry())
-    registry->unregisterStreamURL(url);
+static void UnregisterStreamURLTask(const KURL& url) {
+  if (WebBlobRegistry* registry = GetBlobRegistry())
+    registry->UnregisterStreamURL(url);
 }
 
-void BlobRegistry::unregisterStreamURL(const KURL& url) {
-  removeFromOriginMap(url);
+void BlobRegistry::UnregisterStreamURL(const KURL& url) {
+  RemoveFromOriginMap(url);
 
-  if (isMainThread())
-    unregisterStreamURLTask(url);
+  if (IsMainThread())
+    UnregisterStreamURLTask(url);
   else
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(&unregisterStreamURLTask, url));
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, CrossThreadBind(&UnregisterStreamURLTask, url));
 }
 
 BlobOriginMap::BlobOriginMap() {
-  SecurityOrigin::setMap(this);
+  SecurityOrigin::SetMap(this);
 }
 
-SecurityOrigin* BlobOriginMap::getOrigin(const KURL& url) {
-  if (url.protocolIs("blob"))
-    return originMap()->at(url.getString());
+SecurityOrigin* BlobOriginMap::GetOrigin(const KURL& url) {
+  if (url.ProtocolIs("blob"))
+    return OriginMap()->at(url.GetString());
   return 0;
 }
 

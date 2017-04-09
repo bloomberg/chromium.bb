@@ -34,7 +34,7 @@ class WebGLVertexArrayObjectOES final : public WebGLVertexArrayObjectBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGLVertexArrayObjectOES* create(WebGLRenderingContextBase*, VaoType);
+  static WebGLVertexArrayObjectOES* Create(WebGLRenderingContextBase*, VaoType);
 
  private:
   explicit WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);

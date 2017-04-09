@@ -57,45 +57,45 @@ class SVGImageForContainer;
 // needed by SVGImage.
 class CORE_EXPORT SVGImage final : public Image {
  public:
-  static PassRefPtr<SVGImage> create(ImageObserver* observer) {
-    return adoptRef(new SVGImage(observer));
+  static PassRefPtr<SVGImage> Create(ImageObserver* observer) {
+    return AdoptRef(new SVGImage(observer));
   }
 
-  static bool isInSVGImage(const Node*);
+  static bool IsInSVGImage(const Node*);
 
-  LayoutReplaced* embeddedReplacedContent() const;
+  LayoutReplaced* EmbeddedReplacedContent() const;
 
-  bool isSVGImage() const override { return true; }
-  IntSize size() const override { return m_intrinsicSize; }
+  bool IsSVGImage() const override { return true; }
+  IntSize size() const override { return intrinsic_size_; }
 
-  bool currentFrameHasSingleSecurityOrigin() const override;
+  bool CurrentFrameHasSingleSecurityOrigin() const override;
 
-  void startAnimation(CatchUpAnimation = CatchUp) override;
-  void resetAnimation() override;
+  void StartAnimation(CatchUpAnimation = kCatchUp) override;
+  void ResetAnimation() override;
 
   // Does the SVG image/document contain any animations?
-  bool maybeAnimated() override;
+  bool MaybeAnimated() override;
 
   // Advances an animated image. This will trigger an animation update for CSS
   // and advance the SMIL timeline by one frame.
-  void advanceAnimationForTesting() override;
-  SVGImageChromeClient& chromeClientForTesting();
+  void AdvanceAnimationForTesting() override;
+  SVGImageChromeClient& ChromeClientForTesting();
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
-  static FloatPoint offsetForCurrentFrame(const FloatRect& dstRect,
-                                          const FloatRect& srcRect);
+  sk_sp<SkImage> ImageForCurrentFrame() override;
+  static FloatPoint OffsetForCurrentFrame(const FloatRect& dst_rect,
+                                          const FloatRect& src_rect);
 
   // Service CSS and SMIL animations.
-  void serviceAnimations(double monotonicAnimationStartTime);
+  void ServiceAnimations(double monotonic_animation_start_time);
 
-  void updateUseCounters(const Document&) const;
+  void UpdateUseCounters(const Document&) const;
 
   // The defaultObjectSize is assumed to be unzoomed, i.e. it should
   // not have the effective zoom level applied. The returned size is
   // thus also independent of current zoom level.
-  FloatSize concreteObjectSize(const FloatSize& defaultObjectSize) const;
+  FloatSize ConcreteObjectSize(const FloatSize& default_object_size) const;
 
-  bool hasIntrinsicDimensions() const;
+  bool HasIntrinsicDimensions() const;
 
  private:
   // Accesses m_page.
@@ -107,36 +107,37 @@ class CORE_EXPORT SVGImage final : public Image {
   SVGImage(ImageObserver*);
   ~SVGImage() override;
 
-  String filenameExtension() const override;
+  String FilenameExtension() const override;
 
-  IntSize containerSize() const;
-  bool usesContainerSize() const override { return true; }
+  IntSize ContainerSize() const;
+  bool UsesContainerSize() const override { return true; }
 
-  SizeAvailability dataChanged(bool allDataReceived) override;
+  SizeAvailability DataChanged(bool all_data_received) override;
 
   // FIXME: SVGImages are underreporting decoded sizes and will be unable
   // to prune because these functions are not implemented yet.
-  void destroyDecodedData() override {}
+  void DestroyDecodedData() override {}
 
   // FIXME: Implement this to be less conservative.
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+  bool CurrentFrameKnownToBeOpaque(
+      MetadataMode = kUseCurrentMetadata) override {
     return false;
   }
 
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
-            const FloatRect& fromRect,
-            const FloatRect& toRect,
+            const FloatRect& from_rect,
+            const FloatRect& to_rect,
             RespectImageOrientationEnum,
             ImageClampingMode) override;
-  void drawForContainer(PaintCanvas*,
+  void DrawForContainer(PaintCanvas*,
                         const PaintFlags&,
                         const FloatSize&,
                         float,
                         const FloatRect&,
                         const FloatRect&,
                         const KURL&);
-  void drawPatternForContainer(GraphicsContext&,
+  void DrawPatternForContainer(GraphicsContext&,
                                const FloatSize,
                                float,
                                const FloatRect&,
@@ -144,54 +145,55 @@ class CORE_EXPORT SVGImage final : public Image {
                                const FloatPoint&,
                                SkBlendMode,
                                const FloatRect&,
-                               const FloatSize& repeatSpacing,
+                               const FloatSize& repeat_spacing,
                                const KURL&);
-  sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
-                                                  const IntSize& containerSize);
+  sk_sp<SkImage> ImageForCurrentFrameForContainer(
+      const KURL&,
+      const IntSize& container_size);
 
   // Paints the current frame. If a PaintCanvas is passed, paints into that
   // canvas and returns nullptr.
   // Otherwise returns a pointer to the new PaintRecord.
-  sk_sp<PaintRecord> paintRecordForCurrentFrame(const FloatRect& bounds,
+  sk_sp<PaintRecord> PaintRecordForCurrentFrame(const FloatRect& bounds,
                                                 const KURL&,
                                                 PaintCanvas* = nullptr);
 
-  void drawInternal(PaintCanvas*,
+  void DrawInternal(PaintCanvas*,
                     const PaintFlags&,
-                    const FloatRect& fromRect,
-                    const FloatRect& toRect,
+                    const FloatRect& from_rect,
+                    const FloatRect& to_rect,
                     RespectImageOrientationEnum,
                     ImageClampingMode,
                     const KURL&);
 
   template <typename Func>
-  void forContainer(const FloatSize&, Func&&);
+  void ForContainer(const FloatSize&, Func&&);
 
-  bool applyShader(PaintFlags&, const SkMatrix& localMatrix) override;
-  bool applyShaderForContainer(const FloatSize&,
+  bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix) override;
+  bool ApplyShaderForContainer(const FloatSize&,
                                float zoom,
                                const KURL&,
                                PaintFlags&,
-                               const SkMatrix& localMatrix);
-  bool applyShaderInternal(PaintFlags&,
-                           const SkMatrix& localMatrix,
+                               const SkMatrix& local_matrix);
+  bool ApplyShaderInternal(PaintFlags&,
+                           const SkMatrix& local_matrix,
                            const KURL&);
 
-  void stopAnimation();
-  void scheduleTimelineRewind();
-  void flushPendingTimelineRewind();
+  void StopAnimation();
+  void ScheduleTimelineRewind();
+  void FlushPendingTimelineRewind();
 
-  Persistent<SVGImageChromeClient> m_chromeClient;
-  Persistent<Page> m_page;
-  std::unique_ptr<PaintController> m_paintController;
+  Persistent<SVGImageChromeClient> chrome_client_;
+  Persistent<Page> page_;
+  std::unique_ptr<PaintController> paint_controller_;
 
   // When an SVG image has no intrinsic size, the size depends on the default
   // object size, which in turn depends on the container. One SVGImage may
   // belong to multiple containers so the final image size can't be known in
   // SVGImage. SVGImageForContainer carries the final image size, also called
   // the "concrete object size". For more, see: SVGImageForContainer.h
-  IntSize m_intrinsicSize;
-  bool m_hasPendingTimelineRewind;
+  IntSize intrinsic_size_;
+  bool has_pending_timeline_rewind_;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);
@@ -201,14 +203,14 @@ class ImageObserverDisabler {
   WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);
 
  public:
-  ImageObserverDisabler(Image* image) : m_image(image) {
-    m_image->setImageObserverDisabled(true);
+  ImageObserverDisabler(Image* image) : image_(image) {
+    image_->SetImageObserverDisabled(true);
   }
 
-  ~ImageObserverDisabler() { m_image->setImageObserverDisabled(false); }
+  ~ImageObserverDisabler() { image_->SetImageObserverDisabled(false); }
 
  private:
-  Image* m_image;
+  Image* image_;
 };
 
 }  // namespace blink

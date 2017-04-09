@@ -31,51 +31,51 @@ class MockFetchContext : public FetchContext {
   // FetchTestingPlatformSupport's WebTaskRunner. Probably, MockFetchContext
   // would be available only through the FetchTestingPlatformSupport in the
   // future.
-  static MockFetchContext* create(LoadPolicy loadPolicy,
-                                  RefPtr<WebTaskRunner> taskRunner = nullptr) {
-    return new MockFetchContext(loadPolicy, std::move(taskRunner));
+  static MockFetchContext* Create(LoadPolicy load_policy,
+                                  RefPtr<WebTaskRunner> task_runner = nullptr) {
+    return new MockFetchContext(load_policy, std::move(task_runner));
   }
 
   ~MockFetchContext() override {}
 
-  void setLoadComplete(bool complete) { m_complete = complete; }
-  long long getTransferSize() const { return m_transferSize; }
+  void SetLoadComplete(bool complete) { complete_ = complete; }
+  long long GetTransferSize() const { return transfer_size_; }
 
   // FetchContext:
-  bool allowImage(bool imagesEnabled, const KURL&) const override {
+  bool AllowImage(bool images_enabled, const KURL&) const override {
     return true;
   }
-  ResourceRequestBlockedReason canRequest(
+  ResourceRequestBlockedReason CanRequest(
       Resource::Type,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
       FetchRequest::OriginRestriction) const override {
-    return ResourceRequestBlockedReason::None;
+    return ResourceRequestBlockedReason::kNone;
   }
-  bool shouldLoadNewResource(Resource::Type) const override {
-    return m_loadPolicy == kShouldLoadNewResource;
+  bool ShouldLoadNewResource(Resource::Type) const override {
+    return load_policy_ == kShouldLoadNewResource;
   }
-  RefPtr<WebTaskRunner> loadingTaskRunner() const override { return m_runner; }
-  bool isLoadComplete() const override { return m_complete; }
-  void addResourceTiming(
-      const ResourceTimingInfo& resourceTimingInfo) override {
-    m_transferSize = resourceTimingInfo.transferSize();
+  RefPtr<WebTaskRunner> LoadingTaskRunner() const override { return runner_; }
+  bool IsLoadComplete() const override { return complete_; }
+  void AddResourceTiming(
+      const ResourceTimingInfo& resource_timing_info) override {
+    transfer_size_ = resource_timing_info.TransferSize();
   }
 
  private:
-  MockFetchContext(LoadPolicy loadPolicy, RefPtr<WebTaskRunner> taskRunner)
-      : m_loadPolicy(loadPolicy),
-        m_runner(taskRunner ? std::move(taskRunner)
-                            : adoptRef(new scheduler::FakeWebTaskRunner)),
-        m_complete(false),
-        m_transferSize(-1) {}
+  MockFetchContext(LoadPolicy load_policy, RefPtr<WebTaskRunner> task_runner)
+      : load_policy_(load_policy),
+        runner_(task_runner ? std::move(task_runner)
+                            : AdoptRef(new scheduler::FakeWebTaskRunner)),
+        complete_(false),
+        transfer_size_(-1) {}
 
-  enum LoadPolicy m_loadPolicy;
-  RefPtr<WebTaskRunner> m_runner;
-  bool m_complete;
-  long long m_transferSize;
+  enum LoadPolicy load_policy_;
+  RefPtr<WebTaskRunner> runner_;
+  bool complete_;
+  long long transfer_size_;
 };
 
 }  // namespace blink

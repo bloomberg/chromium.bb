@@ -62,171 +62,171 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
  public:
-  static FrontendMenuProvider* create(DevToolsHost* devtoolsHost,
+  static FrontendMenuProvider* Create(DevToolsHost* devtools_host,
                                       const Vector<ContextMenuItem>& items) {
-    return new FrontendMenuProvider(devtoolsHost, items);
+    return new FrontendMenuProvider(devtools_host, items);
   }
 
   ~FrontendMenuProvider() override {
     // Verify that this menu provider has been detached.
-    ASSERT(!m_devtoolsHost);
+    ASSERT(!devtools_host_);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_devtoolsHost);
-    ContextMenuProvider::trace(visitor);
+    visitor->Trace(devtools_host_);
+    ContextMenuProvider::Trace(visitor);
   }
 
-  void disconnect() { m_devtoolsHost = nullptr; }
+  void Disconnect() { devtools_host_ = nullptr; }
 
-  void contextMenuCleared() override {
-    if (m_devtoolsHost) {
-      m_devtoolsHost->evaluateScript("DevToolsAPI.contextMenuCleared()");
-      m_devtoolsHost->clearMenuProvider();
-      m_devtoolsHost = nullptr;
+  void ContextMenuCleared() override {
+    if (devtools_host_) {
+      devtools_host_->EvaluateScript("DevToolsAPI.contextMenuCleared()");
+      devtools_host_->ClearMenuProvider();
+      devtools_host_ = nullptr;
     }
-    m_items.clear();
+    items_.Clear();
   }
 
-  void populateContextMenu(ContextMenu* menu) override {
-    for (size_t i = 0; i < m_items.size(); ++i)
-      menu->appendItem(m_items[i]);
+  void PopulateContextMenu(ContextMenu* menu) override {
+    for (size_t i = 0; i < items_.size(); ++i)
+      menu->AppendItem(items_[i]);
   }
 
-  void contextMenuItemSelected(const ContextMenuItem* item) override {
-    if (!m_devtoolsHost)
+  void ContextMenuItemSelected(const ContextMenuItem* item) override {
+    if (!devtools_host_)
       return;
-    int itemNumber = item->action() - ContextMenuItemBaseCustomTag;
-    m_devtoolsHost->evaluateScript("DevToolsAPI.contextMenuItemSelected(" +
-                                   String::number(itemNumber) + ")");
+    int item_number = item->Action() - kContextMenuItemBaseCustomTag;
+    devtools_host_->EvaluateScript("DevToolsAPI.contextMenuItemSelected(" +
+                                   String::Number(item_number) + ")");
   }
 
  private:
-  FrontendMenuProvider(DevToolsHost* devtoolsHost,
+  FrontendMenuProvider(DevToolsHost* devtools_host,
                        const Vector<ContextMenuItem>& items)
-      : m_devtoolsHost(devtoolsHost), m_items(items) {}
+      : devtools_host_(devtools_host), items_(items) {}
 
-  Member<DevToolsHost> m_devtoolsHost;
-  Vector<ContextMenuItem> m_items;
+  Member<DevToolsHost> devtools_host_;
+  Vector<ContextMenuItem> items_;
 };
 
 DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
-                           LocalFrame* frontendFrame)
-    : m_client(client),
-      m_frontendFrame(frontendFrame),
-      m_menuProvider(nullptr) {}
+                           LocalFrame* frontend_frame)
+    : client_(client),
+      frontend_frame_(frontend_frame),
+      menu_provider_(nullptr) {}
 
 DevToolsHost::~DevToolsHost() {
-  ASSERT(!m_client);
+  ASSERT(!client_);
 }
 
 DEFINE_TRACE(DevToolsHost) {
-  visitor->trace(m_frontendFrame);
-  visitor->trace(m_menuProvider);
+  visitor->Trace(frontend_frame_);
+  visitor->Trace(menu_provider_);
 }
 
-void DevToolsHost::evaluateScript(const String& expression) {
-  if (ScriptForbiddenScope::isScriptForbidden())
+void DevToolsHost::EvaluateScript(const String& expression) {
+  if (ScriptForbiddenScope::IsScriptForbidden())
     return;
-  if (!m_frontendFrame)
+  if (!frontend_frame_)
     return;
-  ScriptState* scriptState = toScriptStateForMainWorld(m_frontendFrame);
-  if (!scriptState)
+  ScriptState* script_state = ToScriptStateForMainWorld(frontend_frame_);
+  if (!script_state)
     return;
-  ScriptState::Scope scope(scriptState);
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(m_frontendFrame->document()));
-  v8::MicrotasksScope microtasks(scriptState->isolate(),
+  ScriptState::Scope scope(script_state);
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(frontend_frame_->GetDocument()));
+  v8::MicrotasksScope microtasks(script_state->GetIsolate(),
                                  v8::MicrotasksScope::kRunMicrotasks);
   v8::Local<v8::String> source =
-      v8AtomicString(scriptState->isolate(), expression.utf8().data());
-  V8ScriptRunner::compileAndRunInternalScript(source, scriptState->isolate(),
-                                              String(), TextPosition());
+      V8AtomicString(script_state->GetIsolate(), expression.Utf8().Data());
+  V8ScriptRunner::CompileAndRunInternalScript(
+      source, script_state->GetIsolate(), String(), TextPosition());
 }
 
-void DevToolsHost::disconnectClient() {
-  m_client = 0;
-  if (m_menuProvider) {
-    m_menuProvider->disconnect();
-    m_menuProvider = nullptr;
+void DevToolsHost::DisconnectClient() {
+  client_ = 0;
+  if (menu_provider_) {
+    menu_provider_->Disconnect();
+    menu_provider_ = nullptr;
   }
-  m_frontendFrame = nullptr;
+  frontend_frame_ = nullptr;
 }
 
 float DevToolsHost::zoomFactor() {
-  if (!m_frontendFrame)
+  if (!frontend_frame_)
     return 1;
-  float zoomFactor = m_frontendFrame->pageZoomFactor();
+  float zoom_factor = frontend_frame_->PageZoomFactor();
   // Cancel the device scale factor applied to the zoom factor in
   // use-zoom-for-dsf mode.
-  const HostWindow* hostWindow = m_frontendFrame->view()->getHostWindow();
-  float windowToViewportRatio = hostWindow->windowToViewportScalar(1.0f);
-  return zoomFactor / windowToViewportRatio;
+  const HostWindow* host_window = frontend_frame_->View()->GetHostWindow();
+  float window_to_viewport_ratio = host_window->WindowToViewportScalar(1.0f);
+  return zoom_factor / window_to_viewport_ratio;
 }
 
 void DevToolsHost::setInjectedScriptForOrigin(const String& origin,
                                               const String& script) {
-  if (m_client)
-    m_client->setInjectedScriptForOrigin(origin, script);
+  if (client_)
+    client_->SetInjectedScriptForOrigin(origin, script);
 }
 
 void DevToolsHost::copyText(const String& text) {
-  Pasteboard::generalPasteboard()->writePlainText(
-      text, Pasteboard::CannotSmartReplace);
+  Pasteboard::GeneralPasteboard()->WritePlainText(
+      text, Pasteboard::kCannotSmartReplace);
 }
 
-static String escapeUnicodeNonCharacters(const String& str) {
-  const UChar nonChar = 0xD800;
+static String EscapeUnicodeNonCharacters(const String& str) {
+  const UChar kNonChar = 0xD800;
 
   unsigned i = 0;
-  while (i < str.length() && str[i] < nonChar)
+  while (i < str.length() && str[i] < kNonChar)
     ++i;
   if (i == str.length())
     return str;
 
   StringBuilder dst;
-  dst.append(str, 0, i);
+  dst.Append(str, 0, i);
   for (; i < str.length(); ++i) {
     UChar c = str[i];
-    if (c >= nonChar) {
+    if (c >= kNonChar) {
       unsigned symbol = static_cast<unsigned>(c);
-      String symbolCode = String::format("\\u%04X", symbol);
-      dst.append(symbolCode);
+      String symbol_code = String::Format("\\u%04X", symbol);
+      dst.Append(symbol_code);
     } else {
-      dst.append(c);
+      dst.Append(c);
     }
   }
-  return dst.toString();
+  return dst.ToString();
 }
 
 void DevToolsHost::sendMessageToEmbedder(const String& message) {
-  if (m_client)
-    m_client->sendMessageToEmbedder(escapeUnicodeNonCharacters(message));
+  if (client_)
+    client_->SendMessageToEmbedder(EscapeUnicodeNonCharacters(message));
 }
 
-void DevToolsHost::showContextMenu(LocalFrame* targetFrame,
+void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
                                    float x,
                                    float y,
                                    const Vector<ContextMenuItem>& items) {
-  ASSERT(m_frontendFrame);
-  FrontendMenuProvider* menuProvider =
-      FrontendMenuProvider::create(this, items);
-  m_menuProvider = menuProvider;
-  float zoom = targetFrame->pageZoomFactor();
-  if (m_client)
-    m_client->showContextMenu(targetFrame, x * zoom, y * zoom, menuProvider);
+  ASSERT(frontend_frame_);
+  FrontendMenuProvider* menu_provider =
+      FrontendMenuProvider::Create(this, items);
+  menu_provider_ = menu_provider;
+  float zoom = target_frame->PageZoomFactor();
+  if (client_)
+    client_->ShowContextMenu(target_frame, x * zoom, y * zoom, menu_provider);
 }
 
 String DevToolsHost::getSelectionBackgroundColor() {
-  return LayoutTheme::theme().activeSelectionBackgroundColor().serialized();
+  return LayoutTheme::GetTheme().ActiveSelectionBackgroundColor().Serialized();
 }
 
 String DevToolsHost::getSelectionForegroundColor() {
-  return LayoutTheme::theme().activeSelectionForegroundColor().serialized();
+  return LayoutTheme::GetTheme().ActiveSelectionForegroundColor().Serialized();
 }
 
 bool DevToolsHost::isUnderTest() {
-  return m_client && m_client->isUnderTest();
+  return client_ && client_->IsUnderTest();
 }
 
 bool DevToolsHost::isHostedMode() {

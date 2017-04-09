@@ -65,7 +65,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   // Tasks cannot call Commit.
   void ScheduleTask(Operation task) {
-    ScheduleTask(blink::WebIDBTaskTypeNormal, task);
+    ScheduleTask(blink::kWebIDBTaskTypeNormal, task);
   }
   void ScheduleTask(blink::WebIDBTaskType, Operation task);
   void ScheduleAbortTask(AbortOperation abort_task);

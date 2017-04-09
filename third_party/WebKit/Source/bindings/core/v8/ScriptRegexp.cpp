@@ -36,67 +36,67 @@
 namespace blink {
 
 ScriptRegexp::ScriptRegexp(const String& pattern,
-                           TextCaseSensitivity caseSensitivity,
-                           MultilineMode multilineMode,
-                           CharacterMode charMode) {
+                           TextCaseSensitivity case_sensitivity,
+                           MultilineMode multiline_mode,
+                           CharacterMode char_mode) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handleScope(isolate);
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
-      V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
-  v8::Context::Scope contextScope(context);
-  v8::TryCatch tryCatch(isolate);
+      V8PerIsolateData::From(isolate)->EnsureScriptRegexpContext();
+  v8::Context::Scope context_scope(context);
+  v8::TryCatch try_catch(isolate);
 
   unsigned flags = v8::RegExp::kNone;
-  if (caseSensitivity != TextCaseSensitive)
+  if (case_sensitivity != kTextCaseSensitive)
     flags |= v8::RegExp::kIgnoreCase;
-  if (multilineMode == MultilineEnabled)
+  if (multiline_mode == kMultilineEnabled)
     flags |= v8::RegExp::kMultiline;
-  if (charMode == UTF16)
+  if (char_mode == UTF16)
     flags |= v8::RegExp::kUnicode;
 
   v8::Local<v8::RegExp> regex;
-  if (v8::RegExp::New(context, v8String(isolate, pattern),
+  if (v8::RegExp::New(context, V8String(isolate, pattern),
                       static_cast<v8::RegExp::Flags>(flags))
           .ToLocal(&regex))
-    m_regex.set(isolate, regex);
-  if (tryCatch.HasCaught() && !tryCatch.Message().IsEmpty())
-    m_exceptionMessage =
-        toCoreStringWithUndefinedOrNullCheck(tryCatch.Message()->Get());
+    regex_.Set(isolate, regex);
+  if (try_catch.HasCaught() && !try_catch.Message().IsEmpty())
+    exception_message_ =
+        ToCoreStringWithUndefinedOrNullCheck(try_catch.Message()->Get());
 }
 
-int ScriptRegexp::match(const String& string,
-                        int startFrom,
-                        int* matchLength) const {
-  if (matchLength)
-    *matchLength = 0;
+int ScriptRegexp::Match(const String& string,
+                        int start_from,
+                        int* match_length) const {
+  if (match_length)
+    *match_length = 0;
 
-  if (m_regex.isEmpty() || string.isNull())
+  if (regex_.IsEmpty() || string.IsNull())
     return -1;
 
   // v8 strings are limited to int.
   if (string.length() > INT_MAX)
     return -1;
 
-  ScriptForbiddenScope::AllowUserAgentScript allowScript;
+  ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handleScope(isolate);
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
-      V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
-  v8::Context::Scope contextScope(context);
-  v8::TryCatch tryCatch(isolate);
+      V8PerIsolateData::From(isolate)->EnsureScriptRegexpContext();
+  v8::Context::Scope context_scope(context);
+  v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
+  v8::Local<v8::RegExp> regex = regex_.NewLocal(isolate);
   v8::Local<v8::Value> exec;
-  if (!regex->Get(context, v8AtomicString(isolate, "exec")).ToLocal(&exec))
+  if (!regex->Get(context, V8AtomicString(isolate, "exec")).ToLocal(&exec))
     return -1;
   v8::Local<v8::Value> argv[] = {
-      v8String(isolate, string.substring(startFrom))};
-  v8::Local<v8::Value> returnValue;
-  if (!V8ScriptRunner::callInternalFunction(exec.As<v8::Function>(), regex,
+      V8String(isolate, string.Substring(start_from))};
+  v8::Local<v8::Value> return_value;
+  if (!V8ScriptRunner::CallInternalFunction(exec.As<v8::Function>(), regex,
                                             WTF_ARRAY_LENGTH(argv), argv,
                                             isolate)
-           .ToLocal(&returnValue))
+           .ToLocal(&return_value))
     return -1;
 
   // RegExp#exec returns null if there's no match, otherwise it returns an
@@ -106,23 +106,23 @@ int ScriptRegexp::match(const String& string,
   //
   // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec
 
-  ASSERT(!returnValue.IsEmpty());
-  if (!returnValue->IsArray())
+  ASSERT(!return_value.IsEmpty());
+  if (!return_value->IsArray())
     return -1;
 
-  v8::Local<v8::Array> result = returnValue.As<v8::Array>();
-  v8::Local<v8::Value> matchOffset;
-  if (!result->Get(context, v8AtomicString(isolate, "index"))
-           .ToLocal(&matchOffset))
+  v8::Local<v8::Array> result = return_value.As<v8::Array>();
+  v8::Local<v8::Value> match_offset;
+  if (!result->Get(context, V8AtomicString(isolate, "index"))
+           .ToLocal(&match_offset))
     return -1;
-  if (matchLength) {
+  if (match_length) {
     v8::Local<v8::Value> match;
     if (!result->Get(context, 0).ToLocal(&match))
       return -1;
-    *matchLength = match.As<v8::String>()->Length();
+    *match_length = match.As<v8::String>()->Length();
   }
 
-  return matchOffset.As<v8::Int32>()->Value() + startFrom;
+  return match_offset.As<v8::Int32>()->Value() + start_from;
 }
 
 }  // namespace blink

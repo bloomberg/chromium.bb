@@ -39,24 +39,24 @@ class CORE_EXPORT SuspendableObject : public ContextLifecycleObserver {
 
   // suspendIfNeeded() should be called exactly once after object construction
   // to synchronize the suspend state with that in ExecutionContext.
-  void suspendIfNeeded();
+  void SuspendIfNeeded();
 #if DCHECK_IS_ON()
-  bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
+  bool SuspendIfNeededCalled() const { return suspend_if_needed_called_; }
 #endif
 
   // These methods have an empty default implementation so that subclasses
   // which don't need special treatment can skip implementation.
-  virtual void suspend();
-  virtual void resume();
+  virtual void Suspend();
+  virtual void Resume();
 
-  void didMoveToNewExecutionContext(ExecutionContext*);
+  void DidMoveToNewExecutionContext(ExecutionContext*);
 
  protected:
   virtual ~SuspendableObject();
 
  private:
 #if DCHECK_IS_ON()
-  bool m_suspendIfNeededCalled;
+  bool suspend_if_needed_called_;
 #endif
 };
 

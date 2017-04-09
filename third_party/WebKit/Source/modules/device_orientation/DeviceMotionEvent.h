@@ -41,18 +41,18 @@ class DeviceMotionEvent final : public Event {
 
  public:
   ~DeviceMotionEvent() override;
-  static DeviceMotionEvent* create() { return new DeviceMotionEvent; }
-  static DeviceMotionEvent* create(const AtomicString& eventType,
+  static DeviceMotionEvent* Create() { return new DeviceMotionEvent; }
+  static DeviceMotionEvent* Create(const AtomicString& event_type,
                                    const DeviceMotionEventInit& initializer) {
-    return new DeviceMotionEvent(eventType, initializer);
+    return new DeviceMotionEvent(event_type, initializer);
   }
-  static DeviceMotionEvent* create(const AtomicString& eventType,
-                                   DeviceMotionData* deviceMotionData) {
-    return new DeviceMotionEvent(eventType, deviceMotionData);
+  static DeviceMotionEvent* Create(const AtomicString& event_type,
+                                   DeviceMotionData* device_motion_data) {
+    return new DeviceMotionEvent(event_type, device_motion_data);
   }
 
-  DeviceMotionData* getDeviceMotionData() const {
-    return m_deviceMotionData.get();
+  DeviceMotionData* GetDeviceMotionData() const {
+    return device_motion_data_.Get();
   }
 
   DeviceAcceleration* acceleration();
@@ -60,26 +60,26 @@ class DeviceMotionEvent final : public Event {
   DeviceRotationRate* rotationRate();
   double interval() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   DeviceMotionEvent();
   DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit&);
-  DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
+  DeviceMotionEvent(const AtomicString& event_type, DeviceMotionData*);
 
-  Member<DeviceMotionData> m_deviceMotionData;
-  Member<DeviceAcceleration> m_acceleration;
-  Member<DeviceAcceleration> m_accelerationIncludingGravity;
-  Member<DeviceRotationRate> m_rotationRate;
+  Member<DeviceMotionData> device_motion_data_;
+  Member<DeviceAcceleration> acceleration_;
+  Member<DeviceAcceleration> acceleration_including_gravity_;
+  Member<DeviceRotationRate> rotation_rate_;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent,
                   Event,
                   event,
-                  event->interfaceName() == EventNames::DeviceMotionEvent,
-                  event.interfaceName() == EventNames::DeviceMotionEvent);
+                  event->InterfaceName() == EventNames::DeviceMotionEvent,
+                  event.InterfaceName() == EventNames::DeviceMotionEvent);
 
 }  // namespace blink
 

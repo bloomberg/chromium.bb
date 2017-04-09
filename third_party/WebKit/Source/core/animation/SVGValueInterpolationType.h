@@ -17,35 +17,35 @@ class SVGValueInterpolationType : public SVGInterpolationType {
       : SVGInterpolationType(attribute) {}
 
  private:
-  PairwiseInterpolationValue maybeConvertPairwise(
-      const PropertySpecificKeyframe& startKeyframe,
-      const PropertySpecificKeyframe& endKeyframe,
+  PairwiseInterpolationValue MaybeConvertPairwise(
+      const PropertySpecificKeyframe& start_keyframe,
+      const PropertySpecificKeyframe& end_keyframe,
       const InterpolationEnvironment&,
       const InterpolationValue& underlying,
       ConversionCheckers&) const final {
     return nullptr;
   }
 
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final {
     return nullptr;
   }
 
-  InterpolationValue maybeConvertSVGValue(const SVGPropertyBase&) const final;
+  InterpolationValue MaybeConvertSVGValue(const SVGPropertyBase&) const final;
 
-  InterpolationValue maybeConvertUnderlyingValue(
+  InterpolationValue MaybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const final {
     return nullptr;
   }
 
-  void composite(UnderlyingValueOwner& underlyingValueOwner,
-                 double underlyingFraction,
+  void Composite(UnderlyingValueOwner& underlying_value_owner,
+                 double underlying_fraction,
                  const InterpolationValue& value,
-                 double interpolationFraction) const final {
-    underlyingValueOwner.set(*this, value);
+                 double interpolation_fraction) const final {
+    underlying_value_owner.Set(*this, value);
   }
 
-  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+  SVGPropertyBase* AppliedSVGValue(const InterpolableValue&,
                                    const NonInterpolableValue*) const final;
 };
 

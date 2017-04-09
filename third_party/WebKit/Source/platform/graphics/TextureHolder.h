@@ -21,53 +21,53 @@ class PLATFORM_EXPORT TextureHolder {
   virtual ~TextureHolder() {}
 
   // Methods overrided by all sub-classes
-  virtual bool isSkiaTextureHolder() = 0;
-  virtual bool isMailboxTextureHolder() = 0;
-  virtual unsigned sharedContextId() = 0;
+  virtual bool IsSkiaTextureHolder() = 0;
+  virtual bool IsMailboxTextureHolder() = 0;
+  virtual unsigned SharedContextId() = 0;
   virtual IntSize size() const = 0;
-  virtual bool currentFrameKnownToBeOpaque(Image::MetadataMode) = 0;
+  virtual bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) = 0;
 
   // Methods overrided by MailboxTextureHolder
-  virtual gpu::Mailbox mailbox() {
+  virtual gpu::Mailbox GetMailbox() {
     NOTREACHED();
     return gpu::Mailbox();
   }
-  virtual gpu::SyncToken syncToken() {
+  virtual gpu::SyncToken GetSyncToken() {
     NOTREACHED();
     return gpu::SyncToken();
   }
-  virtual void updateSyncToken(gpu::SyncToken) { NOTREACHED(); }
+  virtual void UpdateSyncToken(gpu::SyncToken) { NOTREACHED(); }
 
   // Methods overrided by SkiaTextureHolder
-  virtual sk_sp<SkImage> skImage() {
+  virtual sk_sp<SkImage> GetSkImage() {
     NOTREACHED();
     return nullptr;
   }
-  virtual void setSharedContextId(unsigned) { NOTREACHED(); }
-  virtual void setImageThread(WebThread*) { NOTREACHED(); }
-  virtual void setImageThreadTaskRunner(RefPtr<WebTaskRunner>) { NOTREACHED(); }
+  virtual void SetSharedContextId(unsigned) { NOTREACHED(); }
+  virtual void SetImageThread(WebThread*) { NOTREACHED(); }
+  virtual void SetImageThreadTaskRunner(RefPtr<WebTaskRunner>) { NOTREACHED(); }
 
   // Methods that have exactly the same impelmentation for all sub-classes
-  bool wasTransferred() { return m_wasTransferred; }
-  RefPtr<WebTaskRunner> textureThreadTaskRunner() {
-    return m_textureThreadTaskRunner;
+  bool WasTransferred() { return was_transferred_; }
+  RefPtr<WebTaskRunner> TextureThreadTaskRunner() {
+    return texture_thread_task_runner_;
   }
-  void setWasTransferred(bool flag) { m_wasTransferred = flag; }
-  void setTextureThreadTaskRunner(RefPtr<WebTaskRunner> taskRunner) {
-    m_textureThreadTaskRunner = std::move(taskRunner);
+  void SetWasTransferred(bool flag) { was_transferred_ = flag; }
+  void SetTextureThreadTaskRunner(RefPtr<WebTaskRunner> task_runner) {
+    texture_thread_task_runner_ = std::move(task_runner);
   }
 
  private:
   // Wether the AcceleratedStaticBitmapImage that holds the |m_texture| was
   // transferred to another thread or not. Set to false when the
   // AcceleratedStaticBitmapImage remain on the same thread as it was craeted.
-  bool m_wasTransferred = false;
+  bool was_transferred_ = false;
   // Keep a clone of the WebTaskRunner. This is to handle the case where the
   // AcceleratedStaticBitmapImage was created on one thread and transferred to
   // another thread, and the original thread gone out of scope, and that we need
   // to clear the resouces associated with that AcceleratedStaticBitmapImage on
   // the original thread.
-  RefPtr<WebTaskRunner> m_textureThreadTaskRunner;
+  RefPtr<WebTaskRunner> texture_thread_task_runner_;
 };
 
 }  // namespace blink

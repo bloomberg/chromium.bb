@@ -11,42 +11,42 @@ namespace blink {
 
 ServiceWorkerRegistrationSync::ServiceWorkerRegistrationSync(
     ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    : registration_(registration) {}
 
 ServiceWorkerRegistrationSync::~ServiceWorkerRegistrationSync() {}
 
-const char* ServiceWorkerRegistrationSync::supplementName() {
+const char* ServiceWorkerRegistrationSync::SupplementName() {
   return "ServiceWorkerRegistrationSync";
 }
 
-ServiceWorkerRegistrationSync& ServiceWorkerRegistrationSync::from(
+ServiceWorkerRegistrationSync& ServiceWorkerRegistrationSync::From(
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationSync* supplement =
       static_cast<ServiceWorkerRegistrationSync*>(
-          Supplement<ServiceWorkerRegistration>::from(registration,
-                                                      supplementName()));
+          Supplement<ServiceWorkerRegistration>::From(registration,
+                                                      SupplementName()));
   if (!supplement) {
     supplement = new ServiceWorkerRegistrationSync(&registration);
-    provideTo(registration, supplementName(), supplement);
+    ProvideTo(registration, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 SyncManager* ServiceWorkerRegistrationSync::sync(
     ServiceWorkerRegistration& registration) {
-  return ServiceWorkerRegistrationSync::from(registration).sync();
+  return ServiceWorkerRegistrationSync::From(registration).sync();
 }
 
 SyncManager* ServiceWorkerRegistrationSync::sync() {
-  if (!m_syncManager)
-    m_syncManager = SyncManager::create(m_registration);
-  return m_syncManager.get();
+  if (!sync_manager_)
+    sync_manager_ = SyncManager::Create(registration_);
+  return sync_manager_.Get();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationSync) {
-  visitor->trace(m_registration);
-  visitor->trace(m_syncManager);
-  Supplement<ServiceWorkerRegistration>::trace(visitor);
+  visitor->Trace(registration_);
+  visitor->Trace(sync_manager_);
+  Supplement<ServiceWorkerRegistration>::Trace(visitor);
 }
 
 }  // namespace blink

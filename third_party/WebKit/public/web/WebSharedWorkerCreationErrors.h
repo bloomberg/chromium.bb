@@ -11,9 +11,9 @@ namespace blink {
 
 // Describes errors that can occur while creating a SharedWorker.
 enum WebWorkerCreationError {
-  WebWorkerCreationErrorNone = 0,
-  WebWorkerCreationErrorSecureContextMismatch,
-  WebWorkerCreationErrorLast = WebWorkerCreationErrorSecureContextMismatch
+  kWebWorkerCreationErrorNone = 0,
+  kWebWorkerCreationErrorSecureContextMismatch,
+  kWebWorkerCreationErrorLast = kWebWorkerCreationErrorSecureContextMismatch
 };
 
 }  // namespace blink

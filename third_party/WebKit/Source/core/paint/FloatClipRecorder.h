@@ -26,9 +26,9 @@ class FloatClipRecorder {
   ~FloatClipRecorder();
 
  private:
-  GraphicsContext& m_context;
-  const DisplayItemClient& m_client;
-  DisplayItem::Type m_clipType;
+  GraphicsContext& context_;
+  const DisplayItemClient& client_;
+  DisplayItem::Type clip_type_;
 };
 
 }  // namespace blink

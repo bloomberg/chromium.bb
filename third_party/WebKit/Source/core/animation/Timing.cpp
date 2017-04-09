@@ -6,8 +6,8 @@
 
 namespace blink {
 
-String Timing::fillModeString(FillMode fillMode) {
-  switch (fillMode) {
+String Timing::FillModeString(FillMode fill_mode) {
+  switch (fill_mode) {
     case FillMode::NONE:
       return "none";
     case FillMode::FORWARDS:
@@ -23,8 +23,8 @@ String Timing::fillModeString(FillMode fillMode) {
   return "none";
 }
 
-String Timing::playbackDirectionString(PlaybackDirection playbackDirection) {
-  switch (playbackDirection) {
+String Timing::PlaybackDirectionString(PlaybackDirection playback_direction) {
+  switch (playback_direction) {
     case PlaybackDirection::NORMAL:
       return "normal";
     case PlaybackDirection::REVERSE:

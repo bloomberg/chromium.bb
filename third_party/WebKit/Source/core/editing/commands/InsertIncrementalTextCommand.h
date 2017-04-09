@@ -12,18 +12,18 @@ namespace blink {
 class CORE_EXPORT InsertIncrementalTextCommand final
     : public InsertTextCommand {
  public:
-  static InsertIncrementalTextCommand* create(
+  static InsertIncrementalTextCommand* Create(
       Document&,
       const String&,
-      bool selectInsertedText = false,
-      RebalanceType = RebalanceLeadingAndTrailingWhitespaces);
+      bool select_inserted_text = false,
+      RebalanceType = kRebalanceLeadingAndTrailingWhitespaces);
 
  private:
   InsertIncrementalTextCommand(Document&,
                                const String& text,
-                               bool selectInsertedText,
+                               bool select_inserted_text,
                                RebalanceType);
-  void doApply(EditingState*) override;
+  void DoApply(EditingState*) override;
 };
 
 }  // namespace blink

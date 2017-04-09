@@ -22,12 +22,12 @@ class CORE_EXPORT CustomElementReaction
   CustomElementReaction(CustomElementDefinition*);
   virtual ~CustomElementReaction() = default;
 
-  virtual void invoke(Element*) = 0;
+  virtual void Invoke(Element*) = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  Member<CustomElementDefinition> m_definition;
+  Member<CustomElementDefinition> definition_;
 };
 
 }  // namespace blink

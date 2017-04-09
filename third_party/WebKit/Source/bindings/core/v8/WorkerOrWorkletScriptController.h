@@ -53,46 +53,47 @@ class CORE_EXPORT WorkerOrWorkletScriptController
   WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 
  public:
-  static WorkerOrWorkletScriptController* create(WorkerOrWorkletGlobalScope*,
+  static WorkerOrWorkletScriptController* Create(WorkerOrWorkletGlobalScope*,
                                                  v8::Isolate*);
   virtual ~WorkerOrWorkletScriptController();
-  void dispose();
+  void Dispose();
 
-  bool isExecutionForbidden() const;
+  bool IsExecutionForbidden() const;
 
   // Returns true if the evaluation completed with no uncaught exception.
-  bool evaluate(const ScriptSourceCode&,
+  bool Evaluate(const ScriptSourceCode&,
                 ErrorEvent** = nullptr,
                 CachedMetadataHandler* = nullptr,
-                V8CacheOptions = V8CacheOptionsDefault);
+                V8CacheOptions = kV8CacheOptionsDefault);
 
   // Prevents future JavaScript execution.
-  void forbidExecution();
+  void ForbidExecution();
 
   // Used by WorkerThread. Returns true if the context is successfully
   // initialized or already initialized.
-  bool initializeContextIfNeeded();
+  bool InitializeContextIfNeeded();
 
   // Used by WorkerGlobalScope:
-  void rethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
-  void disableEval(const String&);
+  void RethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
+  void DisableEval(const String&);
 
   // Used by Inspector agents:
-  ScriptState* getScriptState() { return m_scriptState.get(); }
+  ScriptState* GetScriptState() { return script_state_.Get(); }
 
   // Used by V8 bindings:
-  v8::Local<v8::Context> context() {
-    return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
+  v8::Local<v8::Context> GetContext() {
+    return script_state_ ? script_state_->GetContext()
+                         : v8::Local<v8::Context>();
   }
 
-  RejectedPromises* getRejectedPromises() const {
-    return m_rejectedPromises.get();
+  RejectedPromises* GetRejectedPromises() const {
+    return rejected_promises_.Get();
   }
 
   DECLARE_TRACE();
 
-  bool isContextInitialized() const {
-    return m_scriptState && !!m_scriptState->perContextData();
+  bool IsContextInitialized() const {
+    return script_state_ && !!script_state_->PerContextData();
   }
 
  private:
@@ -100,26 +101,26 @@ class CORE_EXPORT WorkerOrWorkletScriptController
   class ExecutionState;
 
   // Evaluate a script file in the current execution environment.
-  ScriptValue evaluate(const String& script,
-                       const String& fileName,
-                       const TextPosition& scriptStartPosition,
+  ScriptValue Evaluate(const String& script,
+                       const String& file_name,
+                       const TextPosition& script_start_position,
                        CachedMetadataHandler*,
                        V8CacheOptions);
-  void disposeContextIfNeeded();
+  void DisposeContextIfNeeded();
 
-  Member<WorkerOrWorkletGlobalScope> m_globalScope;
+  Member<WorkerOrWorkletGlobalScope> global_scope_;
 
   // The v8 isolate associated to the (worker or worklet) global scope. For
   // workers this should be the worker thread's isolate, while for worklets
   // usually the main thread's isolate is used.
-  v8::Isolate* m_isolate;
+  v8::Isolate* isolate_;
 
-  RefPtr<ScriptState> m_scriptState;
-  RefPtr<DOMWrapperWorld> m_world;
-  String m_disableEvalPending;
-  bool m_executionForbidden;
+  RefPtr<ScriptState> script_state_;
+  RefPtr<DOMWrapperWorld> world_;
+  String disable_eval_pending_;
+  bool execution_forbidden_;
 
-  RefPtr<RejectedPromises> m_rejectedPromises;
+  RefPtr<RejectedPromises> rejected_promises_;
 
   // |m_executionState| refers to a stack object that evaluate() allocates;
   // evaluate() ensuring that the pointer reference to it is removed upon
@@ -127,7 +128,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController
   // Oilpan enabled; stack scanning will visit the object and
   // trace its on-heap fields.
   GC_PLUGIN_IGNORE("394615")
-  ExecutionState* m_executionState;
+  ExecutionState* execution_state_;
 };
 
 }  // namespace blink

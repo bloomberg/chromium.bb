@@ -13,113 +13,113 @@
 
 namespace blink {
 
-ResizeObserver* ResizeObserver::create(Document& document,
+ResizeObserver* ResizeObserver::Create(Document& document,
                                        ResizeObserverCallback* callback) {
   return new ResizeObserver(callback, document);
 }
 
 ResizeObserver::ResizeObserver(ResizeObserverCallback* callback,
                                Document& document)
-    : m_callback(callback),
-      m_skippedObservations(false),
-      m_elementSizeChanged(false) {
-  m_controller = &document.ensureResizeObserverController();
-  m_controller->addObserver(*this);
+    : callback_(callback),
+      skipped_observations_(false),
+      element_size_changed_(false) {
+  controller_ = &document.EnsureResizeObserverController();
+  controller_->AddObserver(*this);
 }
 
 void ResizeObserver::observe(Element* target) {
-  auto& observerMap = target->ensureResizeObserverData();
-  if (observerMap.contains(this))
+  auto& observer_map = target->EnsureResizeObserverData();
+  if (observer_map.Contains(this))
     return;  // Already registered.
 
   auto observation = new ResizeObservation(target, this);
-  m_observations.insert(observation);
-  observerMap.set(this, observation);
+  observations_.insert(observation);
+  observer_map.Set(this, observation);
 
-  if (FrameView* frameView = target->document().view())
-    frameView->scheduleAnimation();
+  if (FrameView* frame_view = target->GetDocument().View())
+    frame_view->ScheduleAnimation();
 }
 
 void ResizeObserver::unobserve(Element* target) {
-  auto observerMap = target ? target->resizeObserverData() : nullptr;
-  if (!observerMap)
+  auto observer_map = target ? target->ResizeObserverData() : nullptr;
+  if (!observer_map)
     return;
-  auto observation = observerMap->find(this);
-  if (observation != observerMap->end()) {
-    m_observations.erase((*observation).value);
-    observerMap->erase(observation);
+  auto observation = observer_map->Find(this);
+  if (observation != observer_map->end()) {
+    observations_.erase((*observation).value);
+    observer_map->erase(observation);
   }
 }
 
 void ResizeObserver::disconnect() {
   ObservationList observations;
-  m_observations.swap(observations);
+  observations_.Swap(observations);
 
   for (auto& observation : observations) {
-    Element* target = (*observation).target();
+    Element* target = (*observation).Target();
     if (target)
-      target->ensureResizeObserverData().erase(this);
+      target->EnsureResizeObserverData().erase(this);
   }
-  clearObservations();
+  ClearObservations();
 }
 
-size_t ResizeObserver::gatherObservations(size_t deeperThan) {
-  DCHECK(m_activeObservations.isEmpty());
+size_t ResizeObserver::GatherObservations(size_t deeper_than) {
+  DCHECK(active_observations_.IsEmpty());
 
-  size_t minObservedDepth = ResizeObserverController::kDepthBottom;
-  if (!m_elementSizeChanged)
-    return minObservedDepth;
-  for (auto& observation : m_observations) {
-    if (!observation->observationSizeOutOfSync())
+  size_t min_observed_depth = ResizeObserverController::kDepthBottom;
+  if (!element_size_changed_)
+    return min_observed_depth;
+  for (auto& observation : observations_) {
+    if (!observation->ObservationSizeOutOfSync())
       continue;
-    auto depth = observation->targetDepth();
-    if (depth > deeperThan) {
-      m_activeObservations.push_back(*observation);
-      minObservedDepth = std::min(minObservedDepth, depth);
+    auto depth = observation->TargetDepth();
+    if (depth > deeper_than) {
+      active_observations_.push_back(*observation);
+      min_observed_depth = std::min(min_observed_depth, depth);
     } else {
-      m_skippedObservations = true;
+      skipped_observations_ = true;
     }
   }
-  return minObservedDepth;
+  return min_observed_depth;
 }
 
-void ResizeObserver::deliverObservations() {
+void ResizeObserver::DeliverObservations() {
   // We can only clear this flag after all observations have been
   // broadcast.
-  m_elementSizeChanged = m_skippedObservations;
-  if (m_activeObservations.size() == 0)
+  element_size_changed_ = skipped_observations_;
+  if (active_observations_.size() == 0)
     return;
 
   HeapVector<Member<ResizeObserverEntry>> entries;
 
-  for (auto& observation : m_activeObservations) {
-    LayoutPoint location = observation->computeTargetLocation();
-    LayoutSize size = observation->computeTargetSize();
-    observation->setObservationSize(size);
-    auto entry = new ResizeObserverEntry(observation->target(),
+  for (auto& observation : active_observations_) {
+    LayoutPoint location = observation->ComputeTargetLocation();
+    LayoutSize size = observation->ComputeTargetSize();
+    observation->SetObservationSize(size);
+    auto entry = new ResizeObserverEntry(observation->Target(),
                                          LayoutRect(location, size));
     entries.push_back(entry);
   }
-  m_callback->handleEvent(entries, this);
-  clearObservations();
+  callback_->handleEvent(entries, this);
+  ClearObservations();
 }
 
-void ResizeObserver::clearObservations() {
-  m_activeObservations.clear();
-  m_skippedObservations = false;
+void ResizeObserver::ClearObservations() {
+  active_observations_.Clear();
+  skipped_observations_ = false;
 }
 
-void ResizeObserver::elementSizeChanged() {
-  m_elementSizeChanged = true;
-  if (m_controller)
-    m_controller->observerChanged();
+void ResizeObserver::ElementSizeChanged() {
+  element_size_changed_ = true;
+  if (controller_)
+    controller_->ObserverChanged();
 }
 
 DEFINE_TRACE(ResizeObserver) {
-  visitor->trace(m_callback);
-  visitor->trace(m_observations);
-  visitor->trace(m_activeObservations);
-  visitor->trace(m_controller);
+  visitor->Trace(callback_);
+  visitor->Trace(observations_);
+  visitor->Trace(active_observations_);
+  visitor->Trace(controller_);
 }
 
 }  // namespace blink

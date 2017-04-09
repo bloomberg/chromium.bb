@@ -47,26 +47,26 @@ class WorkerContentSettingsClient final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
 
  public:
-  static WorkerContentSettingsClient* create(
+  static WorkerContentSettingsClient* Create(
       std::unique_ptr<WebWorkerContentSettingsClientProxy>);
   virtual ~WorkerContentSettingsClient();
 
-  bool requestFileSystemAccessSync();
-  bool allowIndexedDB(const WebString& name);
+  bool RequestFileSystemAccessSync();
+  bool AllowIndexedDB(const WebString& name);
 
-  static const char* supplementName();
-  static WorkerContentSettingsClient* from(ExecutionContext&);
+  static const char* SupplementName();
+  static WorkerContentSettingsClient* From(ExecutionContext&);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::Trace(visitor); }
 
  private:
   explicit WorkerContentSettingsClient(
       std::unique_ptr<WebWorkerContentSettingsClientProxy>);
 
-  std::unique_ptr<WebWorkerContentSettingsClientProxy> m_proxy;
+  std::unique_ptr<WebWorkerContentSettingsClientProxy> proxy_;
 };
 
-void provideContentSettingsClientToWorker(
+void ProvideContentSettingsClientToWorker(
     WorkerClients*,
     std::unique_ptr<WebWorkerContentSettingsClientProxy>);
 

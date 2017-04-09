@@ -15,10 +15,10 @@ namespace mojo {
 
 COMPILE_ASSERT_MATCHING_ENUM(
     mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
-    WebServiceWorkerContextProxy::IsNotLastChance);
+    WebServiceWorkerContextProxy::kIsNotLastChance);
 COMPILE_ASSERT_MATCHING_ENUM(
     mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE,
-    WebServiceWorkerContextProxy::IsLastChance);
+    WebServiceWorkerContextProxy::kIsLastChance);
 
 // static
 blink::WebServiceWorkerContextProxy::LastChanceOption

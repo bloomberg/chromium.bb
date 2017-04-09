@@ -10,43 +10,43 @@
 
 namespace blink {
 
-CSSValue* CSSPropertyColumnUtils::consumeColumnCount(
+CSSValue* CSSPropertyColumnUtils::ConsumeColumnCount(
     CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumePositiveInteger(range);
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
 }
 
-CSSValue* CSSPropertyColumnUtils::consumeColumnWidth(
+CSSValue* CSSPropertyColumnUtils::ConsumeColumnWidth(
     CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
   // Always parse lengths in strict mode here, since it would be ambiguous
   // otherwise when used in the 'columns' shorthand property.
-  CSSPrimitiveValue* columnWidth = CSSPropertyParserHelpers::consumeLength(
-      range, HTMLStandardMode, ValueRangeNonNegative);
-  if (!columnWidth ||
-      (!columnWidth->isCalculated() && columnWidth->getDoubleValue() == 0))
+  CSSPrimitiveValue* column_width = CSSPropertyParserHelpers::ConsumeLength(
+      range, kHTMLStandardMode, kValueRangeNonNegative);
+  if (!column_width ||
+      (!column_width->IsCalculated() && column_width->GetDoubleValue() == 0))
     return nullptr;
-  return columnWidth;
+  return column_width;
 }
 
-bool CSSPropertyColumnUtils::consumeColumnWidthOrCount(
+bool CSSPropertyColumnUtils::ConsumeColumnWidthOrCount(
     CSSParserTokenRange& range,
-    CSSValue*& columnWidth,
-    CSSValue*& columnCount) {
-  if (range.peek().id() == CSSValueAuto) {
-    CSSPropertyParserHelpers::consumeIdent(range);
+    CSSValue*& column_width,
+    CSSValue*& column_count) {
+  if (range.Peek().Id() == CSSValueAuto) {
+    CSSPropertyParserHelpers::ConsumeIdent(range);
     return true;
   }
-  if (!columnWidth) {
-    columnWidth = consumeColumnWidth(range);
-    if (columnWidth)
+  if (!column_width) {
+    column_width = ConsumeColumnWidth(range);
+    if (column_width)
       return true;
   }
-  if (!columnCount)
-    columnCount = consumeColumnCount(range);
-  return columnCount;
+  if (!column_count)
+    column_count = ConsumeColumnCount(range);
+  return column_count;
 }
 
 }  // namespace blink

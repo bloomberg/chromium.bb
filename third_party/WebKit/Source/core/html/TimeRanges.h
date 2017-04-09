@@ -52,60 +52,60 @@ class CORE_EXPORT TimeRanges final
    public:
     Range() {}
     Range(double start, double end) {
-      m_start = start;
-      m_end = end;
+      start_ = start;
+      end_ = end;
     }
-    double m_start;
-    double m_end;
+    double start_;
+    double end_;
 
     inline bool isPointInRange(double point) const {
-      return m_start <= point && point < m_end;
+      return start_ <= point && point < end_;
     }
 
-    inline bool isOverlappingRange(const Range& range) const {
-      return isPointInRange(range.m_start) || isPointInRange(range.m_end) ||
-             range.isPointInRange(m_start);
+    inline bool IsOverlappingRange(const Range& range) const {
+      return isPointInRange(range.start_) || isPointInRange(range.end_) ||
+             range.isPointInRange(start_);
     }
 
-    inline bool isContiguousWithRange(const Range& range) const {
-      return range.m_start == m_end || range.m_end == m_start;
+    inline bool IsContiguousWithRange(const Range& range) const {
+      return range.start_ == end_ || range.end_ == start_;
     }
 
-    inline Range unionWithOverlappingOrContiguousRange(
+    inline Range UnionWithOverlappingOrContiguousRange(
         const Range& range) const {
       Range ret;
 
-      ret.m_start = std::min(m_start, range.m_start);
-      ret.m_end = std::max(m_end, range.m_end);
+      ret.start_ = std::min(start_, range.start_);
+      ret.end_ = std::max(end_, range.end_);
 
       return ret;
     }
 
-    inline bool isBeforeRange(const Range& range) const {
-      return range.m_start >= m_end;
+    inline bool IsBeforeRange(const Range& range) const {
+      return range.start_ >= end_;
     }
   };
 
-  static TimeRanges* create() { return new TimeRanges; }
-  static TimeRanges* create(double start, double end) {
+  static TimeRanges* Create() { return new TimeRanges; }
+  static TimeRanges* Create(double start, double end) {
     return new TimeRanges(start, end);
   }
-  static TimeRanges* create(const WebTimeRanges&);
+  static TimeRanges* Create(const WebTimeRanges&);
 
-  TimeRanges* copy() const;
-  void intersectWith(const TimeRanges*);
-  void unionWith(const TimeRanges*);
+  TimeRanges* Copy() const;
+  void IntersectWith(const TimeRanges*);
+  void UnionWith(const TimeRanges*);
 
-  unsigned length() const { return m_ranges.size(); }
+  unsigned length() const { return ranges_.size(); }
   double start(unsigned index, ExceptionState&) const;
   double end(unsigned index, ExceptionState&) const;
 
-  void add(double start, double end);
+  void Add(double start, double end);
 
-  bool contain(double time) const;
+  bool Contain(double time) const;
 
-  double nearest(double newPlaybackPosition,
-                 double currentPlaybackPosition) const;
+  double Nearest(double new_playback_position,
+                 double current_playback_position) const;
 
   DEFINE_INLINE_TRACE() {}
 
@@ -114,9 +114,9 @@ class CORE_EXPORT TimeRanges final
 
   TimeRanges(double start, double end);
 
-  void invert();
+  void Invert();
 
-  Vector<Range> m_ranges;
+  Vector<Range> ranges_;
 };
 
 }  // namespace blink

@@ -35,29 +35,29 @@ class MODULES_EXPORT PresentationAvailability final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PresentationAvailability* take(PresentationAvailabilityProperty*,
+  static PresentationAvailability* Take(PresentationAvailabilityProperty*,
                                         const WTF::Vector<KURL>&,
                                         bool);
   ~PresentationAvailability() override;
 
   // EventTarget implementation.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // WebPresentationAvailabilityObserver implementation.
-  void availabilityChanged(bool) override;
-  const WebVector<WebURL>& urls() const override;
+  void AvailabilityChanged(bool) override;
+  const WebVector<WebURL>& Urls() const override;
 
   // ScriptWrappable implementation.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // SuspendableObject implementation.
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // PageVisibilityObserver implementation.
-  void pageVisibilityChanged() override;
+  void PageVisibilityChanged() override;
 
   bool value() const;
 
@@ -67,7 +67,7 @@ class MODULES_EXPORT PresentationAvailability final
 
  protected:
   // EventTarget implementation.
-  void addedEventListener(const AtomicString& eventType,
+  void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
  private:
@@ -76,19 +76,19 @@ class MODULES_EXPORT PresentationAvailability final
   // resume() is called. It becomes Inactive when stop() is called or at
   // destruction time.
   enum class State : char {
-    Active,
-    Suspended,
-    Inactive,
+    kActive,
+    kSuspended,
+    kInactive,
   };
 
   PresentationAvailability(ExecutionContext*, const WTF::Vector<KURL>&, bool);
 
-  void setState(State);
-  void updateListening();
+  void SetState(State);
+  void UpdateListening();
 
-  WebVector<WebURL> m_urls;
-  bool m_value;
-  State m_state;
+  WebVector<WebURL> urls_;
+  bool value_;
+  State state_;
 };
 
 }  // namespace blink

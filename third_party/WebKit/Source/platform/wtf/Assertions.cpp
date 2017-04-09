@@ -116,7 +116,7 @@ static void vprintf_stderr_with_trailing_newline(const char* format,
   }
 
   std::unique_ptr<char[]> formatWithNewline =
-      wrapArrayUnique(new char[formatLength + 2]);
+      WrapArrayUnique(new char[formatLength + 2]);
   memcpy(formatWithNewline.get(), format, formatLength);
   formatWithNewline[formatLength] = '\n';
   formatWithNewline[formatLength + 1] = 0;
@@ -166,88 +166,88 @@ FrameToNameScope::~FrameToNameScope() {
 namespace WTF {
 
 ScopedLogger::ScopedLogger(bool condition, const char* format, ...)
-    : m_parent(condition ? current() : 0), m_multiline(false) {
+    : parent_(condition ? Current() : 0), multiline_(false) {
   if (!condition)
     return;
 
   va_list args;
   va_start(args, format);
-  init(format, args);
+  Init(format, args);
   va_end(args);
 }
 
 ScopedLogger::~ScopedLogger() {
-  if (current() == this) {
-    if (m_multiline)
-      indent();
+  if (Current() == this) {
+    if (multiline_)
+      Indent();
     else
-      print(" ");
-    print(")\n");
-    current() = m_parent;
+      Print(" ");
+    Print(")\n");
+    Current() = parent_;
   }
 }
 
-void ScopedLogger::setPrintFuncForTests(PrintFunctionPtr ptr) {
-  m_printFunc = ptr;
+void ScopedLogger::SetPrintFuncForTests(PrintFunctionPtr ptr) {
+  print_func_ = ptr;
 };
 
-void ScopedLogger::init(const char* format, va_list args) {
-  current() = this;
-  if (m_parent)
-    m_parent->writeNewlineIfNeeded();
-  indent();
-  print("( ");
-  m_printFunc(format, args);
+void ScopedLogger::Init(const char* format, va_list args) {
+  Current() = this;
+  if (parent_)
+    parent_->WriteNewlineIfNeeded();
+  Indent();
+  Print("( ");
+  print_func_(format, args);
 }
 
-void ScopedLogger::writeNewlineIfNeeded() {
-  if (!m_multiline) {
-    print("\n");
-    m_multiline = true;
+void ScopedLogger::WriteNewlineIfNeeded() {
+  if (!multiline_) {
+    Print("\n");
+    multiline_ = true;
   }
 }
 
-void ScopedLogger::indent() {
-  if (m_parent) {
-    m_parent->indent();
-    printIndent();
+void ScopedLogger::Indent() {
+  if (parent_) {
+    parent_->Indent();
+    PrintIndent();
   }
 }
 
-void ScopedLogger::log(const char* format, ...) {
-  if (current() != this)
+void ScopedLogger::Log(const char* format, ...) {
+  if (Current() != this)
     return;
 
   va_list args;
   va_start(args, format);
 
-  writeNewlineIfNeeded();
-  indent();
-  printIndent();
-  m_printFunc(format, args);
-  print("\n");
+  WriteNewlineIfNeeded();
+  Indent();
+  PrintIndent();
+  print_func_(format, args);
+  Print("\n");
 
   va_end(args);
 }
 
-void ScopedLogger::print(const char* format, ...) {
+void ScopedLogger::Print(const char* format, ...) {
   va_list args;
   va_start(args, format);
-  m_printFunc(format, args);
+  print_func_(format, args);
   va_end(args);
 }
 
-void ScopedLogger::printIndent() {
-  print("  ");
+void ScopedLogger::PrintIndent() {
+  Print("  ");
 }
 
-ScopedLogger*& ScopedLogger::current() {
+ScopedLogger*& ScopedLogger::Current() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<ScopedLogger*>, ref,
                                   new ThreadSpecific<ScopedLogger*>);
   return *ref;
 }
 
-ScopedLogger::PrintFunctionPtr ScopedLogger::m_printFunc =
+ScopedLogger::PrintFunctionPtr ScopedLogger::print_func_ =
     vprintf_stderr_common;
 
 }  // namespace WTF

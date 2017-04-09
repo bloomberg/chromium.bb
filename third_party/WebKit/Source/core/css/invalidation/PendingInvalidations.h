@@ -15,14 +15,14 @@ class CORE_EXPORT PendingInvalidations final {
  public:
   PendingInvalidations() {}
 
-  InvalidationSetVector& descendants() { return m_descendants; }
-  const InvalidationSetVector& descendants() const { return m_descendants; }
-  InvalidationSetVector& siblings() { return m_siblings; }
-  const InvalidationSetVector& siblings() const { return m_siblings; }
+  InvalidationSetVector& Descendants() { return descendants_; }
+  const InvalidationSetVector& Descendants() const { return descendants_; }
+  InvalidationSetVector& Siblings() { return siblings_; }
+  const InvalidationSetVector& Siblings() const { return siblings_; }
 
  private:
-  InvalidationSetVector m_descendants;
-  InvalidationSetVector m_siblings;
+  InvalidationSetVector descendants_;
+  InvalidationSetVector siblings_;
 };
 
 }  // namespace blink

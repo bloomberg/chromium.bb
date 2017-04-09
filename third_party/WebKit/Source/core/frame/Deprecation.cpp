@@ -44,14 +44,14 @@ const char* milestoneString(Milestone milestone) {
 }
 
 String replacedBy(const char* feature, const char* replacement) {
-  return String::format("%s is deprecated. Please use %s instead.", feature,
+  return String::Format("%s is deprecated. Please use %s instead.", feature,
                         replacement);
 }
 
 String willBeRemoved(const char* feature,
                      Milestone milestone,
                      const char* details) {
-  return String::format(
+  return String::Format(
       "%s is deprecated and will be removed in %s. See "
       "https://www.chromestatus.com/features/%s for more details.",
       feature, milestoneString(milestone), details);
@@ -61,7 +61,7 @@ String replacedWillBeRemoved(const char* feature,
                              const char* replacement,
                              Milestone milestone,
                              const char* details) {
-  return String::format(
+  return String::Format(
       "%s is deprecated and will be removed in %s. Please use %s instead. See "
       "https://www.chromestatus.com/features/%s for more details.",
       feature, milestoneString(milestone), replacement, details);
@@ -71,52 +71,53 @@ String replacedWillBeRemoved(const char* feature,
 
 namespace blink {
 
-Deprecation::Deprecation() : m_muteCount(0) {
-  m_cssPropertyDeprecationBits.ensureSize(numCSSPropertyIDs);
+Deprecation::Deprecation() : mute_count_(0) {
+  css_property_deprecation_bits_.EnsureSize(numCSSPropertyIDs);
 }
 
 Deprecation::~Deprecation() {}
 
-void Deprecation::clearSuppression() {
-  m_cssPropertyDeprecationBits.clearAll();
+void Deprecation::ClearSuppression() {
+  css_property_deprecation_bits_.ClearAll();
 }
 
-void Deprecation::muteForInspector() {
-  m_muteCount++;
+void Deprecation::MuteForInspector() {
+  mute_count_++;
 }
 
-void Deprecation::unmuteForInspector() {
-  m_muteCount--;
+void Deprecation::UnmuteForInspector() {
+  mute_count_--;
 }
 
-void Deprecation::suppress(CSSPropertyID unresolvedProperty) {
-  DCHECK(isCSSPropertyIDWithName(unresolvedProperty));
-  m_cssPropertyDeprecationBits.quickSet(unresolvedProperty);
+void Deprecation::Suppress(CSSPropertyID unresolved_property) {
+  DCHECK(isCSSPropertyIDWithName(unresolved_property));
+  css_property_deprecation_bits_.QuickSet(unresolved_property);
 }
 
-bool Deprecation::isSuppressed(CSSPropertyID unresolvedProperty) {
-  DCHECK(isCSSPropertyIDWithName(unresolvedProperty));
-  return m_cssPropertyDeprecationBits.quickGet(unresolvedProperty);
+bool Deprecation::IsSuppressed(CSSPropertyID unresolved_property) {
+  DCHECK(isCSSPropertyIDWithName(unresolved_property));
+  return css_property_deprecation_bits_.QuickGet(unresolved_property);
 }
 
-void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame,
-                                             CSSPropertyID unresolvedProperty) {
-  Page* page = frame ? frame->page() : nullptr;
-  if (!page || page->deprecation().m_muteCount ||
-      page->deprecation().isSuppressed(unresolvedProperty))
+void Deprecation::WarnOnDeprecatedProperties(
+    const LocalFrame* frame,
+    CSSPropertyID unresolved_property) {
+  Page* page = frame ? frame->GetPage() : nullptr;
+  if (!page || page->GetDeprecation().mute_count_ ||
+      page->GetDeprecation().IsSuppressed(unresolved_property))
     return;
 
-  String message = deprecationMessage(unresolvedProperty);
-  if (!message.isEmpty()) {
-    page->deprecation().suppress(unresolvedProperty);
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(
-        DeprecationMessageSource, WarningMessageLevel, message);
-    frame->console().addMessage(consoleMessage);
+  String message = DeprecationMessage(unresolved_property);
+  if (!message.IsEmpty()) {
+    page->GetDeprecation().Suppress(unresolved_property);
+    ConsoleMessage* console_message = ConsoleMessage::Create(
+        kDeprecationMessageSource, kWarningMessageLevel, message);
+    frame->Console().AddMessage(console_message);
   }
 }
 
-String Deprecation::deprecationMessage(CSSPropertyID unresolvedProperty) {
-  switch (unresolvedProperty) {
+String Deprecation::DeprecationMessage(CSSPropertyID unresolved_property) {
+  switch (unresolved_property) {
     case CSSPropertyAliasMotionOffset:
       return replacedWillBeRemoved("motion-offset", "offset-distance", M58,
                                    "6390764217040896");
@@ -133,194 +134,194 @@ String Deprecation::deprecationMessage(CSSPropertyID unresolvedProperty) {
                                    "6390764217040896");
 
     default:
-      return emptyString;
+      return g_empty_string;
   }
 }
 
-void Deprecation::countDeprecation(const LocalFrame* frame,
+void Deprecation::CountDeprecation(const LocalFrame* frame,
                                    UseCounter::Feature feature) {
   if (!frame)
     return;
-  Page* page = frame->page();
-  if (!page || page->deprecation().m_muteCount)
+  Page* page = frame->GetPage();
+  if (!page || page->GetDeprecation().mute_count_)
     return;
 
-  if (!page->useCounter().hasRecordedMeasurement(feature)) {
-    page->useCounter().recordMeasurement(feature);
-    ASSERT(!deprecationMessage(feature).isEmpty());
-    ConsoleMessage* consoleMessage =
-        ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel,
-                               deprecationMessage(feature));
-    frame->console().addMessage(consoleMessage);
+  if (!page->GetUseCounter().HasRecordedMeasurement(feature)) {
+    page->GetUseCounter().RecordMeasurement(feature);
+    ASSERT(!DeprecationMessage(feature).IsEmpty());
+    ConsoleMessage* console_message =
+        ConsoleMessage::Create(kDeprecationMessageSource, kWarningMessageLevel,
+                               DeprecationMessage(feature));
+    frame->Console().AddMessage(console_message);
   }
 }
 
-void Deprecation::countDeprecation(ExecutionContext* context,
+void Deprecation::CountDeprecation(ExecutionContext* context,
                                    UseCounter::Feature feature) {
   if (!context)
     return;
-  if (context->isDocument()) {
-    Deprecation::countDeprecation(*toDocument(context), feature);
+  if (context->IsDocument()) {
+    Deprecation::CountDeprecation(*ToDocument(context), feature);
     return;
   }
-  if (context->isWorkerOrWorkletGlobalScope())
-    toWorkerOrWorkletGlobalScope(context)->countDeprecation(feature);
+  if (context->IsWorkerOrWorkletGlobalScope())
+    ToWorkerOrWorkletGlobalScope(context)->CountDeprecation(feature);
 }
 
-void Deprecation::countDeprecation(const Document& document,
+void Deprecation::CountDeprecation(const Document& document,
                                    UseCounter::Feature feature) {
-  Deprecation::countDeprecation(document.frame(), feature);
+  Deprecation::CountDeprecation(document.GetFrame(), feature);
 }
 
-void Deprecation::countDeprecationCrossOriginIframe(
+void Deprecation::CountDeprecationCrossOriginIframe(
     const LocalFrame* frame,
     UseCounter::Feature feature) {
   // Check to see if the frame can script into the top level document.
-  SecurityOrigin* securityOrigin =
-      frame->securityContext()->getSecurityOrigin();
-  Frame* top = frame->tree().top();
-  if (top &&
-      !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin()))
-    countDeprecation(frame, feature);
+  SecurityOrigin* security_origin =
+      frame->GetSecurityContext()->GetSecurityOrigin();
+  Frame* top = frame->Tree().Top();
+  if (top && !security_origin->CanAccess(
+                 top->GetSecurityContext()->GetSecurityOrigin()))
+    CountDeprecation(frame, feature);
 }
 
-void Deprecation::countDeprecationCrossOriginIframe(
+void Deprecation::CountDeprecationCrossOriginIframe(
     const Document& document,
     UseCounter::Feature feature) {
-  LocalFrame* frame = document.frame();
+  LocalFrame* frame = document.GetFrame();
   if (!frame)
     return;
-  countDeprecationCrossOriginIframe(frame, feature);
+  CountDeprecationCrossOriginIframe(frame, feature);
 }
 
-String Deprecation::deprecationMessage(UseCounter::Feature feature) {
+String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
   switch (feature) {
     // Quota
-    case UseCounter::PrefixedStorageInfo:
+    case UseCounter::kPrefixedStorageInfo:
       return replacedBy("'window.webkitStorageInfo'",
                         "'navigator.webkitTemporaryStorage' or "
                         "'navigator.webkitPersistentStorage'");
 
-    case UseCounter::ConsoleMarkTimeline:
+    case UseCounter::kConsoleMarkTimeline:
       return replacedBy("'console.markTimeline'", "'console.timeStamp'");
 
-    case UseCounter::CSSStyleSheetInsertRuleOptionalArg:
+    case UseCounter::kCSSStyleSheetInsertRuleOptionalArg:
       return "Calling CSSStyleSheet.insertRule() with one argument is "
              "deprecated. Please pass the index argument as well: "
              "insertRule(x, 0).";
 
-    case UseCounter::PrefixedVideoSupportsFullscreen:
+    case UseCounter::kPrefixedVideoSupportsFullscreen:
       return replacedBy("'HTMLVideoElement.webkitSupportsFullscreen'",
                         "'Document.fullscreenEnabled'");
 
-    case UseCounter::PrefixedVideoDisplayingFullscreen:
+    case UseCounter::kPrefixedVideoDisplayingFullscreen:
       return replacedBy("'HTMLVideoElement.webkitDisplayingFullscreen'",
                         "'Document.fullscreenElement'");
 
-    case UseCounter::PrefixedVideoEnterFullscreen:
+    case UseCounter::kPrefixedVideoEnterFullscreen:
       return replacedBy("'HTMLVideoElement.webkitEnterFullscreen()'",
                         "'Element.requestFullscreen()'");
 
-    case UseCounter::PrefixedVideoExitFullscreen:
+    case UseCounter::kPrefixedVideoExitFullscreen:
       return replacedBy("'HTMLVideoElement.webkitExitFullscreen()'",
                         "'Document.exitFullscreen()'");
 
-    case UseCounter::PrefixedVideoEnterFullScreen:
+    case UseCounter::kPrefixedVideoEnterFullScreen:
       return replacedBy("'HTMLVideoElement.webkitEnterFullScreen()'",
                         "'Element.requestFullscreen()'");
 
-    case UseCounter::PrefixedVideoExitFullScreen:
+    case UseCounter::kPrefixedVideoExitFullScreen:
       return replacedBy("'HTMLVideoElement.webkitExitFullScreen()'",
                         "'Document.exitFullscreen()'");
 
-    case UseCounter::PrefixedRequestAnimationFrame:
+    case UseCounter::kPrefixedRequestAnimationFrame:
       return "'webkitRequestAnimationFrame' is vendor-specific. Please use the "
              "standard 'requestAnimationFrame' instead.";
 
-    case UseCounter::PrefixedCancelAnimationFrame:
+    case UseCounter::kPrefixedCancelAnimationFrame:
       return "'webkitCancelAnimationFrame' is vendor-specific. Please use the "
              "standard 'cancelAnimationFrame' instead.";
 
-    case UseCounter::PictureSourceSrc:
+    case UseCounter::kPictureSourceSrc:
       return "<source src> with a <picture> parent is invalid and therefore "
              "ignored. Please use <source srcset> instead.";
 
-    case UseCounter::ConsoleTimeline:
+    case UseCounter::kConsoleTimeline:
       return replacedBy("'console.timeline'", "'console.time'");
 
-    case UseCounter::ConsoleTimelineEnd:
+    case UseCounter::kConsoleTimelineEnd:
       return replacedBy("'console.timelineEnd'", "'console.timeEnd'");
 
-    case UseCounter::XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
+    case UseCounter::kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
       return "Synchronous XMLHttpRequest on the main thread is deprecated "
              "because of its detrimental effects to the end user's experience. "
              "For more help, check https://xhr.spec.whatwg.org/.";
 
-    case UseCounter::GetMatchedCSSRules:
+    case UseCounter::kGetMatchedCSSRules:
       return "'getMatchedCSSRules()' is deprecated. For more help, check "
              "https://code.google.com/p/chromium/issues/detail?id=437569#c2";
 
-    case UseCounter::PrefixedWindowURL:
+    case UseCounter::kPrefixedWindowURL:
       return replacedBy("'webkitURL'", "'URL'");
 
-    case UseCounter::RangeExpand:
+    case UseCounter::kRangeExpand:
       return replacedBy("'Range.expand()'", "'Selection.modify()'");
 
     // Blocked subresource requests:
-    case UseCounter::LegacyProtocolEmbeddedAsSubresource:
-      return String::format(
+    case UseCounter::kLegacyProtocolEmbeddedAsSubresource:
+      return String::Format(
           "Subresource requests using legacy protocols (like `ftp:`) are "
           "are blocked. Please deliver web-accessible resources over modern "
           "protocols like HTTPS. See "
           "https://www.chromestatus.com/feature/5709390967472128 for details.");
 
-    case UseCounter::RequestedSubresourceWithEmbeddedCredentials:
+    case UseCounter::kRequestedSubresourceWithEmbeddedCredentials:
       return "Subresource requests whose URLs contain embedded credentials "
              "(e.g. `https://user:pass@host/`) are blocked. See "
              "https://www.chromestatus.com/feature/5669008342777856 for more "
              "details.";
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
-    case UseCounter::DeviceMotionInsecureOrigin:
+    case UseCounter::kDeviceMotionInsecureOrigin:
       return "The devicemotion event is deprecated on insecure origins, and "
              "support will be removed in the future. You should consider "
              "switching your application to a secure origin, such as HTTPS. "
              "See https://goo.gl/rStTGz for more details.";
 
-    case UseCounter::DeviceOrientationInsecureOrigin:
+    case UseCounter::kDeviceOrientationInsecureOrigin:
       return "The deviceorientation event is deprecated on insecure origins, "
              "and support will be removed in the future. You should consider "
              "switching your application to a secure origin, such as HTTPS. "
              "See https://goo.gl/rStTGz for more details.";
 
-    case UseCounter::DeviceOrientationAbsoluteInsecureOrigin:
+    case UseCounter::kDeviceOrientationAbsoluteInsecureOrigin:
       return "The deviceorientationabsolute event is deprecated on insecure "
              "origins, and support will be removed in the future. You should "
              "consider switching your application to a secure origin, such as "
              "HTTPS. See https://goo.gl/rStTGz for more details.";
 
-    case UseCounter::GeolocationInsecureOrigin:
-    case UseCounter::GeolocationInsecureOriginIframe:
+    case UseCounter::kGeolocationInsecureOrigin:
+    case UseCounter::kGeolocationInsecureOriginIframe:
       return "getCurrentPosition() and watchPosition() no longer work on "
              "insecure origins. To use this feature, you should consider "
              "switching your application to a secure origin, such as HTTPS. "
              "See https://goo.gl/rStTGz for more details.";
 
-    case UseCounter::GeolocationInsecureOriginDeprecatedNotRemoved:
-    case UseCounter::GeolocationInsecureOriginIframeDeprecatedNotRemoved:
+    case UseCounter::kGeolocationInsecureOriginDeprecatedNotRemoved:
+    case UseCounter::kGeolocationInsecureOriginIframeDeprecatedNotRemoved:
       return "getCurrentPosition() and watchPosition() are deprecated on "
              "insecure origins. To use this feature, you should consider "
              "switching your application to a secure origin, such as HTTPS. "
              "See https://goo.gl/rStTGz for more details.";
 
-    case UseCounter::GetUserMediaInsecureOrigin:
-    case UseCounter::GetUserMediaInsecureOriginIframe:
+    case UseCounter::kGetUserMediaInsecureOrigin:
+    case UseCounter::kGetUserMediaInsecureOriginIframe:
       return "getUserMedia() no longer works on insecure origins. To use this "
              "feature, you should consider switching your application to a "
              "secure origin, such as HTTPS. See https://goo.gl/rStTGz for more "
              "details.";
 
-    case UseCounter::MediaSourceAbortRemove:
+    case UseCounter::kMediaSourceAbortRemove:
       return "Using SourceBuffer.abort() to abort remove()'s asynchronous "
              "range removal is deprecated due to specification change. Support "
              "will be removed in the future. You should instead await "
@@ -328,7 +329,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "media append or reset parser state. See "
              "https://www.chromestatus.com/features/6107495151960064 for more "
              "details.";
-    case UseCounter::MediaSourceDurationTruncatingBuffered:
+    case UseCounter::kMediaSourceDurationTruncatingBuffered:
       return "Setting MediaSource.duration below the highest presentation "
              "timestamp of any buffered coded frames is deprecated due to "
              "specification change. Support for implicit removal of truncated "
@@ -338,94 +339,94 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "https://www.chromestatus.com/features/6107495151960064 for more "
              "details.";
 
-    case UseCounter::ApplicationCacheManifestSelectInsecureOrigin:
-    case UseCounter::ApplicationCacheAPIInsecureOrigin:
+    case UseCounter::kApplicationCacheManifestSelectInsecureOrigin:
+    case UseCounter::kApplicationCacheAPIInsecureOrigin:
       return "Use of the Application Cache is deprecated on insecure origins. "
              "Support will be removed in the future. You should consider "
              "switching your application to a secure origin, such as HTTPS. "
              "See https://goo.gl/rStTGz for more details.";
 
-    case UseCounter::NotificationInsecureOrigin:
-    case UseCounter::NotificationAPIInsecureOriginIframe:
-    case UseCounter::NotificationPermissionRequestedInsecureOrigin:
-      return String::format(
+    case UseCounter::kNotificationInsecureOrigin:
+    case UseCounter::kNotificationAPIInsecureOriginIframe:
+    case UseCounter::kNotificationPermissionRequestedInsecureOrigin:
+      return String::Format(
           "Using the Notification API on insecure origins is "
           "deprecated and will be removed in %s. You should consider "
           "switching your application to a secure origin, such as HTTPS. See "
           "https://goo.gl/rStTGz for more details.",
           milestoneString(M60));
 
-    case UseCounter::ElementCreateShadowRootMultiple:
+    case UseCounter::kElementCreateShadowRootMultiple:
       return "Calling Element.createShadowRoot() for an element which already "
              "hosts a shadow root is deprecated. See "
              "https://www.chromestatus.com/features/4668884095336448 for more "
              "details.";
 
-    case UseCounter::CSSDeepCombinator:
-      return String::format(
+    case UseCounter::kCSSDeepCombinator:
+      return String::Format(
           "/deep/ combinator is deprecated and will be a no-op in %s. See "
           "https://www.chromestatus.com/features/4964279606312960 for more "
           "details.",
           milestoneString(M60));
 
-    case UseCounter::CSSSelectorPseudoShadow:
+    case UseCounter::kCSSSelectorPseudoShadow:
       return willBeRemoved("::shadow pseudo-element", M60, "6750456638341120");
 
-    case UseCounter::VREyeParametersOffset:
+    case UseCounter::kVREyeParametersOffset:
       return replacedBy("VREyeParameters.offset",
                         "view matrices provided by VRFrameData");
 
     case UseCounter::
-        ServiceWorkerRespondToNavigationRequestWithRedirectedResponse:
-      return String::format(
+        kServiceWorkerRespondToNavigationRequestWithRedirectedResponse:
+      return String::Format(
           "The service worker responded to the navigation request with a "
           "redirected response. This will result in an error in %s.",
           milestoneString(M59));
 
-    case UseCounter::CSSSelectorInternalMediaControlsOverlayCastButton:
+    case UseCounter::kCSSSelectorInternalMediaControlsOverlayCastButton:
       return willBeRemoved(
           "-internal-media-controls-overlay-cast-button selector", M59,
           "5714245488476160");
 
-    case UseCounter::CSSZoomReset:
+    case UseCounter::kCSSZoomReset:
       return willBeRemoved("\"zoom: reset\"", M59, "4997605029314560");
 
-    case UseCounter::CSSZoomDocument:
+    case UseCounter::kCSSZoomDocument:
       return willBeRemoved("\"zoom: document\"", M59, "4997605029314560");
 
-    case UseCounter::SelectionAddRangeIntersect:
+    case UseCounter::kSelectionAddRangeIntersect:
       return "The behavior that Selection.addRange() merges existing Range and "
              "the specified Range was removed. See "
              "https://www.chromestatus.com/features/6680566019653632 for more "
              "details.";
 
-    case UseCounter::SubtleCryptoOnlyStrictSecureContextCheckFailed:
-      return String::format(
+    case UseCounter::kSubtleCryptoOnlyStrictSecureContextCheckFailed:
+      return String::Format(
           "Web Crypto API usage inside secure frames with non-secure ancestors "
           "is deprecated. The API will no longer be exposed in these contexts "
           "as of %s. See https://www.chromestatus.com/features/5030265697075200"
           " for more details.",
           milestoneString(M59));
 
-    case UseCounter::RtcpMuxPolicyNegotiate:
-      return String::format(
+    case UseCounter::kRtcpMuxPolicyNegotiate:
+      return String::Format(
           "The rtcpMuxPolicy option is being considered for "
           "removal and may be removed no earlier than %s. If you depend on it, "
           "please see https://www.chromestatus.com/features/5654810086866944 "
           "for more details.",
           milestoneString(M60));
 
-    case UseCounter::V8IDBFactory_WebkitGetDatabaseNames_Method:
+    case UseCounter::kV8IDBFactory_WebkitGetDatabaseNames_Method:
       return willBeRemoved("indexedDB.webkitGetDatabaseNames()", M60,
                            "5725741740195840");
 
-    case UseCounter::ChildSrcAllowedWorkerThatScriptSrcBlocked:
+    case UseCounter::kChildSrcAllowedWorkerThatScriptSrcBlocked:
       return replacedWillBeRemoved("The 'child-src' directive",
                                    "the 'script-src' directive for Workers",
                                    M60, "5922594955984896");
 
-    case UseCounter::CanRequestURLHTTPContainingNewline:
-      return String::format(
+    case UseCounter::kCanRequestURLHTTPContainingNewline:
+      return String::Format(
           "Resource requests whose URLs contain raw newline characters are "
           "deprecated, and may be blocked in %s. Please remove newlines from "
           "places like element attribute values in order to continue loading "

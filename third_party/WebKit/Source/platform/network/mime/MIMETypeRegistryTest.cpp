@@ -9,19 +9,19 @@
 namespace blink {
 
 TEST(MIMETypeRegistryTest, MimeTypeTest) {
-  EXPECT_TRUE(MIMETypeRegistry::isSupportedImagePrefixedMIMEType("image/gif"));
-  EXPECT_TRUE(MIMETypeRegistry::isSupportedImageResourceMIMEType("image/gif"));
-  EXPECT_TRUE(MIMETypeRegistry::isSupportedImagePrefixedMIMEType("Image/Gif"));
-  EXPECT_TRUE(MIMETypeRegistry::isSupportedImageResourceMIMEType("Image/Gif"));
-  static const UChar upper16[] = {0x0049, 0x006d, 0x0061, 0x0067,
-                                  0x0065, 0x002f, 0x0067, 0x0069,
-                                  0x0066, 0};  // Image/gif in UTF16
+  EXPECT_TRUE(MIMETypeRegistry::IsSupportedImagePrefixedMIMEType("image/gif"));
+  EXPECT_TRUE(MIMETypeRegistry::IsSupportedImageResourceMIMEType("image/gif"));
+  EXPECT_TRUE(MIMETypeRegistry::IsSupportedImagePrefixedMIMEType("Image/Gif"));
+  EXPECT_TRUE(MIMETypeRegistry::IsSupportedImageResourceMIMEType("Image/Gif"));
+  static const UChar kUpper16[] = {0x0049, 0x006d, 0x0061, 0x0067,
+                                   0x0065, 0x002f, 0x0067, 0x0069,
+                                   0x0066, 0};  // Image/gif in UTF16
   EXPECT_TRUE(
-      MIMETypeRegistry::isSupportedImagePrefixedMIMEType(String(upper16)));
+      MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(String(kUpper16)));
   EXPECT_TRUE(
-      MIMETypeRegistry::isSupportedImagePrefixedMIMEType("image/svg+xml"));
+      MIMETypeRegistry::IsSupportedImagePrefixedMIMEType("image/svg+xml"));
   EXPECT_FALSE(
-      MIMETypeRegistry::isSupportedImageResourceMIMEType("image/svg+xml"));
+      MIMETypeRegistry::IsSupportedImageResourceMIMEType("image/svg+xml"));
 }
 
 TEST(MIMETypeRegistryTest, PluginMimeTypes) {
@@ -29,9 +29,9 @@ TEST(MIMETypeRegistryTest, PluginMimeTypes) {
   // extensions, ensure that the MIMETypeRegistry already contains
   // the extensions used by common PPAPI plugins.
   EXPECT_EQ("application/pdf",
-            MIMETypeRegistry::getWellKnownMIMETypeForExtension("pdf").utf8());
+            MIMETypeRegistry::GetWellKnownMIMETypeForExtension("pdf").Utf8());
   EXPECT_EQ("application/x-shockwave-flash",
-            MIMETypeRegistry::getWellKnownMIMETypeForExtension("swf").utf8());
+            MIMETypeRegistry::GetWellKnownMIMETypeForExtension("swf").Utf8());
 }
 
 }  // namespace blink

@@ -7,64 +7,64 @@
 namespace blink {
 
 OpenTypeCapsSupport::OpenTypeCapsSupport()
-    : m_harfBuzzFace(nullptr),
-      m_requestedCaps(FontDescription::CapsNormal),
-      m_fontSupport(FontSupport::Full),
-      m_capsSynthesis(CapsSynthesis::None) {}
+    : harf_buzz_face_(nullptr),
+      requested_caps_(FontDescription::kCapsNormal),
+      font_support_(FontSupport::kFull),
+      caps_synthesis_(CapsSynthesis::kNone) {}
 
 OpenTypeCapsSupport::OpenTypeCapsSupport(
-    const HarfBuzzFace* harfBuzzFace,
-    FontDescription::FontVariantCaps requestedCaps,
+    const HarfBuzzFace* harf_buzz_face,
+    FontDescription::FontVariantCaps requested_caps,
     hb_script_t script)
-    : m_harfBuzzFace(harfBuzzFace),
-      m_requestedCaps(requestedCaps),
-      m_fontSupport(FontSupport::Full),
-      m_capsSynthesis(CapsSynthesis::None) {
-  if (requestedCaps != FontDescription::CapsNormal)
-    determineFontSupport(script);
+    : harf_buzz_face_(harf_buzz_face),
+      requested_caps_(requested_caps),
+      font_support_(FontSupport::kFull),
+      caps_synthesis_(CapsSynthesis::kNone) {
+  if (requested_caps != FontDescription::kCapsNormal)
+    DetermineFontSupport(script);
 }
 
-FontDescription::FontVariantCaps OpenTypeCapsSupport::fontFeatureToUse(
-    SmallCapsIterator::SmallCapsBehavior sourceTextCase) {
-  if (m_fontSupport == FontSupport::Full)
-    return m_requestedCaps;
+FontDescription::FontVariantCaps OpenTypeCapsSupport::FontFeatureToUse(
+    SmallCapsIterator::SmallCapsBehavior source_text_case) {
+  if (font_support_ == FontSupport::kFull)
+    return requested_caps_;
 
-  if (m_fontSupport == FontSupport::Fallback) {
-    if (m_requestedCaps == FontDescription::FontVariantCaps::AllPetiteCaps)
-      return FontDescription::FontVariantCaps::AllSmallCaps;
+  if (font_support_ == FontSupport::kFallback) {
+    if (requested_caps_ == FontDescription::FontVariantCaps::kAllPetiteCaps)
+      return FontDescription::FontVariantCaps::kAllSmallCaps;
 
-    if (m_requestedCaps == FontDescription::FontVariantCaps::PetiteCaps ||
-        (m_requestedCaps == FontDescription::FontVariantCaps::Unicase &&
-         sourceTextCase == SmallCapsIterator::SmallCapsSameCase))
-      return FontDescription::FontVariantCaps::SmallCaps;
+    if (requested_caps_ == FontDescription::FontVariantCaps::kPetiteCaps ||
+        (requested_caps_ == FontDescription::FontVariantCaps::kUnicase &&
+         source_text_case == SmallCapsIterator::kSmallCapsSameCase))
+      return FontDescription::FontVariantCaps::kSmallCaps;
   }
 
-  return FontDescription::FontVariantCaps::CapsNormal;
+  return FontDescription::FontVariantCaps::kCapsNormal;
 }
 
-bool OpenTypeCapsSupport::needsRunCaseSplitting() {
+bool OpenTypeCapsSupport::NeedsRunCaseSplitting() {
   // Lack of titling case support is ignored, titling case is not synthesized.
-  return m_fontSupport != FontSupport::Full &&
-         m_requestedCaps != FontDescription::TitlingCaps;
+  return font_support_ != FontSupport::kFull &&
+         requested_caps_ != FontDescription::kTitlingCaps;
 }
 
-bool OpenTypeCapsSupport::needsSyntheticFont(
-    SmallCapsIterator::SmallCapsBehavior runCase) {
-  if (m_fontSupport == FontSupport::Full)
+bool OpenTypeCapsSupport::NeedsSyntheticFont(
+    SmallCapsIterator::SmallCapsBehavior run_case) {
+  if (font_support_ == FontSupport::kFull)
     return false;
 
-  if (m_requestedCaps == FontDescription::TitlingCaps)
+  if (requested_caps_ == FontDescription::kTitlingCaps)
     return false;
 
-  if (m_fontSupport == FontSupport::None) {
-    if (runCase == SmallCapsIterator::SmallCapsUppercaseNeeded &&
-        (m_capsSynthesis == CapsSynthesis::LowerToSmallCaps ||
-         m_capsSynthesis == CapsSynthesis::BothToSmallCaps))
+  if (font_support_ == FontSupport::kNone) {
+    if (run_case == SmallCapsIterator::kSmallCapsUppercaseNeeded &&
+        (caps_synthesis_ == CapsSynthesis::kLowerToSmallCaps ||
+         caps_synthesis_ == CapsSynthesis::kBothToSmallCaps))
       return true;
 
-    if (runCase == SmallCapsIterator::SmallCapsSameCase &&
-        (m_capsSynthesis == CapsSynthesis::UpperToSmallCaps ||
-         m_capsSynthesis == CapsSynthesis::BothToSmallCaps)) {
+    if (run_case == SmallCapsIterator::kSmallCapsSameCase &&
+        (caps_synthesis_ == CapsSynthesis::kUpperToSmallCaps ||
+         caps_synthesis_ == CapsSynthesis::kBothToSmallCaps)) {
       return true;
     }
   }
@@ -72,86 +72,86 @@ bool OpenTypeCapsSupport::needsSyntheticFont(
   return false;
 }
 
-CaseMapIntend OpenTypeCapsSupport::needsCaseChange(
-    SmallCapsIterator::SmallCapsBehavior runCase) {
-  CaseMapIntend caseMapIntend = CaseMapIntend::KeepSameCase;
+CaseMapIntend OpenTypeCapsSupport::NeedsCaseChange(
+    SmallCapsIterator::SmallCapsBehavior run_case) {
+  CaseMapIntend case_map_intend = CaseMapIntend::kKeepSameCase;
 
-  if (m_fontSupport == FontSupport::Full)
-    return caseMapIntend;
+  if (font_support_ == FontSupport::kFull)
+    return case_map_intend;
 
-  switch (runCase) {
-    case SmallCapsIterator::SmallCapsSameCase:
-      caseMapIntend =
-          m_fontSupport == FontSupport::Fallback &&
-                  (m_capsSynthesis == CapsSynthesis::BothToSmallCaps ||
-                   m_capsSynthesis == CapsSynthesis::UpperToSmallCaps)
-              ? CaseMapIntend::LowerCase
-              : CaseMapIntend::KeepSameCase;
+  switch (run_case) {
+    case SmallCapsIterator::kSmallCapsSameCase:
+      case_map_intend =
+          font_support_ == FontSupport::kFallback &&
+                  (caps_synthesis_ == CapsSynthesis::kBothToSmallCaps ||
+                   caps_synthesis_ == CapsSynthesis::kUpperToSmallCaps)
+              ? CaseMapIntend::kLowerCase
+              : CaseMapIntend::kKeepSameCase;
       break;
-    case SmallCapsIterator::SmallCapsUppercaseNeeded:
-      caseMapIntend =
-          m_fontSupport != FontSupport::Fallback &&
-                  (m_capsSynthesis == CapsSynthesis::LowerToSmallCaps ||
-                   m_capsSynthesis == CapsSynthesis::BothToSmallCaps)
-              ? CaseMapIntend::UpperCase
-              : CaseMapIntend::KeepSameCase;
+    case SmallCapsIterator::kSmallCapsUppercaseNeeded:
+      case_map_intend =
+          font_support_ != FontSupport::kFallback &&
+                  (caps_synthesis_ == CapsSynthesis::kLowerToSmallCaps ||
+                   caps_synthesis_ == CapsSynthesis::kBothToSmallCaps)
+              ? CaseMapIntend::kUpperCase
+              : CaseMapIntend::kKeepSameCase;
       break;
     default:
       break;
   }
-  return caseMapIntend;
+  return case_map_intend;
 }
 
-void OpenTypeCapsSupport::determineFontSupport(hb_script_t script) {
-  switch (m_requestedCaps) {
-    case FontDescription::SmallCaps:
-      if (!supportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
-        m_fontSupport = FontSupport::None;
-        m_capsSynthesis = CapsSynthesis::LowerToSmallCaps;
+void OpenTypeCapsSupport::DetermineFontSupport(hb_script_t script) {
+  switch (requested_caps_) {
+    case FontDescription::kSmallCaps:
+      if (!SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
+        font_support_ = FontSupport::kNone;
+        caps_synthesis_ = CapsSynthesis::kLowerToSmallCaps;
       }
       break;
-    case FontDescription::AllSmallCaps:
-      if (!(supportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
-            supportsOpenTypeFeature(script, HB_TAG('c', '2', 's', 'c')))) {
-        m_fontSupport = FontSupport::None;
-        m_capsSynthesis = CapsSynthesis::BothToSmallCaps;
+    case FontDescription::kAllSmallCaps:
+      if (!(SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
+            SupportsOpenTypeFeature(script, HB_TAG('c', '2', 's', 'c')))) {
+        font_support_ = FontSupport::kNone;
+        caps_synthesis_ = CapsSynthesis::kBothToSmallCaps;
       }
       break;
-    case FontDescription::PetiteCaps:
-      if (!supportsOpenTypeFeature(script, HB_TAG('p', 'c', 'a', 'p'))) {
-        if (supportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
-          m_fontSupport = FontSupport::Fallback;
+    case FontDescription::kPetiteCaps:
+      if (!SupportsOpenTypeFeature(script, HB_TAG('p', 'c', 'a', 'p'))) {
+        if (SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
+          font_support_ = FontSupport::kFallback;
         } else {
-          m_fontSupport = FontSupport::None;
-          m_capsSynthesis = CapsSynthesis::LowerToSmallCaps;
+          font_support_ = FontSupport::kNone;
+          caps_synthesis_ = CapsSynthesis::kLowerToSmallCaps;
         }
       }
       break;
-    case FontDescription::AllPetiteCaps:
-      if (!(supportsOpenTypeFeature(script, HB_TAG('p', 'c', 'a', 'p')) &&
-            supportsOpenTypeFeature(script, HB_TAG('c', '2', 'p', 'c')))) {
-        if (supportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
-            supportsOpenTypeFeature(script, HB_TAG('c', '2', 's', 'c'))) {
-          m_fontSupport = FontSupport::Fallback;
+    case FontDescription::kAllPetiteCaps:
+      if (!(SupportsOpenTypeFeature(script, HB_TAG('p', 'c', 'a', 'p')) &&
+            SupportsOpenTypeFeature(script, HB_TAG('c', '2', 'p', 'c')))) {
+        if (SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p')) &&
+            SupportsOpenTypeFeature(script, HB_TAG('c', '2', 's', 'c'))) {
+          font_support_ = FontSupport::kFallback;
         } else {
-          m_fontSupport = FontSupport::None;
-          m_capsSynthesis = CapsSynthesis::BothToSmallCaps;
+          font_support_ = FontSupport::kNone;
+          caps_synthesis_ = CapsSynthesis::kBothToSmallCaps;
         }
       }
       break;
-    case FontDescription::Unicase:
-      if (!supportsOpenTypeFeature(script, HB_TAG('u', 'n', 'i', 'c'))) {
-        m_capsSynthesis = CapsSynthesis::UpperToSmallCaps;
-        if (supportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
-          m_fontSupport = FontSupport::Fallback;
+    case FontDescription::kUnicase:
+      if (!SupportsOpenTypeFeature(script, HB_TAG('u', 'n', 'i', 'c'))) {
+        caps_synthesis_ = CapsSynthesis::kUpperToSmallCaps;
+        if (SupportsOpenTypeFeature(script, HB_TAG('s', 'm', 'c', 'p'))) {
+          font_support_ = FontSupport::kFallback;
         } else {
-          m_fontSupport = FontSupport::None;
+          font_support_ = FontSupport::kNone;
         }
       }
       break;
-    case FontDescription::TitlingCaps:
-      if (!supportsOpenTypeFeature(script, HB_TAG('t', 'i', 't', 'l'))) {
-        m_fontSupport = FontSupport::None;
+    case FontDescription::kTitlingCaps:
+      if (!SupportsOpenTypeFeature(script, HB_TAG('t', 'i', 't', 'l'))) {
+        font_support_ = FontSupport::kNone;
       }
       break;
     default:

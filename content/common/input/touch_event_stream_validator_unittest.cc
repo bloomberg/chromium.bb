@@ -122,13 +122,13 @@ TEST(TouchEventStreamValidator, EmptyEvent) {
 
 TEST(TouchEventStreamValidator, InvalidEventType) {
   TouchEventStreamValidator validator;
-  WebTouchEvent event(WebInputEvent::GestureScrollBegin,
-                      WebInputEvent::NoModifiers,
-                      WebInputEvent::TimeStampForTesting);
+  WebTouchEvent event(WebInputEvent::kGestureScrollBegin,
+                      WebInputEvent::kNoModifiers,
+                      WebInputEvent::kTimeStampForTesting);
   std::string error_msg;
 
-  event.touchesLength = 1;
-  event.touches[0].state = WebTouchPoint::StatePressed;
+  event.touches_length = 1;
+  event.touches[0].state = WebTouchPoint::kStatePressed;
 
   EXPECT_FALSE(validator.Validate(event, &error_msg));
   EXPECT_FALSE(error_msg.empty());
@@ -139,13 +139,13 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
   std::string error_msg;
 
   WebInputEvent::Type kTouchTypes[4] = {
-      WebInputEvent::TouchStart, WebInputEvent::TouchMove,
-      WebInputEvent::TouchEnd, WebInputEvent::TouchCancel,
+      WebInputEvent::kTouchStart, WebInputEvent::kTouchMove,
+      WebInputEvent::kTouchEnd, WebInputEvent::kTouchCancel,
   };
 
   WebTouchPoint::State kValidTouchPointStatesForType[4] = {
-      WebTouchPoint::StatePressed, WebTouchPoint::StateMoved,
-      WebTouchPoint::StateReleased, WebTouchPoint::StateCancelled,
+      WebTouchPoint::kStatePressed, WebTouchPoint::kStateMoved,
+      WebTouchPoint::kStateReleased, WebTouchPoint::kStateCancelled,
   };
 
   SyntheticWebTouchEvent start;
@@ -155,12 +155,11 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
     EXPECT_TRUE(validator.Validate(start, &error_msg));
     EXPECT_TRUE(error_msg.empty());
 
-    WebTouchEvent event(kTouchTypes[i], WebInputEvent::NoModifiers,
-                        WebInputEvent::TimeStampForTesting);
-    event.touchesLength = 1;
-    for (size_t j = WebTouchPoint::StateUndefined;
-         j <= WebTouchPoint::StateCancelled;
-         ++j) {
+    WebTouchEvent event(kTouchTypes[i], WebInputEvent::kNoModifiers,
+                        WebInputEvent::kTimeStampForTesting);
+    event.touches_length = 1;
+    for (size_t j = WebTouchPoint::kStateUndefined;
+         j <= WebTouchPoint::kStateCancelled; ++j) {
       event.touches[0].state = static_cast<WebTouchPoint::State>(j);
       if (event.touches[0].state == kValidTouchPointStatesForType[i]) {
         EXPECT_TRUE(validator.Validate(event, &error_msg));

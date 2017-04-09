@@ -22,70 +22,68 @@ class PLATFORM_EXPORT DoubleRect {
  public:
   DoubleRect() {}
   DoubleRect(const DoublePoint& location, const DoubleSize& size)
-      : m_location(location), m_size(size) {}
+      : location_(location), size_(size) {}
   DoubleRect(double x, double y, double width, double height)
-      : m_location(DoublePoint(x, y)), m_size(DoubleSize(width, height)) {}
+      : location_(DoublePoint(x, y)), size_(DoubleSize(width, height)) {}
   DoubleRect(const IntRect&);
   DoubleRect(const FloatRect&);
   DoubleRect(const LayoutRect&);
 
-  DoublePoint location() const { return m_location; }
-  DoubleSize size() const { return m_size; }
+  DoublePoint Location() const { return location_; }
+  DoubleSize size() const { return size_; }
 
-  void setLocation(const DoublePoint& location) { m_location = location; }
-  void setSize(const DoubleSize& size) { m_size = size; }
+  void SetLocation(const DoublePoint& location) { location_ = location; }
+  void SetSize(const DoubleSize& size) { size_ = size; }
 
-  double x() const { return m_location.x(); }
-  double y() const { return m_location.y(); }
-  double maxX() const { return x() + width(); }
-  double maxY() const { return y() + height(); }
-  double width() const { return m_size.width(); }
-  double height() const { return m_size.height(); }
+  double X() const { return location_.X(); }
+  double Y() const { return location_.Y(); }
+  double MaxX() const { return X() + Width(); }
+  double MaxY() const { return Y() + Height(); }
+  double Width() const { return size_.Width(); }
+  double Height() const { return size_.Height(); }
 
-  void setX(double x) { m_location.setX(x); }
-  void setY(double y) { m_location.setY(y); }
-  void setWidth(double width) { m_size.setWidth(width); }
-  void setHeight(double height) { m_size.setHeight(height); }
+  void SetX(double x) { location_.SetX(x); }
+  void SetY(double y) { location_.SetY(y); }
+  void SetWidth(double width) { size_.SetWidth(width); }
+  void SetHeight(double height) { size_.SetHeight(height); }
 
-  bool isEmpty() const { return m_size.isEmpty(); }
-  bool isZero() const { return m_size.isZero(); }
+  bool IsEmpty() const { return size_.IsEmpty(); }
+  bool IsZero() const { return size_.IsZero(); }
 
-  void move(const DoubleSize& delta) { m_location += delta; }
-  void move(double dx, double dy) { m_location.move(dx, dy); }
-  void moveBy(const DoublePoint& delta) {
-    m_location.move(delta.x(), delta.y());
+  void Move(const DoubleSize& delta) { location_ += delta; }
+  void Move(double dx, double dy) { location_.Move(dx, dy); }
+  void MoveBy(const DoublePoint& delta) {
+    location_.Move(delta.X(), delta.Y());
   }
 
-  DoublePoint minXMinYCorner() const {
-    return m_location;
-  }  // typically topLeft
-  DoublePoint maxXMinYCorner() const {
-    return DoublePoint(m_location.x() + m_size.width(), m_location.y());
+  DoublePoint MinXMinYCorner() const { return location_; }  // typically topLeft
+  DoublePoint MaxXMinYCorner() const {
+    return DoublePoint(location_.X() + size_.Width(), location_.Y());
   }  // typically topRight
-  DoublePoint minXMaxYCorner() const {
-    return DoublePoint(m_location.x(), m_location.y() + m_size.height());
+  DoublePoint MinXMaxYCorner() const {
+    return DoublePoint(location_.X(), location_.Y() + size_.Height());
   }  // typically bottomLeft
-  DoublePoint maxXMaxYCorner() const {
-    return DoublePoint(m_location.x() + m_size.width(),
-                       m_location.y() + m_size.height());
+  DoublePoint MaxXMaxYCorner() const {
+    return DoublePoint(location_.X() + size_.Width(),
+                       location_.Y() + size_.Height());
   }  // typically bottomRight
 
-  void scale(float s) { scale(s, s); }
-  void scale(float sx, float sy);
+  void Scale(float s) { Scale(s, s); }
+  void Scale(float sx, float sy);
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  DoublePoint m_location;
-  DoubleSize m_size;
+  DoublePoint location_;
+  DoubleSize size_;
 };
 
-PLATFORM_EXPORT IntRect enclosingIntRect(const DoubleRect&);
+PLATFORM_EXPORT IntRect EnclosingIntRect(const DoubleRect&);
 
 // Returns a valid IntRect contained within the given DoubleRect.
-PLATFORM_EXPORT IntRect enclosedIntRect(const DoubleRect&);
+PLATFORM_EXPORT IntRect EnclosedIntRect(const DoubleRect&);
 
-PLATFORM_EXPORT IntRect roundedIntRect(const DoubleRect&);
+PLATFORM_EXPORT IntRect RoundedIntRect(const DoubleRect&);
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.

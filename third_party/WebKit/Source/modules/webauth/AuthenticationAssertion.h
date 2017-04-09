@@ -17,44 +17,44 @@ class AuthenticationAssertion final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AuthenticationAssertion* create(ScopedCredential* credential,
-                                         DOMArrayBuffer* clientData,
-                                         DOMArrayBuffer* authenticatorData,
+  static AuthenticationAssertion* Create(ScopedCredential* credential,
+                                         DOMArrayBuffer* client_data,
+                                         DOMArrayBuffer* authenticator_data,
                                          DOMArrayBuffer* signature) {
-    return new AuthenticationAssertion(credential, clientData,
-                                       authenticatorData, signature);
+    return new AuthenticationAssertion(credential, client_data,
+                                       authenticator_data, signature);
   }
 
   AuthenticationAssertion(ScopedCredential* credential,
-                          DOMArrayBuffer* clientData,
-                          DOMArrayBuffer* authenticatorData,
+                          DOMArrayBuffer* client_data,
+                          DOMArrayBuffer* authenticator_data,
                           DOMArrayBuffer* signature)
-      : m_credential(credential),
-        m_clientData(clientData),
-        m_authenticatorData(authenticatorData),
-        m_signature(signature) {}
+      : credential_(credential),
+        client_data_(client_data),
+        authenticator_data_(authenticator_data),
+        signature_(signature) {}
 
   virtual ~AuthenticationAssertion() {}
 
-  ScopedCredential* credential() const { return m_credential.get(); }
-  DOMArrayBuffer* clientData() const { return m_clientData.get(); }
+  ScopedCredential* credential() const { return credential_.Get(); }
+  DOMArrayBuffer* clientData() const { return client_data_.Get(); }
   DOMArrayBuffer* authenticatorData() const {
-    return m_authenticatorData.get();
+    return authenticator_data_.Get();
   }
-  DOMArrayBuffer* signature() const { return m_signature.get(); }
+  DOMArrayBuffer* signature() const { return signature_.Get(); }
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_credential);
-    visitor->trace(m_clientData);
-    visitor->trace(m_authenticatorData);
-    visitor->trace(m_signature);
+    visitor->Trace(credential_);
+    visitor->Trace(client_data_);
+    visitor->Trace(authenticator_data_);
+    visitor->Trace(signature_);
   }
 
  private:
-  const Member<ScopedCredential> m_credential;
-  const Member<DOMArrayBuffer> m_clientData;
-  const Member<DOMArrayBuffer> m_authenticatorData;
-  const Member<DOMArrayBuffer> m_signature;
+  const Member<ScopedCredential> credential_;
+  const Member<DOMArrayBuffer> client_data_;
+  const Member<DOMArrayBuffer> authenticator_data_;
+  const Member<DOMArrayBuffer> signature_;
 };
 
 }  // namespace blink

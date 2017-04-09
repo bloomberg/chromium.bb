@@ -30,136 +30,136 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGMarkerOrientType>() {
+GetStaticStringEntries<SVGMarkerOrientType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
-    entries.push_back(std::make_pair(SVGMarkerOrientAuto, "auto"));
-    entries.push_back(std::make_pair(SVGMarkerOrientAngle, "angle"));
+  if (entries.IsEmpty()) {
+    entries.push_back(std::make_pair(kSVGMarkerOrientAuto, "auto"));
+    entries.push_back(std::make_pair(kSVGMarkerOrientAngle, "angle"));
     entries.push_back(
-        std::make_pair(SVGMarkerOrientAutoStartReverse, "auto-start-reverse"));
+        std::make_pair(kSVGMarkerOrientAutoStartReverse, "auto-start-reverse"));
   }
   return entries;
 }
 
 template <>
-unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>() {
-  return SVGMarkerOrientAngle;
+unsigned short GetMaxExposedEnumValue<SVGMarkerOrientType>() {
+  return kSVGMarkerOrientAngle;
 }
 
 SVGMarkerOrientEnumeration::SVGMarkerOrientEnumeration(SVGAngle* angle)
-    : SVGEnumeration<SVGMarkerOrientType>(SVGMarkerOrientAngle),
-      m_angle(angle) {}
+    : SVGEnumeration<SVGMarkerOrientType>(kSVGMarkerOrientAngle),
+      angle_(angle) {}
 
 SVGMarkerOrientEnumeration::~SVGMarkerOrientEnumeration() {}
 
 DEFINE_TRACE(SVGMarkerOrientEnumeration) {
-  visitor->trace(m_angle);
-  SVGEnumeration<SVGMarkerOrientType>::trace(visitor);
+  visitor->Trace(angle_);
+  SVGEnumeration<SVGMarkerOrientType>::Trace(visitor);
 }
 
-void SVGMarkerOrientEnumeration::notifyChange() {
-  DCHECK(m_angle);
-  m_angle->orientTypeChanged();
+void SVGMarkerOrientEnumeration::NotifyChange() {
+  DCHECK(angle_);
+  angle_->OrientTypeChanged();
 }
 
-void SVGMarkerOrientEnumeration::add(SVGPropertyBase*, SVGElement*) {
+void SVGMarkerOrientEnumeration::Add(SVGPropertyBase*, SVGElement*) {
   // SVGMarkerOrientEnumeration is only animated via SVGAngle
   NOTREACHED();
 }
 
-void SVGMarkerOrientEnumeration::calculateAnimatedValue(
+void SVGMarkerOrientEnumeration::CalculateAnimatedValue(
     SVGAnimationElement*,
     float percentage,
-    unsigned repeatCount,
+    unsigned repeat_count,
     SVGPropertyBase* from,
     SVGPropertyBase* to,
-    SVGPropertyBase* toAtEndOfDurationValue,
-    SVGElement* contextElement) {
+    SVGPropertyBase* to_at_end_of_duration_value,
+    SVGElement* context_element) {
   // SVGMarkerOrientEnumeration is only animated via SVGAngle
   NOTREACHED();
 }
 
-float SVGMarkerOrientEnumeration::calculateDistance(
+float SVGMarkerOrientEnumeration::CalculateDistance(
     SVGPropertyBase* to,
-    SVGElement* contextElement) {
+    SVGElement* context_element) {
   // SVGMarkerOrientEnumeration is only animated via SVGAngle
   NOTREACHED();
   return -1.0;
 }
 
 SVGAngle::SVGAngle()
-    : m_unitType(kSvgAngletypeUnspecified),
-      m_valueInSpecifiedUnits(0),
-      m_orientType(SVGMarkerOrientEnumeration::create(this)) {}
+    : unit_type_(kSvgAngletypeUnspecified),
+      value_in_specified_units_(0),
+      orient_type_(SVGMarkerOrientEnumeration::Create(this)) {}
 
-SVGAngle::SVGAngle(SVGAngleType unitType,
-                   float valueInSpecifiedUnits,
-                   SVGMarkerOrientType orientType)
-    : m_unitType(unitType),
-      m_valueInSpecifiedUnits(valueInSpecifiedUnits),
-      m_orientType(SVGMarkerOrientEnumeration::create(this)) {
-  m_orientType->setEnumValue(orientType);
+SVGAngle::SVGAngle(SVGAngleType unit_type,
+                   float value_in_specified_units,
+                   SVGMarkerOrientType orient_type)
+    : unit_type_(unit_type),
+      value_in_specified_units_(value_in_specified_units),
+      orient_type_(SVGMarkerOrientEnumeration::Create(this)) {
+  orient_type_->SetEnumValue(orient_type);
 }
 
 SVGAngle::~SVGAngle() {}
 
 DEFINE_TRACE(SVGAngle) {
-  visitor->trace(m_orientType);
-  SVGPropertyHelper<SVGAngle>::trace(visitor);
+  visitor->Trace(orient_type_);
+  SVGPropertyHelper<SVGAngle>::Trace(visitor);
 }
 
-SVGAngle* SVGAngle::clone() const {
-  return new SVGAngle(m_unitType, m_valueInSpecifiedUnits,
-                      m_orientType->enumValue());
+SVGAngle* SVGAngle::Clone() const {
+  return new SVGAngle(unit_type_, value_in_specified_units_,
+                      orient_type_->EnumValue());
 }
 
-float SVGAngle::value() const {
-  switch (m_unitType) {
+float SVGAngle::Value() const {
+  switch (unit_type_) {
     case kSvgAngletypeGrad:
-      return grad2deg(m_valueInSpecifiedUnits);
+      return grad2deg(value_in_specified_units_);
     case kSvgAngletypeRad:
-      return rad2deg(m_valueInSpecifiedUnits);
+      return rad2deg(value_in_specified_units_);
     case kSvgAngletypeTurn:
-      return turn2deg(m_valueInSpecifiedUnits);
+      return turn2deg(value_in_specified_units_);
     case kSvgAngletypeUnspecified:
     case kSvgAngletypeUnknown:
     case kSvgAngletypeDeg:
-      return m_valueInSpecifiedUnits;
+      return value_in_specified_units_;
   }
 
   NOTREACHED();
   return 0;
 }
 
-void SVGAngle::setValue(float value) {
-  switch (m_unitType) {
+void SVGAngle::SetValue(float value) {
+  switch (unit_type_) {
     case kSvgAngletypeGrad:
-      m_valueInSpecifiedUnits = deg2grad(value);
+      value_in_specified_units_ = deg2grad(value);
       break;
     case kSvgAngletypeRad:
-      m_valueInSpecifiedUnits = deg2rad(value);
+      value_in_specified_units_ = deg2rad(value);
       break;
     case kSvgAngletypeTurn:
-      m_valueInSpecifiedUnits = deg2turn(value);
+      value_in_specified_units_ = deg2turn(value);
       break;
     case kSvgAngletypeUnspecified:
     case kSvgAngletypeUnknown:
     case kSvgAngletypeDeg:
-      m_valueInSpecifiedUnits = value;
+      value_in_specified_units_ = value;
       break;
   }
-  m_orientType->setEnumValue(SVGMarkerOrientAngle);
+  orient_type_->SetEnumValue(kSVGMarkerOrientAngle);
 }
 
 template <typename CharType>
-static SVGAngle::SVGAngleType stringToAngleType(const CharType*& ptr,
+static SVGAngle::SVGAngleType StringToAngleType(const CharType*& ptr,
                                                 const CharType* end) {
   // If there's no unit given, the angle type is unspecified.
   if (ptr == end)
     return SVGAngle::kSvgAngletypeUnspecified;
 
   SVGAngle::SVGAngleType type = SVGAngle::kSvgAngletypeUnknown;
-  if (isHTMLSpace<CharType>(ptr[0])) {
+  if (IsHTMLSpace<CharType>(ptr[0])) {
     type = SVGAngle::kSvgAngletypeUnspecified;
     ptr++;
   } else if (end - ptr >= 3) {
@@ -181,33 +181,33 @@ static SVGAngle::SVGAngleType stringToAngleType(const CharType*& ptr,
     }
   }
 
-  if (!skipOptionalSVGSpaces(ptr, end))
+  if (!SkipOptionalSVGSpaces(ptr, end))
     return type;
 
   return SVGAngle::kSvgAngletypeUnknown;
 }
 
-String SVGAngle::valueAsString() const {
-  switch (m_unitType) {
+String SVGAngle::ValueAsString() const {
+  switch (unit_type_) {
     case kSvgAngletypeDeg: {
-      DEFINE_STATIC_LOCAL(String, degString, ("deg"));
-      return String::number(m_valueInSpecifiedUnits) + degString;
+      DEFINE_STATIC_LOCAL(String, deg_string, ("deg"));
+      return String::Number(value_in_specified_units_) + deg_string;
     }
     case kSvgAngletypeRad: {
-      DEFINE_STATIC_LOCAL(String, radString, ("rad"));
-      return String::number(m_valueInSpecifiedUnits) + radString;
+      DEFINE_STATIC_LOCAL(String, rad_string, ("rad"));
+      return String::Number(value_in_specified_units_) + rad_string;
     }
     case kSvgAngletypeGrad: {
-      DEFINE_STATIC_LOCAL(String, gradString, ("grad"));
-      return String::number(m_valueInSpecifiedUnits) + gradString;
+      DEFINE_STATIC_LOCAL(String, grad_string, ("grad"));
+      return String::Number(value_in_specified_units_) + grad_string;
     }
     case kSvgAngletypeTurn: {
-      DEFINE_STATIC_LOCAL(String, turnString, ("turn"));
-      return String::number(m_valueInSpecifiedUnits) + turnString;
+      DEFINE_STATIC_LOCAL(String, turn_string, ("turn"));
+      return String::Number(value_in_specified_units_) + turn_string;
     }
     case kSvgAngletypeUnspecified:
     case kSvgAngletypeUnknown:
-      return String::number(m_valueInSpecifiedUnits);
+      return String::Number(value_in_specified_units_);
   }
 
   NOTREACHED();
@@ -215,81 +215,82 @@ String SVGAngle::valueAsString() const {
 }
 
 template <typename CharType>
-static SVGParsingError parseValue(const String& value,
-                                  float& valueInSpecifiedUnits,
-                                  SVGAngle::SVGAngleType& unitType) {
-  const CharType* ptr = value.getCharacters<CharType>();
+static SVGParsingError ParseValue(const String& value,
+                                  float& value_in_specified_units,
+                                  SVGAngle::SVGAngleType& unit_type) {
+  const CharType* ptr = value.GetCharacters<CharType>();
   const CharType* end = ptr + value.length();
 
-  if (!parseNumber(ptr, end, valueInSpecifiedUnits, AllowLeadingWhitespace))
-    return SVGParsingError(SVGParseStatus::ExpectedAngle,
-                           ptr - value.getCharacters<CharType>());
+  if (!ParseNumber(ptr, end, value_in_specified_units, kAllowLeadingWhitespace))
+    return SVGParsingError(SVGParseStatus::kExpectedAngle,
+                           ptr - value.GetCharacters<CharType>());
 
-  unitType = stringToAngleType(ptr, end);
-  if (unitType == SVGAngle::kSvgAngletypeUnknown)
-    return SVGParsingError(SVGParseStatus::ExpectedAngle,
-                           ptr - value.getCharacters<CharType>());
+  unit_type = StringToAngleType(ptr, end);
+  if (unit_type == SVGAngle::kSvgAngletypeUnknown)
+    return SVGParsingError(SVGParseStatus::kExpectedAngle,
+                           ptr - value.GetCharacters<CharType>());
 
-  return SVGParseStatus::NoError;
+  return SVGParseStatus::kNoError;
 }
 
-SVGParsingError SVGAngle::setValueAsString(const String& value) {
-  if (value.isEmpty()) {
-    newValueSpecifiedUnits(kSvgAngletypeUnspecified, 0);
-    return SVGParseStatus::NoError;
+SVGParsingError SVGAngle::SetValueAsString(const String& value) {
+  if (value.IsEmpty()) {
+    NewValueSpecifiedUnits(kSvgAngletypeUnspecified, 0);
+    return SVGParseStatus::kNoError;
   }
 
   if (value == "auto") {
-    newValueSpecifiedUnits(kSvgAngletypeUnspecified, 0);
-    m_orientType->setEnumValue(SVGMarkerOrientAuto);
-    return SVGParseStatus::NoError;
+    NewValueSpecifiedUnits(kSvgAngletypeUnspecified, 0);
+    orient_type_->SetEnumValue(kSVGMarkerOrientAuto);
+    return SVGParseStatus::kNoError;
   }
   if (value == "auto-start-reverse") {
-    newValueSpecifiedUnits(kSvgAngletypeUnspecified, 0);
-    m_orientType->setEnumValue(SVGMarkerOrientAutoStartReverse);
-    return SVGParseStatus::NoError;
+    NewValueSpecifiedUnits(kSvgAngletypeUnspecified, 0);
+    orient_type_->SetEnumValue(kSVGMarkerOrientAutoStartReverse);
+    return SVGParseStatus::kNoError;
   }
 
-  float valueInSpecifiedUnits = 0;
-  SVGAngleType unitType = kSvgAngletypeUnknown;
+  float value_in_specified_units = 0;
+  SVGAngleType unit_type = kSvgAngletypeUnknown;
 
   SVGParsingError error;
-  if (value.is8Bit())
-    error = parseValue<LChar>(value, valueInSpecifiedUnits, unitType);
+  if (value.Is8Bit())
+    error = ParseValue<LChar>(value, value_in_specified_units, unit_type);
   else
-    error = parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
-  if (error != SVGParseStatus::NoError)
+    error = ParseValue<UChar>(value, value_in_specified_units, unit_type);
+  if (error != SVGParseStatus::kNoError)
     return error;
 
-  m_orientType->setEnumValue(SVGMarkerOrientAngle);
-  m_unitType = unitType;
-  m_valueInSpecifiedUnits = valueInSpecifiedUnits;
-  return SVGParseStatus::NoError;
+  orient_type_->SetEnumValue(kSVGMarkerOrientAngle);
+  unit_type_ = unit_type;
+  value_in_specified_units_ = value_in_specified_units;
+  return SVGParseStatus::kNoError;
 }
 
-void SVGAngle::newValueSpecifiedUnits(SVGAngleType unitType,
-                                      float valueInSpecifiedUnits) {
-  m_orientType->setEnumValue(SVGMarkerOrientAngle);
-  m_unitType = unitType;
-  m_valueInSpecifiedUnits = valueInSpecifiedUnits;
+void SVGAngle::NewValueSpecifiedUnits(SVGAngleType unit_type,
+                                      float value_in_specified_units) {
+  orient_type_->SetEnumValue(kSVGMarkerOrientAngle);
+  unit_type_ = unit_type;
+  value_in_specified_units_ = value_in_specified_units;
 }
 
-void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
-  if (unitType == m_unitType)
+void SVGAngle::ConvertToSpecifiedUnits(SVGAngleType unit_type) {
+  if (unit_type == unit_type_)
     return;
 
-  switch (m_unitType) {
+  switch (unit_type_) {
     case kSvgAngletypeTurn:
-      switch (unitType) {
+      switch (unit_type) {
         case kSvgAngletypeGrad:
-          m_valueInSpecifiedUnits = turn2grad(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = turn2grad(value_in_specified_units_);
           break;
         case kSvgAngletypeUnspecified:
         case kSvgAngletypeDeg:
-          m_valueInSpecifiedUnits = turn2deg(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = turn2deg(value_in_specified_units_);
           break;
         case kSvgAngletypeRad:
-          m_valueInSpecifiedUnits = deg2rad(turn2deg(m_valueInSpecifiedUnits));
+          value_in_specified_units_ =
+              deg2rad(turn2deg(value_in_specified_units_));
           break;
         case kSvgAngletypeTurn:
         case kSvgAngletypeUnknown:
@@ -298,16 +299,17 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
       }
       break;
     case kSvgAngletypeRad:
-      switch (unitType) {
+      switch (unit_type) {
         case kSvgAngletypeGrad:
-          m_valueInSpecifiedUnits = rad2grad(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = rad2grad(value_in_specified_units_);
           break;
         case kSvgAngletypeUnspecified:
         case kSvgAngletypeDeg:
-          m_valueInSpecifiedUnits = rad2deg(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = rad2deg(value_in_specified_units_);
           break;
         case kSvgAngletypeTurn:
-          m_valueInSpecifiedUnits = deg2turn(rad2deg(m_valueInSpecifiedUnits));
+          value_in_specified_units_ =
+              deg2turn(rad2deg(value_in_specified_units_));
           break;
         case kSvgAngletypeRad:
         case kSvgAngletypeUnknown:
@@ -316,16 +318,16 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
       }
       break;
     case kSvgAngletypeGrad:
-      switch (unitType) {
+      switch (unit_type) {
         case kSvgAngletypeRad:
-          m_valueInSpecifiedUnits = grad2rad(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = grad2rad(value_in_specified_units_);
           break;
         case kSvgAngletypeUnspecified:
         case kSvgAngletypeDeg:
-          m_valueInSpecifiedUnits = grad2deg(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = grad2deg(value_in_specified_units_);
           break;
         case kSvgAngletypeTurn:
-          m_valueInSpecifiedUnits = grad2turn(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = grad2turn(value_in_specified_units_);
           break;
         case kSvgAngletypeGrad:
         case kSvgAngletypeUnknown:
@@ -337,15 +339,15 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
     // Spec: For angles, a unitless value is treated the same as if degrees were
     // specified.
     case kSvgAngletypeDeg:
-      switch (unitType) {
+      switch (unit_type) {
         case kSvgAngletypeRad:
-          m_valueInSpecifiedUnits = deg2rad(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = deg2rad(value_in_specified_units_);
           break;
         case kSvgAngletypeGrad:
-          m_valueInSpecifiedUnits = deg2grad(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = deg2grad(value_in_specified_units_);
           break;
         case kSvgAngletypeTurn:
-          m_valueInSpecifiedUnits = deg2turn(m_valueInSpecifiedUnits);
+          value_in_specified_units_ = deg2turn(value_in_specified_units_);
           break;
         case kSvgAngletypeUnspecified:
         case kSvgAngletypeDeg:
@@ -360,89 +362,89 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
       break;
   }
 
-  m_unitType = unitType;
-  m_orientType->setEnumValue(SVGMarkerOrientAngle);
+  unit_type_ = unit_type;
+  orient_type_->SetEnumValue(kSVGMarkerOrientAngle);
 }
 
-void SVGAngle::add(SVGPropertyBase* other, SVGElement*) {
-  SVGAngle* otherAngle = toSVGAngle(other);
+void SVGAngle::Add(SVGPropertyBase* other, SVGElement*) {
+  SVGAngle* other_angle = ToSVGAngle(other);
 
   // Only respect by animations, if from and by are both specified in angles
   // (and not, for example, 'auto').
-  if (orientType()->enumValue() != SVGMarkerOrientAngle ||
-      otherAngle->orientType()->enumValue() != SVGMarkerOrientAngle)
+  if (OrientType()->EnumValue() != kSVGMarkerOrientAngle ||
+      other_angle->OrientType()->EnumValue() != kSVGMarkerOrientAngle)
     return;
 
-  setValue(value() + otherAngle->value());
+  SetValue(Value() + other_angle->Value());
 }
 
-void SVGAngle::assign(const SVGAngle& other) {
-  SVGMarkerOrientType otherOrientType = other.orientType()->enumValue();
-  if (otherOrientType == SVGMarkerOrientAngle)
-    newValueSpecifiedUnits(other.unitType(), other.valueInSpecifiedUnits());
+void SVGAngle::Assign(const SVGAngle& other) {
+  SVGMarkerOrientType other_orient_type = other.OrientType()->EnumValue();
+  if (other_orient_type == kSVGMarkerOrientAngle)
+    NewValueSpecifiedUnits(other.UnitType(), other.ValueInSpecifiedUnits());
   else
-    m_orientType->setEnumValue(otherOrientType);
+    orient_type_->SetEnumValue(other_orient_type);
 }
 
-void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement,
+void SVGAngle::CalculateAnimatedValue(SVGAnimationElement* animation_element,
                                       float percentage,
-                                      unsigned repeatCount,
+                                      unsigned repeat_count,
                                       SVGPropertyBase* from,
                                       SVGPropertyBase* to,
-                                      SVGPropertyBase* toAtEndOfDuration,
+                                      SVGPropertyBase* to_at_end_of_duration,
                                       SVGElement*) {
-  DCHECK(animationElement);
-  bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
+  DCHECK(animation_element);
+  bool is_to_animation = animation_element->GetAnimationMode() == kToAnimation;
 
-  SVGAngle* fromAngle = isToAnimation ? this : toSVGAngle(from);
-  SVGAngle* toAngle = toSVGAngle(to);
-  SVGMarkerOrientType fromOrientType = fromAngle->orientType()->enumValue();
-  SVGMarkerOrientType toOrientType = toAngle->orientType()->enumValue();
+  SVGAngle* from_angle = is_to_animation ? this : ToSVGAngle(from);
+  SVGAngle* to_angle = ToSVGAngle(to);
+  SVGMarkerOrientType from_orient_type = from_angle->OrientType()->EnumValue();
+  SVGMarkerOrientType to_orient_type = to_angle->OrientType()->EnumValue();
 
-  if (fromOrientType != toOrientType) {
+  if (from_orient_type != to_orient_type) {
     // Fall back to discrete animation.
-    assign(percentage < 0.5f ? *fromAngle : *toAngle);
+    Assign(percentage < 0.5f ? *from_angle : *to_angle);
     return;
   }
 
-  switch (fromOrientType) {
+  switch (from_orient_type) {
     // From 'auto' to 'auto', or 'auto-start-reverse' to 'auto-start-reverse'
-    case SVGMarkerOrientAuto:
-    case SVGMarkerOrientAutoStartReverse:
-      orientType()->setEnumValue(fromOrientType);
+    case kSVGMarkerOrientAuto:
+    case kSVGMarkerOrientAutoStartReverse:
+      OrientType()->SetEnumValue(from_orient_type);
       return;
 
     // Regular from angle to angle animation, with all features like additive
     // etc.
-    case SVGMarkerOrientAngle: {
-      float animatedValue = value();
-      SVGAngle* toAtEndOfDurationAngle = toSVGAngle(toAtEndOfDuration);
+    case kSVGMarkerOrientAngle: {
+      float animated_value = Value();
+      SVGAngle* to_at_end_of_duration_angle = ToSVGAngle(to_at_end_of_duration);
 
-      animationElement->animateAdditiveNumber(
-          percentage, repeatCount, fromAngle->value(), toAngle->value(),
-          toAtEndOfDurationAngle->value(), animatedValue);
-      orientType()->setEnumValue(SVGMarkerOrientAngle);
-      setValue(animatedValue);
+      animation_element->AnimateAdditiveNumber(
+          percentage, repeat_count, from_angle->Value(), to_angle->Value(),
+          to_at_end_of_duration_angle->Value(), animated_value);
+      OrientType()->SetEnumValue(kSVGMarkerOrientAngle);
+      SetValue(animated_value);
     }
       return;
 
     // If the enumeration value is not angle or auto, its unknown.
     default:
-      m_valueInSpecifiedUnits = 0;
-      orientType()->setEnumValue(SVGMarkerOrientUnknown);
+      value_in_specified_units_ = 0;
+      OrientType()->SetEnumValue(kSVGMarkerOrientUnknown);
       return;
   }
 }
 
-float SVGAngle::calculateDistance(SVGPropertyBase* other, SVGElement*) {
-  return fabsf(value() - toSVGAngle(other)->value());
+float SVGAngle::CalculateDistance(SVGPropertyBase* other, SVGElement*) {
+  return fabsf(Value() - ToSVGAngle(other)->Value());
 }
 
-void SVGAngle::orientTypeChanged() {
-  if (orientType()->enumValue() == SVGMarkerOrientAuto ||
-      orientType()->enumValue() == SVGMarkerOrientAutoStartReverse) {
-    m_unitType = kSvgAngletypeUnspecified;
-    m_valueInSpecifiedUnits = 0;
+void SVGAngle::OrientTypeChanged() {
+  if (OrientType()->EnumValue() == kSVGMarkerOrientAuto ||
+      OrientType()->EnumValue() == kSVGMarkerOrientAutoStartReverse) {
+    unit_type_ = kSvgAngletypeUnspecified;
+    value_in_specified_units_ = 0;
   }
 }
 

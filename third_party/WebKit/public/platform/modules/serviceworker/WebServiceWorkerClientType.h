@@ -8,11 +8,11 @@
 namespace blink {
 
 enum WebServiceWorkerClientType {
-  WebServiceWorkerClientTypeWindow,
-  WebServiceWorkerClientTypeWorker,
-  WebServiceWorkerClientTypeSharedWorker,
-  WebServiceWorkerClientTypeAll,
-  WebServiceWorkerClientTypeLast = WebServiceWorkerClientTypeAll
+  kWebServiceWorkerClientTypeWindow,
+  kWebServiceWorkerClientTypeWorker,
+  kWebServiceWorkerClientTypeSharedWorker,
+  kWebServiceWorkerClientTypeAll,
+  kWebServiceWorkerClientTypeLast = kWebServiceWorkerClientTypeAll
 };
 
 }  // namespace blink

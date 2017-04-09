@@ -37,63 +37,63 @@ namespace blink {
 
 class WebHTTPBodyPrivate : public EncodedFormData {};
 
-void WebHTTPBody::initialize() {
-  assign(static_cast<WebHTTPBodyPrivate*>(EncodedFormData::create().leakRef()));
+void WebHTTPBody::Initialize() {
+  Assign(static_cast<WebHTTPBodyPrivate*>(EncodedFormData::Create().LeakRef()));
 }
 
-void WebHTTPBody::reset() {
-  assign(0);
+void WebHTTPBody::Reset() {
+  Assign(0);
 }
 
-void WebHTTPBody::assign(const WebHTTPBody& other) {
-  WebHTTPBodyPrivate* p = const_cast<WebHTTPBodyPrivate*>(other.m_private);
+void WebHTTPBody::Assign(const WebHTTPBody& other) {
+  WebHTTPBodyPrivate* p = const_cast<WebHTTPBodyPrivate*>(other.private_);
   if (p)
-    p->ref();
-  assign(p);
+    p->Ref();
+  Assign(p);
 }
 
-size_t WebHTTPBody::elementCount() const {
-  ASSERT(!isNull());
-  return m_private->elements().size();
+size_t WebHTTPBody::ElementCount() const {
+  ASSERT(!IsNull());
+  return private_->Elements().size();
 }
 
-bool WebHTTPBody::elementAt(size_t index, Element& result) const {
-  ASSERT(!isNull());
+bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
+  ASSERT(!IsNull());
 
-  if (index >= m_private->elements().size())
+  if (index >= private_->Elements().size())
     return false;
 
-  const FormDataElement& element = m_private->elements()[index];
+  const FormDataElement& element = private_->Elements()[index];
 
-  result.data.reset();
-  result.filePath.reset();
-  result.fileStart = 0;
-  result.fileLength = 0;
-  result.modificationTime = invalidFileTime();
-  result.blobUUID.reset();
+  result.data.Reset();
+  result.file_path.Reset();
+  result.file_start = 0;
+  result.file_length = 0;
+  result.modification_time = InvalidFileTime();
+  result.blob_uuid.Reset();
 
-  switch (element.m_type) {
-    case FormDataElement::data:
-      result.type = Element::TypeData;
-      result.data.assign(element.m_data.data(), element.m_data.size());
+  switch (element.type_) {
+    case FormDataElement::kData:
+      result.type = Element::kTypeData;
+      result.data.Assign(element.data_.Data(), element.data_.size());
       break;
-    case FormDataElement::encodedFile:
-      result.type = Element::TypeFile;
-      result.filePath = element.m_filename;
-      result.fileStart = element.m_fileStart;
-      result.fileLength = element.m_fileLength;
-      result.modificationTime = element.m_expectedFileModificationTime;
+    case FormDataElement::kEncodedFile:
+      result.type = Element::kTypeFile;
+      result.file_path = element.filename_;
+      result.file_start = element.file_start_;
+      result.file_length = element.file_length_;
+      result.modification_time = element.expected_file_modification_time_;
       break;
-    case FormDataElement::encodedBlob:
-      result.type = Element::TypeBlob;
-      result.blobUUID = element.m_blobUUID;
+    case FormDataElement::kEncodedBlob:
+      result.type = Element::kTypeBlob;
+      result.blob_uuid = element.blob_uuid_;
       break;
-    case FormDataElement::encodedFileSystemURL:
-      result.type = Element::TypeFileSystemURL;
-      result.fileSystemURL = element.m_fileSystemURL;
-      result.fileStart = element.m_fileStart;
-      result.fileLength = element.m_fileLength;
-      result.modificationTime = element.m_expectedFileModificationTime;
+    case FormDataElement::kEncodedFileSystemURL:
+      result.type = Element::kTypeFileSystemURL;
+      result.file_system_url = element.file_system_url_;
+      result.file_start = element.file_start_;
+      result.file_length = element.file_length_;
+      result.modification_time = element.expected_file_modification_time_;
       break;
     default:
       ASSERT_NOT_REACHED();
@@ -103,82 +103,83 @@ bool WebHTTPBody::elementAt(size_t index, Element& result) const {
   return true;
 }
 
-void WebHTTPBody::appendData(const WebData& data) {
-  ensureMutable();
+void WebHTTPBody::AppendData(const WebData& data) {
+  EnsureMutable();
   // FIXME: FormDataElement::m_data should be a SharedBuffer<char>.  Then we
   // could avoid this buffer copy.
-  m_private->appendData(data.data(), data.size());
+  private_->AppendData(data.Data(), data.size());
 }
 
-void WebHTTPBody::appendFile(const WebString& filePath) {
-  ensureMutable();
-  m_private->appendFile(filePath);
+void WebHTTPBody::AppendFile(const WebString& file_path) {
+  EnsureMutable();
+  private_->AppendFile(file_path);
 }
 
-void WebHTTPBody::appendFileRange(const WebString& filePath,
-                                  long long fileStart,
-                                  long long fileLength,
-                                  double modificationTime) {
-  ensureMutable();
-  m_private->appendFileRange(filePath, fileStart, fileLength, modificationTime);
+void WebHTTPBody::AppendFileRange(const WebString& file_path,
+                                  long long file_start,
+                                  long long file_length,
+                                  double modification_time) {
+  EnsureMutable();
+  private_->AppendFileRange(file_path, file_start, file_length,
+                            modification_time);
 }
 
-void WebHTTPBody::appendFileSystemURLRange(const WebURL& url,
+void WebHTTPBody::AppendFileSystemURLRange(const WebURL& url,
                                            long long start,
                                            long long length,
-                                           double modificationTime) {
+                                           double modification_time) {
   // Currently we only support filesystem URL.
-  ASSERT(KURL(url).protocolIs("filesystem"));
-  ensureMutable();
-  m_private->appendFileSystemURLRange(url, start, length, modificationTime);
+  ASSERT(KURL(url).ProtocolIs("filesystem"));
+  EnsureMutable();
+  private_->AppendFileSystemURLRange(url, start, length, modification_time);
 }
 
-void WebHTTPBody::appendBlob(const WebString& uuid) {
-  ensureMutable();
-  m_private->appendBlob(uuid, nullptr);
+void WebHTTPBody::AppendBlob(const WebString& uuid) {
+  EnsureMutable();
+  private_->AppendBlob(uuid, nullptr);
 }
 
-long long WebHTTPBody::identifier() const {
-  ASSERT(!isNull());
-  return m_private->identifier();
+long long WebHTTPBody::Identifier() const {
+  ASSERT(!IsNull());
+  return private_->Identifier();
 }
 
-void WebHTTPBody::setIdentifier(long long identifier) {
-  ensureMutable();
-  return m_private->setIdentifier(identifier);
+void WebHTTPBody::SetIdentifier(long long identifier) {
+  EnsureMutable();
+  return private_->SetIdentifier(identifier);
 }
 
-bool WebHTTPBody::containsPasswordData() const {
-  return m_private->containsPasswordData();
+bool WebHTTPBody::ContainsPasswordData() const {
+  return private_->ContainsPasswordData();
 }
 
-void WebHTTPBody::setContainsPasswordData(bool containsPasswordData) {
-  m_private->setContainsPasswordData(containsPasswordData);
+void WebHTTPBody::SetContainsPasswordData(bool contains_password_data) {
+  private_->SetContainsPasswordData(contains_password_data);
 }
 
 WebHTTPBody::WebHTTPBody(PassRefPtr<EncodedFormData> data)
-    : m_private(static_cast<WebHTTPBodyPrivate*>(data.leakRef())) {}
+    : private_(static_cast<WebHTTPBodyPrivate*>(data.LeakRef())) {}
 
 WebHTTPBody& WebHTTPBody::operator=(PassRefPtr<EncodedFormData> data) {
-  assign(static_cast<WebHTTPBodyPrivate*>(data.leakRef()));
+  Assign(static_cast<WebHTTPBodyPrivate*>(data.LeakRef()));
   return *this;
 }
 
 WebHTTPBody::operator PassRefPtr<EncodedFormData>() const {
-  return m_private;
+  return private_;
 }
 
-void WebHTTPBody::assign(WebHTTPBodyPrivate* p) {
+void WebHTTPBody::Assign(WebHTTPBodyPrivate* p) {
   // p is already ref'd for us by the caller
-  if (m_private)
-    m_private->deref();
-  m_private = p;
+  if (private_)
+    private_->Deref();
+  private_ = p;
 }
 
-void WebHTTPBody::ensureMutable() {
-  ASSERT(!isNull());
-  if (!m_private->hasOneRef())
-    assign(static_cast<WebHTTPBodyPrivate*>(m_private->copy().leakRef()));
+void WebHTTPBody::EnsureMutable() {
+  ASSERT(!IsNull());
+  if (!private_->HasOneRef())
+    Assign(static_cast<WebHTTPBodyPrivate*>(private_->Copy().LeakRef()));
 }
 
 }  // namespace blink

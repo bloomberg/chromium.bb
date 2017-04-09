@@ -6,58 +6,58 @@
 
 namespace blink {
 
-double CSSStyleImageValue::intrinsicWidth(bool& isNull) const {
-  isNull = isCachePending();
-  if (isNull)
+double CSSStyleImageValue::intrinsicWidth(bool& is_null) const {
+  is_null = IsCachePending();
+  if (is_null)
     return 0;
-  return imageLayoutSize().width().toDouble();
+  return ImageLayoutSize().Width().ToDouble();
 }
 
-double CSSStyleImageValue::intrinsicHeight(bool& isNull) const {
-  isNull = isCachePending();
-  if (isNull)
+double CSSStyleImageValue::intrinsicHeight(bool& is_null) const {
+  is_null = IsCachePending();
+  if (is_null)
     return 0;
-  return imageLayoutSize().height().toDouble();
+  return ImageLayoutSize().Height().ToDouble();
 }
 
-double CSSStyleImageValue::intrinsicRatio(bool& isNull) {
-  isNull = isCachePending();
-  if (isNull || intrinsicHeight(isNull) == 0) {
-    isNull = true;
+double CSSStyleImageValue::intrinsicRatio(bool& is_null) {
+  is_null = IsCachePending();
+  if (is_null || intrinsicHeight(is_null) == 0) {
+    is_null = true;
     return 0;
   }
-  return intrinsicWidth(isNull) / intrinsicHeight(isNull);
+  return intrinsicWidth(is_null) / intrinsicHeight(is_null);
 }
 
-FloatSize CSSStyleImageValue::elementSize(
-    const FloatSize& defaultObjectSize) const {
-  bool notUsed;
-  return FloatSize(intrinsicWidth(notUsed), intrinsicHeight(notUsed));
+FloatSize CSSStyleImageValue::ElementSize(
+    const FloatSize& default_object_size) const {
+  bool not_used;
+  return FloatSize(intrinsicWidth(not_used), intrinsicHeight(not_used));
 }
 
-bool CSSStyleImageValue::isAccelerated() const {
-  return image() && image()->isTextureBacked();
+bool CSSStyleImageValue::IsAccelerated() const {
+  return GetImage() && GetImage()->IsTextureBacked();
 }
 
-int CSSStyleImageValue::sourceHeight() {
-  bool notUsed;
-  return intrinsicHeight(notUsed);
+int CSSStyleImageValue::SourceHeight() {
+  bool not_used;
+  return intrinsicHeight(not_used);
 }
 
-int CSSStyleImageValue::sourceWidth() {
-  bool notUsed;
-  return intrinsicWidth(notUsed);
+int CSSStyleImageValue::SourceWidth() {
+  bool not_used;
+  return intrinsicWidth(not_used);
 }
 
-PassRefPtr<Image> CSSStyleImageValue::image() const {
-  if (isCachePending())
+PassRefPtr<Image> CSSStyleImageValue::GetImage() const {
+  if (IsCachePending())
     return nullptr;
   // cachedImage can be null if image is StyleInvalidImage
-  ImageResourceContent* cachedImage =
-      m_imageValue->cachedImage()->cachedImage();
-  if (cachedImage) {
+  ImageResourceContent* cached_image =
+      image_value_->CachedImage()->CachedImage();
+  if (cached_image) {
     // getImage() returns the nullImage() if the image is not available yet
-    return cachedImage->getImage()->imageForDefaultFrame();
+    return cached_image->GetImage()->ImageForDefaultFrame();
   }
   return nullptr;
 }

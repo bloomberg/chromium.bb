@@ -22,15 +22,15 @@ class StubCompositorMutator : public CompositorMutator {
  public:
   StubCompositorMutator() {}
 
-  bool mutate(double monotonicTimeNow,
-              CompositorMutableStateProvider* stateProvider) override {
+  bool Mutate(double monotonic_time_now,
+              CompositorMutableStateProvider* state_provider) override {
     return false;
   }
 };
 
 class MockCompositoMutationsTarget : public CompositorMutationsTarget {
  public:
-  MOCK_METHOD1(applyMutations, void(CompositorMutations*));
+  MOCK_METHOD1(ApplyMutations, void(CompositorMutations*));
 };
 
 TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply) {
@@ -38,10 +38,10 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply) {
 
   CompositorMutatorClient client(new StubCompositorMutator, &target);
   std::unique_ptr<CompositorMutations> mutations =
-      WTF::makeUnique<CompositorMutations>();
-  client.setMutationsForTesting(std::move(mutations));
+      WTF::MakeUnique<CompositorMutations>();
+  client.SetMutationsForTesting(std::move(mutations));
 
-  EXPECT_CALL(target, applyMutations(_));
+  EXPECT_CALL(target, ApplyMutations(_));
   client.TakeMutations().Run();
 }
 
@@ -49,7 +49,7 @@ TEST(CompositorMutatorClient, CallbackForNullMutationsShouldBeNoop) {
   MockCompositoMutationsTarget target;
   CompositorMutatorClient client(new StubCompositorMutator, &target);
 
-  EXPECT_CALL(target, applyMutations(_)).Times(0);
+  EXPECT_CALL(target, ApplyMutations(_)).Times(0);
   EXPECT_TRUE(client.TakeMutations().is_null());
 }
 

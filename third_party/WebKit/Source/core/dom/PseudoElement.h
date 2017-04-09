@@ -35,45 +35,45 @@ namespace blink {
 
 class CORE_EXPORT PseudoElement : public Element {
  public:
-  static PseudoElement* create(Element* parent, PseudoId);
+  static PseudoElement* Create(Element* parent, PseudoId);
 
-  PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 
-  bool canStartSelection() const override { return false; }
-  bool canContainRangeEndPoint() const override { return false; }
-  PseudoId getPseudoId() const override { return m_pseudoId; }
+  bool CanStartSelection() const override { return false; }
+  bool CanContainRangeEndPoint() const override { return false; }
+  PseudoId GetPseudoId() const override { return pseudo_id_; }
 
-  static String pseudoElementNameForEvents(PseudoId);
+  static String PseudoElementNameForEvents(PseudoId);
 
-  Node* findAssociatedNode() const;
+  Node* FindAssociatedNode() const;
 
-  virtual void dispose();
+  virtual void Dispose();
 
  protected:
   PseudoElement(Element*, PseudoId);
 
  private:
-  void didRecalcStyle() override;
+  void DidRecalcStyle() override;
 
-  PseudoId m_pseudoId;
+  PseudoId pseudo_id_;
 };
 
-const QualifiedName& pseudoElementTagName();
+const QualifiedName& PseudoElementTagName();
 
-inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
+inline bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
   if (!style)
     return false;
-  if (style->display() == EDisplay::kNone)
+  if (style->Display() == EDisplay::kNone)
     return false;
-  if (style->styleType() == PseudoIdFirstLetter ||
-      style->styleType() == PseudoIdBackdrop)
+  if (style->StyleType() == kPseudoIdFirstLetter ||
+      style->StyleType() == kPseudoIdBackdrop)
     return true;
-  return style->contentData();
+  return style->GetContentData();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS(PseudoElement, isPseudoElement());
+DEFINE_ELEMENT_TYPE_CASTS(PseudoElement, IsPseudoElement());
 
 }  // namespace blink
 

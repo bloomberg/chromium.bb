@@ -7,11 +7,11 @@
 namespace blink {
 
 void SpellCheckTestBase::SetUp() {
-  Page::PageClients pageClients;
-  fillWithEmptyClients(pageClients);
-  m_spellCheckerClient = WTF::wrapUnique(new DummySpellCheckerClient);
-  pageClients.spellCheckerClient = m_spellCheckerClient.get();
-  setupPageWithClients(&pageClients);
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  spell_checker_client_ = WTF::WrapUnique(new DummySpellCheckerClient);
+  page_clients.spell_checker_client = spell_checker_client_.get();
+  SetupPageWithClients(&page_clients);
 }
 
 }  // namespace blink

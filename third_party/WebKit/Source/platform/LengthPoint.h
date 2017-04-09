@@ -41,24 +41,24 @@ struct LengthPoint {
  public:
   LengthPoint() {}
 
-  LengthPoint(const Length& x, const Length& y) : m_x(x), m_y(y) {}
+  LengthPoint(const Length& x, const Length& y) : x_(x), y_(y) {}
 
   bool operator==(const LengthPoint& o) const {
-    return m_x == o.m_x && m_y == o.m_y;
+    return x_ == o.x_ && y_ == o.y_;
   }
   bool operator!=(const LengthPoint& o) const {
-    return m_x != o.m_x || m_y != o.m_y;
+    return x_ != o.x_ || y_ != o.y_;
   }
 
-  void setX(const Length& x) { m_x = x; }
-  const Length& x() const { return m_x; }
+  void SetX(const Length& x) { x_ = x; }
+  const Length& X() const { return x_; }
 
-  void setY(const Length& y) { m_y = y; }
-  const Length& y() const { return m_y; }
+  void SetY(const Length& y) { y_ = y; }
+  const Length& Y() const { return y_; }
 
  private:
-  Length m_x;
-  Length m_y;
+  Length x_;
+  Length y_;
 };
 
 }  // namespace blink

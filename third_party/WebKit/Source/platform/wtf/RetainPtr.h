@@ -51,11 +51,11 @@ namespace WTF {
 // type or the pointed-to type, so both RetainPtr<NSDictionary> and
 // RetainPtr<CFDictionaryRef> will work.
 
-enum AdoptCFTag { AdoptCF };
-enum AdoptNSTag { AdoptNS };
+enum AdoptCFTag { kAdoptCF };
+enum AdoptNSTag { kAdoptNS };
 
 #ifdef __OBJC__
-inline void adoptNSReference(id ptr) {
+inline void AdoptNSReference(id ptr) {
   if (ptr) {
     CFRetain(ptr);
     [ptr release];
@@ -69,45 +69,45 @@ class RetainPtr {
   typedef typename std::remove_pointer<T>::type ValueType;
   typedef ValueType* PtrType;
 
-  RetainPtr() : m_ptr(nullptr) {}
-  RetainPtr(PtrType ptr) : m_ptr(ptr) {
+  RetainPtr() : ptr_(nullptr) {}
+  RetainPtr(PtrType ptr) : ptr_(ptr) {
     if (ptr)
       CFRetain(ptr);
   }
 
-  RetainPtr(AdoptCFTag, PtrType ptr) : m_ptr(ptr) {}
-  RetainPtr(AdoptNSTag, PtrType ptr) : m_ptr(ptr) { adoptNSReference(ptr); }
+  RetainPtr(AdoptCFTag, PtrType ptr) : ptr_(ptr) {}
+  RetainPtr(AdoptNSTag, PtrType ptr) : ptr_(ptr) { AdoptNSReference(ptr); }
 
-  RetainPtr(const RetainPtr& o) : m_ptr(o.m_ptr) {
-    if (PtrType ptr = m_ptr)
+  RetainPtr(const RetainPtr& o) : ptr_(o.ptr_) {
+    if (PtrType ptr = ptr_)
       CFRetain(ptr);
   }
 
-  RetainPtr(RetainPtr&& o) : m_ptr(o.leakRef()) {}
+  RetainPtr(RetainPtr&& o) : ptr_(o.LeakRef()) {}
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
-  RetainPtr(HashTableDeletedValueType) : m_ptr(hashTableDeletedValue()) {}
-  bool isHashTableDeletedValue() const {
-    return m_ptr == hashTableDeletedValue();
+  RetainPtr(HashTableDeletedValueType) : ptr_(HashTableDeletedValue()) {}
+  bool IsHashTableDeletedValue() const {
+    return ptr_ == HashTableDeletedValue();
   }
 
   ~RetainPtr() {
-    if (PtrType ptr = m_ptr)
+    if (PtrType ptr = ptr_)
       CFRelease(ptr);
   }
 
   template <typename U>
   RetainPtr(const RetainPtr<U>&);
 
-  void clear();
-  WARN_UNUSED_RESULT PtrType leakRef();
+  void Clear();
+  WARN_UNUSED_RESULT PtrType LeakRef();
 
-  PtrType get() const { return m_ptr; }
-  PtrType operator->() const { return m_ptr; }
+  PtrType Get() const { return ptr_; }
+  PtrType operator->() const { return ptr_; }
 
-  bool operator!() const { return !m_ptr; }
-  explicit operator bool() const { return m_ptr; }
+  bool operator!() const { return !ptr_; }
+  explicit operator bool() const { return ptr_; }
 
   RetainPtr& operator=(const RetainPtr&);
   template <typename U>
@@ -121,52 +121,52 @@ class RetainPtr {
   RetainPtr& operator=(RetainPtr<U>&&);
 
   RetainPtr& operator=(std::nullptr_t) {
-    clear();
+    Clear();
     return *this;
   }
 
-  void adoptCF(PtrType);
-  void adoptNS(PtrType);
+  void AdoptCF(PtrType);
+  void AdoptNS(PtrType);
 
-  void swap(RetainPtr&);
+  void Swap(RetainPtr&);
 
  private:
-  static PtrType hashTableDeletedValue() {
+  static PtrType HashTableDeletedValue() {
     return reinterpret_cast<PtrType>(-1);
   }
 
-  PtrType m_ptr;
+  PtrType ptr_;
 };
 
 template <typename T>
 template <typename U>
-inline RetainPtr<T>::RetainPtr(const RetainPtr<U>& o) : m_ptr(o.get()) {
-  if (PtrType ptr = m_ptr)
+inline RetainPtr<T>::RetainPtr(const RetainPtr<U>& o) : ptr_(o.Get()) {
+  if (PtrType ptr = ptr_)
     CFRetain(ptr);
 }
 
 template <typename T>
-inline void RetainPtr<T>::clear() {
-  if (PtrType ptr = m_ptr) {
-    m_ptr = nullptr;
+inline void RetainPtr<T>::Clear() {
+  if (PtrType ptr = ptr_) {
+    ptr_ = nullptr;
     CFRelease(ptr);
   }
 }
 
 template <typename T>
-inline typename RetainPtr<T>::PtrType RetainPtr<T>::leakRef() {
-  PtrType ptr = m_ptr;
-  m_ptr = nullptr;
+inline typename RetainPtr<T>::PtrType RetainPtr<T>::LeakRef() {
+  PtrType ptr = ptr_;
+  ptr_ = nullptr;
   return ptr;
 }
 
 template <typename T>
 inline RetainPtr<T>& RetainPtr<T>::operator=(const RetainPtr<T>& o) {
-  PtrType optr = o.get();
+  PtrType optr = o.Get();
   if (optr)
     CFRetain(optr);
-  PtrType ptr = m_ptr;
-  m_ptr = optr;
+  PtrType ptr = ptr_;
+  ptr_ = optr;
   if (ptr)
     CFRelease(ptr);
   return *this;
@@ -175,11 +175,11 @@ inline RetainPtr<T>& RetainPtr<T>::operator=(const RetainPtr<T>& o) {
 template <typename T>
 template <typename U>
 inline RetainPtr<T>& RetainPtr<T>::operator=(const RetainPtr<U>& o) {
-  PtrType optr = o.get();
+  PtrType optr = o.Get();
   if (optr)
     CFRetain(optr);
-  PtrType ptr = m_ptr;
-  m_ptr = optr;
+  PtrType ptr = ptr_;
+  ptr_ = optr;
   if (ptr)
     CFRelease(ptr);
   return *this;
@@ -189,8 +189,8 @@ template <typename T>
 inline RetainPtr<T>& RetainPtr<T>::operator=(PtrType optr) {
   if (optr)
     CFRetain(optr);
-  PtrType ptr = m_ptr;
-  m_ptr = optr;
+  PtrType ptr = ptr_;
+  ptr_ = optr;
   if (ptr)
     CFRelease(ptr);
   return *this;
@@ -201,8 +201,8 @@ template <typename U>
 inline RetainPtr<T>& RetainPtr<T>::operator=(U* optr) {
   if (optr)
     CFRetain(optr);
-  PtrType ptr = m_ptr;
-  m_ptr = optr;
+  PtrType ptr = ptr_;
+  ptr_ = optr;
   if (ptr)
     CFRelease(ptr);
   return *this;
@@ -210,95 +210,87 @@ inline RetainPtr<T>& RetainPtr<T>::operator=(U* optr) {
 
 template <typename T>
 inline RetainPtr<T>& RetainPtr<T>::operator=(RetainPtr<T>&& o) {
-  adoptCF(o.leakRef());
+  AdoptCF(o.LeakRef());
   return *this;
 }
 
 template <typename T>
 template <typename U>
 inline RetainPtr<T>& RetainPtr<T>::operator=(RetainPtr<U>&& o) {
-  adoptCF(o.leakRef());
+  AdoptCF(o.LeakRef());
   return *this;
 }
 
 template <typename T>
-inline void RetainPtr<T>::adoptCF(PtrType optr) {
-  PtrType ptr = m_ptr;
-  m_ptr = optr;
+inline void RetainPtr<T>::AdoptCF(PtrType optr) {
+  PtrType ptr = ptr_;
+  ptr_ = optr;
   if (ptr)
     CFRelease(ptr);
 }
 
 template <typename T>
-inline void RetainPtr<T>::adoptNS(PtrType optr) {
-  adoptNSReference(optr);
+inline void RetainPtr<T>::AdoptNS(PtrType optr) {
+  AdoptNSReference(optr);
 
-  PtrType ptr = m_ptr;
-  m_ptr = optr;
+  PtrType ptr = ptr_;
+  ptr_ = optr;
   if (ptr)
     CFRelease(ptr);
 }
 
 template <typename T>
-inline void RetainPtr<T>::swap(RetainPtr<T>& o) {
-  std::swap(m_ptr, o.m_ptr);
+inline void RetainPtr<T>::Swap(RetainPtr<T>& o) {
+  std::swap(ptr_, o.ptr_);
 }
 
 template <typename T>
 inline void swap(RetainPtr<T>& a, RetainPtr<T>& b) {
-  a.swap(b);
+  a.Swap(b);
 }
 
 template <typename T, typename U>
 inline bool operator==(const RetainPtr<T>& a, const RetainPtr<U>& b) {
-  return a.get() == b.get();
+  return a.Get() == b.Get();
 }
 
 template <typename T, typename U>
 inline bool operator==(const RetainPtr<T>& a, U* b) {
-  return a.get() == b;
+  return a.Get() == b;
 }
 
 template <typename T, typename U>
 inline bool operator==(T* a, const RetainPtr<U>& b) {
-  return a == b.get();
+  return a == b.Get();
 }
 
 template <typename T, typename U>
 inline bool operator!=(const RetainPtr<T>& a, const RetainPtr<U>& b) {
-  return a.get() != b.get();
+  return a.Get() != b.Get();
 }
 
 template <typename T, typename U>
 inline bool operator!=(const RetainPtr<T>& a, U* b) {
-  return a.get() != b;
+  return a.Get() != b;
 }
 
 template <typename T, typename U>
 inline bool operator!=(T* a, const RetainPtr<U>& b) {
-  return a != b.get();
+  return a != b.Get();
 }
 
 template <typename T>
-WARN_UNUSED_RESULT inline RetainPtr<T> adoptCF(T CF_RELEASES_ARGUMENT);
+WARN_UNUSED_RESULT inline RetainPtr<T> AdoptCF(T CF_RELEASES_ARGUMENT);
 template <typename T>
-inline RetainPtr<T> adoptCF(T o) {
-  return RetainPtr<T>(AdoptCF, o);
+inline RetainPtr<T> AdoptCF(T o) {
+  return RetainPtr<T>(kAdoptCF, o);
 }
 
 template <typename T>
-WARN_UNUSED_RESULT inline RetainPtr<T> adoptNS(T NS_RELEASES_ARGUMENT);
+WARN_UNUSED_RESULT inline RetainPtr<T> AdoptNS(T NS_RELEASES_ARGUMENT);
 template <typename T>
-inline RetainPtr<T> adoptNS(T o) {
-  return RetainPtr<T>(AdoptNS, o);
-}
-
-// Helper function for creating a RetainPtr using template argument deduction.
-template <typename T>
-WARN_UNUSED_RESULT inline RetainPtr<T> retainPtr(T);
-template <typename T>
-inline RetainPtr<T> retainPtr(T o) {
-  return RetainPtr<T>(o);
+inline RetainPtr<T> AdoptNS(T o) {
+  return RetainPtr<T>(kAdoptNS, o);
 }
 
 template <typename T>
@@ -310,16 +302,16 @@ struct RetainPtrHash
           typename std::remove_pointer<typename RetainPtr<T>::PtrType>::type> {
   using Base = PtrHash<
       typename std::remove_pointer<typename RetainPtr<T>::PtrType>::type>;
-  using Base::hash;
-  static unsigned hash(const RetainPtr<T>& key) { return hash(key.get()); }
-  using Base::equal;
-  static bool equal(const RetainPtr<T>& a, const RetainPtr<T>& b) {
+  using Base::GetHash;
+  static unsigned GetHash(const RetainPtr<T>& key) { return hash(key.Get()); }
+  using Base::Equal;
+  static bool Equal(const RetainPtr<T>& a, const RetainPtr<T>& b) {
     return a == b;
   }
-  static bool equal(typename RetainPtr<T>::PtrType a, const RetainPtr<T>& b) {
+  static bool Equal(typename RetainPtr<T>::PtrType a, const RetainPtr<T>& b) {
     return a == b;
   }
-  static bool equal(const RetainPtr<T>& a, typename RetainPtr<T>::PtrType b) {
+  static bool Equal(const RetainPtr<T>& a, typename RetainPtr<T>::PtrType b) {
     return a == b;
   }
 };
@@ -331,11 +323,10 @@ struct DefaultHash<RetainPtr<T>> {
 
 }  // namespace WTF
 
+using WTF::kAdoptCF;
+using WTF::kAdoptNS;
 using WTF::AdoptCF;
 using WTF::AdoptNS;
-using WTF::adoptCF;
-using WTF::adoptNS;
 using WTF::RetainPtr;
-using WTF::retainPtr;
 
 #endif  // WTF_RetainPtr_h

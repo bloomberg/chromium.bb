@@ -8,34 +8,34 @@ namespace blink {
 
 SyncEvent::SyncEvent(const AtomicString& type,
                      const String& tag,
-                     bool lastChance,
+                     bool last_chance,
                      WaitUntilObserver* observer)
     : ExtendableEvent(type, ExtendableEventInit(), observer),
-      m_tag(tag),
-      m_lastChance(lastChance) {}
+      tag_(tag),
+      last_chance_(last_chance) {}
 
 SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit& init)
     : ExtendableEvent(type, init) {
-  m_tag = init.tag();
-  m_lastChance = init.lastChance();
+  tag_ = init.tag();
+  last_chance_ = init.lastChance();
 }
 
 SyncEvent::~SyncEvent() {}
 
-const AtomicString& SyncEvent::interfaceName() const {
+const AtomicString& SyncEvent::InterfaceName() const {
   return EventNames::SyncEvent;
 }
 
 String SyncEvent::tag() {
-  return m_tag;
+  return tag_;
 }
 
 bool SyncEvent::lastChance() {
-  return m_lastChance;
+  return last_chance_;
 }
 
 DEFINE_TRACE(SyncEvent) {
-  ExtendableEvent::trace(visitor);
+  ExtendableEvent::Trace(visitor);
 }
 
 }  // namespace blink

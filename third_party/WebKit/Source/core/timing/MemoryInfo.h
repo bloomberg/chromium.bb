@@ -40,11 +40,12 @@ namespace blink {
 
 struct HeapInfo {
   DISALLOW_NEW();
-  HeapInfo() : usedJSHeapSize(0), totalJSHeapSize(0), jsHeapSizeLimit(0) {}
+  HeapInfo()
+      : used_js_heap_size(0), total_js_heap_size(0), js_heap_size_limit(0) {}
 
-  size_t usedJSHeapSize;
-  size_t totalJSHeapSize;
-  size_t jsHeapSizeLimit;
+  size_t used_js_heap_size;
+  size_t total_js_heap_size;
+  size_t js_heap_size_limit;
 };
 
 class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>,
@@ -52,21 +53,21 @@ class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MemoryInfo* create() { return new MemoryInfo(); }
+  static MemoryInfo* Create() { return new MemoryInfo(); }
 
-  size_t totalJSHeapSize() const { return m_info.totalJSHeapSize; }
-  size_t usedJSHeapSize() const { return m_info.usedJSHeapSize; }
-  size_t jsHeapSizeLimit() const { return m_info.jsHeapSizeLimit; }
+  size_t totalJSHeapSize() const { return info_.total_js_heap_size; }
+  size_t usedJSHeapSize() const { return info_.used_js_heap_size; }
+  size_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   MemoryInfo();
 
-  HeapInfo m_info;
+  HeapInfo info_;
 };
 
-CORE_EXPORT size_t quantizeMemorySize(size_t);
+CORE_EXPORT size_t QuantizeMemorySize(size_t);
 
 }  // namespace blink
 

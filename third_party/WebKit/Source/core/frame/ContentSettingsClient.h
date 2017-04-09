@@ -26,75 +26,75 @@ class CORE_EXPORT ContentSettingsClient {
  public:
   ContentSettingsClient();
 
-  void setClient(WebContentSettingsClient* client) { m_client = client; }
+  void SetClient(WebContentSettingsClient* client) { client_ = client; }
 
   // Controls whether access to Web Databases is allowed.
-  bool allowDatabase(const String& name,
-                     const String& displayName,
-                     unsigned estimatedSize);
+  bool AllowDatabase(const String& name,
+                     const String& display_name,
+                     unsigned estimated_size);
 
   // Controls whether access to File System is allowed for this frame.
-  bool requestFileSystemAccessSync();
+  bool RequestFileSystemAccessSync();
 
   // Controls whether access to File System is allowed for this frame.
-  void requestFileSystemAccessAsync(std::unique_ptr<ContentSettingCallbacks>);
+  void RequestFileSystemAccessAsync(std::unique_ptr<ContentSettingCallbacks>);
 
   // Controls whether access to File System is allowed.
-  bool allowIndexedDB(const String& name, SecurityOrigin*);
+  bool AllowIndexedDB(const String& name, SecurityOrigin*);
 
   // Controls whether scripts are allowed to execute.
-  bool allowScript(bool enabledPerSettings);
+  bool AllowScript(bool enabled_per_settings);
 
   // Controls whether scripts loaded from the given URL are allowed to execute.
-  bool allowScriptFromSource(bool enabledPerSettings, const KURL&);
+  bool AllowScriptFromSource(bool enabled_per_settings, const KURL&);
 
   // Controls whether plugins are allowed.
-  bool allowPlugins(bool enabledPerSettings);
+  bool AllowPlugins(bool enabled_per_settings);
 
   // Controls whether images are allowed.
-  bool allowImage(bool enabledPerSettings, const KURL&);
+  bool AllowImage(bool enabled_per_settings, const KURL&);
 
   // Controls whether insecure scripts are allowed to execute for this frame.
-  bool allowRunningInsecureContent(bool enabledPerSettings,
+  bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    SecurityOrigin*,
                                    const KURL&);
 
   // Controls whether HTML5 Web Storage is allowed for this frame.
   enum class StorageType { kLocal, kSession };
-  bool allowStorage(StorageType);
+  bool AllowStorage(StorageType);
 
   // Controls whether access to read the clipboard is allowed for this frame.
-  bool allowReadFromClipboard(bool defaultValue);
+  bool AllowReadFromClipboard(bool default_value);
 
   // Controls whether access to write the clipboard is allowed for this frame.
-  bool allowWriteToClipboard(bool defaultValue);
+  bool AllowWriteToClipboard(bool default_value);
 
   // Controls whether to enable MutationEvents for this frame.
   // The common use case of this method is actually to selectively disable
   // MutationEvents, but it's been named for consistency with the rest of the
   // interface.
-  bool allowMutationEvents(bool defaultValue);
+  bool AllowMutationEvents(bool default_value);
 
   // Controls whether autoplay is allowed for this frame.
-  bool allowAutoplay(bool defaultValue);
+  bool AllowAutoplay(bool default_value);
 
   // Reports that passive mixed content was found at the provided URL. It may or
   // may not be actually displayed later, what would be flagged by
   // didDisplayInsecureContent.
-  void passiveInsecureContentFound(const KURL&);
+  void PassiveInsecureContentFound(const KURL&);
 
   // This callback notifies the client that the frame was about to run
   // JavaScript but did not because allowScript returned false. We have a
   // separate callback here because there are a number of places that need to
   // know if JavaScript is enabled but are not necessarily preparing to execute
   // script.
-  void didNotAllowScript();
+  void DidNotAllowScript();
 
   // This callback is similar, but for plugins.
-  void didNotAllowPlugins();
+  void DidNotAllowPlugins();
 
  private:
-  WebContentSettingsClient* m_client = nullptr;
+  WebContentSettingsClient* client_ = nullptr;
 };
 
 }  // namespace blink

@@ -131,7 +131,7 @@ void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExposeInternalsForTesting)) {
-    blink::WebTestingSupport::injectInternalsObject(context);
+    blink::WebTestingSupport::InjectInternalsObject(context);
   }
 }
 

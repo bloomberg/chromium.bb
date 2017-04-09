@@ -36,44 +36,43 @@
 namespace blink {
 
 DistanceEffect::DistanceEffect()
-    : m_model(ModelInverse),
-      m_refDistance(1.0),
-      m_maxDistance(10000.0),
-      m_rolloffFactor(1.0) {}
+    : model_(kModelInverse),
+      ref_distance_(1.0),
+      max_distance_(10000.0),
+      rolloff_factor_(1.0) {}
 
-double DistanceEffect::gain(double distance) {
+double DistanceEffect::Gain(double distance) {
   // Don't get closer than the reference distance or go beyond the maximum
   // distance.
-  distance = clampTo(distance, m_refDistance, m_maxDistance);
+  distance = clampTo(distance, ref_distance_, max_distance_);
 
-  switch (m_model) {
-    case ModelLinear:
-      return linearGain(distance);
-    case ModelInverse:
-      return inverseGain(distance);
-    case ModelExponential:
-      return exponentialGain(distance);
+  switch (model_) {
+    case kModelLinear:
+      return LinearGain(distance);
+    case kModelInverse:
+      return InverseGain(distance);
+    case kModelExponential:
+      return ExponentialGain(distance);
   }
   NOTREACHED();
   return 0.0;
 }
 
-double DistanceEffect::linearGain(double distance) {
+double DistanceEffect::LinearGain(double distance) {
   // We want a gain that decreases linearly from m_refDistance to
   // m_maxDistance. The gain is 1 at m_refDistance.
-  return (1.0 -
-          clampTo(m_rolloffFactor, 0.0, 1.0) * (distance - m_refDistance) /
-              (m_maxDistance - m_refDistance));
+  return (1.0 - clampTo(rolloff_factor_, 0.0, 1.0) *
+                    (distance - ref_distance_) /
+                    (max_distance_ - ref_distance_));
 }
 
-double DistanceEffect::inverseGain(double distance) {
-  return m_refDistance /
-         (m_refDistance +
-          clampTo(m_rolloffFactor, 0.0) * (distance - m_refDistance));
+double DistanceEffect::InverseGain(double distance) {
+  return ref_distance_ / (ref_distance_ + clampTo(rolloff_factor_, 0.0) *
+                                              (distance - ref_distance_));
 }
 
-double DistanceEffect::exponentialGain(double distance) {
-  return pow(distance / m_refDistance, -clampTo(m_rolloffFactor, 0.0));
+double DistanceEffect::ExponentialGain(double distance) {
+  return pow(distance / ref_distance_, -clampTo(rolloff_factor_, 0.0));
 }
 
 }  // namespace blink

@@ -55,19 +55,19 @@ class PLATFORM_EXPORT GeometryMapper {
   //
   // TODO(chrishtr): we should provide a variant of these methods that
   // guarantees a tight result, or else signals an error. crbug.com/708741
-  static void sourceToDestinationVisualRect(
-      const PropertyTreeState& sourceState,
-      const PropertyTreeState& destinationState,
-      FloatClipRect& mappingRect);
+  static void SourceToDestinationVisualRect(
+      const PropertyTreeState& source_state,
+      const PropertyTreeState& destination_state,
+      FloatClipRect& mapping_rect);
 
   // Same as sourceToDestinationVisualRect() except that only transforms are
   // applied.
   //
   // |mappingRect| is both input and output.
-  static void sourceToDestinationRect(
-      const TransformPaintPropertyNode* sourceTransformNode,
-      const TransformPaintPropertyNode* destinationTransformNode,
-      FloatRect& mappingRect);
+  static void SourceToDestinationRect(
+      const TransformPaintPropertyNode* source_transform_node,
+      const TransformPaintPropertyNode* destination_transform_node,
+      FloatRect& mapping_rect);
 
   // Maps from a rect in |localTransformSpace| to its visual rect in
   // |ancestorState|. This is computed by multiplying the rect by its combined
@@ -87,10 +87,10 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
-  static void localToAncestorVisualRect(
-      const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState,
-      FloatClipRect& mappingRect);
+  static void LocalToAncestorVisualRect(
+      const PropertyTreeState& local_transform_state,
+      const PropertyTreeState& ancestor_state,
+      FloatClipRect& mapping_rect);
 
   // Maps from a rect in |localTransformNode| space to its transformed rect in
   // |ancestorTransformNode| space. This is computed by multiplying the rect by
@@ -101,10 +101,10 @@ class PLATFORM_EXPORT GeometryMapper {
   // |ancestorTransformNode|.
   //
   //|mappingRect| is both input and output.
-  static void localToAncestorRect(
-      const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode,
-      FloatRect& mappingRect);
+  static void LocalToAncestorRect(
+      const TransformPaintPropertyNode* local_transform_node,
+      const TransformPaintPropertyNode* ancestor_transform_node,
+      FloatRect& mapping_rect);
 
   // Maps from a rect in |ancestorTransformNode| space to its transformed rect
   // in |localTransformNode| space. This is computed by multiplying the rect by
@@ -116,10 +116,10 @@ class PLATFORM_EXPORT GeometryMapper {
   // |ancestorTransformNode|.
   //
   // |mappingRect| is both input and output.
-  static void ancestorToLocalRect(
-      const TransformPaintPropertyNode* ancestorTransformNode,
-      const TransformPaintPropertyNode* localTransformNode,
-      FloatRect& mappingRect);
+  static void AncestorToLocalRect(
+      const TransformPaintPropertyNode* ancestor_transform_node,
+      const TransformPaintPropertyNode* local_transform_node,
+      FloatRect& mapping_rect);
 
   // Returns the matrix used in |LocalToAncestorRect|. DCHECK fails iff
   // |localTransformNode| is not equal to or a descendant of
@@ -128,9 +128,9 @@ class PLATFORM_EXPORT GeometryMapper {
   // flattened ancestor spaces, the returned matrix must be flattened to have
   // the correct semantics (calling mapRect() on it implicitly applies
   // flattening to the input; flattenTo2d() does it explicitly to tme matrix).
-  static const TransformationMatrix& localToAncestorMatrix(
-      const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode);
+  static const TransformationMatrix& LocalToAncestorMatrix(
+      const TransformPaintPropertyNode* local_transform_node,
+      const TransformPaintPropertyNode* ancestor_transform_node);
 
   // Returns the "clip visual rect" between |localTransformState| and
   // |ancestorState|. See above for the definition of "clip visual rect".
@@ -138,9 +138,9 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
-  static FloatClipRect localToAncestorClipRect(
-      const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState);
+  static FloatClipRect LocalToAncestorClipRect(
+      const PropertyTreeState& local_transform_state,
+      const PropertyTreeState& ancestor_state);
 
   // Like localToAncestorClipRect, except it can handle destination transform
   // spaces which are not direct ancestors of the source transform space.
@@ -148,16 +148,16 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
-  static const FloatClipRect& sourceToDestinationClipRect(
-      const PropertyTreeState& sourceState,
-      const PropertyTreeState& destinationState);
+  static const FloatClipRect& SourceToDestinationClipRect(
+      const PropertyTreeState& source_state,
+      const PropertyTreeState& destination_state);
 
   // Returns the lowest common ancestor in the paint property tree.
   template <typename NodeType>
-  static PLATFORM_EXPORT const NodeType* lowestCommonAncestor(const NodeType*,
+  static PLATFORM_EXPORT const NodeType* LowestCommonAncestor(const NodeType*,
                                                               const NodeType*);
 
-  static void clearCache();
+  static void ClearCache();
 
  private:
   // The internal methods do the same things as their public counterparts, but
@@ -165,49 +165,49 @@ class PLATFORM_EXPORT GeometryMapper {
   // successful on return. See comments of the public functions for failure
   // conditions.
 
-  static void sourceToDestinationVisualRectInternal(
-      const PropertyTreeState& sourceState,
-      const PropertyTreeState& destinationState,
-      FloatClipRect& mappingRect,
+  static void SourceToDestinationVisualRectInternal(
+      const PropertyTreeState& source_state,
+      const PropertyTreeState& destination_state,
+      FloatClipRect& mapping_rect,
       bool& success);
 
-  static void localToAncestorVisualRectInternal(
-      const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState,
-      FloatClipRect& mappingRect,
+  static void LocalToAncestorVisualRectInternal(
+      const PropertyTreeState& local_transform_state,
+      const PropertyTreeState& ancestor_state,
+      FloatClipRect& mapping_rect,
       bool& success);
 
-  static void localToAncestorRectInternal(
-      const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode,
+  static void LocalToAncestorRectInternal(
+      const TransformPaintPropertyNode* local_transform_node,
+      const TransformPaintPropertyNode* ancestor_transform_node,
       FloatRect&,
       bool& success);
 
-  static const TransformationMatrix& localToAncestorMatrixInternal(
-      const TransformPaintPropertyNode* localTransformNode,
-      const TransformPaintPropertyNode* ancestorTransformNode,
+  static const TransformationMatrix& LocalToAncestorMatrixInternal(
+      const TransformPaintPropertyNode* local_transform_node,
+      const TransformPaintPropertyNode* ancestor_transform_node,
       bool& success);
 
-  static const FloatClipRect& localToAncestorClipRectInternal(
+  static const FloatClipRect& LocalToAncestorClipRectInternal(
       const ClipPaintPropertyNode* descendant,
-      const ClipPaintPropertyNode* ancestorClip,
-      const TransformPaintPropertyNode* ancestorTransform,
+      const ClipPaintPropertyNode* ancestor_clip,
+      const TransformPaintPropertyNode* ancestor_transform,
       bool& success);
 
-  static const FloatClipRect& sourceToDestinationClipRectInternal(
-      const PropertyTreeState& sourceState,
-      const PropertyTreeState& destinationState,
+  static const FloatClipRect& SourceToDestinationClipRectInternal(
+      const PropertyTreeState& source_state,
+      const PropertyTreeState& destination_state,
       bool& success);
 
-  static void slowLocalToAncestorVisualRectWithEffects(
-      const PropertyTreeState& localState,
-      const PropertyTreeState& ancestorState,
-      FloatClipRect& mappingRect,
+  static void SlowLocalToAncestorVisualRectWithEffects(
+      const PropertyTreeState& local_state,
+      const PropertyTreeState& ancestor_state,
+      FloatClipRect& mapping_rect,
       bool& success);
 
-  static const TransformationMatrix& identityMatrix();
-  static const FloatClipRect& infiniteClip();
-  static FloatClipRect& tempRect();
+  static const TransformationMatrix& IdentityMatrix();
+  static const FloatClipRect& InfiniteClip();
+  static FloatClipRect& TempRect();
 
   friend class GeometryMapperTest;
   friend class PaintLayerClipperTest;

@@ -11,21 +11,21 @@ namespace blink {
 
 LayoutUnit NGBoxFragment::InlineOverflow() const {
   return writing_mode_ == kHorizontalTopBottom
-             ? toNGPhysicalBoxFragment(physical_fragment_)->WidthOverflow()
-             : toNGPhysicalBoxFragment(physical_fragment_)->HeightOverflow();
+             ? ToNGPhysicalBoxFragment(physical_fragment_)->WidthOverflow()
+             : ToNGPhysicalBoxFragment(physical_fragment_)->HeightOverflow();
 }
 
 LayoutUnit NGBoxFragment::BlockOverflow() const {
   return writing_mode_ == kHorizontalTopBottom
-             ? toNGPhysicalBoxFragment(physical_fragment_)->HeightOverflow()
-             : toNGPhysicalBoxFragment(physical_fragment_)->WidthOverflow();
+             ? ToNGPhysicalBoxFragment(physical_fragment_)->HeightOverflow()
+             : ToNGPhysicalBoxFragment(physical_fragment_)->WidthOverflow();
 }
 
 const WTF::Optional<NGLogicalOffset>& NGBoxFragment::BfcOffset() const {
   WRITING_MODE_IGNORED(
       "Accessing BFC offset is allowed here because writing"
       "modes are irrelevant in this case.");
-  return toNGPhysicalBoxFragment(physical_fragment_)->BfcOffset();
+  return ToNGPhysicalBoxFragment(physical_fragment_)->BfcOffset();
 }
 
 const NGMarginStrut& NGBoxFragment::EndMarginStrut() const {
@@ -33,7 +33,7 @@ const NGMarginStrut& NGBoxFragment::EndMarginStrut() const {
       "Accessing the margin strut is fine here. Changing the writing mode"
       "establishes a new formatting context, for which a margin strut is"
       "never set for a fragment.");
-  return toNGPhysicalBoxFragment(physical_fragment_)->EndMarginStrut();
+  return ToNGPhysicalBoxFragment(physical_fragment_)->EndMarginStrut();
 }
 
 }  // namespace blink

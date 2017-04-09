@@ -25,13 +25,13 @@ class GlobalFetch {
    public:
     virtual ~ScopedFetcher();
 
-    virtual ScriptPromise fetch(ScriptState*,
+    virtual ScriptPromise Fetch(ScriptState*,
                                 const RequestInfo&,
                                 const Dictionary&,
                                 ExceptionState&) = 0;
 
-    static ScopedFetcher* from(LocalDOMWindow&);
-    static ScopedFetcher* from(WorkerGlobalScope&);
+    static ScopedFetcher* From(LocalDOMWindow&);
+    static ScopedFetcher* From(WorkerGlobalScope&);
 
     DECLARE_VIRTUAL_TRACE();
   };

@@ -41,26 +41,26 @@ class Event;
 
 class V8WorkerGlobalScopeEventListener final : public V8EventListener {
  public:
-  static V8WorkerGlobalScopeEventListener* create(
+  static V8WorkerGlobalScopeEventListener* Create(
       v8::Local<v8::Object> listener,
-      bool isInline,
-      ScriptState* scriptState) {
-    V8WorkerGlobalScopeEventListener* eventListener =
-        new V8WorkerGlobalScopeEventListener(isInline, scriptState);
-    eventListener->setListenerObject(listener);
-    return eventListener;
+      bool is_inline,
+      ScriptState* script_state) {
+    V8WorkerGlobalScopeEventListener* event_listener =
+        new V8WorkerGlobalScopeEventListener(is_inline, script_state);
+    event_listener->SetListenerObject(listener);
+    return event_listener;
   }
 
-  void handleEvent(ScriptState*, Event*) override;
+  void HandleEvent(ScriptState*, Event*) override;
 
  protected:
-  V8WorkerGlobalScopeEventListener(bool isInline, ScriptState*);
+  V8WorkerGlobalScopeEventListener(bool is_inline, ScriptState*);
 
  private:
-  v8::Local<v8::Value> callListenerFunction(ScriptState*,
+  v8::Local<v8::Value> CallListenerFunction(ScriptState*,
                                             v8::Local<v8::Value>,
                                             Event*) override;
-  v8::Local<v8::Object> getReceiverObject(ScriptState*, Event*);
+  v8::Local<v8::Object> GetReceiverObject(ScriptState*, Event*);
 };
 
 }  // namespace blink

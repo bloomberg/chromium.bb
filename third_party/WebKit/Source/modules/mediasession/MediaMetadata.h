@@ -31,7 +31,7 @@ class MODULES_EXPORT MediaMetadata final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaMetadata* create(ScriptState*,
+  static MediaMetadata* Create(ScriptState*,
                                const MediaMetadataInit&,
                                ExceptionState&);
 
@@ -50,7 +50,7 @@ class MODULES_EXPORT MediaMetadata final
   void setArtwork(ScriptState*, const HeapVector<MediaImage>&, ExceptionState&);
 
   // Called by MediaSession to associate or de-associate itself.
-  void setSession(MediaSession*);
+  void SetSession(MediaSession*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -60,25 +60,25 @@ class MODULES_EXPORT MediaMetadata final
   // Called when one of the metadata fields is updated from script. It will
   // notify the session asynchronously in order to bundle multiple call in one
   // notification.
-  void notifySessionAsync();
+  void NotifySessionAsync();
 
   // Called asynchronously after at least one field of MediaMetadata has been
   // modified.
-  void notifySessionTimerFired(TimerBase*);
+  void NotifySessionTimerFired(TimerBase*);
 
   // Make an internal copy of the MediaImage vector with some internal steps
   // such as parsing of the src property.
-  void setArtworkInternal(ScriptState*,
+  void SetArtworkInternal(ScriptState*,
                           const HeapVector<MediaImage>&,
                           ExceptionState&);
 
-  String m_title;
-  String m_artist;
-  String m_album;
-  HeapVector<MediaImage> m_artwork;
+  String title_;
+  String artist_;
+  String album_;
+  HeapVector<MediaImage> artwork_;
 
-  Member<MediaSession> m_session;
-  TaskRunnerTimer<MediaMetadata> m_notifySessionTimer;
+  Member<MediaSession> session_;
+  TaskRunnerTimer<MediaMetadata> notify_session_timer_;
 };
 
 }  // namespace blink

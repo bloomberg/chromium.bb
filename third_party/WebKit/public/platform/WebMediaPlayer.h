@@ -60,73 +60,73 @@ struct WebSize;
 class WebMediaPlayer {
  public:
   enum NetworkState {
-    NetworkStateEmpty,
-    NetworkStateIdle,
-    NetworkStateLoading,
-    NetworkStateLoaded,
-    NetworkStateFormatError,
-    NetworkStateNetworkError,
-    NetworkStateDecodeError,
+    kNetworkStateEmpty,
+    kNetworkStateIdle,
+    kNetworkStateLoading,
+    kNetworkStateLoaded,
+    kNetworkStateFormatError,
+    kNetworkStateNetworkError,
+    kNetworkStateDecodeError,
   };
 
   enum ReadyState {
-    ReadyStateHaveNothing,
-    ReadyStateHaveMetadata,
-    ReadyStateHaveCurrentData,
-    ReadyStateHaveFutureData,
-    ReadyStateHaveEnoughData,
+    kReadyStateHaveNothing,
+    kReadyStateHaveMetadata,
+    kReadyStateHaveCurrentData,
+    kReadyStateHaveFutureData,
+    kReadyStateHaveEnoughData,
   };
 
   enum Preload {
-    PreloadNone,
-    PreloadMetaData,
-    PreloadAuto,
+    kPreloadNone,
+    kPreloadMetaData,
+    kPreloadAuto,
   };
 
   enum CORSMode {
-    CORSModeUnspecified,
-    CORSModeAnonymous,
-    CORSModeUseCredentials,
+    kCORSModeUnspecified,
+    kCORSModeAnonymous,
+    kCORSModeUseCredentials,
   };
 
   // Reported to UMA. Do not change existing values.
   enum LoadType {
-    LoadTypeURL = 0,
-    LoadTypeMediaSource = 1,
-    LoadTypeMediaStream = 2,
-    LoadTypeMax = LoadTypeMediaStream,
+    kLoadTypeURL = 0,
+    kLoadTypeMediaSource = 1,
+    kLoadTypeMediaStream = 2,
+    kLoadTypeMax = kLoadTypeMediaStream,
   };
 
   typedef WebString TrackId;
-  enum TrackType { TextTrack, AudioTrack, VideoTrack };
+  enum TrackType { kTextTrack, kAudioTrack, kVideoTrack };
 
   // This must stay in sync with WebGLRenderingContextBase::TexImageFunctionID.
   enum TexImageFunctionID {
-    TexImage2D,
-    TexSubImage2D,
-    TexImage3D,
-    TexSubImage3D
+    kTexImage2D,
+    kTexSubImage2D,
+    kTexImage3D,
+    kTexSubImage3D
   };
 
   virtual ~WebMediaPlayer() {}
 
-  virtual void load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
+  virtual void Load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
 
   // Playback controls.
-  virtual void play() = 0;
-  virtual void pause() = 0;
-  virtual bool supportsSave() const = 0;
-  virtual void seek(double seconds) = 0;
-  virtual void setRate(double) = 0;
-  virtual void setVolume(double) = 0;
+  virtual void Play() = 0;
+  virtual void Pause() = 0;
+  virtual bool SupportsSave() const = 0;
+  virtual void Seek(double seconds) = 0;
+  virtual void SetRate(double) = 0;
+  virtual void SetVolume(double) = 0;
 
-  virtual void requestRemotePlayback() {}
-  virtual void requestRemotePlaybackControl() {}
-  virtual void requestRemotePlaybackStop() {}
-  virtual void requestRemotePlaybackDisabled(bool disabled) {}
-  virtual void setPreload(Preload) {}
-  virtual WebTimeRanges buffered() const = 0;
-  virtual WebTimeRanges seekable() const = 0;
+  virtual void RequestRemotePlayback() {}
+  virtual void RequestRemotePlaybackControl() {}
+  virtual void RequestRemotePlaybackStop() {}
+  virtual void RequestRemotePlaybackDisabled(bool disabled) {}
+  virtual void SetPreload(Preload) {}
+  virtual WebTimeRanges Buffered() const = 0;
+  virtual WebTimeRanges Seekable() const = 0;
 
   // Attempts to switch the audio output device.
   // Implementations of setSinkId take ownership of the WebSetSinkCallbacks
@@ -135,45 +135,45 @@ class WebMediaPlayer {
   // methods of the WebSetSinkCallbacks object, including constructors and
   // destructors, run in the same thread where the object is created
   // (i.e., the blink thread).
-  virtual void setSinkId(const WebString& sinkId,
+  virtual void SetSinkId(const WebString& sink_id,
                          const WebSecurityOrigin&,
                          WebSetSinkIdCallbacks*) = 0;
 
   // True if the loaded media has a playable video/audio track.
-  virtual bool hasVideo() const = 0;
-  virtual bool hasAudio() const = 0;
+  virtual bool HasVideo() const = 0;
+  virtual bool HasAudio() const = 0;
 
   // True if the media is being played on a remote device.
-  virtual bool isRemote() const { return false; }
+  virtual bool IsRemote() const { return false; }
 
   // Dimension of the video.
-  virtual WebSize naturalSize() const = 0;
+  virtual WebSize NaturalSize() const = 0;
 
   // Getters of playback state.
-  virtual bool paused() const = 0;
-  virtual bool seeking() const = 0;
-  virtual double duration() const = 0;
-  virtual double currentTime() const = 0;
+  virtual bool Paused() const = 0;
+  virtual bool Seeking() const = 0;
+  virtual double Duration() const = 0;
+  virtual double CurrentTime() const = 0;
 
   // Internal states of loading and network.
-  virtual NetworkState getNetworkState() const = 0;
-  virtual ReadyState getReadyState() const = 0;
+  virtual NetworkState GetNetworkState() const = 0;
+  virtual ReadyState GetReadyState() const = 0;
 
-  virtual WebString getErrorMessage() = 0;
-  virtual bool didLoadingProgress() = 0;
+  virtual WebString GetErrorMessage() = 0;
+  virtual bool DidLoadingProgress() = 0;
 
-  virtual bool hasSingleSecurityOrigin() const = 0;
-  virtual bool didPassCORSAccessCheck() const = 0;
+  virtual bool HasSingleSecurityOrigin() const = 0;
+  virtual bool DidPassCORSAccessCheck() const = 0;
 
-  virtual double mediaTimeForTimeValue(double timeValue) const = 0;
+  virtual double MediaTimeForTimeValue(double time_value) const = 0;
 
-  virtual unsigned decodedFrameCount() const = 0;
-  virtual unsigned droppedFrameCount() const = 0;
-  virtual unsigned corruptedFrameCount() const { return 0; }
-  virtual size_t audioDecodedByteCount() const = 0;
-  virtual size_t videoDecodedByteCount() const = 0;
+  virtual unsigned DecodedFrameCount() const = 0;
+  virtual unsigned DroppedFrameCount() const = 0;
+  virtual unsigned CorruptedFrameCount() const { return 0; }
+  virtual size_t AudioDecodedByteCount() const = 0;
+  virtual size_t VideoDecodedByteCount() const = 0;
 
-  virtual void paint(WebCanvas*, const WebRect&, cc::PaintFlags&) = 0;
+  virtual void Paint(WebCanvas*, const WebRect&, cc::PaintFlags&) = 0;
 
   // TODO(kbr): remove non-|target| version. crbug.com/349871
   //
@@ -181,10 +181,10 @@ class WebMediaPlayer {
   // video frame to |texture|. Caller is responsible for allocating
   // |texture| with the appropriate size. If the copy is impossible or
   // fails, it returns false.
-  virtual bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
+  virtual bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                  unsigned texture,
-                                                 bool premultiplyAlpha,
-                                                 bool flipY) {
+                                                 bool premultiply_alpha,
+                                                 bool flip_y) {
     return false;
   }
 
@@ -192,26 +192,26 @@ class WebMediaPlayer {
   // |internalFormat| and |type| parameters. crbug.com/349871
   // Do a GPU-GPU textures copy. If the copy is impossible or fails, it returns
   // false.
-  virtual bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
+  virtual bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                  unsigned target,
                                                  unsigned texture,
-                                                 unsigned internalFormat,
+                                                 unsigned internal_format,
                                                  unsigned type,
                                                  int level,
-                                                 bool premultiplyAlpha,
-                                                 bool flipY) {
+                                                 bool premultiply_alpha,
+                                                 bool flip_y) {
     return false;
   }
   // Copy sub video frame texture to |texture|. If the copy is impossible or
   // fails, it returns false.
-  virtual bool copyVideoSubTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
+  virtual bool CopyVideoSubTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                     unsigned target,
                                                     unsigned texture,
                                                     int level,
                                                     int xoffset,
                                                     int yoffset,
-                                                    bool premultiplyAlpha,
-                                                    bool flipY) {
+                                                    bool premultiply_alpha,
+                                                    bool flip_y) {
     return false;
   }
 
@@ -224,7 +224,7 @@ class WebMediaPlayer {
   // call. In addition, TexSubImage2D and TexSubImage3D require that previous
   // TexImage2D and TexSubImage3D calls, respectivelly, defined the texture
   // content.
-  virtual bool texImageImpl(TexImageFunctionID functionID,
+  virtual bool TexImageImpl(TexImageFunctionID function_id,
                             unsigned target,
                             gpu::gles2::GLES2Interface* gl,
                             int level,
@@ -234,37 +234,37 @@ class WebMediaPlayer {
                             int xoffset,
                             int yoffset,
                             int zoffset,
-                            bool flipY,
-                            bool premultiplyAlpha) {
+                            bool flip_y,
+                            bool premultiply_alpha) {
     return false;
   }
 
-  virtual WebAudioSourceProvider* getAudioSourceProvider() { return nullptr; }
+  virtual WebAudioSourceProvider* GetAudioSourceProvider() { return nullptr; }
 
-  virtual void setContentDecryptionModule(
+  virtual void SetContentDecryptionModule(
       WebContentDecryptionModule* cdm,
       WebContentDecryptionModuleResult result) {
-    result.completeWithError(
-        WebContentDecryptionModuleExceptionNotSupportedError, 0, "ERROR");
+    result.CompleteWithError(
+        kWebContentDecryptionModuleExceptionNotSupportedError, 0, "ERROR");
   }
 
   // Sets the poster image URL.
-  virtual void setPoster(const WebURL& poster) {}
+  virtual void SetPoster(const WebURL& poster) {}
 
   // Whether the WebMediaPlayer supports overlay fullscreen video mode. When
   // this is true, the video layer will be removed from the layer tree when
   // entering fullscreen, and the WebMediaPlayer is responsible for displaying
   // the video in enteredFullscreen().
-  virtual bool supportsOverlayFullscreenVideo() { return false; }
+  virtual bool SupportsOverlayFullscreenVideo() { return false; }
   // Inform WebMediaPlayer when the element has entered/exited fullscreen.
-  virtual void enteredFullscreen() {}
-  virtual void exitedFullscreen() {}
+  virtual void EnteredFullscreen() {}
+  virtual void ExitedFullscreen() {}
 
   // Inform WebMediaPlayer when the element starts/stops being the dominant
   // visible content. This will only be called after the monitoring of the
   // intersection with viewport is activated by calling
   // WebMediaPlayerClient::activateViewportIntersectionMonitoring().
-  virtual void becameDominantVisibleContent(bool isDominant) {}
+  virtual void BecameDominantVisibleContent(bool is_dominant) {}
 
   // Inform WebMediaPlayer when the element starts/stops being the effectively
   // fullscreen video, i.e. being the fullscreen element or child of the
@@ -272,17 +272,17 @@ class WebMediaPlayer {
   //
   // TODO(zqzhang): merge with becameDominantVisibleContent(). See
   // https://crbug.com/696211
-  virtual void setIsEffectivelyFullscreen(bool) {}
+  virtual void SetIsEffectivelyFullscreen(bool) {}
 
-  virtual void enabledAudioTracksChanged(
-      const WebVector<TrackId>& enabledTrackIds) {}
+  virtual void EnabledAudioTracksChanged(
+      const WebVector<TrackId>& enabled_track_ids) {}
   // |selectedTrackId| is null if no track is selected.
-  virtual void selectedVideoTrackChanged(TrackId* selectedTrackId) {}
+  virtual void SelectedVideoTrackChanged(TrackId* selected_track_id) {}
 
   // TODO(kainino): This is for a prototype implementation for getting the
   // width, height, and timestamp of the last frame uploaded to a WebGL
   // texture. https://crbug.com/639174
-  virtual bool getLastUploadedFrameInfo(unsigned* width,
+  virtual bool GetLastUploadedFrameInfo(unsigned* width,
                                         unsigned* height,
                                         double* timestamp) {
     return false;

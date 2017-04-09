@@ -715,7 +715,7 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
 
   NavigationController::LoadURLParams load_params(GURL("http://foo/2"));
   load_params.referrer =
-      Referrer(GURL("http://referrer"), blink::WebReferrerPolicyDefault);
+      Referrer(GURL("http://referrer"), blink::kWebReferrerPolicyDefault);
   load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   load_params.extra_headers = "content-type: text/plain";
   load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
@@ -2229,8 +2229,8 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   // Prereq: add a subframe with an initial auto-subframe navigation.
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), unique_name, blink::WebSandboxFlags::None,
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name, blink::WebSandboxFlags::kNone,
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -2309,8 +2309,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   // Add a subframe and navigate it.
   std::string unique_name0("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), unique_name0, blink::WebSandboxFlags::None,
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name0, blink::WebSandboxFlags::kNone,
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -2353,8 +2353,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   // Add a second subframe and navigate.
   std::string unique_name1("uniqueName1");
   main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), unique_name1, blink::WebSandboxFlags::None,
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name1, blink::WebSandboxFlags::kNone,
       FrameOwnerProperties());
   TestRenderFrameHost* subframe2 = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(1)->current_frame_host());
@@ -2396,10 +2396,10 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
 
   // Add a nested subframe and navigate.
   std::string unique_name2("uniqueName2");
-  subframe->OnCreateChildFrame(process()->GetNextRoutingID(),
-                               blink::WebTreeScopeType::Document, std::string(),
-                               unique_name2, blink::WebSandboxFlags::None,
-                               FrameOwnerProperties());
+  subframe->OnCreateChildFrame(
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name2, blink::WebSandboxFlags::kNone,
+      FrameOwnerProperties());
   TestRenderFrameHost* subframe3 =
       static_cast<TestRenderFrameHost*>(contents()
                                             ->GetFrameTree()
@@ -2461,8 +2461,8 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // Prereq: add a subframe with an initial auto-subframe navigation.
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), unique_name, blink::WebSandboxFlags::None,
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name, blink::WebSandboxFlags::kNone,
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -3915,8 +3915,8 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   // Add and navigate a subframe that would normally count as in-page.
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), unique_name, blink::WebSandboxFlags::None,
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name, blink::WebSandboxFlags::kNone,
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -4090,8 +4090,8 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   // automatically loaded. Auto subframes don't increment the page ID.
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
-      process()->GetNextRoutingID(), blink::WebTreeScopeType::Document,
-      std::string(), unique_name, blink::WebSandboxFlags::None,
+      process()->GetNextRoutingID(), blink::WebTreeScopeType::kDocument,
+      std::string(), unique_name, blink::WebSandboxFlags::kNone,
       FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());

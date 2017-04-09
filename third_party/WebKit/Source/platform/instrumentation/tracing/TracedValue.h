@@ -19,26 +19,26 @@ class PLATFORM_EXPORT TracedValue final
  public:
   ~TracedValue();
 
-  static std::unique_ptr<TracedValue> create();
+  static std::unique_ptr<TracedValue> Create();
 
-  void endDictionary();
-  void endArray();
+  void EndDictionary();
+  void EndArray();
 
-  void setInteger(const char* name, int value);
-  void setDouble(const char* name, double);
-  void setBoolean(const char* name, bool value);
-  void setString(const char* name, const String& value);
-  void beginArray(const char* name);
-  void beginDictionary(const char* name);
+  void SetInteger(const char* name, int value);
+  void SetDouble(const char* name, double);
+  void SetBoolean(const char* name, bool value);
+  void SetString(const char* name, const String& value);
+  void BeginArray(const char* name);
+  void BeginDictionary(const char* name);
 
-  void pushInteger(int);
-  void pushDouble(double);
-  void pushBoolean(bool);
-  void pushString(const String&);
-  void beginArray();
-  void beginDictionary();
+  void PushInteger(int);
+  void PushDouble(double);
+  void PushBoolean(bool);
+  void PushString(const String&);
+  void BeginArray();
+  void BeginDictionary();
 
-  String toString() const;
+  String ToString() const;
 
  private:
   TracedValue();
@@ -51,7 +51,7 @@ class PLATFORM_EXPORT TracedValue final
   void EstimateTraceMemoryOverhead(
       base::trace_event::TraceEventMemoryOverhead*) final;
 
-  base::trace_event::TracedValue m_tracedValue;
+  base::trace_event::TracedValue traced_value_;
 };
 
 }  // namespace blink

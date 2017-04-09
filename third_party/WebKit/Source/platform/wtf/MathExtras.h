@@ -413,7 +413,7 @@ inline void doubleToInteger(double d, unsigned long long& value) {
 
 namespace WTF {
 
-inline unsigned fastLog2(unsigned i) {
+inline unsigned FastLog2(unsigned i) {
   unsigned log2 = 0;
   if (i & (i - 1))
     log2 += 1;

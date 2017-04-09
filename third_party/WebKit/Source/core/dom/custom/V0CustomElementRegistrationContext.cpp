@@ -45,109 +45,110 @@
 namespace blink {
 
 V0CustomElementRegistrationContext::V0CustomElementRegistrationContext()
-    : m_candidates(V0CustomElementUpgradeCandidateMap::create()) {}
+    : candidates_(V0CustomElementUpgradeCandidateMap::Create()) {}
 
-void V0CustomElementRegistrationContext::registerElement(
+void V0CustomElementRegistrationContext::RegisterElement(
     Document* document,
-    V0CustomElementConstructorBuilder* constructorBuilder,
+    V0CustomElementConstructorBuilder* constructor_builder,
     const AtomicString& type,
-    V0CustomElement::NameSet validNames,
-    ExceptionState& exceptionState) {
-  V0CustomElementDefinition* definition = m_registry.registerElement(
-      document, constructorBuilder, type, validNames, exceptionState);
+    V0CustomElement::NameSet valid_names,
+    ExceptionState& exception_state) {
+  V0CustomElementDefinition* definition = registry_.RegisterElement(
+      document, constructor_builder, type, valid_names, exception_state);
 
   if (!definition)
     return;
 
   // Upgrade elements that were waiting for this definition.
-  V0CustomElementUpgradeCandidateMap::ElementSet* upgradeCandidates =
-      m_candidates->takeUpgradeCandidatesFor(definition->descriptor());
+  V0CustomElementUpgradeCandidateMap::ElementSet* upgrade_candidates =
+      candidates_->TakeUpgradeCandidatesFor(definition->Descriptor());
 
-  if (!upgradeCandidates)
+  if (!upgrade_candidates)
     return;
 
-  for (const auto& candidate : *upgradeCandidates)
-    V0CustomElement::define(candidate, definition);
+  for (const auto& candidate : *upgrade_candidates)
+    V0CustomElement::Define(candidate, definition);
 }
 
-Element* V0CustomElementRegistrationContext::createCustomTagElement(
+Element* V0CustomElementRegistrationContext::CreateCustomTagElement(
     Document& document,
-    const QualifiedName& tagName) {
-  DCHECK(V0CustomElement::isValidName(tagName.localName()));
+    const QualifiedName& tag_name) {
+  DCHECK(V0CustomElement::IsValidName(tag_name.LocalName()));
 
   Element* element;
 
-  if (HTMLNames::xhtmlNamespaceURI == tagName.namespaceURI()) {
-    element = HTMLElement::create(tagName, document);
-  } else if (SVGNames::svgNamespaceURI == tagName.namespaceURI()) {
-    element = SVGUnknownElement::create(tagName, document);
+  if (HTMLNames::xhtmlNamespaceURI == tag_name.NamespaceURI()) {
+    element = HTMLElement::Create(tag_name, document);
+  } else if (SVGNames::svgNamespaceURI == tag_name.NamespaceURI()) {
+    element = SVGUnknownElement::Create(tag_name, document);
   } else {
     // XML elements are not custom elements, so return early.
-    return Element::create(tagName, &document);
+    return Element::Create(tag_name, &document);
   }
 
-  element->setV0CustomElementState(Element::V0WaitingForUpgrade);
-  resolveOrScheduleResolution(element, nullAtom);
+  element->SetV0CustomElementState(Element::kV0WaitingForUpgrade);
+  ResolveOrScheduleResolution(element, g_null_atom);
   return element;
 }
 
-void V0CustomElementRegistrationContext::didGiveTypeExtension(
+void V0CustomElementRegistrationContext::DidGiveTypeExtension(
     Element* element,
     const AtomicString& type) {
-  resolveOrScheduleResolution(element, type);
+  ResolveOrScheduleResolution(element, type);
 }
 
-void V0CustomElementRegistrationContext::resolveOrScheduleResolution(
+void V0CustomElementRegistrationContext::ResolveOrScheduleResolution(
     Element* element,
-    const AtomicString& typeExtension) {
+    const AtomicString& type_extension) {
   // If an element has a custom tag name it takes precedence over
   // the "is" attribute (if any).
-  const AtomicString& type = V0CustomElement::isValidName(element->localName())
+  const AtomicString& type = V0CustomElement::IsValidName(element->localName())
                                  ? element->localName()
-                                 : typeExtension;
-  DCHECK(!type.isNull());
+                                 : type_extension;
+  DCHECK(!type.IsNull());
 
   V0CustomElementDescriptor descriptor(type, element->namespaceURI(),
                                        element->localName());
-  DCHECK_EQ(element->getV0CustomElementState(), Element::V0WaitingForUpgrade);
+  DCHECK_EQ(element->GetV0CustomElementState(), Element::kV0WaitingForUpgrade);
 
-  V0CustomElementScheduler::resolveOrScheduleResolution(this, element,
+  V0CustomElementScheduler::ResolveOrScheduleResolution(this, element,
                                                         descriptor);
 }
 
-void V0CustomElementRegistrationContext::resolve(
+void V0CustomElementRegistrationContext::Resolve(
     Element* element,
     const V0CustomElementDescriptor& descriptor) {
-  V0CustomElementDefinition* definition = m_registry.find(descriptor);
+  V0CustomElementDefinition* definition = registry_.Find(descriptor);
   if (definition) {
-    V0CustomElement::define(element, definition);
+    V0CustomElement::Define(element, definition);
   } else {
-    DCHECK_EQ(element->getV0CustomElementState(), Element::V0WaitingForUpgrade);
-    m_candidates->add(descriptor, element);
+    DCHECK_EQ(element->GetV0CustomElementState(),
+              Element::kV0WaitingForUpgrade);
+    candidates_->Add(descriptor, element);
   }
 }
 
-void V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(
+void V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
     Element* element,
     const AtomicString& type) {
   DCHECK(element);
-  DCHECK(!type.isEmpty());
+  DCHECK(!type.IsEmpty());
   element->setAttribute(HTMLNames::isAttr, type);
-  setTypeExtension(element, type);
+  SetTypeExtension(element, type);
 }
 
-void V0CustomElementRegistrationContext::setTypeExtension(
+void V0CustomElementRegistrationContext::SetTypeExtension(
     Element* element,
     const AtomicString& type) {
-  if (!element->isHTMLElement() && !element->isSVGElement())
+  if (!element->IsHTMLElement() && !element->IsSVGElement())
     return;
 
   V0CustomElementRegistrationContext* context =
-      element->document().registrationContext();
+      element->GetDocument().RegistrationContext();
   if (!context)
     return;
 
-  if (element->isV0CustomElement()) {
+  if (element->IsV0CustomElement()) {
     // This can happen if:
     // 1. The element has a custom tag, which takes precedence over
     //    type extensions.
@@ -157,29 +158,29 @@ void V0CustomElementRegistrationContext::setTypeExtension(
   }
 
   // Custom tags take precedence over type extensions
-  DCHECK(!V0CustomElement::isValidName(element->localName()));
+  DCHECK(!V0CustomElement::IsValidName(element->localName()));
 
-  if (!V0CustomElement::isValidName(type))
+  if (!V0CustomElement::IsValidName(type))
     return;
 
-  element->setV0CustomElementState(Element::V0WaitingForUpgrade);
-  context->didGiveTypeExtension(element,
-                                element->document().convertLocalName(type));
+  element->SetV0CustomElementState(Element::kV0WaitingForUpgrade);
+  context->DidGiveTypeExtension(element,
+                                element->GetDocument().ConvertLocalName(type));
 }
 
-bool V0CustomElementRegistrationContext::nameIsDefined(
+bool V0CustomElementRegistrationContext::NameIsDefined(
     const AtomicString& name) const {
-  return m_registry.nameIsDefined(name);
+  return registry_.NameIsDefined(name);
 }
 
-void V0CustomElementRegistrationContext::setV1(
+void V0CustomElementRegistrationContext::SetV1(
     const CustomElementRegistry* v1) {
-  m_registry.setV1(v1);
+  registry_.SetV1(v1);
 }
 
 DEFINE_TRACE(V0CustomElementRegistrationContext) {
-  visitor->trace(m_candidates);
-  visitor->trace(m_registry);
+  visitor->Trace(candidates_);
+  visitor->Trace(registry_);
 }
 
 }  // namespace blink

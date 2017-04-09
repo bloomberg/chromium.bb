@@ -43,107 +43,107 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
   class Acceleration final
       : public GarbageCollected<DeviceMotionData::Acceleration> {
    public:
-    static Acceleration* create(bool canProvideX,
+    static Acceleration* Create(bool can_provide_x,
                                 double x,
-                                bool canProvideY,
+                                bool can_provide_y,
                                 double y,
-                                bool canProvideZ,
+                                bool can_provide_z,
                                 double z);
-    static Acceleration* create(const DeviceAccelerationInit&);
+    static Acceleration* Create(const DeviceAccelerationInit&);
     DEFINE_INLINE_TRACE() {}
 
-    bool canProvideX() const { return m_canProvideX; }
-    bool canProvideY() const { return m_canProvideY; }
-    bool canProvideZ() const { return m_canProvideZ; }
+    bool CanProvideX() const { return can_provide_x_; }
+    bool CanProvideY() const { return can_provide_y_; }
+    bool CanProvideZ() const { return can_provide_z_; }
 
-    double x() const { return m_x; }
-    double y() const { return m_y; }
-    double z() const { return m_z; }
+    double X() const { return x_; }
+    double Y() const { return y_; }
+    double Z() const { return z_; }
 
    private:
-    Acceleration(bool canProvideX,
+    Acceleration(bool can_provide_x,
                  double x,
-                 bool canProvideY,
+                 bool can_provide_y,
                  double y,
-                 bool canProvideZ,
+                 bool can_provide_z,
                  double z);
 
-    double m_x;
-    double m_y;
-    double m_z;
+    double x_;
+    double y_;
+    double z_;
 
-    bool m_canProvideX;
-    bool m_canProvideY;
-    bool m_canProvideZ;
+    bool can_provide_x_;
+    bool can_provide_y_;
+    bool can_provide_z_;
   };
 
   class RotationRate final
       : public GarbageCollected<DeviceMotionData::RotationRate> {
    public:
-    static RotationRate* create(bool canProvideAlpha,
+    static RotationRate* Create(bool can_provide_alpha,
                                 double alpha,
-                                bool canProvideBeta,
+                                bool can_provide_beta,
                                 double beta,
-                                bool canProvideGamma,
+                                bool can_provide_gamma,
                                 double gamma);
-    static RotationRate* create(const DeviceRotationRateInit&);
+    static RotationRate* Create(const DeviceRotationRateInit&);
     DEFINE_INLINE_TRACE() {}
 
-    bool canProvideAlpha() const { return m_canProvideAlpha; }
-    bool canProvideBeta() const { return m_canProvideBeta; }
-    bool canProvideGamma() const { return m_canProvideGamma; }
+    bool CanProvideAlpha() const { return can_provide_alpha_; }
+    bool CanProvideBeta() const { return can_provide_beta_; }
+    bool CanProvideGamma() const { return can_provide_gamma_; }
 
-    double alpha() const { return m_alpha; }
-    double beta() const { return m_beta; }
-    double gamma() const { return m_gamma; }
+    double Alpha() const { return alpha_; }
+    double Beta() const { return beta_; }
+    double Gamma() const { return gamma_; }
 
    private:
-    RotationRate(bool canProvideAlpha,
+    RotationRate(bool can_provide_alpha,
                  double alpha,
-                 bool canProvideBeta,
+                 bool can_provide_beta,
                  double beta,
-                 bool canProvideGamma,
+                 bool can_provide_gamma,
                  double gamma);
 
-    double m_alpha;
-    double m_beta;
-    double m_gamma;
+    double alpha_;
+    double beta_;
+    double gamma_;
 
-    bool m_canProvideAlpha;
-    bool m_canProvideBeta;
-    bool m_canProvideGamma;
+    bool can_provide_alpha_;
+    bool can_provide_beta_;
+    bool can_provide_gamma_;
   };
 
-  static DeviceMotionData* create();
-  static DeviceMotionData* create(Acceleration*,
-                                  Acceleration* accelerationIncludingGravity,
+  static DeviceMotionData* Create();
+  static DeviceMotionData* Create(Acceleration*,
+                                  Acceleration* acceleration_including_gravity,
                                   RotationRate*,
                                   double interval);
-  static DeviceMotionData* create(const DeviceMotionEventInit&);
-  static DeviceMotionData* create(const device::MotionData&);
+  static DeviceMotionData* Create(const DeviceMotionEventInit&);
+  static DeviceMotionData* Create(const device::MotionData&);
   DECLARE_TRACE();
 
-  Acceleration* getAcceleration() const { return m_acceleration.get(); }
-  Acceleration* getAccelerationIncludingGravity() const {
-    return m_accelerationIncludingGravity.get();
+  Acceleration* GetAcceleration() const { return acceleration_.Get(); }
+  Acceleration* GetAccelerationIncludingGravity() const {
+    return acceleration_including_gravity_.Get();
   }
-  RotationRate* getRotationRate() const { return m_rotationRate.get(); }
+  RotationRate* GetRotationRate() const { return rotation_rate_.Get(); }
 
-  double interval() const { return m_interval; }
+  double Interval() const { return interval_; }
 
-  bool canProvideEventData() const;
+  bool CanProvideEventData() const;
 
  private:
   DeviceMotionData();
   DeviceMotionData(Acceleration*,
-                   Acceleration* accelerationIncludingGravity,
+                   Acceleration* acceleration_including_gravity,
                    RotationRate*,
                    double interval);
 
-  Member<Acceleration> m_acceleration;
-  Member<Acceleration> m_accelerationIncludingGravity;
-  Member<RotationRate> m_rotationRate;
-  double m_interval;
+  Member<Acceleration> acceleration_;
+  Member<Acceleration> acceleration_including_gravity_;
+  Member<RotationRate> rotation_rate_;
+  double interval_;
 };
 
 }  // namespace blink

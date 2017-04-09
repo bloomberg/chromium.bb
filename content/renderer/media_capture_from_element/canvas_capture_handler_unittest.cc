@@ -59,8 +59,8 @@ class CanvasCaptureHandlerTest
   }
 
   void TearDown() override {
-    track_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    track_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
     canvas_capture_handler_.reset();
 
     // Let the message loop run to finish destroying the capturer.
@@ -145,20 +145,20 @@ class CanvasCaptureHandlerTest
 
 // Checks that the initialization-destruction sequence works fine.
 TEST_F(CanvasCaptureHandlerTest, ConstructAndDestruct) {
-  EXPECT_TRUE(canvas_capture_handler_->needsNewFrame());
+  EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   base::RunLoop().RunUntilIdle();
 }
 
 // Checks that the destruction sequence works fine.
 TEST_F(CanvasCaptureHandlerTest, DestructTrack) {
-  EXPECT_TRUE(canvas_capture_handler_->needsNewFrame());
-  track_.reset();
+  EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
+  track_.Reset();
   base::RunLoop().RunUntilIdle();
 }
 
 // Checks that the destruction sequence works fine.
 TEST_F(CanvasCaptureHandlerTest, DestructHandler) {
-  EXPECT_TRUE(canvas_capture_handler_->needsNewFrame());
+  EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   canvas_capture_handler_.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -166,11 +166,11 @@ TEST_F(CanvasCaptureHandlerTest, DestructHandler) {
 // Checks that VideoCapturerSource call sequence works fine.
 TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   InSequence s;
-  const blink::WebMediaStreamSource& web_media_stream_source = track_.source();
-  EXPECT_FALSE(web_media_stream_source.isNull());
+  const blink::WebMediaStreamSource& web_media_stream_source = track_.Source();
+  EXPECT_FALSE(web_media_stream_source.IsNull());
   MediaStreamVideoCapturerSource* const ms_source =
       static_cast<MediaStreamVideoCapturerSource*>(
-          web_media_stream_source.getExtraData());
+          web_media_stream_source.GetExtraData());
   EXPECT_TRUE(ms_source != nullptr);
   media::VideoCapturerSource* source = GetVideoCapturerSource(ms_source);
   EXPECT_TRUE(source != nullptr);
@@ -201,7 +201,7 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
       params, base::Bind(&CanvasCaptureHandlerTest::OnDeliverFrame,
                          base::Unretained(this)),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
-  canvas_capture_handler_->sendNewFrame(
+  canvas_capture_handler_->SendNewFrame(
       GenerateTestImage(testing::get<0>(GetParam()),
                         testing::get<1>(GetParam()),
                         testing::get<2>(GetParam()))
@@ -219,7 +219,7 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
   InSequence s;
   media::VideoCapturerSource* const source =
       GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
-          track_.source().getExtraData()));
+          track_.Source().GetExtraData()));
   EXPECT_TRUE(source != nullptr);
 
   base::RunLoop run_loop;
@@ -229,7 +229,7 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
       params, base::Bind(&CanvasCaptureHandlerTest::OnVerifyDeliveredFrame,
                          base::Unretained(this), opaque_frame, width, height),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
-  canvas_capture_handler_->sendNewFrame(
+  canvas_capture_handler_->SendNewFrame(
       GenerateTestImage(opaque_frame, width, height).get());
   run_loop.RunUntilIdle();
 }
@@ -239,11 +239,11 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   InSequence s;
   media::VideoCapturerSource* source =
       GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
-          track_.source().getExtraData()));
+          track_.Source().GetExtraData()));
   EXPECT_TRUE(source != nullptr);
-  EXPECT_TRUE(canvas_capture_handler_->needsNewFrame());
+  EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   source->StopCapture();
-  EXPECT_FALSE(canvas_capture_handler_->needsNewFrame());
+  EXPECT_FALSE(canvas_capture_handler_->NeedsNewFrame());
 }
 
 INSTANTIATE_TEST_CASE_P(

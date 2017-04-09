@@ -56,24 +56,24 @@ class AsyncAudioDecoder {
   // modify any of the parameters except |audioData|.  They are used to
   // associate this decoding instance with the caller to process the decoding
   // appropriately when finished.
-  void decodeAsync(DOMArrayBuffer* audioData,
-                   float sampleRate,
-                   AudioBufferCallback* successCallback,
-                   AudioBufferCallback* errorCallback,
+  void DecodeAsync(DOMArrayBuffer* audio_data,
+                   float sample_rate,
+                   AudioBufferCallback* success_callback,
+                   AudioBufferCallback* error_callback,
                    ScriptPromiseResolver*,
                    BaseAudioContext*);
 
  private:
-  AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-  static void decodeOnBackgroundThread(DOMArrayBuffer* audioData,
-                                       float sampleRate,
-                                       AudioBufferCallback* successCallback,
-                                       AudioBufferCallback* errorCallback,
+  AudioBuffer* CreateAudioBufferFromAudioBus(AudioBus*);
+  static void DecodeOnBackgroundThread(DOMArrayBuffer* audio_data,
+                                       float sample_rate,
+                                       AudioBufferCallback* success_callback,
+                                       AudioBufferCallback* error_callback,
                                        ScriptPromiseResolver*,
                                        BaseAudioContext*);
-  static void notifyComplete(DOMArrayBuffer* audioData,
-                             AudioBufferCallback* successCallback,
-                             AudioBufferCallback* errorCallback,
+  static void NotifyComplete(DOMArrayBuffer* audio_data,
+                             AudioBufferCallback* success_callback,
+                             AudioBufferCallback* error_callback,
                              AudioBus*,
                              ScriptPromiseResolver*,
                              BaseAudioContext*);

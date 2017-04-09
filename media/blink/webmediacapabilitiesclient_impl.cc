@@ -12,7 +12,7 @@ WebMediaCapabilitiesClientImpl::WebMediaCapabilitiesClientImpl() = default;
 
 WebMediaCapabilitiesClientImpl::~WebMediaCapabilitiesClientImpl() = default;
 
-void WebMediaCapabilitiesClientImpl::query(
+void WebMediaCapabilitiesClientImpl::Query(
     const blink::WebMediaConfiguration& configuration,
     std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks) {
   // TODO(chcunningham, mlamouri): this is a dummy implementation that returns
@@ -21,8 +21,8 @@ void WebMediaCapabilitiesClientImpl::query(
       new blink::WebMediaDecodingAbility());
   ability->supported = true;
   ability->smooth = true;
-  ability->powerEfficient = true;
-  callbacks->onSuccess(std::move(ability));
+  ability->power_efficient = true;
+  callbacks->OnSuccess(std::move(ability));
 }
 
 }  // namespace media

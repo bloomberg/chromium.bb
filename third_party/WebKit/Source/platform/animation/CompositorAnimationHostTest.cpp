@@ -16,21 +16,21 @@ class CompositorAnimationHostTest : public CompositorTest {};
 
 TEST_F(CompositorAnimationHostTest, AnimationHostNullWhenTimelineDetached) {
   std::unique_ptr<CompositorAnimationTimeline> timeline =
-      CompositorAnimationTimeline::create();
+      CompositorAnimationTimeline::Create();
 
-  scoped_refptr<cc::AnimationTimeline> ccTimeline =
-      timeline->animationTimeline();
-  EXPECT_FALSE(ccTimeline->animation_host());
+  scoped_refptr<cc::AnimationTimeline> cc_timeline =
+      timeline->GetAnimationTimeline();
+  EXPECT_FALSE(cc_timeline->animation_host());
 
-  WebLayerTreeViewImplForTesting layerTreeView;
-  CompositorAnimationHost compositorAnimationHost(
-      layerTreeView.compositorAnimationHost());
+  WebLayerTreeViewImplForTesting layer_tree_view;
+  CompositorAnimationHost compositor_animation_host(
+      layer_tree_view.CompositorAnimationHost());
 
-  compositorAnimationHost.addTimeline(*timeline);
-  EXPECT_TRUE(ccTimeline->animation_host());
+  compositor_animation_host.AddTimeline(*timeline);
+  EXPECT_TRUE(cc_timeline->animation_host());
 
-  compositorAnimationHost.removeTimeline(*timeline);
-  EXPECT_FALSE(ccTimeline->animation_host());
+  compositor_animation_host.RemoveTimeline(*timeline);
+  EXPECT_FALSE(cc_timeline->animation_host());
 }
 
 }  // namespace blink

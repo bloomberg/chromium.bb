@@ -33,7 +33,7 @@ namespace blink {
 // in ComputedStyle.h.
 class CORE_EXPORT ComputedStyleBase {
  public:
-  inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
+  inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
     {% for field in fields if field.is_inherited and field.is_independent %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
@@ -41,7 +41,7 @@ class CORE_EXPORT ComputedStyleBase {
     );
   }
 
-  inline bool nonIndependentInheritedEqual(const ComputedStyleBase& o) const {
+  inline bool NonIndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
     {% for field in fields if field.is_inherited and not field.is_independent %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
@@ -49,11 +49,11 @@ class CORE_EXPORT ComputedStyleBase {
     );
   }
 
-  inline bool inheritedEqual(const ComputedStyleBase& o) const {
-    return independentInheritedEqual(o) && nonIndependentInheritedEqual(o);
+  inline bool InheritedEqual(const ComputedStyleBase& o) const {
+    return IndependentInheritedEqual(o) && NonIndependentInheritedEqual(o);
   }
 
-  inline bool nonInheritedEqual(const ComputedStyleBase& o) const {
+  inline bool NonInheritedEqual(const ComputedStyleBase& o) const {
     return (
     {% for field in fields if field.is_property and not field.is_inherited %}
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
@@ -62,17 +62,17 @@ class CORE_EXPORT ComputedStyleBase {
   }
 
   enum IsAtShadowBoundary {
-    AtShadowBoundary,
-    NotAtShadowBoundary,
+    kAtShadowBoundary,
+    kNotAtShadowBoundary,
   };
-  void inheritFrom(const ComputedStyleBase& inheritParent,
-                   IsAtShadowBoundary isAtShadowBoundary = NotAtShadowBoundary);
+  void InheritFrom(const ComputedStyleBase& inheritParent,
+                   IsAtShadowBoundary isAtShadowBoundary = kNotAtShadowBoundary);
 
-  void copyNonInheritedFromCached(const ComputedStyleBase& other);
+  void CopyNonInheritedFromCached(const ComputedStyleBase& other);
 
   // Copies the values of any independent inherited properties from the parent
   // style that are marked as inherited by this style.
-  void propagateIndependentInheritedProperties(
+  void PropagateIndependentInheritedProperties(
       const ComputedStyleBase& parentStyle);
 
   // Fields.

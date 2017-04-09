@@ -34,50 +34,52 @@
 
 namespace blink {
 
-OrderIterator::OrderIterator(const LayoutBox* containerBox)
-    : m_containerBox(containerBox), m_currentChild(nullptr), m_isReset(false) {}
+OrderIterator::OrderIterator(const LayoutBox* container_box)
+    : container_box_(container_box),
+      current_child_(nullptr),
+      is_reset_(false) {}
 
-LayoutBox* OrderIterator::first() {
-  reset();
-  return next();
+LayoutBox* OrderIterator::First() {
+  Reset();
+  return Next();
 }
 
-LayoutBox* OrderIterator::next() {
+LayoutBox* OrderIterator::Next() {
   do {
-    if (!m_currentChild) {
-      if (m_orderValuesIterator == m_orderValues.end())
+    if (!current_child_) {
+      if (order_values_iterator_ == order_values_.end())
         return nullptr;
 
-      if (!m_isReset) {
-        ++m_orderValuesIterator;
-        if (m_orderValuesIterator == m_orderValues.end())
+      if (!is_reset_) {
+        ++order_values_iterator_;
+        if (order_values_iterator_ == order_values_.end())
           return nullptr;
       } else {
-        m_isReset = false;
+        is_reset_ = false;
       }
 
-      m_currentChild = m_containerBox->firstChildBox();
+      current_child_ = container_box_->FirstChildBox();
     } else {
-      m_currentChild = m_currentChild->nextSiblingBox();
+      current_child_ = current_child_->NextSiblingBox();
     }
-  } while (!m_currentChild ||
-           m_currentChild->style()->order() != *m_orderValuesIterator);
+  } while (!current_child_ ||
+           current_child_->Style()->Order() != *order_values_iterator_);
 
-  return m_currentChild;
+  return current_child_;
 }
 
-void OrderIterator::reset() {
-  m_currentChild = nullptr;
-  m_orderValuesIterator = m_orderValues.begin();
-  m_isReset = true;
+void OrderIterator::Reset() {
+  current_child_ = nullptr;
+  order_values_iterator_ = order_values_.begin();
+  is_reset_ = true;
 }
 
 OrderIteratorPopulator::~OrderIteratorPopulator() {
-  m_iterator.reset();
+  iterator_.Reset();
 }
 
-void OrderIteratorPopulator::collectChild(const LayoutBox* child) {
-  m_iterator.m_orderValues.insert(child->style()->order());
+void OrderIteratorPopulator::CollectChild(const LayoutBox* child) {
+  iterator_.order_values_.insert(child->Style()->Order());
 }
 
 }  // namespace blink

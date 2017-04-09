@@ -43,28 +43,28 @@ class VideoPlaybackQuality : public GarbageCollected<VideoPlaybackQuality>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VideoPlaybackQuality* create(const Document&,
-                                      unsigned totalVideoFrames,
-                                      unsigned droppedVideoFrames,
-                                      unsigned corruptedVideoFrames);
+  static VideoPlaybackQuality* Create(const Document&,
+                                      unsigned total_video_frames,
+                                      unsigned dropped_video_frames,
+                                      unsigned corrupted_video_frames);
 
-  double creationTime() const { return m_creationTime; }
-  unsigned totalVideoFrames() const { return m_totalVideoFrames; }
-  unsigned droppedVideoFrames() const { return m_droppedVideoFrames; }
-  unsigned corruptedVideoFrames() const { return m_corruptedVideoFrames; }
+  double creationTime() const { return creation_time_; }
+  unsigned totalVideoFrames() const { return total_video_frames_; }
+  unsigned droppedVideoFrames() const { return dropped_video_frames_; }
+  unsigned corruptedVideoFrames() const { return corrupted_video_frames_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   VideoPlaybackQuality(const Document&,
-                       unsigned totalVideoFrames,
-                       unsigned droppedVideoFrames,
-                       unsigned corruptedVideoFrames);
+                       unsigned total_video_frames,
+                       unsigned dropped_video_frames,
+                       unsigned corrupted_video_frames);
 
-  double m_creationTime;
-  unsigned m_totalVideoFrames;
-  unsigned m_droppedVideoFrames;
-  unsigned m_corruptedVideoFrames;
+  double creation_time_;
+  unsigned total_video_frames_;
+  unsigned dropped_video_frames_;
+  unsigned corrupted_video_frames_;
 };
 
 }  // namespace blink

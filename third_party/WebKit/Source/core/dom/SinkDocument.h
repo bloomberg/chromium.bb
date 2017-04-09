@@ -32,7 +32,7 @@ namespace blink {
 
 class SinkDocument final : public HTMLDocument {
  public:
-  static SinkDocument* create(
+  static SinkDocument* Create(
       const DocumentInit& initializer = DocumentInit()) {
     return new SinkDocument(initializer);
   }
@@ -40,7 +40,7 @@ class SinkDocument final : public HTMLDocument {
  private:
   explicit SinkDocument(const DocumentInit&);
 
-  DocumentParser* createParser() override;
+  DocumentParser* CreateParser() override;
 };
 
 }  // namespace blink

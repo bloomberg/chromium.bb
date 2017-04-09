@@ -25,22 +25,22 @@ class CORE_EXPORT RarePaintData {
   RarePaintData();
   ~RarePaintData();
 
-  ObjectPaintProperties* paintProperties() const {
-    return m_paintProperties.get();
+  ObjectPaintProperties* PaintProperties() const {
+    return paint_properties_.get();
   }
-  ObjectPaintProperties& ensurePaintProperties();
+  ObjectPaintProperties& EnsurePaintProperties();
 
-  PropertyTreeState* localBorderBoxProperties() const {
-    return m_localBorderBoxProperties.get();
+  PropertyTreeState* LocalBorderBoxProperties() const {
+    return local_border_box_properties_.get();
   }
 
-  void clearLocalBorderBoxProperties();
-  void setLocalBorderBoxProperties(PropertyTreeState&);
-  const PropertyTreeState* contentsProperties() const;
+  void ClearLocalBorderBoxProperties();
+  void SetLocalBorderBoxProperties(PropertyTreeState&);
+  const PropertyTreeState* ContentsProperties() const;
 
  private:
   // Holds references to the paint property nodes created by this object.
-  std::unique_ptr<ObjectPaintProperties> m_paintProperties;
+  std::unique_ptr<ObjectPaintProperties> paint_properties_;
 
   // This is a complete set of property nodes that should be used as a
   // starting point to paint a LayoutObject. This data is cached because some
@@ -52,14 +52,14 @@ class CORE_EXPORT RarePaintData {
   //   node. Even though the div has no transform, its local border box
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
-  std::unique_ptr<PropertyTreeState> m_localBorderBoxProperties;
+  std::unique_ptr<PropertyTreeState> local_border_box_properties_;
 
   // This is the complete set of property nodes that can be used to paint the
   // contents of this object. It is similar to m_localBorderBoxProperties but
   // includes properties (e.g., overflow clip, scroll translation) that apply
   // to contents. This cached value is derived from m_localBorderBoxProperties
   // and m_paintProperties and should be invalidated when these change.
-  mutable std::unique_ptr<PropertyTreeState> m_contentsProperties;
+  mutable std::unique_ptr<PropertyTreeState> contents_properties_;
 };
 
 }  // namespace blink

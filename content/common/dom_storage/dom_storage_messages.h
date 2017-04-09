@@ -16,7 +16,7 @@
 #define IPC_MESSAGE_START DOMStorageMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebStorageArea::Result,
-                          blink::WebStorageArea::ResultLast)
+                          blink::WebStorageArea::kResultLast)
 
 // Signals a local storage event.
 IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)

@@ -10,37 +10,37 @@
 
 namespace blink {
 
-ClipList::ClipList(const ClipList& other) : m_clipList(other.m_clipList) {}
+ClipList::ClipList(const ClipList& other) : clip_list_(other.clip_list_) {}
 
-void ClipList::clipPath(const SkPath& path,
-                        AntiAliasingMode antiAliasingMode,
+void ClipList::ClipPath(const SkPath& path,
+                        AntiAliasingMode anti_aliasing_mode,
                         const SkMatrix& ctm) {
-  ClipOp newClip;
-  newClip.m_antiAliasingMode = antiAliasingMode;
-  newClip.m_path = path;
-  newClip.m_path.transform(ctm);
-  if (m_clipList.isEmpty())
-    m_currentClipPath = path;
+  ClipOp new_clip;
+  new_clip.anti_aliasing_mode_ = anti_aliasing_mode;
+  new_clip.path_ = path;
+  new_clip.path_.transform(ctm);
+  if (clip_list_.IsEmpty())
+    current_clip_path_ = path;
   else
-    Op(m_currentClipPath, path, SkPathOp::kIntersect_SkPathOp,
-       &m_currentClipPath);
-  m_clipList.push_back(newClip);
+    Op(current_clip_path_, path, SkPathOp::kIntersect_SkPathOp,
+       &current_clip_path_);
+  clip_list_.push_back(new_clip);
 }
 
-void ClipList::playback(PaintCanvas* canvas) const {
-  for (const ClipOp* it = m_clipList.begin(); it < m_clipList.end(); it++) {
-    canvas->clipPath(it->m_path, SkClipOp::kIntersect,
-                     it->m_antiAliasingMode == AntiAliased);
+void ClipList::Playback(PaintCanvas* canvas) const {
+  for (const ClipOp* it = clip_list_.begin(); it < clip_list_.end(); it++) {
+    canvas->clipPath(it->path_, SkClipOp::kIntersect,
+                     it->anti_aliasing_mode_ == kAntiAliased);
   }
 }
 
-const SkPath& ClipList::getCurrentClipPath() const {
-  return m_currentClipPath;
+const SkPath& ClipList::GetCurrentClipPath() const {
+  return current_clip_path_;
 }
 
-ClipList::ClipOp::ClipOp() : m_antiAliasingMode(AntiAliased) {}
+ClipList::ClipOp::ClipOp() : anti_aliasing_mode_(kAntiAliased) {}
 
 ClipList::ClipOp::ClipOp(const ClipOp& other)
-    : m_path(other.m_path), m_antiAliasingMode(other.m_antiAliasingMode) {}
+    : path_(other.path_), anti_aliasing_mode_(other.anti_aliasing_mode_) {}
 
 }  // namespace blink

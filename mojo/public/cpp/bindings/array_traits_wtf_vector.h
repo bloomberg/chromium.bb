@@ -21,14 +21,14 @@ struct ArrayTraits<WTF::Vector<U>> {
 
   static void SetToNull(WTF::Vector<U>* output) {
     // WTF::Vector<> doesn't support null state. Set it to empty instead.
-    output->clear();
+    output->Clear();
   }
 
   static size_t GetSize(const WTF::Vector<U>& input) { return input.size(); }
 
-  static U* GetData(WTF::Vector<U>& input) { return input.data(); }
+  static U* GetData(WTF::Vector<U>& input) { return input.Data(); }
 
-  static const U* GetData(const WTF::Vector<U>& input) { return input.data(); }
+  static const U* GetData(const WTF::Vector<U>& input) { return input.Data(); }
 
   static U& GetAt(WTF::Vector<U>& input, size_t index) { return input[index]; }
 
@@ -37,7 +37,7 @@ struct ArrayTraits<WTF::Vector<U>> {
   }
 
   static bool Resize(WTF::Vector<U>& input, size_t size) {
-    input.resize(size);
+    input.Resize(size);
     return true;
   }
 };

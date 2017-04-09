@@ -21,7 +21,7 @@ class CredentialsContainer final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CredentialsContainer* create();
+  static CredentialsContainer* Create();
 
   // CredentialsContainer.h
   ScriptPromise get(ScriptState*, const CredentialRequestOptions&);

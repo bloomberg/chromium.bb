@@ -34,275 +34,277 @@
 
 namespace blink {
 
-SelectionEditor::SelectionEditor(LocalFrame& frame) : m_frame(frame) {
-  clearVisibleSelection();
+SelectionEditor::SelectionEditor(LocalFrame& frame) : frame_(frame) {
+  ClearVisibleSelection();
 }
 
 SelectionEditor::~SelectionEditor() {}
 
-void SelectionEditor::assertSelectionValid() const {
+void SelectionEditor::AssertSelectionValid() const {
 #if DCHECK_IS_ON()
   // Since We don't track dom tree version during attribute changes, we can't
   // use it for validity of |m_selection|.
-  const_cast<SelectionEditor*>(this)->m_selection.m_domTreeVersion =
-      document().domTreeVersion();
+  const_cast<SelectionEditor*>(this)->selection_.dom_tree_version_ =
+      GetDocument().DomTreeVersion();
 #endif
-  m_selection.assertValidFor(document());
+  selection_.AssertValidFor(GetDocument());
 }
 
-void SelectionEditor::clearVisibleSelection() {
-  m_selection = SelectionInDOMTree();
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
-  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
-  if (!shouldAlwaysUseDirectionalSelection())
+void SelectionEditor::ClearVisibleSelection() {
+  selection_ = SelectionInDOMTree();
+  cached_visible_selection_in_dom_tree_ = VisibleSelection();
+  cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
+  cached_visible_selection_in_dom_tree_is_dirty_ = false;
+  cached_visible_selection_in_flat_tree_is_dirty_ = false;
+  if (!ShouldAlwaysUseDirectionalSelection())
     return;
-  m_selection.m_isDirectional = true;
+  selection_.is_directional_ = true;
 }
 
-void SelectionEditor::dispose() {
-  clearDocumentCachedRange();
-  clearVisibleSelection();
+void SelectionEditor::Dispose() {
+  ClearDocumentCachedRange();
+  ClearVisibleSelection();
 }
 
-Document& SelectionEditor::document() const {
-  DCHECK(lifecycleContext());
-  return *lifecycleContext();
+Document& SelectionEditor::GetDocument() const {
+  DCHECK(LifecycleContext());
+  return *LifecycleContext();
 }
 
-const VisibleSelection& SelectionEditor::computeVisibleSelectionInDOMTree()
+const VisibleSelection& SelectionEditor::ComputeVisibleSelectionInDOMTree()
     const {
-  DCHECK_EQ(frame()->document(), document());
-  DCHECK_EQ(frame(), document().frame());
-  updateCachedVisibleSelectionIfNeeded();
-  if (m_cachedVisibleSelectionInDOMTree.isNone())
-    return m_cachedVisibleSelectionInDOMTree;
-  DCHECK_EQ(m_cachedVisibleSelectionInDOMTree.base().document(), document());
-  return m_cachedVisibleSelectionInDOMTree;
+  DCHECK_EQ(GetFrame()->GetDocument(), GetDocument());
+  DCHECK_EQ(GetFrame(), GetDocument().GetFrame());
+  UpdateCachedVisibleSelectionIfNeeded();
+  if (cached_visible_selection_in_dom_tree_.IsNone())
+    return cached_visible_selection_in_dom_tree_;
+  DCHECK_EQ(cached_visible_selection_in_dom_tree_.Base().GetDocument(),
+            GetDocument());
+  return cached_visible_selection_in_dom_tree_;
 }
 
 const VisibleSelectionInFlatTree&
-SelectionEditor::computeVisibleSelectionInFlatTree() const {
-  DCHECK_EQ(frame()->document(), document());
-  DCHECK_EQ(frame(), document().frame());
-  updateCachedVisibleSelectionInFlatTreeIfNeeded();
-  if (m_cachedVisibleSelectionInFlatTree.isNone())
-    return m_cachedVisibleSelectionInFlatTree;
-  DCHECK_EQ(m_cachedVisibleSelectionInFlatTree.base().document(), document());
-  return m_cachedVisibleSelectionInFlatTree;
+SelectionEditor::ComputeVisibleSelectionInFlatTree() const {
+  DCHECK_EQ(GetFrame()->GetDocument(), GetDocument());
+  DCHECK_EQ(GetFrame(), GetDocument().GetFrame());
+  UpdateCachedVisibleSelectionInFlatTreeIfNeeded();
+  if (cached_visible_selection_in_flat_tree_.IsNone())
+    return cached_visible_selection_in_flat_tree_;
+  DCHECK_EQ(cached_visible_selection_in_flat_tree_.Base().GetDocument(),
+            GetDocument());
+  return cached_visible_selection_in_flat_tree_;
 }
 
-const SelectionInDOMTree& SelectionEditor::selectionInDOMTree() const {
-  assertSelectionValid();
-  return m_selection;
+const SelectionInDOMTree& SelectionEditor::GetSelectionInDOMTree() const {
+  AssertSelectionValid();
+  return selection_;
 }
 
-bool SelectionEditor::hasEditableStyle() const {
-  return computeVisibleSelectionInDOMTree().hasEditableStyle();
+bool SelectionEditor::HasEditableStyle() const {
+  return ComputeVisibleSelectionInDOMTree().HasEditableStyle();
 }
 
-bool SelectionEditor::isContentEditable() const {
-  return computeVisibleSelectionInDOMTree().isContentEditable();
+bool SelectionEditor::IsContentEditable() const {
+  return ComputeVisibleSelectionInDOMTree().IsContentEditable();
 }
 
-bool SelectionEditor::isContentRichlyEditable() const {
-  return computeVisibleSelectionInDOMTree().isContentRichlyEditable();
+bool SelectionEditor::IsContentRichlyEditable() const {
+  return ComputeVisibleSelectionInDOMTree().IsContentRichlyEditable();
 }
 
-void SelectionEditor::markCacheDirty() {
-  if (!m_cachedVisibleSelectionInDOMTreeIsDirty) {
-    m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-    m_cachedVisibleSelectionInDOMTreeIsDirty = true;
+void SelectionEditor::MarkCacheDirty() {
+  if (!cached_visible_selection_in_dom_tree_is_dirty_) {
+    cached_visible_selection_in_dom_tree_ = VisibleSelection();
+    cached_visible_selection_in_dom_tree_is_dirty_ = true;
   }
-  if (!m_cachedVisibleSelectionInFlatTreeIsDirty) {
-    m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-    m_cachedVisibleSelectionInFlatTreeIsDirty = true;
+  if (!cached_visible_selection_in_flat_tree_is_dirty_) {
+    cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
+    cached_visible_selection_in_flat_tree_is_dirty_ = true;
   }
 }
 
-void SelectionEditor::setSelection(const SelectionInDOMTree& newSelection) {
-  newSelection.assertValidFor(document());
-  if (m_selection == newSelection)
+void SelectionEditor::SetSelection(const SelectionInDOMTree& new_selection) {
+  new_selection.AssertValidFor(GetDocument());
+  if (selection_ == new_selection)
     return;
-  clearDocumentCachedRange();
-  markCacheDirty();
-  m_selection = newSelection;
+  ClearDocumentCachedRange();
+  MarkCacheDirty();
+  selection_ = new_selection;
 }
 
-void SelectionEditor::didChangeChildren(const ContainerNode&) {
-  markCacheDirty();
-  didFinishDOMMutation();
+void SelectionEditor::DidChangeChildren(const ContainerNode&) {
+  MarkCacheDirty();
+  DidFinishDOMMutation();
 }
 
-void SelectionEditor::didFinishTextChange(const Position& newBase,
-                                          const Position& newExtent) {
-  if (newBase == m_selection.m_base && newExtent == m_selection.m_extent) {
-    didFinishDOMMutation();
+void SelectionEditor::DidFinishTextChange(const Position& new_base,
+                                          const Position& new_extent) {
+  if (new_base == selection_.base_ && new_extent == selection_.extent_) {
+    DidFinishDOMMutation();
     return;
   }
-  m_selection.m_base = newBase;
-  m_selection.m_extent = newExtent;
-  markCacheDirty();
-  didFinishDOMMutation();
+  selection_.base_ = new_base;
+  selection_.extent_ = new_extent;
+  MarkCacheDirty();
+  DidFinishDOMMutation();
 }
 
-void SelectionEditor::didFinishDOMMutation() {
-  assertSelectionValid();
+void SelectionEditor::DidFinishDOMMutation() {
+  AssertSelectionValid();
 }
 
-void SelectionEditor::documentAttached(Document* document) {
+void SelectionEditor::DocumentAttached(Document* document) {
   DCHECK(document);
-  DCHECK(!lifecycleContext()) << lifecycleContext();
-  m_styleVersionForDOMTree = static_cast<uint64_t>(-1);
-  m_styleVersionForFlatTree = static_cast<uint64_t>(-1);
-  clearVisibleSelection();
-  setContext(document);
+  DCHECK(!LifecycleContext()) << LifecycleContext();
+  style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
+  style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
+  ClearVisibleSelection();
+  SetContext(document);
 }
 
-void SelectionEditor::contextDestroyed(Document*) {
-  dispose();
-  m_styleVersionForDOMTree = static_cast<uint64_t>(-1);
-  m_styleVersionForFlatTree = static_cast<uint64_t>(-1);
-  m_selection = SelectionInDOMTree();
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
-  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
-  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
+void SelectionEditor::ContextDestroyed(Document*) {
+  Dispose();
+  style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
+  style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
+  selection_ = SelectionInDOMTree();
+  cached_visible_selection_in_dom_tree_ = VisibleSelection();
+  cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
+  cached_visible_selection_in_dom_tree_is_dirty_ = false;
+  cached_visible_selection_in_flat_tree_is_dirty_ = false;
 }
 
-static Position computePositionForChildrenRemoval(const Position& position,
+static Position ComputePositionForChildrenRemoval(const Position& position,
                                                   ContainerNode& container) {
-  Node* node = position.computeContainerNode();
-  if (container.containsIncludingHostElements(*node))
-    return Position::firstPositionInNode(&container);
+  Node* node = position.ComputeContainerNode();
+  if (container.ContainsIncludingHostElements(*node))
+    return Position::FirstPositionInNode(&container);
   return position;
 }
 
-void SelectionEditor::nodeChildrenWillBeRemoved(ContainerNode& container) {
-  if (m_selection.isNone())
+void SelectionEditor::NodeChildrenWillBeRemoved(ContainerNode& container) {
+  if (selection_.IsNone())
     return;
-  const Position oldBase = m_selection.m_base;
-  const Position oldExtent = m_selection.m_extent;
-  const Position& newBase =
-      computePositionForChildrenRemoval(oldBase, container);
-  const Position& newExtent =
-      computePositionForChildrenRemoval(oldExtent, container);
-  if (newBase == oldBase && newExtent == oldExtent)
+  const Position old_base = selection_.base_;
+  const Position old_extent = selection_.extent_;
+  const Position& new_base =
+      ComputePositionForChildrenRemoval(old_base, container);
+  const Position& new_extent =
+      ComputePositionForChildrenRemoval(old_extent, container);
+  if (new_base == old_base && new_extent == old_extent)
     return;
-  m_selection = SelectionInDOMTree::Builder()
-                    .setBaseAndExtent(newBase, newExtent)
-                    .build();
-  markCacheDirty();
+  selection_ = SelectionInDOMTree::Builder()
+                   .SetBaseAndExtent(new_base, new_extent)
+                   .Build();
+  MarkCacheDirty();
 }
 
-void SelectionEditor::nodeWillBeRemoved(Node& nodeToBeRemoved) {
-  if (m_selection.isNone())
+void SelectionEditor::NodeWillBeRemoved(Node& node_to_be_removed) {
+  if (selection_.IsNone())
     return;
-  const Position oldBase = m_selection.m_base;
-  const Position oldExtent = m_selection.m_extent;
-  const Position& newBase =
-      computePositionForNodeRemoval(oldBase, nodeToBeRemoved);
-  const Position& newExtent =
-      computePositionForNodeRemoval(oldExtent, nodeToBeRemoved);
-  if (newBase == oldBase && newExtent == oldExtent)
+  const Position old_base = selection_.base_;
+  const Position old_extent = selection_.extent_;
+  const Position& new_base =
+      ComputePositionForNodeRemoval(old_base, node_to_be_removed);
+  const Position& new_extent =
+      ComputePositionForNodeRemoval(old_extent, node_to_be_removed);
+  if (new_base == old_base && new_extent == old_extent)
     return;
-  m_selection = SelectionInDOMTree::Builder()
-                    .setBaseAndExtent(newBase, newExtent)
-                    .build();
-  markCacheDirty();
+  selection_ = SelectionInDOMTree::Builder()
+                   .SetBaseAndExtent(new_base, new_extent)
+                   .Build();
+  MarkCacheDirty();
 }
 
-static Position updatePositionAfterAdoptingTextReplacement(
+static Position UpdatePositionAfterAdoptingTextReplacement(
     const Position& position,
     CharacterData* node,
     unsigned offset,
-    unsigned oldLength,
-    unsigned newLength) {
-  if (position.anchorNode() != node)
+    unsigned old_length,
+    unsigned new_length) {
+  if (position.AnchorNode() != node)
     return position;
 
-  if (position.isBeforeAnchor()) {
-    return updatePositionAfterAdoptingTextReplacement(
-        Position(node, 0), node, offset, oldLength, newLength);
+  if (position.IsBeforeAnchor()) {
+    return UpdatePositionAfterAdoptingTextReplacement(
+        Position(node, 0), node, offset, old_length, new_length);
   }
-  if (position.isAfterAnchor()) {
-    return updatePositionAfterAdoptingTextReplacement(
-        Position(node, oldLength), node, offset, oldLength, newLength);
+  if (position.IsAfterAnchor()) {
+    return UpdatePositionAfterAdoptingTextReplacement(
+        Position(node, old_length), node, offset, old_length, new_length);
   }
 
   // See:
   // http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
-  DCHECK_GE(position.offsetInContainerNode(), 0);
-  unsigned positionOffset =
-      static_cast<unsigned>(position.offsetInContainerNode());
+  DCHECK_GE(position.OffsetInContainerNode(), 0);
+  unsigned position_offset =
+      static_cast<unsigned>(position.OffsetInContainerNode());
   // Replacing text can be viewed as a deletion followed by insertion.
-  if (positionOffset >= offset && positionOffset <= offset + oldLength)
-    positionOffset = offset;
+  if (position_offset >= offset && position_offset <= offset + old_length)
+    position_offset = offset;
 
   // Adjust the offset if the position is after the end of the deleted contents
   // (positionOffset > offset + oldLength) to avoid having a stale offset.
-  if (positionOffset > offset + oldLength)
-    positionOffset = positionOffset - oldLength + newLength;
+  if (position_offset > offset + old_length)
+    position_offset = position_offset - old_length + new_length;
 
   // Due to case folding
   // (http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt), LayoutText
   // length may be different from Text length.  A correct implementation would
   // translate the LayoutText offset to a Text offset; this is just a safety
   // precaution to avoid offset values that run off the end of the Text.
-  if (positionOffset > node->length())
-    positionOffset = node->length();
+  if (position_offset > node->length())
+    position_offset = node->length();
 
-  return Position(node, positionOffset);
+  return Position(node, position_offset);
 }
 
-void SelectionEditor::didUpdateCharacterData(CharacterData* node,
+void SelectionEditor::DidUpdateCharacterData(CharacterData* node,
                                              unsigned offset,
-                                             unsigned oldLength,
-                                             unsigned newLength) {
+                                             unsigned old_length,
+                                             unsigned new_length) {
   // The fragment check is a performance optimization. See
   // http://trac.webkit.org/changeset/30062.
-  if (m_selection.isNone() || !node || !node->isConnected()) {
-    didFinishDOMMutation();
+  if (selection_.IsNone() || !node || !node->isConnected()) {
+    DidFinishDOMMutation();
     return;
   }
-  const Position& newBase = updatePositionAfterAdoptingTextReplacement(
-      m_selection.m_base, node, offset, oldLength, newLength);
-  const Position& newExtent = updatePositionAfterAdoptingTextReplacement(
-      m_selection.m_extent, node, offset, oldLength, newLength);
-  didFinishTextChange(newBase, newExtent);
+  const Position& new_base = UpdatePositionAfterAdoptingTextReplacement(
+      selection_.base_, node, offset, old_length, new_length);
+  const Position& new_extent = UpdatePositionAfterAdoptingTextReplacement(
+      selection_.extent_, node, offset, old_length, new_length);
+  DidFinishTextChange(new_base, new_extent);
 }
 
 // TODO(yosin): We should introduce |Position(const Text&, int)| to avoid
 // |const_cast<Text*>|.
-static Position updatePostionAfterAdoptingTextNodesMerged(
+static Position UpdatePostionAfterAdoptingTextNodesMerged(
     const Position& position,
-    const Text& mergedNode,
-    const NodeWithIndex& nodeToBeRemovedWithIndex,
-    unsigned oldLength) {
-  Node* const anchorNode = position.anchorNode();
-  const Node& nodeToBeRemoved = nodeToBeRemovedWithIndex.node();
-  switch (position.anchorType()) {
-    case PositionAnchorType::BeforeChildren:
-    case PositionAnchorType::AfterChildren:
+    const Text& merged_node,
+    const NodeWithIndex& node_to_be_removed_with_index,
+    unsigned old_length) {
+  Node* const anchor_node = position.AnchorNode();
+  const Node& node_to_be_removed = node_to_be_removed_with_index.GetNode();
+  switch (position.AnchorType()) {
+    case PositionAnchorType::kBeforeChildren:
+    case PositionAnchorType::kAfterChildren:
       return position;
-    case PositionAnchorType::BeforeAnchor:
-      if (anchorNode == nodeToBeRemoved)
-        return Position(const_cast<Text*>(&mergedNode), mergedNode.length());
+    case PositionAnchorType::kBeforeAnchor:
+      if (anchor_node == node_to_be_removed)
+        return Position(const_cast<Text*>(&merged_node), merged_node.length());
       return position;
-    case PositionAnchorType::AfterAnchor:
-      if (anchorNode == nodeToBeRemoved)
-        return Position(const_cast<Text*>(&mergedNode), mergedNode.length());
-      if (anchorNode == mergedNode)
-        return Position(const_cast<Text*>(&mergedNode), oldLength);
+    case PositionAnchorType::kAfterAnchor:
+      if (anchor_node == node_to_be_removed)
+        return Position(const_cast<Text*>(&merged_node), merged_node.length());
+      if (anchor_node == merged_node)
+        return Position(const_cast<Text*>(&merged_node), old_length);
       return position;
-    case PositionAnchorType::OffsetInAnchor: {
-      const int offset = position.offsetInContainerNode();
-      if (anchorNode == nodeToBeRemoved)
-        return Position(const_cast<Text*>(&mergedNode), oldLength + offset);
-      if (anchorNode == nodeToBeRemoved.parentNode() &&
-          offset == nodeToBeRemovedWithIndex.index()) {
-        return Position(const_cast<Text*>(&mergedNode), oldLength);
+    case PositionAnchorType::kOffsetInAnchor: {
+      const int offset = position.OffsetInContainerNode();
+      if (anchor_node == node_to_be_removed)
+        return Position(const_cast<Text*>(&merged_node), old_length + offset);
+      if (anchor_node == node_to_be_removed.parentNode() &&
+          offset == node_to_be_removed_with_index.Index()) {
+        return Position(const_cast<Text*>(&merged_node), old_length);
       }
       return position;
     }
@@ -311,129 +313,133 @@ static Position updatePostionAfterAdoptingTextNodesMerged(
   return position;
 }
 
-void SelectionEditor::didMergeTextNodes(
-    const Text& mergedNode,
-    const NodeWithIndex& nodeToBeRemovedWithIndex,
-    unsigned oldLength) {
-  if (m_selection.isNone()) {
-    didFinishDOMMutation();
+void SelectionEditor::DidMergeTextNodes(
+    const Text& merged_node,
+    const NodeWithIndex& node_to_be_removed_with_index,
+    unsigned old_length) {
+  if (selection_.IsNone()) {
+    DidFinishDOMMutation();
     return;
   }
-  const Position& newBase = updatePostionAfterAdoptingTextNodesMerged(
-      m_selection.m_base, mergedNode, nodeToBeRemovedWithIndex, oldLength);
-  const Position& newExtent = updatePostionAfterAdoptingTextNodesMerged(
-      m_selection.m_extent, mergedNode, nodeToBeRemovedWithIndex, oldLength);
-  didFinishTextChange(newBase, newExtent);
+  const Position& new_base = UpdatePostionAfterAdoptingTextNodesMerged(
+      selection_.base_, merged_node, node_to_be_removed_with_index, old_length);
+  const Position& new_extent = UpdatePostionAfterAdoptingTextNodesMerged(
+      selection_.extent_, merged_node, node_to_be_removed_with_index,
+      old_length);
+  DidFinishTextChange(new_base, new_extent);
 }
 
-static Position updatePostionAfterAdoptingTextNodeSplit(
+static Position UpdatePostionAfterAdoptingTextNodeSplit(
     const Position& position,
-    const Text& oldNode) {
-  if (!position.anchorNode() || position.anchorNode() != &oldNode ||
-      !position.isOffsetInAnchor())
+    const Text& old_node) {
+  if (!position.AnchorNode() || position.AnchorNode() != &old_node ||
+      !position.IsOffsetInAnchor())
     return position;
   // See:
   // http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
-  DCHECK_GE(position.offsetInContainerNode(), 0);
-  unsigned positionOffset =
-      static_cast<unsigned>(position.offsetInContainerNode());
-  unsigned oldLength = oldNode.length();
-  if (positionOffset <= oldLength)
+  DCHECK_GE(position.OffsetInContainerNode(), 0);
+  unsigned position_offset =
+      static_cast<unsigned>(position.OffsetInContainerNode());
+  unsigned old_length = old_node.length();
+  if (position_offset <= old_length)
     return position;
-  return Position(toText(oldNode.nextSibling()), positionOffset - oldLength);
+  return Position(ToText(old_node.nextSibling()), position_offset - old_length);
 }
 
-void SelectionEditor::didSplitTextNode(const Text& oldNode) {
-  if (m_selection.isNone() || !oldNode.isConnected()) {
-    didFinishDOMMutation();
+void SelectionEditor::DidSplitTextNode(const Text& old_node) {
+  if (selection_.IsNone() || !old_node.isConnected()) {
+    DidFinishDOMMutation();
     return;
   }
-  const Position& newBase =
-      updatePostionAfterAdoptingTextNodeSplit(m_selection.m_base, oldNode);
-  const Position& newExtent =
-      updatePostionAfterAdoptingTextNodeSplit(m_selection.m_extent, oldNode);
-  didFinishTextChange(newBase, newExtent);
+  const Position& new_base =
+      UpdatePostionAfterAdoptingTextNodeSplit(selection_.base_, old_node);
+  const Position& new_extent =
+      UpdatePostionAfterAdoptingTextNodeSplit(selection_.extent_, old_node);
+  DidFinishTextChange(new_base, new_extent);
 }
 
-bool SelectionEditor::shouldAlwaysUseDirectionalSelection() const {
-  return frame()->editor().behavior().shouldConsiderSelectionAsDirectional();
+bool SelectionEditor::ShouldAlwaysUseDirectionalSelection() const {
+  return GetFrame()
+      ->GetEditor()
+      .Behavior()
+      .ShouldConsiderSelectionAsDirectional();
 }
 
-bool SelectionEditor::needsUpdateVisibleSelection() const {
-  return m_cachedVisibleSelectionInDOMTreeIsDirty ||
-         m_styleVersionForDOMTree != document().styleVersion();
+bool SelectionEditor::NeedsUpdateVisibleSelection() const {
+  return cached_visible_selection_in_dom_tree_is_dirty_ ||
+         style_version_for_dom_tree_ != GetDocument().StyleVersion();
 }
 
-void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
+void SelectionEditor::UpdateCachedVisibleSelectionIfNeeded() const {
   // Note: Since we |FrameCaret::updateApperance()| is called from
   // |FrameView::performPostLayoutTasks()|, we check lifecycle against
   // |AfterPerformLayout| instead of |LayoutClean|.
-  DCHECK_GE(document().lifecycle().state(),
-            DocumentLifecycle::AfterPerformLayout);
-  assertSelectionValid();
-  if (!needsUpdateVisibleSelection())
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
+  AssertSelectionValid();
+  if (!NeedsUpdateVisibleSelection())
     return;
-  m_styleVersionForDOMTree = document().styleVersion();
-  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
-  m_cachedVisibleSelectionInDOMTree = createVisibleSelection(m_selection);
-  if (!m_cachedVisibleSelectionInDOMTree.isNone())
+  style_version_for_dom_tree_ = GetDocument().StyleVersion();
+  cached_visible_selection_in_dom_tree_is_dirty_ = false;
+  cached_visible_selection_in_dom_tree_ = CreateVisibleSelection(selection_);
+  if (!cached_visible_selection_in_dom_tree_.IsNone())
     return;
-  m_styleVersionForFlatTree = document().styleVersion();
-  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
-  m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
+  style_version_for_flat_tree_ = GetDocument().StyleVersion();
+  cached_visible_selection_in_flat_tree_is_dirty_ = false;
+  cached_visible_selection_in_flat_tree_ = VisibleSelectionInFlatTree();
 }
 
-bool SelectionEditor::needsUpdateVisibleSelectionInFlatTree() const {
-  return m_cachedVisibleSelectionInFlatTreeIsDirty ||
-         m_styleVersionForFlatTree != document().styleVersion();
+bool SelectionEditor::NeedsUpdateVisibleSelectionInFlatTree() const {
+  return cached_visible_selection_in_flat_tree_is_dirty_ ||
+         style_version_for_flat_tree_ != GetDocument().StyleVersion();
 }
 
-void SelectionEditor::updateCachedVisibleSelectionInFlatTreeIfNeeded() const {
+void SelectionEditor::UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const {
   // Note: Since we |FrameCaret::updateApperance()| is called from
   // |FrameView::performPostLayoutTasks()|, we check lifecycle against
   // |AfterPerformLayout| instead of |LayoutClean|.
-  DCHECK_GE(document().lifecycle().state(),
-            DocumentLifecycle::AfterPerformLayout);
-  assertSelectionValid();
-  if (!needsUpdateVisibleSelectionInFlatTree())
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
+  AssertSelectionValid();
+  if (!NeedsUpdateVisibleSelectionInFlatTree())
     return;
-  m_styleVersionForFlatTree = document().styleVersion();
-  m_cachedVisibleSelectionInFlatTreeIsDirty = false;
-  m_cachedVisibleSelectionInFlatTree = createVisibleSelection(
+  style_version_for_flat_tree_ = GetDocument().StyleVersion();
+  cached_visible_selection_in_flat_tree_is_dirty_ = false;
+  cached_visible_selection_in_flat_tree_ = CreateVisibleSelection(
       SelectionInFlatTree::Builder()
-          .setBaseAndExtent(toPositionInFlatTree(m_selection.base()),
-                            toPositionInFlatTree(m_selection.extent()))
-          .setAffinity(m_selection.affinity())
-          .setHasTrailingWhitespace(m_selection.hasTrailingWhitespace())
-          .setGranularity(m_selection.granularity())
-          .setIsDirectional(m_selection.isDirectional())
-          .build());
-  if (!m_cachedVisibleSelectionInFlatTree.isNone())
+          .SetBaseAndExtent(ToPositionInFlatTree(selection_.Base()),
+                            ToPositionInFlatTree(selection_.Extent()))
+          .SetAffinity(selection_.Affinity())
+          .SetHasTrailingWhitespace(selection_.HasTrailingWhitespace())
+          .SetGranularity(selection_.Granularity())
+          .SetIsDirectional(selection_.IsDirectional())
+          .Build());
+  if (!cached_visible_selection_in_flat_tree_.IsNone())
     return;
-  m_styleVersionForDOMTree = document().styleVersion();
-  m_cachedVisibleSelectionInDOMTreeIsDirty = false;
-  m_cachedVisibleSelectionInDOMTree = VisibleSelection();
+  style_version_for_dom_tree_ = GetDocument().StyleVersion();
+  cached_visible_selection_in_dom_tree_is_dirty_ = false;
+  cached_visible_selection_in_dom_tree_ = VisibleSelection();
 }
 
-void SelectionEditor::cacheRangeOfDocument(Range* range) {
-  m_cachedRange = range;
+void SelectionEditor::CacheRangeOfDocument(Range* range) {
+  cached_range_ = range;
 }
 
-Range* SelectionEditor::documentCachedRange() const {
-  return m_cachedRange;
+Range* SelectionEditor::DocumentCachedRange() const {
+  return cached_range_;
 }
 
-void SelectionEditor::clearDocumentCachedRange() {
-  m_cachedRange = nullptr;
+void SelectionEditor::ClearDocumentCachedRange() {
+  cached_range_ = nullptr;
 }
 
 DEFINE_TRACE(SelectionEditor) {
-  visitor->trace(m_frame);
-  visitor->trace(m_selection);
-  visitor->trace(m_cachedVisibleSelectionInDOMTree);
-  visitor->trace(m_cachedVisibleSelectionInFlatTree);
-  visitor->trace(m_cachedRange);
-  SynchronousMutationObserver::trace(visitor);
+  visitor->Trace(frame_);
+  visitor->Trace(selection_);
+  visitor->Trace(cached_visible_selection_in_dom_tree_);
+  visitor->Trace(cached_visible_selection_in_flat_tree_);
+  visitor->Trace(cached_range_);
+  SynchronousMutationObserver::Trace(visitor);
 }
 
 }  // namespace blink

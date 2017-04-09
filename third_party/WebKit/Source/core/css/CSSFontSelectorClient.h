@@ -42,7 +42,7 @@ class CORE_EXPORT CSSFontSelectorClient : public GarbageCollectedMixin {
  public:
   virtual ~CSSFontSelectorClient() {}
 
-  virtual void fontsNeedUpdate(CSSFontSelector*) = 0;
+  virtual void FontsNeedUpdate(CSSFontSelector*) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

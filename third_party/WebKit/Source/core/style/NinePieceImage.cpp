@@ -28,63 +28,63 @@
 
 namespace blink {
 
-static DataRef<NinePieceImageData>& defaultData() {
+static DataRef<NinePieceImageData>& DefaultData() {
   static DataRef<NinePieceImageData>* data = new DataRef<NinePieceImageData>;
-  if (!data->get())
-    data->init();
+  if (!data->Get())
+    data->Init();
   return *data;
 }
 
-NinePieceImage::NinePieceImage() : m_data(defaultData()) {}
+NinePieceImage::NinePieceImage() : data_(DefaultData()) {}
 
 NinePieceImage::NinePieceImage(StyleImage* image,
-                               LengthBox imageSlices,
+                               LengthBox image_slices,
                                bool fill,
-                               const BorderImageLengthBox& borderSlices,
+                               const BorderImageLengthBox& border_slices,
                                const BorderImageLengthBox& outset,
-                               ENinePieceImageRule horizontalRule,
-                               ENinePieceImageRule verticalRule) {
-  m_data.init();
-  m_data.access()->image = image;
-  m_data.access()->imageSlices = imageSlices;
-  m_data.access()->borderSlices = borderSlices;
-  m_data.access()->outset = outset;
-  m_data.access()->fill = fill;
-  m_data.access()->horizontalRule = horizontalRule;
-  m_data.access()->verticalRule = verticalRule;
+                               ENinePieceImageRule horizontal_rule,
+                               ENinePieceImageRule vertical_rule) {
+  data_.Init();
+  data_.Access()->image = image;
+  data_.Access()->image_slices = image_slices;
+  data_.Access()->border_slices = border_slices;
+  data_.Access()->outset = outset;
+  data_.Access()->fill = fill;
+  data_.Access()->horizontal_rule = horizontal_rule;
+  data_.Access()->vertical_rule = vertical_rule;
 }
 
 NinePieceImageData::NinePieceImageData()
     : fill(false),
-      horizontalRule(StretchImageRule),
-      verticalRule(StretchImageRule),
+      horizontal_rule(kStretchImageRule),
+      vertical_rule(kStretchImageRule),
       image(nullptr),
-      imageSlices(Length(100, Percent),
-                  Length(100, Percent),
-                  Length(100, Percent),
-                  Length(100, Percent)),
-      borderSlices(1.0, 1.0, 1.0, 1.0),
-      outset(Length(0, Fixed),
-             Length(0, Fixed),
-             Length(0, Fixed),
-             Length(0, Fixed)) {}
+      image_slices(Length(100, kPercent),
+                   Length(100, kPercent),
+                   Length(100, kPercent),
+                   Length(100, kPercent)),
+      border_slices(1.0, 1.0, 1.0, 1.0),
+      outset(Length(0, kFixed),
+             Length(0, kFixed),
+             Length(0, kFixed),
+             Length(0, kFixed)) {}
 
 NinePieceImageData::NinePieceImageData(const NinePieceImageData& other)
     : RefCounted<NinePieceImageData>(),
       fill(other.fill),
-      horizontalRule(other.horizontalRule),
-      verticalRule(other.verticalRule),
+      horizontal_rule(other.horizontal_rule),
+      vertical_rule(other.vertical_rule),
       image(other.image),
-      imageSlices(other.imageSlices),
-      borderSlices(other.borderSlices),
+      image_slices(other.image_slices),
+      border_slices(other.border_slices),
       outset(other.outset) {}
 
 bool NinePieceImageData::operator==(const NinePieceImageData& other) const {
-  return dataEquivalent(image, other.image) &&
-         imageSlices == other.imageSlices && fill == other.fill &&
-         borderSlices == other.borderSlices && outset == other.outset &&
-         horizontalRule == other.horizontalRule &&
-         verticalRule == other.verticalRule;
+  return DataEquivalent(image, other.image) &&
+         image_slices == other.image_slices && fill == other.fill &&
+         border_slices == other.border_slices && outset == other.outset &&
+         horizontal_rule == other.horizontal_rule &&
+         vertical_rule == other.vertical_rule;
 }
 
 }  // namespace blink

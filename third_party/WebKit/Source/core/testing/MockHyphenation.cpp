@@ -6,14 +6,14 @@
 
 namespace blink {
 
-size_t MockHyphenation::lastHyphenLocation(const StringView& text,
-                                           size_t beforeIndex) const {
-  String str = text.toString();
-  if (str.endsWith("phenation", TextCaseASCIIInsensitive)) {
-    if (beforeIndex - (str.length() - 9) > 4)
+size_t MockHyphenation::LastHyphenLocation(const StringView& text,
+                                           size_t before_index) const {
+  String str = text.ToString();
+  if (str.EndsWith("phenation", kTextCaseASCIIInsensitive)) {
+    if (before_index - (str.length() - 9) > 4)
       return 4 + (str.length() - 9);
-    if (str.endsWith("hyphenation", TextCaseASCIIInsensitive) &&
-        beforeIndex - (str.length() - 11) > 2) {
+    if (str.EndsWith("hyphenation", kTextCaseASCIIInsensitive) &&
+        before_index - (str.length() - 11) > 2) {
       return 2 + (str.length() - 11);
     }
   }

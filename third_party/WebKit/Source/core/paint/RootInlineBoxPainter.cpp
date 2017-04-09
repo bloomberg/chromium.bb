@@ -11,25 +11,25 @@
 
 namespace blink {
 
-void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo,
-                                            const LayoutPoint& paintOffset,
-                                            LayoutUnit lineTop,
-                                            LayoutUnit lineBottom) const {
-  if (m_rootInlineBox.hasEllipsisBox() &&
-      m_rootInlineBox.getLineLayoutItem().style()->visibility() ==
+void RootInlineBoxPainter::PaintEllipsisBox(const PaintInfo& paint_info,
+                                            const LayoutPoint& paint_offset,
+                                            LayoutUnit line_top,
+                                            LayoutUnit line_bottom) const {
+  if (root_inline_box_.HasEllipsisBox() &&
+      root_inline_box_.GetLineLayoutItem().Style()->Visibility() ==
           EVisibility::kVisible &&
-      paintInfo.phase == PaintPhaseForeground)
-    m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop,
-                                         lineBottom);
+      paint_info.phase == kPaintPhaseForeground)
+    root_inline_box_.GetEllipsisBox()->Paint(paint_info, paint_offset, line_top,
+                                             line_bottom);
 }
 
-void RootInlineBoxPainter::paint(const PaintInfo& paintInfo,
-                                 const LayoutPoint& paintOffset,
-                                 LayoutUnit lineTop,
-                                 LayoutUnit lineBottom) {
-  m_rootInlineBox.InlineFlowBox::paint(paintInfo, paintOffset, lineTop,
-                                       lineBottom);
-  paintEllipsisBox(paintInfo, paintOffset, lineTop, lineBottom);
+void RootInlineBoxPainter::Paint(const PaintInfo& paint_info,
+                                 const LayoutPoint& paint_offset,
+                                 LayoutUnit line_top,
+                                 LayoutUnit line_bottom) {
+  root_inline_box_.InlineFlowBox::Paint(paint_info, paint_offset, line_top,
+                                        line_bottom);
+  PaintEllipsisBox(paint_info, paint_offset, line_top, line_bottom);
 }
 
 }  // namespace blink

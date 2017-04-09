@@ -46,19 +46,19 @@ namespace blink {
 template <typename T>
 class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T>> {
  public:
-  HeapLinkedStack() : m_size(0) {}
+  HeapLinkedStack() : size_(0) {}
 
-  bool isEmpty();
+  bool IsEmpty();
 
-  void push(const T&);
-  const T& peek();
-  void pop();
+  void Push(const T&);
+  const T& Peek();
+  void Pop();
 
   size_t size();
 
   DEFINE_INLINE_TRACE() {
-    for (Node* current = m_head; current; current = current->m_next)
-      visitor->trace(current);
+    for (Node* current = head_; current; current = current->next_)
+      visitor->Trace(current);
   }
 
  private:
@@ -66,46 +66,46 @@ class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T>> {
    public:
     Node(const T&, Node* next);
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
+    DEFINE_INLINE_TRACE() { visitor->Trace(data_); }
 
-    T m_data;
-    Member<Node> m_next;
+    T data_;
+    Member<Node> next_;
   };
 
-  Member<Node> m_head;
-  size_t m_size;
+  Member<Node> head_;
+  size_t size_;
 };
 
 template <typename T>
 HeapLinkedStack<T>::Node::Node(const T& data, Node* next)
-    : m_data(data), m_next(next) {}
+    : data_(data), next_(next) {}
 
 template <typename T>
-inline bool HeapLinkedStack<T>::isEmpty() {
-  return !m_head;
+inline bool HeapLinkedStack<T>::IsEmpty() {
+  return !head_;
 }
 
 template <typename T>
-inline void HeapLinkedStack<T>::push(const T& data) {
-  m_head = new Node(data, m_head);
-  ++m_size;
+inline void HeapLinkedStack<T>::Push(const T& data) {
+  head_ = new Node(data, head_);
+  ++size_;
 }
 
 template <typename T>
-inline const T& HeapLinkedStack<T>::peek() {
-  return m_head->m_data;
+inline const T& HeapLinkedStack<T>::Peek() {
+  return head_->data_;
 }
 
 template <typename T>
-inline void HeapLinkedStack<T>::pop() {
-  ASSERT(m_head && m_size);
-  m_head = m_head->m_next;
-  --m_size;
+inline void HeapLinkedStack<T>::Pop() {
+  ASSERT(head_ && size_);
+  head_ = head_->next_;
+  --size_;
 }
 
 template <typename T>
 inline size_t HeapLinkedStack<T>::size() {
-  return m_size;
+  return size_;
 }
 
 template <typename T>

@@ -39,31 +39,31 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridge
   explicit CanvasSurfaceLayerBridge(CanvasSurfaceLayerBridgeObserver*,
                                     WebLayerTreeView*);
   ~CanvasSurfaceLayerBridge();
-  void createSolidColorLayer();
-  WebLayer* getWebLayer() const { return m_webLayer.get(); }
-  const cc::FrameSinkId& getFrameSinkId() const { return m_frameSinkId; }
+  void CreateSolidColorLayer();
+  WebLayer* GetWebLayer() const { return web_layer_.get(); }
+  const cc::FrameSinkId& GetFrameSinkId() const { return frame_sink_id_; }
 
   // Implementation of cc::mojom::blink::FrameSinkManagerClient
   void OnSurfaceCreated(const cc::SurfaceInfo&) override;
 
-  void satisfyCallback(const cc::SurfaceSequence&);
-  void requireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&);
+  void SatisfyCallback(const cc::SurfaceSequence&);
+  void RequireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&);
 
  private:
-  scoped_refptr<cc::Layer> m_CCLayer;
-  std::unique_ptr<WebLayer> m_webLayer;
+  scoped_refptr<cc::Layer> cc_layer_;
+  std::unique_ptr<WebLayer> web_layer_;
 
-  scoped_refptr<cc::SurfaceReferenceFactory> m_refFactory;
-  base::WeakPtrFactory<CanvasSurfaceLayerBridge> m_weakFactory;
+  scoped_refptr<cc::SurfaceReferenceFactory> ref_factory_;
+  base::WeakPtrFactory<CanvasSurfaceLayerBridge> weak_factory_;
 
-  CanvasSurfaceLayerBridgeObserver* m_observer;
+  CanvasSurfaceLayerBridgeObserver* observer_;
 
-  mojom::blink::OffscreenCanvasSurfacePtr m_service;
-  mojo::Binding<cc::mojom::blink::FrameSinkManagerClient> m_binding;
+  mojom::blink::OffscreenCanvasSurfacePtr service_;
+  mojo::Binding<cc::mojom::blink::FrameSinkManagerClient> binding_;
 
-  const cc::FrameSinkId m_frameSinkId;
-  cc::SurfaceId m_currentSurfaceId;
-  const cc::FrameSinkId m_parentFrameSinkId;
+  const cc::FrameSinkId frame_sink_id_;
+  cc::SurfaceId current_surface_id_;
+  const cc::FrameSinkId parent_frame_sink_id_;
 };
 
 }  // namespace blink

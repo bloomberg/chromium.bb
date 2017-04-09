@@ -42,20 +42,20 @@ class CORE_EXPORT DOMImplementation final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMImplementation* create(Document& document) {
+  static DOMImplementation* Create(Document& document) {
     return new DOMImplementation(document);
   }
 
-  Document& document() const { return *m_document; }
+  Document& GetDocument() const { return *document_; }
 
   // DOM methods & attributes for DOMImplementation
   bool hasFeature() { return true; }
-  DocumentType* createDocumentType(const AtomicString& qualifiedName,
-                                   const String& publicId,
-                                   const String& systemId,
+  DocumentType* createDocumentType(const AtomicString& qualified_name,
+                                   const String& public_id,
+                                   const String& system_id,
                                    ExceptionState&);
-  XMLDocument* createDocument(const AtomicString& namespaceURI,
-                              const AtomicString& qualifiedName,
+  XMLDocument* createDocument(const AtomicString& namespace_uri,
+                              const AtomicString& qualified_name,
                               DocumentType*,
                               ExceptionState&);
 
@@ -63,20 +63,20 @@ class CORE_EXPORT DOMImplementation final
   HTMLDocument* createHTMLDocument(const String& title);
 
   // Other methods (not part of DOM)
-  static Document* createDocument(const String& mimeType,
+  static Document* createDocument(const String& mime_type,
                                   const DocumentInit&,
-                                  bool inViewSourceMode);
+                                  bool in_view_source_mode);
 
-  static bool isXMLMIMEType(const String&);
-  static bool isTextMIMEType(const String&);
-  static bool isJSONMIMEType(const String&);
+  static bool IsXMLMIMEType(const String&);
+  static bool IsTextMIMEType(const String&);
+  static bool IsJSONMIMEType(const String&);
 
   DECLARE_TRACE();
 
  private:
   explicit DOMImplementation(Document&);
 
-  Member<Document> m_document;
+  Member<Document> document_;
 };
 
 }  // namespace blink

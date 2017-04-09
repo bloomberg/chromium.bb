@@ -16,182 +16,182 @@ class UnderlyingSizeListChecker : public InterpolationType::ConversionChecker {
  public:
   ~UnderlyingSizeListChecker() final {}
 
-  static std::unique_ptr<UnderlyingSizeListChecker> create(
-      const NonInterpolableList& underlyingList) {
-    return WTF::wrapUnique(new UnderlyingSizeListChecker(underlyingList));
+  static std::unique_ptr<UnderlyingSizeListChecker> Create(
+      const NonInterpolableList& underlying_list) {
+    return WTF::WrapUnique(new UnderlyingSizeListChecker(underlying_list));
   }
 
  private:
-  UnderlyingSizeListChecker(const NonInterpolableList& underlyingList)
-      : m_underlyingList(&underlyingList) {}
+  UnderlyingSizeListChecker(const NonInterpolableList& underlying_list)
+      : underlying_list_(&underlying_list) {}
 
-  bool isValid(const InterpolationEnvironment&,
+  bool IsValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
-    const auto& underlyingList =
-        toNonInterpolableList(*underlying.nonInterpolableValue);
-    size_t underlyingLength = underlyingList.length();
-    if (underlyingLength != m_underlyingList->length())
+    const auto& underlying_list =
+        ToNonInterpolableList(*underlying.non_interpolable_value);
+    size_t underlying_length = underlying_list.length();
+    if (underlying_length != underlying_list_->length())
       return false;
-    for (size_t i = 0; i < underlyingLength; i++) {
+    for (size_t i = 0; i < underlying_length; i++) {
       bool compatible =
-          SizeInterpolationFunctions::nonInterpolableValuesAreCompatible(
-              underlyingList.get(i), m_underlyingList->get(i));
+          SizeInterpolationFunctions::NonInterpolableValuesAreCompatible(
+              underlying_list.Get(i), underlying_list_->Get(i));
       if (!compatible)
         return false;
     }
     return true;
   }
 
-  RefPtr<const NonInterpolableList> m_underlyingList;
+  RefPtr<const NonInterpolableList> underlying_list_;
 };
 
 class InheritedSizeListChecker : public InterpolationType::ConversionChecker {
  public:
   ~InheritedSizeListChecker() final {}
 
-  static std::unique_ptr<InheritedSizeListChecker> create(
+  static std::unique_ptr<InheritedSizeListChecker> Create(
       CSSPropertyID property,
-      const SizeList& inheritedSizeList) {
-    return WTF::wrapUnique(
-        new InheritedSizeListChecker(property, inheritedSizeList));
+      const SizeList& inherited_size_list) {
+    return WTF::WrapUnique(
+        new InheritedSizeListChecker(property, inherited_size_list));
   }
 
  private:
   InheritedSizeListChecker(CSSPropertyID property,
-                           const SizeList& inheritedSizeList)
-      : m_property(property), m_inheritedSizeList(inheritedSizeList) {}
+                           const SizeList& inherited_size_list)
+      : property_(property), inherited_size_list_(inherited_size_list) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    return m_inheritedSizeList ==
-           SizeListPropertyFunctions::getSizeList(
-               m_property, *environment.state().parentStyle());
+    return inherited_size_list_ ==
+           SizeListPropertyFunctions::GetSizeList(
+               property_, *environment.GetState().ParentStyle());
   }
 
-  CSSPropertyID m_property;
-  SizeList m_inheritedSizeList;
+  CSSPropertyID property_;
+  SizeList inherited_size_list_;
 };
 
-InterpolationValue convertSizeList(const SizeList& sizeList, float zoom) {
+InterpolationValue ConvertSizeList(const SizeList& size_list, float zoom) {
   // Flatten pairs of width/height into individual items, even for contain and
   // cover keywords.
-  return ListInterpolationFunctions::createList(
-      sizeList.size() * 2,
-      [&sizeList, zoom](size_t index) -> InterpolationValue {
-        bool convertWidth = index % 2 == 0;
-        return SizeInterpolationFunctions::convertFillSizeSide(
-            sizeList[index / 2], zoom, convertWidth);
+  return ListInterpolationFunctions::CreateList(
+      size_list.size() * 2,
+      [&size_list, zoom](size_t index) -> InterpolationValue {
+        bool convert_width = index % 2 == 0;
+        return SizeInterpolationFunctions::ConvertFillSizeSide(
+            size_list[index / 2], zoom, convert_width);
       });
 }
 
-InterpolationValue maybeConvertCSSSizeList(const CSSValue& value) {
+InterpolationValue MaybeConvertCSSSizeList(const CSSValue& value) {
   // CSSPropertyParser doesn't put single values in lists so wrap it up in a
   // temporary list.
   const CSSValueList* list = nullptr;
-  if (!value.isBaseValueList()) {
-    CSSValueList* tempList = CSSValueList::createCommaSeparated();
-    tempList->append(value);
-    list = tempList;
+  if (!value.IsBaseValueList()) {
+    CSSValueList* temp_list = CSSValueList::CreateCommaSeparated();
+    temp_list->Append(value);
+    list = temp_list;
   } else {
-    list = toCSSValueList(&value);
+    list = ToCSSValueList(&value);
   }
 
   // Flatten pairs of width/height into individual items, even for contain and
   // cover keywords.
-  return ListInterpolationFunctions::createList(
+  return ListInterpolationFunctions::CreateList(
       list->length() * 2, [list](size_t index) -> InterpolationValue {
-        const CSSValue& cssSize = list->item(index / 2);
-        bool convertWidth = index % 2 == 0;
-        return SizeInterpolationFunctions::maybeConvertCSSSizeSide(
-            cssSize, convertWidth);
+        const CSSValue& css_size = list->Item(index / 2);
+        bool convert_width = index % 2 == 0;
+        return SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
+            css_size, convert_width);
       });
 }
 
-InterpolationValue CSSSizeListInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSSizeListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
-    ConversionCheckers& conversionCheckers) const {
-  const auto& underlyingList =
-      toNonInterpolableList(*underlying.nonInterpolableValue);
-  conversionCheckers.push_back(
-      UnderlyingSizeListChecker::create(underlyingList));
-  return ListInterpolationFunctions::createList(
-      underlyingList.length(), [&underlyingList](size_t index) {
-        return SizeInterpolationFunctions::createNeutralValue(
-            underlyingList.get(index));
+    ConversionCheckers& conversion_checkers) const {
+  const auto& underlying_list =
+      ToNonInterpolableList(*underlying.non_interpolable_value);
+  conversion_checkers.push_back(
+      UnderlyingSizeListChecker::Create(underlying_list));
+  return ListInterpolationFunctions::CreateList(
+      underlying_list.length(), [&underlying_list](size_t index) {
+        return SizeInterpolationFunctions::CreateNeutralValue(
+            underlying_list.Get(index));
       });
 }
 
-InterpolationValue CSSSizeListInterpolationType::maybeConvertInitial(
+InterpolationValue CSSSizeListInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return convertSizeList(
-      SizeListPropertyFunctions::getInitialSizeList(cssProperty()), 1);
+  return ConvertSizeList(
+      SizeListPropertyFunctions::GetInitialSizeList(CssProperty()), 1);
 }
 
-InterpolationValue CSSSizeListInterpolationType::maybeConvertInherit(
+InterpolationValue CSSSizeListInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  SizeList inheritedSizeList = SizeListPropertyFunctions::getSizeList(
-      cssProperty(), *state.parentStyle());
-  conversionCheckers.push_back(
-      InheritedSizeListChecker::create(cssProperty(), inheritedSizeList));
-  return convertSizeList(inheritedSizeList, state.style()->effectiveZoom());
+    ConversionCheckers& conversion_checkers) const {
+  SizeList inherited_size_list = SizeListPropertyFunctions::GetSizeList(
+      CssProperty(), *state.ParentStyle());
+  conversion_checkers.push_back(
+      InheritedSizeListChecker::Create(CssProperty(), inherited_size_list));
+  return ConvertSizeList(inherited_size_list, state.Style()->EffectiveZoom());
 }
 
-InterpolationValue CSSSizeListInterpolationType::maybeConvertValue(
+InterpolationValue CSSSizeListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  return maybeConvertCSSSizeList(value);
+  return MaybeConvertCSSSizeList(value);
 }
 
-PairwiseInterpolationValue CSSSizeListInterpolationType::maybeMergeSingles(
+PairwiseInterpolationValue CSSSizeListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  return ListInterpolationFunctions::maybeMergeSingles(
+  return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
-      SizeInterpolationFunctions::maybeMergeSingles);
+      SizeInterpolationFunctions::MaybeMergeSingles);
 }
 
 InterpolationValue
-CSSSizeListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSSizeListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return convertSizeList(
-      SizeListPropertyFunctions::getSizeList(cssProperty(), style),
-      style.effectiveZoom());
+  return ConvertSizeList(
+      SizeListPropertyFunctions::GetSizeList(CssProperty(), style),
+      style.EffectiveZoom());
 }
 
-void CSSSizeListInterpolationType::composite(
-    UnderlyingValueOwner& underlyingValueOwner,
-    double underlyingFraction,
+void CSSSizeListInterpolationType::Composite(
+    UnderlyingValueOwner& underlying_value_owner,
+    double underlying_fraction,
     const InterpolationValue& value,
-    double interpolationFraction) const {
-  ListInterpolationFunctions::composite(
-      underlyingValueOwner, underlyingFraction, *this, value,
-      SizeInterpolationFunctions::nonInterpolableValuesAreCompatible,
-      SizeInterpolationFunctions::composite);
+    double interpolation_fraction) const {
+  ListInterpolationFunctions::Composite(
+      underlying_value_owner, underlying_fraction, *this, value,
+      SizeInterpolationFunctions::NonInterpolableValuesAreCompatible,
+      SizeInterpolationFunctions::Composite);
 }
 
-void CSSSizeListInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue,
+void CSSSizeListInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  const auto& interpolableList = toInterpolableList(interpolableValue);
-  const auto& nonInterpolableList =
-      toNonInterpolableList(*nonInterpolableValue);
-  size_t length = interpolableList.length();
-  DCHECK_EQ(length, nonInterpolableList.length());
+  const auto& interpolable_list = ToInterpolableList(interpolable_value);
+  const auto& non_interpolable_list =
+      ToNonInterpolableList(*non_interpolable_value);
+  size_t length = interpolable_list.length();
+  DCHECK_EQ(length, non_interpolable_list.length());
   DCHECK_EQ(length % 2, 0ul);
-  size_t sizeListLength = length / 2;
-  SizeList sizeList(sizeListLength);
-  for (size_t i = 0; i < sizeListLength; i++) {
-    sizeList[i] = SizeInterpolationFunctions::createFillSize(
-        *interpolableList.get(i * 2), nonInterpolableList.get(i * 2),
-        *interpolableList.get(i * 2 + 1), nonInterpolableList.get(i * 2 + 1),
-        state.cssToLengthConversionData());
+  size_t size_list_length = length / 2;
+  SizeList size_list(size_list_length);
+  for (size_t i = 0; i < size_list_length; i++) {
+    size_list[i] = SizeInterpolationFunctions::CreateFillSize(
+        *interpolable_list.Get(i * 2), non_interpolable_list.Get(i * 2),
+        *interpolable_list.Get(i * 2 + 1), non_interpolable_list.Get(i * 2 + 1),
+        state.CssToLengthConversionData());
   }
-  SizeListPropertyFunctions::setSizeList(cssProperty(), *state.style(),
-                                         sizeList);
+  SizeListPropertyFunctions::SetSizeList(CssProperty(), *state.Style(),
+                                         size_list);
 }
 
 }  // namespace blink

@@ -29,22 +29,22 @@ namespace blink {
 
 EXTFragDepth::EXTFragDepth(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_frag_depth");
+  context->ExtensionsUtil()->EnsureExtensionEnabled("GL_EXT_frag_depth");
 }
 
-WebGLExtensionName EXTFragDepth::name() const {
-  return EXTFragDepthName;
+WebGLExtensionName EXTFragDepth::GetName() const {
+  return kEXTFragDepthName;
 }
 
-EXTFragDepth* EXTFragDepth::create(WebGLRenderingContextBase* context) {
+EXTFragDepth* EXTFragDepth::Create(WebGLRenderingContextBase* context) {
   return new EXTFragDepth(context);
 }
 
-bool EXTFragDepth::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension("GL_EXT_frag_depth");
+bool EXTFragDepth::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension("GL_EXT_frag_depth");
 }
 
-const char* EXTFragDepth::extensionName() {
+const char* EXTFragDepth::ExtensionName() {
   return "EXT_frag_depth";
 }
 

@@ -14,37 +14,37 @@ namespace blink {
 typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
 enum ContentSecurityPolicyHeaderType {
-  ContentSecurityPolicyHeaderTypeReport,
-  ContentSecurityPolicyHeaderTypeEnforce
+  kContentSecurityPolicyHeaderTypeReport,
+  kContentSecurityPolicyHeaderTypeEnforce
 };
 
 enum ContentSecurityPolicyHeaderSource {
-  ContentSecurityPolicyHeaderSourceHTTP,
-  ContentSecurityPolicyHeaderSourceMeta
+  kContentSecurityPolicyHeaderSourceHTTP,
+  kContentSecurityPolicyHeaderSourceMeta
 };
 
 enum ContentSecurityPolicyHashAlgorithm {
-  ContentSecurityPolicyHashAlgorithmNone = 0,
-  ContentSecurityPolicyHashAlgorithmSha1 = 1 << 1,
-  ContentSecurityPolicyHashAlgorithmSha256 = 1 << 2,
-  ContentSecurityPolicyHashAlgorithmSha384 = 1 << 3,
-  ContentSecurityPolicyHashAlgorithmSha512 = 1 << 4
+  kContentSecurityPolicyHashAlgorithmNone = 0,
+  kContentSecurityPolicyHashAlgorithmSha1 = 1 << 1,
+  kContentSecurityPolicyHashAlgorithmSha256 = 1 << 2,
+  kContentSecurityPolicyHashAlgorithmSha384 = 1 << 3,
+  kContentSecurityPolicyHashAlgorithmSha512 = 1 << 4
 };
 
-PLATFORM_EXPORT bool isCSPDirectiveNameCharacter(UChar);
-PLATFORM_EXPORT bool isCSPDirectiveValueCharacter(UChar);
-PLATFORM_EXPORT bool isNonceCharacter(UChar);
-PLATFORM_EXPORT bool isSourceCharacter(UChar);
-PLATFORM_EXPORT bool isPathComponentCharacter(UChar);
-PLATFORM_EXPORT bool isHostCharacter(UChar);
-PLATFORM_EXPORT bool isSchemeContinuationCharacter(UChar);
-PLATFORM_EXPORT bool isNotASCIISpace(UChar);
-PLATFORM_EXPORT bool isNotColonOrSlash(UChar);
-PLATFORM_EXPORT bool isMediaTypeCharacter(UChar);
+PLATFORM_EXPORT bool IsCSPDirectiveNameCharacter(UChar);
+PLATFORM_EXPORT bool IsCSPDirectiveValueCharacter(UChar);
+PLATFORM_EXPORT bool IsNonceCharacter(UChar);
+PLATFORM_EXPORT bool IsSourceCharacter(UChar);
+PLATFORM_EXPORT bool IsPathComponentCharacter(UChar);
+PLATFORM_EXPORT bool IsHostCharacter(UChar);
+PLATFORM_EXPORT bool IsSchemeContinuationCharacter(UChar);
+PLATFORM_EXPORT bool IsNotASCIISpace(UChar);
+PLATFORM_EXPORT bool IsNotColonOrSlash(UChar);
+PLATFORM_EXPORT bool IsMediaTypeCharacter(UChar);
 
 // Only checks for general Base64 encoded chars, not '=' chars since '=' is
 // positional and may only appear at the end of a Base64 encoded string.
-PLATFORM_EXPORT bool isBase64EncodedCharacter(UChar);
+PLATFORM_EXPORT bool IsBase64EncodedCharacter(UChar);
 
 }  // namespace blink
 

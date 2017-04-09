@@ -40,22 +40,22 @@ class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
   WTF_MAKE_NONCOPYABLE(LightSource);
 
  public:
-  LightSource(LightType type) : m_type(type) {}
+  LightSource(LightType type) : type_(type) {}
 
   virtual ~LightSource();
 
-  LightType type() const { return m_type; }
-  virtual TextStream& externalRepresentation(TextStream&) const = 0;
+  LightType GetType() const { return type_; }
+  virtual TextStream& ExternalRepresentation(TextStream&) const = 0;
 
-  virtual bool setAzimuth(float) { return false; }
-  virtual bool setElevation(float) { return false; }
-  virtual bool setPosition(const FloatPoint3D&) { return false; }
-  virtual bool setPointsAt(const FloatPoint3D&) { return false; }
-  virtual bool setSpecularExponent(float) { return false; }
-  virtual bool setLimitingConeAngle(float) { return false; }
+  virtual bool SetAzimuth(float) { return false; }
+  virtual bool SetElevation(float) { return false; }
+  virtual bool SetPosition(const FloatPoint3D&) { return false; }
+  virtual bool SetPointsAt(const FloatPoint3D&) { return false; }
+  virtual bool SetSpecularExponent(float) { return false; }
+  virtual bool SetLimitingConeAngle(float) { return false; }
 
  private:
-  LightType m_type;
+  LightType type_;
 };
 
 }  // namespace blink

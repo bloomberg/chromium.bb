@@ -22,11 +22,11 @@ namespace blink {
 class ScriptState;
 class SerializedScriptValue;
 
-CORE_EXPORT void v8ConstructorAttributeGetter(
-    v8::Local<v8::Name> propertyName,
+CORE_EXPORT void V8ConstructorAttributeGetter(
+    v8::Local<v8::Name> property_name,
     const v8::PropertyCallbackInfo<v8::Value>&);
 
-CORE_EXPORT v8::Local<v8::Value> v8Deserialize(
+CORE_EXPORT v8::Local<v8::Value> V8Deserialize(
     v8::Isolate*,
     PassRefPtr<SerializedScriptValue>);
 
@@ -41,29 +41,28 @@ class CORE_EXPORT ExceptionToRejectPromiseScope {
 
  public:
   ExceptionToRejectPromiseScope(const v8::FunctionCallbackInfo<v8::Value>& info,
-                                ExceptionState& exceptionState)
-      : m_info(info),
-        m_exceptionState(exceptionState) {}
+                                ExceptionState& exception_state)
+      : info_(info), exception_state_(exception_state) {}
   ~ExceptionToRejectPromiseScope() {
-    if (!m_exceptionState.hadException())
+    if (!exception_state_.HadException())
       return;
 
     // As exceptions must always be created in the current realm, reject
     // promises must also be created in the current realm while regular promises
     // are created in the relevant realm of the context object.
-    ScriptState* scriptState = ScriptState::forFunctionObject(m_info);
-    v8SetReturnValue(m_info, m_exceptionState.reject(scriptState).v8Value());
+    ScriptState* script_state = ScriptState::ForFunctionObject(info_);
+    V8SetReturnValue(info_, exception_state_.Reject(script_state).V8Value());
   }
 
  private:
-  const v8::FunctionCallbackInfo<v8::Value>& m_info;
-  ExceptionState& m_exceptionState;
+  const v8::FunctionCallbackInfo<v8::Value>& info_;
+  ExceptionState& exception_state_;
 };
 
 using InstallTemplateFunction =
     void (*)(v8::Isolate* isolate,
              const DOMWrapperWorld& world,
-             v8::Local<v8::FunctionTemplate> interfaceTemplate);
+             v8::Local<v8::FunctionTemplate> interface_template);
 
 using InstallRuntimeEnabledFunction =
     void (*)(v8::Isolate* isolate,

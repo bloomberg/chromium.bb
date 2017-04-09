@@ -54,68 +54,68 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
 
  public:
   AudioDestination(AudioIOCallback&,
-                   unsigned numberOfOutputChannels,
+                   unsigned number_of_output_channels,
                    const WebAudioLatencyHint&,
                    PassRefPtr<SecurityOrigin>);
   ~AudioDestination() override;
 
-  static std::unique_ptr<AudioDestination> create(
+  static std::unique_ptr<AudioDestination> Create(
       AudioIOCallback&,
-      unsigned numberOfOutputChannels,
+      unsigned number_of_output_channels,
       const WebAudioLatencyHint&,
       PassRefPtr<SecurityOrigin>);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
   // invoked by the media renderer.
-  void render(const WebVector<float*>& destinationData,
-              size_t numberOfFrames,
+  void Render(const WebVector<float*>& destination_data,
+              size_t number_of_frames,
               double delay,
-              double delayTimestamp,
-              size_t priorFramesSkipped) override;
+              double delay_timestamp,
+              size_t prior_frames_skipped) override;
 
-  virtual void start();
-  virtual void stop();
+  virtual void Start();
+  virtual void Stop();
 
-  size_t callbackBufferSize() const { return m_callbackBufferSize; }
-  bool isPlaying() { return m_isPlaying; }
+  size_t CallbackBufferSize() const { return callback_buffer_size_; }
+  bool IsPlaying() { return is_playing_; }
 
-  double sampleRate() const { return m_webAudioDevice->sampleRate(); }
+  double SampleRate() const { return web_audio_device_->SampleRate(); }
 
   // Returns the audio buffer size in frames used by the underlying audio
   // hardware.
-  int framesPerBuffer() const { return m_webAudioDevice->framesPerBuffer(); }
+  int FramesPerBuffer() const { return web_audio_device_->FramesPerBuffer(); }
 
   // The information from the actual audio hardware. (via Platform::current)
-  static float hardwareSampleRate();
-  static unsigned long maxChannelCount();
+  static float HardwareSampleRate();
+  static unsigned long MaxChannelCount();
 
  private:
-  std::unique_ptr<WebAudioDevice> m_webAudioDevice;
-  unsigned m_numberOfOutputChannels;
-  size_t m_callbackBufferSize;
-  bool m_isPlaying;
+  std::unique_ptr<WebAudioDevice> web_audio_device_;
+  unsigned number_of_output_channels_;
+  size_t callback_buffer_size_;
+  bool is_playing_;
 
   // The render callback function of WebAudio engine. (i.e. DestinationNode)
-  AudioIOCallback& m_callback;
+  AudioIOCallback& callback_;
 
   // To pass the data from FIFO to the audio device callback.
-  RefPtr<AudioBus> m_outputBus;
+  RefPtr<AudioBus> output_bus_;
 
   // To push the rendered result from WebAudio graph into the FIFO.
-  RefPtr<AudioBus> m_renderBus;
+  RefPtr<AudioBus> render_bus_;
 
   // Resolves the buffer size mismatch between the WebAudio engine and
   // the callback function from the actual audio device.
-  std::unique_ptr<PushPullFIFO> m_fifo;
+  std::unique_ptr<PushPullFIFO> fifo_;
 
-  size_t m_framesElapsed;
-  AudioIOPosition m_outputPosition;
-  base::TimeTicks m_outputPositionReceivedTimestamp;
+  size_t frames_elapsed_;
+  AudioIOPosition output_position_;
+  base::TimeTicks output_position_received_timestamp_;
 
   // Check if the buffer size chosen by the WebAudioDevice is too large.
-  bool checkBufferSize();
+  bool CheckBufferSize();
 
-  size_t hardwareBufferSize();
+  size_t HardwareBufferSize();
 };
 
 }  // namespace blink

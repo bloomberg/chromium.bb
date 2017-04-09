@@ -54,16 +54,16 @@ class DeprecatedStorageInfo final
     kPersistent,
   };
 
-  static DeprecatedStorageInfo* create() { return new DeprecatedStorageInfo(); }
+  static DeprecatedStorageInfo* Create() { return new DeprecatedStorageInfo(); }
 
   void queryUsageAndQuota(ScriptState*,
-                          int storageType,
+                          int storage_type,
                           StorageUsageCallback*,
                           StorageErrorCallback*);
 
   void requestQuota(ScriptState*,
-                    int storageType,
-                    unsigned long long newQuotaInBytes,
+                    int storage_type,
+                    unsigned long long new_quota_in_bytes,
                     StorageQuotaCallback*,
                     StorageErrorCallback*);
 
@@ -72,10 +72,10 @@ class DeprecatedStorageInfo final
  private:
   DeprecatedStorageInfo();
 
-  DeprecatedStorageQuota* getStorageQuota(int storageType);
+  DeprecatedStorageQuota* GetStorageQuota(int storage_type);
 
-  mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
-  mutable Member<DeprecatedStorageQuota> m_persistentStorage;
+  mutable Member<DeprecatedStorageQuota> temporary_storage_;
+  mutable Member<DeprecatedStorageQuota> persistent_storage_;
 };
 
 }  // namespace blink

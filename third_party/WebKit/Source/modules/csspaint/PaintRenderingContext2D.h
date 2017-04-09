@@ -25,61 +25,64 @@ class MODULES_EXPORT PaintRenderingContext2D
   WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
 
  public:
-  static PaintRenderingContext2D*
-  create(std::unique_ptr<ImageBuffer> imageBuffer, bool hasAlpha, float zoom) {
-    return new PaintRenderingContext2D(std::move(imageBuffer), hasAlpha, zoom);
+  static PaintRenderingContext2D* Create(
+      std::unique_ptr<ImageBuffer> image_buffer,
+      bool has_alpha,
+      float zoom) {
+    return new PaintRenderingContext2D(std::move(image_buffer), has_alpha,
+                                       zoom);
   }
 
   // BaseRenderingContext2D
 
   // PaintRenderingContext2D doesn't have any pixel readback so the origin
   // is always clean, and unable to taint it.
-  bool originClean() const final { return true; }
-  void setOriginTainted() final {}
-  bool wouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final {
+  bool OriginClean() const final { return true; }
+  void SetOriginTainted() final {}
+  bool WouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final {
     return false;
   }
 
-  int width() const final;
-  int height() const final;
+  int Width() const final;
+  int Height() const final;
 
-  bool hasImageBuffer() const final { return m_imageBuffer.get(); }
-  ImageBuffer* imageBuffer() const final { return m_imageBuffer.get(); }
+  bool HasImageBuffer() const final { return image_buffer_.get(); }
+  ImageBuffer* GetImageBuffer() const final { return image_buffer_.get(); }
 
-  bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
+  bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  PaintCanvas* drawingCanvas() const final;
-  PaintCanvas* existingDrawingCanvas() const final;
-  void disableDeferral(DisableDeferralReason) final {}
+  PaintCanvas* DrawingCanvas() const final;
+  PaintCanvas* ExistingDrawingCanvas() const final;
+  void DisableDeferral(DisableDeferralReason) final {}
 
-  AffineTransform baseTransform() const final;
+  AffineTransform BaseTransform() const final;
 
-  void didDraw(const SkIRect& dirtyRect) final;
+  void DidDraw(const SkIRect& dirty_rect) final;
 
-  ColorBehavior drawImageColorBehavior() const final;
+  ColorBehavior DrawImageColorBehavior() const final;
 
   // TODO(ikilpatrick): We'll need to either only accept resolved filters
   // from a typed-om <filter> object, or use the appropriate style resolution
   // host to determine 'em' units etc in filters. At the moment just pretend
   // that we don't have a filter set.
-  bool stateHasFilter() final { return false; }
-  sk_sp<SkImageFilter> stateGetFilter() final { return nullptr; }
-  void snapshotStateForFilter() final {}
+  bool StateHasFilter() final { return false; }
+  sk_sp<SkImageFilter> StateGetFilter() final { return nullptr; }
+  void SnapshotStateForFilter() final {}
 
-  void validateStateStack() const final;
+  void ValidateStateStack() const final;
 
-  bool hasAlpha() const final { return m_hasAlpha; }
+  bool HasAlpha() const final { return has_alpha_; }
 
   // PaintRenderingContext2D cannot lose it's context.
   bool isContextLost() const final { return false; }
 
  private:
   PaintRenderingContext2D(std::unique_ptr<ImageBuffer>,
-                          bool hasAlpha,
+                          bool has_alpha,
                           float zoom);
 
-  std::unique_ptr<ImageBuffer> m_imageBuffer;
-  bool m_hasAlpha;
+  std::unique_ptr<ImageBuffer> image_buffer_;
+  bool has_alpha_;
 };
 
 }  // namespace blink

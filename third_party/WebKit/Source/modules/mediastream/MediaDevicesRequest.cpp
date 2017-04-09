@@ -33,7 +33,7 @@
 
 namespace blink {
 
-MediaDevicesRequest* MediaDevicesRequest::create(
+MediaDevicesRequest* MediaDevicesRequest::Create(
     ScriptState* state,
     UserMediaController* controller) {
   return new MediaDevicesRequest(state, controller);
@@ -41,43 +41,43 @@ MediaDevicesRequest* MediaDevicesRequest::create(
 
 MediaDevicesRequest::MediaDevicesRequest(ScriptState* state,
                                          UserMediaController* controller)
-    : ContextLifecycleObserver(state->getExecutionContext()),
-      m_controller(controller),
-      m_resolver(ScriptPromiseResolver::create(state)) {}
+    : ContextLifecycleObserver(state->GetExecutionContext()),
+      controller_(controller),
+      resolver_(ScriptPromiseResolver::Create(state)) {}
 
 MediaDevicesRequest::~MediaDevicesRequest() {}
 
-Document* MediaDevicesRequest::ownerDocument() {
-  if (ExecutionContext* context = getExecutionContext()) {
-    return toDocument(context);
+Document* MediaDevicesRequest::OwnerDocument() {
+  if (ExecutionContext* context = GetExecutionContext()) {
+    return ToDocument(context);
   }
 
   return 0;
 }
 
-ScriptPromise MediaDevicesRequest::start() {
-  DCHECK(m_controller);
-  m_resolver->keepAliveWhilePending();
-  m_controller->requestMediaDevices(this);
-  return m_resolver->promise();
+ScriptPromise MediaDevicesRequest::Start() {
+  DCHECK(controller_);
+  resolver_->KeepAliveWhilePending();
+  controller_->RequestMediaDevices(this);
+  return resolver_->Promise();
 }
 
-void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices) {
-  if (!getExecutionContext() || !m_resolver)
+void MediaDevicesRequest::Succeed(const MediaDeviceInfoVector& media_devices) {
+  if (!GetExecutionContext() || !resolver_)
     return;
 
-  m_resolver->resolve(mediaDevices);
+  resolver_->Resolve(media_devices);
 }
 
-void MediaDevicesRequest::contextDestroyed(ExecutionContext*) {
-  m_controller.clear();
-  m_resolver.clear();
+void MediaDevicesRequest::ContextDestroyed(ExecutionContext*) {
+  controller_.Clear();
+  resolver_.Clear();
 }
 
 DEFINE_TRACE(MediaDevicesRequest) {
-  visitor->trace(m_controller);
-  visitor->trace(m_resolver);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(controller_);
+  visitor->Trace(resolver_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

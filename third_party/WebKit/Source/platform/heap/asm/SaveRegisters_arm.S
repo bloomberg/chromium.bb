@@ -31,12 +31,12 @@
 
 /*
  * typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
- * extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
+ * extern "C" void PushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
  */
 
-.type pushAllRegisters, %function
-.global pushAllRegisters
-.hidden pushAllRegisters
+.type PushAllRegisters, %function
+.global PushAllRegisters
+.hidden PushAllRegisters
 #ifdef __thumb__
 /* In THUMB Mode jump to ARM stub via bx to ensure CPU mode switch.
  * FIXME: This trampoline is provided to workaround bugs in
@@ -46,7 +46,7 @@
 .align 2
 .code 16
 .thumb_func
-pushAllRegisters:
+PushAllRegisters:
         adr r3, pushAllRegistersARM
         bx r3
 
@@ -59,7 +59,7 @@ pushAllRegistersARM:
 /* ARM Mode */
 .align 4
 .code 32
-pushAllRegisters:
+PushAllRegisters:
 #endif
         /* Push all callee-saved registers and save return address. */
         push {r4-r11, lr}

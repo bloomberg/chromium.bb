@@ -32,7 +32,7 @@ class SVGElement;
 class SVGLength;
 class UnzoomedLength;
 
-enum class SVGLengthMode { Width, Height, Other };
+enum class SVGLengthMode { kWidth, kHeight, kOther };
 
 class SVGLengthContext {
   STACK_ALLOCATED();
@@ -41,60 +41,60 @@ class SVGLengthContext {
   explicit SVGLengthContext(const SVGElement*);
 
   template <typename T>
-  static FloatRect resolveRectangle(const T* context,
+  static FloatRect ResolveRectangle(const T* context,
                                     SVGUnitTypes::SVGUnitType type,
                                     const FloatRect& viewport) {
-    return resolveRectangle(
-        context, type, viewport, *context->x()->currentValue(),
-        *context->y()->currentValue(), *context->width()->currentValue(),
-        *context->height()->currentValue());
+    return ResolveRectangle(
+        context, type, viewport, *context->x()->CurrentValue(),
+        *context->y()->CurrentValue(), *context->width()->CurrentValue(),
+        *context->height()->CurrentValue());
   }
 
-  static FloatRect resolveRectangle(const SVGElement*,
+  static FloatRect ResolveRectangle(const SVGElement*,
                                     SVGUnitTypes::SVGUnitType,
                                     const FloatRect& viewport,
                                     const SVGLength& x,
                                     const SVGLength& y,
                                     const SVGLength& width,
                                     const SVGLength& height);
-  static FloatPoint resolvePoint(const SVGElement*,
+  static FloatPoint ResolvePoint(const SVGElement*,
                                  SVGUnitTypes::SVGUnitType,
                                  const SVGLength& x,
                                  const SVGLength& y);
-  static float resolveLength(const SVGElement*,
+  static float ResolveLength(const SVGElement*,
                              SVGUnitTypes::SVGUnitType,
                              const SVGLength&);
 
-  float convertValueToUserUnits(float,
+  float ConvertValueToUserUnits(float,
                                 SVGLengthMode,
-                                CSSPrimitiveValue::UnitType fromUnit) const;
-  float convertValueFromUserUnits(float,
+                                CSSPrimitiveValue::UnitType from_unit) const;
+  float ConvertValueFromUserUnits(float,
                                   SVGLengthMode,
-                                  CSSPrimitiveValue::UnitType toUnit) const;
+                                  CSSPrimitiveValue::UnitType to_unit) const;
 
-  float valueForLength(const UnzoomedLength&,
-                       SVGLengthMode = SVGLengthMode::Other) const;
-  float valueForLength(const Length&,
+  float ValueForLength(const UnzoomedLength&,
+                       SVGLengthMode = SVGLengthMode::kOther) const;
+  float ValueForLength(const Length&,
                        const ComputedStyle&,
-                       SVGLengthMode = SVGLengthMode::Other) const;
-  static float valueForLength(const Length&,
+                       SVGLengthMode = SVGLengthMode::kOther) const;
+  static float ValueForLength(const Length&,
                               const ComputedStyle&,
                               float dimension);
 
-  bool determineViewport(FloatSize&) const;
-  float resolveValue(const CSSPrimitiveValue&, SVGLengthMode) const;
+  bool DetermineViewport(FloatSize&) const;
+  float ResolveValue(const CSSPrimitiveValue&, SVGLengthMode) const;
 
  private:
-  float valueForLength(const Length&, float zoom, SVGLengthMode) const;
-  static float valueForLength(const Length&, float zoom, float dimension);
+  float ValueForLength(const Length&, float zoom, SVGLengthMode) const;
+  static float ValueForLength(const Length&, float zoom, float dimension);
 
-  float convertValueFromUserUnitsToEXS(float value) const;
-  float convertValueFromEXSToUserUnits(float value) const;
+  float ConvertValueFromUserUnitsToEXS(float value) const;
+  float ConvertValueFromEXSToUserUnits(float value) const;
 
-  float convertValueFromUserUnitsToCHS(float value) const;
-  float convertValueFromCHSToUserUnits(float value) const;
+  float ConvertValueFromUserUnitsToCHS(float value) const;
+  float ConvertValueFromCHSToUserUnits(float value) const;
 
-  Member<const SVGElement> m_context;
+  Member<const SVGElement> context_;
 };
 
 }  // namespace blink

@@ -37,34 +37,34 @@ class AlgorithmRegistry {
   const AlgorithmImplementation* GetAlgorithm(
       blink::WebCryptoAlgorithmId id) const {
     switch (id) {
-      case blink::WebCryptoAlgorithmIdSha1:
-      case blink::WebCryptoAlgorithmIdSha256:
-      case blink::WebCryptoAlgorithmIdSha384:
-      case blink::WebCryptoAlgorithmIdSha512:
+      case blink::kWebCryptoAlgorithmIdSha1:
+      case blink::kWebCryptoAlgorithmIdSha256:
+      case blink::kWebCryptoAlgorithmIdSha384:
+      case blink::kWebCryptoAlgorithmIdSha512:
         return sha_.get();
-      case blink::WebCryptoAlgorithmIdAesGcm:
+      case blink::kWebCryptoAlgorithmIdAesGcm:
         return aes_gcm_.get();
-      case blink::WebCryptoAlgorithmIdAesCbc:
+      case blink::kWebCryptoAlgorithmIdAesCbc:
         return aes_cbc_.get();
-      case blink::WebCryptoAlgorithmIdAesCtr:
+      case blink::kWebCryptoAlgorithmIdAesCtr:
         return aes_ctr_.get();
-      case blink::WebCryptoAlgorithmIdAesKw:
+      case blink::kWebCryptoAlgorithmIdAesKw:
         return aes_kw_.get();
-      case blink::WebCryptoAlgorithmIdHmac:
+      case blink::kWebCryptoAlgorithmIdHmac:
         return hmac_.get();
-      case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      case blink::kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
         return rsa_ssa_.get();
-      case blink::WebCryptoAlgorithmIdRsaOaep:
+      case blink::kWebCryptoAlgorithmIdRsaOaep:
         return rsa_oaep_.get();
-      case blink::WebCryptoAlgorithmIdRsaPss:
+      case blink::kWebCryptoAlgorithmIdRsaPss:
         return rsa_pss_.get();
-      case blink::WebCryptoAlgorithmIdEcdsa:
+      case blink::kWebCryptoAlgorithmIdEcdsa:
         return ecdsa_.get();
-      case blink::WebCryptoAlgorithmIdEcdh:
+      case blink::kWebCryptoAlgorithmIdEcdh:
         return ecdh_.get();
-      case blink::WebCryptoAlgorithmIdHkdf:
+      case blink::kWebCryptoAlgorithmIdHkdf:
         return hkdf_.get();
-      case blink::WebCryptoAlgorithmIdPbkdf2:
+      case blink::kWebCryptoAlgorithmIdPbkdf2:
         return pbkdf2_.get();
       default:
         return NULL;

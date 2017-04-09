@@ -13,18 +13,18 @@ struct WebURLError;
 
 class WebAssociatedURLLoaderClient {
  public:
-  virtual bool willFollowRedirect(const WebURLRequest& newRequest,
-                                  const WebURLResponse& redirectResponse) {
+  virtual bool WillFollowRedirect(const WebURLRequest& new_request,
+                                  const WebURLResponse& redirect_response) {
     return true;
   }
-  virtual void didSendData(unsigned long long bytesSent,
-                           unsigned long long totalBytesToBeSent) {}
-  virtual void didReceiveResponse(const WebURLResponse&) {}
-  virtual void didDownloadData(int dataLength) {}
-  virtual void didReceiveData(const char* data, int dataLength) {}
-  virtual void didReceiveCachedMetadata(const char* data, int dataLength) {}
-  virtual void didFinishLoading(double finishTime) {}
-  virtual void didFail(const WebURLError&) {}
+  virtual void DidSendData(unsigned long long bytes_sent,
+                           unsigned long long total_bytes_to_be_sent) {}
+  virtual void DidReceiveResponse(const WebURLResponse&) {}
+  virtual void DidDownloadData(int data_length) {}
+  virtual void DidReceiveData(const char* data, int data_length) {}
+  virtual void DidReceiveCachedMetadata(const char* data, int data_length) {}
+  virtual void DidFinishLoading(double finish_time) {}
+  virtual void DidFail(const WebURLError&) {}
 
  protected:
   virtual ~WebAssociatedURLLoaderClient() {}

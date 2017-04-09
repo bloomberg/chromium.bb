@@ -221,9 +221,9 @@ void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
     }
   }
 
-  blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
-      blink::WebString::fromUTF16(key_string),
-      blink::WebString::fromUTF16(Uint8VectorToString16(old_value)),
+  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+      blink::WebString::FromUTF16(key_string),
+      blink::WebString::FromUTF16(Uint8VectorToString16(old_value)),
       blink::WebString(), origin_.GetURL(), page_url, originating_area);
 }
 
@@ -253,7 +253,7 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
     }
   }
 
-  blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
+  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
       blink::WebString(), blink::WebString(), blink::WebString(),
       origin_.GetURL(), page_url, originating_area);
 }
@@ -289,10 +289,10 @@ void LocalStorageCachedArea::KeyAddedOrChanged(
     }
   }
 
-  blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
-      blink::WebString::fromUTF16(key_string),
-      blink::WebString::fromUTF16(old_value),
-      blink::WebString::fromUTF16(new_value_string), origin_.GetURL(), page_url,
+  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+      blink::WebString::FromUTF16(key_string),
+      blink::WebString::FromUTF16(old_value),
+      blink::WebString::FromUTF16(new_value_string), origin_.GetURL(), page_url,
       originating_area);
 }
 

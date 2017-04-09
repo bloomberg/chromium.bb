@@ -232,7 +232,7 @@ class TrialTokenValidatorTest : public testing::Test {
 #endif
 TEST_F(TrialTokenValidatorTest, MAYBE_ValidateValidToken) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
   EXPECT_EQ(kAppropriateFeatureName, feature);
@@ -240,31 +240,31 @@ TEST_F(TrialTokenValidatorTest, MAYBE_ValidateValidToken) {
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             TrialTokenValidator::ValidateToken(
                 kSampleToken, inappropriate_origin_, &feature));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::WrongOrigin,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             TrialTokenValidator::ValidateToken(kSampleToken, insecure_origin_,
                                                &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature,
             TrialTokenValidator::ValidateToken(kInvalidSignatureToken,
                                                appropriate_origin_, &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Malformed,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed,
             TrialTokenValidator::ValidateToken(kUnparsableToken,
                                                appropriate_origin_, &feature));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Expired,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kExpired,
             TrialTokenValidator::ValidateToken(kExpiredToken,
                                                appropriate_origin_, &feature));
 }
@@ -272,7 +272,7 @@ TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   std::string feature;
   SetPublicKey(kTestPublicKey2);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::InvalidSignature,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
 }
@@ -287,13 +287,13 @@ TEST_F(TrialTokenValidatorTest, MAYBE_ValidatorRespectsDisabledFeatures) {
   std::string feature;
   // Disable an irrelevant feature; token should still validate
   DisableFeature(kInappropriateFeatureName);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token's feature; it should no longer be valid
   DisableFeature(kAppropriateFeatureName);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::FeatureDisabled,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kFeatureDisabled,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
 }
@@ -302,13 +302,13 @@ TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
   std::string feature;
   // Disable an irrelevant token; token should still validate
   DisableToken(expired_token_signature_);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::Success,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token; it should no longer be valid
   DisableToken(valid_token_signature_);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::TokenDisabled,
+  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kTokenDisabled,
             TrialTokenValidator::ValidateToken(kSampleToken,
                                                appropriate_origin_, &feature));
 }

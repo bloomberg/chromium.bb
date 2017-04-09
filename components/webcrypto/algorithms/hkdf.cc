@@ -23,7 +23,7 @@ namespace webcrypto {
 namespace {
 
 const blink::WebCryptoKeyUsageMask kValidUsages =
-    blink::WebCryptoKeyUsageDeriveKey | blink::WebCryptoKeyUsageDeriveBits;
+    blink::kWebCryptoKeyUsageDeriveKey | blink::kWebCryptoKeyUsageDeriveBits;
 
 class HkdfImplementation : public AlgorithmImplementation {
  public:
@@ -36,7 +36,7 @@ class HkdfImplementation : public AlgorithmImplementation {
                    blink::WebCryptoKeyUsageMask usages,
                    blink::WebCryptoKey* key) const override {
     switch (format) {
-      case blink::WebCryptoKeyFormatRaw:
+      case blink::kWebCryptoKeyFormatRaw:
         return ImportKeyRaw(key_data, algorithm, extractable, usages, key);
       default:
         return Status::ErrorUnsupportedImportKeyFormat();
@@ -56,8 +56,9 @@ class HkdfImplementation : public AlgorithmImplementation {
       return Status::ErrorImportExtractableKdfKey();
 
     return CreateWebCryptoSecretKey(
-        key_data, blink::WebCryptoKeyAlgorithm::createWithoutParams(
-                      blink::WebCryptoAlgorithmIdHkdf),
+        key_data,
+        blink::WebCryptoKeyAlgorithm::CreateWithoutParams(
+            blink::kWebCryptoAlgorithmIdHkdf),
         extractable, usages, key);
   }
 
@@ -70,9 +71,9 @@ class HkdfImplementation : public AlgorithmImplementation {
     if (!has_optional_length_bits)
       return Status::ErrorHkdfDeriveBitsLengthNotSpecified();
 
-    const blink::WebCryptoHkdfParams* params = algorithm.hkdfParams();
+    const blink::WebCryptoHkdfParams* params = algorithm.HkdfParams();
 
-    const EVP_MD* digest_algorithm = GetDigest(params->hash());
+    const EVP_MD* digest_algorithm = GetDigest(params->GetHash());
     if (!digest_algorithm)
       return Status::ErrorUnsupported();
 
@@ -84,9 +85,9 @@ class HkdfImplementation : public AlgorithmImplementation {
     // |algorithm|.
     const std::vector<uint8_t>& raw_key = GetSymmetricKeyData(base_key);
     if (!HKDF(derived_bytes->data(), derived_bytes_len, digest_algorithm,
-              raw_key.data(), raw_key.size(), params->salt().data(),
-              params->salt().size(), params->info().data(),
-              params->info().size())) {
+              raw_key.data(), raw_key.size(), params->Salt().Data(),
+              params->Salt().size(), params->Info().Data(),
+              params->Info().size())) {
       uint32_t error = ERR_get_error();
       if (ERR_GET_LIB(error) == ERR_LIB_HKDF &&
           ERR_GET_REASON(error) == HKDF_R_OUTPUT_TOO_LARGE) {
@@ -105,8 +106,8 @@ class HkdfImplementation : public AlgorithmImplementation {
                                 blink::WebCryptoKeyUsageMask usages,
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override {
-    if (algorithm.paramsType() != blink::WebCryptoKeyAlgorithmParamsTypeNone ||
-        type != blink::WebCryptoKeyTypeSecret)
+    if (algorithm.ParamsType() != blink::kWebCryptoKeyAlgorithmParamsTypeNone ||
+        type != blink::kWebCryptoKeyTypeSecret)
       return Status::ErrorUnexpected();
 
     // NOTE: Unlike ImportKeyRaw(), this does not enforce extractable==false.

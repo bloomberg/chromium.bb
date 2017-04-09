@@ -19,16 +19,16 @@ namespace {
 ui::EventType WebTouchPointStateToEventType(
     blink::WebTouchPoint::State state) {
   switch (state) {
-    case blink::WebTouchPoint::StateReleased:
+    case blink::WebTouchPoint::kStateReleased:
       return ui::ET_TOUCH_RELEASED;
 
-    case blink::WebTouchPoint::StatePressed:
+    case blink::WebTouchPoint::kStatePressed:
       return ui::ET_TOUCH_PRESSED;
 
-    case blink::WebTouchPoint::StateMoved:
+    case blink::WebTouchPoint::kStateMoved:
       return ui::ET_TOUCH_MOVED;
 
-    case blink::WebTouchPoint::StateCancelled:
+    case blink::WebTouchPoint::kStateCancelled:
       return ui::ET_TOUCH_CANCELLED;
 
     default:
@@ -46,17 +46,17 @@ bool MakeUITouchEventsFromWebTouchEvents(
     TouchEventCoordinateSystem coordinate_system) {
   const blink::WebTouchEvent& touch = touch_with_latency.event;
   ui::EventType type = ui::ET_UNKNOWN;
-  switch (touch.type()) {
-    case blink::WebInputEvent::TouchStart:
+  switch (touch.GetType()) {
+    case blink::WebInputEvent::kTouchStart:
       type = ui::ET_TOUCH_PRESSED;
       break;
-    case blink::WebInputEvent::TouchEnd:
+    case blink::WebInputEvent::kTouchEnd:
       type = ui::ET_TOUCH_RELEASED;
       break;
-    case blink::WebInputEvent::TouchMove:
+    case blink::WebInputEvent::kTouchMove:
       type = ui::ET_TOUCH_MOVED;
       break;
-    case blink::WebInputEvent::TouchCancel:
+    case blink::WebInputEvent::kTouchCancel:
       type = ui::ET_TOUCH_CANCELLED;
       break;
     default:
@@ -64,10 +64,10 @@ bool MakeUITouchEventsFromWebTouchEvents(
       return false;
   }
 
-  int flags = ui::WebEventModifiersToEventFlags(touch.modifiers());
+  int flags = ui::WebEventModifiersToEventFlags(touch.GetModifiers());
   base::TimeTicks timestamp =
-      ui::EventTimeStampFromSeconds(touch.timeStampSeconds());
-  for (unsigned i = 0; i < touch.touchesLength; ++i) {
+      ui::EventTimeStampFromSeconds(touch.TimeStampSeconds());
+  for (unsigned i = 0; i < touch.touches_length; ++i) {
     const blink::WebTouchPoint& point = touch.touches[i];
     if (WebTouchPointStateToEventType(point.state) != type)
       continue;
@@ -76,12 +76,12 @@ bool MakeUITouchEventsFromWebTouchEvents(
     if (coordinate_system == LOCAL_COORDINATES)
       location = point.position;
     else
-      location = point.screenPosition;
+      location = point.screen_position;
     auto uievent = base::MakeUnique<ui::TouchEvent>(
         type, gfx::Point(), timestamp,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, point.id,
-                           point.radiusX, point.radiusY, point.force),
-        flags, point.rotationAngle);
+                           point.radius_x, point.radius_y, point.force),
+        flags, point.rotation_angle);
     uievent->set_location_f(location);
     uievent->set_root_location_f(location);
     uievent->set_latency(touch_with_latency.latency);

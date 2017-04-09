@@ -87,16 +87,16 @@ static_assert(arraysize(kTimeDeltaMSIntervals) * 2 - 1 == kTimeDeltaBucketCount,
 
 // Calculates index of UMA MediaTimelinePercent enum corresponding to |percent|.
 // Negative values use kPercentIntervals in reverse.
-int32_t toPercentSample(double percent) {
-  constexpr int32_t nonNegativeBucketCount = arraysize(kPercentIntervals);
-  constexpr int32_t negativeBucketCount = arraysize(kPercentIntervals) - 1;
+int32_t ToPercentSample(double percent) {
+  constexpr int32_t kNonNegativeBucketCount = arraysize(kPercentIntervals);
+  constexpr int32_t kNegativeBucketCount = arraysize(kPercentIntervals) - 1;
   bool negative = percent < 0;
-  double absPercent = std::abs(percent);
-  if (absPercent == 0)
-    return negativeBucketCount;  // Dedicated zero bucket.
-  for (int32_t i = 0; i < nonNegativeBucketCount; i++) {
-    if (absPercent < kPercentIntervals[i])
-      return negativeBucketCount + (negative ? -i : +i);
+  double abs_percent = std::abs(percent);
+  if (abs_percent == 0)
+    return kNegativeBucketCount;  // Dedicated zero bucket.
+  for (int32_t i = 0; i < kNonNegativeBucketCount; i++) {
+    if (abs_percent < kPercentIntervals[i])
+      return kNegativeBucketCount + (negative ? -i : +i);
   }
   // No NOTREACHED since the +/-100 bounds are inclusive (even if they are
   // slightly exceeded due to floating point inaccuracies).
@@ -105,12 +105,12 @@ int32_t toPercentSample(double percent) {
 
 // Calculates index of UMA MediaTimelineAbsTimeDelta enum corresponding to
 // |sumAbsDeltaSeconds|.
-int32_t toAbsTimeDeltaSample(double sumAbsDeltaSeconds) {
-  double sumAbsDeltaMS = 1000 * sumAbsDeltaSeconds;
-  if (sumAbsDeltaMS == 0)
+int32_t ToAbsTimeDeltaSample(double sum_abs_delta_seconds) {
+  double sum_abs_delta_ms = 1000 * sum_abs_delta_seconds;
+  if (sum_abs_delta_ms == 0)
     return 0;  // Dedicated zero bucket.
   for (int32_t i = 0; i < kAbsTimeDeltaBucketCount; i++) {
-    if (sumAbsDeltaMS < kTimeDeltaMSIntervals[i])
+    if (sum_abs_delta_ms < kTimeDeltaMSIntervals[i])
       return i;
   }
   NOTREACHED() << "sumAbsDeltaSeconds shouldn't be infinite";
@@ -119,16 +119,16 @@ int32_t toAbsTimeDeltaSample(double sumAbsDeltaSeconds) {
 
 // Calculates index of UMA MediaTimelineTimeDelta enum corresponding to
 // |deltaSeconds|. Negative values use kTimeDeltaMSIntervals in reverse.
-int32_t toTimeDeltaSample(double deltaSeconds) {
-  constexpr int32_t nonNegativeBucketCount = arraysize(kTimeDeltaMSIntervals);
-  constexpr int32_t negativeBucketCount = arraysize(kTimeDeltaMSIntervals) - 1;
-  bool negative = deltaSeconds < 0;
-  double absDeltaMS = 1000 * std::abs(deltaSeconds);
-  if (absDeltaMS == 0)
-    return negativeBucketCount;  // Dedicated zero bucket.
-  for (int32_t i = 0; i < nonNegativeBucketCount; i++) {
-    if (absDeltaMS < kTimeDeltaMSIntervals[i])
-      return negativeBucketCount + (negative ? -i : +i);
+int32_t ToTimeDeltaSample(double delta_seconds) {
+  constexpr int32_t kNonNegativeBucketCount = arraysize(kTimeDeltaMSIntervals);
+  constexpr int32_t kNegativeBucketCount = arraysize(kTimeDeltaMSIntervals) - 1;
+  bool negative = delta_seconds < 0;
+  double abs_delta_ms = 1000 * std::abs(delta_seconds);
+  if (abs_delta_ms == 0)
+    return kNegativeBucketCount;  // Dedicated zero bucket.
+  for (int32_t i = 0; i < kNonNegativeBucketCount; i++) {
+    if (abs_delta_ms < kTimeDeltaMSIntervals[i])
+      return kNegativeBucketCount + (negative ? -i : +i);
   }
   NOTREACHED() << "deltaSeconds shouldn't be infinite";
   return negative ? 0 : kTimeDeltaBucketCount - 1;
@@ -142,7 +142,7 @@ int32_t toTimeDeltaSample(double deltaSeconds) {
         HistogramType, metric##minWidth##_##maxWidth##Histogram,            \
         ("Media.Timeline." #metric "." #minWidth "_" #maxWidth,             \
          ##__VA_ARGS__));                                                   \
-    metric##minWidth##_##maxWidth##Histogram.count(sample);                 \
+    metric##minWidth##_##maxWidth##Histogram.Count(sample);                 \
   }
 
 // Records UMA with a histogram suffix based on timelineWidth.
@@ -171,33 +171,33 @@ int32_t toTimeDeltaSample(double deltaSeconds) {
     }                                                                          \
   } while (false)
 
-void recordDragGestureDurationByWidth(int timelineWidth, TimeDelta duration) {
+void RecordDragGestureDurationByWidth(int timeline_width, TimeDelta duration) {
   int32_t sample = static_cast<int32_t>(duration.InMilliseconds());
-  RECORD_TIMELINE_UMA_BY_WIDTH(timelineWidth, DragGestureDuration, sample,
+  RECORD_TIMELINE_UMA_BY_WIDTH(timeline_width, DragGestureDuration, sample,
                                CustomCountHistogram, 1 /* 1 ms */,
                                60000 /* 1 minute */, 50);
 }
-void recordDragPercentByWidth(int timelineWidth, double percent) {
-  int32_t sample = toPercentSample(percent);
-  RECORD_TIMELINE_UMA_BY_WIDTH(timelineWidth, DragPercent, sample,
+void RecordDragPercentByWidth(int timeline_width, double percent) {
+  int32_t sample = ToPercentSample(percent);
+  RECORD_TIMELINE_UMA_BY_WIDTH(timeline_width, DragPercent, sample,
                                EnumerationHistogram, kPercentBucketCount);
 }
-void recordDragSumAbsTimeDeltaByWidth(int timelineWidth,
-                                      double sumAbsDeltaSeconds) {
-  int32_t sample = toAbsTimeDeltaSample(sumAbsDeltaSeconds);
-  RECORD_TIMELINE_UMA_BY_WIDTH(timelineWidth, DragSumAbsTimeDelta, sample,
+void RecordDragSumAbsTimeDeltaByWidth(int timeline_width,
+                                      double sum_abs_delta_seconds) {
+  int32_t sample = ToAbsTimeDeltaSample(sum_abs_delta_seconds);
+  RECORD_TIMELINE_UMA_BY_WIDTH(timeline_width, DragSumAbsTimeDelta, sample,
                                EnumerationHistogram, kAbsTimeDeltaBucketCount);
 }
-void recordDragTimeDeltaByWidth(int timelineWidth, double deltaSeconds) {
-  int32_t sample = toTimeDeltaSample(deltaSeconds);
-  RECORD_TIMELINE_UMA_BY_WIDTH(timelineWidth, DragTimeDelta, sample,
+void RecordDragTimeDeltaByWidth(int timeline_width, double delta_seconds) {
+  int32_t sample = ToTimeDeltaSample(delta_seconds);
+  RECORD_TIMELINE_UMA_BY_WIDTH(timeline_width, DragTimeDelta, sample,
                                EnumerationHistogram, kTimeDeltaBucketCount);
 }
-void recordSeekTypeByWidth(int timelineWidth, SeekType type) {
+void RecordSeekTypeByWidth(int timeline_width, SeekType type) {
   int32_t sample = static_cast<int32_t>(type);
-  constexpr int32_t bucketCount = static_cast<int32_t>(SeekType::kLast) + 1;
-  RECORD_TIMELINE_UMA_BY_WIDTH(timelineWidth, SeekType, sample,
-                               EnumerationHistogram, bucketCount);
+  constexpr int32_t kBucketCount = static_cast<int32_t>(SeekType::kLast) + 1;
+  RECORD_TIMELINE_UMA_BY_WIDTH(timeline_width, SeekType, sample,
+                               EnumerationHistogram, kBucketCount);
 }
 
 #undef RECORD_TIMELINE_UMA_BY_WIDTH
@@ -205,22 +205,23 @@ void recordSeekTypeByWidth(int timelineWidth, SeekType type) {
 
 }  // namespace
 
-void MediaControlTimelineMetrics::startGesture(bool fromThumb) {
+void MediaControlTimelineMetrics::StartGesture(bool from_thumb) {
   // Initialize gesture tracking.
-  m_state = fromThumb ? State::kGestureFromThumb : State::kGestureFromElsewhere;
-  m_dragStartTimeTicks = TimeTicks::Now();
-  m_dragDeltaMediaSeconds = 0;
-  m_dragSumAbsDeltaMediaSeconds = 0;
+  state_ = from_thumb ? State::kGestureFromThumb : State::kGestureFromElsewhere;
+  drag_start_time_ticks_ = TimeTicks::Now();
+  drag_delta_media_seconds_ = 0;
+  drag_sum_abs_delta_media_seconds_ = 0;
 }
 
-void MediaControlTimelineMetrics::recordEndGesture(
-    int timelineWidth,
-    double mediaDurationSeconds) {
-  State endState = m_state;
-  m_state = State::kInactive;  // Reset tracking.
+void MediaControlTimelineMetrics::RecordEndGesture(
+    int timeline_width,
+    double media_duration_seconds) {
+  State end_state = state_;
+  state_ = State::kInactive;  // Reset tracking.
 
-  SeekType seekType = SeekType::kLast;  // Arbitrary inital val to appease MSVC.
-  switch (endState) {
+  SeekType seek_type =
+      SeekType::kLast;  // Arbitrary inital val to appease MSVC.
+  switch (end_state) {
     case State::kInactive:
     case State::kKeyDown:
       return;  // Pointer and keys were interleaved. Skip UMA in this edge case.
@@ -228,44 +229,45 @@ void MediaControlTimelineMetrics::recordEndGesture(
     case State::kGestureFromElsewhere:
       return;  // Empty gesture with no calls to gestureInput.
     case State::kDragFromThumb:
-      seekType = SeekType::kDragFromCurrentPosition;
+      seek_type = SeekType::kDragFromCurrentPosition;
       break;
     case State::kClick:
-      seekType = SeekType::kClick;
+      seek_type = SeekType::kClick;
       break;
     case State::kDragFromElsewhere:
-      seekType = SeekType::kDragFromElsewhere;
+      seek_type = SeekType::kDragFromElsewhere;
       break;
   }
 
-  recordSeekTypeByWidth(timelineWidth, seekType);
+  RecordSeekTypeByWidth(timeline_width, seek_type);
 
-  if (seekType == SeekType::kClick)
+  if (seek_type == SeekType::kClick)
     return;  // Metrics below are only for drags.
 
-  recordDragGestureDurationByWidth(timelineWidth,
-                                   TimeTicks::Now() - m_dragStartTimeTicks);
-  if (std::isfinite(mediaDurationSeconds)) {
-    recordDragPercentByWidth(
-        timelineWidth, 100.0 * m_dragDeltaMediaSeconds / mediaDurationSeconds);
+  RecordDragGestureDurationByWidth(timeline_width,
+                                   TimeTicks::Now() - drag_start_time_ticks_);
+  if (std::isfinite(media_duration_seconds)) {
+    RecordDragPercentByWidth(timeline_width, 100.0 * drag_delta_media_seconds_ /
+                                                 media_duration_seconds);
   }
-  recordDragSumAbsTimeDeltaByWidth(timelineWidth,
-                                   m_dragSumAbsDeltaMediaSeconds);
-  recordDragTimeDeltaByWidth(timelineWidth, m_dragDeltaMediaSeconds);
+  RecordDragSumAbsTimeDeltaByWidth(timeline_width,
+                                   drag_sum_abs_delta_media_seconds_);
+  RecordDragTimeDeltaByWidth(timeline_width, drag_delta_media_seconds_);
 }
 
-void MediaControlTimelineMetrics::startKey() {
-  m_state = State::kKeyDown;
+void MediaControlTimelineMetrics::StartKey() {
+  state_ = State::kKeyDown;
 }
 
-void MediaControlTimelineMetrics::recordEndKey(int timelineWidth, int keyCode) {
-  State endState = m_state;
-  m_state = State::kInactive;  // Reset tracking.
-  if (endState != State::kKeyDown)
+void MediaControlTimelineMetrics::RecordEndKey(int timeline_width,
+                                               int key_code) {
+  State end_state = state_;
+  state_ = State::kInactive;  // Reset tracking.
+  if (end_state != State::kKeyDown)
     return;  // Pointer and keys were interleaved. Skip UMA in this edge case.
 
   SeekType type;
-  switch (keyCode) {
+  switch (key_code) {
     case VKEY_UP:
     case VKEY_DOWN:
     case VKEY_LEFT:
@@ -283,28 +285,28 @@ void MediaControlTimelineMetrics::recordEndKey(int timelineWidth, int keyCode) {
     default:
       return;  // Other keys don't seek (at time of writing).
   }
-  recordSeekTypeByWidth(timelineWidth, type);
+  RecordSeekTypeByWidth(timeline_width, type);
 }
 
-void MediaControlTimelineMetrics::onInput(double fromSeconds,
-                                          double toSeconds) {
-  switch (m_state) {
+void MediaControlTimelineMetrics::OnInput(double from_seconds,
+                                          double to_seconds) {
+  switch (state_) {
     case State::kInactive:
       // Unexpected input.
-      m_state = State::kInactive;
+      state_ = State::kInactive;
       break;
     case State::kGestureFromThumb:
       // Drag confirmed now input has been received.
-      m_state = State::kDragFromThumb;
+      state_ = State::kDragFromThumb;
       break;
     case State::kGestureFromElsewhere:
       // Click/drag confirmed now input has been received. Assume it's a click
       // until further input is received.
-      m_state = State::kClick;
+      state_ = State::kClick;
       break;
     case State::kClick:
       // Drag confirmed now further input has been received.
-      m_state = State::kDragFromElsewhere;
+      state_ = State::kDragFromElsewhere;
       break;
     case State::kDragFromThumb:
     case State::kDragFromElsewhere:
@@ -318,68 +320,68 @@ void MediaControlTimelineMetrics::onInput(double fromSeconds,
   // The following tracking is only for drags. Note that we exclude kClick here,
   // as even if it progresses to a kDragFromElsewhere, the first input event
   // corresponds to the position jump from the pointer down on the track.
-  if (m_state != State::kDragFromThumb && m_state != State::kDragFromElsewhere)
+  if (state_ != State::kDragFromThumb && state_ != State::kDragFromElsewhere)
     return;
 
-  float deltaMediaSeconds = static_cast<float>(toSeconds - fromSeconds);
-  m_dragDeltaMediaSeconds += deltaMediaSeconds;
-  m_dragSumAbsDeltaMediaSeconds += std::abs(deltaMediaSeconds);
+  float delta_media_seconds = static_cast<float>(to_seconds - from_seconds);
+  drag_delta_media_seconds_ += delta_media_seconds;
+  drag_sum_abs_delta_media_seconds_ += std::abs(delta_media_seconds);
 }
 
-void MediaControlTimelineMetrics::recordPlaying(
+void MediaControlTimelineMetrics::RecordPlaying(
     WebScreenOrientationType orientation,
-    bool isFullscreen,
-    int timelineWidth) {
-  bool isPortrait = false;  // Arbitrary initial value to appease MSVC.
+    bool is_fullscreen,
+    int timeline_width) {
+  bool is_portrait = false;  // Arbitrary initial value to appease MSVC.
   switch (orientation) {
-    case WebScreenOrientationPortraitPrimary:
-    case WebScreenOrientationPortraitSecondary:
-      isPortrait = true;
+    case kWebScreenOrientationPortraitPrimary:
+    case kWebScreenOrientationPortraitSecondary:
+      is_portrait = true;
       break;
-    case WebScreenOrientationLandscapePrimary:
-    case WebScreenOrientationLandscapeSecondary:
-      isPortrait = false;
+    case kWebScreenOrientationLandscapePrimary:
+    case kWebScreenOrientationLandscapeSecondary:
+      is_portrait = false;
       break;
-    case WebScreenOrientationUndefined:
+    case kWebScreenOrientationUndefined:
       return;  // Skip UMA in the unlikely event we fail to detect orientation.
   }
 
   // Only record the first time each media element enters the playing state.
-  if (!m_hasNeverBeenPlaying)
+  if (!has_never_been_playing_)
     return;
-  m_hasNeverBeenPlaying = false;
+  has_never_been_playing_ = false;
 
-  constexpr int32_t min = 1;
-  constexpr int32_t max = 7680;  // Equivalent to an 80inch wide 8K monitor.
-  constexpr int32_t bucketCount = 50;
+  constexpr int32_t kMin = 1;
+  constexpr int32_t kMax = 7680;  // Equivalent to an 80inch wide 8K monitor.
+  constexpr int32_t kBucketCount = 50;
   // Record merged histogram for all configurations.
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, allConfigurationsWidthHistogram,
-                      ("Media.Timeline.Width", min, max, bucketCount));
-  allConfigurationsWidthHistogram.count(timelineWidth);
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, all_configurations_width_histogram,
+                      ("Media.Timeline.Width", kMin, kMax, kBucketCount));
+  all_configurations_width_histogram.Count(timeline_width);
   // Record configuration-specific histogram.
-  if (!isFullscreen) {
-    if (isPortrait) {
+  if (!is_fullscreen) {
+    if (is_portrait) {
       DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, widthHistogram,
-          ("Media.Timeline.Width.InlinePortrait", min, max, bucketCount));
-      widthHistogram.count(timelineWidth);
+          CustomCountHistogram, width_histogram,
+          ("Media.Timeline.Width.InlinePortrait", kMin, kMax, kBucketCount));
+      width_histogram.Count(timeline_width);
     } else {
       DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, widthHistogram,
-          ("Media.Timeline.Width.InlineLandscape", min, max, bucketCount));
-      widthHistogram.count(timelineWidth);
+          CustomCountHistogram, width_histogram,
+          ("Media.Timeline.Width.InlineLandscape", kMin, kMax, kBucketCount));
+      width_histogram.Count(timeline_width);
     }
   } else {
-    if (isPortrait) {
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, widthHistogram,
-          ("Media.Timeline.Width.FullscreenPortrait", min, max, bucketCount));
-      widthHistogram.count(timelineWidth);
+    if (is_portrait) {
+      DEFINE_STATIC_LOCAL(CustomCountHistogram, width_histogram,
+                          ("Media.Timeline.Width.FullscreenPortrait", kMin,
+                           kMax, kBucketCount));
+      width_histogram.Count(timeline_width);
     } else {
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, widthHistogram,
-          ("Media.Timeline.Width.FullscreenLandscape", min, max, bucketCount));
-      widthHistogram.count(timelineWidth);
+      DEFINE_STATIC_LOCAL(CustomCountHistogram, width_histogram,
+                          ("Media.Timeline.Width.FullscreenLandscape", kMin,
+                           kMax, kBucketCount));
+      width_histogram.Count(timeline_width);
     }
   }
 }

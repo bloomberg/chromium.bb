@@ -13,58 +13,59 @@
 namespace blink {
 
 enum {
-  InitialWidth = 100,
-  InitialHeight = 100,
-  AlternateHeight = 50,
+  kInitialWidth = 100,
+  kInitialHeight = 100,
+  kAlternateHeight = 50,
 };
 
 class DrawingBufferForTests : public DrawingBuffer {
  public:
-  static PassRefPtr<DrawingBufferForTests> create(
-      std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+  static PassRefPtr<DrawingBufferForTests> Create(
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
       DrawingBuffer::Client* client,
       const IntSize& size,
       PreserveDrawingBuffer preserve) {
-    std::unique_ptr<Extensions3DUtil> extensionsUtil =
-        Extensions3DUtil::create(contextProvider->contextGL());
-    RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(
-        new DrawingBufferForTests(std::move(contextProvider),
-                                  std::move(extensionsUtil), client, preserve));
-    bool multisampleExtensionSupported = false;
-    if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
-      drawingBuffer->beginDestruction();
+    std::unique_ptr<Extensions3DUtil> extensions_util =
+        Extensions3DUtil::Create(context_provider->ContextGL());
+    RefPtr<DrawingBufferForTests> drawing_buffer =
+        AdoptRef(new DrawingBufferForTests(std::move(context_provider),
+                                           std::move(extensions_util), client,
+                                           preserve));
+    bool multisample_extension_supported = false;
+    if (!drawing_buffer->Initialize(size, multisample_extension_supported)) {
+      drawing_buffer->BeginDestruction();
       return nullptr;
     }
-    return drawingBuffer.release();
+    return drawing_buffer.Release();
   }
 
   DrawingBufferForTests(
-      std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
-      std::unique_ptr<Extensions3DUtil> extensionsUtil,
+      std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+      std::unique_ptr<Extensions3DUtil> extensions_util,
       DrawingBuffer::Client* client,
       PreserveDrawingBuffer preserve)
       : DrawingBuffer(
-            std::move(contextProvider),
-            std::move(extensionsUtil),
+            std::move(context_provider),
+            std::move(extensions_util),
             client,
             false /* discardFramebufferSupported */,
             true /* wantAlphaChannel */,
             false /* premultipliedAlpha */,
             preserve,
-            WebGL1,
+            kWebGL1,
             false /* wantDepth */,
             false /* wantStencil */,
-            DrawingBuffer::AllowChromiumImage /* ChromiumImageUsage */),
-        m_live(0) {}
+            DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */),
+        live_(0) {}
 
   ~DrawingBufferForTests() override {
-    if (m_live)
-      *m_live = false;
+    if (live_)
+      *live_ = false;
   }
 
-  bool* m_live;
+  bool* live_;
 
-  int recycledBitmapCount() { return m_recycledBitmaps.size(); }
+  int RecycledBitmapCount() { return recycled_bitmaps_.size(); }
 };
 
 class WebGraphicsContext3DProviderForTests
@@ -72,26 +73,26 @@ class WebGraphicsContext3DProviderForTests
  public:
   WebGraphicsContext3DProviderForTests(
       std::unique_ptr<gpu::gles2::GLES2Interface> gl)
-      : m_gl(std::move(gl)) {}
+      : gl_(std::move(gl)) {}
 
-  gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
-  bool isSoftwareRendering() const override { return false; }
+  gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
+  bool IsSoftwareRendering() const override { return false; }
 
   // Not used by WebGL code.
-  GrContext* grContext() override { return nullptr; }
-  bool bindToCurrentThread() override { return false; }
-  gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
-  void setLostContextCallback(const base::Closure&) {}
-  void setErrorMessageCallback(
+  GrContext* GetGrContext() override { return nullptr; }
+  bool BindToCurrentThread() override { return false; }
+  gpu::Capabilities GetCapabilities() override { return gpu::Capabilities(); }
+  void SetLostContextCallback(const base::Closure&) {}
+  void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
-  void signalQuery(uint32_t, const base::Closure&) override {}
+  void SignalQuery(uint32_t, const base::Closure&) override {}
 
  private:
-  std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;
+  std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
 };
 
 // The target to use when binding a texture to a Chromium image.
-GLenum imageCHROMIUMTextureTarget() {
+GLenum ImageCHROMIUMTextureTarget() {
 #if OS(MACOSX)
   return GC3D_TEXTURE_RECTANGLE_ARB;
 #else
@@ -100,9 +101,9 @@ GLenum imageCHROMIUMTextureTarget() {
 }
 
 // The target to use when preparing a mailbox texture.
-GLenum drawingBufferTextureTarget() {
+GLenum DrawingBufferTextureTarget() {
   if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
-    return imageCHROMIUMTextureTarget();
+    return ImageCHROMIUMTextureTarget();
   return GL_TEXTURE_2D;
 }
 
@@ -112,21 +113,21 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   // GLES2InterfaceStub implementation:
   void BindTexture(GLenum target, GLuint texture) override {
     if (target == GL_TEXTURE_2D)
-      m_state.activeTexture2DBinding = texture;
-    m_boundTextures[target] = texture;
+      state_.active_texture2d_binding = texture;
+    bound_textures_[target] = texture;
   }
 
   void BindFramebuffer(GLenum target, GLuint framebuffer) override {
     switch (target) {
       case GL_FRAMEBUFFER:
-        m_state.drawFramebufferBinding = framebuffer;
-        m_state.readFramebufferBinding = framebuffer;
+        state_.draw_framebuffer_binding = framebuffer;
+        state_.read_framebuffer_binding = framebuffer;
         break;
       case GL_DRAW_FRAMEBUFFER:
-        m_state.drawFramebufferBinding = framebuffer;
+        state_.draw_framebuffer_binding = framebuffer;
         break;
       case GL_READ_FRAMEBUFFER:
-        m_state.readFramebufferBinding = framebuffer;
+        state_.read_framebuffer_binding = framebuffer;
         break;
       default:
         break;
@@ -134,70 +135,70 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
   void BindRenderbuffer(GLenum target, GLuint renderbuffer) override {
-    m_state.renderbufferBinding = renderbuffer;
+    state_.renderbuffer_binding = renderbuffer;
   }
 
   void Enable(GLenum cap) {
     if (cap == GL_SCISSOR_TEST)
-      m_state.scissorEnabled = true;
+      state_.scissor_enabled = true;
   }
 
   void Disable(GLenum cap) {
     if (cap == GL_SCISSOR_TEST)
-      m_state.scissorEnabled = false;
+      state_.scissor_enabled = false;
   }
 
   void ClearColor(GLfloat red,
                   GLfloat green,
                   GLfloat blue,
                   GLfloat alpha) override {
-    m_state.clearColor[0] = red;
-    m_state.clearColor[1] = green;
-    m_state.clearColor[2] = blue;
-    m_state.clearColor[3] = alpha;
+    state_.clear_color[0] = red;
+    state_.clear_color[1] = green;
+    state_.clear_color[2] = blue;
+    state_.clear_color[3] = alpha;
   }
 
-  void ClearDepthf(GLfloat depth) override { m_state.clearDepth = depth; }
+  void ClearDepthf(GLfloat depth) override { state_.clear_depth = depth; }
 
-  void ClearStencil(GLint s) override { m_state.clearStencil = s; }
+  void ClearStencil(GLint s) override { state_.clear_stencil = s; }
 
   void ColorMask(GLboolean red,
                  GLboolean green,
                  GLboolean blue,
                  GLboolean alpha) override {
-    m_state.colorMask[0] = red;
-    m_state.colorMask[1] = green;
-    m_state.colorMask[2] = blue;
-    m_state.colorMask[3] = alpha;
+    state_.color_mask[0] = red;
+    state_.color_mask[1] = green;
+    state_.color_mask[2] = blue;
+    state_.color_mask[3] = alpha;
   }
 
-  void DepthMask(GLboolean flag) override { m_state.depthMask = flag; }
+  void DepthMask(GLboolean flag) override { state_.depth_mask = flag; }
 
-  void StencilMask(GLuint mask) override { m_state.stencilMask = mask; }
+  void StencilMask(GLuint mask) override { state_.stencil_mask = mask; }
 
   void StencilMaskSeparate(GLenum face, GLuint mask) override {
     if (face == GL_FRONT)
-      m_state.stencilMask = mask;
+      state_.stencil_mask = mask;
   }
 
   void PixelStorei(GLenum pname, GLint param) override {
     if (pname == GL_PACK_ALIGNMENT)
-      m_state.packAlignment = param;
+      state_.pack_alignment = param;
   }
 
   void BindBuffer(GLenum target, GLuint buffer) override {
     if (target == GL_PIXEL_UNPACK_BUFFER)
-      m_state.pixelUnpackBufferBinding = buffer;
+      state_.pixel_unpack_buffer_binding = buffer;
   }
 
   GLuint64 InsertFenceSyncCHROMIUM() override {
-    static GLuint64 syncPointGenerator = 0;
-    return ++syncPointGenerator;
+    static GLuint64 sync_point_generator = 0;
+    return ++sync_point_generator;
   }
 
-  void WaitSyncTokenCHROMIUM(const GLbyte* syncToken) override {
-    memcpy(&m_mostRecentlyWaitedSyncToken, syncToken,
-           sizeof(m_mostRecentlyWaitedSyncToken));
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override {
+    memcpy(&most_recently_waited_sync_token_, sync_token,
+           sizeof(most_recently_waited_sync_token_));
   }
 
   GLenum CheckFramebufferStatus(GLenum target) override {
@@ -210,18 +211,18 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   }
 
   void GenMailboxCHROMIUM(GLbyte* mailbox) override {
-    ++m_currentMailboxByte;
-    memset(mailbox, m_currentMailboxByte, GL_MAILBOX_SIZE_CHROMIUM);
+    ++current_mailbox_byte_;
+    memset(mailbox, current_mailbox_byte_, GL_MAILBOX_SIZE_CHROMIUM);
   }
 
   void ProduceTextureDirectCHROMIUM(GLuint texture,
                                     GLenum target,
                                     const GLbyte* mailbox) override {
-    ASSERT_EQ(target, drawingBufferTextureTarget());
+    ASSERT_EQ(target, DrawingBufferTextureTarget());
 
-    if (!m_createImageChromiumFail) {
-      ASSERT_TRUE(m_textureSizes.contains(texture));
-      m_mostRecentlyProducedSize = m_textureSizes.at(texture);
+    if (!create_image_chromium_fail_) {
+      ASSERT_TRUE(texture_sizes_.Contains(texture));
+      most_recently_produced_size_ = texture_sizes_.at(texture);
     }
   }
 
@@ -235,7 +236,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
                   GLenum type,
                   const void* pixels) override {
     if (target == GL_TEXTURE_2D && !level) {
-      m_textureSizes.set(m_boundTextures[target], IntSize(width, height));
+      texture_sizes_.Set(bound_textures_[target], IntSize(width, height));
     }
   }
 
@@ -243,45 +244,45 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
                              GLsizei width,
                              GLsizei height,
                              GLenum internalformat) override {
-    if (m_createImageChromiumFail)
+    if (create_image_chromium_fail_)
       return 0;
-    m_imageSizes.set(m_currentImageId, IntSize(width, height));
-    return m_currentImageId++;
+    image_sizes_.Set(current_image_id_, IntSize(width, height));
+    return current_image_id_++;
   }
 
   MOCK_METHOD1(DestroyImageMock, void(GLuint imageId));
-  void DestroyImageCHROMIUM(GLuint imageId) {
-    m_imageSizes.erase(imageId);
+  void DestroyImageCHROMIUM(GLuint image_id) {
+    image_sizes_.erase(image_id);
     // No textures should be bound to this.
-    CHECK(m_imageToTextureMap.find(imageId) == m_imageToTextureMap.end());
-    m_imageSizes.erase(imageId);
-    DestroyImageMock(imageId);
+    CHECK(image_to_texture_map_.Find(image_id) == image_to_texture_map_.end());
+    image_sizes_.erase(image_id);
+    DestroyImageMock(image_id);
   }
 
   MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
-  void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
-    if (target == imageCHROMIUMTextureTarget()) {
-      m_textureSizes.set(m_boundTextures[target],
-                         m_imageSizes.find(imageId)->value);
-      m_imageToTextureMap.set(imageId, m_boundTextures[target]);
-      BindTexImage2DMock(imageId);
+  void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
+    if (target == ImageCHROMIUMTextureTarget()) {
+      texture_sizes_.Set(bound_textures_[target],
+                         image_sizes_.Find(image_id)->value);
+      image_to_texture_map_.Set(image_id, bound_textures_[target]);
+      BindTexImage2DMock(image_id);
     }
   }
 
   MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
-  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
-    if (target == imageCHROMIUMTextureTarget()) {
-      m_imageSizes.set(m_currentImageId, IntSize());
-      m_imageToTextureMap.erase(imageId);
-      ReleaseTexImage2DMock(imageId);
+  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) {
+    if (target == ImageCHROMIUMTextureTarget()) {
+      image_sizes_.Set(current_image_id_, IntSize());
+      image_to_texture_map_.erase(image_id);
+      ReleaseTexImage2DMock(image_id);
     }
   }
 
-  void GenSyncTokenCHROMIUM(GLuint64 fenceSync, GLbyte* syncToken) override {
-    static uint64_t uniqueId = 1;
-    gpu::SyncToken source(gpu::GPU_IO, 1,
-                          gpu::CommandBufferId::FromUnsafeValue(uniqueId++), 2);
-    memcpy(syncToken, &source, sizeof(source));
+  void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) override {
+    static uint64_t unique_id = 1;
+    gpu::SyncToken source(
+        gpu::GPU_IO, 1, gpu::CommandBufferId::FromUnsafeValue(unique_id++), 2);
+    memcpy(sync_token, &source, sizeof(source));
   }
 
   void GenTextures(GLsizei n, GLuint* textures) override {
@@ -292,110 +293,111 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
   // DrawingBuffer::Client implementation.
   bool DrawingBufferClientIsBoundForDraw() override {
-    return !m_state.drawFramebufferBinding;
+    return !state_.draw_framebuffer_binding;
   }
   void DrawingBufferClientRestoreScissorTest() override {
-    m_state.scissorEnabled = m_savedState.scissorEnabled;
+    state_.scissor_enabled = saved_state_.scissor_enabled;
   }
   void DrawingBufferClientRestoreMaskAndClearValues() override {
-    memcpy(m_state.colorMask, m_savedState.colorMask,
-           sizeof(m_state.colorMask));
-    m_state.clearDepth = m_savedState.clearDepth;
-    m_state.clearStencil = m_savedState.clearStencil;
+    memcpy(state_.color_mask, saved_state_.color_mask,
+           sizeof(state_.color_mask));
+    state_.clear_depth = saved_state_.clear_depth;
+    state_.clear_stencil = saved_state_.clear_stencil;
 
-    memcpy(m_state.clearColor, m_savedState.clearColor,
-           sizeof(m_state.clearColor));
-    m_state.depthMask = m_savedState.depthMask;
-    m_state.stencilMask = m_savedState.stencilMask;
+    memcpy(state_.clear_color, saved_state_.clear_color,
+           sizeof(state_.clear_color));
+    state_.depth_mask = saved_state_.depth_mask;
+    state_.stencil_mask = saved_state_.stencil_mask;
   }
   void DrawingBufferClientRestorePixelPackAlignment() override {
-    m_state.packAlignment = m_savedState.packAlignment;
+    state_.pack_alignment = saved_state_.pack_alignment;
   }
   void DrawingBufferClientRestoreTexture2DBinding() override {
-    m_state.activeTexture2DBinding = m_savedState.activeTexture2DBinding;
+    state_.active_texture2d_binding = saved_state_.active_texture2d_binding;
   }
   void DrawingBufferClientRestoreRenderbufferBinding() override {
-    m_state.renderbufferBinding = m_savedState.renderbufferBinding;
+    state_.renderbuffer_binding = saved_state_.renderbuffer_binding;
   }
   void DrawingBufferClientRestoreFramebufferBinding() override {
-    m_state.drawFramebufferBinding = m_savedState.drawFramebufferBinding;
-    m_state.readFramebufferBinding = m_savedState.readFramebufferBinding;
+    state_.draw_framebuffer_binding = saved_state_.draw_framebuffer_binding;
+    state_.read_framebuffer_binding = saved_state_.read_framebuffer_binding;
   }
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override {
-    m_state.pixelUnpackBufferBinding = m_savedState.pixelUnpackBufferBinding;
+    state_.pixel_unpack_buffer_binding =
+        saved_state_.pixel_unpack_buffer_binding;
   }
 
   // Testing methods.
-  gpu::SyncToken mostRecentlyWaitedSyncToken() const {
-    return m_mostRecentlyWaitedSyncToken;
+  gpu::SyncToken MostRecentlyWaitedSyncToken() const {
+    return most_recently_waited_sync_token_;
   }
-  GLuint nextImageIdToBeCreated() const { return m_currentImageId; }
-  IntSize mostRecentlyProducedSize() const {
-    return m_mostRecentlyProducedSize;
+  GLuint NextImageIdToBeCreated() const { return current_image_id_; }
+  IntSize MostRecentlyProducedSize() const {
+    return most_recently_produced_size_;
   }
 
-  void setCreateImageChromiumFail(bool fail) {
-    m_createImageChromiumFail = fail;
+  void SetCreateImageChromiumFail(bool fail) {
+    create_image_chromium_fail_ = fail;
   }
 
   // Saves current GL state for later verification.
-  void SaveState() { m_savedState = m_state; }
+  void SaveState() { saved_state_ = state_; }
   void VerifyStateHasNotChangedSinceSave() const {
     for (size_t i = 0; i < 4; ++i) {
-      EXPECT_EQ(m_state.clearColor[0], m_savedState.clearColor[0]);
-      EXPECT_EQ(m_state.colorMask[0], m_savedState.colorMask[0]);
+      EXPECT_EQ(state_.clear_color[0], saved_state_.clear_color[0]);
+      EXPECT_EQ(state_.color_mask[0], saved_state_.color_mask[0]);
     }
-    EXPECT_EQ(m_state.clearDepth, m_savedState.clearDepth);
-    EXPECT_EQ(m_state.clearStencil, m_savedState.clearStencil);
-    EXPECT_EQ(m_state.depthMask, m_savedState.depthMask);
-    EXPECT_EQ(m_state.stencilMask, m_savedState.stencilMask);
-    EXPECT_EQ(m_state.packAlignment, m_savedState.packAlignment);
-    EXPECT_EQ(m_state.activeTexture2DBinding,
-              m_savedState.activeTexture2DBinding);
-    EXPECT_EQ(m_state.renderbufferBinding, m_savedState.renderbufferBinding);
-    EXPECT_EQ(m_state.drawFramebufferBinding,
-              m_savedState.drawFramebufferBinding);
-    EXPECT_EQ(m_state.readFramebufferBinding,
-              m_savedState.readFramebufferBinding);
-    EXPECT_EQ(m_state.pixelUnpackBufferBinding,
-              m_savedState.pixelUnpackBufferBinding);
+    EXPECT_EQ(state_.clear_depth, saved_state_.clear_depth);
+    EXPECT_EQ(state_.clear_stencil, saved_state_.clear_stencil);
+    EXPECT_EQ(state_.depth_mask, saved_state_.depth_mask);
+    EXPECT_EQ(state_.stencil_mask, saved_state_.stencil_mask);
+    EXPECT_EQ(state_.pack_alignment, saved_state_.pack_alignment);
+    EXPECT_EQ(state_.active_texture2d_binding,
+              saved_state_.active_texture2d_binding);
+    EXPECT_EQ(state_.renderbuffer_binding, saved_state_.renderbuffer_binding);
+    EXPECT_EQ(state_.draw_framebuffer_binding,
+              saved_state_.draw_framebuffer_binding);
+    EXPECT_EQ(state_.read_framebuffer_binding,
+              saved_state_.read_framebuffer_binding);
+    EXPECT_EQ(state_.pixel_unpack_buffer_binding,
+              saved_state_.pixel_unpack_buffer_binding);
   }
 
  private:
-  std::map<GLenum, GLuint> m_boundTextures;
+  std::map<GLenum, GLuint> bound_textures_;
 
   // State tracked to verify that it is restored correctly.
   struct State {
-    bool scissorEnabled = false;
+    bool scissor_enabled = false;
 
-    GLfloat clearColor[4] = {0, 0, 0, 0};
-    GLfloat clearDepth = 0;
-    GLint clearStencil = 0;
+    GLfloat clear_color[4] = {0, 0, 0, 0};
+    GLfloat clear_depth = 0;
+    GLint clear_stencil = 0;
 
-    GLboolean colorMask[4] = {0, 0, 0, 0};
-    GLboolean depthMask = 0;
-    GLuint stencilMask = 0;
+    GLboolean color_mask[4] = {0, 0, 0, 0};
+    GLboolean depth_mask = 0;
+    GLuint stencil_mask = 0;
 
-    GLint packAlignment = 4;
+    GLint pack_alignment = 4;
 
     // The bound 2D texture for the active texture unit.
-    GLuint activeTexture2DBinding = 0;
-    GLuint renderbufferBinding = 0;
-    GLuint drawFramebufferBinding = 0;
-    GLuint readFramebufferBinding = 0;
-    GLuint pixelUnpackBufferBinding = 0;
+    GLuint active_texture2d_binding = 0;
+    GLuint renderbuffer_binding = 0;
+    GLuint draw_framebuffer_binding = 0;
+    GLuint read_framebuffer_binding = 0;
+    GLuint pixel_unpack_buffer_binding = 0;
   };
-  State m_state;
-  State m_savedState;
+  State state_;
+  State saved_state_;
 
-  gpu::SyncToken m_mostRecentlyWaitedSyncToken;
-  GLbyte m_currentMailboxByte = 0;
-  IntSize m_mostRecentlyProducedSize;
-  bool m_createImageChromiumFail = false;
-  GLuint m_currentImageId = 1;
-  HashMap<GLuint, IntSize> m_textureSizes;
-  HashMap<GLuint, IntSize> m_imageSizes;
-  HashMap<GLuint, GLuint> m_imageToTextureMap;
+  gpu::SyncToken most_recently_waited_sync_token_;
+  GLbyte current_mailbox_byte_ = 0;
+  IntSize most_recently_produced_size_;
+  bool create_image_chromium_fail_ = false;
+  GLuint current_image_id_ = 1;
+  HashMap<GLuint, IntSize> texture_sizes_;
+  HashMap<GLuint, IntSize> image_sizes_;
+  HashMap<GLuint, GLuint> image_to_texture_map_;
 };
 
 }  // blink

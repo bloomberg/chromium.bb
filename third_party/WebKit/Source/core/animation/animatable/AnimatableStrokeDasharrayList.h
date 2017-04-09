@@ -41,24 +41,24 @@ class AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
  public:
   ~AnimatableStrokeDasharrayList() override {}
 
-  static PassRefPtr<AnimatableStrokeDasharrayList> create(
+  static PassRefPtr<AnimatableStrokeDasharrayList> Create(
       PassRefPtr<SVGDashArray> lengths,
       float zoom) {
-    return adoptRef(
+    return AdoptRef(
         new AnimatableStrokeDasharrayList(std::move(lengths), zoom));
   }
 
  private:
   AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray> lengths, float zoom) {
-    for (const Length& dashLength : lengths->vector())
-      m_values.push_back(AnimatableLength::create(dashLength, zoom));
+    for (const Length& dash_length : lengths->GetVector())
+      values_.push_back(AnimatableLength::Create(dash_length, zoom));
   }
 
-  AnimatableType type() const override { return TypeStrokeDasharrayList; }
+  AnimatableType GetType() const override { return kTypeStrokeDasharrayList; }
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList,
-                                   isStrokeDasharrayList());
+                                   IsStrokeDasharrayList());
 
 }  // namespace blink
 

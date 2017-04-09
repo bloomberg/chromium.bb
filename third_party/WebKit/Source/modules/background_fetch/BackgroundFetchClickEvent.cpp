@@ -13,15 +13,15 @@ BackgroundFetchClickEvent::BackgroundFetchClickEvent(
     const AtomicString& type,
     const BackgroundFetchClickEventInit& init,
     WaitUntilObserver* observer)
-    : BackgroundFetchEvent(type, init, observer), m_state(init.state()) {}
+    : BackgroundFetchEvent(type, init, observer), state_(init.state()) {}
 
 BackgroundFetchClickEvent::~BackgroundFetchClickEvent() = default;
 
 AtomicString BackgroundFetchClickEvent::state() const {
-  return m_state;
+  return state_;
 }
 
-const AtomicString& BackgroundFetchClickEvent::interfaceName() const {
+const AtomicString& BackgroundFetchClickEvent::InterfaceName() const {
   return EventNames::BackgroundFetchClickEvent;
 }
 

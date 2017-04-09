@@ -13,13 +13,13 @@ class VisualViewportScrollEvent final : public Event {
  public:
   ~VisualViewportScrollEvent() override;
 
-  static VisualViewportScrollEvent* create() {
+  static VisualViewportScrollEvent* Create() {
     return new VisualViewportScrollEvent();
   }
 
-  void doneDispatchingEventAtCurrentTarget() override;
+  void DoneDispatchingEventAtCurrentTarget() override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::Trace(visitor); }
 
  private:
   VisualViewportScrollEvent();

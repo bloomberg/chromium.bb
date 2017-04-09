@@ -20,8 +20,8 @@ class CORE_TEMPLATE_CLASS_EXPORT FullyClippedStateStackAlgorithm final
   FullyClippedStateStackAlgorithm();
   ~FullyClippedStateStackAlgorithm();
 
-  void pushFullyClippedState(Node*);
-  void setUpFullyClippedStack(Node*);
+  void PushFullyClippedState(Node*);
+  void SetUpFullyClippedStack(Node*);
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

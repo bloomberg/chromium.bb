@@ -37,52 +37,52 @@
 namespace blink {
 
 void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align,
-                                             ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+                                             ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
   if (align == kSvgPreserveaspectratioUnknown ||
       align > kSvgPreserveaspectratioXmaxymax) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "The alignment provided is invalid.");
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "The alignment provided is invalid.");
     return;
   }
-  target()->setAlign(
+  Target()->SetAlign(
       static_cast<SVGPreserveAspectRatio::SVGPreserveAspectRatioType>(align));
-  commitChange();
+  CommitChange();
 }
 
 void SVGPreserveAspectRatioTearOff::setMeetOrSlice(
-    unsigned short meetOrSlice,
-    ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+    unsigned short meet_or_slice,
+    ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return;
   }
-  if (meetOrSlice == kSvgMeetorsliceUnknown ||
-      meetOrSlice > kSvgMeetorsliceSlice) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "The meetOrSlice provided is invalid.");
+  if (meet_or_slice == kSvgMeetorsliceUnknown ||
+      meet_or_slice > kSvgMeetorsliceSlice) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "The meetOrSlice provided is invalid.");
     return;
   }
-  target()->setMeetOrSlice(
-      static_cast<SVGPreserveAspectRatio::SVGMeetOrSliceType>(meetOrSlice));
-  commitChange();
+  Target()->SetMeetOrSlice(
+      static_cast<SVGPreserveAspectRatio::SVGMeetOrSliceType>(meet_or_slice));
+  CommitChange();
 }
 
 SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(
     SVGPreserveAspectRatio* target,
-    SVGElement* contextElement,
-    PropertyIsAnimValType propertyIsAnimVal,
-    const QualifiedName& attributeName)
+    SVGElement* context_element,
+    PropertyIsAnimValType property_is_anim_val,
+    const QualifiedName& attribute_name)
     : SVGPropertyTearOff<SVGPreserveAspectRatio>(target,
-                                                 contextElement,
-                                                 propertyIsAnimVal,
-                                                 attributeName) {}
+                                                 context_element,
+                                                 property_is_anim_val,
+                                                 attribute_name) {}
 
 DEFINE_TRACE_WRAPPERS(SVGPreserveAspectRatioTearOff) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink

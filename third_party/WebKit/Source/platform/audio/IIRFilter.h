@@ -17,18 +17,18 @@ class PLATFORM_EXPORT IIRFilter final {
   // coefficients.  The maximum number of coefficients is 20 according to the
   // spec.
   const static size_t kMaxOrder = 19;
-  IIRFilter(const AudioDoubleArray* feedforwardCoef,
-            const AudioDoubleArray* feedbackCoef);
+  IIRFilter(const AudioDoubleArray* feedforward_coef,
+            const AudioDoubleArray* feedback_coef);
   ~IIRFilter();
 
-  void process(const float* sourceP, float* destP, size_t framesToProcess);
+  void Process(const float* source_p, float* dest_p, size_t frames_to_process);
 
-  void reset();
+  void Reset();
 
-  void getFrequencyResponse(int nFrequencies,
+  void GetFrequencyResponse(int n_frequencies,
                             const float* frequency,
-                            float* magResponse,
-                            float* phaseResponse);
+                            float* mag_response,
+                            float* phase_response);
 
  private:
   // Filter memory
@@ -43,19 +43,19 @@ class PLATFORM_EXPORT IIRFilter final {
   // Then m_yBuffer[m_bufferIndex - k] is y[n - k].  Similarly for m_xBuffer.
   //
   // To minimize roundoff, these arrays are double's instead of floats.
-  AudioDoubleArray m_xBuffer;
-  AudioDoubleArray m_yBuffer;
+  AudioDoubleArray x_buffer_;
+  AudioDoubleArray y_buffer_;
 
   // Index into the xBuffer and yBuffer arrays where the most current x and y
   // values should be stored.  xBuffer[bufferIndex] corresponds to x[n], the
   // current x input value and yBuffer[bufferIndex] is where y[n], the current
   // output value.
-  int m_bufferIndex;
+  int buffer_index_;
 
   // Coefficients of the IIR filter.  To minimize storage, these point to the
   // arrays given in the constructor.
-  const AudioDoubleArray* m_feedback;
-  const AudioDoubleArray* m_feedforward;
+  const AudioDoubleArray* feedback_;
+  const AudioDoubleArray* feedforward_;
 };
 
 }  // namespace blink

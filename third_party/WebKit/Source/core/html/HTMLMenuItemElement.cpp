@@ -15,43 +15,44 @@ using namespace HTMLNames;
 
 inline HTMLMenuItemElement::HTMLMenuItemElement(Document& document)
     : HTMLElement(HTMLNames::menuitemTag, document) {
-  UseCounter::count(document, UseCounter::MenuItemElement);
+  UseCounter::Count(document, UseCounter::kMenuItemElement);
 }
 
-bool HTMLMenuItemElement::isURLAttribute(const Attribute& attribute) const {
-  return attribute.name() == iconAttr || HTMLElement::isURLAttribute(attribute);
+bool HTMLMenuItemElement::IsURLAttribute(const Attribute& attribute) const {
+  return attribute.GetName() == iconAttr ||
+         HTMLElement::IsURLAttribute(attribute);
 }
 
-void HTMLMenuItemElement::parseAttribute(
+void HTMLMenuItemElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == iconAttr)
-    UseCounter::count(document(), UseCounter::MenuItemElementIconAttribute);
-  HTMLElement::parseAttribute(params);
+    UseCounter::Count(GetDocument(), UseCounter::kMenuItemElementIconAttribute);
+  HTMLElement::ParseAttribute(params);
 }
 
-void HTMLMenuItemElement::defaultEventHandler(Event* event) {
+void HTMLMenuItemElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
-    if (equalIgnoringCase(fastGetAttribute(typeAttr), "checkbox")) {
-      if (fastHasAttribute(checkedAttr))
+    if (EqualIgnoringCase(FastGetAttribute(typeAttr), "checkbox")) {
+      if (FastHasAttribute(checkedAttr))
         removeAttribute(checkedAttr);
       else
         setAttribute(checkedAttr, "checked");
-    } else if (equalIgnoringCase(fastGetAttribute(typeAttr), "radio")) {
+    } else if (EqualIgnoringCase(FastGetAttribute(typeAttr), "radio")) {
       if (Element* parent = parentElement()) {
-        AtomicString group = fastGetAttribute(radiogroupAttr);
-        for (HTMLMenuItemElement& menuItem :
-             Traversal<HTMLMenuItemElement>::childrenOf(*parent)) {
-          if (!menuItem.fastHasAttribute(checkedAttr))
+        AtomicString group = FastGetAttribute(radiogroupAttr);
+        for (HTMLMenuItemElement& menu_item :
+             Traversal<HTMLMenuItemElement>::ChildrenOf(*parent)) {
+          if (!menu_item.FastHasAttribute(checkedAttr))
             continue;
-          const AtomicString& groupAttr =
-              menuItem.fastGetAttribute(radiogroupAttr);
-          if (equalIgnoringNullity(groupAttr.impl(), group.impl()))
-            menuItem.removeAttribute(checkedAttr);
+          const AtomicString& group_attr =
+              menu_item.FastGetAttribute(radiogroupAttr);
+          if (EqualIgnoringNullity(group_attr.Impl(), group.Impl()))
+            menu_item.removeAttribute(checkedAttr);
         }
       }
       setAttribute(checkedAttr, "checked");
     }
-    event->setDefaultHandled();
+    event->SetDefaultHandled();
   }
 }
 

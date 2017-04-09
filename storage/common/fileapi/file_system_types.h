@@ -24,11 +24,11 @@ enum FileSystemType {
   // They are sandboxed filesystems; all the files in the filesystems are
   // placed under the profile directory with path obfuscation and quota
   // enforcement.
-  kFileSystemTypeTemporary = blink::WebFileSystemTypeTemporary,
-  kFileSystemTypePersistent = blink::WebFileSystemTypePersistent,
+  kFileSystemTypeTemporary = blink::kWebFileSystemTypeTemporary,
+  kFileSystemTypePersistent = blink::kWebFileSystemTypePersistent,
 
   // Indicates non-sandboxed isolated filesystem.
-  kFileSystemTypeIsolated = blink::WebFileSystemTypeIsolated,
+  kFileSystemTypeIsolated = blink::kWebFileSystemTypeIsolated,
 
   // Indicates filesystems that are mounted externally via
   // ExternalMountPoints with a well-known mount name.  The mounted
@@ -36,7 +36,7 @@ enum FileSystemType {
   // non-sandboxed removable media folder with a name 'removable', while
   // chrome.syncFileSystem mounts a sandboxed filesystem with a name
   // 'syncfs'.)
-  kFileSystemTypeExternal = blink::WebFileSystemTypeExternal,
+  kFileSystemTypeExternal = blink::kWebFileSystemTypeExternal,
 
   // ------------------------------------------------------------------------
   // Marks the beginning of internal type enum. (This is not the actual fs type)

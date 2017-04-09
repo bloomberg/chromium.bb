@@ -82,7 +82,7 @@
 
 namespace blink {
 
-SQLStatementBackend* SQLStatementBackend::create(
+SQLStatementBackend* SQLStatementBackend::Create(
     SQLStatement* frontend,
     const String& statement,
     const Vector<SQLValue>& arguments,
@@ -94,145 +94,145 @@ SQLStatementBackend::SQLStatementBackend(SQLStatement* frontend,
                                          const String& statement,
                                          const Vector<SQLValue>& arguments,
                                          int permissions)
-    : m_frontend(frontend),
-      m_statement(statement.isolatedCopy()),
-      m_arguments(arguments),
-      m_hasCallback(m_frontend->hasCallback()),
-      m_hasErrorCallback(m_frontend->hasErrorCallback()),
-      m_resultSet(SQLResultSet::create()),
-      m_permissions(permissions) {
-  DCHECK(isMainThread());
+    : frontend_(frontend),
+      statement_(statement.IsolatedCopy()),
+      arguments_(arguments),
+      has_callback_(frontend_->HasCallback()),
+      has_error_callback_(frontend_->HasErrorCallback()),
+      result_set_(SQLResultSet::Create()),
+      permissions_(permissions) {
+  DCHECK(IsMainThread());
 
-  m_frontend->setBackend(this);
+  frontend_->SetBackend(this);
 }
 
 DEFINE_TRACE(SQLStatementBackend) {
-  visitor->trace(m_frontend);
-  visitor->trace(m_resultSet);
+  visitor->Trace(frontend_);
+  visitor->Trace(result_set_);
 }
 
-SQLStatement* SQLStatementBackend::frontend() {
-  return m_frontend.get();
+SQLStatement* SQLStatementBackend::GetFrontend() {
+  return frontend_.Get();
 }
 
-SQLErrorData* SQLStatementBackend::sqlError() const {
-  return m_error.get();
+SQLErrorData* SQLStatementBackend::SqlError() const {
+  return error_.get();
 }
 
-SQLResultSet* SQLStatementBackend::sqlResultSet() const {
-  return m_resultSet->isValid() ? m_resultSet.get() : 0;
+SQLResultSet* SQLStatementBackend::SqlResultSet() const {
+  return result_set_->IsValid() ? result_set_.Get() : 0;
 }
 
-bool SQLStatementBackend::execute(Database* db) {
-  ASSERT(!m_resultSet->isValid());
+bool SQLStatementBackend::Execute(Database* db) {
+  ASSERT(!result_set_->IsValid());
 
   // If we're re-running this statement after a quota violation, we need to
   // clear that error now
-  clearFailureDueToQuota();
+  ClearFailureDueToQuota();
 
   // This transaction might have been marked bad while it was being set up on
   // the main thread, so if there is still an error, return false.
-  if (m_error)
+  if (error_)
     return false;
 
-  db->setAuthorizerPermissions(m_permissions);
+  db->SetAuthorizerPermissions(permissions_);
 
-  SQLiteDatabase* database = &db->sqliteDatabase();
+  SQLiteDatabase* database = &db->SqliteDatabase();
 
-  SQLiteStatement statement(*database, m_statement);
-  int result = statement.prepare();
+  SQLiteStatement statement(*database, statement_);
+  int result = statement.Prepare();
 
-  if (result != SQLResultOk) {
+  if (result != kSQLResultOk) {
     STORAGE_DVLOG(1) << "Unable to verify correctness of statement "
-                     << m_statement << " - error " << result << " ("
-                     << database->lastErrorMsg() << ")";
-    if (result == SQLResultInterrupt)
-      m_error = SQLErrorData::create(SQLError::kDatabaseErr,
-                                     "could not prepare statement", result,
-                                     "interrupted");
+                     << statement_ << " - error " << result << " ("
+                     << database->LastErrorMsg() << ")";
+    if (result == kSQLResultInterrupt)
+      error_ = SQLErrorData::Create(SQLError::kDatabaseErr,
+                                    "could not prepare statement", result,
+                                    "interrupted");
     else
-      m_error = SQLErrorData::create(SQLError::kSyntaxErr,
-                                     "could not prepare statement", result,
-                                     database->lastErrorMsg());
-    db->reportExecuteStatementResult(1, m_error->code(), result);
+      error_ = SQLErrorData::Create(SQLError::kSyntaxErr,
+                                    "could not prepare statement", result,
+                                    database->LastErrorMsg());
+    db->ReportExecuteStatementResult(1, error_->Code(), result);
     return false;
   }
 
   // FIXME: If the statement uses the ?### syntax supported by sqlite, the bind
   // parameter count is very likely off from the number of question marks.  If
   // this is the case, they might be trying to do something fishy or malicious
-  if (statement.bindParameterCount() != m_arguments.size()) {
+  if (statement.BindParameterCount() != arguments_.size()) {
     STORAGE_DVLOG(1)
         << "Bind parameter count doesn't match number of question marks";
-    m_error = SQLErrorData::create(
+    error_ = SQLErrorData::Create(
         SQLError::kSyntaxErr,
         "number of '?'s in statement string does not match argument count");
-    db->reportExecuteStatementResult(2, m_error->code(), 0);
+    db->ReportExecuteStatementResult(2, error_->Code(), 0);
     return false;
   }
 
-  for (unsigned i = 0; i < m_arguments.size(); ++i) {
-    result = statement.bindValue(i + 1, m_arguments[i]);
-    if (result == SQLResultFull) {
-      setFailureDueToQuota(db);
+  for (unsigned i = 0; i < arguments_.size(); ++i) {
+    result = statement.BindValue(i + 1, arguments_[i]);
+    if (result == kSQLResultFull) {
+      SetFailureDueToQuota(db);
       return false;
     }
 
-    if (result != SQLResultOk) {
+    if (result != kSQLResultOk) {
       STORAGE_DVLOG(1) << "Failed to bind value index " << (i + 1)
-                       << " to statement for query " << m_statement;
-      db->reportExecuteStatementResult(3, SQLError::kDatabaseErr, result);
-      m_error =
-          SQLErrorData::create(SQLError::kDatabaseErr, "could not bind value",
-                               result, database->lastErrorMsg());
+                       << " to statement for query " << statement_;
+      db->ReportExecuteStatementResult(3, SQLError::kDatabaseErr, result);
+      error_ =
+          SQLErrorData::Create(SQLError::kDatabaseErr, "could not bind value",
+                               result, database->LastErrorMsg());
       return false;
     }
   }
 
   // Step so we can fetch the column names.
-  result = statement.step();
-  if (result == SQLResultRow) {
-    int columnCount = statement.columnCount();
-    SQLResultSetRowList* rows = m_resultSet->rows();
+  result = statement.Step();
+  if (result == kSQLResultRow) {
+    int column_count = statement.ColumnCount();
+    SQLResultSetRowList* rows = result_set_->rows();
 
-    for (int i = 0; i < columnCount; i++)
-      rows->addColumn(statement.getColumnName(i));
+    for (int i = 0; i < column_count; i++)
+      rows->AddColumn(statement.GetColumnName(i));
 
     do {
-      for (int i = 0; i < columnCount; i++)
-        rows->addResult(statement.getColumnValue(i));
+      for (int i = 0; i < column_count; i++)
+        rows->AddResult(statement.GetColumnValue(i));
 
-      result = statement.step();
-    } while (result == SQLResultRow);
+      result = statement.Step();
+    } while (result == kSQLResultRow);
 
-    if (result != SQLResultDone) {
-      db->reportExecuteStatementResult(4, SQLError::kDatabaseErr, result);
-      m_error = SQLErrorData::create(SQLError::kDatabaseErr,
-                                     "could not iterate results", result,
-                                     database->lastErrorMsg());
+    if (result != kSQLResultDone) {
+      db->ReportExecuteStatementResult(4, SQLError::kDatabaseErr, result);
+      error_ = SQLErrorData::Create(SQLError::kDatabaseErr,
+                                    "could not iterate results", result,
+                                    database->LastErrorMsg());
       return false;
     }
-  } else if (result == SQLResultDone) {
+  } else if (result == kSQLResultDone) {
     // Didn't find anything, or was an insert
-    if (db->lastActionWasInsert())
-      m_resultSet->setInsertId(database->lastInsertRowID());
-  } else if (result == SQLResultFull) {
+    if (db->LastActionWasInsert())
+      result_set_->SetInsertId(database->LastInsertRowID());
+  } else if (result == kSQLResultFull) {
     // Return the Quota error - the delegate will be asked for more space and
     // this statement might be re-run.
-    setFailureDueToQuota(db);
+    SetFailureDueToQuota(db);
     return false;
-  } else if (result == SQLResultConstraint) {
-    db->reportExecuteStatementResult(6, SQLError::kConstraintErr, result);
-    m_error = SQLErrorData::create(
+  } else if (result == kSQLResultConstraint) {
+    db->ReportExecuteStatementResult(6, SQLError::kConstraintErr, result);
+    error_ = SQLErrorData::Create(
         SQLError::kConstraintErr,
         "could not execute statement due to a constaint failure", result,
-        database->lastErrorMsg());
+        database->LastErrorMsg());
     return false;
   } else {
-    db->reportExecuteStatementResult(5, SQLError::kDatabaseErr, result);
-    m_error = SQLErrorData::create(SQLError::kDatabaseErr,
-                                   "could not execute statement", result,
-                                   database->lastErrorMsg());
+    db->ReportExecuteStatementResult(5, SQLError::kDatabaseErr, result);
+    error_ = SQLErrorData::Create(SQLError::kDatabaseErr,
+                                  "could not execute statement", result,
+                                  database->LastErrorMsg());
     return false;
   }
 
@@ -240,36 +240,36 @@ bool SQLStatementBackend::execute(Database* db) {
   // different way, we'd use sqlite3_total_changes() here instead of
   // sqlite3_changed, because that includes rows modified from within a trigger.
   // For now, this seems sufficient.
-  m_resultSet->setRowsAffected(database->lastChanges());
+  result_set_->SetRowsAffected(database->LastChanges());
 
-  db->reportExecuteStatementResult(0, -1, 0);  // OK
+  db->ReportExecuteStatementResult(0, -1, 0);  // OK
   return true;
 }
 
-void SQLStatementBackend::setVersionMismatchedError(Database* database) {
-  ASSERT(!m_error && !m_resultSet->isValid());
-  database->reportExecuteStatementResult(7, SQLError::kVersionErr, 0);
-  m_error = SQLErrorData::create(
+void SQLStatementBackend::SetVersionMismatchedError(Database* database) {
+  ASSERT(!error_ && !result_set_->IsValid());
+  database->ReportExecuteStatementResult(7, SQLError::kVersionErr, 0);
+  error_ = SQLErrorData::Create(
       SQLError::kVersionErr,
       "current version of the database and `oldVersion` argument do not match");
 }
 
-void SQLStatementBackend::setFailureDueToQuota(Database* database) {
-  ASSERT(!m_error && !m_resultSet->isValid());
-  database->reportExecuteStatementResult(8, SQLError::kQuotaErr, 0);
-  m_error = SQLErrorData::create(SQLError::kQuotaErr,
-                                 "there was not enough remaining storage "
-                                 "space, or the storage quota was reached and "
-                                 "the user declined to allow more space");
+void SQLStatementBackend::SetFailureDueToQuota(Database* database) {
+  ASSERT(!error_ && !result_set_->IsValid());
+  database->ReportExecuteStatementResult(8, SQLError::kQuotaErr, 0);
+  error_ = SQLErrorData::Create(SQLError::kQuotaErr,
+                                "there was not enough remaining storage "
+                                "space, or the storage quota was reached and "
+                                "the user declined to allow more space");
 }
 
-void SQLStatementBackend::clearFailureDueToQuota() {
-  if (lastExecutionFailedDueToQuota())
-    m_error = nullptr;
+void SQLStatementBackend::ClearFailureDueToQuota() {
+  if (LastExecutionFailedDueToQuota())
+    error_ = nullptr;
 }
 
-bool SQLStatementBackend::lastExecutionFailedDueToQuota() const {
-  return m_error && m_error->code() == SQLError::kQuotaErr;
+bool SQLStatementBackend::LastExecutionFailedDueToQuota() const {
+  return error_ && error_->Code() == SQLError::kQuotaErr;
 }
 
 }  // namespace blink

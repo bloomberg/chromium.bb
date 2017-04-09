@@ -114,23 +114,23 @@ testing::AssertionResult StringValueEquals(
 // error page for that error.
 std::string ErrorToString(const WebURLError& error, bool is_failed_post) {
   return base::StringPrintf("(%s, %s, %i, %s)",
-                            error.unreachableURL.string().utf8().c_str(),
-                            error.domain.utf8().c_str(), error.reason,
+                            error.unreachable_url.GetString().Utf8().c_str(),
+                            error.domain.Utf8().c_str(), error.reason,
                             is_failed_post ? "POST" : "NOT POST");
 }
 
 WebURLError ProbeError(DnsProbeStatus status) {
   WebURLError error;
-  error.unreachableURL = GURL(kFailedUrl);
-  error.domain = blink::WebString::fromUTF8(kDnsProbeErrorDomain);
+  error.unreachable_url = GURL(kFailedUrl);
+  error.domain = blink::WebString::FromUTF8(kDnsProbeErrorDomain);
   error.reason = status;
   return error;
 }
 
 WebURLError NetErrorForURL(net::Error net_error, const GURL& url) {
   WebURLError error;
-  error.unreachableURL = url;
-  error.domain = blink::WebString::fromUTF8(net::kErrorDomain);
+  error.unreachable_url = url;
+  error.domain = blink::WebString::FromUTF8(net::kErrorDomain);
   error.reason = net_error;
   return error;
 }
@@ -1176,13 +1176,13 @@ TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
   // The HTTPS page fails to load.
   std::string html;
   blink::WebURLError error = NetError(net::ERR_NAME_NOT_RESOLVED);
-  error.unreachableURL = GURL(kFailedHttpsUrl);
+  error.unreachable_url = GURL(kFailedHttpsUrl);
   core()->GetErrorHTML(NetErrorHelperCore::MAIN_FRAME, error,
                        false /* is_failed_post */,
                        false /* is_ignoring_cache */, &html);
 
   blink::WebURLError probe_error = ProbeError(DNS_PROBE_POSSIBLE);
-  probe_error.unreachableURL = GURL(kFailedHttpsUrl);
+  probe_error.unreachable_url = GURL(kFailedHttpsUrl);
   EXPECT_EQ(ErrorToString(probe_error, false), html);
   EXPECT_FALSE(is_url_being_fetched());
   EXPECT_FALSE(last_error_page_params());
@@ -1203,7 +1203,7 @@ TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
   EXPECT_FALSE(last_error_page_params());
   blink::WebURLError final_probe_error =
       ProbeError(DNS_PROBE_FINISHED_NXDOMAIN);
-  final_probe_error.unreachableURL = GURL(kFailedHttpsUrl);
+  final_probe_error.unreachable_url = GURL(kFailedHttpsUrl);
   EXPECT_EQ(ErrorToString(final_probe_error, false), last_error_html());
 }
 

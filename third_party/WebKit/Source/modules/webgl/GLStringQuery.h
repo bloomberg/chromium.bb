@@ -23,9 +23,9 @@ class GLStringQuery {
     static void LogFunction(gpu::gles2::GLES2Interface* gl,
                             GLuint id,
                             GLint length,
-                            GLint* returnedLength,
+                            GLint* returned_length,
                             LChar* ptr) {
-      return gl->GetProgramInfoLog(id, length, returnedLength,
+      return gl->GetProgramInfoLog(id, length, returned_length,
                                    reinterpret_cast<GLchar*>(ptr));
     }
   };
@@ -39,9 +39,9 @@ class GLStringQuery {
     static void LogFunction(gpu::gles2::GLES2Interface* gl,
                             GLuint id,
                             GLint length,
-                            GLint* returnedLength,
+                            GLint* returned_length,
                             LChar* ptr) {
-      gl->GetShaderInfoLog(id, length, returnedLength,
+      gl->GetShaderInfoLog(id, length, returned_length,
                            reinterpret_cast<GLchar*>(ptr));
     }
   };
@@ -55,34 +55,34 @@ class GLStringQuery {
     static void LogFunction(gpu::gles2::GLES2Interface* gl,
                             GLuint id,
                             GLint length,
-                            GLint* returnedLength,
+                            GLint* returned_length,
                             LChar* ptr) {
-      gl->GetTranslatedShaderSourceANGLE(id, length, returnedLength,
+      gl->GetTranslatedShaderSourceANGLE(id, length, returned_length,
                                          reinterpret_cast<GLchar*>(ptr));
     }
   };
 
-  GLStringQuery(gpu::gles2::GLES2Interface* gl) : m_gl(gl) {}
+  GLStringQuery(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
 
   template <class Traits>
   WTF::String Run(GLuint id) {
     GLint length = 0;
-    Traits::LengthFunction(m_gl, id, &length);
+    Traits::LengthFunction(gl_, id, &length);
     if (!length)
-      return WTF::emptyString;
-    LChar* logPtr;
-    RefPtr<WTF::StringImpl> nameImpl =
-        WTF::StringImpl::createUninitialized(length, logPtr);
-    GLsizei returnedLength = 0;
-    Traits::LogFunction(m_gl, id, length, &returnedLength, logPtr);
+      return WTF::g_empty_string;
+    LChar* log_ptr;
+    RefPtr<WTF::StringImpl> name_impl =
+        WTF::StringImpl::CreateUninitialized(length, log_ptr);
+    GLsizei returned_length = 0;
+    Traits::LogFunction(gl_, id, length, &returned_length, log_ptr);
     // The returnedLength excludes the null terminator. If this check wasn't
     // true, then we'd need to tell the returned String the real length.
-    DCHECK_EQ(returnedLength + 1, length);
-    return String(nameImpl.release());
+    DCHECK_EQ(returned_length + 1, length);
+    return String(name_impl.Release());
   }
 
  private:
-  gpu::gles2::GLES2Interface* m_gl;
+  gpu::gles2::GLES2Interface* gl_;
 };
 
 }  // namespace blink

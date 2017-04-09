@@ -54,34 +54,34 @@ class InternalSettings final : public InternalSettingsGenerated,
 
    public:
     explicit Backup(Settings*);
-    void restoreTo(Settings*);
+    void RestoreTo(Settings*);
 
-    bool m_originalCSP;
-    bool m_originalCSSStickyPositionEnabled;
-    bool m_originalOverlayScrollbarsEnabled;
-    EditingBehaviorType m_originalEditingBehavior;
-    bool m_originalTextAutosizingEnabled;
-    IntSize m_originalTextAutosizingWindowSizeOverride;
-    float m_originalAccessibilityFontScaleFactor;
-    String m_originalMediaTypeOverride;
-    WebDisplayMode m_originalDisplayModeOverride;
-    bool m_originalMockScrollbarsEnabled;
-    bool m_originalMockGestureTapHighlightsEnabled;
-    bool m_langAttributeAwareFormControlUIEnabled;
-    bool m_imagesEnabled;
-    String m_defaultVideoPosterURL;
-    ImageAnimationPolicy m_originalImageAnimationPolicy;
-    bool m_originalScrollTopLeftInteropEnabled;
-    bool m_originalCompositorWorkerEnabled;
+    bool original_csp_;
+    bool original_css_sticky_position_enabled_;
+    bool original_overlay_scrollbars_enabled_;
+    EditingBehaviorType original_editing_behavior_;
+    bool original_text_autosizing_enabled_;
+    IntSize original_text_autosizing_window_size_override_;
+    float original_accessibility_font_scale_factor_;
+    String original_media_type_override_;
+    WebDisplayMode original_display_mode_override_;
+    bool original_mock_scrollbars_enabled_;
+    bool original_mock_gesture_tap_highlights_enabled_;
+    bool lang_attribute_aware_form_control_ui_enabled_;
+    bool images_enabled_;
+    String default_video_poster_url_;
+    ImageAnimationPolicy original_image_animation_policy_;
+    bool original_scroll_top_left_interop_enabled_;
+    bool original_compositor_worker_enabled_;
   };
 
-  static InternalSettings* create(Page& page) {
+  static InternalSettings* Create(Page& page) {
     return new InternalSettings(page);
   }
-  static InternalSettings* from(Page&);
+  static InternalSettings* From(Page&);
 
   ~InternalSettings() override;
-  void resetToConsistentState();
+  void ResetToConsistentState();
 
   void setStandardFontFamily(const AtomicString& family,
                              const String& script,
@@ -108,15 +108,16 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setDefaultVideoPosterURL(const String& url, ExceptionState&);
   void setEditingBehavior(const String&, ExceptionState&);
   void setImagesEnabled(bool, ExceptionState&);
-  void setMediaTypeOverride(const String& mediaType, ExceptionState&);
-  void setDisplayModeOverride(const String& displayMode, ExceptionState&);
+  void setMediaTypeOverride(const String& media_type, ExceptionState&);
+  void setDisplayModeOverride(const String& display_mode, ExceptionState&);
   void setMockScrollbarsEnabled(bool, ExceptionState&);
   void setHideScrollbars(bool, ExceptionState&);
   void setMockGestureTapHighlightsEnabled(bool, ExceptionState&);
   void setTextAutosizingEnabled(bool, ExceptionState&);
   void setTextTrackKindUserPreference(const String& preference,
                                       ExceptionState&);
-  void setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState&);
+  void setAccessibilityFontScaleFactor(float font_scale_factor,
+                                       ExceptionState&);
   void setTextAutosizingWindowSizeOverride(int width,
                                            int height,
                                            ExceptionState&);
@@ -142,17 +143,17 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setPrimaryPointerType(const String&, ExceptionState&);
   void setAvailableHoverTypes(const String&, ExceptionState&);
   void setPrimaryHoverType(const String&, ExceptionState&);
-  void setDnsPrefetchLogging(bool, ExceptionState&);
-  void setPreloadLogging(bool, ExceptionState&);
+  void SetDnsPrefetchLogging(bool, ExceptionState&);
+  void SetPreloadLogging(bool, ExceptionState&);
 
  private:
   explicit InternalSettings(Page&);
 
-  Settings* settings() const;
-  Page* page() const { return supplementable(); }
-  static const char* supplementName();
+  Settings* GetSettings() const;
+  Page* GetPage() const { return GetSupplementable(); }
+  static const char* SupplementName();
 
-  Backup m_backup;
+  Backup backup_;
 };
 
 }  // namespace blink

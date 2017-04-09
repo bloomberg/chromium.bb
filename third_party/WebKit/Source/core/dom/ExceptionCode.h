@@ -32,72 +32,72 @@ typedef int ExceptionCode;
 // Some of these are considered historical since they have been
 // changed or removed from the specifications.
 enum {
-  IndexSizeError = 1,
-  HierarchyRequestError,
-  WrongDocumentError,
-  InvalidCharacterError,
-  NoModificationAllowedError,
-  NotFoundError,
-  NotSupportedError,
-  InUseAttributeError,  // Historical. Only used in setAttributeNode etc which
-                        // have been removed from the DOM specs.
+  kIndexSizeError = 1,
+  kHierarchyRequestError,
+  kWrongDocumentError,
+  kInvalidCharacterError,
+  kNoModificationAllowedError,
+  kNotFoundError,
+  kNotSupportedError,
+  kInUseAttributeError,  // Historical. Only used in setAttributeNode etc which
+                         // have been removed from the DOM specs.
 
   // Introduced in DOM Level 2:
-  InvalidStateError,
-  SyntaxError,
-  InvalidModificationError,
-  NamespaceError,
-  InvalidAccessError,
+  kInvalidStateError,
+  kSyntaxError,
+  kInvalidModificationError,
+  kNamespaceError,
+  kInvalidAccessError,
 
   // Introduced in DOM Level 3:
-  TypeMismatchError,  // Historical; use TypeError instead
+  kTypeMismatchError,  // Historical; use TypeError instead
 
   // XMLHttpRequest extension:
-  SecurityError,
+  kSecurityError,
 
   // Others introduced in HTML5:
-  NetworkError,
-  AbortError,
-  URLMismatchError,
-  QuotaExceededError,
-  TimeoutError,
-  InvalidNodeTypeError,
-  DataCloneError,
+  kNetworkError,
+  kAbortError,
+  kURLMismatchError,
+  kQuotaExceededError,
+  kTimeoutError,
+  kInvalidNodeTypeError,
+  kDataCloneError,
 
   // These are IDB-specific.
-  UnknownError,
-  ConstraintError,
-  DataError,
-  TransactionInactiveError,
-  ReadOnlyError,
-  VersionError,
+  kUnknownError,
+  kConstraintError,
+  kDataError,
+  kTransactionInactiveError,
+  kReadOnlyError,
+  kVersionError,
 
   // File system
-  NotReadableError,
-  EncodingError,
-  PathExistsError,
+  kNotReadableError,
+  kEncodingError,
+  kPathExistsError,
 
   // SQL
-  SQLDatabaseError,  // Naming conflict with DatabaseError class.
+  kSQLDatabaseError,  // Naming conflict with DatabaseError class.
 
   // Web Crypto
-  OperationError,
+  kOperationError,
 
   // Push API
-  PermissionDeniedError,
+  kPermissionDeniedError,
 
-  NotAllowedError,
+  kNotAllowedError,
 
   // Pointer Events
-  InvalidPointerId,
+  kInvalidPointerId,
 };
 
 enum V8ErrorType {
-  V8Error = 1000,
-  V8TypeError,
-  V8RangeError,
-  V8SyntaxError,
-  V8ReferenceError,
+  kV8Error = 1000,
+  kV8TypeError,
+  kV8RangeError,
+  kV8SyntaxError,
+  kV8ReferenceError,
 };
 
 }  // namespace blink

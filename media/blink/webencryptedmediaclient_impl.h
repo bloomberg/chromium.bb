@@ -42,7 +42,7 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   ~WebEncryptedMediaClientImpl() override;
 
   // WebEncryptedMediaClient implementation.
-  void requestMediaKeySystemAccess(
+  void RequestMediaKeySystemAccess(
       blink::WebEncryptedMediaRequest request) override;
 
   // Create the CDM for |key_system| and |security_origin|. The caller owns

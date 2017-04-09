@@ -19,23 +19,23 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
 
  public:
-  static DOMWindowStorage& from(LocalDOMWindow&);
+  static DOMWindowStorage& From(LocalDOMWindow&);
   static Storage* sessionStorage(LocalDOMWindow&, ExceptionState&);
   static Storage* localStorage(LocalDOMWindow&, ExceptionState&);
 
   Storage* sessionStorage(ExceptionState&) const;
   Storage* localStorage(ExceptionState&) const;
-  Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
-  Storage* optionalLocalStorage() const { return m_localStorage.get(); }
+  Storage* OptionalSessionStorage() const { return session_storage_.Get(); }
+  Storage* OptionalLocalStorage() const { return local_storage_.Get(); }
 
   DECLARE_TRACE();
 
  private:
   explicit DOMWindowStorage(LocalDOMWindow&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  mutable Member<Storage> m_sessionStorage;
-  mutable Member<Storage> m_localStorage;
+  mutable Member<Storage> session_storage_;
+  mutable Member<Storage> local_storage_;
 };
 
 }  // namespace blink

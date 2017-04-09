@@ -39,13 +39,13 @@ class MODULES_EXPORT SpeechRecognitionResult final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognitionResult* create(
+  static SpeechRecognitionResult* Create(
       const HeapVector<Member<SpeechRecognitionAlternative>>&,
       bool final);
 
-  unsigned length() { return m_alternatives.size(); }
+  unsigned length() { return alternatives_.size(); }
   SpeechRecognitionAlternative* item(unsigned index);
-  bool isFinal() { return m_final; }
+  bool isFinal() { return final_; }
 
   DECLARE_TRACE();
 
@@ -54,8 +54,8 @@ class MODULES_EXPORT SpeechRecognitionResult final
       const HeapVector<Member<SpeechRecognitionAlternative>>&,
       bool final);
 
-  bool m_final;
-  HeapVector<Member<SpeechRecognitionAlternative>> m_alternatives;
+  bool final_;
+  HeapVector<Member<SpeechRecognitionAlternative>> alternatives_;
 };
 
 }  // namespace blink

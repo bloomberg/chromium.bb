@@ -16,46 +16,46 @@ class CORE_EXPORT TextBufferBase {
   WTF_MAKE_NONCOPYABLE(TextBufferBase);
 
  public:
-  void clear() { m_size = 0; }
-  size_t size() const { return m_size; }
-  bool isEmpty() const { return m_size == 0; }
-  size_t capacity() const { return m_buffer.capacity(); }
+  void Clear() { size_ = 0; }
+  size_t size() const { return size_; }
+  bool IsEmpty() const { return size_ == 0; }
+  size_t Capacity() const { return buffer_.Capacity(); }
   const UChar& operator[](size_t index) const {
-    DCHECK_LT(index, m_size);
-    return data()[index];
+    DCHECK_LT(index, size_);
+    return Data()[index];
   }
-  virtual const UChar* data() const = 0;
+  virtual const UChar* Data() const = 0;
 
-  void pushCharacters(UChar, size_t length);
+  void PushCharacters(UChar, size_t length);
 
   template <typename T>
-  void pushRange(const T* other, size_t length) {
+  void PushRange(const T* other, size_t length) {
     if (length == 0)
       return;
-    std::copy(other, other + length, ensureDestination(length));
+    std::copy(other, other + length, EnsureDestination(length));
   }
 
-  void shrink(size_t delta) {
-    DCHECK_LE(delta, m_size);
-    m_size -= delta;
+  void Shrink(size_t delta) {
+    DCHECK_LE(delta, size_);
+    size_ -= delta;
   }
 
  protected:
   TextBufferBase();
-  UChar* ensureDestination(size_t length);
-  void grow(size_t demand);
+  UChar* EnsureDestination(size_t length);
+  void Grow(size_t demand);
 
-  virtual UChar* calcDestination(size_t length) = 0;
-  virtual void shiftData(size_t oldCapacity);
+  virtual UChar* CalcDestination(size_t length) = 0;
+  virtual void ShiftData(size_t old_capacity);
 
-  const UChar* bufferBegin() const { return m_buffer.begin(); }
-  const UChar* bufferEnd() const { return m_buffer.end(); }
-  UChar* bufferBegin() { return m_buffer.begin(); }
-  UChar* bufferEnd() { return m_buffer.end(); }
+  const UChar* BufferBegin() const { return buffer_.begin(); }
+  const UChar* BufferEnd() const { return buffer_.end(); }
+  UChar* BufferBegin() { return buffer_.begin(); }
+  UChar* BufferEnd() { return buffer_.end(); }
 
  private:
-  size_t m_size = 0;
-  Vector<UChar, 1024> m_buffer;
+  size_t size_ = 0;
+  Vector<UChar, 1024> buffer_;
 };
 
 }  // namespace blink

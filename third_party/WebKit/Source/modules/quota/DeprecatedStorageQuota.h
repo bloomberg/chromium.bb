@@ -48,11 +48,11 @@ class DeprecatedStorageQuota final
 
  public:
   enum Type {
-    Temporary,
-    Persistent,
+    kTemporary,
+    kPersistent,
   };
 
-  static DeprecatedStorageQuota* create(Type type) {
+  static DeprecatedStorageQuota* Create(Type type) {
     return new DeprecatedStorageQuota(type);
   }
 
@@ -61,7 +61,7 @@ class DeprecatedStorageQuota final
                           StorageErrorCallback*);
 
   void requestQuota(ScriptState*,
-                    unsigned long long newQuotaInBytes,
+                    unsigned long long new_quota_in_bytes,
                     StorageQuotaCallback*,
                     StorageErrorCallback*);
 
@@ -69,7 +69,7 @@ class DeprecatedStorageQuota final
 
  private:
   explicit DeprecatedStorageQuota(Type);
-  Type m_type;
+  Type type_;
 };
 
 }  // namespace blink

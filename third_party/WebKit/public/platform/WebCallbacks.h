@@ -45,32 +45,32 @@ template <typename S, typename T>
 class WebCallbacks {
  public:
   virtual ~WebCallbacks() {}
-  virtual void onSuccess(S) {}
-  virtual void onError(T) {}
+  virtual void OnSuccess(S) {}
+  virtual void OnError(T) {}
 };
 
 template <typename T>
 class WebCallbacks<void, T> {
  public:
   virtual ~WebCallbacks() {}
-  virtual void onSuccess() {}
-  virtual void onError(T) {}
+  virtual void OnSuccess() {}
+  virtual void OnError(T) {}
 };
 
 template <typename S>
 class WebCallbacks<S, void> {
  public:
   virtual ~WebCallbacks() {}
-  virtual void onSuccess(S) {}
-  virtual void onError() {}
+  virtual void OnSuccess(S) {}
+  virtual void OnError() {}
 };
 
 template <>
 class WebCallbacks<void, void> {
  public:
   virtual ~WebCallbacks() {}
-  virtual void onSuccess() {}
-  virtual void onError() {}
+  virtual void OnSuccess() {}
+  virtual void OnError() {}
 };
 
 }  // namespace blink

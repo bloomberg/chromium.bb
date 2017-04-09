@@ -11,25 +11,25 @@
 namespace blink {
 
 CSSCustomIdentValue::CSSCustomIdentValue(const AtomicString& str)
-    : CSSValue(CustomIdentClass),
-      m_string(str),
-      m_propertyId(CSSPropertyInvalid) {}
+    : CSSValue(kCustomIdentClass),
+      string_(str),
+      property_id_(CSSPropertyInvalid) {}
 
 CSSCustomIdentValue::CSSCustomIdentValue(CSSPropertyID id)
-    : CSSValue(CustomIdentClass), m_string(), m_propertyId(id) {
-  DCHECK(isKnownPropertyID());
+    : CSSValue(kCustomIdentClass), string_(), property_id_(id) {
+  DCHECK(IsKnownPropertyID());
 }
 
-String CSSCustomIdentValue::customCSSText() const {
-  if (isKnownPropertyID())
-    return getPropertyNameAtomicString(m_propertyId);
+String CSSCustomIdentValue::CustomCSSText() const {
+  if (IsKnownPropertyID())
+    return getPropertyNameAtomicString(property_id_);
   StringBuilder builder;
-  serializeIdentifier(m_string, builder);
-  return builder.toString();
+  SerializeIdentifier(string_, builder);
+  return builder.ToString();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSCustomIdentValue) {
-  CSSValue::traceAfterDispatch(visitor);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

@@ -38,13 +38,13 @@ SubresourceFilterAgent::SubresourceFilterAgent(
 SubresourceFilterAgent::~SubresourceFilterAgent() = default;
 
 GURL SubresourceFilterAgent::GetDocumentURL() {
-  return render_frame()->GetWebFrame()->document().url();
+  return render_frame()->GetWebFrame()->GetDocument().Url();
 }
 
 void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
     std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) {
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-  web_frame->dataSource()->setSubresourceFilter(filter.release());
+  web_frame->DataSource()->SetSubresourceFilter(filter.release());
 }
 
 void SubresourceFilterAgent::

@@ -11,8 +11,8 @@
 namespace blink {
 
 enum class UnionTypeConversionMode {
-  Nullable,
-  NotNullable,
+  kNullable,
+  kNotNullable,
 };
 
 template <typename T>
@@ -20,59 +20,59 @@ class Nullable {
   DISALLOW_NEW();
 
  public:
-  Nullable() : m_value(), m_isNull(true) {}
+  Nullable() : value_(), is_null_(true) {}
 
-  Nullable(std::nullptr_t) : m_value(), m_isNull(true) {}
+  Nullable(std::nullptr_t) : value_(), is_null_(true) {}
 
-  Nullable(const T& value) : m_value(value), m_isNull(false) {}
+  Nullable(const T& value) : value_(value), is_null_(false) {}
 
   Nullable(const Nullable& other)
-      : m_value(other.m_value), m_isNull(other.m_isNull) {}
+      : value_(other.value_), is_null_(other.is_null_) {}
 
   Nullable& operator=(const Nullable& other) {
-    m_value = other.m_value;
-    m_isNull = other.m_isNull;
+    value_ = other.value_;
+    is_null_ = other.is_null_;
     return *this;
   }
 
   Nullable& operator=(std::nullptr_t) {
-    m_value = T();
-    m_isNull = true;
+    value_ = T();
+    is_null_ = true;
     return *this;
   }
 
-  void set(const T& value) {
-    m_value = value;
-    m_isNull = false;
+  void Set(const T& value) {
+    value_ = value;
+    is_null_ = false;
   }
 
-  void set(std::nullptr_t) {
-    m_value = T();
-    m_isNull = true;
+  void Set(std::nullptr_t) {
+    value_ = T();
+    is_null_ = true;
   }
 
-  const T& get() const {
-    ASSERT(!m_isNull);
-    return m_value;
+  const T& Get() const {
+    ASSERT(!is_null_);
+    return value_;
   }
-  T& get() {
-    ASSERT(!m_isNull);
-    return m_value;
+  T& Get() {
+    ASSERT(!is_null_);
+    return value_;
   }
-  bool isNull() const { return m_isNull; }
+  bool IsNull() const { return is_null_; }
 
-  explicit operator bool() const { return !m_isNull; }
+  explicit operator bool() const { return !is_null_; }
 
   bool operator==(const Nullable& other) const {
-    return (m_isNull && other.m_isNull) ||
-           (!m_isNull && !other.m_isNull && m_value == other.m_value);
+    return (is_null_ && other.is_null_) ||
+           (!is_null_ && !other.is_null_ && value_ == other.value_);
   }
 
-  DEFINE_INLINE_TRACE() { TraceIfNeeded<T>::trace(visitor, m_value); }
+  DEFINE_INLINE_TRACE() { TraceIfNeeded<T>::Trace(visitor, value_); }
 
  private:
-  T m_value;
-  bool m_isNull;
+  T value_;
+  bool is_null_;
 };
 
 }  // namespace blink

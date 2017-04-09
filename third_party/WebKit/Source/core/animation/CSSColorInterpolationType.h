@@ -20,39 +20,39 @@ class CSSColorInterpolationType : public CSSInterpolationType {
   CSSColorInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {}
 
-  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
-  void applyStandardPropertyValue(const InterpolableValue&,
+  void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
 
-  static std::unique_ptr<InterpolableValue> createInterpolableColor(
+  static std::unique_ptr<InterpolableValue> CreateInterpolableColor(
       const Color&);
-  static std::unique_ptr<InterpolableValue> createInterpolableColor(CSSValueID);
-  static std::unique_ptr<InterpolableValue> createInterpolableColor(
+  static std::unique_ptr<InterpolableValue> CreateInterpolableColor(CSSValueID);
+  static std::unique_ptr<InterpolableValue> CreateInterpolableColor(
       const StyleColor&);
-  static std::unique_ptr<InterpolableValue> maybeCreateInterpolableColor(
+  static std::unique_ptr<InterpolableValue> MaybeCreateInterpolableColor(
       const CSSValue&);
-  static Color resolveInterpolableColor(
-      const InterpolableValue& interpolableColor,
+  static Color ResolveInterpolableColor(
+      const InterpolableValue& interpolable_color,
       const StyleResolverState&,
-      bool isVisited = false,
-      bool isTextDecoration = false);
+      bool is_visited = false,
+      bool is_text_decoration = false);
 
  private:
-  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+  InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                          ConversionCheckers&) const final;
-  InterpolationValue maybeConvertValue(const CSSValue&,
+  InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
-  InterpolationValue convertStyleColorPair(const OptionalStyleColor&,
+  InterpolationValue ConvertStyleColorPair(const OptionalStyleColor&,
                                            const OptionalStyleColor&) const;
 
-  const CSSValue* createCSSValue(const InterpolableValue&,
+  const CSSValue* CreateCSSValue(const InterpolableValue&,
                                  const NonInterpolableValue*,
                                  const StyleResolverState&) const final;
 };

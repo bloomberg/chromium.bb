@@ -24,66 +24,66 @@ class PathBuilder {
   WTF_MAKE_NONCOPYABLE(PathBuilder);
 
  public:
-  PathBuilder() : m_path(protocol::ListValue::create()) {}
+  PathBuilder() : path_(protocol::ListValue::create()) {}
   virtual ~PathBuilder() {}
 
-  std::unique_ptr<protocol::ListValue> release() { return std::move(m_path); }
+  std::unique_ptr<protocol::ListValue> Release() { return std::move(path_); }
 
-  void appendPath(const Path& path, float scale) {
-    Path transformPath(path);
-    transformPath.transform(AffineTransform().scale(scale));
-    transformPath.apply(this, &PathBuilder::appendPathElement);
+  void AppendPath(const Path& path, float scale) {
+    Path transform_path(path);
+    transform_path.Transform(AffineTransform().Scale(scale));
+    transform_path.Apply(this, &PathBuilder::AppendPathElement);
   }
 
  protected:
-  virtual FloatPoint translatePoint(const FloatPoint& point) { return point; }
+  virtual FloatPoint TranslatePoint(const FloatPoint& point) { return point; }
 
  private:
-  static void appendPathElement(void* pathBuilder,
-                                const PathElement* pathElement) {
-    static_cast<PathBuilder*>(pathBuilder)->appendPathElement(pathElement);
+  static void AppendPathElement(void* path_builder,
+                                const PathElement* path_element) {
+    static_cast<PathBuilder*>(path_builder)->AppendPathElement(path_element);
   }
 
-  void appendPathElement(const PathElement*);
-  void appendPathCommandAndPoints(const char* command,
+  void AppendPathElement(const PathElement*);
+  void AppendPathCommandAndPoints(const char* command,
                                   const FloatPoint points[],
                                   size_t length);
 
-  std::unique_ptr<protocol::ListValue> m_path;
+  std::unique_ptr<protocol::ListValue> path_;
 };
 
-void PathBuilder::appendPathCommandAndPoints(const char* command,
+void PathBuilder::AppendPathCommandAndPoints(const char* command,
                                              const FloatPoint points[],
                                              size_t length) {
-  m_path->pushValue(protocol::StringValue::create(command));
+  path_->pushValue(protocol::StringValue::create(command));
   for (size_t i = 0; i < length; i++) {
-    FloatPoint point = translatePoint(points[i]);
-    m_path->pushValue(protocol::FundamentalValue::create(point.x()));
-    m_path->pushValue(protocol::FundamentalValue::create(point.y()));
+    FloatPoint point = TranslatePoint(points[i]);
+    path_->pushValue(protocol::FundamentalValue::create(point.X()));
+    path_->pushValue(protocol::FundamentalValue::create(point.Y()));
   }
 }
 
-void PathBuilder::appendPathElement(const PathElement* pathElement) {
-  switch (pathElement->type) {
+void PathBuilder::AppendPathElement(const PathElement* path_element) {
+  switch (path_element->type) {
     // The points member will contain 1 value.
-    case PathElementMoveToPoint:
-      appendPathCommandAndPoints("M", pathElement->points, 1);
+    case kPathElementMoveToPoint:
+      AppendPathCommandAndPoints("M", path_element->points, 1);
       break;
     // The points member will contain 1 value.
-    case PathElementAddLineToPoint:
-      appendPathCommandAndPoints("L", pathElement->points, 1);
+    case kPathElementAddLineToPoint:
+      AppendPathCommandAndPoints("L", path_element->points, 1);
       break;
     // The points member will contain 3 values.
-    case PathElementAddCurveToPoint:
-      appendPathCommandAndPoints("C", pathElement->points, 3);
+    case kPathElementAddCurveToPoint:
+      AppendPathCommandAndPoints("C", path_element->points, 3);
       break;
     // The points member will contain 2 values.
-    case PathElementAddQuadCurveToPoint:
-      appendPathCommandAndPoints("Q", pathElement->points, 2);
+    case kPathElementAddQuadCurveToPoint:
+      AppendPathCommandAndPoints("Q", path_element->points, 2);
       break;
     // The points member will contain no values.
-    case PathElementCloseSubpath:
-      appendPathCommandAndPoints("Z", 0, 0);
+    case kPathElementCloseSubpath:
+      AppendPathCommandAndPoints("Z", 0, 0);
       break;
   }
 }
@@ -91,336 +91,340 @@ void PathBuilder::appendPathElement(const PathElement* pathElement) {
 class ShapePathBuilder : public PathBuilder {
  public:
   ShapePathBuilder(FrameView& view,
-                   LayoutObject& layoutObject,
-                   const ShapeOutsideInfo& shapeOutsideInfo)
-      : m_view(&view),
-        m_layoutObject(layoutObject),
-        m_shapeOutsideInfo(shapeOutsideInfo) {}
+                   LayoutObject& layout_object,
+                   const ShapeOutsideInfo& shape_outside_info)
+      : view_(&view),
+        layout_object_(layout_object),
+        shape_outside_info_(shape_outside_info) {}
 
-  static std::unique_ptr<protocol::ListValue> buildPath(
+  static std::unique_ptr<protocol::ListValue> BuildPath(
       FrameView& view,
-      LayoutObject& layoutObject,
-      const ShapeOutsideInfo& shapeOutsideInfo,
+      LayoutObject& layout_object,
+      const ShapeOutsideInfo& shape_outside_info,
       const Path& path,
       float scale) {
-    ShapePathBuilder builder(view, layoutObject, shapeOutsideInfo);
-    builder.appendPath(path, scale);
-    return builder.release();
+    ShapePathBuilder builder(view, layout_object, shape_outside_info);
+    builder.AppendPath(path, scale);
+    return builder.Release();
   }
 
  protected:
-  virtual FloatPoint translatePoint(const FloatPoint& point) {
-    FloatPoint layoutObjectPoint =
-        m_shapeOutsideInfo.shapeToLayoutObjectPoint(point);
-    return m_view->contentsToViewport(
-        roundedIntPoint(m_layoutObject.localToAbsolute(layoutObjectPoint)));
+  virtual FloatPoint TranslatePoint(const FloatPoint& point) {
+    FloatPoint layout_object_point =
+        shape_outside_info_.ShapeToLayoutObjectPoint(point);
+    return view_->ContentsToViewport(
+        RoundedIntPoint(layout_object_.LocalToAbsolute(layout_object_point)));
   }
 
  private:
-  Member<FrameView> m_view;
-  LayoutObject& m_layoutObject;
-  const ShapeOutsideInfo& m_shapeOutsideInfo;
+  Member<FrameView> view_;
+  LayoutObject& layout_object_;
+  const ShapeOutsideInfo& shape_outside_info_;
 };
 
-std::unique_ptr<protocol::Array<double>> buildArrayForQuad(
+std::unique_ptr<protocol::Array<double>> BuildArrayForQuad(
     const FloatQuad& quad) {
   std::unique_ptr<protocol::Array<double>> array =
       protocol::Array<double>::create();
-  array->addItem(quad.p1().x());
-  array->addItem(quad.p1().y());
-  array->addItem(quad.p2().x());
-  array->addItem(quad.p2().y());
-  array->addItem(quad.p3().x());
-  array->addItem(quad.p3().y());
-  array->addItem(quad.p4().x());
-  array->addItem(quad.p4().y());
+  array->addItem(quad.P1().X());
+  array->addItem(quad.P1().Y());
+  array->addItem(quad.P2().X());
+  array->addItem(quad.P2().Y());
+  array->addItem(quad.P3().X());
+  array->addItem(quad.P3().Y());
+  array->addItem(quad.P4().X());
+  array->addItem(quad.P4().Y());
   return array;
 }
 
-Path quadToPath(const FloatQuad& quad) {
-  Path quadPath;
-  quadPath.moveTo(quad.p1());
-  quadPath.addLineTo(quad.p2());
-  quadPath.addLineTo(quad.p3());
-  quadPath.addLineTo(quad.p4());
-  quadPath.closeSubpath();
-  return quadPath;
+Path QuadToPath(const FloatQuad& quad) {
+  Path quad_path;
+  quad_path.MoveTo(quad.P1());
+  quad_path.AddLineTo(quad.P2());
+  quad_path.AddLineTo(quad.P3());
+  quad_path.AddLineTo(quad.P4());
+  quad_path.CloseSubpath();
+  return quad_path;
 }
 
-void contentsQuadToViewport(const FrameView* view, FloatQuad& quad) {
-  quad.setP1(view->contentsToViewport(roundedIntPoint(quad.p1())));
-  quad.setP2(view->contentsToViewport(roundedIntPoint(quad.p2())));
-  quad.setP3(view->contentsToViewport(roundedIntPoint(quad.p3())));
-  quad.setP4(view->contentsToViewport(roundedIntPoint(quad.p4())));
+void ContentsQuadToViewport(const FrameView* view, FloatQuad& quad) {
+  quad.SetP1(view->ContentsToViewport(RoundedIntPoint(quad.P1())));
+  quad.SetP2(view->ContentsToViewport(RoundedIntPoint(quad.P2())));
+  quad.SetP3(view->ContentsToViewport(RoundedIntPoint(quad.P3())));
+  quad.SetP4(view->ContentsToViewport(RoundedIntPoint(quad.P4())));
 }
 
-const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node,
+const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
                                                 Shape::DisplayPaths* paths,
                                                 FloatQuad* bounds) {
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject || !layoutObject->isBox() ||
-      !toLayoutBox(layoutObject)->shapeOutsideInfo())
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsBox() ||
+      !ToLayoutBox(layout_object)->GetShapeOutsideInfo())
     return nullptr;
 
-  FrameView* containingView = node->document().view();
-  LayoutBox* layoutBox = toLayoutBox(layoutObject);
-  const ShapeOutsideInfo* shapeOutsideInfo = layoutBox->shapeOutsideInfo();
+  FrameView* containing_view = node->GetDocument().View();
+  LayoutBox* layout_box = ToLayoutBox(layout_object);
+  const ShapeOutsideInfo* shape_outside_info =
+      layout_box->GetShapeOutsideInfo();
 
-  shapeOutsideInfo->computedShape().buildDisplayPaths(*paths);
+  shape_outside_info->ComputedShape().BuildDisplayPaths(*paths);
 
-  LayoutRect shapeBounds = shapeOutsideInfo->computedShapePhysicalBoundingBox();
-  *bounds = layoutBox->localToAbsoluteQuad(FloatRect(shapeBounds));
-  contentsQuadToViewport(containingView, *bounds);
+  LayoutRect shape_bounds =
+      shape_outside_info->ComputedShapePhysicalBoundingBox();
+  *bounds = layout_box->LocalToAbsoluteQuad(FloatRect(shape_bounds));
+  ContentsQuadToViewport(containing_view, *bounds);
 
-  return shapeOutsideInfo;
+  return shape_outside_info;
 }
 
-std::unique_ptr<protocol::DictionaryValue> buildElementInfo(Element* element) {
-  std::unique_ptr<protocol::DictionaryValue> elementInfo =
+std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
+  std::unique_ptr<protocol::DictionaryValue> element_info =
       protocol::DictionaryValue::create();
-  Element* realElement = element;
-  PseudoElement* pseudoElement = nullptr;
-  if (element->isPseudoElement()) {
-    pseudoElement = toPseudoElement(element);
-    realElement = element->parentOrShadowHostElement();
+  Element* real_element = element;
+  PseudoElement* pseudo_element = nullptr;
+  if (element->IsPseudoElement()) {
+    pseudo_element = ToPseudoElement(element);
+    real_element = element->ParentOrShadowHostElement();
   }
-  bool isXHTML = realElement->document().isXHTMLDocument();
-  elementInfo->setString("tagName", isXHTML ? realElement->nodeName()
-                                            : realElement->nodeName().lower());
-  elementInfo->setString("idValue", realElement->getIdAttribute());
-  StringBuilder classNames;
-  if (realElement->hasClass() && realElement->isStyledElement()) {
-    HashSet<AtomicString> usedClassNames;
-    const SpaceSplitString& classNamesString = realElement->classNames();
-    size_t classNameCount = classNamesString.size();
-    for (size_t i = 0; i < classNameCount; ++i) {
-      const AtomicString& className = classNamesString[i];
-      if (!usedClassNames.insert(className).isNewEntry)
+  bool is_xhtml = real_element->GetDocument().IsXHTMLDocument();
+  element_info->setString("tagName", is_xhtml
+                                         ? real_element->nodeName()
+                                         : real_element->nodeName().Lower());
+  element_info->setString("idValue", real_element->GetIdAttribute());
+  StringBuilder class_names;
+  if (real_element->HasClass() && real_element->IsStyledElement()) {
+    HashSet<AtomicString> used_class_names;
+    const SpaceSplitString& class_names_string = real_element->ClassNames();
+    size_t class_name_count = class_names_string.size();
+    for (size_t i = 0; i < class_name_count; ++i) {
+      const AtomicString& class_name = class_names_string[i];
+      if (!used_class_names.insert(class_name).is_new_entry)
         continue;
-      classNames.append('.');
-      classNames.append(className);
+      class_names.Append('.');
+      class_names.Append(class_name);
     }
   }
-  if (pseudoElement) {
-    if (pseudoElement->getPseudoId() == PseudoIdBefore)
-      classNames.append("::before");
-    else if (pseudoElement->getPseudoId() == PseudoIdAfter)
-      classNames.append("::after");
+  if (pseudo_element) {
+    if (pseudo_element->GetPseudoId() == kPseudoIdBefore)
+      class_names.Append("::before");
+    else if (pseudo_element->GetPseudoId() == kPseudoIdAfter)
+      class_names.Append("::after");
   }
-  if (!classNames.isEmpty())
-    elementInfo->setString("className", classNames.toString());
+  if (!class_names.IsEmpty())
+    element_info->setString("className", class_names.ToString());
 
-  LayoutObject* layoutObject = element->layoutObject();
-  FrameView* containingView = element->document().view();
-  if (!layoutObject || !containingView)
-    return elementInfo;
+  LayoutObject* layout_object = element->GetLayoutObject();
+  FrameView* containing_view = element->GetDocument().View();
+  if (!layout_object || !containing_view)
+    return element_info;
 
   // layoutObject the getBoundingClientRect() data in the tooltip
   // to be consistent with the rulers (see http://crbug.com/262338).
-  ClientRect* boundingBox = element->getBoundingClientRect();
-  elementInfo->setString("nodeWidth", String::number(boundingBox->width()));
-  elementInfo->setString("nodeHeight", String::number(boundingBox->height()));
+  ClientRect* bounding_box = element->getBoundingClientRect();
+  element_info->setString("nodeWidth", String::Number(bounding_box->width()));
+  element_info->setString("nodeHeight", String::Number(bounding_box->height()));
 
-  return elementInfo;
+  return element_info;
 }
 
 }  // namespace
 
 InspectorHighlight::InspectorHighlight(float scale)
-    : m_highlightPaths(protocol::ListValue::create()),
-      m_showRulers(false),
-      m_showExtensionLines(false),
-      m_displayAsMaterial(false),
-      m_scale(scale) {}
+    : highlight_paths_(protocol::ListValue::create()),
+      show_rulers_(false),
+      show_extension_lines_(false),
+      display_as_material_(false),
+      scale_(scale) {}
 
 InspectorHighlightConfig::InspectorHighlightConfig()
-    : showInfo(false),
-      showRulers(false),
-      showExtensionLines(false),
-      displayAsMaterial(false) {}
+    : show_info(false),
+      show_rulers(false),
+      show_extension_lines(false),
+      display_as_material(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
-    const InspectorHighlightConfig& highlightConfig,
-    bool appendElementInfo)
-    : m_highlightPaths(protocol::ListValue::create()),
-      m_showRulers(highlightConfig.showRulers),
-      m_showExtensionLines(highlightConfig.showExtensionLines),
-      m_displayAsMaterial(highlightConfig.displayAsMaterial),
-      m_scale(1.f) {
-  FrameView* frameView = node->document().view();
-  if (frameView)
-    m_scale = 1.f / frameView->getHostWindow()->windowToViewportScalar(1.f);
-  appendPathsForShapeOutside(node, highlightConfig);
-  appendNodeHighlight(node, highlightConfig);
-  if (appendElementInfo && node->isElementNode())
-    m_elementInfo = buildElementInfo(toElement(node));
+    const InspectorHighlightConfig& highlight_config,
+    bool append_element_info)
+    : highlight_paths_(protocol::ListValue::create()),
+      show_rulers_(highlight_config.show_rulers),
+      show_extension_lines_(highlight_config.show_extension_lines),
+      display_as_material_(highlight_config.display_as_material),
+      scale_(1.f) {
+  FrameView* frame_view = node->GetDocument().View();
+  if (frame_view)
+    scale_ = 1.f / frame_view->GetHostWindow()->WindowToViewportScalar(1.f);
+  AppendPathsForShapeOutside(node, highlight_config);
+  AppendNodeHighlight(node, highlight_config);
+  if (append_element_info && node->IsElementNode())
+    element_info_ = BuildElementInfo(ToElement(node));
 }
 
 InspectorHighlight::~InspectorHighlight() {}
 
-void InspectorHighlight::appendQuad(const FloatQuad& quad,
-                                    const Color& fillColor,
-                                    const Color& outlineColor,
+void InspectorHighlight::AppendQuad(const FloatQuad& quad,
+                                    const Color& fill_color,
+                                    const Color& outline_color,
                                     const String& name) {
-  Path path = quadToPath(quad);
+  Path path = QuadToPath(quad);
   PathBuilder builder;
-  builder.appendPath(path, m_scale);
-  appendPath(builder.release(), fillColor, outlineColor, name);
+  builder.AppendPath(path, scale_);
+  AppendPath(builder.Release(), fill_color, outline_color, name);
 }
 
-void InspectorHighlight::appendPath(std::unique_ptr<protocol::ListValue> path,
-                                    const Color& fillColor,
-                                    const Color& outlineColor,
+void InspectorHighlight::AppendPath(std::unique_ptr<protocol::ListValue> path,
+                                    const Color& fill_color,
+                                    const Color& outline_color,
                                     const String& name) {
   std::unique_ptr<protocol::DictionaryValue> object =
       protocol::DictionaryValue::create();
   object->setValue("path", std::move(path));
-  object->setString("fillColor", fillColor.serialized());
-  if (outlineColor != Color::transparent)
-    object->setString("outlineColor", outlineColor.serialized());
-  if (!name.isEmpty())
+  object->setString("fillColor", fill_color.Serialized());
+  if (outline_color != Color::kTransparent)
+    object->setString("outlineColor", outline_color.Serialized());
+  if (!name.IsEmpty())
     object->setString("name", name);
-  m_highlightPaths->pushValue(std::move(object));
+  highlight_paths_->pushValue(std::move(object));
 }
 
-void InspectorHighlight::appendEventTargetQuads(
-    Node* eventTargetNode,
-    const InspectorHighlightConfig& highlightConfig) {
-  if (eventTargetNode->layoutObject()) {
+void InspectorHighlight::AppendEventTargetQuads(
+    Node* event_target_node,
+    const InspectorHighlightConfig& highlight_config) {
+  if (event_target_node->GetLayoutObject()) {
     FloatQuad border, unused;
-    if (buildNodeQuads(eventTargetNode, &unused, &unused, &border, &unused))
-      appendQuad(border, highlightConfig.eventTarget);
+    if (BuildNodeQuads(event_target_node, &unused, &unused, &border, &unused))
+      AppendQuad(border, highlight_config.event_target);
   }
 }
 
-void InspectorHighlight::appendPathsForShapeOutside(
+void InspectorHighlight::AppendPathsForShapeOutside(
     Node* node,
     const InspectorHighlightConfig& config) {
   Shape::DisplayPaths paths;
-  FloatQuad boundsQuad;
+  FloatQuad bounds_quad;
 
-  const ShapeOutsideInfo* shapeOutsideInfo =
-      shapeOutsideInfoForNode(node, &paths, &boundsQuad);
-  if (!shapeOutsideInfo)
+  const ShapeOutsideInfo* shape_outside_info =
+      ShapeOutsideInfoForNode(node, &paths, &bounds_quad);
+  if (!shape_outside_info)
     return;
 
   if (!paths.shape.length()) {
-    appendQuad(boundsQuad, config.shape);
+    AppendQuad(bounds_quad, config.shape);
     return;
   }
 
-  appendPath(ShapePathBuilder::buildPath(
-                 *node->document().view(), *node->layoutObject(),
-                 *shapeOutsideInfo, paths.shape, m_scale),
-             config.shape, Color::transparent);
-  if (paths.marginShape.length())
-    appendPath(ShapePathBuilder::buildPath(
-                   *node->document().view(), *node->layoutObject(),
-                   *shapeOutsideInfo, paths.marginShape, m_scale),
-               config.shapeMargin, Color::transparent);
+  AppendPath(ShapePathBuilder::BuildPath(
+                 *node->GetDocument().View(), *node->GetLayoutObject(),
+                 *shape_outside_info, paths.shape, scale_),
+             config.shape, Color::kTransparent);
+  if (paths.margin_shape.length())
+    AppendPath(ShapePathBuilder::BuildPath(
+                   *node->GetDocument().View(), *node->GetLayoutObject(),
+                   *shape_outside_info, paths.margin_shape, scale_),
+               config.shape_margin, Color::kTransparent);
 }
 
-void InspectorHighlight::appendNodeHighlight(
+void InspectorHighlight::AppendNodeHighlight(
     Node* node,
-    const InspectorHighlightConfig& highlightConfig) {
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject)
+    const InspectorHighlightConfig& highlight_config) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
     return;
 
   // LayoutSVGRoot should be highlighted through the isBox() code path, all
   // other SVG elements should just dump their absoluteQuads().
-  if (layoutObject->node() && layoutObject->node()->isSVGElement() &&
-      !layoutObject->isSVGRoot()) {
+  if (layout_object->GetNode() && layout_object->GetNode()->IsSVGElement() &&
+      !layout_object->IsSVGRoot()) {
     Vector<FloatQuad> quads;
-    layoutObject->absoluteQuads(quads);
-    FrameView* containingView = layoutObject->frameView();
+    layout_object->AbsoluteQuads(quads);
+    FrameView* containing_view = layout_object->GetFrameView();
     for (size_t i = 0; i < quads.size(); ++i) {
-      if (containingView)
-        contentsQuadToViewport(containingView, quads[i]);
-      appendQuad(quads[i], highlightConfig.content,
-                 highlightConfig.contentOutline);
+      if (containing_view)
+        ContentsQuadToViewport(containing_view, quads[i]);
+      AppendQuad(quads[i], highlight_config.content,
+                 highlight_config.content_outline);
     }
     return;
   }
 
   FloatQuad content, padding, border, margin;
-  if (!buildNodeQuads(node, &content, &padding, &border, &margin))
+  if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
     return;
-  appendQuad(content, highlightConfig.content, highlightConfig.contentOutline,
-             "content");
-  appendQuad(padding, highlightConfig.padding, Color::transparent, "padding");
-  appendQuad(border, highlightConfig.border, Color::transparent, "border");
-  appendQuad(margin, highlightConfig.margin, Color::transparent, "margin");
+  AppendQuad(content, highlight_config.content,
+             highlight_config.content_outline, "content");
+  AppendQuad(padding, highlight_config.padding, Color::kTransparent, "padding");
+  AppendQuad(border, highlight_config.border, Color::kTransparent, "border");
+  AppendQuad(margin, highlight_config.margin, Color::kTransparent, "margin");
 }
 
-std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue()
+std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
     const {
   std::unique_ptr<protocol::DictionaryValue> object =
       protocol::DictionaryValue::create();
-  object->setValue("paths", m_highlightPaths->clone());
-  object->setBoolean("showRulers", m_showRulers);
-  object->setBoolean("showExtensionLines", m_showExtensionLines);
-  if (m_elementInfo)
-    object->setValue("elementInfo", m_elementInfo->clone());
-  object->setBoolean("displayAsMaterial", m_displayAsMaterial);
+  object->setValue("paths", highlight_paths_->clone());
+  object->setBoolean("showRulers", show_rulers_);
+  object->setBoolean("showExtensionLines", show_extension_lines_);
+  if (element_info_)
+    object->setValue("elementInfo", element_info_->clone());
+  object->setBoolean("displayAsMaterial", display_as_material_);
   return object;
 }
 
 // static
-bool InspectorHighlight::getBoxModel(
+bool InspectorHighlight::GetBoxModel(
     Node* node,
     std::unique_ptr<protocol::DOM::BoxModel>* model) {
-  LayoutObject* layoutObject = node->layoutObject();
-  FrameView* view = node->document().view();
-  if (!layoutObject || !view)
+  LayoutObject* layout_object = node->GetLayoutObject();
+  FrameView* view = node->GetDocument().View();
+  if (!layout_object || !view)
     return false;
 
   FloatQuad content, padding, border, margin;
-  if (!buildNodeQuads(node, &content, &padding, &border, &margin))
+  if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
     return false;
 
-  IntRect boundingBox =
-      view->contentsToRootFrame(layoutObject->absoluteBoundingBoxRect());
-  LayoutBoxModelObject* modelObject = layoutObject->isBoxModelObject()
-                                          ? toLayoutBoxModelObject(layoutObject)
-                                          : nullptr;
+  IntRect bounding_box =
+      view->ContentsToRootFrame(layout_object->AbsoluteBoundingBoxRect());
+  LayoutBoxModelObject* model_object =
+      layout_object->IsBoxModelObject() ? ToLayoutBoxModelObject(layout_object)
+                                        : nullptr;
 
   *model =
       protocol::DOM::BoxModel::create()
-          .setContent(buildArrayForQuad(content))
-          .setPadding(buildArrayForQuad(padding))
-          .setBorder(buildArrayForQuad(border))
-          .setMargin(buildArrayForQuad(margin))
-          .setWidth(modelObject ? adjustForAbsoluteZoom(
-                                      modelObject->pixelSnappedOffsetWidth(
-                                          modelObject->offsetParent()),
-                                      modelObject)
-                                : boundingBox.width())
-          .setHeight(modelObject ? adjustForAbsoluteZoom(
-                                       modelObject->pixelSnappedOffsetHeight(
-                                           modelObject->offsetParent()),
-                                       modelObject)
-                                 : boundingBox.height())
+          .setContent(BuildArrayForQuad(content))
+          .setPadding(BuildArrayForQuad(padding))
+          .setBorder(BuildArrayForQuad(border))
+          .setMargin(BuildArrayForQuad(margin))
+          .setWidth(model_object ? AdjustForAbsoluteZoom(
+                                       model_object->PixelSnappedOffsetWidth(
+                                           model_object->OffsetParent()),
+                                       model_object)
+                                 : bounding_box.Width())
+          .setHeight(model_object ? AdjustForAbsoluteZoom(
+                                        model_object->PixelSnappedOffsetHeight(
+                                            model_object->OffsetParent()),
+                                        model_object)
+                                  : bounding_box.Height())
           .build();
 
   Shape::DisplayPaths paths;
-  FloatQuad boundsQuad;
+  FloatQuad bounds_quad;
   protocol::ErrorSupport errors;
-  if (const ShapeOutsideInfo* shapeOutsideInfo =
-          shapeOutsideInfoForNode(node, &paths, &boundsQuad)) {
+  if (const ShapeOutsideInfo* shape_outside_info =
+          ShapeOutsideInfoForNode(node, &paths, &bounds_quad)) {
     (*model)->setShapeOutside(
         protocol::DOM::ShapeOutsideInfo::create()
-            .setBounds(buildArrayForQuad(boundsQuad))
+            .setBounds(BuildArrayForQuad(bounds_quad))
             .setShape(protocol::Array<protocol::Value>::fromValue(
-                ShapePathBuilder::buildPath(*view, *layoutObject,
-                                            *shapeOutsideInfo, paths.shape, 1.f)
+                ShapePathBuilder::BuildPath(*view, *layout_object,
+                                            *shape_outside_info, paths.shape,
+                                            1.f)
                     .get(),
                 &errors))
             .setMarginShape(protocol::Array<protocol::Value>::fromValue(
-                ShapePathBuilder::buildPath(*view, *layoutObject,
-                                            *shapeOutsideInfo,
-                                            paths.marginShape, 1.f)
+                ShapePathBuilder::BuildPath(*view, *layout_object,
+                                            *shape_outside_info,
+                                            paths.margin_shape, 1.f)
                     .get(),
                 &errors))
             .build());
@@ -429,101 +433,102 @@ bool InspectorHighlight::getBoxModel(
   return true;
 }
 
-bool InspectorHighlight::buildNodeQuads(Node* node,
+bool InspectorHighlight::BuildNodeQuads(Node* node,
                                         FloatQuad* content,
                                         FloatQuad* padding,
                                         FloatQuad* border,
                                         FloatQuad* margin) {
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
     return false;
 
-  FrameView* containingView = layoutObject->frameView();
-  if (!containingView)
+  FrameView* containing_view = layout_object->GetFrameView();
+  if (!containing_view)
     return false;
-  if (!layoutObject->isBox() && !layoutObject->isLayoutInline())
+  if (!layout_object->IsBox() && !layout_object->IsLayoutInline())
     return false;
 
-  LayoutRect contentBox;
-  LayoutRect paddingBox;
-  LayoutRect borderBox;
-  LayoutRect marginBox;
+  LayoutRect content_box;
+  LayoutRect padding_box;
+  LayoutRect border_box;
+  LayoutRect margin_box;
 
-  if (layoutObject->isBox()) {
-    LayoutBox* layoutBox = toLayoutBox(layoutObject);
+  if (layout_object->IsBox()) {
+    LayoutBox* layout_box = ToLayoutBox(layout_object);
 
     // LayoutBox returns the "pure" content area box, exclusive of the
     // scrollbars (if present), which also count towards the content area in
     // CSS.
-    const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
-    const int horizontalScrollbarHeight =
-        layoutBox->horizontalScrollbarHeight();
-    contentBox = layoutBox->contentBoxRect();
-    contentBox.setWidth(contentBox.width() + verticalScrollbarWidth);
-    contentBox.setHeight(contentBox.height() + horizontalScrollbarHeight);
+    const int vertical_scrollbar_width = layout_box->VerticalScrollbarWidth();
+    const int horizontal_scrollbar_height =
+        layout_box->HorizontalScrollbarHeight();
+    content_box = layout_box->ContentBoxRect();
+    content_box.SetWidth(content_box.Width() + vertical_scrollbar_width);
+    content_box.SetHeight(content_box.Height() + horizontal_scrollbar_height);
 
-    paddingBox = layoutBox->paddingBoxRect();
-    paddingBox.setWidth(paddingBox.width() + verticalScrollbarWidth);
-    paddingBox.setHeight(paddingBox.height() + horizontalScrollbarHeight);
+    padding_box = layout_box->PaddingBoxRect();
+    padding_box.SetWidth(padding_box.Width() + vertical_scrollbar_width);
+    padding_box.SetHeight(padding_box.Height() + horizontal_scrollbar_height);
 
-    borderBox = layoutBox->borderBoxRect();
+    border_box = layout_box->BorderBoxRect();
 
-    marginBox = LayoutRect(borderBox.x() - layoutBox->marginLeft(),
-                           borderBox.y() - layoutBox->marginTop(),
-                           borderBox.width() + layoutBox->marginWidth(),
-                           borderBox.height() + layoutBox->marginHeight());
+    margin_box = LayoutRect(border_box.X() - layout_box->MarginLeft(),
+                            border_box.Y() - layout_box->MarginTop(),
+                            border_box.Width() + layout_box->MarginWidth(),
+                            border_box.Height() + layout_box->MarginHeight());
   } else {
-    LayoutInline* layoutInline = toLayoutInline(layoutObject);
+    LayoutInline* layout_inline = ToLayoutInline(layout_object);
 
     // LayoutInline's bounding box includes paddings and borders, excludes
     // margins.
-    borderBox = LayoutRect(layoutInline->linesBoundingBox());
-    paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(),
-                            borderBox.y() + layoutInline->borderTop(),
-                            borderBox.width() - layoutInline->borderLeft() -
-                                layoutInline->borderRight(),
-                            borderBox.height() - layoutInline->borderTop() -
-                                layoutInline->borderBottom());
-    contentBox = LayoutRect(paddingBox.x() + layoutInline->paddingLeft(),
-                            paddingBox.y() + layoutInline->paddingTop(),
-                            paddingBox.width() - layoutInline->paddingLeft() -
-                                layoutInline->paddingRight(),
-                            paddingBox.height() - layoutInline->paddingTop() -
-                                layoutInline->paddingBottom());
+    border_box = LayoutRect(layout_inline->LinesBoundingBox());
+    padding_box = LayoutRect(border_box.X() + layout_inline->BorderLeft(),
+                             border_box.Y() + layout_inline->BorderTop(),
+                             border_box.Width() - layout_inline->BorderLeft() -
+                                 layout_inline->BorderRight(),
+                             border_box.Height() - layout_inline->BorderTop() -
+                                 layout_inline->BorderBottom());
+    content_box =
+        LayoutRect(padding_box.X() + layout_inline->PaddingLeft(),
+                   padding_box.Y() + layout_inline->PaddingTop(),
+                   padding_box.Width() - layout_inline->PaddingLeft() -
+                       layout_inline->PaddingRight(),
+                   padding_box.Height() - layout_inline->PaddingTop() -
+                       layout_inline->PaddingBottom());
     // Ignore marginTop and marginBottom for inlines.
-    marginBox = LayoutRect(
-        borderBox.x() - layoutInline->marginLeft(), borderBox.y(),
-        borderBox.width() + layoutInline->marginWidth(), borderBox.height());
+    margin_box = LayoutRect(
+        border_box.X() - layout_inline->MarginLeft(), border_box.Y(),
+        border_box.Width() + layout_inline->MarginWidth(), border_box.Height());
   }
 
-  *content = layoutObject->localToAbsoluteQuad(FloatRect(contentBox));
-  *padding = layoutObject->localToAbsoluteQuad(FloatRect(paddingBox));
-  *border = layoutObject->localToAbsoluteQuad(FloatRect(borderBox));
-  *margin = layoutObject->localToAbsoluteQuad(FloatRect(marginBox));
+  *content = layout_object->LocalToAbsoluteQuad(FloatRect(content_box));
+  *padding = layout_object->LocalToAbsoluteQuad(FloatRect(padding_box));
+  *border = layout_object->LocalToAbsoluteQuad(FloatRect(border_box));
+  *margin = layout_object->LocalToAbsoluteQuad(FloatRect(margin_box));
 
-  contentsQuadToViewport(containingView, *content);
-  contentsQuadToViewport(containingView, *padding);
-  contentsQuadToViewport(containingView, *border);
-  contentsQuadToViewport(containingView, *margin);
+  ContentsQuadToViewport(containing_view, *content);
+  ContentsQuadToViewport(containing_view, *padding);
+  ContentsQuadToViewport(containing_view, *border);
+  ContentsQuadToViewport(containing_view, *margin);
 
   return true;
 }
 
 // static
-InspectorHighlightConfig InspectorHighlight::defaultConfig() {
+InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   InspectorHighlightConfig config;
   config.content = Color(255, 0, 0, 0);
-  config.contentOutline = Color(128, 0, 0, 0);
+  config.content_outline = Color(128, 0, 0, 0);
   config.padding = Color(0, 255, 0, 0);
   config.border = Color(0, 0, 255, 0);
   config.margin = Color(255, 255, 255, 0);
-  config.eventTarget = Color(128, 128, 128, 0);
+  config.event_target = Color(128, 128, 128, 0);
   config.shape = Color(0, 0, 0, 0);
-  config.shapeMargin = Color(128, 128, 128, 0);
-  config.showInfo = true;
-  config.showRulers = true;
-  config.showExtensionLines = true;
-  config.displayAsMaterial = false;
+  config.shape_margin = Color(128, 128, 128, 0);
+  config.show_info = true;
+  config.show_rulers = true;
+  config.show_extension_lines = true;
+  config.display_as_material = false;
   return config;
 }
 

@@ -35,43 +35,43 @@ namespace blink {
 
 class PLATFORM_EXPORT HRTFPanner final : public Panner {
  public:
-  HRTFPanner(float sampleRate, HRTFDatabaseLoader*);
+  HRTFPanner(float sample_rate, HRTFDatabaseLoader*);
   ~HRTFPanner() override;
 
   // Panner
-  void pan(double azimuth,
+  void Pan(double azimuth,
            double elevation,
-           const AudioBus* inputBus,
-           AudioBus* outputBus,
-           size_t framesToProcess,
+           const AudioBus* input_bus,
+           AudioBus* output_bus,
+           size_t frames_to_process,
            AudioBus::ChannelInterpretation) override;
-  void panWithSampleAccurateValues(double* azimuth,
+  void PanWithSampleAccurateValues(double* azimuth,
                                    double* elevation,
-                                   const AudioBus* inputBus,
-                                   AudioBus* outputBus,
-                                   size_t framesToProcess,
+                                   const AudioBus* input_bus,
+                                   AudioBus* output_bus,
+                                   size_t frames_to_process,
                                    AudioBus::ChannelInterpretation) override;
 
-  void reset() override;
+  void Reset() override;
 
-  size_t fftSize() const { return fftSizeForSampleRate(m_sampleRate); }
-  static size_t fftSizeForSampleRate(float sampleRate);
+  size_t FftSize() const { return FftSizeForSampleRate(sample_rate_); }
+  static size_t FftSizeForSampleRate(float sample_rate);
 
-  float sampleRate() const { return m_sampleRate; }
+  float SampleRate() const { return sample_rate_; }
 
-  double tailTime() const override;
-  double latencyTime() const override;
+  double TailTime() const override;
+  double LatencyTime() const override;
 
  private:
   // Given an azimuth angle in the range -180 -> +180, returns the corresponding
   // azimuth index for the database, and azimuthBlend which is an interpolation
   // value from 0 -> 1.
-  int calculateDesiredAzimuthIndexAndBlend(double azimuth,
-                                           double& azimuthBlend);
+  int CalculateDesiredAzimuthIndexAndBlend(double azimuth,
+                                           double& azimuth_blend);
 
-  RefPtr<HRTFDatabaseLoader> m_databaseLoader;
+  RefPtr<HRTFDatabaseLoader> database_loader_;
 
-  float m_sampleRate;
+  float sample_rate_;
 
   // We maintain two sets of convolvers for smooth cross-faded interpolations
   // when then azimuth and elevation are dynamically changing.  When the
@@ -86,36 +86,36 @@ class PLATFORM_EXPORT HRTFPanner final : public Panner {
 
   // Selects either the convolver set (m_convolverL1, m_convolverR1) or
   // (m_convolverL2, m_convolverR2).
-  enum CrossfadeSelection { CrossfadeSelection1, CrossfadeSelection2 };
+  enum CrossfadeSelection { kCrossfadeSelection1, kCrossfadeSelection2 };
 
-  CrossfadeSelection m_crossfadeSelection;
+  CrossfadeSelection crossfade_selection_;
 
   // azimuth/elevation for CrossfadeSelection1.
-  int m_azimuthIndex1;
-  double m_elevation1;
+  int azimuth_index1_;
+  double elevation1_;
 
   // azimuth/elevation for CrossfadeSelection2.
-  int m_azimuthIndex2;
-  double m_elevation2;
+  int azimuth_index2_;
+  double elevation2_;
 
   // A crossfade value 0 <= m_crossfadeX <= 1.
-  float m_crossfadeX;
+  float crossfade_x_;
 
   // Per-sample-frame crossfade value increment.
-  float m_crossfadeIncr;
+  float crossfade_incr_;
 
-  FFTConvolver m_convolverL1;
-  FFTConvolver m_convolverR1;
-  FFTConvolver m_convolverL2;
-  FFTConvolver m_convolverR2;
+  FFTConvolver convolver_l1_;
+  FFTConvolver convolver_r1_;
+  FFTConvolver convolver_l2_;
+  FFTConvolver convolver_r2_;
 
-  AudioDelayDSPKernel m_delayLineL;
-  AudioDelayDSPKernel m_delayLineR;
+  AudioDelayDSPKernel delay_line_l_;
+  AudioDelayDSPKernel delay_line_r_;
 
-  AudioFloatArray m_tempL1;
-  AudioFloatArray m_tempR1;
-  AudioFloatArray m_tempL2;
-  AudioFloatArray m_tempR2;
+  AudioFloatArray temp_l1_;
+  AudioFloatArray temp_r1_;
+  AudioFloatArray temp_l2_;
+  AudioFloatArray temp_r2_;
 };
 
 }  // namespace blink

@@ -26,11 +26,11 @@
 
 namespace blink {
 
-HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode,
-                                     const AtomicString& localName)
-    : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName),
-      m_loweredLocalName(localName.lowerASCII()) {
-  DCHECK(rootNode.document().isHTMLDocument());
+HTMLTagCollection::HTMLTagCollection(ContainerNode& root_node,
+                                     const AtomicString& local_name)
+    : TagCollection(root_node, kHTMLTagCollectionType, g_star_atom, local_name),
+      lowered_local_name_(local_name.LowerASCII()) {
+  DCHECK(root_node.GetDocument().IsHTMLDocument());
 }
 
 }  // namespace blink

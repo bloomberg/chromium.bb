@@ -22,112 +22,114 @@
 
 namespace blink {
 
-void HttpEquiv::process(Document& document,
+void HttpEquiv::Process(Document& document,
                         const AtomicString& equiv,
                         const AtomicString& content,
-                        bool inDocumentHeadElement,
+                        bool in_document_head_element,
                         Element* element) {
-  DCHECK(!equiv.isNull());
-  DCHECK(!content.isNull());
+  DCHECK(!equiv.IsNull());
+  DCHECK(!content.IsNull());
 
-  if (equalIgnoringASCIICase(equiv, "default-style")) {
-    processHttpEquivDefaultStyle(document, content);
-  } else if (equalIgnoringASCIICase(equiv, "refresh")) {
-    processHttpEquivRefresh(document, content, element);
-  } else if (equalIgnoringASCIICase(equiv, "set-cookie")) {
-    processHttpEquivSetCookie(document, content, element);
-  } else if (equalIgnoringASCIICase(equiv, "content-language")) {
-    document.setContentLanguage(content);
-  } else if (equalIgnoringASCIICase(equiv, "x-dns-prefetch-control")) {
-    document.parseDNSPrefetchControlHeader(content);
-  } else if (equalIgnoringASCIICase(equiv, "x-frame-options")) {
-    document.addConsoleMessage(ConsoleMessage::create(
-        SecurityMessageSource, ErrorMessageLevel,
+  if (EqualIgnoringASCIICase(equiv, "default-style")) {
+    ProcessHttpEquivDefaultStyle(document, content);
+  } else if (EqualIgnoringASCIICase(equiv, "refresh")) {
+    ProcessHttpEquivRefresh(document, content, element);
+  } else if (EqualIgnoringASCIICase(equiv, "set-cookie")) {
+    ProcessHttpEquivSetCookie(document, content, element);
+  } else if (EqualIgnoringASCIICase(equiv, "content-language")) {
+    document.SetContentLanguage(content);
+  } else if (EqualIgnoringASCIICase(equiv, "x-dns-prefetch-control")) {
+    document.ParseDNSPrefetchControlHeader(content);
+  } else if (EqualIgnoringASCIICase(equiv, "x-frame-options")) {
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
         "document. It may not be set inside <meta>."));
-  } else if (equalIgnoringASCIICase(equiv, "accept-ch")) {
-    processHttpEquivAcceptCH(document, content);
-  } else if (equalIgnoringASCIICase(equiv, "content-security-policy") ||
-             equalIgnoringASCIICase(equiv, "content-security-policy-report-only")) {
-    if (inDocumentHeadElement)
-      processHttpEquivContentSecurityPolicy(document, equiv, content);
+  } else if (EqualIgnoringASCIICase(equiv, "accept-ch")) {
+    ProcessHttpEquivAcceptCH(document, content);
+  } else if (EqualIgnoringASCIICase(equiv, "content-security-policy") ||
+             EqualIgnoringASCIICase(equiv,
+                                    "content-security-policy-report-only")) {
+    if (in_document_head_element)
+      ProcessHttpEquivContentSecurityPolicy(document, equiv, content);
     else
-      document.contentSecurityPolicy()->reportMetaOutsideHead(content);
-  } else if (equalIgnoringASCIICase(equiv, "suborigin")) {
-    document.addConsoleMessage(ConsoleMessage::create(
-        SecurityMessageSource, ErrorMessageLevel,
+      document.GetContentSecurityPolicy()->ReportMetaOutsideHead(content);
+  } else if (EqualIgnoringASCIICase(equiv, "suborigin")) {
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
         "Error with Suborigin header: Suborigin header with value '" + content +
             "' was delivered via a <meta> element and not an HTTP header, "
             "which is disallowed. The Suborigin has been ignored."));
-  } else if (equalIgnoringASCIICase(equiv, HTTPNames::Origin_Trial)) {
-    if (inDocumentHeadElement)
-      OriginTrialContext::from(&document)->addToken(content);
+  } else if (EqualIgnoringASCIICase(equiv, HTTPNames::Origin_Trial)) {
+    if (in_document_head_element)
+      OriginTrialContext::From(&document)->AddToken(content);
   }
 }
 
-void HttpEquiv::processHttpEquivContentSecurityPolicy(
+void HttpEquiv::ProcessHttpEquivContentSecurityPolicy(
     Document& document,
     const AtomicString& equiv,
     const AtomicString& content) {
-  if (document.importLoader())
+  if (document.ImportLoader())
     return;
-  if (equalIgnoringASCIICase(equiv, "content-security-policy")) {
-    document.contentSecurityPolicy()->didReceiveHeader(
-        content, ContentSecurityPolicyHeaderTypeEnforce,
-        ContentSecurityPolicyHeaderSourceMeta);
-  } else if (equalIgnoringASCIICase(equiv, "content-security-policy-report-only")) {
-    document.contentSecurityPolicy()->didReceiveHeader(
-        content, ContentSecurityPolicyHeaderTypeReport,
-        ContentSecurityPolicyHeaderSourceMeta);
+  if (EqualIgnoringASCIICase(equiv, "content-security-policy")) {
+    document.GetContentSecurityPolicy()->DidReceiveHeader(
+        content, kContentSecurityPolicyHeaderTypeEnforce,
+        kContentSecurityPolicyHeaderSourceMeta);
+  } else if (EqualIgnoringASCIICase(equiv,
+                                    "content-security-policy-report-only")) {
+    document.GetContentSecurityPolicy()->DidReceiveHeader(
+        content, kContentSecurityPolicyHeaderTypeReport,
+        kContentSecurityPolicyHeaderSourceMeta);
   } else {
     NOTREACHED();
   }
 }
 
-void HttpEquiv::processHttpEquivAcceptCH(Document& document,
+void HttpEquiv::ProcessHttpEquivAcceptCH(Document& document,
                                          const AtomicString& content) {
-  if (!document.frame())
+  if (!document.GetFrame())
     return;
 
-  UseCounter::count(document, UseCounter::ClientHintsMetaAcceptCH);
-  FrameClientHintsPreferencesContext hintsContext(document.frame());
-  document.clientHintsPreferences().updateFromAcceptClientHintsHeader(
-      content, &hintsContext);
+  UseCounter::Count(document, UseCounter::kClientHintsMetaAcceptCH);
+  FrameClientHintsPreferencesContext hints_context(document.GetFrame());
+  document.GetClientHintsPreferences().UpdateFromAcceptClientHintsHeader(
+      content, &hints_context);
 }
 
-void HttpEquiv::processHttpEquivDefaultStyle(Document& document,
+void HttpEquiv::ProcessHttpEquivDefaultStyle(Document& document,
                                              const AtomicString& content) {
-  document.styleEngine().setHttpDefaultStyle(content);
+  document.GetStyleEngine().SetHttpDefaultStyle(content);
 }
 
-void HttpEquiv::processHttpEquivRefresh(Document& document,
+void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
                                         const AtomicString& content,
                                         Element* element) {
-  UseCounter::count(document, UseCounter::MetaRefresh);
-  if (!document.contentSecurityPolicy()->allowInlineScript(
+  UseCounter::Count(document, UseCounter::kMetaRefresh);
+  if (!document.GetContentSecurityPolicy()->AllowInlineScript(
           element, KURL(), "", OrdinalNumber(), "",
-          SecurityViolationReportingPolicy::SuppressReporting)) {
-    UseCounter::count(document,
-                      UseCounter::MetaRefreshWhenCSPBlocksInlineScript);
+          SecurityViolationReportingPolicy::kSuppressReporting)) {
+    UseCounter::Count(document,
+                      UseCounter::kMetaRefreshWhenCSPBlocksInlineScript);
   }
 
-  document.maybeHandleHttpRefresh(content, Document::HttpRefreshFromMetaTag);
+  document.MaybeHandleHttpRefresh(content, Document::kHttpRefreshFromMetaTag);
 }
 
-void HttpEquiv::processHttpEquivSetCookie(Document& document,
+void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
                                           const AtomicString& content,
                                           Element* element) {
   // FIXME: make setCookie work on XML documents too; e.g. in case of
   // <html:meta.....>
-  if (!document.isHTMLDocument())
+  if (!document.IsHTMLDocument())
     return;
 
-  UseCounter::count(document, UseCounter::MetaSetCookie);
-  if (!document.contentSecurityPolicy()->allowInlineScript(
+  UseCounter::Count(document, UseCounter::kMetaSetCookie);
+  if (!document.GetContentSecurityPolicy()->AllowInlineScript(
           element, KURL(), "", OrdinalNumber(), "",
-          SecurityViolationReportingPolicy::SuppressReporting)) {
-    UseCounter::count(document,
-                      UseCounter::MetaSetCookieWhenCSPBlocksInlineScript);
+          SecurityViolationReportingPolicy::kSuppressReporting)) {
+    UseCounter::Count(document,
+                      UseCounter::kMetaSetCookieWhenCSPBlocksInlineScript);
   }
 
   // Exception (for sandboxed documents) ignored.

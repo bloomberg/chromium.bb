@@ -18,7 +18,7 @@ class HTMLMediaElementControlsList final : public DOMTokenList,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementControlsList);
 
  public:
-  static HTMLMediaElementControlsList* create(HTMLMediaElement* element) {
+  static HTMLMediaElementControlsList* Create(HTMLMediaElement* element) {
     return new HTMLMediaElementControlsList(element);
   }
 
@@ -27,18 +27,18 @@ class HTMLMediaElementControlsList final : public DOMTokenList,
   DECLARE_VIRTUAL_TRACE();
 
   // Whether the list dictates to hide a certain control.
-  CORE_EXPORT bool shouldHideDownload() const;
-  CORE_EXPORT bool shouldHideFullscreen() const;
-  CORE_EXPORT bool shouldHideRemotePlayback() const;
+  CORE_EXPORT bool ShouldHideDownload() const;
+  CORE_EXPORT bool ShouldHideFullscreen() const;
+  CORE_EXPORT bool ShouldHideRemotePlayback() const;
 
  private:
   explicit HTMLMediaElementControlsList(HTMLMediaElement*);
-  bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
+  bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
   // DOMTokenListObserver.
-  void valueWasSet() override;
+  void ValueWasSet() override;
 
-  Member<HTMLMediaElement> m_element;
+  Member<HTMLMediaElement> element_;
 };
 
 }  // namespace blink

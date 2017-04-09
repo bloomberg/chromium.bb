@@ -18,7 +18,7 @@ BlinkInterfaceRegistryImpl::BlinkInterfaceRegistryImpl(
 
 BlinkInterfaceRegistryImpl::~BlinkInterfaceRegistryImpl() = default;
 
-void BlinkInterfaceRegistryImpl::addInterface(
+void BlinkInterfaceRegistryImpl::AddInterface(
     const char* name,
     const blink::InterfaceFactory& factory) {
   if (!interface_registry_)

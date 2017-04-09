@@ -11,60 +11,60 @@
 
 namespace blink {
 
-static WebCryptoAlgorithmId toWebCryptoAlgorithmId(HashAlgorithm algorithm) {
+static WebCryptoAlgorithmId ToWebCryptoAlgorithmId(HashAlgorithm algorithm) {
   switch (algorithm) {
-    case HashAlgorithmSha1:
-      return WebCryptoAlgorithmIdSha1;
-    case HashAlgorithmSha256:
-      return WebCryptoAlgorithmIdSha256;
-    case HashAlgorithmSha384:
-      return WebCryptoAlgorithmIdSha384;
-    case HashAlgorithmSha512:
-      return WebCryptoAlgorithmIdSha512;
+    case kHashAlgorithmSha1:
+      return kWebCryptoAlgorithmIdSha1;
+    case kHashAlgorithmSha256:
+      return kWebCryptoAlgorithmIdSha256;
+    case kHashAlgorithmSha384:
+      return kWebCryptoAlgorithmIdSha384;
+    case kHashAlgorithmSha512:
+      return kWebCryptoAlgorithmIdSha512;
   };
 
   ASSERT_NOT_REACHED();
-  return WebCryptoAlgorithmIdSha256;
+  return kWebCryptoAlgorithmIdSha256;
 }
 
-bool computeDigest(HashAlgorithm algorithm,
+bool ComputeDigest(HashAlgorithm algorithm,
                    const char* digestable,
                    size_t length,
-                   DigestValue& digestResult) {
-  WebCryptoAlgorithmId algorithmId = toWebCryptoAlgorithmId(algorithm);
-  WebCrypto* crypto = Platform::current()->crypto();
+                   DigestValue& digest_result) {
+  WebCryptoAlgorithmId algorithm_id = ToWebCryptoAlgorithmId(algorithm);
+  WebCrypto* crypto = Platform::Current()->Crypto();
   unsigned char* result;
-  unsigned resultSize;
+  unsigned result_size;
 
   ASSERT(crypto);
 
   std::unique_ptr<WebCryptoDigestor> digestor =
-      crypto->createDigestor(algorithmId);
+      crypto->CreateDigestor(algorithm_id);
   DCHECK(digestor);
-  if (!digestor->consume(reinterpret_cast<const unsigned char*>(digestable),
+  if (!digestor->Consume(reinterpret_cast<const unsigned char*>(digestable),
                          length) ||
-      !digestor->finish(result, resultSize))
+      !digestor->Finish(result, result_size))
     return false;
 
-  digestResult.append(static_cast<uint8_t*>(result), resultSize);
+  digest_result.Append(static_cast<uint8_t*>(result), result_size);
   return true;
 }
 
-std::unique_ptr<WebCryptoDigestor> createDigestor(HashAlgorithm algorithm) {
-  return Platform::current()->crypto()->createDigestor(
-      toWebCryptoAlgorithmId(algorithm));
+std::unique_ptr<WebCryptoDigestor> CreateDigestor(HashAlgorithm algorithm) {
+  return Platform::Current()->Crypto()->CreateDigestor(
+      ToWebCryptoAlgorithmId(algorithm));
 }
 
-void finishDigestor(WebCryptoDigestor* digestor, DigestValue& digestResult) {
+void FinishDigestor(WebCryptoDigestor* digestor, DigestValue& digest_result) {
   unsigned char* result = 0;
-  unsigned resultSize = 0;
+  unsigned result_size = 0;
 
-  if (!digestor->finish(result, resultSize))
+  if (!digestor->Finish(result, result_size))
     return;
 
   ASSERT(result);
 
-  digestResult.append(static_cast<uint8_t*>(result), resultSize);
+  digest_result.Append(static_cast<uint8_t*>(result), result_size);
 }
 
 }  // namespace blink

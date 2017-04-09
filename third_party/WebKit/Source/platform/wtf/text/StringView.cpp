@@ -11,91 +11,91 @@
 namespace WTF {
 
 StringView::StringView(const UChar* chars)
-    : StringView(chars, chars ? lengthOfNullTerminatedString(chars) : 0) {}
+    : StringView(chars, chars ? LengthOfNullTerminatedString(chars) : 0) {}
 
 #if DCHECK_IS_ON()
 StringView::~StringView() {
-  DCHECK(m_impl);
-  DCHECK(!m_impl->hasOneRef() || m_impl->isStatic())
+  DCHECK(impl_);
+  DCHECK(!impl_->HasOneRef() || impl_->IsStatic())
       << "StringView does not own the StringImpl, it "
          "must not have the last ref.";
 }
 #endif
 
-String StringView::toString() const {
-  if (isNull())
+String StringView::ToString() const {
+  if (IsNull())
     return String();
-  if (isEmpty())
-    return emptyString;
-  if (StringImpl* impl = sharedImpl())
+  if (IsEmpty())
+    return g_empty_string;
+  if (StringImpl* impl = SharedImpl())
     return impl;
-  if (is8Bit())
-    return String(characters8(), m_length);
-  return StringImpl::create8BitIfPossible(characters16(), m_length);
+  if (Is8Bit())
+    return String(Characters8(), length_);
+  return StringImpl::Create8BitIfPossible(Characters16(), length_);
 }
 
-AtomicString StringView::toAtomicString() const {
-  if (isNull())
-    return nullAtom;
-  if (isEmpty())
-    return emptyAtom;
-  if (StringImpl* impl = sharedImpl())
+AtomicString StringView::ToAtomicString() const {
+  if (IsNull())
+    return g_null_atom;
+  if (IsEmpty())
+    return g_empty_atom;
+  if (StringImpl* impl = SharedImpl())
     return AtomicString(impl);
-  if (is8Bit())
-    return AtomicString(characters8(), m_length);
-  return AtomicString(characters16(), m_length);
+  if (Is8Bit())
+    return AtomicString(Characters8(), length_);
+  return AtomicString(Characters16(), length_);
 }
 
-bool equalStringView(const StringView& a, const StringView& b) {
-  if (a.isNull() || b.isNull())
-    return a.isNull() == b.isNull();
+bool EqualStringView(const StringView& a, const StringView& b) {
+  if (a.IsNull() || b.IsNull())
+    return a.IsNull() == b.IsNull();
   if (a.length() != b.length())
     return false;
-  if (a.is8Bit()) {
-    if (b.is8Bit())
-      return equal(a.characters8(), b.characters8(), a.length());
-    return equal(a.characters8(), b.characters16(), a.length());
+  if (a.Is8Bit()) {
+    if (b.Is8Bit())
+      return Equal(a.Characters8(), b.Characters8(), a.length());
+    return Equal(a.Characters8(), b.Characters16(), a.length());
   }
-  if (b.is8Bit())
-    return equal(a.characters16(), b.characters8(), a.length());
-  return equal(a.characters16(), b.characters16(), a.length());
+  if (b.Is8Bit())
+    return Equal(a.Characters16(), b.Characters8(), a.length());
+  return Equal(a.Characters16(), b.Characters16(), a.length());
 }
 
-bool equalIgnoringCaseAndNullity(const StringView& a, const StringView& b) {
+bool EqualIgnoringCaseAndNullity(const StringView& a, const StringView& b) {
   if (a.length() != b.length())
     return false;
-  if (a.is8Bit()) {
-    if (b.is8Bit())
-      return equalIgnoringCase(a.characters8(), b.characters8(), a.length());
-    return equalIgnoringCase(a.characters8(), b.characters16(), a.length());
+  if (a.Is8Bit()) {
+    if (b.Is8Bit())
+      return EqualIgnoringCase(a.Characters8(), b.Characters8(), a.length());
+    return EqualIgnoringCase(a.Characters8(), b.Characters16(), a.length());
   }
-  if (b.is8Bit())
-    return equalIgnoringCase(a.characters16(), b.characters8(), a.length());
-  return equalIgnoringCase(a.characters16(), b.characters16(), a.length());
+  if (b.Is8Bit())
+    return EqualIgnoringCase(a.Characters16(), b.Characters8(), a.length());
+  return EqualIgnoringCase(a.Characters16(), b.Characters16(), a.length());
 }
 
-bool equalIgnoringCase(const StringView& a, const StringView& b) {
-  if (a.isNull() || b.isNull())
-    return a.isNull() == b.isNull();
-  return equalIgnoringCaseAndNullity(a, b);
+bool EqualIgnoringCase(const StringView& a, const StringView& b) {
+  if (a.IsNull() || b.IsNull())
+    return a.IsNull() == b.IsNull();
+  return EqualIgnoringCaseAndNullity(a, b);
 }
 
-bool equalIgnoringASCIICase(const StringView& a, const StringView& b) {
-  if (a.isNull() || b.isNull())
-    return a.isNull() == b.isNull();
+bool EqualIgnoringASCIICase(const StringView& a, const StringView& b) {
+  if (a.IsNull() || b.IsNull())
+    return a.IsNull() == b.IsNull();
   if (a.length() != b.length())
     return false;
-  if (a.is8Bit()) {
-    if (b.is8Bit())
-      return equalIgnoringASCIICase(a.characters8(), b.characters8(),
+  if (a.Is8Bit()) {
+    if (b.Is8Bit())
+      return EqualIgnoringASCIICase(a.Characters8(), b.Characters8(),
                                     a.length());
-    return equalIgnoringASCIICase(a.characters8(), b.characters16(),
+    return EqualIgnoringASCIICase(a.Characters8(), b.Characters16(),
                                   a.length());
   }
-  if (b.is8Bit())
-    return equalIgnoringASCIICase(a.characters16(), b.characters8(),
+  if (b.Is8Bit())
+    return EqualIgnoringASCIICase(a.Characters16(), b.Characters8(),
                                   a.length());
-  return equalIgnoringASCIICase(a.characters16(), b.characters16(), a.length());
+  return EqualIgnoringASCIICase(a.Characters16(), b.Characters16(), a.length());
 }
 
 }  // namespace WTF

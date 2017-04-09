@@ -12,7 +12,7 @@ namespace blink {
 const CSSValue* CSSPropertyAPILineHeight::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyFontUtils::consumeLineHeight(range, context.mode());
+  return CSSPropertyFontUtils::ConsumeLineHeight(range, context.Mode());
 }
 
 }  // namespace blink

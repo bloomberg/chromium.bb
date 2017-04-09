@@ -20,7 +20,7 @@
 namespace blink {
 namespace {
 
-void setDictionaryMembers(DOMMatrixInit& other) {
+void SetDictionaryMembers(DOMMatrixInit& other) {
   if (!other.hasM11())
     other.setM11(other.hasA() ? other.a() : 1);
 
@@ -40,73 +40,73 @@ void setDictionaryMembers(DOMMatrixInit& other) {
     other.setM42(other.hasF() ? other.f() : 0);
 }
 
-String getErrorMessage(const char* a, const char* b) {
-  return String::format("The '%s' property should equal the '%s' property.", a,
+String GetErrorMessage(const char* a, const char* b) {
+  return String::Format("The '%s' property should equal the '%s' property.", a,
                         b);
 }
 
 }  // namespace
 
-bool DOMMatrixReadOnly::validateAndFixup(DOMMatrixInit& other,
-                                         ExceptionState& exceptionState) {
+bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit& other,
+                                         ExceptionState& exception_state) {
   if (other.hasA() && other.hasM11() && other.a() != other.m11()) {
-    exceptionState.throwTypeError(getErrorMessage("a", "m11"));
+    exception_state.ThrowTypeError(GetErrorMessage("a", "m11"));
     return false;
   }
   if (other.hasB() && other.hasM12() && other.b() != other.m12()) {
-    exceptionState.throwTypeError(getErrorMessage("b", "m12"));
+    exception_state.ThrowTypeError(GetErrorMessage("b", "m12"));
     return false;
   }
   if (other.hasC() && other.hasM21() && other.c() != other.m21()) {
-    exceptionState.throwTypeError(getErrorMessage("c", "m21"));
+    exception_state.ThrowTypeError(GetErrorMessage("c", "m21"));
     return false;
   }
   if (other.hasD() && other.hasM22() && other.d() != other.m22()) {
-    exceptionState.throwTypeError(getErrorMessage("d", "m22"));
+    exception_state.ThrowTypeError(GetErrorMessage("d", "m22"));
     return false;
   }
   if (other.hasE() && other.hasM41() && other.e() != other.m41()) {
-    exceptionState.throwTypeError(getErrorMessage("e", "m41"));
+    exception_state.ThrowTypeError(GetErrorMessage("e", "m41"));
     return false;
   }
   if (other.hasF() && other.hasM42() && other.f() != other.m42()) {
-    exceptionState.throwTypeError(getErrorMessage("f", "m42"));
+    exception_state.ThrowTypeError(GetErrorMessage("f", "m42"));
     return false;
   }
   if (other.hasIs2D() && other.is2D() &&
       (other.m31() || other.m32() || other.m13() || other.m23() ||
        other.m43() || other.m14() || other.m24() || other.m34() ||
        other.m33() != 1 || other.m44() != 1)) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "The is2D member is set to true but the input matrix is 3d matrix.");
     return false;
   }
 
-  setDictionaryMembers(other);
+  SetDictionaryMembers(other);
   if (!other.hasIs2D()) {
-    bool is2D = !(other.m31() || other.m32() || other.m13() || other.m23() ||
+    bool is2d = !(other.m31() || other.m32() || other.m13() || other.m23() ||
                   other.m43() || other.m14() || other.m24() || other.m34() ||
                   other.m33() != 1 || other.m44() != 1);
-    other.setIs2D(is2D);
+    other.setIs2D(is2d);
   }
   return true;
 }
 
-DOMMatrixReadOnly* DOMMatrixReadOnly::create(ExceptionState& exceptionState) {
+DOMMatrixReadOnly* DOMMatrixReadOnly::Create(ExceptionState& exception_state) {
   return new DOMMatrixReadOnly(TransformationMatrix());
 }
 
-DOMMatrixReadOnly* DOMMatrixReadOnly::create(const String& transformList,
-                                             ExceptionState& exceptionState) {
+DOMMatrixReadOnly* DOMMatrixReadOnly::Create(const String& transform_list,
+                                             ExceptionState& exception_state) {
   DOMMatrixReadOnly* matrix = new DOMMatrixReadOnly(TransformationMatrix());
-  matrix->setMatrixValueFromString(transformList, exceptionState);
+  matrix->SetMatrixValueFromString(transform_list, exception_state);
   return matrix;
 }
 
-DOMMatrixReadOnly* DOMMatrixReadOnly::create(Vector<double> sequence,
-                                             ExceptionState& exceptionState) {
+DOMMatrixReadOnly* DOMMatrixReadOnly::Create(Vector<double> sequence,
+                                             ExceptionState& exception_state) {
   if (sequence.size() != 6 && sequence.size() != 16) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements "
         "for a 3D matrix.");
     return nullptr;
@@ -115,34 +115,34 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::create(Vector<double> sequence,
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat32Array(
-    DOMFloat32Array* float32Array,
-    ExceptionState& exceptionState) {
-  if (float32Array->length() != 6 && float32Array->length() != 16) {
-    exceptionState.throwTypeError(
+    DOMFloat32Array* float32_array,
+    ExceptionState& exception_state) {
+  if (float32_array->length() != 6 && float32_array->length() != 16) {
+    exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements a "
         "for 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrixReadOnly(float32Array->data(), float32Array->length());
+  return new DOMMatrixReadOnly(float32_array->Data(), float32_array->length());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromFloat64Array(
-    DOMFloat64Array* float64Array,
-    ExceptionState& exceptionState) {
-  if (float64Array->length() != 6 && float64Array->length() != 16) {
-    exceptionState.throwTypeError(
+    DOMFloat64Array* float64_array,
+    ExceptionState& exception_state) {
+  if (float64_array->length() != 6 && float64_array->length() != 16) {
+    exception_state.ThrowTypeError(
         "The sequence must contain 6 elements for a 2D matrix or 16 elements "
         "for a 3D matrix.");
     return nullptr;
   }
-  return new DOMMatrixReadOnly(float64Array->data(), float64Array->length());
+  return new DOMMatrixReadOnly(float64_array->Data(), float64_array->length());
 }
 
 DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
     DOMMatrixInit& other,
-    ExceptionState& exceptionState) {
-  if (!validateAndFixup(other, exceptionState)) {
-    DCHECK(exceptionState.hadException());
+    ExceptionState& exception_state) {
+  if (!ValidateAndFixup(other, exception_state)) {
+    DCHECK(exception_state.HadException());
     return nullptr;
   }
 
@@ -162,20 +162,20 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::fromMatrix(
 DOMMatrixReadOnly::~DOMMatrixReadOnly() {}
 
 bool DOMMatrixReadOnly::is2D() const {
-  return m_is2D;
+  return is2d_;
 }
 
 bool DOMMatrixReadOnly::isIdentity() const {
-  return m_matrix->isIdentity();
+  return matrix_->IsIdentity();
 }
 
 DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrixInit& other,
-                                       ExceptionState& exceptionState) {
-  return DOMMatrix::create(this)->multiplySelf(other, exceptionState);
+                                       ExceptionState& exception_state) {
+  return DOMMatrix::Create(this)->multiplySelf(other, exception_state);
 }
 
 DOMMatrix* DOMMatrixReadOnly::translate(double tx, double ty, double tz) {
-  return DOMMatrix::create(this)->translateSelf(tx, ty, tz);
+  return DOMMatrix::Create(this)->translateSelf(tx, ty, tz);
 }
 
 DOMMatrix* DOMMatrixReadOnly::scale(double sx) {
@@ -188,74 +188,74 @@ DOMMatrix* DOMMatrixReadOnly::scale(double sx,
                                     double ox,
                                     double oy,
                                     double oz) {
-  return DOMMatrix::create(this)->scaleSelf(sx, sy, sz, ox, oy, oz);
+  return DOMMatrix::Create(this)->scaleSelf(sx, sy, sz, ox, oy, oz);
 }
 
 DOMMatrix* DOMMatrixReadOnly::scale3d(double scale,
                                       double ox,
                                       double oy,
                                       double oz) {
-  return DOMMatrix::create(this)->scale3dSelf(scale, ox, oy, oz);
+  return DOMMatrix::Create(this)->scale3dSelf(scale, ox, oy, oz);
 }
 
-DOMMatrix* DOMMatrixReadOnly::rotate(double rotX) {
-  return DOMMatrix::create(this)->rotateSelf(rotX);
+DOMMatrix* DOMMatrixReadOnly::rotate(double rot_x) {
+  return DOMMatrix::Create(this)->rotateSelf(rot_x);
 }
 
-DOMMatrix* DOMMatrixReadOnly::rotate(double rotX, double rotY) {
-  return DOMMatrix::create(this)->rotateSelf(rotX, rotY);
+DOMMatrix* DOMMatrixReadOnly::rotate(double rot_x, double rot_y) {
+  return DOMMatrix::Create(this)->rotateSelf(rot_x, rot_y);
 }
 
-DOMMatrix* DOMMatrixReadOnly::rotate(double rotX, double rotY, double rotZ) {
-  return DOMMatrix::create(this)->rotateSelf(rotX, rotY, rotZ);
+DOMMatrix* DOMMatrixReadOnly::rotate(double rot_x, double rot_y, double rot_z) {
+  return DOMMatrix::Create(this)->rotateSelf(rot_x, rot_y, rot_z);
 }
 
 DOMMatrix* DOMMatrixReadOnly::rotateFromVector(double x, double y) {
-  return DOMMatrix::create(this)->rotateFromVectorSelf(x, y);
+  return DOMMatrix::Create(this)->rotateFromVectorSelf(x, y);
 }
 
 DOMMatrix* DOMMatrixReadOnly::rotateAxisAngle(double x,
                                               double y,
                                               double z,
                                               double angle) {
-  return DOMMatrix::create(this)->rotateAxisAngleSelf(x, y, z, angle);
+  return DOMMatrix::Create(this)->rotateAxisAngleSelf(x, y, z, angle);
 }
 
 DOMMatrix* DOMMatrixReadOnly::skewX(double sx) {
-  return DOMMatrix::create(this)->skewXSelf(sx);
+  return DOMMatrix::Create(this)->skewXSelf(sx);
 }
 
 DOMMatrix* DOMMatrixReadOnly::skewY(double sy) {
-  return DOMMatrix::create(this)->skewYSelf(sy);
+  return DOMMatrix::Create(this)->skewYSelf(sy);
 }
 
 DOMMatrix* DOMMatrixReadOnly::flipX() {
-  DOMMatrix* flipX = DOMMatrix::create(this);
-  flipX->setM11(-this->m11());
-  flipX->setM12(-this->m12());
-  flipX->setM13(-this->m13());
-  flipX->setM14(-this->m14());
-  return flipX;
+  DOMMatrix* flip_x = DOMMatrix::Create(this);
+  flip_x->setM11(-this->m11());
+  flip_x->setM12(-this->m12());
+  flip_x->setM13(-this->m13());
+  flip_x->setM14(-this->m14());
+  return flip_x;
 }
 
 DOMMatrix* DOMMatrixReadOnly::flipY() {
-  DOMMatrix* flipY = DOMMatrix::create(this);
-  flipY->setM21(-this->m21());
-  flipY->setM22(-this->m22());
-  flipY->setM23(-this->m23());
-  flipY->setM24(-this->m24());
-  return flipY;
+  DOMMatrix* flip_y = DOMMatrix::Create(this);
+  flip_y->setM21(-this->m21());
+  flip_y->setM22(-this->m22());
+  flip_y->setM23(-this->m23());
+  flip_y->setM24(-this->m24());
+  return flip_y;
 }
 
 DOMMatrix* DOMMatrixReadOnly::inverse() {
-  return DOMMatrix::create(this)->invertSelf();
+  return DOMMatrix::Create(this)->invertSelf();
 }
 
 DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit& point) {
   if (is2D() && point.z() == 0 && point.w() == 1) {
     double x = point.x() * m11() + point.y() * m12() + m41();
     double y = point.x() * m12() + point.y() * m22() + m42();
-    return DOMPoint::create(x, y, 0, 1);
+    return DOMPoint::Create(x, y, 0, 1);
   }
 
   double x = point.x() * m11() + point.y() * m21() + point.z() * m31() +
@@ -266,37 +266,37 @@ DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit& point) {
              point.w() * m43();
   double w = point.x() * m14() + point.y() * m24() + point.z() * m34() +
              point.w() * m44();
-  return DOMPoint::create(x, y, z, w);
+  return DOMPoint::Create(x, y, z, w);
 }
 
 DOMMatrixReadOnly::DOMMatrixReadOnly(const TransformationMatrix& matrix,
-                                     bool is2D) {
-  m_matrix = TransformationMatrix::create(matrix);
-  m_is2D = is2D;
+                                     bool is2d) {
+  matrix_ = TransformationMatrix::Create(matrix);
+  is2d_ = is2d;
 }
 
 DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const {
   float array[] = {
-      static_cast<float>(m_matrix->m11()), static_cast<float>(m_matrix->m12()),
-      static_cast<float>(m_matrix->m13()), static_cast<float>(m_matrix->m14()),
-      static_cast<float>(m_matrix->m21()), static_cast<float>(m_matrix->m22()),
-      static_cast<float>(m_matrix->m23()), static_cast<float>(m_matrix->m24()),
-      static_cast<float>(m_matrix->m31()), static_cast<float>(m_matrix->m32()),
-      static_cast<float>(m_matrix->m33()), static_cast<float>(m_matrix->m34()),
-      static_cast<float>(m_matrix->m41()), static_cast<float>(m_matrix->m42()),
-      static_cast<float>(m_matrix->m43()), static_cast<float>(m_matrix->m44())};
+      static_cast<float>(matrix_->M11()), static_cast<float>(matrix_->M12()),
+      static_cast<float>(matrix_->M13()), static_cast<float>(matrix_->M14()),
+      static_cast<float>(matrix_->M21()), static_cast<float>(matrix_->M22()),
+      static_cast<float>(matrix_->M23()), static_cast<float>(matrix_->M24()),
+      static_cast<float>(matrix_->M31()), static_cast<float>(matrix_->M32()),
+      static_cast<float>(matrix_->M33()), static_cast<float>(matrix_->M34()),
+      static_cast<float>(matrix_->M41()), static_cast<float>(matrix_->M42()),
+      static_cast<float>(matrix_->M43()), static_cast<float>(matrix_->M44())};
 
-  return DOMFloat32Array::create(array, 16);
+  return DOMFloat32Array::Create(array, 16);
 }
 
 DOMFloat64Array* DOMMatrixReadOnly::toFloat64Array() const {
   double array[] = {
-      m_matrix->m11(), m_matrix->m12(), m_matrix->m13(), m_matrix->m14(),
-      m_matrix->m21(), m_matrix->m22(), m_matrix->m23(), m_matrix->m24(),
-      m_matrix->m31(), m_matrix->m32(), m_matrix->m33(), m_matrix->m34(),
-      m_matrix->m41(), m_matrix->m42(), m_matrix->m43(), m_matrix->m44()};
+      matrix_->M11(), matrix_->M12(), matrix_->M13(), matrix_->M14(),
+      matrix_->M21(), matrix_->M22(), matrix_->M23(), matrix_->M24(),
+      matrix_->M31(), matrix_->M32(), matrix_->M33(), matrix_->M34(),
+      matrix_->M41(), matrix_->M42(), matrix_->M43(), matrix_->M44()};
 
-  return DOMFloat64Array::create(array, 16);
+  return DOMFloat64Array::Create(array, 16);
 }
 
 const String DOMMatrixReadOnly::toString() const {
@@ -317,80 +317,80 @@ const String DOMMatrixReadOnly::toString() const {
 }
 
 ScriptValue DOMMatrixReadOnly::toJSONForBinding(
-    ScriptState* scriptState) const {
-  V8ObjectBuilder result(scriptState);
-  result.addNumber("a", a());
-  result.addNumber("b", b());
-  result.addNumber("c", c());
-  result.addNumber("d", d());
-  result.addNumber("e", e());
-  result.addNumber("f", f());
-  result.addNumber("m11", m11());
-  result.addNumber("m12", m12());
-  result.addNumber("m13", m13());
-  result.addNumber("m14", m14());
-  result.addNumber("m21", m21());
-  result.addNumber("m22", m22());
-  result.addNumber("m23", m23());
-  result.addNumber("m24", m24());
-  result.addNumber("m31", m31());
-  result.addNumber("m32", m32());
-  result.addNumber("m33", m33());
-  result.addNumber("m34", m34());
-  result.addNumber("m41", m41());
-  result.addNumber("m42", m42());
-  result.addNumber("m43", m43());
-  result.addNumber("m44", m44());
-  result.addBoolean("is2D", is2D());
-  result.addBoolean("isIdentity", isIdentity());
-  return result.scriptValue();
+    ScriptState* script_state) const {
+  V8ObjectBuilder result(script_state);
+  result.AddNumber("a", a());
+  result.AddNumber("b", b());
+  result.AddNumber("c", c());
+  result.AddNumber("d", d());
+  result.AddNumber("e", e());
+  result.AddNumber("f", f());
+  result.AddNumber("m11", m11());
+  result.AddNumber("m12", m12());
+  result.AddNumber("m13", m13());
+  result.AddNumber("m14", m14());
+  result.AddNumber("m21", m21());
+  result.AddNumber("m22", m22());
+  result.AddNumber("m23", m23());
+  result.AddNumber("m24", m24());
+  result.AddNumber("m31", m31());
+  result.AddNumber("m32", m32());
+  result.AddNumber("m33", m33());
+  result.AddNumber("m34", m34());
+  result.AddNumber("m41", m41());
+  result.AddNumber("m42", m42());
+  result.AddNumber("m43", m43());
+  result.AddNumber("m44", m44());
+  result.AddBoolean("is2D", is2D());
+  result.AddBoolean("isIdentity", isIdentity());
+  return result.GetScriptValue();
 }
 
-void DOMMatrixReadOnly::setMatrixValueFromString(
-    const String& inputString,
-    ExceptionState& exceptionState) {
-  DEFINE_STATIC_LOCAL(String, identityMatrix2D, ("matrix(1, 0, 0, 1, 0, 0)"));
-  String string = inputString;
-  if (string.isEmpty())
-    string = identityMatrix2D;
+void DOMMatrixReadOnly::SetMatrixValueFromString(
+    const String& input_string,
+    ExceptionState& exception_state) {
+  DEFINE_STATIC_LOCAL(String, identity_matrix2d, ("matrix(1, 0, 0, 1, 0, 0)"));
+  String string = input_string;
+  if (string.IsEmpty())
+    string = identity_matrix2d;
 
   const CSSValue* value =
-      CSSParser::parseSingleValue(CSSPropertyTransform, string);
+      CSSParser::ParseSingleValue(CSSPropertyTransform, string);
 
-  if (!value || value->isCSSWideKeyword()) {
-    exceptionState.throwDOMException(SyntaxError,
-                                     "Failed to parse '" + inputString + "'.");
+  if (!value || value->IsCSSWideKeyword()) {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "Failed to parse '" + input_string + "'.");
     return;
   }
 
-  if (value->isIdentifierValue()) {
-    DCHECK(toCSSIdentifierValue(value)->getValueID() == CSSValueNone);
-    m_matrix->makeIdentity();
-    m_is2D = true;
+  if (value->IsIdentifierValue()) {
+    DCHECK(ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone);
+    matrix_->MakeIdentity();
+    is2d_ = true;
     return;
   }
 
-  if (TransformBuilder::hasRelativeLengths(toCSSValueList(*value))) {
-    exceptionState.throwDOMException(SyntaxError,
-                                     "Lengths must be absolute, not relative");
+  if (TransformBuilder::HasRelativeLengths(ToCSSValueList(*value))) {
+    exception_state.ThrowDOMException(kSyntaxError,
+                                      "Lengths must be absolute, not relative");
     return;
   }
 
-  const ComputedStyle& initialStyle = ComputedStyle::initialStyle();
-  TransformOperations operations = TransformBuilder::createTransformOperations(
-      *value, CSSToLengthConversionData(&initialStyle, &initialStyle,
+  const ComputedStyle& initial_style = ComputedStyle::InitialStyle();
+  TransformOperations operations = TransformBuilder::CreateTransformOperations(
+      *value, CSSToLengthConversionData(&initial_style, &initial_style,
                                         LayoutViewItem(nullptr), 1.0f));
 
-  if (operations.dependsOnBoxSize()) {
-    exceptionState.throwDOMException(
-        SyntaxError, "Lengths must be absolute, not depend on the box size");
+  if (operations.DependsOnBoxSize()) {
+    exception_state.ThrowDOMException(
+        kSyntaxError, "Lengths must be absolute, not depend on the box size");
     return;
   }
 
-  m_matrix->makeIdentity();
-  operations.apply(FloatSize(0, 0), *m_matrix);
+  matrix_->MakeIdentity();
+  operations.Apply(FloatSize(0, 0), *matrix_);
 
-  m_is2D = !operations.has3DOperation();
+  is2d_ = !operations.Has3DOperation();
 
   return;
 }

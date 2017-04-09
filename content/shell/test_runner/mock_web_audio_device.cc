@@ -12,15 +12,15 @@ MockWebAudioDevice::MockWebAudioDevice(double sample_rate,
 
 MockWebAudioDevice::~MockWebAudioDevice() {}
 
-void MockWebAudioDevice::start() {}
+void MockWebAudioDevice::Start() {}
 
-void MockWebAudioDevice::stop() {}
+void MockWebAudioDevice::Stop() {}
 
-double MockWebAudioDevice::sampleRate() {
+double MockWebAudioDevice::SampleRate() {
   return sample_rate_;
 }
 
-int MockWebAudioDevice::framesPerBuffer() {
+int MockWebAudioDevice::FramesPerBuffer() {
   return frames_per_buffer_;
 }
 

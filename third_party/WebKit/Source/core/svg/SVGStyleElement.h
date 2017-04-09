@@ -33,7 +33,7 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
   USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 
  public:
-  static SVGStyleElement* create(Document&, bool createdByParser);
+  static SVGStyleElement* Create(Document&, bool created_by_parser);
   ~SVGStyleElement() override;
 
   using StyleElement::sheet;
@@ -50,27 +50,29 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
   String title() const override;
   void setTitle(const AtomicString&);
 
-  void dispatchPendingEvent();
+  void DispatchPendingEvent();
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  SVGStyleElement(Document&, bool createdByParser);
+  SVGStyleElement(Document&, bool created_by_parser);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void didNotifySubtreeInsertionsToDocument() override;
-  void removedFrom(ContainerNode*) override;
-  void childrenChanged(const ChildrenChange&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void DidNotifySubtreeInsertionsToDocument() override;
+  void RemovedFrom(ContainerNode*) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  void finishParsingChildren() override;
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void FinishParsingChildren() override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-  bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-  void notifyLoadedSheetAndAllCriticalSubresources(
+  bool SheetLoaded() override {
+    return StyleElement::SheetLoaded(GetDocument());
+  }
+  void NotifyLoadedSheetAndAllCriticalSubresources(
       LoadedSheetErrorStatus) override;
-  void startLoadingDynamicSheet() override {
-    StyleElement::startLoadingDynamicSheet(document());
+  void StartLoadingDynamicSheet() override {
+    StyleElement::StartLoadingDynamicSheet(GetDocument());
   }
 };
 

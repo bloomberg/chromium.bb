@@ -53,7 +53,7 @@ TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
 
   PaymentAddress* output = new PaymentAddress(std::move(input));
 
-  EXPECT_TRUE(output->languageCode().isEmpty());
+  EXPECT_TRUE(output->languageCode().IsEmpty());
 }
 
 TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode) {

@@ -10,31 +10,32 @@
 namespace blink {
 
 namespace {
-uint64_t s_currentSequenceNumber = 0;
+uint64_t g_current_sequence_number = 0;
 }
 
-UndoStep* UndoStep::create(Document* document,
-                           const VisibleSelection& startingSelection,
-                           const VisibleSelection& endingSelection,
-                           InputEvent::InputType inputType) {
-  return new UndoStep(document, startingSelection, endingSelection, inputType);
+UndoStep* UndoStep::Create(Document* document,
+                           const VisibleSelection& starting_selection,
+                           const VisibleSelection& ending_selection,
+                           InputEvent::InputType input_type) {
+  return new UndoStep(document, starting_selection, ending_selection,
+                      input_type);
 }
 
 UndoStep::UndoStep(Document* document,
-                   const VisibleSelection& startingSelection,
-                   const VisibleSelection& endingSelection,
-                   InputEvent::InputType inputType)
-    : m_document(document),
-      m_startingSelection(startingSelection),
-      m_endingSelection(endingSelection),
-      m_startingRootEditableElement(startingSelection.rootEditableElement()),
-      m_endingRootEditableElement(endingSelection.rootEditableElement()),
-      m_inputType(inputType),
-      m_sequenceNumber(++s_currentSequenceNumber) {}
+                   const VisibleSelection& starting_selection,
+                   const VisibleSelection& ending_selection,
+                   InputEvent::InputType input_type)
+    : document_(document),
+      starting_selection_(starting_selection),
+      ending_selection_(ending_selection),
+      starting_root_editable_element_(starting_selection.RootEditableElement()),
+      ending_root_editable_element_(ending_selection.RootEditableElement()),
+      input_type_(input_type),
+      sequence_number_(++g_current_sequence_number) {}
 
-void UndoStep::unapply() {
-  DCHECK(m_document);
-  LocalFrame* frame = m_document->frame();
+void UndoStep::Unapply() {
+  DCHECK(document_);
+  LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
 
   // Changes to the document may have been made since the last editing operation
@@ -42,20 +43,20 @@ void UndoStep::unapply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  m_document->updateStyleAndLayoutIgnorePendingStylesheets();
+  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   {
-    size_t size = m_commands.size();
+    size_t size = commands_.size();
     for (size_t i = size; i; --i)
-      m_commands[i - 1]->doUnapply();
+      commands_[i - 1]->DoUnapply();
   }
 
-  frame->editor().unappliedEditing(this);
+  frame->GetEditor().UnappliedEditing(this);
 }
 
-void UndoStep::reapply() {
-  DCHECK(m_document);
-  LocalFrame* frame = m_document->frame();
+void UndoStep::Reapply() {
+  DCHECK(document_);
+  LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
 
   // Changes to the document may have been made since the last editing operation
@@ -63,45 +64,45 @@ void UndoStep::reapply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  m_document->updateStyleAndLayoutIgnorePendingStylesheets();
+  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   {
-    for (const auto& command : m_commands)
-      command->doReapply();
+    for (const auto& command : commands_)
+      command->DoReapply();
   }
 
-  frame->editor().reappliedEditing(this);
+  frame->GetEditor().ReappliedEditing(this);
 }
 
-InputEvent::InputType UndoStep::inputType() const {
-  return m_inputType;
+InputEvent::InputType UndoStep::GetInputType() const {
+  return input_type_;
 }
 
-void UndoStep::append(SimpleEditCommand* command) {
-  m_commands.push_back(command);
+void UndoStep::Append(SimpleEditCommand* command) {
+  commands_.push_back(command);
 }
 
-void UndoStep::append(UndoStep* undoStep) {
-  m_commands.appendVector(undoStep->m_commands);
+void UndoStep::Append(UndoStep* undo_step) {
+  commands_.AppendVector(undo_step->commands_);
 }
 
-void UndoStep::setStartingSelection(const VisibleSelection& selection) {
-  m_startingSelection = selection;
-  m_startingRootEditableElement = selection.rootEditableElement();
+void UndoStep::SetStartingSelection(const VisibleSelection& selection) {
+  starting_selection_ = selection;
+  starting_root_editable_element_ = selection.RootEditableElement();
 }
 
-void UndoStep::setEndingSelection(const VisibleSelection& selection) {
-  m_endingSelection = selection;
-  m_endingRootEditableElement = selection.rootEditableElement();
+void UndoStep::SetEndingSelection(const VisibleSelection& selection) {
+  ending_selection_ = selection;
+  ending_root_editable_element_ = selection.RootEditableElement();
 }
 
 DEFINE_TRACE(UndoStep) {
-  visitor->trace(m_document);
-  visitor->trace(m_startingSelection);
-  visitor->trace(m_endingSelection);
-  visitor->trace(m_commands);
-  visitor->trace(m_startingRootEditableElement);
-  visitor->trace(m_endingRootEditableElement);
+  visitor->Trace(document_);
+  visitor->Trace(starting_selection_);
+  visitor->Trace(ending_selection_);
+  visitor->Trace(commands_);
+  visitor->Trace(starting_root_editable_element_);
+  visitor->Trace(ending_root_editable_element_);
 }
 
 }  // namespace blink

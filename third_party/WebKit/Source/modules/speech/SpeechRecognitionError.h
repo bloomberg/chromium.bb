@@ -39,36 +39,36 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
  public:
   enum ErrorCode {
     // FIXME: This is an unspecified error and Chromium should stop using it.
-    ErrorCodeOther = 0,
+    kErrorCodeOther = 0,
 
-    ErrorCodeNoSpeech = 1,
-    ErrorCodeAborted = 2,
-    ErrorCodeAudioCapture = 3,
-    ErrorCodeNetwork = 4,
-    ErrorCodeNotAllowed = 5,
-    ErrorCodeServiceNotAllowed = 6,
-    ErrorCodeBadGrammar = 7,
-    ErrorCodeLanguageNotSupported = 8
+    kErrorCodeNoSpeech = 1,
+    kErrorCodeAborted = 2,
+    kErrorCodeAudioCapture = 3,
+    kErrorCodeNetwork = 4,
+    kErrorCodeNotAllowed = 5,
+    kErrorCodeServiceNotAllowed = 6,
+    kErrorCodeBadGrammar = 7,
+    kErrorCodeLanguageNotSupported = 8
   };
 
-  static SpeechRecognitionError* create(ErrorCode, const String&);
-  static SpeechRecognitionError* create(const AtomicString&,
+  static SpeechRecognitionError* Create(ErrorCode, const String&);
+  static SpeechRecognitionError* Create(const AtomicString&,
                                         const SpeechRecognitionErrorInit&);
 
-  const String& error() { return m_error; }
-  const String& message() { return m_message; }
+  const String& error() { return error_; }
+  const String& message() { return message_; }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::Trace(visitor); }
 
  private:
   SpeechRecognitionError(const String&, const String&);
   SpeechRecognitionError(const AtomicString&,
                          const SpeechRecognitionErrorInit&);
 
-  String m_error;
-  String m_message;
+  String error_;
+  String message_;
 };
 
 }  // namespace blink

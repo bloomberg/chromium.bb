@@ -39,22 +39,22 @@ class SQLErrorData;
 
 class ChangeVersionWrapper final : public SQLTransactionWrapper {
  public:
-  static ChangeVersionWrapper* create(const String& oldVersion,
-                                      const String& newVersion) {
-    return new ChangeVersionWrapper(oldVersion, newVersion);
+  static ChangeVersionWrapper* Create(const String& old_version,
+                                      const String& new_version) {
+    return new ChangeVersionWrapper(old_version, new_version);
   }
 
-  bool performPreflight(SQLTransactionBackend*) override;
-  bool performPostflight(SQLTransactionBackend*) override;
-  SQLErrorData* sqlError() const override { return m_sqlError.get(); }
-  void handleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
+  bool PerformPreflight(SQLTransactionBackend*) override;
+  bool PerformPostflight(SQLTransactionBackend*) override;
+  SQLErrorData* SqlError() const override { return sql_error_.get(); }
+  void HandleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
 
  private:
-  ChangeVersionWrapper(const String& oldVersion, const String& newVersion);
+  ChangeVersionWrapper(const String& old_version, const String& new_version);
 
-  String m_oldVersion;
-  String m_newVersion;
-  std::unique_ptr<SQLErrorData> m_sqlError;
+  String old_version_;
+  String new_version_;
+  std::unique_ptr<SQLErrorData> sql_error_;
 };
 
 }  // namespace blink

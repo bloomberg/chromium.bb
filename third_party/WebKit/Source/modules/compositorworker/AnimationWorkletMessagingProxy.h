@@ -26,8 +26,8 @@ class AnimationWorkletMessagingProxy final
  protected:
   ~AnimationWorkletMessagingProxy() override;
 
-  std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
-  Persistent<AnimationWorkletProxyClient> m_proxyClient;
+  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
+  Persistent<AnimationWorkletProxyClient> proxy_client_;
 };
 
 }  // namespace blink

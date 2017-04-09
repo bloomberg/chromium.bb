@@ -16,13 +16,13 @@ class WebDocumentSubresourceFilter {
   enum LoadPolicy { kAllow, kDisallow, kWouldDisallow };
 
   virtual ~WebDocumentSubresourceFilter() {}
-  virtual LoadPolicy getLoadPolicy(const WebURL& resourceUrl,
+  virtual LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                                    WebURLRequest::RequestContext) = 0;
-  virtual LoadPolicy getLoadPolicyForWebSocketConnect(const WebURL&) = 0;
+  virtual LoadPolicy GetLoadPolicyForWebSocketConnect(const WebURL&) = 0;
 
   // Report that a resource loaded by the document (not a preload) was
   // disallowed.
-  virtual void reportDisallowedLoad() = 0;
+  virtual void ReportDisallowedLoad() = 0;
 };
 
 }  // namespace blink

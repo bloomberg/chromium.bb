@@ -9,11 +9,11 @@
 namespace blink {
 
 bool StyleMotionData::operator==(const StyleMotionData& o) const {
-  if (m_anchor != o.m_anchor || m_position != o.m_position ||
-      m_distance != o.m_distance || m_rotation != o.m_rotation)
+  if (anchor_ != o.anchor_ || position_ != o.position_ ||
+      distance_ != o.distance_ || rotation_ != o.rotation_)
     return false;
 
-  return dataEquivalent(m_path, o.m_path);
+  return DataEquivalent(path_, o.path_);
 }
 
 }  // namespace blink

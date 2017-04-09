@@ -42,7 +42,7 @@ class EventFactoryBase {
   USING_FAST_MALLOC(EventFactoryBase);
 
  public:
-  virtual Event* create(ExecutionContext*, const String& eventType) = 0;
+  virtual Event* Create(ExecutionContext*, const String& event_type) = 0;
   virtual ~EventFactoryBase() {}
 
  protected:
@@ -51,11 +51,11 @@ class EventFactoryBase {
 
 class EventFactory final : public EventFactoryBase {
  public:
-  static std::unique_ptr<EventFactory> create() {
-    return WTF::makeUnique<EventFactory>();
+  static std::unique_ptr<EventFactory> Create() {
+    return WTF::MakeUnique<EventFactory>();
   }
 
-  Event* create(ExecutionContext*, const String& eventType) override;
+  Event* Create(ExecutionContext*, const String& event_type) override;
 };
 
 }  // namespace blink

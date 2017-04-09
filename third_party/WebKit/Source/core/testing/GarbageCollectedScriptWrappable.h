@@ -21,11 +21,11 @@ class GarbageCollectedScriptWrappable
   GarbageCollectedScriptWrappable(const String&);
   virtual ~GarbageCollectedScriptWrappable();
 
-  const String& toString() const { return m_string; }
+  const String& toString() const { return string_; }
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  String m_string;
+  String string_;
 };
 
 }  // namespace blink

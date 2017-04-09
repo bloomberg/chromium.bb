@@ -42,7 +42,7 @@ namespace {
 
 const size_t kMinimumSearchBufferSize = 8192;
 
-UChar32 getCodePointAt(const UChar* str, size_t index, size_t length) {
+UChar32 GetCodePointAt(const UChar* str, size_t index, size_t length) {
   UChar32 c;
   U16_GET(str, 0, index, length, c);
   return c;
@@ -51,167 +51,167 @@ UChar32 getCodePointAt(const UChar* str, size_t index, size_t length) {
 }  // namespace
 
 inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
-    : m_options(options),
-      m_prefixLength(0),
-      m_numberOfCharactersJustAppended(0),
-      m_atBreak(true),
-      m_needsMoreContext(options & AtWordStarts),
-      m_targetRequiresKanaWorkaround(containsKanaLetters(target)) {
-  DCHECK(!target.isEmpty()) << target;
-  target.appendTo(m_target);
+    : options_(options),
+      prefix_length_(0),
+      number_of_characters_just_appended_(0),
+      at_break_(true),
+      needs_more_context_(options & kAtWordStarts),
+      target_requires_kana_workaround_(ContainsKanaLetters(target)) {
+  DCHECK(!target.IsEmpty()) << target;
+  target.AppendTo(target_);
 
   // FIXME: We'd like to tailor the searcher to fold quote marks for us instead
   // of doing it in a separate replacement pass here, but ICU doesn't offer a
   // way to add tailoring on top of the locale-specific tailoring as of this
   // writing.
-  foldQuoteMarksAndSoftHyphens(m_target.data(), m_target.size());
+  FoldQuoteMarksAndSoftHyphens(target_.Data(), target_.size());
 
-  size_t targetLength = m_target.size();
-  m_buffer.reserveInitialCapacity(
-      std::max(targetLength * 8, kMinimumSearchBufferSize));
-  m_overlap = m_buffer.capacity() / 4;
+  size_t target_length = target_.size();
+  buffer_.ReserveInitialCapacity(
+      std::max(target_length * 8, kMinimumSearchBufferSize));
+  overlap_ = buffer_.Capacity() / 4;
 
-  if ((m_options & AtWordStarts) && targetLength) {
-    const UChar32 targetFirstCharacter =
-        getCodePointAt(m_target.data(), 0, targetLength);
+  if ((options_ & kAtWordStarts) && target_length) {
+    const UChar32 target_first_character =
+        GetCodePointAt(target_.Data(), 0, target_length);
     // Characters in the separator category never really occur at the beginning
     // of a word, so if the target begins with such a character, we just ignore
     // the AtWordStart option.
-    if (isSeparator(targetFirstCharacter)) {
-      m_options &= ~AtWordStarts;
-      m_needsMoreContext = false;
+    if (IsSeparator(target_first_character)) {
+      options_ &= ~kAtWordStarts;
+      needs_more_context_ = false;
     }
   }
 
-  m_textSearcher = WTF::makeUnique<TextSearcherICU>();
-  m_textSearcher->setPattern(StringView(m_target.data(), m_target.size()),
-                             !(m_options & CaseInsensitive));
+  text_searcher_ = WTF::MakeUnique<TextSearcherICU>();
+  text_searcher_->SetPattern(StringView(target_.Data(), target_.size()),
+                             !(options_ & kCaseInsensitive));
 
   // The kana workaround requires a normalized copy of the target string.
-  if (m_targetRequiresKanaWorkaround)
-    normalizeCharactersIntoNFCForm(m_target.data(), m_target.size(),
-                                   m_normalizedTarget);
+  if (target_requires_kana_workaround_)
+    NormalizeCharactersIntoNFCForm(target_.Data(), target_.size(),
+                                   normalized_target_);
 }
 
 inline SearchBuffer::~SearchBuffer() {}
 
 template <typename CharType>
-inline void SearchBuffer::append(const CharType* characters, size_t length) {
+inline void SearchBuffer::Append(const CharType* characters, size_t length) {
   DCHECK(length);
 
-  if (m_atBreak) {
-    m_buffer.shrink(0);
-    m_prefixLength = 0;
-    m_atBreak = false;
-  } else if (m_buffer.size() == m_buffer.capacity()) {
-    memcpy(m_buffer.data(), m_buffer.data() + m_buffer.size() - m_overlap,
-           m_overlap * sizeof(UChar));
-    m_prefixLength -= std::min(m_prefixLength, m_buffer.size() - m_overlap);
-    m_buffer.shrink(m_overlap);
+  if (at_break_) {
+    buffer_.Shrink(0);
+    prefix_length_ = 0;
+    at_break_ = false;
+  } else if (buffer_.size() == buffer_.Capacity()) {
+    memcpy(buffer_.Data(), buffer_.Data() + buffer_.size() - overlap_,
+           overlap_ * sizeof(UChar));
+    prefix_length_ -= std::min(prefix_length_, buffer_.size() - overlap_);
+    buffer_.Shrink(overlap_);
   }
 
-  size_t oldLength = m_buffer.size();
-  size_t usableLength = std::min(m_buffer.capacity() - oldLength, length);
-  DCHECK(usableLength);
-  m_buffer.resize(oldLength + usableLength);
-  UChar* destination = m_buffer.data() + oldLength;
-  StringImpl::copyChars(destination, characters, usableLength);
-  foldQuoteMarksAndSoftHyphens(destination, usableLength);
-  m_numberOfCharactersJustAppended = usableLength;
+  size_t old_length = buffer_.size();
+  size_t usable_length = std::min(buffer_.Capacity() - old_length, length);
+  DCHECK(usable_length);
+  buffer_.Resize(old_length + usable_length);
+  UChar* destination = buffer_.Data() + old_length;
+  StringImpl::CopyChars(destination, characters, usable_length);
+  FoldQuoteMarksAndSoftHyphens(destination, usable_length);
+  number_of_characters_just_appended_ = usable_length;
 }
 
-inline bool SearchBuffer::needsMoreContext() const {
-  return m_needsMoreContext;
+inline bool SearchBuffer::NeedsMoreContext() const {
+  return needs_more_context_;
 }
 
-inline void SearchBuffer::prependContext(const UChar* characters,
+inline void SearchBuffer::PrependContext(const UChar* characters,
                                          size_t length) {
-  DCHECK(m_needsMoreContext);
-  DCHECK_EQ(m_prefixLength, m_buffer.size());
+  DCHECK(needs_more_context_);
+  DCHECK_EQ(prefix_length_, buffer_.size());
 
   if (!length)
     return;
 
-  m_atBreak = false;
+  at_break_ = false;
 
-  size_t wordBoundaryContextStart = length;
-  if (wordBoundaryContextStart) {
-    U16_BACK_1(characters, 0, wordBoundaryContextStart);
-    wordBoundaryContextStart =
-        startOfLastWordBoundaryContext(characters, wordBoundaryContextStart);
+  size_t word_boundary_context_start = length;
+  if (word_boundary_context_start) {
+    U16_BACK_1(characters, 0, word_boundary_context_start);
+    word_boundary_context_start =
+        StartOfLastWordBoundaryContext(characters, word_boundary_context_start);
   }
 
-  size_t usableLength = std::min(m_buffer.capacity() - m_prefixLength,
-                                 length - wordBoundaryContextStart);
-  m_buffer.push_front(characters + length - usableLength, usableLength);
-  m_prefixLength += usableLength;
+  size_t usable_length = std::min(buffer_.Capacity() - prefix_length_,
+                                  length - word_boundary_context_start);
+  buffer_.push_front(characters + length - usable_length, usable_length);
+  prefix_length_ += usable_length;
 
-  if (wordBoundaryContextStart || m_prefixLength == m_buffer.capacity())
-    m_needsMoreContext = false;
+  if (word_boundary_context_start || prefix_length_ == buffer_.Capacity())
+    needs_more_context_ = false;
 }
 
-inline bool SearchBuffer::atBreak() const {
-  return m_atBreak;
+inline bool SearchBuffer::AtBreak() const {
+  return at_break_;
 }
 
-inline void SearchBuffer::reachedBreak() {
-  m_atBreak = true;
+inline void SearchBuffer::ReachedBreak() {
+  at_break_ = true;
 }
 
-inline bool SearchBuffer::isBadMatch(const UChar* match,
-                                     size_t matchLength) const {
+inline bool SearchBuffer::IsBadMatch(const UChar* match,
+                                     size_t match_length) const {
   // This function implements the kana workaround. If usearch treats
   // it as a match, but we do not want to, then it's a "bad match".
-  if (!m_targetRequiresKanaWorkaround)
+  if (!target_requires_kana_workaround_)
     return false;
 
   // Normalize into a match buffer. We reuse a single buffer rather than
   // creating a new one each time.
-  normalizeCharactersIntoNFCForm(match, matchLength, m_normalizedMatch);
+  NormalizeCharactersIntoNFCForm(match, match_length, normalized_match_);
 
-  return !checkOnlyKanaLettersInStrings(
-      m_normalizedTarget.begin(), m_normalizedTarget.size(),
-      m_normalizedMatch.begin(), m_normalizedMatch.size());
+  return !CheckOnlyKanaLettersInStrings(
+      normalized_target_.begin(), normalized_target_.size(),
+      normalized_match_.begin(), normalized_match_.size());
 }
 
-inline bool SearchBuffer::isWordStartMatch(size_t start, size_t length) const {
-  DCHECK(m_options & AtWordStarts);
+inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
+  DCHECK(options_ & kAtWordStarts);
 
   if (!start)
     return true;
 
-  int size = m_buffer.size();
+  int size = buffer_.size();
   int offset = start;
-  UChar32 firstCharacter = getCodePointAt(m_buffer.data(), offset, size);
+  UChar32 first_character = GetCodePointAt(buffer_.Data(), offset, size);
 
-  if (m_options & TreatMedialCapitalAsWordStart) {
-    UChar32 previousCharacter;
-    U16_PREV(m_buffer.data(), 0, offset, previousCharacter);
+  if (options_ & kTreatMedialCapitalAsWordStart) {
+    UChar32 previous_character;
+    U16_PREV(buffer_.Data(), 0, offset, previous_character);
 
-    if (isSeparator(firstCharacter)) {
+    if (IsSeparator(first_character)) {
       // The start of a separator run is a word start (".org" in "webkit.org").
-      if (!isSeparator(previousCharacter))
+      if (!IsSeparator(previous_character))
         return true;
-    } else if (isASCIIUpper(firstCharacter)) {
+    } else if (IsASCIIUpper(first_character)) {
       // The start of an uppercase run is a word start ("Kit" in "WebKit").
-      if (!isASCIIUpper(previousCharacter))
+      if (!IsASCIIUpper(previous_character))
         return true;
       // The last character of an uppercase run followed by a non-separator,
       // non-digit is a word start ("Request" in "XMLHTTPRequest").
       offset = start;
-      U16_FWD_1(m_buffer.data(), offset, size);
-      UChar32 nextCharacter = 0;
+      U16_FWD_1(buffer_.Data(), offset, size);
+      UChar32 next_character = 0;
       if (offset < size)
-        nextCharacter = getCodePointAt(m_buffer.data(), offset, size);
-      if (!isASCIIUpper(nextCharacter) && !isASCIIDigit(nextCharacter) &&
-          !isSeparator(nextCharacter))
+        next_character = GetCodePointAt(buffer_.Data(), offset, size);
+      if (!IsASCIIUpper(next_character) && !IsASCIIDigit(next_character) &&
+          !IsSeparator(next_character))
         return true;
-    } else if (isASCIIDigit(firstCharacter)) {
+    } else if (IsASCIIDigit(first_character)) {
       // The start of a digit run is a word start ("2" in "WebKit2").
-      if (!isASCIIDigit(previousCharacter))
+      if (!IsASCIIDigit(previous_character))
         return true;
-    } else if (isSeparator(previousCharacter) ||
-               isASCIIDigit(previousCharacter)) {
+    } else if (IsSeparator(previous_character) ||
+               IsASCIIDigit(previous_character)) {
       // The start of a non-separator, non-uppercase, non-digit run is a word
       // start, except after an uppercase. ("org" in "webkit.org", but not "ore"
       // in "WebCore").
@@ -222,78 +222,78 @@ inline bool SearchBuffer::isWordStartMatch(size_t start, size_t length) const {
   // Chinese and Japanese lack word boundary marks, and there is no clear
   // agreement on what constitutes a word, so treat the position before any CJK
   // character as a word start.
-  if (Character::isCJKIdeographOrSymbol(firstCharacter))
+  if (Character::IsCJKIdeographOrSymbol(first_character))
     return true;
 
-  size_t wordBreakSearchStart = start + length;
-  while (wordBreakSearchStart > start)
-    wordBreakSearchStart =
-        findNextWordFromIndex(m_buffer.data(), m_buffer.size(),
-                              wordBreakSearchStart, false /* backwards */);
-  if (wordBreakSearchStart != start)
+  size_t word_break_search_start = start + length;
+  while (word_break_search_start > start)
+    word_break_search_start =
+        FindNextWordFromIndex(buffer_.Data(), buffer_.size(),
+                              word_break_search_start, false /* backwards */);
+  if (word_break_search_start != start)
     return false;
-  if (m_options & WholeWord)
+  if (options_ & kWholeWord)
     return static_cast<int>(start + length) ==
-           findWordEndBoundary(m_buffer.data(), m_buffer.size(),
-                               wordBreakSearchStart);
+           FindWordEndBoundary(buffer_.Data(), buffer_.size(),
+                               word_break_search_start);
   return true;
 }
 
-inline size_t SearchBuffer::search(size_t& start) {
-  size_t size = m_buffer.size();
-  if (m_atBreak) {
+inline size_t SearchBuffer::Search(size_t& start) {
+  size_t size = buffer_.size();
+  if (at_break_) {
     if (!size)
       return 0;
   } else {
-    if (size != m_buffer.capacity())
+    if (size != buffer_.Capacity())
       return 0;
   }
 
-  m_textSearcher->setText(m_buffer.data(), size);
-  m_textSearcher->setOffset(m_prefixLength);
+  text_searcher_->SetText(buffer_.Data(), size);
+  text_searcher_->SetOffset(prefix_length_);
 
   MatchResultICU match;
 
 nextMatch:
-  if (!m_textSearcher->nextMatchResult(match))
+  if (!text_searcher_->NextMatchResult(match))
     return 0;
 
   // Matches that start in the overlap area are only tentative.
   // The same match may appear later, matching more characters,
   // possibly including a combining character that's not yet in the buffer.
-  if (!m_atBreak && match.start >= size - m_overlap) {
-    size_t overlap = m_overlap;
-    if (m_options & AtWordStarts) {
+  if (!at_break_ && match.start >= size - overlap_) {
+    size_t overlap = overlap_;
+    if (options_ & kAtWordStarts) {
       // Ensure that there is sufficient context before matchStart the next time
       // around for determining if it is at a word boundary.
-      int wordBoundaryContextStart = match.start;
-      U16_BACK_1(m_buffer.data(), 0, wordBoundaryContextStart);
-      wordBoundaryContextStart = startOfLastWordBoundaryContext(
-          m_buffer.data(), wordBoundaryContextStart);
+      int word_boundary_context_start = match.start;
+      U16_BACK_1(buffer_.Data(), 0, word_boundary_context_start);
+      word_boundary_context_start = StartOfLastWordBoundaryContext(
+          buffer_.Data(), word_boundary_context_start);
       overlap = std::min(size - 1,
-                         std::max(overlap, size - wordBoundaryContextStart));
+                         std::max(overlap, size - word_boundary_context_start));
     }
-    memcpy(m_buffer.data(), m_buffer.data() + size - overlap,
+    memcpy(buffer_.Data(), buffer_.Data() + size - overlap,
            overlap * sizeof(UChar));
-    m_prefixLength -= std::min(m_prefixLength, size - overlap);
-    m_buffer.shrink(overlap);
+    prefix_length_ -= std::min(prefix_length_, size - overlap);
+    buffer_.Shrink(overlap);
     return 0;
   }
 
   SECURITY_DCHECK(match.start + match.length <= size);
 
   // If this match is "bad", move on to the next match.
-  if (isBadMatch(m_buffer.data() + match.start, match.length) ||
-      ((m_options & AtWordStarts) &&
-       !isWordStartMatch(match.start, match.length))) {
+  if (IsBadMatch(buffer_.Data() + match.start, match.length) ||
+      ((options_ & kAtWordStarts) &&
+       !IsWordStartMatch(match.start, match.length))) {
     goto nextMatch;
   }
 
-  size_t newSize = size - (match.start + 1);
-  memmove(m_buffer.data(), m_buffer.data() + match.start + 1,
-          newSize * sizeof(UChar));
-  m_prefixLength -= std::min<size_t>(m_prefixLength, match.start + 1);
-  m_buffer.shrink(newSize);
+  size_t new_size = size - (match.start + 1);
+  memmove(buffer_.Data(), buffer_.Data() + match.start + 1,
+          new_size * sizeof(UChar));
+  prefix_length_ -= std::min<size_t>(prefix_length_, match.start + 1);
+  buffer_.Shrink(new_size);
 
   start = size - match.start;
   return match.length;
@@ -301,10 +301,10 @@ nextMatch:
 
 // Check if there's any unpaird surrogate code point.
 // Non-character code points are not checked.
-static bool isValidUTF16(const String& s) {
-  if (s.is8Bit())
+static bool IsValidUTF16(const String& s) {
+  if (s.Is8Bit())
     return true;
-  const UChar* ustr = s.characters16();
+  const UChar* ustr = s.Characters16();
   size_t length = s.length();
   size_t position = 0;
   while (position < length) {
@@ -317,115 +317,115 @@ static bool isValidUTF16(const String& s) {
 }
 
 template <typename Strategy>
-static size_t findPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
+static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
                                     const String& target,
                                     FindOptions options,
-                                    size_t& matchStart) {
-  matchStart = 0;
-  size_t matchLength = 0;
+                                    size_t& match_start) {
+  match_start = 0;
+  size_t match_length = 0;
 
-  if (!isValidUTF16(target))
+  if (!IsValidUTF16(target))
     return 0;
 
   SearchBuffer buffer(target, options);
 
-  if (buffer.needsMoreContext()) {
-    for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(
-             PositionTemplate<Strategy>::firstPositionInNode(
-                 it.ownerDocument()),
-             PositionTemplate<Strategy>(it.currentContainer(),
-                                        it.startOffset()));
-         !backwardsIterator.atEnd(); backwardsIterator.advance()) {
+  if (buffer.NeedsMoreContext()) {
+    for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwards_iterator(
+             PositionTemplate<Strategy>::FirstPositionInNode(
+                 it.OwnerDocument()),
+             PositionTemplate<Strategy>(it.CurrentContainer(),
+                                        it.StartOffset()));
+         !backwards_iterator.AtEnd(); backwards_iterator.Advance()) {
       BackwardsTextBuffer characters;
-      backwardsIterator.copyTextTo(&characters);
-      buffer.prependContext(characters.data(), characters.size());
-      if (!buffer.needsMoreContext())
+      backwards_iterator.CopyTextTo(&characters);
+      buffer.PrependContext(characters.Data(), characters.size());
+      if (!buffer.NeedsMoreContext())
         break;
     }
   }
 
-  while (!it.atEnd()) {
+  while (!it.AtEnd()) {
     // TODO(xiaochengh): Should allow copying text to SearchBuffer directly
     ForwardsTextBuffer characters;
-    it.copyTextTo(&characters);
-    buffer.append(characters.data(), characters.size());
-    it.advance(buffer.numberOfCharactersJustAppended());
+    it.CopyTextTo(&characters);
+    buffer.Append(characters.Data(), characters.size());
+    it.Advance(buffer.NumberOfCharactersJustAppended());
   tryAgain:
-    size_t matchStartOffset;
-    if (size_t newMatchLength = buffer.search(matchStartOffset)) {
+    size_t match_start_offset;
+    if (size_t new_match_length = buffer.Search(match_start_offset)) {
       // Note that we found a match, and where we found it.
-      size_t lastCharacterInBufferOffset = it.characterOffset();
-      DCHECK_GE(lastCharacterInBufferOffset, matchStartOffset);
-      matchStart = lastCharacterInBufferOffset - matchStartOffset;
-      matchLength = newMatchLength;
+      size_t last_character_in_buffer_offset = it.CharacterOffset();
+      DCHECK_GE(last_character_in_buffer_offset, match_start_offset);
+      match_start = last_character_in_buffer_offset - match_start_offset;
+      match_length = new_match_length;
       // If searching forward, stop on the first match.
       // If searching backward, don't stop, so we end up with the last match.
-      if (!(options & Backwards))
+      if (!(options & kBackwards))
         break;
       goto tryAgain;
     }
-    if (it.atBreak() && !buffer.atBreak()) {
-      buffer.reachedBreak();
+    if (it.AtBreak() && !buffer.AtBreak()) {
+      buffer.ReachedBreak();
       goto tryAgain;
     }
   }
 
-  return matchLength;
+  return match_length;
 }
 
 template <typename Strategy>
-static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(
-    const EphemeralRangeTemplate<Strategy>& inputRange,
+static EphemeralRangeTemplate<Strategy> FindPlainTextAlgorithm(
+    const EphemeralRangeTemplate<Strategy>& input_range,
     const String& target,
     FindOptions options) {
   // CharacterIterator requires layoutObjects to be up to date.
-  if (!inputRange.startPosition().isConnected())
+  if (!input_range.StartPosition().IsConnected())
     return EphemeralRangeTemplate<Strategy>();
-  DCHECK_EQ(inputRange.startPosition().document(),
-            inputRange.endPosition().document());
+  DCHECK_EQ(input_range.StartPosition().GetDocument(),
+            input_range.EndPosition().GetDocument());
 
-  const TextIteratorBehavior& iteratorFlagsForFindPlainText =
+  const TextIteratorBehavior& iterator_flags_for_find_plain_text =
       TextIteratorBehavior::Builder()
-          .setEntersTextControls(true)
-          .setEntersOpenShadowRoots(true)
-          .setDoesNotBreakAtReplacedElement(true)
-          .setCollapseTrailingSpace(true)
-          .build();
+          .SetEntersTextControls(true)
+          .SetEntersOpenShadowRoots(true)
+          .SetDoesNotBreakAtReplacedElement(true)
+          .SetCollapseTrailingSpace(true)
+          .Build();
 
   // FIXME: Reduce the code duplication with above (but how?).
-  size_t matchStart;
-  size_t matchLength;
+  size_t match_start;
+  size_t match_length;
   {
     const TextIteratorBehavior& behavior =
-        TextIteratorBehavior::Builder(iteratorFlagsForFindPlainText)
-            .setForWindowFind(options & FindAPICall)
-            .build();
-    CharacterIteratorAlgorithm<Strategy> findIterator(inputRange, behavior);
-    matchLength =
-        findPlainTextInternal(findIterator, target, options, matchStart);
-    if (!matchLength)
-      return EphemeralRangeTemplate<Strategy>(options & Backwards
-                                                  ? inputRange.startPosition()
-                                                  : inputRange.endPosition());
+        TextIteratorBehavior::Builder(iterator_flags_for_find_plain_text)
+            .SetForWindowFind(options & kFindAPICall)
+            .Build();
+    CharacterIteratorAlgorithm<Strategy> find_iterator(input_range, behavior);
+    match_length =
+        FindPlainTextInternal(find_iterator, target, options, match_start);
+    if (!match_length)
+      return EphemeralRangeTemplate<Strategy>(options & kBackwards
+                                                  ? input_range.StartPosition()
+                                                  : input_range.EndPosition());
   }
 
-  CharacterIteratorAlgorithm<Strategy> computeRangeIterator(
-      inputRange, iteratorFlagsForFindPlainText);
-  return computeRangeIterator.calculateCharacterSubrange(matchStart,
-                                                         matchLength);
+  CharacterIteratorAlgorithm<Strategy> compute_range_iterator(
+      input_range, iterator_flags_for_find_plain_text);
+  return compute_range_iterator.CalculateCharacterSubrange(match_start,
+                                                           match_length);
 }
 
-EphemeralRange findPlainText(const EphemeralRange& inputRange,
+EphemeralRange FindPlainText(const EphemeralRange& input_range,
                              const String& target,
                              FindOptions options) {
-  return findPlainTextAlgorithm<EditingStrategy>(inputRange, target, options);
+  return FindPlainTextAlgorithm<EditingStrategy>(input_range, target, options);
 }
 
-EphemeralRangeInFlatTree findPlainText(
-    const EphemeralRangeInFlatTree& inputRange,
+EphemeralRangeInFlatTree FindPlainText(
+    const EphemeralRangeInFlatTree& input_range,
     const String& target,
     FindOptions options) {
-  return findPlainTextAlgorithm<EditingInFlatTreeStrategy>(inputRange, target,
+  return FindPlainTextAlgorithm<EditingInFlatTreeStrategy>(input_range, target,
                                                            options);
 }
 

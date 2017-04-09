@@ -43,44 +43,44 @@ class DateTimeSymbolicFieldElement : public DateTimeFieldElement,
                                const Vector<String>&,
                                int minimum,
                                int maximum);
-  size_t symbolsSize() const { return m_symbols.size(); }
-  bool hasValue() const final;
-  void initialize(const AtomicString& pseudo, const String& axHelpText);
-  void setEmptyValue(EventBehavior = DispatchNoEvent) final;
-  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) final;
-  int valueAsInteger() const final;
+  size_t SymbolsSize() const { return symbols_.size(); }
+  bool HasValue() const final;
+  void Initialize(const AtomicString& pseudo, const String& ax_help_text);
+  void SetEmptyValue(EventBehavior = kDispatchNoEvent) final;
+  void SetValueAsInteger(int, EventBehavior = kDispatchNoEvent) final;
+  int ValueAsInteger() const final;
 
  private:
-  static const int invalidIndex = -1;
+  static const int kInvalidIndex = -1;
 
-  String visibleEmptyValue() const;
-  bool indexIsInRange(int index) const {
-    return index >= m_minimumIndex && index <= m_maximumIndex;
+  String VisibleEmptyValue() const;
+  bool IndexIsInRange(int index) const {
+    return index >= minimum_index_ && index <= maximum_index_;
   }
 
   // DateTimeFieldElement functions.
-  void handleKeyboardEvent(KeyboardEvent*) final;
-  float maximumWidth(const ComputedStyle&) override;
-  void stepDown() final;
-  void stepUp() final;
-  String value() const final;
-  int valueForARIAValueNow() const final;
-  String visibleValue() const final;
+  void HandleKeyboardEvent(KeyboardEvent*) final;
+  float MaximumWidth(const ComputedStyle&) override;
+  void StepDown() final;
+  void StepUp() final;
+  String Value() const final;
+  int ValueForARIAValueNow() const final;
+  String VisibleValue() const final;
 
   // TypeAheadDataSource functions.
-  int indexOfSelectedOption() const override;
-  int optionCount() const override;
-  String optionAtIndex(int index) const override;
+  int IndexOfSelectedOption() const override;
+  int OptionCount() const override;
+  String OptionAtIndex(int index) const override;
 
-  const Vector<String> m_symbols;
+  const Vector<String> symbols_;
 
   // We use AtomicString to share visible empty value among multiple
   // DateTimeEditElements in the page.
-  const AtomicString m_visibleEmptyValue;
-  int m_selectedIndex;
-  TypeAhead m_typeAhead;
-  const int m_minimumIndex;
-  const int m_maximumIndex;
+  const AtomicString visible_empty_value_;
+  int selected_index_;
+  TypeAhead type_ahead_;
+  const int minimum_index_;
+  const int maximum_index_;
 };
 
 }  // namespace blink

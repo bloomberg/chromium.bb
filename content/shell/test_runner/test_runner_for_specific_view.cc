@@ -92,21 +92,21 @@ void TestRunnerForSpecificView::Reset() {
   pointer_locked_ = false;
   pointer_lock_planned_result_ = PointerLockWillSucceed;
 
-  if (web_view() && web_view()->mainFrame()) {
+  if (web_view() && web_view()->MainFrame()) {
     RemoveWebPageOverlay();
     SetTabKeyCyclesThroughElements(true);
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
     // (Constants copied because we can't depend on the header that defined
     // them from this file.)
-    web_view()->setSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
+    web_view()->SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
                                    0xff323232);
 #endif
-    web_view()->setVisibilityState(WebPageVisibilityStateVisible, true);
-    if (web_view()->mainFrame()->isWebLocalFrame()) {
-      web_view()->mainFrame()->enableViewSourceMode(false);
-      web_view()->setTextZoomFactor(1);
-      web_view()->setZoomLevel(0);
+    web_view()->SetVisibilityState(kWebPageVisibilityStateVisible, true);
+    if (web_view()->MainFrame()->IsWebLocalFrame()) {
+      web_view()->MainFrame()->EnableViewSourceMode(false);
+      web_view()->SetTextZoomFactor(1);
+      web_view()->SetZoomLevel(0);
     }
   }
 }
@@ -155,7 +155,7 @@ void TestRunnerForSpecificView::PostV8Callback(
   PostTask(base::Bind(&TestRunnerForSpecificView::InvokeV8Callback,
                       weak_factory_.GetWeakPtr(),
                       v8::UniquePersistent<v8::Function>(
-                          blink::mainThreadIsolate(), callback)));
+                          blink::MainThreadIsolate(), callback)));
 }
 
 void TestRunnerForSpecificView::PostV8CallbackWithArgs(
@@ -165,7 +165,7 @@ void TestRunnerForSpecificView::PostV8CallbackWithArgs(
   std::vector<v8::UniquePersistent<v8::Value>> args;
   for (int i = 0; i < argc; i++) {
     args.push_back(
-        v8::UniquePersistent<v8::Value>(blink::mainThreadIsolate(), argv[i]));
+        v8::UniquePersistent<v8::Value>(blink::MainThreadIsolate(), argv[i]));
   }
 
   PostTask(base::Bind(&TestRunnerForSpecificView::InvokeV8CallbackWithArgs,
@@ -182,11 +182,11 @@ void TestRunnerForSpecificView::InvokeV8Callback(
 void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
     const v8::UniquePersistent<v8::Function>& callback,
     const std::vector<v8::UniquePersistent<v8::Value>>& args) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  WebFrame* frame = web_view()->mainFrame();
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  WebFrame* frame = web_view()->MainFrame();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
   v8::Context::Scope context_scope(context);
@@ -196,7 +196,7 @@ void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
     local_args.push_back(v8::Local<v8::Value>::New(isolate, arg));
   }
 
-  frame->callFunctionEvenIfScriptDisabled(
+  frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, callback), context->Global(),
       local_args.size(), local_args.data());
 }
@@ -208,7 +208,7 @@ base::Closure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
                     base::Bind(&TestRunnerForSpecificView::InvokeV8Callback,
                                weak_factory_.GetWeakPtr(),
                                v8::UniquePersistent<v8::Function>(
-                                   blink::mainThreadIsolate(), callback)));
+                                   blink::MainThreadIsolate(), callback)));
 }
 
 void TestRunnerForSpecificView::LayoutAndPaintAsync() {
@@ -217,21 +217,21 @@ void TestRunnerForSpecificView::LayoutAndPaintAsync() {
   // multiple WebWidgets, one for each local root. We should look into making
   // this structure more generic.
   test_runner::LayoutAndPaintAsyncThen(
-      web_view()->mainFrame()->toWebLocalFrame()->frameWidget(),
+      web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
       base::Closure());
 }
 
 void TestRunnerForSpecificView::LayoutAndPaintAsyncThen(
     v8::Local<v8::Function> callback) {
   test_runner::LayoutAndPaintAsyncThen(
-      web_view()->mainFrame()->toWebLocalFrame()->frameWidget(),
+      web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
       CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunnerForSpecificView::CapturePixelsAsyncThen(
     v8::Local<v8::Function> callback) {
   v8::UniquePersistent<v8::Function> persistent_callback(
-      blink::mainThreadIsolate(), callback);
+      blink::MainThreadIsolate(), callback);
 
   web_view_test_proxy_base_->test_interfaces()
       ->GetTestRunner()
@@ -245,11 +245,11 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
 void TestRunnerForSpecificView::CapturePixelsCallback(
     v8::UniquePersistent<v8::Function> callback,
     const SkBitmap& snapshot) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Context> context =
-      web_view()->mainFrame()->mainWorldScriptContext();
+      web_view()->MainFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -271,13 +271,13 @@ void TestRunnerForSpecificView::CapturePixelsCallback(
       snapshot.info().makeColorType(kRGBA_8888_SkColorType);
   const size_t bufferRowBytes = bufferInfo.minRowBytes();
   blink::WebArrayBuffer buffer =
-      blink::WebArrayBuffer::create(bufferInfo.getSafeSize(bufferRowBytes), 1);
-  if (!snapshot.readPixels(bufferInfo, buffer.data(), bufferRowBytes, 0, 0)) {
+      blink::WebArrayBuffer::Create(bufferInfo.getSafeSize(bufferRowBytes), 1);
+  if (!snapshot.readPixels(bufferInfo, buffer.Data(), bufferRowBytes, 0, 0)) {
     // We only expect readPixels to fail for null bitmaps.
     DCHECK(snapshot.isNull());
   }
 
-  argv[2] = blink::WebArrayBufferConverter::toV8Value(
+  argv[2] = blink::WebArrayBufferConverter::ToV8Value(
       &buffer, context->Global(), isolate);
 
   PostV8CallbackWithArgs(std::move(callback), arraysize(argv), argv);
@@ -288,7 +288,7 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
     int y,
     v8::Local<v8::Function> callback) {
   v8::UniquePersistent<v8::Function> persistent_callback(
-      blink::mainThreadIsolate(), callback);
+      blink::MainThreadIsolate(), callback);
 
   CopyImageAtAndCapturePixels(
       web_view(), x, y,
@@ -300,10 +300,10 @@ void TestRunnerForSpecificView::CopyImageAtAndCapturePixelsAsyncThen(
 void TestRunnerForSpecificView::GetManifestThen(
     v8::Local<v8::Function> callback) {
   v8::UniquePersistent<v8::Function> persistent_callback(
-      blink::mainThreadIsolate(), callback);
+      blink::MainThreadIsolate(), callback);
 
   delegate()->FetchManifest(
-      web_view(), web_view()->mainFrame()->document().manifestURL(),
+      web_view(), web_view()->MainFrame()->GetDocument().ManifestURL(),
       base::Bind(&TestRunnerForSpecificView::GetManifestCallback,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(persistent_callback))));
@@ -322,17 +322,17 @@ void TestRunnerForSpecificView::GetBluetoothManualChooserEvents(
       &TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback,
       weak_factory_.GetWeakPtr(),
       base::Passed(v8::UniquePersistent<v8::Function>(
-          blink::mainThreadIsolate(), callback))));
+          blink::MainThreadIsolate(), callback))));
 }
 
 void TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback(
     v8::UniquePersistent<v8::Function> callback,
     const std::vector<std::string>& events) {
   // Build the V8 context.
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
-      web_view()->mainFrame()->mainWorldScriptContext();
+      web_view()->MainFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
   v8::Context::Scope context_scope(context);
@@ -370,10 +370,10 @@ void TestRunnerForSpecificView::SetBackingScaleFactor(
 
   // TODO(oshima): remove this callback argument when all platforms are migrated
   // to use-zoom-for-dsf by default
-  v8::UniquePersistent<v8::Function> global_callback(blink::mainThreadIsolate(),
+  v8::UniquePersistent<v8::Function> global_callback(blink::MainThreadIsolate(),
                                                      callback);
   v8::Local<v8::Value> arg = v8::Boolean::New(
-      blink::mainThreadIsolate(), delegate()->IsUseZoomForDSFEnabled());
+      blink::MainThreadIsolate(), delegate()->IsUseZoomForDSFEnabled());
   PostV8CallbackWithArgs(std::move(global_callback), 1, &arg);
 }
 
@@ -399,17 +399,17 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(
           &TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback,
           weak_factory_.GetWeakPtr(),
           base::Passed(v8::UniquePersistent<v8::Function>(
-              blink::mainThreadIsolate(), callback))));
+              blink::MainThreadIsolate(), callback))));
 }
 
 void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(
     v8::UniquePersistent<v8::Function> callback,
     bool canceled) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Context> context =
-      web_view()->mainFrame()->mainWorldScriptContext();
+      web_view()->MainFrame()->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -426,7 +426,7 @@ void TestRunnerForSpecificView::RunIdleTasks(v8::Local<v8::Function> callback) {
 
 void TestRunnerForSpecificView::SetTabKeyCyclesThroughElements(
     bool tab_key_cycles_through_elements) {
-  web_view()->setTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
+  web_view()->SetTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
 }
 
 void TestRunnerForSpecificView::ExecCommand(gin::Arguments* args) {
@@ -442,37 +442,37 @@ void TestRunnerForSpecificView::ExecCommand(gin::Arguments* args) {
   }
 
   // Note: webkit's version does not return the boolean, so neither do we.
-  web_view()->focusedFrame()->executeCommand(WebString::fromUTF8(command),
-                                             WebString::fromUTF8(value));
+  web_view()->FocusedFrame()->ExecuteCommand(WebString::FromUTF8(command),
+                                             WebString::FromUTF8(value));
 }
 
 bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {
-  return web_view()->focusedFrame()->isCommandEnabled(
-      WebString::fromUTF8(command));
+  return web_view()->FocusedFrame()->IsCommandEnabled(
+      WebString::FromUTF8(command));
 }
 
 bool TestRunnerForSpecificView::HasCustomPageSizeStyle(int page_index) {
   // TODO(dcheng): This class has many implicit assumptions that the frames it
   // operates on are always local.
-  WebFrame* frame = web_view()->mainFrame();
-  if (!frame || frame->isWebRemoteFrame())
+  WebFrame* frame = web_view()->MainFrame();
+  if (!frame || frame->IsWebRemoteFrame())
     return false;
-  return frame->toWebLocalFrame()->hasCustomPageSizeStyle(page_index);
+  return frame->ToWebLocalFrame()->HasCustomPageSizeStyle(page_index);
 }
 
 void TestRunnerForSpecificView::ForceRedSelectionColors() {
-  web_view()->setSelectionColors(0xffee0000, 0xff00ee00, 0xff000000,
+  web_view()->SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000,
                                  0xffc0c0c0);
 }
 
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
   if (new_visibility == "visible")
-    web_view()->setVisibilityState(WebPageVisibilityStateVisible, false);
+    web_view()->SetVisibilityState(kWebPageVisibilityStateVisible, false);
   else if (new_visibility == "hidden")
-    web_view()->setVisibilityState(WebPageVisibilityStateHidden, false);
+    web_view()->SetVisibilityState(kWebPageVisibilityStateHidden, false);
   else if (new_visibility == "prerender")
-    web_view()->setVisibilityState(WebPageVisibilityStatePrerender, false);
+    web_view()->SetVisibilityState(kWebPageVisibilityStatePrerender, false);
 }
 
 void TestRunnerForSpecificView::SetTextDirection(
@@ -480,20 +480,20 @@ void TestRunnerForSpecificView::SetTextDirection(
   // Map a direction name to a WebTextDirection value.
   WebTextDirection direction;
   if (direction_name == "auto")
-    direction = WebTextDirectionDefault;
+    direction = kWebTextDirectionDefault;
   else if (direction_name == "rtl")
-    direction = WebTextDirectionRightToLeft;
+    direction = kWebTextDirectionRightToLeft;
   else if (direction_name == "ltr")
-    direction = WebTextDirectionLeftToRight;
+    direction = kWebTextDirectionLeftToRight;
   else
     return;
 
-  web_view()->setTextDirection(direction);
+  web_view()->SetTextDirection(direction);
 }
 
 void TestRunnerForSpecificView::DumpPageImportanceSignals() {
   blink::WebPageImportanceSignals* signals =
-      web_view()->pageImportanceSignals();
+      web_view()->PageImportanceSignals();
   if (!signals)
     return;
 
@@ -501,26 +501,26 @@ void TestRunnerForSpecificView::DumpPageImportanceSignals() {
       "WebPageImportanceSignals:\n"
       "  hadFormInteraction: %s\n"
       "  issuedNonGetFetchFromScript: %s\n",
-      signals->hadFormInteraction() ? "true" : "false",
-      signals->issuedNonGetFetchFromScript() ? "true" : "false");
+      signals->HadFormInteraction() ? "true" : "false",
+      signals->IssuedNonGetFetchFromScript() ? "true" : "false");
   if (delegate())
     delegate()->PrintMessage(message);
 }
 
 void TestRunnerForSpecificView::AddWebPageOverlay() {
-  web_view()->setPageOverlayColor(SK_ColorCYAN);
+  web_view()->SetPageOverlayColor(SK_ColorCYAN);
 }
 
 void TestRunnerForSpecificView::RemoveWebPageOverlay() {
-  web_view()->setPageOverlayColor(SK_ColorTRANSPARENT);
+  web_view()->SetPageOverlayColor(SK_ColorTRANSPARENT);
 }
 
 void TestRunnerForSpecificView::ForceNextWebGLContextCreationToFail() {
-  web_view()->forceNextWebGLContextCreationToFail();
+  web_view()->ForceNextWebGLContextCreationToFail();
 }
 
 void TestRunnerForSpecificView::ForceNextDrawingBufferCreationToFail() {
-  web_view()->forceNextDrawingBufferCreationToFail();
+  web_view()->ForceNextDrawingBufferCreationToFail();
 }
 
 void TestRunnerForSpecificView::SetWindowIsKey(bool value) {
@@ -550,7 +550,7 @@ void TestRunnerForSpecificView::SetPointerLockWillRespondAsynchronously() {
 
 void TestRunnerForSpecificView::DidAcquirePointerLockInternal() {
   pointer_locked_ = true;
-  web_view()->didAcquirePointerLock();
+  web_view()->DidAcquirePointerLock();
 
   // Reset planned result to default.
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -559,7 +559,7 @@ void TestRunnerForSpecificView::DidAcquirePointerLockInternal() {
 void TestRunnerForSpecificView::DidNotAcquirePointerLockInternal() {
   DCHECK(!pointer_locked_);
   pointer_locked_ = false;
-  web_view()->didNotAcquirePointerLock();
+  web_view()->DidNotAcquirePointerLock();
 
   // Reset planned result to default.
   pointer_lock_planned_result_ = PointerLockWillSucceed;
@@ -569,24 +569,24 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
   bool was_locked = pointer_locked_;
   pointer_locked_ = false;
   if (was_locked)
-    web_view()->didLosePointerLock();
+    web_view()->DidLosePointerLock();
 }
 
 bool TestRunnerForSpecificView::CallShouldCloseOnWebView() {
-  if (!web_view()->mainFrame()->toWebLocalFrame()) {
+  if (!web_view()->MainFrame()->ToWebLocalFrame()) {
     CHECK(false) << "This function cannot be called if the main frame is not a "
                     "local frame.";
   }
 
-  return web_view()->mainFrame()->toWebLocalFrame()->dispatchBeforeUnloadEvent(
+  return web_view()->MainFrame()->ToWebLocalFrame()->DispatchBeforeUnloadEvent(
       false);
 }
 
 void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const std::string& scheme) {
-  web_view()->setDomainRelaxationForbidden(forbidden,
-                                           WebString::fromUTF8(scheme));
+  web_view()->SetDomainRelaxationForbidden(forbidden,
+                                           WebString::FromUTF8(scheme));
 }
 
 v8::Local<v8::Value>
@@ -594,10 +594,10 @@ TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const std::string& script) {
   WebVector<v8::Local<v8::Value>> values;
-  WebScriptSource source(WebString::fromUTF8(script));
+  WebScriptSource source(WebString::FromUTF8(script));
   // This relies on the iframe focusing itself when it loads. This is a bit
   // sketchy, but it seems to be what other tests do.
-  web_view()->focusedFrame()->executeScriptInIsolatedWorld(world_id, &source, 1,
+  web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, &source, 1,
                                                            &values);
   // Since only one script was added, only one result is expected
   if (values.size() == 1 && !values[0].IsEmpty())
@@ -608,8 +608,8 @@ TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
 void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
     int world_id,
     const std::string& script) {
-  WebScriptSource source(WebString::fromUTF8(script));
-  web_view()->focusedFrame()->executeScriptInIsolatedWorld(world_id, &source,
+  WebScriptSource source(WebString::FromUTF8(script));
+  web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, &source,
                                                            1);
 }
 
@@ -621,23 +621,23 @@ void TestRunnerForSpecificView::SetIsolatedWorldSecurityOrigin(
 
   WebSecurityOrigin web_origin;
   if (origin->IsString()) {
-    web_origin = WebSecurityOrigin::createFromString(
+    web_origin = WebSecurityOrigin::CreateFromString(
         V8StringToWebString(origin.As<v8::String>()));
   }
-  web_view()->focusedFrame()->setIsolatedWorldSecurityOrigin(world_id,
+  web_view()->FocusedFrame()->SetIsolatedWorldSecurityOrigin(world_id,
                                                              web_origin);
 }
 
 void TestRunnerForSpecificView::SetIsolatedWorldContentSecurityPolicy(
     int world_id,
     const std::string& policy) {
-  web_view()->focusedFrame()->setIsolatedWorldContentSecurityPolicy(
-      world_id, WebString::fromUTF8(policy));
+  web_view()->FocusedFrame()->SetIsolatedWorldContentSecurityPolicy(
+      world_id, WebString::FromUTF8(policy));
 }
 
 void TestRunner::InsertStyleSheet(const std::string& source_code) {
-  WebLocalFrame::frameForCurrentContext()->document().insertStyleSheet(
-      WebString::fromUTF8(source_code));
+  WebLocalFrame::FrameForCurrentContext()->GetDocument().InsertStyleSheet(
+      WebString::FromUTF8(source_code));
 }
 
 bool TestRunnerForSpecificView::FindString(
@@ -645,45 +645,45 @@ bool TestRunnerForSpecificView::FindString(
     const std::vector<std::string>& options_array) {
   WebFindOptions find_options;
   bool wrap_around = false;
-  find_options.matchCase = true;
-  find_options.findNext = true;
+  find_options.match_case = true;
+  find_options.find_next = true;
 
   for (const std::string& option : options_array) {
     if (option == "CaseInsensitive")
-      find_options.matchCase = false;
+      find_options.match_case = false;
     else if (option == "Backwards")
       find_options.forward = false;
     else if (option == "StartInSelection")
-      find_options.findNext = false;
+      find_options.find_next = false;
     else if (option == "AtWordStarts")
-      find_options.wordStart = true;
+      find_options.word_start = true;
     else if (option == "TreatMedialCapitalAsWordStart")
-      find_options.medialCapitalAsWordStart = true;
+      find_options.medial_capital_as_word_start = true;
     else if (option == "WrapAround")
       wrap_around = true;
   }
 
-  WebLocalFrame* frame = web_view()->mainFrame()->toWebLocalFrame();
-  const bool find_result = frame->find(0, WebString::fromUTF8(search_text),
+  WebLocalFrame* frame = web_view()->MainFrame()->ToWebLocalFrame();
+  const bool find_result = frame->Find(0, WebString::FromUTF8(search_text),
                                        find_options, wrap_around, 0);
-  frame->stopFinding(WebLocalFrame::StopFindActionKeepSelection);
+  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
   return find_result;
 }
 
 std::string TestRunnerForSpecificView::SelectionAsMarkup() {
-  if (!web_view()->mainFrame()->toWebLocalFrame()) {
+  if (!web_view()->MainFrame()->ToWebLocalFrame()) {
     CHECK(false) << "This function cannot be called if the main frame is not a "
                     "local frame.";
   }
-  return web_view()->mainFrame()->toWebLocalFrame()->selectionAsMarkup().utf8();
+  return web_view()->MainFrame()->ToWebLocalFrame()->SelectionAsMarkup().Utf8();
 }
 
 void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
                                                       bool enabled) {
   WebFrame* target_frame =
-      web_view()->findFrameByName(WebString::fromUTF8(name));
+      web_view()->FindFrameByName(WebString::FromUTF8(name));
   if (target_frame)
-    target_frame->enableViewSourceMode(enabled);
+    target_frame->EnableViewSourceMode(enabled);
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {

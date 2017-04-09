@@ -21,101 +21,102 @@ namespace {
 
 const int kHotModeChunkSize = 1024;
 
-EphemeralRange adjacentWordIfExists(const Position& pos) {
-  const VisiblePosition& visiblePos = createVisiblePosition(pos);
-  const VisiblePosition& wordStart = previousWordPosition(visiblePos);
-  if (wordStart.isNull())
+EphemeralRange AdjacentWordIfExists(const Position& pos) {
+  const VisiblePosition& visible_pos = CreateVisiblePosition(pos);
+  const VisiblePosition& word_start = PreviousWordPosition(visible_pos);
+  if (word_start.IsNull())
     return EphemeralRange();
-  const VisiblePosition& wordEnd = endOfWord(wordStart);
-  if (wordEnd.isNull())
+  const VisiblePosition& word_end = EndOfWord(word_start);
+  if (word_end.IsNull())
     return EphemeralRange();
-  if (comparePositions(visiblePos, wordEnd) > 0)
+  if (ComparePositions(visible_pos, word_end) > 0)
     return EphemeralRange();
-  return EphemeralRange(wordStart.deepEquivalent(), wordEnd.deepEquivalent());
+  return EphemeralRange(word_start.DeepEquivalent(), word_end.DeepEquivalent());
 }
 
-EphemeralRange currentWordIfTypingInPartialWord(const Element& editable) {
-  const LocalFrame& frame = *editable.document().frame();
-  const SelectionInDOMTree& selection = frame.selection().selectionInDOMTree();
-  if (!selection.isCaret())
+EphemeralRange CurrentWordIfTypingInPartialWord(const Element& editable) {
+  const LocalFrame& frame = *editable.GetDocument().GetFrame();
+  const SelectionInDOMTree& selection =
+      frame.Selection().GetSelectionInDOMTree();
+  if (!selection.IsCaret())
     return EphemeralRange();
-  if (rootEditableElementOf(selection.base()) != &editable)
+  if (RootEditableElementOf(selection.Base()) != &editable)
     return EphemeralRange();
 
-  CompositeEditCommand* typingCommand =
-      frame.editor().lastTypingCommandIfStillOpenForTyping();
-  if (!typingCommand)
+  CompositeEditCommand* typing_command =
+      frame.GetEditor().LastTypingCommandIfStillOpenForTyping();
+  if (!typing_command)
     return EphemeralRange();
-  if (typingCommand->endingSelection().asSelection() != selection)
+  if (typing_command->EndingSelection().AsSelection() != selection)
     return EphemeralRange();
-  return adjacentWordIfExists(selection.base());
+  return AdjacentWordIfExists(selection.Base());
 }
 
-bool isUnderActiveEditing(const Element& editable, const Position& position) {
-  if (!editable.isSpellCheckingEnabled() &&
-      !SpellChecker::isSpellCheckingEnabledAt(position))
+bool IsUnderActiveEditing(const Element& editable, const Position& position) {
+  if (!editable.IsSpellCheckingEnabled() &&
+      !SpellChecker::IsSpellCheckingEnabledAt(position))
     return false;
-  if (editable.visibleBoundsInVisualViewport().isEmpty())
+  if (editable.VisibleBoundsInVisualViewport().IsEmpty())
     return false;
   // TODO(xiaochengh): Design more aggressive strategies to reduce checking when
   // we are just moving selection around without modifying anything.
   return true;
 }
 
-EphemeralRange calculateHotModeCheckingRange(const Element& editable,
+EphemeralRange CalculateHotModeCheckingRange(const Element& editable,
                                              const Position& position) {
-  const EphemeralRange& fullRange = EphemeralRange::rangeOfContents(editable);
-  const int fullLength = TextIterator::rangeLength(fullRange.startPosition(),
-                                                   fullRange.endPosition());
-  if (fullLength <= kHotModeChunkSize)
-    return fullRange;
+  const EphemeralRange& full_range = EphemeralRange::RangeOfContents(editable);
+  const int full_length = TextIterator::RangeLength(full_range.StartPosition(),
+                                                    full_range.EndPosition());
+  if (full_length <= kHotModeChunkSize)
+    return full_range;
 
   TextIteratorBehavior behavior = TextIteratorBehavior::Builder()
-                                      .setEmitsObjectReplacementCharacter(true)
-                                      .build();
-  BackwardsCharacterIterator backwardIterator(fullRange.startPosition(),
-                                              position, behavior);
-  if (!backwardIterator.atEnd())
-    backwardIterator.advance(kHotModeChunkSize / 2);
-  const Position& chunkStart = backwardIterator.endPosition();
-  CharacterIterator forwardIterator(position, fullRange.endPosition(),
-                                    behavior);
-  if (!forwardIterator.atEnd())
-    forwardIterator.advance(kHotModeChunkSize / 2);
-  const Position& chunkEnd = forwardIterator.endPosition();
-  return expandRangeToSentenceBoundary(EphemeralRange(chunkStart, chunkEnd));
+                                      .SetEmitsObjectReplacementCharacter(true)
+                                      .Build();
+  BackwardsCharacterIterator backward_iterator(full_range.StartPosition(),
+                                               position, behavior);
+  if (!backward_iterator.AtEnd())
+    backward_iterator.Advance(kHotModeChunkSize / 2);
+  const Position& chunk_start = backward_iterator.EndPosition();
+  CharacterIterator forward_iterator(position, full_range.EndPosition(),
+                                     behavior);
+  if (!forward_iterator.AtEnd())
+    forward_iterator.Advance(kHotModeChunkSize / 2);
+  const Position& chunk_end = forward_iterator.EndPosition();
+  return ExpandRangeToSentenceBoundary(EphemeralRange(chunk_start, chunk_end));
 }
 
 }  // namespace
 
 HotModeSpellCheckRequester::HotModeSpellCheckRequester(
     SpellCheckRequester& requester)
-    : m_requester(requester) {}
+    : requester_(requester) {}
 
-void HotModeSpellCheckRequester::checkSpellingAt(const Position& position) {
-  const Element* rootEditable = rootEditableElementOf(position);
-  if (!rootEditable || !rootEditable->isConnected())
+void HotModeSpellCheckRequester::CheckSpellingAt(const Position& position) {
+  const Element* root_editable = RootEditableElementOf(position);
+  if (!root_editable || !root_editable->isConnected())
     return;
 
-  if (m_processedRootEditables.contains(rootEditable))
+  if (processed_root_editables_.Contains(root_editable))
     return;
-  m_processedRootEditables.push_back(rootEditable);
+  processed_root_editables_.push_back(root_editable);
 
-  if (!isUnderActiveEditing(*rootEditable, position))
+  if (!IsUnderActiveEditing(*root_editable, position))
     return;
 
-  const EphemeralRange& currentWord =
-      currentWordIfTypingInPartialWord(*rootEditable);
-  if (currentWord.isNotNull()) {
-    rootEditable->document().markers().removeMarkers(
-        currentWord, DocumentMarker::MisspellingMarkers(),
-        DocumentMarkerController::RemovePartiallyOverlappingMarker);
+  const EphemeralRange& current_word =
+      CurrentWordIfTypingInPartialWord(*root_editable);
+  if (current_word.IsNotNull()) {
+    root_editable->GetDocument().Markers().RemoveMarkers(
+        current_word, DocumentMarker::MisspellingMarkers(),
+        DocumentMarkerController::kRemovePartiallyOverlappingMarker);
     return;
   }
 
-  const EphemeralRange& checkingRange =
-      calculateHotModeCheckingRange(*rootEditable, position);
-  m_requester->requestCheckingFor(checkingRange);
+  const EphemeralRange& checking_range =
+      CalculateHotModeCheckingRange(*root_editable, position);
+  requester_->RequestCheckingFor(checking_range);
 }
 
 }  // namespace blink

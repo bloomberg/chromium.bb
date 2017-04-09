@@ -35,29 +35,29 @@
 namespace WTF {
 
 TEST(AtomicStringTest, Number) {
-  int intValue = 1234;
-  EXPECT_EQ("1234", AtomicString::number(intValue));
-  intValue = -1234;
-  EXPECT_EQ("-1234", AtomicString::number(intValue));
-  unsigned unsignedValue = 1234u;
-  EXPECT_EQ("1234", AtomicString::number(unsignedValue));
-  long longValue = 6553500;
-  EXPECT_EQ("6553500", AtomicString::number(longValue));
-  longValue = -6553500;
-  EXPECT_EQ("-6553500", AtomicString::number(longValue));
-  unsigned long unsignedLongValue = 4294967295u;
-  EXPECT_EQ("4294967295", AtomicString::number(unsignedLongValue));
-  long long longlongValue = 9223372036854775807;
-  EXPECT_EQ("9223372036854775807", AtomicString::number(longlongValue));
-  longlongValue = -9223372036854775807;
-  EXPECT_EQ("-9223372036854775807", AtomicString::number(longlongValue));
-  unsigned long long unsignedLongLongValue = 18446744073709551615u;
+  int int_value = 1234;
+  EXPECT_EQ("1234", AtomicString::Number(int_value));
+  int_value = -1234;
+  EXPECT_EQ("-1234", AtomicString::Number(int_value));
+  unsigned unsigned_value = 1234u;
+  EXPECT_EQ("1234", AtomicString::Number(unsigned_value));
+  long long_value = 6553500;
+  EXPECT_EQ("6553500", AtomicString::Number(long_value));
+  long_value = -6553500;
+  EXPECT_EQ("-6553500", AtomicString::Number(long_value));
+  unsigned long unsigned_long_value = 4294967295u;
+  EXPECT_EQ("4294967295", AtomicString::Number(unsigned_long_value));
+  long long longlong_value = 9223372036854775807;
+  EXPECT_EQ("9223372036854775807", AtomicString::Number(longlong_value));
+  longlong_value = -9223372036854775807;
+  EXPECT_EQ("-9223372036854775807", AtomicString::Number(longlong_value));
+  unsigned long long unsigned_long_long_value = 18446744073709551615u;
   EXPECT_EQ("18446744073709551615",
-            AtomicString::number(unsignedLongLongValue));
-  double doubleValue = 1234.56;
-  EXPECT_EQ("1234.56", AtomicString::number(doubleValue));
-  doubleValue = 1234.56789;
-  EXPECT_EQ("1234.56789", AtomicString::number(doubleValue, 9));
+            AtomicString::Number(unsigned_long_long_value));
+  double double_value = 1234.56;
+  EXPECT_EQ("1234.56", AtomicString::Number(double_value));
+  double_value = 1234.56789;
+  EXPECT_EQ("1234.56789", AtomicString::Number(double_value, 9));
 }
 
 TEST(AtomicStringTest, ImplEquality) {
@@ -67,12 +67,12 @@ TEST(AtomicStringTest, ImplEquality) {
   AtomicString foo2("foo");
   AtomicString baz2("baz");
   AtomicString bar2("bar");
-  EXPECT_EQ(foo.impl(), foo2.impl());
-  EXPECT_EQ(bar.impl(), bar2.impl());
-  EXPECT_EQ(baz.impl(), baz2.impl());
-  EXPECT_NE(foo.impl(), bar.impl());
-  EXPECT_NE(foo.impl(), baz.impl());
-  EXPECT_NE(bar.impl(), baz.impl());
+  EXPECT_EQ(foo.Impl(), foo2.Impl());
+  EXPECT_EQ(bar.Impl(), bar2.Impl());
+  EXPECT_EQ(baz.Impl(), baz2.Impl());
+  EXPECT_NE(foo.Impl(), bar.Impl());
+  EXPECT_NE(foo.Impl(), baz.Impl());
+  EXPECT_NE(bar.Impl(), baz.Impl());
 }
 
 }  // namespace WTF

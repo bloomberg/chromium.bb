@@ -32,7 +32,7 @@ WebWidgetTestClient::WebWidgetTestClient(
 
 WebWidgetTestClient::~WebWidgetTestClient() {}
 
-void WebWidgetTestClient::scheduleAnimation() {
+void WebWidgetTestClient::ScheduleAnimation() {
   if (!test_runner()->TestIsRunning())
     return;
 
@@ -49,48 +49,48 @@ void WebWidgetTestClient::AnimateNow() {
     blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
     animation_scheduled_ = false;
     base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
-    web_widget->beginFrame(animate_time.InSecondsF());
-    web_widget->updateAllLifecyclePhases();
-    if (blink::WebPagePopup* popup = web_widget->pagePopup()) {
-      popup->beginFrame(animate_time.InSecondsF());
-      popup->updateAllLifecyclePhases();
+    web_widget->BeginFrame(animate_time.InSecondsF());
+    web_widget->UpdateAllLifecyclePhases();
+    if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
+      popup->BeginFrame(animate_time.InSecondsF());
+      popup->UpdateAllLifecyclePhases();
     }
   }
 }
 
-blink::WebScreenInfo WebWidgetTestClient::screenInfo() {
+blink::WebScreenInfo WebWidgetTestClient::GetScreenInfo() {
   blink::WebScreenInfo screen_info;
   MockScreenOrientationClient* mock_client =
       test_runner()->getMockScreenOrientationClient();
   if (mock_client->IsDisabled()) {
     // Indicate to WebViewTestProxy that there is no test/mock info.
-    screen_info.orientationType = blink::WebScreenOrientationUndefined;
+    screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
   } else {
     // Override screen orientation information with mock data.
-    screen_info.orientationType = mock_client->CurrentOrientationType();
-    screen_info.orientationAngle = mock_client->CurrentOrientationAngle();
+    screen_info.orientation_type = mock_client->CurrentOrientationType();
+    screen_info.orientation_angle = mock_client->CurrentOrientationAngle();
   }
   return screen_info;
 }
 
-bool WebWidgetTestClient::requestPointerLock() {
+bool WebWidgetTestClient::RequestPointerLock() {
   return view_test_runner()->RequestPointerLock();
 }
 
-void WebWidgetTestClient::requestPointerUnlock() {
+void WebWidgetTestClient::RequestPointerUnlock() {
   view_test_runner()->RequestPointerUnlock();
 }
 
-bool WebWidgetTestClient::isPointerLocked() {
+bool WebWidgetTestClient::IsPointerLocked() {
   return view_test_runner()->isPointerLocked();
 }
 
-void WebWidgetTestClient::setToolTipText(const blink::WebString& text,
+void WebWidgetTestClient::SetToolTipText(const blink::WebString& text,
                                          blink::WebTextDirection direction) {
   test_runner()->setToolTipText(text);
 }
 
-void WebWidgetTestClient::startDragging(blink::WebReferrerPolicy policy,
+void WebWidgetTestClient::StartDragging(blink::WebReferrerPolicy policy,
                                         const blink::WebDragData& data,
                                         blink::WebDragOperationsMask mask,
                                         const blink::WebImage& image,

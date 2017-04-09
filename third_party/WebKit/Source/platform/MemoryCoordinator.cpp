@@ -13,81 +13,81 @@
 namespace blink {
 
 // static
-bool MemoryCoordinator::s_isLowEndDevice = false;
+bool MemoryCoordinator::is_low_end_device_ = false;
 
 // static
-bool MemoryCoordinator::isLowEndDevice() {
-  return s_isLowEndDevice;
+bool MemoryCoordinator::IsLowEndDevice() {
+  return is_low_end_device_;
 }
 
 // static
-void MemoryCoordinator::initialize() {
-  s_isLowEndDevice = ::base::SysInfo::IsLowEndDevice();
+void MemoryCoordinator::Initialize() {
+  is_low_end_device_ = ::base::SysInfo::IsLowEndDevice();
 }
 
 // static
-void MemoryCoordinator::setIsLowEndDeviceForTesting(bool isLowEndDevice) {
-  s_isLowEndDevice = isLowEndDevice;
+void MemoryCoordinator::SetIsLowEndDeviceForTesting(bool is_low_end_device) {
+  is_low_end_device_ = is_low_end_device;
 }
 
 // static
-MemoryCoordinator& MemoryCoordinator::instance() {
+MemoryCoordinator& MemoryCoordinator::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<MemoryCoordinator>, external,
                       (new MemoryCoordinator));
-  DCHECK(isMainThread());
-  return *external.get();
+  DCHECK(IsMainThread());
+  return *external.Get();
 }
 
 
 MemoryCoordinator::MemoryCoordinator() {}
 
-void MemoryCoordinator::registerClient(MemoryCoordinatorClient* client) {
-  DCHECK(isMainThread());
+void MemoryCoordinator::RegisterClient(MemoryCoordinatorClient* client) {
+  DCHECK(IsMainThread());
   DCHECK(client);
-  DCHECK(!m_clients.contains(client));
-  m_clients.insert(client);
+  DCHECK(!clients_.Contains(client));
+  clients_.insert(client);
 }
 
-void MemoryCoordinator::unregisterClient(MemoryCoordinatorClient* client) {
-  DCHECK(isMainThread());
-  m_clients.erase(client);
+void MemoryCoordinator::UnregisterClient(MemoryCoordinatorClient* client) {
+  DCHECK(IsMainThread());
+  clients_.erase(client);
 }
 
-void MemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel level) {
+void MemoryCoordinator::OnMemoryPressure(WebMemoryPressureLevel level) {
   TRACE_EVENT0("blink", "MemoryCoordinator::onMemoryPressure");
-  for (auto& client : m_clients)
-    client->onMemoryPressure(level);
-  if (level == WebMemoryPressureLevelCritical)
-    clearMemory();
-  WTF::Partitions::decommitFreeableMemory();
+  for (auto& client : clients_)
+    client->OnMemoryPressure(level);
+  if (level == kWebMemoryPressureLevelCritical)
+    ClearMemory();
+  WTF::Partitions::DecommitFreeableMemory();
 }
 
-void MemoryCoordinator::onMemoryStateChange(MemoryState state) {
-  for (auto& client : m_clients)
-    client->onMemoryStateChange(state);
+void MemoryCoordinator::OnMemoryStateChange(MemoryState state) {
+  for (auto& client : clients_)
+    client->OnMemoryStateChange(state);
 }
 
-void MemoryCoordinator::onPurgeMemory() {
-  for (auto& client : m_clients)
-    client->onPurgeMemory();
+void MemoryCoordinator::OnPurgeMemory() {
+  for (auto& client : clients_)
+    client->OnPurgeMemory();
   // Don't call clearMemory() because font cache invalidation always causes full
   // layout. This increases tab switching cost significantly (e.g.
   // en.wikipedia.org/wiki/Wikipedia). So we should not invalidate the font
   // cache in purge+throttle.
-  ImageDecodingStore::instance().clear();
-  WTF::Partitions::decommitFreeableMemory();
+  ImageDecodingStore::Instance().Clear();
+  WTF::Partitions::DecommitFreeableMemory();
 }
 
-void MemoryCoordinator::clearMemory() {
+void MemoryCoordinator::ClearMemory() {
   // Clear the image cache.
   // TODO(tasak|bashi): Make ImageDecodingStore and FontCache be
   // MemoryCoordinatorClients rather than clearing caches here.
-  ImageDecodingStore::instance().clear();
-  FontCache::fontCache()->invalidate();
+  ImageDecodingStore::Instance().Clear();
+  FontCache::GetFontCache()->Invalidate();
 }
 
 DEFINE_TRACE(MemoryCoordinator) {
-  visitor->trace(m_clients);
+  visitor->Trace(clients_);
 }
 
 }  // namespace blink

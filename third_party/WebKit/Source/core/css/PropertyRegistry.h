@@ -13,21 +13,21 @@ namespace blink {
 
 class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
  public:
-  static PropertyRegistry* create() { return new PropertyRegistry(); }
+  static PropertyRegistry* Create() { return new PropertyRegistry(); }
 
-  void registerProperty(const AtomicString&,
+  void RegisterProperty(const AtomicString&,
                         const CSSSyntaxDescriptor&,
                         bool inherits,
                         const CSSValue* initial,
-                        PassRefPtr<CSSVariableData> initialVariableData,
+                        PassRefPtr<CSSVariableData> initial_variable_data,
                         CSSInterpolationTypes);
-  const PropertyRegistration* registration(const AtomicString&) const;
-  size_t registrationCount() const { return m_registrations.size(); }
+  const PropertyRegistration* Registration(const AtomicString&) const;
+  size_t RegistrationCount() const { return registrations_.size(); }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_registrations); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(registrations_); }
 
  private:
-  HeapHashMap<AtomicString, Member<PropertyRegistration>> m_registrations;
+  HeapHashMap<AtomicString, Member<PropertyRegistration>> registrations_;
 };
 
 }  // namespace blink

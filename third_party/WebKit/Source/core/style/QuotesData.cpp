@@ -23,36 +23,36 @@
 
 namespace blink {
 
-PassRefPtr<QuotesData> QuotesData::create(UChar open1,
+PassRefPtr<QuotesData> QuotesData::Create(UChar open1,
                                           UChar close1,
                                           UChar open2,
                                           UChar close2) {
-  RefPtr<QuotesData> data = QuotesData::create();
-  data->addPair(std::make_pair(String(&open1, 1), String(&close1, 1)));
-  data->addPair(std::make_pair(String(&open2, 1), String(&close2, 1)));
+  RefPtr<QuotesData> data = QuotesData::Create();
+  data->AddPair(std::make_pair(String(&open1, 1), String(&close1, 1)));
+  data->AddPair(std::make_pair(String(&open2, 1), String(&close2, 1)));
   return data;
 }
 
-void QuotesData::addPair(std::pair<String, String> quotePair) {
-  m_quotePairs.push_back(quotePair);
+void QuotesData::AddPair(std::pair<String, String> quote_pair) {
+  quote_pairs_.push_back(quote_pair);
 }
 
-const String QuotesData::getOpenQuote(int index) const {
+const String QuotesData::GetOpenQuote(int index) const {
   DCHECK_GE(index, 0);
-  if (!m_quotePairs.size() || index < 0)
-    return emptyString;
-  if ((size_t)index >= m_quotePairs.size())
-    return m_quotePairs.back().first;
-  return m_quotePairs.at(index).first;
+  if (!quote_pairs_.size() || index < 0)
+    return g_empty_string;
+  if ((size_t)index >= quote_pairs_.size())
+    return quote_pairs_.back().first;
+  return quote_pairs_.at(index).first;
 }
 
-const String QuotesData::getCloseQuote(int index) const {
+const String QuotesData::GetCloseQuote(int index) const {
   DCHECK_GE(index, -1);
-  if (!m_quotePairs.size() || index < 0)
-    return emptyString;
-  if ((size_t)index >= m_quotePairs.size())
-    return m_quotePairs.back().second;
-  return m_quotePairs.at(index).second;
+  if (!quote_pairs_.size() || index < 0)
+    return g_empty_string;
+  if ((size_t)index >= quote_pairs_.size())
+    return quote_pairs_.back().second;
+  return quote_pairs_.at(index).second;
 }
 
 }  // namespace blink

@@ -10,15 +10,15 @@ namespace blink {
 namespace {
 
 class EmptyInterfaceRegistry : public InterfaceRegistry {
-  void addInterface(const char* name,
+  void AddInterface(const char* name,
                     const InterfaceFactory& factory) override {}
 };
 
 }  // namespace
 
-InterfaceRegistry* InterfaceRegistry::getEmptyInterfaceRegistry() {
-  DEFINE_STATIC_LOCAL(EmptyInterfaceRegistry, emptyInterfaceRegistry, ());
-  return &emptyInterfaceRegistry;
+InterfaceRegistry* InterfaceRegistry::GetEmptyInterfaceRegistry() {
+  DEFINE_STATIC_LOCAL(EmptyInterfaceRegistry, empty_interface_registry, ());
+  return &empty_interface_registry;
 }
 
 }  // namespace blink

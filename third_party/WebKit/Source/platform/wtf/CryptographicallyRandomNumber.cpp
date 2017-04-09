@@ -22,20 +22,20 @@
 
 namespace WTF {
 
-static bool s_shouldUseAlwaysZeroRandomSourceForTesting = false;
+static bool g_should_use_always_zero_random_source_for_testing = false;
 
-void setAlwaysZeroRandomSourceForTesting() {
-  s_shouldUseAlwaysZeroRandomSourceForTesting = true;
+void SetAlwaysZeroRandomSourceForTesting() {
+  g_should_use_always_zero_random_source_for_testing = true;
 }
 
-uint32_t cryptographicallyRandomNumber() {
+uint32_t CryptographicallyRandomNumber() {
   uint32_t result;
-  cryptographicallyRandomValues(&result, sizeof(result));
+  CryptographicallyRandomValues(&result, sizeof(result));
   return result;
 }
 
-void cryptographicallyRandomValues(void* buffer, size_t length) {
-  if (s_shouldUseAlwaysZeroRandomSourceForTesting) {
+void CryptographicallyRandomValues(void* buffer, size_t length) {
+  if (g_should_use_always_zero_random_source_for_testing) {
     memset(buffer, '\0', length);
     return;
   }

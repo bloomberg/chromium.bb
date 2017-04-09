@@ -9,15 +9,15 @@
 
 namespace blink {
 
-WebTimeRanges EmptyWebMediaPlayer::buffered() const {
+WebTimeRanges EmptyWebMediaPlayer::Buffered() const {
   return WebTimeRanges();
 }
 
-WebTimeRanges EmptyWebMediaPlayer::seekable() const {
+WebTimeRanges EmptyWebMediaPlayer::Seekable() const {
   return WebTimeRanges();
 }
 
-WebSize EmptyWebMediaPlayer::naturalSize() const {
+WebSize EmptyWebMediaPlayer::NaturalSize() const {
   return WebSize(0, 0);
 }
 

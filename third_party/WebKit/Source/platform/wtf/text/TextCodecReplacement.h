@@ -14,17 +14,17 @@ class TextCodecReplacement final : public TextCodecUTF8 {
  public:
   TextCodecReplacement();
 
-  static void registerEncodingNames(EncodingNameRegistrar);
-  static void registerCodecs(TextCodecRegistrar);
+  static void RegisterEncodingNames(EncodingNameRegistrar);
+  static void RegisterCodecs(TextCodecRegistrar);
 
  private:
-  String decode(const char*,
+  String Decode(const char*,
                 size_t length,
                 FlushBehavior,
-                bool stopOnError,
-                bool& sawError) override;
+                bool stop_on_error,
+                bool& saw_error) override;
 
-  bool m_replacementErrorReturned;
+  bool replacement_error_returned_;
 };
 
 }  // namespace WTF

@@ -53,13 +53,13 @@ class CSSTestHelper {
   CSSTestHelper();
   ~CSSTestHelper();
 
-  void addCSSRules(const char* ruleText);
-  RuleSet& ruleSet();
-  CSSRuleList* cssRules();
+  void AddCSSRules(const char* rule_text);
+  RuleSet& GetRuleSet();
+  CSSRuleList* CssRules();
 
  private:
-  Persistent<Document> m_document;
-  Persistent<CSSStyleSheet> m_styleSheet;
+  Persistent<Document> document_;
+  Persistent<CSSStyleSheet> style_sheet_;
 };
 
 }  // namespace blink

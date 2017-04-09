@@ -39,35 +39,35 @@ class ExceptionState;
 
 class DateTimeLocalInputType final : public BaseTemporalInputType {
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
 
  private:
   explicit DateTimeLocalInputType(HTMLInputElement& element)
       : BaseTemporalInputType(element) {}
 
-  void countUsage() override;
-  const AtomicString& formControlType() const override;
-  double valueAsDate() const override;
-  void setValueAsDate(double, ExceptionState&) const override;
-  StepRange createStepRange(AnyStepHandling) const override;
-  bool parseToDateComponentsInternal(const String&,
+  void CountUsage() override;
+  const AtomicString& FormControlType() const override;
+  double ValueAsDate() const override;
+  void SetValueAsDate(double, ExceptionState&) const override;
+  StepRange CreateStepRange(AnyStepHandling) const override;
+  bool ParseToDateComponentsInternal(const String&,
                                      DateComponents*) const override;
-  bool setMillisecondToDateComponents(double, DateComponents*) const override;
-  String localizeValue(const String&) const override;
-  void warnIfValueIsInvalid(const String&) const override;
+  bool SetMillisecondToDateComponents(double, DateComponents*) const override;
+  String LocalizeValue(const String&) const override;
+  void WarnIfValueIsInvalid(const String&) const override;
 
   // BaseTemporalInputType functions
-  String formatDateTimeFieldsState(const DateTimeFieldsState&) const final;
-  void setupLayoutParameters(DateTimeEditElement::LayoutParameters&,
+  String FormatDateTimeFieldsState(const DateTimeFieldsState&) const final;
+  void SetupLayoutParameters(DateTimeEditElement::LayoutParameters&,
                              const DateComponents&) const final;
-  bool isValidFormat(bool hasYear,
-                     bool hasMonth,
-                     bool hasWeek,
-                     bool hasDay,
-                     bool hasAMPM,
-                     bool hasHour,
-                     bool hasMinute,
-                     bool hasSecond) const override;
+  bool IsValidFormat(bool has_year,
+                     bool has_month,
+                     bool has_week,
+                     bool has_day,
+                     bool has_ampm,
+                     bool has_hour,
+                     bool has_minute,
+                     bool has_second) const override;
 };
 
 }  // namespace blink

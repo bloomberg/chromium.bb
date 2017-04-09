@@ -16,21 +16,21 @@ class ThrowOnDynamicMarkupInsertionCountIncrementer {
 
  public:
   explicit ThrowOnDynamicMarkupInsertionCountIncrementer(Document* document)
-      : m_count(document ? &document->m_throwOnDynamicMarkupInsertionCount
-                         : 0) {
-    if (!m_count)
+      : count_(document ? &document->throw_on_dynamic_markup_insertion_count_
+                        : 0) {
+    if (!count_)
       return;
-    ++(*m_count);
+    ++(*count_);
   }
 
   ~ThrowOnDynamicMarkupInsertionCountIncrementer() {
-    if (!m_count)
+    if (!count_)
       return;
-    --(*m_count);
+    --(*count_);
   }
 
  private:
-  unsigned* m_count;
+  unsigned* count_;
 };
 
 }  // namespace blink

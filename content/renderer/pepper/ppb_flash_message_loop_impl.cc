@@ -89,11 +89,11 @@ int32_t PPB_Flash_MessageLoop_Impl::InternalRun(
   {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    blink::WebView::willEnterModalLoop();
+    blink::WebView::WillEnterModalLoop();
 
     base::RunLoop().Run();
 
-    blink::WebView::didExitModalLoop();
+    blink::WebView::DidExitModalLoop();
   }
   // Don't access data members of the class below.
 

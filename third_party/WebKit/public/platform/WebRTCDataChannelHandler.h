@@ -36,25 +36,25 @@ class WebRTCDataChannelHandler {
  public:
   virtual ~WebRTCDataChannelHandler() {}
 
-  virtual void setClient(WebRTCDataChannelHandlerClient*) = 0;
+  virtual void SetClient(WebRTCDataChannelHandlerClient*) = 0;
 
-  virtual WebString label() = 0;
+  virtual WebString Label() = 0;
 
   // DEPRECATED
-  virtual bool isReliable() { return true; }
+  virtual bool IsReliable() { return true; }
 
-  virtual bool ordered() const = 0;
-  virtual unsigned short maxRetransmitTime() const = 0;
-  virtual unsigned short maxRetransmits() const = 0;
-  virtual WebString protocol() const = 0;
-  virtual bool negotiated() const = 0;
-  virtual unsigned short id() const = 0;
+  virtual bool Ordered() const = 0;
+  virtual unsigned short MaxRetransmitTime() const = 0;
+  virtual unsigned short MaxRetransmits() const = 0;
+  virtual WebString Protocol() const = 0;
+  virtual bool Negotiated() const = 0;
+  virtual unsigned short Id() const = 0;
 
-  virtual WebRTCDataChannelHandlerClient::ReadyState state() const = 0;
-  virtual unsigned long bufferedAmount() = 0;
-  virtual bool sendStringData(const WebString&) = 0;
-  virtual bool sendRawData(const char*, size_t) = 0;
-  virtual void close() = 0;
+  virtual WebRTCDataChannelHandlerClient::ReadyState GetState() const = 0;
+  virtual unsigned long BufferedAmount() = 0;
+  virtual bool SendStringData(const WebString&) = 0;
+  virtual bool SendRawData(const char*, size_t) = 0;
+  virtual void Close() = 0;
 };
 
 }  // namespace blink

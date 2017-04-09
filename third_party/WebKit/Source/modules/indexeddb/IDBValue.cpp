@@ -16,79 +16,84 @@ namespace blink {
 IDBValue::IDBValue() = default;
 
 IDBValue::IDBValue(const WebIDBValue& value, v8::Isolate* isolate)
-    : IDBValue(value.data, value.webBlobInfo, value.primaryKey, value.keyPath) {
-  m_isolate = isolate;
-  m_externalAllocatedSize = m_data ? static_cast<int64_t>(m_data->size()) : 0l;
-  if (m_externalAllocatedSize)
-    m_isolate->AdjustAmountOfExternalAllocatedMemory(m_externalAllocatedSize);
+    : IDBValue(value.data,
+               value.web_blob_info,
+               value.primary_key,
+               value.key_path) {
+  isolate_ = isolate;
+  external_allocated_size_ = data_ ? static_cast<int64_t>(data_->size()) : 0l;
+  if (external_allocated_size_)
+    isolate_->AdjustAmountOfExternalAllocatedMemory(external_allocated_size_);
 }
 
 IDBValue::IDBValue(PassRefPtr<SharedBuffer> data,
-                   const WebVector<WebBlobInfo>& webBlobInfo,
-                   IDBKey* primaryKey,
-                   const IDBKeyPath& keyPath)
-    : m_data(data),
-      m_blobData(WTF::makeUnique<Vector<RefPtr<BlobDataHandle>>>()),
-      m_blobInfo(WTF::wrapUnique(new Vector<WebBlobInfo>(webBlobInfo.size()))),
-      m_primaryKey(primaryKey && primaryKey->isValid() ? primaryKey : nullptr),
-      m_keyPath(keyPath) {
-  for (size_t i = 0; i < webBlobInfo.size(); ++i) {
-    const WebBlobInfo& info = (*m_blobInfo)[i] = webBlobInfo[i];
-    m_blobData->push_back(
-        BlobDataHandle::create(info.uuid(), info.type(), info.size()));
+                   const WebVector<WebBlobInfo>& web_blob_info,
+                   IDBKey* primary_key,
+                   const IDBKeyPath& key_path)
+    : data_(data),
+      blob_data_(WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>()),
+      blob_info_(
+          WTF::WrapUnique(new Vector<WebBlobInfo>(web_blob_info.size()))),
+      primary_key_(primary_key && primary_key->IsValid() ? primary_key
+                                                         : nullptr),
+      key_path_(key_path) {
+  for (size_t i = 0; i < web_blob_info.size(); ++i) {
+    const WebBlobInfo& info = (*blob_info_)[i] = web_blob_info[i];
+    blob_data_->push_back(
+        BlobDataHandle::Create(info.Uuid(), info.GetType(), info.size()));
   }
 }
 
 IDBValue::IDBValue(const IDBValue* value,
-                   IDBKey* primaryKey,
-                   const IDBKeyPath& keyPath)
-    : m_data(value->m_data),
-      m_blobData(WTF::makeUnique<Vector<RefPtr<BlobDataHandle>>>()),
-      m_blobInfo(
-          WTF::wrapUnique(new Vector<WebBlobInfo>(value->m_blobInfo->size()))),
-      m_primaryKey(primaryKey),
-      m_keyPath(keyPath) {
-  for (size_t i = 0; i < value->m_blobInfo->size(); ++i) {
-    const WebBlobInfo& info = (*m_blobInfo)[i] = value->m_blobInfo->at(i);
-    m_blobData->push_back(
-        BlobDataHandle::create(info.uuid(), info.type(), info.size()));
+                   IDBKey* primary_key,
+                   const IDBKeyPath& key_path)
+    : data_(value->data_),
+      blob_data_(WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>()),
+      blob_info_(
+          WTF::WrapUnique(new Vector<WebBlobInfo>(value->blob_info_->size()))),
+      primary_key_(primary_key),
+      key_path_(key_path) {
+  for (size_t i = 0; i < value->blob_info_->size(); ++i) {
+    const WebBlobInfo& info = (*blob_info_)[i] = value->blob_info_->at(i);
+    blob_data_->push_back(
+        BlobDataHandle::Create(info.Uuid(), info.GetType(), info.size()));
   }
 }
 
 IDBValue::~IDBValue() {
-  if (m_isolate)
-    m_isolate->AdjustAmountOfExternalAllocatedMemory(-m_externalAllocatedSize);
+  if (isolate_)
+    isolate_->AdjustAmountOfExternalAllocatedMemory(-external_allocated_size_);
 }
 
-PassRefPtr<IDBValue> IDBValue::create() {
-  return adoptRef(new IDBValue());
+PassRefPtr<IDBValue> IDBValue::Create() {
+  return AdoptRef(new IDBValue());
 }
 
-PassRefPtr<IDBValue> IDBValue::create(const WebIDBValue& value,
+PassRefPtr<IDBValue> IDBValue::Create(const WebIDBValue& value,
                                       v8::Isolate* isolate) {
-  return adoptRef(new IDBValue(value, isolate));
+  return AdoptRef(new IDBValue(value, isolate));
 }
 
-PassRefPtr<IDBValue> IDBValue::create(const IDBValue* value,
-                                      IDBKey* primaryKey,
-                                      const IDBKeyPath& keyPath) {
-  return adoptRef(new IDBValue(value, primaryKey, keyPath));
+PassRefPtr<IDBValue> IDBValue::Create(const IDBValue* value,
+                                      IDBKey* primary_key,
+                                      const IDBKeyPath& key_path) {
+  return AdoptRef(new IDBValue(value, primary_key, key_path));
 }
 
-Vector<String> IDBValue::getUUIDs() const {
+Vector<String> IDBValue::GetUUIDs() const {
   Vector<String> uuids;
-  uuids.reserveCapacity(m_blobInfo->size());
-  for (const auto& info : *m_blobInfo)
-    uuids.push_back(info.uuid());
+  uuids.ReserveCapacity(blob_info_->size());
+  for (const auto& info : *blob_info_)
+    uuids.push_back(info.Uuid());
   return uuids;
 }
 
-RefPtr<SerializedScriptValue> IDBValue::createSerializedValue() const {
-  return SerializedScriptValue::create(m_data->data(), m_data->size());
+RefPtr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {
+  return SerializedScriptValue::Create(data_->Data(), data_->size());
 }
 
-bool IDBValue::isNull() const {
-  return !m_data.get();
+bool IDBValue::IsNull() const {
+  return !data_.Get();
 }
 
 }  // namespace blink

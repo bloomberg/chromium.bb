@@ -40,19 +40,19 @@ class CachedUAStyle {
   WTF_MAKE_NONCOPYABLE(CachedUAStyle);
 
  public:
-  static std::unique_ptr<CachedUAStyle> create(const ComputedStyle* style) {
-    return WTF::wrapUnique(new CachedUAStyle(style));
+  static std::unique_ptr<CachedUAStyle> Create(const ComputedStyle* style) {
+    return WTF::WrapUnique(new CachedUAStyle(style));
   }
 
   BorderData border;
-  FillLayer backgroundLayers;
-  StyleColor backgroundColor;
+  FillLayer background_layers;
+  StyleColor background_color;
 
  private:
   explicit CachedUAStyle(const ComputedStyle* style)
-      : border(style->border()),
-        backgroundLayers(style->backgroundLayers()),
-        backgroundColor(style->backgroundColor()) {}
+      : border(style->Border()),
+        background_layers(style->BackgroundLayers()),
+        background_color(style->BackgroundColor()) {}
 };
 
 }  // namespace blink

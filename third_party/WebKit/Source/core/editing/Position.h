@@ -43,11 +43,11 @@ enum class TextAffinity;
 class TreeScope;
 
 enum class PositionAnchorType : unsigned {
-  OffsetInAnchor,
-  BeforeAnchor,
-  AfterAnchor,
-  BeforeChildren,
-  AfterChildren,
+  kOffsetInAnchor,
+  kBeforeAnchor,
+  kAfterAnchor,
+  kBeforeChildren,
+  kAfterChildren,
 };
 
 // Instances of |PositionTemplate<Strategy>| are immutable.
@@ -57,38 +57,38 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
 
  public:
   PositionTemplate()
-      : m_offset(0), m_anchorType(PositionAnchorType::OffsetInAnchor) {}
+      : offset_(0), anchor_type_(PositionAnchorType::kOffsetInAnchor) {}
 
-  static const TreeScope* commonAncestorTreeScope(
+  static const TreeScope* CommonAncestorTreeScope(
       const PositionTemplate<Strategy>&,
       const PositionTemplate<Strategy>& b);
-  static PositionTemplate<Strategy> editingPositionOf(Node* anchorNode,
+  static PositionTemplate<Strategy> EditingPositionOf(Node* anchor_node,
                                                       int offset);
 
   // For creating before/after positions:
-  PositionTemplate(Node* anchorNode, PositionAnchorType);
+  PositionTemplate(Node* anchor_node, PositionAnchorType);
 
   // For creating offset positions:
   // FIXME: This constructor should eventually go away. See bug 63040.
-  PositionTemplate(Node* anchorNode, int offset);
+  PositionTemplate(Node* anchor_node, int offset);
 
   PositionTemplate(const PositionTemplate&);
 
-  PositionAnchorType anchorType() const { return m_anchorType; }
-  bool isAfterAnchor() const {
-    return m_anchorType == PositionAnchorType::AfterAnchor;
+  PositionAnchorType AnchorType() const { return anchor_type_; }
+  bool IsAfterAnchor() const {
+    return anchor_type_ == PositionAnchorType::kAfterAnchor;
   }
-  bool isAfterChildren() const {
-    return m_anchorType == PositionAnchorType::AfterChildren;
+  bool IsAfterChildren() const {
+    return anchor_type_ == PositionAnchorType::kAfterChildren;
   }
-  bool isBeforeAnchor() const {
-    return m_anchorType == PositionAnchorType::BeforeAnchor;
+  bool IsBeforeAnchor() const {
+    return anchor_type_ == PositionAnchorType::kBeforeAnchor;
   }
-  bool isBeforeChildren() const {
-    return m_anchorType == PositionAnchorType::BeforeChildren;
+  bool IsBeforeChildren() const {
+    return anchor_type_ == PositionAnchorType::kBeforeChildren;
   }
-  bool isOffsetInAnchor() const {
-    return m_anchorType == PositionAnchorType::OffsetInAnchor;
+  bool IsOffsetInAnchor() const {
+    return anchor_type_ == PositionAnchorType::kOffsetInAnchor;
   }
 
   // These are always DOM compliant values.  Editing positions like [img, 0]
@@ -96,26 +96,26 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   // these functions.
 
   // null for a before/after position anchored to a node with no parent
-  Node* computeContainerNode() const;
+  Node* ComputeContainerNode() const;
 
   // O(n) for before/after-anchored positions, O(1) for parent-anchored
   // positions
-  int computeOffsetInContainerNode() const;
+  int ComputeOffsetInContainerNode() const;
 
   // Convenience method for DOM positions that also fixes up some positions for
   // editing
-  PositionTemplate<Strategy> parentAnchoredEquivalent() const;
+  PositionTemplate<Strategy> ParentAnchoredEquivalent() const;
 
   // Returns |PositionIsAnchor| type |Position| which is compatible with
   // |RangeBoundaryPoint| as safe to pass |Range| constructor. Return value
   // of this function is different from |parentAnchoredEquivalent()| which
   // returns editing specific position.
-  PositionTemplate<Strategy> toOffsetInAnchor() const;
+  PositionTemplate<Strategy> ToOffsetInAnchor() const;
 
   // Inline O(1) access for Positions which callers know to be parent-anchored
-  int offsetInContainerNode() const {
-    DCHECK(isOffsetInAnchor());
-    return m_offset;
+  int OffsetInContainerNode() const {
+    DCHECK(IsOffsetInAnchor());
+    return offset_;
   }
 
   // Returns an offset for editing based on anchor type for using with
@@ -127,46 +127,46 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   //   - AfterAnchor     last editing offset in anchor node
   // Editing operations will change in anchor node rather than nodes around
   // anchor node.
-  int computeEditingOffset() const;
+  int ComputeEditingOffset() const;
 
   // These are convenience methods which are smart about whether the position is
   // neighbor anchored or parent anchored
-  Node* computeNodeBeforePosition() const;
-  Node* computeNodeAfterPosition() const;
+  Node* ComputeNodeBeforePosition() const;
+  Node* ComputeNodeAfterPosition() const;
 
   // Returns node as |Range::firstNode()|. This position must be a
   // |PositionAnchorType::OffsetInAhcor| to behave as |Range| boundary point.
-  Node* nodeAsRangeFirstNode() const;
+  Node* NodeAsRangeFirstNode() const;
 
   // Similar to |nodeAsRangeLastNode()|, but returns a node in a range.
-  Node* nodeAsRangeLastNode() const;
+  Node* NodeAsRangeLastNode() const;
 
   // Returns a node as past last as same as |Range::pastLastNode()|. This
   // function is supposed to used in HTML serialization and plain text
   // iterator. This position must be a |PositionAnchorType::OffsetInAhcor| to
   // behave as |Range| boundary point.
-  Node* nodeAsRangePastLastNode() const;
+  Node* NodeAsRangePastLastNode() const;
 
-  Node* commonAncestorContainer(const PositionTemplate<Strategy>&) const;
+  Node* CommonAncestorContainer(const PositionTemplate<Strategy>&) const;
 
-  Node* anchorNode() const { return m_anchorNode.get(); }
+  Node* AnchorNode() const { return anchor_node_.Get(); }
 
-  Document* document() const {
-    return m_anchorNode ? &m_anchorNode->document() : 0;
+  Document* GetDocument() const {
+    return anchor_node_ ? &anchor_node_->GetDocument() : 0;
   }
-  bool isConnected() const {
-    return m_anchorNode && m_anchorNode->isConnected();
+  bool IsConnected() const {
+    return anchor_node_ && anchor_node_->isConnected();
   }
 
-  bool isNull() const { return !m_anchorNode; }
-  bool isNotNull() const { return m_anchorNode; }
-  bool isOrphan() const { return m_anchorNode && !m_anchorNode->isConnected(); }
+  bool IsNull() const { return !anchor_node_; }
+  bool IsNotNull() const { return anchor_node_; }
+  bool IsOrphan() const { return anchor_node_ && !anchor_node_->isConnected(); }
 
   // Note: Comparison of positions require both parameters are non-null. You
   // should check null-position before comparing them.
   // TODO(yosin): We should use |Position::operator<()| instead of
   // |Position::comapreTo()| to utilize |DHCECK_XX()|.
-  int compareTo(const PositionTemplate<Strategy>&) const;
+  int CompareTo(const PositionTemplate<Strategy>&) const;
   bool operator<(const PositionTemplate<Strategy>&) const;
   bool operator<=(const PositionTemplate<Strategy>&) const;
   bool operator>(const PositionTemplate<Strategy>&) const;
@@ -175,44 +175,45 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   // These can be either inside or just before/after the node, depending on
   // if the node is ignored by editing or not.
   // FIXME: These should go away. They only make sense for legacy positions.
-  bool atFirstEditingPositionForNode() const;
-  bool atLastEditingPositionForNode() const;
+  bool AtFirstEditingPositionForNode() const;
+  bool AtLastEditingPositionForNode() const;
 
-  bool atStartOfTree() const;
-  bool atEndOfTree() const;
+  bool AtStartOfTree() const;
+  bool AtEndOfTree() const;
 
-  static PositionTemplate<Strategy> beforeNode(Node* anchorNode);
-  static PositionTemplate<Strategy> afterNode(Node* anchorNode);
-  static PositionTemplate<Strategy> inParentBeforeNode(const Node& anchorNode);
-  static PositionTemplate<Strategy> inParentAfterNode(const Node& anchorNode);
-  static int lastOffsetInNode(Node* anchorNode);
-  static PositionTemplate<Strategy> firstPositionInNode(Node* anchorNode);
-  static PositionTemplate<Strategy> lastPositionInNode(Node* anchorNode);
-  static int minOffsetForNode(Node* anchorNode, int offset);
-  static PositionTemplate<Strategy> firstPositionInOrBeforeNode(
-      Node* anchorNode);
-  static PositionTemplate<Strategy> lastPositionInOrAfterNode(Node* anchorNode);
+  static PositionTemplate<Strategy> BeforeNode(Node* anchor_node);
+  static PositionTemplate<Strategy> AfterNode(Node* anchor_node);
+  static PositionTemplate<Strategy> InParentBeforeNode(const Node& anchor_node);
+  static PositionTemplate<Strategy> InParentAfterNode(const Node& anchor_node);
+  static int LastOffsetInNode(Node* anchor_node);
+  static PositionTemplate<Strategy> FirstPositionInNode(Node* anchor_node);
+  static PositionTemplate<Strategy> LastPositionInNode(Node* anchor_node);
+  static int MinOffsetForNode(Node* anchor_node, int offset);
+  static PositionTemplate<Strategy> FirstPositionInOrBeforeNode(
+      Node* anchor_node);
+  static PositionTemplate<Strategy> LastPositionInOrAfterNode(
+      Node* anchor_node);
 
-  String toAnchorTypeAndOffsetString() const;
+  String ToAnchorTypeAndOffsetString() const;
 #ifndef NDEBUG
-  void showTreeForThis() const;
-  void showTreeForThisInFlatTree() const;
+  void ShowTreeForThis() const;
+  void ShowTreeForThisInFlatTree() const;
 #endif
 
   DECLARE_TRACE();
 
  private:
-  bool isAfterAnchorOrAfterChildren() const {
-    return isAfterAnchor() || isAfterChildren();
+  bool IsAfterAnchorOrAfterChildren() const {
+    return IsAfterAnchor() || IsAfterChildren();
   }
 
-  Member<Node> m_anchorNode;
+  Member<Node> anchor_node_;
   // m_offset can be the offset inside m_anchorNode, or if
   // editingIgnoresContent(m_anchorNode) returns true, then other places in
   // editing will treat m_offset == 0 as "before the anchor" and m_offset > 0 as
   // "after the anchor node".  See parentAnchoredEquivalent for more info.
-  int m_offset;
-  PositionAnchorType m_anchorType;
+  int offset_;
+  PositionAnchorType anchor_type_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
@@ -226,13 +227,13 @@ using PositionInFlatTree = PositionTemplate<EditingInFlatTreeStrategy>;
 template <typename Strategy>
 bool operator==(const PositionTemplate<Strategy>& a,
                 const PositionTemplate<Strategy>& b) {
-  if (a.isNull())
-    return b.isNull();
+  if (a.IsNull())
+    return b.IsNull();
 
-  if (a.anchorNode() != b.anchorNode() || a.anchorType() != b.anchorType())
+  if (a.AnchorNode() != b.AnchorNode() || a.AnchorType() != b.AnchorType())
     return false;
 
-  if (!a.isOffsetInAnchor()) {
+  if (!a.IsOffsetInAnchor()) {
     // Note: |m_offset| only has meaning when
     // |PositionAnchorType::OffsetInAnchor|.
     return true;
@@ -240,7 +241,7 @@ bool operator==(const PositionTemplate<Strategy>& a,
 
   // FIXME: In <div><img></div> [div, 0] != [img, 0] even though most of the
   // editing code will treat them as identical.
-  return a.offsetInContainerNode() == b.offsetInContainerNode();
+  return a.OffsetInContainerNode() == b.OffsetInContainerNode();
 }
 
 template <typename Strategy>
@@ -249,23 +250,23 @@ bool operator!=(const PositionTemplate<Strategy>& a,
   return !(a == b);
 }
 
-CORE_EXPORT PositionInFlatTree toPositionInFlatTree(const Position&);
-CORE_EXPORT Position toPositionInDOMTree(const Position&);
-CORE_EXPORT Position toPositionInDOMTree(const PositionInFlatTree&);
+CORE_EXPORT PositionInFlatTree ToPositionInFlatTree(const Position&);
+CORE_EXPORT Position ToPositionInDOMTree(const Position&);
+CORE_EXPORT Position ToPositionInDOMTree(const PositionInFlatTree&);
 
 template <typename Strategy>
-PositionTemplate<Strategy> fromPositionInDOMTree(const Position&);
+PositionTemplate<Strategy> FromPositionInDOMTree(const Position&);
 
 template <>
-inline Position fromPositionInDOMTree<EditingStrategy>(
+inline Position FromPositionInDOMTree<EditingStrategy>(
     const Position& position) {
   return position;
 }
 
 template <>
-inline PositionInFlatTree fromPositionInDOMTree<EditingInFlatTreeStrategy>(
+inline PositionInFlatTree FromPositionInDOMTree<EditingInFlatTreeStrategy>(
     const Position& position) {
-  return toPositionInFlatTree(position);
+  return ToPositionInFlatTree(position);
 }
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, PositionAnchorType);

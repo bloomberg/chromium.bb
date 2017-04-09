@@ -22,50 +22,52 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   STACK_ALLOCATED();
 
  public:
-  enum class Type { Normal, TextIntercepts };
+  enum class Type { kNormal, kTextIntercepts };
 
   ShapeResultBloberizer(const Font&,
-                        float deviceScaleFactor,
-                        Type = Type::Normal);
+                        float device_scale_factor,
+                        Type = Type::kNormal);
 
-  Type type() const { return m_type; }
+  Type GetType() const { return type_; }
 
-  void add(Glyph glyph, const SimpleFontData* fontData, float hOffset) {
+  void Add(Glyph glyph, const SimpleFontData* font_data, float h_offset) {
     // cannot mix x-only/xy offsets
-    DCHECK(!hasPendingVerticalOffsets());
+    DCHECK(!HasPendingVerticalOffsets());
 
-    if (UNLIKELY(fontData != m_pendingFontData)) {
-      commitPendingRun();
-      m_pendingFontData = fontData;
-      DCHECK_EQ(blobRotation(fontData), BlobRotation::NoRotation);
+    if (UNLIKELY(font_data != pending_font_data_)) {
+      CommitPendingRun();
+      pending_font_data_ = font_data;
+      DCHECK_EQ(GetBlobRotation(font_data), BlobRotation::kNoRotation);
     }
 
-    m_pendingGlyphs.push_back(glyph);
-    m_pendingOffsets.push_back(hOffset);
+    pending_glyphs_.push_back(glyph);
+    pending_offsets_.push_back(h_offset);
   }
 
-  void add(Glyph glyph,
-           const SimpleFontData* fontData,
+  void Add(Glyph glyph,
+           const SimpleFontData* font_data,
            const FloatPoint& offset) {
     // cannot mix x-only/xy offsets
-    DCHECK(m_pendingGlyphs.isEmpty() || hasPendingVerticalOffsets());
+    DCHECK(pending_glyphs_.IsEmpty() || HasPendingVerticalOffsets());
 
-    if (UNLIKELY(fontData != m_pendingFontData)) {
-      commitPendingRun();
-      m_pendingFontData = fontData;
-      m_pendingVerticalBaselineXOffset =
-          blobRotation(fontData) == BlobRotation::NoRotation
+    if (UNLIKELY(font_data != pending_font_data_)) {
+      CommitPendingRun();
+      pending_font_data_ = font_data;
+      pending_vertical_baseline_x_offset_ =
+          GetBlobRotation(font_data) == BlobRotation::kNoRotation
               ? 0
-              : fontData->getFontMetrics().floatAscent() -
-                    fontData->getFontMetrics().floatAscent(IdeographicBaseline);
+              : font_data->GetFontMetrics().FloatAscent() -
+                    font_data->GetFontMetrics().FloatAscent(
+                        kIdeographicBaseline);
     }
 
-    m_pendingGlyphs.push_back(glyph);
-    m_pendingOffsets.push_back(offset.x() + m_pendingVerticalBaselineXOffset);
-    m_pendingOffsets.push_back(offset.y());
+    pending_glyphs_.push_back(glyph);
+    pending_offsets_.push_back(offset.X() +
+                               pending_vertical_baseline_x_offset_);
+    pending_offsets_.push_back(offset.Y());
   }
 
-  enum class BlobRotation { NoRotation, CCWRotation };
+  enum class BlobRotation { kNoRotation, kCCWRotation };
   struct BlobInfo {
     BlobInfo(sk_sp<SkTextBlob> b, BlobRotation r)
         : blob(std::move(b)), rotation(r) {}
@@ -74,34 +76,34 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   };
 
   using BlobBuffer = Vector<BlobInfo, 16>;
-  const BlobBuffer& blobs();
+  const BlobBuffer& Blobs();
 
  private:
   friend class ShapeResultBloberizerTestInfo;
 
-  void commitPendingRun();
-  void commitPendingBlob();
+  void CommitPendingRun();
+  void CommitPendingBlob();
 
-  bool hasPendingVerticalOffsets() const;
-  static BlobRotation blobRotation(const SimpleFontData*);
+  bool HasPendingVerticalOffsets() const;
+  static BlobRotation GetBlobRotation(const SimpleFontData*);
 
-  const Font& m_font;
-  const float m_deviceScaleFactor;
-  const Type m_type;
+  const Font& font_;
+  const float device_scale_factor_;
+  const Type type_;
 
   // Current text blob state.
-  SkTextBlobBuilder m_builder;
-  BlobRotation m_builderRotation = BlobRotation::NoRotation;
-  size_t m_builderRunCount = 0;
+  SkTextBlobBuilder builder_;
+  BlobRotation builder_rotation_ = BlobRotation::kNoRotation;
+  size_t builder_run_count_ = 0;
 
   // Current run state.
-  const SimpleFontData* m_pendingFontData = nullptr;
-  Vector<Glyph, 1024> m_pendingGlyphs;
-  Vector<float, 1024> m_pendingOffsets;
-  float m_pendingVerticalBaselineXOffset = 0;
+  const SimpleFontData* pending_font_data_ = nullptr;
+  Vector<Glyph, 1024> pending_glyphs_;
+  Vector<float, 1024> pending_offsets_;
+  float pending_vertical_baseline_x_offset_ = 0;
 
   // Constructed blobs.
-  BlobBuffer m_blobs;
+  BlobBuffer blobs_;
 };
 
 }  // namespace blink

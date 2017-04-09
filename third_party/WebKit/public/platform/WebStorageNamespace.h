@@ -50,10 +50,10 @@ class WebStorageNamespace {
   // origin will return two different WebStorageArea objects that share the same
   // backing store.  You should call delete on the returned object when you're
   // finished.
-  virtual WebStorageArea* createStorageArea(const WebSecurityOrigin&) = 0;
+  virtual WebStorageArea* CreateStorageArea(const WebSecurityOrigin&) = 0;
 
   // Returns true of the two instances represent the same storage namespace.
-  virtual bool isSameNamespace(const WebStorageNamespace&) const {
+  virtual bool IsSameNamespace(const WebStorageNamespace&) const {
     return false;
   }
 };

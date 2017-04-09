@@ -13,30 +13,32 @@ namespace blink {
 
 class LayoutBlockItem : public LayoutBoxItem {
  public:
-  explicit LayoutBlockItem(LayoutBlock* layoutBlock)
-      : LayoutBoxItem(layoutBlock) {}
+  explicit LayoutBlockItem(LayoutBlock* layout_block)
+      : LayoutBoxItem(layout_block) {}
 
   explicit LayoutBlockItem(const LayoutBoxItem& item) : LayoutBoxItem(item) {
-    SECURITY_DCHECK(!item || item.isLayoutBlock());
+    SECURITY_DCHECK(!item || item.IsLayoutBlock());
   }
 
   explicit LayoutBlockItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}
 
   LayoutBlockItem() {}
 
-  void flipForWritingMode(LayoutRect& rect) const {
-    toBlock()->flipForWritingMode(rect);
+  void FlipForWritingMode(LayoutRect& rect) const {
+    ToBlock()->FlipForWritingMode(rect);
   }
 
-  bool recalcOverflowAfterStyleChange() {
-    return toBlock()->recalcOverflowAfterStyleChange();
+  bool RecalcOverflowAfterStyleChange() {
+    return ToBlock()->RecalcOverflowAfterStyleChange();
   }
 
-  LayoutItem firstChild() const { return LayoutItem(toBlock()->firstChild()); }
+  LayoutItem FirstChild() const { return LayoutItem(ToBlock()->FirstChild()); }
 
  private:
-  LayoutBlock* toBlock() { return toLayoutBlock(layoutObject()); }
-  const LayoutBlock* toBlock() const { return toLayoutBlock(layoutObject()); }
+  LayoutBlock* ToBlock() { return ToLayoutBlock(GetLayoutObject()); }
+  const LayoutBlock* ToBlock() const {
+    return ToLayoutBlock(GetLayoutObject());
+  }
 };
 
 }  // namespace blink

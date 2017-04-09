@@ -26,7 +26,7 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
   USING_GARBAGE_COLLECTED_MIXIN(MojoWatcher);
 
  public:
-  static MojoWatcher* create(mojo::Handle,
+  static MojoWatcher* Create(mojo::Handle,
                              const MojoHandleSignals&,
                              MojoWatchCallback*,
                              ExecutionContext*);
@@ -38,28 +38,28 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
   DECLARE_TRACE_WRAPPERS();
 
   // ActiveScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed(ExecutionContext*) final;
 
  private:
   friend class V8MojoWatcher;
 
   MojoWatcher(ExecutionContext*, MojoWatchCallback*);
-  MojoResult watch(mojo::Handle, const MojoHandleSignals&);
-  MojoResult arm(MojoResult* readyResult);
+  MojoResult Watch(mojo::Handle, const MojoHandleSignals&);
+  MojoResult Arm(MojoResult* ready_result);
 
-  static void onHandleReady(uintptr_t context,
+  static void OnHandleReady(uintptr_t context,
                             MojoResult,
                             MojoHandleSignalsState,
                             MojoWatcherNotificationFlags);
-  void runReadyCallback(MojoResult);
+  void RunReadyCallback(MojoResult);
 
-  RefPtr<WebTaskRunner> m_taskRunner;
-  TraceWrapperMember<MojoWatchCallback> m_callback;
-  mojo::ScopedWatcherHandle m_watcherHandle;
-  mojo::Handle m_handle;
+  RefPtr<WebTaskRunner> task_runner_;
+  TraceWrapperMember<MojoWatchCallback> callback_;
+  mojo::ScopedWatcherHandle watcher_handle_;
+  mojo::Handle handle_;
 };
 
 }  // namespace blink

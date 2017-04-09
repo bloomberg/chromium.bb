@@ -86,11 +86,11 @@ VisibilityTimerTabHelper::VisibilityTimerTabHelper(
     is_visible_ = false;
   } else {
     switch (contents->GetMainFrame()->GetVisibilityState()) {
-      case blink::WebPageVisibilityStateHidden:
-      case blink::WebPageVisibilityStatePrerender:
+      case blink::kWebPageVisibilityStateHidden:
+      case blink::kWebPageVisibilityStatePrerender:
         is_visible_ = false;
         break;
-      case blink::WebPageVisibilityStateVisible:
+      case blink::kWebPageVisibilityStateVisible:
         is_visible_ = true;
         break;
     }

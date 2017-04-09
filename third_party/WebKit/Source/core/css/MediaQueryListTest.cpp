@@ -16,17 +16,17 @@ namespace {
 
 class TestListener : public MediaQueryListListener {
  public:
-  void notifyMediaQueryChanged() override {}
+  void NotifyMediaQueryChanged() override {}
 };
 
 }  // anonymous namespace
 
 TEST(MediaQueryListTest, CrashInStop) {
-  Document* document = Document::create();
-  MediaQueryList* list = MediaQueryList::create(
-      document, MediaQueryMatcher::create(*document), MediaQuerySet::create());
-  list->addListener(new TestListener());
-  list->contextDestroyed(document);
+  Document* document = Document::Create();
+  MediaQueryList* list = MediaQueryList::Create(
+      document, MediaQueryMatcher::Create(*document), MediaQuerySet::Create());
+  list->AddListener(new TestListener());
+  list->ContextDestroyed(document);
   // This test passes if it's not crashed.
 }
 

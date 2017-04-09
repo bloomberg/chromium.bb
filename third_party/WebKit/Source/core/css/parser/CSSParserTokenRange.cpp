@@ -9,62 +9,62 @@
 
 namespace blink {
 
-DEFINE_GLOBAL(CSSParserToken, staticEOFToken);
+DEFINE_GLOBAL(CSSParserToken, g_static_eof_token);
 
-void CSSParserTokenRange::initStaticEOFToken() {
-  new ((void*)&staticEOFToken) CSSParserToken(EOFToken);
+void CSSParserTokenRange::InitStaticEOFToken() {
+  new ((void*)&g_static_eof_token) CSSParserToken(kEOFToken);
 }
 
-CSSParserTokenRange CSSParserTokenRange::makeSubRange(
+CSSParserTokenRange CSSParserTokenRange::MakeSubRange(
     const CSSParserToken* first,
     const CSSParserToken* last) const {
-  if (first == &staticEOFToken)
-    first = m_last;
-  if (last == &staticEOFToken)
-    last = m_last;
+  if (first == &g_static_eof_token)
+    first = last_;
+  if (last == &g_static_eof_token)
+    last = last_;
   DCHECK_LE(first, last);
   return CSSParserTokenRange(first, last);
 }
 
-CSSParserTokenRange CSSParserTokenRange::consumeBlock() {
-  DCHECK_EQ(peek().getBlockType(), CSSParserToken::BlockStart);
-  const CSSParserToken* start = &peek() + 1;
-  unsigned nestingLevel = 0;
+CSSParserTokenRange CSSParserTokenRange::ConsumeBlock() {
+  DCHECK_EQ(Peek().GetBlockType(), CSSParserToken::kBlockStart);
+  const CSSParserToken* start = &Peek() + 1;
+  unsigned nesting_level = 0;
   do {
-    const CSSParserToken& token = consume();
-    if (token.getBlockType() == CSSParserToken::BlockStart)
-      nestingLevel++;
-    else if (token.getBlockType() == CSSParserToken::BlockEnd)
-      nestingLevel--;
-  } while (nestingLevel && m_first < m_last);
+    const CSSParserToken& token = Consume();
+    if (token.GetBlockType() == CSSParserToken::kBlockStart)
+      nesting_level++;
+    else if (token.GetBlockType() == CSSParserToken::kBlockEnd)
+      nesting_level--;
+  } while (nesting_level && first_ < last_);
 
-  if (nestingLevel)
-    return makeSubRange(start, m_first);  // Ended at EOF
-  return makeSubRange(start, m_first - 1);
+  if (nesting_level)
+    return MakeSubRange(start, first_);  // Ended at EOF
+  return MakeSubRange(start, first_ - 1);
 }
 
-void CSSParserTokenRange::consumeComponentValue() {
+void CSSParserTokenRange::ConsumeComponentValue() {
   // FIXME: This is going to do multiple passes over large sections of a
   // stylesheet. We should consider optimising this by precomputing where each
   // block ends.
-  unsigned nestingLevel = 0;
+  unsigned nesting_level = 0;
   do {
-    const CSSParserToken& token = consume();
-    if (token.getBlockType() == CSSParserToken::BlockStart)
-      nestingLevel++;
-    else if (token.getBlockType() == CSSParserToken::BlockEnd)
-      nestingLevel--;
-  } while (nestingLevel && m_first < m_last);
+    const CSSParserToken& token = Consume();
+    if (token.GetBlockType() == CSSParserToken::kBlockStart)
+      nesting_level++;
+    else if (token.GetBlockType() == CSSParserToken::kBlockEnd)
+      nesting_level--;
+  } while (nesting_level && first_ < last_);
 }
 
-String CSSParserTokenRange::serialize() const {
+String CSSParserTokenRange::Serialize() const {
   // We're supposed to insert comments between certain pairs of token types
   // as per spec, but since this is currently only used for @supports CSSOM
   // we just get these cases wrong and avoid the additional complexity.
   StringBuilder builder;
-  for (const CSSParserToken* it = m_first; it < m_last; ++it)
-    it->serialize(builder);
-  return builder.toString();
+  for (const CSSParserToken* it = first_; it < last_; ++it)
+    it->Serialize(builder);
+  return builder.ToString();
 }
 
 }  // namespace blink

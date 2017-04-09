@@ -38,7 +38,7 @@ Status GetPKeyAndDigest(const blink::WebCryptoAlgorithm& algorithm,
                         EVP_PKEY** pkey,
                         const EVP_MD** digest) {
   *pkey = GetEVP_PKEY(key);
-  *digest = GetDigest(algorithm.ecdsaParams()->hash());
+  *digest = GetDigest(algorithm.EcdsaParams()->GetHash());
   if (!*digest)
     return Status::ErrorUnsupported();
   return Status::Success();
@@ -156,17 +156,17 @@ Status ConvertWebCryptoSignatureToDerSignature(
 class EcdsaImplementation : public EcAlgorithm {
  public:
   EcdsaImplementation()
-      : EcAlgorithm(blink::WebCryptoKeyUsageVerify,
-                    blink::WebCryptoKeyUsageSign) {}
+      : EcAlgorithm(blink::kWebCryptoKeyUsageVerify,
+                    blink::kWebCryptoKeyUsageSign) {}
 
   const char* GetJwkAlgorithm(
       const blink::WebCryptoNamedCurve curve) const override {
     switch (curve) {
-      case blink::WebCryptoNamedCurveP256:
+      case blink::kWebCryptoNamedCurveP256:
         return "ES256";
-      case blink::WebCryptoNamedCurveP384:
+      case blink::kWebCryptoNamedCurveP384:
         return "ES384";
-      case blink::WebCryptoNamedCurveP521:
+      case blink::kWebCryptoNamedCurveP521:
         // This is not a typo! ES512 means P-521 with SHA-512.
         return "ES512";
       default:
@@ -178,7 +178,7 @@ class EcdsaImplementation : public EcAlgorithm {
               const blink::WebCryptoKey& key,
               const CryptoData& data,
               std::vector<uint8_t>* buffer) const override {
-    if (key.type() != blink::WebCryptoKeyTypePrivate)
+    if (key.GetType() != blink::kWebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -216,7 +216,7 @@ class EcdsaImplementation : public EcAlgorithm {
                 const CryptoData& signature,
                 const CryptoData& data,
                 bool* signature_match) const override {
-    if (key.type() != blink::WebCryptoKeyTypePublic)
+    if (key.GetType() != blink::kWebCryptoKeyTypePublic)
       return Status::ErrorUnexpectedKeyType();
 
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);

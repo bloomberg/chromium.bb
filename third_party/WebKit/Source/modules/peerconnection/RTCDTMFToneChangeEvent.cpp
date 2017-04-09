@@ -27,11 +27,11 @@
 
 namespace blink {
 
-RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const String& tone) {
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(const String& tone) {
   return new RTCDTMFToneChangeEvent(tone);
 }
 
-RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(
     const AtomicString& type,
     const RTCDTMFToneChangeEventInit& initializer) {
   DCHECK(type == EventTypeNames::tonechange);
@@ -39,27 +39,27 @@ RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
-    : Event(EventTypeNames::tonechange, false, false), m_tone(tone) {}
+    : Event(EventTypeNames::tonechange, false, false), tone_(tone) {}
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(
     const RTCDTMFToneChangeEventInit& initializer)
     : Event(EventTypeNames::tonechange, initializer) {
   if (initializer.hasTone())
-    m_tone = initializer.tone();
+    tone_ = initializer.tone();
 }
 
 RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent() {}
 
 const String& RTCDTMFToneChangeEvent::tone() const {
-  return m_tone;
+  return tone_;
 }
 
-const AtomicString& RTCDTMFToneChangeEvent::interfaceName() const {
+const AtomicString& RTCDTMFToneChangeEvent::InterfaceName() const {
   return EventNames::RTCDTMFToneChangeEvent;
 }
 
 DEFINE_TRACE(RTCDTMFToneChangeEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

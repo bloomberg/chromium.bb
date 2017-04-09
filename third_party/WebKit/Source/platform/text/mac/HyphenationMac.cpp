@@ -12,30 +12,30 @@ namespace blink {
 
 class HyphenationCF : public Hyphenation {
  public:
-  HyphenationCF(RetainPtr<CFLocaleRef>& localeCF) : m_localeCF(localeCF) {
-    DCHECK(m_localeCF);
+  HyphenationCF(RetainPtr<CFLocaleRef>& locale_cf) : locale_cf_(locale_cf) {
+    DCHECK(locale_cf_);
   }
 
-  size_t lastHyphenLocation(const StringView& text,
-                            size_t beforeIndex) const override {
+  size_t LastHyphenLocation(const StringView& text,
+                            size_t before_index) const override {
     CFIndex result = CFStringGetHyphenationLocationBeforeIndex(
-        text.toString().impl()->createCFString().get(), beforeIndex,
-        CFRangeMake(0, text.length()), 0, m_localeCF.get(), 0);
+        text.ToString().Impl()->CreateCFString().Get(), before_index,
+        CFRangeMake(0, text.length()), 0, locale_cf_.Get(), 0);
     return result == kCFNotFound ? 0 : result;
   }
 
  private:
-  RetainPtr<CFLocaleRef> m_localeCF;
+  RetainPtr<CFLocaleRef> locale_cf_;
 };
 
-PassRefPtr<Hyphenation> Hyphenation::platformGetHyphenation(
+PassRefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
     const AtomicString& locale) {
-  RetainPtr<CFStringRef> localeCFString = locale.impl()->createCFString();
-  RetainPtr<CFLocaleRef> localeCF =
-      adoptCF(CFLocaleCreate(kCFAllocatorDefault, localeCFString.get()));
-  if (!CFStringIsHyphenationAvailableForLocale(localeCF.get()))
+  RetainPtr<CFStringRef> locale_cf_string = locale.Impl()->CreateCFString();
+  RetainPtr<CFLocaleRef> locale_cf =
+      AdoptCF(CFLocaleCreate(kCFAllocatorDefault, locale_cf_string.Get()));
+  if (!CFStringIsHyphenationAvailableForLocale(locale_cf.Get()))
     return nullptr;
-  return adoptRef(new HyphenationCF(localeCF));
+  return AdoptRef(new HyphenationCF(locale_cf));
 }
 
 }  // namespace blink

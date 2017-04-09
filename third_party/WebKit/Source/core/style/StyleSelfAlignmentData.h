@@ -20,30 +20,30 @@ class StyleSelfAlignmentData {
   // center ] ]
   StyleSelfAlignmentData(ItemPosition position,
                          OverflowAlignment overflow,
-                         ItemPositionType positionType = NonLegacyPosition)
-      : m_position(position),
-        m_positionType(positionType),
-        m_overflow(overflow) {}
+                         ItemPositionType position_type = kNonLegacyPosition)
+      : position_(position),
+        position_type_(position_type),
+        overflow_(overflow) {}
 
-  void setPosition(ItemPosition position) { m_position = position; }
-  void setPositionType(ItemPositionType positionType) {
-    m_positionType = positionType;
+  void SetPosition(ItemPosition position) { position_ = position; }
+  void SetPositionType(ItemPositionType position_type) {
+    position_type_ = position_type;
   }
-  void setOverflow(OverflowAlignment overflow) { m_overflow = overflow; }
+  void SetOverflow(OverflowAlignment overflow) { overflow_ = overflow; }
 
-  ItemPosition position() const {
-    return static_cast<ItemPosition>(m_position);
+  ItemPosition GetPosition() const {
+    return static_cast<ItemPosition>(position_);
   }
-  ItemPositionType positionType() const {
-    return static_cast<ItemPositionType>(m_positionType);
+  ItemPositionType PositionType() const {
+    return static_cast<ItemPositionType>(position_type_);
   }
-  OverflowAlignment overflow() const {
-    return static_cast<OverflowAlignment>(m_overflow);
+  OverflowAlignment Overflow() const {
+    return static_cast<OverflowAlignment>(overflow_);
   }
 
   bool operator==(const StyleSelfAlignmentData& o) const {
-    return m_position == o.m_position && m_positionType == o.m_positionType &&
-           m_overflow == o.m_overflow;
+    return position_ == o.position_ && position_type_ == o.position_type_ &&
+           overflow_ == o.overflow_;
   }
 
   bool operator!=(const StyleSelfAlignmentData& o) const {
@@ -51,10 +51,10 @@ class StyleSelfAlignmentData {
   }
 
  private:
-  unsigned m_position : 4;      // ItemPosition
-  unsigned m_positionType : 1;  // Whether or not alignment uses the 'legacy'
+  unsigned position_ : 4;       // ItemPosition
+  unsigned position_type_ : 1;  // Whether or not alignment uses the 'legacy'
                                 // keyword.
-  unsigned m_overflow : 2;      // OverflowAlignment
+  unsigned overflow_ : 2;       // OverflowAlignment
 };
 
 }  // namespace blink

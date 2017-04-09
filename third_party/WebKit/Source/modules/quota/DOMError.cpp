@@ -29,9 +29,9 @@ namespace blink {
 
 DOMError::~DOMError() {}
 
-DOMError::DOMError(const String& name) : m_name(name) {}
+DOMError::DOMError(const String& name) : name_(name) {}
 
 DOMError::DOMError(const String& name, const String& message)
-    : m_name(name), m_message(message) {}
+    : name_(name), message_(message) {}
 
 }  // namespace blink

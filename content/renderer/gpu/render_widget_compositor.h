@@ -115,63 +115,63 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetLocalSurfaceId(const cc::LocalSurfaceId& local_surface_id);
 
   // WebLayerTreeView implementation.
-  cc::FrameSinkId getFrameSinkId() override;
-  void setRootLayer(const blink::WebLayer& layer) override;
-  void clearRootLayer() override;
-  cc::AnimationHost* compositorAnimationHost() override;
-  void setViewportSize(const blink::WebSize& device_viewport_size) override;
-  blink::WebSize getViewportSize() const override;
+  cc::FrameSinkId GetFrameSinkId() override;
+  void SetRootLayer(const blink::WebLayer& layer) override;
+  void ClearRootLayer() override;
+  cc::AnimationHost* CompositorAnimationHost() override;
+  void SetViewportSize(const blink::WebSize& device_viewport_size) override;
+  blink::WebSize GetViewportSize() const override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(
       const blink::WebFloatPoint& point) const;
-  void setDeviceScaleFactor(float device_scale) override;
-  void setBackgroundColor(blink::WebColor color) override;
-  void setVisible(bool visible) override;
-  void setPageScaleFactorAndLimits(float page_scale_factor,
+  void SetDeviceScaleFactor(float device_scale) override;
+  void SetBackgroundColor(blink::WebColor color) override;
+  void SetVisible(bool visible) override;
+  void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;
-  void startPageScaleAnimation(const blink::WebPoint& destination,
+  void StartPageScaleAnimation(const blink::WebPoint& destination,
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
-  bool hasPendingPageScaleAnimation() const override;
-  void heuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
-  void setNeedsBeginFrame() override;
-  void didStopFlinging() override;
-  void layoutAndPaintAsync(
+  bool HasPendingPageScaleAnimation() const override;
+  void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
+  void SetNeedsBeginFrame() override;
+  void DidStopFlinging() override;
+  void LayoutAndPaintAsync(
       blink::WebLayoutAndPaintAsyncCallback* callback) override;
-  void compositeAndReadbackAsync(
+  void CompositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) override;
-  void setDeferCommits(bool defer_commits) override;
-  void registerViewportLayers(
+  void SetDeferCommits(bool defer_commits) override;
+  void RegisterViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayer,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;
-  void clearViewportLayers() override;
-  void registerSelection(const blink::WebSelection& selection) override;
-  void clearSelection() override;
-  void setMutatorClient(
+  void ClearViewportLayers() override;
+  void RegisterSelection(const blink::WebSelection& selection) override;
+  void ClearSelection() override;
+  void SetMutatorClient(
       std::unique_ptr<blink::WebCompositorMutatorClient>) override;
-  void forceRecalculateRasterScales() override;
-  void setEventListenerProperties(
+  void ForceRecalculateRasterScales() override;
+  void SetEventListenerProperties(
       blink::WebEventListenerClass eventClass,
       blink::WebEventListenerProperties properties) override;
-  void updateEventRectsForSubframeIfNecessary() override;
-  blink::WebEventListenerProperties eventListenerProperties(
+  void UpdateEventRectsForSubframeIfNecessary() override;
+  blink::WebEventListenerProperties EventListenerProperties(
       blink::WebEventListenerClass eventClass) const override;
-  void setHaveScrollEventHandlers(bool) override;
-  bool haveScrollEventHandlers() const override;
-  int layerTreeId() const override;
-  void setShowFPSCounter(bool show) override;
-  void setShowPaintRects(bool show) override;
-  void setShowDebugBorders(bool show) override;
-  void setShowScrollBottleneckRects(bool show) override;
+  void SetHaveScrollEventHandlers(bool) override;
+  bool HaveScrollEventHandlers() const override;
+  int LayerTreeId() const override;
+  void SetShowFPSCounter(bool show) override;
+  void SetShowPaintRects(bool show) override;
+  void SetShowDebugBorders(bool show) override;
+  void SetShowScrollBottleneckRects(bool show) override;
 
-  void updateBrowserControlsState(blink::WebBrowserControlsState constraints,
+  void UpdateBrowserControlsState(blink::WebBrowserControlsState constraints,
                                   blink::WebBrowserControlsState current,
                                   bool animate) override;
-  void setBrowserControlsHeight(float height, bool shrink) override;
-  void setBrowserControlsShownRatio(float) override;
+  void SetBrowserControlsHeight(float height, bool shrink) override;
+  void SetBrowserControlsShownRatio(float) override;
   // TODO(ianwen): Move this method to WebLayerTreeView and implement main
   // thread scrolling.
   virtual void setBottomControlsHeight(float height);

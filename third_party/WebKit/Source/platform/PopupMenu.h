@@ -30,15 +30,15 @@ class PopupMenu : public GarbageCollectedFinalized<PopupMenu> {
  public:
   virtual ~PopupMenu() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
-  virtual void show() = 0;
-  virtual void hide() = 0;
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
   enum UpdateReason {
-    BySelectionChange,
-    ByStyleChange,
-    ByDOMChange,
+    kBySelectionChange,
+    kByStyleChange,
+    kByDOMChange,
   };
-  virtual void updateFromElement(UpdateReason) = 0;
-  virtual void disconnectClient() = 0;
+  virtual void UpdateFromElement(UpdateReason) = 0;
+  virtual void DisconnectClient() = 0;
 };
 
 }  // namespace blink

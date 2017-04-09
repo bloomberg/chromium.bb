@@ -24,72 +24,74 @@ class EventHandlerTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  Page& page() const { return m_dummyPageHolder->page(); }
-  Document& document() const { return m_dummyPageHolder->document(); }
-  FrameSelection& selection() const { return document().frame()->selection(); }
+  Page& GetPage() const { return dummy_page_holder_->GetPage(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  FrameSelection& Selection() const {
+    return GetDocument().GetFrame()->Selection();
+  }
 
-  void setHtmlInnerHTML(const char* htmlContent);
+  void SetHtmlInnerHTML(const char* html_content);
 
  protected:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 class TapEventBuilder : public WebGestureEvent {
  public:
-  TapEventBuilder(IntPoint position, int tapCount)
-      : WebGestureEvent(WebInputEvent::GestureTap,
-                        WebInputEvent::NoModifiers,
+  TapEventBuilder(IntPoint position, int tap_count)
+      : WebGestureEvent(WebInputEvent::kGestureTap,
+                        WebInputEvent::kNoModifiers,
                         TimeTicks::Now().InSeconds()) {
-    x = globalX = position.x();
-    y = globalY = position.y();
-    sourceDevice = WebGestureDeviceTouchscreen;
-    data.tap.tapCount = tapCount;
+    x = global_x = position.X();
+    y = global_y = position.Y();
+    source_device = kWebGestureDeviceTouchscreen;
+    data.tap.tap_count = tap_count;
     data.tap.width = 5;
     data.tap.height = 5;
-    m_frameScale = 1;
+    frame_scale_ = 1;
   }
 };
 
 class LongPressEventBuilder : public WebGestureEvent {
  public:
   LongPressEventBuilder(IntPoint position) : WebGestureEvent() {
-    m_type = WebInputEvent::GestureLongPress;
-    x = globalX = position.x();
-    y = globalY = position.y();
-    sourceDevice = WebGestureDeviceTouchscreen;
-    data.longPress.width = 5;
-    data.longPress.height = 5;
-    m_frameScale = 1;
+    type_ = WebInputEvent::kGestureLongPress;
+    x = global_x = position.X();
+    y = global_y = position.Y();
+    source_device = kWebGestureDeviceTouchscreen;
+    data.long_press.width = 5;
+    data.long_press.height = 5;
+    frame_scale_ = 1;
   }
 };
 
 class MousePressEventBuilder : public WebMouseEvent {
  public:
-  MousePressEventBuilder(IntPoint positionParam,
-                         int clickCountParam,
-                         WebMouseEvent::Button buttonParam)
-      : WebMouseEvent(WebInputEvent::MouseDown,
-                      WebInputEvent::NoModifiers,
+  MousePressEventBuilder(IntPoint position_param,
+                         int click_count_param,
+                         WebMouseEvent::Button button_param)
+      : WebMouseEvent(WebInputEvent::kMouseDown,
+                      WebInputEvent::kNoModifiers,
                       TimeTicks::Now().InSeconds()) {
-    clickCount = clickCountParam;
-    button = buttonParam;
-    setPositionInWidget(positionParam.x(), positionParam.y());
-    setPositionInScreen(positionParam.x(), positionParam.y());
-    m_frameScale = 1;
+    click_count = click_count_param;
+    button = button_param;
+    SetPositionInWidget(position_param.X(), position_param.Y());
+    SetPositionInScreen(position_param.X(), position_param.Y());
+    frame_scale_ = 1;
   }
 };
 
 void EventHandlerTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(300, 400));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(300, 400));
 }
 
-void EventHandlerTest::setHtmlInnerHTML(const char* htmlContent) {
-  document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent));
-  document().view()->updateAllLifecyclePhases();
+void EventHandlerTest::SetHtmlInnerHTML(const char* html_content) {
+  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
 TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style> body { margin: 0px; } .upper { width: 300px; height: 400px; }"
       ".lower { margin: 0px; width: 300px; height: 400px; } .line { display: "
       "block; width: 300px; height: 30px; } </style>"
@@ -103,125 +105,137 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       "class='line'>Line 10</span>"
       "</div>");
 
-  FrameView* frameView = document().view();
-  frameView->layoutViewportScrollableArea()->setScrollOffset(
-      ScrollOffset(0, 400), ProgrammaticScroll);
+  FrameView* frame_view = GetDocument().View();
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 400), kProgrammaticScroll);
 
-  WebMouseEvent mouseDownEvent(WebInputEvent::MouseDown, WebFloatPoint(0, 0),
-                               WebFloatPoint(100, 200),
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseDownEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+  WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown, WebFloatPoint(0, 0),
+                                 WebFloatPoint(100, 200),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::kTimeStampForTesting);
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
 
-  WebMouseEvent mouseMoveEvent(WebInputEvent::MouseMove, WebFloatPoint(100, 50),
-                               WebFloatPoint(200, 250),
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseMoveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<WebMouseEvent>());
+  WebMouseEvent mouse_move_event(
+      WebInputEvent::kMouseMove, WebFloatPoint(100, 50),
+      WebFloatPoint(200, 250), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>());
 
-  page().autoscrollController().animate(WTF::monotonicallyIncreasingTime());
-  page().animator().serviceScriptedAnimations(
-      WTF::monotonicallyIncreasingTime());
+  GetPage().GetAutoscrollController().Animate(
+      WTF::MonotonicallyIncreasingTime());
+  GetPage().Animator().ServiceScriptedAnimations(
+      WTF::MonotonicallyIncreasingTime());
 
-  WebMouseEvent mouseUpEvent(
-      WebMouseEvent::MouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
-      WebPointerProperties::Button::Left, 1, WebInputEvent::NoModifiers,
-      WebInputEvent::TimeStampForTesting);
-  mouseUpEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseReleaseEvent(mouseUpEvent);
+  WebMouseEvent mouse_up_event(
+      WebMouseEvent::kMouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_up_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
-  Range* range = createRange(selection()
-                                 .computeVisibleSelectionInDOMTreeDeprecated()
-                                 .toNormalizedEphemeralRange());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
+  Range* range = CreateRange(Selection()
+                                 .ComputeVisibleSelectionInDOMTreeDeprecated()
+                                 .ToNormalizedEphemeralRange());
   ASSERT_TRUE(range);
-  EXPECT_EQ("Line 1\nLine 2", range->text());
+  EXPECT_EQ("Line 1\nLine 2", range->GetText());
 }
 
 TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style> body { margin: 0px; } .line { display: block; width: 300px; "
       "height: 30px; } </style>"
       "<body contenteditable='true'><span class='line' id='line'>One Two "
       "Three</span></body>");
 
-  Node* line = document().getElementById("line")->firstChild();
+  Node* line = GetDocument().GetElementById("line")->FirstChild();
 
-  TapEventBuilder singleTapEvent(IntPoint(0, 0), 1);
-  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+  TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
   EXPECT_EQ(Position(line, 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
 
   // Multi-tap events on editable elements should trigger selection, just
   // like multi-click events.
-  TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
-  document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
+  TapEventBuilder double_tap_event(IntPoint(0, 0), 2);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      double_tap_event);
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
   EXPECT_EQ(Position(line, 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
-  if (document().frame()->editor().isSelectTrailingWhitespaceEnabled()) {
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  if (GetDocument()
+          .GetFrame()
+          ->GetEditor()
+          .IsSelectTrailingWhitespaceEnabled()) {
     EXPECT_EQ(Position(line, 4),
-              selection().computeVisibleSelectionInDOMTreeDeprecated().end());
-    EXPECT_EQ("One ", WebString(selection().selectedText()).utf8());
+              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().end());
+    EXPECT_EQ("One ", WebString(Selection().SelectedText()).Utf8());
   } else {
     EXPECT_EQ(Position(line, 3),
-              selection().computeVisibleSelectionInDOMTreeDeprecated().end());
-    EXPECT_EQ("One", WebString(selection().selectedText()).utf8());
+              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().end());
+    EXPECT_EQ("One", WebString(Selection().SelectedText()).Utf8());
   }
 
-  TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
-  document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
+  TapEventBuilder triple_tap_event(IntPoint(0, 0), 3);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      triple_tap_event);
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
   EXPECT_EQ(Position(line, 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
   EXPECT_EQ(Position(line, 13),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().end());
-  EXPECT_EQ("One Two Three", WebString(selection().selectedText()).utf8());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().end());
+  EXPECT_EQ("One Two Three", WebString(Selection().SelectedText()).Utf8());
 }
 
 TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style> body { margin: 0px; } .line { display: block; width: 300px; "
       "height: 30px; } </style>"
       "<span class='line' id='line'>One Two Three</span>");
 
-  Node* line = document().getElementById("line")->firstChild();
+  Node* line = GetDocument().GetElementById("line")->FirstChild();
 
-  TapEventBuilder singleTapEvent(IntPoint(0, 0), 1);
-  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+  TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
   EXPECT_EQ(Position(line, 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
 
   // As the text is readonly, multi-tap events should not trigger selection.
-  TapEventBuilder doubleTapEvent(IntPoint(0, 0), 2);
-  document().frame()->eventHandler().handleGestureEvent(doubleTapEvent);
+  TapEventBuilder double_tap_event(IntPoint(0, 0), 2);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      double_tap_event);
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
   EXPECT_EQ(Position(line, 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
 
-  TapEventBuilder tripleTapEvent(IntPoint(0, 0), 3);
-  document().frame()->eventHandler().handleGestureEvent(tripleTapEvent);
+  TapEventBuilder triple_tap_event(IntPoint(0, 0), 3);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      triple_tap_event);
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
   EXPECT_EQ(Position(line, 0),
-            selection().computeVisibleSelectionInDOMTreeDeprecated().start());
+            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
 }
 
 TEST_F(EventHandlerTest, draggedInlinePositionTest) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>"
       "body { margin: 0px; }"
       ".line { font-family: sans-serif; background: blue; width: 300px; "
@@ -230,30 +244,32 @@ TEST_F(EventHandlerTest, draggedInlinePositionTest) {
       "<div style='width: 300px; height: 100px;'>"
       "<span class='line' draggable='true'>abcd</span>"
       "</div>");
-  WebMouseEvent mouseDownEvent(WebMouseEvent::MouseDown, WebFloatPoint(262, 29),
-                               WebFloatPoint(329, 67),
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseDownEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown,
+                                 WebFloatPoint(262, 29), WebFloatPoint(329, 67),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::kTimeStampForTesting);
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
 
-  WebMouseEvent mouseMoveEvent(WebMouseEvent::MouseMove,
-                               WebFloatPoint(618, 298), WebFloatPoint(685, 436),
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseMoveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<WebMouseEvent>());
+  WebMouseEvent mouse_move_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(618, 298),
+      WebFloatPoint(685, 436), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>());
 
-  EXPECT_EQ(
-      IntPoint(12, 29),
-      document().frame()->eventHandler().dragDataTransferLocationForTesting());
+  EXPECT_EQ(IntPoint(12, 29), GetDocument()
+                                  .GetFrame()
+                                  ->GetEventHandler()
+                                  .DragDataTransferLocationForTesting());
 }
 
 TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>"
       "body { margin: 0px; }"
       "[draggable] {"
@@ -266,183 +282,194 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
       "draggable='true'/>"
       "</svg>"
       "</div>");
-  WebMouseEvent mouseDownEvent(WebMouseEvent::MouseDown,
-                               WebFloatPoint(145, 144), WebFloatPoint(212, 282),
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseDownEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+  WebMouseEvent mouse_down_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(145, 144),
+      WebFloatPoint(212, 282), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
 
-  WebMouseEvent mouseMoveEvent(WebMouseEvent::MouseMove,
-                               WebFloatPoint(618, 298), WebFloatPoint(685, 436),
-                               WebPointerProperties::Button::Left, 1,
-                               WebInputEvent::Modifiers::LeftButtonDown,
-                               WebInputEvent::TimeStampForTesting);
-  mouseMoveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<WebMouseEvent>());
+  WebMouseEvent mouse_move_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(618, 298),
+      WebFloatPoint(685, 436), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::kTimeStampForTesting);
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>());
 
-  EXPECT_EQ(
-      IntPoint(45, 44),
-      document().frame()->eventHandler().dragDataTransferLocationForTesting());
+  EXPECT_EQ(IntPoint(45, 44), GetDocument()
+                                  .GetFrame()
+                                  ->GetEventHandler()
+                                  .DragDataTransferLocationForTesting());
 }
 
 // Regression test for http://crbug.com/641403 to verify we use up-to-date
 // layout tree for dispatching "contextmenu" event.
 TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>*:hover { color: red; }</style>"
       "<div>foo</div>");
-  document().settings()->setScriptEnabled(true);
-  Element* script = document().createElement("script");
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  Element* script = GetDocument().createElement("script");
   script->setInnerHTML(
       "document.addEventListener('contextmenu', event => "
       "event.preventDefault());");
-  document().body()->appendChild(script);
-  document().updateStyleAndLayout();
-  document().frame()->selection().setSelection(
+  GetDocument().body()->AppendChild(script);
+  GetDocument().UpdateStyleAndLayout();
+  GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder()
-          .collapse(Position(document().body(), 0))
-          .build());
-  WebMouseEvent mouseDownEvent(
-      WebMouseEvent::MouseDown, WebFloatPoint(0, 0), WebFloatPoint(100, 200),
-      WebPointerProperties::Button::Right, 1,
-      WebInputEvent::Modifiers::RightButtonDown, TimeTicks::Now().InSeconds());
-  mouseDownEvent.setFrameScale(1);
-  EXPECT_EQ(
-      WebInputEventResult::HandledApplication,
-      document().frame()->eventHandler().sendContextMenuEvent(mouseDownEvent));
+          .Collapse(Position(GetDocument().body(), 0))
+          .Build());
+  WebMouseEvent mouse_down_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(0, 0), WebFloatPoint(100, 200),
+      WebPointerProperties::Button::kRight, 1,
+      WebInputEvent::Modifiers::kRightButtonDown, TimeTicks::Now().InSeconds());
+  mouse_down_event.SetFrameScale(1);
+  EXPECT_EQ(WebInputEventResult::kHandledApplication,
+            GetDocument().GetFrame()->GetEventHandler().SendContextMenuEvent(
+                mouse_down_event));
 }
 
 TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnTap) {
-  setHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
+  SetHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
 
-  TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
-  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+  TapEventBuilder single_tap_event(IntPoint(200, 200), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_FALSE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
 TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
-  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+  SetHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
 
-  TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
-  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+  TapEventBuilder single_tap_event(IntPoint(200, 200), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_TRUE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
 }
 
 TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
-  setHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
+  SetHtmlInnerHTML("<textarea cols=50 rows=50></textarea>");
 
-  LongPressEventBuilder longPressEvent(IntPoint(200, 200));
-  document().frame()->eventHandler().handleGestureEvent(longPressEvent);
+  LongPressEventBuilder long_press_event(IntPoint(200, 200));
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      long_press_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_TRUE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
 
   // Single Tap on an empty edit field should clear insertion handle
-  TapEventBuilder singleTapEvent(IntPoint(200, 200), 1);
-  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+  TapEventBuilder single_tap_event(IntPoint(200, 200), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_FALSE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
 TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnLongPress) {
-  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+  SetHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
 
-  LongPressEventBuilder longPressEvent(IntPoint(200, 200));
-  document().frame()->eventHandler().handleGestureEvent(longPressEvent);
+  LongPressEventBuilder long_press_event(IntPoint(200, 200));
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      long_press_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_TRUE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
 }
 
 TEST_F(EventHandlerTest, ClearHandleAfterTap) {
-  setHtmlInnerHTML("<textarea cols=50  rows=10>Enter text</textarea>");
+  SetHtmlInnerHTML("<textarea cols=50  rows=10>Enter text</textarea>");
 
   // Show handle
-  LongPressEventBuilder longPressEvent(IntPoint(200, 10));
-  document().frame()->eventHandler().handleGestureEvent(longPressEvent);
+  LongPressEventBuilder long_press_event(IntPoint(200, 10));
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      long_press_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_TRUE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().IsHandleVisible());
 
   // Tap away from text area should clear handle
-  TapEventBuilder singleTapEvent(IntPoint(200, 350), 1);
-  document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
+  TapEventBuilder single_tap_event(IntPoint(200, 350), 1);
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      single_tap_event);
 
-  ASSERT_FALSE(selection().isHandleVisible());
+  ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
 TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
-  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+  SetHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
 
-  MousePressEventBuilder leftMousePressEvent(
-      IntPoint(200, 200), 1, WebPointerProperties::Button::Left);
-  document().frame()->eventHandler().handleMousePressEvent(leftMousePressEvent);
-
-  ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_FALSE(selection().isHandleVisible());
-
-  MousePressEventBuilder rightMousePressEvent(
-      IntPoint(200, 200), 1, WebPointerProperties::Button::Right);
-  document().frame()->eventHandler().handleMousePressEvent(
-      rightMousePressEvent);
+  MousePressEventBuilder left_mouse_press_event(
+      IntPoint(200, 200), 1, WebPointerProperties::Button::kLeft);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      left_mouse_press_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isCaret());
-  ASSERT_FALSE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_FALSE(Selection().IsHandleVisible());
 
-  MousePressEventBuilder doubleClickMousePressEvent(
-      IntPoint(200, 200), 2, WebPointerProperties::Button::Left);
-  document().frame()->eventHandler().handleMousePressEvent(
-      doubleClickMousePressEvent);
-
-  ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
-  ASSERT_FALSE(selection().isHandleVisible());
-
-  MousePressEventBuilder tripleClickMousePressEvent(
-      IntPoint(200, 200), 3, WebPointerProperties::Button::Left);
-  document().frame()->eventHandler().handleMousePressEvent(
-      tripleClickMousePressEvent);
+  MousePressEventBuilder right_mouse_press_event(
+      IntPoint(200, 200), 1, WebPointerProperties::Button::kRight);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      right_mouse_press_event);
 
   ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isRange());
-  ASSERT_FALSE(selection().isHandleVisible());
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_FALSE(Selection().IsHandleVisible());
+
+  MousePressEventBuilder double_click_mouse_press_event(
+      IntPoint(200, 200), 2, WebPointerProperties::Button::kLeft);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      double_click_mouse_press_event);
+
+  ASSERT_TRUE(
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
+  ASSERT_FALSE(Selection().IsHandleVisible());
+
+  MousePressEventBuilder triple_click_mouse_press_event(
+      IntPoint(200, 200), 3, WebPointerProperties::Button::kLeft);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      triple_click_mouse_press_event);
+
+  ASSERT_TRUE(
+      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
+  ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
 TEST_F(EventHandlerTest, dragEndInNewDrag) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>.box { width: 100px; height: 100px; display: block; }</style>"
       "<a class='box' href=''>Drag me</a>");
 
-  WebMouseEvent mouseDownEvent(
-      WebInputEvent::MouseDown, WebFloatPoint(50, 50), WebFloatPoint(50, 50),
-      WebPointerProperties::Button::Left, 1,
-      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
-  mouseDownEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMousePressEvent(mouseDownEvent);
+  WebMouseEvent mouse_down_event(
+      WebInputEvent::kMouseDown, WebFloatPoint(50, 50), WebFloatPoint(50, 50),
+      WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown, TimeTicks::Now().InSeconds());
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
 
-  WebMouseEvent mouseMoveEvent(
-      WebInputEvent::MouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
-      WebPointerProperties::Button::Left, 1,
-      WebInputEvent::Modifiers::LeftButtonDown, TimeTicks::Now().InSeconds());
-  mouseMoveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<WebMouseEvent>());
+  WebMouseEvent mouse_move_event(
+      WebInputEvent::kMouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown, TimeTicks::Now().InSeconds());
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>());
 
   // This reproduces what might be the conditions of http://crbug.com/677916
   //
@@ -450,13 +477,13 @@ TEST_F(EventHandlerTest, dragEndInNewDrag) {
   // this contrived test. Given the current code, it is unclear how the
   // dragSourceEndedAt() call could occur before a drag operation is started.
 
-  WebMouseEvent mouseUpEvent(
-      WebInputEvent::MouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
-      WebPointerProperties::Button::Left, 1, WebInputEvent::NoModifiers,
+  WebMouseEvent mouse_up_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(100, 50), WebFloatPoint(200, 250),
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
       TimeTicks::Now().InSeconds());
-  mouseUpEvent.setFrameScale(1);
-  document().frame()->eventHandler().dragSourceEndedAt(mouseUpEvent,
-                                                       DragOperationNone);
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().DragSourceEndedAt(
+      mouse_up_event, kDragOperationNone);
 
   // This test passes if it doesn't crash.
 }
@@ -465,14 +492,14 @@ class TooltipCapturingChromeClient : public EmptyChromeClient {
  public:
   TooltipCapturingChromeClient() {}
 
-  void setToolTip(LocalFrame&, const String& str, TextDirection) override {
-    m_lastToolTip = str;
+  void SetToolTip(LocalFrame&, const String& str, TextDirection) override {
+    last_tool_tip_ = str;
   }
 
-  String& lastToolTip() { return m_lastToolTip; }
+  String& LastToolTip() { return last_tool_tip_; }
 
  private:
-  String m_lastToolTip;
+  String last_tool_tip_;
 };
 
 class EventHandlerTooltipTest : public EventHandlerTest {
@@ -480,44 +507,45 @@ class EventHandlerTooltipTest : public EventHandlerTest {
   EventHandlerTooltipTest() {}
 
   void SetUp() override {
-    m_chromeClient = new TooltipCapturingChromeClient();
+    chrome_client_ = new TooltipCapturingChromeClient();
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = m_chromeClient.get();
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
   }
 
-  String& lastToolTip() { return m_chromeClient->lastToolTip(); }
+  String& LastToolTip() { return chrome_client_->LastToolTip(); }
 
  private:
-  Persistent<TooltipCapturingChromeClient> m_chromeClient;
+  Persistent<TooltipCapturingChromeClient> chrome_client_;
 };
 
 TEST_F(EventHandlerTooltipTest, mouseLeaveClearsTooltip) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<style>.box { width: 100%; height: 100%; }</style>"
       "<img src='image.png' class='box' title='tooltip'>link</img>");
 
-  EXPECT_EQ(WTF::String(), lastToolTip());
+  EXPECT_EQ(WTF::String(), LastToolTip());
 
-  WebMouseEvent mouseMoveEvent(
-      WebInputEvent::MouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
-      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+  WebMouseEvent mouse_move_event(
+      WebInputEvent::kMouseMove, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
       TimeTicks::Now().InSeconds());
-  mouseMoveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveEvent, Vector<WebMouseEvent>());
+  mouse_move_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_move_event, Vector<WebMouseEvent>());
 
-  EXPECT_EQ("tooltip", lastToolTip());
+  EXPECT_EQ("tooltip", LastToolTip());
 
-  WebMouseEvent mouseLeaveEvent(
-      WebInputEvent::MouseLeave, WebFloatPoint(0, 0), WebFloatPoint(0, 0),
-      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+  WebMouseEvent mouse_leave_event(
+      WebInputEvent::kMouseLeave, WebFloatPoint(0, 0), WebFloatPoint(0, 0),
+      WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
       TimeTicks::Now().InSeconds());
-  mouseLeaveEvent.setFrameScale(1);
-  document().frame()->eventHandler().handleMouseLeaveEvent(mouseLeaveEvent);
+  mouse_leave_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseLeaveEvent(
+      mouse_leave_event);
 
-  EXPECT_EQ(WTF::String(), lastToolTip());
+  EXPECT_EQ(WTF::String(), LastToolTip());
 }
 
 }  // namespace blink

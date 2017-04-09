@@ -49,37 +49,37 @@ class PLATFORM_EXPORT WaitableEvent {
   // to non-signaled, a consumer must call reset().  Otherwise, the system
   // automatically resets the event state to non-signaled after a single
   // waiting thread has been released.
-  enum class ResetPolicy { Auto, Manual };
+  enum class ResetPolicy { kAuto, kManual };
 
   // Specify the initial state on creation.
-  enum class InitialState { NonSignaled, Signaled };
+  enum class InitialState { kNonSignaled, kSignaled };
 
-  explicit WaitableEvent(ResetPolicy = ResetPolicy::Auto,
-                         InitialState = InitialState::NonSignaled);
+  explicit WaitableEvent(ResetPolicy = ResetPolicy::kAuto,
+                         InitialState = InitialState::kNonSignaled);
 
   ~WaitableEvent();
 
   // Puts the event in the un-signaled state.
-  void reset();
+  void Reset();
 
   // Waits indefinitely for the event to be signaled.
-  void wait();
+  void Wait();
 
   // Puts the event in the signaled state. Causing any thread blocked on Wait
   // to be woken up. The event state is reset to non-signaled after
   // a waiting thread has been released.
-  void signal();
+  void Signal();
 
   // Waits on multiple events and returns the index of the object that
   // has been signaled. Any event objects given to this method must
   // not deleted while this wait is happening.
-  static size_t waitMultiple(const WTF::Vector<WaitableEvent*>& events);
+  static size_t WaitMultiple(const WTF::Vector<WaitableEvent*>& events);
 
  private:
   WaitableEvent(const WaitableEvent&) = delete;
   void operator=(const WaitableEvent&) = delete;
 
-  std::unique_ptr<base::WaitableEvent> m_impl;
+  std::unique_ptr<base::WaitableEvent> impl_;
 };
 
 }  // namespace blink

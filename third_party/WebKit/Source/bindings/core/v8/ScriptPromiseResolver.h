@@ -35,9 +35,9 @@ class CORE_EXPORT ScriptPromiseResolver
   WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 
  public:
-  static ScriptPromiseResolver* create(ScriptState* scriptState) {
-    ScriptPromiseResolver* resolver = new ScriptPromiseResolver(scriptState);
-    resolver->suspendIfNeeded();
+  static ScriptPromiseResolver* Create(ScriptState* script_state) {
+    ScriptPromiseResolver* resolver = new ScriptPromiseResolver(script_state);
+    resolver->SuspendIfNeeded();
     return resolver;
   }
 
@@ -52,54 +52,54 @@ class CORE_EXPORT ScriptPromiseResolver
     //  - this resolver is destructed before it is resolved, rejected,
     //    detached, the V8 isolate is terminated or the associated
     //    ExecutionContext is stopped.
-    ASSERT(m_state == Detached || !m_isPromiseCalled ||
-           !getScriptState()->contextIsValid() || !getExecutionContext() ||
-           getExecutionContext()->isContextDestroyed());
+    ASSERT(state_ == kDetached || !is_promise_called_ ||
+           !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
+           GetExecutionContext()->IsContextDestroyed());
   }
 #endif
 
   // Anything that can be passed to toV8 can be passed to this function.
   template <typename T>
-  void resolve(T value) {
-    resolveOrReject(value, Resolving);
+  void Resolve(T value) {
+    ResolveOrReject(value, kResolving);
   }
 
   // Anything that can be passed to toV8 can be passed to this function.
   template <typename T>
-  void reject(T value) {
-    resolveOrReject(value, Rejecting);
+  void Reject(T value) {
+    ResolveOrReject(value, kRejecting);
   }
 
-  void resolve() { resolve(ToV8UndefinedGenerator()); }
-  void reject() { reject(ToV8UndefinedGenerator()); }
+  void Resolve() { Resolve(ToV8UndefinedGenerator()); }
+  void Reject() { Reject(ToV8UndefinedGenerator()); }
 
-  ScriptState* getScriptState() { return m_scriptState.get(); }
+  ScriptState* GetScriptState() { return script_state_.Get(); }
 
   // Note that an empty ScriptPromise will be returned after resolve or
   // reject is called.
-  ScriptPromise promise() {
+  ScriptPromise Promise() {
 #if DCHECK_IS_ON()
-    m_isPromiseCalled = true;
+    is_promise_called_ = true;
 #endif
-    return m_resolver.promise();
+    return resolver_.Promise();
   }
 
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
   // SuspendableObject implementation.
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override { detach(); }
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override { Detach(); }
 
   // Calling this function makes the resolver release its internal resources.
   // That means the associated promise will never be resolved or rejected
   // unless it's already been resolved or rejected.
   // Do not call this function unless you truly need the behavior.
-  void detach();
+  void Detach();
 
   // Once this function is called this resolver stays alive while the
   // promise is pending and the associated ExecutionContext isn't stopped.
-  void keepAliveWhilePending();
+  void KeepAliveWhilePending();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -111,21 +111,21 @@ class CORE_EXPORT ScriptPromiseResolver
  private:
   typedef ScriptPromise::InternalResolver Resolver;
   enum ResolutionState {
-    Pending,
-    Resolving,
-    Rejecting,
-    Detached,
+    kPending,
+    kResolving,
+    kRejecting,
+    kDetached,
   };
 
   template <typename T>
-  void resolveOrReject(T value, ResolutionState newState) {
-    if (m_state != Pending || !getScriptState()->contextIsValid() ||
-        !getExecutionContext() || getExecutionContext()->isContextDestroyed())
+  void ResolveOrReject(T value, ResolutionState new_state) {
+    if (state_ != kPending || !GetScriptState()->ContextIsValid() ||
+        !GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
       return;
-    ASSERT(newState == Resolving || newState == Rejecting);
-    m_state = newState;
+    ASSERT(new_state == kResolving || new_state == kRejecting);
+    state_ = new_state;
 
-    ScriptState::Scope scope(m_scriptState.get());
+    ScriptState::Scope scope(script_state_.Get());
 
     // Calling ToV8 in a ScriptForbiddenScope will trigger a RELEASE_ASSERT and
     // cause a crash. ToV8 just invokes a constructor for wrapper creation,
@@ -134,15 +134,15 @@ class CORE_EXPORT ScriptPromiseResolver
     // isMainThread() every time a wrapper is created is expensive). Ideally,
     // resolveOrReject shouldn't be called inside a ScriptForbiddenScope.
     {
-      ScriptForbiddenScope::AllowUserAgentScript allowScript;
-      m_value.set(m_scriptState->isolate(),
-                  ToV8(value, m_scriptState->context()->Global(),
-                       m_scriptState->isolate()));
+      ScriptForbiddenScope::AllowUserAgentScript allow_script;
+      value_.Set(script_state_->GetIsolate(),
+                 ToV8(value, script_state_->GetContext()->Global(),
+                      script_state_->GetIsolate()));
     }
 
-    if (getExecutionContext()->isContextSuspended()) {
+    if (GetExecutionContext()->IsContextSuspended()) {
       // Retain this object until it is actually resolved or rejected.
-      keepAliveWhilePending();
+      KeepAliveWhilePending();
       return;
     }
     // TODO(esprehn): This is a hack, instead we should RELEASE_ASSERT that
@@ -151,29 +151,29 @@ class CORE_EXPORT ScriptPromiseResolver
     // ScriptPromiseResolver and the related specs and switch to an async
     // resolve.
     // See: http://crbug.com/663476
-    if (ScriptForbiddenScope::isScriptForbidden()) {
-      m_timer.startOneShot(0, BLINK_FROM_HERE);
+    if (ScriptForbiddenScope::IsScriptForbidden()) {
+      timer_.StartOneShot(0, BLINK_FROM_HERE);
       return;
     }
-    resolveOrRejectImmediately();
+    ResolveOrRejectImmediately();
   }
 
-  void resolveOrRejectImmediately();
-  void onTimerFired(TimerBase*);
+  void ResolveOrRejectImmediately();
+  void OnTimerFired(TimerBase*);
 
-  ResolutionState m_state;
-  const RefPtr<ScriptState> m_scriptState;
-  TaskRunnerTimer<ScriptPromiseResolver> m_timer;
-  Resolver m_resolver;
-  ScopedPersistent<v8::Value> m_value;
+  ResolutionState state_;
+  const RefPtr<ScriptState> script_state_;
+  TaskRunnerTimer<ScriptPromiseResolver> timer_;
+  Resolver resolver_;
+  ScopedPersistent<v8::Value> value_;
 
   // To support keepAliveWhilePending(), this object needs to keep itself
   // alive while in that state.
-  SelfKeepAlive<ScriptPromiseResolver> m_keepAlive;
+  SelfKeepAlive<ScriptPromiseResolver> keep_alive_;
 
 #if DCHECK_IS_ON()
   // True if promise() is called.
-  bool m_isPromiseCalled = false;
+  bool is_promise_called_ = false;
 #endif
 };
 

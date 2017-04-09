@@ -43,17 +43,17 @@ class SQLTransaction;
 
 class SQLStatement final : public GarbageCollected<SQLStatement> {
  public:
-  static SQLStatement* create(Database*,
+  static SQLStatement* Create(Database*,
                               SQLStatementCallback*,
                               SQLStatementErrorCallback*);
   DECLARE_TRACE();
 
-  bool performCallback(SQLTransaction*);
+  bool PerformCallback(SQLTransaction*);
 
-  void setBackend(SQLStatementBackend*);
+  void SetBackend(SQLStatementBackend*);
 
-  bool hasCallback();
-  bool hasErrorCallback();
+  bool HasCallback();
+  bool HasErrorCallback();
 
  private:
   SQLStatement(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
@@ -61,10 +61,10 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
   // The SQLStatementBackend owns the SQLStatement. Hence, the backend is
   // guaranteed to be outlive the SQLStatement, and it is safe for us to refer
   // to the backend using a raw pointer here.
-  Member<SQLStatementBackend> m_backend;
+  Member<SQLStatementBackend> backend_;
 
-  Member<SQLStatementCallback> m_statementCallback;
-  Member<SQLStatementErrorCallback> m_statementErrorCallback;
+  Member<SQLStatementCallback> statement_callback_;
+  Member<SQLStatementErrorCallback> statement_error_callback_;
 };
 
 }  // namespace blink

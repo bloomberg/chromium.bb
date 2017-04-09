@@ -10,6 +10,9 @@
 #include "WebCommon.h"
 #include <memory>
 
+// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+#undef DrawText
+
 namespace blink {
 
 struct WebFloatPoint;
@@ -20,26 +23,26 @@ struct WebTextRun;
 
 class WebFont {
  public:
-  BLINK_PLATFORM_EXPORT static WebFont* create(const WebFontDescription&);
+  BLINK_PLATFORM_EXPORT static WebFont* Create(const WebFontDescription&);
   BLINK_PLATFORM_EXPORT ~WebFont();
 
-  BLINK_PLATFORM_EXPORT WebFontDescription getFontDescription() const;
-  BLINK_PLATFORM_EXPORT int ascent() const;
-  BLINK_PLATFORM_EXPORT int descent() const;
-  BLINK_PLATFORM_EXPORT int height() const;
-  BLINK_PLATFORM_EXPORT int lineSpacing() const;
-  BLINK_PLATFORM_EXPORT float xHeight() const;
-  BLINK_PLATFORM_EXPORT void drawText(WebCanvas*,
+  BLINK_PLATFORM_EXPORT WebFontDescription GetFontDescription() const;
+  BLINK_PLATFORM_EXPORT int Ascent() const;
+  BLINK_PLATFORM_EXPORT int Descent() const;
+  BLINK_PLATFORM_EXPORT int Height() const;
+  BLINK_PLATFORM_EXPORT int LineSpacing() const;
+  BLINK_PLATFORM_EXPORT float XHeight() const;
+  BLINK_PLATFORM_EXPORT void DrawText(WebCanvas*,
                                       const WebTextRun&,
-                                      const WebFloatPoint& leftBaseline,
+                                      const WebFloatPoint& left_baseline,
                                       WebColor,
                                       const WebRect& clip) const;
-  BLINK_PLATFORM_EXPORT int calculateWidth(const WebTextRun&) const;
-  BLINK_PLATFORM_EXPORT int offsetForPosition(const WebTextRun&,
+  BLINK_PLATFORM_EXPORT int CalculateWidth(const WebTextRun&) const;
+  BLINK_PLATFORM_EXPORT int OffsetForPosition(const WebTextRun&,
                                               float position) const;
   BLINK_PLATFORM_EXPORT WebFloatRect
-  selectionRectForText(const WebTextRun&,
-                       const WebFloatPoint& leftBaseline,
+  SelectionRectForText(const WebTextRun&,
+                       const WebFloatPoint& left_baseline,
                        int height,
                        int from = 0,
                        int to = -1) const;
@@ -48,7 +51,7 @@ class WebFont {
   explicit WebFont(const WebFontDescription&);
 
   class Impl;
-  std::unique_ptr<Impl> m_private;
+  std::unique_ptr<Impl> private_;
 };
 
 }  // namespace blink

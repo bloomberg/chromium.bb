@@ -34,32 +34,32 @@ class SVGEllipseElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGEllipseElement);
 
-  Path asPath() const override;
+  Path AsPath() const override;
 
-  SVGAnimatedLength* cx() const { return m_cx.get(); }
-  SVGAnimatedLength* cy() const { return m_cy.get(); }
-  SVGAnimatedLength* rx() const { return m_rx.get(); }
-  SVGAnimatedLength* ry() const { return m_ry.get(); }
+  SVGAnimatedLength* cx() const { return cx_.Get(); }
+  SVGAnimatedLength* cy() const { return cy_.Get(); }
+  SVGAnimatedLength* rx() const { return rx_.Get(); }
+  SVGAnimatedLength* ry() const { return ry_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGEllipseElement(Document&);
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  Member<SVGAnimatedLength> m_cx;
-  Member<SVGAnimatedLength> m_cy;
-  Member<SVGAnimatedLength> m_rx;
-  Member<SVGAnimatedLength> m_ry;
+  Member<SVGAnimatedLength> cx_;
+  Member<SVGAnimatedLength> cy_;
+  Member<SVGAnimatedLength> rx_;
+  Member<SVGAnimatedLength> ry_;
 };
 
 }  // namespace blink

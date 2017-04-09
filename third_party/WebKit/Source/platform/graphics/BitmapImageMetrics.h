@@ -20,39 +20,39 @@ class PLATFORM_EXPORT BitmapImageMetrics {
   // Values synced with 'DecodedImageType' in
   // src/tools/metrics/histograms/histograms.xml
   enum DecodedImageType {
-    ImageUnknown = 0,
-    ImageJPEG = 1,
-    ImagePNG = 2,
-    ImageGIF = 3,
-    ImageWebP = 4,
-    ImageICO = 5,
-    ImageBMP = 6,
-    DecodedImageTypeEnumEnd = ImageBMP + 1
+    kImageUnknown = 0,
+    kImageJPEG = 1,
+    kImagePNG = 2,
+    kImageGIF = 3,
+    kImageWebP = 4,
+    kImageICO = 5,
+    kImageBMP = 6,
+    kDecodedImageTypeEnumEnd = kImageBMP + 1
   };
 
   enum Gamma {
     // Values synced with 'Gamma' in src/tools/metrics/histograms/histograms.xml
-    GammaLinear = 0,
-    GammaSRGB = 1,
-    Gamma2Dot2 = 2,
-    GammaNonStandard = 3,
-    GammaNull = 4,
-    GammaFail = 5,
-    GammaInvalid = 6,
-    GammaExponent = 7,
-    GammaTable = 8,
-    GammaParametric = 9,
-    GammaNamed = 10,
-    GammaEnd = GammaNamed + 1,
+    kGammaLinear = 0,
+    kGammaSRGB = 1,
+    kGamma2Dot2 = 2,
+    kGammaNonStandard = 3,
+    kGammaNull = 4,
+    kGammaFail = 5,
+    kGammaInvalid = 6,
+    kGammaExponent = 7,
+    kGammaTable = 8,
+    kGammaParametric = 9,
+    kGammaNamed = 10,
+    kGammaEnd = kGammaNamed + 1,
   };
 
-  static void countDecodedImageType(const String& type);
-  static void countImageOrientation(const ImageOrientationEnum);
-  static void countImageGammaAndGamut(SkColorSpace*);
-  static void countOutputGammaAndGamut(SkColorSpace*);
+  static void CountDecodedImageType(const String& type);
+  static void CountImageOrientation(const ImageOrientationEnum);
+  static void CountImageGammaAndGamut(SkColorSpace*);
+  static void CountOutputGammaAndGamut(SkColorSpace*);
 
  private:
-  static Gamma getColorSpaceGamma(SkColorSpace*);
+  static Gamma GetColorSpaceGamma(SkColorSpace*);
 };
 
 }  // namespace blink

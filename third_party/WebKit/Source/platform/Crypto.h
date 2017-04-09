@@ -24,23 +24,23 @@ namespace blink {
 static const size_t kMaxDigestSize = 64;
 typedef Vector<uint8_t, kMaxDigestSize> DigestValue;
 
-const size_t sha1HashSize = 20;
+const size_t kSha1HashSize = 20;
 enum HashAlgorithm {
-  HashAlgorithmSha1,
-  HashAlgorithmSha256,
-  HashAlgorithmSha384,
-  HashAlgorithmSha512
+  kHashAlgorithmSha1,
+  kHashAlgorithmSha256,
+  kHashAlgorithmSha384,
+  kHashAlgorithmSha512
 };
 
-PLATFORM_EXPORT bool computeDigest(HashAlgorithm,
+PLATFORM_EXPORT bool ComputeDigest(HashAlgorithm,
                                    const char* digestable,
                                    size_t length,
-                                   DigestValue& digestResult);
+                                   DigestValue& digest_result);
 // Note: this will never return null.
-PLATFORM_EXPORT std::unique_ptr<WebCryptoDigestor> createDigestor(
+PLATFORM_EXPORT std::unique_ptr<WebCryptoDigestor> CreateDigestor(
     HashAlgorithm);
-PLATFORM_EXPORT void finishDigestor(WebCryptoDigestor*,
-                                    DigestValue& digestResult);
+PLATFORM_EXPORT void FinishDigestor(WebCryptoDigestor*,
+                                    DigestValue& digest_result);
 
 }  // namespace blink
 
@@ -48,13 +48,13 @@ namespace WTF {
 
 struct DigestValueHash {
   STATIC_ONLY(DigestValueHash);
-  static unsigned hash(const blink::DigestValue& v) {
-    return StringHasher::computeHash(v.data(), v.size());
+  static unsigned GetHash(const blink::DigestValue& v) {
+    return StringHasher::ComputeHash(v.Data(), v.size());
   }
-  static bool equal(const blink::DigestValue& a, const blink::DigestValue& b) {
+  static bool Equal(const blink::DigestValue& a, const blink::DigestValue& b) {
     return a == b;
   };
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 template <>
 struct DefaultHash<blink::DigestValue> {

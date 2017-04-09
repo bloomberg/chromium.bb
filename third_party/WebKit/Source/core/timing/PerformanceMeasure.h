@@ -37,17 +37,17 @@ class PerformanceMeasure final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceMeasure* create(const String& name,
-                                    double startTime,
-                                    double endTime) {
-    return new PerformanceMeasure(name, startTime, endTime);
+  static PerformanceMeasure* Create(const String& name,
+                                    double start_time,
+                                    double end_time) {
+    return new PerformanceMeasure(name, start_time, end_time);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { PerformanceEntry::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { PerformanceEntry::Trace(visitor); }
 
  private:
-  PerformanceMeasure(const String& name, double startTime, double endTime)
-      : PerformanceEntry(name, "measure", startTime, endTime) {}
+  PerformanceMeasure(const String& name, double start_time, double end_time)
+      : PerformanceEntry(name, "measure", start_time, end_time) {}
   ~PerformanceMeasure() override {}
 };
 

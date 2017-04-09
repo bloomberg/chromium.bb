@@ -49,217 +49,219 @@ namespace blink {
 class AnimationAnimationTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    setUpWithoutStartingTimeline();
-    startTimeline();
+    SetUpWithoutStartingTimeline();
+    StartTimeline();
   }
 
-  void setUpWithoutStartingTimeline() {
-    pageHolder = DummyPageHolder::create();
-    document = &pageHolder->document();
-    document->animationClock().resetTimeForTesting();
-    timeline = AnimationTimeline::create(document.get());
-    timeline->resetForTesting();
-    animation = timeline->play(0);
+  void SetUpWithoutStartingTimeline() {
+    page_holder = DummyPageHolder::Create();
+    document = &page_holder->GetDocument();
+    document->GetAnimationClock().ResetTimeForTesting();
+    timeline = AnimationTimeline::Create(document.Get());
+    timeline->ResetForTesting();
+    animation = timeline->Play(0);
     animation->setStartTime(0);
-    animation->setEffect(makeAnimation());
+    animation->setEffect(MakeAnimation());
   }
 
-  void startTimeline() { simulateFrame(0); }
+  void StartTimeline() { SimulateFrame(0); }
 
-  KeyframeEffect* makeAnimation(double duration = 30, double playbackRate = 1) {
+  KeyframeEffect* MakeAnimation(double duration = 30,
+                                double playback_rate = 1) {
     Timing timing;
-    timing.iterationDuration = duration;
-    timing.playbackRate = playbackRate;
-    return KeyframeEffect::create(0, nullptr, timing);
+    timing.iteration_duration = duration;
+    timing.playback_rate = playback_rate;
+    return KeyframeEffect::Create(0, nullptr, timing);
   }
 
-  bool simulateFrame(double time,
-                     Optional<CompositorElementIdSet> compositedElementIds =
+  bool SimulateFrame(double time,
+                     Optional<CompositorElementIdSet> composited_element_ids =
                          Optional<CompositorElementIdSet>()) {
-    document->animationClock().updateTime(time);
-    document->compositorPendingAnimations().update(compositedElementIds, false);
+    document->GetAnimationClock().UpdateTime(time);
+    document->GetCompositorPendingAnimations().Update(composited_element_ids,
+                                                      false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
-    return animation->update(TimingUpdateForAnimationFrame);
+    return animation->Update(kTimingUpdateForAnimationFrame);
   }
 
   Persistent<Document> document;
   Persistent<AnimationTimeline> timeline;
   Persistent<Animation> animation;
-  std::unique_ptr<DummyPageHolder> pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder;
 };
 
 TEST_F(AnimationAnimationTest, InitialState) {
-  setUpWithoutStartingTimeline();
-  animation = timeline->play(0);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_FALSE(animation->paused());
+  SetUpWithoutStartingTimeline();
+  animation = timeline->Play(0);
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(1, animation->playbackRate());
-  EXPECT_FALSE(animation->hasStartTime());
-  EXPECT_TRUE(isNull(animation->startTimeInternal()));
+  EXPECT_FALSE(animation->HasStartTime());
+  EXPECT_TRUE(IsNull(animation->StartTimeInternal()));
 
-  startTimeline();
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(0, timeline->currentTimeInternal());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_FALSE(animation->paused());
+  StartTimeline();
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(0, timeline->CurrentTimeInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(1, animation->playbackRate());
-  EXPECT_EQ(0, animation->startTimeInternal());
-  EXPECT_TRUE(animation->hasStartTime());
+  EXPECT_EQ(0, animation->StartTimeInternal());
+  EXPECT_TRUE(animation->HasStartTime());
 }
 
 TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated) {
-  EXPECT_FALSE(animation->outdated());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_FALSE(animation->outdated());
+  EXPECT_FALSE(animation->Outdated());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_FALSE(animation->Outdated());
   // FIXME: We should split simulateFrame into a version that doesn't update
   // the animation and one that does, as most of the tests don't require
   // update() to be called.
-  document->animationClock().updateTime(10);
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  EXPECT_FALSE(animation->outdated());
+  document->GetAnimationClock().UpdateTime(10);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  EXPECT_FALSE(animation->Outdated());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTime) {
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  animation->setCurrentTimeInternal(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  EXPECT_EQ(20, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  animation->SetCurrentTimeInternal(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTimeNegative) {
-  animation->setCurrentTimeInternal(-10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  EXPECT_EQ(-10, animation->currentTimeInternal());
-  simulateFrame(20);
-  EXPECT_EQ(10, animation->currentTimeInternal());
+  animation->SetCurrentTimeInternal(-10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  EXPECT_EQ(-10, animation->CurrentTimeInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
 
   animation->setPlaybackRate(-2);
-  animation->setCurrentTimeInternal(-10);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  EXPECT_EQ(-10, animation->currentTimeInternal());
-  simulateFrame(40);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(-10, animation->currentTimeInternal());
+  animation->SetCurrentTimeInternal(-10);
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  EXPECT_EQ(-10, animation->CurrentTimeInternal());
+  SimulateFrame(40);
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(-10, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest,
        SetCurrentTimeNegativeWithoutSimultaneousPlaybackRateChange) {
-  simulateFrame(20);
-  EXPECT_EQ(20, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   animation->setPlaybackRate(-1);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(30);
-  EXPECT_EQ(20, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(30);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   animation->setCurrentTime(-10 * 1000);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd) {
   animation->setCurrentTime(50 * 1000);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(50, animation->currentTimeInternal());
-  simulateFrame(20);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(50, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(50, animation->CurrentTimeInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(50, animation->CurrentTimeInternal());
 
   animation->setPlaybackRate(-2);
   animation->setCurrentTime(50 * 1000);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  EXPECT_EQ(50, animation->currentTimeInternal());
-  simulateFrame(20);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  simulateFrame(40);
-  EXPECT_EQ(10, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  EXPECT_EQ(50, animation->CurrentTimeInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  SimulateFrame(40);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTimeMax) {
-  animation->setCurrentTimeInternal(std::numeric_limits<double>::max());
+  animation->SetCurrentTimeInternal(std::numeric_limits<double>::max());
   EXPECT_EQ(std::numeric_limits<double>::max(),
-            animation->currentTimeInternal());
-  simulateFrame(100);
+            animation->CurrentTimeInternal());
+  SimulateFrame(100);
   EXPECT_EQ(std::numeric_limits<double>::max(),
-            animation->currentTimeInternal());
+            animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetCurrentTimeSetsStartTime) {
   EXPECT_EQ(0, animation->startTime());
   animation->setCurrentTime(1000);
   EXPECT_EQ(-1000, animation->startTime());
-  simulateFrame(1);
+  SimulateFrame(1);
   EXPECT_EQ(-1000, animation->startTime());
   EXPECT_EQ(2000, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTest, SetStartTime) {
-  simulateFrame(20);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  EXPECT_EQ(0, animation->startTimeInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  EXPECT_EQ(0, animation->StartTimeInternal());
   EXPECT_EQ(20 * 1000, animation->currentTime());
   animation->setStartTime(10 * 1000);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  EXPECT_EQ(10, animation->startTimeInternal());
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  EXPECT_EQ(10, animation->StartTimeInternal());
   EXPECT_EQ(10 * 1000, animation->currentTime());
-  simulateFrame(30);
-  EXPECT_EQ(10, animation->startTimeInternal());
+  SimulateFrame(30);
+  EXPECT_EQ(10, animation->StartTimeInternal());
   EXPECT_EQ(20 * 1000, animation->currentTime());
   animation->setStartTime(-20 * 1000);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetStartTimeLimitsAnimation) {
   animation->setStartTime(-50 * 1000);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
   animation->setPlaybackRate(-1);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   animation->setStartTime(-100 * 1000);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_TRUE(animation->limited());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_TRUE(animation->Limited());
 }
 
 TEST_F(AnimationAnimationTest, SetStartTimeOnLimitedAnimation) {
-  simulateFrame(30);
+  SimulateFrame(30);
   animation->setStartTime(-10 * 1000);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  animation->setCurrentTimeInternal(50);
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  animation->SetCurrentTimeInternal(50);
   animation->setStartTime(-40 * 1000);
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
-  EXPECT_TRUE(animation->limited());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
+  EXPECT_TRUE(animation->Limited());
 }
 
 TEST_F(AnimationAnimationTest, StartTimePauseFinish) {
-  NonThrowableExceptionState exceptionState;
+  NonThrowableExceptionState exception_state;
   animation->pause();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->startTime()));
-  animation->finish(exceptionState);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  animation->finish(exception_state);
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(-30000, animation->startTime());
 }
 
 TEST_F(AnimationAnimationTest, FinishWhenPaused) {
-  NonThrowableExceptionState exceptionState;
+  NonThrowableExceptionState exception_state;
   animation->pause();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Paused, animation->playStateInternal());
-  animation->finish(exceptionState);
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kPaused, animation->PlayStateInternal());
+  animation->finish(exception_state);
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, StartTimeFinishPause) {
-  NonThrowableExceptionState exceptionState;
-  animation->finish(exceptionState);
+  NonThrowableExceptionState exception_state;
+  animation->finish(exception_state);
   EXPECT_EQ(-30 * 1000, animation->startTime());
   animation->pause();
   EXPECT_TRUE(std::isnan(animation->startTime()));
@@ -267,465 +269,465 @@ TEST_F(AnimationAnimationTest, StartTimeFinishPause) {
 
 TEST_F(AnimationAnimationTest, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->startTime()));
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, PausePlay) {
-  simulateFrame(10);
+  SimulateFrame(10);
   animation->pause();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  EXPECT_TRUE(animation->paused());
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  simulateFrame(20);
-  EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  EXPECT_TRUE(animation->Paused());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kPaused, animation->PlayStateInternal());
   animation->play();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(20);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
-  EXPECT_FALSE(animation->paused());
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  simulateFrame(30);
-  EXPECT_EQ(20, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
+  EXPECT_FALSE(animation->Paused());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(30);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, PlayRewindsToStart) {
-  animation->setCurrentTimeInternal(30);
+  animation->SetCurrentTimeInternal(30);
   animation->play();
-  EXPECT_EQ(0, animation->currentTimeInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
 
-  animation->setCurrentTimeInternal(40);
+  animation->SetCurrentTimeInternal(40);
   animation->play();
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 
-  animation->setCurrentTimeInternal(-10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  animation->SetCurrentTimeInternal(-10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   animation->play();
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, PlayRewindsToEnd) {
   animation->setPlaybackRate(-1);
   animation->play();
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
 
-  animation->setCurrentTimeInternal(40);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  animation->SetCurrentTimeInternal(40);
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   animation->play();
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 
-  animation->setCurrentTimeInternal(-10);
+  animation->SetCurrentTimeInternal(-10);
   animation->play();
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  simulateFrame(20);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, PlayWithPlaybackRateZeroDoesNotSeek) {
   animation->setPlaybackRate(0);
   animation->play();
-  EXPECT_EQ(0, animation->currentTimeInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
 
-  animation->setCurrentTimeInternal(40);
+  animation->SetCurrentTimeInternal(40);
   animation->play();
-  EXPECT_EQ(40, animation->currentTimeInternal());
+  EXPECT_EQ(40, animation->CurrentTimeInternal());
 
-  animation->setCurrentTimeInternal(-10);
+  animation->SetCurrentTimeInternal(-10);
   animation->play();
-  EXPECT_EQ(-10, animation->currentTimeInternal());
+  EXPECT_EQ(-10, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest,
        PlayAfterPauseWithPlaybackRateZeroUpdatesPlayState) {
   animation->pause();
   animation->setPlaybackRate(0);
-  simulateFrame(1);
-  EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+  SimulateFrame(1);
+  EXPECT_EQ(Animation::kPaused, animation->PlayStateInternal());
   animation->play();
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, Reverse) {
-  animation->setCurrentTimeInternal(10);
+  animation->SetCurrentTimeInternal(10);
   animation->pause();
   animation->reverse();
-  EXPECT_FALSE(animation->paused());
+  EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(-1, animation->playbackRate());
-  EXPECT_EQ(10, animation->currentTimeInternal());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero) {
-  animation->setCurrentTimeInternal(10);
+  animation->SetCurrentTimeInternal(10);
   animation->setPlaybackRate(0);
   animation->pause();
   animation->reverse();
-  EXPECT_TRUE(animation->paused());
+  EXPECT_TRUE(animation->Paused());
   EXPECT_EQ(0, animation->playbackRate());
-  EXPECT_EQ(10, animation->currentTimeInternal());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, ReverseSeeksToStart) {
-  animation->setCurrentTimeInternal(-10);
+  animation->SetCurrentTimeInternal(-10);
   animation->setPlaybackRate(-1);
   animation->reverse();
-  EXPECT_EQ(0, animation->currentTimeInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, ReverseSeeksToEnd) {
   animation->setCurrentTime(40 * 1000);
   animation->reverse();
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, ReverseBeyondLimit) {
-  animation->setCurrentTimeInternal(40);
+  animation->SetCurrentTimeInternal(40);
   animation->setPlaybackRate(-1);
   animation->reverse();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  EXPECT_EQ(0, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
 
-  animation->setCurrentTimeInternal(-10);
+  animation->SetCurrentTimeInternal(-10);
   animation->reverse();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, Finish) {
-  NonThrowableExceptionState exceptionState;
-  animation->finish(exceptionState);
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  NonThrowableExceptionState exception_state;
+  animation->finish(exception_state);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 
   animation->setPlaybackRate(-1);
-  animation->finish(exceptionState);
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  animation->finish(exception_state);
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, FinishAfterEffectEnd) {
-  NonThrowableExceptionState exceptionState;
+  NonThrowableExceptionState exception_state;
   animation->setCurrentTime(40 * 1000);
-  animation->finish(exceptionState);
-  EXPECT_EQ(40, animation->currentTimeInternal());
+  animation->finish(exception_state);
+  EXPECT_EQ(40, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, FinishBeforeStart) {
-  NonThrowableExceptionState exceptionState;
-  animation->setCurrentTimeInternal(-10);
+  NonThrowableExceptionState exception_state;
+  animation->SetCurrentTimeInternal(-10);
   animation->setPlaybackRate(-1);
-  animation->finish(exceptionState);
-  EXPECT_EQ(0, animation->currentTimeInternal());
+  animation->finish(exception_state);
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, FinishDoesNothingWithPlaybackRateZero) {
-  DummyExceptionStateForTesting exceptionState;
-  animation->setCurrentTimeInternal(10);
+  DummyExceptionStateForTesting exception_state;
+  animation->SetCurrentTimeInternal(10);
   animation->setPlaybackRate(0);
-  animation->finish(exceptionState);
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  EXPECT_TRUE(exceptionState.hadException());
+  animation->finish(exception_state);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  EXPECT_TRUE(exception_state.HadException());
 }
 
 TEST_F(AnimationAnimationTest, FinishRaisesException) {
   Timing timing;
-  timing.iterationDuration = 1;
-  timing.iterationCount = std::numeric_limits<double>::infinity();
-  animation->setEffect(KeyframeEffect::create(0, nullptr, timing));
-  animation->setCurrentTimeInternal(10);
+  timing.iteration_duration = 1;
+  timing.iteration_count = std::numeric_limits<double>::infinity();
+  animation->setEffect(KeyframeEffect::Create(0, nullptr, timing));
+  animation->SetCurrentTimeInternal(10);
 
-  DummyExceptionStateForTesting exceptionState;
-  animation->finish(exceptionState);
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  EXPECT_TRUE(exceptionState.hadException());
-  EXPECT_EQ(InvalidStateError, exceptionState.code());
+  DummyExceptionStateForTesting exception_state;
+  animation->finish(exception_state);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(kInvalidStateError, exception_state.Code());
 }
 
 TEST_F(AnimationAnimationTest, LimitingAtEffectEnd) {
-  simulateFrame(30);
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  EXPECT_TRUE(animation->limited());
-  simulateFrame(40);
-  EXPECT_EQ(30, animation->currentTimeInternal());
-  EXPECT_FALSE(animation->paused());
+  SimulateFrame(30);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  EXPECT_TRUE(animation->Limited());
+  SimulateFrame(40);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+  EXPECT_FALSE(animation->Paused());
 }
 
 TEST_F(AnimationAnimationTest, LimitingAtStart) {
-  simulateFrame(30);
+  SimulateFrame(30);
   animation->setPlaybackRate(-2);
-  simulateFrame(30);
-  simulateFrame(45);
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_TRUE(animation->limited());
-  simulateFrame(60);
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  EXPECT_FALSE(animation->paused());
+  SimulateFrame(30);
+  SimulateFrame(45);
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_TRUE(animation->Limited());
+  SimulateFrame(60);
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  EXPECT_FALSE(animation->Paused());
 }
 
 TEST_F(AnimationAnimationTest, LimitingWithNoEffect) {
   animation->setEffect(0);
-  EXPECT_TRUE(animation->limited());
-  simulateFrame(30);
-  EXPECT_EQ(0, animation->currentTimeInternal());
+  EXPECT_TRUE(animation->Limited());
+  SimulateFrame(30);
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetPlaybackRate) {
   animation->setPlaybackRate(2);
-  simulateFrame(0);
+  SimulateFrame(0);
   EXPECT_EQ(2, animation->playbackRate());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  simulateFrame(10);
-  EXPECT_EQ(20, animation->currentTimeInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetPlaybackRateWhilePaused) {
-  simulateFrame(10);
+  SimulateFrame(10);
   animation->pause();
   animation->setPlaybackRate(2);
-  simulateFrame(20);
+  SimulateFrame(20);
   animation->play();
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  simulateFrame(20);
-  simulateFrame(25);
-  EXPECT_EQ(20, animation->currentTimeInternal());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(20);
+  SimulateFrame(25);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetPlaybackRateWhileLimited) {
-  simulateFrame(40);
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  SimulateFrame(40);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
   animation->setPlaybackRate(2);
-  simulateFrame(50);
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  SimulateFrame(50);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
   animation->setPlaybackRate(-2);
-  simulateFrame(50);
-  simulateFrame(60);
-  EXPECT_FALSE(animation->limited());
-  EXPECT_EQ(10, animation->currentTimeInternal());
+  SimulateFrame(50);
+  SimulateFrame(60);
+  EXPECT_FALSE(animation->Limited());
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetPlaybackRateZero) {
-  simulateFrame(0);
-  simulateFrame(10);
+  SimulateFrame(0);
+  SimulateFrame(10);
   animation->setPlaybackRate(0);
-  simulateFrame(10);
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  simulateFrame(20);
-  EXPECT_EQ(10, animation->currentTimeInternal());
-  animation->setCurrentTimeInternal(20);
-  EXPECT_EQ(20, animation->currentTimeInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(20);
+  EXPECT_EQ(10, animation->CurrentTimeInternal());
+  animation->SetCurrentTimeInternal(20);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
   animation->setPlaybackRate(std::numeric_limits<double>::max());
-  simulateFrame(0);
+  SimulateFrame(0);
   EXPECT_EQ(std::numeric_limits<double>::max(), animation->playbackRate());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  simulateFrame(1);
-  EXPECT_EQ(30, animation->currentTimeInternal());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  SimulateFrame(1);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetEffect) {
-  animation = timeline->play(0);
+  animation = timeline->Play(0);
   animation->setStartTime(0);
-  AnimationEffectReadOnly* effect1 = makeAnimation();
-  AnimationEffectReadOnly* effect2 = makeAnimation();
+  AnimationEffectReadOnly* effect1 = MakeAnimation();
+  AnimationEffectReadOnly* effect2 = MakeAnimation();
   animation->setEffect(effect1);
   EXPECT_EQ(effect1, animation->effect());
-  EXPECT_EQ(0, animation->currentTimeInternal());
-  animation->setCurrentTimeInternal(15);
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+  animation->SetCurrentTimeInternal(15);
   animation->setEffect(effect2);
-  EXPECT_EQ(15, animation->currentTimeInternal());
-  EXPECT_EQ(0, effect1->animation());
-  EXPECT_EQ(animation, effect2->animation());
+  EXPECT_EQ(15, animation->CurrentTimeInternal());
+  EXPECT_EQ(0, effect1->GetAnimation());
+  EXPECT_EQ(animation, effect2->GetAnimation());
   EXPECT_EQ(effect2, animation->effect());
 }
 
 TEST_F(AnimationAnimationTest, SetEffectLimitsAnimation) {
-  animation->setCurrentTimeInternal(20);
-  animation->setEffect(makeAnimation(10));
-  EXPECT_EQ(20, animation->currentTimeInternal());
-  EXPECT_TRUE(animation->limited());
-  simulateFrame(10);
-  EXPECT_EQ(20, animation->currentTimeInternal());
+  animation->SetCurrentTimeInternal(20);
+  animation->setEffect(MakeAnimation(10));
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
+  EXPECT_TRUE(animation->Limited());
+  SimulateFrame(10);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, SetEffectUnlimitsAnimation) {
-  animation->setCurrentTimeInternal(40);
-  animation->setEffect(makeAnimation(60));
-  EXPECT_FALSE(animation->limited());
-  EXPECT_EQ(40, animation->currentTimeInternal());
-  simulateFrame(10);
-  EXPECT_EQ(50, animation->currentTimeInternal());
+  animation->SetCurrentTimeInternal(40);
+  animation->setEffect(MakeAnimation(60));
+  EXPECT_FALSE(animation->Limited());
+  EXPECT_EQ(40, animation->CurrentTimeInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(50, animation->CurrentTimeInternal());
 }
 
 TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects) {
-  animation = timeline->play(0);
-  animation->update(TimingUpdateOnDemand);
+  animation = timeline->Play(0);
+  animation->Update(kTimingUpdateOnDemand);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 
-  simulateFrame(1234);
+  SimulateFrame(1234);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTest, AnimationsDisassociateFromEffect) {
-  AnimationEffectReadOnly* animationNode = animation->effect();
-  Animation* animation2 = timeline->play(animationNode);
+  AnimationEffectReadOnly* animation_node = animation->effect();
+  Animation* animation2 = timeline->Play(animation_node);
   EXPECT_EQ(0, animation->effect());
-  animation->setEffect(animationNode);
+  animation->setEffect(animation_node);
   EXPECT_EQ(0, animation2->effect());
 }
 
 TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   Timing timing;
-  timing.startDelay = 1;
-  timing.iterationDuration = 1;
-  timing.endDelay = 1;
-  KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
-  animation = timeline->play(keyframeEffect);
+  timing.start_delay = 1;
+  timing.iteration_duration = 1;
+  timing.end_delay = 1;
+  KeyframeEffect* keyframe_effect = KeyframeEffect::Create(0, nullptr, timing);
+  animation = timeline->Play(keyframe_effect);
   animation->setStartTime(0);
 
-  simulateFrame(0);
-  EXPECT_EQ(1, animation->timeToEffectChange());
+  SimulateFrame(0);
+  EXPECT_EQ(1, animation->TimeToEffectChange());
 
-  simulateFrame(0.5);
-  EXPECT_EQ(0.5, animation->timeToEffectChange());
+  SimulateFrame(0.5);
+  EXPECT_EQ(0.5, animation->TimeToEffectChange());
 
-  simulateFrame(1);
-  EXPECT_EQ(0, animation->timeToEffectChange());
+  SimulateFrame(1);
+  EXPECT_EQ(0, animation->TimeToEffectChange());
 
-  simulateFrame(1.5);
-  EXPECT_EQ(0, animation->timeToEffectChange());
+  SimulateFrame(1.5);
+  EXPECT_EQ(0, animation->TimeToEffectChange());
 
-  simulateFrame(2);
+  SimulateFrame(2);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 
-  simulateFrame(3);
+  SimulateFrame(3);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 
-  animation->setCurrentTimeInternal(0);
-  simulateFrame(3);
-  EXPECT_EQ(1, animation->timeToEffectChange());
+  animation->SetCurrentTimeInternal(0);
+  SimulateFrame(3);
+  EXPECT_EQ(1, animation->TimeToEffectChange());
 
   animation->setPlaybackRate(2);
-  simulateFrame(3);
-  EXPECT_EQ(0.5, animation->timeToEffectChange());
+  SimulateFrame(3);
+  EXPECT_EQ(0.5, animation->TimeToEffectChange());
 
   animation->setPlaybackRate(0);
-  animation->update(TimingUpdateOnDemand);
+  animation->Update(kTimingUpdateOnDemand);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 
-  animation->setCurrentTimeInternal(3);
+  animation->SetCurrentTimeInternal(3);
   animation->setPlaybackRate(-1);
-  animation->update(TimingUpdateOnDemand);
-  simulateFrame(3);
-  EXPECT_EQ(1, animation->timeToEffectChange());
+  animation->Update(kTimingUpdateOnDemand);
+  SimulateFrame(3);
+  EXPECT_EQ(1, animation->TimeToEffectChange());
 
   animation->setPlaybackRate(-2);
-  animation->update(TimingUpdateOnDemand);
-  simulateFrame(3);
-  EXPECT_EQ(0.5, animation->timeToEffectChange());
+  animation->Update(kTimingUpdateOnDemand);
+  SimulateFrame(3);
+  EXPECT_EQ(0.5, animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTest, TimeToNextEffectWhenPaused) {
-  EXPECT_EQ(0, animation->timeToEffectChange());
+  EXPECT_EQ(0, animation->TimeToEffectChange());
   animation->pause();
-  animation->update(TimingUpdateOnDemand);
+  animation->Update(kTimingUpdateOnDemand);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTest, TimeToNextEffectWhenCancelledBeforeStart) {
-  EXPECT_EQ(0, animation->timeToEffectChange());
-  animation->setCurrentTimeInternal(-8);
+  EXPECT_EQ(0, animation->TimeToEffectChange());
+  animation->SetCurrentTimeInternal(-8);
   animation->setPlaybackRate(2);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
-  animation->update(TimingUpdateOnDemand);
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
+  animation->Update(kTimingUpdateOnDemand);
   // This frame will fire the finish event event though no start time has been
   // received from the compositor yet, as cancel() nukes start times.
-  simulateFrame(0);
+  SimulateFrame(0);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTest,
        TimeToNextEffectWhenCancelledBeforeStartReverse) {
-  EXPECT_EQ(0, animation->timeToEffectChange());
-  animation->setCurrentTimeInternal(9);
+  EXPECT_EQ(0, animation->TimeToEffectChange());
+  animation->SetCurrentTimeInternal(9);
   animation->setPlaybackRate(-3);
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
-  animation->update(TimingUpdateOnDemand);
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
+  animation->Update(kTimingUpdateOnDemand);
   // This frame will fire the finish event event though no start time has been
   // received from the compositor yet, as cancel() nukes start times.
-  simulateFrame(0);
+  SimulateFrame(0);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTest, TimeToNextEffectSimpleCancelledBeforeStart) {
-  EXPECT_EQ(0, animation->timeToEffectChange());
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  EXPECT_EQ(0, animation->TimeToEffectChange());
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   animation->cancel();
-  animation->update(TimingUpdateOnDemand);
+  animation->Update(kTimingUpdateOnDemand);
   // This frame will fire the finish event event though no start time has been
   // received from the compositor yet, as cancel() nukes start times.
-  simulateFrame(0);
+  SimulateFrame(0);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->timeToEffectChange());
+            animation->TimeToEffectChange());
 }
 
 TEST_F(AnimationAnimationTest, AttachedAnimations) {
   Persistent<Element> element = document->createElement("foo");
 
   Timing timing;
-  KeyframeEffect* keyframeEffect =
-      KeyframeEffect::create(element.get(), nullptr, timing);
-  Animation* animation = timeline->play(keyframeEffect);
-  simulateFrame(0);
-  timeline->serviceAnimations(TimingUpdateForAnimationFrame);
-  EXPECT_EQ(1U,
-            element->elementAnimations()->animations().find(animation)->value);
+  KeyframeEffect* keyframe_effect =
+      KeyframeEffect::Create(element.Get(), nullptr, timing);
+  Animation* animation = timeline->Play(keyframe_effect);
+  SimulateFrame(0);
+  timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
+  EXPECT_EQ(
+      1U, element->GetElementAnimations()->Animations().Find(animation)->value);
 
-  ThreadState::current()->collectAllGarbage();
-  EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 
 TEST_F(AnimationAnimationTest, HasLowerPriority) {
-  Animation* animation1 = timeline->play(0);
-  Animation* animation2 = timeline->play(0);
-  EXPECT_TRUE(Animation::hasLowerPriority(animation1, animation2));
+  Animation* animation1 = timeline->Play(0);
+  Animation* animation2 = timeline->Play(0);
+  EXPECT_TRUE(Animation::HasLowerPriority(animation1, animation2));
 }
 
 TEST_F(AnimationAnimationTest, PlayAfterCancel) {
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
   EXPECT_TRUE(std::isnan(animation->startTime()));
   animation->play();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_TRUE(std::isnan(animation->startTime()));
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_EQ(10 * 1000, animation->startTime());
 }
@@ -733,88 +735,88 @@ TEST_F(AnimationAnimationTest, PlayAfterCancel) {
 TEST_F(AnimationAnimationTest, PlayBackwardsAfterCancel) {
   animation->setPlaybackRate(-1);
   animation->setCurrentTime(15 * 1000);
-  simulateFrame(0);
+  SimulateFrame(0);
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
   EXPECT_TRUE(std::isnan(animation->startTime()));
   animation->play();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
   EXPECT_TRUE(std::isnan(animation->startTime()));
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
   EXPECT_EQ(40 * 1000, animation->startTime());
 }
 
 TEST_F(AnimationAnimationTest, ReverseAfterCancel) {
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
   EXPECT_TRUE(std::isnan(animation->startTime()));
   animation->reverse();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
   EXPECT_TRUE(std::isnan(animation->startTime()));
-  simulateFrame(10);
-  EXPECT_EQ(Animation::Running, animation->playStateInternal());
+  SimulateFrame(10);
+  EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(30 * 1000, animation->currentTime());
   EXPECT_EQ(40 * 1000, animation->startTime());
 }
 
 TEST_F(AnimationAnimationTest, FinishAfterCancel) {
-  NonThrowableExceptionState exceptionState;
+  NonThrowableExceptionState exception_state;
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
   EXPECT_TRUE(std::isnan(animation->startTime()));
-  animation->finish(exceptionState);
+  animation->finish(exception_state);
   EXPECT_EQ(30000, animation->currentTime());
   EXPECT_EQ(-30000, animation->startTime());
-  EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+  EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
 TEST_F(AnimationAnimationTest, PauseAfterCancel) {
   animation->cancel();
-  EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+  EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
   EXPECT_TRUE(std::isnan(animation->startTime()));
   animation->pause();
-  EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+  EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->currentTime());
   EXPECT_TRUE(std::isnan(animation->startTime()));
 }
 
 TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
-  ScopedSlimmingPaintV2ForTest enableSPv2(true);
+  ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
 
-  Persistent<Element> elementComposited = document->createElement("foo");
-  Persistent<Element> elementNotComposited = document->createElement("bar");
+  Persistent<Element> element_composited = document->createElement("foo");
+  Persistent<Element> element_not_composited = document->createElement("bar");
 
-  Optional<CompositorElementIdSet> compositedElementIds =
+  Optional<CompositorElementIdSet> composited_element_ids =
       CompositorElementIdSet();
-  CompositorElementId expectedCompositorElementId =
-      createCompositorElementId(DOMNodeIds::idForNode(elementComposited),
-                                CompositorSubElementId::Primary);
-  compositedElementIds->insert(expectedCompositorElementId);
+  CompositorElementId expected_compositor_element_id =
+      CreateCompositorElementId(DOMNodeIds::IdForNode(element_composited),
+                                CompositorSubElementId::kPrimary);
+  composited_element_ids->insert(expected_compositor_element_id);
 
   Timing timing;
-  timing.iterationDuration = 30;
-  timing.playbackRate = 1;
-  KeyframeEffect* keyframeEffectComposited =
-      KeyframeEffect::create(elementComposited.get(), nullptr, timing);
-  Animation* animationComposited = timeline->play(keyframeEffectComposited);
-  KeyframeEffect* keyframeEffectNotComposited =
-      KeyframeEffect::create(elementNotComposited.get(), nullptr, timing);
-  Animation* animationNotComposited =
-      timeline->play(keyframeEffectNotComposited);
+  timing.iteration_duration = 30;
+  timing.playback_rate = 1;
+  KeyframeEffect* keyframe_effect_composited =
+      KeyframeEffect::Create(element_composited.Get(), nullptr, timing);
+  Animation* animation_composited = timeline->Play(keyframe_effect_composited);
+  KeyframeEffect* keyframe_effect_not_composited =
+      KeyframeEffect::Create(element_not_composited.Get(), nullptr, timing);
+  Animation* animation_not_composited =
+      timeline->Play(keyframe_effect_not_composited);
 
-  simulateFrame(0, compositedElementIds);
-  EXPECT_TRUE(
-      animationComposited->canStartAnimationOnCompositor(compositedElementIds));
-  EXPECT_FALSE(animationNotComposited->canStartAnimationOnCompositor(
-      compositedElementIds));
+  SimulateFrame(0, composited_element_ids);
+  EXPECT_TRUE(animation_composited->CanStartAnimationOnCompositor(
+      composited_element_ids));
+  EXPECT_FALSE(animation_not_composited->CanStartAnimationOnCompositor(
+      composited_element_ids));
 }
 
 }  // namespace blink

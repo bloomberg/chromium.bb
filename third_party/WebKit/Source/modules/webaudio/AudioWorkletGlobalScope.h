@@ -24,36 +24,36 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioWorkletGlobalScope* create(const KURL&,
-                                         const String& userAgent,
+  static AudioWorkletGlobalScope* Create(const KURL&,
+                                         const String& user_agent,
                                          PassRefPtr<SecurityOrigin>,
                                          v8::Isolate*,
                                          WorkerThread*);
   ~AudioWorkletGlobalScope() override;
-  void dispose() final;
-  bool isAudioWorkletGlobalScope() const final { return true; }
+  void Dispose() final;
+  bool IsAudioWorkletGlobalScope() const final { return true; }
   void registerProcessor(const String& name,
-                         const ScriptValue& classDefinition,
+                         const ScriptValue& class_definition,
                          ExceptionState&);
 
   // Creates an instance of AudioWorkletProcessor from a registered name. This
   // function may return nullptr when 1) a definition cannot be found or 2) a
   // new V8 object cannot be constructed for some reason.
-  AudioWorkletProcessor* createInstance(const String& name);
+  AudioWorkletProcessor* CreateInstance(const String& name);
 
   // Invokes the JS audio processing function from an instance of
   // AudioWorkletProcessor, along with given AudioBuffer from the audio graph.
-  bool process(AudioWorkletProcessor*,
-               AudioBuffer* inputBuffer,
-               AudioBuffer* outputBuffer);
+  bool Process(AudioWorkletProcessor*,
+               AudioBuffer* input_buffer,
+               AudioBuffer* output_buffer);
 
-  AudioWorkletProcessorDefinition* findDefinition(const String& name);
+  AudioWorkletProcessorDefinition* FindDefinition(const String& name);
 
   DECLARE_TRACE();
 
  private:
   AudioWorkletGlobalScope(const KURL&,
-                          const String& userAgent,
+                          const String& user_agent,
                           PassRefPtr<SecurityOrigin>,
                           v8::Isolate*,
                           WorkerThread*);
@@ -62,8 +62,8 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
       ProcessorDefinitionMap;
   typedef HeapVector<Member<AudioWorkletProcessor>> ProcessorInstances;
 
-  ProcessorDefinitionMap m_processorDefinitionMap;
-  ProcessorInstances m_processorInstances;
+  ProcessorDefinitionMap processor_definition_map_;
+  ProcessorInstances processor_instances_;
 };
 
 }  // namespace blink

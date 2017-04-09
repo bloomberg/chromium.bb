@@ -13,13 +13,13 @@ class VisualViewportResizeEvent final : public Event {
  public:
   ~VisualViewportResizeEvent() override;
 
-  static VisualViewportResizeEvent* create() {
+  static VisualViewportResizeEvent* Create() {
     return new VisualViewportResizeEvent();
   }
 
-  void doneDispatchingEventAtCurrentTarget() override;
+  void DoneDispatchingEventAtCurrentTarget() override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::Trace(visitor); }
 
  private:
   VisualViewportResizeEvent();

@@ -16,7 +16,7 @@ class MediaMetadataSanitizer {
  public:
   // Produce the sanitized metadata, which will later be sent to the
   // MediaSession mojo service.
-  static blink::mojom::blink::MediaMetadataPtr sanitizeAndConvertToMojo(
+  static blink::mojom::blink::MediaMetadataPtr SanitizeAndConvertToMojo(
       const MediaMetadata*,
       ExecutionContext*);
 };

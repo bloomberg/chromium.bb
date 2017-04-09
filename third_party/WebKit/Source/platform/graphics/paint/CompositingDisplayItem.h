@@ -19,51 +19,47 @@ class PLATFORM_EXPORT BeginCompositingDisplayItem final
     : public PairedBeginDisplayItem {
  public:
   BeginCompositingDisplayItem(const DisplayItemClient& client,
-                              const SkBlendMode xferMode,
+                              const SkBlendMode xfer_mode,
                               const float opacity,
                               const FloatRect* bounds,
-                              ColorFilter colorFilter = ColorFilterNone)
+                              ColorFilter color_filter = kColorFilterNone)
       : PairedBeginDisplayItem(client, kBeginCompositing, sizeof(*this)),
-        m_xferMode(xferMode),
-        m_opacity(opacity),
-        m_hasBounds(bounds),
-        m_colorFilter(colorFilter) {
+        xfer_mode_(xfer_mode),
+        opacity_(opacity),
+        has_bounds_(bounds),
+        color_filter_(color_filter) {
     if (bounds)
-      m_bounds = FloatRect(*bounds);
+      bounds_ = FloatRect(*bounds);
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-  bool equals(const DisplayItem& other) const final {
-    return DisplayItem::equals(other) &&
-           m_xferMode ==
+  bool Equals(const DisplayItem& other) const final {
+    return DisplayItem::Equals(other) &&
+           xfer_mode_ == static_cast<const BeginCompositingDisplayItem&>(other)
+                             .xfer_mode_ &&
+           opacity_ == static_cast<const BeginCompositingDisplayItem&>(other)
+                           .opacity_ &&
+           has_bounds_ == static_cast<const BeginCompositingDisplayItem&>(other)
+                              .has_bounds_ &&
+           bounds_ ==
+               static_cast<const BeginCompositingDisplayItem&>(other).bounds_ &&
+           color_filter_ ==
                static_cast<const BeginCompositingDisplayItem&>(other)
-                   .m_xferMode &&
-           m_opacity ==
-               static_cast<const BeginCompositingDisplayItem&>(other)
-                   .m_opacity &&
-           m_hasBounds ==
-               static_cast<const BeginCompositingDisplayItem&>(other)
-                   .m_hasBounds &&
-           m_bounds ==
-               static_cast<const BeginCompositingDisplayItem&>(other)
-                   .m_bounds &&
-           m_colorFilter ==
-               static_cast<const BeginCompositingDisplayItem&>(other)
-                   .m_colorFilter;
+                   .color_filter_;
   }
 
-  const SkBlendMode m_xferMode;
-  const float m_opacity;
-  bool m_hasBounds;
-  FloatRect m_bounds;
-  ColorFilter m_colorFilter;
+  const SkBlendMode xfer_mode_;
+  const float opacity_;
+  bool has_bounds_;
+  FloatRect bounds_;
+  ColorFilter color_filter_;
 };
 
 class PLATFORM_EXPORT EndCompositingDisplayItem final
@@ -72,14 +68,14 @@ class PLATFORM_EXPORT EndCompositingDisplayItem final
   EndCompositingDisplayItem(const DisplayItemClient& client)
       : PairedEndDisplayItem(client, kEndCompositing, sizeof(*this)) {}
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #if DCHECK_IS_ON()
-  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
-    return otherType == kBeginCompositing;
+  bool IsEndAndPairedWith(DisplayItem::Type other_type) const final {
+    return other_type == kBeginCompositing;
   }
 #endif
 };

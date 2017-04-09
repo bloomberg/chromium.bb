@@ -23,29 +23,29 @@ class CORE_EXPORT DeviceSingleWindowEventController
   virtual ~DeviceSingleWindowEventController();
 
   // Inherited from DeviceEventControllerBase.
-  void didUpdateData() override;
+  void DidUpdateData() override;
   DECLARE_VIRTUAL_TRACE();
 
   // Inherited from LocalDOMWindow::EventListenerObserver.
-  void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveAllEventListeners(LocalDOMWindow*) override;
+  void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
  protected:
   explicit DeviceSingleWindowEventController(Document&);
 
-  Document& document() const { return *m_document; }
-  bool isSameSecurityOriginAsMainFrame() const;
+  Document& GetDocument() const { return *document_; }
+  bool IsSameSecurityOriginAsMainFrame() const;
 
-  void dispatchDeviceEvent(Event*);
+  void DispatchDeviceEvent(Event*);
 
-  virtual Event* lastEvent() const = 0;
-  virtual const AtomicString& eventTypeName() const = 0;
-  virtual bool isNullEvent(Event*) const = 0;
+  virtual Event* LastEvent() const = 0;
+  virtual const AtomicString& EventTypeName() const = 0;
+  virtual bool IsNullEvent(Event*) const = 0;
 
  private:
-  bool m_needsCheckingNullEvents;
-  Member<Document> m_document;
+  bool needs_checking_null_events_;
+  Member<Document> document_;
 };
 
 }  // namespace blink

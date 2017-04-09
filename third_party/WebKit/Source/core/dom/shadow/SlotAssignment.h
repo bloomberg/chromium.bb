@@ -22,13 +22,13 @@ class ShadowRoot;
 // tree.
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
  public:
-  static SlotAssignment* create(ShadowRoot& owner) {
+  static SlotAssignment* Create(ShadowRoot& owner) {
     return new SlotAssignment(owner);
   }
 
   // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
-  HTMLSlotElement* findSlot(const Node&);
-  HTMLSlotElement* findSlotByName(const AtomicString& slotName);
+  HTMLSlotElement* FindSlot(const Node&);
+  HTMLSlotElement* FindSlotByName(const AtomicString& slot_name);
 
   // DOM Standaard defines these two procedures:
   // 1. https://dom.spec.whatwg.org/#assign-a-slot
@@ -39,32 +39,32 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   // Instead, provide alternative, HTMLSlotElement::hasAssignedNodesSlow()
   // so that slotchange can be detected.
 
-  void resolveDistribution();
-  const HeapVector<Member<HTMLSlotElement>>& slots();
+  void ResolveDistribution();
+  const HeapVector<Member<HTMLSlotElement>>& Slots();
 
-  void didAddSlot(HTMLSlotElement&);
-  void slotRemoved(HTMLSlotElement&);
-  void slotRenamed(const AtomicString& oldName, HTMLSlotElement&);
-  void didChangeHostChildSlotName(const AtomicString& oldValue,
-                                  const AtomicString& newValue);
+  void DidAddSlot(HTMLSlotElement&);
+  void SlotRemoved(HTMLSlotElement&);
+  void SlotRenamed(const AtomicString& old_name, HTMLSlotElement&);
+  void DidChangeHostChildSlotName(const AtomicString& old_value,
+                                  const AtomicString& new_value);
 
-  bool findHostChildBySlotName(const AtomicString& slotName) const;
+  bool FindHostChildBySlotName(const AtomicString& slot_name) const;
 
   DECLARE_TRACE();
 
  private:
   explicit SlotAssignment(ShadowRoot& owner);
 
-  void collectSlots();
+  void CollectSlots();
 
-  void resolveAssignment();
-  void distributeTo(Node&, HTMLSlotElement&);
+  void ResolveAssignment();
+  void DistributeTo(Node&, HTMLSlotElement&);
 
-  HeapVector<Member<HTMLSlotElement>> m_slots;
-  Member<DocumentOrderedMap> m_slotMap;
-  WeakMember<ShadowRoot> m_owner;
-  unsigned m_needsCollectSlots : 1;
-  unsigned m_slotCount : 31;
+  HeapVector<Member<HTMLSlotElement>> slots_;
+  Member<DocumentOrderedMap> slot_map_;
+  WeakMember<ShadowRoot> owner_;
+  unsigned needs_collect_slots_ : 1;
+  unsigned slot_count_ : 31;
 };
 
 }  // namespace blink

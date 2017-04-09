@@ -29,23 +29,23 @@ namespace blink {
 
 class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
  public:
-  static FEGaussianBlur* create(Filter*, float, float);
+  static FEGaussianBlur* Create(Filter*, float, float);
 
   // Compute which destination area will be affected when applying a gaussian
   // blur effect with |stdDeviation| to an area |rect|.
-  static FloatRect mapEffect(const FloatSize& stdDeviation, const FloatRect&);
+  static FloatRect MapEffect(const FloatSize& std_deviation, const FloatRect&);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
   FEGaussianBlur(Filter*, float, float);
 
-  FloatRect mapEffect(const FloatRect&) const override;
+  FloatRect MapEffect(const FloatRect&) const override;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 
-  float m_stdX;
-  float m_stdY;
+  float std_x_;
+  float std_y_;
 };
 
 }  // namespace blink

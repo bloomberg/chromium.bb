@@ -44,83 +44,85 @@
 
 namespace blink {
 
-WebDevToolsFrontend* WebDevToolsFrontend::create(
+WebDevToolsFrontend* WebDevToolsFrontend::Create(
     WebLocalFrame* frame,
     WebDevToolsFrontendClient* client) {
-  return new WebDevToolsFrontendImpl(toWebLocalFrameImpl(frame), client);
+  return new WebDevToolsFrontendImpl(ToWebLocalFrameImpl(frame), client);
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
-    WebLocalFrameImpl* webFrame,
+    WebLocalFrameImpl* web_frame,
     WebDevToolsFrontendClient* client)
-    : m_webFrame(webFrame), m_client(client) {
-  m_webFrame->setDevToolsFrontend(this);
-  m_webFrame->frame()->page()->setDefaultPageScaleLimits(1.f, 1.f);
+    : web_frame_(web_frame), client_(client) {
+  web_frame_->SetDevToolsFrontend(this);
+  web_frame_->GetFrame()->GetPage()->SetDefaultPageScaleLimits(1.f, 1.f);
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
-  if (m_devtoolsHost)
-    m_devtoolsHost->disconnectClient();
+  if (devtools_host_)
+    devtools_host_->DisconnectClient();
 }
 
-void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame) {
-  if (m_webFrame == frame) {
+void WebDevToolsFrontendImpl::DidClearWindowObject(WebLocalFrameImpl* frame) {
+  if (web_frame_ == frame) {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Use higher limit for DevTools isolate so that it does not OOM when
     // profiling large heaps.
     isolate->IncreaseHeapLimitForDebugging();
-    ScriptState* scriptState = toScriptStateForMainWorld(m_webFrame->frame());
-    DCHECK(scriptState);
-    ScriptState::Scope scope(scriptState);
+    ScriptState* script_state =
+        ToScriptStateForMainWorld(web_frame_->GetFrame());
+    DCHECK(script_state);
+    ScriptState::Scope scope(script_state);
 
-    if (m_devtoolsHost)
-      m_devtoolsHost->disconnectClient();
-    m_devtoolsHost = DevToolsHost::create(this, m_webFrame->frame());
-    v8::Local<v8::Object> global = scriptState->context()->Global();
-    v8::Local<v8::Value> devtoolsHostObj =
-        ToV8(m_devtoolsHost.get(), global, scriptState->isolate());
-    DCHECK(!devtoolsHostObj.IsEmpty());
-    global->Set(v8AtomicString(isolate, "DevToolsHost"), devtoolsHostObj);
+    if (devtools_host_)
+      devtools_host_->DisconnectClient();
+    devtools_host_ = DevToolsHost::Create(this, web_frame_->GetFrame());
+    v8::Local<v8::Object> global = script_state->GetContext()->Global();
+    v8::Local<v8::Value> devtools_host_obj =
+        ToV8(devtools_host_.Get(), global, script_state->GetIsolate());
+    DCHECK(!devtools_host_obj.IsEmpty());
+    global->Set(V8AtomicString(isolate, "DevToolsHost"), devtools_host_obj);
   }
 
-  if (m_injectedScriptForOrigin.isEmpty())
+  if (injected_script_for_origin_.IsEmpty())
     return;
 
-  String origin = frame->getSecurityOrigin().toString();
-  String script = m_injectedScriptForOrigin.at(origin);
-  if (script.isEmpty())
+  String origin = frame->GetSecurityOrigin().ToString();
+  String script = injected_script_for_origin_.at(origin);
+  if (script.IsEmpty())
     return;
-  static int s_lastScriptId = 0;
-  StringBuilder scriptWithId;
-  scriptWithId.append(script);
-  scriptWithId.append('(');
-  scriptWithId.appendNumber(++s_lastScriptId);
-  scriptWithId.append(')');
-  frame->frame()->script().executeScriptInMainWorld(scriptWithId.toString());
+  static int last_script_id = 0;
+  StringBuilder script_with_id;
+  script_with_id.Append(script);
+  script_with_id.Append('(');
+  script_with_id.AppendNumber(++last_script_id);
+  script_with_id.Append(')');
+  frame->GetFrame()->Script().ExecuteScriptInMainWorld(
+      script_with_id.ToString());
 }
 
-void WebDevToolsFrontendImpl::sendMessageToEmbedder(const String& message) {
-  if (m_client)
-    m_client->sendMessageToEmbedder(message);
+void WebDevToolsFrontendImpl::SendMessageToEmbedder(const String& message) {
+  if (client_)
+    client_->SendMessageToEmbedder(message);
 }
 
-bool WebDevToolsFrontendImpl::isUnderTest() {
-  return m_client ? m_client->isUnderTest() : false;
+bool WebDevToolsFrontendImpl::IsUnderTest() {
+  return client_ ? client_->IsUnderTest() : false;
 }
 
-void WebDevToolsFrontendImpl::showContextMenu(
-    LocalFrame* targetFrame,
+void WebDevToolsFrontendImpl::ShowContextMenu(
+    LocalFrame* target_frame,
     float x,
     float y,
-    ContextMenuProvider* menuProvider) {
-  WebLocalFrameImpl::fromFrame(targetFrame)
-      ->viewImpl()
-      ->showContextMenuAtPoint(x, y, menuProvider);
+    ContextMenuProvider* menu_provider) {
+  WebLocalFrameImpl::FromFrame(target_frame)
+      ->ViewImpl()
+      ->ShowContextMenuAtPoint(x, y, menu_provider);
 }
 
-void WebDevToolsFrontendImpl::setInjectedScriptForOrigin(const String& origin,
+void WebDevToolsFrontendImpl::SetInjectedScriptForOrigin(const String& origin,
                                                          const String& source) {
-  m_injectedScriptForOrigin.set(origin, source);
+  injected_script_for_origin_.Set(origin, source);
 }
 
 }  // namespace blink

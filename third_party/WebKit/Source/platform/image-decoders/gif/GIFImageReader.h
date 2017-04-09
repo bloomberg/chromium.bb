@@ -185,7 +185,7 @@ struct GIFFrameContext {
         m_width(0),
         m_height(0),
         m_transparentPixel(kNotFound),
-        m_disposalMethod(blink::ImageFrame::DisposeNotSpecified),
+        m_disposalMethod(blink::ImageFrame::kDisposeNotSpecified),
         m_dataSize(0),
         m_progressiveDisplay(false),
         m_interlaced(false),
@@ -305,7 +305,7 @@ class PLATFORM_EXPORT GIFImageReader final {
   bool decode(size_t frameIndex);
 
   size_t imagesCount() const {
-    if (m_frames.isEmpty())
+    if (m_frames.IsEmpty())
       return 0;
 
     // This avoids counting an empty frame when the file is truncated right
@@ -335,7 +335,7 @@ class PLATFORM_EXPORT GIFImageReader final {
 
   void addFrameIfNecessary();
   bool currentFrameIsFirstFrame() const {
-    return m_frames.isEmpty() ||
+    return m_frames.IsEmpty() ||
            (m_frames.size() == 1u && !m_frames[0]->isComplete());
   }
 

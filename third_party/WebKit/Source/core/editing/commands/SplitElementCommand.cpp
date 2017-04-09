@@ -33,80 +33,80 @@
 
 namespace blink {
 
-SplitElementCommand::SplitElementCommand(Element* element, Node* atChild)
-    : SimpleEditCommand(element->document()),
-      m_element2(element),
-      m_atChild(atChild) {
-  DCHECK(m_element2);
-  DCHECK(m_atChild);
-  DCHECK_EQ(m_atChild->parentNode(), m_element2);
+SplitElementCommand::SplitElementCommand(Element* element, Node* at_child)
+    : SimpleEditCommand(element->GetDocument()),
+      element2_(element),
+      at_child_(at_child) {
+  DCHECK(element2_);
+  DCHECK(at_child_);
+  DCHECK_EQ(at_child_->parentNode(), element2_);
 }
 
-void SplitElementCommand::executeApply() {
-  if (m_atChild->parentNode() != m_element2)
+void SplitElementCommand::ExecuteApply() {
+  if (at_child_->parentNode() != element2_)
     return;
 
   HeapVector<Member<Node>> children;
-  for (Node* node = m_element2->firstChild(); node != m_atChild;
+  for (Node* node = element2_->FirstChild(); node != at_child_;
        node = node->nextSibling())
     children.push_back(node);
 
-  DummyExceptionStateForTesting exceptionState;
+  DummyExceptionStateForTesting exception_state;
 
-  ContainerNode* parent = m_element2->parentNode();
-  if (!parent || !hasEditableStyle(*parent))
+  ContainerNode* parent = element2_->parentNode();
+  if (!parent || !HasEditableStyle(*parent))
     return;
-  parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
-  if (exceptionState.hadException())
+  parent->InsertBefore(element1_.Get(), element2_.Get(), exception_state);
+  if (exception_state.HadException())
     return;
 
   // Delete id attribute from the second element because the same id cannot be
   // used for more than one element
-  m_element2->removeAttribute(HTMLNames::idAttr);
+  element2_->removeAttribute(HTMLNames::idAttr);
 
   for (const auto& child : children)
-    m_element1->appendChild(child, exceptionState);
+    element1_->AppendChild(child, exception_state);
 }
 
-void SplitElementCommand::doApply(EditingState*) {
-  m_element1 = m_element2->cloneElementWithoutChildren();
+void SplitElementCommand::DoApply(EditingState*) {
+  element1_ = element2_->CloneElementWithoutChildren();
 
-  executeApply();
+  ExecuteApply();
 }
 
-void SplitElementCommand::doUnapply() {
-  if (!m_element1 || !hasEditableStyle(*m_element1) ||
-      !hasEditableStyle(*m_element2))
+void SplitElementCommand::DoUnapply() {
+  if (!element1_ || !HasEditableStyle(*element1_) ||
+      !HasEditableStyle(*element2_))
     return;
 
   NodeVector children;
-  getChildNodes(*m_element1, children);
+  GetChildNodes(*element1_, children);
 
-  Node* refChild = m_element2->firstChild();
+  Node* ref_child = element2_->FirstChild();
 
   for (const auto& child : children)
-    m_element2->insertBefore(child, refChild, IGNORE_EXCEPTION_FOR_TESTING);
+    element2_->InsertBefore(child, ref_child, IGNORE_EXCEPTION_FOR_TESTING);
 
   // Recover the id attribute of the original element.
-  const AtomicString& id = m_element1->getAttribute(HTMLNames::idAttr);
-  if (!id.isNull())
-    m_element2->setAttribute(HTMLNames::idAttr, id);
+  const AtomicString& id = element1_->getAttribute(HTMLNames::idAttr);
+  if (!id.IsNull())
+    element2_->setAttribute(HTMLNames::idAttr, id);
 
-  m_element1->remove(IGNORE_EXCEPTION_FOR_TESTING);
+  element1_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void SplitElementCommand::doReapply() {
-  if (!m_element1)
+void SplitElementCommand::DoReapply() {
+  if (!element1_)
     return;
 
-  executeApply();
+  ExecuteApply();
 }
 
 DEFINE_TRACE(SplitElementCommand) {
-  visitor->trace(m_element1);
-  visitor->trace(m_element2);
-  visitor->trace(m_atChild);
-  SimpleEditCommand::trace(visitor);
+  visitor->Trace(element1_);
+  visitor->Trace(element2_);
+  visitor->Trace(at_child_);
+  SimpleEditCommand::Trace(visitor);
 }
 
 }  // namespace blink

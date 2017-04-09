@@ -34,17 +34,17 @@ class MediaQueryResult : public GarbageCollected<MediaQueryResult> {
 
  public:
   MediaQueryResult(const MediaQueryExp& expr, bool result)
-      : m_expression(&expr), m_result(result) {}
+      : expression_(&expr), result_(result) {}
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_expression); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(expression_); }
 
-  const MediaQueryExp* expression() const { return m_expression; }
+  const MediaQueryExp* Expression() const { return expression_; }
 
-  bool result() const { return m_result; }
+  bool Result() const { return result_; }
 
  private:
-  Member<const MediaQueryExp> m_expression;
-  bool m_result;
+  Member<const MediaQueryExp> expression_;
+  bool result_;
 };
 
 }  // namespace blink

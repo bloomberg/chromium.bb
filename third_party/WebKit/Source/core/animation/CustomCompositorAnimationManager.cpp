@@ -16,17 +16,17 @@ CustomCompositorAnimationManager::CustomCompositorAnimationManager() {}
 
 CustomCompositorAnimationManager::~CustomCompositorAnimationManager() {}
 
-void CustomCompositorAnimationManager::applyMutations(
+void CustomCompositorAnimationManager::ApplyMutations(
     CompositorMutations* mutations) {
   TRACE_EVENT0("compositor-worker",
                "CustomCompositorAnimationManager::applyMutations");
   for (const auto& entry : mutations->map) {
-    int elementId = entry.key;
+    int element_id = entry.key;
     const CompositorMutation& mutation = *entry.value;
-    Node* node = DOMNodeIds::nodeForId(elementId);
-    if (!node || !node->isElementNode())
+    Node* node = DOMNodeIds::NodeForId(element_id);
+    if (!node || !node->IsElementNode())
       continue;
-    toElement(node)->updateFromCompositorMutation(mutation);
+    ToElement(node)->UpdateFromCompositorMutation(mutation);
   }
 }
 

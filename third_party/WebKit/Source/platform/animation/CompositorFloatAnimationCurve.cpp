@@ -13,57 +13,57 @@
 namespace blink {
 
 CompositorFloatAnimationCurve::CompositorFloatAnimationCurve()
-    : m_curve(cc::KeyframedFloatAnimationCurve::Create()) {}
+    : curve_(cc::KeyframedFloatAnimationCurve::Create()) {}
 
 CompositorFloatAnimationCurve::CompositorFloatAnimationCurve(
     std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
-    : m_curve(std::move(curve)) {}
+    : curve_(std::move(curve)) {}
 
 CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve() {}
 
 std::unique_ptr<CompositorFloatAnimationCurve>
-CompositorFloatAnimationCurve::createForTesting(
+CompositorFloatAnimationCurve::CreateForTesting(
     std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve) {
-  return WTF::wrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
+  return WTF::WrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
 }
 
 CompositorFloatAnimationCurve::Keyframes
-CompositorFloatAnimationCurve::keyframesForTesting() const {
+CompositorFloatAnimationCurve::KeyframesForTesting() const {
   Keyframes keyframes;
-  for (const auto& ccKeyframe : m_curve->keyframes_for_testing()) {
+  for (const auto& cc_keyframe : curve_->keyframes_for_testing()) {
     keyframes.push_back(
-        WTF::wrapUnique(new CompositorFloatKeyframe(ccKeyframe->Clone())));
+        WTF::WrapUnique(new CompositorFloatKeyframe(cc_keyframe->Clone())));
   }
   return keyframes;
 }
 
 PassRefPtr<TimingFunction>
-CompositorFloatAnimationCurve::getTimingFunctionForTesting() const {
-  return createCompositorTimingFunctionFromCC(
-      m_curve->timing_function_for_testing());
+CompositorFloatAnimationCurve::GetTimingFunctionForTesting() const {
+  return CreateCompositorTimingFunctionFromCC(
+      curve_->timing_function_for_testing());
 }
 
-void CompositorFloatAnimationCurve::addKeyframe(
+void CompositorFloatAnimationCurve::AddKeyframe(
     const CompositorFloatKeyframe& keyframe) {
-  m_curve->AddKeyframe(keyframe.cloneToCC());
+  curve_->AddKeyframe(keyframe.CloneToCC());
 }
 
-void CompositorFloatAnimationCurve::setTimingFunction(
-    const TimingFunction& timingFunction) {
-  m_curve->SetTimingFunction(timingFunction.cloneToCC());
+void CompositorFloatAnimationCurve::SetTimingFunction(
+    const TimingFunction& timing_function) {
+  curve_->SetTimingFunction(timing_function.CloneToCC());
 }
 
-void CompositorFloatAnimationCurve::setScaledDuration(double scaledDuration) {
-  m_curve->set_scaled_duration(scaledDuration);
+void CompositorFloatAnimationCurve::SetScaledDuration(double scaled_duration) {
+  curve_->set_scaled_duration(scaled_duration);
 }
 
-float CompositorFloatAnimationCurve::getValue(double time) const {
-  return m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
+float CompositorFloatAnimationCurve::GetValue(double time) const {
+  return curve_->GetValue(base::TimeDelta::FromSecondsD(time));
 }
 
 std::unique_ptr<cc::AnimationCurve>
-CompositorFloatAnimationCurve::cloneToAnimationCurve() const {
-  return m_curve->Clone();
+CompositorFloatAnimationCurve::CloneToAnimationCurve() const {
+  return curve_->Clone();
 }
 
 }  // namespace blink

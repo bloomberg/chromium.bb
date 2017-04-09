@@ -63,23 +63,23 @@ RtcDtmfSenderHandler::~RtcDtmfSenderHandler() {
   observer_ = NULL;
 }
 
-void RtcDtmfSenderHandler::setClient(
+void RtcDtmfSenderHandler::SetClient(
     blink::WebRTCDTMFSenderHandlerClient* client) {
   webkit_client_ = client;
 }
 
-blink::WebString RtcDtmfSenderHandler::currentToneBuffer() {
-  return blink::WebString::fromUTF8(dtmf_sender_->tones());
+blink::WebString RtcDtmfSenderHandler::CurrentToneBuffer() {
+  return blink::WebString::FromUTF8(dtmf_sender_->tones());
 }
 
-bool RtcDtmfSenderHandler::canInsertDTMF() {
+bool RtcDtmfSenderHandler::CanInsertDTMF() {
   return dtmf_sender_->CanInsertDtmf();
 }
 
-bool RtcDtmfSenderHandler::insertDTMF(const blink::WebString& tones,
+bool RtcDtmfSenderHandler::InsertDTMF(const blink::WebString& tones,
                                       long duration,
                                       long interToneGap) {
-  std::string utf8_tones = tones.utf8();
+  std::string utf8_tones = tones.Utf8();
   return dtmf_sender_->InsertDtmf(utf8_tones, static_cast<int>(duration),
                                   static_cast<int>(interToneGap));
 }
@@ -89,7 +89,7 @@ void RtcDtmfSenderHandler::OnToneChange(const std::string& tone) {
     LOG(ERROR) << "WebRTCDTMFSenderHandlerClient not set.";
     return;
   }
-  webkit_client_->didPlayTone(blink::WebString::fromUTF8(tone));
+  webkit_client_->DidPlayTone(blink::WebString::FromUTF8(tone));
 }
 
 }  // namespace content

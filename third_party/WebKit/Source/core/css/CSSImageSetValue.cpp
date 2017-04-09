@@ -44,143 +44,145 @@
 namespace blink {
 
 CSSImageSetValue::CSSImageSetValue()
-    : CSSValueList(ImageSetClass, CommaSeparator), m_cachedScaleFactor(1) {}
+    : CSSValueList(kImageSetClass, kCommaSeparator), cached_scale_factor_(1) {}
 
 CSSImageSetValue::~CSSImageSetValue() {}
 
-void CSSImageSetValue::fillImageSet() {
+void CSSImageSetValue::FillImageSet() {
   size_t length = this->length();
   size_t i = 0;
   while (i < length) {
-    const CSSImageValue& imageValue = toCSSImageValue(item(i));
-    String imageURL = imageValue.url();
+    const CSSImageValue& image_value = ToCSSImageValue(Item(i));
+    String image_url = image_value.Url();
 
     ++i;
     SECURITY_DCHECK(i < length);
-    const CSSValue& scaleFactorValue = item(i);
-    float scaleFactor = toCSSPrimitiveValue(scaleFactorValue).getFloatValue();
+    const CSSValue& scale_factor_value = Item(i);
+    float scale_factor =
+        ToCSSPrimitiveValue(scale_factor_value).GetFloatValue();
 
     ImageWithScale image;
-    image.imageURL = imageURL;
-    image.referrer = SecurityPolicy::generateReferrer(
-        imageValue.referrer().referrerPolicy, KURL(ParsedURLString, imageURL),
-        imageValue.referrer().referrer);
-    image.scaleFactor = scaleFactor;
-    m_imagesInSet.push_back(image);
+    image.image_url = image_url;
+    image.referrer = SecurityPolicy::GenerateReferrer(
+        image_value.GetReferrer().referrer_policy,
+        KURL(kParsedURLString, image_url), image_value.GetReferrer().referrer);
+    image.scale_factor = scale_factor;
+    images_in_set_.push_back(image);
     ++i;
   }
 
   // Sort the images so that they are stored in order from lowest resolution to
   // highest.
-  std::sort(m_imagesInSet.begin(), m_imagesInSet.end(),
-            CSSImageSetValue::compareByScaleFactor);
+  std::sort(images_in_set_.begin(), images_in_set_.end(),
+            CSSImageSetValue::CompareByScaleFactor);
 }
 
-CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor(
-    float scaleFactor) {
+CSSImageSetValue::ImageWithScale CSSImageSetValue::BestImageForScaleFactor(
+    float scale_factor) {
   ImageWithScale image;
-  size_t numberOfImages = m_imagesInSet.size();
-  for (size_t i = 0; i < numberOfImages; ++i) {
-    image = m_imagesInSet.at(i);
-    if (image.scaleFactor >= scaleFactor)
+  size_t number_of_images = images_in_set_.size();
+  for (size_t i = 0; i < number_of_images; ++i) {
+    image = images_in_set_.at(i);
+    if (image.scale_factor >= scale_factor)
       return image;
   }
   return image;
 }
 
-bool CSSImageSetValue::isCachePending(float deviceScaleFactor) const {
-  return !m_cachedImage || deviceScaleFactor != m_cachedScaleFactor;
+bool CSSImageSetValue::IsCachePending(float device_scale_factor) const {
+  return !cached_image_ || device_scale_factor != cached_scale_factor_;
 }
 
-StyleImage* CSSImageSetValue::cachedImage(float deviceScaleFactor) const {
-  DCHECK(!isCachePending(deviceScaleFactor));
-  return m_cachedImage.get();
+StyleImage* CSSImageSetValue::CachedImage(float device_scale_factor) const {
+  DCHECK(!IsCachePending(device_scale_factor));
+  return cached_image_.Get();
 }
 
-StyleImage* CSSImageSetValue::cacheImage(
+StyleImage* CSSImageSetValue::CacheImage(
     const Document& document,
-    float deviceScaleFactor,
-    CrossOriginAttributeValue crossOrigin) {
-  if (!m_imagesInSet.size())
-    fillImageSet();
+    float device_scale_factor,
+    CrossOriginAttributeValue cross_origin) {
+  if (!images_in_set_.size())
+    FillImageSet();
 
-  if (isCachePending(deviceScaleFactor)) {
+  if (IsCachePending(device_scale_factor)) {
     // FIXME: In the future, we want to take much more than deviceScaleFactor
     // into acount here. All forms of scale should be included:
     // Page::pageScaleFactor(), LocalFrame::pageZoomFactor(), and any CSS
     // transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
-    ImageWithScale image = bestImageForScaleFactor(deviceScaleFactor);
-    ResourceRequest resourceRequest(document.completeURL(image.imageURL));
-    resourceRequest.setHTTPReferrer(image.referrer);
-    FetchRequest request(resourceRequest, FetchInitiatorTypeNames::css);
+    ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
+    ResourceRequest resource_request(document.CompleteURL(image.image_url));
+    resource_request.SetHTTPReferrer(image.referrer);
+    FetchRequest request(resource_request, FetchInitiatorTypeNames::css);
 
-    if (crossOrigin != CrossOriginAttributeNotSet)
-      request.setCrossOriginAccessControl(document.getSecurityOrigin(),
-                                          crossOrigin);
-    if (document.settings() && document.settings()->getFetchImagePlaceholders())
-      request.setAllowImagePlaceholder();
+    if (cross_origin != kCrossOriginAttributeNotSet)
+      request.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
+                                          cross_origin);
+    if (document.GetSettings() &&
+        document.GetSettings()->GetFetchImagePlaceholders())
+      request.SetAllowImagePlaceholder();
 
-    if (ImageResourceContent* cachedImage =
-            ImageResourceContent::fetch(request, document.fetcher()))
-      m_cachedImage = StyleFetchedImageSet::create(
-          cachedImage, image.scaleFactor, this, request.url());
+    if (ImageResourceContent* cached_image =
+            ImageResourceContent::Fetch(request, document.Fetcher()))
+      cached_image_ = StyleFetchedImageSet::Create(
+          cached_image, image.scale_factor, this, request.Url());
     else
-      m_cachedImage = StyleInvalidImage::create(image.imageURL);
-    m_cachedScaleFactor = deviceScaleFactor;
+      cached_image_ = StyleInvalidImage::Create(image.image_url);
+    cached_scale_factor_ = device_scale_factor;
   }
 
-  return m_cachedImage.get();
+  return cached_image_.Get();
 }
 
-String CSSImageSetValue::customCSSText() const {
+String CSSImageSetValue::CustomCSSText() const {
   StringBuilder result;
-  result.append("-webkit-image-set(");
+  result.Append("-webkit-image-set(");
 
   size_t length = this->length();
   size_t i = 0;
   while (i < length) {
     if (i > 0)
-      result.append(", ");
+      result.Append(", ");
 
-    const CSSValue& imageValue = item(i);
-    result.append(imageValue.cssText());
-    result.append(' ');
+    const CSSValue& image_value = Item(i);
+    result.Append(image_value.CssText());
+    result.Append(' ');
 
     ++i;
     SECURITY_DCHECK(i < length);
-    const CSSValue& scaleFactorValue = item(i);
-    result.append(scaleFactorValue.cssText());
+    const CSSValue& scale_factor_value = Item(i);
+    result.Append(scale_factor_value.CssText());
     // FIXME: Eventually the scale factor should contain it's own unit
     // http://wkb.ug/100120.
     // For now 'x' is hard-coded in the parser, so we hard-code it here too.
-    result.append('x');
+    result.Append('x');
 
     ++i;
   }
 
-  result.append(')');
-  return result.toString();
+  result.Append(')');
+  return result.ToString();
 }
 
-bool CSSImageSetValue::hasFailedOrCanceledSubresources() const {
-  if (!m_cachedImage)
+bool CSSImageSetValue::HasFailedOrCanceledSubresources() const {
+  if (!cached_image_)
     return false;
-  if (ImageResourceContent* cachedResource = m_cachedImage->cachedImage())
-    return cachedResource->loadFailedOrCanceled();
+  if (ImageResourceContent* cached_resource = cached_image_->CachedImage())
+    return cached_resource->LoadFailedOrCanceled();
   return true;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue) {
-  visitor->trace(m_cachedImage);
-  CSSValueList::traceAfterDispatch(visitor);
+  visitor->Trace(cached_image_);
+  CSSValueList::TraceAfterDispatch(visitor);
 }
 
-CSSImageSetValue* CSSImageSetValue::valueWithURLsMadeAbsolute() {
-  CSSImageSetValue* value = CSSImageSetValue::create();
+CSSImageSetValue* CSSImageSetValue::ValueWithURLsMadeAbsolute() {
+  CSSImageSetValue* value = CSSImageSetValue::Create();
   for (auto& item : *this)
-    item->isImageValue()
-        ? value->append(*toCSSImageValue(*item).valueWithURLMadeAbsolute())
-        : value->append(*item);
+    item->IsImageValue()
+        ? value->Append(*ToCSSImageValue(*item).ValueWithURLMadeAbsolute())
+        : value->Append(*item);
   return value;
 }
 

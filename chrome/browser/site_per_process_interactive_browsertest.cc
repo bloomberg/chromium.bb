@@ -1100,16 +1100,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   auto send_right_mouse_event = [](content::RenderWidgetHost* host, int x,
                                    int y, blink::WebInputEvent::Type type) {
     blink::WebMouseEvent event;
-    event.setPositionInWidget(x, y);
-    event.button = blink::WebMouseEvent::Button::Right;
-    event.setType(type);
+    event.SetPositionInWidget(x, y);
+    event.button = blink::WebMouseEvent::Button::kRight;
+    event.SetType(type);
     host->ForwardMouseEvent(event);
   };
 
   send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
-                         blink::WebInputEvent::MouseDown);
+                         blink::WebInputEvent::kMouseDown);
   send_right_mouse_event(child_view->GetRenderWidgetHost(), 10, 20,
-                         blink::WebInputEvent::MouseUp);
+                         blink::WebInputEvent::kMouseUp);
   menu_waiter.WaitForMenuOpenAndClose();
 
   gfx::Point point_in_root_window =

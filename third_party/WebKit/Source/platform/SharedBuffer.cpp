@@ -32,214 +32,214 @@
 
 namespace blink {
 
-static inline size_t segmentIndex(size_t position) {
+static inline size_t SegmentIndex(size_t position) {
   return position / SharedBuffer::kSegmentSize;
 }
 
-static inline size_t offsetInSegment(size_t position) {
+static inline size_t OffsetInSegment(size_t position) {
   return position % SharedBuffer::kSegmentSize;
 }
 
-static inline char* allocateSegment() {
-  return static_cast<char*>(WTF::Partitions::fastMalloc(
+static inline char* AllocateSegment() {
+  return static_cast<char*>(WTF::Partitions::FastMalloc(
       SharedBuffer::kSegmentSize, "blink::SharedBuffer"));
 }
 
-static inline void freeSegment(char* p) {
-  WTF::Partitions::fastFree(p);
+static inline void FreeSegment(char* p) {
+  WTF::Partitions::FastFree(p);
 }
 
-SharedBuffer::SharedBuffer() : m_size(0) {}
+SharedBuffer::SharedBuffer() : size_(0) {}
 
-SharedBuffer::SharedBuffer(size_t size) : m_size(size), m_buffer(size) {}
+SharedBuffer::SharedBuffer(size_t size) : size_(size), buffer_(size) {}
 
-SharedBuffer::SharedBuffer(const char* data, size_t size) : m_size(0) {
-  appendInternal(data, size);
+SharedBuffer::SharedBuffer(const char* data, size_t size) : size_(0) {
+  AppendInternal(data, size);
 }
 
-SharedBuffer::SharedBuffer(const unsigned char* data, size_t size) : m_size(0) {
-  appendInternal(reinterpret_cast<const char*>(data), size);
+SharedBuffer::SharedBuffer(const unsigned char* data, size_t size) : size_(0) {
+  AppendInternal(reinterpret_cast<const char*>(data), size);
 }
 
 SharedBuffer::~SharedBuffer() {
-  clear();
+  Clear();
 }
 
-PassRefPtr<SharedBuffer> SharedBuffer::adoptVector(Vector<char>& vector) {
-  RefPtr<SharedBuffer> buffer = create();
-  buffer->m_buffer.swap(vector);
-  buffer->m_size = buffer->m_buffer.size();
-  return buffer.release();
+PassRefPtr<SharedBuffer> SharedBuffer::AdoptVector(Vector<char>& vector) {
+  RefPtr<SharedBuffer> buffer = Create();
+  buffer->buffer_.Swap(vector);
+  buffer->size_ = buffer->buffer_.size();
+  return buffer.Release();
 }
 
 size_t SharedBuffer::size() const {
-  return m_size;
+  return size_;
 }
 
-const char* SharedBuffer::data() const {
-  mergeSegmentsIntoBuffer();
-  return m_buffer.data();
+const char* SharedBuffer::Data() const {
+  MergeSegmentsIntoBuffer();
+  return buffer_.Data();
 }
 
-void SharedBuffer::append(PassRefPtr<SharedBuffer> data) {
+void SharedBuffer::Append(PassRefPtr<SharedBuffer> data) {
   const char* segment;
   size_t position = 0;
-  while (size_t length = data->getSomeDataInternal(segment, position)) {
-    append(segment, length);
+  while (size_t length = data->GetSomeDataInternal(segment, position)) {
+    Append(segment, length);
     position += length;
   }
 }
 
-void SharedBuffer::appendInternal(const char* data, size_t length) {
+void SharedBuffer::AppendInternal(const char* data, size_t length) {
   if (!length)
     return;
 
-  ASSERT(m_size >= m_buffer.size());
-  size_t positionInSegment = offsetInSegment(m_size - m_buffer.size());
-  m_size += length;
+  ASSERT(size_ >= buffer_.size());
+  size_t position_in_segment = OffsetInSegment(size_ - buffer_.size());
+  size_ += length;
 
-  if (m_size <= kSegmentSize) {
+  if (size_ <= kSegmentSize) {
     // No need to use segments for small resource data.
-    m_buffer.append(data, length);
+    buffer_.Append(data, length);
     return;
   }
 
   char* segment;
-  if (!positionInSegment) {
-    segment = allocateSegment();
-    m_segments.push_back(segment);
+  if (!position_in_segment) {
+    segment = AllocateSegment();
+    segments_.push_back(segment);
   } else
-    segment = m_segments.back() + positionInSegment;
+    segment = segments_.back() + position_in_segment;
 
-  size_t segmentFreeSpace = kSegmentSize - positionInSegment;
-  size_t bytesToCopy = std::min(length, segmentFreeSpace);
+  size_t segment_free_space = kSegmentSize - position_in_segment;
+  size_t bytes_to_copy = std::min(length, segment_free_space);
 
   for (;;) {
-    memcpy(segment, data, bytesToCopy);
-    if (length == bytesToCopy)
+    memcpy(segment, data, bytes_to_copy);
+    if (length == bytes_to_copy)
       break;
 
-    length -= bytesToCopy;
-    data += bytesToCopy;
-    segment = allocateSegment();
-    m_segments.push_back(segment);
-    bytesToCopy = std::min(length, static_cast<size_t>(kSegmentSize));
+    length -= bytes_to_copy;
+    data += bytes_to_copy;
+    segment = AllocateSegment();
+    segments_.push_back(segment);
+    bytes_to_copy = std::min(length, static_cast<size_t>(kSegmentSize));
   }
 }
 
-void SharedBuffer::append(const Vector<char>& data) {
-  append(data.data(), data.size());
+void SharedBuffer::Append(const Vector<char>& data) {
+  Append(data.Data(), data.size());
 }
 
-void SharedBuffer::clear() {
-  for (size_t i = 0; i < m_segments.size(); ++i)
-    freeSegment(m_segments[i]);
+void SharedBuffer::Clear() {
+  for (size_t i = 0; i < segments_.size(); ++i)
+    FreeSegment(segments_[i]);
 
-  m_segments.clear();
-  m_size = 0;
-  m_buffer.clear();
+  segments_.Clear();
+  size_ = 0;
+  buffer_.Clear();
 }
 
-PassRefPtr<SharedBuffer> SharedBuffer::copy() const {
-  RefPtr<SharedBuffer> clone(adoptRef(new SharedBuffer));
-  clone->m_size = m_size;
-  clone->m_buffer.reserveInitialCapacity(m_size);
-  clone->m_buffer.append(m_buffer.data(), m_buffer.size());
-  if (!m_segments.isEmpty()) {
+PassRefPtr<SharedBuffer> SharedBuffer::Copy() const {
+  RefPtr<SharedBuffer> clone(AdoptRef(new SharedBuffer));
+  clone->size_ = size_;
+  clone->buffer_.ReserveInitialCapacity(size_);
+  clone->buffer_.Append(buffer_.Data(), buffer_.size());
+  if (!segments_.IsEmpty()) {
     const char* segment = 0;
-    size_t position = m_buffer.size();
-    while (size_t segmentSize = getSomeDataInternal(segment, position)) {
-      clone->m_buffer.append(segment, segmentSize);
-      position += segmentSize;
+    size_t position = buffer_.size();
+    while (size_t segment_size = GetSomeDataInternal(segment, position)) {
+      clone->buffer_.Append(segment, segment_size);
+      position += segment_size;
     }
     ASSERT(position == clone->size());
   }
-  return clone.release();
+  return clone.Release();
 }
 
-void SharedBuffer::mergeSegmentsIntoBuffer() const {
-  size_t bufferSize = m_buffer.size();
-  if (m_size > bufferSize) {
-    size_t bytesLeft = m_size - bufferSize;
-    for (size_t i = 0; i < m_segments.size(); ++i) {
-      size_t bytesToCopy =
-          std::min(bytesLeft, static_cast<size_t>(kSegmentSize));
-      m_buffer.append(m_segments[i], bytesToCopy);
-      bytesLeft -= bytesToCopy;
-      freeSegment(m_segments[i]);
+void SharedBuffer::MergeSegmentsIntoBuffer() const {
+  size_t buffer_size = buffer_.size();
+  if (size_ > buffer_size) {
+    size_t bytes_left = size_ - buffer_size;
+    for (size_t i = 0; i < segments_.size(); ++i) {
+      size_t bytes_to_copy =
+          std::min(bytes_left, static_cast<size_t>(kSegmentSize));
+      buffer_.Append(segments_[i], bytes_to_copy);
+      bytes_left -= bytes_to_copy;
+      FreeSegment(segments_[i]);
     }
-    m_segments.clear();
+    segments_.Clear();
   }
 }
 
-size_t SharedBuffer::getSomeDataInternal(const char*& someData,
+size_t SharedBuffer::GetSomeDataInternal(const char*& some_data,
                                          size_t position) const {
-  size_t totalSize = size();
-  if (position >= totalSize) {
-    someData = 0;
+  size_t total_size = size();
+  if (position >= total_size) {
+    some_data = 0;
     return 0;
   }
 
-  SECURITY_DCHECK(position < m_size);
-  size_t consecutiveSize = m_buffer.size();
-  if (position < consecutiveSize) {
-    someData = m_buffer.data() + position;
-    return consecutiveSize - position;
+  SECURITY_DCHECK(position < size_);
+  size_t consecutive_size = buffer_.size();
+  if (position < consecutive_size) {
+    some_data = buffer_.Data() + position;
+    return consecutive_size - position;
   }
 
-  position -= consecutiveSize;
-  size_t segments = m_segments.size();
-  size_t maxSegmentedSize = segments * kSegmentSize;
-  size_t segment = segmentIndex(position);
+  position -= consecutive_size;
+  size_t segments = segments_.size();
+  size_t max_segmented_size = segments * kSegmentSize;
+  size_t segment = SegmentIndex(position);
   if (segment < segments) {
-    size_t bytesLeft = totalSize - consecutiveSize;
-    size_t segmentedSize = std::min(maxSegmentedSize, bytesLeft);
+    size_t bytes_left = total_size - consecutive_size;
+    size_t segmented_size = std::min(max_segmented_size, bytes_left);
 
-    size_t positionInSegment = offsetInSegment(position);
-    someData = m_segments[segment] + positionInSegment;
-    return segment == segments - 1 ? segmentedSize - position
-                                   : kSegmentSize - positionInSegment;
+    size_t position_in_segment = OffsetInSegment(position);
+    some_data = segments_[segment] + position_in_segment;
+    return segment == segments - 1 ? segmented_size - position
+                                   : kSegmentSize - position_in_segment;
   }
   ASSERT_NOT_REACHED();
   return 0;
 }
 
-bool SharedBuffer::getAsBytesInternal(void* dest,
-                                      size_t loadPosition,
-                                      size_t byteLength) const {
+bool SharedBuffer::GetAsBytesInternal(void* dest,
+                                      size_t load_position,
+                                      size_t byte_length) const {
   if (!dest)
     return false;
 
   const char* segment = nullptr;
-  size_t writePosition = 0;
-  while (byteLength > 0) {
-    size_t loadSize = getSomeDataInternal(segment, loadPosition);
-    if (loadSize == 0)
+  size_t write_position = 0;
+  while (byte_length > 0) {
+    size_t load_size = GetSomeDataInternal(segment, load_position);
+    if (load_size == 0)
       break;
 
-    if (byteLength < loadSize)
-      loadSize = byteLength;
-    memcpy(static_cast<char*>(dest) + writePosition, segment, loadSize);
-    loadPosition += loadSize;
-    writePosition += loadSize;
-    byteLength -= loadSize;
+    if (byte_length < load_size)
+      load_size = byte_length;
+    memcpy(static_cast<char*>(dest) + write_position, segment, load_size);
+    load_position += load_size;
+    write_position += load_size;
+    byte_length -= load_size;
   }
 
-  return byteLength == 0;
+  return byte_length == 0;
 }
 
-sk_sp<SkData> SharedBuffer::getAsSkData() const {
-  size_t bufferLength = size();
-  sk_sp<SkData> data = SkData::MakeUninitialized(bufferLength);
+sk_sp<SkData> SharedBuffer::GetAsSkData() const {
+  size_t buffer_length = size();
+  sk_sp<SkData> data = SkData::MakeUninitialized(buffer_length);
   char* buffer = static_cast<char*>(data->writable_data());
   const char* segment = 0;
   size_t position = 0;
-  while (size_t segmentSize = getSomeDataInternal(segment, position)) {
-    memcpy(buffer + position, segment, segmentSize);
-    position += segmentSize;
+  while (size_t segment_size = GetSomeDataInternal(segment, position)) {
+    memcpy(buffer + position, segment, segment_size);
+    position += segment_size;
   }
 
-  if (position != bufferLength) {
+  if (position != buffer_length) {
     ASSERT_NOT_REACHED();
     // Don't return the incomplete SkData.
     return nullptr;
@@ -247,22 +247,22 @@ sk_sp<SkData> SharedBuffer::getAsSkData() const {
   return data;
 }
 
-void SharedBuffer::onMemoryDump(const String& dumpPrefix,
-                                WebProcessMemoryDump* memoryDump) const {
-  if (m_buffer.size()) {
+void SharedBuffer::OnMemoryDump(const String& dump_prefix,
+                                WebProcessMemoryDump* memory_dump) const {
+  if (buffer_.size()) {
     WebMemoryAllocatorDump* dump =
-        memoryDump->createMemoryAllocatorDump(dumpPrefix + "/shared_buffer");
-    dump->addScalar("size", "bytes", m_buffer.size());
-    memoryDump->addSuballocation(
-        dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+        memory_dump->CreateMemoryAllocatorDump(dump_prefix + "/shared_buffer");
+    dump->AddScalar("size", "bytes", buffer_.size());
+    memory_dump->AddSuballocation(
+        dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
   } else {
     // If there is data in the segments, then it should have been allocated
     // using fastMalloc.
-    const String dataDumpName = dumpPrefix + "/segments";
-    auto dump = memoryDump->createMemoryAllocatorDump(dataDumpName);
-    dump->addScalar("size", "bytes", m_size);
-    memoryDump->addSuballocation(
-        dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    const String data_dump_name = dump_prefix + "/segments";
+    auto dump = memory_dump->CreateMemoryAllocatorDump(data_dump_name);
+    dump->AddScalar("size", "bytes", size_);
+    memory_dump->AddSuballocation(
+        dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
   }
 }
 

@@ -10,41 +10,41 @@
 namespace blink {
 
 ClientHintsPreferences::ClientHintsPreferences()
-    : m_shouldSendDPR(false),
-      m_shouldSendResourceWidth(false),
-      m_shouldSendViewportWidth(false) {}
+    : should_send_dpr_(false),
+      should_send_resource_width_(false),
+      should_send_viewport_width_(false) {}
 
-void ClientHintsPreferences::updateFrom(
+void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
-  m_shouldSendDPR = preferences.m_shouldSendDPR;
-  m_shouldSendResourceWidth = preferences.m_shouldSendResourceWidth;
-  m_shouldSendViewportWidth = preferences.m_shouldSendViewportWidth;
+  should_send_dpr_ = preferences.should_send_dpr_;
+  should_send_resource_width_ = preferences.should_send_resource_width_;
+  should_send_viewport_width_ = preferences.should_send_viewport_width_;
 }
 
-void ClientHintsPreferences::updateFromAcceptClientHintsHeader(
-    const String& headerValue,
+void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
+    const String& header_value,
     Context* context) {
-  if (!RuntimeEnabledFeatures::clientHintsEnabled() || headerValue.isEmpty())
+  if (!RuntimeEnabledFeatures::clientHintsEnabled() || header_value.IsEmpty())
     return;
 
-  CommaDelimitedHeaderSet acceptClientHintsHeader;
-  parseCommaDelimitedHeader(headerValue, acceptClientHintsHeader);
-  if (acceptClientHintsHeader.contains("dpr")) {
+  CommaDelimitedHeaderSet accept_client_hints_header;
+  ParseCommaDelimitedHeader(header_value, accept_client_hints_header);
+  if (accept_client_hints_header.Contains("dpr")) {
     if (context)
-      context->countClientHintsDPR();
-    m_shouldSendDPR = true;
+      context->CountClientHintsDPR();
+    should_send_dpr_ = true;
   }
 
-  if (acceptClientHintsHeader.contains("width")) {
+  if (accept_client_hints_header.Contains("width")) {
     if (context)
-      context->countClientHintsResourceWidth();
-    m_shouldSendResourceWidth = true;
+      context->CountClientHintsResourceWidth();
+    should_send_resource_width_ = true;
   }
 
-  if (acceptClientHintsHeader.contains("viewport-width")) {
+  if (accept_client_hints_header.Contains("viewport-width")) {
     if (context)
-      context->countClientHintsViewportWidth();
-    m_shouldSendViewportWidth = true;
+      context->CountClientHintsViewportWidth();
+    should_send_viewport_width_ = true;
   }
 }
 

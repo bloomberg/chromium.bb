@@ -42,19 +42,19 @@ class MIDIConnectionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIConnectionEvent* create(MIDIPort* port) {
+  static MIDIConnectionEvent* Create(MIDIPort* port) {
     return new MIDIConnectionEvent(port);
   }
 
-  static MIDIConnectionEvent* create(
+  static MIDIConnectionEvent* Create(
       const AtomicString& type,
       const MIDIConnectionEventInit& initializer) {
     return new MIDIConnectionEvent(type, initializer);
   }
 
-  MIDIPort* port() { return m_port; }
+  MIDIPort* port() { return port_; }
 
-  const AtomicString& interfaceName() const override {
+  const AtomicString& InterfaceName() const override {
     return EventNames::MIDIConnectionEvent;
   }
 
@@ -62,11 +62,11 @@ class MIDIConnectionEvent final : public Event {
 
  private:
   MIDIConnectionEvent(MIDIPort* port)
-      : Event(EventTypeNames::statechange, false, false), m_port(port) {}
+      : Event(EventTypeNames::statechange, false, false), port_(port) {}
 
   MIDIConnectionEvent(const AtomicString&, const MIDIConnectionEventInit&);
 
-  Member<MIDIPort> m_port;
+  Member<MIDIPort> port_;
 };
 
 }  // namespace blink

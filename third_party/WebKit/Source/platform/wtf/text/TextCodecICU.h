@@ -41,30 +41,30 @@ class TextCodecInput;
 
 class TextCodecICU final : public TextCodec {
  public:
-  static void registerEncodingNames(EncodingNameRegistrar);
-  static void registerCodecs(TextCodecRegistrar);
+  static void RegisterEncodingNames(EncodingNameRegistrar);
+  static void RegisterCodecs(TextCodecRegistrar);
 
   ~TextCodecICU() override;
 
  private:
   TextCodecICU(const TextEncoding&);
-  WTF_EXPORT static std::unique_ptr<TextCodec> create(const TextEncoding&,
+  WTF_EXPORT static std::unique_ptr<TextCodec> Create(const TextEncoding&,
                                                       const void*);
 
-  String decode(const char*,
+  String Decode(const char*,
                 size_t length,
                 FlushBehavior,
-                bool stopOnError,
-                bool& sawError) override;
-  CString encode(const UChar*, size_t length, UnencodableHandling) override;
-  CString encode(const LChar*, size_t length, UnencodableHandling) override;
+                bool stop_on_error,
+                bool& saw_error) override;
+  CString Encode(const UChar*, size_t length, UnencodableHandling) override;
+  CString Encode(const LChar*, size_t length, UnencodableHandling) override;
 
   template <typename CharType>
-  CString encodeCommon(const CharType*, size_t length, UnencodableHandling);
-  CString encodeInternal(const TextCodecInput&, UnencodableHandling);
+  CString EncodeCommon(const CharType*, size_t length, UnencodableHandling);
+  CString EncodeInternal(const TextCodecInput&, UnencodableHandling);
 
-  void createICUConverter() const;
-  void releaseICUConverter() const;
+  void CreateICUConverter() const;
+  void ReleaseICUConverter() const;
 #if defined(USING_SYSTEM_ICU)
   bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
   void setNeedsGBKFallbacks(bool needsFallbacks) {
@@ -72,16 +72,16 @@ class TextCodecICU final : public TextCodec {
   }
 #endif
 
-  int decodeToBuffer(UChar* buffer,
-                     UChar* bufferLimit,
+  int DecodeToBuffer(UChar* buffer,
+                     UChar* buffer_limit,
                      const char*& source,
-                     const char* sourceLimit,
+                     const char* source_limit,
                      int32_t* offsets,
                      bool flush,
                      UErrorCode&);
 
-  TextEncoding m_encoding;
-  mutable UConverter* m_converterICU;
+  TextEncoding encoding_;
+  mutable UConverter* converter_icu_;
 #if defined(USING_SYSTEM_ICU)
   mutable bool m_needsGBKFallbacks;
 #endif

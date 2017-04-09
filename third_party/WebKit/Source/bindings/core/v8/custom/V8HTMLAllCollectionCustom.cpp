@@ -40,39 +40,40 @@
 namespace blink {
 
 template <class CallbackInfo>
-static v8::Local<v8::Value> getNamedItems(HTMLAllCollection* collection,
+static v8::Local<v8::Value> GetNamedItems(HTMLAllCollection* collection,
                                           AtomicString name,
                                           const CallbackInfo& info) {
-  HeapVector<Member<Element>> namedItems;
-  collection->namedItems(name, namedItems);
+  HeapVector<Member<Element>> named_items;
+  collection->NamedItems(name, named_items);
 
-  if (!namedItems.size())
-    return v8Undefined();
+  if (!named_items.size())
+    return V8Undefined();
 
-  if (namedItems.size() == 1)
-    return ToV8(namedItems.at(0).release(), info.Holder(), info.GetIsolate());
+  if (named_items.size() == 1)
+    return ToV8(named_items.at(0).Release(), info.Holder(), info.GetIsolate());
 
   // FIXME: HTML5 specification says this should be a HTMLCollection.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-  return ToV8(StaticElementList::adopt(namedItems), info.Holder(),
+  return ToV8(StaticElementList::Adopt(named_items), info.Holder(),
               info.GetIsolate());
 }
 
 template <class CallbackInfo>
-static v8::Local<v8::Value> getItem(
+static v8::Local<v8::Value> GetItem(
     HTMLAllCollection* collection,
     v8::Local<v8::Value> argument,
     const CallbackInfo& info,
-    UseCounter::Feature namedFeature,
-    UseCounter::Feature indexedFeature,
-    UseCounter::Feature indexedWithNonNumberFeature) {
+    UseCounter::Feature named_feature,
+    UseCounter::Feature indexed_feature,
+    UseCounter::Feature indexed_with_non_number_feature) {
   v8::Local<v8::Uint32> index;
   if (!argument->ToArrayIndex(info.GetIsolate()->GetCurrentContext())
            .ToLocal(&index)) {
-    UseCounter::count(currentExecutionContext(info.GetIsolate()), namedFeature);
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      named_feature);
     TOSTRING_DEFAULT(V8StringResource<>, name, argument,
                      v8::Undefined(info.GetIsolate()));
-    v8::Local<v8::Value> result = getNamedItems(collection, name, info);
+    v8::Local<v8::Value> result = GetNamedItems(collection, name, info);
 
     if (result.IsEmpty())
       return v8::Undefined(info.GetIsolate());
@@ -80,10 +81,11 @@ static v8::Local<v8::Value> getItem(
     return result;
   }
 
-  UseCounter::count(currentExecutionContext(info.GetIsolate()), indexedFeature);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                    indexed_feature);
   if (!argument->IsNumber()) {
-    UseCounter::count(currentExecutionContext(info.GetIsolate()),
-                      indexedWithNonNumberFeature);
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      indexed_with_non_number_feature);
   }
   Element* result = collection->item(index->Value());
   return ToV8(result, info.Holder(), info.GetIsolate());
@@ -92,42 +94,42 @@ static v8::Local<v8::Value> getItem(
 void V8HTMLAllCollection::itemMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (info.Length() < 1) {
-    UseCounter::count(currentExecutionContext(info.GetIsolate()),
-                      UseCounter::DocumentAllItemNoArguments);
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      UseCounter::kDocumentAllItemNoArguments);
     return;
   }
 
   HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
-  v8SetReturnValue(
-      info, getItem(impl, info[0], info, UseCounter::DocumentAllItemNamed,
-                    UseCounter::DocumentAllItemIndexed,
-                    UseCounter::DocumentAllItemIndexedWithNonNumber));
+  V8SetReturnValue(
+      info, GetItem(impl, info[0], info, UseCounter::kDocumentAllItemNamed,
+                    UseCounter::kDocumentAllItemIndexed,
+                    UseCounter::kDocumentAllItemIndexedWithNonNumber));
 }
 
 void V8HTMLAllCollection::legacyCallCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (info.Length() < 1) {
-    UseCounter::count(currentExecutionContext(info.GetIsolate()),
-                      UseCounter::DocumentAllLegacyCallNoArguments);
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      UseCounter::kDocumentAllLegacyCallNoArguments);
     return;
   }
 
-  UseCounter::count(currentExecutionContext(info.GetIsolate()),
-                    UseCounter::DocumentAllLegacyCall);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                    UseCounter::kDocumentAllLegacyCall);
 
   HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
 
   if (info.Length() == 1) {
-    v8SetReturnValue(
+    V8SetReturnValue(
         info,
-        getItem(impl, info[0], info, UseCounter::DocumentAllLegacyCallNamed,
-                UseCounter::DocumentAllLegacyCallIndexed,
-                UseCounter::DocumentAllLegacyCallIndexedWithNonNumber));
+        GetItem(impl, info[0], info, UseCounter::kDocumentAllLegacyCallNamed,
+                UseCounter::kDocumentAllLegacyCallIndexed,
+                UseCounter::kDocumentAllLegacyCallIndexedWithNonNumber));
     return;
   }
 
-  UseCounter::count(currentExecutionContext(info.GetIsolate()),
-                    UseCounter::DocumentAllLegacyCallTwoArguments);
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                    UseCounter::kDocumentAllLegacyCallTwoArguments);
 
   // If there is a second argument it is the index of the item we want.
   TOSTRING_VOID(V8StringResource<>, name, info[0]);
@@ -137,8 +139,8 @@ void V8HTMLAllCollection::legacyCallCustom(
            .ToLocal(&index))
     return;
 
-  if (Node* node = impl->namedItemWithIndex(name, index->Value())) {
-    v8SetReturnValueFast(info, node, impl);
+  if (Node* node = impl->NamedItemWithIndex(name, index->Value())) {
+    V8SetReturnValueFast(info, node, impl);
     return;
   }
 }

@@ -24,7 +24,7 @@ class InternalsMediaStream {
                                      Internals&,
                                      const MediaDeviceInfo*,
                                      const MediaTrackConstraints& capabilities,
-                                     const MediaStreamTrack* dataSource);
+                                     const MediaStreamTrack* data_source);
 };
 
 }  // namespace blink

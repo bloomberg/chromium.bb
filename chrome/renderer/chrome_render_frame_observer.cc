@@ -79,17 +79,17 @@ namespace {
 SkBitmap Downscale(const blink::WebImage& image,
                    int thumbnail_min_area_pixels,
                    const gfx::Size& thumbnail_max_size_pixels) {
-  if (image.isNull())
+  if (image.IsNull())
     return SkBitmap();
 
   gfx::Size image_size = image.size();
 
   if (image_size.GetArea() < thumbnail_min_area_pixels)
-    return image.getSkBitmap();
+    return image.GetSkBitmap();
 
   if (image_size.width() <= thumbnail_max_size_pixels.width() &&
       image_size.height() <= thumbnail_max_size_pixels.height())
-    return image.getSkBitmap();
+    return image.GetSkBitmap();
 
   gfx::SizeF scaled_size = gfx::SizeF(image_size);
 
@@ -102,7 +102,7 @@ SkBitmap Downscale(const blink::WebImage& image,
         thumbnail_max_size_pixels.height() / scaled_size.height());
   }
 
-  return skia::ImageOperations::Resize(image.getSkBitmap(),
+  return skia::ImageOperations::Resize(image.GetSkBitmap(),
                                        skia::ImageOperations::RESIZE_GOOD,
                                        static_cast<int>(scaled_size.width()),
                                        static_cast<int>(scaled_size.height()));
@@ -181,9 +181,9 @@ void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   // TODO(dglazkov): This code is clearly in the wrong place. Need
   // to investigate what it is doing and fix (http://crbug.com/606164).
-  WebNode context_node = frame->contextMenuNode();
-  if (!context_node.isNull() && context_node.isElementNode()) {
-    frame->reloadImage(context_node);
+  WebNode context_node = frame->ContextMenuNode();
+  if (!context_node.IsNull() && context_node.IsElementNode()) {
+    frame->ReloadImage(context_node);
   }
 }
 
@@ -191,11 +191,11 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
     int32_t thumbnail_min_area_pixels,
     const gfx::Size& thumbnail_max_size_pixels,
     const RequestThumbnailForContextNodeCallback& callback) {
-  WebNode context_node = render_frame()->GetWebFrame()->contextMenuNode();
+  WebNode context_node = render_frame()->GetWebFrame()->ContextMenuNode();
   SkBitmap thumbnail;
   gfx::Size original_size;
-  if (!context_node.isNull() && context_node.isElementNode()) {
-    blink::WebImage image = context_node.to<WebElement>().imageContents();
+  if (!context_node.IsNull() && context_node.IsElementNode()) {
+    blink::WebImage image = context_node.To<WebElement>().ImageContents();
     original_size = image.size();
     thumbnail = Downscale(image,
                           thumbnail_min_area_pixels,
@@ -229,7 +229,7 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
   printing::PrintWebViewHelper* helper =
       printing::PrintWebViewHelper::Get(render_frame());
   if (helper)
-    helper->PrintNode(render_frame()->GetWebFrame()->contextMenuNode());
+    helper->PrintNode(render_frame()->GetWebFrame()->ContextMenuNode());
 #endif
 }
 
@@ -247,17 +247,17 @@ void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(
 void ChromeRenderFrameObserver::DidFinishLoad() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   // Don't do anything for subframes.
-  if (frame->parent())
+  if (frame->Parent())
     return;
 
-  GURL osdd_url = frame->document().openSearchDescriptionURL();
+  GURL osdd_url = frame->GetDocument().OpenSearchDescriptionURL();
   if (!osdd_url.is_empty()) {
     chrome::mojom::OpenSearchDescriptionDocumentHandlerAssociatedPtr
         osdd_handler;
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
         &osdd_handler);
     osdd_handler->PageHasOpenSearchDescriptionDocument(
-        frame->document().url(), osdd_url);
+        frame->GetDocument().Url(), osdd_url);
   }
 }
 
@@ -268,7 +268,7 @@ void ChromeRenderFrameObserver::DidStartProvisionalLoad(
     return;
 
   translate_helper_->PrepareForUrl(
-      render_frame()->GetWebFrame()->document().url());
+      render_frame()->GetWebFrame()->GetDocument().Url());
 }
 
 void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
@@ -277,7 +277,7 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   // Don't do anything for subframes.
-  if (frame->parent())
+  if (frame->Parent())
     return;
 
   base::debug::SetCrashKeyValue(
@@ -291,16 +291,16 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
     return;
 
   // Don't capture pages that have pending redirect or location change.
-  if (frame->isNavigationScheduledWithin(kLocationChangeIntervalInSeconds))
+  if (frame->IsNavigationScheduledWithin(kLocationChangeIntervalInSeconds))
     return;
 
   // Don't index/capture pages that are in view source mode.
-  if (frame->isViewSourceModeEnabled())
+  if (frame->IsViewSourceModeEnabled())
     return;
 
   // Don't capture text of the error pages.
-  WebDataSource* ds = frame->dataSource();
-  if (ds && ds->hasUnreachableURL())
+  WebDataSource* ds = frame->DataSource();
+  if (ds && ds->HasUnreachableURL())
     return;
 
   // Don't index/capture pages that are being prerendered.
@@ -314,9 +314,9 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
   // TODO(dglazkov): WebFrameContentDumper should only be used for
   // testing purposes. See http://crbug.com/585164.
   base::string16 contents =
-      WebFrameContentDumper::deprecatedDumpFrameTreeAsText(frame,
+      WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(frame,
                                                            kMaxIndexChars)
-          .utf16();
+          .Utf16();
 
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
@@ -343,10 +343,10 @@ void ChromeRenderFrameObserver::DidMeaningfulLayout(
     return;
 
   switch (layout_type) {
-    case blink::WebMeaningfulLayout::FinishedParsing:
+    case blink::WebMeaningfulLayout::kFinishedParsing:
       CapturePageText(PRELIMINARY_CAPTURE);
       break;
-    case blink::WebMeaningfulLayout::FinishedLoading:
+    case blink::WebMeaningfulLayout::kFinishedLoading:
       CapturePageText(FINAL_CAPTURE);
       break;
     default:

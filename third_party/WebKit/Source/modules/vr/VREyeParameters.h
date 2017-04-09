@@ -22,20 +22,20 @@ class VREyeParameters final : public GarbageCollected<VREyeParameters>,
  public:
   VREyeParameters();
 
-  DOMFloat32Array* offset() const { return m_offset; }
-  VRFieldOfView* fieldOfView() const { return m_fieldOfView; }
-  unsigned long renderWidth() const { return m_renderWidth; }
-  unsigned long renderHeight() const { return m_renderHeight; }
+  DOMFloat32Array* offset() const { return offset_; }
+  VRFieldOfView* FieldOfView() const { return field_of_view_; }
+  unsigned long renderWidth() const { return render_width_; }
+  unsigned long renderHeight() const { return render_height_; }
 
-  void update(const device::mojom::blink::VREyeParametersPtr&);
+  void Update(const device::mojom::blink::VREyeParametersPtr&);
 
   DECLARE_VIRTUAL_TRACE()
 
  private:
-  Member<DOMFloat32Array> m_offset;
-  Member<VRFieldOfView> m_fieldOfView;
-  unsigned long m_renderWidth;
-  unsigned long m_renderHeight;
+  Member<DOMFloat32Array> offset_;
+  Member<VRFieldOfView> field_of_view_;
+  unsigned long render_width_;
+  unsigned long render_height_;
 };
 
 }  // namespace blink

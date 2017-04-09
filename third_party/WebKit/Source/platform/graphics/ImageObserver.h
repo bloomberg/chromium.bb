@@ -41,12 +41,12 @@ class PLATFORM_EXPORT ImageObserver : public GarbageCollectedMixin {
   virtual ~ImageObserver();
 
  public:
-  virtual void decodedSizeChangedTo(const Image*, size_t newSize) = 0;
+  virtual void DecodedSizeChangedTo(const Image*, size_t new_size) = 0;
 
-  virtual bool shouldPauseAnimation(const Image*) = 0;
-  virtual void animationAdvanced(const Image*) = 0;
+  virtual bool ShouldPauseAnimation(const Image*) = 0;
+  virtual void AnimationAdvanced(const Image*) = 0;
 
-  virtual void changedInRect(const Image*, const IntRect&) = 0;
+  virtual void ChangedInRect(const Image*, const IntRect&) = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

@@ -22,37 +22,38 @@ class TableSectionPainter {
   STACK_ALLOCATED();
 
  public:
-  TableSectionPainter(const LayoutTableSection& layoutTableSection)
-      : m_layoutTableSection(layoutTableSection) {}
+  TableSectionPainter(const LayoutTableSection& layout_table_section)
+      : layout_table_section_(layout_table_section) {}
 
-  void paint(const PaintInfo&, const LayoutPoint&);
-  void paintCollapsedBorders(const PaintInfo&,
+  void Paint(const PaintInfo&, const LayoutPoint&);
+  void PaintCollapsedBorders(const PaintInfo&,
                              const LayoutPoint&,
                              const CollapsedBorderValue&);
 
  private:
-  void paintObject(const PaintInfo&, const LayoutPoint&);
+  void PaintObject(const PaintInfo&, const LayoutPoint&);
 
-  void paintBoxDecorationBackground(const PaintInfo&,
+  void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&,
-                                    const CellSpan& dirtiedRows,
-                                    const CellSpan& dirtiedColumns);
-  void paintBackgroundsBehindCell(const LayoutTableCell&,
+                                    const CellSpan& dirtied_rows,
+                                    const CellSpan& dirtied_columns);
+  void PaintBackgroundsBehindCell(const LayoutTableCell&,
                                   const PaintInfo&,
                                   const LayoutPoint&);
-  void paintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
+  void PaintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
 
-  enum ItemToPaint { PaintCollapsedBorders, PaintSection };
-  void paintRepeatingHeaderGroup(const PaintInfo&,
-                                 const LayoutPoint& paintOffset,
-                                 const CollapsedBorderValue& currentBorderValue,
-                                 ItemToPaint);
-  void paintSection(const PaintInfo&, const LayoutPoint&);
-  void paintCollapsedSectionBorders(const PaintInfo&,
+  enum ItemToPaint { kPaintCollapsedBorders, kPaintSection };
+  void PaintRepeatingHeaderGroup(
+      const PaintInfo&,
+      const LayoutPoint& paint_offset,
+      const CollapsedBorderValue& current_border_value,
+      ItemToPaint);
+  void PaintSection(const PaintInfo&, const LayoutPoint&);
+  void PaintCollapsedSectionBorders(const PaintInfo&,
                                     const LayoutPoint&,
                                     const CollapsedBorderValue&);
 
-  const LayoutTableSection& m_layoutTableSection;
+  const LayoutTableSection& layout_table_section_;
 };
 
 }  // namespace blink

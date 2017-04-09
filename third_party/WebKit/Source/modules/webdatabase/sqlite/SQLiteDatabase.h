@@ -44,12 +44,12 @@ namespace blink {
 class DatabaseAuthorizer;
 class SQLiteTransaction;
 
-extern const int SQLResultDone;
-extern const int SQLResultOk;
-extern const int SQLResultRow;
-extern const int SQLResultFull;
-extern const int SQLResultInterrupt;
-extern const int SQLResultConstraint;
+extern const int kSQLResultDone;
+extern const int kSQLResultOk;
+extern const int kSQLResultRow;
+extern const int kSQLResultFull;
+extern const int kSQLResultInterrupt;
+extern const int kSQLResultConstraint;
 
 class SQLiteDatabase {
   DISALLOW_NEW();
@@ -60,24 +60,24 @@ class SQLiteDatabase {
   SQLiteDatabase();
   ~SQLiteDatabase();
 
-  bool open(const String& filename);
-  bool isOpen() const { return m_db; }
-  void close();
+  bool Open(const String& filename);
+  bool IsOpen() const { return db_; }
+  void Close();
 
-  void updateLastChangesCount();
+  void UpdateLastChangesCount();
 
-  bool executeCommand(const String&);
+  bool ExecuteCommand(const String&);
 
-  bool tableExists(const String&);
-  int runVacuumCommand();
-  int runIncrementalVacuumCommand();
+  bool TableExists(const String&);
+  int RunVacuumCommand();
+  int RunIncrementalVacuumCommand();
 
-  bool transactionInProgress() const { return m_transactionInProgress; }
+  bool TransactionInProgress() const { return transaction_in_progress_; }
 
-  int64_t lastInsertRowID();
-  int lastChanges();
+  int64_t LastInsertRowID();
+  int LastChanges();
 
-  void setBusyTimeout(int ms);
+  void SetBusyTimeout(int ms);
 
   // Sets the maximum size in bytes.
   // Depending on per-database attributes, the size will only be settable in
@@ -85,23 +85,23 @@ class SQLiteDatabase {
   // creation.  These chunks will never be anything other than 512, 1024, 2048,
   // 4096, 8192, 16384, or 32768 bytes in size.  setMaximumSize() will round the
   // size down to the next smallest chunk if the passed size doesn't align.
-  void setMaximumSize(int64_t);
+  void SetMaximumSize(int64_t);
 
   // Gets the number of unused bytes in the database file.
-  int64_t freeSpaceSize();
-  int64_t totalSize();
+  int64_t FreeSpaceSize();
+  int64_t TotalSize();
 
-  int lastError();
-  const char* lastErrorMsg();
+  int LastError();
+  const char* LastErrorMsg();
 
-  sqlite3* sqlite3Handle() const {
-    ASSERT(m_sharable || currentThread() == m_openingThread || !m_db);
-    return m_db;
+  sqlite3* Sqlite3Handle() const {
+    ASSERT(sharable_ || CurrentThread() == opening_thread_ || !db_);
+    return db_;
   }
 
-  void setAuthorizer(DatabaseAuthorizer*);
+  void SetAuthorizer(DatabaseAuthorizer*);
 
-  bool isAutoCommitOn() const;
+  bool IsAutoCommitOn() const;
 
   // The SQLite AUTO_VACUUM pragma can be either NONE, FULL, or INCREMENTAL.
   // NONE - SQLite does not do any vacuuming
@@ -113,43 +113,43 @@ class SQLiteDatabase {
   //               file, but removes the empty pages only when PRAGMA
   //               INCREMANTAL_VACUUM is called.
   enum AutoVacuumPragma {
-    AutoVacuumNone = 0,
-    AutoVacuumFull = 1,
-    AutoVacuumIncremental = 2
+    kAutoVacuumNone = 0,
+    kAutoVacuumFull = 1,
+    kAutoVacuumIncremental = 2
   };
-  bool turnOnIncrementalAutoVacuum();
+  bool TurnOnIncrementalAutoVacuum();
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  static int authorizerFunction(void*,
+  static int AuthorizerFunction(void*,
                                 int,
                                 const char*,
                                 const char*,
                                 const char*,
                                 const char*);
 
-  void enableAuthorizer(bool enable);
+  void EnableAuthorizer(bool enable);
 
-  int pageSize();
+  int PageSize();
 
-  sqlite3* m_db;
-  int m_pageSize;
+  sqlite3* db_;
+  int page_size_;
 
-  bool m_transactionInProgress;
-  bool m_sharable;
+  bool transaction_in_progress_;
+  bool sharable_;
 
-  Mutex m_authorizerLock;
-  CrossThreadPersistent<DatabaseAuthorizer> m_authorizer;
+  Mutex authorizer_lock_;
+  CrossThreadPersistent<DatabaseAuthorizer> authorizer_;
 
-  ThreadIdentifier m_openingThread;
+  ThreadIdentifier opening_thread_;
 
-  Mutex m_databaseClosingMutex;
+  Mutex database_closing_mutex_;
 
-  int m_openError;
-  CString m_openErrorMessage;
+  int open_error_;
+  CString open_error_message_;
 
-  int m_lastChangesCount;
+  int last_changes_count_;
 };
 
 }  // namespace blink

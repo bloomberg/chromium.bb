@@ -63,8 +63,8 @@ bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
                              const GURL& new_url,
                              bool is_extension_url,
                              bool is_initial_navigation) {
-  DCHECK(!frame->parent());
-  GURL old_url(frame->document().url());
+  DCHECK(!frame->Parent());
+  GURL old_url(frame->GetDocument().Url());
 
   extensions::RendererExtensionRegistry* extension_registry =
       extensions::RendererExtensionRegistry::Get();
@@ -72,25 +72,25 @@ bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
   // If old_url is still empty and this is an initial navigation, then this is
   // a window.open operation.  We should look at the opener URL.  Note that the
   // opener is a local frame in this case.
-  if (is_initial_navigation && old_url.is_empty() && frame->opener()) {
-    blink::WebLocalFrame* opener_frame = frame->opener()->toWebLocalFrame();
+  if (is_initial_navigation && old_url.is_empty() && frame->Opener()) {
+    blink::WebLocalFrame* opener_frame = frame->Opener()->ToWebLocalFrame();
 
     // We want to compare against the URL that determines the type of
     // process.  Use the URL of the opener's local frame root, which will
     // correctly handle any site isolation modes (--site-per-process and
     // --isolate-extensions).
-    blink::WebLocalFrame* local_root = opener_frame->localRoot();
-    old_url = local_root->document().url();
+    blink::WebLocalFrame* local_root = opener_frame->LocalRoot();
+    old_url = local_root->GetDocument().Url();
 
     // If we're about to open a normal web page from a same-origin opener stuck
     // in an extension process (other than the Chrome Web Store), we want to
     // keep it in process to allow the opener to script it.
-    blink::WebDocument opener_document = opener_frame->document();
+    blink::WebDocument opener_document = opener_frame->GetDocument();
     blink::WebSecurityOrigin opener_origin =
-        opener_document.getSecurityOrigin();
-    bool opener_is_extension_url = !opener_origin.isUnique() &&
-                                   extension_registry->GetExtensionOrAppByURL(
-                                       opener_document.url()) != nullptr;
+        opener_document.GetSecurityOrigin();
+    bool opener_is_extension_url =
+        !opener_origin.IsUnique() && extension_registry->GetExtensionOrAppByURL(
+                                         opener_document.Url()) != nullptr;
     const Extension* opener_top_extension =
         extension_registry->GetExtensionOrAppByURL(old_url);
     bool opener_is_web_store =
@@ -98,14 +98,14 @@ bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
         opener_top_extension->id() == extensions::kWebStoreAppId;
     if (!is_extension_url && !opener_is_extension_url && !opener_is_web_store &&
         IsStandaloneExtensionProcess() &&
-        opener_origin.canRequest(blink::WebURL(new_url)))
+        opener_origin.CanRequest(blink::WebURL(new_url)))
       return false;
   }
 
   // Only consider keeping non-app URLs in an app process if this window
   // has an opener (in which case it might be an OAuth popup that tries to
   // script an iframe within the app).
-  bool should_consider_workaround = !!frame->opener();
+  bool should_consider_workaround = !!frame->Opener();
 
   return extensions::CrossesExtensionProcessBoundary(
       *extension_registry->GetMainThreadExtensionSet(), old_url, new_url,
@@ -172,7 +172,7 @@ void ChromeExtensionsRendererClient::RenderViewCreated(
 bool ChromeExtensionsRendererClient::OverrideCreatePlugin(
     content::RenderFrame* render_frame,
     const blink::WebPluginParams& params) {
-  if (params.mimeType.utf8() != content::kBrowserPluginMimeType)
+  if (params.mime_type.Utf8() != content::kBrowserPluginMimeType)
     return true;
 
   bool guest_view_api_available = false;
@@ -200,7 +200,7 @@ bool ChromeExtensionsRendererClient::AllowPopup() {
     case extensions::Feature::CONTENT_SCRIPT_CONTEXT:
       return true;
     case extensions::Feature::BLESSED_WEB_PAGE_CONTEXT:
-      return !current_context->web_frame()->parent();
+      return !current_context->web_frame()->Parent();
     default:
       NOTREACHED();
       return false;
@@ -212,7 +212,7 @@ bool ChromeExtensionsRendererClient::WillSendRequest(
     ui::PageTransition transition_type,
     const blink::WebURL& url,
     GURL* new_url) {
-  if (url.protocolIs(extensions::kExtensionScheme) &&
+  if (url.ProtocolIs(extensions::kExtensionScheme) &&
       !resource_request_policy_->CanRequestResource(GURL(url), frame,
                                                     transition_type)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
@@ -280,7 +280,7 @@ bool ChromeExtensionsRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   // subframes, so this check only makes sense for top-level frames.
   // TODO(alexmos,nasko): Figure out how this check should work when reloading
   // subframes in --site-per-process mode.
-  if (!frame->parent() && GURL(frame->document().url()) == url) {
+  if (!frame->Parent() && GURL(frame->GetDocument().Url()) == url) {
     if (is_extension_url != IsStandaloneExtensionProcess())
       return true;
   }

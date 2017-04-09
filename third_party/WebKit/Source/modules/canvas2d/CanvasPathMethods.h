@@ -60,29 +60,29 @@ class MODULES_EXPORT CanvasPathMethods {
   void arc(float x,
            float y,
            float radius,
-           float startAngle,
-           float endAngle,
+           float start_angle,
+           float end_angle,
            bool anticlockwise,
            ExceptionState&);
   void ellipse(float x,
                float y,
-               float radiusX,
-               float radiusY,
+               float radius_x,
+               float radius_y,
                float rotation,
-               float startAngle,
-               float endAngle,
+               float start_angle,
+               float end_angle,
                bool anticlockwise,
                ExceptionState&);
   void rect(float x, float y, float width, float height);
 
-  virtual bool isTransformInvertible() const { return true; }
+  virtual bool IsTransformInvertible() const { return true; }
 
  protected:
-  CanvasPathMethods() { m_path.setIsVolatile(true); }
-  CanvasPathMethods(const Path& path) : m_path(path) {
-    m_path.setIsVolatile(true);
+  CanvasPathMethods() { path_.SetIsVolatile(true); }
+  CanvasPathMethods(const Path& path) : path_(path) {
+    path_.SetIsVolatile(true);
   }
-  Path m_path;
+  Path path_;
 };
 }  // namespace blink
 

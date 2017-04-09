@@ -8,25 +8,25 @@ namespace blink {
 
 EXTColorBufferFloat::EXTColorBufferFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_EXT_color_buffer_float");
 }
 
-WebGLExtensionName EXTColorBufferFloat::name() const {
-  return EXTColorBufferFloatName;
+WebGLExtensionName EXTColorBufferFloat::GetName() const {
+  return kEXTColorBufferFloatName;
 }
 
-EXTColorBufferFloat* EXTColorBufferFloat::create(
+EXTColorBufferFloat* EXTColorBufferFloat::Create(
     WebGLRenderingContextBase* context) {
   return new EXTColorBufferFloat(context);
 }
 
-bool EXTColorBufferFloat::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+bool EXTColorBufferFloat::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_EXT_color_buffer_float");
 }
 
-const char* EXTColorBufferFloat::extensionName() {
+const char* EXTColorBufferFloat::ExtensionName() {
   return "EXT_color_buffer_float";
 }
 

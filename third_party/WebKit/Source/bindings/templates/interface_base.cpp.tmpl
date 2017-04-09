@@ -11,12 +11,12 @@ namespace blink {
 {% set dom_template = '%s::domTemplate' % v8_class if not is_array_buffer_or_view else '0' %}
 {% set parent_wrapper_type_info = '&V8%s::wrapperTypeInfo' % parent_interface
                                   if parent_interface else '0' %}
-{% set wrapper_type_prototype = 'WrapperTypeExceptionPrototype' if is_exception else
-                                'WrapperTypeObjectPrototype' %}
+{% set wrapper_type_prototype = 'kWrapperTypeExceptionPrototype' if is_exception else
+                                'kWrapperTypeObjectPrototype' %}
 {% set active_scriptwrappable_inheritance =
-    'InheritFromActiveScriptWrappable'
+    'kInheritFromActiveScriptWrappable'
     if active_scriptwrappable else
-    'NotInheritFromActiveScriptWrappable' %}
+    'kNotInheritFromActiveScriptWrappable' %}
 
 {% set wrapper_type_info_const = '' if has_partial_interface else 'const ' %}
 {% if not is_partial %}
@@ -26,7 +26,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::trace, {{v8_class}}::traceWrappers, {{prepare_prototype_and_interface_object_func or 'nullptr'}}, "{{interface_name}}", {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{active_scriptwrappable_inheritance}}, WrapperTypeInfo::{{lifetime}} };
+{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::Trace, {{v8_class}}::TraceWrappers, {{prepare_prototype_and_interface_object_func or 'nullptr'}}, "{{interface_name}}", {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{active_scriptwrappable_inheritance}}, WrapperTypeInfo::{{lifetime}} };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -35,7 +35,7 @@ namespace blink {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
-const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperTypeInfo;
+const WrapperTypeInfo& {{cpp_class}}::wrapper_type_info_ = {{v8_class}}::wrapperTypeInfo;
 {% endif %}
 
 {% if active_scriptwrappable %}
@@ -46,8 +46,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    !std::is_same<decltype(&{{cpp_class}}::hasPendingActivity),
-                  decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    !std::is_same<decltype(&{{cpp_class}}::HasPendingActivity),
+                  decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "{{cpp_class}} is not overriding hasPendingActivity(), but is specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -59,8 +59,8 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
-    std::is_same<decltype(&{{cpp_class}}::hasPendingActivity),
-                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    std::is_same<decltype(&{{cpp_class}}::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "{{cpp_class}} is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
@@ -240,10 +240,10 @@ bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingCont
     return false;  // the frame is gone.
 
   const DOMWindow* targetWindow = V8Window::toImpl(window);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(accessingContext), targetWindow, BindingSecurity::ErrorReportOption::DoNotReport);
+  return BindingSecurity::ShouldAllowAccessTo(ToLocalDOMWindow(accessingContext), targetWindow, BindingSecurity::ErrorReportOption::kDoNotReport);
   {% elif interface_name == 'Location' %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(accessedObject);
-  return BindingSecurity::shouldAllowAccessTo(toLocalDOMWindow(accessingContext), impl, BindingSecurity::ErrorReportOption::DoNotReport);
+  return BindingSecurity::ShouldAllowAccessTo(ToLocalDOMWindow(accessingContext), impl, BindingSecurity::ErrorReportOption::kDoNotReport);
   {% else %}
   #error "Unexpected security check for interface {{interface_name}}"
   {% endif %}
@@ -253,7 +253,7 @@ bool {{v8_class_or_partial}}::securityCheck(v8::Local<v8::Context> accessingCont
 void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
-  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable) {
     if (propertyName == attribute.name && attribute.getter) {
@@ -269,9 +269,9 @@ void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, c
   {{cpp_class}}V8Internal::namedPropertyGetter(propertyName, info);
   {% endif %}
   {% else %}
-  BindingSecurity::failedAccessCheckFor(
+  BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      {{v8_class}}::toImpl(info.Holder())->frame());
+      {{v8_class}}::toImpl(info.Holder())->GetFrame());
   {% endif %}
 }
 {% endif %}
@@ -280,7 +280,7 @@ void {{v8_class_or_partial}}::crossOriginNamedGetter(v8::Local<v8::Name> name, c
 void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
   if (!name->IsString())
     return;
-  const AtomicString& propertyName = toCoreAtomicString(name.As<v8::String>());
+  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   for (const auto& attribute : {{cpp_class_or_partial}}V8Internal::kCrossOriginAttributeTable) {
     if (propertyName == attribute.name && attribute.setter) {
@@ -293,9 +293,9 @@ void {{v8_class_or_partial}}::crossOriginNamedSetter(v8::Local<v8::Name> name, v
      an access check failure: there are no custom named setters that are
      accessible from a cross-origin context. #}
 
-  BindingSecurity::failedAccessCheckFor(
+  BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      {{v8_class}}::toImpl(info.Holder())->frame());
+      {{v8_class}}::toImpl(info.Holder())->GetFrame());
 }
 {% endif %}
 
@@ -307,7 +307,7 @@ void {{v8_class_or_partial}}::crossOriginNamedEnumerator(const v8::PropertyCallb
 
   // Use the current context as the creation context, as a cross-origin access
   // may involve an object that does not have a creation context.
-  v8SetReturnValue(info,
+  V8SetReturnValue(info,
                    ToV8(names, info.GetIsolate()->GetCurrentContext()->Global(),
                         info.GetIsolate()).As<v8::Array>());
 }
@@ -417,7 +417,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
          'V8%s::domTemplate(isolate, world)' % parent_interface
          if parent_interface else
          'v8::Local<v8::FunctionTemplate>()' %}
-  V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_interface_template}}, {{v8_class}}::internalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, {{v8_class}}::wrapperTypeInfo.interface_name, {{parent_interface_template}}, {{v8_class}}::internalFieldCount);
   {% if constructors or has_custom_constructor or has_event_constructor or has_html_constructor %}
   interfaceTemplate->SetCallHandler({{v8_class}}::constructorCallback);
   interfaceTemplate->SetLength({{interface_length}});
@@ -456,16 +456,16 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {{install_constants() | indent(2)}}
   {% endif %}
   {% if data_attributes %}
-  V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
+  V8DOMConfiguration::InstallAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
   {% endif %}
   {% if lazy_data_attributes %}
-  V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sLazyDataAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sLazyDataAttributes)' % v8_class}});
+  V8DOMConfiguration::InstallLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sLazyDataAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sLazyDataAttributes)' % v8_class}});
   {% endif %}
   {% if accessors %}
-  V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
+  V8DOMConfiguration::InstallAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
   {% endif %}
   {% if methods | has_method_configuration(is_partial) %}
-  V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
+  V8DOMConfiguration::InstallMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
   {% endif %}
 
   {% if has_access_check_callbacks and not is_partial %}
@@ -485,13 +485,13 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     {{attribute_configuration(attribute) | indent(2)}}
   };
   for (const auto& attributeConfig : attribute{{attribute.name}}Configuration)
-    V8DOMConfiguration::installAttribute(isolate, world, instanceTemplate, prototypeTemplate, attributeConfig);
+    V8DOMConfiguration::InstallAttribute(isolate, world, instanceTemplate, prototypeTemplate, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
     {{attribute_configuration(attribute) | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
-    V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorConfig);
+    V8DOMConfiguration::InstallAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorConfig);
   {% endif %}
   {% endfor %}
   {% endfilter %}
@@ -515,10 +515,10 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endif %}
   // For value iterators, the properties below must originally be set to the corresponding ones in %ArrayPrototype%.
   // See https://heycam.github.io/webidl/#es-iterators.
-  prototypeTemplate->SetIntrinsicDataProperty(v8AtomicString(isolate, "entries"), v8::kArrayProto_entries);
-  prototypeTemplate->SetIntrinsicDataProperty(v8AtomicString(isolate, "forEach"), v8::kArrayProto_forEach);
-  prototypeTemplate->SetIntrinsicDataProperty(v8AtomicString(isolate, "keys"), v8::kArrayProto_keys);
-  prototypeTemplate->SetIntrinsicDataProperty(v8AtomicString(isolate, "values"), v8::kArrayProto_values);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "entries"), v8::kArrayProto_entries);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "forEach"), v8::kArrayProto_forEach);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "keys"), v8::kArrayProto_keys);
+  prototypeTemplate->SetIntrinsicDataProperty(V8AtomicString(isolate, "values"), v8::kArrayProto_values);
   {% endif %}
   {% endif %}
 
@@ -526,8 +526,8 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% filter exposed(iterator_method.exposed_test) %}
   {% filter runtime_enabled(iterator_method.runtime_enabled_feature_name) %}
   // Iterator (@@iterator)
-  static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{v8_class_or_partial}}::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess };
-  V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+  static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{v8_class_or_partial}}::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess };
+  V8DOMConfiguration::InstallMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
   {% endfilter %}
   {% endfilter %}
   {% endif %}
@@ -605,13 +605,13 @@ void {{v8_class_or_partial}}::installRuntimeEnabledFeatures(v8::Isolate* isolate
     {{attribute_configuration(attribute) | indent(2)}}
   };
   for (const auto& attributeConfig : attribute{{attribute.name}}Configuration)
-    V8DOMConfiguration::installAttribute(isolate, world, instance, prototype, attributeConfig);
+    V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
     {{attribute_configuration(attribute) | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
-    V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
+    V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
   {% endif %}
   {% endfor %}
   {% endfilter %}
@@ -667,20 +667,20 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
     {{attribute_configuration(attribute) | indent(2)}}
   };
   for (const auto& attributeConfig : attribute{{attribute.name}}Configuration)
-    V8DOMConfiguration::installAttribute(isolate, world, instance, prototype, attributeConfig);
+    V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, attributeConfig);
   {% else %}
   static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
     {{attribute_configuration(attribute) | indent(2)}}
   };
   for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
-    V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
+    V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
   {% endif %}
   {% endfor %}
   {# Origin-Trial-enabled constants #}
   {% for constant in feature.constants %}
   {% set constant_name = constant.name.title().replace('_', '') %}
   const V8DOMConfiguration::ConstantConfiguration constant{{constant_name}}Configuration = {{constant_configuration(constant)}};
-  V8DOMConfiguration::installConstant(isolate, interface, prototype, constant{{constant_name}}Configuration);
+  V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constant{{constant_name}}Configuration);
   {% endfor %}
   {# Origin-Trial-enabled methods (no overloads) #}
   {% for method in feature.methods %}
@@ -689,16 +689,16 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
     {{method_configuration(method) | indent(2)}}
   };
   for (const auto& methodConfig : method{{method_name}}Configuration)
-    V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
+    V8DOMConfiguration::InstallMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
   {% endfor %}
 }
 
 void {{v8_class_or_partial}}::install{{feature.name}}(ScriptState* scriptState, v8::Local<v8::Object> instance) {
-  V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
-  v8::Local<v8::Object> prototype = perContextData->prototypeForType(&{{v8_class}}::wrapperTypeInfo);
-  v8::Local<v8::Function> interface = perContextData->constructorForType(&{{v8_class}}::wrapperTypeInfo);
+  V8PerContextData* perContextData = V8PerContextData::From(scriptState->GetContext());
+  v8::Local<v8::Object> prototype = perContextData->PrototypeForType(&{{v8_class}}::wrapperTypeInfo);
+  v8::Local<v8::Function> interface = perContextData->ConstructorForType(&{{v8_class}}::wrapperTypeInfo);
   ALLOW_UNUSED_LOCAL(interface);
-  install{{feature.name}}(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
+  install{{feature.name}}(scriptState->GetIsolate(), scriptState->World(), instance, prototype, interface);
 }
 {% if not feature.needs_instance %}
 
@@ -729,20 +729,20 @@ void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::C
   v8::Isolate* isolate = context->GetIsolate();
   {% if has_conditional_attributes_on_prototype or methods | conditionally_exposed(is_partial) %}
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
-  ExecutionContext* executionContext = toExecutionContext(context);
+  ExecutionContext* executionContext = ToExecutionContext(context);
   DCHECK(executionContext);
   {% endif %}
 
 {% if unscopables %}
   v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
   v8::Local<v8::Object> unscopables;
-  if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
+  if (V8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
     unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
   else
     unscopables = v8::Object::New(isolate);
   {% for name, runtime_enabled_feature_name in unscopables %}
   {% filter runtime_enabled(runtime_enabled_feature_name) %}
-  unscopables->CreateDataProperty(context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
+  unscopables->CreateDataProperty(context, V8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
   {% endfilter %}
   {% endfor %}
   prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();

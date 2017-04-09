@@ -43,19 +43,19 @@ class CORE_EXPORT ClientRectList final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ClientRectList* create() { return new ClientRectList; }
-  static ClientRectList* create(const Vector<FloatQuad>& quads) {
+  static ClientRectList* Create() { return new ClientRectList; }
+  static ClientRectList* Create(const Vector<FloatQuad>& quads) {
     return new ClientRectList(quads);
   }
 
   template <typename Rects>
-  static ClientRectList* create(const Rects& rects) {
+  static ClientRectList* Create(const Rects& rects) {
     return new ClientRectList(rects);
   }
 
   unsigned length() const;
   ClientRect* item(unsigned index);
-  ClientRect* anonymousIndexedGetter(unsigned index) { return item(index); }
+  ClientRect* AnonymousIndexedGetter(unsigned index) { return item(index); }
 
   DECLARE_TRACE();
 
@@ -64,14 +64,14 @@ class CORE_EXPORT ClientRectList final
 
   template <typename Rects>
   explicit ClientRectList(const Rects& rects) {
-    m_list.reserveInitialCapacity(rects.size());
+    list_.ReserveInitialCapacity(rects.size());
     for (const auto& r : rects)
-      m_list.push_back(ClientRect::create(FloatRect(r)));
+      list_.push_back(ClientRect::Create(FloatRect(r)));
   }
 
   explicit ClientRectList(const Vector<FloatQuad>&);
 
-  HeapVector<Member<ClientRect>> m_list;
+  HeapVector<Member<ClientRect>> list_;
 };
 
 }  // namespace blink

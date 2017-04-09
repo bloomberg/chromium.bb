@@ -24,14 +24,14 @@ namespace {
 
 class MockTask {
  public:
-  MOCK_METHOD0(run, void());
+  MOCK_METHOD0(Run, void());
 };
 
 class MockIdleTask : public blink::WebThread::IdleTask {
  public:
   ~MockIdleTask() override {}
 
-  MOCK_METHOD1(run, void(double deadline));
+  MOCK_METHOD1(Run, void(double deadline));
 };
 
 class TestObserver : public blink::WebThread::TaskObserver {
@@ -40,32 +40,32 @@ class TestObserver : public blink::WebThread::TaskObserver {
 
   ~TestObserver() override {}
 
-  void willProcessTask() override { calls_->append(" willProcessTask"); }
+  void WillProcessTask() override { calls_->append(" willProcessTask"); }
 
-  void didProcessTask() override { calls_->append(" didProcessTask"); }
+  void DidProcessTask() override { calls_->append(" didProcessTask"); }
 
  private:
   std::string* calls_;  // NOT OWNED
 };
 
-void runTestTask(std::string* calls) {
+void RunTestTask(std::string* calls) {
   calls->append(" run");
 }
 
-void addTaskObserver(WebThreadImplForWorkerScheduler* thread,
+void AddTaskObserver(WebThreadImplForWorkerScheduler* thread,
                      TestObserver* observer) {
-  thread->addTaskObserver(observer);
+  thread->AddTaskObserver(observer);
 }
 
-void removeTaskObserver(WebThreadImplForWorkerScheduler* thread,
+void RemoveTaskObserver(WebThreadImplForWorkerScheduler* thread,
                         TestObserver* observer) {
-  thread->removeTaskObserver(observer);
+  thread->RemoveTaskObserver(observer);
 }
 
-void shutdownOnThread(WebThreadImplForWorkerScheduler* thread) {
+void ShutdownOnThread(WebThreadImplForWorkerScheduler* thread) {
   WebSchedulerImpl* web_scheduler_impl =
-      static_cast<WebSchedulerImpl*>(thread->scheduler());
-  web_scheduler_impl->shutdown();
+      static_cast<WebSchedulerImpl*>(thread->Scheduler());
+  web_scheduler_impl->Shutdown();
 }
 
 }  // namespace
@@ -111,13 +111,13 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  EXPECT_CALL(task, run());
-  ON_CALL(task, run()).WillByDefault(Invoke([&completion]() {
+  EXPECT_CALL(task, Run());
+  ON_CALL(task, Run()).WillByDefault(Invoke([&completion]() {
     completion.Signal();
   }));
 
-  thread_->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
+  thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
   completion.Wait();
 }
 
@@ -128,13 +128,13 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  EXPECT_CALL(task, run());
-  ON_CALL(task, run()).WillByDefault(Invoke([&completion]() {
+  EXPECT_CALL(task, Run());
+  ON_CALL(task, Run()).WillByDefault(Invoke([&completion]() {
     completion.Signal();
   }));
 
-  thread_->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
+  thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
   thread_.reset();
 }
 
@@ -144,14 +144,15 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  EXPECT_CALL(*task, run(_));
-  ON_CALL(*task, run(_))
-      .WillByDefault(Invoke([&completion](double) { completion.Signal(); }));
+  EXPECT_CALL(*task, Run(_));
+  ON_CALL(*task, Run(_)).WillByDefault(Invoke([&completion](double) {
+    completion.Signal();
+  }));
 
-  thread_->postIdleTask(BLINK_FROM_HERE, task.release());
+  thread_->PostIdleTask(BLINK_FROM_HERE, task.release());
   // We need to post a wake-up task or idle work will never happen.
-  thread_->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE,
-                                               WTF::bind([] {}), 50ll);
+  thread_->GetWebTaskRunner()->PostDelayedTask(BLINK_FROM_HERE,
+                                               WTF::Bind([] {}), 50ll);
 
   completion.Wait();
 }
@@ -161,11 +162,11 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   TestObserver observer(&calls);
 
   RunOnWorkerThread(FROM_HERE,
-                    base::Bind(&addTaskObserver, thread_.get(), &observer));
-  thread_->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, WTF::bind(&runTestTask, WTF::unretained(&calls)));
+                    base::Bind(&AddTaskObserver, thread_.get(), &observer));
+  thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, WTF::Bind(&RunTestTask, WTF::Unretained(&calls)));
   RunOnWorkerThread(FROM_HERE,
-                    base::Bind(&removeTaskObserver, thread_.get(), &observer));
+                    base::Bind(&RemoveTaskObserver, thread_.get(), &observer));
 
   // We need to be careful what we test here.  We want to make sure the
   // observers are un in the expected order before and after the task.
@@ -179,15 +180,15 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
   MockTask task;
   MockTask delayed_task;
 
-  EXPECT_CALL(task, run()).Times(0);
-  EXPECT_CALL(delayed_task, run()).Times(0);
+  EXPECT_CALL(task, Run()).Times(0);
+  EXPECT_CALL(delayed_task, Run()).Times(0);
 
-  RunOnWorkerThread(FROM_HERE, base::Bind(&shutdownOnThread, thread_.get()));
-  thread_->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, WTF::bind(&MockTask::run, WTF::unretained(&task)));
-  thread_->getWebTaskRunner()->postDelayedTask(
+  RunOnWorkerThread(FROM_HERE, base::Bind(&ShutdownOnThread, thread_.get()));
+  thread_->GetWebTaskRunner()->PostTask(
+      BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
+  thread_->GetWebTaskRunner()->PostDelayedTask(
       BLINK_FROM_HERE,
-      WTF::bind(&MockTask::run, WTF::unretained(&delayed_task)), 50ll);
+      WTF::Bind(&MockTask::Run, WTF::Unretained(&delayed_task)), 50ll);
   thread_.reset();
 }
 

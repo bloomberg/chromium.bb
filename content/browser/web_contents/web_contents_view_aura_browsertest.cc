@@ -161,7 +161,7 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
  public:
   InputEventMessageFilterWaitsForAcks()
       : BrowserMessageFilter(InputMsgStart),
-        type_(blink::WebInputEvent::Undefined),
+        type_(blink::WebInputEvent::kUndefined),
         state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
 
   void WaitForAck(blink::WebInputEvent::Type type) {
@@ -914,7 +914,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     touch.PressPoint(bounds.x() + 2, bounds.y() + 10);
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());
-    filter()->WaitForAck(blink::WebInputEvent::TouchStart);
+    filter()->WaitForAck(blink::WebInputEvent::kTouchStart);
     WaitAFrame();
 
     // Assert on the ack, because we'll end up waiting for acks that will never
@@ -925,12 +925,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     touch.MovePoint(0, bounds.x() + 20 + 1 * dx, bounds.y() + 100);
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());
-    filter()->WaitForAck(blink::WebInputEvent::TouchMove);
+    filter()->WaitForAck(blink::WebInputEvent::kTouchMove);
     ASSERT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
 
     blink::WebGestureEvent scroll_begin =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
-            1, 1, blink::WebGestureDeviceTouchscreen);
+            1, 1, blink::kWebGestureDeviceTouchscreen);
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_begin, ui::LatencyInfo());
     // Scroll begin ignores ack disposition, so don't wait for the ack.
@@ -946,7 +946,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
       blink::WebGestureEvent scroll_update =
           SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-              dx, 5, 0, blink::WebGestureDeviceTouchscreen);
+              dx, 5, 0, blink::kWebGestureDeviceTouchscreen);
 
       GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
           scroll_update, ui::LatencyInfo());
@@ -960,8 +960,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     WaitAFrame();
 
     blink::WebGestureEvent scroll_end(
-        blink::WebInputEvent::GestureScrollEnd,
-        blink::WebInputEvent::NoModifiers,
+        blink::WebInputEvent::kGestureScrollEnd,
+        blink::WebInputEvent::kNoModifiers,
         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_end, ui::LatencyInfo());

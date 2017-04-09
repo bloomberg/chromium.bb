@@ -41,32 +41,32 @@ using namespace HTMLNames;
 
 namespace {
 
-bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition,
+bool IsFirstVisiblePositionInNode(const VisiblePosition& visible_position,
                                   const ContainerNode* node) {
-  if (visiblePosition.isNull())
+  if (visible_position.IsNull())
     return false;
 
-  if (!visiblePosition.deepEquivalent().computeContainerNode()->isDescendantOf(
+  if (!visible_position.DeepEquivalent().ComputeContainerNode()->IsDescendantOf(
           node))
     return false;
 
-  VisiblePosition previous = previousPositionOf(visiblePosition);
-  return previous.isNull() ||
-         !previous.deepEquivalent().anchorNode()->isDescendantOf(node);
+  VisiblePosition previous = PreviousPositionOf(visible_position);
+  return previous.IsNull() ||
+         !previous.DeepEquivalent().AnchorNode()->IsDescendantOf(node);
 }
 
-bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition,
+bool IsLastVisiblePositionInNode(const VisiblePosition& visible_position,
                                  const ContainerNode* node) {
-  if (visiblePosition.isNull())
+  if (visible_position.IsNull())
     return false;
 
-  if (!visiblePosition.deepEquivalent().computeContainerNode()->isDescendantOf(
+  if (!visible_position.DeepEquivalent().ComputeContainerNode()->IsDescendantOf(
           node))
     return false;
 
-  VisiblePosition next = nextPositionOf(visiblePosition);
-  return next.isNull() ||
-         !next.deepEquivalent().anchorNode()->isDescendantOf(node);
+  VisiblePosition next = NextPositionOf(visible_position);
+  return next.IsNull() ||
+         !next.DeepEquivalent().AnchorNode()->IsDescendantOf(node);
 }
 
 }  // namespace
@@ -74,216 +74,218 @@ bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition,
 BreakBlockquoteCommand::BreakBlockquoteCommand(Document& document)
     : CompositeEditCommand(document) {}
 
-static HTMLQuoteElement* topBlockquoteOf(const Position& start) {
+static HTMLQuoteElement* TopBlockquoteOf(const Position& start) {
   // This is a position equivalent to the caret.  We use |downstream()| so that
   // |position| will be in the first node that we need to move (there are a few
   // exceptions to this, see |doApply|).
-  const Position& position = mostForwardCaretPosition(start);
-  return toHTMLQuoteElement(
-      highestEnclosingNodeOfType(position, isMailHTMLBlockquoteElement));
+  const Position& position = MostForwardCaretPosition(start);
+  return ToHTMLQuoteElement(
+      HighestEnclosingNodeOfType(position, IsMailHTMLBlockquoteElement));
 }
 
-void BreakBlockquoteCommand::doApply(EditingState* editingState) {
-  if (endingSelection().isNone())
+void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
+  if (EndingSelection().IsNone())
     return;
 
-  if (!topBlockquoteOf(endingSelection().start()))
+  if (!TopBlockquoteOf(EndingSelection().Start()))
     return;
 
   // Delete the current selection.
-  if (endingSelection().isRange()) {
-    deleteSelection(editingState, false, false);
-    if (editingState->isAborted())
+  if (EndingSelection().IsRange()) {
+    DeleteSelection(editing_state, false, false);
+    if (editing_state->IsAborted())
       return;
   }
 
   // This is a scenario that should never happen, but we want to
   // make sure we don't dereference a null pointer below.
 
-  DCHECK(!endingSelection().isNone());
+  DCHECK(!EndingSelection().IsNone());
 
-  if (endingSelection().isNone())
+  if (EndingSelection().IsNone())
     return;
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisiblePosition visiblePos = endingSelection().visibleStart();
+  VisiblePosition visible_pos = EndingSelection().VisibleStart();
 
   // pos is a position equivalent to the caret.  We use downstream() so that pos
   // will be in the first node that we need to move (there are a few exceptions
   // to this, see below).
-  Position pos = mostForwardCaretPosition(endingSelection().start());
+  Position pos = MostForwardCaretPosition(EndingSelection().Start());
 
   // Find the top-most blockquote from the start.
-  HTMLQuoteElement* const topBlockquote =
-      topBlockquoteOf(endingSelection().start());
-  if (!topBlockquote || !topBlockquote->parentNode())
+  HTMLQuoteElement* const top_blockquote =
+      TopBlockquoteOf(EndingSelection().Start());
+  if (!top_blockquote || !top_blockquote->parentNode())
     return;
 
-  HTMLBRElement* breakElement = HTMLBRElement::create(document());
+  HTMLBRElement* break_element = HTMLBRElement::Create(GetDocument());
 
-  bool isLastVisPosInNode =
-      isLastVisiblePositionInNode(visiblePos, topBlockquote);
+  bool is_last_vis_pos_in_node =
+      IsLastVisiblePositionInNode(visible_pos, top_blockquote);
 
   // If the position is at the beginning of the top quoted content, we don't
   // need to break the quote. Instead, insert the break before the blockquote,
   // unless the position is as the end of the the quoted content.
-  if (isFirstVisiblePositionInNode(visiblePos, topBlockquote) &&
-      !isLastVisPosInNode) {
-    insertNodeBefore(breakElement, topBlockquote, editingState);
-    if (editingState->isAborted())
+  if (IsFirstVisiblePositionInNode(visible_pos, top_blockquote) &&
+      !is_last_vis_pos_in_node) {
+    InsertNodeBefore(break_element, top_blockquote, editing_state);
+    if (editing_state->IsAborted())
       return;
-    setEndingSelection(SelectionInDOMTree::Builder()
-                           .collapse(Position::beforeNode(breakElement))
-                           .setIsDirectional(endingSelection().isDirectional())
-                           .build());
-    rebalanceWhitespace();
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(Position::BeforeNode(break_element))
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
+    RebalanceWhitespace();
     return;
   }
 
   // Insert a break after the top blockquote.
-  insertNodeAfter(breakElement, topBlockquote, editingState);
-  if (editingState->isAborted())
+  InsertNodeAfter(break_element, top_blockquote, editing_state);
+  if (editing_state->IsAborted())
     return;
 
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // If we're inserting the break at the end of the quoted content, we don't
   // need to break the quote.
-  if (isLastVisPosInNode) {
-    setEndingSelection(SelectionInDOMTree::Builder()
-                           .collapse(Position::beforeNode(breakElement))
-                           .setIsDirectional(endingSelection().isDirectional())
-                           .build());
-    rebalanceWhitespace();
+  if (is_last_vis_pos_in_node) {
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(Position::BeforeNode(break_element))
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
+    RebalanceWhitespace();
     return;
   }
 
   // Don't move a line break just after the caret.  Doing so would create an
   // extra, empty paragraph in the new blockquote.
-  if (lineBreakExistsAtVisiblePosition(visiblePos)) {
-    pos = nextPositionOf(pos, PositionMoveType::GraphemeCluster);
+  if (LineBreakExistsAtVisiblePosition(visible_pos)) {
+    pos = NextPositionOf(pos, PositionMoveType::kGraphemeCluster);
   }
 
   // Adjust the position so we don't split at the beginning of a quote.
-  while (isFirstVisiblePositionInNode(createVisiblePosition(pos),
-                                      toHTMLQuoteElement(enclosingNodeOfType(
-                                          pos, isMailHTMLBlockquoteElement)))) {
-    pos = previousPositionOf(pos, PositionMoveType::GraphemeCluster);
+  while (IsFirstVisiblePositionInNode(CreateVisiblePosition(pos),
+                                      ToHTMLQuoteElement(EnclosingNodeOfType(
+                                          pos, IsMailHTMLBlockquoteElement)))) {
+    pos = PreviousPositionOf(pos, PositionMoveType::kGraphemeCluster);
   }
 
   // startNode is the first node that we need to move to the new blockquote.
-  Node* startNode = pos.anchorNode();
-  DCHECK(startNode);
+  Node* start_node = pos.AnchorNode();
+  DCHECK(start_node);
 
   // Split at pos if in the middle of a text node.
-  if (startNode->isTextNode()) {
-    Text* textNode = toText(startNode);
-    int textOffset = pos.computeOffsetInContainerNode();
-    if ((unsigned)textOffset >= textNode->length()) {
-      startNode = NodeTraversal::next(*startNode);
-      DCHECK(startNode);
-    } else if (textOffset > 0) {
-      splitTextNode(textNode, textOffset);
+  if (start_node->IsTextNode()) {
+    Text* text_node = ToText(start_node);
+    int text_offset = pos.ComputeOffsetInContainerNode();
+    if ((unsigned)text_offset >= text_node->length()) {
+      start_node = NodeTraversal::Next(*start_node);
+      DCHECK(start_node);
+    } else if (text_offset > 0) {
+      SplitTextNode(text_node, text_offset);
     }
-  } else if (pos.computeEditingOffset() > 0) {
-    Node* childAtOffset =
-        NodeTraversal::childAt(*startNode, pos.computeEditingOffset());
-    startNode = childAtOffset ? childAtOffset : NodeTraversal::next(*startNode);
-    DCHECK(startNode);
+  } else if (pos.ComputeEditingOffset() > 0) {
+    Node* child_at_offset =
+        NodeTraversal::ChildAt(*start_node, pos.ComputeEditingOffset());
+    start_node =
+        child_at_offset ? child_at_offset : NodeTraversal::Next(*start_node);
+    DCHECK(start_node);
   }
 
   // If there's nothing inside topBlockquote to move, we're finished.
-  if (!startNode->isDescendantOf(topBlockquote)) {
-    setEndingSelection(SelectionInDOMTree::Builder()
-                           .collapse(firstPositionInOrBeforeNode(startNode))
-                           .setIsDirectional(endingSelection().isDirectional())
-                           .build());
+  if (!start_node->IsDescendantOf(top_blockquote)) {
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(FirstPositionInOrBeforeNode(start_node))
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
     return;
   }
 
   // Build up list of ancestors in between the start node and the top
   // blockquote.
   HeapVector<Member<Element>> ancestors;
-  for (Element* node = startNode->parentElement();
-       node && node != topBlockquote; node = node->parentElement())
+  for (Element* node = start_node->parentElement();
+       node && node != top_blockquote; node = node->parentElement())
     ancestors.push_back(node);
 
   // Insert a clone of the top blockquote after the break.
-  Element* clonedBlockquote = topBlockquote->cloneElementWithoutChildren();
-  insertNodeAfter(clonedBlockquote, breakElement, editingState);
-  if (editingState->isAborted())
+  Element* cloned_blockquote = top_blockquote->CloneElementWithoutChildren();
+  InsertNodeAfter(cloned_blockquote, break_element, editing_state);
+  if (editing_state->IsAborted())
     return;
 
   // Clone startNode's ancestors into the cloned blockquote.
   // On exiting this loop, clonedAncestor is the lowest ancestor
   // that was cloned (i.e. the clone of either ancestors.last()
   // or clonedBlockquote if ancestors is empty).
-  Element* clonedAncestor = clonedBlockquote;
+  Element* cloned_ancestor = cloned_blockquote;
   for (size_t i = ancestors.size(); i != 0; --i) {
-    Element* clonedChild = ancestors[i - 1]->cloneElementWithoutChildren();
+    Element* cloned_child = ancestors[i - 1]->CloneElementWithoutChildren();
     // Preserve list item numbering in cloned lists.
-    if (isHTMLOListElement(*clonedChild)) {
-      Node* listChildNode = i > 1 ? ancestors[i - 2].get() : startNode;
+    if (isHTMLOListElement(*cloned_child)) {
+      Node* list_child_node = i > 1 ? ancestors[i - 2].Get() : start_node;
       // The first child of the cloned list might not be a list item element,
       // find the first one so that we know where to start numbering.
-      while (listChildNode && !isHTMLLIElement(*listChildNode))
-        listChildNode = listChildNode->nextSibling();
-      if (isListItem(listChildNode))
-        setNodeAttribute(
-            clonedChild, startAttr,
-            AtomicString::number(
-                toLayoutListItem(listChildNode->layoutObject())->value()));
+      while (list_child_node && !isHTMLLIElement(*list_child_node))
+        list_child_node = list_child_node->nextSibling();
+      if (IsListItem(list_child_node))
+        SetNodeAttribute(
+            cloned_child, startAttr,
+            AtomicString::Number(
+                ToLayoutListItem(list_child_node->GetLayoutObject())->Value()));
     }
 
-    appendNode(clonedChild, clonedAncestor, editingState);
-    if (editingState->isAborted())
+    AppendNode(cloned_child, cloned_ancestor, editing_state);
+    if (editing_state->IsAborted())
       return;
-    clonedAncestor = clonedChild;
+    cloned_ancestor = cloned_child;
   }
 
-  moveRemainingSiblingsToNewParent(startNode, 0, clonedAncestor, editingState);
-  if (editingState->isAborted())
+  MoveRemainingSiblingsToNewParent(start_node, 0, cloned_ancestor,
+                                   editing_state);
+  if (editing_state->IsAborted())
     return;
 
-  if (!ancestors.isEmpty()) {
+  if (!ancestors.IsEmpty()) {
     // Split the tree up the ancestor chain until the topBlockquote
     // Throughout this loop, clonedParent is the clone of ancestor's parent.
     // This is so we can clone ancestor's siblings and place the clones
     // into the clone corresponding to the ancestor's parent.
     Element* ancestor = nullptr;
-    Element* clonedParent = nullptr;
+    Element* cloned_parent = nullptr;
     for (ancestor = ancestors.front(),
-        clonedParent = clonedAncestor->parentElement();
-         ancestor && ancestor != topBlockquote;
+        cloned_parent = cloned_ancestor->parentElement();
+         ancestor && ancestor != top_blockquote;
          ancestor = ancestor->parentElement(),
-        clonedParent = clonedParent->parentElement()) {
-      moveRemainingSiblingsToNewParent(ancestor->nextSibling(), 0, clonedParent,
-                                       editingState);
-      if (editingState->isAborted())
+        cloned_parent = cloned_parent->parentElement()) {
+      MoveRemainingSiblingsToNewParent(ancestor->nextSibling(), 0,
+                                       cloned_parent, editing_state);
+      if (editing_state->IsAborted())
         return;
     }
 
     // If the startNode's original parent is now empty, remove it
-    Element* originalParent = ancestors.front().get();
-    if (!originalParent->hasChildren()) {
-      removeNode(originalParent, editingState);
-      if (editingState->isAborted())
+    Element* original_parent = ancestors.front().Get();
+    if (!original_parent->HasChildren()) {
+      RemoveNode(original_parent, editing_state);
+      if (editing_state->IsAborted())
         return;
     }
   }
 
   // Make sure the cloned block quote renders.
-  addBlockPlaceholderIfNeeded(clonedBlockquote, editingState);
-  if (editingState->isAborted())
+  AddBlockPlaceholderIfNeeded(cloned_blockquote, editing_state);
+  if (editing_state->IsAborted())
     return;
 
   // Put the selection right before the break.
-  setEndingSelection(SelectionInDOMTree::Builder()
-                         .collapse(Position::beforeNode(breakElement))
-                         .setIsDirectional(endingSelection().isDirectional())
-                         .build());
-  rebalanceWhitespace();
+  SetEndingSelection(SelectionInDOMTree::Builder()
+                         .Collapse(Position::BeforeNode(break_element))
+                         .SetIsDirectional(EndingSelection().IsDirectional())
+                         .Build());
+  RebalanceWhitespace();
 }
 
 }  // namespace blink

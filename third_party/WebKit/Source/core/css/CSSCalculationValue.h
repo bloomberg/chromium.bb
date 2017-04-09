@@ -43,114 +43,114 @@ namespace blink {
 class CalculationValue;
 
 enum CalcOperator {
-  CalcAdd = '+',
-  CalcSubtract = '-',
-  CalcMultiply = '*',
-  CalcDivide = '/'
+  kCalcAdd = '+',
+  kCalcSubtract = '-',
+  kCalcMultiply = '*',
+  kCalcDivide = '/'
 };
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
 enum CalculationCategory {
-  CalcNumber = 0,
-  CalcLength,
-  CalcPercent,
-  CalcPercentNumber,
-  CalcPercentLength,
-  CalcAngle,
-  CalcTime,
-  CalcFrequency,
-  CalcLengthNumber,
-  CalcPercentLengthNumber,
-  CalcOther
+  kCalcNumber = 0,
+  kCalcLength,
+  kCalcPercent,
+  kCalcPercentNumber,
+  kCalcPercentLength,
+  kCalcAngle,
+  kCalcTime,
+  kCalcFrequency,
+  kCalcLengthNumber,
+  kCalcPercentLengthNumber,
+  kCalcOther
 };
 
 class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
  public:
-  enum Type { CssCalcPrimitiveValue = 1, CssCalcBinaryOperation };
+  enum Type { kCssCalcPrimitiveValue = 1, kCssCalcBinaryOperation };
 
-  virtual bool isZero() const = 0;
-  virtual double doubleValue() const = 0;
-  virtual double computeLengthPx(const CSSToLengthConversionData&) const = 0;
-  virtual void accumulateLengthArray(CSSLengthArray&,
+  virtual bool IsZero() const = 0;
+  virtual double DoubleValue() const = 0;
+  virtual double ComputeLengthPx(const CSSToLengthConversionData&) const = 0;
+  virtual void AccumulateLengthArray(CSSLengthArray&,
                                      double multiplier) const = 0;
-  virtual void accumulatePixelsAndPercent(const CSSToLengthConversionData&,
+  virtual void AccumulatePixelsAndPercent(const CSSToLengthConversionData&,
                                           PixelsAndPercent&,
                                           float multiplier = 1) const = 0;
-  virtual String customCSSText() const = 0;
+  virtual String CustomCSSText() const = 0;
   virtual bool operator==(const CSSCalcExpressionNode& other) const {
-    return m_category == other.m_category && m_isInteger == other.m_isInteger;
+    return category_ == other.category_ && is_integer_ == other.is_integer_;
   }
-  virtual Type getType() const = 0;
-  virtual const CSSCalcExpressionNode* leftExpressionNode() const = 0;
-  virtual const CSSCalcExpressionNode* rightExpressionNode() const = 0;
-  virtual CalcOperator operatorType() const = 0;
+  virtual Type GetType() const = 0;
+  virtual const CSSCalcExpressionNode* LeftExpressionNode() const = 0;
+  virtual const CSSCalcExpressionNode* RightExpressionNode() const = 0;
+  virtual CalcOperator OperatorType() const = 0;
 
-  CalculationCategory category() const { return m_category; }
-  virtual CSSPrimitiveValue::UnitType typeWithCalcResolved() const = 0;
-  bool isInteger() const { return m_isInteger; }
+  CalculationCategory Category() const { return category_; }
+  virtual CSSPrimitiveValue::UnitType TypeWithCalcResolved() const = 0;
+  bool IsInteger() const { return is_integer_; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  CSSCalcExpressionNode(CalculationCategory category, bool isInteger)
-      : m_category(category), m_isInteger(isInteger) {
-    DCHECK_NE(category, CalcOther);
+  CSSCalcExpressionNode(CalculationCategory category, bool is_integer)
+      : category_(category), is_integer_(is_integer) {
+    DCHECK_NE(category, kCalcOther);
   }
 
-  CalculationCategory m_category;
-  bool m_isInteger;
+  CalculationCategory category_;
+  bool is_integer_;
 };
 
 class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
  public:
-  static CSSCalcValue* create(const CSSParserTokenRange&, ValueRange);
-  static CSSCalcValue* create(CSSCalcExpressionNode*,
-                              ValueRange = ValueRangeAll);
+  static CSSCalcValue* Create(const CSSParserTokenRange&, ValueRange);
+  static CSSCalcValue* Create(CSSCalcExpressionNode*,
+                              ValueRange = kValueRangeAll);
 
-  static CSSCalcExpressionNode* createExpressionNode(CSSPrimitiveValue*,
-                                                     bool isInteger = false);
-  static CSSCalcExpressionNode* createExpressionNode(CSSCalcExpressionNode*,
+  static CSSCalcExpressionNode* CreateExpressionNode(CSSPrimitiveValue*,
+                                                     bool is_integer = false);
+  static CSSCalcExpressionNode* CreateExpressionNode(CSSCalcExpressionNode*,
                                                      CSSCalcExpressionNode*,
                                                      CalcOperator);
-  static CSSCalcExpressionNode* createExpressionNode(double pixels,
+  static CSSCalcExpressionNode* CreateExpressionNode(double pixels,
                                                      double percent);
 
-  PassRefPtr<CalculationValue> toCalcValue(
-      const CSSToLengthConversionData& conversionData) const {
+  PassRefPtr<CalculationValue> ToCalcValue(
+      const CSSToLengthConversionData& conversion_data) const {
     PixelsAndPercent value(0, 0);
-    m_expression->accumulatePixelsAndPercent(conversionData, value);
-    return CalculationValue::create(
-        value, m_nonNegative ? ValueRangeNonNegative : ValueRangeAll);
+    expression_->AccumulatePixelsAndPercent(conversion_data, value);
+    return CalculationValue::Create(
+        value, non_negative_ ? kValueRangeNonNegative : kValueRangeAll);
   }
-  CalculationCategory category() const { return m_expression->category(); }
-  bool isInt() const { return m_expression->isInteger(); }
-  double doubleValue() const;
-  bool isNegative() const { return m_expression->doubleValue() < 0; }
-  ValueRange permittedValueRange() {
-    return m_nonNegative ? ValueRangeNonNegative : ValueRangeAll;
+  CalculationCategory Category() const { return expression_->Category(); }
+  bool IsInt() const { return expression_->IsInteger(); }
+  double DoubleValue() const;
+  bool IsNegative() const { return expression_->DoubleValue() < 0; }
+  ValueRange PermittedValueRange() {
+    return non_negative_ ? kValueRangeNonNegative : kValueRangeAll;
   }
-  double computeLengthPx(const CSSToLengthConversionData&) const;
-  void accumulateLengthArray(CSSLengthArray& lengthArray,
+  double ComputeLengthPx(const CSSToLengthConversionData&) const;
+  void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const {
-    m_expression->accumulateLengthArray(lengthArray, multiplier);
+    expression_->AccumulateLengthArray(length_array, multiplier);
   }
-  CSSCalcExpressionNode* expressionNode() const { return m_expression.get(); }
+  CSSCalcExpressionNode* ExpressionNode() const { return expression_.Get(); }
 
-  String customCSSText() const;
-  bool equals(const CSSCalcValue&) const;
+  String CustomCSSText() const;
+  bool Equals(const CSSCalcValue&) const;
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_expression); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(expression_); }
 
  private:
   CSSCalcValue(CSSCalcExpressionNode* expression, ValueRange range)
-      : m_expression(expression),
-        m_nonNegative(range == ValueRangeNonNegative) {}
+      : expression_(expression),
+        non_negative_(range == kValueRangeNonNegative) {}
 
-  double clampToPermittedRange(double) const;
+  double ClampToPermittedRange(double) const;
 
-  const Member<CSSCalcExpressionNode> m_expression;
-  const bool m_nonNegative;
+  const Member<CSSCalcExpressionNode> expression_;
+  const bool non_negative_;
 };
 
 }  // namespace blink

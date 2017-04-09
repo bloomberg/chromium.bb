@@ -61,7 +61,7 @@ public class WebApkUpdateManagerTest {
     private static final String SHORT_NAME = "Short Name";
     private static final String ICON_URL = "/icon.png";
     private static final String ICON_MURMUR2_HASH = "3";
-    private static final int DISPLAY_MODE = WebDisplayMode.Undefined;
+    private static final int DISPLAY_MODE = WebDisplayMode.kUndefined;
     private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
     private static final long THEME_COLOR = 1L;
     private static final long BACKGROUND_COLOR = 2L;

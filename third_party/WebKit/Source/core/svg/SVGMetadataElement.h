@@ -34,7 +34,7 @@ class SVGMetadataElement final : public SVGElement {
  private:
   explicit SVGMetadataElement(Document&);
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 };
 
 }  // namespace blink

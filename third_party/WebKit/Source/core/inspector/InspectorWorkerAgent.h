@@ -53,36 +53,36 @@ class CORE_EXPORT InspectorWorkerAgent final
   DECLARE_VIRTUAL_TRACE();
 
   protocol::Response disable() override;
-  void restore() override;
-  void didCommitLoadForLocalFrame(LocalFrame*) override;
+  void Restore() override;
+  void DidCommitLoadForLocalFrame(LocalFrame*) override;
 
   // Probes
-  void shouldWaitForDebuggerOnWorkerStart(bool* result);
-  void didStartWorker(WorkerInspectorProxy*, bool waitingForDebugger);
-  void workerTerminated(WorkerInspectorProxy*);
+  void ShouldWaitForDebuggerOnWorkerStart(bool* result);
+  void DidStartWorker(WorkerInspectorProxy*, bool waiting_for_debugger);
+  void WorkerTerminated(WorkerInspectorProxy*);
 
   // Called from Dispatcher
-  protocol::Response setAutoAttach(bool autoAttach,
-                                   bool waitForDebuggerOnStart) override;
-  protocol::Response sendMessageToTarget(const String& targetId,
+  protocol::Response setAutoAttach(bool auto_attach,
+                                   bool wait_for_debugger_on_start) override;
+  protocol::Response sendMessageToTarget(const String& target_id,
                                          const String& message) override;
 
-  void setTracingSessionId(const String&);
+  void SetTracingSessionId(const String&);
 
  private:
-  bool autoAttachEnabled();
-  void connectToAllProxies();
-  void disconnectFromAllProxies(bool reportToFrontend);
-  void connectToProxy(WorkerInspectorProxy*, bool waitingForDebugger);
-  protocol::DictionaryValue* attachedWorkerIds();
+  bool AutoAttachEnabled();
+  void ConnectToAllProxies();
+  void DisconnectFromAllProxies(bool report_to_frontend);
+  void ConnectToProxy(WorkerInspectorProxy*, bool waiting_for_debugger);
+  protocol::DictionaryValue* AttachedWorkerIds();
 
   // WorkerInspectorProxy::PageInspector implementation.
-  void dispatchMessageFromWorker(WorkerInspectorProxy*,
+  void DispatchMessageFromWorker(WorkerInspectorProxy*,
                                  const String& message) override;
 
-  Member<InspectedFrames> m_inspectedFrames;
-  HeapHashMap<String, Member<WorkerInspectorProxy>> m_connectedProxies;
-  String m_tracingSessionId;
+  Member<InspectedFrames> inspected_frames_;
+  HeapHashMap<String, Member<WorkerInspectorProxy>> connected_proxies_;
+  String tracing_session_id_;
 };
 
 }  // namespace blink

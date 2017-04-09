@@ -10,17 +10,17 @@ namespace blink {
 
 WindowNameCollection::WindowNameCollection(ContainerNode& document,
                                            const AtomicString& name)
-    : HTMLNameCollection(document, WindowNamedItems, name) {}
+    : HTMLNameCollection(document, kWindowNamedItems, name) {}
 
-bool WindowNameCollection::elementMatches(const Element& element) const {
+bool WindowNameCollection::ElementMatches(const Element& element) const {
   // Match only images, forms, embeds and objects by name,
   // but anything by id
   if (isHTMLImageElement(element) || isHTMLFormElement(element) ||
       isHTMLEmbedElement(element) || isHTMLObjectElement(element)) {
-    if (element.getNameAttribute() == m_name)
+    if (element.GetNameAttribute() == name_)
       return true;
   }
-  return element.getIdAttribute() == m_name;
+  return element.GetIdAttribute() == name_;
 }
 
 }  // namespace blink

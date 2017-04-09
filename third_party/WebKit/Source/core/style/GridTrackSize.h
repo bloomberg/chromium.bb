@@ -37,9 +37,9 @@
 namespace blink {
 
 enum GridTrackSizeType {
-  LengthTrackSizing,
-  MinMaxTrackSizing,
-  FitContentTrackSizing
+  kLengthTrackSizing,
+  kMinMaxTrackSizing,
+  kFitContentTrackSizing
 };
 
 // This class represents a <track-size> from the spec. Althought there are 3
@@ -60,128 +60,137 @@ class GridTrackSize {
 
  public:
   GridTrackSize(const GridLength& length,
-                GridTrackSizeType trackSizeType = LengthTrackSizing)
-      : m_type(trackSizeType),
-        m_minTrackBreadth(trackSizeType == FitContentTrackSizing ? Length(Auto)
-                                                                 : length),
-        m_maxTrackBreadth(trackSizeType == FitContentTrackSizing ? Length(Auto)
-                                                                 : length),
-        m_fitContentTrackBreadth(trackSizeType == FitContentTrackSizing
-                                     ? length
-                                     : GridLength(Length(Fixed))) {
-    DCHECK(trackSizeType == LengthTrackSizing ||
-           trackSizeType == FitContentTrackSizing);
-    DCHECK(trackSizeType != FitContentTrackSizing || length.isLength());
-    cacheMinMaxTrackBreadthTypes();
+                GridTrackSizeType track_size_type = kLengthTrackSizing)
+      : type_(track_size_type),
+        min_track_breadth_(
+            track_size_type == kFitContentTrackSizing ? Length(kAuto) : length),
+        max_track_breadth_(
+            track_size_type == kFitContentTrackSizing ? Length(kAuto) : length),
+        fit_content_track_breadth_(track_size_type == kFitContentTrackSizing
+                                       ? length
+                                       : GridLength(Length(kFixed))) {
+    DCHECK(track_size_type == kLengthTrackSizing ||
+           track_size_type == kFitContentTrackSizing);
+    DCHECK(track_size_type != kFitContentTrackSizing || length.IsLength());
+    CacheMinMaxTrackBreadthTypes();
   }
 
-  GridTrackSize(const GridLength& minTrackBreadth,
-                const GridLength& maxTrackBreadth)
-      : m_type(MinMaxTrackSizing),
-        m_minTrackBreadth(minTrackBreadth),
-        m_maxTrackBreadth(maxTrackBreadth),
-        m_fitContentTrackBreadth(GridLength(Length(Fixed))) {
-    cacheMinMaxTrackBreadthTypes();
+  GridTrackSize(const GridLength& min_track_breadth,
+                const GridLength& max_track_breadth)
+      : type_(kMinMaxTrackSizing),
+        min_track_breadth_(min_track_breadth),
+        max_track_breadth_(max_track_breadth),
+        fit_content_track_breadth_(GridLength(Length(kFixed))) {
+    CacheMinMaxTrackBreadthTypes();
   }
 
-  const GridLength& fitContentTrackBreadth() const {
-    DCHECK(m_type == FitContentTrackSizing);
-    return m_fitContentTrackBreadth;
+  const GridLength& FitContentTrackBreadth() const {
+    DCHECK(type_ == kFitContentTrackSizing);
+    return fit_content_track_breadth_;
   }
 
-  const GridLength& minTrackBreadth() const { return m_minTrackBreadth; }
-  const GridLength& maxTrackBreadth() const { return m_maxTrackBreadth; }
+  const GridLength& MinTrackBreadth() const { return min_track_breadth_; }
+  const GridLength& MaxTrackBreadth() const { return max_track_breadth_; }
 
-  GridTrackSizeType type() const { return m_type; }
+  GridTrackSizeType GetType() const { return type_; }
 
-  bool isContentSized() const {
-    return m_minTrackBreadth.isContentSized() ||
-           m_maxTrackBreadth.isContentSized();
+  bool IsContentSized() const {
+    return min_track_breadth_.IsContentSized() ||
+           max_track_breadth_.IsContentSized();
   }
-  bool isFitContent() const { return m_type == FitContentTrackSizing; }
+  bool IsFitContent() const { return type_ == kFitContentTrackSizing; }
 
   bool operator==(const GridTrackSize& other) const {
-    return m_type == other.m_type &&
-           m_minTrackBreadth == other.m_minTrackBreadth &&
-           m_maxTrackBreadth == other.m_maxTrackBreadth &&
-           m_fitContentTrackBreadth == other.m_fitContentTrackBreadth;
+    return type_ == other.type_ &&
+           min_track_breadth_ == other.min_track_breadth_ &&
+           max_track_breadth_ == other.max_track_breadth_ &&
+           fit_content_track_breadth_ == other.fit_content_track_breadth_;
   }
 
-  void cacheMinMaxTrackBreadthTypes() {
-    m_minTrackBreadthIsAuto =
-        minTrackBreadth().isLength() && minTrackBreadth().length().isAuto();
-    m_minTrackBreadthIsMinContent = minTrackBreadth().isLength() &&
-                                    minTrackBreadth().length().isMinContent();
-    m_minTrackBreadthIsMaxContent = minTrackBreadth().isLength() &&
-                                    minTrackBreadth().length().isMaxContent();
-    m_maxTrackBreadthIsMaxContent = maxTrackBreadth().isLength() &&
-                                    maxTrackBreadth().length().isMaxContent();
-    m_maxTrackBreadthIsMinContent = maxTrackBreadth().isLength() &&
-                                    maxTrackBreadth().length().isMinContent();
-    m_maxTrackBreadthIsAuto =
-        maxTrackBreadth().isLength() && maxTrackBreadth().length().isAuto();
+  void CacheMinMaxTrackBreadthTypes() {
+    min_track_breadth_is_auto_ =
+        MinTrackBreadth().IsLength() && MinTrackBreadth().length().IsAuto();
+    min_track_breadth_is_min_content_ =
+        MinTrackBreadth().IsLength() &&
+        MinTrackBreadth().length().IsMinContent();
+    min_track_breadth_is_max_content_ =
+        MinTrackBreadth().IsLength() &&
+        MinTrackBreadth().length().IsMaxContent();
+    max_track_breadth_is_max_content_ =
+        MaxTrackBreadth().IsLength() &&
+        MaxTrackBreadth().length().IsMaxContent();
+    max_track_breadth_is_min_content_ =
+        MaxTrackBreadth().IsLength() &&
+        MaxTrackBreadth().length().IsMinContent();
+    max_track_breadth_is_auto_ =
+        MaxTrackBreadth().IsLength() && MaxTrackBreadth().length().IsAuto();
 
-    m_minTrackBreadthIsIntrinsic = m_minTrackBreadthIsMaxContent ||
-                                   m_minTrackBreadthIsMinContent ||
-                                   m_minTrackBreadthIsAuto || isFitContent();
-    m_maxTrackBreadthIsIntrinsic = m_maxTrackBreadthIsMaxContent ||
-                                   m_maxTrackBreadthIsMinContent ||
-                                   m_maxTrackBreadthIsAuto || isFitContent();
-  }
-
-  bool hasIntrinsicMinTrackBreadth() const {
-    return m_minTrackBreadthIsIntrinsic;
-  }
-
-  bool hasIntrinsicMaxTrackBreadth() const {
-    return m_maxTrackBreadthIsIntrinsic;
+    min_track_breadth_is_intrinsic_ = min_track_breadth_is_max_content_ ||
+                                      min_track_breadth_is_min_content_ ||
+                                      min_track_breadth_is_auto_ ||
+                                      IsFitContent();
+    max_track_breadth_is_intrinsic_ = max_track_breadth_is_max_content_ ||
+                                      max_track_breadth_is_min_content_ ||
+                                      max_track_breadth_is_auto_ ||
+                                      IsFitContent();
   }
 
-  bool hasMinOrMaxContentMinTrackBreadth() const {
-    return m_minTrackBreadthIsMaxContent || m_minTrackBreadthIsMinContent;
+  bool HasIntrinsicMinTrackBreadth() const {
+    return min_track_breadth_is_intrinsic_;
   }
-  bool hasAutoMaxTrackBreadth() const { return m_maxTrackBreadthIsAuto; }
-  bool hasAutoMinTrackBreadth() const { return m_minTrackBreadthIsAuto; }
-  bool hasMaxContentMinTrackBreadth() const {
-    return m_minTrackBreadthIsMaxContent;
+
+  bool HasIntrinsicMaxTrackBreadth() const {
+    return max_track_breadth_is_intrinsic_;
   }
-  bool hasMinContentMinTrackBreadth() const {
-    return m_minTrackBreadthIsMinContent;
+
+  bool HasMinOrMaxContentMinTrackBreadth() const {
+    return min_track_breadth_is_max_content_ ||
+           min_track_breadth_is_min_content_;
   }
-  bool hasMinOrMaxContentMaxTrackBreadth() const {
-    return m_maxTrackBreadthIsMaxContent || m_maxTrackBreadthIsMinContent;
+  bool HasAutoMaxTrackBreadth() const { return max_track_breadth_is_auto_; }
+  bool HasAutoMinTrackBreadth() const { return min_track_breadth_is_auto_; }
+  bool HasMaxContentMinTrackBreadth() const {
+    return min_track_breadth_is_max_content_;
   }
-  bool hasMaxContentMaxTrackBreadth() const {
-    return m_maxTrackBreadthIsMaxContent;
+  bool HasMinContentMinTrackBreadth() const {
+    return min_track_breadth_is_min_content_;
   }
-  bool hasMaxContentOrAutoMaxTrackBreadth() const {
-    return m_maxTrackBreadthIsMaxContent || m_maxTrackBreadthIsAuto;
+  bool HasMinOrMaxContentMaxTrackBreadth() const {
+    return max_track_breadth_is_max_content_ ||
+           max_track_breadth_is_min_content_;
   }
-  bool hasMinContentMaxTrackBreadth() const {
-    return m_maxTrackBreadthIsMinContent;
+  bool HasMaxContentMaxTrackBreadth() const {
+    return max_track_breadth_is_max_content_;
   }
-  bool hasMaxContentMinTrackBreadthAndMaxContentMaxTrackBreadth() const {
-    return m_minTrackBreadthIsMaxContent && m_maxTrackBreadthIsMaxContent;
+  bool HasMaxContentOrAutoMaxTrackBreadth() const {
+    return max_track_breadth_is_max_content_ || max_track_breadth_is_auto_;
   }
-  bool hasAutoOrMinContentMinTrackBreadthAndIntrinsicMaxTrackBreadth() const {
-    return (m_minTrackBreadthIsMinContent || m_minTrackBreadthIsAuto) &&
-           m_maxTrackBreadthIsIntrinsic;
+  bool HasMinContentMaxTrackBreadth() const {
+    return max_track_breadth_is_min_content_;
+  }
+  bool HasMaxContentMinTrackBreadthAndMaxContentMaxTrackBreadth() const {
+    return min_track_breadth_is_max_content_ &&
+           max_track_breadth_is_max_content_;
+  }
+  bool HasAutoOrMinContentMinTrackBreadthAndIntrinsicMaxTrackBreadth() const {
+    return (min_track_breadth_is_min_content_ || min_track_breadth_is_auto_) &&
+           max_track_breadth_is_intrinsic_;
   }
 
  private:
-  GridTrackSizeType m_type;
-  GridLength m_minTrackBreadth;
-  GridLength m_maxTrackBreadth;
-  GridLength m_fitContentTrackBreadth;
+  GridTrackSizeType type_;
+  GridLength min_track_breadth_;
+  GridLength max_track_breadth_;
+  GridLength fit_content_track_breadth_;
 
-  bool m_minTrackBreadthIsAuto : 1;
-  bool m_maxTrackBreadthIsAuto : 1;
-  bool m_minTrackBreadthIsMaxContent : 1;
-  bool m_minTrackBreadthIsMinContent : 1;
-  bool m_maxTrackBreadthIsMaxContent : 1;
-  bool m_maxTrackBreadthIsMinContent : 1;
-  bool m_minTrackBreadthIsIntrinsic : 1;
-  bool m_maxTrackBreadthIsIntrinsic : 1;
+  bool min_track_breadth_is_auto_ : 1;
+  bool max_track_breadth_is_auto_ : 1;
+  bool min_track_breadth_is_max_content_ : 1;
+  bool min_track_breadth_is_min_content_ : 1;
+  bool max_track_breadth_is_max_content_ : 1;
+  bool max_track_breadth_is_min_content_ : 1;
+  bool min_track_breadth_is_intrinsic_ : 1;
+  bool max_track_breadth_is_intrinsic_ : 1;
 };
 
 }  // namespace blink

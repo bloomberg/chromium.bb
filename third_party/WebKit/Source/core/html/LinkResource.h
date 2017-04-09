@@ -47,24 +47,24 @@ class CORE_EXPORT LinkResource
   WTF_MAKE_NONCOPYABLE(LinkResource);
 
  public:
-  enum LinkResourceType { Style, Import, Manifest, Other };
+  enum LinkResourceType { kStyle, kImport, kManifest, kOther };
 
   explicit LinkResource(HTMLLinkElement*);
   virtual ~LinkResource();
 
-  bool shouldLoadResource() const;
-  LocalFrame* loadingFrame() const;
+  bool ShouldLoadResource() const;
+  LocalFrame* LoadingFrame() const;
 
-  virtual LinkResourceType type() const = 0;
-  virtual void process() = 0;
-  virtual void ownerRemoved() {}
-  virtual void ownerInserted() {}
-  virtual bool hasLoaded() const = 0;
+  virtual LinkResourceType GetType() const = 0;
+  virtual void Process() = 0;
+  virtual void OwnerRemoved() {}
+  virtual void OwnerInserted() {}
+  virtual bool HasLoaded() const = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  Member<HTMLLinkElement> m_owner;
+  Member<HTMLLinkElement> owner_;
 };
 
 class LinkRequestBuilder {
@@ -73,15 +73,15 @@ class LinkRequestBuilder {
  public:
   explicit LinkRequestBuilder(HTMLLinkElement* owner);
 
-  bool isValid() const { return !m_url.isEmpty() && m_url.isValid(); }
-  const KURL& url() const { return m_url; }
-  const AtomicString& charset() const { return m_charset; }
-  FetchRequest build(bool lowPriority) const;
+  bool IsValid() const { return !url_.IsEmpty() && url_.IsValid(); }
+  const KURL& Url() const { return url_; }
+  const AtomicString& Charset() const { return charset_; }
+  FetchRequest Build(bool low_priority) const;
 
  private:
-  Member<HTMLLinkElement> m_owner;
-  KURL m_url;
-  AtomicString m_charset;
+  Member<HTMLLinkElement> owner_;
+  KURL url_;
+  AtomicString charset_;
 };
 
 }  // namespace blink

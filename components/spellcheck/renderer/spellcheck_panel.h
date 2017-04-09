@@ -30,9 +30,9 @@ class SpellCheckPanel
   void OnDestruct() override;
 
   // blink::WebSpellCheckClient implementation.
-  void showSpellingUI(bool show) override;
-  bool isShowingSpellingUI() override;
-  void updateSpellingUIWithMisspelledWord(
+  void ShowSpellingUI(bool show) override;
+  bool IsShowingSpellingUI() override;
+  void UpdateSpellingUIWithMisspelledWord(
       const blink::WebString& word) override;
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)

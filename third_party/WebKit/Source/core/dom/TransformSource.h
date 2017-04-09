@@ -34,10 +34,10 @@ class TransformSource {
   explicit TransformSource(xmlDocPtr source);
   ~TransformSource();
 
-  xmlDocPtr platformSource() const { return m_source; }
+  xmlDocPtr PlatformSource() const { return source_; }
 
  private:
-  xmlDocPtr m_source;
+  xmlDocPtr source_;
 };
 
 }  // namespace blink

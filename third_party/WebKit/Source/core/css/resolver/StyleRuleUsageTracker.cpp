@@ -9,30 +9,31 @@
 
 namespace blink {
 
-StyleRuleUsageTracker::RuleListByStyleSheet StyleRuleUsageTracker::takeDelta() {
+StyleRuleUsageTracker::RuleListByStyleSheet StyleRuleUsageTracker::TakeDelta() {
   RuleListByStyleSheet result;
-  result.swap(m_usedRulesDelta);
+  result.Swap(used_rules_delta_);
   return result;
 }
 
-void StyleRuleUsageTracker::track(const CSSStyleSheet* parentSheet,
+void StyleRuleUsageTracker::Track(const CSSStyleSheet* parent_sheet,
                                   const StyleRule* rule) {
-  if (!parentSheet)
+  if (!parent_sheet)
     return;
-  if (!m_usedRules.insert(std::make_pair(parentSheet, rule)).isNewEntry)
+  if (!used_rules_.insert(std::make_pair(parent_sheet, rule)).is_new_entry)
     return;
-  auto it = m_usedRulesDelta.find(parentSheet);
-  if (it != m_usedRulesDelta.end()) {
+  auto it = used_rules_delta_.Find(parent_sheet);
+  if (it != used_rules_delta_.end()) {
     it->value.push_back(rule);
   } else {
-    m_usedRulesDelta.insert(parentSheet, HeapVector<Member<const StyleRule>>())
-        .storedValue->value.push_back(rule);
+    used_rules_delta_
+        .insert(parent_sheet, HeapVector<Member<const StyleRule>>())
+        .stored_value->value.push_back(rule);
   }
 }
 
 DEFINE_TRACE(StyleRuleUsageTracker) {
-  visitor->trace(m_usedRules);
-  visitor->trace(m_usedRulesDelta);
+  visitor->Trace(used_rules_);
+  visitor->Trace(used_rules_delta_);
 }
 
 }  // namespace blink

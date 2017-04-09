@@ -252,19 +252,19 @@ public class ImeAdapter {
     private static int getModifiers(int metaState) {
         int modifiers = 0;
         if ((metaState & KeyEvent.META_SHIFT_ON) != 0) {
-            modifiers |= WebInputEventModifier.ShiftKey;
+            modifiers |= WebInputEventModifier.kShiftKey;
         }
         if ((metaState & KeyEvent.META_ALT_ON) != 0) {
-            modifiers |= WebInputEventModifier.AltKey;
+            modifiers |= WebInputEventModifier.kAltKey;
         }
         if ((metaState & KeyEvent.META_CTRL_ON) != 0) {
-            modifiers |= WebInputEventModifier.ControlKey;
+            modifiers |= WebInputEventModifier.kControlKey;
         }
         if ((metaState & KeyEvent.META_CAPS_LOCK_ON) != 0) {
-            modifiers |= WebInputEventModifier.CapsLockOn;
+            modifiers |= WebInputEventModifier.kCapsLockOn;
         }
         if ((metaState & KeyEvent.META_NUM_LOCK_ON) != 0) {
-            modifiers |= WebInputEventModifier.NumLockOn;
+            modifiers |= WebInputEventModifier.kNumLockOn;
         }
         return modifiers;
     }
@@ -563,7 +563,7 @@ public class ImeAdapter {
 
         mViewEmbedder.onImeEvent();
         long timestampMs = SystemClock.uptimeMillis();
-        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.RawKeyDown, 0,
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.kRawKeyDown, 0,
                 timestampMs, COMPOSITION_KEY_CODE, 0, false, unicodeFromKeyEvent);
 
         if (isCommit) {
@@ -573,7 +573,7 @@ public class ImeAdapter {
                     mNativeImeAdapterAndroid, text, text.toString(), newCursorPosition);
         }
 
-        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.KeyUp, 0, timestampMs,
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.kKeyUp, 0, timestampMs,
                 COMPOSITION_KEY_CODE, 0, false, unicodeFromKeyEvent);
         return true;
     }
@@ -591,9 +591,9 @@ public class ImeAdapter {
         int action = event.getAction();
         int type;
         if (action == KeyEvent.ACTION_DOWN) {
-            type = WebInputEventType.KeyDown;
+            type = WebInputEventType.kKeyDown;
         } else if (action == KeyEvent.ACTION_UP) {
-            type = WebInputEventType.KeyUp;
+            type = WebInputEventType.kKeyUp;
         } else {
             // In theory, KeyEvent.ACTION_MULTIPLE is a valid value, but in practice
             // this seems to have been quietly deprecated and we've never observed
@@ -619,10 +619,10 @@ public class ImeAdapter {
     boolean deleteSurroundingText(int beforeLength, int afterLength) {
         mViewEmbedder.onImeEvent();
         if (!isValid()) return false;
-        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.RawKeyDown, 0,
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.kRawKeyDown, 0,
                 SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
         nativeDeleteSurroundingText(mNativeImeAdapterAndroid, beforeLength, afterLength);
-        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.KeyUp, 0,
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.kKeyUp, 0,
                 SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
         return true;
     }
@@ -638,11 +638,11 @@ public class ImeAdapter {
     boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
         mViewEmbedder.onImeEvent();
         if (!isValid()) return false;
-        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.RawKeyDown, 0,
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.kRawKeyDown, 0,
                 SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
         nativeDeleteSurroundingTextInCodePoints(
                 mNativeImeAdapterAndroid, beforeLength, afterLength);
-        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.KeyUp, 0,
+        nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.kKeyUp, 0,
                 SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
         return true;
     }

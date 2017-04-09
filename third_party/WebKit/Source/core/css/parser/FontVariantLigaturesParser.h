@@ -17,60 +17,60 @@ class FontVariantLigaturesParser {
 
  public:
   FontVariantLigaturesParser()
-      : m_sawCommonLigaturesValue(false),
-        m_sawDiscretionaryLigaturesValue(false),
-        m_sawHistoricalLigaturesValue(false),
-        m_sawContextualLigaturesValue(false),
-        m_result(CSSValueList::createSpaceSeparated()) {}
+      : saw_common_ligatures_value_(false),
+        saw_discretionary_ligatures_value_(false),
+        saw_historical_ligatures_value_(false),
+        saw_contextual_ligatures_value_(false),
+        result_(CSSValueList::CreateSpaceSeparated()) {}
 
-  enum class ParseResult { ConsumedValue, DisallowedValue, UnknownValue };
+  enum class ParseResult { kConsumedValue, kDisallowedValue, kUnknownValue };
 
-  ParseResult consumeLigature(CSSParserTokenRange& range) {
-    CSSValueID valueID = range.peek().id();
-    switch (valueID) {
+  ParseResult ConsumeLigature(CSSParserTokenRange& range) {
+    CSSValueID value_id = range.Peek().Id();
+    switch (value_id) {
       case CSSValueNoCommonLigatures:
       case CSSValueCommonLigatures:
-        if (m_sawCommonLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawCommonLigaturesValue = true;
+        if (saw_common_ligatures_value_)
+          return ParseResult::kDisallowedValue;
+        saw_common_ligatures_value_ = true;
         break;
       case CSSValueNoDiscretionaryLigatures:
       case CSSValueDiscretionaryLigatures:
-        if (m_sawDiscretionaryLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawDiscretionaryLigaturesValue = true;
+        if (saw_discretionary_ligatures_value_)
+          return ParseResult::kDisallowedValue;
+        saw_discretionary_ligatures_value_ = true;
         break;
       case CSSValueNoHistoricalLigatures:
       case CSSValueHistoricalLigatures:
-        if (m_sawHistoricalLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawHistoricalLigaturesValue = true;
+        if (saw_historical_ligatures_value_)
+          return ParseResult::kDisallowedValue;
+        saw_historical_ligatures_value_ = true;
         break;
       case CSSValueNoContextual:
       case CSSValueContextual:
-        if (m_sawContextualLigaturesValue)
-          return ParseResult::DisallowedValue;
-        m_sawContextualLigaturesValue = true;
+        if (saw_contextual_ligatures_value_)
+          return ParseResult::kDisallowedValue;
+        saw_contextual_ligatures_value_ = true;
         break;
       default:
-        return ParseResult::UnknownValue;
+        return ParseResult::kUnknownValue;
     }
-    m_result->append(*CSSPropertyParserHelpers::consumeIdent(range));
-    return ParseResult::ConsumedValue;
+    result_->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+    return ParseResult::kConsumedValue;
   }
 
-  CSSValue* finalizeValue() {
-    if (!m_result->length())
-      return CSSIdentifierValue::create(CSSValueNormal);
-    return m_result.release();
+  CSSValue* FinalizeValue() {
+    if (!result_->length())
+      return CSSIdentifierValue::Create(CSSValueNormal);
+    return result_.Release();
   }
 
  private:
-  bool m_sawCommonLigaturesValue;
-  bool m_sawDiscretionaryLigaturesValue;
-  bool m_sawHistoricalLigaturesValue;
-  bool m_sawContextualLigaturesValue;
-  Member<CSSValueList> m_result;
+  bool saw_common_ligatures_value_;
+  bool saw_discretionary_ligatures_value_;
+  bool saw_historical_ligatures_value_;
+  bool saw_contextual_ligatures_value_;
+  Member<CSSValueList> result_;
 };
 
 }  // namespace blink

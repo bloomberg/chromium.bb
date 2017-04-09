@@ -33,9 +33,9 @@ void DocumentCustomBindings::RegisterElement(
   v8::Local<v8::Object> options = v8::Local<v8::Object>::Cast(args[1]);
 
   blink::WebExceptionCode ec = 0;
-  blink::WebDocument document = context()->web_frame()->document();
-  v8::Local<v8::Value> constructor = document.registerEmbedderCustomElement(
-      blink::WebString::fromUTF8(element_name), options, ec);
+  blink::WebDocument document = context()->web_frame()->GetDocument();
+  v8::Local<v8::Value> constructor = document.RegisterEmbedderCustomElement(
+      blink::WebString::FromUTF8(element_name), options, ec);
   args.GetReturnValue().Set(constructor);
 }
 

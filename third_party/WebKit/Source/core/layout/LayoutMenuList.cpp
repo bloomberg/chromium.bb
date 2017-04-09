@@ -40,13 +40,13 @@ namespace blink {
 
 LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element),
-      m_buttonText(nullptr),
-      m_innerBlock(nullptr),
-      m_isEmpty(false),
-      m_hasUpdatedActiveOption(false),
-      m_innerBlockHeight(LayoutUnit()),
-      m_optionsWidth(0),
-      m_lastActiveIndex(-1) {
+      button_text_(nullptr),
+      inner_block_(nullptr),
+      is_empty_(false),
+      has_updated_active_option_(false),
+      inner_block_height_(LayoutUnit()),
+      options_width_(0),
+      last_active_index_(-1) {
   DCHECK(isHTMLSelectElement(element));
 }
 
@@ -54,176 +54,177 @@ LayoutMenuList::~LayoutMenuList() {}
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no
 // insertion point to prevent children from rendering.
-bool LayoutMenuList::isChildAllowed(LayoutObject* object,
+bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
                                     const ComputedStyle&) const {
-  return object->isAnonymous() && !object->isLayoutFullScreen();
+  return object->IsAnonymous() && !object->IsLayoutFullScreen();
 }
 
-void LayoutMenuList::createInnerBlock() {
-  if (m_innerBlock) {
-    DCHECK_EQ(firstChild(), m_innerBlock);
-    DCHECK(!m_innerBlock->nextSibling());
+void LayoutMenuList::CreateInnerBlock() {
+  if (inner_block_) {
+    DCHECK_EQ(FirstChild(), inner_block_);
+    DCHECK(!inner_block_->NextSibling());
     return;
   }
 
   // Create an anonymous block.
-  DCHECK(!firstChild());
-  m_innerBlock = createAnonymousBlock();
+  DCHECK(!FirstChild());
+  inner_block_ = CreateAnonymousBlock();
 
-  m_buttonText = LayoutText::createEmptyAnonymous(document());
+  button_text_ = LayoutText::CreateEmptyAnonymous(GetDocument());
   // We need to set the text explicitly though it was specified in the
   // constructor because LayoutText doesn't refer to the text
   // specified in the constructor in a case of re-transforming.
-  m_buttonText->setStyle(mutableStyle());
-  m_innerBlock->addChild(m_buttonText);
+  button_text_->SetStyle(MutableStyle());
+  inner_block_->AddChild(button_text_);
 
-  adjustInnerStyle();
-  LayoutFlexibleBox::addChild(m_innerBlock);
+  AdjustInnerStyle();
+  LayoutFlexibleBox::AddChild(inner_block_);
 }
 
-void LayoutMenuList::adjustInnerStyle() {
-  ComputedStyle& innerStyle = m_innerBlock->mutableStyleRef();
-  innerStyle.setFlexGrow(1);
-  innerStyle.setFlexShrink(1);
+void LayoutMenuList::AdjustInnerStyle() {
+  ComputedStyle& inner_style = inner_block_->MutableStyleRef();
+  inner_style.SetFlexGrow(1);
+  inner_style.SetFlexShrink(1);
   // min-width: 0; is needed for correct shrinking.
-  innerStyle.setMinWidth(Length(0, Fixed));
+  inner_style.SetMinWidth(Length(0, kFixed));
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
   // But we only do that for the cases where html.css would otherwise use
   // center.
-  if (style()->alignItemsPosition() == ItemPositionCenter) {
-    innerStyle.setMarginTop(Length());
-    innerStyle.setMarginBottom(Length());
-    innerStyle.setAlignSelfPosition(ItemPositionFlexStart);
+  if (Style()->AlignItemsPosition() == kItemPositionCenter) {
+    inner_style.SetMarginTop(Length());
+    inner_style.SetMarginBottom(Length());
+    inner_style.SetAlignSelfPosition(kItemPositionFlexStart);
   }
 
-  Length paddingStart =
-      Length(LayoutTheme::theme().popupInternalPaddingStart(styleRef()), Fixed);
-  Length paddingEnd = Length(LayoutTheme::theme().popupInternalPaddingEnd(
-                                 frameView()->getHostWindow(), styleRef()),
-                             Fixed);
-  innerStyle.setPaddingLeft(styleRef().direction() == TextDirection::kLtr
-                                ? paddingStart
-                                : paddingEnd);
-  innerStyle.setPaddingRight(styleRef().direction() == TextDirection::kLtr
-                                 ? paddingEnd
-                                 : paddingStart);
-  innerStyle.setPaddingTop(
-      Length(LayoutTheme::theme().popupInternalPaddingTop(styleRef()), Fixed));
-  innerStyle.setPaddingBottom(Length(
-      LayoutTheme::theme().popupInternalPaddingBottom(styleRef()), Fixed));
+  Length padding_start = Length(
+      LayoutTheme::GetTheme().PopupInternalPaddingStart(StyleRef()), kFixed);
+  Length padding_end = Length(LayoutTheme::GetTheme().PopupInternalPaddingEnd(
+                                  GetFrameView()->GetHostWindow(), StyleRef()),
+                              kFixed);
+  inner_style.SetPaddingLeft(StyleRef().Direction() == TextDirection::kLtr
+                                 ? padding_start
+                                 : padding_end);
+  inner_style.SetPaddingRight(StyleRef().Direction() == TextDirection::kLtr
+                                  ? padding_end
+                                  : padding_start);
+  inner_style.SetPaddingTop(Length(
+      LayoutTheme::GetTheme().PopupInternalPaddingTop(StyleRef()), kFixed));
+  inner_style.SetPaddingBottom(Length(
+      LayoutTheme::GetTheme().PopupInternalPaddingBottom(StyleRef()), kFixed));
 
-  if (m_optionStyle) {
-    if ((m_optionStyle->direction() != innerStyle.direction() ||
-         m_optionStyle->getUnicodeBidi() != innerStyle.getUnicodeBidi()))
-      m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::StyleChange);
-    innerStyle.setTextAlign(style()->isLeftToRightDirection()
-                                ? ETextAlign::kLeft
-                                : ETextAlign::kRight);
-    innerStyle.setDirection(m_optionStyle->direction());
-    innerStyle.setUnicodeBidi(m_optionStyle->getUnicodeBidi());
+  if (option_style_) {
+    if ((option_style_->Direction() != inner_style.Direction() ||
+         option_style_->GetUnicodeBidi() != inner_style.GetUnicodeBidi()))
+      inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          LayoutInvalidationReason::kStyleChange);
+    inner_style.SetTextAlign(Style()->IsLeftToRightDirection()
+                                 ? ETextAlign::kLeft
+                                 : ETextAlign::kRight);
+    inner_style.SetDirection(option_style_->Direction());
+    inner_style.SetUnicodeBidi(option_style_->GetUnicodeBidi());
   }
 }
 
-HTMLSelectElement* LayoutMenuList::selectElement() const {
-  return toHTMLSelectElement(node());
+HTMLSelectElement* LayoutMenuList::SelectElement() const {
+  return toHTMLSelectElement(GetNode());
 }
 
-void LayoutMenuList::addChild(LayoutObject* newChild,
-                              LayoutObject* beforeChild) {
-  m_innerBlock->addChild(newChild, beforeChild);
-  DCHECK_EQ(m_innerBlock, firstChild());
+void LayoutMenuList::AddChild(LayoutObject* new_child,
+                              LayoutObject* before_child) {
+  inner_block_->AddChild(new_child, before_child);
+  DCHECK_EQ(inner_block_, FirstChild());
 
-  if (AXObjectCache* cache = document().existingAXObjectCache())
-    cache->childrenChanged(this);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(this);
 }
 
-void LayoutMenuList::removeChild(LayoutObject* oldChild) {
-  if (oldChild == m_innerBlock || !m_innerBlock) {
-    LayoutFlexibleBox::removeChild(oldChild);
-    m_innerBlock = nullptr;
+void LayoutMenuList::RemoveChild(LayoutObject* old_child) {
+  if (old_child == inner_block_ || !inner_block_) {
+    LayoutFlexibleBox::RemoveChild(old_child);
+    inner_block_ = nullptr;
   } else {
-    m_innerBlock->removeChild(oldChild);
+    inner_block_->RemoveChild(old_child);
   }
 }
 
-void LayoutMenuList::styleDidChange(StyleDifference diff,
-                                    const ComputedStyle* oldStyle) {
-  LayoutBlock::styleDidChange(diff, oldStyle);
+void LayoutMenuList::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  LayoutBlock::StyleDidChange(diff, old_style);
 
-  if (!m_innerBlock)
-    createInnerBlock();
+  if (!inner_block_)
+    CreateInnerBlock();
 
-  m_buttonText->setStyle(mutableStyle());
-  adjustInnerStyle();
-  updateInnerBlockHeight();
+  button_text_->SetStyle(MutableStyle());
+  AdjustInnerStyle();
+  UpdateInnerBlockHeight();
 }
 
-void LayoutMenuList::updateInnerBlockHeight() {
-  const SimpleFontData* fontData = style()->font().primaryFont();
-  DCHECK(fontData);
-  m_innerBlockHeight = (fontData ? fontData->getFontMetrics().height() : 0) +
-                       m_innerBlock->borderAndPaddingHeight();
+void LayoutMenuList::UpdateInnerBlockHeight() {
+  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  DCHECK(font_data);
+  inner_block_height_ = (font_data ? font_data->GetFontMetrics().Height() : 0) +
+                        inner_block_->BorderAndPaddingHeight();
 }
 
-void LayoutMenuList::updateOptionsWidth() const {
-  float maxOptionWidth = 0;
+void LayoutMenuList::UpdateOptionsWidth() const {
+  float max_option_width = 0;
 
-  for (const auto& option : selectElement()->optionList()) {
-    String text = option->textIndentedToRespectGroupLabel();
-    const ComputedStyle* itemStyle =
-        option->computedStyle() ? option->computedStyle() : style();
-    applyTextTransform(itemStyle, text, ' ');
+  for (const auto& option : SelectElement()->GetOptionList()) {
+    String text = option->TextIndentedToRespectGroupLabel();
+    const ComputedStyle* item_style =
+        option->GetComputedStyle() ? option->GetComputedStyle() : Style();
+    ApplyTextTransform(item_style, text, ' ');
     // We apply SELECT's style, not OPTION's style because m_optionsWidth is
     // used to determine intrinsic width of the menulist box.
-    TextRun textRun = constructTextRun(style()->font(), text, *style());
-    maxOptionWidth = std::max(maxOptionWidth, style()->font().width(textRun));
+    TextRun text_run = ConstructTextRun(Style()->GetFont(), text, *Style());
+    max_option_width =
+        std::max(max_option_width, Style()->GetFont().Width(text_run));
   }
-  m_optionsWidth = static_cast<int>(ceilf(maxOptionWidth));
+  options_width_ = static_cast<int>(ceilf(max_option_width));
 }
 
-void LayoutMenuList::updateFromElement() {
-  HTMLSelectElement* select = selectElement();
-  HTMLOptionElement* option = select->optionToBeShown();
-  String text = emptyString;
-  m_optionStyle.clear();
+void LayoutMenuList::UpdateFromElement() {
+  HTMLSelectElement* select = SelectElement();
+  HTMLOptionElement* option = select->OptionToBeShown();
+  String text = g_empty_string;
+  option_style_.Clear();
 
-  if (select->isMultiple()) {
-    unsigned selectedCount = 0;
-    HTMLOptionElement* selectedOptionElement = nullptr;
-    for (const auto& option : select->optionList()) {
-      if (option->selected()) {
-        if (++selectedCount == 1)
-          selectedOptionElement = option;
+  if (select->IsMultiple()) {
+    unsigned selected_count = 0;
+    HTMLOptionElement* selected_option_element = nullptr;
+    for (const auto& option : select->GetOptionList()) {
+      if (option->Selected()) {
+        if (++selected_count == 1)
+          selected_option_element = option;
       }
     }
 
-    if (selectedCount == 1) {
-      text = selectedOptionElement->textIndentedToRespectGroupLabel();
-      m_optionStyle = selectedOptionElement->mutableComputedStyle();
+    if (selected_count == 1) {
+      text = selected_option_element->TextIndentedToRespectGroupLabel();
+      option_style_ = selected_option_element->MutableComputedStyle();
     } else {
-      Locale& locale = select->locale();
-      String localizedNumberString =
-          locale.convertToLocalizedNumber(String::number(selectedCount));
-      text = locale.queryString(WebLocalizedString::SelectMenuListText,
-                                localizedNumberString);
-      DCHECK(!m_optionStyle);
+      Locale& locale = select->GetLocale();
+      String localized_number_string =
+          locale.ConvertToLocalizedNumber(String::Number(selected_count));
+      text = locale.QueryString(WebLocalizedString::kSelectMenuListText,
+                                localized_number_string);
+      DCHECK(!option_style_);
     }
   } else {
     if (option) {
-      text = option->textIndentedToRespectGroupLabel();
-      m_optionStyle = option->mutableComputedStyle();
+      text = option->TextIndentedToRespectGroupLabel();
+      option_style_ = option->MutableComputedStyle();
     }
   }
 
-  setText(text.stripWhiteSpace());
+  SetText(text.StripWhiteSpace());
 
-  didUpdateActiveOption(option);
+  DidUpdateActiveOption(option);
 }
 
-void LayoutMenuList::setText(const String& s) {
-  if (s.isEmpty()) {
+void LayoutMenuList::SetText(const String& s) {
+  if (s.IsEmpty()) {
     // FIXME: This is a hack. We need the select to have the same baseline
     // positioning as any surrounding text. Wihtout any content, we align the
     // bottom of the select to the bottom of the text. With content (In this
@@ -231,93 +232,93 @@ void LayoutMenuList::setText(const String& s) {
     // middle of the text. It should be possible to remove this, just set
     // s.impl() into the text and have things align correctly...
     // crbug.com/485982
-    m_isEmpty = true;
-    m_buttonText->setText(StringImpl::create(" ", 1), true);
+    is_empty_ = true;
+    button_text_->SetText(StringImpl::Create(" ", 1), true);
   } else {
-    m_isEmpty = false;
-    m_buttonText->setText(s.impl(), true);
+    is_empty_ = false;
+    button_text_->SetText(s.Impl(), true);
   }
-  adjustInnerStyle();
+  AdjustInnerStyle();
 }
 
-String LayoutMenuList::text() const {
-  return m_buttonText && !m_isEmpty ? m_buttonText->text() : String();
+String LayoutMenuList::GetText() const {
+  return button_text_ && !is_empty_ ? button_text_->GetText() : String();
 }
 
-LayoutRect LayoutMenuList::controlClipRect(
-    const LayoutPoint& additionalOffset) const {
+LayoutRect LayoutMenuList::ControlClipRect(
+    const LayoutPoint& additional_offset) const {
   // Clip to the intersection of the content box and the content box for the
   // inner box. This will leave room for the arrows which sit in the inner box
   // padding, and if the inner box ever spills out of the outer box, that will
   // get clipped too.
-  LayoutRect outerBox = contentBoxRect();
-  outerBox.moveBy(additionalOffset);
+  LayoutRect outer_box = ContentBoxRect();
+  outer_box.MoveBy(additional_offset);
 
-  LayoutRect innerBox(
-      additionalOffset + m_innerBlock->location() +
-          LayoutSize(m_innerBlock->paddingLeft(), m_innerBlock->paddingTop()),
-      m_innerBlock->contentSize());
+  LayoutRect inner_box(
+      additional_offset + inner_block_->Location() +
+          LayoutSize(inner_block_->PaddingLeft(), inner_block_->PaddingTop()),
+      inner_block_->ContentSize());
 
-  return intersection(outerBox, innerBox);
+  return Intersection(outer_box, inner_box);
 }
 
-void LayoutMenuList::computeIntrinsicLogicalWidths(
-    LayoutUnit& minLogicalWidth,
-    LayoutUnit& maxLogicalWidth) const {
-  updateOptionsWidth();
+void LayoutMenuList::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  UpdateOptionsWidth();
 
-  maxLogicalWidth =
-      std::max(m_optionsWidth,
-               LayoutTheme::theme().minimumMenuListSize(styleRef())) +
-      m_innerBlock->paddingLeft() + m_innerBlock->paddingRight();
-  if (!style()->width().isPercentOrCalc())
-    minLogicalWidth = maxLogicalWidth;
+  max_logical_width =
+      std::max(options_width_,
+               LayoutTheme::GetTheme().MinimumMenuListSize(StyleRef())) +
+      inner_block_->PaddingLeft() + inner_block_->PaddingRight();
+  if (!Style()->Width().IsPercentOrCalc())
+    min_logical_width = max_logical_width;
   else
-    minLogicalWidth = LayoutUnit();
+    min_logical_width = LayoutUnit();
 }
 
-void LayoutMenuList::computeLogicalHeight(
-    LayoutUnit logicalHeight,
-    LayoutUnit logicalTop,
-    LogicalExtentComputedValues& computedValues) const {
-  if (style()->hasAppearance())
-    logicalHeight = m_innerBlockHeight + borderAndPaddingHeight();
-  LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
+void LayoutMenuList::ComputeLogicalHeight(
+    LayoutUnit logical_height,
+    LayoutUnit logical_top,
+    LogicalExtentComputedValues& computed_values) const {
+  if (Style()->HasAppearance())
+    logical_height = inner_block_height_ + BorderAndPaddingHeight();
+  LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
-void LayoutMenuList::didSelectOption(HTMLOptionElement* option) {
-  didUpdateActiveOption(option);
+void LayoutMenuList::DidSelectOption(HTMLOptionElement* option) {
+  DidUpdateActiveOption(option);
 }
 
-void LayoutMenuList::didUpdateActiveOption(HTMLOptionElement* option) {
-  if (!document().existingAXObjectCache())
+void LayoutMenuList::DidUpdateActiveOption(HTMLOptionElement* option) {
+  if (!GetDocument().ExistingAXObjectCache())
     return;
 
-  int optionIndex = option ? option->index() : -1;
-  if (m_lastActiveIndex == optionIndex)
+  int option_index = option ? option->index() : -1;
+  if (last_active_index_ == option_index)
     return;
-  m_lastActiveIndex = optionIndex;
+  last_active_index_ = option_index;
 
-  if (optionIndex < 0)
+  if (option_index < 0)
     return;
 
   // We skip sending accessiblity notifications for the very first option,
   // otherwise we get extra focus and select events that are undesired.
-  if (!m_hasUpdatedActiveOption) {
-    m_hasUpdatedActiveOption = true;
+  if (!has_updated_active_option_) {
+    has_updated_active_option_ = true;
     return;
   }
 
-  document().existingAXObjectCache()->handleUpdateActiveMenuOption(this,
-                                                                   optionIndex);
+  GetDocument().ExistingAXObjectCache()->HandleUpdateActiveMenuOption(
+      this, option_index);
 }
 
-LayoutUnit LayoutMenuList::clientPaddingLeft() const {
-  return paddingLeft() + m_innerBlock->paddingLeft();
+LayoutUnit LayoutMenuList::ClientPaddingLeft() const {
+  return PaddingLeft() + inner_block_->PaddingLeft();
 }
 
-LayoutUnit LayoutMenuList::clientPaddingRight() const {
-  return paddingRight() + m_innerBlock->paddingRight();
+LayoutUnit LayoutMenuList::ClientPaddingRight() const {
+  return PaddingRight() + inner_block_->PaddingRight();
 }
 
 }  // namespace blink

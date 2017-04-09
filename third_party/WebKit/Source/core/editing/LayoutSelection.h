@@ -33,26 +33,26 @@ class LayoutView;
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
-  static LayoutSelection* create(FrameSelection& frameSelection) {
-    return new LayoutSelection(frameSelection);
+  static LayoutSelection* Create(FrameSelection& frame_selection) {
+    return new LayoutSelection(frame_selection);
   }
 
-  bool hasPendingSelection() const { return m_hasPendingSelection; }
-  void setHasPendingSelection() { m_hasPendingSelection = true; }
-  void commit(LayoutView&);
+  bool HasPendingSelection() const { return has_pending_selection_; }
+  void SetHasPendingSelection() { has_pending_selection_ = true; }
+  void Commit(LayoutView&);
 
   DECLARE_TRACE();
 
  private:
   LayoutSelection(FrameSelection&);
 
-  const VisibleSelection& visibleSelection() const;
+  const VisibleSelection& GetVisibleSelection() const;
 
-  SelectionInFlatTree calcVisibleSelection(
+  SelectionInFlatTree CalcVisibleSelection(
       const VisibleSelectionInFlatTree&) const;
 
-  Member<FrameSelection> m_frameSelection;
-  bool m_hasPendingSelection : 1;
+  Member<FrameSelection> frame_selection_;
+  bool has_pending_selection_ : 1;
 };
 
 }  // namespace blink

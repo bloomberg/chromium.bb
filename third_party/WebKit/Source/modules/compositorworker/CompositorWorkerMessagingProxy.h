@@ -21,7 +21,7 @@ class CompositorWorkerMessagingProxy final
  protected:
   ~CompositorWorkerMessagingProxy() override;
 
-  std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
+  std::unique_ptr<WorkerThread> CreateWorkerThread(double origin_time) override;
 };
 
 }  // namespace blink

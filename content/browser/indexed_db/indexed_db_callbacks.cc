@@ -147,7 +147,7 @@ IndexedDBCallbacks::IndexedDBCallbacks(
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info)
     : dispatcher_host_(std::move(dispatcher_host)),
       origin_(origin),
-      data_loss_(blink::WebIDBDataLossNone),
+      data_loss_(blink::kWebIDBDataLossNone),
       sent_blocked_(false),
       io_helper_(
           new IOThreadHelper(std::move(callbacks_info), dispatcher_host_)) {
@@ -284,7 +284,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   auto cursor_impl = base::MakeUnique<CursorImpl>(std::move(cursor), origin_,
                                                   dispatcher_host_);
@@ -312,7 +312,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
   DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   ::indexed_db::mojom::ValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
@@ -339,7 +339,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   DCHECK_EQ(keys.size(), primary_keys.size());
   DCHECK_EQ(keys.size(), values->size());
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   std::vector<::indexed_db::mojom::ValuePtr> mojo_values;
   mojo_values.reserve(values->size());
@@ -358,7 +358,7 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(dispatcher_host_);
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   ::indexed_db::mojom::ReturnValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
@@ -381,7 +381,7 @@ void IndexedDBCallbacks::OnSuccessArray(
   DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   std::vector<::indexed_db::mojom::ReturnValuePtr> mojo_values;
   mojo_values.reserve(values->size());
@@ -400,7 +400,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
   DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -425,7 +425,7 @@ void IndexedDBCallbacks::OnSuccess() {
   DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&IOThreadHelper::SendSuccess,

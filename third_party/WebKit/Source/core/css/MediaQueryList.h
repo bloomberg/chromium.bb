@@ -50,7 +50,7 @@ class CORE_EXPORT MediaQueryList final
   WTF_MAKE_NONCOPYABLE(MediaQueryList);
 
  public:
-  static MediaQueryList* create(ExecutionContext*,
+  static MediaQueryList* Create(ExecutionContext*,
                                 MediaQueryMatcher*,
                                 MediaQuerySet*);
   ~MediaQueryList() override;
@@ -67,35 +67,35 @@ class CORE_EXPORT MediaQueryList final
 
   // C++ code can use these functions to listen to changes instead of having to
   // use DOM event listeners.
-  void addListener(MediaQueryListListener*);
-  void removeListener(MediaQueryListListener*);
+  void AddListener(MediaQueryListListener*);
+  void RemoveListener(MediaQueryListListener*);
 
   // Will return true if a DOM event should be scheduled.
-  bool mediaFeaturesChanged(
-      HeapVector<Member<MediaQueryListListener>>* listenersToNotify);
+  bool MediaFeaturesChanged(
+      HeapVector<Member<MediaQueryListListener>>* listeners_to_notify);
 
   DECLARE_VIRTUAL_TRACE();
 
   // From ScriptWrappable
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // From ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
  private:
   MediaQueryList(ExecutionContext*, MediaQueryMatcher*, MediaQuerySet*);
 
-  bool updateMatches();
+  bool UpdateMatches();
 
-  Member<MediaQueryMatcher> m_matcher;
-  Member<MediaQuerySet> m_media;
+  Member<MediaQueryMatcher> matcher_;
+  Member<MediaQuerySet> media_;
   using ListenerList = HeapListHashSet<Member<MediaQueryListListener>>;
-  ListenerList m_listeners;
-  bool m_matchesDirty;
-  bool m_matches;
+  ListenerList listeners_;
+  bool matches_dirty_;
+  bool matches_;
 };
 
 }  // namespace blink

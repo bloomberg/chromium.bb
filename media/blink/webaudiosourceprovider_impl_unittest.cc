@@ -103,9 +103,9 @@ class WebAudioSourceProviderImplTest
 
     if (client) {
       EXPECT_CALL(*expected_sink_, Stop());
-      EXPECT_CALL(*this, setFormat(params_.channels(), params_.sample_rate()));
+      EXPECT_CALL(*this, SetFormat(params_.channels(), params_.sample_rate()));
     }
-    wasp_impl_->setClient(client);
+    wasp_impl_->SetClient(client);
     base::RunLoop().RunUntilIdle();
 
     testing::Mock::VerifyAndClear(mock_sink_.get());
@@ -126,7 +126,7 @@ class WebAudioSourceProviderImplTest
   }
 
   // blink::WebAudioSourceProviderClient implementation.
-  MOCK_METHOD2(setFormat, void(size_t numberOfChannels, float sampleRate));
+  MOCK_METHOD2(SetFormat, void(size_t numberOfChannels, float sampleRate));
 
   // CopyAudioCB. Added forwarder method due to GMock troubles with scoped_ptr.
   MOCK_METHOD3(DoCopyAudioCB,
@@ -159,7 +159,7 @@ class WebAudioSourceProviderImplTest
 
 TEST_P(WebAudioSourceProviderImplTest, SetClientBeforeInitialize) {
   // setClient() with a NULL client should do nothing if no client is set.
-  wasp_impl_->setClient(NULL);
+  wasp_impl_->SetClient(NULL);
 
   // If |mock_sink_| is not null, it should be stopped during setClient(this).
   // If it is unhealthy, it should also be stopped during fallback in
@@ -168,25 +168,25 @@ TEST_P(WebAudioSourceProviderImplTest, SetClientBeforeInitialize) {
     EXPECT_CALL(*mock_sink_.get(), Stop())
         .Times(2 + static_cast<int>(GetParam()));
 
-  wasp_impl_->setClient(this);
+  wasp_impl_->SetClient(this);
   base::RunLoop().RunUntilIdle();
 
   if (mock_sink_)
     EXPECT_CALL(*mock_sink_.get(), SetVolume(1)).Times(1);
-  wasp_impl_->setClient(NULL);
+  wasp_impl_->SetClient(NULL);
   base::RunLoop().RunUntilIdle();
 
-  wasp_impl_->setClient(this);
+  wasp_impl_->SetClient(this);
   base::RunLoop().RunUntilIdle();
 
   // When Initialize() is called after setClient(), the params should propagate
   // to the client via setFormat() during the call.
-  EXPECT_CALL(*this, setFormat(params_.channels(), params_.sample_rate()));
+  EXPECT_CALL(*this, SetFormat(params_.channels(), params_.sample_rate()));
   wasp_impl_->Initialize(params_, &fake_callback_);
   base::RunLoop().RunUntilIdle();
 
   // setClient() with the same client should do nothing.
-  wasp_impl_->setClient(this);
+  wasp_impl_->SetClient(this);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -248,7 +248,7 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
   // Verify provideInput() works before Initialize() and returns silence.
   bus1->channel(0)[0] = 1;
   bus2->Zero();
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
   wasp_impl_->Initialize(params_, &fake_callback_);
@@ -258,7 +258,7 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
   // callback have occurred.
   bus1->channel(0)[0] = 1;
   bus2->Zero();
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
   ASSERT_EQ(fake_callback_.last_delay(), base::TimeDelta::Max());
 
@@ -266,14 +266,14 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
 
   // Ditto for Play().
   bus1->channel(0)[0] = 1;
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
   ASSERT_EQ(fake_callback_.last_delay(), base::TimeDelta::Max());
 
   wasp_impl_->Play();
 
   // Now we should get real audio data.
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_FALSE(CompareBusses(bus1.get(), bus2.get()));
 
   // Ensure volume adjustment is working.
@@ -284,14 +284,14 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
 
   fake_callback_.reset();
   wasp_impl_->SetVolume(kTestVolume);
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
   // Pause should return to silence.
   wasp_impl_->Pause();
   bus1->channel(0)[0] = 1;
   bus2->Zero();
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
   // Ensure if a renderer properly fill silence for partial Render() calls by
@@ -310,14 +310,14 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
   wasp_impl_->Play();
 
   // Play should return real audio data again, but the last half should be zero.
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 
   // Stop() should return silence.
   wasp_impl_->Stop();
   bus1->channel(0)[0] = 1;
   bus2->Zero();
-  wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
 }
 

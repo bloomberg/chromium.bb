@@ -17,14 +17,14 @@ class MultiColumnSetPainter {
   STACK_ALLOCATED();
 
  public:
-  MultiColumnSetPainter(const LayoutMultiColumnSet& layoutMultiColumnSet)
-      : m_layoutMultiColumnSet(layoutMultiColumnSet) {}
-  void paintObject(const PaintInfo&, const LayoutPoint& paintOffset);
+  MultiColumnSetPainter(const LayoutMultiColumnSet& layout_multi_column_set)
+      : layout_multi_column_set_(layout_multi_column_set) {}
+  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  void paintColumnRules(const PaintInfo&, const LayoutPoint& paintOffset);
+  void PaintColumnRules(const PaintInfo&, const LayoutPoint& paint_offset);
 
-  const LayoutMultiColumnSet& m_layoutMultiColumnSet;
+  const LayoutMultiColumnSet& layout_multi_column_set_;
 };
 
 }  // namespace blink

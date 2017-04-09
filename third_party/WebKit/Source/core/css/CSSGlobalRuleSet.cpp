@@ -12,77 +12,79 @@
 
 namespace blink {
 
-void CSSGlobalRuleSet::initWatchedSelectorsRuleSet(Document& document) {
-  markDirty();
-  m_watchedSelectorsRuleSet = nullptr;
-  CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(document);
+void CSSGlobalRuleSet::InitWatchedSelectorsRuleSet(Document& document) {
+  MarkDirty();
+  watched_selectors_rule_set_ = nullptr;
+  CSSSelectorWatch* watch = CSSSelectorWatch::FromIfExists(document);
   if (!watch)
     return;
-  const HeapVector<Member<StyleRule>>& watchedSelectors =
-      watch->watchedCallbackSelectors();
-  if (!watchedSelectors.size())
+  const HeapVector<Member<StyleRule>>& watched_selectors =
+      watch->WatchedCallbackSelectors();
+  if (!watched_selectors.size())
     return;
-  m_watchedSelectorsRuleSet = RuleSet::create();
-  for (unsigned i = 0; i < watchedSelectors.size(); ++i) {
-    m_watchedSelectorsRuleSet->addStyleRule(watchedSelectors[i],
-                                            RuleHasNoSpecialState);
+  watched_selectors_rule_set_ = RuleSet::Create();
+  for (unsigned i = 0; i < watched_selectors.size(); ++i) {
+    watched_selectors_rule_set_->AddStyleRule(watched_selectors[i],
+                                              kRuleHasNoSpecialState);
   }
 }
 
-static RuleSet* makeRuleSet(const HeapVector<RuleFeature>& rules) {
+static RuleSet* MakeRuleSet(const HeapVector<RuleFeature>& rules) {
   size_t size = rules.size();
   if (!size)
     return nullptr;
-  RuleSet* ruleSet = RuleSet::create();
+  RuleSet* rule_set = RuleSet::Create();
   for (size_t i = 0; i < size; ++i) {
-    ruleSet->addRule(rules[i].rule, rules[i].selectorIndex,
-                     rules[i].hasDocumentSecurityOrigin
-                         ? RuleHasDocumentSecurityOrigin
-                         : RuleHasNoSpecialState);
+    rule_set->AddRule(rules[i].rule, rules[i].selector_index,
+                      rules[i].has_document_security_origin
+                          ? kRuleHasDocumentSecurityOrigin
+                          : kRuleHasNoSpecialState);
   }
-  return ruleSet;
+  return rule_set;
 }
 
-void CSSGlobalRuleSet::update(Document& document) {
-  if (!m_isDirty)
+void CSSGlobalRuleSet::Update(Document& document) {
+  if (!is_dirty_)
     return;
 
-  m_isDirty = false;
-  m_features.clear();
-  m_hasFullscreenUAStyle = false;
+  is_dirty_ = false;
+  features_.Clear();
+  has_fullscreen_ua_style_ = false;
 
-  CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
-  if (defaultStyleSheets.defaultStyle()) {
-    m_features.add(defaultStyleSheets.defaultStyle()->features());
-    m_hasFullscreenUAStyle = defaultStyleSheets.fullscreenStyleSheet();
+  CSSDefaultStyleSheets& default_style_sheets =
+      CSSDefaultStyleSheets::Instance();
+  if (default_style_sheets.DefaultStyle()) {
+    features_.Add(default_style_sheets.DefaultStyle()->Features());
+    has_fullscreen_ua_style_ = default_style_sheets.FullscreenStyleSheet();
   }
 
-  if (document.isViewSource())
-    m_features.add(defaultStyleSheets.defaultViewSourceStyle()->features());
+  if (document.IsViewSource())
+    features_.Add(default_style_sheets.DefaultViewSourceStyle()->Features());
 
-  if (m_watchedSelectorsRuleSet)
-    m_features.add(m_watchedSelectorsRuleSet->features());
+  if (watched_selectors_rule_set_)
+    features_.Add(watched_selectors_rule_set_->Features());
 
-  document.styleEngine().collectScopedStyleFeaturesTo(m_features);
+  document.GetStyleEngine().CollectScopedStyleFeaturesTo(features_);
 
-  m_siblingRuleSet = makeRuleSet(m_features.siblingRules());
-  m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules());
+  sibling_rule_set_ = MakeRuleSet(features_.SiblingRules());
+  uncommon_attribute_rule_set_ =
+      MakeRuleSet(features_.UncommonAttributeRules());
 }
 
-void CSSGlobalRuleSet::dispose() {
-  m_features.clear();
-  m_siblingRuleSet = nullptr;
-  m_uncommonAttributeRuleSet = nullptr;
-  m_watchedSelectorsRuleSet = nullptr;
-  m_hasFullscreenUAStyle = false;
-  m_isDirty = true;
+void CSSGlobalRuleSet::Dispose() {
+  features_.Clear();
+  sibling_rule_set_ = nullptr;
+  uncommon_attribute_rule_set_ = nullptr;
+  watched_selectors_rule_set_ = nullptr;
+  has_fullscreen_ua_style_ = false;
+  is_dirty_ = true;
 }
 
 DEFINE_TRACE(CSSGlobalRuleSet) {
-  visitor->trace(m_features);
-  visitor->trace(m_siblingRuleSet);
-  visitor->trace(m_uncommonAttributeRuleSet);
-  visitor->trace(m_watchedSelectorsRuleSet);
+  visitor->Trace(features_);
+  visitor->Trace(sibling_rule_set_);
+  visitor->Trace(uncommon_attribute_rule_set_);
+  visitor->Trace(watched_selectors_rule_set_);
 }
 
 }  // namespace blink

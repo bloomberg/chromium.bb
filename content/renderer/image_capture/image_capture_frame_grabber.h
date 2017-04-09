@@ -35,7 +35,7 @@ class CONTENT_EXPORT ImageCaptureFrameGrabber final
   ~ImageCaptureFrameGrabber() override;
 
   // blink::WebImageCaptureFrameGrabber implementation.
-  void grabFrame(blink::WebMediaStreamTrack* track,
+  void GrabFrame(blink::WebMediaStreamTrack* track,
                  blink::WebImageCaptureGrabFrameCallbacks* callbacks) override;
 
  private:

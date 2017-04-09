@@ -21,34 +21,34 @@ class SVGFilterRecordingContext {
   WTF_MAKE_NONCOPYABLE(SVGFilterRecordingContext);
 
  public:
-  explicit SVGFilterRecordingContext(GraphicsContext& initialContext)
-      : m_initialContext(initialContext) {}
+  explicit SVGFilterRecordingContext(GraphicsContext& initial_context)
+      : initial_context_(initial_context) {}
 
-  GraphicsContext* beginContent(FilterData*);
-  void endContent(FilterData*);
+  GraphicsContext* BeginContent(FilterData*);
+  void EndContent(FilterData*);
 
-  GraphicsContext& paintingContext() const { return m_initialContext; }
+  GraphicsContext& PaintingContext() const { return initial_context_; }
 
  private:
-  std::unique_ptr<PaintController> m_paintController;
-  std::unique_ptr<GraphicsContext> m_context;
-  GraphicsContext& m_initialContext;
+  std::unique_ptr<PaintController> paint_controller_;
+  std::unique_ptr<GraphicsContext> context_;
+  GraphicsContext& initial_context_;
 };
 
 class SVGFilterPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGFilterPainter(LayoutSVGResourceFilter& filter) : m_filter(filter) {}
+  SVGFilterPainter(LayoutSVGResourceFilter& filter) : filter_(filter) {}
 
   // Returns the context that should be used to paint the filter contents, or
   // null if the content should not be recorded.
-  GraphicsContext* prepareEffect(const LayoutObject&,
+  GraphicsContext* PrepareEffect(const LayoutObject&,
                                  SVGFilterRecordingContext&);
-  void finishEffect(const LayoutObject&, SVGFilterRecordingContext&);
+  void FinishEffect(const LayoutObject&, SVGFilterRecordingContext&);
 
  private:
-  LayoutSVGResourceFilter& m_filter;
+  LayoutSVGResourceFilter& filter_;
 };
 
 }  // namespace blink

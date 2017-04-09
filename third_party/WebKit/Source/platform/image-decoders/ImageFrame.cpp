@@ -33,179 +33,179 @@
 namespace blink {
 
 ImageFrame::ImageFrame()
-    : m_allocator(0),
-      m_hasAlpha(true),
-      m_status(FrameEmpty),
-      m_duration(0),
-      m_disposalMethod(DisposeNotSpecified),
-      m_alphaBlendSource(BlendAtopPreviousFrame),
-      m_premultiplyAlpha(true),
-      m_pixelsChanged(false),
-      m_requiredPreviousFrameIndex(kNotFound) {}
+    : allocator_(0),
+      has_alpha_(true),
+      status_(kFrameEmpty),
+      duration_(0),
+      disposal_method_(kDisposeNotSpecified),
+      alpha_blend_source_(kBlendAtopPreviousFrame),
+      premultiply_alpha_(true),
+      pixels_changed_(false),
+      required_previous_frame_index_(kNotFound) {}
 
 ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
   if (this == &other)
     return *this;
 
-  m_bitmap = other.m_bitmap;
+  bitmap_ = other.bitmap_;
   // Keep the pixels locked since we will be writing directly into the
   // bitmap throughout this object's lifetime.
-  m_bitmap.lockPixels();
+  bitmap_.lockPixels();
   // Be sure to assign this before calling setStatus(), since setStatus() may
   // call notifyBitmapIfPixelsChanged().
-  m_pixelsChanged = other.m_pixelsChanged;
-  setMemoryAllocator(other.allocator());
-  setOriginalFrameRect(other.originalFrameRect());
-  setStatus(other.getStatus());
-  setDuration(other.duration());
-  setDisposalMethod(other.getDisposalMethod());
-  setAlphaBlendSource(other.getAlphaBlendSource());
-  setPremultiplyAlpha(other.premultiplyAlpha());
+  pixels_changed_ = other.pixels_changed_;
+  SetMemoryAllocator(other.GetAllocator());
+  SetOriginalFrameRect(other.OriginalFrameRect());
+  SetStatus(other.GetStatus());
+  SetDuration(other.Duration());
+  SetDisposalMethod(other.GetDisposalMethod());
+  SetAlphaBlendSource(other.GetAlphaBlendSource());
+  SetPremultiplyAlpha(other.PremultiplyAlpha());
   // Be sure that this is called after we've called setStatus(), since we
   // look at our status to know what to do with the alpha value.
-  setHasAlpha(other.hasAlpha());
-  setRequiredPreviousFrameIndex(other.requiredPreviousFrameIndex());
+  SetHasAlpha(other.HasAlpha());
+  SetRequiredPreviousFrameIndex(other.RequiredPreviousFrameIndex());
   return *this;
 }
 
-void ImageFrame::clearPixelData() {
-  m_bitmap.reset();
-  m_status = FrameEmpty;
+void ImageFrame::ClearPixelData() {
+  bitmap_.reset();
+  status_ = kFrameEmpty;
   // NOTE: Do not reset other members here; clearFrameBufferCache()
   // calls this to free the bitmap data, but other functions like
   // initFrameBuffer() and frameComplete() may still need to read
   // other metadata out of this frame later.
 }
 
-void ImageFrame::zeroFillPixelData() {
-  m_bitmap.eraseARGB(0, 0, 0, 0);
-  m_hasAlpha = true;
+void ImageFrame::ZeroFillPixelData() {
+  bitmap_.eraseARGB(0, 0, 0, 0);
+  has_alpha_ = true;
 }
 
-bool ImageFrame::copyBitmapData(const ImageFrame& other) {
+bool ImageFrame::CopyBitmapData(const ImageFrame& other) {
   DCHECK_NE(this, &other);
-  m_hasAlpha = other.m_hasAlpha;
-  m_bitmap.reset();
-  return other.m_bitmap.copyTo(&m_bitmap, other.m_bitmap.colorType());
+  has_alpha_ = other.has_alpha_;
+  bitmap_.reset();
+  return other.bitmap_.copyTo(&bitmap_, other.bitmap_.colorType());
 }
 
-bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other) {
+bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
   DCHECK(other);
-  DCHECK_EQ(FrameComplete, other->m_status);
-  DCHECK_EQ(FrameEmpty, m_status);
+  DCHECK_EQ(kFrameComplete, other->status_);
+  DCHECK_EQ(kFrameEmpty, status_);
   DCHECK_NE(this, other);
-  if (other->m_bitmap.isImmutable())
+  if (other->bitmap_.isImmutable())
     return false;
-  m_hasAlpha = other->m_hasAlpha;
-  m_bitmap.reset();
-  m_bitmap.swap(other->m_bitmap);
-  other->m_status = FrameEmpty;
+  has_alpha_ = other->has_alpha_;
+  bitmap_.reset();
+  bitmap_.swap(other->bitmap_);
+  other->status_ = kFrameEmpty;
   return true;
 }
 
-bool ImageFrame::allocatePixelData(int newWidth,
-                                   int newHeight,
-                                   sk_sp<SkColorSpace> colorSpace) {
+bool ImageFrame::AllocatePixelData(int new_width,
+                                   int new_height,
+                                   sk_sp<SkColorSpace> color_space) {
   // allocatePixelData() should only be called once.
-  DCHECK(!width() && !height());
+  DCHECK(!Width() && !Height());
 
-  m_bitmap.setInfo(SkImageInfo::MakeN32(
-      newWidth, newHeight,
-      m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
-      std::move(colorSpace)));
-  return m_bitmap.tryAllocPixels(m_allocator, 0);
+  bitmap_.setInfo(SkImageInfo::MakeN32(
+      new_width, new_height,
+      premultiply_alpha_ ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
+      std::move(color_space)));
+  return bitmap_.tryAllocPixels(allocator_, 0);
 }
 
-bool ImageFrame::hasAlpha() const {
-  return m_hasAlpha;
+bool ImageFrame::HasAlpha() const {
+  return has_alpha_;
 }
 
-sk_sp<SkImage> ImageFrame::finalizePixelsAndGetImage() {
-  DCHECK_EQ(FrameComplete, m_status);
-  m_bitmap.setImmutable();
-  return SkImage::MakeFromBitmap(m_bitmap);
+sk_sp<SkImage> ImageFrame::FinalizePixelsAndGetImage() {
+  DCHECK_EQ(kFrameComplete, status_);
+  bitmap_.setImmutable();
+  return SkImage::MakeFromBitmap(bitmap_);
 }
 
-void ImageFrame::setHasAlpha(bool alpha) {
-  m_hasAlpha = alpha;
+void ImageFrame::SetHasAlpha(bool alpha) {
+  has_alpha_ = alpha;
 
-  m_bitmap.setAlphaType(computeAlphaType());
+  bitmap_.setAlphaType(ComputeAlphaType());
 }
 
-void ImageFrame::setStatus(Status status) {
-  m_status = status;
-  if (m_status == FrameComplete) {
-    m_bitmap.setAlphaType(computeAlphaType());
+void ImageFrame::SetStatus(Status status) {
+  status_ = status;
+  if (status_ == kFrameComplete) {
+    bitmap_.setAlphaType(ComputeAlphaType());
     // Send pending pixels changed notifications now, because we can't do
     // this after the bitmap has been marked immutable.  We don't set the
     // bitmap immutable here because it would defeat
     // takeBitmapDataIfWritable().  Instead we let the bitmap stay mutable
     // until someone calls finalizePixelsAndGetImage() to actually get the
     // SkImage.
-    notifyBitmapIfPixelsChanged();
+    NotifyBitmapIfPixelsChanged();
   }
 }
 
-void ImageFrame::zeroFillFrameRect(const IntRect& rect) {
-  if (rect.isEmpty())
+void ImageFrame::ZeroFillFrameRect(const IntRect& rect) {
+  if (rect.IsEmpty())
     return;
 
-  m_bitmap.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
-  setHasAlpha(true);
+  bitmap_.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
+  SetHasAlpha(true);
 }
 
-static uint8_t blendChannel(uint8_t src,
-                            uint8_t srcA,
+static uint8_t BlendChannel(uint8_t src,
+                            uint8_t src_a,
                             uint8_t dst,
-                            uint8_t dstA,
+                            uint8_t dst_a,
                             unsigned scale) {
-  unsigned blendUnscaled = src * srcA + dst * dstA;
-  DCHECK(blendUnscaled < (1ULL << 32) / scale);
-  return (blendUnscaled * scale) >> 24;
+  unsigned blend_unscaled = src * src_a + dst * dst_a;
+  DCHECK(blend_unscaled < (1ULL << 32) / scale);
+  return (blend_unscaled * scale) >> 24;
 }
 
-static uint32_t blendSrcOverDstNonPremultiplied(uint32_t src, uint32_t dst) {
-  uint8_t srcA = SkGetPackedA32(src);
-  if (srcA == 0)
+static uint32_t BlendSrcOverDstNonPremultiplied(uint32_t src, uint32_t dst) {
+  uint8_t src_a = SkGetPackedA32(src);
+  if (src_a == 0)
     return dst;
 
-  uint8_t dstA = SkGetPackedA32(dst);
-  uint8_t dstFactorA = (dstA * SkAlpha255To256(255 - srcA)) >> 8;
-  DCHECK(srcA + dstFactorA < (1U << 8));
-  uint8_t blendA = srcA + dstFactorA;
-  unsigned scale = (1UL << 24) / blendA;
+  uint8_t dst_a = SkGetPackedA32(dst);
+  uint8_t dst_factor_a = (dst_a * SkAlpha255To256(255 - src_a)) >> 8;
+  DCHECK(src_a + dst_factor_a < (1U << 8));
+  uint8_t blend_a = src_a + dst_factor_a;
+  unsigned scale = (1UL << 24) / blend_a;
 
-  uint8_t blendR = blendChannel(SkGetPackedR32(src), srcA, SkGetPackedR32(dst),
-                                dstFactorA, scale);
-  uint8_t blendG = blendChannel(SkGetPackedG32(src), srcA, SkGetPackedG32(dst),
-                                dstFactorA, scale);
-  uint8_t blendB = blendChannel(SkGetPackedB32(src), srcA, SkGetPackedB32(dst),
-                                dstFactorA, scale);
+  uint8_t blend_r = BlendChannel(SkGetPackedR32(src), src_a,
+                                 SkGetPackedR32(dst), dst_factor_a, scale);
+  uint8_t blend_g = BlendChannel(SkGetPackedG32(src), src_a,
+                                 SkGetPackedG32(dst), dst_factor_a, scale);
+  uint8_t blend_b = BlendChannel(SkGetPackedB32(src), src_a,
+                                 SkGetPackedB32(dst), dst_factor_a, scale);
 
-  return SkPackARGB32NoCheck(blendA, blendR, blendG, blendB);
+  return SkPackARGB32NoCheck(blend_a, blend_r, blend_g, blend_b);
 }
 
-void ImageFrame::blendRGBARaw(PixelData* dest,
+void ImageFrame::BlendRGBARaw(PixelData* dest,
                               unsigned r,
                               unsigned g,
                               unsigned b,
                               unsigned a) {
   *dest =
-      blendSrcOverDstNonPremultiplied(SkPackARGB32NoCheck(a, r, g, b), *dest);
+      BlendSrcOverDstNonPremultiplied(SkPackARGB32NoCheck(a, r, g, b), *dest);
 }
 
-void ImageFrame::blendSrcOverDstRaw(PixelData* src, PixelData dst) {
-  *src = blendSrcOverDstNonPremultiplied(*src, dst);
+void ImageFrame::BlendSrcOverDstRaw(PixelData* src, PixelData dst) {
+  *src = BlendSrcOverDstNonPremultiplied(*src, dst);
 }
 
-SkAlphaType ImageFrame::computeAlphaType() const {
+SkAlphaType ImageFrame::ComputeAlphaType() const {
   // If the frame is not fully loaded, there will be transparent pixels,
   // so we can't tell skia we're opaque, even for image types that logically
   // always are (e.g. jpeg).
-  if (!m_hasAlpha && m_status == FrameComplete)
+  if (!has_alpha_ && status_ == kFrameComplete)
     return kOpaque_SkAlphaType;
 
-  return m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
+  return premultiply_alpha_ ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
 }
 
 }  // namespace blink

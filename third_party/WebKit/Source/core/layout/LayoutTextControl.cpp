@@ -36,131 +36,133 @@ LayoutTextControl::LayoutTextControl(TextControlElement* element)
 
 LayoutTextControl::~LayoutTextControl() {}
 
-TextControlElement* LayoutTextControl::textControlElement() const {
-  return toTextControlElement(node());
+TextControlElement* LayoutTextControl::GetTextControlElement() const {
+  return ToTextControlElement(GetNode());
 }
 
-HTMLElement* LayoutTextControl::innerEditorElement() const {
-  return textControlElement()->innerEditorElement();
+HTMLElement* LayoutTextControl::InnerEditorElement() const {
+  return GetTextControlElement()->InnerEditorElement();
 }
 
-void LayoutTextControl::styleDidChange(StyleDifference diff,
-                                       const ComputedStyle* oldStyle) {
-  LayoutBlockFlow::styleDidChange(diff, oldStyle);
-  Element* innerEditor = innerEditorElement();
-  if (!innerEditor)
+void LayoutTextControl::StyleDidChange(StyleDifference diff,
+                                       const ComputedStyle* old_style) {
+  LayoutBlockFlow::StyleDidChange(diff, old_style);
+  Element* inner_editor = InnerEditorElement();
+  if (!inner_editor)
     return;
-  LayoutBlock* innerEditorLayoutObject =
-      toLayoutBlock(innerEditor->layoutObject());
-  if (innerEditorLayoutObject) {
+  LayoutBlock* inner_editor_layout_object =
+      ToLayoutBlock(inner_editor->GetLayoutObject());
+  if (inner_editor_layout_object) {
     // We may have set the width and the height in the old style in layout().
     // Reset them now to avoid getting a spurious layout hint.
-    innerEditorLayoutObject->mutableStyleRef().setHeight(Length());
-    innerEditorLayoutObject->mutableStyleRef().setWidth(Length());
-    innerEditorLayoutObject->setStyle(createInnerEditorStyle(styleRef()));
-    innerEditor->setNeedsStyleRecalc(
-        SubtreeStyleChange,
-        StyleChangeReasonForTracing::create(StyleChangeReason::Control));
+    inner_editor_layout_object->MutableStyleRef().SetHeight(Length());
+    inner_editor_layout_object->MutableStyleRef().SetWidth(Length());
+    inner_editor_layout_object->SetStyle(CreateInnerEditorStyle(StyleRef()));
+    inner_editor->SetNeedsStyleRecalc(
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(StyleChangeReason::kControl));
   }
-  textControlElement()->updatePlaceholderVisibility();
+  GetTextControlElement()->UpdatePlaceholderVisibility();
 }
 
-static inline void updateUserModifyProperty(TextControlElement& node,
+static inline void UpdateUserModifyProperty(TextControlElement& node,
                                             ComputedStyle& style) {
-  style.setUserModify(node.isDisabledOrReadOnly() ? READ_ONLY
+  style.SetUserModify(node.IsDisabledOrReadOnly() ? READ_ONLY
                                                   : READ_WRITE_PLAINTEXT_ONLY);
 }
 
-void LayoutTextControl::adjustInnerEditorStyle(
-    ComputedStyle& textBlockStyle) const {
+void LayoutTextControl::AdjustInnerEditorStyle(
+    ComputedStyle& text_block_style) const {
   // The inner block, if present, always has its direction set to LTR,
   // so we need to inherit the direction and unicode-bidi style from the
   // element.
-  textBlockStyle.setDirection(style()->direction());
-  textBlockStyle.setUnicodeBidi(style()->getUnicodeBidi());
+  text_block_style.SetDirection(Style()->Direction());
+  text_block_style.SetUnicodeBidi(Style()->GetUnicodeBidi());
 
-  updateUserModifyProperty(*textControlElement(), textBlockStyle);
+  UpdateUserModifyProperty(*GetTextControlElement(), text_block_style);
 }
 
-int LayoutTextControl::textBlockLogicalHeight() const {
-  return (logicalHeight() - borderAndPaddingLogicalHeight()).toInt();
+int LayoutTextControl::TextBlockLogicalHeight() const {
+  return (LogicalHeight() - BorderAndPaddingLogicalHeight()).ToInt();
 }
 
-int LayoutTextControl::textBlockLogicalWidth() const {
-  Element* innerEditor = innerEditorElement();
-  DCHECK(innerEditor);
+int LayoutTextControl::TextBlockLogicalWidth() const {
+  Element* inner_editor = InnerEditorElement();
+  DCHECK(inner_editor);
 
-  LayoutUnit unitWidth = logicalWidth() - borderAndPaddingLogicalWidth();
-  if (innerEditor->layoutObject())
-    unitWidth -= innerEditor->layoutBox()->paddingStart() +
-                 innerEditor->layoutBox()->paddingEnd();
+  LayoutUnit unit_width = LogicalWidth() - BorderAndPaddingLogicalWidth();
+  if (inner_editor->GetLayoutObject())
+    unit_width -= inner_editor->GetLayoutBox()->PaddingStart() +
+                  inner_editor->GetLayoutBox()->PaddingEnd();
 
-  return unitWidth.toInt();
+  return unit_width.ToInt();
 }
 
-void LayoutTextControl::updateFromElement() {
-  Element* innerEditor = innerEditorElement();
-  if (innerEditor && innerEditor->layoutObject())
-    updateUserModifyProperty(*textControlElement(),
-                             innerEditor->layoutObject()->mutableStyleRef());
+void LayoutTextControl::UpdateFromElement() {
+  Element* inner_editor = InnerEditorElement();
+  if (inner_editor && inner_editor->GetLayoutObject())
+    UpdateUserModifyProperty(
+        *GetTextControlElement(),
+        inner_editor->GetLayoutObject()->MutableStyleRef());
 }
 
-int LayoutTextControl::scrollbarThickness() const {
+int LayoutTextControl::ScrollbarThickness() const {
   // FIXME: We should get the size of the scrollbar from the LayoutTheme
   // instead.
-  return ScrollbarTheme::theme().scrollbarThickness();
+  return ScrollbarTheme::GetTheme().ScrollbarThickness();
 }
 
-void LayoutTextControl::computeLogicalHeight(
-    LayoutUnit logicalHeight,
-    LayoutUnit logicalTop,
-    LogicalExtentComputedValues& computedValues) const {
-  HTMLElement* innerEditor = innerEditorElement();
-  DCHECK(innerEditor);
-  if (LayoutBox* innerEditorBox = innerEditor->layoutBox()) {
-    LayoutUnit nonContentHeight = innerEditorBox->borderAndPaddingHeight() +
-                                  innerEditorBox->marginHeight();
-    logicalHeight = computeControlLogicalHeight(
-        innerEditorBox->lineHeight(true, HorizontalLine,
-                                   PositionOfInteriorLineBoxes),
-        nonContentHeight);
+void LayoutTextControl::ComputeLogicalHeight(
+    LayoutUnit logical_height,
+    LayoutUnit logical_top,
+    LogicalExtentComputedValues& computed_values) const {
+  HTMLElement* inner_editor = InnerEditorElement();
+  DCHECK(inner_editor);
+  if (LayoutBox* inner_editor_box = inner_editor->GetLayoutBox()) {
+    LayoutUnit non_content_height = inner_editor_box->BorderAndPaddingHeight() +
+                                    inner_editor_box->MarginHeight();
+    logical_height = ComputeControlLogicalHeight(
+        inner_editor_box->LineHeight(true, kHorizontalLine,
+                                     kPositionOfInteriorLineBoxes),
+        non_content_height);
 
     // We are able to have a horizontal scrollbar if the overflow style is
     // scroll, or if its auto and there's no word wrap.
-    if (style()->overflowInlineDirection() == EOverflow::kScroll ||
-        (style()->overflowInlineDirection() == EOverflow::kAuto &&
-         innerEditor->layoutObject()->style()->overflowWrap() ==
-             NormalOverflowWrap))
-      logicalHeight += scrollbarThickness();
+    if (Style()->OverflowInlineDirection() == EOverflow::kScroll ||
+        (Style()->OverflowInlineDirection() == EOverflow::kAuto &&
+         inner_editor->GetLayoutObject()->Style()->OverflowWrap() ==
+             kNormalOverflowWrap))
+      logical_height += ScrollbarThickness();
 
     // FIXME: The logical height of the inner text box should have been added
     // before calling computeLogicalHeight to avoid this hack.
-    setIntrinsicContentLogicalHeight(logicalHeight);
+    SetIntrinsicContentLogicalHeight(logical_height);
 
-    logicalHeight += borderAndPaddingHeight();
+    logical_height += BorderAndPaddingHeight();
   }
 
-  LayoutBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
+  LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
-void LayoutTextControl::hitInnerEditorElement(
+void LayoutTextControl::HitInnerEditorElement(
     HitTestResult& result,
-    const LayoutPoint& pointInContainer,
-    const LayoutPoint& accumulatedOffset) {
-  HTMLElement* innerEditor = innerEditorElement();
-  if (!innerEditor->layoutObject())
+    const LayoutPoint& point_in_container,
+    const LayoutPoint& accumulated_offset) {
+  HTMLElement* inner_editor = InnerEditorElement();
+  if (!inner_editor->GetLayoutObject())
     return;
 
-  LayoutPoint adjustedLocation = accumulatedOffset + location();
-  LayoutPoint localPoint =
-      pointInContainer -
-      toLayoutSize(adjustedLocation + innerEditor->layoutBox()->location());
-  if (hasOverflowClip())
-    localPoint += scrolledContentOffset();
-  result.setNodeAndPosition(innerEditor, localPoint);
+  LayoutPoint adjusted_location = accumulated_offset + Location();
+  LayoutPoint local_point =
+      point_in_container -
+      ToLayoutSize(adjusted_location +
+                   inner_editor->GetLayoutBox()->Location());
+  if (HasOverflowClip())
+    local_point += ScrolledContentOffset();
+  result.SetNodeAndPosition(inner_editor, local_point);
 }
 
-static const char* const fontFamiliesWithInvalidCharWidth[] = {
+static const char* const kFontFamiliesWithInvalidCharWidth[] = {
     "American Typewriter",
     "Arial Hebrew",
     "Chalkboard",
@@ -202,161 +204,169 @@ static const char* const fontFamiliesWithInvalidCharWidth[] = {
 // avgCharWidth from the width of a '0'. This only seems to apply to a fixed
 // number of Mac fonts, but, in order to get similar rendering across platforms,
 // we do this check for all platforms.
-bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* fontData,
+bool LayoutTextControl::HasValidAvgCharWidth(const SimpleFontData* font_data,
                                              const AtomicString& family) {
   // Some fonts match avgCharWidth to CJK full-width characters.
   // Heuristic check to avoid such fonts.
-  DCHECK(fontData);
-  if (!fontData)
+  DCHECK(font_data);
+  if (!font_data)
     return false;
-  const FontMetrics& metrics = fontData->getFontMetrics();
-  if (metrics.hasZeroWidth() &&
-      fontData->avgCharWidth() > metrics.zeroWidth() * 1.7)
-    return false;
-
-  static HashSet<AtomicString>* fontFamiliesWithInvalidCharWidthMap = nullptr;
-
-  if (family.isEmpty())
+  const FontMetrics& metrics = font_data->GetFontMetrics();
+  if (metrics.HasZeroWidth() &&
+      font_data->AvgCharWidth() > metrics.ZeroWidth() * 1.7)
     return false;
 
-  if (!fontFamiliesWithInvalidCharWidthMap) {
-    fontFamiliesWithInvalidCharWidthMap = new HashSet<AtomicString>;
+  static HashSet<AtomicString>* font_families_with_invalid_char_width_map =
+      nullptr;
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontFamiliesWithInvalidCharWidth);
+  if (family.IsEmpty())
+    return false;
+
+  if (!font_families_with_invalid_char_width_map) {
+    font_families_with_invalid_char_width_map = new HashSet<AtomicString>;
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kFontFamiliesWithInvalidCharWidth);
          ++i)
-      fontFamiliesWithInvalidCharWidthMap->insert(
-          AtomicString(fontFamiliesWithInvalidCharWidth[i]));
+      font_families_with_invalid_char_width_map->insert(
+          AtomicString(kFontFamiliesWithInvalidCharWidth[i]));
   }
 
-  return !fontFamiliesWithInvalidCharWidthMap->contains(family);
+  return !font_families_with_invalid_char_width_map->Contains(family);
 }
 
-float LayoutTextControl::getAvgCharWidth(const AtomicString& family) const {
-  const Font& font = style()->font();
+float LayoutTextControl::GetAvgCharWidth(const AtomicString& family) const {
+  const Font& font = Style()->GetFont();
 
-  const SimpleFontData* primaryFont = font.primaryFont();
-  if (primaryFont && hasValidAvgCharWidth(primaryFont, family))
-    return roundf(primaryFont->avgCharWidth());
+  const SimpleFontData* primary_font = font.PrimaryFont();
+  if (primary_font && HasValidAvgCharWidth(primary_font, family))
+    return roundf(primary_font->AvgCharWidth());
 
-  const UChar ch = '0';
-  const String str = String(&ch, 1);
-  TextRun textRun =
-      constructTextRun(font, str, styleRef(), TextRun::AllowTrailingExpansion);
-  return font.width(textRun);
+  const UChar kCh = '0';
+  const String str = String(&kCh, 1);
+  TextRun text_run =
+      ConstructTextRun(font, str, StyleRef(), TextRun::kAllowTrailingExpansion);
+  return font.Width(text_run);
 }
 
-float LayoutTextControl::scaleEmToUnits(int x) const {
+float LayoutTextControl::ScaleEmToUnits(int x) const {
   // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the
   // "head" font table.
-  float unitsPerEm = 2048.0f;
-  return roundf(style()->font().getFontDescription().computedSize() * x /
-                unitsPerEm);
+  float units_per_em = 2048.0f;
+  return roundf(Style()->GetFont().GetFontDescription().ComputedSize() * x /
+                units_per_em);
 }
 
-void LayoutTextControl::computeIntrinsicLogicalWidths(
-    LayoutUnit& minLogicalWidth,
-    LayoutUnit& maxLogicalWidth) const {
+void LayoutTextControl::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
   // Use average character width. Matches IE.
-  AtomicString family = style()->font().getFontDescription().family().family();
-  maxLogicalWidth = preferredContentLogicalWidth(
-      const_cast<LayoutTextControl*>(this)->getAvgCharWidth(family));
-  if (innerEditorElement()) {
-    if (LayoutBox* innerEditorLayoutBox = innerEditorElement()->layoutBox())
-      maxLogicalWidth += innerEditorLayoutBox->paddingStart() +
-                         innerEditorLayoutBox->paddingEnd();
+  AtomicString family =
+      Style()->GetFont().GetFontDescription().Family().Family();
+  max_logical_width = PreferredContentLogicalWidth(
+      const_cast<LayoutTextControl*>(this)->GetAvgCharWidth(family));
+  if (InnerEditorElement()) {
+    if (LayoutBox* inner_editor_layout_box =
+            InnerEditorElement()->GetLayoutBox())
+      max_logical_width += inner_editor_layout_box->PaddingStart() +
+                           inner_editor_layout_box->PaddingEnd();
   }
-  if (!style()->logicalWidth().isPercentOrCalc())
-    minLogicalWidth = maxLogicalWidth;
+  if (!Style()->LogicalWidth().IsPercentOrCalc())
+    min_logical_width = max_logical_width;
 }
 
-void LayoutTextControl::computePreferredLogicalWidths() {
-  DCHECK(preferredLogicalWidthsDirty());
+void LayoutTextControl::ComputePreferredLogicalWidths() {
+  DCHECK(PreferredLogicalWidthsDirty());
 
-  m_minPreferredLogicalWidth = LayoutUnit();
-  m_maxPreferredLogicalWidth = LayoutUnit();
-  const ComputedStyle& styleToUse = styleRef();
+  min_preferred_logical_width_ = LayoutUnit();
+  max_preferred_logical_width_ = LayoutUnit();
+  const ComputedStyle& style_to_use = StyleRef();
 
-  if (styleToUse.logicalWidth().isFixed() &&
-      styleToUse.logicalWidth().value() >= 0)
-    m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth =
-        adjustContentBoxLogicalWidthForBoxSizing(
-            styleToUse.logicalWidth().value());
+  if (style_to_use.LogicalWidth().IsFixed() &&
+      style_to_use.LogicalWidth().Value() >= 0)
+    min_preferred_logical_width_ = max_preferred_logical_width_ =
+        AdjustContentBoxLogicalWidthForBoxSizing(
+            style_to_use.LogicalWidth().Value());
   else
-    computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth,
-                                  m_maxPreferredLogicalWidth);
+    ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
+                                  max_preferred_logical_width_);
 
-  if (styleToUse.logicalMinWidth().isFixed() &&
-      styleToUse.logicalMinWidth().value() > 0) {
-    m_maxPreferredLogicalWidth = std::max(
-        m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(
-                                        styleToUse.logicalMinWidth().value()));
-    m_minPreferredLogicalWidth = std::max(
-        m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(
-                                        styleToUse.logicalMinWidth().value()));
+  if (style_to_use.LogicalMinWidth().IsFixed() &&
+      style_to_use.LogicalMinWidth().Value() > 0) {
+    max_preferred_logical_width_ =
+        std::max(max_preferred_logical_width_,
+                 AdjustContentBoxLogicalWidthForBoxSizing(
+                     style_to_use.LogicalMinWidth().Value()));
+    min_preferred_logical_width_ =
+        std::max(min_preferred_logical_width_,
+                 AdjustContentBoxLogicalWidthForBoxSizing(
+                     style_to_use.LogicalMinWidth().Value()));
   }
 
-  if (styleToUse.logicalMaxWidth().isFixed()) {
-    m_maxPreferredLogicalWidth = std::min(
-        m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(
-                                        styleToUse.logicalMaxWidth().value()));
-    m_minPreferredLogicalWidth = std::min(
-        m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(
-                                        styleToUse.logicalMaxWidth().value()));
+  if (style_to_use.LogicalMaxWidth().IsFixed()) {
+    max_preferred_logical_width_ =
+        std::min(max_preferred_logical_width_,
+                 AdjustContentBoxLogicalWidthForBoxSizing(
+                     style_to_use.LogicalMaxWidth().Value()));
+    min_preferred_logical_width_ =
+        std::min(min_preferred_logical_width_,
+                 AdjustContentBoxLogicalWidthForBoxSizing(
+                     style_to_use.LogicalMaxWidth().Value()));
   }
 
-  LayoutUnit toAdd = borderAndPaddingLogicalWidth();
+  LayoutUnit to_add = BorderAndPaddingLogicalWidth();
 
-  m_minPreferredLogicalWidth += toAdd;
-  m_maxPreferredLogicalWidth += toAdd;
+  min_preferred_logical_width_ += to_add;
+  max_preferred_logical_width_ += to_add;
 
-  clearPreferredLogicalWidthsDirty();
+  ClearPreferredLogicalWidthsDirty();
 }
 
-void LayoutTextControl::addOutlineRects(Vector<LayoutRect>& rects,
-                                        const LayoutPoint& additionalOffset,
+void LayoutTextControl::AddOutlineRects(Vector<LayoutRect>& rects,
+                                        const LayoutPoint& additional_offset,
                                         IncludeBlockVisualOverflowOrNot) const {
-  rects.push_back(LayoutRect(additionalOffset, size()));
+  rects.push_back(LayoutRect(additional_offset, size()));
 }
 
-LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(
-    bool relayoutChildren,
-    SubtreeLayoutScope& layoutScope) {
-  HTMLElement* placeholder = toTextControlElement(node())->placeholderElement();
-  LayoutObject* placeholderLayoutObject =
-      placeholder ? placeholder->layoutObject() : nullptr;
-  if (!placeholderLayoutObject)
+LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(
+    bool relayout_children,
+    SubtreeLayoutScope& layout_scope) {
+  HTMLElement* placeholder =
+      ToTextControlElement(GetNode())->PlaceholderElement();
+  LayoutObject* placeholder_layout_object =
+      placeholder ? placeholder->GetLayoutObject() : nullptr;
+  if (!placeholder_layout_object)
     return nullptr;
-  if (relayoutChildren)
-    layoutScope.setChildNeedsLayout(placeholderLayoutObject);
-  return placeholderLayoutObject;
+  if (relayout_children)
+    layout_scope.SetChildNeedsLayout(placeholder_layout_object);
+  return placeholder_layout_object;
 }
 
-int LayoutTextControl::firstLineBoxBaseline() const {
-  int result = LayoutBlock::firstLineBoxBaseline();
+int LayoutTextControl::FirstLineBoxBaseline() const {
+  int result = LayoutBlock::FirstLineBoxBaseline();
   if (result != -1)
     return result;
 
   // When the text is empty, |LayoutBlock::firstLineBoxBaseline()| cannot
   // compute the baseline because lineboxes do not exist.
-  Element* innerEditor = innerEditorElement();
-  if (!innerEditor || !innerEditor->layoutObject())
+  Element* inner_editor = InnerEditorElement();
+  if (!inner_editor || !inner_editor->GetLayoutObject())
     return -1;
 
-  LayoutBlock* innerEditorLayoutObject =
-      toLayoutBlock(innerEditor->layoutObject());
-  const SimpleFontData* fontData =
-      innerEditorLayoutObject->style(true)->font().primaryFont();
-  DCHECK(fontData);
-  if (!fontData)
+  LayoutBlock* inner_editor_layout_object =
+      ToLayoutBlock(inner_editor->GetLayoutObject());
+  const SimpleFontData* font_data =
+      inner_editor_layout_object->Style(true)->GetFont().PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
     return -1;
 
-  LayoutUnit baseline(fontData->getFontMetrics().ascent(AlphabeticBaseline));
-  for (LayoutObject* box = innerEditorLayoutObject; box && box != this;
-       box = box->parent()) {
-    if (box->isBox())
-      baseline += toLayoutBox(box)->logicalTop();
+  LayoutUnit baseline(font_data->GetFontMetrics().Ascent(kAlphabeticBaseline));
+  for (LayoutObject* box = inner_editor_layout_object; box && box != this;
+       box = box->Parent()) {
+    if (box->IsBox())
+      baseline += ToLayoutBox(box)->LogicalTop();
   }
-  return baseline.toInt();
+  return baseline.ToInt();
 }
 
 }  // namespace blink

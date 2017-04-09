@@ -49,28 +49,28 @@ class OrderIterator {
 
   OrderIterator(const LayoutBox*);
 
-  LayoutBox* currentChild() { return m_currentChild; }
-  const LayoutBox* currentChild() const { return m_currentChild; }
-  LayoutBox* first();
-  const LayoutBox* first() const {
-    return const_cast<OrderIterator*>(this)->first();
+  LayoutBox* CurrentChild() { return current_child_; }
+  const LayoutBox* CurrentChild() const { return current_child_; }
+  LayoutBox* First();
+  const LayoutBox* First() const {
+    return const_cast<OrderIterator*>(this)->First();
   }
-  LayoutBox* next();
-  const LayoutBox* next() const {
-    return const_cast<OrderIterator*>(this)->next();
+  LayoutBox* Next();
+  const LayoutBox* Next() const {
+    return const_cast<OrderIterator*>(this)->Next();
   }
 
-  void reset();
+  void Reset();
 
  private:
-  const LayoutBox* m_containerBox;
+  const LayoutBox* container_box_;
 
-  LayoutBox* m_currentChild;
+  LayoutBox* current_child_;
 
   typedef std::set<int> OrderValues;
-  OrderValues m_orderValues;
-  OrderValues::const_iterator m_orderValuesIterator;
-  bool m_isReset;
+  OrderValues order_values_;
+  OrderValues::const_iterator order_values_iterator_;
+  bool is_reset_;
 };
 
 class OrderIteratorPopulator {
@@ -78,16 +78,16 @@ class OrderIteratorPopulator {
 
  public:
   explicit OrderIteratorPopulator(OrderIterator& iterator)
-      : m_iterator(iterator) {
-    m_iterator.m_orderValues.clear();
+      : iterator_(iterator) {
+    iterator_.order_values_.clear();
   }
 
   ~OrderIteratorPopulator();
 
-  void collectChild(const LayoutBox*);
+  void CollectChild(const LayoutBox*);
 
  private:
-  OrderIterator& m_iterator;
+  OrderIterator& iterator_;
 };
 
 }  // namespace blink

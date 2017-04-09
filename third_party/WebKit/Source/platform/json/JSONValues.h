@@ -60,235 +60,235 @@ class PLATFORM_EXPORT JSONValue {
   WTF_MAKE_NONCOPYABLE(JSONValue);
 
  public:
-  static const int maxDepth = 1000;
+  static const int kMaxDepth = 1000;
 
   virtual ~JSONValue() {}
 
-  static std::unique_ptr<JSONValue> null() {
-    return WTF::wrapUnique(new JSONValue());
+  static std::unique_ptr<JSONValue> Null() {
+    return WTF::WrapUnique(new JSONValue());
   }
 
   enum ValueType {
-    TypeNull = 0,
-    TypeBoolean,
-    TypeInteger,
-    TypeDouble,
-    TypeString,
-    TypeObject,
-    TypeArray
+    kTypeNull = 0,
+    kTypeBoolean,
+    kTypeInteger,
+    kTypeDouble,
+    kTypeString,
+    kTypeObject,
+    kTypeArray
   };
 
-  ValueType getType() const { return m_type; }
+  ValueType GetType() const { return type_; }
 
-  bool isNull() const { return m_type == TypeNull; }
+  bool IsNull() const { return type_ == kTypeNull; }
 
-  virtual bool asBoolean(bool* output) const;
-  virtual bool asDouble(double* output) const;
-  virtual bool asInteger(int* output) const;
-  virtual bool asString(String* output) const;
+  virtual bool AsBoolean(bool* output) const;
+  virtual bool AsDouble(double* output) const;
+  virtual bool AsInteger(int* output) const;
+  virtual bool AsString(String* output) const;
 
-  String toJSONString() const;
-  String toPrettyJSONString() const;
-  virtual void writeJSON(StringBuilder* output) const;
-  virtual void prettyWriteJSON(StringBuilder* output) const;
-  virtual std::unique_ptr<JSONValue> clone() const;
+  String ToJSONString() const;
+  String ToPrettyJSONString() const;
+  virtual void WriteJSON(StringBuilder* output) const;
+  virtual void PrettyWriteJSON(StringBuilder* output) const;
+  virtual std::unique_ptr<JSONValue> Clone() const;
 
-  static String quoteString(const String&);
+  static String QuoteString(const String&);
 
  protected:
-  JSONValue() : m_type(TypeNull) {}
-  explicit JSONValue(ValueType type) : m_type(type) {}
-  virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const;
+  JSONValue() : type_(kTypeNull) {}
+  explicit JSONValue(ValueType type) : type_(type) {}
+  virtual void PrettyWriteJSONInternal(StringBuilder* output, int depth) const;
 
  private:
   friend class JSONObject;
   friend class JSONArray;
 
-  ValueType m_type;
+  ValueType type_;
 };
 
 class PLATFORM_EXPORT JSONBasicValue : public JSONValue {
  public:
-  static std::unique_ptr<JSONBasicValue> create(bool value) {
-    return WTF::wrapUnique(new JSONBasicValue(value));
+  static std::unique_ptr<JSONBasicValue> Create(bool value) {
+    return WTF::WrapUnique(new JSONBasicValue(value));
   }
 
-  static std::unique_ptr<JSONBasicValue> create(int value) {
-    return WTF::wrapUnique(new JSONBasicValue(value));
+  static std::unique_ptr<JSONBasicValue> Create(int value) {
+    return WTF::WrapUnique(new JSONBasicValue(value));
   }
 
-  static std::unique_ptr<JSONBasicValue> create(double value) {
-    return WTF::wrapUnique(new JSONBasicValue(value));
+  static std::unique_ptr<JSONBasicValue> Create(double value) {
+    return WTF::WrapUnique(new JSONBasicValue(value));
   }
 
-  bool asBoolean(bool* output) const override;
-  bool asDouble(double* output) const override;
-  bool asInteger(int* output) const override;
-  void writeJSON(StringBuilder* output) const override;
-  std::unique_ptr<JSONValue> clone() const override;
+  bool AsBoolean(bool* output) const override;
+  bool AsDouble(double* output) const override;
+  bool AsInteger(int* output) const override;
+  void WriteJSON(StringBuilder* output) const override;
+  std::unique_ptr<JSONValue> Clone() const override;
 
  private:
   explicit JSONBasicValue(bool value)
-      : JSONValue(TypeBoolean), m_boolValue(value) {}
+      : JSONValue(kTypeBoolean), bool_value_(value) {}
   explicit JSONBasicValue(int value)
-      : JSONValue(TypeInteger), m_integerValue(value) {}
+      : JSONValue(kTypeInteger), integer_value_(value) {}
   explicit JSONBasicValue(double value)
-      : JSONValue(TypeDouble), m_doubleValue(value) {}
+      : JSONValue(kTypeDouble), double_value_(value) {}
 
   union {
-    bool m_boolValue;
-    double m_doubleValue;
-    int m_integerValue;
+    bool bool_value_;
+    double double_value_;
+    int integer_value_;
   };
 };
 
 class PLATFORM_EXPORT JSONString : public JSONValue {
  public:
-  static std::unique_ptr<JSONString> create(const String& value) {
-    return WTF::wrapUnique(new JSONString(value));
+  static std::unique_ptr<JSONString> Create(const String& value) {
+    return WTF::WrapUnique(new JSONString(value));
   }
 
-  static std::unique_ptr<JSONString> create(const char* value) {
-    return WTF::wrapUnique(new JSONString(value));
+  static std::unique_ptr<JSONString> Create(const char* value) {
+    return WTF::WrapUnique(new JSONString(value));
   }
 
-  bool asString(String* output) const override;
-  void writeJSON(StringBuilder* output) const override;
-  std::unique_ptr<JSONValue> clone() const override;
+  bool AsString(String* output) const override;
+  void WriteJSON(StringBuilder* output) const override;
+  std::unique_ptr<JSONValue> Clone() const override;
 
  private:
   explicit JSONString(const String& value)
-      : JSONValue(TypeString), m_stringValue(value) {}
+      : JSONValue(kTypeString), string_value_(value) {}
   explicit JSONString(const char* value)
-      : JSONValue(TypeString), m_stringValue(value) {}
+      : JSONValue(kTypeString), string_value_(value) {}
 
-  String m_stringValue;
+  String string_value_;
 };
 
 class PLATFORM_EXPORT JSONObject : public JSONValue {
  public:
   using Entry = std::pair<String, JSONValue*>;
-  static std::unique_ptr<JSONObject> create() {
-    return WTF::wrapUnique(new JSONObject());
+  static std::unique_ptr<JSONObject> Create() {
+    return WTF::WrapUnique(new JSONObject());
   }
 
-  static JSONObject* cast(JSONValue* value) {
-    if (!value || value->getType() != TypeObject)
+  static JSONObject* Cast(JSONValue* value) {
+    if (!value || value->GetType() != kTypeObject)
       return nullptr;
     return static_cast<JSONObject*>(value);
   }
 
-  static const JSONObject* cast(const JSONValue* value) {
-    if (!value || value->getType() != TypeObject)
+  static const JSONObject* Cast(const JSONValue* value) {
+    if (!value || value->GetType() != kTypeObject)
       return nullptr;
     return static_cast<const JSONObject*>(value);
   }
 
-  static std::unique_ptr<JSONObject> from(std::unique_ptr<JSONValue> value) {
-    auto maybeObject = WTF::wrapUnique(JSONObject::cast(value.get()));
-    if (maybeObject)
+  static std::unique_ptr<JSONObject> From(std::unique_ptr<JSONValue> value) {
+    auto maybe_object = WTF::WrapUnique(JSONObject::Cast(value.get()));
+    if (maybe_object)
       value.release();
-    return maybeObject;
+    return maybe_object;
   }
 
-  static void cast(JSONObject*) = delete;
-  static void cast(std::unique_ptr<JSONObject>) = delete;
+  static void Cast(JSONObject*) = delete;
+  static void Cast(std::unique_ptr<JSONObject>) = delete;
 
-  void writeJSON(StringBuilder* output) const override;
-  std::unique_ptr<JSONValue> clone() const override;
+  void WriteJSON(StringBuilder* output) const override;
+  std::unique_ptr<JSONValue> Clone() const override;
 
-  size_t size() const { return m_data.size(); }
+  size_t size() const { return data_.size(); }
 
-  void setBoolean(const String& name, bool);
-  void setInteger(const String& name, int);
-  void setDouble(const String& name, double);
-  void setString(const String& name, const String&);
-  void setValue(const String& name, std::unique_ptr<JSONValue>);
-  void setObject(const String& name, std::unique_ptr<JSONObject>);
-  void setArray(const String& name, std::unique_ptr<JSONArray>);
+  void SetBoolean(const String& name, bool);
+  void SetInteger(const String& name, int);
+  void SetDouble(const String& name, double);
+  void SetString(const String& name, const String&);
+  void SetValue(const String& name, std::unique_ptr<JSONValue>);
+  void SetObject(const String& name, std::unique_ptr<JSONObject>);
+  void SetArray(const String& name, std::unique_ptr<JSONArray>);
 
-  bool getBoolean(const String& name, bool* output) const;
-  bool getInteger(const String& name, int* output) const;
-  bool getDouble(const String& name, double* output) const;
-  bool getString(const String& name, String* output) const;
+  bool GetBoolean(const String& name, bool* output) const;
+  bool GetInteger(const String& name, int* output) const;
+  bool GetDouble(const String& name, double* output) const;
+  bool GetString(const String& name, String* output) const;
 
-  JSONObject* getObject(const String& name) const;
-  JSONArray* getArray(const String& name) const;
-  JSONValue* get(const String& name) const;
+  JSONObject* GetObject(const String& name) const;
+  JSONArray* GetArray(const String& name) const;
+  JSONValue* Get(const String& name) const;
   Entry at(size_t index) const;
 
-  bool booleanProperty(const String& name, bool defaultValue) const;
-  int integerProperty(const String& name, int defaultValue) const;
-  double doubleProperty(const String& name, double defaultValue) const;
-  void remove(const String& name);
+  bool BooleanProperty(const String& name, bool default_value) const;
+  int IntegerProperty(const String& name, int default_value) const;
+  double DoubleProperty(const String& name, double default_value) const;
+  void Remove(const String& name);
 
   ~JSONObject() override;
 
  protected:
-  void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
+  void PrettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
  private:
   JSONObject();
   template <typename T>
-  void set(const String& key, std::unique_ptr<T>& value) {
+  void Set(const String& key, std::unique_ptr<T>& value) {
     DCHECK(value);
-    if (m_data.set(key, std::move(value)).isNewEntry)
-      m_order.push_back(key);
+    if (data_.Set(key, std::move(value)).is_new_entry)
+      order_.push_back(key);
   }
 
   using Dictionary = HashMap<String, std::unique_ptr<JSONValue>>;
-  Dictionary m_data;
-  Vector<String> m_order;
+  Dictionary data_;
+  Vector<String> order_;
 };
 
 class PLATFORM_EXPORT JSONArray : public JSONValue {
  public:
-  static std::unique_ptr<JSONArray> create() {
-    return WTF::wrapUnique(new JSONArray());
+  static std::unique_ptr<JSONArray> Create() {
+    return WTF::WrapUnique(new JSONArray());
   }
 
-  static JSONArray* cast(JSONValue* value) {
-    if (!value || value->getType() != TypeArray)
+  static JSONArray* Cast(JSONValue* value) {
+    if (!value || value->GetType() != kTypeArray)
       return nullptr;
     return static_cast<JSONArray*>(value);
   }
 
-  static std::unique_ptr<JSONArray> from(std::unique_ptr<JSONValue> value) {
-    auto maybeArray = WTF::wrapUnique(JSONArray::cast(value.get()));
-    if (maybeArray)
+  static std::unique_ptr<JSONArray> From(std::unique_ptr<JSONValue> value) {
+    auto maybe_array = WTF::WrapUnique(JSONArray::Cast(value.get()));
+    if (maybe_array)
       value.release();
-    return maybeArray;
+    return maybe_array;
   }
 
-  static void cast(JSONArray*) = delete;
-  static void cast(std::unique_ptr<JSONArray>) = delete;
+  static void Cast(JSONArray*) = delete;
+  static void Cast(std::unique_ptr<JSONArray>) = delete;
 
   ~JSONArray() override;
 
-  void writeJSON(StringBuilder* output) const override;
-  std::unique_ptr<JSONValue> clone() const override;
+  void WriteJSON(StringBuilder* output) const override;
+  std::unique_ptr<JSONValue> Clone() const override;
 
-  void pushBoolean(bool);
-  void pushInteger(int);
-  void pushDouble(double);
-  void pushString(const String&);
-  void pushValue(std::unique_ptr<JSONValue>);
-  void pushObject(std::unique_ptr<JSONObject>);
-  void pushArray(std::unique_ptr<JSONArray>);
+  void PushBoolean(bool);
+  void PushInteger(int);
+  void PushDouble(double);
+  void PushString(const String&);
+  void PushValue(std::unique_ptr<JSONValue>);
+  void PushObject(std::unique_ptr<JSONObject>);
+  void PushArray(std::unique_ptr<JSONArray>);
 
   JSONValue* at(size_t index) const;
-  size_t size() const { return m_data.size(); }
+  size_t size() const { return data_.size(); }
 
  protected:
-  void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
+  void PrettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
  private:
   JSONArray();
-  Vector<std::unique_ptr<JSONValue>> m_data;
+  Vector<std::unique_ptr<JSONValue>> data_;
 };
 
-PLATFORM_EXPORT void escapeStringForJSON(const String&, StringBuilder*);
-void doubleQuoteStringForJSON(const String&, StringBuilder*);
+PLATFORM_EXPORT void EscapeStringForJSON(const String&, StringBuilder*);
+void DoubleQuoteStringForJSON(const String&, StringBuilder*);
 
 }  // namespace blink
 

@@ -53,19 +53,19 @@ class MODULES_EXPORT RTCDataChannel final
       public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(RTCDataChannel, dispose);
+  USING_PRE_FINALIZER(RTCDataChannel, Dispose);
 
  public:
-  static RTCDataChannel* create(ExecutionContext*,
+  static RTCDataChannel* Create(ExecutionContext*,
                                 std::unique_ptr<WebRTCDataChannelHandler>);
-  static RTCDataChannel* create(ExecutionContext*,
+  static RTCDataChannel* Create(ExecutionContext*,
                                 WebRTCPeerConnectionHandler*,
                                 const String& label,
                                 const WebRTCDataChannelInit&,
                                 ExceptionState&);
   ~RTCDataChannel() override;
 
-  ReadyState getHandlerState() const;
+  ReadyState GetHandlerState() const;
 
   String label() const;
 
@@ -101,46 +101,46 @@ class MODULES_EXPORT RTCDataChannel final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   // EventTarget
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   // SuspendableObject
-  void suspend() override;
-  void resume() override;
-  void contextDestroyed(ExecutionContext*) override;
+  void Suspend() override;
+  void Resume() override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
-  bool hasPendingActivity() const override;
+  bool HasPendingActivity() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
   // WebRTCDataChannelHandlerClient
-  void didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;
-  void didDecreaseBufferedAmount(unsigned) override;
-  void didReceiveStringData(const WebString&) override;
-  void didReceiveRawData(const char*, size_t) override;
-  void didDetectError() override;
+  void DidChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;
+  void DidDecreaseBufferedAmount(unsigned) override;
+  void DidReceiveStringData(const WebString&) override;
+  void DidReceiveRawData(const char*, size_t) override;
+  void DidDetectError() override;
 
  private:
   RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
-  void dispose();
+  void Dispose();
 
-  void scheduleDispatchEvent(Event*);
-  void scheduledEventTimerFired(TimerBase*);
+  void ScheduleDispatchEvent(Event*);
+  void ScheduledEventTimerFired(TimerBase*);
 
-  std::unique_ptr<WebRTCDataChannelHandler> m_handler;
+  std::unique_ptr<WebRTCDataChannelHandler> handler_;
 
-  WebRTCDataChannelHandlerClient::ReadyState m_readyState;
+  WebRTCDataChannelHandlerClient::ReadyState ready_state_;
 
-  enum BinaryType { BinaryTypeBlob, BinaryTypeArrayBuffer };
-  BinaryType m_binaryType;
+  enum BinaryType { kBinaryTypeBlob, kBinaryTypeArrayBuffer };
+  BinaryType binary_type_;
 
-  TaskRunnerTimer<RTCDataChannel> m_scheduledEventTimer;
-  HeapVector<Member<Event>> m_scheduledEvents;
+  TaskRunnerTimer<RTCDataChannel> scheduled_event_timer_;
+  HeapVector<Member<Event>> scheduled_events_;
 
-  unsigned m_bufferedAmountLowThreshold;
+  unsigned buffered_amount_low_threshold_;
 
-  bool m_stopped;
+  bool stopped_;
 
   FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
 };

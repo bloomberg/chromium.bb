@@ -16,15 +16,15 @@ namespace blink {
 // that would have been necesary with service_manager::InterfaceProvider.
 class BLINK_PLATFORM_EXPORT InterfaceProvider {
  public:
-  virtual void getInterface(const char* name,
+  virtual void GetInterface(const char* name,
                             mojo::ScopedMessagePipeHandle) = 0;
 
   template <typename Interface>
-  void getInterface(mojo::InterfaceRequest<Interface> ptr) {
-    getInterface(Interface::Name_, ptr.PassMessagePipe());
+  void GetInterface(mojo::InterfaceRequest<Interface> ptr) {
+    GetInterface(Interface::Name_, ptr.PassMessagePipe());
   }
 
-  static InterfaceProvider* getEmptyInterfaceProvider();
+  static InterfaceProvider* GetEmptyInterfaceProvider();
 };
 
 }  // namespace blink

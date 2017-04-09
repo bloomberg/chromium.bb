@@ -31,33 +31,33 @@ namespace blink {
 
 LayoutIFrame::LayoutIFrame(Element* element) : LayoutPart(element) {}
 
-bool LayoutIFrame::shouldComputeSizeAsReplaced() const {
+bool LayoutIFrame::ShouldComputeSizeAsReplaced() const {
   return true;
 }
 
-bool LayoutIFrame::isInlineBlockOrInlineTable() const {
-  return isInline();
+bool LayoutIFrame::IsInlineBlockOrInlineTable() const {
+  return IsInline();
 }
 
-PaintLayerType LayoutIFrame::layerTypeRequired() const {
-  if (style()->resize() != RESIZE_NONE)
-    return NormalPaintLayer;
-  return LayoutPart::layerTypeRequired();
+PaintLayerType LayoutIFrame::LayerTypeRequired() const {
+  if (Style()->Resize() != RESIZE_NONE)
+    return kNormalPaintLayer;
+  return LayoutPart::LayerTypeRequired();
 }
 
-void LayoutIFrame::layout() {
-  DCHECK(needsLayout());
+void LayoutIFrame::GetLayout() {
+  DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  updateLogicalWidth();
+  UpdateLogicalWidth();
   // No kids to layout as a replaced element.
-  updateLogicalHeight();
+  UpdateLogicalHeight();
 
-  m_overflow.reset();
-  addVisualEffectOverflow();
-  updateLayerTransformAfterLayout();
+  overflow_.reset();
+  AddVisualEffectOverflow();
+  UpdateLayerTransformAfterLayout();
 
-  clearNeedsLayout();
+  ClearNeedsLayout();
 }
 
 }  // namespace blink

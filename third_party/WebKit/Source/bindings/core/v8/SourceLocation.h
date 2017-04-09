@@ -21,70 +21,70 @@ class CORE_EXPORT SourceLocation {
  public:
   // Zero lineNumber and columnNumber mean unknown. Captures current stack
   // trace.
-  static std::unique_ptr<SourceLocation> capture(const String& url,
-                                                 unsigned lineNumber,
-                                                 unsigned columnNumber);
+  static std::unique_ptr<SourceLocation> Capture(const String& url,
+                                                 unsigned line_number,
+                                                 unsigned column_number);
 
   // Shortcut when location is unknown. Tries to capture call stack or parsing
   // location if available.
-  static std::unique_ptr<SourceLocation> capture(ExecutionContext* = nullptr);
+  static std::unique_ptr<SourceLocation> Capture(ExecutionContext* = nullptr);
 
-  static std::unique_ptr<SourceLocation> fromMessage(v8::Isolate*,
+  static std::unique_ptr<SourceLocation> FromMessage(v8::Isolate*,
                                                      v8::Local<v8::Message>,
                                                      ExecutionContext*);
 
-  static std::unique_ptr<SourceLocation> fromFunction(v8::Local<v8::Function>);
+  static std::unique_ptr<SourceLocation> FromFunction(v8::Local<v8::Function>);
 
   // Forces full stack trace.
-  static std::unique_ptr<SourceLocation> captureWithFullStackTrace();
+  static std::unique_ptr<SourceLocation> CaptureWithFullStackTrace();
 
-  static std::unique_ptr<SourceLocation> create(
+  static std::unique_ptr<SourceLocation> Create(
       const String& url,
-      unsigned lineNumber,
-      unsigned columnNumber,
+      unsigned line_number,
+      unsigned column_number,
       std::unique_ptr<v8_inspector::V8StackTrace>,
-      int scriptId = 0);
+      int script_id = 0);
   ~SourceLocation();
 
-  bool isUnknown() const {
-    return m_url.isNull() && !m_scriptId && !m_lineNumber;
+  bool IsUnknown() const {
+    return url_.IsNull() && !script_id_ && !line_number_;
   }
-  const String& url() const { return m_url; }
-  unsigned lineNumber() const { return m_lineNumber; }
-  unsigned columnNumber() const { return m_columnNumber; }
-  int scriptId() const { return m_scriptId; }
-  std::unique_ptr<v8_inspector::V8StackTrace> takeStackTrace() {
-    return std::move(m_stackTrace);
+  const String& Url() const { return url_; }
+  unsigned LineNumber() const { return line_number_; }
+  unsigned ColumnNumber() const { return column_number_; }
+  int ScriptId() const { return script_id_; }
+  std::unique_ptr<v8_inspector::V8StackTrace> TakeStackTrace() {
+    return std::move(stack_trace_);
   }
 
-  std::unique_ptr<SourceLocation> clone()
+  std::unique_ptr<SourceLocation> Clone()
       const;  // Safe to pass between threads.
 
   // No-op when stack trace is unknown.
-  void toTracedValue(TracedValue*, const char* name) const;
+  void ToTracedValue(TracedValue*, const char* name) const;
 
   // Could be null string when stack trace is unknown.
-  String toString() const;
+  String ToString() const;
 
   // Could be null when stack trace is unknown.
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
-  buildInspectorObject() const;
+  BuildInspectorObject() const;
 
  private:
   SourceLocation(const String& url,
-                 unsigned lineNumber,
-                 unsigned columnNumber,
+                 unsigned line_number,
+                 unsigned column_number,
                  std::unique_ptr<v8_inspector::V8StackTrace>,
-                 int scriptId);
-  static std::unique_ptr<SourceLocation> createFromNonEmptyV8StackTrace(
+                 int script_id);
+  static std::unique_ptr<SourceLocation> CreateFromNonEmptyV8StackTrace(
       std::unique_ptr<v8_inspector::V8StackTrace>,
-      int scriptId);
+      int script_id);
 
-  String m_url;
-  unsigned m_lineNumber;
-  unsigned m_columnNumber;
-  std::unique_ptr<v8_inspector::V8StackTrace> m_stackTrace;
-  int m_scriptId;
+  String url_;
+  unsigned line_number_;
+  unsigned column_number_;
+  std::unique_ptr<v8_inspector::V8StackTrace> stack_trace_;
+  int script_id_;
 };
 
 }  // namespace blink

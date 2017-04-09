@@ -16,8 +16,8 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   WTF::Vector<WTF::String> messages;
   RefPtr<blink::SecurityOrigin> origin =
-      blink::SecurityOrigin::createFromString("https://example.com/");
-  blink::parseFeaturePolicy(WTF::String(data, size), origin.get(), &messages);
+      blink::SecurityOrigin::CreateFromString("https://example.com/");
+  blink::ParseFeaturePolicy(WTF::String(data, size), origin.Get(), &messages);
   return 0;
 }
 

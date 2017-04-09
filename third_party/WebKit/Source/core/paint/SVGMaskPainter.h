@@ -18,18 +18,18 @@ class SVGMaskPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGMaskPainter(LayoutSVGResourceMasker& mask) : m_mask(mask) {}
+  SVGMaskPainter(LayoutSVGResourceMasker& mask) : mask_(mask) {}
 
-  bool prepareEffect(const LayoutObject&, GraphicsContext&);
-  void finishEffect(const LayoutObject&, GraphicsContext&);
+  bool PrepareEffect(const LayoutObject&, GraphicsContext&);
+  void FinishEffect(const LayoutObject&, GraphicsContext&);
 
  private:
-  void drawMaskForLayoutObject(GraphicsContext&,
+  void DrawMaskForLayoutObject(GraphicsContext&,
                                const LayoutObject&,
-                               const FloatRect& targetBoundingBox,
-                               const FloatRect& targetVisualRect);
+                               const FloatRect& target_bounding_box,
+                               const FloatRect& target_visual_rect);
 
-  LayoutSVGResourceMasker& m_mask;
+  LayoutSVGResourceMasker& mask_;
 };
 
 }  // namespace blink

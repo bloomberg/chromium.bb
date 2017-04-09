@@ -10,15 +10,15 @@ namespace blink {
 
 BackgroundFetchSettledFetch::BackgroundFetchSettledFetch(Request* request,
                                                          Response* response)
-    : BackgroundFetchFetch(request), m_response(response) {}
+    : BackgroundFetchFetch(request), response_(response) {}
 
 Response* BackgroundFetchSettledFetch::response() const {
-  return m_response;
+  return response_;
 }
 
 DEFINE_TRACE(BackgroundFetchSettledFetch) {
-  visitor->trace(m_response);
-  BackgroundFetchFetch::trace(visitor);
+  visitor->Trace(response_);
+  BackgroundFetchFetch::Trace(visitor);
 }
 
 }  // namespace blink

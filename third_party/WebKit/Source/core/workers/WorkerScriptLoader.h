@@ -56,69 +56,69 @@ class CORE_EXPORT WorkerScriptLoader final
   USING_FAST_MALLOC(WorkerScriptLoader);
 
  public:
-  static PassRefPtr<WorkerScriptLoader> create() {
-    return adoptRef(new WorkerScriptLoader());
+  static PassRefPtr<WorkerScriptLoader> Create() {
+    return AdoptRef(new WorkerScriptLoader());
   }
 
-  void loadSynchronously(ExecutionContext&,
+  void LoadSynchronously(ExecutionContext&,
                          const KURL&,
                          CrossOriginRequestPolicy,
                          WebAddressSpace);
 
   // Note that callbacks could be invoked before loadAsynchronously() returns.
-  void loadAsynchronously(ExecutionContext&,
+  void LoadAsynchronously(ExecutionContext&,
                           const KURL&,
                           CrossOriginRequestPolicy,
                           WebAddressSpace,
-                          std::unique_ptr<WTF::Closure> responseCallback,
-                          std::unique_ptr<WTF::Closure> finishedCallback);
+                          std::unique_ptr<WTF::Closure> response_callback,
+                          std::unique_ptr<WTF::Closure> finished_callback);
 
   // This will immediately invoke |finishedCallback| if loadAsynchronously()
   // is in progress.
-  void cancel();
+  void Cancel();
 
-  String script();
-  const KURL& url() const { return m_url; }
-  const KURL& responseURL() const;
-  bool failed() const { return m_failed; }
-  bool canceled() const { return m_canceled; }
-  unsigned long identifier() const { return m_identifier; }
-  long long appCacheID() const { return m_appCacheID; }
+  String Script();
+  const KURL& Url() const { return url_; }
+  const KURL& ResponseURL() const;
+  bool Failed() const { return failed_; }
+  bool Canceled() const { return canceled_; }
+  unsigned long Identifier() const { return identifier_; }
+  long long AppCacheID() const { return app_cache_id_; }
 
-  std::unique_ptr<Vector<char>> releaseCachedMetadata() {
-    return std::move(m_cachedMetadata);
+  std::unique_ptr<Vector<char>> ReleaseCachedMetadata() {
+    return std::move(cached_metadata_);
   }
-  const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
+  const Vector<char>* CachedMetadata() const { return cached_metadata_.get(); }
 
-  ContentSecurityPolicy* contentSecurityPolicy() {
-    return m_contentSecurityPolicy.get();
+  ContentSecurityPolicy* GetContentSecurityPolicy() {
+    return content_security_policy_.Get();
   }
-  ContentSecurityPolicy* releaseContentSecurityPolicy() {
-    return m_contentSecurityPolicy.release();
-  }
-
-  String getReferrerPolicy() { return m_referrerPolicy; }
-
-  WebAddressSpace responseAddressSpace() const {
-    return m_responseAddressSpace;
+  ContentSecurityPolicy* ReleaseContentSecurityPolicy() {
+    return content_security_policy_.Release();
   }
 
-  const Vector<String>* originTrialTokens() const {
-    return m_originTrialTokens.get();
+  String GetReferrerPolicy() { return referrer_policy_; }
+
+  WebAddressSpace ResponseAddressSpace() const {
+    return response_address_space_;
+  }
+
+  const Vector<String>* OriginTrialTokens() const {
+    return origin_trial_tokens_.get();
   }
 
   // ThreadableLoaderClient
-  void didReceiveResponse(unsigned long /*identifier*/,
+  void DidReceiveResponse(unsigned long /*identifier*/,
                           const ResourceResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didReceiveData(const char* data, unsigned dataLength) override;
-  void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void didFinishLoading(unsigned long identifier, double) override;
-  void didFail(const ResourceError&) override;
-  void didFailRedirectCheck() override;
+  void DidReceiveData(const char* data, unsigned data_length) override;
+  void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
+  void DidFinishLoading(unsigned long identifier, double) override;
+  void DidFail(const ResourceError&) override;
+  void DidFailRedirectCheck() override;
 
-  void setRequestContext(WebURLRequest::RequestContext requestContext) {
-    m_requestContext = requestContext;
+  void SetRequestContext(WebURLRequest::RequestContext request_context) {
+    request_context_ = request_context;
   }
 
  private:
@@ -127,37 +127,37 @@ class CORE_EXPORT WorkerScriptLoader final
   WorkerScriptLoader();
   ~WorkerScriptLoader() override;
 
-  ResourceRequest createResourceRequest(WebAddressSpace);
-  void notifyError();
-  void notifyFinished();
+  ResourceRequest CreateResourceRequest(WebAddressSpace);
+  void NotifyError();
+  void NotifyFinished();
 
-  void processContentSecurityPolicy(const ResourceResponse&);
+  void ProcessContentSecurityPolicy(const ResourceResponse&);
 
   // Callbacks for loadAsynchronously().
-  std::unique_ptr<WTF::Closure> m_responseCallback;
-  std::unique_ptr<WTF::Closure> m_finishedCallback;
+  std::unique_ptr<WTF::Closure> response_callback_;
+  std::unique_ptr<WTF::Closure> finished_callback_;
 
-  Persistent<ThreadableLoader> m_threadableLoader;
-  String m_responseEncoding;
-  std::unique_ptr<TextResourceDecoder> m_decoder;
-  StringBuilder m_script;
-  KURL m_url;
-  KURL m_responseURL;
+  Persistent<ThreadableLoader> threadable_loader_;
+  String response_encoding_;
+  std::unique_ptr<TextResourceDecoder> decoder_;
+  StringBuilder script_;
+  KURL url_;
+  KURL response_url_;
 
   // TODO(nhiroki): Consolidate these state flags for cleanup.
-  bool m_failed = false;
-  bool m_canceled = false;
-  bool m_needToCancel = false;
+  bool failed_ = false;
+  bool canceled_ = false;
+  bool need_to_cancel_ = false;
 
-  unsigned long m_identifier = 0;
-  long long m_appCacheID = 0;
-  std::unique_ptr<Vector<char>> m_cachedMetadata;
-  WebURLRequest::RequestContext m_requestContext;
-  Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
-  Persistent<ExecutionContext> m_executionContext;
-  WebAddressSpace m_responseAddressSpace;
-  std::unique_ptr<Vector<String>> m_originTrialTokens;
-  String m_referrerPolicy;
+  unsigned long identifier_ = 0;
+  long long app_cache_id_ = 0;
+  std::unique_ptr<Vector<char>> cached_metadata_;
+  WebURLRequest::RequestContext request_context_;
+  Persistent<ContentSecurityPolicy> content_security_policy_;
+  Persistent<ExecutionContext> execution_context_;
+  WebAddressSpace response_address_space_;
+  std::unique_ptr<Vector<String>> origin_trial_tokens_;
+  String referrer_policy_;
 };
 
 }  // namespace blink

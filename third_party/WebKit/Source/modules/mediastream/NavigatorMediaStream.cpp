@@ -44,41 +44,42 @@ namespace blink {
 void NavigatorMediaStream::getUserMedia(
     Navigator& navigator,
     const MediaStreamConstraints& options,
-    NavigatorUserMediaSuccessCallback* successCallback,
-    NavigatorUserMediaErrorCallback* errorCallback,
-    ExceptionState& exceptionState) {
-  if (!successCallback)
+    NavigatorUserMediaSuccessCallback* success_callback,
+    NavigatorUserMediaErrorCallback* error_callback,
+    ExceptionState& exception_state) {
+  if (!success_callback)
     return;
 
-  UserMediaController* userMedia = UserMediaController::from(navigator.frame());
-  if (!userMedia) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
+  UserMediaController* user_media =
+      UserMediaController::From(navigator.GetFrame());
+  if (!user_media) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
         "No user media controller available; is this a detached window?");
     return;
   }
 
-  MediaErrorState errorState;
-  UserMediaRequest* request = UserMediaRequest::create(
-      navigator.frame()->document(), userMedia, options, successCallback,
-      errorCallback, errorState);
+  MediaErrorState error_state;
+  UserMediaRequest* request = UserMediaRequest::Create(
+      navigator.GetFrame()->GetDocument(), user_media, options,
+      success_callback, error_callback, error_state);
   if (!request) {
-    DCHECK(errorState.hadException());
-    if (errorState.canGenerateException()) {
-      errorState.raiseException(exceptionState);
+    DCHECK(error_state.HadException());
+    if (error_state.CanGenerateException()) {
+      error_state.RaiseException(exception_state);
     } else {
-      errorCallback->handleEvent(errorState.createError());
+      error_callback->handleEvent(error_state.CreateError());
     }
     return;
   }
 
-  String errorMessage;
-  if (!request->isSecureContextUse(errorMessage)) {
-    request->failPermissionDenied(errorMessage);
+  String error_message;
+  if (!request->IsSecureContextUse(error_message)) {
+    request->FailPermissionDenied(error_message);
     return;
   }
 
-  request->start();
+  request->Start();
 }
 
 }  // namespace blink

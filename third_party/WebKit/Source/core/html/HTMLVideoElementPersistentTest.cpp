@@ -23,8 +23,8 @@ namespace {
 
 class MockChromeClient : public EmptyChromeClient {
  public:
-  MOCK_METHOD1(enterFullscreen, void(LocalFrame&));
-  MOCK_METHOD1(exitFullscreen, void(LocalFrame&));
+  MOCK_METHOD1(EnterFullscreen, void(LocalFrame&));
+  MOCK_METHOD1(ExitFullscreen, void(LocalFrame&));
 };
 
 using ::testing::_;
@@ -35,273 +35,274 @@ using ::testing::Sequence;
 class HTMLVideoElementPersistentTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_chromeClient = new MockChromeClient();
+    chrome_client_ = new MockChromeClient();
 
     Page::PageClients clients;
-    fillWithEmptyClients(clients);
-    clients.chromeClient = m_chromeClient.get();
+    FillWithEmptyClients(clients);
+    clients.chrome_client = chrome_client_.Get();
 
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
-    document().body()->setInnerHTML("<body><div><video></video></div></body>");
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
+    GetDocument().body()->setInnerHTML(
+        "<body><div><video></video></div></body>");
   }
 
-  Document& document() { return m_pageHolder->document(); }
+  Document& GetDocument() { return page_holder_->GetDocument(); }
 
-  HTMLVideoElement* videoElement() {
-    return toHTMLVideoElement(document().querySelector("video"));
+  HTMLVideoElement* VideoElement() {
+    return toHTMLVideoElement(GetDocument().QuerySelector("video"));
   }
 
-  HTMLDivElement* divElement() {
-    return toHTMLDivElement(document().querySelector("div"));
+  HTMLDivElement* DivElement() {
+    return toHTMLDivElement(GetDocument().QuerySelector("div"));
   }
 
-  Element* fullscreenElement() {
-    return Fullscreen::currentFullScreenElementFrom(document());
+  Element* FullscreenElement() {
+    return Fullscreen::CurrentFullScreenElementFrom(GetDocument());
   }
 
-  MockChromeClient& mockChromeClient() { return *m_chromeClient; }
+  MockChromeClient& GetMockChromeClient() { return *chrome_client_; }
 
-  void simulateDidEnterFullscreen() {
-    Fullscreen::fromIfExists(document())->didEnterFullscreen();
+  void SimulateDidEnterFullscreen() {
+    Fullscreen::FromIfExists(GetDocument())->DidEnterFullscreen();
   }
 
-  void simulateDidExitFullscreen() {
-    Fullscreen::fromIfExists(document())->didExitFullscreen();
+  void SimulateDidExitFullscreen() {
+    Fullscreen::FromIfExists(GetDocument())->DidExitFullscreen();
   }
 
-  void simulateBecamePersistentVideo(bool value) {
-    videoElement()->onBecamePersistentVideo(value);
+  void SimulateBecamePersistentVideo(bool value) {
+    VideoElement()->OnBecamePersistentVideo(value);
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
-  Persistent<MockChromeClient> m_chromeClient;
+  std::unique_ptr<DummyPageHolder> page_holder_;
+  Persistent<MockChromeClient> chrome_client_;
 };
 
 TEST_F(HTMLVideoElementPersistentTest, nothingIsFullscreen) {
   Sequence s;
 
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
   // Making the video persistent should be a no-op.
-  simulateBecamePersistentVideo(true);
-  EXPECT_EQ(fullscreenElement(), nullptr);
-  EXPECT_FALSE(videoElement()->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(true);
+  EXPECT_EQ(FullscreenElement(), nullptr);
+  EXPECT_FALSE(VideoElement()->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(VideoElement()->ContainsPersistentVideo());
 
   // Making the video not persitent should also be a no-op.
-  simulateBecamePersistentVideo(false);
-  EXPECT_EQ(fullscreenElement(), nullptr);
-  EXPECT_FALSE(videoElement()->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(false);
+  EXPECT_EQ(FullscreenElement(), nullptr);
+  EXPECT_FALSE(VideoElement()->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(VideoElement()->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, videoIsFullscreen) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(0);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*videoElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), videoElement());
-
-  // This should be no-op.
-  simulateBecamePersistentVideo(true);
-  EXPECT_EQ(fullscreenElement(), videoElement());
-  EXPECT_FALSE(videoElement()->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(videoElement()->containsPersistentVideo());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*VideoElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), VideoElement());
 
   // This should be no-op.
-  simulateBecamePersistentVideo(false);
-  EXPECT_EQ(fullscreenElement(), videoElement());
-  EXPECT_FALSE(videoElement()->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(true);
+  EXPECT_EQ(FullscreenElement(), VideoElement());
+  EXPECT_FALSE(VideoElement()->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(VideoElement()->ContainsPersistentVideo());
+
+  // This should be no-op.
+  SimulateBecamePersistentVideo(false);
+  EXPECT_EQ(FullscreenElement(), VideoElement());
+  EXPECT_FALSE(VideoElement()->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(VideoElement()->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, divIsFullscreen) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(0);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), divElement());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), DivElement());
 
   // Make the video persistent.
-  simulateBecamePersistentVideo(true);
-  EXPECT_EQ(fullscreenElement(), divElement());
-  EXPECT_TRUE(videoElement()->isPersistent());
-  EXPECT_TRUE(divElement()->containsPersistentVideo());
-  EXPECT_TRUE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(true);
+  EXPECT_EQ(FullscreenElement(), DivElement());
+  EXPECT_TRUE(VideoElement()->IsPersistent());
+  EXPECT_TRUE(DivElement()->ContainsPersistentVideo());
+  EXPECT_TRUE(VideoElement()->ContainsPersistentVideo());
 
   // This should be no-op.
-  simulateBecamePersistentVideo(true);
-  EXPECT_EQ(fullscreenElement(), divElement());
-  EXPECT_TRUE(videoElement()->isPersistent());
-  EXPECT_TRUE(divElement()->containsPersistentVideo());
-  EXPECT_TRUE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(true);
+  EXPECT_EQ(FullscreenElement(), DivElement());
+  EXPECT_TRUE(VideoElement()->IsPersistent());
+  EXPECT_TRUE(DivElement()->ContainsPersistentVideo());
+  EXPECT_TRUE(VideoElement()->ContainsPersistentVideo());
 
   // Make the video not persistent.
-  simulateBecamePersistentVideo(false);
-  EXPECT_EQ(fullscreenElement(), divElement());
-  EXPECT_FALSE(videoElement()->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(false);
+  EXPECT_EQ(FullscreenElement(), DivElement());
+  EXPECT_FALSE(VideoElement()->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(VideoElement()->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, exitFullscreenBeforePersistence) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(1);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), divElement());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), DivElement());
 
-  simulateBecamePersistentVideo(true);
+  SimulateBecamePersistentVideo(true);
 
-  Fullscreen::fullyExitFullscreen(document());
-  simulateDidExitFullscreen();
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  Fullscreen::FullyExitFullscreen(GetDocument());
+  SimulateDidExitFullscreen();
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
   // Video persistence states should still apply.
-  EXPECT_TRUE(videoElement()->isPersistent());
-  EXPECT_TRUE(divElement()->containsPersistentVideo());
-  EXPECT_TRUE(videoElement()->containsPersistentVideo());
+  EXPECT_TRUE(VideoElement()->IsPersistent());
+  EXPECT_TRUE(DivElement()->ContainsPersistentVideo());
+  EXPECT_TRUE(VideoElement()->ContainsPersistentVideo());
 
   // Make the video not persistent, cleaned up.
-  simulateBecamePersistentVideo(false);
-  EXPECT_FALSE(videoElement()->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(videoElement()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(false);
+  EXPECT_FALSE(VideoElement()->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(VideoElement()->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, internalPseudoClassOnlyUAStyleSheet) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(0);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
-  EXPECT_FALSE(divElement()->matches(":-webkit-full-screen"));
-  EXPECT_FALSE(divElement()->matches(":-internal-video-persistent-ancestor"));
-  EXPECT_FALSE(videoElement()->matches(":-internal-video-persistent"));
-  EXPECT_FALSE(videoElement()->matches(":-internal-video-persistent-ancestor"));
+  EXPECT_FALSE(DivElement()->matches(":-webkit-full-screen"));
+  EXPECT_FALSE(DivElement()->matches(":-internal-video-persistent-ancestor"));
+  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent"));
+  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent-ancestor"));
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  simulateBecamePersistentVideo(true);
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  SimulateBecamePersistentVideo(true);
 
-  EXPECT_EQ(fullscreenElement(), divElement());
-  EXPECT_TRUE(videoElement()->isPersistent());
-  EXPECT_TRUE(divElement()->containsPersistentVideo());
-  EXPECT_TRUE(videoElement()->containsPersistentVideo());
+  EXPECT_EQ(FullscreenElement(), DivElement());
+  EXPECT_TRUE(VideoElement()->IsPersistent());
+  EXPECT_TRUE(DivElement()->ContainsPersistentVideo());
+  EXPECT_TRUE(VideoElement()->ContainsPersistentVideo());
 
   // The :internal-* rules apply only from the UA stylesheet.
-  EXPECT_TRUE(divElement()->matches(":-webkit-full-screen"));
-  EXPECT_FALSE(divElement()->matches(":-internal-video-persistent-ancestor"));
-  EXPECT_FALSE(videoElement()->matches(":-internal-video-persistent"));
-  EXPECT_FALSE(videoElement()->matches(":-internal-video-persistent-ancestor"));
+  EXPECT_TRUE(DivElement()->matches(":-webkit-full-screen"));
+  EXPECT_FALSE(DivElement()->matches(":-internal-video-persistent-ancestor"));
+  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent"));
+  EXPECT_FALSE(VideoElement()->matches(":-internal-video-persistent-ancestor"));
 }
 
 TEST_F(HTMLVideoElementPersistentTest, removeContainerWhilePersisting) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(1);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), divElement());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), DivElement());
 
-  simulateBecamePersistentVideo(true);
-  Persistent<HTMLDivElement> div = divElement();
-  Persistent<HTMLVideoElement> video = videoElement();
-  document().body()->removeChild(divElement());
+  SimulateBecamePersistentVideo(true);
+  Persistent<HTMLDivElement> div = DivElement();
+  Persistent<HTMLVideoElement> video = VideoElement();
+  GetDocument().body()->RemoveChild(DivElement());
 
-  EXPECT_FALSE(video->isPersistent());
-  EXPECT_FALSE(div->containsPersistentVideo());
-  EXPECT_FALSE(video->containsPersistentVideo());
+  EXPECT_FALSE(video->IsPersistent());
+  EXPECT_FALSE(div->ContainsPersistentVideo());
+  EXPECT_FALSE(video->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, removeVideoWhilePersisting) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(0);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), divElement());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), DivElement());
 
-  simulateBecamePersistentVideo(true);
-  Persistent<HTMLVideoElement> video = videoElement();
-  divElement()->removeChild(videoElement());
+  SimulateBecamePersistentVideo(true);
+  Persistent<HTMLVideoElement> video = VideoElement();
+  DivElement()->RemoveChild(VideoElement());
 
-  EXPECT_FALSE(video->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(video->containsPersistentVideo());
+  EXPECT_FALSE(video->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(video->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, removeVideoWithLayerWhilePersisting) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
   // Inserting a <span> between the <div> and <video>.
-  Persistent<Element> span = document().createElement("span");
-  divElement()->appendChild(span);
-  span->appendChild(videoElement());
+  Persistent<Element> span = GetDocument().createElement("span");
+  DivElement()->AppendChild(span);
+  span->AppendChild(VideoElement());
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(0);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), divElement());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), DivElement());
 
-  simulateBecamePersistentVideo(true);
-  Persistent<HTMLVideoElement> video = videoElement();
-  span->removeChild(videoElement());
+  SimulateBecamePersistentVideo(true);
+  Persistent<HTMLVideoElement> video = VideoElement();
+  span->RemoveChild(VideoElement());
 
-  EXPECT_FALSE(video->isPersistent());
-  EXPECT_FALSE(divElement()->containsPersistentVideo());
-  EXPECT_FALSE(video->containsPersistentVideo());
-  EXPECT_FALSE(span->containsPersistentVideo());
+  EXPECT_FALSE(video->IsPersistent());
+  EXPECT_FALSE(DivElement()->ContainsPersistentVideo());
+  EXPECT_FALSE(video->ContainsPersistentVideo());
+  EXPECT_FALSE(span->ContainsPersistentVideo());
 }
 
 TEST_F(HTMLVideoElementPersistentTest, containsPersistentVideoScopedToFS) {
-  EXPECT_EQ(fullscreenElement(), nullptr);
+  EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(mockChromeClient(), enterFullscreen(_)).Times(1);
-  EXPECT_CALL(mockChromeClient(), exitFullscreen(_)).Times(0);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
-  UserGestureIndicator gestureIndicator(
-      DocumentUserGestureToken::create(&document()));
-  Fullscreen::requestFullscreen(*divElement());
-  simulateDidEnterFullscreen();
-  EXPECT_EQ(fullscreenElement(), divElement());
+  UserGestureIndicator gesture_indicator(
+      DocumentUserGestureToken::Create(&GetDocument()));
+  Fullscreen::RequestFullscreen(*DivElement());
+  SimulateDidEnterFullscreen();
+  EXPECT_EQ(FullscreenElement(), DivElement());
 
-  simulateBecamePersistentVideo(true);
-  EXPECT_FALSE(document().body()->containsPersistentVideo());
+  SimulateBecamePersistentVideo(true);
+  EXPECT_FALSE(GetDocument().body()->ContainsPersistentVideo());
 }
 
 }  // namespace blink

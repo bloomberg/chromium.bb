@@ -14,22 +14,22 @@ namespace blink {
 // Used to implement the -webkit-box-reflect property as a filter.
 class PLATFORM_EXPORT FEBoxReflect final : public FilterEffect {
  public:
-  static FEBoxReflect* create(Filter* filter, const BoxReflection& reflection) {
+  static FEBoxReflect* Create(Filter* filter, const BoxReflection& reflection) {
     return new FEBoxReflect(filter, reflection);
   }
 
   // FilterEffect implementation
-  TextStream& externalRepresentation(TextStream&, int indentation) const final;
+  TextStream& ExternalRepresentation(TextStream&, int indentation) const final;
 
  private:
   FEBoxReflect(Filter*, const BoxReflection&);
   ~FEBoxReflect() final;
 
-  FloatRect mapEffect(const FloatRect&) const final;
+  FloatRect MapEffect(const FloatRect&) const final;
 
-  sk_sp<SkImageFilter> createImageFilter() final;
+  sk_sp<SkImageFilter> CreateImageFilter() final;
 
-  BoxReflection m_reflection;
+  BoxReflection reflection_;
 };
 
 }  // namespace blink

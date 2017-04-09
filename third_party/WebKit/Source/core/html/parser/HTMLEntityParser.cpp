@@ -33,45 +33,45 @@
 
 namespace blink {
 
-static const UChar windowsLatin1ExtensionArray[32] = {
+static const UChar kWindowsLatin1ExtensionArray[32] = {
     0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,  // 80-87
     0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,  // 88-8F
     0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014,  // 90-97
     0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178,  // 98-9F
 };
 
-static bool isAlphaNumeric(UChar cc) {
+static bool IsAlphaNumeric(UChar cc) {
   return (cc >= '0' && cc <= '9') || (cc >= 'a' && cc <= 'z') ||
          (cc >= 'A' && cc <= 'Z');
 }
 
-static UChar adjustEntity(UChar32 value) {
+static UChar AdjustEntity(UChar32 value) {
   if ((value & ~0x1F) != 0x0080)
     return value;
-  return windowsLatin1ExtensionArray[value - 0x80];
+  return kWindowsLatin1ExtensionArray[value - 0x80];
 }
 
-static void appendLegalEntityFor(UChar32 c, DecodedHTMLEntity& decodedEntity) {
+static void AppendLegalEntityFor(UChar32 c, DecodedHTMLEntity& decoded_entity) {
   // FIXME: A number of specific entity values generate parse errors.
   if (c <= 0 || c > 0x10FFFF || (c >= 0xD800 && c <= 0xDFFF)) {
-    decodedEntity.append(0xFFFD);
+    decoded_entity.Append(0xFFFD);
     return;
   }
   if (U_IS_BMP(c)) {
-    decodedEntity.append(adjustEntity(c));
+    decoded_entity.Append(AdjustEntity(c));
     return;
   }
-  decodedEntity.append(c);
+  decoded_entity.Append(c);
 }
 
 static const UChar32 kInvalidUnicode = -1;
 
-static bool isHexDigit(UChar cc) {
+static bool IsHexDigit(UChar cc) {
   return (cc >= '0' && cc <= '9') || (cc >= 'a' && cc <= 'f') ||
          (cc >= 'A' && cc <= 'F');
 }
 
-static UChar asHexDigit(UChar cc) {
+static UChar AsHexDigit(UChar cc) {
   if (cc >= '0' && cc <= '9')
     return cc - '0';
   if (cc >= 'a' && cc <= 'z')
@@ -84,196 +84,197 @@ static UChar asHexDigit(UChar cc) {
 
 typedef Vector<UChar, 64> ConsumedCharacterBuffer;
 
-static void unconsumeCharacters(SegmentedString& source,
-                                ConsumedCharacterBuffer& consumedCharacters) {
-  if (consumedCharacters.size() == 1)
-    source.push(consumedCharacters[0]);
-  else if (consumedCharacters.size() == 2) {
-    source.push(consumedCharacters[1]);
-    source.push(consumedCharacters[0]);
+static void UnconsumeCharacters(SegmentedString& source,
+                                ConsumedCharacterBuffer& consumed_characters) {
+  if (consumed_characters.size() == 1)
+    source.Push(consumed_characters[0]);
+  else if (consumed_characters.size() == 2) {
+    source.Push(consumed_characters[1]);
+    source.Push(consumed_characters[0]);
   } else
-    source.prepend(SegmentedString(String(consumedCharacters)),
-                   SegmentedString::PrependType::Unconsume);
+    source.Prepend(SegmentedString(String(consumed_characters)),
+                   SegmentedString::PrependType::kUnconsume);
 }
 
-static bool consumeNamedEntity(SegmentedString& source,
-                               DecodedHTMLEntity& decodedEntity,
-                               bool& notEnoughCharacters,
-                               UChar additionalAllowedCharacter,
+static bool ConsumeNamedEntity(SegmentedString& source,
+                               DecodedHTMLEntity& decoded_entity,
+                               bool& not_enough_characters,
+                               UChar additional_allowed_character,
                                UChar& cc) {
-  ConsumedCharacterBuffer consumedCharacters;
-  HTMLEntitySearch entitySearch;
-  while (!source.isEmpty()) {
-    cc = source.currentChar();
-    entitySearch.advance(cc);
-    if (!entitySearch.isEntityPrefix())
+  ConsumedCharacterBuffer consumed_characters;
+  HTMLEntitySearch entity_search;
+  while (!source.IsEmpty()) {
+    cc = source.CurrentChar();
+    entity_search.Advance(cc);
+    if (!entity_search.IsEntityPrefix())
       break;
-    consumedCharacters.push_back(cc);
-    source.advanceAndASSERT(cc);
+    consumed_characters.push_back(cc);
+    source.AdvanceAndASSERT(cc);
   }
-  notEnoughCharacters = source.isEmpty();
-  if (notEnoughCharacters) {
+  not_enough_characters = source.IsEmpty();
+  if (not_enough_characters) {
     // We can't decide on an entity because there might be a longer entity
     // that we could match if we had more data.
-    unconsumeCharacters(source, consumedCharacters);
+    UnconsumeCharacters(source, consumed_characters);
     return false;
   }
-  if (!entitySearch.mostRecentMatch()) {
-    unconsumeCharacters(source, consumedCharacters);
+  if (!entity_search.MostRecentMatch()) {
+    UnconsumeCharacters(source, consumed_characters);
     return false;
   }
-  if (entitySearch.mostRecentMatch()->length != entitySearch.currentLength()) {
+  if (entity_search.MostRecentMatch()->length !=
+      entity_search.CurrentLength()) {
     // We've consumed too many characters. We need to walk the
     // source back to the point at which we had consumed an
     // actual entity.
-    unconsumeCharacters(source, consumedCharacters);
-    consumedCharacters.clear();
-    const HTMLEntityTableEntry* mostRecent = entitySearch.mostRecentMatch();
-    const int length = mostRecent->length;
-    const LChar* reference = HTMLEntityTable::entityString(*mostRecent);
+    UnconsumeCharacters(source, consumed_characters);
+    consumed_characters.Clear();
+    const HTMLEntityTableEntry* most_recent = entity_search.MostRecentMatch();
+    const int length = most_recent->length;
+    const LChar* reference = HTMLEntityTable::EntityString(*most_recent);
     for (int i = 0; i < length; ++i) {
-      cc = source.currentChar();
+      cc = source.CurrentChar();
       DCHECK_EQ(cc, static_cast<UChar>(*reference++));
-      consumedCharacters.push_back(cc);
-      source.advanceAndASSERT(cc);
-      DCHECK(!source.isEmpty());
+      consumed_characters.push_back(cc);
+      source.AdvanceAndASSERT(cc);
+      DCHECK(!source.IsEmpty());
     }
-    cc = source.currentChar();
+    cc = source.CurrentChar();
   }
-  if (entitySearch.mostRecentMatch()->lastCharacter() == ';' ||
-      !additionalAllowedCharacter || !(isAlphaNumeric(cc) || cc == '=')) {
-    decodedEntity.append(entitySearch.mostRecentMatch()->firstValue);
-    if (UChar32 second = entitySearch.mostRecentMatch()->secondValue)
-      decodedEntity.append(second);
+  if (entity_search.MostRecentMatch()->LastCharacter() == ';' ||
+      !additional_allowed_character || !(IsAlphaNumeric(cc) || cc == '=')) {
+    decoded_entity.Append(entity_search.MostRecentMatch()->first_value);
+    if (UChar32 second = entity_search.MostRecentMatch()->second_value)
+      decoded_entity.Append(second);
     return true;
   }
-  unconsumeCharacters(source, consumedCharacters);
+  UnconsumeCharacters(source, consumed_characters);
   return false;
 }
 
-bool consumeHTMLEntity(SegmentedString& source,
-                       DecodedHTMLEntity& decodedEntity,
-                       bool& notEnoughCharacters,
-                       UChar additionalAllowedCharacter) {
-  DCHECK(!additionalAllowedCharacter || additionalAllowedCharacter == '"' ||
-         additionalAllowedCharacter == '\'' ||
-         additionalAllowedCharacter == '>');
-  DCHECK(!notEnoughCharacters);
-  DCHECK(decodedEntity.isEmpty());
+bool ConsumeHTMLEntity(SegmentedString& source,
+                       DecodedHTMLEntity& decoded_entity,
+                       bool& not_enough_characters,
+                       UChar additional_allowed_character) {
+  DCHECK(!additional_allowed_character || additional_allowed_character == '"' ||
+         additional_allowed_character == '\'' ||
+         additional_allowed_character == '>');
+  DCHECK(!not_enough_characters);
+  DCHECK(decoded_entity.IsEmpty());
 
   enum EntityState {
-    Initial,
-    Number,
-    MaybeHexLowerCaseX,
-    MaybeHexUpperCaseX,
-    Hex,
-    Decimal,
-    Named
+    kInitial,
+    kNumber,
+    kMaybeHexLowerCaseX,
+    kMaybeHexUpperCaseX,
+    kHex,
+    kDecimal,
+    kNamed
   };
-  EntityState entityState = Initial;
+  EntityState entity_state = kInitial;
   UChar32 result = 0;
-  ConsumedCharacterBuffer consumedCharacters;
+  ConsumedCharacterBuffer consumed_characters;
 
-  while (!source.isEmpty()) {
-    UChar cc = source.currentChar();
-    switch (entityState) {
-      case Initial: {
+  while (!source.IsEmpty()) {
+    UChar cc = source.CurrentChar();
+    switch (entity_state) {
+      case kInitial: {
         if (cc == '\x09' || cc == '\x0A' || cc == '\x0C' || cc == ' ' ||
             cc == '<' || cc == '&')
           return false;
-        if (additionalAllowedCharacter && cc == additionalAllowedCharacter)
+        if (additional_allowed_character && cc == additional_allowed_character)
           return false;
         if (cc == '#') {
-          entityState = Number;
+          entity_state = kNumber;
           break;
         }
         if ((cc >= 'a' && cc <= 'z') || (cc >= 'A' && cc <= 'Z')) {
-          entityState = Named;
+          entity_state = kNamed;
           continue;
         }
         return false;
       }
-      case Number: {
+      case kNumber: {
         if (cc == 'x') {
-          entityState = MaybeHexLowerCaseX;
+          entity_state = kMaybeHexLowerCaseX;
           break;
         }
         if (cc == 'X') {
-          entityState = MaybeHexUpperCaseX;
+          entity_state = kMaybeHexUpperCaseX;
           break;
         }
         if (cc >= '0' && cc <= '9') {
-          entityState = Decimal;
+          entity_state = kDecimal;
           continue;
         }
-        source.push('#');
+        source.Push('#');
         return false;
       }
-      case MaybeHexLowerCaseX: {
-        if (isHexDigit(cc)) {
-          entityState = Hex;
+      case kMaybeHexLowerCaseX: {
+        if (IsHexDigit(cc)) {
+          entity_state = kHex;
           continue;
         }
-        source.push('x');
-        source.push('#');
+        source.Push('x');
+        source.Push('#');
         return false;
       }
-      case MaybeHexUpperCaseX: {
-        if (isHexDigit(cc)) {
-          entityState = Hex;
+      case kMaybeHexUpperCaseX: {
+        if (IsHexDigit(cc)) {
+          entity_state = kHex;
           continue;
         }
-        source.push('X');
-        source.push('#');
+        source.Push('X');
+        source.Push('#');
         return false;
       }
-      case Hex: {
-        if (isHexDigit(cc)) {
+      case kHex: {
+        if (IsHexDigit(cc)) {
           if (result != kInvalidUnicode)
-            result = result * 16 + asHexDigit(cc);
+            result = result * 16 + AsHexDigit(cc);
         } else if (cc == ';') {
-          source.advanceAndASSERT(cc);
-          appendLegalEntityFor(result, decodedEntity);
+          source.AdvanceAndASSERT(cc);
+          AppendLegalEntityFor(result, decoded_entity);
           return true;
         } else {
-          appendLegalEntityFor(result, decodedEntity);
+          AppendLegalEntityFor(result, decoded_entity);
           return true;
         }
         break;
       }
-      case Decimal: {
+      case kDecimal: {
         if (cc >= '0' && cc <= '9') {
           if (result != kInvalidUnicode)
             result = result * 10 + cc - '0';
         } else if (cc == ';') {
-          source.advanceAndASSERT(cc);
-          appendLegalEntityFor(result, decodedEntity);
+          source.AdvanceAndASSERT(cc);
+          AppendLegalEntityFor(result, decoded_entity);
           return true;
         } else {
-          appendLegalEntityFor(result, decodedEntity);
+          AppendLegalEntityFor(result, decoded_entity);
           return true;
         }
         break;
       }
-      case Named: {
-        return consumeNamedEntity(source, decodedEntity, notEnoughCharacters,
-                                  additionalAllowedCharacter, cc);
+      case kNamed: {
+        return ConsumeNamedEntity(source, decoded_entity, not_enough_characters,
+                                  additional_allowed_character, cc);
       }
     }
 
     if (result > UCHAR_MAX_VALUE)
       result = kInvalidUnicode;
 
-    consumedCharacters.push_back(cc);
-    source.advanceAndASSERT(cc);
+    consumed_characters.push_back(cc);
+    source.AdvanceAndASSERT(cc);
   }
-  DCHECK(source.isEmpty());
-  notEnoughCharacters = true;
-  unconsumeCharacters(source, consumedCharacters);
+  DCHECK(source.IsEmpty());
+  not_enough_characters = true;
+  UnconsumeCharacters(source, consumed_characters);
   return false;
 }
 
-static size_t appendUChar32ToUCharArray(UChar32 value, UChar* result) {
+static size_t AppendUChar32ToUCharArray(UChar32 value, UChar* result) {
   if (U_IS_BMP(value)) {
     UChar character = static_cast<UChar>(value);
     DCHECK_EQ(character, value);
@@ -286,24 +287,24 @@ static size_t appendUChar32ToUCharArray(UChar32 value, UChar* result) {
   return 2;
 }
 
-size_t decodeNamedEntityToUCharArray(const char* name, UChar result[4]) {
+size_t DecodeNamedEntityToUCharArray(const char* name, UChar result[4]) {
   HTMLEntitySearch search;
   while (*name) {
-    search.advance(*name++);
-    if (!search.isEntityPrefix())
+    search.Advance(*name++);
+    if (!search.IsEntityPrefix())
       return 0;
   }
-  search.advance(';');
-  if (!search.isEntityPrefix())
+  search.Advance(';');
+  if (!search.IsEntityPrefix())
     return 0;
 
-  size_t numberOfCodePoints =
-      appendUChar32ToUCharArray(search.mostRecentMatch()->firstValue, result);
-  if (!search.mostRecentMatch()->secondValue)
-    return numberOfCodePoints;
-  return numberOfCodePoints +
-         appendUChar32ToUCharArray(search.mostRecentMatch()->secondValue,
-                                   result + numberOfCodePoints);
+  size_t number_of_code_points =
+      AppendUChar32ToUCharArray(search.MostRecentMatch()->first_value, result);
+  if (!search.MostRecentMatch()->second_value)
+    return number_of_code_points;
+  return number_of_code_points +
+         AppendUChar32ToUCharArray(search.MostRecentMatch()->second_value,
+                                   result + number_of_code_points);
 }
 
 }  // namespace blink

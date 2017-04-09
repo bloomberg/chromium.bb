@@ -47,12 +47,12 @@ namespace blink {
 // pseudorandom data source. Version 4 UUIDs have the form
 // xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx with hexadecimal digits for x and one of
 // 8, 9, A, or B for y.
-PLATFORM_EXPORT String createCanonicalUUIDString();
+PLATFORM_EXPORT String CreateCanonicalUUIDString();
 
 // Check that the UUID is a valid UUID. A valid UUID is a string made out of 5
 // groups of lower case hexadecimal characters separated by hyphens, in the form
 // 8-4-4-4-12.
-PLATFORM_EXPORT bool isValidUUID(const String& uuid);
+PLATFORM_EXPORT bool IsValidUUID(const String& uuid);
 
 }  // namespace blink
 

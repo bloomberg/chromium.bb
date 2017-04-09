@@ -35,16 +35,16 @@ namespace blink {
 
 struct WebPluginAction {
   enum Type {
-    Unknown,
-    Rotate90Clockwise,
-    Rotate90Counterclockwise,
-    TypeLast = Rotate90Counterclockwise
+    kUnknown,
+    kRotate90Clockwise,
+    kRotate90Counterclockwise,
+    kTypeLast = kRotate90Counterclockwise
   };
 
   Type type;
   bool enable;
 
-  WebPluginAction() : type(Unknown), enable(false) {}
+  WebPluginAction() : type(kUnknown), enable(false) {}
   WebPluginAction(Type type, bool enable) : type(type), enable(enable) {}
 };
 

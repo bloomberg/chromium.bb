@@ -52,8 +52,8 @@ class CORE_EXPORT HTMLTableRowElement final : public HTMLTablePartElement {
  private:
   explicit HTMLTableRowElement(Document&);
 
-  bool hasLegalLinkAttribute(const QualifiedName&) const override;
-  const QualifiedName& subResourceAttributeName() const override;
+  bool HasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& SubResourceAttributeName() const override;
 };
 
 }  // namespace blink

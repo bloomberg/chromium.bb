@@ -83,43 +83,43 @@ struct CrossThreadResourceTimingInfoData;
 //
 class WorkerThreadableLoader final : public ThreadableLoader {
  public:
-  static void loadResourceSynchronously(WorkerGlobalScope&,
+  static void LoadResourceSynchronously(WorkerGlobalScope&,
                                         const ResourceRequest&,
                                         ThreadableLoaderClient&,
                                         const ThreadableLoaderOptions&,
                                         const ResourceLoaderOptions&);
-  static WorkerThreadableLoader* create(
-      WorkerGlobalScope& workerGlobalScope,
+  static WorkerThreadableLoader* Create(
+      WorkerGlobalScope& worker_global_scope,
       ThreadableLoaderClient* client,
       const ThreadableLoaderOptions& options,
-      const ResourceLoaderOptions& resourceLoaderOptions) {
-    return new WorkerThreadableLoader(workerGlobalScope, client, options,
-                                      resourceLoaderOptions,
-                                      LoadAsynchronously);
+      const ResourceLoaderOptions& resource_loader_options) {
+    return new WorkerThreadableLoader(worker_global_scope, client, options,
+                                      resource_loader_options,
+                                      kLoadAsynchronously);
   }
 
   ~WorkerThreadableLoader() override;
 
   // ThreadableLoader functions
-  void start(const ResourceRequest&) override;
-  void overrideTimeout(unsigned long timeout) override;
-  void cancel() override;
+  void Start(const ResourceRequest&) override;
+  void OverrideTimeout(unsigned long timeout) override;
+  void Cancel() override;
 
   DECLARE_TRACE();
 
  private:
-  enum BlockingBehavior { LoadSynchronously, LoadAsynchronously };
+  enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };
 
   // A TaskForwarder forwards a task to the worker thread.
   class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
    public:
     virtual ~TaskForwarder() {}
-    virtual void forwardTask(const WebTraceLocation&,
+    virtual void ForwardTask(const WebTraceLocation&,
                              std::unique_ptr<CrossThreadClosure>) = 0;
-    virtual void forwardTaskWithDoneSignal(
+    virtual void ForwardTaskWithDoneSignal(
         const WebTraceLocation&,
         std::unique_ptr<CrossThreadClosure>) = 0;
-    virtual void abort() = 0;
+    virtual void Abort() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
@@ -137,10 +137,10 @@ class WorkerThreadableLoader final : public ThreadableLoader {
         public ThreadableLoaderClient,
         public WorkerThreadLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(MainThreadLoaderHolder);
-    USING_PRE_FINALIZER(MainThreadLoaderHolder, cancel);
+    USING_PRE_FINALIZER(MainThreadLoaderHolder, Cancel);
 
    public:
-    static void createAndStart(WorkerThreadableLoader*,
+    static void CreateAndStart(WorkerThreadableLoader*,
                                PassRefPtr<WorkerLoaderProxy>,
                                WorkerThreadLifecycleContext*,
                                std::unique_ptr<CrossThreadResourceRequestData>,
@@ -149,40 +149,41 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                                PassRefPtr<WaitableEventWithTasks>);
     ~MainThreadLoaderHolder() override;
 
-    void overrideTimeout(unsigned long timeoutMillisecond);
-    void cancel();
+    void OverrideTimeout(unsigned long timeout_millisecond);
+    void Cancel();
 
-    void didSendData(unsigned long long bytesSent,
-                     unsigned long long totalBytesToBeSent) override;
-    void didReceiveRedirectTo(const KURL&) override;
-    void didReceiveResponse(unsigned long identifier,
+    void DidSendData(unsigned long long bytes_sent,
+                     unsigned long long total_bytes_to_be_sent) override;
+    void DidReceiveRedirectTo(const KURL&) override;
+    void DidReceiveResponse(unsigned long identifier,
                             const ResourceResponse&,
                             std::unique_ptr<WebDataConsumerHandle>) override;
-    void didReceiveData(const char*, unsigned dataLength) override;
-    void didDownloadData(int dataLength) override;
-    void didReceiveCachedMetadata(const char*, int dataLength) override;
-    void didFinishLoading(unsigned long identifier, double finishTime) override;
-    void didFail(const ResourceError&) override;
-    void didFailAccessControlCheck(const ResourceError&) override;
-    void didFailRedirectCheck() override;
-    void didReceiveResourceTiming(const ResourceTimingInfo&) override;
+    void DidReceiveData(const char*, unsigned data_length) override;
+    void DidDownloadData(int data_length) override;
+    void DidReceiveCachedMetadata(const char*, int data_length) override;
+    void DidFinishLoading(unsigned long identifier,
+                          double finish_time) override;
+    void DidFail(const ResourceError&) override;
+    void DidFailAccessControlCheck(const ResourceError&) override;
+    void DidFailRedirectCheck() override;
+    void DidReceiveResourceTiming(const ResourceTimingInfo&) override;
 
-    void contextDestroyed(WorkerThreadLifecycleContext*) override;
+    void ContextDestroyed(WorkerThreadLifecycleContext*) override;
 
     DECLARE_TRACE();
 
    private:
     MainThreadLoaderHolder(TaskForwarder*, WorkerThreadLifecycleContext*);
-    void start(ThreadableLoadingContext&,
+    void Start(ThreadableLoadingContext&,
                std::unique_ptr<CrossThreadResourceRequestData>,
                const ThreadableLoaderOptions&,
                const ResourceLoaderOptions&);
 
-    Member<TaskForwarder> m_forwarder;
-    Member<ThreadableLoader> m_mainThreadLoader;
+    Member<TaskForwarder> forwarder_;
+    Member<ThreadableLoader> main_thread_loader_;
 
     // |*m_workerLoader| lives in the worker thread.
-    CrossThreadWeakPersistent<WorkerThreadableLoader> m_workerLoader;
+    CrossThreadWeakPersistent<WorkerThreadableLoader> worker_loader_;
   };
 
   WorkerThreadableLoader(WorkerGlobalScope&,
@@ -190,34 +191,34 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                          const ThreadableLoaderOptions&,
                          const ResourceLoaderOptions&,
                          BlockingBehavior);
-  void didStart(MainThreadLoaderHolder*);
+  void DidStart(MainThreadLoaderHolder*);
 
-  void didSendData(unsigned long long bytesSent,
-                   unsigned long long totalBytesToBeSent);
-  void didReceiveRedirectTo(const KURL&);
-  void didReceiveResponse(unsigned long identifier,
+  void DidSendData(unsigned long long bytes_sent,
+                   unsigned long long total_bytes_to_be_sent);
+  void DidReceiveRedirectTo(const KURL&);
+  void DidReceiveResponse(unsigned long identifier,
                           std::unique_ptr<CrossThreadResourceResponseData>,
                           std::unique_ptr<WebDataConsumerHandle>);
-  void didReceiveData(std::unique_ptr<Vector<char>> data);
-  void didReceiveCachedMetadata(std::unique_ptr<Vector<char>> data);
-  void didFinishLoading(unsigned long identifier, double finishTime);
-  void didFail(const ResourceError&);
-  void didFailAccessControlCheck(const ResourceError&);
-  void didFailRedirectCheck();
-  void didDownloadData(int dataLength);
-  void didReceiveResourceTiming(
+  void DidReceiveData(std::unique_ptr<Vector<char>> data);
+  void DidReceiveCachedMetadata(std::unique_ptr<Vector<char>> data);
+  void DidFinishLoading(unsigned long identifier, double finish_time);
+  void DidFail(const ResourceError&);
+  void DidFailAccessControlCheck(const ResourceError&);
+  void DidFailRedirectCheck();
+  void DidDownloadData(int data_length);
+  void DidReceiveResourceTiming(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
-  Member<WorkerGlobalScope> m_workerGlobalScope;
-  RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
-  ThreadableLoaderClient* m_client;
+  Member<WorkerGlobalScope> worker_global_scope_;
+  RefPtr<WorkerLoaderProxy> worker_loader_proxy_;
+  ThreadableLoaderClient* client_;
 
-  ThreadableLoaderOptions m_threadableLoaderOptions;
-  ResourceLoaderOptions m_resourceLoaderOptions;
-  BlockingBehavior m_blockingBehavior;
+  ThreadableLoaderOptions threadable_loader_options_;
+  ResourceLoaderOptions resource_loader_options_;
+  BlockingBehavior blocking_behavior_;
 
   // |*m_mainThreadLoaderHolder| lives in the main thread.
-  CrossThreadPersistent<MainThreadLoaderHolder> m_mainThreadLoaderHolder;
+  CrossThreadPersistent<MainThreadLoaderHolder> main_thread_loader_holder_;
 };
 
 }  // namespace blink

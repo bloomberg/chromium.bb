@@ -18,73 +18,73 @@ const unsigned kMaxMessagesToLog = 100;
 
 const size_t PushPullFIFO::kMaxFIFOLength = 65536;
 
-PushPullFIFO::PushPullFIFO(unsigned numberOfChannels, size_t fifoLength)
-    : m_fifoLength(fifoLength),
-      m_framesAvailable(0),
-      m_indexRead(0),
-      m_indexWrite(0),
-      m_overflowCount(0),
-      m_underflowCount(0) {
-  CHECK_LE(m_fifoLength, kMaxFIFOLength);
-  m_fifoBus = AudioBus::create(numberOfChannels, m_fifoLength);
+PushPullFIFO::PushPullFIFO(unsigned number_of_channels, size_t fifo_length)
+    : fifo_length_(fifo_length),
+      frames_available_(0),
+      index_read_(0),
+      index_write_(0),
+      overflow_count_(0),
+      underflow_count_(0) {
+  CHECK_LE(fifo_length_, kMaxFIFOLength);
+  fifo_bus_ = AudioBus::Create(number_of_channels, fifo_length_);
 }
 
 PushPullFIFO::~PushPullFIFO() {}
 
 // Push the data from |inputBus| to FIFO. The size of push is determined by
 // the length of |inputBus|.
-void PushPullFIFO::push(const AudioBus* inputBus) {
-  CHECK(inputBus);
-  CHECK_EQ(inputBus->length(), AudioUtilities::kRenderQuantumFrames);
-  SECURITY_CHECK(inputBus->length() <= m_fifoLength);
-  SECURITY_CHECK(m_indexWrite < m_fifoLength);
+void PushPullFIFO::Push(const AudioBus* input_bus) {
+  CHECK(input_bus);
+  CHECK_EQ(input_bus->length(), AudioUtilities::kRenderQuantumFrames);
+  SECURITY_CHECK(input_bus->length() <= fifo_length_);
+  SECURITY_CHECK(index_write_ < fifo_length_);
 
-  const size_t inputBusLength = inputBus->length();
-  const size_t remainder = m_fifoLength - m_indexWrite;
+  const size_t input_bus_length = input_bus->length();
+  const size_t remainder = fifo_length_ - index_write_;
 
-  for (unsigned i = 0; i < m_fifoBus->numberOfChannels(); ++i) {
-    float* fifoBusChannel = m_fifoBus->channel(i)->mutableData();
-    const float* inputBusChannel = inputBus->channel(i)->data();
-    if (remainder >= inputBusLength) {
+  for (unsigned i = 0; i < fifo_bus_->NumberOfChannels(); ++i) {
+    float* fifo_bus_channel = fifo_bus_->Channel(i)->MutableData();
+    const float* input_bus_channel = input_bus->Channel(i)->Data();
+    if (remainder >= input_bus_length) {
       // The remainder is big enough for the input data.
-      memcpy(fifoBusChannel + m_indexWrite, inputBusChannel,
-             inputBusLength * sizeof(*fifoBusChannel));
+      memcpy(fifo_bus_channel + index_write_, input_bus_channel,
+             input_bus_length * sizeof(*fifo_bus_channel));
     } else {
       // The input data overflows the remainder size. Wrap around the index.
-      memcpy(fifoBusChannel + m_indexWrite, inputBusChannel,
-             remainder * sizeof(*fifoBusChannel));
-      memcpy(fifoBusChannel, inputBusChannel + remainder,
-             (inputBusLength - remainder) * sizeof(*fifoBusChannel));
+      memcpy(fifo_bus_channel + index_write_, input_bus_channel,
+             remainder * sizeof(*fifo_bus_channel));
+      memcpy(fifo_bus_channel, input_bus_channel + remainder,
+             (input_bus_length - remainder) * sizeof(*fifo_bus_channel));
     }
   }
 
   // Update the write index; wrap it around if necessary.
-  m_indexWrite = (m_indexWrite + inputBusLength) % m_fifoLength;
+  index_write_ = (index_write_ + input_bus_length) % fifo_length_;
 
   // In case of overflow, move the |indexRead| to the updated |indexWrite| to
   // avoid reading overwritten frames by the next pull.
-  if (inputBusLength > m_fifoLength - m_framesAvailable) {
-    m_indexRead = m_indexWrite;
-    if (++m_overflowCount < kMaxMessagesToLog) {
+  if (input_bus_length > fifo_length_ - frames_available_) {
+    index_read_ = index_write_;
+    if (++overflow_count_ < kMaxMessagesToLog) {
       LOG(WARNING) << "PushPullFIFO: overflow while pushing ("
-                   << "overflowCount=" << m_overflowCount
-                   << ", availableFrames=" << m_framesAvailable
-                   << ", inputFrames=" << inputBusLength
-                   << ", fifoLength=" << m_fifoLength << ")";
+                   << "overflowCount=" << overflow_count_
+                   << ", availableFrames=" << frames_available_
+                   << ", inputFrames=" << input_bus_length
+                   << ", fifoLength=" << fifo_length_ << ")";
     }
   }
 
   // Update the number of frames available in FIFO.
-  m_framesAvailable =
-      std::min(m_framesAvailable + inputBusLength, m_fifoLength);
-  DCHECK_EQ((m_indexRead + m_framesAvailable) % m_fifoLength, m_indexWrite);
+  frames_available_ =
+      std::min(frames_available_ + input_bus_length, fifo_length_);
+  DCHECK_EQ((index_read_ + frames_available_) % fifo_length_, index_write_);
 }
 
 // Pull the data out of FIFO to |outputBus|. If remaining frame in the FIFO
 // is less than the frames to pull, provides remaining frame plus the silence.
-void PushPullFIFO::pull(AudioBus* outputBus, size_t framesRequested) {
+void PushPullFIFO::Pull(AudioBus* output_bus, size_t frames_requested) {
 #if OS(ANDROID)
-  if (!outputBus) {
+  if (!output_bus) {
     // Log when outputBus or FIFO object is invalid. (crbug.com/692423)
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
                  << ">] |outputBus| is invalid.";
@@ -94,79 +94,79 @@ void PushPullFIFO::pull(AudioBus* outputBus, size_t framesRequested) {
 
   // The following checks are in place to catch the inexplicable crash.
   // (crbug.com/692423)
-  if (framesRequested > outputBus->length()) {
+  if (frames_requested > output_bus->length()) {
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
                  << ">] framesRequested > outputBus->length() ("
-                 << framesRequested << " > " << outputBus->length() << ")";
+                 << frames_requested << " > " << output_bus->length() << ")";
   }
-  if (framesRequested > m_fifoLength) {
+  if (frames_requested > fifo_length_) {
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
-                 << ">] framesRequested > m_fifoLength (" << framesRequested
-                 << " > " << m_fifoLength << ")";
+                 << ">] framesRequested > m_fifoLength (" << frames_requested
+                 << " > " << fifo_length_ << ")";
   }
-  if (m_indexRead >= m_fifoLength) {
+  if (index_read_ >= fifo_length_) {
     LOG(WARNING) << "[WebAudio/PushPullFIFO::pull <" << static_cast<void*>(this)
-                 << ">] m_indexRead >= m_fifoLength (" << m_indexRead
-                 << " >= " << m_fifoLength << ")";
+                 << ">] m_indexRead >= m_fifoLength (" << index_read_
+                 << " >= " << fifo_length_ << ")";
   }
 #endif
-  CHECK(outputBus);
-  SECURITY_CHECK(framesRequested <= outputBus->length());
-  SECURITY_CHECK(framesRequested <= m_fifoLength);
-  SECURITY_CHECK(m_indexRead < m_fifoLength);
+  CHECK(output_bus);
+  SECURITY_CHECK(frames_requested <= output_bus->length());
+  SECURITY_CHECK(frames_requested <= fifo_length_);
+  SECURITY_CHECK(index_read_ < fifo_length_);
 
-  const size_t remainder = m_fifoLength - m_indexRead;
-  const size_t framesToFill = std::min(m_framesAvailable, framesRequested);
+  const size_t remainder = fifo_length_ - index_read_;
+  const size_t frames_to_fill = std::min(frames_available_, frames_requested);
 
-  for (unsigned i = 0; i < m_fifoBus->numberOfChannels(); ++i) {
-    const float* fifoBusChannel = m_fifoBus->channel(i)->data();
-    float* outputBusChannel = outputBus->channel(i)->mutableData();
+  for (unsigned i = 0; i < fifo_bus_->NumberOfChannels(); ++i) {
+    const float* fifo_bus_channel = fifo_bus_->Channel(i)->Data();
+    float* output_bus_channel = output_bus->Channel(i)->MutableData();
 
     // Fill up the output bus with the available frames first.
-    if (remainder >= framesToFill) {
+    if (remainder >= frames_to_fill) {
       // The remainder is big enough for the frames to pull.
-      memcpy(outputBusChannel, fifoBusChannel + m_indexRead,
-             framesToFill * sizeof(*fifoBusChannel));
+      memcpy(output_bus_channel, fifo_bus_channel + index_read_,
+             frames_to_fill * sizeof(*fifo_bus_channel));
     } else {
       // The frames to pull is bigger than the remainder size.
       // Wrap around the index.
-      memcpy(outputBusChannel, fifoBusChannel + m_indexRead,
-             remainder * sizeof(*fifoBusChannel));
-      memcpy(outputBusChannel + remainder, fifoBusChannel,
-             (framesToFill - remainder) * sizeof(*fifoBusChannel));
+      memcpy(output_bus_channel, fifo_bus_channel + index_read_,
+             remainder * sizeof(*fifo_bus_channel));
+      memcpy(output_bus_channel + remainder, fifo_bus_channel,
+             (frames_to_fill - remainder) * sizeof(*fifo_bus_channel));
     }
 
     // The frames available was not enough to fulfill the requested frames. Fill
     // the rest of the channel with silence.
-    if (framesRequested > framesToFill) {
-      memset(outputBusChannel + framesToFill, 0,
-             (framesRequested - framesToFill) * sizeof(*outputBusChannel));
+    if (frames_requested > frames_to_fill) {
+      memset(output_bus_channel + frames_to_fill, 0,
+             (frames_requested - frames_to_fill) * sizeof(*output_bus_channel));
     }
   }
 
   // Update the read index; wrap it around if necessary.
-  m_indexRead = (m_indexRead + framesToFill) % m_fifoLength;
+  index_read_ = (index_read_ + frames_to_fill) % fifo_length_;
 
   // In case of underflow, move the |indexWrite| to the updated |indexRead|.
-  if (framesRequested > framesToFill) {
-    m_indexWrite = m_indexRead;
-    if (m_underflowCount++ < kMaxMessagesToLog) {
+  if (frames_requested > frames_to_fill) {
+    index_write_ = index_read_;
+    if (underflow_count_++ < kMaxMessagesToLog) {
       LOG(WARNING) << "PushPullFIFO: underflow while pulling ("
-                   << "underflowCount=" << m_underflowCount
-                   << ", availableFrames=" << m_framesAvailable
-                   << ", requestedFrames=" << framesRequested
-                   << ", fifoLength=" << m_fifoLength << ")";
+                   << "underflowCount=" << underflow_count_
+                   << ", availableFrames=" << frames_available_
+                   << ", requestedFrames=" << frames_requested
+                   << ", fifoLength=" << fifo_length_ << ")";
     }
   }
 
   // Update the number of frames in FIFO.
-  m_framesAvailable -= framesToFill;
-  DCHECK_EQ((m_indexRead + m_framesAvailable) % m_fifoLength, m_indexWrite);
+  frames_available_ -= frames_to_fill;
+  DCHECK_EQ((index_read_ + frames_available_) % fifo_length_, index_write_);
 }
 
-const PushPullFIFOStateForTest PushPullFIFO::getStateForTest() const {
-  return {length(),     numberOfChannels(), framesAvailable(), m_indexRead,
-          m_indexWrite, m_overflowCount,    m_underflowCount};
+const PushPullFIFOStateForTest PushPullFIFO::GetStateForTest() const {
+  return {length(),     NumberOfChannels(), FramesAvailable(), index_read_,
+          index_write_, overflow_count_,    underflow_count_};
 }
 
 }  // namespace blink

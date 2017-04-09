@@ -37,15 +37,15 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
  public:
   DECLARE_NODE_FACTORY(SVGMaskElement);
 
-  SVGAnimatedLength* x() const { return m_x.get(); }
-  SVGAnimatedLength* y() const { return m_y.get(); }
-  SVGAnimatedLength* width() const { return m_width.get(); }
-  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedLength* x() const { return x_.Get(); }
+  SVGAnimatedLength* y() const { return y_.Get(); }
+  SVGAnimatedLength* width() const { return width_.Get(); }
+  SVGAnimatedLength* height() const { return height_.Get(); }
   SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* maskUnits() {
-    return m_maskUnits.get();
+    return mask_units_.Get();
   }
   SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* maskContentUnits() {
-    return m_maskContentUnits.get();
+    return mask_content_units_.Get();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -53,25 +53,25 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
  private:
   explicit SVGMaskElement(Document&);
 
-  bool isValid() const override { return SVGTests::isValid(); }
-  bool needsPendingResourceHandling() const override { return false; }
+  bool IsValid() const override { return SVGTests::IsValid(); }
+  bool NeedsPendingResourceHandling() const override { return false; }
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  void svgAttributeChanged(const QualifiedName&) override;
-  void childrenChanged(const ChildrenChange&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
+  void ChildrenChanged(const ChildrenChange&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  Member<SVGAnimatedLength> m_x;
-  Member<SVGAnimatedLength> m_y;
-  Member<SVGAnimatedLength> m_width;
-  Member<SVGAnimatedLength> m_height;
-  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_maskUnits;
-  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_maskContentUnits;
+  Member<SVGAnimatedLength> x_;
+  Member<SVGAnimatedLength> y_;
+  Member<SVGAnimatedLength> width_;
+  Member<SVGAnimatedLength> height_;
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> mask_units_;
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> mask_content_units_;
 };
 
 }  // namespace blink

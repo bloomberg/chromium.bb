@@ -41,31 +41,31 @@ namespace blink {
 class AnimationDocumentTimelineTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    pageHolder = DummyPageHolder::create();
-    document = &pageHolder->document();
+    page_holder = DummyPageHolder::Create();
+    document = &page_holder->GetDocument();
   }
 
   virtual void TearDown() {
-    document.release();
-    ThreadState::current()->collectAllGarbage();
+    document.Release();
+    ThreadState::Current()->CollectAllGarbage();
   }
 
-  std::unique_ptr<DummyPageHolder> pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Document> document;
   Persistent<DocumentTimeline> timeline;
   Timing timing;
 };
 
 TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
-  timing.iterationDuration = 2;
-  timing.startDelay = 5;
+  timing.iteration_duration = 2;
+  timing.start_delay = 5;
 
-  timeline = &document->timeline();
+  timeline = &document->Timeline();
   document = nullptr;
 
-  KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
+  KeyframeEffect* keyframe_effect = KeyframeEffect::Create(0, nullptr, timing);
   // Test passes if this does not crash.
-  timeline->play(keyframeEffect);
+  timeline->Play(keyframe_effect);
 }
 
 }  // namespace blink

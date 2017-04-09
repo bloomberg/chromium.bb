@@ -11,13 +11,13 @@ namespace blink {
 
 class ExecutionContext;
 
-bool connectToPermissionService(ExecutionContext*,
+bool ConnectToPermissionService(ExecutionContext*,
                                 mojom::blink::PermissionServiceRequest);
 
-mojom::blink::PermissionDescriptorPtr createPermissionDescriptor(
+mojom::blink::PermissionDescriptorPtr CreatePermissionDescriptor(
     mojom::blink::PermissionName);
 
-mojom::blink::PermissionDescriptorPtr createMidiPermissionDescriptor(
+mojom::blink::PermissionDescriptorPtr CreateMidiPermissionDescriptor(
     bool sysex);
 
 }  // namespace blink

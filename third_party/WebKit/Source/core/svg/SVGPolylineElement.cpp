@@ -29,8 +29,8 @@ SVGPolylineElement::SVGPolylineElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGPolylineElement)
 
-Path SVGPolylineElement::asPath() const {
-  return asPathFromPoints();
+Path SVGPolylineElement::AsPath() const {
+  return AsPathFromPoints();
 }
 
 }  // namespace blink

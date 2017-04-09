@@ -47,165 +47,166 @@ using namespace HTMLNames;
 
 class Event;
 
-const HTMLMediaElement* toParentMediaElement(const Node* node) {
+const HTMLMediaElement* ToParentMediaElement(const Node* node) {
   if (!node)
     return nullptr;
-  const Node* mediaNode = node->ownerShadowHost();
-  if (!mediaNode)
+  const Node* media_node = node->OwnerShadowHost();
+  if (!media_node)
     return nullptr;
-  if (!isHTMLMediaElement(mediaNode))
+  if (!IsHTMLMediaElement(media_node))
     return nullptr;
 
-  return toHTMLMediaElement(mediaNode);
+  return ToHTMLMediaElement(media_node);
 }
 
-const HTMLMediaElement* toParentMediaElement(const LayoutObject& layoutObject) {
-  return toParentMediaElement(layoutObject.node());
+const HTMLMediaElement* ToParentMediaElement(
+    const LayoutObject& layout_object) {
+  return ToParentMediaElement(layout_object.GetNode());
 }
 
-MediaControlElementType mediaControlElementType(const Node* node) {
-  SECURITY_DCHECK(node->isMediaControlElement());
-  const HTMLElement* element = toHTMLElement(node);
+MediaControlElementType GetMediaControlElementType(const Node* node) {
+  SECURITY_DCHECK(node->IsMediaControlElement());
+  const HTMLElement* element = ToHTMLElement(node);
   if (isHTMLInputElement(*element))
-    return static_cast<const MediaControlInputElement*>(element)->displayType();
-  return static_cast<const MediaControlDivElement*>(element)->displayType();
+    return static_cast<const MediaControlInputElement*>(element)->DisplayType();
+  return static_cast<const MediaControlDivElement*>(element)->DisplayType();
 }
 
-MediaControlElement::MediaControlElement(MediaControls& mediaControls,
-                                         MediaControlElementType displayType,
+MediaControlElement::MediaControlElement(MediaControls& media_controls,
+                                         MediaControlElementType display_type,
                                          HTMLElement* element)
-    : m_mediaControls(&mediaControls),
-      m_displayType(displayType),
-      m_element(element),
-      m_isWanted(true),
-      m_doesFit(true) {}
+    : media_controls_(&media_controls),
+      display_type_(display_type),
+      element_(element),
+      is_wanted_(true),
+      does_fit_(true) {}
 
-HTMLMediaElement& MediaControlElement::mediaElement() const {
-  return mediaControls().mediaElement();
+HTMLMediaElement& MediaControlElement::MediaElement() const {
+  return GetMediaControls().MediaElement();
 }
 
-void MediaControlElement::updateShownState() {
-  if (m_isWanted && m_doesFit)
-    m_element->removeInlineStyleProperty(CSSPropertyDisplay);
+void MediaControlElement::UpdateShownState() {
+  if (is_wanted_ && does_fit_)
+    element_->RemoveInlineStyleProperty(CSSPropertyDisplay);
   else
-    m_element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    element_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 }
 
-void MediaControlElement::setDoesFit(bool fits) {
-  m_doesFit = fits;
-  updateShownState();
+void MediaControlElement::SetDoesFit(bool fits) {
+  does_fit_ = fits;
+  UpdateShownState();
 }
 
-void MediaControlElement::setIsWanted(bool wanted) {
-  if (m_isWanted == wanted)
+void MediaControlElement::SetIsWanted(bool wanted) {
+  if (is_wanted_ == wanted)
     return;
-  m_isWanted = wanted;
-  updateShownState();
+  is_wanted_ = wanted;
+  UpdateShownState();
 }
 
-bool MediaControlElement::isWanted() {
-  return m_isWanted;
+bool MediaControlElement::IsWanted() {
+  return is_wanted_;
 }
 
-void MediaControlElement::setDisplayType(MediaControlElementType displayType) {
-  if (displayType == m_displayType)
+void MediaControlElement::SetDisplayType(MediaControlElementType display_type) {
+  if (display_type == display_type_)
     return;
 
-  m_displayType = displayType;
-  if (LayoutObject* object = m_element->layoutObject())
-    object->setShouldDoFullPaintInvalidation();
+  display_type_ = display_type;
+  if (LayoutObject* object = element_->GetLayoutObject())
+    object->SetShouldDoFullPaintInvalidation();
 }
 
-void MediaControlElement::shouldShowButtonInOverflowMenu(bool shouldShow) {
-  if (!hasOverflowButton())
+void MediaControlElement::ShouldShowButtonInOverflowMenu(bool should_show) {
+  if (!HasOverflowButton())
     return;
-  if (shouldShow) {
-    m_overflowMenuElement->removeInlineStyleProperty(CSSPropertyDisplay);
+  if (should_show) {
+    overflow_menu_element_->RemoveInlineStyleProperty(CSSPropertyDisplay);
   } else {
-    m_overflowMenuElement->setInlineStyleProperty(CSSPropertyDisplay,
-                                                  CSSValueNone);
+    overflow_menu_element_->SetInlineStyleProperty(CSSPropertyDisplay,
+                                                   CSSValueNone);
   }
 }
 
-String MediaControlElement::getOverflowMenuString() {
-  return mediaElement().locale().queryString(getOverflowStringName());
+String MediaControlElement::GetOverflowMenuString() {
+  return MediaElement().GetLocale().QueryString(GetOverflowStringName());
 }
 
-void MediaControlElement::updateOverflowString() {
-  if (m_overflowMenuElement && m_overflowMenuText)
-    m_overflowMenuText->replaceWholeText(getOverflowMenuString());
+void MediaControlElement::UpdateOverflowString() {
+  if (overflow_menu_element_ && overflow_menu_text_)
+    overflow_menu_text_->ReplaceWholeText(GetOverflowMenuString());
 }
 
 DEFINE_TRACE(MediaControlElement) {
-  visitor->trace(m_mediaControls);
-  visitor->trace(m_element);
-  visitor->trace(m_overflowMenuElement);
-  visitor->trace(m_overflowMenuText);
+  visitor->Trace(media_controls_);
+  visitor->Trace(element_);
+  visitor->Trace(overflow_menu_element_);
+  visitor->Trace(overflow_menu_text_);
 }
 
 // ----------------------------
 
 MediaControlDivElement::MediaControlDivElement(
-    MediaControls& mediaControls,
-    MediaControlElementType displayType)
-    : HTMLDivElement(mediaControls.ownerDocument()),
-      MediaControlElement(mediaControls, displayType, this) {}
+    MediaControls& media_controls,
+    MediaControlElementType display_type)
+    : HTMLDivElement(media_controls.OwnerDocument()),
+      MediaControlElement(media_controls, display_type, this) {}
 
 DEFINE_TRACE(MediaControlDivElement) {
-  MediaControlElement::trace(visitor);
-  HTMLDivElement::trace(visitor);
+  MediaControlElement::Trace(visitor);
+  HTMLDivElement::Trace(visitor);
 }
 
 // ----------------------------
 
 MediaControlInputElement::MediaControlInputElement(
-    MediaControls& mediaControls,
-    MediaControlElementType displayType)
-    : HTMLInputElement(mediaControls.ownerDocument(), false),
-      MediaControlElement(mediaControls, displayType, this) {}
+    MediaControls& media_controls,
+    MediaControlElementType display_type)
+    : HTMLInputElement(media_controls.OwnerDocument(), false),
+      MediaControlElement(media_controls, display_type, this) {}
 
-bool MediaControlInputElement::isMouseFocusable() const {
+bool MediaControlInputElement::IsMouseFocusable() const {
   return false;
 }
 
-HTMLElement* MediaControlInputElement::createOverflowElement(
-    MediaControls& mediaControls,
+HTMLElement* MediaControlInputElement::CreateOverflowElement(
+    MediaControls& media_controls,
     MediaControlInputElement* button) {
   if (!button)
     return nullptr;
 
   // We don't want the button visible within the overflow menu.
-  button->setIsWanted(false);
+  button->SetIsWanted(false);
 
-  m_overflowMenuText = Text::create(mediaControls.ownerDocument(),
-                                    button->getOverflowMenuString());
+  overflow_menu_text_ = Text::Create(media_controls.OwnerDocument(),
+                                     button->GetOverflowMenuString());
 
   HTMLLabelElement* element =
-      HTMLLabelElement::create(mediaControls.ownerDocument());
-  element->setShadowPseudoId(
+      HTMLLabelElement::Create(media_controls.OwnerDocument());
+  element->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
   // Appending a button to a label element ensures that clicks on the label
   // are passed down to the button, performing the action we'd expect.
-  element->appendChild(button);
-  element->appendChild(m_overflowMenuText);
-  m_overflowMenuElement = element;
+  element->AppendChild(button);
+  element->AppendChild(overflow_menu_text_);
+  overflow_menu_element_ = element;
   return element;
 }
 
 DEFINE_TRACE(MediaControlInputElement) {
-  MediaControlElement::trace(visitor);
-  HTMLInputElement::trace(visitor);
+  MediaControlElement::Trace(visitor);
+  HTMLInputElement::Trace(visitor);
 }
 
 // ----------------------------
 
 MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(
-    MediaControls& mediaControls,
-    MediaControlElementType displayType)
-    : MediaControlDivElement(mediaControls, displayType), m_currentValue(0) {}
+    MediaControls& media_controls,
+    MediaControlElementType display_type)
+    : MediaControlDivElement(media_controls, display_type), current_value_(0) {}
 
-void MediaControlTimeDisplayElement::setCurrentValue(double time) {
-  m_currentValue = time;
+void MediaControlTimeDisplayElement::SetCurrentValue(double time) {
+  current_value_ = time;
 }
 
 }  // namespace blink

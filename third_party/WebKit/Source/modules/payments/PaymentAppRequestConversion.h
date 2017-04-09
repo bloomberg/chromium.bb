@@ -17,7 +17,7 @@ class MODULES_EXPORT PaymentAppRequestConversion {
   STATIC_ONLY(PaymentAppRequestConversion);
 
  public:
-  static PaymentAppRequest toPaymentAppRequest(ScriptState*,
+  static PaymentAppRequest ToPaymentAppRequest(ScriptState*,
                                                const WebPaymentAppRequest&);
 };
 

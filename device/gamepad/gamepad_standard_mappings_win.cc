@@ -20,8 +20,8 @@ void MapperLogitechDualAction(const blink::WebGamepad& input,
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT;
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void Mapper2Axes8Keys(const blink::WebGamepad& input,
@@ -44,8 +44,8 @@ void Mapper2Axes8Keys(const blink::WebGamepad& input,
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = blink::WebGamepadButton();
   mapped->buttons[BUTTON_INDEX_META] = blink::WebGamepadButton();
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT - 1;
-  mapped->axesLength = 0;
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
+  mapped->axes_length = 0;
 }
 
 void MapperDualshock4(const blink::WebGamepad& input,
@@ -73,8 +73,8 @@ void MapperDualshock4(const blink::WebGamepad& input,
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = DUALSHOCK_BUTTON_COUNT;
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = DUALSHOCK_BUTTON_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void MapperIBuffalo(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
@@ -92,8 +92,8 @@ void MapperIBuffalo(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[0]);
   mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
       AxisPositiveAsButton(input.axes[0]);
-  mapped->buttonsLength = BUTTON_INDEX_COUNT - 1; /* no meta */
-  mapped->axesLength = 2;
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1; /* no meta */
+  mapped->axes_length = 2;
 }
 
 void MapperOnLiveWireless(const blink::WebGamepad& input,
@@ -116,8 +116,8 @@ void MapperOnLiveWireless(const blink::WebGamepad& input,
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT;
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void MapperADT1(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
@@ -138,8 +138,8 @@ void MapperADT1(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT;
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void MapperNvShield(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
@@ -160,8 +160,8 @@ void MapperNvShield(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT;
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void MapperOUYA(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
@@ -186,8 +186,8 @@ void MapperOUYA(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT;
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void MapperRazerServal(const blink::WebGamepad& input,
@@ -208,8 +208,8 @@ void MapperRazerServal(const blink::WebGamepad& input,
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT - 1; /* no meta */
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1; /* no meta */
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 void MapperMogaPro(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
@@ -229,8 +229,8 @@ void MapperMogaPro(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttonsLength = BUTTON_INDEX_COUNT - 1; /* no meta */
-  mapped->axesLength = AXIS_INDEX_COUNT;
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1; /* no meta */
+  mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
 struct MappingData {

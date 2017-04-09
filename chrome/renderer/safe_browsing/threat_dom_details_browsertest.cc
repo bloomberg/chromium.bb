@@ -49,7 +49,7 @@ using ThreatDOMDetailsTest = ChromeRenderViewTest;
 using testing::ElementsAre;
 
 TEST_F(ThreatDOMDetailsTest, Everything) {
-  blink::WebRuntimeFeatures::enableOverlayScrollbars(
+  blink::WebRuntimeFeatures::EnableOverlayScrollbars(
       ui::IsOverlayScrollbarEnabled());
   // Configure a field trial to collect divs with attribute foo.
   std::unique_ptr<base::test::ScopedFeatureList> feature_list =

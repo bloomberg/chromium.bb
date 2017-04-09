@@ -29,17 +29,17 @@ constexpr int kRateLimitClampMillis = (kOldestAllowedEventAgeSeconds * 1000) /
 
 bool IsInterestingInputEvent(const blink::WebInputEvent& event) {
   // Ignore synthesized auto repeat events.
-  if (event.modifiers() & blink::WebInputEvent::IsAutoRepeat)
+  if (event.GetModifiers() & blink::WebInputEvent::kIsAutoRepeat)
     return false;
 
-  switch (event.type()) {
-    case blink::WebInputEvent::MouseDown:
-    case blink::WebInputEvent::MouseUp:
-    case blink::WebInputEvent::RawKeyDown:
-    case blink::WebInputEvent::KeyDown:
-    case blink::WebInputEvent::Char:
-    case blink::WebInputEvent::TouchStart:
-    case blink::WebInputEvent::TouchEnd:
+  switch (event.GetType()) {
+    case blink::WebInputEvent::kMouseDown:
+    case blink::WebInputEvent::kMouseUp:
+    case blink::WebInputEvent::kRawKeyDown:
+    case blink::WebInputEvent::kKeyDown:
+    case blink::WebInputEvent::kChar:
+    case blink::WebInputEvent::kTouchStart:
+    case blink::WebInputEvent::kTouchEnd:
       return true;
     default:
       return false;
@@ -68,7 +68,7 @@ UserInputTracker::~UserInputTracker() {}
 // static
 base::TimeTicks UserInputTracker::GetEventTime(
     const blink::WebInputEvent& event) {
-  return GetTimeTicksFromSeconds(event.timeStampSeconds());
+  return GetTimeTicksFromSeconds(event.TimeStampSeconds());
 }
 
 // static

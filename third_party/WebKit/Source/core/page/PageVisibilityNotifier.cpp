@@ -30,10 +30,10 @@
 
 namespace blink {
 
-void PageVisibilityNotifier::notifyPageVisibilityChanged() {
-  AutoReset<IterationState> scope(&m_iterationState, AllowingNone);
-  for (PageVisibilityObserver* observer : m_observers)
-    observer->pageVisibilityChanged();
+void PageVisibilityNotifier::NotifyPageVisibilityChanged() {
+  AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
+  for (PageVisibilityObserver* observer : observers_)
+    observer->PageVisibilityChanged();
 }
 
 }  // namespace blink

@@ -48,12 +48,12 @@ class XPathExpression : public GarbageCollected<XPathExpression>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static XPathExpression* create() { return new XPathExpression; }
+  static XPathExpression* Create() { return new XPathExpression; }
 
-  static XPathExpression* createExpression(const String& expression,
+  static XPathExpression* CreateExpression(const String& expression,
                                            XPathNSResolver*,
                                            ExceptionState&);
-  XPathResult* evaluate(Node* contextNode,
+  XPathResult* evaluate(Node* context_node,
                         unsigned short type,
                         const ScriptValue&,
                         ExceptionState&);
@@ -63,7 +63,7 @@ class XPathExpression : public GarbageCollected<XPathExpression>,
  private:
   XPathExpression();
 
-  Member<XPath::Expression> m_topExpression;
+  Member<XPath::Expression> top_expression_;
 };
 
 }  // namespace blink

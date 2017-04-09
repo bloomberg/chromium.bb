@@ -36,23 +36,23 @@ using namespace WTF::Unicode;
 namespace blink {
 
 enum VoicedSoundMarkType {
-  NoVoicedSoundMark,
-  VoicedSoundMark,
-  SemiVoicedSoundMark
+  kNoVoicedSoundMark,
+  kVoicedSoundMark,
+  kSemiVoicedSoundMark
 };
 
 template <typename CharType>
-static inline CharType foldQuoteMarkOrSoftHyphen(CharType c) {
+static inline CharType FoldQuoteMarkOrSoftHyphen(CharType c) {
   switch (static_cast<UChar>(c)) {
-    case hebrewPunctuationGershayimCharacter:
-    case leftDoubleQuotationMarkCharacter:
-    case rightDoubleQuotationMarkCharacter:
+    case kHebrewPunctuationGershayimCharacter:
+    case kLeftDoubleQuotationMarkCharacter:
+    case kRightDoubleQuotationMarkCharacter:
       return '"';
-    case hebrewPunctuationGereshCharacter:
-    case leftSingleQuotationMarkCharacter:
-    case rightSingleQuotationMarkCharacter:
+    case kHebrewPunctuationGereshCharacter:
+    case kLeftSingleQuotationMarkCharacter:
+    case kRightSingleQuotationMarkCharacter:
       return '\'';
-    case softHyphenCharacter:
+    case kSoftHyphenCharacter:
       // Replace soft hyphen with an ignorable character so that their presence
       // or absence will
       // not affect string comparison.
@@ -62,33 +62,33 @@ static inline CharType foldQuoteMarkOrSoftHyphen(CharType c) {
   }
 }
 
-void foldQuoteMarksAndSoftHyphens(UChar* data, size_t length) {
+void FoldQuoteMarksAndSoftHyphens(UChar* data, size_t length) {
   for (size_t i = 0; i < length; ++i)
-    data[i] = foldQuoteMarkOrSoftHyphen(data[i]);
+    data[i] = FoldQuoteMarkOrSoftHyphen(data[i]);
 }
 
-void foldQuoteMarksAndSoftHyphens(String& s) {
-  s.replace(hebrewPunctuationGereshCharacter, '\'');
-  s.replace(hebrewPunctuationGershayimCharacter, '"');
-  s.replace(leftDoubleQuotationMarkCharacter, '"');
-  s.replace(leftSingleQuotationMarkCharacter, '\'');
-  s.replace(rightDoubleQuotationMarkCharacter, '"');
-  s.replace(rightSingleQuotationMarkCharacter, '\'');
+void FoldQuoteMarksAndSoftHyphens(String& s) {
+  s.Replace(kHebrewPunctuationGereshCharacter, '\'');
+  s.Replace(kHebrewPunctuationGershayimCharacter, '"');
+  s.Replace(kLeftDoubleQuotationMarkCharacter, '"');
+  s.Replace(kLeftSingleQuotationMarkCharacter, '\'');
+  s.Replace(kRightDoubleQuotationMarkCharacter, '"');
+  s.Replace(kRightSingleQuotationMarkCharacter, '\'');
   // Replace soft hyphen with an ignorable character so that their presence or
   // absence will
   // not affect string comparison.
-  s.replace(softHyphenCharacter, static_cast<UChar>('\0'));
+  s.Replace(kSoftHyphenCharacter, static_cast<UChar>('\0'));
 }
 
-static bool isNonLatin1Separator(UChar32 character) {
+static bool IsNonLatin1Separator(UChar32 character) {
   DCHECK_GE(character, 256);
   return U_GET_GC_MASK(character) &
          (U_GC_S_MASK | U_GC_P_MASK | U_GC_Z_MASK | U_GC_CF_MASK);
 }
 
-bool isSeparator(UChar32 character) {
+bool IsSeparator(UChar32 character) {
   // clang-format off
-  static const bool latin1SeparatorTable[256] = {
+  static const bool kLatin1SeparatorTable[256] = {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       // space ! " # $ % & ' ( ) * + , - . /
@@ -114,9 +114,9 @@ bool isSeparator(UChar32 character) {
   };
   // clang-format on
   if (character < 256)
-    return latin1SeparatorTable[character];
+    return kLatin1SeparatorTable[character];
 
-  return isNonLatin1Separator(character);
+  return IsNonLatin1Separator(character);
 }
 
 // ICU's search ignores the distinction between small kana letters and ones
@@ -132,7 +132,7 @@ bool isSeparator(UChar32 character) {
 // We refer to the above technique as the "kana workaround". The next few
 // functions are helper functinos for the kana workaround.
 
-bool isKanaLetter(UChar character) {
+bool IsKanaLetter(UChar character) {
   // Hiragana letters.
   if (character >= 0x3041 && character <= 0x3096)
     return true;
@@ -150,8 +150,8 @@ bool isKanaLetter(UChar character) {
   return false;
 }
 
-bool isSmallKanaLetter(UChar character) {
-  ASSERT(isKanaLetter(character));
+bool IsSmallKanaLetter(UChar character) {
+  ASSERT(IsKanaLetter(character));
 
   switch (character) {
     case 0x3041:  // HIRAGANA LETTER SMALL A
@@ -208,8 +208,8 @@ bool isSmallKanaLetter(UChar character) {
   return false;
 }
 
-static inline VoicedSoundMarkType composedVoicedSoundMark(UChar character) {
-  ASSERT(isKanaLetter(character));
+static inline VoicedSoundMarkType ComposedVoicedSoundMark(UChar character) {
+  ASSERT(IsKanaLetter(character));
 
   switch (character) {
     case 0x304C:  // HIRAGANA LETTER GA
@@ -258,7 +258,7 @@ static inline VoicedSoundMarkType composedVoicedSoundMark(UChar character) {
     case 0x30F8:  // KATAKANA LETTER VI
     case 0x30F9:  // KATAKANA LETTER VE
     case 0x30FA:  // KATAKANA LETTER VO
-      return VoicedSoundMark;
+      return kVoicedSoundMark;
     case 0x3071:  // HIRAGANA LETTER PA
     case 0x3074:  // HIRAGANA LETTER PI
     case 0x3077:  // HIRAGANA LETTER PU
@@ -269,12 +269,12 @@ static inline VoicedSoundMarkType composedVoicedSoundMark(UChar character) {
     case 0x30D7:  // KATAKANA LETTER PU
     case 0x30DA:  // KATAKANA LETTER PE
     case 0x30DD:  // KATAKANA LETTER PO
-      return SemiVoicedSoundMark;
+      return kSemiVoicedSoundMark;
   }
-  return NoVoicedSoundMark;
+  return kNoVoicedSoundMark;
 }
 
-static inline bool isCombiningVoicedSoundMark(UChar character) {
+static inline bool IsCombiningVoicedSoundMark(UChar character) {
   switch (character) {
     case 0x3099:  // COMBINING KATAKANA-HIRAGANA VOICED SOUND MARK
     case 0x309A:  // COMBINING KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK
@@ -283,36 +283,36 @@ static inline bool isCombiningVoicedSoundMark(UChar character) {
   return false;
 }
 
-bool containsKanaLetters(const String& pattern) {
+bool ContainsKanaLetters(const String& pattern) {
   const unsigned length = pattern.length();
   for (unsigned i = 0; i < length; ++i) {
-    if (isKanaLetter(pattern[i]))
+    if (IsKanaLetter(pattern[i]))
       return true;
   }
   return false;
 }
 
-void normalizeCharactersIntoNFCForm(const UChar* characters,
+void NormalizeCharactersIntoNFCForm(const UChar* characters,
                                     unsigned length,
                                     Vector<UChar>& buffer) {
   ASSERT(length);
 
-  buffer.resize(length);
+  buffer.Resize(length);
 
   UErrorCode status = U_ZERO_ERROR;
-  size_t bufferSize = unorm_normalize(characters, length, UNORM_NFC, 0,
-                                      buffer.data(), length, &status);
+  size_t buffer_size = unorm_normalize(characters, length, UNORM_NFC, 0,
+                                       buffer.Data(), length, &status);
   ASSERT(status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING ||
          status == U_BUFFER_OVERFLOW_ERROR);
-  ASSERT(bufferSize);
+  ASSERT(buffer_size);
 
-  buffer.resize(bufferSize);
+  buffer.Resize(buffer_size);
 
   if (status == U_ZERO_ERROR || status == U_STRING_NOT_TERMINATED_WARNING)
     return;
 
   status = U_ZERO_ERROR;
-  unorm_normalize(characters, length, UNORM_NFC, 0, buffer.data(), bufferSize,
+  unorm_normalize(characters, length, UNORM_NFC, 0, buffer.Data(), buffer_size,
                   &status);
   ASSERT(status == U_STRING_NOT_TERMINATED_WARNING);
 }
@@ -322,16 +322,16 @@ void normalizeCharactersIntoNFCForm(const UChar* characters,
 // function returns offset in characters from |first|.
 // Pointers to both strings increase simultaneously so so it is possible to use
 // one offset value.
-static inline size_t compareKanaLetterAndComposedVoicedSoundMarks(
+static inline size_t CompareKanaLetterAndComposedVoicedSoundMarks(
     const UChar* first,
-    const UChar* firstEnd,
+    const UChar* first_end,
     const UChar* second,
-    const UChar* secondEnd) {
+    const UChar* second_end) {
   const UChar* start = first;
   // Check for differences in the kana letter character itself.
-  if (isSmallKanaLetter(*first) != isSmallKanaLetter(*second))
+  if (IsSmallKanaLetter(*first) != IsSmallKanaLetter(*second))
     return kNotFound;
-  if (composedVoicedSoundMark(*first) != composedVoicedSoundMark(*second))
+  if (ComposedVoicedSoundMark(*first) != ComposedVoicedSoundMark(*second))
     return kNotFound;
   ++first;
   ++second;
@@ -339,12 +339,12 @@ static inline size_t compareKanaLetterAndComposedVoicedSoundMarks(
   // Check for differences in combining voiced sound marks found after the
   // letter.
   while (true) {
-    const bool secondIsNotSoundMark =
-        second == secondEnd || !isCombiningVoicedSoundMark(*second);
-    if (first == firstEnd || !isCombiningVoicedSoundMark(*first)) {
-      return secondIsNotSoundMark ? first - start : kNotFound;
+    const bool second_is_not_sound_mark =
+        second == second_end || !IsCombiningVoicedSoundMark(*second);
+    if (first == first_end || !IsCombiningVoicedSoundMark(*first)) {
+      return second_is_not_sound_mark ? first - start : kNotFound;
     }
-    if (secondIsNotSoundMark)
+    if (second_is_not_sound_mark)
       return kNotFound;
     if (*first != *second)
       return kNotFound;
@@ -353,36 +353,36 @@ static inline size_t compareKanaLetterAndComposedVoicedSoundMarks(
   }
 }
 
-bool checkOnlyKanaLettersInStrings(const UChar* firstData,
-                                   unsigned firstLength,
-                                   const UChar* secondData,
-                                   unsigned secondLength) {
-  const UChar* a = firstData;
-  const UChar* aEnd = firstData + firstLength;
+bool CheckOnlyKanaLettersInStrings(const UChar* first_data,
+                                   unsigned first_length,
+                                   const UChar* second_data,
+                                   unsigned second_length) {
+  const UChar* a = first_data;
+  const UChar* a_end = first_data + first_length;
 
-  const UChar* b = secondData;
-  const UChar* bEnd = secondData + secondLength;
+  const UChar* b = second_data;
+  const UChar* b_end = second_data + second_length;
   while (true) {
     // Skip runs of non-kana-letter characters. This is necessary so we can
     // correctly handle strings where the |firstData| and |secondData| have
     // different-length runs of characters that match, while still double
     // checking the correctness of matches of kana letters with other kana
     // letters.
-    while (a != aEnd && !isKanaLetter(*a))
+    while (a != a_end && !IsKanaLetter(*a))
       ++a;
-    while (b != bEnd && !isKanaLetter(*b))
+    while (b != b_end && !IsKanaLetter(*b))
       ++b;
 
     // If we reached the end of either the target or the match, we should have
     // reached the end of both; both should have the same number of kana
     // letters.
-    if (a == aEnd || b == bEnd) {
-      return a == aEnd && b == bEnd;
+    if (a == a_end || b == b_end) {
+      return a == a_end && b == b_end;
     }
 
     // Check that single Kana letters in |a| and |b| are the same.
     const size_t offset =
-        compareKanaLetterAndComposedVoicedSoundMarks(a, aEnd, b, bEnd);
+        CompareKanaLetterAndComposedVoicedSoundMarks(a, a_end, b, b_end);
     if (offset == kNotFound)
       return false;
 
@@ -392,18 +392,18 @@ bool checkOnlyKanaLettersInStrings(const UChar* firstData,
   }
 }
 
-bool checkKanaStringsEqual(const UChar* firstData,
-                           unsigned firstLength,
-                           const UChar* secondData,
-                           unsigned secondLength) {
-  const UChar* a = firstData;
-  const UChar* aEnd = firstData + firstLength;
+bool CheckKanaStringsEqual(const UChar* first_data,
+                           unsigned first_length,
+                           const UChar* second_data,
+                           unsigned second_length) {
+  const UChar* a = first_data;
+  const UChar* a_end = first_data + first_length;
 
-  const UChar* b = secondData;
-  const UChar* bEnd = secondData + secondLength;
+  const UChar* b = second_data;
+  const UChar* b_end = second_data + second_length;
   while (true) {
     // Check for non-kana-letter characters.
-    while (a != aEnd && !isKanaLetter(*a) && b != bEnd && !isKanaLetter(*b)) {
+    while (a != a_end && !IsKanaLetter(*a) && b != b_end && !IsKanaLetter(*b)) {
       if (*a++ != *b++)
         return false;
     }
@@ -411,16 +411,16 @@ bool checkKanaStringsEqual(const UChar* firstData,
     // If we reached the end of either the target or the match, we should have
     // reached the end of both; both should have the same number of kana
     // letters.
-    if (a == aEnd || b == bEnd) {
-      return a == aEnd && b == bEnd;
+    if (a == a_end || b == b_end) {
+      return a == a_end && b == b_end;
     }
 
-    if (isKanaLetter(*a) != isKanaLetter(*b))
+    if (IsKanaLetter(*a) != IsKanaLetter(*b))
       return false;
 
     // Check that single Kana letters in |a| and |b| are the same.
     const size_t offset =
-        compareKanaLetterAndComposedVoicedSoundMarks(a, aEnd, b, bEnd);
+        CompareKanaLetterAndComposedVoicedSoundMarks(a, a_end, b, b_end);
     if (offset == kNotFound)
       return false;
 

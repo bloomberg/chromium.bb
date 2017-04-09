@@ -17,24 +17,24 @@ class PLATFORM_EXPORT PlatformFederatedCredential final
   WTF_MAKE_NONCOPYABLE(PlatformFederatedCredential);
 
  public:
-  static PlatformFederatedCredential* create(
+  static PlatformFederatedCredential* Create(
       const String& id,
       PassRefPtr<SecurityOrigin> provider,
       const String& name,
-      const KURL& iconURL);
+      const KURL& icon_url);
   ~PlatformFederatedCredential() override;
 
-  PassRefPtr<SecurityOrigin> provider() const { return m_provider; }
+  PassRefPtr<SecurityOrigin> Provider() const { return provider_; }
 
-  bool isFederated() override { return true; }
+  bool IsFederated() override { return true; }
 
  private:
   PlatformFederatedCredential(const String& id,
                               PassRefPtr<SecurityOrigin> provider,
                               const String& name,
-                              const KURL& iconURL);
+                              const KURL& icon_url);
 
-  RefPtr<SecurityOrigin> m_provider;
+  RefPtr<SecurityOrigin> provider_;
 };
 
 }  // namespace blink

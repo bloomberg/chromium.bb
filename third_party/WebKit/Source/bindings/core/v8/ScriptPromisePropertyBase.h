@@ -40,20 +40,20 @@ class CORE_EXPORT ScriptPromisePropertyBase
   };
 
   enum State {
-    Pending,
-    Resolved,
-    Rejected,
+    kPending,
+    kResolved,
+    kRejected,
   };
-  State getState() const { return m_state; }
+  State GetState() const { return state_; }
 
-  ScriptPromise promise(DOMWrapperWorld&);
+  ScriptPromise Promise(DOMWrapperWorld&);
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   ScriptPromisePropertyBase(ExecutionContext*, Name);
 
-  void resolveOrReject(State targetState);
+  void ResolveOrReject(State target_state);
 
   // ScriptPromiseProperty overrides these to wrap the holder,
   // rejected value and resolved value. The
@@ -61,37 +61,37 @@ class CORE_EXPORT ScriptPromisePropertyBase
   // the property's execution context and the world it is
   // creating/settling promises in; the implementation should use
   // this context.
-  virtual v8::Local<v8::Object> holder(
+  virtual v8::Local<v8::Object> Holder(
       v8::Isolate*,
-      v8::Local<v8::Object> creationContext) = 0;
-  virtual v8::Local<v8::Value> resolvedValue(
+      v8::Local<v8::Object> creation_context) = 0;
+  virtual v8::Local<v8::Value> ResolvedValue(
       v8::Isolate*,
-      v8::Local<v8::Object> creationContext) = 0;
-  virtual v8::Local<v8::Value> rejectedValue(
+      v8::Local<v8::Object> creation_context) = 0;
+  virtual v8::Local<v8::Value> RejectedValue(
       v8::Isolate*,
-      v8::Local<v8::Object> creationContext) = 0;
+      v8::Local<v8::Object> creation_context) = 0;
 
-  NEVER_INLINE void resetBase();
+  NEVER_INLINE void ResetBase();
 
  private:
   typedef Vector<std::unique_ptr<ScopedPersistent<v8::Object>>>
       WeakPersistentSet;
 
-  void resolveOrRejectInternal(v8::Local<v8::Promise::Resolver>);
-  v8::Local<v8::Object> ensureHolderWrapper(ScriptState*);
-  NEVER_INLINE void clearWrappers();
+  void ResolveOrRejectInternal(v8::Local<v8::Promise::Resolver>);
+  v8::Local<v8::Object> EnsureHolderWrapper(ScriptState*);
+  NEVER_INLINE void ClearWrappers();
   // TODO(yhirano): Remove these functions once we find the cause of crashes.
-  NEVER_INLINE void checkThis();
-  NEVER_INLINE void checkWrappers();
+  NEVER_INLINE void CheckThis();
+  NEVER_INLINE void CheckWrappers();
 
-  V8PrivateProperty::Symbol promiseSymbol();
-  V8PrivateProperty::Symbol resolverSymbol();
+  V8PrivateProperty::Symbol PromiseSymbol();
+  V8PrivateProperty::Symbol ResolverSymbol();
 
-  v8::Isolate* m_isolate;
-  Name m_name;
-  State m_state;
+  v8::Isolate* isolate_;
+  Name name_;
+  State state_;
 
-  WeakPersistentSet m_wrappers;
+  WeakPersistentSet wrappers_;
 };
 
 }  // namespace blink

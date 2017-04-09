@@ -33,12 +33,12 @@ class CORE_EXPORT ParentFrameTaskRunners final
   WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
 
  public:
-  static ParentFrameTaskRunners* create(LocalFrame* frame) {
+  static ParentFrameTaskRunners* Create(LocalFrame* frame) {
     return new ParentFrameTaskRunners(frame);
   }
 
   // Might return nullptr for unsupported task types.
-  RefPtr<WebTaskRunner> get(TaskType);
+  RefPtr<WebTaskRunner> Get(TaskType);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -52,10 +52,10 @@ class CORE_EXPORT ParentFrameTaskRunners final
   // particular local frame.
   explicit ParentFrameTaskRunners(LocalFrame*);
 
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
-  Mutex m_taskRunnersMutex;
-  TaskRunnerHashMap m_taskRunners;
+  Mutex task_runners_mutex_;
+  TaskRunnerHashMap task_runners_;
 };
 
 }  // namespace blink

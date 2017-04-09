@@ -18,57 +18,57 @@ namespace blink {
 class WebPointerProperties {
  public:
   enum class Button {
-    NoButton = -1,
-    Left,
-    Middle,
-    Right,
-    Back,
-    Forward,
-    Eraser
+    kNoButton = -1,
+    kLeft,
+    kMiddle,
+    kRight,
+    kBack,
+    kForward,
+    kEraser
   };
 
   enum class Buttons : unsigned {
-    NoButton = 0,
-    Left = 1 << 0,
-    Right = 1 << 1,
-    Middle = 1 << 2,
-    Back = 1 << 3,
-    Forward = 1 << 4,
-    Eraser = 1 << 5
+    kNoButton = 0,
+    kLeft = 1 << 0,
+    kRight = 1 << 1,
+    kMiddle = 1 << 2,
+    kBack = 1 << 3,
+    kForward = 1 << 4,
+    kEraser = 1 << 5
   };
 
   enum class PointerType {
-    Unknown,
-    Mouse,
-    Pen,
-    Eraser,
-    Touch,
-    LastEntry = Touch  // Must be the last entry in the list
+    kUnknown,
+    kMouse,
+    kPen,
+    kEraser,
+    kTouch,
+    kLastEntry = kTouch  // Must be the last entry in the list
   };
 
   WebPointerProperties()
       : id(0),
         force(std::numeric_limits<float>::quiet_NaN()),
-        tiltX(0),
-        tiltY(0),
-        tangentialPressure(0.0f),
+        tilt_x(0),
+        tilt_y(0),
+        tangential_pressure(0.0f),
         twist(0),
-        button(Button::NoButton),
-        pointerType(PointerType::Unknown),
-        movementX(0),
-        movementY(0) {}
+        button(Button::kNoButton),
+        pointer_type(PointerType::kUnknown),
+        movement_x(0),
+        movement_y(0) {}
 
-  WebPointerProperties(Button buttonParam, PointerType pointerTypeParam)
+  WebPointerProperties(Button button_param, PointerType pointer_type_param)
       : id(0),
         force(std::numeric_limits<float>::quiet_NaN()),
-        tiltX(0),
-        tiltY(0),
-        tangentialPressure(0.0f),
+        tilt_x(0),
+        tilt_y(0),
+        tangential_pressure(0.0f),
         twist(0),
-        button(buttonParam),
-        pointerType(pointerTypeParam),
-        movementX(0),
-        movementY(0) {}
+        button(button_param),
+        pointer_type(pointer_type_param),
+        movement_x(0),
+        movement_y(0) {}
 
   int id;
 
@@ -79,14 +79,14 @@ class WebPointerProperties {
   // Tilt of a pen stylus from surface normal as plane angles in degrees,
   // Values lie in [-90,90]. A positive tiltX is to the right and a positive
   // tiltY is towards the user.
-  int tiltX;
-  int tiltY;
+  int tilt_x;
+  int tilt_y;
 
   // The normalized tangential pressure (or barrel pressure), typically set by
   // an additional control of the stylus, which has a range of [-1,1], where 0
   // is the neutral position of the control. Always 0 if the device does not
   // support it.
-  float tangentialPressure;
+  float tangential_pressure;
 
   // The clockwise rotation of a pen stylus around its own major axis, in
   // degrees in the range [0,359]. Always 0 if the device does not support it.
@@ -99,10 +99,10 @@ class WebPointerProperties {
   // dependent).
   Button button;
 
-  PointerType pointerType;
+  PointerType pointer_type;
 
-  int movementX;
-  int movementY;
+  int movement_x;
+  int movement_y;
 };
 
 }  // namespace blink

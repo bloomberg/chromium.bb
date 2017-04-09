@@ -40,18 +40,18 @@ class SharedContextRateLimiter final {
   WTF_MAKE_NONCOPYABLE(SharedContextRateLimiter);
 
  public:
-  static std::unique_ptr<SharedContextRateLimiter> create(
-      unsigned maxPendingTicks);
-  void tick();
-  void reset();
+  static std::unique_ptr<SharedContextRateLimiter> Create(
+      unsigned max_pending_ticks);
+  void Tick();
+  void Reset();
 
  private:
-  SharedContextRateLimiter(unsigned maxPendingTicks);
+  SharedContextRateLimiter(unsigned max_pending_ticks);
 
-  std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
-  Deque<GLuint> m_queries;
-  unsigned m_maxPendingTicks;
-  bool m_canUseSyncQueries;
+  std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+  Deque<GLuint> queries_;
+  unsigned max_pending_ticks_;
+  bool can_use_sync_queries_;
 };
 
 }  // namespace blink

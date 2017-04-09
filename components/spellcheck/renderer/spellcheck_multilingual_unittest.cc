@@ -82,7 +82,7 @@ class MultilingualSpellCheckTest : public testing::Test {
       int misspelling_start = 0;
       int misspelling_length = 0;
       static_cast<blink::WebTextCheckClient*>(provider())
-          ->checkSpelling(blink::WebString::fromUTF16(
+          ->CheckSpelling(blink::WebString::FromUTF16(
                               base::WideToUTF16(test_cases[i].input)),
                           misspelling_start, misspelling_length, nullptr);
 
@@ -104,7 +104,7 @@ class MultilingualSpellCheckTest : public testing::Test {
     EXPECT_EQ(expected.size(), results.size());
     size_t size = std::min(results.size(), expected.size());
     for (size_t i = 0; i < size; ++i) {
-      EXPECT_EQ(blink::WebTextDecorationTypeSpelling, results[i].decoration);
+      EXPECT_EQ(blink::kWebTextDecorationTypeSpelling, results[i].decoration);
       EXPECT_EQ(expected[i].location, results[i].location);
       EXPECT_EQ(expected[i].length, results[i].length);
     }
@@ -236,8 +236,8 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     int misspelling_start;
     int misspelling_length;
     static_cast<blink::WebTextCheckClient*>(provider())
-        ->checkSpelling(
-            blink::WebString::fromUTF16(base::WideToUTF16(kTestCases[i].input)),
+        ->CheckSpelling(
+            blink::WebString::FromUTF16(base::WideToUTF16(kTestCases[i].input)),
             misspelling_start, misspelling_length, &suggestions);
 
     EXPECT_EQ(kTestCases[i].expected_misspelling_start, misspelling_start);
@@ -254,7 +254,7 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     EXPECT_EQ(expected_suggestions.size(), suggestions.size());
     for (size_t j = 0;
          j < std::min(expected_suggestions.size(), suggestions.size()); j++) {
-      EXPECT_EQ(expected_suggestions[j], suggestions[j].utf16());
+      EXPECT_EQ(expected_suggestions[j], suggestions[j].Utf16());
     }
   }
 }

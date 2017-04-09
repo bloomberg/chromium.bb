@@ -45,25 +45,25 @@ class MODULES_EXPORT MediaDevicesRequest final
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
 
  public:
-  static MediaDevicesRequest* create(ScriptState*, UserMediaController*);
+  static MediaDevicesRequest* Create(ScriptState*, UserMediaController*);
   virtual ~MediaDevicesRequest();
 
-  Document* ownerDocument();
+  Document* OwnerDocument();
 
-  ScriptPromise start();
+  ScriptPromise Start();
 
-  void succeed(const MediaDeviceInfoVector&);
+  void Succeed(const MediaDeviceInfoVector&);
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   MediaDevicesRequest(ScriptState*, UserMediaController*);
 
-  Member<UserMediaController> m_controller;
-  Member<ScriptPromiseResolver> m_resolver;
+  Member<UserMediaController> controller_;
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace blink

@@ -45,141 +45,141 @@ using namespace VectorMath;
 
 // Empirical gain calibration tested across many impulse responses to ensure
 // perceived volume is same as dry (unprocessed) signal
-const float GainCalibration = -58;
-const float GainCalibrationSampleRate = 44100;
+const float kGainCalibration = -58;
+const float kGainCalibrationSampleRate = 44100;
 
 // A minimum power value to when normalizing a silent (or very quiet) impulse
 // response
-const float MinPower = 0.000125f;
+const float kMinPower = 0.000125f;
 
-static float calculateNormalizationScale(AudioBus* response) {
+static float CalculateNormalizationScale(AudioBus* response) {
   // Normalize by RMS power
-  size_t numberOfChannels = response->numberOfChannels();
+  size_t number_of_channels = response->NumberOfChannels();
   size_t length = response->length();
 
   float power = 0;
 
-  for (size_t i = 0; i < numberOfChannels; ++i) {
-    float channelPower = 0;
-    vsvesq(response->channel(i)->data(), 1, &channelPower, length);
-    power += channelPower;
+  for (size_t i = 0; i < number_of_channels; ++i) {
+    float channel_power = 0;
+    Vsvesq(response->Channel(i)->Data(), 1, &channel_power, length);
+    power += channel_power;
   }
 
-  power = sqrt(power / (numberOfChannels * length));
+  power = sqrt(power / (number_of_channels * length));
 
   // Protect against accidental overload
-  if (std::isinf(power) || std::isnan(power) || power < MinPower)
-    power = MinPower;
+  if (std::isinf(power) || std::isnan(power) || power < kMinPower)
+    power = kMinPower;
 
   float scale = 1 / power;
 
   scale *= powf(
-      10, GainCalibration *
+      10, kGainCalibration *
               0.05f);  // calibrate to make perceived volume same as unprocessed
 
   // Scale depends on sample-rate.
-  if (response->sampleRate())
-    scale *= GainCalibrationSampleRate / response->sampleRate();
+  if (response->SampleRate())
+    scale *= kGainCalibrationSampleRate / response->SampleRate();
 
   // True-stereo compensation
-  if (response->numberOfChannels() == 4)
+  if (response->NumberOfChannels() == 4)
     scale *= 0.5f;
 
   return scale;
 }
 
-Reverb::Reverb(AudioBus* impulseResponse,
-               size_t renderSliceSize,
-               size_t maxFFTSize,
-               bool useBackgroundThreads,
+Reverb::Reverb(AudioBus* impulse_response,
+               size_t render_slice_size,
+               size_t max_fft_size,
+               bool use_background_threads,
                bool normalize) {
   float scale = 1;
 
   if (normalize) {
-    scale = calculateNormalizationScale(impulseResponse);
+    scale = CalculateNormalizationScale(impulse_response);
 
     if (scale)
-      impulseResponse->scale(scale);
+      impulse_response->Scale(scale);
   }
 
-  initialize(impulseResponse, renderSliceSize, maxFFTSize,
-             useBackgroundThreads);
+  Initialize(impulse_response, render_slice_size, max_fft_size,
+             use_background_threads);
 
   // Undo scaling since this shouldn't be a destructive operation on
   // impulseResponse.
   // FIXME: What about roundoff? Perhaps consider making a temporary scaled copy
   // instead of scaling and unscaling in place.
   if (normalize && scale)
-    impulseResponse->scale(1 / scale);
+    impulse_response->Scale(1 / scale);
 }
 
-void Reverb::initialize(AudioBus* impulseResponseBuffer,
-                        size_t renderSliceSize,
-                        size_t maxFFTSize,
-                        bool useBackgroundThreads) {
-  m_impulseResponseLength = impulseResponseBuffer->length();
-  m_numberOfResponseChannels = impulseResponseBuffer->numberOfChannels();
+void Reverb::Initialize(AudioBus* impulse_response_buffer,
+                        size_t render_slice_size,
+                        size_t max_fft_size,
+                        bool use_background_threads) {
+  impulse_response_length_ = impulse_response_buffer->length();
+  number_of_response_channels_ = impulse_response_buffer->NumberOfChannels();
 
   // The reverb can handle a mono impulse response and still do stereo
   // processing.
-  unsigned numConvolvers = std::max(m_numberOfResponseChannels, 2u);
-  m_convolvers.reserveCapacity(numConvolvers);
+  unsigned num_convolvers = std::max(number_of_response_channels_, 2u);
+  convolvers_.ReserveCapacity(num_convolvers);
 
-  int convolverRenderPhase = 0;
-  for (unsigned i = 0; i < numConvolvers; ++i) {
-    AudioChannel* channel = impulseResponseBuffer->channel(
-        std::min(i, m_numberOfResponseChannels - 1));
+  int convolver_render_phase = 0;
+  for (unsigned i = 0; i < num_convolvers; ++i) {
+    AudioChannel* channel = impulse_response_buffer->Channel(
+        std::min(i, number_of_response_channels_ - 1));
 
-    std::unique_ptr<ReverbConvolver> convolver = WTF::wrapUnique(
-        new ReverbConvolver(channel, renderSliceSize, maxFFTSize,
-                            convolverRenderPhase, useBackgroundThreads));
-    m_convolvers.push_back(std::move(convolver));
+    std::unique_ptr<ReverbConvolver> convolver = WTF::WrapUnique(
+        new ReverbConvolver(channel, render_slice_size, max_fft_size,
+                            convolver_render_phase, use_background_threads));
+    convolvers_.push_back(std::move(convolver));
 
-    convolverRenderPhase += renderSliceSize;
+    convolver_render_phase += render_slice_size;
   }
 
   // For "True" stereo processing we allocate a temporary buffer to avoid
   // repeatedly allocating it in the process() method.  It can be bad to
   // allocate memory in a real-time thread.
-  if (m_numberOfResponseChannels == 4)
-    m_tempBuffer = AudioBus::create(2, MaxFrameSize);
+  if (number_of_response_channels_ == 4)
+    temp_buffer_ = AudioBus::Create(2, kMaxFrameSize);
 }
 
-void Reverb::process(const AudioBus* sourceBus,
-                     AudioBus* destinationBus,
-                     size_t framesToProcess) {
+void Reverb::Process(const AudioBus* source_bus,
+                     AudioBus* destination_bus,
+                     size_t frames_to_process) {
   // Do a fairly comprehensive sanity check.
   // If these conditions are satisfied, all of the source and destination
   // pointers will be valid for the various matrixing cases.
-  bool isSafeToProcess = sourceBus && destinationBus &&
-                         sourceBus->numberOfChannels() > 0 &&
-                         destinationBus->numberOfChannels() > 0 &&
-                         framesToProcess <= MaxFrameSize &&
-                         framesToProcess <= sourceBus->length() &&
-                         framesToProcess <= destinationBus->length();
+  bool is_safe_to_process = source_bus && destination_bus &&
+                            source_bus->NumberOfChannels() > 0 &&
+                            destination_bus->NumberOfChannels() > 0 &&
+                            frames_to_process <= kMaxFrameSize &&
+                            frames_to_process <= source_bus->length() &&
+                            frames_to_process <= destination_bus->length();
 
-  DCHECK(isSafeToProcess);
-  if (!isSafeToProcess)
+  DCHECK(is_safe_to_process);
+  if (!is_safe_to_process)
     return;
 
   // For now only handle mono or stereo output
-  if (destinationBus->numberOfChannels() > 2) {
-    destinationBus->zero();
+  if (destination_bus->NumberOfChannels() > 2) {
+    destination_bus->Zero();
     return;
   }
 
-  AudioChannel* destinationChannelL = destinationBus->channel(0);
-  const AudioChannel* sourceChannelL = sourceBus->channel(0);
+  AudioChannel* destination_channel_l = destination_bus->Channel(0);
+  const AudioChannel* source_channel_l = source_bus->Channel(0);
 
   // Handle input -> output matrixing...
-  size_t numInputChannels = sourceBus->numberOfChannels();
-  size_t numOutputChannels = destinationBus->numberOfChannels();
-  size_t numberOfResponseChannels = m_numberOfResponseChannels;
+  size_t num_input_channels = source_bus->NumberOfChannels();
+  size_t num_output_channels = destination_bus->NumberOfChannels();
+  size_t number_of_response_channels = number_of_response_channels_;
 
-  DCHECK_LE(numInputChannels, 2ul);
-  DCHECK_LE(numOutputChannels, 2ul);
-  DCHECK(numberOfResponseChannels == 1 || numberOfResponseChannels == 2 ||
-         numberOfResponseChannels == 4);
+  DCHECK_LE(num_input_channels, 2ul);
+  DCHECK_LE(num_output_channels, 2ul);
+  DCHECK(number_of_response_channels == 1 || number_of_response_channels == 2 ||
+         number_of_response_channels == 4);
 
   // These are the possible combinations of number inputs, response
   // channels and outputs channels that need to be supported:
@@ -202,87 +202,91 @@ void Reverb::process(const AudioBus* sourceBus,
   //   5        2 -> 2 -> 2
   //   6        2 -> 4 -> 2
 
-  if (numInputChannels == 2 &&
-      (numberOfResponseChannels == 1 || numberOfResponseChannels == 2) &&
-      numOutputChannels == 2) {
+  if (num_input_channels == 2 &&
+      (number_of_response_channels == 1 || number_of_response_channels == 2) &&
+      num_output_channels == 2) {
     // Case 4 and 5: 2 -> 2 -> 2 or 2 -> 1 -> 2.
     //
     // These can be handled in the same way because in the latter
     // case, two connvolvers are still created with the second being a
     // copy of the first.
-    const AudioChannel* sourceChannelR = sourceBus->channel(1);
-    AudioChannel* destinationChannelR = destinationBus->channel(1);
-    m_convolvers[0]->process(sourceChannelL, destinationChannelL,
-                             framesToProcess);
-    m_convolvers[1]->process(sourceChannelR, destinationChannelR,
-                             framesToProcess);
-  } else if (numInputChannels == 1 && numOutputChannels == 2 &&
-             numberOfResponseChannels == 2) {
+    const AudioChannel* source_channel_r = source_bus->Channel(1);
+    AudioChannel* destination_channel_r = destination_bus->Channel(1);
+    convolvers_[0]->Process(source_channel_l, destination_channel_l,
+                            frames_to_process);
+    convolvers_[1]->Process(source_channel_r, destination_channel_r,
+                            frames_to_process);
+  } else if (num_input_channels == 1 && num_output_channels == 2 &&
+             number_of_response_channels == 2) {
     // Case 2: 1 -> 2 -> 2
     for (int i = 0; i < 2; ++i) {
-      AudioChannel* destinationChannel = destinationBus->channel(i);
-      m_convolvers[i]->process(sourceChannelL, destinationChannel,
-                               framesToProcess);
+      AudioChannel* destination_channel = destination_bus->Channel(i);
+      convolvers_[i]->Process(source_channel_l, destination_channel,
+                              frames_to_process);
     }
-  } else if (numInputChannels == 1 && numberOfResponseChannels == 1) {
+  } else if (num_input_channels == 1 && number_of_response_channels == 1) {
     // Case 1: 1 -> 1 -> 1
-    DCHECK_EQ(numOutputChannels, 1ul);
-    m_convolvers[0]->process(sourceChannelL, destinationChannelL,
-                             framesToProcess);
-  } else if (numInputChannels == 2 && numberOfResponseChannels == 4 &&
-             numOutputChannels == 2) {
+    DCHECK_EQ(num_output_channels, 1ul);
+    convolvers_[0]->Process(source_channel_l, destination_channel_l,
+                            frames_to_process);
+  } else if (num_input_channels == 2 && number_of_response_channels == 4 &&
+             num_output_channels == 2) {
     // Case 6: 2 -> 4 -> 2 ("True" stereo)
-    const AudioChannel* sourceChannelR = sourceBus->channel(1);
-    AudioChannel* destinationChannelR = destinationBus->channel(1);
+    const AudioChannel* source_channel_r = source_bus->Channel(1);
+    AudioChannel* destination_channel_r = destination_bus->Channel(1);
 
-    AudioChannel* tempChannelL = m_tempBuffer->channel(0);
-    AudioChannel* tempChannelR = m_tempBuffer->channel(1);
+    AudioChannel* temp_channel_l = temp_buffer_->Channel(0);
+    AudioChannel* temp_channel_r = temp_buffer_->Channel(1);
 
     // Process left virtual source
-    m_convolvers[0]->process(sourceChannelL, destinationChannelL,
-                             framesToProcess);
-    m_convolvers[1]->process(sourceChannelL, destinationChannelR,
-                             framesToProcess);
+    convolvers_[0]->Process(source_channel_l, destination_channel_l,
+                            frames_to_process);
+    convolvers_[1]->Process(source_channel_l, destination_channel_r,
+                            frames_to_process);
 
     // Process right virtual source
-    m_convolvers[2]->process(sourceChannelR, tempChannelL, framesToProcess);
-    m_convolvers[3]->process(sourceChannelR, tempChannelR, framesToProcess);
+    convolvers_[2]->Process(source_channel_r, temp_channel_l,
+                            frames_to_process);
+    convolvers_[3]->Process(source_channel_r, temp_channel_r,
+                            frames_to_process);
 
-    destinationBus->sumFrom(*m_tempBuffer);
-  } else if (numInputChannels == 1 && numberOfResponseChannels == 4 &&
-             numOutputChannels == 2) {
+    destination_bus->SumFrom(*temp_buffer_);
+  } else if (num_input_channels == 1 && number_of_response_channels == 4 &&
+             num_output_channels == 2) {
     // Case 3: 1 -> 4 -> 2 (Processing mono with "True" stereo impulse
     // response) This is an inefficient use of a four-channel impulse
     // response, but we should handle the case.
-    AudioChannel* destinationChannelR = destinationBus->channel(1);
+    AudioChannel* destination_channel_r = destination_bus->Channel(1);
 
-    AudioChannel* tempChannelL = m_tempBuffer->channel(0);
-    AudioChannel* tempChannelR = m_tempBuffer->channel(1);
+    AudioChannel* temp_channel_l = temp_buffer_->Channel(0);
+    AudioChannel* temp_channel_r = temp_buffer_->Channel(1);
 
     // Process left virtual source
-    m_convolvers[0]->process(sourceChannelL, destinationChannelL,
-                             framesToProcess);
-    m_convolvers[1]->process(sourceChannelL, destinationChannelR,
-                             framesToProcess);
+    convolvers_[0]->Process(source_channel_l, destination_channel_l,
+                            frames_to_process);
+    convolvers_[1]->Process(source_channel_l, destination_channel_r,
+                            frames_to_process);
 
     // Process right virtual source
-    m_convolvers[2]->process(sourceChannelL, tempChannelL, framesToProcess);
-    m_convolvers[3]->process(sourceChannelL, tempChannelR, framesToProcess);
+    convolvers_[2]->Process(source_channel_l, temp_channel_l,
+                            frames_to_process);
+    convolvers_[3]->Process(source_channel_l, temp_channel_r,
+                            frames_to_process);
 
-    destinationBus->sumFrom(*m_tempBuffer);
+    destination_bus->SumFrom(*temp_buffer_);
   } else {
     NOTREACHED();
-    destinationBus->zero();
+    destination_bus->Zero();
   }
 }
 
-void Reverb::reset() {
-  for (size_t i = 0; i < m_convolvers.size(); ++i)
-    m_convolvers[i]->reset();
+void Reverb::Reset() {
+  for (size_t i = 0; i < convolvers_.size(); ++i)
+    convolvers_[i]->Reset();
 }
 
-size_t Reverb::latencyFrames() const {
-  return !m_convolvers.isEmpty() ? m_convolvers.front()->latencyFrames() : 0;
+size_t Reverb::LatencyFrames() const {
+  return !convolvers_.IsEmpty() ? convolvers_.front()->LatencyFrames() : 0;
 }
 
 }  // namespace blink

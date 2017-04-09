@@ -9,7 +9,7 @@
 
 namespace blink {
 
-static const UChar32 isCJKIdeographOrSymbolArray[] = {
+static const UChar32 kIsCJKIdeographOrSymbolArray[] = {
     // 0x2C7 Caron, Mandarin Chinese 3rd Tone
     0x2C7,
     // 0x2CA Modifier Letter Acute Accent, Mandarin Chinese 2nd Tone
@@ -32,7 +32,7 @@ static const UChar32 isCJKIdeographOrSymbolArray[] = {
     // Emoji.
     0x1F100, 0x1F004, 0x1F0CF, 0x1F18E};
 
-static const UChar32 isCJKIdeographOrSymbolRanges[] = {
+static const UChar32 kIsCJKIdeographOrSymbolRanges[] = {
     // STAFF OF AESCULAPIUS..SCALES for emoji sequences for doctor and judge
     // professions.
     0x2695, 0x2696,
@@ -101,10 +101,10 @@ static const UChar32 isCJKIdeographOrSymbolRanges[] = {
 // http://www.unicode.org/reports/tr50/
 // Taken from the corresponding data file:
 // http://www.unicode.org/Public/vertical/revision-16/VerticalOrientation-16.txt
-static const UChar32 isUprightInMixedVerticalArray[] = {
+static const UChar32 kIsUprightInMixedVerticalArray[] = {
     0x000A7, 0x000A9, 0x000AE, 0x000B1, 0x000D7, 0x000F7};
 
-static const UChar32 isUprightInMixedVerticalRanges[] = {
+static const UChar32 kIsUprightInMixedVerticalRanges[] = {
     0x000BC, 0x000BE,
     // Spacing Modifier Letters (Part of)
     0x002EA, 0x002EB,
@@ -193,11 +193,11 @@ static const UChar32 isUprightInMixedVerticalRanges[] = {
 };
 
 // https://html.spec.whatwg.org/multipage/scripting.html#prod-potentialcustomelementname
-static const UChar32 isPotentialCustomElementNameCharArray[] = {
+static const UChar32 kIsPotentialCustomElementNameCharArray[] = {
     '-', '.', '_', 0xB7,
 };
 
-static const UChar32 isPotentialCustomElementNameCharRanges[] = {
+static const UChar32 kIsPotentialCustomElementNameCharRanges[] = {
     '0',    '9',    'a',    'z',    0xC0,    0xD6,    0xD8,   0xF6,
     0xF8,   0x2FF,  0x300,  0x37D,  0x37F,   0x1FFF,  0x200C, 0x200D,
     0x203F, 0x2040, 0x2070, 0x218F, 0x2C00,  0x2FEF,  0x3001, 0xD7FF,

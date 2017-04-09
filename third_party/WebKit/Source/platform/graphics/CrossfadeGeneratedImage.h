@@ -36,44 +36,45 @@ namespace blink {
 
 class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
  public:
-  static PassRefPtr<CrossfadeGeneratedImage> create(PassRefPtr<Image> fromImage,
-                                                    PassRefPtr<Image> toImage,
-                                                    float percentage,
-                                                    IntSize crossfadeSize,
-                                                    const IntSize& size) {
-    return adoptRef(new CrossfadeGeneratedImage(std::move(fromImage),
-                                                std::move(toImage), percentage,
-                                                crossfadeSize, size));
+  static PassRefPtr<CrossfadeGeneratedImage> Create(
+      PassRefPtr<Image> from_image,
+      PassRefPtr<Image> to_image,
+      float percentage,
+      IntSize crossfade_size,
+      const IntSize& size) {
+    return AdoptRef(new CrossfadeGeneratedImage(std::move(from_image),
+                                                std::move(to_image), percentage,
+                                                crossfade_size, size));
   }
 
-  bool usesContainerSize() const override { return false; }
-  bool hasRelativeSize() const override { return false; }
+  bool UsesContainerSize() const override { return false; }
+  bool HasRelativeSize() const override { return false; }
 
-  IntSize size() const override { return m_crossfadeSize; }
+  IntSize size() const override { return crossfade_size_; }
 
  protected:
-  void draw(PaintCanvas*,
+  void Draw(PaintCanvas*,
             const PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
             ImageClampingMode) override;
-  void drawTile(GraphicsContext&, const FloatRect&) final;
+  void DrawTile(GraphicsContext&, const FloatRect&) final;
 
-  CrossfadeGeneratedImage(PassRefPtr<Image> fromImage,
-                          PassRefPtr<Image> toImage,
+  CrossfadeGeneratedImage(PassRefPtr<Image> from_image,
+                          PassRefPtr<Image> to_image,
                           float percentage,
-                          IntSize crossfadeSize,
+                          IntSize crossfade_size,
                           const IntSize&);
 
  private:
-  void drawCrossfade(PaintCanvas*, const PaintFlags&, ImageClampingMode);
+  void DrawCrossfade(PaintCanvas*, const PaintFlags&, ImageClampingMode);
 
-  RefPtr<Image> m_fromImage;
-  RefPtr<Image> m_toImage;
+  RefPtr<Image> from_image_;
+  RefPtr<Image> to_image_;
 
-  float m_percentage;
-  IntSize m_crossfadeSize;
+  float percentage_;
+  IntSize crossfade_size_;
 };
 
 }  // namespace blink

@@ -37,7 +37,7 @@ void WebSharedWorkerProxy::connect(
   router_->Send(new ViewHostMsg_CreateWorker(params, &reply));
   route_id_ = reply.route_id;
   router_->AddRoute(route_id_, this);
-  listener_->workerCreated(reply.error);
+  listener_->WorkerCreated(reply.error);
 
   message_port_ = static_cast<WebMessagePortChannelImpl*>(channel.get())
                       ->ReleaseMessagePort();
@@ -68,15 +68,15 @@ void WebSharedWorkerProxy::OnWorkerCreated() {
 }
 
 void WebSharedWorkerProxy::OnWorkerScriptLoadFailed() {
-  listener_->scriptLoadFailed();
+  listener_->ScriptLoadFailed();
   delete this;
 }
 
 void WebSharedWorkerProxy::OnWorkerConnected(
     const std::set<uint32_t>& used_features) {
-  listener_->connected();
+  listener_->Connected();
   for (uint32_t feature : used_features)
-    listener_->countFeature(feature);
+    listener_->CountFeature(feature);
 }
 
 void WebSharedWorkerProxy::OnWorkerDestroyed() {
@@ -84,7 +84,7 @@ void WebSharedWorkerProxy::OnWorkerDestroyed() {
 }
 
 void WebSharedWorkerProxy::OnCountFeature(uint32_t feature) {
-  listener_->countFeature(feature);
+  listener_->CountFeature(feature);
 }
 
 }  // namespace content

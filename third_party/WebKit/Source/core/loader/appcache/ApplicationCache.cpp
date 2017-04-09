@@ -39,63 +39,63 @@
 namespace blink {
 
 ApplicationCache::ApplicationCache(LocalFrame* frame) : DOMWindowClient(frame) {
-  ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (cacheHost)
-    cacheHost->setApplicationCache(this);
+  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  if (cache_host)
+    cache_host->SetApplicationCache(this);
 }
 
 DEFINE_TRACE(ApplicationCache) {
-  EventTargetWithInlineData::trace(visitor);
-  DOMWindowClient::trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  DOMWindowClient::Trace(visitor);
 }
 
-ApplicationCacheHost* ApplicationCache::applicationCacheHost() const {
-  if (!frame() || !frame()->loader().documentLoader())
+ApplicationCacheHost* ApplicationCache::GetApplicationCacheHost() const {
+  if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
     return 0;
-  return frame()->loader().documentLoader()->applicationCacheHost();
+  return GetFrame()->Loader().GetDocumentLoader()->GetApplicationCacheHost();
 }
 
 unsigned short ApplicationCache::status() const {
-  recordAPIUseType();
-  ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (!cacheHost)
+  RecordAPIUseType();
+  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  if (!cache_host)
     return ApplicationCacheHost::kUncached;
-  return cacheHost->getStatus();
+  return cache_host->GetStatus();
 }
 
-void ApplicationCache::update(ExceptionState& exceptionState) {
-  recordAPIUseType();
-  ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (!cacheHost || !cacheHost->update()) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "there is no application cache to update.");
+void ApplicationCache::update(ExceptionState& exception_state) {
+  RecordAPIUseType();
+  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  if (!cache_host || !cache_host->Update()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "there is no application cache to update.");
   }
 }
 
-void ApplicationCache::swapCache(ExceptionState& exceptionState) {
-  recordAPIUseType();
-  ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (!cacheHost || !cacheHost->swapCache()) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "there is no newer application cache to swap to.");
+void ApplicationCache::swapCache(ExceptionState& exception_state) {
+  RecordAPIUseType();
+  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  if (!cache_host || !cache_host->SwapCache()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "there is no newer application cache to swap to.");
   }
 }
 
 void ApplicationCache::abort() {
-  ApplicationCacheHost* cacheHost = applicationCacheHost();
-  if (cacheHost)
-    cacheHost->abort();
+  ApplicationCacheHost* cache_host = GetApplicationCacheHost();
+  if (cache_host)
+    cache_host->Abort();
 }
 
-const AtomicString& ApplicationCache::interfaceName() const {
+const AtomicString& ApplicationCache::InterfaceName() const {
   return EventTargetNames::ApplicationCache;
 }
 
-ExecutionContext* ApplicationCache::getExecutionContext() const {
-  return frame() ? frame()->document() : nullptr;
+ExecutionContext* ApplicationCache::GetExecutionContext() const {
+  return GetFrame() ? GetFrame()->GetDocument() : nullptr;
 }
 
-const AtomicString& ApplicationCache::toEventType(
+const AtomicString& ApplicationCache::ToEventType(
     ApplicationCacheHost::EventID id) {
   switch (id) {
     case ApplicationCacheHost::kCheckingEvent:
@@ -119,23 +119,23 @@ const AtomicString& ApplicationCache::toEventType(
   return EventTypeNames::error;
 }
 
-void ApplicationCache::recordAPIUseType() const {
-  if (!frame())
+void ApplicationCache::RecordAPIUseType() const {
+  if (!GetFrame())
     return;
 
-  Document* document = frame()->document();
+  Document* document = GetFrame()->GetDocument();
 
   if (!document)
     return;
 
-  if (document->isSecureContext()) {
-    UseCounter::count(document, UseCounter::ApplicationCacheAPISecureOrigin);
+  if (document->IsSecureContext()) {
+    UseCounter::Count(document, UseCounter::kApplicationCacheAPISecureOrigin);
   } else {
-    Deprecation::countDeprecation(
-        document, UseCounter::ApplicationCacheAPIInsecureOrigin);
-    HostsUsingFeatures::countAnyWorld(
+    Deprecation::CountDeprecation(
+        document, UseCounter::kApplicationCacheAPIInsecureOrigin);
+    HostsUsingFeatures::CountAnyWorld(
         *document,
-        HostsUsingFeatures::Feature::ApplicationCacheAPIInsecureHost);
+        HostsUsingFeatures::Feature::kApplicationCacheAPIInsecureHost);
   }
 }
 

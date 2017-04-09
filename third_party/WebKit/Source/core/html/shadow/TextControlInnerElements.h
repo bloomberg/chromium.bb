@@ -34,51 +34,51 @@ namespace blink {
 
 class TextControlInnerContainer final : public HTMLDivElement {
  public:
-  static TextControlInnerContainer* create(Document&);
+  static TextControlInnerContainer* Create(Document&);
 
  protected:
   explicit TextControlInnerContainer(Document&);
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
 class EditingViewPortElement final : public HTMLDivElement {
  public:
-  static EditingViewPortElement* create(Document&);
+  static EditingViewPortElement* Create(Document&);
 
  protected:
   explicit EditingViewPortElement(Document&);
-  PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
 
  private:
-  bool supportsFocus() const override { return false; }
+  bool SupportsFocus() const override { return false; }
 };
 
 class TextControlInnerEditorElement final : public HTMLDivElement {
  public:
-  static TextControlInnerEditorElement* create(Document&);
+  static TextControlInnerEditorElement* Create(Document&);
 
-  void defaultEventHandler(Event*) override;
+  void DefaultEventHandler(Event*) override;
 
  private:
   explicit TextControlInnerEditorElement(Document&);
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-  bool supportsFocus() const override { return false; }
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  PassRefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
+  bool SupportsFocus() const override { return false; }
 };
 
 class SearchFieldCancelButtonElement final : public HTMLDivElement {
  public:
-  static SearchFieldCancelButtonElement* create(Document&);
+  static SearchFieldCancelButtonElement* Create(Document&);
 
-  void defaultEventHandler(Event*) override;
-  bool willRespondToMouseClickEvents() override;
+  void DefaultEventHandler(Event*) override;
+  bool WillRespondToMouseClickEvents() override;
 
  private:
   explicit SearchFieldCancelButtonElement(Document&);
-  void detachLayoutTree(const AttachContext& = AttachContext()) override;
-  bool supportsFocus() const override { return false; }
+  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool SupportsFocus() const override { return false; }
 
-  bool m_capturing;
+  bool capturing_;
 };
 
 }  // namespace blink

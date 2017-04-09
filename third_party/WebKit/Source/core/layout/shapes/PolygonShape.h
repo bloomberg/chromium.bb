@@ -42,41 +42,40 @@ class OffsetPolygonEdge final : public VertexPair {
 
  public:
   OffsetPolygonEdge(const FloatPolygonEdge& edge, const FloatSize& offset)
-      : m_vertex1(edge.vertex1() + offset),
-        m_vertex2(edge.vertex2() + offset) {}
+      : vertex1_(edge.Vertex1() + offset), vertex2_(edge.Vertex2() + offset) {}
 
-  const FloatPoint& vertex1() const override { return m_vertex1; }
-  const FloatPoint& vertex2() const override { return m_vertex2; }
+  const FloatPoint& Vertex1() const override { return vertex1_; }
+  const FloatPoint& Vertex2() const override { return vertex2_; }
 
-  bool isWithinYRange(float y1, float y2) const {
-    return y1 <= minY() && y2 >= maxY();
+  bool IsWithinYRange(float y1, float y2) const {
+    return y1 <= MinY() && y2 >= MaxY();
   }
-  bool overlapsYRange(float y1, float y2) const {
-    return y2 >= minY() && y1 <= maxY();
+  bool OverlapsYRange(float y1, float y2) const {
+    return y2 >= MinY() && y1 <= MaxY();
   }
-  float xIntercept(float y) const;
-  FloatShapeInterval clippedEdgeXRange(float y1, float y2) const;
+  float XIntercept(float y) const;
+  FloatShapeInterval ClippedEdgeXRange(float y1, float y2) const;
 
  private:
-  FloatPoint m_vertex1;
-  FloatPoint m_vertex2;
+  FloatPoint vertex1_;
+  FloatPoint vertex2_;
 };
 
 class PolygonShape final : public Shape {
   WTF_MAKE_NONCOPYABLE(PolygonShape);
 
  public:
-  PolygonShape(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fillRule)
-      : Shape(), m_polygon(std::move(vertices), fillRule) {}
+  PolygonShape(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fill_rule)
+      : Shape(), polygon_(std::move(vertices), fill_rule) {}
 
-  LayoutRect shapeMarginLogicalBoundingBox() const override;
-  bool isEmpty() const override { return m_polygon.isEmpty(); }
-  LineSegment getExcludedInterval(LayoutUnit logicalTop,
-                                  LayoutUnit logicalHeight) const override;
-  void buildDisplayPaths(DisplayPaths&) const override;
+  LayoutRect ShapeMarginLogicalBoundingBox() const override;
+  bool IsEmpty() const override { return polygon_.IsEmpty(); }
+  LineSegment GetExcludedInterval(LayoutUnit logical_top,
+                                  LayoutUnit logical_height) const override;
+  void BuildDisplayPaths(DisplayPaths&) const override;
 
  private:
-  FloatPolygon m_polygon;
+  FloatPolygon polygon_;
 };
 
 }  // namespace blink

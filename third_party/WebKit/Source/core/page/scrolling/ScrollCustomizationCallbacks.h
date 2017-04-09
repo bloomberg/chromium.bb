@@ -20,22 +20,22 @@ class CORE_EXPORT ScrollCustomizationCallbacks
 
  public:
   ScrollCustomizationCallbacks() {}
-  void setDistributeScroll(Element*, ScrollStateCallback*);
-  ScrollStateCallback* getDistributeScroll(Element*);
-  void setApplyScroll(Element*, ScrollStateCallback*);
-  void removeApplyScroll(Element*);
-  ScrollStateCallback* getApplyScroll(Element*);
+  void SetDistributeScroll(Element*, ScrollStateCallback*);
+  ScrollStateCallback* GetDistributeScroll(Element*);
+  void SetApplyScroll(Element*, ScrollStateCallback*);
+  void RemoveApplyScroll(Element*);
+  ScrollStateCallback* GetApplyScroll(Element*);
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_applyScrollCallbacks);
-    visitor->trace(m_distributeScrollCallbacks);
+    visitor->Trace(apply_scroll_callbacks_);
+    visitor->Trace(distribute_scroll_callbacks_);
   };
 
  private:
   using ScrollStateCallbackList =
       HeapHashMap<WeakMember<Element>, Member<ScrollStateCallback>>;
-  ScrollStateCallbackList m_applyScrollCallbacks;
-  ScrollStateCallbackList m_distributeScrollCallbacks;
+  ScrollStateCallbackList apply_scroll_callbacks_;
+  ScrollStateCallbackList distribute_scroll_callbacks_;
 };
 
 }  // namespace blink

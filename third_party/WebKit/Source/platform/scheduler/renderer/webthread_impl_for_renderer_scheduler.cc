@@ -21,15 +21,15 @@ WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
       scheduler_(scheduler),
       thread_id_(base::PlatformThread::CurrentId()),
       web_task_runner_(
-          WebTaskRunnerImpl::create(scheduler->DefaultTaskRunner())) {}
+          WebTaskRunnerImpl::Create(scheduler->DefaultTaskRunner())) {}
 
 WebThreadImplForRendererScheduler::~WebThreadImplForRendererScheduler() {}
 
-blink::PlatformThreadId WebThreadImplForRendererScheduler::threadId() const {
+blink::PlatformThreadId WebThreadImplForRendererScheduler::ThreadId() const {
   return thread_id_;
 }
 
-blink::WebScheduler* WebThreadImplForRendererScheduler::scheduler() const {
+blink::WebScheduler* WebThreadImplForRendererScheduler::Scheduler() const {
   return web_scheduler_.get();
 }
 
@@ -43,8 +43,8 @@ WebThreadImplForRendererScheduler::GetIdleTaskRunner() const {
   return idle_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebThreadImplForRendererScheduler::getWebTaskRunner() {
-  return web_task_runner_.get();
+blink::WebTaskRunner* WebThreadImplForRendererScheduler::GetWebTaskRunner() {
+  return web_task_runner_.Get();
 }
 
 void WebThreadImplForRendererScheduler::AddTaskObserverInternal(

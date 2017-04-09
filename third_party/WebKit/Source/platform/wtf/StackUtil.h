@@ -13,18 +13,18 @@
 
 namespace WTF {
 
-WTF_EXPORT size_t getUnderestimatedStackSize();
-WTF_EXPORT void* getStackStart();
+WTF_EXPORT size_t GetUnderestimatedStackSize();
+WTF_EXPORT void* GetStackStart();
 
 namespace internal {
 
-WTF_EXPORT extern uintptr_t s_mainThreadStackStart;
-WTF_EXPORT extern uintptr_t s_mainThreadUnderestimatedStackSize;
+WTF_EXPORT extern uintptr_t g_main_thread_stack_start;
+WTF_EXPORT extern uintptr_t g_main_thread_underestimated_stack_size;
 
-WTF_EXPORT void initializeMainThreadStackEstimate();
+WTF_EXPORT void InitializeMainThreadStackEstimate();
 
 #if OS(WIN) && COMPILER(MSVC)
-size_t threadStackSize();
+size_t ThreadStackSize();
 #endif
 
 }  // namespace internal
@@ -33,15 +33,15 @@ size_t threadStackSize();
 // that this function may have false positives, i.e. it can return true even if
 // we are on the main thread. If the function returns false, we are certainly
 // on the main thread.
-inline bool mayNotBeMainThread() {
+inline bool MayNotBeMainThread() {
   uintptr_t dummy;
-  uintptr_t addressDiff =
-      internal::s_mainThreadStackStart - reinterpret_cast<uintptr_t>(&dummy);
+  uintptr_t address_diff =
+      internal::g_main_thread_stack_start - reinterpret_cast<uintptr_t>(&dummy);
   // This is a fast way to judge if we are in the main thread.
   // If |&dummy| is within |s_mainThreadUnderestimatedStackSize| byte from
   // the stack start of the main thread, we judge that we are in
   // the main thread.
-  return addressDiff >= internal::s_mainThreadUnderestimatedStackSize;
+  return address_diff >= internal::g_main_thread_underestimated_stack_size;
 }
 
 }  // namespace WTF

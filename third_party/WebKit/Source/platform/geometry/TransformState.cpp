@@ -28,207 +28,207 @@
 namespace blink {
 
 TransformState& TransformState::operator=(const TransformState& other) {
-  m_accumulatedOffset = other.m_accumulatedOffset;
-  m_mapPoint = other.m_mapPoint;
-  m_mapQuad = other.m_mapQuad;
-  if (m_mapPoint)
-    m_lastPlanarPoint = other.m_lastPlanarPoint;
-  if (m_mapQuad)
-    m_lastPlanarQuad = other.m_lastPlanarQuad;
-  m_accumulatingTransform = other.m_accumulatingTransform;
-  m_forceAccumulatingTransform = other.m_forceAccumulatingTransform;
-  m_direction = other.m_direction;
+  accumulated_offset_ = other.accumulated_offset_;
+  map_point_ = other.map_point_;
+  map_quad_ = other.map_quad_;
+  if (map_point_)
+    last_planar_point_ = other.last_planar_point_;
+  if (map_quad_)
+    last_planar_quad_ = other.last_planar_quad_;
+  accumulating_transform_ = other.accumulating_transform_;
+  force_accumulating_transform_ = other.force_accumulating_transform_;
+  direction_ = other.direction_;
 
-  m_accumulatedTransform.reset();
+  accumulated_transform_.reset();
 
-  if (other.m_accumulatedTransform)
-    m_accumulatedTransform =
-        TransformationMatrix::create(*other.m_accumulatedTransform);
+  if (other.accumulated_transform_)
+    accumulated_transform_ =
+        TransformationMatrix::Create(*other.accumulated_transform_);
 
   return *this;
 }
 
-void TransformState::translateTransform(const LayoutSize& offset) {
-  if (m_direction == ApplyTransformDirection)
-    m_accumulatedTransform->translateRight(offset.width().toDouble(),
-                                           offset.height().toDouble());
+void TransformState::TranslateTransform(const LayoutSize& offset) {
+  if (direction_ == kApplyTransformDirection)
+    accumulated_transform_->TranslateRight(offset.Width().ToDouble(),
+                                           offset.Height().ToDouble());
   else
-    m_accumulatedTransform->translate(offset.width().toDouble(),
-                                      offset.height().toDouble());
+    accumulated_transform_->Translate(offset.Width().ToDouble(),
+                                      offset.Height().ToDouble());
 }
 
-void TransformState::translateMappedCoordinates(const LayoutSize& offset) {
-  FloatSize adjustedOffset((m_direction == ApplyTransformDirection) ? offset
-                                                                    : -offset);
-  if (m_mapPoint)
-    m_lastPlanarPoint.move(adjustedOffset);
-  if (m_mapQuad)
-    m_lastPlanarQuad.move(adjustedOffset);
+void TransformState::TranslateMappedCoordinates(const LayoutSize& offset) {
+  FloatSize adjusted_offset((direction_ == kApplyTransformDirection) ? offset
+                                                                     : -offset);
+  if (map_point_)
+    last_planar_point_.Move(adjusted_offset);
+  if (map_quad_)
+    last_planar_quad_.Move(adjusted_offset);
 }
 
-void TransformState::move(const LayoutSize& offset,
+void TransformState::Move(const LayoutSize& offset,
                           TransformAccumulation accumulate) {
-  if (m_forceAccumulatingTransform)
-    accumulate = AccumulateTransform;
+  if (force_accumulating_transform_)
+    accumulate = kAccumulateTransform;
 
-  if (accumulate == FlattenTransform || !m_accumulatedTransform) {
-    m_accumulatedOffset += offset;
+  if (accumulate == kFlattenTransform || !accumulated_transform_) {
+    accumulated_offset_ += offset;
   } else {
-    applyAccumulatedOffset();
-    if (m_accumulatingTransform && m_accumulatedTransform) {
+    ApplyAccumulatedOffset();
+    if (accumulating_transform_ && accumulated_transform_) {
       // If we're accumulating into an existing transform, apply the
       // translation.
-      translateTransform(offset);
+      TranslateTransform(offset);
     } else {
       // Just move the point and/or quad.
-      translateMappedCoordinates(offset);
+      TranslateMappedCoordinates(offset);
     }
   }
-  m_accumulatingTransform = accumulate == AccumulateTransform;
+  accumulating_transform_ = accumulate == kAccumulateTransform;
 }
 
-void TransformState::applyAccumulatedOffset() {
-  LayoutSize offset = m_accumulatedOffset;
-  m_accumulatedOffset = LayoutSize();
-  if (!offset.isZero()) {
-    if (m_accumulatedTransform) {
-      translateTransform(offset);
-      flatten();
+void TransformState::ApplyAccumulatedOffset() {
+  LayoutSize offset = accumulated_offset_;
+  accumulated_offset_ = LayoutSize();
+  if (!offset.IsZero()) {
+    if (accumulated_transform_) {
+      TranslateTransform(offset);
+      Flatten();
     } else {
-      translateMappedCoordinates(offset);
+      TranslateMappedCoordinates(offset);
     }
   }
 }
 
 // FIXME: We transform AffineTransform to TransformationMatrix. This is rather
 // inefficient.
-void TransformState::applyTransform(
-    const AffineTransform& transformFromContainer,
+void TransformState::ApplyTransform(
+    const AffineTransform& transform_from_container,
     TransformAccumulation accumulate,
-    bool* wasClamped) {
-  applyTransform(transformFromContainer.toTransformationMatrix(), accumulate,
-                 wasClamped);
+    bool* was_clamped) {
+  ApplyTransform(transform_from_container.ToTransformationMatrix(), accumulate,
+                 was_clamped);
 }
 
-void TransformState::applyTransform(
-    const TransformationMatrix& transformFromContainer,
+void TransformState::ApplyTransform(
+    const TransformationMatrix& transform_from_container,
     TransformAccumulation accumulate,
-    bool* wasClamped) {
-  if (wasClamped)
-    *wasClamped = false;
+    bool* was_clamped) {
+  if (was_clamped)
+    *was_clamped = false;
 
-  if (transformFromContainer.isIntegerTranslation()) {
-    move(LayoutSize(LayoutUnit(transformFromContainer.e()),
-                    LayoutUnit(transformFromContainer.f())),
+  if (transform_from_container.IsIntegerTranslation()) {
+    Move(LayoutSize(LayoutUnit(transform_from_container.E()),
+                    LayoutUnit(transform_from_container.F())),
          accumulate);
     return;
   }
 
-  applyAccumulatedOffset();
+  ApplyAccumulatedOffset();
 
   // If we have an accumulated transform from last time, multiply in this
   // transform
-  if (m_accumulatedTransform) {
-    if (m_direction == ApplyTransformDirection)
-      m_accumulatedTransform = TransformationMatrix::create(
-          transformFromContainer * *m_accumulatedTransform);
+  if (accumulated_transform_) {
+    if (direction_ == kApplyTransformDirection)
+      accumulated_transform_ = TransformationMatrix::Create(
+          transform_from_container * *accumulated_transform_);
     else
-      m_accumulatedTransform->multiply(transformFromContainer);
-  } else if (accumulate == AccumulateTransform) {
+      accumulated_transform_->Multiply(transform_from_container);
+  } else if (accumulate == kAccumulateTransform) {
     // Make one if we started to accumulate
-    m_accumulatedTransform =
-        TransformationMatrix::create(transformFromContainer);
+    accumulated_transform_ =
+        TransformationMatrix::Create(transform_from_container);
   }
 
-  if (accumulate == FlattenTransform) {
-    if (m_forceAccumulatingTransform) {
-      m_accumulatedTransform->flattenTo2d();
+  if (accumulate == kFlattenTransform) {
+    if (force_accumulating_transform_) {
+      accumulated_transform_->FlattenTo2d();
     } else {
-      const TransformationMatrix* finalTransform =
-          m_accumulatedTransform ? m_accumulatedTransform.get()
-                                 : &transformFromContainer;
-      flattenWithTransform(*finalTransform, wasClamped);
+      const TransformationMatrix* final_transform =
+          accumulated_transform_ ? accumulated_transform_.get()
+                                 : &transform_from_container;
+      FlattenWithTransform(*final_transform, was_clamped);
     }
   }
-  m_accumulatingTransform =
-      accumulate == AccumulateTransform || m_forceAccumulatingTransform;
+  accumulating_transform_ =
+      accumulate == kAccumulateTransform || force_accumulating_transform_;
 }
 
-void TransformState::flatten(bool* wasClamped) {
-  ASSERT(!m_forceAccumulatingTransform);
-  if (wasClamped)
-    *wasClamped = false;
+void TransformState::Flatten(bool* was_clamped) {
+  ASSERT(!force_accumulating_transform_);
+  if (was_clamped)
+    *was_clamped = false;
 
-  applyAccumulatedOffset();
+  ApplyAccumulatedOffset();
 
-  if (!m_accumulatedTransform) {
-    m_accumulatingTransform = false;
+  if (!accumulated_transform_) {
+    accumulating_transform_ = false;
     return;
   }
 
-  flattenWithTransform(*m_accumulatedTransform, wasClamped);
+  FlattenWithTransform(*accumulated_transform_, was_clamped);
 }
 
-FloatPoint TransformState::mappedPoint(bool* wasClamped) const {
-  if (wasClamped)
-    *wasClamped = false;
+FloatPoint TransformState::MappedPoint(bool* was_clamped) const {
+  if (was_clamped)
+    *was_clamped = false;
 
-  FloatPoint point = m_lastPlanarPoint;
-  point.move((m_direction == ApplyTransformDirection) ? m_accumulatedOffset
-                                                      : -m_accumulatedOffset);
-  if (!m_accumulatedTransform)
+  FloatPoint point = last_planar_point_;
+  point.Move((direction_ == kApplyTransformDirection) ? accumulated_offset_
+                                                      : -accumulated_offset_);
+  if (!accumulated_transform_)
     return point;
 
-  if (m_direction == ApplyTransformDirection)
-    return m_accumulatedTransform->mapPoint(point);
+  if (direction_ == kApplyTransformDirection)
+    return accumulated_transform_->MapPoint(point);
 
-  return m_accumulatedTransform->inverse().projectPoint(point, wasClamped);
+  return accumulated_transform_->Inverse().ProjectPoint(point, was_clamped);
 }
 
-FloatQuad TransformState::mappedQuad(bool* wasClamped) const {
-  if (wasClamped)
-    *wasClamped = false;
+FloatQuad TransformState::MappedQuad(bool* was_clamped) const {
+  if (was_clamped)
+    *was_clamped = false;
 
-  FloatQuad quad = m_lastPlanarQuad;
-  quad.move(FloatSize((m_direction == ApplyTransformDirection)
-                          ? m_accumulatedOffset
-                          : -m_accumulatedOffset));
-  if (!m_accumulatedTransform)
+  FloatQuad quad = last_planar_quad_;
+  quad.Move(FloatSize((direction_ == kApplyTransformDirection)
+                          ? accumulated_offset_
+                          : -accumulated_offset_));
+  if (!accumulated_transform_)
     return quad;
 
-  if (m_direction == ApplyTransformDirection)
-    return m_accumulatedTransform->mapQuad(quad);
+  if (direction_ == kApplyTransformDirection)
+    return accumulated_transform_->MapQuad(quad);
 
-  return m_accumulatedTransform->inverse().projectQuad(quad, wasClamped);
+  return accumulated_transform_->Inverse().ProjectQuad(quad, was_clamped);
 }
 
-const TransformationMatrix& TransformState::accumulatedTransform() const {
-  ASSERT(m_forceAccumulatingTransform && m_accumulatingTransform);
-  return *m_accumulatedTransform;
+const TransformationMatrix& TransformState::AccumulatedTransform() const {
+  ASSERT(force_accumulating_transform_ && accumulating_transform_);
+  return *accumulated_transform_;
 }
 
-void TransformState::flattenWithTransform(const TransformationMatrix& t,
-                                          bool* wasClamped) {
-  if (m_direction == ApplyTransformDirection) {
-    if (m_mapPoint)
-      m_lastPlanarPoint = t.mapPoint(m_lastPlanarPoint);
-    if (m_mapQuad)
-      m_lastPlanarQuad = t.mapQuad(m_lastPlanarQuad);
+void TransformState::FlattenWithTransform(const TransformationMatrix& t,
+                                          bool* was_clamped) {
+  if (direction_ == kApplyTransformDirection) {
+    if (map_point_)
+      last_planar_point_ = t.MapPoint(last_planar_point_);
+    if (map_quad_)
+      last_planar_quad_ = t.MapQuad(last_planar_quad_);
   } else {
-    TransformationMatrix inverseTransform = t.inverse();
-    if (m_mapPoint)
-      m_lastPlanarPoint = inverseTransform.projectPoint(m_lastPlanarPoint);
-    if (m_mapQuad)
-      m_lastPlanarQuad =
-          inverseTransform.projectQuad(m_lastPlanarQuad, wasClamped);
+    TransformationMatrix inverse_transform = t.Inverse();
+    if (map_point_)
+      last_planar_point_ = inverse_transform.ProjectPoint(last_planar_point_);
+    if (map_quad_)
+      last_planar_quad_ =
+          inverse_transform.ProjectQuad(last_planar_quad_, was_clamped);
   }
 
   // We could throw away m_accumulatedTransform if we wanted to here, but that
   // would cause thrash when traversing hierarchies with alternating
   // preserve-3d and flat elements.
-  if (m_accumulatedTransform)
-    m_accumulatedTransform->makeIdentity();
-  m_accumulatingTransform = false;
+  if (accumulated_transform_)
+    accumulated_transform_->MakeIdentity();
+  accumulating_transform_ = false;
 }
 
 }  // namespace blink

@@ -34,7 +34,7 @@
 
 namespace blink {
 
-enum SpeechBoundary { SpeechWordBoundary, SpeechSentenceBoundary };
+enum SpeechBoundary { kSpeechWordBoundary, kSpeechSentenceBoundary };
 
 class PlatformSpeechSynthesisUtterance;
 class WebSpeechSynthesizer;
@@ -43,15 +43,15 @@ class WebSpeechSynthesizerClientImpl;
 class PLATFORM_EXPORT PlatformSpeechSynthesizerClient
     : public GarbageCollectedMixin {
  public:
-  virtual void didStartSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
-  virtual void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
-  virtual void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
-  virtual void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
-  virtual void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) = 0;
-  virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*,
+  virtual void DidStartSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+  virtual void DidFinishSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+  virtual void DidPauseSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+  virtual void DidResumeSpeaking(PlatformSpeechSynthesisUtterance*) = 0;
+  virtual void SpeakingErrorOccurred(PlatformSpeechSynthesisUtterance*) = 0;
+  virtual void BoundaryEventOccurred(PlatformSpeechSynthesisUtterance*,
                                      SpeechBoundary,
-                                     unsigned charIndex) = 0;
-  virtual void voicesDidChange() = 0;
+                                     unsigned char_index) = 0;
+  virtual void VoicesDidChange() = 0;
 
  protected:
   virtual ~PlatformSpeechSynthesizerClient() {}
@@ -62,23 +62,23 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
   WTF_MAKE_NONCOPYABLE(PlatformSpeechSynthesizer);
 
  public:
-  static PlatformSpeechSynthesizer* create(PlatformSpeechSynthesizerClient*);
+  static PlatformSpeechSynthesizer* Create(PlatformSpeechSynthesizerClient*);
 
   virtual ~PlatformSpeechSynthesizer();
 
-  const Vector<RefPtr<PlatformSpeechSynthesisVoice>>& voiceList() const {
-    return m_voiceList;
+  const Vector<RefPtr<PlatformSpeechSynthesisVoice>>& VoiceList() const {
+    return voice_list_;
   }
-  virtual void speak(PlatformSpeechSynthesisUtterance*);
-  virtual void pause();
-  virtual void resume();
-  virtual void cancel();
+  virtual void Speak(PlatformSpeechSynthesisUtterance*);
+  virtual void Pause();
+  virtual void Resume();
+  virtual void Cancel();
 
-  PlatformSpeechSynthesizerClient* client() const {
-    return m_speechSynthesizerClient;
+  PlatformSpeechSynthesizerClient* Client() const {
+    return speech_synthesizer_client_;
   }
 
-  void setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice>>&);
+  void SetVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice>>&);
 
   // Eager finalization is required to promptly release the owned
   // WebSpeechSynthesizer.
@@ -96,15 +96,15 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
  protected:
   explicit PlatformSpeechSynthesizer(PlatformSpeechSynthesizerClient*);
 
-  virtual void initializeVoiceList();
+  virtual void InitializeVoiceList();
 
-  Vector<RefPtr<PlatformSpeechSynthesisVoice>> m_voiceList;
+  Vector<RefPtr<PlatformSpeechSynthesisVoice>> voice_list_;
 
  private:
-  Member<PlatformSpeechSynthesizerClient> m_speechSynthesizerClient;
+  Member<PlatformSpeechSynthesizerClient> speech_synthesizer_client_;
 
-  std::unique_ptr<WebSpeechSynthesizer> m_webSpeechSynthesizer;
-  Member<WebSpeechSynthesizerClientImpl> m_webSpeechSynthesizerClient;
+  std::unique_ptr<WebSpeechSynthesizer> web_speech_synthesizer_;
+  Member<WebSpeechSynthesizerClientImpl> web_speech_synthesizer_client_;
 };
 
 }  // namespace blink

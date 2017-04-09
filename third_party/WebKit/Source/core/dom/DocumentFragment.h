@@ -34,32 +34,32 @@ class CORE_EXPORT DocumentFragment : public ContainerNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DocumentFragment* create(Document&);
+  static DocumentFragment* Create(Document&);
 
-  void parseHTML(const String&,
-                 Element* contextElement,
-                 ParserContentPolicy = AllowScriptingContent);
-  bool parseXML(const String&,
-                Element* contextElement,
-                ParserContentPolicy = AllowScriptingContent);
+  void ParseHTML(const String&,
+                 Element* context_element,
+                 ParserContentPolicy = kAllowScriptingContent);
+  bool ParseXML(const String&,
+                Element* context_element,
+                ParserContentPolicy = kAllowScriptingContent);
 
-  bool canContainRangeEndPoint() const final { return true; }
-  virtual bool isTemplateContent() const { return false; }
+  bool CanContainRangeEndPoint() const final { return true; }
+  virtual bool IsTemplateContent() const { return false; }
 
  protected:
-  DocumentFragment(Document*, ConstructionType = CreateContainer);
+  DocumentFragment(Document*, ConstructionType = kCreateContainer);
   String nodeName() const final;
 
  private:
   NodeType getNodeType() const final;
   Node* cloneNode(bool deep, ExceptionState&) override;
-  bool childTypeAllowed(NodeType) const override;
+  bool ChildTypeAllowed(NodeType) const override;
 
-  bool isDocumentFragment() const =
+  bool IsDocumentFragment() const =
       delete;  // This will catch anyone doing an unnecessary check.
 };
 
-DEFINE_NODE_TYPE_CASTS(DocumentFragment, isDocumentFragment());
+DEFINE_NODE_TYPE_CASTS(DocumentFragment, IsDocumentFragment());
 
 }  // namespace blink
 

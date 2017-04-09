@@ -53,7 +53,7 @@ void TimeDomain::ScheduleDelayedWork(
   queue->set_scheduled_time_domain_wake_up(wake_up.time);
 
   // If |queue| is the first wake-up then request the wake-up.
-  if (delayed_wake_up_queue_.min().queue == queue)
+  if (delayed_wake_up_queue_.Min().queue == queue)
     RequestWakeUpAt(now, wake_up.time);
 }
 
@@ -68,16 +68,16 @@ void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue) {
   DCHECK_NE(queue->scheduled_time_domain_wake_up(), base::TimeTicks());
   DCHECK(!delayed_wake_up_queue_.empty());
   base::TimeTicks prev_first_wake_up =
-      delayed_wake_up_queue_.min().wake_up.time;
+      delayed_wake_up_queue_.Min().wake_up.time;
 
   // O(log n)
   delayed_wake_up_queue_.erase(queue->heap_handle());
 
   if (delayed_wake_up_queue_.empty()) {
     CancelWakeUpAt(prev_first_wake_up);
-  } else if (prev_first_wake_up != delayed_wake_up_queue_.min().wake_up.time) {
+  } else if (prev_first_wake_up != delayed_wake_up_queue_.Min().wake_up.time) {
     CancelWakeUpAt(prev_first_wake_up);
-    RequestWakeUpAt(Now(), delayed_wake_up_queue_.min().wake_up.time);
+    RequestWakeUpAt(Now(), delayed_wake_up_queue_.Min().wake_up.time);
   }
 }
 
@@ -87,8 +87,8 @@ void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wake-up.
   while (!delayed_wake_up_queue_.empty() &&
-         delayed_wake_up_queue_.min().wake_up.time <= lazy_now->Now()) {
-    internal::TaskQueueImpl* queue = delayed_wake_up_queue_.min().queue;
+         delayed_wake_up_queue_.Min().wake_up.time <= lazy_now->Now()) {
+    internal::TaskQueueImpl* queue = delayed_wake_up_queue_.Min().queue;
     base::Optional<internal::TaskQueueImpl::DelayedWakeUp> next_wake_up =
         queue->WakeUpForDelayedWork(lazy_now);
 
@@ -98,7 +98,7 @@ void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
       queue->set_scheduled_time_domain_wake_up(next_wake_up->time);
     } else {
       // O(log n)
-      delayed_wake_up_queue_.pop();
+      delayed_wake_up_queue_.Pop();
       DCHECK_EQ(queue->scheduled_time_domain_wake_up(), base::TimeTicks());
     }
   }
@@ -109,7 +109,7 @@ bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
   if (delayed_wake_up_queue_.empty())
     return false;
 
-  *out_time = delayed_wake_up_queue_.min().wake_up.time;
+  *out_time = delayed_wake_up_queue_.Min().wake_up.time;
   return true;
 }
 
@@ -118,7 +118,7 @@ bool TimeDomain::NextScheduledTaskQueue(TaskQueue** out_task_queue) const {
   if (delayed_wake_up_queue_.empty())
     return false;
 
-  *out_task_queue = delayed_wake_up_queue_.min().queue;
+  *out_task_queue = delayed_wake_up_queue_.Min().queue;
   return true;
 }
 
@@ -127,7 +127,7 @@ void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetString("name", GetName());
   state->SetInteger("registered_delay_count", delayed_wake_up_queue_.size());
   if (!delayed_wake_up_queue_.empty()) {
-    base::TimeDelta delay = delayed_wake_up_queue_.min().wake_up.time - Now();
+    base::TimeDelta delay = delayed_wake_up_queue_.Min().wake_up.time - Now();
     state->SetDouble("next_delay_ms", delay.InMillisecondsF());
   }
   AsValueIntoInternal(state);

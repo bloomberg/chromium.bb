@@ -42,91 +42,91 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGStringListTearOff* create(
+  static SVGStringListTearOff* Create(
       SVGStringList* target,
-      SVGElement* contextElement,
-      PropertyIsAnimValType propertyIsAnimVal,
-      const QualifiedName& attributeName = QualifiedName::null()) {
-    return new SVGStringListTearOff(target, contextElement, propertyIsAnimVal,
-                                    attributeName);
+      SVGElement* context_element,
+      PropertyIsAnimValType property_is_anim_val,
+      const QualifiedName& attribute_name = QualifiedName::Null()) {
+    return new SVGStringListTearOff(target, context_element,
+                                    property_is_anim_val, attribute_name);
   }
 
   // SVGStringList DOM interface:
 
   // WebIDL requires "unsigned long" type instead of size_t.
-  unsigned long length() { return target()->length(); }
+  unsigned long length() { return Target()->length(); }
 
-  void clear(ExceptionState& exceptionState) {
-    if (isImmutable()) {
-      throwReadOnly(exceptionState);
+  void clear(ExceptionState& exception_state) {
+    if (IsImmutable()) {
+      ThrowReadOnly(exception_state);
       return;
     }
-    target()->clear();
-    commitChange();
+    Target()->Clear();
+    CommitChange();
   }
 
-  String initialize(const String& item, ExceptionState& exceptionState) {
-    if (isImmutable()) {
-      throwReadOnly(exceptionState);
+  String initialize(const String& item, ExceptionState& exception_state) {
+    if (IsImmutable()) {
+      ThrowReadOnly(exception_state);
       return String();
     }
-    target()->initialize(item);
-    commitChange();
+    Target()->Initialize(item);
+    CommitChange();
     return item;
   }
 
-  String getItem(unsigned long index, ExceptionState& exceptionState) {
-    return target()->getItem(index, exceptionState);
+  String getItem(unsigned long index, ExceptionState& exception_state) {
+    return Target()->GetItem(index, exception_state);
   }
 
   String insertItemBefore(const String& item,
                           unsigned long index,
-                          ExceptionState& exceptionState) {
-    if (isImmutable()) {
-      throwReadOnly(exceptionState);
+                          ExceptionState& exception_state) {
+    if (IsImmutable()) {
+      ThrowReadOnly(exception_state);
       return String();
     }
-    target()->insertItemBefore(item, index);
-    commitChange();
+    Target()->InsertItemBefore(item, index);
+    CommitChange();
     return item;
   }
 
   String replaceItem(const String& item,
                      unsigned long index,
-                     ExceptionState& exceptionState) {
-    if (isImmutable()) {
-      throwReadOnly(exceptionState);
+                     ExceptionState& exception_state) {
+    if (IsImmutable()) {
+      ThrowReadOnly(exception_state);
       return String();
     }
-    target()->replaceItem(item, index, exceptionState);
-    commitChange();
+    Target()->ReplaceItem(item, index, exception_state);
+    CommitChange();
     return item;
   }
 
-  bool anonymousIndexedSetter(unsigned index,
+  bool AnonymousIndexedSetter(unsigned index,
                               const String& item,
-                              ExceptionState& exceptionState) {
-    replaceItem(item, index, exceptionState);
+                              ExceptionState& exception_state) {
+    replaceItem(item, index, exception_state);
     return true;
   }
 
-  String removeItem(unsigned long index, ExceptionState& exceptionState) {
-    if (isImmutable()) {
-      throwReadOnly(exceptionState);
+  String removeItem(unsigned long index, ExceptionState& exception_state) {
+    if (IsImmutable()) {
+      ThrowReadOnly(exception_state);
       return String();
     }
-    String removedItem = target()->removeItem(index, exceptionState);
-    commitChange();
-    return removedItem;
+    String removed_item = Target()->RemoveItem(index, exception_state);
+    CommitChange();
+    return removed_item;
   }
 
-  String appendItem(const String& item, ExceptionState& exceptionState) {
-    if (isImmutable()) {
-      throwReadOnly(exceptionState);
+  String appendItem(const String& item, ExceptionState& exception_state) {
+    if (IsImmutable()) {
+      ThrowReadOnly(exception_state);
       return String();
     }
-    target()->appendItem(item);
-    commitChange();
+    Target()->AppendItem(item);
+    CommitChange();
     return item;
   }
 

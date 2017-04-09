@@ -12,31 +12,31 @@ namespace blink {
 
 class MediaValuesInitialViewportTest : public ::testing::Test {
  protected:
-  Document& document() const { return m_dummyPageHolder->document(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
  private:
   void SetUp() override {
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(320, 480));
-    document().view()->setInitialViewportSize(IntSize(320, 480));
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(320, 480));
+    GetDocument().View()->SetInitialViewportSize(IntSize(320, 480));
   }
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(MediaValuesInitialViewportTest, InitialViewportSize) {
-  FrameView* view = document().view();
+  FrameView* view = GetDocument().View();
   ASSERT_TRUE(view);
-  EXPECT_TRUE(view->layoutSizeFixedToFrameSize());
+  EXPECT_TRUE(view->LayoutSizeFixedToFrameSize());
 
-  MediaValues* mediaValues =
-      MediaValuesInitialViewport::create(*document().frame());
-  EXPECT_EQ(320, mediaValues->viewportWidth());
-  EXPECT_EQ(480, mediaValues->viewportHeight());
+  MediaValues* media_values =
+      MediaValuesInitialViewport::Create(*GetDocument().GetFrame());
+  EXPECT_EQ(320, media_values->ViewportWidth());
+  EXPECT_EQ(480, media_values->ViewportHeight());
 
-  view->setLayoutSizeFixedToFrameSize(false);
-  view->setLayoutSize(IntSize(800, 600));
-  EXPECT_EQ(320, mediaValues->viewportWidth());
-  EXPECT_EQ(480, mediaValues->viewportHeight());
+  view->SetLayoutSizeFixedToFrameSize(false);
+  view->SetLayoutSize(IntSize(800, 600));
+  EXPECT_EQ(320, media_values->ViewportWidth());
+  EXPECT_EQ(480, media_values->ViewportHeight());
 }
 
 }  // namespace blink

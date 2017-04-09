@@ -38,68 +38,68 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGEnumerationBase);
 
 SVGEnumerationBase::~SVGEnumerationBase() {}
 
-SVGPropertyBase* SVGEnumerationBase::cloneForAnimation(
+SVGPropertyBase* SVGEnumerationBase::CloneForAnimation(
     const String& value) const {
-  SVGEnumerationBase* svgEnumeration = clone();
-  svgEnumeration->setValueAsString(value);
-  return svgEnumeration;
+  SVGEnumerationBase* svg_enumeration = Clone();
+  svg_enumeration->SetValueAsString(value);
+  return svg_enumeration;
 }
 
-String SVGEnumerationBase::valueAsString() const {
-  for (const auto& entry : m_entries) {
-    if (m_value == entry.first)
+String SVGEnumerationBase::ValueAsString() const {
+  for (const auto& entry : entries_) {
+    if (value_ == entry.first)
       return entry.second;
   }
 
-  DCHECK_LT(m_value, maxInternalEnumValue());
-  return emptyString;
+  DCHECK_LT(value_, MaxInternalEnumValue());
+  return g_empty_string;
 }
 
-void SVGEnumerationBase::setValue(unsigned short value) {
-  m_value = value;
-  notifyChange();
+void SVGEnumerationBase::SetValue(unsigned short value) {
+  value_ = value;
+  NotifyChange();
 }
 
-SVGParsingError SVGEnumerationBase::setValueAsString(const String& string) {
-  for (const auto& entry : m_entries) {
+SVGParsingError SVGEnumerationBase::SetValueAsString(const String& string) {
+  for (const auto& entry : entries_) {
     if (string == entry.second) {
       // 0 corresponds to _UNKNOWN enumeration values, and should not be
       // settable.
       DCHECK(entry.first);
-      m_value = entry.first;
-      notifyChange();
-      return SVGParseStatus::NoError;
+      value_ = entry.first;
+      NotifyChange();
+      return SVGParseStatus::kNoError;
     }
   }
 
-  notifyChange();
-  return SVGParseStatus::ExpectedEnumeration;
+  NotifyChange();
+  return SVGParseStatus::kExpectedEnumeration;
 }
 
-void SVGEnumerationBase::add(SVGPropertyBase*, SVGElement*) {
+void SVGEnumerationBase::Add(SVGPropertyBase*, SVGElement*) {
   NOTREACHED();
 }
 
-void SVGEnumerationBase::calculateAnimatedValue(
-    SVGAnimationElement* animationElement,
+void SVGEnumerationBase::CalculateAnimatedValue(
+    SVGAnimationElement* animation_element,
     float percentage,
-    unsigned repeatCount,
+    unsigned repeat_count,
     SVGPropertyBase* from,
     SVGPropertyBase* to,
     SVGPropertyBase*,
     SVGElement*) {
-  DCHECK(animationElement);
-  unsigned short fromEnumeration =
-      animationElement->getAnimationMode() == ToAnimation
-          ? m_value
-          : toSVGEnumerationBase(from)->value();
-  unsigned short toEnumeration = toSVGEnumerationBase(to)->value();
+  DCHECK(animation_element);
+  unsigned short from_enumeration =
+      animation_element->GetAnimationMode() == kToAnimation
+          ? value_
+          : ToSVGEnumerationBase(from)->Value();
+  unsigned short to_enumeration = ToSVGEnumerationBase(to)->Value();
 
-  animationElement->animateDiscreteType<unsigned short>(
-      percentage, fromEnumeration, toEnumeration, m_value);
+  animation_element->AnimateDiscreteType<unsigned short>(
+      percentage, from_enumeration, to_enumeration, value_);
 }
 
-float SVGEnumerationBase::calculateDistance(SVGPropertyBase*, SVGElement*) {
+float SVGEnumerationBase::CalculateDistance(SVGPropertyBase*, SVGElement*) {
   // No paced animations for boolean.
   return -1;
 }

@@ -46,43 +46,43 @@ class Storage final : public GarbageCollected<Storage>,
   USING_GARBAGE_COLLECTED_MIXIN(Storage);
 
  public:
-  static Storage* create(LocalFrame*, StorageArea*);
+  static Storage* Create(LocalFrame*, StorageArea*);
   unsigned length(ExceptionState& ec) const {
-    return m_storageArea->length(ec, frame());
+    return storage_area_->length(ec, GetFrame());
   }
   String key(unsigned index, ExceptionState& ec) const {
-    return m_storageArea->key(index, ec, frame());
+    return storage_area_->Key(index, ec, GetFrame());
   }
   String getItem(const String& key, ExceptionState& ec) const {
-    return m_storageArea->getItem(key, ec, frame());
+    return storage_area_->GetItem(key, ec, GetFrame());
   }
   void setItem(const String& key, const String& value, ExceptionState& ec) {
-    m_storageArea->setItem(key, value, ec, frame());
+    storage_area_->SetItem(key, value, ec, GetFrame());
   }
   void removeItem(const String& key, ExceptionState& ec) {
-    m_storageArea->removeItem(key, ec, frame());
+    storage_area_->RemoveItem(key, ec, GetFrame());
   }
-  void clear(ExceptionState& ec) { m_storageArea->clear(ec, frame()); }
-  bool contains(const String& key, ExceptionState& ec) const {
-    return m_storageArea->contains(key, ec, frame());
+  void clear(ExceptionState& ec) { storage_area_->Clear(ec, GetFrame()); }
+  bool Contains(const String& key, ExceptionState& ec) const {
+    return storage_area_->Contains(key, ec, GetFrame());
   }
 
-  StorageArea* area() const { return m_storageArea.get(); }
+  StorageArea* Area() const { return storage_area_.Get(); }
 
-  String anonymousNamedGetter(const AtomicString&, ExceptionState&);
-  bool anonymousNamedSetter(const AtomicString& name,
+  String AnonymousNamedGetter(const AtomicString&, ExceptionState&);
+  bool AnonymousNamedSetter(const AtomicString& name,
                             const AtomicString& value,
                             ExceptionState&);
-  DeleteResult anonymousNamedDeleter(const AtomicString&, ExceptionState&);
-  void namedPropertyEnumerator(Vector<String>&, ExceptionState&);
-  bool namedPropertyQuery(const AtomicString&, ExceptionState&);
+  DeleteResult AnonymousNamedDeleter(const AtomicString&, ExceptionState&);
+  void NamedPropertyEnumerator(Vector<String>&, ExceptionState&);
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   Storage(LocalFrame*, StorageArea*);
 
-  Member<StorageArea> m_storageArea;
+  Member<StorageArea> storage_area_;
 };
 
 }  // namespace blink

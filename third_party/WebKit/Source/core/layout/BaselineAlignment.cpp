@@ -6,97 +6,97 @@
 
 namespace blink {
 
-BaselineGroup::BaselineGroup(WritingMode blockFlow,
-                             ItemPosition childPreference)
-    : m_maxAscent(0), m_maxDescent(0), m_items() {
-  m_blockFlow = blockFlow;
-  m_preference = childPreference;
+BaselineGroup::BaselineGroup(WritingMode block_flow,
+                             ItemPosition child_preference)
+    : max_ascent_(0), max_descent_(0), items_() {
+  block_flow_ = block_flow;
+  preference_ = child_preference;
 }
 
-void BaselineGroup::update(const LayoutBox& child,
+void BaselineGroup::Update(const LayoutBox& child,
                            LayoutUnit ascent,
                            LayoutUnit descent) {
-  if (m_items.insert(&child).isNewEntry) {
-    m_maxAscent = std::max(m_maxAscent, ascent);
-    m_maxDescent = std::max(m_maxDescent, descent);
+  if (items_.insert(&child).is_new_entry) {
+    max_ascent_ = std::max(max_ascent_, ascent);
+    max_descent_ = std::max(max_descent_, descent);
   }
 }
 
-bool BaselineGroup::isOppositeBlockFlow(WritingMode blockFlow) const {
-  switch (blockFlow) {
+bool BaselineGroup::IsOppositeBlockFlow(WritingMode block_flow) const {
+  switch (block_flow) {
     case WritingMode::kHorizontalTb:
       return false;
     case WritingMode::kVerticalLr:
-      return m_blockFlow == WritingMode::kVerticalRl;
+      return block_flow_ == WritingMode::kVerticalRl;
     case WritingMode::kVerticalRl:
-      return m_blockFlow == WritingMode::kVerticalLr;
+      return block_flow_ == WritingMode::kVerticalLr;
     default:
       NOTREACHED();
       return false;
   }
 }
 
-bool BaselineGroup::isOrthogonalBlockFlow(WritingMode blockFlow) const {
-  switch (blockFlow) {
+bool BaselineGroup::IsOrthogonalBlockFlow(WritingMode block_flow) const {
+  switch (block_flow) {
     case WritingMode::kHorizontalTb:
-      return m_blockFlow != WritingMode::kHorizontalTb;
+      return block_flow_ != WritingMode::kHorizontalTb;
     case WritingMode::kVerticalLr:
     case WritingMode::kVerticalRl:
-      return m_blockFlow == WritingMode::kHorizontalTb;
+      return block_flow_ == WritingMode::kHorizontalTb;
     default:
       NOTREACHED();
       return false;
   }
 }
 
-bool BaselineGroup::isCompatible(WritingMode childBlockFlow,
-                                 ItemPosition childPreference) const {
-  DCHECK(isBaselinePosition(childPreference));
+bool BaselineGroup::IsCompatible(WritingMode child_block_flow,
+                                 ItemPosition child_preference) const {
+  DCHECK(IsBaselinePosition(child_preference));
   DCHECK_GT(size(), 0);
-  return ((m_blockFlow == childBlockFlow ||
-           isOrthogonalBlockFlow(childBlockFlow)) &&
-          m_preference == childPreference) ||
-         (isOppositeBlockFlow(childBlockFlow) &&
-          m_preference != childPreference);
+  return ((block_flow_ == child_block_flow ||
+           IsOrthogonalBlockFlow(child_block_flow)) &&
+          preference_ == child_preference) ||
+         (IsOppositeBlockFlow(child_block_flow) &&
+          preference_ != child_preference);
 }
 
 BaselineContext::BaselineContext(const LayoutBox& child,
                                  ItemPosition preference,
                                  LayoutUnit ascent,
                                  LayoutUnit descent) {
-  DCHECK(isBaselinePosition(preference));
-  updateSharedGroup(child, preference, ascent, descent);
+  DCHECK(IsBaselinePosition(preference));
+  UpdateSharedGroup(child, preference, ascent, descent);
 }
 
-const BaselineGroup& BaselineContext::getSharedGroup(
+const BaselineGroup& BaselineContext::GetSharedGroup(
     const LayoutBox& child,
     ItemPosition preference) const {
-  DCHECK(isBaselinePosition(preference));
-  return const_cast<BaselineContext*>(this)->findCompatibleSharedGroup(
+  DCHECK(IsBaselinePosition(preference));
+  return const_cast<BaselineContext*>(this)->FindCompatibleSharedGroup(
       child, preference);
 }
 
-void BaselineContext::updateSharedGroup(const LayoutBox& child,
+void BaselineContext::UpdateSharedGroup(const LayoutBox& child,
                                         ItemPosition preference,
                                         LayoutUnit ascent,
                                         LayoutUnit descent) {
-  DCHECK(isBaselinePosition(preference));
-  BaselineGroup& group = findCompatibleSharedGroup(child, preference);
-  group.update(child, ascent, descent);
+  DCHECK(IsBaselinePosition(preference));
+  BaselineGroup& group = FindCompatibleSharedGroup(child, preference);
+  group.Update(child, ascent, descent);
 }
 
 // TODO Properly implement baseline-group compatibility
 // See https://github.com/w3c/csswg-drafts/issues/721
-BaselineGroup& BaselineContext::findCompatibleSharedGroup(
+BaselineGroup& BaselineContext::FindCompatibleSharedGroup(
     const LayoutBox& child,
     ItemPosition preference) {
-  WritingMode blockDirection = child.styleRef().getWritingMode();
-  for (auto& group : m_sharedGroups) {
-    if (group.isCompatible(blockDirection, preference))
+  WritingMode block_direction = child.StyleRef().GetWritingMode();
+  for (auto& group : shared_groups_) {
+    if (group.IsCompatible(block_direction, preference))
       return group;
   }
-  m_sharedGroups.push_front(BaselineGroup(blockDirection, preference));
-  return m_sharedGroups[0];
+  shared_groups_.push_front(BaselineGroup(block_direction, preference));
+  return shared_groups_[0];
 }
 
 }  // namespace blink

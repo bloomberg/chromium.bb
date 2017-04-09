@@ -8,6 +8,6 @@ namespace blink {
 const CSSValue* CSSPropertyAPIFragmentation::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  return CSSPropertyParserHelpers::consumePositiveInteger(range);
+  return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
 }
 }  // namespace blink

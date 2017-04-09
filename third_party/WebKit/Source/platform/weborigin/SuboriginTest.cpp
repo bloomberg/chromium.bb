@@ -9,59 +9,59 @@
 
 namespace blink {
 
-bool policyContainsOnly(const Suborigin& suborigin,
+bool PolicyContainsOnly(const Suborigin& suborigin,
                         const Suborigin::SuboriginPolicyOptions options[],
-                        size_t optionsSize) {
-  unsigned optionsMask = 0;
-  for (size_t i = 0; i < optionsSize; i++)
-    optionsMask |= static_cast<unsigned>(options[i]);
+                        size_t options_size) {
+  unsigned options_mask = 0;
+  for (size_t i = 0; i < options_size; i++)
+    options_mask |= static_cast<unsigned>(options[i]);
 
-  return optionsMask == suborigin.optionsMask();
+  return options_mask == suborigin.OptionsMask();
 }
 
 TEST(SuboriginTest, PolicyTests) {
-  Suborigin suboriginUnsafePostmessageSend;
-  Suborigin suboriginUnsafePostmessageReceive;
-  Suborigin suboriginAllUnsafePostmessage;
+  Suborigin suborigin_unsafe_postmessage_send;
+  Suborigin suborigin_unsafe_postmessage_receive;
+  Suborigin suborigin_all_unsafe_postmessage;
 
-  const Suborigin::SuboriginPolicyOptions emptyPolicies[] = {
-      Suborigin::SuboriginPolicyOptions::None};
-  const Suborigin::SuboriginPolicyOptions unsafePostmessageSendPolicy[] = {
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend};
-  const Suborigin::SuboriginPolicyOptions unsafePostmessageReceivePolicy[] = {
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive};
-  const Suborigin::SuboriginPolicyOptions allUnsafePostmessagePolicies[] = {
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend,
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive};
+  const Suborigin::SuboriginPolicyOptions kEmptyPolicies[] = {
+      Suborigin::SuboriginPolicyOptions::kNone};
+  const Suborigin::SuboriginPolicyOptions kUnsafePostmessageSendPolicy[] = {
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend};
+  const Suborigin::SuboriginPolicyOptions kUnsafePostmessageReceivePolicy[] = {
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive};
+  const Suborigin::SuboriginPolicyOptions kAllUnsafePostmessagePolicies[] = {
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend,
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive};
 
-  EXPECT_TRUE(policyContainsOnly(suboriginUnsafePostmessageSend, emptyPolicies,
-                                 ARRAY_SIZE(emptyPolicies)));
+  EXPECT_TRUE(PolicyContainsOnly(suborigin_unsafe_postmessage_send,
+                                 kEmptyPolicies, ARRAY_SIZE(kEmptyPolicies)));
 
-  suboriginUnsafePostmessageSend.addPolicyOption(
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend);
-  EXPECT_TRUE(policyContainsOnly(suboriginUnsafePostmessageSend,
-                                 unsafePostmessageSendPolicy,
-                                 ARRAY_SIZE(unsafePostmessageSendPolicy)));
-  EXPECT_FALSE(policyContainsOnly(suboriginUnsafePostmessageSend,
-                                  allUnsafePostmessagePolicies,
-                                  ARRAY_SIZE(allUnsafePostmessagePolicies)));
+  suborigin_unsafe_postmessage_send.AddPolicyOption(
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend);
+  EXPECT_TRUE(PolicyContainsOnly(suborigin_unsafe_postmessage_send,
+                                 kUnsafePostmessageSendPolicy,
+                                 ARRAY_SIZE(kUnsafePostmessageSendPolicy)));
+  EXPECT_FALSE(PolicyContainsOnly(suborigin_unsafe_postmessage_send,
+                                  kAllUnsafePostmessagePolicies,
+                                  ARRAY_SIZE(kAllUnsafePostmessagePolicies)));
 
-  suboriginUnsafePostmessageReceive.addPolicyOption(
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive);
-  EXPECT_TRUE(policyContainsOnly(suboriginUnsafePostmessageReceive,
-                                 unsafePostmessageReceivePolicy,
-                                 ARRAY_SIZE(unsafePostmessageReceivePolicy)));
-  EXPECT_FALSE(policyContainsOnly(suboriginUnsafePostmessageReceive,
-                                  allUnsafePostmessagePolicies,
-                                  ARRAY_SIZE(allUnsafePostmessagePolicies)));
+  suborigin_unsafe_postmessage_receive.AddPolicyOption(
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive);
+  EXPECT_TRUE(PolicyContainsOnly(suborigin_unsafe_postmessage_receive,
+                                 kUnsafePostmessageReceivePolicy,
+                                 ARRAY_SIZE(kUnsafePostmessageReceivePolicy)));
+  EXPECT_FALSE(PolicyContainsOnly(suborigin_unsafe_postmessage_receive,
+                                  kAllUnsafePostmessagePolicies,
+                                  ARRAY_SIZE(kAllUnsafePostmessagePolicies)));
 
-  suboriginAllUnsafePostmessage.addPolicyOption(
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend);
-  suboriginAllUnsafePostmessage.addPolicyOption(
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive);
-  EXPECT_TRUE(policyContainsOnly(suboriginAllUnsafePostmessage,
-                                 allUnsafePostmessagePolicies,
-                                 ARRAY_SIZE(allUnsafePostmessagePolicies)));
+  suborigin_all_unsafe_postmessage.AddPolicyOption(
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend);
+  suborigin_all_unsafe_postmessage.AddPolicyOption(
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive);
+  EXPECT_TRUE(PolicyContainsOnly(suborigin_all_unsafe_postmessage,
+                                 kAllUnsafePostmessagePolicies,
+                                 ARRAY_SIZE(kAllUnsafePostmessagePolicies)));
 }
 
 }  // namespace blink

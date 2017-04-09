@@ -26,102 +26,102 @@ struct WebPoint;
 
 class WebFrameWidgetBase : public WebFrameWidget {
  public:
-  virtual bool forSubframe() const = 0;
-  virtual void scheduleAnimation() = 0;
-  virtual CompositorWorkerProxyClient* createCompositorWorkerProxyClient() = 0;
-  virtual AnimationWorkletProxyClient* createAnimationWorkletProxyClient() = 0;
-  virtual WebWidgetClient* client() const = 0;
+  virtual bool ForSubframe() const = 0;
+  virtual void ScheduleAnimation() = 0;
+  virtual CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient() = 0;
+  virtual AnimationWorkletProxyClient* CreateAnimationWorkletProxyClient() = 0;
+  virtual WebWidgetClient* Client() const = 0;
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
-  virtual void setRootGraphicsLayer(GraphicsLayer*) = 0;
+  virtual void SetRootGraphicsLayer(GraphicsLayer*) = 0;
 
   // Sets the root layer. |WebLayer| can be null when detaching the root layer.
-  virtual void setRootLayer(WebLayer*) = 0;
+  virtual void SetRootLayer(WebLayer*) = 0;
 
-  virtual WebLayerTreeView* getLayerTreeView() const = 0;
-  virtual CompositorAnimationHost* animationHost() const = 0;
+  virtual WebLayerTreeView* GetLayerTreeView() const = 0;
+  virtual CompositorAnimationHost* AnimationHost() const = 0;
 
-  virtual HitTestResult coreHitTestResultAt(const WebPoint&) = 0;
+  virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
 
   // WebFrameWidget implementation.
-  WebDragOperation dragTargetDragEnter(const WebDragData&,
-                                       const WebPoint& pointInViewport,
-                                       const WebPoint& screenPoint,
-                                       WebDragOperationsMask operationsAllowed,
+  WebDragOperation DragTargetDragEnter(const WebDragData&,
+                                       const WebPoint& point_in_viewport,
+                                       const WebPoint& screen_point,
+                                       WebDragOperationsMask operations_allowed,
                                        int modifiers) override;
-  WebDragOperation dragTargetDragOver(const WebPoint& pointInViewport,
-                                      const WebPoint& screenPoint,
-                                      WebDragOperationsMask operationsAllowed,
+  WebDragOperation DragTargetDragOver(const WebPoint& point_in_viewport,
+                                      const WebPoint& screen_point,
+                                      WebDragOperationsMask operations_allowed,
                                       int modifiers) override;
-  void dragTargetDragLeave(const WebPoint& pointInViewport,
-                           const WebPoint& screenPoint) override;
-  void dragTargetDrop(const WebDragData&,
-                      const WebPoint& pointInViewport,
-                      const WebPoint& screenPoint,
+  void DragTargetDragLeave(const WebPoint& point_in_viewport,
+                           const WebPoint& screen_point) override;
+  void DragTargetDrop(const WebDragData&,
+                      const WebPoint& point_in_viewport,
+                      const WebPoint& screen_point,
                       int modifiers) override;
-  void dragSourceEndedAt(const WebPoint& pointInViewport,
-                         const WebPoint& screenPoint,
+  void DragSourceEndedAt(const WebPoint& point_in_viewport,
+                         const WebPoint& screen_point,
                          WebDragOperation) override;
-  void dragSourceSystemDragEnded() override;
+  void DragSourceSystemDragEnded() override;
 
   // Called when a drag-n-drop operation should begin.
-  void startDragging(WebReferrerPolicy,
+  void StartDragging(WebReferrerPolicy,
                      const WebDragData&,
                      WebDragOperationsMask,
-                     const WebImage& dragImage,
-                     const WebPoint& dragImageOffset);
+                     const WebImage& drag_image,
+                     const WebPoint& drag_image_offset);
 
-  bool doingDragAndDrop() { return m_doingDragAndDrop; }
-  static void setIgnoreInputEvents(bool value) { s_ignoreInputEvents = value; }
-  static bool ignoreInputEvents() { return s_ignoreInputEvents; }
+  bool DoingDragAndDrop() { return doing_drag_and_drop_; }
+  static void SetIgnoreInputEvents(bool value) { ignore_input_events_ = value; }
+  static bool IgnoreInputEvents() { return ignore_input_events_; }
 
   // WebWidget methods.
-  void didAcquirePointerLock() override;
-  void didNotAcquirePointerLock() override;
-  void didLosePointerLock() override;
+  void DidAcquirePointerLock() override;
+  void DidNotAcquirePointerLock() override;
+  void DidLosePointerLock() override;
 
  protected:
-  enum DragAction { DragEnter, DragOver };
+  enum DragAction { kDragEnter, kDragOver };
 
   // Consolidate some common code between starting a drag over a target and
   // updating a drag over a target. If we're starting a drag, |isEntering|
   // should be true.
-  WebDragOperation dragTargetDragEnterOrOver(const WebPoint& pointInViewport,
-                                             const WebPoint& screenPoint,
+  WebDragOperation DragTargetDragEnterOrOver(const WebPoint& point_in_viewport,
+                                             const WebPoint& screen_point,
                                              DragAction,
                                              int modifiers);
 
   // Helper function to call VisualViewport::viewportToRootFrame().
-  WebPoint viewportToRootFrame(const WebPoint& pointInViewport) const;
+  WebPoint ViewportToRootFrame(const WebPoint& point_in_viewport) const;
 
-  WebViewImpl* view() const;
+  WebViewImpl* View() const;
 
   // Returns the page object associated with this widget. This may be null when
   // the page is shutting down, but will be valid at all other times.
-  Page* page() const;
+  Page* GetPage() const;
 
   // A copy of the web drop data object we received from the browser.
-  Persistent<DataObject> m_currentDragData;
+  Persistent<DataObject> current_drag_data_;
 
-  bool m_doingDragAndDrop = false;
+  bool doing_drag_and_drop_ = false;
 
   // The available drag operations (copy, move link...) allowed by the source.
-  WebDragOperation m_operationsAllowed = WebDragOperationNone;
+  WebDragOperation operations_allowed_ = kWebDragOperationNone;
 
   // The current drag operation as negotiated by the source and destination.
   // When not equal to DragOperationNone, the drag data can be dropped onto the
   // current drop target in this WebView (the drop target can accept the drop).
-  WebDragOperation m_dragOperation = WebDragOperationNone;
+  WebDragOperation drag_operation_ = kWebDragOperationNone;
 
   // Helper function to process events while pointer locked.
-  void pointerLockMouseEvent(const WebInputEvent&);
+  void PointerLockMouseEvent(const WebInputEvent&);
 
  private:
-  void cancelDrag();
+  void CancelDrag();
 
-  static bool s_ignoreInputEvents;
-  RefPtr<UserGestureToken> m_pointerLockGestureToken;
+  static bool ignore_input_events_;
+  RefPtr<UserGestureToken> pointer_lock_gesture_token_;
 
   friend class WebViewImpl;
 };

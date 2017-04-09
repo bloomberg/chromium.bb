@@ -31,7 +31,7 @@ bool ClearanceMayAffectLayout(
     const Vector<RefPtr<NGFloatingObject>>& unpositioned_floats,
     const ComputedStyle& child_style) {
   const NGExclusions& exclusions = *space.Exclusions();
-  EClear clear = child_style.clear();
+  EClear clear = child_style.Clear();
   bool should_clear_left = (clear == EClear::kBoth || clear == EClear::kLeft);
   bool should_clear_right = (clear == EClear::kBoth || clear == EClear::kRight);
 
@@ -75,7 +75,7 @@ Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
   MinMaxContentSize sizes;
 
   // Size-contained elements don't consider their contents for intrinsic sizing.
-  if (Style().containsSize())
+  if (Style().ContainsSize())
     return sizes;
 
   // TODO: handle floats & orthogonal children.
@@ -199,13 +199,13 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   while (child) {
     if (child->IsBlock()) {
-      EPosition position = child->Style().position();
+      EPosition position = child->Style().GetPosition();
       if (position == EPosition::kAbsolute || position == EPosition::kFixed) {
         // TODO(ikilpatrick): curr_margin_strut_ shouldn't be included if there
         // is no content size yet? See floats-wrap-inside-inline-006.
         NGLogicalOffset offset = {border_and_padding_.inline_start,
                                   content_size_ + curr_margin_strut_.Sum()};
-        builder_.AddOutOfFlowChildCandidate(toNGBlockNode(child), offset);
+        builder_.AddOutOfFlowChildCandidate(ToNGBlockNode(child), offset);
         NGBlockChildIterator::Entry entry = child_iterator.NextChild();
         child = entry.node;
         child_break_token = entry.token;
@@ -217,9 +217,9 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     RefPtr<NGConstraintSpace> child_space =
         CreateConstraintSpaceForChild(child);
     RefPtr<NGLayoutResult> layout_result =
-        child->Layout(child_space.get(), child_break_token);
+        child->Layout(child_space.Get(), child_break_token);
 
-    FinishChildLayout(child, child_space.get(), layout_result);
+    FinishChildLayout(child, child_space.Get(), layout_result);
 
     entry = child_iterator.NextChild();
     child = entry.node;
@@ -259,7 +259,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // Margins collapsing:
   //   Do not collapse margins between the last in-flow child and bottom margin
   //   of its parent if the parent has height != auto()
-  if (!Style().logicalHeight().isAuto()) {
+  if (!Style().LogicalHeight().IsAuto()) {
     // TODO(glebl): handle minLogicalHeight, maxLogicalHeight.
     curr_margin_strut_ = NGMarginStrut();
   }
@@ -279,7 +279,7 @@ void NGBlockLayoutAlgorithm::PrepareChildLayout(NGLayoutInputNode* child) {
   // Calculate margins in parent's writing mode.
   curr_child_margins_ = CalculateMargins(
       child, *space_builder_.ToConstraintSpace(
-                 FromPlatformWritingMode(Style().getWritingMode())));
+                 FromPlatformWritingMode(Style().GetWritingMode())));
 
   // Set estimated BFC offset to the next child's constraint space.
   curr_bfc_offset_ = builder_.BfcOffset() ? builder_.BfcOffset().value()
@@ -287,7 +287,7 @@ void NGBlockLayoutAlgorithm::PrepareChildLayout(NGLayoutInputNode* child) {
   curr_bfc_offset_.block_offset += content_size_;
   curr_bfc_offset_.inline_offset += border_and_padding_.inline_start;
 
-  bool is_floating = child->IsBlock() && child->Style().isFloating();
+  bool is_floating = child->IsBlock() && child->Style().IsFloating();
 
   bool should_position_pending_floats =
       child->IsBlock() && !is_floating &&
@@ -347,22 +347,22 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
     RefPtr<NGLayoutResult> layout_result) {
   NGBoxFragment fragment(
       ConstraintSpace().WritingMode(),
-      toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get()));
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get()));
 
   // Pull out unpositioned floats to the current fragment. This may needed if
   // for example the child fragment could not position its floats because it's
   // empty and therefore couldn't determine its position in space.
-  builder_.MutableUnpositionedFloats().appendVector(
+  builder_.MutableUnpositionedFloats().AppendVector(
       layout_result->UnpositionedFloats());
 
-  if (child->IsBlock() && child->Style().isFloating()) {
+  if (child->IsBlock() && child->Style().IsFloating()) {
     NGLogicalOffset origin_offset = constraint_space_->BfcOffset();
     origin_offset.inline_offset += border_and_padding_.inline_start;
     RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
         child->Style(), child_space->WritingMode(),
         child_space->AvailableSize(), origin_offset,
         constraint_space_->BfcOffset(), curr_child_margins_,
-        layout_result->PhysicalFragment().get());
+        layout_result->PhysicalFragment().Get());
     builder_.AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
     if (builder_.BfcOffset()) {
@@ -477,7 +477,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
       ComputeInlineSizeForFragment(space, child_style, sizes);
   NGBoxStrut margins = ComputeMargins(space, child_style, space.WritingMode(),
                                       space.Direction());
-  if (!child_style.isFloating()) {
+  if (!child_style.IsFloating()) {
     ApplyAutoMargins(space, child_style, child_inline_size, &margins);
   }
   return margins;
@@ -496,19 +496,19 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // TODO(kojii): Setup space_builder_ appropriately for inline child.
     space_builder_.SetBfcOffset(curr_bfc_offset_);
     return space_builder_.ToConstraintSpace(
-        FromPlatformWritingMode(Style().getWritingMode()));
+        FromPlatformWritingMode(Style().GetWritingMode()));
   }
 
   space_builder_
       .SetClearanceOffset(
           GetClearanceOffset(constraint_space_->Exclusions(), child_style))
       .SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style))
-      .SetTextDirection(child_style.direction());
+      .SetTextDirection(child_style.Direction());
 
   // Float's margins are not included in child's space because:
   // 1) Floats do not participate in margins collapsing.
   // 2) Floats margins are used separately to calculate floating exclusions.
-  space_builder_.SetMarginStrut(child_style.isFloating() ? NGMarginStrut()
+  space_builder_.SetMarginStrut(child_style.IsFloating() ? NGMarginStrut()
                                                          : curr_margin_strut_);
 
   LayoutUnit space_available;
@@ -525,6 +525,6 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   space_builder_.SetFragmentainerSpaceAvailable(space_available);
 
   return space_builder_.ToConstraintSpace(
-      FromPlatformWritingMode(child_style.getWritingMode()));
+      FromPlatformWritingMode(child_style.GetWritingMode()));
 }
 }  // namespace blink

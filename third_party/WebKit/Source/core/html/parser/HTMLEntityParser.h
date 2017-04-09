@@ -43,34 +43,34 @@ class DecodedHTMLEntity {
  public:
   DecodedHTMLEntity() : length(0) {}
 
-  bool isEmpty() const { return !length; }
+  bool IsEmpty() const { return !length; }
 
-  void append(UChar c) {
+  void Append(UChar c) {
     CHECK(length < kMaxLength);
     data[length++] = c;
   }
 
-  void append(UChar32 c) {
+  void Append(UChar32 c) {
     if (U_IS_BMP(c)) {
-      append(static_cast<UChar>(c));
+      Append(static_cast<UChar>(c));
       return;
     }
-    append(U16_LEAD(c));
-    append(U16_TRAIL(c));
+    Append(U16_LEAD(c));
+    Append(U16_TRAIL(c));
   }
 
   unsigned length;
   UChar data[kMaxLength];
 };
 
-CORE_EXPORT bool consumeHTMLEntity(SegmentedString&,
-                                   DecodedHTMLEntity& decodedEntity,
-                                   bool& notEnoughCharacters,
-                                   UChar additionalAllowedCharacter = '\0');
+CORE_EXPORT bool ConsumeHTMLEntity(SegmentedString&,
+                                   DecodedHTMLEntity& decoded_entity,
+                                   bool& not_enough_characters,
+                                   UChar additional_allowed_character = '\0');
 
 // Used by the XML parser.  Not suitable for use in HTML parsing.  Use
 // consumeHTMLEntity instead.
-size_t decodeNamedEntityToUCharArray(const char*, UChar result[4]);
+size_t DecodeNamedEntityToUCharArray(const char*, UChar result[4]);
 
 }  // namespace blink
 

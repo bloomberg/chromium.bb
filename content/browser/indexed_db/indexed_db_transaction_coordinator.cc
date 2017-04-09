@@ -65,7 +65,7 @@ bool IndexedDBTransactionCoordinator::IsRunningVersionChangeTransaction()
     const {
   return !started_transactions_.empty() &&
          (*started_transactions_.begin())->mode() ==
-             blink::WebIDBTransactionModeVersionChange;
+             blink::kWebIDBTransactionModeVersionChange;
 }
 
 #ifndef NDEBUG
@@ -114,7 +114,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   // connection sequencing in IndexedDBDatabase.)
   std::set<int64_t> locked_scope;
   for (auto* transaction : started_transactions_) {
-    if (transaction->mode() == blink::WebIDBTransactionModeReadWrite) {
+    if (transaction->mode() == blink::kWebIDBTransactionModeReadWrite) {
       // Started read/write transactions have exclusive access to the object
       // stores within their scopes.
       locked_scope.insert(transaction->scope().begin(),
@@ -133,7 +133,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
       transaction->Start();
       DCHECK_EQ(IndexedDBTransaction::STARTED, transaction->state());
     }
-    if (transaction->mode() == blink::WebIDBTransactionModeReadWrite) {
+    if (transaction->mode() == blink::kWebIDBTransactionModeReadWrite) {
       // Either the transaction started, so it has exclusive access to the
       // stores in its scope, or per the spec the transaction which was
       // created first must get access first, so the stores are also locked.
@@ -168,14 +168,14 @@ bool IndexedDBTransactionCoordinator::CanStartTransaction(
   }
   DCHECK(queued_transactions_.count(transaction));
   switch (transaction->mode()) {
-    case blink::WebIDBTransactionModeVersionChange:
+    case blink::kWebIDBTransactionModeVersionChange:
       DCHECK_EQ(1u, queued_transactions_.size());
       DCHECK(started_transactions_.empty());
       DCHECK(locked_scope.empty());
       return true;
 
-    case blink::WebIDBTransactionModeReadOnly:
-    case blink::WebIDBTransactionModeReadWrite:
+    case blink::kWebIDBTransactionModeReadOnly:
+    case blink::kWebIDBTransactionModeReadWrite:
       return !DoSetsIntersect(transaction->scope(), locked_scope);
   }
   NOTREACHED();

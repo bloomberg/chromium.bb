@@ -45,37 +45,37 @@ const size_t MaxFFTSize = 32768;
 
 namespace blink {
 
-ConvolverHandler::ConvolverHandler(AudioNode& node, float sampleRate)
-    : AudioHandler(NodeTypeConvolver, node, sampleRate), m_normalize(true) {
-  addInput();
-  addOutput(1);
+ConvolverHandler::ConvolverHandler(AudioNode& node, float sample_rate)
+    : AudioHandler(kNodeTypeConvolver, node, sample_rate), normalize_(true) {
+  AddInput();
+  AddOutput(1);
 
   // Node-specific default mixing rules.
-  m_channelCount = 2;
-  setInternalChannelCountMode(ClampedMax);
-  setInternalChannelInterpretation(AudioBus::Speakers);
+  channel_count_ = 2;
+  SetInternalChannelCountMode(kClampedMax);
+  SetInternalChannelInterpretation(AudioBus::kSpeakers);
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<ConvolverHandler> ConvolverHandler::create(AudioNode& node,
-                                                      float sampleRate) {
-  return adoptRef(new ConvolverHandler(node, sampleRate));
+PassRefPtr<ConvolverHandler> ConvolverHandler::Create(AudioNode& node,
+                                                      float sample_rate) {
+  return AdoptRef(new ConvolverHandler(node, sample_rate));
 }
 
 ConvolverHandler::~ConvolverHandler() {
-  uninitialize();
+  Uninitialize();
 }
 
-void ConvolverHandler::process(size_t framesToProcess) {
-  AudioBus* outputBus = output(0).bus();
-  DCHECK(outputBus);
+void ConvolverHandler::Process(size_t frames_to_process) {
+  AudioBus* output_bus = Output(0).Bus();
+  DCHECK(output_bus);
 
   // Synchronize with possible dynamic changes to the impulse response.
-  MutexTryLocker tryLocker(m_processLock);
-  if (tryLocker.locked()) {
-    if (!isInitialized() || !m_reverb) {
-      outputBus->zero();
+  MutexTryLocker try_locker(process_lock_);
+  if (try_locker.Locked()) {
+    if (!IsInitialized() || !reverb_) {
+      output_bus->Zero();
     } else {
       // Process using the convolution engine.
       // Note that we can handle the case where nothing is connected to the
@@ -83,230 +83,229 @@ void ConvolverHandler::process(size_t framesToProcess) {
       // FIXME:  If we wanted to get fancy we could try to factor in the 'tail
       // time' and stop processing once the tail dies down if
       // we keep getting fed silence.
-      m_reverb->process(input(0).bus(), outputBus, framesToProcess);
+      reverb_->Process(Input(0).Bus(), output_bus, frames_to_process);
     }
   } else {
     // Too bad - the tryLock() failed.  We must be in the middle of setting a
     // new impulse response.
-    outputBus->zero();
+    output_bus->Zero();
   }
 }
 
-void ConvolverHandler::setBuffer(AudioBuffer* buffer,
-                                 ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
+                                 ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
   if (!buffer)
     return;
 
-  if (buffer->sampleRate() != context()->sampleRate()) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
-        "The buffer sample rate of " + String::number(buffer->sampleRate()) +
+  if (buffer->sampleRate() != Context()->sampleRate()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The buffer sample rate of " + String::Number(buffer->sampleRate()) +
             " does not match the context rate of " +
-            String::number(context()->sampleRate()) + " Hz.");
+            String::Number(Context()->sampleRate()) + " Hz.");
     return;
   }
 
-  unsigned numberOfChannels = buffer->numberOfChannels();
-  size_t bufferLength = buffer->length();
+  unsigned number_of_channels = buffer->numberOfChannels();
+  size_t buffer_length = buffer->length();
 
   // The current implementation supports only 1-, 2-, or 4-channel impulse
   // responses, with the 4-channel response being interpreted as true-stereo
   // (see Reverb class).
-  bool isChannelCountGood =
-      numberOfChannels == 1 || numberOfChannels == 2 || numberOfChannels == 4;
+  bool is_channel_count_good = number_of_channels == 1 ||
+                               number_of_channels == 2 ||
+                               number_of_channels == 4;
 
-  if (!isChannelCountGood) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "The buffer must have 1, 2, or 4 channels, not " +
-                               String::number(numberOfChannels));
+  if (!is_channel_count_good) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "The buffer must have 1, 2, or 4 channels, not " +
+                                String::Number(number_of_channels));
     return;
   }
 
   // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not
   // a memcpy().  This memory is simply used in the Reverb constructor and no
   // reference to it is kept for later use in that class.
-  RefPtr<AudioBus> bufferBus =
-      AudioBus::create(numberOfChannels, bufferLength, false);
-  for (unsigned i = 0; i < numberOfChannels; ++i)
-    bufferBus->setChannelMemory(i, buffer->getChannelData(i)->data(),
-                                bufferLength);
+  RefPtr<AudioBus> buffer_bus =
+      AudioBus::Create(number_of_channels, buffer_length, false);
+  for (unsigned i = 0; i < number_of_channels; ++i)
+    buffer_bus->SetChannelMemory(i, buffer->getChannelData(i)->Data(),
+                                 buffer_length);
 
-  bufferBus->setSampleRate(buffer->sampleRate());
+  buffer_bus->SetSampleRate(buffer->sampleRate());
 
   // Create the reverb with the given impulse response.
-  std::unique_ptr<Reverb> reverb = WTF::wrapUnique(new Reverb(
-      bufferBus.get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize,
-      context() && context()->hasRealtimeConstraint(), m_normalize));
+  std::unique_ptr<Reverb> reverb = WTF::WrapUnique(new Reverb(
+      buffer_bus.Get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize,
+      Context() && Context()->HasRealtimeConstraint(), normalize_));
 
   {
     // The context must be locked since changing the buffer can
     // re-configure the number of channels that are output.
-    BaseAudioContext::AutoLocker contextLocker(context());
+    BaseAudioContext::AutoLocker context_locker(Context());
 
     // Synchronize with process().
-    MutexLocker locker(m_processLock);
-    m_reverb = std::move(reverb);
-    m_buffer = buffer;
+    MutexLocker locker(process_lock_);
+    reverb_ = std::move(reverb);
+    buffer_ = buffer;
     if (buffer) {
       // This will propagate the channel count to any nodes connected further
       // downstream in the graph.
-      output(0).setNumberOfChannels(computeNumberOfOutputChannels(
-          input(0).numberOfChannels(), m_buffer->numberOfChannels()));
+      Output(0).SetNumberOfChannels(ComputeNumberOfOutputChannels(
+          Input(0).NumberOfChannels(), buffer_->numberOfChannels()));
     }
   }
 }
 
-AudioBuffer* ConvolverHandler::buffer() {
-  DCHECK(isMainThread());
-  return m_buffer.get();
+AudioBuffer* ConvolverHandler::Buffer() {
+  DCHECK(IsMainThread());
+  return buffer_.Get();
 }
 
-double ConvolverHandler::tailTime() const {
-  MutexTryLocker tryLocker(m_processLock);
-  if (tryLocker.locked())
-    return m_reverb
-               ? m_reverb->impulseResponseLength() /
-                     static_cast<double>(context()->sampleRate())
-               : 0;
+double ConvolverHandler::TailTime() const {
+  MutexTryLocker try_locker(process_lock_);
+  if (try_locker.Locked())
+    return reverb_ ? reverb_->ImpulseResponseLength() /
+                         static_cast<double>(Context()->sampleRate())
+                   : 0;
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
 }
 
-double ConvolverHandler::latencyTime() const {
-  MutexTryLocker tryLocker(m_processLock);
-  if (tryLocker.locked())
-    return m_reverb
-               ? m_reverb->latencyFrames() /
-                     static_cast<double>(context()->sampleRate())
-               : 0;
+double ConvolverHandler::LatencyTime() const {
+  MutexTryLocker try_locker(process_lock_);
+  if (try_locker.Locked())
+    return reverb_ ? reverb_->LatencyFrames() /
+                         static_cast<double>(Context()->sampleRate())
+                   : 0;
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
 }
 
-unsigned ConvolverHandler::computeNumberOfOutputChannels(
-    unsigned inputChannels,
-    unsigned responseChannels) const {
+unsigned ConvolverHandler::ComputeNumberOfOutputChannels(
+    unsigned input_channels,
+    unsigned response_channels) const {
   // The number of output channels for a Convolver must be one or two.
   // And can only be one if there's a mono source and a mono response
   // buffer.
-  return clampTo(std::max(inputChannels, responseChannels), 1, 2);
+  return clampTo(std::max(input_channels, response_channels), 1, 2);
 }
 
-void ConvolverHandler::setChannelCount(unsigned long channelCount,
-                                       ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void ConvolverHandler::SetChannelCount(unsigned long channel_count,
+                                       ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // channelCount must be 2.
-  if (channelCount != 2) {
-    exceptionState.throwDOMException(
-        NotSupportedError,
+  if (channel_count != 2) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
         "ConvolverNode: channelCount cannot be changed from 2");
   }
 }
 
-void ConvolverHandler::setChannelCountMode(const String& mode,
-                                           ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void ConvolverHandler::SetChannelCountMode(const String& mode,
+                                           ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // channcelCountMode must be 'clamped-max'.
   if (mode != "clamped-max") {
-    exceptionState.throwDOMException(
-        NotSupportedError,
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
         "ConvolverNode: channelCountMode cannot be changed from 'clamped-max'");
   }
 }
 
-void ConvolverHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
-  DCHECK(context()->isAudioThread());
-  DCHECK(context()->isGraphOwner());
+void ConvolverHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
+  DCHECK(Context()->IsAudioThread());
+  DCHECK(Context()->IsGraphOwner());
 
   DCHECK(input);
-  DCHECK_EQ(input, &this->input(0));
-  if (input != &this->input(0))
+  DCHECK_EQ(input, &this->Input(0));
+  if (input != &this->Input(0))
     return;
 
-  if (m_buffer) {
-    unsigned numberOfOutputChannels = computeNumberOfOutputChannels(
-        input->numberOfChannels(), m_buffer->numberOfChannels());
+  if (buffer_) {
+    unsigned number_of_output_channels = ComputeNumberOfOutputChannels(
+        input->NumberOfChannels(), buffer_->numberOfChannels());
 
-    if (isInitialized() &&
-        numberOfOutputChannels != output(0).numberOfChannels()) {
+    if (IsInitialized() &&
+        number_of_output_channels != Output(0).NumberOfChannels()) {
       // We're already initialized but the channel count has changed.
-      uninitialize();
+      Uninitialize();
     }
 
-    if (!isInitialized()) {
+    if (!IsInitialized()) {
       // This will propagate the channel count to any nodes connected further
       // downstream in the graph.
-      output(0).setNumberOfChannels(numberOfOutputChannels);
-      initialize();
+      Output(0).SetNumberOfChannels(number_of_output_channels);
+      Initialize();
     }
   }
 
   // Update the input's internal bus if needed.
-  AudioHandler::checkNumberOfChannelsForInput(input);
+  AudioHandler::CheckNumberOfChannelsForInput(input);
 }
 // ----------------------------------------------------------------
 
 ConvolverNode::ConvolverNode(BaseAudioContext& context) : AudioNode(context) {
-  setHandler(ConvolverHandler::create(*this, context.sampleRate()));
+  SetHandler(ConvolverHandler::Create(*this, context.sampleRate()));
 }
 
-ConvolverNode* ConvolverNode::create(BaseAudioContext& context,
-                                     ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+ConvolverNode* ConvolverNode::Create(BaseAudioContext& context,
+                                     ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
   return new ConvolverNode(context);
 }
 
-ConvolverNode* ConvolverNode::create(BaseAudioContext* context,
+ConvolverNode* ConvolverNode::Create(BaseAudioContext* context,
                                      const ConvolverOptions& options,
-                                     ExceptionState& exceptionState) {
-  ConvolverNode* node = create(*context, exceptionState);
+                                     ExceptionState& exception_state) {
+  ConvolverNode* node = Create(*context, exception_state);
 
   if (!node)
     return nullptr;
 
-  node->handleChannelOptions(options, exceptionState);
+  node->HandleChannelOptions(options, exception_state);
 
   // It is important to set normalize first because setting the buffer will
   // examing the normalize attribute to see if normalization needs to be done.
   node->setNormalize(!options.disableNormalization());
   if (options.hasBuffer())
-    node->setBuffer(options.buffer(), exceptionState);
+    node->setBuffer(options.buffer(), exception_state);
   return node;
 }
 
-ConvolverHandler& ConvolverNode::convolverHandler() const {
-  return static_cast<ConvolverHandler&>(handler());
+ConvolverHandler& ConvolverNode::GetConvolverHandler() const {
+  return static_cast<ConvolverHandler&>(Handler());
 }
 
 AudioBuffer* ConvolverNode::buffer() const {
-  return convolverHandler().buffer();
+  return GetConvolverHandler().Buffer();
 }
 
-void ConvolverNode::setBuffer(AudioBuffer* newBuffer,
-                              ExceptionState& exceptionState) {
-  convolverHandler().setBuffer(newBuffer, exceptionState);
+void ConvolverNode::setBuffer(AudioBuffer* new_buffer,
+                              ExceptionState& exception_state) {
+  GetConvolverHandler().SetBuffer(new_buffer, exception_state);
 }
 
 bool ConvolverNode::normalize() const {
-  return convolverHandler().normalize();
+  return GetConvolverHandler().Normalize();
 }
 
 void ConvolverNode::setNormalize(bool normalize) {
-  convolverHandler().setNormalize(normalize);
+  GetConvolverHandler().SetNormalize(normalize);
 }
 
 }  // namespace blink

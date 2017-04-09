@@ -38,14 +38,14 @@ class RTCDTMFToneChangeEvent final : public Event {
  public:
   ~RTCDTMFToneChangeEvent() override;
 
-  static RTCDTMFToneChangeEvent* create(const String& tone);
-  static RTCDTMFToneChangeEvent* create(
+  static RTCDTMFToneChangeEvent* Create(const String& tone);
+  static RTCDTMFToneChangeEvent* Create(
       const AtomicString& type,
       const RTCDTMFToneChangeEventInit& initializer);
 
   const String& tone() const;
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -53,7 +53,7 @@ class RTCDTMFToneChangeEvent final : public Event {
   explicit RTCDTMFToneChangeEvent(const String& tone);
   explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit&);
 
-  String m_tone;
+  String tone_;
 };
 
 }  // namespace blink

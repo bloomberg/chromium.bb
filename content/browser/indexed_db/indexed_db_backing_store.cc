@@ -929,11 +929,11 @@ bool ObjectStoreCursorOptions(
   bool lower_bound = range.lower().IsValid();
   bool upper_bound = range.upper().IsValid();
   cursor_options->forward =
-      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::WebIDBCursorDirectionNext);
+      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::kWebIDBCursorDirectionNext);
   cursor_options->unique =
-      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::WebIDBCursorDirectionPrevNoDuplicate);
+      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::kWebIDBCursorDirectionPrevNoDuplicate);
 
   if (!lower_bound) {
     cursor_options->low_key =
@@ -1004,11 +1004,11 @@ bool IndexCursorOptions(
   bool lower_bound = range.lower().IsValid();
   bool upper_bound = range.upper().IsValid();
   cursor_options->forward =
-      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::WebIDBCursorDirectionNext);
+      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::kWebIDBCursorDirectionNext);
   cursor_options->unique =
-      (direction == blink::WebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::WebIDBCursorDirectionPrevNoDuplicate);
+      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
+       direction == blink::kWebIDBCursorDirectionPrevNoDuplicate);
 
   if (!lower_bound) {
     cursor_options->low_key =
@@ -1323,7 +1323,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   DCHECK(!path_base.empty());
   *is_disk_full = false;
 
-  data_loss_info->status = blink::WebIDBDataLossNone;
+  data_loss_info->status = blink::kWebIDBDataLossNone;
   *status = Status::OK();
 
   std::unique_ptr<LevelDBComparator> comparator(base::MakeUnique<Comparator>());
@@ -1360,7 +1360,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (leveldb_env::IndicatesDiskFull(*status)) {
       *is_disk_full = true;
     } else if (status->IsCorruption()) {
-      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->status = blink::kWebIDBDataLossTotal;
       data_loss_info->message = leveldb_env::GetCorruptionMessage(*status);
     }
   }
@@ -1374,7 +1374,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
                           origin);
       db.reset();
-      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->status = blink::kWebIDBDataLossTotal;
       data_loss_info->message =
           "IndexedDB (database was corrupt): " + corruption_message;
     } else if (!IsSchemaKnown(db.get(), &is_schema_known)) {
@@ -1384,7 +1384,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
           origin);
       db.reset();
-      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->status = blink::kWebIDBDataLossTotal;
       data_loss_info->message = "I/O error checking schema";
     } else if (!is_schema_known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
@@ -1392,7 +1392,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
                           origin);
       db.reset();
-      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->status = blink::kWebIDBDataLossTotal;
       data_loss_info->message = "Unknown schema";
     }
   }
@@ -1881,7 +1881,7 @@ Status IndexedDBBackingStore::GetObjectStores(
       // (2) Later, null vs. string vs. array was stored in the key_path itself.
       // So this check is only relevant for string-type key_paths.
       if (!has_key_path &&
-          (key_path.type() == blink::WebIDBKeyPathTypeString &&
+          (key_path.type() == blink::kWebIDBKeyPathTypeString &&
            !key_path.string().empty())) {
         INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
         break;
@@ -2218,14 +2218,14 @@ Status IndexedDBBackingStore::DeleteRange(
   Status s;
   std::unique_ptr<IndexedDBBackingStore::Cursor> start_cursor =
       OpenObjectStoreCursor(transaction, database_id, object_store_id,
-                            key_range, blink::WebIDBCursorDirectionNext, &s);
+                            key_range, blink::kWebIDBCursorDirectionNext, &s);
   if (!s.ok())
     return s;
   if (!start_cursor)
     return Status::OK();  // Empty range == delete success.
   std::unique_ptr<IndexedDBBackingStore::Cursor> end_cursor =
       OpenObjectStoreCursor(transaction, database_id, object_store_id,
-                            key_range, blink::WebIDBCursorDirectionPrev, &s);
+                            key_range, blink::kWebIDBCursorDirectionPrev, &s);
 
   if (!s.ok())
     return s;
@@ -2320,7 +2320,7 @@ Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
       return InternalInconsistencyStatus();
     }
     std::unique_ptr<IndexedDBKey> user_key = data_key.user_key();
-    if (user_key->type() == blink::WebIDBKeyTypeNumber) {
+    if (user_key->type() == blink::kWebIDBKeyTypeNumber) {
       int64_t n = static_cast<int64_t>(user_key->number());
       if (n > max_numeric_key)
         max_numeric_key = n;

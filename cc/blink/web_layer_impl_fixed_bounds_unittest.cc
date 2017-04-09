@@ -25,8 +25,8 @@ namespace {
 TEST(WebLayerImplFixedBoundsTest, IdentityBounds) {
   WebLayerImplFixedBounds layer;
   layer.SetFixedBounds(gfx::Size(100, 100));
-  layer.setBounds(WebSize(100, 100));
-  EXPECT_EQ(WebSize(100, 100), layer.bounds());
+  layer.SetBounds(WebSize(100, 100));
+  EXPECT_EQ(WebSize(100, 100), layer.Bounds());
   EXPECT_EQ(gfx::Size(100, 100), layer.layer()->bounds());
   EXPECT_EQ(gfx::Transform(), layer.layer()->transform());
 }
@@ -41,12 +41,12 @@ gfx::Point3F TransformPoint(const gfx::Transform& transform,
 void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
                             const WebSize& bounds,
                             const gfx::Size& fixed_bounds) {
-  layer->setBounds(bounds);
+  layer->SetBounds(bounds);
   layer->SetFixedBounds(fixed_bounds);
 
-  EXPECT_EQ(bounds, layer->bounds());
+  EXPECT_EQ(bounds, layer->Bounds());
   EXPECT_EQ(fixed_bounds, layer->layer()->bounds());
-  EXPECT_TRUE(layer->transform().isIdentity());
+  EXPECT_TRUE(layer->Transform().isIdentity());
 
   // An arbitrary point to check the scale and transforms.
   gfx::Point3F original_point(10, 20, 1);
@@ -91,18 +91,18 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   WebLayerImplFixedBounds root_layer;
 
   WebLayerImplFixedBounds fixed_bounds_layer(cc::PictureImageLayer::Create());
-  fixed_bounds_layer.setBounds(bounds);
+  fixed_bounds_layer.SetBounds(bounds);
   fixed_bounds_layer.SetFixedBounds(fixed_bounds);
-  fixed_bounds_layer.setTransform(transform.matrix());
-  fixed_bounds_layer.setPosition(position);
-  root_layer.addChild(&fixed_bounds_layer);
+  fixed_bounds_layer.SetTransform(transform.matrix());
+  fixed_bounds_layer.SetPosition(position);
+  root_layer.AddChild(&fixed_bounds_layer);
 
   WebLayerImpl normal_layer(cc::PictureImageLayer::Create());
 
-  normal_layer.setBounds(bounds);
-  normal_layer.setTransform(transform.matrix());
-  normal_layer.setPosition(position);
-  root_layer.addChild(&normal_layer);
+  normal_layer.SetBounds(bounds);
+  normal_layer.SetTransform(transform.matrix());
+  normal_layer.SetPosition(position);
+  root_layer.AddChild(&normal_layer);
 
   auto animation_host =
       cc::AnimationHost::CreateForTesting(cc::ThreadInstance::MAIN);

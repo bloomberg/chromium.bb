@@ -167,32 +167,34 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
 inline blink::WebGestureEvent CreateScrollBeginForWrapping(
     const blink::WebGestureEvent& gesture_event) {
-  DCHECK(gesture_event.type() == blink::WebInputEvent::GestureScrollUpdate);
+  DCHECK(gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate);
 
   blink::WebGestureEvent wrap_gesture_scroll_begin(
-      blink::WebInputEvent::GestureScrollBegin, gesture_event.modifiers(),
-      gesture_event.timeStampSeconds());
-  wrap_gesture_scroll_begin.sourceDevice = gesture_event.sourceDevice;
-  wrap_gesture_scroll_begin.data.scrollBegin.deltaXHint = 0;
-  wrap_gesture_scroll_begin.data.scrollBegin.deltaYHint = 0;
-  wrap_gesture_scroll_begin.resendingPluginId = gesture_event.resendingPluginId;
-  wrap_gesture_scroll_begin.data.scrollBegin.deltaHintUnits =
-      gesture_event.data.scrollUpdate.deltaUnits;
+      blink::WebInputEvent::kGestureScrollBegin, gesture_event.GetModifiers(),
+      gesture_event.TimeStampSeconds());
+  wrap_gesture_scroll_begin.source_device = gesture_event.source_device;
+  wrap_gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  wrap_gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0;
+  wrap_gesture_scroll_begin.resending_plugin_id =
+      gesture_event.resending_plugin_id;
+  wrap_gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      gesture_event.data.scroll_update.delta_units;
 
   return wrap_gesture_scroll_begin;
 }
 
 inline blink::WebGestureEvent CreateScrollEndForWrapping(
     const blink::WebGestureEvent& gesture_event) {
-  DCHECK(gesture_event.type() == blink::WebInputEvent::GestureScrollUpdate);
+  DCHECK(gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate);
 
   blink::WebGestureEvent wrap_gesture_scroll_end(
-      blink::WebInputEvent::GestureScrollEnd, gesture_event.modifiers(),
-      gesture_event.timeStampSeconds());
-  wrap_gesture_scroll_end.sourceDevice = gesture_event.sourceDevice;
-  wrap_gesture_scroll_end.resendingPluginId = gesture_event.resendingPluginId;
-  wrap_gesture_scroll_end.data.scrollEnd.deltaUnits =
-      gesture_event.data.scrollUpdate.deltaUnits;
+      blink::WebInputEvent::kGestureScrollEnd, gesture_event.GetModifiers(),
+      gesture_event.TimeStampSeconds());
+  wrap_gesture_scroll_end.source_device = gesture_event.source_device;
+  wrap_gesture_scroll_end.resending_plugin_id =
+      gesture_event.resending_plugin_id;
+  wrap_gesture_scroll_end.data.scroll_end.delta_units =
+      gesture_event.data.scroll_update.delta_units;
 
   return wrap_gesture_scroll_end;
 }
@@ -274,7 +276,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       in_get_backing_store_(false),
       ignore_input_events_(false),
       text_direction_updated_(false),
-      text_direction_(blink::WebTextDirectionLeftToRight),
+      text_direction_(blink::kWebTextDirectionLeftToRight),
       text_direction_canceled_(false),
       suppress_events_until_keydown_(false),
       pending_mouse_lock_request_(false),
@@ -288,8 +290,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_focused_(false),
       hung_renderer_delay_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
-      hang_monitor_event_type_(blink::WebInputEvent::Undefined),
-      last_event_type_(blink::WebInputEvent::Undefined),
+      hang_monitor_event_type_(blink::WebInputEvent::kUndefined),
+      last_event_type_(blink::WebInputEvent::kUndefined),
       new_content_rendering_delay_(
           base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       current_content_source_id_(0),
@@ -689,7 +691,7 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     resize_params->display_mode = delegate_->GetDisplayMode(this);
   } else {
     resize_params->is_fullscreen_granted = false;
-    resize_params->display_mode = blink::WebDisplayModeBrowser;
+    resize_params->display_mode = blink::kWebDisplayModeBrowser;
   }
 
   if (view_) {
@@ -1028,8 +1030,8 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
       const blink::WebMouseEvent& mouse_event,
       const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent", "x",
-               mouse_event.positionInWidget().x, "y",
-               mouse_event.positionInWidget().y);
+               mouse_event.PositionInWidget().x, "y",
+               mouse_event.PositionInWidget().y);
 
   for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
     if (mouse_event_callbacks_[i].Run(mouse_event))
@@ -1056,8 +1058,8 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& ui_latency) {
-  TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent",
-               "dx", wheel_event.deltaX, "dy", wheel_event.deltaY);
+  TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardWheelEvent", "dx",
+               wheel_event.delta_x, "dy", wheel_event.delta_y);
 
   if (ShouldDropInputEvents())
     return;
@@ -1095,15 +1097,17 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   // when WebView transitions to OOPIF and BrowserPlugin is removed.
   // http://crbug.com/533069
   bool* is_in_gesture_scroll =
-      gesture_event.sourceDevice ==
-              blink::WebGestureDevice::WebGestureDeviceTouchpad
+      gesture_event.source_device ==
+              blink::WebGestureDevice::kWebGestureDeviceTouchpad
           ? &is_in_touchpad_gesture_scroll_
           : &is_in_touchscreen_gesture_scroll_;
-  if (gesture_event.type() == blink::WebInputEvent::GestureScrollBegin) {
+  if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     DCHECK(!(*is_in_gesture_scroll));
     *is_in_gesture_scroll = true;
-  } else if (gesture_event.type() == blink::WebInputEvent::GestureScrollEnd ||
-             gesture_event.type() == blink::WebInputEvent::GestureFlingStart) {
+  } else if (gesture_event.GetType() ==
+                 blink::WebInputEvent::kGestureScrollEnd ||
+             gesture_event.GetType() ==
+                 blink::WebInputEvent::kGestureFlingStart) {
     // TODO(wjmaclean): Re-enable the following DCHECK once crbug.com/695187
     // is fixed.
     // DCHECK(*is_in_gesture_scroll ||
@@ -1114,8 +1118,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   }
 
   bool scroll_update_needs_wrapping =
-      gesture_event.type() == blink::WebInputEvent::GestureScrollUpdate &&
-      gesture_event.resendingPluginId != -1 && !(*is_in_gesture_scroll);
+      gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+      gesture_event.resending_plugin_id != -1 && !(*is_in_gesture_scroll);
 
   // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
   // Bubble to test the resending logic of gesture events.
@@ -1200,25 +1204,25 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   if (KeyPressListenersHandleEvent(key_event)) {
     // Some keypresses that are accepted by the listener may be followed by Char
     // and KeyUp events, which should be ignored.
-    if (key_event.type() == WebKeyboardEvent::RawKeyDown)
+    if (key_event.GetType() == WebKeyboardEvent::kRawKeyDown)
       suppress_events_until_keydown_ = true;
     return;
   }
 
   // Double check the type to make sure caller hasn't sent us nonsense that
   // will mess up our key queue.
-  if (!WebInputEvent::isKeyboardEventType(key_event.type()))
+  if (!WebInputEvent::IsKeyboardEventType(key_event.GetType()))
     return;
 
   if (suppress_events_until_keydown_) {
     // If the preceding RawKeyDown event was handled by the browser, then we
     // need to suppress all events generated by it until the next RawKeyDown or
     // KeyDown event.
-    if (key_event.type() == WebKeyboardEvent::KeyUp ||
-        key_event.type() == WebKeyboardEvent::Char)
+    if (key_event.GetType() == WebKeyboardEvent::kKeyUp ||
+        key_event.GetType() == WebKeyboardEvent::kChar)
       return;
-    DCHECK(key_event.type() == WebKeyboardEvent::RawKeyDown ||
-           key_event.type() == WebKeyboardEvent::KeyDown);
+    DCHECK(key_event.GetType() == WebKeyboardEvent::kRawKeyDown ||
+           key_event.GetType() == WebKeyboardEvent::kKeyDown);
     suppress_events_until_keydown_ = false;
   }
 
@@ -1230,7 +1234,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     // PreHandleKeyboardEvent() handles the event, but |this| may already be
     // destroyed at that time. So set |suppress_events_until_keydown_| true
     // here, then revert it afterwards when necessary.
-    if (key_event.type() == WebKeyboardEvent::RawKeyDown)
+    if (key_event.GetType() == WebKeyboardEvent::kRawKeyDown)
       suppress_events_until_keydown_ = true;
 
     // Tab switching/closing accelerators aren't sent to the renderer to avoid
@@ -1251,7 +1255,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
         break;
     }
 
-    if (key_event.type() == WebKeyboardEvent::RawKeyDown)
+    if (key_event.GetType() == WebKeyboardEvent::kRawKeyDown)
       suppress_events_until_keydown_ = false;
   }
 
@@ -1260,7 +1264,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
   NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event,
                                                                latency_info);
-  key_event_with_latency.event.isBrowserShortcut = is_shortcut;
+  key_event_with_latency.event.is_browser_shortcut = is_shortcut;
   DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
   // TODO(foolip): |InputRouter::SendKeyboardEvent()| may filter events, in
   // which the commands will be treated as belonging to the next key event.
@@ -1862,11 +1866,11 @@ void RenderWidgetHostImpl::OnSetTooltipText(
   // but we use the current approach to match Fx & IE's behavior.
   base::string16 wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
-    if (text_direction_hint == blink::WebTextDirectionLeftToRight) {
+    if (text_direction_hint == blink::kWebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.
       wrapped_tooltip_text =
           base::i18n::GetDisplayStringInLTRDirectionality(wrapped_tooltip_text);
-    } else if (text_direction_hint == blink::WebTextDirectionRightToLeft &&
+    } else if (text_direction_hint == blink::kWebTextDirectionRightToLeft &&
                !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
@@ -2135,7 +2139,7 @@ void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
 
 bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
     const NativeWebKeyboardEvent& event) {
-  if (event.skip_in_browser || event.type() != WebKeyboardEvent::RawKeyDown)
+  if (event.skip_in_browser || event.GetType() != WebKeyboardEvent::kRawKeyDown)
     return false;
 
   for (size_t i = 0; i < key_press_event_callbacks_.size(); i++) {
@@ -2160,22 +2164,22 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   // Don't ignore touch cancel events, since they may be sent while input
   // events are being ignored in order to keep the renderer from getting
   // confused about how many touches are active.
-  if (ShouldDropInputEvents() && event.type() != WebInputEvent::TouchCancel)
+  if (ShouldDropInputEvents() && event.GetType() != WebInputEvent::kTouchCancel)
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
 
   if (!process_->HasConnection())
     return INPUT_EVENT_ACK_STATE_UNKNOWN;
 
   if (delegate_) {
-    if (event.type() == WebInputEvent::MouseDown ||
-        event.type() == WebInputEvent::TouchStart) {
+    if (event.GetType() == WebInputEvent::kMouseDown ||
+        event.GetType() == WebInputEvent::kTouchStart) {
       delegate_->FocusOwningWebContents(this);
     }
-    if (event.type() == WebInputEvent::MouseDown ||
-        event.type() == WebInputEvent::GestureScrollBegin ||
-        event.type() == WebInputEvent::TouchStart ||
-        event.type() == WebInputEvent::RawKeyDown) {
-      delegate_->OnUserInteraction(this, event.type());
+    if (event.GetType() == WebInputEvent::kMouseDown ||
+        event.GetType() == WebInputEvent::kGestureScrollBegin ||
+        event.GetType() == WebInputEvent::kTouchStart ||
+        event.GetType() == WebInputEvent::kRawKeyDown) {
+      delegate_->OnUserInteraction(this, event.GetType());
     }
   }
 

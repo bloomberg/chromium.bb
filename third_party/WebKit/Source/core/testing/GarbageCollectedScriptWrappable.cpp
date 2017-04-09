@@ -8,7 +8,7 @@ namespace blink {
 
 GarbageCollectedScriptWrappable::GarbageCollectedScriptWrappable(
     const String& string)
-    : m_string(string) {}
+    : string_(string) {}
 
 GarbageCollectedScriptWrappable::~GarbageCollectedScriptWrappable() {}
 

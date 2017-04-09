@@ -207,7 +207,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request->method = "GET";
     request->url = GURL(kTestPageUrl);
     request->first_party_for_cookies = GURL(kTestPageUrl);
-    request->referrer_policy = blink::WebReferrerPolicyDefault;
+    request->referrer_policy = blink::kWebReferrerPolicyDefault;
     request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     request->priority = net::LOW;
     request->fetch_request_mode = FETCH_REQUEST_MODE_NO_CORS;
@@ -229,7 +229,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
         new TestRequestPeer(dispatcher(), peer_context));
     int request_id = dispatcher()->StartAsync(
         std::move(request), 0, nullptr, url::Origin(), std::move(peer),
-        blink::WebURLRequest::LoadingIPCType::ChromeIPC, nullptr);
+        blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr);
     peer_context->request_id = request_id;
     return request_id;
   }

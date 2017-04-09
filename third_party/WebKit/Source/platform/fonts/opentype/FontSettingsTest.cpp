@@ -9,36 +9,37 @@
 
 namespace blink {
 
-PassRefPtr<FontVariationSettings> makeFontVariationSettings(
-    std::initializer_list<FontVariationAxis> variationAxes) {
-  RefPtr<FontVariationSettings> variationSettings =
-      FontVariationSettings::create();
+PassRefPtr<FontVariationSettings> MakeFontVariationSettings(
+    std::initializer_list<FontVariationAxis> variation_axes) {
+  RefPtr<FontVariationSettings> variation_settings =
+      FontVariationSettings::Create();
 
-  for (auto axis = variationAxes.begin(); axis != variationAxes.end(); ++axis) {
-    variationSettings->append(*axis);
+  for (auto axis = variation_axes.begin(); axis != variation_axes.end();
+       ++axis) {
+    variation_settings->Append(*axis);
   }
-  return variationSettings;
+  return variation_settings;
 }
 
 TEST(FontSettingsTest, HashTest) {
-  RefPtr<FontVariationSettings> oneAxisA =
-      makeFontVariationSettings({FontVariationAxis{"a   ", 0}});
-  RefPtr<FontVariationSettings> oneAxisB =
-      makeFontVariationSettings({FontVariationAxis{"b   ", 0}});
-  RefPtr<FontVariationSettings> twoAxes = makeFontVariationSettings(
+  RefPtr<FontVariationSettings> one_axis_a =
+      MakeFontVariationSettings({FontVariationAxis{"a   ", 0}});
+  RefPtr<FontVariationSettings> one_axis_b =
+      MakeFontVariationSettings({FontVariationAxis{"b   ", 0}});
+  RefPtr<FontVariationSettings> two_axes = MakeFontVariationSettings(
       {FontVariationAxis{"a   ", 0}, FontVariationAxis{"b   ", 0}});
-  RefPtr<FontVariationSettings> twoAxesDifferentValue =
-      makeFontVariationSettings(
+  RefPtr<FontVariationSettings> two_axes_different_value =
+      MakeFontVariationSettings(
           {FontVariationAxis{"a   ", 0}, FontVariationAxis{"b   ", 1}});
 
-  RefPtr<FontVariationSettings> emptyVariationSettings =
-      FontVariationSettings::create();
+  RefPtr<FontVariationSettings> empty_variation_settings =
+      FontVariationSettings::Create();
 
-  CHECK_NE(oneAxisA->hash(), oneAxisB->hash());
-  CHECK_NE(oneAxisA->hash(), twoAxes->hash());
-  CHECK_NE(oneAxisA->hash(), twoAxesDifferentValue->hash());
-  CHECK_NE(emptyVariationSettings->hash(), oneAxisA->hash());
-  CHECK_EQ(emptyVariationSettings->hash(), 0u);
+  CHECK_NE(one_axis_a->GetHash(), one_axis_b->GetHash());
+  CHECK_NE(one_axis_a->GetHash(), two_axes->GetHash());
+  CHECK_NE(one_axis_a->GetHash(), two_axes_different_value->GetHash());
+  CHECK_NE(empty_variation_settings->GetHash(), one_axis_a->GetHash());
+  CHECK_EQ(empty_variation_settings->GetHash(), 0u);
 };
 
 }  // namespace blink

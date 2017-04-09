@@ -118,9 +118,10 @@ class PasswordGenerationInteractiveTest :
 
   void SendKeyToPopup(ui::KeyboardCode key) {
     content::NativeWebKeyboardEvent event(
-        blink::WebKeyboardEvent::RawKeyDown, blink::WebInputEvent::NoModifiers,
-        blink::WebInputEvent::TimeStampForTesting);
-    event.windowsKeyCode = key;
+        blink::WebKeyboardEvent::kRawKeyDown,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::kTimeStampForTesting);
+    event.windows_key_code = key;
     RenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
   }
 

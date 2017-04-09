@@ -134,20 +134,20 @@ void SiteEngagementService::Helper::InputTracker::DidGetUserInteraction(
   // of the values of the WebInputEvent::Type enum (hence it won't require the
   // compiler verifying that all cases are covered).
   switch (type) {
-    case blink::WebInputEvent::RawKeyDown:
+    case blink::WebInputEvent::kRawKeyDown:
       helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
       break;
-    case blink::WebInputEvent::MouseDown:
+    case blink::WebInputEvent::kMouseDown:
       helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_MOUSE);
       break;
-    case blink::WebInputEvent::TouchStart:
+    case blink::WebInputEvent::kTouchStart:
       helper()->RecordUserInput(
           SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
       break;
-    case blink::WebInputEvent::GestureScrollBegin:
+    case blink::WebInputEvent::kGestureScrollBegin:
       helper()->RecordUserInput(SiteEngagementMetrics::ENGAGEMENT_SCROLL);
       break;
-    case blink::WebInputEvent::Undefined:
+    case blink::WebInputEvent::kUndefined:
       // Explicitly ignore browser-initiated navigation input.
       break;
     default:

@@ -34,13 +34,13 @@ class AnimationWorkletProxyClientImpl final
 
   // CompositorAnimator:
   // This method is invoked in compositor thread
-  bool mutate(double monotonicTimeNow,
+  bool Mutate(double monotonic_time_now,
               CompositorMutableStateProvider*) override;
 
  private:
-  CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
+  CrossThreadPersistent<CompositorMutatorImpl> mutator_;
 
-  CrossThreadPersistent<CompositorProxyClientImpl> m_compositorProxyClient;
+  CrossThreadPersistent<CompositorProxyClientImpl> compositor_proxy_client_;
 };
 
 }  // namespace blink

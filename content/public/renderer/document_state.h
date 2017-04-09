@@ -30,7 +30,7 @@ class CONTENT_EXPORT DocumentState
   ~DocumentState() override;
 
   static DocumentState* FromDataSource(blink::WebDataSource* ds) {
-    return static_cast<DocumentState*>(ds->getExtraData());
+    return static_cast<DocumentState*>(ds->GetExtraData());
   }
 
   // Indicator if SPDY was used as part of this page load.

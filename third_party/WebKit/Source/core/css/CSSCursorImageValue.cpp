@@ -28,40 +28,40 @@ namespace blink {
 
 namespace cssvalue {
 
-CSSCursorImageValue::CSSCursorImageValue(const CSSValue& imageValue,
-                                         bool hotSpotSpecified,
-                                         const IntPoint& hotSpot)
-    : CSSValue(CursorImageClass),
-      m_imageValue(&imageValue),
-      m_hotSpot(hotSpot),
-      m_hotSpotSpecified(hotSpotSpecified) {
-  DCHECK(imageValue.isImageValue() || imageValue.isImageSetValue());
+CSSCursorImageValue::CSSCursorImageValue(const CSSValue& image_value,
+                                         bool hot_spot_specified,
+                                         const IntPoint& hot_spot)
+    : CSSValue(kCursorImageClass),
+      image_value_(&image_value),
+      hot_spot_(hot_spot),
+      hot_spot_specified_(hot_spot_specified) {
+  DCHECK(image_value.IsImageValue() || image_value.IsImageSetValue());
 }
 
 CSSCursorImageValue::~CSSCursorImageValue() {}
 
-String CSSCursorImageValue::customCSSText() const {
+String CSSCursorImageValue::CustomCSSText() const {
   StringBuilder result;
-  result.append(m_imageValue->cssText());
-  if (m_hotSpotSpecified) {
-    result.append(' ');
-    result.appendNumber(m_hotSpot.x());
-    result.append(' ');
-    result.appendNumber(m_hotSpot.y());
+  result.Append(image_value_->CssText());
+  if (hot_spot_specified_) {
+    result.Append(' ');
+    result.AppendNumber(hot_spot_.X());
+    result.Append(' ');
+    result.AppendNumber(hot_spot_.Y());
   }
-  return result.toString();
+  return result.ToString();
 }
 
-bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const {
-  return (m_hotSpotSpecified
-              ? other.m_hotSpotSpecified && m_hotSpot == other.m_hotSpot
-              : !other.m_hotSpotSpecified) &&
-         dataEquivalent(m_imageValue, other.m_imageValue);
+bool CSSCursorImageValue::Equals(const CSSCursorImageValue& other) const {
+  return (hot_spot_specified_
+              ? other.hot_spot_specified_ && hot_spot_ == other.hot_spot_
+              : !other.hot_spot_specified_) &&
+         DataEquivalent(image_value_, other.image_value_);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSCursorImageValue) {
-  visitor->trace(m_imageValue);
-  CSSValue::traceAfterDispatch(visitor);
+  visitor->Trace(image_value_);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace cssvalue

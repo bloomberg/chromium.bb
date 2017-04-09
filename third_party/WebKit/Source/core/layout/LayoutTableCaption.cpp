@@ -28,25 +28,25 @@ LayoutTableCaption::LayoutTableCaption(Element* element)
 
 LayoutTableCaption::~LayoutTableCaption() {}
 
-LayoutUnit LayoutTableCaption::containingBlockLogicalWidthForContent() const {
-  LayoutBlock* cb = containingBlock();
-  return cb->logicalWidth();
+LayoutUnit LayoutTableCaption::ContainingBlockLogicalWidthForContent() const {
+  LayoutBlock* cb = ContainingBlock();
+  return cb->LogicalWidth();
 }
 
-void LayoutTableCaption::insertedIntoTree() {
-  LayoutBlockFlow::insertedIntoTree();
+void LayoutTableCaption::InsertedIntoTree() {
+  LayoutBlockFlow::InsertedIntoTree();
 
-  table()->addCaption(this);
+  Table()->AddCaption(this);
 }
 
-void LayoutTableCaption::willBeRemovedFromTree() {
-  LayoutBlockFlow::willBeRemovedFromTree();
+void LayoutTableCaption::WillBeRemovedFromTree() {
+  LayoutBlockFlow::WillBeRemovedFromTree();
 
-  table()->removeCaption(this);
+  Table()->RemoveCaption(this);
 }
 
-LayoutTable* LayoutTableCaption::table() const {
-  return toLayoutTable(parent());
+LayoutTable* LayoutTableCaption::Table() const {
+  return ToLayoutTable(Parent());
 }
 
 }  // namespace blink

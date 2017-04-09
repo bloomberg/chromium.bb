@@ -40,30 +40,31 @@ class StyleSheetContents;
 
 class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
  public:
-  enum class MIMETypeCheck { Strict, Lax };
+  enum class MIMETypeCheck { kStrict, kLax };
 
-  static CSSStyleSheetResource* fetch(FetchRequest&, ResourceFetcher*);
-  static CSSStyleSheetResource* createForTest(const ResourceRequest&,
+  static CSSStyleSheetResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static CSSStyleSheetResource* CreateForTest(const ResourceRequest&,
                                               const String& charset);
 
   ~CSSStyleSheetResource() override;
   DECLARE_VIRTUAL_TRACE();
 
-  const String sheetText(MIMETypeCheck = MIMETypeCheck::Strict) const;
+  const String SheetText(MIMETypeCheck = MIMETypeCheck::kStrict) const;
 
-  void didAddClient(ResourceClient*) override;
+  void DidAddClient(ResourceClient*) override;
 
-  StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext*);
-  void saveParsedStyleSheet(StyleSheetContents*);
+  StyleSheetContents* RestoreParsedStyleSheet(const CSSParserContext*);
+  void SaveParsedStyleSheet(StyleSheetContents*);
 
-  void appendData(const char* data, size_t length) override;
+  void AppendData(const char* data, size_t length) override;
 
  private:
   class CSSStyleSheetResourceFactory : public ResourceFactory {
    public:
-    CSSStyleSheetResourceFactory() : ResourceFactory(Resource::CSSStyleSheet) {}
+    CSSStyleSheetResourceFactory()
+        : ResourceFactory(Resource::kCSSStyleSheet) {}
 
-    Resource* create(const ResourceRequest& request,
+    Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options,
                      const String& charset) const override {
       return new CSSStyleSheetResource(request, options, charset);
@@ -73,23 +74,23 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
                         const ResourceLoaderOptions&,
                         const String& charset);
 
-  bool canUseSheet(MIMETypeCheck) const;
-  void checkNotify() override;
+  bool CanUseSheet(MIMETypeCheck) const;
+  void CheckNotify() override;
 
-  void setParsedStyleSheetCache(StyleSheetContents*);
-  void setDecodedSheetText(const String&);
+  void SetParsedStyleSheetCache(StyleSheetContents*);
+  void SetDecodedSheetText(const String&);
 
-  void destroyDecodedDataIfPossible() override;
-  void destroyDecodedDataForFailedRevalidation() override;
-  void updateDecodedSize();
+  void DestroyDecodedDataIfPossible() override;
+  void DestroyDecodedDataForFailedRevalidation() override;
+  void UpdateDecodedSize();
 
   // Decoded sheet text cache is available iff loading this CSS resource is
   // successfully complete.
-  String m_decodedSheetText;
+  String decoded_sheet_text_;
 
-  Member<StyleSheetContents> m_parsedStyleSheetCache;
+  Member<StyleSheetContents> parsed_style_sheet_cache_;
 
-  bool m_didNotifyFirstData;
+  bool did_notify_first_data_;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);

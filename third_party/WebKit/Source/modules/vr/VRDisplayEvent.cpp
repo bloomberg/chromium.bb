@@ -27,46 +27,44 @@ String VRDisplayEventReasonToString(
 
 }  // namespace
 
-VRDisplayEvent* VRDisplayEvent::create(
+VRDisplayEvent* VRDisplayEvent::Create(
     const AtomicString& type,
-    bool canBubble,
+    bool can_bubble,
     bool cancelable,
     VRDisplay* display,
     device::mojom::blink::VRDisplayEventReason reason) {
-  return new VRDisplayEvent(type, canBubble, cancelable, display,
+  return new VRDisplayEvent(type, can_bubble, cancelable, display,
                             VRDisplayEventReasonToString(reason));
 }
 
 VRDisplayEvent::VRDisplayEvent() {}
 
 VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
-                               bool canBubble,
+                               bool can_bubble,
                                bool cancelable,
                                VRDisplay* display,
                                String reason)
-    : Event(type, canBubble, cancelable),
-      m_display(display),
-      m_reason(reason) {}
+    : Event(type, can_bubble, cancelable), display_(display), reason_(reason) {}
 
 VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
                                const VRDisplayEventInit& initializer)
     : Event(type, initializer) {
   if (initializer.hasDisplay())
-    m_display = initializer.display();
+    display_ = initializer.display();
 
   if (initializer.hasReason())
-    m_reason = initializer.reason();
+    reason_ = initializer.reason();
 }
 
 VRDisplayEvent::~VRDisplayEvent() {}
 
-const AtomicString& VRDisplayEvent::interfaceName() const {
+const AtomicString& VRDisplayEvent::InterfaceName() const {
   return EventNames::VRDisplayEvent;
 }
 
 DEFINE_TRACE(VRDisplayEvent) {
-  visitor->trace(m_display);
-  Event::trace(visitor);
+  visitor->Trace(display_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

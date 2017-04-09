@@ -25,30 +25,30 @@ class ResizeObserverController final
 
   ResizeObserverController();
 
-  void addObserver(ResizeObserver&);
+  void AddObserver(ResizeObserver&);
 
   // observation API
   // Returns depth of shallowest observed node, kDepthLimit if none.
-  size_t gatherObservations(size_t deeperThan);
+  size_t GatherObservations(size_t deeper_than);
   // Returns true if gatherObservations has skipped observations
   // because they were too shallow.
-  bool skippedObservations();
-  void deliverObservations();
-  void clearObservations();
-  void observerChanged() { m_observersChanged = true; }
+  bool SkippedObservations();
+  void DeliverObservations();
+  void ClearObservations();
+  void ObserverChanged() { observers_changed_ = true; }
 
   DECLARE_TRACE();
 
   // For testing only.
-  const HeapHashSet<WeakMember<ResizeObserver>>& observers() {
-    return m_observers;
+  const HeapHashSet<WeakMember<ResizeObserver>>& Observers() {
+    return observers_;
   }
 
  private:
   // Active observers
-  HeapHashSet<WeakMember<ResizeObserver>> m_observers;
+  HeapHashSet<WeakMember<ResizeObserver>> observers_;
   // True if any observers were changed since last notification.
-  bool m_observersChanged;
+  bool observers_changed_;
 };
 
 }  // namespace blink

@@ -38,274 +38,275 @@
 
 namespace blink {
 
-bool BasicShape::canBlend(const BasicShape* other) const {
+bool BasicShape::CanBlend(const BasicShape* other) const {
   // FIXME: Support animations between different shapes in the future.
-  if (!other || !isSameType(*other))
+  if (!other || !IsSameType(*other))
     return false;
 
   // Just polygons with same number of vertices can be animated.
-  if (type() == BasicShape::BasicShapePolygonType &&
-      (toBasicShapePolygon(this)->values().size() !=
-           toBasicShapePolygon(other)->values().size() ||
-       toBasicShapePolygon(this)->getWindRule() !=
-           toBasicShapePolygon(other)->getWindRule()))
+  if (GetType() == BasicShape::kBasicShapePolygonType &&
+      (ToBasicShapePolygon(this)->Values().size() !=
+           ToBasicShapePolygon(other)->Values().size() ||
+       ToBasicShapePolygon(this)->GetWindRule() !=
+           ToBasicShapePolygon(other)->GetWindRule()))
     return false;
 
   // Circles with keywords for radii or center coordinates cannot be animated.
-  if (type() == BasicShape::BasicShapeCircleType) {
-    if (!toBasicShapeCircle(this)->radius().canBlend(
-            toBasicShapeCircle(other)->radius()))
+  if (GetType() == BasicShape::kBasicShapeCircleType) {
+    if (!ToBasicShapeCircle(this)->Radius().CanBlend(
+            ToBasicShapeCircle(other)->Radius()))
       return false;
   }
 
   // Ellipses with keywords for radii or center coordinates cannot be animated.
-  if (type() != BasicShape::BasicShapeEllipseType)
+  if (GetType() != BasicShape::kBasicShapeEllipseType)
     return true;
 
-  return (toBasicShapeEllipse(this)->radiusX().canBlend(
-              toBasicShapeEllipse(other)->radiusX()) &&
-          toBasicShapeEllipse(this)->radiusY().canBlend(
-              toBasicShapeEllipse(other)->radiusY()));
+  return (ToBasicShapeEllipse(this)->RadiusX().CanBlend(
+              ToBasicShapeEllipse(other)->RadiusX()) &&
+          ToBasicShapeEllipse(this)->RadiusY().CanBlend(
+              ToBasicShapeEllipse(other)->RadiusY()));
 }
 
 bool BasicShapeCircle::operator==(const BasicShape& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
-  const BasicShapeCircle& other = toBasicShapeCircle(o);
-  return m_centerX == other.m_centerX && m_centerY == other.m_centerY &&
-         m_radius == other.m_radius;
+  const BasicShapeCircle& other = ToBasicShapeCircle(o);
+  return center_x_ == other.center_x_ && center_y_ == other.center_y_ &&
+         radius_ == other.radius_;
 }
 
-float BasicShapeCircle::floatValueForRadiusInBox(FloatSize boxSize) const {
-  if (m_radius.type() == BasicShapeRadius::Value)
-    return floatValueForLength(
-        m_radius.value(), hypotf(boxSize.width(), boxSize.height()) / sqrtf(2));
+float BasicShapeCircle::FloatValueForRadiusInBox(FloatSize box_size) const {
+  if (radius_.GetType() == BasicShapeRadius::kValue)
+    return FloatValueForLength(
+        radius_.Value(),
+        hypotf(box_size.Width(), box_size.Height()) / sqrtf(2));
 
   FloatPoint center =
-      floatPointForCenterCoordinate(m_centerX, m_centerY, boxSize);
+      FloatPointForCenterCoordinate(center_x_, center_y_, box_size);
 
-  float widthDelta = std::abs(boxSize.width() - center.x());
-  float heightDelta = std::abs(boxSize.height() - center.y());
-  if (m_radius.type() == BasicShapeRadius::ClosestSide)
-    return std::min(std::min(std::abs(center.x()), widthDelta),
-                    std::min(std::abs(center.y()), heightDelta));
+  float width_delta = std::abs(box_size.Width() - center.X());
+  float height_delta = std::abs(box_size.Height() - center.Y());
+  if (radius_.GetType() == BasicShapeRadius::kClosestSide)
+    return std::min(std::min(std::abs(center.X()), width_delta),
+                    std::min(std::abs(center.Y()), height_delta));
 
   // If radius.type() == BasicShapeRadius::FarthestSide.
-  return std::max(std::max(center.x(), widthDelta),
-                  std::max(center.y(), heightDelta));
+  return std::max(std::max(center.X(), width_delta),
+                  std::max(center.Y(), height_delta));
 }
 
-void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox) {
-  DCHECK(path.isEmpty());
+void BasicShapeCircle::GetPath(Path& path, const FloatRect& bounding_box) {
+  DCHECK(path.IsEmpty());
   FloatPoint center =
-      floatPointForCenterCoordinate(m_centerX, m_centerY, boundingBox.size());
-  float radius = floatValueForRadiusInBox(boundingBox.size());
-  path.addEllipse(FloatRect(center.x() - radius + boundingBox.x(),
-                            center.y() - radius + boundingBox.y(), radius * 2,
+      FloatPointForCenterCoordinate(center_x_, center_y_, bounding_box.size());
+  float radius = FloatValueForRadiusInBox(bounding_box.size());
+  path.AddEllipse(FloatRect(center.X() - radius + bounding_box.X(),
+                            center.Y() - radius + bounding_box.Y(), radius * 2,
                             radius * 2));
 }
 
-PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other,
+PassRefPtr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
                                                double progress) const {
-  DCHECK_EQ(type(), other->type());
-  const BasicShapeCircle* o = toBasicShapeCircle(other);
-  RefPtr<BasicShapeCircle> result = BasicShapeCircle::create();
+  DCHECK_EQ(GetType(), other->GetType());
+  const BasicShapeCircle* o = ToBasicShapeCircle(other);
+  RefPtr<BasicShapeCircle> result = BasicShapeCircle::Create();
 
-  result->setCenterX(m_centerX.blend(o->centerX(), progress));
-  result->setCenterY(m_centerY.blend(o->centerY(), progress));
-  result->setRadius(m_radius.blend(o->radius(), progress));
-  return result.release();
+  result->SetCenterX(center_x_.Blend(o->CenterX(), progress));
+  result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
+  result->SetRadius(radius_.Blend(o->Radius(), progress));
+  return result.Release();
 }
 
 bool BasicShapeEllipse::operator==(const BasicShape& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
-  const BasicShapeEllipse& other = toBasicShapeEllipse(o);
-  return m_centerX == other.m_centerX && m_centerY == other.m_centerY &&
-         m_radiusX == other.m_radiusX && m_radiusY == other.m_radiusY;
+  const BasicShapeEllipse& other = ToBasicShapeEllipse(o);
+  return center_x_ == other.center_x_ && center_y_ == other.center_y_ &&
+         radius_x_ == other.radius_x_ && radius_y_ == other.radius_y_;
 }
 
-float BasicShapeEllipse::floatValueForRadiusInBox(
+float BasicShapeEllipse::FloatValueForRadiusInBox(
     const BasicShapeRadius& radius,
     float center,
-    float boxWidthOrHeight) const {
-  if (radius.type() == BasicShapeRadius::Value)
-    return floatValueForLength(radius.value(), boxWidthOrHeight);
+    float box_width_or_height) const {
+  if (radius.GetType() == BasicShapeRadius::kValue)
+    return FloatValueForLength(radius.Value(), box_width_or_height);
 
-  float widthOrHeightDelta = std::abs(boxWidthOrHeight - center);
-  if (radius.type() == BasicShapeRadius::ClosestSide)
-    return std::min(std::abs(center), widthOrHeightDelta);
+  float width_or_height_delta = std::abs(box_width_or_height - center);
+  if (radius.GetType() == BasicShapeRadius::kClosestSide)
+    return std::min(std::abs(center), width_or_height_delta);
 
-  DCHECK_EQ(radius.type(), BasicShapeRadius::FarthestSide);
-  return std::max(center, widthOrHeightDelta);
+  DCHECK_EQ(radius.GetType(), BasicShapeRadius::kFarthestSide);
+  return std::max(center, width_or_height_delta);
 }
 
-void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox) {
-  DCHECK(path.isEmpty());
+void BasicShapeEllipse::GetPath(Path& path, const FloatRect& bounding_box) {
+  DCHECK(path.IsEmpty());
   FloatPoint center =
-      floatPointForCenterCoordinate(m_centerX, m_centerY, boundingBox.size());
-  float radiusX =
-      floatValueForRadiusInBox(m_radiusX, center.x(), boundingBox.width());
-  float radiusY =
-      floatValueForRadiusInBox(m_radiusY, center.y(), boundingBox.height());
-  path.addEllipse(FloatRect(center.x() - radiusX + boundingBox.x(),
-                            center.y() - radiusY + boundingBox.y(), radiusX * 2,
-                            radiusY * 2));
+      FloatPointForCenterCoordinate(center_x_, center_y_, bounding_box.size());
+  float radius_x =
+      FloatValueForRadiusInBox(radius_x_, center.X(), bounding_box.Width());
+  float radius_y =
+      FloatValueForRadiusInBox(radius_y_, center.Y(), bounding_box.Height());
+  path.AddEllipse(FloatRect(center.X() - radius_x + bounding_box.X(),
+                            center.Y() - radius_y + bounding_box.Y(),
+                            radius_x * 2, radius_y * 2));
 }
 
-PassRefPtr<BasicShape> BasicShapeEllipse::blend(const BasicShape* other,
+PassRefPtr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
                                                 double progress) const {
-  DCHECK_EQ(type(), other->type());
-  const BasicShapeEllipse* o = toBasicShapeEllipse(other);
-  RefPtr<BasicShapeEllipse> result = BasicShapeEllipse::create();
+  DCHECK_EQ(GetType(), other->GetType());
+  const BasicShapeEllipse* o = ToBasicShapeEllipse(other);
+  RefPtr<BasicShapeEllipse> result = BasicShapeEllipse::Create();
 
-  if (m_radiusX.type() != BasicShapeRadius::Value ||
-      o->radiusX().type() != BasicShapeRadius::Value ||
-      m_radiusY.type() != BasicShapeRadius::Value ||
-      o->radiusY().type() != BasicShapeRadius::Value) {
-    result->setCenterX(o->centerX());
-    result->setCenterY(o->centerY());
-    result->setRadiusX(o->radiusX());
-    result->setRadiusY(o->radiusY());
+  if (radius_x_.GetType() != BasicShapeRadius::kValue ||
+      o->RadiusX().GetType() != BasicShapeRadius::kValue ||
+      radius_y_.GetType() != BasicShapeRadius::kValue ||
+      o->RadiusY().GetType() != BasicShapeRadius::kValue) {
+    result->SetCenterX(o->CenterX());
+    result->SetCenterY(o->CenterY());
+    result->SetRadiusX(o->RadiusX());
+    result->SetRadiusY(o->RadiusY());
     return result;
   }
 
-  result->setCenterX(m_centerX.blend(o->centerX(), progress));
-  result->setCenterY(m_centerY.blend(o->centerY(), progress));
-  result->setRadiusX(m_radiusX.blend(o->radiusX(), progress));
-  result->setRadiusY(m_radiusY.blend(o->radiusY(), progress));
-  return result.release();
+  result->SetCenterX(center_x_.Blend(o->CenterX(), progress));
+  result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
+  result->SetRadiusX(radius_x_.Blend(o->RadiusX(), progress));
+  result->SetRadiusY(radius_y_.Blend(o->RadiusY(), progress));
+  return result.Release();
 }
 
-void BasicShapePolygon::path(Path& path, const FloatRect& boundingBox) {
-  DCHECK(path.isEmpty());
-  DCHECK(!(m_values.size() % 2));
-  size_t length = m_values.size();
+void BasicShapePolygon::GetPath(Path& path, const FloatRect& bounding_box) {
+  DCHECK(path.IsEmpty());
+  DCHECK(!(values_.size() % 2));
+  size_t length = values_.size();
 
   if (!length)
     return;
 
-  path.moveTo(
-      FloatPoint(floatValueForLength(m_values.at(0), boundingBox.width()) +
-                     boundingBox.x(),
-                 floatValueForLength(m_values.at(1), boundingBox.height()) +
-                     boundingBox.y()));
+  path.MoveTo(
+      FloatPoint(FloatValueForLength(values_.at(0), bounding_box.Width()) +
+                     bounding_box.X(),
+                 FloatValueForLength(values_.at(1), bounding_box.Height()) +
+                     bounding_box.Y()));
   for (size_t i = 2; i < length; i = i + 2) {
-    path.addLineTo(FloatPoint(
-        floatValueForLength(m_values.at(i), boundingBox.width()) +
-            boundingBox.x(),
-        floatValueForLength(m_values.at(i + 1), boundingBox.height()) +
-            boundingBox.y()));
+    path.AddLineTo(FloatPoint(
+        FloatValueForLength(values_.at(i), bounding_box.Width()) +
+            bounding_box.X(),
+        FloatValueForLength(values_.at(i + 1), bounding_box.Height()) +
+            bounding_box.Y()));
   }
-  path.closeSubpath();
+  path.CloseSubpath();
 }
 
-PassRefPtr<BasicShape> BasicShapePolygon::blend(const BasicShape* other,
+PassRefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
                                                 double progress) const {
   DCHECK(other);
-  DCHECK(isSameType(*other));
+  DCHECK(IsSameType(*other));
 
-  const BasicShapePolygon* o = toBasicShapePolygon(other);
-  DCHECK_EQ(m_values.size(), o->values().size());
-  DCHECK(!(m_values.size() % 2));
+  const BasicShapePolygon* o = ToBasicShapePolygon(other);
+  DCHECK_EQ(values_.size(), o->Values().size());
+  DCHECK(!(values_.size() % 2));
 
-  size_t length = m_values.size();
-  RefPtr<BasicShapePolygon> result = BasicShapePolygon::create();
+  size_t length = values_.size();
+  RefPtr<BasicShapePolygon> result = BasicShapePolygon::Create();
   if (!length)
-    return result.release();
+    return result.Release();
 
-  result->setWindRule(o->getWindRule());
+  result->SetWindRule(o->GetWindRule());
 
   for (size_t i = 0; i < length; i = i + 2) {
-    result->appendPoint(
-        m_values.at(i).blend(o->values().at(i), progress, ValueRangeAll),
-        m_values.at(i + 1).blend(o->values().at(i + 1), progress,
-                                 ValueRangeAll));
+    result->AppendPoint(
+        values_.at(i).Blend(o->Values().at(i), progress, kValueRangeAll),
+        values_.at(i + 1).Blend(o->Values().at(i + 1), progress,
+                                kValueRangeAll));
   }
 
-  return result.release();
+  return result.Release();
 }
 
 bool BasicShapePolygon::operator==(const BasicShape& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
-  const BasicShapePolygon& other = toBasicShapePolygon(o);
-  return m_windRule == other.m_windRule && m_values == other.m_values;
+  const BasicShapePolygon& other = ToBasicShapePolygon(o);
+  return wind_rule_ == other.wind_rule_ && values_ == other.values_;
 }
 
-static FloatSize floatSizeForLengthSize(const LengthSize& lengthSize,
-                                        const FloatRect& boundingBox) {
+static FloatSize FloatSizeForLengthSize(const LengthSize& length_size,
+                                        const FloatRect& bounding_box) {
   return FloatSize(
-      floatValueForLength(lengthSize.width(), boundingBox.width()),
-      floatValueForLength(lengthSize.height(), boundingBox.height()));
+      FloatValueForLength(length_size.Width(), bounding_box.Width()),
+      FloatValueForLength(length_size.Height(), bounding_box.Height()));
 }
 
-void BasicShapeInset::path(Path& path, const FloatRect& boundingBox) {
-  DCHECK(path.isEmpty());
-  float left = floatValueForLength(m_left, boundingBox.width());
-  float top = floatValueForLength(m_top, boundingBox.height());
+void BasicShapeInset::GetPath(Path& path, const FloatRect& bounding_box) {
+  DCHECK(path.IsEmpty());
+  float left = FloatValueForLength(left_, bounding_box.Width());
+  float top = FloatValueForLength(top_, bounding_box.Height());
   FloatRect rect(
-      left + boundingBox.x(), top + boundingBox.y(),
-      std::max<float>(boundingBox.width() - left -
-                          floatValueForLength(m_right, boundingBox.width()),
+      left + bounding_box.X(), top + bounding_box.Y(),
+      std::max<float>(bounding_box.Width() - left -
+                          FloatValueForLength(right_, bounding_box.Width()),
                       0),
-      std::max<float>(boundingBox.height() - top -
-                          floatValueForLength(m_bottom, boundingBox.height()),
+      std::max<float>(bounding_box.Height() - top -
+                          FloatValueForLength(bottom_, bounding_box.Height()),
                       0));
   auto radii = FloatRoundedRect::Radii(
-      floatSizeForLengthSize(m_topLeftRadius, boundingBox),
-      floatSizeForLengthSize(m_topRightRadius, boundingBox),
-      floatSizeForLengthSize(m_bottomLeftRadius, boundingBox),
-      floatSizeForLengthSize(m_bottomRightRadius, boundingBox));
+      FloatSizeForLengthSize(top_left_radius_, bounding_box),
+      FloatSizeForLengthSize(top_right_radius_, bounding_box),
+      FloatSizeForLengthSize(bottom_left_radius_, bounding_box),
+      FloatSizeForLengthSize(bottom_right_radius_, bounding_box));
 
-  FloatRoundedRect finalRect(rect, radii);
-  finalRect.constrainRadii();
-  path.addRoundedRect(finalRect);
+  FloatRoundedRect final_rect(rect, radii);
+  final_rect.ConstrainRadii();
+  path.AddRoundedRect(final_rect);
 }
 
-static inline LengthSize blendLengthSize(const LengthSize& to,
+static inline LengthSize BlendLengthSize(const LengthSize& to,
                                          const LengthSize& from,
                                          double progress) {
   return LengthSize(
-      to.width().blend(from.width(), progress, ValueRangeNonNegative),
-      to.height().blend(from.height(), progress, ValueRangeNonNegative));
+      to.Width().Blend(from.Width(), progress, kValueRangeNonNegative),
+      to.Height().Blend(from.Height(), progress, kValueRangeNonNegative));
 }
 
-PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other,
+PassRefPtr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
                                               double progress) const {
   DCHECK(other);
-  DCHECK(isSameType(*other));
+  DCHECK(IsSameType(*other));
 
-  const BasicShapeInset& otherInset = toBasicShapeInset(*other);
-  RefPtr<BasicShapeInset> result = BasicShapeInset::create();
-  result->setTop(m_top.blend(otherInset.top(), progress, ValueRangeAll));
-  result->setRight(m_right.blend(otherInset.right(), progress, ValueRangeAll));
-  result->setBottom(
-      m_bottom.blend(otherInset.bottom(), progress, ValueRangeAll));
-  result->setLeft(m_left.blend(otherInset.left(), progress, ValueRangeAll));
+  const BasicShapeInset& other_inset = ToBasicShapeInset(*other);
+  RefPtr<BasicShapeInset> result = BasicShapeInset::Create();
+  result->SetTop(top_.Blend(other_inset.Top(), progress, kValueRangeAll));
+  result->SetRight(right_.Blend(other_inset.Right(), progress, kValueRangeAll));
+  result->SetBottom(
+      bottom_.Blend(other_inset.Bottom(), progress, kValueRangeAll));
+  result->SetLeft(left_.Blend(other_inset.Left(), progress, kValueRangeAll));
 
-  result->setTopLeftRadius(
-      blendLengthSize(m_topLeftRadius, otherInset.topLeftRadius(), progress));
-  result->setTopRightRadius(
-      blendLengthSize(m_topRightRadius, otherInset.topRightRadius(), progress));
-  result->setBottomRightRadius(blendLengthSize(
-      m_bottomRightRadius, otherInset.bottomRightRadius(), progress));
-  result->setBottomLeftRadius(blendLengthSize(
-      m_bottomLeftRadius, otherInset.bottomLeftRadius(), progress));
+  result->SetTopLeftRadius(
+      BlendLengthSize(top_left_radius_, other_inset.TopLeftRadius(), progress));
+  result->SetTopRightRadius(BlendLengthSize(
+      top_right_radius_, other_inset.TopRightRadius(), progress));
+  result->SetBottomRightRadius(BlendLengthSize(
+      bottom_right_radius_, other_inset.BottomRightRadius(), progress));
+  result->SetBottomLeftRadius(BlendLengthSize(
+      bottom_left_radius_, other_inset.BottomLeftRadius(), progress));
 
-  return result.release();
+  return result.Release();
 }
 
 bool BasicShapeInset::operator==(const BasicShape& o) const {
-  if (!isSameType(o))
+  if (!IsSameType(o))
     return false;
-  const BasicShapeInset& other = toBasicShapeInset(o);
-  return m_right == other.m_right && m_top == other.m_top &&
-         m_bottom == other.m_bottom && m_left == other.m_left &&
-         m_topLeftRadius == other.m_topLeftRadius &&
-         m_topRightRadius == other.m_topRightRadius &&
-         m_bottomRightRadius == other.m_bottomRightRadius &&
-         m_bottomLeftRadius == other.m_bottomLeftRadius;
+  const BasicShapeInset& other = ToBasicShapeInset(o);
+  return right_ == other.right_ && top_ == other.top_ &&
+         bottom_ == other.bottom_ && left_ == other.left_ &&
+         top_left_radius_ == other.top_left_radius_ &&
+         top_right_radius_ == other.top_right_radius_ &&
+         bottom_right_radius_ == other.bottom_right_radius_ &&
+         bottom_left_radius_ == other.bottom_left_radius_;
 }
 
 }  // namespace blink

@@ -166,7 +166,7 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
 
   // StateChanged (state == Installed).
   VerifyStateChangedMessage(handle->handle_id(),
-                            blink::WebServiceWorkerStateInstalled, message);
+                            blink::kWebServiceWorkerStateInstalled, message);
 }
 
 }  // namespace content

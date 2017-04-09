@@ -17,59 +17,59 @@ class LayoutUnit;
 
 class LayoutBoxItem : public LayoutBoxModel {
  public:
-  explicit LayoutBoxItem(LayoutBox* layoutBox) : LayoutBoxModel(layoutBox) {}
+  explicit LayoutBoxItem(LayoutBox* layout_box) : LayoutBoxModel(layout_box) {}
 
   explicit LayoutBoxItem(const LayoutItem& item) : LayoutBoxModel(item) {
-    SECURITY_DCHECK(!item || item.isBox());
+    SECURITY_DCHECK(!item || item.IsBox());
   }
 
   explicit LayoutBoxItem(std::nullptr_t) : LayoutBoxModel(nullptr) {}
 
   LayoutBoxItem() {}
 
-  LayoutBoxItem enclosingBox() const {
-    return LayoutBoxItem(toBox()->enclosingBox());
+  LayoutBoxItem EnclosingBox() const {
+    return LayoutBoxItem(ToBox()->EnclosingBox());
   }
 
-  ScrollResult scroll(ScrollGranularity granularity, const FloatSize& delta) {
-    return toBox()->scroll(granularity, delta);
+  ScrollResult Scroll(ScrollGranularity granularity, const FloatSize& delta) {
+    return ToBox()->Scroll(granularity, delta);
   }
 
-  LayoutSize size() const { return toBox()->size(); }
+  LayoutSize size() const { return ToBox()->size(); }
 
-  LayoutPoint location() const { return toBox()->location(); }
+  LayoutPoint Location() const { return ToBox()->Location(); }
 
-  LayoutUnit logicalWidth() const { return toBox()->logicalWidth(); }
+  LayoutUnit LogicalWidth() const { return ToBox()->LogicalWidth(); }
 
-  LayoutUnit logicalHeight() const { return toBox()->logicalHeight(); }
+  LayoutUnit LogicalHeight() const { return ToBox()->LogicalHeight(); }
 
-  LayoutUnit minPreferredLogicalWidth() const {
-    return toBox()->minPreferredLogicalWidth();
+  LayoutUnit MinPreferredLogicalWidth() const {
+    return ToBox()->MinPreferredLogicalWidth();
   }
 
-  LayoutRect overflowClipRect(const LayoutPoint& location,
+  LayoutRect OverflowClipRect(const LayoutPoint& location,
                               OverlayScrollbarClipBehavior behavior =
-                                  IgnorePlatformOverlayScrollbarSize) const {
-    return toBox()->overflowClipRect(location, behavior);
+                                  kIgnorePlatformOverlayScrollbarSize) const {
+    return ToBox()->OverflowClipRect(location, behavior);
   }
 
-  LayoutSize contentBoxOffset() const { return toBox()->contentBoxOffset(); }
+  LayoutSize ContentBoxOffset() const { return ToBox()->ContentBoxOffset(); }
 
-  void mapLocalToAncestor(
+  void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,
       TransformState& state,
-      MapCoordinatesFlags flags = ApplyContainerFlip) const {
-    toBox()->mapLocalToAncestor(ancestor, state, flags);
+      MapCoordinatesFlags flags = kApplyContainerFlip) const {
+    ToBox()->MapLocalToAncestor(ancestor, state, flags);
   }
 
-  FloatQuad absoluteContentQuad(MapCoordinatesFlags flags = 0) const {
-    return toBox()->absoluteContentQuad(flags);
+  FloatQuad AbsoluteContentQuad(MapCoordinatesFlags flags = 0) const {
+    return ToBox()->AbsoluteContentQuad(flags);
   }
 
  private:
-  LayoutBox* toBox() { return toLayoutBox(layoutObject()); }
+  LayoutBox* ToBox() { return ToLayoutBox(GetLayoutObject()); }
 
-  const LayoutBox* toBox() const { return toLayoutBox(layoutObject()); }
+  const LayoutBox* ToBox() const { return ToLayoutBox(GetLayoutObject()); }
 };
 
 }  // namespace blink

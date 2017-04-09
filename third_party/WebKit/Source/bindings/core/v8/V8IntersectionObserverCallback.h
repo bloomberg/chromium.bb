@@ -22,16 +22,16 @@ class V8IntersectionObserverCallback final
 
   DECLARE_VIRTUAL_TRACE();
 
-  void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
+  void HandleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
                    IntersectionObserver&) override;
 
-  ExecutionContext* getExecutionContext() const override {
-    return m_scriptState->getExecutionContext();
+  ExecutionContext* GetExecutionContext() const override {
+    return script_state_->GetExecutionContext();
   }
 
  private:
-  ScopedPersistent<v8::Function> m_callback;
-  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Function> callback_;
+  RefPtr<ScriptState> script_state_;
 };
 
 }  // namespace blink

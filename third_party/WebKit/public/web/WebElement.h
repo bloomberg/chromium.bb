@@ -46,40 +46,40 @@ class WebElement : public WebNode {
   WebElement(const WebElement& e) : WebNode(e) {}
 
   WebElement& operator=(const WebElement& e) {
-    WebNode::assign(e);
+    WebNode::Assign(e);
     return *this;
   }
-  void assign(const WebElement& e) { WebNode::assign(e); }
+  void Assign(const WebElement& e) { WebNode::Assign(e); }
 
-  BLINK_EXPORT bool isFormControlElement() const;
+  BLINK_EXPORT bool IsFormControlElement() const;
   // If the element is editable, for example by being contenteditable or being
   // an <input> that isn't readonly or disabled.
-  BLINK_EXPORT bool isEditable() const;
+  BLINK_EXPORT bool IsEditable() const;
   // Returns the qualified name, which may contain a prefix and a colon.
-  BLINK_EXPORT WebString tagName() const;
+  BLINK_EXPORT WebString TagName() const;
   // Check if this element has the specified local tag name, and the HTML
   // namespace. Tag name matching is case-insensitive.
-  BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
-  BLINK_EXPORT bool hasAttribute(const WebString&) const;
-  BLINK_EXPORT WebString getAttribute(const WebString&) const;
-  BLINK_EXPORT void setAttribute(const WebString& name, const WebString& value);
-  BLINK_EXPORT WebString textContent() const;
-  BLINK_EXPORT WebString innerHTML() const;
-  BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
-  BLINK_EXPORT WebString attributeValue(unsigned index) const;
-  BLINK_EXPORT unsigned attributeCount() const;
+  BLINK_EXPORT bool HasHTMLTagName(const WebString&) const;
+  BLINK_EXPORT bool HasAttribute(const WebString&) const;
+  BLINK_EXPORT WebString GetAttribute(const WebString&) const;
+  BLINK_EXPORT void SetAttribute(const WebString& name, const WebString& value);
+  BLINK_EXPORT WebString TextContent() const;
+  BLINK_EXPORT WebString InnerHTML() const;
+  BLINK_EXPORT WebString AttributeLocalName(unsigned index) const;
+  BLINK_EXPORT WebString AttributeValue(unsigned index) const;
+  BLINK_EXPORT unsigned AttributeCount() const;
 
   // If this element takes up space in the layout of the page.
-  BLINK_EXPORT bool hasNonEmptyLayoutSize() const;
+  BLINK_EXPORT bool HasNonEmptyLayoutSize() const;
 
   // Returns the bounds of the element in Visual Viewport. The bounds
   // have been adjusted to include any transformations, including page scale.
   // This function will update the layout if required.
-  BLINK_EXPORT WebRect boundsInViewport() const;
+  BLINK_EXPORT WebRect BoundsInViewport() const;
 
   // Returns the image contents of this element or a null WebImage
   // if there isn't any.
-  BLINK_EXPORT WebImage imageContents();
+  BLINK_EXPORT WebImage ImageContents();
 
 #if BLINK_IMPLEMENTATION
   BLINK_EXPORT WebElement(Element*);

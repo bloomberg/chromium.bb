@@ -14,10 +14,10 @@ namespace content {
 std::string URLToMarkup(const blink::WebURL& url,
                         const blink::WebString& title) {
   std::string markup("<a href=\"");
-  markup.append(url.string().utf8());
+  markup.append(url.GetString().Utf8());
   markup.append("\">");
   // TODO(darin): HTML escape this
-  markup.append(net::EscapeForHTML(title.utf8()));
+  markup.append(net::EscapeForHTML(title.Utf8()));
   markup.append("</a>");
   return markup;
 }
@@ -25,11 +25,11 @@ std::string URLToMarkup(const blink::WebURL& url,
 std::string URLToImageMarkup(const blink::WebURL& url,
                              const blink::WebString& title) {
   std::string markup("<img src=\"");
-  markup.append(net::EscapeForHTML(url.string().utf8()));
+  markup.append(net::EscapeForHTML(url.GetString().Utf8()));
   markup.append("\"");
-  if (!title.isEmpty()) {
+  if (!title.IsEmpty()) {
     markup.append(" alt=\"");
-    markup.append(net::EscapeForHTML(title.utf8()));
+    markup.append(net::EscapeForHTML(title.Utf8()));
     markup.append("\"");
   }
   markup.append("/>");

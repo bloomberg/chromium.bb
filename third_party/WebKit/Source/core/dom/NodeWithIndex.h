@@ -37,24 +37,24 @@ class NodeWithIndex {
   STACK_ALLOCATED();
 
  public:
-  explicit NodeWithIndex(Node& node) : m_node(node), m_index(-1) {}
+  explicit NodeWithIndex(Node& node) : node_(node), index_(-1) {}
 
-  Node& node() const { return *m_node; }
+  Node& GetNode() const { return *node_; }
 
   // TODO(tkent): Should be unsigned.
-  int index() const {
-    if (!hasIndex())
-      m_index = node().nodeIndex();
-    DCHECK(hasIndex());
-    DCHECK_EQ(m_index, static_cast<int>(node().nodeIndex()));
-    return m_index;
+  int Index() const {
+    if (!HasIndex())
+      index_ = GetNode().NodeIndex();
+    DCHECK(HasIndex());
+    DCHECK_EQ(index_, static_cast<int>(GetNode().NodeIndex()));
+    return index_;
   }
 
  private:
-  bool hasIndex() const { return m_index >= 0; }
+  bool HasIndex() const { return index_ >= 0; }
 
-  Member<Node> m_node;
-  mutable int m_index;
+  Member<Node> node_;
+  mutable int index_;
 };
 
 }  // namespace blink

@@ -29,7 +29,7 @@
 
 namespace WTF {
 
-static const char base64EncMap[64] = {
+static const char kBase64EncMap[64] = {
     0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B,
     0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56,
     0x57, 0x58, 0x59, 0x5A, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
@@ -37,7 +37,7 @@ static const char base64EncMap[64] = {
     0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x30, 0x31, 0x32,
     0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x2B, 0x2F};
 
-static const char base64DecMap[128] = {
+static const char kBase64DecMap[128] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -50,71 +50,71 @@ static const char base64DecMap[128] = {
     0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30,
     0x31, 0x32, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-String base64Encode(const char* data,
+String Base64Encode(const char* data,
                     unsigned length,
                     Base64EncodePolicy policy) {
   Vector<char> result;
-  base64Encode(data, length, result, policy);
-  return String(result.data(), result.size());
+  Base64Encode(data, length, result, policy);
+  return String(result.Data(), result.size());
 }
 
-void base64Encode(const char* data,
+void Base64Encode(const char* data,
                   unsigned len,
                   Vector<char>& out,
                   Base64EncodePolicy policy) {
-  out.clear();
+  out.Clear();
   if (!len)
     return;
 
   // If the input string is pathologically large, just return nothing.
   // Note: Keep this in sync with the "outLength" computation below.
   // Rather than being perfectly precise, this is a bit conservative.
-  const unsigned maxInputBufferSize = UINT_MAX / 77 * 76 / 4 * 3 - 2;
-  if (len > maxInputBufferSize)
+  const unsigned kMaxInputBufferSize = UINT_MAX / 77 * 76 / 4 * 3 - 2;
+  if (len > kMaxInputBufferSize)
     return;
 
   unsigned sidx = 0;
   unsigned didx = 0;
 
-  unsigned outLength = ((len + 2) / 3) * 4;
+  unsigned out_length = ((len + 2) / 3) * 4;
 
   // Deal with the 76 character per line limit specified in RFC 2045.
-  bool insertLFs = (policy == Base64InsertLFs && outLength > 76);
-  if (insertLFs)
-    outLength += ((outLength - 1) / 76);
+  bool insert_l_fs = (policy == kBase64InsertLFs && out_length > 76);
+  if (insert_l_fs)
+    out_length += ((out_length - 1) / 76);
 
   int count = 0;
-  out.grow(outLength);
+  out.Grow(out_length);
 
   // 3-byte to 4-byte conversion + 0-63 to ascii printable conversion
   if (len > 1) {
     while (sidx < len - 2) {
-      if (insertLFs) {
+      if (insert_l_fs) {
         if (count && !(count % 76))
           out[didx++] = '\n';
         count += 4;
       }
-      out[didx++] = base64EncMap[(data[sidx] >> 2) & 077];
-      out[didx++] = base64EncMap[((data[sidx + 1] >> 4) & 017) |
-                                 ((data[sidx] << 4) & 077)];
-      out[didx++] = base64EncMap[((data[sidx + 2] >> 6) & 003) |
-                                 ((data[sidx + 1] << 2) & 077)];
-      out[didx++] = base64EncMap[data[sidx + 2] & 077];
+      out[didx++] = kBase64EncMap[(data[sidx] >> 2) & 077];
+      out[didx++] = kBase64EncMap[((data[sidx + 1] >> 4) & 017) |
+                                  ((data[sidx] << 4) & 077)];
+      out[didx++] = kBase64EncMap[((data[sidx + 2] >> 6) & 003) |
+                                  ((data[sidx + 1] << 2) & 077)];
+      out[didx++] = kBase64EncMap[data[sidx + 2] & 077];
       sidx += 3;
     }
   }
 
   if (sidx < len) {
-    if (insertLFs && (count > 0) && !(count % 76))
+    if (insert_l_fs && (count > 0) && !(count % 76))
       out[didx++] = '\n';
 
-    out[didx++] = base64EncMap[(data[sidx] >> 2) & 077];
+    out[didx++] = kBase64EncMap[(data[sidx] >> 2) & 077];
     if (sidx < len - 1) {
-      out[didx++] = base64EncMap[((data[sidx + 1] >> 4) & 017) |
-                                 ((data[sidx] << 4) & 077)];
-      out[didx++] = base64EncMap[(data[sidx + 1] << 2) & 077];
+      out[didx++] = kBase64EncMap[((data[sidx + 1] >> 4) & 017) |
+                                  ((data[sidx] << 4) & 077)];
+      out[didx++] = kBase64EncMap[(data[sidx + 1] << 2) & 077];
     } else {
-      out[didx++] = base64EncMap[(data[sidx] << 4) & 077];
+      out[didx++] = kBase64EncMap[(data[sidx] << 4) & 077];
     }
   }
 
@@ -125,86 +125,87 @@ void base64Encode(const char* data,
   }
 }
 
-bool base64Decode(const Vector<char>& in,
+bool Base64Decode(const Vector<char>& in,
                   Vector<char>& out,
-                  CharacterMatchFunctionPtr shouldIgnoreCharacter,
+                  CharacterMatchFunctionPtr should_ignore_character,
                   Base64DecodePolicy policy) {
-  out.clear();
+  out.Clear();
 
   // If the input string is pathologically large, just return nothing.
   if (in.size() > UINT_MAX)
     return false;
 
-  return base64Decode(in.data(), in.size(), out, shouldIgnoreCharacter, policy);
+  return Base64Decode(in.Data(), in.size(), out, should_ignore_character,
+                      policy);
 }
 
 template <typename T>
-static inline bool base64DecodeInternal(
+static inline bool Base64DecodeInternal(
     const T* data,
     unsigned length,
     Vector<char>& out,
-    CharacterMatchFunctionPtr shouldIgnoreCharacter,
+    CharacterMatchFunctionPtr should_ignore_character,
     Base64DecodePolicy policy) {
-  out.clear();
+  out.Clear();
   if (!length)
     return true;
 
-  out.grow(length);
+  out.Grow(length);
 
-  unsigned equalsSignCount = 0;
-  unsigned outLength = 0;
-  bool hadError = false;
+  unsigned equals_sign_count = 0;
+  unsigned out_length = 0;
+  bool had_error = false;
   for (unsigned idx = 0; idx < length; ++idx) {
     UChar ch = data[idx];
     if (ch == '=') {
-      ++equalsSignCount;
+      ++equals_sign_count;
       // There should never be more than 2 padding characters.
-      if (policy == Base64ValidatePadding && equalsSignCount > 2) {
-        hadError = true;
+      if (policy == kBase64ValidatePadding && equals_sign_count > 2) {
+        had_error = true;
         break;
       }
     } else if (('0' <= ch && ch <= '9') || ('A' <= ch && ch <= 'Z') ||
                ('a' <= ch && ch <= 'z') || ch == '+' || ch == '/') {
-      if (equalsSignCount) {
-        hadError = true;
+      if (equals_sign_count) {
+        had_error = true;
         break;
       }
-      out[outLength++] = base64DecMap[ch];
-    } else if (!shouldIgnoreCharacter || !shouldIgnoreCharacter(ch)) {
-      hadError = true;
+      out[out_length++] = kBase64DecMap[ch];
+    } else if (!should_ignore_character || !should_ignore_character(ch)) {
+      had_error = true;
       break;
     }
   }
 
-  if (outLength < out.size())
-    out.shrink(outLength);
+  if (out_length < out.size())
+    out.Shrink(out_length);
 
-  if (hadError)
+  if (had_error)
     return false;
 
-  if (!outLength)
-    return !equalsSignCount;
+  if (!out_length)
+    return !equals_sign_count;
 
   // There should be no padding if length is a multiple of 4.
   // We use (outLength + equalsSignCount) instead of length because we don't
   // want to account for ignored characters.
-  if (policy == Base64ValidatePadding && equalsSignCount &&
-      (outLength + equalsSignCount) % 4)
+  if (policy == kBase64ValidatePadding && equals_sign_count &&
+      (out_length + equals_sign_count) % 4)
     return false;
 
   // Valid data is (n * 4 + [0,2,3]) characters long.
-  if ((outLength % 4) == 1)
+  if ((out_length % 4) == 1)
     return false;
 
   // 4-byte to 3-byte conversion
-  outLength -= (outLength + 3) / 4;
-  if (!outLength)
+  out_length -= (out_length + 3) / 4;
+  if (!out_length)
     return false;
 
   unsigned sidx = 0;
   unsigned didx = 0;
-  if (outLength > 1) {
-    while (didx < outLength - 2) {
+  if (out_length > 1) {
+    while (didx < out_length - 2) {
       out[didx] = (((out[sidx] << 2) & 255) | ((out[sidx + 1] >> 4) & 003));
       out[didx + 1] =
           (((out[sidx + 1] << 4) & 255) | ((out[sidx + 2] >> 2) & 017));
@@ -214,59 +215,59 @@ static inline bool base64DecodeInternal(
     }
   }
 
-  if (didx < outLength)
+  if (didx < out_length)
     out[didx] = (((out[sidx] << 2) & 255) | ((out[sidx + 1] >> 4) & 003));
 
-  if (++didx < outLength)
+  if (++didx < out_length)
     out[didx] = (((out[sidx + 1] << 4) & 255) | ((out[sidx + 2] >> 2) & 017));
 
-  if (outLength < out.size())
-    out.shrink(outLength);
+  if (out_length < out.size())
+    out.Shrink(out_length);
 
   return true;
 }
 
-bool base64Decode(const char* data,
+bool Base64Decode(const char* data,
                   unsigned length,
                   Vector<char>& out,
-                  CharacterMatchFunctionPtr shouldIgnoreCharacter,
+                  CharacterMatchFunctionPtr should_ignore_character,
                   Base64DecodePolicy policy) {
-  return base64DecodeInternal<LChar>(reinterpret_cast<const LChar*>(data),
-                                     length, out, shouldIgnoreCharacter,
+  return Base64DecodeInternal<LChar>(reinterpret_cast<const LChar*>(data),
+                                     length, out, should_ignore_character,
                                      policy);
 }
 
-bool base64Decode(const UChar* data,
+bool Base64Decode(const UChar* data,
                   unsigned length,
                   Vector<char>& out,
-                  CharacterMatchFunctionPtr shouldIgnoreCharacter,
+                  CharacterMatchFunctionPtr should_ignore_character,
                   Base64DecodePolicy policy) {
-  return base64DecodeInternal<UChar>(data, length, out, shouldIgnoreCharacter,
+  return Base64DecodeInternal<UChar>(data, length, out, should_ignore_character,
                                      policy);
 }
 
-bool base64Decode(const String& in,
+bool Base64Decode(const String& in,
                   Vector<char>& out,
-                  CharacterMatchFunctionPtr shouldIgnoreCharacter,
+                  CharacterMatchFunctionPtr should_ignore_character,
                   Base64DecodePolicy policy) {
-  if (in.isEmpty())
-    return base64DecodeInternal<LChar>(0, 0, out, shouldIgnoreCharacter,
+  if (in.IsEmpty())
+    return Base64DecodeInternal<LChar>(0, 0, out, should_ignore_character,
                                        policy);
-  if (in.is8Bit())
-    return base64DecodeInternal<LChar>(in.characters8(), in.length(), out,
-                                       shouldIgnoreCharacter, policy);
-  return base64DecodeInternal<UChar>(in.characters16(), in.length(), out,
-                                     shouldIgnoreCharacter, policy);
+  if (in.Is8Bit())
+    return Base64DecodeInternal<LChar>(in.Characters8(), in.length(), out,
+                                       should_ignore_character, policy);
+  return Base64DecodeInternal<UChar>(in.Characters16(), in.length(), out,
+                                     should_ignore_character, policy);
 }
 
-String base64URLEncode(const char* data,
+String Base64URLEncode(const char* data,
                        unsigned length,
                        Base64EncodePolicy policy) {
-  return base64Encode(data, length, policy).replace('+', '-').replace('/', '_');
+  return Base64Encode(data, length, policy).Replace('+', '-').Replace('/', '_');
 }
 
-String normalizeToBase64(const String& encoding) {
-  return String(encoding).replace('-', '+').replace('_', '/');
+String NormalizeToBase64(const String& encoding) {
+  return String(encoding).Replace('-', '+').Replace('_', '/');
 }
 
 }  // namespace WTF

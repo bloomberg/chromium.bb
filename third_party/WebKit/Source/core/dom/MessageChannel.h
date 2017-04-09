@@ -40,20 +40,20 @@ class MessageChannel final : public GarbageCollected<MessageChannel>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MessageChannel* create(ExecutionContext* context) {
+  static MessageChannel* Create(ExecutionContext* context) {
     return new MessageChannel(context);
   }
 
-  MessagePort* port1() const { return m_port1; }
-  MessagePort* port2() const { return m_port2; }
+  MessagePort* port1() const { return port1_; }
+  MessagePort* port2() const { return port2_; }
 
   DECLARE_TRACE();
 
  private:
   explicit MessageChannel(ExecutionContext*);
 
-  Member<MessagePort> m_port1;
-  Member<MessagePort> m_port2;
+  Member<MessagePort> port1_;
+  Member<MessagePort> port2_;
 };
 
 }  // namespace blink

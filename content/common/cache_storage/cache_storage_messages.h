@@ -42,7 +42,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CacheStorageBatchOperation)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerCacheError,
-                          blink::WebServiceWorkerCacheErrorLast)
+                          blink::kWebServiceWorkerCacheErrorLast)
 
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.

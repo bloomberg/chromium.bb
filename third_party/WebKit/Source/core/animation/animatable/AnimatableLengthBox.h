@@ -38,43 +38,43 @@ namespace blink {
 class AnimatableLengthBox final : public AnimatableValue {
  public:
   ~AnimatableLengthBox() override {}
-  static PassRefPtr<AnimatableLengthBox> create(
+  static PassRefPtr<AnimatableLengthBox> Create(
       PassRefPtr<AnimatableValue> left,
       PassRefPtr<AnimatableValue> right,
       PassRefPtr<AnimatableValue> top,
       PassRefPtr<AnimatableValue> bottom) {
-    return adoptRef(new AnimatableLengthBox(std::move(left), std::move(right),
+    return AdoptRef(new AnimatableLengthBox(std::move(left), std::move(right),
                                             std::move(top), std::move(bottom)));
   }
-  const AnimatableValue* left() const { return m_left.get(); }
-  const AnimatableValue* right() const { return m_right.get(); }
-  const AnimatableValue* top() const { return m_top.get(); }
-  const AnimatableValue* bottom() const { return m_bottom.get(); }
+  const AnimatableValue* Left() const { return left_.Get(); }
+  const AnimatableValue* Right() const { return right_.Get(); }
+  const AnimatableValue* Top() const { return top_.Get(); }
+  const AnimatableValue* Bottom() const { return bottom_.Get(); }
 
  protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+  PassRefPtr<AnimatableValue> InterpolateTo(const AnimatableValue*,
                                             double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const final;
+  bool UsesDefaultInterpolationWith(const AnimatableValue*) const final;
 
  private:
   AnimatableLengthBox(PassRefPtr<AnimatableValue> left,
                       PassRefPtr<AnimatableValue> right,
                       PassRefPtr<AnimatableValue> top,
                       PassRefPtr<AnimatableValue> bottom)
-      : m_left(std::move(left)),
-        m_right(std::move(right)),
-        m_top(std::move(top)),
-        m_bottom(std::move(bottom)) {}
-  AnimatableType type() const override { return TypeLengthBox; }
-  bool equalTo(const AnimatableValue*) const override;
+      : left_(std::move(left)),
+        right_(std::move(right)),
+        top_(std::move(top)),
+        bottom_(std::move(bottom)) {}
+  AnimatableType GetType() const override { return kTypeLengthBox; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  RefPtr<AnimatableValue> m_left;
-  RefPtr<AnimatableValue> m_right;
-  RefPtr<AnimatableValue> m_top;
-  RefPtr<AnimatableValue> m_bottom;
+  RefPtr<AnimatableValue> left_;
+  RefPtr<AnimatableValue> right_;
+  RefPtr<AnimatableValue> top_;
+  RefPtr<AnimatableValue> bottom_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBox, isLengthBox());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBox, IsLengthBox());
 
 }  // namespace blink
 

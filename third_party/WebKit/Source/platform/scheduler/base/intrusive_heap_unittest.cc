@@ -51,7 +51,7 @@ TEST_F(IntrusiveHeapTest, Clear) {
   EXPECT_EQ(1u, heap.size());
   EXPECT_TRUE(index1.IsValid());
 
-  heap.clear();
+  heap.Clear();
   EXPECT_EQ(0u, heap.size());
   EXPECT_FALSE(index1.IsValid());
 }
@@ -84,7 +84,7 @@ TEST_F(IntrusiveHeapTest, Min) {
 
   EXPECT_FALSE(heap.empty());
   EXPECT_EQ(8u, heap.size());
-  EXPECT_EQ(2, heap.min().key);
+  EXPECT_EQ(2, heap.Min().key);
 }
 
 TEST_F(IntrusiveHeapTest, InsertAscending) {
@@ -94,7 +94,7 @@ TEST_F(IntrusiveHeapTest, InsertAscending) {
   for (int i = 0; i < 50; i++)
     heap.insert({i, nullptr});
 
-  EXPECT_EQ(0, heap.min().key);
+  EXPECT_EQ(0, heap.Min().key);
   EXPECT_EQ(50u, heap.size());
 }
 
@@ -104,7 +104,7 @@ TEST_F(IntrusiveHeapTest, InsertDescending) {
   for (int i = 0; i < 50; i++)
     heap.insert({50 - i, nullptr});
 
-  EXPECT_EQ(1, heap.min().key);
+  EXPECT_EQ(1, heap.Min().key);
   EXPECT_EQ(50u, heap.size());
 }
 
@@ -148,12 +148,12 @@ TEST_F(IntrusiveHeapTest, Pop) {
   EXPECT_TRUE(index1.IsValid());
   EXPECT_TRUE(index2.IsValid());
 
-  heap.pop();
+  heap.Pop();
   EXPECT_EQ(1u, heap.size());
   EXPECT_FALSE(index1.IsValid());
   EXPECT_TRUE(index2.IsValid());
 
-  heap.pop();
+  heap.Pop();
   EXPECT_EQ(0u, heap.size());
   EXPECT_FALSE(index1.IsValid());
   EXPECT_FALSE(index2.IsValid());
@@ -168,8 +168,8 @@ TEST_F(IntrusiveHeapTest, PopMany) {
   EXPECT_FALSE(heap.empty());
   EXPECT_EQ(500u, heap.size());
   for (int i = 0; i < 500; i++) {
-    EXPECT_EQ(i, heap.min().key);
-    heap.pop();
+    EXPECT_EQ(i, heap.Min().key);
+    heap.Pop();
   }
   EXPECT_TRUE(heap.empty());
 }
@@ -191,14 +191,14 @@ TEST_F(IntrusiveHeapTest, Erase) {
   EXPECT_EQ(4u, heap.size());
   EXPECT_FALSE(index12.IsValid());
 
-  EXPECT_EQ(11, heap.min().key);
-  heap.pop();
-  EXPECT_EQ(13, heap.min().key);
-  heap.pop();
-  EXPECT_EQ(14, heap.min().key);
-  heap.pop();
-  EXPECT_EQ(15, heap.min().key);
-  heap.pop();
+  EXPECT_EQ(11, heap.Min().key);
+  heap.Pop();
+  EXPECT_EQ(13, heap.Min().key);
+  heap.Pop();
+  EXPECT_EQ(14, heap.Min().key);
+  heap.Pop();
+  EXPECT_EQ(15, heap.Min().key);
+  heap.Pop();
   EXPECT_TRUE(heap.empty());
 }
 
@@ -208,12 +208,12 @@ TEST_F(IntrusiveHeapTest, ReplaceMin) {
   for (int i = 0; i < 500; i++)
     heap.insert({500 - i, nullptr});
 
-  EXPECT_EQ(1, heap.min().key);
+  EXPECT_EQ(1, heap.Min().key);
 
   for (int i = 0; i < 500; i++)
     heap.ReplaceMin({1000 + i, nullptr});
 
-  EXPECT_EQ(1000, heap.min().key);
+  EXPECT_EQ(1000, heap.Min().key);
 }
 
 TEST_F(IntrusiveHeapTest, ReplaceMinWithNonLeafNode) {
@@ -224,18 +224,18 @@ TEST_F(IntrusiveHeapTest, ReplaceMinWithNonLeafNode) {
     heap.insert({200 + i, nullptr});
   }
 
-  EXPECT_EQ(0, heap.min().key);
+  EXPECT_EQ(0, heap.Min().key);
 
   for (int i = 0; i < 50; i++)
     heap.ReplaceMin({100 + i, nullptr});
 
   for (int i = 0; i < 50; i++) {
-    EXPECT_EQ((100 + i), heap.min().key);
-    heap.pop();
+    EXPECT_EQ((100 + i), heap.Min().key);
+    heap.Pop();
   }
   for (int i = 0; i < 50; i++) {
-    EXPECT_EQ((200 + i), heap.min().key);
-    heap.pop();
+    EXPECT_EQ((200 + i), heap.Min().key);
+    heap.Pop();
   }
   EXPECT_TRUE(heap.empty());
 }
@@ -253,11 +253,11 @@ TEST_F(IntrusiveHeapTest, ReplaceMinCheckAllFinalPositions) {
 
     int prev = -2;
     while (!heap.empty()) {
-      DCHECK_GT(heap.min().key, prev);
-      DCHECK(heap.min().key == j || (heap.min().key % 2) == 0);
-      DCHECK_NE(heap.min().key, 0);
-      prev = heap.min().key;
-      heap.pop();
+      DCHECK_GT(heap.Min().key, prev);
+      DCHECK(heap.Min().key == j || (heap.Min().key % 2) == 0);
+      DCHECK_NE(heap.Min().key, 0);
+      prev = heap.Min().key;
+      heap.Pop();
     }
   }
 }
@@ -274,8 +274,8 @@ TEST_F(IntrusiveHeapTest, ChangeKeyUp) {
 
   std::vector<int> results;
   while (!heap.empty()) {
-    results.push_back(heap.min().key);
-    heap.pop();
+    results.push_back(heap.Min().key);
+    heap.Pop();
   }
 
   EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 12, 14, 16, 17, 18));
@@ -293,8 +293,8 @@ TEST_F(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
 
   std::vector<int> results;
   while (!heap.empty()) {
-    results.push_back(heap.min().key);
-    heap.pop();
+    results.push_back(heap.Min().key);
+    heap.Pop();
   }
 
   EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 11, 12, 14, 16, 18));
@@ -312,8 +312,8 @@ TEST_F(IntrusiveHeapTest, ChangeKeyDown) {
 
   std::vector<int> results;
   while (!heap.empty()) {
-    results.push_back(heap.min().key);
-    heap.pop();
+    results.push_back(heap.Min().key);
+    heap.Pop();
   }
 
   EXPECT_THAT(results, testing::ElementsAre(0, 1, 2, 4, 6, 8, 12, 14, 16, 18));
@@ -331,8 +331,8 @@ TEST_F(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
 
   std::vector<int> results;
   while (!heap.empty()) {
-    results.push_back(heap.min().key);
-    heap.pop();
+    results.push_back(heap.Min().key);
+    heap.Pop();
   }
 
   EXPECT_THAT(results, testing::ElementsAre(0, 2, 4, 6, 8, 9, 12, 14, 16, 18));
@@ -351,11 +351,11 @@ TEST_F(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
 
     int prev = -2;
     while (!heap.empty()) {
-      DCHECK_GT(heap.min().key, prev);
-      DCHECK(heap.min().key == j || (heap.min().key % 2) == 0);
-      DCHECK_NE(heap.min().key, 80);
-      prev = heap.min().key;
-      heap.pop();
+      DCHECK_GT(heap.Min().key, prev);
+      DCHECK(heap.Min().key == j || (heap.Min().key % 2) == 0);
+      DCHECK_NE(heap.Min().key, 80);
+      prev = heap.Min().key;
+      heap.Pop();
     }
   }
 }

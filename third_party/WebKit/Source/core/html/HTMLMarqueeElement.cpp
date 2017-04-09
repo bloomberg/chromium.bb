@@ -49,30 +49,30 @@ namespace blink {
 
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(HTMLNames::marqueeTag, document) {
-  UseCounter::count(document, UseCounter::HTMLMarqueeElement);
+  UseCounter::Count(document, UseCounter::kHTMLMarqueeElement);
 }
 
-HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document) {
-  HTMLMarqueeElement* marqueeElement = new HTMLMarqueeElement(document);
-  marqueeElement->ensureUserAgentShadowRoot();
-  return marqueeElement;
+HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
+  HTMLMarqueeElement* marquee_element = new HTMLMarqueeElement(document);
+  marquee_element->EnsureUserAgentShadowRoot();
+  return marquee_element;
 }
 
-void HTMLMarqueeElement::didAddUserAgentShadowRoot(ShadowRoot& shadowRoot) {
-  Element* style = HTMLStyleElement::create(document(), false);
+void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
+  Element* style = HTMLStyleElement::Create(GetDocument(), false);
   style->setTextContent(
       ":host { display: inline-block; overflow: hidden;"
       "text-align: initial; white-space: nowrap; }"
       ":host([direction=\"up\"]), :host([direction=\"down\"]) { overflow: "
       "initial; overflow-y: hidden; white-space: initial; }"
       ":host > div { will-change: transform; }");
-  shadowRoot.appendChild(style);
+  shadow_root.AppendChild(style);
 
-  Element* mover = HTMLDivElement::create(document());
-  shadowRoot.appendChild(mover);
+  Element* mover = HTMLDivElement::Create(GetDocument());
+  shadow_root.AppendChild(mover);
 
-  mover->appendChild(HTMLContentElement::create(document()));
-  m_mover = mover;
+  mover->AppendChild(HTMLContentElement::Create(GetDocument()));
+  mover_ = mover;
 }
 
 class HTMLMarqueeElement::RequestAnimationFrameCallback final
@@ -81,20 +81,20 @@ class HTMLMarqueeElement::RequestAnimationFrameCallback final
 
  public:
   explicit RequestAnimationFrameCallback(HTMLMarqueeElement* marquee)
-      : m_marquee(marquee) {}
+      : marquee_(marquee) {}
 
   void handleEvent(double) override {
-    m_marquee->m_continueCallbackRequestId = 0;
-    m_marquee->continueAnimation();
+    marquee_->continue_callback_request_id_ = 0;
+    marquee_->ContinueAnimation();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_marquee);
-    FrameRequestCallback::trace(visitor);
+    visitor->Trace(marquee_);
+    FrameRequestCallback::Trace(visitor);
   }
 
  private:
-  Member<HTMLMarqueeElement> m_marquee;
+  Member<HTMLMarqueeElement> marquee_;
 };
 
 class HTMLMarqueeElement::AnimationFinished final : public EventListener {
@@ -102,380 +102,380 @@ class HTMLMarqueeElement::AnimationFinished final : public EventListener {
 
  public:
   explicit AnimationFinished(HTMLMarqueeElement* marquee)
-      : EventListener(CPPEventListenerType), m_marquee(marquee) {}
+      : EventListener(kCPPEventListenerType), marquee_(marquee) {}
 
   bool operator==(const EventListener& that) const override {
     return this == &that;
   }
 
   void handleEvent(ExecutionContext*, Event*) override {
-    ++m_marquee->m_loopCount;
-    m_marquee->start();
+    ++marquee_->loop_count_;
+    marquee_->start();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_marquee);
-    EventListener::trace(visitor);
+    visitor->Trace(marquee_);
+    EventListener::Trace(visitor);
   }
 
  private:
-  Member<HTMLMarqueeElement> m_marquee;
+  Member<HTMLMarqueeElement> marquee_;
 };
 
-Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLElement::insertedInto(insertionPoint);
+Node::InsertionNotificationRequest HTMLMarqueeElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
 
   if (isConnected())
     start();
 
-  return InsertionDone;
+  return kInsertionDone;
 }
 
-void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint) {
-  HTMLElement::removedFrom(insertionPoint);
-  if (insertionPoint->isConnected()) {
+void HTMLMarqueeElement::RemovedFrom(ContainerNode* insertion_point) {
+  HTMLElement::RemovedFrom(insertion_point);
+  if (insertion_point->isConnected()) {
     stop();
   }
 }
 
-bool HTMLMarqueeElement::isHorizontal() const {
-  Direction direction = getDirection();
+bool HTMLMarqueeElement::IsHorizontal() const {
+  Direction direction = GetDirection();
   return direction != kUp && direction != kDown;
 }
 
 int HTMLMarqueeElement::scrollAmount() const {
   bool ok;
-  int scrollAmount = fastGetAttribute(HTMLNames::scrollamountAttr).toInt(&ok);
-  if (!ok || scrollAmount < 0)
+  int scroll_amount = FastGetAttribute(HTMLNames::scrollamountAttr).ToInt(&ok);
+  if (!ok || scroll_amount < 0)
     return kDefaultScrollAmount;
-  return scrollAmount;
+  return scroll_amount;
 }
 
 void HTMLMarqueeElement::setScrollAmount(int value,
-                                         ExceptionState& exceptionState) {
+                                         ExceptionState& exception_state) {
   if (value < 0) {
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        "The provided value (" + String::number(value) + ") is negative.");
+    exception_state.ThrowDOMException(
+        kIndexSizeError,
+        "The provided value (" + String::Number(value) + ") is negative.");
     return;
   }
-  setIntegralAttribute(HTMLNames::scrollamountAttr, value);
+  SetIntegralAttribute(HTMLNames::scrollamountAttr, value);
 }
 
 int HTMLMarqueeElement::scrollDelay() const {
   bool ok;
-  int scrollDelay = fastGetAttribute(HTMLNames::scrolldelayAttr).toInt(&ok);
-  if (!ok || scrollDelay < 0)
+  int scroll_delay = FastGetAttribute(HTMLNames::scrolldelayAttr).ToInt(&ok);
+  if (!ok || scroll_delay < 0)
     return kDefaultScrollDelayMS;
-  return scrollDelay;
+  return scroll_delay;
 }
 
 void HTMLMarqueeElement::setScrollDelay(int value,
-                                        ExceptionState& exceptionState) {
+                                        ExceptionState& exception_state) {
   if (value < 0) {
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        "The provided value (" + String::number(value) + ") is negative.");
+    exception_state.ThrowDOMException(
+        kIndexSizeError,
+        "The provided value (" + String::Number(value) + ") is negative.");
     return;
   }
-  setIntegralAttribute(HTMLNames::scrolldelayAttr, value);
+  SetIntegralAttribute(HTMLNames::scrolldelayAttr, value);
 }
 
 int HTMLMarqueeElement::loop() const {
   bool ok;
-  int loop = fastGetAttribute(HTMLNames::loopAttr).toInt(&ok);
+  int loop = FastGetAttribute(HTMLNames::loopAttr).ToInt(&ok);
   if (!ok || loop <= 0)
     return kDefaultLoopLimit;
   return loop;
 }
 
-void HTMLMarqueeElement::setLoop(int value, ExceptionState& exceptionState) {
+void HTMLMarqueeElement::setLoop(int value, ExceptionState& exception_state) {
   if (value <= 0 && value != -1) {
-    exceptionState.throwDOMException(
-        IndexSizeError, "The provided value (" + String::number(value) +
-                            ") is neither positive nor -1.");
+    exception_state.ThrowDOMException(
+        kIndexSizeError, "The provided value (" + String::Number(value) +
+                             ") is neither positive nor -1.");
     return;
   }
-  setIntegralAttribute(HTMLNames::loopAttr, value);
+  SetIntegralAttribute(HTMLNames::loopAttr, value);
 }
 
 void HTMLMarqueeElement::start() {
-  if (m_continueCallbackRequestId)
+  if (continue_callback_request_id_)
     return;
 
   RequestAnimationFrameCallback* callback =
       new RequestAnimationFrameCallback(this);
-  m_continueCallbackRequestId = document().requestAnimationFrame(callback);
+  continue_callback_request_id_ = GetDocument().RequestAnimationFrame(callback);
 }
 
 void HTMLMarqueeElement::stop() {
-  if (m_continueCallbackRequestId) {
-    document().cancelAnimationFrame(m_continueCallbackRequestId);
-    m_continueCallbackRequestId = 0;
+  if (continue_callback_request_id_) {
+    GetDocument().CancelAnimationFrame(continue_callback_request_id_);
+    continue_callback_request_id_ = 0;
     return;
   }
 
-  if (m_player)
-    m_player->pause();
+  if (player_)
+    player_->pause();
 }
 
-bool HTMLMarqueeElement::isPresentationAttribute(
+bool HTMLMarqueeElement::IsPresentationAttribute(
     const QualifiedName& attr) const {
   if (attr == HTMLNames::bgcolorAttr || attr == HTMLNames::heightAttr ||
       attr == HTMLNames::hspaceAttr || attr == HTMLNames::vspaceAttr ||
       attr == HTMLNames::widthAttr) {
     return true;
   }
-  return HTMLElement::isPresentationAttribute(attr);
+  return HTMLElement::IsPresentationAttribute(attr);
 }
 
-void HTMLMarqueeElement::collectStyleForPresentationAttribute(
+void HTMLMarqueeElement::CollectStyleForPresentationAttribute(
     const QualifiedName& attr,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (attr == HTMLNames::bgcolorAttr) {
-    addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (attr == HTMLNames::heightAttr) {
-    addHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else if (attr == HTMLNames::hspaceAttr) {
-    addHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    addHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
   } else if (attr == HTMLNames::vspaceAttr) {
-    addHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    addHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
   } else if (attr == HTMLNames::widthAttr) {
-    addHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   } else {
-    HTMLElement::collectStyleForPresentationAttribute(attr, value, style);
+    HTMLElement::CollectStyleForPresentationAttribute(attr, value, style);
   }
 }
 
-StringKeyframeEffectModel* HTMLMarqueeElement::createEffectModel(
+StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
     const AnimationParameters& parameters) {
-  StyleSheetContents* styleSheetContents =
-      m_mover->document().elementSheet().contents();
-  MutableStylePropertySet::SetResult setResult;
+  StyleSheetContents* style_sheet_contents =
+      mover_->GetDocument().ElementSheet().Contents();
+  MutableStylePropertySet::SetResult set_result;
 
-  RefPtr<StringKeyframe> keyframe1 = StringKeyframe::create();
-  setResult = keyframe1->setCSSPropertyValue(
-      CSSPropertyTransform, parameters.transformBegin, styleSheetContents);
-  DCHECK(setResult.didParse);
+  RefPtr<StringKeyframe> keyframe1 = StringKeyframe::Create();
+  set_result = keyframe1->SetCSSPropertyValue(
+      CSSPropertyTransform, parameters.transform_begin, style_sheet_contents);
+  DCHECK(set_result.did_parse);
 
-  RefPtr<StringKeyframe> keyframe2 = StringKeyframe::create();
-  setResult = keyframe2->setCSSPropertyValue(
-      CSSPropertyTransform, parameters.transformEnd, styleSheetContents);
-  DCHECK(setResult.didParse);
+  RefPtr<StringKeyframe> keyframe2 = StringKeyframe::Create();
+  set_result = keyframe2->SetCSSPropertyValue(
+      CSSPropertyTransform, parameters.transform_end, style_sheet_contents);
+  DCHECK(set_result.did_parse);
 
-  return StringKeyframeEffectModel::create(
+  return StringKeyframeEffectModel::Create(
       {std::move(keyframe1), std::move(keyframe2)},
-      LinearTimingFunction::shared());
+      LinearTimingFunction::Shared());
 }
 
-void HTMLMarqueeElement::continueAnimation() {
-  if (!shouldContinue())
+void HTMLMarqueeElement::ContinueAnimation() {
+  if (!ShouldContinue())
     return;
 
-  if (m_player && m_player->playState() == "paused") {
-    m_player->play();
+  if (player_ && player_->playState() == "paused") {
+    player_->play();
     return;
   }
 
-  AnimationParameters parameters = getAnimationParameters();
-  int scrollDelay = this->scrollDelay();
-  int scrollAmount = this->scrollAmount();
+  AnimationParameters parameters = GetAnimationParameters();
+  int scroll_delay = this->scrollDelay();
+  int scroll_amount = this->scrollAmount();
 
-  if (scrollDelay < kMinimumScrollDelayMS &&
-      !fastHasAttribute(HTMLNames::truespeedAttr))
-    scrollDelay = kDefaultScrollDelayMS;
+  if (scroll_delay < kMinimumScrollDelayMS &&
+      !FastHasAttribute(HTMLNames::truespeedAttr))
+    scroll_delay = kDefaultScrollDelayMS;
   double duration = 0;
-  if (scrollAmount)
-    duration = parameters.distance * scrollDelay / scrollAmount;
+  if (scroll_amount)
+    duration = parameters.distance * scroll_delay / scroll_amount;
   if (!duration)
     return;
 
-  StringKeyframeEffectModel* effectModel = createEffectModel(parameters);
+  StringKeyframeEffectModel* effect_model = CreateEffectModel(parameters);
   Timing timing;
-  timing.fillMode = Timing::FillMode::FORWARDS;
-  TimingInput::setIterationDuration(
+  timing.fill_mode = Timing::FillMode::FORWARDS;
+  TimingInput::SetIterationDuration(
       timing, UnrestrictedDoubleOrString::fromUnrestrictedDouble(duration),
       ASSERT_NO_EXCEPTION);
 
-  KeyframeEffect* keyframeEffect =
-      KeyframeEffect::create(m_mover, effectModel, timing);
-  Animation* player = m_mover->document().timeline().play(keyframeEffect);
-  player->setId(emptyString);
+  KeyframeEffect* keyframe_effect =
+      KeyframeEffect::Create(mover_, effect_model, timing);
+  Animation* player = mover_->GetDocument().Timeline().Play(keyframe_effect);
+  player->setId(g_empty_string);
   player->setOnfinish(new AnimationFinished(this));
 
-  m_player = player;
+  player_ = player;
 }
 
-bool HTMLMarqueeElement::shouldContinue() {
-  int loopCount = loop();
+bool HTMLMarqueeElement::ShouldContinue() {
+  int loop_count = loop();
 
   // By default, slide loops only once.
-  if (loopCount <= 0 && getBehavior() == kSlide)
-    loopCount = 1;
+  if (loop_count <= 0 && GetBehavior() == kSlide)
+    loop_count = 1;
 
-  if (loopCount <= 0)
+  if (loop_count <= 0)
     return true;
-  return m_loopCount < loopCount;
+  return loop_count_ < loop_count;
 }
 
-HTMLMarqueeElement::Behavior HTMLMarqueeElement::getBehavior() const {
-  const AtomicString& behavior = fastGetAttribute(HTMLNames::behaviorAttr);
-  if (equalIgnoringASCIICase(behavior, "alternate"))
+HTMLMarqueeElement::Behavior HTMLMarqueeElement::GetBehavior() const {
+  const AtomicString& behavior = FastGetAttribute(HTMLNames::behaviorAttr);
+  if (EqualIgnoringASCIICase(behavior, "alternate"))
     return kAlternate;
-  if (equalIgnoringASCIICase(behavior, "slide"))
+  if (EqualIgnoringASCIICase(behavior, "slide"))
     return kSlide;
   return kScroll;
 }
 
-HTMLMarqueeElement::Direction HTMLMarqueeElement::getDirection() const {
-  const AtomicString& direction = fastGetAttribute(HTMLNames::directionAttr);
-  if (equalIgnoringASCIICase(direction, "down"))
+HTMLMarqueeElement::Direction HTMLMarqueeElement::GetDirection() const {
+  const AtomicString& direction = FastGetAttribute(HTMLNames::directionAttr);
+  if (EqualIgnoringASCIICase(direction, "down"))
     return kDown;
-  if (equalIgnoringASCIICase(direction, "up"))
+  if (EqualIgnoringASCIICase(direction, "up"))
     return kUp;
-  if (equalIgnoringASCIICase(direction, "right"))
+  if (EqualIgnoringASCIICase(direction, "right"))
     return kRight;
   return kLeft;
 }
 
-HTMLMarqueeElement::Metrics HTMLMarqueeElement::getMetrics() {
+HTMLMarqueeElement::Metrics HTMLMarqueeElement::GetMetrics() {
   Metrics metrics;
-  CSSStyleDeclaration* marqueeStyle =
-      document().domWindow()->getComputedStyle(this, String());
+  CSSStyleDeclaration* marquee_style =
+      GetDocument().domWindow()->getComputedStyle(this, String());
   // For marquees that are declared inline, getComputedStyle returns "auto" for
   // width and height. Setting all the metrics to zero disables animation for
   // inline marquees.
-  if (marqueeStyle->getPropertyValue("width") == "auto" &&
-      marqueeStyle->getPropertyValue("height") == "auto") {
-    metrics.contentHeight = 0;
-    metrics.contentWidth = 0;
-    metrics.marqueeWidth = 0;
-    metrics.marqueeHeight = 0;
+  if (marquee_style->getPropertyValue("width") == "auto" &&
+      marquee_style->getPropertyValue("height") == "auto") {
+    metrics.content_height = 0;
+    metrics.content_width = 0;
+    metrics.marquee_width = 0;
+    metrics.marquee_height = 0;
     return metrics;
   }
 
-  if (isHorizontal()) {
-    m_mover->style()->setProperty("width", "-webkit-max-content", "important",
-                                  ASSERT_NO_EXCEPTION);
+  if (IsHorizontal()) {
+    mover_->style()->setProperty("width", "-webkit-max-content", "important",
+                                 ASSERT_NO_EXCEPTION);
   } else {
-    m_mover->style()->setProperty("height", "-webkit-max-content", "important",
-                                  ASSERT_NO_EXCEPTION);
+    mover_->style()->setProperty("height", "-webkit-max-content", "important",
+                                 ASSERT_NO_EXCEPTION);
   }
-  CSSStyleDeclaration* moverStyle =
-      document().domWindow()->getComputedStyle(m_mover, String());
+  CSSStyleDeclaration* mover_style =
+      GetDocument().domWindow()->getComputedStyle(mover_, String());
 
-  metrics.contentWidth = moverStyle->getPropertyValue("width").toDouble();
-  metrics.contentHeight = moverStyle->getPropertyValue("height").toDouble();
-  metrics.marqueeWidth = marqueeStyle->getPropertyValue("width").toDouble();
-  metrics.marqueeHeight = marqueeStyle->getPropertyValue("height").toDouble();
+  metrics.content_width = mover_style->getPropertyValue("width").ToDouble();
+  metrics.content_height = mover_style->getPropertyValue("height").ToDouble();
+  metrics.marquee_width = marquee_style->getPropertyValue("width").ToDouble();
+  metrics.marquee_height = marquee_style->getPropertyValue("height").ToDouble();
 
-  if (isHorizontal()) {
-    m_mover->style()->removeProperty("width", ASSERT_NO_EXCEPTION);
+  if (IsHorizontal()) {
+    mover_->style()->removeProperty("width", ASSERT_NO_EXCEPTION);
   } else {
-    m_mover->style()->removeProperty("height", ASSERT_NO_EXCEPTION);
+    mover_->style()->removeProperty("height", ASSERT_NO_EXCEPTION);
   }
 
   return metrics;
 }
 
 HTMLMarqueeElement::AnimationParameters
-HTMLMarqueeElement::getAnimationParameters() {
+HTMLMarqueeElement::GetAnimationParameters() {
   AnimationParameters parameters;
-  Metrics metrics = getMetrics();
+  Metrics metrics = GetMetrics();
 
-  double totalWidth = metrics.marqueeWidth + metrics.contentWidth;
-  double totalHeight = metrics.marqueeHeight + metrics.contentHeight;
+  double total_width = metrics.marquee_width + metrics.content_width;
+  double total_height = metrics.marquee_height + metrics.content_height;
 
-  double innerWidth = metrics.marqueeWidth - metrics.contentWidth;
-  double innerHeight = metrics.marqueeHeight - metrics.contentHeight;
+  double inner_width = metrics.marquee_width - metrics.content_width;
+  double inner_height = metrics.marquee_height - metrics.content_height;
 
-  switch (getBehavior()) {
+  switch (GetBehavior()) {
     case kAlternate:
-      switch (getDirection()) {
+      switch (GetDirection()) {
         case kRight:
-          parameters.transformBegin =
-              createTransform(innerWidth >= 0 ? 0 : innerWidth);
-          parameters.transformEnd =
-              createTransform(innerWidth >= 0 ? innerWidth : 0);
-          parameters.distance = std::abs(innerWidth);
+          parameters.transform_begin =
+              CreateTransform(inner_width >= 0 ? 0 : inner_width);
+          parameters.transform_end =
+              CreateTransform(inner_width >= 0 ? inner_width : 0);
+          parameters.distance = std::abs(inner_width);
           break;
         case kUp:
-          parameters.transformBegin =
-              createTransform(innerHeight >= 0 ? innerHeight : 0);
-          parameters.transformEnd =
-              createTransform(innerHeight >= 0 ? 0 : innerHeight);
-          parameters.distance = std::abs(innerHeight);
+          parameters.transform_begin =
+              CreateTransform(inner_height >= 0 ? inner_height : 0);
+          parameters.transform_end =
+              CreateTransform(inner_height >= 0 ? 0 : inner_height);
+          parameters.distance = std::abs(inner_height);
           break;
         case kDown:
-          parameters.transformBegin =
-              createTransform(innerHeight >= 0 ? 0 : innerHeight);
-          parameters.transformEnd =
-              createTransform(innerHeight >= 0 ? innerHeight : 0);
-          parameters.distance = std::abs(innerHeight);
+          parameters.transform_begin =
+              CreateTransform(inner_height >= 0 ? 0 : inner_height);
+          parameters.transform_end =
+              CreateTransform(inner_height >= 0 ? inner_height : 0);
+          parameters.distance = std::abs(inner_height);
           break;
         case kLeft:
         default:
-          parameters.transformBegin =
-              createTransform(innerWidth >= 0 ? innerWidth : 0);
-          parameters.transformEnd =
-              createTransform(innerWidth >= 0 ? 0 : innerWidth);
-          parameters.distance = std::abs(innerWidth);
+          parameters.transform_begin =
+              CreateTransform(inner_width >= 0 ? inner_width : 0);
+          parameters.transform_end =
+              CreateTransform(inner_width >= 0 ? 0 : inner_width);
+          parameters.distance = std::abs(inner_width);
       }
 
-      if (m_loopCount % 2)
-        std::swap(parameters.transformBegin, parameters.transformEnd);
+      if (loop_count_ % 2)
+        std::swap(parameters.transform_begin, parameters.transform_end);
       break;
     case kSlide:
-      switch (getDirection()) {
+      switch (GetDirection()) {
         case kRight:
-          parameters.transformBegin = createTransform(-metrics.contentWidth);
-          parameters.transformEnd = createTransform(innerWidth);
-          parameters.distance = metrics.marqueeWidth;
+          parameters.transform_begin = CreateTransform(-metrics.content_width);
+          parameters.transform_end = CreateTransform(inner_width);
+          parameters.distance = metrics.marquee_width;
           break;
         case kUp:
-          parameters.transformBegin = createTransform(metrics.marqueeHeight);
-          parameters.transformEnd = "translateY(0)";
-          parameters.distance = metrics.marqueeHeight;
+          parameters.transform_begin = CreateTransform(metrics.marquee_height);
+          parameters.transform_end = "translateY(0)";
+          parameters.distance = metrics.marquee_height;
           break;
         case kDown:
-          parameters.transformBegin = createTransform(-metrics.contentHeight);
-          parameters.transformEnd = createTransform(innerHeight);
-          parameters.distance = metrics.marqueeHeight;
+          parameters.transform_begin = CreateTransform(-metrics.content_height);
+          parameters.transform_end = CreateTransform(inner_height);
+          parameters.distance = metrics.marquee_height;
           break;
         case kLeft:
         default:
-          parameters.transformBegin = createTransform(metrics.marqueeWidth);
-          parameters.transformEnd = "translateX(0)";
-          parameters.distance = metrics.marqueeWidth;
+          parameters.transform_begin = CreateTransform(metrics.marquee_width);
+          parameters.transform_end = "translateX(0)";
+          parameters.distance = metrics.marquee_width;
       }
       break;
     case kScroll:
     default:
-      switch (getDirection()) {
+      switch (GetDirection()) {
         case kRight:
-          parameters.transformBegin = createTransform(-metrics.contentWidth);
-          parameters.transformEnd = createTransform(metrics.marqueeWidth);
-          parameters.distance = totalWidth;
+          parameters.transform_begin = CreateTransform(-metrics.content_width);
+          parameters.transform_end = CreateTransform(metrics.marquee_width);
+          parameters.distance = total_width;
           break;
         case kUp:
-          parameters.transformBegin = createTransform(metrics.marqueeHeight);
-          parameters.transformEnd = createTransform(-metrics.contentHeight);
-          parameters.distance = totalHeight;
+          parameters.transform_begin = CreateTransform(metrics.marquee_height);
+          parameters.transform_end = CreateTransform(-metrics.content_height);
+          parameters.distance = total_height;
           break;
         case kDown:
-          parameters.transformBegin = createTransform(-metrics.contentHeight);
-          parameters.transformEnd = createTransform(metrics.marqueeHeight);
-          parameters.distance = totalHeight;
+          parameters.transform_begin = CreateTransform(-metrics.content_height);
+          parameters.transform_end = CreateTransform(metrics.marquee_height);
+          parameters.distance = total_height;
           break;
         case kLeft:
         default:
-          parameters.transformBegin = createTransform(metrics.marqueeWidth);
-          parameters.transformEnd = createTransform(-metrics.contentWidth);
-          parameters.distance = totalWidth;
+          parameters.transform_begin = CreateTransform(metrics.marquee_width);
+          parameters.transform_end = CreateTransform(-metrics.content_width);
+          parameters.distance = total_width;
       }
       break;
   }
@@ -483,16 +483,16 @@ HTMLMarqueeElement::getAnimationParameters() {
   return parameters;
 }
 
-AtomicString HTMLMarqueeElement::createTransform(double value) const {
-  char axis = isHorizontal() ? 'X' : 'Y';
-  return String::format("translate%c(", axis) +
-         String::numberToStringECMAScript(value) + "px)";
+AtomicString HTMLMarqueeElement::CreateTransform(double value) const {
+  char axis = IsHorizontal() ? 'X' : 'Y';
+  return String::Format("translate%c(", axis) +
+         String::NumberToStringECMAScript(value) + "px)";
 }
 
 DEFINE_TRACE(HTMLMarqueeElement) {
-  visitor->trace(m_mover);
-  visitor->trace(m_player);
-  HTMLElement::trace(visitor);
+  visitor->Trace(mover_);
+  visitor->Trace(player_);
+  HTMLElement::Trace(visitor);
 }
 
 }  // namespace blink

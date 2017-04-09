@@ -45,32 +45,32 @@ class CORE_EXPORT LinkRelAttribute {
  public:
   explicit LinkRelAttribute(const String& = "");
 
-  bool isStyleSheet() const { return m_isStyleSheet; }
-  IconType getIconType() const { return m_iconType; }
-  bool isAlternate() const { return m_isAlternate; }
-  bool isDNSPrefetch() const { return m_isDNSPrefetch; }
-  bool isPreconnect() const { return m_isPreconnect; }
-  bool isLinkPrefetch() const { return m_isLinkPrefetch; }
-  bool isLinkPreload() const { return m_isLinkPreload; }
-  bool isLinkPrerender() const { return m_isLinkPrerender; }
-  bool isLinkNext() const { return m_isLinkNext; }
-  bool isImport() const { return m_isImport; }
-  bool isManifest() const { return m_isManifest; }
-  bool isServiceWorker() const { return m_isServiceWorker; }
+  bool IsStyleSheet() const { return is_style_sheet_; }
+  IconType GetIconType() const { return icon_type_; }
+  bool IsAlternate() const { return is_alternate_; }
+  bool IsDNSPrefetch() const { return is_dns_prefetch_; }
+  bool IsPreconnect() const { return is_preconnect_; }
+  bool IsLinkPrefetch() const { return is_link_prefetch_; }
+  bool IsLinkPreload() const { return is_link_preload_; }
+  bool IsLinkPrerender() const { return is_link_prerender_; }
+  bool IsLinkNext() const { return is_link_next_; }
+  bool IsImport() const { return is_import_; }
+  bool IsManifest() const { return is_manifest_; }
+  bool IsServiceWorker() const { return is_service_worker_; }
 
  private:
-  IconType m_iconType;
-  bool m_isStyleSheet : 1;
-  bool m_isAlternate : 1;
-  bool m_isDNSPrefetch : 1;
-  bool m_isPreconnect : 1;
-  bool m_isLinkPrefetch : 1;
-  bool m_isLinkPreload : 1;
-  bool m_isLinkPrerender : 1;
-  bool m_isLinkNext : 1;
-  bool m_isImport : 1;
-  bool m_isManifest : 1;
-  bool m_isServiceWorker : 1;
+  IconType icon_type_;
+  bool is_style_sheet_ : 1;
+  bool is_alternate_ : 1;
+  bool is_dns_prefetch_ : 1;
+  bool is_preconnect_ : 1;
+  bool is_link_prefetch_ : 1;
+  bool is_link_preload_ : 1;
+  bool is_link_prerender_ : 1;
+  bool is_link_next_ : 1;
+  bool is_import_ : 1;
+  bool is_manifest_ : 1;
+  bool is_service_worker_ : 1;
 };
 
 }  // namespace blink

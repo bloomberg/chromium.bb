@@ -42,16 +42,16 @@ class AXList final : public AXLayoutObject {
   AXList(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXList* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXList* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXList() override;
 
-  bool isList() const override { return true; }
+  bool IsList() const override { return true; }
 
-  AccessibilityRole roleValue() const final;
+  AccessibilityRole RoleValue() const final;
 
  private:
-  bool isDescriptionList() const;
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool IsDescriptionList() const;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 }  // namespace blink

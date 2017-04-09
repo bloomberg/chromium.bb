@@ -20,53 +20,42 @@ MockWebBlobRegistryImpl::MockWebBlobRegistryImpl() {
 MockWebBlobRegistryImpl::~MockWebBlobRegistryImpl() {
 }
 
-void MockWebBlobRegistryImpl::registerBlobData(const WebString& uuid,
-                                               const WebBlobData& data) {
-}
+void MockWebBlobRegistryImpl::RegisterBlobData(const WebString& uuid,
+                                               const WebBlobData& data) {}
 
 std::unique_ptr<blink::WebBlobRegistry::Builder>
-MockWebBlobRegistryImpl::createBuilder(const blink::WebString& uuid,
+MockWebBlobRegistryImpl::CreateBuilder(const blink::WebString& uuid,
                                        const blink::WebString& contentType) {
   NOTREACHED();
   return nullptr;
 }
 
-void MockWebBlobRegistryImpl::addBlobDataRef(const WebString& uuid) {
-}
+void MockWebBlobRegistryImpl::AddBlobDataRef(const WebString& uuid) {}
 
-void MockWebBlobRegistryImpl::removeBlobDataRef(const WebString& uuid) {
-}
+void MockWebBlobRegistryImpl::RemoveBlobDataRef(const WebString& uuid) {}
 
-void MockWebBlobRegistryImpl::registerPublicBlobURL(const WebURL& url,
-                                                    const WebString& uuid) {
-}
+void MockWebBlobRegistryImpl::RegisterPublicBlobURL(const WebURL& url,
+                                                    const WebString& uuid) {}
 
-void MockWebBlobRegistryImpl::revokePublicBlobURL(const WebURL& url) {
-}
+void MockWebBlobRegistryImpl::RevokePublicBlobURL(const WebURL& url) {}
 
-void MockWebBlobRegistryImpl::registerStreamURL(const WebURL& url,
+void MockWebBlobRegistryImpl::RegisterStreamURL(const WebURL& url,
                                                 const WebString& content_type) {
 }
 
-void MockWebBlobRegistryImpl::registerStreamURL(const WebURL& url,
-                                                const blink::WebURL& src_url) {
-}
+void MockWebBlobRegistryImpl::RegisterStreamURL(const WebURL& url,
+                                                const blink::WebURL& src_url) {}
 
-void MockWebBlobRegistryImpl::addDataToStream(const WebURL& url,
+void MockWebBlobRegistryImpl::AddDataToStream(const WebURL& url,
                                               const char* data,
-                                              size_t length) {
-}
+                                              size_t length) {}
 
-void MockWebBlobRegistryImpl::flushStream(const WebURL& url) {
-}
+void MockWebBlobRegistryImpl::FlushStream(const WebURL& url) {}
 
-void MockWebBlobRegistryImpl::finalizeStream(const WebURL& url) {
-}
+void MockWebBlobRegistryImpl::FinalizeStream(const WebURL& url) {}
 
-void MockWebBlobRegistryImpl::abortStream(const WebURL& url) {
-}
+void MockWebBlobRegistryImpl::AbortStream(const WebURL& url) {}
 
-void MockWebBlobRegistryImpl::unregisterStreamURL(const WebURL& url) {
-}
+void MockWebBlobRegistryImpl::UnregisterStreamURL(const WebURL& url) {}
 
 }  // namespace content

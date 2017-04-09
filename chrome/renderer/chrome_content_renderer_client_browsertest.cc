@@ -104,9 +104,9 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
                                      blink::WebURL(thumbnail_url), &result));
 
   // Make sure the SearchBox rewrites a thumbnail request from the iframe.
-  blink::WebFrame* child_frame = GetMainFrame()->firstChild();
+  blink::WebFrame* child_frame = GetMainFrame()->FirstChild();
   ASSERT_TRUE(child_frame);
-  ASSERT_TRUE(child_frame->isWebLocalFrame());
+  ASSERT_TRUE(child_frame->IsWebLocalFrame());
   blink::WebLocalFrame* local_child =
       static_cast<blink::WebLocalFrame*>(child_frame);
   EXPECT_TRUE(client.WillSendRequest(local_child, ui::PAGE_TRANSITION_LINK,

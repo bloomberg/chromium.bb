@@ -64,183 +64,185 @@
 namespace blink {
 namespace {
 
-void removeURLFromMemoryCacheInternal(const KURL& url) {
-  memoryCache()->removeURLFromCache(url);
+void RemoveURLFromMemoryCacheInternal(const KURL& url) {
+  GetMemoryCache()->RemoveURLFromCache(url);
 }
 
 }  // namespace
 
 WorkerGlobalScope::~WorkerGlobalScope() {
-  DCHECK(!m_scriptController);
-  InstanceCounters::decrementCounter(
-      InstanceCounters::WorkerGlobalScopeCounter);
+  DCHECK(!script_controller_);
+  InstanceCounters::DecrementCounter(
+      InstanceCounters::kWorkerGlobalScopeCounter);
 }
 
-KURL WorkerGlobalScope::completeURL(const String& url) const {
+KURL WorkerGlobalScope::CompleteURL(const String& url) const {
   // Always return a null URL when passed a null string.
   // FIXME: Should we change the KURL constructor to have this behavior?
-  if (url.isNull())
+  if (url.IsNull())
     return KURL();
   // Always use UTF-8 in Workers.
-  return KURL(m_url, url);
+  return KURL(url_, url);
 }
 
-void WorkerGlobalScope::dispose() {
-  DCHECK(thread()->isCurrentThread());
+void WorkerGlobalScope::Dispose() {
+  DCHECK(GetThread()->IsCurrentThread());
 
   // Event listeners would keep DOMWrapperWorld objects alive for too long.
   // Also, they have references to JS objects, which become dangling once Heap
   // is destroyed.
-  m_closing = true;
+  closing_ = true;
   HeapHashSet<Member<V8AbstractEventListener>> listeners;
-  listeners.swap(m_eventListeners);
-  while (!listeners.isEmpty()) {
+  listeners.Swap(event_listeners_);
+  while (!listeners.IsEmpty()) {
     for (const auto& listener : listeners)
-      listener->clearListenerObject();
-    listeners.clear();
+      listener->ClearListenerObject();
+    listeners.Clear();
     // Pick up any additions made while iterating.
-    listeners.swap(m_eventListeners);
+    listeners.Swap(event_listeners_);
   }
-  removeAllEventListeners();
+  RemoveAllEventListeners();
 
-  m_scriptController->dispose();
-  m_scriptController.clear();
-  m_eventQueue->close();
-  m_thread = nullptr;
+  script_controller_->Dispose();
+  script_controller_.Clear();
+  event_queue_->Close();
+  thread_ = nullptr;
 }
 
-void WorkerGlobalScope::countFeature(UseCounter::Feature feature) {
-  DCHECK(isContextThread());
-  DCHECK(m_thread);
-  m_thread->workerReportingProxy().countFeature(feature);
+void WorkerGlobalScope::CountFeature(UseCounter::Feature feature) {
+  DCHECK(IsContextThread());
+  DCHECK(thread_);
+  thread_->GetWorkerReportingProxy().CountFeature(feature);
 }
 
-void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) {
-  DCHECK(isContextThread());
-  DCHECK(m_thread);
-  addDeprecationMessage(feature);
-  m_thread->workerReportingProxy().countDeprecation(feature);
+void WorkerGlobalScope::CountDeprecation(UseCounter::Feature feature) {
+  DCHECK(IsContextThread());
+  DCHECK(thread_);
+  AddDeprecationMessage(feature);
+  thread_->GetWorkerReportingProxy().CountDeprecation(feature);
 }
 
-void WorkerGlobalScope::exceptionUnhandled(int exceptionId) {
-  ErrorEvent* event = m_pendingErrorEvents.take(exceptionId);
+void WorkerGlobalScope::ExceptionUnhandled(int exception_id) {
+  ErrorEvent* event = pending_error_events_.Take(exception_id);
   DCHECK(event);
   if (WorkerThreadDebugger* debugger =
-          WorkerThreadDebugger::from(thread()->isolate()))
-    debugger->exceptionThrown(m_thread, event);
+          WorkerThreadDebugger::From(GetThread()->GetIsolate()))
+    debugger->ExceptionThrown(thread_, event);
 }
 
-void WorkerGlobalScope::registerEventListener(
-    V8AbstractEventListener* eventListener) {
+void WorkerGlobalScope::RegisterEventListener(
+    V8AbstractEventListener* event_listener) {
   // TODO(sof): remove once crbug.com/677654 has been diagnosed.
-  CHECK(&ThreadState::fromObject(this)->heap() == &ThreadState::fromObject(eventListener)->heap());
-  bool newEntry = m_eventListeners.insert(eventListener).isNewEntry;
-  CHECK(newEntry);
+  CHECK(&ThreadState::FromObject(this)->Heap() ==
+        &ThreadState::FromObject(event_listener)->Heap());
+  bool new_entry = event_listeners_.insert(event_listener).is_new_entry;
+  CHECK(new_entry);
 }
 
-void WorkerGlobalScope::deregisterEventListener(
-    V8AbstractEventListener* eventListener) {
-  auto it = m_eventListeners.find(eventListener);
-  CHECK(it != m_eventListeners.end() || m_closing);
-  m_eventListeners.erase(it);
+void WorkerGlobalScope::DeregisterEventListener(
+    V8AbstractEventListener* event_listener) {
+  auto it = event_listeners_.Find(event_listener);
+  CHECK(it != event_listeners_.end() || closing_);
+  event_listeners_.erase(it);
 }
 
 WorkerLocation* WorkerGlobalScope::location() const {
-  if (!m_location)
-    m_location = WorkerLocation::create(m_url);
-  return m_location.get();
+  if (!location_)
+    location_ = WorkerLocation::Create(url_);
+  return location_.Get();
 }
 
 WorkerNavigator* WorkerGlobalScope::navigator() const {
-  if (!m_navigator)
-    m_navigator = WorkerNavigator::create(m_userAgent);
-  return m_navigator.get();
+  if (!navigator_)
+    navigator_ = WorkerNavigator::Create(user_agent_);
+  return navigator_.Get();
 }
 
 void WorkerGlobalScope::close() {
   // Let current script run to completion, but tell the worker micro task
   // runner to tear down the thread after this task.
-  m_closing = true;
+  closing_ = true;
 }
 
 String WorkerGlobalScope::origin() const {
-  return getSecurityOrigin()->toString();
+  return GetSecurityOrigin()->ToString();
 }
 
 void WorkerGlobalScope::importScripts(const Vector<String>& urls,
-                                      ExceptionState& exceptionState) {
-  DCHECK(contentSecurityPolicy());
-  DCHECK(getExecutionContext());
+                                      ExceptionState& exception_state) {
+  DCHECK(GetContentSecurityPolicy());
+  DCHECK(GetExecutionContext());
 
-  ExecutionContext& executionContext = *this->getExecutionContext();
+  ExecutionContext& execution_context = *this->GetExecutionContext();
 
-  Vector<KURL> completedURLs;
-  for (const String& urlString : urls) {
-    const KURL& url = executionContext.completeURL(urlString);
-    if (!url.isValid()) {
-      exceptionState.throwDOMException(
-          SyntaxError, "The URL '" + urlString + "' is invalid.");
+  Vector<KURL> completed_ur_ls;
+  for (const String& url_string : urls) {
+    const KURL& url = execution_context.CompleteURL(url_string);
+    if (!url.IsValid()) {
+      exception_state.ThrowDOMException(
+          kSyntaxError, "The URL '" + url_string + "' is invalid.");
       return;
     }
-    if (!contentSecurityPolicy()->allowScriptFromSource(
-            url, AtomicString(), IntegrityMetadataSet(), NotParserInserted)) {
-      exceptionState.throwDOMException(
-          NetworkError,
-          "The script at '" + url.elidedString() + "' failed to load.");
+    if (!GetContentSecurityPolicy()->AllowScriptFromSource(
+            url, AtomicString(), IntegrityMetadataSet(), kNotParserInserted)) {
+      exception_state.ThrowDOMException(
+          kNetworkError,
+          "The script at '" + url.ElidedString() + "' failed to load.");
       return;
     }
-    completedURLs.push_back(url);
+    completed_ur_ls.push_back(url);
   }
 
-  for (const KURL& completeURL : completedURLs) {
-    RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
-    scriptLoader->setRequestContext(WebURLRequest::RequestContextScript);
-    scriptLoader->loadSynchronously(
-        executionContext, completeURL, AllowCrossOriginRequests,
-        executionContext.securityContext().addressSpace());
+  for (const KURL& complete_url : completed_ur_ls) {
+    RefPtr<WorkerScriptLoader> script_loader(WorkerScriptLoader::Create());
+    script_loader->SetRequestContext(WebURLRequest::kRequestContextScript);
+    script_loader->LoadSynchronously(
+        execution_context, complete_url, kAllowCrossOriginRequests,
+        execution_context.GetSecurityContext().AddressSpace());
 
     // If the fetching attempt failed, throw a NetworkError exception and
     // abort all these steps.
-    if (scriptLoader->failed()) {
-      exceptionState.throwDOMException(
-          NetworkError,
-          "The script at '" + completeURL.elidedString() + "' failed to load.");
+    if (script_loader->Failed()) {
+      exception_state.ThrowDOMException(
+          kNetworkError, "The script at '" + complete_url.ElidedString() +
+                             "' failed to load.");
       return;
     }
 
-    probe::scriptImported(&executionContext, scriptLoader->identifier(),
-                          scriptLoader->script());
+    probe::scriptImported(&execution_context, script_loader->Identifier(),
+                          script_loader->Script());
 
-    ErrorEvent* errorEvent = nullptr;
-    std::unique_ptr<Vector<char>> cachedMetaData(
-        scriptLoader->releaseCachedMetadata());
-    CachedMetadataHandler* handler(createWorkerScriptCachedMetadataHandler(
-        completeURL, cachedMetaData.get()));
-    thread()->workerReportingProxy().willEvaluateImportedScript(
-        scriptLoader->script().length(),
-        scriptLoader->cachedMetadata() ? scriptLoader->cachedMetadata()->size()
-                                       : 0);
-    m_scriptController->evaluate(
-        ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()),
-        &errorEvent, handler, m_v8CacheOptions);
-    if (errorEvent) {
-      m_scriptController->rethrowExceptionFromImportedScript(errorEvent,
-                                                             exceptionState);
+    ErrorEvent* error_event = nullptr;
+    std::unique_ptr<Vector<char>> cached_meta_data(
+        script_loader->ReleaseCachedMetadata());
+    CachedMetadataHandler* handler(CreateWorkerScriptCachedMetadataHandler(
+        complete_url, cached_meta_data.get()));
+    GetThread()->GetWorkerReportingProxy().WillEvaluateImportedScript(
+        script_loader->Script().length(),
+        script_loader->CachedMetadata()
+            ? script_loader->CachedMetadata()->size()
+            : 0);
+    script_controller_->Evaluate(
+        ScriptSourceCode(script_loader->Script(), script_loader->ResponseURL()),
+        &error_event, handler, v8_cache_options_);
+    if (error_event) {
+      script_controller_->RethrowExceptionFromImportedScript(error_event,
+                                                             exception_state);
       return;
     }
   }
 }
 
-v8::Local<v8::Object> WorkerGlobalScope::wrap(
+v8::Local<v8::Object> WorkerGlobalScope::Wrap(
     v8::Isolate*,
-    v8::Local<v8::Object> creationContext) {
+    v8::Local<v8::Object> creation_context) {
   LOG(FATAL) << "WorkerGlobalScope must never be wrapped with wrap method.  "
                 "The global object of ECMAScript environment is used as the "
                 "wrapper.";
   return v8::Local<v8::Object>();
 }
 
-v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(
+v8::Local<v8::Object> WorkerGlobalScope::AssociateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
@@ -250,132 +252,134 @@ v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(
   return v8::Local<v8::Object>();
 }
 
-bool WorkerGlobalScope::hasPendingActivity() const {
-  return m_timers.hasInstalledTimeout();
+bool WorkerGlobalScope::HasPendingActivity() const {
+  return timers_.HasInstalledTimeout();
 }
 
-bool WorkerGlobalScope::isJSExecutionForbidden() const {
-  return m_scriptController->isExecutionForbidden();
+bool WorkerGlobalScope::IsJSExecutionForbidden() const {
+  return script_controller_->IsExecutionForbidden();
 }
 
-bool WorkerGlobalScope::isContextThread() const {
-  return thread()->isCurrentThread();
+bool WorkerGlobalScope::IsContextThread() const {
+  return GetThread()->IsCurrentThread();
 }
 
-void WorkerGlobalScope::disableEval(const String& errorMessage) {
-  m_scriptController->disableEval(errorMessage);
+void WorkerGlobalScope::DisableEval(const String& error_message) {
+  script_controller_->DisableEval(error_message);
 }
 
-void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage) {
-  DCHECK(isContextThread());
-  thread()->workerReportingProxy().reportConsoleMessage(
-      consoleMessage->source(), consoleMessage->level(),
-      consoleMessage->message(), consoleMessage->location());
-  thread()->consoleMessageStorage()->addConsoleMessage(this, consoleMessage);
+void WorkerGlobalScope::AddConsoleMessage(ConsoleMessage* console_message) {
+  DCHECK(IsContextThread());
+  GetThread()->GetWorkerReportingProxy().ReportConsoleMessage(
+      console_message->Source(), console_message->Level(),
+      console_message->Message(), console_message->Location());
+  GetThread()->GetConsoleMessageStorage()->AddConsoleMessage(this,
+                                                             console_message);
 }
 
-WorkerEventQueue* WorkerGlobalScope::getEventQueue() const {
-  return m_eventQueue.get();
+WorkerEventQueue* WorkerGlobalScope::GetEventQueue() const {
+  return event_queue_.Get();
 }
 
-bool WorkerGlobalScope::isSecureContext(
-    String& errorMessage,
-    const SecureContextCheck privilegeContextCheck) const {
+bool WorkerGlobalScope::IsSecureContext(
+    String& error_message,
+    const SecureContextCheck privilege_context_check) const {
   // Until there are APIs that are available in workers and that
   // require a privileged context test that checks ancestors, just do
   // a simple check here. Once we have a need for a real
   // |isSecureContext| check here, we can check the responsible
   // document for a privileged context at worker creation time, pass
   // it in via WorkerThreadStartupData, and check it here.
-  if (getSecurityOrigin()->isPotentiallyTrustworthy())
+  if (GetSecurityOrigin()->IsPotentiallyTrustworthy())
     return true;
-  errorMessage = getSecurityOrigin()->isPotentiallyTrustworthyErrorMessage();
+  error_message = GetSecurityOrigin()->IsPotentiallyTrustworthyErrorMessage();
   return false;
 }
 
-ExecutionContext* WorkerGlobalScope::getExecutionContext() const {
+ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
     const KURL& url,
-    const String& userAgent,
+    const String& user_agent,
     WorkerThread* thread,
-    double timeOrigin,
-    std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData,
-    WorkerClients* workerClients)
-    : m_url(url),
-      m_userAgent(userAgent),
-      m_v8CacheOptions(V8CacheOptionsDefault),
-      m_scriptController(
-          WorkerOrWorkletScriptController::create(this, thread->isolate())),
-      m_thread(thread),
-      m_closing(false),
-      m_eventQueue(WorkerEventQueue::create(this)),
-      m_workerClients(workerClients),
-      m_timers(
-          Platform::current()->currentThread()->scheduler()->timerTaskRunner()),
-      m_timeOrigin(timeOrigin),
-      m_lastPendingErrorEventId(0) {
-  InstanceCounters::incrementCounter(
-      InstanceCounters::WorkerGlobalScopeCounter);
-  setSecurityOrigin(SecurityOrigin::create(url));
-  if (starterOriginPrivilageData)
-    getSecurityOrigin()->transferPrivilegesFrom(
-        std::move(starterOriginPrivilageData));
+    double time_origin,
+    std::unique_ptr<SecurityOrigin::PrivilegeData>
+        starter_origin_privilage_data,
+    WorkerClients* worker_clients)
+    : url_(url),
+      user_agent_(user_agent),
+      v8_cache_options_(kV8CacheOptionsDefault),
+      script_controller_(
+          WorkerOrWorkletScriptController::Create(this, thread->GetIsolate())),
+      thread_(thread),
+      closing_(false),
+      event_queue_(WorkerEventQueue::Create(this)),
+      worker_clients_(worker_clients),
+      timers_(
+          Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner()),
+      time_origin_(time_origin),
+      last_pending_error_event_id_(0) {
+  InstanceCounters::IncrementCounter(
+      InstanceCounters::kWorkerGlobalScopeCounter);
+  SetSecurityOrigin(SecurityOrigin::Create(url));
+  if (starter_origin_privilage_data)
+    GetSecurityOrigin()->TransferPrivilegesFrom(
+        std::move(starter_origin_privilage_data));
 
-  if (m_workerClients)
-    m_workerClients->reattachThread();
+  if (worker_clients_)
+    worker_clients_->ReattachThread();
 }
 
-void WorkerGlobalScope::applyContentSecurityPolicyFromVector(
+void WorkerGlobalScope::ApplyContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
-  if (!contentSecurityPolicy()) {
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
-    setContentSecurityPolicy(csp);
+  if (!GetContentSecurityPolicy()) {
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    SetContentSecurityPolicy(csp);
   }
-  for (const auto& policyAndType : headers)
-    contentSecurityPolicy()->didReceiveHeader(
-        policyAndType.first, policyAndType.second,
-        ContentSecurityPolicyHeaderSourceHTTP);
-  contentSecurityPolicy()->bindToExecutionContext(getExecutionContext());
+  for (const auto& policy_and_type : headers)
+    GetContentSecurityPolicy()->DidReceiveHeader(
+        policy_and_type.first, policy_and_type.second,
+        kContentSecurityPolicyHeaderSourceHTTP);
+  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
 }
 
-void WorkerGlobalScope::setWorkerSettings(
-    std::unique_ptr<WorkerSettings> workerSettings) {
-  m_workerSettings = std::move(workerSettings);
+void WorkerGlobalScope::SetWorkerSettings(
+    std::unique_ptr<WorkerSettings> worker_settings) {
+  worker_settings_ = std::move(worker_settings);
 }
 
-void WorkerGlobalScope::exceptionThrown(ErrorEvent* event) {
-  int nextId = ++m_lastPendingErrorEventId;
-  m_pendingErrorEvents.set(nextId, event);
-  thread()->workerReportingProxy().reportException(
-      event->messageForConsole(), event->location()->clone(), nextId);
+void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
+  int next_id = ++last_pending_error_event_id_;
+  pending_error_events_.Set(next_id, event);
+  GetThread()->GetWorkerReportingProxy().ReportException(
+      event->MessageForConsole(), event->Location()->Clone(), next_id);
 }
 
-void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url) {
-  m_thread->getParentFrameTaskRunners()
-      ->get(TaskType::Networking)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(&removeURLFromMemoryCacheInternal, url));
+void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
+  thread_->GetParentFrameTaskRunners()
+      ->Get(TaskType::kNetworking)
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
 }
 
-KURL WorkerGlobalScope::virtualCompleteURL(const String& url) const {
-  return completeURL(url);
+KURL WorkerGlobalScope::VirtualCompleteURL(const String& url) const {
+  return CompleteURL(url);
 }
 
 DEFINE_TRACE(WorkerGlobalScope) {
-  visitor->trace(m_location);
-  visitor->trace(m_navigator);
-  visitor->trace(m_scriptController);
-  visitor->trace(m_eventQueue);
-  visitor->trace(m_timers);
-  visitor->trace(m_eventListeners);
-  visitor->trace(m_pendingErrorEvents);
-  ExecutionContext::trace(visitor);
-  EventTargetWithInlineData::trace(visitor);
-  SecurityContext::trace(visitor);
-  Supplementable<WorkerGlobalScope>::trace(visitor);
+  visitor->Trace(location_);
+  visitor->Trace(navigator_);
+  visitor->Trace(script_controller_);
+  visitor->Trace(event_queue_);
+  visitor->Trace(timers_);
+  visitor->Trace(event_listeners_);
+  visitor->Trace(pending_error_events_);
+  ExecutionContext::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  SecurityContext::Trace(visitor);
+  Supplementable<WorkerGlobalScope>::Trace(visitor);
 }
 
 }  // namespace blink

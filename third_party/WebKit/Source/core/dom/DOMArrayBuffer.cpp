@@ -9,26 +9,26 @@
 
 namespace blink {
 
-DOMArrayBuffer* DOMArrayBuffer::createUninitializedOrNull(
-    unsigned numElements,
-    unsigned elementByteSize) {
-  RefPtr<ArrayBuffer> buffer =
-      WTF::ArrayBuffer::createUninitializedOrNull(numElements, elementByteSize);
+DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
+    unsigned num_elements,
+    unsigned element_byte_size) {
+  RefPtr<ArrayBuffer> buffer = WTF::ArrayBuffer::CreateUninitializedOrNull(
+      num_elements, element_byte_size);
   if (!buffer)
     return nullptr;
-  return create(std::move(buffer));
+  return Create(std::move(buffer));
 }
 
-v8::Local<v8::Object> DOMArrayBuffer::wrap(
+v8::Local<v8::Object> DOMArrayBuffer::Wrap(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> creationContext) {
-  DCHECK(!DOMDataStore::containsWrapper(this, isolate));
+    v8::Local<v8::Object> creation_context) {
+  DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
 
-  const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
+  const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
   v8::Local<v8::Object> wrapper =
-      v8::ArrayBuffer::New(isolate, data(), byteLength());
+      v8::ArrayBuffer::New(isolate, Data(), ByteLength());
 
-  return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
+  return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }
 
 }  // namespace blink

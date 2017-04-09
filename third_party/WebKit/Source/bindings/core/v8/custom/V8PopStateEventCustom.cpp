@@ -47,40 +47,40 @@ constexpr char kSymbolKey[] = "History#State";
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return
 // it, for convenience.
-static v8::Local<v8::Value> cacheState(ScriptState* scriptState,
-                                       v8::Local<v8::Object> popStateEvent,
+static v8::Local<v8::Value> CacheState(ScriptState* script_state,
+                                       v8::Local<v8::Object> pop_state_event,
                                        v8::Local<v8::Value> state) {
-  V8PrivateProperty::getPopStateEventState(scriptState->isolate())
-      .set(popStateEvent, state);
+  V8PrivateProperty::GetPopStateEventState(script_state->GetIsolate())
+      .Set(pop_state_event, state);
   return state;
 }
 
 void V8PopStateEvent::stateAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
-  ScriptState* scriptState = ScriptState::current(isolate);
-  V8PrivateProperty::Symbol propertySymbol =
-      V8PrivateProperty::getPopStateEventState(isolate);
-  v8::Local<v8::Value> result = propertySymbol.getOrEmpty(info.Holder());
+  ScriptState* script_state = ScriptState::Current(isolate);
+  V8PrivateProperty::Symbol property_symbol =
+      V8PrivateProperty::GetPopStateEventState(isolate);
+  v8::Local<v8::Value> result = property_symbol.GetOrEmpty(info.Holder());
 
   if (!result.IsEmpty()) {
-    v8SetReturnValue(info, result);
+    V8SetReturnValue(info, result);
     return;
   }
 
   PopStateEvent* event = V8PopStateEvent::toImpl(info.Holder());
-  History* history = event->history();
-  if (!history || !event->serializedState()) {
+  History* history = event->GetHistory();
+  if (!history || !event->SerializedState()) {
     // If the event doesn't have serializedState(), it means that the
     // event was initialized with PopStateEventInit. In such case, we need
     // to get a v8 value for the current world from state().
-    if (event->serializedState())
-      result = event->serializedState()->deserialize(isolate);
+    if (event->SerializedState())
+      result = event->SerializedState()->Deserialize(isolate);
     else
-      result = event->state().v8ValueFor(scriptState);
+      result = event->state().V8ValueFor(script_state);
     if (result.IsEmpty())
       result = v8::Null(isolate);
-    v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
+    V8SetReturnValue(info, CacheState(script_state, info.Holder(), result));
     return;
   }
 
@@ -92,27 +92,28 @@ void V8PopStateEvent::stateAttributeGetterCustom(
   // need to take care of using the correct one, and always share the same
   // deserialization with history.state.
 
-  bool isSameState = history->isSameAsCurrentState(event->serializedState());
-  if (isSameState) {
-    V8PrivateProperty::Symbol historyState =
-        V8PrivateProperty::getSymbol(isolate, kSymbolKey);
-    v8::Local<v8::Value> v8HistoryValue = ToV8(history, info.Holder(), isolate);
-    if (v8HistoryValue.IsEmpty())
+  bool is_same_state = history->IsSameAsCurrentState(event->SerializedState());
+  if (is_same_state) {
+    V8PrivateProperty::Symbol history_state =
+        V8PrivateProperty::GetSymbol(isolate, kSymbolKey);
+    v8::Local<v8::Value> v8_history_value =
+        ToV8(history, info.Holder(), isolate);
+    if (v8_history_value.IsEmpty())
       return;
-    v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
-    if (!history->stateChanged() && historyState.hasValue(v8History)) {
-      v8SetReturnValue(info,
-                       cacheState(scriptState, info.Holder(),
-                                  historyState.getOrUndefined(v8History)));
+    v8::Local<v8::Object> v8_history = v8_history_value.As<v8::Object>();
+    if (!history->stateChanged() && history_state.HasValue(v8_history)) {
+      V8SetReturnValue(info,
+                       CacheState(script_state, info.Holder(),
+                                  history_state.GetOrUndefined(v8_history)));
       return;
     }
-    result = event->serializedState()->deserialize(isolate);
-    historyState.set(v8History, result);
+    result = event->SerializedState()->Deserialize(isolate);
+    history_state.Set(v8_history, result);
   } else {
-    result = event->serializedState()->deserialize(isolate);
+    result = event->SerializedState()->Deserialize(isolate);
   }
 
-  v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
+  V8SetReturnValue(info, CacheState(script_state, info.Holder(), result));
 }
 
 }  // namespace blink

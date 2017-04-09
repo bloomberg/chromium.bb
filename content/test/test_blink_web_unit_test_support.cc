@@ -99,7 +99,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-  url_loader_factory_ = blink::WebURLLoaderMockFactory::create();
+  url_loader_factory_ = blink::WebURLLoaderMockFactory::Create();
   mock_clipboard_.reset(new MockWebClipboardImpl());
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -132,15 +132,15 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
 
-  blink::initialize(this);
-  blink::setLayoutTestMode(true);
-  blink::WebRuntimeFeatures::enableDatabase(true);
-  blink::WebRuntimeFeatures::enableNotifications(true);
-  blink::WebRuntimeFeatures::enableTouchEventFeatureDetection(true);
+  blink::Initialize(this);
+  blink::SetLayoutTestMode(true);
+  blink::WebRuntimeFeatures::EnableDatabase(true);
+  blink::WebRuntimeFeatures::EnableNotifications(true);
+  blink::WebRuntimeFeatures::EnableTouchEventFeatureDetection(true);
 
   // Initialize NetworkStateNotifier.
-  blink::WebNetworkStateNotifier::setWebConnection(
-      blink::WebConnectionType::WebConnectionTypeUnknown,
+  blink::WebNetworkStateNotifier::SetWebConnection(
+      blink::WebConnectionType::kWebConnectionTypeUnknown,
       std::numeric_limits<double>::infinity());
 
   // Initialize libraries for media.
@@ -169,107 +169,106 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   base::FeatureList::ClearInstanceForTesting();
 }
 
-blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::getBlobRegistry() {
+blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
   return &blob_registry_;
 }
 
-blink::WebClipboard* TestBlinkWebUnitTestSupport::clipboard() {
+blink::WebClipboard* TestBlinkWebUnitTestSupport::Clipboard() {
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
   return mock_clipboard_.get();
 }
 
-blink::WebFileUtilities* TestBlinkWebUnitTestSupport::fileUtilities() {
+blink::WebFileUtilities* TestBlinkWebUnitTestSupport::GetFileUtilities() {
   return &file_utilities_;
 }
 
-blink::WebIDBFactory* TestBlinkWebUnitTestSupport::idbFactory() {
+blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {
   NOTREACHED() <<
       "IndexedDB cannot be tested with in-process harnesses.";
   return NULL;
 }
 
-blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
+blink::WebURLLoader* TestBlinkWebUnitTestSupport::CreateURLLoader() {
   // This loader should be used only for process-local resources such as
   // data URLs.
   blink::WebURLLoader* default_loader = new WebURLLoaderImpl(nullptr, nullptr);
-  return url_loader_factory_->createURLLoader(default_loader);
+  return url_loader_factory_->CreateURLLoader(default_loader);
 }
 
-blink::WebString TestBlinkWebUnitTestSupport::userAgent() {
-  return blink::WebString::fromUTF8("test_runner/0.0.0.0");
+blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {
+  return blink::WebString::FromUTF8("test_runner/0.0.0.0");
 }
 
 std::unique_ptr<cc::SharedBitmap>
-TestBlinkWebUnitTestSupport::allocateSharedBitmap(
-    const blink::WebSize& size) {
+TestBlinkWebUnitTestSupport::AllocateSharedBitmap(const blink::WebSize& size) {
   return shared_bitmap_manager_
       ->AllocateSharedBitmap(gfx::Size(size.width, size.height));
 }
 
-blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
+blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
     blink::WebLocalizedString::Name name) {
   // Returns placeholder strings to check if they are correctly localized.
   switch (name) {
-    case blink::WebLocalizedString::OtherDateLabel:
-      return WebString::fromASCII("<<OtherDateLabel>>");
-    case blink::WebLocalizedString::OtherMonthLabel:
-      return WebString::fromASCII("<<OtherMonthLabel>>");
-    case blink::WebLocalizedString::OtherTimeLabel:
-      return WebString::fromASCII("<<OtherTimeLabel>>");
-    case blink::WebLocalizedString::OtherWeekLabel:
-      return WebString::fromASCII("<<OtherWeekLabel>>");
-    case blink::WebLocalizedString::CalendarClear:
-      return WebString::fromASCII("<<CalendarClear>>");
-    case blink::WebLocalizedString::CalendarToday:
-      return WebString::fromASCII("<<CalendarToday>>");
-    case blink::WebLocalizedString::ThisMonthButtonLabel:
-      return WebString::fromASCII("<<ThisMonthLabel>>");
-    case blink::WebLocalizedString::ThisWeekButtonLabel:
-      return WebString::fromASCII("<<ThisWeekLabel>>");
-    case blink::WebLocalizedString::ValidationValueMissing:
-      return WebString::fromASCII("<<ValidationValueMissing>>");
-    case blink::WebLocalizedString::ValidationValueMissingForSelect:
-      return WebString::fromASCII("<<ValidationValueMissingForSelect>>");
-    case blink::WebLocalizedString::WeekFormatTemplate:
-      return WebString::fromASCII("Week $2, $1");
+    case blink::WebLocalizedString::kOtherDateLabel:
+      return WebString::FromASCII("<<OtherDateLabel>>");
+    case blink::WebLocalizedString::kOtherMonthLabel:
+      return WebString::FromASCII("<<OtherMonthLabel>>");
+    case blink::WebLocalizedString::kOtherTimeLabel:
+      return WebString::FromASCII("<<OtherTimeLabel>>");
+    case blink::WebLocalizedString::kOtherWeekLabel:
+      return WebString::FromASCII("<<OtherWeekLabel>>");
+    case blink::WebLocalizedString::kCalendarClear:
+      return WebString::FromASCII("<<CalendarClear>>");
+    case blink::WebLocalizedString::kCalendarToday:
+      return WebString::FromASCII("<<CalendarToday>>");
+    case blink::WebLocalizedString::kThisMonthButtonLabel:
+      return WebString::FromASCII("<<ThisMonthLabel>>");
+    case blink::WebLocalizedString::kThisWeekButtonLabel:
+      return WebString::FromASCII("<<ThisWeekLabel>>");
+    case blink::WebLocalizedString::kValidationValueMissing:
+      return WebString::FromASCII("<<ValidationValueMissing>>");
+    case blink::WebLocalizedString::kValidationValueMissingForSelect:
+      return WebString::FromASCII("<<ValidationValueMissingForSelect>>");
+    case blink::WebLocalizedString::kWeekFormatTemplate:
+      return WebString::FromASCII("Week $2, $1");
     default:
       return blink::WebString();
   }
 }
 
-blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
+blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
     blink::WebLocalizedString::Name name,
     const blink::WebString& value) {
-  if (name == blink::WebLocalizedString::ValidationRangeUnderflow)
-    return blink::WebString::fromASCII("range underflow");
-  if (name == blink::WebLocalizedString::ValidationRangeOverflow)
-    return blink::WebString::fromASCII("range overflow");
-  if (name == blink::WebLocalizedString::SelectMenuListText)
-    return blink::WebString::fromASCII("$1 selected");
-  return BlinkPlatformImpl::queryLocalizedString(name, value);
+  if (name == blink::WebLocalizedString::kValidationRangeUnderflow)
+    return blink::WebString::FromASCII("range underflow");
+  if (name == blink::WebLocalizedString::kValidationRangeOverflow)
+    return blink::WebString::FromASCII("range overflow");
+  if (name == blink::WebLocalizedString::kSelectMenuListText)
+    return blink::WebString::FromASCII("$1 selected");
+  return BlinkPlatformImpl::QueryLocalizedString(name, value);
 }
 
-blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(
+blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
     blink::WebLocalizedString::Name name,
     const blink::WebString& value1,
     const blink::WebString& value2) {
-  if (name == blink::WebLocalizedString::ValidationTooLong)
-    return blink::WebString::fromASCII("too long");
-  if (name == blink::WebLocalizedString::ValidationStepMismatch)
-    return blink::WebString::fromASCII("step mismatch");
-  return BlinkPlatformImpl::queryLocalizedString(name, value1, value2);
+  if (name == blink::WebLocalizedString::kValidationTooLong)
+    return blink::WebString::FromASCII("too long");
+  if (name == blink::WebLocalizedString::kValidationStepMismatch)
+    return blink::WebString::FromASCII("step mismatch");
+  return BlinkPlatformImpl::QueryLocalizedString(name, value1, value2);
 }
 
-blink::WebString TestBlinkWebUnitTestSupport::defaultLocale() {
-  return blink::WebString::fromASCII("en-US");
+blink::WebString TestBlinkWebUnitTestSupport::DefaultLocale() {
+  return blink::WebString::FromASCII("en-US");
 }
 
-blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::compositorSupport() {
+blink::WebCompositorSupport* TestBlinkWebUnitTestSupport::CompositorSupport() {
   return &compositor_support_;
 }
 
-blink::WebGestureCurve* TestBlinkWebUnitTestSupport::createFlingAnimationCurve(
+blink::WebGestureCurve* TestBlinkWebUnitTestSupport::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
@@ -278,22 +277,22 @@ blink::WebGestureCurve* TestBlinkWebUnitTestSupport::createFlingAnimationCurve(
 }
 
 blink::WebURLLoaderMockFactory*
-TestBlinkWebUnitTestSupport::getURLLoaderMockFactory() {
+TestBlinkWebUnitTestSupport::GetURLLoaderMockFactory() {
   return url_loader_factory_.get();
 }
 
-blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {
-  if (web_thread_ && web_thread_->isCurrentThread())
+blink::WebThread* TestBlinkWebUnitTestSupport::CurrentThread() {
+  if (web_thread_ && web_thread_->IsCurrentThread())
     return web_thread_.get();
-  return BlinkPlatformImpl::currentThread();
+  return BlinkPlatformImpl::CurrentThread();
 }
 
-void TestBlinkWebUnitTestSupport::getPluginList(
+void TestBlinkWebUnitTestSupport::GetPluginList(
     bool refresh,
     const blink::WebSecurityOrigin& mainFrameOrigin,
     blink::WebPluginListBuilder* builder) {
-  builder->addPlugin("pdf", "pdf", "pdf-files");
-  builder->addMediaTypeToLastPlugin("application/pdf", "pdf");
+  builder->AddPlugin("pdf", "pdf", "pdf-files");
+  builder->AddMediaTypeToLastPlugin("application/pdf", "pdf");
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -301,26 +300,26 @@ namespace {
 
 class TestWebRTCCertificateGenerator
     : public blink::WebRTCCertificateGenerator {
-  void generateCertificate(
+  void GenerateCertificate(
       const blink::WebRTCKeyParams& key_params,
       std::unique_ptr<blink::WebRTCCertificateCallback> callback) override {
     NOTIMPLEMENTED();
   }
-  void generateCertificateWithExpiration(
+  void GenerateCertificateWithExpiration(
       const blink::WebRTCKeyParams& key_params,
       uint64_t expires_ms,
       std::unique_ptr<blink::WebRTCCertificateCallback> callback) override {
     NOTIMPLEMENTED();
   }
-  bool isSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override {
+  bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override {
     return false;
   }
-  std::unique_ptr<blink::WebRTCCertificate> fromPEM(
+  std::unique_ptr<blink::WebRTCCertificate> FromPEM(
       blink::WebString pem_private_key,
       blink::WebString pem_certificate) override {
     rtc::scoped_refptr<rtc::RTCCertificate> certificate =
         rtc::RTCCertificate::FromPEM(rtc::RTCCertificatePEM(
-            pem_private_key.utf8(), pem_certificate.utf8()));
+            pem_private_key.Utf8(), pem_certificate.Utf8()));
     if (!certificate)
       return nullptr;
     return base::MakeUnique<RTCCertificate>(certificate);
@@ -331,7 +330,7 @@ class TestWebRTCCertificateGenerator
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 blink::WebRTCCertificateGenerator*
-TestBlinkWebUnitTestSupport::createRTCCertificateGenerator() {
+TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
 #if BUILDFLAG(ENABLE_WEBRTC)
   return new TestWebRTCCertificateGenerator();
 #else

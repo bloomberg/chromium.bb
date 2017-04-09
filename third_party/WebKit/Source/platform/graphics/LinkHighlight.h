@@ -13,9 +13,9 @@ class WebLayer;
 
 class PLATFORM_EXPORT LinkHighlight {
  public:
-  virtual void invalidate() = 0;
-  virtual void clearCurrentGraphicsLayer() = 0;
-  virtual WebLayer* layer() = 0;
+  virtual void Invalidate() = 0;
+  virtual void ClearCurrentGraphicsLayer() = 0;
+  virtual WebLayer* Layer() = 0;
 
  protected:
   virtual ~LinkHighlight() {}

@@ -48,60 +48,60 @@ class LineBoxList {
   DISALLOW_NEW();
 
  public:
-  LineBoxList() : m_firstLineBox(nullptr), m_lastLineBox(nullptr) {}
+  LineBoxList() : first_line_box_(nullptr), last_line_box_(nullptr) {}
 
 #if DCHECK_IS_ON()
   ~LineBoxList();
 #endif
 
-  InlineFlowBox* firstLineBox() const { return m_firstLineBox; }
-  InlineFlowBox* lastLineBox() const { return m_lastLineBox; }
+  InlineFlowBox* FirstLineBox() const { return first_line_box_; }
+  InlineFlowBox* LastLineBox() const { return last_line_box_; }
 
-  void checkConsistency() const;
+  void CheckConsistency() const;
 
-  void appendLineBox(InlineFlowBox*);
+  void AppendLineBox(InlineFlowBox*);
 
-  void deleteLineBoxTree();
-  void deleteLineBoxes();
+  void DeleteLineBoxTree();
+  void DeleteLineBoxes();
 
-  void extractLineBox(InlineFlowBox*);
-  void attachLineBox(InlineFlowBox*);
-  void removeLineBox(InlineFlowBox*);
+  void ExtractLineBox(InlineFlowBox*);
+  void AttachLineBox(InlineFlowBox*);
+  void RemoveLineBox(InlineFlowBox*);
 
-  void dirtyLineBoxes();
-  void dirtyLinesFromChangedChild(LineLayoutItem parent,
+  void DirtyLineBoxes();
+  void DirtyLinesFromChangedChild(LineLayoutItem parent,
                                   LineLayoutItem child,
-                                  bool canDirtyAncestors);
+                                  bool can_dirty_ancestors);
 
-  bool hitTest(LineLayoutBoxModel,
+  bool HitTest(LineLayoutBoxModel,
                HitTestResult&,
-               const HitTestLocation& locationInContainer,
-               const LayoutPoint& accumulatedOffset,
+               const HitTestLocation& location_in_container,
+               const LayoutPoint& accumulated_offset,
                HitTestAction) const;
-  bool anyLineIntersectsRect(LineLayoutBoxModel,
+  bool AnyLineIntersectsRect(LineLayoutBoxModel,
                              const CullRect&,
                              const LayoutPoint&) const;
-  bool lineIntersectsDirtyRect(LineLayoutBoxModel,
+  bool LineIntersectsDirtyRect(LineLayoutBoxModel,
                                InlineFlowBox*,
                                const CullRect&,
                                const LayoutPoint&) const;
 
  private:
-  bool rangeIntersectsRect(LineLayoutBoxModel,
-                           LayoutUnit logicalTop,
-                           LayoutUnit logicalBottom,
+  bool RangeIntersectsRect(LineLayoutBoxModel,
+                           LayoutUnit logical_top,
+                           LayoutUnit logical_bottom,
                            const CullRect&,
                            const LayoutPoint&) const;
 
   // For block flows, each box represents the root inline box for a line in the
   // paragraph.
   // For inline flows, each box represents a portion of that inline.
-  InlineFlowBox* m_firstLineBox;
-  InlineFlowBox* m_lastLineBox;
+  InlineFlowBox* first_line_box_;
+  InlineFlowBox* last_line_box_;
 };
 
 #if !DCHECK_IS_ON()
-inline void LineBoxList::checkConsistency() const {}
+inline void LineBoxList::CheckConsistency() const {}
 #endif
 
 }  // namespace blink

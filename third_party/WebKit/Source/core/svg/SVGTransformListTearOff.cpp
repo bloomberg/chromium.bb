@@ -36,33 +36,33 @@ namespace blink {
 
 SVGTransformListTearOff::SVGTransformListTearOff(
     SVGTransformList* target,
-    SVGElement* contextElement,
-    PropertyIsAnimValType propertyIsAnimVal,
-    const QualifiedName& attributeName = QualifiedName::null())
+    SVGElement* context_element,
+    PropertyIsAnimValType property_is_anim_val,
+    const QualifiedName& attribute_name = QualifiedName::Null())
     : SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>(
           target,
-          contextElement,
-          propertyIsAnimVal,
-          attributeName) {}
+          context_element,
+          property_is_anim_val,
+          attribute_name) {}
 
 SVGTransformListTearOff::~SVGTransformListTearOff() {}
 
 SVGTransformTearOff* SVGTransformListTearOff::createSVGTransformFromMatrix(
     SVGMatrixTearOff* matrix) const {
-  return SVGTransformTearOff::create(matrix);
+  return SVGTransformTearOff::Create(matrix);
 }
 
 SVGTransformTearOff* SVGTransformListTearOff::consolidate(
-    ExceptionState& exceptionState) {
-  if (isImmutable()) {
-    throwReadOnly(exceptionState);
+    ExceptionState& exception_state) {
+  if (IsImmutable()) {
+    ThrowReadOnly(exception_state);
     return nullptr;
   }
-  return createItemTearOff(target()->consolidate());
+  return CreateItemTearOff(Target()->Consolidate());
 }
 
 DEFINE_TRACE_WRAPPERS(SVGTransformListTearOff) {
-  visitor->traceWrappers(contextElement());
+  visitor->TraceWrappers(contextElement());
 }
 
 }  // namespace blink

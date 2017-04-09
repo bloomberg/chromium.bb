@@ -35,168 +35,168 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutTableCol::LayoutTableCol(Element* element)
-    : LayoutTableBoxComponent(element), m_span(1) {
+    : LayoutTableBoxComponent(element), span_(1) {
   // init LayoutObject attributes
-  setInline(true);  // our object is not Inline
-  updateFromElement();
+  SetInline(true);  // our object is not Inline
+  UpdateFromElement();
 }
 
-void LayoutTableCol::styleDidChange(StyleDifference diff,
-                                    const ComputedStyle* oldStyle) {
-  DCHECK(style()->display() == EDisplay::kTableColumn ||
-         style()->display() == EDisplay::kTableColumnGroup);
+void LayoutTableCol::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  DCHECK(Style()->Display() == EDisplay::kTableColumn ||
+         Style()->Display() == EDisplay::kTableColumnGroup);
 
-  LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
+  LayoutTableBoxComponent::StyleDidChange(diff, old_style);
 
-  if (!oldStyle)
+  if (!old_style)
     return;
 
-  LayoutTable* table = this->table();
+  LayoutTable* table = this->Table();
   if (!table)
     return;
 
   // TODO(dgrogan): Is the "else" necessary for correctness or just a brittle
   // optimization? The optimization would be: if the first branch is taken then
   // the next one can't be, so don't even check its condition.
-  if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() &&
-      oldStyle->border() != style()->border()) {
-    table->invalidateCollapsedBorders();
-  } else if ((oldStyle->logicalWidth() != style()->logicalWidth()) ||
-             LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff,
-                                                            *oldStyle)) {
+  if (!table->SelfNeedsLayout() && !table->NormalChildNeedsLayout() &&
+      old_style->Border() != Style()->Border()) {
+    table->InvalidateCollapsedBorders();
+  } else if ((old_style->LogicalWidth() != Style()->LogicalWidth()) ||
+             LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
+                                                            *old_style)) {
     // TODO(dgrogan): Optimization opportunities:
     // (1) Only mark cells which are affected by this col, not every cell in the
     //     table.
     // (2) If only the col width changes and its border width doesn't, do the
     //     cells need to be marked as needing layout or just given dirty
     //     widths?
-    table->markAllCellsWidthsDirtyAndOrNeedsLayout(
-        LayoutTable::MarkDirtyAndNeedsLayout);
+    table->MarkAllCellsWidthsDirtyAndOrNeedsLayout(
+        LayoutTable::kMarkDirtyAndNeedsLayout);
   }
 }
 
-void LayoutTableCol::updateFromElement() {
-  unsigned oldSpan = m_span;
-  Node* n = node();
-  if (isHTMLTableColElement(n)) {
-    HTMLTableColElement& tc = toHTMLTableColElement(*n);
-    m_span = tc.span();
+void LayoutTableCol::UpdateFromElement() {
+  unsigned old_span = span_;
+  Node* n = GetNode();
+  if (IsHTMLTableColElement(n)) {
+    HTMLTableColElement& tc = ToHTMLTableColElement(*n);
+    span_ = tc.span();
   } else {
-    m_span = 1;
+    span_ = 1;
   }
-  if (m_span != oldSpan && style() && parent())
-    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::AttributeChanged);
+  if (span_ != old_span && Style() && Parent())
+    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        LayoutInvalidationReason::kAttributeChanged);
 }
 
-void LayoutTableCol::insertedIntoTree() {
-  LayoutTableBoxComponent::insertedIntoTree();
-  table()->addColumn(this);
+void LayoutTableCol::InsertedIntoTree() {
+  LayoutTableBoxComponent::InsertedIntoTree();
+  Table()->AddColumn(this);
 }
 
-void LayoutTableCol::willBeRemovedFromTree() {
-  LayoutTableBoxComponent::willBeRemovedFromTree();
-  table()->removeColumn(this);
+void LayoutTableCol::WillBeRemovedFromTree() {
+  LayoutTableBoxComponent::WillBeRemovedFromTree();
+  Table()->RemoveColumn(this);
 }
 
-bool LayoutTableCol::isChildAllowed(LayoutObject* child,
+bool LayoutTableCol::IsChildAllowed(LayoutObject* child,
                                     const ComputedStyle& style) const {
   // We cannot use isTableColumn here as style() may return 0.
-  return child->isLayoutTableCol() && style.display() == EDisplay::kTableColumn;
+  return child->IsLayoutTableCol() && style.Display() == EDisplay::kTableColumn;
 }
 
-bool LayoutTableCol::canHaveChildren() const {
+bool LayoutTableCol::CanHaveChildren() const {
   // Cols cannot have children. This is actually necessary to fix a bug
   // with libraries.uc.edu, which makes a <p> be a table-column.
-  return isTableColumnGroup();
+  return IsTableColumnGroup();
 }
 
-LayoutRect LayoutTableCol::localVisualRect() const {
+LayoutRect LayoutTableCol::LocalVisualRect() const {
   // Entire table gets invalidated, instead of invalidating
   // every cell in the column. This is simpler, but suboptimal.
 
-  LayoutTable* table = this->table();
+  LayoutTable* table = this->Table();
   if (!table)
     return LayoutRect();
 
   // The correctness of this method depends on the fact that LayoutTableCol's
   // location is always zero.
-  DCHECK(this->location() == LayoutPoint());
+  DCHECK(this->Location() == LayoutPoint());
 
-  return table->localVisualRect();
+  return table->LocalVisualRect();
 }
 
-void LayoutTableCol::clearPreferredLogicalWidthsDirtyBits() {
-  clearPreferredLogicalWidthsDirty();
+void LayoutTableCol::ClearPreferredLogicalWidthsDirtyBits() {
+  ClearPreferredLogicalWidthsDirty();
 
-  for (LayoutObject* child = firstChild(); child; child = child->nextSibling())
-    child->clearPreferredLogicalWidthsDirty();
+  for (LayoutObject* child = FirstChild(); child; child = child->NextSibling())
+    child->ClearPreferredLogicalWidthsDirty();
 }
 
-LayoutTable* LayoutTableCol::table() const {
-  LayoutObject* table = parent();
-  if (table && !table->isTable())
-    table = table->parent();
-  return table && table->isTable() ? toLayoutTable(table) : nullptr;
+LayoutTable* LayoutTableCol::Table() const {
+  LayoutObject* table = Parent();
+  if (table && !table->IsTable())
+    table = table->Parent();
+  return table && table->IsTable() ? ToLayoutTable(table) : nullptr;
 }
 
-LayoutTableCol* LayoutTableCol::enclosingColumnGroup() const {
-  if (!parent()->isLayoutTableCol())
+LayoutTableCol* LayoutTableCol::EnclosingColumnGroup() const {
+  if (!Parent()->IsLayoutTableCol())
     return nullptr;
 
-  LayoutTableCol* parentColumnGroup = toLayoutTableCol(parent());
-  DCHECK(parentColumnGroup->isTableColumnGroup());
-  DCHECK(isTableColumn());
-  return parentColumnGroup;
+  LayoutTableCol* parent_column_group = ToLayoutTableCol(Parent());
+  DCHECK(parent_column_group->IsTableColumnGroup());
+  DCHECK(IsTableColumn());
+  return parent_column_group;
 }
 
-LayoutTableCol* LayoutTableCol::nextColumn() const {
+LayoutTableCol* LayoutTableCol::NextColumn() const {
   // If |this| is a column-group, the next column is the colgroup's first child
   // column.
-  if (LayoutObject* firstChild = this->firstChild())
-    return toLayoutTableCol(firstChild);
+  if (LayoutObject* first_child = this->FirstChild())
+    return ToLayoutTableCol(first_child);
 
   // Otherwise it's the next column along.
-  LayoutObject* next = nextSibling();
+  LayoutObject* next = NextSibling();
 
   // Failing that, the child is the last column in a column-group, so the next
   // column is the next column/column-group after its column-group.
-  if (!next && parent()->isLayoutTableCol())
-    next = parent()->nextSibling();
+  if (!next && Parent()->IsLayoutTableCol())
+    next = Parent()->NextSibling();
 
-  for (; next && !next->isLayoutTableCol(); next = next->nextSibling()) {
+  for (; next && !next->IsLayoutTableCol(); next = next->NextSibling()) {
   }
 
-  return toLayoutTableCol(next);
+  return ToLayoutTableCol(next);
 }
 
-const BorderValue& LayoutTableCol::borderAdjoiningCellStartBorder(
+const BorderValue& LayoutTableCol::BorderAdjoiningCellStartBorder(
     const LayoutTableCell*) const {
-  return style()->borderStart();
+  return Style()->BorderStart();
 }
 
-const BorderValue& LayoutTableCol::borderAdjoiningCellEndBorder(
+const BorderValue& LayoutTableCol::BorderAdjoiningCellEndBorder(
     const LayoutTableCell*) const {
-  return style()->borderEnd();
+  return Style()->BorderEnd();
 }
 
-const BorderValue& LayoutTableCol::borderAdjoiningCellBefore(
+const BorderValue& LayoutTableCol::BorderAdjoiningCellBefore(
     const LayoutTableCell* cell) const {
-  DCHECK_EQ(table()
-                ->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() +
-                                             cell->colSpan())
-                .innermostColOrColGroup(),
+  DCHECK_EQ(Table()
+                ->ColElementAtAbsoluteColumn(cell->AbsoluteColumnIndex() +
+                                             cell->ColSpan())
+                .InnermostColOrColGroup(),
             this);
-  return style()->borderStart();
+  return Style()->BorderStart();
 }
 
-const BorderValue& LayoutTableCol::borderAdjoiningCellAfter(
+const BorderValue& LayoutTableCol::BorderAdjoiningCellAfter(
     const LayoutTableCell* cell) const {
-  DCHECK_EQ(table()
-                ->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() - 1)
-                .innermostColOrColGroup(),
+  DCHECK_EQ(Table()
+                ->ColElementAtAbsoluteColumn(cell->AbsoluteColumnIndex() - 1)
+                .InnermostColOrColGroup(),
             this);
-  return style()->borderEnd();
+  return Style()->BorderEnd();
 }
 
 }  // namespace blink

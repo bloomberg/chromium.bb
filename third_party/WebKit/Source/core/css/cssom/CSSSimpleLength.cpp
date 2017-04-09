@@ -11,59 +11,59 @@
 
 namespace blink {
 
-CSSSimpleLength* CSSSimpleLength::create(double value,
+CSSSimpleLength* CSSSimpleLength::Create(double value,
                                          const String& type,
-                                         ExceptionState& exceptionState) {
-  CSSPrimitiveValue::UnitType unit = CSSLengthValue::unitFromName(type);
-  if (!CSSLengthValue::isSupportedLengthUnit(unit)) {
-    exceptionState.throwTypeError("Invalid unit for CSSSimpleLength: " + type);
+                                         ExceptionState& exception_state) {
+  CSSPrimitiveValue::UnitType unit = CSSLengthValue::UnitFromName(type);
+  if (!CSSLengthValue::IsSupportedLengthUnit(unit)) {
+    exception_state.ThrowTypeError("Invalid unit for CSSSimpleLength: " + type);
     return nullptr;
   }
   return new CSSSimpleLength(value, unit);
 }
 
-CSSSimpleLength* CSSSimpleLength::fromCSSValue(const CSSPrimitiveValue& value) {
-  DCHECK(value.isLength() || value.isPercentage());
-  if (value.isPercentage())
-    return new CSSSimpleLength(value.getDoubleValue(),
-                               CSSPrimitiveValue::UnitType::Percentage);
-  return new CSSSimpleLength(value.getDoubleValue(),
-                             value.typeWithCalcResolved());
+CSSSimpleLength* CSSSimpleLength::FromCSSValue(const CSSPrimitiveValue& value) {
+  DCHECK(value.IsLength() || value.IsPercentage());
+  if (value.IsPercentage())
+    return new CSSSimpleLength(value.GetDoubleValue(),
+                               CSSPrimitiveValue::UnitType::kPercentage);
+  return new CSSSimpleLength(value.GetDoubleValue(),
+                             value.TypeWithCalcResolved());
 }
 
-bool CSSSimpleLength::containsPercent() const {
-  return lengthUnit() == CSSPrimitiveValue::UnitType::Percentage;
+bool CSSSimpleLength::ContainsPercent() const {
+  return LengthUnit() == CSSPrimitiveValue::UnitType::kPercentage;
 }
 
 String CSSSimpleLength::unit() const {
-  if (lengthUnit() == CSSPrimitiveValue::UnitType::Percentage)
+  if (LengthUnit() == CSSPrimitiveValue::UnitType::kPercentage)
     return "percent";
-  return CSSPrimitiveValue::unitTypeToString(m_unit);
+  return CSSPrimitiveValue::UnitTypeToString(unit_);
 }
 
-CSSLengthValue* CSSSimpleLength::addInternal(const CSSLengthValue* other) {
-  const CSSSimpleLength* o = toCSSSimpleLength(other);
-  DCHECK_EQ(m_unit, o->m_unit);
-  return create(m_value + o->value(), m_unit);
+CSSLengthValue* CSSSimpleLength::AddInternal(const CSSLengthValue* other) {
+  const CSSSimpleLength* o = ToCSSSimpleLength(other);
+  DCHECK_EQ(unit_, o->unit_);
+  return Create(value_ + o->value(), unit_);
 }
 
-CSSLengthValue* CSSSimpleLength::subtractInternal(const CSSLengthValue* other) {
-  const CSSSimpleLength* o = toCSSSimpleLength(other);
-  DCHECK_EQ(m_unit, o->m_unit);
-  return create(m_value - o->value(), m_unit);
+CSSLengthValue* CSSSimpleLength::SubtractInternal(const CSSLengthValue* other) {
+  const CSSSimpleLength* o = ToCSSSimpleLength(other);
+  DCHECK_EQ(unit_, o->unit_);
+  return Create(value_ - o->value(), unit_);
 }
 
-CSSLengthValue* CSSSimpleLength::multiplyInternal(double x) {
-  return create(m_value * x, m_unit);
+CSSLengthValue* CSSSimpleLength::MultiplyInternal(double x) {
+  return Create(value_ * x, unit_);
 }
 
-CSSLengthValue* CSSSimpleLength::divideInternal(double x) {
+CSSLengthValue* CSSSimpleLength::DivideInternal(double x) {
   DCHECK_NE(x, 0);
-  return create(m_value / x, m_unit);
+  return Create(value_ / x, unit_);
 }
 
-CSSValue* CSSSimpleLength::toCSSValue() const {
-  return CSSPrimitiveValue::create(m_value, m_unit);
+CSSValue* CSSSimpleLength::ToCSSValue() const {
+  return CSSPrimitiveValue::Create(value_, unit_);
 }
 
 }  // namespace blink

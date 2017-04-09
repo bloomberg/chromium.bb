@@ -22,14 +22,14 @@ class ClipList {
   ClipList(const ClipList&);
   ~ClipList() {}
 
-  void clipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
-  void playback(PaintCanvas*) const;
-  const SkPath& getCurrentClipPath() const;
+  void ClipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
+  void Playback(PaintCanvas*) const;
+  const SkPath& GetCurrentClipPath() const;
 
  private:
   struct ClipOp {
-    SkPath m_path;
-    AntiAliasingMode m_antiAliasingMode;
+    SkPath path_;
+    AntiAliasingMode anti_aliasing_mode_;
 
     ClipOp();
     ClipOp(const ClipOp&);
@@ -37,10 +37,10 @@ class ClipList {
 
   // Number of clip ops that can be stored in a ClipList without resorting to
   // dynamic allocation
-  static const size_t cInlineClipOpCapacity = 4;
+  static const size_t kCInlineClipOpCapacity = 4;
 
-  WTF::Vector<ClipOp, cInlineClipOpCapacity> m_clipList;
-  SkPath m_currentClipPath;
+  WTF::Vector<ClipOp, kCInlineClipOpCapacity> clip_list_;
+  SkPath current_clip_path_;
 };
 
 }  // namespace blink

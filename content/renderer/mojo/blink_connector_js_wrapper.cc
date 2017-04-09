@@ -94,8 +94,8 @@ void BlinkConnectorJsWrapper::CallJsFactory(
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Value> argv[] = {
       gin::ConvertToV8(isolate_, mojo::Handle(pipe.release().value()))};
-  blink::WebLocalFrame::frameForContext(context)
-      ->callFunctionEvenIfScriptDisabled(factory.Get(isolate_),
+  blink::WebLocalFrame::FrameForContext(context)
+      ->CallFunctionEvenIfScriptDisabled(factory.Get(isolate_),
                                          v8::Undefined(isolate_), 1, argv);
 }
 

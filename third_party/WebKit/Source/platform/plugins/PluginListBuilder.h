@@ -42,18 +42,18 @@ class PluginListBuilder final : public WebPluginListBuilder {
   DISALLOW_NEW();
 
  public:
-  PluginListBuilder(Vector<PluginInfo>* results) : m_results(results) {}
+  PluginListBuilder(Vector<PluginInfo>* results) : results_(results) {}
 
   // WebPluginListBuilder methods:
-  void addPlugin(const WebString& name,
+  void AddPlugin(const WebString& name,
                  const WebString& description,
-                 const WebString& fileName) override;
-  void addMediaTypeToLastPlugin(const WebString& name,
+                 const WebString& file_name) override;
+  void AddMediaTypeToLastPlugin(const WebString& name,
                                 const WebString& description) override;
-  void addFileExtensionToLastMediaType(const WebString& extension) override;
+  void AddFileExtensionToLastMediaType(const WebString& extension) override;
 
  private:
-  Vector<PluginInfo>* m_results;
+  Vector<PluginInfo>* results_;
 };
 
 }  // namespace blink

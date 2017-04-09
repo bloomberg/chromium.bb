@@ -27,8 +27,8 @@ class EmbeddedSharedWorkerContentSettingsClientProxy
   ~EmbeddedSharedWorkerContentSettingsClientProxy() override;
 
   // WebWorkerContentSettingsClientProxy overrides.
-  bool requestFileSystemAccessSync() override;
-  bool allowIndexedDB(const blink::WebString& name) override;
+  bool RequestFileSystemAccessSync() override;
+  bool AllowIndexedDB(const blink::WebString& name) override;
 
  private:
   const GURL origin_url_;

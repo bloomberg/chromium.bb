@@ -35,62 +35,63 @@ class CollapsedBorderValue {
 
  public:
   CollapsedBorderValue()
-      : m_color(0),
-        m_colorIsCurrentColor(true),
-        m_width(0),
-        m_style(BorderStyleNone),
-        m_precedence(BorderPrecedenceOff),
-        m_transparent(false) {}
+      : color_(0),
+        color_is_current_color_(true),
+        width_(0),
+        style_(kBorderStyleNone),
+        precedence_(kBorderPrecedenceOff),
+        transparent_(false) {}
 
   CollapsedBorderValue(const BorderValue& border,
                        const StyleColor& color,
                        EBorderPrecedence precedence)
-      : m_color(color.resolve(Color())),
-        m_colorIsCurrentColor(color.isCurrentColor()),
-        m_width(border.nonZero() ? border.width() : 0),
-        m_style(border.style()),
-        m_precedence(precedence),
-        m_transparent(border.isTransparent()) {}
+      : color_(color.Resolve(Color())),
+        color_is_current_color_(color.IsCurrentColor()),
+        width_(border.NonZero() ? border.Width() : 0),
+        style_(border.Style()),
+        precedence_(precedence),
+        transparent_(border.IsTransparent()) {}
 
-  unsigned width() const { return m_style > BorderStyleHidden ? m_width : 0; }
-  EBorderStyle style() const { return static_cast<EBorderStyle>(m_style); }
-  bool exists() const { return m_precedence != BorderPrecedenceOff; }
-  StyleColor color() const {
-    return m_colorIsCurrentColor ? StyleColor::currentColor()
-                                 : StyleColor(m_color);
+  unsigned Width() const { return style_ > kBorderStyleHidden ? width_ : 0; }
+  EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
+  bool Exists() const { return precedence_ != kBorderPrecedenceOff; }
+  StyleColor GetColor() const {
+    return color_is_current_color_ ? StyleColor::CurrentColor()
+                                   : StyleColor(color_);
   }
-  bool isTransparent() const { return m_transparent; }
-  EBorderPrecedence precedence() const {
-    return static_cast<EBorderPrecedence>(m_precedence);
-  }
-
-  bool isSameIgnoringColor(const CollapsedBorderValue& o) const {
-    return width() == o.width() && style() == o.style() &&
-           precedence() == o.precedence();
+  bool IsTransparent() const { return transparent_; }
+  EBorderPrecedence Precedence() const {
+    return static_cast<EBorderPrecedence>(precedence_);
   }
 
-  bool visuallyEquals(const CollapsedBorderValue& o) const {
-    if (!isVisible() && !o.isVisible())
+  bool IsSameIgnoringColor(const CollapsedBorderValue& o) const {
+    return Width() == o.Width() && Style() == o.Style() &&
+           Precedence() == o.Precedence();
+  }
+
+  bool VisuallyEquals(const CollapsedBorderValue& o) const {
+    if (!IsVisible() && !o.IsVisible())
       return true;
-    return color() == o.color() && isTransparent() == o.isTransparent() &&
-           isSameIgnoringColor(o);
+    return GetColor() == o.GetColor() && IsTransparent() == o.IsTransparent() &&
+           IsSameIgnoringColor(o);
   }
 
-  bool isVisible() const {
-    return style() > BorderStyleHidden && !isTransparent() && exists();
+  bool IsVisible() const {
+    return Style() > kBorderStyleHidden && !IsTransparent() && Exists();
   }
 
-  bool shouldPaint(const CollapsedBorderValue& tableCurrentBorderValue) const {
-    return isVisible() && isSameIgnoringColor(tableCurrentBorderValue);
+  bool ShouldPaint(
+      const CollapsedBorderValue& table_current_border_value) const {
+    return IsVisible() && IsSameIgnoringColor(table_current_border_value);
   }
 
  private:
-  Color m_color;
-  unsigned m_colorIsCurrentColor : 1;
-  unsigned m_width : 23;
-  unsigned m_style : 4;       // EBorderStyle
-  unsigned m_precedence : 3;  // EBorderPrecedence
-  unsigned m_transparent : 1;
+  Color color_;
+  unsigned color_is_current_color_ : 1;
+  unsigned width_ : 23;
+  unsigned style_ : 4;       // EBorderStyle
+  unsigned precedence_ : 3;  // EBorderPrecedence
+  unsigned transparent_ : 1;
 };
 
 }  // namespace blink

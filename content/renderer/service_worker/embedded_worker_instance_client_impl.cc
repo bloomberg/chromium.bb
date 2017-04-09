@@ -76,13 +76,13 @@ void EmbeddedWorkerInstanceClientImpl::StopWorker(
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
   stop_callback_ = callback;
   dispatcher_->RecordStopWorkerTimer(embedded_worker_id_.value());
-  wrapper_->worker()->terminateWorkerContext();
+  wrapper_->worker()->TerminateWorkerContext();
 }
 
 void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
   DCHECK(wrapper_);
   DCHECK(wrapper_->worker());
-  wrapper_->worker()->resumeAfterDownload();
+  wrapper_->worker()->ResumeAfterDownload();
 }
 
 void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
@@ -90,8 +90,8 @@ void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
     const std::string& message) {
   DCHECK(wrapper_);
   DCHECK(wrapper_->worker());
-  wrapper_->worker()->addMessageToConsole(
-      blink::WebConsoleMessage(level, blink::WebString::fromUTF8(message)));
+  wrapper_->worker()->AddMessageToConsole(
+      blink::WebConsoleMessage(level, blink::WebString::FromUTF8(message)));
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(

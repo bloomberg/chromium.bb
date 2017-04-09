@@ -25,28 +25,28 @@
 namespace blink {
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,
-                               bool canBubble,
+                               bool can_bubble,
                                bool cancelable,
-                               DataTransfer* clipboardData)
-    : Event(type, canBubble, cancelable), m_clipboardData(clipboardData) {}
+                               DataTransfer* clipboard_data)
+    : Event(type, can_bubble, cancelable), clipboard_data_(clipboard_data) {}
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,
                                const ClipboardEventInit& initializer)
-    : Event(type, initializer), m_clipboardData(initializer.clipboardData()) {}
+    : Event(type, initializer), clipboard_data_(initializer.clipboardData()) {}
 
 ClipboardEvent::~ClipboardEvent() {}
 
-const AtomicString& ClipboardEvent::interfaceName() const {
+const AtomicString& ClipboardEvent::InterfaceName() const {
   return EventNames::ClipboardEvent;
 }
 
-bool ClipboardEvent::isClipboardEvent() const {
+bool ClipboardEvent::IsClipboardEvent() const {
   return true;
 }
 
 DEFINE_TRACE(ClipboardEvent) {
-  visitor->trace(m_clipboardData);
-  Event::trace(visitor);
+  visitor->Trace(clipboard_data_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

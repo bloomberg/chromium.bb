@@ -14,12 +14,12 @@
 
 namespace blink {
 
-void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo,
-                                        const LayoutPoint& paintOffset) {
-  if (m_layoutMultiColumnSet.style()->visibility() != EVisibility::kVisible)
+void MultiColumnSetPainter::PaintObject(const PaintInfo& paint_info,
+                                        const LayoutPoint& paint_offset) {
+  if (layout_multi_column_set_.Style()->Visibility() != EVisibility::kVisible)
     return;
 
-  BlockPainter(m_layoutMultiColumnSet).paintObject(paintInfo, paintOffset);
+  BlockPainter(layout_multi_column_set_).PaintObject(paint_info, paint_offset);
 
   // FIXME: Right now we're only painting in the foreground phase.
   // Columns should technically respect phases and allow for
@@ -27,47 +27,50 @@ void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo,
   // this is a pretty minor issue, since the old column implementation clipped
   // columns anyway, thus making it impossible for them to overlap one another.
   // It's also really unlikely that the columns would overlap another block.
-  if (!m_layoutMultiColumnSet.flowThread() ||
-      (paintInfo.phase != PaintPhaseForeground &&
-       paintInfo.phase != PaintPhaseSelection))
+  if (!layout_multi_column_set_.FlowThread() ||
+      (paint_info.phase != kPaintPhaseForeground &&
+       paint_info.phase != kPaintPhaseSelection))
     return;
 
-  paintColumnRules(paintInfo, paintOffset);
+  PaintColumnRules(paint_info, paint_offset);
 }
 
-void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo,
-                                             const LayoutPoint& paintOffset) {
-  Vector<LayoutRect> columnRuleBounds;
-  if (!m_layoutMultiColumnSet.computeColumnRuleBounds(paintOffset,
-                                                      columnRuleBounds))
+void MultiColumnSetPainter::PaintColumnRules(const PaintInfo& paint_info,
+                                             const LayoutPoint& paint_offset) {
+  Vector<LayoutRect> column_rule_bounds;
+  if (!layout_multi_column_set_.ComputeColumnRuleBounds(paint_offset,
+                                                        column_rule_bounds))
     return;
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutMultiColumnSet, DisplayItem::kColumnRules))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_multi_column_set_,
+          DisplayItem::kColumnRules))
     return;
 
-  LayoutRect paintRect = m_layoutMultiColumnSet.visualOverflowRect();
-  paintRect.moveBy(paintOffset);
-  LayoutObjectDrawingRecorder drawingRecorder(
-      paintInfo.context, m_layoutMultiColumnSet, DisplayItem::kColumnRules,
-      paintRect);
+  LayoutRect paint_rect = layout_multi_column_set_.VisualOverflowRect();
+  paint_rect.MoveBy(paint_offset);
+  LayoutObjectDrawingRecorder drawing_recorder(
+      paint_info.context, layout_multi_column_set_, DisplayItem::kColumnRules,
+      paint_rect);
 
-  const ComputedStyle& blockStyle =
-      m_layoutMultiColumnSet.multiColumnBlockFlow()->styleRef();
-  EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
-  bool leftToRight = m_layoutMultiColumnSet.style()->isLeftToRightDirection();
-  BoxSide boxSide = m_layoutMultiColumnSet.isHorizontalWritingMode()
-                        ? leftToRight ? BSLeft : BSRight
-                        : leftToRight ? BSTop : BSBottom;
-  const Color& ruleColor = m_layoutMultiColumnSet.resolveColor(
-      blockStyle, CSSPropertyColumnRuleColor);
+  const ComputedStyle& block_style =
+      layout_multi_column_set_.MultiColumnBlockFlow()->StyleRef();
+  EBorderStyle rule_style = block_style.ColumnRuleStyle();
+  bool left_to_right =
+      layout_multi_column_set_.Style()->IsLeftToRightDirection();
+  BoxSide box_side = layout_multi_column_set_.IsHorizontalWritingMode()
+                         ? left_to_right ? kBSLeft : kBSRight
+                         : left_to_right ? kBSTop : kBSBottom;
+  const Color& rule_color = layout_multi_column_set_.ResolveColor(
+      block_style, CSSPropertyColumnRuleColor);
 
-  for (auto& bound : columnRuleBounds) {
-    IntRect pixelSnappedRuleRect = pixelSnappedIntRect(bound);
-    ObjectPainter::drawLineForBoxSide(
-        paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(),
-        pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide,
-        ruleColor, ruleStyle, 0, 0, true);
+  for (auto& bound : column_rule_bounds) {
+    IntRect pixel_snapped_rule_rect = PixelSnappedIntRect(bound);
+    ObjectPainter::DrawLineForBoxSide(
+        paint_info.context, pixel_snapped_rule_rect.X(),
+        pixel_snapped_rule_rect.Y(), pixel_snapped_rule_rect.MaxX(),
+        pixel_snapped_rule_rect.MaxY(), box_side, rule_color, rule_style, 0, 0,
+        true);
   }
 }
 

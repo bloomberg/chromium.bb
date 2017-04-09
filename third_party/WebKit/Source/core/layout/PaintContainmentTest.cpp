@@ -14,57 +14,57 @@ class PaintContainmentTest : public RenderingTest {
  private:
   void SetUp() override {
     RenderingTest::SetUp();
-    enableCompositing();
+    EnableCompositing();
   }
 };
 
-static void checkIsClippingStackingContextAndContainer(
+static void CheckIsClippingStackingContextAndContainer(
     LayoutBoxModelObject& obj) {
-  EXPECT_TRUE(obj.canContainFixedPositionObjects());
-  EXPECT_TRUE(obj.hasClipRelatedProperty());
-  EXPECT_TRUE(obj.style()->containsPaint());
+  EXPECT_TRUE(obj.CanContainFixedPositionObjects());
+  EXPECT_TRUE(obj.HasClipRelatedProperty());
+  EXPECT_TRUE(obj.Style()->ContainsPaint());
 
   // TODO(leviw): Ideally, we wouldn't require a paint layer to handle the
   // clipping and stacking performed by paint containment.
-  DCHECK(obj.layer());
-  PaintLayer* layer = obj.layer();
-  EXPECT_TRUE(layer->stackingNode() &&
-              layer->stackingNode()->isStackingContext());
+  DCHECK(obj.Layer());
+  PaintLayer* layer = obj.Layer();
+  EXPECT_TRUE(layer->StackingNode() &&
+              layer->StackingNode()->IsStackingContext());
 }
 
 TEST_F(PaintContainmentTest, BlockPaintContainment) {
-  setBodyInnerHTML("<div id='div' style='contain: paint'></div>");
-  Element* div = document().getElementById(AtomicString("div"));
+  SetBodyInnerHTML("<div id='div' style='contain: paint'></div>");
+  Element* div = GetDocument().GetElementById(AtomicString("div"));
   DCHECK(div);
-  LayoutObject* obj = div->layoutObject();
+  LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
-  DCHECK(obj->isLayoutBlock());
-  LayoutBlock& block = toLayoutBlock(*obj);
-  EXPECT_TRUE(block.createsNewFormattingContext());
-  EXPECT_FALSE(block.canBeScrolledAndHasScrollableArea());
-  checkIsClippingStackingContextAndContainer(block);
+  DCHECK(obj->IsLayoutBlock());
+  LayoutBlock& block = ToLayoutBlock(*obj);
+  EXPECT_TRUE(block.CreatesNewFormattingContext());
+  EXPECT_FALSE(block.CanBeScrolledAndHasScrollableArea());
+  CheckIsClippingStackingContextAndContainer(block);
 }
 
 TEST_F(PaintContainmentTest, InlinePaintContainment) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div><span id='test' style='contain: paint'>Foo</span></div>");
-  Element* span = document().getElementById(AtomicString("test"));
+  Element* span = GetDocument().GetElementById(AtomicString("test"));
   DCHECK(span);
   // The inline should have been coerced into a block in StyleAdjuster.
-  LayoutObject* obj = span->layoutObject();
+  LayoutObject* obj = span->GetLayoutObject();
   DCHECK(obj);
-  DCHECK(obj->isLayoutBlock());
-  LayoutBlock& layoutBlock = toLayoutBlock(*obj);
-  checkIsClippingStackingContextAndContainer(layoutBlock);
+  DCHECK(obj->IsLayoutBlock());
+  LayoutBlock& layout_block = ToLayoutBlock(*obj);
+  CheckIsClippingStackingContextAndContainer(layout_block);
 }
 
 TEST_F(PaintContainmentTest, SvgWithContainmentShouldNotCrash) {
   // SVG doesn't currently support PaintLayers and should not crash with
   // layer-related properties.
-  setBodyInnerHTML("<svg><text y='20' style='contain: paint'>Foo</text></svg>");
-  setBodyInnerHTML(
+  SetBodyInnerHTML("<svg><text y='20' style='contain: paint'>Foo</text></svg>");
+  SetBodyInnerHTML(
       "<svg><foreignObject style='contain: paint'>Foo</foreignObject></svg>");
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<svg><foreignObject><span style='contain: "
       "paint'>Foo</span></foreignObject></svg>");
 }

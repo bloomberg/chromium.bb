@@ -23,64 +23,64 @@ namespace blink {
 
 MediaStream* HTMLCanvasElementCapture::captureStream(
     HTMLCanvasElement& element,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   return HTMLCanvasElementCapture::captureStream(element, false, 0,
-                                                 exceptionState);
+                                                 exception_state);
 }
 
 MediaStream* HTMLCanvasElementCapture::captureStream(
     HTMLCanvasElement& element,
-    double frameRate,
-    ExceptionState& exceptionState) {
-  if (frameRate < 0.0) {
-    exceptionState.throwDOMException(NotSupportedError,
-                                     "Given frame rate is not supported.");
+    double frame_rate,
+    ExceptionState& exception_state) {
+  if (frame_rate < 0.0) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Given frame rate is not supported.");
     return nullptr;
   }
 
-  return HTMLCanvasElementCapture::captureStream(element, true, frameRate,
-                                                 exceptionState);
+  return HTMLCanvasElementCapture::captureStream(element, true, frame_rate,
+                                                 exception_state);
 }
 
 MediaStream* HTMLCanvasElementCapture::captureStream(
     HTMLCanvasElement& element,
-    bool givenFrameRate,
-    double frameRate,
-    ExceptionState& exceptionState) {
-  if (!element.originClean()) {
-    exceptionState.throwSecurityError("Canvas is not origin-clean.");
+    bool given_frame_rate,
+    double frame_rate,
+    ExceptionState& exception_state) {
+  if (!element.OriginClean()) {
+    exception_state.ThrowSecurityError("Canvas is not origin-clean.");
     return nullptr;
   }
 
   WebMediaStreamTrack track;
   const WebSize size(element.width(), element.height());
   std::unique_ptr<WebCanvasCaptureHandler> handler;
-  if (givenFrameRate)
-    handler = WTF::wrapUnique(Platform::current()->createCanvasCaptureHandler(
-        size, frameRate, &track));
+  if (given_frame_rate)
+    handler = WTF::WrapUnique(Platform::Current()->CreateCanvasCaptureHandler(
+        size, frame_rate, &track));
   else
-    handler = WTF::wrapUnique(Platform::current()->createCanvasCaptureHandler(
+    handler = WTF::WrapUnique(Platform::Current()->CreateCanvasCaptureHandler(
         size, kDefaultFrameRate, &track));
 
   if (!handler) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "No CanvasCapture handler can be created.");
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "No CanvasCapture handler can be created.");
     return nullptr;
   }
 
-  CanvasCaptureMediaStreamTrack* canvasTrack;
-  if (givenFrameRate)
-    canvasTrack = CanvasCaptureMediaStreamTrack::create(
-        track, &element, std::move(handler), frameRate);
+  CanvasCaptureMediaStreamTrack* canvas_track;
+  if (given_frame_rate)
+    canvas_track = CanvasCaptureMediaStreamTrack::Create(
+        track, &element, std::move(handler), frame_rate);
   else
-    canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element,
-                                                        std::move(handler));
+    canvas_track = CanvasCaptureMediaStreamTrack::Create(track, &element,
+                                                         std::move(handler));
   // We want to capture a frame in the beginning.
-  canvasTrack->requestFrame();
+  canvas_track->requestFrame();
 
   MediaStreamTrackVector tracks;
-  tracks.push_back(canvasTrack);
-  return MediaStream::create(element.getExecutionContext(), tracks);
+  tracks.push_back(canvas_track);
+  return MediaStream::Create(element.GetExecutionContext(), tracks);
 }
 
 }  // namespace blink

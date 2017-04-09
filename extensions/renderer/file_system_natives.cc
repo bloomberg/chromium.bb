@@ -36,7 +36,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
   CHECK(args[0]->IsString());
   std::string file_system_id(*v8::String::Utf8Value(args[0]));
   blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::frameForContext(context()->v8_context());
+      blink::WebLocalFrame::FrameForContext(context()->v8_context());
   DCHECK(webframe);
 
   GURL context_url =
@@ -58,11 +58,10 @@ void FileSystemNatives::GetIsolatedFileSystem(
       origin, file_system_id, optional_root_name));
 
   args.GetReturnValue().Set(
-      blink::WebDOMFileSystem::create(webframe,
-                                      blink::WebFileSystemTypeIsolated,
-                                      blink::WebString::fromUTF8(name),
-                                      root_url)
-          .toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
+      blink::WebDOMFileSystem::Create(
+          webframe, blink::kWebFileSystemTypeIsolated,
+          blink::WebString::FromUTF8(name), root_url)
+          .ToV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 void FileSystemNatives::GetFileEntry(
@@ -88,21 +87,18 @@ void FileSystemNatives::GetFileEntry(
 
   CHECK(args[4]->IsBoolean());
   blink::WebDOMFileSystem::EntryType entry_type =
-      args[4]->BooleanValue() ? blink::WebDOMFileSystem::EntryTypeDirectory
-                              : blink::WebDOMFileSystem::EntryTypeFile;
+      args[4]->BooleanValue() ? blink::WebDOMFileSystem::kEntryTypeDirectory
+                              : blink::WebDOMFileSystem::kEntryTypeFile;
 
   blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::frameForContext(context()->v8_context());
+      blink::WebLocalFrame::FrameForContext(context()->v8_context());
   DCHECK(webframe);
   args.GetReturnValue().Set(
-      blink::WebDOMFileSystem::create(
-          webframe,
-          type,
-          blink::WebString::fromUTF8(file_system_name),
+      blink::WebDOMFileSystem::Create(
+          webframe, type, blink::WebString::FromUTF8(file_system_name),
           file_system_root_url)
-          .createV8Entry(blink::WebString::fromUTF8(file_path_string),
-                         entry_type,
-                         context()->v8_context()->Global(),
+          .CreateV8Entry(blink::WebString::FromUTF8(file_path_string),
+                         entry_type, context()->v8_context()->Global(),
                          args.GetIsolate()));
 }
 

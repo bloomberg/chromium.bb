@@ -144,7 +144,7 @@ ReadStatus BlobConsolidation::VisitMemory(size_t consolidated_item_index,
     size_t read_size = std::min(item.data[item_index].size() - item_offset,
                                 consolidated_size - memory_read);
     bool continu =
-        visitor.Run(item.data[item_index].data() + item_offset, read_size);
+        visitor.Run(item.data[item_index].Data() + item_offset, read_size);
     if (!continu)
       return ReadStatus::CANCELLED_BY_VISITOR;
     item_offset = 0;

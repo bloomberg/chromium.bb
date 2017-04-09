@@ -31,46 +31,46 @@
 
 namespace blink {
 
-void WebIDBKeyRange::assign(const WebIDBKeyRange& other) {
-  m_private = other.m_private;
+void WebIDBKeyRange::Assign(const WebIDBKeyRange& other) {
+  private_ = other.private_;
 }
 
-void WebIDBKeyRange::assign(const WebIDBKey& lower,
+void WebIDBKeyRange::Assign(const WebIDBKey& lower,
                             const WebIDBKey& upper,
-                            bool lowerOpen,
-                            bool upperOpen) {
-  if (!lower.isValid() && !upper.isValid())
-    m_private.reset();
+                            bool lower_open,
+                            bool upper_open) {
+  if (!lower.IsValid() && !upper.IsValid())
+    private_.Reset();
   else
-    m_private = IDBKeyRange::create(
-        lower, upper,
-        lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed,
-        upperOpen ? IDBKeyRange::UpperBoundOpen
-                  : IDBKeyRange::UpperBoundClosed);
+    private_ = IDBKeyRange::Create(lower, upper,
+                                   lower_open ? IDBKeyRange::kLowerBoundOpen
+                                              : IDBKeyRange::kLowerBoundClosed,
+                                   upper_open ? IDBKeyRange::kUpperBoundOpen
+                                              : IDBKeyRange::kUpperBoundClosed);
 }
 
-void WebIDBKeyRange::reset() {
-  m_private.reset();
+void WebIDBKeyRange::Reset() {
+  private_.Reset();
 }
 
-WebIDBKey WebIDBKeyRange::lower() const {
-  if (!m_private.get())
-    return WebIDBKey::createInvalid();
-  return WebIDBKey(m_private->lower());
+WebIDBKey WebIDBKeyRange::Lower() const {
+  if (!private_.Get())
+    return WebIDBKey::CreateInvalid();
+  return WebIDBKey(private_->Lower());
 }
 
-WebIDBKey WebIDBKeyRange::upper() const {
-  if (!m_private.get())
-    return WebIDBKey::createInvalid();
-  return WebIDBKey(m_private->upper());
+WebIDBKey WebIDBKeyRange::Upper() const {
+  if (!private_.Get())
+    return WebIDBKey::CreateInvalid();
+  return WebIDBKey(private_->Upper());
 }
 
-bool WebIDBKeyRange::lowerOpen() const {
-  return m_private.get() && m_private->lowerOpen();
+bool WebIDBKeyRange::LowerOpen() const {
+  return private_.Get() && private_->lowerOpen();
 }
 
-bool WebIDBKeyRange::upperOpen() const {
-  return m_private.get() && m_private->upperOpen();
+bool WebIDBKeyRange::UpperOpen() const {
+  return private_.Get() && private_->upperOpen();
 }
 
 }  // namespace blink

@@ -212,7 +212,7 @@ class FakeMediaStreamAudioSink : public MediaStreamAudioSink {
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) final {
     CHECK(main_thread_checker_.CalledOnValidThread());
-    if (state == blink::WebMediaStreamSource::ReadyStateEnded)
+    if (state == blink::WebMediaStreamSource::kReadyStateEnded)
       was_ended_ = true;
   }
 
@@ -241,18 +241,18 @@ class FakeMediaStreamAudioSink : public MediaStreamAudioSink {
 class MediaStreamAudioTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    blink_audio_source_.initialize(blink::WebString::fromUTF8("audio_id"),
-                                   blink::WebMediaStreamSource::TypeAudio,
-                                   blink::WebString::fromUTF8("audio_track"),
+    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_id"),
+                                   blink::WebMediaStreamSource::kTypeAudio,
+                                   blink::WebString::FromUTF8("audio_track"),
                                    false /* remote */);
-    blink_audio_track_.initialize(blink_audio_source_.id(),
+    blink_audio_track_.Initialize(blink_audio_source_.Id(),
                                   blink_audio_source_);
   }
 
   void TearDown() override {
-    blink_audio_track_.reset();
-    blink_audio_source_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_audio_track_.Reset();
+    blink_audio_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   FakeMediaStreamAudioSource* source() const {
@@ -275,7 +275,7 @@ class MediaStreamAudioTest : public ::testing::Test {
 TEST_F(MediaStreamAudioTest, BasicUsage) {
   // Create the source, but it should not be started yet.
   ASSERT_FALSE(source());
-  blink_audio_source_.setExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
   ASSERT_TRUE(source());
   EXPECT_FALSE(source()->was_started());
   EXPECT_FALSE(source()->was_stopped());
@@ -319,7 +319,7 @@ TEST_F(MediaStreamAudioTest, BasicUsage) {
 TEST_F(MediaStreamAudioTest, ConnectTrackAfterSourceStopped) {
   // Create the source, connect one track, and stop it. This should
   // automatically stop the source.
-  blink_audio_source_.setExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   track()->Stop();
@@ -330,7 +330,7 @@ TEST_F(MediaStreamAudioTest, ConnectTrackAfterSourceStopped) {
   // should be a MediaStreamAudioTrack instance created and owned by the
   // blink::WebMediaStreamTrack.
   blink::WebMediaStreamTrack another_blink_track;
-  another_blink_track.initialize(blink_audio_source_.id(), blink_audio_source_);
+  another_blink_track.Initialize(blink_audio_source_.Id(), blink_audio_source_);
   EXPECT_FALSE(MediaStreamAudioTrack::From(another_blink_track));
   EXPECT_FALSE(source()->ConnectToTrack(another_blink_track));
   EXPECT_TRUE(MediaStreamAudioTrack::From(another_blink_track));
@@ -355,7 +355,7 @@ TEST_F(MediaStreamAudioTest, AddSinkToStoppedTrack) {
 TEST_F(MediaStreamAudioTest, FormatChangesPropagate) {
   // Create a source, connect it to track, and connect the track to a
   // sink.
-  blink_audio_source_.setExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   ASSERT_TRUE(track());
@@ -390,7 +390,7 @@ TEST_F(MediaStreamAudioTest, FormatChangesPropagate) {
 // OnEnabledChanged() method should be called.
 TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   // Create a source and connect it to track.
-  blink_audio_source_.setExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   ASSERT_TRUE(track());
@@ -420,7 +420,7 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   // disabled. Expect the sink to be notified at the start that the track is
   // disabled.
   blink::WebMediaStreamTrack another_blink_track;
-  another_blink_track.initialize(blink_audio_source_.id(), blink_audio_source_);
+  another_blink_track.Initialize(blink_audio_source_.Id(), blink_audio_source_);
   EXPECT_TRUE(source()->ConnectToTrack(another_blink_track));
   MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(false);
   FakeMediaStreamAudioSink another_sink;

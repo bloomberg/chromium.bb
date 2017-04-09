@@ -42,10 +42,10 @@ class CSSKeyframeRule final : public CSSRule {
  public:
   ~CSSKeyframeRule() override;
 
-  String cssText() const override { return m_keyframe->cssText(); }
-  void reattach(StyleRuleBase*) override;
+  String cssText() const override { return keyframe_->CssText(); }
+  void Reattach(StyleRuleBase*) override;
 
-  String keyText() const { return m_keyframe->keyText(); }
+  String keyText() const { return keyframe_->KeyText(); }
   void setKeyText(const String&, ExceptionState&);
 
   CSSStyleDeclaration* style() const;
@@ -57,8 +57,9 @@ class CSSKeyframeRule final : public CSSRule {
 
   CSSRule::Type type() const override { return kKeyframeRule; }
 
-  Member<StyleRuleKeyframe> m_keyframe;
-  mutable Member<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  Member<StyleRuleKeyframe> keyframe_;
+  mutable Member<KeyframeStyleRuleCSSStyleDeclaration>
+      properties_cssom_wrapper_;
 
   friend class CSSKeyframesRule;
 };

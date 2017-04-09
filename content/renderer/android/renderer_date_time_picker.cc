@@ -27,8 +27,8 @@ DateTimeSuggestion ToDateTimeSuggestion(
     const blink::WebDateTimeSuggestion& suggestion) {
   DateTimeSuggestion result;
   result.value = suggestion.value;
-  result.localized_value = suggestion.localizedValue.utf16();
-  result.label = suggestion.label.utf16();
+  result.localized_value = suggestion.localized_value.Utf16();
+  result.label = suggestion.label.Utf16();
   return result;
 }
 
@@ -36,25 +36,25 @@ DateTimeSuggestion ToDateTimeSuggestion(
 
 static ui::TextInputType ToTextInputType(int type) {
   switch (type) {
-    case blink::WebDateTimeInputTypeDate:
+    case blink::kWebDateTimeInputTypeDate:
       return ui::TEXT_INPUT_TYPE_DATE;
       break;
-    case blink::WebDateTimeInputTypeDateTime:
+    case blink::kWebDateTimeInputTypeDateTime:
       return ui::TEXT_INPUT_TYPE_DATE_TIME;
       break;
-    case blink::WebDateTimeInputTypeDateTimeLocal:
+    case blink::kWebDateTimeInputTypeDateTimeLocal:
       return ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
       break;
-    case blink::WebDateTimeInputTypeMonth:
+    case blink::kWebDateTimeInputTypeMonth:
       return ui::TEXT_INPUT_TYPE_MONTH;
       break;
-    case blink::WebDateTimeInputTypeTime:
+    case blink::kWebDateTimeInputTypeTime:
       return ui::TEXT_INPUT_TYPE_TIME;
       break;
-    case blink::WebDateTimeInputTypeWeek:
+    case blink::kWebDateTimeInputTypeWeek:
       return ui::TEXT_INPUT_TYPE_WEEK;
       break;
-    case blink::WebDateTimeInputTypeNone:
+    case blink::kWebDateTimeInputTypeNone:
     default:
       return ui::TEXT_INPUT_TYPE_NONE;
   }
@@ -75,7 +75,7 @@ RendererDateTimePicker::~RendererDateTimePicker() {
 bool RendererDateTimePicker::Open() {
   ViewHostMsg_DateTimeDialogValue_Params message;
   message.dialog_type = ToTextInputType(chooser_params_.type);
-  message.dialog_value = chooser_params_.doubleValue;
+  message.dialog_value = chooser_params_.double_value;
   message.minimum = chooser_params_.minimum;
   message.maximum = chooser_params_.maximum;
   message.step = chooser_params_.step;
@@ -100,13 +100,13 @@ bool RendererDateTimePicker::OnMessageReceived(
 
 void RendererDateTimePicker::OnReplaceDateTime(double value) {
   if (chooser_completion_)
-    chooser_completion_->didChooseValue(value);
+    chooser_completion_->DidChooseValue(value);
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
 }
 
 void RendererDateTimePicker::OnCancel() {
   if (chooser_completion_)
-    chooser_completion_->didCancelChooser();
+    chooser_completion_->DidCancelChooser();
   static_cast<RenderViewImpl*>(render_view())->DismissDateTimeDialog();
 }
 

@@ -25,20 +25,20 @@ class MODULES_EXPORT BackgroundFetchedEvent final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchedEvent* create(
+  static BackgroundFetchedEvent* Create(
       const AtomicString& type,
       const BackgroundFetchedEventInit& initializer) {
     return new BackgroundFetchedEvent(type, initializer);
   }
 
-  static BackgroundFetchedEvent* create(
+  static BackgroundFetchedEvent* Create(
       const AtomicString& type,
       const BackgroundFetchedEventInit& initializer,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches,
-      ScriptState* scriptState,
+      ScriptState* script_state,
       WaitUntilObserver* observer,
       ServiceWorkerRegistration* registration) {
-    return new BackgroundFetchedEvent(type, initializer, fetches, scriptState,
+    return new BackgroundFetchedEvent(type, initializer, fetches, script_state,
                                       observer, registration);
   }
 
@@ -51,7 +51,7 @@ class MODULES_EXPORT BackgroundFetchedEvent final
   ScriptPromise updateUI(ScriptState*, const String& title);
 
   // ExtendableEvent interface.
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -66,10 +66,10 @@ class MODULES_EXPORT BackgroundFetchedEvent final
       WaitUntilObserver*,
       ServiceWorkerRegistration*);
 
-  void didUpdateUI(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
+  void DidUpdateUI(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
 
-  HeapVector<Member<BackgroundFetchSettledFetch>> m_fetches;
-  Member<ServiceWorkerRegistration> m_registration;
+  HeapVector<Member<BackgroundFetchSettledFetch>> fetches_;
+  Member<ServiceWorkerRegistration> registration_;
 };
 
 }  // namespace blink

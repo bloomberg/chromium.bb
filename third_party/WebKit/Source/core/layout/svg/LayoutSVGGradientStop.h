@@ -34,34 +34,34 @@ class LayoutSVGGradientStop final : public LayoutObject {
   explicit LayoutSVGGradientStop(SVGStopElement*);
   ~LayoutSVGGradientStop() override;
 
-  const char* name() const override { return "LayoutSVGGradientStop"; }
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVG || type == LayoutObjectSVGGradientStop ||
-           LayoutObject::isOfType(type);
+  const char* GetName() const override { return "LayoutSVGGradientStop"; }
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVG || type == kLayoutObjectSVGGradientStop ||
+           LayoutObject::IsOfType(type);
   }
 
-  void layout() override;
+  void GetLayout() override;
 
   // These overrides are needed to prevent NOTREACHED on <svg><stop /></svg> in
   // LayoutObject's default implementations.
-  LayoutRect localVisualRect() const override { return LayoutRect(); }
-  FloatRect objectBoundingBox() const override { return FloatRect(); }
-  FloatRect strokeBoundingBox() const override { return FloatRect(); }
-  FloatRect visualRectInLocalSVGCoordinates() const override {
+  LayoutRect LocalVisualRect() const override { return LayoutRect(); }
+  FloatRect ObjectBoundingBox() const override { return FloatRect(); }
+  FloatRect StrokeBoundingBox() const override { return FloatRect(); }
+  FloatRect VisualRectInLocalSVGCoordinates() const override {
     return FloatRect();
   }
-  FloatRect localBoundingBoxRectForAccessibility() const final {
+  FloatRect LocalBoundingBoxRectForAccessibility() const final {
     return FloatRect();
   }
 
  protected:
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
  private:
-  SVGGradientElement* gradientElement() const;
+  SVGGradientElement* GradientElement() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGGradientStop, isSVGGradientStop());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGGradientStop, IsSVGGradientStop());
 
 }  // namespace blink
 

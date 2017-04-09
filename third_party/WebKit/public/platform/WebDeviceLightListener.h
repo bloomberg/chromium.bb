@@ -12,7 +12,7 @@ namespace blink {
 class WebDeviceLightListener : public WebPlatformEventListener {
  public:
   // This method is called every time new device light data is available.
-  virtual void didChangeDeviceLight(double) = 0;
+  virtual void DidChangeDeviceLight(double) = 0;
 
   virtual ~WebDeviceLightListener() {}
 };

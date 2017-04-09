@@ -21,100 +21,101 @@ class WebGestureEvent;
 //   on. crbug.com/456625
 class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
  public:
-  int clickCount;
+  int click_count;
 
-  WebMouseEvent(Type typeParam,
-                int xParam,
-                int yParam,
-                int globalXParam,
-                int globalYParam,
-                int modifiersParam,
-                double timeStampSecondsParam)
+  WebMouseEvent(Type type_param,
+                int x_param,
+                int y_param,
+                int global_x_param,
+                int global_y_param,
+                int modifiers_param,
+                double time_stamp_seconds_param)
       : WebInputEvent(sizeof(WebMouseEvent),
-                      typeParam,
-                      modifiersParam,
-                      timeStampSecondsParam),
+                      type_param,
+                      modifiers_param,
+                      time_stamp_seconds_param),
         WebPointerProperties(),
-        m_positionInWidget(xParam, yParam),
-        m_positionInScreen(globalXParam, globalYParam) {}
+        position_in_widget_(x_param, y_param),
+        position_in_screen_(global_x_param, global_y_param) {}
 
-  WebMouseEvent(Type typeParam,
+  WebMouseEvent(Type type_param,
                 WebFloatPoint position,
-                WebFloatPoint globalPosition,
-                Button buttonParam,
-                int clickCountParam,
-                int modifiersParam,
-                double timeStampSecondsParam)
+                WebFloatPoint global_position,
+                Button button_param,
+                int click_count_param,
+                int modifiers_param,
+                double time_stamp_seconds_param)
       : WebInputEvent(sizeof(WebMouseEvent),
-                      typeParam,
-                      modifiersParam,
-                      timeStampSecondsParam),
-        WebPointerProperties(buttonParam, PointerType::Mouse),
-        clickCount(clickCountParam),
-        m_positionInWidget(floor(position.x), floor(position.y)),
-        m_positionInScreen(floor(globalPosition.x), floor(globalPosition.y)) {}
+                      type_param,
+                      modifiers_param,
+                      time_stamp_seconds_param),
+        WebPointerProperties(button_param, PointerType::kMouse),
+        click_count(click_count_param),
+        position_in_widget_(floor(position.x), floor(position.y)),
+        position_in_screen_(floor(global_position.x),
+                            floor(global_position.y)) {}
 
-  WebMouseEvent(Type typeParam,
-                int modifiersParam,
-                double timeStampSecondsParam)
+  WebMouseEvent(Type type_param,
+                int modifiers_param,
+                double time_stamp_seconds_param)
       : WebMouseEvent(sizeof(WebMouseEvent),
-                      typeParam,
-                      modifiersParam,
-                      timeStampSecondsParam) {}
+                      type_param,
+                      modifiers_param,
+                      time_stamp_seconds_param) {}
 
   WebMouseEvent() : WebMouseEvent(sizeof(WebMouseEvent)) {}
 
-  bool fromTouch() const {
-    return (modifiers() & IsCompatibilityEventForTouch) != 0;
+  bool FromTouch() const {
+    return (GetModifiers() & kIsCompatibilityEventForTouch) != 0;
   }
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebMouseEvent(Type typeParam,
+  BLINK_PLATFORM_EXPORT WebMouseEvent(Type type_param,
                                       const WebGestureEvent&,
-                                      Button buttonParam,
-                                      int clickCountParam,
-                                      int modifiersParam,
-                                      double timeStampSecondsParam);
+                                      Button button_param,
+                                      int click_count_param,
+                                      int modifiers_param,
+                                      double time_stamp_seconds_param);
 
-  BLINK_PLATFORM_EXPORT WebFloatPoint movementInRootFrame() const;
-  BLINK_PLATFORM_EXPORT WebFloatPoint positionInRootFrame() const;
+  BLINK_PLATFORM_EXPORT WebFloatPoint MovementInRootFrame() const;
+  BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
 
   // Sets any scaled values to be their computed values and sets |frameScale|
   // back to 1 and |translateX|, |translateY| back to 0.
-  BLINK_PLATFORM_EXPORT WebMouseEvent flattenTransform() const;
+  BLINK_PLATFORM_EXPORT WebMouseEvent FlattenTransform() const;
 #endif
 
-  WebFloatPoint positionInWidget() const { return m_positionInWidget; }
-  void setPositionInWidget(float x, float y) {
-    m_positionInWidget = WebFloatPoint(floor(x), floor(y));
+  WebFloatPoint PositionInWidget() const { return position_in_widget_; }
+  void SetPositionInWidget(float x, float y) {
+    position_in_widget_ = WebFloatPoint(floor(x), floor(y));
   }
 
-  WebFloatPoint positionInScreen() const { return m_positionInScreen; }
-  void setPositionInScreen(float x, float y) {
-    m_positionInScreen = WebFloatPoint(floor(x), floor(y));
+  WebFloatPoint PositionInScreen() const { return position_in_screen_; }
+  void SetPositionInScreen(float x, float y) {
+    position_in_screen_ = WebFloatPoint(floor(x), floor(y));
   }
 
  protected:
-  explicit WebMouseEvent(unsigned sizeParam)
-      : WebInputEvent(sizeParam), WebPointerProperties() {}
+  explicit WebMouseEvent(unsigned size_param)
+      : WebInputEvent(size_param), WebPointerProperties() {}
 
-  WebMouseEvent(unsigned sizeParam,
+  WebMouseEvent(unsigned size_param,
                 Type type,
                 int modifiers,
-                double timeStampSeconds)
-      : WebInputEvent(sizeParam, type, modifiers, timeStampSeconds),
+                double time_stamp_seconds)
+      : WebInputEvent(size_param, type, modifiers, time_stamp_seconds),
         WebPointerProperties() {}
 
-  void flattenTransformSelf();
+  void FlattenTransformSelf();
 
  private:
   // Widget coordinate, which is relative to the bound of current RenderWidget
   // (e.g. a plugin or OOPIF inside a RenderView). Similar to viewport
   // coordinates but without DevTools emulation transform or overscroll applied.
-  WebFloatPoint m_positionInWidget;
+  WebFloatPoint position_in_widget_;
 
   // Screen coordinate
-  WebFloatPoint m_positionInScreen;
+  WebFloatPoint position_in_screen_;
 };
 
 #pragma pack(pop)

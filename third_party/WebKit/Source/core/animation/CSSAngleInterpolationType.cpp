@@ -8,28 +8,28 @@
 
 namespace blink {
 
-InterpolationValue CSSAngleInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSAngleInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::create(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
-InterpolationValue CSSAngleInterpolationType::maybeConvertValue(
+InterpolationValue CSSAngleInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isAngle())
+  if (!value.IsPrimitiveValue() || !ToCSSPrimitiveValue(value).IsAngle())
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::create(toCSSPrimitiveValue(value).computeDegrees()));
+      InterpolableNumber::Create(ToCSSPrimitiveValue(value).ComputeDegrees()));
 }
 
-const CSSValue* CSSAngleInterpolationType::createCSSValue(
+const CSSValue* CSSAngleInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return CSSPrimitiveValue::create(toInterpolableNumber(value).value(),
-                                   CSSPrimitiveValue::UnitType::Degrees);
+  return CSSPrimitiveValue::Create(ToInterpolableNumber(value).Value(),
+                                   CSSPrimitiveValue::UnitType::kDegrees);
 }
 
 }  // namespace blink

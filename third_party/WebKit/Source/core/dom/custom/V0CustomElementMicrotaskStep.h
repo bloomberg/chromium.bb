@@ -44,14 +44,14 @@ class V0CustomElementMicrotaskStep
   V0CustomElementMicrotaskStep() {}
   virtual ~V0CustomElementMicrotaskStep() {}
 
-  enum Result { Processing, FinishedProcessing };
+  enum Result { kProcessing, kFinishedProcessing };
 
-  virtual Result process() = 0;
+  virtual Result Process() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
 #if !defined(NDEBUG)
-  virtual void show(unsigned indent) = 0;
+  virtual void Show(unsigned indent) = 0;
 #endif
 };
 

@@ -20,7 +20,7 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
 
  public:
   // Gets, or creates, NavigatorNFC supplement on Navigator.
-  static NavigatorNFC& from(Navigator&);
+  static NavigatorNFC& From(Navigator&);
 
   static NFC* nfc(Navigator&);
 
@@ -28,9 +28,9 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
 
  private:
   explicit NavigatorNFC(Navigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<NFC> m_nfc;
+  Member<NFC> nfc_;
 };
 
 }  // namespace blink

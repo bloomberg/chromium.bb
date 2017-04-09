@@ -22,7 +22,7 @@ class HeapTerminatedArray : public TerminatedArray<T> {
 
   DEFINE_INLINE_TRACE() {
     for (typename TerminatedArray<T>::iterator it = begin(); it != end(); ++it)
-      visitor->trace(*it);
+      visitor->Trace(*it);
   }
 
  private:
@@ -33,17 +33,17 @@ class HeapTerminatedArray : public TerminatedArray<T> {
     using PassPtr = HeapTerminatedArray*;
     using Ptr = Member<HeapTerminatedArray>;
 
-    static PassPtr release(Ptr& ptr) { return ptr; }
+    static PassPtr Release(Ptr& ptr) { return ptr; }
 
-    static PassPtr create(size_t capacity) {
+    static PassPtr Create(size_t capacity) {
       return reinterpret_cast<HeapTerminatedArray*>(
-          ThreadHeap::allocate<HeapTerminatedArray>(
+          ThreadHeap::Allocate<HeapTerminatedArray>(
               capacity * sizeof(T), IsEagerlyFinalizedType<T>::value));
     }
 
-    static PassPtr resize(PassPtr ptr, size_t capacity) {
+    static PassPtr Resize(PassPtr ptr, size_t capacity) {
       return reinterpret_cast<HeapTerminatedArray*>(
-          ThreadHeap::reallocate<HeapTerminatedArray>(ptr,
+          ThreadHeap::Reallocate<HeapTerminatedArray>(ptr,
                                                       capacity * sizeof(T)));
     }
   };

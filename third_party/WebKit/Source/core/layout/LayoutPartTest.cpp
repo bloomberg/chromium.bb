@@ -17,18 +17,18 @@ class OverriddenLayoutPart : public LayoutPart {
  public:
   explicit OverriddenLayoutPart(Element* element) : LayoutPart(element) {}
 
-  const char* name() const override { return "OverriddenLayoutPart"; }
+  const char* GetName() const override { return "OverriddenLayoutPart"; }
 };
 
 TEST_F(LayoutPartTest, DestroyUpdatesImageQualityController) {
-  Element* element = HTMLElement::create(HTMLNames::divTag, document());
+  Element* element = HTMLElement::Create(HTMLNames::divTag, GetDocument());
   LayoutObject* part = new OverriddenLayoutPart(element);
   // The third and forth arguments are not important in this test.
-  ImageQualityController::imageQualityController()->set(
+  ImageQualityController::GetImageQualityController()->Set(
       *part, 0, this, LayoutSize(1, 1), false);
-  EXPECT_TRUE(ImageQualityController::has(*part));
-  part->destroy();
-  EXPECT_FALSE(ImageQualityController::has(*part));
+  EXPECT_TRUE(ImageQualityController::Has(*part));
+  part->Destroy();
+  EXPECT_FALSE(ImageQualityController::Has(*part));
 }
 
 }  // namespace blink

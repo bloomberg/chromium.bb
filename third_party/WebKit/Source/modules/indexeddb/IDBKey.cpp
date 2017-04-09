@@ -32,16 +32,16 @@ namespace blink {
 IDBKey::~IDBKey() {}
 
 DEFINE_TRACE(IDBKey) {
-  visitor->trace(m_array);
+  visitor->Trace(array_);
 }
 
-bool IDBKey::isValid() const {
-  if (m_type == InvalidType)
+bool IDBKey::IsValid() const {
+  if (type_ == kInvalidType)
     return false;
 
-  if (m_type == ArrayType) {
-    for (size_t i = 0; i < m_array.size(); i++) {
-      if (!m_array[i]->isValid())
+  if (type_ == kArrayType) {
+    for (size_t i = 0; i < array_.size(); i++) {
+      if (!array_[i]->IsValid())
         return false;
     }
   }
@@ -51,7 +51,7 @@ bool IDBKey::isValid() const {
 
 // Safely compare numbers (signed/unsigned ints/floats/doubles).
 template <typename T>
-static int compareNumbers(const T& a, const T& b) {
+static int CompareNumbers(const T& a, const T& b) {
   if (a < b)
     return -1;
   if (b < a)
@@ -59,31 +59,31 @@ static int compareNumbers(const T& a, const T& b) {
   return 0;
 }
 
-int IDBKey::compare(const IDBKey* other) const {
+int IDBKey::Compare(const IDBKey* other) const {
   ASSERT(other);
-  if (m_type != other->m_type)
-    return m_type > other->m_type ? -1 : 1;
+  if (type_ != other->type_)
+    return type_ > other->type_ ? -1 : 1;
 
-  switch (m_type) {
-    case ArrayType:
-      for (size_t i = 0; i < m_array.size() && i < other->m_array.size(); ++i) {
-        if (int result = m_array[i]->compare(other->m_array[i].get()))
+  switch (type_) {
+    case kArrayType:
+      for (size_t i = 0; i < array_.size() && i < other->array_.size(); ++i) {
+        if (int result = array_[i]->Compare(other->array_[i].Get()))
           return result;
       }
-      return compareNumbers(m_array.size(), other->m_array.size());
-    case BinaryType:
+      return CompareNumbers(array_.size(), other->array_.size());
+    case kBinaryType:
       if (int result =
-              memcmp(m_binary->data(), other->m_binary->data(),
-                     std::min(m_binary->size(), other->m_binary->size())))
+              memcmp(binary_->Data(), other->binary_->Data(),
+                     std::min(binary_->size(), other->binary_->size())))
         return result < 0 ? -1 : 1;
-      return compareNumbers(m_binary->size(), other->m_binary->size());
-    case StringType:
-      return codePointCompare(m_string, other->m_string);
-    case DateType:
-    case NumberType:
-      return compareNumbers(m_number, other->m_number);
-    case InvalidType:
-    case TypeEnumMax:
+      return CompareNumbers(binary_->size(), other->binary_->size());
+    case kStringType:
+      return CodePointCompare(string_, other->string_);
+    case kDateType:
+    case kNumberType:
+      return CompareNumbers(number_, other->number_);
+    case kInvalidType:
+    case kTypeEnumMax:
       ASSERT_NOT_REACHED();
       return 0;
   }
@@ -92,34 +92,34 @@ int IDBKey::compare(const IDBKey* other) const {
   return 0;
 }
 
-bool IDBKey::isLessThan(const IDBKey* other) const {
+bool IDBKey::IsLessThan(const IDBKey* other) const {
   ASSERT(other);
-  return compare(other) == -1;
+  return Compare(other) == -1;
 }
 
-bool IDBKey::isEqual(const IDBKey* other) const {
+bool IDBKey::IsEqual(const IDBKey* other) const {
   if (!other)
     return false;
 
-  return !compare(other);
+  return !Compare(other);
 }
 
-IDBKey::KeyArray IDBKey::toMultiEntryArray() const {
-  DCHECK_EQ(m_type, ArrayType);
+IDBKey::KeyArray IDBKey::ToMultiEntryArray() const {
+  DCHECK_EQ(type_, kArrayType);
   KeyArray result;
-  result.reserveCapacity(m_array.size());
-  std::copy_if(m_array.begin(), m_array.end(), std::back_inserter(result),
-               [](const Member<IDBKey> key) { return key->isValid(); });
+  result.ReserveCapacity(array_.size());
+  std::copy_if(array_.begin(), array_.end(), std::back_inserter(result),
+               [](const Member<IDBKey> key) { return key->IsValid(); });
 
   // Remove duplicates using std::sort/std::unique rather than a hashtable to
   // avoid the complexity of implementing DefaultHash<IDBKey>.
   std::sort(result.begin(), result.end(),
             [](const Member<IDBKey> a, const Member<IDBKey> b) {
-              return a->isLessThan(b);
+              return a->IsLessThan(b);
             });
   const auto end = std::unique(result.begin(), result.end());
   DCHECK_LE(static_cast<size_t>(end - result.begin()), result.size());
-  result.resize(end - result.begin());
+  result.Resize(end - result.begin());
   return result;
 }
 

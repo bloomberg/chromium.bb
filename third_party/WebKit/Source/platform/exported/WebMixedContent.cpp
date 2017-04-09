@@ -33,64 +33,64 @@
 namespace blink {
 
 // static
-WebMixedContentContextType WebMixedContent::contextTypeFromRequestContext(
+WebMixedContentContextType WebMixedContent::ContextTypeFromRequestContext(
     WebURLRequest::RequestContext context,
-    bool strictMixedContentCheckingForPlugin) {
+    bool strict_mixed_content_checking_for_plugin) {
   switch (context) {
     // "Optionally-blockable" mixed content
-    case WebURLRequest::RequestContextAudio:
-    case WebURLRequest::RequestContextFavicon:
-    case WebURLRequest::RequestContextImage:
-    case WebURLRequest::RequestContextVideo:
-      return WebMixedContentContextType::OptionallyBlockable;
+    case WebURLRequest::kRequestContextAudio:
+    case WebURLRequest::kRequestContextFavicon:
+    case WebURLRequest::kRequestContextImage:
+    case WebURLRequest::kRequestContextVideo:
+      return WebMixedContentContextType::kOptionallyBlockable;
 
     // Plugins! Oh how dearly we love plugin-loaded content!
-    case WebURLRequest::RequestContextPlugin: {
-      return strictMixedContentCheckingForPlugin
-                 ? WebMixedContentContextType::Blockable
-                 : WebMixedContentContextType::OptionallyBlockable;
+    case WebURLRequest::kRequestContextPlugin: {
+      return strict_mixed_content_checking_for_plugin
+                 ? WebMixedContentContextType::kBlockable
+                 : WebMixedContentContextType::kOptionallyBlockable;
     }
 
     // "Blockable" mixed content
-    case WebURLRequest::RequestContextBeacon:
-    case WebURLRequest::RequestContextCSPReport:
-    case WebURLRequest::RequestContextEmbed:
-    case WebURLRequest::RequestContextEventSource:
-    case WebURLRequest::RequestContextFetch:
-    case WebURLRequest::RequestContextFont:
-    case WebURLRequest::RequestContextForm:
-    case WebURLRequest::RequestContextFrame:
-    case WebURLRequest::RequestContextHyperlink:
-    case WebURLRequest::RequestContextIframe:
-    case WebURLRequest::RequestContextImageSet:
-    case WebURLRequest::RequestContextImport:
-    case WebURLRequest::RequestContextInternal:
-    case WebURLRequest::RequestContextLocation:
-    case WebURLRequest::RequestContextManifest:
-    case WebURLRequest::RequestContextObject:
-    case WebURLRequest::RequestContextPing:
-    case WebURLRequest::RequestContextScript:
-    case WebURLRequest::RequestContextServiceWorker:
-    case WebURLRequest::RequestContextSharedWorker:
-    case WebURLRequest::RequestContextStyle:
-    case WebURLRequest::RequestContextSubresource:
-    case WebURLRequest::RequestContextTrack:
-    case WebURLRequest::RequestContextWorker:
-    case WebURLRequest::RequestContextXMLHttpRequest:
-    case WebURLRequest::RequestContextXSLT:
-      return WebMixedContentContextType::Blockable;
+    case WebURLRequest::kRequestContextBeacon:
+    case WebURLRequest::kRequestContextCSPReport:
+    case WebURLRequest::kRequestContextEmbed:
+    case WebURLRequest::kRequestContextEventSource:
+    case WebURLRequest::kRequestContextFetch:
+    case WebURLRequest::kRequestContextFont:
+    case WebURLRequest::kRequestContextForm:
+    case WebURLRequest::kRequestContextFrame:
+    case WebURLRequest::kRequestContextHyperlink:
+    case WebURLRequest::kRequestContextIframe:
+    case WebURLRequest::kRequestContextImageSet:
+    case WebURLRequest::kRequestContextImport:
+    case WebURLRequest::kRequestContextInternal:
+    case WebURLRequest::kRequestContextLocation:
+    case WebURLRequest::kRequestContextManifest:
+    case WebURLRequest::kRequestContextObject:
+    case WebURLRequest::kRequestContextPing:
+    case WebURLRequest::kRequestContextScript:
+    case WebURLRequest::kRequestContextServiceWorker:
+    case WebURLRequest::kRequestContextSharedWorker:
+    case WebURLRequest::kRequestContextStyle:
+    case WebURLRequest::kRequestContextSubresource:
+    case WebURLRequest::kRequestContextTrack:
+    case WebURLRequest::kRequestContextWorker:
+    case WebURLRequest::kRequestContextXMLHttpRequest:
+    case WebURLRequest::kRequestContextXSLT:
+      return WebMixedContentContextType::kBlockable;
 
     // FIXME: Contexts that we should block, but don't currently.
     // https://crbug.com/388650
-    case WebURLRequest::RequestContextDownload:
-    case WebURLRequest::RequestContextPrefetch:
-      return WebMixedContentContextType::ShouldBeBlockable;
+    case WebURLRequest::kRequestContextDownload:
+    case WebURLRequest::kRequestContextPrefetch:
+      return WebMixedContentContextType::kShouldBeBlockable;
 
-    case WebURLRequest::RequestContextUnspecified:
+    case WebURLRequest::kRequestContextUnspecified:
       NOTREACHED();
   }
   NOTREACHED();
-  return WebMixedContentContextType::Blockable;
+  return WebMixedContentContextType::kBlockable;
 }
 
 }  // namespace blink

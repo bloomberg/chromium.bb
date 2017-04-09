@@ -57,39 +57,39 @@ class GraphicsLayerDebugInfo final {
   GraphicsLayerDebugInfo();
   ~GraphicsLayerDebugInfo();
 
-  std::unique_ptr<base::trace_event::TracedValue> asTracedValue() const;
+  std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
-  CompositingReasons getCompositingReasons() const {
-    return m_compositingReasons;
+  CompositingReasons GetCompositingReasons() const {
+    return compositing_reasons_;
   }
-  void setCompositingReasons(CompositingReasons reasons) {
-    m_compositingReasons = reasons;
+  void SetCompositingReasons(CompositingReasons reasons) {
+    compositing_reasons_ = reasons;
   }
 
-  SquashingDisallowedReasons getSquashingDisallowedReasons() const {
-    return m_squashingDisallowedReasons;
+  SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
+    return squashing_disallowed_reasons_;
   }
-  void setSquashingDisallowedReasons(SquashingDisallowedReasons reasons) {
-    m_squashingDisallowedReasons = reasons;
+  void SetSquashingDisallowedReasons(SquashingDisallowedReasons reasons) {
+    squashing_disallowed_reasons_ = reasons;
   }
-  void setOwnerNodeId(int id) { m_ownerNodeId = id; }
+  void SetOwnerNodeId(int id) { owner_node_id_ = id; }
 
-  void appendAnnotatedInvalidateRect(const FloatRect&, PaintInvalidationReason);
-  void clearAnnotatedInvalidateRects();
+  void AppendAnnotatedInvalidateRect(const FloatRect&, PaintInvalidationReason);
+  void ClearAnnotatedInvalidateRects();
 
-  uint32_t getMainThreadScrollingReasons() const {
-    return m_mainThreadScrollingReasons;
+  uint32_t GetMainThreadScrollingReasons() const {
+    return main_thread_scrolling_reasons_;
   }
-  void setMainThreadScrollingReasons(uint32_t reasons) {
-    m_mainThreadScrollingReasons = reasons;
+  void SetMainThreadScrollingReasons(uint32_t reasons) {
+    main_thread_scrolling_reasons_ = reasons;
   }
 
  private:
-  void appendAnnotatedInvalidateRects(base::trace_event::TracedValue*) const;
-  void appendCompositingReasons(base::trace_event::TracedValue*) const;
-  void appendSquashingDisallowedReasons(base::trace_event::TracedValue*) const;
-  void appendOwnerNodeId(base::trace_event::TracedValue*) const;
-  void appendMainThreadScrollingReasons(base::trace_event::TracedValue*) const;
+  void AppendAnnotatedInvalidateRects(base::trace_event::TracedValue*) const;
+  void AppendCompositingReasons(base::trace_event::TracedValue*) const;
+  void AppendSquashingDisallowedReasons(base::trace_event::TracedValue*) const;
+  void AppendOwnerNodeId(base::trace_event::TracedValue*) const;
+  void AppendMainThreadScrollingReasons(base::trace_event::TracedValue*) const;
 
   struct AnnotatedInvalidationRect {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -97,12 +97,12 @@ class GraphicsLayerDebugInfo final {
     PaintInvalidationReason reason;
   };
 
-  CompositingReasons m_compositingReasons;
-  SquashingDisallowedReasons m_squashingDisallowedReasons;
-  int m_ownerNodeId;
-  Vector<AnnotatedInvalidationRect> m_invalidations;
-  Vector<AnnotatedInvalidationRect> m_previousInvalidations;
-  uint32_t m_mainThreadScrollingReasons;
+  CompositingReasons compositing_reasons_;
+  SquashingDisallowedReasons squashing_disallowed_reasons_;
+  int owner_node_id_;
+  Vector<AnnotatedInvalidationRect> invalidations_;
+  Vector<AnnotatedInvalidationRect> previous_invalidations_;
+  uint32_t main_thread_scrolling_reasons_;
 };
 
 }  // namespace blink

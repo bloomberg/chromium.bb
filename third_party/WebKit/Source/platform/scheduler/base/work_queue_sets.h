@@ -70,7 +70,7 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   bool ContainsWorkQueueForTest(const WorkQueue* queue) const;
 #endif
 
-  const char* name() const { return name_; }
+  const char* GetName() const { return name_; }
 
  private:
   struct OldestTaskEnqueueOrder {

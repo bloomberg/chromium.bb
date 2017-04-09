@@ -34,18 +34,18 @@ namespace blink {
 
 class CSSBorderImageSliceValue : public CSSValue {
  public:
-  static CSSBorderImageSliceValue* create(CSSQuadValue* slices, bool fill) {
+  static CSSBorderImageSliceValue* Create(CSSQuadValue* slices, bool fill) {
     return new CSSBorderImageSliceValue(slices, fill);
   }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
   // TODO(sashab): Change this to a quad of CSSPrimitiveValues, or add separate
   // methods for topSlice(), leftSlice(), etc.
-  const CSSQuadValue& slices() const { return *m_slices; }
-  bool fill() const { return m_fill; }
+  const CSSQuadValue& Slices() const { return *slices_; }
+  bool Fill() const { return fill_; }
 
-  bool equals(const CSSBorderImageSliceValue&) const;
+  bool Equals(const CSSBorderImageSliceValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -54,12 +54,12 @@ class CSSBorderImageSliceValue : public CSSValue {
 
   // These four values are used to make "cuts" in the border image. They can be
   // numbers or percentages.
-  Member<CSSQuadValue> m_slices;
-  bool m_fill;
+  Member<CSSQuadValue> slices_;
+  bool fill_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBorderImageSliceValue,
-                            isBorderImageSliceValue());
+                            IsBorderImageSliceValue());
 
 }  // namespace blink
 

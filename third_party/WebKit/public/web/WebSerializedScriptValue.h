@@ -49,34 +49,34 @@ class WebString;
 // FIXME: Should this class be in platform?
 class WebSerializedScriptValue {
  public:
-  ~WebSerializedScriptValue() { reset(); }
+  ~WebSerializedScriptValue() { Reset(); }
 
   WebSerializedScriptValue() {}
-  WebSerializedScriptValue(const WebSerializedScriptValue& d) { assign(d); }
+  WebSerializedScriptValue(const WebSerializedScriptValue& d) { Assign(d); }
   WebSerializedScriptValue& operator=(const WebSerializedScriptValue& d) {
-    assign(d);
+    Assign(d);
     return *this;
   }
 
   // Creates a serialized script value from its wire format data.
-  BLINK_EXPORT static WebSerializedScriptValue fromString(const WebString&);
+  BLINK_EXPORT static WebSerializedScriptValue FromString(const WebString&);
 
-  BLINK_EXPORT static WebSerializedScriptValue serialize(v8::Isolate*,
+  BLINK_EXPORT static WebSerializedScriptValue Serialize(v8::Isolate*,
                                                          v8::Local<v8::Value>);
 
   // Create a WebSerializedScriptValue that represents a serialization error.
-  BLINK_EXPORT static WebSerializedScriptValue createInvalid();
+  BLINK_EXPORT static WebSerializedScriptValue CreateInvalid();
 
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebSerializedScriptValue&);
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebSerializedScriptValue&);
 
-  bool isNull() const { return m_private.isNull(); }
+  bool IsNull() const { return private_.IsNull(); }
 
   // Returns a string representation of the WebSerializedScriptValue.
-  BLINK_EXPORT WebString toString() const;
+  BLINK_EXPORT WebString ToString() const;
 
   // Convert the serialized value to a parsed v8 value.
-  BLINK_EXPORT v8::Local<v8::Value> deserialize(v8::Isolate*);
+  BLINK_EXPORT v8::Local<v8::Value> Deserialize(v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
   WebSerializedScriptValue(WTF::PassRefPtr<SerializedScriptValue>);
@@ -85,7 +85,7 @@ class WebSerializedScriptValue {
 #endif
 
  private:
-  WebPrivatePtr<SerializedScriptValue> m_private;
+  WebPrivatePtr<SerializedScriptValue> private_;
 };
 
 }  // namespace blink

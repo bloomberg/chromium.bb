@@ -42,31 +42,31 @@ class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum LowerBoundType { LowerBoundOpen, LowerBoundClosed };
-  enum UpperBoundType { UpperBoundOpen, UpperBoundClosed };
+  enum LowerBoundType { kLowerBoundOpen, kLowerBoundClosed };
+  enum UpperBoundType { kUpperBoundOpen, kUpperBoundClosed };
 
-  static IDBKeyRange* create(IDBKey* lower,
+  static IDBKeyRange* Create(IDBKey* lower,
                              IDBKey* upper,
-                             LowerBoundType lowerType,
-                             UpperBoundType upperType) {
-    return new IDBKeyRange(lower, upper, lowerType, upperType);
+                             LowerBoundType lower_type,
+                             UpperBoundType upper_type) {
+    return new IDBKeyRange(lower, upper, lower_type, upper_type);
   }
   // Null if the script value is null or undefined, the range if it is one,
   // otherwise tries to convert to a key and throws if it fails.
-  static IDBKeyRange* fromScriptValue(ExecutionContext*,
+  static IDBKeyRange* FromScriptValue(ExecutionContext*,
                                       const ScriptValue&,
                                       ExceptionState&);
 
   DECLARE_TRACE();
 
   // Implement the IDBKeyRange IDL
-  IDBKey* lower() const { return m_lower.get(); }
-  IDBKey* upper() const { return m_upper.get(); }
+  IDBKey* Lower() const { return lower_.Get(); }
+  IDBKey* Upper() const { return upper_.Get(); }
 
   ScriptValue lowerValue(ScriptState*) const;
   ScriptValue upperValue(ScriptState*) const;
-  bool lowerOpen() const { return m_lowerType == LowerBoundOpen; }
-  bool upperOpen() const { return m_upperType == UpperBoundOpen; }
+  bool lowerOpen() const { return lower_type_ == kLowerBoundOpen; }
+  bool upperOpen() const { return upper_type_ == kUpperBoundOpen; }
 
   static IDBKeyRange* only(ScriptState*,
                            const ScriptValue& key,
@@ -82,8 +82,8 @@ class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
   static IDBKeyRange* bound(ScriptState*,
                             const ScriptValue& lower,
                             const ScriptValue& upper,
-                            bool lowerOpen,
-                            bool upperOpen,
+                            bool lower_open,
+                            bool upper_open,
                             ExceptionState&);
 
   static IDBKeyRange* only(IDBKey* value, ExceptionState&);
@@ -93,13 +93,13 @@ class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
  private:
   IDBKeyRange(IDBKey* lower,
               IDBKey* upper,
-              LowerBoundType lowerType,
-              UpperBoundType upperType);
+              LowerBoundType lower_type,
+              UpperBoundType upper_type);
 
-  Member<IDBKey> m_lower;
-  Member<IDBKey> m_upper;
-  const LowerBoundType m_lowerType;
-  const UpperBoundType m_upperType;
+  Member<IDBKey> lower_;
+  Member<IDBKey> upper_;
+  const LowerBoundType lower_type_;
+  const UpperBoundType upper_type_;
 };
 
 }  // namespace blink

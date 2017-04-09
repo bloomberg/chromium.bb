@@ -16,7 +16,7 @@ namespace blink {
 
 class SourceListDirectiveTest : public ::testing::Test {
  public:
-  SourceListDirectiveTest() : csp(ContentSecurityPolicy::create()) {}
+  SourceListDirectiveTest() : csp(ContentSecurityPolicy::Create()) {}
 
  protected:
   struct Source {
@@ -24,32 +24,32 @@ class SourceListDirectiveTest : public ::testing::Test {
     String host;
     const int port;
     String path;
-    CSPSource::WildcardDisposition hostWildcard;
-    CSPSource::WildcardDisposition portWildcard;
+    CSPSource::WildcardDisposition host_wildcard;
+    CSPSource::WildcardDisposition port_wildcard;
   };
 
   virtual void SetUp() {
-    KURL secureURL(ParsedURLString, "https://example.test/image.png");
-    RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(secureURL));
-    document = Document::create();
-    document->setSecurityOrigin(secureOrigin);
-    csp->bindToExecutionContext(document.get());
+    KURL secure_url(kParsedURLString, "https://example.test/image.png");
+    RefPtr<SecurityOrigin> secure_origin(SecurityOrigin::Create(secure_url));
+    document = Document::Create();
+    document->SetSecurityOrigin(secure_origin);
+    csp->BindToExecutionContext(document.Get());
   }
 
   ContentSecurityPolicy* SetUpWithOrigin(const String& origin) {
-    KURL secureURL(ParsedURLString, origin);
-    RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(secureURL));
-    Document* document = Document::create();
-    document->setSecurityOrigin(secureOrigin);
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
-    csp->bindToExecutionContext(document);
+    KURL secure_url(kParsedURLString, origin);
+    RefPtr<SecurityOrigin> secure_origin(SecurityOrigin::Create(secure_url));
+    Document* document = Document::Create();
+    document->SetSecurityOrigin(secure_origin);
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    csp->BindToExecutionContext(document);
     return csp;
   }
 
-  bool equalSources(const Source& a, const Source& b) {
+  bool EqualSources(const Source& a, const Source& b) {
     return a.scheme == b.scheme && a.host == b.host && a.port == b.port &&
-           a.path == b.path && a.hostWildcard == b.hostWildcard &&
-           a.portWildcard == b.portWildcard;
+           a.path == b.path && a.host_wildcard == b.host_wildcard &&
+           a.port_wildcard == b.port_wildcard;
   }
 
   Persistent<ContentSecurityPolicy> csp;
@@ -59,169 +59,169 @@ class SourceListDirectiveTest : public ::testing::Test {
 TEST_F(SourceListDirectiveTest, BasicMatchingNone) {
   KURL base;
   String sources = "'none'";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://example.com/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://example.com/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example.test/")));
 }
 
 TEST_F(SourceListDirectiveTest, BasicMatchingStrictDynamic) {
   String sources = "'strict-dynamic'";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_TRUE(sourceList.allowDynamic());
+  EXPECT_TRUE(source_list.AllowDynamic());
 }
 
 TEST_F(SourceListDirectiveTest, BasicMatchingUnsafeHashedAttributes) {
   String sources = "'unsafe-hashed-attributes'";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_TRUE(sourceList.allowHashedAttributes());
+  EXPECT_TRUE(source_list.AllowHashedAttributes());
 }
 
 TEST_F(SourceListDirectiveTest, BasicMatchingStar) {
   KURL base;
   String sources = "*";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example.com/bar")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://foo.example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://foo.example.com/bar")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "ftp://example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example.com/bar")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://foo.example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://foo.example.com/bar")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "ftp://example.com/")));
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "data:https://example.test/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "blob:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "data:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "blob:https://example.test/")));
   EXPECT_FALSE(
-      sourceList.allows(KURL(base, "filesystem:https://example.test/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "file:///etc/hosts")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "applewebdata://example.test/")));
+      source_list.Allows(KURL(base, "filesystem:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "file:///etc/hosts")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "applewebdata://example.test/")));
 }
 
 TEST_F(SourceListDirectiveTest, StarallowsSelf) {
   KURL base;
   String sources = "*";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
   // With a protocol of 'file', '*' allows 'file:':
-  RefPtr<SecurityOrigin> origin = SecurityOrigin::create("file", "", 0);
-  csp->setupSelf(*origin);
-  EXPECT_TRUE(sourceList.allows(KURL(base, "file:///etc/hosts")));
+  RefPtr<SecurityOrigin> origin = SecurityOrigin::Create("file", "", 0);
+  csp->SetupSelf(*origin);
+  EXPECT_TRUE(source_list.Allows(KURL(base, "file:///etc/hosts")));
 
   // The other results are the same as above:
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example.com/bar")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://foo.example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://foo.example.com/bar")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example.com/bar")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://foo.example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://foo.example.com/bar")));
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "data:https://example.test/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "blob:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "data:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "blob:https://example.test/")));
   EXPECT_FALSE(
-      sourceList.allows(KURL(base, "filesystem:https://example.test/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "applewebdata://example.test/")));
+      source_list.Allows(KURL(base, "filesystem:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "applewebdata://example.test/")));
 }
 
 TEST_F(SourceListDirectiveTest, BasicMatchingSelf) {
   KURL base;
   String sources = "'self'";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://example.com/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://not-example.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://example.com/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://not-example.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example.test/")));
 }
 
 TEST_F(SourceListDirectiveTest, BlobMatchingBlob) {
   KURL base;
   String sources = "blob:";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example.test/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "blob:https://example.test/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example.test/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "blob:https://example.test/")));
 }
 
 TEST_F(SourceListDirectiveTest, BasicMatching) {
   KURL base;
   String sources = "http://example1.com:8000/foo/ https://example2.com/";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example1.com:8000/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example1.com:8000/foo/")));
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "http://example1.com:8000/foo/bar")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example2.com/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example2.com/foo/")));
+      source_list.Allows(KURL(base, "http://example1.com:8000/foo/bar")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example2.com/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example2.com/foo/")));
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://not-example.com/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://example1.com/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example1.com/foo")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://example1.com:9000/foo/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://example1.com:8000/FOO/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://not-example.com/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://example1.com/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example1.com/foo")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://example1.com:9000/foo/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://example1.com:8000/FOO/")));
 }
 
 TEST_F(SourceListDirectiveTest, WildcardMatching) {
   KURL base;
   String sources =
       "http://example1.com:*/foo/ https://*.example2.com/bar/ http://*.test/";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example1.com/foo/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example1.com:8000/foo/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://example1.com:9000/foo/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://foo.example2.com/bar/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://foo.test/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "http://foo.bar.test/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example1.com/foo/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example1.com:8000/foo/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://example1.com:9000/foo/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://foo.test/")));
-  EXPECT_TRUE(sourceList.allows(KURL(base, "https://foo.bar.test/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example1.com/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example1.com:8000/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://example1.com:9000/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://foo.example2.com/bar/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://foo.test/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "http://foo.bar.test/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example1.com/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example1.com:8000/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://example1.com:9000/foo/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://foo.test/")));
+  EXPECT_TRUE(source_list.Allows(KURL(base, "https://foo.bar.test/")));
 
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example1.com:8000/foo")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example2.com:8000/bar")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example1.com:8000/foo")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example2.com:8000/bar")));
   EXPECT_FALSE(
-      sourceList.allows(KURL(base, "https://foo.example2.com:8000/bar")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example2.foo.com/bar")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://foo.test.bar/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "https://example2.com/bar/")));
-  EXPECT_FALSE(sourceList.allows(KURL(base, "http://test/")));
+      source_list.Allows(KURL(base, "https://foo.example2.com:8000/bar")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example2.foo.com/bar")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://foo.test.bar/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "https://example2.com/bar/")));
+  EXPECT_FALSE(source_list.Allows(KURL(base, "http://test/")));
 }
 
 TEST_F(SourceListDirectiveTest, RedirectMatching) {
   KURL base;
   String sources = "http://example1.com/foo/ http://example2.com/bar/";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
 
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "http://example1.com/foo/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "http://example1.com/foo/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "http://example1.com/bar/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "http://example1.com/bar/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "http://example2.com/bar/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "http://example2.com/bar/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "http://example2.com/foo/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "http://example2.com/foo/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "https://example1.com/foo/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "https://example1.com/foo/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_TRUE(
-      sourceList.allows(KURL(base, "https://example1.com/bar/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "https://example1.com/bar/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
 
   EXPECT_FALSE(
-      sourceList.allows(KURL(base, "http://example3.com/foo/"),
-                        ResourceRequest::RedirectStatus::FollowedRedirect));
+      source_list.Allows(KURL(base, "http://example3.com/foo/"),
+                         ResourceRequest::RedirectStatus::kFollowedRedirect));
 }
 
 TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
   String sources =
       "http://example1.com/foo/ http://*.example2.com/bar/ "
       "http://*.example3.com:*/bar/";
-  SourceListDirective sourceList("script-src", sources, csp.get());
+  SourceListDirective source_list("script-src", sources, csp.Get());
   struct TestCase {
     String sources;
     String expected;
@@ -262,36 +262,36 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective secondList("script-src", test.sources, csp.get());
+    SourceListDirective second_list("script-src", test.sources, csp.Get());
     HeapVector<Member<CSPSource>> normalized =
-        sourceList.getIntersectCSPSources(secondList.m_list);
-    SourceListDirective helperSourceList("script-src", test.expected,
-                                         csp.get());
-    HeapVector<Member<CSPSource>> expected = helperSourceList.m_list;
+        source_list.GetIntersectCSPSources(second_list.list_);
+    SourceListDirective helper_source_list("script-src", test.expected,
+                                           csp.Get());
+    HeapVector<Member<CSPSource>> expected = helper_source_list.list_;
     EXPECT_EQ(normalized.size(), expected.size());
     for (size_t i = 0; i < normalized.size(); i++) {
-      Source a = {normalized[i]->m_scheme,       normalized[i]->m_host,
-                  normalized[i]->m_port,         normalized[i]->m_path,
-                  normalized[i]->m_hostWildcard, normalized[i]->m_portWildcard};
-      Source b = {expected[i]->m_scheme,       expected[i]->m_host,
-                  expected[i]->m_port,         expected[i]->m_path,
-                  expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
-      EXPECT_TRUE(equalSources(a, b));
+      Source a = {normalized[i]->scheme_,        normalized[i]->host_,
+                  normalized[i]->port_,          normalized[i]->path_,
+                  normalized[i]->host_wildcard_, normalized[i]->port_wildcard_};
+      Source b = {expected[i]->scheme_,        expected[i]->host_,
+                  expected[i]->port_,          expected[i]->path_,
+                  expected[i]->host_wildcard_, expected[i]->port_wildcard_};
+      EXPECT_TRUE(EqualSources(a, b));
     }
   }
 }
 
 TEST_F(SourceListDirectiveTest, GetIntersectCSPSourcesSchemes) {
-  SourceListDirective listA("script-src",
-                            "http: http://example1.com/foo/ "
-                            "https://example1.com/foo/ "
-                            "http://example1.com/bar/page.html "
-                            "wss: ws://another.test/bar/",
-                            csp.get());
+  SourceListDirective list_a("script-src",
+                             "http: http://example1.com/foo/ "
+                             "https://example1.com/foo/ "
+                             "http://example1.com/bar/page.html "
+                             "wss: ws://another.test/bar/",
+                             csp.Get());
   struct TestCase {
     String sources;
     String expected;
-    String expectedReversed;
+    String expected_reversed;
   } cases[] = {{"http:", "http:"},
                {"https:", "https:"},
                {"ws:", "wss: ws://another.test/bar/"},
@@ -316,35 +316,35 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSourcesSchemes) {
                 "http: wss: ws://another.test/bar/"}};
 
   for (const auto& test : cases) {
-    SourceListDirective listB("script-src", test.sources, csp.get());
+    SourceListDirective list_b("script-src", test.sources, csp.Get());
     HeapVector<Member<CSPSource>> normalized =
-        listA.getIntersectCSPSources(listB.m_list);
+        list_a.GetIntersectCSPSources(list_b.list_);
 
-    SourceListDirective helperSourceList("script-src", test.expected,
-                                         csp.get());
-    HeapVector<Member<CSPSource>> expected = helperSourceList.m_list;
+    SourceListDirective helper_source_list("script-src", test.expected,
+                                           csp.Get());
+    HeapVector<Member<CSPSource>> expected = helper_source_list.list_;
     EXPECT_EQ(normalized.size(), expected.size());
     for (size_t i = 0; i < expected.size(); i++) {
-      Source a = {expected[i]->m_scheme,       expected[i]->m_host,
-                  expected[i]->m_port,         expected[i]->m_path,
-                  expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
-      Source b = {normalized[i]->m_scheme,       normalized[i]->m_host,
-                  normalized[i]->m_port,         normalized[i]->m_path,
-                  normalized[i]->m_hostWildcard, normalized[i]->m_portWildcard};
-      EXPECT_TRUE(equalSources(a, b));
+      Source a = {expected[i]->scheme_,        expected[i]->host_,
+                  expected[i]->port_,          expected[i]->path_,
+                  expected[i]->host_wildcard_, expected[i]->port_wildcard_};
+      Source b = {normalized[i]->scheme_,        normalized[i]->host_,
+                  normalized[i]->port_,          normalized[i]->path_,
+                  normalized[i]->host_wildcard_, normalized[i]->port_wildcard_};
+      EXPECT_TRUE(EqualSources(a, b));
     }
   }
 }
 
 TEST_F(SourceListDirectiveTest, Subsumes) {
   KURL base;
-  String requiredSources =
+  String required_sources =
       "http://example1.com/foo/ http://*.example2.com/bar/ "
       "http://*.example3.com:*/bar/";
-  SourceListDirective required("script-src", requiredSources, csp.get());
+  SourceListDirective required("script-src", required_sources, csp.Get());
 
   struct TestCase {
-    std::vector<String> sourcesVector;
+    std::vector<String> sources_vector;
     bool expected;
   } cases[] = {
       // Non-intersecting source lists give an effective policy of 'none', which
@@ -410,25 +410,25 @@ TEST_F(SourceListDirectiveTest, Subsumes) {
   for (const auto& test : cases) {
     HeapVector<Member<SourceListDirective>> returned;
 
-    for (const auto& sources : test.sourcesVector) {
+    for (const auto& sources : test.sources_vector) {
       SourceListDirective* member =
-          new SourceListDirective("script-src", sources, csp.get());
+          new SourceListDirective("script-src", sources, csp.Get());
       returned.push_back(member);
     }
 
-    EXPECT_EQ(required.subsumes(returned), test.expected);
+    EXPECT_EQ(required.Subsumes(returned), test.expected);
   }
 }
 
 TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
-  SourceListDirective A("script-src",
+  SourceListDirective a("script-src",
                         "http://example1.com/foo/ http://*.example2.com/bar/ "
                         "http://*.example3.com:*/bar/ 'self'",
-                        csp.get());
+                        csp.Get());
 
   struct TestCase {
-    std::vector<const char*> sourcesB;
-    const char* originB;
+    std::vector<const char*> sources_b;
+    const char* origin_b;
     bool expected;
   } cases[] = {
       // "https://example.test/" is a secure origin for both A and B.
@@ -524,16 +524,16 @@ TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
   };
 
   for (const auto& test : cases) {
-    ContentSecurityPolicy* cspB = SetUpWithOrigin(String(test.originB));
+    ContentSecurityPolicy* csp_b = SetUpWithOrigin(String(test.origin_b));
 
-    HeapVector<Member<SourceListDirective>> vectorB;
-    for (const auto& sources : test.sourcesB) {
+    HeapVector<Member<SourceListDirective>> vector_b;
+    for (const auto& sources : test.sources_b) {
       SourceListDirective* member =
-          new SourceListDirective("script-src", sources, cspB);
-      vectorB.push_back(member);
+          new SourceListDirective("script-src", sources, csp_b);
+      vector_b.push_back(member);
     }
 
-    EXPECT_EQ(test.expected, A.subsumes(vectorB));
+    EXPECT_EQ(test.expected, a.Subsumes(vector_b));
   }
 }
 
@@ -573,32 +573,32 @@ TEST_F(SourceListDirectiveTest, AllowAllInline) {
   };
 
   // Script-src and style-src differently handle presence of 'strict-dynamic'.
-  SourceListDirective scriptSrc("script-src",
-                                "'strict-dynamic' 'unsafe-inline'", csp.get());
-  EXPECT_FALSE(scriptSrc.allowAllInline());
+  SourceListDirective script_src("script-src",
+                                 "'strict-dynamic' 'unsafe-inline'", csp.Get());
+  EXPECT_FALSE(script_src.AllowAllInline());
 
-  SourceListDirective styleSrc("style-src", "'strict-dynamic' 'unsafe-inline'",
-                               csp.get());
-  EXPECT_TRUE(styleSrc.allowAllInline());
+  SourceListDirective style_src("style-src", "'strict-dynamic' 'unsafe-inline'",
+                                csp.Get());
+  EXPECT_TRUE(style_src.AllowAllInline());
 
   for (const auto& test : cases) {
-    SourceListDirective scriptSrc("script-src", test.sources, csp.get());
-    EXPECT_EQ(scriptSrc.allowAllInline(), test.expected);
+    SourceListDirective script_src("script-src", test.sources, csp.Get());
+    EXPECT_EQ(script_src.AllowAllInline(), test.expected);
 
-    SourceListDirective styleSrc("style-src", test.sources, csp.get());
-    EXPECT_EQ(styleSrc.allowAllInline(), test.expected);
+    SourceListDirective style_src("style-src", test.sources, csp.Get());
+    EXPECT_EQ(style_src.AllowAllInline(), test.expected);
 
     // If source list doesn't have a valid type, it must not allow all inline.
-    SourceListDirective imgSrc("img-src", test.sources, csp.get());
-    EXPECT_FALSE(imgSrc.allowAllInline());
+    SourceListDirective img_src("img-src", test.sources, csp.Get());
+    EXPECT_FALSE(img_src.AllowAllInline());
   }
 }
 
 TEST_F(SourceListDirectiveTest, SubsumesAllowAllInline) {
   struct TestCase {
-    bool isScriptSrc;
-    String sourcesA;
-    std::vector<String> sourcesB;
+    bool is_script_src;
+    String sources_a;
+    std::vector<String> sources_b;
     bool expected;
   } cases[] = {
       // `sourcesA` allows all inline behavior.
@@ -687,27 +687,27 @@ TEST_F(SourceListDirectiveTest, SubsumesAllowAllInline) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
-                          test.sourcesA, csp.get());
-    ContentSecurityPolicy* cspB =
+    SourceListDirective a(test.is_script_src ? "script-src" : "style-src",
+                          test.sources_a, csp.Get());
+    ContentSecurityPolicy* csp_b =
         SetUpWithOrigin("https://another.test/image.png");
 
-    HeapVector<Member<SourceListDirective>> vectorB;
-    for (const auto& sources : test.sourcesB) {
+    HeapVector<Member<SourceListDirective>> vector_b;
+    for (const auto& sources : test.sources_b) {
       SourceListDirective* member = new SourceListDirective(
-          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.push_back(member);
+          test.is_script_src ? "script-src" : "style-src", sources, csp_b);
+      vector_b.push_back(member);
     }
 
-    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+    EXPECT_EQ(a.Subsumes(vector_b), test.expected);
   }
 }
 
 TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
   struct TestCase {
-    bool isScriptSrc;
-    String sourcesA;
-    std::vector<String> sourcesB;
+    bool is_script_src;
+    String sources_a;
+    std::vector<String> sources_b;
     bool expected;
   } cases[] = {
       // A or policiesB contain `unsafe-eval`.
@@ -774,21 +774,21 @@ TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
        false},
   };
 
-  ContentSecurityPolicy* cspB =
+  ContentSecurityPolicy* csp_b =
       SetUpWithOrigin("https://another.test/image.png");
 
   for (const auto& test : cases) {
-    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
-                          test.sourcesA, csp.get());
+    SourceListDirective a(test.is_script_src ? "script-src" : "style-src",
+                          test.sources_a, csp.Get());
 
-    HeapVector<Member<SourceListDirective>> vectorB;
-    for (const auto& sources : test.sourcesB) {
+    HeapVector<Member<SourceListDirective>> vector_b;
+    for (const auto& sources : test.sources_b) {
       SourceListDirective* member = new SourceListDirective(
-          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.push_back(member);
+          test.is_script_src ? "script-src" : "style-src", sources, csp_b);
+      vector_b.push_back(member);
     }
 
-    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+    EXPECT_EQ(a.Subsumes(vector_b), test.expected);
   }
 }
 
@@ -819,22 +819,22 @@ TEST_F(SourceListDirectiveTest, IsNone) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective scriptSrc("script-src", test.sources, csp.get());
-    EXPECT_EQ(scriptSrc.isNone(), test.expected);
+    SourceListDirective script_src("script-src", test.sources, csp.Get());
+    EXPECT_EQ(script_src.IsNone(), test.expected);
 
-    SourceListDirective styleSrc("form-action", test.sources, csp.get());
-    EXPECT_EQ(styleSrc.isNone(), test.expected);
+    SourceListDirective style_src("form-action", test.sources, csp.Get());
+    EXPECT_EQ(style_src.IsNone(), test.expected);
 
-    SourceListDirective imgSrc("frame-src", test.sources, csp.get());
-    EXPECT_EQ(styleSrc.isNone(), test.expected);
+    SourceListDirective img_src("frame-src", test.sources, csp.Get());
+    EXPECT_EQ(style_src.IsNone(), test.expected);
   }
 }
 
 TEST_F(SourceListDirectiveTest, GetIntersectNonces) {
-  SourceListDirective listA(
+  SourceListDirective list_a(
       "script-src",
       "http://example.com 'nonce-abc' 'nonce-xyz' 'nonce-' 'unsafe-inline'",
-      csp.get());
+      csp.Get());
   struct TestCase {
     String sources;
     String expected;
@@ -856,23 +856,23 @@ TEST_F(SourceListDirectiveTest, GetIntersectNonces) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective listB("script-src", test.sources, csp.get());
-    HashSet<String> normalized = listA.getIntersectNonces(listB.m_nonces);
+    SourceListDirective list_b("script-src", test.sources, csp.Get());
+    HashSet<String> normalized = list_a.GetIntersectNonces(list_b.nonces_);
 
-    SourceListDirective expectedList("script-src", test.expected, csp.get());
-    HashSet<String> expected = expectedList.m_nonces;
+    SourceListDirective expected_list("script-src", test.expected, csp.Get());
+    HashSet<String> expected = expected_list.nonces_;
     EXPECT_EQ(normalized.size(), expected.size());
     for (const auto& nonce : normalized) {
-      EXPECT_TRUE(expected.contains(nonce));
+      EXPECT_TRUE(expected.Contains(nonce));
     }
   }
 }
 
 TEST_F(SourceListDirectiveTest, GetIntersectHashes) {
-  SourceListDirective listA(
+  SourceListDirective list_a(
       "script-src",
       "http://example.com 'sha256-abc123' 'sha384-' 'sha512-321cba' 'self'",
-      csp.get());
+      csp.Get());
   struct TestCase {
     String sources;
     String expected;
@@ -894,23 +894,24 @@ TEST_F(SourceListDirectiveTest, GetIntersectHashes) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective listB("script-src", test.sources, csp.get());
-    HashSet<CSPHashValue> normalized = listA.getIntersectHashes(listB.m_hashes);
+    SourceListDirective list_b("script-src", test.sources, csp.Get());
+    HashSet<CSPHashValue> normalized =
+        list_a.GetIntersectHashes(list_b.hashes_);
 
-    SourceListDirective expectedList("script-src", test.expected, csp.get());
-    HashSet<CSPHashValue> expected = expectedList.m_hashes;
+    SourceListDirective expected_list("script-src", test.expected, csp.Get());
+    HashSet<CSPHashValue> expected = expected_list.hashes_;
     EXPECT_EQ(normalized.size(), expected.size());
     for (const auto& hash : normalized) {
-      EXPECT_TRUE(expected.contains(hash));
+      EXPECT_TRUE(expected.Contains(hash));
     }
   }
 }
 
 TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
   struct TestCase {
-    bool isScriptSrc;
-    String sourcesA;
-    std::vector<String> sourcesB;
+    bool is_script_src;
+    String sources_a;
+    std::vector<String> sources_b;
     bool expected;
   } cases[] = {
       // Check nonces.
@@ -1014,27 +1015,27 @@ TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
-                          test.sourcesA, csp.get());
-    ContentSecurityPolicy* cspB =
+    SourceListDirective a(test.is_script_src ? "script-src" : "style-src",
+                          test.sources_a, csp.Get());
+    ContentSecurityPolicy* csp_b =
         SetUpWithOrigin("https://another.test/image.png");
 
-    HeapVector<Member<SourceListDirective>> vectorB;
-    for (const auto& sources : test.sourcesB) {
+    HeapVector<Member<SourceListDirective>> vector_b;
+    for (const auto& sources : test.sources_b) {
       SourceListDirective* member = new SourceListDirective(
-          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.push_back(member);
+          test.is_script_src ? "script-src" : "style-src", sources, csp_b);
+      vector_b.push_back(member);
     }
 
-    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+    EXPECT_EQ(a.Subsumes(vector_b), test.expected);
   }
 }
 
 TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
   struct TestCase {
-    bool isScriptSrc;
-    String sourcesA;
-    std::vector<String> sourcesB;
+    bool is_script_src;
+    String sources_a;
+    std::vector<String> sources_b;
     bool expected;
   } cases[] = {
       // Neither A nor effective policy of list B has `strict-dynamic`.
@@ -1190,26 +1191,26 @@ TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
-                          test.sourcesA, csp.get());
-    ContentSecurityPolicy* cspB =
+    SourceListDirective a(test.is_script_src ? "script-src" : "style-src",
+                          test.sources_a, csp.Get());
+    ContentSecurityPolicy* csp_b =
         SetUpWithOrigin("https://another.test/image.png");
 
-    HeapVector<Member<SourceListDirective>> vectorB;
-    for (const auto& sources : test.sourcesB) {
+    HeapVector<Member<SourceListDirective>> vector_b;
+    for (const auto& sources : test.sources_b) {
       SourceListDirective* member = new SourceListDirective(
-          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.push_back(member);
+          test.is_script_src ? "script-src" : "style-src", sources, csp_b);
+      vector_b.push_back(member);
     }
 
-    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+    EXPECT_EQ(a.Subsumes(vector_b), test.expected);
   }
 }
 
 TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
   struct TestCase {
-    const char* sourcesA;
-    std::vector<const char*> sourcesB;
+    const char* sources_a;
+    std::vector<const char*> sources_b;
     bool expected;
   } cases[] = {
       // `A` subsumes `policiesB`..
@@ -1262,18 +1263,18 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective A("script-src", test.sourcesA, csp.get());
-    ContentSecurityPolicy* cspB =
+    SourceListDirective a("script-src", test.sources_a, csp.Get());
+    ContentSecurityPolicy* csp_b =
         SetUpWithOrigin("https://another.test/image.png");
 
-    HeapVector<Member<SourceListDirective>> vectorB;
-    for (const auto& sources : test.sourcesB) {
+    HeapVector<Member<SourceListDirective>> vector_b;
+    for (const auto& sources : test.sources_b) {
       SourceListDirective* member =
-          new SourceListDirective("script-src", sources, cspB);
-      vectorB.push_back(member);
+          new SourceListDirective("script-src", sources, csp_b);
+      vector_b.push_back(member);
     }
 
-    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+    EXPECT_EQ(a.Subsumes(vector_b), test.expected);
   }
 }
 
@@ -1296,21 +1297,21 @@ TEST_F(SourceListDirectiveTest, GetSources) {
   };
 
   for (const auto& test : cases) {
-    SourceListDirective list("script-src", test.sources, csp.get());
+    SourceListDirective list("script-src", test.sources, csp.Get());
     HeapVector<Member<CSPSource>> normalized =
-        list.getSources(csp.get()->getSelfSource());
+        list.GetSources(csp.Get()->GetSelfSource());
 
-    SourceListDirective expectedList("script-src", test.expected, csp.get());
-    HeapVector<Member<CSPSource>> expected = expectedList.m_list;
+    SourceListDirective expected_list("script-src", test.expected, csp.Get());
+    HeapVector<Member<CSPSource>> expected = expected_list.list_;
     EXPECT_EQ(normalized.size(), expected.size());
     for (size_t i = 0; i < expected.size(); i++) {
-      Source a = {expected[i]->m_scheme,       expected[i]->m_host,
-                  expected[i]->m_port,         expected[i]->m_path,
-                  expected[i]->m_hostWildcard, expected[i]->m_portWildcard};
-      Source b = {normalized[i]->m_scheme,       normalized[i]->m_host,
-                  normalized[i]->m_port,         normalized[i]->m_path,
-                  normalized[i]->m_hostWildcard, normalized[i]->m_portWildcard};
-      EXPECT_TRUE(equalSources(a, b));
+      Source a = {expected[i]->scheme_,        expected[i]->host_,
+                  expected[i]->port_,          expected[i]->path_,
+                  expected[i]->host_wildcard_, expected[i]->port_wildcard_};
+      Source b = {normalized[i]->scheme_,        normalized[i]->host_,
+                  normalized[i]->port_,          normalized[i]->path_,
+                  normalized[i]->host_wildcard_, normalized[i]->port_wildcard_};
+      EXPECT_TRUE(EqualSources(a, b));
     }
   }
 }
@@ -1340,13 +1341,13 @@ TEST_F(SourceListDirectiveTest, ParseHost) {
 
   for (const auto& test : cases) {
     String host;
-    CSPSource::WildcardDisposition disposition = CSPSource::NoWildcard;
+    CSPSource::WildcardDisposition disposition = CSPSource::kNoWildcard;
     Vector<UChar> characters;
-    test.sources.appendTo(characters);
-    const UChar* start = characters.data();
+    test.sources.AppendTo(characters);
+    const UChar* start = characters.Data();
     const UChar* end = start + characters.size();
     EXPECT_EQ(test.expected,
-              SourceListDirective::parseHost(start, end, host, disposition))
+              SourceListDirective::ParseHost(start, end, host, disposition))
         << "SourceListDirective::parseHost fail to parse: " << test.sources;
   }
 }
@@ -1357,24 +1358,24 @@ TEST_F(SourceListDirectiveTest, AllowHostWildcard) {
   // See crbug.com/682673.
   {
     String sources = "http://*:111";
-    SourceListDirective sourceList("default-src", sources, csp.get());
-    EXPECT_TRUE(sourceList.allows(KURL(base, "http://a.com:111")));
-    EXPECT_FALSE(sourceList.allows(KURL(base, "http://a.com:222")));
+    SourceListDirective source_list("default-src", sources, csp.Get());
+    EXPECT_TRUE(source_list.Allows(KURL(base, "http://a.com:111")));
+    EXPECT_FALSE(source_list.Allows(KURL(base, "http://a.com:222")));
   }
   // When the host-part is "*", the path must still be checked.
   // See crbug.com/682673.
   {
     String sources = "http://*/welcome.html";
-    SourceListDirective sourceList("default-src", sources, csp.get());
-    EXPECT_TRUE(sourceList.allows(KURL(base, "http://a.com/welcome.html")));
-    EXPECT_FALSE(sourceList.allows(KURL(base, "http://a.com/passwords.txt")));
+    SourceListDirective source_list("default-src", sources, csp.Get());
+    EXPECT_TRUE(source_list.Allows(KURL(base, "http://a.com/welcome.html")));
+    EXPECT_FALSE(source_list.Allows(KURL(base, "http://a.com/passwords.txt")));
   }
   // When the host-part is "*" and the expression-source is not "*", then every
   // host are allowed. See crbug.com/682673.
   {
     String sources = "http://*";
-    SourceListDirective sourceList("default-src", sources, csp.get());
-    EXPECT_TRUE(sourceList.allows(KURL(base, "http://a.com")));
+    SourceListDirective source_list("default-src", sources, csp.Get());
+    EXPECT_TRUE(source_list.Allows(KURL(base, "http://a.com")));
   }
 }
 

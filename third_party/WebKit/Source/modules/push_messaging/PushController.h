@@ -23,22 +23,22 @@ class PushController final : public GarbageCollected<PushController>,
  public:
   PushController(LocalFrame&, WebPushClient*);
 
-  static const char* supplementName();
-  static PushController* from(LocalFrame* frame) {
+  static const char* SupplementName();
+  static PushController* From(LocalFrame* frame) {
     return static_cast<PushController*>(
-        Supplement<LocalFrame>::from(frame, supplementName()));
+        Supplement<LocalFrame>::From(frame, SupplementName()));
   }
-  static WebPushClient& clientFrom(LocalFrame*);
+  static WebPushClient& ClientFrom(LocalFrame*);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::Trace(visitor); }
 
  private:
-  WebPushClient* client() const { return m_client; }
+  WebPushClient* Client() const { return client_; }
 
-  WebPushClient* m_client;
+  WebPushClient* client_;
 };
 
-MODULES_EXPORT void providePushControllerTo(LocalFrame&, WebPushClient*);
+MODULES_EXPORT void ProvidePushControllerTo(LocalFrame&, WebPushClient*);
 
 }  // namespace blink
 

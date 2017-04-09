@@ -12,13 +12,13 @@ namespace blink {
 template <typename Derived>
 class SVGPropertyHelper : public SVGPropertyBase {
  public:
-  virtual SVGPropertyBase* cloneForAnimation(const String& value) const {
-    Derived* property = Derived::create();
-    property->setValueAsString(value);
+  virtual SVGPropertyBase* CloneForAnimation(const String& value) const {
+    Derived* property = Derived::Create();
+    property->SetValueAsString(value);
     return property;
   }
 
-  AnimatedPropertyType type() const override { return Derived::classType(); }
+  AnimatedPropertyType GetType() const override { return Derived::ClassType(); }
 };
 
 }  // namespace blink

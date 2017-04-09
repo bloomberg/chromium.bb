@@ -34,19 +34,19 @@
 
 namespace blink {
 
-v8::Local<v8::Value> WebArrayBufferConverter::toV8Value(
+v8::Local<v8::Value> WebArrayBufferConverter::ToV8Value(
     WebArrayBuffer* buffer,
-    v8::Local<v8::Object> creationContext,
+    v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
   // We no longer use |creationContext| because it's often misused and points
   // to a context faked by user script.
-  DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
+  DCHECK(creation_context->CreationContext() == isolate->GetCurrentContext());
   if (!buffer)
     return v8::Local<v8::Value>();
   return ToV8(*buffer, isolate->GetCurrentContext()->Global(), isolate);
 }
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(
+WebArrayBuffer* WebArrayBufferConverter::CreateFromV8Value(
     v8::Local<v8::Value> value,
     v8::Isolate*) {
   if (!value->IsArrayBuffer())

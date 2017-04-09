@@ -29,17 +29,17 @@ class SVGInlineFlowBox final : public InlineFlowBox {
  public:
   SVGInlineFlowBox(LineLayoutItem item) : InlineFlowBox(item) {}
 
-  bool isSVGInlineFlowBox() const override { return true; }
-  LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
-  void setLogicalHeight(LayoutUnit h) { m_logicalHeight = h; }
+  bool IsSVGInlineFlowBox() const override { return true; }
+  LayoutUnit VirtualLogicalHeight() const override { return logical_height_; }
+  void SetLogicalHeight(LayoutUnit h) { logical_height_ = h; }
 
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom) const override;
+             LayoutUnit line_top,
+             LayoutUnit line_bottom) const override;
 
  private:
-  LayoutUnit m_logicalHeight;
+  LayoutUnit logical_height_;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineFlowBox);

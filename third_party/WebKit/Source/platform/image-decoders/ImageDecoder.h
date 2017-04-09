@@ -47,11 +47,11 @@
 namespace blink {
 
 #if SK_B32_SHIFT
-inline SkColorSpaceXform::ColorFormat xformColorFormat() {
+inline SkColorSpaceXform::ColorFormat XformColorFormat() {
   return SkColorSpaceXform::kRGBA_8888_ColorFormat;
 }
 #else
-inline SkColorSpaceXform::ColorFormat xformColorFormat() {
+inline SkColorSpaceXform::ColorFormat XformColorFormat() {
   return SkColorSpaceXform::kBGRA_8888_ColorFormat;
 }
 #endif
@@ -64,14 +64,14 @@ class PLATFORM_EXPORT ImagePlanes final {
 
  public:
   ImagePlanes();
-  ImagePlanes(void* planes[3], const size_t rowBytes[3]);
+  ImagePlanes(void* planes[3], const size_t row_bytes[3]);
 
-  void* plane(int);
-  size_t rowBytes(int) const;
+  void* Plane(int);
+  size_t RowBytes(int) const;
 
  private:
-  void* m_planes[3];
-  size_t m_rowBytes[3];
+  void* planes_[3];
+  size_t row_bytes_[3];
 };
 
 // ImageDecoder is a base for all format-specific decoders
@@ -82,10 +82,10 @@ class PLATFORM_EXPORT ImageDecoder {
   USING_FAST_MALLOC(ImageDecoder);
 
  public:
-  static const size_t noDecodedImageByteLimit =
-      Platform::noDecodedImageByteLimit;
+  static const size_t kNoDecodedImageByteLimit =
+      Platform::kNoDecodedImageByteLimit;
 
-  enum AlphaOption { AlphaPremultiplied, AlphaNotPremultiplied };
+  enum AlphaOption { kAlphaPremultiplied, kAlphaNotPremultiplied };
 
   virtual ~ImageDecoder() {}
 
@@ -93,69 +93,69 @@ class PLATFORM_EXPORT ImageDecoder {
   // we can't sniff a supported type from the provided data (possibly
   // because there isn't enough data yet).
   // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
-  static std::unique_ptr<ImageDecoder> create(PassRefPtr<SegmentReader> data,
-                                              bool dataComplete,
+  static std::unique_ptr<ImageDecoder> Create(PassRefPtr<SegmentReader> data,
+                                              bool data_complete,
                                               AlphaOption,
                                               const ColorBehavior&);
-  static std::unique_ptr<ImageDecoder> create(
+  static std::unique_ptr<ImageDecoder> Create(
       PassRefPtr<SharedBuffer> data,
-      bool dataComplete,
+      bool data_complete,
       AlphaOption alphaoption,
-      const ColorBehavior& colorBehavior) {
-    return create(SegmentReader::createFromSharedBuffer(std::move(data)),
-                  dataComplete, alphaoption, colorBehavior);
+      const ColorBehavior& color_behavior) {
+    return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
+                  data_complete, alphaoption, color_behavior);
   }
 
-  virtual String filenameExtension() const = 0;
+  virtual String FilenameExtension() const = 0;
 
-  bool isAllDataReceived() const { return m_isAllDataReceived; }
+  bool IsAllDataReceived() const { return is_all_data_received_; }
 
   // Returns true if the buffer holds enough data to instantiate a decoder.
   // This is useful for callers to determine whether a decoder instantiation
   // failure is due to insufficient or bad data.
-  static bool hasSufficientDataToSniffImageType(const SharedBuffer&);
+  static bool HasSufficientDataToSniffImageType(const SharedBuffer&);
 
-  void setData(PassRefPtr<SegmentReader> data, bool allDataReceived) {
-    if (m_failed)
+  void SetData(PassRefPtr<SegmentReader> data, bool all_data_received) {
+    if (failed_)
       return;
-    m_data = std::move(data);
-    m_isAllDataReceived = allDataReceived;
-    onSetData(m_data.get());
+    data_ = std::move(data);
+    is_all_data_received_ = all_data_received;
+    OnSetData(data_.Get());
   }
 
-  void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived) {
-    setData(SegmentReader::createFromSharedBuffer(std::move(data)),
-            allDataReceived);
+  void SetData(PassRefPtr<SharedBuffer> data, bool all_data_received) {
+    SetData(SegmentReader::CreateFromSharedBuffer(std::move(data)),
+            all_data_received);
   }
 
-  virtual void onSetData(SegmentReader* data) {}
+  virtual void OnSetData(SegmentReader* data) {}
 
-  bool isSizeAvailable() {
-    if (m_failed)
+  bool IsSizeAvailable() {
+    if (failed_)
       return false;
-    if (!m_sizeAvailable)
-      decodeSize();
-    return isDecodedSizeAvailable();
+    if (!size_available_)
+      DecodeSize();
+    return IsDecodedSizeAvailable();
   }
 
-  bool isDecodedSizeAvailable() const { return !m_failed && m_sizeAvailable; }
+  bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
-  virtual IntSize size() const { return m_size; }
+  virtual IntSize size() const { return size_; }
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.
-  virtual IntSize decodedSize() const { return size(); }
+  virtual IntSize DecodedSize() const { return size(); }
 
   // Image decoders that support YUV decoding must override this to
   // provide the size of each component.
-  virtual IntSize decodedYUVSize(int component) const {
+  virtual IntSize DecodedYUVSize(int component) const {
     NOTREACHED();
     return IntSize();
   }
 
   // Image decoders that support YUV decoding must override this to
   // return the width of each row of the memory allocation.
-  virtual size_t decodedYUVWidthBytes(int component) const {
+  virtual size_t DecodedYUVWidthBytes(int component) const {
     NOTREACHED();
     return 0;
   }
@@ -165,77 +165,77 @@ class PLATFORM_EXPORT ImageDecoder {
   // sizes. This does NOT differ from size() for GIF or WebP, since
   // decoding GIF or WebP composites any smaller frames against previous
   // frames to create full-size frames.
-  virtual IntSize frameSizeAtIndex(size_t) const { return size(); }
+  virtual IntSize FrameSizeAtIndex(size_t) const { return size(); }
 
   // Returns whether the size is legal (i.e. not going to result in
   // overflow elsewhere).  If not, marks decoding as failed.
-  virtual bool setSize(unsigned width, unsigned height) {
-    if (sizeCalculationMayOverflow(width, height))
-      return setFailed();
+  virtual bool SetSize(unsigned width, unsigned height) {
+    if (SizeCalculationMayOverflow(width, height))
+      return SetFailed();
 
-    m_size = IntSize(width, height);
-    m_sizeAvailable = true;
+    size_ = IntSize(width, height);
+    size_available_ = true;
     return true;
   }
 
   // Calls decodeFrameCount() to get the frame count (if possible), without
   // decoding the individual frames.  Resizes m_frameBufferCache to the
   // correct size and returns its size.
-  size_t frameCount();
+  size_t FrameCount();
 
-  virtual int repetitionCount() const { return cAnimationNone; }
+  virtual int RepetitionCount() const { return kCAnimationNone; }
 
   // Decodes as much of the requested frame as possible, and returns an
   // ImageDecoder-owned pointer.
-  ImageFrame* frameBufferAtIndex(size_t);
+  ImageFrame* FrameBufferAtIndex(size_t);
 
   // Whether the requested frame has alpha.
-  virtual bool frameHasAlphaAtIndex(size_t) const;
+  virtual bool FrameHasAlphaAtIndex(size_t) const;
 
   // Whether or not the frame is fully received.
-  virtual bool frameIsCompleteAtIndex(size_t) const;
+  virtual bool FrameIsCompleteAtIndex(size_t) const;
 
   // Duration for displaying a frame in milliseconds. This method is only used
   // by animated images.
-  virtual float frameDurationAtIndex(size_t) const { return 0; }
+  virtual float FrameDurationAtIndex(size_t) const { return 0; }
 
   // Number of bytes in the decoded frame. Returns 0 if the decoder doesn't
   // have this frame cached (either because it hasn't been decoded, or because
   // it has been cleared).
-  virtual size_t frameBytesAtIndex(size_t) const;
+  virtual size_t FrameBytesAtIndex(size_t) const;
 
-  ImageOrientation orientation() const { return m_orientation; }
+  ImageOrientation Orientation() const { return orientation_; }
 
-  bool ignoresColorSpace() const { return m_colorBehavior.isIgnore(); }
-  const ColorBehavior& colorBehavior() const { return m_colorBehavior; }
+  bool IgnoresColorSpace() const { return color_behavior_.IsIgnore(); }
+  const ColorBehavior& GetColorBehavior() const { return color_behavior_; }
 
   // This returns the color space that will be included in the SkImageInfo of
   // SkImages created from this decoder. This will be nullptr unless the
   // decoder was created with the option ColorSpaceTagged.
-  sk_sp<SkColorSpace> colorSpaceForSkImages() const;
+  sk_sp<SkColorSpace> ColorSpaceForSkImages() const;
 
   // This returns whether or not the image included a not-ignored embedded
   // color space. This is independent of whether or not that space's transform
   // has been baked into the pixel values.
-  bool hasEmbeddedColorSpace() const { return m_embeddedColorSpace.get(); }
+  bool HasEmbeddedColorSpace() const { return embedded_color_space_.get(); }
 
   // Set the embedded color space directly or via ICC profile.
-  void setEmbeddedColorProfile(const char* iccData, unsigned iccLength);
-  void setEmbeddedColorSpace(sk_sp<SkColorSpace> srcSpace);
+  void SetEmbeddedColorProfile(const char* icc_data, unsigned icc_length);
+  void SetEmbeddedColorSpace(sk_sp<SkColorSpace> src_space);
 
   // Transformation from embedded color space to target color space.
-  SkColorSpaceXform* colorTransform();
+  SkColorSpaceXform* ColorTransform();
 
   // Sets the "decode failure" flag.  For caller convenience (since so
   // many callers want to return false after calling this), returns false
   // to enable easy tailcalling.  Subclasses may override this to also
   // clean up any local data.
-  virtual bool setFailed() {
-    m_failed = true;
+  virtual bool SetFailed() {
+    failed_ = true;
     return false;
   }
 
-  bool failed() const { return m_failed; }
+  bool Failed() const { return failed_; }
 
   // Clears decoded pixel data from all frames except the provided frame. If
   // subsequent frames depend on this frame's required previous frame, then that
@@ -252,36 +252,36 @@ class PLATFORM_EXPORT ImageDecoder {
   //        ImageFrameGeneratorTest::clearMultiFrameDecode. The test needs to
   //        be modified since two frames may be kept in cache, instead of
   //        always just one, with this clearCacheExceptFrame implementation.
-  virtual size_t clearCacheExceptFrame(size_t);
+  virtual size_t ClearCacheExceptFrame(size_t);
 
   // If the image has a cursor hot-spot, stores it in the argument
   // and returns true. Otherwise returns false.
-  virtual bool hotSpot(IntPoint&) const { return false; }
+  virtual bool HotSpot(IntPoint&) const { return false; }
 
-  void setMemoryAllocator(SkBitmap::Allocator* allocator) {
+  void SetMemoryAllocator(SkBitmap::Allocator* allocator) {
     // FIXME: this doesn't work for images with multiple frames.
-    if (m_frameBufferCache.isEmpty()) {
+    if (frame_buffer_cache_.IsEmpty()) {
       // Ensure that initializeNewFrame is called, after parsing if
       // necessary.
-      if (!frameCount())
+      if (!FrameCount())
         return;
     }
 
-    m_frameBufferCache[0].setMemoryAllocator(allocator);
+    frame_buffer_cache_[0].SetMemoryAllocator(allocator);
   }
 
-  virtual bool canDecodeToYUV() { return false; }
-  virtual bool decodeToYUV() { return false; }
-  virtual void setImagePlanes(std::unique_ptr<ImagePlanes>) {}
+  virtual bool CanDecodeToYUV() { return false; }
+  virtual bool DecodeToYUV() { return false; }
+  virtual void SetImagePlanes(std::unique_ptr<ImagePlanes>) {}
 
  protected:
-  ImageDecoder(AlphaOption alphaOption,
-               const ColorBehavior& colorBehavior,
-               size_t maxDecodedBytes)
-      : m_premultiplyAlpha(alphaOption == AlphaPremultiplied),
-        m_colorBehavior(colorBehavior),
-        m_maxDecodedBytes(maxDecodedBytes),
-        m_purgeAggressively(false) {}
+  ImageDecoder(AlphaOption alpha_option,
+               const ColorBehavior& color_behavior,
+               size_t max_decoded_bytes)
+      : premultiply_alpha_(alpha_option == kAlphaPremultiplied),
+        color_behavior_(color_behavior),
+        max_decoded_bytes_(max_decoded_bytes),
+        purge_aggressively_(false) {}
 
   // Calculates the most recent frame whose image data may be needed in
   // order to decode frame |frameIndex|, based on frame disposal methods
@@ -300,19 +300,20 @@ class PLATFORM_EXPORT ImageDecoder {
   // Image formats which do not use more than one frame do not need to
   // worry about this; see comments on
   // ImageFrame::m_requiredPreviousFrameIndex.
-  size_t findRequiredPreviousFrame(size_t frameIndex, bool frameRectIsOpaque);
+  size_t FindRequiredPreviousFrame(size_t frame_index,
+                                   bool frame_rect_is_opaque);
 
   // This is called by clearCacheExceptFrame() if that method decides it wants
   // to preserve another frame, to avoid unnecessary redecoding.
-  size_t clearCacheExceptTwoFrames(size_t, size_t);
-  virtual void clearFrameBuffer(size_t frameIndex);
+  size_t ClearCacheExceptTwoFrames(size_t, size_t);
+  virtual void ClearFrameBuffer(size_t frame_index);
 
   // Decodes the image sufficiently to determine the image size.
-  virtual void decodeSize() = 0;
+  virtual void DecodeSize() = 0;
 
   // Decodes the image sufficiently to determine the number of frames and
   // returns that number.
-  virtual size_t decodeFrameCount() { return 1; }
+  virtual size_t DecodeFrameCount() { return 1; }
 
   // Called to initialize the frame buffer with the given index, based on the
   // provided and previous frame's characteristics. Returns true on success.
@@ -320,27 +321,27 @@ class PLATFORM_EXPORT ImageDecoder {
   // On failure, the client should call setFailed. This method does not call
   // setFailed itself because that might delete the object directly making this
   // call.
-  bool initFrameBuffer(size_t);
+  bool InitFrameBuffer(size_t);
 
   // Performs any additional setup of the requested frame after it has been
   // initially created, e.g. setting a duration or disposal method.
-  virtual void initializeNewFrame(size_t) {}
+  virtual void InitializeNewFrame(size_t) {}
 
   // Decodes the requested frame.
-  virtual void decode(size_t) = 0;
+  virtual void Decode(size_t) = 0;
 
   // This method is only required for animated images. It returns a vector with
   // all frame indices that need to be decoded in order to succesfully decode
   // the provided frame.  The indices are returned in reverse order, so the
   // last frame needs to be decoded first.  Before calling this method, the
   // caller must verify that the frame exists.
-  Vector<size_t> findFramesToDecode(size_t) const;
+  Vector<size_t> FindFramesToDecode(size_t) const;
 
   // This is called by decode() after decoding a frame in an animated image.
   // Before calling this method, the caller must verify that the frame exists.
   // @return true  if the frame was fully decoded,
   //         false otherwise.
-  bool postDecodeProcessing(size_t);
+  bool PostDecodeProcessing(size_t);
 
   // The GIF and PNG decoders set the default alpha setting of the ImageFrame to
   // true. When the frame rect does not contain any (semi-) transparent pixels,
@@ -352,26 +353,26 @@ class PLATFORM_EXPORT ImageDecoder {
   // This method should be called by the GIF and PNG decoder when the pixels in
   // the frame rect do *not* contain any transparent pixels. Before calling
   // this method, the caller must verify that the frame exists.
-  void correctAlphaWhenFrameBufferSawNoAlpha(size_t);
+  void CorrectAlphaWhenFrameBufferSawNoAlpha(size_t);
 
-  RefPtr<SegmentReader> m_data;  // The encoded data.
-  Vector<ImageFrame, 1> m_frameBufferCache;
-  const bool m_premultiplyAlpha;
-  const ColorBehavior m_colorBehavior;
-  ImageOrientation m_orientation;
+  RefPtr<SegmentReader> data_;  // The encoded data.
+  Vector<ImageFrame, 1> frame_buffer_cache_;
+  const bool premultiply_alpha_;
+  const ColorBehavior color_behavior_;
+  ImageOrientation orientation_;
 
   // The maximum amount of memory a decoded image should require. Ideally,
   // image decoders should downsample large images to fit under this limit
   // (and then return the downsampled size from decodedSize()). Ignoring
   // this limit can cause excessive memory use or even crashes on low-
   // memory devices.
-  const size_t m_maxDecodedBytes;
+  const size_t max_decoded_bytes_;
 
   // While decoding, we may learn that there are so many animation frames that
   // we would go beyond our cache budget.
   // If that happens, m_purgeAggressively is set to true. This signals
   // future decodes to purge old frames as it goes.
-  void updateAggressivePurging(size_t index);
+  void UpdateAggressivePurging(size_t index);
 
   // The method is only relevant for multi-frame images.
   //
@@ -388,43 +389,43 @@ class PLATFORM_EXPORT ImageDecoder {
   //
   // Before calling this, verify that frame |index| exists by checking that
   // |index| is smaller than |m_frameBufferCache|.size().
-  virtual bool frameStatusSufficientForSuccessors(size_t index) {
-    DCHECK(index < m_frameBufferCache.size());
-    return m_frameBufferCache[index].getStatus() != ImageFrame::FrameEmpty;
+  virtual bool FrameStatusSufficientForSuccessors(size_t index) {
+    DCHECK(index < frame_buffer_cache_.size());
+    return frame_buffer_cache_[index].GetStatus() != ImageFrame::kFrameEmpty;
   }
 
  private:
-  enum class SniffResult { JPEG, PNG, GIF, WEBP, ICO, BMP, Invalid };
+  enum class SniffResult { JPEG, PNG, GIF, WEBP, ICO, BMP, kInvalid };
 
-  static SniffResult determineImageType(const char* data, size_t length);
+  static SniffResult DetermineImageType(const char* data, size_t length);
 
   // Some code paths compute the size of the image as "width * height * 4"
   // and return it as a (signed) int.  Avoid overflow.
-  static bool sizeCalculationMayOverflow(unsigned width, unsigned height) {
+  static bool SizeCalculationMayOverflow(unsigned width, unsigned height) {
     unsigned long long total_size = static_cast<unsigned long long>(width) *
                                     static_cast<unsigned long long>(height);
     return total_size > ((1 << 29) - 1);
   }
 
-  bool m_purgeAggressively;
+  bool purge_aggressively_;
 
   // This methods gets called at the end of initFrameBuffer. Subclasses can do
   // format specific initialization, for e.g. alpha settings, here.
-  virtual void onInitFrameBuffer(size_t){};
+  virtual void OnInitFrameBuffer(size_t){};
 
   // Called by initFrameBuffer to determine if it can take the bitmap of the
   // previous frame. This condition is different for GIF and WEBP.
-  virtual bool canReusePreviousFrameBuffer(size_t) const { return false; }
+  virtual bool CanReusePreviousFrameBuffer(size_t) const { return false; }
 
-  IntSize m_size;
-  bool m_sizeAvailable = false;
-  bool m_isAllDataReceived = false;
-  bool m_failed = false;
-  bool m_hasHistogrammedColorSpace = false;
+  IntSize size_;
+  bool size_available_ = false;
+  bool is_all_data_received_ = false;
+  bool failed_ = false;
+  bool has_histogrammed_color_space_ = false;
 
-  sk_sp<SkColorSpace> m_embeddedColorSpace = nullptr;
-  bool m_sourceToTargetColorTransformNeedsUpdate = false;
-  std::unique_ptr<SkColorSpaceXform> m_sourceToTargetColorTransform;
+  sk_sp<SkColorSpace> embedded_color_space_ = nullptr;
+  bool source_to_target_color_transform_needs_update_ = false;
+  std::unique_ptr<SkColorSpaceXform> source_to_target_color_transform_;
 };
 
 }  // namespace blink

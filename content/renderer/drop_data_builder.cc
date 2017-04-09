@@ -24,62 +24,62 @@ namespace content {
 // static
 DropData DropDataBuilder::Build(const WebDragData& drag_data) {
   DropData result;
-  result.key_modifiers = drag_data.modifierKeyState();
-  result.referrer_policy = blink::WebReferrerPolicyDefault;
+  result.key_modifiers = drag_data.ModifierKeyState();
+  result.referrer_policy = blink::kWebReferrerPolicyDefault;
 
-  const WebVector<WebDragData::Item>& item_list = drag_data.items();
+  const WebVector<WebDragData::Item>& item_list = drag_data.Items();
   for (size_t i = 0; i < item_list.size(); ++i) {
     const WebDragData::Item& item = item_list[i];
-    switch (item.storageType) {
-      case WebDragData::Item::StorageTypeString: {
-        base::string16 str_type(item.stringType.utf16());
+    switch (item.storage_type) {
+      case WebDragData::Item::kStorageTypeString: {
+        base::string16 str_type(item.string_type.Utf16());
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeText)) {
-          result.text = WebString::toNullableString16(item.stringData);
+          result.text = WebString::ToNullableString16(item.string_data);
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeURIList)) {
-          result.url = blink::WebStringToGURL(item.stringData);
-          result.url_title = item.title.utf16();
+          result.url = blink::WebStringToGURL(item.string_data);
+          result.url_title = item.title.Utf16();
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeDownloadURL)) {
-          result.download_metadata = item.stringData.utf16();
+          result.download_metadata = item.string_data.Utf16();
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeHTML)) {
-          result.html = WebString::toNullableString16(item.stringData);
-          result.html_base_url = item.baseURL;
+          result.html = WebString::ToNullableString16(item.string_data);
+          result.html_base_url = item.base_url;
           break;
         }
         result.custom_data.insert(
-            std::make_pair(item.stringType.utf16(), item.stringData.utf16()));
+            std::make_pair(item.string_type.Utf16(), item.string_data.Utf16()));
         break;
       }
-      case WebDragData::Item::StorageTypeBinaryData:
-        result.file_contents.assign(item.binaryData.data(),
-                                    item.binaryData.size());
-        result.file_contents_source_url = item.binaryDataSourceURL;
+      case WebDragData::Item::kStorageTypeBinaryData:
+        result.file_contents.assign(item.binary_data.Data(),
+                                    item.binary_data.size());
+        result.file_contents_source_url = item.binary_data_source_url;
 #if defined(OS_WIN)
         result.file_contents_filename_extension =
-            item.binaryDataFilenameExtension.utf16();
+            item.binary_data_filename_extension.Utf16();
 #else
         result.file_contents_filename_extension =
-            item.binaryDataFilenameExtension.utf8();
+            item.binary_data_filename_extension.Utf8();
 #endif
         result.file_contents_content_disposition =
-            item.binaryDataContentDisposition.utf8();
+            item.binary_data_content_disposition.Utf8();
         break;
-      case WebDragData::Item::StorageTypeFilename:
+      case WebDragData::Item::kStorageTypeFilename:
         // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.
-        result.filenames.push_back(ui::FileInfo(
-            blink::WebStringToFilePath(item.filenameData),
-            blink::WebStringToFilePath(item.displayNameData)));
+        result.filenames.push_back(
+            ui::FileInfo(blink::WebStringToFilePath(item.filename_data),
+                         blink::WebStringToFilePath(item.display_name_data)));
         break;
-      case WebDragData::Item::StorageTypeFileSystemFile: {
+      case WebDragData::Item::kStorageTypeFileSystemFile: {
         DropData::FileSystemFileInfo info;
-        info.url = item.fileSystemURL;
-        info.size = item.fileSystemFileSize;
-        info.filesystem_id = item.fileSystemId.ascii();
+        info.url = item.file_system_url;
+        info.size = item.file_system_file_size;
+        info.filesystem_id = item.file_system_id.Ascii();
         result.file_system_files.push_back(info);
         break;
       }

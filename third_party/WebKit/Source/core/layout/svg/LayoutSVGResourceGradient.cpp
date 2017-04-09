@@ -29,102 +29,103 @@ namespace blink {
 
 LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
     : LayoutSVGResourcePaintServer(node),
-      m_shouldCollectGradientAttributes(true) {}
+      should_collect_gradient_attributes_(true) {}
 
-void LayoutSVGResourceGradient::removeAllClientsFromCache(
-    bool markForInvalidation) {
-  m_gradientMap.clear();
-  m_shouldCollectGradientAttributes = true;
-  markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation
-                                                    : ParentOnlyInvalidation);
+void LayoutSVGResourceGradient::RemoveAllClientsFromCache(
+    bool mark_for_invalidation) {
+  gradient_map_.Clear();
+  should_collect_gradient_attributes_ = true;
+  MarkAllClientsForInvalidation(
+      mark_for_invalidation ? kPaintInvalidation : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceGradient::removeClientFromCache(
+void LayoutSVGResourceGradient::RemoveClientFromCache(
     LayoutObject* client,
-    bool markForInvalidation) {
+    bool mark_for_invalidation) {
   DCHECK(client);
-  m_gradientMap.erase(client);
-  markClientForInvalidation(
-      client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
+  gradient_map_.erase(client);
+  MarkClientForInvalidation(client, mark_for_invalidation
+                                        ? kPaintInvalidation
+                                        : kParentOnlyInvalidation);
 }
 
-SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
+SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
     const LayoutObject& object) {
-  clearInvalidationMask();
+  ClearInvalidationMask();
 
   // Validate gradient DOM state before building the actual
   // gradient. This should avoid tearing down the gradient we're
   // currently working on. Preferably the state validation should have
   // no side-effects though.
-  if (m_shouldCollectGradientAttributes) {
-    if (!collectGradientAttributes())
-      return SVGPaintServer::invalid();
-    m_shouldCollectGradientAttributes = false;
+  if (should_collect_gradient_attributes_) {
+    if (!CollectGradientAttributes())
+      return SVGPaintServer::Invalid();
+    should_collect_gradient_attributes_ = false;
   }
 
   // Spec: When the geometry of the applicable element has no width or height
   // and objectBoundingBox is specified, then the given effect (e.g. a gradient
   // or a filter) will be ignored.
-  FloatRect objectBoundingBox = object.objectBoundingBox();
-  if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
-      objectBoundingBox.isEmpty())
-    return SVGPaintServer::invalid();
+  FloatRect object_bounding_box = object.ObjectBoundingBox();
+  if (GradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
+      object_bounding_box.IsEmpty())
+    return SVGPaintServer::Invalid();
 
-  std::unique_ptr<GradientData>& gradientData =
-      m_gradientMap.insert(&object, nullptr).storedValue->value;
-  if (!gradientData)
-    gradientData = WTF::wrapUnique(new GradientData);
+  std::unique_ptr<GradientData>& gradient_data =
+      gradient_map_.insert(&object, nullptr).stored_value->value;
+  if (!gradient_data)
+    gradient_data = WTF::WrapUnique(new GradientData);
 
   // Create gradient object
-  if (!gradientData->gradient) {
-    gradientData->gradient = buildGradient();
+  if (!gradient_data->gradient) {
+    gradient_data->gradient = BuildGradient();
 
     // We want the text bounding box applied to the gradient space transform
     // now, so the gradient shader can use it.
-    if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
-        !objectBoundingBox.isEmpty()) {
-      gradientData->userspaceTransform.translate(objectBoundingBox.x(),
-                                                 objectBoundingBox.y());
-      gradientData->userspaceTransform.scaleNonUniform(
-          objectBoundingBox.width(), objectBoundingBox.height());
+    if (GradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
+        !object_bounding_box.IsEmpty()) {
+      gradient_data->userspace_transform.Translate(object_bounding_box.X(),
+                                                   object_bounding_box.Y());
+      gradient_data->userspace_transform.ScaleNonUniform(
+          object_bounding_box.Width(), object_bounding_box.Height());
     }
 
-    AffineTransform gradientTransform = calculateGradientTransform();
-    gradientData->userspaceTransform *= gradientTransform;
+    AffineTransform gradient_transform = CalculateGradientTransform();
+    gradient_data->userspace_transform *= gradient_transform;
   }
 
-  if (!gradientData->gradient)
-    return SVGPaintServer::invalid();
+  if (!gradient_data->gradient)
+    return SVGPaintServer::Invalid();
 
-  return SVGPaintServer(gradientData->gradient,
-                        gradientData->userspaceTransform);
+  return SVGPaintServer(gradient_data->gradient,
+                        gradient_data->userspace_transform);
 }
 
-bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child,
+bool LayoutSVGResourceGradient::IsChildAllowed(LayoutObject* child,
                                                const ComputedStyle&) const {
-  if (child->isSVGGradientStop())
+  if (child->IsSVGGradientStop())
     return true;
 
-  if (!child->isSVGResourceContainer())
+  if (!child->IsSVGResourceContainer())
     return false;
 
-  return toLayoutSVGResourceContainer(child)->isSVGPaintServer();
+  return ToLayoutSVGResourceContainer(child)->IsSVGPaintServer();
 }
 
-GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(
+GradientSpreadMethod LayoutSVGResourceGradient::PlatformSpreadMethodFromSVGType(
     SVGSpreadMethodType method) {
   switch (method) {
-    case SVGSpreadMethodUnknown:
-    case SVGSpreadMethodPad:
-      return SpreadMethodPad;
-    case SVGSpreadMethodReflect:
-      return SpreadMethodReflect;
-    case SVGSpreadMethodRepeat:
-      return SpreadMethodRepeat;
+    case kSVGSpreadMethodUnknown:
+    case kSVGSpreadMethodPad:
+      return kSpreadMethodPad;
+    case kSVGSpreadMethodReflect:
+      return kSpreadMethodReflect;
+    case kSVGSpreadMethodRepeat:
+      return kSpreadMethodRepeat;
   }
 
   NOTREACHED();
-  return SpreadMethodPad;
+  return kSpreadMethodPad;
 }
 
 }  // namespace blink

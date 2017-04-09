@@ -18,129 +18,130 @@ namespace blink {
 
 namespace {
 
-WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
-  if (!executionContext)
+WebPresentationClient* PresentationClient(ExecutionContext* execution_context) {
+  if (!execution_context)
     return nullptr;
-  DCHECK(executionContext->isDocument());
-  Document* document = toDocument(executionContext);
-  if (!document->frame())
+  DCHECK(execution_context->IsDocument());
+  Document* document = ToDocument(execution_context);
+  if (!document->GetFrame())
     return nullptr;
   PresentationController* controller =
-      PresentationController::from(*document->frame());
-  return controller ? controller->client() : nullptr;
+      PresentationController::From(*document->GetFrame());
+  return controller ? controller->Client() : nullptr;
 }
 
 }  // anonymous namespace
 
 // static
-PresentationAvailability* PresentationAvailability::take(
+PresentationAvailability* PresentationAvailability::Take(
     PresentationAvailabilityProperty* resolver,
     const WTF::Vector<KURL>& urls,
     bool value) {
-  PresentationAvailability* presentationAvailability =
-      new PresentationAvailability(resolver->getExecutionContext(), urls,
+  PresentationAvailability* presentation_availability =
+      new PresentationAvailability(resolver->GetExecutionContext(), urls,
                                    value);
-  presentationAvailability->suspendIfNeeded();
-  presentationAvailability->updateListening();
-  return presentationAvailability;
+  presentation_availability->SuspendIfNeeded();
+  presentation_availability->UpdateListening();
+  return presentation_availability;
 }
 
 PresentationAvailability::PresentationAvailability(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     const WTF::Vector<KURL>& urls,
     bool value)
-    : SuspendableObject(executionContext),
-      PageVisibilityObserver(toDocument(executionContext)->page()),
-      m_urls(urls),
-      m_value(value),
-      m_state(State::Active) {
-  ASSERT(executionContext->isDocument());
+    : SuspendableObject(execution_context),
+      PageVisibilityObserver(ToDocument(execution_context)->GetPage()),
+      urls_(urls),
+      value_(value),
+      state_(State::kActive) {
+  ASSERT(execution_context->IsDocument());
   WebVector<WebURL> data(urls.size());
   for (size_t i = 0; i < urls.size(); ++i)
     data[i] = WebURL(urls[i]);
 
-  m_urls.swap(data);
+  urls_.Swap(data);
 }
 
 PresentationAvailability::~PresentationAvailability() {}
 
-const AtomicString& PresentationAvailability::interfaceName() const {
+const AtomicString& PresentationAvailability::InterfaceName() const {
   return EventTargetNames::PresentationAvailability;
 }
 
-ExecutionContext* PresentationAvailability::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+ExecutionContext* PresentationAvailability::GetExecutionContext() const {
+  return SuspendableObject::GetExecutionContext();
 }
 
-void PresentationAvailability::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-  if (eventType == EventTypeNames::change)
-    UseCounter::count(getExecutionContext(),
-                      UseCounter::PresentationAvailabilityChangeEventListener);
+void PresentationAvailability::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  if (event_type == EventTypeNames::change)
+    UseCounter::Count(GetExecutionContext(),
+                      UseCounter::kPresentationAvailabilityChangeEventListener);
 }
 
-void PresentationAvailability::availabilityChanged(bool value) {
-  if (m_value == value)
+void PresentationAvailability::AvailabilityChanged(bool value) {
+  if (value_ == value)
     return;
 
-  m_value = value;
-  dispatchEvent(Event::create(EventTypeNames::change));
+  value_ = value;
+  DispatchEvent(Event::Create(EventTypeNames::change));
 }
 
-bool PresentationAvailability::hasPendingActivity() const {
-  return m_state != State::Inactive;
+bool PresentationAvailability::HasPendingActivity() const {
+  return state_ != State::kInactive;
 }
 
-void PresentationAvailability::resume() {
-  setState(State::Active);
+void PresentationAvailability::Resume() {
+  SetState(State::kActive);
 }
 
-void PresentationAvailability::suspend() {
-  setState(State::Suspended);
+void PresentationAvailability::Suspend() {
+  SetState(State::kSuspended);
 }
 
-void PresentationAvailability::contextDestroyed(ExecutionContext*) {
-  setState(State::Inactive);
+void PresentationAvailability::ContextDestroyed(ExecutionContext*) {
+  SetState(State::kInactive);
 }
 
-void PresentationAvailability::pageVisibilityChanged() {
-  if (m_state == State::Inactive)
+void PresentationAvailability::PageVisibilityChanged() {
+  if (state_ == State::kInactive)
     return;
-  updateListening();
+  UpdateListening();
 }
 
-void PresentationAvailability::setState(State state) {
-  m_state = state;
-  updateListening();
+void PresentationAvailability::SetState(State state) {
+  state_ = state;
+  UpdateListening();
 }
 
-void PresentationAvailability::updateListening() {
-  WebPresentationClient* client = presentationClient(getExecutionContext());
+void PresentationAvailability::UpdateListening() {
+  WebPresentationClient* client = PresentationClient(GetExecutionContext());
   if (!client)
     return;
 
-  if (m_state == State::Active &&
-      (toDocument(getExecutionContext())->pageVisibilityState() ==
-       PageVisibilityStateVisible))
-    client->startListening(this);
+  if (state_ == State::kActive &&
+      (ToDocument(GetExecutionContext())->GetPageVisibilityState() ==
+       kPageVisibilityStateVisible))
+    client->StartListening(this);
   else
-    client->stopListening(this);
+    client->StopListening(this);
 }
 
-const WebVector<WebURL>& PresentationAvailability::urls() const {
-  return m_urls;
+const WebVector<WebURL>& PresentationAvailability::Urls() const {
+  return urls_;
 }
 
 bool PresentationAvailability::value() const {
-  return m_value;
+  return value_;
 }
 
 DEFINE_TRACE(PresentationAvailability) {
-  EventTargetWithInlineData::trace(visitor);
-  PageVisibilityObserver::trace(visitor);
-  SuspendableObject::trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
+  SuspendableObject::Trace(visitor);
 }
 
 }  // namespace blink

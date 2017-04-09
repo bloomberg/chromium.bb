@@ -14,75 +14,75 @@ namespace blink {
 TEST(PaintChunkTest, matchesSame) {
   PaintChunkProperties properties;
   FakeDisplayItemClient client;
-  client.updateCacheGeneration();
+  client.UpdateCacheGeneration();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
   EXPECT_TRUE(PaintChunk(0, 1, &id, properties)
-                  .matches(PaintChunk(0, 1, &id, properties)));
+                  .Matches(PaintChunk(0, 1, &id, properties)));
 }
 
 TEST(PaintChunkTest, matchesEqual) {
   PaintChunkProperties properties;
   FakeDisplayItemClient client;
-  client.updateCacheGeneration();
+  client.UpdateCacheGeneration();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
-  DisplayItem::Id idEqual = id;
+  DisplayItem::Id id_equal = id;
   EXPECT_TRUE(PaintChunk(0, 1, &id, properties)
-                  .matches(PaintChunk(0, 1, &idEqual, properties)));
-  EXPECT_TRUE(PaintChunk(0, 1, &idEqual, properties)
-                  .matches(PaintChunk(0, 1, &id, properties)));
+                  .Matches(PaintChunk(0, 1, &id_equal, properties)));
+  EXPECT_TRUE(PaintChunk(0, 1, &id_equal, properties)
+                  .Matches(PaintChunk(0, 1, &id, properties)));
 }
 
 TEST(PaintChunkTest, IdNotMatches) {
   PaintChunkProperties properties;
   FakeDisplayItemClient client1;
-  client1.updateCacheGeneration();
+  client1.UpdateCacheGeneration();
   DisplayItem::Id id1(client1, DisplayItem::kDrawingFirst);
 
   FakeDisplayItemClient client2;
-  client2.updateCacheGeneration();
+  client2.UpdateCacheGeneration();
   DisplayItem::Id id2(client2, DisplayItem::kDrawingFirst);
   EXPECT_FALSE(PaintChunk(0, 1, &id2, properties)
-                   .matches(PaintChunk(0, 1, &id1, properties)));
+                   .Matches(PaintChunk(0, 1, &id1, properties)));
 }
 
 TEST(PaintChunkTest, IdNotMatchesNull) {
   PaintChunkProperties properties;
   FakeDisplayItemClient client;
-  client.updateCacheGeneration();
+  client.UpdateCacheGeneration();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
   EXPECT_FALSE(PaintChunk(0, 1, nullptr, properties)
-                   .matches(PaintChunk(0, 1, &id, properties)));
+                   .Matches(PaintChunk(0, 1, &id, properties)));
   EXPECT_FALSE(PaintChunk(0, 1, &id, properties)
-                   .matches(PaintChunk(0, 1, nullptr, properties)));
+                   .Matches(PaintChunk(0, 1, nullptr, properties)));
   EXPECT_FALSE(PaintChunk(0, 1, nullptr, properties)
-                   .matches(PaintChunk(0, 1, nullptr, properties)));
+                   .Matches(PaintChunk(0, 1, nullptr, properties)));
 }
 
 TEST(PaintChunkTest, IdNotMatchesJustCreated) {
   PaintChunkProperties properties;
   Optional<FakeDisplayItemClient> client;
   client.emplace();
-  EXPECT_TRUE(client->isJustCreated());
+  EXPECT_TRUE(client->IsJustCreated());
   // Invalidation won't change the "just created" status.
-  client->setDisplayItemsUncached();
-  EXPECT_TRUE(client->isJustCreated());
+  client->SetDisplayItemsUncached();
+  EXPECT_TRUE(client->IsJustCreated());
 
   DisplayItem::Id id(*client, DisplayItem::kDrawingFirst);
   // A chunk of a newly created client doesn't match any chunk because it's
   // never cached.
   EXPECT_FALSE(PaintChunk(0, 1, &id, properties)
-                   .matches(PaintChunk(0, 1, &id, properties)));
+                   .Matches(PaintChunk(0, 1, &id, properties)));
 
-  client->updateCacheGeneration();
+  client->UpdateCacheGeneration();
   EXPECT_TRUE(PaintChunk(0, 1, &id, properties)
-                  .matches(PaintChunk(0, 1, &id, properties)));
+                  .Matches(PaintChunk(0, 1, &id, properties)));
 
   // Delete the current object and create a new object at the same address.
-  client = WTF::nullopt;
+  client = WTF::kNullopt;
   client.emplace();
-  EXPECT_TRUE(client->isJustCreated());
+  EXPECT_TRUE(client->IsJustCreated());
   EXPECT_FALSE(PaintChunk(0, 1, &id, properties)
-                   .matches(PaintChunk(0, 1, &id, properties)));
+                   .Matches(PaintChunk(0, 1, &id, properties)));
 }
 
 }  // namespace blink

@@ -51,7 +51,7 @@ int BrowserPluginManager::GetNextInstanceID() {
 void BrowserPluginManager::UpdateFocusState() {
   IDMap<BrowserPlugin*>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->UpdateGuestFocusState(blink::WebFocusTypeNone);
+    iter.GetCurrentValue()->UpdateGuestFocusState(blink::kWebFocusTypeNone);
     iter.Advance();
   }
 }

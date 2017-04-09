@@ -32,78 +32,78 @@ class SpaceSplitString {
   USING_FAST_MALLOC(SpaceSplitString);
 
  public:
-  enum CaseFolding { ShouldNotFoldCase, ShouldFoldCase };
+  enum CaseFolding { kShouldNotFoldCase, kShouldFoldCase };
   SpaceSplitString() {}
-  SpaceSplitString(const AtomicString& string, CaseFolding caseFolding) {
-    set(string, caseFolding);
+  SpaceSplitString(const AtomicString& string, CaseFolding case_folding) {
+    Set(string, case_folding);
   }
 
   bool operator!=(const SpaceSplitString& other) const {
-    return m_data != other.m_data;
+    return data_ != other.data_;
   }
 
-  void set(const AtomicString&, CaseFolding);
-  void clear() { m_data.clear(); }
+  void Set(const AtomicString&, CaseFolding);
+  void Clear() { data_.Clear(); }
 
-  bool contains(const AtomicString& string) const {
-    return m_data && m_data->contains(string);
+  bool Contains(const AtomicString& string) const {
+    return data_ && data_->Contains(string);
   }
-  bool containsAll(const SpaceSplitString& names) const {
-    return !names.m_data || (m_data && m_data->containsAll(*names.m_data));
+  bool ContainsAll(const SpaceSplitString& names) const {
+    return !names.data_ || (data_ && data_->ContainsAll(*names.data_));
   }
-  void add(const AtomicString&);
-  bool remove(const AtomicString&);
+  void Add(const AtomicString&);
+  bool Remove(const AtomicString&);
 
-  size_t size() const { return m_data ? m_data->size() : 0; }
-  bool isNull() const { return !m_data; }
-  const AtomicString& operator[](size_t i) const { return (*m_data)[i]; }
+  size_t size() const { return data_ ? data_->size() : 0; }
+  bool IsNull() const { return !data_; }
+  const AtomicString& operator[](size_t i) const { return (*data_)[i]; }
 
  private:
   class Data : public RefCounted<Data> {
    public:
-    static PassRefPtr<Data> create(const AtomicString&);
-    static PassRefPtr<Data> createUnique(const Data&);
+    static PassRefPtr<Data> Create(const AtomicString&);
+    static PassRefPtr<Data> CreateUnique(const Data&);
 
     ~Data();
 
-    bool contains(const AtomicString& string) {
-      for (const auto& item : m_vector) {
+    bool Contains(const AtomicString& string) {
+      for (const auto& item : vector_) {
         if (item == string)
           return true;
       }
       return false;
     }
 
-    bool containsAll(Data&);
+    bool ContainsAll(Data&);
 
-    void add(const AtomicString&);
-    void remove(unsigned index);
+    void Add(const AtomicString&);
+    void Remove(unsigned index);
 
-    bool isUnique() const { return m_keyString.isNull(); }
-    size_t size() const { return m_vector.size(); }
-    const AtomicString& operator[](size_t i) { return m_vector[i]; }
+    bool IsUnique() const { return key_string_.IsNull(); }
+    size_t size() const { return vector_.size(); }
+    const AtomicString& operator[](size_t i) { return vector_[i]; }
 
    private:
     explicit Data(const AtomicString&);
     explicit Data(const Data&);
 
-    void createVector(const String&);
+    void CreateVector(const String&);
     template <typename CharacterType>
-    inline void createVector(const CharacterType*, unsigned);
+    inline void CreateVector(const CharacterType*, unsigned);
 
-    AtomicString m_keyString;
-    Vector<AtomicString, 4> m_vector;
+    AtomicString key_string_;
+    Vector<AtomicString, 4> vector_;
   };
   typedef HashMap<AtomicString, Data*> DataMap;
 
-  static DataMap& sharedDataMap();
+  static DataMap& SharedDataMap();
 
-  void ensureUnique() {
-    if (m_data && !m_data->isUnique())
-      m_data = Data::createUnique(*m_data);
+  void EnsureUnique() {
+    if (data_ && !data_->IsUnique())
+      data_ = Data::CreateUnique(*data_);
   }
 
-  RefPtr<Data> m_data;
+  RefPtr<Data> data_;
 };
 
 }  // namespace blink

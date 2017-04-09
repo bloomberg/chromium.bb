@@ -137,7 +137,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::EffectiveConnectionType,
                           net::EFFECTIVE_CONNECTION_TYPE_LAST - 1)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMixedContentContextType,
-                          blink::WebMixedContentContextType::Last)
+                          blink::WebMixedContentContextType::kLast)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
 IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)

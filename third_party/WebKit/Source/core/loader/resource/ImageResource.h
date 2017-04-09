@@ -60,52 +60,52 @@ class CORE_EXPORT ImageResource final
 
   // Use ImageResourceContent::fetch() unless ImageResource is required.
   // TODO(hiroshige): Make fetch() private.
-  static ImageResource* fetch(FetchRequest&, ResourceFetcher*);
+  static ImageResource* Fetch(FetchRequest&, ResourceFetcher*);
 
   // TODO(hiroshige): Make create() test-only by refactoring ImageDocument.
-  static ImageResource* create(const ResourceRequest&);
+  static ImageResource* Create(const ResourceRequest&);
 
   ~ImageResource() override;
 
-  ImageResourceContent* getContent();
-  const ImageResourceContent* getContent() const;
+  ImageResourceContent* GetContent();
+  const ImageResourceContent* GetContent() const;
 
-  void reloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
+  void ReloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
                                       ReloadLoFiOrPlaceholderPolicy);
 
-  void didAddClient(ResourceClient*) override;
+  void DidAddClient(ResourceClient*) override;
 
-  ResourcePriority priorityFromObservers() override;
+  ResourcePriority PriorityFromObservers() override;
 
-  void allClientsAndObserversRemoved() override;
+  void AllClientsAndObserversRemoved() override;
 
-  bool canReuse(const FetchRequest&) const override;
+  bool CanReuse(const FetchRequest&) const override;
 
-  PassRefPtr<const SharedBuffer> resourceBuffer() const override;
-  void appendData(const char*, size_t) override;
-  void error(const ResourceError&) override;
-  void responseReceived(const ResourceResponse&,
+  PassRefPtr<const SharedBuffer> ResourceBuffer() const override;
+  void AppendData(const char*, size_t) override;
+  void GetError(const ResourceError&) override;
+  void ResponseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
-  void finish(double finishTime = 0.0) override;
+  void Finish(double finish_time = 0.0) override;
 
   // For compatibility, images keep loading even if there are HTTP errors.
-  bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
+  bool ShouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 
-  bool isImage() const override { return true; }
+  bool IsImage() const override { return true; }
 
   // MultipartImageResourceParser::Client
-  void onePartInMultipartReceived(const ResourceResponse&) final;
-  void multipartDataReceived(const char*, size_t) final;
+  void OnePartInMultipartReceived(const ResourceResponse&) final;
+  void MultipartDataReceived(const char*, size_t) final;
 
-  bool shouldShowPlaceholder() const;
+  bool ShouldShowPlaceholder() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   enum class MultipartParsingState : uint8_t {
-    WaitingForFirstPart,
-    ParsingFirstPart,
-    FinishedParsingFirstPart,
+    kWaitingForFirstPart,
+    kParsingFirstPart,
+    kFinishedParsingFirstPart,
   };
 
   class ImageResourceInfoImpl;
@@ -114,62 +114,62 @@ class CORE_EXPORT ImageResource final
   ImageResource(const ResourceRequest&,
                 const ResourceLoaderOptions&,
                 ImageResourceContent*,
-                bool isPlaceholder);
+                bool is_placeholder);
 
   // Only for ImageResourceInfoImpl.
-  void decodeError(bool allDataReceived);
-  bool isAccessAllowed(
+  void DecodeError(bool all_data_received);
+  bool IsAccessAllowed(
       SecurityOrigin*,
       ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin) const;
 
-  bool hasClientsOrObservers() const override;
+  bool HasClientsOrObservers() const override;
 
-  void updateImageAndClearBuffer();
-  void updateImage(PassRefPtr<SharedBuffer>,
+  void UpdateImageAndClearBuffer();
+  void UpdateImage(PassRefPtr<SharedBuffer>,
                    ImageResourceContent::UpdateImageOption,
-                   bool allDataReceived);
+                   bool all_data_received);
 
-  void checkNotify() override;
+  void CheckNotify() override;
 
-  void destroyDecodedDataIfPossible() override;
-  void destroyDecodedDataForFailedRevalidation() override;
+  void DestroyDecodedDataIfPossible() override;
+  void DestroyDecodedDataForFailedRevalidation() override;
 
-  void flushImageIfNeeded(TimerBase*);
+  void FlushImageIfNeeded(TimerBase*);
 
-  bool shouldReloadBrokenPlaceholder() const;
+  bool ShouldReloadBrokenPlaceholder() const;
 
-  Member<ImageResourceContent> m_content;
+  Member<ImageResourceContent> content_;
 
   // TODO(hiroshige): move |m_devicePixelRatioHeaderValue| and
   // |m_hasDevicePixelRatioHeaderValue| to ImageResourceContent and update
   // it via ImageResourceContent::updateImage().
-  float m_devicePixelRatioHeaderValue;
+  float device_pixel_ratio_header_value_;
 
-  Member<MultipartImageResourceParser> m_multipartParser;
-  MultipartParsingState m_multipartParsingState =
-      MultipartParsingState::WaitingForFirstPart;
-  bool m_hasDevicePixelRatioHeaderValue;
+  Member<MultipartImageResourceParser> multipart_parser_;
+  MultipartParsingState multipart_parsing_state_ =
+      MultipartParsingState::kWaitingForFirstPart;
+  bool has_device_pixel_ratio_header_value_;
 
   // Indicates if the ImageResource is currently scheduling a reload, e.g.
   // because reloadIfLoFi() was called.
-  bool m_isSchedulingReload;
+  bool is_scheduling_reload_;
 
   // Indicates if this ImageResource is either attempting to load a placeholder
   // image, or is a (possibly broken) placeholder image.
   enum class PlaceholderOption {
     // Do not show or reload placeholder.
-    DoNotReloadPlaceholder,
+    kDoNotReloadPlaceholder,
 
     // Do not show placeholder, reload only when decode error occurs.
-    ReloadPlaceholderOnDecodeError,
+    kReloadPlaceholderOnDecodeError,
 
     // Show placeholder and reload.
-    ShowAndReloadPlaceholderAlways,
+    kShowAndReloadPlaceholderAlways,
   };
-  PlaceholderOption m_placeholderOption;
+  PlaceholderOption placeholder_option_;
 
-  Timer<ImageResource> m_flushTimer;
-  double m_lastFlushTime = 0.;
+  Timer<ImageResource> flush_timer_;
+  double last_flush_time_ = 0.;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

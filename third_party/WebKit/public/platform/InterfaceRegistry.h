@@ -20,24 +20,24 @@ using InterfaceFactory = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
 
 class BLINK_PLATFORM_EXPORT InterfaceRegistry {
  public:
-  virtual void addInterface(const char* name, const InterfaceFactory&) = 0;
+  virtual void AddInterface(const char* name, const InterfaceFactory&) = 0;
 
 #if INSIDE_BLINK
-  static InterfaceRegistry* getEmptyInterfaceRegistry();
+  static InterfaceRegistry* GetEmptyInterfaceRegistry();
 
   template <typename Interface>
-  void addInterface(
+  void AddInterface(
       std::unique_ptr<WTF::Function<void(mojo::InterfaceRequest<Interface>)>>
           factory) {
-    addInterface(Interface::Name_,
-                 convertToBaseCallback(WTF::bind(
-                     &InterfaceRegistry::forwardToInterfaceFactory<Interface>,
+    AddInterface(Interface::Name_,
+                 ConvertToBaseCallback(WTF::Bind(
+                     &InterfaceRegistry::ForwardToInterfaceFactory<Interface>,
                      std::move(factory))));
   }
 
  private:
   template <typename Interface>
-  static void forwardToInterfaceFactory(
+  static void ForwardToInterfaceFactory(
       const std::unique_ptr<
           WTF::Function<void(mojo::InterfaceRequest<Interface>)>>& factory,
       mojo::ScopedMessagePipeHandle handle) {

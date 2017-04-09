@@ -56,32 +56,32 @@ class HashCountedSet {
   typedef typename ImplType::AddResult AddResult;
 
   HashCountedSet() {
-    static_assert(Allocator::isGarbageCollected ||
+    static_assert(Allocator::kIsGarbageCollected ||
                       !IsPointerToGarbageCollectedType<Value>::value,
                   "Cannot put raw pointers to garbage-collected classes into "
                   "an off-heap HashCountedSet. Use "
                   "HeapHashCountedSet<Member<T>> instead.");
   }
 
-  void swap(HashCountedSet& other) { m_impl.swap(other.m_impl); }
+  void Swap(HashCountedSet& other) { impl_.Swap(other.impl_); }
 
-  unsigned size() const { return m_impl.size(); }
-  unsigned capacity() const { return m_impl.capacity(); }
-  bool isEmpty() const { return m_impl.isEmpty(); }
+  unsigned size() const { return impl_.size(); }
+  unsigned Capacity() const { return impl_.Capacity(); }
+  bool IsEmpty() const { return impl_.IsEmpty(); }
 
   // Iterators iterate over pairs of values (called key) and counts (called
   // value).
-  iterator begin() { return m_impl.begin(); }
-  iterator end() { return m_impl.end(); }
-  const_iterator begin() const { return m_impl.begin(); }
-  const_iterator end() const { return m_impl.end(); }
+  iterator begin() { return impl_.begin(); }
+  iterator end() { return impl_.end(); }
+  const_iterator begin() const { return impl_.begin(); }
+  const_iterator end() const { return impl_.end(); }
 
-  iterator find(const ValueType& value) { return m_impl.find(value); }
-  const_iterator find(const ValueType& value) const {
-    return m_impl.find(value);
+  iterator Find(const ValueType& value) { return impl_.Find(value); }
+  const_iterator Find(const ValueType& value) const {
+    return impl_.Find(value);
   }
-  bool contains(const ValueType& value) const { return m_impl.contains(value); }
-  unsigned count(const ValueType& value) const { return m_impl.at(value); }
+  bool Contains(const ValueType& value) const { return impl_.Contains(value); }
+  unsigned Count(const ValueType& value) const { return impl_.at(value); }
 
   // Increases the count if an equal value is already present the return value
   // is a pair of an iterator to the new value's location, and a bool that is
@@ -93,33 +93,33 @@ class HashCountedSet {
 
   // Reduces the count of the value, and removes it if count goes down to
   // zero, returns true if the value is removed.
-  bool erase(const ValueType& value) { return erase(find(value)); }
+  bool erase(const ValueType& value) { return erase(Find(value)); }
   bool erase(iterator);
 
   // Removes the value, regardless of its count.
-  void removeAll(const ValueType& value) { removeAll(find(value)); }
-  void removeAll(iterator);
+  void RemoveAll(const ValueType& value) { RemoveAll(Find(value)); }
+  void RemoveAll(iterator);
 
   // Clears the whole set.
-  void clear() { m_impl.clear(); }
+  void Clear() { impl_.Clear(); }
 
-  Vector<Value> asVector() const;
+  Vector<Value> AsVector() const;
 
   template <typename VisitorDispatcher>
-  void trace(VisitorDispatcher visitor) {
-    m_impl.trace(visitor);
+  void Trace(VisitorDispatcher visitor) {
+    impl_.Trace(visitor);
   }
 
  private:
-  ImplType m_impl;
+  ImplType impl_;
 };
 
 template <typename T, typename U, typename V, typename W>
 inline typename HashCountedSet<T, U, V, W>::AddResult
 HashCountedSet<T, U, V, W>::insert(const ValueType& value, unsigned count) {
   DCHECK_GT(count, 0u);
-  AddResult result = m_impl.insert(value, 0);
-  result.storedValue->value += count;
+  AddResult result = impl_.insert(value, 0);
+  result.stored_value->value += count;
   return result;
 }
 
@@ -134,24 +134,24 @@ inline bool HashCountedSet<T, U, V, W>::erase(iterator it) {
   if (it == end())
     return false;
 
-  unsigned oldVal = it->value;
-  DCHECK(oldVal);
-  unsigned newVal = oldVal - 1;
-  if (newVal) {
-    it->value = newVal;
+  unsigned old_val = it->value;
+  DCHECK(old_val);
+  unsigned new_val = old_val - 1;
+  if (new_val) {
+    it->value = new_val;
     return false;
   }
 
-  m_impl.erase(it);
+  impl_.erase(it);
   return true;
 }
 
 template <typename T, typename U, typename V, typename W>
-inline void HashCountedSet<T, U, V, W>::removeAll(iterator it) {
+inline void HashCountedSet<T, U, V, W>::RemoveAll(iterator it) {
   if (it == end())
     return;
 
-  m_impl.erase(it);
+  impl_.erase(it);
 }
 
 template <typename Value,
@@ -159,13 +159,13 @@ template <typename Value,
           typename Traits,
           typename Allocator,
           typename VectorType>
-inline void copyToVector(
+inline void CopyToVector(
     const HashCountedSet<Value, HashFunctions, Traits, Allocator>& collection,
     VectorType& vector) {
   {
     // Disallow GC across resize allocation, see crbug.com/568173
     typename VectorType::GCForbiddenScope scope;
-    vector.resize(collection.size());
+    vector.Resize(collection.size());
   }
 
   auto it = collection.begin();
@@ -175,9 +175,9 @@ inline void copyToVector(
 }
 
 template <typename T, typename U, typename V, typename W>
-inline Vector<T> HashCountedSet<T, U, V, W>::asVector() const {
+inline Vector<T> HashCountedSet<T, U, V, W>::AsVector() const {
   Vector<T> vector;
-  copyToVector(*this, vector);
+  CopyToVector(*this, vector);
   return vector;
 }
 

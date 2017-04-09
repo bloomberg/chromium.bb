@@ -31,128 +31,128 @@
 
 namespace blink {
 
-WebGLProgram* WebGLProgram::create(WebGLRenderingContextBase* ctx) {
+WebGLProgram* WebGLProgram::Create(WebGLRenderingContextBase* ctx) {
   return new WebGLProgram(ctx);
 }
 
 WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
-      m_linkStatus(false),
-      m_linkCount(0),
-      m_activeTransformFeedbackCount(0),
-      m_vertexShader(this, nullptr),
-      m_fragmentShader(this, nullptr),
-      m_infoValid(true) {
-  setObject(ctx->contextGL()->CreateProgram());
+      link_status_(false),
+      link_count_(0),
+      active_transform_feedback_count_(0),
+      vertex_shader_(this, nullptr),
+      fragment_shader_(this, nullptr),
+      info_valid_(true) {
+  SetObject(ctx->ContextGL()->CreateProgram());
 }
 
 WebGLProgram::~WebGLProgram() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLProgram::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteProgram(m_object);
-  m_object = 0;
-  if (!destructionInProgress()) {
-    if (m_vertexShader) {
-      m_vertexShader->onDetached(gl);
-      m_vertexShader = nullptr;
+void WebGLProgram::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteProgram(object_);
+  object_ = 0;
+  if (!DestructionInProgress()) {
+    if (vertex_shader_) {
+      vertex_shader_->OnDetached(gl);
+      vertex_shader_ = nullptr;
     }
-    if (m_fragmentShader) {
-      m_fragmentShader->onDetached(gl);
-      m_fragmentShader = nullptr;
+    if (fragment_shader_) {
+      fragment_shader_->OnDetached(gl);
+      fragment_shader_ = nullptr;
     }
   }
 }
 
-bool WebGLProgram::linkStatus(WebGLRenderingContextBase* context) {
-  cacheInfoIfNeeded(context);
-  return m_linkStatus;
+bool WebGLProgram::LinkStatus(WebGLRenderingContextBase* context) {
+  CacheInfoIfNeeded(context);
+  return link_status_;
 }
 
-void WebGLProgram::increaseLinkCount() {
-  ++m_linkCount;
-  m_infoValid = false;
+void WebGLProgram::IncreaseLinkCount() {
+  ++link_count_;
+  info_valid_ = false;
 }
 
-void WebGLProgram::increaseActiveTransformFeedbackCount() {
-  ++m_activeTransformFeedbackCount;
+void WebGLProgram::IncreaseActiveTransformFeedbackCount() {
+  ++active_transform_feedback_count_;
 }
 
-void WebGLProgram::decreaseActiveTransformFeedbackCount() {
-  --m_activeTransformFeedbackCount;
+void WebGLProgram::DecreaseActiveTransformFeedbackCount() {
+  --active_transform_feedback_count_;
 }
 
-WebGLShader* WebGLProgram::getAttachedShader(GLenum type) {
+WebGLShader* WebGLProgram::GetAttachedShader(GLenum type) {
   switch (type) {
     case GL_VERTEX_SHADER:
-      return m_vertexShader;
+      return vertex_shader_;
     case GL_FRAGMENT_SHADER:
-      return m_fragmentShader;
+      return fragment_shader_;
     default:
       return 0;
   }
 }
 
-bool WebGLProgram::attachShader(WebGLShader* shader) {
-  if (!shader || !shader->object())
+bool WebGLProgram::AttachShader(WebGLShader* shader) {
+  if (!shader || !shader->Object())
     return false;
-  switch (shader->type()) {
+  switch (shader->GetType()) {
     case GL_VERTEX_SHADER:
-      if (m_vertexShader)
+      if (vertex_shader_)
         return false;
-      m_vertexShader = shader;
+      vertex_shader_ = shader;
       return true;
     case GL_FRAGMENT_SHADER:
-      if (m_fragmentShader)
+      if (fragment_shader_)
         return false;
-      m_fragmentShader = shader;
+      fragment_shader_ = shader;
       return true;
     default:
       return false;
   }
 }
 
-bool WebGLProgram::detachShader(WebGLShader* shader) {
-  if (!shader || !shader->object())
+bool WebGLProgram::DetachShader(WebGLShader* shader) {
+  if (!shader || !shader->Object())
     return false;
-  switch (shader->type()) {
+  switch (shader->GetType()) {
     case GL_VERTEX_SHADER:
-      if (m_vertexShader != shader)
+      if (vertex_shader_ != shader)
         return false;
-      m_vertexShader = nullptr;
+      vertex_shader_ = nullptr;
       return true;
     case GL_FRAGMENT_SHADER:
-      if (m_fragmentShader != shader)
+      if (fragment_shader_ != shader)
         return false;
-      m_fragmentShader = nullptr;
+      fragment_shader_ = nullptr;
       return true;
     default:
       return false;
   }
 }
 
-void WebGLProgram::cacheInfoIfNeeded(WebGLRenderingContextBase* context) {
-  if (m_infoValid)
+void WebGLProgram::CacheInfoIfNeeded(WebGLRenderingContextBase* context) {
+  if (info_valid_)
     return;
-  if (!m_object)
+  if (!object_)
     return;
-  gpu::gles2::GLES2Interface* gl = context->contextGL();
-  m_linkStatus = 0;
-  gl->GetProgramiv(m_object, GL_LINK_STATUS, &m_linkStatus);
-  m_infoValid = true;
+  gpu::gles2::GLES2Interface* gl = context->ContextGL();
+  link_status_ = 0;
+  gl->GetProgramiv(object_, GL_LINK_STATUS, &link_status_);
+  info_valid_ = true;
 }
 
 DEFINE_TRACE(WebGLProgram) {
-  visitor->trace(m_vertexShader);
-  visitor->trace(m_fragmentShader);
-  WebGLSharedPlatform3DObject::trace(visitor);
+  visitor->Trace(vertex_shader_);
+  visitor->Trace(fragment_shader_);
+  WebGLSharedPlatform3DObject::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLProgram) {
-  visitor->traceWrappers(m_vertexShader);
-  visitor->traceWrappers(m_fragmentShader);
-  WebGLSharedPlatform3DObject::traceWrappers(visitor);
+  visitor->TraceWrappers(vertex_shader_);
+  visitor->TraceWrappers(fragment_shader_);
+  WebGLSharedPlatform3DObject::TraceWrappers(visitor);
 }
 
 }  // namespace blink

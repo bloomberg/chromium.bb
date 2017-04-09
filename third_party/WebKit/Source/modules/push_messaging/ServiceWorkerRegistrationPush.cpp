@@ -11,42 +11,42 @@ namespace blink {
 
 ServiceWorkerRegistrationPush::ServiceWorkerRegistrationPush(
     ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    : registration_(registration) {}
 
 ServiceWorkerRegistrationPush::~ServiceWorkerRegistrationPush() {}
 
-const char* ServiceWorkerRegistrationPush::supplementName() {
+const char* ServiceWorkerRegistrationPush::SupplementName() {
   return "ServiceWorkerRegistrationPush";
 }
 
-ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::from(
+ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::From(
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationPush* supplement =
       static_cast<ServiceWorkerRegistrationPush*>(
-          Supplement<ServiceWorkerRegistration>::from(registration,
-                                                      supplementName()));
+          Supplement<ServiceWorkerRegistration>::From(registration,
+                                                      SupplementName()));
   if (!supplement) {
     supplement = new ServiceWorkerRegistrationPush(&registration);
-    provideTo(registration, supplementName(), supplement);
+    ProvideTo(registration, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 PushManager* ServiceWorkerRegistrationPush::pushManager(
     ServiceWorkerRegistration& registration) {
-  return ServiceWorkerRegistrationPush::from(registration).pushManager();
+  return ServiceWorkerRegistrationPush::From(registration).pushManager();
 }
 
 PushManager* ServiceWorkerRegistrationPush::pushManager() {
-  if (!m_pushManager)
-    m_pushManager = PushManager::create(m_registration);
-  return m_pushManager.get();
+  if (!push_manager_)
+    push_manager_ = PushManager::Create(registration_);
+  return push_manager_.Get();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistrationPush) {
-  visitor->trace(m_registration);
-  visitor->trace(m_pushManager);
-  Supplement<ServiceWorkerRegistration>::trace(visitor);
+  visitor->Trace(registration_);
+  visitor->Trace(push_manager_);
+  Supplement<ServiceWorkerRegistration>::Trace(visitor);
 }
 
 }  // namespace blink

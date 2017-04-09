@@ -49,7 +49,7 @@ class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextEncoder* create(ExecutionContext*, ExceptionState&);
+  static TextEncoder* Create(ExecutionContext*, ExceptionState&);
   ~TextEncoder();
 
   // Implement the IDL
@@ -61,8 +61,8 @@ class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>,
  private:
   TextEncoder(const WTF::TextEncoding&);
 
-  WTF::TextEncoding m_encoding;
-  std::unique_ptr<WTF::TextCodec> m_codec;
+  WTF::TextEncoding encoding_;
+  std::unique_ptr<WTF::TextCodec> codec_;
 };
 
 }  // namespace blink

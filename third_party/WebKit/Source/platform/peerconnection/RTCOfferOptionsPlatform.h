@@ -12,35 +12,36 @@ namespace blink {
 class RTCOfferOptionsPlatform final
     : public GarbageCollected<RTCOfferOptionsPlatform> {
  public:
-  static RTCOfferOptionsPlatform* create(int32_t offerToReceiveVideo,
-                                         int32_t offerToReceiveAudio,
-                                         bool voiceActivityDetection,
-                                         bool iceRestart) {
-    return new RTCOfferOptionsPlatform(offerToReceiveVideo, offerToReceiveAudio,
-                                       voiceActivityDetection, iceRestart);
+  static RTCOfferOptionsPlatform* Create(int32_t offer_to_receive_video,
+                                         int32_t offer_to_receive_audio,
+                                         bool voice_activity_detection,
+                                         bool ice_restart) {
+    return new RTCOfferOptionsPlatform(offer_to_receive_video,
+                                       offer_to_receive_audio,
+                                       voice_activity_detection, ice_restart);
   }
 
-  int32_t offerToReceiveVideo() const { return m_offerToReceiveVideo; }
-  int32_t offerToReceiveAudio() const { return m_offerToReceiveAudio; }
-  bool voiceActivityDetection() const { return m_voiceActivityDetection; }
-  bool iceRestart() const { return m_iceRestart; }
+  int32_t OfferToReceiveVideo() const { return offer_to_receive_video_; }
+  int32_t OfferToReceiveAudio() const { return offer_to_receive_audio_; }
+  bool VoiceActivityDetection() const { return voice_activity_detection_; }
+  bool IceRestart() const { return ice_restart_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  RTCOfferOptionsPlatform(int32_t offerToReceiveVideo,
-                          int32_t offerToReceiveAudio,
-                          bool voiceActivityDetection,
-                          bool iceRestart)
-      : m_offerToReceiveVideo(offerToReceiveVideo),
-        m_offerToReceiveAudio(offerToReceiveAudio),
-        m_voiceActivityDetection(voiceActivityDetection),
-        m_iceRestart(iceRestart) {}
+  RTCOfferOptionsPlatform(int32_t offer_to_receive_video,
+                          int32_t offer_to_receive_audio,
+                          bool voice_activity_detection,
+                          bool ice_restart)
+      : offer_to_receive_video_(offer_to_receive_video),
+        offer_to_receive_audio_(offer_to_receive_audio),
+        voice_activity_detection_(voice_activity_detection),
+        ice_restart_(ice_restart) {}
 
-  int32_t m_offerToReceiveVideo;
-  int32_t m_offerToReceiveAudio;
-  bool m_voiceActivityDetection;
-  bool m_iceRestart;
+  int32_t offer_to_receive_video_;
+  int32_t offer_to_receive_audio_;
+  bool voice_activity_detection_;
+  bool ice_restart_;
 };
 
 }  // namespace blink

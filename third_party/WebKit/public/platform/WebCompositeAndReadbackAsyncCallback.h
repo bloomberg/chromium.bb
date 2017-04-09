@@ -32,7 +32,7 @@ namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback {
  public:
-  virtual void didCompositeAndReadback(const SkBitmap&) = 0;
+  virtual void DidCompositeAndReadback(const SkBitmap&) = 0;
 };
 
 }  // namespace blink

@@ -17,76 +17,77 @@
 namespace blink {
 
 namespace {
-InstallConditionalFeaturesFunction s_oldInstallConditionalFeaturesFunction =
+InstallConditionalFeaturesFunction g_old_install_conditional_features_function =
     nullptr;
 InstallPendingConditionalFeatureFunction
-    s_oldInstallPendingConditionalFeatureFunction = nullptr;
+    g_old_install_pending_conditional_feature_function = nullptr;
 }
 
-void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
-                                    const ScriptState* scriptState,
-                                    v8::Local<v8::Object> prototypeObject,
-                                    v8::Local<v8::Function> interfaceObject) {
-  (*s_oldInstallConditionalFeaturesFunction)(wrapperTypeInfo, scriptState,
-                                             prototypeObject, interfaceObject);
+void InstallConditionalFeaturesCore(const WrapperTypeInfo* wrapper_type_info,
+                                    const ScriptState* script_state,
+                                    v8::Local<v8::Object> prototype_object,
+                                    v8::Local<v8::Function> interface_object) {
+  (*g_old_install_conditional_features_function)(
+      wrapper_type_info, script_state, prototype_object, interface_object);
 
   // TODO(iclelland): Generate all of this logic at compile-time, based on the
   // configuration of origin trial enabled attributes and interfaces in IDL
   // files. (crbug.com/615060)
-  ExecutionContext* executionContext = scriptState->getExecutionContext();
-  if (!executionContext)
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  if (!execution_context)
     return;
-  v8::Isolate* isolate = scriptState->isolate();
-  const DOMWrapperWorld& world = scriptState->world();
-  if (wrapperTypeInfo == &V8HTMLLinkElement::wrapperTypeInfo) {
-    if (OriginTrials::linkServiceWorkerEnabled(executionContext)) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  if (wrapper_type_info == &V8HTMLLinkElement::wrapperTypeInfo) {
+    if (OriginTrials::linkServiceWorkerEnabled(execution_context)) {
       V8HTMLLinkElement::installLinkServiceWorker(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
   }
 }
 
-void installPendingConditionalFeatureCore(const String& feature,
-                                          const ScriptState* scriptState) {
-  (*s_oldInstallPendingConditionalFeatureFunction)(feature, scriptState);
+void InstallPendingConditionalFeatureCore(const String& feature,
+                                          const ScriptState* script_state) {
+  (*g_old_install_pending_conditional_feature_function)(feature, script_state);
 
   // TODO(iclelland): Generate all of this logic at compile-time, based on the
   // configuration of origin trial enabled attributes and interfaces in IDL
   // files. (crbug.com/615060)
-  v8::Local<v8::Object> prototypeObject;
-  v8::Local<v8::Function> interfaceObject;
-  v8::Isolate* isolate = scriptState->isolate();
-  const DOMWrapperWorld& world = scriptState->world();
-  V8PerContextData* contextData = scriptState->perContextData();
+  v8::Local<v8::Object> prototype_object;
+  v8::Local<v8::Function> interface_object;
+  v8::Isolate* isolate = script_state->GetIsolate();
+  const DOMWrapperWorld& world = script_state->World();
+  V8PerContextData* context_data = script_state->PerContextData();
   if (feature == "ForeignFetch") {
-    if (contextData->getExistingConstructorAndPrototypeForType(
-            &V8HTMLLinkElement::wrapperTypeInfo, &prototypeObject,
-            &interfaceObject)) {
+    if (context_data->GetExistingConstructorAndPrototypeForType(
+            &V8HTMLLinkElement::wrapperTypeInfo, &prototype_object,
+            &interface_object)) {
       V8HTMLLinkElement::installLinkServiceWorker(
-          isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototype_object,
+          interface_object);
     }
     return;
   }
 }
 
-void installConditionalFeaturesOnWindow(const ScriptState* scriptState) {
-  DCHECK(scriptState);
-  DCHECK(scriptState->context() == scriptState->isolate()->GetCurrentContext());
-  DCHECK(scriptState->perContextData());
-  DCHECK(scriptState->world().isMainWorld());
-  installConditionalFeatures(&V8Window::wrapperTypeInfo, scriptState,
+void InstallConditionalFeaturesOnWindow(const ScriptState* script_state) {
+  DCHECK(script_state);
+  DCHECK(script_state->GetContext() ==
+         script_state->GetIsolate()->GetCurrentContext());
+  DCHECK(script_state->PerContextData());
+  DCHECK(script_state->World().IsMainWorld());
+  InstallConditionalFeatures(&V8Window::wrapperTypeInfo, script_state,
                              v8::Local<v8::Object>(),
                              v8::Local<v8::Function>());
 }
 
-void registerInstallConditionalFeaturesForCore() {
-  s_oldInstallConditionalFeaturesFunction =
-      setInstallConditionalFeaturesFunction(&installConditionalFeaturesCore);
-  s_oldInstallPendingConditionalFeatureFunction =
-      setInstallPendingConditionalFeatureFunction(
-          &installPendingConditionalFeatureCore);
+void RegisterInstallConditionalFeaturesForCore() {
+  g_old_install_conditional_features_function =
+      SetInstallConditionalFeaturesFunction(&InstallConditionalFeaturesCore);
+  g_old_install_pending_conditional_feature_function =
+      SetInstallPendingConditionalFeatureFunction(
+          &InstallPendingConditionalFeatureCore);
 }
 
 }  // namespace blink

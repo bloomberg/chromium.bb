@@ -30,28 +30,28 @@ namespace blink {
 WebGLCompressedTextureATC::WebGLCompressedTextureATC(
     WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->addCompressedTextureFormat(GC3D_COMPRESSED_ATC_RGB_AMD);
-  context->addCompressedTextureFormat(
+  context->AddCompressedTextureFormat(GC3D_COMPRESSED_ATC_RGB_AMD);
+  context->AddCompressedTextureFormat(
       GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD);
-  context->addCompressedTextureFormat(
+  context->AddCompressedTextureFormat(
       GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
 }
 
-WebGLExtensionName WebGLCompressedTextureATC::name() const {
-  return WebGLCompressedTextureATCName;
+WebGLExtensionName WebGLCompressedTextureATC::GetName() const {
+  return kWebGLCompressedTextureATCName;
 }
 
-WebGLCompressedTextureATC* WebGLCompressedTextureATC::create(
+WebGLCompressedTextureATC* WebGLCompressedTextureATC::Create(
     WebGLRenderingContextBase* context) {
   return new WebGLCompressedTextureATC(context);
 }
 
-bool WebGLCompressedTextureATC::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+bool WebGLCompressedTextureATC::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_AMD_compressed_ATC_texture");
 }
 
-const char* WebGLCompressedTextureATC::extensionName() {
+const char* WebGLCompressedTextureATC::ExtensionName() {
   return "WEBGL_compressed_texture_atc";
 }
 

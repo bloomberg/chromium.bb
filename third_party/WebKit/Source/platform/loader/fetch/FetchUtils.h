@@ -17,26 +17,26 @@ class PLATFORM_EXPORT FetchUtils {
   STATIC_ONLY(FetchUtils);
 
  public:
-  static bool isSimpleMethod(const String& method);
-  static bool isSimpleHeader(const AtomicString& name,
+  static bool IsSimpleMethod(const String& method);
+  static bool IsSimpleHeader(const AtomicString& name,
                              const AtomicString& value);
-  static bool isSimpleContentType(const AtomicString& mediaType);
-  static bool isSimpleRequest(const String& method, const HTTPHeaderMap&);
-  static bool isForbiddenMethod(const String& method);
-  static bool isUsefulMethod(const String& method) {
-    return !isForbiddenMethod(method);
+  static bool IsSimpleContentType(const AtomicString& media_type);
+  static bool IsSimpleRequest(const String& method, const HTTPHeaderMap&);
+  static bool IsForbiddenMethod(const String& method);
+  static bool IsUsefulMethod(const String& method) {
+    return !IsForbiddenMethod(method);
   }
-  static bool isForbiddenHeaderName(const String& name);
-  static bool isForbiddenResponseHeaderName(const String& name);
-  static bool isSimpleOrForbiddenRequest(const String& method,
+  static bool IsForbiddenHeaderName(const String& name);
+  static bool IsForbiddenResponseHeaderName(const String& name);
+  static bool IsSimpleOrForbiddenRequest(const String& method,
                                          const HTTPHeaderMap&);
-  static AtomicString normalizeMethod(const AtomicString& method);
-  static String normalizeHeaderValue(const String& value);
+  static AtomicString NormalizeMethod(const AtomicString& method);
+  static String NormalizeHeaderValue(const String& value);
 
   // https://fetch.spec.whatwg.org/#ok-status aka a successful 2xx status
   // code, https://tools.ietf.org/html/rfc7231#section-6.3 . We opt to use
   // the Fetch term in naming the predicate.
-  static bool isOkStatus(int status) { return status >= 200 && status < 300; }
+  static bool IsOkStatus(int status) { return status >= 200 && status < 300; }
 };
 
 }  // namespace blink

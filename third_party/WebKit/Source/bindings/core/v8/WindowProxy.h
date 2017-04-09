@@ -146,20 +146,20 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
   DECLARE_TRACE();
 
-  void initializeIfNeeded();
+  void InitializeIfNeeded();
 
-  void clearForClose();
-  void clearForNavigation();
+  void ClearForClose();
+  void ClearForNavigation();
 
-  CORE_EXPORT v8::Local<v8::Object> globalProxyIfNotDetached();
-  v8::Local<v8::Object> releaseGlobalProxy();
-  void setGlobalProxy(v8::Local<v8::Object>);
+  CORE_EXPORT v8::Local<v8::Object> GlobalProxyIfNotDetached();
+  v8::Local<v8::Object> ReleaseGlobalProxy();
+  void SetGlobalProxy(v8::Local<v8::Object>);
 
   // TODO(dcheng): Temporarily exposed to avoid include cycles. Remove the need
   // for this and remove this getter.
-  DOMWrapperWorld& world() { return *m_world; }
+  DOMWrapperWorld& World() { return *world_; }
 
-  virtual bool isLocal() const { return false; }
+  virtual bool IsLocal() const { return false; }
 
  protected:
   // Lifecycle represents the following four states.
@@ -210,48 +210,48 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // - Possible next states: n/a
   enum class Lifecycle {
     // v8::Context is not yet initialized.
-    ContextIsUninitialized,
+    kContextIsUninitialized,
     // v8::Context is initialized.
-    ContextIsInitialized,
+    kContextIsInitialized,
     // The global object (inner global) is detached from the global proxy (outer
     // global).
-    GlobalObjectIsDetached,
+    kGlobalObjectIsDetached,
     // The context's frame is detached from the DOM.
-    FrameIsDetached,
+    kFrameIsDetached,
   };
 
   WindowProxy(v8::Isolate*, Frame&, RefPtr<DOMWrapperWorld>);
 
-  virtual void initialize() = 0;
+  virtual void Initialize() = 0;
 
-  enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
-  virtual void disposeContext(GlobalDetachmentBehavior) = 0;
+  enum GlobalDetachmentBehavior { kDoNotDetachGlobal, kDetachGlobal };
+  virtual void DisposeContext(GlobalDetachmentBehavior) = 0;
 
-  WARN_UNUSED_RESULT v8::Local<v8::Object> associateWithWrapper(
+  WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       DOMWindow*,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper);
 
-  v8::Isolate* isolate() const { return m_isolate; }
-  Frame* frame() const { return m_frame.get(); }
+  v8::Isolate* GetIsolate() const { return isolate_; }
+  Frame* GetFrame() const { return frame_.Get(); }
 
 #if DCHECK_IS_ON()
-  void didAttachGlobalObject() { m_isGlobalObjectAttached = true; }
-  void didDetachGlobalObject() { m_isGlobalObjectAttached = false; }
+  void DidAttachGlobalObject() { is_global_object_attached_ = true; }
+  void DidDetachGlobalObject() { is_global_object_attached_ = false; }
 #endif
 
  private:
-  v8::Isolate* const m_isolate;
-  const Member<Frame> m_frame;
+  v8::Isolate* const isolate_;
+  const Member<Frame> frame_;
 #if DCHECK_IS_ON()
-  bool m_isGlobalObjectAttached = false;
+  bool is_global_object_attached_ = false;
 #endif
 
  protected:
   // TODO(dcheng): Consider making these private and using getters.
-  const RefPtr<DOMWrapperWorld> m_world;
-  ScopedPersistent<v8::Object> m_globalProxy;
-  Lifecycle m_lifecycle;
+  const RefPtr<DOMWrapperWorld> world_;
+  ScopedPersistent<v8::Object> global_proxy_;
+  Lifecycle lifecycle_;
 };
 
 }  // namespace blink

@@ -14,18 +14,18 @@ namespace blink {
 class AnimatablePath final : public AnimatableValue {
  public:
   ~AnimatablePath() override {}
-  static PassRefPtr<AnimatablePath> create(PassRefPtr<StylePath> path) {
-    return adoptRef(new AnimatablePath(std::move(path)));
+  static PassRefPtr<AnimatablePath> Create(PassRefPtr<StylePath> path) {
+    return AdoptRef(new AnimatablePath(std::move(path)));
   }
 
  private:
-  explicit AnimatablePath(PassRefPtr<StylePath> path) : m_path(path) {}
-  AnimatableType type() const override { return TypePath; }
-  bool equalTo(const AnimatableValue*) const override;
-  const RefPtr<StylePath> m_path;
+  explicit AnimatablePath(PassRefPtr<StylePath> path) : path_(path) {}
+  AnimatableType GetType() const override { return kTypePath; }
+  bool EqualTo(const AnimatableValue*) const override;
+  const RefPtr<StylePath> path_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatablePath, isPath());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatablePath, IsPath());
 
 }  // namespace blink
 

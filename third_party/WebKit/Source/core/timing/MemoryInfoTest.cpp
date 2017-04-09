@@ -35,22 +35,22 @@
 namespace blink {
 
 TEST(MemoryInfo, quantizeMemorySize) {
-  EXPECT_EQ(10000000u, quantizeMemorySize(1024));
-  EXPECT_EQ(10000000u, quantizeMemorySize(1024 * 1024));
-  EXPECT_EQ(410000000u, quantizeMemorySize(389472983));
-  EXPECT_EQ(39600000u, quantizeMemorySize(38947298));
-  EXPECT_EQ(29400000u, quantizeMemorySize(28947298));
-  EXPECT_EQ(19300000u, quantizeMemorySize(18947298));
-  EXPECT_EQ(14300000u, quantizeMemorySize(13947298));
-  EXPECT_EQ(10000000u, quantizeMemorySize(3894729));
-  EXPECT_EQ(10000000u, quantizeMemorySize(389472));
-  EXPECT_EQ(10000000u, quantizeMemorySize(38947));
-  EXPECT_EQ(10000000u, quantizeMemorySize(3894));
-  EXPECT_EQ(10000000u, quantizeMemorySize(389));
-  EXPECT_EQ(10000000u, quantizeMemorySize(38));
-  EXPECT_EQ(10000000u, quantizeMemorySize(3));
-  EXPECT_EQ(10000000u, quantizeMemorySize(1));
-  EXPECT_EQ(10000000u, quantizeMemorySize(0));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(1024));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(1024 * 1024));
+  EXPECT_EQ(410000000u, QuantizeMemorySize(389472983));
+  EXPECT_EQ(39600000u, QuantizeMemorySize(38947298));
+  EXPECT_EQ(29400000u, QuantizeMemorySize(28947298));
+  EXPECT_EQ(19300000u, QuantizeMemorySize(18947298));
+  EXPECT_EQ(14300000u, QuantizeMemorySize(13947298));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(3894729));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(389472));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(38947));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(3894));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(389));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(38));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(3));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(1));
+  EXPECT_EQ(10000000u, QuantizeMemorySize(0));
 }
 
 }  // namespace blink

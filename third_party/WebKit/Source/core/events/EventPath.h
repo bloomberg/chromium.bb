@@ -50,90 +50,90 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
  public:
   explicit EventPath(Node&, Event* = nullptr);
 
-  void initializeWith(Node&, Event*);
+  void InitializeWith(Node&, Event*);
 
-  const HeapVector<NodeEventContext>& nodeEventContexts() const {
-    return m_nodeEventContexts;
+  const HeapVector<NodeEventContext>& NodeEventContexts() const {
+    return node_event_contexts_;
   }
-  HeapVector<NodeEventContext>& nodeEventContexts() {
-    return m_nodeEventContexts;
+  HeapVector<NodeEventContext>& NodeEventContexts() {
+    return node_event_contexts_;
   }
   NodeEventContext& operator[](size_t index) {
-    return m_nodeEventContexts[index];
+    return node_event_contexts_[index];
   }
   const NodeEventContext& operator[](size_t index) const {
-    return m_nodeEventContexts[index];
+    return node_event_contexts_[index];
   }
-  NodeEventContext& at(size_t index) { return m_nodeEventContexts[index]; }
-  NodeEventContext& last() { return m_nodeEventContexts[size() - 1]; }
+  NodeEventContext& at(size_t index) { return node_event_contexts_[index]; }
+  NodeEventContext& Last() { return node_event_contexts_[size() - 1]; }
 
-  WindowEventContext& windowEventContext() {
-    DCHECK(m_windowEventContext);
-    return *m_windowEventContext;
+  WindowEventContext& GetWindowEventContext() {
+    DCHECK(window_event_context_);
+    return *window_event_context_;
   }
-  void ensureWindowEventContext();
+  void EnsureWindowEventContext();
 
-  bool isEmpty() const { return m_nodeEventContexts.isEmpty(); }
-  size_t size() const { return m_nodeEventContexts.size(); }
+  bool IsEmpty() const { return node_event_contexts_.IsEmpty(); }
+  size_t size() const { return node_event_contexts_.size(); }
 
-  void adjustForRelatedTarget(Node&, EventTarget* relatedTarget);
-  void adjustForTouchEvent(TouchEvent&);
+  void AdjustForRelatedTarget(Node&, EventTarget* related_target);
+  void AdjustForTouchEvent(TouchEvent&);
 
-  NodeEventContext& topNodeEventContext();
+  NodeEventContext& TopNodeEventContext();
 
-  static EventTarget* eventTargetRespectingTargetRules(Node&);
+  static EventTarget* EventTargetRespectingTargetRules(Node&);
 
   DECLARE_TRACE();
-  void clear() {
-    m_nodeEventContexts.clear();
-    m_treeScopeEventContexts.clear();
+  void Clear() {
+    node_event_contexts_.Clear();
+    tree_scope_event_contexts_.Clear();
   }
 
  private:
   EventPath();
 
-  void initialize();
-  void calculatePath();
-  void calculateAdjustedTargets();
-  void calculateTreeOrderAndSetNearestAncestorClosedTree();
+  void Initialize();
+  void CalculatePath();
+  void CalculateAdjustedTargets();
+  void CalculateTreeOrderAndSetNearestAncestorClosedTree();
 
-  bool shouldStopEventPath(EventTarget& currentTarget,
-                           EventTarget& currentRelatedTarget,
+  bool ShouldStopEventPath(EventTarget& current_target,
+                           EventTarget& current_related_target,
                            const Node& target);
 
-  void shrink(size_t newSize) {
-    DCHECK(!m_windowEventContext);
-    m_nodeEventContexts.shrink(newSize);
+  void Shrink(size_t new_size) {
+    DCHECK(!window_event_context_);
+    node_event_contexts_.Shrink(new_size);
   }
 
-  void retargetRelatedTarget(const Node& relatedTargetNode);
+  void RetargetRelatedTarget(const Node& related_target_node);
 
-  void shrinkForRelatedTarget(const Node& target);
+  void ShrinkForRelatedTarget(const Node& target);
 
-  void adjustTouchList(const TouchList*,
-                       HeapVector<Member<TouchList>> adjustedTouchList,
-                       const HeapVector<Member<TreeScope>>& treeScopes);
+  void AdjustTouchList(const TouchList*,
+                       HeapVector<Member<TouchList>> adjusted_touch_list,
+                       const HeapVector<Member<TreeScope>>& tree_scopes);
 
   using TreeScopeEventContextMap =
       HeapHashMap<Member<TreeScope>, Member<TreeScopeEventContext>>;
-  TreeScopeEventContext* ensureTreeScopeEventContext(Node* currentTarget,
+  TreeScopeEventContext* EnsureTreeScopeEventContext(Node* current_target,
                                                      TreeScope*,
                                                      TreeScopeEventContextMap&);
 
   using RelatedTargetMap = HeapHashMap<Member<TreeScope>, Member<EventTarget>>;
 
-  static void buildRelatedNodeMap(const Node&, RelatedTargetMap&);
-  static EventTarget* findRelatedNode(TreeScope&, RelatedTargetMap&);
+  static void BuildRelatedNodeMap(const Node&, RelatedTargetMap&);
+  static EventTarget* FindRelatedNode(TreeScope&, RelatedTargetMap&);
 
 #if DCHECK_IS_ON()
-  static void checkReachability(TreeScope&, TouchList&);
+  static void CheckReachability(TreeScope&, TouchList&);
 #endif
 
-  HeapVector<NodeEventContext> m_nodeEventContexts;
-  Member<Node> m_node;
-  Member<Event> m_event;
-  HeapVector<Member<TreeScopeEventContext>> m_treeScopeEventContexts;
-  Member<WindowEventContext> m_windowEventContext;
+  HeapVector<NodeEventContext> node_event_contexts_;
+  Member<Node> node_;
+  Member<Event> event_;
+  HeapVector<Member<TreeScopeEventContext>> tree_scope_event_contexts_;
+  Member<WindowEventContext> window_event_context_;
 };
 
 }  // namespace blink

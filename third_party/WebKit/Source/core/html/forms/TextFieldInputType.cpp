@@ -62,15 +62,15 @@ class DataListIndicatorElement final : public HTMLDivElement {
  private:
   inline DataListIndicatorElement(Document& document)
       : HTMLDivElement(document) {}
-  inline HTMLInputElement* hostInput() const {
-    return toHTMLInputElement(ownerShadowHost());
+  inline HTMLInputElement* HostInput() const {
+    return toHTMLInputElement(OwnerShadowHost());
   }
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override {
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override {
     return new LayoutDetailsMarker(this);
   }
 
-  EventDispatchHandlingState* preDispatchEventHandler(Event* event) override {
+  EventDispatchHandlingState* PreDispatchEventHandler(Event* event) override {
     // Chromium opens autofill popup in a mousedown event listener
     // associated to the document. We don't want to open it in this case
     // because we opens a datalist chooser later.
@@ -80,28 +80,28 @@ class DataListIndicatorElement final : public HTMLDivElement {
     return nullptr;
   }
 
-  void defaultEventHandler(Event* event) override {
-    DCHECK(document().isActive());
+  void DefaultEventHandler(Event* event) override {
+    DCHECK(GetDocument().IsActive());
     if (event->type() != EventTypeNames::click)
       return;
-    HTMLInputElement* host = hostInput();
-    if (host && !host->isDisabledOrReadOnly()) {
-      document().page()->chromeClient().openTextDataListChooser(*host);
-      event->setDefaultHandled();
+    HTMLInputElement* host = HostInput();
+    if (host && !host->IsDisabledOrReadOnly()) {
+      GetDocument().GetPage()->GetChromeClient().OpenTextDataListChooser(*host);
+      event->SetDefaultHandled();
     }
   }
 
-  bool willRespondToMouseClickEvents() override {
-    return hostInput() && !hostInput()->isDisabledOrReadOnly() &&
-           document().isActive();
+  bool WillRespondToMouseClickEvents() override {
+    return HostInput() && !HostInput()->IsDisabledOrReadOnly() &&
+           GetDocument().IsActive();
   }
 
  public:
-  static DataListIndicatorElement* create(Document& document) {
+  static DataListIndicatorElement* Create(Document& document) {
     DataListIndicatorElement* element = new DataListIndicatorElement(document);
-    element->setShadowPseudoId(
+    element->SetShadowPseudoId(
         AtomicString("-webkit-calendar-picker-indicator"));
-    element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
+    element->setAttribute(idAttr, ShadowElementNames::PickerIndicator());
     return element;
   }
 };
@@ -112,450 +112,456 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
 TextFieldInputType::~TextFieldInputType() {}
 
 DEFINE_TRACE(TextFieldInputType) {
-  InputTypeView::trace(visitor);
-  InputType::trace(visitor);
+  InputTypeView::Trace(visitor);
+  InputType::Trace(visitor);
 }
 
-InputTypeView* TextFieldInputType::createView() {
+InputTypeView* TextFieldInputType::CreateView() {
   return this;
 }
 
-InputType::ValueMode TextFieldInputType::valueMode() const {
+InputType::ValueMode TextFieldInputType::GetValueMode() const {
   return ValueMode::kValue;
 }
 
-SpinButtonElement* TextFieldInputType::spinButtonElement() const {
-  return toSpinButtonElementOrDie(
-      element().userAgentShadowRoot()->getElementById(
-          ShadowElementNames::spinButton()));
+SpinButtonElement* TextFieldInputType::GetSpinButtonElement() const {
+  return ToSpinButtonElementOrDie(
+      GetElement().UserAgentShadowRoot()->GetElementById(
+          ShadowElementNames::SpinButton()));
 }
 
-bool TextFieldInputType::shouldShowFocusRingOnMouseFocus() const {
+bool TextFieldInputType::ShouldShowFocusRingOnMouseFocus() const {
   return true;
 }
 
-bool TextFieldInputType::isTextField() const {
+bool TextFieldInputType::IsTextField() const {
   return true;
 }
 
-bool TextFieldInputType::valueMissing(const String& value) const {
-  return element().isRequired() && value.isEmpty();
+bool TextFieldInputType::ValueMissing(const String& value) const {
+  return GetElement().IsRequired() && value.IsEmpty();
 }
 
-bool TextFieldInputType::canSetSuggestedValue() {
+bool TextFieldInputType::CanSetSuggestedValue() {
   return true;
 }
 
-void TextFieldInputType::setValue(const String& sanitizedValue,
-                                  bool valueChanged,
-                                  TextFieldEventBehavior eventBehavior,
+void TextFieldInputType::SetValue(const String& sanitized_value,
+                                  bool value_changed,
+                                  TextFieldEventBehavior event_behavior,
                                   TextControlSetValueSelection selection) {
   // We don't use InputType::setValue.  TextFieldInputType dispatches events
   // different way from InputType::setValue.
-  if (eventBehavior == DispatchNoEvent)
-    element().setNonAttributeValue(sanitizedValue);
+  if (event_behavior == kDispatchNoEvent)
+    GetElement().SetNonAttributeValue(sanitized_value);
   else
-    element().setNonAttributeValueByUserEdit(sanitizedValue);
+    GetElement().SetNonAttributeValueByUserEdit(sanitized_value);
 
-  if (valueChanged)
-    element().updateView();
+  if (value_changed)
+    GetElement().UpdateView();
 
   if (selection == TextControlSetValueSelection::kSetSelectionToEnd) {
-    unsigned max = visibleValue().length();
-    element().setSelectionRange(max, max);
+    unsigned max = VisibleValue().length();
+    GetElement().SetSelectionRange(max, max);
   }
 
-  if (!valueChanged)
+  if (!value_changed)
     return;
 
-  switch (eventBehavior) {
-    case DispatchChangeEvent:
+  switch (event_behavior) {
+    case kDispatchChangeEvent:
       // If the user is still editing this field, dispatch an input event rather
       // than a change event.  The change event will be dispatched when editing
       // finishes.
-      if (element().isFocused())
-        element().dispatchInputEvent();
+      if (GetElement().IsFocused())
+        GetElement().DispatchInputEvent();
       else
-        element().dispatchFormControlChangeEvent();
+        GetElement().DispatchFormControlChangeEvent();
       break;
 
-    case DispatchInputAndChangeEvent: {
-      element().dispatchInputEvent();
-      element().dispatchFormControlChangeEvent();
+    case kDispatchInputAndChangeEvent: {
+      GetElement().DispatchInputEvent();
+      GetElement().DispatchFormControlChangeEvent();
       break;
     }
 
-    case DispatchNoEvent:
+    case kDispatchNoEvent:
       break;
   }
 }
 
-void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event) {
-  if (!element().isFocused())
+void TextFieldInputType::HandleKeydownEvent(KeyboardEvent* event) {
+  if (!GetElement().IsFocused())
     return;
-  if (ChromeClient* chromeClient = this->chromeClient()) {
-    chromeClient->handleKeyboardEventOnTextField(element(), *event);
+  if (ChromeClient* chrome_client = this->GetChromeClient()) {
+    chrome_client->HandleKeyboardEventOnTextField(GetElement(), *event);
     return;
   }
-  event->setDefaultHandled();
+  event->SetDefaultHandled();
 }
 
-void TextFieldInputType::handleKeydownEventForSpinButton(KeyboardEvent* event) {
-  if (element().isDisabledOrReadOnly())
+void TextFieldInputType::HandleKeydownEventForSpinButton(KeyboardEvent* event) {
+  if (GetElement().IsDisabledOrReadOnly())
     return;
   const String& key = event->key();
   if (key == "ArrowUp")
-    spinButtonStepUp();
+    SpinButtonStepUp();
   else if (key == "ArrowDown" && !event->altKey())
-    spinButtonStepDown();
+    SpinButtonStepDown();
   else
     return;
-  element().dispatchFormControlChangeEvent();
-  event->setDefaultHandled();
+  GetElement().DispatchFormControlChangeEvent();
+  event->SetDefaultHandled();
 }
 
-void TextFieldInputType::forwardEvent(Event* event) {
-  if (SpinButtonElement* spinButton = spinButtonElement()) {
-    spinButton->forwardEvent(event);
-    if (event->defaultHandled())
+void TextFieldInputType::ForwardEvent(Event* event) {
+  if (SpinButtonElement* spin_button = GetSpinButtonElement()) {
+    spin_button->ForwardEvent(event);
+    if (event->DefaultHandled())
       return;
   }
 
-  if (element().layoutObject() &&
-      (event->isMouseEvent() || event->isDragEvent() ||
-       event->hasInterface(EventNames::WheelEvent) ||
+  if (GetElement().GetLayoutObject() &&
+      (event->IsMouseEvent() || event->IsDragEvent() ||
+       event->HasInterface(EventNames::WheelEvent) ||
        event->type() == EventTypeNames::blur ||
        event->type() == EventTypeNames::focus)) {
-    LayoutTextControlSingleLine* layoutTextControl =
-        toLayoutTextControlSingleLine(element().layoutObject());
+    LayoutTextControlSingleLine* layout_text_control =
+        ToLayoutTextControlSingleLine(GetElement().GetLayoutObject());
     if (event->type() == EventTypeNames::blur) {
-      if (LayoutBox* innerEditorLayoutObject =
-              element().innerEditorElement()->layoutBox()) {
+      if (LayoutBox* inner_editor_layout_object =
+              GetElement().InnerEditorElement()->GetLayoutBox()) {
         // FIXME: This class has no need to know about PaintLayer!
-        if (PaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
-          if (PaintLayerScrollableArea* innerScrollableArea =
-                  innerLayer->getScrollableArea()) {
-            innerScrollableArea->setScrollOffset(ScrollOffset(0, 0),
-                                                 ProgrammaticScroll);
+        if (PaintLayer* inner_layer = inner_editor_layout_object->Layer()) {
+          if (PaintLayerScrollableArea* inner_scrollable_area =
+                  inner_layer->GetScrollableArea()) {
+            inner_scrollable_area->SetScrollOffset(ScrollOffset(0, 0),
+                                                   kProgrammaticScroll);
           }
         }
       }
 
-      layoutTextControl->capsLockStateMayHaveChanged();
+      layout_text_control->CapsLockStateMayHaveChanged();
     } else if (event->type() == EventTypeNames::focus) {
-      layoutTextControl->capsLockStateMayHaveChanged();
+      layout_text_control->CapsLockStateMayHaveChanged();
     }
 
-    element().forwardEvent(event);
+    GetElement().ForwardEvent(event);
   }
 }
 
-void TextFieldInputType::handleFocusEvent(Element* oldFocusedNode,
-                                          WebFocusType focusType) {
-  InputTypeView::handleFocusEvent(oldFocusedNode, focusType);
-  element().beginEditing();
+void TextFieldInputType::HandleFocusEvent(Element* old_focused_node,
+                                          WebFocusType focus_type) {
+  InputTypeView::HandleFocusEvent(old_focused_node, focus_type);
+  GetElement().BeginEditing();
 }
 
-void TextFieldInputType::handleBlurEvent() {
-  InputTypeView::handleBlurEvent();
-  element().endEditing();
-  if (SpinButtonElement* spinButton = spinButtonElement())
-    spinButton->releaseCapture();
+void TextFieldInputType::HandleBlurEvent() {
+  InputTypeView::HandleBlurEvent();
+  GetElement().EndEditing();
+  if (SpinButtonElement* spin_button = GetSpinButtonElement())
+    spin_button->ReleaseCapture();
 }
 
-bool TextFieldInputType::shouldSubmitImplicitly(Event* event) {
+bool TextFieldInputType::ShouldSubmitImplicitly(Event* event) {
   return (event->type() == EventTypeNames::textInput &&
-          event->hasInterface(EventNames::TextEvent) &&
-          toTextEvent(event)->data() == "\n") ||
-         InputTypeView::shouldSubmitImplicitly(event);
+          event->HasInterface(EventNames::TextEvent) &&
+          ToTextEvent(event)->data() == "\n") ||
+         InputTypeView::ShouldSubmitImplicitly(event);
 }
 
-LayoutObject* TextFieldInputType::createLayoutObject(
+LayoutObject* TextFieldInputType::CreateLayoutObject(
     const ComputedStyle&) const {
-  return new LayoutTextControlSingleLine(&element());
+  return new LayoutTextControlSingleLine(&GetElement());
 }
 
-bool TextFieldInputType::shouldHaveSpinButton() const {
-  return LayoutTheme::theme().shouldHaveSpinButton(&element());
+bool TextFieldInputType::ShouldHaveSpinButton() const {
+  return LayoutTheme::GetTheme().ShouldHaveSpinButton(&GetElement());
 }
 
-void TextFieldInputType::createShadowSubtree() {
-  DCHECK(element().shadow());
-  ShadowRoot* shadowRoot = element().userAgentShadowRoot();
-  DCHECK(!shadowRoot->hasChildren());
+void TextFieldInputType::CreateShadowSubtree() {
+  DCHECK(GetElement().Shadow());
+  ShadowRoot* shadow_root = GetElement().UserAgentShadowRoot();
+  DCHECK(!shadow_root->HasChildren());
 
-  Document& document = element().document();
-  bool shouldHaveSpinButton = this->shouldHaveSpinButton();
-  bool shouldHaveDataListIndicator = element().hasValidDataListOptions();
-  bool createsContainer =
-      shouldHaveSpinButton || shouldHaveDataListIndicator || needsContainer();
+  Document& document = GetElement().GetDocument();
+  bool should_have_spin_button = this->ShouldHaveSpinButton();
+  bool should_have_data_list_indicator = GetElement().HasValidDataListOptions();
+  bool creates_container = should_have_spin_button ||
+                           should_have_data_list_indicator || NeedsContainer();
 
-  TextControlInnerEditorElement* innerEditor =
-      TextControlInnerEditorElement::create(document);
-  if (!createsContainer) {
-    shadowRoot->appendChild(innerEditor);
+  TextControlInnerEditorElement* inner_editor =
+      TextControlInnerEditorElement::Create(document);
+  if (!creates_container) {
+    shadow_root->AppendChild(inner_editor);
     return;
   }
 
   TextControlInnerContainer* container =
-      TextControlInnerContainer::create(document);
-  container->setShadowPseudoId(
+      TextControlInnerContainer::Create(document);
+  container->SetShadowPseudoId(
       AtomicString("-webkit-textfield-decoration-container"));
-  shadowRoot->appendChild(container);
+  shadow_root->AppendChild(container);
 
-  EditingViewPortElement* editingViewPort =
-      EditingViewPortElement::create(document);
-  editingViewPort->appendChild(innerEditor);
-  container->appendChild(editingViewPort);
+  EditingViewPortElement* editing_view_port =
+      EditingViewPortElement::Create(document);
+  editing_view_port->AppendChild(inner_editor);
+  container->AppendChild(editing_view_port);
 
-  if (shouldHaveDataListIndicator)
-    container->appendChild(DataListIndicatorElement::create(document));
+  if (should_have_data_list_indicator)
+    container->AppendChild(DataListIndicatorElement::Create(document));
   // FIXME: Because of a special handling for a spin button in
   // LayoutTextControlSingleLine, we need to put it to the last position. It's
   // inconsistent with multiple-fields date/time types.
-  if (shouldHaveSpinButton)
-    container->appendChild(SpinButtonElement::create(document, *this));
+  if (should_have_spin_button)
+    container->AppendChild(SpinButtonElement::Create(document, *this));
 
   // See listAttributeTargetChanged too.
 }
 
-Element* TextFieldInputType::containerElement() const {
-  return element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::textFieldContainer());
+Element* TextFieldInputType::ContainerElement() const {
+  return GetElement().UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::TextFieldContainer());
 }
 
-void TextFieldInputType::destroyShadowSubtree() {
-  InputTypeView::destroyShadowSubtree();
-  if (SpinButtonElement* spinButton = spinButtonElement())
-    spinButton->removeSpinButtonOwner();
+void TextFieldInputType::DestroyShadowSubtree() {
+  InputTypeView::DestroyShadowSubtree();
+  if (SpinButtonElement* spin_button = GetSpinButtonElement())
+    spin_button->RemoveSpinButtonOwner();
 }
 
-void TextFieldInputType::listAttributeTargetChanged() {
-  if (ChromeClient* chromeClient = this->chromeClient())
-    chromeClient->textFieldDataListChanged(element());
-  Element* picker = element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::pickerIndicator());
-  bool didHavePickerIndicator = picker;
-  bool willHavePickerIndicator = element().hasValidDataListOptions();
-  if (didHavePickerIndicator == willHavePickerIndicator)
+void TextFieldInputType::ListAttributeTargetChanged() {
+  if (ChromeClient* chrome_client = this->GetChromeClient())
+    chrome_client->TextFieldDataListChanged(GetElement());
+  Element* picker = GetElement().UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::PickerIndicator());
+  bool did_have_picker_indicator = picker;
+  bool will_have_picker_indicator = GetElement().HasValidDataListOptions();
+  if (did_have_picker_indicator == will_have_picker_indicator)
     return;
-  EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
-  if (willHavePickerIndicator) {
-    Document& document = element().document();
-    if (Element* container = containerElement()) {
-      container->insertBefore(DataListIndicatorElement::create(document),
-                              spinButtonElement());
+  EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
+  if (will_have_picker_indicator) {
+    Document& document = GetElement().GetDocument();
+    if (Element* container = ContainerElement()) {
+      container->InsertBefore(DataListIndicatorElement::Create(document),
+                              GetSpinButtonElement());
     } else {
       // FIXME: The following code is similar to createShadowSubtree(),
       // but they are different. We should simplify the code by making
       // containerElement mandatory.
-      Element* rpContainer = TextControlInnerContainer::create(document);
-      rpContainer->setShadowPseudoId(
+      Element* rp_container = TextControlInnerContainer::Create(document);
+      rp_container->SetShadowPseudoId(
           AtomicString("-webkit-textfield-decoration-container"));
-      Element* innerEditor = element().innerEditorElement();
-      innerEditor->parentNode()->replaceChild(rpContainer, innerEditor);
-      Element* editingViewPort = EditingViewPortElement::create(document);
-      editingViewPort->appendChild(innerEditor);
-      rpContainer->appendChild(editingViewPort);
-      rpContainer->appendChild(DataListIndicatorElement::create(document));
-      if (element().document().focusedElement() == element())
-        element().updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
+      Element* inner_editor = GetElement().InnerEditorElement();
+      inner_editor->parentNode()->ReplaceChild(rp_container, inner_editor);
+      Element* editing_view_port = EditingViewPortElement::Create(document);
+      editing_view_port->AppendChild(inner_editor);
+      rp_container->AppendChild(editing_view_port);
+      rp_container->AppendChild(DataListIndicatorElement::Create(document));
+      if (GetElement().GetDocument().FocusedElement() == GetElement())
+        GetElement().UpdateFocusAppearance(SelectionBehaviorOnFocus::kRestore);
     }
   } else {
     picker->remove(ASSERT_NO_EXCEPTION);
   }
 }
 
-void TextFieldInputType::attributeChanged() {
+void TextFieldInputType::AttributeChanged() {
   // FIXME: Updating on any attribute update should be unnecessary. We should
   // figure out what attributes affect.
-  updateView();
+  UpdateView();
 }
 
-void TextFieldInputType::disabledAttributeChanged() {
-  if (SpinButtonElement* spinButton = spinButtonElement())
-    spinButton->releaseCapture();
+void TextFieldInputType::DisabledAttributeChanged() {
+  if (SpinButtonElement* spin_button = GetSpinButtonElement())
+    spin_button->ReleaseCapture();
 }
 
-void TextFieldInputType::readonlyAttributeChanged() {
-  if (SpinButtonElement* spinButton = spinButtonElement())
-    spinButton->releaseCapture();
+void TextFieldInputType::ReadonlyAttributeChanged() {
+  if (SpinButtonElement* spin_button = GetSpinButtonElement())
+    spin_button->ReleaseCapture();
 }
 
-bool TextFieldInputType::supportsReadOnly() const {
+bool TextFieldInputType::SupportsReadOnly() const {
   return true;
 }
 
-static bool isASCIILineBreak(UChar c) {
+static bool IsASCIILineBreak(UChar c) {
   return c == '\r' || c == '\n';
 }
 
-static String limitLength(const String& string, unsigned maxLength) {
-  unsigned newLength = std::min(maxLength, string.length());
-  if (newLength == string.length())
+static String LimitLength(const String& string, unsigned max_length) {
+  unsigned new_length = std::min(max_length, string.length());
+  if (new_length == string.length())
     return string;
-  if (newLength > 0 && U16_IS_LEAD(string[newLength - 1]))
-    --newLength;
-  return string.left(newLength);
+  if (new_length > 0 && U16_IS_LEAD(string[new_length - 1]))
+    --new_length;
+  return string.Left(new_length);
 }
 
-String TextFieldInputType::sanitizeValue(const String& proposedValue) const {
-  return limitLength(proposedValue.removeCharacters(isASCIILineBreak),
+String TextFieldInputType::SanitizeValue(const String& proposed_value) const {
+  return LimitLength(proposed_value.RemoveCharacters(IsASCIILineBreak),
                      std::numeric_limits<int>::max());
 }
 
-void TextFieldInputType::handleBeforeTextInsertedEvent(
+void TextFieldInputType::HandleBeforeTextInsertedEvent(
     BeforeTextInsertedEvent* event) {
   // Make sure that the text to be inserted will not violate the maxLength.
 
   // We use HTMLInputElement::innerEditorValue() instead of
   // HTMLInputElement::value() because they can be mismatched by
   // sanitizeValue() in HTMLInputElement::subtreeHasChanged() in some cases.
-  unsigned oldLength = element().innerEditorValue().length();
+  unsigned old_length = GetElement().InnerEditorValue().length();
 
   // selectionLength represents the selection length of this text field to be
   // removed by this insertion.
   // If the text field has no focus, we don't need to take account of the
   // selection length. The selection is the source of text drag-and-drop in
   // that case, and nothing in the text field will be removed.
-  unsigned selectionLength = 0;
-  if (element().isFocused()) {
+  unsigned selection_length = 0;
+  if (GetElement().IsFocused()) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    element().document().updateStyleAndLayoutIgnorePendingStylesheets();
+    GetElement().GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-    selectionLength =
-        element().document().frame()->selection().selectedText().length();
+    selection_length = GetElement()
+                           .GetDocument()
+                           .GetFrame()
+                           ->Selection()
+                           .SelectedText()
+                           .length();
   }
-  DCHECK_GE(oldLength, selectionLength);
+  DCHECK_GE(old_length, selection_length);
 
   // Selected characters will be removed by the next text event.
-  unsigned baseLength = oldLength - selectionLength;
-  unsigned maxLength;
-  if (this->maxLength() < 0)
-    maxLength = std::numeric_limits<int>::max();
+  unsigned base_length = old_length - selection_length;
+  unsigned max_length;
+  if (this->MaxLength() < 0)
+    max_length = std::numeric_limits<int>::max();
   else
-    maxLength = static_cast<unsigned>(this->maxLength());
-  unsigned appendableLength =
-      maxLength > baseLength ? maxLength - baseLength : 0;
+    max_length = static_cast<unsigned>(this->MaxLength());
+  unsigned appendable_length =
+      max_length > base_length ? max_length - base_length : 0;
 
   // Truncate the inserted text to avoid violating the maxLength and other
   // constraints.
-  String eventText = event->text();
-  unsigned textLength = eventText.length();
-  while (textLength > 0 && isASCIILineBreak(eventText[textLength - 1]))
-    textLength--;
-  eventText.truncate(textLength);
-  eventText.replace("\r\n", " ");
-  eventText.replace('\r', ' ');
-  eventText.replace('\n', ' ');
+  String event_text = event->GetText();
+  unsigned text_length = event_text.length();
+  while (text_length > 0 && IsASCIILineBreak(event_text[text_length - 1]))
+    text_length--;
+  event_text.Truncate(text_length);
+  event_text.Replace("\r\n", " ");
+  event_text.Replace('\r', ' ');
+  event_text.Replace('\n', ' ');
 
-  event->setText(limitLength(eventText, appendableLength));
+  event->SetText(LimitLength(event_text, appendable_length));
 }
 
-bool TextFieldInputType::shouldRespectListAttribute() {
+bool TextFieldInputType::ShouldRespectListAttribute() {
   return true;
 }
 
-void TextFieldInputType::updatePlaceholderText() {
-  if (!supportsPlaceholder())
+void TextFieldInputType::UpdatePlaceholderText() {
+  if (!SupportsPlaceholder())
     return;
-  HTMLElement* placeholder = element().placeholderElement();
-  String placeholderText = element().strippedPlaceholder();
-  if (placeholderText.isEmpty()) {
+  HTMLElement* placeholder = GetElement().PlaceholderElement();
+  String placeholder_text = GetElement().StrippedPlaceholder();
+  if (placeholder_text.IsEmpty()) {
     if (placeholder)
       placeholder->remove(ASSERT_NO_EXCEPTION);
     return;
   }
   if (!placeholder) {
-    HTMLElement* newElement = HTMLDivElement::create(element().document());
-    placeholder = newElement;
-    placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder"));
-    placeholder->setInlineStyleProperty(
+    HTMLElement* new_element =
+        HTMLDivElement::Create(GetElement().GetDocument());
+    placeholder = new_element;
+    placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
+    placeholder->SetInlineStyleProperty(
         CSSPropertyDisplay,
-        element().isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
-    placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
-    Element* container = containerElement();
-    Node* previous = container ? container : element().innerEditorElement();
-    previous->parentNode()->insertBefore(placeholder, previous);
+        GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
+        true);
+    placeholder->setAttribute(idAttr, ShadowElementNames::Placeholder());
+    Element* container = ContainerElement();
+    Node* previous = container ? container : GetElement().InnerEditorElement();
+    previous->parentNode()->InsertBefore(placeholder, previous);
     SECURITY_DCHECK(placeholder->parentNode() == previous->parentNode());
   }
-  placeholder->setTextContent(placeholderText);
+  placeholder->setTextContent(placeholder_text);
 }
 
-void TextFieldInputType::appendToFormData(FormData& formData) const {
-  InputType::appendToFormData(formData);
-  const AtomicString& dirnameAttrValue =
-      element().fastGetAttribute(dirnameAttr);
-  if (!dirnameAttrValue.isNull())
-    formData.append(dirnameAttrValue, element().directionForFormData());
+void TextFieldInputType::AppendToFormData(FormData& form_data) const {
+  InputType::AppendToFormData(form_data);
+  const AtomicString& dirname_attr_value =
+      GetElement().FastGetAttribute(dirnameAttr);
+  if (!dirname_attr_value.IsNull())
+    form_data.append(dirname_attr_value, GetElement().DirectionForFormData());
 }
 
-String TextFieldInputType::convertFromVisibleValue(
-    const String& visibleValue) const {
-  return visibleValue;
+String TextFieldInputType::ConvertFromVisibleValue(
+    const String& visible_value) const {
+  return visible_value;
 }
 
-void TextFieldInputType::subtreeHasChanged() {
-  element().setValueFromRenderer(sanitizeUserInputValue(
-      convertFromVisibleValue(element().innerEditorValue())));
-  element().updatePlaceholderVisibility();
-  element().pseudoStateChanged(CSSSelector::PseudoValid);
-  element().pseudoStateChanged(CSSSelector::PseudoInvalid);
-  element().pseudoStateChanged(CSSSelector::PseudoInRange);
-  element().pseudoStateChanged(CSSSelector::PseudoOutOfRange);
+void TextFieldInputType::SubtreeHasChanged() {
+  GetElement().SetValueFromRenderer(SanitizeUserInputValue(
+      ConvertFromVisibleValue(GetElement().InnerEditorValue())));
+  GetElement().UpdatePlaceholderVisibility();
+  GetElement().PseudoStateChanged(CSSSelector::kPseudoValid);
+  GetElement().PseudoStateChanged(CSSSelector::kPseudoInvalid);
+  GetElement().PseudoStateChanged(CSSSelector::kPseudoInRange);
+  GetElement().PseudoStateChanged(CSSSelector::kPseudoOutOfRange);
 
-  didSetValueByUserEdit();
+  DidSetValueByUserEdit();
 }
 
-void TextFieldInputType::didSetValueByUserEdit() {
-  if (!element().isFocused())
+void TextFieldInputType::DidSetValueByUserEdit() {
+  if (!GetElement().IsFocused())
     return;
-  if (ChromeClient* chromeClient = this->chromeClient())
-    chromeClient->didChangeValueInTextField(element());
+  if (ChromeClient* chrome_client = this->GetChromeClient())
+    chrome_client->DidChangeValueInTextField(GetElement());
 }
 
-void TextFieldInputType::spinButtonStepDown() {
-  stepUpFromLayoutObject(-1);
+void TextFieldInputType::SpinButtonStepDown() {
+  StepUpFromLayoutObject(-1);
 }
 
-void TextFieldInputType::spinButtonStepUp() {
-  stepUpFromLayoutObject(1);
+void TextFieldInputType::SpinButtonStepUp() {
+  StepUpFromLayoutObject(1);
 }
 
-void TextFieldInputType::updateView() {
-  if (!element().suggestedValue().isNull()) {
-    element().setInnerEditorValue(element().suggestedValue());
-    element().updatePlaceholderVisibility();
-  } else if (element().needsToUpdateViewValue()) {
+void TextFieldInputType::UpdateView() {
+  if (!GetElement().SuggestedValue().IsNull()) {
+    GetElement().SetInnerEditorValue(GetElement().SuggestedValue());
+    GetElement().UpdatePlaceholderVisibility();
+  } else if (GetElement().NeedsToUpdateViewValue()) {
     // Update the view only if needsToUpdateViewValue is true. It protects
     // an unacceptable view value from being overwritten with the DOM value.
     //
     // e.g. <input type=number> has a view value "abc", and input.max is
     // updated. In this case, updateView() is called but we should not
     // update the view value.
-    element().setInnerEditorValue(visibleValue());
-    element().updatePlaceholderVisibility();
+    GetElement().SetInnerEditorValue(VisibleValue());
+    GetElement().UpdatePlaceholderVisibility();
   }
 }
 
-void TextFieldInputType::focusAndSelectSpinButtonOwner() {
-  element().focus();
-  element().setSelectionRange(0, std::numeric_limits<int>::max());
+void TextFieldInputType::FocusAndSelectSpinButtonOwner() {
+  GetElement().focus();
+  GetElement().SetSelectionRange(0, std::numeric_limits<int>::max());
 }
 
-bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents() {
-  return !element().isDisabledOrReadOnly();
+bool TextFieldInputType::ShouldSpinButtonRespondToMouseEvents() {
+  return !GetElement().IsDisabledOrReadOnly();
 }
 
-bool TextFieldInputType::shouldSpinButtonRespondToWheelEvents() {
-  return shouldSpinButtonRespondToMouseEvents() && element().isFocused();
+bool TextFieldInputType::ShouldSpinButtonRespondToWheelEvents() {
+  return ShouldSpinButtonRespondToMouseEvents() && GetElement().IsFocused();
 }
 
-void TextFieldInputType::spinButtonDidReleaseMouseCapture(
-    SpinButtonElement::EventDispatch eventDispatch) {
-  if (eventDispatch == SpinButtonElement::EventDispatchAllowed)
-    element().dispatchFormControlChangeEvent();
+void TextFieldInputType::SpinButtonDidReleaseMouseCapture(
+    SpinButtonElement::EventDispatch event_dispatch) {
+  if (event_dispatch == SpinButtonElement::kEventDispatchAllowed)
+    GetElement().DispatchFormControlChangeEvent();
 }
 
 }  // namespace blink

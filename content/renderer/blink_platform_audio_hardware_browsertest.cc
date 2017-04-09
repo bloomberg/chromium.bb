@@ -15,12 +15,12 @@ class BlinkPlatformAudioHardwareTest : public RenderViewTest {
 // Test that calling audioHardware functions from blink::Platform without a v8
 // context returns valid values.
 TEST_F(BlinkPlatformAudioHardwareTest, AudioHardwareFunctionsNoV8) {
-  blink::Platform* blink_platform = blink::Platform::current();
-  size_t buffer_size = blink_platform->audioHardwareBufferSize();
+  blink::Platform* blink_platform = blink::Platform::Current();
+  size_t buffer_size = blink_platform->AudioHardwareBufferSize();
   EXPECT_GT(buffer_size, 0u);
-  unsigned channels = blink_platform->audioHardwareOutputChannels();
+  unsigned channels = blink_platform->AudioHardwareOutputChannels();
   EXPECT_GT(channels, 0u);
-  double sample_rate = blink_platform->audioHardwareSampleRate();
+  double sample_rate = blink_platform->AudioHardwareSampleRate();
   EXPECT_GT(sample_rate, 0.0);
 }
 

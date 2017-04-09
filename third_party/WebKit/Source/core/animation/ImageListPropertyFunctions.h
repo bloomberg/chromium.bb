@@ -15,43 +15,43 @@ using StyleImageList = PersistentHeapVector<Member<StyleImage>, 1>;
 
 class ImageListPropertyFunctions {
  public:
-  static void getInitialImageList(CSSPropertyID, StyleImageList& result) {
-    result.clear();
+  static void GetInitialImageList(CSSPropertyID, StyleImageList& result) {
+    result.Clear();
   }
 
-  static void getImageList(CSSPropertyID property,
+  static void GetImageList(CSSPropertyID property,
                            const ComputedStyle& style,
                            StyleImageList& result) {
-    const FillLayer* fillLayer = nullptr;
+    const FillLayer* fill_layer = nullptr;
     switch (property) {
       case CSSPropertyBackgroundImage:
-        fillLayer = &style.backgroundLayers();
+        fill_layer = &style.BackgroundLayers();
         break;
       case CSSPropertyWebkitMaskImage:
-        fillLayer = &style.maskLayers();
+        fill_layer = &style.MaskLayers();
         break;
       default:
         NOTREACHED();
         return;
     }
 
-    result.clear();
-    while (fillLayer) {
-      result.push_back(fillLayer->image());
-      fillLayer = fillLayer->next();
+    result.Clear();
+    while (fill_layer) {
+      result.push_back(fill_layer->GetImage());
+      fill_layer = fill_layer->Next();
     }
   }
 
-  static void setImageList(CSSPropertyID property,
+  static void SetImageList(CSSPropertyID property,
                            ComputedStyle& style,
-                           const StyleImageList& imageList) {
-    FillLayer* fillLayer = nullptr;
+                           const StyleImageList& image_list) {
+    FillLayer* fill_layer = nullptr;
     switch (property) {
       case CSSPropertyBackgroundImage:
-        fillLayer = &style.accessBackgroundLayers();
+        fill_layer = &style.AccessBackgroundLayers();
         break;
       case CSSPropertyWebkitMaskImage:
-        fillLayer = &style.accessMaskLayers();
+        fill_layer = &style.AccessMaskLayers();
         break;
       default:
         NOTREACHED();
@@ -59,16 +59,16 @@ class ImageListPropertyFunctions {
     }
 
     FillLayer* prev = nullptr;
-    for (size_t i = 0; i < imageList.size(); i++) {
-      if (!fillLayer)
-        fillLayer = prev->ensureNext();
-      fillLayer->setImage(imageList[i]);
-      prev = fillLayer;
-      fillLayer = fillLayer->next();
+    for (size_t i = 0; i < image_list.size(); i++) {
+      if (!fill_layer)
+        fill_layer = prev->EnsureNext();
+      fill_layer->SetImage(image_list[i]);
+      prev = fill_layer;
+      fill_layer = fill_layer->Next();
     }
-    while (fillLayer) {
-      fillLayer->clearImage();
-      fillLayer = fillLayer->next();
+    while (fill_layer) {
+      fill_layer->ClearImage();
+      fill_layer = fill_layer->Next();
     }
   }
 };

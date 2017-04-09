@@ -34,7 +34,7 @@ namespace blink {
 struct GlyphOverflow {
   GlyphOverflow() : left(0), right(0), top(0), bottom(0) {}
 
-  bool isApproximatelyZero() const {
+  bool IsApproximatelyZero() const {
     // Overflow can be expensive so we try to avoid it. Small amounts of
     // overflow is imperceptible and is typically masked by pixel snapping.
     static const float kApproximatelyNoOverflow = 0.0625f;
@@ -44,14 +44,14 @@ struct GlyphOverflow {
            std::fabs(bottom) < kApproximatelyNoOverflow;
   }
 
-  void setFromBounds(const FloatRect& bounds,
+  void SetFromBounds(const FloatRect& bounds,
                      float ascent,
                      float descent,
-                     float textWidth) {
-    top = std::max(0.0f, -bounds.y() - ascent);
-    bottom = std::max(0.0f, bounds.maxY() - descent);
-    left = std::max(0.0f, -bounds.x());
-    right = std::max(0.0f, bounds.maxX() - textWidth);
+                     float text_width) {
+    top = std::max(0.0f, -bounds.Y() - ascent);
+    bottom = std::max(0.0f, bounds.MaxY() - descent);
+    left = std::max(0.0f, -bounds.X());
+    right = std::max(0.0f, bounds.MaxX() - text_width);
   }
 
   // Top and bottom are the amounts of glyph overflows exceeding the font

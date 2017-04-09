@@ -17,15 +17,15 @@ class PartPainter {
   STACK_ALLOCATED();
 
  public:
-  PartPainter(const LayoutPart& layoutPart) : m_layoutPart(layoutPart) {}
+  PartPainter(const LayoutPart& layout_part) : layout_part_(layout_part) {}
 
-  void paint(const PaintInfo&, const LayoutPoint&);
-  void paintContents(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
+  void PaintContents(const PaintInfo&, const LayoutPoint&);
 
  private:
-  bool isSelected() const;
+  bool IsSelected() const;
 
-  const LayoutPart& m_layoutPart;
+  const LayoutPart& layout_part_;
 };
 
 }  // namespace blink

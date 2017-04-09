@@ -113,9 +113,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
-  output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
+  output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
-               .ascii();
+               .Ascii();
   EXPECT_EQ(kArrowDownScrollDown, output);
 
   const char* kArrowUpScrollUp = "38,false,false,true,false\n0\np1";
@@ -124,9 +124,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
-  output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
+  output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
-               .ascii();
+               .Ascii();
   EXPECT_EQ(kArrowUpScrollUp, output);
 
   // Now let javascript eat the key events -- no scrolling should happen.
@@ -140,9 +140,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
-  output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
+  output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
-               .ascii();
+               .Ascii();
   EXPECT_EQ(kArrowDownNoScroll, output);
 
   const char* kArrowUpNoScroll = "38,false,false,true,false\n100\np1";
@@ -151,9 +151,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
-  output = WebFrameContentDumper::dumpWebViewAsText(view->GetWebView(),
+  output = WebFrameContentDumper::DumpWebViewAsText(view->GetWebView(),
                                                     kMaxOutputCharacters)
-               .ascii();
+               .Ascii();
   EXPECT_EQ(kArrowUpNoScroll, output);
 }
 
@@ -166,7 +166,7 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
   LoadHTML("<input/>");
 
   // Normally, we have a WebFrameWidget.
-  EXPECT_TRUE(GetWebWidget()->isWebFrameWidget());
+  EXPECT_TRUE(GetWebWidget()->IsWebFrameWidget());
 
   // Swap out the main frame so that the frame widget is destroyed.
   auto* view = static_cast<RenderViewImpl*>(view_);
@@ -175,7 +175,7 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
       main_frame->GetRoutingID(), 123, true, FrameReplicationState()));
 
   // We no longer have a frame widget.
-  EXPECT_FALSE(GetWebWidget()->isWebFrameWidget());
+  EXPECT_FALSE(GetWebWidget()->IsWebFrameWidget());
 
   int routing_id = view->GetRoutingID();
   // Now simulate some TextInputClientMac IPCs. These will be handled by

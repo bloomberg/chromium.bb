@@ -43,21 +43,22 @@ class LayoutObject;
 class TextStream;
 
 enum LayoutAsTextBehaviorFlags {
-  LayoutAsTextBehaviorNormal = 0,
-  LayoutAsTextShowAllLayers =
+  kLayoutAsTextBehaviorNormal = 0,
+  kLayoutAsTextShowAllLayers =
       1 << 0,  // Dump all layers, not just those that would paint.
-  LayoutAsTextShowLayerNesting = 1 << 1,  // Annotate the layer lists.
-  LayoutAsTextShowCompositedLayers = 1
-                                     << 2,  // Show which layers are composited.
-  LayoutAsTextShowAddresses = 1 << 3,  // Show layer and layoutObject addresses.
-  LayoutAsTextShowIDAndClass = 1 << 4,  // Show id and class attributes
-  LayoutAsTextPrintingMode = 1 << 5,    // Dump the tree in printing mode.
-  LayoutAsTextDontUpdateLayout =
+  kLayoutAsTextShowLayerNesting = 1 << 1,  // Annotate the layer lists.
+  kLayoutAsTextShowCompositedLayers =
+      1 << 2,  // Show which layers are composited.
+  kLayoutAsTextShowAddresses = 1
+                               << 3,  // Show layer and layoutObject addresses.
+  kLayoutAsTextShowIDAndClass = 1 << 4,  // Show id and class attributes
+  kLayoutAsTextPrintingMode = 1 << 5,    // Dump the tree in printing mode.
+  kLayoutAsTextDontUpdateLayout =
       1 << 6,  // Don't update layout, to make it safe to call showLayerTree()
                // from the debugger inside layout or painting code.
-  LayoutAsTextShowLayoutState =
+  kLayoutAsTextShowLayoutState =
       1 << 7,  // Print the various 'needs layout' bits on layoutObjects.
-  LayoutAsTextShowLineTrees =
+  kLayoutAsTextShowLineTrees =
       1 << 8  // Dump the line trees for each LayoutBlockFlow.
 };
 typedef unsigned LayoutAsTextBehavior;
@@ -65,16 +66,16 @@ typedef unsigned LayoutAsTextBehavior;
 // You don't need pageWidthInPixels if you don't specify
 // LayoutAsTextInPrintingMode.
 CORE_EXPORT String
-externalRepresentation(LocalFrame*,
-                       LayoutAsTextBehavior = LayoutAsTextBehaviorNormal,
-                       const PaintLayer* markedLayer = nullptr);
+ExternalRepresentation(LocalFrame*,
+                       LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal,
+                       const PaintLayer* marked_layer = nullptr);
 CORE_EXPORT String
-externalRepresentation(Element*,
-                       LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
-void write(TextStream&,
+ExternalRepresentation(Element*,
+                       LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal);
+void Write(TextStream&,
            const LayoutObject&,
            int indent = 0,
-           LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+           LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal);
 
 class LayoutTreeAsText {
   STATIC_ONLY(LayoutTreeAsText);
@@ -83,27 +84,27 @@ class LayoutTreeAsText {
   // (This just involves rebaselining many results though, so for now it's
   // not being done).
  public:
-  static void writeLayoutObject(TextStream&,
+  static void WriteLayoutObject(TextStream&,
                                 const LayoutObject&,
                                 LayoutAsTextBehavior);
-  static void writeLayers(TextStream&,
-                          const PaintLayer* rootLayer,
+  static void WriteLayers(TextStream&,
+                          const PaintLayer* root_layer,
                           PaintLayer*,
-                          const LayoutRect& paintDirtyRect,
+                          const LayoutRect& paint_dirty_rect,
                           int indent = 0,
-                          LayoutAsTextBehavior = LayoutAsTextBehaviorNormal,
-                          const PaintLayer* markedLayer = nullptr);
-  static void writeLineBoxTree(TextStream&,
+                          LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal,
+                          const PaintLayer* marked_layer = nullptr);
+  static void WriteLineBoxTree(TextStream&,
                                const LayoutBlockFlow&,
                                int indent = 0);
 };
 
 // Helper function shared with SVGLayoutTreeAsText
-String quoteAndEscapeNonPrintables(const String&);
+String QuoteAndEscapeNonPrintables(const String&);
 
-CORE_EXPORT String counterValueForElement(Element*);
+CORE_EXPORT String CounterValueForElement(Element*);
 
-CORE_EXPORT String markerTextForListItem(Element*);
+CORE_EXPORT String MarkerTextForListItem(Element*);
 
 TextStream& operator<<(TextStream&, const Color&);
 

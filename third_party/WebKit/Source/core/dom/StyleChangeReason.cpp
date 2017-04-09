@@ -10,61 +10,62 @@
 namespace blink {
 
 namespace StyleChangeReason {
-const char ActiveStylesheetsUpdate[] = "ActiveStylesheetsUpdate";
-const char Animation[] = "Animation";
-const char Attribute[] = "Attribute";
-const char CleanupPlaceholderStyles[] = "CleanupPlaceholderStyles";
-const char CompositorProxy[] = "CompositorProxy";
-const char ControlValue[] = "ControlValue";
-const char Control[] = "Control";
-const char DeclarativeContent[] = "Extension declarativeContent.css";
-const char DesignMode[] = "DesignMode";
-const char FontSizeChange[] = "FontSizeChange";
-const char Fonts[] = "Fonts";
-const char FullScreen[] = "FullScreen";
-const char Inline[] = "Inline";
-const char InlineCSSStyleMutated[] = "Inline CSS style declaration was mutated";
-const char Inspector[] = "Inspector";
-const char Language[] = "Language";
-const char LinkColorChange[] = "LinkColorChange";
-const char PlatformColorChange[] = "PlatformColorChange";
-const char PropagateInheritChangeToDistributedNodes[] =
+const char kActiveStylesheetsUpdate[] = "ActiveStylesheetsUpdate";
+const char kAnimation[] = "Animation";
+const char kAttribute[] = "Attribute";
+const char kCleanupPlaceholderStyles[] = "CleanupPlaceholderStyles";
+const char kCompositorProxy[] = "CompositorProxy";
+const char kControlValue[] = "ControlValue";
+const char kControl[] = "Control";
+const char kDeclarativeContent[] = "Extension declarativeContent.css";
+const char kDesignMode[] = "DesignMode";
+const char kFontSizeChange[] = "FontSizeChange";
+const char kFonts[] = "Fonts";
+const char kFullScreen[] = "FullScreen";
+const char kInline[] = "Inline";
+const char kInlineCSSStyleMutated[] =
+    "Inline CSS style declaration was mutated";
+const char kInspector[] = "Inspector";
+const char kLanguage[] = "Language";
+const char kLinkColorChange[] = "LinkColorChange";
+const char kPlatformColorChange[] = "PlatformColorChange";
+const char kPropagateInheritChangeToDistributedNodes[] =
     "PropagateInheritChangeToDistributedNodes";
-const char PropertyRegistration[] = "PropertyRegistration";
-const char PropertyUnregistration[] = "PropertyUnregistration";
-const char PseudoClass[] = "PseudoClass";
-const char SVGContainerSizeChange[] = "SVGContainerSizeChange";
-const char SVGCursor[] = "SVGCursor";
-const char Settings[] = "Settings";
-const char Shadow[] = "Shadow";
-const char StyleInvalidator[] = "StyleInvalidator";
-const char StyleSheetChange[] = "StyleSheetChange";
-const char ViewportUnits[] = "ViewportUnits";
-const char VisitedLink[] = "VisitedLink";
-const char VisuallyOrdered[] = "VisuallyOrdered";
-const char WritingModeChange[] = "WritingModeChange";
-const char Zoom[] = "Zoom";
+const char kPropertyRegistration[] = "PropertyRegistration";
+const char kPropertyUnregistration[] = "PropertyUnregistration";
+const char kPseudoClass[] = "PseudoClass";
+const char kSVGContainerSizeChange[] = "SVGContainerSizeChange";
+const char kSVGCursor[] = "SVGCursor";
+const char kSettings[] = "Settings";
+const char kShadow[] = "Shadow";
+const char kStyleInvalidator[] = "StyleInvalidator";
+const char kStyleSheetChange[] = "StyleSheetChange";
+const char kViewportUnits[] = "ViewportUnits";
+const char kVisitedLink[] = "VisitedLink";
+const char kVisuallyOrdered[] = "VisuallyOrdered";
+const char kWritingModeChange[] = "WritingModeChange";
+const char kZoom[] = "Zoom";
 }  // namespace StyleChangeReason
 
 namespace StyleChangeExtraData {
-DEFINE_GLOBAL(AtomicString, Active);
-DEFINE_GLOBAL(AtomicString, Disabled);
-DEFINE_GLOBAL(AtomicString, Drag);
-DEFINE_GLOBAL(AtomicString, Focus);
-DEFINE_GLOBAL(AtomicString, Hover);
-DEFINE_GLOBAL(AtomicString, Past);
-DEFINE_GLOBAL(AtomicString, Unresolved);
+DEFINE_GLOBAL(AtomicString, g_active);
+DEFINE_GLOBAL(AtomicString, g_disabled);
+DEFINE_GLOBAL(AtomicString, g_drag);
+DEFINE_GLOBAL(AtomicString, g_focus);
+DEFINE_GLOBAL(AtomicString, g_hover);
+DEFINE_GLOBAL(AtomicString, g_past);
+DEFINE_GLOBAL(AtomicString, g_unresolved);
 
-void init() {
-  DCHECK(isMainThread());
+void Init() {
+  DCHECK(IsMainThread());
 
-  new (NotNull, (void*)&Active) AtomicString(":active");
-  new (NotNull, (void*)&Disabled) AtomicString(":disabled");
-  new (NotNull, (void*)&Drag) AtomicString(":-webkit-drag");
-  new (NotNull, (void*)&Focus) AtomicString(":focus");
-  new (NotNull, (void*)&Hover) AtomicString(":hover");
-  new (NotNull, (void*)&Past) AtomicString(":past");
-  new (NotNull, (void*)&Unresolved) AtomicString(":unresolved");
+  new (NotNull, (void*)&g_active) AtomicString(":active");
+  new (NotNull, (void*)&g_disabled) AtomicString(":disabled");
+  new (NotNull, (void*)&g_drag) AtomicString(":-webkit-drag");
+  new (NotNull, (void*)&g_focus) AtomicString(":focus");
+  new (NotNull, (void*)&g_hover) AtomicString(":hover");
+  new (NotNull, (void*)&g_past) AtomicString(":past");
+  new (NotNull, (void*)&g_unresolved) AtomicString(":unresolved");
 }
 
 }  // namespace StyleChangeExtraData

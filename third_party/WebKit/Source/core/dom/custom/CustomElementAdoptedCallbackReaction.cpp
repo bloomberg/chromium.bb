@@ -11,22 +11,22 @@ namespace blink {
 
 CustomElementAdoptedCallbackReaction::CustomElementAdoptedCallbackReaction(
     CustomElementDefinition* definition,
-    Document* oldOwner,
-    Document* newOwner)
+    Document* old_owner,
+    Document* new_owner)
     : CustomElementReaction(definition),
-      m_oldOwner(oldOwner),
-      m_newOwner(newOwner) {
-  DCHECK(definition->hasAdoptedCallback());
+      old_owner_(old_owner),
+      new_owner_(new_owner) {
+  DCHECK(definition->HasAdoptedCallback());
 }
 
 DEFINE_TRACE(CustomElementAdoptedCallbackReaction) {
-  CustomElementReaction::trace(visitor);
-  visitor->trace(m_oldOwner);
-  visitor->trace(m_newOwner);
+  CustomElementReaction::Trace(visitor);
+  visitor->Trace(old_owner_);
+  visitor->Trace(new_owner_);
 }
 
-void CustomElementAdoptedCallbackReaction::invoke(Element* element) {
-  m_definition->runAdoptedCallback(element, m_oldOwner.get(), m_newOwner.get());
+void CustomElementAdoptedCallbackReaction::Invoke(Element* element) {
+  definition_->RunAdoptedCallback(element, old_owner_.Get(), new_owner_.Get());
 }
 
 }  // namespace blink

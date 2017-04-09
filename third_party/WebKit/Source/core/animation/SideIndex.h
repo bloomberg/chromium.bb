@@ -8,11 +8,11 @@
 namespace blink {
 
 enum SideIndex : unsigned {
-  SideTop,
-  SideRight,
-  SideBottom,
-  SideLeft,
-  SideIndexCount,
+  kSideTop,
+  kSideRight,
+  kSideBottom,
+  kSideLeft,
+  kSideIndexCount,
 };
 
 }  // namespace blink

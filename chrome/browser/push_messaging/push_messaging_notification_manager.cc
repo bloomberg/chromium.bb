@@ -226,10 +226,10 @@ bool PushMessagingNotificationManager::IsTabVisible(
 
   // Ignore minimized windows.
   switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
-    case blink::WebPageVisibilityStateHidden:
-    case blink::WebPageVisibilityStatePrerender:
+    case blink::kWebPageVisibilityStateHidden:
+    case blink::kWebPageVisibilityStatePrerender:
       return false;
-    case blink::WebPageVisibilityStateVisible:
+    case blink::kWebPageVisibilityStateVisible:
       break;
   }
 

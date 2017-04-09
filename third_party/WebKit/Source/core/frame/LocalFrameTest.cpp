@@ -22,123 +22,125 @@ class LocalFrameTest : public ::testing::Test {
   LocalFrameTest() = default;
   ~LocalFrameTest() override = default;
 
-  Document& document() const { return m_dummyPageHolder->document(); }
-  LocalFrame& frame() const { return *document().frame(); }
-  Performance* performance() const { return m_performance; }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
+  Performance* GetPerformance() const { return performance_; }
 
-  void setBodyContent(const std::string& bodyContent) {
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent.c_str()));
-    updateAllLifecyclePhases();
+  void SetBodyContent(const std::string& body_content) {
+    GetDocument().body()->setInnerHTML(String::FromUTF8(body_content.c_str()));
+    UpdateAllLifecyclePhases();
   }
 
-  void updateAllLifecyclePhases() {
-    document().view()->updateAllLifecyclePhases();
+  void UpdateAllLifecyclePhases() {
+    GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
  private:
   void SetUp() override {
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_performance = Performance::create(&frame());
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    performance_ = Performance::Create(&GetFrame());
   }
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<Performance> m_performance;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<Performance> performance_;
 };
 
 TEST_F(LocalFrameTest, nodeImage) {
-  setBodyContent(
+  SetBodyContent(
       "<style>"
       "#sample { width: 100px; height: 100px; }"
       "</style>"
       "<div id=sample></div>");
-  Element* sample = document().getElementById("sample");
-  const std::unique_ptr<DragImage> image = frame().nodeImage(*sample);
+  Element* sample = GetDocument().GetElementById("sample");
+  const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(IntSize(100, 100), image->size());
 }
 
 TEST_F(LocalFrameTest, nodeImageWithNestedElement) {
-  setBodyContent(
+  SetBodyContent(
       "<style>"
       "div { -webkit-user-drag: element }"
       "span:-webkit-drag { color: #0F0 }"
       "</style>"
       "<div id=sample><span>Green when dragged</span></div>");
-  Element* sample = document().getElementById("sample");
-  const std::unique_ptr<DragImage> image = frame().nodeImage(*sample);
+  Element* sample = GetDocument().GetElementById("sample");
+  const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(
       Color(0, 255, 0),
-      sample->firstChild()->layoutObject()->resolveColor(CSSPropertyColor))
+      sample->FirstChild()->GetLayoutObject()->ResolveColor(CSSPropertyColor))
       << "Descendants node should have :-webkit-drag.";
 }
 
 TEST_F(LocalFrameTest, nodeImageWithPsuedoClassWebKitDrag) {
-  setBodyContent(
+  SetBodyContent(
       "<style>"
       "#sample { width: 100px; height: 100px; }"
       "#sample:-webkit-drag { width: 200px; height: 200px; }"
       "</style>"
       "<div id=sample></div>");
-  Element* sample = document().getElementById("sample");
-  const std::unique_ptr<DragImage> image = frame().nodeImage(*sample);
+  Element* sample = GetDocument().GetElementById("sample");
+  const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(IntSize(200, 200), image->size())
       << ":-webkit-drag should affect dragged image.";
 }
 
 TEST_F(LocalFrameTest, nodeImageWithoutDraggedLayoutObject) {
-  setBodyContent(
+  SetBodyContent(
       "<style>"
       "#sample { width: 100px; height: 100px; }"
       "#sample:-webkit-drag { display:none }"
       "</style>"
       "<div id=sample></div>");
-  Element* sample = document().getElementById("sample");
-  const std::unique_ptr<DragImage> image = frame().nodeImage(*sample);
+  Element* sample = GetDocument().GetElementById("sample");
+  const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
   EXPECT_EQ(nullptr, image.get()) << ":-webkit-drag blows away layout object";
 }
 
 TEST_F(LocalFrameTest, nodeImageWithChangingLayoutObject) {
-  setBodyContent(
+  SetBodyContent(
       "<style>"
       "#sample { color: blue; }"
       "#sample:-webkit-drag { display: inline-block; color: red; }"
       "</style>"
       "<span id=sample>foo</span>");
-  Element* sample = document().getElementById("sample");
-  updateAllLifecyclePhases();
-  LayoutObject* beforeLayoutObject = sample->layoutObject();
-  const std::unique_ptr<DragImage> image = frame().nodeImage(*sample);
+  Element* sample = GetDocument().GetElementById("sample");
+  UpdateAllLifecyclePhases();
+  LayoutObject* before_layout_object = sample->GetLayoutObject();
+  const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
 
-  EXPECT_TRUE(sample->layoutObject() != beforeLayoutObject)
+  EXPECT_TRUE(sample->GetLayoutObject() != before_layout_object)
       << ":-webkit-drag causes sample to have different layout object.";
   EXPECT_EQ(Color(255, 0, 0),
-            sample->layoutObject()->resolveColor(CSSPropertyColor))
+            sample->GetLayoutObject()->ResolveColor(CSSPropertyColor))
       << "#sample has :-webkit-drag.";
 
   // Layout w/o :-webkit-drag
-  updateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color(0, 0, 255),
-            sample->layoutObject()->resolveColor(CSSPropertyColor))
+            sample->GetLayoutObject()->ResolveColor(CSSPropertyColor))
       << "#sample doesn't have :-webkit-drag.";
 }
 
 TEST_F(LocalFrameTest, dragImageForSelectionUsesPageScaleFactor) {
-  setBodyContent(
+  SetBodyContent(
       "<div>Hello world! This tests that the bitmap for drag image is scaled "
       "by page scale factor</div>");
-  frame().page()->visualViewport().setScale(1);
-  frame().selection().selectAll();
-  updateAllLifecyclePhases();
-  const std::unique_ptr<DragImage> image1(frame().dragImageForSelection(0.75f));
-  frame().page()->visualViewport().setScale(2);
-  frame().selection().selectAll();
-  updateAllLifecyclePhases();
-  const std::unique_ptr<DragImage> image2(frame().dragImageForSelection(0.75f));
+  GetFrame().GetPage()->GetVisualViewport().SetScale(1);
+  GetFrame().Selection().SelectAll();
+  UpdateAllLifecyclePhases();
+  const std::unique_ptr<DragImage> image1(
+      GetFrame().DragImageForSelection(0.75f));
+  GetFrame().GetPage()->GetVisualViewport().SetScale(2);
+  GetFrame().Selection().SelectAll();
+  UpdateAllLifecyclePhases();
+  const std::unique_ptr<DragImage> image2(
+      GetFrame().DragImageForSelection(0.75f));
 
-  EXPECT_GT(image1->size().width(), 0);
-  EXPECT_GT(image1->size().height(), 0);
-  EXPECT_EQ(image1->size().width() * 2, image2->size().width());
-  EXPECT_EQ(image1->size().height() * 2, image2->size().height());
+  EXPECT_GT(image1->size().Width(), 0);
+  EXPECT_GT(image1->size().Height(), 0);
+  EXPECT_EQ(image1->size().Width() * 2, image2->size().Width());
+  EXPECT_EQ(image1->size().Height() * 2, image2->size().Height());
 }
 
 }  // namespace blink

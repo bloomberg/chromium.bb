@@ -12,73 +12,73 @@
 
 namespace blink {
 
-static const AtomicString& valueName(CSSValueID valueID) {
-  DCHECK_GE(valueID, 0);
-  DCHECK_LT(valueID, numCSSValueKeywords);
+static const AtomicString& ValueName(CSSValueID value_id) {
+  DCHECK_GE(value_id, 0);
+  DCHECK_LT(value_id, numCSSValueKeywords);
 
-  if (valueID < 0)
-    return nullAtom;
+  if (value_id < 0)
+    return g_null_atom;
 
-  static AtomicString* keywordStrings =
+  static AtomicString* keyword_strings =
       new AtomicString[numCSSValueKeywords];  // Leaked intentionally.
-  AtomicString& keywordString = keywordStrings[valueID];
-  if (keywordString.isNull())
-    keywordString = getValueName(valueID);
-  return keywordString;
+  AtomicString& keyword_string = keyword_strings[value_id];
+  if (keyword_string.IsNull())
+    keyword_string = getValueName(value_id);
+  return keyword_string;
 }
 
-CSSIdentifierValue* CSSIdentifierValue::create(CSSValueID valueID) {
-  CSSIdentifierValue* cssValue = cssValuePool().identifierCacheValue(valueID);
-  if (!cssValue) {
-    cssValue = cssValuePool().setIdentifierCacheValue(
-        valueID, new CSSIdentifierValue(valueID));
+CSSIdentifierValue* CSSIdentifierValue::Create(CSSValueID value_id) {
+  CSSIdentifierValue* css_value = CssValuePool().IdentifierCacheValue(value_id);
+  if (!css_value) {
+    css_value = CssValuePool().SetIdentifierCacheValue(
+        value_id, new CSSIdentifierValue(value_id));
   }
-  return cssValue;
+  return css_value;
 }
 
-String CSSIdentifierValue::customCSSText() const {
-  return valueName(m_valueID);
+String CSSIdentifierValue::CustomCSSText() const {
+  return ValueName(value_id_);
 }
 
-CSSIdentifierValue::CSSIdentifierValue(CSSValueID valueID)
-    : CSSValue(IdentifierClass), m_valueID(valueID) {
+CSSIdentifierValue::CSSIdentifierValue(CSSValueID value_id)
+    : CSSValue(kIdentifierClass), value_id_(value_id) {
   // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueInvalid) once no code paths
   // cause this to happen.
 }
 
 CSSIdentifierValue::CSSIdentifierValue(const Length& length)
-    : CSSValue(IdentifierClass) {
-  switch (length.type()) {
-    case Auto:
-      m_valueID = CSSValueAuto;
+    : CSSValue(kIdentifierClass) {
+  switch (length.GetType()) {
+    case kAuto:
+      value_id_ = CSSValueAuto;
       break;
-    case MinContent:
-      m_valueID = CSSValueMinContent;
+    case kMinContent:
+      value_id_ = CSSValueMinContent;
       break;
-    case MaxContent:
-      m_valueID = CSSValueMaxContent;
+    case kMaxContent:
+      value_id_ = CSSValueMaxContent;
       break;
-    case FillAvailable:
-      m_valueID = CSSValueWebkitFillAvailable;
+    case kFillAvailable:
+      value_id_ = CSSValueWebkitFillAvailable;
       break;
-    case FitContent:
-      m_valueID = CSSValueFitContent;
+    case kFitContent:
+      value_id_ = CSSValueFitContent;
       break;
-    case ExtendToZoom:
-      m_valueID = CSSValueInternalExtendToZoom;
-    case Percent:
-    case Fixed:
-    case Calculated:
-    case DeviceWidth:
-    case DeviceHeight:
-    case MaxSizeNone:
+    case kExtendToZoom:
+      value_id_ = CSSValueInternalExtendToZoom;
+    case kPercent:
+    case kFixed:
+    case kCalculated:
+    case kDeviceWidth:
+    case kDeviceHeight:
+    case kMaxSizeNone:
       NOTREACHED();
       break;
   }
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSIdentifierValue) {
-  CSSValue::traceAfterDispatch(visitor);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

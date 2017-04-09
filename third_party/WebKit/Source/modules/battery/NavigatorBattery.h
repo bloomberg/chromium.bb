@@ -20,7 +20,7 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorBattery);
 
  public:
-  static NavigatorBattery& from(Navigator&);
+  static NavigatorBattery& From(Navigator&);
 
   static ScriptPromise getBattery(ScriptState*, Navigator&);
   ScriptPromise getBattery(ScriptState*);
@@ -29,9 +29,9 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
 
  private:
   explicit NavigatorBattery(Navigator&);
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  Member<BatteryManager> m_batteryManager;
+  Member<BatteryManager> battery_manager_;
 };
 
 }  // namespace blink

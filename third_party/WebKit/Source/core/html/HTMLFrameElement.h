@@ -34,22 +34,22 @@ class HTMLFrameElement final : public HTMLFrameElementBase {
  public:
   DECLARE_NODE_FACTORY(HTMLFrameElement);
 
-  bool hasFrameBorder() const { return m_frameBorder; }
+  bool HasFrameBorder() const { return frame_border_; }
 
-  bool noResize() const;
+  bool NoResize() const;
 
  private:
   explicit HTMLFrameElement(Document&);
 
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  bool layoutObjectIsNeeded(const ComputedStyle&) override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  void parseAttribute(const AttributeModificationParams&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  bool m_frameBorder;
-  bool m_frameBorderSet;
+  bool frame_border_;
+  bool frame_border_set_;
 };
 
 }  // namespace blink

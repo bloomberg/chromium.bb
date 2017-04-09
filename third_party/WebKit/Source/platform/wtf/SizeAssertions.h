@@ -16,9 +16,9 @@ struct assert_size {
   template <int ActualSize, int ExpectedSize>
   struct assertSizeEqual {
     static_assert(ActualSize == ExpectedSize, "Class should stay small");
-    static const bool innerValue = true;
+    static const bool kInnerValue = true;
   };
-  static const bool value = assertSizeEqual<sizeof(T), sizeof(U)>::innerValue;
+  static const bool value = assertSizeEqual<sizeof(T), sizeof(U)>::kInnerValue;
 };
 
 }  // namespace WTF

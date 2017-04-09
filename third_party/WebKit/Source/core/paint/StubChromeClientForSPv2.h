@@ -15,18 +15,18 @@ namespace blink {
 // simple analysis of the results.
 class StubChromeClientForSPv2 : public EmptyChromeClient {
  public:
-  StubChromeClientForSPv2() : m_layerTreeView() {}
+  StubChromeClientForSPv2() : layer_tree_view_() {}
 
-  bool hasLayer(const WebLayer& layer) {
-    return m_layerTreeView.hasLayer(layer);
+  bool HasLayer(const WebLayer& layer) {
+    return layer_tree_view_.HasLayer(layer);
   }
 
-  void attachRootLayer(WebLayer* layer, LocalFrame* localRoot) override {
-    m_layerTreeView.setRootLayer(*layer);
+  void AttachRootLayer(WebLayer* layer, LocalFrame* local_root) override {
+    layer_tree_view_.SetRootLayer(*layer);
   }
 
  private:
-  WebLayerTreeViewImplForTesting m_layerTreeView;
+  WebLayerTreeViewImplForTesting layer_tree_view_;
 };
 
 }  // namespace blink

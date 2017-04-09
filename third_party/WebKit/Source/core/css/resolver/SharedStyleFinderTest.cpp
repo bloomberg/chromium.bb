@@ -25,73 +25,73 @@ class SharedStyleFinderTest : public ::testing::Test {
   SharedStyleFinderTest() = default;
   ~SharedStyleFinderTest() override = default;
 
-  Document& document() { return m_dummyPageHolder->document(); }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
-  void setBodyContent(const String& html) {
-    document().body()->setInnerHTML(html);
-    document().view()->updateAllLifecyclePhases();
+  void SetBodyContent(const String& html) {
+    GetDocument().body()->setInnerHTML(html);
+    GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
-  ShadowRoot& attachShadow(Element& host) {
+  ShadowRoot& AttachShadow(Element& host) {
     ShadowRootInit init;
     init.setMode("open");
-    ShadowRoot* shadowRoot =
-        host.attachShadow(toScriptStateForMainWorld(document().frame()), init,
-                          ASSERT_NO_EXCEPTION);
-    EXPECT_TRUE(shadowRoot);
-    return *shadowRoot;
+    ShadowRoot* shadow_root =
+        host.attachShadow(ToScriptStateForMainWorld(GetDocument().GetFrame()),
+                          init, ASSERT_NO_EXCEPTION);
+    EXPECT_TRUE(shadow_root);
+    return *shadow_root;
   }
 
-  void addSelector(const String& selector) {
-    StyleRuleBase* newRule =
-        CSSParser::parseRule(CSSParserContext::create(HTMLStandardMode),
+  void AddSelector(const String& selector) {
+    StyleRuleBase* new_rule =
+        CSSParser::ParseRule(CSSParserContext::Create(kHTMLStandardMode),
                              nullptr, selector + "{color:pink}");
-    m_ruleSet->addStyleRule(static_cast<StyleRule*>(newRule),
-                            RuleHasNoSpecialState);
+    rule_set_->AddStyleRule(static_cast<StyleRule*>(new_rule),
+                            kRuleHasNoSpecialState);
   }
 
-  void finishAddingSelectors() {
-    m_siblingRuleSet = makeRuleSet(m_ruleSet->features().siblingRules());
-    m_uncommonAttributeRuleSet =
-        makeRuleSet(m_ruleSet->features().uncommonAttributeRules());
+  void FinishAddingSelectors() {
+    sibling_rule_set_ = MakeRuleSet(rule_set_->Features().SiblingRules());
+    uncommon_attribute_rule_set_ =
+        MakeRuleSet(rule_set_->Features().UncommonAttributeRules());
   }
 
-  bool matchesUncommonAttributeRuleSet(Element& element) {
-    return matchesRuleSet(element, m_uncommonAttributeRuleSet);
+  bool MatchesUncommonAttributeRuleSet(Element& element) {
+    return MatchesRuleSet(element, uncommon_attribute_rule_set_);
   }
 
  private:
   void SetUp() override {
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_ruleSet = RuleSet::create();
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    rule_set_ = RuleSet::Create();
   }
 
-  static RuleSet* makeRuleSet(const HeapVector<RuleFeature>& ruleFeatures) {
-    if (ruleFeatures.isEmpty())
+  static RuleSet* MakeRuleSet(const HeapVector<RuleFeature>& rule_features) {
+    if (rule_features.IsEmpty())
       return nullptr;
-    RuleSet* ruleSet = RuleSet::create();
-    for (auto ruleFeature : ruleFeatures)
-      ruleSet->addRule(ruleFeature.rule, ruleFeature.selectorIndex,
-                       RuleHasNoSpecialState);
-    return ruleSet;
+    RuleSet* rule_set = RuleSet::Create();
+    for (auto rule_feature : rule_features)
+      rule_set->AddRule(rule_feature.rule, rule_feature.selector_index,
+                        kRuleHasNoSpecialState);
+    return rule_set;
   }
 
-  bool matchesRuleSet(Element& element, RuleSet* ruleSet) {
-    if (!ruleSet)
+  bool MatchesRuleSet(Element& element, RuleSet* rule_set) {
+    if (!rule_set)
       return false;
 
     ElementResolveContext context(element);
-    SharedStyleFinder finder(context, m_ruleSet->features(), m_siblingRuleSet,
-                             m_uncommonAttributeRuleSet,
-                             document().ensureStyleResolver());
+    SharedStyleFinder finder(context, rule_set_->Features(), sibling_rule_set_,
+                             uncommon_attribute_rule_set_,
+                             GetDocument().EnsureStyleResolver());
 
-    return finder.matchesRuleSet(ruleSet);
+    return finder.MatchesRuleSet(rule_set);
   }
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Persistent<RuleSet> m_ruleSet;
-  Persistent<RuleSet> m_siblingRuleSet;
-  Persistent<RuleSet> m_uncommonAttributeRuleSet;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Persistent<RuleSet> rule_set_;
+  Persistent<RuleSet> sibling_rule_set_;
+  Persistent<RuleSet> uncommon_attribute_rule_set_;
 };
 
 // Selectors which only fail matching :hover/:focus/:active/:-webkit-drag are
@@ -101,118 +101,118 @@ class SharedStyleFinderTest : public ::testing::Test {
 // matching.
 
 TEST_F(SharedStyleFinderTest, AttributeAffectedByHover) {
-  setBodyContent("<div id=a attr></div><div id=b></div>");
+  SetBodyContent("<div id=a attr></div><div id=b></div>");
 
-  addSelector("[attr]:hover");
-  finishAddingSelectors();
+  AddSelector("[attr]:hover");
+  FinishAddingSelectors();
 
-  Element* a = document().getElementById("a");
-  Element* b = document().getElementById("b");
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->isHovered());
-  EXPECT_FALSE(b->isHovered());
+  EXPECT_FALSE(a->IsHovered());
+  EXPECT_FALSE(b->IsHovered());
 
-  EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
-  EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 
 TEST_F(SharedStyleFinderTest, AttributeAffectedByHoverNegated) {
-  setBodyContent("<div id=a attr></div><div id=b></div>");
+  SetBodyContent("<div id=a attr></div><div id=b></div>");
 
-  addSelector("[attr]:not(:hover)");
-  finishAddingSelectors();
+  AddSelector("[attr]:not(:hover)");
+  FinishAddingSelectors();
 
-  Element* a = document().getElementById("a");
-  Element* b = document().getElementById("b");
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->isHovered());
-  EXPECT_FALSE(b->isHovered());
+  EXPECT_FALSE(a->IsHovered());
+  EXPECT_FALSE(b->IsHovered());
 
-  EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
-  EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 
 TEST_F(SharedStyleFinderTest, AttributeAffectedByFocus) {
-  setBodyContent("<div id=a attr></div><div id=b></div>");
+  SetBodyContent("<div id=a attr></div><div id=b></div>");
 
-  addSelector("[attr]:focus");
-  finishAddingSelectors();
+  AddSelector("[attr]:focus");
+  FinishAddingSelectors();
 
-  Element* a = document().getElementById("a");
-  Element* b = document().getElementById("b");
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->isFocused());
-  EXPECT_FALSE(b->isFocused());
+  EXPECT_FALSE(a->IsFocused());
+  EXPECT_FALSE(b->IsFocused());
 
-  EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
-  EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 
 TEST_F(SharedStyleFinderTest, AttributeAffectedByActive) {
-  setBodyContent("<div id=a attr></div><div id=b></div>");
+  SetBodyContent("<div id=a attr></div><div id=b></div>");
 
-  addSelector("[attr]:active");
-  finishAddingSelectors();
+  AddSelector("[attr]:active");
+  FinishAddingSelectors();
 
-  Element* a = document().getElementById("a");
-  Element* b = document().getElementById("b");
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->isActive());
-  EXPECT_FALSE(b->isActive());
+  EXPECT_FALSE(a->IsActive());
+  EXPECT_FALSE(b->IsActive());
 
-  EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
-  EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 
 TEST_F(SharedStyleFinderTest, AttributeAffectedByDrag) {
-  setBodyContent("<div id=a attr></div><div id=b></div>");
+  SetBodyContent("<div id=a attr></div><div id=b></div>");
 
-  addSelector("[attr]:-webkit-drag");
-  finishAddingSelectors();
+  AddSelector("[attr]:-webkit-drag");
+  FinishAddingSelectors();
 
-  Element* a = document().getElementById("a");
-  Element* b = document().getElementById("b");
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
 
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->isDragged());
-  EXPECT_FALSE(b->isDragged());
+  EXPECT_FALSE(a->IsDragged());
+  EXPECT_FALSE(b->IsDragged());
 
-  EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
-  EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 
 TEST_F(SharedStyleFinderTest, SlottedPseudoWithAttribute) {
-  setBodyContent("<div id=host><div id=a></div><div id=b attr></div></div>");
-  Element* host = document().getElementById("host");
-  ShadowRoot& root = attachShadow(*host);
+  SetBodyContent("<div id=host><div id=a></div><div id=b attr></div></div>");
+  Element* host = GetDocument().GetElementById("host");
+  ShadowRoot& root = AttachShadow(*host);
   root.setInnerHTML("<slot></slot>");
-  document().updateDistribution();
+  GetDocument().UpdateDistribution();
 
-  addSelector("::slotted([attr])");
-  finishAddingSelectors();
+  AddSelector("::slotted([attr])");
+  FinishAddingSelectors();
 
-  Element* a = document().getElementById("a");
-  Element* b = document().getElementById("b");
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
 
-  EXPECT_TRUE(a->assignedSlot());
-  EXPECT_TRUE(b->assignedSlot());
+  EXPECT_TRUE(a->AssignedSlot());
+  EXPECT_TRUE(b->AssignedSlot());
 
-  EXPECT_FALSE(matchesUncommonAttributeRuleSet(*a));
-  EXPECT_TRUE(matchesUncommonAttributeRuleSet(*b));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*b));
 }
 
 }  // namespace blink

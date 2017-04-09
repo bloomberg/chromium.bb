@@ -19,23 +19,23 @@ class CSSValueList;
 class CSSPropertyFontUtils {
   STATIC_ONLY(CSSPropertyFontUtils);
 
-  static CSSValue* consumeFontSize(
+  static CSSValue* ConsumeFontSize(
       CSSParserTokenRange&,
       CSSParserMode,
       CSSPropertyParserHelpers::UnitlessQuirk =
-          CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
+          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 
-  static CSSValue* consumeLineHeight(CSSParserTokenRange&, CSSParserMode);
+  static CSSValue* ConsumeLineHeight(CSSParserTokenRange&, CSSParserMode);
 
-  static CSSValueList* consumeFontFamily(CSSParserTokenRange&);
-  static CSSValue* consumeGenericFamily(CSSParserTokenRange&);
-  static CSSValue* consumeFamilyName(CSSParserTokenRange&);
-  static String concatenateFamilyName(CSSParserTokenRange&);
+  static CSSValueList* ConsumeFontFamily(CSSParserTokenRange&);
+  static CSSValue* ConsumeGenericFamily(CSSParserTokenRange&);
+  static CSSValue* ConsumeFamilyName(CSSParserTokenRange&);
+  static String ConcatenateFamilyName(CSSParserTokenRange&);
 
-  static CSSIdentifierValue* consumeFontWeight(CSSParserTokenRange&);
+  static CSSIdentifierValue* ConsumeFontWeight(CSSParserTokenRange&);
 
-  static CSSValue* consumeFontFeatureSettings(CSSParserTokenRange&);
-  static CSSFontFeatureValue* consumeFontFeatureTag(CSSParserTokenRange&);
+  static CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
+  static CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);
 };
 
 }  // namespace blink

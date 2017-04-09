@@ -40,19 +40,19 @@ class V8GCForContextDispose {
   WTF_MAKE_NONCOPYABLE(V8GCForContextDispose);
 
  public:
-  void notifyContextDisposed(bool isMainFrame);
-  void notifyIdle();
+  void NotifyContextDisposed(bool is_main_frame);
+  void NotifyIdle();
 
-  static V8GCForContextDispose& instance();
+  static V8GCForContextDispose& Instance();
 
  private:
   V8GCForContextDispose();  // Use instance() instead.
-  void pseudoIdleTimerFired(TimerBase*);
-  void reset();
+  void PseudoIdleTimerFired(TimerBase*);
+  void Reset();
 
-  Timer<V8GCForContextDispose> m_pseudoIdleTimer;
-  bool m_didDisposeContextForMainFrame;
-  double m_lastContextDisposalTime;
+  Timer<V8GCForContextDispose> pseudo_idle_timer_;
+  bool did_dispose_context_for_main_frame_;
+  double last_context_disposal_time_;
 };
 
 }  // namespace blink

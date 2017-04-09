@@ -31,354 +31,356 @@ class NullImageResourceInfo final
  public:
   NullImageResourceInfo() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ImageResourceInfo::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { ImageResourceInfo::Trace(visitor); }
 
  private:
-  const KURL& url() const override { return m_url; }
-  bool isSchedulingReload() const override { return false; }
-  bool hasDevicePixelRatioHeaderValue() const override { return false; }
-  float devicePixelRatioHeaderValue() const override { return 1.0; }
-  const ResourceResponse& response() const override { return m_response; }
-  ResourceStatus getStatus() const override { return ResourceStatus::Cached; }
-  bool shouldShowPlaceholder() const override { return false; }
-  bool isCacheValidator() const override { return false; }
-  bool schedulingReloadOrShouldReloadBrokenPlaceholder() const override {
+  const KURL& Url() const override { return url_; }
+  bool IsSchedulingReload() const override { return false; }
+  bool HasDevicePixelRatioHeaderValue() const override { return false; }
+  float DevicePixelRatioHeaderValue() const override { return 1.0; }
+  const ResourceResponse& GetResponse() const override { return response_; }
+  ResourceStatus GetStatus() const override { return ResourceStatus::kCached; }
+  bool ShouldShowPlaceholder() const override { return false; }
+  bool IsCacheValidator() const override { return false; }
+  bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const override {
     return false;
   }
-  bool isAccessAllowed(
+  bool IsAccessAllowed(
       SecurityOrigin*,
       DoesCurrentFrameHaveSingleSecurityOrigin) const override {
     return true;
   }
-  bool hasCacheControlNoStoreHeader() const override { return false; }
-  const ResourceError& resourceError() const override { return m_error; }
+  bool HasCacheControlNoStoreHeader() const override { return false; }
+  const ResourceError& GetResourceError() const override { return error_; }
 
-  void setDecodedSize(size_t) override {}
-  void willAddClientOrObserver() override {}
-  void didRemoveClientOrObserver() override {}
-  void emulateLoadStartedForInspector(
+  void SetDecodedSize(size_t) override {}
+  void WillAddClientOrObserver() override {}
+  void DidRemoveClientOrObserver() override {}
+  void EmulateLoadStartedForInspector(
       ResourceFetcher*,
       const KURL&,
-      const AtomicString& initiatorName) override {}
+      const AtomicString& initiator_name) override {}
 
-  const KURL m_url;
-  const ResourceResponse m_response;
-  const ResourceError m_error;
+  const KURL url_;
+  const ResourceResponse response_;
+  const ResourceError error_;
 };
 
 }  // namespace
 
 ImageResourceContent::ImageResourceContent(PassRefPtr<blink::Image> image)
-    : m_image(std::move(image)), m_isRefetchableDataFromDiskCache(true) {
-  DEFINE_STATIC_LOCAL(NullImageResourceInfo, nullInfo,
+    : image_(std::move(image)), is_refetchable_data_from_disk_cache_(true) {
+  DEFINE_STATIC_LOCAL(NullImageResourceInfo, null_info,
                       (new NullImageResourceInfo()));
-  m_info = &nullInfo;
+  info_ = &null_info;
 }
 
-ImageResourceContent* ImageResourceContent::fetch(FetchRequest& request,
+ImageResourceContent* ImageResourceContent::Fetch(FetchRequest& request,
                                                   ResourceFetcher* fetcher) {
   // TODO(hiroshige): Remove direct references to ImageResource by making
   // the dependencies around ImageResource and ImageResourceContent cleaner.
-  ImageResource* resource = ImageResource::fetch(request, fetcher);
+  ImageResource* resource = ImageResource::Fetch(request, fetcher);
   if (!resource)
     return nullptr;
-  return resource->getContent();
+  return resource->GetContent();
 }
 
-void ImageResourceContent::setImageResourceInfo(ImageResourceInfo* info) {
-  m_info = info;
+void ImageResourceContent::SetImageResourceInfo(ImageResourceInfo* info) {
+  info_ = info;
 }
 
 DEFINE_TRACE(ImageResourceContent) {
-  visitor->trace(m_info);
-  ImageObserver::trace(visitor);
+  visitor->Trace(info_);
+  ImageObserver::Trace(visitor);
 }
 
-void ImageResourceContent::markObserverFinished(
+void ImageResourceContent::MarkObserverFinished(
     ImageResourceObserver* observer) {
-  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+  ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
-  auto it = m_observers.find(observer);
-  if (it == m_observers.end())
+  auto it = observers_.Find(observer);
+  if (it == observers_.end())
     return;
-  m_observers.erase(it);
-  m_finishedObservers.insert(observer);
+  observers_.erase(it);
+  finished_observers_.insert(observer);
 }
 
-void ImageResourceContent::addObserver(ImageResourceObserver* observer) {
-  CHECK(!m_isAddRemoveObserverProhibited);
+void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
+  CHECK(!is_add_remove_observer_prohibited_);
 
-  m_info->willAddClientOrObserver();
+  info_->WillAddClientOrObserver();
 
   {
-    ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
-    m_observers.insert(observer);
+    ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
+        this);
+    observers_.insert(observer);
   }
 
-  if (m_info->isCacheValidator())
+  if (info_->IsCacheValidator())
     return;
 
-  if (m_image && !m_image->isNull()) {
-    observer->imageChanged(this);
+  if (image_ && !image_->IsNull()) {
+    observer->ImageChanged(this);
   }
 
-  if (isLoaded() && m_observers.contains(observer) &&
-      !m_info->schedulingReloadOrShouldReloadBrokenPlaceholder()) {
-    markObserverFinished(observer);
-    observer->imageNotifyFinished(this);
+  if (IsLoaded() && observers_.Contains(observer) &&
+      !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
+    MarkObserverFinished(observer);
+    observer->ImageNotifyFinished(this);
   }
 }
 
-void ImageResourceContent::removeObserver(ImageResourceObserver* observer) {
+void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
   DCHECK(observer);
-  CHECK(!m_isAddRemoveObserverProhibited);
-  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+  CHECK(!is_add_remove_observer_prohibited_);
+  ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
-  auto it = m_observers.find(observer);
-  if (it != m_observers.end()) {
-    m_observers.erase(it);
+  auto it = observers_.Find(observer);
+  if (it != observers_.end()) {
+    observers_.erase(it);
   } else {
-    it = m_finishedObservers.find(observer);
-    DCHECK(it != m_finishedObservers.end());
-    m_finishedObservers.erase(it);
+    it = finished_observers_.Find(observer);
+    DCHECK(it != finished_observers_.end());
+    finished_observers_.erase(it);
   }
-  m_info->didRemoveClientOrObserver();
+  info_->DidRemoveClientOrObserver();
 }
 
-static void priorityFromObserver(const ImageResourceObserver* observer,
+static void PriorityFromObserver(const ImageResourceObserver* observer,
                                  ResourcePriority& priority) {
-  ResourcePriority nextPriority = observer->computeResourcePriority();
-  if (nextPriority.visibility == ResourcePriority::NotVisible)
+  ResourcePriority next_priority = observer->ComputeResourcePriority();
+  if (next_priority.visibility == ResourcePriority::kNotVisible)
     return;
-  priority.visibility = ResourcePriority::Visible;
-  priority.intraPriorityValue += nextPriority.intraPriorityValue;
+  priority.visibility = ResourcePriority::kVisible;
+  priority.intra_priority_value += next_priority.intra_priority_value;
 }
 
-ResourcePriority ImageResourceContent::priorityFromObservers() const {
-  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+ResourcePriority ImageResourceContent::PriorityFromObservers() const {
+  ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
   ResourcePriority priority;
 
-  for (const auto& it : m_finishedObservers)
-    priorityFromObserver(it.key, priority);
-  for (const auto& it : m_observers)
-    priorityFromObserver(it.key, priority);
+  for (const auto& it : finished_observers_)
+    PriorityFromObserver(it.key, priority);
+  for (const auto& it : observers_)
+    PriorityFromObserver(it.key, priority);
 
   return priority;
 }
 
-void ImageResourceContent::destroyDecodedData() {
-  if (!m_image)
+void ImageResourceContent::DestroyDecodedData() {
+  if (!image_)
     return;
-  CHECK(!errorOccurred());
-  m_image->destroyDecodedData();
+  CHECK(!ErrorOccurred());
+  image_->DestroyDecodedData();
 }
 
-void ImageResourceContent::doResetAnimation() {
-  if (m_image)
-    m_image->resetAnimation();
+void ImageResourceContent::DoResetAnimation() {
+  if (image_)
+    image_->ResetAnimation();
 }
 
-PassRefPtr<const SharedBuffer> ImageResourceContent::resourceBuffer() const {
-  if (m_image)
-    return m_image->data();
+PassRefPtr<const SharedBuffer> ImageResourceContent::ResourceBuffer() const {
+  if (image_)
+    return image_->Data();
   return nullptr;
 }
 
-bool ImageResourceContent::shouldUpdateImageImmediately() const {
+bool ImageResourceContent::ShouldUpdateImageImmediately() const {
   // If we don't have the size available yet, then update immediately since
   // we need to know the image size as soon as possible. Likewise for
   // animated images, update right away since we shouldn't throttle animated
   // images.
-  return m_sizeAvailable == Image::SizeUnavailable ||
-         (m_image && m_image->maybeAnimated());
+  return size_available_ == Image::kSizeUnavailable ||
+         (image_ && image_->MaybeAnimated());
 }
 
-std::pair<blink::Image*, float> ImageResourceContent::brokenImage(
-    float deviceScaleFactor) {
-  if (deviceScaleFactor >= 2) {
-    DEFINE_STATIC_REF(blink::Image, brokenImageHiRes,
-                      (blink::Image::loadPlatformResource("missingImage@2x")));
-    return std::make_pair(brokenImageHiRes, 2);
+std::pair<blink::Image*, float> ImageResourceContent::BrokenImage(
+    float device_scale_factor) {
+  if (device_scale_factor >= 2) {
+    DEFINE_STATIC_REF(blink::Image, broken_image_hi_res,
+                      (blink::Image::LoadPlatformResource("missingImage@2x")));
+    return std::make_pair(broken_image_hi_res, 2);
   }
 
-  DEFINE_STATIC_REF(blink::Image, brokenImageLoRes,
-                    (blink::Image::loadPlatformResource("missingImage")));
-  return std::make_pair(brokenImageLoRes, 1);
+  DEFINE_STATIC_REF(blink::Image, broken_image_lo_res,
+                    (blink::Image::LoadPlatformResource("missingImage")));
+  return std::make_pair(broken_image_lo_res, 1);
 }
 
-blink::Image* ImageResourceContent::getImage() {
-  if (errorOccurred()) {
+blink::Image* ImageResourceContent::GetImage() {
+  if (ErrorOccurred()) {
     // Returning the 1x broken image is non-ideal, but we cannot reliably access
     // the appropriate deviceScaleFactor from here. It is critical that callers
     // use ImageResourceContent::brokenImage() when they need the real,
     // deviceScaleFactor-appropriate broken image icon.
-    return brokenImage(1).first;
+    return BrokenImage(1).first;
   }
 
-  if (m_image)
-    return m_image.get();
+  if (image_)
+    return image_.Get();
 
-  return blink::Image::nullImage();
+  return blink::Image::NullImage();
 }
 
-bool ImageResourceContent::usesImageContainerSize() const {
-  if (m_image)
-    return m_image->usesContainerSize();
+bool ImageResourceContent::UsesImageContainerSize() const {
+  if (image_)
+    return image_->UsesContainerSize();
 
   return false;
 }
 
-bool ImageResourceContent::imageHasRelativeSize() const {
-  if (m_image)
-    return m_image->hasRelativeSize();
+bool ImageResourceContent::ImageHasRelativeSize() const {
+  if (image_)
+    return image_->HasRelativeSize();
 
   return false;
 }
 
-LayoutSize ImageResourceContent::imageSize(
-    RespectImageOrientationEnum shouldRespectImageOrientation,
+LayoutSize ImageResourceContent::ImageSize(
+    RespectImageOrientationEnum should_respect_image_orientation,
     float multiplier,
-    SizeType sizeType) {
-  if (!m_image)
+    SizeType size_type) {
+  if (!image_)
     return LayoutSize();
 
   LayoutSize size;
 
-  if (m_image->isBitmapImage() &&
-      shouldRespectImageOrientation == RespectImageOrientation) {
-    size =
-        LayoutSize(toBitmapImage(m_image.get())->sizeRespectingOrientation());
+  if (image_->IsBitmapImage() &&
+      should_respect_image_orientation == kRespectImageOrientation) {
+    size = LayoutSize(ToBitmapImage(image_.Get())->SizeRespectingOrientation());
   } else {
-    size = LayoutSize(m_image->size());
+    size = LayoutSize(image_->size());
   }
 
-  if (sizeType == IntrinsicCorrectedToDPR && hasDevicePixelRatioHeaderValue() &&
-      devicePixelRatioHeaderValue() > 0)
-    multiplier = 1 / devicePixelRatioHeaderValue();
+  if (size_type == kIntrinsicCorrectedToDPR &&
+      HasDevicePixelRatioHeaderValue() && DevicePixelRatioHeaderValue() > 0)
+    multiplier = 1 / DevicePixelRatioHeaderValue();
 
-  if (multiplier == 1 || m_image->hasRelativeSize())
+  if (multiplier == 1 || image_->HasRelativeSize())
     return size;
 
   // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-  LayoutSize minimumSize(
-      size.width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
-      LayoutUnit(size.height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit()));
-  size.scale(multiplier);
-  size.clampToMinimumSize(minimumSize);
+  LayoutSize minimum_size(
+      size.Width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
+      LayoutUnit(size.Height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit()));
+  size.Scale(multiplier);
+  size.ClampToMinimumSize(minimum_size);
   return size;
 }
 
-void ImageResourceContent::notifyObservers(
-    NotifyFinishOption notifyingFinishOption,
-    const IntRect* changeRect) {
+void ImageResourceContent::NotifyObservers(
+    NotifyFinishOption notifying_finish_option,
+    const IntRect* change_rect) {
   {
-    Vector<ImageResourceObserver*> finishedObserversAsVector;
+    Vector<ImageResourceObserver*> finished_observers_as_vector;
     {
-      ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
-      finishedObserversAsVector = m_finishedObservers.asVector();
+      ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
+          this);
+      finished_observers_as_vector = finished_observers_.AsVector();
     }
 
-    for (auto* observer : finishedObserversAsVector) {
-      if (m_finishedObservers.contains(observer))
-        observer->imageChanged(this, changeRect);
+    for (auto* observer : finished_observers_as_vector) {
+      if (finished_observers_.Contains(observer))
+        observer->ImageChanged(this, change_rect);
     }
   }
   {
-    Vector<ImageResourceObserver*> observersAsVector;
+    Vector<ImageResourceObserver*> observers_as_vector;
     {
-      ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
-      observersAsVector = m_observers.asVector();
+      ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
+          this);
+      observers_as_vector = observers_.AsVector();
     }
 
-    for (auto* observer : observersAsVector) {
-      if (m_observers.contains(observer)) {
-        observer->imageChanged(this, changeRect);
-        if (notifyingFinishOption == ShouldNotifyFinish &&
-            m_observers.contains(observer) &&
-            !m_info->schedulingReloadOrShouldReloadBrokenPlaceholder()) {
-          markObserverFinished(observer);
-          observer->imageNotifyFinished(this);
+    for (auto* observer : observers_as_vector) {
+      if (observers_.Contains(observer)) {
+        observer->ImageChanged(this, change_rect);
+        if (notifying_finish_option == kShouldNotifyFinish &&
+            observers_.Contains(observer) &&
+            !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
+          MarkObserverFinished(observer);
+          observer->ImageNotifyFinished(this);
         }
       }
     }
   }
 }
 
-PassRefPtr<Image> ImageResourceContent::createImage() {
-  if (m_info->response().mimeType() == "image/svg+xml")
-    return SVGImage::create(this);
-  return BitmapImage::create(this);
+PassRefPtr<Image> ImageResourceContent::CreateImage() {
+  if (info_->GetResponse().MimeType() == "image/svg+xml")
+    return SVGImage::Create(this);
+  return BitmapImage::Create(this);
 }
 
-void ImageResourceContent::clearImage() {
-  if (!m_image)
+void ImageResourceContent::ClearImage() {
+  if (!image_)
     return;
-  int64_t length = m_image->data() ? m_image->data()->size() : 0;
+  int64_t length = image_->Data() ? image_->Data()->size() : 0;
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-length);
 
   // If our Image has an observer, it's always us so we need to clear the back
   // pointer before dropping our reference.
-  m_image->clearImageObserver();
-  m_image.clear();
-  m_sizeAvailable = Image::SizeUnavailable;
+  image_->ClearImageObserver();
+  image_.Clear();
+  size_available_ = Image::kSizeUnavailable;
 }
 
-ImageResourceContent::UpdateImageResult ImageResourceContent::updateImage(
+ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
     PassRefPtr<SharedBuffer> data,
-    UpdateImageOption updateImageOption,
-    bool allDataReceived) {
+    UpdateImageOption update_image_option,
+    bool all_data_received) {
   TRACE_EVENT0("blink", "ImageResourceContent::updateImage");
 
 #if DCHECK_IS_ON()
-  DCHECK(!m_isUpdateImageBeingCalled);
-  AutoReset<bool> scope(&m_isUpdateImageBeingCalled, true);
+  DCHECK(!is_update_image_being_called_);
+  AutoReset<bool> scope(&is_update_image_being_called_, true);
 #endif
 
   // Clears the existing image, if instructed by |updateImageOption|.
-  switch (updateImageOption) {
-    case ClearAndUpdateImage:
-    case ClearImageAndNotifyObservers:
-      clearImage();
+  switch (update_image_option) {
+    case kClearAndUpdateImage:
+    case kClearImageAndNotifyObservers:
+      ClearImage();
       break;
-    case UpdateImage:
+    case kUpdateImage:
       break;
   }
 
   // Updates the image, if instructed by |updateImageOption|.
-  switch (updateImageOption) {
-    case ClearImageAndNotifyObservers:
+  switch (update_image_option) {
+    case kClearImageAndNotifyObservers:
       DCHECK(!data);
       break;
 
-    case UpdateImage:
-    case ClearAndUpdateImage:
+    case kUpdateImage:
+    case kClearAndUpdateImage:
       // Have the image update its data from its internal buffer. It will not do
       // anything now, but will delay decoding until queried for info (like size
       // or specific image frames).
       if (data) {
-        if (!m_image)
-          m_image = createImage();
-        DCHECK(m_image);
-        m_sizeAvailable = m_image->setData(std::move(data), allDataReceived);
+        if (!image_)
+          image_ = CreateImage();
+        DCHECK(image_);
+        size_available_ = image_->SetData(std::move(data), all_data_received);
       }
 
       // Go ahead and tell our observers to try to draw if we have either
       // received all the data or the size is known. Each chunk from the network
       // causes observers to repaint, which will force that chunk to decode.
-      if (m_sizeAvailable == Image::SizeUnavailable && !allDataReceived)
-        return UpdateImageResult::NoDecodeError;
+      if (size_available_ == Image::kSizeUnavailable && !all_data_received)
+        return UpdateImageResult::kNoDecodeError;
 
-      if (m_info->shouldShowPlaceholder() && allDataReceived) {
-        if (m_image && !m_image->isNull()) {
-          IntSize dimensions = m_image->size();
-          clearImage();
-          m_image = PlaceholderImage::create(this, dimensions);
+      if (info_->ShouldShowPlaceholder() && all_data_received) {
+        if (image_ && !image_->IsNull()) {
+          IntSize dimensions = image_->size();
+          ClearImage();
+          image_ = PlaceholderImage::Create(this, dimensions);
         }
       }
 
-      if (!m_image || m_image->isNull()) {
-        clearImage();
-        return UpdateImageResult::ShouldDecodeError;
+      if (!image_ || image_->IsNull()) {
+        ClearImage();
+        return UpdateImageResult::kShouldDecodeError;
       }
       break;
   }
@@ -386,132 +388,133 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::updateImage(
   // Notifies the observers.
   // It would be nice to only redraw the decoded band of the image, but with the
   // current design (decoding delayed until painting) that seems hard.
-  notifyObservers(allDataReceived ? ShouldNotifyFinish : DoNotNotifyFinish);
-  return UpdateImageResult::NoDecodeError;
+  NotifyObservers(all_data_received ? kShouldNotifyFinish : kDoNotNotifyFinish);
+  return UpdateImageResult::kNoDecodeError;
 }
 
-void ImageResourceContent::decodedSizeChangedTo(const blink::Image* image,
-                                                size_t newSize) {
-  if (!image || image != m_image)
+void ImageResourceContent::DecodedSizeChangedTo(const blink::Image* image,
+                                                size_t new_size) {
+  if (!image || image != image_)
     return;
 
-  m_info->setDecodedSize(newSize);
+  info_->SetDecodedSize(new_size);
 }
 
-bool ImageResourceContent::shouldPauseAnimation(const blink::Image* image) {
-  if (!image || image != m_image)
+bool ImageResourceContent::ShouldPauseAnimation(const blink::Image* image) {
+  if (!image || image != image_)
     return false;
 
-  ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
+  ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
 
-  for (const auto& it : m_finishedObservers) {
-    if (it.key->willRenderImage())
+  for (const auto& it : finished_observers_) {
+    if (it.key->WillRenderImage())
       return false;
   }
 
-  for (const auto& it : m_observers) {
-    if (it.key->willRenderImage())
+  for (const auto& it : observers_) {
+    if (it.key->WillRenderImage())
       return false;
   }
 
   return true;
 }
 
-void ImageResourceContent::animationAdvanced(const blink::Image* image) {
-  if (!image || image != m_image)
+void ImageResourceContent::AnimationAdvanced(const blink::Image* image) {
+  if (!image || image != image_)
     return;
-  notifyObservers(DoNotNotifyFinish);
+  NotifyObservers(kDoNotNotifyFinish);
 }
 
-void ImageResourceContent::updateImageAnimationPolicy() {
-  if (!m_image)
+void ImageResourceContent::UpdateImageAnimationPolicy() {
+  if (!image_)
     return;
 
-  ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
+  ImageAnimationPolicy new_policy = kImageAnimationPolicyAllowed;
   {
-    ProhibitAddRemoveObserverInScope prohibitAddRemoveObserverInScope(this);
-    for (const auto& it : m_finishedObservers) {
-      if (it.key->getImageAnimationPolicy(newPolicy))
+    ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
+        this);
+    for (const auto& it : finished_observers_) {
+      if (it.key->GetImageAnimationPolicy(new_policy))
         break;
     }
-    for (const auto& it : m_observers) {
-      if (it.key->getImageAnimationPolicy(newPolicy))
+    for (const auto& it : observers_) {
+      if (it.key->GetImageAnimationPolicy(new_policy))
         break;
     }
   }
 
-  if (m_image->animationPolicy() != newPolicy) {
-    m_image->resetAnimation();
-    m_image->setAnimationPolicy(newPolicy);
+  if (image_->AnimationPolicy() != new_policy) {
+    image_->ResetAnimation();
+    image_->SetAnimationPolicy(new_policy);
   }
 }
 
-void ImageResourceContent::changedInRect(const blink::Image* image,
+void ImageResourceContent::ChangedInRect(const blink::Image* image,
                                          const IntRect& rect) {
-  if (!image || image != m_image)
+  if (!image || image != image_)
     return;
-  notifyObservers(DoNotNotifyFinish, &rect);
+  NotifyObservers(kDoNotNotifyFinish, &rect);
 }
 
-bool ImageResourceContent::isAccessAllowed(SecurityOrigin* securityOrigin) {
-  return m_info->isAccessAllowed(
-      securityOrigin, getImage()->currentFrameHasSingleSecurityOrigin()
-                          ? ImageResourceInfo::HasSingleSecurityOrigin
-                          : ImageResourceInfo::HasMultipleSecurityOrigin);
+bool ImageResourceContent::IsAccessAllowed(SecurityOrigin* security_origin) {
+  return info_->IsAccessAllowed(
+      security_origin, GetImage()->CurrentFrameHasSingleSecurityOrigin()
+                           ? ImageResourceInfo::kHasSingleSecurityOrigin
+                           : ImageResourceInfo::kHasMultipleSecurityOrigin);
 }
 
-void ImageResourceContent::emulateLoadStartedForInspector(
+void ImageResourceContent::EmulateLoadStartedForInspector(
     ResourceFetcher* fetcher,
     const KURL& url,
-    const AtomicString& initiatorName) {
-  m_info->emulateLoadStartedForInspector(fetcher, url, initiatorName);
+    const AtomicString& initiator_name) {
+  info_->EmulateLoadStartedForInspector(fetcher, url, initiator_name);
 }
 
 // TODO(hiroshige): Consider removing the following methods, or stoping
 // redirecting to ImageResource.
-bool ImageResourceContent::isLoaded() const {
-  return getStatus() > ResourceStatus::Pending;
+bool ImageResourceContent::IsLoaded() const {
+  return GetStatus() > ResourceStatus::kPending;
 }
 
-bool ImageResourceContent::isLoading() const {
-  return getStatus() == ResourceStatus::Pending;
+bool ImageResourceContent::IsLoading() const {
+  return GetStatus() == ResourceStatus::kPending;
 }
 
-bool ImageResourceContent::errorOccurred() const {
-  return getStatus() == ResourceStatus::LoadError ||
-         getStatus() == ResourceStatus::DecodeError;
+bool ImageResourceContent::ErrorOccurred() const {
+  return GetStatus() == ResourceStatus::kLoadError ||
+         GetStatus() == ResourceStatus::kDecodeError;
 }
 
-bool ImageResourceContent::loadFailedOrCanceled() const {
-  return getStatus() == ResourceStatus::LoadError;
+bool ImageResourceContent::LoadFailedOrCanceled() const {
+  return GetStatus() == ResourceStatus::kLoadError;
 }
 
-ResourceStatus ImageResourceContent::getStatus() const {
-  return m_info->getStatus();
+ResourceStatus ImageResourceContent::GetStatus() const {
+  return info_->GetStatus();
 }
 
-const KURL& ImageResourceContent::url() const {
-  return m_info->url();
+const KURL& ImageResourceContent::Url() const {
+  return info_->Url();
 }
 
-bool ImageResourceContent::hasCacheControlNoStoreHeader() const {
-  return m_info->hasCacheControlNoStoreHeader();
+bool ImageResourceContent::HasCacheControlNoStoreHeader() const {
+  return info_->HasCacheControlNoStoreHeader();
 }
 
-float ImageResourceContent::devicePixelRatioHeaderValue() const {
-  return m_info->devicePixelRatioHeaderValue();
+float ImageResourceContent::DevicePixelRatioHeaderValue() const {
+  return info_->DevicePixelRatioHeaderValue();
 }
 
-bool ImageResourceContent::hasDevicePixelRatioHeaderValue() const {
-  return m_info->hasDevicePixelRatioHeaderValue();
+bool ImageResourceContent::HasDevicePixelRatioHeaderValue() const {
+  return info_->HasDevicePixelRatioHeaderValue();
 }
 
-const ResourceResponse& ImageResourceContent::response() const {
-  return m_info->response();
+const ResourceResponse& ImageResourceContent::GetResponse() const {
+  return info_->GetResponse();
 }
 
-const ResourceError& ImageResourceContent::resourceError() const {
-  return m_info->resourceError();
+const ResourceError& ImageResourceContent::GetResourceError() const {
+  return info_->GetResourceError();
 }
 
 }  // namespace blink

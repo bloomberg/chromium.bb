@@ -10,16 +10,16 @@ namespace blink {
 
 WebGLSharedPlatform3DObject::WebGLSharedPlatform3DObject(
     WebGLRenderingContextBase* ctx)
-    : WebGLSharedObject(ctx), m_object(0) {}
+    : WebGLSharedObject(ctx), object_(0) {}
 
-void WebGLSharedPlatform3DObject::setObject(GLuint object) {
+void WebGLSharedPlatform3DObject::SetObject(GLuint object) {
   // object==0 && deleted==false indicating an uninitialized state;
-  ASSERT(!m_object && !isDeleted());
-  m_object = object;
+  ASSERT(!object_ && !IsDeleted());
+  object_ = object;
 }
 
-bool WebGLSharedPlatform3DObject::hasObject() const {
-  return m_object != 0;
+bool WebGLSharedPlatform3DObject::HasObject() const {
+  return object_ != 0;
 }
 
 }  // namespace blink

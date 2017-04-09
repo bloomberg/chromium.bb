@@ -34,37 +34,38 @@ namespace blink {
 
 class PLATFORM_EXPORT GeneratedImage : public Image {
  public:
-  bool currentFrameHasSingleSecurityOrigin() const override { return true; }
+  bool CurrentFrameHasSingleSecurityOrigin() const override { return true; }
 
-  bool usesContainerSize() const override { return true; }
-  bool hasRelativeSize() const override { return true; }
+  bool UsesContainerSize() const override { return true; }
+  bool HasRelativeSize() const override { return true; }
 
-  IntSize size() const override { return m_size; }
+  IntSize size() const override { return size_; }
 
   // Assume that generated content has no decoded data we need to worry about
-  void destroyDecodedData() override {}
+  void DestroyDecodedData() override {}
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> ImageForCurrentFrame() override;
 
  protected:
-  void drawPattern(GraphicsContext&,
+  void DrawPattern(GraphicsContext&,
                    const FloatRect&,
                    const FloatSize&,
                    const FloatPoint&,
                    SkBlendMode,
                    const FloatRect&,
-                   const FloatSize& repeatSpacing) final;
+                   const FloatSize& repeat_spacing) final;
 
   // FIXME: Implement this to be less conservative.
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+  bool CurrentFrameKnownToBeOpaque(
+      MetadataMode = kUseCurrentMetadata) override {
     return false;
   }
 
-  GeneratedImage(const IntSize& size) : m_size(size) {}
+  GeneratedImage(const IntSize& size) : size_(size) {}
 
-  virtual void drawTile(GraphicsContext&, const FloatRect&) = 0;
+  virtual void DrawTile(GraphicsContext&, const FloatRect&) = 0;
 
-  IntSize m_size;
+  IntSize size_;
 };
 
 }  // namespace blink

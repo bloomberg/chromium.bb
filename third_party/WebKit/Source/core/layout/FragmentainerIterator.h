@@ -24,43 +24,45 @@ class FragmentainerIterator {
   // fragmentainers to visit is |physicalBoundingBox|.
   FragmentainerIterator(
       const LayoutFlowThread&,
-      const LayoutRect& physicalBoundingBoxInFlowThread,
-      const LayoutRect& clipRectInMulticolContainer = LayoutRect());
+      const LayoutRect& physical_bounding_box_in_flow_thread,
+      const LayoutRect& clip_rect_in_multicol_container = LayoutRect());
 
   // Advance to the next fragmentainer. Not allowed to call this if atEnd() is
   // true.
-  void advance();
+  void Advance();
 
   // Return true if we have walked through all relevant fragmentainers.
-  bool atEnd() const { return !m_currentColumnSet; }
+  bool AtEnd() const { return !current_column_set_; }
 
   // The physical translation to apply to shift the box when converting from
   // flowthread to visual coordinates.
-  LayoutSize paginationOffset() const;
+  LayoutSize PaginationOffset() const;
 
   // Return the physical clip rectangle of the current fragmentainer, relative
   // to the flow thread.
-  LayoutRect clipRectInFlowThread(
+  LayoutRect ClipRectInFlowThread(
       MultiColumnFragmentainerGroup::ClipRectAxesSelector =
-          MultiColumnFragmentainerGroup::BothAxes) const;
+          MultiColumnFragmentainerGroup::kBothAxes) const;
 
  private:
-  const LayoutFlowThread& m_flowThread;
-  const LayoutRect m_clipRectInMulticolContainer;
+  const LayoutFlowThread& flow_thread_;
+  const LayoutRect clip_rect_in_multicol_container_;
 
-  const LayoutMultiColumnSet* m_currentColumnSet;
-  unsigned m_currentFragmentainerGroupIndex;
-  unsigned m_currentFragmentainerIndex;
-  unsigned m_endFragmentainerIndex;
+  const LayoutMultiColumnSet* current_column_set_;
+  unsigned current_fragmentainer_group_index_;
+  unsigned current_fragmentainer_index_;
+  unsigned end_fragmentainer_index_;
 
-  LayoutUnit m_logicalTopInFlowThread;
-  LayoutUnit m_logicalBottomInFlowThread;
+  LayoutUnit logical_top_in_flow_thread_;
+  LayoutUnit logical_bottom_in_flow_thread_;
 
-  const MultiColumnFragmentainerGroup& currentGroup() const;
-  void moveToNextFragmentainerGroup();
-  bool setFragmentainersOfInterest();
-  void setAtEnd() { m_currentColumnSet = nullptr; }
-  bool hasClipRect() const { return !m_clipRectInMulticolContainer.isEmpty(); }
+  const MultiColumnFragmentainerGroup& CurrentGroup() const;
+  void MoveToNextFragmentainerGroup();
+  bool SetFragmentainersOfInterest();
+  void SetAtEnd() { current_column_set_ = nullptr; }
+  bool HasClipRect() const {
+    return !clip_rect_in_multicol_container_.IsEmpty();
+  }
 };
 
 }  // namespace blink

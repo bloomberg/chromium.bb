@@ -16,85 +16,85 @@ namespace {
 class MultiColumnFragmentainerGroupTest : public RenderingTest {
  public:
   MultiColumnFragmentainerGroupTest()
-      : m_flowThread(nullptr), m_columnSet(nullptr) {}
+      : flow_thread_(nullptr), column_set_(nullptr) {}
 
  protected:
   void SetUp() override;
   void TearDown() override;
 
-  LayoutMultiColumnSet& columnSet() { return *m_columnSet; }
+  LayoutMultiColumnSet& ColumnSet() { return *column_set_; }
 
-  static int groupCount(const MultiColumnFragmentainerGroupList&);
+  static int GroupCount(const MultiColumnFragmentainerGroupList&);
 
  private:
-  LayoutMultiColumnFlowThread* m_flowThread;
-  LayoutMultiColumnSet* m_columnSet;
+  LayoutMultiColumnFlowThread* flow_thread_;
+  LayoutMultiColumnSet* column_set_;
 };
 
 void MultiColumnFragmentainerGroupTest::SetUp() {
   RenderingTest::SetUp();
-  RefPtr<ComputedStyle> style = ComputedStyle::create();
-  m_flowThread =
-      LayoutMultiColumnFlowThread::createAnonymous(document(), *style.get());
-  m_columnSet = LayoutMultiColumnSet::createAnonymous(*m_flowThread,
-                                                      *m_flowThread->style());
+  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  flow_thread_ =
+      LayoutMultiColumnFlowThread::CreateAnonymous(GetDocument(), *style.Get());
+  column_set_ = LayoutMultiColumnSet::CreateAnonymous(*flow_thread_,
+                                                      *flow_thread_->Style());
 }
 
 void MultiColumnFragmentainerGroupTest::TearDown() {
-  m_columnSet->destroy();
-  m_flowThread->destroy();
+  column_set_->Destroy();
+  flow_thread_->Destroy();
   RenderingTest::TearDown();
 }
 
-int MultiColumnFragmentainerGroupTest::groupCount(
-    const MultiColumnFragmentainerGroupList& groupList) {
+int MultiColumnFragmentainerGroupTest::GroupCount(
+    const MultiColumnFragmentainerGroupList& group_list) {
   int count = 0;
-  for (const auto& dummyGroup : groupList) {
-    (void)dummyGroup;
+  for (const auto& dummy_group : group_list) {
+    (void)dummy_group;
     count++;
   }
   return count;
 }
 
 TEST_F(MultiColumnFragmentainerGroupTest, Create) {
-  MultiColumnFragmentainerGroupList groupList(columnSet());
-  EXPECT_EQ(groupCount(groupList), 1);
+  MultiColumnFragmentainerGroupList group_list(ColumnSet());
+  EXPECT_EQ(GroupCount(group_list), 1);
 }
 
 TEST_F(MultiColumnFragmentainerGroupTest, DeleteExtra) {
-  MultiColumnFragmentainerGroupList groupList(columnSet());
-  EXPECT_EQ(groupCount(groupList), 1);
-  groupList.deleteExtraGroups();
-  EXPECT_EQ(groupCount(groupList), 1);
+  MultiColumnFragmentainerGroupList group_list(ColumnSet());
+  EXPECT_EQ(GroupCount(group_list), 1);
+  group_list.DeleteExtraGroups();
+  EXPECT_EQ(GroupCount(group_list), 1);
 }
 
 TEST_F(MultiColumnFragmentainerGroupTest, AddThenDeleteExtra) {
-  MultiColumnFragmentainerGroupList groupList(columnSet());
-  EXPECT_EQ(groupCount(groupList), 1);
-  groupList.addExtraGroup();
-  EXPECT_EQ(groupCount(groupList), 2);
-  groupList.deleteExtraGroups();
-  EXPECT_EQ(groupCount(groupList), 1);
+  MultiColumnFragmentainerGroupList group_list(ColumnSet());
+  EXPECT_EQ(GroupCount(group_list), 1);
+  group_list.AddExtraGroup();
+  EXPECT_EQ(GroupCount(group_list), 2);
+  group_list.DeleteExtraGroups();
+  EXPECT_EQ(GroupCount(group_list), 1);
 }
 
 TEST_F(MultiColumnFragmentainerGroupTest,
        AddTwoThenDeleteExtraThenAddThreeThenDeleteExtra) {
-  MultiColumnFragmentainerGroupList groupList(columnSet());
-  EXPECT_EQ(groupCount(groupList), 1);
-  groupList.addExtraGroup();
-  EXPECT_EQ(groupCount(groupList), 2);
-  groupList.addExtraGroup();
-  EXPECT_EQ(groupCount(groupList), 3);
-  groupList.deleteExtraGroups();
-  EXPECT_EQ(groupCount(groupList), 1);
-  groupList.addExtraGroup();
-  EXPECT_EQ(groupCount(groupList), 2);
-  groupList.addExtraGroup();
-  EXPECT_EQ(groupCount(groupList), 3);
-  groupList.addExtraGroup();
-  EXPECT_EQ(groupCount(groupList), 4);
-  groupList.deleteExtraGroups();
-  EXPECT_EQ(groupCount(groupList), 1);
+  MultiColumnFragmentainerGroupList group_list(ColumnSet());
+  EXPECT_EQ(GroupCount(group_list), 1);
+  group_list.AddExtraGroup();
+  EXPECT_EQ(GroupCount(group_list), 2);
+  group_list.AddExtraGroup();
+  EXPECT_EQ(GroupCount(group_list), 3);
+  group_list.DeleteExtraGroups();
+  EXPECT_EQ(GroupCount(group_list), 1);
+  group_list.AddExtraGroup();
+  EXPECT_EQ(GroupCount(group_list), 2);
+  group_list.AddExtraGroup();
+  EXPECT_EQ(GroupCount(group_list), 3);
+  group_list.AddExtraGroup();
+  EXPECT_EQ(GroupCount(group_list), 4);
+  group_list.DeleteExtraGroups();
+  EXPECT_EQ(GroupCount(group_list), 1);
 }
 
 }  // anonymous namespace

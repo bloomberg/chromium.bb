@@ -16,44 +16,44 @@ namespace blink {
 void V8IDBObserver::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
-  ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
-                                "IDBObserver");
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 "IDBObserver");
 
   if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.throwTypeError(
-        ExceptionMessages::notEnoughArguments(1, info.Length()));
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
     return;
   }
 
   v8::Local<v8::Object> wrapper = info.Holder();
 
   if (!info[0]->IsFunction()) {
-    exceptionState.throwTypeError(
+    exception_state.ThrowTypeError(
         "The callback provided as parameter 1 is not a function.");
     return;
   }
 
-  if (info.Length() > 1 && !isUndefinedOrNull(info[1]) &&
+  if (info.Length() > 1 && !IsUndefinedOrNull(info[1]) &&
       !info[1]->IsObject()) {
-    exceptionState.throwTypeError("parameter 2 ('options') is not an object.");
+    exception_state.ThrowTypeError("parameter 2 ('options') is not an object.");
     return;
   }
 
-  if (exceptionState.hadException())
+  if (exception_state.HadException())
     return;
 
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
-  v8::Local<v8::Function> v8Callback = v8::Local<v8::Function>::Cast(info[0]);
+  ScriptState* script_state = ScriptState::ForReceiverObject(info);
+  v8::Local<v8::Function> v8_callback = v8::Local<v8::Function>::Cast(info[0]);
   IDBObserverCallback* callback =
-      IDBObserverCallback::create(scriptState, v8Callback);
-  IDBObserver* observer = IDBObserver::create(callback);
-  if (exceptionState.hadException())
+      IDBObserverCallback::Create(script_state, v8_callback);
+  IDBObserver* observer = IDBObserver::Create(callback);
+  if (exception_state.HadException())
     return;
   DCHECK(observer);
   // TODO(bashi): Don't set private property (and remove this custom
   // constructor) when we can trace correctly.
-  V8PrivateProperty::getIDBObserverCallback(isolate).set(wrapper, v8Callback);
-  v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(
+  V8PrivateProperty::GetIDBObserverCallback(isolate).Set(wrapper, v8_callback);
+  V8SetReturnValue(info, V8DOMWrapper::AssociateObjectWithWrapper(
                              isolate, observer, &wrapperTypeInfo, wrapper));
 }
 

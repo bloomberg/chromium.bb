@@ -10,25 +10,25 @@ ScreenOrientationController::ScreenOrientationController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame) {}
 
 // static
-ScreenOrientationController* ScreenOrientationController::from(
+ScreenOrientationController* ScreenOrientationController::From(
     LocalFrame& frame) {
   return static_cast<ScreenOrientationController*>(
-      Supplement<LocalFrame>::from(frame, supplementName()));
+      Supplement<LocalFrame>::From(frame, SupplementName()));
 }
 
 DEFINE_TRACE(ScreenOrientationController) {
-  Supplement<LocalFrame>::trace(visitor);
+  Supplement<LocalFrame>::Trace(visitor);
 }
 
 // static
-void ScreenOrientationController::provideTo(
+void ScreenOrientationController::ProvideTo(
     LocalFrame& frame,
     ScreenOrientationController* controller) {
-  Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
+  Supplement<LocalFrame>::ProvideTo(frame, SupplementName(), controller);
 }
 
 // static
-const char* ScreenOrientationController::supplementName() {
+const char* ScreenOrientationController::SupplementName() {
   return "ScreenOrientationController";
 }
 

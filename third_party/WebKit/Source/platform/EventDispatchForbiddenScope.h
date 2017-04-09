@@ -20,35 +20,35 @@ class EventDispatchForbiddenScope {
 
  public:
   EventDispatchForbiddenScope() {
-    ASSERT(isMainThread());
-    ++s_count;
+    ASSERT(IsMainThread());
+    ++count_;
   }
 
   ~EventDispatchForbiddenScope() {
-    ASSERT(isMainThread());
-    ASSERT(s_count);
-    --s_count;
+    ASSERT(IsMainThread());
+    ASSERT(count_);
+    --count_;
   }
 
-  static bool isEventDispatchForbidden() {
-    if (!isMainThread())
+  static bool IsEventDispatchForbidden() {
+    if (!IsMainThread())
       return false;
-    return s_count;
+    return count_;
   }
 
   class AllowUserAgentEvents {
     STACK_ALLOCATED();
 
    public:
-    AllowUserAgentEvents() : m_change(&s_count, 0) { ASSERT(isMainThread()); }
+    AllowUserAgentEvents() : change_(&count_, 0) { ASSERT(IsMainThread()); }
 
-    ~AllowUserAgentEvents() { ASSERT(!s_count); }
+    ~AllowUserAgentEvents() { ASSERT(!count_); }
 
-    AutoReset<unsigned> m_change;
+    AutoReset<unsigned> change_;
   };
 
  private:
-  PLATFORM_EXPORT static unsigned s_count;
+  PLATFORM_EXPORT static unsigned count_;
 };
 
 #else

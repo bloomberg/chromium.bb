@@ -20,34 +20,34 @@ class PLATFORM_EXPORT FloatRectOutsets {
   STACK_ALLOCATED();
 
  public:
-  FloatRectOutsets() : m_top(0), m_right(0), m_bottom(0), m_left(0) {}
+  FloatRectOutsets() : top_(0), right_(0), bottom_(0), left_(0) {}
 
   FloatRectOutsets(float top, float right, float bottom, float left)
-      : m_top(top), m_right(right), m_bottom(bottom), m_left(left) {}
+      : top_(top), right_(right), bottom_(bottom), left_(left) {}
 
-  float top() const { return m_top; }
-  float right() const { return m_right; }
-  float bottom() const { return m_bottom; }
-  float left() const { return m_left; }
+  float Top() const { return top_; }
+  float Right() const { return right_; }
+  float Bottom() const { return bottom_; }
+  float Left() const { return left_; }
 
-  void setTop(float top) { m_top = top; }
-  void setRight(float right) { m_right = right; }
-  void setBottom(float bottom) { m_bottom = bottom; }
-  void setLeft(float left) { m_left = left; }
+  void SetTop(float top) { top_ = top; }
+  void SetRight(float right) { right_ = right; }
+  void SetBottom(float bottom) { bottom_ = bottom; }
+  void SetLeft(float left) { left_ = left; }
 
   // Change outsets to be at least as large as |other|.
-  void unite(const FloatRectOutsets& other) {
-    m_top = std::max(m_top, other.m_top);
-    m_right = std::max(m_right, other.m_right);
-    m_bottom = std::max(m_bottom, other.m_bottom);
-    m_left = std::max(m_left, other.m_left);
+  void Unite(const FloatRectOutsets& other) {
+    top_ = std::max(top_, other.top_);
+    right_ = std::max(right_, other.right_);
+    bottom_ = std::max(bottom_, other.bottom_);
+    left_ = std::max(left_, other.left_);
   }
 
  private:
-  float m_top;
-  float m_right;
-  float m_bottom;
-  float m_left;
+  float top_;
+  float right_;
+  float bottom_;
+  float left_;
 };
 
 }  // namespace blink

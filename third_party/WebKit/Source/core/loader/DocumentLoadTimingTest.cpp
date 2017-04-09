@@ -14,43 +14,44 @@ namespace blink {
 class DocumentLoadTimingTest : public testing::Test {};
 
 TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
-  std::unique_ptr<DummyPageHolder> dummyPage = DummyPageHolder::create();
-  DocumentLoadTiming timing(*(dummyPage->document().loader()));
+  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
+  DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double delta = -1000;
-  double embedderNavigationStart = monotonicallyIncreasingTime() + delta;
-  timing.setNavigationStart(embedderNavigationStart);
+  double embedder_navigation_start = MonotonicallyIncreasingTime() + delta;
+  timing.SetNavigationStart(embedder_navigation_start);
 
-  double realWallTime = currentTime();
-  double adjustedWallTime =
-      timing.monotonicTimeToPseudoWallTime(timing.navigationStart());
+  double real_wall_time = CurrentTime();
+  double adjusted_wall_time =
+      timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
 
-  EXPECT_NEAR(adjustedWallTime, realWallTime + delta, .001);
+  EXPECT_NEAR(adjusted_wall_time, real_wall_time + delta, .001);
 }
 
 TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
-  std::unique_ptr<DummyPageHolder> dummyPage = DummyPageHolder::create();
-  DocumentLoadTiming timing(*(dummyPage->document().loader()));
+  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
+  DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
-  double navigationStartDelta = -456;
-  double currentMonotonicTime = monotonicallyIncreasingTime();
-  double embedderNavigationStart = currentMonotonicTime + navigationStartDelta;
+  double navigation_start_delta = -456;
+  double current_monotonic_time = MonotonicallyIncreasingTime();
+  double embedder_navigation_start =
+      current_monotonic_time + navigation_start_delta;
 
-  timing.setNavigationStart(embedderNavigationStart);
+  timing.SetNavigationStart(embedder_navigation_start);
 
   // Super quick load! Expect the wall time reported by this event to be
   // dominated by the navigationStartDelta, but similar to currentTime().
-  timing.markLoadEventEnd();
-  double realWallLoadEventEnd = currentTime();
-  double adjustedLoadEventEnd =
-      timing.monotonicTimeToPseudoWallTime(timing.loadEventEnd());
+  timing.MarkLoadEventEnd();
+  double real_wall_load_event_end = CurrentTime();
+  double adjusted_load_event_end =
+      timing.MonotonicTimeToPseudoWallTime(timing.LoadEventEnd());
 
-  EXPECT_NEAR(adjustedLoadEventEnd, realWallLoadEventEnd, .001);
+  EXPECT_NEAR(adjusted_load_event_end, real_wall_load_event_end, .001);
 
-  double adjustedNavigationStart =
-      timing.monotonicTimeToPseudoWallTime(timing.navigationStart());
-  EXPECT_NEAR(adjustedLoadEventEnd - adjustedNavigationStart,
-              -navigationStartDelta, .001);
+  double adjusted_navigation_start =
+      timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
+  EXPECT_NEAR(adjusted_load_event_end - adjusted_navigation_start,
+              -navigation_start_delta, .001);
 }
 
 }  // namespace blink

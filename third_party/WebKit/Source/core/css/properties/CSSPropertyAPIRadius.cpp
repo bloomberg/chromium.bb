@@ -11,11 +11,11 @@ namespace blink {
 const CSSValue* CSSPropertyAPIRadius::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueAuto)
-    return CSSPropertyParserHelpers::consumeIdent(range);
-  return CSSPropertyParserHelpers::consumeLengthOrPercent(
-      range, SVGAttributeMode, ValueRangeAll,
-      CSSPropertyParserHelpers::UnitlessQuirk::Forbid);
+  if (range.Peek().Id() == CSSValueAuto)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, kSVGAttributeMode, kValueRangeAll,
+      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
 
 }  // namespace blink

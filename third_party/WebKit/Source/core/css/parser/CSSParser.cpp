@@ -23,231 +23,233 @@ namespace blink {
 
 using namespace cssvalue;
 
-bool CSSParser::parseDeclarationList(const CSSParserContext* context,
-                                     MutableStylePropertySet* propertySet,
+bool CSSParser::ParseDeclarationList(const CSSParserContext* context,
+                                     MutableStylePropertySet* property_set,
                                      const String& declaration) {
-  return CSSParserImpl::parseDeclarationList(propertySet, declaration, context);
-}
-
-void CSSParser::parseDeclarationListForInspector(
-    const CSSParserContext* context,
-    const String& declaration,
-    CSSParserObserver& observer) {
-  CSSParserImpl::parseDeclarationListForInspector(declaration, context,
-                                                  observer);
-}
-
-CSSSelectorList CSSParser::parseSelector(const CSSParserContext* context,
-                                         StyleSheetContents* styleSheetContents,
-                                         const String& selector) {
-  CSSTokenizer tokenizer(selector);
-  return CSSSelectorParser::parseSelector(tokenizer.tokenRange(), context,
-                                          styleSheetContents);
-}
-
-CSSSelectorList CSSParser::parsePageSelector(
-    const CSSParserContext* context,
-    StyleSheetContents* styleSheetContents,
-    const String& selector) {
-  CSSTokenizer tokenizer(selector);
-  return CSSParserImpl::parsePageSelector(tokenizer.tokenRange(),
-                                          styleSheetContents);
-}
-
-StyleRuleBase* CSSParser::parseRule(const CSSParserContext* context,
-                                    StyleSheetContents* styleSheet,
-                                    const String& rule) {
-  return CSSParserImpl::parseRule(rule, context, styleSheet,
-                                  CSSParserImpl::AllowImportRules);
-}
-
-void CSSParser::parseSheet(const CSSParserContext* context,
-                           StyleSheetContents* styleSheet,
-                           const String& text,
-                           bool deferPropertyParsing) {
-  return CSSParserImpl::parseStyleSheet(text, context, styleSheet,
-                                        deferPropertyParsing);
-}
-
-void CSSParser::parseSheetForInspector(const CSSParserContext* context,
-                                       StyleSheetContents* styleSheet,
-                                       const String& text,
-                                       CSSParserObserver& observer) {
-  return CSSParserImpl::parseStyleSheetForInspector(text, context, styleSheet,
-                                                    observer);
-}
-
-MutableStylePropertySet::SetResult CSSParser::parseValue(
-    MutableStylePropertySet* declaration,
-    CSSPropertyID unresolvedProperty,
-    const String& string,
-    bool important) {
-  return parseValue(declaration, unresolvedProperty, string, important,
-                    static_cast<StyleSheetContents*>(nullptr));
-}
-
-MutableStylePropertySet::SetResult CSSParser::parseValue(
-    MutableStylePropertySet* declaration,
-    CSSPropertyID unresolvedProperty,
-    const String& string,
-    bool important,
-    StyleSheetContents* styleSheet) {
-  if (string.isEmpty()) {
-    bool didParse = false;
-    bool didChange = false;
-    return MutableStylePropertySet::SetResult{didParse, didChange};
-  }
-
-  CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
-  CSSParserMode parserMode = declaration->cssParserMode();
-  CSSValue* value =
-      CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
-  if (value) {
-    bool didParse = true;
-    bool didChange = declaration->setProperty(
-        CSSProperty(resolvedProperty, *value, important));
-    return MutableStylePropertySet::SetResult{didParse, didChange};
-  }
-  CSSParserContext* context;
-  if (styleSheet) {
-    context = CSSParserContext::create(styleSheet->parserContext(), nullptr);
-    context->setMode(parserMode);
-  } else {
-    context = CSSParserContext::create(parserMode);
-  }
-  return parseValue(declaration, unresolvedProperty, string, important,
-                    context);
-}
-
-MutableStylePropertySet::SetResult CSSParser::parseValueForCustomProperty(
-    MutableStylePropertySet* declaration,
-    const AtomicString& propertyName,
-    const PropertyRegistry* registry,
-    const String& value,
-    bool important,
-    StyleSheetContents* styleSheet,
-    bool isAnimationTainted) {
-  DCHECK(CSSVariableParser::isValidVariableName(propertyName));
-  if (value.isEmpty()) {
-    bool didParse = false;
-    bool didChange = false;
-    return MutableStylePropertySet::SetResult{didParse, didChange};
-  }
-  CSSParserMode parserMode = declaration->cssParserMode();
-  CSSParserContext* context;
-  if (styleSheet) {
-    context = CSSParserContext::create(styleSheet->parserContext(), nullptr);
-    context->setMode(parserMode);
-  } else {
-    context = CSSParserContext::create(parserMode);
-  }
-  return CSSParserImpl::parseVariableValue(declaration, propertyName, registry,
-                                           value, important, context,
-                                           isAnimationTainted);
-}
-
-ImmutableStylePropertySet* CSSParser::parseCustomPropertySet(
-    CSSParserTokenRange range) {
-  return CSSParserImpl::parseCustomPropertySet(range);
-}
-
-MutableStylePropertySet::SetResult CSSParser::parseValue(
-    MutableStylePropertySet* declaration,
-    CSSPropertyID unresolvedProperty,
-    const String& string,
-    bool important,
-    const CSSParserContext* context) {
-  return CSSParserImpl::parseValue(declaration, unresolvedProperty, string,
-                                   important, context);
-}
-
-const CSSValue* CSSParser::parseSingleValue(CSSPropertyID propertyID,
-                                            const String& string,
-                                            const CSSParserContext* context) {
-  if (string.isEmpty())
-    return nullptr;
-  if (CSSValue* value = CSSParserFastPaths::maybeParseValue(propertyID, string,
-                                                            context->mode()))
-    return value;
-  CSSTokenizer tokenizer(string);
-  return CSSPropertyParser::parseSingleValue(propertyID, tokenizer.tokenRange(),
+  return CSSParserImpl::ParseDeclarationList(property_set, declaration,
                                              context);
 }
 
-ImmutableStylePropertySet* CSSParser::parseInlineStyleDeclaration(
-    const String& styleString,
+void CSSParser::ParseDeclarationListForInspector(
+    const CSSParserContext* context,
+    const String& declaration,
+    CSSParserObserver& observer) {
+  CSSParserImpl::ParseDeclarationListForInspector(declaration, context,
+                                                  observer);
+}
+
+CSSSelectorList CSSParser::ParseSelector(
+    const CSSParserContext* context,
+    StyleSheetContents* style_sheet_contents,
+    const String& selector) {
+  CSSTokenizer tokenizer(selector);
+  return CSSSelectorParser::ParseSelector(tokenizer.TokenRange(), context,
+                                          style_sheet_contents);
+}
+
+CSSSelectorList CSSParser::ParsePageSelector(
+    const CSSParserContext* context,
+    StyleSheetContents* style_sheet_contents,
+    const String& selector) {
+  CSSTokenizer tokenizer(selector);
+  return CSSParserImpl::ParsePageSelector(tokenizer.TokenRange(),
+                                          style_sheet_contents);
+}
+
+StyleRuleBase* CSSParser::ParseRule(const CSSParserContext* context,
+                                    StyleSheetContents* style_sheet,
+                                    const String& rule) {
+  return CSSParserImpl::ParseRule(rule, context, style_sheet,
+                                  CSSParserImpl::kAllowImportRules);
+}
+
+void CSSParser::ParseSheet(const CSSParserContext* context,
+                           StyleSheetContents* style_sheet,
+                           const String& text,
+                           bool defer_property_parsing) {
+  return CSSParserImpl::ParseStyleSheet(text, context, style_sheet,
+                                        defer_property_parsing);
+}
+
+void CSSParser::ParseSheetForInspector(const CSSParserContext* context,
+                                       StyleSheetContents* style_sheet,
+                                       const String& text,
+                                       CSSParserObserver& observer) {
+  return CSSParserImpl::ParseStyleSheetForInspector(text, context, style_sheet,
+                                                    observer);
+}
+
+MutableStylePropertySet::SetResult CSSParser::ParseValue(
+    MutableStylePropertySet* declaration,
+    CSSPropertyID unresolved_property,
+    const String& string,
+    bool important) {
+  return ParseValue(declaration, unresolved_property, string, important,
+                    static_cast<StyleSheetContents*>(nullptr));
+}
+
+MutableStylePropertySet::SetResult CSSParser::ParseValue(
+    MutableStylePropertySet* declaration,
+    CSSPropertyID unresolved_property,
+    const String& string,
+    bool important,
+    StyleSheetContents* style_sheet) {
+  if (string.IsEmpty()) {
+    bool did_parse = false;
+    bool did_change = false;
+    return MutableStylePropertySet::SetResult{did_parse, did_change};
+  }
+
+  CSSPropertyID resolved_property = resolveCSSPropertyID(unresolved_property);
+  CSSParserMode parser_mode = declaration->CssParserMode();
+  CSSValue* value = CSSParserFastPaths::MaybeParseValue(resolved_property,
+                                                        string, parser_mode);
+  if (value) {
+    bool did_parse = true;
+    bool did_change = declaration->SetProperty(
+        CSSProperty(resolved_property, *value, important));
+    return MutableStylePropertySet::SetResult{did_parse, did_change};
+  }
+  CSSParserContext* context;
+  if (style_sheet) {
+    context = CSSParserContext::Create(style_sheet->ParserContext(), nullptr);
+    context->SetMode(parser_mode);
+  } else {
+    context = CSSParserContext::Create(parser_mode);
+  }
+  return ParseValue(declaration, unresolved_property, string, important,
+                    context);
+}
+
+MutableStylePropertySet::SetResult CSSParser::ParseValueForCustomProperty(
+    MutableStylePropertySet* declaration,
+    const AtomicString& property_name,
+    const PropertyRegistry* registry,
+    const String& value,
+    bool important,
+    StyleSheetContents* style_sheet,
+    bool is_animation_tainted) {
+  DCHECK(CSSVariableParser::IsValidVariableName(property_name));
+  if (value.IsEmpty()) {
+    bool did_parse = false;
+    bool did_change = false;
+    return MutableStylePropertySet::SetResult{did_parse, did_change};
+  }
+  CSSParserMode parser_mode = declaration->CssParserMode();
+  CSSParserContext* context;
+  if (style_sheet) {
+    context = CSSParserContext::Create(style_sheet->ParserContext(), nullptr);
+    context->SetMode(parser_mode);
+  } else {
+    context = CSSParserContext::Create(parser_mode);
+  }
+  return CSSParserImpl::ParseVariableValue(declaration, property_name, registry,
+                                           value, important, context,
+                                           is_animation_tainted);
+}
+
+ImmutableStylePropertySet* CSSParser::ParseCustomPropertySet(
+    CSSParserTokenRange range) {
+  return CSSParserImpl::ParseCustomPropertySet(range);
+}
+
+MutableStylePropertySet::SetResult CSSParser::ParseValue(
+    MutableStylePropertySet* declaration,
+    CSSPropertyID unresolved_property,
+    const String& string,
+    bool important,
+    const CSSParserContext* context) {
+  return CSSParserImpl::ParseValue(declaration, unresolved_property, string,
+                                   important, context);
+}
+
+const CSSValue* CSSParser::ParseSingleValue(CSSPropertyID property_id,
+                                            const String& string,
+                                            const CSSParserContext* context) {
+  if (string.IsEmpty())
+    return nullptr;
+  if (CSSValue* value = CSSParserFastPaths::MaybeParseValue(property_id, string,
+                                                            context->Mode()))
+    return value;
+  CSSTokenizer tokenizer(string);
+  return CSSPropertyParser::ParseSingleValue(property_id,
+                                             tokenizer.TokenRange(), context);
+}
+
+ImmutableStylePropertySet* CSSParser::ParseInlineStyleDeclaration(
+    const String& style_string,
     Element* element) {
-  return CSSParserImpl::parseInlineStyleDeclaration(styleString, element);
+  return CSSParserImpl::ParseInlineStyleDeclaration(style_string, element);
 }
 
-std::unique_ptr<Vector<double>> CSSParser::parseKeyframeKeyList(
-    const String& keyList) {
-  return CSSParserImpl::parseKeyframeKeyList(keyList);
+std::unique_ptr<Vector<double>> CSSParser::ParseKeyframeKeyList(
+    const String& key_list) {
+  return CSSParserImpl::ParseKeyframeKeyList(key_list);
 }
 
-StyleRuleKeyframe* CSSParser::parseKeyframeRule(const CSSParserContext* context,
+StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
                                                 const String& rule) {
-  StyleRuleBase* keyframe = CSSParserImpl::parseRule(
-      rule, context, nullptr, CSSParserImpl::KeyframeRules);
-  return toStyleRuleKeyframe(keyframe);
+  StyleRuleBase* keyframe = CSSParserImpl::ParseRule(
+      rule, context, nullptr, CSSParserImpl::kKeyframeRules);
+  return ToStyleRuleKeyframe(keyframe);
 }
 
-bool CSSParser::parseSupportsCondition(const String& condition) {
+bool CSSParser::ParseSupportsCondition(const String& condition) {
   CSSTokenizer tokenizer(condition);
-  CSSParserImpl parser(strictCSSParserContext());
-  return CSSSupportsParser::supportsCondition(tokenizer.tokenRange(), parser) ==
-         CSSSupportsParser::Supported;
+  CSSParserImpl parser(StrictCSSParserContext());
+  return CSSSupportsParser::SupportsCondition(tokenizer.TokenRange(), parser) ==
+         CSSSupportsParser::kSupported;
 }
 
-bool CSSParser::parseColor(Color& color, const String& string, bool strict) {
-  if (string.isEmpty())
+bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
+  if (string.IsEmpty())
     return false;
 
   // The regular color parsers don't resolve named colors, so explicitly
   // handle these first.
-  Color namedColor;
-  if (namedColor.setNamedColor(string)) {
-    color = namedColor;
+  Color named_color;
+  if (named_color.SetNamedColor(string)) {
+    color = named_color;
     return true;
   }
 
-  const CSSValue* value = CSSParserFastPaths::parseColor(
-      string, strict ? HTMLStandardMode : HTMLQuirksMode);
+  const CSSValue* value = CSSParserFastPaths::ParseColor(
+      string, strict ? kHTMLStandardMode : kHTMLQuirksMode);
   // TODO(timloh): Why is this always strict mode?
   if (!value)
     value =
-        parseSingleValue(CSSPropertyColor, string, strictCSSParserContext());
+        ParseSingleValue(CSSPropertyColor, string, StrictCSSParserContext());
 
-  if (!value || !value->isColorValue())
+  if (!value || !value->IsColorValue())
     return false;
-  color = toCSSColorValue(*value).value();
+  color = ToCSSColorValue(*value).Value();
   return true;
 }
 
-bool CSSParser::parseSystemColor(Color& color, const String& colorString) {
-  CSSValueID id = cssValueKeywordID(colorString);
-  if (!StyleColor::isSystemColor(id))
+bool CSSParser::ParseSystemColor(Color& color, const String& color_string) {
+  CSSValueID id = CssValueKeywordID(color_string);
+  if (!StyleColor::IsSystemColor(id))
     return false;
 
-  color = LayoutTheme::theme().systemColor(id);
+  color = LayoutTheme::GetTheme().SystemColor(id);
   return true;
 }
 
-const CSSValue* CSSParser::parseFontFaceDescriptor(
-    CSSPropertyID propertyID,
-    const String& propertyValue,
+const CSSValue* CSSParser::ParseFontFaceDescriptor(
+    CSSPropertyID property_id,
+    const String& property_value,
     const CSSParserContext* context) {
   StringBuilder builder;
-  builder.append("@font-face { ");
-  builder.append(getPropertyNameString(propertyID));
-  builder.append(" : ");
-  builder.append(propertyValue);
-  builder.append("; }");
-  StyleRuleBase* rule = parseRule(context, nullptr, builder.toString());
-  if (!rule || !rule->isFontFaceRule())
+  builder.Append("@font-face { ");
+  builder.Append(getPropertyNameString(property_id));
+  builder.Append(" : ");
+  builder.Append(property_value);
+  builder.Append("; }");
+  StyleRuleBase* rule = ParseRule(context, nullptr, builder.ToString());
+  if (!rule || !rule->IsFontFaceRule())
     return nullptr;
-  return toStyleRuleFontFace(rule)->properties().getPropertyCSSValue(
-      propertyID);
+  return ToStyleRuleFontFace(rule)->Properties().GetPropertyCSSValue(
+      property_id);
 }
 
 }  // namespace blink

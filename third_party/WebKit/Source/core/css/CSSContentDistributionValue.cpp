@@ -13,39 +13,39 @@ CSSContentDistributionValue::CSSContentDistributionValue(
     CSSValueID distribution,
     CSSValueID position,
     CSSValueID overflow)
-    : CSSValue(CSSContentDistributionClass),
-      m_distribution(distribution),
-      m_position(position),
-      m_overflow(overflow) {}
+    : CSSValue(kCSSContentDistributionClass),
+      distribution_(distribution),
+      position_(position),
+      overflow_(overflow) {}
 
 CSSContentDistributionValue::~CSSContentDistributionValue() {}
 
-String CSSContentDistributionValue::customCSSText() const {
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+String CSSContentDistributionValue::CustomCSSText() const {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  if (m_distribution != CSSValueInvalid)
-    list->append(*distribution());
-  if (m_position != CSSValueInvalid) {
-    if (m_position == CSSValueFirstBaseline ||
-        m_position == CSSValueLastBaseline) {
+  if (distribution_ != CSSValueInvalid)
+    list->Append(*Distribution());
+  if (position_ != CSSValueInvalid) {
+    if (position_ == CSSValueFirstBaseline ||
+        position_ == CSSValueLastBaseline) {
       CSSValueID preference =
-          m_position == CSSValueFirstBaseline ? CSSValueFirst : CSSValueLast;
-      list->append(*CSSIdentifierValue::create(preference));
-      list->append(*CSSIdentifierValue::create(CSSValueBaseline));
+          position_ == CSSValueFirstBaseline ? CSSValueFirst : CSSValueLast;
+      list->Append(*CSSIdentifierValue::Create(preference));
+      list->Append(*CSSIdentifierValue::Create(CSSValueBaseline));
     } else {
-      list->append(*position());
+      list->Append(*GetPosition());
     }
   }
-  if (m_overflow != CSSValueInvalid)
-    list->append(*overflow());
+  if (overflow_ != CSSValueInvalid)
+    list->Append(*Overflow());
 
-  return list->customCSSText();
+  return list->CustomCSSText();
 }
 
-bool CSSContentDistributionValue::equals(
+bool CSSContentDistributionValue::Equals(
     const CSSContentDistributionValue& other) const {
-  return m_distribution == other.m_distribution &&
-         m_position == other.m_position && m_overflow == other.m_overflow;
+  return distribution_ == other.distribution_ && position_ == other.position_ &&
+         overflow_ == other.overflow_;
 }
 
 }  // namespace blink

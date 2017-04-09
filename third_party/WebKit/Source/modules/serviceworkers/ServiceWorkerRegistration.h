@@ -34,45 +34,45 @@ class ServiceWorkerRegistration final
       public Supplementable<ServiceWorkerRegistration> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
-  USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
+  USING_PRE_FINALIZER(ServiceWorkerRegistration, Dispose);
 
  public:
   // Called from CallbackPromiseAdapter.
   using WebType = std::unique_ptr<WebServiceWorkerRegistration::Handle>;
-  static ServiceWorkerRegistration* take(
+  static ServiceWorkerRegistration* Take(
       ScriptPromiseResolver*,
       std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 
   // ScriptWrappable overrides.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
   // EventTarget overrides.
-  const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override {
-    return ContextLifecycleObserver::getExecutionContext();
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextLifecycleObserver::GetExecutionContext();
   }
 
   // WebServiceWorkerRegistrationProxy overrides.
-  void dispatchUpdateFoundEvent() override;
-  void setInstalling(std::unique_ptr<WebServiceWorker::Handle>) override;
-  void setWaiting(std::unique_ptr<WebServiceWorker::Handle>) override;
-  void setActive(std::unique_ptr<WebServiceWorker::Handle>) override;
+  void DispatchUpdateFoundEvent() override;
+  void SetInstalling(std::unique_ptr<WebServiceWorker::Handle>) override;
+  void SetWaiting(std::unique_ptr<WebServiceWorker::Handle>) override;
+  void SetActive(std::unique_ptr<WebServiceWorker::Handle>) override;
 
   // Returns an existing registration object for the handle if it exists.
   // Otherwise, returns a new registration object.
-  static ServiceWorkerRegistration* getOrCreate(
+  static ServiceWorkerRegistration* GetOrCreate(
       ExecutionContext*,
       std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 
-  ServiceWorker* installing() { return m_installing; }
-  ServiceWorker* waiting() { return m_waiting; }
-  ServiceWorker* active() { return m_active; }
+  ServiceWorker* installing() { return installing_; }
+  ServiceWorker* waiting() { return waiting_; }
+  ServiceWorker* active() { return active_; }
   NavigationPreloadManager* navigationPreload();
 
   String scope() const;
 
-  WebServiceWorkerRegistration* webRegistration() {
-    return m_handle->registration();
+  WebServiceWorkerRegistration* WebRegistration() {
+    return handle_->Registration();
   }
 
   ScriptPromise update(ScriptState*);
@@ -88,20 +88,20 @@ class ServiceWorkerRegistration final
   ServiceWorkerRegistration(
       ExecutionContext*,
       std::unique_ptr<WebServiceWorkerRegistration::Handle>);
-  void dispose();
+  void Dispose();
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // A handle to the registration representation in the embedder.
-  std::unique_ptr<WebServiceWorkerRegistration::Handle> m_handle;
+  std::unique_ptr<WebServiceWorkerRegistration::Handle> handle_;
 
-  Member<ServiceWorker> m_installing;
-  Member<ServiceWorker> m_waiting;
-  Member<ServiceWorker> m_active;
-  Member<NavigationPreloadManager> m_navigationPreload;
+  Member<ServiceWorker> installing_;
+  Member<ServiceWorker> waiting_;
+  Member<ServiceWorker> active_;
+  Member<NavigationPreloadManager> navigation_preload_;
 
-  bool m_stopped;
+  bool stopped_;
 };
 
 class ServiceWorkerRegistrationArray {
@@ -111,13 +111,13 @@ class ServiceWorkerRegistrationArray {
   // Called from CallbackPromiseAdapter.
   using WebType = std::unique_ptr<
       WebVector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>>;
-  static HeapVector<Member<ServiceWorkerRegistration>> take(
+  static HeapVector<Member<ServiceWorkerRegistration>> Take(
       ScriptPromiseResolver* resolver,
-      WebType webServiceWorkerRegistrations) {
+      WebType web_service_worker_registrations) {
     HeapVector<Member<ServiceWorkerRegistration>> registrations;
-    for (auto& registration : *webServiceWorkerRegistrations) {
+    for (auto& registration : *web_service_worker_registrations) {
       registrations.push_back(
-          ServiceWorkerRegistration::take(resolver, std::move(registration)));
+          ServiceWorkerRegistration::Take(resolver, std::move(registration)));
     }
     return registrations;
   }

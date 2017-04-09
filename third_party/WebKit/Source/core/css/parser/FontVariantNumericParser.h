@@ -16,66 +16,66 @@ class FontVariantNumericParser {
 
  public:
   FontVariantNumericParser()
-      : m_sawNumericFigureValue(false),
-        m_sawNumericSpacingValue(false),
-        m_sawNumericFractionValue(false),
-        m_sawOrdinalValue(false),
-        m_sawSlashedZeroValue(false),
-        m_result(CSSValueList::createSpaceSeparated()) {}
+      : saw_numeric_figure_value_(false),
+        saw_numeric_spacing_value_(false),
+        saw_numeric_fraction_value_(false),
+        saw_ordinal_value_(false),
+        saw_slashed_zero_value_(false),
+        result_(CSSValueList::CreateSpaceSeparated()) {}
 
-  enum class ParseResult { ConsumedValue, DisallowedValue, UnknownValue };
+  enum class ParseResult { kConsumedValue, kDisallowedValue, kUnknownValue };
 
-  ParseResult consumeNumeric(CSSParserTokenRange& range) {
-    CSSValueID valueID = range.peek().id();
-    switch (valueID) {
+  ParseResult ConsumeNumeric(CSSParserTokenRange& range) {
+    CSSValueID value_id = range.Peek().Id();
+    switch (value_id) {
       case CSSValueLiningNums:
       case CSSValueOldstyleNums:
-        if (m_sawNumericFigureValue)
-          return ParseResult::DisallowedValue;
-        m_sawNumericFigureValue = true;
+        if (saw_numeric_figure_value_)
+          return ParseResult::kDisallowedValue;
+        saw_numeric_figure_value_ = true;
         break;
       case CSSValueProportionalNums:
       case CSSValueTabularNums:
-        if (m_sawNumericSpacingValue)
-          return ParseResult::DisallowedValue;
-        m_sawNumericSpacingValue = true;
+        if (saw_numeric_spacing_value_)
+          return ParseResult::kDisallowedValue;
+        saw_numeric_spacing_value_ = true;
         break;
       case CSSValueDiagonalFractions:
       case CSSValueStackedFractions:
-        if (m_sawNumericFractionValue)
-          return ParseResult::DisallowedValue;
-        m_sawNumericFractionValue = true;
+        if (saw_numeric_fraction_value_)
+          return ParseResult::kDisallowedValue;
+        saw_numeric_fraction_value_ = true;
         break;
       case CSSValueOrdinal:
-        if (m_sawOrdinalValue)
-          return ParseResult::DisallowedValue;
-        m_sawOrdinalValue = true;
+        if (saw_ordinal_value_)
+          return ParseResult::kDisallowedValue;
+        saw_ordinal_value_ = true;
         break;
       case CSSValueSlashedZero:
-        if (m_sawSlashedZeroValue)
-          return ParseResult::DisallowedValue;
-        m_sawSlashedZeroValue = true;
+        if (saw_slashed_zero_value_)
+          return ParseResult::kDisallowedValue;
+        saw_slashed_zero_value_ = true;
         break;
       default:
-        return ParseResult::UnknownValue;
+        return ParseResult::kUnknownValue;
     }
-    m_result->append(*CSSPropertyParserHelpers::consumeIdent(range));
-    return ParseResult::ConsumedValue;
+    result_->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
+    return ParseResult::kConsumedValue;
   }
 
-  CSSValue* finalizeValue() {
-    if (!m_result->length())
-      return CSSIdentifierValue::create(CSSValueNormal);
-    return m_result.release();
+  CSSValue* FinalizeValue() {
+    if (!result_->length())
+      return CSSIdentifierValue::Create(CSSValueNormal);
+    return result_.Release();
   }
 
  private:
-  bool m_sawNumericFigureValue;
-  bool m_sawNumericSpacingValue;
-  bool m_sawNumericFractionValue;
-  bool m_sawOrdinalValue;
-  bool m_sawSlashedZeroValue;
-  Member<CSSValueList> m_result;
+  bool saw_numeric_figure_value_;
+  bool saw_numeric_spacing_value_;
+  bool saw_numeric_fraction_value_;
+  bool saw_ordinal_value_;
+  bool saw_slashed_zero_value_;
+  Member<CSSValueList> result_;
 };
 
 }  // namespace blink

@@ -10,66 +10,66 @@
 
 namespace blink {
 
-WebGLExtensionName EXTDisjointTimerQueryWebGL2::name() const {
-  return EXTDisjointTimerQueryWebGL2Name;
+WebGLExtensionName EXTDisjointTimerQueryWebGL2::GetName() const {
+  return kEXTDisjointTimerQueryWebGL2Name;
 }
 
-EXTDisjointTimerQueryWebGL2* EXTDisjointTimerQueryWebGL2::create(
+EXTDisjointTimerQueryWebGL2* EXTDisjointTimerQueryWebGL2::Create(
     WebGLRenderingContextBase* context) {
   EXTDisjointTimerQueryWebGL2* o = new EXTDisjointTimerQueryWebGL2(context);
   return o;
 }
 
-bool EXTDisjointTimerQueryWebGL2::supported(
+bool EXTDisjointTimerQueryWebGL2::Supported(
     WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_EXT_disjoint_timer_query");
 }
 
-const char* EXTDisjointTimerQueryWebGL2::extensionName() {
+const char* EXTDisjointTimerQueryWebGL2::ExtensionName() {
   return "EXT_disjoint_timer_query_webgl2";
 }
 
 void EXTDisjointTimerQueryWebGL2::queryCounterEXT(WebGLQuery* query,
                                                   GLenum target) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
+  if (scoped.IsLost())
     return;
 
   DCHECK(query);
-  if (query->isDeleted() ||
-      !query->validate(scoped.context()->contextGroup(), scoped.context())) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
+  if (query->IsDeleted() ||
+      !query->Validate(scoped.Context()->ContextGroup(), scoped.Context())) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
                                         "invalid query");
     return;
   }
 
   if (target != GL_TIMESTAMP_EXT) {
-    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT",
+    scoped.Context()->SynthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT",
                                         "invalid target");
     return;
   }
 
-  if (query->hasTarget() && query->getTarget() != target) {
-    scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
+  if (query->HasTarget() && query->GetTarget() != target) {
+    scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
                                         "target does not match query");
     return;
   }
 
   // Timestamps are disabled in WebGL due to lack of driver support on multiple
   // platforms, so we don't actually perform a GL call.
-  query->setTarget(target);
-  query->resetCachedResult();
+  query->SetTarget(target);
+  query->ResetCachedResult();
 }
 
 DEFINE_TRACE(EXTDisjointTimerQueryWebGL2) {
-  WebGLExtension::trace(visitor);
+  WebGLExtension::Trace(visitor);
 }
 
 EXTDisjointTimerQueryWebGL2::EXTDisjointTimerQueryWebGL2(
     WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_EXT_disjoint_timer_query_webgl2");
 }
 

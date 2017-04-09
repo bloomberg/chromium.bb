@@ -73,134 +73,135 @@ namespace blink {
 TableLayoutAlgorithmFixed::TableLayoutAlgorithmFixed(LayoutTable* table)
     : TableLayoutAlgorithm(table) {}
 
-int TableLayoutAlgorithmFixed::calcWidthArray() {
+int TableLayoutAlgorithmFixed::CalcWidthArray() {
   // FIXME: We might want to wait until we have all of the first row before
   // computing for the first time.
-  int usedWidth = 0;
+  int used_width = 0;
 
   // iterate over all <col> elements
-  unsigned nEffCols = m_table->numEffectiveColumns();
-  m_width.resize(nEffCols);
-  m_width.fill(Length(Auto));
+  unsigned n_eff_cols = table_->NumEffectiveColumns();
+  width_.Resize(n_eff_cols);
+  width_.Fill(Length(kAuto));
 
-  unsigned currentEffectiveColumn = 0;
-  for (LayoutTableCol* col = m_table->firstColumn(); col;
-       col = col->nextColumn()) {
+  unsigned current_effective_column = 0;
+  for (LayoutTableCol* col = table_->FirstColumn(); col;
+       col = col->NextColumn()) {
     // LayoutTableCols don't have the concept of preferred logical width, but we
     // need to clear their dirty bits so that if we call
     // setPreferredWidthsDirty(true) on a col or one of its descendants, we'll
     // mark it's ancestors as dirty.
-    col->clearPreferredLogicalWidthsDirtyBits();
+    col->ClearPreferredLogicalWidthsDirtyBits();
 
     // Width specified by column-groups that have column child does not affect
     // column width in fixed layout tables
-    if (col->isTableColumnGroupWithColumnChildren())
+    if (col->IsTableColumnGroupWithColumnChildren())
       continue;
 
-    Length colStyleLogicalWidth = col->style()->logicalWidth();
-    int effectiveColWidth = 0;
-    if (colStyleLogicalWidth.isFixed() && colStyleLogicalWidth.value() > 0)
-      effectiveColWidth = colStyleLogicalWidth.value();
+    Length col_style_logical_width = col->Style()->LogicalWidth();
+    int effective_col_width = 0;
+    if (col_style_logical_width.IsFixed() &&
+        col_style_logical_width.Value() > 0)
+      effective_col_width = col_style_logical_width.Value();
 
-    unsigned span = col->span();
+    unsigned span = col->Span();
     while (span) {
-      unsigned spanInCurrentEffectiveColumn;
-      if (currentEffectiveColumn >= nEffCols) {
-        m_table->appendEffectiveColumn(span);
-        nEffCols++;
-        m_width.push_back(Length());
-        spanInCurrentEffectiveColumn = span;
+      unsigned span_in_current_effective_column;
+      if (current_effective_column >= n_eff_cols) {
+        table_->AppendEffectiveColumn(span);
+        n_eff_cols++;
+        width_.push_back(Length());
+        span_in_current_effective_column = span;
       } else {
-        if (span < m_table->spanOfEffectiveColumn(currentEffectiveColumn)) {
-          m_table->splitEffectiveColumn(currentEffectiveColumn, span);
-          nEffCols++;
-          m_width.push_back(Length());
+        if (span < table_->SpanOfEffectiveColumn(current_effective_column)) {
+          table_->SplitEffectiveColumn(current_effective_column, span);
+          n_eff_cols++;
+          width_.push_back(Length());
         }
-        spanInCurrentEffectiveColumn =
-            m_table->spanOfEffectiveColumn(currentEffectiveColumn);
+        span_in_current_effective_column =
+            table_->SpanOfEffectiveColumn(current_effective_column);
       }
       // TODO(alancutter): Make this work correctly for calc lengths.
-      if ((colStyleLogicalWidth.isFixed() ||
-           colStyleLogicalWidth.isPercentOrCalc()) &&
-          colStyleLogicalWidth.isPositive()) {
-        m_width[currentEffectiveColumn] = colStyleLogicalWidth;
-        m_width[currentEffectiveColumn] *= spanInCurrentEffectiveColumn;
-        usedWidth += effectiveColWidth * spanInCurrentEffectiveColumn;
+      if ((col_style_logical_width.IsFixed() ||
+           col_style_logical_width.IsPercentOrCalc()) &&
+          col_style_logical_width.IsPositive()) {
+        width_[current_effective_column] = col_style_logical_width;
+        width_[current_effective_column] *= span_in_current_effective_column;
+        used_width += effective_col_width * span_in_current_effective_column;
       }
-      span -= spanInCurrentEffectiveColumn;
-      currentEffectiveColumn++;
+      span -= span_in_current_effective_column;
+      current_effective_column++;
     }
   }
 
   // Iterate over the first row in case some are unspecified.
-  LayoutTableSection* section = m_table->topNonEmptySection();
+  LayoutTableSection* section = table_->TopNonEmptySection();
   if (!section)
-    return usedWidth;
+    return used_width;
 
-  unsigned currentColumn = 0;
+  unsigned current_column = 0;
 
-  LayoutTableRow* firstRow = section->firstRow();
-  for (LayoutTableCell* cell = firstRow->firstCell(); cell;
-       cell = cell->nextCell()) {
-    Length logicalWidth = cell->styleOrColLogicalWidth();
+  LayoutTableRow* first_row = section->FirstRow();
+  for (LayoutTableCell* cell = first_row->FirstCell(); cell;
+       cell = cell->NextCell()) {
+    Length logical_width = cell->StyleOrColLogicalWidth();
 
     // FIXME: calc() on tables should be handled consistently with other
     // lengths. See bug: https://crbug.com/382725
-    if (logicalWidth.isCalculated())
-      logicalWidth = Length();  // Make it Auto
+    if (logical_width.IsCalculated())
+      logical_width = Length();  // Make it Auto
 
-    unsigned span = cell->colSpan();
-    int fixedBorderBoxLogicalWidth = 0;
+    unsigned span = cell->ColSpan();
+    int fixed_border_box_logical_width = 0;
     // FIXME: Support other length types. If the width is non-auto, it should
     // probably just use LayoutBox::computeLogicalWidthUsing to compute the
     // width.
-    if (logicalWidth.isFixed() && logicalWidth.isPositive()) {
-      fixedBorderBoxLogicalWidth =
-          cell->adjustBorderBoxLogicalWidthForBoxSizing(logicalWidth.value())
-              .toInt();
-      logicalWidth.setValue(fixedBorderBoxLogicalWidth);
+    if (logical_width.IsFixed() && logical_width.IsPositive()) {
+      fixed_border_box_logical_width =
+          cell->AdjustBorderBoxLogicalWidthForBoxSizing(logical_width.Value())
+              .ToInt();
+      logical_width.SetValue(fixed_border_box_logical_width);
     }
 
-    unsigned usedSpan = 0;
-    while (usedSpan < span && currentColumn < nEffCols) {
-      float eSpan = m_table->spanOfEffectiveColumn(currentColumn);
+    unsigned used_span = 0;
+    while (used_span < span && current_column < n_eff_cols) {
+      float e_span = table_->SpanOfEffectiveColumn(current_column);
       // Only set if no col element has already set it.
-      if (m_width[currentColumn].isAuto() && logicalWidth.type() != Auto) {
-        m_width[currentColumn] = logicalWidth;
-        m_width[currentColumn] *= eSpan / span;
-        usedWidth += fixedBorderBoxLogicalWidth * eSpan / span;
+      if (width_[current_column].IsAuto() && logical_width.GetType() != kAuto) {
+        width_[current_column] = logical_width;
+        width_[current_column] *= e_span / span;
+        used_width += fixed_border_box_logical_width * e_span / span;
       }
-      usedSpan += eSpan;
-      ++currentColumn;
+      used_span += e_span;
+      ++current_column;
     }
 
     // TableLayoutAlgorithmFixed doesn't use min/maxPreferredLogicalWidths, but
     // we need to clear the dirty bit on the cell so that we'll correctly mark
     // its ancestors dirty in case we later call
     // setPreferredLogicalWidthsDirty() on it later.
-    if (cell->preferredLogicalWidthsDirty())
-      cell->clearPreferredLogicalWidthsDirty();
+    if (cell->PreferredLogicalWidthsDirty())
+      cell->ClearPreferredLogicalWidthsDirty();
   }
 
-  return usedWidth;
+  return used_width;
 }
 
-void TableLayoutAlgorithmFixed::computeIntrinsicLogicalWidths(
-    LayoutUnit& minWidth,
-    LayoutUnit& maxWidth) {
-  minWidth = maxWidth = LayoutUnit(calcWidthArray());
+void TableLayoutAlgorithmFixed::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_width,
+    LayoutUnit& max_width) {
+  min_width = max_width = LayoutUnit(CalcWidthArray());
 }
 
-void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(
-    LayoutUnit& minWidth,
-    LayoutUnit& maxWidth) const {
-  Length tableLogicalWidth = m_table->style()->logicalWidth();
-  if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
-    minWidth = maxWidth = LayoutUnit(
-        max(minWidth,
-            LayoutUnit(tableLogicalWidth.value() -
-                       m_table->bordersPaddingAndSpacingInRowDirection()))
-            .floor());
+void TableLayoutAlgorithmFixed::ApplyPreferredLogicalWidthQuirks(
+    LayoutUnit& min_width,
+    LayoutUnit& max_width) const {
+  Length table_logical_width = table_->Style()->LogicalWidth();
+  if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
+    min_width = max_width = LayoutUnit(
+        max(min_width,
+            LayoutUnit(table_logical_width.Value() -
+                       table_->BordersPaddingAndSpacingInRowDirection()))
+            .Floor());
   }
 
   /*
@@ -216,140 +217,142 @@ void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(
   // In this example, the two inner tables should be as large as the outer
   // table. We can achieve this effect by making the maxwidth of fixed tables
   // with percentage widths be infinite.
-  if (m_table->style()->logicalWidth().isPercentOrCalc() &&
-      maxWidth < tableMaxWidth)
-    maxWidth = LayoutUnit(tableMaxWidth);
+  if (table_->Style()->LogicalWidth().IsPercentOrCalc() &&
+      max_width < kTableMaxWidth)
+    max_width = LayoutUnit(kTableMaxWidth);
 }
 
-void TableLayoutAlgorithmFixed::layout() {
-  int tableLogicalWidth = (m_table->logicalWidth() -
-                           m_table->bordersPaddingAndSpacingInRowDirection())
-                              .toInt();
-  unsigned nEffCols = m_table->numEffectiveColumns();
+void TableLayoutAlgorithmFixed::GetLayout() {
+  int table_logical_width = (table_->LogicalWidth() -
+                             table_->BordersPaddingAndSpacingInRowDirection())
+                                .ToInt();
+  unsigned n_eff_cols = table_->NumEffectiveColumns();
 
   // FIXME: It is possible to be called without having properly updated our
   // internal representation. This means that our preferred logical widths were
   // not recomputed as expected.
-  if (nEffCols != m_width.size()) {
-    calcWidthArray();
+  if (n_eff_cols != width_.size()) {
+    CalcWidthArray();
     // FIXME: Table layout shouldn't modify our table structure (but does due to
     // columns and column-groups).
-    nEffCols = m_table->numEffectiveColumns();
+    n_eff_cols = table_->NumEffectiveColumns();
   }
 
-  Vector<int> calcWidth(nEffCols, 0);
+  Vector<int> calc_width(n_eff_cols, 0);
 
-  unsigned numAuto = 0;
-  unsigned autoSpan = 0;
-  int totalFixedWidth = 0;
-  int totalPercentWidth = 0;
-  float totalPercent = 0;
+  unsigned num_auto = 0;
+  unsigned auto_span = 0;
+  int total_fixed_width = 0;
+  int total_percent_width = 0;
+  float total_percent = 0;
 
   // Compute requirements and try to satisfy fixed and percent widths.
   // Percentages are of the table's width, so for example
   // for a table width of 100px with columns (40px, 10%), the 10% compute
   // to 10px here, and will scale up to 20px in the final (80px, 20px).
-  for (unsigned i = 0; i < nEffCols; i++) {
-    if (m_width[i].isFixed()) {
-      calcWidth[i] = m_width[i].value();
-      totalFixedWidth += calcWidth[i];
-    } else if (m_width[i].isPercentOrCalc()) {
+  for (unsigned i = 0; i < n_eff_cols; i++) {
+    if (width_[i].IsFixed()) {
+      calc_width[i] = width_[i].Value();
+      total_fixed_width += calc_width[i];
+    } else if (width_[i].IsPercentOrCalc()) {
       // TODO(alancutter): Make this work correctly for calc lengths.
-      calcWidth[i] =
-          valueForLength(m_width[i], LayoutUnit(tableLogicalWidth)).toInt();
-      totalPercentWidth += calcWidth[i];
-      totalPercent += m_width[i].percent();
-    } else if (m_width[i].isAuto()) {
-      numAuto++;
-      autoSpan += m_table->spanOfEffectiveColumn(i);
+      calc_width[i] =
+          ValueForLength(width_[i], LayoutUnit(table_logical_width)).ToInt();
+      total_percent_width += calc_width[i];
+      total_percent += width_[i].Percent();
+    } else if (width_[i].IsAuto()) {
+      num_auto++;
+      auto_span += table_->SpanOfEffectiveColumn(i);
     }
   }
 
-  int hspacing = m_table->hBorderSpacing();
-  int totalWidth = totalFixedWidth + totalPercentWidth;
-  if (!numAuto || totalWidth > tableLogicalWidth) {
+  int hspacing = table_->HBorderSpacing();
+  int total_width = total_fixed_width + total_percent_width;
+  if (!num_auto || total_width > table_logical_width) {
     // If there are no auto columns, or if the total is too wide, take
     // what we have and scale it to fit as necessary.
-    if (totalWidth != tableLogicalWidth) {
+    if (total_width != table_logical_width) {
       // Fixed widths only scale up
-      if (totalFixedWidth && totalWidth < tableLogicalWidth) {
-        totalFixedWidth = 0;
-        for (unsigned i = 0; i < nEffCols; i++) {
-          if (m_width[i].isFixed()) {
-            calcWidth[i] = calcWidth[i] * tableLogicalWidth / totalWidth;
-            totalFixedWidth += calcWidth[i];
+      if (total_fixed_width && total_width < table_logical_width) {
+        total_fixed_width = 0;
+        for (unsigned i = 0; i < n_eff_cols; i++) {
+          if (width_[i].IsFixed()) {
+            calc_width[i] = calc_width[i] * table_logical_width / total_width;
+            total_fixed_width += calc_width[i];
           }
         }
       }
-      if (totalPercent) {
-        totalPercentWidth = 0;
-        for (unsigned i = 0; i < nEffCols; i++) {
+      if (total_percent) {
+        total_percent_width = 0;
+        for (unsigned i = 0; i < n_eff_cols; i++) {
           // TODO(alancutter): Make this work correctly for calc lengths.
-          if (m_width[i].isPercentOrCalc()) {
-            calcWidth[i] = m_width[i].percent() *
-                           (tableLogicalWidth - totalFixedWidth) / totalPercent;
-            totalPercentWidth += calcWidth[i];
+          if (width_[i].IsPercentOrCalc()) {
+            calc_width[i] = width_[i].Percent() *
+                            (table_logical_width - total_fixed_width) /
+                            total_percent;
+            total_percent_width += calc_width[i];
           }
         }
       }
-      totalWidth = totalFixedWidth + totalPercentWidth;
+      total_width = total_fixed_width + total_percent_width;
     }
   } else {
     // Divide the remaining width among the auto columns.
-    DCHECK_GE(autoSpan, numAuto);
-    int remainingWidth = tableLogicalWidth - totalFixedWidth -
-                         totalPercentWidth - hspacing * (autoSpan - numAuto);
-    int lastAuto = 0;
-    for (unsigned i = 0; i < nEffCols; i++) {
-      if (m_width[i].isAuto()) {
-        unsigned span = m_table->spanOfEffectiveColumn(i);
-        int w = remainingWidth * span / autoSpan;
-        calcWidth[i] = w + hspacing * (span - 1);
-        remainingWidth -= w;
-        if (!remainingWidth)
+    DCHECK_GE(auto_span, num_auto);
+    int remaining_width = table_logical_width - total_fixed_width -
+                          total_percent_width -
+                          hspacing * (auto_span - num_auto);
+    int last_auto = 0;
+    for (unsigned i = 0; i < n_eff_cols; i++) {
+      if (width_[i].IsAuto()) {
+        unsigned span = table_->SpanOfEffectiveColumn(i);
+        int w = remaining_width * span / auto_span;
+        calc_width[i] = w + hspacing * (span - 1);
+        remaining_width -= w;
+        if (!remaining_width)
           break;
-        lastAuto = i;
-        numAuto--;
-        DCHECK_GE(autoSpan, span);
-        autoSpan -= span;
+        last_auto = i;
+        num_auto--;
+        DCHECK_GE(auto_span, span);
+        auto_span -= span;
       }
     }
     // Last one gets the remainder.
-    if (remainingWidth)
-      calcWidth[lastAuto] += remainingWidth;
-    totalWidth = tableLogicalWidth;
+    if (remaining_width)
+      calc_width[last_auto] += remaining_width;
+    total_width = table_logical_width;
   }
 
-  if (totalWidth < tableLogicalWidth) {
+  if (total_width < table_logical_width) {
     // Spread extra space over columns.
-    int remainingWidth = tableLogicalWidth - totalWidth;
-    int total = nEffCols;
+    int remaining_width = table_logical_width - total_width;
+    int total = n_eff_cols;
     while (total) {
-      int w = remainingWidth / total;
-      remainingWidth -= w;
-      calcWidth[--total] += w;
+      int w = remaining_width / total;
+      remaining_width -= w;
+      calc_width[--total] += w;
     }
-    if (nEffCols > 0)
-      calcWidth[nEffCols - 1] += remainingWidth;
+    if (n_eff_cols > 0)
+      calc_width[n_eff_cols - 1] += remaining_width;
   }
 
-  DCHECK_EQ(m_table->effectiveColumnPositions().size(), nEffCols + 1);
+  DCHECK_EQ(table_->EffectiveColumnPositions().size(), n_eff_cols + 1);
   int pos = 0;
-  for (unsigned i = 0; i < nEffCols; i++) {
-    m_table->setEffectiveColumnPosition(i, pos);
-    pos += calcWidth[i] + hspacing;
+  for (unsigned i = 0; i < n_eff_cols; i++) {
+    table_->SetEffectiveColumnPosition(i, pos);
+    pos += calc_width[i] + hspacing;
   }
   // The extra position is for the imaginary column after the last column.
-  m_table->setEffectiveColumnPosition(nEffCols, pos);
+  table_->SetEffectiveColumnPosition(n_eff_cols, pos);
 }
 
-void TableLayoutAlgorithmFixed::willChangeTableLayout() {
+void TableLayoutAlgorithmFixed::WillChangeTableLayout() {
   // When switching table layout algorithm, we need to dirty the preferred
   // logical widths as we cleared the bits without computing them.
   // (see calcWidthArray above.) This optimization is preferred to always
   // computing the logical widths we never intended to use.
-  m_table->recalcSectionsIfNeeded();
-  m_table->markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::MarkDirtyOnly);
+  table_->RecalcSectionsIfNeeded();
+  table_->MarkAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTable::kMarkDirtyOnly);
 }
 
 }  // namespace blink

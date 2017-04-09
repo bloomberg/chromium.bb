@@ -17,41 +17,41 @@
 
 namespace blink {
 
-bool V8ScriptValueSerializerForModules::writeDOMObject(
+bool V8ScriptValueSerializerForModules::WriteDOMObject(
     ScriptWrappable* wrappable,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   // Give the core/ implementation a chance to try first.
   // If it didn't recognize the kind of wrapper, try the modules types.
-  if (V8ScriptValueSerializer::writeDOMObject(wrappable, exceptionState))
+  if (V8ScriptValueSerializer::WriteDOMObject(wrappable, exception_state))
     return true;
-  if (exceptionState.hadException())
+  if (exception_state.HadException())
     return false;
 
-  const WrapperTypeInfo* wrapperTypeInfo = wrappable->wrapperTypeInfo();
-  if (wrapperTypeInfo == &V8CryptoKey::wrapperTypeInfo) {
-    return writeCryptoKey(wrappable->toImpl<CryptoKey>()->key(),
-                          exceptionState);
+  const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
+  if (wrapper_type_info == &V8CryptoKey::wrapperTypeInfo) {
+    return WriteCryptoKey(wrappable->ToImpl<CryptoKey>()->Key(),
+                          exception_state);
   }
-  if (wrapperTypeInfo == &V8DOMFileSystem::wrapperTypeInfo) {
-    DOMFileSystem* fs = wrappable->toImpl<DOMFileSystem>();
-    if (!fs->clonable()) {
-      exceptionState.throwDOMException(
-          DataCloneError, "A FileSystem object could not be cloned.");
+  if (wrapper_type_info == &V8DOMFileSystem::wrapperTypeInfo) {
+    DOMFileSystem* fs = wrappable->ToImpl<DOMFileSystem>();
+    if (!fs->Clonable()) {
+      exception_state.ThrowDOMException(
+          kDataCloneError, "A FileSystem object could not be cloned.");
       return false;
     }
-    writeTag(DOMFileSystemTag);
+    WriteTag(kDOMFileSystemTag);
     // This locks in the values of the FileSystemType enumerators.
-    writeUint32(static_cast<uint32_t>(fs->type()));
-    writeUTF8String(fs->name());
-    writeUTF8String(fs->rootURL().getString());
+    WriteUint32(static_cast<uint32_t>(fs->GetType()));
+    WriteUTF8String(fs->name());
+    WriteUTF8String(fs->RootURL().GetString());
     return true;
   }
-  if (wrapperTypeInfo == &V8RTCCertificate::wrapperTypeInfo) {
-    RTCCertificate* certificate = wrappable->toImpl<RTCCertificate>();
-    WebRTCCertificatePEM pem = certificate->certificate().toPEM();
-    writeTag(RTCCertificateTag);
-    writeUTF8String(pem.privateKey());
-    writeUTF8String(pem.certificate());
+  if (wrapper_type_info == &V8RTCCertificate::wrapperTypeInfo) {
+    RTCCertificate* certificate = wrappable->ToImpl<RTCCertificate>();
+    WebRTCCertificatePEM pem = certificate->Certificate().ToPEM();
+    WriteTag(kRTCCertificateTag);
+    WriteUTF8String(pem.PrivateKey());
+    WriteUTF8String(pem.Certificate());
     return true;
   }
   return false;
@@ -59,164 +59,164 @@ bool V8ScriptValueSerializerForModules::writeDOMObject(
 
 namespace {
 
-uint32_t algorithmIdForWireFormat(WebCryptoAlgorithmId id) {
+uint32_t AlgorithmIdForWireFormat(WebCryptoAlgorithmId id) {
   switch (id) {
-    case WebCryptoAlgorithmIdAesCbc:
-      return AesCbcTag;
-    case WebCryptoAlgorithmIdHmac:
-      return HmacTag;
-    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-      return RsaSsaPkcs1v1_5Tag;
-    case WebCryptoAlgorithmIdSha1:
-      return Sha1Tag;
-    case WebCryptoAlgorithmIdSha256:
-      return Sha256Tag;
-    case WebCryptoAlgorithmIdSha384:
-      return Sha384Tag;
-    case WebCryptoAlgorithmIdSha512:
-      return Sha512Tag;
-    case WebCryptoAlgorithmIdAesGcm:
-      return AesGcmTag;
-    case WebCryptoAlgorithmIdRsaOaep:
-      return RsaOaepTag;
-    case WebCryptoAlgorithmIdAesCtr:
-      return AesCtrTag;
-    case WebCryptoAlgorithmIdAesKw:
-      return AesKwTag;
-    case WebCryptoAlgorithmIdRsaPss:
-      return RsaPssTag;
-    case WebCryptoAlgorithmIdEcdsa:
-      return EcdsaTag;
-    case WebCryptoAlgorithmIdEcdh:
-      return EcdhTag;
-    case WebCryptoAlgorithmIdHkdf:
-      return HkdfTag;
-    case WebCryptoAlgorithmIdPbkdf2:
-      return Pbkdf2Tag;
+    case kWebCryptoAlgorithmIdAesCbc:
+      return kAesCbcTag;
+    case kWebCryptoAlgorithmIdHmac:
+      return kHmacTag;
+    case kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      return kRsaSsaPkcs1v1_5Tag;
+    case kWebCryptoAlgorithmIdSha1:
+      return kSha1Tag;
+    case kWebCryptoAlgorithmIdSha256:
+      return kSha256Tag;
+    case kWebCryptoAlgorithmIdSha384:
+      return kSha384Tag;
+    case kWebCryptoAlgorithmIdSha512:
+      return kSha512Tag;
+    case kWebCryptoAlgorithmIdAesGcm:
+      return kAesGcmTag;
+    case kWebCryptoAlgorithmIdRsaOaep:
+      return kRsaOaepTag;
+    case kWebCryptoAlgorithmIdAesCtr:
+      return kAesCtrTag;
+    case kWebCryptoAlgorithmIdAesKw:
+      return kAesKwTag;
+    case kWebCryptoAlgorithmIdRsaPss:
+      return kRsaPssTag;
+    case kWebCryptoAlgorithmIdEcdsa:
+      return kEcdsaTag;
+    case kWebCryptoAlgorithmIdEcdh:
+      return kEcdhTag;
+    case kWebCryptoAlgorithmIdHkdf:
+      return kHkdfTag;
+    case kWebCryptoAlgorithmIdPbkdf2:
+      return kPbkdf2Tag;
   }
   NOTREACHED() << "Unknown algorithm ID " << id;
   return 0;
 }
 
-uint32_t asymmetricKeyTypeForWireFormat(WebCryptoKeyType keyType) {
-  switch (keyType) {
-    case WebCryptoKeyTypePublic:
-      return PublicKeyType;
-    case WebCryptoKeyTypePrivate:
-      return PrivateKeyType;
-    case WebCryptoKeyTypeSecret:
+uint32_t AsymmetricKeyTypeForWireFormat(WebCryptoKeyType key_type) {
+  switch (key_type) {
+    case kWebCryptoKeyTypePublic:
+      return kPublicKeyType;
+    case kWebCryptoKeyTypePrivate:
+      return kPrivateKeyType;
+    case kWebCryptoKeyTypeSecret:
       break;
   }
-  NOTREACHED() << "Unknown asymmetric key type " << keyType;
+  NOTREACHED() << "Unknown asymmetric key type " << key_type;
   return 0;
 }
 
-uint32_t namedCurveForWireFormat(WebCryptoNamedCurve namedCurve) {
-  switch (namedCurve) {
-    case WebCryptoNamedCurveP256:
-      return P256Tag;
-    case WebCryptoNamedCurveP384:
-      return P384Tag;
-    case WebCryptoNamedCurveP521:
-      return P521Tag;
+uint32_t NamedCurveForWireFormat(WebCryptoNamedCurve named_curve) {
+  switch (named_curve) {
+    case kWebCryptoNamedCurveP256:
+      return kP256Tag;
+    case kWebCryptoNamedCurveP384:
+      return kP384Tag;
+    case kWebCryptoNamedCurveP521:
+      return kP521Tag;
   }
-  NOTREACHED() << "Unknown named curve " << namedCurve;
+  NOTREACHED() << "Unknown named curve " << named_curve;
   return 0;
 }
 
-uint32_t keyUsagesForWireFormat(WebCryptoKeyUsageMask usages,
+uint32_t KeyUsagesForWireFormat(WebCryptoKeyUsageMask usages,
                                 bool extractable) {
   // Reminder to update this when adding new key usages.
-  static_assert(EndOfWebCryptoKeyUsage == (1 << 7) + 1,
+  static_assert(kEndOfWebCryptoKeyUsage == (1 << 7) + 1,
                 "update required when adding new key usages");
   uint32_t value = 0;
   if (extractable)
-    value |= ExtractableUsage;
-  if (usages & WebCryptoKeyUsageEncrypt)
-    value |= EncryptUsage;
-  if (usages & WebCryptoKeyUsageDecrypt)
-    value |= DecryptUsage;
-  if (usages & WebCryptoKeyUsageSign)
-    value |= SignUsage;
-  if (usages & WebCryptoKeyUsageVerify)
-    value |= VerifyUsage;
-  if (usages & WebCryptoKeyUsageDeriveKey)
-    value |= DeriveKeyUsage;
-  if (usages & WebCryptoKeyUsageWrapKey)
-    value |= WrapKeyUsage;
-  if (usages & WebCryptoKeyUsageUnwrapKey)
-    value |= UnwrapKeyUsage;
-  if (usages & WebCryptoKeyUsageDeriveBits)
-    value |= DeriveBitsUsage;
+    value |= kExtractableUsage;
+  if (usages & kWebCryptoKeyUsageEncrypt)
+    value |= kEncryptUsage;
+  if (usages & kWebCryptoKeyUsageDecrypt)
+    value |= kDecryptUsage;
+  if (usages & kWebCryptoKeyUsageSign)
+    value |= kSignUsage;
+  if (usages & kWebCryptoKeyUsageVerify)
+    value |= kVerifyUsage;
+  if (usages & kWebCryptoKeyUsageDeriveKey)
+    value |= kDeriveKeyUsage;
+  if (usages & kWebCryptoKeyUsageWrapKey)
+    value |= kWrapKeyUsage;
+  if (usages & kWebCryptoKeyUsageUnwrapKey)
+    value |= kUnwrapKeyUsage;
+  if (usages & kWebCryptoKeyUsageDeriveBits)
+    value |= kDeriveBitsUsage;
   return value;
 }
 
 }  // namespace
 
-bool V8ScriptValueSerializerForModules::writeCryptoKey(
+bool V8ScriptValueSerializerForModules::WriteCryptoKey(
     const WebCryptoKey& key,
-    ExceptionState& exceptionState) {
-  writeTag(CryptoKeyTag);
+    ExceptionState& exception_state) {
+  WriteTag(kCryptoKeyTag);
 
   // Write params.
-  const WebCryptoKeyAlgorithm& algorithm = key.algorithm();
-  switch (algorithm.paramsType()) {
-    case WebCryptoKeyAlgorithmParamsTypeAes: {
-      const auto& params = *algorithm.aesParams();
-      writeOneByte(AesKeyTag);
-      writeUint32(algorithmIdForWireFormat(algorithm.id()));
-      DCHECK_EQ(0, params.lengthBits() % 8);
-      writeUint32(params.lengthBits() / 8);
+  const WebCryptoKeyAlgorithm& algorithm = key.Algorithm();
+  switch (algorithm.ParamsType()) {
+    case kWebCryptoKeyAlgorithmParamsTypeAes: {
+      const auto& params = *algorithm.AesParams();
+      WriteOneByte(kAesKeyTag);
+      WriteUint32(AlgorithmIdForWireFormat(algorithm.Id()));
+      DCHECK_EQ(0, params.LengthBits() % 8);
+      WriteUint32(params.LengthBits() / 8);
       break;
     }
-    case WebCryptoKeyAlgorithmParamsTypeHmac: {
-      const auto& params = *algorithm.hmacParams();
-      writeOneByte(HmacKeyTag);
-      DCHECK_EQ(0u, params.lengthBits() % 8);
-      writeUint32(params.lengthBits() / 8);
-      writeUint32(algorithmIdForWireFormat(params.hash().id()));
+    case kWebCryptoKeyAlgorithmParamsTypeHmac: {
+      const auto& params = *algorithm.HmacParams();
+      WriteOneByte(kHmacKeyTag);
+      DCHECK_EQ(0u, params.LengthBits() % 8);
+      WriteUint32(params.LengthBits() / 8);
+      WriteUint32(AlgorithmIdForWireFormat(params.GetHash().Id()));
       break;
     }
-    case WebCryptoKeyAlgorithmParamsTypeRsaHashed: {
-      const auto& params = *algorithm.rsaHashedParams();
-      writeOneByte(RsaHashedKeyTag);
-      writeUint32(algorithmIdForWireFormat(algorithm.id()));
-      writeUint32(asymmetricKeyTypeForWireFormat(key.type()));
-      writeUint32(params.modulusLengthBits());
-      writeUint32(params.publicExponent().size());
-      writeRawBytes(params.publicExponent().data(),
-                    params.publicExponent().size());
-      writeUint32(algorithmIdForWireFormat(params.hash().id()));
+    case kWebCryptoKeyAlgorithmParamsTypeRsaHashed: {
+      const auto& params = *algorithm.RsaHashedParams();
+      WriteOneByte(kRsaHashedKeyTag);
+      WriteUint32(AlgorithmIdForWireFormat(algorithm.Id()));
+      WriteUint32(AsymmetricKeyTypeForWireFormat(key.GetType()));
+      WriteUint32(params.ModulusLengthBits());
+      WriteUint32(params.PublicExponent().size());
+      WriteRawBytes(params.PublicExponent().Data(),
+                    params.PublicExponent().size());
+      WriteUint32(AlgorithmIdForWireFormat(params.GetHash().Id()));
       break;
     }
-    case WebCryptoKeyAlgorithmParamsTypeEc: {
-      const auto& params = *algorithm.ecParams();
-      writeOneByte(EcKeyTag);
-      writeUint32(algorithmIdForWireFormat(algorithm.id()));
-      writeUint32(asymmetricKeyTypeForWireFormat(key.type()));
-      writeUint32(namedCurveForWireFormat(params.namedCurve()));
+    case kWebCryptoKeyAlgorithmParamsTypeEc: {
+      const auto& params = *algorithm.EcParams();
+      WriteOneByte(kEcKeyTag);
+      WriteUint32(AlgorithmIdForWireFormat(algorithm.Id()));
+      WriteUint32(AsymmetricKeyTypeForWireFormat(key.GetType()));
+      WriteUint32(NamedCurveForWireFormat(params.NamedCurve()));
       break;
     }
-    case WebCryptoKeyAlgorithmParamsTypeNone:
-      DCHECK(WebCryptoAlgorithm::isKdf(algorithm.id()));
-      writeOneByte(NoParamsKeyTag);
-      writeUint32(algorithmIdForWireFormat(algorithm.id()));
+    case kWebCryptoKeyAlgorithmParamsTypeNone:
+      DCHECK(WebCryptoAlgorithm::IsKdf(algorithm.Id()));
+      WriteOneByte(kNoParamsKeyTag);
+      WriteUint32(AlgorithmIdForWireFormat(algorithm.Id()));
       break;
   }
 
   // Write key usages.
-  writeUint32(keyUsagesForWireFormat(key.usages(), key.extractable()));
+  WriteUint32(KeyUsagesForWireFormat(key.Usages(), key.Extractable()));
 
   // Write key data.
-  WebVector<uint8_t> keyData;
-  if (!Platform::current()->crypto()->serializeKeyForClone(key, keyData) ||
-      keyData.size() > std::numeric_limits<uint32_t>::max()) {
-    exceptionState.throwDOMException(DataCloneError,
-                                     "A CryptoKey object could not be cloned.");
+  WebVector<uint8_t> key_data;
+  if (!Platform::Current()->Crypto()->SerializeKeyForClone(key, key_data) ||
+      key_data.size() > std::numeric_limits<uint32_t>::max()) {
+    exception_state.ThrowDOMException(
+        kDataCloneError, "A CryptoKey object could not be cloned.");
     return false;
   }
-  writeUint32(keyData.size());
-  writeRawBytes(keyData.data(), keyData.size());
+  WriteUint32(key_data.size());
+  WriteRawBytes(key_data.Data(), key_data.size());
 
   return true;
 }

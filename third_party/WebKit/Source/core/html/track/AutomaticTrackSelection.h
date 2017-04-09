@@ -21,25 +21,26 @@ class AutomaticTrackSelection {
   struct Configuration {
     DISALLOW_NEW();
     Configuration()
-        : disableCurrentlyEnabledTracks(false),
-          forceEnableSubtitleOrCaptionTrack(false),
-          textTrackKindUserPreference(TextTrackKindUserPreference::Default) {}
+        : disable_currently_enabled_tracks(false),
+          force_enable_subtitle_or_caption_track(false),
+          text_track_kind_user_preference(
+              TextTrackKindUserPreference::kDefault) {}
 
-    bool disableCurrentlyEnabledTracks;
-    bool forceEnableSubtitleOrCaptionTrack;
-    TextTrackKindUserPreference textTrackKindUserPreference;
+    bool disable_currently_enabled_tracks;
+    bool force_enable_subtitle_or_caption_track;
+    TextTrackKindUserPreference text_track_kind_user_preference;
   };
 
   AutomaticTrackSelection(const Configuration&);
 
-  void perform(TextTrackList&);
+  void Perform(TextTrackList&);
 
  private:
-  void performAutomaticTextTrackSelection(const TrackGroup&);
-  void enableDefaultMetadataTextTracks(const TrackGroup&);
-  const AtomicString& preferredTrackKind() const;
+  void PerformAutomaticTextTrackSelection(const TrackGroup&);
+  void EnableDefaultMetadataTextTracks(const TrackGroup&);
+  const AtomicString& PreferredTrackKind() const;
 
-  const Configuration m_configuration;
+  const Configuration configuration_;
 };
 
 }  // namespace blink

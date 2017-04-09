@@ -20,15 +20,15 @@ class TextOffset {
   TextOffset(Text*, int);
   TextOffset(const TextOffset&);
 
-  Text* text() const { return m_text.get(); }
-  int offset() const { return m_offset; }
+  Text* GetText() const { return text_.Get(); }
+  int Offset() const { return offset_; }
 
-  bool isNull() const;
-  bool isNotNull() const;
+  bool IsNull() const;
+  bool IsNotNull() const;
 
  private:
-  Member<Text> m_text;
-  int m_offset;
+  Member<Text> text_;
+  int offset_;
 };
 
 }  // namespace blink

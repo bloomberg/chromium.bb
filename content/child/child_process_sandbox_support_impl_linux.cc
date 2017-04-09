@@ -51,10 +51,10 @@ void GetFallbackFontForCharacter(int32_t character,
         pickle_iter.ReadBool(&isItalic)) {
       fallbackFont->name = family_name;
       fallbackFont->filename = filename;
-      fallbackFont->fontconfigInterfaceId = fontconfigInterfaceId;
-      fallbackFont->ttcIndex = ttcIndex;
-      fallbackFont->isBold = isBold;
-      fallbackFont->isItalic = isItalic;
+      fallbackFont->fontconfig_interface_id = fontconfigInterfaceId;
+      fallbackFont->ttc_index = ttcIndex;
+      fallbackFont->is_bold = isBold;
+      fallbackFont->is_italic = isItalic;
     }
   }
 }
@@ -64,7 +64,7 @@ void GetRenderStyleForStrike(const char* family,
                              blink::WebFontRenderStyle* out) {
   TRACE_EVENT0("sandbox_ipc", "GetRenderStyleForStrike");
 
-  out->setDefaults();
+  out->SetDefaults();
 
   if (size_and_style < 0)
     return;
@@ -97,13 +97,13 @@ void GetRenderStyleForStrike(const char* family,
       pickle_iter.ReadInt(&use_antialias) &&
       pickle_iter.ReadInt(&use_subpixel_rendering) &&
       pickle_iter.ReadInt(&use_subpixel_positioning)) {
-    out->useBitmaps = use_bitmaps;
-    out->useAutoHint = use_autohint;
-    out->useHinting = use_hinting;
-    out->hintStyle = hint_style;
-    out->useAntiAlias = use_antialias;
-    out->useSubpixelRendering = use_subpixel_rendering;
-    out->useSubpixelPositioning = use_subpixel_positioning;
+    out->use_bitmaps = use_bitmaps;
+    out->use_auto_hint = use_autohint;
+    out->use_hinting = use_hinting;
+    out->hint_style = hint_style;
+    out->use_anti_alias = use_antialias;
+    out->use_subpixel_rendering = use_subpixel_rendering;
+    out->use_subpixel_positioning = use_subpixel_positioning;
   }
 }
 

@@ -33,38 +33,38 @@ namespace blink {
 
 namespace {
 
-unsigned s_suspensionCount = 0;
+unsigned g_suspension_count = 0;
 
 }  // namespace
 
 ScopedPageSuspender::ScopedPageSuspender() {
-  if (++s_suspensionCount > 1)
+  if (++g_suspension_count > 1)
     return;
 
-  setSuspended(true);
-  Platform::current()->currentThread()->scheduler()->suspendTimerQueue();
+  SetSuspended(true);
+  Platform::Current()->CurrentThread()->Scheduler()->SuspendTimerQueue();
 }
 
 ScopedPageSuspender::~ScopedPageSuspender() {
-  if (--s_suspensionCount > 0)
+  if (--g_suspension_count > 0)
     return;
 
-  setSuspended(false);
-  Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
+  SetSuspended(false);
+  Platform::Current()->CurrentThread()->Scheduler()->ResumeTimerQueue();
 }
 
-void ScopedPageSuspender::setSuspended(bool isSuspended) {
+void ScopedPageSuspender::SetSuspended(bool is_suspended) {
   // Make a copy of the collection. Undeferring loads can cause script to run,
   // which would mutate ordinaryPages() in the middle of iteration.
   HeapVector<Member<Page>> pages;
-  copyToVector(Page::ordinaryPages(), pages);
+  CopyToVector(Page::OrdinaryPages(), pages);
 
   for (const auto& page : pages)
-    page->setSuspended(isSuspended);
+    page->SetSuspended(is_suspended);
 }
 
-bool ScopedPageSuspender::isActive() {
-  return s_suspensionCount > 0;
+bool ScopedPageSuspender::IsActive() {
+  return g_suspension_count > 0;
 }
 
 }  // namespace blink

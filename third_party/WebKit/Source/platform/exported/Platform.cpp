@@ -54,98 +54,98 @@ class DefaultConnector {
  public:
   DefaultConnector() {
     service_manager::mojom::ConnectorRequest request;
-    m_connector = service_manager::Connector::Create(&request);
+    connector_ = service_manager::Connector::Create(&request);
   }
 
-  service_manager::Connector* get() { return m_connector.get(); }
+  service_manager::Connector* Get() { return connector_.get(); }
 
  private:
-  std::unique_ptr<service_manager::Connector> m_connector;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 }  // namespace
 
-static Platform* s_platform = nullptr;
+static Platform* g_platform = nullptr;
 
-static GCTaskRunner* s_gcTaskRunner = nullptr;
+static GCTaskRunner* g_gc_task_runner = nullptr;
 
-static void maxObservedSizeFunction(size_t sizeInMB) {
-  const size_t supportedMaxSizeInMB = 4 * 1024;
-  if (sizeInMB >= supportedMaxSizeInMB)
-    sizeInMB = supportedMaxSizeInMB - 1;
+static void MaxObservedSizeFunction(size_t size_in_mb) {
+  const size_t kSupportedMaxSizeInMB = 4 * 1024;
+  if (size_in_mb >= kSupportedMaxSizeInMB)
+    size_in_mb = kSupportedMaxSizeInMB - 1;
 
   // Send a UseCounter only when we see the highest memory usage
   // we've ever seen.
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, committedSizeHistogram,
-                      ("PartitionAlloc.CommittedSize", supportedMaxSizeInMB));
-  committedSizeHistogram.count(sizeInMB);
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, committed_size_histogram,
+                      ("PartitionAlloc.CommittedSize", kSupportedMaxSizeInMB));
+  committed_size_histogram.Count(size_in_mb);
 }
 
-static void callOnMainThreadFunction(WTF::MainThreadFunction function,
+static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
-  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+  Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      crossThreadBind(function, crossThreadUnretained(context)));
+      CrossThreadBind(function, CrossThreadUnretained(context)));
 }
 
-Platform::Platform() : m_mainThread(0) {
-  WTF::Partitions::initialize(maxObservedSizeFunction);
+Platform::Platform() : main_thread_(0) {
+  WTF::Partitions::Initialize(MaxObservedSizeFunction);
 }
 
-void Platform::initialize(Platform* platform) {
-  ASSERT(!s_platform);
+void Platform::Initialize(Platform* platform) {
+  ASSERT(!g_platform);
   ASSERT(platform);
-  s_platform = platform;
-  s_platform->m_mainThread = platform->currentThread();
+  g_platform = platform;
+  g_platform->main_thread_ = platform->CurrentThread();
 
-  WTF::initialize(callOnMainThreadFunction);
+  WTF::Initialize(CallOnMainThreadFunction);
 
-  ProcessHeap::init();
-  MemoryCoordinator::initialize();
+  ProcessHeap::Init();
+  MemoryCoordinator::Initialize();
   if (base::ThreadTaskRunnerHandle::IsSet())
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        BlinkGCMemoryDumpProvider::instance(), "BlinkGC",
+        BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
         base::ThreadTaskRunnerHandle::Get());
 
-  ThreadState::attachMainThread();
+  ThreadState::AttachMainThread();
 
   // TODO(ssid): remove this check after fixing crbug.com/486782.
-  if (s_platform->m_mainThread) {
-    ASSERT(!s_gcTaskRunner);
-    s_gcTaskRunner = new GCTaskRunner(s_platform->m_mainThread);
+  if (g_platform->main_thread_) {
+    ASSERT(!g_gc_task_runner);
+    g_gc_task_runner = new GCTaskRunner(g_platform->main_thread_);
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc",
+        PartitionAllocMemoryDumpProvider::Instance(), "PartitionAlloc",
         base::ThreadTaskRunnerHandle::Get());
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        FontCacheMemoryDumpProvider::instance(), "FontCaches",
+        FontCacheMemoryDumpProvider::Instance(), "FontCaches",
         base::ThreadTaskRunnerHandle::Get());
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        MemoryCacheDumpProvider::instance(), "MemoryCache",
+        MemoryCacheDumpProvider::Instance(), "MemoryCache",
         base::ThreadTaskRunnerHandle::Get());
   }
 }
 
-void Platform::setCurrentPlatformForTesting(Platform* platform) {
+void Platform::SetCurrentPlatformForTesting(Platform* platform) {
   ASSERT(platform);
-  s_platform = platform;
-  s_platform->m_mainThread = platform->currentThread();
+  g_platform = platform;
+  g_platform->main_thread_ = platform->CurrentThread();
 }
 
-Platform* Platform::current() {
-  return s_platform;
+Platform* Platform::Current() {
+  return g_platform;
 }
 
-WebThread* Platform::mainThread() const {
-  return m_mainThread;
+WebThread* Platform::MainThread() const {
+  return main_thread_;
 }
 
-service_manager::Connector* Platform::connector() {
+service_manager::Connector* Platform::GetConnector() {
   DEFINE_STATIC_LOCAL(DefaultConnector, connector, ());
-  return connector.get();
+  return connector.Get();
 }
 
-InterfaceProvider* Platform::interfaceProvider() {
-  return InterfaceProvider::getEmptyInterfaceProvider();
+InterfaceProvider* Platform::GetInterfaceProvider() {
+  return InterfaceProvider::GetEmptyInterfaceProvider();
 }
 
 }  // namespace blink

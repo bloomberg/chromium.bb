@@ -13,51 +13,51 @@ namespace blink {
 struct TestCase {
   double value;
   CSSPrimitiveValue::UnitType type;
-  unsigned fontSize;
-  unsigned viewportWidth;
-  unsigned viewportHeight;
+  unsigned font_size;
+  unsigned viewport_width;
+  unsigned viewport_height;
   bool success;
   double output;
 };
 
 TEST(MediaValuesTest, Basic) {
-  TestCase testCases[] = {
-      {40.0, CSSPrimitiveValue::UnitType::Pixels, 16, 300, 300, true, 40},
-      {40.0, CSSPrimitiveValue::UnitType::Ems, 16, 300, 300, true, 640},
-      {40.0, CSSPrimitiveValue::UnitType::Rems, 16, 300, 300, true, 640},
-      {40.0, CSSPrimitiveValue::UnitType::Exs, 16, 300, 300, true, 320},
-      {40.0, CSSPrimitiveValue::UnitType::Chs, 16, 300, 300, true, 320},
-      {43.0, CSSPrimitiveValue::UnitType::ViewportWidth, 16, 848, 976, true,
+  TestCase test_cases[] = {
+      {40.0, CSSPrimitiveValue::UnitType::kPixels, 16, 300, 300, true, 40},
+      {40.0, CSSPrimitiveValue::UnitType::kEms, 16, 300, 300, true, 640},
+      {40.0, CSSPrimitiveValue::UnitType::kRems, 16, 300, 300, true, 640},
+      {40.0, CSSPrimitiveValue::UnitType::kExs, 16, 300, 300, true, 320},
+      {40.0, CSSPrimitiveValue::UnitType::kChs, 16, 300, 300, true, 320},
+      {43.0, CSSPrimitiveValue::UnitType::kViewportWidth, 16, 848, 976, true,
        364.64},
-      {100.0, CSSPrimitiveValue::UnitType::ViewportWidth, 16, 821, 976, true,
+      {100.0, CSSPrimitiveValue::UnitType::kViewportWidth, 16, 821, 976, true,
        821},
-      {43.0, CSSPrimitiveValue::UnitType::ViewportHeight, 16, 848, 976, true,
+      {43.0, CSSPrimitiveValue::UnitType::kViewportHeight, 16, 848, 976, true,
        419.68},
-      {43.0, CSSPrimitiveValue::UnitType::ViewportMin, 16, 848, 976, true,
+      {43.0, CSSPrimitiveValue::UnitType::kViewportMin, 16, 848, 976, true,
        364.64},
-      {43.0, CSSPrimitiveValue::UnitType::ViewportMax, 16, 848, 976, true,
+      {43.0, CSSPrimitiveValue::UnitType::kViewportMax, 16, 848, 976, true,
        419.68},
-      {1.3, CSSPrimitiveValue::UnitType::Centimeters, 16, 300, 300, true,
+      {1.3, CSSPrimitiveValue::UnitType::kCentimeters, 16, 300, 300, true,
        49.133858},
-      {1.3, CSSPrimitiveValue::UnitType::Millimeters, 16, 300, 300, true,
+      {1.3, CSSPrimitiveValue::UnitType::kMillimeters, 16, 300, 300, true,
        4.913386},
-      {1.3, CSSPrimitiveValue::UnitType::Inches, 16, 300, 300, true, 124.8},
-      {13, CSSPrimitiveValue::UnitType::Points, 16, 300, 300, true, 17.333333},
-      {1.3, CSSPrimitiveValue::UnitType::Picas, 16, 300, 300, true, 20.8},
-      {40.0, CSSPrimitiveValue::UnitType::UserUnits, 16, 300, 300, true, 40},
-      {1.3, CSSPrimitiveValue::UnitType::Unknown, 16, 300, 300, false, 20},
-      {0.0, CSSPrimitiveValue::UnitType::Unknown, 0, 0, 0, false,
+      {1.3, CSSPrimitiveValue::UnitType::kInches, 16, 300, 300, true, 124.8},
+      {13, CSSPrimitiveValue::UnitType::kPoints, 16, 300, 300, true, 17.333333},
+      {1.3, CSSPrimitiveValue::UnitType::kPicas, 16, 300, 300, true, 20.8},
+      {40.0, CSSPrimitiveValue::UnitType::kUserUnits, 16, 300, 300, true, 40},
+      {1.3, CSSPrimitiveValue::UnitType::kUnknown, 16, 300, 300, false, 20},
+      {0.0, CSSPrimitiveValue::UnitType::kUnknown, 0, 0, 0, false,
        0.0}  // Do not remove the terminating line.
   };
 
-  for (unsigned i = 0; testCases[i].viewportWidth; ++i) {
+  for (unsigned i = 0; test_cases[i].viewport_width; ++i) {
     double output = 0;
-    bool success = MediaValues::computeLength(
-        testCases[i].value, testCases[i].type, testCases[i].fontSize,
-        testCases[i].viewportWidth, testCases[i].viewportHeight, output);
-    EXPECT_EQ(testCases[i].success, success);
+    bool success = MediaValues::ComputeLength(
+        test_cases[i].value, test_cases[i].type, test_cases[i].font_size,
+        test_cases[i].viewport_width, test_cases[i].viewport_height, output);
+    EXPECT_EQ(test_cases[i].success, success);
     if (success)
-      EXPECT_FLOAT_EQ(testCases[i].output, output);
+      EXPECT_FLOAT_EQ(test_cases[i].output, output);
   }
 }
 

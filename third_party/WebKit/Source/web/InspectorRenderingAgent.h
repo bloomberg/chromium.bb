@@ -19,7 +19,7 @@ class InspectorRenderingAgent final
   WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 
  public:
-  static InspectorRenderingAgent* create(WebLocalFrameImpl*, InspectorOverlay*);
+  static InspectorRenderingAgent* Create(WebLocalFrameImpl*, InspectorOverlay*);
 
   // protocol::Dispatcher::PageCommandHandler implementation.
   protocol::Response setShowPaintRects(bool) override;
@@ -30,17 +30,17 @@ class InspectorRenderingAgent final
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;
-  void restore() override;
+  void Restore() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   InspectorRenderingAgent(WebLocalFrameImpl*, InspectorOverlay*);
-  protocol::Response compositingEnabled();
-  WebViewImpl* webViewImpl();
+  protocol::Response CompositingEnabled();
+  WebViewImpl* GetWebViewImpl();
 
-  Member<WebLocalFrameImpl> m_webLocalFrameImpl;
-  Member<InspectorOverlay> m_overlay;
+  Member<WebLocalFrameImpl> web_local_frame_impl_;
+  Member<InspectorOverlay> overlay_;
 };
 
 }  // namespace blink

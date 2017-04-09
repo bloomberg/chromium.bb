@@ -36,35 +36,35 @@ namespace blink {
 
 SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
     AnimatedPropertyType type,
-    SVGElement* contextElement,
-    const QualifiedName& attributeName,
-    CSSPropertyID cssPropertyId)
-    : m_type(type),
+    SVGElement* context_element,
+    const QualifiedName& attribute_name,
+    CSSPropertyID css_property_id)
+    : type_(type),
       // Cast to avoid warnings about unsafe bitfield truncations of the CSS
       // property enum. CSS properties that don't fit in this bitfield are never
       // used here. See static_assert in header.
-      m_cssPropertyId(static_cast<unsigned>(cssPropertyId)),
-      m_contextElement(contextElement),
-      m_attributeName(attributeName) {
-  DCHECK(m_contextElement);
-  DCHECK(m_attributeName != QualifiedName::null());
-  DCHECK_EQ(this->type(), type);
-  DCHECK_EQ(this->cssPropertyId(), cssPropertyId);
+      css_property_id_(static_cast<unsigned>(css_property_id)),
+      context_element_(context_element),
+      attribute_name_(attribute_name) {
+  DCHECK(context_element_);
+  DCHECK(attribute_name_ != QualifiedName::Null());
+  DCHECK_EQ(this->GetType(), type);
+  DCHECK_EQ(this->CssPropertyId(), css_property_id);
 }
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase() {}
 
-void SVGAnimatedPropertyBase::animationEnded() {
-  synchronizeAttribute();
+void SVGAnimatedPropertyBase::AnimationEnded() {
+  SynchronizeAttribute();
 }
 
-void SVGAnimatedPropertyBase::synchronizeAttribute() {
-  AtomicString value(currentValueBase()->valueAsString());
-  m_contextElement->setSynchronizedLazyAttribute(m_attributeName, value);
+void SVGAnimatedPropertyBase::SynchronizeAttribute() {
+  AtomicString value(CurrentValueBase()->ValueAsString());
+  context_element_->SetSynchronizedLazyAttribute(attribute_name_, value);
 }
 
-bool SVGAnimatedPropertyBase::isSpecified() const {
-  return isAnimating() || contextElement()->hasAttribute(attributeName());
+bool SVGAnimatedPropertyBase::IsSpecified() const {
+  return IsAnimating() || contextElement()->hasAttribute(AttributeName());
 }
 
 }  // namespace blink

@@ -8,41 +8,41 @@
 
 namespace blink {
 
-String CSSQuadValue::customCSSText() const {
-  String top = m_top->cssText();
-  String right = m_right->cssText();
-  String bottom = m_bottom->cssText();
-  String left = m_left->cssText();
+String CSSQuadValue::CustomCSSText() const {
+  String top = top_->CssText();
+  String right = right_->CssText();
+  String bottom = bottom_->CssText();
+  String left = left_->CssText();
 
-  if (m_serializationType == TypeForSerialization::SerializeAsRect)
+  if (serialization_type_ == TypeForSerialization::kSerializeAsRect)
     return "rect(" + top + ' ' + right + ' ' + bottom + ' ' + left + ')';
 
   StringBuilder result;
   // reserve space for the four strings, plus three space separator characters.
-  result.reserveCapacity(top.length() + right.length() + bottom.length() +
+  result.ReserveCapacity(top.length() + right.length() + bottom.length() +
                          left.length() + 3);
-  result.append(top);
+  result.Append(top);
   if (right != top || bottom != top || left != top) {
-    result.append(' ');
-    result.append(right);
+    result.Append(' ');
+    result.Append(right);
     if (bottom != top || right != left) {
-      result.append(' ');
-      result.append(bottom);
+      result.Append(' ');
+      result.Append(bottom);
       if (left != right) {
-        result.append(' ');
-        result.append(left);
+        result.Append(' ');
+        result.Append(left);
       }
     }
   }
-  return result.toString();
+  return result.ToString();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSQuadValue) {
-  visitor->trace(m_top);
-  visitor->trace(m_right);
-  visitor->trace(m_bottom);
-  visitor->trace(m_left);
-  CSSValue::traceAfterDispatch(visitor);
+  visitor->Trace(top_);
+  visitor->Trace(right_);
+  visitor->Trace(bottom_);
+  visitor->Trace(left_);
+  CSSValue::TraceAfterDispatch(visitor);
 }
 
 }  // namespace blink

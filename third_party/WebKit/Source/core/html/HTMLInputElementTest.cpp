@@ -22,165 +22,167 @@ namespace blink {
 
 class HTMLInputElementTest : public testing::Test {
  protected:
-  Document& document() { return m_pageHolder->document(); }
-  HTMLInputElement& testElement() {
-    Element* element = document().getElementById("test");
+  Document& GetDocument() { return page_holder_->GetDocument(); }
+  HTMLInputElement& TestElement() {
+    Element* element = GetDocument().GetElementById("test");
     DCHECK(element);
     return toHTMLInputElement(*element);
   }
 
  private:
   void SetUp() override {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
   }
 
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsNoList) {
-  document().documentElement()->setInnerHTML("<input id=test>");
-  EXPECT_TRUE(testElement().filteredDataListOptions().isEmpty());
+  GetDocument().documentElement()->setInnerHTML("<input id=test>");
+  EXPECT_TRUE(TestElement().FilteredDataListOptions().IsEmpty());
 
-  document().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test list=dl1><datalist id=dl1></datalist>");
-  EXPECT_TRUE(testElement().filteredDataListOptions().isEmpty());
+  EXPECT_TRUE(TestElement().FilteredDataListOptions().IsEmpty());
 }
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsContain) {
-  document().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test value=BC list=dl2>"
       "<datalist id=dl2>"
       "<option>AbC DEF</option>"
       "<option>VAX</option>"
       "<option value=ghi>abc</option>"  // Match to label, not value.
       "</datalist>");
-  auto options = testElement().filteredDataListOptions();
+  auto options = TestElement().FilteredDataListOptions();
   EXPECT_EQ(2u, options.size());
-  EXPECT_EQ("AbC DEF", options[0]->value().utf8());
-  EXPECT_EQ("ghi", options[1]->value().utf8());
+  EXPECT_EQ("AbC DEF", options[0]->value().Utf8());
+  EXPECT_EQ("ghi", options[1]->value().Utf8());
 
-  document().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test value=i list=dl2>"
       "<datalist id=dl2>"
       "<option>I</option>"
       "<option>&#x0130;</option>"  // LATIN CAPITAL LETTER I WITH DOT ABOVE
       "<option>&#xFF49;</option>"  // FULLWIDTH LATIN SMALL LETTER I
       "</datalist>");
-  options = testElement().filteredDataListOptions();
+  options = TestElement().FilteredDataListOptions();
   EXPECT_EQ(2u, options.size());
-  EXPECT_EQ("I", options[0]->value().utf8());
+  EXPECT_EQ("I", options[0]->value().Utf8());
   EXPECT_EQ(0x0130, options[1]->value()[0]);
 }
 
 TEST_F(HTMLInputElementTest, FilteredDataListOptionsForMultipleEmail) {
-  document().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->setInnerHTML(
       "<input id=test value='foo@example.com, tkent' list=dl3 type=email "
       "multiple>"
       "<datalist id=dl3>"
       "<option>keishi@chromium.org</option>"
       "<option>tkent@chromium.org</option>"
       "</datalist>");
-  auto options = testElement().filteredDataListOptions();
+  auto options = TestElement().FilteredDataListOptions();
   EXPECT_EQ(1u, options.size());
-  EXPECT_EQ("tkent@chromium.org", options[0]->value().utf8());
+  EXPECT_EQ("tkent@chromium.org", options[0]->value().Utf8());
 }
 
 TEST_F(HTMLInputElementTest, create) {
   HTMLInputElement* input =
-      HTMLInputElement::create(document(), /* createdByParser */ false);
-  EXPECT_NE(nullptr, input->userAgentShadowRoot());
+      HTMLInputElement::Create(GetDocument(), /* createdByParser */ false);
+  EXPECT_NE(nullptr, input->UserAgentShadowRoot());
 
-  input = HTMLInputElement::create(document(), /* createdByParser */ true);
-  EXPECT_EQ(nullptr, input->userAgentShadowRoot());
-  input->parserSetAttributes(Vector<Attribute>());
-  EXPECT_NE(nullptr, input->userAgentShadowRoot());
+  input = HTMLInputElement::Create(GetDocument(), /* createdByParser */ true);
+  EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
+  input->ParserSetAttributes(Vector<Attribute>());
+  EXPECT_NE(nullptr, input->UserAgentShadowRoot());
 }
 
 TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
-  Document* documentWithoutFrame = Document::create();
-  EXPECT_EQ(nullptr, documentWithoutFrame->page());
-  HTMLHtmlElement* html = HTMLHtmlElement::create(*documentWithoutFrame);
-  html->appendChild(HTMLBodyElement::create(*documentWithoutFrame));
+  Document* document_without_frame = Document::Create();
+  EXPECT_EQ(nullptr, document_without_frame->GetPage());
+  HTMLHtmlElement* html = HTMLHtmlElement::Create(*document_without_frame);
+  html->AppendChild(HTMLBodyElement::Create(*document_without_frame));
 
   // Create an input element with type "range" inside a document without frame.
-  toHTMLBodyElement(html->firstChild())->setInnerHTML("<input type='range' />");
-  documentWithoutFrame->appendChild(html);
+  toHTMLBodyElement(html->FirstChild())->setInnerHTML("<input type='range' />");
+  document_without_frame->AppendChild(html);
 
-  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
-  auto& document = pageHolder->document();
-  EXPECT_NE(nullptr, document.page());
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
+  auto& document = page_holder->GetDocument();
+  EXPECT_NE(nullptr, document.GetPage());
 
   // Put the input element inside a document with frame.
-  document.body()->appendChild(documentWithoutFrame->body()->firstChild());
+  document.body()->AppendChild(document_without_frame->body()->FirstChild());
 
   // Remove the input element and all refs to it so it gets deleted before the
   // document.
   // The assert in |EventHandlerRegistry::updateEventHandlerTargets()| should
   // not be triggered.
-  document.body()->removeChild(document.body()->firstChild());
+  document.body()->RemoveChild(document.body()->FirstChild());
 }
 
 TEST_F(HTMLInputElementTest, DefaultToolTip) {
-  HTMLInputElement* inputWithoutForm =
-      HTMLInputElement::create(document(), false);
-  inputWithoutForm->setBooleanAttribute(HTMLNames::requiredAttr, true);
-  document().body()->appendChild(inputWithoutForm);
-  EXPECT_EQ("<<ValidationValueMissing>>", inputWithoutForm->defaultToolTip());
+  HTMLInputElement* input_without_form =
+      HTMLInputElement::Create(GetDocument(), false);
+  input_without_form->SetBooleanAttribute(HTMLNames::requiredAttr, true);
+  GetDocument().body()->AppendChild(input_without_form);
+  EXPECT_EQ("<<ValidationValueMissing>>", input_without_form->DefaultToolTip());
 
-  HTMLFormElement* form = HTMLFormElement::create(document());
-  document().body()->appendChild(form);
-  HTMLInputElement* inputWithForm = HTMLInputElement::create(document(), false);
-  inputWithForm->setBooleanAttribute(HTMLNames::requiredAttr, true);
-  form->appendChild(inputWithForm);
-  EXPECT_EQ("<<ValidationValueMissing>>", inputWithForm->defaultToolTip());
+  HTMLFormElement* form = HTMLFormElement::Create(GetDocument());
+  GetDocument().body()->AppendChild(form);
+  HTMLInputElement* input_with_form =
+      HTMLInputElement::Create(GetDocument(), false);
+  input_with_form->SetBooleanAttribute(HTMLNames::requiredAttr, true);
+  form->AppendChild(input_with_form);
+  EXPECT_EQ("<<ValidationValueMissing>>", input_with_form->DefaultToolTip());
 
-  form->setBooleanAttribute(HTMLNames::novalidateAttr, true);
-  EXPECT_EQ(String(), inputWithForm->defaultToolTip());
+  form->SetBooleanAttribute(HTMLNames::novalidateAttr, true);
+  EXPECT_EQ(String(), input_with_form->DefaultToolTip());
 }
 
 // crbug.com/589838
 TEST_F(HTMLInputElementTest, ImageTypeCrash) {
-  HTMLInputElement* input = HTMLInputElement::create(document(), false);
+  HTMLInputElement* input = HTMLInputElement::Create(GetDocument(), false);
   input->setAttribute(HTMLNames::typeAttr, "image");
-  input->ensureFallbackContent();
+  input->EnsureFallbackContent();
   // Make sure ensurePrimaryContent() recreates UA shadow tree, and updating
   // |value| doesn't crash.
-  input->ensurePrimaryContent();
+  input->EnsurePrimaryContent();
   input->setAttribute(HTMLNames::valueAttr, "aaa");
 }
 
 TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
   // crbug.com/697286
-  document().body()->setInnerHTML(
+  GetDocument().body()->setInnerHTML(
       "<input type=radio name=g><input type=radio name=g>");
   HTMLInputElement& radio1 =
-      toHTMLInputElement(*document().body()->firstChild());
+      toHTMLInputElement(*GetDocument().body()->FirstChild());
   HTMLInputElement& radio2 = toHTMLInputElement(*radio1.nextSibling());
   radio1.focus();
   // Make layout-dirty.
   radio2.setAttribute(HTMLNames::styleAttr, "position:fixed");
   KeyboardEventInit init;
   init.setKey("ArrowRight");
-  radio1.defaultEventHandler(new KeyboardEvent("keydown", init));
-  EXPECT_EQ(document().activeElement(), &radio2);
+  radio1.DefaultEventHandler(new KeyboardEvent("keydown", init));
+  EXPECT_EQ(GetDocument().ActiveElement(), &radio2);
 }
 
 TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
-  document().view()->frame().page()->visualViewport().setScale(2.f);
-  document().body()->setInnerHTML(
+  GetDocument().View()->GetFrame().GetPage()->GetVisualViewport().SetScale(2.f);
+  GetDocument().body()->setInnerHTML(
       "<input type='date' style='width:200px;height:50px' />");
-  document().view()->updateAllLifecyclePhases();
-  HTMLInputElement* input = toHTMLInputElement(document().body()->firstChild());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  HTMLInputElement* input =
+      toHTMLInputElement(GetDocument().body()->FirstChild());
 
   DateTimeChooserParameters params;
-  bool success = input->setupDateTimeChooserParameters(params);
+  bool success = input->SetupDateTimeChooserParameters(params);
   EXPECT_TRUE(success);
   EXPECT_EQ("date", params.type);
-  EXPECT_EQ(IntRect(16, 16, 400, 100), params.anchorRectInScreen);
+  EXPECT_EQ(IntRect(16, 16, 400, 100), params.anchor_rect_in_screen);
 }
 
 TEST_F(HTMLInputElementTest, StepDownOverflow) {
-  HTMLInputElement* input = HTMLInputElement::create(document(), false);
+  HTMLInputElement* input = HTMLInputElement::Create(GetDocument(), false);
   input->setAttribute(HTMLNames::typeAttr, "date");
   input->setAttribute(HTMLNames::minAttr, "2010-02-10");
   input->setAttribute(HTMLNames::stepAttr, "9223372036854775556");

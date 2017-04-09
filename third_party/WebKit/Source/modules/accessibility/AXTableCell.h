@@ -42,38 +42,38 @@ class MODULES_EXPORT AXTableCell : public AXLayoutObject {
   AXTableCell(LayoutObject*, AXObjectCacheImpl&);
 
  public:
-  static AXTableCell* create(LayoutObject*, AXObjectCacheImpl&);
+  static AXTableCell* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXTableCell() override;
 
-  bool isTableCell() const final;
+  bool IsTableCell() const final;
 
   // fills in the start location and row span of cell
-  virtual void rowIndexRange(std::pair<unsigned, unsigned>& rowRange);
+  virtual void RowIndexRange(std::pair<unsigned, unsigned>& row_range);
   // fills in the start location and column span of cell
-  virtual void columnIndexRange(std::pair<unsigned, unsigned>& columnRange);
+  virtual void ColumnIndexRange(std::pair<unsigned, unsigned>& column_range);
   // In the case of cells that act as row or column headers.
-  SortDirection getSortDirection() const final;
-  virtual AccessibilityRole scanToDecideHeaderRole();
+  SortDirection GetSortDirection() const final;
+  virtual AccessibilityRole ScanToDecideHeaderRole();
 
-  unsigned ariaColumnIndex() const;
-  unsigned ariaRowIndex() const;
-  void setARIAColIndexFromRow(int index) { m_ariaColIndexFromRow = index; }
+  unsigned AriaColumnIndex() const;
+  unsigned AriaRowIndex() const;
+  void SetARIAColIndexFromRow(int index) { aria_col_index_from_row_ = index; }
 
  protected:
-  virtual AXObject* parentTable() const;
-  AccessibilityRole determineAccessibilityRole() final;
+  virtual AXObject* ParentTable() const;
+  AccessibilityRole DetermineAccessibilityRole() final;
 
  private:
-  bool isTableHeaderCell() const;
-  bool isRowHeaderCell() const;
-  bool isColumnHeaderCell() const;
+  bool IsTableHeaderCell() const;
+  bool IsRowHeaderCell() const;
+  bool IsColumnHeaderCell() const;
 
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 
-  unsigned m_ariaColIndexFromRow;
+  unsigned aria_col_index_from_row_;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, isTableCell());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, IsTableCell());
 
 }  // namespace blink
 

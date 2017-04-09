@@ -55,96 +55,97 @@ struct EntityDescription {
 };
 
 template <typename CharType>
-static inline void appendCharactersReplacingEntitiesInternal(
+static inline void AppendCharactersReplacingEntitiesInternal(
     StringBuilder& result,
     CharType* text,
     unsigned length,
-    const EntityDescription entityMaps[],
-    unsigned entityMapsCount,
-    EntityMask entityMask) {
-  unsigned positionAfterLastEntity = 0;
+    const EntityDescription entity_maps[],
+    unsigned entity_maps_count,
+    EntityMask entity_mask) {
+  unsigned position_after_last_entity = 0;
   for (unsigned i = 0; i < length; ++i) {
-    for (unsigned entityIndex = 0; entityIndex < entityMapsCount;
-         ++entityIndex) {
-      if (text[i] == entityMaps[entityIndex].entity &&
-          entityMaps[entityIndex].mask & entityMask) {
-        result.append(text + positionAfterLastEntity,
-                      i - positionAfterLastEntity);
-        const CString& replacement = entityMaps[entityIndex].reference;
-        result.append(replacement.data(), replacement.length());
-        positionAfterLastEntity = i + 1;
+    for (unsigned entity_index = 0; entity_index < entity_maps_count;
+         ++entity_index) {
+      if (text[i] == entity_maps[entity_index].entity &&
+          entity_maps[entity_index].mask & entity_mask) {
+        result.Append(text + position_after_last_entity,
+                      i - position_after_last_entity);
+        const CString& replacement = entity_maps[entity_index].reference;
+        result.Append(replacement.Data(), replacement.length());
+        position_after_last_entity = i + 1;
         break;
       }
     }
   }
-  result.append(text + positionAfterLastEntity,
-                length - positionAfterLastEntity);
+  result.Append(text + position_after_last_entity,
+                length - position_after_last_entity);
 }
 
-void MarkupFormatter::appendCharactersReplacingEntities(StringBuilder& result,
-                                                        const String& source,
-                                                        unsigned offset,
-                                                        unsigned length,
-                                                        EntityMask entityMask) {
-  DEFINE_STATIC_LOCAL(const CString, ampReference, ("&amp;"));
-  DEFINE_STATIC_LOCAL(const CString, ltReference, ("&lt;"));
-  DEFINE_STATIC_LOCAL(const CString, gtReference, ("&gt;"));
-  DEFINE_STATIC_LOCAL(const CString, quotReference, ("&quot;"));
-  DEFINE_STATIC_LOCAL(const CString, nbspReference, ("&nbsp;"));
-  DEFINE_STATIC_LOCAL(const CString, tabReference, ("&#9;"));
-  DEFINE_STATIC_LOCAL(const CString, lineFeedReference, ("&#10;"));
-  DEFINE_STATIC_LOCAL(const CString, carriageReturnReference, ("&#13;"));
+void MarkupFormatter::AppendCharactersReplacingEntities(
+    StringBuilder& result,
+    const String& source,
+    unsigned offset,
+    unsigned length,
+    EntityMask entity_mask) {
+  DEFINE_STATIC_LOCAL(const CString, amp_reference, ("&amp;"));
+  DEFINE_STATIC_LOCAL(const CString, lt_reference, ("&lt;"));
+  DEFINE_STATIC_LOCAL(const CString, gt_reference, ("&gt;"));
+  DEFINE_STATIC_LOCAL(const CString, quot_reference, ("&quot;"));
+  DEFINE_STATIC_LOCAL(const CString, nbsp_reference, ("&nbsp;"));
+  DEFINE_STATIC_LOCAL(const CString, tab_reference, ("&#9;"));
+  DEFINE_STATIC_LOCAL(const CString, line_feed_reference, ("&#10;"));
+  DEFINE_STATIC_LOCAL(const CString, carriage_return_reference, ("&#13;"));
 
-  static const EntityDescription entityMaps[] = {
-      {'&', ampReference, EntityAmp},
-      {'<', ltReference, EntityLt},
-      {'>', gtReference, EntityGt},
-      {'"', quotReference, EntityQuot},
-      {noBreakSpaceCharacter, nbspReference, EntityNbsp},
-      {'\t', tabReference, EntityTab},
-      {'\n', lineFeedReference, EntityLineFeed},
-      {'\r', carriageReturnReference, EntityCarriageReturn},
+  static const EntityDescription kEntityMaps[] = {
+      {'&', amp_reference, kEntityAmp},
+      {'<', lt_reference, kEntityLt},
+      {'>', gt_reference, kEntityGt},
+      {'"', quot_reference, kEntityQuot},
+      {kNoBreakSpaceCharacter, nbsp_reference, kEntityNbsp},
+      {'\t', tab_reference, kEntityTab},
+      {'\n', line_feed_reference, kEntityLineFeed},
+      {'\r', carriage_return_reference, kEntityCarriageReturn},
   };
 
   if (!(offset + length))
     return;
 
   DCHECK_LE(offset + length, source.length());
-  if (source.is8Bit())
-    appendCharactersReplacingEntitiesInternal(
-        result, source.characters8() + offset, length, entityMaps,
-        WTF_ARRAY_LENGTH(entityMaps), entityMask);
+  if (source.Is8Bit())
+    AppendCharactersReplacingEntitiesInternal(
+        result, source.Characters8() + offset, length, kEntityMaps,
+        WTF_ARRAY_LENGTH(kEntityMaps), entity_mask);
   else
-    appendCharactersReplacingEntitiesInternal(
-        result, source.characters16() + offset, length, entityMaps,
-        WTF_ARRAY_LENGTH(entityMaps), entityMask);
+    AppendCharactersReplacingEntitiesInternal(
+        result, source.Characters16() + offset, length, kEntityMaps,
+        WTF_ARRAY_LENGTH(kEntityMaps), entity_mask);
 }
 
-MarkupFormatter::MarkupFormatter(EAbsoluteURLs resolveUrlsMethod,
-                                 SerializationType serializationType)
-    : m_resolveURLsMethod(resolveUrlsMethod),
-      m_serializationType(serializationType) {}
+MarkupFormatter::MarkupFormatter(EAbsoluteURLs resolve_urls_method,
+                                 SerializationType serialization_type)
+    : resolve_ur_ls_method_(resolve_urls_method),
+      serialization_type_(serialization_type) {}
 
 MarkupFormatter::~MarkupFormatter() {}
 
-String MarkupFormatter::resolveURLIfNeeded(const Element& element,
-                                           const String& urlString) const {
-  switch (m_resolveURLsMethod) {
-    case ResolveAllURLs:
-      return element.document().completeURL(urlString).getString();
+String MarkupFormatter::ResolveURLIfNeeded(const Element& element,
+                                           const String& url_string) const {
+  switch (resolve_ur_ls_method_) {
+    case kResolveAllURLs:
+      return element.GetDocument().CompleteURL(url_string).GetString();
 
-    case ResolveNonLocalURLs:
-      if (!element.document().url().isLocalFile())
-        return element.document().completeURL(urlString).getString();
+    case kResolveNonLocalURLs:
+      if (!element.GetDocument().Url().IsLocalFile())
+        return element.GetDocument().CompleteURL(url_string).GetString();
       break;
 
-    case DoNotResolveURLs:
+    case kDoNotResolveURLs:
       break;
   }
-  return urlString;
+  return url_string;
 }
 
-void MarkupFormatter::appendStartMarkup(StringBuilder& result,
+void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
                                         const Node& node,
                                         Namespaces* namespaces) {
   switch (node.getNodeType()) {
@@ -152,26 +153,26 @@ void MarkupFormatter::appendStartMarkup(StringBuilder& result,
       NOTREACHED();
       break;
     case Node::kCommentNode:
-      appendComment(result, toComment(node).data());
+      AppendComment(result, ToComment(node).data());
       break;
     case Node::kDocumentNode:
-      appendXMLDeclaration(result, toDocument(node));
+      AppendXMLDeclaration(result, ToDocument(node));
       break;
     case Node::kDocumentFragmentNode:
       break;
     case Node::kDocumentTypeNode:
-      appendDocumentType(result, toDocumentType(node));
+      AppendDocumentType(result, ToDocumentType(node));
       break;
     case Node::kProcessingInstructionNode:
-      appendProcessingInstruction(result,
-                                  toProcessingInstruction(node).target(),
-                                  toProcessingInstruction(node).data());
+      AppendProcessingInstruction(result,
+                                  ToProcessingInstruction(node).target(),
+                                  ToProcessingInstruction(node).data());
       break;
     case Node::kElementNode:
       NOTREACHED();
       break;
     case Node::kCdataSectionNode:
-      appendCDATASection(result, toCDATASection(node).data());
+      AppendCDATASection(result, ToCDATASection(node).data());
       break;
     case Node::kAttributeNode:
       NOTREACHED();
@@ -179,307 +180,308 @@ void MarkupFormatter::appendStartMarkup(StringBuilder& result,
   }
 }
 
-void MarkupFormatter::appendEndMarkup(StringBuilder& result,
+void MarkupFormatter::AppendEndMarkup(StringBuilder& result,
                                       const Element& element) {
-  if (shouldSelfClose(element) ||
-      (!element.hasChildren() && elementCannotHaveEndTag(element)))
+  if (ShouldSelfClose(element) ||
+      (!element.HasChildren() && ElementCannotHaveEndTag(element)))
     return;
 
-  result.append("</");
-  result.append(element.tagQName().toString());
-  result.append('>');
+  result.Append("</");
+  result.Append(element.TagQName().ToString());
+  result.Append('>');
 }
 
-void MarkupFormatter::appendAttributeValue(StringBuilder& result,
+void MarkupFormatter::AppendAttributeValue(StringBuilder& result,
                                            const String& attribute,
-                                           bool documentIsHTML) {
-  appendCharactersReplacingEntities(result, attribute, 0, attribute.length(),
-                                    documentIsHTML
-                                        ? EntityMaskInHTMLAttributeValue
-                                        : EntityMaskInAttributeValue);
+                                           bool document_is_html) {
+  AppendCharactersReplacingEntities(result, attribute, 0, attribute.length(),
+                                    document_is_html
+                                        ? kEntityMaskInHTMLAttributeValue
+                                        : kEntityMaskInAttributeValue);
 }
 
-void MarkupFormatter::appendQuotedURLAttributeValue(
+void MarkupFormatter::AppendQuotedURLAttributeValue(
     StringBuilder& result,
     const Element& element,
     const Attribute& attribute) {
-  DCHECK(element.isURLAttribute(attribute)) << element;
-  const String resolvedURLString =
-      resolveURLIfNeeded(element, attribute.value());
-  UChar quoteChar = '"';
-  String strippedURLString = resolvedURLString.stripWhiteSpace();
-  if (protocolIsJavaScript(strippedURLString)) {
+  DCHECK(element.IsURLAttribute(attribute)) << element;
+  const String resolved_url_string =
+      ResolveURLIfNeeded(element, attribute.Value());
+  UChar quote_char = '"';
+  String stripped_url_string = resolved_url_string.StripWhiteSpace();
+  if (ProtocolIsJavaScript(stripped_url_string)) {
     // minimal escaping for javascript urls
-    if (strippedURLString.contains('&'))
-      strippedURLString.replace('&', "&amp;");
+    if (stripped_url_string.Contains('&'))
+      stripped_url_string.Replace('&', "&amp;");
 
-    if (strippedURLString.contains('"')) {
-      if (strippedURLString.contains('\''))
-        strippedURLString.replace('"', "&quot;");
+    if (stripped_url_string.Contains('"')) {
+      if (stripped_url_string.Contains('\''))
+        stripped_url_string.Replace('"', "&quot;");
       else
-        quoteChar = '\'';
+        quote_char = '\'';
     }
-    result.append(quoteChar);
-    result.append(strippedURLString);
-    result.append(quoteChar);
+    result.Append(quote_char);
+    result.Append(stripped_url_string);
+    result.Append(quote_char);
     return;
   }
 
   // FIXME: This does not fully match other browsers. Firefox percent-escapes
   // non-ASCII characters for innerHTML.
-  result.append(quoteChar);
-  appendAttributeValue(result, resolvedURLString, false);
-  result.append(quoteChar);
+  result.Append(quote_char);
+  AppendAttributeValue(result, resolved_url_string, false);
+  result.Append(quote_char);
 }
 
-void MarkupFormatter::appendNamespace(StringBuilder& result,
+void MarkupFormatter::AppendNamespace(StringBuilder& result,
                                       const AtomicString& prefix,
-                                      const AtomicString& namespaceURI,
+                                      const AtomicString& namespace_uri,
                                       Namespaces& namespaces) {
-  if (namespaceURI.isEmpty())
+  if (namespace_uri.IsEmpty())
     return;
 
-  const AtomicString& lookupKey = (!prefix) ? emptyAtom : prefix;
-  AtomicString foundURI = namespaces.at(lookupKey);
-  if (foundURI != namespaceURI) {
-    namespaces.set(lookupKey, namespaceURI);
-    result.append(' ');
-    result.append(xmlnsAtom.getString());
-    if (!prefix.isEmpty()) {
-      result.append(':');
-      result.append(prefix);
+  const AtomicString& lookup_key = (!prefix) ? g_empty_atom : prefix;
+  AtomicString found_uri = namespaces.at(lookup_key);
+  if (found_uri != namespace_uri) {
+    namespaces.Set(lookup_key, namespace_uri);
+    result.Append(' ');
+    result.Append(g_xmlns_atom.GetString());
+    if (!prefix.IsEmpty()) {
+      result.Append(':');
+      result.Append(prefix);
     }
 
-    result.append("=\"");
-    appendAttributeValue(result, namespaceURI, false);
-    result.append('"');
+    result.Append("=\"");
+    AppendAttributeValue(result, namespace_uri, false);
+    result.Append('"');
   }
 }
 
-void MarkupFormatter::appendText(StringBuilder& result, Text& text) {
+void MarkupFormatter::AppendText(StringBuilder& result, Text& text) {
   const String& str = text.data();
-  appendCharactersReplacingEntities(result, str, 0, str.length(),
-                                    entityMaskForText(text));
+  AppendCharactersReplacingEntities(result, str, 0, str.length(),
+                                    EntityMaskForText(text));
 }
 
-void MarkupFormatter::appendComment(StringBuilder& result,
+void MarkupFormatter::AppendComment(StringBuilder& result,
                                     const String& comment) {
   // FIXME: Comment content is not escaped, but XMLSerializer (and possibly
   // other callers) should raise an exception if it includes "-->".
-  result.append("<!--");
-  result.append(comment);
-  result.append("-->");
+  result.Append("<!--");
+  result.Append(comment);
+  result.Append("-->");
 }
 
-void MarkupFormatter::appendXMLDeclaration(StringBuilder& result,
+void MarkupFormatter::AppendXMLDeclaration(StringBuilder& result,
                                            const Document& document) {
-  if (!document.hasXMLDeclaration())
+  if (!document.HasXMLDeclaration())
     return;
 
-  result.append("<?xml version=\"");
-  result.append(document.xmlVersion());
+  result.Append("<?xml version=\"");
+  result.Append(document.xmlVersion());
   const String& encoding = document.xmlEncoding();
-  if (!encoding.isEmpty()) {
-    result.append("\" encoding=\"");
-    result.append(encoding);
+  if (!encoding.IsEmpty()) {
+    result.Append("\" encoding=\"");
+    result.Append(encoding);
   }
-  if (document.xmlStandaloneStatus() != Document::StandaloneUnspecified) {
-    result.append("\" standalone=\"");
+  if (document.XmlStandaloneStatus() != Document::kStandaloneUnspecified) {
+    result.Append("\" standalone=\"");
     if (document.xmlStandalone())
-      result.append("yes");
+      result.Append("yes");
     else
-      result.append("no");
+      result.Append("no");
   }
 
-  result.append("\"?>");
+  result.Append("\"?>");
 }
 
-void MarkupFormatter::appendDocumentType(StringBuilder& result,
+void MarkupFormatter::AppendDocumentType(StringBuilder& result,
                                          const DocumentType& n) {
-  if (n.name().isEmpty())
+  if (n.name().IsEmpty())
     return;
 
-  result.append("<!DOCTYPE ");
-  result.append(n.name());
-  if (!n.publicId().isEmpty()) {
-    result.append(" PUBLIC \"");
-    result.append(n.publicId());
-    result.append('"');
-    if (!n.systemId().isEmpty()) {
-      result.append(" \"");
-      result.append(n.systemId());
-      result.append('"');
+  result.Append("<!DOCTYPE ");
+  result.Append(n.name());
+  if (!n.publicId().IsEmpty()) {
+    result.Append(" PUBLIC \"");
+    result.Append(n.publicId());
+    result.Append('"');
+    if (!n.systemId().IsEmpty()) {
+      result.Append(" \"");
+      result.Append(n.systemId());
+      result.Append('"');
     }
-  } else if (!n.systemId().isEmpty()) {
-    result.append(" SYSTEM \"");
-    result.append(n.systemId());
-    result.append('"');
+  } else if (!n.systemId().IsEmpty()) {
+    result.Append(" SYSTEM \"");
+    result.Append(n.systemId());
+    result.Append('"');
   }
-  result.append('>');
+  result.Append('>');
 }
 
-void MarkupFormatter::appendProcessingInstruction(StringBuilder& result,
+void MarkupFormatter::AppendProcessingInstruction(StringBuilder& result,
                                                   const String& target,
                                                   const String& data) {
   // FIXME: PI data is not escaped, but XMLSerializer (and possibly other
   // callers) this should raise an exception if it includes "?>".
-  result.append("<?");
-  result.append(target);
-  result.append(' ');
-  result.append(data);
-  result.append("?>");
+  result.Append("<?");
+  result.Append(target);
+  result.Append(' ');
+  result.Append(data);
+  result.Append("?>");
 }
 
-void MarkupFormatter::appendOpenTag(StringBuilder& result,
+void MarkupFormatter::AppendOpenTag(StringBuilder& result,
                                     const Element& element,
                                     Namespaces* namespaces) {
-  result.append('<');
-  result.append(element.tagQName().toString());
-  if (!serializeAsHTMLDocument(element) && namespaces &&
-      shouldAddNamespaceElement(element, *namespaces))
-    appendNamespace(result, element.prefix(), element.namespaceURI(),
+  result.Append('<');
+  result.Append(element.TagQName().ToString());
+  if (!SerializeAsHTMLDocument(element) && namespaces &&
+      ShouldAddNamespaceElement(element, *namespaces))
+    AppendNamespace(result, element.prefix(), element.namespaceURI(),
                     *namespaces);
 }
 
-void MarkupFormatter::appendCloseTag(StringBuilder& result,
+void MarkupFormatter::AppendCloseTag(StringBuilder& result,
                                      const Element& element) {
-  if (shouldSelfClose(element)) {
-    if (element.isHTMLElement())
-      result.append(' ');  // XHTML 1.0 <-> HTML compatibility.
-    result.append('/');
+  if (ShouldSelfClose(element)) {
+    if (element.IsHTMLElement())
+      result.Append(' ');  // XHTML 1.0 <-> HTML compatibility.
+    result.Append('/');
   }
-  result.append('>');
+  result.Append('>');
 }
 
-static inline bool attributeIsInSerializedNamespace(
+static inline bool AttributeIsInSerializedNamespace(
     const Attribute& attribute) {
-  return attribute.namespaceURI() == XMLNames::xmlNamespaceURI ||
-         attribute.namespaceURI() == XLinkNames::xlinkNamespaceURI ||
-         attribute.namespaceURI() == XMLNSNames::xmlnsNamespaceURI;
+  return attribute.NamespaceURI() == XMLNames::xmlNamespaceURI ||
+         attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI ||
+         attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI;
 }
 
-void MarkupFormatter::appendAttribute(StringBuilder& result,
+void MarkupFormatter::AppendAttribute(StringBuilder& result,
                                       const Element& element,
                                       const Attribute& attribute,
                                       Namespaces* namespaces) {
-  bool documentIsHTML = serializeAsHTMLDocument(element);
+  bool document_is_html = SerializeAsHTMLDocument(element);
 
-  QualifiedName prefixedName = attribute.name();
-  if (documentIsHTML && !attributeIsInSerializedNamespace(attribute)) {
-    result.append(' ');
-    result.append(attribute.name().localName());
+  QualifiedName prefixed_name = attribute.GetName();
+  if (document_is_html && !AttributeIsInSerializedNamespace(attribute)) {
+    result.Append(' ');
+    result.Append(attribute.GetName().LocalName());
   } else {
-    if (attribute.namespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
-      if (!attribute.prefix() && attribute.localName() != xmlnsAtom)
-        prefixedName.setPrefix(xmlnsAtom);
+    if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+      if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
+        prefixed_name.SetPrefix(g_xmlns_atom);
       // Account for the namespace attribute we're about to append.
       if (namespaces) {
-        const AtomicString& lookupKey =
-            (!attribute.prefix()) ? emptyAtom : attribute.localName();
-        namespaces->set(lookupKey, attribute.value());
+        const AtomicString& lookup_key =
+            (!attribute.Prefix()) ? g_empty_atom : attribute.LocalName();
+        namespaces->Set(lookup_key, attribute.Value());
       }
-    } else if (attribute.namespaceURI() == XMLNames::xmlNamespaceURI) {
-      if (!attribute.prefix())
-        prefixedName.setPrefix(xmlAtom);
+    } else if (attribute.NamespaceURI() == XMLNames::xmlNamespaceURI) {
+      if (!attribute.Prefix())
+        prefixed_name.SetPrefix(g_xml_atom);
     } else {
-      if (attribute.namespaceURI() == XLinkNames::xlinkNamespaceURI) {
-        if (!attribute.prefix())
-          prefixedName.setPrefix(xlinkAtom);
+      if (attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI) {
+        if (!attribute.Prefix())
+          prefixed_name.SetPrefix(g_xlink_atom);
       }
 
-      if (namespaces && shouldAddNamespaceAttribute(attribute, element)) {
-        if (!prefixedName.prefix()) {
+      if (namespaces && ShouldAddNamespaceAttribute(attribute, element)) {
+        if (!prefixed_name.Prefix()) {
           // This behavior is in process of being standardized. See
           // crbug.com/248044 and
           // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
-          String prefixPrefix("ns", 2);
-          for (unsigned i = attribute.namespaceURI().impl()->existingHash();;
+          String prefix_prefix("ns", 2);
+          for (unsigned i = attribute.NamespaceURI().Impl()->ExistingHash();;
                ++i) {
-            AtomicString newPrefix(String(prefixPrefix + String::number(i)));
-            AtomicString foundURI = namespaces->at(newPrefix);
-            if (foundURI == attribute.namespaceURI() || foundURI == nullAtom) {
+            AtomicString new_prefix(String(prefix_prefix + String::Number(i)));
+            AtomicString found_uri = namespaces->at(new_prefix);
+            if (found_uri == attribute.NamespaceURI() ||
+                found_uri == g_null_atom) {
               // We already generated a prefix for this namespace.
-              prefixedName.setPrefix(newPrefix);
+              prefixed_name.SetPrefix(new_prefix);
               break;
             }
           }
         }
-        DCHECK(prefixedName.prefix());
-        appendNamespace(result, prefixedName.prefix(), attribute.namespaceURI(),
-                        *namespaces);
+        DCHECK(prefixed_name.Prefix());
+        AppendNamespace(result, prefixed_name.Prefix(),
+                        attribute.NamespaceURI(), *namespaces);
       }
     }
-    result.append(' ');
-    result.append(prefixedName.toString());
+    result.Append(' ');
+    result.Append(prefixed_name.ToString());
   }
 
-  result.append('=');
+  result.Append('=');
 
-  if (element.isURLAttribute(attribute)) {
-    appendQuotedURLAttributeValue(result, element, attribute);
+  if (element.IsURLAttribute(attribute)) {
+    AppendQuotedURLAttributeValue(result, element, attribute);
   } else {
-    result.append('"');
-    appendAttributeValue(result, attribute.value(), documentIsHTML);
-    result.append('"');
+    result.Append('"');
+    AppendAttributeValue(result, attribute.Value(), document_is_html);
+    result.Append('"');
   }
 }
 
-void MarkupFormatter::appendCDATASection(StringBuilder& result,
+void MarkupFormatter::AppendCDATASection(StringBuilder& result,
                                          const String& section) {
   // FIXME: CDATA content is not escaped, but XMLSerializer (and possibly other
   // callers) should raise an exception if it includes "]]>".
-  result.append("<![CDATA[");
-  result.append(section);
-  result.append("]]>");
+  result.Append("<![CDATA[");
+  result.Append(section);
+  result.Append("]]>");
 }
 
-bool MarkupFormatter::shouldAddNamespaceElement(const Element& element,
+bool MarkupFormatter::ShouldAddNamespaceElement(const Element& element,
                                                 Namespaces& namespaces) const {
   // Don't add namespace attribute if it is already defined for this elem.
   const AtomicString& prefix = element.prefix();
-  if (prefix.isEmpty()) {
-    if (element.hasAttribute(xmlnsAtom)) {
-      namespaces.set(emptyAtom, element.namespaceURI());
+  if (prefix.IsEmpty()) {
+    if (element.hasAttribute(g_xmlns_atom)) {
+      namespaces.Set(g_empty_atom, element.namespaceURI());
       return false;
     }
     return true;
   }
 
-  return !element.hasAttribute(WTF::xmlnsWithColon + prefix);
+  return !element.hasAttribute(WTF::g_xmlns_with_colon + prefix);
 }
 
-bool MarkupFormatter::shouldAddNamespaceAttribute(
+bool MarkupFormatter::ShouldAddNamespaceAttribute(
     const Attribute& attribute,
     const Element& element) const {
   // xmlns and xmlns:prefix attributes should be handled by another branch in
   // appendAttribute.
-  DCHECK_NE(attribute.namespaceURI(), XMLNSNames::xmlnsNamespaceURI);
+  DCHECK_NE(attribute.NamespaceURI(), XMLNSNames::xmlnsNamespaceURI);
 
   // Attributes are in the null namespace by default.
-  if (!attribute.namespaceURI())
+  if (!attribute.NamespaceURI())
     return false;
 
   // Attributes without a prefix will need one generated for them, and an xmlns
   // attribute for that prefix.
-  if (!attribute.prefix())
+  if (!attribute.Prefix())
     return true;
 
-  return !element.hasAttribute(WTF::xmlnsWithColon + attribute.prefix());
+  return !element.hasAttribute(WTF::g_xmlns_with_colon + attribute.Prefix());
 }
 
-EntityMask MarkupFormatter::entityMaskForText(const Text& text) const {
-  if (!serializeAsHTMLDocument(text))
-    return EntityMaskInPCDATA;
+EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
+  if (!SerializeAsHTMLDocument(text))
+    return kEntityMaskInPCDATA;
 
   // TODO(hajimehoshi): We need to switch EditingStrategy.
-  const QualifiedName* parentName = nullptr;
+  const QualifiedName* parent_name = nullptr;
   if (text.parentElement())
-    parentName = &(text.parentElement())->tagQName();
+    parent_name = &(text.parentElement())->TagQName();
 
-  if (parentName && (*parentName == scriptTag || *parentName == styleTag ||
-                     *parentName == xmpTag))
-    return EntityMaskInCDATA;
-  return EntityMaskInHTMLPCDATA;
+  if (parent_name && (*parent_name == scriptTag || *parent_name == styleTag ||
+                      *parent_name == xmpTag))
+    return kEntityMaskInCDATA;
+  return kEntityMaskInHTMLPCDATA;
 }
 
 // Rules of self-closure
@@ -488,20 +490,20 @@ EntityMask MarkupFormatter::entityMaskForText(const Text& text) const {
 // 3. HTML elements which do not listed in spec will close with a
 // separate end tag.
 // 4. Other elements self-close.
-bool MarkupFormatter::shouldSelfClose(const Element& element) const {
-  if (serializeAsHTMLDocument(element))
+bool MarkupFormatter::ShouldSelfClose(const Element& element) const {
+  if (SerializeAsHTMLDocument(element))
     return false;
-  if (element.hasChildren())
+  if (element.HasChildren())
     return false;
-  if (element.isHTMLElement() && !elementCannotHaveEndTag(element))
+  if (element.IsHTMLElement() && !ElementCannotHaveEndTag(element))
     return false;
   return true;
 }
 
-bool MarkupFormatter::serializeAsHTMLDocument(const Node& node) const {
-  if (m_serializationType == SerializationType::ForcedXML)
+bool MarkupFormatter::SerializeAsHTMLDocument(const Node& node) const {
+  if (serialization_type_ == SerializationType::kForcedXML)
     return false;
-  return node.document().isHTMLDocument();
+  return node.GetDocument().IsHTMLDocument();
 }
 
 }  // namespace blink

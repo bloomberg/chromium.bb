@@ -46,108 +46,108 @@ namespace blink {
 namespace {
 
 struct chromiumVfsFile {
-  sqlite3_io_methods* pMethods;
-  sqlite3_file* wrappedFile;
-  char* wrappedFileName;
+  sqlite3_io_methods* p_methods;
+  sqlite3_file* wrapped_file;
+  char* wrapped_file_name;
 };
 
-int chromiumClose(sqlite3_file* sqliteFile) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  int r =
-      chromiumFile->wrappedFile->pMethods->xClose(chromiumFile->wrappedFile);
-  sqlite3_free(chromiumFile->wrappedFileName);
-  sqlite3_free(chromiumFile->wrappedFile);
-  memset(chromiumFile, 0, sizeof(*chromiumFile));
+int ChromiumClose(sqlite3_file* sqlite_file) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  int r = chromium_file->wrapped_file->pMethods->xClose(
+      chromium_file->wrapped_file);
+  sqlite3_free(chromium_file->wrapped_file_name);
+  sqlite3_free(chromium_file->wrapped_file);
+  memset(chromium_file, 0, sizeof(*chromium_file));
   return r;
 }
 
-int chromiumRead(sqlite3_file* sqliteFile,
-                 void* pBuf,
-                 int iAmt,
-                 sqlite3_int64 iOfst) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xRead(chromiumFile->wrappedFile,
-                                                    pBuf, iAmt, iOfst);
+int ChromiumRead(sqlite3_file* sqlite_file,
+                 void* p_buf,
+                 int i_amt,
+                 sqlite3_int64 i_ofst) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xRead(
+      chromium_file->wrapped_file, p_buf, i_amt, i_ofst);
 }
 
-int chromiumWrite(sqlite3_file* sqliteFile,
-                  const void* pBuf,
-                  int iAmt,
-                  sqlite3_int64 iOfst) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xWrite(chromiumFile->wrappedFile,
-                                                     pBuf, iAmt, iOfst);
+int ChromiumWrite(sqlite3_file* sqlite_file,
+                  const void* p_buf,
+                  int i_amt,
+                  sqlite3_int64 i_ofst) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xWrite(
+      chromium_file->wrapped_file, p_buf, i_amt, i_ofst);
 }
 
-int chromiumTruncate(sqlite3_file* sqliteFile, sqlite3_int64 size) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
+int ChromiumTruncate(sqlite3_file* sqlite_file, sqlite3_int64 size) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
 
   // The OSX and Linux sandboxes block ftruncate(), proxy to the browser
   // process.
-  if (Platform::current()->databaseSetFileSize(
-          String::fromUTF8(chromiumFile->wrappedFileName), size))
+  if (Platform::Current()->DatabaseSetFileSize(
+          String::FromUTF8(chromium_file->wrapped_file_name), size))
     return SQLITE_OK;
   return SQLITE_IOERR_TRUNCATE;
 }
 
-int chromiumSync(sqlite3_file* sqliteFile, int flags) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xSync(chromiumFile->wrappedFile,
-                                                    flags);
+int ChromiumSync(sqlite3_file* sqlite_file, int flags) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xSync(
+      chromium_file->wrapped_file, flags);
 }
 
-int chromiumFileSize(sqlite3_file* sqliteFile, sqlite3_int64* pSize) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xFileSize(
-      chromiumFile->wrappedFile, pSize);
+int ChromiumFileSize(sqlite3_file* sqlite_file, sqlite3_int64* p_size) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xFileSize(
+      chromium_file->wrapped_file, p_size);
 }
 
-int chromiumLock(sqlite3_file* sqliteFile, int eFileLock) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xLock(chromiumFile->wrappedFile,
-                                                    eFileLock);
+int ChromiumLock(sqlite3_file* sqlite_file, int e_file_lock) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xLock(
+      chromium_file->wrapped_file, e_file_lock);
 }
 
-int chromiumUnlock(sqlite3_file* sqliteFile, int eFileLock) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xUnlock(chromiumFile->wrappedFile,
-                                                      eFileLock);
+int ChromiumUnlock(sqlite3_file* sqlite_file, int e_file_lock) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xUnlock(
+      chromium_file->wrapped_file, e_file_lock);
 }
 
-int chromiumCheckReservedLock(sqlite3_file* sqliteFile, int* pResOut) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xCheckReservedLock(
-      chromiumFile->wrappedFile, pResOut);
+int ChromiumCheckReservedLock(sqlite3_file* sqlite_file, int* p_res_out) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xCheckReservedLock(
+      chromium_file->wrapped_file, p_res_out);
 }
 
-int chromiumFileControl(sqlite3_file* sqliteFile, int op, void* pArg) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xFileControl(
-      chromiumFile->wrappedFile, op, pArg);
+int ChromiumFileControl(sqlite3_file* sqlite_file, int op, void* p_arg) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xFileControl(
+      chromium_file->wrapped_file, op, p_arg);
 }
 
-int chromiumSectorSize(sqlite3_file* sqliteFile) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xSectorSize(
-      chromiumFile->wrappedFile);
+int ChromiumSectorSize(sqlite3_file* sqlite_file) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xSectorSize(
+      chromium_file->wrapped_file);
 }
 
-int chromiumDeviceCharacteristics(sqlite3_file* sqliteFile) {
-  chromiumVfsFile* chromiumFile =
-      reinterpret_cast<chromiumVfsFile*>(sqliteFile);
-  return chromiumFile->wrappedFile->pMethods->xDeviceCharacteristics(
-      chromiumFile->wrappedFile);
+int ChromiumDeviceCharacteristics(sqlite3_file* sqlite_file) {
+  chromiumVfsFile* chromium_file =
+      reinterpret_cast<chromiumVfsFile*>(sqlite_file);
+  return chromium_file->wrapped_file->pMethods->xDeviceCharacteristics(
+      chromium_file->wrapped_file);
 }
 
 // Opens a file.
@@ -157,87 +157,87 @@ int chromiumDeviceCharacteristics(sqlite3_file* sqliteFile) {
 // id - the structure that will manipulate the newly opened file.
 // desiredFlags - the desired open mode flags.
 // usedFlags - the actual open mode flags that were used.
-int chromiumOpenInternal(sqlite3_vfs* vfs,
-                         const char* fileName,
+int ChromiumOpenInternal(sqlite3_vfs* vfs,
+                         const char* file_name,
                          sqlite3_file* id,
-                         int desiredFlags,
-                         int* usedFlags) {
-  int fd = Platform::current()->databaseOpenFile(String::fromUTF8(fileName),
-                                                 desiredFlags);
-  if ((fd < 0) && (desiredFlags & SQLITE_OPEN_READWRITE)) {
-    desiredFlags =
-        (desiredFlags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) |
+                         int desired_flags,
+                         int* used_flags) {
+  int fd = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
+                                                 desired_flags);
+  if ((fd < 0) && (desired_flags & SQLITE_OPEN_READWRITE)) {
+    desired_flags =
+        (desired_flags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) |
         SQLITE_OPEN_READONLY;
-    fd = Platform::current()->databaseOpenFile(String::fromUTF8(fileName),
-                                               desiredFlags);
+    fd = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
+                                               desired_flags);
   }
   if (fd < 0)
     return SQLITE_CANTOPEN;
 
-  if (usedFlags)
-    *usedFlags = desiredFlags;
+  if (used_flags)
+    *used_flags = desired_flags;
 
   fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
 
   // The mask 0x00007F00 gives us the 7 bits that determine the type of the file
   // SQLite is trying to open.
-  int fileType = desiredFlags & 0x00007F00;
-  int noLock = (fileType != SQLITE_OPEN_MAIN_DB);
-  sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
+  int file_type = desired_flags & 0x00007F00;
+  int no_lock = (file_type != SQLITE_OPEN_MAIN_DB);
+  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
   return chromium_sqlite3_fill_in_unix_sqlite3_file(
-      wrappedVfs, fd, id, fileName, noLock, desiredFlags);
+      wrapped_vfs, fd, id, file_name, no_lock, desired_flags);
 }
 
-int chromiumOpen(sqlite3_vfs* vfs,
-                 const char* fileName,
+int ChromiumOpen(sqlite3_vfs* vfs,
+                 const char* file_name,
                  sqlite3_file* id,
-                 int desiredFlags,
-                 int* usedFlags) {
-  sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-  sqlite3_file* wrappedFile =
-      static_cast<sqlite3_file*>(sqlite3_malloc(wrappedVfs->szOsFile));
-  if (!wrappedFile)
+                 int desired_flags,
+                 int* used_flags) {
+  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
+  sqlite3_file* wrapped_file =
+      static_cast<sqlite3_file*>(sqlite3_malloc(wrapped_vfs->szOsFile));
+  if (!wrapped_file)
     return SQLITE_NOMEM;
 
   // Make a local copy of the file name.  SQLite's os_unix.c appears to be
   // written to allow caching the pointer passed in to this function, but that
   // seems brittle.
-  char* wrappedFileName = sqlite3_mprintf("%s", fileName);
-  if (!wrappedFileName) {
-    sqlite3_free(wrappedFile);
+  char* wrapped_file_name = sqlite3_mprintf("%s", file_name);
+  if (!wrapped_file_name) {
+    sqlite3_free(wrapped_file);
     return SQLITE_NOMEM;
   }
 
   // SQLite's unixOpen() makes assumptions about the structure of |fileName|.
   // Our local copy may not answer those assumptions correctly.
-  int rc =
-      chromiumOpenInternal(vfs, fileName, wrappedFile, desiredFlags, usedFlags);
+  int rc = ChromiumOpenInternal(vfs, file_name, wrapped_file, desired_flags,
+                                used_flags);
   if (rc != SQLITE_OK) {
-    sqlite3_free(wrappedFileName);
-    sqlite3_free(wrappedFile);
+    sqlite3_free(wrapped_file_name);
+    sqlite3_free(wrapped_file);
     return rc;
   }
 
-  static sqlite3_io_methods chromiumIoMethods = {
+  static sqlite3_io_methods chromium_io_methods = {
       1,
-      chromiumClose,
-      chromiumRead,
-      chromiumWrite,
-      chromiumTruncate,
-      chromiumSync,
-      chromiumFileSize,
-      chromiumLock,
-      chromiumUnlock,
-      chromiumCheckReservedLock,
-      chromiumFileControl,
-      chromiumSectorSize,
-      chromiumDeviceCharacteristics,
+      ChromiumClose,
+      ChromiumRead,
+      ChromiumWrite,
+      ChromiumTruncate,
+      ChromiumSync,
+      ChromiumFileSize,
+      ChromiumLock,
+      ChromiumUnlock,
+      ChromiumCheckReservedLock,
+      ChromiumFileControl,
+      ChromiumSectorSize,
+      ChromiumDeviceCharacteristics,
       // Methods above are valid for version 1.
   };
-  chromiumVfsFile* chromiumFile = reinterpret_cast<chromiumVfsFile*>(id);
-  chromiumFile->pMethods = &chromiumIoMethods;
-  chromiumFile->wrappedFile = wrappedFile;
-  chromiumFile->wrappedFileName = wrappedFileName;
+  chromiumVfsFile* chromium_file = reinterpret_cast<chromiumVfsFile*>(id);
+  chromium_file->p_methods = &chromium_io_methods;
+  chromium_file->wrapped_file = wrapped_file;
+  chromium_file->wrapped_file_name = wrapped_file_name;
   return SQLITE_OK;
 }
 
@@ -247,9 +247,9 @@ int chromiumOpen(sqlite3_vfs* vfs,
 // fileName - the name of the file.
 // syncDir - determines if the directory to which this file belongs
 //           should be synched after the file is deleted.
-int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir) {
-  return Platform::current()->databaseDeleteFile(String::fromUTF8(fileName),
-                                                 syncDir);
+int ChromiumDelete(sqlite3_vfs*, const char* file_name, int sync_dir) {
+  return Platform::Current()->DatabaseDeleteFile(String::FromUTF8(file_name),
+                                                 sync_dir);
 }
 
 // Check the existance and status of the given file.
@@ -258,9 +258,9 @@ int chromiumDelete(sqlite3_vfs*, const char* fileName, int syncDir) {
 // fileName - the name of the file.
 // flag - the type of test to make on this file.
 // res - the result.
-int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res) {
-  int attr = static_cast<int>(Platform::current()->databaseGetFileAttributes(
-      String::fromUTF8(fileName)));
+int ChromiumAccess(sqlite3_vfs*, const char* file_name, int flag, int* res) {
+  int attr = static_cast<int>(Platform::Current()->DatabaseGetFileAttributes(
+      String::FromUTF8(file_name)));
   if (attr < 0) {
     *res = 0;
     return SQLITE_OK;
@@ -289,80 +289,80 @@ int chromiumAccess(sqlite3_vfs*, const char* fileName, int flag, int* res) {
 // relativePath - the relative path.
 // bufSize - the size of the output buffer in bytes.
 // absolutePath - the output buffer where the absolute path will be stored.
-int chromiumFullPathname(sqlite3_vfs* vfs,
-                         const char* relativePath,
-                         int bufSize,
-                         char* absolutePath) {
+int ChromiumFullPathname(sqlite3_vfs* vfs,
+                         const char* relative_path,
+                         int buf_size,
+                         char* absolute_path) {
   // The renderer process doesn't need to know the absolute path of the file
-  sqlite3_snprintf(bufSize, absolutePath, "%s", relativePath);
+  sqlite3_snprintf(buf_size, absolute_path, "%s", relative_path);
   return SQLITE_OK;
 }
 
 // Do not allow loading libraries in the renderer.
-void* chromiumDlOpen(sqlite3_vfs*, const char*) {
+void* ChromiumDlOpen(sqlite3_vfs*, const char*) {
   return 0;
 }
 
-void chromiumDlError(sqlite3_vfs*, int bufSize, char* errorBuffer) {
-  sqlite3_snprintf(bufSize, errorBuffer, "Dynamic loading not supported");
+void ChromiumDlError(sqlite3_vfs*, int buf_size, char* error_buffer) {
+  sqlite3_snprintf(buf_size, error_buffer, "Dynamic loading not supported");
 }
 
-void (*chromiumDlSym(sqlite3_vfs*, void*, const char*))(void) {
+void (*ChromiumDlSym(sqlite3_vfs*, void*, const char*))(void) {
   return 0;
 }
 
-void chromiumDlClose(sqlite3_vfs*, void*) {}
+void ChromiumDlClose(sqlite3_vfs*, void*) {}
 
-int chromiumRandomness(sqlite3_vfs* vfs, int bufSize, char* buffer) {
-  sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-  return wrappedVfs->xRandomness(wrappedVfs, bufSize, buffer);
+int ChromiumRandomness(sqlite3_vfs* vfs, int buf_size, char* buffer) {
+  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
+  return wrapped_vfs->xRandomness(wrapped_vfs, buf_size, buffer);
 }
 
-int chromiumSleep(sqlite3_vfs* vfs, int microseconds) {
-  sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-  return wrappedVfs->xSleep(wrappedVfs, microseconds);
+int ChromiumSleep(sqlite3_vfs* vfs, int microseconds) {
+  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
+  return wrapped_vfs->xSleep(wrapped_vfs, microseconds);
 }
 
-int chromiumCurrentTime(sqlite3_vfs* vfs, double* prNow) {
-  sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
-  return wrappedVfs->xCurrentTime(wrappedVfs, prNow);
+int ChromiumCurrentTime(sqlite3_vfs* vfs, double* pr_now) {
+  sqlite3_vfs* wrapped_vfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
+  return wrapped_vfs->xCurrentTime(wrapped_vfs, pr_now);
 }
 
-int chromiumGetLastError(sqlite3_vfs* vfs, int nBuf, char* zBuf) {
-  if (nBuf && zBuf)
-    *zBuf = '\0';
+int ChromiumGetLastError(sqlite3_vfs* vfs, int n_buf, char* z_buf) {
+  if (n_buf && z_buf)
+    *z_buf = '\0';
   return 0;
 }
 
 }  // namespace
 
-void SQLiteFileSystem::registerSQLiteVFS() {
-  sqlite3_vfs* wrappedVfs = sqlite3_vfs_find("unix");
+void SQLiteFileSystem::RegisterSQLiteVFS() {
+  sqlite3_vfs* wrapped_vfs = sqlite3_vfs_find("unix");
 
   // These are implemented by delegating to |wrappedVfs|.
   // TODO(shess): Implement local versions.
-  ASSERT(wrappedVfs->xRandomness);
-  ASSERT(wrappedVfs->xSleep);
-  ASSERT(wrappedVfs->xCurrentTime);
+  ASSERT(wrapped_vfs->xRandomness);
+  ASSERT(wrapped_vfs->xSleep);
+  ASSERT(wrapped_vfs->xCurrentTime);
 
   static sqlite3_vfs chromium_vfs = {1,
                                      sizeof(chromiumVfsFile),
-                                     wrappedVfs->mxPathname,
+                                     wrapped_vfs->mxPathname,
                                      0,
                                      "chromium_vfs",
-                                     wrappedVfs,
-                                     chromiumOpen,
-                                     chromiumDelete,
-                                     chromiumAccess,
-                                     chromiumFullPathname,
-                                     chromiumDlOpen,
-                                     chromiumDlError,
-                                     chromiumDlSym,
-                                     chromiumDlClose,
-                                     chromiumRandomness,
-                                     chromiumSleep,
-                                     chromiumCurrentTime,
-                                     chromiumGetLastError};
+                                     wrapped_vfs,
+                                     ChromiumOpen,
+                                     ChromiumDelete,
+                                     ChromiumAccess,
+                                     ChromiumFullPathname,
+                                     ChromiumDlOpen,
+                                     ChromiumDlError,
+                                     ChromiumDlSym,
+                                     ChromiumDlClose,
+                                     ChromiumRandomness,
+                                     ChromiumSleep,
+                                     ChromiumCurrentTime,
+                                     ChromiumGetLastError};
   sqlite3_vfs_register(&chromium_vfs, 0);
 }
 

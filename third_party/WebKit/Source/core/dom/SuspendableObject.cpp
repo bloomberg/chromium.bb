@@ -31,55 +31,55 @@
 
 namespace blink {
 
-SuspendableObject::SuspendableObject(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext, SuspendableObjectType)
+SuspendableObject::SuspendableObject(ExecutionContext* execution_context)
+    : ContextLifecycleObserver(execution_context, kSuspendableObjectType)
 #if DCHECK_IS_ON()
       ,
-      m_suspendIfNeededCalled(false)
+      suspend_if_needed_called_(false)
 #endif
 {
-  DCHECK(!executionContext || executionContext->isContextThread());
-  InstanceCounters::incrementCounter(
-      InstanceCounters::SuspendableObjectCounter);
+  DCHECK(!execution_context || execution_context->IsContextThread());
+  InstanceCounters::IncrementCounter(
+      InstanceCounters::kSuspendableObjectCounter);
 }
 
 SuspendableObject::~SuspendableObject() {
-  InstanceCounters::decrementCounter(
-      InstanceCounters::SuspendableObjectCounter);
+  InstanceCounters::DecrementCounter(
+      InstanceCounters::kSuspendableObjectCounter);
 
 #if DCHECK_IS_ON()
-  DCHECK(m_suspendIfNeededCalled);
+  DCHECK(suspend_if_needed_called_);
 #endif
 }
 
-void SuspendableObject::suspendIfNeeded() {
+void SuspendableObject::SuspendIfNeeded() {
 #if DCHECK_IS_ON()
-  DCHECK(!m_suspendIfNeededCalled);
-  m_suspendIfNeededCalled = true;
+  DCHECK(!suspend_if_needed_called_);
+  suspend_if_needed_called_ = true;
 #endif
-  if (ExecutionContext* context = getExecutionContext())
-    context->suspendSuspendableObjectIfNeeded(this);
+  if (ExecutionContext* context = GetExecutionContext())
+    context->SuspendSuspendableObjectIfNeeded(this);
 }
 
-void SuspendableObject::suspend() {}
+void SuspendableObject::Suspend() {}
 
-void SuspendableObject::resume() {}
+void SuspendableObject::Resume() {}
 
-void SuspendableObject::didMoveToNewExecutionContext(
+void SuspendableObject::DidMoveToNewExecutionContext(
     ExecutionContext* context) {
-  setContext(context);
+  SetContext(context);
 
-  if (context->isContextDestroyed()) {
-    contextDestroyed(context);
+  if (context->IsContextDestroyed()) {
+    ContextDestroyed(context);
     return;
   }
 
-  if (context->isContextSuspended()) {
-    suspend();
+  if (context->IsContextSuspended()) {
+    Suspend();
     return;
   }
 
-  resume();
+  Resume();
 }
 
 }  // namespace blink

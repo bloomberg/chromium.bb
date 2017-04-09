@@ -69,9 +69,9 @@ Status CreateWebCryptoPublicKey(bssl::UniquePtr<EVP_PKEY> public_key,
   if (status.IsError())
     return status;
 
-  *key = blink::WebCryptoKey::create(
+  *key = blink::WebCryptoKey::Create(
       CreateAsymmetricKeyHandle(std::move(public_key), spki_data),
-      blink::WebCryptoKeyTypePublic, extractable, algorithm, usages);
+      blink::kWebCryptoKeyTypePublic, extractable, algorithm, usages);
   return Status::Success();
 }
 
@@ -87,9 +87,9 @@ Status CreateWebCryptoPrivateKey(bssl::UniquePtr<EVP_PKEY> private_key,
   if (status.IsError())
     return status;
 
-  *key = blink::WebCryptoKey::create(
+  *key = blink::WebCryptoKey::Create(
       CreateAsymmetricKeyHandle(std::move(private_key), pkcs8_data),
-      blink::WebCryptoKeyTypePrivate, extractable, algorithm, usages);
+      blink::kWebCryptoKeyTypePrivate, extractable, algorithm, usages);
   return Status::Success();
 }
 

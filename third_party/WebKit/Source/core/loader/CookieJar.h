@@ -34,9 +34,9 @@ namespace blink {
 class Document;
 class KURL;
 
-String cookies(const Document*, const KURL&);
-void setCookies(Document*, const KURL&, const String& cookieString);
-bool cookiesEnabled(const Document*);
+String Cookies(const Document*, const KURL&);
+void SetCookies(Document*, const KURL&, const String& cookie_string);
+bool CookiesEnabled(const Document*);
 
 }  // namespace blink
 

@@ -43,9 +43,9 @@ class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
   USING_FAST_MALLOC(DocumentThreadableLoaderClient);
 
  public:
-  bool isDocumentThreadableLoaderClient() final { return true; }
+  bool IsDocumentThreadableLoaderClient() final { return true; }
 
-  virtual bool willFollowRedirect(
+  virtual bool WillFollowRedirect(
       const ResourceRequest& /*newRequest*/,
       const ResourceResponse& /*redirectResponse*/) {
     return true;

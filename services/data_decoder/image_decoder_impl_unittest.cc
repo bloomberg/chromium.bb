@@ -77,12 +77,12 @@ class BlinkInitializer : public blink::Platform {
     gin::V8Initializer::LoadV8Natives();
 #endif
 
-    blink::initialize(this);
+    blink::Initialize(this);
   }
 
   ~BlinkInitializer() override {}
 
-  blink::WebThread* currentThread() override { return main_thread_.get(); }
+  blink::WebThread* CurrentThread() override { return main_thread_.get(); }
 
  private:
   std::unique_ptr<blink::scheduler::WebThreadImplForUtilityThread> main_thread_;

@@ -52,130 +52,131 @@ class Node;
 // NodeList cache manipulation in the destructor.
 class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
  public:
-  TreeScope* parentTreeScope() const { return m_parentTreeScope; }
+  TreeScope* ParentTreeScope() const { return parent_tree_scope_; }
 
-  TreeScope* olderShadowRootOrParentTreeScope() const;
-  bool isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
+  TreeScope* OlderShadowRootOrParentTreeScope() const;
+  bool IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
       const TreeScope&) const;
 
-  Element* adjustedFocusedElement() const;
+  Element* AdjustedFocusedElement() const;
   // Finds a retargeted element to the given argument, when the retargeted
   // element is in this TreeScope. Returns null otherwise.
   // TODO(kochi): once this algorithm is named in the spec, rename the method
   // name.
-  Element* adjustedElement(const Element&) const;
-  Element* getElementById(const AtomicString&) const;
-  const HeapVector<Member<Element>>& getAllElementsById(
+  Element* AdjustedElement(const Element&) const;
+  Element* GetElementById(const AtomicString&) const;
+  const HeapVector<Member<Element>>& GetAllElementsById(
       const AtomicString&) const;
-  bool hasElementWithId(const AtomicString& id) const;
-  bool containsMultipleElementsWithId(const AtomicString& id) const;
-  void addElementById(const AtomicString& elementId, Element*);
-  void removeElementById(const AtomicString& elementId, Element*);
+  bool HasElementWithId(const AtomicString& id) const;
+  bool ContainsMultipleElementsWithId(const AtomicString& id) const;
+  void AddElementById(const AtomicString& element_id, Element*);
+  void RemoveElementById(const AtomicString& element_id, Element*);
 
-  Document& document() const {
-    DCHECK(m_document);
-    return *m_document;
+  Document& GetDocument() const {
+    DCHECK(document_);
+    return *document_;
   }
 
-  Node* ancestorInThisScope(Node*) const;
+  Node* AncestorInThisScope(Node*) const;
 
-  void addImageMap(HTMLMapElement*);
-  void removeImageMap(HTMLMapElement*);
-  HTMLMapElement* getImageMap(const String& url) const;
+  void AddImageMap(HTMLMapElement*);
+  void RemoveImageMap(HTMLMapElement*);
+  HTMLMapElement* GetImageMap(const String& url) const;
 
-  Element* elementFromPoint(int x, int y) const;
-  Element* hitTestPoint(int x, int y, const HitTestRequest&) const;
-  HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
-  HeapVector<Member<Element>> elementsFromHitTestResult(HitTestResult&) const;
+  Element* ElementFromPoint(int x, int y) const;
+  Element* HitTestPoint(int x, int y, const HitTestRequest&) const;
+  HeapVector<Member<Element>> ElementsFromPoint(int x, int y) const;
+  HeapVector<Member<Element>> ElementsFromHitTestResult(HitTestResult&) const;
 
-  DOMSelection* getSelection() const;
+  DOMSelection* GetSelection() const;
 
-  Element* retarget(const Element& target) const;
+  Element* Retarget(const Element& target) const;
 
   // Find first anchor with the given name.
   // First searches for an element with the given ID, but if that fails, then
   // looks for an anchor with the given name. ID matching is always case
   // sensitive, but Anchor name matching is case sensitive in strict mode and
   // not case sensitive in quirks mode for historical compatibility reasons.
-  Element* findAnchor(const String& name);
+  Element* FindAnchor(const String& name);
 
   // Used by the basic DOM mutation methods (e.g., appendChild()).
-  void adoptIfNeeded(Node&);
+  void AdoptIfNeeded(Node&);
 
-  ContainerNode& rootNode() const { return *m_rootNode; }
+  ContainerNode& RootNode() const { return *root_node_; }
 
-  IdTargetObserverRegistry& idTargetObserverRegistry() const {
-    return *m_idTargetObserverRegistry.get();
+  IdTargetObserverRegistry& GetIdTargetObserverRegistry() const {
+    return *id_target_observer_registry_.Get();
   }
 
-  RadioButtonGroupScope& radioButtonGroupScope() {
-    return m_radioButtonGroupScope;
+  RadioButtonGroupScope& GetRadioButtonGroupScope() {
+    return radio_button_group_scope_;
   }
 
-  bool isInclusiveAncestorOf(const TreeScope&) const;
-  unsigned short comparePosition(const TreeScope&) const;
+  bool IsInclusiveAncestorOf(const TreeScope&) const;
+  unsigned short ComparePosition(const TreeScope&) const;
 
-  const TreeScope* commonAncestorTreeScope(const TreeScope& other) const;
-  TreeScope* commonAncestorTreeScope(TreeScope& other);
+  const TreeScope* CommonAncestorTreeScope(const TreeScope& other) const;
+  TreeScope* CommonAncestorTreeScope(TreeScope& other);
 
-  Element* getElementByAccessKey(const String& key) const;
+  Element* GetElementByAccessKey(const String& key) const;
 
   DECLARE_VIRTUAL_TRACE();
 
-  ScopedStyleResolver* scopedStyleResolver() const {
-    return m_scopedStyleResolver.get();
+  ScopedStyleResolver* GetScopedStyleResolver() const {
+    return scoped_style_resolver_.Get();
   }
-  ScopedStyleResolver& ensureScopedStyleResolver();
-  void clearScopedStyleResolver();
+  ScopedStyleResolver& EnsureScopedStyleResolver();
+  void ClearScopedStyleResolver();
 
-  SVGTreeScopeResources& ensureSVGTreeScopedResources();
+  SVGTreeScopeResources& EnsureSVGTreeScopedResources();
 
  protected:
   TreeScope(ContainerNode&, Document&);
   TreeScope(Document&);
   virtual ~TreeScope();
 
-  void resetTreeScope();
-  void setDocument(Document& document) { m_document = &document; }
-  void setParentTreeScope(TreeScope&);
-  void setNeedsStyleRecalcForViewportUnits();
+  void ResetTreeScope();
+  void SetDocument(Document& document) { document_ = &document; }
+  void SetParentTreeScope(TreeScope&);
+  void SetNeedsStyleRecalcForViewportUnits();
 
  private:
-  Member<ContainerNode> m_rootNode;
-  Member<Document> m_document;
-  Member<TreeScope> m_parentTreeScope;
+  Member<ContainerNode> root_node_;
+  Member<Document> document_;
+  Member<TreeScope> parent_tree_scope_;
 
-  Member<DocumentOrderedMap> m_elementsById;
-  Member<DocumentOrderedMap> m_imageMapsByName;
+  Member<DocumentOrderedMap> elements_by_id_;
+  Member<DocumentOrderedMap> image_maps_by_name_;
 
-  Member<IdTargetObserverRegistry> m_idTargetObserverRegistry;
+  Member<IdTargetObserverRegistry> id_target_observer_registry_;
 
-  Member<ScopedStyleResolver> m_scopedStyleResolver;
+  Member<ScopedStyleResolver> scoped_style_resolver_;
 
-  mutable Member<DOMSelection> m_selection;
+  mutable Member<DOMSelection> selection_;
 
-  RadioButtonGroupScope m_radioButtonGroupScope;
+  RadioButtonGroupScope radio_button_group_scope_;
 
-  Member<SVGTreeScopeResources> m_svgTreeScopedResources;
+  Member<SVGTreeScopeResources> svg_tree_scoped_resources_;
 };
 
-inline bool TreeScope::hasElementWithId(const AtomicString& id) const {
-  DCHECK(!id.isNull());
-  return m_elementsById && m_elementsById->contains(id);
+inline bool TreeScope::HasElementWithId(const AtomicString& id) const {
+  DCHECK(!id.IsNull());
+  return elements_by_id_ && elements_by_id_->Contains(id);
 }
 
-inline bool TreeScope::containsMultipleElementsWithId(
+inline bool TreeScope::ContainsMultipleElementsWithId(
     const AtomicString& id) const {
-  return m_elementsById && m_elementsById->containsMultiple(id);
+  return elements_by_id_ && elements_by_id_->ContainsMultiple(id);
 }
 
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 
-HitTestResult hitTestInDocument(
+HitTestResult HitTestInDocument(
     const Document*,
     int x,
     int y,
-    const HitTestRequest& = HitTestRequest::ReadOnly | HitTestRequest::Active);
+    const HitTestRequest& = HitTestRequest::kReadOnly |
+                            HitTestRequest::kActive);
 
 }  // namespace blink
 

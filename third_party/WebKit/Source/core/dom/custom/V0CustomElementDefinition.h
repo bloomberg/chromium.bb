@@ -39,12 +39,12 @@ namespace blink {
 class V0CustomElementDefinition final
     : public GarbageCollectedFinalized<V0CustomElementDefinition> {
  public:
-  static V0CustomElementDefinition* create(const V0CustomElementDescriptor&,
+  static V0CustomElementDefinition* Create(const V0CustomElementDescriptor&,
                                            V0CustomElementLifecycleCallbacks*);
 
-  const V0CustomElementDescriptor& descriptor() const { return m_descriptor; }
-  V0CustomElementLifecycleCallbacks* callbacks() const {
-    return m_callbacks.get();
+  const V0CustomElementDescriptor& Descriptor() const { return descriptor_; }
+  V0CustomElementLifecycleCallbacks* Callbacks() const {
+    return callbacks_.Get();
   }
 
   DECLARE_TRACE();
@@ -53,8 +53,8 @@ class V0CustomElementDefinition final
   V0CustomElementDefinition(const V0CustomElementDescriptor&,
                             V0CustomElementLifecycleCallbacks*);
 
-  V0CustomElementDescriptor m_descriptor;
-  Member<V0CustomElementLifecycleCallbacks> m_callbacks;
+  V0CustomElementDescriptor descriptor_;
+  Member<V0CustomElementLifecycleCallbacks> callbacks_;
 };
 
 }  // namespace blink

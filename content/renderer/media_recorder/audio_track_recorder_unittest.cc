@@ -132,8 +132,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
   ~AudioTrackRecorderTest() {
     opus_decoder_destroy(opus_decoder_);
     opus_decoder_ = nullptr;
-    blink_track_.reset();
-    blink::WebHeap::collectAllGarbageForTesting();
+    blink_track_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
     audio_track_recorder_.reset();
     // Let the message loop run to finish destroying the recorder properly.
     base::RunLoop().RunUntilIdle();
@@ -216,12 +216,12 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
   // Adapted from media::WebRTCLocalAudioSourceProviderTest.
   void PrepareBlinkTrack() {
     blink::WebMediaStreamSource audio_source;
-    audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
-                            blink::WebMediaStreamSource::TypeAudio,
-                            blink::WebString::fromUTF8("dummy_source_name"),
+    audio_source.Initialize(blink::WebString::FromUTF8("dummy_source_id"),
+                            blink::WebMediaStreamSource::kTypeAudio,
+                            blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
-    audio_source.setExtraData(new MediaStreamAudioSource(true));
-    blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
+    audio_source.SetExtraData(new MediaStreamAudioSource(true));
+    blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
                             audio_source);
     CHECK(MediaStreamAudioSource::From(audio_source)
               ->ConnectToTrack(blink_track_));

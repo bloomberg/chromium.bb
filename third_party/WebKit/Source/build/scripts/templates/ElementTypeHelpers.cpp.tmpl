@@ -17,13 +17,13 @@ void createHTMLTypeMap() {
   DCHECK(!html_type_map);
   html_type_map = new HTMLTypeMap;
   {% for tag in tags|sort %}
-  html_type_map->set(AtomicString("{{tag.name}}"), HTMLElementType::k{{tag.interface}});
+  html_type_map->Set(AtomicString("{{tag.name}}"), HTMLElementType::k{{tag.interface}});
   {% endfor %}
 }
 
 HTMLElementType htmlElementTypeForTag(const AtomicString& tagName) {
   if (!html_type_map) createHTMLTypeMap();
-  if (html_type_map->contains(tagName)) {
+  if (html_type_map->Contains(tagName)) {
     {% for tag in tags|sort %}
     {% if tag.runtimeEnabled %}
     if (tagName == "{{tag.name}}") {

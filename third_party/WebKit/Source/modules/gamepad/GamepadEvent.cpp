@@ -7,27 +7,27 @@
 namespace blink {
 
 GamepadEvent::GamepadEvent(const AtomicString& type,
-                           bool canBubble,
+                           bool can_bubble,
                            bool cancelable,
                            Gamepad* gamepad)
-    : Event(type, canBubble, cancelable), m_gamepad(gamepad) {}
+    : Event(type, can_bubble, cancelable), gamepad_(gamepad) {}
 
 GamepadEvent::GamepadEvent(const AtomicString& type,
                            const GamepadEventInit& initializer)
     : Event(type, initializer) {
   if (initializer.hasGamepad())
-    m_gamepad = initializer.gamepad();
+    gamepad_ = initializer.gamepad();
 }
 
 GamepadEvent::~GamepadEvent() {}
 
-const AtomicString& GamepadEvent::interfaceName() const {
+const AtomicString& GamepadEvent::InterfaceName() const {
   return EventNames::GamepadEvent;
 }
 
 DEFINE_TRACE(GamepadEvent) {
-  visitor->trace(m_gamepad);
-  Event::trace(visitor);
+  visitor->Trace(gamepad_);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

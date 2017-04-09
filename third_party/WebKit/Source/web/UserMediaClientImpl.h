@@ -43,21 +43,21 @@ class WebUserMediaClient;
 
 class UserMediaClientImpl final : public UserMediaClient {
  public:
-  static std::unique_ptr<UserMediaClientImpl> create(
+  static std::unique_ptr<UserMediaClientImpl> Create(
       WebUserMediaClient* client) {
-    return WTF::wrapUnique(new UserMediaClientImpl(client));
+    return WTF::WrapUnique(new UserMediaClientImpl(client));
   }
 
   // UserMediaClient ----------------------------------------------
-  void requestUserMedia(UserMediaRequest*) override;
-  void cancelUserMediaRequest(UserMediaRequest*) override;
-  void requestMediaDevices(MediaDevicesRequest*) override;
-  void setMediaDeviceChangeObserver(MediaDevices*) override;
+  void RequestUserMedia(UserMediaRequest*) override;
+  void CancelUserMediaRequest(UserMediaRequest*) override;
+  void RequestMediaDevices(MediaDevicesRequest*) override;
+  void SetMediaDeviceChangeObserver(MediaDevices*) override;
 
  private:
   explicit UserMediaClientImpl(WebUserMediaClient*);
 
-  WebUserMediaClient* m_client;
+  WebUserMediaClient* client_;
 };
 
 }  // namespace blink

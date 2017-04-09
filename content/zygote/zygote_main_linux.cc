@@ -404,7 +404,7 @@ static void ZygotePreSandboxInit() {
     custom.fFontsXml = font_config.c_str();
     custom.fIsolated = true;
 
-    blink::WebFontRendering::setSkiaFontManager(SkFontMgr_New_Android(&custom));
+    blink::WebFontRendering::SetSkiaFontManager(SkFontMgr_New_Android(&custom));
   }
 }
 

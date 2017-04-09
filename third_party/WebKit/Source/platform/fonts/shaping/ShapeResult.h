@@ -52,77 +52,77 @@ class TextRun;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
-  static PassRefPtr<ShapeResult> create(const Font* font,
-                                        unsigned numCharacters,
+  static PassRefPtr<ShapeResult> Create(const Font* font,
+                                        unsigned num_characters,
                                         TextDirection direction) {
-    return adoptRef(new ShapeResult(font, numCharacters, direction));
+    return AdoptRef(new ShapeResult(font, num_characters, direction));
   }
-  static PassRefPtr<ShapeResult> createForTabulationCharacters(
+  static PassRefPtr<ShapeResult> CreateForTabulationCharacters(
       const Font*,
       const TextRun&,
-      float positionOffset,
+      float position_offset,
       unsigned count);
   ~ShapeResult();
 
-  float width() const { return m_width; }
-  LayoutUnit snappedWidth() const { return LayoutUnit::fromFloatCeil(m_width); }
-  const FloatRect& bounds() const { return m_glyphBoundingBox; }
-  unsigned numCharacters() const { return m_numCharacters; }
-  void fallbackFonts(HashSet<const SimpleFontData*>*) const;
-  TextDirection direction() const {
-    return static_cast<TextDirection>(m_direction);
+  float Width() const { return width_; }
+  LayoutUnit SnappedWidth() const { return LayoutUnit::FromFloatCeil(width_); }
+  const FloatRect& Bounds() const { return glyph_bounding_box_; }
+  unsigned NumCharacters() const { return num_characters_; }
+  void FallbackFonts(HashSet<const SimpleFontData*>*) const;
+  TextDirection Direction() const {
+    return static_cast<TextDirection>(direction_);
   }
-  bool rtl() const { return direction() == TextDirection::kRtl; }
-  bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
+  bool Rtl() const { return Direction() == TextDirection::kRtl; }
+  bool HasVerticalOffsets() const { return has_vertical_offsets_; }
 
   // For memory reporting.
-  size_t byteSize() const;
+  size_t ByteSize() const;
 
-  unsigned offsetForPosition(float targetX, bool includePartialGlyphs) const;
-  float positionForOffset(unsigned offset) const;
-  LayoutUnit snappedStartPositionForOffset(unsigned offset) const {
-    return LayoutUnit::fromFloatFloor(positionForOffset(offset));
+  unsigned OffsetForPosition(float target_x, bool include_partial_glyphs) const;
+  float PositionForOffset(unsigned offset) const;
+  LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
+    return LayoutUnit::FromFloatFloor(PositionForOffset(offset));
   }
-  LayoutUnit snappedEndPositionForOffset(unsigned offset) const {
-    return LayoutUnit::fromFloatCeil(positionForOffset(offset));
+  LayoutUnit SnappedEndPositionForOffset(unsigned offset) const {
+    return LayoutUnit::FromFloatCeil(PositionForOffset(offset));
   }
 
-  PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
+  PassRefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing&,
                                              const TextRun&) const;
 
-  void copyRange(unsigned start, unsigned end, ShapeResult*) const;
+  void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
 
  protected:
   struct RunInfo;
 
-  ShapeResult(const Font*, unsigned numCharacters, TextDirection);
+  ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
 
-  static PassRefPtr<ShapeResult> create(const ShapeResult& other) {
-    return adoptRef(new ShapeResult(other));
+  static PassRefPtr<ShapeResult> Create(const ShapeResult& other) {
+    return AdoptRef(new ShapeResult(other));
   }
 
-  void applySpacing(ShapeResultSpacing&, const TextRun&);
-  void insertRun(std::unique_ptr<ShapeResult::RunInfo>,
-                 unsigned startGlyph,
-                 unsigned numGlyphs,
+  void ApplySpacing(ShapeResultSpacing&, const TextRun&);
+  void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
+                 unsigned start_glyph,
+                 unsigned num_glyphs,
                  hb_buffer_t*);
 
-  float m_width;
-  FloatRect m_glyphBoundingBox;
-  Vector<std::unique_ptr<RunInfo>> m_runs;
-  RefPtr<SimpleFontData> m_primaryFont;
+  float width_;
+  FloatRect glyph_bounding_box_;
+  Vector<std::unique_ptr<RunInfo>> runs_;
+  RefPtr<SimpleFontData> primary_font_;
 
-  unsigned m_numCharacters;
-  unsigned m_numGlyphs : 30;
+  unsigned num_characters_;
+  unsigned num_glyphs_ : 30;
 
   // Overall direction for the TextRun, dictates which order each individual
   // sub run (represented by RunInfo structs in the m_runs vector) can have a
   // different text direction.
-  unsigned m_direction : 1;
+  unsigned direction_ : 1;
 
   // Tracks whether any runs contain glyphs with a y-offset != 0.
-  unsigned m_hasVerticalOffsets : 1;
+  unsigned has_vertical_offsets_ : 1;
 
   friend class HarfBuzzShaper;
   friend class ShapeResultBuffer;

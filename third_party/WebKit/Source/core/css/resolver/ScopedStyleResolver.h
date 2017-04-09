@@ -47,84 +47,86 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   WTF_MAKE_NONCOPYABLE(ScopedStyleResolver);
 
  public:
-  static ScopedStyleResolver* create(TreeScope& scope) {
+  static ScopedStyleResolver* Create(TreeScope& scope) {
     return new ScopedStyleResolver(scope);
   }
 
-  const TreeScope& treeScope() const { return *m_scope; }
-  ScopedStyleResolver* parent() const;
+  const TreeScope& GetTreeScope() const { return *scope_; }
+  ScopedStyleResolver* Parent() const;
 
-  StyleRuleKeyframes* keyframeStylesForAnimation(
-      const StringImpl* animationName);
+  StyleRuleKeyframes* KeyframeStylesForAnimation(
+      const StringImpl* animation_name);
 
-  void appendActiveStyleSheets(unsigned index, const ActiveStyleSheetVector&);
-  void collectMatchingAuthorRules(ElementRuleCollector&,
-                                  CascadeOrder = ignoreCascadeOrder);
-  void collectMatchingShadowHostRules(ElementRuleCollector&,
-                                      CascadeOrder = ignoreCascadeOrder);
-  void collectMatchingTreeBoundaryCrossingRules(
+  void AppendActiveStyleSheets(unsigned index, const ActiveStyleSheetVector&);
+  void CollectMatchingAuthorRules(ElementRuleCollector&,
+                                  CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingShadowHostRules(ElementRuleCollector&,
+                                      CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingTreeBoundaryCrossingRules(
       ElementRuleCollector&,
-      CascadeOrder = ignoreCascadeOrder);
-  void matchPageRules(PageRuleCollector&);
-  void collectFeaturesTo(RuleFeatureSet&,
+      CascadeOrder = kIgnoreCascadeOrder);
+  void MatchPageRules(PageRuleCollector&);
+  void CollectFeaturesTo(RuleFeatureSet&,
                          HeapHashSet<Member<const StyleSheetContents>>&
-                             visitedSharedStyleSheetContents) const;
-  void resetAuthorStyle();
-  bool hasDeepOrShadowSelector() const { return m_hasDeepOrShadowSelector; }
-  void setHasUnresolvedKeyframesRule() { m_hasUnresolvedKeyframesRule = true; }
-  bool needsAppendAllSheets() const { return m_needsAppendAllSheets; }
-  void setNeedsAppendAllSheets() { m_needsAppendAllSheets = true; }
-  static void keyframesRulesAdded(const TreeScope&);
-  static ContainerNode& invalidationRootForTreeScope(const TreeScope&);
-  CORE_EXPORT static bool haveSameStyles(const ScopedStyleResolver*,
+                             visited_shared_style_sheet_contents) const;
+  void ResetAuthorStyle();
+  bool HasDeepOrShadowSelector() const { return has_deep_or_shadow_selector_; }
+  void SetHasUnresolvedKeyframesRule() {
+    has_unresolved_keyframes_rule_ = true;
+  }
+  bool NeedsAppendAllSheets() const { return needs_append_all_sheets_; }
+  void SetNeedsAppendAllSheets() { needs_append_all_sheets_ = true; }
+  static void KeyframesRulesAdded(const TreeScope&);
+  static ContainerNode& InvalidationRootForTreeScope(const TreeScope&);
+  CORE_EXPORT static bool HaveSameStyles(const ScopedStyleResolver*,
                                          const ScopedStyleResolver*);
 
   DECLARE_TRACE();
 
  private:
-  explicit ScopedStyleResolver(TreeScope& scope) : m_scope(scope) {}
+  explicit ScopedStyleResolver(TreeScope& scope) : scope_(scope) {}
 
-  void addTreeBoundaryCrossingRules(const RuleSet&,
+  void AddTreeBoundaryCrossingRules(const RuleSet&,
                                     CSSStyleSheet*,
-                                    unsigned sheetIndex);
-  void addKeyframeRules(const RuleSet&);
-  void addFontFaceRules(const RuleSet&);
-  void addKeyframeStyle(StyleRuleKeyframes*);
+                                    unsigned sheet_index);
+  void AddKeyframeRules(const RuleSet&);
+  void AddFontFaceRules(const RuleSet&);
+  void AddKeyframeStyle(StyleRuleKeyframes*);
 
-  Member<TreeScope> m_scope;
+  Member<TreeScope> scope_;
 
-  HeapVector<Member<CSSStyleSheet>> m_authorStyleSheets;
-  MediaQueryResultList m_viewportDependentMediaQueryResults;
-  MediaQueryResultList m_deviceDependentMediaQueryResults;
+  HeapVector<Member<CSSStyleSheet>> author_style_sheets_;
+  MediaQueryResultList viewport_dependent_media_query_results_;
+  MediaQueryResultList device_dependent_media_query_results_;
 
   using KeyframesRuleMap =
       HeapHashMap<const StringImpl*, Member<StyleRuleKeyframes>>;
-  KeyframesRuleMap m_keyframesRuleMap;
+  KeyframesRuleMap keyframes_rule_map_;
 
   class RuleSubSet final : public GarbageCollected<RuleSubSet> {
    public:
-    static RuleSubSet* create(CSSStyleSheet* sheet,
+    static RuleSubSet* Create(CSSStyleSheet* sheet,
                               unsigned index,
                               RuleSet* rules) {
       return new RuleSubSet(sheet, index, rules);
     }
 
-    Member<CSSStyleSheet> m_parentStyleSheet;
-    unsigned m_parentIndex;
-    Member<RuleSet> m_ruleSet;
+    Member<CSSStyleSheet> parent_style_sheet_;
+    unsigned parent_index_;
+    Member<RuleSet> rule_set_;
 
     DECLARE_TRACE();
 
    private:
     RuleSubSet(CSSStyleSheet* sheet, unsigned index, RuleSet* rules)
-        : m_parentStyleSheet(sheet), m_parentIndex(index), m_ruleSet(rules) {}
+        : parent_style_sheet_(sheet), parent_index_(index), rule_set_(rules) {}
   };
   using CSSStyleSheetRuleSubSet = HeapVector<Member<RuleSubSet>>;
 
-  Member<CSSStyleSheetRuleSubSet> m_treeBoundaryCrossingRuleSet;
-  bool m_hasDeepOrShadowSelector = false;
-  bool m_hasUnresolvedKeyframesRule = false;
-  bool m_needsAppendAllSheets = false;
+  Member<CSSStyleSheetRuleSubSet> tree_boundary_crossing_rule_set_;
+  bool has_deep_or_shadow_selector_ = false;
+  bool has_unresolved_keyframes_rule_ = false;
+  bool needs_append_all_sheets_ = false;
 };
 
 }  // namespace blink

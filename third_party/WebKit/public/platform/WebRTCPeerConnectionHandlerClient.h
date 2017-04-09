@@ -40,45 +40,45 @@ class WebRTCICECandidate;
 class WebRTCPeerConnectionHandlerClient {
  public:
   enum SignalingState {
-    SignalingStateStable = 1,
-    SignalingStateHaveLocalOffer = 2,
-    SignalingStateHaveRemoteOffer = 3,
-    SignalingStateHaveLocalPrAnswer = 4,
-    SignalingStateHaveRemotePrAnswer = 5,
-    SignalingStateClosed = 6,
+    kSignalingStateStable = 1,
+    kSignalingStateHaveLocalOffer = 2,
+    kSignalingStateHaveRemoteOffer = 3,
+    kSignalingStateHaveLocalPrAnswer = 4,
+    kSignalingStateHaveRemotePrAnswer = 5,
+    kSignalingStateClosed = 6,
   };
 
   enum ICEConnectionState {
-    ICEConnectionStateNew = 1,
-    ICEConnectionStateChecking = 2,
-    ICEConnectionStateConnected = 3,
-    ICEConnectionStateCompleted = 4,
-    ICEConnectionStateFailed = 5,
-    ICEConnectionStateDisconnected = 6,
-    ICEConnectionStateClosed = 7,
+    kICEConnectionStateNew = 1,
+    kICEConnectionStateChecking = 2,
+    kICEConnectionStateConnected = 3,
+    kICEConnectionStateCompleted = 4,
+    kICEConnectionStateFailed = 5,
+    kICEConnectionStateDisconnected = 6,
+    kICEConnectionStateClosed = 7,
 
     // DEPRECATED
-    ICEConnectionStateStarting = 1,
+    kICEConnectionStateStarting = 1,
   };
 
   enum ICEGatheringState {
-    ICEGatheringStateNew = 1,
-    ICEGatheringStateGathering = 2,
-    ICEGatheringStateComplete = 3
+    kICEGatheringStateNew = 1,
+    kICEGatheringStateGathering = 2,
+    kICEGatheringStateComplete = 3
   };
 
   virtual ~WebRTCPeerConnectionHandlerClient() {}
 
-  virtual void negotiationNeeded() = 0;
-  virtual void didGenerateICECandidate(const WebRTCICECandidate&) = 0;
-  virtual void didChangeSignalingState(SignalingState) = 0;
-  virtual void didChangeICEGatheringState(ICEGatheringState) = 0;
-  virtual void didChangeICEConnectionState(ICEConnectionState) = 0;
-  virtual void didAddRemoteStream(const WebMediaStream&) = 0;
-  virtual void didRemoveRemoteStream(const WebMediaStream&) = 0;
-  virtual void didAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
-  virtual void releasePeerConnectionHandler() = 0;
-  virtual void closePeerConnection() {}
+  virtual void NegotiationNeeded() = 0;
+  virtual void DidGenerateICECandidate(const WebRTCICECandidate&) = 0;
+  virtual void DidChangeSignalingState(SignalingState) = 0;
+  virtual void DidChangeICEGatheringState(ICEGatheringState) = 0;
+  virtual void DidChangeICEConnectionState(ICEConnectionState) = 0;
+  virtual void DidAddRemoteStream(const WebMediaStream&) = 0;
+  virtual void DidRemoveRemoteStream(const WebMediaStream&) = 0;
+  virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
+  virtual void ReleasePeerConnectionHandler() = 0;
+  virtual void ClosePeerConnection() {}
 };
 
 }  // namespace blink

@@ -19,14 +19,14 @@ struct CommandNameEntry {
 };
 
 const CommandNameEntry kCommandNameEntries[] = {
-#define V(name) {#name, WebEditingCommandType::name},
+#define V(name) {#name, WebEditingCommandType::k##name},
     FOR_EACH_BLINK_EDITING_COMMAND_NAME(V)
 #undef V
 };
 // Test all commands except WebEditingCommandType::Invalid.
 static_assert(
     arraysize(kCommandNameEntries) + 1 ==
-        static_cast<size_t>(WebEditingCommandType::NumberOfCommandTypes),
+        static_cast<size_t>(WebEditingCommandType::kNumberOfCommandTypes),
     "must test all valid WebEditingCommandType");
 
 }  // anonymous namespace
@@ -42,35 +42,35 @@ TEST_F(EditingCommandTest, EditorCommandOrder) {
 }
 
 TEST_F(EditingCommandTest, CreateCommandFromString) {
-  Editor& dummyEditor = document().frame()->editor();
+  Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
   for (const auto& entry : kCommandNameEntries) {
-    Editor::Command command = dummyEditor.createCommand(entry.name);
-    EXPECT_EQ(static_cast<int>(entry.type), command.idForHistogram())
+    Editor::Command command = dummy_editor.CreateCommand(entry.name);
+    EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
   }
 }
 
 TEST_F(EditingCommandTest, CreateCommandFromStringCaseFolding) {
-  Editor& dummyEditor = document().frame()->editor();
+  Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
   for (const auto& entry : kCommandNameEntries) {
     Editor::Command command =
-        dummyEditor.createCommand(String(entry.name).lower());
-    EXPECT_EQ(static_cast<int>(entry.type), command.idForHistogram())
+        dummy_editor.CreateCommand(String(entry.name).Lower());
+    EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
-    command = dummyEditor.createCommand(String(entry.name).upper());
-    EXPECT_EQ(static_cast<int>(entry.type), command.idForHistogram())
+    command = dummy_editor.CreateCommand(String(entry.name).Upper());
+    EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
   }
 }
 
 TEST_F(EditingCommandTest, CreateCommandFromInvalidString) {
-  const String kInvalidCommandName[] = {
+  const String k_invalid_command_name[] = {
       "", "iNvAlId", "12345",
   };
-  Editor& dummyEditor = document().frame()->editor();
-  for (const auto& commandName : kInvalidCommandName) {
-    Editor::Command command = dummyEditor.createCommand(commandName);
-    EXPECT_EQ(0, command.idForHistogram());
+  Editor& dummy_editor = GetDocument().GetFrame()->GetEditor();
+  for (const auto& command_name : k_invalid_command_name) {
+    Editor::Command command = dummy_editor.CreateCommand(command_name);
+    EXPECT_EQ(0, command.IdForHistogram());
   }
 }
 

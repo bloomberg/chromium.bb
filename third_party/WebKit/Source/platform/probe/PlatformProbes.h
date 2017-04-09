@@ -19,17 +19,17 @@ class PLATFORM_EXPORT ProbeBase {
   STACK_ALLOCATED()
 
  public:
-  double captureStartTime() const;
-  double captureEndTime() const;
-  double duration() const;
+  double CaptureStartTime() const;
+  double CaptureEndTime() const;
+  double Duration() const;
 
  private:
-  mutable double m_startTime = 0;
-  mutable double m_endTime = 0;
+  mutable double start_time_ = 0;
+  mutable double end_time_ = 0;
 };
 
-inline PlatformProbeSink* toPlatformProbeSink(FetchContext* context) {
-  return context->platformProbeSink();
+inline PlatformProbeSink* ToPlatformProbeSink(FetchContext* context) {
+  return context->GetPlatformProbeSink();
 }
 
 }  // namespace probe

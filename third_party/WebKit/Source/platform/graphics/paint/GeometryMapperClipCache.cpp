@@ -11,44 +11,44 @@ namespace blink {
 // All clip caches invalidate themselves by tracking a local cache generation,
 // and invalidating their cache if their cache generation disagrees with
 // s_clipCacheGeneration.
-static unsigned s_clipCacheGeneration = 0;
+static unsigned g_clip_cache_generation = 0;
 
 GeometryMapperClipCache::GeometryMapperClipCache()
-    : m_cacheGeneration(s_clipCacheGeneration) {}
+    : cache_generation_(g_clip_cache_generation) {}
 
-void GeometryMapperClipCache::clearCache() {
-  s_clipCacheGeneration++;
+void GeometryMapperClipCache::ClearCache() {
+  g_clip_cache_generation++;
 }
 
-void GeometryMapperClipCache::invalidateCacheIfNeeded() {
-  if (m_cacheGeneration != s_clipCacheGeneration) {
-    m_clipCache.clear();
-    m_cacheGeneration = s_clipCacheGeneration;
+void GeometryMapperClipCache::InvalidateCacheIfNeeded() {
+  if (cache_generation_ != g_clip_cache_generation) {
+    clip_cache_.Clear();
+    cache_generation_ = g_clip_cache_generation;
   }
 }
 
-const FloatClipRect* GeometryMapperClipCache::getCachedClip(
-    const ClipAndTransform& clipAndTransform) {
-  invalidateCacheIfNeeded();
-  for (const auto& entry : m_clipCache) {
-    if (entry.clipAndTransform == clipAndTransform) {
-      return &entry.clipRect;
+const FloatClipRect* GeometryMapperClipCache::GetCachedClip(
+    const ClipAndTransform& clip_and_transform) {
+  InvalidateCacheIfNeeded();
+  for (const auto& entry : clip_cache_) {
+    if (entry.clip_and_transform == clip_and_transform) {
+      return &entry.clip_rect;
     }
   }
   return nullptr;
 }
 
-void GeometryMapperClipCache::setCachedClip(
-    const ClipAndTransform& clipAndTransform,
+void GeometryMapperClipCache::SetCachedClip(
+    const ClipAndTransform& clip_and_transform,
     const FloatClipRect& clip) {
-  invalidateCacheIfNeeded();
+  InvalidateCacheIfNeeded();
 #if DCHECK_IS_ON()
-  for (const auto& entry : m_clipCache) {
-    if (entry.clipAndTransform == clipAndTransform)
+  for (const auto& entry : clip_cache_) {
+    if (entry.clip_and_transform == clip_and_transform)
       DCHECK(false);  // There should be no existing entry.
   }
 #endif
-  m_clipCache.push_back(ClipCacheEntry(clipAndTransform, clip));
+  clip_cache_.push_back(ClipCacheEntry(clip_and_transform, clip));
 }
 
 }  // namespace blink

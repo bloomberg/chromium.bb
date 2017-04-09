@@ -43,25 +43,25 @@ typedef HashMap<const InlineTextBox*,
 
 class InlineFlowBox : public InlineBox {
  public:
-  InlineFlowBox(LineLayoutItem lineLayoutItem)
-      : InlineBox(lineLayoutItem),
-        m_firstChild(nullptr),
-        m_lastChild(nullptr),
-        m_prevLineBox(nullptr),
-        m_nextLineBox(nullptr),
-        m_includeLogicalLeftEdge(false),
-        m_includeLogicalRightEdge(false),
-        m_descendantsHaveSameLineHeightAndBaseline(true),
-        m_baselineType(AlphabeticBaseline),
-        m_hasAnnotationsBefore(false),
-        m_hasAnnotationsAfter(false),
-        m_lineBreakBidiStatusEor(WTF::Unicode::LeftToRight),
-        m_lineBreakBidiStatusLastStrong(WTF::Unicode::LeftToRight),
-        m_lineBreakBidiStatusLast(WTF::Unicode::LeftToRight),
-        m_isFirstAfterPageBreak(false)
+  InlineFlowBox(LineLayoutItem line_layout_item)
+      : InlineBox(line_layout_item),
+        first_child_(nullptr),
+        last_child_(nullptr),
+        prev_line_box_(nullptr),
+        next_line_box_(nullptr),
+        include_logical_left_edge_(false),
+        include_logical_right_edge_(false),
+        descendants_have_same_line_height_and_baseline_(true),
+        baseline_type_(kAlphabeticBaseline),
+        has_annotations_before_(false),
+        has_annotations_after_(false),
+        line_break_bidi_status_eor_(WTF::Unicode::kLeftToRight),
+        line_break_bidi_status_last_strong_(WTF::Unicode::kLeftToRight),
+        line_break_bidi_status_last_(WTF::Unicode::kLeftToRight),
+        is_first_after_page_break_(false)
 #if DCHECK_IS_ON()
         ,
-        m_hasBadChildList(false)
+        has_bad_child_list_(false)
 #endif
   {
     // Internet Explorer and Firefox always create a marker for list items, even
@@ -73,9 +73,9 @@ class InlineFlowBox : public InlineBox {
     // must not apply. This change also means that gaps will exist between image
     // bullet list items.  Even when the list bullet is an image, the line is
     // still considered to be immune from the quirk.
-    m_hasTextChildren =
-        lineLayoutItem.style()->display() == EDisplay::kListItem;
-    m_hasTextDescendants = m_hasTextChildren;
+    has_text_children_ =
+        line_layout_item.Style()->Display() == EDisplay::kListItem;
+    has_text_descendants_ = has_text_children_;
   }
 
 #if DCHECK_IS_ON()
@@ -83,206 +83,207 @@ class InlineFlowBox : public InlineBox {
 #endif
 
 #ifndef NDEBUG
-  void showLineTreeAndMark(const InlineBox* = nullptr,
+  void ShowLineTreeAndMark(const InlineBox* = nullptr,
                            const char* = nullptr,
                            const InlineBox* = nullptr,
                            const char* = nullptr,
                            const LayoutObject* = nullptr,
                            int = 0) const override;
 #endif
-  const char* boxName() const override;
+  const char* BoxName() const override;
 
-  InlineFlowBox* prevLineBox() const { return m_prevLineBox; }
-  InlineFlowBox* nextLineBox() const { return m_nextLineBox; }
-  void setNextLineBox(InlineFlowBox* n) { m_nextLineBox = n; }
-  void setPreviousLineBox(InlineFlowBox* p) { m_prevLineBox = p; }
+  InlineFlowBox* PrevLineBox() const { return prev_line_box_; }
+  InlineFlowBox* NextLineBox() const { return next_line_box_; }
+  void SetNextLineBox(InlineFlowBox* n) { next_line_box_ = n; }
+  void SetPreviousLineBox(InlineFlowBox* p) { prev_line_box_ = p; }
 
-  InlineBox* firstChild() const {
-    checkConsistency();
-    return m_firstChild;
+  InlineBox* FirstChild() const {
+    CheckConsistency();
+    return first_child_;
   }
-  InlineBox* lastChild() const {
-    checkConsistency();
-    return m_lastChild;
+  InlineBox* LastChild() const {
+    CheckConsistency();
+    return last_child_;
   }
 
-  bool isLeaf() const final { return false; }
+  bool IsLeaf() const final { return false; }
 
-  InlineBox* firstLeafChild() const;
-  InlineBox* lastLeafChild() const;
+  InlineBox* FirstLeafChild() const;
+  InlineBox* LastLeafChild() const;
 
   typedef void (*CustomInlineBoxRangeReverse)(
       Vector<InlineBox*>::iterator first,
       Vector<InlineBox*>::iterator last);
-  void collectLeafBoxesInLogicalOrder(
+  void CollectLeafBoxesInLogicalOrder(
       Vector<InlineBox*>&,
-      CustomInlineBoxRangeReverse customReverseImplementation = 0) const;
+      CustomInlineBoxRangeReverse custom_reverse_implementation = 0) const;
 
   DISABLE_CFI_PERF
-  void setConstructed() final {
-    InlineBox::setConstructed();
-    for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
-      child->setConstructed();
+  void SetConstructed() final {
+    InlineBox::SetConstructed();
+    for (InlineBox* child = FirstChild(); child; child = child->NextOnLine())
+      child->SetConstructed();
   }
 
-  void addToLine(InlineBox* child);
-  void deleteLine() final;
-  void extractLine() final;
-  void attachLine() final;
-  void move(const LayoutSize&) override;
+  void AddToLine(InlineBox* child);
+  void DeleteLine() final;
+  void ExtractLine() final;
+  void AttachLine() final;
+  void Move(const LayoutSize&) override;
 
-  virtual void extractLineBoxFromLayoutObject();
-  virtual void attachLineBoxToLayoutObject();
-  virtual void removeLineBoxFromLayoutObject();
+  virtual void ExtractLineBoxFromLayoutObject();
+  virtual void AttachLineBoxToLayoutObject();
+  virtual void RemoveLineBoxFromLayoutObject();
 
-  void clearTruncation() override;
+  void ClearTruncation() override;
 
-  LayoutRect frameRect() const;
+  LayoutRect FrameRect() const;
 
-  void paint(const PaintInfo&,
+  void Paint(const PaintInfo&,
              const LayoutPoint&,
-             LayoutUnit lineTop,
-             LayoutUnit lineBottom) const override;
-  bool nodeAtPoint(HitTestResult&,
-                   const HitTestLocation& locationInContainer,
-                   const LayoutPoint& accumulatedOffset,
-                   LayoutUnit lineTop,
-                   LayoutUnit lineBottom) override;
+             LayoutUnit line_top,
+             LayoutUnit line_bottom) const override;
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
+                   LayoutUnit line_top,
+                   LayoutUnit line_bottom) override;
 
-  bool boxShadowCanBeAppliedToBackground(const FillLayer&) const;
+  bool BoxShadowCanBeAppliedToBackground(const FillLayer&) const;
 
-  virtual LineBoxList* lineBoxes() const;
+  virtual LineBoxList* LineBoxes() const;
 
   // logicalLeft = left in a horizontal line and top in a vertical line.
-  LayoutUnit marginBorderPaddingLogicalLeft() const {
-    return marginLogicalLeft() + borderLogicalLeft() + paddingLogicalLeft();
+  LayoutUnit MarginBorderPaddingLogicalLeft() const {
+    return MarginLogicalLeft() + BorderLogicalLeft() + PaddingLogicalLeft();
   }
-  LayoutUnit marginBorderPaddingLogicalRight() const {
-    return marginLogicalRight() + borderLogicalRight() + paddingLogicalRight();
+  LayoutUnit MarginBorderPaddingLogicalRight() const {
+    return MarginLogicalRight() + BorderLogicalRight() + PaddingLogicalRight();
   }
-  LayoutUnit marginLogicalLeft() const {
-    if (!includeLogicalLeftEdge())
+  LayoutUnit MarginLogicalLeft() const {
+    if (!IncludeLogicalLeftEdge())
       return LayoutUnit();
-    return isHorizontal() ? boxModelObject().marginLeft()
-                          : boxModelObject().marginTop();
+    return IsHorizontal() ? BoxModelObject().MarginLeft()
+                          : BoxModelObject().MarginTop();
   }
-  LayoutUnit marginLogicalRight() const {
-    if (!includeLogicalRightEdge())
+  LayoutUnit MarginLogicalRight() const {
+    if (!IncludeLogicalRightEdge())
       return LayoutUnit();
-    return isHorizontal() ? boxModelObject().marginRight()
-                          : boxModelObject().marginBottom();
+    return IsHorizontal() ? BoxModelObject().MarginRight()
+                          : BoxModelObject().MarginBottom();
   }
-  LayoutUnit marginLogicalWidth() const {
-    return marginLogicalLeft() + marginLogicalRight();
+  LayoutUnit MarginLogicalWidth() const {
+    return MarginLogicalLeft() + MarginLogicalRight();
   }
-  LayoutUnit borderLogicalLeft() const {
-    if (!includeLogicalLeftEdge())
-      return LayoutUnit();
-    return LayoutUnit(
-        isHorizontal()
-            ? getLineLayoutItem().style(isFirstLineStyle())->borderLeftWidth()
-            : getLineLayoutItem().style(isFirstLineStyle())->borderTopWidth());
-  }
-  LayoutUnit borderLogicalRight() const {
-    if (!includeLogicalRightEdge())
+  LayoutUnit BorderLogicalLeft() const {
+    if (!IncludeLogicalLeftEdge())
       return LayoutUnit();
     return LayoutUnit(
-        isHorizontal()
-            ? getLineLayoutItem().style(isFirstLineStyle())->borderRightWidth()
-            : getLineLayoutItem()
-                  .style(isFirstLineStyle())
-                  ->borderBottomWidth());
+        IsHorizontal()
+            ? GetLineLayoutItem().Style(IsFirstLineStyle())->BorderLeftWidth()
+            : GetLineLayoutItem().Style(IsFirstLineStyle())->BorderTopWidth());
   }
-  int paddingLogicalLeft() const {
-    if (!includeLogicalLeftEdge())
-      return 0;
-    return (isHorizontal() ? boxModelObject().paddingLeft()
-                           : boxModelObject().paddingTop())
-        .toInt();
+  LayoutUnit BorderLogicalRight() const {
+    if (!IncludeLogicalRightEdge())
+      return LayoutUnit();
+    return LayoutUnit(
+        IsHorizontal()
+            ? GetLineLayoutItem().Style(IsFirstLineStyle())->BorderRightWidth()
+            : GetLineLayoutItem()
+                  .Style(IsFirstLineStyle())
+                  ->BorderBottomWidth());
   }
-  int paddingLogicalRight() const {
-    if (!includeLogicalRightEdge())
+  int PaddingLogicalLeft() const {
+    if (!IncludeLogicalLeftEdge())
       return 0;
-    return (isHorizontal() ? boxModelObject().paddingRight()
-                           : boxModelObject().paddingBottom())
-        .toInt();
+    return (IsHorizontal() ? BoxModelObject().PaddingLeft()
+                           : BoxModelObject().PaddingTop())
+        .ToInt();
+  }
+  int PaddingLogicalRight() const {
+    if (!IncludeLogicalRightEdge())
+      return 0;
+    return (IsHorizontal() ? BoxModelObject().PaddingRight()
+                           : BoxModelObject().PaddingBottom())
+        .ToInt();
   }
 
-  bool includeLogicalLeftEdge() const { return m_includeLogicalLeftEdge; }
-  bool includeLogicalRightEdge() const { return m_includeLogicalRightEdge; }
-  void setEdges(bool includeLeft, bool includeRight) {
-    m_includeLogicalLeftEdge = includeLeft;
-    m_includeLogicalRightEdge = includeRight;
+  bool IncludeLogicalLeftEdge() const { return include_logical_left_edge_; }
+  bool IncludeLogicalRightEdge() const { return include_logical_right_edge_; }
+  void SetEdges(bool include_left, bool include_right) {
+    include_logical_left_edge_ = include_left;
+    include_logical_right_edge_ = include_right;
   }
 
   // Helper functions used during line construction and placement.
-  void determineSpacingForFlowBoxes(
-      bool lastLine,
-      bool isLogicallyLastRunWrapped,
-      LineLayoutItem logicallyLastRunLayoutObject);
-  LayoutUnit getFlowSpacingLogicalWidth();
-  LayoutUnit placeBoxesInInlineDirection(LayoutUnit logicalLeft,
-                                         bool& needsWordSpacing);
+  void DetermineSpacingForFlowBoxes(
+      bool last_line,
+      bool is_logically_last_run_wrapped,
+      LineLayoutItem logically_last_run_layout_object);
+  LayoutUnit GetFlowSpacingLogicalWidth();
+  LayoutUnit PlaceBoxesInInlineDirection(LayoutUnit logical_left,
+                                         bool& needs_word_spacing);
 
-  void computeLogicalBoxHeights(RootInlineBox*,
-                                LayoutUnit& maxPositionTop,
-                                LayoutUnit& maxPositionBottom,
-                                int& maxAscent,
-                                int& maxDescent,
-                                bool& setMaxAscent,
-                                bool& setMaxDescent,
-                                bool noQuirksMode,
+  void ComputeLogicalBoxHeights(RootInlineBox*,
+                                LayoutUnit& max_position_top,
+                                LayoutUnit& max_position_bottom,
+                                int& max_ascent,
+                                int& max_descent,
+                                bool& set_max_ascent,
+                                bool& set_max_descent,
+                                bool no_quirks_mode,
                                 GlyphOverflowAndFallbackFontsMap&,
                                 FontBaseline,
                                 VerticalPositionCache&);
-  void adjustMaxAscentAndDescent(int& maxAscent,
-                                 int& maxDescent,
-                                 int maxPositionTop,
-                                 int maxPositionBottom);
-  void placeBoxesInBlockDirection(LayoutUnit logicalTop,
-                                  LayoutUnit maxHeight,
-                                  int maxAscent,
-                                  bool noQuirksMode,
-                                  LayoutUnit& lineTop,
-                                  LayoutUnit& lineBottom,
-                                  LayoutUnit& selectionBottom,
-                                  bool& setLineTop,
-                                  LayoutUnit& lineTopIncludingMargins,
-                                  LayoutUnit& lineBottomIncludingMargins,
-                                  bool& hasAnnotationsBefore,
-                                  bool& hasAnnotationsAfter,
+  void AdjustMaxAscentAndDescent(int& max_ascent,
+                                 int& max_descent,
+                                 int max_position_top,
+                                 int max_position_bottom);
+  void PlaceBoxesInBlockDirection(LayoutUnit logical_top,
+                                  LayoutUnit max_height,
+                                  int max_ascent,
+                                  bool no_quirks_mode,
+                                  LayoutUnit& line_top,
+                                  LayoutUnit& line_bottom,
+                                  LayoutUnit& selection_bottom,
+                                  bool& set_line_top,
+                                  LayoutUnit& line_top_including_margins,
+                                  LayoutUnit& line_bottom_including_margins,
+                                  bool& has_annotations_before,
+                                  bool& has_annotations_after,
                                   FontBaseline);
-  void flipLinesInBlockDirection(LayoutUnit lineTop, LayoutUnit lineBottom);
-  FontBaseline dominantBaseline() const;
+  void FlipLinesInBlockDirection(LayoutUnit line_top, LayoutUnit line_bottom);
+  FontBaseline DominantBaseline() const;
 
-  LayoutUnit computeOverAnnotationAdjustment(LayoutUnit allowedPosition) const;
-  LayoutUnit computeUnderAnnotationAdjustment(LayoutUnit allowedPosition) const;
+  LayoutUnit ComputeOverAnnotationAdjustment(LayoutUnit allowed_position) const;
+  LayoutUnit ComputeUnderAnnotationAdjustment(
+      LayoutUnit allowed_position) const;
 
-  void computeOverflow(LayoutUnit lineTop,
-                       LayoutUnit lineBottom,
+  void ComputeOverflow(LayoutUnit line_top,
+                       LayoutUnit line_bottom,
                        GlyphOverflowAndFallbackFontsMap&);
 
-  void removeChild(InlineBox* child, MarkLineBoxes);
+  void RemoveChild(InlineBox* child, MarkLineBoxes);
 
-  SelectionState getSelectionState() const override;
+  SelectionState GetSelectionState() const override;
 
-  bool canAccommodateEllipsis(bool ltr,
-                              LayoutUnit blockEdge,
-                              LayoutUnit ellipsisWidth) const final;
-  LayoutUnit placeEllipsisBox(bool ltr,
-                              LayoutUnit blockLeftEdge,
-                              LayoutUnit blockRightEdge,
-                              LayoutUnit ellipsisWidth,
-                              LayoutUnit& truncatedWidth,
+  bool CanAccommodateEllipsis(bool ltr,
+                              LayoutUnit block_edge,
+                              LayoutUnit ellipsis_width) const final;
+  LayoutUnit PlaceEllipsisBox(bool ltr,
+                              LayoutUnit block_left_edge,
+                              LayoutUnit block_right_edge,
+                              LayoutUnit ellipsis_width,
+                              LayoutUnit& truncated_width,
                               bool&,
-                              LayoutUnit logicalLeftOffset) override;
+                              LayoutUnit logical_left_offset) override;
 
-  bool hasTextChildren() const { return m_hasTextChildren; }
-  bool hasTextDescendants() const { return m_hasTextDescendants; }
-  void setHasTextDescendants() { m_hasTextDescendants = true; }
+  bool HasTextChildren() const { return has_text_children_; }
+  bool HasTextDescendants() const { return has_text_descendants_; }
+  void SetHasTextDescendants() { has_text_descendants_ = true; }
 
-  void checkConsistency() const;
-  void setHasBadChildList();
+  void CheckConsistency() const;
+  void SetHasBadChildList();
 
   // Line visual and layout overflow are in the coordinate space of the block.
   // This means that they aren't purely physical directions. For horizontal-tb
@@ -290,168 +291,169 @@ class InlineFlowBox : public InlineBox {
   // the left/right respectively are flipped when compared to their physical
   // counterparts.  For example minX is on the left in vertical-lr, but it is on
   // the right in vertical-rl.
-  LayoutRect layoutOverflowRect(LayoutUnit lineTop,
-                                LayoutUnit lineBottom) const {
-    return m_overflow ? m_overflow->layoutOverflowRect()
-                      : frameRectIncludingLineHeight(lineTop, lineBottom);
+  LayoutRect LayoutOverflowRect(LayoutUnit line_top,
+                                LayoutUnit line_bottom) const {
+    return overflow_ ? overflow_->LayoutOverflowRect()
+                     : FrameRectIncludingLineHeight(line_top, line_bottom);
   }
-  LayoutUnit logicalTopLayoutOverflow(LayoutUnit lineTop) const {
-    if (m_overflow)
-      return isHorizontal() ? m_overflow->layoutOverflowRect().y()
-                            : m_overflow->layoutOverflowRect().x();
-    return lineTop;
+  LayoutUnit LogicalTopLayoutOverflow(LayoutUnit line_top) const {
+    if (overflow_)
+      return IsHorizontal() ? overflow_->LayoutOverflowRect().Y()
+                            : overflow_->LayoutOverflowRect().X();
+    return line_top;
   }
-  LayoutUnit logicalBottomLayoutOverflow(LayoutUnit lineBottom) const {
-    if (m_overflow)
-      return isHorizontal() ? m_overflow->layoutOverflowRect().maxY()
-                            : m_overflow->layoutOverflowRect().maxX();
-    return lineBottom;
+  LayoutUnit LogicalBottomLayoutOverflow(LayoutUnit line_bottom) const {
+    if (overflow_)
+      return IsHorizontal() ? overflow_->LayoutOverflowRect().MaxY()
+                            : overflow_->LayoutOverflowRect().MaxX();
+    return line_bottom;
   }
-  LayoutRect logicalLayoutOverflowRect(LayoutUnit lineTop,
-                                       LayoutUnit lineBottom) const {
-    LayoutRect result = layoutOverflowRect(lineTop, lineBottom);
-    if (!getLineLayoutItem().isHorizontalWritingMode())
-      result = result.transposedRect();
+  LayoutRect LogicalLayoutOverflowRect(LayoutUnit line_top,
+                                       LayoutUnit line_bottom) const {
+    LayoutRect result = LayoutOverflowRect(line_top, line_bottom);
+    if (!GetLineLayoutItem().IsHorizontalWritingMode())
+      result = result.TransposedRect();
     return result;
   }
 
-  LayoutRect visualOverflowRect(LayoutUnit lineTop,
-                                LayoutUnit lineBottom) const {
-    return m_overflow ? m_overflow->visualOverflowRect()
-                      : frameRectIncludingLineHeight(lineTop, lineBottom);
+  LayoutRect VisualOverflowRect(LayoutUnit line_top,
+                                LayoutUnit line_bottom) const {
+    return overflow_ ? overflow_->VisualOverflowRect()
+                     : FrameRectIncludingLineHeight(line_top, line_bottom);
   }
-  LayoutUnit logicalLeftVisualOverflow() const {
-    return m_overflow ? (isHorizontal() ? m_overflow->visualOverflowRect().x()
-                                        : m_overflow->visualOverflowRect().y())
-                      : logicalLeft();
+  LayoutUnit LogicalLeftVisualOverflow() const {
+    return overflow_ ? (IsHorizontal() ? overflow_->VisualOverflowRect().X()
+                                       : overflow_->VisualOverflowRect().Y())
+                     : LogicalLeft();
   }
-  LayoutUnit logicalRightVisualOverflow() const {
-    return m_overflow
-               ? (isHorizontal() ? m_overflow->visualOverflowRect().maxX()
-                                 : m_overflow->visualOverflowRect().maxY())
-               : static_cast<LayoutUnit>(logicalRight().ceil());
+  LayoutUnit LogicalRightVisualOverflow() const {
+    return overflow_ ? (IsHorizontal() ? overflow_->VisualOverflowRect().MaxX()
+                                       : overflow_->VisualOverflowRect().MaxY())
+                     : static_cast<LayoutUnit>(LogicalRight().Ceil());
   }
-  LayoutUnit logicalTopVisualOverflow(LayoutUnit lineTop) const {
-    if (m_overflow)
-      return isHorizontal() ? m_overflow->visualOverflowRect().y()
-                            : m_overflow->visualOverflowRect().x();
-    return lineTop;
+  LayoutUnit LogicalTopVisualOverflow(LayoutUnit line_top) const {
+    if (overflow_)
+      return IsHorizontal() ? overflow_->VisualOverflowRect().Y()
+                            : overflow_->VisualOverflowRect().X();
+    return line_top;
   }
-  LayoutUnit logicalBottomVisualOverflow(LayoutUnit lineBottom) const {
-    if (m_overflow)
-      return isHorizontal() ? m_overflow->visualOverflowRect().maxY()
-                            : m_overflow->visualOverflowRect().maxX();
-    return lineBottom;
+  LayoutUnit LogicalBottomVisualOverflow(LayoutUnit line_bottom) const {
+    if (overflow_)
+      return IsHorizontal() ? overflow_->VisualOverflowRect().MaxY()
+                            : overflow_->VisualOverflowRect().MaxX();
+    return line_bottom;
   }
-  LayoutRect logicalVisualOverflowRect(LayoutUnit lineTop,
-                                       LayoutUnit lineBottom) const {
-    LayoutRect result = visualOverflowRect(lineTop, lineBottom);
-    if (!getLineLayoutItem().isHorizontalWritingMode())
-      result = result.transposedRect();
+  LayoutRect LogicalVisualOverflowRect(LayoutUnit line_top,
+                                       LayoutUnit line_bottom) const {
+    LayoutRect result = VisualOverflowRect(line_top, line_bottom);
+    if (!GetLineLayoutItem().IsHorizontalWritingMode())
+      result = result.TransposedRect();
     return result;
   }
 
-  LayoutRect frameRectIncludingLineHeight(LayoutUnit lineTop,
-                                          LayoutUnit lineBottom) const {
-    if (isHorizontal())
-      return LayoutRect(x(), lineTop, logicalWidth(), lineBottom - lineTop);
-    return LayoutRect(lineTop, y(), lineBottom - lineTop, logicalWidth());
+  LayoutRect FrameRectIncludingLineHeight(LayoutUnit line_top,
+                                          LayoutUnit line_bottom) const {
+    if (IsHorizontal())
+      return LayoutRect(X(), line_top, LogicalWidth(), line_bottom - line_top);
+    return LayoutRect(line_top, Y(), line_bottom - line_top, LogicalWidth());
   }
 
-  LayoutRect logicalFrameRectIncludingLineHeight(LayoutUnit lineTop,
-                                                 LayoutUnit lineBottom) const {
-    return LayoutRect(logicalLeft(), lineTop, logicalWidth(),
-                      lineBottom - lineTop);
+  LayoutRect LogicalFrameRectIncludingLineHeight(LayoutUnit line_top,
+                                                 LayoutUnit line_bottom) const {
+    return LayoutRect(LogicalLeft(), line_top, LogicalWidth(),
+                      line_bottom - line_top);
   }
 
-  bool descendantsHaveSameLineHeightAndBaseline() const {
-    return m_descendantsHaveSameLineHeightAndBaseline;
+  bool DescendantsHaveSameLineHeightAndBaseline() const {
+    return descendants_have_same_line_height_and_baseline_;
   }
-  void clearDescendantsHaveSameLineHeightAndBaseline() {
-    m_descendantsHaveSameLineHeightAndBaseline = false;
-    if (parent() && parent()->descendantsHaveSameLineHeightAndBaseline())
-      parent()->clearDescendantsHaveSameLineHeightAndBaseline();
+  void ClearDescendantsHaveSameLineHeightAndBaseline() {
+    descendants_have_same_line_height_and_baseline_ = false;
+    if (Parent() && Parent()->DescendantsHaveSameLineHeightAndBaseline())
+      Parent()->ClearDescendantsHaveSameLineHeightAndBaseline();
   }
 
-  bool isFirstAfterPageBreak() const { return m_isFirstAfterPageBreak; }
-  void setIsFirstAfterPageBreak(bool isFirstAfterPageBreak) {
-    m_isFirstAfterPageBreak = isFirstAfterPageBreak;
+  bool IsFirstAfterPageBreak() const { return is_first_after_page_break_; }
+  void SetIsFirstAfterPageBreak(bool is_first_after_page_break) {
+    is_first_after_page_break_ = is_first_after_page_break;
   }
 
   // Some callers (LayoutListItem) needs to set extra overflow on their line
   // box.
-  void overrideOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow,
-                                        const LayoutRect& logicalVisualOverflow,
-                                        LayoutUnit lineTop,
-                                        LayoutUnit lineBottom) {
+  void OverrideOverflowFromLogicalRects(
+      const LayoutRect& logical_layout_overflow,
+      const LayoutRect& logical_visual_overflow,
+      LayoutUnit line_top,
+      LayoutUnit line_bottom) {
     // If we are setting an overflow, then we can't pretend not to have an
     // overflow.
-    clearKnownToHaveNoOverflow();
-    setOverflowFromLogicalRects(logicalLayoutOverflow, logicalVisualOverflow,
-                                lineTop, lineBottom);
+    ClearKnownToHaveNoOverflow();
+    SetOverflowFromLogicalRects(logical_layout_overflow,
+                                logical_visual_overflow, line_top, line_bottom);
   }
 
-  LayoutUnit maxLogicalBottomForUnderline(LineLayoutItem decorationObject,
-                                          LayoutUnit maxLogicalBottom) const;
-  LayoutUnit minLogicalTopForUnderline(LineLayoutItem decorationObject,
-                                       LayoutUnit minLogicalTop) const;
+  LayoutUnit MaxLogicalBottomForUnderline(LineLayoutItem decoration_object,
+                                          LayoutUnit max_logical_bottom) const;
+  LayoutUnit MinLogicalTopForUnderline(LineLayoutItem decoration_object,
+                                       LayoutUnit min_logical_top) const;
 
  private:
-  void placeBoxRangeInInlineDirection(InlineBox* firstChild,
-                                      InlineBox* lastChild,
-                                      LayoutUnit& logicalLeft,
-                                      LayoutUnit& minLogicalLeft,
-                                      LayoutUnit& maxLogicalRight,
-                                      bool& needsWordSpacing);
-  void beginPlacingBoxRangesInInlineDirection(LayoutUnit logicalLeft) {
-    setLogicalLeft(logicalLeft);
+  void PlaceBoxRangeInInlineDirection(InlineBox* first_child,
+                                      InlineBox* last_child,
+                                      LayoutUnit& logical_left,
+                                      LayoutUnit& min_logical_left,
+                                      LayoutUnit& max_logical_right,
+                                      bool& needs_word_spacing);
+  void BeginPlacingBoxRangesInInlineDirection(LayoutUnit logical_left) {
+    SetLogicalLeft(logical_left);
   }
-  void endPlacingBoxRangesInInlineDirection(LayoutUnit logicalLeft,
-                                            LayoutUnit logicalRight,
-                                            LayoutUnit minLogicalLeft,
-                                            LayoutUnit maxLogicalRight) {
-    setLogicalWidth(logicalRight - logicalLeft);
-    if (knownToHaveNoOverflow() &&
-        (minLogicalLeft < logicalLeft || maxLogicalRight > logicalRight))
-      clearKnownToHaveNoOverflow();
+  void EndPlacingBoxRangesInInlineDirection(LayoutUnit logical_left,
+                                            LayoutUnit logical_right,
+                                            LayoutUnit min_logical_left,
+                                            LayoutUnit max_logical_right) {
+    SetLogicalWidth(logical_right - logical_left);
+    if (KnownToHaveNoOverflow() &&
+        (min_logical_left < logical_left || max_logical_right > logical_right))
+      ClearKnownToHaveNoOverflow();
   }
 
-  void addBoxShadowVisualOverflow(LayoutRect& logicalVisualOverflow);
-  void addBorderOutsetVisualOverflow(LayoutRect& logicalVisualOverflow);
-  void addOutlineVisualOverflow(LayoutRect& logicalVisualOverflow);
-  void addTextBoxVisualOverflow(InlineTextBox*,
+  void AddBoxShadowVisualOverflow(LayoutRect& logical_visual_overflow);
+  void AddBorderOutsetVisualOverflow(LayoutRect& logical_visual_overflow);
+  void AddOutlineVisualOverflow(LayoutRect& logical_visual_overflow);
+  void AddTextBoxVisualOverflow(InlineTextBox*,
                                 GlyphOverflowAndFallbackFontsMap&,
-                                LayoutRect& logicalVisualOverflow);
-  void addReplacedChildOverflow(const InlineBox*,
-                                LayoutRect& logicalLayoutOverflow,
-                                LayoutRect& logicalVisualOverflow);
+                                LayoutRect& logical_visual_overflow);
+  void AddReplacedChildOverflow(const InlineBox*,
+                                LayoutRect& logical_layout_overflow,
+                                LayoutRect& logical_visual_overflow);
 
-  void setLayoutOverflow(const LayoutRect&, const LayoutRect&);
-  void setVisualOverflow(const LayoutRect&, const LayoutRect&);
+  void SetLayoutOverflow(const LayoutRect&, const LayoutRect&);
+  void SetVisualOverflow(const LayoutRect&, const LayoutRect&);
 
-  void setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow,
-                                   const LayoutRect& logicalVisualOverflow,
-                                   LayoutUnit lineTop,
-                                   LayoutUnit lineBottom);
+  void SetOverflowFromLogicalRects(const LayoutRect& logical_layout_overflow,
+                                   const LayoutRect& logical_visual_overflow,
+                                   LayoutUnit line_top,
+                                   LayoutUnit line_bottom);
 
  protected:
-  std::unique_ptr<SimpleOverflowModel> m_overflow;
+  std::unique_ptr<SimpleOverflowModel> overflow_;
 
-  bool isInlineFlowBox() const final { return true; }
+  bool IsInlineFlowBox() const final { return true; }
 
-  InlineBox* m_firstChild;
-  InlineBox* m_lastChild;
+  InlineBox* first_child_;
+  InlineBox* last_child_;
 
   InlineFlowBox*
-      m_prevLineBox;  // The previous box that also uses our LayoutObject
-  InlineFlowBox* m_nextLineBox;  // The next box that also uses our LayoutObject
+      prev_line_box_;  // The previous box that also uses our LayoutObject
+  InlineFlowBox*
+      next_line_box_;  // The next box that also uses our LayoutObject
 
  private:
-  unsigned m_includeLogicalLeftEdge : 1;
-  unsigned m_includeLogicalRightEdge : 1;
-  unsigned m_hasTextChildren : 1;
-  unsigned m_hasTextDescendants : 1;
-  unsigned m_descendantsHaveSameLineHeightAndBaseline : 1;
+  unsigned include_logical_left_edge_ : 1;
+  unsigned include_logical_right_edge_ : 1;
+  unsigned has_text_children_ : 1;
+  unsigned has_text_descendants_ : 1;
+  unsigned descendants_have_same_line_height_and_baseline_ : 1;
 
  protected:
   // The following members are only used by RootInlineBox but moved here to keep
@@ -459,35 +461,35 @@ class InlineFlowBox : public InlineBox {
 
   // Whether or not this line uses alphabetic or ideographic baselines by
   // default.
-  unsigned m_baselineType : 1;  // FontBaseline
+  unsigned baseline_type_ : 1;  // FontBaseline
 
   // If the line contains any ruby runs, then this will be true.
-  unsigned m_hasAnnotationsBefore : 1;
-  unsigned m_hasAnnotationsAfter : 1;
+  unsigned has_annotations_before_ : 1;
+  unsigned has_annotations_after_ : 1;
 
-  unsigned m_lineBreakBidiStatusEor : 5;         // WTF::Unicode::Direction
-  unsigned m_lineBreakBidiStatusLastStrong : 5;  // WTF::Unicode::Direction
-  unsigned m_lineBreakBidiStatusLast : 5;        // WTF::Unicode::Direction
+  unsigned line_break_bidi_status_eor_ : 5;          // WTF::Unicode::Direction
+  unsigned line_break_bidi_status_last_strong_ : 5;  // WTF::Unicode::Direction
+  unsigned line_break_bidi_status_last_ : 5;         // WTF::Unicode::Direction
 
-  unsigned m_isFirstAfterPageBreak : 1;
+  unsigned is_first_after_page_break_ : 1;
 
 // End of RootInlineBox-specific members.
 
 #if DCHECK_IS_ON()
  private:
-  unsigned m_hasBadChildList : 1;
+  unsigned has_bad_child_list_ : 1;
 #endif
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineFlowBox);
 
 #if !DCHECK_IS_ON()
-inline void InlineFlowBox::checkConsistency() const {}
+inline void InlineFlowBox::CheckConsistency() const {}
 #endif
 
-inline void InlineFlowBox::setHasBadChildList() {
+inline void InlineFlowBox::SetHasBadChildList() {
 #if DCHECK_IS_ON()
-  m_hasBadChildList = true;
+  has_bad_child_list_ = true;
 #endif
 }
 

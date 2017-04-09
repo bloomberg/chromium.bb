@@ -38,43 +38,43 @@ class WebSecurityOrigin;
 
 class WebDatabaseObserver {
  public:
-  virtual void databaseOpened(const WebSecurityOrigin&,
-                              const WebString& databaseName,
-                              const WebString& databaseDisplayName,
-                              unsigned long estimatedSize) = 0;
-  virtual void databaseModified(const WebSecurityOrigin&,
-                                const WebString& databaseName) = 0;
-  virtual void databaseClosed(const WebSecurityOrigin&,
-                              const WebString& databaseName) = 0;
-  virtual void reportOpenDatabaseResult(const WebSecurityOrigin&,
-                                        const WebString& databaseName,
-                                        int errorSite,
-                                        int webSqlErrorCode,
-                                        int sqliteErrorCode,
-                                        double callTime) {}
-  virtual void reportChangeVersionResult(const WebSecurityOrigin&,
-                                         const WebString& databaseName,
-                                         int errorSite,
-                                         int webSqlErrorCode,
-                                         int sqliteErrorCode) {}
-  virtual void reportStartTransactionResult(const WebSecurityOrigin&,
-                                            const WebString& databaseName,
-                                            int errorSite,
-                                            int webSqlErrorCode,
-                                            int sqliteErrorCode) {}
-  virtual void reportCommitTransactionResult(const WebSecurityOrigin&,
-                                             const WebString& databaseName,
-                                             int errorSite,
-                                             int webSqlErrorCode,
-                                             int sqliteErrorCode) {}
-  virtual void reportExecuteStatementResult(const WebSecurityOrigin&,
-                                            const WebString& databaseName,
-                                            int errorSite,
-                                            int webSqlErrorCode,
-                                            int sqliteErrorCode) {}
-  virtual void reportVacuumDatabaseResult(const WebSecurityOrigin&,
-                                          const WebString& databaseName,
-                                          int sqliteErrorCode) {}
+  virtual void DatabaseOpened(const WebSecurityOrigin&,
+                              const WebString& database_name,
+                              const WebString& database_display_name,
+                              unsigned long estimated_size) = 0;
+  virtual void DatabaseModified(const WebSecurityOrigin&,
+                                const WebString& database_name) = 0;
+  virtual void DatabaseClosed(const WebSecurityOrigin&,
+                              const WebString& database_name) = 0;
+  virtual void ReportOpenDatabaseResult(const WebSecurityOrigin&,
+                                        const WebString& database_name,
+                                        int error_site,
+                                        int web_sql_error_code,
+                                        int sqlite_error_code,
+                                        double call_time) {}
+  virtual void ReportChangeVersionResult(const WebSecurityOrigin&,
+                                         const WebString& database_name,
+                                         int error_site,
+                                         int web_sql_error_code,
+                                         int sqlite_error_code) {}
+  virtual void ReportStartTransactionResult(const WebSecurityOrigin&,
+                                            const WebString& database_name,
+                                            int error_site,
+                                            int web_sql_error_code,
+                                            int sqlite_error_code) {}
+  virtual void ReportCommitTransactionResult(const WebSecurityOrigin&,
+                                             const WebString& database_name,
+                                             int error_site,
+                                             int web_sql_error_code,
+                                             int sqlite_error_code) {}
+  virtual void ReportExecuteStatementResult(const WebSecurityOrigin&,
+                                            const WebString& database_name,
+                                            int error_site,
+                                            int web_sql_error_code,
+                                            int sqlite_error_code) {}
+  virtual void ReportVacuumDatabaseResult(const WebSecurityOrigin&,
+                                          const WebString& database_name,
+                                          int sqlite_error_code) {}
 
  protected:
   ~WebDatabaseObserver() {}

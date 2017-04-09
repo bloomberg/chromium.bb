@@ -28,7 +28,7 @@ void {{sink_class}}::add{{class_name}}({{class_name}}* agent) {
 
 void {{sink_class}}::remove{{class_name}}({{class_name}}* agent) {
   m_{{getter_name}}s.erase(agent);
-  m_has{{class_name}}s = !m_{{getter_name}}s.isEmpty();
+  m_has{{class_name}}s = !m_{{getter_name}}s.IsEmpty();
 }
 
 {% endfor -%}
@@ -37,7 +37,7 @@ DEFINE_TRACE({{sink_class}})
 {
 {% for agent in agents %}
 {% set getter_name = agent | agent_name_to_class | to_lower_case %}
-  visitor->trace(m_{{getter_name}}s);
+  visitor->Trace(m_{{getter_name}}s);
 {% endfor %}
 }
 
@@ -50,8 +50,8 @@ namespace probe {
 {%- endmacro %}
 
 {% macro probe_body(probe, common_name) %}
-{% set agent_probe_name = common_name or probe.name %}
-  {{sink_class}}* sink = to{{sink_class}}({{probe.params[0].name}});
+{% set agent_probe_name = method_name(common_name or probe.name) %}
+  {{sink_class}}* sink = To{{sink_class}}({{probe.params[0].name}});
   if (!sink)
     return;
 {% for param in probe.params %}
@@ -77,11 +77,11 @@ namespace probe {
 {%- if not loop.last %},
 {% endif %}
 {% endfor %} {
-{% call probe_body(probe, "will") %}*this{% endcall %}
+{% call probe_body(probe, "Will") %}*this{% endcall %}
 }
 
 {{probe.name}}::~{{probe.name}}() {
-{% call probe_body(probe, "did") %}*this{% endcall %}
+{% call probe_body(probe, "Did") %}*this{% endcall %}
 }
 
 {% else -%}

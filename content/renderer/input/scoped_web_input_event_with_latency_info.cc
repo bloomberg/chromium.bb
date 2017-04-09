@@ -29,10 +29,10 @@ void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
 
   // New events get coalesced into older events, and the newer timestamp
   // should always be preserved.
-  const double time_stamp_seconds = other.event().timeStampSeconds();
-  ui::Coalesce(other.event(), event_->eventPointer());
-  event_->eventPointer()->setTimeStampSeconds(time_stamp_seconds);
-  event_->addCoalescedEvent(other.event());
+  const double time_stamp_seconds = other.event().TimeStampSeconds();
+  ui::Coalesce(other.event(), event_->EventPointer());
+  event_->EventPointer()->SetTimeStampSeconds(time_stamp_seconds);
+  event_->AddCoalescedEvent(other.event());
 
   // When coalescing two input events, we keep the oldest LatencyInfo
   // since it will represent the longest latency.
@@ -41,11 +41,11 @@ void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
 }
 
 const blink::WebInputEvent& ScopedWebInputEventWithLatencyInfo::event() const {
-  return event_->event();
+  return event_->Event();
 }
 
 blink::WebInputEvent& ScopedWebInputEventWithLatencyInfo::event() {
-  return *event_->eventPointer();
+  return *event_->EventPointer();
 }
 
 const blink::WebCoalescedInputEvent&

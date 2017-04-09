@@ -41,51 +41,53 @@ using namespace XPath;
 
 XPathExpression::XPathExpression() {}
 
-XPathExpression* XPathExpression::createExpression(
+XPathExpression* XPathExpression::CreateExpression(
     const String& expression,
     XPathNSResolver* resolver,
-    ExceptionState& exceptionState) {
-  XPathExpression* expr = XPathExpression::create();
+    ExceptionState& exception_state) {
+  XPathExpression* expr = XPathExpression::Create();
   Parser parser;
 
-  expr->m_topExpression =
-      parser.parseStatement(expression, resolver, exceptionState);
-  if (!expr->m_topExpression)
+  expr->top_expression_ =
+      parser.ParseStatement(expression, resolver, exception_state);
+  if (!expr->top_expression_)
     return nullptr;
 
   return expr;
 }
 
 DEFINE_TRACE(XPathExpression) {
-  visitor->trace(m_topExpression);
+  visitor->Trace(top_expression_);
 }
 
-XPathResult* XPathExpression::evaluate(Node* contextNode,
+XPathResult* XPathExpression::evaluate(Node* context_node,
                                        unsigned short type,
                                        const ScriptValue&,
-                                       ExceptionState& exceptionState) {
-  if (!isValidContextNode(contextNode)) {
-    exceptionState.throwDOMException(
-        NotSupportedError, "The node provided is '" + contextNode->nodeName() +
-                               "', which is not a valid context node type.");
+                                       ExceptionState& exception_state) {
+  if (!IsValidContextNode(context_node)) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError, "The node provided is '" +
+                                context_node->nodeName() +
+                                "', which is not a valid context node type.");
     return nullptr;
   }
 
-  EvaluationContext evaluationContext(*contextNode);
-  XPathResult* result = XPathResult::create(
-      evaluationContext, m_topExpression->evaluate(evaluationContext));
+  EvaluationContext evaluation_context(*context_node);
+  XPathResult* result = XPathResult::Create(
+      evaluation_context, top_expression_->Evaluate(evaluation_context));
 
-  if (evaluationContext.hadTypeConversionError) {
+  if (evaluation_context.had_type_conversion_error) {
     // It is not specified what to do if type conversion fails while evaluating
     // an expression.
-    exceptionState.throwDOMException(
-        SyntaxError, "Type conversion failed while evaluating the expression.");
+    exception_state.ThrowDOMException(
+        kSyntaxError,
+        "Type conversion failed while evaluating the expression.");
     return nullptr;
   }
 
   if (type != XPathResult::kAnyType) {
-    result->convertTo(type, exceptionState);
-    if (exceptionState.hadException())
+    result->ConvertTo(type, exception_state);
+    if (exception_state.HadException())
       return nullptr;
   }
 

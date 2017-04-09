@@ -32,134 +32,134 @@ namespace blink {
 // dimensions in paged media (i.e. cm, pt,). The shrinkage used
 // to be 80% (1.25f) to match other browsers - they have since moved on.
 // Wide pages will be scaled down more than this.
-const float printingMinimumShrinkFactor = 1.333f;
+const float kPrintingMinimumShrinkFactor = 1.333f;
 
 // This number determines how small we are willing to reduce the page content
 // in order to accommodate the widest line. If the page would have to be
 // reduced smaller to make the widest line fit, we just clip instead (this
 // behavior matches MacIE and Mozilla, at least).
 // TODO(rhogan): Decide if this quirk is still required.
-const float printingMaximumShrinkFactor = 2;
+const float kPrintingMaximumShrinkFactor = 2;
 
 PrintContext::PrintContext(LocalFrame* frame)
-    : m_frame(frame), m_isPrinting(false), m_linkedDestinationsValid(false) {}
+    : frame_(frame), is_printing_(false), linked_destinations_valid_(false) {}
 
 PrintContext::~PrintContext() {
-  if (m_isPrinting)
+  if (is_printing_)
     end();
 }
 
-void PrintContext::computePageRects(const FloatRect& printRect,
-                                    float headerHeight,
-                                    float footerHeight,
-                                    float userScaleFactor,
-                                    float& outPageHeight) {
-  m_pageRects.clear();
-  outPageHeight = 0;
+void PrintContext::ComputePageRects(const FloatRect& print_rect,
+                                    float header_height,
+                                    float footer_height,
+                                    float user_scale_factor,
+                                    float& out_page_height) {
+  page_rects_.Clear();
+  out_page_height = 0;
 
-  if (!m_frame->document() || !m_frame->view() ||
-      m_frame->document()->layoutViewItem().isNull())
+  if (!frame_->GetDocument() || !frame_->View() ||
+      frame_->GetDocument()->GetLayoutViewItem().IsNull())
     return;
 
-  if (userScaleFactor <= 0) {
-    DLOG(ERROR) << "userScaleFactor has bad value " << userScaleFactor;
-    return;
-  }
-
-  LayoutViewItem view = m_frame->document()->layoutViewItem();
-  const IntRect& documentRect = view.documentRect();
-  FloatSize pageSize = m_frame->resizePageRectsKeepingRatio(
-      FloatSize(printRect.width(), printRect.height()),
-      FloatSize(documentRect.width(), documentRect.height()));
-  float pageWidth = pageSize.width();
-  float pageHeight = pageSize.height();
-
-  outPageHeight =
-      pageHeight;  // this is the height of the page adjusted by margins
-  pageHeight -= headerHeight + footerHeight;
-
-  if (pageHeight <= 0) {
-    DLOG(ERROR) << "pageHeight has bad value " << pageHeight;
+  if (user_scale_factor <= 0) {
+    DLOG(ERROR) << "userScaleFactor has bad value " << user_scale_factor;
     return;
   }
 
-  computePageRectsWithPageSizeInternal(
-      FloatSize(pageWidth / userScaleFactor, pageHeight / userScaleFactor));
+  LayoutViewItem view = frame_->GetDocument()->GetLayoutViewItem();
+  const IntRect& document_rect = view.DocumentRect();
+  FloatSize page_size = frame_->ResizePageRectsKeepingRatio(
+      FloatSize(print_rect.Width(), print_rect.Height()),
+      FloatSize(document_rect.Width(), document_rect.Height()));
+  float page_width = page_size.Width();
+  float page_height = page_size.Height();
+
+  out_page_height =
+      page_height;  // this is the height of the page adjusted by margins
+  page_height -= header_height + footer_height;
+
+  if (page_height <= 0) {
+    DLOG(ERROR) << "pageHeight has bad value " << page_height;
+    return;
+  }
+
+  ComputePageRectsWithPageSizeInternal(FloatSize(
+      page_width / user_scale_factor, page_height / user_scale_factor));
 }
 
-void PrintContext::computePageRectsWithPageSize(
-    const FloatSize& pageSizeInPixels) {
-  m_pageRects.clear();
-  computePageRectsWithPageSizeInternal(pageSizeInPixels);
+void PrintContext::ComputePageRectsWithPageSize(
+    const FloatSize& page_size_in_pixels) {
+  page_rects_.Clear();
+  ComputePageRectsWithPageSizeInternal(page_size_in_pixels);
 }
 
-void PrintContext::computePageRectsWithPageSizeInternal(
-    const FloatSize& pageSizeInPixels) {
-  if (!m_frame->document() || !m_frame->view() ||
-      m_frame->document()->layoutViewItem().isNull())
+void PrintContext::ComputePageRectsWithPageSizeInternal(
+    const FloatSize& page_size_in_pixels) {
+  if (!frame_->GetDocument() || !frame_->View() ||
+      frame_->GetDocument()->GetLayoutViewItem().IsNull())
     return;
 
-  LayoutViewItem view = m_frame->document()->layoutViewItem();
+  LayoutViewItem view = frame_->GetDocument()->GetLayoutViewItem();
 
-  IntRect docRect = view.documentRect();
+  IntRect doc_rect = view.DocumentRect();
 
-  int pageWidth = pageSizeInPixels.width();
+  int page_width = page_size_in_pixels.Width();
   // We scaled with floating point arithmetic and need to ensure results like
   // 13329.99 are treated as 13330 so that we don't mistakenly assign an extra
   // page for the stray pixel.
-  int pageHeight = pageSizeInPixels.height() + LayoutUnit::epsilon();
+  int page_height = page_size_in_pixels.Height() + LayoutUnit::Epsilon();
 
-  bool isHorizontal = view.style()->isHorizontalWritingMode();
+  bool is_horizontal = view.Style()->IsHorizontalWritingMode();
 
-  int docLogicalHeight = isHorizontal ? docRect.height() : docRect.width();
-  int pageLogicalHeight = isHorizontal ? pageHeight : pageWidth;
-  int pageLogicalWidth = isHorizontal ? pageWidth : pageHeight;
+  int doc_logical_height = is_horizontal ? doc_rect.Height() : doc_rect.Width();
+  int page_logical_height = is_horizontal ? page_height : page_width;
+  int page_logical_width = is_horizontal ? page_width : page_height;
 
-  int inlineDirectionStart;
-  int inlineDirectionEnd;
-  int blockDirectionStart;
-  int blockDirectionEnd;
-  if (isHorizontal) {
-    if (view.style()->isFlippedBlocksWritingMode()) {
-      blockDirectionStart = docRect.maxY();
-      blockDirectionEnd = docRect.y();
+  int inline_direction_start;
+  int inline_direction_end;
+  int block_direction_start;
+  int block_direction_end;
+  if (is_horizontal) {
+    if (view.Style()->IsFlippedBlocksWritingMode()) {
+      block_direction_start = doc_rect.MaxY();
+      block_direction_end = doc_rect.Y();
     } else {
-      blockDirectionStart = docRect.y();
-      blockDirectionEnd = docRect.maxY();
+      block_direction_start = doc_rect.Y();
+      block_direction_end = doc_rect.MaxY();
     }
-    inlineDirectionStart =
-        view.style()->isLeftToRightDirection() ? docRect.x() : docRect.maxX();
-    inlineDirectionEnd =
-        view.style()->isLeftToRightDirection() ? docRect.maxX() : docRect.x();
+    inline_direction_start =
+        view.Style()->IsLeftToRightDirection() ? doc_rect.X() : doc_rect.MaxX();
+    inline_direction_end =
+        view.Style()->IsLeftToRightDirection() ? doc_rect.MaxX() : doc_rect.X();
   } else {
-    if (view.style()->isFlippedBlocksWritingMode()) {
-      blockDirectionStart = docRect.maxX();
-      blockDirectionEnd = docRect.x();
+    if (view.Style()->IsFlippedBlocksWritingMode()) {
+      block_direction_start = doc_rect.MaxX();
+      block_direction_end = doc_rect.X();
     } else {
-      blockDirectionStart = docRect.x();
-      blockDirectionEnd = docRect.maxX();
+      block_direction_start = doc_rect.X();
+      block_direction_end = doc_rect.MaxX();
     }
-    inlineDirectionStart =
-        view.style()->isLeftToRightDirection() ? docRect.y() : docRect.maxY();
-    inlineDirectionEnd =
-        view.style()->isLeftToRightDirection() ? docRect.maxY() : docRect.y();
+    inline_direction_start =
+        view.Style()->IsLeftToRightDirection() ? doc_rect.Y() : doc_rect.MaxY();
+    inline_direction_end =
+        view.Style()->IsLeftToRightDirection() ? doc_rect.MaxY() : doc_rect.Y();
   }
 
-  unsigned pageCount = ceilf((float)docLogicalHeight / pageLogicalHeight);
-  for (unsigned i = 0; i < pageCount; ++i) {
-    int pageLogicalTop =
-        blockDirectionEnd > blockDirectionStart
-            ? blockDirectionStart + i * pageLogicalHeight
-            : blockDirectionStart - (i + 1) * pageLogicalHeight;
+  unsigned page_count = ceilf((float)doc_logical_height / page_logical_height);
+  for (unsigned i = 0; i < page_count; ++i) {
+    int page_logical_top =
+        block_direction_end > block_direction_start
+            ? block_direction_start + i * page_logical_height
+            : block_direction_start - (i + 1) * page_logical_height;
 
-    int pageLogicalLeft = inlineDirectionEnd > inlineDirectionStart
-                              ? inlineDirectionStart
-                              : inlineDirectionStart - pageLogicalWidth;
-    IntRect pageRect(pageLogicalLeft, pageLogicalTop, pageLogicalWidth,
-                     pageLogicalHeight);
-    if (!isHorizontal)
-      pageRect = pageRect.transposedRect();
-    m_pageRects.push_back(pageRect);
+    int page_logical_left = inline_direction_end > inline_direction_start
+                                ? inline_direction_start
+                                : inline_direction_start - page_logical_width;
+    IntRect page_rect(page_logical_left, page_logical_top, page_logical_width,
+                      page_logical_height);
+    if (!is_horizontal)
+      page_rect = page_rect.TransposedRect();
+    page_rects_.push_back(page_rect);
   }
 }
 
@@ -169,183 +169,185 @@ void PrintContext::begin(float width, float height) {
 
   // This function can be called multiple times to adjust printing parameters
   // without going back to screen mode.
-  m_isPrinting = true;
+  is_printing_ = true;
 
-  FloatSize originalPageSize = FloatSize(width, height);
-  FloatSize minLayoutSize = m_frame->resizePageRectsKeepingRatio(
-      originalPageSize, FloatSize(width * printingMinimumShrinkFactor,
-                                  height * printingMinimumShrinkFactor));
+  FloatSize original_page_size = FloatSize(width, height);
+  FloatSize min_layout_size = frame_->ResizePageRectsKeepingRatio(
+      original_page_size, FloatSize(width * kPrintingMinimumShrinkFactor,
+                                    height * kPrintingMinimumShrinkFactor));
 
   // This changes layout, so callers need to make sure that they don't paint to
   // screen while in printing mode.
-  m_frame->setPrinting(
-      true, minLayoutSize, originalPageSize,
-      printingMaximumShrinkFactor / printingMinimumShrinkFactor);
+  frame_->SetPrinting(
+      true, min_layout_size, original_page_size,
+      kPrintingMaximumShrinkFactor / kPrintingMinimumShrinkFactor);
 }
 
 void PrintContext::end() {
-  ASSERT(m_isPrinting);
-  m_isPrinting = false;
-  m_frame->setPrinting(false, FloatSize(), FloatSize(), 0);
-  m_linkedDestinations.clear();
-  m_linkedDestinationsValid = false;
+  ASSERT(is_printing_);
+  is_printing_ = false;
+  frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);
+  linked_destinations_.Clear();
+  linked_destinations_valid_ = false;
 }
 
-static LayoutBoxModelObject* enclosingBoxModelObject(LayoutObject* object) {
-  while (object && !object->isBoxModelObject())
-    object = object->parent();
+static LayoutBoxModelObject* EnclosingBoxModelObject(LayoutObject* object) {
+  while (object && !object->IsBoxModelObject())
+    object = object->Parent();
   if (!object)
     return nullptr;
-  return toLayoutBoxModelObject(object);
+  return ToLayoutBoxModelObject(object);
 }
 
-int PrintContext::pageNumberForElement(Element* element,
-                                       const FloatSize& pageSizeInPixels) {
-  element->document().updateStyleAndLayout();
+int PrintContext::PageNumberForElement(Element* element,
+                                       const FloatSize& page_size_in_pixels) {
+  element->GetDocument().UpdateStyleAndLayout();
 
-  LocalFrame* frame = element->document().frame();
-  FloatRect pageRect(FloatPoint(0, 0), pageSizeInPixels);
-  PrintContext printContext(frame);
-  printContext.begin(pageRect.width(), pageRect.height());
+  LocalFrame* frame = element->GetDocument().GetFrame();
+  FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
+  PrintContext print_context(frame);
+  print_context.begin(page_rect.Width(), page_rect.Height());
 
-  LayoutBoxModelObject* box = enclosingBoxModelObject(element->layoutObject());
+  LayoutBoxModelObject* box =
+      EnclosingBoxModelObject(element->GetLayoutObject());
   if (!box)
     return -1;
 
-  FloatSize scaledPageSize = pageSizeInPixels;
-  scaledPageSize.scale(frame->view()->contentsSize().width() /
-                       pageRect.width());
-  printContext.computePageRectsWithPageSize(scaledPageSize);
+  FloatSize scaled_page_size = page_size_in_pixels;
+  scaled_page_size.Scale(frame->View()->ContentsSize().Width() /
+                         page_rect.Width());
+  print_context.ComputePageRectsWithPageSize(scaled_page_size);
 
-  int top = box->pixelSnappedOffsetTop(box->offsetParent());
-  int left = box->pixelSnappedOffsetLeft(box->offsetParent());
-  size_t pageNumber = 0;
-  for (; pageNumber < printContext.pageCount(); pageNumber++) {
-    const IntRect& page = printContext.pageRect(pageNumber);
-    if (page.x() <= left && left < page.maxX() && page.y() <= top &&
-        top < page.maxY())
-      return pageNumber;
+  int top = box->PixelSnappedOffsetTop(box->OffsetParent());
+  int left = box->PixelSnappedOffsetLeft(box->OffsetParent());
+  size_t page_number = 0;
+  for (; page_number < print_context.PageCount(); page_number++) {
+    const IntRect& page = print_context.PageRect(page_number);
+    if (page.X() <= left && left < page.MaxX() && page.Y() <= top &&
+        top < page.MaxY())
+      return page_number;
   }
   return -1;
 }
 
-void PrintContext::collectLinkedDestinations(Node* node) {
+void PrintContext::CollectLinkedDestinations(Node* node) {
   for (Node* i = node->firstChild(); i; i = i->nextSibling())
-    collectLinkedDestinations(i);
+    CollectLinkedDestinations(i);
 
-  if (!node->isLink() || !node->isElementNode())
+  if (!node->IsLink() || !node->IsElementNode())
     return;
-  const AtomicString& href = toElement(node)->getAttribute(HTMLNames::hrefAttr);
-  if (href.isNull())
+  const AtomicString& href = ToElement(node)->getAttribute(HTMLNames::hrefAttr);
+  if (href.IsNull())
     return;
-  KURL url = node->document().completeURL(href);
-  if (!url.isValid())
+  KURL url = node->GetDocument().CompleteURL(href);
+  if (!url.IsValid())
     return;
 
-  if (url.hasFragmentIdentifier() &&
-      equalIgnoringFragmentIdentifier(url, node->document().baseURL())) {
-    String name = url.fragmentIdentifier();
-    if (Element* element = node->document().findAnchor(name))
-      m_linkedDestinations.set(name, element);
+  if (url.HasFragmentIdentifier() &&
+      EqualIgnoringFragmentIdentifier(url, node->GetDocument().BaseURL())) {
+    String name = url.FragmentIdentifier();
+    if (Element* element = node->GetDocument().FindAnchor(name))
+      linked_destinations_.Set(name, element);
   }
 }
 
-void PrintContext::outputLinkedDestinations(GraphicsContext& context,
-                                            const IntRect& pageRect) {
-  if (!m_linkedDestinationsValid) {
+void PrintContext::OutputLinkedDestinations(GraphicsContext& context,
+                                            const IntRect& page_rect) {
+  if (!linked_destinations_valid_) {
     // Collect anchors in the top-level frame only because our PrintContext
     // supports only one namespace for the anchors.
-    collectLinkedDestinations(frame()->document());
-    m_linkedDestinationsValid = true;
+    CollectLinkedDestinations(GetFrame()->GetDocument());
+    linked_destinations_valid_ = true;
   }
 
-  for (const auto& entry : m_linkedDestinations) {
-    LayoutObject* layoutObject = entry.value->layoutObject();
-    if (!layoutObject || !layoutObject->frameView())
+  for (const auto& entry : linked_destinations_) {
+    LayoutObject* layout_object = entry.value->GetLayoutObject();
+    if (!layout_object || !layout_object->GetFrameView())
       continue;
-    IntRect boundingBox = layoutObject->absoluteBoundingBoxRect();
+    IntRect bounding_box = layout_object->AbsoluteBoundingBoxRect();
     // TODO(bokan): boundingBox looks to be in content coordinates but
     // convertToRootFrame doesn't apply scroll offsets when converting up to
     // the root frame.
-    IntPoint point =
-        layoutObject->frameView()->convertToRootFrame(boundingBox.location());
-    if (!pageRect.contains(point))
+    IntPoint point = layout_object->GetFrameView()->ConvertToRootFrame(
+        bounding_box.Location());
+    if (!page_rect.Contains(point))
       continue;
-    point.clampNegativeToZero();
-    context.setURLDestinationLocation(entry.key, point);
+    point.ClampNegativeToZero();
+    context.SetURLDestinationLocation(entry.key, point);
   }
 }
 
-String PrintContext::pageProperty(LocalFrame* frame,
-                                  const char* propertyName,
-                                  int pageNumber) {
-  Document* document = frame->document();
-  PrintContext printContext(frame);
+String PrintContext::PageProperty(LocalFrame* frame,
+                                  const char* property_name,
+                                  int page_number) {
+  Document* document = frame->GetDocument();
+  PrintContext print_context(frame);
   // Any non-zero size is OK here. We don't care about actual layout. We just
   // want to collect @page rules and figure out what declarations apply on a
   // given page (that may or may not exist).
-  printContext.begin(800, 1000);
-  RefPtr<ComputedStyle> style = document->styleForPage(pageNumber);
+  print_context.begin(800, 1000);
+  RefPtr<ComputedStyle> style = document->StyleForPage(page_number);
 
   // Implement formatters for properties we care about.
-  if (!strcmp(propertyName, "margin-left")) {
-    if (style->marginLeft().isAuto())
+  if (!strcmp(property_name, "margin-left")) {
+    if (style->MarginLeft().IsAuto())
       return String("auto");
-    return String::number(style->marginLeft().value());
+    return String::Number(style->MarginLeft().Value());
   }
-  if (!strcmp(propertyName, "line-height"))
-    return String::number(style->lineHeight().value());
-  if (!strcmp(propertyName, "font-size"))
-    return String::number(style->getFontDescription().computedPixelSize());
-  if (!strcmp(propertyName, "font-family"))
-    return style->getFontDescription().family().family().getString();
-  if (!strcmp(propertyName, "size"))
-    return String::number(style->pageSize().width()) + ' ' +
-           String::number(style->pageSize().height());
+  if (!strcmp(property_name, "line-height"))
+    return String::Number(style->LineHeight().Value());
+  if (!strcmp(property_name, "font-size"))
+    return String::Number(style->GetFontDescription().ComputedPixelSize());
+  if (!strcmp(property_name, "font-family"))
+    return style->GetFontDescription().Family().Family().GetString();
+  if (!strcmp(property_name, "size"))
+    return String::Number(style->PageSize().Width()) + ' ' +
+           String::Number(style->PageSize().Height());
 
-  return String("pageProperty() unimplemented for: ") + propertyName;
+  return String("pageProperty() unimplemented for: ") + property_name;
 }
 
-bool PrintContext::isPageBoxVisible(LocalFrame* frame, int pageNumber) {
-  return frame->document()->isPageBoxVisible(pageNumber);
+bool PrintContext::IsPageBoxVisible(LocalFrame* frame, int page_number) {
+  return frame->GetDocument()->IsPageBoxVisible(page_number);
 }
 
-String PrintContext::pageSizeAndMarginsInPixels(LocalFrame* frame,
-                                                int pageNumber,
+String PrintContext::PageSizeAndMarginsInPixels(LocalFrame* frame,
+                                                int page_number,
                                                 int width,
                                                 int height,
-                                                int marginTop,
-                                                int marginRight,
-                                                int marginBottom,
-                                                int marginLeft) {
-  DoubleSize pageSize(width, height);
-  frame->document()->pageSizeAndMarginsInPixels(
-      pageNumber, pageSize, marginTop, marginRight, marginBottom, marginLeft);
+                                                int margin_top,
+                                                int margin_right,
+                                                int margin_bottom,
+                                                int margin_left) {
+  DoubleSize page_size(width, height);
+  frame->GetDocument()->PageSizeAndMarginsInPixels(page_number, page_size,
+                                                   margin_top, margin_right,
+                                                   margin_bottom, margin_left);
 
-  return "(" + String::number(floor(pageSize.width())) + ", " +
-         String::number(floor(pageSize.height())) + ") " +
-         String::number(marginTop) + ' ' + String::number(marginRight) + ' ' +
-         String::number(marginBottom) + ' ' + String::number(marginLeft);
+  return "(" + String::Number(floor(page_size.Width())) + ", " +
+         String::Number(floor(page_size.Height())) + ") " +
+         String::Number(margin_top) + ' ' + String::Number(margin_right) + ' ' +
+         String::Number(margin_bottom) + ' ' + String::Number(margin_left);
 }
 
-int PrintContext::numberOfPages(LocalFrame* frame,
-                                const FloatSize& pageSizeInPixels) {
-  frame->document()->updateStyleAndLayout();
+int PrintContext::NumberOfPages(LocalFrame* frame,
+                                const FloatSize& page_size_in_pixels) {
+  frame->GetDocument()->UpdateStyleAndLayout();
 
-  FloatRect pageRect(FloatPoint(0, 0), pageSizeInPixels);
-  PrintContext printContext(frame);
-  printContext.begin(pageRect.width(), pageRect.height());
+  FloatRect page_rect(FloatPoint(0, 0), page_size_in_pixels);
+  PrintContext print_context(frame);
+  print_context.begin(page_rect.Width(), page_rect.Height());
   // Account for shrink-to-fit.
-  FloatSize scaledPageSize = pageSizeInPixels;
-  scaledPageSize.scale(frame->view()->contentsSize().width() /
-                       pageRect.width());
-  printContext.computePageRectsWithPageSize(scaledPageSize);
-  return printContext.pageCount();
+  FloatSize scaled_page_size = page_size_in_pixels;
+  scaled_page_size.Scale(frame->View()->ContentsSize().Width() /
+                         page_rect.Width());
+  print_context.ComputePageRectsWithPageSize(scaled_page_size);
+  return print_context.PageCount();
 }
 
 DEFINE_TRACE(PrintContext) {
-  visitor->trace(m_frame);
-  visitor->trace(m_linkedDestinations);
+  visitor->Trace(frame_);
+  visitor->Trace(linked_destinations_);
 }
 
 }  // namespace blink

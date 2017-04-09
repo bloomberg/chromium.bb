@@ -111,20 +111,20 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
     const cc::InputHandlerScrollResult& scroll_result) {
   base::TimeTicks event_timestamp =
       base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds());
+      base::TimeDelta::FromSecondsD(gesture_event.TimeStampSeconds());
 
-  switch (gesture_event.type()) {
-    case blink::WebInputEvent::GestureScrollBegin: {
-      if (gesture_event.data.scrollBegin.synthetic)
+  switch (gesture_event.GetType()) {
+    case blink::WebInputEvent::kGestureScrollBegin: {
+      if (gesture_event.data.scroll_begin.synthetic)
         return;
-      if (gesture_event.data.scrollBegin.inertialPhase ==
-          blink::WebGestureEvent::MomentumPhase) {
+      if (gesture_event.data.scroll_begin.inertial_phase ==
+          blink::WebGestureEvent::kMomentumPhase) {
         if (state_ == kStateInactive)
           state_ = kStateMomentumScroll;
-      } else if (gesture_event.data.scrollBegin.inertialPhase ==
-                     blink::WebGestureEvent::NonMomentumPhase &&
-                 gesture_event.data.scrollBegin.deltaHintUnits ==
-                     blink::WebGestureEvent::PrecisePixels) {
+      } else if (gesture_event.data.scroll_begin.inertial_phase ==
+                     blink::WebGestureEvent::kNonMomentumPhase &&
+                 gesture_event.data.scroll_begin.delta_hint_units ==
+                     blink::WebGestureEvent::kPrecisePixels) {
         scroll_velocity = gfx::Vector2dF();
         last_scroll_event_timestamp_ = base::TimeTicks();
         state_ = kStateActiveScroll;
@@ -132,9 +132,9 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
       }
       break;
     }
-    case blink::WebInputEvent::GestureScrollUpdate: {
-      gfx::Vector2dF event_delta(-gesture_event.data.scrollUpdate.deltaX,
-                                 -gesture_event.data.scrollUpdate.deltaY);
+    case blink::WebInputEvent::kGestureScrollUpdate: {
+      gfx::Vector2dF event_delta(-gesture_event.data.scroll_update.delta_x,
+                                 -gesture_event.data.scroll_update.delta_y);
       switch (state_) {
         case kStateMomentumAnimated:
         case kStateInactive:
@@ -143,8 +143,8 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
         case kStateMomentumScroll:
           UpdateVelocity(event_delta, event_timestamp);
           Overscroll(event_delta, scroll_result.unused_scroll_delta);
-          if (gesture_event.data.scrollUpdate.inertialPhase ==
-                  blink::WebGestureEvent::MomentumPhase &&
+          if (gesture_event.data.scroll_update.inertial_phase ==
+                  blink::WebGestureEvent::kMomentumPhase &&
               !helper_->StretchAmount().IsZero()) {
             EnterStateMomentumAnimated(event_timestamp);
           }
@@ -152,8 +152,8 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
       }
       break;
     }
-    case blink::WebInputEvent::GestureScrollEnd: {
-      if (gesture_event.data.scrollEnd.synthetic)
+    case blink::WebInputEvent::kGestureScrollEnd: {
+      if (gesture_event.data.scroll_end.synthetic)
         return;
       switch (state_) {
         case kStateMomentumAnimated:

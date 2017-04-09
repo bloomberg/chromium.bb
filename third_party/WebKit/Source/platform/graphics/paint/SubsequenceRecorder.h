@@ -31,18 +31,18 @@ class PLATFORM_EXPORT SubsequenceRecorder final {
   WTF_MAKE_NONCOPYABLE(SubsequenceRecorder);
 
  public:
-  static bool useCachedSubsequenceIfPossible(GraphicsContext& context,
+  static bool UseCachedSubsequenceIfPossible(GraphicsContext& context,
                                              const DisplayItemClient& client) {
-    return context.getPaintController().useCachedSubsequenceIfPossible(client);
+    return context.GetPaintController().UseCachedSubsequenceIfPossible(client);
   }
 
   SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
   ~SubsequenceRecorder();
 
  private:
-  PaintController& m_paintController;
-  const DisplayItemClient& m_client;
-  size_t m_beginSubsequenceIndex;
+  PaintController& paint_controller_;
+  const DisplayItemClient& client_;
+  size_t begin_subsequence_index_;
 };
 
 }  // namespace blink

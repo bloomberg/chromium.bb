@@ -23,47 +23,47 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 
  public:
-  static PaintWorkletGlobalScope* create(LocalFrame*,
+  static PaintWorkletGlobalScope* Create(LocalFrame*,
                                          const KURL&,
-                                         const String& userAgent,
+                                         const String& user_agent,
                                          PassRefPtr<SecurityOrigin>,
                                          v8::Isolate*);
   ~PaintWorkletGlobalScope() override;
-  void dispose() final;
+  void Dispose() final;
 
-  bool isPaintWorkletGlobalScope() const final { return true; }
+  bool IsPaintWorkletGlobalScope() const final { return true; }
   void registerPaint(const String& name,
                      const ScriptValue& ctor,
                      ExceptionState&);
 
-  CSSPaintDefinition* findDefinition(const String& name);
-  void addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
+  CSSPaintDefinition* FindDefinition(const String& name);
+  void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   PaintWorkletGlobalScope(LocalFrame*,
                           const KURL&,
-                          const String& userAgent,
+                          const String& user_agent,
                           PassRefPtr<SecurityOrigin>,
                           v8::Isolate*);
 
   typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
-  DefinitionMap m_paintDefinitions;
+  DefinitionMap paint_definitions_;
 
   // The map of CSSPaintImageGeneratorImpl which are waiting for a
   // CSSPaintDefinition to be registered. The global scope is expected to
   // outlive the generators hence are held onto with a WeakMember.
   typedef HeapHashSet<WeakMember<CSSPaintImageGeneratorImpl>> GeneratorHashSet;
   typedef HeapHashMap<String, Member<GeneratorHashSet>> PendingGeneratorMap;
-  PendingGeneratorMap m_pendingGenerators;
+  PendingGeneratorMap pending_generators_;
 };
 
 DEFINE_TYPE_CASTS(PaintWorkletGlobalScope,
                   ExecutionContext,
                   context,
-                  context->isPaintWorkletGlobalScope(),
-                  context.isPaintWorkletGlobalScope());
+                  context->IsPaintWorkletGlobalScope(),
+                  context.IsPaintWorkletGlobalScope());
 
 }  // namespace blink
 

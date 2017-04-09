@@ -29,20 +29,20 @@
 namespace blink {
 
 enum class SQLTransactionState {
-  End = 0,
-  Idle,
-  AcquireLock,
-  OpenTransactionAndPreflight,
-  RunStatements,
-  PostflightAndCommit,
-  CleanupAndTerminate,
-  CleanupAfterTransactionErrorCallback,
-  DeliverTransactionCallback,
-  DeliverTransactionErrorCallback,
-  DeliverStatementCallback,
-  DeliverQuotaIncreaseCallback,
-  DeliverSuccessCallback,
-  NumberOfStates  // Always keep this at the end of the list.
+  kEnd = 0,
+  kIdle,
+  kAcquireLock,
+  kOpenTransactionAndPreflight,
+  kRunStatements,
+  kPostflightAndCommit,
+  kCleanupAndTerminate,
+  kCleanupAfterTransactionErrorCallback,
+  kDeliverTransactionCallback,
+  kDeliverTransactionErrorCallback,
+  kDeliverStatementCallback,
+  kDeliverQuotaIncreaseCallback,
+  kDeliverSuccessCallback,
+  kNumberOfStates  // Always keep this at the end of the list.
 };
 
 }  // namespace blink

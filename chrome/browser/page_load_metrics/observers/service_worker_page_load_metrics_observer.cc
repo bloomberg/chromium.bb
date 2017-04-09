@@ -50,7 +50,7 @@ bool IsServiceWorkerControlled(
     const page_load_metrics::PageLoadExtraInfo& info) {
   return (info.main_frame_metadata.behavior_flags &
           blink::WebLoadingBehaviorFlag::
-              WebLoadingBehaviorServiceWorkerControlled) != 0;
+              kWebLoadingBehaviorServiceWorkerControlled) != 0;
 }
 
 bool IsInboxSite(const GURL& url) {

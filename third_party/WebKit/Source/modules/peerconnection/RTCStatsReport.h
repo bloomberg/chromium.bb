@@ -26,10 +26,10 @@ class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>,
   RTCStatsReport(std::unique_ptr<WebRTCStatsReport>);
 
   // Maplike<String, v8::Local<v8::Value>>
-  PairIterable<String, v8::Local<v8::Value>>::IterationSource* startIteration(
+  PairIterable<String, v8::Local<v8::Value>>::IterationSource* StartIteration(
       ScriptState*,
       ExceptionState&) override;
-  bool getMapEntry(ScriptState*,
+  bool GetMapEntry(ScriptState*,
                    const String& key,
                    v8::Local<v8::Value>&,
                    ExceptionState&) override;
@@ -37,7 +37,7 @@ class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>,
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  std::unique_ptr<WebRTCStatsReport> m_report;
+  std::unique_ptr<WebRTCStatsReport> report_;
 };
 
 }  // namespace blink

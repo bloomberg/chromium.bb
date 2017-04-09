@@ -21,15 +21,15 @@ class TraversalRangeNodes : private TraversalRange<Iterator> {
  public:
   using StartNodeType = typename TraversalRange<Iterator>::StartNodeType;
   TraversalRangeNodes(const StartNodeType* start,
-                      const StartNodeType* pastEndNode)
-      : TraversalRange<Iterator>(start), m_pastEndNode(pastEndNode) {}
+                      const StartNodeType* past_end_node)
+      : TraversalRange<Iterator>(start), past_end_node_(past_end_node) {}
 
   using TraversalRange<Iterator>::begin;
 
-  Iterator end() { return Iterator(m_pastEndNode); }
+  Iterator end() { return Iterator(past_end_node_); }
 
  private:
-  const Member<const StartNodeType> m_pastEndNode;
+  const Member<const StartNodeType> past_end_node_;
 };
 
 // This class acts like |TraversalNextIterator| but in addition
@@ -40,7 +40,7 @@ class CheckedTraversalNextIterator
     : public TraversalIteratorBase<TraversalNext> {
   STACK_ALLOCATED();
 
-  using TraversalIteratorBase<TraversalNext>::m_current;
+  using TraversalIteratorBase<TraversalNext>::current_;
 
  public:
   using StartNodeType = typename TraversalNext::TraversalNodeType;
@@ -49,8 +49,8 @@ class CheckedTraversalNextIterator
             const_cast<StartNodeType*>(start)) {}
 
   void operator++() {
-    DCHECK(m_current);
-    m_current = TraversalNext::next(*m_current);
+    DCHECK(current_);
+    current_ = TraversalNext::Next(*current_);
   }
 };
 
@@ -101,34 +101,34 @@ class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
   bool operator==(const EphemeralRangeTemplate<Strategy>& other) const;
   bool operator!=(const EphemeralRangeTemplate<Strategy>& other) const;
 
-  Document& document() const;
-  PositionTemplate<Strategy> startPosition() const;
-  PositionTemplate<Strategy> endPosition() const;
+  Document& GetDocument() const;
+  PositionTemplate<Strategy> StartPosition() const;
+  PositionTemplate<Strategy> EndPosition() const;
 
-  Node* commonAncestorContainer() const;
+  Node* CommonAncestorContainer() const;
 
   // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
-  bool isCollapsed() const;
-  bool isNull() const {
-    DCHECK(isValid());
-    return m_startPosition.isNull();
+  bool IsCollapsed() const;
+  bool IsNull() const {
+    DCHECK(IsValid());
+    return start_position_.IsNull();
   }
-  bool isNotNull() const { return !isNull(); }
+  bool IsNotNull() const { return !IsNull(); }
 
-  RangeTraversal nodes() const;
+  RangeTraversal Nodes() const;
 
   // |node| should be in-document and valid for anchor node of
   // |PositionTemplate<Strategy>|.
-  static EphemeralRangeTemplate<Strategy> rangeOfContents(
+  static EphemeralRangeTemplate<Strategy> RangeOfContents(
       const Node& /* node */);
 
  private:
-  bool isValid() const;
+  bool IsValid() const;
 
-  PositionTemplate<Strategy> m_startPosition;
-  PositionTemplate<Strategy> m_endPosition;
+  PositionTemplate<Strategy> start_position_;
+  PositionTemplate<Strategy> end_position_;
 #if DCHECK_IS_ON()
-  uint64_t m_domTreeVersion;
+  uint64_t dom_tree_version_;
 #endif
 };
 
@@ -143,7 +143,7 @@ using EphemeralRangeInFlatTree =
 
 // Returns a newly created |Range| object from |range| or |nullptr| if
 // |range.isNull()| returns true.
-CORE_EXPORT Range* createRange(const EphemeralRange& /* range */);
+CORE_EXPORT Range* CreateRange(const EphemeralRange& /* range */);
 
 }  // namespace blink
 

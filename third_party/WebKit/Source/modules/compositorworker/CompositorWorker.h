@@ -21,13 +21,13 @@ class MODULES_EXPORT CompositorWorker final : public InProcessWorkerBase {
   USING_GARBAGE_COLLECTED_MIXIN(CompositorWorker);
 
  public:
-  static CompositorWorker* create(ExecutionContext*,
+  static CompositorWorker* Create(ExecutionContext*,
                                   const String& url,
                                   ExceptionState&);
   ~CompositorWorker() override;
 
-  const AtomicString& interfaceName() const override;
-  InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(
+  const AtomicString& InterfaceName() const override;
+  InProcessWorkerMessagingProxy* CreateInProcessWorkerMessagingProxy(
       ExecutionContext*) override;
 
  private:

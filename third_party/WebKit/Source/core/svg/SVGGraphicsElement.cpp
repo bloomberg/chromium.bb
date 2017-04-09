@@ -33,57 +33,57 @@
 
 namespace blink {
 
-SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tagName,
+SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tag_name,
                                        Document& document,
-                                       ConstructionType constructionType)
-    : SVGElement(tagName, document, constructionType),
+                                       ConstructionType construction_type)
+    : SVGElement(tag_name, document, construction_type),
       SVGTests(this),
-      m_transform(SVGAnimatedTransformList::create(this,
-                                                   SVGNames::transformAttr,
-                                                   CSSPropertyTransform)) {
-  addToPropertyMap(m_transform);
+      transform_(SVGAnimatedTransformList::Create(this,
+                                                  SVGNames::transformAttr,
+                                                  CSSPropertyTransform)) {
+  AddToPropertyMap(transform_);
 }
 
 SVGGraphicsElement::~SVGGraphicsElement() {}
 
 DEFINE_TRACE(SVGGraphicsElement) {
-  visitor->trace(m_transform);
-  SVGElement::trace(visitor);
-  SVGTests::trace(visitor);
+  visitor->Trace(transform_);
+  SVGElement::Trace(visitor);
+  SVGTests::Trace(visitor);
 }
 
-static bool isViewportElement(const Element& element) {
+static bool IsViewportElement(const Element& element) {
   return (isSVGSVGElement(element) || isSVGSymbolElement(element) ||
           isSVGForeignObjectElement(element) || isSVGImageElement(element));
 }
 
-AffineTransform SVGGraphicsElement::computeCTM(
+AffineTransform SVGGraphicsElement::ComputeCTM(
     SVGElement::CTMScope mode,
-    SVGGraphicsElement::StyleUpdateStrategy styleUpdateStrategy,
+    SVGGraphicsElement::StyleUpdateStrategy style_update_strategy,
     const SVGGraphicsElement* ancestor) const {
-  if (styleUpdateStrategy == AllowStyleUpdate)
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+  if (style_update_strategy == kAllowStyleUpdate)
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   AffineTransform ctm;
   bool done = false;
 
-  for (const Element* currentElement = this; currentElement && !done;
-       currentElement = currentElement->parentOrShadowHostElement()) {
-    if (!currentElement->isSVGElement())
+  for (const Element* current_element = this; current_element && !done;
+       current_element = current_element->ParentOrShadowHostElement()) {
+    if (!current_element->IsSVGElement())
       break;
 
-    ctm = toSVGElement(currentElement)
-              ->localCoordinateSpaceTransform()
-              .multiply(ctm);
+    ctm = ToSVGElement(current_element)
+              ->LocalCoordinateSpaceTransform()
+              .Multiply(ctm);
 
     switch (mode) {
-      case NearestViewportScope:
+      case kNearestViewportScope:
         // Stop at the nearest viewport ancestor.
-        done = currentElement != this && isViewportElement(*currentElement);
+        done = current_element != this && IsViewportElement(*current_element);
         break;
-      case AncestorScope:
+      case kAncestorScope:
         // Stop at the designated ancestor.
-        done = currentElement == ancestor;
+        done = current_element == ancestor;
         break;
       default:
         NOTREACHED();
@@ -94,102 +94,102 @@ AffineTransform SVGGraphicsElement::computeCTM(
   return ctm;
 }
 
-AffineTransform SVGGraphicsElement::getCTM(
-    StyleUpdateStrategy styleUpdateStrategy) {
-  return computeCTM(NearestViewportScope, styleUpdateStrategy);
+AffineTransform SVGGraphicsElement::GetCTM(
+    StyleUpdateStrategy style_update_strategy) {
+  return ComputeCTM(kNearestViewportScope, style_update_strategy);
 }
 
-AffineTransform SVGGraphicsElement::getScreenCTM(
-    StyleUpdateStrategy styleUpdateStrategy) {
-  if (styleUpdateStrategy == AllowStyleUpdate)
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+AffineTransform SVGGraphicsElement::GetScreenCTM(
+    StyleUpdateStrategy style_update_strategy) {
+  if (style_update_strategy == kAllowStyleUpdate)
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   TransformationMatrix transform;
-  if (LayoutObject* layoutObject = this->layoutObject()) {
+  if (LayoutObject* layout_object = this->GetLayoutObject()) {
     // Adjust for the zoom level factored into CSS coordinates (WK bug #96361).
-    transform.scale(1.0 / layoutObject->styleRef().effectiveZoom());
+    transform.Scale(1.0 / layout_object->StyleRef().EffectiveZoom());
 
     // Origin in the document. (This, together with the inverse-scale above,
     // performs the same operation as
     // Document::adjustFloatRectForScrollAndAbsoluteZoom, but in transformation
     // matrix form.)
-    if (FrameView* view = document().view()) {
-      LayoutRect visibleContentRect(view->visibleContentRect());
-      transform.translate(-visibleContentRect.x(), -visibleContentRect.y());
+    if (FrameView* view = GetDocument().View()) {
+      LayoutRect visible_content_rect(view->VisibleContentRect());
+      transform.Translate(-visible_content_rect.X(), -visible_content_rect.Y());
     }
 
     // Apply transforms from our ancestor coordinate space, including any
     // non-SVG ancestor transforms.
-    transform.multiply(layoutObject->localToAbsoluteTransform());
+    transform.Multiply(layout_object->LocalToAbsoluteTransform());
 
     // At the SVG/HTML boundary (aka LayoutSVGRoot), we need to apply the
     // localToBorderBoxTransform to map an element from SVG viewport
     // coordinates to CSS box coordinates.
-    if (layoutObject->isSVGRoot()) {
-      transform.multiply(
-          toLayoutSVGRoot(layoutObject)->localToBorderBoxTransform());
+    if (layout_object->IsSVGRoot()) {
+      transform.Multiply(
+          ToLayoutSVGRoot(layout_object)->LocalToBorderBoxTransform());
     }
   }
   // Drop any potential non-affine parts, because we're not able to convey that
   // information further anyway until getScreenCTM returns a DOMMatrix (4x4
   // matrix.)
-  return transform.toAffineTransform();
+  return transform.ToAffineTransform();
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getCTMFromJavascript() {
-  return SVGMatrixTearOff::create(getCTM());
+  return SVGMatrixTearOff::Create(GetCTM());
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getScreenCTMFromJavascript() {
-  return SVGMatrixTearOff::create(getScreenCTM());
+  return SVGMatrixTearOff::Create(GetScreenCTM());
 }
 
-void SVGGraphicsElement::collectStyleForPresentationAttribute(
+void SVGGraphicsElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableStylePropertySet* style) {
   if (name == SVGNames::transformAttr) {
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform, m_transform->currentValue()->cssValue());
+    AddPropertyToPresentationAttributeStyle(
+        style, CSSPropertyTransform, transform_->CurrentValue()->CssValue());
     return;
   }
-  SVGElement::collectStyleForPresentationAttribute(name, value, style);
+  SVGElement::CollectStyleForPresentationAttribute(name, value, style);
 }
 
-AffineTransform* SVGGraphicsElement::animateMotionTransform() {
-  return ensureSVGRareData()->animateMotionTransform();
+AffineTransform* SVGGraphicsElement::AnimateMotionTransform() {
+  return EnsureSVGRareData()->AnimateMotionTransform();
 }
 
-void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName) {
+void SVGGraphicsElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   // Reattach so the isValid() check will be run again during layoutObject
   // creation.
-  if (SVGTests::isKnownAttribute(attrName)) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    lazyReattachIfAttached();
+  if (SVGTests::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    LazyReattachIfAttached();
     return;
   }
 
-  if (attrName == SVGNames::transformAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    invalidateSVGPresentationAttributeStyle();
+  if (attr_name == SVGNames::transformAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    InvalidateSVGPresentationAttributeStyle();
     // TODO(fs): The InvalidationGuard will make sure all instances are
     // invalidated, but the style recalc will propagate to instances too. So
     // there is some redundant operations being performed here. Could we get
     // away with removing the InvalidationGuard?
-    setNeedsStyleRecalc(LocalStyleChange,
-                        StyleChangeReasonForTracing::fromAttribute(attrName));
-    if (LayoutObject* object = layoutObject())
-      markForLayoutAndParentResourceInvalidation(object);
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::FromAttribute(attr_name));
+    if (LayoutObject* object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(object);
     return;
   }
 
-  SVGElement::svgAttributeChanged(attrName);
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
 SVGElement* SVGGraphicsElement::nearestViewportElement() const {
-  for (Element* current = parentOrShadowHostElement(); current;
-       current = current->parentOrShadowHostElement()) {
-    if (isViewportElement(*current))
-      return toSVGElement(current);
+  for (Element* current = ParentOrShadowHostElement(); current;
+       current = current->ParentOrShadowHostElement()) {
+    if (IsViewportElement(*current))
+      return ToSVGElement(current);
   }
 
   return nullptr;
@@ -197,27 +197,27 @@ SVGElement* SVGGraphicsElement::nearestViewportElement() const {
 
 SVGElement* SVGGraphicsElement::farthestViewportElement() const {
   SVGElement* farthest = 0;
-  for (Element* current = parentOrShadowHostElement(); current;
-       current = current->parentOrShadowHostElement()) {
-    if (isViewportElement(*current))
-      farthest = toSVGElement(current);
+  for (Element* current = ParentOrShadowHostElement(); current;
+       current = current->ParentOrShadowHostElement()) {
+    if (IsViewportElement(*current))
+      farthest = ToSVGElement(current);
   }
   return farthest;
 }
 
-FloatRect SVGGraphicsElement::getBBox() {
-  document().updateStyleAndLayoutIgnorePendingStylesheets();
+FloatRect SVGGraphicsElement::GetBBox() {
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: Eventually we should support getBBox for detached elements.
-  if (!layoutObject())
+  if (!GetLayoutObject())
     return FloatRect();
 
-  return layoutObject()->objectBoundingBox();
+  return GetLayoutObject()->ObjectBoundingBox();
 }
 
 SVGRectTearOff* SVGGraphicsElement::getBBoxFromJavascript() {
-  return SVGRectTearOff::create(SVGRect::create(getBBox()), 0,
-                                PropertyIsNotAnimVal);
+  return SVGRectTearOff::Create(SVGRect::Create(GetBBox()), 0,
+                                kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

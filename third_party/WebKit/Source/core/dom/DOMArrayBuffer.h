@@ -15,34 +15,34 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer) {
+  static DOMArrayBuffer* Create(PassRefPtr<WTF::ArrayBuffer> buffer) {
     return new DOMArrayBuffer(std::move(buffer));
   }
-  static DOMArrayBuffer* create(unsigned numElements,
-                                unsigned elementByteSize) {
-    return create(WTF::ArrayBuffer::create(numElements, elementByteSize));
+  static DOMArrayBuffer* Create(unsigned num_elements,
+                                unsigned element_byte_size) {
+    return Create(WTF::ArrayBuffer::Create(num_elements, element_byte_size));
   }
-  static DOMArrayBuffer* create(const void* source, unsigned byteLength) {
-    return create(WTF::ArrayBuffer::create(source, byteLength));
+  static DOMArrayBuffer* Create(const void* source, unsigned byte_length) {
+    return Create(WTF::ArrayBuffer::Create(source, byte_length));
   }
-  static DOMArrayBuffer* create(WTF::ArrayBufferContents& contents) {
-    return create(WTF::ArrayBuffer::create(contents));
+  static DOMArrayBuffer* Create(WTF::ArrayBufferContents& contents) {
+    return Create(WTF::ArrayBuffer::Create(contents));
   }
 
   // Only for use by XMLHttpRequest::responseArrayBuffer and
   // Internals::serializeObject.
-  static DOMArrayBuffer* createUninitializedOrNull(unsigned numElements,
-                                                   unsigned elementByteSize);
+  static DOMArrayBuffer* CreateUninitializedOrNull(unsigned num_elements,
+                                                   unsigned element_byte_size);
 
-  DOMArrayBuffer* slice(int begin, int end) const {
-    return create(buffer()->slice(begin, end));
+  DOMArrayBuffer* Slice(int begin, int end) const {
+    return Create(Buffer()->Slice(begin, end));
   }
-  DOMArrayBuffer* slice(int begin) const {
-    return create(buffer()->slice(begin));
+  DOMArrayBuffer* Slice(int begin) const {
+    return Create(Buffer()->Slice(begin));
   }
 
-  v8::Local<v8::Object> wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creationContext) override;
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) override;
 
  private:
   explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)

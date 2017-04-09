@@ -30,65 +30,66 @@ class CORE_EXPORT EventHandlerRegistry final
   // Supported event handler classes. Note that each one may correspond to
   // multiple event types.
   enum EventHandlerClass {
-    ScrollEvent,
-    WheelEventBlocking,
-    WheelEventPassive,
-    TouchStartOrMoveEventBlocking,
-    TouchStartOrMoveEventPassive,
-    TouchEndOrCancelEventBlocking,
-    TouchEndOrCancelEventPassive,
+    kScrollEvent,
+    kWheelEventBlocking,
+    kWheelEventPassive,
+    kTouchStartOrMoveEventBlocking,
+    kTouchStartOrMoveEventPassive,
+    kTouchEndOrCancelEventBlocking,
+    kTouchEndOrCancelEventPassive,
 #if DCHECK_IS_ON()
     // Additional event categories for verifying handler tracking logic.
-    EventsForTesting,
+    kEventsForTesting,
 #endif
-    EventHandlerClassCount,  // Must be the last entry.
+    kEventHandlerClassCount,  // Must be the last entry.
   };
 
   // Returns true if the Page has event handlers of the specified class.
-  bool hasEventHandlers(EventHandlerClass) const;
+  bool HasEventHandlers(EventHandlerClass) const;
 
   // Returns a set of EventTargets which have registered handlers of the given
   // class.
-  const EventTargetSet* eventHandlerTargets(EventHandlerClass) const;
+  const EventTargetSet* EventHandlerTargets(EventHandlerClass) const;
 
   // Registration and management of event handlers attached to EventTargets.
-  void didAddEventHandler(EventTarget&,
-                          const AtomicString& eventType,
+  void DidAddEventHandler(EventTarget&,
+                          const AtomicString& event_type,
                           const AddEventListenerOptions&);
-  void didAddEventHandler(EventTarget&, EventHandlerClass);
-  void didRemoveEventHandler(EventTarget&,
-                             const AtomicString& eventType,
+  void DidAddEventHandler(EventTarget&, EventHandlerClass);
+  void DidRemoveEventHandler(EventTarget&,
+                             const AtomicString& event_type,
                              const AddEventListenerOptions&);
-  void didRemoveEventHandler(EventTarget&, EventHandlerClass);
-  void didRemoveAllEventHandlers(EventTarget&);
+  void DidRemoveEventHandler(EventTarget&, EventHandlerClass);
+  void DidRemoveAllEventHandlers(EventTarget&);
 
-  void didMoveIntoPage(EventTarget&);
-  void didMoveOutOfPage(EventTarget&);
+  void DidMoveIntoPage(EventTarget&);
+  void DidMoveOutOfPage(EventTarget&);
 
   // Either |documentDetached| or |didMove{Into,OutOf,Between}Pages| must
   // be called whenever the Page that is associated with a registered event
   // target changes. This ensures the registry does not end up with stale
   // references to handlers that are no longer related to it.
-  void documentDetached(Document&);
+  void DocumentDetached(Document&);
 
   DECLARE_TRACE();
-  void clearWeakMembers(Visitor*);
+  void ClearWeakMembers(Visitor*);
 
  private:
   enum ChangeOperation {
-    Add,       // Add a new event handler.
-    Remove,    // Remove an existing event handler.
-    RemoveAll  // Remove any and all existing event handlers for a given target.
+    kAdd,       // Add a new event handler.
+    kRemove,    // Remove an existing event handler.
+    kRemoveAll  // Remove any and all existing event handlers for a given
+                // target.
   };
 
   // Returns true if |eventType| belongs to a class this registry tracks.
-  static bool eventTypeToClass(const AtomicString& eventType,
+  static bool EventTypeToClass(const AtomicString& event_type,
                                const AddEventListenerOptions&,
                                EventHandlerClass* result);
 
   // Returns true if the operation actually added a new target or completely
   // removed an existing one.
-  bool updateEventHandlerTargets(ChangeOperation,
+  bool UpdateEventHandlerTargets(ChangeOperation,
                                  EventHandlerClass,
                                  EventTarget*);
 
@@ -96,32 +97,32 @@ class CORE_EXPORT EventHandlerRegistry final
   // clients when we have added the first handler or removed the last one for
   // a given event class. |hasActiveHandlers| can be used to distinguish
   // between the two cases.
-  void notifyHasHandlersChanged(LocalFrame*,
+  void NotifyHasHandlersChanged(LocalFrame*,
                                 EventHandlerClass,
-                                bool hasActiveHandlers);
+                                bool has_active_handlers);
 
   // Called to notify clients whenever a single event handler target is
   // registered or unregistered. If several handlers are registered for the
   // same target, only the first registration will trigger this notification.
-  void notifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass);
+  void NotifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass);
 
   // Record a change operation to a given event handler class and notify any
   // parent registry and other clients accordingly.
-  void updateEventHandlerOfType(ChangeOperation,
-                                const AtomicString& eventType,
+  void UpdateEventHandlerOfType(ChangeOperation,
+                                const AtomicString& event_type,
                                 const AddEventListenerOptions&,
                                 EventTarget*);
 
-  void updateEventHandlerInternal(ChangeOperation,
+  void UpdateEventHandlerInternal(ChangeOperation,
                                   EventHandlerClass,
                                   EventTarget*);
 
-  void updateAllEventHandlers(ChangeOperation, EventTarget&);
+  void UpdateAllEventHandlers(ChangeOperation, EventTarget&);
 
-  void checkConsistency(EventHandlerClass) const;
+  void CheckConsistency(EventHandlerClass) const;
 
-  Member<Page> m_page;
-  EventTargetSet m_targets[EventHandlerClassCount];
+  Member<Page> page_;
+  EventTargetSet targets_[kEventHandlerClassCount];
 };
 
 }  // namespace blink

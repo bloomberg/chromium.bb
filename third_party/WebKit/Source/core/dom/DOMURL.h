@@ -47,27 +47,27 @@ class DOMURL final : public GarbageCollectedFinalized<DOMURL>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMURL* create(const String& url, ExceptionState& exceptionState) {
-    return new DOMURL(url, blankURL(), exceptionState);
+  static DOMURL* Create(const String& url, ExceptionState& exception_state) {
+    return new DOMURL(url, BlankURL(), exception_state);
   }
 
-  static DOMURL* create(const String& url,
+  static DOMURL* Create(const String& url,
                         const String& base,
-                        ExceptionState& exceptionState) {
-    return new DOMURL(url, KURL(KURL(), base), exceptionState);
+                        ExceptionState& exception_state) {
+    return new DOMURL(url, KURL(KURL(), base), exception_state);
   }
   ~DOMURL();
 
-  CORE_EXPORT static String createPublicURL(ExecutionContext*,
+  CORE_EXPORT static String CreatePublicURL(ExecutionContext*,
                                             URLRegistrable*,
                                             const String& uuid = String());
-  static void revokeObjectUUID(ExecutionContext*, const String&);
+  static void RevokeObjectUUID(ExecutionContext*, const String&);
 
-  KURL url() const override { return m_url; }
-  void setURL(const KURL& url) override { m_url = url; }
+  KURL Url() const override { return url_; }
+  void SetURL(const KURL& url) override { url_ = url; }
 
-  String input() const override { return m_input; }
-  void setInput(const String&) override;
+  String Input() const override { return input_; }
+  void SetInput(const String&) override;
 
   void setSearch(const String&) override;
 
@@ -79,12 +79,12 @@ class DOMURL final : public GarbageCollectedFinalized<DOMURL>,
   friend class URLSearchParams;
   DOMURL(const String& url, const KURL& base, ExceptionState&);
 
-  void update();
-  void updateSearchParams(const String&);
+  void Update();
+  void UpdateSearchParams(const String&);
 
-  KURL m_url;
-  String m_input;
-  WeakMember<URLSearchParams> m_searchParams;
+  KURL url_;
+  String input_;
+  WeakMember<URLSearchParams> search_params_;
 };
 
 }  // namespace blink

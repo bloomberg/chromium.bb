@@ -27,21 +27,21 @@ using InstallPendingConditionalFeatureFunction = void (*)(const String&,
 // but can be overridden by this function. A pointer to the previously set
 // function is returned, so that functions can be chained.
 CORE_EXPORT InstallConditionalFeaturesFunction
-    setInstallConditionalFeaturesFunction(InstallConditionalFeaturesFunction);
+    SetInstallConditionalFeaturesFunction(InstallConditionalFeaturesFunction);
 
 // Sets the function to be called by |installPendingConditionalFeature|. This
 // is initially set to the private |installPendingConditionalFeatureDefault|
 // function, but can be overridden by this function. A pointer to the previously
 // set function is returned, so that functions can be chained.
 CORE_EXPORT InstallPendingConditionalFeatureFunction
-    setInstallPendingConditionalFeatureFunction(
+    SetInstallPendingConditionalFeatureFunction(
         InstallPendingConditionalFeatureFunction);
 
 // Installs all of the conditionally enabled V8 bindings for the given type, in
 // a specific context. This is called in V8PerContextData, after the constructor
 // and prototype for the type have been created. It indirectly calls the
 // function set by |setInstallConditionalFeaturesFunction|.
-CORE_EXPORT void installConditionalFeatures(const WrapperTypeInfo*,
+CORE_EXPORT void InstallConditionalFeatures(const WrapperTypeInfo*,
                                             const ScriptState*,
                                             v8::Local<v8::Object>,
                                             v8::Local<v8::Function>);
@@ -51,7 +51,7 @@ CORE_EXPORT void installConditionalFeatures(const WrapperTypeInfo*,
 // objects. If the target object hasn't been created, nothing is installed. The
 // enabled feature will be instead be installed when the object is created
 // (avoids forcing the creation of objects prematurely).
-CORE_EXPORT void installPendingConditionalFeature(const String&,
+CORE_EXPORT void InstallPendingConditionalFeature(const String&,
                                                   const ScriptState*);
 
 }  // namespace blink

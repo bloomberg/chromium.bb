@@ -37,33 +37,33 @@ namespace blink {
 
 class TimeInputType final : public BaseTemporalInputType {
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
 
  private:
   explicit TimeInputType(HTMLInputElement&);
 
-  void countUsage() override;
-  const AtomicString& formControlType() const override;
-  Decimal defaultValueForStepUp() const override;
-  StepRange createStepRange(AnyStepHandling) const override;
-  bool parseToDateComponentsInternal(const String&,
+  void CountUsage() override;
+  const AtomicString& FormControlType() const override;
+  Decimal DefaultValueForStepUp() const override;
+  StepRange CreateStepRange(AnyStepHandling) const override;
+  bool ParseToDateComponentsInternal(const String&,
                                      DateComponents*) const override;
-  bool setMillisecondToDateComponents(double, DateComponents*) const override;
-  void warnIfValueIsInvalid(const String&) const override;
-  String localizeValue(const String&) const override;
+  bool SetMillisecondToDateComponents(double, DateComponents*) const override;
+  void WarnIfValueIsInvalid(const String&) const override;
+  String LocalizeValue(const String&) const override;
 
   // BaseTemporalInputType functions
-  String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
-  void setupLayoutParameters(DateTimeEditElement::LayoutParameters&,
+  String FormatDateTimeFieldsState(const DateTimeFieldsState&) const override;
+  void SetupLayoutParameters(DateTimeEditElement::LayoutParameters&,
                              const DateComponents&) const override;
-  bool isValidFormat(bool hasYear,
-                     bool hasMonth,
-                     bool hasWeek,
-                     bool hasDay,
-                     bool hasAMPM,
-                     bool hasHour,
-                     bool hasMinute,
-                     bool hasSecond) const override;
+  bool IsValidFormat(bool has_year,
+                     bool has_month,
+                     bool has_week,
+                     bool has_day,
+                     bool has_ampm,
+                     bool has_hour,
+                     bool has_minute,
+                     bool has_second) const override;
 };
 
 }  // namespace blink

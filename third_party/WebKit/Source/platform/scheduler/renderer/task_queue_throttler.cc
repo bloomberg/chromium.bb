@@ -304,7 +304,7 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
                "TaskQueueThrottler::MaybeSchedulePumpThrottledTasks",
                "delay_till_next_pump_ms", delay.InMilliseconds());
   task_runner_->PostDelayedTask(
-      from_here, pump_throttled_tasks_closure_.callback(), delay);
+      from_here, pump_throttled_tasks_closure_.GetCallback(), delay);
 }
 
 CPUTimeBudgetPool* TaskQueueThrottler::CreateCPUTimeBudgetPool(

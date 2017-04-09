@@ -23,25 +23,25 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
  public:
   ~FetchRespondWithObserver() override = default;
 
-  static FetchRespondWithObserver* create(ExecutionContext*,
-                                          int fetchEventID,
-                                          const KURL& requestURL,
+  static FetchRespondWithObserver* Create(ExecutionContext*,
+                                          int fetch_event_id,
+                                          const KURL& request_url,
                                           WebURLRequest::FetchRequestMode,
                                           WebURLRequest::FetchRedirectMode,
                                           WebURLRequest::FrameType,
                                           WebURLRequest::RequestContext,
                                           WaitUntilObserver*);
 
-  void onResponseRejected(WebServiceWorkerResponseError) override;
-  void onResponseFulfilled(const ScriptValue&) override;
-  void onNoResponse() override;
+  void OnResponseRejected(WebServiceWorkerResponseError) override;
+  void OnResponseFulfilled(const ScriptValue&) override;
+  void OnNoResponse() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   FetchRespondWithObserver(ExecutionContext*,
-                           int fetchEventID,
-                           const KURL& requestURL,
+                           int fetch_event_id,
+                           const KURL& request_url,
                            WebURLRequest::FetchRequestMode,
                            WebURLRequest::FetchRedirectMode,
                            WebURLRequest::FrameType,
@@ -49,11 +49,11 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
                            WaitUntilObserver*);
 
  private:
-  const KURL m_requestURL;
-  const WebURLRequest::FetchRequestMode m_requestMode;
-  const WebURLRequest::FetchRedirectMode m_redirectMode;
-  const WebURLRequest::FrameType m_frameType;
-  const WebURLRequest::RequestContext m_requestContext;
+  const KURL request_url_;
+  const WebURLRequest::FetchRequestMode request_mode_;
+  const WebURLRequest::FetchRedirectMode redirect_mode_;
+  const WebURLRequest::FrameType frame_type_;
+  const WebURLRequest::RequestContext request_context_;
 };
 
 }  // namespace blink

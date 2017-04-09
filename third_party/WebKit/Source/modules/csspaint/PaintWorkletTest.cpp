@@ -19,52 +19,52 @@ namespace blink {
 
 class PaintWorkletTest : public testing::Test {
  public:
-  PaintWorkletTest() : m_page(DummyPageHolder::create()) {}
+  PaintWorkletTest() : page_(DummyPageHolder::Create()) {}
 
-  PaintWorklet* paintWorklet() {
-    return WindowPaintWorklet::from(*m_page->frame().domWindow())
+  PaintWorklet* GetPaintWorklet() {
+    return WindowPaintWorklet::From(*page_->GetFrame().DomWindow())
         .paintWorklet();
   }
 
  protected:
-  std::unique_ptr<DummyPageHolder> m_page;
+  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
-  PaintWorkletGlobalScope* globalScope =
-      paintWorklet()->workletGlobalScopeProxy();
-  globalScope->scriptController()->evaluate(
+  PaintWorkletGlobalScope* global_scope =
+      GetPaintWorklet()->GetWorkletGlobalScopeProxy();
+  global_scope->ScriptController()->Evaluate(
       ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
 
-  CSSPaintDefinition* definition = globalScope->findDefinition("foo");
+  CSSPaintDefinition* definition = global_scope->FindDefinition("foo");
   ASSERT(definition);
 
   v8::Isolate* isolate =
-      globalScope->scriptController()->getScriptState()->isolate();
+      global_scope->ScriptController()->GetScriptState()->GetIsolate();
   ASSERT(isolate);
 
   // Set our ScopedPersistent to the paint function, and make weak.
   ScopedPersistent<v8::Function> handle;
   {
-    v8::HandleScope handleScope(isolate);
-    handle.set(isolate, definition->paintFunctionForTesting(isolate));
-    handle.setPhantom();
+    v8::HandleScope handle_scope(isolate);
+    handle.Set(isolate, definition->PaintFunctionForTesting(isolate));
+    handle.SetPhantom();
   }
-  ASSERT(!handle.isEmpty());
-  ASSERT(handle.isWeak());
+  ASSERT(!handle.IsEmpty());
+  ASSERT(handle.IsWeak());
 
   // Run a GC, persistent shouldn't have been collected yet.
-  ThreadState::current()->collectAllGarbage();
-  V8GCController::collectAllGarbageForTesting(isolate);
-  ASSERT(!handle.isEmpty());
+  ThreadState::Current()->CollectAllGarbage();
+  V8GCController::CollectAllGarbageForTesting(isolate);
+  ASSERT(!handle.IsEmpty());
 
   // Delete the page & associated objects.
-  m_page.reset();
+  page_.reset();
 
   // Run a GC, the persistent should have been collected.
-  ThreadState::current()->collectAllGarbage();
-  V8GCController::collectAllGarbageForTesting(isolate);
-  ASSERT(handle.isEmpty());
+  ThreadState::Current()->CollectAllGarbage();
+  V8GCController::CollectAllGarbageForTesting(isolate);
+  ASSERT(handle.IsEmpty());
 }
 
 }  // namespace blink

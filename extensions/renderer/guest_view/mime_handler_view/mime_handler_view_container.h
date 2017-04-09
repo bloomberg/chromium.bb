@@ -61,8 +61,8 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate*) override;
 
   // WebAssociatedURLLoaderClient overrides.
-  void didReceiveData(const char* data, int data_length) override;
-  void didFinishLoading(double finish_time) override;
+  void DidReceiveData(const char* data, int data_length) override;
+  void DidFinishLoading(double finish_time) override;
 
   // GuestViewContainer overrides.
   void OnRenderFrameDestroyed() override;

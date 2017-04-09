@@ -35,7 +35,7 @@ void init{{suffix}}() {
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNames); i++) {
-    StringImpl* stringImpl = StringImpl::createStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
+    StringImpl* stringImpl = StringImpl::CreateStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
     void* address = reinterpret_cast<AtomicString*>(&{{suffix}}NamesStorage) + i;
     new (address) AtomicString(stringImpl);
   }

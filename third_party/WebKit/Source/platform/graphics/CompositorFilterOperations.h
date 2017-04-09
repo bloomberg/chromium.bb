@@ -20,33 +20,33 @@ namespace blink {
 // An ordered list of filter operations.
 class PLATFORM_EXPORT CompositorFilterOperations {
  public:
-  const cc::FilterOperations& asCcFilterOperations() const;
-  cc::FilterOperations releaseCcFilterOperations();
+  const cc::FilterOperations& AsCcFilterOperations() const;
+  cc::FilterOperations ReleaseCcFilterOperations();
 
-  void appendGrayscaleFilter(float amount);
-  void appendSepiaFilter(float amount);
-  void appendSaturateFilter(float amount);
-  void appendHueRotateFilter(float amount);
-  void appendInvertFilter(float amount);
-  void appendBrightnessFilter(float amount);
-  void appendContrastFilter(float amount);
-  void appendOpacityFilter(float amount);
-  void appendBlurFilter(float amount);
-  void appendDropShadowFilter(IntPoint offset, float stdDeviation, Color);
-  void appendColorMatrixFilter(SkScalar matrix[20]);
-  void appendZoomFilter(float amount, int inset);
-  void appendSaturatingBrightnessFilter(float amount);
+  void AppendGrayscaleFilter(float amount);
+  void AppendSepiaFilter(float amount);
+  void AppendSaturateFilter(float amount);
+  void AppendHueRotateFilter(float amount);
+  void AppendInvertFilter(float amount);
+  void AppendBrightnessFilter(float amount);
+  void AppendContrastFilter(float amount);
+  void AppendOpacityFilter(float amount);
+  void AppendBlurFilter(float amount);
+  void AppendDropShadowFilter(IntPoint offset, float std_deviation, Color);
+  void AppendColorMatrixFilter(SkScalar matrix[20]);
+  void AppendZoomFilter(float amount, int inset);
+  void AppendSaturatingBrightnessFilter(float amount);
 
-  void appendReferenceFilter(sk_sp<SkImageFilter>);
+  void AppendReferenceFilter(sk_sp<SkImageFilter>);
 
-  void clear();
-  bool isEmpty() const;
+  void Clear();
+  bool IsEmpty() const;
 
   // Returns a rect covering the destination pixels that can be affected by
   // source pixels in |inputRect|.
-  FloatRect mapRect(const FloatRect& inputRect) const;
+  FloatRect MapRect(const FloatRect& input_rect) const;
 
-  bool hasFilterThatMovesPixels() const;
+  bool HasFilterThatMovesPixels() const;
 
   // For reference filters, this equality operator compares pointers of the
   // image_filter fields instead of their values.
@@ -55,12 +55,12 @@ class PLATFORM_EXPORT CompositorFilterOperations {
     return !(*this == o);
   }
 
-  bool equalsIgnoringReferenceFilters(const CompositorFilterOperations&) const;
+  bool EqualsIgnoringReferenceFilters(const CompositorFilterOperations&) const;
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  cc::FilterOperations m_filterOperations;
+  cc::FilterOperations filter_operations_;
 };
 
 }  // namespace blink

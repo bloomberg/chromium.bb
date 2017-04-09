@@ -39,15 +39,15 @@ class CORE_EXPORT BitStack {
   BitStack();
   ~BitStack();
 
-  void push(bool);
-  void pop();
+  void Push(bool);
+  void Pop();
 
-  bool top() const;
+  bool Top() const;
   unsigned size() const;
 
  private:
-  unsigned m_size;
-  Vector<unsigned, 1> m_words;
+  unsigned size_;
+  Vector<unsigned, 1> words_;
 };
 
 }  // namespace blink

@@ -44,15 +44,15 @@ blink::WebPushPermissionStatus ToWebPushPermissionStatus(
     blink::mojom::PermissionStatus status) {
   switch (status) {
     case blink::mojom::PermissionStatus::GRANTED:
-      return blink::WebPushPermissionStatusGranted;
+      return blink::kWebPushPermissionStatusGranted;
     case blink::mojom::PermissionStatus::DENIED:
-      return blink::WebPushPermissionStatusDenied;
+      return blink::kWebPushPermissionStatusDenied;
     case blink::mojom::PermissionStatus::ASK:
-      return blink::WebPushPermissionStatusPrompt;
+      return blink::kWebPushPermissionStatusPrompt;
   }
 
   NOTREACHED();
-  return blink::WebPushPermissionStatusLast;
+  return blink::kWebPushPermissionStatusLast;
 }
 
 }  // anonymous namespace
@@ -86,7 +86,7 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     const PushSubscriptionOptions& options,
     const RegisterCallback& callback) {
   if (GetPermissionStatus(requesting_origin, options.user_visible_only) ==
-      blink::WebPushPermissionStatusGranted) {
+      blink::kWebPushPermissionStatusGranted) {
     std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
     std::vector<uint8_t> auth(

@@ -35,37 +35,38 @@
 
 namespace blink {
 
-MatchedProperties::MatchedProperties() : possiblyPaddedMember(nullptr) {}
+MatchedProperties::MatchedProperties() : possibly_padded_member(nullptr) {}
 
 MatchedProperties::~MatchedProperties() {}
 
 DEFINE_TRACE(MatchedProperties) {
-  visitor->trace(properties);
+  visitor->Trace(properties);
 }
 
-void MatchResult::addMatchedProperties(
+void MatchResult::AddMatchedProperties(
     const StylePropertySet* properties,
-    unsigned linkMatchType,
-    PropertyWhitelistType propertyWhitelistType) {
-  m_matchedProperties.grow(m_matchedProperties.size() + 1);
-  MatchedProperties& newProperties = m_matchedProperties.back();
-  newProperties.properties = const_cast<StylePropertySet*>(properties);
-  newProperties.m_types.linkMatchType = linkMatchType;
-  newProperties.m_types.whitelistType = propertyWhitelistType;
+    unsigned link_match_type,
+    PropertyWhitelistType property_whitelist_type) {
+  matched_properties_.Grow(matched_properties_.size() + 1);
+  MatchedProperties& new_properties = matched_properties_.back();
+  new_properties.properties = const_cast<StylePropertySet*>(properties);
+  new_properties.types_.link_match_type = link_match_type;
+  new_properties.types_.whitelist_type = property_whitelist_type;
 }
 
-void MatchResult::finishAddingUARules() {
-  m_uaRangeEnd = m_matchedProperties.size();
+void MatchResult::FinishAddingUARules() {
+  ua_range_end_ = matched_properties_.size();
 }
 
-void MatchResult::finishAddingAuthorRulesForTreeScope() {
+void MatchResult::FinishAddingAuthorRulesForTreeScope() {
   // Don't add empty ranges.
-  if (m_authorRangeEnds.isEmpty() && m_uaRangeEnd == m_matchedProperties.size())
+  if (author_range_ends_.IsEmpty() &&
+      ua_range_end_ == matched_properties_.size())
     return;
-  if (!m_authorRangeEnds.isEmpty() &&
-      m_authorRangeEnds.back() == m_matchedProperties.size())
+  if (!author_range_ends_.IsEmpty() &&
+      author_range_ends_.back() == matched_properties_.size())
     return;
-  m_authorRangeEnds.push_back(m_matchedProperties.size());
+  author_range_ends_.push_back(matched_properties_.size());
 }
 
 }  // namespace blink

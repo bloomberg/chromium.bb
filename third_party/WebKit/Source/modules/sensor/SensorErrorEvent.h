@@ -16,37 +16,37 @@ class SensorErrorEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SensorErrorEvent* create(const AtomicString& eventType,
+  static SensorErrorEvent* Create(const AtomicString& event_type,
                                   DOMException* error) {
-    return new SensorErrorEvent(eventType, error);
+    return new SensorErrorEvent(event_type, error);
   }
 
-  static SensorErrorEvent* create(const AtomicString& eventType,
+  static SensorErrorEvent* Create(const AtomicString& event_type,
                                   const SensorErrorEventInit& initializer) {
-    return new SensorErrorEvent(eventType, initializer);
+    return new SensorErrorEvent(event_type, initializer);
   }
 
   ~SensorErrorEvent() override;
 
   DECLARE_VIRTUAL_TRACE();
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
-  DOMException* error() { return m_error; }
+  DOMException* error() { return error_; }
 
  private:
-  SensorErrorEvent(const AtomicString& eventType, DOMException* error);
-  SensorErrorEvent(const AtomicString& eventType,
+  SensorErrorEvent(const AtomicString& event_type, DOMException* error);
+  SensorErrorEvent(const AtomicString& event_type,
                    const SensorErrorEventInit& initializer);
 
-  Member<DOMException> m_error;
+  Member<DOMException> error_;
 };
 
 DEFINE_TYPE_CASTS(SensorErrorEvent,
                   Event,
                   event,
-                  event->interfaceName() == EventNames::SensorErrorEvent,
-                  event.interfaceName() == EventNames::SensorErrorEvent);
+                  event->InterfaceName() == EventNames::SensorErrorEvent,
+                  event.InterfaceName() == EventNames::SensorErrorEvent);
 
 }  // namepsace blink
 

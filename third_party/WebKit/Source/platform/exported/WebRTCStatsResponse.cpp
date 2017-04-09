@@ -30,23 +30,23 @@
 namespace blink {
 
 WebRTCStatsResponse::WebRTCStatsResponse(RTCStatsResponseBase* request)
-    : m_private(request) {}
+    : private_(request) {}
 
-void WebRTCStatsResponse::assign(const WebRTCStatsResponse& other) {
-  m_private = other.m_private;
+void WebRTCStatsResponse::Assign(const WebRTCStatsResponse& other) {
+  private_ = other.private_;
 }
 
-void WebRTCStatsResponse::reset() {
-  m_private.reset();
+void WebRTCStatsResponse::Reset() {
+  private_.Reset();
 }
 
 WebRTCStatsResponse::operator RTCStatsResponseBase*() const {
-  return m_private.get();
+  return private_.Get();
 }
 
-void WebRTCStatsResponse::addStats(const WebRTCLegacyStats& stats) {
-  ASSERT(!m_private.isNull());
-  m_private->addStats(stats);
+void WebRTCStatsResponse::AddStats(const WebRTCLegacyStats& stats) {
+  ASSERT(!private_.IsNull());
+  private_->AddStats(stats);
 }
 
 }  // namespace blink

@@ -20,13 +20,13 @@ class DeviceLightDispatcher final
   USING_GARBAGE_COLLECTED_MIXIN(DeviceLightDispatcher);
 
  public:
-  static DeviceLightDispatcher& instance();
+  static DeviceLightDispatcher& Instance();
   ~DeviceLightDispatcher() override;
 
-  double latestDeviceLightData() const;
+  double LatestDeviceLightData() const;
 
   // Inherited from WebDeviceLightListener.
-  void didChangeDeviceLight(double) override;
+  void DidChangeDeviceLight(double) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -34,10 +34,10 @@ class DeviceLightDispatcher final
   DeviceLightDispatcher();
 
   // Inherited from PlatformEventDispatcher.
-  void startListening() override;
-  void stopListening() override;
+  void StartListening() override;
+  void StopListening() override;
 
-  double m_lastDeviceLightData;
+  double last_device_light_data_;
 };
 
 }  // namespace blink

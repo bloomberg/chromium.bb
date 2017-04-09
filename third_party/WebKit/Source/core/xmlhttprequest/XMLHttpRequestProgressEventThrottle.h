@@ -52,16 +52,16 @@ class XMLHttpRequestProgressEventThrottle final
     : public GarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>,
       public TimerBase {
  public:
-  static XMLHttpRequestProgressEventThrottle* create(
-      XMLHttpRequest* eventTarget) {
-    return new XMLHttpRequestProgressEventThrottle(eventTarget);
+  static XMLHttpRequestProgressEventThrottle* Create(
+      XMLHttpRequest* event_target) {
+    return new XMLHttpRequestProgressEventThrottle(event_target);
   }
   ~XMLHttpRequestProgressEventThrottle() override;
 
   enum DeferredEventAction {
-    Ignore,
-    Clear,
-    Flush,
+    kIgnore,
+    kClear,
+    kFlush,
   };
 
   // Dispatches a ProgressEvent.
@@ -74,16 +74,16 @@ class XMLHttpRequestProgressEventThrottle final
   // fired() call.
   // For an event named "progress", a readyStateChange will be dispatched
   // as well.
-  void dispatchProgressEvent(const AtomicString&,
-                             bool lengthComputable,
+  void DispatchProgressEvent(const AtomicString&,
+                             bool length_computable,
                              unsigned long long loaded,
                              unsigned long long total);
   // Dispatches the given event after operation about the "progress" event
   // depending on the value of the ProgressEventAction argument.
-  void dispatchReadyStateChangeEvent(Event*, DeferredEventAction);
+  void DispatchReadyStateChangeEvent(Event*, DeferredEventAction);
 
-  void suspend();
-  void resume();
+  void Suspend();
+  void Resume();
 
   // Need to promptly stop this timer when it is deemed finalizable.
   EAGERLY_FINALIZE();
@@ -94,7 +94,7 @@ class XMLHttpRequestProgressEventThrottle final
 
   // Dispatches a "progress" progress event and usually a readyStateChange
   // event as well.
-  void dispatchProgressProgressEvent(Event*);
+  void DispatchProgressProgressEvent(Event*);
 
   // The main purpose of this class is to throttle the "progress"
   // ProgressEvent dispatching. This class represents such a deferred
@@ -102,32 +102,32 @@ class XMLHttpRequestProgressEventThrottle final
   class DeferredEvent {
    public:
     DeferredEvent();
-    void set(bool lengthComputable,
+    void Set(bool length_computable,
              unsigned long long loaded,
              unsigned long long total);
-    void clear();
-    bool isSet() const { return m_isSet; }
-    Event* take();
+    void Clear();
+    bool IsSet() const { return is_set_; }
+    Event* Take();
 
    private:
-    unsigned long long m_loaded;
-    unsigned long long m_total;
-    bool m_lengthComputable;
+    unsigned long long loaded_;
+    unsigned long long total_;
+    bool length_computable_;
 
-    bool m_isSet;
+    bool is_set_;
   };
 
-  void fired() override;
+  void Fired() override;
 
-  Member<XMLHttpRequest> m_target;
+  Member<XMLHttpRequest> target_;
 
   // A slot for the deferred "progress" ProgressEvent. When multiple events
   // arrive, only the last one is stored and others are discarded.
-  DeferredEvent m_deferred;
+  DeferredEvent deferred_;
 
   // True if any "progress" progress event has been dispatched since
   // |m_target|'s readyState changed.
-  bool m_hasDispatchedProgressProgressEvent;
+  bool has_dispatched_progress_progress_event_;
 };
 
 }  // namespace blink

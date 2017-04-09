@@ -10,98 +10,98 @@
 namespace blink {
 
 ShapeResultSpacing::ShapeResultSpacing(const TextRun& run,
-                                       const FontDescription& fontDescription)
-    : m_textRun(run),
-      m_letterSpacing(fontDescription.letterSpacing()),
-      m_wordSpacing(fontDescription.wordSpacing()),
-      m_expansion(run.expansion()),
-      m_expansionPerOpportunity(0),
-      m_expansionOpportunityCount(0),
-      m_textJustify(TextJustify::TextJustifyAuto),
-      m_hasSpacing(false),
-      m_normalizeSpace(run.normalizeSpace()),
-      m_allowTabs(run.allowTabs()),
-      m_isAfterExpansion(false),
-      m_isVerticalOffset(fontDescription.isVerticalAnyUpright()) {
-  if (m_textRun.spacingDisabled())
+                                       const FontDescription& font_description)
+    : text_run_(run),
+      letter_spacing_(font_description.LetterSpacing()),
+      word_spacing_(font_description.WordSpacing()),
+      expansion_(run.Expansion()),
+      expansion_per_opportunity_(0),
+      expansion_opportunity_count_(0),
+      text_justify_(TextJustify::kTextJustifyAuto),
+      has_spacing_(false),
+      normalize_space_(run.NormalizeSpace()),
+      allow_tabs_(run.AllowTabs()),
+      is_after_expansion_(false),
+      is_vertical_offset_(font_description.IsVerticalAnyUpright()) {
+  if (text_run_.SpacingDisabled())
     return;
 
-  if (!m_letterSpacing && !m_wordSpacing && !m_expansion)
+  if (!letter_spacing_ && !word_spacing_ && !expansion_)
     return;
 
-  m_hasSpacing = true;
+  has_spacing_ = true;
 
-  if (!m_expansion)
+  if (!expansion_)
     return;
 
   // Setup for justifications (expansions.)
-  m_textJustify = run.getTextJustify();
-  m_isAfterExpansion = !run.allowsLeadingExpansion();
+  text_justify_ = run.GetTextJustify();
+  is_after_expansion_ = !run.AllowsLeadingExpansion();
 
-  bool isAfterExpansion = m_isAfterExpansion;
-  m_expansionOpportunityCount =
-      Character::expansionOpportunityCount(run, isAfterExpansion);
-  if (isAfterExpansion && !run.allowsTrailingExpansion()) {
-    ASSERT(m_expansionOpportunityCount > 0);
-    --m_expansionOpportunityCount;
+  bool is_after_expansion = is_after_expansion_;
+  expansion_opportunity_count_ =
+      Character::ExpansionOpportunityCount(run, is_after_expansion);
+  if (is_after_expansion && !run.AllowsTrailingExpansion()) {
+    ASSERT(expansion_opportunity_count_ > 0);
+    --expansion_opportunity_count_;
   }
 
-  if (m_expansionOpportunityCount)
-    m_expansionPerOpportunity = m_expansion / m_expansionOpportunityCount;
+  if (expansion_opportunity_count_)
+    expansion_per_opportunity_ = expansion_ / expansion_opportunity_count_;
 }
 
-float ShapeResultSpacing::nextExpansion() {
-  if (!m_expansionOpportunityCount) {
+float ShapeResultSpacing::NextExpansion() {
+  if (!expansion_opportunity_count_) {
     ASSERT_NOT_REACHED();
     return 0;
   }
 
-  m_isAfterExpansion = true;
+  is_after_expansion_ = true;
 
-  if (!--m_expansionOpportunityCount) {
-    float remaining = m_expansion;
-    m_expansion = 0;
+  if (!--expansion_opportunity_count_) {
+    float remaining = expansion_;
+    expansion_ = 0;
     return remaining;
   }
 
-  m_expansion -= m_expansionPerOpportunity;
-  return m_expansionPerOpportunity;
+  expansion_ -= expansion_per_opportunity_;
+  return expansion_per_opportunity_;
 }
 
-bool ShapeResultSpacing::isFirstRun(const TextRun& run) const {
-  if (&run == &m_textRun)
+bool ShapeResultSpacing::IsFirstRun(const TextRun& run) const {
+  if (&run == &text_run_)
     return true;
-  return run.is8Bit() ? run.characters8() == m_textRun.characters8()
-                      : run.characters16() == m_textRun.characters16();
+  return run.Is8Bit() ? run.Characters8() == text_run_.Characters8()
+                      : run.Characters16() == text_run_.Characters16();
 }
 
-float ShapeResultSpacing::computeSpacing(const TextRun& run,
+float ShapeResultSpacing::ComputeSpacing(const TextRun& run,
                                          size_t index,
                                          float& offset) {
   UChar32 character = run[index];
-  bool treatAsSpace =
-      (Character::treatAsSpace(character) ||
-       (m_normalizeSpace &&
-        Character::isNormalizedCanvasSpaceCharacter(character))) &&
-      (character != '\t' || !m_allowTabs);
-  if (treatAsSpace && character != noBreakSpaceCharacter)
-    character = spaceCharacter;
+  bool treat_as_space =
+      (Character::TreatAsSpace(character) ||
+       (normalize_space_ &&
+        Character::IsNormalizedCanvasSpaceCharacter(character))) &&
+      (character != '\t' || !allow_tabs_);
+  if (treat_as_space && character != kNoBreakSpaceCharacter)
+    character = kSpaceCharacter;
 
   float spacing = 0;
-  if (m_letterSpacing && !Character::treatAsZeroWidthSpace(character))
-    spacing += m_letterSpacing;
+  if (letter_spacing_ && !Character::TreatAsZeroWidthSpace(character))
+    spacing += letter_spacing_;
 
-  if (treatAsSpace &&
-      (index || !isFirstRun(run) || character == noBreakSpaceCharacter))
-    spacing += m_wordSpacing;
+  if (treat_as_space &&
+      (index || !IsFirstRun(run) || character == kNoBreakSpaceCharacter))
+    spacing += word_spacing_;
 
-  if (!hasExpansion())
+  if (!HasExpansion())
     return spacing;
 
-  if (treatAsSpace)
-    return spacing + nextExpansion();
+  if (treat_as_space)
+    return spacing + NextExpansion();
 
-  if (run.is8Bit() || m_textJustify != TextJustify::TextJustifyAuto)
+  if (run.Is8Bit() || text_justify_ != TextJustify::kTextJustifyAuto)
     return spacing;
 
   // isCJKIdeographOrSymbol() has expansion opportunities both before and
@@ -110,23 +110,23 @@ float ShapeResultSpacing::computeSpacing(const TextRun& run,
   if (U16_IS_LEAD(character) && index + 1 < run.length() &&
       U16_IS_TRAIL(run[index + 1]))
     character = U16_GET_SUPPLEMENTARY(character, run[index + 1]);
-  if (!Character::isCJKIdeographOrSymbol(character)) {
-    m_isAfterExpansion = false;
+  if (!Character::IsCJKIdeographOrSymbol(character)) {
+    is_after_expansion_ = false;
     return spacing;
   }
 
-  if (!m_isAfterExpansion) {
+  if (!is_after_expansion_) {
     // Take the expansion opportunity before this ideograph.
-    float expandBefore = nextExpansion();
-    if (expandBefore) {
-      offset += expandBefore;
-      spacing += expandBefore;
+    float expand_before = NextExpansion();
+    if (expand_before) {
+      offset += expand_before;
+      spacing += expand_before;
     }
-    if (!hasExpansion())
+    if (!HasExpansion())
       return spacing;
   }
 
-  return spacing + nextExpansion();
+  return spacing + NextExpansion();
 }
 
 }  // namespace blink

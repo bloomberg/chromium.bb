@@ -11,103 +11,105 @@
 
 namespace blink {
 
-static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates,
+static GridSpan DirtiedGridAreas(const Vector<LayoutUnit>& coordinates,
                                  LayoutUnit start,
                                  LayoutUnit end) {
   // This function does a binary search over the coordinates.
   // This doesn't work with grid items overflowing their grid areas, but that is
   // managed with m_gridItemsOverflowingGridArea.
 
-  size_t startGridAreaIndex =
+  size_t start_grid_area_index =
       std::upper_bound(coordinates.begin(), coordinates.end() - 1, start) -
       coordinates.begin();
-  if (startGridAreaIndex > 0)
-    --startGridAreaIndex;
+  if (start_grid_area_index > 0)
+    --start_grid_area_index;
 
-  size_t endGridAreaIndex =
-      std::upper_bound(coordinates.begin() + startGridAreaIndex,
+  size_t end_grid_area_index =
+      std::upper_bound(coordinates.begin() + start_grid_area_index,
                        coordinates.end() - 1, end) -
       coordinates.begin();
-  if (endGridAreaIndex > 0)
-    --endGridAreaIndex;
+  if (end_grid_area_index > 0)
+    --end_grid_area_index;
 
   // GridSpan stores lines' indexes (not tracks' indexes).
-  return GridSpan::translatedDefiniteGridSpan(startGridAreaIndex,
-                                              endGridAreaIndex + 1);
+  return GridSpan::TranslatedDefiniteGridSpan(start_grid_area_index,
+                                              end_grid_area_index + 1);
 }
 
 // Helper for the sorting of grid items following order-modified document order.
 // See http://www.w3.org/TR/css-flexbox/#order-modified-document-order
-static inline bool compareOrderModifiedDocumentOrder(
-    const std::pair<LayoutBox*, size_t>& firstItem,
-    const std::pair<LayoutBox*, size_t>& secondItem) {
-  return firstItem.second < secondItem.second;
+static inline bool CompareOrderModifiedDocumentOrder(
+    const std::pair<LayoutBox*, size_t>& first_item,
+    const std::pair<LayoutBox*, size_t>& second_item) {
+  return first_item.second < second_item.second;
 }
 
-void GridPainter::paintChildren(const PaintInfo& paintInfo,
-                                const LayoutPoint& paintOffset) {
-  DCHECK(!m_layoutGrid.needsLayout());
+void GridPainter::PaintChildren(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset) {
+  DCHECK(!layout_grid_.NeedsLayout());
 
-  LayoutRect localVisualRect = LayoutRect(paintInfo.cullRect().m_rect);
-  localVisualRect.moveBy(-paintOffset);
+  LayoutRect local_visual_rect = LayoutRect(paint_info.GetCullRect().rect_);
+  local_visual_rect.MoveBy(-paint_offset);
 
-  Vector<LayoutUnit> columnPositions = m_layoutGrid.columnPositions();
-  if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
+  Vector<LayoutUnit> column_positions = layout_grid_.ColumnPositions();
+  if (!layout_grid_.StyleRef().IsLeftToRightDirection()) {
     // Translate columnPositions in RTL as we need the physical coordinates of
     // the columns in order to call dirtiedGridAreas().
-    for (size_t i = 0; i < columnPositions.size(); i++)
-      columnPositions[i] =
-          m_layoutGrid.translateRTLCoordinate(columnPositions[i]);
+    for (size_t i = 0; i < column_positions.size(); i++)
+      column_positions[i] =
+          layout_grid_.TranslateRTLCoordinate(column_positions[i]);
     // We change the order of tracks in columnPositions, as in RTL the leftmost
     // track will be the last one.
-    std::sort(columnPositions.begin(), columnPositions.end());
+    std::sort(column_positions.begin(), column_positions.end());
   }
 
-  GridSpan dirtiedColumns = dirtiedGridAreas(
-      columnPositions, localVisualRect.x(), localVisualRect.maxX());
-  GridSpan dirtiedRows = dirtiedGridAreas(
-      m_layoutGrid.rowPositions(), localVisualRect.y(), localVisualRect.maxY());
+  GridSpan dirtied_columns = DirtiedGridAreas(
+      column_positions, local_visual_rect.X(), local_visual_rect.MaxX());
+  GridSpan dirtied_rows =
+      DirtiedGridAreas(layout_grid_.RowPositions(), local_visual_rect.Y(),
+                       local_visual_rect.MaxY());
 
-  if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
+  if (!layout_grid_.StyleRef().IsLeftToRightDirection()) {
     // As we changed the order of tracks previously, we need to swap the dirtied
     // columns in RTL.
-    size_t lastLine = columnPositions.size() - 1;
-    dirtiedColumns = GridSpan::translatedDefiniteGridSpan(
-        lastLine - dirtiedColumns.endLine(),
-        lastLine - dirtiedColumns.startLine());
+    size_t last_line = column_positions.size() - 1;
+    dirtied_columns = GridSpan::TranslatedDefiniteGridSpan(
+        last_line - dirtied_columns.EndLine(),
+        last_line - dirtied_columns.StartLine());
   }
 
-  Vector<std::pair<LayoutBox*, size_t>> gridItemsToBePainted;
+  Vector<std::pair<LayoutBox*, size_t>> grid_items_to_be_painted;
 
-  for (const auto& row : dirtiedRows) {
-    for (const auto& column : dirtiedColumns) {
+  for (const auto& row : dirtied_rows) {
+    for (const auto& column : dirtied_columns) {
       const Vector<LayoutBox*, 1>& children =
-          m_layoutGrid.gridCell(row, column);
+          layout_grid_.GetGridCell(row, column);
       for (auto* child : children)
-        gridItemsToBePainted.push_back(
-            std::make_pair(child, m_layoutGrid.paintIndexForGridItem(child)));
+        grid_items_to_be_painted.push_back(
+            std::make_pair(child, layout_grid_.PaintIndexForGridItem(child)));
     }
   }
 
-  for (auto* item : m_layoutGrid.itemsOverflowingGridArea()) {
-    if (item->frameRect().intersects(localVisualRect))
-      gridItemsToBePainted.push_back(
-          std::make_pair(item, m_layoutGrid.paintIndexForGridItem(item)));
+  for (auto* item : layout_grid_.ItemsOverflowingGridArea()) {
+    if (item->FrameRect().Intersects(local_visual_rect))
+      grid_items_to_be_painted.push_back(
+          std::make_pair(item, layout_grid_.PaintIndexForGridItem(item)));
   }
 
-  std::stable_sort(gridItemsToBePainted.begin(), gridItemsToBePainted.end(),
-                   compareOrderModifiedDocumentOrder);
+  std::stable_sort(grid_items_to_be_painted.begin(),
+                   grid_items_to_be_painted.end(),
+                   CompareOrderModifiedDocumentOrder);
 
   LayoutBox* previous = 0;
-  for (const auto& gridItemAndPaintIndex : gridItemsToBePainted) {
+  for (const auto& grid_item_and_paint_index : grid_items_to_be_painted) {
     // We might have duplicates because of spanning children are included in all
     // cells they span.  Skip them here to avoid painting items several times.
-    LayoutBox* current = gridItemAndPaintIndex.first;
+    LayoutBox* current = grid_item_and_paint_index.first;
     if (current == previous)
       continue;
 
-    BlockPainter(m_layoutGrid)
-        .paintAllChildPhasesAtomically(*current, paintInfo, paintOffset);
+    BlockPainter(layout_grid_)
+        .PaintAllChildPhasesAtomically(*current, paint_info, paint_offset);
     previous = current;
   }
 }

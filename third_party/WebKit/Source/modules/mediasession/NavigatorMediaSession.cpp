@@ -14,30 +14,30 @@ NavigatorMediaSession::NavigatorMediaSession(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
 DEFINE_TRACE(NavigatorMediaSession) {
-  visitor->trace(m_session);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(session_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorMediaSession::supplementName() {
+const char* NavigatorMediaSession::SupplementName() {
   return "NavigatorMediaSession";
 }
 
-NavigatorMediaSession& NavigatorMediaSession::from(Navigator& navigator) {
+NavigatorMediaSession& NavigatorMediaSession::From(Navigator& navigator) {
   NavigatorMediaSession* supplement = static_cast<NavigatorMediaSession*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
+      Supplement<Navigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new NavigatorMediaSession(navigator);
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-MediaSession* NavigatorMediaSession::mediaSession(ScriptState* scriptState,
+MediaSession* NavigatorMediaSession::mediaSession(ScriptState* script_state,
                                                   Navigator& navigator) {
-  NavigatorMediaSession& self = NavigatorMediaSession::from(navigator);
-  if (!self.m_session)
-    self.m_session = MediaSession::create(scriptState->getExecutionContext());
-  return self.m_session.get();
+  NavigatorMediaSession& self = NavigatorMediaSession::From(navigator);
+  if (!self.session_)
+    self.session_ = MediaSession::Create(script_state->GetExecutionContext());
+  return self.session_.Get();
 }
 
 }  // namespace blink

@@ -12,34 +12,34 @@ namespace blink {
 using InlineBoxTest = RenderingTest;
 
 TEST_F(InlineBoxTest, LogicalRectToPhysicalRectNormal) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' style='width: 80px; height: 50px'>Test</div>");
-  LayoutBlockFlow* div = toLayoutBlockFlow(getLayoutObjectByElementId("div"));
-  InlineBox* inlineBox = div->firstLineBox();
+  LayoutBlockFlow* div = ToLayoutBlockFlow(GetLayoutObjectByElementId("div"));
+  InlineBox* inline_box = div->FirstLineBox();
   LayoutRect rect(11, 22, 33, 44);
-  inlineBox->logicalRectToPhysicalRect(rect);
+  inline_box->LogicalRectToPhysicalRect(rect);
   EXPECT_EQ(LayoutRect(11, 22, 33, 44), rect);
 }
 
 TEST_F(InlineBoxTest, LogicalRectToPhysicalRectVerticalRL) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' "
       "style='writing-mode:vertical-rl; width: 80px; height: 50px'>Test</div>");
-  LayoutBlockFlow* div = toLayoutBlockFlow(getLayoutObjectByElementId("div"));
-  InlineBox* inlineBox = div->firstLineBox();
+  LayoutBlockFlow* div = ToLayoutBlockFlow(GetLayoutObjectByElementId("div"));
+  InlineBox* inline_box = div->FirstLineBox();
   LayoutRect rect(11, 22, 33, 44);
-  inlineBox->logicalRectToPhysicalRect(rect);
+  inline_box->LogicalRectToPhysicalRect(rect);
   EXPECT_EQ(LayoutRect(14, 11, 44, 33), rect);
 }
 
 TEST_F(InlineBoxTest, LogicalRectToPhysicalRectVerticalLR) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<div id='div' "
       "style='writing-mode:vertical-lr; width: 80px; height: 50px'>Test</div>");
-  LayoutBlockFlow* div = toLayoutBlockFlow(getLayoutObjectByElementId("div"));
-  InlineBox* inlineBox = div->firstLineBox();
+  LayoutBlockFlow* div = ToLayoutBlockFlow(GetLayoutObjectByElementId("div"));
+  InlineBox* inline_box = div->FirstLineBox();
   LayoutRect rect(11, 22, 33, 44);
-  inlineBox->logicalRectToPhysicalRect(rect);
+  inline_box->LogicalRectToPhysicalRect(rect);
   EXPECT_EQ(LayoutRect(22, 11, 44, 33), rect);
 }
 

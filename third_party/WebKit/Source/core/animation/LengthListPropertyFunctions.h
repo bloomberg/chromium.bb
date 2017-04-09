@@ -17,14 +17,14 @@ class LengthListPropertyFunctions {
   STATIC_ONLY(LengthListPropertyFunctions);
 
  public:
-  static ValueRange getValueRange(CSSPropertyID);
-  static bool getInitialLengthList(CSSPropertyID, Vector<Length>& result);
-  static bool getLengthList(CSSPropertyID,
+  static ValueRange GetValueRange(CSSPropertyID);
+  static bool GetInitialLengthList(CSSPropertyID, Vector<Length>& result);
+  static bool GetLengthList(CSSPropertyID,
                             const ComputedStyle&,
                             Vector<Length>& result);
-  static void setLengthList(CSSPropertyID,
+  static void SetLengthList(CSSPropertyID,
                             ComputedStyle&,
-                            Vector<Length>&& lengthList);
+                            Vector<Length>&& length_list);
 };
 
 }  // namespace blink

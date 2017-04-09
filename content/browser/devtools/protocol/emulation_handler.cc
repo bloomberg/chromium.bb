@@ -27,14 +27,14 @@ namespace {
 blink::WebScreenOrientationType WebScreenOrientationTypeFromString(
     const std::string& type) {
   if (type == Emulation::ScreenOrientation::TypeEnum::PortraitPrimary)
-    return blink::WebScreenOrientationPortraitPrimary;
+    return blink::kWebScreenOrientationPortraitPrimary;
   if (type == Emulation::ScreenOrientation::TypeEnum::PortraitSecondary)
-    return blink::WebScreenOrientationPortraitSecondary;
+    return blink::kWebScreenOrientationPortraitSecondary;
   if (type == Emulation::ScreenOrientation::TypeEnum::LandscapePrimary)
-    return blink::WebScreenOrientationLandscapePrimary;
+    return blink::kWebScreenOrientationLandscapePrimary;
   if (type == Emulation::ScreenOrientation::TypeEnum::LandscapeSecondary)
-    return blink::WebScreenOrientationLandscapeSecondary;
-  return blink::WebScreenOrientationUndefined;
+    return blink::kWebScreenOrientationLandscapeSecondary;
+  return blink::kWebScreenOrientationUndefined;
 }
 
 ui::GestureProviderConfigType TouchEmulationConfigurationToType(
@@ -189,13 +189,13 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   }
 
   blink::WebScreenOrientationType orientationType =
-      blink::WebScreenOrientationUndefined;
+      blink::kWebScreenOrientationUndefined;
   int orientationAngle = 0;
   if (screen_orientation.isJust()) {
     Emulation::ScreenOrientation* orientation = screen_orientation.fromJust();
     orientationType = WebScreenOrientationTypeFromString(
         orientation->GetType());
-    if (orientationType == blink::WebScreenOrientationUndefined)
+    if (orientationType == blink::kWebScreenOrientationUndefined)
       return Response::InvalidParams("Invalid screen orientation type value");
     orientationAngle = orientation->GetAngle();
     if (orientationAngle < 0 || orientationAngle >= max_orientation_angle) {
@@ -206,18 +206,18 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   }
 
   blink::WebDeviceEmulationParams params;
-  params.screenPosition = mobile ? blink::WebDeviceEmulationParams::Mobile :
-      blink::WebDeviceEmulationParams::Desktop;
-  params.screenSize = blink::WebSize(screen_width.fromMaybe(0),
-                                     screen_height.fromMaybe(0));
-  params.viewPosition = blink::WebPoint(position_x.fromMaybe(0),
-                                        position_y.fromMaybe(0));
-  params.deviceScaleFactor = device_scale_factor;
-  params.viewSize = blink::WebSize(width, height);
-  params.fitToView = fit_window;
+  params.screen_position = mobile ? blink::WebDeviceEmulationParams::kMobile
+                                  : blink::WebDeviceEmulationParams::kDesktop;
+  params.screen_size =
+      blink::WebSize(screen_width.fromMaybe(0), screen_height.fromMaybe(0));
+  params.view_position =
+      blink::WebPoint(position_x.fromMaybe(0), position_y.fromMaybe(0));
+  params.device_scale_factor = device_scale_factor;
+  params.view_size = blink::WebSize(width, height);
+  params.fit_to_view = fit_window;
   params.scale = scale.fromMaybe(1);
-  params.screenOrientationType = orientationType;
-  params.screenOrientationAngle = orientationAngle;
+  params.screen_orientation_type = orientationType;
+  params.screen_orientation_angle = orientationAngle;
 
   if (device_emulation_enabled_ && params == device_emulation_params_)
     return Response::OK();

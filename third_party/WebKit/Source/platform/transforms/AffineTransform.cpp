@@ -36,8 +36,8 @@
 namespace blink {
 
 AffineTransform::AffineTransform() {
-  const Transform identity = IDENTITY_TRANSFORM;
-  setMatrix(identity);
+  const Transform kIdentity = IDENTITY_TRANSFORM;
+  SetMatrix(kIdentity);
 }
 
 AffineTransform::AffineTransform(double a,
@@ -46,77 +46,77 @@ AffineTransform::AffineTransform(double a,
                                  double d,
                                  double e,
                                  double f) {
-  setMatrix(a, b, c, d, e, f);
+  SetMatrix(a, b, c, d, e, f);
 }
 
-void AffineTransform::makeIdentity() {
-  setMatrix(1, 0, 0, 1, 0, 0);
+void AffineTransform::MakeIdentity() {
+  SetMatrix(1, 0, 0, 1, 0, 0);
 }
 
-void AffineTransform::setMatrix(double a,
+void AffineTransform::SetMatrix(double a,
                                 double b,
                                 double c,
                                 double d,
                                 double e,
                                 double f) {
-  m_transform[0] = a;
-  m_transform[1] = b;
-  m_transform[2] = c;
-  m_transform[3] = d;
-  m_transform[4] = e;
-  m_transform[5] = f;
+  transform_[0] = a;
+  transform_[1] = b;
+  transform_[2] = c;
+  transform_[3] = d;
+  transform_[4] = e;
+  transform_[5] = f;
 }
 
-bool AffineTransform::isIdentity() const {
-  return (m_transform[0] == 1 && m_transform[1] == 0 && m_transform[2] == 0 &&
-          m_transform[3] == 1 && m_transform[4] == 0 && m_transform[5] == 0);
+bool AffineTransform::IsIdentity() const {
+  return (transform_[0] == 1 && transform_[1] == 0 && transform_[2] == 0 &&
+          transform_[3] == 1 && transform_[4] == 0 && transform_[5] == 0);
 }
 
-double AffineTransform::xScaleSquared() const {
-  return m_transform[0] * m_transform[0] + m_transform[1] * m_transform[1];
+double AffineTransform::XScaleSquared() const {
+  return transform_[0] * transform_[0] + transform_[1] * transform_[1];
 }
 
-double AffineTransform::xScale() const {
-  return sqrt(xScaleSquared());
+double AffineTransform::XScale() const {
+  return sqrt(XScaleSquared());
 }
 
-double AffineTransform::yScaleSquared() const {
-  return m_transform[2] * m_transform[2] + m_transform[3] * m_transform[3];
+double AffineTransform::YScaleSquared() const {
+  return transform_[2] * transform_[2] + transform_[3] * transform_[3];
 }
 
-double AffineTransform::yScale() const {
-  return sqrt(yScaleSquared());
+double AffineTransform::YScale() const {
+  return sqrt(YScaleSquared());
 }
 
-double AffineTransform::det() const {
-  return m_transform[0] * m_transform[3] - m_transform[1] * m_transform[2];
+double AffineTransform::Det() const {
+  return transform_[0] * transform_[3] - transform_[1] * transform_[2];
 }
 
-bool AffineTransform::isInvertible() const {
-  return det() != 0.0;
+bool AffineTransform::IsInvertible() const {
+  return Det() != 0.0;
 }
 
-AffineTransform AffineTransform::inverse() const {
-  double determinant = det();
+AffineTransform AffineTransform::Inverse() const {
+  double determinant = Det();
   if (determinant == 0.0)
     return AffineTransform();
 
   AffineTransform result;
-  if (isIdentityOrTranslation()) {
-    result.m_transform[4] = -m_transform[4];
-    result.m_transform[5] = -m_transform[5];
+  if (IsIdentityOrTranslation()) {
+    result.transform_[4] = -transform_[4];
+    result.transform_[5] = -transform_[5];
     return result;
   }
 
-  result.m_transform[0] = m_transform[3] / determinant;
-  result.m_transform[1] = -m_transform[1] / determinant;
-  result.m_transform[2] = -m_transform[2] / determinant;
-  result.m_transform[3] = m_transform[0] / determinant;
-  result.m_transform[4] =
-      (m_transform[2] * m_transform[5] - m_transform[3] * m_transform[4]) /
+  result.transform_[0] = transform_[3] / determinant;
+  result.transform_[1] = -transform_[1] / determinant;
+  result.transform_[2] = -transform_[2] / determinant;
+  result.transform_[3] = transform_[0] / determinant;
+  result.transform_[4] =
+      (transform_[2] * transform_[5] - transform_[3] * transform_[4]) /
       determinant;
-  result.m_transform[5] =
-      (m_transform[1] * m_transform[4] - m_transform[0] * m_transform[5]) /
+  result.transform_[5] =
+      (transform_[1] * transform_[4] - transform_[0] * transform_[5]) /
       determinant;
 
   return result;
@@ -125,281 +125,282 @@ AffineTransform AffineTransform::inverse() const {
 namespace {
 
 // res = t1 * t2
-inline void doMultiply(const AffineTransform& t1,
+inline void DoMultiply(const AffineTransform& t1,
                        const AffineTransform& t2,
                        AffineTransform* res) {
-  res->setA(t1.a() * t2.a() + t1.c() * t2.b());
-  res->setB(t1.b() * t2.a() + t1.d() * t2.b());
-  res->setC(t1.a() * t2.c() + t1.c() * t2.d());
-  res->setD(t1.b() * t2.c() + t1.d() * t2.d());
-  res->setE(t1.a() * t2.e() + t1.c() * t2.f() + t1.e());
-  res->setF(t1.b() * t2.e() + t1.d() * t2.f() + t1.f());
+  res->SetA(t1.A() * t2.A() + t1.C() * t2.B());
+  res->SetB(t1.B() * t2.A() + t1.D() * t2.B());
+  res->SetC(t1.A() * t2.C() + t1.C() * t2.D());
+  res->SetD(t1.B() * t2.C() + t1.D() * t2.D());
+  res->SetE(t1.A() * t2.E() + t1.C() * t2.F() + t1.E());
+  res->SetF(t1.B() * t2.E() + t1.D() * t2.F() + t1.F());
 }
 
 }  // anonymous namespace
 
-AffineTransform& AffineTransform::multiply(const AffineTransform& other) {
-  if (other.isIdentityOrTranslation()) {
-    if (other.m_transform[4] || other.m_transform[5])
-      translate(other.m_transform[4], other.m_transform[5]);
+AffineTransform& AffineTransform::Multiply(const AffineTransform& other) {
+  if (other.IsIdentityOrTranslation()) {
+    if (other.transform_[4] || other.transform_[5])
+      Translate(other.transform_[4], other.transform_[5]);
     return *this;
   }
 
   AffineTransform trans;
-  doMultiply(*this, other, &trans);
-  setMatrix(trans.m_transform);
+  DoMultiply(*this, other, &trans);
+  SetMatrix(trans.transform_);
 
   return *this;
 }
 
-AffineTransform& AffineTransform::preMultiply(const AffineTransform& other) {
-  if (other.isIdentityOrTranslation()) {
-    if (other.m_transform[4] || other.m_transform[5]) {
-      m_transform[4] += other.m_transform[4];
-      m_transform[5] += other.m_transform[5];
+AffineTransform& AffineTransform::PreMultiply(const AffineTransform& other) {
+  if (other.IsIdentityOrTranslation()) {
+    if (other.transform_[4] || other.transform_[5]) {
+      transform_[4] += other.transform_[4];
+      transform_[5] += other.transform_[5];
     }
     return *this;
   }
 
   AffineTransform trans;
-  doMultiply(other, *this, &trans);
-  setMatrix(trans.m_transform);
+  DoMultiply(other, *this, &trans);
+  SetMatrix(trans.transform_);
 
   return *this;
 }
 
-AffineTransform& AffineTransform::rotate(double a) {
+AffineTransform& AffineTransform::Rotate(double a) {
   // angle is in degree. Switch to radian
-  return rotateRadians(deg2rad(a));
+  return RotateRadians(deg2rad(a));
 }
 
-AffineTransform& AffineTransform::rotateRadians(double a) {
-  double cosAngle = cos(a);
-  double sinAngle = sin(a);
-  AffineTransform rot(cosAngle, sinAngle, -sinAngle, cosAngle, 0, 0);
+AffineTransform& AffineTransform::RotateRadians(double a) {
+  double cos_angle = cos(a);
+  double sin_angle = sin(a);
+  AffineTransform rot(cos_angle, sin_angle, -sin_angle, cos_angle, 0, 0);
 
-  multiply(rot);
+  Multiply(rot);
   return *this;
 }
 
-AffineTransform& AffineTransform::scale(double s) {
-  return scale(s, s);
+AffineTransform& AffineTransform::Scale(double s) {
+  return Scale(s, s);
 }
 
-AffineTransform& AffineTransform::scale(double sx, double sy) {
-  m_transform[0] *= sx;
-  m_transform[1] *= sx;
-  m_transform[2] *= sy;
-  m_transform[3] *= sy;
+AffineTransform& AffineTransform::Scale(double sx, double sy) {
+  transform_[0] *= sx;
+  transform_[1] *= sx;
+  transform_[2] *= sy;
+  transform_[3] *= sy;
   return *this;
 }
 
 // *this = *this * translation
-AffineTransform& AffineTransform::translate(double tx, double ty) {
-  if (isIdentityOrTranslation()) {
-    m_transform[4] += tx;
-    m_transform[5] += ty;
+AffineTransform& AffineTransform::Translate(double tx, double ty) {
+  if (IsIdentityOrTranslation()) {
+    transform_[4] += tx;
+    transform_[5] += ty;
     return *this;
   }
 
-  m_transform[4] += tx * m_transform[0] + ty * m_transform[2];
-  m_transform[5] += tx * m_transform[1] + ty * m_transform[3];
+  transform_[4] += tx * transform_[0] + ty * transform_[2];
+  transform_[5] += tx * transform_[1] + ty * transform_[3];
   return *this;
 }
 
-AffineTransform& AffineTransform::scaleNonUniform(double sx, double sy) {
-  return scale(sx, sy);
+AffineTransform& AffineTransform::ScaleNonUniform(double sx, double sy) {
+  return Scale(sx, sy);
 }
 
-AffineTransform& AffineTransform::rotateFromVector(double x, double y) {
-  return rotateRadians(atan2(y, x));
+AffineTransform& AffineTransform::RotateFromVector(double x, double y) {
+  return RotateRadians(atan2(y, x));
 }
 
-AffineTransform& AffineTransform::flipX() {
-  return scale(-1, 1);
+AffineTransform& AffineTransform::FlipX() {
+  return Scale(-1, 1);
 }
 
-AffineTransform& AffineTransform::flipY() {
-  return scale(1, -1);
+AffineTransform& AffineTransform::FlipY() {
+  return Scale(1, -1);
 }
 
-AffineTransform& AffineTransform::shear(double sx, double sy) {
-  double a = m_transform[0];
-  double b = m_transform[1];
+AffineTransform& AffineTransform::Shear(double sx, double sy) {
+  double a = transform_[0];
+  double b = transform_[1];
 
-  m_transform[0] += sy * m_transform[2];
-  m_transform[1] += sy * m_transform[3];
-  m_transform[2] += sx * a;
-  m_transform[3] += sx * b;
+  transform_[0] += sy * transform_[2];
+  transform_[1] += sy * transform_[3];
+  transform_[2] += sx * a;
+  transform_[3] += sx * b;
 
   return *this;
 }
 
-AffineTransform& AffineTransform::skew(double angleX, double angleY) {
-  return shear(tan(deg2rad(angleX)), tan(deg2rad(angleY)));
+AffineTransform& AffineTransform::Skew(double angle_x, double angle_y) {
+  return Shear(tan(deg2rad(angle_x)), tan(deg2rad(angle_y)));
 }
 
-AffineTransform& AffineTransform::skewX(double angle) {
-  return shear(tan(deg2rad(angle)), 0);
+AffineTransform& AffineTransform::SkewX(double angle) {
+  return Shear(tan(deg2rad(angle)), 0);
 }
 
-AffineTransform& AffineTransform::skewY(double angle) {
-  return shear(0, tan(deg2rad(angle)));
+AffineTransform& AffineTransform::SkewY(double angle) {
+  return Shear(0, tan(deg2rad(angle)));
 }
 
-void AffineTransform::map(double x, double y, double& x2, double& y2) const {
-  x2 = (m_transform[0] * x + m_transform[2] * y + m_transform[4]);
-  y2 = (m_transform[1] * x + m_transform[3] * y + m_transform[5]);
+void AffineTransform::Map(double x, double y, double& x2, double& y2) const {
+  x2 = (transform_[0] * x + transform_[2] * y + transform_[4]);
+  y2 = (transform_[1] * x + transform_[3] * y + transform_[5]);
 }
 
-IntPoint AffineTransform::mapPoint(const IntPoint& point) const {
+IntPoint AffineTransform::MapPoint(const IntPoint& point) const {
   double x2, y2;
-  map(point.x(), point.y(), x2, y2);
+  Map(point.X(), point.Y(), x2, y2);
 
   // Round the point.
   return IntPoint(lround(x2), lround(y2));
 }
 
-FloatPoint AffineTransform::mapPoint(const FloatPoint& point) const {
+FloatPoint AffineTransform::MapPoint(const FloatPoint& point) const {
   double x2, y2;
-  map(point.x(), point.y(), x2, y2);
+  Map(point.X(), point.Y(), x2, y2);
 
   return FloatPoint(clampTo<float>(x2), clampTo<float>(y2));
 }
 
-IntSize AffineTransform::mapSize(const IntSize& size) const {
-  double width2 = size.width() * xScale();
-  double height2 = size.height() * yScale();
+IntSize AffineTransform::MapSize(const IntSize& size) const {
+  double width2 = size.Width() * XScale();
+  double height2 = size.Height() * YScale();
 
   return IntSize(lround(width2), lround(height2));
 }
 
-FloatSize AffineTransform::mapSize(const FloatSize& size) const {
-  double width2 = size.width() * xScale();
-  double height2 = size.height() * yScale();
+FloatSize AffineTransform::MapSize(const FloatSize& size) const {
+  double width2 = size.Width() * XScale();
+  double height2 = size.Height() * YScale();
 
   return FloatSize(clampTo<float>(width2), clampTo<float>(height2));
 }
 
-IntRect AffineTransform::mapRect(const IntRect& rect) const {
-  return enclosingIntRect(mapRect(FloatRect(rect)));
+IntRect AffineTransform::MapRect(const IntRect& rect) const {
+  return EnclosingIntRect(MapRect(FloatRect(rect)));
 }
 
-FloatRect AffineTransform::mapRect(const FloatRect& rect) const {
-  if (isIdentityOrTranslation()) {
-    if (!m_transform[4] && !m_transform[5])
+FloatRect AffineTransform::MapRect(const FloatRect& rect) const {
+  if (IsIdentityOrTranslation()) {
+    if (!transform_[4] && !transform_[5])
       return rect;
 
-    FloatRect mappedRect(rect);
-    mappedRect.move(clampTo<float>(m_transform[4]),
-                    clampTo<float>(m_transform[5]));
-    return mappedRect;
+    FloatRect mapped_rect(rect);
+    mapped_rect.Move(clampTo<float>(transform_[4]),
+                     clampTo<float>(transform_[5]));
+    return mapped_rect;
   }
 
   FloatQuad result;
-  result.setP1(mapPoint(rect.location()));
-  result.setP2(mapPoint(FloatPoint(rect.maxX(), rect.y())));
-  result.setP3(mapPoint(FloatPoint(rect.maxX(), rect.maxY())));
-  result.setP4(mapPoint(FloatPoint(rect.x(), rect.maxY())));
-  return result.boundingBox();
+  result.SetP1(MapPoint(rect.Location()));
+  result.SetP2(MapPoint(FloatPoint(rect.MaxX(), rect.Y())));
+  result.SetP3(MapPoint(FloatPoint(rect.MaxX(), rect.MaxY())));
+  result.SetP4(MapPoint(FloatPoint(rect.X(), rect.MaxY())));
+  return result.BoundingBox();
 }
 
-FloatQuad AffineTransform::mapQuad(const FloatQuad& q) const {
-  if (isIdentityOrTranslation()) {
-    FloatQuad mappedQuad(q);
-    mappedQuad.move(clampTo<float>(m_transform[4]),
-                    clampTo<float>(m_transform[5]));
-    return mappedQuad;
+FloatQuad AffineTransform::MapQuad(const FloatQuad& q) const {
+  if (IsIdentityOrTranslation()) {
+    FloatQuad mapped_quad(q);
+    mapped_quad.Move(clampTo<float>(transform_[4]),
+                     clampTo<float>(transform_[5]));
+    return mapped_quad;
   }
 
   FloatQuad result;
-  result.setP1(mapPoint(q.p1()));
-  result.setP2(mapPoint(q.p2()));
-  result.setP3(mapPoint(q.p3()));
-  result.setP4(mapPoint(q.p4()));
+  result.SetP1(MapPoint(q.P1()));
+  result.SetP2(MapPoint(q.P2()));
+  result.SetP3(MapPoint(q.P3()));
+  result.SetP4(MapPoint(q.P4()));
   return result;
 }
 
-TransformationMatrix AffineTransform::toTransformationMatrix() const {
-  return TransformationMatrix(m_transform[0], m_transform[1], m_transform[2],
-                              m_transform[3], m_transform[4], m_transform[5]);
+TransformationMatrix AffineTransform::ToTransformationMatrix() const {
+  return TransformationMatrix(transform_[0], transform_[1], transform_[2],
+                              transform_[3], transform_[4], transform_[5]);
 }
 
-bool AffineTransform::decompose(DecomposedType& decomp) const {
+bool AffineTransform::Decompose(DecomposedType& decomp) const {
   AffineTransform m(*this);
 
   // Compute scaling factors
-  double sx = xScale();
-  double sy = yScale();
+  double sx = XScale();
+  double sy = YScale();
 
   // Compute cross product of transformed unit vectors. If negative,
   // one axis was flipped.
-  if (m.a() * m.d() - m.c() * m.b() < 0) {
+  if (m.A() * m.D() - m.C() * m.B() < 0) {
     // Flip axis with minimum unit vector dot product
-    if (m.a() < m.d())
+    if (m.A() < m.D())
       sx = -sx;
     else
       sy = -sy;
   }
 
   // Remove scale from matrix
-  m.scale(1 / sx, 1 / sy);
+  m.Scale(1 / sx, 1 / sy);
 
   // Compute rotation
-  double angle = atan2(m.b(), m.a());
+  double angle = atan2(m.B(), m.A());
 
   // Remove rotation from matrix
-  m.rotateRadians(-angle);
+  m.RotateRadians(-angle);
 
   // Return results
-  decomp.scaleX = sx;
-  decomp.scaleY = sy;
+  decomp.scale_x = sx;
+  decomp.scale_y = sy;
   decomp.angle = angle;
-  decomp.remainderA = m.a();
-  decomp.remainderB = m.b();
-  decomp.remainderC = m.c();
-  decomp.remainderD = m.d();
-  decomp.translateX = m.e();
-  decomp.translateY = m.f();
+  decomp.remainder_a = m.A();
+  decomp.remainder_b = m.B();
+  decomp.remainder_c = m.C();
+  decomp.remainder_d = m.D();
+  decomp.translate_x = m.E();
+  decomp.translate_y = m.F();
 
   return true;
 }
 
-void AffineTransform::recompose(const DecomposedType& decomp) {
-  this->setA(decomp.remainderA);
-  this->setB(decomp.remainderB);
-  this->setC(decomp.remainderC);
-  this->setD(decomp.remainderD);
-  this->setE(decomp.translateX);
-  this->setF(decomp.translateY);
-  this->rotateRadians(decomp.angle);
-  this->scale(decomp.scaleX, decomp.scaleY);
+void AffineTransform::Recompose(const DecomposedType& decomp) {
+  this->SetA(decomp.remainder_a);
+  this->SetB(decomp.remainder_b);
+  this->SetC(decomp.remainder_c);
+  this->SetD(decomp.remainder_d);
+  this->SetE(decomp.translate_x);
+  this->SetF(decomp.translate_y);
+  this->RotateRadians(decomp.angle);
+  this->Scale(decomp.scale_x, decomp.scale_y);
 }
 
-String AffineTransform::toString(bool asMatrix) const {
-  if (asMatrix) {
+String AffineTransform::ToString(bool as_matrix) const {
+  if (as_matrix) {
     // Return as a matrix in row-major order.
-    return String::format("[%lg,%lg,%lg,\n%lg,%lg,%lg]", a(), c(), e(), b(),
-                          d(), f());
+    return String::Format("[%lg,%lg,%lg,\n%lg,%lg,%lg]", A(), C(), E(), B(),
+                          D(), F());
   }
 
-  if (isIdentity())
+  if (IsIdentity())
     return "identity";
 
   AffineTransform::DecomposedType decomposition;
-  decompose(decomposition);
+  Decompose(decomposition);
 
-  if (isIdentityOrTranslation())
-    return String::format("translation(%lg,%lg)", decomposition.translateX,
-                          decomposition.translateY);
+  if (IsIdentityOrTranslation())
+    return String::Format("translation(%lg,%lg)", decomposition.translate_x,
+                          decomposition.translate_y);
 
-  return String::format(
+  return String::Format(
       "translation(%lg,%lg), scale(%lg,%lg), angle(%lgdeg), "
       "remainder(%lg,%lg,%lg,%lg)",
-      decomposition.translateX, decomposition.translateY, decomposition.scaleX,
-      decomposition.scaleY, rad2deg(decomposition.angle),
-      decomposition.remainderA, decomposition.remainderB,
-      decomposition.remainderC, decomposition.remainderD);
+      decomposition.translate_x, decomposition.translate_y,
+      decomposition.scale_x, decomposition.scale_y,
+      rad2deg(decomposition.angle), decomposition.remainder_a,
+      decomposition.remainder_b, decomposition.remainder_c,
+      decomposition.remainder_d);
 }
 
 }  // namespace blink

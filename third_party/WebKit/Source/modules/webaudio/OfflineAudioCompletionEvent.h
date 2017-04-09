@@ -41,27 +41,27 @@ class OfflineAudioCompletionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OfflineAudioCompletionEvent* create();
-  static OfflineAudioCompletionEvent* create(AudioBuffer* renderedBuffer);
-  static OfflineAudioCompletionEvent* create(
+  static OfflineAudioCompletionEvent* Create();
+  static OfflineAudioCompletionEvent* Create(AudioBuffer* rendered_buffer);
+  static OfflineAudioCompletionEvent* Create(
       const AtomicString& type,
       const OfflineAudioCompletionEventInit&);
 
   ~OfflineAudioCompletionEvent() override;
 
-  AudioBuffer* renderedBuffer() { return m_renderedBuffer.get(); }
+  AudioBuffer* renderedBuffer() { return rendered_buffer_.Get(); }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   OfflineAudioCompletionEvent();
-  explicit OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer);
+  explicit OfflineAudioCompletionEvent(AudioBuffer* rendered_buffer);
   explicit OfflineAudioCompletionEvent(const AtomicString& type,
                                        const OfflineAudioCompletionEventInit&);
 
-  Member<AudioBuffer> m_renderedBuffer;
+  Member<AudioBuffer> rendered_buffer_;
 };
 
 }  // namespace blink

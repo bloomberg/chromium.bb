@@ -13,76 +13,77 @@
 
 namespace blink {
 
-ScriptPromise NavigationPreloadManager::enable(ScriptState* scriptState) {
-  return setEnabled(true, scriptState);
+ScriptPromise NavigationPreloadManager::enable(ScriptState* script_state) {
+  return SetEnabled(true, script_state);
 }
 
-ScriptPromise NavigationPreloadManager::disable(ScriptState* scriptState) {
-  return setEnabled(false, scriptState);
+ScriptPromise NavigationPreloadManager::disable(ScriptState* script_state) {
+  return SetEnabled(false, script_state);
 }
 
-ScriptPromise NavigationPreloadManager::setHeaderValue(ScriptState* scriptState,
-                                                       const String& value) {
+ScriptPromise NavigationPreloadManager::setHeaderValue(
+    ScriptState* script_state,
+    const String& value) {
   ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::from(m_registration->getExecutionContext());
-  if (!client || !client->provider()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError, "No provider."));
+      ServiceWorkerContainerClient::From(registration_->GetExecutionContext());
+  if (!client || !client->Provider()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError, "No provider."));
   }
 
-  if (!isValidHTTPHeaderValue(value)) {
-    return ScriptPromise::reject(
-        scriptState, V8ThrowException::createTypeError(
-                         scriptState->isolate(),
-                         "The string provided to setHeaderValue ('" + value +
-                             "') is not a valid HTTP header field value."));
+  if (!IsValidHTTPHeaderValue(value)) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "The string provided to setHeaderValue ('" + value +
+                              "') is not a valid HTTP header field value."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  m_registration->webRegistration()->setNavigationPreloadHeader(
-      value, client->provider(),
-      WTF::makeUnique<SetNavigationPreloadHeaderCallbacks>(resolver));
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  registration_->WebRegistration()->SetNavigationPreloadHeader(
+      value, client->Provider(),
+      WTF::MakeUnique<SetNavigationPreloadHeaderCallbacks>(resolver));
   return promise;
 }
 
-ScriptPromise NavigationPreloadManager::getState(ScriptState* scriptState) {
+ScriptPromise NavigationPreloadManager::getState(ScriptState* script_state) {
   ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::from(m_registration->getExecutionContext());
-  if (!client || !client->provider()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError, "No provider."));
+      ServiceWorkerContainerClient::From(registration_->GetExecutionContext());
+  if (!client || !client->Provider()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError, "No provider."));
   }
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  m_registration->webRegistration()->getNavigationPreloadState(
-      client->provider(),
-      WTF::makeUnique<GetNavigationPreloadStateCallbacks>(resolver));
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  registration_->WebRegistration()->GetNavigationPreloadState(
+      client->Provider(),
+      WTF::MakeUnique<GetNavigationPreloadStateCallbacks>(resolver));
   return promise;
 }
 
 NavigationPreloadManager::NavigationPreloadManager(
     ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    : registration_(registration) {}
 
-ScriptPromise NavigationPreloadManager::setEnabled(bool enable,
-                                                   ScriptState* scriptState) {
+ScriptPromise NavigationPreloadManager::SetEnabled(bool enable,
+                                                   ScriptState* script_state) {
   ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::from(m_registration->getExecutionContext());
-  if (!client || !client->provider()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidStateError, "No provider."));
+      ServiceWorkerContainerClient::From(registration_->GetExecutionContext());
+  if (!client || !client->Provider()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError, "No provider."));
   }
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-  m_registration->webRegistration()->enableNavigationPreload(
-      enable, client->provider(),
-      WTF::makeUnique<EnableNavigationPreloadCallbacks>(resolver));
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  registration_->WebRegistration()->EnableNavigationPreload(
+      enable, client->Provider(),
+      WTF::MakeUnique<EnableNavigationPreloadCallbacks>(resolver));
   return promise;
 }
 
 DEFINE_TRACE(NavigationPreloadManager) {
-  visitor->trace(m_registration);
+  visitor->Trace(registration_);
 }
 
 }  // namespace blink

@@ -20,114 +20,115 @@ using protocol::Maybe;
 using protocol::Response;
 
 namespace TracingAgentState {
-const char sessionId[] = "sessionId";
+const char kSessionId[] = "sessionId";
 }
 
 namespace {
-const char devtoolsMetadataEventCategory[] =
+const char kDevtoolsMetadataEventCategory[] =
     TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
 InspectorTracingAgent::InspectorTracingAgent(Client* client,
-                                             InspectorWorkerAgent* workerAgent,
-                                             InspectedFrames* inspectedFrames)
-    : m_layerTreeId(0),
-      m_client(client),
-      m_workerAgent(workerAgent),
-      m_inspectedFrames(inspectedFrames) {}
+                                             InspectorWorkerAgent* worker_agent,
+                                             InspectedFrames* inspected_frames)
+    : layer_tree_id_(0),
+      client_(client),
+      worker_agent_(worker_agent),
+      inspected_frames_(inspected_frames) {}
 
 DEFINE_TRACE(InspectorTracingAgent) {
-  visitor->trace(m_workerAgent);
-  visitor->trace(m_inspectedFrames);
-  InspectorBaseAgent::trace(visitor);
+  visitor->Trace(worker_agent_);
+  visitor->Trace(inspected_frames_);
+  InspectorBaseAgent::Trace(visitor);
 }
 
-void InspectorTracingAgent::restore() {
-  emitMetadataEvents();
+void InspectorTracingAgent::Restore() {
+  EmitMetadataEvents();
 }
 
-void InspectorTracingAgent::frameStartedLoading(LocalFrame* frame,
+void InspectorTracingAgent::FrameStartedLoading(LocalFrame* frame,
                                                 FrameLoadType type) {
-  if (frame != m_inspectedFrames->root() || !isReloadLoadType(type))
+  if (frame != inspected_frames_->Root() || !IsReloadLoadType(type))
     return;
-  m_client->showReloadingBlanket();
+  client_->ShowReloadingBlanket();
 }
 
-void InspectorTracingAgent::frameStoppedLoading(LocalFrame* frame) {
-  if (frame != m_inspectedFrames->root())
-    m_client->hideReloadingBlanket();
+void InspectorTracingAgent::FrameStoppedLoading(LocalFrame* frame) {
+  if (frame != inspected_frames_->Root())
+    client_->HideReloadingBlanket();
 }
 
 void InspectorTracingAgent::start(Maybe<String> categories,
                                   Maybe<String> options,
-                                  Maybe<double> bufferUsageReportingInterval,
-                                  Maybe<String> transferMode,
+                                  Maybe<double> buffer_usage_reporting_interval,
+                                  Maybe<String> transfer_mode,
                                   Maybe<protocol::Tracing::TraceConfig> config,
                                   std::unique_ptr<StartCallback> callback) {
-  DCHECK(!isStarted());
+  DCHECK(!IsStarted());
   if (config.isJust()) {
     callback->sendFailure(Response::Error(
         "Using trace config on renderer targets is not supported yet."));
     return;
   }
 
-  m_instrumentingAgents->addInspectorTracingAgent(this);
-  m_state->setString(TracingAgentState::sessionId,
-                     IdentifiersFactory::createIdentifier());
-  m_client->enableTracing(categories.fromMaybe(String()));
-  emitMetadataEvents();
+  instrumenting_agents_->addInspectorTracingAgent(this);
+  state_->setString(TracingAgentState::kSessionId,
+                    IdentifiersFactory::CreateIdentifier());
+  client_->EnableTracing(categories.fromMaybe(String()));
+  EmitMetadataEvents();
   callback->sendSuccess();
 }
 
 void InspectorTracingAgent::end(std::unique_ptr<EndCallback> callback) {
-  m_client->disableTracing();
-  innerDisable();
+  client_->DisableTracing();
+  InnerDisable();
   callback->sendSuccess();
 }
 
-bool InspectorTracingAgent::isStarted() const {
-  return !sessionId().isEmpty();
+bool InspectorTracingAgent::IsStarted() const {
+  return !SessionId().IsEmpty();
 }
 
-String InspectorTracingAgent::sessionId() const {
+String InspectorTracingAgent::SessionId() const {
   String result;
-  if (m_state)
-    m_state->getString(TracingAgentState::sessionId, &result);
+  if (state_)
+    state_->getString(TracingAgentState::kSessionId, &result);
   return result;
 }
 
-void InspectorTracingAgent::emitMetadataEvents() {
-  TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "TracingStartedInPage",
+void InspectorTracingAgent::EmitMetadataEvents() {
+  TRACE_EVENT_INSTANT1(kDevtoolsMetadataEventCategory, "TracingStartedInPage",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorTracingStartedInFrame::data(
-                           sessionId(), m_inspectedFrames->root()));
-  if (m_layerTreeId)
-    setLayerTreeId(m_layerTreeId);
-  m_workerAgent->setTracingSessionId(sessionId());
+                       InspectorTracingStartedInFrame::Data(
+                           SessionId(), inspected_frames_->Root()));
+  if (layer_tree_id_)
+    SetLayerTreeId(layer_tree_id_);
+  worker_agent_->SetTracingSessionId(SessionId());
 }
 
-void InspectorTracingAgent::setLayerTreeId(int layerTreeId) {
-  m_layerTreeId = layerTreeId;
+void InspectorTracingAgent::SetLayerTreeId(int layer_tree_id) {
+  layer_tree_id_ = layer_tree_id;
   TRACE_EVENT_INSTANT1(
-      devtoolsMetadataEventCategory, "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD,
-      "data", InspectorSetLayerTreeId::data(sessionId(), m_layerTreeId));
+      kDevtoolsMetadataEventCategory, "SetLayerTreeId",
+      TRACE_EVENT_SCOPE_THREAD, "data",
+      InspectorSetLayerTreeId::Data(SessionId(), layer_tree_id_));
 }
 
-void InspectorTracingAgent::rootLayerCleared() {
-  if (isStarted())
-    m_client->hideReloadingBlanket();
+void InspectorTracingAgent::RootLayerCleared() {
+  if (IsStarted())
+    client_->HideReloadingBlanket();
 }
 
 Response InspectorTracingAgent::disable() {
-  innerDisable();
+  InnerDisable();
   return Response::OK();
 }
 
-void InspectorTracingAgent::innerDisable() {
-  m_client->hideReloadingBlanket();
-  m_instrumentingAgents->removeInspectorTracingAgent(this);
-  m_state->remove(TracingAgentState::sessionId);
-  m_workerAgent->setTracingSessionId(String());
+void InspectorTracingAgent::InnerDisable() {
+  client_->HideReloadingBlanket();
+  instrumenting_agents_->removeInspectorTracingAgent(this);
+  state_->remove(TracingAgentState::kSessionId);
+  worker_agent_->SetTracingSessionId(String());
 }
 
 }  // namespace blink

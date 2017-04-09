@@ -15,7 +15,7 @@ CustomContextMenuContext::CustomContextMenuContext()
 }
 
 ContextMenuParams::ContextMenuParams()
-    : media_type(blink::WebContextMenuData::MediaTypeNone),
+    : media_type(blink::WebContextMenuData::kMediaTypeNone),
       x(0),
       y(0),
       has_image_contents(true),
@@ -23,16 +23,15 @@ ContextMenuParams::ContextMenuParams()
       spellcheck_enabled(false),
       is_editable(false),
       writing_direction_default(
-          blink::WebContextMenuData::CheckableMenuItemDisabled),
+          blink::WebContextMenuData::kCheckableMenuItemDisabled),
       writing_direction_left_to_right(
-          blink::WebContextMenuData::CheckableMenuItemEnabled),
+          blink::WebContextMenuData::kCheckableMenuItemEnabled),
       writing_direction_right_to_left(
-          blink::WebContextMenuData::CheckableMenuItemEnabled),
+          blink::WebContextMenuData::kCheckableMenuItemEnabled),
       edit_flags(0),
-      referrer_policy(blink::WebReferrerPolicyDefault),
+      referrer_policy(blink::kWebReferrerPolicyDefault),
       source_type(ui::MENU_SOURCE_NONE),
-      input_field_type(blink::WebContextMenuData::InputFieldTypeNone) {
-}
+      input_field_type(blink::WebContextMenuData::kInputFieldTypeNone) {}
 
 ContextMenuParams::ContextMenuParams(const ContextMenuParams& other) = default;
 

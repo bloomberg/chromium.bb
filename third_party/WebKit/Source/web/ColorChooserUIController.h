@@ -45,7 +45,7 @@ class ColorChooserUIController
   USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
 
  public:
-  static ColorChooserUIController* create(LocalFrame* frame,
+  static ColorChooserUIController* Create(LocalFrame* frame,
                                           ColorChooserClient* client) {
     return new ColorChooserUIController(frame, client);
   }
@@ -53,25 +53,25 @@ class ColorChooserUIController
   ~ColorChooserUIController() override;
   DECLARE_VIRTUAL_TRACE();
 
-  virtual void openUI();
+  virtual void OpenUI();
 
   // ColorChooser functions:
-  void setSelectedColor(const Color&) final;
-  void endChooser() override;
-  AXObject* rootAXObject() override;
+  void SetSelectedColor(const Color&) final;
+  void EndChooser() override;
+  AXObject* RootAXObject() override;
 
   // WebColorChooserClient functions:
-  void didChooseColor(const WebColor&) final;
-  void didEndChooser() final;
+  void DidChooseColor(const WebColor&) final;
+  void DidEndChooser() final;
 
  protected:
   ColorChooserUIController(LocalFrame*, ColorChooserClient*);
 
-  void openColorChooser();
-  std::unique_ptr<WebColorChooser> m_chooser;
-  Member<ColorChooserClient> m_client;
+  void OpenColorChooser();
+  std::unique_ptr<WebColorChooser> chooser_;
+  Member<ColorChooserClient> client_;
 
-  Member<LocalFrame> m_frame;
+  Member<LocalFrame> frame_;
 };
 
 }  // namespace blink

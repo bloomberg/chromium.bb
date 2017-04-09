@@ -49,44 +49,44 @@ class IDBIndexMetadata : public RefCounted<IDBIndexMetadata> {
   USING_FAST_MALLOC(IDBIndexMetadata);
 
  public:
-  static constexpr int64_t InvalidId = -1;
+  static constexpr int64_t kInvalidId = -1;
 
   IDBIndexMetadata();
   IDBIndexMetadata(const String& name,
                    int64_t id,
                    const IDBKeyPath&,
                    bool unique,
-                   bool multiEntry);
+                   bool multi_entry);
 
   String name;
   int64_t id;
-  IDBKeyPath keyPath;
+  IDBKeyPath key_path;
   bool unique;
-  bool multiEntry;
+  bool multi_entry;
 };
 
 class IDBObjectStoreMetadata : public RefCounted<IDBObjectStoreMetadata> {
   USING_FAST_MALLOC(IDBObjectStoreMetadata);
 
  public:
-  static constexpr int64_t InvalidId = -1;
+  static constexpr int64_t kInvalidId = -1;
 
   IDBObjectStoreMetadata();
   IDBObjectStoreMetadata(const String& name,
                          int64_t id,
                          const IDBKeyPath&,
-                         bool autoIncrement,
-                         int64_t maxIndexId);
+                         bool auto_increment,
+                         int64_t max_index_id);
 
   // Creates a deep copy of the object metadata, which includes copies of index
   // metadata items.
-  RefPtr<IDBObjectStoreMetadata> createCopy() const;
+  RefPtr<IDBObjectStoreMetadata> CreateCopy() const;
 
   String name;
   int64_t id;
-  IDBKeyPath keyPath;
-  bool autoIncrement;
-  int64_t maxIndexId;
+  IDBKeyPath key_path;
+  bool auto_increment;
+  int64_t max_index_id;
   HashMap<int64_t, RefPtr<IDBIndexMetadata>> indexes;
 };
 
@@ -94,25 +94,25 @@ struct MODULES_EXPORT IDBDatabaseMetadata {
   DISALLOW_NEW();
 
   // FIXME: These can probably be collapsed into 0.
-  enum { NoVersion = -1, DefaultVersion = 0 };
+  enum { kNoVersion = -1, kDefaultVersion = 0 };
 
   IDBDatabaseMetadata();
   IDBDatabaseMetadata(const String& name,
                       int64_t id,
                       int64_t version,
-                      int64_t maxObjectStoreId);
+                      int64_t max_object_store_id);
 
   explicit IDBDatabaseMetadata(const WebIDBMetadata&);
 
   // Overwrites the database metadata, but does not change the object store and
   // index metadata.
-  void copyFrom(const IDBDatabaseMetadata&);
+  void CopyFrom(const IDBDatabaseMetadata&);
 
   String name;
   int64_t id;
   int64_t version;
-  int64_t maxObjectStoreId;
-  HashMap<int64_t, RefPtr<IDBObjectStoreMetadata>> objectStores;
+  int64_t max_object_store_id;
+  HashMap<int64_t, RefPtr<IDBObjectStoreMetadata>> object_stores;
 };
 
 }  // namespace blink

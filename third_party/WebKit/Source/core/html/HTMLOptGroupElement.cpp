@@ -52,113 +52,113 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
 // a compile error because of lack of ComputedStyle definition.
 HTMLOptGroupElement::~HTMLOptGroupElement() {}
 
-HTMLOptGroupElement* HTMLOptGroupElement::create(Document& document) {
-  HTMLOptGroupElement* optGroupElement = new HTMLOptGroupElement(document);
-  optGroupElement->ensureUserAgentShadowRoot();
-  return optGroupElement;
+HTMLOptGroupElement* HTMLOptGroupElement::Create(Document& document) {
+  HTMLOptGroupElement* opt_group_element = new HTMLOptGroupElement(document);
+  opt_group_element->EnsureUserAgentShadowRoot();
+  return opt_group_element;
 }
 
-bool HTMLOptGroupElement::isDisabledFormControl() const {
-  return fastHasAttribute(disabledAttr);
+bool HTMLOptGroupElement::IsDisabledFormControl() const {
+  return FastHasAttribute(disabledAttr);
 }
 
-void HTMLOptGroupElement::parseAttribute(
+void HTMLOptGroupElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  HTMLElement::parseAttribute(params);
+  HTMLElement::ParseAttribute(params);
 
   if (params.name == disabledAttr) {
-    pseudoStateChanged(CSSSelector::PseudoDisabled);
-    pseudoStateChanged(CSSSelector::PseudoEnabled);
+    PseudoStateChanged(CSSSelector::kPseudoDisabled);
+    PseudoStateChanged(CSSSelector::kPseudoEnabled);
   } else if (params.name == labelAttr) {
-    updateGroupLabel();
+    UpdateGroupLabel();
   }
 }
 
-bool HTMLOptGroupElement::supportsFocus() const {
-  HTMLSelectElement* select = ownerSelectElement();
-  if (select && select->usesMenuList())
+bool HTMLOptGroupElement::SupportsFocus() const {
+  HTMLSelectElement* select = OwnerSelectElement();
+  if (select && select->UsesMenuList())
     return false;
-  return HTMLElement::supportsFocus();
+  return HTMLElement::SupportsFocus();
 }
 
-bool HTMLOptGroupElement::matchesEnabledPseudoClass() const {
-  return !isDisabledFormControl();
+bool HTMLOptGroupElement::MatchesEnabledPseudoClass() const {
+  return !IsDisabledFormControl();
 }
 
-Node::InsertionNotificationRequest HTMLOptGroupElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLElement::insertedInto(insertionPoint);
-  if (HTMLSelectElement* select = ownerSelectElement()) {
-    if (insertionPoint == select)
-      select->optGroupInsertedOrRemoved(*this);
+Node::InsertionNotificationRequest HTMLOptGroupElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
+  if (HTMLSelectElement* select = OwnerSelectElement()) {
+    if (insertion_point == select)
+      select->OptGroupInsertedOrRemoved(*this);
   }
-  return InsertionDone;
+  return kInsertionDone;
 }
 
-void HTMLOptGroupElement::removedFrom(ContainerNode* insertionPoint) {
-  if (isHTMLSelectElement(*insertionPoint)) {
+void HTMLOptGroupElement::RemovedFrom(ContainerNode* insertion_point) {
+  if (isHTMLSelectElement(*insertion_point)) {
     if (!parentNode())
-      toHTMLSelectElement(insertionPoint)->optGroupInsertedOrRemoved(*this);
+      toHTMLSelectElement(insertion_point)->OptGroupInsertedOrRemoved(*this);
   }
-  HTMLElement::removedFrom(insertionPoint);
+  HTMLElement::RemovedFrom(insertion_point);
 }
 
-String HTMLOptGroupElement::groupLabelText() const {
-  String itemText = getAttribute(labelAttr);
+String HTMLOptGroupElement::GroupLabelText() const {
+  String item_text = getAttribute(labelAttr);
 
   // In WinIE, leading and trailing whitespace is ignored in options and
   // optgroups. We match this behavior.
-  itemText = itemText.stripWhiteSpace();
+  item_text = item_text.StripWhiteSpace();
   // We want to collapse our whitespace too.  This will match other browsers.
-  itemText = itemText.simplifyWhiteSpace();
+  item_text = item_text.SimplifyWhiteSpace();
 
-  return itemText;
+  return item_text;
 }
 
-HTMLSelectElement* HTMLOptGroupElement::ownerSelectElement() const {
+HTMLSelectElement* HTMLOptGroupElement::OwnerSelectElement() const {
   // TODO(tkent): We should return only the parent <select>.
-  return Traversal<HTMLSelectElement>::firstAncestor(*this);
+  return Traversal<HTMLSelectElement>::FirstAncestor(*this);
 }
 
-String HTMLOptGroupElement::defaultToolTip() const {
-  if (HTMLSelectElement* select = ownerSelectElement())
-    return select->defaultToolTip();
+String HTMLOptGroupElement::DefaultToolTip() const {
+  if (HTMLSelectElement* select = OwnerSelectElement())
+    return select->DefaultToolTip();
   return String();
 }
 
-void HTMLOptGroupElement::accessKeyAction(bool) {
-  HTMLSelectElement* select = ownerSelectElement();
+void HTMLOptGroupElement::AccessKeyAction(bool) {
+  HTMLSelectElement* select = OwnerSelectElement();
   // send to the parent to bring focus to the list box
-  if (select && !select->isFocused())
-    select->accessKeyAction(false);
+  if (select && !select->IsFocused())
+    select->AccessKeyAction(false);
 }
 
-void HTMLOptGroupElement::didAddUserAgentShadowRoot(ShadowRoot& root) {
-  DEFINE_STATIC_LOCAL(AtomicString, labelPadding, ("0 2px 1px 2px"));
-  DEFINE_STATIC_LOCAL(AtomicString, labelMinHeight, ("1.2em"));
-  HTMLDivElement* label = HTMLDivElement::create(document());
+void HTMLOptGroupElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
+  DEFINE_STATIC_LOCAL(AtomicString, label_padding, ("0 2px 1px 2px"));
+  DEFINE_STATIC_LOCAL(AtomicString, label_min_height, ("1.2em"));
+  HTMLDivElement* label = HTMLDivElement::Create(GetDocument());
   label->setAttribute(roleAttr, AtomicString("group"));
   label->setAttribute(aria_labelAttr, AtomicString());
-  label->setInlineStyleProperty(CSSPropertyPadding, labelPadding);
-  label->setInlineStyleProperty(CSSPropertyMinHeight, labelMinHeight);
-  label->setIdAttribute(ShadowElementNames::optGroupLabel());
-  root.appendChild(label);
+  label->SetInlineStyleProperty(CSSPropertyPadding, label_padding);
+  label->SetInlineStyleProperty(CSSPropertyMinHeight, label_min_height);
+  label->SetIdAttribute(ShadowElementNames::OptGroupLabel());
+  root.AppendChild(label);
 
-  HTMLContentElement* content = HTMLContentElement::create(document());
+  HTMLContentElement* content = HTMLContentElement::Create(GetDocument());
   content->setAttribute(selectAttr, "option,hr");
-  root.appendChild(content);
+  root.AppendChild(content);
 }
 
-void HTMLOptGroupElement::updateGroupLabel() {
-  const String& labelText = groupLabelText();
-  HTMLDivElement& label = optGroupLabelElement();
-  label.setTextContent(labelText);
-  label.setAttribute(aria_labelAttr, AtomicString(labelText));
+void HTMLOptGroupElement::UpdateGroupLabel() {
+  const String& label_text = GroupLabelText();
+  HTMLDivElement& label = OptGroupLabelElement();
+  label.setTextContent(label_text);
+  label.setAttribute(aria_labelAttr, AtomicString(label_text));
 }
 
-HTMLDivElement& HTMLOptGroupElement::optGroupLabelElement() const {
-  return *toHTMLDivElementOrDie(userAgentShadowRoot()->getElementById(
-      ShadowElementNames::optGroupLabel()));
+HTMLDivElement& HTMLOptGroupElement::OptGroupLabelElement() const {
+  return *toHTMLDivElementOrDie(UserAgentShadowRoot()->GetElementById(
+      ShadowElementNames::OptGroupLabel()));
 }
 
 }  // namespace blink

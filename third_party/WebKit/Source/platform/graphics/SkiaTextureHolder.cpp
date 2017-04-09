@@ -16,78 +16,78 @@ namespace blink {
 
 namespace {
 
-void releaseImage(sk_sp<SkImage>&& image,
-                  std::unique_ptr<gpu::SyncToken>&& syncToken) {
-  if (SharedGpuContext::isValid() && syncToken->HasData())
-    SharedGpuContext::gl()->WaitSyncTokenCHROMIUM(syncToken->GetData());
+void ReleaseImage(sk_sp<SkImage>&& image,
+                  std::unique_ptr<gpu::SyncToken>&& sync_token) {
+  if (SharedGpuContext::IsValid() && sync_token->HasData())
+    SharedGpuContext::Gl()->WaitSyncTokenCHROMIUM(sync_token->GetData());
   image.reset();
 }
 
 }  // namespace
 
 SkiaTextureHolder::SkiaTextureHolder(sk_sp<SkImage> image)
-    : m_image(std::move(image)),
-      m_sharedContextId(SharedGpuContext::contextId()) {}
+    : image_(std::move(image)),
+      shared_context_id_(SharedGpuContext::ContextId()) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
-    std::unique_ptr<TextureHolder> textureHolder) {
-  DCHECK(textureHolder->isMailboxTextureHolder());
-  const gpu::Mailbox mailbox = textureHolder->mailbox();
-  const gpu::SyncToken syncToken = textureHolder->syncToken();
-  const IntSize mailboxSize = textureHolder->size();
+    std::unique_ptr<TextureHolder> texture_holder) {
+  DCHECK(texture_holder->IsMailboxTextureHolder());
+  const gpu::Mailbox mailbox = texture_holder->GetMailbox();
+  const gpu::SyncToken sync_token = texture_holder->GetSyncToken();
+  const IntSize mailbox_size = texture_holder->size();
 
-  gpu::gles2::GLES2Interface* sharedGL = SharedGpuContext::gl();
-  GrContext* sharedGrContext = SharedGpuContext::gr();
-  DCHECK(sharedGL &&
-         sharedGrContext);  // context isValid already checked in callers
+  gpu::gles2::GLES2Interface* shared_gl = SharedGpuContext::Gl();
+  GrContext* shared_gr_context = SharedGpuContext::Gr();
+  DCHECK(shared_gl &&
+         shared_gr_context);  // context isValid already checked in callers
 
-  sharedGL->WaitSyncTokenCHROMIUM(syncToken.GetConstData());
-  GLuint sharedContextTextureId =
-      sharedGL->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-  GrGLTextureInfo textureInfo;
-  textureInfo.fTarget = GL_TEXTURE_2D;
-  textureInfo.fID = sharedContextTextureId;
-  GrBackendTextureDesc backendTexture;
-  backendTexture.fOrigin = kBottomLeft_GrSurfaceOrigin;
-  backendTexture.fWidth = mailboxSize.width();
-  backendTexture.fHeight = mailboxSize.height();
-  backendTexture.fConfig = kSkia8888_GrPixelConfig;
-  backendTexture.fTextureHandle =
-      skia::GrGLTextureInfoToGrBackendObject(textureInfo);
+  shared_gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  GLuint shared_context_texture_id =
+      shared_gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  GrGLTextureInfo texture_info;
+  texture_info.fTarget = GL_TEXTURE_2D;
+  texture_info.fID = shared_context_texture_id;
+  GrBackendTextureDesc backend_texture;
+  backend_texture.fOrigin = kBottomLeft_GrSurfaceOrigin;
+  backend_texture.fWidth = mailbox_size.Width();
+  backend_texture.fHeight = mailbox_size.Height();
+  backend_texture.fConfig = kSkia8888_GrPixelConfig;
+  backend_texture.fTextureHandle =
+      skia::GrGLTextureInfoToGrBackendObject(texture_info);
 
-  sk_sp<SkImage> newImage =
-      SkImage::MakeFromAdoptedTexture(sharedGrContext, backendTexture);
-  releaseImageThreadSafe();
-  m_image = newImage;
-  m_sharedContextId = SharedGpuContext::contextId();
+  sk_sp<SkImage> new_image =
+      SkImage::MakeFromAdoptedTexture(shared_gr_context, backend_texture);
+  ReleaseImageThreadSafe();
+  image_ = new_image;
+  shared_context_id_ = SharedGpuContext::ContextId();
 }
 
 SkiaTextureHolder::~SkiaTextureHolder() {
-  releaseImageThreadSafe();
+  ReleaseImageThreadSafe();
 }
 
-unsigned SkiaTextureHolder::sharedContextId() {
-  return m_sharedContextId;
+unsigned SkiaTextureHolder::SharedContextId() {
+  return shared_context_id_;
 }
 
-void SkiaTextureHolder::releaseImageThreadSafe() {
+void SkiaTextureHolder::ReleaseImageThreadSafe() {
   // If m_image belongs to a GrContext that is on another thread, it
   // must be released on that thread.
-  if (textureThreadTaskRunner() && m_image && wasTransferred() &&
-      SharedGpuContext::isValid()) {
-    gpu::gles2::GLES2Interface* sharedGL = SharedGpuContext::gl();
-    std::unique_ptr<gpu::SyncToken> releaseSyncToken(new gpu::SyncToken);
-    const GLuint64 fenceSync = sharedGL->InsertFenceSyncCHROMIUM();
-    sharedGL->Flush();
-    sharedGL->GenSyncTokenCHROMIUM(fenceSync, releaseSyncToken->GetData());
-    textureThreadTaskRunner()->postTask(
+  if (TextureThreadTaskRunner() && image_ && WasTransferred() &&
+      SharedGpuContext::IsValid()) {
+    gpu::gles2::GLES2Interface* shared_gl = SharedGpuContext::Gl();
+    std::unique_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
+    const GLuint64 fence_sync = shared_gl->InsertFenceSyncCHROMIUM();
+    shared_gl->Flush();
+    shared_gl->GenSyncTokenCHROMIUM(fence_sync, release_sync_token->GetData());
+    TextureThreadTaskRunner()->PostTask(
         BLINK_FROM_HERE,
-        crossThreadBind(&releaseImage, WTF::passed(std::move(m_image)),
-                        WTF::passed(std::move(releaseSyncToken))));
+        CrossThreadBind(&ReleaseImage, WTF::Passed(std::move(image_)),
+                        WTF::Passed(std::move(release_sync_token))));
   }
-  m_image = nullptr;
-  setWasTransferred(false);
-  setTextureThreadTaskRunner(nullptr);
+  image_ = nullptr;
+  SetWasTransferred(false);
+  SetTextureThreadTaskRunner(nullptr);
 }
 
 }  // namespace blink

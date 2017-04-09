@@ -47,33 +47,31 @@ class PLATFORM_EXPORT CachingWordShaper final {
   WTF_MAKE_NONCOPYABLE(CachingWordShaper);
 
  public:
-  explicit CachingWordShaper(const Font& font) : m_font(font) {}
+  explicit CachingWordShaper(const Font& font) : font_(font) {}
   ~CachingWordShaper() {}
 
-  float width(const TextRun&,
-              HashSet<const SimpleFontData*>* fallbackFonts,
-              FloatRect* glyphBounds);
-  int offsetForPosition(const TextRun&,
-                        float targetX,
-                        bool includePartialGlyphs);
+  float Width(const TextRun&,
+              HashSet<const SimpleFontData*>* fallback_fonts,
+              FloatRect* glyph_bounds);
+  int OffsetForPosition(const TextRun&,
+                        float target_x,
+                        bool include_partial_glyphs);
 
-  float fillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&);
-  void fillTextEmphasisGlyphs(const TextRunPaintInfo&,
-                              const GlyphData& emphasisData,
+  float FillGlyphs(const TextRunPaintInfo&, ShapeResultBloberizer&);
+  void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
+                              const GlyphData& emphasis_data,
                               ShapeResultBloberizer&);
-  CharacterRange getCharacterRange(const TextRun&,
-                                   unsigned from,
-                                   unsigned to);
-  Vector<CharacterRange> individualCharacterRanges(const TextRun&);
+  CharacterRange GetCharacterRange(const TextRun&, unsigned from, unsigned to);
+  Vector<CharacterRange> IndividualCharacterRanges(const TextRun&);
 
-  Vector<ShapeResultBuffer::RunFontData> runFontData(const TextRun&) const;
+  Vector<ShapeResultBuffer::RunFontData> GetRunFontData(const TextRun&) const;
 
-  GlyphData emphasisMarkGlyphData(const TextRun&) const;
+  GlyphData EmphasisMarkGlyphData(const TextRun&) const;
 
  private:
-  ShapeCache* shapeCache() const;
+  ShapeCache* GetShapeCache() const;
 
-  const Font& m_font;
+  const Font& font_;
 };
 
 }  // namespace blink

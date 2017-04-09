@@ -287,17 +287,17 @@ blink::WebServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     const {
   switch (provider_type_) {
     case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-      return blink::WebServiceWorkerClientTypeWindow;
+      return blink::kWebServiceWorkerClientTypeWindow;
     case SERVICE_WORKER_PROVIDER_FOR_WORKER:
-      return blink::WebServiceWorkerClientTypeWorker;
+      return blink::kWebServiceWorkerClientTypeWorker;
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
-      return blink::WebServiceWorkerClientTypeSharedWorker;
+      return blink::kWebServiceWorkerClientTypeSharedWorker;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << provider_type_;
   }
   NOTREACHED() << provider_type_;
-  return blink::WebServiceWorkerClientTypeWindow;
+  return blink::kWebServiceWorkerClientTypeWindow;
 }
 
 void ServiceWorkerProviderHost::AssociateRegistration(

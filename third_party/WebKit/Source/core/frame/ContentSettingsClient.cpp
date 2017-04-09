@@ -16,114 +16,115 @@ namespace blink {
 
 ContentSettingsClient::ContentSettingsClient() = default;
 
-bool ContentSettingsClient::allowDatabase(const String& name,
-                                          const String& displayName,
-                                          unsigned estimatedSize) {
-  if (m_client)
-    return m_client->allowDatabase(name, displayName, estimatedSize);
+bool ContentSettingsClient::AllowDatabase(const String& name,
+                                          const String& display_name,
+                                          unsigned estimated_size) {
+  if (client_)
+    return client_->AllowDatabase(name, display_name, estimated_size);
   return true;
 }
 
-bool ContentSettingsClient::allowIndexedDB(const String& name,
-                                           SecurityOrigin* securityOrigin) {
-  if (m_client)
-    return m_client->allowIndexedDB(name, WebSecurityOrigin(securityOrigin));
+bool ContentSettingsClient::AllowIndexedDB(const String& name,
+                                           SecurityOrigin* security_origin) {
+  if (client_)
+    return client_->AllowIndexedDB(name, WebSecurityOrigin(security_origin));
   return true;
 }
 
-bool ContentSettingsClient::requestFileSystemAccessSync() {
-  if (m_client)
-    return m_client->requestFileSystemAccessSync();
+bool ContentSettingsClient::RequestFileSystemAccessSync() {
+  if (client_)
+    return client_->RequestFileSystemAccessSync();
   return true;
 }
 
-void ContentSettingsClient::requestFileSystemAccessAsync(
+void ContentSettingsClient::RequestFileSystemAccessAsync(
     std::unique_ptr<ContentSettingCallbacks> callbacks) {
-  if (m_client)
-    m_client->requestFileSystemAccessAsync(std::move(callbacks));
+  if (client_)
+    client_->RequestFileSystemAccessAsync(std::move(callbacks));
   else
-    callbacks->onAllowed();
+    callbacks->OnAllowed();
 }
 
-bool ContentSettingsClient::allowScript(bool enabledPerSettings) {
-  if (m_client)
-    return m_client->allowScript(enabledPerSettings);
-  return enabledPerSettings;
+bool ContentSettingsClient::AllowScript(bool enabled_per_settings) {
+  if (client_)
+    return client_->AllowScript(enabled_per_settings);
+  return enabled_per_settings;
 }
 
-bool ContentSettingsClient::allowScriptFromSource(bool enabledPerSettings,
-                                                  const KURL& scriptURL) {
-  if (m_client)
-    return m_client->allowScriptFromSource(enabledPerSettings, scriptURL);
-  return enabledPerSettings;
+bool ContentSettingsClient::AllowScriptFromSource(bool enabled_per_settings,
+                                                  const KURL& script_url) {
+  if (client_)
+    return client_->AllowScriptFromSource(enabled_per_settings, script_url);
+  return enabled_per_settings;
 }
 
-bool ContentSettingsClient::allowPlugins(bool enabledPerSettings) {
-  if (m_client)
-    return m_client->allowPlugins(enabledPerSettings);
-  return enabledPerSettings;
+bool ContentSettingsClient::AllowPlugins(bool enabled_per_settings) {
+  if (client_)
+    return client_->AllowPlugins(enabled_per_settings);
+  return enabled_per_settings;
 }
 
-bool ContentSettingsClient::allowImage(bool enabledPerSettings,
-                                       const KURL& imageURL) {
-  if (m_client)
-    return m_client->allowImage(enabledPerSettings, imageURL);
-  return enabledPerSettings;
+bool ContentSettingsClient::AllowImage(bool enabled_per_settings,
+                                       const KURL& image_url) {
+  if (client_)
+    return client_->AllowImage(enabled_per_settings, image_url);
+  return enabled_per_settings;
 }
 
-bool ContentSettingsClient::allowReadFromClipboard(bool defaultValue) {
-  if (m_client)
-    return m_client->allowReadFromClipboard(defaultValue);
-  return defaultValue;
+bool ContentSettingsClient::AllowReadFromClipboard(bool default_value) {
+  if (client_)
+    return client_->AllowReadFromClipboard(default_value);
+  return default_value;
 }
 
-bool ContentSettingsClient::allowWriteToClipboard(bool defaultValue) {
-  if (m_client)
-    return m_client->allowWriteToClipboard(defaultValue);
-  return defaultValue;
+bool ContentSettingsClient::AllowWriteToClipboard(bool default_value) {
+  if (client_)
+    return client_->AllowWriteToClipboard(default_value);
+  return default_value;
 }
 
-bool ContentSettingsClient::allowStorage(StorageType type) {
-  if (m_client)
-    return m_client->allowStorage(type == StorageType::kLocal);
+bool ContentSettingsClient::AllowStorage(StorageType type) {
+  if (client_)
+    return client_->AllowStorage(type == StorageType::kLocal);
   return true;
 }
 
-bool ContentSettingsClient::allowRunningInsecureContent(bool enabledPerSettings,
-                                                        SecurityOrigin* origin,
-                                                        const KURL& url) {
-  if (m_client) {
-    return m_client->allowRunningInsecureContent(
-        enabledPerSettings, WebSecurityOrigin(origin), url);
+bool ContentSettingsClient::AllowRunningInsecureContent(
+    bool enabled_per_settings,
+    SecurityOrigin* origin,
+    const KURL& url) {
+  if (client_) {
+    return client_->AllowRunningInsecureContent(enabled_per_settings,
+                                                WebSecurityOrigin(origin), url);
   }
-  return enabledPerSettings;
+  return enabled_per_settings;
 }
 
-bool ContentSettingsClient::allowMutationEvents(bool defaultValue) {
-  if (m_client)
-    return m_client->allowMutationEvents(defaultValue);
-  return defaultValue;
+bool ContentSettingsClient::AllowMutationEvents(bool default_value) {
+  if (client_)
+    return client_->AllowMutationEvents(default_value);
+  return default_value;
 }
 
-bool ContentSettingsClient::allowAutoplay(bool defaultValue) {
-  if (m_client)
-    return m_client->allowAutoplay(defaultValue);
-  return defaultValue;
+bool ContentSettingsClient::AllowAutoplay(bool default_value) {
+  if (client_)
+    return client_->AllowAutoplay(default_value);
+  return default_value;
 }
 
-void ContentSettingsClient::passiveInsecureContentFound(const KURL& url) {
-  if (m_client)
-    return m_client->passiveInsecureContentFound(url);
+void ContentSettingsClient::PassiveInsecureContentFound(const KURL& url) {
+  if (client_)
+    return client_->PassiveInsecureContentFound(url);
 }
 
-void ContentSettingsClient::didNotAllowScript() {
-  if (m_client)
-    m_client->didNotAllowScript();
+void ContentSettingsClient::DidNotAllowScript() {
+  if (client_)
+    client_->DidNotAllowScript();
 }
 
-void ContentSettingsClient::didNotAllowPlugins() {
-  if (m_client)
-    m_client->didNotAllowPlugins();
+void ContentSettingsClient::DidNotAllowPlugins() {
+  if (client_)
+    client_->DidNotAllowPlugins();
 }
 
 }  // namespace blink

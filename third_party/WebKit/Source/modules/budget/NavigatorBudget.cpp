@@ -13,38 +13,38 @@ NavigatorBudget::NavigatorBudget(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
 // static
-const char* NavigatorBudget::supplementName() {
+const char* NavigatorBudget::SupplementName() {
   return "NavigatorBudget";
 }
 
 // static
-NavigatorBudget& NavigatorBudget::from(Navigator& navigator) {
+NavigatorBudget& NavigatorBudget::From(Navigator& navigator) {
   // Get the unique NavigatorBudget associated with this navigator.
-  NavigatorBudget* navigatorBudget = static_cast<NavigatorBudget*>(
-      Supplement<Navigator>::from(navigator, supplementName()));
-  if (!navigatorBudget) {
+  NavigatorBudget* navigator_budget = static_cast<NavigatorBudget*>(
+      Supplement<Navigator>::From(navigator, SupplementName()));
+  if (!navigator_budget) {
     // If there isn't one already, create it now and associate it.
-    navigatorBudget = new NavigatorBudget(navigator);
-    Supplement<Navigator>::provideTo(navigator, supplementName(),
-                                     navigatorBudget);
+    navigator_budget = new NavigatorBudget(navigator);
+    Supplement<Navigator>::ProvideTo(navigator, SupplementName(),
+                                     navigator_budget);
   }
-  return *navigatorBudget;
+  return *navigator_budget;
 }
 
 BudgetService* NavigatorBudget::budget() {
-  if (!m_budget)
-    m_budget = BudgetService::create();
-  return m_budget.get();
+  if (!budget_)
+    budget_ = BudgetService::Create();
+  return budget_.Get();
 }
 
 // static
 BudgetService* NavigatorBudget::budget(Navigator& navigator) {
-  return NavigatorBudget::from(navigator).budget();
+  return NavigatorBudget::From(navigator).budget();
 }
 
 DEFINE_TRACE(NavigatorBudget) {
-  visitor->trace(m_budget);
-  Supplement<Navigator>::trace(visitor);
+  visitor->Trace(budget_);
+  Supplement<Navigator>::Trace(visitor);
 }
 
 }  // namespace blink

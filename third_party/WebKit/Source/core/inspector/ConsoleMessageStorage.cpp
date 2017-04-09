@@ -9,40 +9,40 @@
 
 namespace blink {
 
-static const unsigned maxConsoleMessageCount = 1000;
+static const unsigned kMaxConsoleMessageCount = 1000;
 
-ConsoleMessageStorage::ConsoleMessageStorage() : m_expiredCount(0) {}
+ConsoleMessageStorage::ConsoleMessageStorage() : expired_count_(0) {}
 
-void ConsoleMessageStorage::addConsoleMessage(ExecutionContext* context,
+void ConsoleMessageStorage::AddConsoleMessage(ExecutionContext* context,
                                               ConsoleMessage* message) {
   probe::consoleMessageAdded(context, message);
-  DCHECK(m_messages.size() <= maxConsoleMessageCount);
-  if (m_messages.size() == maxConsoleMessageCount) {
-    ++m_expiredCount;
-    m_messages.pop_front();
+  DCHECK(messages_.size() <= kMaxConsoleMessageCount);
+  if (messages_.size() == kMaxConsoleMessageCount) {
+    ++expired_count_;
+    messages_.pop_front();
   }
-  m_messages.push_back(message);
+  messages_.push_back(message);
 }
 
-void ConsoleMessageStorage::clear() {
-  m_messages.clear();
-  m_expiredCount = 0;
+void ConsoleMessageStorage::Clear() {
+  messages_.Clear();
+  expired_count_ = 0;
 }
 
 size_t ConsoleMessageStorage::size() const {
-  return m_messages.size();
+  return messages_.size();
 }
 
 ConsoleMessage* ConsoleMessageStorage::at(size_t index) const {
-  return m_messages[index].get();
+  return messages_[index].Get();
 }
 
-int ConsoleMessageStorage::expiredCount() const {
-  return m_expiredCount;
+int ConsoleMessageStorage::ExpiredCount() const {
+  return expired_count_;
 }
 
 DEFINE_TRACE(ConsoleMessageStorage) {
-  visitor->trace(m_messages);
+  visitor->Trace(messages_);
 }
 
 }  // namespace blink

@@ -17,10 +17,10 @@ class CORE_EXPORT StyleValueFactory {
   STATIC_ONLY(StyleValueFactory);
 
  public:
-  static CSSStyleValueVector cssValueToStyleValueVector(CSSPropertyID,
+  static CSSStyleValueVector CssValueToStyleValueVector(CSSPropertyID,
                                                         const CSSValue&);
   // If you don't have complex CSS properties, use this one.
-  static CSSStyleValueVector cssValueToStyleValueVector(const CSSValue&);
+  static CSSStyleValueVector CssValueToStyleValueVector(const CSSValue&);
 };
 
 }  // namespace blink

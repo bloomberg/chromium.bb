@@ -11,193 +11,194 @@ namespace blink {
 class PositionTest : public EditingTestBase {};
 
 TEST_F(PositionTest, NodeAsRangeLastNodeNull) {
-  EXPECT_EQ(nullptr, Position().nodeAsRangeLastNode());
-  EXPECT_EQ(nullptr, PositionInFlatTree().nodeAsRangeLastNode());
+  EXPECT_EQ(nullptr, Position().NodeAsRangeLastNode());
+  EXPECT_EQ(nullptr, PositionInFlatTree().NodeAsRangeLastNode());
 }
 
 TEST_F(PositionTest, editingPositionOfWithEditingIgnoresContent) {
-  const char* bodyContent =
+  const char* body_content =
       "<textarea id=textarea></textarea><a id=child1>1</a><b id=child2>2</b>";
-  setBodyContent(bodyContent);
-  Node* textarea = document().getElementById("textarea");
+  SetBodyContent(body_content);
+  Node* textarea = GetDocument().GetElementById("textarea");
 
-  EXPECT_EQ(Position::beforeNode(textarea),
-            Position::editingPositionOf(textarea, 0));
-  EXPECT_EQ(Position::afterNode(textarea),
-            Position::editingPositionOf(textarea, 1));
-  EXPECT_EQ(Position::afterNode(textarea),
-            Position::editingPositionOf(textarea, 2));
+  EXPECT_EQ(Position::BeforeNode(textarea),
+            Position::EditingPositionOf(textarea, 0));
+  EXPECT_EQ(Position::AfterNode(textarea),
+            Position::EditingPositionOf(textarea, 1));
+  EXPECT_EQ(Position::AfterNode(textarea),
+            Position::EditingPositionOf(textarea, 2));
 
   // Change DOM tree to
   // <textarea id=textarea><a id=child1>1</a><b id=child2>2</b></textarea>
-  Node* child1 = document().getElementById("child1");
-  Node* child2 = document().getElementById("child2");
+  Node* child1 = GetDocument().GetElementById("child1");
+  Node* child2 = GetDocument().GetElementById("child2");
   textarea->appendChild(child1);
   textarea->appendChild(child2);
 
-  EXPECT_EQ(Position::beforeNode(textarea),
-            Position::editingPositionOf(textarea, 0));
-  EXPECT_EQ(Position::afterNode(textarea),
-            Position::editingPositionOf(textarea, 1));
-  EXPECT_EQ(Position::afterNode(textarea),
-            Position::editingPositionOf(textarea, 2));
-  EXPECT_EQ(Position::afterNode(textarea),
-            Position::editingPositionOf(textarea, 3));
+  EXPECT_EQ(Position::BeforeNode(textarea),
+            Position::EditingPositionOf(textarea, 0));
+  EXPECT_EQ(Position::AfterNode(textarea),
+            Position::EditingPositionOf(textarea, 1));
+  EXPECT_EQ(Position::AfterNode(textarea),
+            Position::EditingPositionOf(textarea, 2));
+  EXPECT_EQ(Position::AfterNode(textarea),
+            Position::EditingPositionOf(textarea, 3));
 }
 
 TEST_F(PositionTest, NodeAsRangeLastNode) {
-  const char* bodyContent = "<p id='p1'>11</p><p id='p2'></p><p id='p3'>33</p>";
-  setBodyContent(bodyContent);
-  Node* p1 = document().getElementById("p1");
-  Node* p2 = document().getElementById("p2");
-  Node* p3 = document().getElementById("p3");
-  Node* body = EditingStrategy::parent(*p1);
-  Node* t1 = EditingStrategy::firstChild(*p1);
-  Node* t3 = EditingStrategy::firstChild(*p3);
+  const char* body_content =
+      "<p id='p1'>11</p><p id='p2'></p><p id='p3'>33</p>";
+  SetBodyContent(body_content);
+  Node* p1 = GetDocument().GetElementById("p1");
+  Node* p2 = GetDocument().GetElementById("p2");
+  Node* p3 = GetDocument().GetElementById("p3");
+  Node* body = EditingStrategy::Parent(*p1);
+  Node* t1 = EditingStrategy::FirstChild(*p1);
+  Node* t3 = EditingStrategy::FirstChild(*p3);
 
-  EXPECT_EQ(body, Position::inParentBeforeNode(*p1).nodeAsRangeLastNode());
-  EXPECT_EQ(t1, Position::inParentBeforeNode(*p2).nodeAsRangeLastNode());
-  EXPECT_EQ(p2, Position::inParentBeforeNode(*p3).nodeAsRangeLastNode());
-  EXPECT_EQ(t1, Position::inParentAfterNode(*p1).nodeAsRangeLastNode());
-  EXPECT_EQ(p2, Position::inParentAfterNode(*p2).nodeAsRangeLastNode());
-  EXPECT_EQ(t3, Position::inParentAfterNode(*p3).nodeAsRangeLastNode());
-  EXPECT_EQ(t3, Position::afterNode(p3).nodeAsRangeLastNode());
+  EXPECT_EQ(body, Position::InParentBeforeNode(*p1).NodeAsRangeLastNode());
+  EXPECT_EQ(t1, Position::InParentBeforeNode(*p2).NodeAsRangeLastNode());
+  EXPECT_EQ(p2, Position::InParentBeforeNode(*p3).NodeAsRangeLastNode());
+  EXPECT_EQ(t1, Position::InParentAfterNode(*p1).NodeAsRangeLastNode());
+  EXPECT_EQ(p2, Position::InParentAfterNode(*p2).NodeAsRangeLastNode());
+  EXPECT_EQ(t3, Position::InParentAfterNode(*p3).NodeAsRangeLastNode());
+  EXPECT_EQ(t3, Position::AfterNode(p3).NodeAsRangeLastNode());
 
   EXPECT_EQ(body,
-            PositionInFlatTree::inParentBeforeNode(*p1).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentBeforeNode(*p1).NodeAsRangeLastNode());
   EXPECT_EQ(t1,
-            PositionInFlatTree::inParentBeforeNode(*p2).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentBeforeNode(*p2).NodeAsRangeLastNode());
   EXPECT_EQ(p2,
-            PositionInFlatTree::inParentBeforeNode(*p3).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentBeforeNode(*p3).NodeAsRangeLastNode());
   EXPECT_EQ(t1,
-            PositionInFlatTree::inParentAfterNode(*p1).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentAfterNode(*p1).NodeAsRangeLastNode());
   EXPECT_EQ(p2,
-            PositionInFlatTree::inParentAfterNode(*p2).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentAfterNode(*p2).NodeAsRangeLastNode());
   EXPECT_EQ(t3,
-            PositionInFlatTree::inParentAfterNode(*p3).nodeAsRangeLastNode());
-  EXPECT_EQ(t3, PositionInFlatTree::afterNode(p3).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentAfterNode(*p3).NodeAsRangeLastNode());
+  EXPECT_EQ(t3, PositionInFlatTree::AfterNode(p3).NodeAsRangeLastNode());
 }
 
 TEST_F(PositionTest, NodeAsRangeLastNodeShadow) {
-  const char* bodyContent =
+  const char* body_content =
       "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
-  const char* shadowContent =
+  const char* shadow_content =
       "<a id='a'><content select=#two></content><content "
       "select=#one></content></a>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
 
-  Node* host = document().getElementById("host");
-  Node* n1 = document().getElementById("one");
-  Node* n2 = document().getElementById("two");
-  Node* t0 = EditingStrategy::firstChild(*host);
-  Node* t1 = EditingStrategy::firstChild(*n1);
-  Node* t2 = EditingStrategy::firstChild(*n2);
-  Node* t3 = EditingStrategy::lastChild(*host);
-  Node* a = shadowRoot->getElementById("a");
+  Node* host = GetDocument().GetElementById("host");
+  Node* n1 = GetDocument().GetElementById("one");
+  Node* n2 = GetDocument().GetElementById("two");
+  Node* t0 = EditingStrategy::FirstChild(*host);
+  Node* t1 = EditingStrategy::FirstChild(*n1);
+  Node* t2 = EditingStrategy::FirstChild(*n2);
+  Node* t3 = EditingStrategy::LastChild(*host);
+  Node* a = shadow_root->GetElementById("a");
 
-  EXPECT_EQ(t0, Position::inParentBeforeNode(*n1).nodeAsRangeLastNode());
-  EXPECT_EQ(t1, Position::inParentBeforeNode(*n2).nodeAsRangeLastNode());
-  EXPECT_EQ(t1, Position::inParentAfterNode(*n1).nodeAsRangeLastNode());
-  EXPECT_EQ(t2, Position::inParentAfterNode(*n2).nodeAsRangeLastNode());
-  EXPECT_EQ(t3, Position::afterNode(host).nodeAsRangeLastNode());
+  EXPECT_EQ(t0, Position::InParentBeforeNode(*n1).NodeAsRangeLastNode());
+  EXPECT_EQ(t1, Position::InParentBeforeNode(*n2).NodeAsRangeLastNode());
+  EXPECT_EQ(t1, Position::InParentAfterNode(*n1).NodeAsRangeLastNode());
+  EXPECT_EQ(t2, Position::InParentAfterNode(*n2).NodeAsRangeLastNode());
+  EXPECT_EQ(t3, Position::AfterNode(host).NodeAsRangeLastNode());
 
   EXPECT_EQ(t2,
-            PositionInFlatTree::inParentBeforeNode(*n1).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentBeforeNode(*n1).NodeAsRangeLastNode());
   EXPECT_EQ(a,
-            PositionInFlatTree::inParentBeforeNode(*n2).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentBeforeNode(*n2).NodeAsRangeLastNode());
   EXPECT_EQ(t1,
-            PositionInFlatTree::inParentAfterNode(*n1).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentAfterNode(*n1).NodeAsRangeLastNode());
   EXPECT_EQ(t2,
-            PositionInFlatTree::inParentAfterNode(*n2).nodeAsRangeLastNode());
-  EXPECT_EQ(t1, PositionInFlatTree::afterNode(host).nodeAsRangeLastNode());
+            PositionInFlatTree::InParentAfterNode(*n2).NodeAsRangeLastNode());
+  EXPECT_EQ(t1, PositionInFlatTree::AfterNode(host).NodeAsRangeLastNode());
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithActiveInsertionPoint) {
-  const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
-  const char* shadowContent =
+  const char* body_content = "<p id='host'>00<b id='one'>11</b>22</p>";
+  const char* shadow_content =
       "<a id='a'><content select=#one "
       "id='content'></content><content></content></a>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-  Element* anchor = shadowRoot->getElementById("a");
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
+  Element* anchor = shadow_root->GetElementById("a");
 
   EXPECT_EQ(PositionInFlatTree(anchor, 0),
-            toPositionInFlatTree(Position(anchor, 0)));
+            ToPositionInFlatTree(Position(anchor, 0)));
   EXPECT_EQ(PositionInFlatTree(anchor, 1),
-            toPositionInFlatTree(Position(anchor, 1)));
-  EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(Position(anchor, 2)));
+            ToPositionInFlatTree(Position(anchor, 1)));
+  EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(Position(anchor, 2)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithInactiveInsertionPoint) {
-  const char* bodyContent = "<p id='p'><content></content></p>";
-  setBodyContent(bodyContent);
-  Element* anchor = document().getElementById("p");
+  const char* body_content = "<p id='p'><content></content></p>";
+  SetBodyContent(body_content);
+  Element* anchor = GetDocument().GetElementById("p");
 
   EXPECT_EQ(PositionInFlatTree(anchor, 0),
-            toPositionInFlatTree(Position(anchor, 0)));
-  EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(Position(anchor, 1)));
+            ToPositionInFlatTree(Position(anchor, 0)));
+  EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(Position(anchor, 1)));
 }
 
 // This test comes from "editing/style/block-style-progress-crash.html".
 TEST_F(PositionTest, ToPositionInFlatTreeWithNotDistributed) {
-  setBodyContent("<progress id=sample>foo</progress>");
-  Element* sample = document().getElementById("sample");
+  SetBodyContent("<progress id=sample>foo</progress>");
+  Element* sample = GetDocument().GetElementById("sample");
 
-  EXPECT_EQ(PositionInFlatTree(sample, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(Position(sample, 0)));
+  EXPECT_EQ(PositionInFlatTree(sample, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(Position(sample, 0)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRoot) {
-  const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
-  const char* shadowContent = "<a><content select=#one></content></a>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-  Element* host = document().getElementById("host");
+  const char* body_content = "<p id='host'>00<b id='one'>11</b>22</p>";
+  const char* shadow_content = "<a><content select=#one></content></a>";
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
+  Element* host = GetDocument().GetElementById("host");
 
   EXPECT_EQ(PositionInFlatTree(host, 0),
-            toPositionInFlatTree(Position(shadowRoot, 0)));
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(Position(shadowRoot, 1)));
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(
-                Position(shadowRoot, PositionAnchorType::AfterChildren)));
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::BeforeChildren),
-            toPositionInFlatTree(
-                Position(shadowRoot, PositionAnchorType::BeforeChildren)));
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterAnchor),
-            toPositionInFlatTree(
-                Position(shadowRoot, PositionAnchorType::AfterAnchor)));
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::BeforeAnchor),
-            toPositionInFlatTree(
-                Position(shadowRoot, PositionAnchorType::BeforeAnchor)));
+            ToPositionInFlatTree(Position(shadow_root, 0)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(Position(shadow_root, 1)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(
+                Position(shadow_root, PositionAnchorType::kAfterChildren)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kBeforeChildren),
+            ToPositionInFlatTree(
+                Position(shadow_root, PositionAnchorType::kBeforeChildren)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kAfterAnchor),
+            ToPositionInFlatTree(
+                Position(shadow_root, PositionAnchorType::kAfterAnchor)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kBeforeAnchor),
+            ToPositionInFlatTree(
+                Position(shadow_root, PositionAnchorType::kBeforeAnchor)));
 }
 
 TEST_F(PositionTest,
        ToPositionInFlatTreeWithShadowRootContainingSingleContent) {
-  const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
-  const char* shadowContent = "<content select=#one></content>";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-  Element* host = document().getElementById("host");
+  const char* body_content = "<p id='host'>00<b id='one'>11</b>22</p>";
+  const char* shadow_content = "<content select=#one></content>";
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
+  Element* host = GetDocument().GetElementById("host");
 
   EXPECT_EQ(PositionInFlatTree(host, 0),
-            toPositionInFlatTree(Position(shadowRoot, 0)));
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(Position(shadowRoot, 1)));
+            ToPositionInFlatTree(Position(shadow_root, 0)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(Position(shadow_root, 1)));
 }
 
 TEST_F(PositionTest, ToPositionInFlatTreeWithEmptyShadowRoot) {
-  const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
-  const char* shadowContent = "";
-  setBodyContent(bodyContent);
-  ShadowRoot* shadowRoot = setShadowContent(shadowContent, "host");
-  Element* host = document().getElementById("host");
+  const char* body_content = "<p id='host'>00<b id='one'>11</b>22</p>";
+  const char* shadow_content = "";
+  SetBodyContent(body_content);
+  ShadowRoot* shadow_root = SetShadowContent(shadow_content, "host");
+  Element* host = GetDocument().GetElementById("host");
 
-  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren),
-            toPositionInFlatTree(Position(shadowRoot, 0)));
+  EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::kAfterChildren),
+            ToPositionInFlatTree(Position(shadow_root, 0)));
 }
 
 }  // namespace blink

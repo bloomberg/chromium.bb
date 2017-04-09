@@ -27,8 +27,8 @@ class MockWebAudioDestinationConsumer
  public:
   MockWebAudioDestinationConsumer() {}
   ~MockWebAudioDestinationConsumer() override {}
-  void setFormat(size_t number_of_channels, float sample_rate) override {}
-  void consumeAudio(const blink::WebVector<const float*>&,
+  void SetFormat(size_t number_of_channels, float sample_rate) override {}
+  void ConsumeAudio(const blink::WebVector<const float*>&,
                     size_t number_of_frames) override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockWebAudioDestinationConsumer);
@@ -36,65 +36,65 @@ class MockWebAudioDestinationConsumer
 
 }  // namespace
 
-void MockWebMediaStreamCenter::didEnableMediaStreamTrack(
+void MockWebMediaStreamCenter::DidEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  track.source().setReadyState(blink::WebMediaStreamSource::ReadyStateLive);
+  track.Source().SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
 }
 
-void MockWebMediaStreamCenter::didDisableMediaStreamTrack(
+void MockWebMediaStreamCenter::DidDisableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  track.source().setReadyState(blink::WebMediaStreamSource::ReadyStateMuted);
+  track.Source().SetReadyState(blink::WebMediaStreamSource::kReadyStateMuted);
 }
 
-bool MockWebMediaStreamCenter::didAddMediaStreamTrack(
+bool MockWebMediaStreamCenter::DidAddMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {
   return true;
 }
 
-bool MockWebMediaStreamCenter::didRemoveMediaStreamTrack(
+bool MockWebMediaStreamCenter::DidRemoveMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {
   return true;
 }
 
-void MockWebMediaStreamCenter::didStopLocalMediaStream(
+void MockWebMediaStreamCenter::DidStopLocalMediaStream(
     const blink::WebMediaStream& stream) {
   blink::WebVector<blink::WebMediaStreamTrack> tracks;
-  stream.audioTracks(tracks);
+  stream.AudioTracks(tracks);
   for (size_t i = 0; i < tracks.size(); ++i)
-    tracks[i].source().setReadyState(
-        blink::WebMediaStreamSource::ReadyStateEnded);
-  stream.videoTracks(tracks);
+    tracks[i].Source().SetReadyState(
+        blink::WebMediaStreamSource::kReadyStateEnded);
+  stream.VideoTracks(tracks);
   for (size_t i = 0; i < tracks.size(); ++i)
-    tracks[i].source().setReadyState(
-        blink::WebMediaStreamSource::ReadyStateEnded);
+    tracks[i].Source().SetReadyState(
+        blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
-bool MockWebMediaStreamCenter::didStopMediaStreamTrack(
+bool MockWebMediaStreamCenter::DidStopMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  track.source().setReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
+  track.Source().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
   return true;
 }
 
-void MockWebMediaStreamCenter::didCreateMediaStream(
+void MockWebMediaStreamCenter::DidCreateMediaStream(
     blink::WebMediaStream& stream) {
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  stream.audioTracks(audio_tracks);
+  stream.AudioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    blink::WebMediaStreamSource source = audio_tracks[i].source();
-    if (source.requiresAudioConsumer()) {
+    blink::WebMediaStreamSource source = audio_tracks[i].Source();
+    if (source.RequiresAudioConsumer()) {
       MockWebAudioDestinationConsumer* consumer =
           new MockWebAudioDestinationConsumer();
-      source.addAudioConsumer(consumer);
-      source.removeAudioConsumer(consumer);
+      source.AddAudioConsumer(consumer);
+      source.RemoveAudioConsumer(consumer);
       delete consumer;
     }
   }
 }
 
 blink::WebAudioSourceProvider*
-MockWebMediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
+MockWebMediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   return NULL;
 }

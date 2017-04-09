@@ -45,60 +45,60 @@ class Performance;
 
 class WebPerformance {
  public:
-  ~WebPerformance() { reset(); }
+  ~WebPerformance() { Reset(); }
 
   WebPerformance() {}
 
-  WebPerformance(const WebPerformance& p) { assign(p); }
+  WebPerformance(const WebPerformance& p) { Assign(p); }
 
   WebPerformance& operator=(const WebPerformance& p) {
-    assign(p);
+    Assign(p);
     return *this;
   }
 
-  BLINK_EXPORT void reset();
-  BLINK_EXPORT void assign(const WebPerformance&);
+  BLINK_EXPORT void Reset();
+  BLINK_EXPORT void Assign(const WebPerformance&);
 
   // This only returns one of {Other|Reload|BackForward}.
   // Form submits and link clicks all fall under other.
-  BLINK_EXPORT WebNavigationType navigationType() const;
+  BLINK_EXPORT WebNavigationType GetNavigationType() const;
 
   // These functions return time in seconds (not milliseconds) since the epoch.
-  BLINK_EXPORT double navigationStart() const;
-  BLINK_EXPORT double unloadEventEnd() const;
-  BLINK_EXPORT double redirectStart() const;
-  BLINK_EXPORT double redirectEnd() const;
-  BLINK_EXPORT unsigned short redirectCount() const;
-  BLINK_EXPORT double fetchStart() const;
-  BLINK_EXPORT double domainLookupStart() const;
-  BLINK_EXPORT double domainLookupEnd() const;
-  BLINK_EXPORT double connectStart() const;
-  BLINK_EXPORT double connectEnd() const;
-  BLINK_EXPORT double requestStart() const;
-  BLINK_EXPORT double responseStart() const;
-  BLINK_EXPORT double responseEnd() const;
-  BLINK_EXPORT double domLoading() const;
-  BLINK_EXPORT double domInteractive() const;
-  BLINK_EXPORT double domContentLoadedEventStart() const;
-  BLINK_EXPORT double domContentLoadedEventEnd() const;
-  BLINK_EXPORT double domComplete() const;
-  BLINK_EXPORT double loadEventStart() const;
-  BLINK_EXPORT double loadEventEnd() const;
-  BLINK_EXPORT double firstLayout() const;
-  BLINK_EXPORT double firstPaint() const;
-  BLINK_EXPORT double firstTextPaint() const;
-  BLINK_EXPORT double firstImagePaint() const;
-  BLINK_EXPORT double firstContentfulPaint() const;
-  BLINK_EXPORT double firstMeaningfulPaint() const;
-  BLINK_EXPORT double parseStart() const;
-  BLINK_EXPORT double parseStop() const;
-  BLINK_EXPORT double parseBlockedOnScriptLoadDuration() const;
-  BLINK_EXPORT double parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
-  BLINK_EXPORT double parseBlockedOnScriptExecutionDuration() const;
-  BLINK_EXPORT double parseBlockedOnScriptExecutionFromDocumentWriteDuration()
+  BLINK_EXPORT double NavigationStart() const;
+  BLINK_EXPORT double UnloadEventEnd() const;
+  BLINK_EXPORT double RedirectStart() const;
+  BLINK_EXPORT double RedirectEnd() const;
+  BLINK_EXPORT unsigned short RedirectCount() const;
+  BLINK_EXPORT double FetchStart() const;
+  BLINK_EXPORT double DomainLookupStart() const;
+  BLINK_EXPORT double DomainLookupEnd() const;
+  BLINK_EXPORT double ConnectStart() const;
+  BLINK_EXPORT double ConnectEnd() const;
+  BLINK_EXPORT double RequestStart() const;
+  BLINK_EXPORT double ResponseStart() const;
+  BLINK_EXPORT double ResponseEnd() const;
+  BLINK_EXPORT double DomLoading() const;
+  BLINK_EXPORT double DomInteractive() const;
+  BLINK_EXPORT double DomContentLoadedEventStart() const;
+  BLINK_EXPORT double DomContentLoadedEventEnd() const;
+  BLINK_EXPORT double DomComplete() const;
+  BLINK_EXPORT double LoadEventStart() const;
+  BLINK_EXPORT double LoadEventEnd() const;
+  BLINK_EXPORT double FirstLayout() const;
+  BLINK_EXPORT double FirstPaint() const;
+  BLINK_EXPORT double FirstTextPaint() const;
+  BLINK_EXPORT double FirstImagePaint() const;
+  BLINK_EXPORT double FirstContentfulPaint() const;
+  BLINK_EXPORT double FirstMeaningfulPaint() const;
+  BLINK_EXPORT double ParseStart() const;
+  BLINK_EXPORT double ParseStop() const;
+  BLINK_EXPORT double ParseBlockedOnScriptLoadDuration() const;
+  BLINK_EXPORT double ParseBlockedOnScriptLoadFromDocumentWriteDuration() const;
+  BLINK_EXPORT double ParseBlockedOnScriptExecutionDuration() const;
+  BLINK_EXPORT double ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
-  BLINK_EXPORT double authorStyleSheetParseDurationBeforeFCP() const;
-  BLINK_EXPORT double updateStyleDurationBeforeFCP() const;
+  BLINK_EXPORT double AuthorStyleSheetParseDurationBeforeFCP() const;
+  BLINK_EXPORT double UpdateStyleDurationBeforeFCP() const;
 
 #if BLINK_IMPLEMENTATION
   WebPerformance(Performance*);
@@ -106,7 +106,7 @@ class WebPerformance {
 #endif
 
  private:
-  WebPrivatePtr<Performance> m_private;
+  WebPrivatePtr<Performance> private_;
 };
 
 }  // namespace blink

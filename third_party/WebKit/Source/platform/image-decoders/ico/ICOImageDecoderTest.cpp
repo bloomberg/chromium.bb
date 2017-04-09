@@ -13,79 +13,79 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<ImageDecoder> createDecoder() {
-  return WTF::wrapUnique(
-      new ICOImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                          ColorBehavior::transformToTargetForTesting(),
-                          ImageDecoder::noDecodedImageByteLimit));
+std::unique_ptr<ImageDecoder> CreateDecoder() {
+  return WTF::WrapUnique(
+      new ICOImageDecoder(ImageDecoder::kAlphaNotPremultiplied,
+                          ColorBehavior::TransformToTargetForTesting(),
+                          ImageDecoder::kNoDecodedImageByteLimit));
 }
 }
 
 TEST(ICOImageDecoderTests, trunctedIco) {
   RefPtr<SharedBuffer> data =
-      readFile("/LayoutTests/images/resources/png-in-ico.ico");
-  ASSERT_FALSE(data->isEmpty());
+      ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
+  ASSERT_FALSE(data->IsEmpty());
 
-  RefPtr<SharedBuffer> truncatedData =
-      SharedBuffer::create(data->data(), data->size() / 2);
-  auto decoder = createDecoder();
+  RefPtr<SharedBuffer> truncated_data =
+      SharedBuffer::Create(data->Data(), data->size() / 2);
+  auto decoder = CreateDecoder();
 
-  decoder->setData(truncatedData.get(), false);
-  decoder->frameBufferAtIndex(0);
-  EXPECT_FALSE(decoder->failed());
+  decoder->SetData(truncated_data.Get(), false);
+  decoder->FrameBufferAtIndex(0);
+  EXPECT_FALSE(decoder->Failed());
 
-  decoder->setData(truncatedData.get(), true);
-  decoder->frameBufferAtIndex(0);
-  EXPECT_TRUE(decoder->failed());
+  decoder->SetData(truncated_data.Get(), true);
+  decoder->FrameBufferAtIndex(0);
+  EXPECT_TRUE(decoder->Failed());
 }
 
 TEST(ICOImageDecoderTests, errorInPngInIco) {
   RefPtr<SharedBuffer> data =
-      readFile("/LayoutTests/images/resources/png-in-ico.ico");
-  ASSERT_FALSE(data->isEmpty());
+      ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
+  ASSERT_FALSE(data->IsEmpty());
 
   // Modify the file to have a broken CRC in IHDR.
-  constexpr size_t crcOffset = 22 + 29;
-  constexpr size_t crcSize = 4;
-  RefPtr<SharedBuffer> modifiedData =
-      SharedBuffer::create(data->data(), crcOffset);
-  Vector<char> badCrc(crcSize, 0);
-  modifiedData->append(badCrc);
-  modifiedData->append(data->data() + crcOffset + crcSize,
-                       data->size() - crcOffset - crcSize);
+  constexpr size_t kCrcOffset = 22 + 29;
+  constexpr size_t kCrcSize = 4;
+  RefPtr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kCrcOffset);
+  Vector<char> bad_crc(kCrcSize, 0);
+  modified_data->Append(bad_crc);
+  modified_data->Append(data->Data() + kCrcOffset + kCrcSize,
+                        data->size() - kCrcOffset - kCrcSize);
 
-  auto decoder = createDecoder();
-  decoder->setData(modifiedData.get(), true);
+  auto decoder = CreateDecoder();
+  decoder->SetData(modified_data.Get(), true);
 
   // ICOImageDecoder reports the frame count based on whether enough data has
   // been received according to the icon directory. So even though the
   // embedded PNG is broken, there is enough data to include it in the frame
   // count.
-  EXPECT_EQ(1u, decoder->frameCount());
+  EXPECT_EQ(1u, decoder->FrameCount());
 
-  decoder->frameBufferAtIndex(0);
-  EXPECT_TRUE(decoder->failed());
+  decoder->FrameBufferAtIndex(0);
+  EXPECT_TRUE(decoder->Failed());
 }
 
 TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
-  testByteByByteDecode(&createDecoder,
+  TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/png-in-ico.ico", 1u,
-                       cAnimationNone);
-  testByteByByteDecode(&createDecoder,
+                       kCAnimationNone);
+  TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/2entries.ico", 2u,
-                       cAnimationNone);
-  testByteByByteDecode(&createDecoder,
+                       kCAnimationNone);
+  TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/greenbox-3frames.cur", 3u,
-                       cAnimationNone);
-  testByteByByteDecode(
-      &createDecoder,
+                       kCAnimationNone);
+  TestByteByByteDecode(
+      &CreateDecoder,
       "/LayoutTests/images/resources/icon-without-and-bitmap.ico", 1u,
-      cAnimationNone);
-  testByteByByteDecode(&createDecoder, "/LayoutTests/images/resources/1bit.ico",
-                       1u, cAnimationNone);
-  testByteByByteDecode(&createDecoder,
+      kCAnimationNone);
+  TestByteByByteDecode(&CreateDecoder, "/LayoutTests/images/resources/1bit.ico",
+                       1u, kCAnimationNone);
+  TestByteByByteDecode(&CreateDecoder,
                        "/LayoutTests/images/resources/bug653075.ico", 2u,
-                       cAnimationNone);
+                       kCAnimationNone);
 }
 
 }  // namespace blink

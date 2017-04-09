@@ -23,58 +23,58 @@ namespace blink {
 
 class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
-  static SingleChildLocalFrameClient* create() {
+  static SingleChildLocalFrameClient* Create() {
     return new SingleChildLocalFrameClient();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_child);
-    EmptyLocalFrameClient::trace(visitor);
+    visitor->Trace(child_);
+    EmptyLocalFrameClient::Trace(visitor);
   }
 
   // LocalFrameClient overrides:
-  LocalFrame* firstChild() const override { return m_child.get(); }
-  LocalFrame* createFrame(const FrameLoadRequest&,
+  LocalFrame* FirstChild() const override { return child_.Get(); }
+  LocalFrame* CreateFrame(const FrameLoadRequest&,
                           const AtomicString& name,
                           HTMLFrameOwnerElement*) override;
 
-  void didDetachChild() { m_child = nullptr; }
+  void DidDetachChild() { child_ = nullptr; }
 
  private:
   explicit SingleChildLocalFrameClient() {}
 
-  Member<LocalFrame> m_child;
+  Member<LocalFrame> child_;
 };
 
 class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
-  static LocalFrameClientWithParent* create(LocalFrame* parent) {
+  static LocalFrameClientWithParent* Create(LocalFrame* parent) {
     return new LocalFrameClientWithParent(parent);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_parent);
-    EmptyLocalFrameClient::trace(visitor);
+    visitor->Trace(parent_);
+    EmptyLocalFrameClient::Trace(visitor);
   }
 
   // FrameClient overrides:
-  void detached(FrameDetachType) override;
-  LocalFrame* parent() const override { return m_parent.get(); }
+  void Detached(FrameDetachType) override;
+  LocalFrame* Parent() const override { return parent_.Get(); }
 
  private:
-  explicit LocalFrameClientWithParent(LocalFrame* parent) : m_parent(parent) {}
+  explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
 
-  Member<LocalFrame> m_parent;
+  Member<LocalFrame> parent_;
 };
 
 class RenderingTest : public testing::Test {
   USING_FAST_MALLOC(RenderingTest);
 
  public:
-  virtual FrameSettingOverrideFunction settingOverrider() const {
+  virtual FrameSettingOverrideFunction SettingOverrider() const {
     return nullptr;
   }
-  virtual ChromeClient& chromeClient() const;
+  virtual ChromeClient& GetChromeClient() const;
 
   RenderingTest(LocalFrameClient* = nullptr);
 
@@ -82,42 +82,44 @@ class RenderingTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  Document& document() const { return m_pageHolder->document(); }
-  LayoutView& layoutView() const {
-    return *toLayoutView(
-        LayoutAPIShim::layoutObjectFrom(document().view()->layoutViewItem()));
+  Document& GetDocument() const { return page_holder_->GetDocument(); }
+  LayoutView& GetLayoutView() const {
+    return *ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
+        GetDocument().View()->GetLayoutViewItem()));
   }
 
   // Both sets the inner html and runs the document lifecycle.
-  void setBodyInnerHTML(const String& htmlContent) {
-    document().body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
+  void SetBodyInnerHTML(const String& html_content) {
+    GetDocument().body()->setInnerHTML(html_content, ASSERT_NO_EXCEPTION);
+    GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
-  Document& childDocument() {
-    return *toLocalFrame(m_pageHolder->frame().tree().firstChild())->document();
+  Document& ChildDocument() {
+    return *ToLocalFrame(page_holder_->GetFrame().Tree().FirstChild())
+                ->GetDocument();
   }
 
-  void setChildFrameHTML(const String&);
+  void SetChildFrameHTML(const String&);
 
   // Both enables compositing and runs the document lifecycle.
-  void enableCompositing() {
-    m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
-    document().view()->setParentVisible(true);
-    document().view()->setSelfVisible(true);
-    document().view()->updateAllLifecyclePhases();
+  void EnableCompositing() {
+    page_holder_->GetPage().GetSettings().SetAcceleratedCompositingEnabled(
+        true);
+    GetDocument().View()->SetParentVisible(true);
+    GetDocument().View()->SetSelfVisible(true);
+    GetDocument().View()->UpdateAllLifecyclePhases();
   }
 
-  LayoutObject* getLayoutObjectByElementId(const char* id) const {
-    Node* node = document().getElementById(id);
-    return node ? node->layoutObject() : nullptr;
+  LayoutObject* GetLayoutObjectByElementId(const char* id) const {
+    Node* node = GetDocument().GetElementById(id);
+    return node ? node->GetLayoutObject() : nullptr;
   }
 
-  void loadAhem();
+  void LoadAhem();
 
  private:
-  Persistent<LocalFrameClient> m_localFrameClient;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  Persistent<LocalFrameClient> local_frame_client_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 }  // namespace blink

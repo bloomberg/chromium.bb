@@ -44,39 +44,40 @@ namespace blink {
 
 namespace {
 
-void updateAnimationTiming(Document& document, TimingUpdateReason reason) {
-  document.timeline().serviceAnimations(reason);
+void UpdateAnimationTiming(Document& document, TimingUpdateReason reason) {
+  document.Timeline().ServiceAnimations(reason);
 }
 
 }  // namespace
 
-void DocumentAnimations::updateAnimationTimingForAnimationFrame(
+void DocumentAnimations::UpdateAnimationTimingForAnimationFrame(
     Document& document) {
-  updateAnimationTiming(document, TimingUpdateForAnimationFrame);
+  UpdateAnimationTiming(document, kTimingUpdateForAnimationFrame);
 }
 
-bool DocumentAnimations::needsAnimationTimingUpdate(const Document& document) {
-  return document.timeline().hasOutdatedAnimation() ||
-         document.timeline().needsAnimationTimingUpdate();
+bool DocumentAnimations::NeedsAnimationTimingUpdate(const Document& document) {
+  return document.Timeline().HasOutdatedAnimation() ||
+         document.Timeline().NeedsAnimationTimingUpdate();
 }
 
-void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document) {
-  if (needsAnimationTimingUpdate(document))
-    updateAnimationTiming(document, TimingUpdateOnDemand);
+void DocumentAnimations::UpdateAnimationTimingIfNeeded(Document& document) {
+  if (NeedsAnimationTimingUpdate(document))
+    UpdateAnimationTiming(document, kTimingUpdateOnDemand);
 }
 
-void DocumentAnimations::updateAnimations(
+void DocumentAnimations::UpdateAnimations(
     Document& document,
-    DocumentLifecycle::LifecycleState requiredLifecycleState,
-    Optional<CompositorElementIdSet>& compositedElementIds) {
-  DCHECK(document.lifecycle().state() >= requiredLifecycleState);
+    DocumentLifecycle::LifecycleState required_lifecycle_state,
+    Optional<CompositorElementIdSet>& composited_element_ids) {
+  DCHECK(document.Lifecycle().GetState() >= required_lifecycle_state);
 
-  if (document.compositorPendingAnimations().update(compositedElementIds)) {
-    DCHECK(document.view());
-    document.view()->scheduleAnimation();
+  if (document.GetCompositorPendingAnimations().Update(
+          composited_element_ids)) {
+    DCHECK(document.View());
+    document.View()->ScheduleAnimation();
   }
 
-  document.timeline().scheduleNextService();
+  document.Timeline().ScheduleNextService();
 }
 
 }  // namespace blink

@@ -72,443 +72,449 @@
 
 namespace blink {
 
-PaintLayerCompositor::PaintLayerCompositor(LayoutView& layoutView)
-    : m_layoutView(layoutView),
-      m_compositingReasonFinder(layoutView),
-      m_pendingUpdateType(CompositingUpdateNone),
-      m_hasAcceleratedCompositing(true),
-      m_compositing(false),
-      m_rootShouldAlwaysCompositeDirty(true),
-      m_needsUpdateFixedBackground(false),
-      m_isTrackingRasterInvalidations(
-          layoutView.frameView()->isTrackingPaintInvalidations()),
-      m_inOverlayFullscreenVideo(false),
-      m_rootLayerAttachment(RootLayerUnattached) {
-  updateAcceleratedCompositingSettings();
+PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
+    : layout_view_(layout_view),
+      compositing_reason_finder_(layout_view),
+      pending_update_type_(kCompositingUpdateNone),
+      has_accelerated_compositing_(true),
+      compositing_(false),
+      root_should_always_composite_dirty_(true),
+      needs_update_fixed_background_(false),
+      is_tracking_raster_invalidations_(
+          layout_view.GetFrameView()->IsTrackingPaintInvalidations()),
+      in_overlay_fullscreen_video_(false),
+      root_layer_attachment_(kRootLayerUnattached) {
+  UpdateAcceleratedCompositingSettings();
 }
 
 PaintLayerCompositor::~PaintLayerCompositor() {
-  DCHECK_EQ(m_rootLayerAttachment, RootLayerUnattached);
+  DCHECK_EQ(root_layer_attachment_, kRootLayerUnattached);
 }
 
-bool PaintLayerCompositor::inCompositingMode() const {
+bool PaintLayerCompositor::InCompositingMode() const {
   // FIXME: This should assert that lifecycle is >= CompositingClean since
   // the last step of updateIfNeeded can set this bit to false.
-  DCHECK(m_layoutView.layer()->isAllowedToQueryCompositingState());
-  return m_compositing;
+  DCHECK(layout_view_.Layer()->IsAllowedToQueryCompositingState());
+  return compositing_;
 }
 
-bool PaintLayerCompositor::staleInCompositingMode() const {
-  return m_compositing;
+bool PaintLayerCompositor::StaleInCompositingMode() const {
+  return compositing_;
 }
 
-void PaintLayerCompositor::setCompositingModeEnabled(bool enable) {
-  if (enable == m_compositing)
+void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
+  if (enable == compositing_)
     return;
 
-  m_compositing = enable;
+  compositing_ = enable;
 
-  if (m_compositing)
-    ensureRootLayer();
+  if (compositing_)
+    EnsureRootLayer();
   else
-    destroyRootLayer();
+    DestroyRootLayer();
 
   // Schedule an update in the parent frame so the <iframe>'s layer in the owner
   // document matches the compositing state here.
-  if (HTMLFrameOwnerElement* ownerElement =
-          m_layoutView.document().localOwner())
-    ownerElement->setNeedsCompositingUpdate();
+  if (HTMLFrameOwnerElement* owner_element =
+          layout_view_.GetDocument().LocalOwner())
+    owner_element->SetNeedsCompositingUpdate();
 }
 
-void PaintLayerCompositor::enableCompositingModeIfNeeded() {
-  if (!m_rootShouldAlwaysCompositeDirty)
+void PaintLayerCompositor::EnableCompositingModeIfNeeded() {
+  if (!root_should_always_composite_dirty_)
     return;
 
-  m_rootShouldAlwaysCompositeDirty = false;
-  if (m_compositing)
+  root_should_always_composite_dirty_ = false;
+  if (compositing_)
     return;
 
-  if (rootShouldAlwaysComposite()) {
+  if (RootShouldAlwaysComposite()) {
     // FIXME: Is this needed? It was added in
     // https://bugs.webkit.org/show_bug.cgi?id=26651.
     // No tests fail if it's deleted.
-    setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-    setCompositingModeEnabled(true);
+    SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+    SetCompositingModeEnabled(true);
   }
 }
 
-bool PaintLayerCompositor::rootShouldAlwaysComposite() const {
-  if (!m_hasAcceleratedCompositing)
+bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
+  if (!has_accelerated_compositing_)
     return false;
-  return m_layoutView.frame()->isLocalRoot() ||
-         m_compositingReasonFinder.requiresCompositingForScrollableFrame();
+  return layout_view_.GetFrame()->IsLocalRoot() ||
+         compositing_reason_finder_.RequiresCompositingForScrollableFrame();
 }
 
-void PaintLayerCompositor::updateAcceleratedCompositingSettings() {
-  m_compositingReasonFinder.updateTriggers();
-  m_hasAcceleratedCompositing =
-      m_layoutView.document().settings()->getAcceleratedCompositingEnabled();
-  m_rootShouldAlwaysCompositeDirty = true;
-  if (m_rootLayerAttachment != RootLayerUnattached)
-    rootLayer()->setNeedsCompositingInputsUpdate();
+void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
+  compositing_reason_finder_.UpdateTriggers();
+  has_accelerated_compositing_ = layout_view_.GetDocument()
+                                     .GetSettings()
+                                     ->GetAcceleratedCompositingEnabled();
+  root_should_always_composite_dirty_ = true;
+  if (root_layer_attachment_ != kRootLayerUnattached)
+    RootLayer()->SetNeedsCompositingInputsUpdate();
 }
 
-bool PaintLayerCompositor::preferCompositingToLCDTextEnabled() const {
-  return m_layoutView.document()
-      .settings()
-      ->getPreferCompositingToLCDTextEnabled();
+bool PaintLayerCompositor::PreferCompositingToLCDTextEnabled() const {
+  return layout_view_.GetDocument()
+      .GetSettings()
+      ->GetPreferCompositingToLCDTextEnabled();
 }
 
-static LayoutVideo* findFullscreenVideoLayoutObject(Document& document) {
+static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
   // Recursively find the document that is in fullscreen.
-  Element* fullscreenElement = Fullscreen::fullscreenElementFrom(document);
-  Document* contentDocument = &document;
-  while (fullscreenElement && fullscreenElement->isFrameOwnerElement()) {
-    contentDocument =
-        toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
-    if (!contentDocument)
+  Element* fullscreen_element = Fullscreen::FullscreenElementFrom(document);
+  Document* content_document = &document;
+  while (fullscreen_element && fullscreen_element->IsFrameOwnerElement()) {
+    content_document =
+        ToHTMLFrameOwnerElement(fullscreen_element)->contentDocument();
+    if (!content_document)
       return nullptr;
-    fullscreenElement = Fullscreen::fullscreenElementFrom(*contentDocument);
+    fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
   }
   // Get the current fullscreen element from the document.
   // TODO(foolip): When |currentFullScreenElementFrom| is removed, this will
   // become a no-op and can be removed. https://crbug.com/402421
-  fullscreenElement =
-      Fullscreen::currentFullScreenElementFrom(*contentDocument);
-  if (!isHTMLVideoElement(fullscreenElement))
+  fullscreen_element =
+      Fullscreen::CurrentFullScreenElementFrom(*content_document);
+  if (!isHTMLVideoElement(fullscreen_element))
     return nullptr;
-  LayoutObject* layoutObject = fullscreenElement->layoutObject();
-  if (!layoutObject)
+  LayoutObject* layout_object = fullscreen_element->GetLayoutObject();
+  if (!layout_object)
     return nullptr;
-  return toLayoutVideo(layoutObject);
+  return ToLayoutVideo(layout_object);
 }
 
-void PaintLayerCompositor::updateIfNeededRecursive() {
+void PaintLayerCompositor::UpdateIfNeededRecursive() {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
-  updateIfNeededRecursiveInternal();
+  UpdateIfNeededRecursiveInternal();
 }
 
-void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
-  FrameView* view = m_layoutView.frameView();
-  if (view->shouldThrottleRendering())
+void PaintLayerCompositor::UpdateIfNeededRecursiveInternal() {
+  FrameView* view = layout_view_.GetFrameView();
+  if (view->ShouldThrottleRendering())
     return;
 
-  for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild();
-       child; child = child->tree().nextSibling()) {
-    if (!child->isLocalFrame())
+  for (Frame* child =
+           layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
+       child; child = child->Tree().NextSibling()) {
+    if (!child->IsLocalFrame())
       continue;
-    LocalFrame* localFrame = toLocalFrame(child);
+    LocalFrame* local_frame = ToLocalFrame(child);
     // It's possible for trusted Pepper plugins to force hit testing in
     // situations where the frame tree is in an inconsistent state, such as in
     // the middle of frame detach.
     // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
-    if (localFrame->document()->isActive() &&
-        !localFrame->contentLayoutItem().isNull())
-      localFrame->contentLayoutItem()
-          .compositor()
-          ->updateIfNeededRecursiveInternal();
+    if (local_frame->GetDocument()->IsActive() &&
+        !local_frame->ContentLayoutItem().IsNull())
+      local_frame->ContentLayoutItem()
+          .Compositor()
+          ->UpdateIfNeededRecursiveInternal();
   }
 
   TRACE_EVENT0("blink", "PaintLayerCompositor::updateIfNeededRecursive");
 
-  DCHECK(!m_layoutView.needsLayout());
+  DCHECK(!layout_view_.NeedsLayout());
 
-  ScriptForbiddenScope forbidScript;
+  ScriptForbiddenScope forbid_script;
 
   // FIXME: enableCompositingModeIfNeeded can trigger a
   // CompositingUpdateRebuildTree, which asserts that it's not
   // InCompositingUpdate.
-  enableCompositingModeIfNeeded();
+  EnableCompositingModeIfNeeded();
 
-  rootLayer()->updateDescendantDependentFlags();
+  RootLayer()->UpdateDescendantDependentFlags();
 
-  m_layoutView.commitPendingSelection();
+  layout_view_.CommitPendingSelection();
 
-  lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
-  updateIfNeeded();
-  lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
+  Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingUpdate);
+  UpdateIfNeeded();
+  Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
 
-  Optional<CompositorElementIdSet> compositedElementIds;
-  DocumentAnimations::updateAnimations(m_layoutView.document(),
-                                       DocumentLifecycle::CompositingClean,
-                                       compositedElementIds);
+  Optional<CompositorElementIdSet> composited_element_ids;
+  DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
+                                       DocumentLifecycle::kCompositingClean,
+                                       composited_element_ids);
 
-  m_layoutView.frameView()
-      ->getScrollableArea()
-      ->updateCompositorScrollAnimations();
-  if (const FrameView::ScrollableAreaSet* animatingScrollableAreas =
-          m_layoutView.frameView()->animatingScrollableAreas()) {
-    for (ScrollableArea* scrollableArea : *animatingScrollableAreas)
-      scrollableArea->updateCompositorScrollAnimations();
+  layout_view_.GetFrameView()
+      ->GetScrollableArea()
+      ->UpdateCompositorScrollAnimations();
+  if (const FrameView::ScrollableAreaSet* animating_scrollable_areas =
+          layout_view_.GetFrameView()->AnimatingScrollableAreas()) {
+    for (ScrollableArea* scrollable_area : *animating_scrollable_areas)
+      scrollable_area->UpdateCompositorScrollAnimations();
   }
 
 #if DCHECK_IS_ON()
-  DCHECK_EQ(lifecycle().state(), DocumentLifecycle::CompositingClean);
-  assertNoUnresolvedDirtyBits();
-  for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild();
-       child; child = child->tree().nextSibling()) {
-    if (!child->isLocalFrame())
+  DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
+  AssertNoUnresolvedDirtyBits();
+  for (Frame* child =
+           layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
+       child; child = child->Tree().NextSibling()) {
+    if (!child->IsLocalFrame())
       continue;
-    LocalFrame* localFrame = toLocalFrame(child);
-    if (localFrame->shouldThrottleRendering() ||
-        localFrame->contentLayoutItem().isNull())
+    LocalFrame* local_frame = ToLocalFrame(child);
+    if (local_frame->ShouldThrottleRendering() ||
+        local_frame->ContentLayoutItem().IsNull())
       continue;
-    localFrame->contentLayoutItem().compositor()->assertNoUnresolvedDirtyBits();
+    local_frame->ContentLayoutItem()
+        .Compositor()
+        ->AssertNoUnresolvedDirtyBits();
   }
 #endif
 }
 
-void PaintLayerCompositor::setNeedsCompositingUpdate(
-    CompositingUpdateType updateType) {
-  DCHECK_NE(updateType, CompositingUpdateNone);
-  m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
-  if (Page* page = this->page())
-    page->animator().scheduleVisualUpdate(m_layoutView.frame());
-  lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
+void PaintLayerCompositor::SetNeedsCompositingUpdate(
+    CompositingUpdateType update_type) {
+  DCHECK_NE(update_type, kCompositingUpdateNone);
+  pending_update_type_ = std::max(pending_update_type_, update_type);
+  if (Page* page = this->GetPage())
+    page->Animator().ScheduleVisualUpdate(layout_view_.GetFrame());
+  Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 
-void PaintLayerCompositor::didLayout() {
+void PaintLayerCompositor::DidLayout() {
   // FIXME: Technically we only need to do this when the FrameView's
   // isScrollable method would return a different value.
-  m_rootShouldAlwaysCompositeDirty = true;
-  enableCompositingModeIfNeeded();
+  root_should_always_composite_dirty_ = true;
+  EnableCompositingModeIfNeeded();
 
   // FIXME: Rather than marking the entire LayoutView as dirty, we should
   // track which Layers moved during layout and only dirty those
   // specific Layers.
-  rootLayer()->setNeedsCompositingInputsUpdate();
+  RootLayer()->SetNeedsCompositingInputsUpdate();
 }
 
 #if DCHECK_IS_ON()
 
-void PaintLayerCompositor::assertNoUnresolvedDirtyBits() {
-  DCHECK_EQ(m_pendingUpdateType, CompositingUpdateNone);
-  DCHECK(!m_rootShouldAlwaysCompositeDirty);
+void PaintLayerCompositor::AssertNoUnresolvedDirtyBits() {
+  DCHECK_EQ(pending_update_type_, kCompositingUpdateNone);
+  DCHECK(!root_should_always_composite_dirty_);
 }
 
 #endif
 
-void PaintLayerCompositor::applyOverlayFullscreenVideoAdjustmentIfNeeded() {
-  m_inOverlayFullscreenVideo = false;
-  if (!m_rootContentLayer)
+void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
+  in_overlay_fullscreen_video_ = false;
+  if (!root_content_layer_)
     return;
 
-  bool isLocalRoot = m_layoutView.frame()->isLocalRoot();
-  LayoutVideo* video = findFullscreenVideoLayoutObject(m_layoutView.document());
-  if (!video || !video->layer()->hasCompositedLayerMapping() ||
-      !video->videoElement()->usesOverlayFullscreenVideo()) {
-    if (isLocalRoot) {
-      GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
-      if (backgroundLayer && !backgroundLayer->parent())
-        rootFixedBackgroundsChanged();
+  bool is_local_root = layout_view_.GetFrame()->IsLocalRoot();
+  LayoutVideo* video =
+      FindFullscreenVideoLayoutObject(layout_view_.GetDocument());
+  if (!video || !video->Layer()->HasCompositedLayerMapping() ||
+      !video->VideoElement()->UsesOverlayFullscreenVideo()) {
+    if (is_local_root) {
+      GraphicsLayer* background_layer = FixedRootBackgroundLayer();
+      if (background_layer && !background_layer->Parent())
+        RootFixedBackgroundsChanged();
     }
     return;
   }
 
-  GraphicsLayer* videoLayer =
-      video->layer()->compositedLayerMapping()->mainGraphicsLayer();
+  GraphicsLayer* video_layer =
+      video->Layer()->GetCompositedLayerMapping()->MainGraphicsLayer();
 
   // The fullscreen video has layer position equal to its enclosing frame's
   // scroll position because fullscreen container is fixed-positioned.
   // We should reset layer position here since we are going to reattach the
   // layer at the very top level.
-  videoLayer->setPosition(IntPoint());
+  video_layer->SetPosition(IntPoint());
 
   // Only steal fullscreen video layer and clear all other layers if we are the
   // main frame.
-  if (!isLocalRoot)
+  if (!is_local_root)
     return;
 
-  m_rootContentLayer->removeAllChildren();
-  m_overflowControlsHostLayer->addChild(videoLayer);
-  if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
-    backgroundLayer->removeFromParent();
-  m_inOverlayFullscreenVideo = true;
+  root_content_layer_->RemoveAllChildren();
+  overflow_controls_host_layer_->AddChild(video_layer);
+  if (GraphicsLayer* background_layer = FixedRootBackgroundLayer())
+    background_layer->RemoveFromParent();
+  in_overlay_fullscreen_video_ = true;
 }
 
-void PaintLayerCompositor::updateWithoutAcceleratedCompositing(
-    CompositingUpdateType updateType) {
-  DCHECK(!hasAcceleratedCompositing());
+void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
+    CompositingUpdateType update_type) {
+  DCHECK(!HasAcceleratedCompositing());
 
-  if (updateType >= CompositingUpdateAfterCompositingInputChange)
-    CompositingInputsUpdater(rootLayer()).update();
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange)
+    CompositingInputsUpdater(RootLayer()).Update();
 
 #if DCHECK_IS_ON()
-  CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(
-      rootLayer());
+  CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
+      RootLayer());
 #endif
 }
 
-static void forceRecomputeVisualRectsIncludingNonCompositingDescendants(
-    LayoutObject& layoutObject) {
+static void ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
+    LayoutObject& layout_object) {
   // We clear the previous visual rect as it's wrong (paint invalidation
   // container changed, ...). Forcing a full invalidation will make us recompute
   // it. Also we are not changing the previous position from our paint
   // invalidation container, which is fine as we want a full paint invalidation
   // anyway.
-  layoutObject.clearPreviousVisualRects();
+  layout_object.ClearPreviousVisualRects();
 
-  for (LayoutObject* child = layoutObject.slowFirstChild(); child;
-       child = child->nextSibling()) {
-    if (!child->isPaintInvalidationContainer())
-      forceRecomputeVisualRectsIncludingNonCompositingDescendants(*child);
+  for (LayoutObject* child = layout_object.SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (!child->IsPaintInvalidationContainer())
+      ForceRecomputeVisualRectsIncludingNonCompositingDescendants(*child);
   }
 }
 
-GraphicsLayer* PaintLayerCompositor::parentForContentLayers() const {
-  if (m_rootContentLayer)
-    return m_rootContentLayer.get();
+GraphicsLayer* PaintLayerCompositor::ParentForContentLayers() const {
+  if (root_content_layer_)
+    return root_content_layer_.get();
 
   DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
   // Iframe content layers will be connected by the parent frame using
   // attachFrameContentLayersToIframeLayer.
-  return isMainFrame() ? visualViewport().scrollLayer() : nullptr;
+  return IsMainFrame() ? GetVisualViewport().ScrollLayer() : nullptr;
 }
 
-void PaintLayerCompositor::updateIfNeeded() {
-  CompositingUpdateType updateType = m_pendingUpdateType;
-  m_pendingUpdateType = CompositingUpdateNone;
+void PaintLayerCompositor::UpdateIfNeeded() {
+  CompositingUpdateType update_type = pending_update_type_;
+  pending_update_type_ = kCompositingUpdateNone;
 
-  if (!hasAcceleratedCompositing()) {
-    updateWithoutAcceleratedCompositing(updateType);
+  if (!HasAcceleratedCompositing()) {
+    UpdateWithoutAcceleratedCompositing(update_type);
     return;
   }
 
-  if (updateType == CompositingUpdateNone)
+  if (update_type == kCompositingUpdateNone)
     return;
 
-  PaintLayer* updateRoot = rootLayer();
+  PaintLayer* update_root = RootLayer();
 
-  Vector<PaintLayer*> layersNeedingPaintInvalidation;
+  Vector<PaintLayer*> layers_needing_paint_invalidation;
 
-  if (updateType >= CompositingUpdateAfterCompositingInputChange) {
-    CompositingInputsUpdater(updateRoot).update();
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
+    CompositingInputsUpdater(update_root).Update();
 
 #if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
-    CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(
-        updateRoot);
+    CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
+        update_root);
 #endif
 
-    CompositingRequirementsUpdater(m_layoutView, m_compositingReasonFinder)
-        .update(updateRoot);
+    CompositingRequirementsUpdater(layout_view_, compositing_reason_finder_)
+        .Update(update_root);
 
-    CompositingLayerAssigner layerAssigner(this);
-    layerAssigner.assign(updateRoot, layersNeedingPaintInvalidation);
+    CompositingLayerAssigner layer_assigner(this);
+    layer_assigner.Assign(update_root, layers_needing_paint_invalidation);
 
-    bool layersChanged = layerAssigner.layersChanged();
+    bool layers_changed = layer_assigner.LayersChanged();
 
     {
       TRACE_EVENT0("blink",
                    "PaintLayerCompositor::updateAfterCompositingChange");
-      if (const FrameView::ScrollableAreaSet* scrollableAreas =
-              m_layoutView.frameView()->scrollableAreas()) {
-        for (ScrollableArea* scrollableArea : *scrollableAreas)
-          layersChanged |= scrollableArea->updateAfterCompositingChange();
+      if (const FrameView::ScrollableAreaSet* scrollable_areas =
+              layout_view_.GetFrameView()->ScrollableAreas()) {
+        for (ScrollableArea* scrollable_area : *scrollable_areas)
+          layers_changed |= scrollable_area->UpdateAfterCompositingChange();
       }
     }
 
-    if (layersChanged) {
-      updateType = std::max(updateType, CompositingUpdateRebuildTree);
-      if (ScrollingCoordinator* scrollingCoordinator =
-              this->scrollingCoordinator())
-        scrollingCoordinator->notifyGeometryChanged();
+    if (layers_changed) {
+      update_type = std::max(update_type, kCompositingUpdateRebuildTree);
+      if (ScrollingCoordinator* scrolling_coordinator =
+              this->GetScrollingCoordinator())
+        scrolling_coordinator->NotifyGeometryChanged();
     }
   }
 
-  if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
+  if (RuntimeEnabledFeatures::compositorWorkerEnabled() && scroll_layer_) {
     // If rootLayerScrolls is enabled, these properties are applied in
     // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-      if (Element* scrollingElement =
-              m_layoutView.document().scrollingElement()) {
-        uint32_t mutableProperties = CompositorMutableProperty::kNone;
-        if (scrollingElement->hasCompositorProxy()) {
-          mutableProperties = (CompositorMutableProperty::kScrollLeft |
-                               CompositorMutableProperty::kScrollTop) &
-                              scrollingElement->compositorMutableProperties();
+      if (Element* scrolling_element =
+              layout_view_.GetDocument().scrollingElement()) {
+        uint32_t mutable_properties = CompositorMutableProperty::kNone;
+        if (scrolling_element->HasCompositorProxy()) {
+          mutable_properties = (CompositorMutableProperty::kScrollLeft |
+                                CompositorMutableProperty::kScrollTop) &
+                               scrolling_element->CompositorMutableProperties();
         }
-        m_scrollLayer->setCompositorMutableProperties(mutableProperties);
+        scroll_layer_->SetCompositorMutableProperties(mutable_properties);
       }
     }
   }
 
   GraphicsLayerUpdater updater;
-  updater.update(*updateRoot, layersNeedingPaintInvalidation);
+  updater.Update(*update_root, layers_needing_paint_invalidation);
 
-  if (updater.needsRebuildTree())
-    updateType = std::max(updateType, CompositingUpdateRebuildTree);
+  if (updater.NeedsRebuildTree())
+    update_type = std::max(update_type, kCompositingUpdateRebuildTree);
 
 #if DCHECK_IS_ON()
   // FIXME: Move this check to the end of the compositing update.
-  GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(
-      *updateRoot);
+  GraphicsLayerUpdater::AssertNeedsToUpdateGraphicsLayerBitsCleared(
+      *update_root);
 #endif
 
-  if (updateType >= CompositingUpdateRebuildTree) {
-    GraphicsLayerVector childList;
+  if (update_type >= kCompositingUpdateRebuildTree) {
+    GraphicsLayerVector child_list;
     {
       TRACE_EVENT0("blink", "GraphicsLayerTreeBuilder::rebuild");
-      GraphicsLayerTreeBuilder().rebuild(*updateRoot, childList);
+      GraphicsLayerTreeBuilder().Rebuild(*update_root, child_list);
     }
 
-    if (!childList.isEmpty()) {
-      CHECK(m_compositing);
-      if (GraphicsLayer* contentParent = parentForContentLayers())
-        contentParent->setChildren(childList);
+    if (!child_list.IsEmpty()) {
+      CHECK(compositing_);
+      if (GraphicsLayer* content_parent = ParentForContentLayers())
+        content_parent->SetChildren(child_list);
     }
 
-    applyOverlayFullscreenVideoAdjustmentIfNeeded();
+    ApplyOverlayFullscreenVideoAdjustmentIfNeeded();
   }
 
-  if (m_needsUpdateFixedBackground) {
-    rootFixedBackgroundsChanged();
-    m_needsUpdateFixedBackground = false;
+  if (needs_update_fixed_background_) {
+    RootFixedBackgroundsChanged();
+    needs_update_fixed_background_ = false;
   }
 
-  for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++) {
-    forceRecomputeVisualRectsIncludingNonCompositingDescendants(
-        layersNeedingPaintInvalidation[i]->layoutObject());
+  for (unsigned i = 0; i < layers_needing_paint_invalidation.size(); i++) {
+    ForceRecomputeVisualRectsIncludingNonCompositingDescendants(
+        layers_needing_paint_invalidation[i]->GetLayoutObject());
   }
 
-  if (m_rootLayerAttachment == RootLayerPendingAttachViaChromeClient) {
-    if (Page* page = m_layoutView.frame()->page()) {
-      page->chromeClient().attachRootGraphicsLayer(rootGraphicsLayer(),
-                                                   m_layoutView.frame());
-      m_rootLayerAttachment = RootLayerAttachedViaChromeClient;
+  if (root_layer_attachment_ == kRootLayerPendingAttachViaChromeClient) {
+    if (Page* page = layout_view_.GetFrame()->GetPage()) {
+      page->GetChromeClient().AttachRootGraphicsLayer(RootGraphicsLayer(),
+                                                      layout_view_.GetFrame());
+      root_layer_attachment_ = kRootLayerAttachedViaChromeClient;
     }
   }
 
   // Inform the inspector that the layer tree has changed.
-  if (isMainFrame())
-    probe::layerTreeDidChange(m_layoutView.frame());
+  if (IsMainFrame())
+    probe::layerTreeDidChange(layout_view_.GetFrame());
 }
 
-static void restartAnimationOnCompositor(const LayoutObject& layoutObject) {
-  Node* node = layoutObject.node();
-  ElementAnimations* elementAnimations =
-      (node && node->isElementNode()) ? toElement(node)->elementAnimations()
+static void RestartAnimationOnCompositor(const LayoutObject& layout_object) {
+  Node* node = layout_object.GetNode();
+  ElementAnimations* element_animations =
+      (node && node->IsElementNode()) ? ToElement(node)->GetElementAnimations()
                                       : nullptr;
-  if (elementAnimations)
-    elementAnimations->restartAnimationOnCompositor();
+  if (element_animations)
+    element_animations->RestartAnimationOnCompositor();
 }
 
-bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
+bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
     PaintLayer* layer,
-    const CompositingStateTransitionType compositedLayerUpdate) {
-  bool compositedLayerMappingChanged = false;
+    const CompositingStateTransitionType composited_layer_update) {
+  bool composited_layer_mapping_changed = false;
 
   // FIXME: It would be nice to directly use the layer's compositing reason,
   // but allocateOrClearCompositedLayerMapping also gets called without having
   // updated compositing requirements fully.
-  switch (compositedLayerUpdate) {
-    case AllocateOwnCompositedLayerMapping:
-      DCHECK(!layer->hasCompositedLayerMapping());
-      setCompositingModeEnabled(true);
+  switch (composited_layer_update) {
+    case kAllocateOwnCompositedLayerMapping:
+      DCHECK(!layer->HasCompositedLayerMapping());
+      SetCompositingModeEnabled(true);
 
       // If we need to issue paint invalidations, do so before allocating the
       // compositedLayerMapping and clearing out the groupedMapping.
-      paintInvalidationOnCompositingChange(layer);
+      PaintInvalidationOnCompositingChange(layer);
 
       // If this layer was previously squashed, we need to remove its reference
       // to a groupedMapping right away, so that computing paint invalidation
@@ -517,71 +523,72 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
       // squashing list of its groupedMapping?  Need to create a test where a
       // squashed layer pops into compositing. And also to cover all other sorts
       // of compositingState transitions.
-      layer->setLostGroupedMapping(false);
-      layer->setGroupedMapping(nullptr,
-                               PaintLayer::InvalidateLayerAndRemoveFromMapping);
+      layer->SetLostGroupedMapping(false);
+      layer->SetGroupedMapping(
+          nullptr, PaintLayer::kInvalidateLayerAndRemoveFromMapping);
 
-      layer->ensureCompositedLayerMapping();
-      compositedLayerMappingChanged = true;
+      layer->EnsureCompositedLayerMapping();
+      composited_layer_mapping_changed = true;
 
-      restartAnimationOnCompositor(layer->layoutObject());
+      RestartAnimationOnCompositor(layer->GetLayoutObject());
 
       // At this time, the ScrollingCoordinator only supports the top-level
       // frame.
-      if (layer->isRootLayer() && m_layoutView.frame()->isLocalRoot()) {
-        if (ScrollingCoordinator* scrollingCoordinator =
-                this->scrollingCoordinator())
-          scrollingCoordinator->frameViewRootLayerDidChange(
-              m_layoutView.frameView());
+      if (layer->IsRootLayer() && layout_view_.GetFrame()->IsLocalRoot()) {
+        if (ScrollingCoordinator* scrolling_coordinator =
+                this->GetScrollingCoordinator())
+          scrolling_coordinator->FrameViewRootLayerDidChange(
+              layout_view_.GetFrameView());
       }
       break;
-    case RemoveOwnCompositedLayerMapping:
+    case kRemoveOwnCompositedLayerMapping:
     // PutInSquashingLayer means you might have to remove the composited layer
     // mapping first.
-    case PutInSquashingLayer:
-      if (layer->hasCompositedLayerMapping()) {
-        layer->clearCompositedLayerMapping();
-        compositedLayerMappingChanged = true;
+    case kPutInSquashingLayer:
+      if (layer->HasCompositedLayerMapping()) {
+        layer->ClearCompositedLayerMapping();
+        composited_layer_mapping_changed = true;
       }
 
       break;
-    case RemoveFromSquashingLayer:
-    case NoCompositingStateChange:
+    case kRemoveFromSquashingLayer:
+    case kNoCompositingStateChange:
       // Do nothing.
       break;
   }
 
-  if (compositedLayerMappingChanged && layer->layoutObject().isLayoutPart()) {
-    PaintLayerCompositor* innerCompositor =
-        frameContentsCompositor(toLayoutPart(layer->layoutObject()));
-    if (innerCompositor && innerCompositor->staleInCompositingMode())
-      innerCompositor->ensureRootLayer();
+  if (composited_layer_mapping_changed &&
+      layer->GetLayoutObject().IsLayoutPart()) {
+    PaintLayerCompositor* inner_compositor =
+        FrameContentsCompositor(ToLayoutPart(layer->GetLayoutObject()));
+    if (inner_compositor && inner_compositor->StaleInCompositingMode())
+      inner_compositor->EnsureRootLayer();
   }
 
-  if (compositedLayerMappingChanged) {
-    layer->clipper(PaintLayer::DoNotUseGeometryMapper)
-        .clearClipRectsIncludingDescendants(PaintingClipRects);
+  if (composited_layer_mapping_changed) {
+    layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+        .ClearClipRectsIncludingDescendants(kPaintingClipRects);
   }
 
   // If a fixed position layer gained/lost a compositedLayerMapping or the
   // reason not compositing it changed, the scrolling coordinator needs to
   // recalculate whether it can do fast scrolling.
-  if (compositedLayerMappingChanged) {
-    if (ScrollingCoordinator* scrollingCoordinator =
-            this->scrollingCoordinator())
-      scrollingCoordinator->frameViewFixedObjectsDidChange(
-          m_layoutView.frameView());
+  if (composited_layer_mapping_changed) {
+    if (ScrollingCoordinator* scrolling_coordinator =
+            this->GetScrollingCoordinator())
+      scrolling_coordinator->FrameViewFixedObjectsDidChange(
+          layout_view_.GetFrameView());
   }
 
-  return compositedLayerMappingChanged;
+  return composited_layer_mapping_changed;
 }
 
-void PaintLayerCompositor::paintInvalidationOnCompositingChange(
+void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
     PaintLayer* layer) {
   // If the layoutObject is not attached yet, no need to issue paint
   // invalidations.
-  if (&layer->layoutObject() != &m_layoutView &&
-      !layer->layoutObject().parent())
+  if (&layer->GetLayoutObject() != &layout_view_ &&
+      !layer->GetLayoutObject().Parent())
     return;
 
   // For querying Layer::compositingState()
@@ -591,81 +598,81 @@ void PaintLayerCompositor::paintInvalidationOnCompositingChange(
   DisableCompositingQueryAsserts disabler;
   // FIXME: We should not allow paint invalidation out of paint invalidation
   // state. crbug.com/457415
-  DisablePaintInvalidationStateAsserts paintInvalidationAssertisabler;
+  DisablePaintInvalidationStateAsserts paint_invalidation_assertisabler;
 
-  ObjectPaintInvalidator(layer->layoutObject())
-      .invalidatePaintIncludingNonCompositingDescendants();
+  ObjectPaintInvalidator(layer->GetLayoutObject())
+      .InvalidatePaintIncludingNonCompositingDescendants();
 }
 
-void PaintLayerCompositor::frameViewDidChangeLocation(
-    const IntPoint& contentsOffset) {
-  if (m_overflowControlsHostLayer)
-    m_overflowControlsHostLayer->setPosition(contentsOffset);
+void PaintLayerCompositor::FrameViewDidChangeLocation(
+    const IntPoint& contents_offset) {
+  if (overflow_controls_host_layer_)
+    overflow_controls_host_layer_->SetPosition(contents_offset);
 }
 
-void PaintLayerCompositor::updateContainerSizes() {
-  if (!m_containerLayer)
+void PaintLayerCompositor::UpdateContainerSizes() {
+  if (!container_layer_)
     return;
 
-  FrameView* frameView = m_layoutView.frameView();
-  m_containerLayer->setSize(FloatSize(frameView->visibleContentSize()));
-  m_overflowControlsHostLayer->setSize(
-      FloatSize(frameView->visibleContentSize(IncludeScrollbars)));
+  FrameView* frame_view = layout_view_.GetFrameView();
+  container_layer_->SetSize(FloatSize(frame_view->VisibleContentSize()));
+  overflow_controls_host_layer_->SetSize(
+      FloatSize(frame_view->VisibleContentSize(kIncludeScrollbars)));
 }
 
-void PaintLayerCompositor::frameViewDidChangeSize() {
-  if (!m_containerLayer)
+void PaintLayerCompositor::FrameViewDidChangeSize() {
+  if (!container_layer_)
     return;
 
-  updateContainerSizes();
-  frameViewDidScroll();
-  updateOverflowControlsLayers();
+  UpdateContainerSizes();
+  FrameViewDidScroll();
+  UpdateOverflowControlsLayers();
 }
 
 enum AcceleratedFixedRootBackgroundHistogramBuckets {
-  ScrolledMainFrameBucket = 0,
-  ScrolledMainFrameWithAcceleratedFixedRootBackground = 1,
-  ScrolledMainFrameWithUnacceleratedFixedRootBackground = 2,
-  AcceleratedFixedRootBackgroundHistogramMax = 3
+  kScrolledMainFrameBucket = 0,
+  kScrolledMainFrameWithAcceleratedFixedRootBackground = 1,
+  kScrolledMainFrameWithUnacceleratedFixedRootBackground = 2,
+  kAcceleratedFixedRootBackgroundHistogramMax = 3
 };
 
-void PaintLayerCompositor::frameViewDidScroll() {
-  FrameView* frameView = m_layoutView.frameView();
-  IntSize scrollOffset = frameView->scrollOffsetInt();
+void PaintLayerCompositor::FrameViewDidScroll() {
+  FrameView* frame_view = layout_view_.GetFrameView();
+  IntSize scroll_offset = frame_view->ScrollOffsetInt();
 
-  if (!m_scrollLayer)
+  if (!scroll_layer_)
     return;
 
-  bool scrollingCoordinatorHandlesOffset = false;
-  if (ScrollingCoordinator* scrollingCoordinator =
-          this->scrollingCoordinator()) {
-    scrollingCoordinatorHandlesOffset =
-        scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
+  bool scrolling_coordinator_handles_offset = false;
+  if (ScrollingCoordinator* scrolling_coordinator =
+          this->GetScrollingCoordinator()) {
+    scrolling_coordinator_handles_offset =
+        scrolling_coordinator->ScrollableAreaScrollLayerDidChange(frame_view);
   }
 
   // Scroll position = scroll origin + scroll offset. Adjust the layer's
   // position to handle whatever the scroll coordinator isn't handling.
   // The scroll origin is non-zero for RTL pages with overflow.
-  if (scrollingCoordinatorHandlesOffset)
-    m_scrollLayer->setPosition(frameView->scrollOrigin());
+  if (scrolling_coordinator_handles_offset)
+    scroll_layer_->SetPosition(frame_view->ScrollOrigin());
   else
-    m_scrollLayer->setPosition(IntPoint(-scrollOffset));
+    scroll_layer_->SetPosition(IntPoint(-scroll_offset));
 
-  showScrollbarLayersIfNeeded();
+  ShowScrollbarLayersIfNeeded();
 
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, acceleratedBackgroundHistogram,
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, accelerated_background_histogram,
                       ("Renderer.AcceleratedFixedRootBackground",
-                       AcceleratedFixedRootBackgroundHistogramMax));
-  acceleratedBackgroundHistogram.count(ScrolledMainFrameBucket);
+                       kAcceleratedFixedRootBackgroundHistogramMax));
+  accelerated_background_histogram.Count(kScrolledMainFrameBucket);
 }
 
-void PaintLayerCompositor::frameViewScrollbarsExistenceDidChange() {
-  if (m_containerLayer)
-    updateOverflowControlsLayers();
+void PaintLayerCompositor::FrameViewScrollbarsExistenceDidChange() {
+  if (container_layer_)
+    UpdateOverflowControlsLayers();
 }
 
-void PaintLayerCompositor::rootFixedBackgroundsChanged() {
-  if (!supportsFixedRootBackgroundCompositing() || !m_containerLayer)
+void PaintLayerCompositor::RootFixedBackgroundsChanged() {
+  if (!SupportsFixedRootBackgroundCompositing() || !container_layer_)
     return;
 
   // To avoid having to make the fixed root background layer fixed positioned to
@@ -681,642 +688,649 @@ void PaintLayerCompositor::rootFixedBackgroundsChanged() {
   // That is, it needs to be the first child of the frame clip, the sibling of
   // the frame scroll layer. The compositor does not own the background layer,
   // it just positions it (like the foreground layer).
-  if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
-    m_containerLayer->addChildBelow(backgroundLayer, m_scrollLayer.get());
+  if (GraphicsLayer* background_layer = FixedRootBackgroundLayer())
+    container_layer_->AddChildBelow(background_layer, scroll_layer_.get());
 }
 
-bool PaintLayerCompositor::scrollingLayerDidChange(PaintLayer* layer) {
-  if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-    return scrollingCoordinator->scrollableAreaScrollLayerDidChange(
-        layer->getScrollableArea());
+bool PaintLayerCompositor::ScrollingLayerDidChange(PaintLayer* layer) {
+  if (ScrollingCoordinator* scrolling_coordinator =
+          this->GetScrollingCoordinator())
+    return scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
+        layer->GetScrollableArea());
   return false;
 }
 
-std::unique_ptr<JSONObject> PaintLayerCompositor::layerTreeAsJSON(
+std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
     LayerTreeFlags flags) const {
-  DCHECK(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean ||
-         m_layoutView.frameView()->shouldThrottleRendering());
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPaintInvalidationClean ||
+         layout_view_.GetFrameView()->ShouldThrottleRendering());
 
   // We skip dumping the scroll and clip layers to keep layerTreeAsText output
   // similar between platforms (unless we explicitly request dumping from the
   // root.
-  GraphicsLayer* rootLayer = m_rootContentLayer.get();
-  if (!rootLayer)
-    rootLayer = rootGraphicsLayer();
+  GraphicsLayer* root_layer = root_content_layer_.get();
+  if (!root_layer)
+    root_layer = RootGraphicsLayer();
 
-  if (!rootLayer)
+  if (!root_layer)
     return nullptr;
 
-  if (flags & LayerTreeIncludesRootLayer) {
-    if (isMainFrame()) {
-      while (rootLayer->parent())
-        rootLayer = rootLayer->parent();
+  if (flags & kLayerTreeIncludesRootLayer) {
+    if (IsMainFrame()) {
+      while (root_layer->Parent())
+        root_layer = root_layer->Parent();
     } else {
-      rootLayer = rootGraphicsLayer();
+      root_layer = RootGraphicsLayer();
     }
   }
 
-  return rootLayer->layerTreeAsJSON(flags);
+  return root_layer->LayerTreeAsJSON(flags);
 }
 
-PaintLayerCompositor* PaintLayerCompositor::frameContentsCompositor(
-    LayoutPart& layoutObject) {
-  if (!layoutObject.node()->isFrameOwnerElement())
+PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
+    LayoutPart& layout_object) {
+  if (!layout_object.GetNode()->IsFrameOwnerElement())
     return nullptr;
 
-  HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(layoutObject.node());
-  if (Document* contentDocument = element->contentDocument()) {
-    if (LayoutViewItem view = contentDocument->layoutViewItem())
-      return view.compositor();
+  HTMLFrameOwnerElement* element =
+      ToHTMLFrameOwnerElement(layout_object.GetNode());
+  if (Document* content_document = element->contentDocument()) {
+    if (LayoutViewItem view = content_document->GetLayoutViewItem())
+      return view.Compositor();
   }
   return nullptr;
 }
 
-bool PaintLayerCompositor::attachFrameContentLayersToIframeLayer(
-    LayoutPart& layoutObject) {
-  PaintLayerCompositor* innerCompositor = frameContentsCompositor(layoutObject);
-  if (!innerCompositor || !innerCompositor->staleInCompositingMode() ||
-      innerCompositor->m_rootLayerAttachment !=
-          RootLayerAttachedViaEnclosingFrame)
+bool PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
+    LayoutPart& layout_object) {
+  PaintLayerCompositor* inner_compositor =
+      FrameContentsCompositor(layout_object);
+  if (!inner_compositor || !inner_compositor->StaleInCompositingMode() ||
+      inner_compositor->root_layer_attachment_ !=
+          kRootLayerAttachedViaEnclosingFrame)
     return false;
 
-  PaintLayer* layer = layoutObject.layer();
-  if (!layer->hasCompositedLayerMapping())
+  PaintLayer* layer = layout_object.Layer();
+  if (!layer->HasCompositedLayerMapping())
     return false;
 
   DisableCompositingQueryAsserts disabler;
-  layer->compositedLayerMapping()->setSublayers(
-      GraphicsLayerVector(1, innerCompositor->rootGraphicsLayer()));
+  layer->GetCompositedLayerMapping()->SetSublayers(
+      GraphicsLayerVector(1, inner_compositor->RootGraphicsLayer()));
   return true;
 }
 
-static void fullyInvalidatePaintRecursive(PaintLayer* layer) {
-  if (layer->compositingState() == PaintsIntoOwnBacking) {
-    layer->compositedLayerMapping()->setContentsNeedDisplay();
-    layer->compositedLayerMapping()->setSquashingContentsNeedDisplay();
+static void FullyInvalidatePaintRecursive(PaintLayer* layer) {
+  if (layer->GetCompositingState() == kPaintsIntoOwnBacking) {
+    layer->GetCompositedLayerMapping()->SetContentsNeedDisplay();
+    layer->GetCompositedLayerMapping()->SetSquashingContentsNeedDisplay();
   }
 
-  for (PaintLayer* child = layer->firstChild(); child;
-       child = child->nextSibling())
-    fullyInvalidatePaintRecursive(child);
+  for (PaintLayer* child = layer->FirstChild(); child;
+       child = child->NextSibling())
+    FullyInvalidatePaintRecursive(child);
 }
 
-void PaintLayerCompositor::fullyInvalidatePaint() {
+void PaintLayerCompositor::FullyInvalidatePaint() {
   // We're walking all compositing layers and invalidating them, so there's
   // no need to have up-to-date compositing state.
   DisableCompositingQueryAsserts disabler;
-  fullyInvalidatePaintRecursive(rootLayer());
+  FullyInvalidatePaintRecursive(RootLayer());
 }
 
-PaintLayer* PaintLayerCompositor::rootLayer() const {
-  return m_layoutView.layer();
+PaintLayer* PaintLayerCompositor::RootLayer() const {
+  return layout_view_.Layer();
 }
 
-GraphicsLayer* PaintLayerCompositor::rootGraphicsLayer() const {
-  if (m_overflowControlsHostLayer)
-    return m_overflowControlsHostLayer.get();
-  if (CompositedLayerMapping* clm = rootLayer()->compositedLayerMapping())
-    return clm->childForSuperlayers();
+GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
+  if (overflow_controls_host_layer_)
+    return overflow_controls_host_layer_.get();
+  if (CompositedLayerMapping* clm = RootLayer()->GetCompositedLayerMapping())
+    return clm->ChildForSuperlayers();
   return nullptr;
 }
 
-GraphicsLayer* PaintLayerCompositor::scrollLayer() const {
-  if (ScrollableArea* scrollableArea =
-          m_layoutView.frameView()->getScrollableArea())
-    return scrollableArea->layerForScrolling();
+GraphicsLayer* PaintLayerCompositor::ScrollLayer() const {
+  if (ScrollableArea* scrollable_area =
+          layout_view_.GetFrameView()->GetScrollableArea())
+    return scrollable_area->LayerForScrolling();
   return nullptr;
 }
 
-void PaintLayerCompositor::setIsInWindow(bool isInWindow) {
-  if (!staleInCompositingMode())
+void PaintLayerCompositor::SetIsInWindow(bool is_in_window) {
+  if (!StaleInCompositingMode())
     return;
 
-  if (isInWindow) {
-    if (m_rootLayerAttachment != RootLayerUnattached)
+  if (is_in_window) {
+    if (root_layer_attachment_ != kRootLayerUnattached)
       return;
 
-    attachCompositorTimeline();
-    attachRootLayer();
+    AttachCompositorTimeline();
+    AttachRootLayer();
   } else {
-    if (m_rootLayerAttachment == RootLayerUnattached)
+    if (root_layer_attachment_ == kRootLayerUnattached)
       return;
 
-    detachRootLayer();
-    detachCompositorTimeline();
+    DetachRootLayer();
+    DetachCompositorTimeline();
   }
 }
 
-void PaintLayerCompositor::updateRootLayerPosition() {
-  if (m_rootContentLayer) {
-    IntRect documentRect = m_layoutView.documentRect();
+void PaintLayerCompositor::UpdateRootLayerPosition() {
+  if (root_content_layer_) {
+    IntRect document_rect = layout_view_.DocumentRect();
 
     // Ensure the root content layer is at least the size of the outer viewport
     // so that we don't end up clipping position: fixed elements if the
     // document is smaller.
-    documentRect.unite(IntRect(documentRect.location(),
-                               m_layoutView.frameView()->visibleContentSize()));
+    document_rect.Unite(
+        IntRect(document_rect.Location(),
+                layout_view_.GetFrameView()->VisibleContentSize()));
 
-    m_rootContentLayer->setSize(FloatSize(documentRect.size()));
-    m_rootContentLayer->setPosition(documentRect.location());
+    root_content_layer_->SetSize(FloatSize(document_rect.size()));
+    root_content_layer_->SetPosition(document_rect.Location());
   }
-  if (m_containerLayer)
-    updateContainerSizes();
+  if (container_layer_)
+    UpdateContainerSizes();
 }
 
-void PaintLayerCompositor::updatePotentialCompositingReasonsFromStyle(
+void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
     PaintLayer* layer) {
-  layer->setPotentialCompositingReasonsFromStyle(
-      m_compositingReasonFinder.potentialCompositingReasonsFromStyle(
-          layer->layoutObject()));
+  layer->SetPotentialCompositingReasonsFromStyle(
+      compositing_reason_finder_.PotentialCompositingReasonsFromStyle(
+          layer->GetLayoutObject()));
 }
 
-bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
-  FrameView* frameView = layer->layoutObject().frameView();
+bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
+  FrameView* frame_view = layer->GetLayoutObject().GetFrameView();
   // Elements within an invisible frame must not be composited because they are
   // not drawn.
-  if (frameView && !frameView->isVisible())
+  if (frame_view && !frame_view->IsVisible())
     return false;
 
-  const bool hasCompositorAnimation =
-      m_compositingReasonFinder.requiresCompositingForAnimation(
-          *layer->layoutObject().style());
-  return m_hasAcceleratedCompositing &&
-         (hasCompositorAnimation || !layer->subtreeIsInvisible()) &&
-         layer->isSelfPaintingLayer() &&
-         !layer->layoutObject().isLayoutFlowThread();
+  const bool has_compositor_animation =
+      compositing_reason_finder_.RequiresCompositingForAnimation(
+          *layer->GetLayoutObject().Style());
+  return has_accelerated_compositing_ &&
+         (has_compositor_animation || !layer->SubtreeIsInvisible()) &&
+         layer->IsSelfPaintingLayer() &&
+         !layer->GetLayoutObject().IsLayoutFlowThread();
 }
 
 // Return true if the given layer is a stacking context and has compositing
 // child layers that it needs to clip. In this case we insert a clipping
 // GraphicsLayer into the hierarchy between this layer and its children in the
 // z-order hierarchy.
-bool PaintLayerCompositor::clipsCompositingDescendants(
+bool PaintLayerCompositor::ClipsCompositingDescendants(
     const PaintLayer* layer) const {
-  return layer->hasCompositingDescendant() &&
-         layer->layoutObject().hasClipRelatedProperty();
+  return layer->HasCompositingDescendant() &&
+         layer->GetLayoutObject().HasClipRelatedProperty();
 }
 
 // If an element has composited negative z-index children, those children paint
 // in front of the layer background, so we need an extra 'contents' layer for
 // the foreground of the layer object.
-bool PaintLayerCompositor::needsContentsCompositingLayer(
+bool PaintLayerCompositor::NeedsContentsCompositingLayer(
     const PaintLayer* layer) const {
-  if (!layer->hasCompositingDescendant())
+  if (!layer->HasCompositingDescendant())
     return false;
-  return layer->stackingNode()->hasNegativeZOrderList();
+  return layer->StackingNode()->HasNegativeZOrderList();
 }
 
-static void paintScrollbar(const GraphicsLayer* graphicsLayer,
+static void PaintScrollbar(const GraphicsLayer* graphics_layer,
                            const Scrollbar* scrollbar,
                            GraphicsContext& context,
                            const IntRect& clip) {
   // Frame scrollbars are painted in the space of the containing frame, not the
   // local space of the scrollbar.
-  const IntPoint& paintOffset = scrollbar->frameRect().location();
-  IntRect transformedClip = clip;
-  transformedClip.moveBy(paintOffset);
+  const IntPoint& paint_offset = scrollbar->FrameRect().Location();
+  IntRect transformed_clip = clip;
+  transformed_clip.MoveBy(paint_offset);
 
   AffineTransform translation;
-  translation.translate(-paintOffset.x(), -paintOffset.y());
-  TransformRecorder transformRecorder(context, *scrollbar, translation);
-  scrollbar->paint(context, CullRect(transformedClip));
+  translation.Translate(-paint_offset.X(), -paint_offset.Y());
+  TransformRecorder transform_recorder(context, *scrollbar, translation);
+  scrollbar->Paint(context, CullRect(transformed_clip));
 }
 
-IntRect PaintLayerCompositor::computeInterestRect(
-    const GraphicsLayer* graphicsLayer,
+IntRect PaintLayerCompositor::ComputeInterestRect(
+    const GraphicsLayer* graphics_layer,
     const IntRect&) const {
-  return enclosingIntRect(FloatRect(FloatPoint(), graphicsLayer->size()));
+  return EnclosingIntRect(FloatRect(FloatPoint(), graphics_layer->size()));
 }
 
-void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer,
+void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
                                          GraphicsContext& context,
                                          GraphicsLayerPaintingPhase,
-                                         const IntRect& interestRect) const {
+                                         const IntRect& interest_rect) const {
   // Note the composited scrollable area painted below is always associated with
   // a frame. For painting non-frame ScrollableAreas, see
   // CompositedLayerMapping::paintScrollableArea.
 
-  const Scrollbar* scrollbar = graphicsLayerToScrollbar(graphicsLayer);
-  if (!scrollbar && graphicsLayer != layerForScrollCorner())
+  const Scrollbar* scrollbar = GraphicsLayerToScrollbar(graphics_layer);
+  if (!scrollbar && graphics_layer != LayerForScrollCorner())
     return;
 
-  if (DrawingRecorder::useCachedDrawingIfPossible(
-          context, *graphicsLayer, DisplayItem::kScrollbarCompositedScrollbar))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context, *graphics_layer, DisplayItem::kScrollbarCompositedScrollbar))
     return;
 
-  FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
-  PaintRecordBuilder builder(layerBounds, nullptr, &context);
+  FloatRect layer_bounds(FloatPoint(), graphics_layer->size());
+  PaintRecordBuilder builder(layer_bounds, nullptr, &context);
 
   if (scrollbar) {
-    paintScrollbar(graphicsLayer, scrollbar, builder.context(), interestRect);
+    PaintScrollbar(graphics_layer, scrollbar, builder.Context(), interest_rect);
   } else {
-    FramePainter(*m_layoutView.frameView())
-        .paintScrollCorner(builder.context(), interestRect);
+    FramePainter(*layout_view_.GetFrameView())
+        .PaintScrollCorner(builder.Context(), interest_rect);
   }
 
   // Replay the painted scrollbar content with the GraphicsLayer backing as the
   // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
   // the correct visualRect (i.e., the bounds of the involved GraphicsLayer).
-  DrawingRecorder drawingRecorder(context, *graphicsLayer,
-                                  DisplayItem::kScrollbarCompositedScrollbar,
-                                  layerBounds);
-  context.canvas()->PlaybackPaintRecord(builder.endRecording());
+  DrawingRecorder drawing_recorder(context, *graphics_layer,
+                                   DisplayItem::kScrollbarCompositedScrollbar,
+                                   layer_bounds);
+  context.Canvas()->PlaybackPaintRecord(builder.EndRecording());
 }
 
-Scrollbar* PaintLayerCompositor::graphicsLayerToScrollbar(
-    const GraphicsLayer* graphicsLayer) const {
-  if (graphicsLayer == layerForHorizontalScrollbar()) {
-    return m_layoutView.frameView()->horizontalScrollbar();
+Scrollbar* PaintLayerCompositor::GraphicsLayerToScrollbar(
+    const GraphicsLayer* graphics_layer) const {
+  if (graphics_layer == LayerForHorizontalScrollbar()) {
+    return layout_view_.GetFrameView()->HorizontalScrollbar();
   }
-  if (graphicsLayer == layerForVerticalScrollbar()) {
-    return m_layoutView.frameView()->verticalScrollbar();
+  if (graphics_layer == LayerForVerticalScrollbar()) {
+    return layout_view_.GetFrameView()->VerticalScrollbar();
   }
   return nullptr;
 }
 
-bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const {
-  if (Settings* settings = m_layoutView.document().settings())
-    return settings->getPreferCompositingToLCDTextEnabled();
+bool PaintLayerCompositor::SupportsFixedRootBackgroundCompositing() const {
+  if (Settings* settings = layout_view_.GetDocument().GetSettings())
+    return settings->GetPreferCompositingToLCDTextEnabled();
   return false;
 }
 
-bool PaintLayerCompositor::needsFixedRootBackgroundLayer(
+bool PaintLayerCompositor::NeedsFixedRootBackgroundLayer(
     const PaintLayer* layer) const {
-  if (layer != m_layoutView.layer())
+  if (layer != layout_view_.Layer())
     return false;
 
-  return supportsFixedRootBackgroundCompositing() &&
-         m_layoutView.rootBackgroundIsEntirelyFixed();
+  return SupportsFixedRootBackgroundCompositing() &&
+         layout_view_.RootBackgroundIsEntirelyFixed();
 }
 
-GraphicsLayer* PaintLayerCompositor::fixedRootBackgroundLayer() const {
+GraphicsLayer* PaintLayerCompositor::FixedRootBackgroundLayer() const {
   // Get the fixed root background from the LayoutView layer's
   // compositedLayerMapping.
-  PaintLayer* viewLayer = m_layoutView.layer();
-  if (!viewLayer)
+  PaintLayer* view_layer = layout_view_.Layer();
+  if (!view_layer)
     return nullptr;
 
-  if (viewLayer->compositingState() == PaintsIntoOwnBacking &&
-      viewLayer->compositedLayerMapping()
-          ->backgroundLayerPaintsFixedRootBackground())
-    return viewLayer->compositedLayerMapping()->backgroundLayer();
+  if (view_layer->GetCompositingState() == kPaintsIntoOwnBacking &&
+      view_layer->GetCompositedLayerMapping()
+          ->BackgroundLayerPaintsFixedRootBackground())
+    return view_layer->GetCompositedLayerMapping()->BackgroundLayer();
 
   return nullptr;
 }
 
-static void setTracksRasterInvalidationsRecursive(
-    GraphicsLayer* graphicsLayer,
-    bool tracksPaintInvalidations) {
-  if (!graphicsLayer)
+static void SetTracksRasterInvalidationsRecursive(
+    GraphicsLayer* graphics_layer,
+    bool tracks_paint_invalidations) {
+  if (!graphics_layer)
     return;
 
-  graphicsLayer->setTracksRasterInvalidations(tracksPaintInvalidations);
+  graphics_layer->SetTracksRasterInvalidations(tracks_paint_invalidations);
 
-  for (size_t i = 0; i < graphicsLayer->children().size(); ++i) {
-    setTracksRasterInvalidationsRecursive(graphicsLayer->children()[i],
-                                          tracksPaintInvalidations);
+  for (size_t i = 0; i < graphics_layer->Children().size(); ++i) {
+    SetTracksRasterInvalidationsRecursive(graphics_layer->Children()[i],
+                                          tracks_paint_invalidations);
   }
 
-  if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-    setTracksRasterInvalidationsRecursive(maskLayer, tracksPaintInvalidations);
+  if (GraphicsLayer* mask_layer = graphics_layer->MaskLayer())
+    SetTracksRasterInvalidationsRecursive(mask_layer,
+                                          tracks_paint_invalidations);
 
-  if (GraphicsLayer* clippingMaskLayer =
-          graphicsLayer->contentsClippingMaskLayer()) {
-    setTracksRasterInvalidationsRecursive(clippingMaskLayer,
-                                          tracksPaintInvalidations);
+  if (GraphicsLayer* clipping_mask_layer =
+          graphics_layer->ContentsClippingMaskLayer()) {
+    SetTracksRasterInvalidationsRecursive(clipping_mask_layer,
+                                          tracks_paint_invalidations);
   }
 }
 
-void PaintLayerCompositor::setTracksRasterInvalidations(
-    bool tracksRasterInvalidations) {
+void PaintLayerCompositor::SetTracksRasterInvalidations(
+    bool tracks_raster_invalidations) {
 #if DCHECK_IS_ON()
-  FrameView* view = m_layoutView.frameView();
-  DCHECK(lifecycle().state() == DocumentLifecycle::PaintClean ||
-         (view && view->shouldThrottleRendering()));
+  FrameView* view = layout_view_.GetFrameView();
+  DCHECK(Lifecycle().GetState() == DocumentLifecycle::kPaintClean ||
+         (view && view->ShouldThrottleRendering()));
 #endif
 
-  m_isTrackingRasterInvalidations = tracksRasterInvalidations;
-  if (GraphicsLayer* rootLayer = rootGraphicsLayer())
-    setTracksRasterInvalidationsRecursive(rootLayer, tracksRasterInvalidations);
+  is_tracking_raster_invalidations_ = tracks_raster_invalidations;
+  if (GraphicsLayer* root_layer = RootGraphicsLayer())
+    SetTracksRasterInvalidationsRecursive(root_layer,
+                                          tracks_raster_invalidations);
 }
 
-bool PaintLayerCompositor::isTrackingRasterInvalidations() const {
-  return m_isTrackingRasterInvalidations;
+bool PaintLayerCompositor::IsTrackingRasterInvalidations() const {
+  return is_tracking_raster_invalidations_;
 }
 
-bool PaintLayerCompositor::requiresHorizontalScrollbarLayer() const {
-  return m_layoutView.frameView()->horizontalScrollbar();
+bool PaintLayerCompositor::RequiresHorizontalScrollbarLayer() const {
+  return layout_view_.GetFrameView()->HorizontalScrollbar();
 }
 
-bool PaintLayerCompositor::requiresVerticalScrollbarLayer() const {
-  return m_layoutView.frameView()->verticalScrollbar();
+bool PaintLayerCompositor::RequiresVerticalScrollbarLayer() const {
+  return layout_view_.GetFrameView()->VerticalScrollbar();
 }
 
-bool PaintLayerCompositor::requiresScrollCornerLayer() const {
-  return m_layoutView.frameView()->isScrollCornerVisible();
+bool PaintLayerCompositor::RequiresScrollCornerLayer() const {
+  return layout_view_.GetFrameView()->IsScrollCornerVisible();
 }
 
-void PaintLayerCompositor::updateOverflowControlsLayers() {
-  GraphicsLayer* controlsParent = m_overflowControlsHostLayer.get();
+void PaintLayerCompositor::UpdateOverflowControlsLayers() {
+  GraphicsLayer* controls_parent = overflow_controls_host_layer_.get();
   // Main frame scrollbars should always be stuck to the sides of the screen (in
   // overscroll and in pinch-zoom), so make the parent for the scrollbars be the
   // viewport container layer.
-  if (isMainFrame())
-    controlsParent = visualViewport().containerLayer();
+  if (IsMainFrame())
+    controls_parent = GetVisualViewport().ContainerLayer();
 
-  if (requiresHorizontalScrollbarLayer()) {
-    if (!m_layerForHorizontalScrollbar) {
-      m_layerForHorizontalScrollbar = GraphicsLayer::create(this);
+  if (RequiresHorizontalScrollbarLayer()) {
+    if (!layer_for_horizontal_scrollbar_) {
+      layer_for_horizontal_scrollbar_ = GraphicsLayer::Create(this);
     }
 
-    if (m_layerForHorizontalScrollbar->parent() != controlsParent) {
-      controlsParent->addChild(m_layerForHorizontalScrollbar.get());
+    if (layer_for_horizontal_scrollbar_->Parent() != controls_parent) {
+      controls_parent->AddChild(layer_for_horizontal_scrollbar_.get());
 
-      if (ScrollingCoordinator* scrollingCoordinator =
-              this->scrollingCoordinator())
-        scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(
-            m_layoutView.frameView(), HorizontalScrollbar);
+      if (ScrollingCoordinator* scrolling_coordinator =
+              this->GetScrollingCoordinator())
+        scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
+            layout_view_.GetFrameView(), kHorizontalScrollbar);
     }
-  } else if (m_layerForHorizontalScrollbar) {
-    m_layerForHorizontalScrollbar->removeFromParent();
-    m_layerForHorizontalScrollbar = nullptr;
+  } else if (layer_for_horizontal_scrollbar_) {
+    layer_for_horizontal_scrollbar_->RemoveFromParent();
+    layer_for_horizontal_scrollbar_ = nullptr;
 
-    if (ScrollingCoordinator* scrollingCoordinator =
-            this->scrollingCoordinator())
-      scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(
-          m_layoutView.frameView(), HorizontalScrollbar);
+    if (ScrollingCoordinator* scrolling_coordinator =
+            this->GetScrollingCoordinator())
+      scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
+          layout_view_.GetFrameView(), kHorizontalScrollbar);
   }
 
-  if (requiresVerticalScrollbarLayer()) {
-    if (!m_layerForVerticalScrollbar) {
-      m_layerForVerticalScrollbar = GraphicsLayer::create(this);
+  if (RequiresVerticalScrollbarLayer()) {
+    if (!layer_for_vertical_scrollbar_) {
+      layer_for_vertical_scrollbar_ = GraphicsLayer::Create(this);
     }
 
-    if (m_layerForVerticalScrollbar->parent() != controlsParent) {
-      controlsParent->addChild(m_layerForVerticalScrollbar.get());
+    if (layer_for_vertical_scrollbar_->Parent() != controls_parent) {
+      controls_parent->AddChild(layer_for_vertical_scrollbar_.get());
 
-      if (ScrollingCoordinator* scrollingCoordinator =
-              this->scrollingCoordinator())
-        scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(
-            m_layoutView.frameView(), VerticalScrollbar);
+      if (ScrollingCoordinator* scrolling_coordinator =
+              this->GetScrollingCoordinator())
+        scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
+            layout_view_.GetFrameView(), kVerticalScrollbar);
     }
-  } else if (m_layerForVerticalScrollbar) {
-    m_layerForVerticalScrollbar->removeFromParent();
-    m_layerForVerticalScrollbar = nullptr;
+  } else if (layer_for_vertical_scrollbar_) {
+    layer_for_vertical_scrollbar_->RemoveFromParent();
+    layer_for_vertical_scrollbar_ = nullptr;
 
-    if (ScrollingCoordinator* scrollingCoordinator =
-            this->scrollingCoordinator())
-      scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(
-          m_layoutView.frameView(), VerticalScrollbar);
+    if (ScrollingCoordinator* scrolling_coordinator =
+            this->GetScrollingCoordinator())
+      scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
+          layout_view_.GetFrameView(), kVerticalScrollbar);
   }
 
-  if (requiresScrollCornerLayer()) {
-    if (!m_layerForScrollCorner)
-      m_layerForScrollCorner = GraphicsLayer::create(this);
+  if (RequiresScrollCornerLayer()) {
+    if (!layer_for_scroll_corner_)
+      layer_for_scroll_corner_ = GraphicsLayer::Create(this);
 
-    if (m_layerForScrollCorner->parent() != controlsParent)
-      controlsParent->addChild(m_layerForScrollCorner.get());
-  } else if (m_layerForScrollCorner) {
-    m_layerForScrollCorner->removeFromParent();
-    m_layerForScrollCorner = nullptr;
+    if (layer_for_scroll_corner_->Parent() != controls_parent)
+      controls_parent->AddChild(layer_for_scroll_corner_.get());
+  } else if (layer_for_scroll_corner_) {
+    layer_for_scroll_corner_->RemoveFromParent();
+    layer_for_scroll_corner_ = nullptr;
   }
 
-  m_layoutView.frameView()->positionScrollbarLayers();
-  showScrollbarLayersIfNeeded();
+  layout_view_.GetFrameView()->PositionScrollbarLayers();
+  ShowScrollbarLayersIfNeeded();
 }
 
-void PaintLayerCompositor::showScrollbarLayersIfNeeded() {
-  FrameView* frameView = m_layoutView.frameView();
-  if (m_scrollLayer && frameView->needsShowScrollbarLayers()) {
-    m_scrollLayer->platformLayer()->showScrollbars();
-    frameView->didShowScrollbarLayers();
+void PaintLayerCompositor::ShowScrollbarLayersIfNeeded() {
+  FrameView* frame_view = layout_view_.GetFrameView();
+  if (scroll_layer_ && frame_view->NeedsShowScrollbarLayers()) {
+    scroll_layer_->PlatformLayer()->ShowScrollbars();
+    frame_view->DidShowScrollbarLayers();
   }
 }
 
-void PaintLayerCompositor::ensureRootLayer() {
-  if (m_rootLayerAttachment != RootLayerUnattached)
+void PaintLayerCompositor::EnsureRootLayer() {
+  if (root_layer_attachment_ != kRootLayerUnattached)
     return;
 
-  if (isMainFrame())
-    visualViewport().createLayerTree();
+  if (IsMainFrame())
+    GetVisualViewport().CreateLayerTree();
 
   // When RLS is enabled, none of the PLC GraphicsLayers exist.
-  bool shouldCreateOwnLayers =
+  bool should_create_own_layers =
       !RuntimeEnabledFeatures::rootLayerScrollingEnabled();
 
-  if (shouldCreateOwnLayers && !m_rootContentLayer) {
-    m_rootContentLayer = GraphicsLayer::create(this);
-    IntRect overflowRect = m_layoutView.pixelSnappedLayoutOverflowRect();
-    m_rootContentLayer->setSize(
-        FloatSize(overflowRect.maxX(), overflowRect.maxY()));
-    m_rootContentLayer->setPosition(FloatPoint());
-    m_rootContentLayer->setOwnerNodeId(
-        DOMNodeIds::idForNode(m_layoutView.node()));
+  if (should_create_own_layers && !root_content_layer_) {
+    root_content_layer_ = GraphicsLayer::Create(this);
+    IntRect overflow_rect = layout_view_.PixelSnappedLayoutOverflowRect();
+    root_content_layer_->SetSize(
+        FloatSize(overflow_rect.MaxX(), overflow_rect.MaxY()));
+    root_content_layer_->SetPosition(FloatPoint());
+    root_content_layer_->SetOwnerNodeId(
+        DOMNodeIds::IdForNode(layout_view_.GetNode()));
 
     // FIXME: with rootLayerScrolls, we probably don't even need
     // m_rootContentLayer?
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       // Need to clip to prevent transformed content showing outside this frame
-      m_rootContentLayer->setMasksToBounds(true);
+      root_content_layer_->SetMasksToBounds(true);
     }
   }
 
-  if (shouldCreateOwnLayers && !m_overflowControlsHostLayer) {
-    DCHECK(!m_scrollLayer);
-    DCHECK(!m_containerLayer);
+  if (should_create_own_layers && !overflow_controls_host_layer_) {
+    DCHECK(!scroll_layer_);
+    DCHECK(!container_layer_);
 
     // Create a layer to host the clipping layer and the overflow controls
     // layers.
-    m_overflowControlsHostLayer = GraphicsLayer::create(this);
+    overflow_controls_host_layer_ = GraphicsLayer::Create(this);
 
     // Clip iframe's overflow controls layer.
-    bool containerMasksToBounds = !m_layoutView.frame()->isLocalRoot();
-    m_overflowControlsHostLayer->setMasksToBounds(containerMasksToBounds);
+    bool container_masks_to_bounds = !layout_view_.GetFrame()->IsLocalRoot();
+    overflow_controls_host_layer_->SetMasksToBounds(container_masks_to_bounds);
 
     // Create a clipping layer if this is an iframe or settings require to clip.
-    m_containerLayer = GraphicsLayer::create(this);
-    m_scrollLayer = GraphicsLayer::create(this);
-    if (ScrollingCoordinator* scrollingCoordinator =
-            this->scrollingCoordinator())
-      scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(
-          m_scrollLayer.get(), true);
+    container_layer_ = GraphicsLayer::Create(this);
+    scroll_layer_ = GraphicsLayer::Create(this);
+    if (ScrollingCoordinator* scrolling_coordinator =
+            this->GetScrollingCoordinator())
+      scrolling_coordinator->SetLayerIsContainerForFixedPositionLayers(
+          scroll_layer_.get(), true);
 
     // In RLS mode, LayoutView scrolling contents layer gets this element ID (in
     // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties).
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-      m_scrollLayer->setElementId(createCompositorElementId(
-          DOMNodeIds::idForNode(&m_layoutView.document()),
-          CompositorSubElementId::Scroll));
+      scroll_layer_->SetElementId(CreateCompositorElementId(
+          DOMNodeIds::IdForNode(&layout_view_.GetDocument()),
+          CompositorSubElementId::kScroll));
     }
 
     // Hook them up
-    m_overflowControlsHostLayer->addChild(m_containerLayer.get());
-    m_containerLayer->addChild(m_scrollLayer.get());
-    m_scrollLayer->addChild(m_rootContentLayer.get());
+    overflow_controls_host_layer_->AddChild(container_layer_.get());
+    container_layer_->AddChild(scroll_layer_.get());
+    scroll_layer_->AddChild(root_content_layer_.get());
 
-    frameViewDidChangeSize();
+    FrameViewDidChangeSize();
   }
 
-  attachCompositorTimeline();
-  attachRootLayer();
+  AttachCompositorTimeline();
+  AttachRootLayer();
 }
 
-void PaintLayerCompositor::destroyRootLayer() {
-  detachRootLayer();
+void PaintLayerCompositor::DestroyRootLayer() {
+  DetachRootLayer();
 
-  if (m_layerForHorizontalScrollbar) {
-    m_layerForHorizontalScrollbar->removeFromParent();
-    m_layerForHorizontalScrollbar = nullptr;
-    if (ScrollingCoordinator* scrollingCoordinator =
-            this->scrollingCoordinator())
-      scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(
-          m_layoutView.frameView(), HorizontalScrollbar);
-    m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(
-        HorizontalScrollbar);
+  if (layer_for_horizontal_scrollbar_) {
+    layer_for_horizontal_scrollbar_->RemoveFromParent();
+    layer_for_horizontal_scrollbar_ = nullptr;
+    if (ScrollingCoordinator* scrolling_coordinator =
+            this->GetScrollingCoordinator())
+      scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
+          layout_view_.GetFrameView(), kHorizontalScrollbar);
+    layout_view_.GetFrameView()->SetScrollbarNeedsPaintInvalidation(
+        kHorizontalScrollbar);
   }
 
-  if (m_layerForVerticalScrollbar) {
-    m_layerForVerticalScrollbar->removeFromParent();
-    m_layerForVerticalScrollbar = nullptr;
-    if (ScrollingCoordinator* scrollingCoordinator =
-            this->scrollingCoordinator())
-      scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(
-          m_layoutView.frameView(), VerticalScrollbar);
-    m_layoutView.frameView()->setScrollbarNeedsPaintInvalidation(
-        VerticalScrollbar);
+  if (layer_for_vertical_scrollbar_) {
+    layer_for_vertical_scrollbar_->RemoveFromParent();
+    layer_for_vertical_scrollbar_ = nullptr;
+    if (ScrollingCoordinator* scrolling_coordinator =
+            this->GetScrollingCoordinator())
+      scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
+          layout_view_.GetFrameView(), kVerticalScrollbar);
+    layout_view_.GetFrameView()->SetScrollbarNeedsPaintInvalidation(
+        kVerticalScrollbar);
   }
 
-  if (m_layerForScrollCorner) {
-    m_layerForScrollCorner = nullptr;
-    m_layoutView.frameView()->setScrollCornerNeedsPaintInvalidation();
+  if (layer_for_scroll_corner_) {
+    layer_for_scroll_corner_ = nullptr;
+    layout_view_.GetFrameView()->SetScrollCornerNeedsPaintInvalidation();
   }
 
-  if (m_overflowControlsHostLayer) {
-    m_overflowControlsHostLayer = nullptr;
-    m_containerLayer = nullptr;
-    m_scrollLayer = nullptr;
+  if (overflow_controls_host_layer_) {
+    overflow_controls_host_layer_ = nullptr;
+    container_layer_ = nullptr;
+    scroll_layer_ = nullptr;
   }
-  DCHECK(!m_scrollLayer);
-  m_rootContentLayer = nullptr;
+  DCHECK(!scroll_layer_);
+  root_content_layer_ = nullptr;
 }
 
-void PaintLayerCompositor::attachRootLayer() {
+void PaintLayerCompositor::AttachRootLayer() {
   // In Slimming Paint v2, PaintArtifactCompositor is responsible for the root
   // layer.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
-  if (m_layoutView.frame()->isLocalRoot()) {
-    m_rootLayerAttachment = RootLayerPendingAttachViaChromeClient;
+  if (layout_view_.GetFrame()->IsLocalRoot()) {
+    root_layer_attachment_ = kRootLayerPendingAttachViaChromeClient;
   } else {
-    HTMLFrameOwnerElement* ownerElement = m_layoutView.document().localOwner();
-    DCHECK(ownerElement);
+    HTMLFrameOwnerElement* owner_element =
+        layout_view_.GetDocument().LocalOwner();
+    DCHECK(owner_element);
     // The layer will get hooked up via
     // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
     // frame's layoutObject in the parent document.
-    ownerElement->setNeedsCompositingUpdate();
-    m_rootLayerAttachment = RootLayerAttachedViaEnclosingFrame;
+    owner_element->SetNeedsCompositingUpdate();
+    root_layer_attachment_ = kRootLayerAttachedViaEnclosingFrame;
   }
 }
 
-void PaintLayerCompositor::detachRootLayer() {
-  if (m_rootLayerAttachment == RootLayerUnattached)
+void PaintLayerCompositor::DetachRootLayer() {
+  if (root_layer_attachment_ == kRootLayerUnattached)
     return;
 
-  switch (m_rootLayerAttachment) {
-    case RootLayerAttachedViaEnclosingFrame: {
+  switch (root_layer_attachment_) {
+    case kRootLayerAttachedViaEnclosingFrame: {
       // The layer will get unhooked up via
       // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
       // frame's layoutObject in the parent document.
-      if (m_overflowControlsHostLayer)
-        m_overflowControlsHostLayer->removeFromParent();
+      if (overflow_controls_host_layer_)
+        overflow_controls_host_layer_->RemoveFromParent();
 
-      if (HTMLFrameOwnerElement* ownerElement =
-              m_layoutView.document().localOwner())
-        ownerElement->setNeedsCompositingUpdate();
+      if (HTMLFrameOwnerElement* owner_element =
+              layout_view_.GetDocument().LocalOwner())
+        owner_element->SetNeedsCompositingUpdate();
       break;
     }
-    case RootLayerAttachedViaChromeClient: {
-      LocalFrame& frame = m_layoutView.frameView()->frame();
-      Page* page = frame.page();
+    case kRootLayerAttachedViaChromeClient: {
+      LocalFrame& frame = layout_view_.GetFrameView()->GetFrame();
+      Page* page = frame.GetPage();
       if (!page)
         return;
-      page->chromeClient().attachRootGraphicsLayer(0, &frame);
+      page->GetChromeClient().AttachRootGraphicsLayer(0, &frame);
       break;
     }
-    case RootLayerPendingAttachViaChromeClient:
-    case RootLayerUnattached:
+    case kRootLayerPendingAttachViaChromeClient:
+    case kRootLayerUnattached:
       break;
   }
 
-  m_rootLayerAttachment = RootLayerUnattached;
+  root_layer_attachment_ = kRootLayerUnattached;
 }
 
-void PaintLayerCompositor::attachCompositorTimeline() {
-  LocalFrame& frame = m_layoutView.frameView()->frame();
-  Page* page = frame.page();
-  if (!page || !frame.document())
+void PaintLayerCompositor::AttachCompositorTimeline() {
+  LocalFrame& frame = layout_view_.GetFrameView()->GetFrame();
+  Page* page = frame.GetPage();
+  if (!page || !frame.GetDocument())
     return;
 
-  CompositorAnimationTimeline* compositorTimeline =
-      frame.document()->timeline().compositorTimeline();
-  if (compositorTimeline)
-    page->chromeClient().attachCompositorAnimationTimeline(compositorTimeline,
-                                                           &frame);
+  CompositorAnimationTimeline* compositor_timeline =
+      frame.GetDocument()->Timeline().CompositorTimeline();
+  if (compositor_timeline)
+    page->GetChromeClient().AttachCompositorAnimationTimeline(
+        compositor_timeline, &frame);
 }
 
-void PaintLayerCompositor::detachCompositorTimeline() {
-  LocalFrame& frame = m_layoutView.frameView()->frame();
-  Page* page = frame.page();
-  if (!page || !frame.document())
+void PaintLayerCompositor::DetachCompositorTimeline() {
+  LocalFrame& frame = layout_view_.GetFrameView()->GetFrame();
+  Page* page = frame.GetPage();
+  if (!page || !frame.GetDocument())
     return;
 
-  CompositorAnimationTimeline* compositorTimeline =
-      frame.document()->timeline().compositorTimeline();
-  if (compositorTimeline)
-    page->chromeClient().detachCompositorAnimationTimeline(compositorTimeline,
-                                                           &frame);
+  CompositorAnimationTimeline* compositor_timeline =
+      frame.GetDocument()->Timeline().CompositorTimeline();
+  if (compositor_timeline)
+    page->GetChromeClient().DetachCompositorAnimationTimeline(
+        compositor_timeline, &frame);
 }
 
-ScrollingCoordinator* PaintLayerCompositor::scrollingCoordinator() const {
-  if (Page* page = this->page())
-    return page->scrollingCoordinator();
+ScrollingCoordinator* PaintLayerCompositor::GetScrollingCoordinator() const {
+  if (Page* page = this->GetPage())
+    return page->GetScrollingCoordinator();
 
   return nullptr;
 }
 
-Page* PaintLayerCompositor::page() const {
-  return m_layoutView.frameView()->frame().page();
+Page* PaintLayerCompositor::GetPage() const {
+  return layout_view_.GetFrameView()->GetFrame().GetPage();
 }
 
-DocumentLifecycle& PaintLayerCompositor::lifecycle() const {
-  return m_layoutView.document().lifecycle();
+DocumentLifecycle& PaintLayerCompositor::Lifecycle() const {
+  return layout_view_.GetDocument().Lifecycle();
 }
 
-bool PaintLayerCompositor::isMainFrame() const {
-  return m_layoutView.frame()->isMainFrame();
+bool PaintLayerCompositor::IsMainFrame() const {
+  return layout_view_.GetFrame()->IsMainFrame();
 }
 
-VisualViewport& PaintLayerCompositor::visualViewport() const {
-  return m_layoutView.frameView()->page()->visualViewport();
+VisualViewport& PaintLayerCompositor::GetVisualViewport() const {
+  return layout_view_.GetFrameView()->GetPage()->GetVisualViewport();
 }
 
-String PaintLayerCompositor::debugName(
-    const GraphicsLayer* graphicsLayer) const {
+String PaintLayerCompositor::DebugName(
+    const GraphicsLayer* graphics_layer) const {
   String name;
-  if (graphicsLayer == m_rootContentLayer.get()) {
+  if (graphics_layer == root_content_layer_.get()) {
     name = "Content Root Layer";
-  } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
+  } else if (graphics_layer == overflow_controls_host_layer_.get()) {
     name = "Frame Overflow Controls Host Layer";
-  } else if (graphicsLayer == m_layerForHorizontalScrollbar.get()) {
+  } else if (graphics_layer == layer_for_horizontal_scrollbar_.get()) {
     name = "Frame Horizontal Scrollbar Layer";
-  } else if (graphicsLayer == m_layerForVerticalScrollbar.get()) {
+  } else if (graphics_layer == layer_for_vertical_scrollbar_.get()) {
     name = "Frame Vertical Scrollbar Layer";
-  } else if (graphicsLayer == m_layerForScrollCorner.get()) {
+  } else if (graphics_layer == layer_for_scroll_corner_.get()) {
     name = "Frame Scroll Corner Layer";
-  } else if (graphicsLayer == m_containerLayer.get()) {
+  } else if (graphics_layer == container_layer_.get()) {
     name = "Frame Clipping Layer";
-  } else if (graphicsLayer == m_scrollLayer.get()) {
+  } else if (graphics_layer == scroll_layer_.get()) {
     name = "Frame Scrolling Layer";
   } else {
     NOTREACHED();

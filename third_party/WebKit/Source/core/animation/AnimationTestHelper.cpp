@@ -8,22 +8,22 @@
 
 namespace blink {
 
-void setV8ObjectPropertyAsString(v8::Isolate* isolate,
+void SetV8ObjectPropertyAsString(v8::Isolate* isolate,
                                  v8::Local<v8::Object> object,
                                  const StringView& name,
                                  const StringView& value) {
   object
-      ->Set(isolate->GetCurrentContext(), v8String(isolate, name),
-            v8String(isolate, value))
+      ->Set(isolate->GetCurrentContext(), V8String(isolate, name),
+            V8String(isolate, value))
       .ToChecked();
 }
 
-void setV8ObjectPropertyAsNumber(v8::Isolate* isolate,
+void SetV8ObjectPropertyAsNumber(v8::Isolate* isolate,
                                  v8::Local<v8::Object> object,
                                  const StringView& name,
                                  double value) {
   object
-      ->Set(isolate->GetCurrentContext(), v8String(isolate, name),
+      ->Set(isolate->GetCurrentContext(), V8String(isolate, name),
             v8::Number::New(isolate, value))
       .ToChecked();
 }

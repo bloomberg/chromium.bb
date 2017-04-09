@@ -22,20 +22,20 @@ class FakeWebTaskRunner : public WebTaskRunner {
  public:
   FakeWebTaskRunner();
 
-  void setTime(double new_time);
+  void SetTime(double new_time);
 
   // WebTaskRunner implementation:
-  void postDelayedTask(const WebTraceLocation&,
+  void PostDelayedTask(const WebTraceLocation&,
                        base::OnceClosure,
                        double) override;
-  bool runsTasksOnCurrentThread() override;
-  double virtualTimeSeconds() const override;
-  double monotonicallyIncreasingVirtualTimeSeconds() const override;
-  SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
+  bool RunsTasksOnCurrentThread() override;
+  double VirtualTimeSeconds() const override;
+  double MonotonicallyIncreasingVirtualTimeSeconds() const override;
+  SingleThreadTaskRunner* ToSingleThreadTaskRunner() override;
 
-  void runUntilIdle();
-  void advanceTimeAndRun(double delta_seconds);
-  std::deque<std::pair<base::OnceClosure, double>> takePendingTasksForTesting();
+  void RunUntilIdle();
+  void AdvanceTimeAndRun(double delta_seconds);
+  std::deque<std::pair<base::OnceClosure, double>> TakePendingTasksForTesting();
 
  private:
   ~FakeWebTaskRunner() override;

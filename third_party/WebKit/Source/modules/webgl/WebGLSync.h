@@ -18,21 +18,21 @@ class WebGLSync : public WebGLSharedObject {
  public:
   ~WebGLSync() override;
 
-  GLsync object() const { return m_object; }
+  GLsync Object() const { return object_; }
 
  protected:
-  WebGLSync(WebGL2RenderingContextBase*, GLsync, GLenum objectType);
+  WebGLSync(WebGL2RenderingContextBase*, GLsync, GLenum object_type);
 
-  bool hasObject() const override { return m_object != nullptr; }
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  bool HasObject() const override { return object_ != nullptr; }
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-  GLenum objectType() const { return m_objectType; }
+  GLenum ObjectType() const { return object_type_; }
 
  private:
-  bool isSync() const override { return true; }
+  bool IsSync() const override { return true; }
 
-  GLsync m_object;
-  GLenum m_objectType;
+  GLsync object_;
+  GLenum object_type_;
 };
 
 }  // namespace blink

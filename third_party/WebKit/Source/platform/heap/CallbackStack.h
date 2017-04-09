@@ -29,33 +29,33 @@ class CallbackStack final {
    public:
     Item() {}
     Item(void* object, VisitorCallback callback)
-        : m_object(object), m_callback(callback) {}
-    void* object() { return m_object; }
-    VisitorCallback callback() { return m_callback; }
-    void call(Visitor* visitor) { m_callback(visitor, m_object); }
+        : object_(object), callback_(callback) {}
+    void* Object() { return object_; }
+    VisitorCallback Callback() { return callback_; }
+    void Call(Visitor* visitor) { callback_(visitor, object_); }
 
    private:
-    void* m_object;
-    VisitorCallback m_callback;
+    void* object_;
+    VisitorCallback callback_;
   };
 
-  static std::unique_ptr<CallbackStack> create();
+  static std::unique_ptr<CallbackStack> Create();
   ~CallbackStack();
 
-  void commit();
-  void decommit();
+  void Commit();
+  void Decommit();
 
-  Item* allocateEntry();
-  Item* pop();
+  Item* AllocateEntry();
+  Item* Pop();
 
-  bool isEmpty() const;
+  bool IsEmpty() const;
 
-  void invokeEphemeronCallbacks(Visitor*);
+  void InvokeEphemeronCallbacks(Visitor*);
 
 #if DCHECK_IS_ON()
-  bool hasCallbackForObject(const void*);
+  bool HasCallbackForObject(const void*);
 #endif
-  bool hasJustOneBlock() const;
+  bool HasJustOneBlock() const;
 
   static const size_t kMinimalBlockSize;
   static const size_t kDefaultBlockSize = (1 << 13);
@@ -69,49 +69,49 @@ class CallbackStack final {
     ~Block();
 
 #if DCHECK_IS_ON()
-    void clear();
+    void Clear();
 #endif
-    Block* next() const { return m_next; }
-    void setNext(Block* next) { m_next = next; }
+    Block* Next() const { return next_; }
+    void SetNext(Block* next) { next_ = next; }
 
-    bool isEmptyBlock() const { return m_current == &(m_buffer[0]); }
+    bool IsEmptyBlock() const { return current_ == &(buffer_[0]); }
 
-    size_t blockSize() const { return m_blockSize; }
+    size_t BlockSize() const { return block_size_; }
 
-    Item* allocateEntry() {
-      if (LIKELY(m_current < m_limit))
-        return m_current++;
+    Item* AllocateEntry() {
+      if (LIKELY(current_ < limit_))
+        return current_++;
       return nullptr;
     }
 
-    Item* pop() {
-      if (UNLIKELY(isEmptyBlock()))
+    Item* Pop() {
+      if (UNLIKELY(IsEmptyBlock()))
         return nullptr;
-      return --m_current;
+      return --current_;
     }
 
-    void invokeEphemeronCallbacks(Visitor*);
+    void InvokeEphemeronCallbacks(Visitor*);
 
 #if DCHECK_IS_ON()
-    bool hasCallbackForObject(const void*);
+    bool HasCallbackForObject(const void*);
 #endif
 
    private:
-    size_t m_blockSize;
+    size_t block_size_;
 
-    Item* m_buffer;
-    Item* m_limit;
-    Item* m_current;
-    Block* m_next;
+    Item* buffer_;
+    Item* limit_;
+    Item* current_;
+    Block* next_;
   };
 
   CallbackStack();
-  Item* popSlow();
-  Item* allocateEntrySlow();
-  void invokeOldestCallbacks(Block*, Block*, Visitor*);
+  Item* PopSlow();
+  Item* AllocateEntrySlow();
+  void InvokeOldestCallbacks(Block*, Block*, Visitor*);
 
-  Block* m_first;
-  Block* m_last;
+  Block* first_;
+  Block* last_;
 };
 
 class CallbackStackMemoryPool final {
@@ -124,34 +124,34 @@ class CallbackStackMemoryPool final {
   static const size_t kPooledBlockCount = 8;
   static const size_t kBlockBytes = kBlockSize * sizeof(CallbackStack::Item);
 
-  static CallbackStackMemoryPool& instance();
+  static CallbackStackMemoryPool& Instance();
 
-  void initialize();
-  CallbackStack::Item* allocate();
-  void free(CallbackStack::Item*);
+  void Initialize();
+  CallbackStack::Item* Allocate();
+  void Free(CallbackStack::Item*);
 
  private:
-  Mutex m_mutex;
-  int m_freeListFirst;
-  int m_freeListNext[kPooledBlockCount];
-  CallbackStack::Item* m_pooledMemory;
+  Mutex mutex_;
+  int free_list_first_;
+  int free_list_next_[kPooledBlockCount];
+  CallbackStack::Item* pooled_memory_;
 };
 
-ALWAYS_INLINE CallbackStack::Item* CallbackStack::allocateEntry() {
-  DCHECK(m_first);
-  Item* item = m_first->allocateEntry();
+ALWAYS_INLINE CallbackStack::Item* CallbackStack::AllocateEntry() {
+  DCHECK(first_);
+  Item* item = first_->AllocateEntry();
   if (LIKELY(!!item))
     return item;
 
-  return allocateEntrySlow();
+  return AllocateEntrySlow();
 }
 
-ALWAYS_INLINE CallbackStack::Item* CallbackStack::pop() {
-  Item* item = m_first->pop();
+ALWAYS_INLINE CallbackStack::Item* CallbackStack::Pop() {
+  Item* item = first_->Pop();
   if (LIKELY(!!item))
     return item;
 
-  return popSlow();
+  return PopSlow();
 }
 
 }  // namespace blink

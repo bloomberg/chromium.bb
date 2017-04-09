@@ -81,18 +81,18 @@ void VerifyImage(const blink::WebImageDecoder& decoder,
                  const base::FilePath& md5_sum_path,
                  size_t frame_index) {
   // Make sure decoding can complete successfully.
-  EXPECT_TRUE(decoder.isSizeAvailable()) << path.value();
-  EXPECT_GE(decoder.frameCount(), frame_index) << path.value();
-  EXPECT_TRUE(decoder.isFrameCompleteAtIndex(frame_index)) << path.value();
-  EXPECT_FALSE(decoder.isFailed());
+  EXPECT_TRUE(decoder.IsSizeAvailable()) << path.value();
+  EXPECT_GE(decoder.FrameCount(), frame_index) << path.value();
+  EXPECT_TRUE(decoder.IsFrameCompleteAtIndex(frame_index)) << path.value();
+  EXPECT_FALSE(decoder.IsFailed());
 
   // Calculate MD5 sum.
   base::MD5Digest actual_digest;
-  blink::WebImage web_image = decoder.getFrameAtIndex(frame_index);
-  web_image.getSkBitmap().lockPixels();
-  base::MD5Sum(web_image.getSkBitmap().getPixels(),
-               web_image.getSkBitmap().width() *
-                   web_image.getSkBitmap().height() * sizeof(uint32_t),
+  blink::WebImage web_image = decoder.GetFrameAtIndex(frame_index);
+  web_image.GetSkBitmap().lockPixels();
+  base::MD5Sum(web_image.GetSkBitmap().getPixels(),
+               web_image.GetSkBitmap().width() *
+                   web_image.GetSkBitmap().height() * sizeof(uint32_t),
                &actual_digest);
 
   // Read the MD5 sum off disk.
@@ -105,7 +105,7 @@ void VerifyImage(const blink::WebImageDecoder& decoder,
   // Verify that the sums are the same.
   EXPECT_EQ(0, memcmp(&expected_digest, &actual_digest, sizeof actual_digest))
       << path.value();
-  web_image.getSkBitmap().unlockPixels();
+  web_image.GetSkBitmap().unlockPixels();
 }
 #endif
 
@@ -179,7 +179,7 @@ void ImageDecoderTest::TestWebKitImageDecoder(
   ReadFileToVector(image_path, &image_contents);
   EXPECT_TRUE(image_contents.size());
   std::unique_ptr<blink::WebImageDecoder> decoder(CreateWebKitImageDecoder());
-  EXPECT_FALSE(decoder->isFailed());
+  EXPECT_FALSE(decoder->IsFailed());
 
 #if !defined(CALCULATE_MD5_SUMS)
   // Test chunking file into half.
@@ -193,19 +193,19 @@ void ImageDecoderTest::TestWebKitImageDecoder(
   // NOTE: We can't check that frame 0 is non-NULL, because if this is an
   // ICO and we haven't yet supplied enough data to read the directory,
   // there is no framecount and thus no first frame.
-  decoder->setData(const_cast<blink::WebData&>(partial_data), false);
-  EXPECT_FALSE(decoder->isFailed()) << image_path.value();
+  decoder->SetData(const_cast<blink::WebData&>(partial_data), false);
+  EXPECT_FALSE(decoder->IsFailed()) << image_path.value();
 #endif
 
   // Make sure passing the complete image results in successful decoding.
   blink::WebData data(reinterpret_cast<const char*>(&(image_contents.at(0))),
     image_contents.size());
-  decoder->setData(const_cast<blink::WebData&>(data), true);
+  decoder->SetData(const_cast<blink::WebData&>(data), true);
   if (ShouldImageFail(image_path)) {
-    EXPECT_FALSE(decoder->isFrameCompleteAtIndex(kFirstFrameIndex));
-    EXPECT_TRUE(decoder->isFailed());
+    EXPECT_FALSE(decoder->IsFrameCompleteAtIndex(kFirstFrameIndex));
+    EXPECT_TRUE(decoder->IsFailed());
   } else {
-    EXPECT_FALSE(decoder->isFailed()) << image_path.value();
+    EXPECT_FALSE(decoder->IsFailed()) << image_path.value();
 #if defined(CALCULATE_MD5_SUMS)
     SaveMD5Sum(md5_sum_path, decoder->getFrameAtIndex(desired_frame_index));
 #else

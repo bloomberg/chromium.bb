@@ -24,40 +24,41 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
   WTF_MAKE_NONCOPYABLE(ComputedStylePropertyMap);
 
  public:
-  static ComputedStylePropertyMap* create(Node* node,
-                                          const String& pseudoElement) {
-    return new ComputedStylePropertyMap(node, pseudoElement);
+  static ComputedStylePropertyMap* Create(Node* node,
+                                          const String& pseudo_element) {
+    return new ComputedStylePropertyMap(node, pseudo_element);
   }
 
   Vector<String> getProperties() override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_computedStyleDeclaration);
-    visitor->trace(m_node);
-    StylePropertyMapReadonly::trace(visitor);
+    visitor->Trace(computed_style_declaration_);
+    visitor->Trace(node_);
+    StylePropertyMapReadonly::Trace(visitor);
   }
 
  private:
-  Node* node() const;
+  Node* GetNode() const;
 
  protected:
-  ComputedStylePropertyMap(Node* node, const String& pseudoElement = String())
+  ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
       : StylePropertyMapReadonly(),
-        m_computedStyleDeclaration(
-            CSSComputedStyleDeclaration::create(node, false, pseudoElement)),
-        m_pseudoId(CSSSelector::parsePseudoId(pseudoElement)),
-        m_node(node) {}
+        computed_style_declaration_(
+            CSSComputedStyleDeclaration::Create(node, false, pseudo_element)),
+        pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
+        node_(node) {}
 
-  CSSStyleValueVector getAllInternal(CSSPropertyID) override;
-  CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
+  CSSStyleValueVector GetAllInternal(CSSPropertyID) override;
+  CSSStyleValueVector GetAllInternal(
+      AtomicString custom_property_name) override;
 
-  HeapVector<StylePropertyMapEntry> getIterationEntries() override {
+  HeapVector<StylePropertyMapEntry> GetIterationEntries() override {
     return HeapVector<StylePropertyMapEntry>();
   }
 
-  Member<CSSComputedStyleDeclaration> m_computedStyleDeclaration;
-  PseudoId m_pseudoId;
-  Member<Node> m_node;
+  Member<CSSComputedStyleDeclaration> computed_style_declaration_;
+  PseudoId pseudo_id_;
+  Member<Node> node_;
 };
 
 }  // namespace blink

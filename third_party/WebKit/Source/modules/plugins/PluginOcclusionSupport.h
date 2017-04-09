@@ -28,9 +28,9 @@ class Element;
 class FrameViewBase;
 class IntRect;
 
-MODULES_EXPORT void getPluginOcclusions(Element*,
+MODULES_EXPORT void GetPluginOcclusions(Element*,
                                         FrameViewBase* parent,
-                                        const IntRect& frameRect,
+                                        const IntRect& frame_rect,
                                         Vector<IntRect>& occlusions);
 
 }  // namespace blink

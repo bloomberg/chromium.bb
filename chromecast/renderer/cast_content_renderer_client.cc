@@ -99,11 +99,11 @@ void CastContentRendererClient::RenderViewCreated(
   blink::WebView* webview = render_view->GetWebView();
   if (webview) {
     blink::WebFrameWidget* web_frame_widget = render_view->GetWebFrameWidget();
-    web_frame_widget->setBaseBackgroundColor(kColorBlack);
+    web_frame_widget->SetBaseBackgroundColor(kColorBlack);
 
     // Disable application cache as Chromecast doesn't support off-line
     // application running.
-    webview->settings()->setOfflineWebApplicationCacheEnabled(false);
+    webview->GetSettings()->SetOfflineWebApplicationCacheEnabled(false);
   }
 }
 
@@ -193,7 +193,7 @@ bool CastContentRendererClient::AllowMediaSuspend() {
 void CastContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
   // Settings for ATV (Android defaults are not what we want).
-  blink::WebRuntimeFeatures::enableMediaControlsOverlayPlayButton(false);
+  blink::WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(false);
 }
 
 }  // namespace shell

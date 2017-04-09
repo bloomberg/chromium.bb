@@ -37,51 +37,51 @@ namespace blink {
 
 namespace {
 
-bool isIntegerArray(DOMArrayBufferView* array) {
-  DOMArrayBufferView::ViewType type = array->type();
-  return type == DOMArrayBufferView::TypeInt8 ||
-         type == DOMArrayBufferView::TypeUint8 ||
-         type == DOMArrayBufferView::TypeUint8Clamped ||
-         type == DOMArrayBufferView::TypeInt16 ||
-         type == DOMArrayBufferView::TypeUint16 ||
-         type == DOMArrayBufferView::TypeInt32 ||
-         type == DOMArrayBufferView::TypeUint32;
+bool IsIntegerArray(DOMArrayBufferView* array) {
+  DOMArrayBufferView::ViewType type = array->GetType();
+  return type == DOMArrayBufferView::kTypeInt8 ||
+         type == DOMArrayBufferView::kTypeUint8 ||
+         type == DOMArrayBufferView::kTypeUint8Clamped ||
+         type == DOMArrayBufferView::kTypeInt16 ||
+         type == DOMArrayBufferView::kTypeUint16 ||
+         type == DOMArrayBufferView::kTypeInt32 ||
+         type == DOMArrayBufferView::kTypeUint32;
 }
 
 }  // namespace
 
 DOMArrayBufferView* Crypto::getRandomValues(DOMArrayBufferView* array,
-                                            ExceptionState& exceptionState) {
+                                            ExceptionState& exception_state) {
   ASSERT(array);
-  if (!isIntegerArray(array)) {
-    exceptionState.throwDOMException(
-        TypeMismatchError,
-        String::format("The provided ArrayBufferView is of type '%s', which is "
+  if (!IsIntegerArray(array)) {
+    exception_state.ThrowDOMException(
+        kTypeMismatchError,
+        String::Format("The provided ArrayBufferView is of type '%s', which is "
                        "not an integer array type.",
-                       array->typeName()));
+                       array->TypeName()));
     return nullptr;
   }
   if (array->byteLength() > 65536) {
-    exceptionState.throwDOMException(
-        QuotaExceededError,
-        String::format("The ArrayBufferView's byte length (%u) exceeds the "
+    exception_state.ThrowDOMException(
+        kQuotaExceededError,
+        String::Format("The ArrayBufferView's byte length (%u) exceeds the "
                        "number of bytes of entropy available via this API "
                        "(65536).",
                        array->byteLength()));
     return nullptr;
   }
-  cryptographicallyRandomValues(array->baseAddress(), array->byteLength());
+  CryptographicallyRandomValues(array->BaseAddress(), array->byteLength());
   return array;
 }
 
 SubtleCrypto* Crypto::subtle() {
-  if (!m_subtleCrypto)
-    m_subtleCrypto = SubtleCrypto::create();
-  return m_subtleCrypto.get();
+  if (!subtle_crypto_)
+    subtle_crypto_ = SubtleCrypto::Create();
+  return subtle_crypto_.Get();
 }
 
 DEFINE_TRACE(Crypto) {
-  visitor->trace(m_subtleCrypto);
+  visitor->Trace(subtle_crypto_);
 }
 
 }  // namespace blink

@@ -37,27 +37,27 @@ class CORE_EXPORT Attr final : public Node {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Attr* create(Element&, const QualifiedName&);
-  static Attr* create(Document&,
+  static Attr* Create(Element&, const QualifiedName&);
+  static Attr* Create(Document&,
                       const QualifiedName&,
                       const AtomicString& value);
   ~Attr() override;
 
-  String name() const { return m_name.toString(); }
+  String name() const { return name_.ToString(); }
   bool specified() const { return true; }
-  Element* ownerElement() const { return m_element; }
+  Element* ownerElement() const { return element_; }
 
   const AtomicString& value() const;
   void setValue(const AtomicString&);
 
-  const QualifiedName getQualifiedName() const;
+  const QualifiedName GetQualifiedName() const;
 
-  void attachToElement(Element*, const AtomicString&);
-  void detachFromElementWithValue(const AtomicString&);
+  void AttachToElement(Element*, const AtomicString&);
+  void DetachFromElementWithValue(const AtomicString&);
 
-  const AtomicString& localName() const { return m_name.localName(); }
-  const AtomicString& namespaceURI() const { return m_name.namespaceURI(); }
-  const AtomicString& prefix() const { return m_name.prefix(); }
+  const AtomicString& localName() const { return name_.LocalName(); }
+  const AtomicString& namespaceURI() const { return name_.NamespaceURI(); }
+  const AtomicString& prefix() const { return name_.Prefix(); }
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -66,7 +66,7 @@ class CORE_EXPORT Attr final : public Node {
   Attr(Element&, const QualifiedName&);
   Attr(Document&, const QualifiedName&, const AtomicString& value);
 
-  bool isElementNode() const =
+  bool IsElementNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
   String nodeName() const override { return name(); }
@@ -76,22 +76,22 @@ class CORE_EXPORT Attr final : public Node {
   void setNodeValue(const String&) override;
   Node* cloneNode(bool deep, ExceptionState&) override;
 
-  bool isAttributeNode() const override { return true; }
+  bool IsAttributeNode() const override { return true; }
 
   // Attr wraps either an element/name, or a name/value pair (when it's a
   // standalone Node.)
   // Note that m_name is always set, but m_element/m_standaloneValue may be
   // null.
-  TraceWrapperMember<Element> m_element;
-  QualifiedName m_name;
+  TraceWrapperMember<Element> element_;
+  QualifiedName name_;
   // Holds the value if it is a standalone Node, or the local name of the
   // attribute it is attached to on an Element. The latter may (letter case)
   // differ from m_name's local name. As these two modes are non-overlapping,
   // use a single field.
-  AtomicString m_standaloneValueOrAttachedLocalName;
+  AtomicString standalone_value_or_attached_local_name_;
 };
 
-DEFINE_NODE_TYPE_CASTS(Attr, isAttributeNode());
+DEFINE_NODE_TYPE_CASTS(Attr, IsAttributeNode());
 
 }  // namespace blink
 

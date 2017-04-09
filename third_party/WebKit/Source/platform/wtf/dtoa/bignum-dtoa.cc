@@ -386,11 +386,12 @@ namespace double_conversion {
         // the fact that 2^(p-1) <= f < 2^p. Boundaries still satisfy this requirement
         // (even for denormals where the delta can be much more important).
 
-        const double k1Log10 = 0.30102999566398114;  // 1/lg(10)
+        const double kK1Log10 = 0.30102999566398114;  // 1/lg(10)
 
         // For doubles len(f) == 53 (don't forget the hidden bit).
         const int kSignificandSize = 53;
-        double estimate = ceil((exponent + kSignificandSize - 1) * k1Log10 - 1e-10);
+        double estimate =
+            ceil((exponent + kSignificandSize - 1) * kK1Log10 - 1e-10);
         return static_cast<int>(estimate);
     }
 

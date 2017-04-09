@@ -13,7 +13,7 @@
 
 namespace blink {
 
-static const char s_blockWithContinuations[] =
+static const char kBlockWithContinuations[] =
     "<head> <style> form {display: inline;} </style> </head>"
     "<body>"
     "  <form>"
@@ -23,14 +23,14 @@ static const char s_blockWithContinuations[] =
     "  </form>"
     "</body>";
 
-static const char s_emptyBlock[] =
+static const char kEmptyBlock[] =
     "<head> <style> form {display: inline;} </style> </head>"
     "<body> <form id='testElement'> </form> </body>";
 
-static const char s_emptyInline[] =
+static const char kEmptyInline[] =
     "<body> <span id='testElement'> </span> </body>";
 
-static const char s_blockWithDisplayNone[] =
+static const char kBlockWithDisplayNone[] =
     "<head> <style> form {display: none;} </style> </head>"
     "<body>"
     "  <form id='testElement'>"
@@ -40,116 +40,116 @@ static const char s_blockWithDisplayNone[] =
     "  </form>"
     "</body>";
 
-static const char s_blockWithContent[] =
+static const char kBlockWithContent[] =
     "<div id='testElement'>"
     "  <div>Hello</div> "
     "</div>";
 
-static const char s_blockWithText[] =
+static const char kBlockWithText[] =
     "<div id='testElement'>"
     "  <div>Hello</div> "
     "</div>";
 
-static const char s_blockWithInlines[] =
+static const char kBlockWithInlines[] =
     "<div id='testElement'>"
     "  <span>Hello</span> "
     "</div>";
 
-static const char s_blockWithEmptyInlines[] =
+static const char kBlockWithEmptyInlines[] =
     "<div id='testElement'>"
     "  <span></span> "
     "</div>";
 
 class WebElementTest : public testing::Test {
  protected:
-  Document& document() { return m_pageHolder->document(); }
-  void insertHTML(String html);
-  WebElement testElement();
+  Document& GetDocument() { return page_holder_->GetDocument(); }
+  void InsertHTML(String html);
+  WebElement TestElement();
 
  private:
   void SetUp() override;
 
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
-void WebElementTest::insertHTML(String html) {
-  document().documentElement()->setInnerHTML(html);
+void WebElementTest::InsertHTML(String html) {
+  GetDocument().documentElement()->setInnerHTML(html);
 }
 
-WebElement WebElementTest::testElement() {
-  Element* element = document().getElementById("testElement");
+WebElement WebElementTest::TestElement() {
+  Element* element = GetDocument().GetElementById("testElement");
   DCHECK(element);
   return WebElement(element);
 }
 
 void WebElementTest::SetUp() {
-  m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
 TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
-  insertHTML(s_emptyBlock);
-  EXPECT_FALSE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kEmptyBlock);
+  EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_emptyInline);
-  EXPECT_FALSE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kEmptyInline);
+  EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_blockWithDisplayNone);
-  EXPECT_FALSE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kBlockWithDisplayNone);
+  EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_blockWithEmptyInlines);
-  EXPECT_FALSE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kBlockWithEmptyInlines);
+  EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_blockWithContinuations);
-  EXPECT_TRUE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kBlockWithContinuations);
+  EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_blockWithInlines);
-  EXPECT_TRUE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kBlockWithInlines);
+  EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_blockWithContent);
-  EXPECT_TRUE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kBlockWithContent);
+  EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_blockWithText);
-  EXPECT_TRUE(testElement().hasNonEmptyLayoutSize());
+  InsertHTML(kBlockWithText);
+  EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 
-  insertHTML(s_emptyBlock);
+  InsertHTML(kEmptyBlock);
   ShadowRoot* root =
-      document()
-          .getElementById("testElement")
-          ->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+      GetDocument()
+          .GetElementById("testElement")
+          ->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
   root->setInnerHTML("<div>Hello World</div>");
-  EXPECT_TRUE(testElement().hasNonEmptyLayoutSize());
+  EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 }
 
 TEST_F(WebElementTest, IsEditable) {
-  insertHTML("<div id=testElement></div>");
-  EXPECT_FALSE(testElement().isEditable());
+  InsertHTML("<div id=testElement></div>");
+  EXPECT_FALSE(TestElement().IsEditable());
 
-  insertHTML("<div id=testElement contenteditable=true></div>");
-  EXPECT_TRUE(testElement().isEditable());
+  InsertHTML("<div id=testElement contenteditable=true></div>");
+  EXPECT_TRUE(TestElement().IsEditable());
 
-  insertHTML(
+  InsertHTML(
       "<div style='-webkit-user-modify: read-write'>"
       "  <div id=testElement></div>"
       "</div>");
-  EXPECT_TRUE(testElement().isEditable());
+  EXPECT_TRUE(TestElement().IsEditable());
 
-  insertHTML(
+  InsertHTML(
       "<div style='-webkit-user-modify: read-write'>"
       "  <div id=testElement style='-webkit-user-modify: read-only'></div>"
       "</div>");
-  EXPECT_FALSE(testElement().isEditable());
+  EXPECT_FALSE(TestElement().IsEditable());
 
-  insertHTML("<input id=testElement>");
-  EXPECT_TRUE(testElement().isEditable());
+  InsertHTML("<input id=testElement>");
+  EXPECT_TRUE(TestElement().IsEditable());
 
-  insertHTML("<input id=testElement readonly>");
-  EXPECT_FALSE(testElement().isEditable());
+  InsertHTML("<input id=testElement readonly>");
+  EXPECT_FALSE(TestElement().IsEditable());
 
-  insertHTML("<input id=testElement disabled>");
-  EXPECT_FALSE(testElement().isEditable());
+  InsertHTML("<input id=testElement disabled>");
+  EXPECT_FALSE(TestElement().IsEditable());
 
-  insertHTML("<fieldset disabled><div><input id=testElement></div></fieldset>");
-  EXPECT_FALSE(testElement().isEditable());
+  InsertHTML("<fieldset disabled><div><input id=testElement></div></fieldset>");
+  EXPECT_FALSE(TestElement().IsEditable());
 }
 
 }  // namespace blink

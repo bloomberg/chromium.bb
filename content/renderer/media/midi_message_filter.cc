@@ -218,20 +218,20 @@ void MidiMessageFilter::HandleClientAdded(Result result) {
     if (result == Result::OK) {
       // Add the client's input and output ports.
       for (const auto& info : inputs_) {
-        client->didAddInputPort(WebString::fromUTF8(info.id),
-                                WebString::fromUTF8(info.manufacturer),
-                                WebString::fromUTF8(info.name),
-                                WebString::fromUTF8(info.version), info.state);
+        client->DidAddInputPort(WebString::FromUTF8(info.id),
+                                WebString::FromUTF8(info.manufacturer),
+                                WebString::FromUTF8(info.name),
+                                WebString::FromUTF8(info.version), info.state);
       }
 
       for (const auto& info : outputs_) {
-        client->didAddOutputPort(WebString::fromUTF8(info.id),
-                                 WebString::fromUTF8(info.manufacturer),
-                                 WebString::fromUTF8(info.name),
-                                 WebString::fromUTF8(info.version), info.state);
+        client->DidAddOutputPort(WebString::FromUTF8(info.id),
+                                 WebString::FromUTF8(info.manufacturer),
+                                 WebString::FromUTF8(info.name),
+                                 WebString::FromUTF8(info.version), info.state);
       }
     }
-    client->didStartSession(result);
+    client->DidStartSession(result);
     clients_.insert(client);
   }
 }
@@ -239,23 +239,23 @@ void MidiMessageFilter::HandleClientAdded(Result result) {
 void MidiMessageFilter::HandleAddInputPort(midi::MidiPortInfo info) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_.push_back(info);
-  const WebString id = WebString::fromUTF8(info.id);
-  const WebString manufacturer = WebString::fromUTF8(info.manufacturer);
-  const WebString name = WebString::fromUTF8(info.name);
-  const WebString version = WebString::fromUTF8(info.version);
+  const WebString id = WebString::FromUTF8(info.id);
+  const WebString manufacturer = WebString::FromUTF8(info.manufacturer);
+  const WebString name = WebString::FromUTF8(info.name);
+  const WebString version = WebString::FromUTF8(info.version);
   for (auto* client : clients_)
-    client->didAddInputPort(id, manufacturer, name, version, info.state);
+    client->DidAddInputPort(id, manufacturer, name, version, info.state);
 }
 
 void MidiMessageFilter::HandleAddOutputPort(midi::MidiPortInfo info) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_.push_back(info);
-  const WebString id = WebString::fromUTF8(info.id);
-  const WebString manufacturer = WebString::fromUTF8(info.manufacturer);
-  const WebString name = WebString::fromUTF8(info.name);
-  const WebString version = WebString::fromUTF8(info.version);
+  const WebString id = WebString::FromUTF8(info.id);
+  const WebString manufacturer = WebString::FromUTF8(info.manufacturer);
+  const WebString name = WebString::FromUTF8(info.name);
+  const WebString version = WebString::FromUTF8(info.version);
   for (auto* client : clients_)
-    client->didAddOutputPort(id, manufacturer, name, version, info.state);
+    client->DidAddOutputPort(id, manufacturer, name, version, info.state);
 }
 
 void MidiMessageFilter::HandleDataReceived(uint32_t port,
@@ -266,7 +266,7 @@ void MidiMessageFilter::HandleDataReceived(uint32_t port,
   DCHECK(!data.empty());
 
   for (auto* client : clients_)
-    client->didReceiveMIDIData(port, &data[0], data.size(), timestamp);
+    client->DidReceiveMIDIData(port, &data[0], data.size(), timestamp);
 }
 
 void MidiMessageFilter::HandleAckknowledgeSentData(size_t bytes_sent) {
@@ -283,7 +283,7 @@ void MidiMessageFilter::HandleSetInputPortState(uint32_t port,
     return;
   inputs_[port].state = state;
   for (auto* client : clients_)
-    client->didSetInputPortState(port, state);
+    client->DidSetInputPortState(port, state);
 }
 
 void MidiMessageFilter::HandleSetOutputPortState(uint32_t port,
@@ -293,7 +293,7 @@ void MidiMessageFilter::HandleSetOutputPortState(uint32_t port,
     return;
   outputs_[port].state = state;
   for (auto* client : clients_)
-    client->didSetOutputPortState(port, state);
+    client->DidSetOutputPortState(port, state);
 }
 
 }  // namespace content

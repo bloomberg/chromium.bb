@@ -12,45 +12,45 @@ namespace blink {
 
 class StyleInvalidImage final : public StyleImage {
  public:
-  static StyleInvalidImage* create(const String& url) {
+  static StyleInvalidImage* Create(const String& url) {
     return new StyleInvalidImage(url);
   }
 
-  WrappedImagePtr data() const override { return m_url.impl(); }
+  WrappedImagePtr Data() const override { return url_.Impl(); }
 
-  CSSValue* cssValue() const override {
-    return CSSImageValue::create(AtomicString(m_url));
+  CSSValue* CssValue() const override {
+    return CSSImageValue::Create(AtomicString(url_));
   }
 
-  CSSValue* computedCSSValue() const override { return cssValue(); }
+  CSSValue* ComputedCSSValue() const override { return CssValue(); }
 
-  LayoutSize imageSize(const LayoutObject&,
+  LayoutSize ImageSize(const LayoutObject&,
                        float /*multiplier*/,
                        const LayoutSize& /*defaultObjectSize*/) const override {
     return LayoutSize();
   }
-  bool imageHasRelativeSize() const override { return false; }
-  bool usesImageContainerSize() const override { return false; }
-  void addClient(LayoutObject*) override {}
-  void removeClient(LayoutObject*) override {}
-  PassRefPtr<Image> image(const LayoutObject&,
-                          const IntSize&,
-                          float) const override {
+  bool ImageHasRelativeSize() const override { return false; }
+  bool UsesImageContainerSize() const override { return false; }
+  void AddClient(LayoutObject*) override {}
+  void RemoveClient(LayoutObject*) override {}
+  PassRefPtr<Image> GetImage(const LayoutObject&,
+                             const IntSize&,
+                             float) const override {
     return nullptr;
   }
-  bool knownToBeOpaque(const LayoutObject&) const override { return false; }
+  bool KnownToBeOpaque(const LayoutObject&) const override { return false; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { StyleImage::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { StyleImage::Trace(visitor); }
 
  private:
-  explicit StyleInvalidImage(const String& url) : m_url(url) {
-    m_isInvalidImage = true;
+  explicit StyleInvalidImage(const String& url) : url_(url) {
+    is_invalid_image_ = true;
   }
 
-  String m_url;
+  String url_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleInvalidImage, isInvalidImage());
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleInvalidImage, IsInvalidImage());
 
 }  // namespace blink
 #endif

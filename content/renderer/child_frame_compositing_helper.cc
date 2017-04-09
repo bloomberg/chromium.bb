@@ -146,15 +146,15 @@ blink::WebPluginContainer* ChildFrameCompositingHelper::GetContainer() {
   if (!browser_plugin_)
     return nullptr;
 
-  return browser_plugin_->container();
+  return browser_plugin_->Container();
 }
 
 void ChildFrameCompositingHelper::UpdateWebLayer(
     std::unique_ptr<blink::WebLayer> layer) {
   if (GetContainer()) {
-    GetContainer()->setWebLayer(layer.get());
+    GetContainer()->SetWebLayer(layer.get());
   } else if (frame_) {
-    frame_->setWebLayer(layer.get());
+    frame_->SetWebLayer(layer.get());
   }
   web_layer_ = std::move(layer);
 }
@@ -187,16 +187,16 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
   if (web_layer_) {
     SkBitmap* sad_bitmap =
         GetContentClient()->renderer()->GetSadWebViewBitmap();
-    if (sad_bitmap && web_layer_->bounds().width > sad_bitmap->width() &&
-        web_layer_->bounds().height > sad_bitmap->height()) {
+    if (sad_bitmap && web_layer_->Bounds().width > sad_bitmap->width() &&
+        web_layer_->Bounds().height > sad_bitmap->height()) {
       scoped_refptr<cc::PictureImageLayer> sad_layer =
           cc::PictureImageLayer::Create();
       sad_layer->SetImage(SkImage::MakeFromBitmap(*sad_bitmap));
       sad_layer->SetBounds(
           gfx::Size(sad_bitmap->width(), sad_bitmap->height()));
       sad_layer->SetPosition(gfx::PointF(
-          (web_layer_->bounds().width - sad_bitmap->width()) / 2,
-          (web_layer_->bounds().height - sad_bitmap->height()) / 2));
+          (web_layer_->Bounds().width - sad_bitmap->width()) / 2,
+          (web_layer_->Bounds().height - sad_bitmap->height()) / 2));
       sad_layer->SetIsDrawable(true);
 
       crashed_layer->AddChild(sad_layer);
@@ -228,7 +228,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
       new cc_blink::WebLayerImpl(surface_layer));
   // TODO(lfg): Investigate if it's possible to propagate the information about
   // the child surface's opacity. https://crbug.com/629851.
-  layer->setOpaque(false);
+  layer->SetOpaque(false);
   layer->SetContentsOpaqueIsFixed(true);
   UpdateWebLayer(std::move(layer));
 
@@ -252,7 +252,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
 
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   if (web_layer_)
-    web_layer_->setDrawsContent(visible);
+    web_layer_->SetDrawsContent(visible);
 }
 
 }  // namespace content

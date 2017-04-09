@@ -28,44 +28,44 @@
 #include "core/editing/iterators/BitStack.h"
 
 namespace blink {
-static const unsigned bitsInWord = sizeof(unsigned) * 8;
-static const unsigned bitInWordMask = bitsInWord - 1;
+static const unsigned kBitsInWord = sizeof(unsigned) * 8;
+static const unsigned kBitInWordMask = kBitsInWord - 1;
 
-BitStack::BitStack() : m_size(0) {}
+BitStack::BitStack() : size_(0) {}
 
 BitStack::~BitStack() {}
 
-void BitStack::push(bool bit) {
-  unsigned index = m_size / bitsInWord;
-  unsigned shift = m_size & bitInWordMask;
-  if (!shift && index == m_words.size()) {
-    m_words.grow(index + 1);
-    m_words[index] = 0;
+void BitStack::Push(bool bit) {
+  unsigned index = size_ / kBitsInWord;
+  unsigned shift = size_ & kBitInWordMask;
+  if (!shift && index == words_.size()) {
+    words_.Grow(index + 1);
+    words_[index] = 0;
   }
-  unsigned& word = m_words[index];
+  unsigned& word = words_[index];
   unsigned mask = 1U << shift;
   if (bit)
     word |= mask;
   else
     word &= ~mask;
-  ++m_size;
+  ++size_;
 }
 
-void BitStack::pop() {
-  if (m_size)
-    --m_size;
+void BitStack::Pop() {
+  if (size_)
+    --size_;
 }
 
-bool BitStack::top() const {
-  if (!m_size)
+bool BitStack::Top() const {
+  if (!size_)
     return false;
-  unsigned shift = (m_size - 1) & bitInWordMask;
-  unsigned index = (m_size - 1) / bitsInWord;
-  return m_words[index] & (1U << shift);
+  unsigned shift = (size_ - 1) & kBitInWordMask;
+  unsigned index = (size_ - 1) / kBitsInWord;
+  return words_[index] & (1U << shift);
 }
 
 unsigned BitStack::size() const {
-  return m_size;
+  return size_;
 }
 
 }  // namespace blink

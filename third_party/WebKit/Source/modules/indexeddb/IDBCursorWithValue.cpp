@@ -32,7 +32,7 @@ using blink::WebIDBCursor;
 
 namespace blink {
 
-IDBCursorWithValue* IDBCursorWithValue::create(
+IDBCursorWithValue* IDBCursorWithValue::Create(
     std::unique_ptr<WebIDBCursor> backend,
     WebIDBCursorDirection direction,
     IDBRequest* request,

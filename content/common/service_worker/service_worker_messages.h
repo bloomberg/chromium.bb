@@ -30,22 +30,22 @@
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerError::ErrorType,
-                          blink::WebServiceWorkerError::ErrorTypeLast)
+                          blink::WebServiceWorkerError::kErrorTypeLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
-                          blink::WebServiceWorkerEventResultLast)
+                          blink::kWebServiceWorkerEventResultLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
-                          blink::WebServiceWorkerStateLast)
+                          blink::kWebServiceWorkerStateLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseType,
-                          blink::WebServiceWorkerResponseTypeLast)
+                          blink::kWebServiceWorkerResponseTypeLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseError,
-                          blink::WebServiceWorkerResponseErrorLast)
+                          blink::kWebServiceWorkerResponseErrorLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerClientType,
-                          blink::WebServiceWorkerClientTypeLast)
+                          blink::kWebServiceWorkerClientTypeLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerProviderType,
                           content::SERVICE_WORKER_PROVIDER_TYPE_LAST)

@@ -17,19 +17,19 @@ class USBConnectionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBConnectionEvent* create(const AtomicString& type,
+  static USBConnectionEvent* Create(const AtomicString& type,
                                     const USBConnectionEventInit&);
-  static USBConnectionEvent* create(const AtomicString& type, USBDevice*);
+  static USBConnectionEvent* Create(const AtomicString& type, USBDevice*);
 
   USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit&);
   USBConnectionEvent(const AtomicString& type, USBDevice*);
 
-  USBDevice* device() const { return m_device; }
+  USBDevice* device() const { return device_; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Member<USBDevice> m_device;
+  Member<USBDevice> device_;
 };
 
 }  // namespace blink

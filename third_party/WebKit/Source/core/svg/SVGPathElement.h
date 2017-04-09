@@ -36,40 +36,40 @@ class SVGPathElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGPathElement);
 
-  Path asPath() const override;
-  Path attributePath() const;
+  Path AsPath() const override;
+  Path AttributePath() const;
 
   float getTotalLength() override;
   SVGPointTearOff* getPointAtLength(float distance) override;
   unsigned getPathSegAtLength(float distance);
 
-  SVGAnimatedPath* path() const { return m_path.get(); }
-  float computePathLength() const override;
-  const SVGPathByteStream& pathByteStream() const {
-    return stylePath()->byteStream();
+  SVGAnimatedPath* GetPath() const { return path_.Get(); }
+  float ComputePathLength() const override;
+  const SVGPathByteStream& PathByteStream() const {
+    return GetStylePath()->ByteStream();
   }
 
-  FloatRect getBBox() override;
+  FloatRect GetBBox() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGPathElement(Document&);
 
-  const StylePath* stylePath() const;
+  const StylePath* GetStylePath() const;
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void removedFrom(ContainerNode*) override;
+  Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
-  void invalidateMPathDependencies();
+  void InvalidateMPathDependencies();
 
-  Member<SVGAnimatedPath> m_path;
+  Member<SVGAnimatedPath> path_;
 };
 
 }  // namespace blink

@@ -40,8 +40,8 @@ namespace blink {
 //
 class PLATFORM_EXPORT SparseHeapBitmap {
  public:
-  static std::unique_ptr<SparseHeapBitmap> create(Address base) {
-    return WTF::wrapUnique(new SparseHeapBitmap(base));
+  static std::unique_ptr<SparseHeapBitmap> Create(Address base) {
+    return WTF::WrapUnique(new SparseHeapBitmap(base));
   }
 
   ~SparseHeapBitmap() {}
@@ -52,51 +52,51 @@ class PLATFORM_EXPORT SparseHeapBitmap {
   // The returned SparseHeapBitmap can be used to quickly lookup what
   // addresses in that range are set or not; see |isSet()|. Its
   // |isSet()| behavior outside that range is not defined.
-  SparseHeapBitmap* hasRange(Address, size_t);
+  SparseHeapBitmap* HasRange(Address, size_t);
 
   // True iff |address| is set for this SparseHeapBitmap tree.
-  bool isSet(Address);
+  bool IsSet(Address);
 
   // Mark |address| as present/set.
-  void add(Address);
+  void Add(Address);
 
   // The assumed minimum alignment of the pointers being added. Cannot
   // exceed |log2(allocationGranularity)|; having it be equal to
   // the platform pointer alignment is what's wanted.
-  static const int s_pointerAlignmentInBits = WTF_ALIGN_OF(void*) == 8 ? 3 : 2;
-  static const size_t s_pointerAlignmentMask =
-      (0x1u << s_pointerAlignmentInBits) - 1;
+  static const int kPointerAlignmentInBits = WTF_ALIGN_OF(void*) == 8 ? 3 : 2;
+  static const size_t kPointerAlignmentMask =
+      (0x1u << kPointerAlignmentInBits) - 1;
 
   // Represent ranges in 0x100 bitset chunks; bit I is set iff Address
   // |m_base + I * (0x1 << s_pointerAlignmentInBits)| has been added to the
   // |SparseHeapBitmap|.
-  static const size_t s_bitmapChunkSize = 0x100;
+  static const size_t kBitmapChunkSize = 0x100;
 
   // A SparseHeapBitmap either contains a single Address or a bitmap
   // recording the mapping for [m_base, m_base + s_bitmapChunkRange)
-  static const size_t s_bitmapChunkRange = s_bitmapChunkSize
-                                           << s_pointerAlignmentInBits;
+  static const size_t kBitmapChunkRange = kBitmapChunkSize
+                                          << kPointerAlignmentInBits;
 
   // Return the number of nodes; for debug stats.
-  size_t intervalCount() const;
+  size_t IntervalCount() const;
 
  private:
-  explicit SparseHeapBitmap(Address base) : m_base(base), m_size(1) {
-    DCHECK(!(reinterpret_cast<uintptr_t>(m_base) & s_pointerAlignmentMask));
-    static_assert(s_pointerAlignmentMask <= allocationMask,
+  explicit SparseHeapBitmap(Address base) : base_(base), size_(1) {
+    DCHECK(!(reinterpret_cast<uintptr_t>(base_) & kPointerAlignmentMask));
+    static_assert(kPointerAlignmentMask <= kAllocationMask,
                   "address shift exceeds heap pointer alignment");
     // For now, only recognize 8 and 4.
     static_assert(WTF_ALIGN_OF(void*) == 8 || WTF_ALIGN_OF(void*) == 4,
                   "unsupported pointer alignment");
   }
 
-  Address base() const { return m_base; }
-  size_t size() const { return m_size; }
-  Address end() const { return base() + (m_size - 1); }
+  Address Base() const { return base_; }
+  size_t size() const { return size_; }
+  Address end() const { return Base() + (size_ - 1); }
 
-  Address maxEnd() const { return base() + s_bitmapChunkRange; }
+  Address MaxEnd() const { return Base() + kBitmapChunkRange; }
 
-  Address minStart() const {
+  Address MinStart() const {
     // If this bitmap node represents the sparse [m_base, s_bitmapChunkRange)
     // range, do not allow it to be "left extended" as that would entail
     // having to shift down the contents of the std::bitset somehow.
@@ -104,31 +104,31 @@ class PLATFORM_EXPORT SparseHeapBitmap {
     // This shouldn't be a real problem as any clusters of set addresses
     // will be marked while iterating from lower to higher addresses, hence
     // "left extension" are unlikely to be common.
-    if (m_bitmap)
-      return base();
-    return (m_base > reinterpret_cast<Address>(s_bitmapChunkRange))
-               ? (base() - s_bitmapChunkRange + 1)
+    if (bitmap_)
+      return Base();
+    return (base_ > reinterpret_cast<Address>(kBitmapChunkRange))
+               ? (Base() - kBitmapChunkRange + 1)
                : nullptr;
   }
 
-  Address swapBase(Address address) {
-    DCHECK(!(reinterpret_cast<uintptr_t>(address) & s_pointerAlignmentMask));
-    Address oldBase = m_base;
-    m_base = address;
-    return oldBase;
+  Address SwapBase(Address address) {
+    DCHECK(!(reinterpret_cast<uintptr_t>(address) & kPointerAlignmentMask));
+    Address old_base = base_;
+    base_ = address;
+    return old_base;
   }
 
-  void createBitmap();
+  void CreateBitmap();
 
-  Address m_base;
+  Address base_;
   // Either 1 or |s_bitmapChunkRange|.
-  size_t m_size;
+  size_t size_;
 
   // If non-null, contains a bitmap for addresses within [m_base, m_size)
-  std::unique_ptr<std::bitset<s_bitmapChunkSize>> m_bitmap;
+  std::unique_ptr<std::bitset<kBitmapChunkSize>> bitmap_;
 
-  std::unique_ptr<SparseHeapBitmap> m_left;
-  std::unique_ptr<SparseHeapBitmap> m_right;
+  std::unique_ptr<SparseHeapBitmap> left_;
+  std::unique_ptr<SparseHeapBitmap> right_;
 };
 
 }  // namespace blink

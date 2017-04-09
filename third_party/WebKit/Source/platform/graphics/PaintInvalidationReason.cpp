@@ -8,63 +8,63 @@
 
 namespace blink {
 
-const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
+const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
   switch (reason) {
-    case PaintInvalidationNone:
+    case kPaintInvalidationNone:
       return "none";
-    case PaintInvalidationIncremental:
+    case kPaintInvalidationIncremental:
       return "incremental";
-    case PaintInvalidationRectangle:
+    case kPaintInvalidationRectangle:
       return "invalidate paint rectangle";
-    case PaintInvalidationFull:
+    case kPaintInvalidationFull:
       return "full";
-    case PaintInvalidationStyleChange:
+    case kPaintInvalidationStyleChange:
       return "style change";
-    case PaintInvalidationForcedByLayout:
+    case kPaintInvalidationForcedByLayout:
       return "forced by layout";
-    case PaintInvalidationCompositingUpdate:
+    case kPaintInvalidationCompositingUpdate:
       return "compositing update";
-    case PaintInvalidationBorderBoxChange:
+    case kPaintInvalidationBorderBoxChange:
       return "border box change";
-    case PaintInvalidationContentBoxChange:
+    case kPaintInvalidationContentBoxChange:
       return "content box change";
-    case PaintInvalidationLayoutOverflowBoxChange:
+    case kPaintInvalidationLayoutOverflowBoxChange:
       return "layout overflow box change";
-    case PaintInvalidationBoundsChange:
+    case kPaintInvalidationBoundsChange:
       return "bounds change";
-    case PaintInvalidationLocationChange:
+    case kPaintInvalidationLocationChange:
       return "location change";
-    case PaintInvalidationBackgroundObscurationChange:
+    case kPaintInvalidationBackgroundObscurationChange:
       return "background obscuration change";
-    case PaintInvalidationBecameVisible:
+    case kPaintInvalidationBecameVisible:
       return "became visible";
-    case PaintInvalidationBecameInvisible:
+    case kPaintInvalidationBecameInvisible:
       return "became invisible";
-    case PaintInvalidationScroll:
+    case kPaintInvalidationScroll:
       return "scroll";
-    case PaintInvalidationSelection:
+    case kPaintInvalidationSelection:
       return "selection";
-    case PaintInvalidationOutline:
+    case kPaintInvalidationOutline:
       return "outline";
-    case PaintInvalidationSubtree:
+    case kPaintInvalidationSubtree:
       return "subtree";
-    case PaintInvalidationLayoutObjectInsertion:
+    case kPaintInvalidationLayoutObjectInsertion:
       return "layoutObject insertion";
-    case PaintInvalidationLayoutObjectRemoval:
+    case kPaintInvalidationLayoutObjectRemoval:
       return "layoutObject removal";
-    case PaintInvalidationSVGResourceChange:
+    case kPaintInvalidationSVGResourceChange:
       return "SVG resource change";
-    case PaintInvalidationBackgroundOnScrollingContentsLayer:
+    case kPaintInvalidationBackgroundOnScrollingContentsLayer:
       return "background on scrolling contents layer";
-    case PaintInvalidationCaret:
+    case kPaintInvalidationCaret:
       return "caret";
-    case PaintInvalidationViewBackground:
+    case kPaintInvalidationViewBackground:
       return "view background";
-    case PaintInvalidationDocumentMarkerChange:
+    case kPaintInvalidationDocumentMarkerChange:
       return "DocumentMarker change";
-    case PaintInvalidationForTesting:
+    case kPaintInvalidationForTesting:
       return "for testing";
-    case PaintInvalidationDelayedFull:
+    case kPaintInvalidationDelayedFull:
       return "delayed full";
   }
   ASSERT_NOT_REACHED();
@@ -72,7 +72,7 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
 }
 
 std::ostream& operator<<(std::ostream& out, PaintInvalidationReason reason) {
-  return out << paintInvalidationReasonToString(reason);
+  return out << PaintInvalidationReasonToString(reason);
 }
 
 }  // namespace blink

@@ -39,12 +39,12 @@ namespace blink {
 
 class LocalFileSystemClient final : public FileSystemClient {
  public:
-  static std::unique_ptr<FileSystemClient> create();
+  static std::unique_ptr<FileSystemClient> Create();
 
   ~LocalFileSystemClient() override;
 
-  bool requestFileSystemAccessSync(ExecutionContext*) override;
-  void requestFileSystemAccessAsync(
+  bool RequestFileSystemAccessSync(ExecutionContext*) override;
+  void RequestFileSystemAccessAsync(
       ExecutionContext*,
       std::unique_ptr<ContentSettingCallbacks>) override;
 

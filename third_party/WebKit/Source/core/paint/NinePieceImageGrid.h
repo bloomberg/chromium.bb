@@ -19,17 +19,17 @@ class IntRectOutsets;
 class NinePieceImage;
 
 enum NinePiece {
-  MinPiece = 0,
-  TopLeftPiece = MinPiece,
-  BottomLeftPiece,
-  LeftPiece,
-  TopRightPiece,
-  BottomRightPiece,
-  RightPiece,
-  TopPiece,
-  BottomPiece,
-  MiddlePiece,
-  MaxPiece
+  kMinPiece = 0,
+  kTopLeftPiece = kMinPiece,
+  kBottomLeftPiece,
+  kLeftPiece,
+  kTopRightPiece,
+  kBottomRightPiece,
+  kRightPiece,
+  kTopPiece,
+  kBottomPiece,
+  kMiddlePiece,
+  kMaxPiece
 };
 
 inline NinePiece& operator++(NinePiece& piece) {
@@ -63,50 +63,50 @@ class CORE_EXPORT NinePieceImageGrid {
 
  public:
   NinePieceImageGrid(const NinePieceImage&,
-                     IntSize imageSize,
-                     IntRect borderImageArea,
-                     const IntRectOutsets& borderWidths);
+                     IntSize image_size,
+                     IntRect border_image_area,
+                     const IntRectOutsets& border_widths);
 
   struct CORE_EXPORT NinePieceDrawInfo {
     STACK_ALLOCATED();
-    bool isDrawable;
-    bool isCornerPiece;
+    bool is_drawable;
+    bool is_corner_piece;
     FloatRect destination;
     FloatRect source;
 
     // tileScale and tileRule are only useful for non-corners, i.e. edge and
     // center pieces.
-    FloatSize tileScale;
+    FloatSize tile_scale;
     struct {
       Image::TileRule horizontal;
       Image::TileRule vertical;
-    } tileRule;
+    } tile_rule;
   };
-  NinePieceDrawInfo getNinePieceDrawInfo(NinePiece, float) const;
+  NinePieceDrawInfo GetNinePieceDrawInfo(NinePiece, float) const;
 
   struct Edge {
     DISALLOW_NEW();
-    bool isDrawable() const { return slice > 0 && width > 0; }
-    float scale() const { return isDrawable() ? (float)width / slice : 1; }
+    bool IsDrawable() const { return slice > 0 && width > 0; }
+    float Scale() const { return IsDrawable() ? (float)width / slice : 1; }
     int slice;
     int width;
   };
 
  private:
-  void setDrawInfoCorner(NinePieceDrawInfo&, NinePiece) const;
-  void setDrawInfoEdge(NinePieceDrawInfo&, NinePiece) const;
-  void setDrawInfoMiddle(NinePieceDrawInfo&) const;
+  void SetDrawInfoCorner(NinePieceDrawInfo&, NinePiece) const;
+  void SetDrawInfoEdge(NinePieceDrawInfo&, NinePiece) const;
+  void SetDrawInfoMiddle(NinePieceDrawInfo&) const;
 
-  IntRect m_borderImageArea;
-  IntSize m_imageSize;
-  Image::TileRule m_horizontalTileRule;
-  Image::TileRule m_verticalTileRule;
-  bool m_fill;
+  IntRect border_image_area_;
+  IntSize image_size_;
+  Image::TileRule horizontal_tile_rule_;
+  Image::TileRule vertical_tile_rule_;
+  bool fill_;
 
-  Edge m_top;
-  Edge m_right;
-  Edge m_bottom;
-  Edge m_left;
+  Edge top_;
+  Edge right_;
+  Edge bottom_;
+  Edge left_;
 };
 
 }  // namespace blink

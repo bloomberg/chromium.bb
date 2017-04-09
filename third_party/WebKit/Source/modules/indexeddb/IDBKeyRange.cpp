@@ -34,176 +34,179 @@
 
 namespace blink {
 
-IDBKeyRange* IDBKeyRange::fromScriptValue(ExecutionContext* context,
+IDBKeyRange* IDBKeyRange::FromScriptValue(ExecutionContext* context,
                                           const ScriptValue& value,
-                                          ExceptionState& exceptionState) {
-  if (value.isUndefined() || value.isNull())
+                                          ExceptionState& exception_state) {
+  if (value.IsUndefined() || value.IsNull())
     return nullptr;
 
   IDBKeyRange* range =
-      ScriptValue::to<IDBKeyRange*>(toIsolate(context), value, exceptionState);
+      ScriptValue::To<IDBKeyRange*>(ToIsolate(context), value, exception_state);
   if (range)
     return range;
 
   IDBKey* key =
-      ScriptValue::to<IDBKey*>(toIsolate(context), value, exceptionState);
-  if (exceptionState.hadException())
+      ScriptValue::To<IDBKey*>(ToIsolate(context), value, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  if (!key || !key->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!key || !key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
-  return new IDBKeyRange(key, key, LowerBoundClosed, UpperBoundClosed);
+  return new IDBKeyRange(key, key, kLowerBoundClosed, kUpperBoundClosed);
 }
 
 IDBKeyRange::IDBKeyRange(IDBKey* lower,
                          IDBKey* upper,
-                         LowerBoundType lowerType,
-                         UpperBoundType upperType)
-    : m_lower(lower),
-      m_upper(upper),
-      m_lowerType(lowerType),
-      m_upperType(upperType) {}
+                         LowerBoundType lower_type,
+                         UpperBoundType upper_type)
+    : lower_(lower),
+      upper_(upper),
+      lower_type_(lower_type),
+      upper_type_(upper_type) {}
 
 DEFINE_TRACE(IDBKeyRange) {
-  visitor->trace(m_lower);
-  visitor->trace(m_upper);
+  visitor->Trace(lower_);
+  visitor->Trace(upper_);
 }
 
-ScriptValue IDBKeyRange::lowerValue(ScriptState* scriptState) const {
-  return ScriptValue::from(scriptState, m_lower);
+ScriptValue IDBKeyRange::lowerValue(ScriptState* script_state) const {
+  return ScriptValue::From(script_state, lower_);
 }
 
-ScriptValue IDBKeyRange::upperValue(ScriptState* scriptState) const {
-  return ScriptValue::from(scriptState, m_upper);
+ScriptValue IDBKeyRange::upperValue(ScriptState* script_state) const {
+  return ScriptValue::From(script_state, upper_);
 }
 
-IDBKeyRange* IDBKeyRange::only(IDBKey* key, ExceptionState& exceptionState) {
-  if (!key || !key->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+IDBKeyRange* IDBKeyRange::only(IDBKey* key, ExceptionState& exception_state) {
+  if (!key || !key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
-  return IDBKeyRange::create(key, key, LowerBoundClosed, UpperBoundClosed);
+  return IDBKeyRange::Create(key, key, kLowerBoundClosed, kUpperBoundClosed);
 }
 
-IDBKeyRange* IDBKeyRange::only(ScriptState* scriptState,
-                               const ScriptValue& keyValue,
-                               ExceptionState& exceptionState) {
-  IDBKey* key = ScriptValue::to<IDBKey*>(
-      toIsolate(scriptState->getExecutionContext()), keyValue, exceptionState);
-  if (exceptionState.hadException())
+IDBKeyRange* IDBKeyRange::only(ScriptState* script_state,
+                               const ScriptValue& key_value,
+                               ExceptionState& exception_state) {
+  IDBKey* key =
+      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+                               key_value, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  if (!key || !key->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!key || !key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
-  return IDBKeyRange::create(key, key, LowerBoundClosed, UpperBoundClosed);
+  return IDBKeyRange::Create(key, key, kLowerBoundClosed, kUpperBoundClosed);
 }
 
-IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* scriptState,
-                                     const ScriptValue& boundValue,
+IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* script_state,
+                                     const ScriptValue& bound_value,
                                      bool open,
-                                     ExceptionState& exceptionState) {
+                                     ExceptionState& exception_state) {
   IDBKey* bound =
-      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
-                               boundValue, exceptionState);
-  if (exceptionState.hadException())
+      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+                               bound_value, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  if (!bound || !bound->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!bound || !bound->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
-  return IDBKeyRange::create(
-      bound, nullptr, open ? LowerBoundOpen : LowerBoundClosed, UpperBoundOpen);
+  return IDBKeyRange::Create(bound, nullptr,
+                             open ? kLowerBoundOpen : kLowerBoundClosed,
+                             kUpperBoundOpen);
 }
 
-IDBKeyRange* IDBKeyRange::upperBound(ScriptState* scriptState,
-                                     const ScriptValue& boundValue,
+IDBKeyRange* IDBKeyRange::upperBound(ScriptState* script_state,
+                                     const ScriptValue& bound_value,
                                      bool open,
-                                     ExceptionState& exceptionState) {
+                                     ExceptionState& exception_state) {
   IDBKey* bound =
-      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
-                               boundValue, exceptionState);
-  if (exceptionState.hadException())
+      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+                               bound_value, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  if (!bound || !bound->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!bound || !bound->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
-  return IDBKeyRange::create(nullptr, bound, LowerBoundOpen,
-                             open ? UpperBoundOpen : UpperBoundClosed);
+  return IDBKeyRange::Create(nullptr, bound, kLowerBoundOpen,
+                             open ? kUpperBoundOpen : kUpperBoundClosed);
 }
 
-IDBKeyRange* IDBKeyRange::bound(ScriptState* scriptState,
-                                const ScriptValue& lowerValue,
-                                const ScriptValue& upperValue,
-                                bool lowerOpen,
-                                bool upperOpen,
-                                ExceptionState& exceptionState) {
+IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
+                                const ScriptValue& lower_value,
+                                const ScriptValue& upper_value,
+                                bool lower_open,
+                                bool upper_open,
+                                ExceptionState& exception_state) {
   IDBKey* lower =
-      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
-                               lowerValue, exceptionState);
-  if (exceptionState.hadException())
+      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+                               lower_value, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  if (!lower || !lower->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!lower || !lower->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
   IDBKey* upper =
-      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
-                               upperValue, exceptionState);
-  if (exceptionState.hadException())
+      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+                               upper_value, exception_state);
+  if (exception_state.HadException())
     return nullptr;
-  if (!upper || !upper->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!upper || !upper->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
-  if (upper->isLessThan(lower)) {
-    exceptionState.throwDOMException(
-        DataError, "The lower key is greater than the upper key.");
+  if (upper->IsLessThan(lower)) {
+    exception_state.ThrowDOMException(
+        kDataError, "The lower key is greater than the upper key.");
     return nullptr;
   }
-  if (upper->isEqual(lower) && (lowerOpen || upperOpen)) {
-    exceptionState.throwDOMException(
-        DataError,
+  if (upper->IsEqual(lower) && (lower_open || upper_open)) {
+    exception_state.ThrowDOMException(
+        kDataError,
         "The lower key and upper key are equal and one of the bounds is open.");
     return nullptr;
   }
 
-  return IDBKeyRange::create(lower, upper,
-                             lowerOpen ? LowerBoundOpen : LowerBoundClosed,
-                             upperOpen ? UpperBoundOpen : UpperBoundClosed);
+  return IDBKeyRange::Create(lower, upper,
+                             lower_open ? kLowerBoundOpen : kLowerBoundClosed,
+                             upper_open ? kUpperBoundOpen : kUpperBoundClosed);
 }
 
-bool IDBKeyRange::includes(ScriptState* scriptState,
-                           const ScriptValue& keyValue,
-                           ExceptionState& exceptionState) {
-  IDBKey* key = ScriptValue::to<IDBKey*>(
-      toIsolate(scriptState->getExecutionContext()), keyValue, exceptionState);
-  if (exceptionState.hadException())
+bool IDBKeyRange::includes(ScriptState* script_state,
+                           const ScriptValue& key_value,
+                           ExceptionState& exception_state) {
+  IDBKey* key =
+      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+                               key_value, exception_state);
+  if (exception_state.HadException())
     return false;
-  if (!key || !key->isValid()) {
-    exceptionState.throwDOMException(DataError,
-                                     IDBDatabase::notValidKeyErrorMessage);
+  if (!key || !key->IsValid()) {
+    exception_state.ThrowDOMException(kDataError,
+                                      IDBDatabase::kNotValidKeyErrorMessage);
     return false;
   }
 
-  if (m_lower) {
-    short c = key->compare(m_lower);
+  if (lower_) {
+    short c = key->Compare(lower_);
     if (lowerOpen()) {
       if (c <= 0)
         return false;
@@ -213,8 +216,8 @@ bool IDBKeyRange::includes(ScriptState* scriptState,
     }
   }
 
-  if (m_upper) {
-    short c = key->compare(m_upper);
+  if (upper_) {
+    short c = key->Compare(upper_);
     if (upperOpen()) {
       if (c >= 0)
         return false;

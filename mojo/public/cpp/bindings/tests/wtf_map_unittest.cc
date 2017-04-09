@@ -16,8 +16,8 @@ TEST(WTFMapTest, StructKey) {
   map.insert(blink::Rect::New(1, 2, 3, 4), 123);
 
   blink::RectPtr key = blink::Rect::New(1, 2, 3, 4);
-  ASSERT_NE(map.end(), map.find(key));
-  ASSERT_EQ(123, map.find(key)->value);
+  ASSERT_NE(map.end(), map.Find(key));
+  ASSERT_EQ(123, map.Find(key)->value);
 
   map.erase(key);
   ASSERT_EQ(0u, map.size());
@@ -29,8 +29,8 @@ TEST(WTFMapTest, TypemappedStructKey) {
 
   blink::ContainsHashablePtr key =
       blink::ContainsHashable::New(RectBlink(1, 2, 3, 4));
-  ASSERT_NE(map.end(), map.find(key));
-  ASSERT_EQ(123, map.find(key)->value);
+  ASSERT_NE(map.end(), map.Find(key));
+  ASSERT_EQ(123, map.Find(key)->value);
 
   map.erase(key);
   ASSERT_EQ(0u, map.size());

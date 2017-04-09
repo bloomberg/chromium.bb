@@ -20,9 +20,9 @@ class WebSourceBufferClient {
   // Complete media track info: track type, unique track id, kind, label,
   // language.
   struct MediaTrackInfo {
-    WebMediaPlayer::TrackType trackType;
+    WebMediaPlayer::TrackType track_type;
     WebMediaPlayer::TrackId id;
-    WebString byteStreamTrackID;
+    WebString byte_stream_track_id;
     WebString kind;
     WebString label;
     WebString language;
@@ -32,7 +32,7 @@ class WebSourceBufferClient {
   // successfully. The input parameter is a collection of information about
   // media tracks found in the new init segment. The return value is true in
   // case of success.
-  virtual bool initializationSegmentReceived(
+  virtual bool InitializationSegmentReceived(
       const WebVector<MediaTrackInfo>& tracks) = 0;
 };
 

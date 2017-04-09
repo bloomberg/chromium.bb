@@ -67,103 +67,103 @@ class WebDevToolsAgentImpl final
       public InspectorSession::Client,
       private WebThread::TaskObserver {
  public:
-  static WebDevToolsAgentImpl* create(WebLocalFrameImpl*,
+  static WebDevToolsAgentImpl* Create(WebLocalFrameImpl*,
                                       WebDevToolsAgentClient*);
   ~WebDevToolsAgentImpl() override;
   DECLARE_VIRTUAL_TRACE();
 
-  void willBeDestroyed();
-  WebDevToolsAgentClient* client() { return m_client; }
-  InspectorOverlay* overlay() const { return m_overlay.get(); }
-  void flushProtocolNotifications();
+  void WillBeDestroyed();
+  WebDevToolsAgentClient* Client() { return client_; }
+  InspectorOverlay* Overlay() const { return overlay_.Get(); }
+  void FlushProtocolNotifications();
 
   // Instrumentation from web/ layer.
-  void didCommitLoadForLocalFrame(LocalFrame*);
-  void didStartProvisionalLoad(LocalFrame*);
-  bool screencastEnabled();
-  void willAddPageOverlay(const GraphicsLayer*);
-  void didRemovePageOverlay(const GraphicsLayer*);
-  void layerTreeViewChanged(WebLayerTreeView*);
-  void rootLayerCleared();
+  void DidCommitLoadForLocalFrame(LocalFrame*);
+  void DidStartProvisionalLoad(LocalFrame*);
+  bool ScreencastEnabled();
+  void WillAddPageOverlay(const GraphicsLayer*);
+  void DidRemovePageOverlay(const GraphicsLayer*);
+  void LayerTreeViewChanged(WebLayerTreeView*);
+  void RootLayerCleared();
 
   // WebDevToolsAgent implementation.
-  void attach(const WebString& hostId, int sessionId) override;
-  void reattach(const WebString& hostId,
-                int sessionId,
-                const WebString& savedState) override;
-  void detach() override;
-  void continueProgram() override;
-  void dispatchOnInspectorBackend(int sessionId,
-                                  int callId,
+  void Attach(const WebString& host_id, int session_id) override;
+  void Reattach(const WebString& host_id,
+                int session_id,
+                const WebString& saved_state) override;
+  void Detach() override;
+  void ContinueProgram() override;
+  void DispatchOnInspectorBackend(int session_id,
+                                  int call_id,
                                   const WebString& method,
                                   const WebString& message) override;
-  void inspectElementAt(int sessionId, const WebPoint&) override;
-  void failedToRequestDevTools() override;
-  WebString evaluateInWebInspectorOverlay(const WebString& script) override;
-  bool cacheDisabled() override;
+  void InspectElementAt(int session_id, const WebPoint&) override;
+  void FailedToRequestDevTools() override;
+  WebString EvaluateInWebInspectorOverlay(const WebString& script) override;
+  bool CacheDisabled() override;
 
  private:
   WebDevToolsAgentImpl(WebLocalFrameImpl*,
                        WebDevToolsAgentClient*,
                        InspectorOverlay*,
-                       bool includeViewAgents);
+                       bool include_view_agents);
 
   // InspectorTracingAgent::Client implementation.
-  void enableTracing(const WTF::String& categoryFilter) override;
-  void disableTracing() override;
-  void showReloadingBlanket() override;
-  void hideReloadingBlanket() override;
+  void EnableTracing(const WTF::String& category_filter) override;
+  void DisableTracing() override;
+  void ShowReloadingBlanket() override;
+  void HideReloadingBlanket() override;
 
   // InspectorEmulationAgent::Client implementation.
-  void setCPUThrottlingRate(double) override;
+  void SetCPUThrottlingRate(double) override;
 
   // InspectorPageAgent::Client implementation.
-  void pageLayoutInvalidated(bool resized) override;
-  void configureOverlay(bool suspended, const String& message) override;
-  void waitForCreateWindow(LocalFrame*) override;
+  void PageLayoutInvalidated(bool resized) override;
+  void ConfigureOverlay(bool suspended, const String& message) override;
+  void WaitForCreateWindow(LocalFrame*) override;
 
   // InspectorSession::Client implementation.
-  void sendProtocolMessage(int sessionId,
-                           int callId,
+  void SendProtocolMessage(int session_id,
+                           int call_id,
                            const String& response,
                            const String& state) override;
 
   // WebThread::TaskObserver implementation.
-  void willProcessTask() override;
-  void didProcessTask() override;
+  void WillProcessTask() override;
+  void DidProcessTask() override;
 
-  void initializeSession(int sessionId, const String& hostId, String* state);
-  void destroySession();
-  void dispatchMessageFromFrontend(int sessionId,
+  void InitializeSession(int session_id, const String& host_id, String* state);
+  void DestroySession();
+  void DispatchMessageFromFrontend(int session_id,
                                    const String& method,
                                    const String& message);
 
   friend class WebDevToolsAgent;
-  static void runDebuggerTask(
-      int sessionId,
+  static void RunDebuggerTask(
+      int session_id,
       std::unique_ptr<WebDevToolsAgent::MessageDescriptor>);
 
-  bool attached() const { return m_session.get(); }
+  bool Attached() const { return session_.Get(); }
 
-  WebDevToolsAgentClient* m_client;
-  Member<WebLocalFrameImpl> m_webLocalFrameImpl;
+  WebDevToolsAgentClient* client_;
+  Member<WebLocalFrameImpl> web_local_frame_impl_;
 
-  Member<CoreProbeSink> m_instrumentingAgents;
-  Member<InspectorResourceContentLoader> m_resourceContentLoader;
-  Member<InspectorOverlay> m_overlay;
-  Member<InspectedFrames> m_inspectedFrames;
-  Member<InspectorResourceContainer> m_resourceContainer;
+  Member<CoreProbeSink> instrumenting_agents_;
+  Member<InspectorResourceContentLoader> resource_content_loader_;
+  Member<InspectorOverlay> overlay_;
+  Member<InspectedFrames> inspected_frames_;
+  Member<InspectorResourceContainer> resource_container_;
 
-  Member<InspectorDOMAgent> m_domAgent;
-  Member<InspectorPageAgent> m_pageAgent;
-  Member<InspectorNetworkAgent> m_networkAgent;
-  Member<InspectorLayerTreeAgent> m_layerTreeAgent;
-  Member<InspectorTracingAgent> m_tracingAgent;
-  Member<InspectorTraceEvents> m_traceEventsAgent;
+  Member<InspectorDOMAgent> dom_agent_;
+  Member<InspectorPageAgent> page_agent_;
+  Member<InspectorNetworkAgent> network_agent_;
+  Member<InspectorLayerTreeAgent> layer_tree_agent_;
+  Member<InspectorTracingAgent> tracing_agent_;
+  Member<InspectorTraceEvents> trace_events_agent_;
 
-  Member<InspectorSession> m_session;
-  bool m_includeViewAgents;
-  int m_layerTreeId;
+  Member<InspectorSession> session_;
+  bool include_view_agents_;
+  int layer_tree_id_;
 };
 
 }  // namespace blink

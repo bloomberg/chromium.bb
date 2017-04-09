@@ -34,126 +34,126 @@ namespace WTF {
 
 template <typename IntegerType>
 struct PrintfFormatTrait {
-  static const char format[];
+  static const char kFormat[];
 };
 
 template <>
 struct PrintfFormatTrait<short> {
-  static const char format[];
+  static const char kFormat[];
 };
-const char PrintfFormatTrait<short>::format[] = "%hd";
+const char PrintfFormatTrait<short>::kFormat[] = "%hd";
 
 template <>
 struct PrintfFormatTrait<int> {
-  static const char format[];
+  static const char kFormat[];
 };
-const char PrintfFormatTrait<int>::format[] = "%d";
+const char PrintfFormatTrait<int>::kFormat[] = "%d";
 
 template <>
 struct PrintfFormatTrait<long> {
-  static const char format[];
+  static const char kFormat[];
 };
-const char PrintfFormatTrait<long>::format[] = "%ld";
+const char PrintfFormatTrait<long>::kFormat[] = "%ld";
 
 template <>
 struct PrintfFormatTrait<long long> {
-  static const char format[];
+  static const char kFormat[];
 };
 #if OS(WIN)
-const char PrintfFormatTrait<long long>::format[] = "%I64i";
+const char PrintfFormatTrait<long long>::kFormat[] = "%I64i";
 #else
-const char PrintfFormatTrait<long long>::format[] = "%lli";
+const char PrintfFormatTrait<long long>::kFormat[] = "%lli";
 #endif  // OS(WIN)
 
 template <>
 struct PrintfFormatTrait<unsigned short> {
-  static const char format[];
+  static const char kFormat[];
 };
-const char PrintfFormatTrait<unsigned short>::format[] = "%hu";
+const char PrintfFormatTrait<unsigned short>::kFormat[] = "%hu";
 
 template <>
 struct PrintfFormatTrait<unsigned> {
-  static const char format[];
+  static const char kFormat[];
 };
-const char PrintfFormatTrait<unsigned>::format[] = "%u";
+const char PrintfFormatTrait<unsigned>::kFormat[] = "%u";
 
 template <>
 struct PrintfFormatTrait<unsigned long> {
-  static const char format[];
+  static const char kFormat[];
 };
-const char PrintfFormatTrait<unsigned long>::format[] = "%lu";
+const char PrintfFormatTrait<unsigned long>::kFormat[] = "%lu";
 
 template <>
 struct PrintfFormatTrait<unsigned long long> {
-  static const char format[];
+  static const char kFormat[];
 };
 #if OS(WIN)
-const char PrintfFormatTrait<unsigned long long>::format[] = "%I64u";
+const char PrintfFormatTrait<unsigned long long>::kFormat[] = "%I64u";
 #else
-const char PrintfFormatTrait<unsigned long long>::format[] = "%llu";
+const char PrintfFormatTrait<unsigned long long>::kFormat[] = "%llu";
 #endif  // OS(WIN)
 
 // FIXME: use snprintf from StringExtras.h
 template <typename IntegerType>
-void testBoundaries() {
-  const unsigned bufferSize = 256;
-  Vector<char, bufferSize> buffer;
-  buffer.resize(bufferSize);
+void TestBoundaries() {
+  const unsigned kBufferSize = 256;
+  Vector<char, kBufferSize> buffer;
+  buffer.Resize(kBufferSize);
 
   const IntegerType min = std::numeric_limits<IntegerType>::min();
-  CString minStringData = String::number(min).latin1();
-  snprintf(buffer.data(), bufferSize, PrintfFormatTrait<IntegerType>::format,
+  CString min_string_data = String::Number(min).Latin1();
+  snprintf(buffer.Data(), kBufferSize, PrintfFormatTrait<IntegerType>::kFormat,
            min);
-  EXPECT_STREQ(buffer.data(), minStringData.data());
+  EXPECT_STREQ(buffer.Data(), min_string_data.Data());
 
   const IntegerType max = std::numeric_limits<IntegerType>::max();
-  CString maxStringData = String::number(max).latin1();
-  snprintf(buffer.data(), bufferSize, PrintfFormatTrait<IntegerType>::format,
+  CString max_string_data = String::Number(max).Latin1();
+  snprintf(buffer.Data(), kBufferSize, PrintfFormatTrait<IntegerType>::kFormat,
            max);
-  EXPECT_STREQ(buffer.data(), maxStringData.data());
+  EXPECT_STREQ(buffer.Data(), max_string_data.Data());
 }
 
 template <typename IntegerType>
-void testNumbers() {
-  const unsigned bufferSize = 256;
-  Vector<char, bufferSize> buffer;
-  buffer.resize(bufferSize);
+void TestNumbers() {
+  const unsigned kBufferSize = 256;
+  Vector<char, kBufferSize> buffer;
+  buffer.Resize(kBufferSize);
 
   for (int i = -100; i < 100; ++i) {
     const IntegerType number = static_cast<IntegerType>(i);
-    CString numberStringData = String::number(number).latin1();
-    snprintf(buffer.data(), bufferSize, PrintfFormatTrait<IntegerType>::format,
-             number);
-    EXPECT_STREQ(buffer.data(), numberStringData.data());
+    CString number_string_data = String::Number(number).Latin1();
+    snprintf(buffer.Data(), kBufferSize,
+             PrintfFormatTrait<IntegerType>::kFormat, number);
+    EXPECT_STREQ(buffer.Data(), number_string_data.Data());
   }
 }
 
 TEST(StringExtraTest, IntegerToStringConversionSignedIntegerBoundaries) {
-  testBoundaries<short>();
-  testBoundaries<int>();
-  testBoundaries<long>();
-  testBoundaries<long long>();
+  TestBoundaries<short>();
+  TestBoundaries<int>();
+  TestBoundaries<long>();
+  TestBoundaries<long long>();
 }
 
 TEST(StringExtraTest, IntegerToStringConversionSignedIntegerRegularNumbers) {
-  testNumbers<short>();
-  testNumbers<int>();
-  testNumbers<long>();
-  testNumbers<long long>();
+  TestNumbers<short>();
+  TestNumbers<int>();
+  TestNumbers<long>();
+  TestNumbers<long long>();
 }
 
 TEST(StringExtraTest, IntegerToStringConversionUnsignedIntegerBoundaries) {
-  testBoundaries<unsigned short>();
-  testBoundaries<unsigned>();
-  testBoundaries<unsigned long>();
-  testBoundaries<unsigned long long>();
+  TestBoundaries<unsigned short>();
+  TestBoundaries<unsigned>();
+  TestBoundaries<unsigned long>();
+  TestBoundaries<unsigned long long>();
 }
 
 TEST(StringExtraTest, IntegerToStringConversionUnsignedIntegerRegularNumbers) {
-  testNumbers<unsigned short>();
-  testNumbers<unsigned>();
-  testNumbers<unsigned long>();
-  testNumbers<unsigned long long>();
+  TestNumbers<unsigned short>();
+  TestNumbers<unsigned>();
+  TestNumbers<unsigned long>();
+  TestNumbers<unsigned long long>();
 }
 
 }  // namespace WTF

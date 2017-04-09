@@ -6,37 +6,37 @@
 
 namespace blink {
 
-static const String& errorReasonToString(
+static const String& ErrorReasonToString(
     WebApplicationCacheHost::ErrorReason reason) {
-  DEFINE_STATIC_LOCAL(String, errorManifest, ("manifest"));
-  DEFINE_STATIC_LOCAL(String, errorSignature, ("signature"));
-  DEFINE_STATIC_LOCAL(String, errorResource, ("resource"));
-  DEFINE_STATIC_LOCAL(String, errorChanged, ("changed"));
-  DEFINE_STATIC_LOCAL(String, errorAbort, ("abort"));
-  DEFINE_STATIC_LOCAL(String, errorQuota, ("quota"));
-  DEFINE_STATIC_LOCAL(String, errorPolicy, ("policy"));
-  DEFINE_STATIC_LOCAL(String, errorUnknown, ("unknown"));
+  DEFINE_STATIC_LOCAL(String, error_manifest, ("manifest"));
+  DEFINE_STATIC_LOCAL(String, error_signature, ("signature"));
+  DEFINE_STATIC_LOCAL(String, error_resource, ("resource"));
+  DEFINE_STATIC_LOCAL(String, error_changed, ("changed"));
+  DEFINE_STATIC_LOCAL(String, error_abort, ("abort"));
+  DEFINE_STATIC_LOCAL(String, error_quota, ("quota"));
+  DEFINE_STATIC_LOCAL(String, error_policy, ("policy"));
+  DEFINE_STATIC_LOCAL(String, error_unknown, ("unknown"));
 
   switch (reason) {
-    case WebApplicationCacheHost::ManifestError:
-      return errorManifest;
-    case WebApplicationCacheHost::SignatureError:
-      return errorSignature;
-    case WebApplicationCacheHost::ResourceError:
-      return errorResource;
-    case WebApplicationCacheHost::ChangedError:
-      return errorChanged;
-    case WebApplicationCacheHost::AbortError:
-      return errorAbort;
-    case WebApplicationCacheHost::QuotaError:
-      return errorQuota;
-    case WebApplicationCacheHost::PolicyError:
-      return errorPolicy;
-    case WebApplicationCacheHost::UnknownError:
-      return errorUnknown;
+    case WebApplicationCacheHost::kManifestError:
+      return error_manifest;
+    case WebApplicationCacheHost::kSignatureError:
+      return error_signature;
+    case WebApplicationCacheHost::kResourceError:
+      return error_resource;
+    case WebApplicationCacheHost::kChangedError:
+      return error_changed;
+    case WebApplicationCacheHost::kAbortError:
+      return error_abort;
+    case WebApplicationCacheHost::kQuotaError:
+      return error_quota;
+    case WebApplicationCacheHost::kPolicyError:
+      return error_policy;
+    case WebApplicationCacheHost::kUnknownError:
+      return error_unknown;
   }
   NOTREACHED();
-  return emptyString;
+  return g_empty_string;
 }
 
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
@@ -45,29 +45,29 @@ ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
     int status,
     const String& message)
     : Event(EventTypeNames::error, false, false),
-      m_reason(errorReasonToString(reason)),
-      m_url(url),
-      m_status(status),
-      m_message(message) {}
+      reason_(ErrorReasonToString(reason)),
+      url_(url),
+      status_(status),
+      message_(message) {}
 
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     const ApplicationCacheErrorEventInit& initializer)
-    : Event(eventType, initializer), m_status(0) {
+    : Event(event_type, initializer), status_(0) {
   if (initializer.hasReason())
-    m_reason = initializer.reason();
+    reason_ = initializer.reason();
   if (initializer.hasURL())
-    m_url = initializer.url();
+    url_ = initializer.url();
   if (initializer.hasStatus())
-    m_status = initializer.status();
+    status_ = initializer.status();
   if (initializer.hasMessage())
-    m_message = initializer.message();
+    message_ = initializer.message();
 }
 
 ApplicationCacheErrorEvent::~ApplicationCacheErrorEvent() {}
 
 DEFINE_TRACE(ApplicationCacheErrorEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 }  // namespace blink

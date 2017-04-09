@@ -11,7 +11,7 @@ namespace blink {
 
 class CORE_EXPORT SetCharacterDataCommand final : public SimpleEditCommand {
  public:
-  static SetCharacterDataCommand* create(Text* node,
+  static SetCharacterDataCommand* Create(Text* node,
                                          unsigned offset,
                                          unsigned count,
                                          const String& text) {
@@ -27,14 +27,14 @@ class CORE_EXPORT SetCharacterDataCommand final : public SimpleEditCommand {
                           const String& text);
 
   // EditCommand implementation
-  void doApply(EditingState*) final;
-  void doUnapply() final;
+  void DoApply(EditingState*) final;
+  void DoUnapply() final;
 
-  const Member<Text> m_node;
-  const unsigned m_offset;
-  const unsigned m_count;
-  String m_previousTextForUndo;
-  const String m_newText;
+  const Member<Text> node_;
+  const unsigned offset_;
+  const unsigned count_;
+  String previous_text_for_undo_;
+  const String new_text_;
 };
 
 }  // namespace blink

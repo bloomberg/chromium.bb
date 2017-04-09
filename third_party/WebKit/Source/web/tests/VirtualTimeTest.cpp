@@ -19,50 +19,50 @@ namespace blink {
 namespace {
 class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
  public:
-  const String result() const { return m_result; }
+  const String Result() const { return result_; }
 
  private:
-  void completed(const WebVector<v8::Local<v8::Value>>& values) override {
-    if (!values.isEmpty() && !values[0].IsEmpty() && values[0]->IsString()) {
-      m_result = toCoreString(v8::Local<v8::String>::Cast(values[0]));
+  void Completed(const WebVector<v8::Local<v8::Value>>& values) override {
+    if (!values.IsEmpty() && !values[0].IsEmpty() && values[0]->IsString()) {
+      result_ = ToCoreString(v8::Local<v8::String>::Cast(values[0]));
     }
   }
 
-  String m_result;
+  String result_;
 };
 }  // namespace
 
 class VirtualTimeTest : public SimTest {
  protected:
-  String ExecuteJavaScript(String scriptSource) {
-    ScriptExecutionCallbackHelper callbackHelper;
-    webView()
-        .mainFrame()
-        ->toWebLocalFrame()
-        ->requestExecuteScriptAndReturnValue(
-            WebScriptSource(WebString(scriptSource)), false, &callbackHelper);
-    return callbackHelper.result();
+  String ExecuteJavaScript(String script_source) {
+    ScriptExecutionCallbackHelper callback_helper;
+    WebView()
+        .MainFrame()
+        ->ToWebLocalFrame()
+        ->RequestExecuteScriptAndReturnValue(
+            WebScriptSource(WebString(script_source)), false, &callback_helper);
+    return callback_helper.Result();
   }
 
   void TearDown() override {
     // The SimTest destructor calls runPendingTasks. This is a problem because
     // if there are any repeating tasks, advancing virtual time will cause the
     // runloop to busy loop. Disabling virtual time here fixes that.
-    webView().scheduler()->disableVirtualTimeForTesting();
+    WebView().Scheduler()->DisableVirtualTimeForTesting();
   }
 };
 
 namespace {
-void quitRunLoop() {
+void QuitRunLoop() {
   base::MessageLoop::current()->QuitNow();
 }
 
 // Some task queues may have repeating v8 tasks that run forever so we impose a
 // hard time limit.
-void runTasksForPeriod(double delayMs) {
-  Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
-      BLINK_FROM_HERE, WTF::bind(&quitRunLoop), delayMs);
-  testing::enterRunLoop();
+void RunTasksForPeriod(double delay_ms) {
+  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE, WTF::Bind(&QuitRunLoop), delay_ms);
+  testing::EnterRunLoop();
 }
 }
 
@@ -73,7 +73,7 @@ void runTasksForPeriod(double delayMs) {
 #define MAYBE_DOMTimersFireInExpectedOrder DOMTimersFireInExpectedOrder
 #endif
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
-  webView().scheduler()->enableVirtualTime();
+  WebView().Scheduler()->EnableVirtualTime();
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -89,7 +89,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
   // take 100h to fire, but thanks to timer fast forwarding we can make them
   // fire immediatly.
 
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
 
@@ -100,7 +100,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
 #define MAYBE_SetInterval SetInterval
 #endif
 TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
-  webView().scheduler()->enableVirtualTime();
+  WebView().Scheduler()->EnableVirtualTime();
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -113,7 +113,7 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
       "}, 1000);"
       "setTimeout(function() { run_order.push('timer'); }, 1500);");
 
-  runTasksForPeriod(12000);
+  RunTasksForPeriod(12000);
 
   EXPECT_EQ("9, timer, 8, 7, 6, 5, 4, 3, 2, 1, 0",
             ExecuteJavaScript("run_order.join(', ')"));
@@ -126,8 +126,8 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
 #define MAYBE_AllowVirtualTimeToAdvance AllowVirtualTimeToAdvance
 #endif
 TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
-  webView().scheduler()->enableVirtualTime();
-  webView().scheduler()->setVirtualTimePolicy(
+  WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::PAUSE);
 
   ExecuteJavaScript(
@@ -139,12 +139,12 @@ TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
       "timerFn(10, 'b');"
       "timerFn(1, 'c');");
 
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   EXPECT_EQ("", ExecuteJavaScript("run_order.join(', ')"));
 
-  webView().scheduler()->setVirtualTimePolicy(
+  WebView().Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::ADVANCE);
-  runTasksForPeriod(1000);
+  RunTasksForPeriod(1000);
 
   EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
@@ -159,43 +159,43 @@ TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
 #endif
 TEST_F(VirtualTimeTest,
        MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading) {
-  webView().scheduler()->enableVirtualTime();
-  webView().scheduler()->setVirtualTimePolicy(
+  WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
 
   // To ensure determinism virtual time is not allowed to advance until we have
   // seen at least one load.
-  EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
-  SimRequest mainResource("https://example.com/test.html", "text/html");
-  SimRequest cssResource("https://example.com/test.css", "text/css");
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest css_resource("https://example.com/test.css", "text/css");
 
   // Loading, virtual time should not advance.
-  loadURL("https://example.com/test.html");
-  EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  LoadURL("https://example.com/test.html");
+  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
-  mainResource.start();
-
-  // Still Loading, virtual time should not advance.
-  mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
-  EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  main_resource.Start();
 
   // Still Loading, virtual time should not advance.
-  cssResource.start();
-  cssResource.write("a { color: red; }");
-  EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  main_resource.Write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
+  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
   // Still Loading, virtual time should not advance.
-  cssResource.finish();
-  EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  css_resource.Start();
+  css_resource.Write("a { color: red; }");
+  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
   // Still Loading, virtual time should not advance.
-  mainResource.write("<body>");
-  EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  css_resource.Finish();
+  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
+
+  // Still Loading, virtual time should not advance.
+  main_resource.Write("<body>");
+  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
   // Finished loading, virtual time should be able to advance.
-  mainResource.finish();
-  EXPECT_TRUE(webView().scheduler()->virtualTimeAllowedToAdvance());
+  main_resource.Finish();
+  EXPECT_TRUE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 }
 
 // http://crbug.com/633321
@@ -205,7 +205,7 @@ TEST_F(VirtualTimeTest,
 #define MAYBE_DOMTimersSuspended DOMTimersSuspended
 #endif
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
-  webView().scheduler()->enableVirtualTime();
+  WebView().Scheduler()->EnableVirtualTime();
 
   // Schedule a normal DOM timer to run at 1s in the future.
   ExecuteJavaScript(
@@ -213,16 +213,16 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
       "setTimeout(() => { run_order.push(1); }, 1000);");
 
   RefPtr<WebTaskRunner> runner =
-      TaskRunnerHelper::get(TaskType::Timer, window().getExecutionContext());
+      TaskRunnerHelper::Get(TaskType::kTimer, Window().GetExecutionContext());
 
   // Schedule a task to suspend virtual time at the same point in time.
-  runner->postDelayedTask(BLINK_FROM_HERE,
-                          WTF::bind(
+  runner->PostDelayedTask(BLINK_FROM_HERE,
+                          WTF::Bind(
                               [](WebViewScheduler* scheduler) {
-                                scheduler->setVirtualTimePolicy(
+                                scheduler->SetVirtualTimePolicy(
                                     WebViewScheduler::VirtualTimePolicy::PAUSE);
                               },
-                              WTF::unretained(webView().scheduler())),
+                              WTF::Unretained(WebView().Scheduler())),
                           1000);
 
   // ALso schedule a second timer for the same point in time.
@@ -230,7 +230,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
 
   // The second DOM timer shouldn't have run because pausing virtual time also
   // atomically pauses DOM timers.
-  testing::runPendingTasks();
+  testing::RunPendingTasks();
   EXPECT_EQ("1", ExecuteJavaScript("run_order.join(', ')"));
 }
 

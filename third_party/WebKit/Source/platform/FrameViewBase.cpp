@@ -31,134 +31,134 @@
 namespace blink {
 
 FrameViewBase::FrameViewBase()
-    : m_parent(nullptr), m_selfVisible(false), m_parentVisible(false) {}
+    : parent_(nullptr), self_visible_(false), parent_visible_(false) {}
 
 FrameViewBase::~FrameViewBase() {}
 
 DEFINE_TRACE(FrameViewBase) {
-  visitor->trace(m_parent);
+  visitor->Trace(parent_);
 }
 
-void FrameViewBase::setParent(FrameViewBase* frameViewBase) {
-  DCHECK(!frameViewBase || !m_parent);
-  if (!frameViewBase || !frameViewBase->isVisible())
-    setParentVisible(false);
-  m_parent = frameViewBase;
-  if (frameViewBase && frameViewBase->isVisible())
-    setParentVisible(true);
+void FrameViewBase::SetParent(FrameViewBase* frame_view_base) {
+  DCHECK(!frame_view_base || !parent_);
+  if (!frame_view_base || !frame_view_base->IsVisible())
+    SetParentVisible(false);
+  parent_ = frame_view_base;
+  if (frame_view_base && frame_view_base->IsVisible())
+    SetParentVisible(true);
 }
 
-FrameViewBase* FrameViewBase::root() const {
+FrameViewBase* FrameViewBase::Root() const {
   const FrameViewBase* top = this;
-  while (top->parent())
-    top = top->parent();
-  if (top->isFrameView())
+  while (top->Parent())
+    top = top->Parent();
+  if (top->IsFrameView())
     return const_cast<FrameViewBase*>(static_cast<const FrameViewBase*>(top));
   return 0;
 }
 
-IntRect FrameViewBase::convertFromRootFrame(
-    const IntRect& rectInRootFrame) const {
-  if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntRect parentRect =
-        parentFrameViewBase->convertFromRootFrame(rectInRootFrame);
-    return convertFromContainingFrameViewBase(parentRect);
+IntRect FrameViewBase::ConvertFromRootFrame(
+    const IntRect& rect_in_root_frame) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent()) {
+    IntRect parent_rect =
+        parent_frame_view_base->ConvertFromRootFrame(rect_in_root_frame);
+    return ConvertFromContainingFrameViewBase(parent_rect);
   }
-  return rectInRootFrame;
+  return rect_in_root_frame;
 }
 
-IntRect FrameViewBase::convertToRootFrame(const IntRect& localRect) const {
-  if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntRect parentRect = convertToContainingFrameViewBase(localRect);
-    return parentFrameViewBase->convertToRootFrame(parentRect);
+IntRect FrameViewBase::ConvertToRootFrame(const IntRect& local_rect) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent()) {
+    IntRect parent_rect = ConvertToContainingFrameViewBase(local_rect);
+    return parent_frame_view_base->ConvertToRootFrame(parent_rect);
   }
-  return localRect;
+  return local_rect;
 }
 
-IntPoint FrameViewBase::convertFromRootFrame(
-    const IntPoint& pointInRootFrame) const {
-  if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntPoint parentPoint =
-        parentFrameViewBase->convertFromRootFrame(pointInRootFrame);
-    return convertFromContainingFrameViewBase(parentPoint);
+IntPoint FrameViewBase::ConvertFromRootFrame(
+    const IntPoint& point_in_root_frame) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent()) {
+    IntPoint parent_point =
+        parent_frame_view_base->ConvertFromRootFrame(point_in_root_frame);
+    return ConvertFromContainingFrameViewBase(parent_point);
   }
-  return pointInRootFrame;
+  return point_in_root_frame;
 }
 
-FloatPoint FrameViewBase::convertFromRootFrame(
-    const FloatPoint& pointInRootFrame) const {
+FloatPoint FrameViewBase::ConvertFromRootFrame(
+    const FloatPoint& point_in_root_frame) const {
   // FrameViewBase / windows are required to be IntPoint aligned, but we may
   // need to convert FloatPoint values within them (eg. for event co-ordinates).
-  IntPoint flooredPoint = flooredIntPoint(pointInRootFrame);
-  FloatPoint parentPoint = this->convertFromRootFrame(flooredPoint);
-  FloatSize windowFraction = pointInRootFrame - flooredPoint;
+  IntPoint floored_point = FlooredIntPoint(point_in_root_frame);
+  FloatPoint parent_point = this->ConvertFromRootFrame(floored_point);
+  FloatSize window_fraction = point_in_root_frame - floored_point;
   // Use linear interpolation handle any fractional value (eg. for iframes
   // subject to a transform beyond just a simple translation).
   // FIXME: Add FloatPoint variants of all co-ordinate space conversion APIs.
-  if (!windowFraction.isEmpty()) {
+  if (!window_fraction.IsEmpty()) {
     const int kFactor = 1000;
-    IntPoint parentLineEnd = this->convertFromRootFrame(
-        flooredPoint + roundedIntSize(windowFraction.scaledBy(kFactor)));
-    FloatSize parentFraction =
-        (parentLineEnd - parentPoint).scaledBy(1.0f / kFactor);
-    parentPoint.move(parentFraction);
+    IntPoint parent_line_end = this->ConvertFromRootFrame(
+        floored_point + RoundedIntSize(window_fraction.ScaledBy(kFactor)));
+    FloatSize parent_fraction =
+        (parent_line_end - parent_point).ScaledBy(1.0f / kFactor);
+    parent_point.Move(parent_fraction);
   }
-  return parentPoint;
+  return parent_point;
 }
 
-IntPoint FrameViewBase::convertToRootFrame(const IntPoint& localPoint) const {
-  if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntPoint parentPoint = convertToContainingFrameViewBase(localPoint);
-    return parentFrameViewBase->convertToRootFrame(parentPoint);
+IntPoint FrameViewBase::ConvertToRootFrame(const IntPoint& local_point) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent()) {
+    IntPoint parent_point = ConvertToContainingFrameViewBase(local_point);
+    return parent_frame_view_base->ConvertToRootFrame(parent_point);
   }
-  return localPoint;
+  return local_point;
 }
 
-IntRect FrameViewBase::convertToContainingFrameViewBase(
-    const IntRect& localRect) const {
-  if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntRect parentRect(localRect);
-    parentRect.setLocation(
-        parentFrameViewBase->convertChildToSelf(this, localRect.location()));
-    return parentRect;
+IntRect FrameViewBase::ConvertToContainingFrameViewBase(
+    const IntRect& local_rect) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent()) {
+    IntRect parent_rect(local_rect);
+    parent_rect.SetLocation(parent_frame_view_base->ConvertChildToSelf(
+        this, local_rect.Location()));
+    return parent_rect;
   }
-  return localRect;
+  return local_rect;
 }
 
-IntRect FrameViewBase::convertFromContainingFrameViewBase(
-    const IntRect& parentRect) const {
-  if (const FrameViewBase* parentFrameViewBase = parent()) {
-    IntRect localRect = parentRect;
-    localRect.setLocation(
-        parentFrameViewBase->convertSelfToChild(this, localRect.location()));
-    return localRect;
+IntRect FrameViewBase::ConvertFromContainingFrameViewBase(
+    const IntRect& parent_rect) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent()) {
+    IntRect local_rect = parent_rect;
+    local_rect.SetLocation(parent_frame_view_base->ConvertSelfToChild(
+        this, local_rect.Location()));
+    return local_rect;
   }
 
-  return parentRect;
+  return parent_rect;
 }
 
-IntPoint FrameViewBase::convertToContainingFrameViewBase(
-    const IntPoint& localPoint) const {
-  if (const FrameViewBase* parentFrameViewBase = parent())
-    return parentFrameViewBase->convertChildToSelf(this, localPoint);
+IntPoint FrameViewBase::ConvertToContainingFrameViewBase(
+    const IntPoint& local_point) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent())
+    return parent_frame_view_base->ConvertChildToSelf(this, local_point);
 
-  return localPoint;
+  return local_point;
 }
 
-IntPoint FrameViewBase::convertFromContainingFrameViewBase(
-    const IntPoint& parentPoint) const {
-  if (const FrameViewBase* parentFrameViewBase = parent())
-    return parentFrameViewBase->convertSelfToChild(this, parentPoint);
+IntPoint FrameViewBase::ConvertFromContainingFrameViewBase(
+    const IntPoint& parent_point) const {
+  if (const FrameViewBase* parent_frame_view_base = Parent())
+    return parent_frame_view_base->ConvertSelfToChild(this, parent_point);
 
-  return parentPoint;
+  return parent_point;
 }
 
-IntPoint FrameViewBase::convertChildToSelf(const FrameViewBase*,
+IntPoint FrameViewBase::ConvertChildToSelf(const FrameViewBase*,
                                            const IntPoint& point) const {
   return point;
 }
 
-IntPoint FrameViewBase::convertSelfToChild(const FrameViewBase*,
+IntPoint FrameViewBase::ConvertSelfToChild(const FrameViewBase*,
                                            const IntPoint& point) const {
   return point;
 }

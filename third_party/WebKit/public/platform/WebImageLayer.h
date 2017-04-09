@@ -37,9 +37,9 @@ class WebImageLayer {
  public:
   virtual ~WebImageLayer() {}
 
-  virtual WebLayer* layer() = 0;
-  virtual void setImage(const SkImage*) = 0;
-  virtual void setNearestNeighbor(bool) = 0;
+  virtual WebLayer* Layer() = 0;
+  virtual void SetImage(const SkImage*) = 0;
+  virtual void SetNearestNeighbor(bool) = 0;
 };
 
 }  // namespace blink

@@ -37,7 +37,7 @@ class PageVisibilityObserver;
 class CORE_EXPORT PageVisibilityNotifier
     : public LifecycleNotifier<Page, PageVisibilityObserver> {
  public:
-  void notifyPageVisibilityChanged();
+  void NotifyPageVisibilityChanged();
 };
 
 }  // namespace blink

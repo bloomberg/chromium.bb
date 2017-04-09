@@ -98,26 +98,26 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   CHECK(plugin());
   if (!new_plugin)
     return;
-  blink::WebPluginContainer* container = plugin()->container();
+  blink::WebPluginContainer* container = plugin()->Container();
   // This can occur if the container has been destroyed.
   if (!container) {
-    new_plugin->destroy();
+    new_plugin->Destroy();
     return;
   }
 
-  container->setPlugin(new_plugin);
+  container->SetPlugin(new_plugin);
   bool plugin_needs_initialization =
       !premade_throttler_ || new_plugin != premade_throttler_->GetWebPlugin();
-  if (plugin_needs_initialization && !new_plugin->initialize(container)) {
-    if (new_plugin->container()) {
+  if (plugin_needs_initialization && !new_plugin->Initialize(container)) {
+    if (new_plugin->Container()) {
       // Since the we couldn't initialize the new plugin, but the container
       // still exists, restore the placeholder and destroy the new plugin.
-      container->setPlugin(plugin());
-      new_plugin->destroy();
+      container->SetPlugin(plugin());
+      new_plugin->Destroy();
     } else {
       // The container has been destroyed, along with the new plugin. Destroy
       // our placeholder plugin also.
-      plugin()->destroy();
+      plugin()->Destroy();
     }
     return;
   }
@@ -125,13 +125,13 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
   // During initialization, the new plugin might have replaced itself in turn
   // with another plugin. Make sure not to use the passed in |new_plugin| after
   // this point.
-  new_plugin = container->plugin();
+  new_plugin = container->Plugin();
 
-  container->invalidate();
-  container->reportGeometry();
-  container->element().setAttribute("title", plugin()->old_title());
+  container->Invalidate();
+  container->ReportGeometry();
+  container->GetElement().SetAttribute("title", plugin()->old_title());
   plugin()->ReplayReceivedData(new_plugin);
-  plugin()->destroy();
+  plugin()->Destroy();
 }
 
 void LoadablePluginPlaceholder::SetMessage(const base::string16& message) {
@@ -145,8 +145,8 @@ void LoadablePluginPlaceholder::UpdateMessage() {
     return;
   std::string script =
       "window.setMessage(" + base::GetQuotedJSONString(message_) + ")";
-  plugin()->web_view()->mainFrame()->executeScript(
-      blink::WebScriptSource(blink::WebString::fromUTF8(script)));
+  plugin()->web_view()->MainFrame()->ExecuteScript(
+      blink::WebScriptSource(blink::WebString::FromUTF8(script)));
 }
 
 void LoadablePluginPlaceholder::PluginDestroyed() {
@@ -154,7 +154,7 @@ void LoadablePluginPlaceholder::PluginDestroyed() {
     if (premade_throttler_) {
       // Since the premade plugin has been detached from the container, it will
       // not be automatically destroyed along with the page.
-      premade_throttler_->GetWebPlugin()->destroy();
+      premade_throttler_->GetWebPlugin()->Destroy();
       premade_throttler_ = nullptr;
     } else if (is_blocked_for_power_saver_poster_) {
       // Record the NEVER unthrottle count only if there is no throttler.
@@ -173,7 +173,7 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
     v8::Isolate* isolate) const {
   // Pass through JavaScript access to the underlying throttled plugin.
   if (premade_throttler_ && premade_throttler_->GetWebPlugin()) {
-    return premade_throttler_->GetWebPlugin()->v8ScriptableObject(isolate);
+    return premade_throttler_->GetWebPlugin()->V8ScriptableObject(isolate);
   }
   return v8::Local<v8::Object>();
 }
@@ -193,7 +193,7 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
 
   unobscured_rect_ = unobscured_rect;
 
-  float zoom_factor = plugin()->container()->pageZoomFactor();
+  float zoom_factor = plugin()->Container()->PageZoomFactor();
   int width = roundf(unobscured_rect_.width() / zoom_factor);
   int height = roundf(unobscured_rect_.height() / zoom_factor);
   int x = roundf(unobscured_rect_.x() / zoom_factor);
@@ -203,7 +203,7 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
   url::Origin content_origin = url::Origin(GetPluginParams().url);
   RenderFrame::PeripheralContentStatus status =
       render_frame()->GetPeripheralContentStatus(
-          render_frame()->GetWebFrame()->top()->getSecurityOrigin(),
+          render_frame()->GetWebFrame()->Top()->GetSecurityOrigin(),
           content_origin, gfx::Size(width, height),
           heuristic_run_before_ ? RenderFrame::DONT_RECORD_DECISION
                                 : RenderFrame::RECORD_DECISION);
@@ -246,8 +246,8 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     std::string script = base::StringPrintf(
         "window.resizePoster('%dpx', '%dpx', '%dpx', '%dpx')", x, y, width,
         height);
-    plugin()->web_view()->mainFrame()->executeScript(
-        blink::WebScriptSource(blink::WebString::fromUTF8(script)));
+    plugin()->web_view()->MainFrame()->ExecuteScript(
+        blink::WebScriptSource(blink::WebString::FromUTF8(script)));
   }
 }
 
@@ -323,8 +323,8 @@ void LoadablePluginPlaceholder::DidFinishLoadingCallback() {
   // In case our initial geometry was reported before the placeholder finished
   // loading, request another one. Needed for correct large poster unthrottling.
   if (plugin()) {
-    CHECK(plugin()->container());
-    plugin()->container()->reportGeometry();
+    CHECK(plugin()->Container());
+    plugin()->Container()->ReportGeometry();
   }
 }
 
@@ -334,20 +334,21 @@ void LoadablePluginPlaceholder::DidFinishIconRepositionForTestingCallback() {
 
   // Set an attribute and post an event, so browser tests can wait for the
   // placeholder to be ready to receive simulated user input.
-  blink::WebElement element = plugin()->container()->element();
-  element.setAttribute("placeholderReady", "true");
+  blink::WebElement element = plugin()->Container()->GetElement();
+  element.SetAttribute("placeholderReady", "true");
 
   std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   base::Value value("placeholderReady");
   blink::WebSerializedScriptValue message_data =
-      blink::WebSerializedScriptValue::serialize(
-          blink::mainThreadIsolate(),
+      blink::WebSerializedScriptValue::Serialize(
+          blink::MainThreadIsolate(),
           converter->ToV8Value(
-              &value, element.document().frame()->mainWorldScriptContext()));
+              &value,
+              element.GetDocument().GetFrame()->MainWorldScriptContext()));
   blink::WebDOMMessageEvent msg_event(message_data);
 
-  plugin()->container()->enqueueMessageEvent(msg_event);
+  plugin()->Container()->EnqueueMessageEvent(msg_event);
 }
 
 void LoadablePluginPlaceholder::SetPluginInfo(

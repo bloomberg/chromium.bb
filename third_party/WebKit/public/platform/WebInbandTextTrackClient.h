@@ -39,7 +39,7 @@ class WebInbandTextTrackClient {
  public:
   virtual ~WebInbandTextTrackClient() {}
 
-  virtual void addWebVTTCue(double start,
+  virtual void AddWebVTTCue(double start,
                             double end,
                             const WebString& id,
                             const WebString& content,

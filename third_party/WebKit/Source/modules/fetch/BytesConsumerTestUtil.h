@@ -23,22 +23,22 @@ class BytesConsumerTestUtil {
  public:
   class MockBytesConsumer : public BytesConsumer {
    public:
-    static MockBytesConsumer* create() {
+    static MockBytesConsumer* Create() {
       return new ::testing::StrictMock<MockBytesConsumer>();
     }
 
-    MOCK_METHOD2(beginRead, Result(const char**, size_t*));
-    MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD1(drainAsBlobDataHandle,
+    MOCK_METHOD2(BeginRead, Result(const char**, size_t*));
+    MOCK_METHOD1(EndRead, Result(size_t));
+    MOCK_METHOD1(DrainAsBlobDataHandle,
                  PassRefPtr<BlobDataHandle>(BlobSizePolicy));
-    MOCK_METHOD0(drainAsFormData, PassRefPtr<EncodedFormData>());
-    MOCK_METHOD1(setClient, void(Client*));
-    MOCK_METHOD0(clearClient, void());
-    MOCK_METHOD0(cancel, void());
-    MOCK_CONST_METHOD0(getPublicState, PublicState());
-    MOCK_CONST_METHOD0(getError, Error());
+    MOCK_METHOD0(DrainAsFormData, PassRefPtr<EncodedFormData>());
+    MOCK_METHOD1(SetClient, void(Client*));
+    MOCK_METHOD0(ClearClient, void());
+    MOCK_METHOD0(Cancel, void());
+    MOCK_CONST_METHOD0(GetPublicState, PublicState());
+    MOCK_CONST_METHOD0(GetError, Error());
 
-    String debugName() const override { return "MockBytesConsumer"; }
+    String DebugName() const override { return "MockBytesConsumer"; }
 
    protected:
     MockBytesConsumer();
@@ -50,26 +50,26 @@ class BytesConsumerTestUtil {
     USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
 
    public:
-    static ::testing::StrictMock<MockFetchDataLoaderClient>* create() {
+    static ::testing::StrictMock<MockFetchDataLoaderClient>* Create() {
       return new ::testing::StrictMock<MockFetchDataLoaderClient>;
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { FetchDataLoader::Client::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { FetchDataLoader::Client::Trace(visitor); }
 
-    MOCK_METHOD1(didFetchDataLoadedBlobHandleMock,
+    MOCK_METHOD1(DidFetchDataLoadedBlobHandleMock,
                  void(RefPtr<BlobDataHandle>));
-    MOCK_METHOD1(didFetchDataLoadedArrayBufferMock, void(DOMArrayBuffer*));
-    MOCK_METHOD1(didFetchDataLoadedString, void(const String&));
-    MOCK_METHOD0(didFetchDataLoadStream, void());
-    MOCK_METHOD0(didFetchDataLoadFailed, void());
+    MOCK_METHOD1(DidFetchDataLoadedArrayBufferMock, void(DOMArrayBuffer*));
+    MOCK_METHOD1(DidFetchDataLoadedString, void(const String&));
+    MOCK_METHOD0(DidFetchDataLoadStream, void());
+    MOCK_METHOD0(DidFetchDataLoadFailed, void());
 
-    void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override {
-      didFetchDataLoadedArrayBufferMock(arrayBuffer);
+    void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer* array_buffer) override {
+      DidFetchDataLoadedArrayBufferMock(array_buffer);
     }
     // In mock methods we use RefPtr<> rather than PassRefPtr<>.
-    void didFetchDataLoadedBlobHandle(
-        PassRefPtr<BlobDataHandle> blobDataHandle) override {
-      didFetchDataLoadedBlobHandleMock(blobDataHandle);
+    void DidFetchDataLoadedBlobHandle(
+        PassRefPtr<BlobDataHandle> blob_data_handle) override {
+      DidFetchDataLoadedBlobHandleMock(blob_data_handle);
     }
   };
 
@@ -78,24 +78,24 @@ class BytesConsumerTestUtil {
 
    public:
     enum Name {
-      Data,
-      Done,
-      Error,
-      Wait,
+      kData,
+      kDone,
+      kError,
+      kWait,
     };
 
-    explicit Command(Name name) : m_name(name) {}
-    Command(Name name, const Vector<char>& body) : m_name(name), m_body(body) {}
-    Command(Name name, const char* body, size_t size) : m_name(name) {
-      m_body.append(body, size);
+    explicit Command(Name name) : name_(name) {}
+    Command(Name name, const Vector<char>& body) : name_(name), body_(body) {}
+    Command(Name name, const char* body, size_t size) : name_(name) {
+      body_.Append(body, size);
     }
     Command(Name name, const char* body) : Command(name, body, strlen(body)) {}
-    Name getName() const { return m_name; }
-    const Vector<char>& body() const { return m_body; }
+    Name GetName() const { return name_; }
+    const Vector<char>& Body() const { return body_; }
 
    private:
-    const Name m_name;
-    Vector<char> m_body;
+    const Name name_;
+    Vector<char> body_;
   };
 
   // ReplayingBytesConsumer stores commands via |add| and replays the stored
@@ -108,35 +108,35 @@ class BytesConsumerTestUtil {
 
     // Add a command to this handle. This function must be called BEFORE
     // any BytesConsumer methods are called.
-    void add(const Command& command) { m_commands.push_back(command); }
+    void Add(const Command& command) { commands_.push_back(command); }
 
-    Result beginRead(const char** buffer, size_t* available) override;
-    Result endRead(size_t readSize) override;
+    Result BeginRead(const char** buffer, size_t* available) override;
+    Result EndRead(size_t read_size) override;
 
-    void setClient(Client*) override;
-    void clearClient() override;
-    void cancel() override;
-    PublicState getPublicState() const override;
-    Error getError() const override;
-    String debugName() const override { return "ReplayingBytesConsumer"; }
+    void SetClient(Client*) override;
+    void ClearClient() override;
+    void Cancel() override;
+    PublicState GetPublicState() const override;
+    Error GetError() const override;
+    String DebugName() const override { return "ReplayingBytesConsumer"; }
 
-    bool isCancelled() const { return m_isCancelled; }
+    bool IsCancelled() const { return is_cancelled_; }
 
     DECLARE_TRACE();
 
    private:
-    void notifyAsReadable(int notificationToken);
-    void close();
-    void error(const Error&);
+    void NotifyAsReadable(int notification_token);
+    void Close();
+    void GetError(const Error&);
 
-    Member<ExecutionContext> m_executionContext;
-    Member<BytesConsumer::Client> m_client;
-    InternalState m_state = InternalState::Waiting;
-    Deque<Command> m_commands;
-    size_t m_offset = 0;
-    BytesConsumer::Error m_error;
-    int m_notificationToken = 0;
-    bool m_isCancelled = false;
+    Member<ExecutionContext> execution_context_;
+    Member<BytesConsumer::Client> client_;
+    InternalState state_ = InternalState::kWaiting;
+    Deque<Command> commands_;
+    size_t offset_ = 0;
+    BytesConsumer::Error error_;
+    int notification_token_ = 0;
+    bool is_cancelled_ = false;
   };
 
   class TwoPhaseReader final : public GarbageCollectedFinalized<TwoPhaseReader>,
@@ -147,18 +147,18 @@ class BytesConsumerTestUtil {
     // |consumer| must not have a client when called.
     explicit TwoPhaseReader(BytesConsumer* /* consumer */);
 
-    void onStateChange() override;
-    std::pair<BytesConsumer::Result, Vector<char>> run();
+    void OnStateChange() override;
+    std::pair<BytesConsumer::Result, Vector<char>> Run();
 
     DEFINE_INLINE_TRACE() {
-      visitor->trace(m_consumer);
-      BytesConsumer::Client::trace(visitor);
+      visitor->Trace(consumer_);
+      BytesConsumer::Client::Trace(visitor);
     }
 
    private:
-    Member<BytesConsumer> m_consumer;
-    BytesConsumer::Result m_result = BytesConsumer::Result::ShouldWait;
-    Vector<char> m_data;
+    Member<BytesConsumer> consumer_;
+    BytesConsumer::Result result_ = BytesConsumer::Result::kShouldWait;
+    Vector<char> data_;
   };
 };
 

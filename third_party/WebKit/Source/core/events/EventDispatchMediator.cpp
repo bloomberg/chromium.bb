@@ -35,20 +35,20 @@
 
 namespace blink {
 
-EventDispatchMediator* EventDispatchMediator::create(Event* event) {
+EventDispatchMediator* EventDispatchMediator::Create(Event* event) {
   return new EventDispatchMediator(event);
 }
 
-EventDispatchMediator::EventDispatchMediator(Event* event) : m_event(event) {}
+EventDispatchMediator::EventDispatchMediator(Event* event) : event_(event) {}
 
 DEFINE_TRACE(EventDispatchMediator) {
-  visitor->trace(m_event);
+  visitor->Trace(event_);
 }
 
-DispatchEventResult EventDispatchMediator::dispatchEvent(
+DispatchEventResult EventDispatchMediator::DispatchEvent(
     EventDispatcher& dispatcher) const {
-  DCHECK_EQ(m_event.get(), &dispatcher.event());
-  return dispatcher.dispatch();
+  DCHECK_EQ(event_.Get(), &dispatcher.GetEvent());
+  return dispatcher.Dispatch();
 }
 
 }  // namespace blink

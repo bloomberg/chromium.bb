@@ -17,7 +17,7 @@ void CssScanningMetricsObserver::OnLoadingBehaviorObserved(
     return;
 
   css_preload_found_ = page_load_metrics::DidObserveLoadingBehaviorInAnyFrame(
-      info, blink::WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
+      info, blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorCSSPreloadFound);
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

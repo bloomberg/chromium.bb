@@ -35,16 +35,16 @@
 namespace blink {
 
 StyleGridItemData::StyleGridItemData()
-    : m_gridColumnStart(ComputedStyle::initialGridColumnStart()),
-      m_gridColumnEnd(ComputedStyle::initialGridColumnEnd()),
-      m_gridRowStart(ComputedStyle::initialGridRowStart()),
-      m_gridRowEnd(ComputedStyle::initialGridRowEnd()) {}
+    : grid_column_start_(ComputedStyle::InitialGridColumnStart()),
+      grid_column_end_(ComputedStyle::InitialGridColumnEnd()),
+      grid_row_start_(ComputedStyle::InitialGridRowStart()),
+      grid_row_end_(ComputedStyle::InitialGridRowEnd()) {}
 
 StyleGridItemData::StyleGridItemData(const StyleGridItemData& o)
     : RefCounted<StyleGridItemData>(),
-      m_gridColumnStart(o.m_gridColumnStart),
-      m_gridColumnEnd(o.m_gridColumnEnd),
-      m_gridRowStart(o.m_gridRowStart),
-      m_gridRowEnd(o.m_gridRowEnd) {}
+      grid_column_start_(o.grid_column_start_),
+      grid_column_end_(o.grid_column_end_),
+      grid_row_start_(o.grid_row_start_),
+      grid_row_end_(o.grid_row_end_) {}
 
 }  // namespace blink

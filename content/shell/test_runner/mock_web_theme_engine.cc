@@ -32,17 +32,17 @@ const SkColor readOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
 
 SkColor bgColors(WebThemeEngine::State state) {
   switch (state) {
-    case WebThemeEngine::StateDisabled:
+    case WebThemeEngine::kStateDisabled:
       return SkColorSetRGB(0xc9, 0xc9, 0xc9);
-    case WebThemeEngine::StateHover:
+    case WebThemeEngine::kStateHover:
       return SkColorSetRGB(0x43, 0xf9, 0xff);
-    case WebThemeEngine::StateNormal:
+    case WebThemeEngine::kStateNormal:
       return SkColorSetRGB(0x89, 0xc4, 0xff);
-    case WebThemeEngine::StatePressed:
+    case WebThemeEngine::kStatePressed:
       return SkColorSetRGB(0xa9, 0xff, 0x12);
-    case WebThemeEngine::StateFocused:
+    case WebThemeEngine::kStateFocused:
       return SkColorSetRGB(0x00, 0xf3, 0xac);
-    case WebThemeEngine::StateReadonly:
+    case WebThemeEngine::kStateReadonly:
       return SkColorSetRGB(0xf3, 0xe0, 0xd0);
     default:
       NOTREACHED();
@@ -50,7 +50,7 @@ SkColor bgColors(WebThemeEngine::State state) {
   return SkColorSetRGB(0x00, 0x00, 0xff);
 }
 
-blink::WebSize MockWebThemeEngine::getSize(WebThemeEngine::Part part) {
+blink::WebSize MockWebThemeEngine::GetSize(WebThemeEngine::Part part) {
   // FIXME: We use this constant to indicate we are being asked for the size of
   // a part that we don't expect to be asked about. We return a garbage value
   // rather than just asserting because this code doesn't have access to either
@@ -58,28 +58,28 @@ blink::WebSize MockWebThemeEngine::getSize(WebThemeEngine::Part part) {
   const blink::WebSize invalidPartSize = blink::WebSize(100, 100);
 
   switch (part) {
-    case WebThemeEngine::PartScrollbarLeftArrow:
+    case WebThemeEngine::kPartScrollbarLeftArrow:
       return blink::WebSize(17, 15);
-    case WebThemeEngine::PartScrollbarRightArrow:
+    case WebThemeEngine::kPartScrollbarRightArrow:
       return invalidPartSize;
-    case WebThemeEngine::PartScrollbarUpArrow:
+    case WebThemeEngine::kPartScrollbarUpArrow:
       return blink::WebSize(15, 17);
-    case WebThemeEngine::PartScrollbarDownArrow:
+    case WebThemeEngine::kPartScrollbarDownArrow:
       return invalidPartSize;
-    case WebThemeEngine::PartScrollbarHorizontalThumb:
+    case WebThemeEngine::kPartScrollbarHorizontalThumb:
       return blink::WebSize(15, 15);
-    case WebThemeEngine::PartScrollbarVerticalThumb:
+    case WebThemeEngine::kPartScrollbarVerticalThumb:
       return blink::WebSize(15, 15);
-    case WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebThemeEngine::kPartScrollbarHorizontalTrack:
       return blink::WebSize(0, 15);
-    case WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebThemeEngine::kPartScrollbarVerticalTrack:
       return blink::WebSize(15, 0);
-    case WebThemeEngine::PartCheckbox:
-    case WebThemeEngine::PartRadio:
+    case WebThemeEngine::kPartCheckbox:
+    case WebThemeEngine::kPartRadio:
       return blink::WebSize(13, 13);
-    case WebThemeEngine::PartSliderThumb:
+    case WebThemeEngine::kPartSliderThumb:
       return blink::WebSize(11, 21);
-    case WebThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::kPartInnerSpinButton:
       return blink::WebSize(15, 8);
     default:
       return invalidPartSize;
@@ -95,8 +95,8 @@ static SkIRect webRectToSkIRect(const WebRect& webRect) {
 
 static SkIRect validate(const SkIRect& rect, WebThemeEngine::Part part) {
   switch (part) {
-    case WebThemeEngine::PartCheckbox:
-    case WebThemeEngine::PartRadio: {
+    case WebThemeEngine::kPartCheckbox:
+    case WebThemeEngine::kPartRadio: {
       SkIRect retval = rect;
 
       // The maximum width and height is 13.
@@ -257,12 +257,12 @@ void markState(cc::PaintCanvas* canvas,
   const int triangleSize = 5;
 
   switch (state) {
-    case WebThemeEngine::StateDisabled:
-    case WebThemeEngine::StateNormal:
+    case WebThemeEngine::kStateDisabled:
+    case WebThemeEngine::kStateNormal:
       // Don't visually mark these states (color is enough).
       break;
 
-    case WebThemeEngine::StateReadonly: {
+    case WebThemeEngine::kStateReadonly: {
       // The horizontal lines in a read only control are spaced by this amount.
       const int readOnlyLineOffset = 5;
 
@@ -272,19 +272,19 @@ void markState(cc::PaintCanvas* canvas,
         line(canvas, left + 1, i, right - 1, i, readOnlyColor);
       break;
     }
-    case WebThemeEngine::StateHover:
+    case WebThemeEngine::kStateHover:
       // Draw a triangle in the upper left corner of the control. (Win's "hot")
       triangle(canvas, left, top, left + triangleSize, top, left,
                top + triangleSize, edgeColor);
       break;
 
-    case WebThemeEngine::StateFocused:
+    case WebThemeEngine::kStateFocused:
       // Draw a triangle in the bottom right corner of the control.
       triangle(canvas, right, bottom, right - triangleSize, bottom, right,
                bottom - triangleSize, edgeColor);
       break;
 
-    case WebThemeEngine::StatePressed:
+    case WebThemeEngine::kStatePressed:
       // Draw a triangle in the bottom left corner of the control.
       triangle(canvas, left, bottom, left, bottom - triangleSize,
                left + triangleSize, bottom, edgeColor);
@@ -299,7 +299,7 @@ void markState(cc::PaintCanvas* canvas,
   }
 }
 
-void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
+void MockWebThemeEngine::Paint(blink::WebCanvas* canvas,
                                WebThemeEngine::Part part,
                                WebThemeEngine::State state,
                                const blink::WebRect& rect,
@@ -336,7 +336,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
   int bottom = irect.fBottom;
 
   switch (part) {
-    case WebThemeEngine::PartScrollbarDownArrow:
+    case WebThemeEngine::kPartScrollbarDownArrow:
       box(canvas, irect, bgColors(state));
       triangle(canvas, left + quarterWidth, top + quarterHeight,
                right - quarterWidth, top + quarterHeight, left + halfWidth,
@@ -344,21 +344,21 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       markState(canvas, irect, state);
       break;
 
-    case WebThemeEngine::PartScrollbarLeftArrow:
+    case WebThemeEngine::kPartScrollbarLeftArrow:
       box(canvas, irect, bgColors(state));
       triangle(canvas, right - quarterWidth, top + quarterHeight,
                right - quarterWidth, bottom - quarterHeight,
                left + quarterWidth, top + halfHeight, edgeColor);
       break;
 
-    case WebThemeEngine::PartScrollbarRightArrow:
+    case WebThemeEngine::kPartScrollbarRightArrow:
       box(canvas, irect, bgColors(state));
       triangle(canvas, left + quarterWidth, top + quarterHeight,
                right - quarterWidth, top + halfHeight, left + quarterWidth,
                bottom - quarterHeight, edgeColor);
       break;
 
-    case WebThemeEngine::PartScrollbarUpArrow:
+    case WebThemeEngine::kPartScrollbarUpArrow:
       box(canvas, irect, bgColors(state));
       triangle(canvas, left + quarterWidth, bottom - quarterHeight,
                left + halfWidth, top + quarterHeight, right - quarterWidth,
@@ -366,7 +366,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       markState(canvas, irect, state);
       break;
 
-    case WebThemeEngine::PartScrollbarHorizontalThumb: {
+    case WebThemeEngine::kPartScrollbarHorizontalThumb: {
       // Draw a narrower box on top of the outside box.
       nestedBoxes(canvas, irect, thumbLongIndent, thumbShortIndent,
                   thumbLongIndent, thumbShortIndent, bgColors(state),
@@ -383,7 +383,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       break;
     }
 
-    case WebThemeEngine::PartScrollbarVerticalThumb: {
+    case WebThemeEngine::kPartScrollbarVerticalThumb: {
       // Draw a shorter box on top of the outside box.
       nestedBoxes(canvas, irect, thumbShortIndent, thumbLongIndent,
                   thumbShortIndent, thumbLongIndent, bgColors(state),
@@ -400,7 +400,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       break;
     }
 
-    case WebThemeEngine::PartScrollbarHorizontalTrack: {
+    case WebThemeEngine::kPartScrollbarHorizontalTrack: {
       int longOffset = halfHeight - notchLongOffset;
       int shortOffset = irect.width() - notchShortOffset;
       box(canvas, irect, bgColors(state));
@@ -414,7 +414,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       break;
     }
 
-    case WebThemeEngine::PartScrollbarVerticalTrack: {
+    case WebThemeEngine::kPartScrollbarVerticalTrack: {
       int longOffset = halfWidth - notchLongOffset;
       int shortOffset = irect.height() - notchShortOffset;
       box(canvas, irect, bgColors(state));
@@ -428,7 +428,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       break;
     }
 
-    case WebThemeEngine::PartScrollbarCorner: {
+    case WebThemeEngine::kPartScrollbarCorner: {
       SkIRect cornerRect = {rect.x, rect.y, rect.x + rect.width,
                             rect.y + rect.height};
       flags.setColor(SK_ColorWHITE);
@@ -439,7 +439,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       break;
     }
 
-    case WebThemeEngine::PartCheckbox:
+    case WebThemeEngine::kPartCheckbox:
       if (extraParams->button.indeterminate) {
         nestedBoxes(canvas, irect, checkIndent, halfHeight, checkIndent,
                     halfHeight, bgColors(state), edgeColor);
@@ -453,7 +453,7 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       }
       break;
 
-    case WebThemeEngine::PartRadio:
+    case WebThemeEngine::kPartRadio:
       irect = validate(irect, part);
       halfHeight = irect.height() / 2;
       if (extraParams->button.checked) {
@@ -465,13 +465,13 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       }
       break;
 
-    case WebThemeEngine::PartButton:
+    case WebThemeEngine::kPartButton:
       roundRect(canvas, irect, bgColors(state));
       markState(canvas, irect, state);
       break;
 
-    case WebThemeEngine::PartTextField:
-      flags.setColor(extraParams->textField.backgroundColor);
+    case WebThemeEngine::kPartTextField:
+      flags.setColor(extraParams->text_field.background_color);
       flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->drawIRect(irect, flags);
 
@@ -482,9 +482,9 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       markState(canvas, irect, state);
       break;
 
-    case WebThemeEngine::PartMenuList:
-      if (extraParams->menuList.fillContentArea) {
-        box(canvas, irect, extraParams->menuList.backgroundColor);
+    case WebThemeEngine::kPartMenuList:
+      if (extraParams->menu_list.fill_content_area) {
+        box(canvas, irect, extraParams->menu_list.background_color);
       } else {
         cc::PaintFlags flags;
         flags.setColor(edgeColor);
@@ -493,21 +493,21 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       }
 
       // clip the drop-down arrow to be inside the select box
-      irect.fLeft =
-          std::max(irect.fLeft, extraParams->menuList.arrowX -
-                                    (extraParams->menuList.arrowSize + 1) / 2);
-      irect.fRight =
-          std::min(irect.fLeft + extraParams->menuList.arrowSize, irect.fRight);
+      irect.fLeft = std::max(irect.fLeft,
+                             extraParams->menu_list.arrow_x -
+                                 (extraParams->menu_list.arrow_size + 1) / 2);
+      irect.fRight = std::min(irect.fLeft + extraParams->menu_list.arrow_size,
+                              irect.fRight);
 
-      irect.fTop =
-          extraParams->menuList.arrowY - (extraParams->menuList.arrowSize) / 2;
-      irect.fBottom = irect.fTop + (extraParams->menuList.arrowSize);
+      irect.fTop = extraParams->menu_list.arrow_y -
+                   (extraParams->menu_list.arrow_size) / 2;
+      irect.fBottom = irect.fTop + (extraParams->menu_list.arrow_size);
 
       halfWidth = irect.width() / 2;
       quarterWidth = irect.width() / 4;
 
-      if (state == WebThemeEngine::StateFocused)  // FIXME: draw differenty?
-        state = WebThemeEngine::StateNormal;
+      if (state == WebThemeEngine::kStateFocused)  // FIXME: draw differenty?
+        state = WebThemeEngine::kStateNormal;
       box(canvas, irect, bgColors(state));
       triangle(canvas, irect.fLeft + quarterWidth, irect.fTop + quarterWidth,
                irect.fRight - quarterWidth, irect.fTop + quarterWidth,
@@ -516,12 +516,12 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
 
       break;
 
-    case WebThemeEngine::PartSliderTrack: {
+    case WebThemeEngine::kPartSliderTrack: {
       SkIRect lirect = irect;
 
       // Draw a narrow rect for the track plus box hatches on the ends.
-      if (state == WebThemeEngine::StateFocused)  // FIXME: draw differently?
-        state = WebThemeEngine::StateNormal;
+      if (state == WebThemeEngine::kStateFocused)  // FIXME: draw differently?
+        state = WebThemeEngine::kStateNormal;
       if (extraParams->slider.vertical) {
         lirect.inset(halfWidth - sliderIndent, noOffset);
         box(canvas, lirect, bgColors(state));
@@ -536,18 +536,18 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       break;
     }
 
-    case WebThemeEngine::PartSliderThumb:
-      if (state == WebThemeEngine::StateFocused)  // FIXME: draw differently?
-        state = WebThemeEngine::StateNormal;
+    case WebThemeEngine::kPartSliderThumb:
+      if (state == WebThemeEngine::kStateFocused)  // FIXME: draw differently?
+        state = WebThemeEngine::kStateNormal;
       oval(canvas, irect, bgColors(state));
       break;
 
-    case WebThemeEngine::PartInnerSpinButton: {
+    case WebThemeEngine::kPartInnerSpinButton: {
       // stack half-height up and down arrows on top of each other
       SkIRect lirect;
       int halfHeight = rect.height / 2;
-      if (extraParams->innerSpin.readOnly)
-        state = blink::WebThemeEngine::StateDisabled;
+      if (extraParams->inner_spin.read_only)
+        state = blink::WebThemeEngine::kStateDisabled;
 
       lirect.set(rect.x, rect.y, rect.x + rect.width - 1,
                  rect.y + halfHeight - 1);
@@ -570,20 +570,20 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
       markState(canvas, irect, state);
       break;
     }
-    case WebThemeEngine::PartProgressBar: {
+    case WebThemeEngine::kPartProgressBar: {
       flags.setColor(bgColors(state));
       flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->drawIRect(irect, flags);
 
       // Emulate clipping
       SkIRect tofill = irect;
-      if (extraParams->progressBar.determinate) {
-        tofill.set(extraParams->progressBar.valueRectX,
-                   extraParams->progressBar.valueRectY,
-                   extraParams->progressBar.valueRectX +
-                       extraParams->progressBar.valueRectWidth - 1,
-                   extraParams->progressBar.valueRectY +
-                       extraParams->progressBar.valueRectHeight);
+      if (extraParams->progress_bar.determinate) {
+        tofill.set(extraParams->progress_bar.value_rect_x,
+                   extraParams->progress_bar.value_rect_y,
+                   extraParams->progress_bar.value_rect_x +
+                       extraParams->progress_bar.value_rect_width - 1,
+                   extraParams->progress_bar.value_rect_y +
+                       extraParams->progress_bar.value_rect_height);
       }
 
       if (!tofill.intersect(irect))

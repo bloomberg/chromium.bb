@@ -13,60 +13,60 @@ VideoTrack::VideoTrack(const String& id,
                        const AtomicString& label,
                        const AtomicString& language,
                        bool selected)
-    : TrackBase(WebMediaPlayer::VideoTrack, kind, label, language, id),
-      m_selected(selected) {}
+    : TrackBase(WebMediaPlayer::kVideoTrack, kind, label, language, id),
+      selected_(selected) {}
 
 VideoTrack::~VideoTrack() {}
 
 DEFINE_TRACE(VideoTrack) {
-  TrackBase::trace(visitor);
+  TrackBase::Trace(visitor);
 }
 
 void VideoTrack::setSelected(bool selected) {
-  if (selected == m_selected)
+  if (selected == selected_)
     return;
 
-  m_selected = selected;
+  selected_ = selected;
 
-  if (mediaElement())
-    mediaElement()->selectedVideoTrackChanged(this);
+  if (MediaElement())
+    MediaElement()->SelectedVideoTrackChanged(this);
 }
 
-const AtomicString& VideoTrack::alternativeKeyword() {
+const AtomicString& VideoTrack::AlternativeKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, keyword, ("alternative"));
   return keyword;
 }
 
-const AtomicString& VideoTrack::captionsKeyword() {
+const AtomicString& VideoTrack::CaptionsKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, keyword, ("captions"));
   return keyword;
 }
 
-const AtomicString& VideoTrack::mainKeyword() {
+const AtomicString& VideoTrack::MainKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, keyword, ("main"));
   return keyword;
 }
 
-const AtomicString& VideoTrack::signKeyword() {
+const AtomicString& VideoTrack::SignKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, keyword, ("sign"));
   return keyword;
 }
 
-const AtomicString& VideoTrack::subtitlesKeyword() {
+const AtomicString& VideoTrack::SubtitlesKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, keyword, ("subtitles"));
   return keyword;
 }
 
-const AtomicString& VideoTrack::commentaryKeyword() {
+const AtomicString& VideoTrack::CommentaryKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, keyword, ("commentary"));
   return keyword;
 }
 
-bool VideoTrack::isValidKindKeyword(const String& kind) {
-  return kind == alternativeKeyword() || kind == captionsKeyword() ||
-         kind == mainKeyword() || kind == signKeyword() ||
-         kind == subtitlesKeyword() || kind == commentaryKeyword() ||
-         kind == emptyAtom;
+bool VideoTrack::IsValidKindKeyword(const String& kind) {
+  return kind == AlternativeKeyword() || kind == CaptionsKeyword() ||
+         kind == MainKeyword() || kind == SignKeyword() ||
+         kind == SubtitlesKeyword() || kind == CommentaryKeyword() ||
+         kind == g_empty_atom;
 }
 
 }  // namespace blink

@@ -16,72 +16,72 @@
 
 namespace blink {
 
-void SVGContainerPainter::paint(const PaintInfo& paintInfo) {
+void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   // Spec: groups w/o children still may render filter content.
-  if (!m_layoutSVGContainer.firstChild() &&
-      !m_layoutSVGContainer.selfWillPaint())
+  if (!layout_svg_container_.FirstChild() &&
+      !layout_svg_container_.SelfWillPaint())
     return;
 
-  FloatRect boundingBox =
-      m_layoutSVGContainer.visualRectInLocalSVGCoordinates();
+  FloatRect bounding_box =
+      layout_svg_container_.VisualRectInLocalSVGCoordinates();
   // LayoutSVGHiddenContainer's visual rect is always empty but we need to
   // paint its descendants.
-  if (!m_layoutSVGContainer.isSVGHiddenContainer() &&
-      !paintInfo.cullRect().intersectsCullRect(
-          m_layoutSVGContainer.localToSVGParentTransform(), boundingBox))
+  if (!layout_svg_container_.IsSVGHiddenContainer() &&
+      !paint_info.GetCullRect().IntersectsCullRect(
+          layout_svg_container_.LocalToSVGParentTransform(), bounding_box))
     return;
 
   // Spec: An empty viewBox on the <svg> element disables rendering.
-  DCHECK(m_layoutSVGContainer.element());
-  if (isSVGSVGElement(*m_layoutSVGContainer.element()) &&
-      toSVGSVGElement(*m_layoutSVGContainer.element()).hasEmptyViewBox())
+  DCHECK(layout_svg_container_.GetElement());
+  if (isSVGSVGElement(*layout_svg_container_.GetElement()) &&
+      toSVGSVGElement(*layout_svg_container_.GetElement()).HasEmptyViewBox())
     return;
 
-  PaintInfo paintInfoBeforeFiltering(paintInfo);
-  paintInfoBeforeFiltering.updateCullRect(
-      m_layoutSVGContainer.localToSVGParentTransform());
-  SVGTransformContext transformContext(
-      paintInfoBeforeFiltering.context, m_layoutSVGContainer,
-      m_layoutSVGContainer.localToSVGParentTransform());
+  PaintInfo paint_info_before_filtering(paint_info);
+  paint_info_before_filtering.UpdateCullRect(
+      layout_svg_container_.LocalToSVGParentTransform());
+  SVGTransformContext transform_context(
+      paint_info_before_filtering.context, layout_svg_container_,
+      layout_svg_container_.LocalToSVGParentTransform());
   {
-    Optional<FloatClipRecorder> clipRecorder;
-    if (m_layoutSVGContainer.isSVGViewportContainer() &&
-        SVGLayoutSupport::isOverflowHidden(&m_layoutSVGContainer)) {
+    Optional<FloatClipRecorder> clip_recorder;
+    if (layout_svg_container_.IsSVGViewportContainer() &&
+        SVGLayoutSupport::IsOverflowHidden(&layout_svg_container_)) {
       FloatRect viewport =
-          m_layoutSVGContainer.localToSVGParentTransform().inverse().mapRect(
-              toLayoutSVGViewportContainer(m_layoutSVGContainer).viewport());
-      clipRecorder.emplace(paintInfoBeforeFiltering.context,
-                           m_layoutSVGContainer, paintInfoBeforeFiltering.phase,
-                           viewport);
+          layout_svg_container_.LocalToSVGParentTransform().Inverse().MapRect(
+              ToLayoutSVGViewportContainer(layout_svg_container_).Viewport());
+      clip_recorder.emplace(paint_info_before_filtering.context,
+                            layout_svg_container_,
+                            paint_info_before_filtering.phase, viewport);
     }
 
-    SVGPaintContext paintContext(m_layoutSVGContainer,
-                                 paintInfoBeforeFiltering);
-    bool continueRendering = true;
-    if (paintContext.paintInfo().phase == PaintPhaseForeground)
-      continueRendering = paintContext.applyClipMaskAndFilterIfNecessary();
+    SVGPaintContext paint_context(layout_svg_container_,
+                                  paint_info_before_filtering);
+    bool continue_rendering = true;
+    if (paint_context.GetPaintInfo().phase == kPaintPhaseForeground)
+      continue_rendering = paint_context.ApplyClipMaskAndFilterIfNecessary();
 
-    if (continueRendering) {
-      for (LayoutObject* child = m_layoutSVGContainer.firstChild(); child;
-           child = child->nextSibling())
-        child->paint(paintContext.paintInfo(), IntPoint());
+    if (continue_rendering) {
+      for (LayoutObject* child = layout_svg_container_.FirstChild(); child;
+           child = child->NextSibling())
+        child->Paint(paint_context.GetPaintInfo(), IntPoint());
     }
   }
 
-  if (paintInfoBeforeFiltering.phase != PaintPhaseForeground)
+  if (paint_info_before_filtering.phase != kPaintPhaseForeground)
     return;
 
-  if (m_layoutSVGContainer.style()->outlineWidth() &&
-      m_layoutSVGContainer.style()->visibility() == EVisibility::kVisible) {
-    PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
-    outlinePaintInfo.phase = PaintPhaseSelfOutlineOnly;
-    ObjectPainter(m_layoutSVGContainer)
-        .paintOutline(outlinePaintInfo, LayoutPoint(boundingBox.location()));
+  if (layout_svg_container_.Style()->OutlineWidth() &&
+      layout_svg_container_.Style()->Visibility() == EVisibility::kVisible) {
+    PaintInfo outline_paint_info(paint_info_before_filtering);
+    outline_paint_info.phase = kPaintPhaseSelfOutlineOnly;
+    ObjectPainter(layout_svg_container_)
+        .PaintOutline(outline_paint_info, LayoutPoint(bounding_box.Location()));
   }
 
-  if (paintInfoBeforeFiltering.isPrinting())
-    ObjectPainter(m_layoutSVGContainer)
-        .addPDFURLRectIfNeeded(paintInfoBeforeFiltering, LayoutPoint());
+  if (paint_info_before_filtering.IsPrinting())
+    ObjectPainter(layout_svg_container_)
+        .AddPDFURLRectIfNeeded(paint_info_before_filtering, LayoutPoint());
 }
 
 }  // namespace blink

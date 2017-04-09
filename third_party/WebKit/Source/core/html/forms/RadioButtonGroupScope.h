@@ -38,17 +38,17 @@ class RadioButtonGroupScope {
   RadioButtonGroupScope();
   ~RadioButtonGroupScope();
   DECLARE_TRACE();
-  void addButton(HTMLInputElement*);
-  void updateCheckedState(HTMLInputElement*);
-  void requiredAttributeChanged(HTMLInputElement*);
-  void removeButton(HTMLInputElement*);
-  HTMLInputElement* checkedButtonForGroup(const AtomicString& groupName) const;
-  bool isInRequiredGroup(HTMLInputElement*) const;
-  unsigned groupSizeFor(const HTMLInputElement*) const;
+  void AddButton(HTMLInputElement*);
+  void UpdateCheckedState(HTMLInputElement*);
+  void RequiredAttributeChanged(HTMLInputElement*);
+  void RemoveButton(HTMLInputElement*);
+  HTMLInputElement* CheckedButtonForGroup(const AtomicString& group_name) const;
+  bool IsInRequiredGroup(HTMLInputElement*) const;
+  unsigned GroupSizeFor(const HTMLInputElement*) const;
 
  private:
   using NameToGroupMap = HeapHashMap<AtomicString, Member<RadioButtonGroup>>;
-  Member<NameToGroupMap> m_nameToGroupMap;
+  Member<NameToGroupMap> name_to_group_map_;
 };
 
 }  // namespace blink

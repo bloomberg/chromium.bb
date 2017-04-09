@@ -32,7 +32,7 @@
 
 namespace blink {
 
-void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
+void XsltUnicodeSortFunction(xsltTransformContextPtr ctxt,
                              xmlNodePtr* sorts,
                              int nbsorts);
 }

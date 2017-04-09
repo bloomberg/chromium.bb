@@ -47,40 +47,40 @@ class UndoStack final : public GarbageCollected<UndoStack> {
   WTF_MAKE_NONCOPYABLE(UndoStack);
 
  public:
-  static UndoStack* create();
+  static UndoStack* Create();
 
-  void registerUndoStep(UndoStep*);
-  void registerRedoStep(UndoStep*);
-  bool canUndo() const;
-  bool canRedo() const;
-  void undo();
-  void redo();
-  void clear();
+  void RegisterUndoStep(UndoStep*);
+  void RegisterRedoStep(UndoStep*);
+  bool CanUndo() const;
+  bool CanRedo() const;
+  void Undo();
+  void Redo();
+  void Clear();
 
   class UndoStepRange {
     STACK_ALLOCATED();
 
    public:
     using ConstIterator = UndoStepStack::const_reverse_iterator;
-    ConstIterator begin() { return m_stepStack.rbegin(); }
-    ConstIterator end() { return m_stepStack.rend(); }
+    ConstIterator begin() { return step_stack_.rbegin(); }
+    ConstIterator end() { return step_stack_.rend(); }
 
     explicit UndoStepRange(const UndoStepStack&);
 
    private:
-    const UndoStepStack& m_stepStack;
+    const UndoStepStack& step_stack_;
   };
 
-  UndoStepRange undoSteps() const;
+  UndoStepRange UndoSteps() const;
 
   DECLARE_TRACE();
 
  private:
   UndoStack();
 
-  bool m_inRedo;
-  UndoStepStack m_undoStack;
-  UndoStepStack m_redoStack;
+  bool in_redo_;
+  UndoStepStack undo_stack_;
+  UndoStepStack redo_stack_;
 };
 
 }  // namespace blink

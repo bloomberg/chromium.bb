@@ -62,30 +62,30 @@ class KURL;
 class CORE_EXPORT PingLoader {
  public:
   enum ViolationReportType {
-    ContentSecurityPolicyViolationReport,
-    XSSAuditorViolationReport
+    kContentSecurityPolicyViolationReport,
+    kXSSAuditorViolationReport
   };
 
-  static void loadImage(LocalFrame*, const KURL&);
-  static void sendLinkAuditPing(LocalFrame*,
-                                const KURL& pingURL,
-                                const KURL& destinationURL);
-  static void sendViolationReport(LocalFrame*,
-                                  const KURL& reportURL,
+  static void LoadImage(LocalFrame*, const KURL&);
+  static void SendLinkAuditPing(LocalFrame*,
+                                const KURL& ping_url,
+                                const KURL& destination_url);
+  static void SendViolationReport(LocalFrame*,
+                                  const KURL& report_url,
                                   PassRefPtr<EncodedFormData> report,
                                   ViolationReportType);
 
   // The last argument is guaranteed to be set to the size of payload if
   // these method return true. If these method returns false, the value
   // shouldn't be used.
-  static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, size_t&);
-  static bool sendBeacon(LocalFrame*,
+  static bool SendBeacon(LocalFrame*, int, const KURL&, const String&, size_t&);
+  static bool SendBeacon(LocalFrame*,
                          int,
                          const KURL&,
                          DOMArrayBufferView*,
                          size_t&);
-  static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, size_t&);
-  static bool sendBeacon(LocalFrame*, int, const KURL&, FormData*, size_t&);
+  static bool SendBeacon(LocalFrame*, int, const KURL&, Blob*, size_t&);
+  static bool SendBeacon(LocalFrame*, int, const KURL&, FormData*, size_t&);
 };
 
 }  // namespace blink

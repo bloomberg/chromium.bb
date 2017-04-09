@@ -37,9 +37,10 @@ HTMLParserOptions::HTMLParserOptions(Document* document) {
   if (!document)
     return;
 
-  if (LocalFrame* frame = document->frame()) {
-    scriptEnabled = document->canExecuteScripts(NotAboutToExecuteScript);
-    pluginsEnabled = frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
+  if (LocalFrame* frame = document->GetFrame()) {
+    script_enabled = document->CanExecuteScripts(kNotAboutToExecuteScript);
+    plugins_enabled =
+        frame->Loader().AllowPlugins(kNotAboutToInstantiatePlugin);
   }
 }
 

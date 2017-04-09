@@ -36,15 +36,15 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceMark* create(const String& name, double startTime) {
-    return new PerformanceMark(name, startTime);
+  static PerformanceMark* Create(const String& name, double start_time) {
+    return new PerformanceMark(name, start_time);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { PerformanceEntry::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { PerformanceEntry::Trace(visitor); }
 
  private:
-  PerformanceMark(const String& name, double startTime)
-      : PerformanceEntry(name, "mark", startTime, startTime) {}
+  PerformanceMark(const String& name, double start_time)
+      : PerformanceEntry(name, "mark", start_time, start_time) {}
 
   ~PerformanceMark() override {}
 };

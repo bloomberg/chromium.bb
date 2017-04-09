@@ -30,100 +30,102 @@
 
 namespace blink {
 
-static inline void assertDescriptionMatchesMask(FontDescription& source,
+static inline void AssertDescriptionMatchesMask(FontDescription& source,
                                                 FontTraitsBitfield bitfield) {
   FontDescription target;
-  target.setTraits(FontTraits(bitfield));
-  EXPECT_EQ(source.style(), target.style());
-  EXPECT_EQ(source.weight(), target.weight());
-  EXPECT_EQ(source.stretch(), target.stretch());
+  target.SetTraits(FontTraits(bitfield));
+  EXPECT_EQ(source.Style(), target.Style());
+  EXPECT_EQ(source.Weight(), target.Weight());
+  EXPECT_EQ(source.Stretch(), target.Stretch());
 }
 
 TEST(FontDescriptionTest, TestFontTraits) {
   FontDescription source;
-  source.setStyle(FontStyleNormal);
-  source.setWeight(FontWeightNormal);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleNormal);
+  source.SetWeight(kFontWeightNormal);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleNormal);
-  source.setWeight(FontWeightNormal);
-  source.setStretch(FontStretchExtraCondensed);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleNormal);
+  source.SetWeight(kFontWeightNormal);
+  source.SetStretch(kFontStretchExtraCondensed);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight900);
-  source.setStretch(FontStretchUltraExpanded);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight900);
+  source.SetStretch(kFontStretchUltraExpanded);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight100);
-  source.setStretch(FontStretchExtraExpanded);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight100);
+  source.SetStretch(kFontStretchExtraExpanded);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight900);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight900);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight800);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight800);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight700);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight700);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight600);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight600);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight500);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight500);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight400);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight400);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight300);
-  source.setStretch(FontStretchUltraExpanded);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight300);
+  source.SetStretch(kFontStretchUltraExpanded);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 
-  source.setStyle(FontStyleItalic);
-  source.setWeight(FontWeight200);
-  source.setStretch(FontStretchNormal);
-  assertDescriptionMatchesMask(source, source.traits().bitfield());
+  source.SetStyle(kFontStyleItalic);
+  source.SetWeight(kFontWeight200);
+  source.SetStretch(kFontStretchNormal);
+  AssertDescriptionMatchesMask(source, source.Traits().Bitfield());
 }
 
 TEST(FontDescriptionTest, TestHashCollision) {
   FontWeight weights[] = {
-      FontWeight100, FontWeight200, FontWeight300, FontWeight400, FontWeight500,
-      FontWeight600, FontWeight700, FontWeight800, FontWeight900,
+      kFontWeight100, kFontWeight200, kFontWeight300,
+      kFontWeight400, kFontWeight500, kFontWeight600,
+      kFontWeight700, kFontWeight800, kFontWeight900,
   };
-  FontStretch stretches[]{FontStretchUltraCondensed, FontStretchExtraCondensed,
-                          FontStretchCondensed,      FontStretchSemiCondensed,
-                          FontStretchNormal,         FontStretchSemiExpanded,
-                          FontStretchExpanded,       FontStretchExtraExpanded,
-                          FontStretchUltraExpanded};
-  FontStyle styles[] = {FontStyleNormal, FontStyleOblique, FontStyleItalic};
+  FontStretch stretches[]{
+      kFontStretchUltraCondensed, kFontStretchExtraCondensed,
+      kFontStretchCondensed,      kFontStretchSemiCondensed,
+      kFontStretchNormal,         kFontStretchSemiExpanded,
+      kFontStretchExpanded,       kFontStretchExtraExpanded,
+      kFontStretchUltraExpanded};
+  FontStyle styles[] = {kFontStyleNormal, kFontStyleOblique, kFontStyleItalic};
 
   FontDescription source;
   WTF::Vector<unsigned> hashes;
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(weights); i++) {
-    source.setWeight(weights[i]);
+    source.SetWeight(weights[i]);
     for (size_t j = 0; j < WTF_ARRAY_LENGTH(stretches); j++) {
-      source.setStretch(stretches[j]);
+      source.SetStretch(stretches[j]);
       for (size_t k = 0; k < WTF_ARRAY_LENGTH(styles); k++) {
-        source.setStyle(styles[k]);
-        unsigned hash = source.styleHashWithoutFamilyList();
-        ASSERT_FALSE(hashes.contains(hash));
+        source.SetStyle(styles[k]);
+        unsigned hash = source.StyleHashWithoutFamilyList();
+        ASSERT_FALSE(hashes.Contains(hash));
         hashes.push_back(hash);
       }
     }

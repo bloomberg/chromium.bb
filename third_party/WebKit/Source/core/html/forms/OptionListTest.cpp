@@ -13,8 +13,8 @@ namespace blink {
 
 namespace {
 
-AtomicString id(const HTMLOptionElement* option) {
-  return option->fastGetAttribute(HTMLNames::idAttr);
+AtomicString Id(const HTMLOptionElement* option) {
+  return option->FastGetAttribute(HTMLNames::idAttr);
 }
 
 }  // namespace
@@ -22,68 +22,68 @@ AtomicString id(const HTMLOptionElement* option) {
 class OptionListTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    HTMLDocument* document = HTMLDocument::create();
-    HTMLSelectElement* select = HTMLSelectElement::create(*document);
-    document->appendChild(select);
-    m_select = select;
+    HTMLDocument* document = HTMLDocument::Create();
+    HTMLSelectElement* select = HTMLSelectElement::Create(*document);
+    document->AppendChild(select);
+    select_ = select;
   }
-  HTMLSelectElement& select() const { return *m_select; }
+  HTMLSelectElement& Select() const { return *select_; }
 
  private:
-  Persistent<HTMLSelectElement> m_select;
+  Persistent<HTMLSelectElement> select_;
 };
 
 TEST_F(OptionListTest, Empty) {
-  OptionList list = select().optionList();
+  OptionList list = Select().GetOptionList();
   EXPECT_EQ(list.end(), list.begin())
       << "OptionList should iterate over empty SELECT successfully";
 }
 
 TEST_F(OptionListTest, OptionOnly) {
-  select().setInnerHTML(
+  Select().setInnerHTML(
       "text<input><option id=o1></option><input><option "
       "id=o2></option><input>");
-  HTMLElement* div = toHTMLElement(select().document().createElement("div"));
+  HTMLElement* div = ToHTMLElement(Select().GetDocument().createElement("div"));
   div->setInnerHTML("<option id=o3></option>");
-  select().appendChild(div);
-  OptionList list = select().optionList();
+  Select().AppendChild(div);
+  OptionList list = Select().GetOptionList();
   OptionList::Iterator iter = list.begin();
-  EXPECT_EQ("o1", id(*iter));
+  EXPECT_EQ("o1", Id(*iter));
   ++iter;
-  EXPECT_EQ("o2", id(*iter));
+  EXPECT_EQ("o2", Id(*iter));
   ++iter;
   // No "o3" because it's in DIV.
   EXPECT_EQ(list.end(), iter);
 }
 
 TEST_F(OptionListTest, Optgroup) {
-  select().setInnerHTML(
+  Select().setInnerHTML(
       "<optgroup><option id=g11></option><option id=g12></option></optgroup>"
       "<optgroup><option id=g21></option></optgroup>"
       "<optgroup></optgroup>"
       "<option id=o1></option>"
       "<optgroup><option id=g41></option></optgroup>");
-  OptionList list = select().optionList();
+  OptionList list = Select().GetOptionList();
   OptionList::Iterator iter = list.begin();
-  EXPECT_EQ("g11", id(*iter));
+  EXPECT_EQ("g11", Id(*iter));
   ++iter;
-  EXPECT_EQ("g12", id(*iter));
+  EXPECT_EQ("g12", Id(*iter));
   ++iter;
-  EXPECT_EQ("g21", id(*iter));
+  EXPECT_EQ("g21", Id(*iter));
   ++iter;
-  EXPECT_EQ("o1", id(*iter));
+  EXPECT_EQ("o1", Id(*iter));
   ++iter;
-  EXPECT_EQ("g41", id(*iter));
+  EXPECT_EQ("g41", Id(*iter));
   ++iter;
   EXPECT_EQ(list.end(), iter);
 
-  toHTMLElement(select().firstChild())
+  ToHTMLElement(Select().FirstChild())
       ->setInnerHTML(
           "<optgroup><option id=gg11></option></optgroup>"
           "<option id=g11></option>");
-  list = select().optionList();
+  list = Select().GetOptionList();
   iter = list.begin();
-  EXPECT_EQ("g11", id(*iter)) << "Nested OPTGROUP should be ignored.";
+  EXPECT_EQ("g11", Id(*iter)) << "Nested OPTGROUP should be ignored.";
 }
 
 }  // naemespace blink

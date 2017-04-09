@@ -34,7 +34,7 @@ class TestPageClickListener : public PageClickListener {
 
   void ClearResults() {
     form_control_element_clicked_called_ = false;
-    form_control_element_clicked_.reset();
+    form_control_element_clicked_.Reset();
     was_focused_ = false;
   }
 
@@ -54,7 +54,7 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
                                                    &test_listener_));
 
     // Must be set before loading HTML.
-    view_->GetWebView()->setDefaultPageScaleLimits(1, 4);
+    view_->GetWebView()->SetDefaultPageScaleLimits(1, 4);
 
     LoadHTML("<form>"
              "  <input type='text' id='text_1'></input><br>"
@@ -64,13 +64,14 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
              "  <input type='button' id='button'></input><br>"
              "  <input type='button' id='button_2' disabled></input><br>"
              "</form>");
-    GetWebWidget()->resize(blink::WebSize(500, 500));
-    GetWebWidget()->setFocus(true);
-    blink::WebDocument document = view_->GetWebView()->mainFrame()->document();
-    text_ = document.getElementById("text_1");
-    textarea_ = document.getElementById("textarea_1");
-    ASSERT_FALSE(text_.isNull());
-    ASSERT_FALSE(textarea_.isNull());
+    GetWebWidget()->Resize(blink::WebSize(500, 500));
+    GetWebWidget()->SetFocus(true);
+    blink::WebDocument document =
+        view_->GetWebView()->MainFrame()->GetDocument();
+    text_ = document.GetElementById("text_1");
+    textarea_ = document.GetElementById("textarea_1");
+    ASSERT_FALSE(text_.IsNull());
+    ASSERT_FALSE(textarea_.IsNull());
 
     // Enable show-ime event when element is focused by indicating that a user
     // gesture has been processed since load.
@@ -78,8 +79,8 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
   }
 
   void TearDown() override {
-    text_.reset();
-    textarea_.reset();
+    text_.Reset();
+    textarea_.Reset();
     test_listener_.ClearResults();
     page_click_tracker_.reset();
     ChromeRenderViewTest::TearDown();
@@ -94,7 +95,7 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
 // Tests that PageClickTracker does notify correctly when an input
 // node is clicked.
 TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
-  EXPECT_NE(text_, text_.document().focusedElement());
+  EXPECT_NE(text_, text_.GetDocument().FocusedElement());
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
@@ -116,7 +117,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
 
 // Tests that PageClickTracker does not notify when there is right click.
 TEST_F(PageClickTrackerTest, PageClickTrackerInputRightClicked) {
-  EXPECT_NE(text_, text_.document().focusedElement());
+  EXPECT_NE(text_, text_.GetDocument().FocusedElement());
   // Right click the text field once.
   EXPECT_TRUE(SimulateElementRightClick("text_1"));
   EXPECT_FALSE(test_listener_.form_control_element_clicked_called_);
@@ -174,9 +175,9 @@ TEST_F(PageClickTrackerTest, PageClickTrackerTextAreaFocusedAndClicked) {
 }
 
 TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaClicked) {
-  EXPECT_NE(textarea_, textarea_.document().focusedElement());
-  view_->GetWebView()->setPageScaleFactor(3);
-  view_->GetWebView()->setVisualViewportOffset(blink::WebFloatPoint(50, 50));
+  EXPECT_NE(textarea_, textarea_.GetDocument().FocusedElement());
+  view_->GetWebView()->SetPageScaleFactor(3);
+  view_->GetWebView()->SetVisualViewportOffset(blink::WebFloatPoint(50, 50));
 
   // Click textarea_1.
   SimulatePointClick(gfx::Point(30, 30));
@@ -186,9 +187,9 @@ TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaClicked) {
 }
 
 TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaTapped) {
-  EXPECT_NE(textarea_, textarea_.document().focusedElement());
-  view_->GetWebView()->setPageScaleFactor(3);
-  view_->GetWebView()->setVisualViewportOffset(blink::WebFloatPoint(50, 50));
+  EXPECT_NE(textarea_, textarea_.GetDocument().FocusedElement());
+  view_->GetWebView()->SetPageScaleFactor(3);
+  view_->GetWebView()->SetVisualViewportOffset(blink::WebFloatPoint(50, 50));
 
   // Tap textarea_1.
   SimulateRectTap(gfx::Rect(30, 30, 30, 30));
@@ -198,7 +199,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerScaledTextareaTapped) {
 }
 
 TEST_F(PageClickTrackerTest, PageClickTrackerDisabledInputClickedNoEvent) {
-  EXPECT_NE(text_, text_.document().focusedElement());
+  EXPECT_NE(text_, text_.GetDocument().FocusedElement());
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
@@ -213,7 +214,7 @@ TEST_F(PageClickTrackerTest, PageClickTrackerDisabledInputClickedNoEvent) {
 
 TEST_F(PageClickTrackerTest,
        PageClickTrackerClickDisabledInputDoesNotResetClickCounter) {
-  EXPECT_NE(text_, text_.document().focusedElement());
+  EXPECT_NE(text_, text_.GetDocument().FocusedElement());
   // Click the text field once.
   EXPECT_TRUE(SimulateElementClick("text_1"));
   EXPECT_TRUE(test_listener_.form_control_element_clicked_called_);
@@ -235,7 +236,7 @@ TEST_F(PageClickTrackerTest,
 }
 
 TEST_F(PageClickTrackerTest, PageClickTrackerTapNearEdgeIsPageClick) {
-  EXPECT_NE(text_, text_.document().focusedElement());
+  EXPECT_NE(text_, text_.GetDocument().FocusedElement());
   // Tap outside of element bounds, but tap width is overlapping the field.
   gfx::Rect element_bounds = GetElementBounds("text_1");
   SimulateRectTap(element_bounds -

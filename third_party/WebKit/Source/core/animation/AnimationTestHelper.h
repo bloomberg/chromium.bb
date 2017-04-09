@@ -11,11 +11,11 @@
 
 namespace blink {
 
-void setV8ObjectPropertyAsString(v8::Isolate*,
+void SetV8ObjectPropertyAsString(v8::Isolate*,
                                  v8::Local<v8::Object>,
                                  const StringView& name,
                                  const StringView& value);
-void setV8ObjectPropertyAsNumber(v8::Isolate*,
+void SetV8ObjectPropertyAsNumber(v8::Isolate*,
                                  v8::Local<v8::Object>,
                                  const StringView& name,
                                  double value);

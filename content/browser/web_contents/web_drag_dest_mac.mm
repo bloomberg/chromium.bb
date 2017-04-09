@@ -36,13 +36,13 @@ int GetModifierFlags() {
   int modifier_state = 0;
   UInt32 currentModifiers = GetCurrentKeyModifiers();
   if (currentModifiers & ::shiftKey)
-    modifier_state |= blink::WebInputEvent::ShiftKey;
+    modifier_state |= blink::WebInputEvent::kShiftKey;
   if (currentModifiers & ::controlKey)
-    modifier_state |= blink::WebInputEvent::ControlKey;
+    modifier_state |= blink::WebInputEvent::kControlKey;
   if (currentModifiers & ::optionKey)
-    modifier_state |= blink::WebInputEvent::AltKey;
+    modifier_state |= blink::WebInputEvent::kAltKey;
   if (currentModifiers & ::cmdKey)
-      modifier_state |= blink::WebInputEvent::MetaKey;
+    modifier_state |= blink::WebInputEvent::kMetaKey;
 
   // The return value of 1 << 0 corresponds to the left mouse button,
   // 1 << 1 corresponds to the right mouse button,
@@ -50,11 +50,11 @@ int GetModifierFlags() {
   NSUInteger pressedButtons = [NSEvent pressedMouseButtons];
 
   if (pressedButtons & (1 << 0))
-      modifier_state |= blink::WebInputEvent::LeftButtonDown;
+    modifier_state |= blink::WebInputEvent::kLeftButtonDown;
   if (pressedButtons & (1 << 1))
-      modifier_state |= blink::WebInputEvent::RightButtonDown;
+    modifier_state |= blink::WebInputEvent::kRightButtonDown;
   if (pressedButtons & (1 << 2))
-      modifier_state |= blink::WebInputEvent::MiddleButtonDown;
+    modifier_state |= blink::WebInputEvent::kMiddleButtonDown;
 
   return modifier_state;
 }

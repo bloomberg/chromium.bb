@@ -22,12 +22,12 @@ namespace {
 // connection as basis for all connections to channels from the same thread. The
 // actual connections used to send/receive messages are then created using
 // associated interfaces, ensuring proper message ordering.
-mojom::blink::BroadcastChannelProviderPtr& getThreadSpecificProvider() {
+mojom::blink::BroadcastChannelProviderPtr& GetThreadSpecificProvider() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>, provider,
       new ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>);
-  if (!provider.isSet()) {
-    Platform::current()->interfaceProvider()->getInterface(
+  if (!provider.IsSet()) {
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&*provider));
   }
   return *provider;
@@ -36,110 +36,111 @@ mojom::blink::BroadcastChannelProviderPtr& getThreadSpecificProvider() {
 }  // namespace
 
 // static
-BroadcastChannel* BroadcastChannel::create(ExecutionContext* executionContext,
+BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
                                            const String& name,
-                                           ExceptionState& exceptionState) {
-  if (executionContext->getSecurityOrigin()->isUnique()) {
+                                           ExceptionState& exception_state) {
+  if (execution_context->GetSecurityOrigin()->IsUnique()) {
     // TODO(mek): Decide what to do here depending on
     // https://github.com/whatwg/html/issues/1319
-    exceptionState.throwDOMException(
-        NotSupportedError, "Can't create BroadcastChannel in an opaque origin");
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "Can't create BroadcastChannel in an opaque origin");
     return nullptr;
   }
-  return new BroadcastChannel(executionContext, name);
+  return new BroadcastChannel(execution_context, name);
 }
 
 BroadcastChannel::~BroadcastChannel() {}
 
-void BroadcastChannel::dispose() {
+void BroadcastChannel::Dispose() {
   close();
 }
 
 void BroadcastChannel::postMessage(const ScriptValue& message,
-                                   ExceptionState& exceptionState) {
-  if (!m_binding.is_bound()) {
-    exceptionState.throwDOMException(InvalidStateError, "Channel is closed");
+                                   ExceptionState& exception_state) {
+  if (!binding_.is_bound()) {
+    exception_state.ThrowDOMException(kInvalidStateError, "Channel is closed");
     return;
   }
-  RefPtr<SerializedScriptValue> value = SerializedScriptValue::serialize(
-      message.isolate(), message.v8Value(),
-      SerializedScriptValue::SerializeOptions(), exceptionState);
-  if (exceptionState.hadException())
+  RefPtr<SerializedScriptValue> value = SerializedScriptValue::Serialize(
+      message.GetIsolate(), message.V8Value(),
+      SerializedScriptValue::SerializeOptions(), exception_state);
+  if (exception_state.HadException())
     return;
 
   Vector<char> data;
-  value->toWireBytes(data);
-  Vector<uint8_t> mojoData;
-  mojoData.appendVector(data);
-  m_remoteClient->OnMessage(std::move(mojoData));
+  value->ToWireBytes(data);
+  Vector<uint8_t> mojo_data;
+  mojo_data.AppendVector(data);
+  remote_client_->OnMessage(std::move(mojo_data));
 }
 
 void BroadcastChannel::close() {
-  m_remoteClient.reset();
-  if (m_binding.is_bound())
-    m_binding.Close();
+  remote_client_.reset();
+  if (binding_.is_bound())
+    binding_.Close();
 }
 
-const AtomicString& BroadcastChannel::interfaceName() const {
+const AtomicString& BroadcastChannel::InterfaceName() const {
   return EventTargetNames::BroadcastChannel;
 }
 
-bool BroadcastChannel::hasPendingActivity() const {
-  return m_binding.is_bound() && hasEventListeners(EventTypeNames::message);
+bool BroadcastChannel::HasPendingActivity() const {
+  return binding_.is_bound() && HasEventListeners(EventTypeNames::message);
 }
 
-void BroadcastChannel::contextDestroyed(ExecutionContext*) {
+void BroadcastChannel::ContextDestroyed(ExecutionContext*) {
   close();
 }
 
 DEFINE_TRACE(BroadcastChannel) {
-  ContextLifecycleObserver::trace(visitor);
-  EventTargetWithInlineData::trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 void BroadcastChannel::OnMessage(const WTF::Vector<uint8_t>& message) {
   // Queue a task to dispatch the event.
-  RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(
-      message.isEmpty() ? nullptr
+  RefPtr<SerializedScriptValue> value = SerializedScriptValue::Create(
+      message.IsEmpty() ? nullptr
                         : reinterpret_cast<const char*>(&message.front()),
       message.size());
-  MessageEvent* event = MessageEvent::create(
-      nullptr, value.release(),
-      getExecutionContext()->getSecurityOrigin()->toString());
-  event->setTarget(this);
-  bool success = getExecutionContext()->getEventQueue()->enqueueEvent(event);
+  MessageEvent* event = MessageEvent::Create(
+      nullptr, value.Release(),
+      GetExecutionContext()->GetSecurityOrigin()->ToString());
+  event->SetTarget(this);
+  bool success = GetExecutionContext()->GetEventQueue()->EnqueueEvent(event);
   DCHECK(success);
   ALLOW_UNUSED_LOCAL(success);
 }
 
-void BroadcastChannel::onError() {
+void BroadcastChannel::OnError() {
   close();
 }
 
-BroadcastChannel::BroadcastChannel(ExecutionContext* executionContext,
+BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
                                    const String& name)
-    : ContextLifecycleObserver(executionContext),
-      m_origin(executionContext->getSecurityOrigin()),
-      m_name(name),
-      m_binding(this) {
+    : ContextLifecycleObserver(execution_context),
+      origin_(execution_context->GetSecurityOrigin()),
+      name_(name),
+      binding_(this) {
   mojom::blink::BroadcastChannelProviderPtr& provider =
-      getThreadSpecificProvider();
+      GetThreadSpecificProvider();
 
   // Local BroadcastChannelClient for messages send from the browser to this
   // channel.
-  mojom::blink::BroadcastChannelClientAssociatedPtrInfo localClientInfo;
-  m_binding.Bind(&localClientInfo);
-  m_binding.set_connection_error_handler(convertToBaseCallback(
-      WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
+  mojom::blink::BroadcastChannelClientAssociatedPtrInfo local_client_info;
+  binding_.Bind(&local_client_info);
+  binding_.set_connection_error_handler(ConvertToBaseCallback(
+      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this))));
 
   // Remote BroadcastChannelClient for messages send from this channel to the
   // browser.
-  auto remoteCientRequest = mojo::MakeRequest(&m_remoteClient);
-  m_remoteClient.set_connection_error_handler(convertToBaseCallback(
-      WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
+  auto remote_cient_request = mojo::MakeRequest(&remote_client_);
+  remote_client_.set_connection_error_handler(ConvertToBaseCallback(
+      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this))));
 
-  provider->ConnectToChannel(m_origin, m_name, std::move(localClientInfo),
-                             std::move(remoteCientRequest));
+  provider->ConnectToChannel(origin_, name_, std::move(local_client_info),
+                             std::move(remote_cient_request));
 }
 
 }  // namespace blink

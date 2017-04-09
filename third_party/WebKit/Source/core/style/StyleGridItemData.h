@@ -39,25 +39,26 @@ namespace blink {
 
 class StyleGridItemData : public RefCounted<StyleGridItemData> {
  public:
-  static PassRefPtr<StyleGridItemData> create() {
-    return adoptRef(new StyleGridItemData);
+  static PassRefPtr<StyleGridItemData> Create() {
+    return AdoptRef(new StyleGridItemData);
   }
-  PassRefPtr<StyleGridItemData> copy() const {
-    return adoptRef(new StyleGridItemData(*this));
+  PassRefPtr<StyleGridItemData> Copy() const {
+    return AdoptRef(new StyleGridItemData(*this));
   }
 
   bool operator==(const StyleGridItemData& o) const {
-    return m_gridColumnStart == o.m_gridColumnStart &&
-           m_gridColumnEnd == o.m_gridColumnEnd &&
-           m_gridRowStart == o.m_gridRowStart && m_gridRowEnd == o.m_gridRowEnd;
+    return grid_column_start_ == o.grid_column_start_ &&
+           grid_column_end_ == o.grid_column_end_ &&
+           grid_row_start_ == o.grid_row_start_ &&
+           grid_row_end_ == o.grid_row_end_;
   }
 
   bool operator!=(const StyleGridItemData& o) const { return !(*this == o); }
 
-  GridPosition m_gridColumnStart;
-  GridPosition m_gridColumnEnd;
-  GridPosition m_gridRowStart;
-  GridPosition m_gridRowEnd;
+  GridPosition grid_column_start_;
+  GridPosition grid_column_end_;
+  GridPosition grid_row_start_;
+  GridPosition grid_row_end_;
 
  private:
   StyleGridItemData();

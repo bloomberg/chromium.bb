@@ -45,8 +45,8 @@ class PLATFORM_EXPORT JPEGImageEncoderState {
   WTF_MAKE_NONCOPYABLE(JPEGImageEncoderState);
 
  public:
-  static std::unique_ptr<JPEGImageEncoderState> create(
-      const IntSize& imageSize,
+  static std::unique_ptr<JPEGImageEncoderState> Create(
+      const IntSize& image_size,
       const double& quality,
       Vector<unsigned char>* output);
   JPEGImageEncoderState() {}
@@ -57,31 +57,31 @@ class PLATFORM_EXPORT JPEGImageEncoder {
   STATIC_ONLY(JPEGImageEncoder);
 
  public:
-  enum { ProgressiveEncodeFailed = -1 };
+  enum { kProgressiveEncodeFailed = -1 };
 
   // Encode the image data with a compression quality in [0-100].
   // Warning: Calling this method off the main thread may result in data race
   // problems; instead, call JPEGImageEncoderState::create on main thread
   // first followed by encodeWithPreInitializedState off the main thread will
   // be safer.
-  static bool encode(const ImageDataBuffer&,
+  static bool Encode(const ImageDataBuffer&,
                      const double& quality,
                      Vector<unsigned char>*);
 
-  static bool encodeWithPreInitializedState(
+  static bool EncodeWithPreInitializedState(
       std::unique_ptr<JPEGImageEncoderState>,
       const unsigned char*,
-      int numRowsCompleted = 0);
-  static int progressiveEncodeRowsJpegHelper(JPEGImageEncoderState*,
+      int num_rows_completed = 0);
+  static int ProgressiveEncodeRowsJpegHelper(JPEGImageEncoderState*,
                                              unsigned char*,
                                              int,
                                              const double,
                                              double);
-  static int computeCompressionQuality(const double& quality);
+  static int ComputeCompressionQuality(const double& quality);
 
  private:
   // For callers: provide a reasonable compression quality default.
-  enum Quality { DefaultCompressionQuality = 92 };
+  enum Quality { kDefaultCompressionQuality = 92 };
 };
 
 }  // namespace blink

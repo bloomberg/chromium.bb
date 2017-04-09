@@ -29,22 +29,22 @@
 
 namespace blink {
 
-DOMWindow::DOMWindow(Frame& frame) : m_frame(frame), m_windowIsClosing(false) {}
+DOMWindow::DOMWindow(Frame& frame) : frame_(frame), window_is_closing_(false) {}
 
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
-  DCHECK(!m_frame);
+  DCHECK(!frame_);
 }
 
-v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate*,
-                                      v8::Local<v8::Object> creationContext) {
+v8::Local<v8::Object> DOMWindow::Wrap(v8::Isolate*,
+                                      v8::Local<v8::Object> creation_context) {
   LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
                 "wrappers must be created at WindowProxy::createContext() and "
                 "setupWindowPrototypeChain().";
   return v8::Local<v8::Object>();
 }
 
-v8::Local<v8::Object> DOMWindow::associateWithWrapper(
+v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
@@ -54,177 +54,178 @@ v8::Local<v8::Object> DOMWindow::associateWithWrapper(
   return v8::Local<v8::Object>();
 }
 
-const AtomicString& DOMWindow::interfaceName() const {
+const AtomicString& DOMWindow::InterfaceName() const {
   return EventTargetNames::DOMWindow;
 }
 
-const DOMWindow* DOMWindow::toDOMWindow() const {
+const DOMWindow* DOMWindow::ToDOMWindow() const {
   return this;
 }
 
 Location* DOMWindow::location() const {
-  if (!m_location)
-    m_location = Location::create(const_cast<DOMWindow*>(this));
-  return m_location.get();
+  if (!location_)
+    location_ = Location::Create(const_cast<DOMWindow*>(this));
+  return location_.Get();
 }
 
 bool DOMWindow::closed() const {
-  return m_windowIsClosing || !frame() || !frame()->page();
+  return window_is_closing_ || !GetFrame() || !GetFrame()->GetPage();
 }
 
 unsigned DOMWindow::length() const {
-  return frame() ? frame()->tree().scopedChildCount() : 0;
+  return GetFrame() ? GetFrame()->Tree().ScopedChildCount() : 0;
 }
 
 DOMWindow* DOMWindow::self() const {
-  if (!frame())
+  if (!GetFrame())
     return nullptr;
 
-  return frame()->domWindow();
+  return GetFrame()->DomWindow();
 }
 
 DOMWindow* DOMWindow::opener() const {
   // FIXME: Use FrameTree to get opener as well, to simplify logic here.
-  if (!frame() || !frame()->client())
+  if (!GetFrame() || !GetFrame()->Client())
     return nullptr;
 
-  Frame* opener = frame()->client()->opener();
-  return opener ? opener->domWindow() : nullptr;
+  Frame* opener = GetFrame()->Client()->Opener();
+  return opener ? opener->DomWindow() : nullptr;
 }
 
 DOMWindow* DOMWindow::parent() const {
-  if (!frame())
+  if (!GetFrame())
     return nullptr;
 
-  Frame* parent = frame()->tree().parent();
-  return parent ? parent->domWindow() : frame()->domWindow();
+  Frame* parent = GetFrame()->Tree().Parent();
+  return parent ? parent->DomWindow() : GetFrame()->DomWindow();
 }
 
 DOMWindow* DOMWindow::top() const {
-  if (!frame())
+  if (!GetFrame())
     return nullptr;
 
-  return frame()->tree().top()->domWindow();
+  return GetFrame()->Tree().Top()->DomWindow();
 }
 
-DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const {
-  if (!frame())
+DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) const {
+  if (!GetFrame())
     return nullptr;
 
-  Frame* child = frame()->tree().scopedChild(index);
-  return child ? child->domWindow() : nullptr;
+  Frame* child = GetFrame()->Tree().ScopedChild(index);
+  return child ? child->DomWindow() : nullptr;
 }
 
-bool DOMWindow::isCurrentlyDisplayedInFrame() const {
-  if (frame())
-    SECURITY_CHECK(frame()->domWindow() == this);
-  return frame() && frame()->page();
+bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
+  if (GetFrame())
+    SECURITY_CHECK(GetFrame()->DomWindow() == this);
+  return GetFrame() && GetFrame()->GetPage();
 }
 
-bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow,
+bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& calling_window,
                                        const KURL& url) {
-  if (!url.protocolIsJavaScript())
+  if (!url.ProtocolIsJavaScript())
     return false;
 
   // If this DOMWindow isn't currently active in the Frame, then there's no
   // way we should allow the access.
-  if (isCurrentlyDisplayedInFrame()) {
+  if (IsCurrentlyDisplayedInFrame()) {
     // FIXME: Is there some way to eliminate the need for a separate
     // "callingWindow == this" check?
-    if (&callingWindow == this)
+    if (&calling_window == this)
       return false;
 
     // FIXME: The name canAccess seems to be a roundabout way to ask "can
     // execute script".  Can we name the SecurityOrigin function better to make
     // this more clear?
-    if (callingWindow.document()->getSecurityOrigin()->canAccess(
-            frame()->securityContext()->getSecurityOrigin())) {
+    if (calling_window.document()->GetSecurityOrigin()->CanAccess(
+            GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
       return false;
     }
   }
 
-  callingWindow.printErrorMessage(
-      crossDomainAccessErrorMessage(&callingWindow));
+  calling_window.PrintErrorMessage(
+      CrossDomainAccessErrorMessage(&calling_window));
   return true;
 }
 
 void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
                             const MessagePortArray& ports,
-                            const String& targetOrigin,
+                            const String& target_origin,
                             LocalDOMWindow* source,
-                            ExceptionState& exceptionState) {
-  if (!isCurrentlyDisplayedInFrame())
+                            ExceptionState& exception_state) {
+  if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  Document* sourceDocument = source->document();
+  Document* source_document = source->document();
 
   // Compute the target origin.  We need to do this synchronously in order
   // to generate the SyntaxError exception correctly.
   RefPtr<SecurityOrigin> target;
-  if (targetOrigin == "/") {
-    if (!sourceDocument)
+  if (target_origin == "/") {
+    if (!source_document)
       return;
-    target = sourceDocument->getSecurityOrigin();
-  } else if (targetOrigin != "*") {
-    target = SecurityOrigin::createFromString(targetOrigin);
+    target = source_document->GetSecurityOrigin();
+  } else if (target_origin != "*") {
+    target = SecurityOrigin::CreateFromString(target_origin);
     // It doesn't make sense target a postMessage at a unique origin
     // because there's no way to represent a unique origin in a string.
-    if (target->isUnique()) {
-      exceptionState.throwDOMException(
-          SyntaxError, "Invalid target origin '" + targetOrigin +
-                           "' in a call to 'postMessage'.");
+    if (target->IsUnique()) {
+      exception_state.ThrowDOMException(
+          kSyntaxError, "Invalid target origin '" + target_origin +
+                            "' in a call to 'postMessage'.");
       return;
     }
   }
 
-  MessagePortChannelArray channels = MessagePort::disentanglePorts(
-      getExecutionContext(), ports, exceptionState);
-  if (exceptionState.hadException())
+  MessagePortChannelArray channels = MessagePort::DisentanglePorts(
+      GetExecutionContext(), ports, exception_state);
+  if (exception_state.HadException())
     return;
 
   // Capture the source of the message.  We need to do this synchronously
   // in order to capture the source of the message correctly.
-  if (!sourceDocument)
+  if (!source_document)
     return;
 
-  const SecurityOrigin* securityOrigin = sourceDocument->getSecurityOrigin();
-  bool hasSuborigin = sourceDocument->getSecurityOrigin()->hasSuborigin();
-  Suborigin::SuboriginPolicyOptions unsafeSendOpt =
-      Suborigin::SuboriginPolicyOptions::UnsafePostMessageSend;
+  const SecurityOrigin* security_origin = source_document->GetSecurityOrigin();
+  bool has_suborigin = source_document->GetSecurityOrigin()->HasSuborigin();
+  Suborigin::SuboriginPolicyOptions unsafe_send_opt =
+      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend;
 
-  String sourceOrigin =
-      (hasSuborigin &&
-       securityOrigin->suborigin()->policyContains(unsafeSendOpt))
-          ? securityOrigin->toPhysicalOriginString()
-          : securityOrigin->toString();
-  String sourceSuborigin =
-      hasSuborigin ? securityOrigin->suborigin()->name() : String();
+  String source_origin =
+      (has_suborigin &&
+       security_origin->GetSuborigin()->PolicyContains(unsafe_send_opt))
+          ? security_origin->ToPhysicalOriginString()
+          : security_origin->ToString();
+  String source_suborigin =
+      has_suborigin ? security_origin->GetSuborigin()->GetName() : String();
 
-  KURL targetUrl =
-      isLocalDOMWindow()
-          ? blink::toLocalDOMWindow(this)->document()->url()
-          : KURL(KURL(),
-                 frame()->securityContext()->getSecurityOrigin()->toString());
-  if (MixedContentChecker::isMixedContent(sourceDocument->getSecurityOrigin(),
-                                          targetUrl)) {
-    UseCounter::count(frame(), UseCounter::PostMessageFromSecureToInsecure);
-  } else if (MixedContentChecker::isMixedContent(
-                 frame()->securityContext()->getSecurityOrigin(),
-                 sourceDocument->url())) {
-    UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
-    if (MixedContentChecker::isMixedContent(
-            frame()->tree().top()->securityContext()->getSecurityOrigin(),
-            sourceDocument->url())) {
-      UseCounter::count(frame(),
-                        UseCounter::PostMessageFromInsecureToSecureToplevel);
+  KURL target_url = IsLocalDOMWindow()
+                        ? blink::ToLocalDOMWindow(this)->document()->Url()
+                        : KURL(KURL(), GetFrame()
+                                           ->GetSecurityContext()
+                                           ->GetSecurityOrigin()
+                                           ->ToString());
+  if (MixedContentChecker::IsMixedContent(source_document->GetSecurityOrigin(),
+                                          target_url)) {
+    UseCounter::Count(GetFrame(), UseCounter::kPostMessageFromSecureToInsecure);
+  } else if (MixedContentChecker::IsMixedContent(
+                 GetFrame()->GetSecurityContext()->GetSecurityOrigin(),
+                 source_document->Url())) {
+    UseCounter::Count(GetFrame(), UseCounter::kPostMessageFromInsecureToSecure);
+    if (MixedContentChecker::IsMixedContent(
+            GetFrame()->Tree().Top()->GetSecurityContext()->GetSecurityOrigin(),
+            source_document->Url())) {
+      UseCounter::Count(GetFrame(),
+                        UseCounter::kPostMessageFromInsecureToSecureToplevel);
     }
   }
 
   MessageEvent* event =
-      MessageEvent::create(std::move(channels), std::move(message),
-                           sourceOrigin, String(), source, sourceSuborigin);
+      MessageEvent::Create(std::move(channels), std::move(message),
+                           source_origin, String(), source, source_suborigin);
 
-  schedulePostMessage(event, std::move(target), sourceDocument);
+  SchedulePostMessage(event, std::move(target), source_document);
 }
 
 // FIXME: Once we're throwing exceptions for cross-origin access violations, we
@@ -233,18 +234,19 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
 // which details may be exposed to JavaScript.
 //
 // http://crbug.com/17325
-String DOMWindow::sanitizedCrossDomainAccessErrorMessage(
-    const LocalDOMWindow* callingWindow) const {
-  if (!callingWindow || !callingWindow->document() || !frame())
+String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
+    const LocalDOMWindow* calling_window) const {
+  if (!calling_window || !calling_window->document() || !GetFrame())
     return String();
 
-  const KURL& callingWindowURL = callingWindow->document()->url();
-  if (callingWindowURL.isNull())
+  const KURL& calling_window_url = calling_window->document()->Url();
+  if (calling_window_url.IsNull())
     return String();
 
-  const SecurityOrigin* activeOrigin =
-      callingWindow->document()->getSecurityOrigin();
-  String message = "Blocked a frame with origin \"" + activeOrigin->toString() +
+  const SecurityOrigin* active_origin =
+      calling_window->document()->GetSecurityOrigin();
+  String message = "Blocked a frame with origin \"" +
+                   active_origin->ToString() +
                    "\" from accessing a cross-origin frame.";
 
   // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may
@@ -253,52 +255,54 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(
   return message;
 }
 
-String DOMWindow::crossDomainAccessErrorMessage(
-    const LocalDOMWindow* callingWindow) const {
-  if (!callingWindow || !callingWindow->document() || !frame())
+String DOMWindow::CrossDomainAccessErrorMessage(
+    const LocalDOMWindow* calling_window) const {
+  if (!calling_window || !calling_window->document() || !GetFrame())
     return String();
 
-  const KURL& callingWindowURL = callingWindow->document()->url();
-  if (callingWindowURL.isNull())
+  const KURL& calling_window_url = calling_window->document()->Url();
+  if (calling_window_url.IsNull())
     return String();
 
   // FIXME: This message, and other console messages, have extra newlines.
   // Should remove them.
-  const SecurityOrigin* activeOrigin =
-      callingWindow->document()->getSecurityOrigin();
-  const SecurityOrigin* targetOrigin =
-      frame()->securityContext()->getSecurityOrigin();
+  const SecurityOrigin* active_origin =
+      calling_window->document()->GetSecurityOrigin();
+  const SecurityOrigin* target_origin =
+      GetFrame()->GetSecurityContext()->GetSecurityOrigin();
   // It's possible for a remote frame to be same origin with respect to a
   // local frame, but it must still be treated as a disallowed cross-domain
   // access. See https://crbug.com/601629.
-  DCHECK(frame()->isRemoteFrame() || !activeOrigin->canAccess(targetOrigin));
+  DCHECK(GetFrame()->IsRemoteFrame() ||
+         !active_origin->CanAccess(target_origin));
 
-  String message = "Blocked a frame with origin \"" + activeOrigin->toString() +
+  String message = "Blocked a frame with origin \"" +
+                   active_origin->ToString() +
                    "\" from accessing a frame with origin \"" +
-                   targetOrigin->toString() + "\". ";
+                   target_origin->ToString() + "\". ";
 
   // Sandbox errors: Use the origin of the frames' location, rather than their
   // actual origin (since we know that at least one will be "null").
-  KURL activeURL = callingWindow->document()->url();
+  KURL active_url = calling_window->document()->Url();
   // TODO(alexmos): RemoteFrames do not have a document, and their URLs
   // aren't replicated.  For now, construct the URL using the replicated
   // origin for RemoteFrames. If the target frame is remote and sandboxed,
   // there isn't anything else to show other than "null" for its origin.
-  KURL targetURL = isLocalDOMWindow()
-                       ? blink::toLocalDOMWindow(this)->document()->url()
-                       : KURL(KURL(), targetOrigin->toString());
-  if (frame()->securityContext()->isSandboxed(SandboxOrigin) ||
-      callingWindow->document()->isSandboxed(SandboxOrigin)) {
+  KURL target_url = IsLocalDOMWindow()
+                        ? blink::ToLocalDOMWindow(this)->document()->Url()
+                        : KURL(KURL(), target_origin->ToString());
+  if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) ||
+      calling_window->document()->IsSandboxed(kSandboxOrigin)) {
     message = "Blocked a frame at \"" +
-              SecurityOrigin::create(activeURL)->toString() +
+              SecurityOrigin::Create(active_url)->ToString() +
               "\" from accessing a frame at \"" +
-              SecurityOrigin::create(targetURL)->toString() + "\". ";
-    if (frame()->securityContext()->isSandboxed(SandboxOrigin) &&
-        callingWindow->document()->isSandboxed(SandboxOrigin))
+              SecurityOrigin::Create(target_url)->ToString() + "\". ";
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) &&
+        calling_window->document()->IsSandboxed(kSandboxOrigin))
       return "Sandbox access violation: " + message +
              " Both frames are sandboxed and lack the \"allow-same-origin\" "
              "flag.";
-    if (frame()->securityContext()->isSandboxed(SandboxOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin))
       return "Sandbox access violation: " + message +
              " The frame being accessed is sandboxed and lacks the "
              "\"allow-same-origin\" flag.";
@@ -309,30 +313,30 @@ String DOMWindow::crossDomainAccessErrorMessage(
 
   // Protocol errors: Use the URL's protocol rather than the origin's protocol
   // so that we get a useful message for non-heirarchal URLs like 'data:'.
-  if (targetOrigin->protocol() != activeOrigin->protocol())
+  if (target_origin->Protocol() != active_origin->Protocol())
     return message + " The frame requesting access has a protocol of \"" +
-           activeURL.protocol() +
+           active_url.Protocol() +
            "\", the frame being accessed has a protocol of \"" +
-           targetURL.protocol() + "\". Protocols must match.\n";
+           target_url.Protocol() + "\". Protocols must match.\n";
 
   // 'document.domain' errors.
-  if (targetOrigin->domainWasSetInDOM() && activeOrigin->domainWasSetInDOM())
+  if (target_origin->DomainWasSetInDOM() && active_origin->DomainWasSetInDOM())
     return message +
            "The frame requesting access set \"document.domain\" to \"" +
-           activeOrigin->domain() +
+           active_origin->Domain() +
            "\", the frame being accessed set it to \"" +
-           targetOrigin->domain() +
+           target_origin->Domain() +
            "\". Both must set \"document.domain\" to the same value to allow "
            "access.";
-  if (activeOrigin->domainWasSetInDOM())
+  if (active_origin->DomainWasSetInDOM())
     return message +
            "The frame requesting access set \"document.domain\" to \"" +
-           activeOrigin->domain() +
+           active_origin->Domain() +
            "\", but the frame being accessed did not. Both must set "
            "\"document.domain\" to the same value to allow access.";
-  if (targetOrigin->domainWasSetInDOM())
+  if (target_origin->DomainWasSetInDOM())
     return message + "The frame being accessed set \"document.domain\" to \"" +
-           targetOrigin->domain() +
+           target_origin->Domain() +
            "\", but the frame requesting access did not. Both must set "
            "\"document.domain\" to the same value to allow access.";
 
@@ -341,91 +345,92 @@ String DOMWindow::crossDomainAccessErrorMessage(
 }
 
 void DOMWindow::close(ExecutionContext* context) {
-  if (!frame() || !frame()->isMainFrame())
+  if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
-  Page* page = frame()->page();
+  Page* page = GetFrame()->GetPage();
   if (!page)
     return;
 
-  Document* activeDocument = nullptr;
+  Document* active_document = nullptr;
   if (context) {
-    ASSERT(isMainThread());
-    activeDocument = toDocument(context);
-    if (!activeDocument)
+    ASSERT(IsMainThread());
+    active_document = ToDocument(context);
+    if (!active_document)
       return;
 
-    if (!activeDocument->frame() ||
-        !activeDocument->frame()->canNavigate(*frame()))
+    if (!active_document->GetFrame() ||
+        !active_document->GetFrame()->CanNavigate(*GetFrame()))
       return;
   }
 
-  Settings* settings = frame()->settings();
-  bool allowScriptsToCloseWindows =
-      settings && settings->getAllowScriptsToCloseWindows();
+  Settings* settings = GetFrame()->GetSettings();
+  bool allow_scripts_to_close_windows =
+      settings && settings->GetAllowScriptsToCloseWindows();
 
-  if (!page->openedByDOM() && frame()->client()->backForwardLength() > 1 &&
-      !allowScriptsToCloseWindows) {
-    if (activeDocument) {
-      activeDocument->domWindow()->frameConsole()->addMessage(
-          ConsoleMessage::create(
-              JSMessageSource, WarningMessageLevel,
+  if (!page->OpenedByDOM() && GetFrame()->Client()->BackForwardLength() > 1 &&
+      !allow_scripts_to_close_windows) {
+    if (active_document) {
+      active_document->domWindow()->GetFrameConsole()->AddMessage(
+          ConsoleMessage::Create(
+              kJSMessageSource, kWarningMessageLevel,
               "Scripts may close only the windows that were opened by it."));
     }
     return;
   }
 
-  if (!frame()->shouldClose())
+  if (!GetFrame()->ShouldClose())
     return;
 
   probe::breakableLocation(context, "DOMWindow.close");
 
-  page->closeSoon();
+  page->CloseSoon();
 
   // So as to make window.closed return the expected result
   // after window.close(), separately record the to-be-closed
   // state of this window. Scripts may access window.closed
   // before the deferred close operation has gone ahead.
-  m_windowIsClosing = true;
+  window_is_closing_ = true;
 }
 
 void DOMWindow::focus(ExecutionContext* context) {
-  if (!frame())
+  if (!GetFrame())
     return;
 
-  Page* page = frame()->page();
+  Page* page = GetFrame()->GetPage();
   if (!page)
     return;
 
   ASSERT(context);
 
-  bool allowFocus = context->isWindowInteractionAllowed();
-  if (allowFocus) {
-    context->consumeWindowInteraction();
+  bool allow_focus = context->IsWindowInteractionAllowed();
+  if (allow_focus) {
+    context->ConsumeWindowInteraction();
   } else {
-    ASSERT(isMainThread());
-    allowFocus = opener() && (opener() != this) &&
-                 (toDocument(context)->domWindow() == opener());
+    ASSERT(IsMainThread());
+    allow_focus = opener() && (opener() != this) &&
+                  (ToDocument(context)->domWindow() == opener());
   }
 
   // If we're a top level window, bring the window to the front.
-  if (frame()->isMainFrame() && allowFocus)
-    page->chromeClient().focus();
+  if (GetFrame()->IsMainFrame() && allow_focus)
+    page->GetChromeClient().Focus();
 
-  page->focusController().focusDocumentView(frame(), true /* notifyEmbedder */);
+  page->GetFocusController().FocusDocumentView(GetFrame(),
+                                               true /* notifyEmbedder */);
 }
 
-InputDeviceCapabilitiesConstants* DOMWindow::getInputDeviceCapabilities() {
-  if (!m_inputCapabilities)
-    m_inputCapabilities = new InputDeviceCapabilitiesConstants;
-  return m_inputCapabilities;
+InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
+  if (!input_capabilities_)
+    input_capabilities_ = new InputDeviceCapabilitiesConstants;
+  return input_capabilities_;
 }
 
 DEFINE_TRACE(DOMWindow) {
-  visitor->trace(m_frame);
-  visitor->trace(m_inputCapabilities);
-  visitor->trace(m_location);
-  EventTargetWithInlineData::trace(visitor);
+  visitor->Trace(frame_);
+  visitor->Trace(input_capabilities_);
+  visitor->Trace(location_);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 }  // namespace blink

@@ -11,96 +11,96 @@
 
 namespace blink {
 
-IntersectionObserverController* IntersectionObserverController::create(
+IntersectionObserverController* IntersectionObserverController::Create(
     Document* document) {
   IntersectionObserverController* result =
       new IntersectionObserverController(document);
-  result->suspendIfNeeded();
+  result->SuspendIfNeeded();
   return result;
 }
 
 IntersectionObserverController::IntersectionObserverController(
     Document* document)
     : SuspendableObject(document),
-      m_weakPtrFactory(this),
-      m_callbackFiredWhileSuspended(false) {}
+      weak_ptr_factory_(this),
+      callback_fired_while_suspended_(false) {}
 
 IntersectionObserverController::~IntersectionObserverController() {}
 
-void IntersectionObserverController::postTaskToDeliverObservations() {
-  if (!m_weakPtrFactory.hasWeakPtrs()) {
+void IntersectionObserverController::PostTaskToDeliverObservations() {
+  if (!weak_ptr_factory_.HasWeakPtrs()) {
     // TODO(ojan): These tasks decide whether to throttle a subframe, so they
     // need to be unthrottled, but we should throttle all the other tasks
     // (e.g. ones coming from the web page).
-    TaskRunnerHelper::get(TaskType::Unthrottled, getExecutionContext())
-        ->postTask(BLINK_FROM_HERE,
-                   WTF::bind(&IntersectionObserverController::
-                                 deliverIntersectionObservations,
-                             m_weakPtrFactory.createWeakPtr()));
+    TaskRunnerHelper::Get(TaskType::kUnthrottled, GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&IntersectionObserverController::
+                                 DeliverIntersectionObservations,
+                             weak_ptr_factory_.CreateWeakPtr()));
   }
 }
 
-void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
+void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
     IntersectionObserver& observer) {
-  m_pendingIntersectionObservers.insert(&observer);
-  postTaskToDeliverObservations();
+  pending_intersection_observers_.insert(&observer);
+  PostTaskToDeliverObservations();
 }
 
-void IntersectionObserverController::resume() {
+void IntersectionObserverController::Resume() {
   // If the callback fired while DOM objects were suspended, notifications might
   // be late, so deliver them right away (rather than waiting to fire again).
-  if (m_callbackFiredWhileSuspended) {
-    m_callbackFiredWhileSuspended = false;
-    postTaskToDeliverObservations();
+  if (callback_fired_while_suspended_) {
+    callback_fired_while_suspended_ = false;
+    PostTaskToDeliverObservations();
   }
 }
 
-void IntersectionObserverController::deliverIntersectionObservations() {
-  ExecutionContext* context = getExecutionContext();
+void IntersectionObserverController::DeliverIntersectionObservations() {
+  ExecutionContext* context = GetExecutionContext();
   if (!context) {
-    m_pendingIntersectionObservers.clear();
+    pending_intersection_observers_.Clear();
     return;
   }
-  if (context->isContextSuspended()) {
-    m_callbackFiredWhileSuspended = true;
+  if (context->IsContextSuspended()) {
+    callback_fired_while_suspended_ = true;
     return;
   }
   HeapHashSet<Member<IntersectionObserver>> observers;
-  m_pendingIntersectionObservers.swap(observers);
+  pending_intersection_observers_.Swap(observers);
   for (auto& observer : observers)
-    observer->deliver();
+    observer->Deliver();
 }
 
-void IntersectionObserverController::computeTrackedIntersectionObservations() {
+void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
   TRACE_EVENT0(
       "blink",
       "IntersectionObserverController::computeTrackedIntersectionObservations");
-  for (auto& observer : m_trackedIntersectionObservers) {
-    observer->computeIntersectionObservations();
-    if (observer->hasEntries())
-      scheduleIntersectionObserverForDelivery(*observer);
+  for (auto& observer : tracked_intersection_observers_) {
+    observer->ComputeIntersectionObservations();
+    if (observer->HasEntries())
+      ScheduleIntersectionObserverForDelivery(*observer);
   }
 }
 
-void IntersectionObserverController::addTrackedObserver(
+void IntersectionObserverController::AddTrackedObserver(
     IntersectionObserver& observer) {
-  m_trackedIntersectionObservers.insert(&observer);
+  tracked_intersection_observers_.insert(&observer);
 }
 
-void IntersectionObserverController::removeTrackedObserversForRoot(
+void IntersectionObserverController::RemoveTrackedObserversForRoot(
     const Node& root) {
-  HeapVector<Member<IntersectionObserver>> toRemove;
-  for (auto& observer : m_trackedIntersectionObservers) {
+  HeapVector<Member<IntersectionObserver>> to_remove;
+  for (auto& observer : tracked_intersection_observers_) {
     if (observer->root() == &root)
-      toRemove.push_back(observer);
+      to_remove.push_back(observer);
   }
-  m_trackedIntersectionObservers.removeAll(toRemove);
+  tracked_intersection_observers_.RemoveAll(to_remove);
 }
 
 DEFINE_TRACE(IntersectionObserverController) {
-  visitor->trace(m_trackedIntersectionObservers);
-  visitor->trace(m_pendingIntersectionObservers);
-  SuspendableObject::trace(visitor);
+  visitor->Trace(tracked_intersection_observers_);
+  visitor->Trace(pending_intersection_observers_);
+  SuspendableObject::Trace(visitor);
 }
 
 }  // namespace blink

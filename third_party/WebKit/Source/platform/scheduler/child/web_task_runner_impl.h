@@ -20,16 +20,16 @@ class TaskQueue;
 
 class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
  public:
-  static RefPtr<WebTaskRunnerImpl> create(scoped_refptr<TaskQueue> task_queue);
+  static RefPtr<WebTaskRunnerImpl> Create(scoped_refptr<TaskQueue> task_queue);
 
   // WebTaskRunner implementation:
-  void postDelayedTask(const WebTraceLocation&,
+  void PostDelayedTask(const WebTraceLocation&,
                        base::OnceClosure,
-                       double delayMs) override;
-  bool runsTasksOnCurrentThread() override;
-  double virtualTimeSeconds() const override;
-  double monotonicallyIncreasingVirtualTimeSeconds() const override;
-  base::SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
+                       double delay_ms) override;
+  bool RunsTasksOnCurrentThread() override;
+  double VirtualTimeSeconds() const override;
+  double MonotonicallyIncreasingVirtualTimeSeconds() const override;
+  base::SingleThreadTaskRunner* ToSingleThreadTaskRunner() override;
 
  private:
   explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);

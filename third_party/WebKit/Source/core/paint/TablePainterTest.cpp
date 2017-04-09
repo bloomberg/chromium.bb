@@ -14,7 +14,7 @@ namespace blink {
 using TablePainterTest = PaintControllerPaintTest;
 
 TEST_F(TablePainterTest, Background) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  td { width: 200px; height: 200px; border: none; }"
       "  tr { background-color: blue; }"
@@ -25,32 +25,32 @@ TEST_F(TablePainterTest, Background) {
       "  <tr id='row2'><td></td></tr>"
       "</table>");
 
-  LayoutView& layoutView = *document().layoutView();
-  LayoutObject& row1 = *getLayoutObjectByElementId("row1");
-  LayoutObject& row2 = *getLayoutObjectByElementId("row2");
+  LayoutView& layout_view = *GetDocument().GetLayoutView();
+  LayoutObject& row1 = *GetLayoutObjectByElementId("row1");
+  LayoutObject& row2 = *GetLayoutObjectByElementId("row2");
 
-  rootPaintController().invalidateAll();
-  document().view()->updateAllLifecyclePhasesExceptPaint();
-  IntRect interestRect(0, 0, 200, 200);
-  paint(&interestRect);
+  RootPaintController().InvalidateAll();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  IntRect interest_rect(0, 0, 200, 200);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 2,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row1, DisplayItem::kBoxDecorationBackground));
 
-  document().view()->updateAllLifecyclePhasesExceptPaint();
-  interestRect = IntRect(0, 300, 200, 1000);
-  paint(&interestRect);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  interest_rect = IntRect(0, 300, 200, 1000);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 2,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row2, DisplayItem::kBoxDecorationBackground));
 }
 
 TEST_F(TablePainterTest, BackgroundWithCellSpacing) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  body { margin: 0; }"
       "  td { width: 200px; height: 150px; border: 0; background-color: green; "
@@ -64,48 +64,48 @@ TEST_F(TablePainterTest, BackgroundWithCellSpacing) {
       "  <tr id='row2'><td id='cell2'></td></tr>"
       "</table>");
 
-  LayoutView& layoutView = *document().layoutView();
-  LayoutObject& row1 = *getLayoutObjectByElementId("row1");
-  LayoutObject& row2 = *getLayoutObjectByElementId("row2");
-  LayoutObject& cell1 = *getLayoutObjectByElementId("cell1");
-  LayoutObject& cell2 = *getLayoutObjectByElementId("cell2");
+  LayoutView& layout_view = *GetDocument().GetLayoutView();
+  LayoutObject& row1 = *GetLayoutObjectByElementId("row1");
+  LayoutObject& row2 = *GetLayoutObjectByElementId("row2");
+  LayoutObject& cell1 = *GetLayoutObjectByElementId("cell1");
+  LayoutObject& cell2 = *GetLayoutObjectByElementId("cell2");
 
-  rootPaintController().invalidateAll();
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  RootPaintController().InvalidateAll();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
-  IntRect interestRect(0, 200, 200, 150);
-  paint(&interestRect);
+  IntRect interest_rect(0, 200, 200, 150);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 3,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row1, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground));
 
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
-  interestRect = IntRect(0, 250, 100, 100);
-  paint(&interestRect);
+  interest_rect = IntRect(0, 250, 100, 100);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 2,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row1, DisplayItem::kBoxDecorationBackground));
 
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
-  interestRect = IntRect(0, 350, 200, 150);
-  paint(&interestRect);
+  interest_rect = IntRect(0, 350, 200, 150);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 3,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row2, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground));
 }
 
 TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  body { margin: 0 }"
       "  td { width: 200px; height: 200px; border: 0; background-color: green; "
@@ -118,42 +118,42 @@ TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
       "  <tr id='row'><td id='cell1'><td id='cell2'></td></tr>"
       "</table>");
 
-  LayoutView& layoutView = *document().layoutView();
-  LayoutObject& cell1 = *getLayoutObjectByElementId("cell1");
-  LayoutObject& cell2 = *getLayoutObjectByElementId("cell2");
-  LayoutObject& row = *getLayoutObjectByElementId("row");
+  LayoutView& layout_view = *GetDocument().GetLayoutView();
+  LayoutObject& cell1 = *GetLayoutObjectByElementId("cell1");
+  LayoutObject& cell2 = *GetLayoutObjectByElementId("cell2");
+  LayoutObject& row = *GetLayoutObjectByElementId("row");
 
-  rootPaintController().invalidateAll();
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  RootPaintController().InvalidateAll();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
-  IntRect interestRect(200, 0, 200, 200);
-  paint(&interestRect);
+  IntRect interest_rect(200, 0, 200, 200);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 5,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 5,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row, DisplayItem::kBeginCompositing),
       TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(row, DisplayItem::kEndCompositing));
 
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
-  interestRect = IntRect(300, 0, 100, 100);
-  paint(&interestRect);
+  interest_rect = IntRect(300, 0, 100, 100);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 1,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground));
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground));
 
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
-  interestRect = IntRect(450, 0, 200, 200);
-  paint(&interestRect);
+  interest_rect = IntRect(450, 0, 200, 200);
+  Paint(&interest_rect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 5,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 5,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(row, DisplayItem::kBeginCompositing),
       TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
@@ -161,7 +161,7 @@ TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
 }
 
 TEST_F(TablePainterTest, CollapsedBorderAndOverflow) {
-  setBodyInnerHTML(
+  SetBodyInnerHTML(
       "<style>"
       "  body { margin: 0 }"
       "  td { width: 100px; height: 100px; border: 100px solid blue; outline: "
@@ -172,23 +172,23 @@ TEST_F(TablePainterTest, CollapsedBorderAndOverflow) {
       "  <tr><td id='cell'></td></tr>"
       "</table>");
 
-  LayoutView& layoutView = *document().layoutView();
-  LayoutObject& cell = *getLayoutObjectByElementId("cell");
+  LayoutView& layout_view = *GetDocument().GetLayoutView();
+  LayoutObject& cell = *GetLayoutObjectByElementId("cell");
 
-  rootPaintController().invalidateAll();
-  document().view()->updateAllLifecyclePhasesExceptPaint();
+  RootPaintController().InvalidateAll();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the overflowing part of cell but not border box.
-  IntRect interestRect(0, 0, 100, 100);
-  paint(&interestRect);
+  IntRect interest_rect(0, 0, 100, 100);
+  Paint(&interest_rect);
 
   // We should paint all display items of cell.
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 4,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      RootPaintController().GetDisplayItemList(), 4,
+      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
       TestDisplayItem(cell, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell, DisplayItem::kTableCollapsedBorderLast),
-      TestDisplayItem(cell, DisplayItem::paintPhaseToDrawingType(
-                                PaintPhaseSelfOutlineOnly)));
+      TestDisplayItem(cell, DisplayItem::PaintPhaseToDrawingType(
+                                kPaintPhaseSelfOutlineOnly)));
 }
 
 }  // namespace blink

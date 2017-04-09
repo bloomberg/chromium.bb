@@ -25,37 +25,37 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
  public:
   ~WebGLQuery() override;
 
-  static WebGLQuery* create(WebGL2RenderingContextBase*);
+  static WebGLQuery* Create(WebGL2RenderingContextBase*);
 
-  void setTarget(GLenum);
-  bool hasTarget() const { return m_target != 0; }
-  GLenum getTarget() const { return m_target; }
+  void SetTarget(GLenum);
+  bool HasTarget() const { return target_ != 0; }
+  GLenum GetTarget() const { return target_; }
 
-  void resetCachedResult();
-  void updateCachedResult(gpu::gles2::GLES2Interface*);
+  void ResetCachedResult();
+  void UpdateCachedResult(gpu::gles2::GLES2Interface*);
 
-  bool isQueryResultAvailable();
-  GLuint getQueryResult();
+  bool IsQueryResultAvailable();
+  GLuint GetQueryResult();
 
  protected:
   explicit WebGLQuery(WebGL2RenderingContextBase*);
 
-  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+  void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:
-  bool isQuery() const override { return true; }
+  bool IsQuery() const override { return true; }
 
-  void scheduleAllowAvailabilityUpdate();
-  void allowAvailabilityUpdate();
+  void ScheduleAllowAvailabilityUpdate();
+  void AllowAvailabilityUpdate();
 
-  GLenum m_target;
+  GLenum target_;
 
-  bool m_canUpdateAvailability;
-  bool m_queryResultAvailable;
-  GLuint m_queryResult;
+  bool can_update_availability_;
+  bool query_result_available_;
+  GLuint query_result_;
 
-  RefPtr<WebTaskRunner> m_taskRunner;
-  TaskHandle m_taskHandle;
+  RefPtr<WebTaskRunner> task_runner_;
+  TaskHandle task_handle_;
 };
 
 }  // namespace blink

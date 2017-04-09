@@ -21,11 +21,11 @@ namespace blink {
 
 // Note that passed string must outlive the resulting StringView. This implies
 // it must not be a temporary object.
-CORE_EXPORT v8_inspector::StringView toV8InspectorStringView(const StringView&);
+CORE_EXPORT v8_inspector::StringView ToV8InspectorStringView(const StringView&);
 CORE_EXPORT std::unique_ptr<v8_inspector::StringBuffer>
-toV8InspectorStringBuffer(const StringView&);
-CORE_EXPORT String toCoreString(const v8_inspector::StringView&);
-CORE_EXPORT String toCoreString(std::unique_ptr<v8_inspector::StringBuffer>);
+ToV8InspectorStringBuffer(const StringView&);
+CORE_EXPORT String ToCoreString(const v8_inspector::StringView&);
+CORE_EXPORT String ToCoreString(std::unique_ptr<v8_inspector::StringBuffer>);
 
 namespace protocol {
 
@@ -39,33 +39,33 @@ class CORE_EXPORT StringUtil {
 
  public:
   static String substring(const String& s, unsigned pos, unsigned len) {
-    return s.substring(pos, len);
+    return s.Substring(pos, len);
   }
-  static String fromInteger(int number) { return String::number(number); }
+  static String fromInteger(int number) { return String::Number(number); }
   static String fromDouble(double number) {
-    return Decimal::fromDouble(number).toString();
+    return Decimal::FromDouble(number).ToString();
   }
   static size_t find(const String& s, const char* needle) {
-    return s.find(needle);
+    return s.Find(needle);
   }
   static size_t find(const String& s, const String& needle) {
-    return s.find(needle);
+    return s.Find(needle);
   }
   static const size_t kNotFound = WTF::kNotFound;
   static void builderAppend(StringBuilder& builder, const String& s) {
-    builder.append(s);
+    builder.Append(s);
   }
   static void builderAppend(StringBuilder& builder, UChar c) {
-    builder.append(c);
+    builder.Append(c);
   }
   static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
-    builder.append(s, len);
+    builder.Append(s, len);
   }
   static void builderReserve(StringBuilder& builder, unsigned capacity) {
-    builder.reserveCapacity(capacity);
+    builder.ReserveCapacity(capacity);
   }
   static String builderToString(StringBuilder& builder) {
-    return builder.toString();
+    return builder.ToString();
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
 };
@@ -79,7 +79,7 @@ namespace std {
 template <>
 struct hash<WTF::String> {
   std::size_t operator()(const WTF::String& string) const {
-    return StringHash::hash(string);
+    return StringHash::GetHash(string);
   }
 };
 }  // namespace std

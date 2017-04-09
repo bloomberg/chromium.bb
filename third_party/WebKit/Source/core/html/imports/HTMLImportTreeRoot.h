@@ -16,42 +16,42 @@ class KURL;
 
 class HTMLImportTreeRoot : public HTMLImport {
  public:
-  static HTMLImportTreeRoot* create(Document*);
+  static HTMLImportTreeRoot* Create(Document*);
 
   ~HTMLImportTreeRoot() override;
-  void dispose();
+  void Dispose();
 
   // HTMLImport
-  Document* document() const override;
-  bool hasFinishedLoading() const override;
-  void stateWillChange() override;
-  void stateDidChange() override;
+  Document* GetDocument() const override;
+  bool HasFinishedLoading() const override;
+  void StateWillChange() override;
+  void StateDidChange() override;
 
-  void scheduleRecalcState();
+  void ScheduleRecalcState();
 
-  HTMLImportChild* add(HTMLImportChild*);
-  HTMLImportChild* find(const KURL&) const;
+  HTMLImportChild* Add(HTMLImportChild*);
+  HTMLImportChild* Find(const KURL&) const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit HTMLImportTreeRoot(Document*);
 
-  void recalcTimerFired(TimerBase*);
+  void RecalcTimerFired(TimerBase*);
 
-  Member<Document> m_document;
-  TaskRunnerTimer<HTMLImportTreeRoot> m_recalcTimer;
+  Member<Document> document_;
+  TaskRunnerTimer<HTMLImportTreeRoot> recalc_timer_;
 
   // List of import which has been loaded or being loaded.
   typedef HeapVector<Member<HTMLImportChild>> ImportList;
-  ImportList m_imports;
+  ImportList imports_;
 };
 
 DEFINE_TYPE_CASTS(HTMLImportTreeRoot,
                   HTMLImport,
                   import,
-                  import->isRoot(),
-                  import.isRoot());
+                  import->IsRoot(),
+                  import.IsRoot());
 
 }  // namespace blink
 

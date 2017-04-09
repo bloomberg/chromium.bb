@@ -37,36 +37,36 @@ namespace blink {
 using namespace HTMLNames;
 
 HTMLMetaCharsetParser::HTMLMetaCharsetParser()
-    : m_tokenizer(HTMLTokenizer::create(HTMLParserOptions(0))),
-      m_assumedCodec(newTextCodec(Latin1Encoding())),
-      m_inHeadSection(true),
-      m_doneChecking(false) {}
+    : tokenizer_(HTMLTokenizer::Create(HTMLParserOptions(0))),
+      assumed_codec_(NewTextCodec(Latin1Encoding())),
+      in_head_section_(true),
+      done_checking_(false) {}
 
 HTMLMetaCharsetParser::~HTMLMetaCharsetParser() {}
 
-bool HTMLMetaCharsetParser::processMeta() {
-  const HTMLToken::AttributeList& tokenAttributes = m_token.attributes();
+bool HTMLMetaCharsetParser::ProcessMeta() {
+  const HTMLToken::AttributeList& token_attributes = token_.Attributes();
   HTMLAttributeList attributes;
-  for (const HTMLToken::Attribute& tokenAttribute : tokenAttributes) {
-    String attributeName = tokenAttribute.nameAttemptStaticStringCreation();
-    String attributeValue = tokenAttribute.value8BitIfNecessary();
-    attributes.push_back(std::make_pair(attributeName, attributeValue));
+  for (const HTMLToken::Attribute& token_attribute : token_attributes) {
+    String attribute_name = token_attribute.NameAttemptStaticStringCreation();
+    String attribute_value = token_attribute.Value8BitIfNecessary();
+    attributes.push_back(std::make_pair(attribute_name, attribute_value));
   }
 
-  m_encoding = encodingFromMetaAttributes(attributes);
-  return m_encoding.isValid();
+  encoding_ = EncodingFromMetaAttributes(attributes);
+  return encoding_.IsValid();
 }
 
 // That many input bytes will be checked for meta charset even if <head> section
 // is over.
-static const int bytesToCheckUnconditionally = 1024;
+static const int kBytesToCheckUnconditionally = 1024;
 
-bool HTMLMetaCharsetParser::checkForMetaCharset(const char* data,
+bool HTMLMetaCharsetParser::CheckForMetaCharset(const char* data,
                                                 size_t length) {
-  if (m_doneChecking)
+  if (done_checking_)
     return true;
 
-  DCHECK(!m_encoding.isValid());
+  DCHECK(!encoding_.IsValid());
 
   // We still don't have an encoding, and are in the head. The following tags
   // are allowed in <head>: SCRIPT|STYLE|META|LINK|OBJECT|TITLE|BASE
@@ -85,41 +85,42 @@ bool HTMLMetaCharsetParser::checkForMetaCharset(const char* data,
   // are disallowed in <head>, we don't bail out until we've checked at least
   // bytesToCheckUnconditionally bytes of input.
 
-  m_input.append(SegmentedString(m_assumedCodec->decode(data, length)));
+  input_.Append(SegmentedString(assumed_codec_->Decode(data, length)));
 
-  while (m_tokenizer->nextToken(m_input, m_token)) {
-    bool end = m_token.type() == HTMLToken::EndTag;
-    if (end || m_token.type() == HTMLToken::StartTag) {
-      String tagName = attemptStaticStringCreation(m_token.name(), Likely8Bit);
+  while (tokenizer_->NextToken(input_, token_)) {
+    bool end = token_.GetType() == HTMLToken::kEndTag;
+    if (end || token_.GetType() == HTMLToken::kStartTag) {
+      String tag_name =
+          AttemptStaticStringCreation(token_.GetName(), kLikely8Bit);
       if (!end) {
-        m_tokenizer->updateStateFor(tagName);
-        if (threadSafeMatch(tagName, metaTag) && processMeta()) {
-          m_doneChecking = true;
+        tokenizer_->UpdateStateFor(tag_name);
+        if (ThreadSafeMatch(tag_name, metaTag) && ProcessMeta()) {
+          done_checking_ = true;
           return true;
         }
       }
 
-      if (!threadSafeMatch(tagName, scriptTag) &&
-          !threadSafeMatch(tagName, noscriptTag) &&
-          !threadSafeMatch(tagName, styleTag) &&
-          !threadSafeMatch(tagName, linkTag) &&
-          !threadSafeMatch(tagName, metaTag) &&
-          !threadSafeMatch(tagName, objectTag) &&
-          !threadSafeMatch(tagName, titleTag) &&
-          !threadSafeMatch(tagName, baseTag) &&
-          (end || !threadSafeMatch(tagName, htmlTag)) &&
-          (end || !threadSafeMatch(tagName, headTag))) {
-        m_inHeadSection = false;
+      if (!ThreadSafeMatch(tag_name, scriptTag) &&
+          !ThreadSafeMatch(tag_name, noscriptTag) &&
+          !ThreadSafeMatch(tag_name, styleTag) &&
+          !ThreadSafeMatch(tag_name, linkTag) &&
+          !ThreadSafeMatch(tag_name, metaTag) &&
+          !ThreadSafeMatch(tag_name, objectTag) &&
+          !ThreadSafeMatch(tag_name, titleTag) &&
+          !ThreadSafeMatch(tag_name, baseTag) &&
+          (end || !ThreadSafeMatch(tag_name, htmlTag)) &&
+          (end || !ThreadSafeMatch(tag_name, headTag))) {
+        in_head_section_ = false;
       }
     }
 
-    if (!m_inHeadSection &&
-        m_input.numberOfCharactersConsumed() >= bytesToCheckUnconditionally) {
-      m_doneChecking = true;
+    if (!in_head_section_ &&
+        input_.NumberOfCharactersConsumed() >= kBytesToCheckUnconditionally) {
+      done_checking_ = true;
       return true;
     }
 
-    m_token.clear();
+    token_.Clear();
   }
 
   return false;

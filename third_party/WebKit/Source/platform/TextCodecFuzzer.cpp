@@ -16,13 +16,13 @@ using namespace blink;
 // so it must live in the latter directory. Once wtf/ moves into platform/wtf
 // this should move there as well.
 
-WTF::FlushBehavior kFlushBehavior[] = {WTF::DoNotFlush, WTF::FetchEOF,
-                                       WTF::DataEOF};
+WTF::FlushBehavior kFlushBehavior[] = {WTF::kDoNotFlush, WTF::kFetchEOF,
+                                       WTF::kDataEOF};
 
 WTF::UnencodableHandling kUnencodableHandlingOptions[] = {
-    WTF::QuestionMarksForUnencodables, WTF::EntitiesForUnencodables,
-    WTF::URLEncodedEntitiesForUnencodables,
-    WTF::CSSEncodedEntitiesForUnencodables};
+    WTF::kQuestionMarksForUnencodables, WTF::kEntitiesForUnencodables,
+    WTF::kURLEncodedEntitiesForUnencodables,
+    WTF::kCSSEncodedEntitiesForUnencodables};
 
 class TextCodecFuzzHarness {};
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
@@ -60,35 +60,35 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Now, use the rest of the fuzzy data to stress test decoding and encoding.
   const CString byteString = fuzzedData.ConsumeRemainingBytes();
-  std::unique_ptr<TextCodec> codec = newTextCodec(encoding);
+  std::unique_ptr<TextCodec> codec = NewTextCodec(encoding);
 
   // Treat as bytes-off-the-wire.
   bool sawError;
-  const String decoded = codec->decode(byteString.data(), byteString.length(),
+  const String decoded = codec->Decode(byteString.Data(), byteString.length(),
                                        flushBehavior, stopOnError, sawError);
 
   // Treat as blink 8-bit string (latin1).
   if (size % sizeof(LChar) == 0) {
-    std::unique_ptr<TextCodec> codec = newTextCodec(encoding);
-    codec->encode(reinterpret_cast<const LChar*>(byteString.data()),
+    std::unique_ptr<TextCodec> codec = NewTextCodec(encoding);
+    codec->Encode(reinterpret_cast<const LChar*>(byteString.Data()),
                   byteString.length() / sizeof(LChar), unencodableHandling);
   }
 
   // Treat as blink 16-bit string (utf-16) if there are an even number of bytes.
   if (size % sizeof(UChar) == 0) {
-    std::unique_ptr<TextCodec> codec = newTextCodec(encoding);
-    codec->encode(reinterpret_cast<const UChar*>(byteString.data()),
+    std::unique_ptr<TextCodec> codec = NewTextCodec(encoding);
+    codec->Encode(reinterpret_cast<const UChar*>(byteString.Data()),
                   byteString.length() / sizeof(UChar), unencodableHandling);
   }
 
-  if (decoded.isNull())
+  if (decoded.IsNull())
     return 0;
 
   // Round trip the bytes (aka encode the decoded bytes).
-  if (decoded.is8Bit()) {
-    codec->encode(decoded.characters8(), decoded.length(), unencodableHandling);
+  if (decoded.Is8Bit()) {
+    codec->Encode(decoded.Characters8(), decoded.length(), unencodableHandling);
   } else {
-    codec->encode(decoded.characters16(), decoded.length(),
+    codec->Encode(decoded.Characters16(), decoded.length(),
                   unencodableHandling);
   }
   return 0;

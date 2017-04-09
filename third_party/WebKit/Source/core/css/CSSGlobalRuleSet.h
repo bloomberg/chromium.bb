@@ -28,37 +28,39 @@ class CSSGlobalRuleSet {
  public:
   CSSGlobalRuleSet() {}
 
-  void dispose();
-  void initWatchedSelectorsRuleSet(Document&);
-  void markDirty() { m_isDirty = true; }
-  bool isDirty() const { return m_isDirty; }
-  void update(Document&);
+  void Dispose();
+  void InitWatchedSelectorsRuleSet(Document&);
+  void MarkDirty() { is_dirty_ = true; }
+  bool IsDirty() const { return is_dirty_; }
+  void Update(Document&);
 
-  const RuleFeatureSet& ruleFeatureSet() const {
-    CHECK(m_features.isAlive());
-    return m_features;
+  const RuleFeatureSet& GetRuleFeatureSet() const {
+    CHECK(features_.IsAlive());
+    return features_;
   }
-  RuleSet* siblingRuleSet() const { return m_siblingRuleSet; }
-  RuleSet* uncommonAttributeRuleSet() const {
-    return m_uncommonAttributeRuleSet;
+  RuleSet* SiblingRuleSet() const { return sibling_rule_set_; }
+  RuleSet* UncommonAttributeRuleSet() const {
+    return uncommon_attribute_rule_set_;
   }
-  RuleSet* watchedSelectorsRuleSet() const { return m_watchedSelectorsRuleSet; }
-  bool hasFullscreenUAStyle() const { return m_hasFullscreenUAStyle; }
+  RuleSet* WatchedSelectorsRuleSet() const {
+    return watched_selectors_rule_set_;
+  }
+  bool HasFullscreenUAStyle() const { return has_fullscreen_ua_style_; }
 
   DECLARE_TRACE();
 
  private:
   // Constructed from rules in all TreeScopes including UA style and style
   // injected from extensions.
-  RuleFeatureSet m_features;
-  Member<RuleSet> m_siblingRuleSet;
-  Member<RuleSet> m_uncommonAttributeRuleSet;
+  RuleFeatureSet features_;
+  Member<RuleSet> sibling_rule_set_;
+  Member<RuleSet> uncommon_attribute_rule_set_;
 
   // Rules injected from extensions.
-  Member<RuleSet> m_watchedSelectorsRuleSet;
+  Member<RuleSet> watched_selectors_rule_set_;
 
-  bool m_hasFullscreenUAStyle = false;
-  bool m_isDirty = true;
+  bool has_fullscreen_ua_style_ = false;
+  bool is_dirty_ = true;
 };
 
 }  // namespace blink

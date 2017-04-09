@@ -15,265 +15,265 @@ using namespace device::mojom::blink;
 
 namespace blink {
 
-SensorProxy::SensorProxy(SensorType sensorType,
+SensorProxy::SensorProxy(SensorType sensor_type,
                          SensorProviderProxy* provider,
                          Page* page)
     : PageVisibilityObserver(page),
-      m_type(sensorType),
-      m_mode(ReportingMode::CONTINUOUS),
-      m_provider(provider),
-      m_clientBinding(this),
-      m_state(SensorProxy::Uninitialized),
-      m_suspended(false) {}
+      type_(sensor_type),
+      mode_(ReportingMode::CONTINUOUS),
+      provider_(provider),
+      client_binding_(this),
+      state_(SensorProxy::kUninitialized),
+      suspended_(false) {}
 
 SensorProxy::~SensorProxy() {}
 
-void SensorProxy::dispose() {
-  m_clientBinding.Close();
+void SensorProxy::Dispose() {
+  client_binding_.Close();
 }
 
 DEFINE_TRACE(SensorProxy) {
-  visitor->trace(m_readingUpdater);
-  visitor->trace(m_observers);
-  visitor->trace(m_provider);
-  PageVisibilityObserver::trace(visitor);
+  visitor->Trace(reading_updater_);
+  visitor->Trace(observers_);
+  visitor->Trace(provider_);
+  PageVisibilityObserver::Trace(visitor);
 }
 
-void SensorProxy::addObserver(Observer* observer) {
-  if (!m_observers.contains(observer))
-    m_observers.insert(observer);
+void SensorProxy::AddObserver(Observer* observer) {
+  if (!observers_.Contains(observer))
+    observers_.insert(observer);
 }
 
-void SensorProxy::removeObserver(Observer* observer) {
-  m_observers.erase(observer);
+void SensorProxy::RemoveObserver(Observer* observer) {
+  observers_.erase(observer);
 }
 
-void SensorProxy::initialize() {
-  if (m_state != Uninitialized)
+void SensorProxy::Initialize() {
+  if (state_ != kUninitialized)
     return;
 
-  if (!m_provider->getSensorProvider()) {
-    handleSensorError();
+  if (!provider_->GetSensorProvider()) {
+    HandleSensorError();
     return;
   }
 
-  m_state = Initializing;
-  auto callback = convertToBaseCallback(
-      WTF::bind(&SensorProxy::onSensorCreated, wrapWeakPersistent(this)));
-  m_provider->getSensorProvider()->GetSensor(
-      m_type, mojo::MakeRequest(&m_sensor), callback);
+  state_ = kInitializing;
+  auto callback = ConvertToBaseCallback(
+      WTF::Bind(&SensorProxy::OnSensorCreated, WrapWeakPersistent(this)));
+  provider_->GetSensorProvider()->GetSensor(type_, mojo::MakeRequest(&sensor_),
+                                            callback);
 }
 
-bool SensorProxy::isActive() const {
-  return isInitialized() && !m_suspended && !m_frequenciesUsed.isEmpty();
+bool SensorProxy::IsActive() const {
+  return IsInitialized() && !suspended_ && !frequencies_used_.IsEmpty();
 }
 
-void SensorProxy::addConfiguration(
+void SensorProxy::AddConfiguration(
     SensorConfigurationPtr configuration,
     std::unique_ptr<Function<void(bool)>> callback) {
-  DCHECK(isInitialized());
-  auto wrapper = WTF::bind(&SensorProxy::onAddConfigurationCompleted,
-                           wrapWeakPersistent(this), configuration->frequency,
-                           WTF::passed(std::move(callback)));
-  m_sensor->AddConfiguration(std::move(configuration),
-                             convertToBaseCallback(std::move(wrapper)));
+  DCHECK(IsInitialized());
+  auto wrapper = WTF::Bind(&SensorProxy::OnAddConfigurationCompleted,
+                           WrapWeakPersistent(this), configuration->frequency,
+                           WTF::Passed(std::move(callback)));
+  sensor_->AddConfiguration(std::move(configuration),
+                            ConvertToBaseCallback(std::move(wrapper)));
 }
 
-void SensorProxy::removeConfiguration(SensorConfigurationPtr configuration) {
-  DCHECK(isInitialized());
-  auto callback = WTF::bind(&SensorProxy::onRemoveConfigurationCompleted,
-                            wrapWeakPersistent(this), configuration->frequency);
-  m_sensor->RemoveConfiguration(std::move(configuration),
-                                convertToBaseCallback(std::move(callback)));
+void SensorProxy::RemoveConfiguration(SensorConfigurationPtr configuration) {
+  DCHECK(IsInitialized());
+  auto callback = WTF::Bind(&SensorProxy::OnRemoveConfigurationCompleted,
+                            WrapWeakPersistent(this), configuration->frequency);
+  sensor_->RemoveConfiguration(std::move(configuration),
+                               ConvertToBaseCallback(std::move(callback)));
 }
 
-void SensorProxy::suspend() {
-  DCHECK(isInitialized());
-  if (m_suspended)
+void SensorProxy::Suspend() {
+  DCHECK(IsInitialized());
+  if (suspended_)
     return;
 
-  m_sensor->Suspend();
-  m_suspended = true;
+  sensor_->Suspend();
+  suspended_ = true;
 }
 
-void SensorProxy::resume() {
-  DCHECK(isInitialized());
-  if (!m_suspended)
+void SensorProxy::Resume() {
+  DCHECK(IsInitialized());
+  if (!suspended_)
     return;
 
-  m_sensor->Resume();
-  m_suspended = false;
+  sensor_->Resume();
+  suspended_ = false;
 
-  if (isActive())
-    m_readingUpdater->start();
+  if (IsActive())
+    reading_updater_->Start();
 }
 
-const SensorConfiguration* SensorProxy::defaultConfig() const {
-  DCHECK(isInitialized());
-  return m_defaultConfig.get();
+const SensorConfiguration* SensorProxy::DefaultConfig() const {
+  DCHECK(IsInitialized());
+  return default_config_.get();
 }
 
-Document* SensorProxy::document() const {
-  return m_provider->supplementable()->document();
+Document* SensorProxy::GetDocument() const {
+  return provider_->GetSupplementable()->GetDocument();
 }
 
-void SensorProxy::updateSensorReading() {
-  DCHECK(isInitialized());
-  int readAttempts = 0;
+void SensorProxy::UpdateSensorReading() {
+  DCHECK(IsInitialized());
+  int read_attempts = 0;
   const int kMaxReadAttemptsCount = 10;
-  device::SensorReading readingData;
-  while (!tryReadFromBuffer(readingData)) {
-    if (++readAttempts == kMaxReadAttemptsCount) {
-      handleSensorError();
+  device::SensorReading reading_data;
+  while (!TryReadFromBuffer(reading_data)) {
+    if (++read_attempts == kMaxReadAttemptsCount) {
+      HandleSensorError();
       return;
     }
   }
 
-  if (m_reading.timestamp != readingData.timestamp) {
-    m_reading = readingData;
-    for (Observer* observer : m_observers)
-      observer->onSensorReadingChanged();
+  if (reading_.timestamp != reading_data.timestamp) {
+    reading_ = reading_data;
+    for (Observer* observer : observers_)
+      observer->OnSensorReadingChanged();
   }
 }
 
-void SensorProxy::notifySensorChanged(double timestamp) {
+void SensorProxy::NotifySensorChanged(double timestamp) {
   // This notification leads to sync 'onchange' event sending, so
   // we must cache m_observers as it can be modified within event handlers.
-  auto copy = m_observers;
+  auto copy = observers_;
   for (Observer* observer : copy)
-    observer->notifySensorChanged(timestamp);
+    observer->NotifySensorChanged(timestamp);
 }
 
 void SensorProxy::RaiseError() {
-  handleSensorError();
+  HandleSensorError();
 }
 
 void SensorProxy::SensorReadingChanged() {
-  DCHECK_EQ(ReportingMode::ON_CHANGE, m_mode);
-  if (isActive())
-    m_readingUpdater->start();
+  DCHECK_EQ(ReportingMode::ON_CHANGE, mode_);
+  if (IsActive())
+    reading_updater_->Start();
 }
 
-void SensorProxy::pageVisibilityChanged() {
-  if (!isInitialized())
+void SensorProxy::PageVisibilityChanged() {
+  if (!IsInitialized())
     return;
 
-  if (page()->visibilityState() != PageVisibilityStateVisible) {
-    suspend();
+  if (GetPage()->VisibilityState() != kPageVisibilityStateVisible) {
+    Suspend();
   } else {
-    resume();
+    Resume();
   }
 }
 
-void SensorProxy::handleSensorError() {
-  m_state = Uninitialized;
-  m_frequenciesUsed.clear();
-  m_reading = device::SensorReading();
+void SensorProxy::HandleSensorError() {
+  state_ = kUninitialized;
+  frequencies_used_.Clear();
+  reading_ = device::SensorReading();
 
   // The m_sensor.reset() will release all callbacks and its bound parameters,
   // therefore, handleSensorError accepts messages by value.
-  m_sensor.reset();
-  m_sharedBuffer.reset();
-  m_sharedBufferHandle.reset();
-  m_defaultConfig.reset();
-  m_clientBinding.Close();
+  sensor_.reset();
+  shared_buffer_.reset();
+  shared_buffer_handle_.reset();
+  default_config_.reset();
+  client_binding_.Close();
 
-  for (Observer* observer : m_observers) {
-    observer->onSensorError(NotReadableError, "Could not connect to a sensor",
+  for (Observer* observer : observers_) {
+    observer->OnSensorError(kNotReadableError, "Could not connect to a sensor",
                             String());
   }
 }
 
-void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
-                                  SensorClientRequest clientRequest) {
-  DCHECK_EQ(Initializing, m_state);
+void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
+                                  SensorClientRequest client_request) {
+  DCHECK_EQ(kInitializing, state_);
   if (!params) {
-    handleSensorError();
+    HandleSensorError();
     return;
   }
   const size_t kReadBufferSize = sizeof(ReadingBuffer);
 
   DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
 
-  m_mode = params->mode;
-  m_defaultConfig = std::move(params->default_configuration);
-  if (!m_defaultConfig) {
-    handleSensorError();
+  mode_ = params->mode;
+  default_config_ = std::move(params->default_configuration);
+  if (!default_config_) {
+    HandleSensorError();
     return;
   }
 
-  DCHECK(m_sensor.is_bound());
-  m_clientBinding.Bind(std::move(clientRequest));
+  DCHECK(sensor_.is_bound());
+  client_binding_.Bind(std::move(client_request));
 
-  m_sharedBufferHandle = std::move(params->memory);
-  DCHECK(!m_sharedBuffer);
-  m_sharedBuffer =
-      m_sharedBufferHandle->MapAtOffset(kReadBufferSize, params->buffer_offset);
+  shared_buffer_handle_ = std::move(params->memory);
+  DCHECK(!shared_buffer_);
+  shared_buffer_ = shared_buffer_handle_->MapAtOffset(kReadBufferSize,
+                                                      params->buffer_offset);
 
-  if (!m_sharedBuffer) {
-    handleSensorError();
+  if (!shared_buffer_) {
+    HandleSensorError();
     return;
   }
-  m_frequencyLimits.first = params->minimum_frequency;
-  m_frequencyLimits.second = params->maximum_frequency;
+  frequency_limits_.first = params->minimum_frequency;
+  frequency_limits_.second = params->maximum_frequency;
 
-  DCHECK_GT(m_frequencyLimits.first, 0.0);
-  DCHECK_GE(m_frequencyLimits.second, m_frequencyLimits.first);
+  DCHECK_GT(frequency_limits_.first, 0.0);
+  DCHECK_GE(frequency_limits_.second, frequency_limits_.first);
   constexpr double kMaxAllowedFrequency =
       SensorConfiguration::kMaxAllowedFrequency;
-  DCHECK_GE(kMaxAllowedFrequency, m_frequencyLimits.second);
+  DCHECK_GE(kMaxAllowedFrequency, frequency_limits_.second);
 
-  auto errorCallback =
-      WTF::bind(&SensorProxy::handleSensorError, wrapWeakPersistent(this));
-  m_sensor.set_connection_error_handler(
-      convertToBaseCallback(std::move(errorCallback)));
+  auto error_callback =
+      WTF::Bind(&SensorProxy::HandleSensorError, WrapWeakPersistent(this));
+  sensor_.set_connection_error_handler(
+      ConvertToBaseCallback(std::move(error_callback)));
 
-  m_readingUpdater = SensorReadingUpdater::create(this, m_mode);
+  reading_updater_ = SensorReadingUpdater::Create(this, mode_);
 
-  m_state = Initialized;
+  state_ = kInitialized;
 
-  for (Observer* observer : m_observers)
-    observer->onSensorInitialized();
+  for (Observer* observer : observers_)
+    observer->OnSensorInitialized();
 }
 
-void SensorProxy::onAddConfigurationCompleted(
+void SensorProxy::OnAddConfigurationCompleted(
     double frequency,
     std::unique_ptr<Function<void(bool)>> callback,
     bool result) {
   if (result) {
-    m_frequenciesUsed.push_back(frequency);
-    std::sort(m_frequenciesUsed.begin(), m_frequenciesUsed.end());
-    if (isActive())
-      m_readingUpdater->start();
+    frequencies_used_.push_back(frequency);
+    std::sort(frequencies_used_.begin(), frequencies_used_.end());
+    if (IsActive())
+      reading_updater_->Start();
   }
 
   (*callback)(result);
 }
 
-void SensorProxy::onRemoveConfigurationCompleted(double frequency,
+void SensorProxy::OnRemoveConfigurationCompleted(double frequency,
                                                  bool result) {
   if (!result)
     DVLOG(1) << "Failure at sensor configuration removal";
 
-  size_t index = m_frequenciesUsed.find(frequency);
+  size_t index = frequencies_used_.Find(frequency);
   if (index == kNotFound) {
     // Could happen e.g. if 'handleSensorError' was called before.
     return;
   }
 
-  m_frequenciesUsed.erase(index);
+  frequencies_used_.erase(index);
 }
 
-bool SensorProxy::tryReadFromBuffer(device::SensorReading& result) {
-  DCHECK(isInitialized());
+bool SensorProxy::TryReadFromBuffer(device::SensorReading& result) {
+  DCHECK(IsInitialized());
   const ReadingBuffer* buffer =
-      static_cast<const ReadingBuffer*>(m_sharedBuffer.get());
+      static_cast<const ReadingBuffer*>(shared_buffer_.get());
   const device::OneWriterSeqLock& seqlock = buffer->seqlock.value();
   auto version = seqlock.ReadBegin();
-  auto readingData = buffer->reading;
+  auto reading_data = buffer->reading;
   if (seqlock.ReadRetry(version))
     return false;
-  result = readingData;
+  result = reading_data;
   return true;
 }
 

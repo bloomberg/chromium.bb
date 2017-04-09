@@ -19,8 +19,8 @@ class PLATFORM_EXPORT PlatformTraceEventsAgent
  public:
   DEFINE_INLINE_TRACE() {}
 
-  void will(const probe::PlatformSendRequest&);
-  void did(const probe::PlatformSendRequest&);
+  void Will(const probe::PlatformSendRequest&);
+  void Did(const probe::PlatformSendRequest&);
 };
 
 }  // namespace blink

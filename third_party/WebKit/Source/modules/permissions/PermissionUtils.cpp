@@ -16,36 +16,36 @@ using mojom::blink::PermissionDescriptor;
 using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionName;
 
-bool connectToPermissionService(
-    ExecutionContext* executionContext,
+bool ConnectToPermissionService(
+    ExecutionContext* execution_context,
     mojom::blink::PermissionServiceRequest request) {
-  InterfaceProvider* interfaceProvider = nullptr;
-  if (executionContext->isDocument()) {
-    Document* document = toDocument(executionContext);
-    if (document->frame())
-      interfaceProvider = document->frame()->interfaceProvider();
+  InterfaceProvider* interface_provider = nullptr;
+  if (execution_context->IsDocument()) {
+    Document* document = ToDocument(execution_context);
+    if (document->GetFrame())
+      interface_provider = document->GetFrame()->GetInterfaceProvider();
   } else {
-    interfaceProvider = Platform::current()->interfaceProvider();
+    interface_provider = Platform::Current()->GetInterfaceProvider();
   }
 
-  if (interfaceProvider)
-    interfaceProvider->getInterface(std::move(request));
-  return interfaceProvider;
+  if (interface_provider)
+    interface_provider->GetInterface(std::move(request));
+  return interface_provider;
 }
 
-PermissionDescriptorPtr createPermissionDescriptor(PermissionName name) {
+PermissionDescriptorPtr CreatePermissionDescriptor(PermissionName name) {
   auto descriptor = PermissionDescriptor::New();
   descriptor->name = name;
   return descriptor;
 }
 
-PermissionDescriptorPtr createMidiPermissionDescriptor(bool sysex) {
+PermissionDescriptorPtr CreateMidiPermissionDescriptor(bool sysex) {
   auto descriptor =
-      createPermissionDescriptor(mojom::blink::PermissionName::MIDI);
-  auto midiExtension = mojom::blink::MidiPermissionDescriptor::New();
-  midiExtension->sysex = sysex;
+      CreatePermissionDescriptor(mojom::blink::PermissionName::MIDI);
+  auto midi_extension = mojom::blink::MidiPermissionDescriptor::New();
+  midi_extension->sysex = sysex;
   descriptor->extension = mojom::blink::PermissionDescriptorExtension::New();
-  descriptor->extension->set_midi(std::move(midiExtension));
+  descriptor->extension->set_midi(std::move(midi_extension));
   return descriptor;
 }
 

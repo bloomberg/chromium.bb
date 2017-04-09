@@ -72,7 +72,7 @@ class TextRunCollection {
     if (run.override_direction) {
       // Skip autodetection.
       num_runs_ = 1;
-      override_run_ = WebTextRun(blink::WebString::fromUTF16(text_),
+      override_run_ = WebTextRun(blink::WebString::FromUTF16(text_),
                                  PP_ToBool(run.rtl), true);
     } else {
       bidi_ = ubidi_open();
@@ -97,7 +97,7 @@ class TextRunCollection {
     DCHECK(index < num_runs_);
     if (bidi_) {
       bool run_rtl = !!ubidi_getVisualRun(bidi_, index, run_start, run_len);
-      return WebTextRun(blink::WebString::fromUTF16(
+      return WebTextRun(blink::WebString::FromUTF16(
                             base::string16(&text_[*run_start], *run_len)),
                         run_rtl, true);
     }
@@ -131,7 +131,7 @@ bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
   if (!text_string)
     return false;
 
-  *run = WebTextRun(blink::WebString::fromUTF8(text_string->value()),
+  *run = WebTextRun(blink::WebString::FromUTF8(text_string->value()),
                     PP_ToBool(text.rtl), PP_ToBool(text.override_direction));
   return true;
 }
@@ -148,27 +148,27 @@ WebFontDescription PPFontDescToWebFontDesc(
     const PP_BrowserFont_Trusted_Description& font,
     const ppapi::Preferences& prefs) {
   // Verify that the enums match so we can just static cast.
-  static_assert(static_cast<int>(WebFontDescription::Weight100) ==
-                static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_100),
+  static_assert(static_cast<int>(WebFontDescription::kWeight100) ==
+                    static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_100),
                 "font Weight100");
-  static_assert(static_cast<int>(WebFontDescription::Weight900) ==
-                static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_900),
+  static_assert(static_cast<int>(WebFontDescription::kWeight900) ==
+                    static_cast<int>(PP_BROWSERFONT_TRUSTED_WEIGHT_900),
                 "font Weight900");
   static_assert(
-      WebFontDescription::GenericFamilyStandard ==
-      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT),
+      WebFontDescription::kGenericFamilyStandard ==
+          PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT),
       "FamilyStandard");
   static_assert(
-      WebFontDescription::GenericFamilySerif ==
-      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_SERIF),
+      WebFontDescription::kGenericFamilySerif ==
+          PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_SERIF),
       "FamilySerif");
   static_assert(
-      WebFontDescription::GenericFamilySansSerif ==
-      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF),
+      WebFontDescription::kGenericFamilySansSerif ==
+          PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF),
       "FamilySansSerif");
   static_assert(
-      WebFontDescription::GenericFamilyMonospace ==
-      PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE),
+      WebFontDescription::kGenericFamilyMonospace ==
+          PP_FAMILY_TO_WEB_FAMILY(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE),
       "FamilyMonospace");
 
   StringVar* face_name = StringVar::FromPPVar(font.face);  // Possibly null.
@@ -200,9 +200,9 @@ WebFontDescription PPFontDescToWebFontDesc(
     // Use the exact font.
     resolved_family = base::UTF8ToUTF16(face_name->value());
   }
-  result.family = blink::WebString::fromUTF16(resolved_family);
+  result.family = blink::WebString::FromUTF16(resolved_family);
 
-  result.genericFamily = PP_FAMILY_TO_WEB_FAMILY(font.family);
+  result.generic_family = PP_FAMILY_TO_WEB_FAMILY(font.family);
 
   if (font.size == 0) {
     // Resolve the default font size, using the resolved family to see if
@@ -221,10 +221,10 @@ WebFontDescription PPFontDescToWebFontDesc(
   }
 
   result.italic = font.italic != PP_FALSE;
-  result.smallCaps = font.small_caps != PP_FALSE;
+  result.small_caps = font.small_caps != PP_FALSE;
   result.weight = static_cast<WebFontDescription::Weight>(font.weight);
-  result.letterSpacing = static_cast<short>(font.letter_spacing);
-  result.wordSpacing = static_cast<short>(font.word_spacing);
+  result.letter_spacing = static_cast<short>(font.letter_spacing);
+  result.word_spacing = static_cast<short>(font.word_spacing);
   return result;
 }
 
@@ -260,8 +260,7 @@ BrowserFontResource_Trusted::BrowserFontResource_Trusted(
     const PP_BrowserFont_Trusted_Description& desc,
     const ppapi::Preferences& prefs)
     : PluginResource(connection, instance),
-      font_(WebFont::create(PPFontDescToWebFontDesc(desc, prefs))) {
-}
+      font_(WebFont::Create(PPFontDescToWebFontDesc(desc, prefs))) {}
 
 BrowserFontResource_Trusted::~BrowserFontResource_Trusted() {
 }
@@ -279,23 +278,23 @@ PP_Bool BrowserFontResource_Trusted::Describe(
 
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
-  WebFontDescription web_desc = font_->getFontDescription();
-  description->face = StringVar::StringToPPVar(web_desc.family.utf8());
+  WebFontDescription web_desc = font_->GetFontDescription();
+  description->face = StringVar::StringToPPVar(web_desc.family.Utf8());
   description->family =
-      static_cast<PP_BrowserFont_Trusted_Family>(web_desc.genericFamily);
+      static_cast<PP_BrowserFont_Trusted_Family>(web_desc.generic_family);
   description->size = static_cast<uint32_t>(web_desc.size);
   description->weight = static_cast<PP_BrowserFont_Trusted_Weight>(
       web_desc.weight);
   description->italic = web_desc.italic ? PP_TRUE : PP_FALSE;
-  description->small_caps = web_desc.smallCaps ? PP_TRUE : PP_FALSE;
-  description->letter_spacing = static_cast<int32_t>(web_desc.letterSpacing);
-  description->word_spacing = static_cast<int32_t>(web_desc.wordSpacing);
+  description->small_caps = web_desc.small_caps ? PP_TRUE : PP_FALSE;
+  description->letter_spacing = static_cast<int32_t>(web_desc.letter_spacing);
+  description->word_spacing = static_cast<int32_t>(web_desc.word_spacing);
 
-  metrics->height = font_->height();
-  metrics->ascent = font_->ascent();
-  metrics->descent = font_->descent();
-  metrics->line_spacing = font_->lineSpacing();
-  metrics->x_height = static_cast<int32_t>(font_->xHeight());
+  metrics->height = font_->Height();
+  metrics->ascent = font_->Ascent();
+  metrics->descent = font_->Descent();
+  metrics->line_spacing = font_->LineSpacing();
+  metrics->x_height = static_cast<int32_t>(font_->XHeight());
 
   // Convert the string.
   return PP_TRUE;
@@ -360,7 +359,7 @@ int32_t BrowserFontResource_Trusted::MeasureText(
   WebTextRun run;
   if (!PPTextRunToWebTextRun(*text, &run))
     return -1;
-  return font_->calculateWidth(run);
+  return font_->CalculateWidth(run);
 }
 
 uint32_t BrowserFontResource_Trusted::CharacterOffsetForPixel(
@@ -372,12 +371,12 @@ uint32_t BrowserFontResource_Trusted::CharacterOffsetForPixel(
     int32_t run_begin = 0;
     int32_t run_len = 0;
     WebTextRun run = runs.GetRunAt(i, &run_begin, &run_len);
-    int run_width = font_->calculateWidth(run);
+    int run_width = font_->CalculateWidth(run);
     if (pixel_position < cur_pixel_offset + run_width) {
       // Offset is in this run.
-      return static_cast<uint32_t>(font_->offsetForPosition(
-              run, static_cast<float>(pixel_position - cur_pixel_offset))) +
-          run_begin;
+      return static_cast<uint32_t>(font_->OffsetForPosition(
+                 run, static_cast<float>(pixel_position - cur_pixel_offset))) +
+             run_begin;
     }
     cur_pixel_offset += run_width;
   }
@@ -402,14 +401,14 @@ int32_t BrowserFontResource_Trusted::PixelOffsetForCharacter(
       // 0 characters starting at the character in question, it would give us
       // a 0-width rect around the insertion point. But that will be on the
       // right side of the character for an RTL run, which would be wrong.
-      WebFloatRect rect = font_->selectionRectForText(
-          run, WebFloatPoint(0.0f, 0.0f), font_->height(),
+      WebFloatRect rect = font_->SelectionRectForText(
+          run, WebFloatPoint(0.0f, 0.0f), font_->Height(),
           char_offset - run_begin, char_offset - run_begin + 1);
       return cur_pixel_offset + static_cast<int>(rect.x);
     } else {
       // Character is past this run, account for the pixels and continue
       // looking.
-      cur_pixel_offset += font_->calculateWidth(run);
+      cur_pixel_offset += font_->CalculateWidth(run);
     }
   }
   return -1;  // Requested a char beyond the end.
@@ -441,13 +440,13 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
     int32_t run_begin = 0;
     int32_t run_len = 0;
     WebTextRun run = runs.GetRunAt(i, &run_begin, &run_len);
-    font_->drawText(destination, run, web_position, color, web_clip);
+    font_->DrawText(destination, run, web_position, color, web_clip);
 
     // Advance to the next run. Note that we avoid doing this for the last run
     // since it's unnecessary, measuring text is slow, and most of the time
     // there will be only one run anyway.
     if (i != runs.num_runs() - 1)
-      web_position.x += font_->calculateWidth(run);
+      web_position.x += font_->CalculateWidth(run);
   }
 }
 

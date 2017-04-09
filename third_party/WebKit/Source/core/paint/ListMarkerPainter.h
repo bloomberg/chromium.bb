@@ -17,13 +17,13 @@ class ListMarkerPainter {
   STACK_ALLOCATED();
 
  public:
-  ListMarkerPainter(const LayoutListMarker& layoutListMarker)
-      : m_layoutListMarker(layoutListMarker) {}
+  ListMarkerPainter(const LayoutListMarker& layout_list_marker)
+      : layout_list_marker_(layout_list_marker) {}
 
-  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  const LayoutListMarker& m_layoutListMarker;
+  const LayoutListMarker& layout_list_marker_;
 };
 
 }  // namespace blink

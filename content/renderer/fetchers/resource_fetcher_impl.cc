@@ -72,29 +72,29 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
   }
 
   // WebURLLoaderClient methods:
-  void didReceiveResponse(const blink::WebURLResponse& response) override {
+  void DidReceiveResponse(const blink::WebURLResponse& response) override {
     DCHECK(!completed_);
 
     response_ = response;
   }
-  void didReceiveCachedMetadata(const char* data, int data_length) override {
+  void DidReceiveCachedMetadata(const char* data, int data_length) override {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
   }
-  void didReceiveData(const char* data, int data_length) override {
+  void DidReceiveData(const char* data, int data_length) override {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
 
     data_.append(data, data_length);
   }
-  void didFinishLoading(double finishTime,
+  void DidFinishLoading(double finishTime,
                         int64_t total_encoded_data_length,
                         int64_t total_encoded_body_length) override {
     DCHECK(!completed_);
 
     OnLoadCompleteInternal(LOAD_SUCCEEDED);
   }
-  void didFail(const blink::WebURLError& error,
+  void DidFail(const blink::WebURLError& error,
                int64_t total_encoded_data_length,
                int64_t total_encoded_body_length) override {
     OnLoadCompleteInternal(LOAD_FAILED);
@@ -131,41 +131,40 @@ ResourceFetcherImpl::~ResourceFetcherImpl() {
   DCHECK(client_);
 
   if (!client_->completed())
-    loader_->cancel();
+    loader_->Cancel();
 }
 
 void ResourceFetcherImpl::SetMethod(const std::string& method) {
-  DCHECK(!request_.isNull());
+  DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
-  request_.setHTTPMethod(blink::WebString::fromUTF8(method));
+  request_.SetHTTPMethod(blink::WebString::FromUTF8(method));
 }
 
 void ResourceFetcherImpl::SetBody(const std::string& body) {
-  DCHECK(!request_.isNull());
+  DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
   blink::WebHTTPBody web_http_body;
-  web_http_body.initialize();
-  web_http_body.appendData(blink::WebData(body));
-  request_.setHTTPBody(web_http_body);
+  web_http_body.Initialize();
+  web_http_body.AppendData(blink::WebData(body));
+  request_.SetHTTPBody(web_http_body);
 }
 
 void ResourceFetcherImpl::SetHeader(const std::string& header,
                                     const std::string& value) {
-  DCHECK(!request_.isNull());
+  DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
   if (base::LowerCaseEqualsASCII(header, "referer")) {
     blink::WebString referrer =
-        blink::WebSecurityPolicy::generateReferrerHeader(
-            blink::WebReferrerPolicyDefault,
-            request_.url(),
-            blink::WebString::fromUTF8(value));
-    request_.setHTTPReferrer(referrer, blink::WebReferrerPolicyDefault);
+        blink::WebSecurityPolicy::GenerateReferrerHeader(
+            blink::kWebReferrerPolicyDefault, request_.Url(),
+            blink::WebString::FromUTF8(value));
+    request_.SetHTTPReferrer(referrer, blink::kWebReferrerPolicyDefault);
   } else {
-    request_.setHTTPHeaderField(blink::WebString::fromUTF8(header),
-                                blink::WebString::fromUTF8(value));
+    request_.SetHTTPHeaderField(blink::WebString::FromUTF8(header),
+                                blink::WebString::FromUTF8(value));
   }
 }
 
@@ -175,18 +174,18 @@ void ResourceFetcherImpl::Start(
     const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
-  DCHECK(!request_.isNull());
-  if (!request_.httpBody().isNull())
-    DCHECK_NE("GET", request_.httpMethod().utf8()) << "GETs can't have bodies.";
+  DCHECK(!request_.IsNull());
+  if (!request_.HttpBody().IsNull())
+    DCHECK_NE("GET", request_.HttpMethod().Utf8()) << "GETs can't have bodies.";
 
-  request_.setRequestContext(request_context);
-  request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
-  request_.addHTTPOriginIfNeeded(blink::WebSecurityOrigin::createUnique());
+  request_.SetRequestContext(request_context);
+  request_.SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
+  request_.AddHTTPOriginIfNeeded(blink::WebSecurityOrigin::CreateUnique());
 
   client_.reset(new ClientImpl(this, callback));
 
-  loader_.reset(blink::Platform::current()->createURLLoader());
-  loader_->loadAsynchronously(request_, client_.get());
+  loader_.reset(blink::Platform::Current()->CreateURLLoader());
+  loader_->LoadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.
   request_ = blink::WebURLRequest();
@@ -205,7 +204,7 @@ void ResourceFetcherImpl::OnLoadComplete() {
 }
 
 void ResourceFetcherImpl::Cancel() {
-  loader_->cancel();
+  loader_->Cancel();
   client_->Cancel();
 }
 

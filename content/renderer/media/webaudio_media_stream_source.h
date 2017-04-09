@@ -35,8 +35,8 @@ class WebAudioMediaStreamSource final
   // Note: Blink ensures setFormat() and consumeAudio() are not called
   // concurrently across threads, but these methods could be called on any
   // thread.
-  void setFormat(size_t number_of_channels, float sample_rate) override;
-  void consumeAudio(const blink::WebVector<const float*>& audio_data,
+  void SetFormat(size_t number_of_channels, float sample_rate) override;
+  void ConsumeAudio(const blink::WebVector<const float*>& audio_data,
                     size_t number_of_frames) override;
 
   // Called by AudioPushFifo zero or more times during the call to

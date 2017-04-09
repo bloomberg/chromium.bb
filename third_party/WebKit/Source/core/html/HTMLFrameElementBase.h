@@ -31,49 +31,49 @@ namespace blink {
 
 class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
  public:
-  bool canContainRangeEndPoint() const final { return false; }
+  bool CanContainRangeEndPoint() const final { return false; }
 
   // FrameOwner overrides:
-  ScrollbarMode scrollingMode() const final { return m_scrollingMode; }
-  int marginWidth() const final { return m_marginWidth; }
-  int marginHeight() const final { return m_marginHeight; }
+  ScrollbarMode ScrollingMode() const final { return scrolling_mode_; }
+  int MarginWidth() const final { return margin_width_; }
+  int MarginHeight() const final { return margin_height_; }
 
  protected:
   HTMLFrameElementBase(const QualifiedName&, Document&);
 
-  void parseAttribute(const AttributeModificationParams&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void didNotifySubtreeInsertionsToDocument() final;
-  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
+  InsertionNotificationRequest InsertedInto(ContainerNode*) override;
+  void DidNotifySubtreeInsertionsToDocument() final;
+  void AttachLayoutTree(const AttachContext& = AttachContext()) override;
 
-  void setScrollingMode(ScrollbarMode);
-  void setMarginWidth(int);
-  void setMarginHeight(int);
+  void SetScrollingMode(ScrollbarMode);
+  void SetMarginWidth(int);
+  void SetMarginHeight(int);
 
  private:
-  bool supportsFocus() const final;
-  void setFocused(bool) final;
+  bool SupportsFocus() const final;
+  void SetFocused(bool) final;
 
-  bool isURLAttribute(const Attribute&) const final;
-  bool hasLegalLinkAttribute(const QualifiedName&) const final;
-  bool isHTMLContentAttribute(const Attribute&) const final;
+  bool IsURLAttribute(const Attribute&) const final;
+  bool HasLegalLinkAttribute(const QualifiedName&) const final;
+  bool IsHTMLContentAttribute(const Attribute&) const final;
 
-  bool areAuthorShadowsAllowed() const final { return false; }
+  bool AreAuthorShadowsAllowed() const final { return false; }
 
-  void setLocation(const String&);
-  void setNameAndOpenURL();
-  bool isURLAllowed() const;
-  void openURL(bool replaceCurrentItem = true);
+  void SetLocation(const String&);
+  void SetNameAndOpenURL();
+  bool IsURLAllowed() const;
+  void OpenURL(bool replace_current_item = true);
 
-  ScrollbarMode m_scrollingMode;
-  int m_marginWidth;
-  int m_marginHeight;
+  ScrollbarMode scrolling_mode_;
+  int margin_width_;
+  int margin_height_;
 
-  AtomicString m_URL;
-  AtomicString m_frameName;
+  AtomicString url_;
+  AtomicString frame_name_;
 };
 
-inline bool isHTMLFrameElementBase(const HTMLElement& element) {
+inline bool IsHTMLFrameElementBase(const HTMLElement& element) {
   return isHTMLFrameElement(element) || isHTMLIFrameElement(element);
 }
 

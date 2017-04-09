@@ -19,20 +19,20 @@ namespace blink {
 // Returns the corresponding WebFeaturePolicyFeature enum given a feature
 // string.
 PLATFORM_EXPORT WebFeaturePolicyFeature
-getWebFeaturePolicyFeature(const String& feature);
+GetWebFeaturePolicyFeature(const String& feature);
 
 // Converts a JSON feature policy string into a vector of whitelists, one for
 // each feature specified. Unrecognized features are filtered out. If |messages|
 // is not null, then any errors in the input will cause an error message to be
 // appended to it.
 PLATFORM_EXPORT WebParsedFeaturePolicy
-parseFeaturePolicy(const String& policy,
+ParseFeaturePolicy(const String& policy,
                    RefPtr<SecurityOrigin>,
                    Vector<String>* messages);
 
 // Given a vector of WebFeaturePolicyFeatures and an origin, creates a vector of
 // whitelists, one for each feature specified.
-PLATFORM_EXPORT WebParsedFeaturePolicy getContainerPolicyFromAllowedFeatures(
+PLATFORM_EXPORT WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
     const WebVector<WebFeaturePolicyFeature>& features,
     RefPtr<SecurityOrigin>);
 

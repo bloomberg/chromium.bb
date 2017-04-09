@@ -45,22 +45,22 @@ class WebSpeechSynthesizerClientImpl final
                                  PlatformSpeechSynthesizerClient*);
   virtual ~WebSpeechSynthesizerClientImpl();
 
-  virtual void setVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices);
-  virtual void didStartSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void didFinishSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void didPauseSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void didResumeSpeaking(const WebSpeechSynthesisUtterance&);
-  virtual void speakingErrorOccurred(const WebSpeechSynthesisUtterance&);
-  virtual void wordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                         unsigned charIndex);
-  virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                             unsigned charIndex);
+  virtual void SetVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices);
+  virtual void DidStartSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void DidFinishSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void DidPauseSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void DidResumeSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void SpeakingErrorOccurred(const WebSpeechSynthesisUtterance&);
+  virtual void WordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                         unsigned char_index);
+  virtual void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                             unsigned char_index);
 
   DECLARE_TRACE();
 
  private:
-  Member<PlatformSpeechSynthesizer> m_synthesizer;
-  Member<PlatformSpeechSynthesizerClient> m_client;
+  Member<PlatformSpeechSynthesizer> synthesizer_;
+  Member<PlatformSpeechSynthesizerClient> client_;
 };
 
 }  // namespace blink

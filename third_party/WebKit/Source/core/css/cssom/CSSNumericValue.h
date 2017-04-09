@@ -19,7 +19,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSNumericValue* parse(const String& cssText, ExceptionState&);
+  static CSSNumericValue* parse(const String& css_text, ExceptionState&);
 
   virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) {
     // TODO(meade): Implement.

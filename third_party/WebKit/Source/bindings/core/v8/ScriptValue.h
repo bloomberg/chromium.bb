@@ -48,127 +48,130 @@ class CORE_EXPORT ScriptValue final {
  public:
   // Defined in ToV8.h due to circular dependency
   template <typename T>
-  static ScriptValue from(ScriptState*, T&& value);
+  static ScriptValue From(ScriptState*, T&& value);
 
   template <typename T, typename... Arguments>
-  static inline T to(v8::Isolate* isolate,
+  static inline T To(v8::Isolate* isolate,
                      v8::Local<v8::Value> value,
-                     ExceptionState& exceptionState,
+                     ExceptionState& exception_state,
                      Arguments const&... arguments) {
-    return NativeValueTraits<T>::nativeValue(isolate, value, exceptionState,
+    return NativeValueTraits<T>::NativeValue(isolate, value, exception_state,
                                              arguments...);
   }
 
   template <typename T, typename... Arguments>
-  static inline T to(v8::Isolate* isolate,
+  static inline T To(v8::Isolate* isolate,
                      const ScriptValue& value,
-                     ExceptionState& exceptionState,
+                     ExceptionState& exception_state,
                      Arguments const&... arguments) {
-    return to<T>(isolate, value.v8Value(), exceptionState, arguments...);
+    return To<T>(isolate, value.V8Value(), exception_state, arguments...);
   }
 
   ScriptValue() {}
 
-  ScriptValue(ScriptState* scriptState, v8::Local<v8::Value> value)
-      : m_scriptState(scriptState),
-        m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(
-                                                value,
-                                                scriptState->isolate())) {
-    ASSERT(isEmpty() || m_scriptState);
+  ScriptValue(ScriptState* script_state, v8::Local<v8::Value> value)
+      : script_state_(script_state),
+        value_(value.IsEmpty() ? nullptr
+                               : SharedPersistent<v8::Value>::Create(
+                                     value,
+                                     script_state->GetIsolate())) {
+    ASSERT(IsEmpty() || script_state_);
   }
 
   template <typename T>
-  ScriptValue(ScriptState* scriptState, v8::MaybeLocal<T> value)
-      : m_scriptState(scriptState),
-        m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(
-                                                value.ToLocalChecked(),
-                                                scriptState->isolate())) {
-    ASSERT(isEmpty() || m_scriptState);
+  ScriptValue(ScriptState* script_state, v8::MaybeLocal<T> value)
+      : script_state_(script_state),
+        value_(value.IsEmpty() ? nullptr
+                               : SharedPersistent<v8::Value>::Create(
+                                     value.ToLocalChecked(),
+                                     script_state->GetIsolate())) {
+    ASSERT(IsEmpty() || script_state_);
   }
 
   ScriptValue(const ScriptValue& value)
-      : m_scriptState(value.m_scriptState), m_value(value.m_value) {
-    ASSERT(isEmpty() || m_scriptState);
+      : script_state_(value.script_state_), value_(value.value_) {
+    ASSERT(IsEmpty() || script_state_);
   }
 
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
-  v8::Isolate* isolate() const {
-    return m_scriptState ? m_scriptState->isolate() : v8::Isolate::GetCurrent();
+  v8::Isolate* GetIsolate() const {
+    return script_state_ ? script_state_->GetIsolate()
+                         : v8::Isolate::GetCurrent();
   }
 
-  v8::Local<v8::Context> context() const {
-    ASSERT(m_scriptState.get());
-    return m_scriptState->context();
+  v8::Local<v8::Context> GetContext() const {
+    ASSERT(script_state_.Get());
+    return script_state_->GetContext();
   }
 
   ScriptValue& operator=(const ScriptValue& value) {
     if (this != &value) {
-      m_scriptState = value.m_scriptState;
-      m_value = value.m_value;
+      script_state_ = value.script_state_;
+      value_ = value.value_;
     }
     return *this;
   }
 
   bool operator==(const ScriptValue& value) const {
-    if (isEmpty())
-      return value.isEmpty();
-    if (value.isEmpty())
+    if (IsEmpty())
+      return value.IsEmpty();
+    if (value.IsEmpty())
       return false;
-    return *m_value == *value.m_value;
+    return *value_ == *value.value_;
   }
 
   bool operator!=(const ScriptValue& value) const { return !operator==(value); }
 
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
-  bool isFunction() const {
-    ASSERT(!isEmpty());
-    v8::Local<v8::Value> value = v8Value();
+  bool IsFunction() const {
+    ASSERT(!IsEmpty());
+    v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsFunction();
   }
 
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
-  bool isNull() const {
-    ASSERT(!isEmpty());
-    v8::Local<v8::Value> value = v8Value();
+  bool IsNull() const {
+    ASSERT(!IsEmpty());
+    v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsNull();
   }
 
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
-  bool isUndefined() const {
-    ASSERT(!isEmpty());
-    v8::Local<v8::Value> value = v8Value();
+  bool IsUndefined() const {
+    ASSERT(!IsEmpty());
+    v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsUndefined();
   }
 
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
-  bool isObject() const {
-    ASSERT(!isEmpty());
-    v8::Local<v8::Value> value = v8Value();
+  bool IsObject() const {
+    ASSERT(!IsEmpty());
+    v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsObject();
   }
 
-  bool isEmpty() const { return !m_value.get() || m_value->isEmpty(); }
+  bool IsEmpty() const { return !value_.Get() || value_->IsEmpty(); }
 
-  void clear() { m_value = nullptr; }
+  void Clear() { value_ = nullptr; }
 
-  v8::Local<v8::Value> v8Value() const;
+  v8::Local<v8::Value> V8Value() const;
   // Returns v8Value() if a given ScriptState is the same as the
   // ScriptState which is associated with this ScriptValue. Otherwise
   // this "clones" the v8 value and returns it.
-  v8::Local<v8::Value> v8ValueFor(ScriptState*) const;
+  v8::Local<v8::Value> V8ValueFor(ScriptState*) const;
 
-  bool toString(String&) const;
+  bool ToString(String&) const;
 
-  static ScriptValue createNull(ScriptState*);
+  static ScriptValue CreateNull(ScriptState*);
 
  private:
-  RefPtr<ScriptState> m_scriptState;
-  RefPtr<SharedPersistent<v8::Value>> m_value;
+  RefPtr<ScriptState> script_state_;
+  RefPtr<SharedPersistent<v8::Value>> value_;
 };
 
 }  // namespace blink

@@ -9,55 +9,55 @@
 namespace blink {
 
 ResizeObserverController::ResizeObserverController()
-    : m_observersChanged(false) {}
+    : observers_changed_(false) {}
 
-void ResizeObserverController::addObserver(ResizeObserver& observer) {
-  m_observers.insert(&observer);
+void ResizeObserverController::AddObserver(ResizeObserver& observer) {
+  observers_.insert(&observer);
 }
 
-size_t ResizeObserverController::gatherObservations(size_t deeperThan) {
+size_t ResizeObserverController::GatherObservations(size_t deeper_than) {
   size_t shallowest = ResizeObserverController::kDepthBottom;
-  if (!m_observersChanged)
+  if (!observers_changed_)
     return shallowest;
-  for (auto& observer : m_observers) {
-    size_t depth = observer->gatherObservations(deeperThan);
+  for (auto& observer : observers_) {
+    size_t depth = observer->GatherObservations(deeper_than);
     if (depth < shallowest)
       shallowest = depth;
   }
   return shallowest;
 }
 
-bool ResizeObserverController::skippedObservations() {
-  for (auto& observer : m_observers) {
-    if (observer->skippedObservations())
+bool ResizeObserverController::SkippedObservations() {
+  for (auto& observer : observers_) {
+    if (observer->SkippedObservations())
       return true;
   }
   return false;
 }
 
-void ResizeObserverController::deliverObservations() {
-  m_observersChanged = false;
+void ResizeObserverController::DeliverObservations() {
+  observers_changed_ = false;
   // Copy is needed because m_observers might get modified during
   // deliverObservations.
   HeapVector<Member<ResizeObserver>> observers;
-  copyToVector(m_observers, observers);
+  CopyToVector(observers_, observers);
 
   for (auto& observer : observers) {
     if (observer) {
-      observer->deliverObservations();
-      m_observersChanged =
-          m_observersChanged || observer->hasElementSizeChanged();
+      observer->DeliverObservations();
+      observers_changed_ =
+          observers_changed_ || observer->HasElementSizeChanged();
     }
   }
 }
 
-void ResizeObserverController::clearObservations() {
-  for (auto& observer : m_observers)
-    observer->clearObservations();
+void ResizeObserverController::ClearObservations() {
+  for (auto& observer : observers_)
+    observer->ClearObservations();
 }
 
 DEFINE_TRACE(ResizeObserverController) {
-  visitor->trace(m_observers);
+  visitor->Trace(observers_);
 }
 
 }  // namespace blink

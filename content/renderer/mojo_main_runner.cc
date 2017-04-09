@@ -37,15 +37,15 @@ MojoMainRunner::~MojoMainRunner() {
 
 void MojoMainRunner::Run(const std::string& source,
                          const std::string& resource_name) {
-  frame_->executeScript(
-      blink::WebScriptSource(blink::WebString::fromUTF8(source)));
+  frame_->ExecuteScript(
+      blink::WebScriptSource(blink::WebString::FromUTF8(source)));
 }
 
 v8::Local<v8::Value> MojoMainRunner::Call(v8::Local<v8::Function> function,
                                           v8::Local<v8::Value> receiver,
                                           int argc,
                                           v8::Local<v8::Value> argv[]) {
-  return frame_->callFunctionEvenIfScriptDisabled(function, receiver, argc,
+  return frame_->CallFunctionEvenIfScriptDisabled(function, receiver, argc,
                                                   argv);
 }
 

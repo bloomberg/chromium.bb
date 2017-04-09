@@ -9,8 +9,8 @@
 
 namespace blink {
 
-double fontWeightToDouble(FontWeight);
-FontWeight doubleToFontWeight(double value);
+double FontWeightToDouble(FontWeight);
+FontWeight DoubleToFontWeight(double value);
 
 }  // namespace blink
 

@@ -14,7 +14,7 @@
 namespace WTF {
 
 template <typename T>
-std::unique_ptr<T> wrapUnique(T* ptr) {
+std::unique_ptr<T> WrapUnique(T* ptr) {
   static_assert(
       !WTF::IsGarbageCollectedType<T>::value,
       "Garbage collected types should not be stored in std::unique_ptr!");
@@ -22,7 +22,7 @@ std::unique_ptr<T> wrapUnique(T* ptr) {
 }
 
 template <typename T>
-std::unique_ptr<T[]> wrapArrayUnique(T* ptr) {
+std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
   static_assert(
       !WTF::IsGarbageCollectedType<T>::value,
       "Garbage collected types should not be stored in std::unique_ptr!");
@@ -31,7 +31,7 @@ std::unique_ptr<T[]> wrapArrayUnique(T* ptr) {
 
 // WTF::makeUnique is base::MakeUnique. See base/ptr_util.h for documentation.
 template <typename T, typename... Args>
-auto makeUnique(Args&&... args)
+auto MakeUnique(Args&&... args)
     -> decltype(base::MakeUnique<T>(std::forward<Args>(args)...)) {
   static_assert(
       !WTF::IsGarbageCollectedType<T>::value,
@@ -40,7 +40,7 @@ auto makeUnique(Args&&... args)
 }
 
 template <typename T>
-auto makeUnique(size_t size) -> decltype(base::MakeUnique<T>(size)) {
+auto MakeUnique(size_t size) -> decltype(base::MakeUnique<T>(size)) {
   static_assert(
       !WTF::IsGarbageCollectedType<std::remove_extent<T>>::value,
       "Garbage collected types should not be stored in std::unique_ptr!");
@@ -49,6 +49,6 @@ auto makeUnique(size_t size) -> decltype(base::MakeUnique<T>(size)) {
 
 }  // namespace WTF
 
-using WTF::wrapArrayUnique;
+using WTF::WrapArrayUnique;
 
 #endif  // PtrUtil_h

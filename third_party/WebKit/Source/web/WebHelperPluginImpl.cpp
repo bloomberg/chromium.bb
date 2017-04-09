@@ -41,63 +41,63 @@ namespace blink {
 
 DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebHelperPlugin, plugin, true, true);
 
-WebHelperPlugin* WebHelperPlugin::create(const WebString& pluginType,
+WebHelperPlugin* WebHelperPlugin::Create(const WebString& plugin_type,
                                          WebLocalFrame* frame) {
   WebHelperPluginUniquePtr plugin(new WebHelperPluginImpl());
-  if (!toWebHelperPluginImpl(plugin.get())
-           ->initialize(pluginType, toWebLocalFrameImpl(frame)))
+  if (!ToWebHelperPluginImpl(plugin.get())
+           ->Initialize(plugin_type, ToWebLocalFrameImpl(frame)))
     return 0;
   return plugin.release();
 }
 
 WebHelperPluginImpl::WebHelperPluginImpl()
-    : m_destructionTimer(this, &WebHelperPluginImpl::reallyDestroy) {}
+    : destruction_timer_(this, &WebHelperPluginImpl::ReallyDestroy) {}
 
-bool WebHelperPluginImpl::initialize(const String& pluginType,
+bool WebHelperPluginImpl::Initialize(const String& plugin_type,
                                      WebLocalFrameImpl* frame) {
-  DCHECK(!m_objectElement && !m_pluginContainer);
-  if (!frame->frame()->loader().client())
+  DCHECK(!object_element_ && !plugin_container_);
+  if (!frame->GetFrame()->Loader().Client())
     return false;
 
-  m_objectElement =
-      HTMLObjectElement::create(*frame->frame()->document(), false);
-  Vector<String> attributeNames;
-  Vector<String> attributeValues;
-  DCHECK(frame->frame()->document()->url().isValid());
-  m_pluginContainer =
-      toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
-          m_objectElement.get(), frame->frame()->document()->url(),
-          attributeNames, attributeValues, pluginType, false,
-          LocalFrameClient::AllowDetachedPlugin));
+  object_element_ =
+      HTMLObjectElement::Create(*frame->GetFrame()->GetDocument(), false);
+  Vector<String> attribute_names;
+  Vector<String> attribute_values;
+  DCHECK(frame->GetFrame()->GetDocument()->Url().IsValid());
+  plugin_container_ = ToWebPluginContainerImpl(
+      frame->GetFrame()->Loader().Client()->CreatePlugin(
+          object_element_.Get(), frame->GetFrame()->GetDocument()->Url(),
+          attribute_names, attribute_values, plugin_type, false,
+          LocalFrameClient::kAllowDetachedPlugin));
 
-  if (!m_pluginContainer)
+  if (!plugin_container_)
     return false;
 
   // Getting a placeholder plugin is also failure, since it's not the plugin the
   // caller needed.
-  return !getPlugin()->isPlaceholder();
+  return !GetPlugin()->IsPlaceholder();
 }
 
-void WebHelperPluginImpl::reallyDestroy(TimerBase*) {
-  if (m_pluginContainer)
-    m_pluginContainer->dispose();
+void WebHelperPluginImpl::ReallyDestroy(TimerBase*) {
+  if (plugin_container_)
+    plugin_container_->Dispose();
   delete this;
 }
 
-void WebHelperPluginImpl::destroy() {
+void WebHelperPluginImpl::Destroy() {
   // Defer deletion so we don't do too much work when called via
   // stopSuspendableObjects().
   // FIXME: It's not clear why we still need this. The original code held a
   // Page and a WebFrame, and destroying it would cause JavaScript triggered by
   // frame detach to run, which isn't allowed inside stopSuspendableObjects().
   // Removing this causes one Chrome test to fail with a timeout.
-  m_destructionTimer.startOneShot(0, BLINK_FROM_HERE);
+  destruction_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
-WebPlugin* WebHelperPluginImpl::getPlugin() {
-  DCHECK(m_pluginContainer);
-  DCHECK(m_pluginContainer->plugin());
-  return m_pluginContainer->plugin();
+WebPlugin* WebHelperPluginImpl::GetPlugin() {
+  DCHECK(plugin_container_);
+  DCHECK(plugin_container_->Plugin());
+  return plugin_container_->Plugin();
 }
 
 }  // namespace blink

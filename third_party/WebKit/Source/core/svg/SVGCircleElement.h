@@ -34,30 +34,30 @@ class SVGCircleElement final : public SVGGeometryElement {
  public:
   DECLARE_NODE_FACTORY(SVGCircleElement);
 
-  Path asPath() const override;
+  Path AsPath() const override;
 
-  SVGAnimatedLength* cx() const { return m_cx.get(); }
-  SVGAnimatedLength* cy() const { return m_cy.get(); }
-  SVGAnimatedLength* r() const { return m_r.get(); }
+  SVGAnimatedLength* cx() const { return cx_.Get(); }
+  SVGAnimatedLength* cy() const { return cy_.Get(); }
+  SVGAnimatedLength* r() const { return r_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit SVGCircleElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  void collectStyleForPresentationAttribute(const QualifiedName&,
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
 
-  bool selfHasRelativeLengths() const override;
+  bool SelfHasRelativeLengths() const override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
-  Member<SVGAnimatedLength> m_cx;
-  Member<SVGAnimatedLength> m_cy;
-  Member<SVGAnimatedLength> m_r;
+  Member<SVGAnimatedLength> cx_;
+  Member<SVGAnimatedLength> cy_;
+  Member<SVGAnimatedLength> r_;
 };
 
 }  // namespace blink

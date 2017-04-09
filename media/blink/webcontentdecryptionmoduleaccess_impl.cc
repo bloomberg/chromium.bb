@@ -25,8 +25,8 @@ static void CreateCdm(
   // If |client| is gone (due to the frame getting destroyed), it is
   // impossible to create the CDM, so fail.
   if (!client) {
-    result->completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
+    result->CompleteWithError(
+        blink::kWebContentDecryptionModuleExceptionInvalidStateError, 0,
         "Failed to create CDM.");
     return;
   }
@@ -62,11 +62,11 @@ WebContentDecryptionModuleAccessImpl::~WebContentDecryptionModuleAccessImpl() {
 }
 
 blink::WebMediaKeySystemConfiguration
-WebContentDecryptionModuleAccessImpl::getConfiguration() {
+WebContentDecryptionModuleAccessImpl::GetConfiguration() {
   return configuration_;
 }
 
-void WebContentDecryptionModuleAccessImpl::createContentDecryptionModule(
+void WebContentDecryptionModuleAccessImpl::CreateContentDecryptionModule(
     blink::WebContentDecryptionModuleResult result) {
   // This method needs to run asynchronously, as it may need to load the CDM.
   // As this object's lifetime is controlled by MediaKeySystemAccess on the

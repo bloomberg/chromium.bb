@@ -63,21 +63,21 @@ class CONTENT_EXPORT DevToolsAgent
   void OnDestruct() override;
 
   // WebDevToolsAgentClient implementation.
-  void sendProtocolMessage(int session_id,
+  void SendProtocolMessage(int session_id,
                            int call_id,
                            const blink::WebString& response,
                            const blink::WebString& state) override;
   blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
-      createClientMessageLoop() override;
-  void willEnterDebugLoop() override;
-  void didExitDebugLoop() override;
+  CreateClientMessageLoop() override;
+  void WillEnterDebugLoop() override;
+  void DidExitDebugLoop() override;
 
-  bool requestDevToolsForFrame(blink::WebLocalFrame* frame) override;
+  bool RequestDevToolsForFrame(blink::WebLocalFrame* frame) override;
 
-  void enableTracing(const blink::WebString& category_filter) override;
-  void disableTracing() override;
+  void EnableTracing(const blink::WebString& category_filter) override;
+  void DisableTracing() override;
 
-  void setCPUThrottlingRate(double rate) override;
+  void SetCPUThrottlingRate(double rate) override;
 
   void OnAttach(const std::string& host_id, int session_id);
   void OnReattach(const std::string& host_id,

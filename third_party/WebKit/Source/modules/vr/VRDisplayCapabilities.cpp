@@ -7,7 +7,7 @@
 namespace blink {
 
 VRDisplayCapabilities::VRDisplayCapabilities()
-    : m_hasPosition(false), m_hasExternalDisplay(false), m_canPresent(false) {}
+    : has_position_(false), has_external_display_(false), can_present_(false) {}
 
 DEFINE_TRACE(VRDisplayCapabilities) {}
 

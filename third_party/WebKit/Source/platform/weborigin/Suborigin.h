@@ -14,28 +14,28 @@ namespace blink {
 class PLATFORM_EXPORT Suborigin {
  public:
   enum class SuboriginPolicyOptions : unsigned {
-    None = 0,
-    UnsafePostMessageSend = 1 << 0,
-    UnsafePostMessageReceive = 1 << 1,
-    UnsafeCookies = 1 << 2,
-    UnsafeCredentials = 1 << 3
+    kNone = 0,
+    kUnsafePostMessageSend = 1 << 0,
+    kUnsafePostMessageReceive = 1 << 1,
+    kUnsafeCookies = 1 << 2,
+    kUnsafeCredentials = 1 << 3
   };
 
   Suborigin();
   explicit Suborigin(const Suborigin*);
 
-  void setTo(const Suborigin&);
-  String name() const { return m_name; }
-  void setName(const String& name) { m_name = name; }
-  void addPolicyOption(SuboriginPolicyOptions);
-  bool policyContains(SuboriginPolicyOptions) const;
-  void clear();
+  void SetTo(const Suborigin&);
+  String GetName() const { return name_; }
+  void SetName(const String& name) { name_ = name; }
+  void AddPolicyOption(SuboriginPolicyOptions);
+  bool PolicyContains(SuboriginPolicyOptions) const;
+  void Clear();
   // For testing
-  unsigned optionsMask() const { return m_optionsMask; }
+  unsigned OptionsMask() const { return options_mask_; }
 
  private:
-  String m_name;
-  unsigned m_optionsMask;
+  String name_;
+  unsigned options_mask_;
 };
 
 }  // namespace blink

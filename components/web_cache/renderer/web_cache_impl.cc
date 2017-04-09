@@ -36,7 +36,7 @@ void WebCacheImpl::ExecutePendingClearCache() {
     case kNavigate_Pending:
       break;
     case kClearCache_Pending:
-      blink::WebCache::clear();
+      blink::WebCache::Clear();
       clear_cache_state_ = kInit;
       break;
   }
@@ -45,12 +45,12 @@ void WebCacheImpl::ExecutePendingClearCache() {
 void WebCacheImpl::SetCacheCapacity(uint64_t capacity64) {
   size_t capacity = base::checked_cast<size_t>(capacity64);
 
-  blink::WebCache::setCapacity(capacity);
+  blink::WebCache::SetCapacity(capacity);
 }
 
 void WebCacheImpl::ClearCache(bool on_navigation) {
   if (!on_navigation) {
-    blink::WebCache::clear();
+    blink::WebCache::Clear();
     return;
   }
 
@@ -59,7 +59,7 @@ void WebCacheImpl::ClearCache(bool on_navigation) {
       clear_cache_state_ = kClearCache_Pending;
       break;
     case kNavigate_Pending:
-      blink::WebCache::clear();
+      blink::WebCache::Clear();
       clear_cache_state_ = kInit;
       break;
     case kClearCache_Pending:

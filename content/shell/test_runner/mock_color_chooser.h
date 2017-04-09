@@ -27,8 +27,8 @@ class MockColorChooser : public blink::WebColorChooser {
   ~MockColorChooser() override;
 
   // blink::WebColorChooser implementation.
-  void setSelectedColor(const blink::WebColor color) override;
-  void endChooser() override;
+  void SetSelectedColor(const blink::WebColor color) override;
+  void EndChooser() override;
 
   void InvokeDidEndChooser();
 

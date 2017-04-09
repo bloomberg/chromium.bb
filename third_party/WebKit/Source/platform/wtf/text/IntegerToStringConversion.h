@@ -40,41 +40,41 @@ class IntegerToStringConverter {
                 "IntegerType must be a type of integer.");
 
   explicit IntegerToStringConverter(IntegerType input) {
-    LChar* end = m_buffer + WTF_ARRAY_LENGTH(m_buffer);
-    m_begin = end;
+    LChar* end = buffer_ + WTF_ARRAY_LENGTH(buffer_);
+    begin_ = end;
 
     // We need to switch to the unsigned type when negating the value since
     // abs(INT_MIN) == INT_MAX + 1.
-    bool isNegative = base::IsValueNegative(input);
-    UnsignedIntegerType value = isNegative ? 0u - input : input;
+    bool is_negative = base::IsValueNegative(input);
+    UnsignedIntegerType value = is_negative ? 0u - input : input;
 
     do {
-      --m_begin;
-      DCHECK_NE(m_begin, m_buffer);
-      *m_begin = static_cast<LChar>((value % 10) + '0');
+      --begin_;
+      DCHECK_NE(begin_, buffer_);
+      *begin_ = static_cast<LChar>((value % 10) + '0');
       value /= 10;
     } while (value);
 
-    if (isNegative) {
-      --m_begin;
-      DCHECK_NE(m_begin, m_buffer);
-      *m_begin = static_cast<LChar>('-');
+    if (is_negative) {
+      --begin_;
+      DCHECK_NE(begin_, buffer_);
+      *begin_ = static_cast<LChar>('-');
     }
 
-    m_length = static_cast<unsigned>(end - m_begin);
+    length_ = static_cast<unsigned>(end - begin_);
   }
 
-  const LChar* characters8() const { return m_begin; }
-  unsigned length() const { return m_length; }
+  const LChar* Characters8() const { return begin_; }
+  unsigned length() const { return length_; }
 
  private:
   using UnsignedIntegerType = typename std::make_unsigned<IntegerType>::type;
   static const size_t kBufferSize = 3 * sizeof(UnsignedIntegerType) +
                                     std::numeric_limits<IntegerType>::is_signed;
 
-  LChar m_buffer[kBufferSize];
-  LChar* m_begin;
-  unsigned m_length;
+  LChar buffer_[kBufferSize];
+  LChar* begin_;
+  unsigned length_;
 };
 
 }  // namespace WTF

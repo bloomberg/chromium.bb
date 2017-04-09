@@ -88,9 +88,9 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   } OnExitNode;
   Vector<OnExitNode> exits_;
 
-  enum class CollapsibleSpace { None, Space, Newline };
+  enum class CollapsibleSpace { kNone, kSpace, kNewline };
 
-  CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::Space;
+  CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::kSpace;
   bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
 

@@ -35,22 +35,21 @@ FileDownloader::~FileDownloader() {
 }
 
 void FileDownloader::Load(const blink::WebURLRequest& request) {
-  url_loader_->loadAsynchronously(request, this);
+  url_loader_->LoadAsynchronously(request, this);
 }
 
-void FileDownloader::didReceiveResponse(
-    const blink::WebURLResponse& response) {
-  http_status_code_ = response.httpStatusCode();
+void FileDownloader::DidReceiveResponse(const blink::WebURLResponse& response) {
+  http_status_code_ = response.HttpStatusCode();
   if (http_status_code_ != 200)
     status_ = FAILED;
 
   // Set -1 if the content length is unknown. Set before issuing callback.
-  total_bytes_to_be_received_ = response.expectedContentLength();
+  total_bytes_to_be_received_ = response.ExpectedContentLength();
   if (!progress_cb_.is_null())
     progress_cb_.Run(total_bytes_received_, total_bytes_to_be_received_);
 }
 
-void FileDownloader::didReceiveData(const char* data, int data_length) {
+void FileDownloader::DidReceiveData(const char* data, int data_length) {
   if (status_ == SUCCESS) {
     if (file_.Write(total_bytes_received_, data, data_length) == -1) {
       status_ = FAILED;
@@ -62,7 +61,7 @@ void FileDownloader::didReceiveData(const char* data, int data_length) {
   }
 }
 
-void FileDownloader::didFinishLoading(double finish_time) {
+void FileDownloader::DidFinishLoading(double finish_time) {
   if (status_ == SUCCESS) {
     // Seek back to the beginning of the file that was just written so it's
     // easy for consumers to use.
@@ -73,9 +72,9 @@ void FileDownloader::didFinishLoading(double finish_time) {
   delete this;
 }
 
-void FileDownloader::didFail(const blink::WebURLError& error) {
+void FileDownloader::DidFail(const blink::WebURLError& error) {
   status_ = FAILED;
-  if (error.domain.equals(blink::WebString::fromUTF8(net::kErrorDomain))) {
+  if (error.domain.Equals(blink::WebString::FromUTF8(net::kErrorDomain))) {
     switch (error.reason) {
       case net::ERR_ACCESS_DENIED:
       case net::ERR_NETWORK_ACCESS_DENIED:

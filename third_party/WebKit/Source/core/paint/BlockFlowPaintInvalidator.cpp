@@ -11,62 +11,62 @@
 
 namespace blink {
 
-void BlockFlowPaintInvalidator::invalidatePaintForOverhangingFloatsInternal(
-    InvalidateDescendantMode invalidateDescendants) {
+void BlockFlowPaintInvalidator::InvalidatePaintForOverhangingFloatsInternal(
+    InvalidateDescendantMode invalidate_descendants) {
   // Invalidate paint of any overhanging floats (if we know we're the one to
   // paint them).  Otherwise, bail out.
-  if (!m_blockFlow.hasOverhangingFloats())
+  if (!block_flow_.HasOverhangingFloats())
     return;
 
-  for (const auto& floatingObject : m_blockFlow.floatingObjects()->set()) {
+  for (const auto& floating_object : block_flow_.GetFloatingObjects()->Set()) {
     // Only issue paint invalidations for the object if it is overhanging, is
     // not in its own layer, and is our responsibility to paint (m_shouldPaint
     // is set). When paintAllDescendants is true, the latter condition is
     // replaced with being a descendant of us.
-    if (m_blockFlow.isOverhangingFloat(*floatingObject) &&
-        !floatingObject->layoutObject()->hasSelfPaintingLayer() &&
-        (floatingObject->shouldPaint() ||
-         (invalidateDescendants == InvalidateDescendants &&
-          floatingObject->layoutObject()->isDescendantOf(&m_blockFlow)))) {
-      LayoutBox* floatingBox = floatingObject->layoutObject();
-      floatingBox->setShouldDoFullPaintInvalidation();
-      if (floatingBox->isLayoutBlockFlow())
-        BlockFlowPaintInvalidator(*toLayoutBlockFlow(floatingBox))
-            .invalidatePaintForOverhangingFloatsInternal(
-                DontInvalidateDescendants);
+    if (block_flow_.IsOverhangingFloat(*floating_object) &&
+        !floating_object->GetLayoutObject()->HasSelfPaintingLayer() &&
+        (floating_object->ShouldPaint() ||
+         (invalidate_descendants == kInvalidateDescendants &&
+          floating_object->GetLayoutObject()->IsDescendantOf(&block_flow_)))) {
+      LayoutBox* floating_box = floating_object->GetLayoutObject();
+      floating_box->SetShouldDoFullPaintInvalidation();
+      if (floating_box->IsLayoutBlockFlow())
+        BlockFlowPaintInvalidator(*ToLayoutBlockFlow(floating_box))
+            .InvalidatePaintForOverhangingFloatsInternal(
+                kDontInvalidateDescendants);
     }
   }
 }
 
-void BlockFlowPaintInvalidator::invalidateDisplayItemClients(
+void BlockFlowPaintInvalidator::InvalidateDisplayItemClients(
     PaintInvalidationReason reason) {
-  ObjectPaintInvalidator objectPaintInvalidator(m_blockFlow);
-  objectPaintInvalidator.invalidateDisplayItemClient(m_blockFlow, reason);
+  ObjectPaintInvalidator object_paint_invalidator(block_flow_);
+  object_paint_invalidator.InvalidateDisplayItemClient(block_flow_, reason);
 
   // PaintInvalidationRectangle happens when we invalidate the caret.
   // The later conditions don't apply when we invalidate the caret or the
   // selection.
-  if (reason == PaintInvalidationRectangle ||
-      reason == PaintInvalidationSelection)
+  if (reason == kPaintInvalidationRectangle ||
+      reason == kPaintInvalidationSelection)
     return;
 
-  RootInlineBox* line = m_blockFlow.firstRootBox();
-  if (line && line->isFirstLineStyle()) {
+  RootInlineBox* line = block_flow_.FirstRootBox();
+  if (line && line->IsFirstLineStyle()) {
     // It's the RootInlineBox that paints the ::first-line background. Note that
     // since it may be expensive to figure out if the first line is affected by
     // any ::first-line selectors at all, we just invalidate it unconditionally
     // which is typically cheaper.
-    objectPaintInvalidator.invalidateDisplayItemClient(*line, reason);
+    object_paint_invalidator.InvalidateDisplayItemClient(*line, reason);
   }
 
-  if (m_blockFlow.multiColumnFlowThread()) {
+  if (block_flow_.MultiColumnFlowThread()) {
     // Invalidate child LayoutMultiColumnSets which may need to repaint column
     // rules after m_blockFlow's column rule style and/or layout changed.
-    for (LayoutObject* child = m_blockFlow.firstChild(); child;
-         child = child->nextSibling()) {
-      if (child->isLayoutMultiColumnSet() &&
-          !child->shouldDoFullPaintInvalidation())
-        objectPaintInvalidator.invalidateDisplayItemClient(*child, reason);
+    for (LayoutObject* child = block_flow_.FirstChild(); child;
+         child = child->NextSibling()) {
+      if (child->IsLayoutMultiColumnSet() &&
+          !child->ShouldDoFullPaintInvalidation())
+        object_paint_invalidator.InvalidateDisplayItemClient(*child, reason);
     }
   }
 }

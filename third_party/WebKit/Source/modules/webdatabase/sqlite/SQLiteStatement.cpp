@@ -79,175 +79,170 @@ int restrictError(int error) {
 namespace blink {
 
 SQLiteStatement::SQLiteStatement(SQLiteDatabase& db, const String& sql)
-    : m_database(db),
-      m_query(sql),
-      m_statement(0)
-{
-}
+    : database_(db), query_(sql), statement_(0) {}
 
 SQLiteStatement::~SQLiteStatement() {
-  finalize();
+  Finalize();
 }
 
-int SQLiteStatement::prepare() {
-  ASSERT(!m_isPrepared);
+int SQLiteStatement::Prepare() {
+  ASSERT(!is_prepared_);
 
-  CString query = m_query.stripWhiteSpace().utf8();
+  CString query = query_.StripWhiteSpace().Utf8();
 
   // Need to pass non-stack |const char*| and |sqlite3_stmt*| to avoid race
   // with Oilpan stack scanning.
-  std::unique_ptr<const char*> tail = WTF::wrapUnique(new const char*);
-  std::unique_ptr<sqlite3_stmt*> statement = WTF::wrapUnique(new sqlite3_stmt*);
+  std::unique_ptr<const char*> tail = WTF::WrapUnique(new const char*);
+  std::unique_ptr<sqlite3_stmt*> statement = WTF::WrapUnique(new sqlite3_stmt*);
   *tail = nullptr;
   *statement = nullptr;
   int error;
   {
-    SQL_DVLOG(1) << "SQL - prepare - " << query.data();
+    SQL_DVLOG(1) << "SQL - prepare - " << query.Data();
 
     // Pass the length of the string including the null character to
     // sqlite3_prepare_v2; this lets SQLite avoid an extra string copy.
-    size_t lengthIncludingNullCharacter = query.length() + 1;
+    size_t length_including_null_character = query.length() + 1;
 
-    error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(),
-                               lengthIncludingNullCharacter, statement.get(),
+    error = sqlite3_prepare_v2(database_.Sqlite3Handle(), query.Data(),
+                               length_including_null_character, statement.get(),
                                tail.get());
   }
-  m_statement = *statement;
+  statement_ = *statement;
 
   if (error != SQLITE_OK)
     SQL_DVLOG(1) << "sqlite3_prepare16 failed (" << error << ")\n"
-                 << query.data() << "\n"
-                 << sqlite3_errmsg(m_database.sqlite3Handle());
+                 << query.Data() << "\n"
+                 << sqlite3_errmsg(database_.Sqlite3Handle());
   else if (*tail && **tail)
     error = SQLITE_ERROR;
 
 #if DCHECK_IS_ON()
-  m_isPrepared = error == SQLITE_OK;
+  is_prepared_ = error == SQLITE_OK;
 #endif
   return restrictError(error);
 }
 
-int SQLiteStatement::step() {
-  if (!m_statement)
+int SQLiteStatement::Step() {
+  if (!statement_)
     return SQLITE_OK;
 
   // The database needs to update its last changes count before each statement
   // in order to compute properly the lastChanges() return value.
-  m_database.updateLastChangesCount();
+  database_.UpdateLastChangesCount();
 
-  SQL_DVLOG(1) << "SQL - step - " << m_query;
-  int error = sqlite3_step(m_statement);
+  SQL_DVLOG(1) << "SQL - step - " << query_;
+  int error = sqlite3_step(statement_);
   if (error != SQLITE_DONE && error != SQLITE_ROW) {
-    SQL_DVLOG(1) << "sqlite3_step failed (" << error << " )\nQuery - "
-                 << m_query << "\nError - "
-                 << sqlite3_errmsg(m_database.sqlite3Handle());
+    SQL_DVLOG(1) << "sqlite3_step failed (" << error << " )\nQuery - " << query_
+                 << "\nError - " << sqlite3_errmsg(database_.Sqlite3Handle());
   }
 
   return restrictError(error);
 }
 
-int SQLiteStatement::finalize() {
+int SQLiteStatement::Finalize() {
 #if DCHECK_IS_ON()
-  m_isPrepared = false;
+  is_prepared_ = false;
 #endif
-  if (!m_statement)
+  if (!statement_)
     return SQLITE_OK;
-  SQL_DVLOG(1) << "SQL - finalize - " << m_query;
-  int result = sqlite3_finalize(m_statement);
-  m_statement = 0;
+  SQL_DVLOG(1) << "SQL - finalize - " << query_;
+  int result = sqlite3_finalize(statement_);
+  statement_ = 0;
   return restrictError(result);
 }
 
-bool SQLiteStatement::executeCommand() {
-  if (!m_statement && prepare() != SQLITE_OK)
+bool SQLiteStatement::ExecuteCommand() {
+  if (!statement_ && Prepare() != SQLITE_OK)
     return false;
-  ASSERT(m_isPrepared);
-  if (step() != SQLITE_DONE) {
-    finalize();
+  ASSERT(is_prepared_);
+  if (Step() != SQLITE_DONE) {
+    Finalize();
     return false;
   }
-  finalize();
+  Finalize();
   return true;
 }
 
-int SQLiteStatement::bindText(int index, const String& text) {
-  ASSERT(m_isPrepared);
+int SQLiteStatement::BindText(int index, const String& text) {
+  ASSERT(is_prepared_);
   ASSERT(index > 0);
-  ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
+  ASSERT(static_cast<unsigned>(index) <= BindParameterCount());
 
   String text16(text);
-  text16.ensure16Bit();
+  text16.Ensure16Bit();
   return restrictError(
-      sqlite3_bind_text16(m_statement, index, text16.characters16(),
+      sqlite3_bind_text16(statement_, index, text16.Characters16(),
                           sizeof(UChar) * text16.length(), SQLITE_TRANSIENT));
 }
 
-int SQLiteStatement::bindDouble(int index, double number) {
-  ASSERT(m_isPrepared);
+int SQLiteStatement::BindDouble(int index, double number) {
+  ASSERT(is_prepared_);
   ASSERT(index > 0);
-  ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
+  ASSERT(static_cast<unsigned>(index) <= BindParameterCount());
 
-  return restrictError(sqlite3_bind_double(m_statement, index, number));
+  return restrictError(sqlite3_bind_double(statement_, index, number));
 }
 
-int SQLiteStatement::bindNull(int index) {
-  ASSERT(m_isPrepared);
+int SQLiteStatement::BindNull(int index) {
+  ASSERT(is_prepared_);
   ASSERT(index > 0);
-  ASSERT(static_cast<unsigned>(index) <= bindParameterCount());
+  ASSERT(static_cast<unsigned>(index) <= BindParameterCount());
 
-  return restrictError(sqlite3_bind_null(m_statement, index));
+  return restrictError(sqlite3_bind_null(statement_, index));
 }
 
-int SQLiteStatement::bindValue(int index, const SQLValue& value) {
-  switch (value.getType()) {
-    case SQLValue::StringValue:
-      return bindText(index, value.string());
-    case SQLValue::NumberValue:
-      return bindDouble(index, value.number());
-    case SQLValue::NullValue:
-      return bindNull(index);
+int SQLiteStatement::BindValue(int index, const SQLValue& value) {
+  switch (value.GetType()) {
+    case SQLValue::kStringValue:
+      return BindText(index, value.GetString());
+    case SQLValue::kNumberValue:
+      return BindDouble(index, value.Number());
+    case SQLValue::kNullValue:
+      return BindNull(index);
   }
 
   ASSERT_NOT_REACHED();
   return SQLITE_ERROR;
 }
 
-unsigned SQLiteStatement::bindParameterCount() const {
-  ASSERT(m_isPrepared);
-  if (!m_statement)
+unsigned SQLiteStatement::BindParameterCount() const {
+  ASSERT(is_prepared_);
+  if (!statement_)
     return 0;
-  return sqlite3_bind_parameter_count(m_statement);
+  return sqlite3_bind_parameter_count(statement_);
 }
 
-int SQLiteStatement::columnCount() {
-  ASSERT(m_isPrepared);
-  if (!m_statement)
+int SQLiteStatement::ColumnCount() {
+  ASSERT(is_prepared_);
+  if (!statement_)
     return 0;
-  return sqlite3_data_count(m_statement);
+  return sqlite3_data_count(statement_);
 }
 
-String SQLiteStatement::getColumnName(int col) {
+String SQLiteStatement::GetColumnName(int col) {
   ASSERT(col >= 0);
-  if (!m_statement)
-    if (prepareAndStep() != SQLITE_ROW)
+  if (!statement_)
+    if (PrepareAndStep() != SQLITE_ROW)
       return String();
-  if (columnCount() <= col)
+  if (ColumnCount() <= col)
     return String();
   return String(
-      reinterpret_cast<const UChar*>(sqlite3_column_name16(m_statement, col)));
+      reinterpret_cast<const UChar*>(sqlite3_column_name16(statement_, col)));
 }
 
-SQLValue SQLiteStatement::getColumnValue(int col) {
+SQLValue SQLiteStatement::GetColumnValue(int col) {
   ASSERT(col >= 0);
-  if (!m_statement)
-    if (prepareAndStep() != SQLITE_ROW)
+  if (!statement_)
+    if (PrepareAndStep() != SQLITE_ROW)
       return SQLValue();
-  if (columnCount() <= col)
+  if (ColumnCount() <= col)
     return SQLValue();
 
   // SQLite is typed per value. optional column types are
   // "(mostly) ignored"
-  sqlite3_value* value = sqlite3_column_value(m_statement, col);
+  sqlite3_value* value = sqlite3_column_value(statement_, col);
   switch (sqlite3_value_type(value)) {
     case SQLITE_INTEGER:  // SQLValue and JS don't represent integers, so use
                           // FLOAT -case
@@ -259,7 +254,7 @@ SQLValue SQLiteStatement::getColumnValue(int col) {
       const UChar* string =
           reinterpret_cast<const UChar*>(sqlite3_value_text16(value));
       unsigned length = sqlite3_value_bytes16(value) / sizeof(UChar);
-      return SQLValue(StringImpl::create8BitIfPossible(string, length));
+      return SQLValue(StringImpl::Create8BitIfPossible(string, length));
     }
     case SQLITE_NULL:
       return SQLValue();
@@ -270,37 +265,37 @@ SQLValue SQLiteStatement::getColumnValue(int col) {
   return SQLValue();
 }
 
-String SQLiteStatement::getColumnText(int col) {
+String SQLiteStatement::GetColumnText(int col) {
   ASSERT(col >= 0);
-  if (!m_statement)
-    if (prepareAndStep() != SQLITE_ROW)
+  if (!statement_)
+    if (PrepareAndStep() != SQLITE_ROW)
       return String();
-  if (columnCount() <= col)
+  if (ColumnCount() <= col)
     return String();
   const UChar* string =
-      reinterpret_cast<const UChar*>(sqlite3_column_text16(m_statement, col));
-  return StringImpl::create8BitIfPossible(
-      string, sqlite3_column_bytes16(m_statement, col) / sizeof(UChar));
+      reinterpret_cast<const UChar*>(sqlite3_column_text16(statement_, col));
+  return StringImpl::Create8BitIfPossible(
+      string, sqlite3_column_bytes16(statement_, col) / sizeof(UChar));
 }
 
-int SQLiteStatement::getColumnInt(int col) {
+int SQLiteStatement::GetColumnInt(int col) {
   ASSERT(col >= 0);
-  if (!m_statement)
-    if (prepareAndStep() != SQLITE_ROW)
+  if (!statement_)
+    if (PrepareAndStep() != SQLITE_ROW)
       return 0;
-  if (columnCount() <= col)
+  if (ColumnCount() <= col)
     return 0;
-  return sqlite3_column_int(m_statement, col);
+  return sqlite3_column_int(statement_, col);
 }
 
-int64_t SQLiteStatement::getColumnInt64(int col) {
+int64_t SQLiteStatement::GetColumnInt64(int col) {
   ASSERT(col >= 0);
-  if (!m_statement)
-    if (prepareAndStep() != SQLITE_ROW)
+  if (!statement_)
+    if (PrepareAndStep() != SQLITE_ROW)
       return 0;
-  if (columnCount() <= col)
+  if (ColumnCount() <= col)
     return 0;
-  return sqlite3_column_int64(m_statement, col);
+  return sqlite3_column_int64(statement_, col);
 }
 
 }  // namespace blink

@@ -49,9 +49,9 @@ class SQLTransactionCoordinator
  public:
   SQLTransactionCoordinator();
   DECLARE_TRACE();
-  void acquireLock(SQLTransactionBackend*);
-  void releaseLock(SQLTransactionBackend*);
-  void shutdown();
+  void AcquireLock(SQLTransactionBackend*);
+  void ReleaseLock(SQLTransactionBackend*);
+  void Shutdown();
 
  private:
   typedef Deque<CrossThreadPersistent<SQLTransactionBackend>> TransactionsQueue;
@@ -59,17 +59,17 @@ class SQLTransactionCoordinator
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
    public:
-    TransactionsQueue pendingTransactions;
+    TransactionsQueue pending_transactions;
     HashSet<CrossThreadPersistent<SQLTransactionBackend>>
-        activeReadTransactions;
-    CrossThreadPersistent<SQLTransactionBackend> activeWriteTransaction;
+        active_read_transactions;
+    CrossThreadPersistent<SQLTransactionBackend> active_write_transaction;
   };
   // Maps database names to information about pending transactions
   typedef HashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
-  CoordinationInfoHeapMap m_coordinationInfoMap;
-  bool m_isShuttingDown;
+  CoordinationInfoHeapMap coordination_info_map_;
+  bool is_shutting_down_;
 
-  void processPendingTransactions(CoordinationInfo&);
+  void ProcessPendingTransactions(CoordinationInfo&);
 };
 
 }  // namespace blink

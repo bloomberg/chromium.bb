@@ -34,71 +34,71 @@ class LayoutSVGText final : public LayoutSVGBlock {
   explicit LayoutSVGText(SVGTextElement*);
   ~LayoutSVGText() override;
 
-  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  void setNeedsPositioningValuesUpdate() {
-    m_needsPositioningValuesUpdate = true;
+  void SetNeedsPositioningValuesUpdate() {
+    needs_positioning_values_update_ = true;
   }
-  void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
-  void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
-  FloatRect visualRectInLocalSVGCoordinates() const override;
-  FloatRect objectBoundingBox() const override;
-  FloatRect strokeBoundingBox() const override;
-  bool isObjectBoundingBoxValid() const;
+  void SetNeedsTransformUpdate() override { needs_transform_update_ = true; }
+  void SetNeedsTextMetricsUpdate() { needs_text_metrics_update_ = true; }
+  FloatRect VisualRectInLocalSVGCoordinates() const override;
+  FloatRect ObjectBoundingBox() const override;
+  FloatRect StrokeBoundingBox() const override;
+  bool IsObjectBoundingBoxValid() const;
 
-  void addOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additionalOffset,
+  void AddOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additional_offset,
                        IncludeBlockVisualOverflowOrNot) const override;
 
-  static LayoutSVGText* locateLayoutSVGTextAncestor(LayoutObject*);
-  static const LayoutSVGText* locateLayoutSVGTextAncestor(const LayoutObject*);
+  static LayoutSVGText* LocateLayoutSVGTextAncestor(LayoutObject*);
+  static const LayoutSVGText* LocateLayoutSVGTextAncestor(const LayoutObject*);
 
-  bool needsReordering() const { return m_needsReordering; }
-  const Vector<LayoutSVGInlineText*>& descendantTextNodes() const {
-    return m_descendantTextNodes;
+  bool NeedsReordering() const { return needs_reordering_; }
+  const Vector<LayoutSVGInlineText*>& DescendantTextNodes() const {
+    return descendant_text_nodes_;
   }
 
-  void subtreeChildWasAdded();
-  void subtreeChildWillBeRemoved();
-  void subtreeTextDidChange();
+  void SubtreeChildWasAdded();
+  void SubtreeChildWillBeRemoved();
+  void SubtreeTextDidChange();
 
-  const char* name() const override { return "LayoutSVGText"; }
+  const char* GetName() const override { return "LayoutSVGText"; }
 
  private:
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectSVGText || LayoutSVGBlock::isOfType(type);
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectSVGText || LayoutSVGBlock::IsOfType(type);
   }
 
-  void paint(const PaintInfo&, const LayoutPoint&) const override;
-  bool nodeAtFloatPoint(HitTestResult&,
-                        const FloatPoint& pointInParent,
+  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  bool NodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& point_in_parent,
                         HitTestAction) override;
-  PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
 
-  void layout() override;
+  void GetLayout() override;
 
-  void absoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
 
-  void addChild(LayoutObject* child,
-                LayoutObject* beforeChild = nullptr) override;
-  void removeChild(LayoutObject*) override;
-  void willBeDestroyed() override;
+  void AddChild(LayoutObject* child,
+                LayoutObject* before_child = nullptr) override;
+  void RemoveChild(LayoutObject*) override;
+  void WillBeDestroyed() override;
 
-  void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
+  void InvalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
-  RootInlineBox* createRootInlineBox() override;
+  RootInlineBox* CreateRootInlineBox() override;
 
-  void invalidatePositioningValues(LayoutInvalidationReasonForTracing);
+  void InvalidatePositioningValues(LayoutInvalidationReasonForTracing);
 
-  bool m_needsReordering : 1;
-  bool m_needsPositioningValuesUpdate : 1;
-  bool m_needsTransformUpdate : 1;
-  bool m_needsTextMetricsUpdate : 1;
-  Vector<LayoutSVGInlineText*> m_descendantTextNodes;
+  bool needs_reordering_ : 1;
+  bool needs_positioning_values_update_ : 1;
+  bool needs_transform_update_ : 1;
+  bool needs_text_metrics_update_ : 1;
+  Vector<LayoutSVGInlineText*> descendant_text_nodes_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGText, isSVGText());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGText, IsSVGText());
 
 }  // namespace blink
 

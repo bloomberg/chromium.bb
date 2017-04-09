@@ -37,37 +37,37 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
                             RefPtr<SerializedScriptValue>,
                             const Options& = Options());
 
-  v8::Local<v8::Value> deserialize();
+  v8::Local<v8::Value> Deserialize();
 
  protected:
-  virtual ScriptWrappable* readDOMObject(SerializationTag);
+  virtual ScriptWrappable* ReadDOMObject(SerializationTag);
 
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
+  ScriptState* GetScriptState() const { return script_state_.Get(); }
 
-  uint32_t version() const { return m_version; }
-  bool readTag(SerializationTag* tag) {
-    const void* tagBytes = nullptr;
-    if (!m_deserializer.ReadRawBytes(1, &tagBytes))
+  uint32_t Version() const { return version_; }
+  bool ReadTag(SerializationTag* tag) {
+    const void* tag_bytes = nullptr;
+    if (!deserializer_.ReadRawBytes(1, &tag_bytes))
       return false;
     *tag = static_cast<SerializationTag>(
-        *reinterpret_cast<const uint8_t*>(tagBytes));
+        *reinterpret_cast<const uint8_t*>(tag_bytes));
     return true;
   }
-  bool readUint32(uint32_t* value) { return m_deserializer.ReadUint32(value); }
-  bool readUint64(uint64_t* value) { return m_deserializer.ReadUint64(value); }
-  bool readDouble(double* value) { return m_deserializer.ReadDouble(value); }
-  bool readRawBytes(size_t size, const void** data) {
-    return m_deserializer.ReadRawBytes(size, data);
+  bool ReadUint32(uint32_t* value) { return deserializer_.ReadUint32(value); }
+  bool ReadUint64(uint64_t* value) { return deserializer_.ReadUint64(value); }
+  bool ReadDouble(double* value) { return deserializer_.ReadDouble(value); }
+  bool ReadRawBytes(size_t size, const void** data) {
+    return deserializer_.ReadRawBytes(size, data);
   }
-  bool readUTF8String(String* stringOut);
+  bool ReadUTF8String(String* string_out);
 
  private:
-  void transfer();
+  void Transfer();
 
-  File* readFile();
-  File* readFileIndex();
+  File* ReadFile();
+  File* ReadFileIndex();
 
-  RefPtr<BlobDataHandle> getOrCreateBlobDataHandle(const String& uuid,
+  RefPtr<BlobDataHandle> GetOrCreateBlobDataHandle(const String& uuid,
                                                    const String& type,
                                                    uint64_t size);
 
@@ -76,24 +76,24 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
   v8::MaybeLocal<v8::WasmCompiledModule> GetWasmModuleFromId(v8::Isolate*,
                                                              uint32_t) override;
 
-  RefPtr<ScriptState> m_scriptState;
-  RefPtr<SerializedScriptValue> m_serializedScriptValue;
-  v8::ValueDeserializer m_deserializer;
+  RefPtr<ScriptState> script_state_;
+  RefPtr<SerializedScriptValue> serialized_script_value_;
+  v8::ValueDeserializer deserializer_;
 
   // Message ports which were transferred in.
-  const MessagePortArray* m_transferredMessagePorts = nullptr;
+  const MessagePortArray* transferred_message_ports_ = nullptr;
 
   // ImageBitmaps which were transferred in.
-  HeapVector<Member<ImageBitmap>> m_transferredImageBitmaps;
+  HeapVector<Member<ImageBitmap>> transferred_image_bitmaps_;
 
   // Blob info for blobs stored by index.
-  const WebBlobInfoArray* m_blobInfoArray = nullptr;
+  const WebBlobInfoArray* blob_info_array_ = nullptr;
 
   // Set during deserialize after the header is read.
-  uint32_t m_version = 0;
+  uint32_t version_ = 0;
 
 #if DCHECK_IS_ON()
-  bool m_deserializeInvoked = false;
+  bool deserialize_invoked_ = false;
 #endif
 };
 

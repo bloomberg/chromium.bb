@@ -46,54 +46,55 @@ class PLATFORM_EXPORT NetworkStateNotifier {
  public:
   struct NetworkState {
     static const int kInvalidMaxBandwidth = -1;
-    bool onLineInitialized = false;
-    bool onLine = true;
-    bool connectionInitialized = false;
-    WebConnectionType type = WebConnectionTypeOther;
-    double maxBandwidthMbps = kInvalidMaxBandwidth;
+    bool on_line_initialized = false;
+    bool on_line = true;
+    bool connection_initialized = false;
+    WebConnectionType type = kWebConnectionTypeOther;
+    double max_bandwidth_mbps = kInvalidMaxBandwidth;
   };
 
   class NetworkStateObserver {
    public:
     // Will be called on the task runner that is passed in add*Observer.
-    virtual void connectionChange(WebConnectionType, double maxBandwidthMbps) {}
-    virtual void onLineStateChange(bool onLine) {}
+    virtual void ConnectionChange(WebConnectionType,
+                                  double max_bandwidth_mbps) {}
+    virtual void OnLineStateChange(bool on_line) {}
   };
 
-  NetworkStateNotifier() : m_hasOverride(false) {}
+  NetworkStateNotifier() : has_override_(false) {}
 
   // Can be called on any thread.
-  bool onLine() const {
-    MutexLocker locker(m_mutex);
-    const NetworkState& state = m_hasOverride ? m_override : m_state;
-    DCHECK(state.onLineInitialized);
-    return state.onLine;
+  bool OnLine() const {
+    MutexLocker locker(mutex_);
+    const NetworkState& state = has_override_ ? override_ : state_;
+    DCHECK(state.on_line_initialized);
+    return state.on_line;
   }
 
-  void setOnLine(bool);
+  void SetOnLine(bool);
 
   // Can be called on any thread.
-  WebConnectionType connectionType() const {
-    MutexLocker locker(m_mutex);
-    const NetworkState& state = m_hasOverride ? m_override : m_state;
-    DCHECK(state.connectionInitialized);
+  WebConnectionType ConnectionType() const {
+    MutexLocker locker(mutex_);
+    const NetworkState& state = has_override_ ? override_ : state_;
+    DCHECK(state.connection_initialized);
     return state.type;
   }
 
   // Can be called on any thread.
-  bool isCellularConnectionType() const {
-    switch (connectionType()) {
-      case WebConnectionTypeCellular2G:
-      case WebConnectionTypeCellular3G:
-      case WebConnectionTypeCellular4G:
+  bool IsCellularConnectionType() const {
+    switch (ConnectionType()) {
+      case kWebConnectionTypeCellular2G:
+      case kWebConnectionTypeCellular3G:
+      case kWebConnectionTypeCellular4G:
         return true;
-      case WebConnectionTypeBluetooth:
-      case WebConnectionTypeEthernet:
-      case WebConnectionTypeWifi:
-      case WebConnectionTypeWimax:
-      case WebConnectionTypeOther:
-      case WebConnectionTypeNone:
-      case WebConnectionTypeUnknown:
+      case kWebConnectionTypeBluetooth:
+      case kWebConnectionTypeEthernet:
+      case kWebConnectionTypeWifi:
+      case kWebConnectionTypeWimax:
+      case kWebConnectionTypeOther:
+      case kWebConnectionTypeNone:
+      case kWebConnectionTypeUnknown:
         return false;
     }
     NOTREACHED();
@@ -101,14 +102,14 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   }
 
   // Can be called on any thread.
-  double maxBandwidth() const {
-    MutexLocker locker(m_mutex);
-    const NetworkState& state = m_hasOverride ? m_override : m_state;
-    DCHECK(state.connectionInitialized);
-    return state.maxBandwidthMbps;
+  double MaxBandwidth() const {
+    MutexLocker locker(mutex_);
+    const NetworkState& state = has_override_ ? override_ : state_;
+    DCHECK(state.connection_initialized);
+    return state.max_bandwidth_mbps;
   }
 
-  void setWebConnection(WebConnectionType, double maxBandwidthMbps);
+  void SetWebConnection(WebConnectionType, double max_bandwidth_mbps);
 
   // When called, successive setWebConnectionType/setOnLine calls are stored,
   // and supplied overridden values are used instead until clearOverride() is
@@ -117,25 +118,25 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   //
   // Since this class is a singleton, tests must clear override when completed
   // to avoid indeterminate state across the test harness.
-  void setOverride(bool onLine, WebConnectionType, double maxBandwidthMbps);
-  void clearOverride();
+  void SetOverride(bool on_line, WebConnectionType, double max_bandwidth_mbps);
+  void ClearOverride();
 
   // Must be called on the given task runner. An added observer must be removed
   // before the observer or its execution context goes away. It's possible for
   // an observer to be called twice for the same event if it is first removed
   // and then added during notification.
-  void addConnectionObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
-  void addOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
-  void removeConnectionObserver(NetworkStateObserver*,
+  void AddConnectionObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
+  void AddOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
+  void RemoveConnectionObserver(NetworkStateObserver*,
                                 PassRefPtr<WebTaskRunner>);
-  void removeOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
+  void RemoveOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
 
  private:
   struct ObserverList {
     ObserverList() : iterating(false) {}
     bool iterating;
     Vector<NetworkStateObserver*> observers;
-    Vector<size_t> zeroedObservers;  // Indices in observers that are 0.
+    Vector<size_t> zeroed_observers;  // Indices in observers that are 0.
   };
 
   // This helper scope issues required notifications when mutating the state if
@@ -148,8 +149,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     ~ScopedNotifier();
 
    private:
-    NetworkStateNotifier& m_notifier;
-    NetworkState m_before;
+    NetworkStateNotifier& notifier_;
+    NetworkState before_;
   };
 
   enum class ObserverType {
@@ -162,39 +163,39 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   using ObserverListMap =
       HashMap<RefPtr<WebTaskRunner>, std::unique_ptr<ObserverList>>;
 
-  void notifyObservers(ObserverListMap&, ObserverType, const NetworkState&);
-  void notifyObserversOnTaskRunner(ObserverListMap*,
+  void NotifyObservers(ObserverListMap&, ObserverType, const NetworkState&);
+  void NotifyObserversOnTaskRunner(ObserverListMap*,
                                    ObserverType,
                                    PassRefPtr<WebTaskRunner>,
                                    const NetworkState&);
 
-  void addObserver(ObserverListMap&,
+  void AddObserver(ObserverListMap&,
                    NetworkStateObserver*,
                    PassRefPtr<WebTaskRunner>);
-  void removeObserver(ObserverListMap&,
+  void RemoveObserver(ObserverListMap&,
                       NetworkStateObserver*,
                       PassRefPtr<WebTaskRunner>);
 
-  ObserverList* lockAndFindObserverList(ObserverListMap&,
+  ObserverList* LockAndFindObserverList(ObserverListMap&,
                                         PassRefPtr<WebTaskRunner>);
 
   // Removed observers are nulled out in the list in case the list is being
   // iterated over. Once done iterating, call this to clean up nulled
   // observers.
-  void collectZeroedObservers(ObserverListMap&,
+  void CollectZeroedObservers(ObserverListMap&,
                               ObserverList*,
                               PassRefPtr<WebTaskRunner>);
 
-  mutable Mutex m_mutex;
-  NetworkState m_state;
-  bool m_hasOverride;
-  NetworkState m_override;
+  mutable Mutex mutex_;
+  NetworkState state_;
+  bool has_override_;
+  NetworkState override_;
 
-  ObserverListMap m_connectionObservers;
-  ObserverListMap m_onLineStateObservers;
+  ObserverListMap connection_observers_;
+  ObserverListMap on_line_state_observers_;
 };
 
-PLATFORM_EXPORT NetworkStateNotifier& networkStateNotifier();
+PLATFORM_EXPORT NetworkStateNotifier& GetNetworkStateNotifier();
 
 }  // namespace blink
 

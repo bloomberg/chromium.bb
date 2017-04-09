@@ -11,51 +11,51 @@
 namespace blink {
 
 MutableStylePropertySet*
-SVGElementRareData::ensureAnimatedSMILStyleProperties() {
-  if (!m_animatedSMILStyleProperties)
-    m_animatedSMILStyleProperties =
-        MutableStylePropertySet::create(SVGAttributeMode);
-  return m_animatedSMILStyleProperties.get();
+SVGElementRareData::EnsureAnimatedSMILStyleProperties() {
+  if (!animated_smil_style_properties_)
+    animated_smil_style_properties_ =
+        MutableStylePropertySet::Create(kSVGAttributeMode);
+  return animated_smil_style_properties_.Get();
 }
 
-ComputedStyle* SVGElementRareData::overrideComputedStyle(
+ComputedStyle* SVGElementRareData::OverrideComputedStyle(
     Element* element,
-    const ComputedStyle* parentStyle) {
+    const ComputedStyle* parent_style) {
   DCHECK(element);
-  if (!m_useOverrideComputedStyle)
+  if (!use_override_computed_style_)
     return nullptr;
-  if (!m_overrideComputedStyle || m_needsOverrideComputedStyleUpdate) {
+  if (!override_computed_style_ || needs_override_computed_style_update_) {
     // The style computed here contains no CSS Animations/Transitions or SMIL
     // induced rules - this is needed to compute the "base value" for the SMIL
     // animation sandwhich model.
-    m_overrideComputedStyle =
-        element->document().ensureStyleResolver().styleForElement(
-            element, parentStyle, parentStyle, DisallowStyleSharing,
-            MatchAllRulesExcludingSMIL);
-    m_needsOverrideComputedStyleUpdate = false;
+    override_computed_style_ =
+        element->GetDocument().EnsureStyleResolver().StyleForElement(
+            element, parent_style, parent_style, kDisallowStyleSharing,
+            kMatchAllRulesExcludingSMIL);
+    needs_override_computed_style_update_ = false;
   }
-  DCHECK(m_overrideComputedStyle);
-  return m_overrideComputedStyle.get();
+  DCHECK(override_computed_style_);
+  return override_computed_style_.Get();
 }
 
 DEFINE_TRACE(SVGElementRareData) {
-  visitor->trace(m_outgoingReferences);
-  visitor->trace(m_incomingReferences);
-  visitor->trace(m_elementProxySet);
-  visitor->trace(m_animatedSMILStyleProperties);
-  visitor->trace(m_elementInstances);
-  visitor->trace(m_correspondingElement);
-  visitor->trace(m_owner);
+  visitor->Trace(outgoing_references_);
+  visitor->Trace(incoming_references_);
+  visitor->Trace(element_proxy_set_);
+  visitor->Trace(animated_smil_style_properties_);
+  visitor->Trace(element_instances_);
+  visitor->Trace(corresponding_element_);
+  visitor->Trace(owner_);
 }
 
-AffineTransform* SVGElementRareData::animateMotionTransform() {
-  return &m_animateMotionTransform;
+AffineTransform* SVGElementRareData::AnimateMotionTransform() {
+  return &animate_motion_transform_;
 }
 
-SVGElementProxySet& SVGElementRareData::ensureElementProxySet() {
-  if (!m_elementProxySet)
-    m_elementProxySet = new SVGElementProxySet;
-  return *m_elementProxySet;
+SVGElementProxySet& SVGElementRareData::EnsureElementProxySet() {
+  if (!element_proxy_set_)
+    element_proxy_set_ = new SVGElementProxySet;
+  return *element_proxy_set_;
 }
 
 }  // namespace blink

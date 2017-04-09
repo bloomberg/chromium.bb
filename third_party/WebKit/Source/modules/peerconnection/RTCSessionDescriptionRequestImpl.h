@@ -49,18 +49,18 @@ class RTCSessionDescriptionRequestImpl final
   USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 
  public:
-  static RTCSessionDescriptionRequestImpl* create(
+  static RTCSessionDescriptionRequestImpl* Create(
       ExecutionContext*,
       RTCPeerConnection*,
       RTCSessionDescriptionCallback*,
       RTCPeerConnectionErrorCallback*);
   ~RTCSessionDescriptionRequestImpl() override;
 
-  void requestSucceeded(const WebRTCSessionDescription&) override;
-  void requestFailed(const String& error) override;
+  void RequestSucceeded(const WebRTCSessionDescription&) override;
+  void RequestFailed(const String& error) override;
 
   // ContextLifecycleObserver
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -70,11 +70,11 @@ class RTCSessionDescriptionRequestImpl final
                                    RTCSessionDescriptionCallback*,
                                    RTCPeerConnectionErrorCallback*);
 
-  void clear();
+  void Clear();
 
-  Member<RTCSessionDescriptionCallback> m_successCallback;
-  Member<RTCPeerConnectionErrorCallback> m_errorCallback;
-  Member<RTCPeerConnection> m_requester;
+  Member<RTCSessionDescriptionCallback> success_callback_;
+  Member<RTCPeerConnectionErrorCallback> error_callback_;
+  Member<RTCPeerConnection> requester_;
 };
 
 }  // namespace blink

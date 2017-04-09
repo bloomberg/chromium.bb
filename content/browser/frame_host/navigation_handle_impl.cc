@@ -106,7 +106,8 @@ NavigationHandleImpl::NavigationHandleImpl(
       navigation_start_(navigation_start),
       pending_nav_entry_id_(pending_nav_entry_id),
       request_context_type_(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
-      mixed_content_context_type_(blink::WebMixedContentContextType::Blockable),
+      mixed_content_context_type_(
+          blink::WebMixedContentContextType::kBlockable),
       should_replace_current_entry_(false),
       redirect_chain_(redirect_chain),
       is_download_(false),
@@ -386,7 +387,7 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
   WillStartRequest(method, resource_request_body, sanitized_referrer,
                    has_user_gesture, transition, is_external_protocol,
                    REQUEST_CONTEXT_TYPE_LOCATION,
-                   blink::WebMixedContentContextType::Blockable,
+                   blink::WebMixedContentContextType::kBlockable,
                    base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.

@@ -9,11 +9,11 @@
 
 namespace blink {
 
-CSSUnsetValue* CSSUnsetValue::create() {
-  return cssValuePool().unsetValue();
+CSSUnsetValue* CSSUnsetValue::Create() {
+  return CssValuePool().UnsetValue();
 }
 
-String CSSUnsetValue::customCSSText() const {
+String CSSUnsetValue::CustomCSSText() const {
   return "unset";
 }
 

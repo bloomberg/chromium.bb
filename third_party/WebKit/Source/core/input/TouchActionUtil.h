@@ -13,7 +13,7 @@ namespace blink {
 class Node;
 
 namespace TouchActionUtil {
-CORE_EXPORT TouchAction computeEffectiveTouchAction(const Node&);
+CORE_EXPORT TouchAction ComputeEffectiveTouchAction(const Node&);
 }  // namespace TouchActionUtil
 
 }  // namespace blink

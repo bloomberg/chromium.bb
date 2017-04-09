@@ -50,29 +50,29 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
     event.set_unique_event_id(123456U);
 
     WebTouchEvent expected_event(
-        WebInputEvent::TouchStart,
-        WebInputEvent::ShiftKey | WebInputEvent::AltKey,
+        WebInputEvent::kTouchStart,
+        WebInputEvent::kShiftKey | WebInputEvent::kAltKey,
         (event.GetEventTime() - base::TimeTicks()).InSecondsF());
-    expected_event.touchesLength = 1;
+    expected_event.touches_length = 1;
     WebTouchPoint expected_pointer;
     expected_pointer.id = pointer.id;
-    expected_pointer.state = WebTouchPoint::StatePressed;
+    expected_pointer.state = WebTouchPoint::kStatePressed;
     expected_pointer.position = blink::WebFloatPoint(pointer.x, pointer.y);
-    expected_pointer.screenPosition =
+    expected_pointer.screen_position =
         blink::WebFloatPoint(pointer.raw_x, pointer.raw_y);
-    expected_pointer.radiusX = pointer.touch_major / 2.f;
-    expected_pointer.radiusY = pointer.touch_minor / 2.f;
-    expected_pointer.rotationAngle = 0.f;
+    expected_pointer.radius_x = pointer.touch_major / 2.f;
+    expected_pointer.radius_y = pointer.touch_minor / 2.f;
+    expected_pointer.rotation_angle = 0.f;
     expected_pointer.force = pointer.pressure;
     if (tool_type == MotionEvent::TOOL_TYPE_STYLUS) {
-      expected_pointer.tiltX = 60;
-      expected_pointer.tiltY = 0;
+      expected_pointer.tilt_x = 60;
+      expected_pointer.tilt_y = 0;
     } else {
-      expected_pointer.tiltX = 0;
-      expected_pointer.tiltY = 0;
+      expected_pointer.tilt_x = 0;
+      expected_pointer.tilt_y = 0;
     }
     expected_event.touches[0] = expected_pointer;
-    expected_event.uniqueTouchEventId = 123456U;
+    expected_event.unique_touch_event_id = 123456U;
 
     WebTouchEvent actual_event =
         ui::CreateWebTouchEventFromMotionEvent(event, false);
@@ -111,18 +111,19 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
 
   blink::WebGestureEvent web_event =
       ui::CreateWebGestureEventFromGestureEventData(event);
-  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, web_event.type());
-  EXPECT_EQ(0, web_event.modifiers());
+  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate, web_event.GetType());
+  EXPECT_EQ(0, web_event.GetModifiers());
   EXPECT_EQ((timestamp - base::TimeTicks()).InSecondsF(),
-            web_event.timeStampSeconds());
+            web_event.TimeStampSeconds());
   EXPECT_EQ(gfx::ToFlooredInt(pos.x()), web_event.x);
   EXPECT_EQ(gfx::ToFlooredInt(pos.y()), web_event.y);
-  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.x()), web_event.globalX);
-  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.y()), web_event.globalY);
-  EXPECT_EQ(blink::WebGestureDeviceTouchscreen, web_event.sourceDevice);
-  EXPECT_EQ(delta.x(), web_event.data.scrollUpdate.deltaX);
-  EXPECT_EQ(delta.y(), web_event.data.scrollUpdate.deltaY);
-  EXPECT_TRUE(web_event.data.scrollUpdate.previousUpdateInSequencePrevented);
+  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.x()), web_event.global_x);
+  EXPECT_EQ(gfx::ToFlooredInt(raw_pos.y()), web_event.global_y);
+  EXPECT_EQ(blink::kWebGestureDeviceTouchscreen, web_event.source_device);
+  EXPECT_EQ(delta.x(), web_event.data.scroll_update.delta_x);
+  EXPECT_EQ(delta.y(), web_event.data.scroll_update.delta_y);
+  EXPECT_TRUE(
+      web_event.data.scroll_update.previous_update_in_sequence_prevented);
 }
 
 }  // namespace content

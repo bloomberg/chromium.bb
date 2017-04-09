@@ -49,19 +49,19 @@ class WebTouchEvent;
 
 class WEB_EXPORT PageWidgetEventHandler {
  public:
-  virtual void handleMouseMove(LocalFrame& mainFrame,
+  virtual void HandleMouseMove(LocalFrame& main_frame,
                                const WebMouseEvent&,
                                const std::vector<const WebInputEvent*>&);
-  virtual void handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent&);
-  virtual void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&);
-  virtual void handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent&);
-  virtual WebInputEventResult handleMouseWheel(LocalFrame& mainFrame,
+  virtual void HandleMouseLeave(LocalFrame& main_frame, const WebMouseEvent&);
+  virtual void HandleMouseDown(LocalFrame& main_frame, const WebMouseEvent&);
+  virtual void HandleMouseUp(LocalFrame& main_frame, const WebMouseEvent&);
+  virtual WebInputEventResult HandleMouseWheel(LocalFrame& main_frame,
                                                const WebMouseWheelEvent&);
-  virtual WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) = 0;
-  virtual WebInputEventResult handleCharEvent(const WebKeyboardEvent&) = 0;
-  virtual WebInputEventResult handleGestureEvent(const WebGestureEvent&) = 0;
-  virtual WebInputEventResult handleTouchEvent(
-      LocalFrame& mainFrame,
+  virtual WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) = 0;
+  virtual WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) = 0;
+  virtual WebInputEventResult HandleGestureEvent(const WebGestureEvent&) = 0;
+  virtual WebInputEventResult HandleTouchEvent(
+      LocalFrame& main_frame,
       const WebTouchEvent&,
       const std::vector<const WebInputEvent*>&);
   virtual ~PageWidgetEventHandler() {}
@@ -70,24 +70,24 @@ class WEB_EXPORT PageWidgetEventHandler {
 // Common implementation of WebViewImpl and WebPagePopupImpl.
 class PageWidgetDelegate {
  public:
-  static void animate(Page&, double monotonicFrameBeginTime);
+  static void Animate(Page&, double monotonic_frame_begin_time);
 
   // For the following methods, the |root| argument indicates a root localFrame
   // from which to start performing the specified operation.
 
   // See documents of methods with the same names in FrameView class.
-  static void updateAllLifecyclePhases(Page&, LocalFrame& root);
+  static void UpdateAllLifecyclePhases(Page&, LocalFrame& root);
 
-  static void paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
-  static void paintIgnoringCompositing(Page&,
+  static void Paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
+  static void PaintIgnoringCompositing(Page&,
                                        WebCanvas*,
                                        const WebRect&,
                                        LocalFrame& root);
 
   // See FIXME in the function body about nullptr |root|.
-  static WebInputEventResult handleInputEvent(
+  static WebInputEventResult HandleInputEvent(
       PageWidgetEventHandler&,
-      const WebCoalescedInputEvent& coalescedEvent,
+      const WebCoalescedInputEvent& coalesced_event,
       LocalFrame* root);
 
  private:

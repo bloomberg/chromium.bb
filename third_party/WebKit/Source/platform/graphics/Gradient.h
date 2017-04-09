@@ -51,36 +51,36 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   WTF_MAKE_NONCOPYABLE(Gradient);
 
  public:
-  enum class Type { Linear, Radial, Conic };
+  enum class Type { kLinear, kRadial, kConic };
 
   enum class ColorInterpolation {
-    Premultiplied,
-    Unpremultiplied,
+    kPremultiplied,
+    kUnpremultiplied,
   };
 
-  static PassRefPtr<Gradient> createLinear(
+  static PassRefPtr<Gradient> CreateLinear(
       const FloatPoint& p0,
       const FloatPoint& p1,
-      GradientSpreadMethod = SpreadMethodPad,
-      ColorInterpolation = ColorInterpolation::Unpremultiplied);
+      GradientSpreadMethod = kSpreadMethodPad,
+      ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
-  static PassRefPtr<Gradient> createRadial(
+  static PassRefPtr<Gradient> CreateRadial(
       const FloatPoint& p0,
       float r0,
       const FloatPoint& p1,
       float r1,
-      float aspectRatio = 1,
-      GradientSpreadMethod = SpreadMethodPad,
-      ColorInterpolation = ColorInterpolation::Unpremultiplied);
+      float aspect_ratio = 1,
+      GradientSpreadMethod = kSpreadMethodPad,
+      ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
-  static PassRefPtr<Gradient> createConic(
+  static PassRefPtr<Gradient> CreateConic(
       const FloatPoint& position,
       float angle,
-      ColorInterpolation = ColorInterpolation::Unpremultiplied);
+      ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
   virtual ~Gradient();
 
-  Type getType() const { return m_type; }
+  Type GetType() const { return type_; }
 
   struct ColorStop {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -89,39 +89,39 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
 
     ColorStop(float s, const Color& c) : stop(s), color(c) {}
   };
-  void addColorStop(const ColorStop&);
-  void addColorStop(float value, const Color& color) {
-    addColorStop(ColorStop(value, color));
+  void AddColorStop(const ColorStop&);
+  void AddColorStop(float value, const Color& color) {
+    AddColorStop(ColorStop(value, color));
   }
-  void addColorStops(const Vector<Gradient::ColorStop>&);
+  void AddColorStops(const Vector<Gradient::ColorStop>&);
 
-  void applyToFlags(PaintFlags&, const SkMatrix& localMatrix);
+  void ApplyToFlags(PaintFlags&, const SkMatrix& local_matrix);
 
  protected:
   Gradient(Type, GradientSpreadMethod, ColorInterpolation);
 
   using ColorBuffer = Vector<SkColor, 8>;
   using OffsetBuffer = Vector<SkScalar, 8>;
-  virtual sk_sp<SkShader> createShader(const ColorBuffer&,
+  virtual sk_sp<SkShader> CreateShader(const ColorBuffer&,
                                        const OffsetBuffer&,
                                        SkShader::TileMode,
                                        uint32_t flags,
                                        const SkMatrix&) const = 0;
 
  private:
-  sk_sp<PaintShader> createShaderInternal(const SkMatrix& localMatrix);
+  sk_sp<PaintShader> CreateShaderInternal(const SkMatrix& local_matrix);
 
-  void sortStopsIfNecessary();
-  void fillSkiaStops(ColorBuffer&, OffsetBuffer&) const;
+  void SortStopsIfNecessary();
+  void FillSkiaStops(ColorBuffer&, OffsetBuffer&) const;
 
-  const Type m_type;
-  const GradientSpreadMethod m_spreadMethod;
-  const ColorInterpolation m_colorInterpolation;
+  const Type type_;
+  const GradientSpreadMethod spread_method_;
+  const ColorInterpolation color_interpolation_;
 
-  Vector<ColorStop, 2> m_stops;
-  bool m_stopsSorted;
+  Vector<ColorStop, 2> stops_;
+  bool stops_sorted_;
 
-  mutable sk_sp<PaintShader> m_cachedShader;
+  mutable sk_sp<PaintShader> cached_shader_;
 };
 
 }  // namespace blink

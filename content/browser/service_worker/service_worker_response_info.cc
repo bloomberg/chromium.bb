@@ -110,7 +110,7 @@ void ServiceWorkerResponseInfo::ResetData() {
   was_fallback_required_ = false;
   url_list_via_service_worker_.clear();
   response_type_via_service_worker_ =
-      blink::WebServiceWorkerResponseTypeDefault;
+      blink::kWebServiceWorkerResponseTypeDefault;
   // Don't reset |service_worker_start_time_| or |service_worker_ready_time_|
   // since it's historical timing information that should persist between job
   // restarts.

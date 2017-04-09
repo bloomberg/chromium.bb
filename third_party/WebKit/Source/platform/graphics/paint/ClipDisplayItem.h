@@ -18,55 +18,55 @@ class PLATFORM_EXPORT ClipDisplayItem final : public PairedBeginDisplayItem {
  public:
   ClipDisplayItem(const DisplayItemClient& client,
                   Type type,
-                  const IntRect& clipRect)
+                  const IntRect& clip_rect)
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
-        m_clipRect(clipRect) {
-    ASSERT(isClipType(type));
+        clip_rect_(clip_rect) {
+    ASSERT(IsClipType(type));
   }
 
   ClipDisplayItem(const DisplayItemClient& client,
                   Type type,
-                  const IntRect& clipRect,
-                  Vector<FloatRoundedRect>& roundedRectClips)
-      : ClipDisplayItem(client, type, clipRect) {
-    m_roundedRectClips.swap(roundedRectClips);
+                  const IntRect& clip_rect,
+                  Vector<FloatRoundedRect>& rounded_rect_clips)
+      : ClipDisplayItem(client, type, clip_rect) {
+    rounded_rect_clips_.Swap(rounded_rect_clips);
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #ifndef NDEBUG
-  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void DumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-  bool equals(const DisplayItem& other) const final {
-    return DisplayItem::equals(other) &&
-           m_clipRect ==
-               static_cast<const ClipDisplayItem&>(other).m_clipRect &&
-           m_roundedRectClips ==
-               static_cast<const ClipDisplayItem&>(other).m_roundedRectClips;
+  bool Equals(const DisplayItem& other) const final {
+    return DisplayItem::Equals(other) &&
+           clip_rect_ ==
+               static_cast<const ClipDisplayItem&>(other).clip_rect_ &&
+           rounded_rect_clips_ ==
+               static_cast<const ClipDisplayItem&>(other).rounded_rect_clips_;
   }
 
-  const IntRect m_clipRect;
-  Vector<FloatRoundedRect> m_roundedRectClips;
+  const IntRect clip_rect_;
+  Vector<FloatRoundedRect> rounded_rect_clips_;
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem final : public PairedEndDisplayItem {
  public:
   EndClipDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(isEndClipType(type));
+    ASSERT(IsEndClipType(type));
   }
 
-  void replay(GraphicsContext&) const override;
-  void appendToWebDisplayItemList(const IntRect&,
+  void Replay(GraphicsContext&) const override;
+  void AppendToWebDisplayItemList(const IntRect&,
                                   WebDisplayItemList*) const override;
 
  private:
 #if DCHECK_IS_ON()
-  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
-    return DisplayItem::isClipType(otherType);
+  bool IsEndAndPairedWith(DisplayItem::Type other_type) const final {
+    return DisplayItem::IsClipType(other_type);
   }
 #endif
 };

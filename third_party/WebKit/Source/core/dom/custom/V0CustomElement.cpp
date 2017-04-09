@@ -42,33 +42,33 @@
 
 namespace blink {
 
-V0CustomElementMicrotaskImportStep* V0CustomElement::didCreateImport(
+V0CustomElementMicrotaskImportStep* V0CustomElement::DidCreateImport(
     HTMLImportChild* import) {
-  return V0CustomElementScheduler::scheduleImport(import);
+  return V0CustomElementScheduler::ScheduleImport(import);
 }
 
-void V0CustomElement::didFinishLoadingImport(Document& master) {
-  master.customElementMicrotaskRunQueue()->requestDispatchIfNeeded();
+void V0CustomElement::DidFinishLoadingImport(Document& master) {
+  master.CustomElementMicrotaskRunQueue()->RequestDispatchIfNeeded();
 }
 
-Vector<AtomicString>& V0CustomElement::embedderCustomElementNames() {
+Vector<AtomicString>& V0CustomElement::EmbedderCustomElementNames() {
   DEFINE_STATIC_LOCAL(Vector<AtomicString>, names, ());
   return names;
 }
 
-void V0CustomElement::addEmbedderCustomElementName(const AtomicString& name) {
-  AtomicString lower = name.lower();
-  if (isValidName(lower, EmbedderNames))
+void V0CustomElement::AddEmbedderCustomElementName(const AtomicString& name) {
+  AtomicString lower = name.Lower();
+  if (IsValidName(lower, kEmbedderNames))
     return;
-  embedderCustomElementNames().push_back(lower);
+  EmbedderCustomElementNames().push_back(lower);
 }
 
-static inline bool isValidNCName(const AtomicString& name) {
-  if (kNotFound != name.find(':'))
+static inline bool IsValidNCName(const AtomicString& name) {
+  if (kNotFound != name.Find(':'))
     return false;
 
-  if (!name.getString().is8Bit()) {
-    const UChar32 c = name.characters16()[0];
+  if (!name.GetString().Is8Bit()) {
+    const UChar32 c = name.Characters16()[0];
     // These characters comes under CombiningChar in NCName and according to
     // NCName only BaseChar and Ideodgraphic can come as first chars.
     // Also these characters come under Letter_Other in UnicodeData, thats
@@ -77,88 +77,88 @@ static inline bool isValidNCName(const AtomicString& name) {
       return false;
   }
 
-  return Document::isValidName(name.getString());
+  return Document::IsValidName(name.GetString());
 }
 
-bool V0CustomElement::isValidName(const AtomicString& name,
-                                  NameSet validNames) {
-  if ((validNames & EmbedderNames) &&
-      kNotFound != embedderCustomElementNames().find(name))
-    return Document::isValidName(name);
+bool V0CustomElement::IsValidName(const AtomicString& name,
+                                  NameSet valid_names) {
+  if ((valid_names & kEmbedderNames) &&
+      kNotFound != EmbedderCustomElementNames().Find(name))
+    return Document::IsValidName(name);
 
-  if ((validNames & StandardNames) && kNotFound != name.find('-')) {
-    DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
-    if (reservedNames.isEmpty()) {
+  if ((valid_names & kStandardNames) && kNotFound != name.Find('-')) {
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, reserved_names, ());
+    if (reserved_names.IsEmpty()) {
       // FIXME(crbug.com/426605): We should be able to remove this.
-      reservedNames.push_back(MathMLNames::annotation_xmlTag.localName());
+      reserved_names.push_back(MathMLNames::annotation_xmlTag.LocalName());
     }
 
-    if (kNotFound == reservedNames.find(name))
-      return isValidNCName(name);
+    if (kNotFound == reserved_names.Find(name))
+      return IsValidNCName(name);
   }
 
   return false;
 }
 
-void V0CustomElement::define(Element* element,
+void V0CustomElement::Define(Element* element,
                              V0CustomElementDefinition* definition) {
-  switch (element->getV0CustomElementState()) {
-    case Element::V0NotCustomElement:
-    case Element::V0Upgraded:
+  switch (element->GetV0CustomElementState()) {
+    case Element::kV0NotCustomElement:
+    case Element::kV0Upgraded:
       NOTREACHED();
       break;
 
-    case Element::V0WaitingForUpgrade:
-      UseCounter::count(
-          element->document(),
-          definition->descriptor().isTypeExtension()
-              ? UseCounter::V0CustomElementsCreateTypeExtensionElement
-              : UseCounter::V0CustomElementsCreateCustomTagElement);
-      element->v0SetCustomElementDefinition(definition);
-      V0CustomElementScheduler::scheduleCallback(
-          definition->callbacks(), element,
-          V0CustomElementLifecycleCallbacks::CreatedCallback);
+    case Element::kV0WaitingForUpgrade:
+      UseCounter::Count(
+          element->GetDocument(),
+          definition->Descriptor().IsTypeExtension()
+              ? UseCounter::kV0CustomElementsCreateTypeExtensionElement
+              : UseCounter::kV0CustomElementsCreateCustomTagElement);
+      element->V0SetCustomElementDefinition(definition);
+      V0CustomElementScheduler::ScheduleCallback(
+          definition->Callbacks(), element,
+          V0CustomElementLifecycleCallbacks::kCreatedCallback);
       break;
   }
 }
 
-void V0CustomElement::attributeDidChange(Element* element,
+void V0CustomElement::AttributeDidChange(Element* element,
                                          const AtomicString& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& newValue) {
-  DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
-  V0CustomElementScheduler::scheduleAttributeChangedCallback(
-      element->v0CustomElementDefinition()->callbacks(), element, name,
-      oldValue, newValue);
+                                         const AtomicString& old_value,
+                                         const AtomicString& new_value) {
+  DCHECK_EQ(element->GetV0CustomElementState(), Element::kV0Upgraded);
+  V0CustomElementScheduler::ScheduleAttributeChangedCallback(
+      element->GetV0CustomElementDefinition()->Callbacks(), element, name,
+      old_value, new_value);
 }
 
-void V0CustomElement::didAttach(Element* element, const Document& document) {
-  DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
+void V0CustomElement::DidAttach(Element* element, const Document& document) {
+  DCHECK_EQ(element->GetV0CustomElementState(), Element::kV0Upgraded);
   if (!document.domWindow())
     return;
-  V0CustomElementScheduler::scheduleCallback(
-      element->v0CustomElementDefinition()->callbacks(), element,
-      V0CustomElementLifecycleCallbacks::AttachedCallback);
+  V0CustomElementScheduler::ScheduleCallback(
+      element->GetV0CustomElementDefinition()->Callbacks(), element,
+      V0CustomElementLifecycleCallbacks::kAttachedCallback);
 }
 
-void V0CustomElement::didDetach(Element* element, const Document& document) {
-  DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
+void V0CustomElement::DidDetach(Element* element, const Document& document) {
+  DCHECK_EQ(element->GetV0CustomElementState(), Element::kV0Upgraded);
   if (!document.domWindow())
     return;
-  V0CustomElementScheduler::scheduleCallback(
-      element->v0CustomElementDefinition()->callbacks(), element,
-      V0CustomElementLifecycleCallbacks::DetachedCallback);
+  V0CustomElementScheduler::ScheduleCallback(
+      element->GetV0CustomElementDefinition()->Callbacks(), element,
+      V0CustomElementLifecycleCallbacks::kDetachedCallback);
 }
 
-void V0CustomElement::wasDestroyed(Element* element) {
-  switch (element->getV0CustomElementState()) {
-    case Element::V0NotCustomElement:
+void V0CustomElement::WasDestroyed(Element* element) {
+  switch (element->GetV0CustomElementState()) {
+    case Element::kV0NotCustomElement:
       NOTREACHED();
       break;
 
-    case Element::V0WaitingForUpgrade:
-    case Element::V0Upgraded:
-      V0CustomElementObserver::notifyElementWasDestroyed(element);
+    case Element::kV0WaitingForUpgrade:
+    case Element::kV0Upgraded:
+      V0CustomElementObserver::NotifyElementWasDestroyed(element);
       break;
   }
 }

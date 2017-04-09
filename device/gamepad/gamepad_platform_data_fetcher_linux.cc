@@ -52,7 +52,7 @@ bool IsGamepad(udev_device* dev, int* index, std::string* path) {
   if (!base::StringToInt(str, &tmp_idx))
     return false;
   if (tmp_idx < 0 ||
-      tmp_idx >= static_cast<int>(blink::WebGamepads::itemsLengthCap)) {
+      tmp_idx >= static_cast<int>(blink::WebGamepads::kItemsLengthCap)) {
     return false;
   }
   *index = tmp_idx;
@@ -74,7 +74,7 @@ GamepadPlatformDataFetcherLinux::GamepadPlatformDataFetcherLinux() {
 }
 
 GamepadPlatformDataFetcherLinux::~GamepadPlatformDataFetcherLinux() {
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
+  for (size_t i = 0; i < WebGamepads::kItemsLengthCap; ++i)
     CloseFileDescriptorIfValid(device_fd_[i]);
 }
 
@@ -96,7 +96,7 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
   TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
   // Update our internal state.
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+  for (size_t i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
     if (device_fd_[i] >= 0) {
       ReadDeviceData(i);
     }
@@ -181,14 +181,14 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
         name_string + base::StringPrintf(" (%sVendor: %s Product: %s)",
                                          mapper ? "STANDARD GAMEPAD " : "",
                                          vendor_id, product_id);
-    base::TruncateUTF8ToByteSize(id, WebGamepad::idLengthCap - 1, &id);
+    base::TruncateUTF8ToByteSize(id, WebGamepad::kIdLengthCap - 1, &id);
     base::string16 tmp16 = base::UTF8ToUTF16(id);
     memset(pad.id, 0, sizeof(pad.id));
     tmp16.copy(pad.id, arraysize(pad.id) - 1);
 
     if (mapper) {
       std::string mapping = "standard";
-      base::TruncateUTF8ToByteSize(mapping, WebGamepad::mappingLengthCap - 1,
+      base::TruncateUTF8ToByteSize(mapping, WebGamepad::kMappingLengthCap - 1,
                                    &mapping);
       tmp16 = base::UTF8ToUTF16(mapping);
       memset(pad.mapping, 0, sizeof(pad.mapping));
@@ -229,7 +229,7 @@ void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
 
 void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
   // Linker does not like CHECK_LT(index, WebGamepads::itemsLengthCap). =/
-  if (index >= WebGamepads::itemsLengthCap) {
+  if (index >= WebGamepads::kItemsLengthCap) {
     CHECK(false);
     return;
   }
@@ -247,22 +247,22 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
   while (HANDLE_EINTR(read(fd, &event, sizeof(struct js_event))) > 0) {
     size_t item = event.number;
     if (event.type & JS_EVENT_AXIS) {
-      if (item >= WebGamepad::axesLengthCap)
+      if (item >= WebGamepad::kAxesLengthCap)
         continue;
 
       pad.axes[item] = event.value / kMaxLinuxAxisValue;
 
-      if (item >= pad.axesLength)
-        pad.axesLength = item + 1;
+      if (item >= pad.axes_length)
+        pad.axes_length = item + 1;
     } else if (event.type & JS_EVENT_BUTTON) {
-      if (item >= WebGamepad::buttonsLengthCap)
+      if (item >= WebGamepad::kButtonsLengthCap)
         continue;
 
       pad.buttons[item].pressed = event.value;
       pad.buttons[item].value = event.value ? 1.0 : 0.0;
 
-      if (item >= pad.buttonsLength)
-        pad.buttonsLength = item + 1;
+      if (item >= pad.buttons_length)
+        pad.buttons_length = item + 1;
     }
     pad.timestamp = event.time;
   }

@@ -24,47 +24,47 @@
 namespace blink {
 
 SVGAnimatedNumberOptionalNumber::SVGAnimatedNumberOptionalNumber(
-    SVGElement* contextElement,
-    const QualifiedName& attributeName,
-    float initialFirstValue,
-    float initialSecondValue)
+    SVGElement* context_element,
+    const QualifiedName& attribute_name,
+    float initial_first_value,
+    float initial_second_value)
     : SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>(
-          contextElement,
-          attributeName,
-          SVGNumberOptionalNumber::create(
-              SVGNumber::create(initialFirstValue),
-              SVGNumber::create(initialSecondValue))),
-      m_firstNumber(SVGAnimatedNumber::create(contextElement,
-                                              attributeName,
-                                              baseValue()->firstNumber())),
-      m_secondNumber(SVGAnimatedNumber::create(contextElement,
-                                               attributeName,
-                                               baseValue()->secondNumber())) {
-  m_firstNumber->setParentOptionalNumber(this);
-  m_secondNumber->setParentOptionalNumber(this);
+          context_element,
+          attribute_name,
+          SVGNumberOptionalNumber::Create(
+              SVGNumber::Create(initial_first_value),
+              SVGNumber::Create(initial_second_value))),
+      first_number_(SVGAnimatedNumber::Create(context_element,
+                                              attribute_name,
+                                              BaseValue()->FirstNumber())),
+      second_number_(SVGAnimatedNumber::Create(context_element,
+                                               attribute_name,
+                                               BaseValue()->SecondNumber())) {
+  first_number_->SetParentOptionalNumber(this);
+  second_number_->SetParentOptionalNumber(this);
 }
 
 DEFINE_TRACE(SVGAnimatedNumberOptionalNumber) {
-  visitor->trace(m_firstNumber);
-  visitor->trace(m_secondNumber);
-  SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::trace(visitor);
+  visitor->Trace(first_number_);
+  visitor->Trace(second_number_);
+  SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::Trace(visitor);
 }
 
-void SVGAnimatedNumberOptionalNumber::setAnimatedValue(SVGPropertyBase* value) {
-  SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::setAnimatedValue(value);
-  m_firstNumber->setAnimatedValue(currentValue()->firstNumber());
-  m_secondNumber->setAnimatedValue(currentValue()->secondNumber());
+void SVGAnimatedNumberOptionalNumber::SetAnimatedValue(SVGPropertyBase* value) {
+  SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::SetAnimatedValue(value);
+  first_number_->SetAnimatedValue(CurrentValue()->FirstNumber());
+  second_number_->SetAnimatedValue(CurrentValue()->SecondNumber());
 }
 
-void SVGAnimatedNumberOptionalNumber::animationEnded() {
-  SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::animationEnded();
-  m_firstNumber->animationEnded();
-  m_secondNumber->animationEnded();
+void SVGAnimatedNumberOptionalNumber::AnimationEnded() {
+  SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>::AnimationEnded();
+  first_number_->AnimationEnded();
+  second_number_->AnimationEnded();
 }
 
-bool SVGAnimatedNumberOptionalNumber::needsSynchronizeAttribute() {
-  return m_firstNumber->needsSynchronizeAttribute() ||
-         m_secondNumber->needsSynchronizeAttribute();
+bool SVGAnimatedNumberOptionalNumber::NeedsSynchronizeAttribute() {
+  return first_number_->NeedsSynchronizeAttribute() ||
+         second_number_->NeedsSynchronizeAttribute();
 }
 
 }  // namespace blink

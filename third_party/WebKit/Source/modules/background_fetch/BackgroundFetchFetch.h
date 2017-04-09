@@ -28,7 +28,7 @@ class BackgroundFetchFetch : public GarbageCollected<BackgroundFetchFetch>,
   explicit BackgroundFetchFetch(Request*);
 
  private:
-  Member<Request> m_request;
+  Member<Request> request_;
 };
 
 }  // namespace blink

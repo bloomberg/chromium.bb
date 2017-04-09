@@ -35,12 +35,12 @@ TypeConverter<blink::WebPaymentAppRequest,
     Convert(const payments::mojom::PaymentAppRequestPtr& input) {
   blink::WebPaymentAppRequest output;
 
-  output.origin = blink::WebString::fromUTF8(input->origin.spec());
+  output.origin = blink::WebString::FromUTF8(input->origin.spec());
 
-  output.methodData =
+  output.method_data =
       blink::WebVector<blink::WebPaymentMethodData>(input->methodData.size());
   for (size_t i = 0; i < input->methodData.size(); i++) {
-    output.methodData[i] = mojo::ConvertTo<blink::WebPaymentMethodData>(
+    output.method_data[i] = mojo::ConvertTo<blink::WebPaymentMethodData>(
         std::move(input->methodData[i]));
   }
 
@@ -53,7 +53,7 @@ TypeConverter<blink::WebPaymentAppRequest,
         mojo::ConvertTo<blink::WebPaymentDetailsModifier>(input->modifiers[i]);
   }
 
-  output.optionId = blink::WebString::fromUTF8(input->optionId);
+  output.option_id = blink::WebString::FromUTF8(input->optionId);
 
   return output;
 }
@@ -64,14 +64,14 @@ TypeConverter<blink::WebPaymentMethodData,
     Convert(const payments::mojom::PaymentMethodDataPtr& input) {
   blink::WebPaymentMethodData output;
 
-  output.supportedMethods =
+  output.supported_methods =
       blink::WebVector<blink::WebString>(input->supported_methods.size());
   for (size_t i = 0; i < input->supported_methods.size(); i++) {
-    output.supportedMethods[i] =
-        blink::WebString::fromUTF8(input->supported_methods[i]);
+    output.supported_methods[i] =
+        blink::WebString::FromUTF8(input->supported_methods[i]);
   }
 
-  output.stringifiedData = blink::WebString::fromUTF8(input->stringified_data);
+  output.stringified_data = blink::WebString::FromUTF8(input->stringified_data);
 
   return output;
 }
@@ -80,7 +80,7 @@ blink::WebPaymentItem
 TypeConverter<blink::WebPaymentItem, payments::mojom::PaymentItemPtr>::Convert(
     const payments::mojom::PaymentItemPtr& input) {
   blink::WebPaymentItem output;
-  output.label = blink::WebString::fromUTF8(input->label);
+  output.label = blink::WebString::FromUTF8(input->label);
   output.amount =
       mojo::ConvertTo<blink::WebPaymentCurrencyAmount>(input->amount);
   output.pending = input->pending;
@@ -92,9 +92,9 @@ TypeConverter<blink::WebPaymentCurrencyAmount,
               payments::mojom::PaymentCurrencyAmountPtr>::
     Convert(const payments::mojom::PaymentCurrencyAmountPtr& input) {
   blink::WebPaymentCurrencyAmount output;
-  output.currency = blink::WebString::fromUTF8(input->currency);
-  output.value = blink::WebString::fromUTF8(input->value);
-  output.currencySystem = blink::WebString::fromUTF8(input->currency_system);
+  output.currency = blink::WebString::FromUTF8(input->currency);
+  output.value = blink::WebString::FromUTF8(input->value);
+  output.currency_system = blink::WebString::FromUTF8(input->currency_system);
   return output;
 }
 
@@ -104,24 +104,24 @@ TypeConverter<blink::WebPaymentDetailsModifier,
     Convert(const payments::mojom::PaymentDetailsModifierPtr& input) {
   blink::WebPaymentDetailsModifier output;
 
-  output.supportedMethods = blink::WebVector<blink::WebString>(
+  output.supported_methods = blink::WebVector<blink::WebString>(
       input->method_data->supported_methods.size());
   for (size_t i = 0; i < input->method_data->supported_methods.size(); i++) {
-    output.supportedMethods[i] =
-        blink::WebString::fromUTF8(input->method_data->supported_methods[i]);
+    output.supported_methods[i] =
+        blink::WebString::FromUTF8(input->method_data->supported_methods[i]);
   }
 
   output.total = mojo::ConvertTo<blink::WebPaymentItem>(input->total);
 
-  output.additionalDisplayItems = blink::WebVector<blink::WebPaymentItem>(
+  output.additional_display_items = blink::WebVector<blink::WebPaymentItem>(
       input->additional_display_items.size());
   for (size_t i = 0; i < input->additional_display_items.size(); i++) {
-    output.additionalDisplayItems[i] = mojo::ConvertTo<blink::WebPaymentItem>(
+    output.additional_display_items[i] = mojo::ConvertTo<blink::WebPaymentItem>(
         input->additional_display_items[i]);
   }
 
-  output.stringifiedData =
-      blink::WebString::fromUTF8(input->method_data->stringified_data);
+  output.stringified_data =
+      blink::WebString::FromUTF8(input->method_data->stringified_data);
 
   return output;
 }
@@ -132,16 +132,17 @@ TypeConverter<blink::WebServiceWorkerContextProxy::BackgroundFetchState,
     Convert(content::mojom::BackgroundFetchState input) {
   switch (input) {
     case content::mojom::BackgroundFetchState::PENDING:
-      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::Pending;
+      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::
+          kPending;
     case content::mojom::BackgroundFetchState::SUCCEEDED:
       return blink::WebServiceWorkerContextProxy::BackgroundFetchState::
-          Succeeded;
+          kSucceeded;
     case content::mojom::BackgroundFetchState::FAILED:
-      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::Failed;
+      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::kFailed;
   }
 
   NOTREACHED();
-  return blink::WebServiceWorkerContextProxy::BackgroundFetchState::Pending;
+  return blink::WebServiceWorkerContextProxy::BackgroundFetchState::kPending;
 }
 
 }  // namespace mojo

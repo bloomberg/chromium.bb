@@ -74,7 +74,7 @@ class ThreadSpecific {
  public:
   ThreadSpecific();
   bool
-  isSet();  // Useful as a fast check to see if this thread has set this value.
+  IsSet();  // Useful as a fast check to see if this thread has set this value.
   T* operator->();
   operator T*();
   T& operator*();
@@ -92,9 +92,9 @@ class ThreadSpecific {
   // pre-requisites to work correctly.
   ~ThreadSpecific();
 
-  T* get();
-  void set(T*);
-  void static destroy(void* ptr);
+  T* Get();
+  void Set(T*);
+  void static Destroy(void* ptr);
 
   struct Data {
     WTF_MAKE_NONCOPYABLE(Data);
@@ -110,56 +110,56 @@ class ThreadSpecific {
   };
 
 #if OS(POSIX)
-  pthread_key_t m_key;
+  pthread_key_t key_;
 #elif OS(WIN)
-  int m_index;
+  int index_;
 #endif
   // This member must only be accessed or modified on the main thread.
-  T* m_mainThreadStorage = nullptr;
+  T* main_thread_storage_ = nullptr;
 };
 
 #if OS(POSIX)
 
 typedef pthread_key_t ThreadSpecificKey;
 
-inline void threadSpecificKeyCreate(ThreadSpecificKey* key,
+inline void ThreadSpecificKeyCreate(ThreadSpecificKey* key,
                                     void (*destructor)(void*)) {
   int error = pthread_key_create(key, destructor);
   if (error)
     CRASH();
 }
 
-inline void threadSpecificKeyDelete(ThreadSpecificKey key) {
+inline void ThreadSpecificKeyDelete(ThreadSpecificKey key) {
   int error = pthread_key_delete(key);
   if (error)
     CRASH();
 }
 
-inline void threadSpecificSet(ThreadSpecificKey key, void* value) {
+inline void ThreadSpecificSet(ThreadSpecificKey key, void* value) {
   pthread_setspecific(key, value);
 }
 
-inline void* threadSpecificGet(ThreadSpecificKey key) {
+inline void* ThreadSpecificGet(ThreadSpecificKey key) {
   return pthread_getspecific(key);
 }
 
 template <typename T>
 inline ThreadSpecific<T>::ThreadSpecific() {
-  int error = pthread_key_create(&m_key, destroy);
+  int error = pthread_key_create(&key_, Destroy);
   if (error)
     CRASH();
 }
 
 template <typename T>
-inline T* ThreadSpecific<T>::get() {
-  Data* data = static_cast<Data*>(pthread_getspecific(m_key));
+inline T* ThreadSpecific<T>::Get() {
+  Data* data = static_cast<Data*>(pthread_getspecific(key_));
   return data ? data->value : 0;
 }
 
 template <typename T>
-inline void ThreadSpecific<T>::set(T* ptr) {
-  DCHECK(!get());
-  pthread_setspecific(m_key, new Data(ptr, this));
+inline void ThreadSpecific<T>::Set(T* ptr) {
+  DCHECK(!Get());
+  pthread_setspecific(key_, new Data(ptr, this));
 }
 
 #elif OS(WIN)
@@ -177,27 +177,27 @@ inline void ThreadSpecific<T>::set(T* ptr) {
 //    number should be far enough.
 const int kMaxTlsKeySize = 256;
 
-WTF_EXPORT long& tlsKeyCount();
-WTF_EXPORT DWORD* tlsKeys();
+WTF_EXPORT long& TlsKeyCount();
+WTF_EXPORT DWORD* TlsKeys();
 
 class PlatformThreadSpecificKey;
 typedef PlatformThreadSpecificKey* ThreadSpecificKey;
 
-WTF_EXPORT void threadSpecificKeyCreate(ThreadSpecificKey*, void (*)(void*));
-WTF_EXPORT void threadSpecificKeyDelete(ThreadSpecificKey);
-WTF_EXPORT void threadSpecificSet(ThreadSpecificKey, void*);
-WTF_EXPORT void* threadSpecificGet(ThreadSpecificKey);
+WTF_EXPORT void ThreadSpecificKeyCreate(ThreadSpecificKey*, void (*)(void*));
+WTF_EXPORT void ThreadSpecificKeyDelete(ThreadSpecificKey);
+WTF_EXPORT void ThreadSpecificSet(ThreadSpecificKey, void*);
+WTF_EXPORT void* ThreadSpecificGet(ThreadSpecificKey);
 
 template <typename T>
-inline ThreadSpecific<T>::ThreadSpecific() : m_index(-1) {
-  DWORD tlsKey = TlsAlloc();
-  if (tlsKey == TLS_OUT_OF_INDEXES)
+inline ThreadSpecific<T>::ThreadSpecific() : index_(-1) {
+  DWORD tls_key = TlsAlloc();
+  if (tls_key == TLS_OUT_OF_INDEXES)
     CRASH();
 
-  m_index = InterlockedIncrement(&tlsKeyCount()) - 1;
-  if (m_index >= kMaxTlsKeySize)
+  index_ = InterlockedIncrement(&TlsKeyCount()) - 1;
+  if (index_ >= kMaxTlsKeySize)
     CRASH();
-  tlsKeys()[m_index] = tlsKey;
+  TlsKeys()[index_] = tls_key;
 }
 
 template <typename T>
@@ -208,17 +208,17 @@ inline ThreadSpecific<T>::~ThreadSpecific() {
 }
 
 template <typename T>
-inline T* ThreadSpecific<T>::get() {
-  Data* data = static_cast<Data*>(TlsGetValue(tlsKeys()[m_index]));
+inline T* ThreadSpecific<T>::Get() {
+  Data* data = static_cast<Data*>(TlsGetValue(TlsKeys()[index_]));
   return data ? data->value : 0;
 }
 
 template <typename T>
-inline void ThreadSpecific<T>::set(T* ptr) {
-  DCHECK(!get());
+inline void ThreadSpecific<T>::Set(T* ptr) {
+  DCHECK(!Get());
   Data* data = new Data(ptr, this);
-  data->destructor = &ThreadSpecific<T>::destroy;
-  TlsSetValue(tlsKeys()[m_index], data);
+  data->destructor = &ThreadSpecific<T>::Destroy;
+  TlsSetValue(TlsKeys()[index_], data);
 }
 
 #else
@@ -226,30 +226,30 @@ inline void ThreadSpecific<T>::set(T* ptr) {
 #endif
 
 template <typename T>
-inline void ThreadSpecific<T>::destroy(void* ptr) {
+inline void ThreadSpecific<T>::Destroy(void* ptr) {
   Data* data = static_cast<Data*>(ptr);
 
 #if OS(POSIX)
   // We want get() to keep working while data destructor works, because it can
   // be called indirectly by the destructor.  Some pthreads implementations
   // zero out the pointer before calling destroy(), so we temporarily reset it.
-  pthread_setspecific(data->owner->m_key, ptr);
+  pthread_setspecific(data->owner->key_, ptr);
 #endif
 
   // Never call destructors on the main thread. This is fine because Blink no
   // longer has a graceful shutdown sequence. Be careful to call this function
   // (which can be re-entrant) while the pointer is still set, to avoid lazily
   // allocating WTFThreadData after it is destroyed.
-  if (isMainThread())
+  if (IsMainThread())
     return;
 
   data->value->~T();
-  Partitions::fastFree(data->value);
+  Partitions::FastFree(data->value);
 
 #if OS(POSIX)
-  pthread_setspecific(data->owner->m_key, 0);
+  pthread_setspecific(data->owner->key_, 0);
 #elif OS(WIN)
-  TlsSetValue(tlsKeys()[data->owner->m_index], 0);
+  TlsSetValue(TlsKeys()[data->owner->index_], 0);
 #else
 #error ThreadSpecific is not implemented for this platform.
 #endif
@@ -258,42 +258,42 @@ inline void ThreadSpecific<T>::destroy(void* ptr) {
 }
 
 template <typename T>
-inline bool ThreadSpecific<T>::isSet() {
-  return !!get();
+inline bool ThreadSpecific<T>::IsSet() {
+  return !!Get();
 }
 
 template <typename T>
 inline ThreadSpecific<T>::operator T*() {
-  T* offThreadPtr;
+  T* off_thread_ptr;
 #if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
   // TLS is fast on these platforms.
   // TODO(csharrison): Qualify this statement for Android.
-  const bool mainThreadAlwaysChecksTLS = true;
-  T** ptr = &offThreadPtr;
-  offThreadPtr = static_cast<T*>(get());
+  const bool kMainThreadAlwaysChecksTLS = true;
+  T** ptr = &off_thread_ptr;
+  off_thread_ptr = static_cast<T*>(Get());
 #else
-  const bool mainThreadAlwaysChecksTLS = false;
-  T** ptr = &m_mainThreadStorage;
-  if (UNLIKELY(mayNotBeMainThread())) {
-    offThreadPtr = static_cast<T*>(get());
-    ptr = &offThreadPtr;
+  const bool kMainThreadAlwaysChecksTLS = false;
+  T** ptr = &main_thread_storage_;
+  if (UNLIKELY(MayNotBeMainThread())) {
+    off_thread_ptr = static_cast<T*>(Get());
+    ptr = &off_thread_ptr;
   }
 #endif
   // Set up thread-specific value's memory pointer before invoking constructor,
   // in case any function it calls needs to access the value, to avoid
   // recursion.
   if (UNLIKELY(!*ptr)) {
-    *ptr = static_cast<T*>(Partitions::fastZeroedMalloc(
+    *ptr = static_cast<T*>(Partitions::FastZeroedMalloc(
         sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T)));
 
     // Even if we didn't realize we're on the main thread, we might still be.
     // We need to double-check so that |m_mainThreadStorage| is populated.
-    if (!mainThreadAlwaysChecksTLS && UNLIKELY(ptr != &m_mainThreadStorage) &&
-        isMainThread()) {
-      m_mainThreadStorage = *ptr;
+    if (!kMainThreadAlwaysChecksTLS && UNLIKELY(ptr != &main_thread_storage_) &&
+        IsMainThread()) {
+      main_thread_storage_ = *ptr;
     }
 
-    set(*ptr);
+    Set(*ptr);
     new (NotNull, *ptr) T;
   }
   return *ptr;

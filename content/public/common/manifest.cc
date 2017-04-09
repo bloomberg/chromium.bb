@@ -33,8 +33,8 @@ Manifest::RelatedApplication::RelatedApplication() = default;
 Manifest::RelatedApplication::~RelatedApplication() = default;
 
 Manifest::Manifest()
-    : display(blink::WebDisplayModeUndefined),
-      orientation(blink::WebScreenOrientationLockDefault),
+    : display(blink::kWebDisplayModeUndefined),
+      orientation(blink::kWebScreenOrientationLockDefault),
       prefer_related_applications(false),
       theme_color(Manifest::kInvalidOrMissingColor),
       background_color(Manifest::kInvalidOrMissingColor) {
@@ -46,19 +46,14 @@ Manifest::Manifest(const Manifest& other) = default;
 Manifest::~Manifest() = default;
 
 bool Manifest::IsEmpty() const {
-  return name.is_null() &&
-         short_name.is_null() &&
-         start_url.is_empty() &&
-         display == blink::WebDisplayModeUndefined &&
-         orientation == blink::WebScreenOrientationLockDefault &&
-         icons.empty() &&
-         !share_target.has_value() &&
-         related_applications.empty() &&
-         !prefer_related_applications &&
+  return name.is_null() && short_name.is_null() && start_url.is_empty() &&
+         display == blink::kWebDisplayModeUndefined &&
+         orientation == blink::kWebScreenOrientationLockDefault &&
+         icons.empty() && !share_target.has_value() &&
+         related_applications.empty() && !prefer_related_applications &&
          theme_color == Manifest::kInvalidOrMissingColor &&
          background_color == Manifest::kInvalidOrMissingColor &&
-         gcm_sender_id.is_null() &&
-         scope.is_empty();
+         gcm_sender_id.is_null() && scope.is_empty();
 }
 
 } // namespace content

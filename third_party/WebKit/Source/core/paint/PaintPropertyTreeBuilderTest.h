@@ -24,23 +24,23 @@ class PaintPropertyTreeBuilderTest
   PaintPropertyTreeBuilderTest()
       : ScopedSlimmingPaintV2ForTest(true),
         ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::create()) {}
+        RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
  protected:
-  void loadTestData(const char* fileName);
+  void LoadTestData(const char* file_name);
 
   // The following helpers return paint property nodes associated with the main
   // FrameView, accounting for differences from the RootLayerScrolls setting.
-  const TransformPaintPropertyNode* framePreTranslation();
-  const TransformPaintPropertyNode* frameScrollTranslation();
-  const ClipPaintPropertyNode* frameContentClip();
-  const ScrollPaintPropertyNode* frameScroll(FrameView* = nullptr);
+  const TransformPaintPropertyNode* FramePreTranslation();
+  const TransformPaintPropertyNode* FrameScrollTranslation();
+  const ClipPaintPropertyNode* FrameContentClip();
+  const ScrollPaintPropertyNode* FrameScroll(FrameView* = nullptr);
 
   // Return the local border box's paint offset. For more details, see
   // ObjectPaintProperties::localBorderBoxProperties().
-  LayoutPoint paintOffset(const LayoutObject*);
+  LayoutPoint PaintOffset(const LayoutObject*);
 
-  const ObjectPaintProperties* paintPropertiesForElement(const char* name);
+  const ObjectPaintProperties* PaintPropertiesForElement(const char* name);
 
  private:
   void SetUp() override;

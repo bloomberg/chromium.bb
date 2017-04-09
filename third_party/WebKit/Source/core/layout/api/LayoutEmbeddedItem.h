@@ -12,33 +12,33 @@ namespace blink {
 
 class LayoutEmbeddedItem : public LayoutPartItem {
  public:
-  explicit LayoutEmbeddedItem(LayoutEmbeddedObject* layoutEmbeddedObject)
-      : LayoutPartItem(layoutEmbeddedObject) {}
+  explicit LayoutEmbeddedItem(LayoutEmbeddedObject* layout_embedded_object)
+      : LayoutPartItem(layout_embedded_object) {}
 
   explicit LayoutEmbeddedItem(const LayoutItem& item) : LayoutPartItem(item) {
-    SECURITY_DCHECK(!item || item.isEmbeddedObject());
+    SECURITY_DCHECK(!item || item.IsEmbeddedObject());
   }
 
   explicit LayoutEmbeddedItem(std::nullptr_t) : LayoutPartItem(nullptr) {}
 
   LayoutEmbeddedItem() {}
 
-  void setPluginAvailability(
+  void SetPluginAvailability(
       LayoutEmbeddedObject::PluginAvailability availability) {
-    toEmbeddedObject()->setPluginAvailability(availability);
+    ToEmbeddedObject()->SetPluginAvailability(availability);
   }
 
-  bool showsUnavailablePluginIndicator() const {
-    return toEmbeddedObject()->showsUnavailablePluginIndicator();
+  bool ShowsUnavailablePluginIndicator() const {
+    return ToEmbeddedObject()->ShowsUnavailablePluginIndicator();
   }
 
  private:
-  LayoutEmbeddedObject* toEmbeddedObject() {
-    return toLayoutEmbeddedObject(layoutObject());
+  LayoutEmbeddedObject* ToEmbeddedObject() {
+    return ToLayoutEmbeddedObject(GetLayoutObject());
   }
 
-  const LayoutEmbeddedObject* toEmbeddedObject() const {
-    return toLayoutEmbeddedObject(layoutObject());
+  const LayoutEmbeddedObject* ToEmbeddedObject() const {
+    return ToLayoutEmbeddedObject(GetLayoutObject());
   }
 };
 

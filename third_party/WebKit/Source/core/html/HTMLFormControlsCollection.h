@@ -42,12 +42,12 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLFormControlsCollection* create(ContainerNode&, CollectionType);
+  static HTMLFormControlsCollection* Create(ContainerNode&, CollectionType);
 
   ~HTMLFormControlsCollection() override;
 
   HTMLElement* item(unsigned offset) const {
-    return toHTMLElement(HTMLCollection::item(offset));
+    return ToHTMLElement(HTMLCollection::item(offset));
   }
 
   HTMLElement* namedItem(const AtomicString& name) const override;
@@ -58,22 +58,22 @@ class HTMLFormControlsCollection final : public HTMLCollection {
  private:
   explicit HTMLFormControlsCollection(ContainerNode&);
 
-  void updateIdNameCache() const override;
-  void supportedPropertyNames(Vector<String>& names) override;
+  void UpdateIdNameCache() const override;
+  void SupportedPropertyNames(Vector<String>& names) override;
 
-  const ListedElement::List& listedElements() const;
-  const HeapVector<Member<HTMLImageElement>>& formImageElements() const;
-  HTMLElement* virtualItemAfter(Element*) const override;
-  void invalidateCache(Document* oldDocument = 0) const override;
+  const ListedElement::List& ListedElements() const;
+  const HeapVector<Member<HTMLImageElement>>& FormImageElements() const;
+  HTMLElement* VirtualItemAfter(Element*) const override;
+  void InvalidateCache(Document* old_document = 0) const override;
 
-  mutable Member<HTMLElement> m_cachedElement;
-  mutable unsigned m_cachedElementOffsetInArray;
+  mutable Member<HTMLElement> cached_element_;
+  mutable unsigned cached_element_offset_in_array_;
 };
 DEFINE_TYPE_CASTS(HTMLFormControlsCollection,
                   LiveNodeListBase,
                   collection,
-                  collection->type() == FormControls,
-                  collection.type() == FormControls);
+                  collection->GetType() == kFormControls,
+                  collection.GetType() == kFormControls);
 
 }  // namespace blink
 

@@ -14,19 +14,19 @@ PrescientNetworkingDispatcher::PrescientNetworkingDispatcher() {
 PrescientNetworkingDispatcher::~PrescientNetworkingDispatcher() {
 }
 
-void PrescientNetworkingDispatcher::prefetchDNS(
+void PrescientNetworkingDispatcher::PrefetchDNS(
     const blink::WebString& hostname) {
-  VLOG(2) << "Prefetch DNS: " << hostname.utf8();
-  if (hostname.isEmpty())
+  VLOG(2) << "Prefetch DNS: " << hostname.Utf8();
+  if (hostname.IsEmpty())
     return;
 
-  std::string hostname_utf8 = hostname.utf8();
+  std::string hostname_utf8 = hostname.Utf8();
   dns_prefetch_.Resolve(hostname_utf8.data(), hostname_utf8.length());
 }
 
-void PrescientNetworkingDispatcher::preconnect(const blink::WebURL& url,
+void PrescientNetworkingDispatcher::Preconnect(const blink::WebURL& url,
                                                bool allow_credentials) {
-  VLOG(2) << "Preconnect: " << url.string().utf8();
+  VLOG(2) << "Preconnect: " << url.GetString().Utf8();
   preconnect_.Preconnect(url, allow_credentials);
 }
 

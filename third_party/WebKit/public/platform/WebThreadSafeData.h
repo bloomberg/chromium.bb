@@ -51,15 +51,15 @@ class WebThreadSafeData {
   WebThreadSafeData() {}
   BLINK_PLATFORM_EXPORT WebThreadSafeData(const char* data, size_t length);
 
-  ~WebThreadSafeData() { reset(); }
+  ~WebThreadSafeData() { Reset(); }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebThreadSafeData&);
-  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebThreadSafeData&);
+  BLINK_PLATFORM_EXPORT void Reset();
 
   BLINK_PLATFORM_EXPORT size_t size() const;
-  BLINK_PLATFORM_EXPORT const char* data() const;
+  BLINK_PLATFORM_EXPORT const char* Data() const;
 
-  bool isEmpty() const { return !size(); }
+  bool IsEmpty() const { return !size(); }
 
   BLINK_PLATFORM_EXPORT WebThreadSafeData(const WebThreadSafeData&);
   BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WebThreadSafeData&);
@@ -70,12 +70,12 @@ class WebThreadSafeData {
 #else
   operator std::string() const {
     size_t len = size();
-    return len ? std::string(data(), len) : std::string();
+    return len ? std::string(Data(), len) : std::string();
   }
 #endif
 
  private:
-  WebPrivatePtr<RawData> m_private;
+  WebPrivatePtr<RawData> private_;
 };
 
 }  // namespace blink

@@ -33,144 +33,145 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl& axObjectCache)
-    : AXMockObject(axObjectCache), m_activeIndex(-1) {}
+AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl& ax_object_cache)
+    : AXMockObject(ax_object_cache), active_index_(-1) {}
 
-bool AXMenuListPopup::isVisible() const {
-  return !isOffScreen();
+bool AXMenuListPopup::IsVisible() const {
+  return !IsOffScreen();
 }
 
-bool AXMenuListPopup::isOffScreen() const {
-  if (!m_parent)
+bool AXMenuListPopup::IsOffScreen() const {
+  if (!parent_)
     return true;
 
-  return m_parent->isCollapsed();
+  return parent_->IsCollapsed();
 }
 
-bool AXMenuListPopup::isEnabled() const {
-  if (!m_parent)
+bool AXMenuListPopup::IsEnabled() const {
+  if (!parent_)
     return false;
 
-  return m_parent->isEnabled();
+  return parent_->IsEnabled();
 }
 
-bool AXMenuListPopup::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  return accessibilityIsIgnoredByDefault(ignoredReasons);
+bool AXMenuListPopup::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
-AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(
+AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(
     HTMLElement* element) const {
   DCHECK(element);
   if (!isHTMLOptionElement(*element))
     return 0;
 
-  AXObject* object = axObjectCache().getOrCreate(element);
-  if (!object || !object->isMenuListOption())
+  AXObject* object = AxObjectCache().GetOrCreate(element);
+  if (!object || !object->IsMenuListOption())
     return 0;
 
-  return toAXMenuListOption(object);
+  return ToAXMenuListOption(object);
 }
 
-int AXMenuListPopup::getSelectedIndex() const {
-  if (!m_parent)
+int AXMenuListPopup::GetSelectedIndex() const {
+  if (!parent_)
     return -1;
 
-  Node* parentNode = m_parent->getNode();
-  if (!isHTMLSelectElement(parentNode))
+  Node* parent_node = parent_->GetNode();
+  if (!isHTMLSelectElement(parent_node))
     return -1;
 
-  HTMLSelectElement* htmlSelectElement = toHTMLSelectElement(parentNode);
-  return htmlSelectElement->selectedIndex();
+  HTMLSelectElement* html_select_element = toHTMLSelectElement(parent_node);
+  return html_select_element->selectedIndex();
 }
 
-bool AXMenuListPopup::press() {
-  if (!m_parent)
+bool AXMenuListPopup::Press() {
+  if (!parent_)
     return false;
 
-  m_parent->press();
+  parent_->Press();
   return true;
 }
 
-void AXMenuListPopup::addChildren() {
-  DCHECK(!isDetached());
-  if (!m_parent)
+void AXMenuListPopup::AddChildren() {
+  DCHECK(!IsDetached());
+  if (!parent_)
     return;
 
-  Node* parentNode = m_parent->getNode();
-  if (!isHTMLSelectElement(parentNode))
+  Node* parent_node = parent_->GetNode();
+  if (!isHTMLSelectElement(parent_node))
     return;
 
-  HTMLSelectElement* htmlSelectElement = toHTMLSelectElement(parentNode);
-  m_haveChildren = true;
+  HTMLSelectElement* html_select_element = toHTMLSelectElement(parent_node);
+  have_children_ = true;
 
-  if (m_activeIndex == -1)
-    m_activeIndex = getSelectedIndex();
+  if (active_index_ == -1)
+    active_index_ = GetSelectedIndex();
 
-  for (const auto& optionElement : htmlSelectElement->optionList()) {
-    AXMenuListOption* option = menuListOptionAXObject(optionElement);
+  for (const auto& option_element : html_select_element->GetOptionList()) {
+    AXMenuListOption* option = MenuListOptionAXObject(option_element);
     if (option) {
-      option->setParent(this);
-      m_children.push_back(option);
+      option->SetParent(this);
+      children_.push_back(option);
     }
   }
 }
 
-void AXMenuListPopup::updateChildrenIfNecessary() {
-  if (m_haveChildren && m_parent && m_parent->needsToUpdateChildren())
-    clearChildren();
+void AXMenuListPopup::UpdateChildrenIfNecessary() {
+  if (have_children_ && parent_ && parent_->NeedsToUpdateChildren())
+    ClearChildren();
 
-  if (!m_haveChildren)
-    addChildren();
+  if (!have_children_)
+    AddChildren();
 }
 
-void AXMenuListPopup::didUpdateActiveOption(int optionIndex) {
-  updateChildrenIfNecessary();
+void AXMenuListPopup::DidUpdateActiveOption(int option_index) {
+  UpdateChildrenIfNecessary();
 
-  AXObjectCacheImpl& cache = axObjectCache();
-  if (m_activeIndex != optionIndex && m_activeIndex >= 0 &&
-      m_activeIndex < static_cast<int>(m_children.size())) {
-    AXObject* previousChild = m_children[m_activeIndex].get();
-    cache.postNotification(previousChild,
-                           AXObjectCacheImpl::AXMenuListItemUnselected);
+  AXObjectCacheImpl& cache = AxObjectCache();
+  if (active_index_ != option_index && active_index_ >= 0 &&
+      active_index_ < static_cast<int>(children_.size())) {
+    AXObject* previous_child = children_[active_index_].Get();
+    cache.PostNotification(previous_child,
+                           AXObjectCacheImpl::kAXMenuListItemUnselected);
   }
 
-  if (optionIndex >= 0 && optionIndex < static_cast<int>(m_children.size())) {
-    AXObject* child = m_children[optionIndex].get();
-    cache.postNotification(this, AXObjectCacheImpl::AXActiveDescendantChanged);
-    cache.postNotification(child, AXObjectCacheImpl::AXMenuListItemSelected);
+  if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
+    AXObject* child = children_[option_index].Get();
+    cache.PostNotification(this, AXObjectCacheImpl::kAXActiveDescendantChanged);
+    cache.PostNotification(child, AXObjectCacheImpl::kAXMenuListItemSelected);
   }
 
-  m_activeIndex = optionIndex;
+  active_index_ = option_index;
 }
 
-void AXMenuListPopup::didHide() {
-  AXObjectCacheImpl& cache = axObjectCache();
-  cache.postNotification(this, AXObjectCacheImpl::AXHide);
-  if (activeDescendant())
-    cache.postNotification(activeDescendant(),
-                           AXObjectCacheImpl::AXMenuListItemUnselected);
+void AXMenuListPopup::DidHide() {
+  AXObjectCacheImpl& cache = AxObjectCache();
+  cache.PostNotification(this, AXObjectCacheImpl::kAXHide);
+  if (ActiveDescendant())
+    cache.PostNotification(ActiveDescendant(),
+                           AXObjectCacheImpl::kAXMenuListItemUnselected);
 }
 
-void AXMenuListPopup::didShow() {
-  if (!m_haveChildren)
-    addChildren();
+void AXMenuListPopup::DidShow() {
+  if (!have_children_)
+    AddChildren();
 
-  AXObjectCacheImpl& cache = axObjectCache();
-  cache.postNotification(this, AXObjectCacheImpl::AXShow);
-  int selectedIndex = getSelectedIndex();
-  if (selectedIndex >= 0 && selectedIndex < static_cast<int>(m_children.size()))
-    didUpdateActiveOption(selectedIndex);
+  AXObjectCacheImpl& cache = AxObjectCache();
+  cache.PostNotification(this, AXObjectCacheImpl::kAXShow);
+  int selected_index = GetSelectedIndex();
+  if (selected_index >= 0 &&
+      selected_index < static_cast<int>(children_.size()))
+    DidUpdateActiveOption(selected_index);
   else
-    cache.postNotification(m_parent,
-                           AXObjectCacheImpl::AXFocusedUIElementChanged);
+    cache.PostNotification(parent_,
+                           AXObjectCacheImpl::kAXFocusedUIElementChanged);
 }
 
-AXObject* AXMenuListPopup::activeDescendant() {
-  if (m_activeIndex < 0 || m_activeIndex >= static_cast<int>(children().size()))
+AXObject* AXMenuListPopup::ActiveDescendant() {
+  if (active_index_ < 0 || active_index_ >= static_cast<int>(Children().size()))
     return nullptr;
 
-  return m_children[m_activeIndex].get();
+  return children_[active_index_].Get();
 }
 
 }  // namespace blink

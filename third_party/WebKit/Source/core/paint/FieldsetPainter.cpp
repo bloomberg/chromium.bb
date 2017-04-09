@@ -13,122 +13,123 @@
 
 namespace blink {
 
-void FieldsetPainter::paintBoxDecorationBackground(
-    const PaintInfo& paintInfo,
-    const LayoutPoint& paintOffset) {
-  LayoutRect paintRect(paintOffset, m_layoutFieldset.size());
-  LayoutBox* legend = m_layoutFieldset.findInFlowLegend();
+void FieldsetPainter::PaintBoxDecorationBackground(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) {
+  LayoutRect paint_rect(paint_offset, layout_fieldset_.size());
+  LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend)
-    return BoxPainter(m_layoutFieldset)
-        .paintBoxDecorationBackground(paintInfo, paintOffset);
+    return BoxPainter(layout_fieldset_)
+        .PaintBoxDecorationBackground(paint_info, paint_offset);
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutFieldset, paintInfo.phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_fieldset_, paint_info.phase))
     return;
 
   // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
   // cases the legend is embedded in the right and bottom borders respectively.
   // https://bugs.webkit.org/show_bug.cgi?id=47236
-  if (m_layoutFieldset.style()->isHorizontalWritingMode()) {
-    LayoutUnit yOff =
-        (legend->location().y() > 0)
+  if (layout_fieldset_.Style()->IsHorizontalWritingMode()) {
+    LayoutUnit y_off =
+        (legend->Location().Y() > 0)
             ? LayoutUnit()
-            : (legend->size().height() - m_layoutFieldset.borderTop()) / 2;
-    paintRect.setHeight(paintRect.height() - yOff);
-    paintRect.setY(paintRect.y() + yOff);
+            : (legend->size().Height() - layout_fieldset_.BorderTop()) / 2;
+    paint_rect.SetHeight(paint_rect.Height() - y_off);
+    paint_rect.SetY(paint_rect.Y() + y_off);
   } else {
-    LayoutUnit xOff =
-        (legend->location().x() > 0)
+    LayoutUnit x_off =
+        (legend->Location().X() > 0)
             ? LayoutUnit()
-            : (legend->size().width() - m_layoutFieldset.borderLeft()) / 2;
-    paintRect.setWidth(paintRect.width() - xOff);
-    paintRect.setX(paintRect.x() + xOff);
+            : (legend->size().Width() - layout_fieldset_.BorderLeft()) / 2;
+    paint_rect.SetWidth(paint_rect.Width() - x_off);
+    paint_rect.SetX(paint_rect.X() + x_off);
   }
 
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset,
-                                       paintInfo.phase, paintRect);
-  BoxDecorationData boxDecorationData(m_layoutFieldset);
+  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_fieldset_,
+                                       paint_info.phase, paint_rect);
+  BoxDecorationData box_decoration_data(layout_fieldset_);
 
-  if (boxDecorationData.bleedAvoidance == BackgroundBleedNone) {
-    BoxPainter::paintNormalBoxShadow(paintInfo, paintRect,
-                                     m_layoutFieldset.styleRef());
+  if (box_decoration_data.bleed_avoidance == kBackgroundBleedNone) {
+    BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,
+                                     layout_fieldset_.StyleRef());
   }
-  BoxPainter(m_layoutFieldset)
-      .paintFillLayers(paintInfo, boxDecorationData.backgroundColor,
-                       m_layoutFieldset.style()->backgroundLayers(), paintRect);
-  BoxPainter::paintInsetBoxShadow(paintInfo, paintRect,
-                                  m_layoutFieldset.styleRef());
+  BoxPainter(layout_fieldset_)
+      .PaintFillLayers(paint_info, box_decoration_data.background_color,
+                       layout_fieldset_.Style()->BackgroundLayers(),
+                       paint_rect);
+  BoxPainter::PaintInsetBoxShadow(paint_info, paint_rect,
+                                  layout_fieldset_.StyleRef());
 
-  if (!boxDecorationData.hasBorderDecoration)
+  if (!box_decoration_data.has_border_decoration)
     return;
 
   // Create a clipping region around the legend and paint the border as normal
-  GraphicsContext& graphicsContext = paintInfo.context;
-  GraphicsContextStateSaver stateSaver(graphicsContext);
+  GraphicsContext& graphics_context = paint_info.context;
+  GraphicsContextStateSaver state_saver(graphics_context);
 
   // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
   // cases the legend is embedded in the right and bottom borders respectively.
   // https://bugs.webkit.org/show_bug.cgi?id=47236
-  if (m_layoutFieldset.style()->isHorizontalWritingMode()) {
-    LayoutUnit clipTop = paintRect.y();
-    LayoutUnit clipHeight =
-        max(static_cast<LayoutUnit>(m_layoutFieldset.style()->borderTopWidth()),
-            legend->size().height() -
-                ((legend->size().height() - m_layoutFieldset.borderTop()) / 2));
-    graphicsContext.clipOut(
-        pixelSnappedIntRect(paintRect.x() + legend->location().x(), clipTop,
-                            legend->size().width(), clipHeight));
+  if (layout_fieldset_.Style()->IsHorizontalWritingMode()) {
+    LayoutUnit clip_top = paint_rect.Y();
+    LayoutUnit clip_height =
+        max(static_cast<LayoutUnit>(layout_fieldset_.Style()->BorderTopWidth()),
+            legend->size().Height() -
+                ((legend->size().Height() - layout_fieldset_.BorderTop()) / 2));
+    graphics_context.ClipOut(
+        PixelSnappedIntRect(paint_rect.X() + legend->Location().X(), clip_top,
+                            legend->size().Width(), clip_height));
   } else {
-    LayoutUnit clipLeft = paintRect.x();
-    LayoutUnit clipWidth = max(
-        static_cast<LayoutUnit>(m_layoutFieldset.style()->borderLeftWidth()),
-        legend->size().width());
-    graphicsContext.clipOut(
-        pixelSnappedIntRect(clipLeft, paintRect.y() + legend->location().y(),
-                            clipWidth, legend->size().height()));
+    LayoutUnit clip_left = paint_rect.X();
+    LayoutUnit clip_width = max(
+        static_cast<LayoutUnit>(layout_fieldset_.Style()->BorderLeftWidth()),
+        legend->size().Width());
+    graphics_context.ClipOut(
+        PixelSnappedIntRect(clip_left, paint_rect.Y() + legend->Location().Y(),
+                            clip_width, legend->size().Height()));
   }
 
-  BoxPainter::paintBorder(m_layoutFieldset, paintInfo, paintRect,
-                          m_layoutFieldset.styleRef());
+  BoxPainter::PaintBorder(layout_fieldset_, paint_info, paint_rect,
+                          layout_fieldset_.StyleRef());
 }
 
-void FieldsetPainter::paintMask(const PaintInfo& paintInfo,
-                                const LayoutPoint& paintOffset) {
-  if (m_layoutFieldset.style()->visibility() != EVisibility::kVisible ||
-      paintInfo.phase != PaintPhaseMask)
+void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset) {
+  if (layout_fieldset_.Style()->Visibility() != EVisibility::kVisible ||
+      paint_info.phase != kPaintPhaseMask)
     return;
 
-  LayoutRect paintRect = LayoutRect(paintOffset, m_layoutFieldset.size());
-  LayoutBox* legend = m_layoutFieldset.findInFlowLegend();
+  LayoutRect paint_rect = LayoutRect(paint_offset, layout_fieldset_.size());
+  LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend)
-    return BoxPainter(m_layoutFieldset).paintMask(paintInfo, paintOffset);
+    return BoxPainter(layout_fieldset_).PaintMask(paint_info, paint_offset);
 
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutFieldset, paintInfo.phase))
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_fieldset_, paint_info.phase))
     return;
 
   // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
   // cases the legend is embedded in the right and bottom borders respectively.
   // https://bugs.webkit.org/show_bug.cgi?id=47236
-  if (m_layoutFieldset.style()->isHorizontalWritingMode()) {
-    LayoutUnit yOff =
-        (legend->location().y() > LayoutUnit())
+  if (layout_fieldset_.Style()->IsHorizontalWritingMode()) {
+    LayoutUnit y_off =
+        (legend->Location().Y() > LayoutUnit())
             ? LayoutUnit()
-            : (legend->size().height() - m_layoutFieldset.borderTop()) / 2;
-    paintRect.expand(LayoutUnit(), -yOff);
-    paintRect.move(LayoutUnit(), yOff);
+            : (legend->size().Height() - layout_fieldset_.BorderTop()) / 2;
+    paint_rect.Expand(LayoutUnit(), -y_off);
+    paint_rect.Move(LayoutUnit(), y_off);
   } else {
-    LayoutUnit xOff =
-        (legend->location().x() > LayoutUnit())
+    LayoutUnit x_off =
+        (legend->Location().X() > LayoutUnit())
             ? LayoutUnit()
-            : (legend->size().width() - m_layoutFieldset.borderLeft()) / 2;
-    paintRect.expand(-xOff, LayoutUnit());
-    paintRect.move(xOff, LayoutUnit());
+            : (legend->size().Width() - layout_fieldset_.BorderLeft()) / 2;
+    paint_rect.Expand(-x_off, LayoutUnit());
+    paint_rect.Move(x_off, LayoutUnit());
   }
 
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset,
-                                       paintInfo.phase, paintRect);
-  BoxPainter(m_layoutFieldset).paintMaskImages(paintInfo, paintRect);
+  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_fieldset_,
+                                       paint_info.phase, paint_rect);
+  BoxPainter(layout_fieldset_).PaintMaskImages(paint_info, paint_rect);
 }
 
 }  // namespace blink

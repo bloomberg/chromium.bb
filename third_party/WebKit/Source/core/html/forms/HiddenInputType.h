@@ -40,29 +40,29 @@ class HiddenInputType final : public InputType, private InputTypeView {
   USING_GARBAGE_COLLECTED_MIXIN(HiddenInputType);
 
  public:
-  static InputType* create(HTMLInputElement&);
+  static InputType* Create(HTMLInputElement&);
   DECLARE_VIRTUAL_TRACE();
-  using InputType::element;
+  using InputType::GetElement;
 
  private:
   HiddenInputType(HTMLInputElement& element)
       : InputType(element), InputTypeView(element) {}
-  InputTypeView* createView() override;
-  const AtomicString& formControlType() const override;
-  FormControlState saveFormControlState() const override;
-  void restoreFormControlState(const FormControlState&) override;
-  bool supportsValidation() const override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) const override;
-  void accessKeyAction(bool sendMouseEvents) override;
-  bool layoutObjectIsNeeded() override;
-  ValueMode valueMode() const override;
-  bool isInteractiveContent() const override { return false; }
-  bool shouldRespectHeightAndWidthAttributes() override;
-  void setValue(const String&,
+  InputTypeView* CreateView() override;
+  const AtomicString& FormControlType() const override;
+  FormControlState SaveFormControlState() const override;
+  void RestoreFormControlState(const FormControlState&) override;
+  bool SupportsValidation() const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
+  void AccessKeyAction(bool send_mouse_events) override;
+  bool LayoutObjectIsNeeded() override;
+  ValueMode GetValueMode() const override;
+  bool IsInteractiveContent() const override { return false; }
+  bool ShouldRespectHeightAndWidthAttributes() override;
+  void SetValue(const String&,
                 bool,
                 TextFieldEventBehavior,
                 TextControlSetValueSelection) override;
-  void appendToFormData(FormData&) const override;
+  void AppendToFormData(FormData&) const override;
 };
 
 }  // namespace blink

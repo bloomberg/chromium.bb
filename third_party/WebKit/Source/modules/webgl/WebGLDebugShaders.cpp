@@ -34,37 +34,37 @@ namespace blink {
 
 WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->extensionsUtil()->ensureExtensionEnabled(
+  context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_ANGLE_translated_shader_source");
 }
 
-WebGLExtensionName WebGLDebugShaders::name() const {
-  return WebGLDebugShadersName;
+WebGLExtensionName WebGLDebugShaders::GetName() const {
+  return kWebGLDebugShadersName;
 }
 
-WebGLDebugShaders* WebGLDebugShaders::create(
+WebGLDebugShaders* WebGLDebugShaders::Create(
     WebGLRenderingContextBase* context) {
   return new WebGLDebugShaders(context);
 }
 
 String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader) {
   WebGLExtensionScopedContext scoped(this);
-  if (scoped.isLost())
+  if (scoped.IsLost())
     return String();
-  if (!scoped.context()->validateWebGLObject("getTranslatedShaderSource",
+  if (!scoped.Context()->ValidateWebGLObject("getTranslatedShaderSource",
                                              shader))
     return "";
-  GLStringQuery query(scoped.context()->contextGL());
+  GLStringQuery query(scoped.Context()->ContextGL());
   return query.Run<GLStringQuery::TranslatedShaderSourceANGLE>(
-      shader->object());
+      shader->Object());
 }
 
-bool WebGLDebugShaders::supported(WebGLRenderingContextBase* context) {
-  return context->extensionsUtil()->supportsExtension(
+bool WebGLDebugShaders::Supported(WebGLRenderingContextBase* context) {
+  return context->ExtensionsUtil()->SupportsExtension(
       "GL_ANGLE_translated_shader_source");
 }
 
-const char* WebGLDebugShaders::extensionName() {
+const char* WebGLDebugShaders::ExtensionName() {
   return "WEBGL_debug_shaders";
 }
 

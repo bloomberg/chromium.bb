@@ -10,20 +10,20 @@
 namespace blink {
 
 enum class WebEventListenerClass {
-  TouchStartOrMove,  // This value includes "touchstart", "touchmove" and
-                     // "pointer" events.
-  MouseWheel,        // This value includes "wheel" and "mousewheel" events.
-  TouchEndOrCancel,  // This value includes "touchend", "touchcancel" events.
+  kTouchStartOrMove,  // This value includes "touchstart", "touchmove" and
+                      // "pointer" events.
+  kMouseWheel,        // This value includes "wheel" and "mousewheel" events.
+  kTouchEndOrCancel,  // This value includes "touchend", "touchcancel" events.
 };
 
 // Indicates the variety of event listener types for a given
 // WebEventListenerClass.
 enum class WebEventListenerProperties {
-  Nothing,             // This should be "None"; but None #defined in X11's X.h
-  Passive,             // This indicates solely passive listeners.
-  Blocking,            // This indicates solely blocking listeners.
-  BlockingAndPassive,  // This indicates >= 1 blocking listener and >= 1 passive
-                       // listeners.
+  kNothing,             // This should be "None"; but None #defined in X11's X.h
+  kPassive,             // This indicates solely passive listeners.
+  kBlocking,            // This indicates solely blocking listeners.
+  kBlockingAndPassive,  // This indicates >= 1 blocking listener and >= 1
+                        // passive listeners.
 };
 
 }  // namespace blink

@@ -22,13 +22,13 @@ class CORE_TEMPLATE_CLASS_EXPORT TypedFlexibleArrayBufferView final
 
   TypedFlexibleArrayBufferView() : FlexibleArrayBufferView() {}
 
-  ValueType* dataMaybeOnStack() const {
-    return static_cast<ValueType*>(baseAddressMaybeOnStack());
+  ValueType* DataMaybeOnStack() const {
+    return static_cast<ValueType*>(BaseAddressMaybeOnStack());
   }
 
   unsigned length() const {
-    DCHECK_EQ(byteLength() % sizeof(ValueType), 0u);
-    return byteLength() / sizeof(ValueType);
+    DCHECK_EQ(ByteLength() % sizeof(ValueType), 0u);
+    return ByteLength() / sizeof(ValueType);
   }
 };
 

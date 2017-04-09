@@ -18,13 +18,13 @@ namespace content {
 class MockDataChannelHandlerClient :
     public blink::WebRTCDataChannelHandlerClient {
  public:
-  MockDataChannelHandlerClient() : state_(ReadyStateConnecting) {}
+  MockDataChannelHandlerClient() : state_(kReadyStateConnecting) {}
 
-  void didChangeReadyState(ReadyState state) override { state_ = state; }
-  void didDecreaseBufferedAmount(unsigned previous_amount) override {}
-  void didReceiveStringData(const blink::WebString& s) override {}
-  void didReceiveRawData(const char* data, size_t size) override {}
-  void didDetectError() override {}
+  void DidChangeReadyState(ReadyState state) override { state_ = state; }
+  void DidDecreaseBufferedAmount(unsigned previous_amount) override {}
+  void DidReceiveStringData(const blink::WebString& s) override {}
+  void DidReceiveRawData(const char* data, size_t size) override {}
+  void DidDetectError() override {}
 
   ReadyState ready_state() const { return state_; }
 
@@ -59,18 +59,18 @@ class RtcDataChannelHandlerTest : public ::testing::Test {
 TEST_F(RtcDataChannelHandlerTest, SetClient) {
   handler_.reset(new RtcDataChannelHandler(signaling_thread_, channel_.get()));
   MockDataChannelHandlerClient blink_channel;
-  handler_->setClient(&blink_channel);
+  handler_->SetClient(&blink_channel);
   channel_->changeState(webrtc::DataChannelInterface::kOpen);
   signaling_thread_->RunPendingTasks();
-  EXPECT_EQ(MockDataChannelHandlerClient::ReadyStateOpen,
-      blink_channel.ready_state());
+  EXPECT_EQ(MockDataChannelHandlerClient::kReadyStateOpen,
+            blink_channel.ready_state());
 }
 
 // Check that state() returns the expected default initial value.
 TEST_F(RtcDataChannelHandlerTest, InitialState) {
   handler_.reset(new RtcDataChannelHandler(signaling_thread_, channel_.get()));
-  EXPECT_EQ(MockDataChannelHandlerClient::ReadyStateConnecting,
-      handler_->state());
+  EXPECT_EQ(MockDataChannelHandlerClient::kReadyStateConnecting,
+            handler_->GetState());
 }
 
 // Check that state() returns the expected value when the channel opens early.
@@ -78,8 +78,8 @@ TEST_F(RtcDataChannelHandlerTest, StateEarlyOpen) {
   channel_->changeState(webrtc::DataChannelInterface::kOpen);
   signaling_thread_->RunPendingTasks();
   handler_.reset(new RtcDataChannelHandler(signaling_thread_, channel_.get()));
-  EXPECT_EQ(MockDataChannelHandlerClient::ReadyStateOpen,
-      handler_->state());
+  EXPECT_EQ(MockDataChannelHandlerClient::kReadyStateOpen,
+            handler_->GetState());
 }
 
 }  // namespace content

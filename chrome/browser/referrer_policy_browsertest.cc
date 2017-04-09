@@ -82,19 +82,20 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   // Returns a string representation of a given |referrer_policy|.
   std::string ReferrerPolicyToString(blink::WebReferrerPolicy referrer_policy) {
     switch (referrer_policy) {
-      case blink::WebReferrerPolicyDefault:
+      case blink::kWebReferrerPolicyDefault:
         return "no-meta";
-      case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
+      case blink::kWebReferrerPolicyNoReferrerWhenDowngrade:
         return "default";
-      case blink::WebReferrerPolicyOrigin:
+      case blink::kWebReferrerPolicyOrigin:
         return "origin";
-      case blink::WebReferrerPolicyOriginWhenCrossOrigin:
+      case blink::kWebReferrerPolicyOriginWhenCrossOrigin:
         return "origin-when-crossorigin";
-      case blink::WebReferrerPolicyAlways:
+      case blink::kWebReferrerPolicyAlways:
         return "always";
-      case blink::WebReferrerPolicyNever:
+      case blink::kWebReferrerPolicyNever:
         return "never";
-      case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+      case blink::
+          kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
         return "reduce-referrer-granularity";
     }
     NOTREACHED();
@@ -151,10 +152,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
                        ExpectedReferrer expected_referrer,
                        blink::WebReferrerPolicy expected_referrer_policy) {
     std::string relative_url =
-        std::string("referrer_policy/referrer-policy-start.html?") + "policy=" +
-        ReferrerPolicyToString(referrer_policy) + "&redirect=" +
-        RedirectTypeToString(redirect) + "&link=" +
-        (button == blink::WebMouseEvent::Button::NoButton ? "false" : "true") +
+        std::string("referrer_policy/referrer-policy-start.html?") +
+        "policy=" + ReferrerPolicyToString(referrer_policy) +
+        "&redirect=" + RedirectTypeToString(redirect) + "&link=" +
+        (button == blink::WebMouseEvent::Button::kNoButton ? "false" : "true") +
         "&target=" + (link_type == LINK_WITH_TARGET_BLANK ? "_blank" : "");
 
     const GURL start_url =
@@ -176,15 +177,15 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
     ui_test_utils::NavigateToURL(browser(), start_url);
 
-    if (button != blink::WebMouseEvent::Button::NoButton) {
+    if (button != blink::WebMouseEvent::Button::kNoButton) {
       blink::WebMouseEvent mouse_event(
-          blink::WebInputEvent::MouseDown, blink::WebInputEvent::NoModifiers,
-          blink::WebInputEvent::TimeStampForTesting);
+          blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+          blink::WebInputEvent::kTimeStampForTesting);
       mouse_event.button = button;
-      mouse_event.setPositionInWidget(15, 15);
-      mouse_event.clickCount = 1;
+      mouse_event.SetPositionInWidget(15, 15);
+      mouse_event.click_count = 1;
       tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
-      mouse_event.setType(blink::WebInputEvent::MouseUp);
+      mouse_event.SetType(blink::WebInputEvent::kMouseUp);
       tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
     }
 
@@ -239,91 +240,91 @@ class ReferrerPolicyWithReduceReferrerGranularityFlagTest
 
 // Content initiated navigation, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, Origin) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::NoButton,
+                  blink::WebMouseEvent::Button::kNoButton,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // Content initiated navigation, from HTTPS to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsDefault) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::NoButton,
+                  blink::WebMouseEvent::Button::kNoButton,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, LeftClickOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left,
+                  blink::WebMouseEvent::Button::kLeft,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, from HTTPS to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsLeftClickOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left,
+                  blink::WebMouseEvent::Button::kLeft,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                  blink::WebMouseEvent::Button::Middle,
+                  blink::WebMouseEvent::Button::kMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, from HTTPS to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                  blink::WebMouseEvent::Button::Middle,
+                  blink::WebMouseEvent::Button::kMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, target blank, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, TargetBlankOrigin) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTP, LINK_WITH_TARGET_BLANK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTP, LINK_WITH_TARGET_BLANK,
       NO_REDIRECT, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, target blank, from HTTPS to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsTargetBlankOrigin) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTPS, LINK_WITH_TARGET_BLANK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, LINK_WITH_TARGET_BLANK,
       NO_REDIRECT, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, target blank, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickTargetBlankOrigin) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTP, LINK_WITH_TARGET_BLANK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTP, LINK_WITH_TARGET_BLANK,
       NO_REDIRECT, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      blink::WebMouseEvent::Button::Middle, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kMiddle, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, target blank, from HTTPS to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickTargetBlankOrigin) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTPS, LINK_WITH_TARGET_BLANK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, LINK_WITH_TARGET_BLANK,
       NO_REDIRECT, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      blink::WebMouseEvent::Button::Middle, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kMiddle, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // Context menu, from HTTP to HTTP.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, ContextMenuOrigin) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Right,
+                  blink::WebMouseEvent::Button::kRight,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
@@ -331,91 +332,91 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, ContextMenuOrigin) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsContextMenuOrigin) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Right,
+                  blink::WebMouseEvent::Button::kRight,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // Content initiated navigation, from HTTP to HTTP via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, Redirect) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
       SERVER_REDIRECT_FROM_HTTPS_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
-      blink::WebMouseEvent::Button::NoButton, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kNoButton, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // Content initiated navigation, from HTTPS to HTTP via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsRedirect) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
       SERVER_REDIRECT_FROM_HTTPS_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
-      blink::WebMouseEvent::Button::NoButton, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kNoButton, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, from HTTP to HTTP via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, LeftClickRedirect) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
       SERVER_REDIRECT_FROM_HTTP_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
-      blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, from HTTPS to HTTP via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsLeftClickRedirect) {
   RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
       SERVER_REDIRECT_FROM_HTTPS_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
-      blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, from HTTP to HTTP via server
 // redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickRedirect) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                  blink::WebMouseEvent::Button::Middle,
+                  blink::WebMouseEvent::Button::kMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, from HTTPS to HTTP via server
 // redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickRedirect) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                  blink::WebMouseEvent::Button::Middle,
+                  blink::WebMouseEvent::Button::kMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, target blank, from HTTP to HTTP via server
 // redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, TargetBlankRedirect) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP,
                   LINK_WITH_TARGET_BLANK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Left,
+                  blink::WebMouseEvent::Button::kLeft,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, target blank, from HTTPS to HTTP via server
 // redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsTargetBlankRedirect) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS,
                   LINK_WITH_TARGET_BLANK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Left,
+                  blink::WebMouseEvent::Button::kLeft,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 // User initiated navigation, middle click, target blank, from HTTP to HTTP via
 // server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickTargetBlankRedirect) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP,
                   LINK_WITH_TARGET_BLANK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Middle,
+                  blink::WebMouseEvent::Button::kMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
@@ -423,10 +424,10 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickTargetBlankRedirect) {
 // via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
                        HttpsMiddleClickTargetBlankRedirect) {
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS,
                   LINK_WITH_TARGET_BLANK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Middle,
+                  blink::WebMouseEvent::Button::kMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
@@ -434,10 +435,10 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, ContextMenuRedirect) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTP, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Right,
+                  blink::WebMouseEvent::Button::kRight,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
@@ -445,10 +446,10 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, ContextMenuRedirect) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsContextMenuRedirect) {
   ContextMenuNotificationObserver context_menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  RunReferrerTest(blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
                   WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  blink::WebMouseEvent::Button::Right,
+                  blink::WebMouseEvent::Button::kRight,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
@@ -457,9 +458,9 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsContextMenuRedirect) {
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   // Navigate from A to B.
   GURL start_url = RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
       SERVER_REDIRECT_FROM_HTTPS_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
-      blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 
   // Navigate to C.
   ui_test_utils::NavigateToURL(
@@ -498,9 +499,9 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
 // the referrer.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, RequestTabletSite) {
   GURL start_url = RunReferrerTest(
-      blink::WebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
+      blink::kWebReferrerPolicyOrigin, START_ON_HTTPS, REGULAR_LINK,
       SERVER_REDIRECT_FROM_HTTP_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
-      blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER);
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
 
   base::string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_EMPTY_REFERRER);
@@ -574,49 +575,49 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
 
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
                        HttpLeftClickHTTPSRedirectToHTTPOriginWhenCrossOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTPS,
-                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
-                  WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left,
-                  EXPECT_ORIGIN_AS_REFERRER);
+  RunReferrerTest(
+      blink::kWebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTPS,
+      REGULAR_LINK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
+      WindowOpenDisposition::CURRENT_TAB, blink::WebMouseEvent::Button::kLeft,
+      EXPECT_ORIGIN_AS_REFERRER);
 }
 
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
                        HttpLeftClickRedirectToHTTPSOriginWhenCrossOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTP,
+  RunReferrerTest(blink::kWebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTP,
                   REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTPS,
                   WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left,
+                  blink::WebMouseEvent::Button::kLeft,
                   EXPECT_ORIGIN_AS_REFERRER);
 }
 
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
                        HttpLeftClickRedirectToHTTPOriginWhenCrossOrigin) {
-  RunReferrerTest(blink::WebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTP,
+  RunReferrerTest(blink::kWebReferrerPolicyOriginWhenCrossOrigin, START_ON_HTTP,
                   REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTP,
                   WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left, EXPECT_FULL_REFERRER);
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_FULL_REFERRER);
 }
 
 // Reduced 'referer' granularity flag tests.
 
 // User initiated navigation, from HTTP to HTTPS via server redirect.
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpLeftClickRedirectDefaultNoFlag) {
-  RunReferrerTest(blink::WebReferrerPolicyDefault, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyDefault, START_ON_HTTP, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTP_TO_HTTPS,
                   WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left, EXPECT_FULL_REFERRER,
-                  blink::WebReferrerPolicyNoReferrerWhenDowngrade);
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_FULL_REFERRER,
+                  blink::kWebReferrerPolicyNoReferrerWhenDowngrade);
 }
 
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyWithReduceReferrerGranularityFlagTest,
                        HttpLeftClickRedirectDefaultFlag) {
   blink::WebReferrerPolicy expected_referrer_policy =
-      blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
 
-  RunReferrerTest(blink::WebReferrerPolicyDefault, START_ON_HTTP, REGULAR_LINK,
+  RunReferrerTest(blink::kWebReferrerPolicyDefault, START_ON_HTTP, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTP_TO_HTTPS,
                   WindowOpenDisposition::CURRENT_TAB,
-                  blink::WebMouseEvent::Button::Left, EXPECT_ORIGIN_AS_REFERRER,
-                  expected_referrer_policy);
+                  blink::WebMouseEvent::Button::kLeft,
+                  EXPECT_ORIGIN_AS_REFERRER, expected_referrer_policy);
 }

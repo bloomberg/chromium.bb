@@ -39,7 +39,7 @@ void SetAccountCreationFormsDetectedMessage(
     int form_index,
     int field_index) {
   blink::WebVector<blink::WebFormElement> web_forms;
-  document.forms(web_forms);
+  document.Forms(web_forms);
 
   autofill::FormData form_data;
   WebFormElementToFormData(

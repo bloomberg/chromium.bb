@@ -39,57 +39,57 @@ class ShapeInterval {
   USING_FAST_MALLOC(ShapeInterval);
 
  public:
-  ShapeInterval() : m_x1(-1), m_x2(-2) {
+  ShapeInterval() : x1_(-1), x2_(-2) {
     // The initial values of m_x1,x2 don't matter (unless you're looking
     // at them in the debugger) so long as isUndefined() is true.
-    DCHECK(isUndefined());
+    DCHECK(IsUndefined());
   }
 
-  ShapeInterval(T x1, T x2) : m_x1(x1), m_x2(x2) { DCHECK_GE(x2, x1); }
+  ShapeInterval(T x1, T x2) : x1_(x1), x2_(x2) { DCHECK_GE(x2, x1); }
 
-  bool isUndefined() const { return m_x2 < m_x1; }
-  T x1() const { return isUndefined() ? 0 : m_x1; }
-  T x2() const { return isUndefined() ? 0 : m_x2; }
-  T width() const { return isUndefined() ? 0 : m_x2 - m_x1; }
-  bool isEmpty() const { return isUndefined() ? true : m_x1 == m_x2; }
+  bool IsUndefined() const { return x2_ < x1_; }
+  T X1() const { return IsUndefined() ? 0 : x1_; }
+  T X2() const { return IsUndefined() ? 0 : x2_; }
+  T Width() const { return IsUndefined() ? 0 : x2_ - x1_; }
+  bool IsEmpty() const { return IsUndefined() ? true : x1_ == x2_; }
 
-  void set(T x1, T x2) {
+  void Set(T x1, T x2) {
     DCHECK_GE(x2, x1);
-    m_x1 = x1;
-    m_x2 = x2;
+    x1_ = x1;
+    x2_ = x2;
   }
 
-  bool overlaps(const ShapeInterval<T>& interval) const {
-    if (isUndefined() || interval.isUndefined())
+  bool Overlaps(const ShapeInterval<T>& interval) const {
+    if (IsUndefined() || interval.IsUndefined())
       return false;
-    return x2() >= interval.x1() && x1() <= interval.x2();
+    return X2() >= interval.X1() && X1() <= interval.X2();
   }
 
-  bool contains(const ShapeInterval<T>& interval) const {
-    if (isUndefined() || interval.isUndefined())
+  bool Contains(const ShapeInterval<T>& interval) const {
+    if (IsUndefined() || interval.IsUndefined())
       return false;
-    return x1() <= interval.x1() && x2() >= interval.x2();
+    return X1() <= interval.X1() && X2() >= interval.X2();
   }
 
   bool operator==(const ShapeInterval<T>& other) const {
-    return x1() == other.x1() && x2() == other.x2();
+    return X1() == other.X1() && X2() == other.X2();
   }
   bool operator!=(const ShapeInterval<T>& other) const {
     return !operator==(other);
   }
 
-  void unite(const ShapeInterval<T>& interval) {
-    if (interval.isUndefined())
+  void Unite(const ShapeInterval<T>& interval) {
+    if (interval.IsUndefined())
       return;
-    if (isUndefined())
-      set(interval.x1(), interval.x2());
+    if (IsUndefined())
+      Set(interval.X1(), interval.X2());
     else
-      set(std::min<T>(x1(), interval.x1()), std::max<T>(x2(), interval.x2()));
+      Set(std::min<T>(X1(), interval.X1()), std::max<T>(X2(), interval.X2()));
   }
 
  private:
-  T m_x1;
-  T m_x2;
+  T x1_;
+  T x2_;
 };
 
 typedef ShapeInterval<int> IntShapeInterval;

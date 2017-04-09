@@ -35,69 +35,69 @@
 
 namespace blink {
 
-FloatRectOutsets ShadowList::rectOutsetsIncludingOriginal() const {
+FloatRectOutsets ShadowList::RectOutsetsIncludingOriginal() const {
   FloatRectOutsets outsets;
-  for (const ShadowData& shadow : shadows()) {
-    if (shadow.style() == Inset)
+  for (const ShadowData& shadow : Shadows()) {
+    if (shadow.Style() == kInset)
       continue;
-    outsets.unite(shadow.rectOutsets());
+    outsets.Unite(shadow.RectOutsets());
   }
   return outsets;
 }
 
-void ShadowList::adjustRectForShadow(FloatRect& rect) const {
-  rect.expand(rectOutsetsIncludingOriginal());
+void ShadowList::AdjustRectForShadow(FloatRect& rect) const {
+  rect.Expand(RectOutsetsIncludingOriginal());
 }
 
-PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from,
+PassRefPtr<ShadowList> ShadowList::Blend(const ShadowList* from,
                                          const ShadowList* to,
                                          double progress,
-                                         const Color& currentColor) {
-  size_t fromLength = from ? from->shadows().size() : 0;
-  size_t toLength = to ? to->shadows().size() : 0;
-  if (!fromLength && !toLength)
+                                         const Color& current_color) {
+  size_t from_length = from ? from->Shadows().size() : 0;
+  size_t to_length = to ? to->Shadows().size() : 0;
+  if (!from_length && !to_length)
     return nullptr;
 
   ShadowDataVector shadows;
 
-  DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData,
-                      (ShadowData::neutralValue()));
+  DEFINE_STATIC_LOCAL(ShadowData, default_shadow_data,
+                      (ShadowData::NeutralValue()));
   DEFINE_STATIC_LOCAL(
-      ShadowData, defaultInsetShadowData,
-      (FloatPoint(), 0, 0, Inset, StyleColor(Color::transparent)));
+      ShadowData, default_inset_shadow_data,
+      (FloatPoint(), 0, 0, kInset, StyleColor(Color::kTransparent)));
 
-  size_t maxLength = std::max(fromLength, toLength);
-  for (size_t i = 0; i < maxLength; ++i) {
-    const ShadowData* fromShadow = i < fromLength ? &from->shadows()[i] : 0;
-    const ShadowData* toShadow = i < toLength ? &to->shadows()[i] : 0;
-    if (!fromShadow)
-      fromShadow = toShadow->style() == Inset ? &defaultInsetShadowData
-                                              : &defaultShadowData;
-    else if (!toShadow)
-      toShadow = fromShadow->style() == Inset ? &defaultInsetShadowData
-                                              : &defaultShadowData;
-    shadows.push_back(toShadow->blend(*fromShadow, progress, currentColor));
+  size_t max_length = std::max(from_length, to_length);
+  for (size_t i = 0; i < max_length; ++i) {
+    const ShadowData* from_shadow = i < from_length ? &from->Shadows()[i] : 0;
+    const ShadowData* to_shadow = i < to_length ? &to->Shadows()[i] : 0;
+    if (!from_shadow)
+      from_shadow = to_shadow->Style() == kInset ? &default_inset_shadow_data
+                                                 : &default_shadow_data;
+    else if (!to_shadow)
+      to_shadow = from_shadow->Style() == kInset ? &default_inset_shadow_data
+                                                 : &default_shadow_data;
+    shadows.push_back(to_shadow->Blend(*from_shadow, progress, current_color));
   }
 
-  return ShadowList::adopt(shadows);
+  return ShadowList::Adopt(shadows);
 }
 
-sk_sp<SkDrawLooper> ShadowList::createDrawLooper(
-    DrawLooperBuilder::ShadowAlphaMode alphaMode,
-    const Color& currentColor,
-    bool isHorizontal) const {
-  DrawLooperBuilder drawLooperBuilder;
-  for (size_t i = shadows().size(); i--;) {
-    const ShadowData& shadow = shadows()[i];
-    float shadowX = isHorizontal ? shadow.x() : shadow.y();
-    float shadowY = isHorizontal ? shadow.y() : -shadow.x();
-    drawLooperBuilder.addShadow(FloatSize(shadowX, shadowY), shadow.blur(),
-                                shadow.color().resolve(currentColor),
-                                DrawLooperBuilder::ShadowRespectsTransforms,
-                                alphaMode);
+sk_sp<SkDrawLooper> ShadowList::CreateDrawLooper(
+    DrawLooperBuilder::ShadowAlphaMode alpha_mode,
+    const Color& current_color,
+    bool is_horizontal) const {
+  DrawLooperBuilder draw_looper_builder;
+  for (size_t i = Shadows().size(); i--;) {
+    const ShadowData& shadow = Shadows()[i];
+    float shadow_x = is_horizontal ? shadow.X() : shadow.Y();
+    float shadow_y = is_horizontal ? shadow.Y() : -shadow.X();
+    draw_looper_builder.AddShadow(FloatSize(shadow_x, shadow_y), shadow.Blur(),
+                                  shadow.GetColor().Resolve(current_color),
+                                  DrawLooperBuilder::kShadowRespectsTransforms,
+                                  alpha_mode);
   }
-  drawLooperBuilder.addUnmodifiedContent();
-  return drawLooperBuilder.detachDrawLooper();
+  draw_looper_builder.AddUnmodifiedContent();
+  return draw_looper_builder.DetachDrawLooper();
 }
 
 }  // namespace blink

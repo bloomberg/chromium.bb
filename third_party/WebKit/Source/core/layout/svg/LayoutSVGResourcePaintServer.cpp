@@ -32,115 +32,115 @@
 
 namespace blink {
 
-SVGPaintServer::SVGPaintServer(Color color) : m_color(color) {}
+SVGPaintServer::SVGPaintServer(Color color) : color_(color) {}
 
 SVGPaintServer::SVGPaintServer(PassRefPtr<Gradient> gradient,
                                const AffineTransform& transform)
-    : m_gradient(std::move(gradient)),
-      m_transform(transform),
-      m_color(Color::black) {}
+    : gradient_(std::move(gradient)),
+      transform_(transform),
+      color_(Color::kBlack) {}
 
 SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern,
                                const AffineTransform& transform)
-    : m_pattern(std::move(pattern)),
-      m_transform(transform),
-      m_color(Color::black) {}
+    : pattern_(std::move(pattern)),
+      transform_(transform),
+      color_(Color::kBlack) {}
 
-void SVGPaintServer::applyToPaintFlags(PaintFlags& flags, float alpha) {
-  SkColor baseColor = m_gradient || m_pattern ? SK_ColorBLACK : m_color.rgb();
-  flags.setColor(scaleAlpha(baseColor, alpha));
-  if (m_pattern) {
-    m_pattern->applyToFlags(flags, affineTransformToSkMatrix(m_transform));
-  } else if (m_gradient) {
-    m_gradient->applyToFlags(flags, affineTransformToSkMatrix(m_transform));
+void SVGPaintServer::ApplyToPaintFlags(PaintFlags& flags, float alpha) {
+  SkColor base_color = gradient_ || pattern_ ? SK_ColorBLACK : color_.Rgb();
+  flags.setColor(ScaleAlpha(base_color, alpha));
+  if (pattern_) {
+    pattern_->ApplyToFlags(flags, AffineTransformToSkMatrix(transform_));
+  } else if (gradient_) {
+    gradient_->ApplyToFlags(flags, AffineTransformToSkMatrix(transform_));
   } else {
     flags.setShader(nullptr);
   }
 }
 
-void SVGPaintServer::prependTransform(const AffineTransform& transform) {
-  DCHECK(m_gradient || m_pattern);
-  m_transform = transform * m_transform;
+void SVGPaintServer::PrependTransform(const AffineTransform& transform) {
+  DCHECK(gradient_ || pattern_);
+  transform_ = transform * transform_;
 }
 
-static SVGPaintDescription requestPaint(const LayoutObject& object,
+static SVGPaintDescription RequestPaint(const LayoutObject& object,
                                         const ComputedStyle& style,
                                         LayoutSVGResourceMode mode) {
   // If we have no style at all, ignore it.
-  const SVGComputedStyle& svgStyle = style.svgStyle();
+  const SVGComputedStyle& svg_style = style.SvgStyle();
 
   // If we have no fill/stroke, return 0.
-  if (mode == ApplyToFillMode) {
-    if (!svgStyle.hasFill())
+  if (mode == kApplyToFillMode) {
+    if (!svg_style.HasFill())
       return SVGPaintDescription();
   } else {
-    if (!svgStyle.hasStroke())
+    if (!svg_style.HasStroke())
       return SVGPaintDescription();
   }
 
-  bool applyToFill = mode == ApplyToFillMode;
-  SVGPaintType paintType =
-      applyToFill ? svgStyle.fillPaintType() : svgStyle.strokePaintType();
-  DCHECK_NE(paintType, SVG_PAINTTYPE_NONE);
+  bool apply_to_fill = mode == kApplyToFillMode;
+  SVGPaintType paint_type =
+      apply_to_fill ? svg_style.FillPaintType() : svg_style.StrokePaintType();
+  DCHECK_NE(paint_type, SVG_PAINTTYPE_NONE);
 
   Color color;
-  bool hasColor = false;
-  switch (paintType) {
+  bool has_color = false;
+  switch (paint_type) {
     case SVG_PAINTTYPE_CURRENTCOLOR:
     case SVG_PAINTTYPE_URI_CURRENTCOLOR:
       // The keyword `currentcolor` takes its value from the value of the
       // `color` property on the same element.
-      color = style.visitedDependentColor(CSSPropertyColor);
-      hasColor = true;
+      color = style.VisitedDependentColor(CSSPropertyColor);
+      has_color = true;
       break;
     case SVG_PAINTTYPE_RGBCOLOR:
     case SVG_PAINTTYPE_URI_RGBCOLOR:
-      color =
-          applyToFill ? svgStyle.fillPaintColor() : svgStyle.strokePaintColor();
-      hasColor = true;
+      color = apply_to_fill ? svg_style.FillPaintColor()
+                            : svg_style.StrokePaintColor();
+      has_color = true;
     default:
       break;
   }
 
-  if (style.insideLink() == EInsideLink::kInsideVisitedLink) {
+  if (style.InsideLink() == EInsideLink::kInsideVisitedLink) {
     // FIXME: This code doesn't support the uri component of the visited link
     // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
-    SVGPaintType visitedPaintType = applyToFill
-                                        ? svgStyle.visitedLinkFillPaintType()
-                                        : svgStyle.visitedLinkStrokePaintType();
+    SVGPaintType visited_paint_type =
+        apply_to_fill ? svg_style.VisitedLinkFillPaintType()
+                      : svg_style.VisitedLinkStrokePaintType();
 
     // For SVG_PAINTTYPE_CURRENTCOLOR, 'color' already contains the
     // 'visitedColor'.
-    if (visitedPaintType < SVG_PAINTTYPE_URI_NONE &&
-        visitedPaintType != SVG_PAINTTYPE_CURRENTCOLOR) {
-      const Color& visitedColor = applyToFill
-                                      ? svgStyle.visitedLinkFillPaintColor()
-                                      : svgStyle.visitedLinkStrokePaintColor();
-      color = Color(visitedColor.red(), visitedColor.green(),
-                    visitedColor.blue(), color.alpha());
-      hasColor = true;
+    if (visited_paint_type < SVG_PAINTTYPE_URI_NONE &&
+        visited_paint_type != SVG_PAINTTYPE_CURRENTCOLOR) {
+      const Color& visited_color =
+          apply_to_fill ? svg_style.VisitedLinkFillPaintColor()
+                        : svg_style.VisitedLinkStrokePaintColor();
+      color = Color(visited_color.Red(), visited_color.Green(),
+                    visited_color.Blue(), color.Alpha());
+      has_color = true;
     }
   }
 
   // If the primary resource is just a color, return immediately.
-  if (paintType < SVG_PAINTTYPE_URI_NONE) {
+  if (paint_type < SVG_PAINTTYPE_URI_NONE) {
     // |paintType| will be either <current-color> or <rgb-color> here - both of
     // which will have a color.
-    DCHECK(hasColor);
+    DCHECK(has_color);
     return SVGPaintDescription(color);
   }
 
-  LayoutSVGResourcePaintServer* uriResource = nullptr;
+  LayoutSVGResourcePaintServer* uri_resource = nullptr;
   if (SVGResources* resources =
-          SVGResourcesCache::cachedResourcesForLayoutObject(&object))
-    uriResource = applyToFill ? resources->fill() : resources->stroke();
+          SVGResourcesCache::CachedResourcesForLayoutObject(&object))
+    uri_resource = apply_to_fill ? resources->Fill() : resources->Stroke();
 
   // If the requested resource is not available, return the color resource or
   // 'none'.
-  if (!uriResource) {
+  if (!uri_resource) {
     // The fallback is 'none'. (SVG2 say 'none' is implied when no fallback is
     // specified.)
-    if (paintType == SVG_PAINTTYPE_URI_NONE || !hasColor)
+    if (paint_type == SVG_PAINTTYPE_URI_NONE || !has_color)
       return SVGPaintDescription();
 
     return SVGPaintDescription(color);
@@ -149,37 +149,39 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
   // The paint server resource exists, though it may be invalid (pattern with
   // width/height=0). Return the fallback color to our caller so it can use it,
   // if preparePaintServer() on the resource container failed.
-  if (hasColor)
-    return SVGPaintDescription(uriResource, color);
+  if (has_color)
+    return SVGPaintDescription(uri_resource, color);
 
-  return SVGPaintDescription(uriResource);
+  return SVGPaintDescription(uri_resource);
 }
 
-SVGPaintServer SVGPaintServer::requestForLayoutObject(
-    const LayoutObject& layoutObject,
+SVGPaintServer SVGPaintServer::RequestForLayoutObject(
+    const LayoutObject& layout_object,
     const ComputedStyle& style,
-    LayoutSVGResourceMode resourceMode) {
-  DCHECK(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
+    LayoutSVGResourceMode resource_mode) {
+  DCHECK(resource_mode == kApplyToFillMode ||
+         resource_mode == kApplyToStrokeMode);
 
-  SVGPaintDescription paintDescription =
-      requestPaint(layoutObject, style, resourceMode);
-  if (!paintDescription.isValid)
-    return invalid();
-  if (!paintDescription.resource)
-    return SVGPaintServer(paintDescription.color);
-  SVGPaintServer paintServer =
-      paintDescription.resource->preparePaintServer(layoutObject);
-  if (paintServer.isValid())
-    return paintServer;
-  if (paintDescription.hasFallback)
-    return SVGPaintServer(paintDescription.color);
-  return invalid();
+  SVGPaintDescription paint_description =
+      RequestPaint(layout_object, style, resource_mode);
+  if (!paint_description.is_valid)
+    return Invalid();
+  if (!paint_description.resource)
+    return SVGPaintServer(paint_description.color);
+  SVGPaintServer paint_server =
+      paint_description.resource->PreparePaintServer(layout_object);
+  if (paint_server.IsValid())
+    return paint_server;
+  if (paint_description.has_fallback)
+    return SVGPaintServer(paint_description.color);
+  return Invalid();
 }
 
-bool SVGPaintServer::existsForLayoutObject(const LayoutObject& layoutObject,
-                                           const ComputedStyle& style,
-                                           LayoutSVGResourceMode resourceMode) {
-  return requestPaint(layoutObject, style, resourceMode).isValid;
+bool SVGPaintServer::ExistsForLayoutObject(
+    const LayoutObject& layout_object,
+    const ComputedStyle& style,
+    LayoutSVGResourceMode resource_mode) {
+  return RequestPaint(layout_object, style, resource_mode).is_valid;
 }
 
 LayoutSVGResourcePaintServer::LayoutSVGResourcePaintServer(SVGElement* element)
@@ -187,11 +189,11 @@ LayoutSVGResourcePaintServer::LayoutSVGResourcePaintServer(SVGElement* element)
 
 LayoutSVGResourcePaintServer::~LayoutSVGResourcePaintServer() {}
 
-SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(
-    const LayoutObject& layoutObject,
+SVGPaintDescription LayoutSVGResourcePaintServer::RequestPaintDescription(
+    const LayoutObject& layout_object,
     const ComputedStyle& style,
-    LayoutSVGResourceMode resourceMode) {
-  return requestPaint(layoutObject, style, resourceMode);
+    LayoutSVGResourceMode resource_mode) {
+  return RequestPaint(layout_object, style, resource_mode);
 }
 
 }  // namespace blink

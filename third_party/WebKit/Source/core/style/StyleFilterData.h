@@ -33,16 +33,16 @@ namespace blink {
 
 class StyleFilterData final : public GarbageCollected<StyleFilterData> {
  public:
-  static StyleFilterData* create() { return new StyleFilterData; }
+  static StyleFilterData* Create() { return new StyleFilterData; }
 
-  StyleFilterData* copy() const { return new StyleFilterData(*this); }
+  StyleFilterData* Copy() const { return new StyleFilterData(*this); }
 
   bool operator==(const StyleFilterData&) const;
   bool operator!=(const StyleFilterData& o) const { return !(*this == o); }
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_operations); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(operations_); }
 
-  FilterOperations m_operations;
+  FilterOperations operations_;
 
  private:
   StyleFilterData();

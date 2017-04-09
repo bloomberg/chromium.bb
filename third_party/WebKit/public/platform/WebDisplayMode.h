@@ -10,12 +10,12 @@ namespace blink {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.platform
 // GENERATED_JAVA_PREFIX_TO_STRIP: WebDisplayMode
 enum WebDisplayMode {
-  WebDisplayModeUndefined,  // User for override setting (ie. not set).
-  WebDisplayModeBrowser,
-  WebDisplayModeMinimalUi,
-  WebDisplayModeStandalone,
-  WebDisplayModeFullscreen,
-  WebDisplayModeLast = WebDisplayModeFullscreen
+  kWebDisplayModeUndefined,  // User for override setting (ie. not set).
+  kWebDisplayModeBrowser,
+  kWebDisplayModeMinimalUi,
+  kWebDisplayModeStandalone,
+  kWebDisplayModeFullscreen,
+  kWebDisplayModeLast = kWebDisplayModeFullscreen
 };
 
 }  // namespace blink

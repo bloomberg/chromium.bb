@@ -22,27 +22,27 @@ class CORE_EXPORT DOMQuad : public GarbageCollected<DOMQuad>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMQuad* create(const DOMPointInit& p1,
+  static DOMQuad* Create(const DOMPointInit& p1,
                          const DOMPointInit& p2,
                          const DOMPointInit& p3,
                          const DOMPointInit& p4);
   static DOMQuad* fromRect(const DOMRectInit&);
   static DOMQuad* fromQuad(const DOMQuadInit&);
 
-  DOMPoint* p1() const { return m_p1; }
-  DOMPoint* p2() const { return m_p2; }
-  DOMPoint* p3() const { return m_p3; }
-  DOMPoint* p4() const { return m_p4; }
+  DOMPoint* p1() const { return p1_; }
+  DOMPoint* p2() const { return p2_; }
+  DOMPoint* p3() const { return p3_; }
+  DOMPoint* p4() const { return p4_; }
 
   DOMRect* getBounds();
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   DEFINE_INLINE_TRACE() {
-    visitor->trace(m_p1);
-    visitor->trace(m_p2);
-    visitor->trace(m_p3);
-    visitor->trace(m_p4);
+    visitor->Trace(p1_);
+    visitor->Trace(p2_);
+    visitor->Trace(p3_);
+    visitor->Trace(p4_);
   }
 
  private:
@@ -52,17 +52,17 @@ class CORE_EXPORT DOMQuad : public GarbageCollected<DOMQuad>,
           const DOMPointInit& p4);
   DOMQuad(double x, double y, double width, double height);
 
-  void calculateBounds();
+  void CalculateBounds();
 
-  Member<DOMPoint> m_p1;
-  Member<DOMPoint> m_p2;
-  Member<DOMPoint> m_p3;
-  Member<DOMPoint> m_p4;
+  Member<DOMPoint> p1_;
+  Member<DOMPoint> p2_;
+  Member<DOMPoint> p3_;
+  Member<DOMPoint> p4_;
 
-  double m_left;
-  double m_right;
-  double m_top;
-  double m_bottom;
+  double left_;
+  double right_;
+  double top_;
+  double bottom_;
 };
 
 }  // namespace blink

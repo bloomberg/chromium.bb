@@ -66,7 +66,7 @@ class ScriptWrappable;
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
-  get##InterfaceName##PrivateKeyName
+  Get##InterfaceName##PrivateKeyName
 
 // The member variable's name for a private property.
 #define V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, PrivateKeyName) \
@@ -103,32 +103,33 @@ class CORE_EXPORT V8PrivateProperty {
     STACK_ALLOCATED();
 
    public:
-    bool hasValue(v8::Local<v8::Object> object) const {
-      return object->HasPrivate(context(), m_privateSymbol).ToChecked();
+    bool HasValue(v8::Local<v8::Object> object) const {
+      return object->HasPrivate(GetContext(), private_symbol_).ToChecked();
     }
 
     // Returns the value of the private property if set, or undefined.
-    v8::Local<v8::Value> getOrUndefined(v8::Local<v8::Object> object) const {
-      return object->GetPrivate(context(), m_privateSymbol).ToLocalChecked();
+    v8::Local<v8::Value> GetOrUndefined(v8::Local<v8::Object> object) const {
+      return object->GetPrivate(GetContext(), private_symbol_).ToLocalChecked();
     }
 
     // TODO(peria): Remove this method, and use getOrUndefined() instead.
     // Returns the value of the private property if set, or an empty handle.
-    v8::Local<v8::Value> getOrEmpty(v8::Local<v8::Object> object) const {
-      if (hasValue(object))
-        return getOrUndefined(object);
+    v8::Local<v8::Value> GetOrEmpty(v8::Local<v8::Object> object) const {
+      if (HasValue(object))
+        return GetOrUndefined(object);
       return v8::Local<v8::Value>();
     }
 
-    bool set(v8::Local<v8::Object> object, v8::Local<v8::Value> value) const {
-      return object->SetPrivate(context(), m_privateSymbol, value).ToChecked();
+    bool Set(v8::Local<v8::Object> object, v8::Local<v8::Value> value) const {
+      return object->SetPrivate(GetContext(), private_symbol_, value)
+          .ToChecked();
     }
 
-    bool deleteProperty(v8::Local<v8::Object> object) const {
-      return object->DeletePrivate(context(), m_privateSymbol).ToChecked();
+    bool DeleteProperty(v8::Local<v8::Object> object) const {
+      return object->DeletePrivate(GetContext(), private_symbol_).ToChecked();
     }
 
-    v8::Local<v8::Private> getPrivate() const { return m_privateSymbol; }
+    v8::Local<v8::Private> GetPrivate() const { return private_symbol_; }
 
    private:
     friend class V8PrivateProperty;
@@ -137,39 +138,39 @@ class CORE_EXPORT V8PrivateProperty {
     friend class V8CustomEvent;
     friend class V8ServiceWorkerMessageEventInternal;
 
-    Symbol(v8::Isolate* isolate, v8::Local<v8::Private> privateSymbol)
-        : m_privateSymbol(privateSymbol), m_isolate(isolate) {}
+    Symbol(v8::Isolate* isolate, v8::Local<v8::Private> private_symbol)
+        : private_symbol_(private_symbol), isolate_(isolate) {}
 
     // To get/set private property, we should use the current context.
-    v8::Local<v8::Context> context() const {
-      return m_isolate->GetCurrentContext();
+    v8::Local<v8::Context> GetContext() const {
+      return isolate_->GetCurrentContext();
     }
 
     // Only friend classes are allowed to use this API.
-    v8::Local<v8::Value> getFromMainWorld(ScriptWrappable*);
+    v8::Local<v8::Value> GetFromMainWorld(ScriptWrappable*);
 
-    v8::Local<v8::Private> m_privateSymbol;
-    v8::Isolate* m_isolate;
+    v8::Local<v8::Private> private_symbol_;
+    v8::Isolate* isolate_;
   };
 
-  static std::unique_ptr<V8PrivateProperty> create() {
-    return WTF::wrapUnique(new V8PrivateProperty());
+  static std::unique_ptr<V8PrivateProperty> Create() {
+    return WTF::WrapUnique(new V8PrivateProperty());
   }
 
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \
   static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */                \
                                                 InterfaceName, KeyName)(       \
       v8::Isolate * isolate) {                                                 \
-    V8PrivateProperty* privateProp =                                           \
-        V8PerIsolateData::from(isolate)->privateProperty();                    \
-    v8::Eternal<v8::Private>& propertyHandle =                                 \
-        privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName);  \
-    if (UNLIKELY(propertyHandle.IsEmpty())) {                                  \
-      propertyHandle.Set(                                                      \
-          isolate, createV8Private(isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING( \
+    V8PrivateProperty* private_prop =                                          \
+        V8PerIsolateData::From(isolate)->PrivateProperty();                    \
+    v8::Eternal<v8::Private>& property_handle =                                \
+        private_prop->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName); \
+    if (UNLIKELY(property_handle.IsEmpty())) {                                 \
+      property_handle.Set(                                                     \
+          isolate, CreateV8Private(isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING( \
                                                 InterfaceName, KeyName)));     \
     }                                                                          \
-    return Symbol(isolate, propertyHandle.Get(isolate));                       \
+    return Symbol(isolate, property_handle.Get(isolate));                      \
   }
 
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
@@ -177,31 +178,32 @@ class CORE_EXPORT V8PrivateProperty {
 
   // TODO(peria): Do not use this specialized hack. See a TODO comment
   // on m_symbolWindowDocumentCachedAccessor.
-  static Symbol getWindowDocumentCachedAccessor(v8::Isolate* isolate) {
-    V8PrivateProperty* privateProp =
-        V8PerIsolateData::from(isolate)->privateProperty();
-    if (UNLIKELY(privateProp->m_symbolWindowDocumentCachedAccessor.isEmpty())) {
-      privateProp->m_symbolWindowDocumentCachedAccessor.set(
-          isolate, createCachedV8Private(
+  static Symbol GetWindowDocumentCachedAccessor(v8::Isolate* isolate) {
+    V8PrivateProperty* private_prop =
+        V8PerIsolateData::From(isolate)->PrivateProperty();
+    if (UNLIKELY(
+            private_prop->symbol_window_document_cached_accessor_.IsEmpty())) {
+      private_prop->symbol_window_document_cached_accessor_.Set(
+          isolate, CreateCachedV8Private(
                        isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING(
                                     "Window", "DocumentCachedAccessor")));
     }
     return Symbol(
-        isolate,
-        privateProp->m_symbolWindowDocumentCachedAccessor.newLocal(isolate));
+        isolate, private_prop->symbol_window_document_cached_accessor_.NewLocal(
+                     isolate));
   }
 
-  static Symbol getSymbol(v8::Isolate* isolate, const char* symbol) {
-    return Symbol(isolate, createCachedV8Private(isolate, symbol));
+  static Symbol GetSymbol(v8::Isolate* isolate, const char* symbol) {
+    return Symbol(isolate, CreateCachedV8Private(isolate, symbol));
   }
 
  private:
   V8PrivateProperty() {}
 
-  static v8::Local<v8::Private> createV8Private(v8::Isolate*,
+  static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);
   // TODO(peria): Remove this method. We should not use v8::Private::ForApi().
-  static v8::Local<v8::Private> createCachedV8Private(v8::Isolate*,
+  static v8::Local<v8::Private> CreateCachedV8Private(v8::Isolate*,
                                                       const char* symbol);
 
 #define V8_PRIVATE_PROPERTY_DECLARE_MEMBER(InterfaceName, KeyName) \
@@ -214,7 +216,7 @@ class CORE_EXPORT V8PrivateProperty {
   // Window#DocumentCachedAccessor. This is required to put v8::Private key in
   // a snapshot, and it cannot be a v8::Eternal<> due to V8 serializer's
   // requirement.
-  ScopedPersistent<v8::Private> m_symbolWindowDocumentCachedAccessor;
+  ScopedPersistent<v8::Private> symbol_window_document_cached_accessor_;
 };
 
 }  // namespace blink

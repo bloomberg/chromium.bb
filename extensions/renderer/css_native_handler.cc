@@ -27,10 +27,10 @@ void CssNativeHandler::CanonicalizeCompoundSelector(
   std::string input_selector = *v8::String::Utf8Value(args[0]);
   // TODO(esprehn): This API shouldn't exist, the extension code should be
   // moved into blink.
-  WebString output_selector = blink::canonicalizeSelector(
-      WebString::fromUTF8(input_selector), blink::WebSelectorTypeCompound);
+  WebString output_selector = blink::CanonicalizeSelector(
+      WebString::FromUTF8(input_selector), blink::kWebSelectorTypeCompound);
   args.GetReturnValue().Set(v8_helpers::ToV8StringUnsafe(
-      args.GetIsolate(), output_selector.utf8().c_str()));
+      args.GetIsolate(), output_selector.Utf8().c_str()));
 }
 
 }  // namespace extensions

@@ -17,152 +17,152 @@
 
 namespace blink {
 
-InterpolationValue CSSShadowListInterpolationType::convertShadowList(
-    const ShadowList* shadowList,
+InterpolationValue CSSShadowListInterpolationType::ConvertShadowList(
+    const ShadowList* shadow_list,
     double zoom) const {
-  if (!shadowList)
-    return createNeutralValue();
-  const ShadowDataVector& shadows = shadowList->shadows();
-  return ListInterpolationFunctions::createList(
+  if (!shadow_list)
+    return CreateNeutralValue();
+  const ShadowDataVector& shadows = shadow_list->Shadows();
+  return ListInterpolationFunctions::CreateList(
       shadows.size(), [&shadows, zoom](size_t index) {
-        return ShadowInterpolationFunctions::convertShadowData(shadows[index],
+        return ShadowInterpolationFunctions::ConvertShadowData(shadows[index],
                                                                zoom);
       });
 }
 
-InterpolationValue CSSShadowListInterpolationType::createNeutralValue() const {
-  return ListInterpolationFunctions::createEmptyList();
+InterpolationValue CSSShadowListInterpolationType::CreateNeutralValue() const {
+  return ListInterpolationFunctions::CreateEmptyList();
 }
 
-InterpolationValue CSSShadowListInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSShadowListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return createNeutralValue();
+  return CreateNeutralValue();
 }
 
-InterpolationValue CSSShadowListInterpolationType::maybeConvertInitial(
+InterpolationValue CSSShadowListInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return convertShadowList(
-      ShadowListPropertyFunctions::getInitialShadowList(cssProperty()), 1);
+  return ConvertShadowList(
+      ShadowListPropertyFunctions::GetInitialShadowList(CssProperty()), 1);
 }
 
 class InheritedShadowListChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<InheritedShadowListChecker> create(
+  static std::unique_ptr<InheritedShadowListChecker> Create(
       CSSPropertyID property,
-      PassRefPtr<ShadowList> shadowList) {
-    return WTF::wrapUnique(
-        new InheritedShadowListChecker(property, std::move(shadowList)));
+      PassRefPtr<ShadowList> shadow_list) {
+    return WTF::WrapUnique(
+        new InheritedShadowListChecker(property, std::move(shadow_list)));
   }
 
  private:
   InheritedShadowListChecker(CSSPropertyID property,
-                             PassRefPtr<ShadowList> shadowList)
-      : m_property(property), m_shadowList(std::move(shadowList)) {}
+                             PassRefPtr<ShadowList> shadow_list)
+      : property_(property), shadow_list_(std::move(shadow_list)) {}
 
-  bool isValid(const InterpolationEnvironment& environment,
+  bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    const ShadowList* inheritedShadowList =
-        ShadowListPropertyFunctions::getShadowList(
-            m_property, *environment.state().parentStyle());
-    if (!inheritedShadowList && !m_shadowList)
+    const ShadowList* inherited_shadow_list =
+        ShadowListPropertyFunctions::GetShadowList(
+            property_, *environment.GetState().ParentStyle());
+    if (!inherited_shadow_list && !shadow_list_)
       return true;
-    if (!inheritedShadowList || !m_shadowList)
+    if (!inherited_shadow_list || !shadow_list_)
       return false;
-    return *inheritedShadowList == *m_shadowList;
+    return *inherited_shadow_list == *shadow_list_;
   }
 
-  const CSSPropertyID m_property;
-  RefPtr<ShadowList> m_shadowList;
+  const CSSPropertyID property_;
+  RefPtr<ShadowList> shadow_list_;
 };
 
-InterpolationValue CSSShadowListInterpolationType::maybeConvertInherit(
+InterpolationValue CSSShadowListInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
-    ConversionCheckers& conversionCheckers) const {
-  if (!state.parentStyle())
+    ConversionCheckers& conversion_checkers) const {
+  if (!state.ParentStyle())
     return nullptr;
-  const ShadowList* inheritedShadowList =
-      ShadowListPropertyFunctions::getShadowList(cssProperty(),
-                                                 *state.parentStyle());
-  conversionCheckers.push_back(InheritedShadowListChecker::create(
-      cssProperty(),
-      const_cast<ShadowList*>(inheritedShadowList)));  // Take ref.
-  return convertShadowList(inheritedShadowList,
-                           state.parentStyle()->effectiveZoom());
+  const ShadowList* inherited_shadow_list =
+      ShadowListPropertyFunctions::GetShadowList(CssProperty(),
+                                                 *state.ParentStyle());
+  conversion_checkers.push_back(InheritedShadowListChecker::Create(
+      CssProperty(),
+      const_cast<ShadowList*>(inherited_shadow_list)));  // Take ref.
+  return ConvertShadowList(inherited_shadow_list,
+                           state.ParentStyle()->EffectiveZoom());
 }
 
-InterpolationValue CSSShadowListInterpolationType::maybeConvertValue(
+InterpolationValue CSSShadowListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (value.isIdentifierValue() &&
-      toCSSIdentifierValue(value).getValueID() == CSSValueNone)
-    return createNeutralValue();
+  if (value.IsIdentifierValue() &&
+      ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
+    return CreateNeutralValue();
 
-  if (!value.isBaseValueList())
+  if (!value.IsBaseValueList())
     return nullptr;
 
-  const CSSValueList& valueList = toCSSValueList(value);
-  return ListInterpolationFunctions::createList(
-      valueList.length(), [&valueList](size_t index) {
-        return ShadowInterpolationFunctions::maybeConvertCSSValue(
-            valueList.item(index));
+  const CSSValueList& value_list = ToCSSValueList(value);
+  return ListInterpolationFunctions::CreateList(
+      value_list.length(), [&value_list](size_t index) {
+        return ShadowInterpolationFunctions::MaybeConvertCSSValue(
+            value_list.Item(index));
       });
 }
 
-PairwiseInterpolationValue CSSShadowListInterpolationType::maybeMergeSingles(
+PairwiseInterpolationValue CSSShadowListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  return ListInterpolationFunctions::maybeMergeSingles(
+  return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
-      ShadowInterpolationFunctions::maybeMergeSingles);
+      ShadowInterpolationFunctions::MaybeMergeSingles);
 }
 
 InterpolationValue
-CSSShadowListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+CSSShadowListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return convertShadowList(
-      ShadowListPropertyFunctions::getShadowList(cssProperty(), style),
-      style.effectiveZoom());
+  return ConvertShadowList(
+      ShadowListPropertyFunctions::GetShadowList(CssProperty(), style),
+      style.EffectiveZoom());
 }
 
-void CSSShadowListInterpolationType::composite(
-    UnderlyingValueOwner& underlyingValueOwner,
-    double underlyingFraction,
+void CSSShadowListInterpolationType::Composite(
+    UnderlyingValueOwner& underlying_value_owner,
+    double underlying_fraction,
     const InterpolationValue& value,
-    double interpolationFraction) const {
-  ListInterpolationFunctions::composite(
-      underlyingValueOwner, underlyingFraction, *this, value,
-      ShadowInterpolationFunctions::nonInterpolableValuesAreCompatible,
-      ShadowInterpolationFunctions::composite);
+    double interpolation_fraction) const {
+  ListInterpolationFunctions::Composite(
+      underlying_value_owner, underlying_fraction, *this, value,
+      ShadowInterpolationFunctions::NonInterpolableValuesAreCompatible,
+      ShadowInterpolationFunctions::Composite);
 }
 
-static PassRefPtr<ShadowList> createShadowList(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue,
+static PassRefPtr<ShadowList> CreateShadowList(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState& state) {
-  const InterpolableList& interpolableList =
-      toInterpolableList(interpolableValue);
-  size_t length = interpolableList.length();
+  const InterpolableList& interpolable_list =
+      ToInterpolableList(interpolable_value);
+  size_t length = interpolable_list.length();
   if (length == 0)
     return nullptr;
-  const NonInterpolableList& nonInterpolableList =
-      toNonInterpolableList(*nonInterpolableValue);
+  const NonInterpolableList& non_interpolable_list =
+      ToNonInterpolableList(*non_interpolable_value);
   ShadowDataVector shadows;
   for (size_t i = 0; i < length; i++)
-    shadows.push_back(ShadowInterpolationFunctions::createShadowData(
-        *interpolableList.get(i), nonInterpolableList.get(i), state));
-  return ShadowList::adopt(shadows);
+    shadows.push_back(ShadowInterpolationFunctions::CreateShadowData(
+        *interpolable_list.Get(i), non_interpolable_list.Get(i), state));
+  return ShadowList::Adopt(shadows);
 }
 
-void CSSShadowListInterpolationType::applyStandardPropertyValue(
-    const InterpolableValue& interpolableValue,
-    const NonInterpolableValue* nonInterpolableValue,
+void CSSShadowListInterpolationType::ApplyStandardPropertyValue(
+    const InterpolableValue& interpolable_value,
+    const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  ShadowListPropertyFunctions::setShadowList(
-      cssProperty(), *state.style(),
-      createShadowList(interpolableValue, nonInterpolableValue, state));
+  ShadowListPropertyFunctions::SetShadowList(
+      CssProperty(), *state.Style(),
+      CreateShadowList(interpolable_value, non_interpolable_value, state));
 }
 
 }  // namespace blink

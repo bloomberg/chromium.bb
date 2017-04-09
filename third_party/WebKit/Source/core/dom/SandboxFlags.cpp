@@ -33,58 +33,58 @@
 
 namespace blink {
 
-SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy,
-                                String& invalidTokensErrorMessage) {
+SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
+                                String& invalid_tokens_error_message) {
   // http://www.w3.org/TR/html5/the-iframe-element.html#attr-iframe-sandbox
   // Parse the unordered set of unique space-separated tokens.
-  SandboxFlags flags = SandboxAll;
+  SandboxFlags flags = kSandboxAll;
   unsigned length = policy.size();
-  unsigned numberOfTokenErrors = 0;
-  StringBuilder tokenErrors;
+  unsigned number_of_token_errors = 0;
+  StringBuilder token_errors;
 
   for (unsigned index = 0; index < length; index++) {
     // Turn off the corresponding sandbox flag if it's set as "allowed".
-    String sandboxToken(policy[index]);
-    if (equalIgnoringCase(sandboxToken, "allow-same-origin")) {
-      flags &= ~SandboxOrigin;
-    } else if (equalIgnoringCase(sandboxToken, "allow-forms")) {
-      flags &= ~SandboxForms;
-    } else if (equalIgnoringCase(sandboxToken, "allow-scripts")) {
-      flags &= ~SandboxScripts;
-      flags &= ~SandboxAutomaticFeatures;
-    } else if (equalIgnoringCase(sandboxToken, "allow-top-navigation")) {
-      flags &= ~SandboxTopNavigation;
-    } else if (equalIgnoringCase(sandboxToken, "allow-popups")) {
-      flags &= ~SandboxPopups;
-    } else if (equalIgnoringCase(sandboxToken, "allow-pointer-lock")) {
-      flags &= ~SandboxPointerLock;
-    } else if (equalIgnoringCase(sandboxToken, "allow-orientation-lock")) {
-      flags &= ~SandboxOrientationLock;
-    } else if (equalIgnoringCase(sandboxToken,
+    String sandbox_token(policy[index]);
+    if (EqualIgnoringCase(sandbox_token, "allow-same-origin")) {
+      flags &= ~kSandboxOrigin;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-forms")) {
+      flags &= ~kSandboxForms;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-scripts")) {
+      flags &= ~kSandboxScripts;
+      flags &= ~kSandboxAutomaticFeatures;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-top-navigation")) {
+      flags &= ~kSandboxTopNavigation;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-popups")) {
+      flags &= ~kSandboxPopups;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-pointer-lock")) {
+      flags &= ~kSandboxPointerLock;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-orientation-lock")) {
+      flags &= ~kSandboxOrientationLock;
+    } else if (EqualIgnoringCase(sandbox_token,
                                  "allow-popups-to-escape-sandbox")) {
-      flags &= ~SandboxPropagatesToAuxiliaryBrowsingContexts;
-    } else if (equalIgnoringCase(sandboxToken, "allow-modals")) {
-      flags &= ~SandboxModals;
-    } else if (equalIgnoringCase(sandboxToken, "allow-presentation")) {
-      flags &= ~SandboxPresentation;
-    } else if (equalIgnoringCase(sandboxToken,
+      flags &= ~kSandboxPropagatesToAuxiliaryBrowsingContexts;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-modals")) {
+      flags &= ~kSandboxModals;
+    } else if (EqualIgnoringCase(sandbox_token, "allow-presentation")) {
+      flags &= ~kSandboxPresentation;
+    } else if (EqualIgnoringCase(sandbox_token,
                                  "allow-top-navigation-by-user-activation") &&
                RuntimeEnabledFeatures::
                    topNavByUserActivationInSandboxEnabled()) {
-      flags &= ~SandboxTopNavigationByUserActivation;
+      flags &= ~kSandboxTopNavigationByUserActivation;
     } else {
-      tokenErrors.append(tokenErrors.isEmpty() ? "'" : ", '");
-      tokenErrors.append(sandboxToken);
-      tokenErrors.append("'");
-      numberOfTokenErrors++;
+      token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
+      token_errors.Append(sandbox_token);
+      token_errors.Append("'");
+      number_of_token_errors++;
     }
   }
 
-  if (numberOfTokenErrors) {
-    tokenErrors.append(numberOfTokenErrors > 1
-                           ? " are invalid sandbox flags."
-                           : " is an invalid sandbox flag.");
-    invalidTokensErrorMessage = tokenErrors.toString();
+  if (number_of_token_errors) {
+    token_errors.Append(number_of_token_errors > 1
+                            ? " are invalid sandbox flags."
+                            : " is an invalid sandbox flag.");
+    invalid_tokens_error_message = token_errors.ToString();
   }
 
   return flags;

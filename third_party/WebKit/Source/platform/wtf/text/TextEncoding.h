@@ -38,40 +38,40 @@ class WTF_EXPORT TextEncoding final {
   USING_FAST_MALLOC(TextEncoding);
 
  public:
-  TextEncoding() : m_name(0) {}
+  TextEncoding() : name_(0) {}
   TextEncoding(const char* name);
   TextEncoding(const String& name);
 
-  bool isValid() const { return m_name; }
-  const char* name() const { return m_name; }
-  bool usesVisualOrdering() const;
-  const TextEncoding& closestByteBasedEquivalent() const;
-  const TextEncoding& encodingForFormSubmission() const;
+  bool IsValid() const { return name_; }
+  const char* GetName() const { return name_; }
+  bool UsesVisualOrdering() const;
+  const TextEncoding& ClosestByteBasedEquivalent() const;
+  const TextEncoding& EncodingForFormSubmission() const;
 
-  String decode(const char* str, size_t length) const {
+  String Decode(const char* str, size_t length) const {
     bool ignored;
-    return decode(str, length, false, ignored);
+    return Decode(str, length, false, ignored);
   }
-  String decode(const char*,
+  String Decode(const char*,
                 size_t length,
-                bool stopOnError,
-                bool& sawError) const;
+                bool stop_on_error,
+                bool& saw_error) const;
 
-  CString encode(const String&, UnencodableHandling) const;
+  CString Encode(const String&, UnencodableHandling) const;
 
-  bool isNonByteBasedEncoding() const;
+  bool IsNonByteBasedEncoding() const;
 
  private:
-  bool isUTF7Encoding() const;
+  bool IsUTF7Encoding() const;
 
-  const char* m_name;
+  const char* name_;
 };
 
 inline bool operator==(const TextEncoding& a, const TextEncoding& b) {
-  return a.name() == b.name();
+  return a.GetName() == b.GetName();
 }
 inline bool operator!=(const TextEncoding& a, const TextEncoding& b) {
-  return a.name() != b.name();
+  return a.GetName() != b.GetName();
 }
 
 WTF_EXPORT const TextEncoding& ASCIIEncoding();

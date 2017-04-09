@@ -39,8 +39,8 @@ class WebHeap {
  public:
   // These APIs are only for testing purposes and should not be used
   // outside of tests.
-  BLINK_EXPORT static void collectGarbageForTesting();
-  BLINK_EXPORT static void collectAllGarbageForTesting();
+  BLINK_EXPORT static void CollectGarbageForTesting();
+  BLINK_EXPORT static void CollectAllGarbageForTesting();
 };
 
 }  // namespace blink

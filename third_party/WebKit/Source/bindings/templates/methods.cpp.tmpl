@@ -7,7 +7,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
       'ExceptionState exceptionState',
       'ScriptState* scriptState = ']) %}
   {% set define_exception_state -%}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{method.name}}");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
   {%- endset %}
 
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
@@ -22,7 +22,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 
   {% if not method.is_static %}
   {% if method.returns_promise %}
-  // V8DOMConfiguration::DoNotCheckHolder
+  // V8DOMConfiguration::kDoNotCheckHolder
   // Make sure that info.Holder() really points to an instance of the type.
   if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate())) {
     {{throw_type_error(method, '"Illegal invocation"')}}
@@ -33,7 +33,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   // Same-origin methods are never exposed via the cross-origin interceptors.
   // Since same-origin access requires a LocalDOMWindow, it is safe to downcast
   // here.
-  LocalDOMWindow* impl = toLocalDOMWindow({{v8_class}}::toImpl(info.Holder()));
+  LocalDOMWindow* impl = ToLocalDOMWindow({{v8_class}}::toImpl(info.Holder()));
   {% else %}
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
   {% endif %}{# interface_name == 'Window' and not method.is_cross_origin #}
@@ -42,17 +42,17 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   {# Security checks #}
   {% if method.is_check_security_for_return_value %}
   {{define_exception_state}}
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
-    v8SetReturnValueNull(info);
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
+    V8SetReturnValueNull(info);
     return;
   }
   {% endif %}
 
   {% if 'scriptState' in function_call %}
   {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::forFunctionObject(info);
+  ScriptState* scriptState = ScriptState::ForFunctionObject(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
   {% endif %}
   {% endif %}
 
@@ -85,7 +85,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {% if method.number_of_required_arguments and not method.overload_index %}
 if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
   {{throw_type_error(method,
-        'ExceptionMessages::notEnoughArguments(%(expected)d, info.Length())'
+        'ExceptionMessages::NotEnoughArguments(%(expected)d, info.Length())'
         | format(expected=method.number_of_required_arguments))}}
   return;
 }
@@ -139,21 +139,21 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case #}
 {% if argument.idl_type == 'EventListener' %}
-{% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
-{{argument.name}} = V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), info[{{argument.index}}], false, ListenerFindOnly);
-{% else %}{# method.name == 'addEventListener' #}
-{{argument.name}} = V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), info[{{argument.index}}], false, ListenerFindOrCreate);
+{% if method.name == 'RemoveEventListener' or method.name == 'RemoveListener' %}
+{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOnly);
+{% else %}{# method.name == 'AddEventListener' #}
+{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOrCreate);
 {% endif %}{# method.name #}
 {% else %}{# argument.idl_type == 'EventListener' #}
 {# Callback functions must be functions:
    http://www.w3.org/TR/WebIDL/#es-callback-function #}
 {% if argument.is_optional %}
-if (!isUndefinedOrNull(info[{{argument.index}}])) {
+if (!IsUndefinedOrNull(info[{{argument.index}}])) {
   if (!info[{{argument.index}}]->IsFunction()) {
     {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
     return;
   }
-  {{argument.name}} = V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
+  {{argument.name}} = V8{{argument.idl_type}}::Create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::Current(info.GetIsolate()));
 } else {
   {{argument.name}} = nullptr;
 }
@@ -162,11 +162,11 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
   return;
 }
-{{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::current(info.GetIsolate()));
+{{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::Create(v8::Local<v8::Function>::Cast(info[{{argument.index}}]), ScriptState::Current(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% endif %}{# argument.idl_type == 'EventListener' #}
 {% elif argument.is_callback_function %}
-if ({% if argument.is_nullable %}!isUndefinedOrNull(info[{{argument.index}}]) && {% endif %}!(info[{{argument.index}}]->IsObject() && v8::Local<v8::Object>::Cast(info[{{argument.index}}])->IsCallable())) {
+if ({% if argument.is_nullable %}!IsUndefinedOrNull(info[{{argument.index}}]) && {% endif %}!(info[{{argument.index}}]->IsObject() && v8::Local<v8::Object>::Cast(info[{{argument.index}}])->IsCallable())) {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
   return;
 }
@@ -183,14 +183,14 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
 {% if not argument.use_permissive_dictionary_conversion %}
 {# Dictionaries must have type Undefined, Null or Object:
    http://heycam.github.io/webidl/#es-dictionary #}
-if (!isUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
+if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
   {{throw_argument_error(method, argument, "parameter %(index)d ('%(name)s') is not an object.")}}
   return;
 }
 {% endif %}{# not argument.use_permissive_dictionary_conversion #}
 {{v8_value_to_local_cpp_value(argument)}}
 {% elif argument.is_explicit_nullable %}
-if (!isUndefinedOrNull(info[{{argument.index}}])) {
+if (!IsUndefinedOrNull(info[{{argument.index}}])) {
   {{v8_value_to_local_cpp_value(argument) | indent(2)}}
 }
 {% else %}{# argument.is_nullable #}
@@ -203,7 +203,7 @@ if (!isUndefinedOrNull(info[{{argument.index}}])) {
    throw a TypeError), per http://www.w3.org/TR/WebIDL/#es-interface
    Note: for variadic arguments, the type checking is done for each matched
    argument instead; see argument.is_variadic_wrapper_type code-path above. #}
-if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
+if (!{{argument.name}}{% if argument.is_nullable %} && !IsUndefinedOrNull(info[{{argument.index}}]){% endif %}) {
   {{throw_argument_error(method, argument, "parameter %(index)d is not of type '%(type)s'.")}}
   return;
 }
@@ -211,13 +211,13 @@ if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
 {% set enum_variable = 'valid' + argument.name[0].upper() + argument.name[1:] + 'Values' %}
 {{declare_enum_validation_variable(argument.enum_values, enum_variable)}}
-if (!isValidEnum({{argument.name}}, {{enum_variable}}, WTF_ARRAY_LENGTH({{enum_variable}}), "{{argument.enum_type}}", exceptionState)) {
+if (!IsValidEnum({{argument.name}}, {{enum_variable}}, WTF_ARRAY_LENGTH({{enum_variable}}), "{{argument.enum_type}}", exceptionState)) {
   return;
 }
 {% elif argument.idl_type == 'Promise' %}
 {# We require this for our implementation of promises, though not in spec:
 http://heycam.github.io/webidl/#es-promise #}
-if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
+if (!{{argument.name}}.IsUndefinedOrNull() && !{{argument.name}}.IsObject()) {
   {{throw_argument_error(method, argument, "parameter %(index)d ('%(name)s') is not an object.")}}
   return;
 }
@@ -234,15 +234,15 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 {% if method.is_call_with_execution_context %}
 {# [ConstructorCallWith=ExecutionContext] #}
 {# [CallWith=ExecutionContext] #}
-ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 {# [CallWith=ScriptArguments] #}
-ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, {{method.number_of_arguments}}));
+ScriptArguments* scriptArguments(ScriptArguments::Create(scriptState, info, {{method.number_of_arguments}}));
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
-Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
+Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
 {% endif %}
 {# Call #}
 {% if method.idl_type == 'void' %}
@@ -257,7 +257,7 @@ Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
 {% endif %}
 {# Post-call #}
 {% if method.is_raises_exception %}
-if (exceptionState.hadException()) {
+if (exceptionState.HadException()) {
   return;
 }
 {% endif %}
@@ -265,14 +265,14 @@ if (exceptionState.hadException()) {
 {% if method.is_new_object and not method.do_not_test_new_object %}
 // [NewObject] must always create a new wrapper.  Check that a wrapper
 // does not exist yet.
-DCHECK(!result || DOMDataStore::getWrapper(result, info.GetIsolate()).IsEmpty());
+DCHECK(!result || DOMDataStore::GetWrapper(result, info.GetIsolate()).IsEmpty());
 {% endif %}
 {% if method.is_constructor %}
 {{generate_constructor_wrapper(method)}}
 {%- elif v8_set_return_value %}
 {% if method.is_explicit_nullable %}
-if (result.isNull())
-  v8SetReturnValueNull(info);
+if (result.IsNull())
+  V8SetReturnValueNull(info);
 else
   {{v8_set_return_value}};
 {% else %}
@@ -288,11 +288,11 @@ else
 {##############################################################################}
 {% macro throw_type_error(method, error_message) %}
 {% if method.has_exception_state or method.returns_promise %}
-exceptionState.throwTypeError({{error_message}});
+exceptionState.ThrowTypeError({{error_message}});
 {%- elif method.is_constructor %}
-V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("{{interface_name}}", {{error_message}}));
+V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("{{interface_name}}", {{error_message}}));
 {%- else %}
-V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}));
+V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}));
 {%- endif %}
 {% endmacro %}
 
@@ -338,10 +338,10 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
   {% set fall_through_to_partial_overloads = not is_partial and overloads.has_partial_overloads %}
 
   {% if overloads.measure_all_as %}
-  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{overloads.measure_all_as}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{overloads.measure_all_as}});
   {% endif %}
   {% if overloads.deprecate_all_as %}
-  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{overloads.deprecate_all_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{overloads.deprecate_all_as}});
   {% endif %}
 
   {# First resolve by length #}
@@ -360,10 +360,10 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
       {% filter runtime_enabled(not overloads.runtime_enabled_all and method.runtime_enabled_feature_name) %}
       if ({{test}}) {
         {% if method.measure_as and not overloads.measure_all_as %}
-        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as('Method')}});
+        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.measure_as('Method')}});
         {% endif %}
         {% if method.deprecate_as and not overloads.deprecate_all_as %}
-        Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
+        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.deprecate_as}});
         {% endif %}
         {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
         return;
@@ -387,7 +387,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 
   {% else %}{# fall_through_to_partial_overloads #}
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{overloads.name}}");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{overloads.name}}");
   {% if overloads.returns_promise_all %}
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
   {% endif %}
@@ -395,18 +395,18 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
   if (isArityError) {
     {% if overloads.length != 0 %}
     if (info.Length() < {{overloads.length}}) {
-      exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.length}}, info.Length()));
+      exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments({{overloads.length}}, info.Length()));
       return;
     }
     {% endif %}
     {% if overloads.valid_arities %}
     if (info.Length() >= {{overloads.length}}) {
-      exceptionState.throwTypeError(ExceptionMessages::invalidArity("{{overloads.valid_arities}}", info.Length()));
+      exceptionState.ThrowTypeError(ExceptionMessages::InvalidArity("{{overloads.valid_arities}}", info.Length()));
       return;
     }
     {% endif %}
   }
-  exceptionState.throwTypeError("No function was found that matched the signature provided.");
+  exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
 
   {% endif %}{# fall_through_to_partial_overloads #}
 }
@@ -416,27 +416,27 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 {##############################################################################}
 {% macro generate_post_message_impl(method) %}
 static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, interfaceName, "postMessage");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, interfaceName, "postMessage");
   if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments({{method.number_of_required_arguments}}, info.Length()));
     return;
   }
 
   Transferables transferables;
   if (info.Length() > 1) {
     const int transferablesArgIndex = 1;
-    if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, transferables, exceptionState)) {
+    if (!SerializedScriptValue::ExtractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, transferables, exceptionState)) {
       return;
     }
   }
 
   RefPtr<SerializedScriptValue> message;
-  if (instance->canTransferArrayBuffersAndImageBitmaps()) {
+  if (instance->CanTransferArrayBuffersAndImageBitmaps()) {
     // This instance supports sending array buffers by move semantics.
     SerializedScriptValue::SerializeOptions options;
     options.transferables = &transferables;
-    message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], options, exceptionState);
-    if (exceptionState.hadException())
+    message = SerializedScriptValue::Serialize(info.GetIsolate(), info[0], options, exceptionState);
+    if (exceptionState.HadException())
       return;
   } else {
     // This instance doesn't support sending array buffers and image bitmaps
@@ -447,30 +447,30 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
     // Clear references to array buffers and image bitmaps from transferables
     // so that the serializer can consider the array buffers as
     // non-transferable and serialize them into the message.
-    ArrayBufferArray transferableArrayBuffers = transferables.arrayBuffers;
-    transferables.arrayBuffers.clear();
-    ImageBitmapArray transferableImageBitmaps = transferables.imageBitmaps;
-    transferables.imageBitmaps.clear();
+    ArrayBufferArray transferableArrayBuffers = transferables.array_buffers;
+    transferables.array_buffers.Clear();
+    ImageBitmapArray transferableImageBitmaps = transferables.image_bitmaps;
+    transferables.image_bitmaps.Clear();
     SerializedScriptValue::SerializeOptions options;
     options.transferables = &transferables;
-    message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], options, exceptionState);
-    if (exceptionState.hadException())
+    message = SerializedScriptValue::Serialize(info.GetIsolate(), info[0], options, exceptionState);
+    if (exceptionState.HadException())
       return;
 
     // Neuter the original array buffers on the sender context.
-    SerializedScriptValue::transferArrayBufferContents(info.GetIsolate(), transferableArrayBuffers, exceptionState);
-    if (exceptionState.hadException())
+    SerializedScriptValue::TransferArrayBufferContents(info.GetIsolate(), transferableArrayBuffers, exceptionState);
+    if (exceptionState.HadException())
       return;
     // Neuter the original image bitmaps on the sender context.
-    SerializedScriptValue::transferImageBitmapContents(info.GetIsolate(), transferableImageBitmaps, exceptionState);
-    if (exceptionState.hadException())
+    SerializedScriptValue::TransferImageBitmapContents(info.GetIsolate(), transferableImageBitmaps, exceptionState);
+    if (exceptionState.HadException())
       return;
   }
 
   // FIXME: Only pass scriptState/exceptionState if instance really requires it.
-  ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-  message->unregisterMemoryAllocatedWithCurrentScriptContext();
-  instance->postMessage(scriptState, message.get(), transferables.messagePorts, exceptionState);
+  ScriptState* scriptState = ScriptState::Current(info.GetIsolate());
+  message->UnregisterMemoryAllocatedWithCurrentScriptContext();
+  instance->postMessage(scriptState, message.Get(), transferables.message_ports, exceptionState);
 }
 {% endmacro %}
 
@@ -480,23 +480,23 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
 void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% if not method.overloads %}{# Overloaded methods are measured in overload_resolution_method() #}
   {% if method.measure_as %}
-  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as('Method')}});
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.measure_as('Method')}});
   {% endif %}
   {% if method.deprecate_as %}
-  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), UseCounter::k{{method.deprecate_as}});
   {% endif %}
   {% endif %}{# not method.overloads #}
   {% if world_suffix in method.activity_logging_world_list %}
   {% if method.is_static %}
-  ScriptState* scriptState = ScriptState::forFunctionObject(info);
+  ScriptState* scriptState = ScriptState::ForFunctionObject(info);
   {% else %}
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
   {% endif %}
-  V8PerContextData* contextData = scriptState->perContextData();
-  if (contextData && contextData->activityLogger()) {
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{method.name}}");
-    Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
-    contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
+  V8PerContextData* contextData = scriptState->PerContextData();
+  if (contextData && contextData->ActivityLogger()) {
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
+    Vector<v8::Local<v8::Value>> loggerArgs = ToImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
+    contextData->ActivityLogger()->LogMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.Data());
   }
   {% endif %}
   {% if method.is_ce_reactions %}
@@ -520,17 +520,17 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
    properly supports the incumbent realm. #}
 static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int domTemplateKey; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::world(info.GetIsolate()->GetCurrentContext());
-  v8::Local<v8::FunctionTemplate> interfaceTemplate = data->findInterfaceTemplate(world, &{{v8_class}}::wrapperTypeInfo);
+  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
+  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Local<v8::FunctionTemplate> interfaceTemplate = data->FindInterfaceTemplate(world, &{{v8_class}}::wrapperTypeInfo);
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interfaceTemplate);
 
-  v8::Local<v8::FunctionTemplate> methodTemplate = data->findOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), signature, {{method.length}});
+  v8::Local<v8::FunctionTemplate> methodTemplate = data->FindOrCreateOperationTemplate(world, &domTemplateKey, {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}, V8Undefined(), signature, {{method.length}});
   // Return the function by default, unless the user script has overwritten it.
-  v8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
+  V8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 
   {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, BindingSecurity::ErrorReportOption::DoNotReport)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl, BindingSecurity::ErrorReportOption::kDoNotReport)) {
     return;
   }
 
@@ -539,10 +539,10 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
   // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
   {% endraw %}
   V8PrivateProperty::Symbol propertySymbol =
-      V8PrivateProperty::getSymbol(info.GetIsolate(), "{{method.name}}");
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), "{{method.name}}");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
-  if (propertySymbol.hasValue(holder)) {
-    v8SetReturnValue(info, propertySymbol.getOrUndefined(holder));
+  if (propertySymbol.HasValue(holder)) {
+    V8SetReturnValue(info, propertySymbol.GetOrUndefined(holder));
   }
 }
 {% endmacro %}
@@ -564,21 +564,21 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   {% if constructor.is_named_constructor %}
   if (!info.IsConstructCall()) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::ConstructorNotCallableAsFunction("{{constructor.name}}"));
     return;
   }
 
-  if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
-    v8SetReturnValue(info, info.Holder());
+  if (ConstructorMode::Current(info.GetIsolate()) == ConstructorMode::kWrapExistingObject) {
+    V8SetReturnValue(info, info.Holder());
     return;
   }
   {% endif %}
 
   {% if 'exceptionState' in function_call %}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ConstructionContext, "{{interface_name}}");
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "{{interface_name}}");
   {% endif %}
   {% if 'scriptState' in function_call %}
-  ScriptState* scriptState = ScriptState::forReceiverObject(info);
+  ScriptState* scriptState = ScriptState::ForReceiverObject(info);
   {% endif %}
 
   {{function_call | indent(2)}}
@@ -592,8 +592,8 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
                                        if constructor.is_named_constructor else
                                        '') %}
 v8::Local<v8::Object> wrapper = info.Holder();
-wrapper = impl->associateWithWrapper(info.GetIsolate(), &{{constructor_class}}::wrapperTypeInfo, wrapper);
-v8SetReturnValue(info, wrapper);
+wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &{{constructor_class}}::wrapperTypeInfo, wrapper);
+V8SetReturnValue(info, wrapper);
 {% endmacro %}
 
 
@@ -608,17 +608,17 @@ v8SetReturnValue(info, wrapper);
 {% set property_attribute =
        'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
        if method.property_attributes else 'v8::None' %}
-{% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder'
-       if method.returns_promise else 'V8DOMConfiguration::CheckHolder' %}
-{% set access_check = 'V8DOMConfiguration::CheckAccess'
-       if method.is_check_security_for_receiver else 'V8DOMConfiguration::DoNotCheckAccess' %}
+{% set holder_check = 'V8DOMConfiguration::kDoNotCheckHolder'
+       if method.returns_promise else 'V8DOMConfiguration::kCheckHolder' %}
+{% set access_check = 'V8DOMConfiguration::kCheckAccess'
+       if method.is_check_security_for_receiver else 'V8DOMConfiguration::kDoNotCheckAccess' %}
 {% if method.is_per_world_bindings %}
 {% set method_callback_for_main_world =
        '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.name) %}
-{"{{method.name}}", {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::MainWorld},
-{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::NonMainWorlds}
+{"{{method.name}}", {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::kMainWorld},
+{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::kNonMainWorlds}
 {%- else %}
-{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::AllWorlds}
+{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::kAllWorlds}
 {%- endif %}
 {%- endmacro %}
 
@@ -629,7 +629,7 @@ const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration
   {{method_configuration(method) | indent(2)}}
 };
 for (const auto& methodConfig : {{method.name}}MethodConfiguration)
-  V8DOMConfiguration::installMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, methodConfig);
+  V8DOMConfiguration::InstallMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, methodConfig);
 {%- endmacro %}
 
 
@@ -650,7 +650,7 @@ const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration
   {{method_configuration(method) | indent(2)}}
 };
 for (const auto& methodConfig : {{method.name}}MethodConfiguration)
-  V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+  V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfilter %}{# secure_context() #}

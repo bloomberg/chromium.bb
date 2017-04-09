@@ -14,7 +14,7 @@ namespace blink {
 
 class CSSContentDistributionValue : public CSSValue {
  public:
-  static CSSContentDistributionValue* create(CSSValueID distribution,
+  static CSSContentDistributionValue* Create(CSSValueID distribution,
                                              CSSValueID position,
                                              CSSValueID overflow) {
     return new CSSContentDistributionValue(distribution, position, overflow);
@@ -22,24 +22,24 @@ class CSSContentDistributionValue : public CSSValue {
   ~CSSContentDistributionValue();
 
   // TODO(sashab): Make these return CSSValueIDs instead of CSSValues.
-  CSSIdentifierValue* distribution() const {
-    return CSSIdentifierValue::create(m_distribution);
+  CSSIdentifierValue* Distribution() const {
+    return CSSIdentifierValue::Create(distribution_);
   }
 
-  CSSIdentifierValue* position() const {
-    return CSSIdentifierValue::create(m_position);
+  CSSIdentifierValue* GetPosition() const {
+    return CSSIdentifierValue::Create(position_);
   }
 
-  CSSIdentifierValue* overflow() const {
-    return CSSIdentifierValue::create(m_overflow);
+  CSSIdentifierValue* Overflow() const {
+    return CSSIdentifierValue::Create(overflow_);
   }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSContentDistributionValue&) const;
+  bool Equals(const CSSContentDistributionValue&) const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValue::traceAfterDispatch(visitor);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  private:
@@ -47,13 +47,13 @@ class CSSContentDistributionValue : public CSSValue {
                               CSSValueID position,
                               CSSValueID overflow);
 
-  CSSValueID m_distribution;
-  CSSValueID m_position;
-  CSSValueID m_overflow;
+  CSSValueID distribution_;
+  CSSValueID position_;
+  CSSValueID overflow_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSContentDistributionValue,
-                            isContentDistributionValue());
+                            IsContentDistributionValue());
 
 }  // namespace blink
 

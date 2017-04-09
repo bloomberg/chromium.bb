@@ -26,9 +26,9 @@ namespace {
 net::registry_controlled_domains::PrivateRegistryFilter
 getNetPrivateRegistryFilter(blink::NetworkUtils::PrivateRegistryFilter filter) {
   switch (filter) {
-    case blink::NetworkUtils::IncludePrivateRegistries:
+    case blink::NetworkUtils::kIncludePrivateRegistries:
       return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
-    case blink::NetworkUtils::ExcludePrivateRegistries:
+    case blink::NetworkUtils::kExcludePrivateRegistries:
       return net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
   }
   // There are only two NetworkUtils::PrivateRegistryFilter enum entries, so
@@ -44,69 +44,69 @@ namespace blink {
 
 namespace NetworkUtils {
 
-bool isReservedIPAddress(const String& host) {
+bool IsReservedIPAddress(const String& host) {
   net::IPAddress address;
   StringUTF8Adaptor utf8(host);
-  if (!net::ParseURLHostnameToAddress(utf8.asStringPiece(), &address))
+  if (!net::ParseURLHostnameToAddress(utf8.AsStringPiece(), &address))
     return false;
   return address.IsReserved();
 }
 
-bool isLocalHostname(const String& host, bool* isLocal6) {
+bool IsLocalHostname(const String& host, bool* is_local6) {
   StringUTF8Adaptor utf8(host);
-  return net::IsLocalHostname(utf8.asStringPiece(), isLocal6);
+  return net::IsLocalHostname(utf8.AsStringPiece(), is_local6);
 }
 
-String getDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
-  StringUTF8Adaptor hostUtf8(host);
+String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
+  StringUTF8Adaptor host_utf8(host);
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-      hostUtf8.asStringPiece(), getNetPrivateRegistryFilter(filter));
+      host_utf8.AsStringPiece(), getNetPrivateRegistryFilter(filter));
   return String(domain.data(), domain.length());
 }
 
-PassRefPtr<SharedBuffer> parseDataURLAndPopulateResponse(
+PassRefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
     const KURL& url,
     ResourceResponse& response) {
   // The following code contains duplication of GetInfoFromDataURL() and
   // WebURLLoaderImpl::PopulateURLResponse() in
   // content/child/web_url_loader_impl.cc. Merge them once content/child is
   // moved to platform/.
-  std::string utf8MimeType;
-  std::string utf8Charset;
-  std::string dataString;
+  std::string utf8_mime_type;
+  std::string utf8_charset;
+  std::string data_string;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(std::string()));
 
   int result = net::URLRequestDataJob::BuildResponse(
-      WebStringToGURL(url.getString()), &utf8MimeType, &utf8Charset,
-      &dataString, headers.get());
+      WebStringToGURL(url.GetString()), &utf8_mime_type, &utf8_charset,
+      &data_string, headers.get());
   if (result != net::OK)
     return nullptr;
 
-  if (!mime_util::IsSupportedMimeType(utf8MimeType))
+  if (!mime_util::IsSupportedMimeType(utf8_mime_type))
     return nullptr;
 
   RefPtr<SharedBuffer> data =
-      SharedBuffer::create(dataString.data(), dataString.size());
-  response.setHTTPStatusCode(200);
-  response.setHTTPStatusText("OK");
-  response.setURL(url);
-  response.setMimeType(WebString::fromUTF8(utf8MimeType));
-  response.setExpectedContentLength(data->size());
-  response.setTextEncodingName(WebString::fromUTF8(utf8Charset));
+      SharedBuffer::Create(data_string.data(), data_string.size());
+  response.SetHTTPStatusCode(200);
+  response.SetHTTPStatusText("OK");
+  response.SetURL(url);
+  response.SetMimeType(WebString::FromUTF8(utf8_mime_type));
+  response.SetExpectedContentLength(data->size());
+  response.SetTextEncodingName(WebString::FromUTF8(utf8_charset));
 
   size_t iter = 0;
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response.addHTTPHeaderField(WebString::fromLatin1(name),
-                                WebString::fromLatin1(value));
+    response.AddHTTPHeaderField(WebString::FromLatin1(name),
+                                WebString::FromLatin1(value));
   }
   return data;
 }
 
-bool isRedirectResponseCode(int responseCode) {
-  return net::HttpResponseHeaders::IsRedirectResponseCode(responseCode);
+bool IsRedirectResponseCode(int response_code) {
+  return net::HttpResponseHeaders::IsRedirectResponseCode(response_code);
 }
 
 }  // NetworkUtils

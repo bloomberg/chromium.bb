@@ -11,43 +11,43 @@
 
 namespace blink {
 
-void BeginCompositingDisplayItem::replay(GraphicsContext& context) const {
-  context.beginLayer(m_opacity, m_xferMode, m_hasBounds ? &m_bounds : nullptr,
-                     m_colorFilter);
+void BeginCompositingDisplayItem::Replay(GraphicsContext& context) const {
+  context.BeginLayer(opacity_, xfer_mode_, has_bounds_ ? &bounds_ : nullptr,
+                     color_filter_);
 }
 
-void BeginCompositingDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void BeginCompositingDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  SkRect bounds = m_bounds;
-  list->appendCompositingItem(
-      m_opacity, m_xferMode, m_hasBounds ? &bounds : nullptr,
-      GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter)
+  SkRect bounds = bounds_;
+  list->AppendCompositingItem(
+      opacity_, xfer_mode_, has_bounds_ ? &bounds : nullptr,
+      GraphicsContext::WebCoreColorFilterToSkiaColorFilter(color_filter_)
           .get());
 }
 
 #ifndef NDEBUG
-void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(
-    WTF::StringBuilder& stringBuilder) const {
-  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-  stringBuilder.append(WTF::String::format(
-      ", xferMode: %d, opacity: %f", static_cast<int>(m_xferMode), m_opacity));
-  if (m_hasBounds)
-    stringBuilder.append(
-        WTF::String::format(", bounds: [%f, %f, %f, %f]",
-                            m_bounds.location().x(), m_bounds.location().y(),
-                            m_bounds.size().width(), m_bounds.size().height()));
+void BeginCompositingDisplayItem::DumpPropertiesAsDebugString(
+    WTF::StringBuilder& string_builder) const {
+  DisplayItem::DumpPropertiesAsDebugString(string_builder);
+  string_builder.Append(WTF::String::Format(
+      ", xferMode: %d, opacity: %f", static_cast<int>(xfer_mode_), opacity_));
+  if (has_bounds_)
+    string_builder.Append(
+        WTF::String::Format(", bounds: [%f, %f, %f, %f]",
+                            bounds_.Location().X(), bounds_.Location().Y(),
+                            bounds_.size().Width(), bounds_.size().Height()));
 }
 #endif
 
-void EndCompositingDisplayItem::replay(GraphicsContext& context) const {
-  context.endLayer();
+void EndCompositingDisplayItem::Replay(GraphicsContext& context) const {
+  context.EndLayer();
 }
 
-void EndCompositingDisplayItem::appendToWebDisplayItemList(
-    const IntRect& visualRect,
+void EndCompositingDisplayItem::AppendToWebDisplayItemList(
+    const IntRect& visual_rect,
     WebDisplayItemList* list) const {
-  list->appendEndCompositingItem();
+  list->AppendEndCompositingItem();
 }
 
 }  // namespace blink

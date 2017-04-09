@@ -15,25 +15,27 @@ using blink::WebURL;
 
 namespace content {
 
-void RendererWebCookieJarImpl::setCookie(
-    const WebURL& url, const WebURL& first_party_for_cookies,
-    const WebString& value) {
-  std::string value_utf8 = value.utf8(
-      WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
+void RendererWebCookieJarImpl::SetCookie(const WebURL& url,
+                                         const WebURL& first_party_for_cookies,
+                                         const WebString& value) {
+  std::string value_utf8 =
+      value.Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   RenderThreadImpl::current()->render_frame_message_filter()->SetCookie(
       sender_->GetRoutingID(), url, first_party_for_cookies, value_utf8);
 }
 
-WebString RendererWebCookieJarImpl::cookies(
-    const WebURL& url, const WebURL& first_party_for_cookies) {
+WebString RendererWebCookieJarImpl::Cookies(
+    const WebURL& url,
+    const WebURL& first_party_for_cookies) {
   std::string value_utf8;
   RenderThreadImpl::current()->render_frame_message_filter()->GetCookies(
       sender_->GetRoutingID(), url, first_party_for_cookies, &value_utf8);
-  return WebString::fromUTF8(value_utf8);
+  return WebString::FromUTF8(value_utf8);
 }
 
-bool RendererWebCookieJarImpl::cookiesEnabled(
-    const WebURL& url, const WebURL& first_party_for_cookies) {
+bool RendererWebCookieJarImpl::CookiesEnabled(
+    const WebURL& url,
+    const WebURL& first_party_for_cookies) {
   bool cookies_enabled = false;
   sender_->Send(new FrameHostMsg_CookiesEnabled(
       sender_->GetRoutingID(), url, first_party_for_cookies, &cookies_enabled));

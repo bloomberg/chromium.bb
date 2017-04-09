@@ -47,72 +47,72 @@ class CORE_EXPORT Dictionary final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  Dictionary() : m_isolate(nullptr) {}
+  Dictionary() : isolate_(nullptr) {}
   Dictionary(v8::Isolate*,
-             v8::Local<v8::Value> dictionaryObject,
+             v8::Local<v8::Value> dictionary_object,
              ExceptionState&);
 
   Dictionary& operator=(const Dictionary&) = default;
 
-  bool isObject() const { return !m_dictionaryObject.IsEmpty(); }
-  bool isUndefinedOrNull() const { return !isObject(); }
+  bool IsObject() const { return !dictionary_object_.IsEmpty(); }
+  bool IsUndefinedOrNull() const { return !IsObject(); }
 
-  v8::Local<v8::Value> v8Value() const {
-    if (!m_isolate)
+  v8::Local<v8::Value> V8Value() const {
+    if (!isolate_)
       return v8::Local<v8::Value>();
-    switch (m_valueType) {
-      case ValueType::Undefined:
-        return v8::Undefined(m_isolate);
-      case ValueType::Null:
-        return v8::Null(m_isolate);
-      case ValueType::Object:
-        return m_dictionaryObject;
+    switch (value_type_) {
+      case ValueType::kUndefined:
+        return v8::Undefined(isolate_);
+      case ValueType::kNull:
+        return v8::Null(isolate_);
+      case ValueType::kObject:
+        return dictionary_object_;
       default:
         NOTREACHED();
         return v8::Local<v8::Value>();
     }
   }
 
-  bool get(const StringView& key, v8::Local<v8::Value>& value) const {
-    return m_isolate && getInternal(v8String(m_isolate, key), value);
+  bool Get(const StringView& key, v8::Local<v8::Value>& value) const {
+    return isolate_ && GetInternal(V8String(isolate_, key), value);
   }
-  bool get(const StringView& key, Dictionary&) const;
+  bool Get(const StringView& key, Dictionary&) const;
 
-  HashMap<String, String> getOwnPropertiesAsStringHashMap(
+  HashMap<String, String> GetOwnPropertiesAsStringHashMap(
       ExceptionState&) const;
-  Vector<String> getPropertyNames(ExceptionState&) const;
+  Vector<String> GetPropertyNames(ExceptionState&) const;
 
-  bool hasProperty(const StringView& key, ExceptionState&) const;
+  bool HasProperty(const StringView& key, ExceptionState&) const;
 
-  v8::Isolate* isolate() const { return m_isolate; }
-  v8::Local<v8::Context> v8Context() const {
-    ASSERT(m_isolate);
-    return m_isolate->GetCurrentContext();
+  v8::Isolate* GetIsolate() const { return isolate_; }
+  v8::Local<v8::Context> V8Context() const {
+    ASSERT(isolate_);
+    return isolate_->GetCurrentContext();
   }
 
-  DictionaryIterator getIterator(ExecutionContext*) const;
+  DictionaryIterator GetIterator(ExecutionContext*) const;
 
  private:
-  bool getInternal(const v8::Local<v8::Value>& key,
+  bool GetInternal(const v8::Local<v8::Value>& key,
                    v8::Local<v8::Value>& result) const;
 
-  v8::Isolate* m_isolate;
+  v8::Isolate* isolate_;
   // Undefined, Null, or Object is allowed as type of dictionary.
   enum class ValueType {
-    Undefined,
-    Null,
-    Object
-  } m_valueType = ValueType::Undefined;
-  v8::Local<v8::Object> m_dictionaryObject;  // an Object or empty
+    kUndefined,
+    kNull,
+    kObject
+  } value_type_ = ValueType::kUndefined;
+  v8::Local<v8::Object> dictionary_object_;  // an Object or empty
 };
 
 template <>
 struct NativeValueTraits<Dictionary>
     : public NativeValueTraitsBase<Dictionary> {
-  static Dictionary nativeValue(v8::Isolate* isolate,
+  static Dictionary NativeValue(v8::Isolate* isolate,
                                 v8::Local<v8::Value> value,
-                                ExceptionState& exceptionState) {
-    return Dictionary(isolate, value, exceptionState);
+                                ExceptionState& exception_state) {
+    return Dictionary(isolate, value, exception_state);
   }
 };
 
@@ -121,33 +121,33 @@ struct NativeValueTraits<Dictionary>
 struct DictionaryHelper {
   STATIC_ONLY(DictionaryHelper);
   template <typename T>
-  static bool get(const Dictionary&, const StringView& key, T& value);
+  static bool Get(const Dictionary&, const StringView& key, T& value);
   template <typename T>
-  static bool get(const Dictionary&,
+  static bool Get(const Dictionary&,
                   const StringView& key,
                   T& value,
-                  bool& hasValue);
+                  bool& has_value);
   template <typename T>
-  static bool get(const Dictionary&,
+  static bool Get(const Dictionary&,
                   const StringView& key,
                   T& value,
                   ExceptionState&);
   template <typename T>
-  static bool getWithUndefinedCheck(const Dictionary& dictionary,
+  static bool GetWithUndefinedCheck(const Dictionary& dictionary,
                                     const StringView& key,
                                     T& value) {
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value) || v8Value.IsEmpty() ||
-        v8Value->IsUndefined())
+    v8::Local<v8::Value> v8_value;
+    if (!dictionary.Get(key, v8_value) || v8_value.IsEmpty() ||
+        v8_value->IsUndefined())
       return false;
-    return DictionaryHelper::get(dictionary, key, value);
+    return DictionaryHelper::Get(dictionary, key, value);
   }
   template <template <typename> class PointerType, typename T>
-  static bool get(const Dictionary&,
+  static bool Get(const Dictionary&,
                   const StringView& key,
                   PointerType<T>& value);
   template <typename T>
-  static bool get(const Dictionary&, const StringView& key, Nullable<T>& value);
+  static bool Get(const Dictionary&, const StringView& key, Nullable<T>& value);
 };
 
 }  // namespace blink

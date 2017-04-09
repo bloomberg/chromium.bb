@@ -9,22 +9,22 @@
 namespace blink {
 
 CSSTransitionData::CSSTransitionData() {
-  m_propertyList.push_back(initialProperty());
+  property_list_.push_back(InitialProperty());
 }
 
 CSSTransitionData::CSSTransitionData(const CSSTransitionData& other)
-    : CSSTimingData(other), m_propertyList(other.m_propertyList) {}
+    : CSSTimingData(other), property_list_(other.property_list_) {}
 
-bool CSSTransitionData::transitionsMatchForStyleRecalc(
+bool CSSTransitionData::TransitionsMatchForStyleRecalc(
     const CSSTransitionData& other) const {
-  return m_propertyList == other.m_propertyList;
+  return property_list_ == other.property_list_;
 }
 
-Timing CSSTransitionData::convertToTiming(size_t index) const {
-  DCHECK_LT(index, m_propertyList.size());
+Timing CSSTransitionData::ConvertToTiming(size_t index) const {
+  DCHECK_LT(index, property_list_.size());
   // Note that the backwards fill part is required for delay to work.
-  Timing timing = CSSTimingData::convertToTiming(index);
-  timing.fillMode = Timing::FillMode::NONE;
+  Timing timing = CSSTimingData::ConvertToTiming(index);
+  timing.fill_mode = Timing::FillMode::NONE;
   return timing;
 }
 

@@ -45,11 +45,11 @@ class CSSAnimatableValueFactory {
   STATIC_ONLY(CSSAnimatableValueFactory);
 
  public:
-  static PassRefPtr<AnimatableValue> create(const PropertyHandle&,
+  static PassRefPtr<AnimatableValue> Create(const PropertyHandle&,
                                             const ComputedStyle&);
 
  private:
-  static PassRefPtr<AnimatableValue> createFromColor(CSSPropertyID,
+  static PassRefPtr<AnimatableValue> CreateFromColor(CSSPropertyID,
                                                      const ComputedStyle&);
 };
 

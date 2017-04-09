@@ -30,28 +30,28 @@ namespace blink {
 
 class SVGPolyElement : public SVGGeometryElement {
  public:
-  SVGAnimatedPointList* points() const { return m_points.get(); }
+  SVGAnimatedPointList* Points() const { return points_.Get(); }
 
-  SVGPointListTearOff* pointsFromJavascript() { return m_points->baseVal(); }
-  SVGPointListTearOff* animatedPoints() { return m_points->animVal(); }
+  SVGPointListTearOff* pointsFromJavascript() { return points_->baseVal(); }
+  SVGPointListTearOff* animatedPoints() { return points_->animVal(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   SVGPolyElement(const QualifiedName&, Document&);
 
-  Path asPathFromPoints() const;
+  Path AsPathFromPoints() const;
 
  private:
-  void svgAttributeChanged(const QualifiedName&) final;
+  void SvgAttributeChanged(const QualifiedName&) final;
 
  private:
-  Member<SVGAnimatedPointList> m_points;
+  Member<SVGAnimatedPointList> points_;
 };
 
-inline bool isSVGPolyElement(const SVGElement& element) {
-  return element.hasTagName(SVGNames::polygonTag) ||
-         element.hasTagName(SVGNames::polylineTag);
+inline bool IsSVGPolyElement(const SVGElement& element) {
+  return element.HasTagName(SVGNames::polygonTag) ||
+         element.HasTagName(SVGNames::polylineTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);

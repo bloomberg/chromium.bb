@@ -37,20 +37,20 @@ class DeviceRotationRate final : public GarbageCollected<DeviceRotationRate>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DeviceRotationRate* create(
-      DeviceMotionData::RotationRate* rotationRate) {
-    return new DeviceRotationRate(rotationRate);
+  static DeviceRotationRate* Create(
+      DeviceMotionData::RotationRate* rotation_rate) {
+    return new DeviceRotationRate(rotation_rate);
   }
   DECLARE_TRACE();
 
-  double alpha(bool& isNull) const;
-  double beta(bool& isNull) const;
-  double gamma(bool& isNull) const;
+  double alpha(bool& is_null) const;
+  double beta(bool& is_null) const;
+  double gamma(bool& is_null) const;
 
  private:
   explicit DeviceRotationRate(DeviceMotionData::RotationRate*);
 
-  Member<DeviceMotionData::RotationRate> m_rotationRate;
+  Member<DeviceMotionData::RotationRate> rotation_rate_;
 };
 
 }  // namespace blink

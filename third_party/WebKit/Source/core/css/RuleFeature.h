@@ -45,14 +45,14 @@ struct RuleFeature {
 
  public:
   RuleFeature(StyleRule*,
-              unsigned selectorIndex,
-              bool hasDocumentSecurityOrigin);
+              unsigned selector_index,
+              bool has_document_security_origin);
 
   DECLARE_TRACE();
 
   Member<StyleRule> rule;
-  unsigned selectorIndex;
-  bool hasDocumentSecurityOrigin;
+  unsigned selector_index;
+  bool has_document_security_origin;
 };
 
 }  // namespace blink
@@ -71,99 +71,101 @@ class CORE_EXPORT RuleFeatureSet {
   RuleFeatureSet();
   ~RuleFeatureSet();
 
-  void add(const RuleFeatureSet&);
-  void clear();
+  void Add(const RuleFeatureSet&);
+  void Clear();
 
-  enum SelectorPreMatch { SelectorNeverMatches, SelectorMayMatch };
+  enum SelectorPreMatch { kSelectorNeverMatches, kSelectorMayMatch };
 
-  SelectorPreMatch collectFeaturesFromRuleData(const RuleData&);
+  SelectorPreMatch CollectFeaturesFromRuleData(const RuleData&);
 
-  bool usesSiblingRules() const { return !m_siblingRules.isEmpty(); }
-  bool usesFirstLineRules() const { return m_metadata.usesFirstLineRules; }
-  bool usesWindowInactiveSelector() const {
-    return m_metadata.usesWindowInactiveSelector;
+  bool UsesSiblingRules() const { return !sibling_rules_.IsEmpty(); }
+  bool UsesFirstLineRules() const { return metadata_.uses_first_line_rules; }
+  bool UsesWindowInactiveSelector() const {
+    return metadata_.uses_window_inactive_selector;
   }
-  bool needsFullRecalcForRuleSetInvalidation() const {
-    return m_metadata.needsFullRecalcForRuleSetInvalidation;
-  }
-
-  unsigned maxDirectAdjacentSelectors() const {
-    return m_metadata.maxDirectAdjacentSelectors;
+  bool NeedsFullRecalcForRuleSetInvalidation() const {
+    return metadata_.needs_full_recalc_for_rule_set_invalidation;
   }
 
-  bool hasSelectorForAttribute(const AtomicString& attributeName) const {
-    DCHECK(!attributeName.isEmpty());
-    return m_attributeInvalidationSets.contains(attributeName);
+  unsigned MaxDirectAdjacentSelectors() const {
+    return metadata_.max_direct_adjacent_selectors;
   }
 
-  bool hasSelectorForClass(const AtomicString& classValue) const {
-    DCHECK(!classValue.isEmpty());
-    return m_classInvalidationSets.contains(classValue);
+  bool HasSelectorForAttribute(const AtomicString& attribute_name) const {
+    DCHECK(!attribute_name.IsEmpty());
+    return attribute_invalidation_sets_.Contains(attribute_name);
   }
 
-  bool hasSelectorForId(const AtomicString& idValue) const {
-    return m_idInvalidationSets.contains(idValue);
+  bool HasSelectorForClass(const AtomicString& class_value) const {
+    DCHECK(!class_value.IsEmpty());
+    return class_invalidation_sets_.Contains(class_value);
   }
 
-  const HeapVector<RuleFeature>& siblingRules() const { return m_siblingRules; }
-  const HeapVector<RuleFeature>& uncommonAttributeRules() const {
-    return m_uncommonAttributeRules;
+  bool HasSelectorForId(const AtomicString& id_value) const {
+    return id_invalidation_sets_.Contains(id_value);
   }
 
-  const MediaQueryResultList& viewportDependentMediaQueryResults() const {
-    return m_viewportDependentMediaQueryResults;
+  const HeapVector<RuleFeature>& SiblingRules() const { return sibling_rules_; }
+  const HeapVector<RuleFeature>& UncommonAttributeRules() const {
+    return uncommon_attribute_rules_;
   }
-  const MediaQueryResultList& deviceDependentMediaQueryResults() const {
-    return m_deviceDependentMediaQueryResults;
+
+  const MediaQueryResultList& ViewportDependentMediaQueryResults() const {
+    return viewport_dependent_media_query_results_;
   }
-  MediaQueryResultList& viewportDependentMediaQueryResults() {
-    return m_viewportDependentMediaQueryResults;
+  const MediaQueryResultList& DeviceDependentMediaQueryResults() const {
+    return device_dependent_media_query_results_;
   }
-  MediaQueryResultList& deviceDependentMediaQueryResults() {
-    return m_deviceDependentMediaQueryResults;
+  MediaQueryResultList& ViewportDependentMediaQueryResults() {
+    return viewport_dependent_media_query_results_;
+  }
+  MediaQueryResultList& DeviceDependentMediaQueryResults() {
+    return device_dependent_media_query_results_;
   }
 
   // Collect descendant and sibling invalidation sets.
-  void collectInvalidationSetsForClass(InvalidationLists&,
+  void CollectInvalidationSetsForClass(InvalidationLists&,
                                        Element&,
-                                       const AtomicString& className) const;
-  void collectInvalidationSetsForId(InvalidationLists&,
+                                       const AtomicString& class_name) const;
+  void CollectInvalidationSetsForId(InvalidationLists&,
                                     Element&,
                                     const AtomicString& id) const;
-  void collectInvalidationSetsForAttribute(
+  void CollectInvalidationSetsForAttribute(
       InvalidationLists&,
       Element&,
-      const QualifiedName& attributeName) const;
-  void collectInvalidationSetsForPseudoClass(InvalidationLists&,
+      const QualifiedName& attribute_name) const;
+  void CollectInvalidationSetsForPseudoClass(InvalidationLists&,
                                              Element&,
                                              CSSSelector::PseudoType) const;
 
-  void collectSiblingInvalidationSetForClass(InvalidationLists&,
-                                             Element&,
-                                             const AtomicString& className,
-                                             unsigned minDirectAdjacent) const;
-  void collectSiblingInvalidationSetForId(InvalidationLists&,
-                                          Element&,
-                                          const AtomicString& id,
-                                          unsigned minDirectAdjacent) const;
-  void collectSiblingInvalidationSetForAttribute(
+  void CollectSiblingInvalidationSetForClass(
       InvalidationLists&,
       Element&,
-      const QualifiedName& attributeName,
-      unsigned minDirectAdjacent) const;
-  void collectUniversalSiblingInvalidationSet(InvalidationLists&,
-                                              unsigned minDirectAdjacent) const;
-  void collectNthInvalidationSet(InvalidationLists&) const;
-  void collectTypeRuleInvalidationSet(InvalidationLists&, ContainerNode&) const;
+      const AtomicString& class_name,
+      unsigned min_direct_adjacent) const;
+  void CollectSiblingInvalidationSetForId(InvalidationLists&,
+                                          Element&,
+                                          const AtomicString& id,
+                                          unsigned min_direct_adjacent) const;
+  void CollectSiblingInvalidationSetForAttribute(
+      InvalidationLists&,
+      Element&,
+      const QualifiedName& attribute_name,
+      unsigned min_direct_adjacent) const;
+  void CollectUniversalSiblingInvalidationSet(
+      InvalidationLists&,
+      unsigned min_direct_adjacent) const;
+  void CollectNthInvalidationSet(InvalidationLists&) const;
+  void CollectTypeRuleInvalidationSet(InvalidationLists&, ContainerNode&) const;
 
-  bool hasIdsInSelectors() const { return m_idInvalidationSets.size() > 0; }
+  bool HasIdsInSelectors() const { return id_invalidation_sets_.size() > 0; }
 
   DECLARE_TRACE();
 
-  bool isAlive() const { return m_isAlive; }
+  bool IsAlive() const { return is_alive_; }
 
  protected:
-  InvalidationSet* invalidationSetForSimpleSelector(const CSSSelector&,
+  InvalidationSet* InvalidationSetForSimpleSelector(const CSSSelector&,
                                                     InvalidationType);
 
  private:
@@ -180,126 +182,126 @@ class CORE_EXPORT RuleFeatureSet {
 
   struct FeatureMetadata {
     DISALLOW_NEW();
-    void add(const FeatureMetadata& other);
-    void clear();
+    void Add(const FeatureMetadata& other);
+    void Clear();
 
-    bool usesFirstLineRules = false;
-    bool usesWindowInactiveSelector = false;
-    bool foundSiblingSelector = false;
-    bool foundInsertionPointCrossing = false;
-    bool needsFullRecalcForRuleSetInvalidation = false;
-    unsigned maxDirectAdjacentSelectors = 0;
+    bool uses_first_line_rules = false;
+    bool uses_window_inactive_selector = false;
+    bool found_sibling_selector = false;
+    bool found_insertion_point_crossing = false;
+    bool needs_full_recalc_for_rule_set_invalidation = false;
+    unsigned max_direct_adjacent_selectors = 0;
   };
 
-  SelectorPreMatch collectFeaturesFromSelector(const CSSSelector&,
+  SelectorPreMatch CollectFeaturesFromSelector(const CSSSelector&,
                                                FeatureMetadata&);
 
-  InvalidationSet& ensureClassInvalidationSet(const AtomicString& className,
+  InvalidationSet& EnsureClassInvalidationSet(const AtomicString& class_name,
                                               InvalidationType);
-  InvalidationSet& ensureAttributeInvalidationSet(
-      const AtomicString& attributeName,
+  InvalidationSet& EnsureAttributeInvalidationSet(
+      const AtomicString& attribute_name,
       InvalidationType);
-  InvalidationSet& ensureIdInvalidationSet(const AtomicString& id,
+  InvalidationSet& EnsureIdInvalidationSet(const AtomicString& id,
                                            InvalidationType);
-  InvalidationSet& ensurePseudoInvalidationSet(CSSSelector::PseudoType,
+  InvalidationSet& EnsurePseudoInvalidationSet(CSSSelector::PseudoType,
                                                InvalidationType);
-  SiblingInvalidationSet& ensureUniversalSiblingInvalidationSet();
-  DescendantInvalidationSet& ensureNthInvalidationSet();
-  DescendantInvalidationSet& ensureTypeRuleInvalidationSet();
+  SiblingInvalidationSet& EnsureUniversalSiblingInvalidationSet();
+  DescendantInvalidationSet& EnsureNthInvalidationSet();
+  DescendantInvalidationSet& EnsureTypeRuleInvalidationSet();
 
-  void updateInvalidationSets(const RuleData&);
-  void updateInvalidationSetsForContentAttribute(const RuleData&);
+  void UpdateInvalidationSets(const RuleData&);
+  void UpdateInvalidationSetsForContentAttribute(const RuleData&);
 
   struct InvalidationSetFeatures {
     DISALLOW_NEW();
 
-    void add(const InvalidationSetFeatures& other);
-    bool hasFeatures() const;
-    bool hasIdClassOrAttribute() const;
+    void Add(const InvalidationSetFeatures& other);
+    bool HasFeatures() const;
+    bool HasIdClassOrAttribute() const;
 
     Vector<AtomicString> classes;
     Vector<AtomicString> attributes;
     Vector<AtomicString> ids;
-    Vector<AtomicString> tagNames;
-    unsigned maxDirectAdjacentSelectors = 0;
-    bool customPseudoElement = false;
-    bool hasBeforeOrAfter = false;
-    bool treeBoundaryCrossing = false;
-    bool insertionPointCrossing = false;
-    bool forceSubtree = false;
-    bool contentPseudoCrossing = false;
-    bool invalidatesSlotted = false;
-    bool hasNthPseudo = false;
-    bool hasFeaturesForRuleSetInvalidation = false;
+    Vector<AtomicString> tag_names;
+    unsigned max_direct_adjacent_selectors = 0;
+    bool custom_pseudo_element = false;
+    bool has_before_or_after = false;
+    bool tree_boundary_crossing = false;
+    bool insertion_point_crossing = false;
+    bool force_subtree = false;
+    bool content_pseudo_crossing = false;
+    bool invalidates_slotted = false;
+    bool has_nth_pseudo = false;
+    bool has_features_for_rule_set_invalidation = false;
   };
 
-  static void extractInvalidationSetFeature(const CSSSelector&,
+  static void ExtractInvalidationSetFeature(const CSSSelector&,
                                             InvalidationSetFeatures&);
 
-  enum PositionType { Subject, Ancestor };
+  enum PositionType { kSubject, kAncestor };
   enum FeatureInvalidationType {
-    NormalInvalidation,
-    RequiresSubtreeInvalidation
+    kNormalInvalidation,
+    kRequiresSubtreeInvalidation
   };
 
-  void extractInvalidationSetFeaturesFromSimpleSelector(
+  void ExtractInvalidationSetFeaturesFromSimpleSelector(
       const CSSSelector&,
       InvalidationSetFeatures&);
-  const CSSSelector* extractInvalidationSetFeaturesFromCompound(
+  const CSSSelector* ExtractInvalidationSetFeaturesFromCompound(
       const CSSSelector&,
       InvalidationSetFeatures&,
       PositionType,
-      CSSSelector::PseudoType = CSSSelector::PseudoUnknown);
-  FeatureInvalidationType extractInvalidationSetFeaturesFromSelectorList(
+      CSSSelector::PseudoType = CSSSelector::kPseudoUnknown);
+  FeatureInvalidationType ExtractInvalidationSetFeaturesFromSelectorList(
       const CSSSelector&,
       InvalidationSetFeatures&,
       PositionType);
-  void updateFeaturesFromCombinator(
+  void UpdateFeaturesFromCombinator(
       const CSSSelector&,
-      const CSSSelector* lastCompoundSelectorInAdjacentChain,
-      InvalidationSetFeatures& lastCompoundInAdjacentChainFeatures,
-      InvalidationSetFeatures*& siblingFeatures,
-      InvalidationSetFeatures& descendantFeatures);
+      const CSSSelector* last_compound_selector_in_adjacent_chain,
+      InvalidationSetFeatures& last_compound_in_adjacent_chain_features,
+      InvalidationSetFeatures*& sibling_features,
+      InvalidationSetFeatures& descendant_features);
 
-  void addFeaturesToInvalidationSet(InvalidationSet&,
+  void AddFeaturesToInvalidationSet(InvalidationSet&,
                                     const InvalidationSetFeatures&);
-  void addFeaturesToInvalidationSets(
+  void AddFeaturesToInvalidationSets(
       const CSSSelector&,
-      InvalidationSetFeatures* siblingFeatures,
-      InvalidationSetFeatures& descendantFeatures);
-  const CSSSelector* addFeaturesToInvalidationSetsForCompoundSelector(
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
+  const CSSSelector* AddFeaturesToInvalidationSetsForCompoundSelector(
       const CSSSelector&,
-      InvalidationSetFeatures* siblingFeatures,
-      InvalidationSetFeatures& descendantFeatures);
-  void addFeaturesToInvalidationSetsForSimpleSelector(
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
+  void AddFeaturesToInvalidationSetsForSimpleSelector(
       const CSSSelector&,
-      InvalidationSetFeatures* siblingFeatures,
-      InvalidationSetFeatures& descendantFeatures);
-  void addFeaturesToInvalidationSetsForSelectorList(
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
+  void AddFeaturesToInvalidationSetsForSelectorList(
       const CSSSelector&,
-      InvalidationSetFeatures* siblingFeatures,
-      InvalidationSetFeatures& descendantFeatures);
-  void addFeaturesToUniversalSiblingInvalidationSet(
-      const InvalidationSetFeatures& siblingFeatures,
-      const InvalidationSetFeatures& descendantFeatures);
+      InvalidationSetFeatures* sibling_features,
+      InvalidationSetFeatures& descendant_features);
+  void AddFeaturesToUniversalSiblingInvalidationSet(
+      const InvalidationSetFeatures& sibling_features,
+      const InvalidationSetFeatures& descendant_features);
 
-  void updateRuleSetInvalidation(const InvalidationSetFeatures&);
+  void UpdateRuleSetInvalidation(const InvalidationSetFeatures&);
 
-  FeatureMetadata m_metadata;
-  InvalidationSetMap m_classInvalidationSets;
-  InvalidationSetMap m_attributeInvalidationSets;
-  InvalidationSetMap m_idInvalidationSets;
-  PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
-  RefPtr<SiblingInvalidationSet> m_universalSiblingInvalidationSet;
-  RefPtr<DescendantInvalidationSet> m_nthInvalidationSet;
-  RefPtr<DescendantInvalidationSet> m_typeRuleInvalidationSet;
-  HeapVector<RuleFeature> m_siblingRules;
-  HeapVector<RuleFeature> m_uncommonAttributeRules;
-  MediaQueryResultList m_viewportDependentMediaQueryResults;
-  MediaQueryResultList m_deviceDependentMediaQueryResults;
+  FeatureMetadata metadata_;
+  InvalidationSetMap class_invalidation_sets_;
+  InvalidationSetMap attribute_invalidation_sets_;
+  InvalidationSetMap id_invalidation_sets_;
+  PseudoTypeInvalidationSetMap pseudo_invalidation_sets_;
+  RefPtr<SiblingInvalidationSet> universal_sibling_invalidation_set_;
+  RefPtr<DescendantInvalidationSet> nth_invalidation_set_;
+  RefPtr<DescendantInvalidationSet> type_rule_invalidation_set_;
+  HeapVector<RuleFeature> sibling_rules_;
+  HeapVector<RuleFeature> uncommon_attribute_rules_;
+  MediaQueryResultList viewport_dependent_media_query_results_;
+  MediaQueryResultList device_dependent_media_query_results_;
 
   // If true, the RuleFeatureSet is alive and can be used.
-  unsigned m_isAlive : 1;
+  unsigned is_alive_ : 1;
 
   friend class RuleFeatureSetTest;
 };

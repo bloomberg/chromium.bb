@@ -14,31 +14,31 @@ namespace blink {
 
 class RelList final : public DOMTokenList {
  public:
-  static RelList* create(Element* element) { return new RelList(element); }
+  static RelList* Create(Element* element) { return new RelList(element); }
 
   unsigned length() const override;
   const AtomicString item(unsigned index) const override;
 
-  void setRelValues(const AtomicString&);
+  void SetRelValues(const AtomicString&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit RelList(Element*);
 
-  bool containsInternal(const AtomicString&) const override;
+  bool ContainsInternal(const AtomicString&) const override;
 
   const AtomicString& value() const override {
-    return m_element->getAttribute(HTMLNames::relAttr);
+    return element_->getAttribute(HTMLNames::relAttr);
   }
   void setValue(const AtomicString& value) override {
-    m_element->setAttribute(HTMLNames::relAttr, value);
+    element_->setAttribute(HTMLNames::relAttr, value);
   }
 
-  bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
+  bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
-  Member<Element> m_element;
-  SpaceSplitString m_relValues;
+  Member<Element> element_;
+  SpaceSplitString rel_values_;
 };
 
 }  // namespace blink

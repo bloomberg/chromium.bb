@@ -50,47 +50,47 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
   // time).
   // Returns the HRTFDatabaseLoader.
   // Must be called from the main thread.
-  static PassRefPtr<HRTFDatabaseLoader> createAndLoadAsynchronouslyIfNecessary(
-      float sampleRate);
+  static PassRefPtr<HRTFDatabaseLoader> CreateAndLoadAsynchronouslyIfNecessary(
+      float sample_rate);
 
   // Both constructor and destructor must be called from the main thread.
   ~HRTFDatabaseLoader();
 
   // Returns true once the default database has been completely loaded.  This
   // must be called from the audio thread.
-  bool isLoaded() { return database(); }
+  bool IsLoaded() { return Database(); }
 
   // waitForLoaderThreadCompletion() may be called more than once and is
   // thread-safe.
-  void waitForLoaderThreadCompletion();
+  void WaitForLoaderThreadCompletion();
 
   // Returns the database or nullptr if the database doesn't yet exist.  Must
   // be called from the audio thread.
-  HRTFDatabase* database();
+  HRTFDatabase* Database();
 
-  float databaseSampleRate() const { return m_databaseSampleRate; }
+  float DatabaseSampleRate() const { return database_sample_rate_; }
 
  private:
   // Both constructor and destructor must be called from the main thread.
-  explicit HRTFDatabaseLoader(float sampleRate);
+  explicit HRTFDatabaseLoader(float sample_rate);
 
   // If it hasn't already been loaded, creates a new thread and initiates
   // asynchronous loading of the default database.
   // This must be called from the main thread.
-  void loadAsynchronously();
+  void LoadAsynchronously();
 
   // Called in asynchronous loading thread.
-  void loadTask();
-  void cleanupTask(WaitableEvent*);
+  void LoadTask();
+  void CleanupTask(WaitableEvent*);
 
   // Holding a m_lock is required when accessing m_hrtfDatabase since we access
   // it from multiple threads.
-  Mutex m_lock;
-  std::unique_ptr<HRTFDatabase> m_hrtfDatabase;
+  Mutex lock_;
+  std::unique_ptr<HRTFDatabase> hrtf_database_;
 
-  std::unique_ptr<WebThread> m_thread;
+  std::unique_ptr<WebThread> thread_;
 
-  float m_databaseSampleRate;
+  float database_sample_rate_;
 };
 
 }  // namespace blink

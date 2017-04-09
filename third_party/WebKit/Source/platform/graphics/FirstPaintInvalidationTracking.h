@@ -12,22 +12,22 @@ namespace blink {
 
 class PLATFORM_EXPORT FirstPaintInvalidationTracking {
  public:
-  static bool isEnabled() {
-    if (s_enabledForShowPaintRects)
+  static bool IsEnabled() {
+    if (enabled_for_show_paint_rects_)
       return true;
 
-    bool isTracingEnabled;
+    bool is_tracing_enabled;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-        TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), &isTracingEnabled);
-    return isTracingEnabled;
+        TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), &is_tracing_enabled);
+    return is_tracing_enabled;
   }
 
-  static void setEnabledForShowPaintRects(bool enabled) {
-    s_enabledForShowPaintRects = enabled;
+  static void SetEnabledForShowPaintRects(bool enabled) {
+    enabled_for_show_paint_rects_ = enabled;
   }
 
  private:
-  static bool s_enabledForShowPaintRects;
+  static bool enabled_for_show_paint_rects_;
 };
 
 }  // namespace blink

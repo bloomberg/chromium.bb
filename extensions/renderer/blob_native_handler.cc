@@ -14,9 +14,9 @@ namespace {
 // Expects a single Blob argument. Returns the Blob's UUID.
 void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  blink::WebBlob blob = blink::WebBlob::fromV8Value(args[0]);
+  blink::WebBlob blob = blink::WebBlob::FromV8Value(args[0]);
   args.GetReturnValue().Set(
-      v8::String::NewFromUtf8(args.GetIsolate(), blob.uuid().utf8().data()));
+      v8::String::NewFromUtf8(args.GetIsolate(), blob.Uuid().Utf8().data()));
 }
 
 }  // namespace
@@ -43,12 +43,11 @@ void BlobNativeHandler::TakeBrowserProcessBlob(
   CHECK(args[2]->IsInt32());
   std::string uuid(*v8::String::Utf8Value(args[0]));
   std::string type(*v8::String::Utf8Value(args[1]));
-  blink::WebBlob blob =
-      blink::WebBlob::createFromUUID(blink::WebString::fromUTF8(uuid),
-                                     blink::WebString::fromUTF8(type),
-                                     args[2]->Int32Value());
-  args.GetReturnValue().Set(blob.toV8Value(
-      context()->v8_context()->Global(), args.GetIsolate()));
+  blink::WebBlob blob = blink::WebBlob::CreateFromUUID(
+      blink::WebString::FromUTF8(uuid), blink::WebString::FromUTF8(type),
+      args[2]->Int32Value());
+  args.GetReturnValue().Set(
+      blob.ToV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 }  // namespace extensions

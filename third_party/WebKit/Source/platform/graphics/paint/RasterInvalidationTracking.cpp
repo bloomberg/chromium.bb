@@ -9,77 +9,78 @@
 
 namespace blink {
 
-static bool compareRasterInvalidationInfo(const RasterInvalidationInfo& a,
+static bool CompareRasterInvalidationInfo(const RasterInvalidationInfo& a,
                                           const RasterInvalidationInfo& b) {
   // Sort by rect first, bigger rects before smaller ones.
-  if (a.rect.width() != b.rect.width())
-    return a.rect.width() > b.rect.width();
-  if (a.rect.height() != b.rect.height())
-    return a.rect.height() > b.rect.height();
-  if (a.rect.x() != b.rect.x())
-    return a.rect.x() > b.rect.x();
-  if (a.rect.y() != b.rect.y())
-    return a.rect.y() > b.rect.y();
+  if (a.rect.Width() != b.rect.Width())
+    return a.rect.Width() > b.rect.Width();
+  if (a.rect.Height() != b.rect.Height())
+    return a.rect.Height() > b.rect.Height();
+  if (a.rect.X() != b.rect.X())
+    return a.rect.X() > b.rect.X();
+  if (a.rect.Y() != b.rect.Y())
+    return a.rect.Y() > b.rect.Y();
 
   // Then compare clientDebugName, in alphabetic order.
-  int nameCompareResult =
-      codePointCompare(a.clientDebugName, b.clientDebugName);
-  if (nameCompareResult != 0)
-    return nameCompareResult < 0;
+  int name_compare_result =
+      CodePointCompare(a.client_debug_name, b.client_debug_name);
+  if (name_compare_result != 0)
+    return name_compare_result < 0;
 
   return a.reason < b.reason;
 }
 
 template <typename T>
-static std::unique_ptr<JSONArray> rectAsJSONArray(const T& rect) {
-  std::unique_ptr<JSONArray> array = JSONArray::create();
-  array->pushDouble(rect.x());
-  array->pushDouble(rect.y());
-  array->pushDouble(rect.width());
-  array->pushDouble(rect.height());
+static std::unique_ptr<JSONArray> RectAsJSONArray(const T& rect) {
+  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  array->PushDouble(rect.X());
+  array->PushDouble(rect.Y());
+  array->PushDouble(rect.Width());
+  array->PushDouble(rect.Height());
   return array;
 }
 
-void RasterInvalidationTracking::asJSON(JSONObject* json) {
-  if (!trackedRasterInvalidations.isEmpty()) {
-    std::sort(trackedRasterInvalidations.begin(),
-              trackedRasterInvalidations.end(), &compareRasterInvalidationInfo);
-    std::unique_ptr<JSONArray> paintInvalidationsJSON = JSONArray::create();
-    for (auto& info : trackedRasterInvalidations) {
-      std::unique_ptr<JSONObject> infoJSON = JSONObject::create();
-      infoJSON->setString("object", info.clientDebugName);
-      if (!info.rect.isEmpty()) {
-        if (info.rect == LayoutRect::infiniteIntRect())
-          infoJSON->setString("rect", "infinite");
+void RasterInvalidationTracking::AsJSON(JSONObject* json) {
+  if (!tracked_raster_invalidations.IsEmpty()) {
+    std::sort(tracked_raster_invalidations.begin(),
+              tracked_raster_invalidations.end(),
+              &CompareRasterInvalidationInfo);
+    std::unique_ptr<JSONArray> paint_invalidations_json = JSONArray::Create();
+    for (auto& info : tracked_raster_invalidations) {
+      std::unique_ptr<JSONObject> info_json = JSONObject::Create();
+      info_json->SetString("object", info.client_debug_name);
+      if (!info.rect.IsEmpty()) {
+        if (info.rect == LayoutRect::InfiniteIntRect())
+          info_json->SetString("rect", "infinite");
         else
-          infoJSON->setArray("rect", rectAsJSONArray(info.rect));
+          info_json->SetArray("rect", RectAsJSONArray(info.rect));
       }
-      infoJSON->setString("reason",
-                          paintInvalidationReasonToString(info.reason));
-      paintInvalidationsJSON->pushObject(std::move(infoJSON));
+      info_json->SetString("reason",
+                           PaintInvalidationReasonToString(info.reason));
+      paint_invalidations_json->PushObject(std::move(info_json));
     }
-    json->setArray("paintInvalidations", std::move(paintInvalidationsJSON));
+    json->SetArray("paintInvalidations", std::move(paint_invalidations_json));
   }
 
-  if (!underPaintInvalidations.isEmpty()) {
-    std::unique_ptr<JSONArray> underPaintInvalidationsJSON =
-        JSONArray::create();
-    for (auto& underPaintInvalidation : underPaintInvalidations) {
-      std::unique_ptr<JSONObject> underPaintInvalidationJSON =
-          JSONObject::create();
-      underPaintInvalidationJSON->setDouble("x", underPaintInvalidation.x);
-      underPaintInvalidationJSON->setDouble("y", underPaintInvalidation.y);
-      underPaintInvalidationJSON->setString(
+  if (!under_paint_invalidations.IsEmpty()) {
+    std::unique_ptr<JSONArray> under_paint_invalidations_json =
+        JSONArray::Create();
+    for (auto& under_paint_invalidation : under_paint_invalidations) {
+      std::unique_ptr<JSONObject> under_paint_invalidation_json =
+          JSONObject::Create();
+      under_paint_invalidation_json->SetDouble("x", under_paint_invalidation.x);
+      under_paint_invalidation_json->SetDouble("y", under_paint_invalidation.y);
+      under_paint_invalidation_json->SetString(
           "oldPixel",
-          Color(underPaintInvalidation.oldPixel).nameForLayoutTreeAsText());
-      underPaintInvalidationJSON->setString(
+          Color(under_paint_invalidation.old_pixel).NameForLayoutTreeAsText());
+      under_paint_invalidation_json->SetString(
           "newPixel",
-          Color(underPaintInvalidation.newPixel).nameForLayoutTreeAsText());
-      underPaintInvalidationsJSON->pushObject(
-          std::move(underPaintInvalidationJSON));
+          Color(under_paint_invalidation.new_pixel).NameForLayoutTreeAsText());
+      under_paint_invalidations_json->PushObject(
+          std::move(under_paint_invalidation_json));
     }
-    json->setArray("underPaintInvalidations",
-                   std::move(underPaintInvalidationsJSON));
+    json->SetArray("underPaintInvalidations",
+                   std::move(under_paint_invalidations_json));
   }
 }
 

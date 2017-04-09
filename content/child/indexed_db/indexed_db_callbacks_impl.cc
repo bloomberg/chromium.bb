@@ -32,20 +32,20 @@ namespace {
 void ConvertIndexMetadata(const content::IndexedDBIndexMetadata& metadata,
                           WebIDBMetadata::Index* output) {
   output->id = metadata.id;
-  output->name = WebString::fromUTF16(metadata.name);
-  output->keyPath = WebIDBKeyPathBuilder::Build(metadata.key_path);
+  output->name = WebString::FromUTF16(metadata.name);
+  output->key_path = WebIDBKeyPathBuilder::Build(metadata.key_path);
   output->unique = metadata.unique;
-  output->multiEntry = metadata.multi_entry;
+  output->multi_entry = metadata.multi_entry;
 }
 
 void ConvertObjectStoreMetadata(
     const content::IndexedDBObjectStoreMetadata& metadata,
     WebIDBMetadata::ObjectStore* output) {
   output->id = metadata.id;
-  output->name = WebString::fromUTF16(metadata.name);
-  output->keyPath = WebIDBKeyPathBuilder::Build(metadata.key_path);
-  output->autoIncrement = metadata.auto_increment;
-  output->maxIndexId = metadata.max_index_id;
+  output->name = WebString::FromUTF16(metadata.name);
+  output->key_path = WebIDBKeyPathBuilder::Build(metadata.key_path);
+  output->auto_increment = metadata.auto_increment;
+  output->max_index_id = metadata.max_index_id;
   output->indexes = WebVector<WebIDBMetadata::Index>(metadata.indexes.size());
   size_t i = 0;
   for (const auto& iter : metadata.indexes)
@@ -55,21 +55,21 @@ void ConvertObjectStoreMetadata(
 void ConvertDatabaseMetadata(const content::IndexedDBDatabaseMetadata& metadata,
                              WebIDBMetadata* output) {
   output->id = metadata.id;
-  output->name = WebString::fromUTF16(metadata.name);
+  output->name = WebString::FromUTF16(metadata.name);
   output->version = metadata.version;
-  output->maxObjectStoreId = metadata.max_object_store_id;
-  output->objectStores =
+  output->max_object_store_id = metadata.max_object_store_id;
+  output->object_stores =
       WebVector<WebIDBMetadata::ObjectStore>(metadata.object_stores.size());
   size_t i = 0;
   for (const auto& iter : metadata.object_stores)
-    ConvertObjectStoreMetadata(iter.second, &output->objectStores[i++]);
+    ConvertObjectStoreMetadata(iter.second, &output->object_stores[i++]);
 }
 
 void ConvertReturnValue(const indexed_db::mojom::ReturnValuePtr& value,
                         WebIDBValue* web_value) {
   IndexedDBCallbacksImpl::ConvertValue(value->value, web_value);
-  web_value->primaryKey = WebIDBKeyBuilder::Build(value->primary_key);
-  web_value->keyPath = WebIDBKeyPathBuilder::Build(value->key_path);
+  web_value->primary_key = WebIDBKeyBuilder::Build(value->primary_key);
+  web_value->key_path = WebIDBKeyPathBuilder::Build(value->key_path);
 }
 
 }  // namespace
@@ -87,20 +87,20 @@ void IndexedDBCallbacksImpl::ConvertValue(
     const auto& info = value->blob_or_file_info[i];
     if (info->file) {
       local_blob_info[i] =
-          WebBlobInfo(WebString::fromUTF8(info->uuid),
+          WebBlobInfo(WebString::FromUTF8(info->uuid),
                       blink::FilePathToWebString(info->file->path),
-                      WebString::fromUTF16(info->file->name),
-                      WebString::fromUTF16(info->mime_type),
+                      WebString::FromUTF16(info->file->name),
+                      WebString::FromUTF16(info->mime_type),
                       info->file->last_modified.ToDoubleT(), info->size);
     } else {
       local_blob_info[i] =
-          WebBlobInfo(WebString::fromUTF8(info->uuid),
-                      WebString::fromUTF16(info->mime_type), info->size);
+          WebBlobInfo(WebString::FromUTF8(info->uuid),
+                      WebString::FromUTF16(info->mime_type), info->size);
     }
   }
 
-  web_value->data.assign(&*value->bits.begin(), value->bits.size());
-  web_value->webBlobInfo.swap(local_blob_info);
+  web_value->data.Assign(&*value->bits.begin(), value->bits.size());
+  web_value->web_blob_info.Swap(local_blob_info);
 }
 
 
@@ -249,8 +249,8 @@ IndexedDBCallbacksImpl::InternalState::~InternalState() {
 void IndexedDBCallbacksImpl::InternalState::Error(
     int32_t code,
     const base::string16& message) {
-  callbacks_->onError(
-      blink::WebIDBDatabaseError(code, WebString::fromUTF16(message)));
+  callbacks_->OnError(
+      blink::WebIDBDatabaseError(code, WebString::FromUTF16(message)));
   callbacks_.reset();
 }
 
@@ -259,13 +259,13 @@ void IndexedDBCallbacksImpl::InternalState::SuccessStringList(
   WebVector<WebString> web_value(value.size());
   std::transform(
       value.begin(), value.end(), web_value.begin(),
-      [](const base::string16& s) { return WebString::fromUTF16(s); });
-  callbacks_->onSuccess(web_value);
+      [](const base::string16& s) { return WebString::FromUTF16(s); });
+  callbacks_->OnSuccess(web_value);
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::InternalState::Blocked(int64_t existing_version) {
-  callbacks_->onBlocked(existing_version);
+  callbacks_->OnBlocked(existing_version);
   // Not resetting |callbacks_|.
 }
 
@@ -279,8 +279,8 @@ void IndexedDBCallbacksImpl::InternalState::UpgradeNeeded(
       new WebIDBDatabaseImpl(std::move(database_info), io_runner_);
   WebIDBMetadata web_metadata;
   ConvertDatabaseMetadata(metadata, &web_metadata);
-  callbacks_->onUpgradeNeeded(old_version, database, web_metadata, data_loss,
-                              WebString::fromUTF8(data_loss_message));
+  callbacks_->OnUpgradeNeeded(old_version, database, web_metadata, data_loss,
+                              WebString::FromUTF8(data_loss_message));
   // Not resetting |callbacks_|.
 }
 
@@ -293,7 +293,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessDatabase(
 
   WebIDBMetadata web_metadata;
   ConvertDatabaseMetadata(metadata, &web_metadata);
-  callbacks_->onSuccess(database, web_metadata);
+  callbacks_->OnSuccess(database, web_metadata);
   callbacks_.reset();
 }
 
@@ -308,14 +308,14 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursor(
 
   WebIDBCursorImpl* cursor =
       new WebIDBCursorImpl(std::move(cursor_info), transaction_id_, io_runner_);
-  callbacks_->onSuccess(cursor, WebIDBKeyBuilder::Build(key),
+  callbacks_->OnSuccess(cursor, WebIDBKeyBuilder::Build(key),
                         WebIDBKeyBuilder::Build(primary_key), web_value);
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::InternalState::SuccessKey(
     const IndexedDBKey& key) {
-  callbacks_->onSuccess(WebIDBKeyBuilder::Build(key));
+  callbacks_->OnSuccess(WebIDBKeyBuilder::Build(key));
   callbacks_.reset();
 }
 
@@ -324,7 +324,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessValue(
   WebIDBValue web_value;
   if (value)
     ConvertReturnValue(value, &web_value);
-  callbacks_->onSuccess(web_value);
+  callbacks_->OnSuccess(web_value);
   callbacks_.reset();
 }
 
@@ -335,7 +335,7 @@ void IndexedDBCallbacksImpl::InternalState::SuccessCursorContinue(
   WebIDBValue web_value;
   if (value)
     ConvertValue(value, &web_value);
-  callbacks_->onSuccess(WebIDBKeyBuilder::Build(key),
+  callbacks_->OnSuccess(WebIDBKeyBuilder::Build(key),
                         WebIDBKeyBuilder::Build(primary_key), web_value);
   callbacks_.reset();
 }
@@ -360,17 +360,17 @@ void IndexedDBCallbacksImpl::InternalState::SuccessArray(
   blink::WebVector<WebIDBValue> web_values(values.size());
   for (size_t i = 0; i < values.size(); ++i)
     ConvertReturnValue(values[i], &web_values[i]);
-  callbacks_->onSuccess(web_values);
+  callbacks_->OnSuccess(web_values);
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::InternalState::SuccessInteger(int64_t value) {
-  callbacks_->onSuccess(value);
+  callbacks_->OnSuccess(value);
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::InternalState::Success() {
-  callbacks_->onSuccess();
+  callbacks_->OnSuccess();
   callbacks_.reset();
 }
 

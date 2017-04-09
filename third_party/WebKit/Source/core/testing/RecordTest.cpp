@@ -12,62 +12,62 @@ RecordTest::~RecordTest() {}
 
 void RecordTest::setStringLongRecord(
     const Vector<std::pair<String, int32_t>>& arg) {
-  m_stringLongRecord = arg;
+  string_long_record_ = arg;
 }
 
 Vector<std::pair<String, int32_t>> RecordTest::getStringLongRecord() {
-  return m_stringLongRecord;
+  return string_long_record_;
 }
 
 void RecordTest::setNullableStringLongRecord(
     const Nullable<Vector<std::pair<String, int32_t>>>& arg) {
-  m_nullableStringLongRecord = arg;
+  nullable_string_long_record_ = arg;
 }
 
 Nullable<Vector<std::pair<String, int32_t>>>
 RecordTest::getNullableStringLongRecord() {
-  return m_nullableStringLongRecord;
+  return nullable_string_long_record_;
 }
 
-Vector<std::pair<String, String>> RecordTest::getByteStringByteStringRecord() {
-  return m_byteStringByteStringRecord;
+Vector<std::pair<String, String>> RecordTest::GetByteStringByteStringRecord() {
+  return byte_string_byte_string_record_;
 }
 
 void RecordTest::setByteStringByteStringRecord(
     const Vector<std::pair<String, String>>& arg) {
-  m_byteStringByteStringRecord = arg;
+  byte_string_byte_string_record_ = arg;
 }
 
 void RecordTest::setStringElementRecord(
     const HeapVector<std::pair<String, Member<Element>>>& arg) {
-  m_stringElementRecord = arg;
+  string_element_record_ = arg;
 }
 
 HeapVector<std::pair<String, Member<Element>>>
 RecordTest::getStringElementRecord() {
-  return m_stringElementRecord;
+  return string_element_record_;
 }
 
 void RecordTest::setUSVStringUSVStringBooleanRecordRecord(
     const RecordTest::NestedRecordType& arg) {
-  m_USVStringUSVStringBooleanRecordRecord = arg;
+  usv_string_usv_string_boolean_record_record_ = arg;
 }
 
 RecordTest::NestedRecordType
 RecordTest::getUSVStringUSVStringBooleanRecordRecord() {
-  return m_USVStringUSVStringBooleanRecordRecord;
+  return usv_string_usv_string_boolean_record_record_;
 }
 
 Vector<std::pair<String, Vector<String>>>
 RecordTest::returnStringByteStringSequenceRecord() {
   Vector<std::pair<String, Vector<String>>> record;
-  Vector<String> innerVector1;
-  innerVector1.push_back("hello, world");
-  innerVector1.push_back("hi, mom");
-  record.push_back(std::make_pair(String("foo"), innerVector1));
-  Vector<String> innerVector2;
-  innerVector2.push_back("goodbye, mom");
-  record.push_back(std::make_pair(String("bar"), innerVector2));
+  Vector<String> inner_vector1;
+  inner_vector1.push_back("hello, world");
+  inner_vector1.push_back("hi, mom");
+  record.push_back(std::make_pair(String("foo"), inner_vector1));
+  Vector<String> inner_vector2;
+  inner_vector2.push_back("goodbye, mom");
+  record.push_back(std::make_pair(String("bar"), inner_vector2));
   return record;
 }
 
@@ -77,7 +77,7 @@ bool RecordTest::unionReceivedARecord(
 }
 
 DEFINE_TRACE(RecordTest) {
-  visitor->trace(m_stringElementRecord);
+  visitor->Trace(string_element_record_);
 }
 
 }  // namespace blink

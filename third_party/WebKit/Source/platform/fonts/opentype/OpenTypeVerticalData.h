@@ -41,37 +41,38 @@ class SimpleFontData;
 class PLATFORM_EXPORT OpenTypeVerticalData
     : public RefCounted<OpenTypeVerticalData> {
  public:
-  static PassRefPtr<OpenTypeVerticalData> create(
-      const FontPlatformData& platformData) {
-    return adoptRef(new OpenTypeVerticalData(platformData));
+  static PassRefPtr<OpenTypeVerticalData> Create(
+      const FontPlatformData& platform_data) {
+    return AdoptRef(new OpenTypeVerticalData(platform_data));
   }
 
-  bool isOpenType() const { return !m_advanceWidths.isEmpty(); }
-  bool hasVerticalMetrics() const { return !m_advanceHeights.isEmpty(); }
-  float advanceHeight(const SimpleFontData*, Glyph) const;
+  bool IsOpenType() const { return !advance_widths_.IsEmpty(); }
+  bool HasVerticalMetrics() const { return !advance_heights_.IsEmpty(); }
+  float AdvanceHeight(const SimpleFontData*, Glyph) const;
 
-  bool inFontCache() const { return m_inFontCache; }
-  void setInFontCache(bool inFontCache) { m_inFontCache = inFontCache; }
+  bool InFontCache() const { return in_font_cache_; }
+  void SetInFontCache(bool in_font_cache) { in_font_cache_ = in_font_cache; }
 
-  void getVerticalTranslationsForGlyphs(const SimpleFontData*,
+  void GetVerticalTranslationsForGlyphs(const SimpleFontData*,
                                         const Glyph*,
                                         size_t,
-                                        float* outXYArray) const;
+                                        float* out_xy_array) const;
 
  private:
   explicit OpenTypeVerticalData(const FontPlatformData&);
 
-  void loadMetrics(const FontPlatformData&);
-  bool hasVORG() const { return !m_vertOriginY.isEmpty(); }
+  void LoadMetrics(const FontPlatformData&);
+  bool HasVORG() const { return !vert_origin_y_.IsEmpty(); }
 
-  HashMap<Glyph, Glyph> m_verticalGlyphMap;
-  Vector<uint16_t> m_advanceWidths;
-  Vector<uint16_t> m_advanceHeights;
-  Vector<int16_t> m_topSideBearings;
-  int16_t m_defaultVertOriginY;
-  HashMap<Glyph, int16_t> m_vertOriginY;
+  HashMap<Glyph, Glyph> vertical_glyph_map_;
+  Vector<uint16_t> advance_widths_;
+  Vector<uint16_t> advance_heights_;
+  Vector<int16_t> top_side_bearings_;
+  int16_t default_vert_origin_y_;
+  HashMap<Glyph, int16_t> vert_origin_y_;
 
-  bool m_inFontCache;  // for mark & sweep in FontCache::purgeInactiveFontData()
+  bool
+      in_font_cache_;  // for mark & sweep in FontCache::purgeInactiveFontData()
 };
 
 }  // namespace blink

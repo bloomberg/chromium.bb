@@ -46,12 +46,12 @@ class PromiseAllHandler final
   WTF_MAKE_NONCOPYABLE(PromiseAllHandler);
 
  public:
-  static ScriptPromise all(ScriptState* scriptState,
+  static ScriptPromise All(ScriptState* script_state,
                            const Vector<ScriptPromise>& promises) {
-    if (promises.isEmpty())
-      return ScriptPromise::cast(scriptState,
-                                 v8::Array::New(scriptState->isolate()));
-    return (new PromiseAllHandler(scriptState, promises))->m_resolver.promise();
+    if (promises.IsEmpty())
+      return ScriptPromise::Cast(script_state,
+                                 v8::Array::New(script_state->GetIsolate()));
+    return (new PromiseAllHandler(script_state, promises))->resolver_.Promise();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -60,271 +60,277 @@ class PromiseAllHandler final
   class AdapterFunction : public ScriptFunction {
    public:
     enum ResolveType {
-      Fulfilled,
-      Rejected,
+      kFulfilled,
+      kRejected,
     };
 
-    static v8::Local<v8::Function> create(ScriptState* scriptState,
-                                          ResolveType resolveType,
+    static v8::Local<v8::Function> Create(ScriptState* script_state,
+                                          ResolveType resolve_type,
                                           size_t index,
                                           PromiseAllHandler* handler) {
       AdapterFunction* self =
-          new AdapterFunction(scriptState, resolveType, index, handler);
-      return self->bindToV8Function();
+          new AdapterFunction(script_state, resolve_type, index, handler);
+      return self->BindToV8Function();
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE() {
-      visitor->trace(m_handler);
-      ScriptFunction::trace(visitor);
+      visitor->Trace(handler_);
+      ScriptFunction::Trace(visitor);
     }
 
    private:
-    AdapterFunction(ScriptState* scriptState,
-                    ResolveType resolveType,
+    AdapterFunction(ScriptState* script_state,
+                    ResolveType resolve_type,
                     size_t index,
                     PromiseAllHandler* handler)
-        : ScriptFunction(scriptState),
-          m_resolveType(resolveType),
-          m_index(index),
-          m_handler(handler) {}
+        : ScriptFunction(script_state),
+          resolve_type_(resolve_type),
+          index_(index),
+          handler_(handler) {}
 
-    ScriptValue call(ScriptValue value) override {
-      if (m_resolveType == Fulfilled)
-        m_handler->onFulfilled(m_index, value);
+    ScriptValue Call(ScriptValue value) override {
+      if (resolve_type_ == kFulfilled)
+        handler_->OnFulfilled(index_, value);
       else
-        m_handler->onRejected(value);
+        handler_->OnRejected(value);
       // This return value is never used.
       return ScriptValue();
     }
 
-    const ResolveType m_resolveType;
-    const size_t m_index;
-    Member<PromiseAllHandler> m_handler;
+    const ResolveType resolve_type_;
+    const size_t index_;
+    Member<PromiseAllHandler> handler_;
   };
 
-  PromiseAllHandler(ScriptState* scriptState, Vector<ScriptPromise> promises)
-      : m_numberOfPendingPromises(promises.size()), m_resolver(scriptState) {
-    ASSERT(!promises.isEmpty());
-    m_values.resize(promises.size());
+  PromiseAllHandler(ScriptState* script_state, Vector<ScriptPromise> promises)
+      : number_of_pending_promises_(promises.size()), resolver_(script_state) {
+    ASSERT(!promises.IsEmpty());
+    values_.Resize(promises.size());
     for (size_t i = 0; i < promises.size(); ++i)
-      promises[i].then(createFulfillFunction(scriptState, i),
-                       createRejectFunction(scriptState));
+      promises[i].Then(CreateFulfillFunction(script_state, i),
+                       CreateRejectFunction(script_state));
   }
 
-  v8::Local<v8::Function> createFulfillFunction(ScriptState* scriptState,
+  v8::Local<v8::Function> CreateFulfillFunction(ScriptState* script_state,
                                                 size_t index) {
-    return AdapterFunction::create(scriptState, AdapterFunction::Fulfilled,
+    return AdapterFunction::Create(script_state, AdapterFunction::kFulfilled,
                                    index, this);
   }
 
-  v8::Local<v8::Function> createRejectFunction(ScriptState* scriptState) {
-    return AdapterFunction::create(scriptState, AdapterFunction::Rejected, 0,
+  v8::Local<v8::Function> CreateRejectFunction(ScriptState* script_state) {
+    return AdapterFunction::Create(script_state, AdapterFunction::kRejected, 0,
                                    this);
   }
 
-  void onFulfilled(size_t index, const ScriptValue& value) {
-    if (m_isSettled)
+  void OnFulfilled(size_t index, const ScriptValue& value) {
+    if (is_settled_)
       return;
 
-    ASSERT(index < m_values.size());
-    m_values[index] = value;
-    if (--m_numberOfPendingPromises > 0)
+    ASSERT(index < values_.size());
+    values_[index] = value;
+    if (--number_of_pending_promises_ > 0)
       return;
 
     v8::Local<v8::Array> values =
-        v8::Array::New(value.isolate(), m_values.size());
-    for (size_t i = 0; i < m_values.size(); ++i) {
-      if (!v8CallBoolean(values->CreateDataProperty(value.context(), i,
-                                                    m_values[i].v8Value())))
+        v8::Array::New(value.GetIsolate(), values_.size());
+    for (size_t i = 0; i < values_.size(); ++i) {
+      if (!V8CallBoolean(values->CreateDataProperty(value.GetContext(), i,
+                                                    values_[i].V8Value())))
         return;
     }
 
-    markPromiseSettled();
-    m_resolver.resolve(values);
+    MarkPromiseSettled();
+    resolver_.Resolve(values);
   }
 
-  void onRejected(const ScriptValue& value) {
-    if (m_isSettled)
+  void OnRejected(const ScriptValue& value) {
+    if (is_settled_)
       return;
-    markPromiseSettled();
-    m_resolver.reject(value.v8Value());
+    MarkPromiseSettled();
+    resolver_.Reject(value.V8Value());
   }
 
-  void markPromiseSettled() {
-    ASSERT(!m_isSettled);
-    m_isSettled = true;
-    m_values.clear();
+  void MarkPromiseSettled() {
+    ASSERT(!is_settled_);
+    is_settled_ = true;
+    values_.Clear();
   }
 
-  size_t m_numberOfPendingPromises;
-  ScriptPromise::InternalResolver m_resolver;
-  bool m_isSettled = false;
+  size_t number_of_pending_promises_;
+  ScriptPromise::InternalResolver resolver_;
+  bool is_settled_ = false;
 
   // This is cleared when owners of this handler, that is, given promises are
   // settled.
-  Vector<ScriptValue> m_values;
+  Vector<ScriptValue> values_;
 };
 
 }  // namespace
 
-ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
-    : m_resolver(scriptState,
-                 v8::Promise::Resolver::New(scriptState->context())) {}
+ScriptPromise::InternalResolver::InternalResolver(ScriptState* script_state)
+    : resolver_(script_state,
+                v8::Promise::Resolver::New(script_state->GetContext())) {}
 
-v8::Local<v8::Promise> ScriptPromise::InternalResolver::v8Promise() const {
-  if (m_resolver.isEmpty())
+v8::Local<v8::Promise> ScriptPromise::InternalResolver::V8Promise() const {
+  if (resolver_.IsEmpty())
     return v8::Local<v8::Promise>();
-  return m_resolver.v8Value().As<v8::Promise::Resolver>()->GetPromise();
+  return resolver_.V8Value().As<v8::Promise::Resolver>()->GetPromise();
 }
 
-ScriptPromise ScriptPromise::InternalResolver::promise() const {
-  if (m_resolver.isEmpty())
+ScriptPromise ScriptPromise::InternalResolver::Promise() const {
+  if (resolver_.IsEmpty())
     return ScriptPromise();
-  return ScriptPromise(m_resolver.getScriptState(), v8Promise());
+  return ScriptPromise(resolver_.GetScriptState(), V8Promise());
 }
 
-void ScriptPromise::InternalResolver::resolve(v8::Local<v8::Value> value) {
-  if (m_resolver.isEmpty())
+void ScriptPromise::InternalResolver::Resolve(v8::Local<v8::Value> value) {
+  if (resolver_.IsEmpty())
     return;
-  m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(
-      m_resolver.context(), value).ToChecked();
-  clear();
+  resolver_.V8Value()
+      .As<v8::Promise::Resolver>()
+      ->Resolve(resolver_.GetContext(), value)
+      .ToChecked();
+  Clear();
 }
 
-void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value) {
-  if (m_resolver.isEmpty())
+void ScriptPromise::InternalResolver::Reject(v8::Local<v8::Value> value) {
+  if (resolver_.IsEmpty())
     return;
-  m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(
-      m_resolver.context(), value).ToChecked();
-  clear();
+  resolver_.V8Value()
+      .As<v8::Promise::Resolver>()
+      ->Reject(resolver_.GetContext(), value)
+      .ToChecked();
+  Clear();
 }
 
 ScriptPromise::ScriptPromise() {
-  increaseInstanceCount();
+  IncreaseInstanceCount();
 }
 
-ScriptPromise::ScriptPromise(ScriptState* scriptState,
+ScriptPromise::ScriptPromise(ScriptState* script_state,
                              v8::Local<v8::Value> value)
-    : m_scriptState(scriptState) {
-  increaseInstanceCount();
+    : script_state_(script_state) {
+  IncreaseInstanceCount();
 
   if (value.IsEmpty())
     return;
 
   if (!value->IsPromise()) {
-    m_promise = ScriptValue(scriptState, v8::Local<v8::Value>());
-    V8ThrowException::throwTypeError(scriptState->isolate(),
+    promise_ = ScriptValue(script_state, v8::Local<v8::Value>());
+    V8ThrowException::ThrowTypeError(script_state->GetIsolate(),
                                      "the given value is not a Promise");
     return;
   }
-  m_promise = ScriptValue(scriptState, value);
+  promise_ = ScriptValue(script_state, value);
 }
 
 ScriptPromise::ScriptPromise(const ScriptPromise& other) {
-  increaseInstanceCount();
+  IncreaseInstanceCount();
 
-  this->m_scriptState = other.m_scriptState;
-  this->m_promise = other.m_promise;
+  this->script_state_ = other.script_state_;
+  this->promise_ = other.promise_;
 }
 
 ScriptPromise::~ScriptPromise() {
-  decreaseInstanceCount();
+  DecreaseInstanceCount();
 }
 
-ScriptPromise ScriptPromise::then(v8::Local<v8::Function> onFulfilled,
-                                  v8::Local<v8::Function> onRejected) {
-  if (m_promise.isEmpty())
+ScriptPromise ScriptPromise::Then(v8::Local<v8::Function> on_fulfilled,
+                                  v8::Local<v8::Function> on_rejected) {
+  if (promise_.IsEmpty())
     return ScriptPromise();
 
-  v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
+  v8::Local<v8::Object> promise = promise_.V8Value().As<v8::Object>();
 
   ASSERT(promise->IsPromise());
   // Return this Promise if no handlers are given.
   // In fact it is not the exact bahavior of Promise.prototype.then
   // but that is not a problem in this case.
-  v8::Local<v8::Promise> resultPromise = promise.As<v8::Promise>();
-  if (!onFulfilled.IsEmpty()) {
-    if (!resultPromise->Then(m_scriptState->context(), onFulfilled)
-             .ToLocal(&resultPromise))
+  v8::Local<v8::Promise> result_promise = promise.As<v8::Promise>();
+  if (!on_fulfilled.IsEmpty()) {
+    if (!result_promise->Then(script_state_->GetContext(), on_fulfilled)
+             .ToLocal(&result_promise))
       return ScriptPromise();
   }
-  if (!onRejected.IsEmpty()) {
-    if (!resultPromise->Catch(m_scriptState->context(), onRejected)
-             .ToLocal(&resultPromise))
+  if (!on_rejected.IsEmpty()) {
+    if (!result_promise->Catch(script_state_->GetContext(), on_rejected)
+             .ToLocal(&result_promise))
       return ScriptPromise();
   }
 
-  return ScriptPromise(m_scriptState.get(), resultPromise);
+  return ScriptPromise(script_state_.Get(), result_promise);
 }
 
-ScriptPromise ScriptPromise::castUndefined(ScriptState* scriptState) {
-  return ScriptPromise::cast(scriptState,
-                             v8::Undefined(scriptState->isolate()));
+ScriptPromise ScriptPromise::CastUndefined(ScriptState* script_state) {
+  return ScriptPromise::Cast(script_state,
+                             v8::Undefined(script_state->GetIsolate()));
 }
 
-ScriptPromise ScriptPromise::cast(ScriptState* scriptState,
+ScriptPromise ScriptPromise::Cast(ScriptState* script_state,
                                   const ScriptValue& value) {
-  return ScriptPromise::cast(scriptState, value.v8Value());
+  return ScriptPromise::Cast(script_state, value.V8Value());
 }
 
-ScriptPromise ScriptPromise::cast(ScriptState* scriptState,
+ScriptPromise ScriptPromise::Cast(ScriptState* script_state,
                                   v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return ScriptPromise();
   if (value->IsPromise()) {
-    return ScriptPromise(scriptState, value);
+    return ScriptPromise(script_state, value);
   }
-  InternalResolver resolver(scriptState);
-  ScriptPromise promise = resolver.promise();
-  resolver.resolve(value);
+  InternalResolver resolver(script_state);
+  ScriptPromise promise = resolver.Promise();
+  resolver.Resolve(value);
   return promise;
 }
 
-ScriptPromise ScriptPromise::reject(ScriptState* scriptState,
+ScriptPromise ScriptPromise::Reject(ScriptState* script_state,
                                     const ScriptValue& value) {
-  return ScriptPromise::reject(scriptState, value.v8Value());
+  return ScriptPromise::Reject(script_state, value.V8Value());
 }
 
-ScriptPromise ScriptPromise::reject(ScriptState* scriptState,
+ScriptPromise ScriptPromise::Reject(ScriptState* script_state,
                                     v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return ScriptPromise();
-  InternalResolver resolver(scriptState);
-  ScriptPromise promise = resolver.promise();
-  resolver.reject(value);
+  InternalResolver resolver(script_state);
+  ScriptPromise promise = resolver.Promise();
+  resolver.Reject(value);
   return promise;
 }
 
-ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState,
+ScriptPromise ScriptPromise::RejectWithDOMException(ScriptState* script_state,
                                                     DOMException* exception) {
-  ASSERT(scriptState->isolate()->InContext());
-  return reject(scriptState, ToV8(exception, scriptState->context()->Global(),
-                                  scriptState->isolate()));
+  ASSERT(script_state->GetIsolate()->InContext());
+  return Reject(script_state,
+                ToV8(exception, script_state->GetContext()->Global(),
+                     script_state->GetIsolate()));
 }
 
-v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState,
+v8::Local<v8::Promise> ScriptPromise::RejectRaw(ScriptState* script_state,
                                                 v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return v8::Local<v8::Promise>();
   v8::Local<v8::Promise::Resolver> resolver;
-  if (!v8::Promise::Resolver::New(scriptState->context()).ToLocal(&resolver))
+  if (!v8::Promise::Resolver::New(script_state->GetContext())
+           .ToLocal(&resolver))
     return v8::Local<v8::Promise>();
   v8::Local<v8::Promise> promise = resolver->GetPromise();
-  resolver->Reject(scriptState->context(), value).ToChecked();
+  resolver->Reject(script_state->GetContext(), value).ToChecked();
   return promise;
 }
 
-ScriptPromise ScriptPromise::all(ScriptState* scriptState,
+ScriptPromise ScriptPromise::All(ScriptState* script_state,
                                  const Vector<ScriptPromise>& promises) {
-  return PromiseAllHandler::all(scriptState, promises);
+  return PromiseAllHandler::All(script_state, promises);
 }
 
-void ScriptPromise::increaseInstanceCount() {
-  InstanceCounters::incrementCounter(InstanceCounters::ScriptPromiseCounter);
+void ScriptPromise::IncreaseInstanceCount() {
+  InstanceCounters::IncrementCounter(InstanceCounters::kScriptPromiseCounter);
 }
 
-void ScriptPromise::decreaseInstanceCount() {
-  InstanceCounters::decrementCounter(InstanceCounters::ScriptPromiseCounter);
+void ScriptPromise::DecreaseInstanceCount() {
+  InstanceCounters::DecrementCounter(InstanceCounters::kScriptPromiseCounter);
 }
 
 }  // namespace blink

@@ -9,25 +9,25 @@
 
 namespace blink {
 
-InterpolationValue SVGIntegerInterpolationType::maybeConvertNeutral(
+InterpolationValue SVGIntegerInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::create(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
-InterpolationValue SVGIntegerInterpolationType::maybeConvertSVGValue(
-    const SVGPropertyBase& svgValue) const {
-  if (svgValue.type() != AnimatedInteger)
+InterpolationValue SVGIntegerInterpolationType::MaybeConvertSVGValue(
+    const SVGPropertyBase& svg_value) const {
+  if (svg_value.GetType() != kAnimatedInteger)
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::create(toSVGInteger(svgValue).value()));
+      InterpolableNumber::Create(ToSVGInteger(svg_value).Value()));
 }
 
-SVGPropertyBase* SVGIntegerInterpolationType::appliedSVGValue(
-    const InterpolableValue& interpolableValue,
+SVGPropertyBase* SVGIntegerInterpolationType::AppliedSVGValue(
+    const InterpolableValue& interpolable_value,
     const NonInterpolableValue*) const {
-  double value = toInterpolableNumber(interpolableValue).value();
-  return SVGInteger::create(round(value));
+  double value = ToInterpolableNumber(interpolable_value).Value();
+  return SVGInteger::Create(round(value));
 }
 
 }  // namespace blink

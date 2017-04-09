@@ -42,98 +42,98 @@ namespace blink {
 // <http://en.wikipedia.org/wiki/Percent-encoding#Non-standard_implementations>.
 struct Unicode16BitEscapeSequence {
   STATIC_ONLY(Unicode16BitEscapeSequence);
-  enum { sequenceSize = 6 };  // e.g. %u26C4
-  static size_t findInString(const String& string, size_t startPosition) {
-    return string.find("%u", startPosition);
+  enum { kSequenceSize = 6 };  // e.g. %u26C4
+  static size_t FindInString(const String& string, size_t start_position) {
+    return string.Find("%u", start_position);
   }
-  static size_t findEndOfRun(const String& string,
-                             size_t startPosition,
-                             size_t endPosition) {
-    size_t runEnd = startPosition;
-    while (endPosition - runEnd >= sequenceSize && string[runEnd] == '%' &&
-           string[runEnd + 1] == 'u' && isASCIIHexDigit(string[runEnd + 2]) &&
-           isASCIIHexDigit(string[runEnd + 3]) &&
-           isASCIIHexDigit(string[runEnd + 4]) &&
-           isASCIIHexDigit(string[runEnd + 5])) {
-      runEnd += sequenceSize;
+  static size_t FindEndOfRun(const String& string,
+                             size_t start_position,
+                             size_t end_position) {
+    size_t run_end = start_position;
+    while (end_position - run_end >= kSequenceSize && string[run_end] == '%' &&
+           string[run_end + 1] == 'u' && IsASCIIHexDigit(string[run_end + 2]) &&
+           IsASCIIHexDigit(string[run_end + 3]) &&
+           IsASCIIHexDigit(string[run_end + 4]) &&
+           IsASCIIHexDigit(string[run_end + 5])) {
+      run_end += kSequenceSize;
     }
-    return runEnd;
+    return run_end;
   }
 
   template <typename CharType>
-  static String decodeRun(const CharType* run,
-                          size_t runLength,
+  static String DecodeRun(const CharType* run,
+                          size_t run_length,
                           const WTF::TextEncoding&) {
     // Each %u-escape sequence represents a UTF-16 code unit.  See
     // <http://www.w3.org/International/iri-edit/draft-duerst-iri.html#anchor29>.
     // For 16-bit escape sequences, we know that findEndOfRun() has given us a
     // contiguous run of sequences without any intervening characters, so decode
     // the run without additional checks.
-    size_t numberOfSequences = runLength / sequenceSize;
+    size_t number_of_sequences = run_length / kSequenceSize;
     StringBuilder builder;
-    builder.reserveCapacity(numberOfSequences);
-    while (numberOfSequences--) {
-      UChar codeUnit = (toASCIIHexValue(run[2]) << 12) |
-                       (toASCIIHexValue(run[3]) << 8) |
-                       (toASCIIHexValue(run[4]) << 4) | toASCIIHexValue(run[5]);
-      builder.append(codeUnit);
-      run += sequenceSize;
+    builder.ReserveCapacity(number_of_sequences);
+    while (number_of_sequences--) {
+      UChar code_unit =
+          (ToASCIIHexValue(run[2]) << 12) | (ToASCIIHexValue(run[3]) << 8) |
+          (ToASCIIHexValue(run[4]) << 4) | ToASCIIHexValue(run[5]);
+      builder.Append(code_unit);
+      run += kSequenceSize;
     }
-    return builder.toString();
+    return builder.ToString();
   }
 };
 
 struct URLEscapeSequence {
-  enum { sequenceSize = 3 };  // e.g. %41
-  static size_t findInString(const String& string, size_t startPosition) {
-    return string.find('%', startPosition);
+  enum { kSequenceSize = 3 };  // e.g. %41
+  static size_t FindInString(const String& string, size_t start_position) {
+    return string.Find('%', start_position);
   }
-  static size_t findEndOfRun(const String& string,
-                             size_t startPosition,
-                             size_t endPosition) {
+  static size_t FindEndOfRun(const String& string,
+                             size_t start_position,
+                             size_t end_position) {
     // Make the simplifying assumption that supported encodings may have up to
     // two unescaped characters in the range 0x40 - 0x7F as the trailing bytes
     // of their sequences which need to be passed into the decoder as part of
     // the run. In other words, we end the run at the first value outside of the
     // 0x40 - 0x7F range, after two values in this range, or at a %-sign that
     // does not introduce a valid escape sequence.
-    size_t runEnd = startPosition;
-    int numberOfTrailingCharacters = 0;
-    while (runEnd < endPosition) {
-      if (string[runEnd] == '%') {
-        if (endPosition - runEnd >= sequenceSize &&
-            isASCIIHexDigit(string[runEnd + 1]) &&
-            isASCIIHexDigit(string[runEnd + 2])) {
-          runEnd += sequenceSize;
-          numberOfTrailingCharacters = 0;
+    size_t run_end = start_position;
+    int number_of_trailing_characters = 0;
+    while (run_end < end_position) {
+      if (string[run_end] == '%') {
+        if (end_position - run_end >= kSequenceSize &&
+            IsASCIIHexDigit(string[run_end + 1]) &&
+            IsASCIIHexDigit(string[run_end + 2])) {
+          run_end += kSequenceSize;
+          number_of_trailing_characters = 0;
         } else
           break;
-      } else if (string[runEnd] >= 0x40 && string[runEnd] <= 0x7F &&
-                 numberOfTrailingCharacters < 2) {
-        runEnd += 1;
-        numberOfTrailingCharacters += 1;
+      } else if (string[run_end] >= 0x40 && string[run_end] <= 0x7F &&
+                 number_of_trailing_characters < 2) {
+        run_end += 1;
+        number_of_trailing_characters += 1;
       } else
         break;
     }
-    return runEnd;
+    return run_end;
   }
 
   template <typename CharType>
-  static String decodeRun(const CharType* run,
-                          size_t runLength,
+  static String DecodeRun(const CharType* run,
+                          size_t run_length,
                           const WTF::TextEncoding& encoding) {
     // For URL escape sequences, we know that findEndOfRun() has given us a run
     // where every %-sign introduces a valid escape sequence, but there may be
     // characters between the sequences.
     Vector<char, 512> buffer;
-    buffer.resize(
-        runLength);  // Unescaping hex sequences only makes the length smaller.
-    char* p = buffer.data();
-    const CharType* runEnd = run + runLength;
-    while (run < runEnd) {
+    buffer.Resize(
+        run_length);  // Unescaping hex sequences only makes the length smaller.
+    char* p = buffer.Data();
+    const CharType* run_end = run + run_length;
+    while (run < run_end) {
       if (run[0] == '%') {
-        *p++ = (toASCIIHexValue(run[1]) << 4) | toASCIIHexValue(run[2]);
-        run += sequenceSize;
+        *p++ = (ToASCIIHexValue(run[1]) << 4) | ToASCIIHexValue(run[2]);
+        run += kSequenceSize;
       } else {
         *p++ = run[0];
         run += 1;
@@ -141,48 +141,48 @@ struct URLEscapeSequence {
     }
     ASSERT(
         buffer.size() >=
-        static_cast<size_t>(p - buffer.data()));  // Prove buffer not overrun.
-    return (encoding.isValid() ? encoding : UTF8Encoding())
-        .decode(buffer.data(), p - buffer.data());
+        static_cast<size_t>(p - buffer.Data()));  // Prove buffer not overrun.
+    return (encoding.IsValid() ? encoding : UTF8Encoding())
+        .Decode(buffer.Data(), p - buffer.Data());
   }
 };
 
 template <typename EscapeSequence>
-String decodeEscapeSequences(const String& string,
+String DecodeEscapeSequences(const String& string,
                              const WTF::TextEncoding& encoding) {
   StringBuilder result;
   size_t length = string.length();
-  size_t decodedPosition = 0;
-  size_t searchPosition = 0;
-  size_t encodedRunPosition;
-  while ((encodedRunPosition = EscapeSequence::findInString(
-              string, searchPosition)) != kNotFound) {
-    size_t encodedRunEnd =
-        EscapeSequence::findEndOfRun(string, encodedRunPosition, length);
-    searchPosition = encodedRunEnd;
-    if (encodedRunEnd == encodedRunPosition) {
-      ++searchPosition;
+  size_t decoded_position = 0;
+  size_t search_position = 0;
+  size_t encoded_run_position;
+  while ((encoded_run_position = EscapeSequence::FindInString(
+              string, search_position)) != kNotFound) {
+    size_t encoded_run_end =
+        EscapeSequence::FindEndOfRun(string, encoded_run_position, length);
+    search_position = encoded_run_end;
+    if (encoded_run_end == encoded_run_position) {
+      ++search_position;
       continue;
     }
 
-    String decoded = string.is8Bit()
-                         ? EscapeSequence::decodeRun(
-                               string.characters8() + encodedRunPosition,
-                               encodedRunEnd - encodedRunPosition, encoding)
-                         : EscapeSequence::decodeRun(
-                               string.characters16() + encodedRunPosition,
-                               encodedRunEnd - encodedRunPosition, encoding);
+    String decoded =
+        string.Is8Bit() ? EscapeSequence::DecodeRun(
+                              string.Characters8() + encoded_run_position,
+                              encoded_run_end - encoded_run_position, encoding)
+                        : EscapeSequence::DecodeRun(
+                              string.Characters16() + encoded_run_position,
+                              encoded_run_end - encoded_run_position, encoding);
 
-    if (decoded.isEmpty())
+    if (decoded.IsEmpty())
       continue;
 
-    result.append(string, decodedPosition,
-                  encodedRunPosition - decodedPosition);
-    result.append(decoded);
-    decodedPosition = encodedRunEnd;
+    result.Append(string, decoded_position,
+                  encoded_run_position - decoded_position);
+    result.Append(decoded);
+    decoded_position = encoded_run_end;
   }
-  result.append(string, decodedPosition, length - decodedPosition);
-  return result.toString();
+  result.Append(string, decoded_position, length - decoded_position);
+  return result.ToString();
 }
 
 }  // namespace blink

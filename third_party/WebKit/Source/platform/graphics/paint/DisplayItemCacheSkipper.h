@@ -17,15 +17,15 @@ class DisplayItemCacheSkipper final {
   WTF_MAKE_NONCOPYABLE(DisplayItemCacheSkipper);
 
  public:
-  DisplayItemCacheSkipper(GraphicsContext& context) : m_context(context) {
-    context.getPaintController().beginSkippingCache();
+  DisplayItemCacheSkipper(GraphicsContext& context) : context_(context) {
+    context.GetPaintController().BeginSkippingCache();
   }
   ~DisplayItemCacheSkipper() {
-    m_context.getPaintController().endSkippingCache();
+    context_.GetPaintController().EndSkippingCache();
   }
 
  private:
-  GraphicsContext& m_context;
+  GraphicsContext& context_;
 };
 
 }  // namespace blink

@@ -29,7 +29,7 @@ class DigestorImpl : public blink::WebCryptoDigestor {
       : initialized_(false),
         algorithm_id_(algorithm_id) {}
 
-  bool consume(const unsigned char* data, unsigned int size) override {
+  bool Consume(const unsigned char* data, unsigned int size) override {
     return ConsumeWithStatus(data, size).IsSuccess();
   }
 
@@ -45,7 +45,7 @@ class DigestorImpl : public blink::WebCryptoDigestor {
     return Status::Success();
   }
 
-  bool finish(unsigned char*& result_data,
+  bool Finish(unsigned char*& result_data,
               unsigned int& result_data_size) override {
     Status error = FinishInternal(result_, &result_data_size);
     if (!error.IsSuccess())
@@ -106,7 +106,7 @@ class ShaImplementation : public AlgorithmImplementation {
   Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                 const CryptoData& data,
                 std::vector<uint8_t>* buffer) const override {
-    DigestorImpl digestor(algorithm.id());
+    DigestorImpl digestor(algorithm.Id());
     Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
     // http://crbug.com/366427: the spec does not define any other failures for
     // digest, so none of the subsequent errors are spec compliant.

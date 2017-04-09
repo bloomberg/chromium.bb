@@ -10,31 +10,31 @@
 
 namespace blink {
 
-const char* StorageNamespaceController::supplementName() {
+const char* StorageNamespaceController::SupplementName() {
   return "StorageNamespaceController";
 }
 
 StorageNamespaceController::StorageNamespaceController(StorageClient* client)
-    : m_client(client), m_inspectorAgent(nullptr) {}
+    : client_(client), inspector_agent_(nullptr) {}
 
 StorageNamespaceController::~StorageNamespaceController() {}
 
 DEFINE_TRACE(StorageNamespaceController) {
-  Supplement<Page>::trace(visitor);
-  visitor->trace(m_inspectorAgent);
+  Supplement<Page>::Trace(visitor);
+  visitor->Trace(inspector_agent_);
 }
 
-StorageNamespace* StorageNamespaceController::sessionStorage(
-    bool optionalCreate) {
-  if (!m_sessionStorage && optionalCreate)
-    m_sessionStorage = m_client->createSessionStorageNamespace();
-  return m_sessionStorage.get();
+StorageNamespace* StorageNamespaceController::SessionStorage(
+    bool optional_create) {
+  if (!session_storage_ && optional_create)
+    session_storage_ = client_->CreateSessionStorageNamespace();
+  return session_storage_.get();
 }
 
-void StorageNamespaceController::provideStorageNamespaceTo(
+void StorageNamespaceController::ProvideStorageNamespaceTo(
     Page& page,
     StorageClient* client) {
-  StorageNamespaceController::provideTo(page, supplementName(),
+  StorageNamespaceController::ProvideTo(page, SupplementName(),
                                         new StorageNamespaceController(client));
 }
 

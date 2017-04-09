@@ -41,16 +41,16 @@ class WeakPtrFactory {
   USING_FAST_MALLOC(WeakPtrFactory);
 
  public:
-  explicit WeakPtrFactory(T* ptr) : m_factory(ptr) {}
+  explicit WeakPtrFactory(T* ptr) : factory_(ptr) {}
 
-  WeakPtr<T> createWeakPtr() { return m_factory.GetWeakPtr(); }
+  WeakPtr<T> CreateWeakPtr() { return factory_.GetWeakPtr(); }
 
-  void revokeAll() { m_factory.InvalidateWeakPtrs(); }
+  void RevokeAll() { factory_.InvalidateWeakPtrs(); }
 
-  bool hasWeakPtrs() const { return m_factory.HasWeakPtrs(); }
+  bool HasWeakPtrs() const { return factory_.HasWeakPtrs(); }
 
  private:
-  base::WeakPtrFactory<T> m_factory;
+  base::WeakPtrFactory<T> factory_;
 };
 
 }  // namespace WTF

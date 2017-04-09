@@ -43,7 +43,7 @@ class Element;
 class V0CustomElementMicrotaskResolutionStep final
     : public V0CustomElementMicrotaskStep {
  public:
-  static V0CustomElementMicrotaskResolutionStep* create(
+  static V0CustomElementMicrotaskResolutionStep* Create(
       V0CustomElementRegistrationContext*,
       Element*,
       const V0CustomElementDescriptor&);
@@ -57,15 +57,15 @@ class V0CustomElementMicrotaskResolutionStep final
                                          Element*,
                                          const V0CustomElementDescriptor&);
 
-  Result process() override;
+  Result Process() override;
 
 #if !defined(NDEBUG)
-  void show(unsigned indent) override;
+  void Show(unsigned indent) override;
 #endif
 
-  Member<V0CustomElementRegistrationContext> m_context;
-  Member<Element> m_element;
-  V0CustomElementDescriptor m_descriptor;
+  Member<V0CustomElementRegistrationContext> context_;
+  Member<Element> element_;
+  V0CustomElementDescriptor descriptor_;
 };
 
 }  // namespace blink

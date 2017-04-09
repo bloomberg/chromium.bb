@@ -41,9 +41,10 @@ ui::GestureProvider::Config GetEmulatorGestureProviderConfig(
 }
 
 int ModifiersWithoutMouseButtons(const WebInputEvent& event) {
-  const int all_buttons = WebInputEvent::LeftButtonDown |
-      WebInputEvent::MiddleButtonDown | WebInputEvent::RightButtonDown;
-  return event.modifiers() & ~all_buttons;
+  const int all_buttons = WebInputEvent::kLeftButtonDown |
+                          WebInputEvent::kMiddleButtonDown |
+                          WebInputEvent::kRightButtonDown;
+  return event.GetModifiers() & ~all_buttons;
 }
 
 // Time between two consecutive mouse moves, during which second mouse move
@@ -133,7 +134,7 @@ bool TouchEmulator::InitCursors(float device_scale_factor, bool force) {
           IDR_DEVTOOLS_PINCH_CURSOR_ICON);
 
   WebCursor::CursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::TypePointer;
+  cursor_info.type = blink::WebCursorInfo::kTypePointer;
   pointer_cursor_.InitFromCursorInfo(cursor_info);
   return true;
 }
@@ -143,7 +144,7 @@ gfx::SizeF TouchEmulator::InitCursorFromResource(
   gfx::Image& cursor_image =
       content::GetContentClient()->GetNativeImageNamed(resource_id);
   WebCursor::CursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::TypeCustom;
+  cursor_info.type = blink::WebCursorInfo::kTypeCustom;
   cursor_info.image_scale_factor = scale;
   cursor_info.custom_image = cursor_image.AsBitmap();
   cursor_info.hotspot =
@@ -157,37 +158,38 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
   if (!enabled())
     return false;
 
-  if (mouse_event.button == WebMouseEvent::Button::Right &&
-      mouse_event.type() == WebInputEvent::MouseDown) {
+  if (mouse_event.button == WebMouseEvent::Button::kRight &&
+      mouse_event.GetType() == WebInputEvent::kMouseDown) {
     client_->ShowContextMenuAtPoint(gfx::Point(
-        mouse_event.positionInWidget().x, mouse_event.positionInWidget().y));
+        mouse_event.PositionInWidget().x, mouse_event.PositionInWidget().y));
   }
 
-  if (mouse_event.button != WebMouseEvent::Button::Left)
+  if (mouse_event.button != WebMouseEvent::Button::kLeft)
     return true;
 
-  if (mouse_event.type() == WebInputEvent::MouseMove) {
+  if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
     if (last_mouse_event_was_move_ &&
-        mouse_event.timeStampSeconds() <
+        mouse_event.TimeStampSeconds() <
             last_mouse_move_timestamp_ + kMouseMoveDropIntervalSeconds)
       return true;
 
     last_mouse_event_was_move_ = true;
-    last_mouse_move_timestamp_ = mouse_event.timeStampSeconds();
+    last_mouse_move_timestamp_ = mouse_event.TimeStampSeconds();
   } else {
     last_mouse_event_was_move_ = false;
   }
 
-  if (mouse_event.type() == WebInputEvent::MouseDown)
+  if (mouse_event.GetType() == WebInputEvent::kMouseDown)
     mouse_pressed_ = true;
-  else if (mouse_event.type() == WebInputEvent::MouseUp)
+  else if (mouse_event.GetType() == WebInputEvent::kMouseUp)
     mouse_pressed_ = false;
 
-  UpdateShiftPressed((mouse_event.modifiers() & WebInputEvent::ShiftKey) != 0);
+  UpdateShiftPressed((mouse_event.GetModifiers() & WebInputEvent::kShiftKey) !=
+                     0);
 
-  if (mouse_event.type() != WebInputEvent::MouseDown &&
-      mouse_event.type() != WebInputEvent::MouseMove &&
-      mouse_event.type() != WebInputEvent::MouseUp) {
+  if (mouse_event.GetType() != WebInputEvent::kMouseDown &&
+      mouse_event.GetType() != WebInputEvent::kMouseMove &&
+      mouse_event.GetType() != WebInputEvent::kMouseUp) {
     return true;
   }
 
@@ -210,7 +212,8 @@ bool TouchEmulator::HandleKeyboardEvent(const WebKeyboardEvent& event) {
   if (!enabled())
     return false;
 
-  if (!UpdateShiftPressed((event.modifiers() & WebInputEvent::ShiftKey) != 0))
+  if (!UpdateShiftPressed((event.GetModifiers() & WebInputEvent::kShiftKey) !=
+                          0))
     return false;
 
   if (!mouse_pressed_)
@@ -246,7 +249,7 @@ bool TouchEmulator::HandleTouchEvent(const blink::WebTouchEvent& event) {
 
 void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   DCHECK(gesture_provider_);
-  event.uniqueTouchEventId = ui::GetNextTouchEventId();
+  event.unique_touch_event_id = ui::GetNextTouchEventId();
   auto result = gesture_provider_->OnTouchEvent(MotionEventWeb(event));
   if (!result.succeeded)
     return;
@@ -254,7 +257,7 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   const bool event_consumed = true;
   // Block emulated event when emulated native stream is active.
   if (native_stream_active_sequence_count_) {
-    gesture_provider_->OnTouchEventAck(event.uniqueTouchEventId,
+    gesture_provider_->OnTouchEventAck(event.unique_touch_event_id,
                                        event_consumed);
     return;
   }
@@ -262,7 +265,7 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   bool is_sequence_start = WebTouchEventTraits::IsTouchSequenceStart(event);
   // Do not allow middle-sequence event to pass through, if start was blocked.
   if (!emulated_stream_active_sequence_count_ && !is_sequence_start) {
-    gesture_provider_->OnTouchEventAck(event.uniqueTouchEventId,
+    gesture_provider_->OnTouchEventAck(event.unique_touch_event_id,
                                        event_consumed);
     return;
   }
@@ -270,7 +273,7 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   if (is_sequence_start)
     emulated_stream_active_sequence_count_++;
 
-  event.movedBeyondSlopRegion = result.moved_beyond_slop_region;
+  event.moved_beyond_slop_region = result.moved_beyond_slop_region;
   client_->ForwardEmulatedTouchEvent(event);
 }
 
@@ -283,7 +286,7 @@ bool TouchEmulator::HandleTouchEventAck(
 
     const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
     if (gesture_provider_)
-      gesture_provider_->OnTouchEventAck(event.uniqueTouchEventId,
+      gesture_provider_->OnTouchEventAck(event.unique_touch_event_id,
                                          event_consumed);
     return true;
   }
@@ -299,20 +302,20 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
   WebGestureEvent gesture_event =
       ui::CreateWebGestureEventFromGestureEventData(gesture);
 
-  switch (gesture_event.type()) {
-    case WebInputEvent::Undefined:
+  switch (gesture_event.GetType()) {
+    case WebInputEvent::kUndefined:
       NOTREACHED() << "Undefined WebInputEvent type";
       // Bail without sending the junk event to the client.
       return;
 
-    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::kGestureScrollBegin:
       client_->ForwardEmulatedGestureEvent(gesture_event);
       // PinchBegin must always follow ScrollBegin.
       if (InPinchGestureMode())
         PinchBegin(gesture_event);
       break;
 
-    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::kGestureScrollUpdate:
       if (InPinchGestureMode()) {
         // Convert scrolls to pinches while shift is pressed.
         if (!pinch_gesture_active_)
@@ -327,14 +330,14 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
       }
       break;
 
-    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::kGestureScrollEnd:
       // PinchEnd must precede ScrollEnd.
       if (pinch_gesture_active_)
         PinchEnd(gesture_event);
       client_->ForwardEmulatedGestureEvent(gesture_event);
       break;
 
-    case WebInputEvent::GestureFlingStart:
+    case WebInputEvent::kGestureFlingStart:
       // PinchEnd must precede FlingStart.
       if (pinch_gesture_active_)
         PinchEnd(gesture_event);
@@ -348,7 +351,7 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
       }
       break;
 
-    case WebInputEvent::GestureFlingCancel:
+    case WebInputEvent::kGestureFlingCancel:
       // If fling start was suppressed, we should not send fling cancel either.
       if (!suppress_next_fling_cancel_)
         client_->ForwardEmulatedGestureEvent(gesture_event);
@@ -366,7 +369,7 @@ void TouchEmulator::CancelTouch() {
     return;
 
   WebTouchEventTraits::ResetTypeAndTouchStates(
-      WebInputEvent::TouchCancel,
+      WebInputEvent::kTouchCancel,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()), &touch_event_);
   DCHECK(gesture_provider_);
   if (gesture_provider_->GetCurrentDownEvent())
@@ -395,7 +398,7 @@ void TouchEmulator::PinchBegin(const WebGestureEvent& event) {
   pinch_anchor_ = gfx::Point(event.x, event.y);
   pinch_scale_ = 1.f;
   WebGestureEvent pinch_event =
-      GetPinchGestureEvent(WebInputEvent::GesturePinchBegin, event);
+      GetPinchGestureEvent(WebInputEvent::kGesturePinchBegin, event);
   client_->ForwardEmulatedGestureEvent(pinch_event);
 }
 
@@ -404,8 +407,8 @@ void TouchEmulator::PinchUpdate(const WebGestureEvent& event) {
   int dy = pinch_anchor_.y() - event.y;
   float scale = exp(dy * 0.002f);
   WebGestureEvent pinch_event =
-      GetPinchGestureEvent(WebInputEvent::GesturePinchUpdate, event);
-  pinch_event.data.pinchUpdate.scale = scale / pinch_scale_;
+      GetPinchGestureEvent(WebInputEvent::kGesturePinchUpdate, event);
+  pinch_event.data.pinch_update.scale = scale / pinch_scale_;
   client_->ForwardEmulatedGestureEvent(pinch_event);
   pinch_scale_ = scale;
 }
@@ -414,15 +417,15 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
   DCHECK(pinch_gesture_active_);
   pinch_gesture_active_ = false;
   WebGestureEvent pinch_event =
-      GetPinchGestureEvent(WebInputEvent::GesturePinchEnd, event);
+      GetPinchGestureEvent(WebInputEvent::kGesturePinchEnd, event);
   client_->ForwardEmulatedGestureEvent(pinch_event);
 }
 
 void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
-  WebGestureEvent scroll_event(WebInputEvent::GestureScrollEnd,
+  WebGestureEvent scroll_event(WebInputEvent::kGestureScrollEnd,
                                ModifiersWithoutMouseButtons(event),
-                               event.timeStampSeconds());
-  scroll_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+                               event.TimeStampSeconds());
+  scroll_event.source_device = blink::kWebGestureDeviceTouchscreen;
   client_->ForwardEmulatedGestureEvent(scroll_event);
 }
 
@@ -430,8 +433,8 @@ WebGestureEvent TouchEmulator::GetPinchGestureEvent(
     WebInputEvent::Type type,
     const WebInputEvent& original_event) {
   WebGestureEvent event(type, ModifiersWithoutMouseButtons(original_event),
-                        original_event.timeStampSeconds());
-  event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+                        original_event.TimeStampSeconds());
+  event.source_device = blink::kWebGestureDeviceTouchscreen;
   event.x = pinch_anchor_.x();
   event.y = pinch_anchor_.y();
   return event;
@@ -439,38 +442,38 @@ WebGestureEvent TouchEmulator::GetPinchGestureEvent(
 
 void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   WebInputEvent::Type eventType;
-  switch (mouse_event.type()) {
-    case WebInputEvent::MouseDown:
-      eventType = WebInputEvent::TouchStart;
+  switch (mouse_event.GetType()) {
+    case WebInputEvent::kMouseDown:
+      eventType = WebInputEvent::kTouchStart;
       break;
-    case WebInputEvent::MouseMove:
-      eventType = WebInputEvent::TouchMove;
+    case WebInputEvent::kMouseMove:
+      eventType = WebInputEvent::kTouchMove;
       break;
-    case WebInputEvent::MouseUp:
-      eventType = WebInputEvent::TouchEnd;
+    case WebInputEvent::kMouseUp:
+      eventType = WebInputEvent::kTouchEnd;
       break;
     default:
-      eventType = WebInputEvent::Undefined;
+      eventType = WebInputEvent::kUndefined;
       NOTREACHED() << "Invalid event for touch emulation: "
-                   << mouse_event.type();
+                   << mouse_event.GetType();
   }
-  touch_event_.touchesLength = 1;
-  touch_event_.setModifiers(ModifiersWithoutMouseButtons(mouse_event));
+  touch_event_.touches_length = 1;
+  touch_event_.SetModifiers(ModifiersWithoutMouseButtons(mouse_event));
   WebTouchEventTraits::ResetTypeAndTouchStates(
-      eventType, mouse_event.timeStampSeconds(), &touch_event_);
+      eventType, mouse_event.TimeStampSeconds(), &touch_event_);
   WebTouchPoint& point = touch_event_.touches[0];
   point.id = 0;
-  point.radiusX = 0.5f * cursor_size_.width();
-  point.radiusY = 0.5f * cursor_size_.height();
-  point.force = eventType == WebInputEvent::TouchEnd ? 0.f : 1.f;
-  point.rotationAngle = 0.f;
-  point.position.x = mouse_event.positionInWidget().x;
-  point.screenPosition.x = mouse_event.positionInScreen().x;
-  point.position.y = mouse_event.positionInWidget().y;
-  point.screenPosition.y = mouse_event.positionInScreen().y;
-  point.tiltX = 0;
-  point.tiltY = 0;
-  point.pointerType = blink::WebPointerProperties::PointerType::Touch;
+  point.radius_x = 0.5f * cursor_size_.width();
+  point.radius_y = 0.5f * cursor_size_.height();
+  point.force = eventType == WebInputEvent::kTouchEnd ? 0.f : 1.f;
+  point.rotation_angle = 0.f;
+  point.position.x = mouse_event.PositionInWidget().x;
+  point.screen_position.x = mouse_event.PositionInScreen().x;
+  point.position.y = mouse_event.PositionInWidget().y;
+  point.screen_position.y = mouse_event.PositionInScreen().y;
+  point.tilt_x = 0;
+  point.tilt_y = 0;
+  point.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
 }
 
 bool TouchEmulator::InPinchGestureMode() const {

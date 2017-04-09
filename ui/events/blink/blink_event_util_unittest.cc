@@ -30,43 +30,43 @@ TEST(BlinkEventUtilTest, NoScalingWith1DSF) {
 }
 
 TEST(BlinkEventUtilTest, NonPaginatedWebMouseWheelEvent) {
-  blink::WebMouseWheelEvent event(blink::WebInputEvent::MouseWheel,
-                                  blink::WebInputEvent::NoModifiers,
-                                  blink::WebInputEvent::TimeStampForTesting);
-  event.deltaX = 1.f;
-  event.deltaY = 1.f;
-  event.wheelTicksX = 1.f;
-  event.wheelTicksY = 1.f;
-  event.scrollByPage = false;
+  blink::WebMouseWheelEvent event(blink::WebInputEvent::kMouseWheel,
+                                  blink::WebInputEvent::kNoModifiers,
+                                  blink::WebInputEvent::kTimeStampForTesting);
+  event.delta_x = 1.f;
+  event.delta_y = 1.f;
+  event.wheel_ticks_x = 1.f;
+  event.wheel_ticks_y = 1.f;
+  event.scroll_by_page = false;
   std::unique_ptr<blink::WebInputEvent> webEvent =
       ScaleWebInputEvent(event, 2.f);
   EXPECT_TRUE(webEvent);
   blink::WebMouseWheelEvent* mouseWheelEvent =
       static_cast<blink::WebMouseWheelEvent*>(webEvent.get());
-  EXPECT_EQ(2.f, mouseWheelEvent->deltaX);
-  EXPECT_EQ(2.f, mouseWheelEvent->deltaY);
-  EXPECT_EQ(2.f, mouseWheelEvent->wheelTicksX);
-  EXPECT_EQ(2.f, mouseWheelEvent->wheelTicksY);
+  EXPECT_EQ(2.f, mouseWheelEvent->delta_x);
+  EXPECT_EQ(2.f, mouseWheelEvent->delta_y);
+  EXPECT_EQ(2.f, mouseWheelEvent->wheel_ticks_x);
+  EXPECT_EQ(2.f, mouseWheelEvent->wheel_ticks_y);
 }
 
 TEST(BlinkEventUtilTest, PaginatedWebMouseWheelEvent) {
-  blink::WebMouseWheelEvent event(blink::WebInputEvent::MouseWheel,
-                                  blink::WebInputEvent::NoModifiers,
-                                  blink::WebInputEvent::TimeStampForTesting);
-  event.deltaX = 1.f;
-  event.deltaY = 1.f;
-  event.wheelTicksX = 1.f;
-  event.wheelTicksY = 1.f;
-  event.scrollByPage = true;
+  blink::WebMouseWheelEvent event(blink::WebInputEvent::kMouseWheel,
+                                  blink::WebInputEvent::kNoModifiers,
+                                  blink::WebInputEvent::kTimeStampForTesting);
+  event.delta_x = 1.f;
+  event.delta_y = 1.f;
+  event.wheel_ticks_x = 1.f;
+  event.wheel_ticks_y = 1.f;
+  event.scroll_by_page = true;
   std::unique_ptr<blink::WebInputEvent> webEvent =
       ScaleWebInputEvent(event, 2.f);
   EXPECT_TRUE(webEvent);
   blink::WebMouseWheelEvent* mouseWheelEvent =
       static_cast<blink::WebMouseWheelEvent*>(webEvent.get());
-  EXPECT_EQ(1.f, mouseWheelEvent->deltaX);
-  EXPECT_EQ(1.f, mouseWheelEvent->deltaY);
-  EXPECT_EQ(1.f, mouseWheelEvent->wheelTicksX);
-  EXPECT_EQ(1.f, mouseWheelEvent->wheelTicksY);
+  EXPECT_EQ(1.f, mouseWheelEvent->delta_x);
+  EXPECT_EQ(1.f, mouseWheelEvent->delta_y);
+  EXPECT_EQ(1.f, mouseWheelEvent->wheel_ticks_x);
+  EXPECT_EQ(1.f, mouseWheelEvent->wheel_ticks_y);
 }
 
 TEST(BlinkEventUtilTest, NonPaginatedScrollBeginEvent) {
@@ -80,8 +80,8 @@ TEST(BlinkEventUtilTest, NonPaginatedScrollBeginEvent) {
   EXPECT_TRUE(webEvent);
   blink::WebGestureEvent* gestureEvent =
       static_cast<blink::WebGestureEvent*>(webEvent.get());
-  EXPECT_EQ(2.f, gestureEvent->data.scrollBegin.deltaXHint);
-  EXPECT_EQ(2.f, gestureEvent->data.scrollBegin.deltaYHint);
+  EXPECT_EQ(2.f, gestureEvent->data.scroll_begin.delta_x_hint);
+  EXPECT_EQ(2.f, gestureEvent->data.scroll_begin.delta_y_hint);
 }
 
 TEST(BlinkEventUtilTest, PaginatedScrollBeginEvent) {
@@ -96,8 +96,8 @@ TEST(BlinkEventUtilTest, PaginatedScrollBeginEvent) {
   EXPECT_TRUE(webEvent);
   blink::WebGestureEvent* gestureEvent =
       static_cast<blink::WebGestureEvent*>(webEvent.get());
-  EXPECT_EQ(1.f, gestureEvent->data.scrollBegin.deltaXHint);
-  EXPECT_EQ(1.f, gestureEvent->data.scrollBegin.deltaYHint);
+  EXPECT_EQ(1.f, gestureEvent->data.scroll_begin.delta_x_hint);
+  EXPECT_EQ(1.f, gestureEvent->data.scroll_begin.delta_y_hint);
 }
 
 TEST(BlinkEventUtilTest, NonPaginatedScrollUpdateEvent) {
@@ -111,8 +111,8 @@ TEST(BlinkEventUtilTest, NonPaginatedScrollUpdateEvent) {
   EXPECT_TRUE(webEvent);
   blink::WebGestureEvent* gestureEvent =
       static_cast<blink::WebGestureEvent*>(webEvent.get());
-  EXPECT_EQ(2.f, gestureEvent->data.scrollUpdate.deltaX);
-  EXPECT_EQ(2.f, gestureEvent->data.scrollUpdate.deltaY);
+  EXPECT_EQ(2.f, gestureEvent->data.scroll_update.delta_x);
+  EXPECT_EQ(2.f, gestureEvent->data.scroll_update.delta_y);
 }
 
 TEST(BlinkEventUtilTest, PaginatedScrollUpdateEvent) {
@@ -127,77 +127,77 @@ TEST(BlinkEventUtilTest, PaginatedScrollUpdateEvent) {
   EXPECT_TRUE(webEvent);
   blink::WebGestureEvent* gestureEvent =
       static_cast<blink::WebGestureEvent*>(webEvent.get());
-  EXPECT_EQ(1.f, gestureEvent->data.scrollUpdate.deltaX);
-  EXPECT_EQ(1.f, gestureEvent->data.scrollUpdate.deltaY);
+  EXPECT_EQ(1.f, gestureEvent->data.scroll_update.delta_x);
+  EXPECT_EQ(1.f, gestureEvent->data.scroll_update.delta_y);
 }
 
 TEST(BlinkEventUtilTest, TouchEventCoalescing) {
   blink::WebTouchPoint touch_point;
   touch_point.id = 1;
-  touch_point.state = blink::WebTouchPoint::StateMoved;
+  touch_point.state = blink::WebTouchPoint::kStateMoved;
 
   blink::WebTouchEvent coalesced_event;
-  coalesced_event.setType(blink::WebInputEvent::TouchMove);
-  touch_point.movementX = 5;
-  touch_point.movementY = 10;
-  coalesced_event.touches[coalesced_event.touchesLength++] = touch_point;
+  coalesced_event.SetType(blink::WebInputEvent::kTouchMove);
+  touch_point.movement_x = 5;
+  touch_point.movement_y = 10;
+  coalesced_event.touches[coalesced_event.touches_length++] = touch_point;
 
   blink::WebTouchEvent event_to_be_coalesced;
-  event_to_be_coalesced.setType(blink::WebInputEvent::TouchMove);
-  touch_point.movementX = 3;
-  touch_point.movementY = -4;
-  event_to_be_coalesced.touches[event_to_be_coalesced.touchesLength++] =
+  event_to_be_coalesced.SetType(blink::WebInputEvent::kTouchMove);
+  touch_point.movement_x = 3;
+  touch_point.movement_y = -4;
+  event_to_be_coalesced.touches[event_to_be_coalesced.touches_length++] =
       touch_point;
 
   EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
   Coalesce(event_to_be_coalesced, &coalesced_event);
-  EXPECT_EQ(8, coalesced_event.touches[0].movementX);
-  EXPECT_EQ(6, coalesced_event.touches[0].movementY);
+  EXPECT_EQ(8, coalesced_event.touches[0].movement_x);
+  EXPECT_EQ(6, coalesced_event.touches[0].movement_y);
 }
 
 TEST(BlinkEventUtilTest, WebMouseWheelEventCoalescing) {
   blink::WebMouseWheelEvent coalesced_event(
-      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  coalesced_event.deltaX = 1;
-  coalesced_event.deltaY = 1;
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  coalesced_event.delta_x = 1;
+  coalesced_event.delta_y = 1;
 
   blink::WebMouseWheelEvent event_to_be_coalesced(
-      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  event_to_be_coalesced.deltaX = 3;
-  event_to_be_coalesced.deltaY = 4;
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  event_to_be_coalesced.delta_x = 3;
+  event_to_be_coalesced.delta_y = 4;
 
   EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
   Coalesce(event_to_be_coalesced, &coalesced_event);
-  EXPECT_EQ(4, coalesced_event.deltaX);
-  EXPECT_EQ(5, coalesced_event.deltaY);
+  EXPECT_EQ(4, coalesced_event.delta_x);
+  EXPECT_EQ(5, coalesced_event.delta_y);
 
-  event_to_be_coalesced.resendingPluginId = 3;
+  event_to_be_coalesced.resending_plugin_id = 3;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }
 
 TEST(BlinkEventUtilTest, WebGestureEventCoalescing) {
   blink::WebGestureEvent coalesced_event(
-      blink::WebInputEvent::GestureScrollUpdate,
-      blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  coalesced_event.data.scrollUpdate.deltaX = 1;
-  coalesced_event.data.scrollUpdate.deltaY = 1;
+      blink::WebInputEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  coalesced_event.data.scroll_update.delta_x = 1;
+  coalesced_event.data.scroll_update.delta_y = 1;
 
   blink::WebGestureEvent event_to_be_coalesced(
-      blink::WebInputEvent::GestureScrollUpdate,
-      blink::WebInputEvent::NoModifiers,
-      blink::WebInputEvent::TimeStampForTesting);
-  event_to_be_coalesced.data.scrollUpdate.deltaX = 3;
-  event_to_be_coalesced.data.scrollUpdate.deltaY = 4;
+      blink::WebInputEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  event_to_be_coalesced.data.scroll_update.delta_x = 3;
+  event_to_be_coalesced.data.scroll_update.delta_y = 4;
 
   EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
   Coalesce(event_to_be_coalesced, &coalesced_event);
-  EXPECT_EQ(4, coalesced_event.data.scrollUpdate.deltaX);
-  EXPECT_EQ(5, coalesced_event.data.scrollUpdate.deltaY);
+  EXPECT_EQ(4, coalesced_event.data.scroll_update.delta_x);
+  EXPECT_EQ(5, coalesced_event.data.scroll_update.delta_y);
 
-  event_to_be_coalesced.resendingPluginId = 3;
+  event_to_be_coalesced.resending_plugin_id = 3;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }
 

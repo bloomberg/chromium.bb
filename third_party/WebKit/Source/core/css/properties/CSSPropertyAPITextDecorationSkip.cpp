@@ -15,16 +15,16 @@ const CSSValue* CSSPropertyAPITextDecorationSkip::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   while (true) {
     CSSIdentifierValue* ident =
-        CSSPropertyParserHelpers::consumeIdent<CSSValueObjects, CSSValueInk>(
+        CSSPropertyParserHelpers::ConsumeIdent<CSSValueObjects, CSSValueInk>(
             range);
     if (!ident)
       break;
-    if (list->hasValue(*ident))
+    if (list->HasValue(*ident))
       return nullptr;
-    list->append(*ident);
+    list->Append(*ident);
   }
 
   if (!list->length())

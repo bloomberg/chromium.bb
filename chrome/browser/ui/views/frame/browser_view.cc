@@ -1314,8 +1314,8 @@ void BrowserView::ShowAppMenu() {
 
 content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ((event.type() != blink::WebInputEvent::RawKeyDown) &&
-      (event.type() != blink::WebInputEvent::KeyUp)) {
+  if ((event.GetType() != blink::WebInputEvent::kRawKeyDown) &&
+      (event.GetType() != blink::WebInputEvent::kKeyUp)) {
     return content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
@@ -1349,7 +1349,7 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
 
 #if defined(OS_CHROMEOS)
   if (ash_util::IsAcceleratorDeprecated(accelerator)) {
-    return (event.type() == blink::WebInputEvent::RawKeyDown)
+    return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
                ? content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
                : content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
@@ -1393,7 +1393,7 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
 
   if (id != -1) {
     // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+f).
-    return (event.type() == blink::WebInputEvent::RawKeyDown)
+    return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
                ? content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
                : content::KeyboardEventProcessingResult::NOT_HANDLED;
   }

@@ -39,31 +39,31 @@ class SameSizeStyleRareNonInheritedData
   float floats[3];
   int integers;
 
-  LengthPoint lengthPoints[2];
-  LineClampValue lineClamps;
-  DraggableRegionMode draggableRegions;
+  LengthPoint length_points[2];
+  LineClampValue line_clamps;
+  DraggableRegionMode draggable_regions;
 
-  void* dataRefs[8];
-  DataPersistent<void*> dataPersistents[2];
-  void* ownPtrs[4];
-  Persistent<void*> persistentHandles[2];
-  void* refPtrs[3];
-  void* uniquePtrs[1];
+  void* data_refs[8];
+  DataPersistent<void*> data_persistents[2];
+  void* own_ptrs[4];
+  Persistent<void*> persistent_handles[2];
+  void* ref_ptrs[3];
+  void* unique_ptrs[1];
 
-  FillLayer fillLayers;
-  NinePieceImage ninePieces;
-  FloatSize floatSize;
+  FillLayer fill_layers;
+  NinePieceImage nine_pieces;
+  FloatSize float_size;
   Length lengths;
   OutlineValue outline;
 
-  StyleColor styleColors[8];
+  StyleColor style_colors[8];
 
-  Vector<String> m_callbackSelectors;
+  Vector<String> callback_selectors_;
 
-  StyleContentAlignmentData contentAlignmentData[2];
-  StyleSelfAlignmentData selfAlignmentData[4];
+  StyleContentAlignmentData content_alignment_data[2];
+  StyleSelfAlignmentData self_alignment_data[4];
 
-  unsigned m_bitFields[2];
+  unsigned bit_fields_[2];
 };
 
 static_assert(sizeof(StyleRareNonInheritedData) ==
@@ -71,286 +71,289 @@ static_assert(sizeof(StyleRareNonInheritedData) ==
               "StyleRareNonInheritedData_should_stay_small");
 
 StyleRareNonInheritedData::StyleRareNonInheritedData()
-    : opacity(ComputedStyle::initialOpacity()),
-      m_perspective(ComputedStyle::initialPerspective()),
-      m_shapeImageThreshold(ComputedStyle::initialShapeImageThreshold()),
-      m_order(ComputedStyle::initialOrder()),
-      m_perspectiveOrigin(ComputedStyle::initialPerspectiveOrigin()),
-      m_objectPosition(ComputedStyle::initialObjectPosition()),
-      lineClamp(ComputedStyle::initialLineClamp()),
-      m_draggableRegionMode(DraggableRegionNone),
-      m_shapeOutside(ComputedStyle::initialShapeOutside()),
-      m_clipPath(ComputedStyle::initialClipPath()),
-      m_mask(MaskFillLayer, true),
-      m_pageSize(),
-      m_shapeMargin(ComputedStyle::initialShapeMargin()),
-      m_textDecorationColor(StyleColor::currentColor()),
-      m_visitedLinkTextDecorationColor(StyleColor::currentColor()),
-      m_visitedLinkBackgroundColor(ComputedStyle::initialBackgroundColor()),
-      m_visitedLinkOutlineColor(StyleColor::currentColor()),
-      m_visitedLinkBorderLeftColor(StyleColor::currentColor()),
-      m_visitedLinkBorderRightColor(StyleColor::currentColor()),
-      m_visitedLinkBorderTopColor(StyleColor::currentColor()),
-      m_visitedLinkBorderBottomColor(StyleColor::currentColor()),
-      m_variables(ComputedStyle::initialNonInheritedVariables()),
-      m_alignContent(ComputedStyle::initialContentAlignment()),
-      m_alignItems(ComputedStyle::initialDefaultAlignment()),
-      m_alignSelf(ComputedStyle::initialSelfAlignment()),
-      m_justifyContent(ComputedStyle::initialContentAlignment()),
-      m_justifyItems(ComputedStyle::initialSelfAlignment()),
-      m_justifySelf(ComputedStyle::initialSelfAlignment()),
-      m_pageSizeType(PAGE_SIZE_AUTO),
-      m_transformStyle3D(ComputedStyle::initialTransformStyle3D()),
-      m_backfaceVisibility(ComputedStyle::initialBackfaceVisibility()),
-      userDrag(ComputedStyle::initialUserDrag()),
-      textOverflow(ComputedStyle::initialTextOverflow()),
-      marginBeforeCollapse(MarginCollapseCollapse),
-      marginAfterCollapse(MarginCollapseCollapse),
-      m_appearance(ComputedStyle::initialAppearance()),
-      m_textDecorationStyle(ComputedStyle::initialTextDecorationStyle()),
-      m_hasCurrentOpacityAnimation(false),
-      m_hasCurrentTransformAnimation(false),
-      m_hasCurrentFilterAnimation(false),
-      m_hasCurrentBackdropFilterAnimation(false),
-      m_runningOpacityAnimationOnCompositor(false),
-      m_runningTransformAnimationOnCompositor(false),
-      m_runningFilterAnimationOnCompositor(false),
-      m_runningBackdropFilterAnimationOnCompositor(false),
-      m_isStackingContext(false),
-      m_effectiveBlendMode(ComputedStyle::initialBlendMode()),
-      m_touchAction(ComputedStyle::initialTouchAction()),
-      m_objectFit(ComputedStyle::initialObjectFit()),
-      m_isolation(ComputedStyle::initialIsolation()),
-      m_contain(ComputedStyle::initialContain()),
-      m_scrollBehavior(ComputedStyle::initialScrollBehavior()),
-      m_scrollSnapType(ComputedStyle::initialScrollSnapType()),
-      m_requiresAcceleratedCompositingForExternalReasons(false),
-      m_hasInlineTransform(false),
-      m_resize(ComputedStyle::initialResize()),
-      m_hasCompositorProxy(false),
-      m_hasAuthorBackground(false),
-      m_hasAuthorBorder(false) {
-  m_maskBoxImage.setMaskDefaults();
+    : opacity(ComputedStyle::InitialOpacity()),
+      perspective_(ComputedStyle::InitialPerspective()),
+      shape_image_threshold_(ComputedStyle::InitialShapeImageThreshold()),
+      order_(ComputedStyle::InitialOrder()),
+      perspective_origin_(ComputedStyle::InitialPerspectiveOrigin()),
+      object_position_(ComputedStyle::InitialObjectPosition()),
+      line_clamp(ComputedStyle::InitialLineClamp()),
+      draggable_region_mode_(kDraggableRegionNone),
+      shape_outside_(ComputedStyle::InitialShapeOutside()),
+      clip_path_(ComputedStyle::InitialClipPath()),
+      mask_(kMaskFillLayer, true),
+      page_size_(),
+      shape_margin_(ComputedStyle::InitialShapeMargin()),
+      text_decoration_color_(StyleColor::CurrentColor()),
+      visited_link_text_decoration_color_(StyleColor::CurrentColor()),
+      visited_link_background_color_(ComputedStyle::InitialBackgroundColor()),
+      visited_link_outline_color_(StyleColor::CurrentColor()),
+      visited_link_border_left_color_(StyleColor::CurrentColor()),
+      visited_link_border_right_color_(StyleColor::CurrentColor()),
+      visited_link_border_top_color_(StyleColor::CurrentColor()),
+      visited_link_border_bottom_color_(StyleColor::CurrentColor()),
+      variables_(ComputedStyle::InitialNonInheritedVariables()),
+      align_content_(ComputedStyle::InitialContentAlignment()),
+      align_items_(ComputedStyle::InitialDefaultAlignment()),
+      align_self_(ComputedStyle::InitialSelfAlignment()),
+      justify_content_(ComputedStyle::InitialContentAlignment()),
+      justify_items_(ComputedStyle::InitialSelfAlignment()),
+      justify_self_(ComputedStyle::InitialSelfAlignment()),
+      page_size_type_(PAGE_SIZE_AUTO),
+      transform_style3d_(ComputedStyle::InitialTransformStyle3D()),
+      backface_visibility_(ComputedStyle::InitialBackfaceVisibility()),
+      user_drag(ComputedStyle::InitialUserDrag()),
+      text_overflow(ComputedStyle::InitialTextOverflow()),
+      margin_before_collapse(kMarginCollapseCollapse),
+      margin_after_collapse(kMarginCollapseCollapse),
+      appearance_(ComputedStyle::InitialAppearance()),
+      text_decoration_style_(ComputedStyle::InitialTextDecorationStyle()),
+      has_current_opacity_animation_(false),
+      has_current_transform_animation_(false),
+      has_current_filter_animation_(false),
+      has_current_backdrop_filter_animation_(false),
+      running_opacity_animation_on_compositor_(false),
+      running_transform_animation_on_compositor_(false),
+      running_filter_animation_on_compositor_(false),
+      running_backdrop_filter_animation_on_compositor_(false),
+      is_stacking_context_(false),
+      effective_blend_mode_(ComputedStyle::InitialBlendMode()),
+      touch_action_(ComputedStyle::InitialTouchAction()),
+      object_fit_(ComputedStyle::InitialObjectFit()),
+      isolation_(ComputedStyle::InitialIsolation()),
+      contain_(ComputedStyle::InitialContain()),
+      scroll_behavior_(ComputedStyle::InitialScrollBehavior()),
+      scroll_snap_type_(ComputedStyle::InitialScrollSnapType()),
+      requires_accelerated_compositing_for_external_reasons_(false),
+      has_inline_transform_(false),
+      resize_(ComputedStyle::InitialResize()),
+      has_compositor_proxy_(false),
+      has_author_background_(false),
+      has_author_border_(false) {
+  mask_box_image_.SetMaskDefaults();
 }
 
 StyleRareNonInheritedData::StyleRareNonInheritedData(
     const StyleRareNonInheritedData& o)
     : RefCounted<StyleRareNonInheritedData>(),
       opacity(o.opacity),
-      m_perspective(o.m_perspective),
-      m_shapeImageThreshold(o.m_shapeImageThreshold),
-      m_order(o.m_order),
-      m_perspectiveOrigin(o.m_perspectiveOrigin),
-      m_objectPosition(o.m_objectPosition),
-      lineClamp(o.lineClamp),
-      m_draggableRegionMode(o.m_draggableRegionMode),
-      m_deprecatedFlexibleBox(o.m_deprecatedFlexibleBox),
-      m_flexibleBox(o.m_flexibleBox),
-      m_multiCol(o.m_multiCol),
-      m_transform(o.m_transform),
-      m_willChange(o.m_willChange),
-      m_filter(o.m_filter),
-      m_backdropFilter(o.m_backdropFilter),
-      m_grid(o.m_grid),
-      m_gridItem(o.m_gridItem),
-      m_scrollSnap(o.m_scrollSnap),
-      m_content(o.m_content ? o.m_content->clone() : nullptr),
-      m_counterDirectives(o.m_counterDirectives ? clone(*o.m_counterDirectives)
+      perspective_(o.perspective_),
+      shape_image_threshold_(o.shape_image_threshold_),
+      order_(o.order_),
+      perspective_origin_(o.perspective_origin_),
+      object_position_(o.object_position_),
+      line_clamp(o.line_clamp),
+      draggable_region_mode_(o.draggable_region_mode_),
+      deprecated_flexible_box_(o.deprecated_flexible_box_),
+      flexible_box_(o.flexible_box_),
+      multi_col_(o.multi_col_),
+      transform_(o.transform_),
+      will_change_(o.will_change_),
+      filter_(o.filter_),
+      backdrop_filter_(o.backdrop_filter_),
+      grid_(o.grid_),
+      grid_item_(o.grid_item_),
+      scroll_snap_(o.scroll_snap_),
+      content_(o.content_ ? o.content_->Clone() : nullptr),
+      counter_directives_(o.counter_directives_ ? Clone(*o.counter_directives_)
                                                 : nullptr),
-      m_animations(o.m_animations ? CSSAnimationData::create(*o.m_animations)
+      animations_(o.animations_ ? CSSAnimationData::Create(*o.animations_)
+                                : nullptr),
+      transitions_(o.transitions_ ? CSSTransitionData::Create(*o.transitions_)
                                   : nullptr),
-      m_transitions(o.m_transitions
-                        ? CSSTransitionData::create(*o.m_transitions)
-                        : nullptr),
-      m_boxShadow(o.m_boxShadow),
-      m_boxReflect(o.m_boxReflect),
-      m_shapeOutside(o.m_shapeOutside),
-      m_clipPath(o.m_clipPath),
-      m_mask(o.m_mask),
-      m_maskBoxImage(o.m_maskBoxImage),
-      m_pageSize(o.m_pageSize),
-      m_shapeMargin(o.m_shapeMargin),
-      m_outline(o.m_outline),
-      m_textDecorationColor(o.m_textDecorationColor),
-      m_visitedLinkTextDecorationColor(o.m_visitedLinkTextDecorationColor),
-      m_visitedLinkBackgroundColor(o.m_visitedLinkBackgroundColor),
-      m_visitedLinkOutlineColor(o.m_visitedLinkOutlineColor),
-      m_visitedLinkBorderLeftColor(o.m_visitedLinkBorderLeftColor),
-      m_visitedLinkBorderRightColor(o.m_visitedLinkBorderRightColor),
-      m_visitedLinkBorderTopColor(o.m_visitedLinkBorderTopColor),
-      m_visitedLinkBorderBottomColor(o.m_visitedLinkBorderBottomColor),
-      m_variables(o.m_variables ? o.m_variables->copy() : nullptr),
-      m_alignContent(o.m_alignContent),
-      m_alignItems(o.m_alignItems),
-      m_alignSelf(o.m_alignSelf),
-      m_justifyContent(o.m_justifyContent),
-      m_justifyItems(o.m_justifyItems),
-      m_justifySelf(o.m_justifySelf),
-      m_pageSizeType(o.m_pageSizeType),
-      m_transformStyle3D(o.m_transformStyle3D),
-      m_backfaceVisibility(o.m_backfaceVisibility),
-      userDrag(o.userDrag),
-      textOverflow(o.textOverflow),
-      marginBeforeCollapse(o.marginBeforeCollapse),
-      marginAfterCollapse(o.marginAfterCollapse),
-      m_appearance(o.m_appearance),
-      m_textDecorationStyle(o.m_textDecorationStyle),
-      m_hasCurrentOpacityAnimation(o.m_hasCurrentOpacityAnimation),
-      m_hasCurrentTransformAnimation(o.m_hasCurrentTransformAnimation),
-      m_hasCurrentFilterAnimation(o.m_hasCurrentFilterAnimation),
-      m_hasCurrentBackdropFilterAnimation(
-          o.m_hasCurrentBackdropFilterAnimation),
-      m_runningOpacityAnimationOnCompositor(
-          o.m_runningOpacityAnimationOnCompositor),
-      m_runningTransformAnimationOnCompositor(
-          o.m_runningTransformAnimationOnCompositor),
-      m_runningFilterAnimationOnCompositor(
-          o.m_runningFilterAnimationOnCompositor),
-      m_runningBackdropFilterAnimationOnCompositor(
-          o.m_runningBackdropFilterAnimationOnCompositor),
-      m_isStackingContext(o.m_isStackingContext),
-      m_effectiveBlendMode(o.m_effectiveBlendMode),
-      m_touchAction(o.m_touchAction),
-      m_objectFit(o.m_objectFit),
-      m_isolation(o.m_isolation),
-      m_contain(o.m_contain),
-      m_scrollBehavior(o.m_scrollBehavior),
-      m_scrollSnapType(o.m_scrollSnapType),
-      m_requiresAcceleratedCompositingForExternalReasons(
-          o.m_requiresAcceleratedCompositingForExternalReasons),
-      m_hasInlineTransform(o.m_hasInlineTransform),
-      m_resize(o.m_resize),
-      m_hasCompositorProxy(o.m_hasCompositorProxy),
-      m_hasAuthorBackground(o.m_hasAuthorBackground),
-      m_hasAuthorBorder(o.m_hasAuthorBorder) {}
+      box_shadow_(o.box_shadow_),
+      box_reflect_(o.box_reflect_),
+      shape_outside_(o.shape_outside_),
+      clip_path_(o.clip_path_),
+      mask_(o.mask_),
+      mask_box_image_(o.mask_box_image_),
+      page_size_(o.page_size_),
+      shape_margin_(o.shape_margin_),
+      outline_(o.outline_),
+      text_decoration_color_(o.text_decoration_color_),
+      visited_link_text_decoration_color_(
+          o.visited_link_text_decoration_color_),
+      visited_link_background_color_(o.visited_link_background_color_),
+      visited_link_outline_color_(o.visited_link_outline_color_),
+      visited_link_border_left_color_(o.visited_link_border_left_color_),
+      visited_link_border_right_color_(o.visited_link_border_right_color_),
+      visited_link_border_top_color_(o.visited_link_border_top_color_),
+      visited_link_border_bottom_color_(o.visited_link_border_bottom_color_),
+      variables_(o.variables_ ? o.variables_->Copy() : nullptr),
+      align_content_(o.align_content_),
+      align_items_(o.align_items_),
+      align_self_(o.align_self_),
+      justify_content_(o.justify_content_),
+      justify_items_(o.justify_items_),
+      justify_self_(o.justify_self_),
+      page_size_type_(o.page_size_type_),
+      transform_style3d_(o.transform_style3d_),
+      backface_visibility_(o.backface_visibility_),
+      user_drag(o.user_drag),
+      text_overflow(o.text_overflow),
+      margin_before_collapse(o.margin_before_collapse),
+      margin_after_collapse(o.margin_after_collapse),
+      appearance_(o.appearance_),
+      text_decoration_style_(o.text_decoration_style_),
+      has_current_opacity_animation_(o.has_current_opacity_animation_),
+      has_current_transform_animation_(o.has_current_transform_animation_),
+      has_current_filter_animation_(o.has_current_filter_animation_),
+      has_current_backdrop_filter_animation_(
+          o.has_current_backdrop_filter_animation_),
+      running_opacity_animation_on_compositor_(
+          o.running_opacity_animation_on_compositor_),
+      running_transform_animation_on_compositor_(
+          o.running_transform_animation_on_compositor_),
+      running_filter_animation_on_compositor_(
+          o.running_filter_animation_on_compositor_),
+      running_backdrop_filter_animation_on_compositor_(
+          o.running_backdrop_filter_animation_on_compositor_),
+      is_stacking_context_(o.is_stacking_context_),
+      effective_blend_mode_(o.effective_blend_mode_),
+      touch_action_(o.touch_action_),
+      object_fit_(o.object_fit_),
+      isolation_(o.isolation_),
+      contain_(o.contain_),
+      scroll_behavior_(o.scroll_behavior_),
+      scroll_snap_type_(o.scroll_snap_type_),
+      requires_accelerated_compositing_for_external_reasons_(
+          o.requires_accelerated_compositing_for_external_reasons_),
+      has_inline_transform_(o.has_inline_transform_),
+      resize_(o.resize_),
+      has_compositor_proxy_(o.has_compositor_proxy_),
+      has_author_background_(o.has_author_background_),
+      has_author_border_(o.has_author_border_) {}
 
 StyleRareNonInheritedData::~StyleRareNonInheritedData() {}
 
 bool StyleRareNonInheritedData::operator==(
     const StyleRareNonInheritedData& o) const {
-  return opacity == o.opacity && m_perspective == o.m_perspective &&
-         m_shapeImageThreshold == o.m_shapeImageThreshold &&
-         m_order == o.m_order && m_perspectiveOrigin == o.m_perspectiveOrigin &&
-         m_objectPosition == o.m_objectPosition && lineClamp == o.lineClamp &&
-         m_draggableRegionMode == o.m_draggableRegionMode &&
-         m_deprecatedFlexibleBox == o.m_deprecatedFlexibleBox &&
-         m_flexibleBox == o.m_flexibleBox && m_multiCol == o.m_multiCol &&
-         m_transform == o.m_transform && m_willChange == o.m_willChange &&
-         m_filter == o.m_filter && m_backdropFilter == o.m_backdropFilter &&
-         m_grid == o.m_grid && m_gridItem == o.m_gridItem &&
-         m_scrollSnap == o.m_scrollSnap && contentDataEquivalent(o) &&
-         counterDataEquivalent(o) && shadowDataEquivalent(o) &&
-         reflectionDataEquivalent(o) && animationDataEquivalent(o) &&
-         transitionDataEquivalent(o) && shapeOutsideDataEquivalent(o) &&
-         m_mask == o.m_mask && m_maskBoxImage == o.m_maskBoxImage &&
-         m_pageSize == o.m_pageSize && m_shapeMargin == o.m_shapeMargin &&
-         m_outline == o.m_outline && clipPathDataEquivalent(o) &&
-         m_textDecorationColor == o.m_textDecorationColor &&
-         m_visitedLinkTextDecorationColor ==
-             o.m_visitedLinkTextDecorationColor &&
-         m_visitedLinkBackgroundColor == o.m_visitedLinkBackgroundColor &&
-         m_visitedLinkOutlineColor == o.m_visitedLinkOutlineColor &&
-         m_visitedLinkBorderLeftColor == o.m_visitedLinkBorderLeftColor &&
-         m_visitedLinkBorderRightColor == o.m_visitedLinkBorderRightColor &&
-         m_visitedLinkBorderTopColor == o.m_visitedLinkBorderTopColor &&
-         m_visitedLinkBorderBottomColor == o.m_visitedLinkBorderBottomColor &&
-         m_callbackSelectors == o.m_callbackSelectors &&
-         dataEquivalent(m_variables, o.m_variables) &&
-         m_alignContent == o.m_alignContent && m_alignItems == o.m_alignItems &&
-         m_alignSelf == o.m_alignSelf &&
-         m_justifyContent == o.m_justifyContent &&
-         m_justifyItems == o.m_justifyItems &&
-         m_justifySelf == o.m_justifySelf &&
-         m_pageSizeType == o.m_pageSizeType &&
-         m_transformStyle3D == o.m_transformStyle3D &&
-         m_backfaceVisibility == o.m_backfaceVisibility &&
-         userDrag == o.userDrag && textOverflow == o.textOverflow &&
-         marginBeforeCollapse == o.marginBeforeCollapse &&
-         marginAfterCollapse == o.marginAfterCollapse &&
-         m_appearance == o.m_appearance &&
-         m_textDecorationStyle == o.m_textDecorationStyle &&
-         m_hasCurrentOpacityAnimation == o.m_hasCurrentOpacityAnimation &&
-         m_hasCurrentTransformAnimation == o.m_hasCurrentTransformAnimation &&
-         m_hasCurrentFilterAnimation == o.m_hasCurrentFilterAnimation &&
-         m_hasCurrentBackdropFilterAnimation ==
-             o.m_hasCurrentBackdropFilterAnimation &&
-         m_isStackingContext == o.m_isStackingContext &&
-         m_effectiveBlendMode == o.m_effectiveBlendMode &&
-         m_touchAction == o.m_touchAction && m_objectFit == o.m_objectFit &&
-         m_isolation == o.m_isolation && m_contain == o.m_contain &&
-         m_scrollBehavior == o.m_scrollBehavior &&
-         m_scrollSnapType == o.m_scrollSnapType &&
-         m_requiresAcceleratedCompositingForExternalReasons ==
-             o.m_requiresAcceleratedCompositingForExternalReasons &&
-         m_hasInlineTransform == o.m_hasInlineTransform &&
-         m_resize == o.m_resize &&
-         m_hasCompositorProxy == o.m_hasCompositorProxy &&
-         m_hasAuthorBackground == o.m_hasAuthorBackground &&
-         m_hasAuthorBorder == o.m_hasAuthorBorder;
+  return opacity == o.opacity && perspective_ == o.perspective_ &&
+         shape_image_threshold_ == o.shape_image_threshold_ &&
+         order_ == o.order_ && perspective_origin_ == o.perspective_origin_ &&
+         object_position_ == o.object_position_ && line_clamp == o.line_clamp &&
+         draggable_region_mode_ == o.draggable_region_mode_ &&
+         deprecated_flexible_box_ == o.deprecated_flexible_box_ &&
+         flexible_box_ == o.flexible_box_ && multi_col_ == o.multi_col_ &&
+         transform_ == o.transform_ && will_change_ == o.will_change_ &&
+         filter_ == o.filter_ && backdrop_filter_ == o.backdrop_filter_ &&
+         grid_ == o.grid_ && grid_item_ == o.grid_item_ &&
+         scroll_snap_ == o.scroll_snap_ && ContentDataEquivalent(o) &&
+         CounterDataEquivalent(o) && ShadowDataEquivalent(o) &&
+         ReflectionDataEquivalent(o) && AnimationDataEquivalent(o) &&
+         TransitionDataEquivalent(o) && ShapeOutsideDataEquivalent(o) &&
+         mask_ == o.mask_ && mask_box_image_ == o.mask_box_image_ &&
+         page_size_ == o.page_size_ && shape_margin_ == o.shape_margin_ &&
+         outline_ == o.outline_ && ClipPathDataEquivalent(o) &&
+         text_decoration_color_ == o.text_decoration_color_ &&
+         visited_link_text_decoration_color_ ==
+             o.visited_link_text_decoration_color_ &&
+         visited_link_background_color_ == o.visited_link_background_color_ &&
+         visited_link_outline_color_ == o.visited_link_outline_color_ &&
+         visited_link_border_left_color_ == o.visited_link_border_left_color_ &&
+         visited_link_border_right_color_ ==
+             o.visited_link_border_right_color_ &&
+         visited_link_border_top_color_ == o.visited_link_border_top_color_ &&
+         visited_link_border_bottom_color_ ==
+             o.visited_link_border_bottom_color_ &&
+         callback_selectors_ == o.callback_selectors_ &&
+         DataEquivalent(variables_, o.variables_) &&
+         align_content_ == o.align_content_ && align_items_ == o.align_items_ &&
+         align_self_ == o.align_self_ &&
+         justify_content_ == o.justify_content_ &&
+         justify_items_ == o.justify_items_ &&
+         justify_self_ == o.justify_self_ &&
+         page_size_type_ == o.page_size_type_ &&
+         transform_style3d_ == o.transform_style3d_ &&
+         backface_visibility_ == o.backface_visibility_ &&
+         user_drag == o.user_drag && text_overflow == o.text_overflow &&
+         margin_before_collapse == o.margin_before_collapse &&
+         margin_after_collapse == o.margin_after_collapse &&
+         appearance_ == o.appearance_ &&
+         text_decoration_style_ == o.text_decoration_style_ &&
+         has_current_opacity_animation_ == o.has_current_opacity_animation_ &&
+         has_current_transform_animation_ ==
+             o.has_current_transform_animation_ &&
+         has_current_filter_animation_ == o.has_current_filter_animation_ &&
+         has_current_backdrop_filter_animation_ ==
+             o.has_current_backdrop_filter_animation_ &&
+         is_stacking_context_ == o.is_stacking_context_ &&
+         effective_blend_mode_ == o.effective_blend_mode_ &&
+         touch_action_ == o.touch_action_ && object_fit_ == o.object_fit_ &&
+         isolation_ == o.isolation_ && contain_ == o.contain_ &&
+         scroll_behavior_ == o.scroll_behavior_ &&
+         scroll_snap_type_ == o.scroll_snap_type_ &&
+         requires_accelerated_compositing_for_external_reasons_ ==
+             o.requires_accelerated_compositing_for_external_reasons_ &&
+         has_inline_transform_ == o.has_inline_transform_ &&
+         resize_ == o.resize_ &&
+         has_compositor_proxy_ == o.has_compositor_proxy_ &&
+         has_author_background_ == o.has_author_background_ &&
+         has_author_border_ == o.has_author_border_;
 }
 
-bool StyleRareNonInheritedData::contentDataEquivalent(
+bool StyleRareNonInheritedData::ContentDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  ContentData* a = m_content.get();
-  ContentData* b = o.m_content.get();
+  ContentData* a = content_.Get();
+  ContentData* b = o.content_.Get();
 
   while (a && b && *a == *b) {
-    a = a->next();
-    b = b->next();
+    a = a->Next();
+    b = b->Next();
   }
 
   return !a && !b;
 }
 
-bool StyleRareNonInheritedData::counterDataEquivalent(
+bool StyleRareNonInheritedData::CounterDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  return dataEquivalent(m_counterDirectives, o.m_counterDirectives);
+  return DataEquivalent(counter_directives_, o.counter_directives_);
 }
 
-bool StyleRareNonInheritedData::shadowDataEquivalent(
+bool StyleRareNonInheritedData::ShadowDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  return dataEquivalent(m_boxShadow, o.m_boxShadow);
+  return DataEquivalent(box_shadow_, o.box_shadow_);
 }
 
-bool StyleRareNonInheritedData::reflectionDataEquivalent(
+bool StyleRareNonInheritedData::ReflectionDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  return dataEquivalent(m_boxReflect, o.m_boxReflect);
+  return DataEquivalent(box_reflect_, o.box_reflect_);
 }
 
-bool StyleRareNonInheritedData::animationDataEquivalent(
+bool StyleRareNonInheritedData::AnimationDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  if (!m_animations && !o.m_animations)
+  if (!animations_ && !o.animations_)
     return true;
-  if (!m_animations || !o.m_animations)
+  if (!animations_ || !o.animations_)
     return false;
-  return m_animations->animationsMatchForStyleRecalc(*o.m_animations);
+  return animations_->AnimationsMatchForStyleRecalc(*o.animations_);
 }
 
-bool StyleRareNonInheritedData::transitionDataEquivalent(
+bool StyleRareNonInheritedData::TransitionDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  if (!m_transitions && !o.m_transitions)
+  if (!transitions_ && !o.transitions_)
     return true;
-  if (!m_transitions || !o.m_transitions)
+  if (!transitions_ || !o.transitions_)
     return false;
-  return m_transitions->transitionsMatchForStyleRecalc(*o.m_transitions);
+  return transitions_->TransitionsMatchForStyleRecalc(*o.transitions_);
 }
 
-bool StyleRareNonInheritedData::hasFilters() const {
-  return m_filter.get() && !m_filter->m_operations.isEmpty();
+bool StyleRareNonInheritedData::HasFilters() const {
+  return filter_.Get() && !filter_->operations_.IsEmpty();
 }
 
-bool StyleRareNonInheritedData::hasBackdropFilters() const {
-  return m_backdropFilter.get() && !m_backdropFilter->m_operations.isEmpty();
+bool StyleRareNonInheritedData::HasBackdropFilters() const {
+  return backdrop_filter_.Get() && !backdrop_filter_->operations_.IsEmpty();
 }
 
-bool StyleRareNonInheritedData::shapeOutsideDataEquivalent(
+bool StyleRareNonInheritedData::ShapeOutsideDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  return dataEquivalent(m_shapeOutside, o.m_shapeOutside);
+  return DataEquivalent(shape_outside_, o.shape_outside_);
 }
 
-bool StyleRareNonInheritedData::clipPathDataEquivalent(
+bool StyleRareNonInheritedData::ClipPathDataEquivalent(
     const StyleRareNonInheritedData& o) const {
-  return dataEquivalent(m_clipPath, o.m_clipPath);
+  return DataEquivalent(clip_path_, o.clip_path_);
 }
 
 }  // namespace blink

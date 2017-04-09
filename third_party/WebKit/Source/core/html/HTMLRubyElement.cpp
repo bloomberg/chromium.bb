@@ -16,12 +16,12 @@ inline HTMLRubyElement::HTMLRubyElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLRubyElement)
 
-LayoutObject* HTMLRubyElement::createLayoutObject(const ComputedStyle& style) {
-  if (style.display() == EDisplay::kInline)
+LayoutObject* HTMLRubyElement::CreateLayoutObject(const ComputedStyle& style) {
+  if (style.Display() == EDisplay::kInline)
     return new LayoutRubyAsInline(this);
-  if (style.display() == EDisplay::kBlock)
+  if (style.Display() == EDisplay::kBlock)
     return new LayoutRubyAsBlock(this);
-  return LayoutObject::createObject(this, style);
+  return LayoutObject::CreateObject(this, style);
 }
 
 }  // namespace blink

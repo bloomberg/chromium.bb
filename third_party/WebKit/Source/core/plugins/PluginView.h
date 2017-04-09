@@ -45,23 +45,23 @@ class ResourceResponse;
 
 class CORE_EXPORT PluginView : public FrameViewBase {
  public:
-  bool isPluginView() const final { return true; }
-  virtual void setFocused(bool, WebFocusType) {}
+  bool IsPluginView() const final { return true; }
+  virtual void SetFocused(bool, WebFocusType) {}
 
-  virtual WebLayer* platformLayer() const { return 0; }
-  virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) {
+  virtual WebLayer* PlatformLayer() const { return 0; }
+  virtual v8::Local<v8::Object> ScriptableObject(v8::Isolate*) {
     return v8::Local<v8::Object>();
   }
-  virtual bool wantsWheelEvents() { return false; }
-  virtual bool supportsKeyboardFocus() const { return false; }
-  virtual bool supportsInputMethod() const { return false; }
-  virtual bool canProcessDrag() const { return false; }
+  virtual bool WantsWheelEvents() { return false; }
+  virtual bool SupportsKeyboardFocus() const { return false; }
+  virtual bool SupportsInputMethod() const { return false; }
+  virtual bool CanProcessDrag() const { return false; }
 
-  virtual void didReceiveResponse(const ResourceResponse&) {}
-  virtual void didReceiveData(const char*, int) {}
+  virtual void DidReceiveResponse(const ResourceResponse&) {}
+  virtual void DidReceiveData(const char*, int) {}
 
-  virtual void updateAllLifecyclePhases() {}
-  virtual void invalidatePaintIfNeeded() {}
+  virtual void UpdateAllLifecyclePhases() {}
+  virtual void InvalidatePaintIfNeeded() {}
 
  protected:
   PluginView() : FrameViewBase() {}
@@ -70,8 +70,8 @@ class CORE_EXPORT PluginView : public FrameViewBase {
 DEFINE_TYPE_CASTS(PluginView,
                   FrameViewBase,
                   frameViewBase,
-                  frameViewBase->isPluginView(),
-                  frameViewBase.isPluginView());
+                  frameViewBase->IsPluginView(),
+                  frameViewBase.IsPluginView());
 
 }  // namespace blink
 

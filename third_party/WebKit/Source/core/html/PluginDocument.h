@@ -35,26 +35,26 @@ class PluginView;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
-  static PluginDocument* create(
+  static PluginDocument* Create(
       const DocumentInit& initializer = DocumentInit()) {
     return new PluginDocument(initializer);
   }
 
-  void setPluginNode(Node* pluginNode) { m_pluginNode = pluginNode; }
+  void SetPluginNode(Node* plugin_node) { plugin_node_ = plugin_node; }
 
-  PluginView* pluginView();
-  Node* pluginNode();
+  PluginView* GetPluginView();
+  Node* PluginNode();
 
-  void shutdown() override;
+  void Shutdown() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit PluginDocument(const DocumentInit&);
 
-  DocumentParser* createParser() override;
+  DocumentParser* CreateParser() override;
 
-  Member<Node> m_pluginNode;
+  Member<Node> plugin_node_;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(PluginDocument);

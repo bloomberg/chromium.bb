@@ -40,11 +40,11 @@ namespace {
 
 // Web Crypto equivalent usage mask for JWK 'use' = 'enc'.
 const blink::WebCryptoKeyUsageMask kJwkEncUsage =
-    blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
-    blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey;
+    blink::kWebCryptoKeyUsageEncrypt | blink::kWebCryptoKeyUsageDecrypt |
+    blink::kWebCryptoKeyUsageWrapKey | blink::kWebCryptoKeyUsageUnwrapKey;
 // Web Crypto equivalent usage mask for JWK 'use' = 'sig'.
 const blink::WebCryptoKeyUsageMask kJwkSigUsage =
-    blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
+    blink::kWebCryptoKeyUsageSign | blink::kWebCryptoKeyUsageVerify;
 
 // Checks that the "ext" member of the JWK is consistent with
 // "expected_extractable".
@@ -69,14 +69,14 @@ struct JwkToWebCryptoUsageMapping {
 // values". While this is not required for spec compliance,
 // it makes the ordering of key_ops match that of WebCrypto's Key.usages.
 const JwkToWebCryptoUsageMapping kJwkWebCryptoUsageMap[] = {
-    {"encrypt", blink::WebCryptoKeyUsageEncrypt},
-    {"decrypt", blink::WebCryptoKeyUsageDecrypt},
-    {"sign", blink::WebCryptoKeyUsageSign},
-    {"verify", blink::WebCryptoKeyUsageVerify},
-    {"deriveKey", blink::WebCryptoKeyUsageDeriveKey},
-    {"deriveBits", blink::WebCryptoKeyUsageDeriveBits},
-    {"wrapKey", blink::WebCryptoKeyUsageWrapKey},
-    {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey}};
+    {"encrypt", blink::kWebCryptoKeyUsageEncrypt},
+    {"decrypt", blink::kWebCryptoKeyUsageDecrypt},
+    {"sign", blink::kWebCryptoKeyUsageSign},
+    {"verify", blink::kWebCryptoKeyUsageVerify},
+    {"deriveKey", blink::kWebCryptoKeyUsageDeriveKey},
+    {"deriveBits", blink::kWebCryptoKeyUsageDeriveBits},
+    {"wrapKey", blink::kWebCryptoKeyUsageWrapKey},
+    {"unwrapKey", blink::kWebCryptoKeyUsageUnwrapKey}};
 
 bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
                               blink::WebCryptoKeyUsage* usage) {

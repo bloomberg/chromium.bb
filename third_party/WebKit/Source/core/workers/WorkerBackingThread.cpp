@@ -21,97 +21,97 @@
 namespace blink {
 
 #define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
-  ASSERT(isolatesMutex().locked());                          \
+  ASSERT(IsolatesMutex().Locked());                          \
   static type& name = *new type arguments
 
-static Mutex& isolatesMutex() {
+static Mutex& IsolatesMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
   return mutex;
 }
 
-static HashSet<v8::Isolate*>& isolates() {
+static HashSet<v8::Isolate*>& Isolates() {
   DEFINE_STATIC_LOCAL_WITH_LOCK(HashSet<v8::Isolate*>, isolates, ());
   return isolates;
 }
 
-static void addWorkerIsolate(v8::Isolate* isolate) {
-  MutexLocker lock(isolatesMutex());
-  isolates().insert(isolate);
+static void AddWorkerIsolate(v8::Isolate* isolate) {
+  MutexLocker lock(IsolatesMutex());
+  Isolates().insert(isolate);
 }
 
-static void removeWorkerIsolate(v8::Isolate* isolate) {
-  MutexLocker lock(isolatesMutex());
-  isolates().erase(isolate);
+static void RemoveWorkerIsolate(v8::Isolate* isolate) {
+  MutexLocker lock(IsolatesMutex());
+  Isolates().erase(isolate);
 }
 
 WorkerBackingThread::WorkerBackingThread(const char* name,
-                                         bool shouldCallGCOnShutdown)
-    : m_backingThread(WebThreadSupportingGC::create(name)),
-      m_isOwningThread(true),
-      m_shouldCallGCOnShutdown(shouldCallGCOnShutdown) {}
+                                         bool should_call_gc_on_shutdown)
+    : backing_thread_(WebThreadSupportingGC::Create(name)),
+      is_owning_thread_(true),
+      should_call_gc_on_shutdown_(should_call_gc_on_shutdown) {}
 
 WorkerBackingThread::WorkerBackingThread(WebThread* thread,
-                                         bool shouldCallGCOnShutdown)
-    : m_backingThread(WebThreadSupportingGC::createForThread(thread)),
-      m_isOwningThread(false),
-      m_shouldCallGCOnShutdown(shouldCallGCOnShutdown) {}
+                                         bool should_call_gc_on_shutdown)
+    : backing_thread_(WebThreadSupportingGC::CreateForThread(thread)),
+      is_owning_thread_(false),
+      should_call_gc_on_shutdown_(should_call_gc_on_shutdown) {}
 
 WorkerBackingThread::~WorkerBackingThread() {}
 
-void WorkerBackingThread::initialize() {
-  DCHECK(!m_isolate);
-  m_backingThread->initialize();
-  m_isolate = V8PerIsolateData::initialize(
-      m_backingThread->platformThread().getWebTaskRunner());
-  addWorkerIsolate(m_isolate);
-  V8Initializer::initializeWorker(m_isolate);
+void WorkerBackingThread::Initialize() {
+  DCHECK(!isolate_);
+  backing_thread_->Initialize();
+  isolate_ = V8PerIsolateData::Initialize(
+      backing_thread_->PlatformThread().GetWebTaskRunner());
+  AddWorkerIsolate(isolate_);
+  V8Initializer::InitializeWorker(isolate_);
 
-  ThreadState::current()->registerTraceDOMWrappers(
-      m_isolate, V8GCController::traceDOMWrappers,
-      ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,
-      ScriptWrappableVisitor::performCleanup);
+  ThreadState::Current()->RegisterTraceDOMWrappers(
+      isolate_, V8GCController::TraceDOMWrappers,
+      ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque,
+      ScriptWrappableVisitor::PerformCleanup);
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
-    V8PerIsolateData::enableIdleTasks(
-        m_isolate, WTF::wrapUnique(new V8IdleTaskRunner(
-                       backingThread().platformThread().scheduler())));
-  if (m_isOwningThread)
-    Platform::current()->didStartWorkerThread();
+    V8PerIsolateData::EnableIdleTasks(
+        isolate_, WTF::WrapUnique(new V8IdleTaskRunner(
+                      BackingThread().PlatformThread().Scheduler())));
+  if (is_owning_thread_)
+    Platform::Current()->DidStartWorkerThread();
 
-  V8PerIsolateData::from(m_isolate)->setThreadDebugger(
-      WTF::makeUnique<WorkerThreadDebugger>(m_isolate));
+  V8PerIsolateData::From(isolate_)->SetThreadDebugger(
+      WTF::MakeUnique<WorkerThreadDebugger>(isolate_));
 }
 
-void WorkerBackingThread::shutdown() {
-  if (m_isOwningThread)
-    Platform::current()->willStopWorkerThread();
+void WorkerBackingThread::Shutdown() {
+  if (is_owning_thread_)
+    Platform::Current()->WillStopWorkerThread();
 
-  V8PerIsolateData::willBeDestroyed(m_isolate);
+  V8PerIsolateData::WillBeDestroyed(isolate_);
   // TODO(yhirano): Remove this when https://crbug.com/v8/1428 is fixed.
-  if (m_shouldCallGCOnShutdown) {
+  if (should_call_gc_on_shutdown_) {
     // This statement runs only in tests.
-    V8GCController::collectAllGarbageForTesting(m_isolate);
+    V8GCController::CollectAllGarbageForTesting(isolate_);
   }
-  m_backingThread->shutdown();
+  backing_thread_->Shutdown();
 
-  removeWorkerIsolate(m_isolate);
-  V8PerIsolateData::destroy(m_isolate);
-  m_isolate = nullptr;
+  RemoveWorkerIsolate(isolate_);
+  V8PerIsolateData::Destroy(isolate_);
+  isolate_ = nullptr;
 }
 
 // static
 void WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(
     v8::MemoryPressureLevel level) {
-  MutexLocker lock(isolatesMutex());
-  for (v8::Isolate* isolate : isolates())
+  MutexLocker lock(IsolatesMutex());
+  for (v8::Isolate* isolate : Isolates())
     isolate->MemoryPressureNotification(level);
 }
 
 // static
-void WorkerBackingThread::setRAILModeOnWorkerThreadIsolates(
-    v8::RAILMode railMode) {
-  MutexLocker lock(isolatesMutex());
-  for (v8::Isolate* isolate : isolates())
-    isolate->SetRAILMode(railMode);
+void WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(
+    v8::RAILMode rail_mode) {
+  MutexLocker lock(IsolatesMutex());
+  for (v8::Isolate* isolate : Isolates())
+    isolate->SetRAILMode(rail_mode);
 }
 
 }  // namespace blink

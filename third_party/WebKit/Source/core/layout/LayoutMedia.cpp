@@ -35,21 +35,21 @@
 namespace blink {
 
 LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
-  setImageResource(LayoutImageResource::create());
+  SetImageResource(LayoutImageResource::Create());
 }
 
 LayoutMedia::~LayoutMedia() {}
 
-HTMLMediaElement* LayoutMedia::mediaElement() const {
-  return toHTMLMediaElement(node());
+HTMLMediaElement* LayoutMedia::MediaElement() const {
+  return ToHTMLMediaElement(GetNode());
 }
 
-void LayoutMedia::layout() {
-  LayoutSize oldSize = contentBoxRect().size();
+void LayoutMedia::GetLayout() {
+  LayoutSize old_size = ContentBoxRect().size();
 
-  LayoutImage::layout();
+  LayoutImage::GetLayout();
 
-  LayoutRect newRect = contentBoxRect();
+  LayoutRect new_rect = ContentBoxRect();
 
   LayoutState state(*this);
 
@@ -58,15 +58,15 @@ void LayoutMedia::layout() {
 // track rendering has an up-to-date position of the media controls for
 // overlap checking, see LayoutVTTCue.
 #if DCHECK_IS_ON()
-  bool seenTextTrackContainer = false;
+  bool seen_text_track_container = false;
 #endif
-  for (LayoutObject* child = m_children.lastChild(); child;
-       child = child->previousSibling()) {
+  for (LayoutObject* child = children_.LastChild(); child;
+       child = child->PreviousSibling()) {
 #if DCHECK_IS_ON()
-    if (child->node()->isMediaControls())
-      DCHECK(!seenTextTrackContainer);
-    else if (child->node()->isTextTrackContainer())
-      seenTextTrackContainer = true;
+    if (child->GetNode()->IsMediaControls())
+      DCHECK(!seen_text_track_container);
+    else if (child->GetNode()->IsTextTrackContainer())
+      seen_text_track_container = true;
     else
       NOTREACHED();
 #endif
@@ -74,36 +74,36 @@ void LayoutMedia::layout() {
     // TODO(mlamouri): we miss some layouts because needsLayout returns false in
     // some cases where we want to change the width of the controls because the
     // visible viewport has changed for example.
-    if (newRect.size() == oldSize && !child->needsLayout())
+    if (new_rect.size() == old_size && !child->NeedsLayout())
       continue;
 
-    LayoutUnit width = newRect.width();
-    if (child->node()->isMediaControls()) {
-      width = computePanelWidth(newRect);
+    LayoutUnit width = new_rect.Width();
+    if (child->GetNode()->IsMediaControls()) {
+      width = ComputePanelWidth(new_rect);
     }
 
-    LayoutBox* layoutBox = toLayoutBox(child);
-    layoutBox->setLocation(newRect.location());
+    LayoutBox* layout_box = ToLayoutBox(child);
+    layout_box->SetLocation(new_rect.Location());
     // TODO(foolip): Remove the mutableStyleRef() and depend on CSS
     // width/height: inherit to match the media element size.
-    layoutBox->mutableStyleRef().setHeight(Length(newRect.height(), Fixed));
-    layoutBox->mutableStyleRef().setWidth(Length(width, Fixed));
+    layout_box->MutableStyleRef().SetHeight(Length(new_rect.Height(), kFixed));
+    layout_box->MutableStyleRef().SetWidth(Length(width, kFixed));
 
-    layoutBox->forceLayout();
+    layout_box->ForceLayout();
   }
 
-  clearNeedsLayout();
+  ClearNeedsLayout();
 }
 
-bool LayoutMedia::isChildAllowed(LayoutObject* child,
+bool LayoutMedia::IsChildAllowed(LayoutObject* child,
                                  const ComputedStyle& style) const {
   // Two types of child layout objects are allowed: media controls
   // and the text track container. Filter children by node type.
-  DCHECK(child->node());
+  DCHECK(child->GetNode());
 
   // Out-of-flow positioned or floating child breaks layout hierarchy.
   // This check can be removed if ::-webkit-media-controls is made internal.
-  if (style.hasOutOfFlowPosition() || style.isFloating())
+  if (style.HasOutOfFlowPosition() || style.IsFloating())
     return false;
 
   // The user agent stylesheet (mediaControls.css) has
@@ -112,51 +112,51 @@ bool LayoutMedia::isChildAllowed(LayoutObject* child,
   // of replaced content, which is not supposed to be possible. This
   // check can be removed if ::-webkit-media-controls is made
   // internal.
-  if (child->node()->isMediaControls())
-    return child->isFlexibleBox();
+  if (child->GetNode()->IsMediaControls())
+    return child->IsFlexibleBox();
 
-  if (child->node()->isTextTrackContainer())
+  if (child->GetNode()->IsTextTrackContainer())
     return true;
 
   return false;
 }
 
-void LayoutMedia::paintReplaced(const PaintInfo&, const LayoutPoint&) const {}
+void LayoutMedia::PaintReplaced(const PaintInfo&, const LayoutPoint&) const {}
 
-LayoutUnit LayoutMedia::computePanelWidth(const LayoutRect& mediaRect) const {
+LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // TODO(mlamouri): we don't know if the main frame has an horizontal scrollbar
   // if it is out of process. See https://crbug.com/662480
-  if (document().page()->mainFrame()->isRemoteFrame())
-    return mediaRect.width();
+  if (GetDocument().GetPage()->MainFrame()->IsRemoteFrame())
+    return media_rect.Width();
 
   // TODO(foolip): when going fullscreen, the animation sometimes does not clear
   // up properly and the last `absoluteXOffset` received is incorrect. This is
   // a shortcut that we could ideally avoid. See https://crbug.com/663680
-  if (mediaElement() && mediaElement()->isFullscreen())
-    return mediaRect.width();
+  if (MediaElement() && MediaElement()->IsFullscreen())
+    return media_rect.Width();
 
-  Page* page = document().page();
-  LocalFrame* mainFrame = page->deprecatedLocalMainFrame();
-  FrameView* pageView = mainFrame ? mainFrame->view() : nullptr;
-  if (!mainFrame || !pageView)
-    return mediaRect.width();
+  Page* page = GetDocument().GetPage();
+  LocalFrame* main_frame = page->DeprecatedLocalMainFrame();
+  FrameView* page_view = main_frame ? main_frame->View() : nullptr;
+  if (!main_frame || !page_view)
+    return media_rect.Width();
 
-  if (pageView->horizontalScrollbarMode() != ScrollbarAlwaysOff)
-    return mediaRect.width();
+  if (page_view->HorizontalScrollbarMode() != kScrollbarAlwaysOff)
+    return media_rect.Width();
 
   // On desktop, this will include scrollbars when they stay visible.
-  const LayoutUnit visibleWidth(page->visualViewport().visibleWidth());
-  const LayoutUnit absoluteXOffset(
-      localToAbsolute(
-          FloatPoint(mediaRect.location()),
-          UseTransforms | ApplyContainerFlip | TraverseDocumentBoundaries)
-          .x());
-  const LayoutUnit newWidth = visibleWidth - absoluteXOffset;
+  const LayoutUnit visible_width(page->GetVisualViewport().VisibleWidth());
+  const LayoutUnit absolute_x_offset(
+      LocalToAbsolute(
+          FloatPoint(media_rect.Location()),
+          kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries)
+          .X());
+  const LayoutUnit new_width = visible_width - absolute_x_offset;
 
-  if (newWidth < 0)
-    return mediaRect.width();
+  if (new_width < 0)
+    return media_rect.Width();
 
-  return std::min(mediaRect.width(), visibleWidth - absoluteXOffset);
+  return std::min(media_rect.Width(), visible_width - absolute_x_offset);
 }
 
 }  // namespace blink

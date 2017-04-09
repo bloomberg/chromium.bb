@@ -11,16 +11,16 @@ namespace blink {
 
 WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx,
                      GLsync object,
-                     GLenum objectType)
-    : WebGLSharedObject(ctx), m_object(object), m_objectType(objectType) {}
+                     GLenum object_type)
+    : WebGLSharedObject(ctx), object_(object), object_type_(object_type) {}
 
 WebGLSync::~WebGLSync() {
-  runDestructor();
+  RunDestructor();
 }
 
-void WebGLSync::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
-  gl->DeleteSync(m_object);
-  m_object = 0;
+void WebGLSync::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
+  gl->DeleteSync(object_);
+  object_ = 0;
 }
 
 }  // namespace blink

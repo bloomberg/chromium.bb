@@ -64,7 +64,7 @@ class RenderFrameImplTest : public RenderViewTest {
     frame_replication_state.unique_name = "frame-uniqueName";
 
     RenderFrameImpl::FromWebFrame(
-        view_->GetMainRenderFrame()->GetWebFrame()->firstChild())
+        view_->GetMainRenderFrame()->GetWebFrame()->FirstChild())
         ->OnSwapOut(kFrameProxyRouteId, false, frame_replication_state);
 
     RenderFrameImpl::CreateFrame(
@@ -188,38 +188,38 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
   blink::WebHistoryItem item;
-  item.initialize();
+  item.Initialize();
 
   // The main frame's and subframe's LoFi states should stay the same on
   // navigations within the page.
-  frame()->didNavigateWithinPage(frame()->GetWebFrame(), item,
-                                 blink::WebStandardCommit, true);
+  frame()->DidNavigateWithinPage(frame()->GetWebFrame(), item,
+                                 blink::kWebStandardCommit, true);
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-  GetMainRenderFrame()->didNavigateWithinPage(
-      GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit,
+  GetMainRenderFrame()->DidNavigateWithinPage(
+      GetMainRenderFrame()->GetWebFrame(), item, blink::kWebStandardCommit,
       true);
   EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
 
   // The subframe's LoFi state should not be reset on commit.
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame()->GetWebFrame()->dataSource());
+      DocumentState::FromDataSource(frame()->GetWebFrame()->DataSource());
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(false);
 
-  frame()->didCommitProvisionalLoad(frame()->GetWebFrame(), item,
-                                    blink::WebStandardCommit);
+  frame()->DidCommitProvisionalLoad(frame()->GetWebFrame(), item,
+                                    blink::kWebStandardCommit);
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
   // The main frame's LoFi state should be reset to off on commit.
   document_state = DocumentState::FromDataSource(
-      GetMainRenderFrame()->GetWebFrame()->dataSource());
+      GetMainRenderFrame()->GetWebFrame()->DataSource());
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(false);
 
   // Calling didCommitProvisionalLoad is not representative of a full navigation
   // but serves the purpose of testing the LoFi state logic.
-  GetMainRenderFrame()->didCommitProvisionalLoad(
-      GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
+  GetMainRenderFrame()->DidCommitProvisionalLoad(
+      GetMainRenderFrame()->GetWebFrame(), item, blink::kWebStandardCommit);
   EXPECT_EQ(PREVIEWS_OFF, GetMainRenderFrame()->GetPreviewsState());
   // The subframe would be deleted here after a cross-document navigation. It
   // happens to be left around in this test because this does not simulate the
@@ -229,58 +229,58 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
 // Test that effective connection type only updates for new main frame
 // documents.
 TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
-  EXPECT_EQ(blink::WebEffectiveConnectionType::TypeUnknown,
-            frame()->getEffectiveConnectionType());
-  EXPECT_EQ(blink::WebEffectiveConnectionType::TypeUnknown,
-            GetMainRenderFrame()->getEffectiveConnectionType());
+  EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
+            frame()->GetEffectiveConnectionType());
+  EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
+            GetMainRenderFrame()->GetEffectiveConnectionType());
 
   const struct {
     blink::WebEffectiveConnectionType type;
-  } tests[] = {{blink::WebEffectiveConnectionType::TypeUnknown},
-               {blink::WebEffectiveConnectionType::Type2G},
-               {blink::WebEffectiveConnectionType::Type4G}};
+  } tests[] = {{blink::WebEffectiveConnectionType::kTypeUnknown},
+               {blink::WebEffectiveConnectionType::kType2G},
+               {blink::WebEffectiveConnectionType::kType4G}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SetEffectionConnectionType(GetMainRenderFrame(), tests[i].type);
     SetEffectionConnectionType(frame(), tests[i].type);
 
-    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
     EXPECT_EQ(tests[i].type,
-              GetMainRenderFrame()->getEffectiveConnectionType());
+              GetMainRenderFrame()->GetEffectiveConnectionType());
 
     blink::WebHistoryItem item;
-    item.initialize();
+    item.Initialize();
 
     // The main frame's and subframe's effective connection type should stay the
     // same on navigations within the page.
-    frame()->didNavigateWithinPage(frame()->GetWebFrame(), item,
-                                   blink::WebStandardCommit, true);
-    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
-    GetMainRenderFrame()->didNavigateWithinPage(
-        GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit,
+    frame()->DidNavigateWithinPage(frame()->GetWebFrame(), item,
+                                   blink::kWebStandardCommit, true);
+    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
+    GetMainRenderFrame()->DidNavigateWithinPage(
+        GetMainRenderFrame()->GetWebFrame(), item, blink::kWebStandardCommit,
         true);
-    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The subframe's effective connection type should not be reset on commit.
     DocumentState* document_state =
-        DocumentState::FromDataSource(frame()->GetWebFrame()->dataSource());
+        DocumentState::FromDataSource(frame()->GetWebFrame()->DataSource());
     static_cast<NavigationStateImpl*>(document_state->navigation_state())
         ->set_was_within_same_document(false);
 
-    frame()->didCommitProvisionalLoad(frame()->GetWebFrame(), item,
-                                      blink::WebStandardCommit);
-    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+    frame()->DidCommitProvisionalLoad(frame()->GetWebFrame(), item,
+                                      blink::kWebStandardCommit);
+    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The main frame's effective connection type should be reset on commit.
     document_state = DocumentState::FromDataSource(
-        GetMainRenderFrame()->GetWebFrame()->dataSource());
+        GetMainRenderFrame()->GetWebFrame()->DataSource());
     static_cast<NavigationStateImpl*>(document_state->navigation_state())
         ->set_was_within_same_document(false);
 
-    GetMainRenderFrame()->didCommitProvisionalLoad(
-        GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
-    EXPECT_EQ(blink::WebEffectiveConnectionType::TypeUnknown,
-              GetMainRenderFrame()->getEffectiveConnectionType());
+    GetMainRenderFrame()->DidCommitProvisionalLoad(
+        GetMainRenderFrame()->GetWebFrame(), item, blink::kWebStandardCommit);
+    EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
+              GetMainRenderFrame()->GetEffectiveConnectionType());
 
     // The subframe would be deleted here after a cross-document navigation.
     // It happens to be left around in this test because this does not simulate
@@ -297,7 +297,7 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   const std::string image_data_url =
       "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
 
-  frame()->saveImageFromDataURL(WebString::fromUTF8(image_data_url));
+  frame()->SaveImageFromDataURL(WebString::FromUTF8(image_data_url));
   ProcessPendingMessages();
   const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
@@ -312,7 +312,7 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
 
   const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
 
-  frame()->saveImageFromDataURL(WebString::fromUTF8(large_data_url));
+  frame()->SaveImageFromDataURL(WebString::FromUTF8(large_data_url));
   ProcessPendingMessages();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
@@ -327,7 +327,7 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
 
   const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
 
-  frame()->saveImageFromDataURL(WebString::fromUTF8(exceeded_data_url));
+  frame()->SaveImageFromDataURL(WebString::FromUTF8(exceeded_data_url));
   ProcessPendingMessages();
   const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
       FrameHostMsg_SaveImageFromDataURL::ID);
@@ -349,10 +349,10 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
       common_params, StartNavigationParams(), RequestNavigationParams(),
       std::unique_ptr<StreamOverrideParameters>());
   ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->zoomLevel());
+  EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
 
   // It should work even when the zoom limit is temporarily changed in the page.
-  view_->GetWebView()->zoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
+  view_->GetWebView()->ZoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
                                          ZoomFactorToZoomLevel(1.0));
   common_params.url = GURL("data:text/html,max_zoomlimit_test");
   GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMaxZoomLevel);
@@ -360,7 +360,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
       common_params, StartNavigationParams(), RequestNavigationParams(),
       std::unique_ptr<StreamOverrideParameters>());
   ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->zoomLevel());
+  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
 }
 
 // Regression test for crbug.com/692557. It shouldn't crash if we inititate a

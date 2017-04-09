@@ -58,47 +58,49 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
     SCOPED_TRACE(::testing::Message() << "Origin: " << test.origin
                                       << ", Target: " << test.target
                                       << ", Expectation: " << test.expectation);
-    KURL originUrl(KURL(), test.origin);
-    RefPtr<SecurityOrigin> securityOrigin(SecurityOrigin::create(originUrl));
-    KURL targetUrl(KURL(), test.target);
-    EXPECT_EQ(test.expectation, MixedContentChecker::isMixedContent(
-                                    securityOrigin.get(), targetUrl));
+    KURL origin_url(KURL(), test.origin);
+    RefPtr<SecurityOrigin> security_origin(SecurityOrigin::Create(origin_url));
+    KURL target_url(KURL(), test.target);
+    EXPECT_EQ(test.expectation, MixedContentChecker::IsMixedContent(
+                                    security_origin.Get(), target_url));
   }
 }
 
 TEST(MixedContentCheckerTest, ContextTypeForInspector) {
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(1, 1));
-  dummyPageHolder->frame().document()->setSecurityOrigin(
-      SecurityOrigin::createFromString("http://example.test"));
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1));
+  dummy_page_holder->GetFrame().GetDocument()->SetSecurityOrigin(
+      SecurityOrigin::CreateFromString("http://example.test"));
 
-  ResourceRequest notMixedContent("https://example.test/foo.jpg");
-  notMixedContent.setFrameType(WebURLRequest::FrameTypeAuxiliary);
-  notMixedContent.setRequestContext(WebURLRequest::RequestContextScript);
-  EXPECT_EQ(WebMixedContentContextType::NotMixedContent,
-            MixedContentChecker::contextTypeForInspector(
-                &dummyPageHolder->frame(), notMixedContent));
+  ResourceRequest not_mixed_content("https://example.test/foo.jpg");
+  not_mixed_content.SetFrameType(WebURLRequest::kFrameTypeAuxiliary);
+  not_mixed_content.SetRequestContext(WebURLRequest::kRequestContextScript);
+  EXPECT_EQ(WebMixedContentContextType::kNotMixedContent,
+            MixedContentChecker::ContextTypeForInspector(
+                &dummy_page_holder->GetFrame(), not_mixed_content));
 
-  dummyPageHolder->frame().document()->setSecurityOrigin(
-      SecurityOrigin::createFromString("https://example.test"));
-  EXPECT_EQ(WebMixedContentContextType::NotMixedContent,
-            MixedContentChecker::contextTypeForInspector(
-                &dummyPageHolder->frame(), notMixedContent));
+  dummy_page_holder->GetFrame().GetDocument()->SetSecurityOrigin(
+      SecurityOrigin::CreateFromString("https://example.test"));
+  EXPECT_EQ(WebMixedContentContextType::kNotMixedContent,
+            MixedContentChecker::ContextTypeForInspector(
+                &dummy_page_holder->GetFrame(), not_mixed_content));
 
-  ResourceRequest blockableMixedContent("http://example.test/foo.jpg");
-  blockableMixedContent.setFrameType(WebURLRequest::FrameTypeAuxiliary);
-  blockableMixedContent.setRequestContext(WebURLRequest::RequestContextScript);
-  EXPECT_EQ(WebMixedContentContextType::Blockable,
-            MixedContentChecker::contextTypeForInspector(
-                &dummyPageHolder->frame(), blockableMixedContent));
+  ResourceRequest blockable_mixed_content("http://example.test/foo.jpg");
+  blockable_mixed_content.SetFrameType(WebURLRequest::kFrameTypeAuxiliary);
+  blockable_mixed_content.SetRequestContext(
+      WebURLRequest::kRequestContextScript);
+  EXPECT_EQ(WebMixedContentContextType::kBlockable,
+            MixedContentChecker::ContextTypeForInspector(
+                &dummy_page_holder->GetFrame(), blockable_mixed_content));
 
-  ResourceRequest optionallyBlockableMixedContent(
+  ResourceRequest optionally_blockable_mixed_content(
       "http://example.test/foo.jpg");
-  blockableMixedContent.setFrameType(WebURLRequest::FrameTypeAuxiliary);
-  blockableMixedContent.setRequestContext(WebURLRequest::RequestContextImage);
-  EXPECT_EQ(WebMixedContentContextType::OptionallyBlockable,
-            MixedContentChecker::contextTypeForInspector(
-                &dummyPageHolder->frame(), blockableMixedContent));
+  blockable_mixed_content.SetFrameType(WebURLRequest::kFrameTypeAuxiliary);
+  blockable_mixed_content.SetRequestContext(
+      WebURLRequest::kRequestContextImage);
+  EXPECT_EQ(WebMixedContentContextType::kOptionallyBlockable,
+            MixedContentChecker::ContextTypeForInspector(
+                &dummy_page_holder->GetFrame(), blockable_mixed_content));
 }
 
 namespace {
@@ -106,76 +108,76 @@ namespace {
 class MockLocalFrameClient : public EmptyLocalFrameClient {
  public:
   MockLocalFrameClient() : EmptyLocalFrameClient() {}
-  MOCK_METHOD0(didContainInsecureFormAction, void());
-  MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
-  MOCK_METHOD1(didRunContentWithCertificateErrors, void(const KURL&));
+  MOCK_METHOD0(DidContainInsecureFormAction, void());
+  MOCK_METHOD1(DidDisplayContentWithCertificateErrors, void(const KURL&));
+  MOCK_METHOD1(DidRunContentWithCertificateErrors, void(const KURL&));
 };
 
 }  // namespace
 
 TEST(MixedContentCheckerTest, HandleCertificateError) {
   MockLocalFrameClient* client = new MockLocalFrameClient;
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(1, 1), nullptr, client);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
 
-  KURL mainResourceUrl(KURL(), "https://example.test");
-  KURL displayedUrl(KURL(), "https://example-displayed.test");
-  KURL ranUrl(KURL(), "https://example-ran.test");
+  KURL main_resource_url(KURL(), "https://example.test");
+  KURL displayed_url(KURL(), "https://example-displayed.test");
+  KURL ran_url(KURL(), "https://example-ran.test");
 
-  dummyPageHolder->frame().document()->setURL(mainResourceUrl);
+  dummy_page_holder->GetFrame().GetDocument()->SetURL(main_resource_url);
   ResourceResponse response1;
-  response1.setURL(ranUrl);
-  EXPECT_CALL(*client, didRunContentWithCertificateErrors(ranUrl));
-  MixedContentChecker::handleCertificateError(
-      &dummyPageHolder->frame(), response1, WebURLRequest::FrameTypeNone,
-      WebURLRequest::RequestContextScript);
+  response1.SetURL(ran_url);
+  EXPECT_CALL(*client, DidRunContentWithCertificateErrors(ran_url));
+  MixedContentChecker::HandleCertificateError(
+      &dummy_page_holder->GetFrame(), response1, WebURLRequest::kFrameTypeNone,
+      WebURLRequest::kRequestContextScript);
 
   ResourceResponse response2;
-  WebURLRequest::RequestContext requestContext =
-      WebURLRequest::RequestContextImage;
+  WebURLRequest::RequestContext request_context =
+      WebURLRequest::kRequestContextImage;
   ASSERT_EQ(
-      WebMixedContentContextType::OptionallyBlockable,
-      WebMixedContent::contextTypeFromRequestContext(
-          requestContext, dummyPageHolder->frame()
-                              .settings()
-                              ->getStrictMixedContentCheckingForPlugin()));
-  response2.setURL(displayedUrl);
-  EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(displayedUrl));
-  MixedContentChecker::handleCertificateError(
-      &dummyPageHolder->frame(), response2, WebURLRequest::FrameTypeNone,
-      requestContext);
+      WebMixedContentContextType::kOptionallyBlockable,
+      WebMixedContent::ContextTypeFromRequestContext(
+          request_context, dummy_page_holder->GetFrame()
+                               .GetSettings()
+                               ->GetStrictMixedContentCheckingForPlugin()));
+  response2.SetURL(displayed_url);
+  EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors(displayed_url));
+  MixedContentChecker::HandleCertificateError(
+      &dummy_page_holder->GetFrame(), response2, WebURLRequest::kFrameTypeNone,
+      request_context);
 }
 
 TEST(MixedContentCheckerTest, DetectMixedForm) {
   MockLocalFrameClient* client = new MockLocalFrameClient;
-  std::unique_ptr<DummyPageHolder> dummyPageHolder =
-      DummyPageHolder::create(IntSize(1, 1), nullptr, client);
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
 
-  KURL mainResourceUrl(KURL(), "https://example.test/");
+  KURL main_resource_url(KURL(), "https://example.test/");
 
-  KURL httpFormActionUrl(KURL(), "http://example-action.test/");
-  KURL httpsFormActionUrl(KURL(), "https://example-action.test/");
-  KURL javascriptFormActionUrl(KURL(), "javascript:void(0);");
-  KURL mailtoFormActionUrl(KURL(), "mailto:action@example-action.test");
+  KURL http_form_action_url(KURL(), "http://example-action.test/");
+  KURL https_form_action_url(KURL(), "https://example-action.test/");
+  KURL javascript_form_action_url(KURL(), "javascript:void(0);");
+  KURL mailto_form_action_url(KURL(), "mailto:action@example-action.test");
 
-  dummyPageHolder->frame().document()->setSecurityOrigin(
-      SecurityOrigin::create(mainResourceUrl));
+  dummy_page_holder->GetFrame().GetDocument()->SetSecurityOrigin(
+      SecurityOrigin::Create(main_resource_url));
 
   // mailto and http are non-secure form targets.
-  EXPECT_CALL(*client, didContainInsecureFormAction()).Times(2);
+  EXPECT_CALL(*client, DidContainInsecureFormAction()).Times(2);
 
-  EXPECT_TRUE(MixedContentChecker::isMixedFormAction(
-      &dummyPageHolder->frame(), httpFormActionUrl,
-      SecurityViolationReportingPolicy::SuppressReporting));
-  EXPECT_FALSE(MixedContentChecker::isMixedFormAction(
-      &dummyPageHolder->frame(), httpsFormActionUrl,
-      SecurityViolationReportingPolicy::SuppressReporting));
-  EXPECT_FALSE(MixedContentChecker::isMixedFormAction(
-      &dummyPageHolder->frame(), javascriptFormActionUrl,
-      SecurityViolationReportingPolicy::SuppressReporting));
-  EXPECT_TRUE(MixedContentChecker::isMixedFormAction(
-      &dummyPageHolder->frame(), mailtoFormActionUrl,
-      SecurityViolationReportingPolicy::SuppressReporting));
+  EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
+      &dummy_page_holder->GetFrame(), http_form_action_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_FALSE(MixedContentChecker::IsMixedFormAction(
+      &dummy_page_holder->GetFrame(), https_form_action_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_FALSE(MixedContentChecker::IsMixedFormAction(
+      &dummy_page_holder->GetFrame(), javascript_form_action_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_TRUE(MixedContentChecker::IsMixedFormAction(
+      &dummy_page_holder->GetFrame(), mailto_form_action_url,
+      SecurityViolationReportingPolicy::kSuppressReporting));
 }
 
 }  // namespace blink

@@ -15,7 +15,7 @@
 
 namespace blink {
 
-bool HeapCompact::s_forceCompactionGC = false;
+bool HeapCompact::force_compaction_gc_ = false;
 
 // The real worker behind heap compaction, recording references to movable
 // objects ("slots".) When the objects end up being compacted and moved,
@@ -26,8 +26,8 @@ bool HeapCompact::s_forceCompactionGC = false;
 // heap compaction-enhanced GC.
 class HeapCompact::MovableObjectFixups final {
  public:
-  static std::unique_ptr<MovableObjectFixups> create() {
-    return WTF::wrapUnique(new MovableObjectFixups);
+  static std::unique_ptr<MovableObjectFixups> Create() {
+    return WTF::WrapUnique(new MovableObjectFixups);
   }
 
   ~MovableObjectFixups() {}
@@ -35,39 +35,39 @@ class HeapCompact::MovableObjectFixups final {
   // For the arenas being compacted, record all pages belonging to them.
   // This is needed to handle 'interior slots', pointers that themselves
   // can move (independently from the reference the slot points to.)
-  void addCompactingPage(BasePage* page) {
-    DCHECK(!page->isLargeObjectPage());
-    m_relocatablePages.insert(page);
+  void AddCompactingPage(BasePage* page) {
+    DCHECK(!page->IsLargeObjectPage());
+    relocatable_pages_.insert(page);
   }
 
-  void addInteriorFixup(MovableReference* slot) {
-    auto it = m_interiorFixups.find(slot);
+  void AddInteriorFixup(MovableReference* slot) {
+    auto it = interior_fixups_.Find(slot);
     // Ephemeron fixpoint iterations may cause repeated registrations.
-    if (UNLIKELY(it != m_interiorFixups.end())) {
+    if (UNLIKELY(it != interior_fixups_.end())) {
       DCHECK(!it->value);
       return;
     }
-    m_interiorFixups.insert(slot, nullptr);
+    interior_fixups_.insert(slot, nullptr);
     LOG_HEAP_COMPACTION("Interior slot: %p\n", slot);
-    Address slotAddress = reinterpret_cast<Address>(slot);
-    if (!m_interiors) {
-      m_interiors = SparseHeapBitmap::create(slotAddress);
+    Address slot_address = reinterpret_cast<Address>(slot);
+    if (!interiors_) {
+      interiors_ = SparseHeapBitmap::Create(slot_address);
       return;
     }
-    m_interiors->add(slotAddress);
+    interiors_->Add(slot_address);
   }
 
-  void add(MovableReference* slot) {
+  void Add(MovableReference* slot) {
     MovableReference reference = *slot;
-    BasePage* refPage = pageFromObject(reference);
+    BasePage* ref_page = PageFromObject(reference);
     // Nothing to compact on a large object's page.
-    if (refPage->isLargeObjectPage())
+    if (ref_page->IsLargeObjectPage())
       return;
 
 #if DCHECK_IS_ON()
-    DCHECK(HeapCompact::isCompactableArena(refPage->arena()->arenaIndex()));
-    auto it = m_fixups.find(reference);
-    DCHECK(it == m_fixups.end() || it->value == slot);
+    DCHECK(HeapCompact::IsCompactableArena(ref_page->Arena()->ArenaIndex()));
+    auto it = fixups_.Find(reference);
+    DCHECK(it == fixups_.end() || it->value == slot);
 #endif
 
     // TODO: when updateHeapResidency() becomes more discriminating about
@@ -75,20 +75,21 @@ class HeapCompact::MovableObjectFixups final {
     // isCompactingArena() would be appropriate here, leaving early if
     // |refPage|'s arena isn't in the set.
 
-    m_fixups.insert(reference, slot);
+    fixups_.insert(reference, slot);
 
     // Note: |slot| will reside outside the Oilpan heap if it is a
     // PersistentHeapCollectionBase. Hence pageFromObject() cannot be
     // used, as it sanity checks the |BasePage| it returns. Simply
     // derive the raw BasePage address here and check if it is a member
     // of the compactable and relocatable page address set.
-    Address slotAddress = reinterpret_cast<Address>(slot);
-    void* slotPageAddress = blinkPageAddress(slotAddress) + blinkGuardPageSize;
-    if (LIKELY(!m_relocatablePages.contains(slotPageAddress)))
+    Address slot_address = reinterpret_cast<Address>(slot);
+    void* slot_page_address =
+        BlinkPageAddress(slot_address) + kBlinkGuardPageSize;
+    if (LIKELY(!relocatable_pages_.Contains(slot_page_address)))
       return;
 #if DCHECK_IS_ON()
-    BasePage* slotPage = reinterpret_cast<BasePage*>(slotPageAddress);
-    DCHECK(slotPage->contains(slotAddress));
+    BasePage* slot_page = reinterpret_cast<BasePage*>(slot_page_address);
+    DCHECK(slot_page->Contains(slot_address));
 #endif
     // Unlikely case, the slot resides on a compacting arena's page.
     //  => It is an 'interior slot' (interior to a movable backing store.)
@@ -100,19 +101,19 @@ class HeapCompact::MovableObjectFixups final {
     //    "interior" bitmap. This bitmap is used when moving a backing
     //    store, quickly/ier checking if interior slots will have to
     //    be additionally redirected.
-    addInteriorFixup(slot);
+    AddInteriorFixup(slot);
   }
 
-  void addFixupCallback(MovableReference reference,
+  void AddFixupCallback(MovableReference reference,
                         MovingObjectCallback callback,
-                        void* callbackData) {
-    DCHECK(!m_fixupCallbacks.contains(reference));
-    m_fixupCallbacks.insert(reference, std::pair<void*, MovingObjectCallback>(
-                                           callbackData, callback));
+                        void* callback_data) {
+    DCHECK(!fixup_callbacks_.Contains(reference));
+    fixup_callbacks_.insert(reference, std::pair<void*, MovingObjectCallback>(
+                                           callback_data, callback));
   }
 
-  void relocateInteriorFixups(Address from, Address to, size_t size) {
-    SparseHeapBitmap* range = m_interiors->hasRange(from, size);
+  void RelocateInteriorFixups(Address from, Address to, size_t size) {
+    SparseHeapBitmap* range = interiors_->HasRange(from, size);
     if (LIKELY(!range))
       return;
 
@@ -122,12 +123,12 @@ class HeapCompact::MovableObjectFixups final {
     // When the backing store is eventually moved, it'll use that location.
     //
     for (size_t offset = 0; offset < size; offset += sizeof(void*)) {
-      if (!range->isSet(from + offset))
+      if (!range->IsSet(from + offset))
         continue;
       MovableReference* slot =
           reinterpret_cast<MovableReference*>(from + offset);
-      auto it = m_interiorFixups.find(slot);
-      if (it == m_interiorFixups.end())
+      auto it = interior_fixups_.Find(slot);
+      if (it == interior_fixups_.end())
         continue;
 
       // TODO: with the right sparse bitmap representation, it could be possible
@@ -146,27 +147,27 @@ class HeapCompact::MovableObjectFixups final {
       // when the backing store corresponding to |slot| is eventually
       // moved/compacted, it'll update |to + offset| with a pointer to the
       // moved backing store.
-      m_interiorFixups.set(slot, fixup);
+      interior_fixups_.Set(slot, fixup);
     }
   }
 
-  void relocate(Address from, Address to) {
-    auto it = m_fixups.find(from);
-    DCHECK(it != m_fixups.end());
+  void Relocate(Address from, Address to) {
+    auto it = fixups_.Find(from);
+    DCHECK(it != fixups_.end());
 #if DCHECK_IS_ON()
-    BasePage* fromPage = pageFromObject(from);
-    DCHECK(m_relocatablePages.contains(fromPage));
+    BasePage* from_page = PageFromObject(from);
+    DCHECK(relocatable_pages_.Contains(from_page));
 #endif
     MovableReference* slot = reinterpret_cast<MovableReference*>(it->value);
-    auto interior = m_interiorFixups.find(slot);
-    if (interior != m_interiorFixups.end()) {
-      MovableReference* slotLocation =
+    auto interior = interior_fixups_.Find(slot);
+    if (interior != interior_fixups_.end()) {
+      MovableReference* slot_location =
           reinterpret_cast<MovableReference*>(interior->value);
-      if (!slotLocation) {
-        m_interiorFixups.set(slot, to);
+      if (!slot_location) {
+        interior_fixups_.Set(slot, to);
       } else {
         LOG_HEAP_COMPACTION("Redirected slot: %p => %p\n", slot, slotLocation);
-        slot = slotLocation;
+        slot = slot_location;
       }
     }
     // If the slot has subsequently been updated, a prefinalizer or
@@ -189,29 +190,29 @@ class HeapCompact::MovableObjectFixups final {
       //    compacted.)
       if (!*slot)
         return;
-      BasePage* slotPage = pageFromObject(*slot);
+      BasePage* slot_page = PageFromObject(*slot);
       DCHECK(
-          slotPage->isLargeObjectPage() ||
-          (HeapCompact::isCompactableArena(slotPage->arena()->arenaIndex()) &&
-           !m_relocatablePages.contains(slotPage)));
+          slot_page->IsLargeObjectPage() ||
+          (HeapCompact::IsCompactableArena(slot_page->Arena()->ArenaIndex()) &&
+           !relocatable_pages_.Contains(slot_page)));
 #endif
       return;
     }
     *slot = to;
 
     size_t size = 0;
-    auto callback = m_fixupCallbacks.find(from);
-    if (UNLIKELY(callback != m_fixupCallbacks.end())) {
-      size = HeapObjectHeader::fromPayload(to)->payloadSize();
+    auto callback = fixup_callbacks_.Find(from);
+    if (UNLIKELY(callback != fixup_callbacks_.end())) {
+      size = HeapObjectHeader::FromPayload(to)->PayloadSize();
       callback->value.second(callback->value.first, from, to, size);
     }
 
-    if (!m_interiors)
+    if (!interiors_)
       return;
 
     if (!size)
-      size = HeapObjectHeader::fromPayload(to)->payloadSize();
-    relocateInteriorFixups(from, to, size);
+      size = HeapObjectHeader::FromPayload(to)->PayloadSize();
+    RelocateInteriorFixups(from, to, size);
   }
 
 #if DEBUG_HEAP_COMPACTION
@@ -234,58 +235,58 @@ class HeapCompact::MovableObjectFixups final {
   // updated.
   //
   // (TODO: consider in-place updating schemes.)
-  HashMap<MovableReference, MovableReference*> m_fixups;
+  HashMap<MovableReference, MovableReference*> fixups_;
 
   // Map from movable reference to callbacks that need to be invoked
   // when the object moves.
   HashMap<MovableReference, std::pair<void*, MovingObjectCallback>>
-      m_fixupCallbacks;
+      fixup_callbacks_;
 
   // Slot => relocated slot/final location.
-  HashMap<MovableReference*, Address> m_interiorFixups;
+  HashMap<MovableReference*, Address> interior_fixups_;
 
   // All pages that are being compacted. The set keeps references to
   // BasePage instances. The void* type was selected to allow to check
   // arbitrary addresses.
-  HashSet<void*> m_relocatablePages;
+  HashSet<void*> relocatable_pages_;
 
-  std::unique_ptr<SparseHeapBitmap> m_interiors;
+  std::unique_ptr<SparseHeapBitmap> interiors_;
 };
 
 HeapCompact::HeapCompact()
-    : m_doCompact(false),
-      m_gcCountSinceLastCompaction(0),
-      m_freeListSize(0),
-      m_compactableArenas(0u),
-      m_freedPages(0),
-      m_freedSize(0),
-      m_startCompactionTimeMS(0) {
+    : do_compact_(false),
+      gc_count_since_last_compaction_(0),
+      free_list_size_(0),
+      compactable_arenas_(0u),
+      freed_pages_(0),
+      freed_size_(0),
+      start_compaction_time_ms_(0) {
   // The heap compaction implementation assumes the contiguous range,
   //
   //   [Vector1ArenaIndex, HashTableArenaIndex]
   //
   // in a few places. Use static asserts here to not have that assumption
   // be silently invalidated by ArenaIndices changes.
-  static_assert(BlinkGC::Vector1ArenaIndex + 3 == BlinkGC::Vector4ArenaIndex,
+  static_assert(BlinkGC::kVector1ArenaIndex + 3 == BlinkGC::kVector4ArenaIndex,
                 "unexpected ArenaIndices ordering");
   static_assert(
-      BlinkGC::Vector4ArenaIndex + 1 == BlinkGC::InlineVectorArenaIndex,
+      BlinkGC::kVector4ArenaIndex + 1 == BlinkGC::kInlineVectorArenaIndex,
       "unexpected ArenaIndices ordering");
   static_assert(
-      BlinkGC::InlineVectorArenaIndex + 1 == BlinkGC::HashTableArenaIndex,
+      BlinkGC::kInlineVectorArenaIndex + 1 == BlinkGC::kHashTableArenaIndex,
       "unexpected ArenaIndices ordering");
 }
 
 HeapCompact::~HeapCompact() {}
 
-HeapCompact::MovableObjectFixups& HeapCompact::fixups() {
-  if (!m_fixups)
-    m_fixups = MovableObjectFixups::create();
-  return *m_fixups;
+HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
+  if (!fixups_)
+    fixups_ = MovableObjectFixups::Create();
+  return *fixups_;
 }
 
-bool HeapCompact::shouldCompact(ThreadState* state,
-                                BlinkGC::GCType gcType,
+bool HeapCompact::ShouldCompact(ThreadState* state,
+                                BlinkGC::GCType gc_type,
                                 BlinkGC::GCReason reason) {
 #if !ENABLE_HEAP_COMPACTION
   return false;
@@ -296,18 +297,18 @@ bool HeapCompact::shouldCompact(ThreadState* state,
   LOG_HEAP_COMPACTION("shouldCompact(): gc=%s count=%zu free=%zu\n",
                       ThreadState::gcReasonString(reason),
                       m_gcCountSinceLastCompaction, m_freeListSize);
-  m_gcCountSinceLastCompaction++;
+  gc_count_since_last_compaction_++;
   // It is only safe to compact during non-conservative GCs.
   // TODO: for the main thread, limit this further to only idle GCs.
-  if (reason != BlinkGC::IdleGC && reason != BlinkGC::PreciseGC &&
-      reason != BlinkGC::ForcedGC)
+  if (reason != BlinkGC::kIdleGC && reason != BlinkGC::kPreciseGC &&
+      reason != BlinkGC::kForcedGC)
     return false;
 
   // If the GCing thread requires a stack scan, do not compact.
   // Why? Should the stack contain an iterator pointing into its
   // associated backing store, its references wouldn't be
   // correctly relocated.
-  if (state->stackState() == BlinkGC::HeapPointersOnStack)
+  if (state->GetStackState() == BlinkGC::kHeapPointersOnStack)
     return false;
 
   // Compaction enable rules:
@@ -321,125 +322,126 @@ bool HeapCompact::shouldCompact(ThreadState* state,
   // TODO: add some form of compaction overhead estimate to the marking
   // time estimate.
 
-  updateHeapResidency(state);
+  UpdateHeapResidency(state);
 
 #if STRESS_TEST_HEAP_COMPACTION
   // Exercise the handling of object movement by compacting as
   // often as possible.
   return true;
 #else
-  return s_forceCompactionGC ||
-         (m_gcCountSinceLastCompaction > kGCCountSinceLastCompactionThreshold &&
-          m_freeListSize > kFreeListSizeThreshold);
+  return force_compaction_gc_ || (gc_count_since_last_compaction_ >
+                                      kGCCountSinceLastCompactionThreshold &&
+                                  free_list_size_ > kFreeListSizeThreshold);
 #endif
 #endif
 }
 
-void HeapCompact::initialize(ThreadState* state) {
+void HeapCompact::Initialize(ThreadState* state) {
   DCHECK(RuntimeEnabledFeatures::heapCompactionEnabled());
   LOG_HEAP_COMPACTION("Compacting: free=%zu\n", m_freeListSize);
-  m_doCompact = true;
-  m_freedPages = 0;
-  m_freedSize = 0;
-  m_fixups.reset();
-  m_gcCountSinceLastCompaction = 0;
-  s_forceCompactionGC = false;
+  do_compact_ = true;
+  freed_pages_ = 0;
+  freed_size_ = 0;
+  fixups_.reset();
+  gc_count_since_last_compaction_ = 0;
+  force_compaction_gc_ = false;
 }
 
-void HeapCompact::registerMovingObjectReference(MovableReference* slot) {
-  if (!m_doCompact)
+void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
+  if (!do_compact_)
     return;
 
-  fixups().add(slot);
+  Fixups().Add(slot);
 }
 
-void HeapCompact::registerMovingObjectCallback(MovableReference reference,
+void HeapCompact::RegisterMovingObjectCallback(MovableReference reference,
                                                MovingObjectCallback callback,
-                                               void* callbackData) {
-  if (!m_doCompact)
+                                               void* callback_data) {
+  if (!do_compact_)
     return;
 
-  fixups().addFixupCallback(reference, callback, callbackData);
+  Fixups().AddFixupCallback(reference, callback, callback_data);
 }
 
-void HeapCompact::updateHeapResidency(ThreadState* threadState) {
-  size_t totalArenaSize = 0;
-  size_t totalFreeListSize = 0;
+void HeapCompact::UpdateHeapResidency(ThreadState* thread_state) {
+  size_t total_arena_size = 0;
+  size_t total_free_list_size = 0;
 
-  m_compactableArenas = 0;
+  compactable_arenas_ = 0;
 #if DEBUG_HEAP_FREELIST
   LOG_HEAP_FREELIST("Arena residencies: {");
 #endif
-  for (int i = BlinkGC::Vector1ArenaIndex; i <= BlinkGC::HashTableArenaIndex;
+  for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
        ++i) {
     NormalPageArena* arena =
-        static_cast<NormalPageArena*>(threadState->arena(i));
-    size_t arenaSize = arena->arenaSize();
-    size_t freeListSize = arena->freeListSize();
-    totalArenaSize += arenaSize;
-    totalFreeListSize += freeListSize;
+        static_cast<NormalPageArena*>(thread_state->Arena(i));
+    size_t arena_size = arena->ArenaSize();
+    size_t free_list_size = arena->FreeListSize();
+    total_arena_size += arena_size;
+    total_free_list_size += free_list_size;
     LOG_HEAP_FREELIST("%d: [%zu, %zu], ", i, arenaSize, freeListSize);
     // TODO: be more discriminating and consider arena
     // load factor, effectiveness of past compactions etc.
-    if (!arenaSize)
+    if (!arena_size)
       continue;
     // Mark the arena as compactable.
-    m_compactableArenas |= (0x1u << (BlinkGC::Vector1ArenaIndex + i));
+    compactable_arenas_ |= (0x1u << (BlinkGC::kVector1ArenaIndex + i));
   }
   LOG_HEAP_FREELIST("}\nTotal = %zu, Free = %zu\n", totalArenaSize,
                     totalFreeListSize);
 
   // TODO(sof): consider smoothing the reported sizes.
-  m_freeListSize = totalFreeListSize;
+  free_list_size_ = total_free_list_size;
 }
 
-void HeapCompact::finishedArenaCompaction(NormalPageArena* arena,
-                                          size_t freedPages,
-                                          size_t freedSize) {
-  if (!m_doCompact)
+void HeapCompact::FinishedArenaCompaction(NormalPageArena* arena,
+                                          size_t freed_pages,
+                                          size_t freed_size) {
+  if (!do_compact_)
     return;
 
-  m_freedPages += freedPages;
-  m_freedSize += freedSize;
+  freed_pages_ += freed_pages;
+  freed_size_ += freed_size;
 }
 
-void HeapCompact::relocate(Address from, Address to) {
-  DCHECK(m_fixups);
-  m_fixups->relocate(from, to);
+void HeapCompact::Relocate(Address from, Address to) {
+  DCHECK(fixups_);
+  fixups_->Relocate(from, to);
 }
 
-void HeapCompact::startThreadCompaction() {
-  if (!m_doCompact)
+void HeapCompact::StartThreadCompaction() {
+  if (!do_compact_)
     return;
 
-  if (!m_startCompactionTimeMS)
-    m_startCompactionTimeMS = WTF::currentTimeMS();
+  if (!start_compaction_time_ms_)
+    start_compaction_time_ms_ = WTF::CurrentTimeMS();
 }
 
-void HeapCompact::finishThreadCompaction() {
-  if (!m_doCompact)
+void HeapCompact::FinishThreadCompaction() {
+  if (!do_compact_)
     return;
 
 #if DEBUG_HEAP_COMPACTION
   if (m_fixups)
     m_fixups->dumpDebugStats();
 #endif
-  m_fixups.reset();
-  m_doCompact = false;
+  fixups_.reset();
+  do_compact_ = false;
 
-  double timeForHeapCompaction = WTF::currentTimeMS() - m_startCompactionTimeMS;
+  double time_for_heap_compaction =
+      WTF::CurrentTimeMS() - start_compaction_time_ms_;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, timeForHeapCompactionHistogram,
+      CustomCountHistogram, time_for_heap_compaction_histogram,
       new CustomCountHistogram("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000,
                                50));
-  timeForHeapCompactionHistogram.count(timeForHeapCompaction);
-  m_startCompactionTimeMS = 0;
+  time_for_heap_compaction_histogram.Count(time_for_heap_compaction);
+  start_compaction_time_ms_ = 0;
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      CustomCountHistogram, objectSizeFreedByHeapCompaction,
+      CustomCountHistogram, object_size_freed_by_heap_compaction,
       new CustomCountHistogram("BlinkGC.ObjectSizeFreedByHeapCompaction", 1,
                                4 * 1024 * 1024, 50));
-  objectSizeFreedByHeapCompaction.count(m_freedSize / 1024);
+  object_size_freed_by_heap_compaction.Count(freed_size_ / 1024);
 
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
   LOG_HEAP_COMPACTION_INTERNAL(
@@ -451,15 +453,15 @@ void HeapCompact::finishThreadCompaction() {
 #endif
 }
 
-void HeapCompact::addCompactingPage(BasePage* page) {
-  DCHECK(m_doCompact);
-  DCHECK(isCompactingArena(page->arena()->arenaIndex()));
-  fixups().addCompactingPage(page);
+void HeapCompact::AddCompactingPage(BasePage* page) {
+  DCHECK(do_compact_);
+  DCHECK(IsCompactingArena(page->Arena()->ArenaIndex()));
+  Fixups().AddCompactingPage(page);
 }
 
-bool HeapCompact::scheduleCompactionGCForTesting(bool value) {
-  bool current = s_forceCompactionGC;
-  s_forceCompactionGC = value;
+bool HeapCompact::ScheduleCompactionGCForTesting(bool value) {
+  bool current = force_compaction_gc_;
+  force_compaction_gc_ = value;
   return current;
 }
 

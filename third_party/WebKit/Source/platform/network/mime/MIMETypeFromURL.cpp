@@ -32,27 +32,27 @@
 
 namespace blink {
 
-String mimeTypeFromDataURL(const String& url) {
-  DCHECK(protocolIs(url, "data"));
-  size_t index = url.find(';');
+String MimeTypeFromDataURL(const String& url) {
+  DCHECK(ProtocolIs(url, "data"));
+  size_t index = url.Find(';');
   if (index == kNotFound)
-    index = url.find(',');
+    index = url.Find(',');
   if (index != kNotFound) {
     if (index > 5)
-      return url.substring(5, index - 5).lower();
+      return url.Substring(5, index - 5).Lower();
     // Data URLs with no MIME type are considered text/plain.
     return "text/plain";
   }
   return "";
 }
 
-String mimeTypeFromURL(const KURL& url) {
-  String decodedPath = decodeURLEscapeSequences(url.path());
-  String extension = decodedPath.substring(decodedPath.reverseFind('.') + 1);
+String MimeTypeFromURL(const KURL& url) {
+  String decoded_path = DecodeURLEscapeSequences(url.GetPath());
+  String extension = decoded_path.Substring(decoded_path.ReverseFind('.') + 1);
 
   // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns
   // "application/octet-stream" upon failure
-  return MIMETypeRegistry::getMIMETypeForExtension(extension);
+  return MIMETypeRegistry::GetMIMETypeForExtension(extension);
 }
 
 }  // namespace blink

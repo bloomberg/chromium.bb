@@ -40,26 +40,26 @@ class NotificationManager : public blink::WebNotificationManager,
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void show(
+  void Show(
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       std::unique_ptr<blink::WebNotificationResources> notification_resources,
       blink::WebNotificationDelegate* delegate) override;
-  void showPersistent(
+  void ShowPersistent(
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       std::unique_ptr<blink::WebNotificationResources> notification_resources,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks) override;
-  void getNotifications(
+  void GetNotifications(
       const blink::WebString& filter_tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       std::unique_ptr<blink::WebNotificationGetCallbacks> callbacks) override;
-  void close(blink::WebNotificationDelegate* delegate) override;
-  void closePersistent(const blink::WebSecurityOrigin& origin,
+  void Close(blink::WebNotificationDelegate* delegate) override;
+  void ClosePersistent(const blink::WebSecurityOrigin& origin,
                        const blink::WebString& tag,
                        const blink::WebString& notification_id) override;
-  void notifyDelegateDestroyed(
+  void NotifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate) override;
 
   // Called by the NotificationDispatcher.

@@ -14,110 +14,110 @@ namespace {
 
 TEST(V8ObjectBuilderTest, addNull) {
   V8TestingScope scope;
-  ScriptState* scriptState = scope.getScriptState();
-  V8ObjectBuilder builder(scriptState);
-  builder.addNull("null_check");
-  ScriptValue jsonObject = builder.scriptValue();
-  EXPECT_TRUE(jsonObject.isObject());
+  ScriptState* script_state = scope.GetScriptState();
+  V8ObjectBuilder builder(script_state);
+  builder.AddNull("null_check");
+  ScriptValue json_object = builder.GetScriptValue();
+  EXPECT_TRUE(json_object.IsObject());
 
-  String jsonString = v8StringToWebCoreString<String>(
-      v8::JSON::Stringify(scope.context(),
-                          jsonObject.v8Value().As<v8::Object>())
+  String json_string = V8StringToWebCoreString<String>(
+      v8::JSON::Stringify(scope.GetContext(),
+                          json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
-      DoNotExternalize);
+      kDoNotExternalize);
 
   String expected = "{\"null_check\":null}";
-  EXPECT_EQ(expected, jsonString);
+  EXPECT_EQ(expected, json_string);
 }
 
 TEST(V8ObjectBuilderTest, addBoolean) {
   V8TestingScope scope;
-  ScriptState* scriptState = scope.getScriptState();
-  V8ObjectBuilder builder(scriptState);
-  builder.addBoolean("b1", true);
-  builder.addBoolean("b2", false);
-  ScriptValue jsonObject = builder.scriptValue();
-  EXPECT_TRUE(jsonObject.isObject());
+  ScriptState* script_state = scope.GetScriptState();
+  V8ObjectBuilder builder(script_state);
+  builder.AddBoolean("b1", true);
+  builder.AddBoolean("b2", false);
+  ScriptValue json_object = builder.GetScriptValue();
+  EXPECT_TRUE(json_object.IsObject());
 
-  String jsonString = v8StringToWebCoreString<String>(
-      v8::JSON::Stringify(scope.context(),
-                          jsonObject.v8Value().As<v8::Object>())
+  String json_string = V8StringToWebCoreString<String>(
+      v8::JSON::Stringify(scope.GetContext(),
+                          json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
-      DoNotExternalize);
+      kDoNotExternalize);
 
   String expected = "{\"b1\":true,\"b2\":false}";
-  EXPECT_EQ(expected, jsonString);
+  EXPECT_EQ(expected, json_string);
 }
 
 TEST(V8ObjectBuilderTest, addNumber) {
   V8TestingScope scope;
-  ScriptState* scriptState = scope.getScriptState();
-  V8ObjectBuilder builder(scriptState);
-  builder.addNumber("n1", 123);
-  builder.addNumber("n2", 123.456);
-  ScriptValue jsonObject = builder.scriptValue();
-  EXPECT_TRUE(jsonObject.isObject());
+  ScriptState* script_state = scope.GetScriptState();
+  V8ObjectBuilder builder(script_state);
+  builder.AddNumber("n1", 123);
+  builder.AddNumber("n2", 123.456);
+  ScriptValue json_object = builder.GetScriptValue();
+  EXPECT_TRUE(json_object.IsObject());
 
-  String jsonString = v8StringToWebCoreString<String>(
-      v8::JSON::Stringify(scope.context(),
-                          jsonObject.v8Value().As<v8::Object>())
+  String json_string = V8StringToWebCoreString<String>(
+      v8::JSON::Stringify(scope.GetContext(),
+                          json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
-      DoNotExternalize);
+      kDoNotExternalize);
 
   String expected = "{\"n1\":123,\"n2\":123.456}";
-  EXPECT_EQ(expected, jsonString);
+  EXPECT_EQ(expected, json_string);
 }
 
 TEST(V8ObjectBuilderTest, addString) {
   V8TestingScope scope;
-  ScriptState* scriptState = scope.getScriptState();
-  V8ObjectBuilder builder(scriptState);
+  ScriptState* script_state = scope.GetScriptState();
+  V8ObjectBuilder builder(script_state);
 
   WTF::String test1 = "test1";
   WTF::String test2;
   WTF::String test3 = "test3";
   WTF::String test4;
 
-  builder.addString("test1", test1);
-  builder.addString("test2", test2);
-  builder.addStringOrNull("test3", test3);
-  builder.addStringOrNull("test4", test4);
-  ScriptValue jsonObject = builder.scriptValue();
-  EXPECT_TRUE(jsonObject.isObject());
+  builder.AddString("test1", test1);
+  builder.AddString("test2", test2);
+  builder.AddStringOrNull("test3", test3);
+  builder.AddStringOrNull("test4", test4);
+  ScriptValue json_object = builder.GetScriptValue();
+  EXPECT_TRUE(json_object.IsObject());
 
-  String jsonString = v8StringToWebCoreString<String>(
-      v8::JSON::Stringify(scope.context(),
-                          jsonObject.v8Value().As<v8::Object>())
+  String json_string = V8StringToWebCoreString<String>(
+      v8::JSON::Stringify(scope.GetContext(),
+                          json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
-      DoNotExternalize);
+      kDoNotExternalize);
 
   String expected =
       "{\"test1\":\"test1\",\"test2\":\"\",\"test3\":\"test3\",\"test4\":"
       "null}";
-  EXPECT_EQ(expected, jsonString);
+  EXPECT_EQ(expected, json_string);
 }
 
 TEST(V8ObjectBuilderTest, add) {
   V8TestingScope scope;
-  ScriptState* scriptState = scope.getScriptState();
-  V8ObjectBuilder builder(scriptState);
-  V8ObjectBuilder result(scriptState);
-  builder.addNumber("n1", 123);
-  builder.addNumber("n2", 123.456);
-  result.add("builder", builder);
-  ScriptValue builderJsonObject = builder.scriptValue();
-  ScriptValue resultJsonObject = result.scriptValue();
-  EXPECT_TRUE(builderJsonObject.isObject());
-  EXPECT_TRUE(resultJsonObject.isObject());
+  ScriptState* script_state = scope.GetScriptState();
+  V8ObjectBuilder builder(script_state);
+  V8ObjectBuilder result(script_state);
+  builder.AddNumber("n1", 123);
+  builder.AddNumber("n2", 123.456);
+  result.Add("builder", builder);
+  ScriptValue builder_json_object = builder.GetScriptValue();
+  ScriptValue result_json_object = result.GetScriptValue();
+  EXPECT_TRUE(builder_json_object.IsObject());
+  EXPECT_TRUE(result_json_object.IsObject());
 
-  String jsonString = v8StringToWebCoreString<String>(
-      v8::JSON::Stringify(scope.context(),
-                          resultJsonObject.v8Value().As<v8::Object>())
+  String json_string = V8StringToWebCoreString<String>(
+      v8::JSON::Stringify(scope.GetContext(),
+                          result_json_object.V8Value().As<v8::Object>())
           .ToLocalChecked(),
-      DoNotExternalize);
+      kDoNotExternalize);
 
   String expected = "{\"builder\":{\"n1\":123,\"n2\":123.456}}";
-  EXPECT_EQ(expected, jsonString);
+  EXPECT_EQ(expected, json_string);
 }
 
 }  // namespace

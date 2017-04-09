@@ -30,35 +30,35 @@ namespace cssvalue {
 
 class CSSCursorImageValue : public CSSValue {
  public:
-  static const CSSCursorImageValue* create(const CSSValue& imageValue,
-                                           bool hotSpotSpecified,
-                                           const IntPoint& hotSpot) {
-    return new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot);
+  static const CSSCursorImageValue* Create(const CSSValue& image_value,
+                                           bool hot_spot_specified,
+                                           const IntPoint& hot_spot) {
+    return new CSSCursorImageValue(image_value, hot_spot_specified, hot_spot);
   }
 
   ~CSSCursorImageValue();
 
-  bool hotSpotSpecified() const { return m_hotSpotSpecified; }
-  const IntPoint& hotSpot() const { return m_hotSpot; }
-  const CSSValue& imageValue() const { return *m_imageValue; }
+  bool HotSpotSpecified() const { return hot_spot_specified_; }
+  const IntPoint& HotSpot() const { return hot_spot_; }
+  const CSSValue& ImageValue() const { return *image_value_; }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSCursorImageValue&) const;
+  bool Equals(const CSSCursorImageValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSCursorImageValue(const CSSValue& imageValue,
-                      bool hotSpotSpecified,
-                      const IntPoint& hotSpot);
+  CSSCursorImageValue(const CSSValue& image_value,
+                      bool hot_spot_specified,
+                      const IntPoint& hot_spot);
 
-  Member<const CSSValue> m_imageValue;
-  IntPoint m_hotSpot;
-  bool m_hotSpotSpecified;
+  Member<const CSSValue> image_value_;
+  IntPoint hot_spot_;
+  bool hot_spot_specified_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, IsCursorImageValue());
 
 }  // namespace cssvalue
 

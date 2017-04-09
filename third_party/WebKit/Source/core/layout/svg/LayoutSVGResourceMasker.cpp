@@ -34,110 +34,114 @@ LayoutSVGResourceMasker::LayoutSVGResourceMasker(SVGMaskElement* node)
 
 LayoutSVGResourceMasker::~LayoutSVGResourceMasker() {}
 
-void LayoutSVGResourceMasker::removeAllClientsFromCache(
-    bool markForInvalidation) {
-  m_cachedPaintRecord.reset();
-  m_maskContentBoundaries = FloatRect();
-  markAllClientsForInvalidation(markForInvalidation
-                                    ? LayoutAndBoundariesInvalidation
-                                    : ParentOnlyInvalidation);
+void LayoutSVGResourceMasker::RemoveAllClientsFromCache(
+    bool mark_for_invalidation) {
+  cached_paint_record_.reset();
+  mask_content_boundaries_ = FloatRect();
+  MarkAllClientsForInvalidation(mark_for_invalidation
+                                    ? kLayoutAndBoundariesInvalidation
+                                    : kParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceMasker::removeClientFromCache(LayoutObject* client,
-                                                    bool markForInvalidation) {
+void LayoutSVGResourceMasker::RemoveClientFromCache(
+    LayoutObject* client,
+    bool mark_for_invalidation) {
   DCHECK(client);
-  markClientForInvalidation(client, markForInvalidation
-                                        ? BoundariesInvalidation
-                                        : ParentOnlyInvalidation);
+  MarkClientForInvalidation(client, mark_for_invalidation
+                                        ? kBoundariesInvalidation
+                                        : kParentOnlyInvalidation);
 }
 
-sk_sp<const PaintRecord> LayoutSVGResourceMasker::createPaintRecord(
-    AffineTransform& contentTransformation,
-    const FloatRect& targetBoundingBox,
+sk_sp<const PaintRecord> LayoutSVGResourceMasker::CreatePaintRecord(
+    AffineTransform& content_transformation,
+    const FloatRect& target_bounding_box,
     GraphicsContext& context) {
-  SVGUnitTypes::SVGUnitType contentUnits = toSVGMaskElement(element())
-                                               ->maskContentUnits()
-                                               ->currentValue()
-                                               ->enumValue();
-  if (contentUnits == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
-    contentTransformation.translate(targetBoundingBox.x(),
-                                    targetBoundingBox.y());
-    contentTransformation.scaleNonUniform(targetBoundingBox.width(),
-                                          targetBoundingBox.height());
+  SVGUnitTypes::SVGUnitType content_units = toSVGMaskElement(GetElement())
+                                                ->maskContentUnits()
+                                                ->CurrentValue()
+                                                ->EnumValue();
+  if (content_units == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+    content_transformation.Translate(target_bounding_box.X(),
+                                     target_bounding_box.Y());
+    content_transformation.ScaleNonUniform(target_bounding_box.Width(),
+                                           target_bounding_box.Height());
   }
 
-  if (m_cachedPaintRecord)
-    return m_cachedPaintRecord;
+  if (cached_paint_record_)
+    return cached_paint_record_;
 
-  SubtreeContentTransformScope contentTransformScope(contentTransformation);
+  SubtreeContentTransformScope content_transform_scope(content_transformation);
 
   // Using strokeBoundingBox instead of visualRectInLocalCoordinates
   // to avoid the intersection with local clips/mask, which may yield incorrect
   // results when mixing objectBoundingBox and userSpaceOnUse units.
   // http://crbug.com/294900
-  FloatRect bounds = strokeBoundingBox();
+  FloatRect bounds = StrokeBoundingBox();
 
   PaintRecordBuilder builder(bounds, nullptr, &context);
 
-  ColorFilter maskContentFilter =
-      style()->svgStyle().colorInterpolation() == CI_LINEARRGB
-          ? ColorFilterSRGBToLinearRGB
-          : ColorFilterNone;
-  builder.context().setColorFilter(maskContentFilter);
+  ColorFilter mask_content_filter =
+      Style()->SvgStyle().ColorInterpolation() == CI_LINEARRGB
+          ? kColorFilterSRGBToLinearRGB
+          : kColorFilterNone;
+  builder.Context().SetColorFilter(mask_content_filter);
 
-  for (const SVGElement& childElement :
-       Traversal<SVGElement>::childrenOf(*element())) {
-    const LayoutObject* layoutObject = childElement.layoutObject();
-    if (!layoutObject || layoutObject->styleRef().display() == EDisplay::kNone)
+  for (const SVGElement& child_element :
+       Traversal<SVGElement>::ChildrenOf(*GetElement())) {
+    const LayoutObject* layout_object = child_element.GetLayoutObject();
+    if (!layout_object ||
+        layout_object->StyleRef().Display() == EDisplay::kNone)
       continue;
-    SVGPaintContext::paintResourceSubtree(builder.context(), layoutObject);
+    SVGPaintContext::PaintResourceSubtree(builder.Context(), layout_object);
   }
 
-  m_cachedPaintRecord = builder.endRecording();
-  return m_cachedPaintRecord;
+  cached_paint_record_ = builder.EndRecording();
+  return cached_paint_record_;
 }
 
-void LayoutSVGResourceMasker::calculateMaskContentVisualRect() {
-  for (const SVGElement& childElement :
-       Traversal<SVGElement>::childrenOf(*element())) {
-    const LayoutObject* layoutObject = childElement.layoutObject();
-    if (!layoutObject || layoutObject->styleRef().display() == EDisplay::kNone)
+void LayoutSVGResourceMasker::CalculateMaskContentVisualRect() {
+  for (const SVGElement& child_element :
+       Traversal<SVGElement>::ChildrenOf(*GetElement())) {
+    const LayoutObject* layout_object = child_element.GetLayoutObject();
+    if (!layout_object ||
+        layout_object->StyleRef().Display() == EDisplay::kNone)
       continue;
-    m_maskContentBoundaries.unite(
-        layoutObject->localToSVGParentTransform().mapRect(
-            layoutObject->visualRectInLocalSVGCoordinates()));
+    mask_content_boundaries_.Unite(
+        layout_object->LocalToSVGParentTransform().MapRect(
+            layout_object->VisualRectInLocalSVGCoordinates()));
   }
 }
 
-FloatRect LayoutSVGResourceMasker::resourceBoundingBox(
+FloatRect LayoutSVGResourceMasker::ResourceBoundingBox(
     const LayoutObject* object) {
-  SVGMaskElement* maskElement = toSVGMaskElement(element());
-  DCHECK(maskElement);
+  SVGMaskElement* mask_element = toSVGMaskElement(GetElement());
+  DCHECK(mask_element);
 
-  FloatRect objectBoundingBox = object->objectBoundingBox();
-  FloatRect maskBoundaries = SVGLengthContext::resolveRectangle<SVGMaskElement>(
-      maskElement, maskElement->maskUnits()->currentValue()->enumValue(),
-      objectBoundingBox);
+  FloatRect object_bounding_box = object->ObjectBoundingBox();
+  FloatRect mask_boundaries =
+      SVGLengthContext::ResolveRectangle<SVGMaskElement>(
+          mask_element, mask_element->maskUnits()->CurrentValue()->EnumValue(),
+          object_bounding_box);
 
   // Resource was not layouted yet. Give back clipping rect of the mask.
-  if (selfNeedsLayout())
-    return maskBoundaries;
+  if (SelfNeedsLayout())
+    return mask_boundaries;
 
-  if (m_maskContentBoundaries.isEmpty())
-    calculateMaskContentVisualRect();
+  if (mask_content_boundaries_.IsEmpty())
+    CalculateMaskContentVisualRect();
 
-  FloatRect maskRect = m_maskContentBoundaries;
-  if (maskElement->maskContentUnits()->currentValue()->value() ==
+  FloatRect mask_rect = mask_content_boundaries_;
+  if (mask_element->maskContentUnits()->CurrentValue()->Value() ==
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     AffineTransform transform;
-    transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
-    transform.scaleNonUniform(objectBoundingBox.width(),
-                              objectBoundingBox.height());
-    maskRect = transform.mapRect(maskRect);
+    transform.Translate(object_bounding_box.X(), object_bounding_box.Y());
+    transform.ScaleNonUniform(object_bounding_box.Width(),
+                              object_bounding_box.Height());
+    mask_rect = transform.MapRect(mask_rect);
   }
 
-  maskRect.intersect(maskBoundaries);
-  return maskRect;
+  mask_rect.Intersect(mask_boundaries);
+  return mask_rect;
 }
 
 }  // namespace blink

@@ -28,102 +28,101 @@
 
 namespace blink {
 
-enum AnyStepHandling { RejectAny, AnyIsDefaultStep };
+enum AnyStepHandling { kRejectAny, kAnyIsDefaultStep };
 
 class CORE_EXPORT StepRange {
   DISALLOW_NEW();
 
  public:
   enum StepValueShouldBe {
-    StepValueShouldBeReal,
-    ParsedStepValueShouldBeInteger,
-    ScaledStepValueShouldBeInteger,
+    kStepValueShouldBeReal,
+    kParsedStepValueShouldBeInteger,
+    kScaledStepValueShouldBeInteger,
   };
 
   struct StepDescription {
     USING_FAST_MALLOC(StepDescription);
 
    public:
-    int defaultStep;
-    int defaultStepBase;
-    int stepScaleFactor;
-    StepValueShouldBe stepValueShouldBe;
+    int default_step;
+    int default_step_base;
+    int step_scale_factor;
+    StepValueShouldBe step_value_should_be;
 
-    StepDescription(int defaultStep,
-                    int defaultStepBase,
-                    int stepScaleFactor,
-                    StepValueShouldBe stepValueShouldBe = StepValueShouldBeReal)
-        : defaultStep(defaultStep),
-          defaultStepBase(defaultStepBase),
-          stepScaleFactor(stepScaleFactor),
-          stepValueShouldBe(stepValueShouldBe) {}
+    StepDescription(
+        int default_step,
+        int default_step_base,
+        int step_scale_factor,
+        StepValueShouldBe step_value_should_be = kStepValueShouldBeReal)
+        : default_step(default_step),
+          default_step_base(default_step_base),
+          step_scale_factor(step_scale_factor),
+          step_value_should_be(step_value_should_be) {}
 
     StepDescription()
-        : defaultStep(1),
-          defaultStepBase(0),
-          stepScaleFactor(1),
-          stepValueShouldBe(StepValueShouldBeReal) {}
+        : default_step(1),
+          default_step_base(0),
+          step_scale_factor(1),
+          step_value_should_be(kStepValueShouldBeReal) {}
 
-    Decimal defaultValue() const { return defaultStep * stepScaleFactor; }
+    Decimal DefaultValue() const { return default_step * step_scale_factor; }
   };
 
   StepRange();
   StepRange(const StepRange&);
-  StepRange(const Decimal& stepBase,
+  StepRange(const Decimal& step_base,
             const Decimal& minimum,
             const Decimal& maximum,
-            bool hasRangeLimitations,
+            bool has_range_limitations,
             const Decimal& step,
             const StepDescription&);
 
-  Decimal alignValueForStep(const Decimal& currentValue,
-                            const Decimal& newValue) const;
-  Decimal clampValue(const Decimal& value) const;
-  bool hasStep() const { return m_hasStep; }
-  Decimal maximum() const { return m_maximum; }
-  Decimal minimum() const { return m_minimum; }
+  Decimal AlignValueForStep(const Decimal& current_value,
+                            const Decimal& new_value) const;
+  Decimal ClampValue(const Decimal& value) const;
+  bool HasStep() const { return has_step_; }
+  Decimal Maximum() const { return maximum_; }
+  Decimal Minimum() const { return minimum_; }
   // https://html.spec.whatwg.org/multipage/forms.html#have-range-limitations
-  bool hasRangeLimitations() const { return m_hasRangeLimitations; }
-  static Decimal parseStep(AnyStepHandling,
+  bool HasRangeLimitations() const { return has_range_limitations_; }
+  static Decimal ParseStep(AnyStepHandling,
                            const StepDescription&,
                            const String&);
-  Decimal step() const { return m_step; }
-  Decimal stepBase() const { return m_stepBase; }
-  bool stepMismatch(const Decimal&) const;
+  Decimal Step() const { return step_; }
+  Decimal StepBase() const { return step_base_; }
+  bool StepMismatch(const Decimal&) const;
   // Returns the maximum step-matched value between minimum() and
   // maximum(). If there's no such value, this returns Decimal::nan().
-  Decimal stepSnappedMaximum() const;
+  Decimal StepSnappedMaximum() const;
 
   // Clamp the middle value according to the step
-  Decimal defaultValue() const {
-    return clampValue((m_minimum + m_maximum) / 2);
-  }
+  Decimal DefaultValue() const { return ClampValue((minimum_ + maximum_) / 2); }
 
   // Map value into 0-1 range
-  Decimal proportionFromValue(const Decimal& value) const {
-    if (m_minimum == m_maximum)
+  Decimal ProportionFromValue(const Decimal& value) const {
+    if (minimum_ == maximum_)
       return 0;
 
-    return (value - m_minimum) / (m_maximum - m_minimum);
+    return (value - minimum_) / (maximum_ - minimum_);
   }
 
   // Map from 0-1 range to value
-  Decimal valueFromProportion(const Decimal& proportion) const {
-    return m_minimum + proportion * (m_maximum - m_minimum);
+  Decimal ValueFromProportion(const Decimal& proportion) const {
+    return minimum_ + proportion * (maximum_ - minimum_);
   }
 
  private:
   StepRange& operator=(const StepRange&) = delete;
-  Decimal acceptableError() const;
-  Decimal roundByStep(const Decimal& value, const Decimal& base) const;
+  Decimal AcceptableError() const;
+  Decimal RoundByStep(const Decimal& value, const Decimal& base) const;
 
-  const Decimal m_maximum;  // maximum must be >= minimum.
-  const Decimal m_minimum;
-  const Decimal m_step;
-  const Decimal m_stepBase;
-  const StepDescription m_stepDescription;
-  const bool m_hasStep;
-  const bool m_hasRangeLimitations;
+  const Decimal maximum_;  // maximum must be >= minimum.
+  const Decimal minimum_;
+  const Decimal step_;
+  const Decimal step_base_;
+  const StepDescription step_description_;
+  const bool has_step_;
+  const bool has_range_limitations_;
 };
 
 }  // namespace blink

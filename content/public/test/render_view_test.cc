@@ -123,7 +123,7 @@ class RendererBlinkPlatformImplTestOverrideImpl
 
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
-  blink::WebSandboxSupport* sandboxSupport() override { return NULL; }
+  blink::WebSandboxSupport* GetSandboxSupport() override { return NULL; }
 };
 
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
@@ -163,19 +163,19 @@ void RenderViewTest::ProcessPendingMessages() {
 }
 
 WebLocalFrame* RenderViewTest::GetMainFrame() {
-  return view_->GetWebView()->mainFrame()->toWebLocalFrame();
+  return view_->GetWebView()->MainFrame()->ToWebLocalFrame();
 }
 
 void RenderViewTest::ExecuteJavaScriptForTests(const char* js) {
-  GetMainFrame()->executeScript(WebScriptSource(WebString::fromUTF8(js)));
+  GetMainFrame()->ExecuteScript(WebScriptSource(WebString::FromUTF8(js)));
 }
 
 bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
     const base::string16& script,
     int* int_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Value> result = GetMainFrame()->executeScriptAndReturnValue(
-      WebScriptSource(blink::WebString::fromUTF16(script)));
+  v8::Local<v8::Value> result = GetMainFrame()->ExecuteScriptAndReturnValue(
+      WebScriptSource(blink::WebString::FromUTF16(script)));
   if (result.IsEmpty() || !result->IsInt32())
     return false;
 
@@ -190,22 +190,22 @@ void RenderViewTest::LoadHTML(const char* html) {
   url_string.append(html);
   GURL url(url_string);
   WebURLRequest request(url);
-  request.setCheckForBrowserSideNavigation(false);
-  GetMainFrame()->loadRequest(request);
+  request.SetCheckForBrowserSideNavigation(false);
+  GetMainFrame()->LoadRequest(request);
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
-  view_->GetWebView()->updateAllLifecyclePhases();
+  view_->GetWebView()->UpdateAllLifecyclePhases();
 }
 
 void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
                                              const char* url_override) {
-  GetMainFrame()->loadHTMLString(std::string(html),
+  GetMainFrame()->LoadHTMLString(std::string(html),
                                  blink::WebURL(GURL(url_override)));
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
-  view_->GetWebView()->updateAllLifecyclePhases();
+  view_->GetWebView()->UpdateAllLifecyclePhases();
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
@@ -235,7 +235,7 @@ void RenderViewTest::SetUp() {
 
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
-  blink::initialize(blink_platform_impl_.Get());
+  blink::Initialize(blink_platform_impl_.Get());
 
   content_client_.reset(CreateContentClient());
   content_browser_client_.reset(CreateContentBrowserClient());
@@ -327,9 +327,9 @@ void RenderViewTest::TearDown() {
   render_thread_->SendCloseMessage();
 
   std::unique_ptr<blink::WebLeakDetector> leak_detector =
-      base::WrapUnique(blink::WebLeakDetector::create(this));
+      base::WrapUnique(blink::WebLeakDetector::Create(this));
 
-  leak_detector->prepareForLeakDetection(view_->GetWebView()->mainFrame());
+  leak_detector->PrepareForLeakDetection(view_->GetWebView()->MainFrame());
 
   view_ = NULL;
   mock_process_.reset();
@@ -343,7 +343,7 @@ void RenderViewTest::TearDown() {
   autorelease_pool_.reset(NULL);
 #endif
 
-  leak_detector->collectGarbageAndReport();
+  leak_detector->CollectGarbageAndReport();
 
   blink_platform_impl_.Shutdown();
   platform_->PlatformUninitialize();
@@ -355,17 +355,17 @@ void RenderViewTest::TearDown() {
   ipc_support_.reset();
 }
 
-void RenderViewTest::onLeakDetectionComplete(const Result& result) {
-  EXPECT_EQ(0u, result.numberOfLiveAudioNodes);
-  EXPECT_EQ(0u, result.numberOfLiveDocuments);
-  EXPECT_EQ(0u, result.numberOfLiveNodes);
-  EXPECT_EQ(0u, result.numberOfLiveLayoutObjects);
-  EXPECT_EQ(0u, result.numberOfLiveResources);
-  EXPECT_EQ(0u, result.numberOfLiveSuspendableObjects);
-  EXPECT_EQ(0u, result.numberOfLiveScriptPromises);
-  EXPECT_EQ(0u, result.numberOfLiveFrames);
-  EXPECT_EQ(0u, result.numberOfLiveV8PerContextData);
-  EXPECT_EQ(0u, result.numberOfWorkerGlobalScopes);
+void RenderViewTest::OnLeakDetectionComplete(const Result& result) {
+  EXPECT_EQ(0u, result.number_of_live_audio_nodes);
+  EXPECT_EQ(0u, result.number_of_live_documents);
+  EXPECT_EQ(0u, result.number_of_live_nodes);
+  EXPECT_EQ(0u, result.number_of_live_layout_objects);
+  EXPECT_EQ(0u, result.number_of_live_resources);
+  EXPECT_EQ(0u, result.number_of_live_suspendable_objects);
+  EXPECT_EQ(0u, result.number_of_live_script_promises);
+  EXPECT_EQ(0u, result.number_of_live_frames);
+  EXPECT_EQ(0u, result.number_of_live_v8_per_context_data);
+  EXPECT_EQ(0u, result.number_of_worker_global_scopes);
 }
 
 void RenderViewTest::SendNativeKeyEvent(
@@ -417,8 +417,8 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
-      WebScriptSource(WebString::fromUTF8(script)));
+  v8::Local<v8::Value> value = GetMainFrame()->ExecuteScriptAndReturnValue(
+      WebScriptSource(WebString::FromUTF8(script)));
   if (value.IsEmpty() || !value->IsArray())
     return gfx::Rect();
 
@@ -445,17 +445,17 @@ bool RenderViewTest::SimulateElementClick(const std::string& element_id) {
 }
 
 void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
-  WebMouseEvent mouse_event(WebInputEvent::MouseDown,
-                            WebInputEvent::NoModifiers,
+  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  mouse_event.button = WebMouseEvent::Button::Left;
-  mouse_event.setPositionInWidget(point.x(), point.y());
-  mouse_event.clickCount = 1;
+  mouse_event.button = WebMouseEvent::Button::kLeft;
+  mouse_event.SetPositionInWidget(point.x(), point.y());
+  mouse_event.click_count = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
       0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
       InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
-  mouse_event.setType(WebInputEvent::MouseUp);
+  mouse_event.SetType(WebInputEvent::kMouseUp);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
       0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
       InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
@@ -471,17 +471,17 @@ bool RenderViewTest::SimulateElementRightClick(const std::string& element_id) {
 }
 
 void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
-  WebMouseEvent mouse_event(WebInputEvent::MouseDown,
-                            WebInputEvent::NoModifiers,
+  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
                             ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  mouse_event.button = WebMouseEvent::Button::Right;
-  mouse_event.setPositionInWidget(point.x(), point.y());
-  mouse_event.clickCount = 1;
+  mouse_event.button = WebMouseEvent::Button::kRight;
+  mouse_event.SetPositionInWidget(point.x(), point.y());
+  mouse_event.click_count = 1;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
       0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
       InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
-  mouse_event.setType(WebInputEvent::MouseUp);
+  mouse_event.SetType(WebInputEvent::kMouseUp);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
       0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
       InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
@@ -489,14 +489,14 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
 
 void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   WebGestureEvent gesture_event(
-      WebInputEvent::GestureTap, WebInputEvent::NoModifiers,
+      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   gesture_event.x = rect.CenterPoint().x();
   gesture_event.y = rect.CenterPoint().y();
-  gesture_event.data.tap.tapCount = 1;
+  gesture_event.data.tap.tap_count = 1;
   gesture_event.data.tap.width = rect.width();
   gesture_event.data.tap.height = rect.height();
-  gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
+  gesture_event.source_device = blink::kWebGestureDeviceTouchpad;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
       0, &gesture_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
@@ -506,7 +506,7 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
 
 void RenderViewTest::SetFocused(const blink::WebNode& node) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->focusedNodeChanged(blink::WebNode(), node);
+  impl->FocusedNodeChanged(blink::WebNode(), node);
 }
 
 void RenderViewTest::Reload(const GURL& url) {
@@ -523,7 +523,7 @@ void RenderViewTest::Reload(const GURL& url) {
   frame->Navigate(common_params, StartNavigationParams(),
                   RequestNavigationParams());
   FrameLoadWaiter(frame).Wait();
-  view_->GetWebView()->updateAllLifecyclePhases();
+  view_->GetWebView()->UpdateAllLifecyclePhases();
 }
 
 uint32_t RenderViewTest::GetNavigationIPCType() {
@@ -539,30 +539,30 @@ void RenderViewTest::Resize(gfx::Size new_size,
   params.top_controls_height = 0.f;
   params.browser_controls_shrink_blink_size = false;
   params.is_fullscreen_granted = is_fullscreen_granted;
-  params.display_mode = blink::WebDisplayModeBrowser;
+  params.display_mode = blink::kWebDisplayModeBrowser;
   std::unique_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));
   OnMessageReceived(*resize_message);
 }
 
 void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
                                                       bool flush_message_loop) {
-  int modifiers = blink::WebInputEvent::NoModifiers;
+  int modifiers = blink::WebInputEvent::kNoModifiers;
   if (isupper(ascii_character) || ascii_character == '@' ||
       ascii_character == '_') {
-    modifiers = blink::WebKeyboardEvent::ShiftKey;
+    modifiers = blink::WebKeyboardEvent::kShiftKey;
   }
 
   blink::WebKeyboardEvent event(
-      blink::WebKeyboardEvent::RawKeyDown, modifiers,
+      blink::WebKeyboardEvent::kRawKeyDown, modifiers,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   event.text[0] = ascii_character;
-  ASSERT_TRUE(GetWindowsKeyCode(ascii_character, &event.windowsKeyCode));
+  ASSERT_TRUE(GetWindowsKeyCode(ascii_character, &event.windows_key_code));
   SendWebKeyboardEvent(event);
 
-  event.setType(blink::WebKeyboardEvent::Char);
+  event.SetType(blink::WebKeyboardEvent::kChar);
   SendWebKeyboardEvent(event);
 
-  event.setType(blink::WebKeyboardEvent::KeyUp);
+  event.SetType(blink::WebKeyboardEvent::kKeyUp);
   SendWebKeyboardEvent(event);
 
   if (flush_message_loop) {
@@ -577,20 +577,20 @@ void RenderViewTest::SimulateUserInputChangeForElement(
     blink::WebInputElement* input,
     const std::string& new_value) {
   ASSERT_TRUE(base::IsStringASCII(new_value));
-  while (!input->focused())
-    input->document().frame()->view()->advanceFocus(false);
+  while (!input->Focused())
+    input->GetDocument().GetFrame()->View()->AdvanceFocus(false);
 
-  size_t previous_length = input->value().length();
+  size_t previous_length = input->Value().length();
   for (size_t i = 0; i < previous_length; ++i)
     SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
 
-  EXPECT_TRUE(input->value().utf8().empty());
+  EXPECT_TRUE(input->Value().Utf8().empty());
   for (size_t i = 0; i < new_value.size(); ++i)
     SimulateUserTypingASCIICharacter(new_value[i], false);
 
   // Compare only beginning, because autocomplete may have filled out the
   // form.
-  EXPECT_EQ(new_value, input->value().utf8().substr(0, new_value.length()));
+  EXPECT_EQ(new_value, input->Value().Utf8().substr(0, new_value.length()));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -605,17 +605,18 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                               bool content_initiated) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
-  item.initialize();
+  item.Initialize();
 
   // Set the document sequence number to be the same as the current page.
   const blink::WebHistoryItem& current_item =
       impl->GetMainRenderFrame()->current_history_item();
-  DCHECK(!current_item.isNull());
-  item.setDocumentSequenceNumber(current_item.documentSequenceNumber());
+  DCHECK(!current_item.IsNull());
+  item.SetDocumentSequenceNumber(current_item.DocumentSequenceNumber());
 
-  impl->GetMainRenderFrame()->didNavigateWithinPage(
-      frame, item, is_new_navigation ? blink::WebStandardCommit
-                                     : blink::WebHistoryInertCommit,
+  impl->GetMainRenderFrame()->DidNavigateWithinPage(
+      frame, item,
+      is_new_navigation ? blink::kWebStandardCommit
+                        : blink::kWebHistoryInertCommit,
       content_initiated);
 }
 
@@ -645,8 +646,8 @@ void RenderViewTest::GoToOffset(int offset,
                                 const PageState& state) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
 
-  int history_list_length = impl->historyBackListCount() +
-                            impl->historyForwardListCount() + 1;
+  int history_list_length =
+      impl->HistoryBackListCount() + impl->HistoryForwardListCount() + 1;
   int pending_offset = offset + impl->history_list_offset_;
 
   CommonNavigationParams common_params(
@@ -670,7 +671,7 @@ void RenderViewTest::GoToOffset(int offset,
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(frame).Wait();
-  view_->GetWebView()->updateAllLifecyclePhases();
+  view_->GetWebView()->UpdateAllLifecyclePhases();
 }
 
 }  // namespace content

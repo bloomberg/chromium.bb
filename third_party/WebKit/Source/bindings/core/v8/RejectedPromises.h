@@ -25,21 +25,21 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
   USING_FAST_MALLOC(RejectedPromises);
 
  public:
-  static PassRefPtr<RejectedPromises> create() {
-    return adoptRef(new RejectedPromises());
+  static PassRefPtr<RejectedPromises> Create() {
+    return AdoptRef(new RejectedPromises());
   }
 
   ~RejectedPromises();
-  void dispose();
+  void Dispose();
 
-  void rejectedWithNoHandler(ScriptState*,
+  void RejectedWithNoHandler(ScriptState*,
                              v8::PromiseRejectMessage,
-                             const String& errorMessage,
+                             const String& error_message,
                              std::unique_ptr<SourceLocation>,
                              AccessControlStatus);
-  void handlerAdded(v8::PromiseRejectMessage);
+  void HandlerAdded(v8::PromiseRejectMessage);
 
-  void processQueue();
+  void ProcessQueue();
 
  private:
   class Message;
@@ -47,13 +47,13 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
   RejectedPromises();
 
   using MessageQueue = Deque<std::unique_ptr<Message>>;
-  std::unique_ptr<MessageQueue> createMessageQueue();
+  std::unique_ptr<MessageQueue> CreateMessageQueue();
 
-  void processQueueNow(std::unique_ptr<MessageQueue>);
-  void revokeNow(std::unique_ptr<Message>);
+  void ProcessQueueNow(std::unique_ptr<MessageQueue>);
+  void RevokeNow(std::unique_ptr<Message>);
 
-  MessageQueue m_queue;
-  Vector<std::unique_ptr<Message>> m_reportedAsErrors;
+  MessageQueue queue_;
+  Vector<std::unique_ptr<Message>> reported_as_errors_;
 };
 
 }  // namespace blink

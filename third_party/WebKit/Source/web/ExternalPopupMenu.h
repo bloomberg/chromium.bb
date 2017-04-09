@@ -61,37 +61,37 @@ class WEB_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
   // PopupMenuClient associated with this ExternalPopupMenu.
   // FIXME: public only for test access. Need to revert once gtest
   // helpers from chromium are available for blink.
-  static void getPopupMenuInfo(WebPopupMenuInfo&, HTMLSelectElement&);
-  static int toPopupMenuItemIndex(int index, HTMLSelectElement&);
-  static int toExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
+  static void GetPopupMenuInfo(WebPopupMenuInfo&, HTMLSelectElement&);
+  static int ToPopupMenuItemIndex(int index, HTMLSelectElement&);
+  static int ToExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   // PopupMenu methods:
-  void show() override;
-  void hide() override;
-  void updateFromElement(UpdateReason) override;
-  void disconnectClient() override;
+  void Show() override;
+  void Hide() override;
+  void UpdateFromElement(UpdateReason) override;
+  void DisconnectClient() override;
 
   // WebExternalPopupClient methods:
-  void didChangeSelection(int index) override;
-  void didAcceptIndex(int index) override;
-  void didAcceptIndices(const WebVector<int>& indices) override;
-  void didCancel() override;
+  void DidChangeSelection(int index) override;
+  void DidAcceptIndex(int index) override;
+  void DidAcceptIndices(const WebVector<int>& indices) override;
+  void DidCancel() override;
 
-  bool showInternal();
-  void dispatchEvent(TimerBase*);
-  void update();
+  bool ShowInternal();
+  void DispatchEvent(TimerBase*);
+  void Update();
 
-  Member<HTMLSelectElement> m_ownerElement;
-  Member<LocalFrame> m_localFrame;
-  WebViewImpl& m_webView;
-  std::unique_ptr<WebMouseEvent> m_syntheticEvent;
-  TaskRunnerTimer<ExternalPopupMenu> m_dispatchEventTimer;
+  Member<HTMLSelectElement> owner_element_;
+  Member<LocalFrame> local_frame_;
+  WebViewImpl& web_view_;
+  std::unique_ptr<WebMouseEvent> synthetic_event_;
+  TaskRunnerTimer<ExternalPopupMenu> dispatch_event_timer_;
   // The actual implementor of the show menu.
-  WebExternalPopupMenu* m_webExternalPopupMenu;
-  bool m_needsUpdate = false;
+  WebExternalPopupMenu* web_external_popup_menu_;
+  bool needs_update_ = false;
 };
 
 }  // namespace blink

@@ -44,15 +44,15 @@ class VTTTokenizer {
  public:
   explicit VTTTokenizer(const String& input);
 
-  bool nextToken(VTTToken&);
+  bool NextToken(VTTToken&);
 
-  inline bool shouldSkipNullCharacters() const { return true; }
+  inline bool ShouldSkipNullCharacters() const { return true; }
 
  private:
-  SegmentedString m_input;
+  SegmentedString input_;
 
   // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
-  InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;
+  InputStreamPreprocessor<VTTTokenizer> input_stream_preprocessor_;
 };
 
 }  // namespace blink

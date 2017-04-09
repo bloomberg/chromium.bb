@@ -42,27 +42,27 @@ class DOMStringMap : public GarbageCollected<DOMStringMap>,
   WTF_MAKE_NONCOPYABLE(DOMStringMap);
 
  public:
-  virtual void getNames(Vector<String>&) = 0;
+  virtual void GetNames(Vector<String>&) = 0;
   virtual String item(const String& name) = 0;
-  virtual bool contains(const String& name) = 0;
-  virtual void setItem(const String& name,
+  virtual bool Contains(const String& name) = 0;
+  virtual void SetItem(const String& name,
                        const String& value,
                        ExceptionState&) = 0;
-  virtual bool deleteItem(const String& name) = 0;
-  bool anonymousNamedSetter(const String& name,
+  virtual bool DeleteItem(const String& name) = 0;
+  bool AnonymousNamedSetter(const String& name,
                             const String& value,
-                            ExceptionState& exceptionState) {
-    setItem(name, value, exceptionState);
+                            ExceptionState& exception_state) {
+    SetItem(name, value, exception_state);
     return true;
   }
-  DeleteResult anonymousNamedDeleter(const AtomicString& name) {
-    bool knownProperty = deleteItem(name);
-    return knownProperty ? DeleteSuccess : DeleteUnknownProperty;
+  DeleteResult AnonymousNamedDeleter(const AtomicString& name) {
+    bool known_property = DeleteItem(name);
+    return known_property ? kDeleteSuccess : kDeleteUnknownProperty;
   }
-  void namedPropertyEnumerator(Vector<String>& names, ExceptionState&) {
-    getNames(names);
+  void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&) {
+    GetNames(names);
   }
-  bool namedPropertyQuery(const AtomicString&, ExceptionState&);
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

@@ -25,9 +25,9 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   // EventListener implementation.
   bool operator==(const EventListener&) const override;
 
-  void attach();
-  void detach();
-  void contextDestroyed();
+  void Attach();
+  void Detach();
+  void ContextDestroyed();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -38,20 +38,20 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   // EventListener implementation.
   void handleEvent(ExecutionContext*, Event*) override;
 
-  HTMLVideoElement& videoElement() { return *m_videoElement; }
+  HTMLVideoElement& VideoElement() { return *video_element_; }
 
-  void onCheckViewportIntersectionTimerFired(TimerBase*);
+  void OnCheckViewportIntersectionTimerFired(TimerBase*);
 
-  bool isVideoOrParentFullscreen();
+  bool IsVideoOrParentFullscreen();
 
-  static bool computeIsDominantVideoForTests(const IntRect& targetRect,
-                                             const IntRect& rootRect,
-                                             const IntRect& intersectionRect);
+  static bool ComputeIsDominantVideoForTests(const IntRect& target_rect,
+                                             const IntRect& root_rect,
+                                             const IntRect& intersection_rect);
 
   // `m_videoElement` owns |this|.
-  Member<HTMLVideoElement> m_videoElement;
+  Member<HTMLVideoElement> video_element_;
   TaskRunnerTimer<MediaCustomControlsFullscreenDetector>
-      m_checkViewportIntersectionTimer;
+      check_viewport_intersection_timer_;
 };
 
 }  // namespace blink

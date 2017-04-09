@@ -19,38 +19,38 @@ class CORE_EXPORT ConsoleMessage final
     : public GarbageCollectedFinalized<ConsoleMessage> {
  public:
   // Location must be non-null.
-  static ConsoleMessage* create(MessageSource,
+  static ConsoleMessage* Create(MessageSource,
                                 MessageLevel,
                                 const String& message,
                                 std::unique_ptr<SourceLocation>);
 
   // Shortcut when location is unknown. Captures current location.
-  static ConsoleMessage* create(MessageSource,
+  static ConsoleMessage* Create(MessageSource,
                                 MessageLevel,
                                 const String& message);
 
   // This method captures current location if available.
-  static ConsoleMessage* createForRequest(MessageSource,
+  static ConsoleMessage* CreateForRequest(MessageSource,
                                           MessageLevel,
                                           const String& message,
                                           const String& url,
-                                          unsigned long requestIdentifier);
+                                          unsigned long request_identifier);
 
   // This creates message from WorkerMessageSource.
-  static ConsoleMessage* createFromWorker(MessageLevel,
+  static ConsoleMessage* CreateFromWorker(MessageLevel,
                                           const String& message,
                                           std::unique_ptr<SourceLocation>,
-                                          const String& workerId);
+                                          const String& worker_id);
 
   ~ConsoleMessage();
 
-  SourceLocation* location() const;
-  unsigned long requestIdentifier() const;
-  double timestamp() const;
-  MessageSource source() const;
-  MessageLevel level() const;
-  const String& message() const;
-  const String& workerId() const;
+  SourceLocation* Location() const;
+  unsigned long RequestIdentifier() const;
+  double Timestamp() const;
+  MessageSource Source() const;
+  MessageLevel Level() const;
+  const String& Message() const;
+  const String& WorkerId() const;
 
   DECLARE_TRACE();
 
@@ -60,13 +60,13 @@ class CORE_EXPORT ConsoleMessage final
                  const String& message,
                  std::unique_ptr<SourceLocation>);
 
-  MessageSource m_source;
-  MessageLevel m_level;
-  String m_message;
-  std::unique_ptr<SourceLocation> m_location;
-  unsigned long m_requestIdentifier;
-  double m_timestamp;
-  String m_workerId;
+  MessageSource source_;
+  MessageLevel level_;
+  String message_;
+  std::unique_ptr<SourceLocation> location_;
+  unsigned long request_identifier_;
+  double timestamp_;
+  String worker_id_;
 };
 
 }  // namespace blink

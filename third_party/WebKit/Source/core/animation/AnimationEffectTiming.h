@@ -19,7 +19,7 @@ class CORE_EXPORT AnimationEffectTiming : public AnimationEffectTimingReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationEffectTiming* create(AnimationEffectReadOnly* parent);
+  static AnimationEffectTiming* Create(AnimationEffectReadOnly* parent);
 
   void setDelay(double);
   void setEndDelay(double);
@@ -27,11 +27,11 @@ class CORE_EXPORT AnimationEffectTiming : public AnimationEffectTimingReadOnly {
   void setIterationStart(double, ExceptionState&);
   void setIterations(double, ExceptionState&);
   void setDuration(const UnrestrictedDoubleOrString&, ExceptionState&);
-  void setPlaybackRate(double);
+  void SetPlaybackRate(double);
   void setDirection(String);
   void setEasing(String, ExceptionState&);
 
-  bool isAnimationEffectTiming() const override { return true; }
+  bool IsAnimationEffectTiming() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -42,8 +42,8 @@ class CORE_EXPORT AnimationEffectTiming : public AnimationEffectTimingReadOnly {
 DEFINE_TYPE_CASTS(AnimationEffectTiming,
                   AnimationEffectTimingReadOnly,
                   timing,
-                  timing->isAnimationEffectTiming(),
-                  timing.isAnimationEffectTiming());
+                  timing->IsAnimationEffectTiming(),
+                  timing.IsAnimationEffectTiming());
 
 }  // namespace blink
 

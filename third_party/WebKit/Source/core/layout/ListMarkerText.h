@@ -37,11 +37,11 @@ namespace ListMarkerText {
 
 // Returns the suffix character, such as '.', for the given list type and
 // item count number.
-UChar suffix(EListStyleType, int count);
+UChar Suffix(EListStyleType, int count);
 
 // Returns the text, such as arabic or roman numerals, for the given list
 // type and item count number. Does not include any suffix character.
-String text(EListStyleType, int count);
+String GetText(EListStyleType, int count);
 
 }  // namespace ListMarkerText
 

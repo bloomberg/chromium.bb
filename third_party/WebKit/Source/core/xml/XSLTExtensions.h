@@ -30,7 +30,7 @@
 
 namespace blink {
 
-void registerXSLTExtensions(xsltTransformContextPtr ctxt);
+void RegisterXSLTExtensions(xsltTransformContextPtr ctxt);
 }
 
 #endif

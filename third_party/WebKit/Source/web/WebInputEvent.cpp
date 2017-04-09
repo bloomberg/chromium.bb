@@ -43,28 +43,28 @@
 namespace blink {
 
 struct SameSizeAsWebInputEvent {
-  int inputData[8];
+  int input_data[8];
 };
 
 struct SameSizeAsWebKeyboardEvent : public SameSizeAsWebInputEvent {
-  int keyboardData[9];
+  int keyboard_data[9];
 };
 
 struct SameSizeAsWebMouseEvent : public SameSizeAsWebInputEvent {
-  int mouseData[15];
+  int mouse_data[15];
 };
 
 struct SameSizeAsWebMouseWheelEvent : public SameSizeAsWebMouseEvent {
-  int mousewheelData[12];
+  int mousewheel_data[12];
 };
 
 struct SameSizeAsWebGestureEvent : public SameSizeAsWebInputEvent {
-  int gestureData[14];
+  int gesture_data[14];
 };
 
 struct SameSizeAsWebTouchEvent : public SameSizeAsWebInputEvent {
-  WebTouchPoint touchPoints[WebTouchEvent::kTouchesLengthCap];
-  int touchData[4];
+  WebTouchPoint touch_points[WebTouchEvent::kTouchesLengthCap];
+  int touch_data[4];
 };
 
 static_assert(sizeof(WebInputEvent) == sizeof(SameSizeAsWebInputEvent),

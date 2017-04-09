@@ -728,7 +728,7 @@ bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
   if (params->options) {
     options.forward =
         params->options->backward ? !*params->options->backward : true;
-    options.matchCase =
+    options.match_case =
         params->options->match_case ? *params->options->match_case : false;
   }
 

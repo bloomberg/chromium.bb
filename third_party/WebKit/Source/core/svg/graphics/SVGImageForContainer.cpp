@@ -28,41 +28,41 @@
 namespace blink {
 
 IntSize SVGImageForContainer::size() const {
-  FloatSize scaledContainerSize(m_containerSize);
-  scaledContainerSize.scale(m_zoom);
-  return roundedIntSize(scaledContainerSize);
+  FloatSize scaled_container_size(container_size_);
+  scaled_container_size.Scale(zoom_);
+  return RoundedIntSize(scaled_container_size);
 }
 
-void SVGImageForContainer::draw(PaintCanvas* canvas,
+void SVGImageForContainer::Draw(PaintCanvas* canvas,
                                 const PaintFlags& flags,
-                                const FloatRect& dstRect,
-                                const FloatRect& srcRect,
+                                const FloatRect& dst_rect,
+                                const FloatRect& src_rect,
                                 RespectImageOrientationEnum,
                                 ImageClampingMode) {
-  m_image->drawForContainer(canvas, flags, m_containerSize, m_zoom, dstRect,
-                            srcRect, m_url);
+  image_->DrawForContainer(canvas, flags, container_size_, zoom_, dst_rect,
+                           src_rect, url_);
 }
 
-void SVGImageForContainer::drawPattern(GraphicsContext& context,
-                                       const FloatRect& srcRect,
+void SVGImageForContainer::DrawPattern(GraphicsContext& context,
+                                       const FloatRect& src_rect,
                                        const FloatSize& scale,
                                        const FloatPoint& phase,
                                        SkBlendMode op,
-                                       const FloatRect& dstRect,
-                                       const FloatSize& repeatSpacing) {
-  m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect,
-                                   scale, phase, op, dstRect, repeatSpacing,
-                                   m_url);
+                                       const FloatRect& dst_rect,
+                                       const FloatSize& repeat_spacing) {
+  image_->DrawPatternForContainer(context, container_size_, zoom_, src_rect,
+                                  scale, phase, op, dst_rect, repeat_spacing,
+                                  url_);
 }
 
-bool SVGImageForContainer::applyShader(PaintFlags& flags,
-                                       const SkMatrix& localMatrix) {
-  return m_image->applyShaderForContainer(m_containerSize, m_zoom, m_url, flags,
-                                          localMatrix);
+bool SVGImageForContainer::ApplyShader(PaintFlags& flags,
+                                       const SkMatrix& local_matrix) {
+  return image_->ApplyShaderForContainer(container_size_, zoom_, url_, flags,
+                                         local_matrix);
 }
 
-sk_sp<SkImage> SVGImageForContainer::imageForCurrentFrame() {
-  return m_image->imageForCurrentFrameForContainer(m_url, size());
+sk_sp<SkImage> SVGImageForContainer::ImageForCurrentFrame() {
+  return image_->ImageForCurrentFrameForContainer(url_, size());
 }
 
 }  // namespace blink

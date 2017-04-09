@@ -24,8 +24,8 @@ class RendererWebMIDIAccessorImpl
   ~RendererWebMIDIAccessorImpl() override;
 
   // blink::WebMIDIAccessor implementation.
-  void startSession() override;
-  void sendMIDIData(unsigned port_index,
+  void StartSession() override;
+  void SendMIDIData(unsigned port_index,
                     const unsigned char* data,
                     size_t length,
                     double timestamp) override;

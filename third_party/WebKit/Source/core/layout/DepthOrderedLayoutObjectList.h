@@ -21,16 +21,16 @@ class DepthOrderedLayoutObjectList {
   DepthOrderedLayoutObjectList();
   ~DepthOrderedLayoutObjectList();
 
-  void add(LayoutObject&);
-  void remove(LayoutObject&);
-  void clear();
+  void Add(LayoutObject&);
+  void Remove(LayoutObject&);
+  void Clear();
 
   int size() const;
-  bool isEmpty() const;
+  bool IsEmpty() const;
 
   struct LayoutObjectWithDepth {
-    LayoutObjectWithDepth(LayoutObject* inObject)
-        : object(inObject), depth(determineDepth(inObject)) {}
+    LayoutObjectWithDepth(LayoutObject* in_object)
+        : object(in_object), depth(DetermineDepth(in_object)) {}
 
     LayoutObjectWithDepth() : object(nullptr), depth(0) {}
 
@@ -46,14 +46,14 @@ class DepthOrderedLayoutObjectList {
     }
 
    private:
-    static unsigned determineDepth(LayoutObject*);
+    static unsigned DetermineDepth(LayoutObject*);
   };
 
-  const HashSet<LayoutObject*>& unordered() const;
-  const Vector<LayoutObjectWithDepth>& ordered();
+  const HashSet<LayoutObject*>& Unordered() const;
+  const Vector<LayoutObjectWithDepth>& Ordered();
 
  private:
-  DepthOrderedLayoutObjectListData* m_data;
+  DepthOrderedLayoutObjectListData* data_;
 };
 
 }  // namespace blink

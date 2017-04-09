@@ -15,18 +15,18 @@
 namespace webcrypto {
 
 const EVP_MD* GetDigest(const blink::WebCryptoAlgorithm& hash_algorithm) {
-  return GetDigest(hash_algorithm.id());
+  return GetDigest(hash_algorithm.Id());
 }
 
 const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
   switch (id) {
-    case blink::WebCryptoAlgorithmIdSha1:
+    case blink::kWebCryptoAlgorithmIdSha1:
       return EVP_sha1();
-    case blink::WebCryptoAlgorithmIdSha256:
+    case blink::kWebCryptoAlgorithmIdSha256:
       return EVP_sha256();
-    case blink::WebCryptoAlgorithmIdSha384:
+    case blink::kWebCryptoAlgorithmIdSha384:
       return EVP_sha384();
-    case blink::WebCryptoAlgorithmIdSha512:
+    case blink::kWebCryptoAlgorithmIdSha512:
       return EVP_sha512();
     default:
       return NULL;

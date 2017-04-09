@@ -32,7 +32,7 @@ namespace blink {
 
 class AppendNodeCommand final : public SimpleEditCommand {
  public:
-  static AppendNodeCommand* create(ContainerNode* parent, Node* node) {
+  static AppendNodeCommand* Create(ContainerNode* parent, Node* node) {
     return new AppendNodeCommand(parent, node);
   }
 
@@ -41,11 +41,11 @@ class AppendNodeCommand final : public SimpleEditCommand {
  private:
   AppendNodeCommand(ContainerNode* parent, Node*);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
 
-  Member<ContainerNode> m_parent;
-  Member<Node> m_node;
+  Member<ContainerNode> parent_;
+  Member<Node> node_;
 };
 
 }  // namespace blink

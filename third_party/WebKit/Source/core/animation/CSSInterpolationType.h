@@ -15,58 +15,58 @@ class PropertyRegistration;
 
 class CSSInterpolationType : public InterpolationType {
  public:
-  void setCustomPropertyRegistration(const PropertyRegistration&);
+  void SetCustomPropertyRegistration(const PropertyRegistration&);
 
  protected:
   CSSInterpolationType(PropertyHandle);
 
-  CSSPropertyID cssProperty() const { return getProperty().cssProperty(); }
+  CSSPropertyID CssProperty() const { return GetProperty().CssProperty(); }
 
-  InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
+  InterpolationValue MaybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const final;
-  virtual InterpolationValue maybeConvertNeutral(
+  virtual InterpolationValue MaybeConvertNeutral(
       const InterpolationValue& underlying,
       ConversionCheckers&) const = 0;
-  virtual InterpolationValue maybeConvertInitial(const StyleResolverState&,
+  virtual InterpolationValue MaybeConvertInitial(const StyleResolverState&,
                                                  ConversionCheckers&) const = 0;
-  virtual InterpolationValue maybeConvertInherit(const StyleResolverState&,
+  virtual InterpolationValue MaybeConvertInherit(const StyleResolverState&,
                                                  ConversionCheckers&) const = 0;
-  virtual InterpolationValue maybeConvertValue(const CSSValue&,
+  virtual InterpolationValue MaybeConvertValue(const CSSValue&,
                                                const StyleResolverState*,
                                                ConversionCheckers&) const = 0;
-  virtual void additiveKeyframeHook(InterpolationValue&) const {}
+  virtual void AdditiveKeyframeHook(InterpolationValue&) const {}
 
-  InterpolationValue maybeConvertUnderlyingValue(
+  InterpolationValue MaybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const final;
-  virtual InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+  virtual InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const = 0;
 
-  void apply(const InterpolableValue&,
+  void Apply(const InterpolableValue&,
              const NonInterpolableValue*,
              InterpolationEnvironment&) const final;
-  virtual void applyStandardPropertyValue(const InterpolableValue&,
+  virtual void ApplyStandardPropertyValue(const InterpolableValue&,
                                           const NonInterpolableValue*,
                                           StyleResolverState&) const = 0;
 
  private:
-  InterpolationValue maybeConvertSingleInternal(
+  InterpolationValue MaybeConvertSingleInternal(
       const PropertySpecificKeyframe&,
       const InterpolationEnvironment&,
       const InterpolationValue& underlying,
       ConversionCheckers&) const;
 
-  InterpolationValue maybeConvertCustomPropertyDeclaration(
+  InterpolationValue MaybeConvertCustomPropertyDeclaration(
       const CSSCustomPropertyDeclaration&,
       const StyleResolverState&,
       ConversionCheckers&) const;
-  InterpolationValue maybeConvertCustomPropertyDeclarationInternal(
+  InterpolationValue MaybeConvertCustomPropertyDeclarationInternal(
       const CSSCustomPropertyDeclaration&,
       const StyleResolverState&,
       ConversionCheckers&) const;
 
-  virtual const CSSValue* createCSSValue(const InterpolableValue&,
+  virtual const CSSValue* CreateCSSValue(const InterpolableValue&,
                                          const NonInterpolableValue*,
                                          const StyleResolverState&) const {
     // TODO(alancutter): Implement this for all subclasses and make this an
@@ -76,11 +76,11 @@ class CSSInterpolationType : public InterpolationType {
     return nullptr;
   }
 
-  void applyCustomPropertyValue(const InterpolableValue&,
+  void ApplyCustomPropertyValue(const InterpolableValue&,
                                 const NonInterpolableValue*,
                                 StyleResolverState&) const;
 
-  WeakPersistent<const PropertyRegistration> m_registration;
+  WeakPersistent<const PropertyRegistration> registration_;
 };
 
 }  // namespace blink

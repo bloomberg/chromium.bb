@@ -46,32 +46,33 @@ namespace blink {
 class SVGAnimatedIntegerOptionalInteger
     : public SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger> {
  public:
-  static SVGAnimatedIntegerOptionalInteger* create(
-      SVGElement* contextElement,
-      const QualifiedName& attributeName,
-      float initialFirstValue = 0,
-      float initialSecondValue = 0) {
+  static SVGAnimatedIntegerOptionalInteger* Create(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      float initial_first_value = 0,
+      float initial_second_value = 0) {
     return new SVGAnimatedIntegerOptionalInteger(
-        contextElement, attributeName, initialFirstValue, initialSecondValue);
+        context_element, attribute_name, initial_first_value,
+        initial_second_value);
   }
 
-  void setAnimatedValue(SVGPropertyBase*) override;
-  bool needsSynchronizeAttribute() override;
-  void animationEnded() override;
+  void SetAnimatedValue(SVGPropertyBase*) override;
+  bool NeedsSynchronizeAttribute() override;
+  void AnimationEnded() override;
 
-  SVGAnimatedInteger* firstInteger() { return m_firstInteger.get(); }
-  SVGAnimatedInteger* secondInteger() { return m_secondInteger.get(); }
+  SVGAnimatedInteger* FirstInteger() { return first_integer_.Get(); }
+  SVGAnimatedInteger* SecondInteger() { return second_integer_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement,
-                                    const QualifiedName& attributeName,
-                                    float initialFirstValue,
-                                    float initialSecondValue);
+  SVGAnimatedIntegerOptionalInteger(SVGElement* context_element,
+                                    const QualifiedName& attribute_name,
+                                    float initial_first_value,
+                                    float initial_second_value);
 
-  Member<SVGAnimatedInteger> m_firstInteger;
-  Member<SVGAnimatedInteger> m_secondInteger;
+  Member<SVGAnimatedInteger> first_integer_;
+  Member<SVGAnimatedInteger> second_integer_;
 };
 
 }  // namespace blink

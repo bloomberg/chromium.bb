@@ -122,39 +122,39 @@ ScopedJavaLocalRef<jobject> CreateJavaRect(
 
 int ToGestureEventType(WebInputEvent::Type type) {
   switch (type) {
-    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::kGestureScrollBegin:
       return GESTURE_EVENT_TYPE_SCROLL_START;
-    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::kGestureScrollEnd:
       return GESTURE_EVENT_TYPE_SCROLL_END;
-    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::kGestureScrollUpdate:
       return GESTURE_EVENT_TYPE_SCROLL_BY;
-    case WebInputEvent::GestureFlingStart:
+    case WebInputEvent::kGestureFlingStart:
       return GESTURE_EVENT_TYPE_FLING_START;
-    case WebInputEvent::GestureFlingCancel:
+    case WebInputEvent::kGestureFlingCancel:
       return GESTURE_EVENT_TYPE_FLING_CANCEL;
-    case WebInputEvent::GestureShowPress:
+    case WebInputEvent::kGestureShowPress:
       return GESTURE_EVENT_TYPE_SHOW_PRESS;
-    case WebInputEvent::GestureTap:
+    case WebInputEvent::kGestureTap:
       return GESTURE_EVENT_TYPE_SINGLE_TAP_CONFIRMED;
-    case WebInputEvent::GestureTapUnconfirmed:
+    case WebInputEvent::kGestureTapUnconfirmed:
       return GESTURE_EVENT_TYPE_SINGLE_TAP_UNCONFIRMED;
-    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::kGestureTapDown:
       return GESTURE_EVENT_TYPE_TAP_DOWN;
-    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::kGestureTapCancel:
       return GESTURE_EVENT_TYPE_TAP_CANCEL;
-    case WebInputEvent::GestureDoubleTap:
+    case WebInputEvent::kGestureDoubleTap:
       return GESTURE_EVENT_TYPE_DOUBLE_TAP;
-    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::kGestureLongPress:
       return GESTURE_EVENT_TYPE_LONG_PRESS;
-    case WebInputEvent::GestureLongTap:
+    case WebInputEvent::kGestureLongTap:
       return GESTURE_EVENT_TYPE_LONG_TAP;
-    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::kGesturePinchBegin:
       return GESTURE_EVENT_TYPE_PINCH_BEGIN;
-    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::kGesturePinchEnd:
       return GESTURE_EVENT_TYPE_PINCH_END;
-    case WebInputEvent::GesturePinchUpdate:
+    case WebInputEvent::kGesturePinchUpdate:
       return GESTURE_EVENT_TYPE_PINCH_BY;
-    case WebInputEvent::GestureTwoFingerTap:
+    case WebInputEvent::kGestureTwoFingerTap:
     default:
       NOTREACHED() << "Invalid source gesture type: "
                    << WebInputEvent::GetName(type);
@@ -515,8 +515,8 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
   if (j_obj.is_null())
     return;
 
-  switch (event.type()) {
-    case WebInputEvent::GestureFlingStart:
+  switch (event.GetType()) {
+    case WebInputEvent::kGestureFlingStart:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
         // The view expects the fling velocity in pixels/s.
         Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj);
@@ -527,30 +527,30 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
         Java_ContentViewCore_onScrollEndEventAck(env, j_obj);
       }
       break;
-    case WebInputEvent::GestureFlingCancel:
+    case WebInputEvent::kGestureFlingCancel:
       Java_ContentViewCore_onFlingCancelEventAck(env, j_obj);
       break;
-    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::kGestureScrollBegin:
       Java_ContentViewCore_onScrollBeginEventAck(env, j_obj);
       break;
-    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::kGestureScrollUpdate:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
         Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj);
       break;
-    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::kGestureScrollEnd:
       Java_ContentViewCore_onScrollEndEventAck(env, j_obj);
       break;
-    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::kGesturePinchBegin:
       Java_ContentViewCore_onPinchBeginEventAck(env, j_obj);
       break;
-    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::kGesturePinchEnd:
       Java_ContentViewCore_onPinchEndEventAck(env, j_obj);
       break;
-    case WebInputEvent::GestureTap:
+    case WebInputEvent::kGestureTap:
       Java_ContentViewCore_onSingleTapEventAck(
           env, j_obj, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
       break;
-    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::kGestureLongPress:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
         Java_ContentViewCore_performLongPressHapticFeedback(env, j_obj);
       break;
@@ -560,10 +560,10 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
 }
 
 bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
-  if (event.type() != WebInputEvent::GestureTap &&
-      event.type() != WebInputEvent::GestureDoubleTap &&
-      event.type() != WebInputEvent::GestureLongTap &&
-      event.type() != WebInputEvent::GestureLongPress)
+  if (event.GetType() != WebInputEvent::kGestureTap &&
+      event.GetType() != WebInputEvent::kGestureDoubleTap &&
+      event.GetType() != WebInputEvent::kGestureLongTap &&
+      event.GetType() != WebInputEvent::kGestureLongPress)
     return false;
 
   JNIEnv* env = AttachCurrentThread();
@@ -573,7 +573,7 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
 
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
-  int gesture_type = ToGestureEventType(event.type());
+  int gesture_type = ToGestureEventType(event.GetType());
   return Java_ContentViewCore_filterTapOrPressEvent(env, j_obj, gesture_type,
                                                     gesture.x * dpi_scale(),
                                                     gesture.y * dpi_scale());
@@ -888,11 +888,11 @@ void ContentViewCoreImpl::ScrollBegin(JNIEnv* env,
                                       jfloat hintx,
                                       jfloat hinty,
                                       jboolean target_viewport) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureScrollBegin, time_ms, x, y);
-  event.data.scrollBegin.deltaXHint = hintx / dpi_scale();
-  event.data.scrollBegin.deltaYHint = hinty / dpi_scale();
-  event.data.scrollBegin.targetViewport = target_viewport;
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGestureScrollBegin, time_ms, x, y);
+  event.data.scroll_begin.delta_x_hint = hintx / dpi_scale();
+  event.data.scroll_begin.delta_y_hint = hinty / dpi_scale();
+  event.data.scroll_begin.target_viewport = target_viewport;
 
   SendGestureEvent(event);
 }
@@ -900,8 +900,8 @@ void ContentViewCoreImpl::ScrollBegin(JNIEnv* env,
 void ContentViewCoreImpl::ScrollEnd(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jlong time_ms) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGestureScrollEnd, time_ms, 0, 0);
   SendGestureEvent(event);
 }
 
@@ -912,10 +912,10 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env,
                                    jfloat y,
                                    jfloat dx,
                                    jfloat dy) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureScrollUpdate, time_ms, x, y);
-  event.data.scrollUpdate.deltaX = -dx / dpi_scale();
-  event.data.scrollUpdate.deltaY = -dy / dpi_scale();
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGestureScrollUpdate, time_ms, x, y);
+  event.data.scroll_update.delta_x = -dx / dpi_scale();
+  event.data.scroll_update.delta_y = -dy / dpi_scale();
 
   SendGestureEvent(event);
 }
@@ -928,11 +928,11 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env,
                                      jfloat vx,
                                      jfloat vy,
                                      jboolean target_viewport) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureFlingStart, time_ms, x, y);
-  event.data.flingStart.velocityX = vx / dpi_scale();
-  event.data.flingStart.velocityY = vy / dpi_scale();
-  event.data.flingStart.targetViewport = target_viewport;
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGestureFlingStart, time_ms, x, y);
+  event.data.fling_start.velocity_x = vx / dpi_scale();
+  event.data.fling_start.velocity_y = vy / dpi_scale();
+  event.data.fling_start.target_viewport = target_viewport;
 
   SendGestureEvent(event);
 }
@@ -940,9 +940,9 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env,
 void ContentViewCoreImpl::FlingCancel(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj,
                                       jlong time_ms) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
-  event.data.flingCancel.preventBoosting = true;
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGestureFlingCancel, time_ms, 0, 0);
+  event.data.fling_cancel.prevent_boosting = true;
 
   SendGestureEvent(event);
 }
@@ -952,11 +952,11 @@ void ContentViewCoreImpl::DoubleTap(JNIEnv* env,
                                     jlong time_ms,
                                     jfloat x,
                                     jfloat y) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GestureDoubleTap, time_ms, x, y);
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGestureDoubleTap, time_ms, x, y);
   // Set the tap count to 1 even for DoubleTap, in order to be consistent with
   // double tap behavior on a mobile viewport. See crbug.com/234986 for context.
-  event.data.tap.tapCount = 1;
+  event.data.tap.tap_count = 1;
 
   SendGestureEvent(event);
 }
@@ -982,16 +982,16 @@ void ContentViewCoreImpl::PinchBegin(JNIEnv* env,
                                      jlong time_ms,
                                      jfloat x,
                                      jfloat y) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GesturePinchBegin, time_ms, x, y);
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGesturePinchBegin, time_ms, x, y);
   SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchEnd(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    jlong time_ms) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
+  WebGestureEvent event =
+      MakeGestureEvent(WebInputEvent::kGesturePinchEnd, time_ms, 0, 0);
   SendGestureEvent(event);
 }
 
@@ -1001,9 +1001,9 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env,
                                   jfloat anchor_x,
                                   jfloat anchor_y,
                                   jfloat delta) {
-  WebGestureEvent event = MakeGestureEvent(
-      WebInputEvent::GesturePinchUpdate, time_ms, anchor_x, anchor_y);
-  event.data.pinchUpdate.scale = delta;
+  WebGestureEvent event = MakeGestureEvent(WebInputEvent::kGesturePinchUpdate,
+                                           time_ms, anchor_x, anchor_y);
+  event.data.pinch_update.scale = delta;
 
   SendGestureEvent(event);
 }

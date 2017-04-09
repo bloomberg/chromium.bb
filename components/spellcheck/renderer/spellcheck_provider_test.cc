@@ -21,12 +21,12 @@ FakeTextCheckingCompletion::FakeTextCheckingCompletion()
 
 FakeTextCheckingCompletion::~FakeTextCheckingCompletion() {}
 
-void FakeTextCheckingCompletion::didFinishCheckingText(
+void FakeTextCheckingCompletion::DidFinishCheckingText(
     const blink::WebVector<blink::WebTextCheckingResult>& results) {
   ++completion_count_;
 }
 
-void FakeTextCheckingCompletion::didCancelCheckingText() {
+void FakeTextCheckingCompletion::DidCancelCheckingText() {
   ++completion_count_;
   ++cancellation_count_;
 }
@@ -84,9 +84,8 @@ void TestingSpellCheckProvider::OnCallSpellingService(
   text_check_completions_.Remove(identifier);
   std::vector<blink::WebTextCheckingResult> results;
   results.push_back(blink::WebTextCheckingResult(
-      blink::WebTextDecorationTypeSpelling,
-      0, 5, blink::WebString("hello")));
-  completion->didFinishCheckingText(results);
+      blink::kWebTextDecorationTypeSpelling, 0, 5, blink::WebString("hello")));
+  completion->DidFinishCheckingText(results);
   last_request_ = text;
   last_results_ = results;
 #endif

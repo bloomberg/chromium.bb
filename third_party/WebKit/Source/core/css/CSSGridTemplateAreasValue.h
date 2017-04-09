@@ -39,37 +39,39 @@ namespace blink {
 
 class CSSGridTemplateAreasValue : public CSSValue {
  public:
-  static CSSGridTemplateAreasValue* create(const NamedGridAreaMap& gridAreaMap,
-                                           size_t rowCount,
-                                           size_t columnCount) {
-    return new CSSGridTemplateAreasValue(gridAreaMap, rowCount, columnCount);
+  static CSSGridTemplateAreasValue* Create(
+      const NamedGridAreaMap& grid_area_map,
+      size_t row_count,
+      size_t column_count) {
+    return new CSSGridTemplateAreasValue(grid_area_map, row_count,
+                                         column_count);
   }
   ~CSSGridTemplateAreasValue() {}
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  const NamedGridAreaMap& gridAreaMap() const { return m_gridAreaMap; }
-  size_t rowCount() const { return m_rowCount; }
-  size_t columnCount() const { return m_columnCount; }
+  const NamedGridAreaMap& GridAreaMap() const { return grid_area_map_; }
+  size_t RowCount() const { return row_count_; }
+  size_t ColumnCount() const { return column_count_; }
 
-  bool equals(const CSSGridTemplateAreasValue&) const;
+  bool Equals(const CSSGridTemplateAreasValue&) const;
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    CSSValue::traceAfterDispatch(visitor);
+    CSSValue::TraceAfterDispatch(visitor);
   }
 
  private:
   CSSGridTemplateAreasValue(const NamedGridAreaMap&,
-                            size_t rowCount,
-                            size_t columnCount);
+                            size_t row_count,
+                            size_t column_count);
 
-  NamedGridAreaMap m_gridAreaMap;
-  size_t m_rowCount;
-  size_t m_columnCount;
+  NamedGridAreaMap grid_area_map_;
+  size_t row_count_;
+  size_t column_count_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateAreasValue,
-                            isGridTemplateAreasValue());
+                            IsGridTemplateAreasValue());
 
 }  // namespace blink
 

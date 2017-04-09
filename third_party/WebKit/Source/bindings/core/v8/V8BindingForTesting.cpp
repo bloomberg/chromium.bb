@@ -10,71 +10,71 @@
 
 namespace blink {
 
-PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(
+PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::Create(
     v8::Local<v8::Context> context,
     PassRefPtr<DOMWrapperWorld> world) {
-  RefPtr<ScriptStateForTesting> scriptState =
-      adoptRef(new ScriptStateForTesting(context, std::move(world)));
+  RefPtr<ScriptStateForTesting> script_state =
+      AdoptRef(new ScriptStateForTesting(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
   // is alive.  This is deref()ed in the weak callback of the v8::Context.
-  scriptState->ref();
-  return scriptState;
+  script_state->Ref();
+  return script_state;
 }
 
 ScriptStateForTesting::ScriptStateForTesting(v8::Local<v8::Context> context,
                                              PassRefPtr<DOMWrapperWorld> world)
     : ScriptState(context, std::move(world)) {}
 
-ExecutionContext* ScriptStateForTesting::getExecutionContext() const {
-  return m_executionContext;
+ExecutionContext* ScriptStateForTesting::GetExecutionContext() const {
+  return execution_context_;
 }
 
 V8TestingScope::V8TestingScope()
-    : m_holder(DummyPageHolder::create()),
-      m_handleScope(isolate()),
-      m_context(getScriptState()->context()),
-      m_contextScope(context()),
-      m_tryCatch(isolate()) {
-  frame().settings()->setScriptEnabled(true);
+    : holder_(DummyPageHolder::Create()),
+      handle_scope_(GetIsolate()),
+      context_(GetScriptState()->GetContext()),
+      context_scope_(GetContext()),
+      try_catch_(GetIsolate()) {
+  GetFrame().GetSettings()->SetScriptEnabled(true);
 }
 
-ScriptState* V8TestingScope::getScriptState() const {
-  return toScriptStateForMainWorld(m_holder->document().frame());
+ScriptState* V8TestingScope::GetScriptState() const {
+  return ToScriptStateForMainWorld(holder_->GetDocument().GetFrame());
 }
 
-ExecutionContext* V8TestingScope::getExecutionContext() const {
-  return getScriptState()->getExecutionContext();
+ExecutionContext* V8TestingScope::GetExecutionContext() const {
+  return GetScriptState()->GetExecutionContext();
 }
 
-v8::Isolate* V8TestingScope::isolate() const {
-  return getScriptState()->isolate();
+v8::Isolate* V8TestingScope::GetIsolate() const {
+  return GetScriptState()->GetIsolate();
 }
 
-v8::Local<v8::Context> V8TestingScope::context() const {
-  return m_context;
+v8::Local<v8::Context> V8TestingScope::GetContext() const {
+  return context_;
 }
 
-ExceptionState& V8TestingScope::getExceptionState() {
-  return m_exceptionState;
+ExceptionState& V8TestingScope::GetExceptionState() {
+  return exception_state_;
 }
 
-Page& V8TestingScope::page() {
-  return m_holder->page();
+Page& V8TestingScope::GetPage() {
+  return holder_->GetPage();
 }
 
-LocalFrame& V8TestingScope::frame() {
-  return m_holder->frame();
+LocalFrame& V8TestingScope::GetFrame() {
+  return holder_->GetFrame();
 }
 
-Document& V8TestingScope::document() {
-  return m_holder->document();
+Document& V8TestingScope::GetDocument() {
+  return holder_->GetDocument();
 }
 
 V8TestingScope::~V8TestingScope() {
   // TODO(yukishiino): We put this statement here to clear an exception from
   // the isolate.  Otherwise, the leak detector complains.  Really mysterious
   // hack.
-  v8::Function::New(context(), nullptr);
+  v8::Function::New(GetContext(), nullptr);
 }
 
 }  // namespace blink

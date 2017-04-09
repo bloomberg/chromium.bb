@@ -21,9 +21,9 @@ const float kMinAxisResetValue = 0.1f;
 }  // namespace
 
 GamepadPadStateProvider::GamepadPadStateProvider() {
-  pad_states_.reset(new PadState[WebGamepads::itemsLengthCap]);
+  pad_states_.reset(new PadState[WebGamepads::kItemsLengthCap]);
 
-  for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i)
+  for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i)
     ClearPadState(pad_states_.get()[i]);
 }
 
@@ -33,7 +33,7 @@ PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
                                                int source_id) {
   // Check to see if the device already has a reserved slot
   PadState* empty_slot = nullptr;
-  for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
+  for (size_t i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
     PadState& state = pad_states_.get()[i];
     if (state.source == source && state.source_id == source_id) {
       // Retrieving the pad state marks this gamepad as active.
@@ -94,9 +94,9 @@ void GamepadPadStateProvider::MapAndSanitizeGamepadData(PadState* pad_state,
   // never reported being at rest, and the value will be forced to zero.
 
   // We can skip axis sanitation if all available axes have been masked.
-  uint32_t full_axis_mask = (1 << pad->axesLength) - 1;
+  uint32_t full_axis_mask = (1 << pad->axes_length) - 1;
   if (pad_state->axis_mask != full_axis_mask) {
-    for (size_t axis = 0; axis < pad->axesLength; ++axis) {
+    for (size_t axis = 0; axis < pad->axes_length; ++axis) {
       if (!(pad_state->axis_mask & 1 << axis)) {
         if (fabs(pad->axes[axis]) < kMinAxisResetValue) {
           pad_state->axis_mask |= 1 << axis;
@@ -108,9 +108,9 @@ void GamepadPadStateProvider::MapAndSanitizeGamepadData(PadState* pad_state,
   }
 
   // We can skip button sanitation if all available buttons have been masked.
-  uint32_t full_button_mask = (1 << pad->buttonsLength) - 1;
+  uint32_t full_button_mask = (1 << pad->buttons_length) - 1;
   if (pad_state->button_mask != full_button_mask) {
-    for (size_t button = 0; button < pad->buttonsLength; ++button) {
+    for (size_t button = 0; button < pad->buttons_length; ++button) {
       if (!(pad_state->button_mask & 1 << button)) {
         if (!pad->buttons[button].pressed) {
           pad_state->button_mask |= 1 << button;

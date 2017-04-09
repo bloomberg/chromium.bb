@@ -14,16 +14,16 @@ namespace blink {
 PaymentAppServiceWorkerRegistration::~PaymentAppServiceWorkerRegistration() {}
 
 // static
-PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::from(
+PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::From(
     ServiceWorkerRegistration& registration) {
   PaymentAppServiceWorkerRegistration* supplement =
       static_cast<PaymentAppServiceWorkerRegistration*>(
-          Supplement<ServiceWorkerRegistration>::from(registration,
-                                                      supplementName()));
+          Supplement<ServiceWorkerRegistration>::From(registration,
+                                                      SupplementName()));
 
   if (!supplement) {
     supplement = new PaymentAppServiceWorkerRegistration(&registration);
-    provideTo(registration, supplementName(), supplement);
+    ProvideTo(registration, SupplementName(), supplement);
   }
 
   return *supplement;
@@ -31,32 +31,32 @@ PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::from(
 
 // static
 PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
-    ScriptState* scriptState,
+    ScriptState* script_state,
     ServiceWorkerRegistration& registration) {
-  return PaymentAppServiceWorkerRegistration::from(registration)
-      .paymentManager(scriptState);
+  return PaymentAppServiceWorkerRegistration::From(registration)
+      .paymentManager(script_state);
 }
 
 PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
-    ScriptState* scriptState) {
-  if (!m_paymentManager) {
-    m_paymentManager = PaymentManager::create(m_registration);
+    ScriptState* script_state) {
+  if (!payment_manager_) {
+    payment_manager_ = PaymentManager::Create(registration_);
   }
-  return m_paymentManager.get();
+  return payment_manager_.Get();
 }
 
 DEFINE_TRACE(PaymentAppServiceWorkerRegistration) {
-  visitor->trace(m_registration);
-  visitor->trace(m_paymentManager);
-  Supplement<ServiceWorkerRegistration>::trace(visitor);
+  visitor->Trace(registration_);
+  visitor->Trace(payment_manager_);
+  Supplement<ServiceWorkerRegistration>::Trace(visitor);
 }
 
 PaymentAppServiceWorkerRegistration::PaymentAppServiceWorkerRegistration(
     ServiceWorkerRegistration* registration)
-    : m_registration(registration) {}
+    : registration_(registration) {}
 
 // static
-const char* PaymentAppServiceWorkerRegistration::supplementName() {
+const char* PaymentAppServiceWorkerRegistration::SupplementName() {
   return "PaymentAppServiceWorkerRegistration";
 }
 

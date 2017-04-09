@@ -18,31 +18,31 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSPositionValue* create(const CSSLengthValue* x,
+  static CSSPositionValue* Create(const CSSLengthValue* x,
                                   const CSSLengthValue* y) {
     return new CSSPositionValue(x, y);
   }
 
   // Bindings require a non const return value.
-  CSSLengthValue* x() const { return const_cast<CSSLengthValue*>(m_x.get()); }
-  CSSLengthValue* y() const { return const_cast<CSSLengthValue*>(m_y.get()); }
+  CSSLengthValue* x() const { return const_cast<CSSLengthValue*>(x_.Get()); }
+  CSSLengthValue* y() const { return const_cast<CSSLengthValue*>(y_.Get()); }
 
-  StyleValueType type() const override { return PositionType; }
+  StyleValueType GetType() const override { return kPositionType; }
 
-  CSSValue* toCSSValue() const override;
+  CSSValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_x);
-    visitor->trace(m_y);
-    CSSStyleValue::trace(visitor);
+    visitor->Trace(x_);
+    visitor->Trace(y_);
+    CSSStyleValue::Trace(visitor);
   }
 
  protected:
   CSSPositionValue(const CSSLengthValue* x, const CSSLengthValue* y)
-      : m_x(x), m_y(y) {}
+      : x_(x), y_(y) {}
 
-  Member<const CSSLengthValue> m_x;
-  Member<const CSSLengthValue> m_y;
+  Member<const CSSLengthValue> x_;
+  Member<const CSSLengthValue> y_;
 };
 
 }  // namespace blink

@@ -21,7 +21,7 @@ class OriginTrialsTest : public GarbageCollectedFinalized<OriginTrialsTest>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static OriginTrialsTest* create() { return new OriginTrialsTest(); }
+  static OriginTrialsTest* Create() { return new OriginTrialsTest(); }
   virtual ~OriginTrialsTest() = default;
 
   bool normalAttribute();

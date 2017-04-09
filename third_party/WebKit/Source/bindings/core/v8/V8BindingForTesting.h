@@ -22,13 +22,13 @@ class Page;
 
 class ScriptStateForTesting : public ScriptState {
  public:
-  static PassRefPtr<ScriptStateForTesting> create(v8::Local<v8::Context>,
+  static PassRefPtr<ScriptStateForTesting> Create(v8::Local<v8::Context>,
                                                   PassRefPtr<DOMWrapperWorld>);
-  ExecutionContext* getExecutionContext() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
  private:
   ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-  Persistent<ExecutionContext> m_executionContext;
+  Persistent<ExecutionContext> execution_context_;
 };
 
 class V8TestingScope {
@@ -36,23 +36,23 @@ class V8TestingScope {
 
  public:
   V8TestingScope();
-  ScriptState* getScriptState() const;
-  ExecutionContext* getExecutionContext() const;
-  v8::Isolate* isolate() const;
-  v8::Local<v8::Context> context() const;
-  ExceptionState& getExceptionState();
-  Page& page();
-  LocalFrame& frame();
-  Document& document();
+  ScriptState* GetScriptState() const;
+  ExecutionContext* GetExecutionContext() const;
+  v8::Isolate* GetIsolate() const;
+  v8::Local<v8::Context> GetContext() const;
+  ExceptionState& GetExceptionState();
+  Page& GetPage();
+  LocalFrame& GetFrame();
+  Document& GetDocument();
   ~V8TestingScope();
 
  private:
-  std::unique_ptr<DummyPageHolder> m_holder;
-  v8::HandleScope m_handleScope;
-  v8::Local<v8::Context> m_context;
-  v8::Context::Scope m_contextScope;
-  v8::TryCatch m_tryCatch;
-  DummyExceptionStateForTesting m_exceptionState;
+  std::unique_ptr<DummyPageHolder> holder_;
+  v8::HandleScope handle_scope_;
+  v8::Local<v8::Context> context_;
+  v8::Context::Scope context_scope_;
+  v8::TryCatch try_catch_;
+  DummyExceptionStateForTesting exception_state_;
 };
 
 }  // namespace blink

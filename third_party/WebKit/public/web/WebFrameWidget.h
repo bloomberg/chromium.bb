@@ -46,27 +46,27 @@ class WebWidgetClient;
 
 class WebFrameWidget : public WebWidget {
  public:
-  BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebLocalFrame*);
+  BLINK_EXPORT static WebFrameWidget* Create(WebWidgetClient*, WebLocalFrame*);
   // Creates a frame widget for a WebView. Temporary helper to help transition
   // away from WebView inheriting WebWidget.
   // TODO(dcheng): Remove once transition is complete.
-  BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*,
+  BLINK_EXPORT static WebFrameWidget* Create(WebWidgetClient*,
                                              WebView*,
-                                             WebLocalFrame* mainFrame);
+                                             WebLocalFrame* main_frame);
 
   // Sets the visibility of the WebFrameWidget.
   // We still track page-level visibility, but additionally we need to notify a
   // WebFrameWidget when its owning RenderWidget receives a Show or Hide
   // directive, so that it knows whether it needs to draw or not.
-  virtual void setVisibilityState(WebPageVisibilityState visibilityState) {}
+  virtual void SetVisibilityState(WebPageVisibilityState visibility_state) {}
 
   // Overrides the WebFrameWidget's background and base background color. You
   // can use this to enforce a transparent background, which is useful if you
   // want to have some custom background rendered behind the widget.
-  virtual void setBackgroundColorOverride(WebColor) = 0;
-  virtual void clearBackgroundColorOverride() = 0;
-  virtual void setBaseBackgroundColorOverride(WebColor) = 0;
-  virtual void clearBaseBackgroundColorOverride() = 0;
+  virtual void SetBackgroundColorOverride(WebColor) = 0;
+  virtual void ClearBackgroundColorOverride() = 0;
+  virtual void SetBaseBackgroundColorOverride(WebColor) = 0;
+  virtual void ClearBaseBackgroundColorOverride() = 0;
 
   // Sets the base color used for this WebFrameWidget's background. This is in
   // effect the default background color used for pages with no
@@ -76,54 +76,54 @@ class WebFrameWidget : public WebWidget {
   // Setting this takes effect for the currently loaded page, if any, and
   // persists across subsequent navigations. Defaults to white prior to the
   // first call to this method.
-  virtual void setBaseBackgroundColor(WebColor) = 0;
+  virtual void SetBaseBackgroundColor(WebColor) = 0;
 
   // Returns the local root of this WebFrameWidget.
-  virtual WebLocalFrame* localRoot() const = 0;
+  virtual WebLocalFrame* LocalRoot() const = 0;
 
   // WebWidget implementation.
-  bool isWebFrameWidget() const final { return true; }
+  bool IsWebFrameWidget() const final { return true; }
 
   // Current instance of the active WebInputMethodController, that is, the
   // WebInputMethodController corresponding to (and owned by) the focused
   // WebLocalFrameImpl. It will return nullptr when there are no focused
   // frames inside this WebFrameWidget.
-  virtual WebInputMethodController* getActiveWebInputMethodController()
+  virtual WebInputMethodController* GetActiveWebInputMethodController()
       const = 0;
 
   // Callback methods when a drag-and-drop operation is trying to drop something
   // on the WebFrameWidget.
-  virtual WebDragOperation dragTargetDragEnter(
+  virtual WebDragOperation DragTargetDragEnter(
       const WebDragData&,
-      const WebPoint& pointInViewport,
-      const WebPoint& screenPoint,
-      WebDragOperationsMask operationsAllowed,
+      const WebPoint& point_in_viewport,
+      const WebPoint& screen_point,
+      WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
-  virtual WebDragOperation dragTargetDragOver(
-      const WebPoint& pointInViewport,
-      const WebPoint& screenPoint,
-      WebDragOperationsMask operationsAllowed,
+  virtual WebDragOperation DragTargetDragOver(
+      const WebPoint& point_in_viewport,
+      const WebPoint& screen_point,
+      WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
-  virtual void dragTargetDragLeave(const WebPoint& pointInViewport,
-                                   const WebPoint& screenPoint) = 0;
-  virtual void dragTargetDrop(const WebDragData&,
-                              const WebPoint& pointInViewport,
-                              const WebPoint& screenPoint,
+  virtual void DragTargetDragLeave(const WebPoint& point_in_viewport,
+                                   const WebPoint& screen_point) = 0;
+  virtual void DragTargetDrop(const WebDragData&,
+                              const WebPoint& point_in_viewport,
+                              const WebPoint& screen_point,
                               int modifiers) = 0;
 
   // Notifies the WebFrameWidget that a drag has terminated.
-  virtual void dragSourceEndedAt(const WebPoint& pointInViewport,
-                                 const WebPoint& screenPoint,
+  virtual void DragSourceEndedAt(const WebPoint& point_in_viewport,
+                                 const WebPoint& screen_point,
                                  WebDragOperation) = 0;
 
   // Notifies the WebFrameWidget that the system drag and drop operation has
   // ended.
-  virtual void dragSourceSystemDragEnded() = 0;
+  virtual void DragSourceSystemDragEnded() = 0;
 
   // Constrains the viewport intersection for use by IntersectionObserver.
   // This is needed for out-of-process iframes to know if they are clipped
   // by ancestor frames in another process.
-  virtual void setRemoteViewportIntersection(const WebRect&) {}
+  virtual void SetRemoteViewportIntersection(const WebRect&) {}
 };
 
 }  // namespace blink

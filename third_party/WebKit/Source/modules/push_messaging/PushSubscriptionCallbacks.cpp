@@ -16,31 +16,31 @@ namespace blink {
 
 PushSubscriptionCallbacks::PushSubscriptionCallbacks(
     ScriptPromiseResolver* resolver,
-    ServiceWorkerRegistration* serviceWorkerRegistration)
-    : m_resolver(resolver),
-      m_serviceWorkerRegistration(serviceWorkerRegistration) {
-  DCHECK(m_resolver);
-  DCHECK(m_serviceWorkerRegistration);
+    ServiceWorkerRegistration* service_worker_registration)
+    : resolver_(resolver),
+      service_worker_registration_(service_worker_registration) {
+  DCHECK(resolver_);
+  DCHECK(service_worker_registration_);
 }
 
 PushSubscriptionCallbacks::~PushSubscriptionCallbacks() {}
 
-void PushSubscriptionCallbacks::onSuccess(
-    std::unique_ptr<WebPushSubscription> webPushSubscription) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void PushSubscriptionCallbacks::OnSuccess(
+    std::unique_ptr<WebPushSubscription> web_push_subscription) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
 
-  m_resolver->resolve(PushSubscription::take(
-      m_resolver.get(), WTF::wrapUnique(webPushSubscription.release()),
-      m_serviceWorkerRegistration));
+  resolver_->Resolve(PushSubscription::Take(
+      resolver_.Get(), WTF::WrapUnique(web_push_subscription.release()),
+      service_worker_registration_));
 }
 
-void PushSubscriptionCallbacks::onError(const WebPushError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
+void PushSubscriptionCallbacks::OnError(const WebPushError& error) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
-  m_resolver->reject(PushError::take(m_resolver.get(), error));
+  resolver_->Reject(PushError::Take(resolver_.Get(), error));
 }
 
 }  // namespace blink

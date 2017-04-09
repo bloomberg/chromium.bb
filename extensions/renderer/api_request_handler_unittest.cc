@@ -279,7 +279,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
 
   auto callback = [](base::Optional<bool>* ran_with_user_gesture) {
     *ran_with_user_gesture =
-        blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
+        blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe();
   };
 
   // Set up a callback to be used with the request so we can check if a user
@@ -307,13 +307,13 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   {
     blink::WebScopedUserGesture user_gesture(nullptr);
     EXPECT_TRUE(
-        blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
+        blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
     request_id = request_handler.StartRequest(
         context, kMethod, base::MakeUnique<base::ListValue>(), v8_callback,
         v8::Local<v8::Function>(), binding::RequestThread::UI);
   }
   EXPECT_FALSE(
-      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
+      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
 
   request_handler.CompleteRequest(request_id, *ListValueFromString("[]"),
                                   std::string());
@@ -322,7 +322,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
   // Sanity check - after the callback ran, there shouldn't be an active
   // gesture.
   EXPECT_FALSE(
-      blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe());
+      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
 }
 
 TEST_F(APIRequestHandlerTest, RequestThread) {

@@ -399,11 +399,11 @@ void WriteResourceRequestBody(const ResourceRequestBodyImpl& request_body,
   for (const auto& element : *request_body.elements()) {
     switch (element.type()) {
       case ResourceRequestBodyImpl::Element::TYPE_BYTES:
-        WriteInteger(blink::WebHTTPBody::Element::TypeData, obj);
+        WriteInteger(blink::WebHTTPBody::Element::kTypeData, obj);
         WriteData(element.bytes(), static_cast<int>(element.length()), obj);
         break;
       case ResourceRequestBodyImpl::Element::TYPE_FILE:
-        WriteInteger(blink::WebHTTPBody::Element::TypeFile, obj);
+        WriteInteger(blink::WebHTTPBody::Element::kTypeFile, obj);
         WriteString(
             base::NullableString16(element.path().AsUTF16Unsafe(), false), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
@@ -411,14 +411,14 @@ void WriteResourceRequestBody(const ResourceRequestBodyImpl& request_body,
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
       case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
-        WriteInteger(blink::WebHTTPBody::Element::TypeFileSystemURL, obj);
+        WriteInteger(blink::WebHTTPBody::Element::kTypeFileSystemURL, obj);
         WriteGURL(element.filesystem_url(), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
       case ResourceRequestBodyImpl::Element::TYPE_BLOB:
-        WriteInteger(blink::WebHTTPBody::Element::TypeBlob, obj);
+        WriteInteger(blink::WebHTTPBody::Element::kTypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
       case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
@@ -437,7 +437,7 @@ void ReadResourceRequestBody(
   int num_elements = ReadInteger(obj);
   for (int i = 0; i < num_elements; ++i) {
     int type = ReadInteger(obj);
-    if (type == blink::WebHTTPBody::Element::TypeData) {
+    if (type == blink::WebHTTPBody::Element::kTypeData) {
       const void* data;
       int length = -1;
       ReadData(obj, &data, &length);
@@ -445,21 +445,21 @@ void ReadResourceRequestBody(
         AppendDataToRequestBody(request_body, static_cast<const char*>(data),
                                 length);
       }
-    } else if (type == blink::WebHTTPBody::Element::TypeFile) {
+    } else if (type == blink::WebHTTPBody::Element::kTypeFile) {
       base::NullableString16 file_path = ReadString(obj);
       int64_t file_start = ReadInteger64(obj);
       int64_t file_length = ReadInteger64(obj);
       double file_modification_time = ReadReal(obj);
       AppendFileRangeToRequestBody(request_body, file_path, file_start,
                                    file_length, file_modification_time);
-    } else if (type == blink::WebHTTPBody::Element::TypeFileSystemURL) {
+    } else if (type == blink::WebHTTPBody::Element::kTypeFileSystemURL) {
       GURL url = ReadGURL(obj);
       int64_t file_start = ReadInteger64(obj);
       int64_t file_length = ReadInteger64(obj);
       double file_modification_time = ReadReal(obj);
       AppendURLRangeToRequestBody(request_body, url, file_start, file_length,
                                   file_modification_time);
-    } else if (type == blink::WebHTTPBody::Element::TypeBlob) {
+    } else if (type == blink::WebHTTPBody::Element::kTypeBlob) {
       if (obj->version >= 16) {
         std::string blob_uuid = ReadStdString(obj);
         AppendBlobToRequestBody(request_body, blob_uuid);
@@ -709,12 +709,12 @@ ExplodedHttpBody::~ExplodedHttpBody() {
 }
 
 ExplodedFrameState::ExplodedFrameState()
-    : scroll_restoration_type(blink::WebHistoryScrollRestorationAuto),
+    : scroll_restoration_type(blink::kWebHistoryScrollRestorationAuto),
       did_save_scroll_or_scale_state(true),
       item_sequence_number(0),
       document_sequence_number(0),
       page_scale_factor(0.0),
-      referrer_policy(blink::WebReferrerPolicyDefault) {}
+      referrer_policy(blink::kWebReferrerPolicyDefault) {}
 
 ExplodedFrameState::ExplodedFrameState(const ExplodedFrameState& other) {
   assign(other);

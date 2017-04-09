@@ -44,222 +44,223 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutFlexibleBox(Element*);
   ~LayoutFlexibleBox() override;
 
-  static LayoutFlexibleBox* createAnonymous(Document*);
+  static LayoutFlexibleBox* CreateAnonymous(Document*);
 
-  const char* name() const override { return "LayoutFlexibleBox"; }
+  const char* GetName() const override { return "LayoutFlexibleBox"; }
 
-  bool isFlexibleBox() const final { return true; }
-  void layoutBlock(bool relayoutChildren) final;
+  bool IsFlexibleBox() const final { return true; }
+  void GetLayoutBlock(bool relayout_children) final;
 
-  int baselinePosition(
+  int BaselinePosition(
       FontBaseline,
-      bool firstLine,
+      bool first_line,
       LineDirectionMode,
-      LinePositionMode = PositionOnContainingLine) const override;
+      LinePositionMode = kPositionOnContainingLine) const override;
 
-  static const StyleContentAlignmentData& contentAlignmentNormalBehavior();
-  static int synthesizedBaselineFromContentBox(const LayoutBox&,
+  static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
+  static int SynthesizedBaselineFromContentBox(const LayoutBox&,
                                                LineDirectionMode);
 
-  int firstLineBoxBaseline() const override;
-  int inlineBlockBaseline(LineDirectionMode) const override;
-  IntSize originAdjustmentForScrollbars() const override;
-  bool hasTopOverflow() const override;
-  bool hasLeftOverflow() const override;
+  int FirstLineBoxBaseline() const override;
+  int InlineBlockBaseline(LineDirectionMode) const override;
+  IntSize OriginAdjustmentForScrollbars() const override;
+  bool HasTopOverflow() const override;
+  bool HasLeftOverflow() const override;
 
-  void paintChildren(const PaintInfo&, const LayoutPoint&) const final;
+  void PaintChildren(const PaintInfo&, const LayoutPoint&) const final;
 
-  bool isHorizontalFlow() const;
+  bool IsHorizontalFlow() const;
 
-  const OrderIterator& orderIterator() const { return m_orderIterator; }
+  const OrderIterator& GetOrderIterator() const { return order_iterator_; }
 
-  LayoutUnit crossSizeForPercentageResolution(const LayoutBox& child);
-  LayoutUnit mainSizeForPercentageResolution(const LayoutBox& child);
-  LayoutUnit childLogicalHeightForPercentageResolution(const LayoutBox& child);
+  LayoutUnit CrossSizeForPercentageResolution(const LayoutBox& child);
+  LayoutUnit MainSizeForPercentageResolution(const LayoutBox& child);
+  LayoutUnit ChildLogicalHeightForPercentageResolution(const LayoutBox& child);
 
-  void clearCachedMainSizeForChild(const LayoutBox& child);
+  void ClearCachedMainSizeForChild(const LayoutBox& child);
 
-  LayoutUnit staticMainAxisPositionForPositionedChild(const LayoutBox& child);
-  LayoutUnit staticCrossAxisPositionForPositionedChild(const LayoutBox& child);
+  LayoutUnit StaticMainAxisPositionForPositionedChild(const LayoutBox& child);
+  LayoutUnit StaticCrossAxisPositionForPositionedChild(const LayoutBox& child);
 
-  LayoutUnit staticInlinePositionForPositionedChild(const LayoutBox& child);
-  LayoutUnit staticBlockPositionForPositionedChild(const LayoutBox& child);
+  LayoutUnit StaticInlinePositionForPositionedChild(const LayoutBox& child);
+  LayoutUnit StaticBlockPositionForPositionedChild(const LayoutBox& child);
 
   // Returns true if the position changed. In that case, the child will have to
   // be laid out again.
-  bool setStaticPositionForPositionedLayout(LayoutBox& child);
+  bool SetStaticPositionForPositionedLayout(LayoutBox& child);
 
  protected:
-  void computeIntrinsicLogicalWidths(
-      LayoutUnit& minLogicalWidth,
-      LayoutUnit& maxLogicalWidth) const override;
+  void ComputeIntrinsicLogicalWidths(
+      LayoutUnit& min_logical_width,
+      LayoutUnit& max_logical_width) const override;
 
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-  void removeChild(LayoutObject*) override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void RemoveChild(LayoutObject*) override;
 
  private:
   enum FlexSign {
-    PositiveFlexibility,
-    NegativeFlexibility,
+    kPositiveFlexibility,
+    kNegativeFlexibility,
   };
 
-  enum ChildLayoutType { LayoutIfNeeded, ForceLayout, NeverLayout };
+  enum ChildLayoutType { kLayoutIfNeeded, kForceLayout, kNeverLayout };
 
   enum class TransformedWritingMode {
-    TopToBottomWritingMode,
-    RightToLeftWritingMode,
-    LeftToRightWritingMode,
-    BottomToTopWritingMode
+    kTopToBottomWritingMode,
+    kRightToLeftWritingMode,
+    kLeftToRightWritingMode,
+    kBottomToTopWritingMode
   };
 
-  enum class SizeDefiniteness { Definite, Indefinite, Unknown };
+  enum class SizeDefiniteness { kDefinite, kIndefinite, kUnknown };
 
   struct LineContext;
 
-  bool hasOrthogonalFlow(const LayoutBox& child) const;
-  bool isColumnFlow() const;
-  bool isLeftToRightFlow() const;
-  bool isMultiline() const;
-  Length flexBasisForChild(const LayoutBox& child) const;
-  LayoutUnit crossAxisExtentForChild(const LayoutBox& child) const;
-  LayoutUnit crossAxisIntrinsicExtentForChild(const LayoutBox& child) const;
-  LayoutUnit childIntrinsicLogicalHeight(const LayoutBox& child) const;
-  LayoutUnit childIntrinsicLogicalWidth(const LayoutBox& child) const;
-  LayoutUnit mainAxisExtentForChild(const LayoutBox& child) const;
-  LayoutUnit mainAxisContentExtentForChildIncludingScrollbar(
+  bool HasOrthogonalFlow(const LayoutBox& child) const;
+  bool IsColumnFlow() const;
+  bool IsLeftToRightFlow() const;
+  bool IsMultiline() const;
+  Length FlexBasisForChild(const LayoutBox& child) const;
+  LayoutUnit CrossAxisExtentForChild(const LayoutBox& child) const;
+  LayoutUnit CrossAxisIntrinsicExtentForChild(const LayoutBox& child) const;
+  LayoutUnit ChildIntrinsicLogicalHeight(const LayoutBox& child) const;
+  LayoutUnit ChildIntrinsicLogicalWidth(const LayoutBox& child) const;
+  LayoutUnit MainAxisExtentForChild(const LayoutBox& child) const;
+  LayoutUnit MainAxisContentExtentForChildIncludingScrollbar(
       const LayoutBox& child) const;
-  LayoutUnit crossAxisExtent() const;
-  LayoutUnit mainAxisExtent() const;
-  LayoutUnit crossAxisContentExtent() const;
-  LayoutUnit mainAxisContentExtent(LayoutUnit contentLogicalHeight);
-  LayoutUnit computeMainAxisExtentForChild(const LayoutBox& child,
+  LayoutUnit CrossAxisExtent() const;
+  LayoutUnit MainAxisExtent() const;
+  LayoutUnit CrossAxisContentExtent() const;
+  LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
+  LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
                                            const Length& size);
-  TransformedWritingMode getTransformedWritingMode() const;
-  LayoutUnit flowAwareBorderStart() const;
-  LayoutUnit flowAwareBorderEnd() const;
-  LayoutUnit flowAwareBorderBefore() const;
-  LayoutUnit flowAwareBorderAfter() const;
-  LayoutUnit flowAwarePaddingStart() const;
-  LayoutUnit flowAwarePaddingEnd() const;
-  LayoutUnit flowAwarePaddingBefore() const;
-  LayoutUnit flowAwarePaddingAfter() const;
-  LayoutUnit flowAwareMarginStartForChild(const LayoutBox& child) const;
-  LayoutUnit flowAwareMarginEndForChild(const LayoutBox& child) const;
-  LayoutUnit flowAwareMarginBeforeForChild(const LayoutBox& child) const;
-  LayoutUnit crossAxisMarginExtentForChild(const LayoutBox& child) const;
-  LayoutUnit crossAxisScrollbarExtent() const;
-  LayoutUnit crossAxisScrollbarExtentForChild(const LayoutBox& child) const;
-  LayoutPoint flowAwareLocationForChild(const LayoutBox& child) const;
-  bool useChildAspectRatio(const LayoutBox& child) const;
-  LayoutUnit computeMainSizeFromAspectRatioUsing(const LayoutBox& child,
-                                                 Length crossSizeLength) const;
-  void setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
-  LayoutUnit computeInnerFlexBaseSizeForChild(
-      LayoutBox& child,
-      LayoutUnit mainAxisBorderAndPadding,
-      ChildLayoutType = LayoutIfNeeded);
-  void adjustAlignmentForChild(LayoutBox& child, LayoutUnit);
-  ItemPosition alignmentForChild(const LayoutBox& child) const;
-  bool mainAxisLengthIsDefinite(const LayoutBox& child,
-                                const Length& flexBasis) const;
-  bool crossAxisLengthIsDefinite(const LayoutBox& child,
-                                 const Length& flexBasis) const;
-  bool needToStretchChildLogicalHeight(const LayoutBox& child) const;
-  bool childHasIntrinsicMainAxisSize(const LayoutBox& child) const;
-  EOverflow mainAxisOverflowForChild(const LayoutBox& child) const;
-  EOverflow crossAxisOverflowForChild(const LayoutBox& child) const;
-  void cacheChildMainSize(const LayoutBox& child);
-
-  void layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope&);
-  LayoutUnit autoMarginOffsetInMainAxis(const Vector<FlexItem>&,
-                                        LayoutUnit& availableFreeSpace);
-  void updateAutoMarginsInMainAxis(LayoutBox& child,
-                                   LayoutUnit autoMarginOffset);
-  bool hasAutoMarginsInCrossAxis(const LayoutBox& child) const;
-  bool updateAutoMarginsInCrossAxis(LayoutBox& child,
-                                    LayoutUnit availableAlignmentSpace);
-  void repositionLogicalHeightDependentFlexItems(Vector<LineContext>&);
-  LayoutUnit clientLogicalBottomAfterRepositioning();
-
-  LayoutUnit availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent,
-                                             const LayoutBox& child);
-  LayoutUnit marginBoxAscentForChild(const LayoutBox& child);
-
-  LayoutUnit computeChildMarginValue(Length margin);
-  void prepareOrderIteratorAndMargins();
-  LayoutUnit adjustChildSizeForMinAndMax(const LayoutBox& child,
-                                         LayoutUnit childSize);
-  LayoutUnit adjustChildSizeForAspectRatioCrossAxisMinAndMax(
+  TransformedWritingMode GetTransformedWritingMode() const;
+  LayoutUnit FlowAwareBorderStart() const;
+  LayoutUnit FlowAwareBorderEnd() const;
+  LayoutUnit FlowAwareBorderBefore() const;
+  LayoutUnit FlowAwareBorderAfter() const;
+  LayoutUnit FlowAwarePaddingStart() const;
+  LayoutUnit FlowAwarePaddingEnd() const;
+  LayoutUnit FlowAwarePaddingBefore() const;
+  LayoutUnit FlowAwarePaddingAfter() const;
+  LayoutUnit FlowAwareMarginStartForChild(const LayoutBox& child) const;
+  LayoutUnit FlowAwareMarginEndForChild(const LayoutBox& child) const;
+  LayoutUnit FlowAwareMarginBeforeForChild(const LayoutBox& child) const;
+  LayoutUnit CrossAxisMarginExtentForChild(const LayoutBox& child) const;
+  LayoutUnit CrossAxisScrollbarExtent() const;
+  LayoutUnit CrossAxisScrollbarExtentForChild(const LayoutBox& child) const;
+  LayoutPoint FlowAwareLocationForChild(const LayoutBox& child) const;
+  bool UseChildAspectRatio(const LayoutBox& child) const;
+  LayoutUnit ComputeMainSizeFromAspectRatioUsing(
       const LayoutBox& child,
-      LayoutUnit childSize);
-  FlexItem constructFlexItem(LayoutBox& child, ChildLayoutType);
+      Length cross_size_length) const;
+  void SetFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
+  LayoutUnit ComputeInnerFlexBaseSizeForChild(
+      LayoutBox& child,
+      LayoutUnit main_axis_border_and_padding,
+      ChildLayoutType = kLayoutIfNeeded);
+  void AdjustAlignmentForChild(LayoutBox& child, LayoutUnit);
+  ItemPosition AlignmentForChild(const LayoutBox& child) const;
+  bool MainAxisLengthIsDefinite(const LayoutBox& child,
+                                const Length& flex_basis) const;
+  bool CrossAxisLengthIsDefinite(const LayoutBox& child,
+                                 const Length& flex_basis) const;
+  bool NeedToStretchChildLogicalHeight(const LayoutBox& child) const;
+  bool ChildHasIntrinsicMainAxisSize(const LayoutBox& child) const;
+  EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
+  EOverflow CrossAxisOverflowForChild(const LayoutBox& child) const;
+  void CacheChildMainSize(const LayoutBox& child);
 
-  void freezeInflexibleItems(FlexSign,
+  void LayoutFlexItems(bool relayout_children, SubtreeLayoutScope&);
+  LayoutUnit AutoMarginOffsetInMainAxis(const Vector<FlexItem>&,
+                                        LayoutUnit& available_free_space);
+  void UpdateAutoMarginsInMainAxis(LayoutBox& child,
+                                   LayoutUnit auto_margin_offset);
+  bool HasAutoMarginsInCrossAxis(const LayoutBox& child) const;
+  bool UpdateAutoMarginsInCrossAxis(LayoutBox& child,
+                                    LayoutUnit available_alignment_space);
+  void RepositionLogicalHeightDependentFlexItems(Vector<LineContext>&);
+  LayoutUnit ClientLogicalBottomAfterRepositioning();
+
+  LayoutUnit AvailableAlignmentSpaceForChild(LayoutUnit line_cross_axis_extent,
+                                             const LayoutBox& child);
+  LayoutUnit MarginBoxAscentForChild(const LayoutBox& child);
+
+  LayoutUnit ComputeChildMarginValue(Length margin);
+  void PrepareOrderIteratorAndMargins();
+  LayoutUnit AdjustChildSizeForMinAndMax(const LayoutBox& child,
+                                         LayoutUnit child_size);
+  LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
+      const LayoutBox& child,
+      LayoutUnit child_size);
+  FlexItem ConstructFlexItem(LayoutBox& child, ChildLayoutType);
+
+  void FreezeInflexibleItems(FlexSign,
                              Vector<FlexItem>& children,
-                             LayoutUnit& remainingFreeSpace,
-                             double& totalFlexGrow,
-                             double& totalFlexShrink,
-                             double& totalWeightedFlexShrink);
-  bool resolveFlexibleLengths(FlexSign,
+                             LayoutUnit& remaining_free_space,
+                             double& total_flex_grow,
+                             double& total_flex_shrink,
+                             double& total_weighted_flex_shrink);
+  bool ResolveFlexibleLengths(FlexSign,
                               Vector<FlexItem>&,
-                              LayoutUnit initialFreeSpace,
-                              LayoutUnit& remainingFreeSpace,
-                              double& totalFlexGrow,
-                              double& totalFlexShrink,
-                              double& totalWeightedFlexShrink);
-  void freezeViolations(Vector<FlexItem*>&,
-                        LayoutUnit& availableFreeSpace,
-                        double& totalFlexGrow,
-                        double& totalFlexShrink,
-                        double& totalWeightedFlexShrink);
+                              LayoutUnit initial_free_space,
+                              LayoutUnit& remaining_free_space,
+                              double& total_flex_grow,
+                              double& total_flex_shrink,
+                              double& total_weighted_flex_shrink);
+  void FreezeViolations(Vector<FlexItem*>&,
+                        LayoutUnit& available_free_space,
+                        double& total_flex_grow,
+                        double& total_flex_shrink,
+                        double& total_weighted_flex_shrink);
 
-  void resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
-  void setOverrideMainAxisContentSizeForChild(LayoutBox& child,
-                                              LayoutUnit childPreferredSize);
-  void prepareChildForPositionedLayout(LayoutBox& child);
-  void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset,
+  void ResetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
+  void SetOverrideMainAxisContentSizeForChild(LayoutBox& child,
+                                              LayoutUnit child_preferred_size);
+  void PrepareChildForPositionedLayout(LayoutBox& child);
+  void LayoutAndPlaceChildren(LayoutUnit& cross_axis_offset,
                               Vector<FlexItem>&,
-                              LayoutUnit availableFreeSpace,
-                              bool relayoutChildren,
+                              LayoutUnit available_free_space,
+                              bool relayout_children,
                               SubtreeLayoutScope&,
                               Vector<LineContext>&);
-  void layoutColumnReverse(const Vector<FlexItem>&,
-                           LayoutUnit crossAxisOffset,
-                           LayoutUnit availableFreeSpace);
-  void alignFlexLines(Vector<LineContext>&);
-  void alignChildren(const Vector<LineContext>&);
-  void applyStretchAlignmentToChild(LayoutBox& child,
-                                    LayoutUnit lineCrossAxisExtent);
-  void flipForRightToLeftColumn(const Vector<LineContext>& lineContexts);
-  void flipForWrapReverse(const Vector<LineContext>&,
-                          LayoutUnit crossAxisStartEdge);
+  void LayoutColumnReverse(const Vector<FlexItem>&,
+                           LayoutUnit cross_axis_offset,
+                           LayoutUnit available_free_space);
+  void AlignFlexLines(Vector<LineContext>&);
+  void AlignChildren(const Vector<LineContext>&);
+  void ApplyStretchAlignmentToChild(LayoutBox& child,
+                                    LayoutUnit line_cross_axis_extent);
+  void FlipForRightToLeftColumn(const Vector<LineContext>& line_contexts);
+  void FlipForWrapReverse(const Vector<LineContext>&,
+                          LayoutUnit cross_axis_start_edge);
 
-  float countIntrinsicSizeForAlgorithmChange(
-      LayoutUnit maxPreferredWidth,
+  float CountIntrinsicSizeForAlgorithmChange(
+      LayoutUnit max_preferred_width,
       LayoutBox* child,
-      float previousMaxContentFlexFraction) const;
+      float previous_max_content_flex_fraction) const;
 
   // This is used to cache the preferred size for orthogonal flow children so we
   // don't have to relayout to get it
-  HashMap<const LayoutObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
+  HashMap<const LayoutObject*, LayoutUnit> intrinsic_size_along_main_axis_;
 
   // This set is used to keep track of which children we laid out in this
   // current layout iteration. We need it because the ones in this set may
   // need an additional layout pass for correct stretch alignment handling, as
   // the first layout likely did not use the correct value for percentage
   // sizing of children.
-  HashSet<const LayoutObject*> m_relaidOutChildren;
+  HashSet<const LayoutObject*> relaid_out_children_;
 
-  mutable OrderIterator m_orderIterator;
-  int m_numberOfInFlowChildrenOnFirstLine;
+  mutable OrderIterator order_iterator_;
+  int number_of_in_flow_children_on_first_line_;
 
   // This is SizeIsUnknown outside of layoutBlock()
-  mutable SizeDefiniteness m_hasDefiniteHeight;
-  bool m_inLayout;
+  mutable SizeDefiniteness has_definite_height_;
+  bool in_layout_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlexibleBox, isFlexibleBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlexibleBox, IsFlexibleBox());
 
 }  // namespace blink
 

@@ -29,10 +29,10 @@ class InspectorEmulationAgent final
    public:
     virtual ~Client() {}
 
-    virtual void setCPUThrottlingRate(double rate) {}
+    virtual void SetCPUThrottlingRate(double rate) {}
   };
 
-  static InspectorEmulationAgent* create(WebLocalFrameImpl*, Client*);
+  static InspectorEmulationAgent* Create(WebLocalFrameImpl*, Client*);
   ~InspectorEmulationAgent() override;
 
   // protocol::Dispatcher::EmulationCommandHandler implementation.
@@ -48,24 +48,24 @@ class InspectorEmulationAgent final
   protocol::Response setCPUThrottlingRate(double) override;
   protocol::Response setVirtualTimePolicy(
       const String& policy,
-      protocol::Maybe<int> virtualTimeBudgetMs) override;
+      protocol::Maybe<int> virtual_time_budget_ms) override;
   protocol::Response setDefaultBackgroundColorOverride(
       protocol::Maybe<protocol::DOM::RGBA>) override;
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;
-  void restore() override;
+  void Restore() override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   InspectorEmulationAgent(WebLocalFrameImpl*, Client*);
-  WebViewImpl* webViewImpl();
-  void virtualTimeBudgetExpired();
+  WebViewImpl* GetWebViewImpl();
+  void VirtualTimeBudgetExpired();
 
-  Member<WebLocalFrameImpl> m_webLocalFrameImpl;
-  Client* m_client;
-  TaskHandle m_virtualTimeBudgetExpiredTaskHandle;
+  Member<WebLocalFrameImpl> web_local_frame_impl_;
+  Client* client_;
+  TaskHandle virtual_time_budget_expired_task_handle_;
 };
 
 }  // namespace blink

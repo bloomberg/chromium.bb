@@ -43,60 +43,61 @@ namespace blink {
 class MutationObserverInterestGroup final
     : public GarbageCollected<MutationObserverInterestGroup> {
  public:
-  static MutationObserverInterestGroup* createForChildListMutation(
+  static MutationObserverInterestGroup* CreateForChildListMutation(
       Node& target) {
-    if (!target.document().hasMutationObserversOfType(
-            MutationObserver::ChildList))
+    if (!target.GetDocument().HasMutationObserversOfType(
+            MutationObserver::kChildList))
       return nullptr;
 
-    MutationRecordDeliveryOptions oldValueFlag = 0;
-    return createIfNeeded(target, MutationObserver::ChildList, oldValueFlag);
+    MutationRecordDeliveryOptions old_value_flag = 0;
+    return CreateIfNeeded(target, MutationObserver::kChildList, old_value_flag);
   }
 
-  static MutationObserverInterestGroup* createForCharacterDataMutation(
+  static MutationObserverInterestGroup* CreateForCharacterDataMutation(
       Node& target) {
-    if (!target.document().hasMutationObserversOfType(
-            MutationObserver::CharacterData))
+    if (!target.GetDocument().HasMutationObserversOfType(
+            MutationObserver::kCharacterData))
       return nullptr;
 
-    return createIfNeeded(target, MutationObserver::CharacterData,
-                          MutationObserver::CharacterDataOldValue);
+    return CreateIfNeeded(target, MutationObserver::kCharacterData,
+                          MutationObserver::kCharacterDataOldValue);
   }
 
-  static MutationObserverInterestGroup* createForAttributesMutation(
+  static MutationObserverInterestGroup* CreateForAttributesMutation(
       Node& target,
-      const QualifiedName& attributeName) {
-    if (!target.document().hasMutationObserversOfType(
-            MutationObserver::Attributes))
+      const QualifiedName& attribute_name) {
+    if (!target.GetDocument().HasMutationObserversOfType(
+            MutationObserver::kAttributes))
       return nullptr;
 
-    return createIfNeeded(target, MutationObserver::Attributes,
-                          MutationObserver::AttributeOldValue, &attributeName);
+    return CreateIfNeeded(target, MutationObserver::kAttributes,
+                          MutationObserver::kAttributeOldValue,
+                          &attribute_name);
   }
 
-  bool isOldValueRequested();
-  void enqueueMutationRecord(MutationRecord*);
+  bool IsOldValueRequested();
+  void EnqueueMutationRecord(MutationRecord*);
 
   DECLARE_TRACE();
 
  private:
-  static MutationObserverInterestGroup* createIfNeeded(
+  static MutationObserverInterestGroup* CreateIfNeeded(
       Node& target,
       MutationObserver::MutationType,
-      MutationRecordDeliveryOptions oldValueFlag,
-      const QualifiedName* attributeName = 0);
+      MutationRecordDeliveryOptions old_value_flag,
+      const QualifiedName* attribute_name = 0);
   MutationObserverInterestGroup(
       HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&
           observers,
-      MutationRecordDeliveryOptions oldValueFlag);
+      MutationRecordDeliveryOptions old_value_flag);
 
-  bool hasOldValue(MutationRecordDeliveryOptions options) {
-    return options & m_oldValueFlag;
+  bool HasOldValue(MutationRecordDeliveryOptions options) {
+    return options & old_value_flag_;
   }
 
   HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>
-      m_observers;
-  MutationRecordDeliveryOptions m_oldValueFlag;
+      observers_;
+  MutationRecordDeliveryOptions old_value_flag_;
 };
 
 }  // namespace blink

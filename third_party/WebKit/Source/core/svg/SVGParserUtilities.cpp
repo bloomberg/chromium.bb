@@ -28,13 +28,13 @@
 namespace blink {
 
 template <typename FloatType>
-static inline bool isValidRange(const FloatType x) {
-  static const FloatType max = std::numeric_limits<FloatType>::max();
-  return x >= -max && x <= max;
+static inline bool IsValidRange(const FloatType x) {
+  static const FloatType kMax = std::numeric_limits<FloatType>::max();
+  return x >= -kMax && x <= kMax;
 }
 
 template <typename FloatType>
-static inline bool isValidExponent(const FloatType x) {
+static inline bool IsValidExponent(const FloatType x) {
   return x >= std::numeric_limits<FloatType>::min_exponent10 &&
          x <= std::numeric_limits<FloatType>::max_exponent10;
 }
@@ -43,12 +43,12 @@ static inline bool isValidExponent(const FloatType x) {
 // work at a higher precision internally, without any unnecessary runtime cost
 // or code complexity.
 template <typename CharType, typename FloatType>
-static bool genericParseNumber(const CharType*& cursor,
+static bool GenericParseNumber(const CharType*& cursor,
                                const CharType* end,
                                FloatType& number,
                                WhitespaceMode mode) {
-  if (mode & AllowLeadingWhitespace)
-    skipOptionalSVGSpaces(cursor, end);
+  if (mode & kAllowLeadingWhitespace)
+    SkipOptionalSVGSpaces(cursor, end);
 
   const CharType* ptr = cursor;
   // read the sign
@@ -65,20 +65,21 @@ static bool genericParseNumber(const CharType*& cursor,
     return false;
 
   // read the integer part, build right-to-left
-  const CharType* digitsStart = ptr;
+  const CharType* digits_start = ptr;
   while (ptr < end && *ptr >= '0' && *ptr <= '9')
     ++ptr;  // Advance to first non-digit.
 
   FloatType integer = 0;
-  if (ptr != digitsStart) {
-    const CharType* ptrScanIntPart = ptr - 1;
+  if (ptr != digits_start) {
+    const CharType* ptr_scan_int_part = ptr - 1;
     FloatType multiplier = 1;
-    while (ptrScanIntPart >= digitsStart) {
-      integer += multiplier * static_cast<FloatType>(*(ptrScanIntPart--) - '0');
+    while (ptr_scan_int_part >= digits_start) {
+      integer +=
+          multiplier * static_cast<FloatType>(*(ptr_scan_int_part--) - '0');
       multiplier *= 10;
     }
     // Bail out early if this overflows.
-    if (!isValidRange(integer))
+    if (!IsValidRange(integer))
       return false;
   }
 
@@ -99,7 +100,7 @@ static bool genericParseNumber(const CharType*& cursor,
 
   // When we get here we should have consumed either a digit for the integer
   // part or a fractional part (with at least one digit after the '.'.)
-  DCHECK_NE(digitsStart, ptr);
+  DCHECK_NE(digits_start, ptr);
 
   number = integer + decimal;
   number *= sign;
@@ -110,12 +111,12 @@ static bool genericParseNumber(const CharType*& cursor,
     ptr++;
 
     // read the sign of the exponent
-    bool exponentIsNegative = false;
+    bool exponent_is_negative = false;
     if (*ptr == '+')
       ptr++;
     else if (*ptr == '-') {
       ptr++;
-      exponentIsNegative = true;
+      exponent_is_negative = true;
     }
 
     // There must be an exponent
@@ -128,100 +129,100 @@ static bool genericParseNumber(const CharType*& cursor,
       exponent += *ptr - '0';
       ptr++;
     }
-    if (exponentIsNegative)
+    if (exponent_is_negative)
       exponent = -exponent;
     // Make sure exponent is valid.
-    if (!isValidExponent(exponent))
+    if (!IsValidExponent(exponent))
       return false;
     if (exponent)
       number *= static_cast<FloatType>(pow(10.0, static_cast<int>(exponent)));
   }
 
   // Don't return Infinity() or NaN().
-  if (!isValidRange(number))
+  if (!IsValidRange(number))
     return false;
 
   // A valid number has been parsed. Commit cursor.
   cursor = ptr;
 
-  if (mode & AllowTrailingWhitespace)
-    skipOptionalSVGSpacesOrDelimiter(cursor, end);
+  if (mode & kAllowTrailingWhitespace)
+    SkipOptionalSVGSpacesOrDelimiter(cursor, end);
 
   return true;
 }
 
-bool parseNumber(const LChar*& ptr,
+bool ParseNumber(const LChar*& ptr,
                  const LChar* end,
                  float& number,
                  WhitespaceMode mode) {
-  return genericParseNumber(ptr, end, number, mode);
+  return GenericParseNumber(ptr, end, number, mode);
 }
 
-bool parseNumber(const UChar*& ptr,
+bool ParseNumber(const UChar*& ptr,
                  const UChar* end,
                  float& number,
                  WhitespaceMode mode) {
-  return genericParseNumber(ptr, end, number, mode);
+  return GenericParseNumber(ptr, end, number, mode);
 }
 
 // only used to parse largeArcFlag and sweepFlag which must be a "0" or "1"
 // and might not have any whitespace/comma after it
 template <typename CharType>
-bool genericParseArcFlag(const CharType*& ptr,
+bool GenericParseArcFlag(const CharType*& ptr,
                          const CharType* end,
                          bool& flag) {
   if (ptr >= end)
     return false;
-  const CharType flagChar = *ptr;
-  if (flagChar == '0')
+  const CharType flag_char = *ptr;
+  if (flag_char == '0')
     flag = false;
-  else if (flagChar == '1')
+  else if (flag_char == '1')
     flag = true;
   else
     return false;
 
   ptr++;
-  skipOptionalSVGSpacesOrDelimiter(ptr, end);
+  SkipOptionalSVGSpacesOrDelimiter(ptr, end);
 
   return true;
 }
 
-bool parseArcFlag(const LChar*& ptr, const LChar* end, bool& flag) {
-  return genericParseArcFlag(ptr, end, flag);
+bool ParseArcFlag(const LChar*& ptr, const LChar* end, bool& flag) {
+  return GenericParseArcFlag(ptr, end, flag);
 }
 
-bool parseArcFlag(const UChar*& ptr, const UChar* end, bool& flag) {
-  return genericParseArcFlag(ptr, end, flag);
+bool ParseArcFlag(const UChar*& ptr, const UChar* end, bool& flag) {
+  return GenericParseArcFlag(ptr, end, flag);
 }
 
 template <typename CharType>
-static bool genericParseNumberOptionalNumber(const CharType*& ptr,
+static bool GenericParseNumberOptionalNumber(const CharType*& ptr,
                                              const CharType* end,
                                              float& x,
                                              float& y) {
-  if (!parseNumber(ptr, end, x))
+  if (!ParseNumber(ptr, end, x))
     return false;
 
   if (ptr == end)
     y = x;
-  else if (!parseNumber(ptr, end, y, AllowLeadingAndTrailingWhitespace))
+  else if (!ParseNumber(ptr, end, y, kAllowLeadingAndTrailingWhitespace))
     return false;
 
   return ptr == end;
 }
 
-bool parseNumberOptionalNumber(const String& string, float& x, float& y) {
-  if (string.isEmpty())
+bool ParseNumberOptionalNumber(const String& string, float& x, float& y) {
+  if (string.IsEmpty())
     return false;
 
-  if (string.is8Bit()) {
-    const LChar* ptr = string.characters8();
+  if (string.Is8Bit()) {
+    const LChar* ptr = string.Characters8();
     const LChar* end = ptr + string.length();
-    return genericParseNumberOptionalNumber(ptr, end, x, y);
+    return GenericParseNumberOptionalNumber(ptr, end, x, y);
   }
-  const UChar* ptr = string.characters16();
+  const UChar* ptr = string.Characters16();
   const UChar* end = ptr + string.length();
-  return genericParseNumberOptionalNumber(ptr, end, x, y);
+  return GenericParseNumberOptionalNumber(ptr, end, x, y);
 }
 
 }  // namespace blink

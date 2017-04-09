@@ -27,22 +27,22 @@ namespace blink {
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGTextPathMethodType>() {
+GetStaticStringEntries<SVGTextPathMethodType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
-    entries.push_back(std::make_pair(SVGTextPathMethodAlign, "align"));
-    entries.push_back(std::make_pair(SVGTextPathMethodStretch, "stretch"));
+  if (entries.IsEmpty()) {
+    entries.push_back(std::make_pair(kSVGTextPathMethodAlign, "align"));
+    entries.push_back(std::make_pair(kSVGTextPathMethodStretch, "stretch"));
   }
   return entries;
 }
 
 template <>
 const SVGEnumerationStringEntries&
-getStaticStringEntries<SVGTextPathSpacingType>() {
+GetStaticStringEntries<SVGTextPathSpacingType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.isEmpty()) {
-    entries.push_back(std::make_pair(SVGTextPathSpacingAuto, "auto"));
-    entries.push_back(std::make_pair(SVGTextPathSpacingExact, "exact"));
+  if (entries.IsEmpty()) {
+    entries.push_back(std::make_pair(kSVGTextPathSpacingAuto, "auto"));
+    entries.push_back(std::make_pair(kSVGTextPathSpacingExact, "exact"));
   }
   return entries;
 }
@@ -50,21 +50,21 @@ getStaticStringEntries<SVGTextPathSpacingType>() {
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document),
       SVGURIReference(this),
-      m_startOffset(
-          SVGAnimatedLength::create(this,
+      start_offset_(
+          SVGAnimatedLength::Create(this,
                                     SVGNames::startOffsetAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
-      m_method(SVGAnimatedEnumeration<SVGTextPathMethodType>::create(
+                                    SVGLength::Create(SVGLengthMode::kWidth))),
+      method_(SVGAnimatedEnumeration<SVGTextPathMethodType>::Create(
           this,
           SVGNames::methodAttr,
-          SVGTextPathMethodAlign)),
-      m_spacing(SVGAnimatedEnumeration<SVGTextPathSpacingType>::create(
+          kSVGTextPathMethodAlign)),
+      spacing_(SVGAnimatedEnumeration<SVGTextPathSpacingType>::Create(
           this,
           SVGNames::spacingAttr,
-          SVGTextPathSpacingExact)) {
-  addToPropertyMap(m_startOffset);
-  addToPropertyMap(m_method);
-  addToPropertyMap(m_spacing);
+          kSVGTextPathSpacingExact)) {
+  AddToPropertyMap(start_offset_);
+  AddToPropertyMap(method_);
+  AddToPropertyMap(spacing_);
 }
 
 DEFINE_NODE_FACTORY(SVGTextPathElement)
@@ -72,85 +72,85 @@ DEFINE_NODE_FACTORY(SVGTextPathElement)
 SVGTextPathElement::~SVGTextPathElement() {}
 
 DEFINE_TRACE(SVGTextPathElement) {
-  visitor->trace(m_startOffset);
-  visitor->trace(m_method);
-  visitor->trace(m_spacing);
-  visitor->trace(m_targetIdObserver);
-  SVGTextContentElement::trace(visitor);
-  SVGURIReference::trace(visitor);
+  visitor->Trace(start_offset_);
+  visitor->Trace(method_);
+  visitor->Trace(spacing_);
+  visitor->Trace(target_id_observer_);
+  SVGTextContentElement::Trace(visitor);
+  SVGURIReference::Trace(visitor);
 }
 
-void SVGTextPathElement::clearResourceReferences() {
-  unobserveTarget(m_targetIdObserver);
-  removeAllOutgoingReferences();
+void SVGTextPathElement::ClearResourceReferences() {
+  UnobserveTarget(target_id_observer_);
+  RemoveAllOutgoingReferences();
 }
 
-void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName) {
-  if (SVGURIReference::isKnownAttribute(attrName)) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    buildPendingResource();
+void SVGTextPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    BuildPendingResource();
     return;
   }
 
-  if (attrName == SVGNames::startOffsetAttr)
-    updateRelativeLengthsInformation();
+  if (attr_name == SVGNames::startOffsetAttr)
+    UpdateRelativeLengthsInformation();
 
-  if (attrName == SVGNames::startOffsetAttr ||
-      attrName == SVGNames::methodAttr || attrName == SVGNames::spacingAttr) {
-    SVGElement::InvalidationGuard invalidationGuard(this);
-    if (LayoutObject* object = layoutObject())
-      markForLayoutAndParentResourceInvalidation(object);
+  if (attr_name == SVGNames::startOffsetAttr ||
+      attr_name == SVGNames::methodAttr || attr_name == SVGNames::spacingAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    if (LayoutObject* object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(object);
 
     return;
   }
 
-  SVGTextContentElement::svgAttributeChanged(attrName);
+  SVGTextContentElement::SvgAttributeChanged(attr_name);
 }
 
-LayoutObject* SVGTextPathElement::createLayoutObject(const ComputedStyle&) {
+LayoutObject* SVGTextPathElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGTextPath(this);
 }
 
-bool SVGTextPathElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+bool SVGTextPathElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   if (parentNode() &&
       (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
-    return SVGElement::layoutObjectIsNeeded(style);
+    return SVGElement::LayoutObjectIsNeeded(style);
 
   return false;
 }
 
-void SVGTextPathElement::buildPendingResource() {
-  clearResourceReferences();
+void SVGTextPathElement::BuildPendingResource() {
+  ClearResourceReferences();
   if (!isConnected())
     return;
-  Element* target = observeTarget(m_targetIdObserver, *this);
+  Element* target = ObserveTarget(target_id_observer_, *this);
   if (isSVGPathElement(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
-    addReferenceTo(toSVGElement(target));
+    AddReferenceTo(ToSVGElement(target));
   }
 
-  if (LayoutObject* layoutObject = this->layoutObject())
-    markForLayoutAndParentResourceInvalidation(layoutObject);
+  if (LayoutObject* layout_object = this->GetLayoutObject())
+    MarkForLayoutAndParentResourceInvalidation(layout_object);
 }
 
-Node::InsertionNotificationRequest SVGTextPathElement::insertedInto(
-    ContainerNode* rootParent) {
-  SVGTextContentElement::insertedInto(rootParent);
-  buildPendingResource();
-  return InsertionDone;
+Node::InsertionNotificationRequest SVGTextPathElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGTextContentElement::InsertedInto(root_parent);
+  BuildPendingResource();
+  return kInsertionDone;
 }
 
-void SVGTextPathElement::removedFrom(ContainerNode* rootParent) {
-  SVGTextContentElement::removedFrom(rootParent);
-  if (rootParent->isConnected())
-    clearResourceReferences();
+void SVGTextPathElement::RemovedFrom(ContainerNode* root_parent) {
+  SVGTextContentElement::RemovedFrom(root_parent);
+  if (root_parent->isConnected())
+    ClearResourceReferences();
 }
 
-bool SVGTextPathElement::selfHasRelativeLengths() const {
-  return m_startOffset->currentValue()->isRelative() ||
-         SVGTextContentElement::selfHasRelativeLengths();
+bool SVGTextPathElement::SelfHasRelativeLengths() const {
+  return start_offset_->CurrentValue()->IsRelative() ||
+         SVGTextContentElement::SelfHasRelativeLengths();
 }
 
 }  // namespace blink

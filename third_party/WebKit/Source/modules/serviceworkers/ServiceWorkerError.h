@@ -46,8 +46,8 @@ class ServiceWorkerError {
  public:
   // For CallbackPromiseAdapter
   using WebType = const WebServiceWorkerError&;
-  static DOMException* take(ScriptPromiseResolver*,
-                            const WebServiceWorkerError& webError);
+  static DOMException* Take(ScriptPromiseResolver*,
+                            const WebServiceWorkerError& web_error);
 };
 
 class ServiceWorkerErrorForUpdate : public ServiceWorkerError {
@@ -55,8 +55,8 @@ class ServiceWorkerErrorForUpdate : public ServiceWorkerError {
 
  public:
   // For CallbackPromiseAdapter
-  static v8::Local<v8::Value> take(ScriptPromiseResolver* resolver,
-                                   const WebServiceWorkerError& webError);
+  static v8::Local<v8::Value> Take(ScriptPromiseResolver* resolver,
+                                   const WebServiceWorkerError& web_error);
 };
 
 }  // namespace blink

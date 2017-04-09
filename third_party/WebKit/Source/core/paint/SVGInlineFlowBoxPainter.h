@@ -17,14 +17,14 @@ class SVGInlineFlowBoxPainter {
   STACK_ALLOCATED();
 
  public:
-  SVGInlineFlowBoxPainter(const SVGInlineFlowBox& svgInlineFlowBox)
-      : m_svgInlineFlowBox(svgInlineFlowBox) {}
+  SVGInlineFlowBoxPainter(const SVGInlineFlowBox& svg_inline_flow_box)
+      : svg_inline_flow_box_(svg_inline_flow_box) {}
 
-  void paintSelectionBackground(const PaintInfo&);
-  void paint(const PaintInfo&, const LayoutPoint&);
+  void PaintSelectionBackground(const PaintInfo&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const SVGInlineFlowBox& m_svgInlineFlowBox;
+  const SVGInlineFlowBox& svg_inline_flow_box_;
 };
 
 }  // namespace blink

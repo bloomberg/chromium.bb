@@ -44,25 +44,25 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
 
  public:
-  ICOImageDecoder(AlphaOption, const ColorBehavior&, size_t maxDecodedBytes);
+  ICOImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
   ~ICOImageDecoder() override;
 
   // ImageDecoder:
-  String filenameExtension() const override { return "ico"; }
-  void onSetData(SegmentReader*) override;
+  String FilenameExtension() const override { return "ico"; }
+  void OnSetData(SegmentReader*) override;
   IntSize size() const override;
-  IntSize frameSizeAtIndex(size_t) const override;
-  bool setSize(unsigned width, unsigned height) override;
-  bool frameIsCompleteAtIndex(size_t) const override;
+  IntSize FrameSizeAtIndex(size_t) const override;
+  bool SetSize(unsigned width, unsigned height) override;
+  bool FrameIsCompleteAtIndex(size_t) const override;
   // CAUTION: setFailed() deletes all readers and decoders.  Be careful to
   // avoid accessing deleted memory, especially when calling this from
   // inside BMPImageReader!
-  bool setFailed() override;
-  bool hotSpot(IntPoint&) const override;
+  bool SetFailed() override;
+  bool HotSpot(IntPoint&) const override;
 
  private:
   enum ImageType {
-    Unknown,
+    kUnknown,
     BMP,
     PNG,
   };
@@ -74,111 +74,111 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
 
   struct IconDirectoryEntry {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    IntSize m_size;
-    uint16_t m_bitCount;
-    IntPoint m_hotSpot;
-    uint32_t m_imageOffset;
-    uint32_t m_byteSize;
+    IntSize size_;
+    uint16_t bit_count_;
+    IntPoint hot_spot_;
+    uint32_t image_offset_;
+    uint32_t byte_size_;
   };
 
   // Returns true if |a| is a preferable icon entry to |b|.
   // Larger sizes, or greater bitdepths at the same size, are preferable.
-  static bool compareEntries(const IconDirectoryEntry& a,
+  static bool CompareEntries(const IconDirectoryEntry& a,
                              const IconDirectoryEntry& b);
 
   // ImageDecoder:
-  void decodeSize() override { decode(0, true); }
-  size_t decodeFrameCount() override;
-  void decode(size_t index) override { decode(index, false); }
+  void DecodeSize() override { Decode(0, true); }
+  size_t DecodeFrameCount() override;
+  void Decode(size_t index) override { Decode(index, false); }
 
   // TODO (scroggo): These functions are identical to functions in
   // BMPImageReader. Share code?
-  inline uint8_t readUint8(size_t offset) const {
-    return m_fastReader.getOneByte(m_decodedOffset + offset);
+  inline uint8_t ReadUint8(size_t offset) const {
+    return fast_reader_.GetOneByte(decoded_offset_ + offset);
   }
 
-  inline uint16_t readUint16(int offset) const {
+  inline uint16_t ReadUint16(int offset) const {
     char buffer[2];
     const char* data =
-        m_fastReader.getConsecutiveData(m_decodedOffset + offset, 2, buffer);
-    return BMPImageReader::readUint16(data);
+        fast_reader_.GetConsecutiveData(decoded_offset_ + offset, 2, buffer);
+    return BMPImageReader::ReadUint16(data);
   }
 
-  inline uint32_t readUint32(int offset) const {
+  inline uint32_t ReadUint32(int offset) const {
     char buffer[4];
     const char* data =
-        m_fastReader.getConsecutiveData(m_decodedOffset + offset, 4, buffer);
-    return BMPImageReader::readUint32(data);
+        fast_reader_.GetConsecutiveData(decoded_offset_ + offset, 4, buffer);
+    return BMPImageReader::ReadUint32(data);
   }
 
   // If the desired PNGImageDecoder exists, gives it the appropriate data.
-  void setDataForPNGDecoderAtIndex(size_t);
+  void SetDataForPNGDecoderAtIndex(size_t);
 
   // Decodes the entry at |index|.  If |onlySize| is true, stops decoding
   // after calculating the image size.  If decoding fails but there is no
   // more data coming, sets the "decode failure" flag.
-  void decode(size_t index, bool onlySize);
+  void Decode(size_t index, bool only_size);
 
   // Decodes the directory and directory entries at the beginning of the
   // data, and initializes members.  Returns true if all decoding
   // succeeded.  Once this returns true, all entries' sizes are known.
-  bool decodeDirectory();
+  bool DecodeDirectory();
 
   // Decodes the specified entry.
-  bool decodeAtIndex(size_t);
+  bool DecodeAtIndex(size_t);
 
   // Processes the ICONDIR at the beginning of the data.  Returns true if
   // the directory could be decoded.
-  bool processDirectory();
+  bool ProcessDirectory();
 
   // Processes the ICONDIRENTRY records after the directory.  Keeps the
   // "best" entry as the one we'll decode.  Returns true if the entries
   // could be decoded.
-  bool processDirectoryEntries();
+  bool ProcessDirectoryEntries();
 
   // Stores the hot-spot for |index| in |hotSpot| and returns true,
   // or returns false if there is none.
-  bool hotSpotAtIndex(size_t index, IntPoint& hotSpot) const;
+  bool HotSpotAtIndex(size_t index, IntPoint& hot_spot) const;
 
   // Reads and returns a directory entry from the current offset into
   // |data|.
-  IconDirectoryEntry readDirectoryEntry();
+  IconDirectoryEntry ReadDirectoryEntry();
 
   // Determines whether the desired entry is a BMP or PNG.  Returns true
   // if the type could be determined.
-  ImageType imageTypeAtIndex(size_t);
+  ImageType ImageTypeAtIndex(size_t);
 
-  FastSharedBufferReader m_fastReader;
+  FastSharedBufferReader fast_reader_;
 
   // An index into |m_data| representing how much we've already decoded.
   // Note that this only tracks data _this_ class decodes; once the
   // BMPImageReader takes over this will not be updated further.
-  size_t m_decodedOffset;
+  size_t decoded_offset_;
 
   // Which type of file (ICO/CUR) this is.
-  FileType m_fileType;
+  FileType file_type_;
 
   // The headers for the ICO.
   typedef Vector<IconDirectoryEntry> IconDirectoryEntries;
-  IconDirectoryEntries m_dirEntries;
+  IconDirectoryEntries dir_entries_;
 
   // Count of directory entries is parsed from header before initializing
   // m_dirEntries. m_dirEntries is populated only when full header
   // information including directory entries is available.
-  size_t m_dirEntriesCount;
+  size_t dir_entries_count_;
 
   // The image decoders for the various frames.
   typedef Vector<std::unique_ptr<BMPImageReader>> BMPReaders;
-  BMPReaders m_bmpReaders;
+  BMPReaders bmp_readers_;
   typedef Vector<std::unique_ptr<PNGImageDecoder>> PNGDecoders;
-  PNGDecoders m_pngDecoders;
+  PNGDecoders png_decoders_;
 
   // Valid only while a BMPImageReader is decoding, this holds the size
   // for the particular entry being decoded.
-  IntSize m_frameSize;
+  IntSize frame_size_;
 
   // Used to pass on to an internally created PNG decoder.
-  const ColorBehavior m_colorBehavior;
+  const ColorBehavior color_behavior_;
 };
 
 }  // namespace blink

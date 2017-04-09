@@ -15,168 +15,174 @@
 namespace blink {
 
 // static
-CSSParserContext* CSSParserContext::createWithStyleSheet(
+CSSParserContext* CSSParserContext::CreateWithStyleSheet(
     const CSSParserContext* other,
-    const CSSStyleSheet* styleSheet) {
-  return CSSParserContext::create(
-      other, CSSStyleSheet::singleOwnerDocument(styleSheet));
+    const CSSStyleSheet* style_sheet) {
+  return CSSParserContext::Create(
+      other, CSSStyleSheet::SingleOwnerDocument(style_sheet));
 }
 
 // static
-CSSParserContext* CSSParserContext::createWithStyleSheetContents(
+CSSParserContext* CSSParserContext::CreateWithStyleSheetContents(
     const CSSParserContext* other,
-    const StyleSheetContents* styleSheetContents) {
-  return CSSParserContext::create(
-      other, StyleSheetContents::singleOwnerDocument(styleSheetContents));
+    const StyleSheetContents* style_sheet_contents) {
+  return CSSParserContext::Create(
+      other, StyleSheetContents::SingleOwnerDocument(style_sheet_contents));
 }
 
 // static
-CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
-                                           const Document* useCounterDocument) {
+CSSParserContext* CSSParserContext::Create(
+    const CSSParserContext* other,
+    const Document* use_counter_document) {
   return new CSSParserContext(
-      other->m_baseURL, other->m_charset, other->m_mode, other->m_matchMode,
-      other->m_profile, other->m_referrer, other->m_isHTMLDocument,
-      other->m_useLegacyBackgroundSizeShorthandBehavior,
-      other->m_shouldCheckContentSecurityPolicy, useCounterDocument);
+      other->base_url_, other->charset_, other->mode_, other->match_mode_,
+      other->profile_, other->referrer_, other->is_html_document_,
+      other->use_legacy_background_size_shorthand_behavior_,
+      other->should_check_content_security_policy_, use_counter_document);
 }
 
 // static
-CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
-                                           const KURL& baseURL,
-                                           ReferrerPolicy referrerPolicy,
-                                           const String& charset,
-                                           const Document* useCounterDocument) {
+CSSParserContext* CSSParserContext::Create(
+    const CSSParserContext* other,
+    const KURL& base_url,
+    ReferrerPolicy referrer_policy,
+    const String& charset,
+    const Document* use_counter_document) {
   return new CSSParserContext(
-      baseURL, charset, other->m_mode, other->m_matchMode, other->m_profile,
-      Referrer(baseURL.strippedForUseAsReferrer(), referrerPolicy),
-      other->m_isHTMLDocument,
-      other->m_useLegacyBackgroundSizeShorthandBehavior,
-      other->m_shouldCheckContentSecurityPolicy, useCounterDocument);
+      base_url, charset, other->mode_, other->match_mode_, other->profile_,
+      Referrer(base_url.StrippedForUseAsReferrer(), referrer_policy),
+      other->is_html_document_,
+      other->use_legacy_background_size_shorthand_behavior_,
+      other->should_check_content_security_policy_, use_counter_document);
 }
 
 // static
-CSSParserContext* CSSParserContext::create(CSSParserMode mode,
-                                           SelectorProfile profile,
-                                           const Document* useCounterDocument) {
+CSSParserContext* CSSParserContext::Create(
+    CSSParserMode mode,
+    SelectorProfile profile,
+    const Document* use_counter_document) {
   return new CSSParserContext(
-      KURL(), emptyString, mode, mode, profile, Referrer(), false, false,
-      DoNotCheckContentSecurityPolicy, useCounterDocument);
+      KURL(), g_empty_string, mode, mode, profile, Referrer(), false, false,
+      kDoNotCheckContentSecurityPolicy, use_counter_document);
 }
 
 // static
-CSSParserContext* CSSParserContext::create(const Document& document) {
-  return CSSParserContext::create(document, document.baseURL(),
-                                  document.getReferrerPolicy(), emptyString,
-                                  DynamicProfile);
+CSSParserContext* CSSParserContext::Create(const Document& document) {
+  return CSSParserContext::Create(document, document.BaseURL(),
+                                  document.GetReferrerPolicy(), g_empty_string,
+                                  kDynamicProfile);
 }
 
 // static
-CSSParserContext* CSSParserContext::create(
+CSSParserContext* CSSParserContext::Create(
     const Document& document,
-    const KURL& baseURLOverride,
-    ReferrerPolicy referrerPolicyOverride,
+    const KURL& base_url_override,
+    ReferrerPolicy referrer_policy_override,
     const String& charset,
     SelectorProfile profile) {
   CSSParserMode mode =
-      document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode;
-  CSSParserMode matchMode;
-  if (HTMLImportsController* importsController = document.importsController()) {
-    matchMode = importsController->master()->inQuirksMode() ? HTMLQuirksMode
-                                                            : HTMLStandardMode;
+      document.InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode;
+  CSSParserMode match_mode;
+  if (HTMLImportsController* imports_controller =
+          document.ImportsController()) {
+    match_mode = imports_controller->Master()->InQuirksMode()
+                     ? kHTMLQuirksMode
+                     : kHTMLStandardMode;
   } else {
-    matchMode = mode;
+    match_mode = mode;
   }
 
-  const Referrer referrer(baseURLOverride.strippedForUseAsReferrer(),
-                          referrerPolicyOverride);
+  const Referrer referrer(base_url_override.StrippedForUseAsReferrer(),
+                          referrer_policy_override);
 
-  bool useLegacyBackgroundSizeShorthandBehavior =
-      document.settings()
-          ? document.settings()->getUseLegacyBackgroundSizeShorthandBehavior()
+  bool use_legacy_background_size_shorthand_behavior =
+      document.GetSettings()
+          ? document.GetSettings()
+                ->GetUseLegacyBackgroundSizeShorthandBehavior()
           : false;
 
-  ContentSecurityPolicyDisposition policyDisposition;
-  if (ContentSecurityPolicy::shouldBypassMainWorld(&document))
-    policyDisposition = DoNotCheckContentSecurityPolicy;
+  ContentSecurityPolicyDisposition policy_disposition;
+  if (ContentSecurityPolicy::ShouldBypassMainWorld(&document))
+    policy_disposition = kDoNotCheckContentSecurityPolicy;
   else
-    policyDisposition = CheckContentSecurityPolicy;
+    policy_disposition = kCheckContentSecurityPolicy;
 
-  return new CSSParserContext(baseURLOverride, charset, mode, matchMode,
-                              profile, referrer, document.isHTMLDocument(),
-                              useLegacyBackgroundSizeShorthandBehavior,
-                              policyDisposition, &document);
+  return new CSSParserContext(base_url_override, charset, mode, match_mode,
+                              profile, referrer, document.IsHTMLDocument(),
+                              use_legacy_background_size_shorthand_behavior,
+                              policy_disposition, &document);
 }
 
 CSSParserContext::CSSParserContext(
-    const KURL& baseURL,
+    const KURL& base_url,
     const String& charset,
     CSSParserMode mode,
-    CSSParserMode matchMode,
+    CSSParserMode match_mode,
     SelectorProfile profile,
     const Referrer& referrer,
-    bool isHTMLDocument,
-    bool useLegacyBackgroundSizeShorthandBehavior,
-    ContentSecurityPolicyDisposition policyDisposition,
-    const Document* useCounterDocument)
-    : m_baseURL(baseURL),
-      m_charset(charset),
-      m_mode(mode),
-      m_matchMode(matchMode),
-      m_profile(profile),
-      m_referrer(referrer),
-      m_isHTMLDocument(isHTMLDocument),
-      m_useLegacyBackgroundSizeShorthandBehavior(
-          useLegacyBackgroundSizeShorthandBehavior),
-      m_shouldCheckContentSecurityPolicy(policyDisposition),
-      m_document(useCounterDocument) {}
+    bool is_html_document,
+    bool use_legacy_background_size_shorthand_behavior,
+    ContentSecurityPolicyDisposition policy_disposition,
+    const Document* use_counter_document)
+    : base_url_(base_url),
+      charset_(charset),
+      mode_(mode),
+      match_mode_(match_mode),
+      profile_(profile),
+      referrer_(referrer),
+      is_html_document_(is_html_document),
+      use_legacy_background_size_shorthand_behavior_(
+          use_legacy_background_size_shorthand_behavior),
+      should_check_content_security_policy_(policy_disposition),
+      document_(use_counter_document) {}
 
 bool CSSParserContext::operator==(const CSSParserContext& other) const {
-  return m_baseURL == other.m_baseURL && m_charset == other.m_charset &&
-         m_mode == other.m_mode && m_matchMode == other.m_matchMode &&
-         m_profile == other.m_profile &&
-         m_isHTMLDocument == other.m_isHTMLDocument &&
-         m_useLegacyBackgroundSizeShorthandBehavior ==
-             other.m_useLegacyBackgroundSizeShorthandBehavior;
+  return base_url_ == other.base_url_ && charset_ == other.charset_ &&
+         mode_ == other.mode_ && match_mode_ == other.match_mode_ &&
+         profile_ == other.profile_ &&
+         is_html_document_ == other.is_html_document_ &&
+         use_legacy_background_size_shorthand_behavior_ ==
+             other.use_legacy_background_size_shorthand_behavior_;
 }
 
-const CSSParserContext* strictCSSParserContext() {
-  DEFINE_STATIC_LOCAL(CSSParserContext, strictContext,
-                      (CSSParserContext::create(HTMLStandardMode)));
-  return &strictContext;
+const CSSParserContext* StrictCSSParserContext() {
+  DEFINE_STATIC_LOCAL(CSSParserContext, strict_context,
+                      (CSSParserContext::Create(kHTMLStandardMode)));
+  return &strict_context;
 }
 
-KURL CSSParserContext::completeURL(const String& url) const {
-  if (url.isNull())
+KURL CSSParserContext::CompleteURL(const String& url) const {
+  if (url.IsNull())
     return KURL();
-  if (charset().isEmpty())
-    return KURL(baseURL(), url);
-  return KURL(baseURL(), url, charset());
+  if (Charset().IsEmpty())
+    return KURL(BaseURL(), url);
+  return KURL(BaseURL(), url, Charset());
 }
 
-void CSSParserContext::count(UseCounter::Feature feature) const {
-  if (isUseCounterRecordingEnabled())
-    UseCounter::count(*m_document, feature);
+void CSSParserContext::Count(UseCounter::Feature feature) const {
+  if (IsUseCounterRecordingEnabled())
+    UseCounter::Count(*document_, feature);
 }
 
-void CSSParserContext::countDeprecation(UseCounter::Feature feature) const {
-  if (isUseCounterRecordingEnabled())
-    Deprecation::countDeprecation(*m_document, feature);
+void CSSParserContext::CountDeprecation(UseCounter::Feature feature) const {
+  if (IsUseCounterRecordingEnabled())
+    Deprecation::CountDeprecation(*document_, feature);
 }
 
-void CSSParserContext::count(CSSParserMode mode, CSSPropertyID property) const {
-  if (isUseCounterRecordingEnabled() && m_document->page()) {
-    UseCounter* useCounter = &m_document->page()->useCounter();
-    if (useCounter)
-      useCounter->count(mode, property);
+void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {
+  if (IsUseCounterRecordingEnabled() && document_->GetPage()) {
+    UseCounter* use_counter = &document_->GetPage()->GetUseCounter();
+    if (use_counter)
+      use_counter->Count(mode, property);
   }
 }
 
-bool CSSParserContext::isDocumentHandleEqual(const Document* other) const {
-  return m_document.get() == other;
+bool CSSParserContext::IsDocumentHandleEqual(const Document* other) const {
+  return document_.Get() == other;
 }
 
 DEFINE_TRACE(CSSParserContext) {
-  visitor->trace(m_document);
+  visitor->Trace(document_);
 }
 
 }  // namespace blink

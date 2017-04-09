@@ -13,31 +13,31 @@ namespace blink {
 
 class CSSCustomIdentValue : public CSSValue {
  public:
-  static CSSCustomIdentValue* create(const AtomicString& str) {
+  static CSSCustomIdentValue* Create(const AtomicString& str) {
     return new CSSCustomIdentValue(str);
   }
 
   // TODO(sashab, timloh): Remove this and lazily parse the CSSPropertyID in
   // isKnownPropertyID().
-  static CSSCustomIdentValue* create(CSSPropertyID id) {
+  static CSSCustomIdentValue* Create(CSSPropertyID id) {
     return new CSSCustomIdentValue(id);
   }
 
-  AtomicString value() const {
-    DCHECK(!isKnownPropertyID());
-    return m_string;
+  AtomicString Value() const {
+    DCHECK(!IsKnownPropertyID());
+    return string_;
   }
-  bool isKnownPropertyID() const { return m_propertyId != CSSPropertyInvalid; }
-  CSSPropertyID valueAsPropertyID() const {
-    DCHECK(isKnownPropertyID());
-    return m_propertyId;
+  bool IsKnownPropertyID() const { return property_id_ != CSSPropertyInvalid; }
+  CSSPropertyID ValueAsPropertyID() const {
+    DCHECK(IsKnownPropertyID());
+    return property_id_;
   }
 
-  String customCSSText() const;
+  String CustomCSSText() const;
 
-  bool equals(const CSSCustomIdentValue& other) const {
-    return isKnownPropertyID() ? m_propertyId == other.m_propertyId
-                               : m_string == other.m_string;
+  bool Equals(const CSSCustomIdentValue& other) const {
+    return IsKnownPropertyID() ? property_id_ == other.property_id_
+                               : string_ == other.string_;
   }
 
   DECLARE_TRACE_AFTER_DISPATCH();
@@ -46,11 +46,11 @@ class CSSCustomIdentValue : public CSSValue {
   explicit CSSCustomIdentValue(const AtomicString&);
   explicit CSSCustomIdentValue(CSSPropertyID);
 
-  AtomicString m_string;
-  CSSPropertyID m_propertyId;
+  AtomicString string_;
+  CSSPropertyID property_id_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomIdentValue, isCustomIdentValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomIdentValue, IsCustomIdentValue());
 
 }  // namespace blink
 

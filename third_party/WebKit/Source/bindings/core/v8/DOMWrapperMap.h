@@ -48,47 +48,47 @@ class DOMWrapperMap {
 
  public:
   explicit DOMWrapperMap(v8::Isolate* isolate)
-      : m_isolate(isolate), m_map(isolate) {}
+      : isolate_(isolate), map_(isolate) {}
 
-  v8::Local<v8::Object> newLocal(v8::Isolate* isolate, KeyType* key) {
-    return m_map.Get(key);
+  v8::Local<v8::Object> NewLocal(v8::Isolate* isolate, KeyType* key) {
+    return map_.Get(key);
   }
 
-  bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue,
+  bool SetReturnValueFrom(v8::ReturnValue<v8::Value> return_value,
                           KeyType* key) {
-    return m_map.SetReturnValue(key, returnValue);
+    return map_.SetReturnValue(key, return_value);
   }
 
-  void setReference(v8::Isolate* isolate,
+  void SetReference(v8::Isolate* isolate,
                     const v8::Persistent<v8::Object>& parent,
                     KeyType* key) {
-    m_map.SetReference(key, parent);
+    map_.SetReference(key, parent);
   }
 
-  bool containsKey(KeyType* key) { return m_map.Contains(key); }
+  bool ContainsKey(KeyType* key) { return map_.Contains(key); }
 
-  WARN_UNUSED_RESULT bool set(KeyType* key,
-                              const WrapperTypeInfo* wrapperTypeInfo,
+  WARN_UNUSED_RESULT bool Set(KeyType* key,
+                              const WrapperTypeInfo* wrapper_type_info,
                               v8::Local<v8::Object>& wrapper) {
-    if (UNLIKELY(containsKey(key))) {
-      wrapper = newLocal(m_isolate, key);
+    if (UNLIKELY(ContainsKey(key))) {
+      wrapper = NewLocal(isolate_, key);
       return false;
     }
-    v8::Global<v8::Object> global(m_isolate, wrapper);
-    wrapperTypeInfo->configureWrapper(&global);
-    m_map.Set(key, std::move(global));
+    v8::Global<v8::Object> global(isolate_, wrapper);
+    wrapper_type_info->ConfigureWrapper(&global);
+    map_.Set(key, std::move(global));
     return true;
   }
 
-  void clear() { m_map.Clear(); }
+  void Clear() { map_.Clear(); }
 
-  void removeAndDispose(KeyType* key) {
-    ASSERT(containsKey(key));
-    m_map.Remove(key);
+  void RemoveAndDispose(KeyType* key) {
+    ASSERT(ContainsKey(key));
+    map_.Remove(key);
   }
 
-  void markWrapper(KeyType* object) {
-    m_map.RegisterExternallyReferencedObject(object);
+  void MarkWrapper(KeyType* object) {
+    map_.RegisterExternallyReferencedObject(object);
   }
 
  private:
@@ -100,8 +100,8 @@ class DOMWrapperMap {
     typedef HashMap<KeyType*, v8::PersistentContainerValue> Impl;
     typedef typename Impl::iterator Iterator;
     static size_t Size(const Impl* impl) { return impl->size(); }
-    static bool Empty(Impl* impl) { return impl->isEmpty(); }
-    static void Swap(Impl& impl, Impl& other) { impl.swap(other); }
+    static bool Empty(Impl* impl) { return impl->IsEmpty(); }
+    static void Swap(Impl& impl, Impl& other) { impl.Swap(other); }
     static Iterator Begin(Impl* impl) { return impl->begin(); }
     static Iterator End(Impl* impl) { return impl->end(); }
     static v8::PersistentContainerValue Value(Iterator& iter) {
@@ -110,16 +110,16 @@ class DOMWrapperMap {
     static KeyType* Key(Iterator& iter) { return iter->key; }
     static v8::PersistentContainerValue
     Set(Impl* impl, KeyType* key, v8::PersistentContainerValue value) {
-      v8::PersistentContainerValue oldValue = Get(impl, key);
-      impl->set(key, value);
-      return oldValue;
+      v8::PersistentContainerValue old_value = Get(impl, key);
+      impl->Set(key, value);
+      return old_value;
     }
     static v8::PersistentContainerValue Get(const Impl* impl, KeyType* key) {
       return impl->at(key);
     }
 
     static v8::PersistentContainerValue Remove(Impl* impl, KeyType* key) {
-      return impl->take(key);
+      return impl->Take(key);
     }
 
     // Weak traits:
@@ -136,7 +136,7 @@ class DOMWrapperMap {
       return map;
     }
 
-    static void DisposeCallbackData(WeakCallbackDataType* callbackData) {}
+    static void DisposeCallbackData(WeakCallbackDataType* callback_data) {}
 
     static MapType* MapFromWeakCallbackInfo(
         const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
@@ -146,7 +146,7 @@ class DOMWrapperMap {
     static KeyType* KeyFromWeakCallbackInfo(
         const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
       return reinterpret_cast<KeyType*>(
-          data.GetInternalField(v8DOMWrapperObjectIndex));
+          data.GetInternalField(kV8DOMWrapperObjectIndex));
     }
 
     static void OnWeakCallback(
@@ -157,8 +157,8 @@ class DOMWrapperMap {
     static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
   };
 
-  v8::Isolate* m_isolate;
-  typename PersistentValueMapTraits::MapType m_map;
+  v8::Isolate* isolate_;
+  typename PersistentValueMapTraits::MapType map_;
 };
 
 }  // namespace blink

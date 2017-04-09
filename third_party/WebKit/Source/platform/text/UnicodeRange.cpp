@@ -174,187 +174,187 @@ namespace blink {
  *  fff0 - ffff
  *********************************************************************/
 
-static const unsigned cNumSubTables = 9;
-static const unsigned cSubTableSize = 16;
+static const unsigned kCNumSubTables = 9;
+static const unsigned kCSubTableSize = 16;
 
-static const unsigned char gUnicodeSubrangeTable[cNumSubTables][cSubTableSize] =
-    {
+static const unsigned char
+    kGUnicodeSubrangeTable[kCNumSubTables][kCSubTableSize] = {
         {
             // table for X---
-            cRangeTableBase + 1,  // u0xxx
-            cRangeTableBase + 2,  // u1xxx
-            cRangeTableBase + 3,  // u2xxx
-            cRangeSetCJK,         // u3xxx
-            cRangeSetCJK,         // u4xxx
-            cRangeSetCJK,         // u5xxx
-            cRangeSetCJK,         // u6xxx
-            cRangeSetCJK,         // u7xxx
-            cRangeSetCJK,         // u8xxx
-            cRangeSetCJK,         // u9xxx
-            cRangeTableBase + 4,  // uaxxx
-            cRangeKorean,         // ubxxx
-            cRangeKorean,         // ucxxx
-            cRangeTableBase + 5,  // udxxx
-            cRangePrivate,        // uexxx
-            cRangeTableBase + 6   // ufxxx
+            kCRangeTableBase + 1,  // u0xxx
+            kCRangeTableBase + 2,  // u1xxx
+            kCRangeTableBase + 3,  // u2xxx
+            kCRangeSetCJK,         // u3xxx
+            kCRangeSetCJK,         // u4xxx
+            kCRangeSetCJK,         // u5xxx
+            kCRangeSetCJK,         // u6xxx
+            kCRangeSetCJK,         // u7xxx
+            kCRangeSetCJK,         // u8xxx
+            kCRangeSetCJK,         // u9xxx
+            kCRangeTableBase + 4,  // uaxxx
+            kCRangeKorean,         // ubxxx
+            kCRangeKorean,         // ucxxx
+            kCRangeTableBase + 5,  // udxxx
+            kCRangePrivate,        // uexxx
+            kCRangeTableBase + 6   // ufxxx
         },
         {
             // table for 0X--
-            cRangeSetLatin,  // u00xx
-            cRangeSetLatin,  // u01xx
-            cRangeSetLatin,  // u02xx
-            cRangeGreek,     // u03xx     XXX 0300-036f is in fact
-                             // cRangeCombiningDiacriticalMarks
-            cRangeCyrillic,  // u04xx
-            cRangeTableBase +
+            kCRangeSetLatin,  // u00xx
+            kCRangeSetLatin,  // u01xx
+            kCRangeSetLatin,  // u02xx
+            kCRangeGreek,     // u03xx     XXX 0300-036f is in fact
+                              // cRangeCombiningDiacriticalMarks
+            kCRangeCyrillic,  // u04xx
+            kCRangeTableBase +
                 7,  // u05xx, includes Cyrillic supplement, Hebrew, and Armenian
-            cRangeArabic,         // u06xx
-            cRangeTertiaryTable,  // u07xx
-            cRangeUnassigned,     // u08xx
-            cRangeTertiaryTable,  // u09xx
-            cRangeTertiaryTable,  // u0axx
-            cRangeTertiaryTable,  // u0bxx
-            cRangeTertiaryTable,  // u0cxx
-            cRangeTertiaryTable,  // u0dxx
-            cRangeTertiaryTable,  // u0exx
-            cRangeTibetan,        // u0fxx
+            kCRangeArabic,         // u06xx
+            kCRangeTertiaryTable,  // u07xx
+            kCRangeUnassigned,     // u08xx
+            kCRangeTertiaryTable,  // u09xx
+            kCRangeTertiaryTable,  // u0axx
+            kCRangeTertiaryTable,  // u0bxx
+            kCRangeTertiaryTable,  // u0cxx
+            kCRangeTertiaryTable,  // u0dxx
+            kCRangeTertiaryTable,  // u0exx
+            kCRangeTibetan,        // u0fxx
         },
         {
             // table for 1x--
-            cRangeTertiaryTable,  // u10xx
-            cRangeKorean,         // u11xx
-            cRangeEthiopic,       // u12xx
-            cRangeTertiaryTable,  // u13xx
-            cRangeCanadian,       // u14xx
-            cRangeCanadian,       // u15xx
-            cRangeTertiaryTable,  // u16xx
-            cRangeKhmer,          // u17xx
-            cRangeMongolian,      // u18xx
-            cRangeUnassigned,     // u19xx
-            cRangeUnassigned,     // u1axx
-            cRangeUnassigned,     // u1bxx
-            cRangeUnassigned,     // u1cxx
-            cRangeUnassigned,     // u1dxx
-            cRangeSetLatin,       // u1exx
-            cRangeGreek,          // u1fxx
+            kCRangeTertiaryTable,  // u10xx
+            kCRangeKorean,         // u11xx
+            kCRangeEthiopic,       // u12xx
+            kCRangeTertiaryTable,  // u13xx
+            kCRangeCanadian,       // u14xx
+            kCRangeCanadian,       // u15xx
+            kCRangeTertiaryTable,  // u16xx
+            kCRangeKhmer,          // u17xx
+            kCRangeMongolian,      // u18xx
+            kCRangeUnassigned,     // u19xx
+            kCRangeUnassigned,     // u1axx
+            kCRangeUnassigned,     // u1bxx
+            kCRangeUnassigned,     // u1cxx
+            kCRangeUnassigned,     // u1dxx
+            kCRangeSetLatin,       // u1exx
+            kCRangeGreek,          // u1fxx
         },
         {
             // table for 2x--
-            cRangeSetLatin,               // u20xx
-            cRangeSetLatin,               // u21xx
-            cRangeMathOperators,          // u22xx
-            cRangeMiscTechnical,          // u23xx
-            cRangeControlOpticalEnclose,  // u24xx
-            cRangeBoxBlockGeometrics,     // u25xx
-            cRangeMiscSymbols,            // u26xx
-            cRangeDingbats,               // u27xx
-            cRangeBraillePattern,         // u28xx
-            cRangeUnassigned,             // u29xx
-            cRangeUnassigned,             // u2axx
-            cRangeUnassigned,             // u2bxx
-            cRangeUnassigned,             // u2cxx
-            cRangeUnassigned,             // u2dxx
-            cRangeSetCJK,                 // u2exx
-            cRangeSetCJK,                 // u2fxx
+            kCRangeSetLatin,               // u20xx
+            kCRangeSetLatin,               // u21xx
+            kCRangeMathOperators,          // u22xx
+            kCRangeMiscTechnical,          // u23xx
+            kCRangeControlOpticalEnclose,  // u24xx
+            kCRangeBoxBlockGeometrics,     // u25xx
+            kCRangeMiscSymbols,            // u26xx
+            kCRangeDingbats,               // u27xx
+            kCRangeBraillePattern,         // u28xx
+            kCRangeUnassigned,             // u29xx
+            kCRangeUnassigned,             // u2axx
+            kCRangeUnassigned,             // u2bxx
+            kCRangeUnassigned,             // u2cxx
+            kCRangeUnassigned,             // u2dxx
+            kCRangeSetCJK,                 // u2exx
+            kCRangeSetCJK,                 // u2fxx
         },
         {
             // table for ax--
-            cRangeYi,          // ua0xx
-            cRangeYi,          // ua1xx
-            cRangeYi,          // ua2xx
-            cRangeYi,          // ua3xx
-            cRangeYi,          // ua4xx
-            cRangeUnassigned,  // ua5xx
-            cRangeUnassigned,  // ua6xx
-            cRangeUnassigned,  // ua7xx
-            cRangeUnassigned,  // ua8xx
-            cRangeUnassigned,  // ua9xx
-            cRangeUnassigned,  // uaaxx
-            cRangeUnassigned,  // uabxx
-            cRangeKorean,      // uacxx
-            cRangeKorean,      // uadxx
-            cRangeKorean,      // uaexx
-            cRangeKorean,      // uafxx
+            kCRangeYi,          // ua0xx
+            kCRangeYi,          // ua1xx
+            kCRangeYi,          // ua2xx
+            kCRangeYi,          // ua3xx
+            kCRangeYi,          // ua4xx
+            kCRangeUnassigned,  // ua5xx
+            kCRangeUnassigned,  // ua6xx
+            kCRangeUnassigned,  // ua7xx
+            kCRangeUnassigned,  // ua8xx
+            kCRangeUnassigned,  // ua9xx
+            kCRangeUnassigned,  // uaaxx
+            kCRangeUnassigned,  // uabxx
+            kCRangeKorean,      // uacxx
+            kCRangeKorean,      // uadxx
+            kCRangeKorean,      // uaexx
+            kCRangeKorean,      // uafxx
         },
         {
             // table for dx--
-            cRangeKorean,     // ud0xx
-            cRangeKorean,     // ud1xx
-            cRangeKorean,     // ud2xx
-            cRangeKorean,     // ud3xx
-            cRangeKorean,     // ud4xx
-            cRangeKorean,     // ud5xx
-            cRangeKorean,     // ud6xx
-            cRangeKorean,     // ud7xx
-            cRangeSurrogate,  // ud8xx
-            cRangeSurrogate,  // ud9xx
-            cRangeSurrogate,  // udaxx
-            cRangeSurrogate,  // udbxx
-            cRangeSurrogate,  // udcxx
-            cRangeSurrogate,  // uddxx
-            cRangeSurrogate,  // udexx
-            cRangeSurrogate,  // udfxx
+            kCRangeKorean,     // ud0xx
+            kCRangeKorean,     // ud1xx
+            kCRangeKorean,     // ud2xx
+            kCRangeKorean,     // ud3xx
+            kCRangeKorean,     // ud4xx
+            kCRangeKorean,     // ud5xx
+            kCRangeKorean,     // ud6xx
+            kCRangeKorean,     // ud7xx
+            kCRangeSurrogate,  // ud8xx
+            kCRangeSurrogate,  // ud9xx
+            kCRangeSurrogate,  // udaxx
+            kCRangeSurrogate,  // udbxx
+            kCRangeSurrogate,  // udcxx
+            kCRangeSurrogate,  // uddxx
+            kCRangeSurrogate,  // udexx
+            kCRangeSurrogate,  // udfxx
         },
         {
             // table for fx--
-            cRangePrivate,  // uf0xx
-            cRangePrivate,  // uf1xx
-            cRangePrivate,  // uf2xx
-            cRangePrivate,  // uf3xx
-            cRangePrivate,  // uf4xx
-            cRangePrivate,  // uf5xx
-            cRangePrivate,  // uf6xx
-            cRangePrivate,  // uf7xx
-            cRangePrivate,  // uf8xx
-            cRangeSetCJK,   // uf9xx
-            cRangeSetCJK,   // ufaxx
-            cRangeArabic,   // ufbxx, includes alphabic presentation form
-            cRangeArabic,   // ufcxx
-            cRangeArabic,   // ufdxx
-            cRangeArabic,   // ufexx, includes Combining half marks,
-            //                CJK compatibility forms,
-            //                CJK compatibility forms,
-            //                small form variants
-            cRangeTableBase +
+            kCRangePrivate,  // uf0xx
+            kCRangePrivate,  // uf1xx
+            kCRangePrivate,  // uf2xx
+            kCRangePrivate,  // uf3xx
+            kCRangePrivate,  // uf4xx
+            kCRangePrivate,  // uf5xx
+            kCRangePrivate,  // uf6xx
+            kCRangePrivate,  // uf7xx
+            kCRangePrivate,  // uf8xx
+            kCRangeSetCJK,   // uf9xx
+            kCRangeSetCJK,   // ufaxx
+            kCRangeArabic,   // ufbxx, includes alphabic presentation form
+            kCRangeArabic,   // ufcxx
+            kCRangeArabic,   // ufdxx
+            kCRangeArabic,   // ufexx, includes Combining half marks,
+                            //                CJK compatibility forms,
+                            //                CJK compatibility forms,
+                            //                small form variants
+            kCRangeTableBase +
                 8,  // uffxx, halfwidth and fullwidth forms, includes Specials
         },
         {
             // table for 0x0500 - 0x05ff
-            cRangeCyrillic,  // u050x
-            cRangeCyrillic,  // u051x
-            cRangeCyrillic,  // u052x
-            cRangeArmenian,  // u053x
-            cRangeArmenian,  // u054x
-            cRangeArmenian,  // u055x
-            cRangeArmenian,  // u056x
-            cRangeArmenian,  // u057x
-            cRangeArmenian,  // u058x
-            cRangeHebrew,    // u059x
-            cRangeHebrew,    // u05ax
-            cRangeHebrew,    // u05bx
-            cRangeHebrew,    // u05cx
-            cRangeHebrew,    // u05dx
-            cRangeHebrew,    // u05ex
-            cRangeHebrew,    // u05fx
+            kCRangeCyrillic,  // u050x
+            kCRangeCyrillic,  // u051x
+            kCRangeCyrillic,  // u052x
+            kCRangeArmenian,  // u053x
+            kCRangeArmenian,  // u054x
+            kCRangeArmenian,  // u055x
+            kCRangeArmenian,  // u056x
+            kCRangeArmenian,  // u057x
+            kCRangeArmenian,  // u058x
+            kCRangeHebrew,    // u059x
+            kCRangeHebrew,    // u05ax
+            kCRangeHebrew,    // u05bx
+            kCRangeHebrew,    // u05cx
+            kCRangeHebrew,    // u05dx
+            kCRangeHebrew,    // u05ex
+            kCRangeHebrew,    // u05fx
         },
         {
             // table for 0xff00 - 0xffff
-            cRangeSetCJK,    // uff0x, fullwidth latin
-            cRangeSetCJK,    // uff1x, fullwidth latin
-            cRangeSetCJK,    // uff2x, fullwidth latin
-            cRangeSetCJK,    // uff3x, fullwidth latin
-            cRangeSetCJK,    // uff4x, fullwidth latin
-            cRangeSetCJK,    // uff5x, fullwidth latin
-            cRangeSetCJK,    // uff6x, halfwidth katakana
-            cRangeSetCJK,    // uff7x, halfwidth katakana
-            cRangeSetCJK,    // uff8x, halfwidth katakana
-            cRangeSetCJK,    // uff9x, halfwidth katakana
-            cRangeSetCJK,    // uffax, halfwidth hangul jamo
-            cRangeSetCJK,    // uffbx, halfwidth hangul jamo
-            cRangeSetCJK,    // uffcx, halfwidth hangul jamo
-            cRangeSetCJK,    // uffdx, halfwidth hangul jamo
-            cRangeSetCJK,    // uffex, fullwidth symbols
-            cRangeSpecials,  // ufffx, Specials
+            kCRangeSetCJK,    // uff0x, fullwidth latin
+            kCRangeSetCJK,    // uff1x, fullwidth latin
+            kCRangeSetCJK,    // uff2x, fullwidth latin
+            kCRangeSetCJK,    // uff3x, fullwidth latin
+            kCRangeSetCJK,    // uff4x, fullwidth latin
+            kCRangeSetCJK,    // uff5x, fullwidth latin
+            kCRangeSetCJK,    // uff6x, halfwidth katakana
+            kCRangeSetCJK,    // uff7x, halfwidth katakana
+            kCRangeSetCJK,    // uff8x, halfwidth katakana
+            kCRangeSetCJK,    // uff9x, halfwidth katakana
+            kCRangeSetCJK,    // uffax, halfwidth hangul jamo
+            kCRangeSetCJK,    // uffbx, halfwidth hangul jamo
+            kCRangeSetCJK,    // uffcx, halfwidth hangul jamo
+            kCRangeSetCJK,    // uffdx, halfwidth hangul jamo
+            kCRangeSetCJK,    // uffex, fullwidth symbols
+            kCRangeSpecials,  // ufffx, Specials
         },
 };
 
@@ -363,42 +363,42 @@ static const unsigned char gUnicodeSubrangeTable[cNumSubTables][cSubTableSize] =
 // table for that range is obtained by dividing (0x1700 - 0x0700) by 128.
 // Exceptions: Ethiopic, Tibetan, Hangul Jamo and Canadian aboriginal
 // syllabaries take multiple chunks and Ogham and Runic share a single chunk.
-static const unsigned cTertiaryTableSize = ((0x1700 - 0x0700) / 0x80);
+static const unsigned kCTertiaryTableSize = ((0x1700 - 0x0700) / 0x80);
 
-static const unsigned char gUnicodeTertiaryRangeTable[cTertiaryTableSize] = {
+static const unsigned char kGUnicodeTertiaryRangeTable[kCTertiaryTableSize] = {
     // table for 0x0700 - 0x1600
-    cRangeSyriac,      // u070x
-    cRangeThaana,      // u078x
-    cRangeUnassigned,  // u080x  place holder(resolved in the 2ndary tab.)
-    cRangeUnassigned,  // u088x  place holder(resolved in the 2ndary tab.)
-    cRangeDevanagari,  // u090x
-    cRangeBengali,     // u098x
-    cRangeGurmukhi,    // u0a0x
-    cRangeGujarati,    // u0a8x
-    cRangeOriya,       // u0b0x
-    cRangeTamil,       // u0b8x
-    cRangeTelugu,      // u0c0x
-    cRangeKannada,     // u0c8x
-    cRangeMalayalam,   // u0d0x
-    cRangeSinhala,     // u0d8x
-    cRangeThai,        // u0e0x
-    cRangeLao,         // u0e8x
-    cRangeTibetan,     // u0f0x  place holder(resolved in the 2ndary tab.)
-    cRangeTibetan,     // u0f8x  place holder(resolved in the 2ndary tab.)
-    cRangeMyanmar,     // u100x
-    cRangeGeorgian,    // u108x
-    cRangeKorean,      // u110x  place holder(resolved in the 2ndary tab.)
-    cRangeKorean,      // u118x  place holder(resolved in the 2ndary tab.)
-    cRangeEthiopic,    // u120x  place holder(resolved in the 2ndary tab.)
-    cRangeEthiopic,    // u128x  place holder(resolved in the 2ndary tab.)
-    cRangeEthiopic,    // u130x
-    cRangeCherokee,    // u138x
-    cRangeCanadian,    // u140x  place holder(resolved in the 2ndary tab.)
-    cRangeCanadian,    // u148x  place holder(resolved in the 2ndary tab.)
-    cRangeCanadian,    // u150x  place holder(resolved in the 2ndary tab.)
-    cRangeCanadian,    // u158x  place holder(resolved in the 2ndary tab.)
-    cRangeCanadian,    // u160x
-    cRangeOghamRunic,  // u168x  this contains two scripts, Ogham & Runic
+    kCRangeSyriac,      // u070x
+    kCRangeThaana,      // u078x
+    kCRangeUnassigned,  // u080x  place holder(resolved in the 2ndary tab.)
+    kCRangeUnassigned,  // u088x  place holder(resolved in the 2ndary tab.)
+    kCRangeDevanagari,  // u090x
+    kCRangeBengali,     // u098x
+    kCRangeGurmukhi,    // u0a0x
+    kCRangeGujarati,    // u0a8x
+    kCRangeOriya,       // u0b0x
+    kCRangeTamil,       // u0b8x
+    kCRangeTelugu,      // u0c0x
+    kCRangeKannada,     // u0c8x
+    kCRangeMalayalam,   // u0d0x
+    kCRangeSinhala,     // u0d8x
+    kCRangeThai,        // u0e0x
+    kCRangeLao,         // u0e8x
+    kCRangeTibetan,     // u0f0x  place holder(resolved in the 2ndary tab.)
+    kCRangeTibetan,     // u0f8x  place holder(resolved in the 2ndary tab.)
+    kCRangeMyanmar,     // u100x
+    kCRangeGeorgian,    // u108x
+    kCRangeKorean,      // u110x  place holder(resolved in the 2ndary tab.)
+    kCRangeKorean,      // u118x  place holder(resolved in the 2ndary tab.)
+    kCRangeEthiopic,    // u120x  place holder(resolved in the 2ndary tab.)
+    kCRangeEthiopic,    // u128x  place holder(resolved in the 2ndary tab.)
+    kCRangeEthiopic,    // u130x
+    kCRangeCherokee,    // u138x
+    kCRangeCanadian,    // u140x  place holder(resolved in the 2ndary tab.)
+    kCRangeCanadian,    // u148x  place holder(resolved in the 2ndary tab.)
+    kCRangeCanadian,    // u150x  place holder(resolved in the 2ndary tab.)
+    kCRangeCanadian,    // u158x  place holder(resolved in the 2ndary tab.)
+    kCRangeCanadian,    // u160x
+    kCRangeOghamRunic,  // u168x  this contains two scripts, Ogham & Runic
 };
 
 // A two level index is almost enough for locating a range, with the
@@ -409,28 +409,28 @@ static const unsigned char gUnicodeTertiaryRangeTable[cTertiaryTableSize] = {
 // there is such a need.
 // For Indic, Southeast Asian scripts and some other scripts between
 // U+0700 and U+16FF, it's extended to the third level.
-unsigned findCharUnicodeRange(UChar32 ch) {
+unsigned FindCharUnicodeRange(UChar32 ch) {
   if (ch >= 0xFFFF)
     return 0;
 
   unsigned range;
 
   // search the first table
-  range = gUnicodeSubrangeTable[0][ch >> 12];
+  range = kGUnicodeSubrangeTable[0][ch >> 12];
 
-  if (range < cRangeTableBase)
+  if (range < kCRangeTableBase)
     // we try to get a specific range
     return range;
 
   // otherwise, we have one more table to look at
-  range = gUnicodeSubrangeTable[range - cRangeTableBase][(ch & 0x0f00) >> 8];
-  if (range < cRangeTableBase)
+  range = kGUnicodeSubrangeTable[range - kCRangeTableBase][(ch & 0x0f00) >> 8];
+  if (range < kCRangeTableBase)
     return range;
-  if (range < cRangeTertiaryTable)
-    return gUnicodeSubrangeTable[range - cRangeTableBase][(ch & 0x00f0) >> 4];
+  if (range < kCRangeTertiaryTable)
+    return kGUnicodeSubrangeTable[range - kCRangeTableBase][(ch & 0x00f0) >> 4];
 
   // Yet another table to look at : U+0700 - U+16FF : 128 code point blocks
-  return gUnicodeTertiaryRangeTable[(ch - 0x0700) >> 7];
+  return kGUnicodeTertiaryRangeTable[(ch - 0x0700) >> 7];
 }
 
 }  // namespace blink

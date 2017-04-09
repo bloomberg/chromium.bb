@@ -145,11 +145,11 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   io_thread_checker_.DetachFromThread();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  if (!web_stream.isNull())
-    web_stream.videoTracks(video_tracks);
+  if (!web_stream.IsNull())
+    web_stream.VideoTracks(video_tracks);
 
   const bool remote_video =
-      video_tracks.size() && video_tracks[0].source().remote();
+      video_tracks.size() && video_tracks[0].Source().Remote();
 
   if (remote_video && !base::CommandLine::ForCurrentProcess()->HasSwitch(
                           switches::kDisableRTCSmoothnessAlgorithm)) {
@@ -162,7 +162,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
 
   // Just for logging purpose.
   std::string stream_id =
-      web_stream.isNull() ? std::string() : web_stream.id().utf8();
+      web_stream.IsNull() ? std::string() : web_stream.Id().Utf8();
   const uint32_t hash_value = base::Hash(stream_id);
   serial_ = (hash_value << 1) | (remote_video ? 1 : 0);
 }

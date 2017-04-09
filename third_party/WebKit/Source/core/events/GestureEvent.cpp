@@ -30,76 +30,76 @@
 
 namespace blink {
 
-GestureEvent* GestureEvent::create(AbstractView* view,
+GestureEvent* GestureEvent::Create(AbstractView* view,
                                    const WebGestureEvent& event) {
-  AtomicString eventType;
+  AtomicString event_type;
 
-  switch (event.type()) {
-    case WebInputEvent::GestureScrollBegin:
-      eventType = EventTypeNames::gesturescrollstart;
+  switch (event.GetType()) {
+    case WebInputEvent::kGestureScrollBegin:
+      event_type = EventTypeNames::gesturescrollstart;
       break;
-    case WebInputEvent::GestureScrollEnd:
-      eventType = EventTypeNames::gesturescrollend;
+    case WebInputEvent::kGestureScrollEnd:
+      event_type = EventTypeNames::gesturescrollend;
       break;
-    case WebInputEvent::GestureScrollUpdate:
-      eventType = EventTypeNames::gesturescrollupdate;
+    case WebInputEvent::kGestureScrollUpdate:
+      event_type = EventTypeNames::gesturescrollupdate;
       break;
-    case WebInputEvent::GestureTap:
-      eventType = EventTypeNames::gesturetap;
+    case WebInputEvent::kGestureTap:
+      event_type = EventTypeNames::gesturetap;
       break;
-    case WebInputEvent::GestureTapUnconfirmed:
-      eventType = EventTypeNames::gesturetapunconfirmed;
+    case WebInputEvent::kGestureTapUnconfirmed:
+      event_type = EventTypeNames::gesturetapunconfirmed;
       break;
-    case WebInputEvent::GestureTapDown:
-      eventType = EventTypeNames::gesturetapdown;
+    case WebInputEvent::kGestureTapDown:
+      event_type = EventTypeNames::gesturetapdown;
       break;
-    case WebInputEvent::GestureShowPress:
-      eventType = EventTypeNames::gestureshowpress;
+    case WebInputEvent::kGestureShowPress:
+      event_type = EventTypeNames::gestureshowpress;
       break;
-    case WebInputEvent::GestureLongPress:
-      eventType = EventTypeNames::gesturelongpress;
+    case WebInputEvent::kGestureLongPress:
+      event_type = EventTypeNames::gesturelongpress;
       break;
-    case WebInputEvent::GestureFlingStart:
-      eventType = EventTypeNames::gestureflingstart;
+    case WebInputEvent::kGestureFlingStart:
+      event_type = EventTypeNames::gestureflingstart;
       break;
-    case WebInputEvent::GestureTwoFingerTap:
-    case WebInputEvent::GesturePinchBegin:
-    case WebInputEvent::GesturePinchEnd:
-    case WebInputEvent::GesturePinchUpdate:
-    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::kGestureTwoFingerTap:
+    case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::kGesturePinchEnd:
+    case WebInputEvent::kGesturePinchUpdate:
+    case WebInputEvent::kGestureTapCancel:
     default:
       return nullptr;
   }
-  return new GestureEvent(eventType, view, event);
+  return new GestureEvent(event_type, view, event);
 }
 
-GestureEvent::GestureEvent(const AtomicString& eventType,
+GestureEvent::GestureEvent(const AtomicString& event_type,
                            AbstractView* view,
                            const WebGestureEvent& event)
     : UIEventWithKeyState(
-          eventType,
+          event_type,
           true,
           true,
           view,
           0,
-          static_cast<WebInputEvent::Modifiers>(event.modifiers()),
-          TimeTicks::FromSeconds(event.timeStampSeconds()),
+          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
+          TimeTicks::FromSeconds(event.TimeStampSeconds()),
           nullptr),
-      m_nativeEvent(event) {}
+      native_event_(event) {}
 
-const AtomicString& GestureEvent::interfaceName() const {
+const AtomicString& GestureEvent::InterfaceName() const {
   // FIXME: when a GestureEvent.idl interface is defined, return the string
   // "GestureEvent".  Until that happens, do not advertise an interface that
   // does not exist, since it will trip up the bindings integrity checks.
-  return UIEvent::interfaceName();
+  return UIEvent::InterfaceName();
 }
 
-bool GestureEvent::isGestureEvent() const {
+bool GestureEvent::IsGestureEvent() const {
   return true;
 }
 
 DEFINE_TRACE(GestureEvent) {
-  UIEvent::trace(visitor);
+  UIEvent::Trace(visitor);
 }
 
 }  // namespace blink

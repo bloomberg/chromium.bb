@@ -15,65 +15,65 @@ namespace blink {
 class FirstMeaningfulPaintDetectorTest : public testing::Test {
  protected:
   void SetUp() override {
-    m_platform->advanceClockSeconds(1);
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    platform_->AdvanceClockSeconds(1);
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
   }
 
-  double advanceClockAndGetTime() {
-    m_platform->advanceClockSeconds(1);
-    return monotonicallyIncreasingTime();
+  double AdvanceClockAndGetTime() {
+    platform_->AdvanceClockSeconds(1);
+    return MonotonicallyIncreasingTime();
   }
 
-  Document& document() { return m_dummyPageHolder->document(); }
-  PaintTiming& paintTiming() { return PaintTiming::from(document()); }
-  FirstMeaningfulPaintDetector& detector() {
-    return paintTiming().firstMeaningfulPaintDetector();
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
+  PaintTiming& GetPaintTiming() { return PaintTiming::From(GetDocument()); }
+  FirstMeaningfulPaintDetector& Detector() {
+    return GetPaintTiming().GetFirstMeaningfulPaintDetector();
   }
 
-  void simulateLayoutAndPaint(int newElements) {
-    m_platform->advanceClockSeconds(0.001);
+  void SimulateLayoutAndPaint(int new_elements) {
+    platform_->AdvanceClockSeconds(0.001);
     StringBuilder builder;
-    for (int i = 0; i < newElements; i++)
-      builder.append("<span>a</span>");
-    document().write(builder.toString());
-    document().updateStyleAndLayout();
-    detector().notifyPaint();
+    for (int i = 0; i < new_elements; i++)
+      builder.Append("<span>a</span>");
+    GetDocument().write(builder.ToString());
+    GetDocument().UpdateStyleAndLayout();
+    Detector().NotifyPaint();
   }
 
-  void simulateNetworkStable() {
-    document().setParsingState(Document::FinishedParsing);
-    detector().network0QuietTimerFired(nullptr);
-    detector().network2QuietTimerFired(nullptr);
+  void SimulateNetworkStable() {
+    GetDocument().SetParsingState(Document::kFinishedParsing);
+    Detector().Network0QuietTimerFired(nullptr);
+    Detector().Network2QuietTimerFired(nullptr);
   }
 
-  void simulateNetwork0Quiet() {
-    document().setParsingState(Document::FinishedParsing);
-    detector().network0QuietTimerFired(nullptr);
+  void SimulateNetwork0Quiet() {
+    GetDocument().SetParsingState(Document::kFinishedParsing);
+    Detector().Network0QuietTimerFired(nullptr);
   }
 
-  void simulateNetwork2Quiet() {
-    document().setParsingState(Document::FinishedParsing);
-    detector().network2QuietTimerFired(nullptr);
+  void SimulateNetwork2Quiet() {
+    GetDocument().SetParsingState(Document::kFinishedParsing);
+    Detector().Network2QuietTimerFired(nullptr);
   }
 
-  void setActiveConnections(int connections) {
-    detector().setNetworkQuietTimers(connections);
+  void SetActiveConnections(int connections) {
+    Detector().SetNetworkQuietTimers(connections);
   }
 
-  bool isNetwork0QuietTimerActive() {
-    return detector().m_network0QuietTimer.isActive();
+  bool IsNetwork0QuietTimerActive() {
+    return Detector().network0_quiet_timer_.IsActive();
   }
 
-  bool isNetwork2QuietTimerActive() {
-    return detector().m_network2QuietTimer.isActive();
+  bool IsNetwork2QuietTimerActive() {
+    return Detector().network2_quiet_timer_.IsActive();
   }
 
-  bool hadNetwork0Quiet() { return detector().m_network0QuietReached; }
-  bool hadNetwork2Quiet() { return detector().m_network2QuietReached; }
+  bool HadNetwork0Quiet() { return Detector().network0_quiet_reached_; }
+  bool HadNetwork2Quiet() { return Detector().network2_quiet_reached_; }
 
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      m_platform;
+      platform_;
 
   static constexpr double kNetwork0QuietWindowSeconds =
       FirstMeaningfulPaintDetector::kNetwork0QuietWindowSeconds;
@@ -81,170 +81,172 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
       FirstMeaningfulPaintDetector::kNetwork2QuietWindowSeconds;
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(FirstMeaningfulPaintDetectorTest, NoFirstPaint) {
-  simulateLayoutAndPaint(1);
-  simulateNetworkStable();
-  EXPECT_EQ(paintTiming().firstMeaningfulPaint(), 0.0);
+  SimulateLayoutAndPaint(1);
+  SimulateNetworkStable();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, OneLayout) {
-  paintTiming().markFirstContentfulPaint();
-  simulateLayoutAndPaint(1);
-  double afterPaint = advanceClockAndGetTime();
-  EXPECT_EQ(paintTiming().firstMeaningfulPaint(), 0.0);
-  simulateNetworkStable();
-  EXPECT_GT(paintTiming().firstMeaningfulPaint(), paintTiming().firstPaint());
-  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterPaint);
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateLayoutAndPaint(1);
+  double after_paint = AdvanceClockAndGetTime();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
+  SimulateNetworkStable();
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(),
+            GetPaintTiming().FirstPaint());
+  EXPECT_LT(GetPaintTiming().FirstMeaningfulPaint(), after_paint);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantSecond) {
-  paintTiming().markFirstContentfulPaint();
-  simulateLayoutAndPaint(1);
-  double afterLayout1 = advanceClockAndGetTime();
-  simulateLayoutAndPaint(10);
-  double afterLayout2 = advanceClockAndGetTime();
-  simulateNetworkStable();
-  EXPECT_GT(paintTiming().firstMeaningfulPaint(), afterLayout1);
-  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterLayout2);
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateLayoutAndPaint(1);
+  double after_layout1 = AdvanceClockAndGetTime();
+  SimulateLayoutAndPaint(10);
+  double after_layout2 = AdvanceClockAndGetTime();
+  SimulateNetworkStable();
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(), after_layout1);
+  EXPECT_LT(GetPaintTiming().FirstMeaningfulPaint(), after_layout2);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantFirst) {
-  paintTiming().markFirstContentfulPaint();
-  simulateLayoutAndPaint(10);
-  double afterLayout1 = advanceClockAndGetTime();
-  simulateLayoutAndPaint(1);
-  simulateNetworkStable();
-  EXPECT_GT(paintTiming().firstMeaningfulPaint(), paintTiming().firstPaint());
-  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterLayout1);
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateLayoutAndPaint(10);
+  double after_layout1 = AdvanceClockAndGetTime();
+  SimulateLayoutAndPaint(1);
+  SimulateNetworkStable();
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(),
+            GetPaintTiming().FirstPaint());
+  EXPECT_LT(GetPaintTiming().FirstMeaningfulPaint(), after_layout1);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
-  paintTiming().markFirstContentfulPaint();
-  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
-  simulateLayoutAndPaint(1);
-  double afterPaint = advanceClockAndGetTime();
+  GetPaintTiming().MarkFirstContentfulPaint();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
+  SimulateLayoutAndPaint(1);
+  double after_paint = AdvanceClockAndGetTime();
   // The first candidate gets ignored.
-  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
-  simulateLayoutAndPaint(10);
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
+  SimulateLayoutAndPaint(10);
   // The second candidate gets reported.
-  EXPECT_GT(paintTiming().firstMeaningfulPaintCandidate(), afterPaint);
-  double candidate = paintTiming().firstMeaningfulPaintCandidate();
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaintCandidate(), after_paint);
+  double candidate = GetPaintTiming().FirstMeaningfulPaintCandidate();
   // The third candidate gets ignored since we already saw the first candidate.
-  simulateLayoutAndPaint(10);
-  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), candidate);
+  SimulateLayoutAndPaint(10);
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), candidate);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest,
        OnlyOneFirstMeaningfulPaintCandidateBeforeNetworkStable) {
-  paintTiming().markFirstContentfulPaint();
-  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
-  double beforePaint = advanceClockAndGetTime();
-  simulateLayoutAndPaint(1);
+  GetPaintTiming().MarkFirstContentfulPaint();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
+  double before_paint = AdvanceClockAndGetTime();
+  SimulateLayoutAndPaint(1);
   // The first candidate is initially ignored.
-  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
-  simulateNetworkStable();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
+  SimulateNetworkStable();
   // The networkStable then promotes the first candidate.
-  EXPECT_GT(paintTiming().firstMeaningfulPaintCandidate(), beforePaint);
-  double candidate = paintTiming().firstMeaningfulPaintCandidate();
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaintCandidate(), before_paint);
+  double candidate = GetPaintTiming().FirstMeaningfulPaintCandidate();
   // The second candidate is then ignored.
-  simulateLayoutAndPaint(10);
-  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), candidate);
+  SimulateLayoutAndPaint(10);
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), candidate);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest,
        NetworkStableBeforeFirstContentfulPaint) {
-  paintTiming().markFirstPaint();
-  simulateLayoutAndPaint(1);
-  simulateNetworkStable();
-  EXPECT_EQ(paintTiming().firstMeaningfulPaint(), 0.0);
-  paintTiming().markFirstContentfulPaint();
-  simulateNetworkStable();
-  EXPECT_NE(paintTiming().firstMeaningfulPaint(), 0.0);
+  GetPaintTiming().MarkFirstPaint();
+  SimulateLayoutAndPaint(1);
+  SimulateNetworkStable();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateNetworkStable();
+  EXPECT_NE(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest,
        FirstMeaningfulPaintShouldNotBeBeforeFirstContentfulPaint) {
-  paintTiming().markFirstPaint();
-  simulateLayoutAndPaint(10);
-  paintTiming().markFirstContentfulPaint();
-  simulateNetworkStable();
-  EXPECT_GE(paintTiming().firstMeaningfulPaint(),
-            paintTiming().firstContentfulPaint());
+  GetPaintTiming().MarkFirstPaint();
+  SimulateLayoutAndPaint(10);
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateNetworkStable();
+  EXPECT_GE(GetPaintTiming().FirstMeaningfulPaint(),
+            GetPaintTiming().FirstContentfulPaint());
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietThen0Quiet) {
-  paintTiming().markFirstContentfulPaint();
+  GetPaintTiming().MarkFirstContentfulPaint();
 
-  simulateLayoutAndPaint(1);
-  double afterFirstPaint = advanceClockAndGetTime();
-  simulateNetwork2Quiet();
+  SimulateLayoutAndPaint(1);
+  double after_first_paint = AdvanceClockAndGetTime();
+  SimulateNetwork2Quiet();
 
-  simulateLayoutAndPaint(10);
-  simulateNetwork0Quiet();
+  SimulateLayoutAndPaint(10);
+  SimulateNetwork0Quiet();
 
   // The first paint is FirstMeaningfulPaint.
-  EXPECT_GT(paintTiming().firstMeaningfulPaint(), 0.0);
-  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterFirstPaint);
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
+  EXPECT_LT(GetPaintTiming().FirstMeaningfulPaint(), after_first_paint);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietThen2Quiet) {
-  paintTiming().markFirstContentfulPaint();
+  GetPaintTiming().MarkFirstContentfulPaint();
 
-  simulateLayoutAndPaint(1);
-  double afterFirstPaint = advanceClockAndGetTime();
-  simulateNetwork0Quiet();
+  SimulateLayoutAndPaint(1);
+  double after_first_paint = AdvanceClockAndGetTime();
+  SimulateNetwork0Quiet();
 
-  simulateLayoutAndPaint(10);
-  double afterSecondPaint = advanceClockAndGetTime();
-  simulateNetwork2Quiet();
+  SimulateLayoutAndPaint(10);
+  double after_second_paint = AdvanceClockAndGetTime();
+  SimulateNetwork2Quiet();
 
   // The second paint is FirstMeaningfulPaint.
-  EXPECT_GT(paintTiming().firstMeaningfulPaint(), afterFirstPaint);
-  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterSecondPaint);
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(), after_first_paint);
+  EXPECT_LT(GetPaintTiming().FirstMeaningfulPaint(), after_second_paint);
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietTimer) {
-  paintTiming().markFirstContentfulPaint();
+  GetPaintTiming().MarkFirstContentfulPaint();
 
-  setActiveConnections(1);
-  EXPECT_FALSE(isNetwork0QuietTimerActive());
+  SetActiveConnections(1);
+  EXPECT_FALSE(IsNetwork0QuietTimerActive());
 
-  setActiveConnections(0);
-  m_platform->runForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
-  EXPECT_TRUE(isNetwork0QuietTimerActive());
-  EXPECT_FALSE(hadNetwork0Quiet());
+  SetActiveConnections(0);
+  platform_->RunForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
+  EXPECT_TRUE(IsNetwork0QuietTimerActive());
+  EXPECT_FALSE(HadNetwork0Quiet());
 
-  setActiveConnections(0);  // This should reset the 0-quiet timer.
-  m_platform->runForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
-  EXPECT_TRUE(isNetwork0QuietTimerActive());
-  EXPECT_FALSE(hadNetwork0Quiet());
+  SetActiveConnections(0);  // This should reset the 0-quiet timer.
+  platform_->RunForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
+  EXPECT_TRUE(IsNetwork0QuietTimerActive());
+  EXPECT_FALSE(HadNetwork0Quiet());
 
-  m_platform->runForPeriodSeconds(0.1001);
-  EXPECT_TRUE(hadNetwork0Quiet());
+  platform_->RunForPeriodSeconds(0.1001);
+  EXPECT_TRUE(HadNetwork0Quiet());
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietTimer) {
-  paintTiming().markFirstContentfulPaint();
+  GetPaintTiming().MarkFirstContentfulPaint();
 
-  setActiveConnections(3);
-  EXPECT_FALSE(isNetwork2QuietTimerActive());
+  SetActiveConnections(3);
+  EXPECT_FALSE(IsNetwork2QuietTimerActive());
 
-  setActiveConnections(2);
-  m_platform->runForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
-  EXPECT_TRUE(isNetwork2QuietTimerActive());
-  EXPECT_FALSE(hadNetwork2Quiet());
+  SetActiveConnections(2);
+  platform_->RunForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
+  EXPECT_TRUE(IsNetwork2QuietTimerActive());
+  EXPECT_FALSE(HadNetwork2Quiet());
 
-  setActiveConnections(2);  // This should reset the 2-quiet timer.
-  m_platform->runForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
-  EXPECT_TRUE(isNetwork2QuietTimerActive());
-  EXPECT_FALSE(hadNetwork2Quiet());
+  SetActiveConnections(2);  // This should reset the 2-quiet timer.
+  platform_->RunForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
+  EXPECT_TRUE(IsNetwork2QuietTimerActive());
+  EXPECT_FALSE(HadNetwork2Quiet());
 
-  setActiveConnections(1);  // This should not reset the 2-quiet timer.
-  m_platform->runForPeriodSeconds(0.1001);
-  EXPECT_TRUE(hadNetwork2Quiet());
+  SetActiveConnections(1);  // This should not reset the 2-quiet timer.
+  platform_->RunForPeriodSeconds(0.1001);
+  EXPECT_TRUE(HadNetwork2Quiet());
 }
 
 }  // namespace blink

@@ -62,40 +62,40 @@ using namespace HTMLNames;
 
 // Enums used for UMA histogram.
 enum MediaDocumentDownloadButtonValue {
-  MediaDocumentDownloadButtonShown,
-  MediaDocumentDownloadButtonClicked,
+  kMediaDocumentDownloadButtonShown,
+  kMediaDocumentDownloadButtonClicked,
   // Only append new enums here.
-  MediaDocumentDownloadButtonMax
+  kMediaDocumentDownloadButtonMax
 };
 
-void recordDownloadMetric(MediaDocumentDownloadButtonValue value) {
+void RecordDownloadMetric(MediaDocumentDownloadButtonValue value) {
   DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, mediaDocumentDownloadButtonHistogram,
-      ("Blink.MediaDocument.DownloadButton", MediaDocumentDownloadButtonMax));
-  mediaDocumentDownloadButtonHistogram.count(value);
+      EnumerationHistogram, media_document_download_button_histogram,
+      ("Blink.MediaDocument.DownloadButton", kMediaDocumentDownloadButtonMax));
+  media_document_download_button_histogram.Count(value);
 }
 
 // FIXME: Share more code with PluginDocumentParser.
 class MediaDocumentParser : public RawDataDocumentParser {
  public:
-  static MediaDocumentParser* create(MediaDocument* document) {
+  static MediaDocumentParser* Create(MediaDocument* document) {
     return new MediaDocumentParser(document);
   }
 
  private:
   explicit MediaDocumentParser(Document* document)
-      : RawDataDocumentParser(document), m_didBuildDocumentStructure(false) {}
+      : RawDataDocumentParser(document), did_build_document_structure_(false) {}
 
-  void appendBytes(const char*, size_t) override;
+  void AppendBytes(const char*, size_t) override;
 
-  void createDocumentStructure();
+  void CreateDocumentStructure();
 
-  bool m_didBuildDocumentStructure;
+  bool did_build_document_structure_;
 };
 
 class MediaDownloadEventListener final : public EventListener {
  public:
-  static MediaDownloadEventListener* create() {
+  static MediaDownloadEventListener* Create() {
     return new MediaDownloadEventListener();
   }
 
@@ -105,23 +105,23 @@ class MediaDownloadEventListener final : public EventListener {
 
  private:
   MediaDownloadEventListener()
-      : EventListener(CPPEventListenerType), m_clicked(false) {}
+      : EventListener(kCPPEventListenerType), clicked_(false) {}
 
   void handleEvent(ExecutionContext* context, Event* event) override {
-    if (!m_clicked) {
-      recordDownloadMetric(MediaDocumentDownloadButtonClicked);
-      m_clicked = true;
+    if (!clicked_) {
+      RecordDownloadMetric(kMediaDocumentDownloadButtonClicked);
+      clicked_ = true;
     }
   }
 
-  bool m_clicked;
+  bool clicked_;
 };
 
 class MediaLoadedEventListener final : public EventListener {
   WTF_MAKE_NONCOPYABLE(MediaLoadedEventListener);
 
  public:
-  static MediaLoadedEventListener* create() {
+  static MediaLoadedEventListener* Create() {
     return new MediaLoadedEventListener();
   }
 
@@ -130,52 +130,52 @@ class MediaLoadedEventListener final : public EventListener {
   }
 
  private:
-  MediaLoadedEventListener() : EventListener(CPPEventListenerType) {}
+  MediaLoadedEventListener() : EventListener(kCPPEventListenerType) {}
 
   void handleEvent(ExecutionContext* context, Event* event) override {
     HTMLVideoElement* media =
-        static_cast<HTMLVideoElement*>(event->target()->toNode());
+        static_cast<HTMLVideoElement*>(event->target()->ToNode());
     UserGestureIndicator gesture(
-        DocumentUserGestureToken::create(&media->document()));
+        DocumentUserGestureToken::Create(&media->GetDocument()));
     // TODO(shaktisahu): Enable fullscreen after https://crbug/698353 is fixed.
-    media->play();
+    media->Play();
   }
 };
 
-void MediaDocumentParser::createDocumentStructure() {
-  DCHECK(document());
-  HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
-  document()->appendChild(rootElement);
-  rootElement->insertedByParser();
+void MediaDocumentParser::CreateDocumentStructure() {
+  DCHECK(GetDocument());
+  HTMLHtmlElement* root_element = HTMLHtmlElement::Create(*GetDocument());
+  GetDocument()->AppendChild(root_element);
+  root_element->InsertedByParser();
 
-  if (isDetached())
+  if (IsDetached())
     return;  // runScriptsAtDocumentElementAvailable can detach the frame.
 
-  HTMLHeadElement* head = HTMLHeadElement::create(*document());
-  HTMLMetaElement* meta = HTMLMetaElement::create(*document());
+  HTMLHeadElement* head = HTMLHeadElement::Create(*GetDocument());
+  HTMLMetaElement* meta = HTMLMetaElement::Create(*GetDocument());
   meta->setAttribute(nameAttr, "viewport");
   meta->setAttribute(contentAttr, "width=device-width");
-  head->appendChild(meta);
+  head->AppendChild(meta);
 
-  HTMLVideoElement* media = HTMLVideoElement::create(*document());
+  HTMLVideoElement* media = HTMLVideoElement::Create(*GetDocument());
   media->setAttribute(controlsAttr, "");
   media->setAttribute(autoplayAttr, "");
   media->setAttribute(nameAttr, "media");
 
-  HTMLSourceElement* source = HTMLSourceElement::create(*document());
-  source->setSrc(document()->url());
+  HTMLSourceElement* source = HTMLSourceElement::Create(*GetDocument());
+  source->SetSrc(GetDocument()->Url());
 
-  if (DocumentLoader* loader = document()->loader())
-    source->setType(loader->responseMIMEType());
+  if (DocumentLoader* loader = GetDocument()->Loader())
+    source->setType(loader->ResponseMIMEType());
 
-  media->appendChild(source);
+  media->AppendChild(source);
 
-  HTMLBodyElement* body = HTMLBodyElement::create(*document());
+  HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
   body->setAttribute(styleAttr, "margin: 0px;");
 
-  document()->willInsertBody();
+  GetDocument()->WillInsertBody();
 
-  HTMLDivElement* div = HTMLDivElement::create(*document());
+  HTMLDivElement* div = HTMLDivElement::Create(*GetDocument());
   // Style sheets for media controls are lazily loaded until a media element is
   // encountered.  As a result, elements encountered before the media element
   // will not get the right style at first if we put the styles in
@@ -189,30 +189,30 @@ void MediaDocumentParser::createDocumentStructure() {
                     "align-items: center;"
                     "min-height: min-content;"
                     "height: 100%;");
-  HTMLContentElement* content = HTMLContentElement::create(*document());
-  div->appendChild(content);
+  HTMLContentElement* content = HTMLContentElement::Create(*GetDocument());
+  div->AppendChild(content);
 
-  if (document()->settings() &&
-      document()->settings()->getEmbeddedMediaExperienceEnabled() &&
-      source->type().startsWith("video/", TextCaseASCIIInsensitive)) {
-    EventListener* listener = MediaLoadedEventListener::create();
+  if (GetDocument()->GetSettings() &&
+      GetDocument()->GetSettings()->GetEmbeddedMediaExperienceEnabled() &&
+      source->type().StartsWith("video/", kTextCaseASCIIInsensitive)) {
+    EventListener* listener = MediaLoadedEventListener::Create();
     AddEventListenerOptions options;
     options.setOnce(true);
-    AddEventListenerOptionsOrBoolean optionsOrBoolean;
-    optionsOrBoolean.setAddEventListenerOptions(options);
+    AddEventListenerOptionsOrBoolean options_or_boolean;
+    options_or_boolean.setAddEventListenerOptions(options);
     media->addEventListener(EventTypeNames::loadedmetadata, listener,
-                            optionsOrBoolean);
+                            options_or_boolean);
   }
 
   if (RuntimeEnabledFeatures::mediaDocumentDownloadButtonEnabled()) {
-    HTMLAnchorElement* anchor = HTMLAnchorElement::create(*document());
+    HTMLAnchorElement* anchor = HTMLAnchorElement::Create(*GetDocument());
     anchor->setAttribute(downloadAttr, "");
-    anchor->setURL(document()->url());
+    anchor->SetURL(GetDocument()->Url());
     anchor->setTextContent(
-        document()
-            ->getCachedLocale(document()->contentLanguage())
-            .queryString(WebLocalizedString::DownloadButtonLabel)
-            .upper());
+        GetDocument()
+            ->GetCachedLocale(GetDocument()->ContentLanguage())
+            .QueryString(WebLocalizedString::kDownloadButtonLabel)
+            .Upper());
     // Using CSS style according to Android material design.
     anchor->setAttribute(
         styleAttr,
@@ -229,69 +229,69 @@ void MediaDocumentParser::createDocumentStructure() {
         "font-weight: 500;"
         "text-decoration: none;"
         "line-height: 36px;");
-    EventListener* listener = MediaDownloadEventListener::create();
+    EventListener* listener = MediaDownloadEventListener::Create();
     anchor->addEventListener(EventTypeNames::click, listener, false);
-    HTMLDivElement* buttonContainer = HTMLDivElement::create(*document());
-    buttonContainer->setAttribute(styleAttr,
-                                  "text-align: center;"
-                                  "height: 0;"
-                                  "flex: none");
-    buttonContainer->appendChild(anchor);
-    div->appendChild(buttonContainer);
-    recordDownloadMetric(MediaDocumentDownloadButtonShown);
+    HTMLDivElement* button_container = HTMLDivElement::Create(*GetDocument());
+    button_container->setAttribute(styleAttr,
+                                   "text-align: center;"
+                                   "height: 0;"
+                                   "flex: none");
+    button_container->AppendChild(anchor);
+    div->AppendChild(button_container);
+    RecordDownloadMetric(kMediaDocumentDownloadButtonShown);
   }
 
   // According to
   // https://html.spec.whatwg.org/multipage/browsers.html#read-media,
   // MediaDocument should have a single child which is the video element. Use
   // shadow root to hide all the elements we added here.
-  ShadowRoot& shadowRoot = body->ensureUserAgentShadowRoot();
-  shadowRoot.appendChild(div);
-  body->appendChild(media);
-  rootElement->appendChild(head);
-  rootElement->appendChild(body);
+  ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
+  shadow_root.AppendChild(div);
+  body->AppendChild(media);
+  root_element->AppendChild(head);
+  root_element->AppendChild(body);
 
-  m_didBuildDocumentStructure = true;
+  did_build_document_structure_ = true;
 }
 
-void MediaDocumentParser::appendBytes(const char*, size_t) {
-  if (m_didBuildDocumentStructure)
+void MediaDocumentParser::AppendBytes(const char*, size_t) {
+  if (did_build_document_structure_)
     return;
 
-  createDocumentStructure();
-  finish();
+  CreateDocumentStructure();
+  Finish();
 }
 
 MediaDocument::MediaDocument(const DocumentInit& initializer)
-    : HTMLDocument(initializer, MediaDocumentClass) {
-  setCompatibilityMode(QuirksMode);
-  lockCompatibilityMode();
-  UseCounter::count(*this, UseCounter::MediaDocument);
-  if (!isInMainFrame())
-    UseCounter::count(*this, UseCounter::MediaDocumentInFrame);
+    : HTMLDocument(initializer, kMediaDocumentClass) {
+  SetCompatibilityMode(kQuirksMode);
+  LockCompatibilityMode();
+  UseCounter::Count(*this, UseCounter::kMediaDocument);
+  if (!IsInMainFrame())
+    UseCounter::Count(*this, UseCounter::kMediaDocumentInFrame);
 }
 
-DocumentParser* MediaDocument::createParser() {
-  return MediaDocumentParser::create(this);
+DocumentParser* MediaDocument::CreateParser() {
+  return MediaDocumentParser::Create(this);
 }
 
-void MediaDocument::defaultEventHandler(Event* event) {
-  Node* targetNode = event->target()->toNode();
-  if (!targetNode)
+void MediaDocument::DefaultEventHandler(Event* event) {
+  Node* target_node = event->target()->ToNode();
+  if (!target_node)
     return;
 
-  if (event->type() == EventTypeNames::keydown && event->isKeyboardEvent()) {
+  if (event->type() == EventTypeNames::keydown && event->IsKeyboardEvent()) {
     HTMLVideoElement* video =
-        Traversal<HTMLVideoElement>::firstWithin(*targetNode);
+        Traversal<HTMLVideoElement>::FirstWithin(*target_node);
     if (!video)
       return;
 
-    KeyboardEvent* keyboardEvent = toKeyboardEvent(event);
-    if (keyboardEvent->key() == " " ||
-        keyboardEvent->keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
+    KeyboardEvent* keyboard_event = ToKeyboardEvent(event);
+    if (keyboard_event->key() == " " ||
+        keyboard_event->keyCode() == VKEY_MEDIA_PLAY_PAUSE) {
       // space or media key (play/pause)
-      video->togglePlayState();
-      event->setDefaultHandled();
+      video->TogglePlayState();
+      event->SetDefaultHandled();
     }
   }
 }

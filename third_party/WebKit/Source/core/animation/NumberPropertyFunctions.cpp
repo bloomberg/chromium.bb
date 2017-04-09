@@ -8,74 +8,74 @@
 
 namespace blink {
 
-bool NumberPropertyFunctions::getInitialNumber(CSSPropertyID property,
+bool NumberPropertyFunctions::GetInitialNumber(CSSPropertyID property,
                                                double& result) {
-  return getNumber(property, ComputedStyle::initialStyle(), result);
+  return GetNumber(property, ComputedStyle::InitialStyle(), result);
 }
 
-bool NumberPropertyFunctions::getNumber(CSSPropertyID property,
+bool NumberPropertyFunctions::GetNumber(CSSPropertyID property,
                                         const ComputedStyle& style,
                                         double& result) {
   switch (property) {
     case CSSPropertyFillOpacity:
-      result = style.fillOpacity();
+      result = style.FillOpacity();
       return true;
     case CSSPropertyFlexGrow:
-      result = style.flexGrow();
+      result = style.FlexGrow();
       return true;
     case CSSPropertyFlexShrink:
-      result = style.flexShrink();
+      result = style.FlexShrink();
       return true;
     case CSSPropertyFloodOpacity:
-      result = style.floodOpacity();
+      result = style.FloodOpacity();
       return true;
     case CSSPropertyOpacity:
-      result = style.opacity();
+      result = style.Opacity();
       return true;
     case CSSPropertyOrder:
-      result = style.order();
+      result = style.Order();
       return true;
     case CSSPropertyOrphans:
-      result = style.orphans();
+      result = style.Orphans();
       return true;
     case CSSPropertyShapeImageThreshold:
-      result = style.shapeImageThreshold();
+      result = style.ShapeImageThreshold();
       return true;
     case CSSPropertyStopOpacity:
-      result = style.stopOpacity();
+      result = style.StopOpacity();
       return true;
     case CSSPropertyStrokeMiterlimit:
-      result = style.strokeMiterLimit();
+      result = style.StrokeMiterLimit();
       return true;
     case CSSPropertyStrokeOpacity:
-      result = style.strokeOpacity();
+      result = style.StrokeOpacity();
       return true;
     case CSSPropertyWidows:
-      result = style.widows();
+      result = style.Widows();
       return true;
 
     case CSSPropertyFontSizeAdjust:
-      if (!style.hasFontSizeAdjust())
+      if (!style.HasFontSizeAdjust())
         return false;
-      result = style.fontSizeAdjust();
+      result = style.FontSizeAdjust();
       return true;
     case CSSPropertyColumnCount:
-      if (style.hasAutoColumnCount())
+      if (style.HasAutoColumnCount())
         return false;
-      result = style.columnCount();
+      result = style.ColumnCount();
       return true;
     case CSSPropertyZIndex:
-      if (style.hasAutoZIndex())
+      if (style.HasAutoZIndex())
         return false;
-      result = style.zIndex();
+      result = style.ZIndex();
       return true;
 
     case CSSPropertyLineHeight: {
-      const Length& length = style.specifiedLineHeight();
+      const Length& length = style.SpecifiedLineHeight();
       // Numbers are represented by percentages.
-      if (length.type() != Percent)
+      if (length.GetType() != kPercent)
         return false;
-      double value = length.value();
+      double value = length.Value();
       // -100% represents the keyword "normal".
       if (value == -100)
         return false;
@@ -88,7 +88,7 @@ bool NumberPropertyFunctions::getNumber(CSSPropertyID property,
   }
 }
 
-double NumberPropertyFunctions::clampNumber(CSSPropertyID property,
+double NumberPropertyFunctions::ClampNumber(CSSPropertyID property,
                                             double value) {
   switch (property) {
     case CSSPropertyStrokeMiterlimit:
@@ -130,55 +130,55 @@ double NumberPropertyFunctions::clampNumber(CSSPropertyID property,
   }
 }
 
-bool NumberPropertyFunctions::setNumber(CSSPropertyID property,
+bool NumberPropertyFunctions::SetNumber(CSSPropertyID property,
                                         ComputedStyle& style,
                                         double value) {
-  DCHECK_EQ(value, clampNumber(property, value));
+  DCHECK_EQ(value, ClampNumber(property, value));
   switch (property) {
     case CSSPropertyFillOpacity:
-      style.setFillOpacity(value);
+      style.SetFillOpacity(value);
       return true;
     case CSSPropertyFlexGrow:
-      style.setFlexGrow(value);
+      style.SetFlexGrow(value);
       return true;
     case CSSPropertyFlexShrink:
-      style.setFlexShrink(value);
+      style.SetFlexShrink(value);
       return true;
     case CSSPropertyFloodOpacity:
-      style.setFloodOpacity(value);
+      style.SetFloodOpacity(value);
       return true;
     case CSSPropertyLineHeight:
-      style.setLineHeight(Length(value * 100, Percent));
+      style.SetLineHeight(Length(value * 100, kPercent));
       return true;
     case CSSPropertyOpacity:
-      style.setOpacity(value);
+      style.SetOpacity(value);
       return true;
     case CSSPropertyOrder:
-      style.setOrder(value);
+      style.SetOrder(value);
       return true;
     case CSSPropertyOrphans:
-      style.setOrphans(value);
+      style.SetOrphans(value);
       return true;
     case CSSPropertyShapeImageThreshold:
-      style.setShapeImageThreshold(value);
+      style.SetShapeImageThreshold(value);
       return true;
     case CSSPropertyStopOpacity:
-      style.setStopOpacity(value);
+      style.SetStopOpacity(value);
       return true;
     case CSSPropertyStrokeMiterlimit:
-      style.setStrokeMiterLimit(value);
+      style.SetStrokeMiterLimit(value);
       return true;
     case CSSPropertyStrokeOpacity:
-      style.setStrokeOpacity(value);
+      style.SetStrokeOpacity(value);
       return true;
     case CSSPropertyColumnCount:
-      style.setColumnCount(value);
+      style.SetColumnCount(value);
       return true;
     case CSSPropertyWidows:
-      style.setWidows(value);
+      style.SetWidows(value);
       return true;
     case CSSPropertyZIndex:
-      style.setZIndex(value);
+      style.SetZIndex(value);
       return true;
     default:
       return false;

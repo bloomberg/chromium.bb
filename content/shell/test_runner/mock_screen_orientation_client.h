@@ -38,10 +38,10 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
 
  private:
   // From blink::WebScreenOrientationClient.
-  void lockOrientation(
+  void LockOrientation(
       blink::WebScreenOrientationLockType orientation,
       std::unique_ptr<blink::WebLockOrientationCallback> callback) override;
-  void unlockOrientation() override;
+  void UnlockOrientation() override;
 
   void UpdateLockSync(blink::WebScreenOrientationLockType,
                       std::unique_ptr<blink::WebLockOrientationCallback>);

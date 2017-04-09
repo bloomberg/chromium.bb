@@ -24,133 +24,134 @@ const char defaultFontFamily[] = "sans-serif";
 namespace blink {
 
 CanvasFontCache::CanvasFontCache(Document& document)
-    : m_document(&document), m_pruningScheduled(false) {
-  FontFamily fontFamily;
-  fontFamily.setFamily(defaultFontFamily);
-  FontDescription defaultFontDescription;
-  defaultFontDescription.setFamily(fontFamily);
-  defaultFontDescription.setSpecifiedSize(defaultFontSize);
-  defaultFontDescription.setComputedSize(defaultFontSize);
-  m_defaultFontStyle = ComputedStyle::create();
-  m_defaultFontStyle->setFontDescription(defaultFontDescription);
-  m_defaultFontStyle->font().update(
-      m_defaultFontStyle->font().getFontSelector());
+    : document_(&document), pruning_scheduled_(false) {
+  FontFamily font_family;
+  font_family.SetFamily(defaultFontFamily);
+  FontDescription default_font_description;
+  default_font_description.SetFamily(font_family);
+  default_font_description.SetSpecifiedSize(defaultFontSize);
+  default_font_description.SetComputedSize(defaultFontSize);
+  default_font_style_ = ComputedStyle::Create();
+  default_font_style_->SetFontDescription(default_font_description);
+  default_font_style_->GetFont().Update(
+      default_font_style_->GetFont().GetFontSelector());
 }
 
 CanvasFontCache::~CanvasFontCache() {
-  m_mainCachePurgePreventer.reset();
-  if (m_pruningScheduled) {
-    Platform::current()->currentThread()->removeTaskObserver(this);
+  main_cache_purge_preventer_.reset();
+  if (pruning_scheduled_) {
+    Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
   }
 }
 
-unsigned CanvasFontCache::maxFonts() {
+unsigned CanvasFontCache::MaxFonts() {
   return CanvasFontCacheMaxFonts;
 }
 
-unsigned CanvasFontCache::hardMaxFonts() {
-  return m_document->hidden() ? CanvasFontCacheHiddenMaxFonts
-                              : CanvasFontCacheHardMaxFonts;
+unsigned CanvasFontCache::HardMaxFonts() {
+  return document_->hidden() ? CanvasFontCacheHiddenMaxFonts
+                             : CanvasFontCacheHardMaxFonts;
 }
 
-bool CanvasFontCache::getFontUsingDefaultStyle(const String& fontString,
-                                               Font& resolvedFont) {
+bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
+                                               Font& resolved_font) {
   HashMap<String, Font>::iterator i =
-      m_fontsResolvedUsingDefaultStyle.find(fontString);
-  if (i != m_fontsResolvedUsingDefaultStyle.end()) {
-    ASSERT(m_fontLRUList.contains(fontString));
-    m_fontLRUList.erase(fontString);
-    m_fontLRUList.insert(fontString);
-    resolvedFont = i->value;
+      fonts_resolved_using_default_style_.Find(font_string);
+  if (i != fonts_resolved_using_default_style_.end()) {
+    ASSERT(font_lru_list_.Contains(font_string));
+    font_lru_list_.erase(font_string);
+    font_lru_list_.insert(font_string);
+    resolved_font = i->value;
     return true;
   }
 
   // Addition to LRU list taken care of inside parseFont
-  MutableStylePropertySet* parsedStyle = parseFont(fontString);
-  if (!parsedStyle)
+  MutableStylePropertySet* parsed_style = ParseFont(font_string);
+  if (!parsed_style)
     return false;
 
-  RefPtr<ComputedStyle> fontStyle =
-      ComputedStyle::clone(*m_defaultFontStyle.get());
-  m_document->ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
-  m_fontsResolvedUsingDefaultStyle.insert(fontString, fontStyle->font());
-  resolvedFont = m_fontsResolvedUsingDefaultStyle.find(fontString)->value;
+  RefPtr<ComputedStyle> font_style =
+      ComputedStyle::Clone(*default_font_style_.Get());
+  document_->EnsureStyleResolver().ComputeFont(font_style.Get(), *parsed_style);
+  fonts_resolved_using_default_style_.insert(font_string,
+                                             font_style->GetFont());
+  resolved_font = fonts_resolved_using_default_style_.Find(font_string)->value;
   return true;
 }
 
-MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString) {
-  MutableStylePropertySet* parsedStyle;
-  MutableStylePropertyMap::iterator i = m_fetchedFonts.find(fontString);
-  if (i != m_fetchedFonts.end()) {
-    ASSERT(m_fontLRUList.contains(fontString));
-    parsedStyle = i->value;
-    m_fontLRUList.erase(fontString);
-    m_fontLRUList.insert(fontString);
+MutableStylePropertySet* CanvasFontCache::ParseFont(const String& font_string) {
+  MutableStylePropertySet* parsed_style;
+  MutableStylePropertyMap::iterator i = fetched_fonts_.Find(font_string);
+  if (i != fetched_fonts_.end()) {
+    ASSERT(font_lru_list_.Contains(font_string));
+    parsed_style = i->value;
+    font_lru_list_.erase(font_string);
+    font_lru_list_.insert(font_string);
   } else {
-    parsedStyle = MutableStylePropertySet::create(HTMLStandardMode);
-    CSSParser::parseValue(parsedStyle, CSSPropertyFont, fontString, true);
-    if (parsedStyle->isEmpty())
+    parsed_style = MutableStylePropertySet::Create(kHTMLStandardMode);
+    CSSParser::ParseValue(parsed_style, CSSPropertyFont, font_string, true);
+    if (parsed_style->IsEmpty())
       return nullptr;
     // According to
     // http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
     // the "inherit" and "initial" values must be ignored.
-    const CSSValue* fontValue =
-        parsedStyle->getPropertyCSSValue(CSSPropertyFontSize);
-    if (fontValue &&
-        (fontValue->isInitialValue() || fontValue->isInheritedValue()))
+    const CSSValue* font_value =
+        parsed_style->GetPropertyCSSValue(CSSPropertyFontSize);
+    if (font_value &&
+        (font_value->IsInitialValue() || font_value->IsInheritedValue()))
       return nullptr;
-    m_fetchedFonts.insert(fontString, parsedStyle);
-    m_fontLRUList.insert(fontString);
+    fetched_fonts_.insert(font_string, parsed_style);
+    font_lru_list_.insert(font_string);
     // Hard limit is applied here, on the fly, while the soft limit is
     // applied at the end of the task.
-    if (m_fetchedFonts.size() > hardMaxFonts()) {
-      ASSERT(m_fetchedFonts.size() == hardMaxFonts() + 1);
-      ASSERT(m_fontLRUList.size() == hardMaxFonts() + 1);
-      m_fetchedFonts.erase(m_fontLRUList.front());
-      m_fontsResolvedUsingDefaultStyle.erase(m_fontLRUList.front());
-      m_fontLRUList.removeFirst();
+    if (fetched_fonts_.size() > HardMaxFonts()) {
+      ASSERT(fetched_fonts_.size() == HardMaxFonts() + 1);
+      ASSERT(font_lru_list_.size() == HardMaxFonts() + 1);
+      fetched_fonts_.erase(font_lru_list_.front());
+      fonts_resolved_using_default_style_.erase(font_lru_list_.front());
+      font_lru_list_.RemoveFirst();
     }
   }
-  schedulePruningIfNeeded();
+  SchedulePruningIfNeeded();
 
-  return parsedStyle;
+  return parsed_style;
 }
 
-void CanvasFontCache::didProcessTask() {
-  ASSERT(m_pruningScheduled);
-  ASSERT(m_mainCachePurgePreventer);
-  while (m_fetchedFonts.size() > maxFonts()) {
-    m_fetchedFonts.erase(m_fontLRUList.front());
-    m_fontsResolvedUsingDefaultStyle.erase(m_fontLRUList.front());
-    m_fontLRUList.removeFirst();
+void CanvasFontCache::DidProcessTask() {
+  ASSERT(pruning_scheduled_);
+  ASSERT(main_cache_purge_preventer_);
+  while (fetched_fonts_.size() > MaxFonts()) {
+    fetched_fonts_.erase(font_lru_list_.front());
+    fonts_resolved_using_default_style_.erase(font_lru_list_.front());
+    font_lru_list_.RemoveFirst();
   }
-  m_mainCachePurgePreventer.reset();
-  Platform::current()->currentThread()->removeTaskObserver(this);
-  m_pruningScheduled = false;
+  main_cache_purge_preventer_.reset();
+  Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
+  pruning_scheduled_ = false;
 }
 
-void CanvasFontCache::schedulePruningIfNeeded() {
-  if (m_pruningScheduled)
+void CanvasFontCache::SchedulePruningIfNeeded() {
+  if (pruning_scheduled_)
     return;
-  ASSERT(!m_mainCachePurgePreventer);
-  m_mainCachePurgePreventer = WTF::wrapUnique(new FontCachePurgePreventer);
-  Platform::current()->currentThread()->addTaskObserver(this);
-  m_pruningScheduled = true;
+  ASSERT(!main_cache_purge_preventer_);
+  main_cache_purge_preventer_ = WTF::WrapUnique(new FontCachePurgePreventer);
+  Platform::Current()->CurrentThread()->AddTaskObserver(this);
+  pruning_scheduled_ = true;
 }
 
-bool CanvasFontCache::isInCache(const String& fontString) {
-  return m_fetchedFonts.find(fontString) != m_fetchedFonts.end();
+bool CanvasFontCache::IsInCache(const String& font_string) {
+  return fetched_fonts_.Find(font_string) != fetched_fonts_.end();
 }
 
-void CanvasFontCache::pruneAll() {
-  m_fetchedFonts.clear();
-  m_fontLRUList.clear();
-  m_fontsResolvedUsingDefaultStyle.clear();
+void CanvasFontCache::PruneAll() {
+  fetched_fonts_.Clear();
+  font_lru_list_.Clear();
+  fonts_resolved_using_default_style_.Clear();
 }
 
 DEFINE_TRACE(CanvasFontCache) {
-  visitor->trace(m_fetchedFonts);
-  visitor->trace(m_document);
+  visitor->Trace(fetched_fonts_);
+  visitor->Trace(document_);
 }
 
 }  // namespace blink

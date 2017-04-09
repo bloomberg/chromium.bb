@@ -197,7 +197,7 @@ TEST_F(GamingSeatTest, OnAxis) {
   axis_moved.items[0].timestamp = 1;
   axis_moved.items[2].connected = true;
   axis_moved.items[2].timestamp = 2;
-  axis_moved.items[2].axesLength = 1;
+  axis_moved.items[2].axes_length = 1;
   axis_moved.items[2].axes[0] = 1.0;
 
   EXPECT_CALL(gamepad_delegate2, OnAxis(0, 1.0)).Times(1);
@@ -205,7 +205,7 @@ TEST_F(GamingSeatTest, OnAxis) {
   SetDataAndPostToDelegate(axis_moved);
 
   axis_moved.items[0].timestamp = 2;
-  axis_moved.items[0].axesLength = 1;
+  axis_moved.items[0].axes_length = 1;
   axis_moved.items[0].axes[0] = 2.0;
 
   EXPECT_CALL(gamepad_delegate0, OnAxis(0, 2.0)).Times(1);
@@ -257,7 +257,7 @@ TEST_F(GamingSeatTest, OnButton) {
   axis_moved.items[2].connected = true;
   axis_moved.items[2].timestamp = 2;
 
-  axis_moved.items[2].buttonsLength = 1;
+  axis_moved.items[2].buttons_length = 1;
   axis_moved.items[2].buttons[0].pressed = true;
   axis_moved.items[2].buttons[0].value = 1.0;
 
@@ -266,7 +266,7 @@ TEST_F(GamingSeatTest, OnButton) {
   SetDataAndPostToDelegate(axis_moved);
 
   axis_moved.items[0].timestamp = 2;
-  axis_moved.items[0].buttonsLength = 1;
+  axis_moved.items[0].buttons_length = 1;
   axis_moved.items[0].buttons[0].pressed = true;
   axis_moved.items[0].buttons[0].value = 2.0;
 

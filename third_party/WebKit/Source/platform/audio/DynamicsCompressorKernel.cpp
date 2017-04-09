@@ -40,84 +40,85 @@ namespace blink {
 using namespace AudioUtilities;
 
 // Metering hits peaks instantly, but releases this fast (in seconds).
-const float meteringReleaseTimeConstant = 0.325f;
+const float kMeteringReleaseTimeConstant = 0.325f;
 
-const float uninitializedValue = -1;
+const float kUninitializedValue = -1;
 
-DynamicsCompressorKernel::DynamicsCompressorKernel(float sampleRate,
-                                                   unsigned numberOfChannels)
-    : m_sampleRate(sampleRate),
-      m_lastPreDelayFrames(DefaultPreDelayFrames),
-      m_preDelayReadIndex(0),
-      m_preDelayWriteIndex(DefaultPreDelayFrames),
-      m_ratio(uninitializedValue),
-      m_slope(uninitializedValue),
-      m_linearThreshold(uninitializedValue),
-      m_dbThreshold(uninitializedValue),
-      m_dbKnee(uninitializedValue),
-      m_kneeThreshold(uninitializedValue),
-      m_kneeThresholdDb(uninitializedValue),
-      m_ykneeThresholdDb(uninitializedValue),
-      m_knee(uninitializedValue) {
-  setNumberOfChannels(numberOfChannels);
+DynamicsCompressorKernel::DynamicsCompressorKernel(float sample_rate,
+                                                   unsigned number_of_channels)
+    : sample_rate_(sample_rate),
+      last_pre_delay_frames_(kDefaultPreDelayFrames),
+      pre_delay_read_index_(0),
+      pre_delay_write_index_(kDefaultPreDelayFrames),
+      ratio_(kUninitializedValue),
+      slope_(kUninitializedValue),
+      linear_threshold_(kUninitializedValue),
+      db_threshold_(kUninitializedValue),
+      db_knee_(kUninitializedValue),
+      knee_threshold_(kUninitializedValue),
+      knee_threshold_db_(kUninitializedValue),
+      yknee_threshold_db_(kUninitializedValue),
+      knee_(kUninitializedValue) {
+  SetNumberOfChannels(number_of_channels);
 
   // Initializes most member variables
-  reset();
+  Reset();
 
-  m_meteringReleaseK = static_cast<float>(discreteTimeConstantForSampleRate(
-      meteringReleaseTimeConstant, sampleRate));
+  metering_release_k_ = static_cast<float>(DiscreteTimeConstantForSampleRate(
+      kMeteringReleaseTimeConstant, sample_rate));
 }
 
-void DynamicsCompressorKernel::setNumberOfChannels(unsigned numberOfChannels) {
-  if (m_preDelayBuffers.size() == numberOfChannels)
+void DynamicsCompressorKernel::SetNumberOfChannels(
+    unsigned number_of_channels) {
+  if (pre_delay_buffers_.size() == number_of_channels)
     return;
 
-  m_preDelayBuffers.clear();
-  for (unsigned i = 0; i < numberOfChannels; ++i) {
-    m_preDelayBuffers.push_back(
-        WTF::makeUnique<AudioFloatArray>(MaxPreDelayFrames));
+  pre_delay_buffers_.Clear();
+  for (unsigned i = 0; i < number_of_channels; ++i) {
+    pre_delay_buffers_.push_back(
+        WTF::MakeUnique<AudioFloatArray>(kMaxPreDelayFrames));
   }
 }
 
-void DynamicsCompressorKernel::setPreDelayTime(float preDelayTime) {
+void DynamicsCompressorKernel::SetPreDelayTime(float pre_delay_time) {
   // Re-configure look-ahead section pre-delay if delay time has changed.
-  unsigned preDelayFrames = preDelayTime * sampleRate();
-  if (preDelayFrames > MaxPreDelayFrames - 1)
-    preDelayFrames = MaxPreDelayFrames - 1;
+  unsigned pre_delay_frames = pre_delay_time * SampleRate();
+  if (pre_delay_frames > kMaxPreDelayFrames - 1)
+    pre_delay_frames = kMaxPreDelayFrames - 1;
 
-  if (m_lastPreDelayFrames != preDelayFrames) {
-    m_lastPreDelayFrames = preDelayFrames;
-    for (unsigned i = 0; i < m_preDelayBuffers.size(); ++i)
-      m_preDelayBuffers[i]->zero();
+  if (last_pre_delay_frames_ != pre_delay_frames) {
+    last_pre_delay_frames_ = pre_delay_frames;
+    for (unsigned i = 0; i < pre_delay_buffers_.size(); ++i)
+      pre_delay_buffers_[i]->Zero();
 
-    m_preDelayReadIndex = 0;
-    m_preDelayWriteIndex = preDelayFrames;
+    pre_delay_read_index_ = 0;
+    pre_delay_write_index_ = pre_delay_frames;
   }
 }
 
 // Exponential curve for the knee.
 // It is 1st derivative matched at m_linearThreshold and asymptotically
 // approaches the value m_linearThreshold + 1 / k.
-float DynamicsCompressorKernel::kneeCurve(float x, float k) {
+float DynamicsCompressorKernel::KneeCurve(float x, float k) {
   // Linear up to threshold.
-  if (x < m_linearThreshold)
+  if (x < linear_threshold_)
     return x;
 
-  return m_linearThreshold + (1 - expf(-k * (x - m_linearThreshold))) / k;
+  return linear_threshold_ + (1 - expf(-k * (x - linear_threshold_))) / k;
 }
 
 // Full compression curve with constant ratio after knee.
-float DynamicsCompressorKernel::saturate(float x, float k) {
+float DynamicsCompressorKernel::Saturate(float x, float k) {
   float y;
 
-  if (x < m_kneeThreshold)
-    y = kneeCurve(x, k);
+  if (x < knee_threshold_)
+    y = KneeCurve(x, k);
   else {
     // Constant ratio after knee.
-    float xDb = linearToDecibels(x);
-    float yDb = m_ykneeThresholdDb + m_slope * (xDb - m_kneeThresholdDb);
+    float x_db = LinearToDecibels(x);
+    float y_db = yknee_threshold_db_ + slope_ * (x_db - knee_threshold_db_);
 
-    y = decibelsToLinear(yDb);
+    y = DecibelsToLinear(y_db);
   }
 
   return y;
@@ -126,134 +127,135 @@ float DynamicsCompressorKernel::saturate(float x, float k) {
 // Approximate 1st derivative with input and output expressed in dB.
 // This slope is equal to the inverse of the compression "ratio".
 // In other words, a compression ratio of 20 would be a slope of 1/20.
-float DynamicsCompressorKernel::slopeAt(float x, float k) {
-  if (x < m_linearThreshold)
+float DynamicsCompressorKernel::SlopeAt(float x, float k) {
+  if (x < linear_threshold_)
     return 1;
 
   float x2 = x * 1.001;
 
-  float xDb = linearToDecibels(x);
-  float x2Db = linearToDecibels(x2);
+  float x_db = LinearToDecibels(x);
+  float x2_db = LinearToDecibels(x2);
 
-  float yDb = linearToDecibels(kneeCurve(x, k));
-  float y2Db = linearToDecibels(kneeCurve(x2, k));
+  float y_db = LinearToDecibels(KneeCurve(x, k));
+  float y2_db = LinearToDecibels(KneeCurve(x2, k));
 
-  float m = (y2Db - yDb) / (x2Db - xDb);
+  float m = (y2_db - y_db) / (x2_db - x_db);
 
   return m;
 }
 
-float DynamicsCompressorKernel::kAtSlope(float desiredSlope) {
-  float xDb = m_dbThreshold + m_dbKnee;
-  float x = decibelsToLinear(xDb);
+float DynamicsCompressorKernel::KAtSlope(float desired_slope) {
+  float x_db = db_threshold_ + db_knee_;
+  float x = DecibelsToLinear(x_db);
 
   // Approximate k given initial values.
-  float minK = 0.1;
-  float maxK = 10000;
+  float min_k = 0.1;
+  float max_k = 10000;
   float k = 5;
 
   for (int i = 0; i < 15; ++i) {
     // A high value for k will more quickly asymptotically approach a slope of
     // 0.
-    float slope = slopeAt(x, k);
+    float slope = SlopeAt(x, k);
 
-    if (slope < desiredSlope) {
+    if (slope < desired_slope) {
       // k is too high.
-      maxK = k;
+      max_k = k;
     } else {
       // k is too low.
-      minK = k;
+      min_k = k;
     }
 
     // Re-calculate based on geometric mean.
-    k = sqrtf(minK * maxK);
+    k = sqrtf(min_k * max_k);
   }
 
   return k;
 }
 
-float DynamicsCompressorKernel::updateStaticCurveParameters(float dbThreshold,
-                                                            float dbKnee,
+float DynamicsCompressorKernel::UpdateStaticCurveParameters(float db_threshold,
+                                                            float db_knee,
                                                             float ratio) {
-  if (dbThreshold != m_dbThreshold || dbKnee != m_dbKnee || ratio != m_ratio) {
+  if (db_threshold != db_threshold_ || db_knee != db_knee_ || ratio != ratio_) {
     // Threshold and knee.
-    m_dbThreshold = dbThreshold;
-    m_linearThreshold = decibelsToLinear(dbThreshold);
-    m_dbKnee = dbKnee;
+    db_threshold_ = db_threshold;
+    linear_threshold_ = DecibelsToLinear(db_threshold);
+    db_knee_ = db_knee;
 
     // Compute knee parameters.
-    m_ratio = ratio;
-    m_slope = 1 / m_ratio;
+    ratio_ = ratio;
+    slope_ = 1 / ratio_;
 
-    float k = kAtSlope(1 / m_ratio);
+    float k = KAtSlope(1 / ratio_);
 
-    m_kneeThresholdDb = dbThreshold + dbKnee;
-    m_kneeThreshold = decibelsToLinear(m_kneeThresholdDb);
+    knee_threshold_db_ = db_threshold + db_knee;
+    knee_threshold_ = DecibelsToLinear(knee_threshold_db_);
 
-    m_ykneeThresholdDb = linearToDecibels(kneeCurve(m_kneeThreshold, k));
+    yknee_threshold_db_ = LinearToDecibels(KneeCurve(knee_threshold_, k));
 
-    m_knee = k;
+    knee_ = k;
   }
-  return m_knee;
+  return knee_;
 }
 
-void DynamicsCompressorKernel::process(
-    const float* sourceChannels[],
-    float* destinationChannels[],
-    unsigned numberOfChannels,
-    unsigned framesToProcess,
+void DynamicsCompressorKernel::Process(
+    const float* source_channels[],
+    float* destination_channels[],
+    unsigned number_of_channels,
+    unsigned frames_to_process,
 
-    float dbThreshold,
-    float dbKnee,
+    float db_threshold,
+    float db_knee,
     float ratio,
-    float attackTime,
-    float releaseTime,
-    float preDelayTime,
-    float dbPostGain,
-    float effectBlend, /* equal power crossfade */
+    float attack_time,
+    float release_time,
+    float pre_delay_time,
+    float db_post_gain,
+    float effect_blend, /* equal power crossfade */
 
-    float releaseZone1,
-    float releaseZone2,
-    float releaseZone3,
-    float releaseZone4) {
-  DCHECK_EQ(m_preDelayBuffers.size(), numberOfChannels);
+    float release_zone1,
+    float release_zone2,
+    float release_zone3,
+    float release_zone4) {
+  DCHECK_EQ(pre_delay_buffers_.size(), number_of_channels);
 
-  float sampleRate = this->sampleRate();
+  float sample_rate = this->SampleRate();
 
-  float dryMix = 1 - effectBlend;
-  float wetMix = effectBlend;
+  float dry_mix = 1 - effect_blend;
+  float wet_mix = effect_blend;
 
-  float k = updateStaticCurveParameters(dbThreshold, dbKnee, ratio);
+  float k = UpdateStaticCurveParameters(db_threshold, db_knee, ratio);
 
   // Makeup gain.
-  float fullRangeGain = saturate(1, k);
-  float fullRangeMakeupGain = 1 / fullRangeGain;
+  float full_range_gain = Saturate(1, k);
+  float full_range_makeup_gain = 1 / full_range_gain;
 
   // Empirical/perceptual tuning.
-  fullRangeMakeupGain = powf(fullRangeMakeupGain, 0.6f);
+  full_range_makeup_gain = powf(full_range_makeup_gain, 0.6f);
 
-  float masterLinearGain = decibelsToLinear(dbPostGain) * fullRangeMakeupGain;
+  float master_linear_gain =
+      DecibelsToLinear(db_post_gain) * full_range_makeup_gain;
 
   // Attack parameters.
-  attackTime = std::max(0.001f, attackTime);
-  float attackFrames = attackTime * sampleRate;
+  attack_time = std::max(0.001f, attack_time);
+  float attack_frames = attack_time * sample_rate;
 
   // Release parameters.
-  float releaseFrames = sampleRate * releaseTime;
+  float release_frames = sample_rate * release_time;
 
   // Detector release time.
-  float satReleaseTime = 0.0025f;
-  float satReleaseFrames = satReleaseTime * sampleRate;
+  float sat_release_time = 0.0025f;
+  float sat_release_frames = sat_release_time * sample_rate;
 
   // Create a smooth function which passes through four points.
 
   // Polynomial of the form
   // y = a + b*x + c*x^2 + d*x^3 + e*x^4;
 
-  float y1 = releaseFrames * releaseZone1;
-  float y2 = releaseFrames * releaseZone2;
-  float y3 = releaseFrames * releaseZone3;
-  float y4 = releaseFrames * releaseZone4;
+  float y1 = release_frames * release_zone1;
+  float y2 = release_frames * release_zone2;
+  float y3 = release_frames * release_zone3;
+  float y4 = release_frames * release_zone4;
 
   // All of these coefficients were derived for 4th order polynomial curve
   // fitting where the y values match the evenly spaced x values as follows:
@@ -275,28 +277,28 @@ void DynamicsCompressorKernel::process(
   // y calculates adaptive release frames depending on the amount of
   // compression.
 
-  setPreDelayTime(preDelayTime);
+  SetPreDelayTime(pre_delay_time);
 
-  const int nDivisionFrames = 32;
+  const int kNDivisionFrames = 32;
 
-  const int nDivisions = framesToProcess / nDivisionFrames;
+  const int n_divisions = frames_to_process / kNDivisionFrames;
 
-  unsigned frameIndex = 0;
-  for (int i = 0; i < nDivisions; ++i) {
+  unsigned frame_index = 0;
+  for (int i = 0; i < n_divisions; ++i) {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Calculate desired gain
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     // Fix gremlins.
-    if (std::isnan(m_detectorAverage))
-      m_detectorAverage = 1;
-    if (std::isinf(m_detectorAverage))
-      m_detectorAverage = 1;
+    if (std::isnan(detector_average_))
+      detector_average_ = 1;
+    if (std::isinf(detector_average_))
+      detector_average_ = 1;
 
-    float desiredGain = m_detectorAverage;
+    float desired_gain = detector_average_;
 
     // Pre-warp so we get desiredGain after sin() warp below.
-    float scaledDesiredGain = asinf(desiredGain) / (piOverTwoFloat);
+    float scaled_desired_gain = asinf(desired_gain) / (piOverTwoFloat);
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Deal with envelopes
@@ -305,30 +307,30 @@ void DynamicsCompressorKernel::process(
     // envelopeRate is the rate we slew from current compressor level to the
     // desired level.  The exact rate depends on if we're attacking or
     // releasing and by how much.
-    float envelopeRate;
+    float envelope_rate;
 
-    bool isReleasing = scaledDesiredGain > m_compressorGain;
+    bool is_releasing = scaled_desired_gain > compressor_gain_;
 
     // compressionDiffDb is the difference between current compression level and
     // the desired level.
-    float compressionDiffDb =
-        linearToDecibels(m_compressorGain / scaledDesiredGain);
+    float compression_diff_db =
+        LinearToDecibels(compressor_gain_ / scaled_desired_gain);
 
-    if (isReleasing) {
+    if (is_releasing) {
       // Release mode - compressionDiffDb should be negative dB
-      m_maxAttackCompressionDiffDb = -1;
+      max_attack_compression_diff_db_ = -1;
 
       // Fix gremlins.
-      if (std::isnan(compressionDiffDb))
-        compressionDiffDb = -1;
-      if (std::isinf(compressionDiffDb))
-        compressionDiffDb = -1;
+      if (std::isnan(compression_diff_db))
+        compression_diff_db = -1;
+      if (std::isinf(compression_diff_db))
+        compression_diff_db = -1;
 
       // Adaptive release - higher compression (lower compressionDiffDb)
       // releases faster.
 
       // Contain within range: -12 -> 0 then scale to go from 0 -> 3
-      float x = compressionDiffDb;
+      float x = compression_diff_db;
       x = clampTo(x, -12.0f, 0.0f);
       x = 0.25f * (x + 12);
 
@@ -338,31 +340,31 @@ void DynamicsCompressorKernel::process(
       float x2 = x * x;
       float x3 = x2 * x;
       float x4 = x2 * x2;
-      float releaseFrames = a + b * x + c * x2 + d * x3 + e * x4;
+      float release_frames = a + b * x + c * x2 + d * x3 + e * x4;
 
 #define kSpacingDb 5
-      float dbPerFrame = kSpacingDb / releaseFrames;
+      float db_per_frame = kSpacingDb / release_frames;
 
-      envelopeRate = decibelsToLinear(dbPerFrame);
+      envelope_rate = DecibelsToLinear(db_per_frame);
     } else {
       // Attack mode - compressionDiffDb should be positive dB
 
       // Fix gremlins.
-      if (std::isnan(compressionDiffDb))
-        compressionDiffDb = 1;
-      if (std::isinf(compressionDiffDb))
-        compressionDiffDb = 1;
+      if (std::isnan(compression_diff_db))
+        compression_diff_db = 1;
+      if (std::isinf(compression_diff_db))
+        compression_diff_db = 1;
 
       // As long as we're still in attack mode, use a rate based off
       // the largest compressionDiffDb we've encountered so far.
-      if (m_maxAttackCompressionDiffDb == -1 ||
-          m_maxAttackCompressionDiffDb < compressionDiffDb)
-        m_maxAttackCompressionDiffDb = compressionDiffDb;
+      if (max_attack_compression_diff_db_ == -1 ||
+          max_attack_compression_diff_db_ < compression_diff_db)
+        max_attack_compression_diff_db_ = compression_diff_db;
 
-      float effAttenDiffDb = std::max(0.5f, m_maxAttackCompressionDiffDb);
+      float eff_atten_diff_db = std::max(0.5f, max_attack_compression_diff_db_);
 
-      float x = 0.25f / effAttenDiffDb;
-      envelopeRate = 1 - powf(x, 1 / attackFrames);
+      float x = 0.25f / eff_atten_diff_db;
+      envelope_rate = 1 - powf(x, 1 / attack_frames);
     }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -370,122 +372,127 @@ void DynamicsCompressorKernel::process(
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     {
-      int preDelayReadIndex = m_preDelayReadIndex;
-      int preDelayWriteIndex = m_preDelayWriteIndex;
-      float detectorAverage = m_detectorAverage;
-      float compressorGain = m_compressorGain;
+      int pre_delay_read_index = pre_delay_read_index_;
+      int pre_delay_write_index = pre_delay_write_index_;
+      float detector_average = detector_average_;
+      float compressor_gain = compressor_gain_;
 
-      int loopFrames = nDivisionFrames;
-      while (loopFrames--) {
-        float compressorInput = 0;
+      int loop_frames = kNDivisionFrames;
+      while (loop_frames--) {
+        float compressor_input = 0;
 
         // Predelay signal, computing compression amount from un-delayed
         // version.
-        for (unsigned i = 0; i < numberOfChannels; ++i) {
-          float* delayBuffer = m_preDelayBuffers[i]->data();
-          float undelayedSource = sourceChannels[i][frameIndex];
-          delayBuffer[preDelayWriteIndex] = undelayedSource;
+        for (unsigned i = 0; i < number_of_channels; ++i) {
+          float* delay_buffer = pre_delay_buffers_[i]->Data();
+          float undelayed_source = source_channels[i][frame_index];
+          delay_buffer[pre_delay_write_index] = undelayed_source;
 
-          float absUndelayedSource =
-              undelayedSource > 0 ? undelayedSource : -undelayedSource;
-          if (compressorInput < absUndelayedSource)
-            compressorInput = absUndelayedSource;
+          float abs_undelayed_source =
+              undelayed_source > 0 ? undelayed_source : -undelayed_source;
+          if (compressor_input < abs_undelayed_source)
+            compressor_input = abs_undelayed_source;
         }
 
         // Calculate shaped power on undelayed input.
 
-        float scaledInput = compressorInput;
-        float absInput = scaledInput > 0 ? scaledInput : -scaledInput;
+        float scaled_input = compressor_input;
+        float abs_input = scaled_input > 0 ? scaled_input : -scaled_input;
 
         // Put through shaping curve.
         // This is linear up to the threshold, then enters a "knee" portion
         // followed by the "ratio" portion.  The transition from the threshold
         // to the knee is smooth (1st derivative matched).  The transition from
         // the knee to the ratio portion is smooth (1st derivative matched).
-        float shapedInput = saturate(absInput, k);
+        float shaped_input = Saturate(abs_input, k);
 
-        float attenuation = absInput <= 0.0001f ? 1 : shapedInput / absInput;
+        float attenuation = abs_input <= 0.0001f ? 1 : shaped_input / abs_input;
 
-        float attenuationDb = -linearToDecibels(attenuation);
-        attenuationDb = std::max(2.0f, attenuationDb);
+        float attenuation_db = -LinearToDecibels(attenuation);
+        attenuation_db = std::max(2.0f, attenuation_db);
 
-        float dbPerFrame = attenuationDb / satReleaseFrames;
+        float db_per_frame = attenuation_db / sat_release_frames;
 
-        float satReleaseRate = decibelsToLinear(dbPerFrame) - 1;
+        float sat_release_rate = DecibelsToLinear(db_per_frame) - 1;
 
-        bool isRelease = (attenuation > detectorAverage);
-        float rate = isRelease ? satReleaseRate : 1;
+        bool is_release = (attenuation > detector_average);
+        float rate = is_release ? sat_release_rate : 1;
 
-        detectorAverage += (attenuation - detectorAverage) * rate;
-        detectorAverage = std::min(1.0f, detectorAverage);
+        detector_average += (attenuation - detector_average) * rate;
+        detector_average = std::min(1.0f, detector_average);
 
         // Fix gremlins.
-        if (std::isnan(detectorAverage))
-          detectorAverage = 1;
-        if (std::isinf(detectorAverage))
-          detectorAverage = 1;
+        if (std::isnan(detector_average))
+          detector_average = 1;
+        if (std::isinf(detector_average))
+          detector_average = 1;
 
         // Exponential approach to desired gain.
-        if (envelopeRate < 1) {
+        if (envelope_rate < 1) {
           // Attack - reduce gain to desired.
-          compressorGain += (scaledDesiredGain - compressorGain) * envelopeRate;
+          compressor_gain +=
+              (scaled_desired_gain - compressor_gain) * envelope_rate;
         } else {
           // Release - exponentially increase gain to 1.0
-          compressorGain *= envelopeRate;
-          compressorGain = std::min(1.0f, compressorGain);
+          compressor_gain *= envelope_rate;
+          compressor_gain = std::min(1.0f, compressor_gain);
         }
 
         // Warp pre-compression gain to smooth out sharp exponential transition
         // points.
-        float postWarpCompressorGain = sinf(piOverTwoFloat * compressorGain);
+        float post_warp_compressor_gain =
+            sinf(piOverTwoFloat * compressor_gain);
 
         // Calculate total gain using master gain and effect blend.
-        float totalGain =
-            dryMix + wetMix * masterLinearGain * postWarpCompressorGain;
+        float total_gain =
+            dry_mix + wet_mix * master_linear_gain * post_warp_compressor_gain;
 
         // Calculate metering.
-        float dbRealGain = 20 * std::log10(postWarpCompressorGain);
-        if (dbRealGain < m_meteringGain)
-          m_meteringGain = dbRealGain;
+        float db_real_gain = 20 * std::log10(post_warp_compressor_gain);
+        if (db_real_gain < metering_gain_)
+          metering_gain_ = db_real_gain;
         else
-          m_meteringGain += (dbRealGain - m_meteringGain) * m_meteringReleaseK;
+          metering_gain_ +=
+              (db_real_gain - metering_gain_) * metering_release_k_;
 
         // Apply final gain.
-        for (unsigned i = 0; i < numberOfChannels; ++i) {
-          float* delayBuffer = m_preDelayBuffers[i]->data();
-          destinationChannels[i][frameIndex] =
-              delayBuffer[preDelayReadIndex] * totalGain;
+        for (unsigned i = 0; i < number_of_channels; ++i) {
+          float* delay_buffer = pre_delay_buffers_[i]->Data();
+          destination_channels[i][frame_index] =
+              delay_buffer[pre_delay_read_index] * total_gain;
         }
 
-        frameIndex++;
-        preDelayReadIndex = (preDelayReadIndex + 1) & MaxPreDelayFramesMask;
-        preDelayWriteIndex = (preDelayWriteIndex + 1) & MaxPreDelayFramesMask;
+        frame_index++;
+        pre_delay_read_index =
+            (pre_delay_read_index + 1) & kMaxPreDelayFramesMask;
+        pre_delay_write_index =
+            (pre_delay_write_index + 1) & kMaxPreDelayFramesMask;
       }
 
       // Locals back to member variables.
-      m_preDelayReadIndex = preDelayReadIndex;
-      m_preDelayWriteIndex = preDelayWriteIndex;
-      m_detectorAverage =
-          DenormalDisabler::flushDenormalFloatToZero(detectorAverage);
-      m_compressorGain =
-          DenormalDisabler::flushDenormalFloatToZero(compressorGain);
+      pre_delay_read_index_ = pre_delay_read_index;
+      pre_delay_write_index_ = pre_delay_write_index;
+      detector_average_ =
+          DenormalDisabler::FlushDenormalFloatToZero(detector_average);
+      compressor_gain_ =
+          DenormalDisabler::FlushDenormalFloatToZero(compressor_gain);
     }
   }
 }
 
-void DynamicsCompressorKernel::reset() {
-  m_detectorAverage = 0;
-  m_compressorGain = 1;
-  m_meteringGain = 1;
+void DynamicsCompressorKernel::Reset() {
+  detector_average_ = 0;
+  compressor_gain_ = 1;
+  metering_gain_ = 1;
 
   // Predelay section.
-  for (unsigned i = 0; i < m_preDelayBuffers.size(); ++i)
-    m_preDelayBuffers[i]->zero();
+  for (unsigned i = 0; i < pre_delay_buffers_.size(); ++i)
+    pre_delay_buffers_[i]->Zero();
 
-  m_preDelayReadIndex = 0;
-  m_preDelayWriteIndex = DefaultPreDelayFrames;
+  pre_delay_read_index_ = 0;
+  pre_delay_write_index_ = kDefaultPreDelayFrames;
 
-  m_maxAttackCompressionDiffDb = -1;  // uninitialized state
+  max_attack_compression_diff_db_ = -1;  // uninitialized state
 }
 
 }  // namespace blink

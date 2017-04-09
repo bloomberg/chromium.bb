@@ -42,18 +42,18 @@ class PLATFORM_EXPORT FontFamily {
   FontFamily() {}
   ~FontFamily();
 
-  void setFamily(const AtomicString& family) { m_family = family; }
-  const AtomicString& family() const { return m_family; }
-  bool familyIsEmpty() const { return m_family.isEmpty(); }
+  void SetFamily(const AtomicString& family) { family_ = family; }
+  const AtomicString& Family() const { return family_; }
+  bool FamilyIsEmpty() const { return family_.IsEmpty(); }
 
-  const FontFamily* next() const;
+  const FontFamily* Next() const;
 
-  void appendFamily(PassRefPtr<SharedFontFamily>);
-  PassRefPtr<SharedFontFamily> releaseNext();
+  void AppendFamily(PassRefPtr<SharedFontFamily>);
+  PassRefPtr<SharedFontFamily> ReleaseNext();
 
  private:
-  AtomicString m_family;
-  RefPtr<SharedFontFamily> m_next;
+  AtomicString family_;
+  RefPtr<SharedFontFamily> next_;
 };
 
 class PLATFORM_EXPORT SharedFontFamily : public FontFamily,
@@ -62,8 +62,8 @@ class PLATFORM_EXPORT SharedFontFamily : public FontFamily,
   WTF_MAKE_NONCOPYABLE(SharedFontFamily);
 
  public:
-  static PassRefPtr<SharedFontFamily> create() {
-    return adoptRef(new SharedFontFamily);
+  static PassRefPtr<SharedFontFamily> Create() {
+    return AdoptRef(new SharedFontFamily);
   }
 
  private:
@@ -76,23 +76,23 @@ inline bool operator!=(const FontFamily& a, const FontFamily& b) {
 }
 
 inline FontFamily::~FontFamily() {
-  RefPtr<SharedFontFamily> reaper = std::move(m_next);
-  while (reaper && reaper->hasOneRef()) {
+  RefPtr<SharedFontFamily> reaper = std::move(next_);
+  while (reaper && reaper->HasOneRef()) {
     // implicitly protects reaper->next, then derefs reaper
-    reaper = reaper->releaseNext();
+    reaper = reaper->ReleaseNext();
   }
 }
 
-inline const FontFamily* FontFamily::next() const {
-  return m_next.get();
+inline const FontFamily* FontFamily::Next() const {
+  return next_.Get();
 }
 
-inline void FontFamily::appendFamily(PassRefPtr<SharedFontFamily> family) {
-  m_next = std::move(family);
+inline void FontFamily::AppendFamily(PassRefPtr<SharedFontFamily> family) {
+  next_ = std::move(family);
 }
 
-inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext() {
-  return std::move(m_next);
+inline PassRefPtr<SharedFontFamily> FontFamily::ReleaseNext() {
+  return std::move(next_);
 }
 
 }  // namespace blink

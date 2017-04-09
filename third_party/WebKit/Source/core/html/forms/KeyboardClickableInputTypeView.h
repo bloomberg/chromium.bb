@@ -43,10 +43,10 @@ class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
       : InputTypeView(element) {}
 
  private:
-  void handleKeydownEvent(KeyboardEvent*) override;
-  void handleKeypressEvent(KeyboardEvent*) override;
-  void handleKeyupEvent(KeyboardEvent*) override;
-  void accessKeyAction(bool sendMouseEvents) override;
+  void HandleKeydownEvent(KeyboardEvent*) override;
+  void HandleKeypressEvent(KeyboardEvent*) override;
+  void HandleKeyupEvent(KeyboardEvent*) override;
+  void AccessKeyAction(bool send_mouse_events) override;
 };
 
 }  // namespace blink

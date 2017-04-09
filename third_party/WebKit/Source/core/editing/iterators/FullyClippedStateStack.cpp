@@ -14,26 +14,26 @@ namespace blink {
 
 namespace {
 
-inline bool fullyClipsContents(Node* node) {
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject || !layoutObject->isBox() ||
-      !layoutObject->hasOverflowClip() || layoutObject->isLayoutView())
+inline bool FullyClipsContents(Node* node) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || !layout_object->IsBox() ||
+      !layout_object->HasOverflowClip() || layout_object->IsLayoutView())
     return false;
-  return toLayoutBox(layoutObject)->size().isEmpty();
+  return ToLayoutBox(layout_object)->size().IsEmpty();
 }
 
-inline bool ignoresContainerClip(Node* node) {
-  LayoutObject* layoutObject = node->layoutObject();
-  if (!layoutObject || layoutObject->isText())
+inline bool IgnoresContainerClip(Node* node) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object || layout_object->IsText())
     return false;
-  return layoutObject->style()->hasOutOfFlowPosition();
+  return layout_object->Style()->HasOutOfFlowPosition();
 }
 
 template <typename Strategy>
-unsigned depthCrossingShadowBoundaries(const Node& node) {
+unsigned DepthCrossingShadowBoundaries(const Node& node) {
   unsigned depth = 0;
-  for (ContainerNode* parent = parentCrossingShadowBoundaries<Strategy>(node);
-       parent; parent = parentCrossingShadowBoundaries<Strategy>(*parent))
+  for (ContainerNode* parent = ParentCrossingShadowBoundaries<Strategy>(node);
+       parent; parent = ParentCrossingShadowBoundaries<Strategy>(*parent))
     ++depth;
   return depth;
 }
@@ -47,9 +47,9 @@ template <typename Strategy>
 FullyClippedStateStackAlgorithm<Strategy>::~FullyClippedStateStackAlgorithm() {}
 
 template <typename Strategy>
-void FullyClippedStateStackAlgorithm<Strategy>::pushFullyClippedState(
+void FullyClippedStateStackAlgorithm<Strategy>::PushFullyClippedState(
     Node* node) {
-  DCHECK_EQ(size(), depthCrossingShadowBoundaries<Strategy>(*node));
+  DCHECK_EQ(size(), DepthCrossingShadowBoundaries<Strategy>(*node));
 
   // FIXME: m_fullyClippedStack was added in response to
   // <https://bugs.webkit.org/show_bug.cgi?id=26364> ("Search can find text
@@ -67,26 +67,26 @@ void FullyClippedStateStackAlgorithm<Strategy>::pushFullyClippedState(
   // Push true if this node full clips its contents, or if a parent already has
   // fully
   // clipped and this is not a node that ignores its container's clip.
-  push(fullyClipsContents(node) || (top() && !ignoresContainerClip(node)));
+  Push(FullyClipsContents(node) || (Top() && !IgnoresContainerClip(node)));
 }
 
 template <typename Strategy>
-void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(
+void FullyClippedStateStackAlgorithm<Strategy>::SetUpFullyClippedStack(
     Node* node) {
   // Put the nodes in a vector so we can iterate in reverse order.
   HeapVector<Member<ContainerNode>, 100> ancestry;
-  for (ContainerNode* parent = parentCrossingShadowBoundaries<Strategy>(*node);
-       parent; parent = parentCrossingShadowBoundaries<Strategy>(*parent))
+  for (ContainerNode* parent = ParentCrossingShadowBoundaries<Strategy>(*node);
+       parent; parent = ParentCrossingShadowBoundaries<Strategy>(*parent))
     ancestry.push_back(parent);
 
   // Call pushFullyClippedState on each node starting with the earliest
   // ancestor.
-  size_t ancestrySize = ancestry.size();
-  for (size_t i = 0; i < ancestrySize; ++i)
-    pushFullyClippedState(ancestry[ancestrySize - i - 1]);
-  pushFullyClippedState(node);
+  size_t ancestry_size = ancestry.size();
+  for (size_t i = 0; i < ancestry_size; ++i)
+    PushFullyClippedState(ancestry[ancestry_size - i - 1]);
+  PushFullyClippedState(node);
 
-  DCHECK_EQ(size(), 1 + depthCrossingShadowBoundaries<Strategy>(*node));
+  DCHECK_EQ(size(), 1 + DepthCrossingShadowBoundaries<Strategy>(*node));
 }
 
 template class CORE_TEMPLATE_EXPORT

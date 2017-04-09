@@ -47,49 +47,49 @@
 
 namespace blink {
 
-static DragOperation convertEffectAllowedToDragOperation(const String& op) {
+static DragOperation ConvertEffectAllowedToDragOperation(const String& op) {
   // Values specified in
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dom-datatransfer-effectallowed
   if (op == "uninitialized")
-    return DragOperationEvery;
+    return kDragOperationEvery;
   if (op == "none")
-    return DragOperationNone;
+    return kDragOperationNone;
   if (op == "copy")
-    return DragOperationCopy;
+    return kDragOperationCopy;
   if (op == "link")
-    return DragOperationLink;
+    return kDragOperationLink;
   if (op == "move")
-    return (DragOperation)(DragOperationGeneric | DragOperationMove);
+    return (DragOperation)(kDragOperationGeneric | kDragOperationMove);
   if (op == "copyLink")
-    return (DragOperation)(DragOperationCopy | DragOperationLink);
+    return (DragOperation)(kDragOperationCopy | kDragOperationLink);
   if (op == "copyMove")
-    return (DragOperation)(DragOperationCopy | DragOperationGeneric |
-                           DragOperationMove);
+    return (DragOperation)(kDragOperationCopy | kDragOperationGeneric |
+                           kDragOperationMove);
   if (op == "linkMove")
-    return (DragOperation)(DragOperationLink | DragOperationGeneric |
-                           DragOperationMove);
+    return (DragOperation)(kDragOperationLink | kDragOperationGeneric |
+                           kDragOperationMove);
   if (op == "all")
-    return DragOperationEvery;
-  return DragOperationPrivate;  // really a marker for "no conversion"
+    return kDragOperationEvery;
+  return kDragOperationPrivate;  // really a marker for "no conversion"
 }
 
-static String convertDragOperationToEffectAllowed(DragOperation op) {
-  bool moveSet = !!((DragOperationGeneric | DragOperationMove) & op);
+static String ConvertDragOperationToEffectAllowed(DragOperation op) {
+  bool move_set = !!((kDragOperationGeneric | kDragOperationMove) & op);
 
-  if ((moveSet && (op & DragOperationCopy) && (op & DragOperationLink)) ||
-      (op == DragOperationEvery))
+  if ((move_set && (op & kDragOperationCopy) && (op & kDragOperationLink)) ||
+      (op == kDragOperationEvery))
     return "all";
-  if (moveSet && (op & DragOperationCopy))
+  if (move_set && (op & kDragOperationCopy))
     return "copyMove";
-  if (moveSet && (op & DragOperationLink))
+  if (move_set && (op & kDragOperationLink))
     return "linkMove";
-  if ((op & DragOperationCopy) && (op & DragOperationLink))
+  if ((op & kDragOperationCopy) && (op & kDragOperationLink))
     return "copyLink";
-  if (moveSet)
+  if (move_set)
     return "move";
-  if (op & DragOperationCopy)
+  if (op & kDragOperationCopy)
     return "copy";
-  if (op & DragOperationLink)
+  if (op & kDragOperationLink)
     return "link";
   return "none";
 }
@@ -97,36 +97,37 @@ static String convertDragOperationToEffectAllowed(DragOperation op) {
 // We provide the IE clipboard types (URL and Text), and the clipboard types
 // specified in the WHATWG Web Applications 1.0 draft see
 // http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
-static String normalizeType(const String& type, bool* convertToURL = 0) {
-  String cleanType = type.stripWhiteSpace().lower();
-  if (cleanType == mimeTypeText || cleanType.startsWith(mimeTypeTextPlainEtc))
-    return mimeTypeTextPlain;
-  if (cleanType == mimeTypeURL) {
-    if (convertToURL)
-      *convertToURL = true;
-    return mimeTypeTextURIList;
+static String NormalizeType(const String& type, bool* convert_to_url = 0) {
+  String clean_type = type.StripWhiteSpace().Lower();
+  if (clean_type == kMimeTypeText ||
+      clean_type.StartsWith(kMimeTypeTextPlainEtc))
+    return kMimeTypeTextPlain;
+  if (clean_type == kMimeTypeURL) {
+    if (convert_to_url)
+      *convert_to_url = true;
+    return kMimeTypeTextURIList;
   }
-  return cleanType;
+  return clean_type;
 }
 
-DataTransfer* DataTransfer::create() {
+DataTransfer* DataTransfer::Create() {
   DataTransfer* data =
-      create(CopyAndPaste, DataTransferWritable, DataObject::create());
-  data->m_dropEffect = "none";
-  data->m_effectAllowed = "none";
+      Create(kCopyAndPaste, kDataTransferWritable, DataObject::Create());
+  data->drop_effect_ = "none";
+  data->effect_allowed_ = "none";
   return data;
 }
 
-DataTransfer* DataTransfer::create(DataTransferType type,
+DataTransfer* DataTransfer::Create(DataTransferType type,
                                    DataTransferAccessPolicy policy,
-                                   DataObject* dataObject) {
-  return new DataTransfer(type, policy, dataObject);
+                                   DataObject* data_object) {
+  return new DataTransfer(type, policy, data_object);
 }
 
 DataTransfer::~DataTransfer() {}
 
 void DataTransfer::setDropEffect(const String& effect) {
-  if (!isForDragAndDrop())
+  if (!IsForDragAndDrop())
     return;
 
   // The attribute must ignore any attempts to set it to a value other than
@@ -141,14 +142,14 @@ void DataTransfer::setDropEffect(const String& effect) {
   // Allowing these changes seems inconsequential, but findDropZone() in
   // EventHandler.cpp relies on being able to call setDropEffect during
   // dragenter, when the DataTransfer policy is DataTransferTypesReadable.
-  m_dropEffect = effect;
+  drop_effect_ = effect;
 }
 
 void DataTransfer::setEffectAllowed(const String& effect) {
-  if (!isForDragAndDrop())
+  if (!IsForDragAndDrop())
     return;
 
-  if (convertEffectAllowedToDragOperation(effect) == DragOperationPrivate) {
+  if (ConvertEffectAllowedToDragOperation(effect) == kDragOperationPrivate) {
     // This means that there was no conversion, and the effectAllowed that
     // we are passed isn't a valid effectAllowed, so we should ignore it,
     // and not set m_effectAllowed.
@@ -159,57 +160,57 @@ void DataTransfer::setEffectAllowed(const String& effect) {
     return;
   }
 
-  if (canWriteData())
-    m_effectAllowed = effect;
+  if (CanWriteData())
+    effect_allowed_ = effect;
 }
 
 void DataTransfer::clearData(const String& type) {
-  if (!canWriteData())
+  if (!CanWriteData())
     return;
 
-  if (type.isNull())
-    m_dataObject->clearAll();
+  if (type.IsNull())
+    data_object_->ClearAll();
   else
-    m_dataObject->clearData(normalizeType(type));
+    data_object_->ClearData(NormalizeType(type));
 }
 
 String DataTransfer::getData(const String& type) const {
-  if (!canReadData())
+  if (!CanReadData())
     return String();
 
-  bool convertToURL = false;
-  String data = m_dataObject->getData(normalizeType(type, &convertToURL));
-  if (!convertToURL)
+  bool convert_to_url = false;
+  String data = data_object_->GetData(NormalizeType(type, &convert_to_url));
+  if (!convert_to_url)
     return data;
-  return convertURIListToURL(data);
+  return ConvertURIListToURL(data);
 }
 
 void DataTransfer::setData(const String& type, const String& data) {
-  if (!canWriteData())
+  if (!CanWriteData())
     return;
 
-  m_dataObject->setData(normalizeType(type), data);
+  data_object_->SetData(NormalizeType(type), data);
 }
 
 // extensions beyond IE's API
 Vector<String> DataTransfer::types() const {
   Vector<String> types;
-  if (!canReadTypes())
+  if (!CanReadTypes())
     return types;
 
-  return m_dataObject->types();
+  return data_object_->Types();
 }
 
 FileList* DataTransfer::files() const {
-  FileList* files = FileList::create();
-  if (!canReadData())
+  FileList* files = FileList::Create();
+  if (!CanReadData())
     return files;
 
-  for (size_t i = 0; i < m_dataObject->length(); ++i) {
-    if (m_dataObject->item(i)->kind() == DataObjectItem::FileKind) {
-      Blob* blob = m_dataObject->item(i)->getAsFile();
-      if (blob && blob->isFile())
-        files->append(toFile(blob));
+  for (size_t i = 0; i < data_object_->length(); ++i) {
+    if (data_object_->Item(i)->Kind() == DataObjectItem::kFileKind) {
+      Blob* blob = data_object_->Item(i)->GetAsFile();
+      if (blob && blob->IsFile())
+        files->Append(ToFile(blob));
     }
   }
 
@@ -219,191 +220,192 @@ FileList* DataTransfer::files() const {
 void DataTransfer::setDragImage(Element* image, int x, int y) {
   ASSERT(image);
 
-  if (!isForDragAndDrop())
+  if (!IsForDragAndDrop())
     return;
 
   IntPoint location(x, y);
   if (isHTMLImageElement(*image) && !image->isConnected())
-    setDragImageResource(toHTMLImageElement(*image).cachedImage(), location);
+    SetDragImageResource(toHTMLImageElement(*image).CachedImage(), location);
   else
-    setDragImageElement(image, location);
+    SetDragImageElement(image, location);
 }
 
-void DataTransfer::clearDragImage() {
-  if (!canSetDragImage())
+void DataTransfer::ClearDragImage() {
+  if (!CanSetDragImage())
     return;
 
-  m_dragImage = nullptr;
-  m_dragLoc = IntPoint();
-  m_dragImageElement = nullptr;
+  drag_image_ = nullptr;
+  drag_loc_ = IntPoint();
+  drag_image_element_ = nullptr;
 }
 
-void DataTransfer::setDragImageResource(ImageResourceContent* img,
+void DataTransfer::SetDragImageResource(ImageResourceContent* img,
                                         const IntPoint& loc) {
   setDragImage(img, 0, loc);
 }
 
-void DataTransfer::setDragImageElement(Node* node, const IntPoint& loc) {
+void DataTransfer::SetDragImageElement(Node* node, const IntPoint& loc) {
   setDragImage(0, node, loc);
 }
 
-std::unique_ptr<DragImage> DataTransfer::createDragImage(
+std::unique_ptr<DragImage> DataTransfer::CreateDragImage(
     IntPoint& loc,
     LocalFrame* frame) const {
-  if (m_dragImageElement) {
-    loc = m_dragLoc;
+  if (drag_image_element_) {
+    loc = drag_loc_;
 
-    return frame->nodeImage(*m_dragImageElement);
+    return frame->NodeImage(*drag_image_element_);
   }
-  if (m_dragImage) {
-    loc = m_dragLoc;
-    return DragImage::create(m_dragImage->getImage());
+  if (drag_image_) {
+    loc = drag_loc_;
+    return DragImage::Create(drag_image_->GetImage());
   }
   return nullptr;
 }
 
-static ImageResourceContent* getImageResourceContent(Element* element) {
+static ImageResourceContent* GetImageResourceContent(Element* element) {
   // Attempt to pull ImageResourceContent from element
   ASSERT(element);
-  LayoutObject* layoutObject = element->layoutObject();
-  if (!layoutObject || !layoutObject->isImage())
+  LayoutObject* layout_object = element->GetLayoutObject();
+  if (!layout_object || !layout_object->IsImage())
     return 0;
 
-  LayoutImage* image = toLayoutImage(layoutObject);
-  if (image->cachedImage() && !image->cachedImage()->errorOccurred())
-    return image->cachedImage();
+  LayoutImage* image = ToLayoutImage(layout_object);
+  if (image->CachedImage() && !image->CachedImage()->ErrorOccurred())
+    return image->CachedImage();
 
   return 0;
 }
 
-static void writeImageToDataObject(DataObject* dataObject,
+static void WriteImageToDataObject(DataObject* data_object,
                                    Element* element,
-                                   const KURL& imageURL) {
+                                   const KURL& image_url) {
   // Shove image data into a DataObject for use as a file
-  ImageResourceContent* cachedImage = getImageResourceContent(element);
-  if (!cachedImage || !cachedImage->getImage() || !cachedImage->isLoaded())
+  ImageResourceContent* cached_image = GetImageResourceContent(element);
+  if (!cached_image || !cached_image->GetImage() || !cached_image->IsLoaded())
     return;
 
-  RefPtr<SharedBuffer> imageBuffer = cachedImage->getImage()->data();
-  if (!imageBuffer || !imageBuffer->size())
+  RefPtr<SharedBuffer> image_buffer = cached_image->GetImage()->Data();
+  if (!image_buffer || !image_buffer->size())
     return;
 
-  dataObject->addSharedBuffer(imageBuffer, imageURL,
-                              cachedImage->getImage()->filenameExtension(),
-                              cachedImage->response().httpHeaderFields().get(
-                                  HTTPNames::Content_Disposition));
+  data_object->AddSharedBuffer(
+      image_buffer, image_url, cached_image->GetImage()->FilenameExtension(),
+      cached_image->GetResponse().HttpHeaderFields().Get(
+          HTTPNames::Content_Disposition));
 }
 
-void DataTransfer::declareAndWriteDragImage(Element* element,
-                                            const KURL& linkURL,
-                                            const KURL& imageURL,
+void DataTransfer::DeclareAndWriteDragImage(Element* element,
+                                            const KURL& link_url,
+                                            const KURL& image_url,
                                             const String& title) {
-  if (!m_dataObject)
+  if (!data_object_)
     return;
 
-  m_dataObject->setURLAndTitle(linkURL.isValid() ? linkURL : imageURL, title);
+  data_object_->SetURLAndTitle(link_url.IsValid() ? link_url : image_url,
+                               title);
 
   // Write the bytes in the image to the file format.
-  writeImageToDataObject(m_dataObject.get(), element, imageURL);
+  WriteImageToDataObject(data_object_.Get(), element, image_url);
 
   // Put img tag on the clipboard referencing the image
-  m_dataObject->setData(mimeTypeTextHTML,
-                        createMarkup(element, IncludeNode, ResolveAllURLs));
+  data_object_->SetData(kMimeTypeTextHTML,
+                        CreateMarkup(element, kIncludeNode, kResolveAllURLs));
 }
 
-void DataTransfer::writeURL(Node* node, const KURL& url, const String& title) {
-  if (!m_dataObject)
+void DataTransfer::WriteURL(Node* node, const KURL& url, const String& title) {
+  if (!data_object_)
     return;
-  ASSERT(!url.isEmpty());
+  ASSERT(!url.IsEmpty());
 
-  m_dataObject->setURLAndTitle(url, title);
+  data_object_->SetURLAndTitle(url, title);
 
   // The URL can also be used as plain text.
-  m_dataObject->setData(mimeTypeTextPlain, url.getString());
+  data_object_->SetData(kMimeTypeTextPlain, url.GetString());
 
   // The URL can also be used as an HTML fragment.
-  m_dataObject->setHTMLAndBaseURL(
-      createMarkup(node, IncludeNode, ResolveAllURLs), url);
+  data_object_->SetHTMLAndBaseURL(
+      CreateMarkup(node, kIncludeNode, kResolveAllURLs), url);
 }
 
-void DataTransfer::writeSelection(const FrameSelection& selection) {
-  if (!m_dataObject)
+void DataTransfer::WriteSelection(const FrameSelection& selection) {
+  if (!data_object_)
     return;
 
-  if (!enclosingTextControl(
-          selection.computeVisibleSelectionInDOMTreeDeprecated().start())) {
-    m_dataObject->setHTMLAndBaseURL(selection.selectedHTMLForClipboard(),
-                                    selection.frame()->document()->url());
+  if (!EnclosingTextControl(
+          selection.ComputeVisibleSelectionInDOMTreeDeprecated().Start())) {
+    data_object_->SetHTMLAndBaseURL(selection.SelectedHTMLForClipboard(),
+                                    selection.GetFrame()->GetDocument()->Url());
   }
 
-  String str = selection.selectedTextForClipboard();
+  String str = selection.SelectedTextForClipboard();
 #if OS(WIN)
-  replaceNewlinesWithWindowsStyleNewlines(str);
+  ReplaceNewlinesWithWindowsStyleNewlines(str);
 #endif
-  replaceNBSPWithSpace(str);
-  m_dataObject->setData(mimeTypeTextPlain, str);
+  ReplaceNBSPWithSpace(str);
+  data_object_->SetData(kMimeTypeTextPlain, str);
 }
 
-void DataTransfer::setAccessPolicy(DataTransferAccessPolicy policy) {
+void DataTransfer::SetAccessPolicy(DataTransferAccessPolicy policy) {
   // once you go numb, can never go back
-  ASSERT(m_policy != DataTransferNumb || policy == DataTransferNumb);
-  m_policy = policy;
+  ASSERT(policy_ != kDataTransferNumb || policy == kDataTransferNumb);
+  policy_ = policy;
 }
 
-bool DataTransfer::canReadTypes() const {
-  return m_policy == DataTransferReadable ||
-         m_policy == DataTransferTypesReadable ||
-         m_policy == DataTransferWritable;
+bool DataTransfer::CanReadTypes() const {
+  return policy_ == kDataTransferReadable ||
+         policy_ == kDataTransferTypesReadable ||
+         policy_ == kDataTransferWritable;
 }
 
-bool DataTransfer::canReadData() const {
-  return m_policy == DataTransferReadable || m_policy == DataTransferWritable;
+bool DataTransfer::CanReadData() const {
+  return policy_ == kDataTransferReadable || policy_ == kDataTransferWritable;
 }
 
-bool DataTransfer::canWriteData() const {
-  return m_policy == DataTransferWritable;
+bool DataTransfer::CanWriteData() const {
+  return policy_ == kDataTransferWritable;
 }
 
-bool DataTransfer::canSetDragImage() const {
-  return m_policy == DataTransferImageWritable ||
-         m_policy == DataTransferWritable;
+bool DataTransfer::CanSetDragImage() const {
+  return policy_ == kDataTransferImageWritable ||
+         policy_ == kDataTransferWritable;
 }
 
-DragOperation DataTransfer::sourceOperation() const {
-  DragOperation op = convertEffectAllowedToDragOperation(m_effectAllowed);
-  ASSERT(op != DragOperationPrivate);
+DragOperation DataTransfer::SourceOperation() const {
+  DragOperation op = ConvertEffectAllowedToDragOperation(effect_allowed_);
+  ASSERT(op != kDragOperationPrivate);
   return op;
 }
 
-DragOperation DataTransfer::destinationOperation() const {
-  DragOperation op = convertEffectAllowedToDragOperation(m_dropEffect);
-  ASSERT(op == DragOperationCopy || op == DragOperationNone ||
-         op == DragOperationLink ||
-         op == (DragOperation)(DragOperationGeneric | DragOperationMove) ||
-         op == DragOperationEvery);
+DragOperation DataTransfer::DestinationOperation() const {
+  DragOperation op = ConvertEffectAllowedToDragOperation(drop_effect_);
+  ASSERT(op == kDragOperationCopy || op == kDragOperationNone ||
+         op == kDragOperationLink ||
+         op == (DragOperation)(kDragOperationGeneric | kDragOperationMove) ||
+         op == kDragOperationEvery);
   return op;
 }
 
-void DataTransfer::setSourceOperation(DragOperation op) {
-  DCHECK_NE(op, DragOperationPrivate);
-  m_effectAllowed = convertDragOperationToEffectAllowed(op);
+void DataTransfer::SetSourceOperation(DragOperation op) {
+  DCHECK_NE(op, kDragOperationPrivate);
+  effect_allowed_ = ConvertDragOperationToEffectAllowed(op);
 }
 
-void DataTransfer::setDestinationOperation(DragOperation op) {
-  DCHECK(op == DragOperationCopy || op == DragOperationNone ||
-         op == DragOperationLink || op == DragOperationGeneric ||
-         op == DragOperationMove ||
-         op == static_cast<DragOperation>(DragOperationGeneric |
-                                          DragOperationMove));
-  m_dropEffect = convertDragOperationToEffectAllowed(op);
+void DataTransfer::SetDestinationOperation(DragOperation op) {
+  DCHECK(op == kDragOperationCopy || op == kDragOperationNone ||
+         op == kDragOperationLink || op == kDragOperationGeneric ||
+         op == kDragOperationMove ||
+         op == static_cast<DragOperation>(kDragOperationGeneric |
+                                          kDragOperationMove));
+  drop_effect_ = ConvertDragOperationToEffectAllowed(op);
 }
 
-bool DataTransfer::hasDropZoneType(const String& keyword) {
-  if (keyword.startsWith("file:"))
-    return hasFileOfType(keyword.substring(5));
+bool DataTransfer::HasDropZoneType(const String& keyword) {
+  if (keyword.StartsWith("file:"))
+    return HasFileOfType(keyword.Substring(5));
 
-  if (keyword.startsWith("string:"))
-    return hasStringOfType(keyword.substring(7));
+  if (keyword.StartsWith("string:"))
+    return HasStringOfType(keyword.Substring(7));
 
   return false;
 }
@@ -413,72 +415,72 @@ DataTransferItemList* DataTransfer::items() {
   // of items each time. We now return a wrapper that always wraps the *same*
   // set of items, so JS shouldn't be able to tell, but we probably still want
   // to fix this.
-  return DataTransferItemList::create(this, m_dataObject);
+  return DataTransferItemList::Create(this, data_object_);
 }
 
-DataObject* DataTransfer::dataObject() const {
-  return m_dataObject;
+DataObject* DataTransfer::GetDataObject() const {
+  return data_object_;
 }
 
 DataTransfer::DataTransfer(DataTransferType type,
                            DataTransferAccessPolicy policy,
-                           DataObject* dataObject)
-    : m_policy(policy),
-      m_dropEffect("uninitialized"),
-      m_effectAllowed("uninitialized"),
-      m_transferType(type),
-      m_dataObject(dataObject) {}
+                           DataObject* data_object)
+    : policy_(policy),
+      drop_effect_("uninitialized"),
+      effect_allowed_("uninitialized"),
+      transfer_type_(type),
+      data_object_(data_object) {}
 
 void DataTransfer::setDragImage(ImageResourceContent* image,
                                 Node* node,
                                 const IntPoint& loc) {
-  if (!canSetDragImage())
+  if (!CanSetDragImage())
     return;
 
-  m_dragImage = image;
-  m_dragLoc = loc;
-  m_dragImageElement = node;
+  drag_image_ = image;
+  drag_loc_ = loc;
+  drag_image_element_ = node;
 }
 
-bool DataTransfer::hasFileOfType(const String& type) const {
-  if (!canReadTypes())
+bool DataTransfer::HasFileOfType(const String& type) const {
+  if (!CanReadTypes())
     return false;
 
-  for (size_t i = 0; i < m_dataObject->length(); ++i) {
-    if (m_dataObject->item(i)->kind() == DataObjectItem::FileKind) {
-      Blob* blob = m_dataObject->item(i)->getAsFile();
-      if (blob && blob->isFile() && equalIgnoringCase(blob->type(), type))
+  for (size_t i = 0; i < data_object_->length(); ++i) {
+    if (data_object_->Item(i)->Kind() == DataObjectItem::kFileKind) {
+      Blob* blob = data_object_->Item(i)->GetAsFile();
+      if (blob && blob->IsFile() && EqualIgnoringCase(blob->type(), type))
         return true;
     }
   }
   return false;
 }
 
-bool DataTransfer::hasStringOfType(const String& type) const {
-  if (!canReadTypes())
+bool DataTransfer::HasStringOfType(const String& type) const {
+  if (!CanReadTypes())
     return false;
 
-  return types().contains(type);
+  return types().Contains(type);
 }
 
-DragOperation convertDropZoneOperationToDragOperation(
-    const String& dragOperation) {
-  if (dragOperation == "copy")
-    return DragOperationCopy;
-  if (dragOperation == "move")
-    return DragOperationMove;
-  if (dragOperation == "link")
-    return DragOperationLink;
-  return DragOperationNone;
+DragOperation ConvertDropZoneOperationToDragOperation(
+    const String& drag_operation) {
+  if (drag_operation == "copy")
+    return kDragOperationCopy;
+  if (drag_operation == "move")
+    return kDragOperationMove;
+  if (drag_operation == "link")
+    return kDragOperationLink;
+  return kDragOperationNone;
 }
 
-String convertDragOperationToDropZoneOperation(DragOperation operation) {
+String ConvertDragOperationToDropZoneOperation(DragOperation operation) {
   switch (operation) {
-    case DragOperationCopy:
+    case kDragOperationCopy:
       return String("copy");
-    case DragOperationMove:
+    case kDragOperationMove:
       return String("move");
-    case DragOperationLink:
+    case kDragOperationLink:
       return String("link");
     default:
       return String("copy");
@@ -486,9 +488,9 @@ String convertDragOperationToDropZoneOperation(DragOperation operation) {
 }
 
 DEFINE_TRACE(DataTransfer) {
-  visitor->trace(m_dataObject);
-  visitor->trace(m_dragImage);
-  visitor->trace(m_dragImageElement);
+  visitor->Trace(data_object_);
+  visitor->Trace(drag_image_);
+  visitor->Trace(drag_image_element_);
 }
 
 }  // namespace blink

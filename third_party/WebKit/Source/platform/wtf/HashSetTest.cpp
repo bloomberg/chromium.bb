@@ -35,46 +35,46 @@ namespace WTF {
 namespace {
 
 template <unsigned size>
-void testReserveCapacity();
+void TestReserveCapacity();
 template <>
-void testReserveCapacity<0>() {}
+void TestReserveCapacity<0>() {}
 template <unsigned size>
-void testReserveCapacity() {
-  HashSet<int> testSet;
+void TestReserveCapacity() {
+  HashSet<int> test_set;
 
   // Initial capacity is zero.
-  EXPECT_EQ(0UL, testSet.capacity());
+  EXPECT_EQ(0UL, test_set.Capacity());
 
-  testSet.reserveCapacityForSize(size);
-  const unsigned initialCapacity = testSet.capacity();
-  const unsigned minimumTableSize = HashTraits<int>::minimumTableSize;
+  test_set.ReserveCapacityForSize(size);
+  const unsigned initial_capacity = test_set.Capacity();
+  const unsigned kMinimumTableSize = HashTraits<int>::kMinimumTableSize;
 
   // reserveCapacityForSize should respect minimumTableSize.
-  EXPECT_GE(initialCapacity, minimumTableSize);
+  EXPECT_GE(initial_capacity, kMinimumTableSize);
 
   // Adding items up to size should never change the capacity.
   for (size_t i = 0; i < size; ++i) {
-    testSet.insert(i + 1);  // Avoid adding '0'.
-    EXPECT_EQ(initialCapacity, testSet.capacity());
+    test_set.insert(i + 1);  // Avoid adding '0'.
+    EXPECT_EQ(initial_capacity, test_set.Capacity());
   }
 
   // Adding items up to less than half the capacity should not change the
   // capacity.
-  unsigned capacityLimit = initialCapacity / 2 - 1;
-  for (size_t i = size; i < capacityLimit; ++i) {
-    testSet.insert(i + 1);
-    EXPECT_EQ(initialCapacity, testSet.capacity());
+  unsigned capacity_limit = initial_capacity / 2 - 1;
+  for (size_t i = size; i < capacity_limit; ++i) {
+    test_set.insert(i + 1);
+    EXPECT_EQ(initial_capacity, test_set.Capacity());
   }
 
   // Adding one more item increases the capacity.
-  testSet.insert(capacityLimit + 1);
-  EXPECT_GT(testSet.capacity(), initialCapacity);
+  test_set.insert(capacity_limit + 1);
+  EXPECT_GT(test_set.Capacity(), initial_capacity);
 
-  testReserveCapacity<size - 1>();
+  TestReserveCapacity<size - 1>();
 }
 
 TEST(HashSetTest, ReserveCapacity) {
-  testReserveCapacity<128>();
+  TestReserveCapacity<128>();
 }
 
 struct Dummy {
@@ -96,157 +96,157 @@ TEST(HashSetTest, HashSetOwnPtr) {
     // AddResult in a separate scope to avoid assertion hit,
     // since we modify the container further.
     HashSet<std::unique_ptr<Dummy>>::AddResult res1 =
-        set.insert(WTF::wrapUnique(ptr1));
-    EXPECT_EQ(ptr1, res1.storedValue->get());
+        set.insert(WTF::WrapUnique(ptr1));
+    EXPECT_EQ(ptr1, res1.stored_value->get());
   }
 
   EXPECT_FALSE(deleted1);
   EXPECT_EQ(1UL, set.size());
-  OwnPtrSet::iterator it1 = set.find(ptr1);
+  OwnPtrSet::iterator it1 = set.Find(ptr1);
   EXPECT_NE(set.end(), it1);
   EXPECT_EQ(ptr1, (*it1).get());
 
   Dummy* ptr2 = new Dummy(deleted2);
   {
     HashSet<std::unique_ptr<Dummy>>::AddResult res2 =
-        set.insert(WTF::wrapUnique(ptr2));
-    EXPECT_EQ(res2.storedValue->get(), ptr2);
+        set.insert(WTF::WrapUnique(ptr2));
+    EXPECT_EQ(res2.stored_value->get(), ptr2);
   }
 
   EXPECT_FALSE(deleted2);
   EXPECT_EQ(2UL, set.size());
-  OwnPtrSet::iterator it2 = set.find(ptr2);
+  OwnPtrSet::iterator it2 = set.Find(ptr2);
   EXPECT_NE(set.end(), it2);
   EXPECT_EQ(ptr2, (*it2).get());
 
   set.erase(ptr1);
   EXPECT_TRUE(deleted1);
 
-  set.clear();
+  set.Clear();
   EXPECT_TRUE(deleted2);
-  EXPECT_TRUE(set.isEmpty());
+  EXPECT_TRUE(set.IsEmpty());
 
   deleted1 = false;
   deleted2 = false;
   {
     OwnPtrSet set;
-    set.insert(WTF::makeUnique<Dummy>(deleted1));
-    set.insert(WTF::makeUnique<Dummy>(deleted2));
+    set.insert(WTF::MakeUnique<Dummy>(deleted1));
+    set.insert(WTF::MakeUnique<Dummy>(deleted2));
   }
   EXPECT_TRUE(deleted1);
   EXPECT_TRUE(deleted2);
 
   deleted1 = false;
   deleted2 = false;
-  std::unique_ptr<Dummy> ownPtr1;
-  std::unique_ptr<Dummy> ownPtr2;
+  std::unique_ptr<Dummy> own_ptr1;
+  std::unique_ptr<Dummy> own_ptr2;
   ptr1 = new Dummy(deleted1);
   ptr2 = new Dummy(deleted2);
   {
     OwnPtrSet set;
-    set.insert(WTF::wrapUnique(ptr1));
-    set.insert(WTF::wrapUnique(ptr2));
-    ownPtr1 = set.take(ptr1);
+    set.insert(WTF::WrapUnique(ptr1));
+    set.insert(WTF::WrapUnique(ptr2));
+    own_ptr1 = set.Take(ptr1);
     EXPECT_EQ(1UL, set.size());
-    ownPtr2 = set.takeAny();
-    EXPECT_TRUE(set.isEmpty());
+    own_ptr2 = set.TakeAny();
+    EXPECT_TRUE(set.IsEmpty());
   }
   EXPECT_FALSE(deleted1);
   EXPECT_FALSE(deleted2);
 
-  EXPECT_EQ(ptr1, ownPtr1.get());
-  EXPECT_EQ(ptr2, ownPtr2.get());
+  EXPECT_EQ(ptr1, own_ptr1.get());
+  EXPECT_EQ(ptr2, own_ptr2.get());
 }
 
 class DummyRefCounted : public RefCounted<DummyRefCounted> {
  public:
-  DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) {
-    m_isDeleted = false;
+  DummyRefCounted(bool& is_deleted) : is_deleted_(is_deleted) {
+    is_deleted_ = false;
   }
-  ~DummyRefCounted() { m_isDeleted = true; }
+  ~DummyRefCounted() { is_deleted_ = true; }
 
-  void ref() {
-    WTF::RefCounted<DummyRefCounted>::ref();
-    ++s_refInvokesCount;
+  void Ref() {
+    WTF::RefCounted<DummyRefCounted>::Ref();
+    ++ref_invokes_count_;
   }
 
-  static int s_refInvokesCount;
+  static int ref_invokes_count_;
 
  private:
-  bool& m_isDeleted;
+  bool& is_deleted_;
 };
 
-int DummyRefCounted::s_refInvokesCount = 0;
+int DummyRefCounted::ref_invokes_count_ = 0;
 
 TEST(HashSetTest, HashSetRefPtr) {
-  bool isDeleted = false;
-  RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
-  EXPECT_EQ(0, DummyRefCounted::s_refInvokesCount);
+  bool is_deleted = false;
+  RefPtr<DummyRefCounted> ptr = AdoptRef(new DummyRefCounted(is_deleted));
+  EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
   HashSet<RefPtr<DummyRefCounted>> set;
   set.insert(ptr);
   // Referenced only once (to store a copy in the container).
-  EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  DummyRefCounted* rawPtr = ptr.get();
+  DummyRefCounted* raw_ptr = ptr.Get();
 
-  EXPECT_TRUE(set.contains(rawPtr));
-  EXPECT_NE(set.end(), set.find(rawPtr));
-  EXPECT_TRUE(set.contains(ptr));
-  EXPECT_NE(set.end(), set.find(ptr));
+  EXPECT_TRUE(set.Contains(raw_ptr));
+  EXPECT_NE(set.end(), set.Find(raw_ptr));
+  EXPECT_TRUE(set.Contains(ptr));
+  EXPECT_NE(set.end(), set.Find(ptr));
 
-  ptr.clear();
-  EXPECT_FALSE(isDeleted);
+  ptr.Clear();
+  EXPECT_FALSE(is_deleted);
 
-  set.erase(rawPtr);
-  EXPECT_TRUE(isDeleted);
-  EXPECT_TRUE(set.isEmpty());
-  EXPECT_EQ(1, DummyRefCounted::s_refInvokesCount);
+  set.erase(raw_ptr);
+  EXPECT_TRUE(is_deleted);
+  EXPECT_TRUE(set.IsEmpty());
+  EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 }
 
 class CountCopy final {
  public:
   static int* const kDeletedValue;
 
-  explicit CountCopy(int* counter = nullptr) : m_counter(counter) {}
-  CountCopy(const CountCopy& other) : m_counter(other.m_counter) {
-    if (m_counter && m_counter != kDeletedValue)
-      ++*m_counter;
+  explicit CountCopy(int* counter = nullptr) : counter_(counter) {}
+  CountCopy(const CountCopy& other) : counter_(other.counter_) {
+    if (counter_ && counter_ != kDeletedValue)
+      ++*counter_;
   }
   CountCopy& operator=(const CountCopy& other) {
-    m_counter = other.m_counter;
-    if (m_counter && m_counter != kDeletedValue)
-      ++*m_counter;
+    counter_ = other.counter_;
+    if (counter_ && counter_ != kDeletedValue)
+      ++*counter_;
     return *this;
   }
-  const int* counter() const { return m_counter; }
+  const int* Counter() const { return counter_; }
 
  private:
-  int* m_counter;
+  int* counter_;
 };
 
 int* const CountCopy::kDeletedValue =
     reinterpret_cast<int*>(static_cast<uintptr_t>(-1));
 
 struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
-  static const bool emptyValueIsZero = false;
-  static const bool hasIsEmptyValueFunction = true;
-  static bool isEmptyValue(const CountCopy& value) { return !value.counter(); }
-  static void constructDeletedValue(CountCopy& slot, bool) {
+  static const bool kEmptyValueIsZero = false;
+  static const bool kHasIsEmptyValueFunction = true;
+  static bool IsEmptyValue(const CountCopy& value) { return !value.Counter(); }
+  static void ConstructDeletedValue(CountCopy& slot, bool) {
     slot = CountCopy(CountCopy::kDeletedValue);
   }
-  static bool isDeletedValue(const CountCopy& value) {
-    return value.counter() == CountCopy::kDeletedValue;
+  static bool IsDeletedValue(const CountCopy& value) {
+    return value.Counter() == CountCopy::kDeletedValue;
   }
 };
 
 struct CountCopyHash : public PtrHash<const int*> {
-  static unsigned hash(const CountCopy& value) {
-    return PtrHash<const int>::hash(value.counter());
+  static unsigned GetHash(const CountCopy& value) {
+    return PtrHash<const int>::GetHash(value.Counter());
   }
-  static bool equal(const CountCopy& left, const CountCopy& right) {
-    return PtrHash<const int>::equal(left.counter(), right.counter());
+  static bool Equal(const CountCopy& left, const CountCopy& right) {
+    return PtrHash<const int>::Equal(left.Counter(), right.Counter());
   }
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 }  // anonymous namespace
@@ -272,7 +272,7 @@ TEST(HashSetTest, MoveShouldNotMakeCopy) {
   EXPECT_EQ(0, counter);
 
   counter = 0;
-  HashSet<CountCopy> yetAnother(std::move(set));
+  HashSet<CountCopy> yet_another(std::move(set));
   EXPECT_EQ(0, counter);
 }
 
@@ -282,57 +282,56 @@ class MoveOnly {
   // of a hash table.
   enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
 
-  explicit MoveOnly(int value = kEmpty, int id = 0)
-      : m_value(value), m_id(id) {}
-  MoveOnly(MoveOnly&& other) : m_value(other.m_value), m_id(other.m_id) {
-    other.m_value = kMovedOut;
-    other.m_id = 0;
+  explicit MoveOnly(int value = kEmpty, int id = 0) : value_(value), id_(id) {}
+  MoveOnly(MoveOnly&& other) : value_(other.value_), id_(other.id_) {
+    other.value_ = kMovedOut;
+    other.id_ = 0;
   }
   MoveOnly& operator=(MoveOnly&& other) {
-    m_value = other.m_value;
-    m_id = other.m_id;
-    other.m_value = kMovedOut;
-    other.m_id = 0;
+    value_ = other.value_;
+    id_ = other.id_;
+    other.value_ = kMovedOut;
+    other.id_ = 0;
     return *this;
   }
 
-  int value() const { return m_value; }
+  int Value() const { return value_; }
   // id() is used for distinguishing MoveOnlys with the same value().
-  int id() const { return m_id; }
+  int Id() const { return id_; }
 
  private:
   MoveOnly(const MoveOnly&) = delete;
   MoveOnly& operator=(const MoveOnly&) = delete;
 
-  int m_value;
-  int m_id;
+  int value_;
+  int id_;
 };
 
 struct MoveOnlyHashTraits : public GenericHashTraits<MoveOnly> {
   // This is actually true, but we pretend that it's false to disable the
   // optimization.
-  static const bool emptyValueIsZero = false;
+  static const bool kEmptyValueIsZero = false;
 
-  static const bool hasIsEmptyValueFunction = true;
-  static bool isEmptyValue(const MoveOnly& value) {
-    return value.value() == MoveOnly::kEmpty;
+  static const bool kHasIsEmptyValueFunction = true;
+  static bool IsEmptyValue(const MoveOnly& value) {
+    return value.Value() == MoveOnly::kEmpty;
   }
-  static void constructDeletedValue(MoveOnly& slot, bool) {
+  static void ConstructDeletedValue(MoveOnly& slot, bool) {
     slot = MoveOnly(MoveOnly::kDeleted);
   }
-  static bool isDeletedValue(const MoveOnly& value) {
-    return value.value() == MoveOnly::kDeleted;
+  static bool IsDeletedValue(const MoveOnly& value) {
+    return value.Value() == MoveOnly::kDeleted;
   }
 };
 
 struct MoveOnlyHash {
-  static unsigned hash(const MoveOnly& value) {
-    return DefaultHash<int>::Hash::hash(value.value());
+  static unsigned GetHash(const MoveOnly& value) {
+    return DefaultHash<int>::Hash::GetHash(value.Value());
   }
-  static bool equal(const MoveOnly& left, const MoveOnly& right) {
-    return DefaultHash<int>::Hash::equal(left.value(), right.value());
+  static bool Equal(const MoveOnly& left, const MoveOnly& right) {
+    return DefaultHash<int>::Hash::Equal(left.Value(), right.Value());
   }
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 }  // anonymous namespace
@@ -351,156 +350,156 @@ TEST(HashSetTest, MoveOnlyValue) {
   using TheSet = HashSet<MoveOnly>;
   TheSet set;
   {
-    TheSet::AddResult addResult = set.insert(MoveOnly(1, 1));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(1, addResult.storedValue->value());
-    EXPECT_EQ(1, addResult.storedValue->id());
+    TheSet::AddResult add_result = set.insert(MoveOnly(1, 1));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(1, add_result.stored_value->Value());
+    EXPECT_EQ(1, add_result.stored_value->Id());
   }
-  auto iter = set.find(MoveOnly(1));
+  auto iter = set.Find(MoveOnly(1));
   ASSERT_TRUE(iter != set.end());
-  EXPECT_EQ(1, iter->value());
+  EXPECT_EQ(1, iter->Value());
 
-  iter = set.find(MoveOnly(2));
+  iter = set.Find(MoveOnly(2));
   EXPECT_TRUE(iter == set.end());
 
   for (int i = 2; i < 32; ++i) {
-    TheSet::AddResult addResult = set.insert(MoveOnly(i, i));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(i, addResult.storedValue->value());
-    EXPECT_EQ(i, addResult.storedValue->id());
+    TheSet::AddResult add_result = set.insert(MoveOnly(i, i));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(i, add_result.stored_value->Value());
+    EXPECT_EQ(i, add_result.stored_value->Id());
   }
 
-  iter = set.find(MoveOnly(1));
+  iter = set.Find(MoveOnly(1));
   ASSERT_TRUE(iter != set.end());
-  EXPECT_EQ(1, iter->value());
-  EXPECT_EQ(1, iter->id());
+  EXPECT_EQ(1, iter->Value());
+  EXPECT_EQ(1, iter->Id());
 
-  iter = set.find(MoveOnly(7));
+  iter = set.Find(MoveOnly(7));
   ASSERT_TRUE(iter != set.end());
-  EXPECT_EQ(7, iter->value());
-  EXPECT_EQ(7, iter->id());
+  EXPECT_EQ(7, iter->Value());
+  EXPECT_EQ(7, iter->Id());
 
   {
-    TheSet::AddResult addResult =
+    TheSet::AddResult add_result =
         set.insert(MoveOnly(7, 777));  // With different ID for identification.
-    EXPECT_FALSE(addResult.isNewEntry);
-    EXPECT_EQ(7, addResult.storedValue->value());
-    EXPECT_EQ(7, addResult.storedValue->id());
+    EXPECT_FALSE(add_result.is_new_entry);
+    EXPECT_EQ(7, add_result.stored_value->Value());
+    EXPECT_EQ(7, add_result.stored_value->Id());
   }
 
   set.erase(MoveOnly(11));
-  iter = set.find(MoveOnly(11));
+  iter = set.Find(MoveOnly(11));
   EXPECT_TRUE(iter == set.end());
 
-  MoveOnly thirteen(set.take(MoveOnly(13)));
-  EXPECT_EQ(13, thirteen.value());
-  EXPECT_EQ(13, thirteen.id());
-  iter = set.find(MoveOnly(13));
+  MoveOnly thirteen(set.Take(MoveOnly(13)));
+  EXPECT_EQ(13, thirteen.Value());
+  EXPECT_EQ(13, thirteen.Id());
+  iter = set.Find(MoveOnly(13));
   EXPECT_TRUE(iter == set.end());
 
-  set.clear();
+  set.Clear();
 }
 
 TEST(HashSetTest, UniquePtr) {
   using Pointer = std::unique_ptr<int>;
   using Set = HashSet<Pointer>;
   Set set;
-  int* onePointer = new int(1);
+  int* one_pointer = new int(1);
   {
-    Set::AddResult addResult = set.insert(Pointer(onePointer));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(onePointer, addResult.storedValue->get());
-    EXPECT_EQ(1, **addResult.storedValue);
+    Set::AddResult add_result = set.insert(Pointer(one_pointer));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(one_pointer, add_result.stored_value->get());
+    EXPECT_EQ(1, **add_result.stored_value);
   }
-  auto iter = set.find(onePointer);
+  auto iter = set.Find(one_pointer);
   ASSERT_TRUE(iter != set.end());
-  EXPECT_EQ(onePointer, iter->get());
+  EXPECT_EQ(one_pointer, iter->get());
 
   Pointer nonexistent(new int(42));
-  iter = set.find(nonexistent.get());
+  iter = set.Find(nonexistent.get());
   EXPECT_TRUE(iter == set.end());
 
   // Insert more to cause a rehash.
   for (int i = 2; i < 32; ++i) {
-    Set::AddResult addResult = set.insert(Pointer(new int(i)));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(i, **addResult.storedValue);
+    Set::AddResult add_result = set.insert(Pointer(new int(i)));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(i, **add_result.stored_value);
   }
 
-  iter = set.find(onePointer);
+  iter = set.Find(one_pointer);
   ASSERT_TRUE(iter != set.end());
-  EXPECT_EQ(onePointer, iter->get());
+  EXPECT_EQ(one_pointer, iter->get());
 
-  Pointer one(set.take(onePointer));
+  Pointer one(set.Take(one_pointer));
   ASSERT_TRUE(one);
-  EXPECT_EQ(onePointer, one.get());
+  EXPECT_EQ(one_pointer, one.get());
 
-  Pointer empty(set.take(nonexistent.get()));
+  Pointer empty(set.Take(nonexistent.get()));
   EXPECT_TRUE(!empty);
 
-  iter = set.find(onePointer);
+  iter = set.Find(one_pointer);
   EXPECT_TRUE(iter == set.end());
 
   // Re-insert to the deleted slot.
   {
-    Set::AddResult addResult = set.insert(std::move(one));
-    EXPECT_TRUE(addResult.isNewEntry);
-    EXPECT_EQ(onePointer, addResult.storedValue->get());
-    EXPECT_EQ(1, **addResult.storedValue);
+    Set::AddResult add_result = set.insert(std::move(one));
+    EXPECT_TRUE(add_result.is_new_entry);
+    EXPECT_EQ(one_pointer, add_result.stored_value->get());
+    EXPECT_EQ(1, **add_result.stored_value);
   }
 }
 
-bool isOneTwoThree(const HashSet<int>& set) {
-  return set.size() == 3 && set.contains(1) && set.contains(2) &&
-         set.contains(3);
+bool IsOneTwoThree(const HashSet<int>& set) {
+  return set.size() == 3 && set.Contains(1) && set.Contains(2) &&
+         set.Contains(3);
 }
 
-HashSet<int> returnOneTwoThree() {
+HashSet<int> ReturnOneTwoThree() {
   return {1, 2, 3};
 }
 
 TEST(HashSetTest, InitializerList) {
   HashSet<int> empty({});
-  EXPECT_TRUE(empty.isEmpty());
+  EXPECT_TRUE(empty.IsEmpty());
 
   HashSet<int> one({1});
   EXPECT_EQ(1u, one.size());
-  EXPECT_TRUE(one.contains(1));
+  EXPECT_TRUE(one.Contains(1));
 
-  HashSet<int> oneTwoThree({1, 2, 3});
-  EXPECT_EQ(3u, oneTwoThree.size());
-  EXPECT_TRUE(oneTwoThree.contains(1));
-  EXPECT_TRUE(oneTwoThree.contains(2));
-  EXPECT_TRUE(oneTwoThree.contains(3));
+  HashSet<int> one_two_three({1, 2, 3});
+  EXPECT_EQ(3u, one_two_three.size());
+  EXPECT_TRUE(one_two_three.Contains(1));
+  EXPECT_TRUE(one_two_three.Contains(2));
+  EXPECT_TRUE(one_two_three.Contains(3));
 
   // Put some jank so we can check if the assignments later can clear them.
   empty.insert(9999);
   one.insert(9999);
-  oneTwoThree.insert(9999);
+  one_two_three.insert(9999);
 
   empty = {};
-  EXPECT_TRUE(empty.isEmpty());
+  EXPECT_TRUE(empty.IsEmpty());
 
   one = {1};
   EXPECT_EQ(1u, one.size());
-  EXPECT_TRUE(one.contains(1));
+  EXPECT_TRUE(one.Contains(1));
 
-  oneTwoThree = {1, 2, 3};
-  EXPECT_EQ(3u, oneTwoThree.size());
-  EXPECT_TRUE(oneTwoThree.contains(1));
-  EXPECT_TRUE(oneTwoThree.contains(2));
-  EXPECT_TRUE(oneTwoThree.contains(3));
+  one_two_three = {1, 2, 3};
+  EXPECT_EQ(3u, one_two_three.size());
+  EXPECT_TRUE(one_two_three.Contains(1));
+  EXPECT_TRUE(one_two_three.Contains(2));
+  EXPECT_TRUE(one_two_three.Contains(3));
 
-  oneTwoThree = {3, 1, 1, 2, 1, 1, 3};
-  EXPECT_EQ(3u, oneTwoThree.size());
-  EXPECT_TRUE(oneTwoThree.contains(1));
-  EXPECT_TRUE(oneTwoThree.contains(2));
-  EXPECT_TRUE(oneTwoThree.contains(3));
+  one_two_three = {3, 1, 1, 2, 1, 1, 3};
+  EXPECT_EQ(3u, one_two_three.size());
+  EXPECT_TRUE(one_two_three.Contains(1));
+  EXPECT_TRUE(one_two_three.Contains(2));
+  EXPECT_TRUE(one_two_three.Contains(3));
 
   // Other ways of construction: as a function parameter and in a return
   // statement.
-  EXPECT_TRUE(isOneTwoThree({1, 2, 3}));
-  EXPECT_TRUE(isOneTwoThree(returnOneTwoThree()));
+  EXPECT_TRUE(IsOneTwoThree({1, 2, 3}));
+  EXPECT_TRUE(IsOneTwoThree(ReturnOneTwoThree()));
 }
 
 }  // anonymous namespace

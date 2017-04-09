@@ -22,32 +22,32 @@ class UnderlyingValueOwner {
 
  public:
   UnderlyingValueOwner()
-      : m_type(nullptr), m_valueOwner(nullptr), m_value(nullptr) {}
+      : type_(nullptr), value_owner_(nullptr), value_(nullptr) {}
 
   operator bool() const {
-    DCHECK_EQ(static_cast<bool>(m_type), static_cast<bool>(m_value));
-    return m_type;
+    DCHECK_EQ(static_cast<bool>(type_), static_cast<bool>(value_));
+    return type_;
   }
 
-  const InterpolationType& type() const {
-    DCHECK(m_type);
-    return *m_type;
+  const InterpolationType& GetType() const {
+    DCHECK(type_);
+    return *type_;
   }
 
-  const InterpolationValue& value() const;
+  const InterpolationValue& Value() const;
 
-  void set(std::nullptr_t);
-  void set(const InterpolationType&, const InterpolationValue&);
-  void set(const InterpolationType&, InterpolationValue&&);
-  void set(std::unique_ptr<TypedInterpolationValue>);
-  void set(const TypedInterpolationValue*);
+  void Set(std::nullptr_t);
+  void Set(const InterpolationType&, const InterpolationValue&);
+  void Set(const InterpolationType&, InterpolationValue&&);
+  void Set(std::unique_ptr<TypedInterpolationValue>);
+  void Set(const TypedInterpolationValue*);
 
-  InterpolationValue& mutableValue();
+  InterpolationValue& MutableValue();
 
  private:
-  const InterpolationType* m_type;
-  InterpolationValue m_valueOwner;
-  const InterpolationValue* m_value;
+  const InterpolationType* type_;
+  InterpolationValue value_owner_;
+  const InterpolationValue* value_;
 };
 
 }  // namespace blink

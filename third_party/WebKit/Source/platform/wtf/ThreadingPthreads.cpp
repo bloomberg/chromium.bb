@@ -61,7 +61,7 @@ namespace WTF {
 
 namespace internal {
 
-ThreadIdentifier currentThreadSyscall() {
+ThreadIdentifier CurrentThreadSyscall() {
 #if OS(MACOSX)
   return pthread_mach_thread_np(pthread_self());
 #elif OS(LINUX)
@@ -75,28 +75,28 @@ ThreadIdentifier currentThreadSyscall() {
 
 }  // namespace internal
 
-void initializeThreading() {
+void InitializeThreading() {
   // This should only be called once.
-  WTFThreadData::initialize();
+  WTFThreadData::Initialize();
 
-  initializeDates();
+  InitializeDates();
   // Force initialization of static DoubleToStringConverter converter variable
   // inside EcmaScriptConverter function while we are in single thread mode.
   double_conversion::DoubleToStringConverter::EcmaScriptConverter();
 }
 
 namespace {
-ThreadSpecificKey s_currentThreadKey;
-bool s_currentThreadKeyInitialized = false;
+ThreadSpecificKey g_current_thread_key;
+bool g_current_thread_key_initialized = false;
 }  // namespace
 
-void initializeCurrentThread() {
-  DCHECK(!s_currentThreadKeyInitialized);
-  threadSpecificKeyCreate(&s_currentThreadKey, [](void*) {});
-  s_currentThreadKeyInitialized = true;
+void InitializeCurrentThread() {
+  DCHECK(!g_current_thread_key_initialized);
+  ThreadSpecificKeyCreate(&g_current_thread_key, [](void*) {});
+  g_current_thread_key_initialized = true;
 }
 
-ThreadIdentifier currentThread() {
+ThreadIdentifier CurrentThread() {
   // This doesn't use WTF::ThreadSpecific (e.g. WTFThreadData) because
   // ThreadSpecific now depends on currentThread. It is necessary to avoid this
   // or a similar loop:
@@ -108,15 +108,15 @@ ThreadIdentifier currentThread() {
   // -> currentThread
   static_assert(sizeof(ThreadIdentifier) <= sizeof(void*),
                 "ThreadIdentifier must fit in a void*.");
-  DCHECK(s_currentThreadKeyInitialized);
-  void* value = threadSpecificGet(s_currentThreadKey);
+  DCHECK(g_current_thread_key_initialized);
+  void* value = ThreadSpecificGet(g_current_thread_key);
   if (UNLIKELY(!value)) {
     value = reinterpret_cast<void*>(
-        static_cast<intptr_t>(internal::currentThreadSyscall()));
+        static_cast<intptr_t>(internal::CurrentThreadSyscall()));
     DCHECK(value);
-    threadSpecificSet(s_currentThreadKey, value);
+    ThreadSpecificSet(g_current_thread_key, value);
   }
-  return reinterpret_cast<intptr_t>(threadSpecificGet(s_currentThreadKey));
+  return reinterpret_cast<intptr_t>(ThreadSpecificGet(g_current_thread_key));
 }
 
 MutexBase::MutexBase(bool recursive) {
@@ -125,34 +125,34 @@ MutexBase::MutexBase(bool recursive) {
   pthread_mutexattr_settype(
       &attr, recursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_NORMAL);
 
-  int result = pthread_mutex_init(&m_mutex.m_internalMutex, &attr);
+  int result = pthread_mutex_init(&mutex_.internal_mutex_, &attr);
   DCHECK_EQ(result, 0);
 #if DCHECK_IS_ON()
-  m_mutex.m_recursionCount = 0;
+  mutex_.recursion_count_ = 0;
 #endif
 
   pthread_mutexattr_destroy(&attr);
 }
 
 MutexBase::~MutexBase() {
-  int result = pthread_mutex_destroy(&m_mutex.m_internalMutex);
+  int result = pthread_mutex_destroy(&mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
 }
 
 void MutexBase::lock() {
-  int result = pthread_mutex_lock(&m_mutex.m_internalMutex);
+  int result = pthread_mutex_lock(&mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
 #if DCHECK_IS_ON()
-  ++m_mutex.m_recursionCount;
+  ++mutex_.recursion_count_;
 #endif
 }
 
 void MutexBase::unlock() {
 #if DCHECK_IS_ON()
-  DCHECK(m_mutex.m_recursionCount);
-  --m_mutex.m_recursionCount;
+  DCHECK(mutex_.recursion_count_);
+  --mutex_.recursion_count_;
 #endif
-  int result = pthread_mutex_unlock(&m_mutex.m_internalMutex);
+  int result = pthread_mutex_unlock(&mutex_.internal_mutex_);
   DCHECK_EQ(result, 0);
 }
 
@@ -161,14 +161,14 @@ void MutexBase::unlock() {
 // succeed or not for the non-recursive mutex. On Linux the two implementations
 // are equal except we can assert the recursion count is always zero for the
 // non-recursive mutex.
-bool Mutex::tryLock() {
-  int result = pthread_mutex_trylock(&m_mutex.m_internalMutex);
+bool Mutex::TryLock() {
+  int result = pthread_mutex_trylock(&mutex_.internal_mutex_);
   if (result == 0) {
 #if DCHECK_IS_ON()
     // The Mutex class is not recursive, so the recursionCount should be
     // zero after getting the lock.
-    DCHECK(!m_mutex.m_recursionCount);
-    ++m_mutex.m_recursionCount;
+    DCHECK(!mutex_.recursion_count_);
+    ++mutex_.recursion_count_;
 #endif
     return true;
   }
@@ -179,11 +179,11 @@ bool Mutex::tryLock() {
   return false;
 }
 
-bool RecursiveMutex::tryLock() {
-  int result = pthread_mutex_trylock(&m_mutex.m_internalMutex);
+bool RecursiveMutex::TryLock() {
+  int result = pthread_mutex_trylock(&mutex_.internal_mutex_);
   if (result == 0) {
 #if DCHECK_IS_ON()
-    ++m_mutex.m_recursionCount;
+    ++mutex_.recursion_count_;
 #endif
     return true;
   }
@@ -195,66 +195,66 @@ bool RecursiveMutex::tryLock() {
 }
 
 ThreadCondition::ThreadCondition() {
-  pthread_cond_init(&m_condition, nullptr);
+  pthread_cond_init(&condition_, nullptr);
 }
 
 ThreadCondition::~ThreadCondition() {
-  pthread_cond_destroy(&m_condition);
+  pthread_cond_destroy(&condition_);
 }
 
-void ThreadCondition::wait(MutexBase& mutex) {
-  PlatformMutex& platformMutex = mutex.impl();
-  int result = pthread_cond_wait(&m_condition, &platformMutex.m_internalMutex);
+void ThreadCondition::Wait(MutexBase& mutex) {
+  PlatformMutex& platform_mutex = mutex.Impl();
+  int result = pthread_cond_wait(&condition_, &platform_mutex.internal_mutex_);
   DCHECK_EQ(result, 0);
 #if DCHECK_IS_ON()
-  ++platformMutex.m_recursionCount;
+  ++platform_mutex.recursion_count_;
 #endif
 }
 
-bool ThreadCondition::timedWait(MutexBase& mutex, double absoluteTime) {
-  if (absoluteTime < currentTime())
+bool ThreadCondition::TimedWait(MutexBase& mutex, double absolute_time) {
+  if (absolute_time < CurrentTime())
     return false;
 
-  if (absoluteTime > INT_MAX) {
-    wait(mutex);
+  if (absolute_time > INT_MAX) {
+    Wait(mutex);
     return true;
   }
 
-  int timeSeconds = static_cast<int>(absoluteTime);
-  int timeNanoseconds = static_cast<int>((absoluteTime - timeSeconds) * 1E9);
+  int time_seconds = static_cast<int>(absolute_time);
+  int time_nanoseconds = static_cast<int>((absolute_time - time_seconds) * 1E9);
 
-  timespec targetTime;
-  targetTime.tv_sec = timeSeconds;
-  targetTime.tv_nsec = timeNanoseconds;
+  timespec target_time;
+  target_time.tv_sec = time_seconds;
+  target_time.tv_nsec = time_nanoseconds;
 
-  PlatformMutex& platformMutex = mutex.impl();
+  PlatformMutex& platform_mutex = mutex.Impl();
   int result = pthread_cond_timedwait(
-      &m_condition, &platformMutex.m_internalMutex, &targetTime);
+      &condition_, &platform_mutex.internal_mutex_, &target_time);
 #if DCHECK_IS_ON()
-  ++platformMutex.m_recursionCount;
+  ++platform_mutex.recursion_count_;
 #endif
   return result == 0;
 }
 
-void ThreadCondition::signal() {
-  int result = pthread_cond_signal(&m_condition);
+void ThreadCondition::Signal() {
+  int result = pthread_cond_signal(&condition_);
   DCHECK_EQ(result, 0);
 }
 
-void ThreadCondition::broadcast() {
-  int result = pthread_cond_broadcast(&m_condition);
+void ThreadCondition::Broadcast() {
+  int result = pthread_cond_broadcast(&condition_);
   DCHECK_EQ(result, 0);
 }
 
 #if DCHECK_IS_ON()
-static bool s_threadCreated = false;
+static bool g_thread_created = false;
 
-bool isBeforeThreadCreated() {
-  return !s_threadCreated;
+bool IsBeforeThreadCreated() {
+  return !g_thread_created;
 }
 
-void willCreateThread() {
-  s_threadCreated = true;
+void WillCreateThread() {
+  g_thread_created = true;
 }
 #endif
 

@@ -45,39 +45,39 @@ class PLATFORM_EXPORT UpSampler {
   WTF_MAKE_NONCOPYABLE(UpSampler);
 
  public:
-  UpSampler(size_t inputBlockSize);
+  UpSampler(size_t input_block_size);
 
   // The destination buffer |destP| is of size sourceFramesToProcess * 2.
-  void process(const float* sourceP,
-               float* destP,
-               size_t sourceFramesToProcess);
+  void Process(const float* source_p,
+               float* dest_p,
+               size_t source_frames_to_process);
 
-  void reset();
+  void Reset();
 
   // Latency based on the source sample-rate.
-  size_t latencyFrames() const;
+  size_t LatencyFrames() const;
 
  private:
-  enum { DefaultKernelSize = 128 };
+  enum { kDefaultKernelSize = 128 };
 
-  size_t m_inputBlockSize;
+  size_t input_block_size_;
 
   // Computes ideal band-limited filter coefficients to sample in between each
   // source sample-frame.  This filter will be used to compute the odd
   // sample-frames of the output.
-  void initializeKernel();
-  AudioFloatArray m_kernel;
+  void InitializeKernel();
+  AudioFloatArray kernel_;
 
   // Computes the odd sample-frames of the output.
-  DirectConvolver m_convolver;
+  DirectConvolver convolver_;
 
-  AudioFloatArray m_tempBuffer;
+  AudioFloatArray temp_buffer_;
 
   // Delay line for generating the even sample-frames of the output.
   // The source samples are delayed exactly to match the linear phase delay of
   // the FIR filter (convolution) used to generate the odd sample-frames of the
   // output.
-  AudioFloatArray m_inputBuffer;
+  AudioFloatArray input_buffer_;
 };
 
 }  // namespace blink

@@ -8,22 +8,22 @@
 
 namespace blink {
 
-static unsigned s_pluginScriptForbiddenCount = 0;
+static unsigned g_plugin_script_forbidden_count = 0;
 
 PluginScriptForbiddenScope::PluginScriptForbiddenScope() {
-  ASSERT(isMainThread());
-  ++s_pluginScriptForbiddenCount;
+  ASSERT(IsMainThread());
+  ++g_plugin_script_forbidden_count;
 }
 
 PluginScriptForbiddenScope::~PluginScriptForbiddenScope() {
-  ASSERT(isMainThread());
-  ASSERT(s_pluginScriptForbiddenCount);
-  --s_pluginScriptForbiddenCount;
+  ASSERT(IsMainThread());
+  ASSERT(g_plugin_script_forbidden_count);
+  --g_plugin_script_forbidden_count;
 }
 
-bool PluginScriptForbiddenScope::isForbidden() {
-  ASSERT(isMainThread());
-  return s_pluginScriptForbiddenCount > 0;
+bool PluginScriptForbiddenScope::IsForbidden() {
+  ASSERT(IsMainThread());
+  return g_plugin_script_forbidden_count > 0;
 }
 
 }  // namespace blink

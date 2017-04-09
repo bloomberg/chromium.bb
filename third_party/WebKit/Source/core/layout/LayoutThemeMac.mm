@@ -66,7 +66,7 @@
 - (void)systemColorsDidChange:(NSNotification*)unusedNotification {
   DCHECK([[unusedNotification name]
       isEqualToString:NSSystemColorsDidChangeNotification]);
-  _theme->platformColorsDidChange();
+  _theme->PlatformColorsDidChange();
 }
 
 @end
@@ -117,13 +117,13 @@ namespace blink {
 
 namespace {
 
-bool fontSizeMatchesToControlSize(const ComputedStyle& style) {
-  int fontSize = style.fontSize();
-  if (fontSize == [NSFont systemFontSizeForControlSize:NSRegularControlSize])
+bool FontSizeMatchesToControlSize(const ComputedStyle& style) {
+  int font_size = style.FontSize();
+  if (font_size == [NSFont systemFontSizeForControlSize:NSRegularControlSize])
     return true;
-  if (fontSize == [NSFont systemFontSizeForControlSize:NSSmallControlSize])
+  if (font_size == [NSFont systemFontSizeForControlSize:NSSmallControlSize])
     return true;
-  if (fontSize == [NSFont systemFontSizeForControlSize:NSMiniControlSize])
+  if (font_size == [NSFont systemFontSizeForControlSize:NSMiniControlSize])
     return true;
   return false;
 }
@@ -133,13 +133,13 @@ bool fontSizeMatchesToControlSize(const ComputedStyle& style) {
 using namespace HTMLNames;
 
 LayoutThemeMac::LayoutThemeMac()
-    : LayoutTheme(platformTheme()),
-      m_notificationObserver(
-          AdoptNS,
+    : LayoutTheme(PlatformTheme()),
+      notification_observer_(
+          kAdoptNS,
           [[BlinkLayoutThemeNotificationObserver alloc] initWithTheme:this]),
-      m_painter(*this) {
+      painter_(*this) {
   [[NSNotificationCenter defaultCenter]
-      addObserver:m_notificationObserver.get()
+      addObserver:notification_observer_.Get()
          selector:@selector(systemColorsDidChange:)
              name:NSSystemColorsDidChangeNotification
            object:nil];
@@ -147,10 +147,10 @@ LayoutThemeMac::LayoutThemeMac()
 
 LayoutThemeMac::~LayoutThemeMac() {
   [[NSNotificationCenter defaultCenter]
-      removeObserver:m_notificationObserver.get()];
+      removeObserver:notification_observer_.Get()];
 }
 
-Color LayoutThemeMac::platformActiveSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor() const {
   NSColor* color = [[NSColor selectedTextBackgroundColor]
       colorUsingColorSpaceName:NSDeviceRGBColorSpace];
   return Color(static_cast<int>(255.0 * [color redComponent]),
@@ -158,7 +158,7 @@ Color LayoutThemeMac::platformActiveSelectionBackgroundColor() const {
                static_cast<int>(255.0 * [color blueComponent]));
 }
 
-Color LayoutThemeMac::platformInactiveSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformInactiveSelectionBackgroundColor() const {
   NSColor* color = [[NSColor secondarySelectedControlColor]
       colorUsingColorSpaceName:NSDeviceRGBColorSpace];
   return Color(static_cast<int>(255.0 * [color redComponent]),
@@ -166,11 +166,11 @@ Color LayoutThemeMac::platformInactiveSelectionBackgroundColor() const {
                static_cast<int>(255.0 * [color blueComponent]));
 }
 
-Color LayoutThemeMac::platformActiveSelectionForegroundColor() const {
-  return Color::black;
+Color LayoutThemeMac::PlatformActiveSelectionForegroundColor() const {
+  return Color::kBlack;
 }
 
-Color LayoutThemeMac::platformActiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformActiveListBoxSelectionBackgroundColor() const {
   NSColor* color = [[NSColor alternateSelectedControlColor]
       colorUsingColorSpaceName:NSDeviceRGBColorSpace];
   return Color(static_cast<int>(255.0 * [color redComponent]),
@@ -178,43 +178,44 @@ Color LayoutThemeMac::platformActiveListBoxSelectionBackgroundColor() const {
                static_cast<int>(255.0 * [color blueComponent]));
 }
 
-Color LayoutThemeMac::platformActiveListBoxSelectionForegroundColor() const {
-  return Color::white;
+Color LayoutThemeMac::PlatformActiveListBoxSelectionForegroundColor() const {
+  return Color::kWhite;
 }
 
-Color LayoutThemeMac::platformInactiveListBoxSelectionForegroundColor() const {
-  return Color::black;
+Color LayoutThemeMac::PlatformInactiveListBoxSelectionForegroundColor() const {
+  return Color::kBlack;
 }
 
-Color LayoutThemeMac::platformFocusRingColor() const {
-  static const RGBA32 oldAquaFocusRingColor = 0xFF7DADD9;
-  if (usesTestModeFocusRingColor())
-    return oldAquaFocusRingColor;
+Color LayoutThemeMac::PlatformFocusRingColor() const {
+  static const RGBA32 kOldAquaFocusRingColor = 0xFF7DADD9;
+  if (UsesTestModeFocusRingColor())
+    return kOldAquaFocusRingColor;
 
-  return systemColor(CSSValueWebkitFocusRingColor);
+  return SystemColor(CSSValueWebkitFocusRingColor);
 }
 
-Color LayoutThemeMac::platformInactiveListBoxSelectionBackgroundColor() const {
-  return platformInactiveSelectionBackgroundColor();
+Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor() const {
+  return PlatformInactiveSelectionBackgroundColor();
 }
 
-static FontWeight toFontWeight(NSInteger appKitFontWeight) {
-  DCHECK_GT(appKitFontWeight, 0);
-  DCHECK_LT(appKitFontWeight, 15);
-  if (appKitFontWeight > 14)
-    appKitFontWeight = 14;
-  else if (appKitFontWeight < 1)
-    appKitFontWeight = 1;
+static FontWeight ToFontWeight(NSInteger app_kit_font_weight) {
+  DCHECK_GT(app_kit_font_weight, 0);
+  DCHECK_LT(app_kit_font_weight, 15);
+  if (app_kit_font_weight > 14)
+    app_kit_font_weight = 14;
+  else if (app_kit_font_weight < 1)
+    app_kit_font_weight = 1;
 
-  static FontWeight fontWeights[] = {
-      FontWeight100, FontWeight100, FontWeight200, FontWeight300, FontWeight400,
-      FontWeight500, FontWeight600, FontWeight600, FontWeight700, FontWeight800,
-      FontWeight800, FontWeight900, FontWeight900, FontWeight900};
-  return fontWeights[appKitFontWeight - 1];
+  static FontWeight font_weights[] = {
+      kFontWeight100, kFontWeight100, kFontWeight200, kFontWeight300,
+      kFontWeight400, kFontWeight500, kFontWeight600, kFontWeight600,
+      kFontWeight700, kFontWeight800, kFontWeight800, kFontWeight900,
+      kFontWeight900, kFontWeight900};
+  return font_weights[app_kit_font_weight - 1];
 }
 
-static inline NSFont* systemNSFont(CSSValueID systemFontID) {
-  switch (systemFontID) {
+static inline NSFont* SystemNSFont(CSSValueID system_font_id) {
+  switch (system_font_id) {
     case CSSValueSmallCaption:
       return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
     case CSSValueMenu:
@@ -236,40 +237,40 @@ static inline NSFont* systemNSFont(CSSValueID systemFontID) {
   }
 }
 
-void LayoutThemeMac::systemFont(CSSValueID systemFontID,
-                                FontStyle& fontStyle,
-                                FontWeight& fontWeight,
-                                float& fontSize,
-                                AtomicString& fontFamily) const {
-  NSFont* font = systemNSFont(systemFontID);
+void LayoutThemeMac::SystemFont(CSSValueID system_font_id,
+                                FontStyle& font_style,
+                                FontWeight& font_weight,
+                                float& font_size,
+                                AtomicString& font_family) const {
+  NSFont* font = SystemNSFont(system_font_id);
   if (!font)
     return;
 
-  NSFontManager* fontManager = [NSFontManager sharedFontManager];
-  fontStyle = ([fontManager traitsOfFont:font] & NSItalicFontMask)
-                  ? FontStyleItalic
-                  : FontStyleNormal;
-  fontWeight = toFontWeight([fontManager weightOfFont:font]);
-  fontSize = [font pointSize];
-  fontFamily = FontFamilyNames::system_ui;
+  NSFontManager* font_manager = [NSFontManager sharedFontManager];
+  font_style = ([font_manager traitsOfFont:font] & NSItalicFontMask)
+                   ? kFontStyleItalic
+                   : kFontStyleNormal;
+  font_weight = ToFontWeight([font_manager weightOfFont:font]);
+  font_size = [font pointSize];
+  font_family = FontFamilyNames::system_ui;
 }
 
-bool LayoutThemeMac::needsHackForTextControlWithFontFamily(
+bool LayoutThemeMac::NeedsHackForTextControlWithFontFamily(
     const AtomicString& family) const {
   // This hack is only applied on OSX 10.9.
   // https://code.google.com/p/chromium/issues/detail?id=515989#c8
   return IsOS10_9() && family == FontFamilyNames::system_ui;
 }
 
-static RGBA32 convertNSColorToColor(NSColor* color) {
-  NSColor* colorInColorSpace =
+static RGBA32 ConvertNSColorToColor(NSColor* color) {
+  NSColor* color_in_color_space =
       [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
-  if (colorInColorSpace) {
-    static const double scaleFactor = nextafter(256.0, 0.0);
-    return makeRGB(
-        static_cast<int>(scaleFactor * [colorInColorSpace redComponent]),
-        static_cast<int>(scaleFactor * [colorInColorSpace greenComponent]),
-        static_cast<int>(scaleFactor * [colorInColorSpace blueComponent]));
+  if (color_in_color_space) {
+    static const double kScaleFactor = nextafter(256.0, 0.0);
+    return MakeRGB(
+        static_cast<int>(kScaleFactor * [color_in_color_space redComponent]),
+        static_cast<int>(kScaleFactor * [color_in_color_space greenComponent]),
+        static_cast<int>(kScaleFactor * [color_in_color_space blueComponent]));
   }
 
   // This conversion above can fail if the NSColor in question is an
@@ -279,7 +280,7 @@ static RGBA32 convertNSColorToColor(NSColor* color) {
   // the color and use that pixel's color. It might be better to use an average
   // of
   // the colors in the pattern instead.
-  NSBitmapImageRep* offscreenRep =
+  NSBitmapImageRep* offscreen_rep =
       [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
                                               pixelsWide:1
                                               pixelsHigh:1
@@ -294,21 +295,21 @@ static RGBA32 convertNSColorToColor(NSColor* color) {
   [NSGraphicsContext saveGraphicsState];
   [NSGraphicsContext
       setCurrentContext:[NSGraphicsContext
-                            graphicsContextWithBitmapImageRep:offscreenRep]];
+                            graphicsContextWithBitmapImageRep:offscreen_rep]];
   NSEraseRect(NSMakeRect(0, 0, 1, 1));
   [color drawSwatchInRect:NSMakeRect(0, 0, 1, 1)];
   [NSGraphicsContext restoreGraphicsState];
 
   NSUInteger pixel[4];
-  [offscreenRep getPixel:pixel atX:0 y:0];
+  [offscreen_rep getPixel:pixel atX:0 y:0];
 
-  [offscreenRep release];
+  [offscreen_rep release];
 
-  return makeRGB(pixel[0], pixel[1], pixel[2]);
+  return MakeRGB(pixel[0], pixel[1], pixel[2]);
 }
 
-static RGBA32 menuBackgroundColor() {
-  NSBitmapImageRep* offscreenRep =
+static RGBA32 MenuBackgroundColor() {
+  NSBitmapImageRep* offscreen_rep =
       [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
                                               pixelsWide:1
                                               pixelsHigh:1
@@ -321,49 +322,49 @@ static RGBA32 menuBackgroundColor() {
                                             bitsPerPixel:32];
 
   CGContextRef context = static_cast<CGContextRef>([[NSGraphicsContext
-      graphicsContextWithBitmapImageRep:offscreenRep] graphicsPort]);
+      graphicsContextWithBitmapImageRep:offscreen_rep] graphicsPort]);
   CGRect rect = CGRectMake(0, 0, 1, 1);
-  HIThemeMenuDrawInfo drawInfo;
-  drawInfo.version = 0;
-  drawInfo.menuType = kThemeMenuTypePopUp;
-  HIThemeDrawMenuBackground(&rect, &drawInfo, context,
+  HIThemeMenuDrawInfo draw_info;
+  draw_info.version = 0;
+  draw_info.menuType = kThemeMenuTypePopUp;
+  HIThemeDrawMenuBackground(&rect, &draw_info, context,
                             kHIThemeOrientationInverted);
 
   NSUInteger pixel[4];
-  [offscreenRep getPixel:pixel atX:0 y:0];
+  [offscreen_rep getPixel:pixel atX:0 y:0];
 
-  [offscreenRep release];
+  [offscreen_rep release];
 
-  return makeRGB(pixel[0], pixel[1], pixel[2]);
+  return MakeRGB(pixel[0], pixel[1], pixel[2]);
 }
 
-void LayoutThemeMac::platformColorsDidChange() {
-  m_systemColorCache.clear();
-  LayoutTheme::platformColorsDidChange();
+void LayoutThemeMac::PlatformColorsDidChange() {
+  system_color_cache_.Clear();
+  LayoutTheme::PlatformColorsDidChange();
 }
 
-Color LayoutThemeMac::systemColor(CSSValueID cssValueId) const {
+Color LayoutThemeMac::SystemColor(CSSValueID css_value_id) const {
   {
-    HashMap<int, RGBA32>::iterator it = m_systemColorCache.find(cssValueId);
-    if (it != m_systemColorCache.end())
+    HashMap<int, RGBA32>::iterator it = system_color_cache_.Find(css_value_id);
+    if (it != system_color_cache_.end())
       return it->value;
   }
 
   Color color;
-  bool needsFallback = false;
-  switch (cssValueId) {
+  bool needs_fallback = false;
+  switch (css_value_id) {
     case CSSValueActiveborder:
-      color = convertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
+      color = ConvertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
       break;
     case CSSValueActivecaption:
-      color = convertNSColorToColor([NSColor windowFrameTextColor]);
+      color = ConvertNSColorToColor([NSColor windowFrameTextColor]);
       break;
     case CSSValueAppworkspace:
-      color = convertNSColorToColor([NSColor headerColor]);
+      color = ConvertNSColorToColor([NSColor headerColor]);
       break;
     case CSSValueBackground:
       // Use theme independent default
-      needsFallback = true;
+      needs_fallback = true;
       break;
     case CSSValueButtonface:
       // We use this value instead of NSColor's controlColor to avoid website
@@ -372,34 +373,34 @@ Color LayoutThemeMac::systemColor(CSSValueID cssValueId) const {
       color = 0xFFC0C0C0;
       break;
     case CSSValueButtonhighlight:
-      color = convertNSColorToColor([NSColor controlHighlightColor]);
+      color = ConvertNSColorToColor([NSColor controlHighlightColor]);
       break;
     case CSSValueButtonshadow:
-      color = convertNSColorToColor([NSColor controlShadowColor]);
+      color = ConvertNSColorToColor([NSColor controlShadowColor]);
       break;
     case CSSValueButtontext:
-      color = convertNSColorToColor([NSColor controlTextColor]);
+      color = ConvertNSColorToColor([NSColor controlTextColor]);
       break;
     case CSSValueCaptiontext:
-      color = convertNSColorToColor([NSColor textColor]);
+      color = ConvertNSColorToColor([NSColor textColor]);
       break;
     case CSSValueGraytext:
-      color = convertNSColorToColor([NSColor disabledControlTextColor]);
+      color = ConvertNSColorToColor([NSColor disabledControlTextColor]);
       break;
     case CSSValueHighlight:
-      color = convertNSColorToColor([NSColor selectedTextBackgroundColor]);
+      color = ConvertNSColorToColor([NSColor selectedTextBackgroundColor]);
       break;
     case CSSValueHighlighttext:
-      color = convertNSColorToColor([NSColor selectedTextColor]);
+      color = ConvertNSColorToColor([NSColor selectedTextColor]);
       break;
     case CSSValueInactiveborder:
-      color = convertNSColorToColor([NSColor controlBackgroundColor]);
+      color = ConvertNSColorToColor([NSColor controlBackgroundColor]);
       break;
     case CSSValueInactivecaption:
-      color = convertNSColorToColor([NSColor controlBackgroundColor]);
+      color = ConvertNSColorToColor([NSColor controlBackgroundColor]);
       break;
     case CSSValueInactivecaptiontext:
-      color = convertNSColorToColor([NSColor textColor]);
+      color = ConvertNSColorToColor([NSColor textColor]);
       break;
     case CSSValueInfobackground:
       // There is no corresponding NSColor for this so we use a hard coded
@@ -407,25 +408,25 @@ Color LayoutThemeMac::systemColor(CSSValueID cssValueId) const {
       color = 0xFFFBFCC5;
       break;
     case CSSValueInfotext:
-      color = convertNSColorToColor([NSColor textColor]);
+      color = ConvertNSColorToColor([NSColor textColor]);
       break;
     case CSSValueMenu:
-      color = menuBackgroundColor();
+      color = MenuBackgroundColor();
       break;
     case CSSValueMenutext:
-      color = convertNSColorToColor([NSColor selectedMenuItemTextColor]);
+      color = ConvertNSColorToColor([NSColor selectedMenuItemTextColor]);
       break;
     case CSSValueScrollbar:
-      color = convertNSColorToColor([NSColor scrollBarColor]);
+      color = ConvertNSColorToColor([NSColor scrollBarColor]);
       break;
     case CSSValueText:
-      color = convertNSColorToColor([NSColor textColor]);
+      color = ConvertNSColorToColor([NSColor textColor]);
       break;
     case CSSValueThreeddarkshadow:
-      color = convertNSColorToColor([NSColor controlDarkShadowColor]);
+      color = ConvertNSColorToColor([NSColor controlDarkShadowColor]);
       break;
     case CSSValueThreedshadow:
-      color = convertNSColorToColor([NSColor shadowColor]);
+      color = ConvertNSColorToColor([NSColor shadowColor]);
       break;
     case CSSValueThreedface:
       // We use this value instead of NSColor's controlColor to avoid website
@@ -434,170 +435,172 @@ Color LayoutThemeMac::systemColor(CSSValueID cssValueId) const {
       color = 0xFFC0C0C0;
       break;
     case CSSValueThreedhighlight:
-      color = convertNSColorToColor([NSColor highlightColor]);
+      color = ConvertNSColorToColor([NSColor highlightColor]);
       break;
     case CSSValueThreedlightshadow:
-      color = convertNSColorToColor([NSColor controlLightHighlightColor]);
+      color = ConvertNSColorToColor([NSColor controlLightHighlightColor]);
       break;
     case CSSValueWebkitFocusRingColor:
-      color = convertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
+      color = ConvertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
       break;
     case CSSValueWindow:
-      color = convertNSColorToColor([NSColor windowBackgroundColor]);
+      color = ConvertNSColorToColor([NSColor windowBackgroundColor]);
       break;
     case CSSValueWindowframe:
-      color = convertNSColorToColor([NSColor windowFrameColor]);
+      color = ConvertNSColorToColor([NSColor windowFrameColor]);
       break;
     case CSSValueWindowtext:
-      color = convertNSColorToColor([NSColor windowFrameTextColor]);
+      color = ConvertNSColorToColor([NSColor windowFrameTextColor]);
       break;
     default:
-      needsFallback = true;
+      needs_fallback = true;
       break;
   }
 
-  if (needsFallback)
-    color = LayoutTheme::systemColor(cssValueId);
+  if (needs_fallback)
+    color = LayoutTheme::SystemColor(css_value_id);
 
-  m_systemColorCache.set(cssValueId, color.rgb());
+  system_color_cache_.Set(css_value_id, color.Rgb());
 
   return color;
 }
 
-bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const {
-  if (style.appearance() == TextFieldPart || style.appearance() == TextAreaPart)
-    return style.hasAuthorBorder() || style.boxShadow();
+bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
+  if (style.Appearance() == kTextFieldPart ||
+      style.Appearance() == kTextAreaPart)
+    return style.HasAuthorBorder() || style.BoxShadow();
 
-  if (style.appearance() == MenulistPart) {
+  if (style.Appearance() == kMenulistPart) {
     // FIXME: This is horrible, but there is not much else that can be done.
     // Menu lists cannot draw properly when scaled. They can't really draw
     // properly when transformed either. We can't detect the transform case
     // at style adjustment time so that will just have to stay broken.  We
     // can however detect that we're zooming. If zooming is in effect we
     // treat it like the control is styled.
-    if (style.effectiveZoom() != 1.0f)
+    if (style.EffectiveZoom() != 1.0f)
       return true;
-    if (!fontSizeMatchesToControlSize(style))
+    if (!FontSizeMatchesToControlSize(style))
       return true;
-    if (style.getFontDescription().family().family() !=
+    if (style.GetFontDescription().Family().Family() !=
         FontFamilyNames::system_ui)
       return true;
-    if (!style.height().isIntrinsicOrAuto())
+    if (!style.Height().IsIntrinsicOrAuto())
       return true;
     // NSPopUpButtonCell on macOS 10.9 doesn't support
     // NSUserInterfaceLayoutDirectionRightToLeft.
-    if (IsOS10_9() && style.direction() == TextDirection::kRtl)
+    if (IsOS10_9() && style.Direction() == TextDirection::kRtl)
       return true;
   }
   // Some other cells don't work well when scaled.
-  if (style.effectiveZoom() != 1) {
-    switch (style.appearance()) {
-      case ButtonPart:
-      case PushButtonPart:
-      case SearchFieldPart:
-      case SquareButtonPart:
+  if (style.EffectiveZoom() != 1) {
+    switch (style.Appearance()) {
+      case kButtonPart:
+      case kPushButtonPart:
+      case kSearchFieldPart:
+      case kSquareButtonPart:
         return true;
       default:
         break;
     }
   }
-  return LayoutTheme::isControlStyled(style);
+  return LayoutTheme::IsControlStyled(style);
 }
 
-void LayoutThemeMac::addVisualOverflow(const LayoutObject& object,
+void LayoutThemeMac::AddVisualOverflow(const LayoutObject& object,
                                        IntRect& rect) {
-  ControlPart part = object.style()->appearance();
+  ControlPart part = object.Style()->Appearance();
 
-  if (hasPlatformTheme()) {
+  if (HasPlatformTheme()) {
     switch (part) {
-      case CheckboxPart:
-      case RadioPart:
-      case PushButtonPart:
-      case SquareButtonPart:
-      case ButtonPart:
-      case InnerSpinButtonPart:
-        return LayoutTheme::addVisualOverflow(object, rect);
+      case kCheckboxPart:
+      case kRadioPart:
+      case kPushButtonPart:
+      case kSquareButtonPart:
+      case kButtonPart:
+      case kInnerSpinButtonPart:
+        return LayoutTheme::AddVisualOverflow(object, rect);
       default:
         break;
     }
   }
 
-  float zoomLevel = object.style()->effectiveZoom();
+  float zoom_level = object.Style()->EffectiveZoom();
 
-  if (part == MenulistPart) {
-    setPopupButtonCellState(object, rect);
-    IntSize size = popupButtonSizes()[[popupButton() controlSize]];
-    size.setHeight(size.height() * zoomLevel);
-    size.setWidth(rect.width());
-    rect = ThemeMac::inflateRect(rect, size, popupButtonMargins(), zoomLevel);
-  } else if (part == SliderThumbHorizontalPart ||
-             part == SliderThumbVerticalPart) {
-    rect.setHeight(rect.height() + sliderThumbShadowBlur);
+  if (part == kMenulistPart) {
+    SetPopupButtonCellState(object, rect);
+    IntSize size = PopupButtonSizes()[[PopupButton() controlSize]];
+    size.SetHeight(size.Height() * zoom_level);
+    size.SetWidth(rect.Width());
+    rect = ThemeMac::InflateRect(rect, size, PopupButtonMargins(), zoom_level);
+  } else if (part == kSliderThumbHorizontalPart ||
+             part == kSliderThumbVerticalPart) {
+    rect.SetHeight(rect.Height() + kSliderThumbShadowBlur);
   }
 }
 
-void LayoutThemeMac::updateCheckedState(NSCell* cell, const LayoutObject& o) {
-  bool oldIndeterminate = [cell state] == NSMixedState;
-  bool indeterminate = isIndeterminate(o);
-  bool checked = isChecked(o);
+void LayoutThemeMac::UpdateCheckedState(NSCell* cell, const LayoutObject& o) {
+  bool old_indeterminate = [cell state] == NSMixedState;
+  bool indeterminate = IsIndeterminate(o);
+  bool checked = IsChecked(o);
 
-  if (oldIndeterminate != indeterminate) {
+  if (old_indeterminate != indeterminate) {
     [cell setState:indeterminate ? NSMixedState
                                  : (checked ? NSOnState : NSOffState)];
     return;
   }
 
-  bool oldChecked = [cell state] == NSOnState;
-  if (checked != oldChecked)
+  bool old_checked = [cell state] == NSOnState;
+  if (checked != old_checked)
     [cell setState:checked ? NSOnState : NSOffState];
 }
 
-void LayoutThemeMac::updateEnabledState(NSCell* cell, const LayoutObject& o) {
-  bool oldEnabled = [cell isEnabled];
-  bool enabled = isEnabled(o);
-  if (enabled != oldEnabled)
+void LayoutThemeMac::UpdateEnabledState(NSCell* cell, const LayoutObject& o) {
+  bool old_enabled = [cell isEnabled];
+  bool enabled = IsEnabled(o);
+  if (enabled != old_enabled)
     [cell setEnabled:enabled];
 }
 
-void LayoutThemeMac::updateFocusedState(NSCell* cell, const LayoutObject& o) {
-  bool oldFocused = [cell showsFirstResponder];
-  bool focused = isFocused(o) && o.styleRef().outlineStyleIsAuto();
-  if (focused != oldFocused)
+void LayoutThemeMac::UpdateFocusedState(NSCell* cell, const LayoutObject& o) {
+  bool old_focused = [cell showsFirstResponder];
+  bool focused = IsFocused(o) && o.StyleRef().OutlineStyleIsAuto();
+  if (focused != old_focused)
     [cell setShowsFirstResponder:focused];
 }
 
-void LayoutThemeMac::updatePressedState(NSCell* cell, const LayoutObject& o) {
-  bool oldPressed = [cell isHighlighted];
-  bool pressed = o.node() && o.node()->isActive();
-  if (pressed != oldPressed)
+void LayoutThemeMac::UpdatePressedState(NSCell* cell, const LayoutObject& o) {
+  bool old_pressed = [cell isHighlighted];
+  bool pressed = o.GetNode() && o.GetNode()->IsActive();
+  if (pressed != old_pressed)
     [cell setHighlighted:pressed];
 }
 
-NSControlSize LayoutThemeMac::controlSizeForFont(
+NSControlSize LayoutThemeMac::ControlSizeForFont(
     const ComputedStyle& style) const {
-  int fontSize = style.fontSize();
-  if (fontSize >= 16)
+  int font_size = style.FontSize();
+  if (font_size >= 16)
     return NSRegularControlSize;
-  if (fontSize >= 11)
+  if (font_size >= 11)
     return NSSmallControlSize;
   return NSMiniControlSize;
 }
 
-void LayoutThemeMac::setControlSize(NSCell* cell,
+void LayoutThemeMac::SetControlSize(NSCell* cell,
                                     const IntSize* sizes,
-                                    const IntSize& minSize,
-                                    float zoomLevel) {
+                                    const IntSize& min_size,
+                                    float zoom_level) {
   NSControlSize size;
-  if (minSize.width() >=
-          static_cast<int>(sizes[NSRegularControlSize].width() * zoomLevel) &&
-      minSize.height() >=
-          static_cast<int>(sizes[NSRegularControlSize].height() * zoomLevel))
+  if (min_size.Width() >=
+          static_cast<int>(sizes[NSRegularControlSize].Width() * zoom_level) &&
+      min_size.Height() >=
+          static_cast<int>(sizes[NSRegularControlSize].Height() * zoom_level))
     size = NSRegularControlSize;
-  else if (minSize.width() >=
-               static_cast<int>(sizes[NSSmallControlSize].width() *
-                                zoomLevel) &&
-           minSize.height() >=
-               static_cast<int>(sizes[NSSmallControlSize].height() * zoomLevel))
+  else if (min_size.Width() >=
+               static_cast<int>(sizes[NSSmallControlSize].Width() *
+                                zoom_level) &&
+           min_size.Height() >=
+               static_cast<int>(sizes[NSSmallControlSize].Height() *
+                                zoom_level))
     size = NSSmallControlSize;
   else
     size = NSMiniControlSize;
@@ -607,416 +610,417 @@ void LayoutThemeMac::setControlSize(NSCell* cell,
     [cell setControlSize:size];
 }
 
-IntSize LayoutThemeMac::sizeForFont(const ComputedStyle& style,
+IntSize LayoutThemeMac::SizeForFont(const ComputedStyle& style,
                                     const IntSize* sizes) const {
-  if (style.effectiveZoom() != 1.0f) {
-    IntSize result = sizes[controlSizeForFont(style)];
-    return IntSize(result.width() * style.effectiveZoom(),
-                   result.height() * style.effectiveZoom());
+  if (style.EffectiveZoom() != 1.0f) {
+    IntSize result = sizes[ControlSizeForFont(style)];
+    return IntSize(result.Width() * style.EffectiveZoom(),
+                   result.Height() * style.EffectiveZoom());
   }
-  return sizes[controlSizeForFont(style)];
+  return sizes[ControlSizeForFont(style)];
 }
 
-IntSize LayoutThemeMac::sizeForSystemFont(const ComputedStyle& style,
+IntSize LayoutThemeMac::SizeForSystemFont(const ComputedStyle& style,
                                           const IntSize* sizes) const {
-  if (style.effectiveZoom() != 1.0f) {
-    IntSize result = sizes[controlSizeForSystemFont(style)];
-    return IntSize(result.width() * style.effectiveZoom(),
-                   result.height() * style.effectiveZoom());
+  if (style.EffectiveZoom() != 1.0f) {
+    IntSize result = sizes[ControlSizeForSystemFont(style)];
+    return IntSize(result.Width() * style.EffectiveZoom(),
+                   result.Height() * style.EffectiveZoom());
   }
-  return sizes[controlSizeForSystemFont(style)];
+  return sizes[ControlSizeForSystemFont(style)];
 }
 
-void LayoutThemeMac::setSizeFromFont(ComputedStyle& style,
+void LayoutThemeMac::SetSizeFromFont(ComputedStyle& style,
                                      const IntSize* sizes) const {
   // FIXME: Check is flawed, since it doesn't take min-width/max-width into
   // account.
-  IntSize size = sizeForFont(style, sizes);
-  if (style.width().isIntrinsicOrAuto() && size.width() > 0)
-    style.setWidth(Length(size.width(), Fixed));
-  if (style.height().isAuto() && size.height() > 0)
-    style.setHeight(Length(size.height(), Fixed));
+  IntSize size = SizeForFont(style, sizes);
+  if (style.Width().IsIntrinsicOrAuto() && size.Width() > 0)
+    style.SetWidth(Length(size.Width(), kFixed));
+  if (style.Height().IsAuto() && size.Height() > 0)
+    style.SetHeight(Length(size.Height(), kFixed));
 }
 
-void LayoutThemeMac::setFontFromControlSize(ComputedStyle& style,
-                                            NSControlSize controlSize) const {
-  FontDescription fontDescription;
-  fontDescription.setIsAbsoluteSize(true);
-  fontDescription.setGenericFamily(FontDescription::SerifFamily);
+void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
+                                            NSControlSize control_size) const {
+  FontDescription font_description;
+  font_description.SetIsAbsoluteSize(true);
+  font_description.SetGenericFamily(FontDescription::kSerifFamily);
 
   NSFont* font = [NSFont
-      systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSize]];
-  fontDescription.firstFamily().setFamily(FontFamilyNames::system_ui);
-  fontDescription.setComputedSize([font pointSize] * style.effectiveZoom());
-  fontDescription.setSpecifiedSize([font pointSize] * style.effectiveZoom());
+      systemFontOfSize:[NSFont systemFontSizeForControlSize:control_size]];
+  font_description.FirstFamily().SetFamily(FontFamilyNames::system_ui);
+  font_description.SetComputedSize([font pointSize] * style.EffectiveZoom());
+  font_description.SetSpecifiedSize([font pointSize] * style.EffectiveZoom());
 
   // Reset line height.
-  style.setLineHeight(ComputedStyle::initialLineHeight());
+  style.SetLineHeight(ComputedStyle::InitialLineHeight());
 
   // TODO(esprehn): The fontSelector manual management is buggy and error prone.
-  FontSelector* fontSelector = style.font().getFontSelector();
-  if (style.setFontDescription(fontDescription))
-    style.font().update(fontSelector);
+  FontSelector* font_selector = style.GetFont().GetFontSelector();
+  if (style.SetFontDescription(font_description))
+    style.GetFont().Update(font_selector);
 }
 
-NSControlSize LayoutThemeMac::controlSizeForSystemFont(
+NSControlSize LayoutThemeMac::ControlSizeForSystemFont(
     const ComputedStyle& style) const {
-  float fontSize = style.fontSize();
-  float zoomLevel = style.effectiveZoom();
-  if (zoomLevel != 1)
-    fontSize /= zoomLevel;
-  if (fontSize >= [NSFont systemFontSizeForControlSize:NSRegularControlSize])
+  float font_size = style.FontSize();
+  float zoom_level = style.EffectiveZoom();
+  if (zoom_level != 1)
+    font_size /= zoom_level;
+  if (font_size >= [NSFont systemFontSizeForControlSize:NSRegularControlSize])
     return NSRegularControlSize;
-  if (fontSize >= [NSFont systemFontSizeForControlSize:NSSmallControlSize])
+  if (font_size >= [NSFont systemFontSizeForControlSize:NSSmallControlSize])
     return NSSmallControlSize;
   return NSMiniControlSize;
 }
 
-const int* LayoutThemeMac::popupButtonMargins() const {
-  static const int margins[3][4] = {{0, 3, 1, 3}, {0, 3, 2, 3}, {0, 1, 0, 1}};
-  return margins[[popupButton() controlSize]];
+const int* LayoutThemeMac::PopupButtonMargins() const {
+  static const int kMargins[3][4] = {{0, 3, 1, 3}, {0, 3, 2, 3}, {0, 1, 0, 1}};
+  return kMargins[[PopupButton() controlSize]];
 }
 
-const IntSize* LayoutThemeMac::popupButtonSizes() const {
-  static const IntSize sizes[3] = {IntSize(0, 21), IntSize(0, 18),
-                                   IntSize(0, 15)};
-  return sizes;
+const IntSize* LayoutThemeMac::PopupButtonSizes() const {
+  static const IntSize kSizes[3] = {IntSize(0, 21), IntSize(0, 18),
+                                    IntSize(0, 15)};
+  return kSizes;
 }
 
-const int* LayoutThemeMac::popupButtonPadding(NSControlSize size) const {
-  static const int padding[3][4] = {
+const int* LayoutThemeMac::PopupButtonPadding(NSControlSize size) const {
+  static const int kPadding[3][4] = {
       {2, 26, 3, 8}, {2, 23, 3, 8}, {2, 22, 3, 10}};
-  return padding[size];
+  return kPadding[size];
 }
 
-const int* LayoutThemeMac::progressBarHeights() const {
-  static const int sizes[3] = {20, 12, 12};
-  return sizes;
+const int* LayoutThemeMac::ProgressBarHeights() const {
+  static const int kSizes[3] = {20, 12, 12};
+  return kSizes;
 }
 
-double LayoutThemeMac::animationRepeatIntervalForProgressBar() const {
-  return progressAnimationFrameRate;
+double LayoutThemeMac::AnimationRepeatIntervalForProgressBar() const {
+  return kProgressAnimationFrameRate;
 }
 
-double LayoutThemeMac::animationDurationForProgressBar() const {
-  return progressAnimationNumFrames * progressAnimationFrameRate;
+double LayoutThemeMac::AnimationDurationForProgressBar() const {
+  return kProgressAnimationNumFrames * kProgressAnimationFrameRate;
 }
 
-static const IntSize* menuListButtonSizes() {
-  static const IntSize sizes[3] = {IntSize(0, 21), IntSize(0, 18),
-                                   IntSize(0, 15)};
-  return sizes;
+static const IntSize* MenuListButtonSizes() {
+  static const IntSize kSizes[3] = {IntSize(0, 21), IntSize(0, 18),
+                                    IntSize(0, 15)};
+  return kSizes;
 }
 
-void LayoutThemeMac::adjustMenuListStyle(ComputedStyle& style,
+void LayoutThemeMac::AdjustMenuListStyle(ComputedStyle& style,
                                          Element* e) const {
-  NSControlSize controlSize = controlSizeForFont(style);
+  NSControlSize control_size = ControlSizeForFont(style);
 
-  style.resetBorder();
-  style.resetPadding();
+  style.ResetBorder();
+  style.ResetPadding();
 
   // Height is locked to auto.
-  style.setHeight(Length(Auto));
+  style.SetHeight(Length(kAuto));
 
   // White-space is locked to pre.
-  style.setWhiteSpace(EWhiteSpace::kPre);
+  style.SetWhiteSpace(EWhiteSpace::kPre);
 
   // Set the foreground color to black or gray when we have the aqua look.
   // Cast to RGB32 is to work around a compiler bug.
-  style.setColor(e && !e->isDisabledFormControl()
-                     ? static_cast<RGBA32>(Color::black)
-                     : Color::darkGray);
+  style.SetColor(e && !e->IsDisabledFormControl()
+                     ? static_cast<RGBA32>(Color::kBlack)
+                     : Color::kDarkGray);
 
   // Set the button's vertical size.
-  setSizeFromFont(style, menuListButtonSizes());
+  SetSizeFromFont(style, MenuListButtonSizes());
 
   // Our font is locked to the appropriate system font size for the
   // control. To clarify, we first use the CSS-specified font to figure out a
   // reasonable control size, but once that control size is determined, we
   // throw that font away and use the appropriate system font for the control
   // size instead.
-  setFontFromControlSize(style, controlSize);
+  SetFontFromControlSize(style, control_size);
 }
 
-static const int baseBorderRadius = 5;
-static const int styledPopupPaddingStart = 8;
-static const int styledPopupPaddingTop = 1;
-static const int styledPopupPaddingBottom = 2;
+static const int kBaseBorderRadius = 5;
+static const int kStyledPopupPaddingStart = 8;
+static const int kStyledPopupPaddingTop = 1;
+static const int kStyledPopupPaddingBottom = 2;
 
 // These functions are called with MenuListPart or MenulistButtonPart appearance
 // by LayoutMenuList.
-int LayoutThemeMac::popupInternalPaddingStart(
+int LayoutThemeMac::PopupInternalPaddingStart(
     const ComputedStyle& style) const {
-  if (style.appearance() == MenulistPart)
-    return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] *
-           style.effectiveZoom();
-  if (style.appearance() == MenulistButtonPart)
-    return styledPopupPaddingStart * style.effectiveZoom();
+  if (style.Appearance() == kMenulistPart)
+    return PopupButtonPadding(
+               ControlSizeForFont(style))[ThemeMac::kLeftMargin] *
+           style.EffectiveZoom();
+  if (style.Appearance() == kMenulistButtonPart)
+    return kStyledPopupPaddingStart * style.EffectiveZoom();
   return 0;
 }
 
-int LayoutThemeMac::popupInternalPaddingEnd(const HostWindow*,
+int LayoutThemeMac::PopupInternalPaddingEnd(const HostWindow*,
                                             const ComputedStyle& style) const {
-  if (style.appearance() == MenulistPart)
-    return popupButtonPadding(
-               controlSizeForFont(style))[ThemeMac::RightMargin] *
-           style.effectiveZoom();
-  if (style.appearance() != MenulistButtonPart)
+  if (style.Appearance() == kMenulistPart)
+    return PopupButtonPadding(
+               ControlSizeForFont(style))[ThemeMac::kRightMargin] *
+           style.EffectiveZoom();
+  if (style.Appearance() != kMenulistButtonPart)
     return 0;
-  float fontScale = style.fontSize() / baseFontSize;
-  float arrowWidth = menuListBaseArrowWidth * fontScale;
-  return static_cast<int>(
-      ceilf(arrowWidth +
-            (menuListArrowPaddingStart + menuListArrowPaddingEnd) *
-                style.effectiveZoom()));
+  float font_scale = style.FontSize() / kBaseFontSize;
+  float arrow_width = kMenuListBaseArrowWidth * font_scale;
+  return static_cast<int>(ceilf(
+      arrow_width + (kMenuListArrowPaddingStart + kMenuListArrowPaddingEnd) *
+                        style.EffectiveZoom()));
 }
 
-int LayoutThemeMac::popupInternalPaddingTop(const ComputedStyle& style) const {
-  if (style.appearance() == MenulistPart)
-    return popupButtonPadding(controlSizeForFont(style))[ThemeMac::TopMargin] *
-           style.effectiveZoom();
-  if (style.appearance() == MenulistButtonPart)
-    return styledPopupPaddingTop * style.effectiveZoom();
+int LayoutThemeMac::PopupInternalPaddingTop(const ComputedStyle& style) const {
+  if (style.Appearance() == kMenulistPart)
+    return PopupButtonPadding(ControlSizeForFont(style))[ThemeMac::kTopMargin] *
+           style.EffectiveZoom();
+  if (style.Appearance() == kMenulistButtonPart)
+    return kStyledPopupPaddingTop * style.EffectiveZoom();
   return 0;
 }
 
-int LayoutThemeMac::popupInternalPaddingBottom(
+int LayoutThemeMac::PopupInternalPaddingBottom(
     const ComputedStyle& style) const {
-  if (style.appearance() == MenulistPart)
-    return popupButtonPadding(
-               controlSizeForFont(style))[ThemeMac::BottomMargin] *
-           style.effectiveZoom();
-  if (style.appearance() == MenulistButtonPart)
-    return styledPopupPaddingBottom * style.effectiveZoom();
+  if (style.Appearance() == kMenulistPart)
+    return PopupButtonPadding(
+               ControlSizeForFont(style))[ThemeMac::kBottomMargin] *
+           style.EffectiveZoom();
+  if (style.Appearance() == kMenulistButtonPart)
+    return kStyledPopupPaddingBottom * style.EffectiveZoom();
   return 0;
 }
 
-void LayoutThemeMac::adjustMenuListButtonStyle(ComputedStyle& style,
+void LayoutThemeMac::AdjustMenuListButtonStyle(ComputedStyle& style,
                                                Element*) const {
-  float fontScale = style.fontSize() / baseFontSize;
+  float font_scale = style.FontSize() / kBaseFontSize;
 
-  style.resetPadding();
-  style.setBorderRadius(
-      IntSize(int(baseBorderRadius + fontScale - 1),
-              int(baseBorderRadius + fontScale - 1)));  // FIXME: Round up?
+  style.ResetPadding();
+  style.SetBorderRadius(
+      IntSize(int(kBaseBorderRadius + font_scale - 1),
+              int(kBaseBorderRadius + font_scale - 1)));  // FIXME: Round up?
 
-  const int minHeight = 15;
-  style.setMinHeight(Length(minHeight, Fixed));
+  const int kMinHeight = 15;
+  style.SetMinHeight(Length(kMinHeight, kFixed));
 
-  style.setLineHeight(ComputedStyle::initialLineHeight());
+  style.SetLineHeight(ComputedStyle::InitialLineHeight());
 }
 
-void LayoutThemeMac::setPopupButtonCellState(const LayoutObject& object,
+void LayoutThemeMac::SetPopupButtonCellState(const LayoutObject& object,
                                              const IntRect& rect) {
-  NSPopUpButtonCell* popupButton = this->popupButton();
+  NSPopUpButtonCell* popup_button = this->PopupButton();
 
   // Set the control size based off the rectangle we're painting into.
-  setControlSize(popupButton, popupButtonSizes(), rect.size(),
-                 object.styleRef().effectiveZoom());
+  SetControlSize(popup_button, PopupButtonSizes(), rect.size(),
+                 object.StyleRef().EffectiveZoom());
 
   // Update the various states we respond to.
-  updateActiveState(popupButton, object);
-  updateCheckedState(popupButton, object);
-  updateEnabledState(popupButton, object);
-  updatePressedState(popupButton, object);
+  UpdateActiveState(popup_button, object);
+  UpdateCheckedState(popup_button, object);
+  UpdateEnabledState(popup_button, object);
+  UpdatePressedState(popup_button, object);
 
-  popupButton.userInterfaceLayoutDirection =
-      object.styleRef().direction() == TextDirection::kLtr
+  popup_button.userInterfaceLayoutDirection =
+      object.StyleRef().Direction() == TextDirection::kLtr
           ? NSUserInterfaceLayoutDirectionLeftToRight
           : NSUserInterfaceLayoutDirectionRightToLeft;
 }
 
-const IntSize* LayoutThemeMac::menuListSizes() const {
-  static const IntSize sizes[3] = {IntSize(9, 0), IntSize(5, 0), IntSize(0, 0)};
-  return sizes;
+const IntSize* LayoutThemeMac::MenuListSizes() const {
+  static const IntSize kSizes[3] = {IntSize(9, 0), IntSize(5, 0),
+                                    IntSize(0, 0)};
+  return kSizes;
 }
 
-int LayoutThemeMac::minimumMenuListSize(const ComputedStyle& style) const {
-  return sizeForSystemFont(style, menuListSizes()).width();
+int LayoutThemeMac::MinimumMenuListSize(const ComputedStyle& style) const {
+  return SizeForSystemFont(style, MenuListSizes()).Width();
 }
 
-void LayoutThemeMac::setSearchCellState(const LayoutObject& o, const IntRect&) {
-  NSSearchFieldCell* search = this->search();
+void LayoutThemeMac::SetSearchCellState(const LayoutObject& o, const IntRect&) {
+  NSSearchFieldCell* search = this->Search();
 
   // Update the various states we respond to.
-  updateActiveState(search, o);
-  updateEnabledState(search, o);
-  updateFocusedState(search, o);
+  UpdateActiveState(search, o);
+  UpdateEnabledState(search, o);
+  UpdateFocusedState(search, o);
 }
 
-const IntSize* LayoutThemeMac::searchFieldSizes() const {
-  static const IntSize sizes[3] = {IntSize(0, 22), IntSize(0, 19),
-                                   IntSize(0, 15)};
-  return sizes;
+const IntSize* LayoutThemeMac::SearchFieldSizes() const {
+  static const IntSize kSizes[3] = {IntSize(0, 22), IntSize(0, 19),
+                                    IntSize(0, 15)};
+  return kSizes;
 }
 
-static const int* searchFieldHorizontalPaddings() {
-  static const int sizes[3] = {3, 2, 1};
-  return sizes;
+static const int* SearchFieldHorizontalPaddings() {
+  static const int kSizes[3] = {3, 2, 1};
+  return kSizes;
 }
 
-void LayoutThemeMac::setSearchFieldSize(ComputedStyle& style) const {
+void LayoutThemeMac::SetSearchFieldSize(ComputedStyle& style) const {
   // If the width and height are both specified, then we have nothing to do.
-  if (!style.width().isIntrinsicOrAuto() && !style.height().isAuto())
+  if (!style.Width().IsIntrinsicOrAuto() && !style.Height().IsAuto())
     return;
 
   // Use the font size to determine the intrinsic width of the control.
-  setSizeFromFont(style, searchFieldSizes());
+  SetSizeFromFont(style, SearchFieldSizes());
 }
 
-const int searchFieldBorderWidth = 2;
-void LayoutThemeMac::adjustSearchFieldStyle(ComputedStyle& style) const {
+const int kSearchFieldBorderWidth = 2;
+void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   // Override border.
-  style.resetBorder();
-  const short borderWidth = searchFieldBorderWidth * style.effectiveZoom();
-  style.setBorderLeftWidth(borderWidth);
-  style.setBorderLeftStyle(BorderStyleInset);
-  style.setBorderRightWidth(borderWidth);
-  style.setBorderRightStyle(BorderStyleInset);
-  style.setBorderBottomWidth(borderWidth);
-  style.setBorderBottomStyle(BorderStyleInset);
-  style.setBorderTopWidth(borderWidth);
-  style.setBorderTopStyle(BorderStyleInset);
+  style.ResetBorder();
+  const short border_width = kSearchFieldBorderWidth * style.EffectiveZoom();
+  style.SetBorderLeftWidth(border_width);
+  style.SetBorderLeftStyle(kBorderStyleInset);
+  style.SetBorderRightWidth(border_width);
+  style.SetBorderRightStyle(kBorderStyleInset);
+  style.SetBorderBottomWidth(border_width);
+  style.SetBorderBottomStyle(kBorderStyleInset);
+  style.SetBorderTopWidth(border_width);
+  style.SetBorderTopStyle(kBorderStyleInset);
 
   // Override height.
-  style.setHeight(Length(Auto));
-  setSearchFieldSize(style);
+  style.SetHeight(Length(kAuto));
+  SetSearchFieldSize(style);
 
-  NSControlSize controlSize = controlSizeForFont(style);
+  NSControlSize control_size = ControlSizeForFont(style);
 
   // Override padding size to match AppKit text positioning.
-  const int verticalPadding = 1 * style.effectiveZoom();
-  const int horizontalPadding =
-      searchFieldHorizontalPaddings()[controlSize] * style.effectiveZoom();
-  style.setPaddingLeft(Length(horizontalPadding, Fixed));
-  style.setPaddingRight(Length(horizontalPadding, Fixed));
-  style.setPaddingTop(Length(verticalPadding, Fixed));
-  style.setPaddingBottom(Length(verticalPadding, Fixed));
+  const int vertical_padding = 1 * style.EffectiveZoom();
+  const int horizontal_padding =
+      SearchFieldHorizontalPaddings()[control_size] * style.EffectiveZoom();
+  style.SetPaddingLeft(Length(horizontal_padding, kFixed));
+  style.SetPaddingRight(Length(horizontal_padding, kFixed));
+  style.SetPaddingTop(Length(vertical_padding, kFixed));
+  style.SetPaddingBottom(Length(vertical_padding, kFixed));
 
-  setFontFromControlSize(style, controlSize);
+  SetFontFromControlSize(style, control_size);
 
-  style.setBoxShadow(nullptr);
+  style.SetBoxShadow(nullptr);
 }
 
-const IntSize* LayoutThemeMac::cancelButtonSizes() const {
-  static const IntSize sizes[3] = {IntSize(14, 14), IntSize(11, 11),
-                                   IntSize(9, 9)};
-  return sizes;
+const IntSize* LayoutThemeMac::CancelButtonSizes() const {
+  static const IntSize kSizes[3] = {IntSize(14, 14), IntSize(11, 11),
+                                    IntSize(9, 9)};
+  return kSizes;
 }
 
-void LayoutThemeMac::adjustSearchFieldCancelButtonStyle(
+void LayoutThemeMac::AdjustSearchFieldCancelButtonStyle(
     ComputedStyle& style) const {
-  IntSize size = sizeForSystemFont(style, cancelButtonSizes());
-  style.setWidth(Length(size.width(), Fixed));
-  style.setHeight(Length(size.height(), Fixed));
-  style.setBoxShadow(nullptr);
+  IntSize size = SizeForSystemFont(style, CancelButtonSizes());
+  style.SetWidth(Length(size.Width(), kFixed));
+  style.SetHeight(Length(size.Height(), kFixed));
+  style.SetBoxShadow(nullptr);
 }
 
-IntSize LayoutThemeMac::sliderTickSize() const {
+IntSize LayoutThemeMac::SliderTickSize() const {
   return IntSize(1, 3);
 }
 
-int LayoutThemeMac::sliderTickOffsetFromTrackCenter() const {
+int LayoutThemeMac::SliderTickOffsetFromTrackCenter() const {
   return -9;
 }
 
-void LayoutThemeMac::adjustProgressBarBounds(ComputedStyle& style) const {
-  float zoomLevel = style.effectiveZoom();
-  NSControlSize controlSize = controlSizeForFont(style);
-  int height = progressBarHeights()[controlSize] * zoomLevel;
+void LayoutThemeMac::AdjustProgressBarBounds(ComputedStyle& style) const {
+  float zoom_level = style.EffectiveZoom();
+  NSControlSize control_size = ControlSizeForFont(style);
+  int height = ProgressBarHeights()[control_size] * zoom_level;
 
   // Now inflate it to account for the shadow.
-  style.setMinHeight(Length(height + zoomLevel, Fixed));
+  style.SetMinHeight(Length(height + zoom_level, kFixed));
 }
 
-void LayoutThemeMac::adjustSliderThumbSize(ComputedStyle& style) const {
-  float zoomLevel = style.effectiveZoom();
-  if (style.appearance() == SliderThumbHorizontalPart ||
-      style.appearance() == SliderThumbVerticalPart) {
-    style.setWidth(
-        Length(static_cast<int>(sliderThumbWidth * zoomLevel), Fixed));
-    style.setHeight(
-        Length(static_cast<int>(sliderThumbHeight * zoomLevel), Fixed));
+void LayoutThemeMac::AdjustSliderThumbSize(ComputedStyle& style) const {
+  float zoom_level = style.EffectiveZoom();
+  if (style.Appearance() == kSliderThumbHorizontalPart ||
+      style.Appearance() == kSliderThumbVerticalPart) {
+    style.SetWidth(
+        Length(static_cast<int>(kSliderThumbWidth * zoom_level), kFixed));
+    style.SetHeight(
+        Length(static_cast<int>(kSliderThumbHeight * zoom_level), kFixed));
   } else {
-    adjustMediaSliderThumbSize(style);
+    AdjustMediaSliderThumbSize(style);
   }
 }
 
-NSPopUpButtonCell* LayoutThemeMac::popupButton() const {
-  if (!m_popupButton) {
-    m_popupButton.adoptNS(
+NSPopUpButtonCell* LayoutThemeMac::PopupButton() const {
+  if (!popup_button_) {
+    popup_button_.AdoptNS(
         [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
-    [m_popupButton.get() setUsesItemFromMenu:NO];
-    [m_popupButton.get() setFocusRingType:NSFocusRingTypeExterior];
+    [popup_button_.Get() setUsesItemFromMenu:NO];
+    [popup_button_.Get() setFocusRingType:NSFocusRingTypeExterior];
   }
 
-  return m_popupButton.get();
+  return popup_button_.Get();
 }
 
-NSSearchFieldCell* LayoutThemeMac::search() const {
-  if (!m_search) {
-    m_search.adoptNS([[NSSearchFieldCell alloc] initTextCell:@""]);
-    [m_search.get() setBezelStyle:NSTextFieldRoundedBezel];
-    [m_search.get() setBezeled:YES];
-    [m_search.get() setEditable:YES];
-    [m_search.get() setFocusRingType:NSFocusRingTypeExterior];
+NSSearchFieldCell* LayoutThemeMac::Search() const {
+  if (!search_) {
+    search_.AdoptNS([[NSSearchFieldCell alloc] initTextCell:@""]);
+    [search_.Get() setBezelStyle:NSTextFieldRoundedBezel];
+    [search_.Get() setBezeled:YES];
+    [search_.Get() setEditable:YES];
+    [search_.Get() setFocusRingType:NSFocusRingTypeExterior];
     SEL sel = @selector(setCenteredLook:);
-    if ([m_search.get() respondsToSelector:sel]) {
-      BOOL boolValue = NO;
+    if ([search_.Get() respondsToSelector:sel]) {
+      BOOL bool_value = NO;
       NSMethodSignature* signature =
           [NSSearchFieldCell instanceMethodSignatureForSelector:sel];
       NSInvocation* invocation =
           [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setTarget:m_search.get()];
+      [invocation setTarget:search_.Get()];
       [invocation setSelector:sel];
-      [invocation setArgument:&boolValue atIndex:2];
+      [invocation setArgument:&bool_value atIndex:2];
       [invocation invoke];
     }
   }
 
-  return m_search.get();
+  return search_.Get();
 }
 
-NSTextFieldCell* LayoutThemeMac::textField() const {
-  if (!m_textField) {
-    m_textField.adoptNS([[BlinkTextFieldCell alloc] initTextCell:@""]);
-    [m_textField.get() setBezeled:YES];
-    [m_textField.get() setEditable:YES];
-    [m_textField.get() setFocusRingType:NSFocusRingTypeExterior];
-    [m_textField.get() setDrawsBackground:YES];
-    [m_textField.get() setBackgroundColor:[NSColor whiteColor]];
+NSTextFieldCell* LayoutThemeMac::TextField() const {
+  if (!text_field_) {
+    text_field_.AdoptNS([[BlinkTextFieldCell alloc] initTextCell:@""]);
+    [text_field_.Get() setBezeled:YES];
+    [text_field_.Get() setEditable:YES];
+    [text_field_.Get() setFocusRingType:NSFocusRingTypeExterior];
+    [text_field_.Get() setDrawsBackground:YES];
+    [text_field_.Get() setBackgroundColor:[NSColor whiteColor]];
   }
 
-  return m_textField.get();
+  return text_field_.Get();
 }
 
-String LayoutThemeMac::fileListNameForWidth(Locale& locale,
-                                            const FileList* fileList,
+String LayoutThemeMac::FileListNameForWidth(Locale& locale,
+                                            const FileList* file_list,
                                             const Font& font,
                                             int width) const {
   if (width <= 0)
     return String();
 
-  String strToTruncate;
-  if (fileList->isEmpty()) {
-    strToTruncate =
-        locale.queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
-  } else if (fileList->length() == 1) {
-    File* file = fileList->item(0);
-    if (file->getUserVisibility() == File::IsUserVisible)
-      strToTruncate = [[NSFileManager defaultManager]
-          displayNameAtPath:(fileList->item(0)->path())];
+  String str_to_truncate;
+  if (file_list->IsEmpty()) {
+    str_to_truncate =
+        locale.QueryString(WebLocalizedString::kFileButtonNoFileSelectedLabel);
+  } else if (file_list->length() == 1) {
+    File* file = file_list->item(0);
+    if (file->GetUserVisibility() == File::kIsUserVisible)
+      str_to_truncate = [[NSFileManager defaultManager]
+          displayNameAtPath:(file_list->item(0)->GetPath())];
     else
-      strToTruncate = file->name();
+      str_to_truncate = file->name();
   } else {
-    return StringTruncator::rightTruncate(
-        locale.queryString(WebLocalizedString::MultipleFileUploadText,
-                           locale.convertToLocalizedNumber(
-                               String::number(fileList->length()))),
+    return StringTruncator::RightTruncate(
+        locale.QueryString(WebLocalizedString::kMultipleFileUploadText,
+                           locale.ConvertToLocalizedNumber(
+                               String::Number(file_list->length()))),
         width, font);
   }
 
-  return StringTruncator::centerTruncate(strToTruncate, width, font);
+  return StringTruncator::CenterTruncate(str_to_truncate, width, font);
 }
 
 NSView* FlippedView() {
@@ -1024,20 +1028,20 @@ NSView* FlippedView() {
   return view;
 }
 
-LayoutTheme& LayoutTheme::nativeTheme() {
-  DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeMac::create()));
-  return *layoutTheme;
+LayoutTheme& LayoutTheme::NativeTheme() {
+  DEFINE_STATIC_REF(LayoutTheme, layout_theme, (LayoutThemeMac::Create()));
+  return *layout_theme;
 }
 
-PassRefPtr<LayoutTheme> LayoutThemeMac::create() {
-  return adoptRef(new LayoutThemeMac);
+PassRefPtr<LayoutTheme> LayoutThemeMac::Create() {
+  return AdoptRef(new LayoutThemeMac);
 }
 
-bool LayoutThemeMac::usesTestModeFocusRingColor() const {
-  return LayoutTestSupport::isRunningLayoutTest();
+bool LayoutThemeMac::UsesTestModeFocusRingColor() const {
+  return LayoutTestSupport::IsRunningLayoutTest();
 }
 
-NSView* LayoutThemeMac::documentViewFor(const LayoutObject&) const {
+NSView* LayoutThemeMac::DocumentViewFor(const LayoutObject&) const {
   return FlippedView();
 }
 
@@ -1050,52 +1054,52 @@ NSView* LayoutThemeMac::documentViewFor(const LayoutObject&) const {
 // code is called.
 // This function should be called before drawing any NSCell-derived controls,
 // unless you're sure it isn't needed.
-void LayoutThemeMac::updateActiveState(NSCell* cell, const LayoutObject& o) {
-  NSControlTint oldTint = [cell controlTint];
-  NSControlTint tint = isActive(o)
+void LayoutThemeMac::UpdateActiveState(NSCell* cell, const LayoutObject& o) {
+  NSControlTint old_tint = [cell controlTint];
+  NSControlTint tint = IsActive(o)
                            ? [NSColor currentControlTint]
                            : static_cast<NSControlTint>(NSClearControlTint);
 
-  if (tint != oldTint)
+  if (tint != old_tint)
     [cell setControlTint:tint];
 }
 
-void LayoutThemeMac::adjustMediaSliderThumbSize(ComputedStyle& style) const {
-  MediaControlsPainter::adjustMediaSliderThumbSize(style);
+void LayoutThemeMac::AdjustMediaSliderThumbSize(ComputedStyle& style) const {
+  MediaControlsPainter::AdjustMediaSliderThumbSize(style);
 }
 
-String LayoutThemeMac::extraFullscreenStyleSheet() {
+String LayoutThemeMac::ExtraFullscreenStyleSheet() {
   // FIXME: Chromium may wish to style its default media controls differently in
   // fullscreen.
   return String();
 }
 
-String LayoutThemeMac::extraDefaultStyleSheet() {
-  return LayoutTheme::extraDefaultStyleSheet() +
-         loadResourceAsASCIIString("themeInputMultipleFields.css") +
-         loadResourceAsASCIIString("themeMac.css");
+String LayoutThemeMac::ExtraDefaultStyleSheet() {
+  return LayoutTheme::ExtraDefaultStyleSheet() +
+         LoadResourceAsASCIIString("themeInputMultipleFields.css") +
+         LoadResourceAsASCIIString("themeMac.css");
 }
 
-bool LayoutThemeMac::themeDrawsFocusRing(const ComputedStyle& style) const {
-  if (shouldUseFallbackTheme(style))
+bool LayoutThemeMac::ThemeDrawsFocusRing(const ComputedStyle& style) const {
+  if (ShouldUseFallbackTheme(style))
     return false;
-  switch (style.appearance()) {
-    case CheckboxPart:
-    case RadioPart:
-    case PushButtonPart:
-    case SquareButtonPart:
-    case ButtonPart:
-    case MenulistPart:
-    case SliderThumbHorizontalPart:
-    case SliderThumbVerticalPart:
+  switch (style.Appearance()) {
+    case kCheckboxPart:
+    case kRadioPart:
+    case kPushButtonPart:
+    case kSquareButtonPart:
+    case kButtonPart:
+    case kMenulistPart:
+    case kSliderThumbHorizontalPart:
+    case kSliderThumbVerticalPart:
       return true;
 
     // Actually, they don't support native focus rings, but this function
     // returns true for them in order to prevent Blink from drawing focus rings.
     // SliderThumb*Part have focus rings, and we don't need to draw two focus
     // rings for single slider.
-    case SliderHorizontalPart:
-    case SliderVerticalPart:
+    case kSliderHorizontalPart:
+    case kSliderVerticalPart:
       return true;
 
     default:
@@ -1103,10 +1107,10 @@ bool LayoutThemeMac::themeDrawsFocusRing(const ComputedStyle& style) const {
   }
 }
 
-bool LayoutThemeMac::shouldUseFallbackTheme(const ComputedStyle& style) const {
-  ControlPart part = style.appearance();
-  if (part == CheckboxPart || part == RadioPart)
-    return style.effectiveZoom() != 1;
+bool LayoutThemeMac::ShouldUseFallbackTheme(const ComputedStyle& style) const {
+  ControlPart part = style.Appearance();
+  if (part == kCheckboxPart || part == kRadioPart)
+    return style.EffectiveZoom() != 1;
   return false;
 }
 

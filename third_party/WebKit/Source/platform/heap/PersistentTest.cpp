@@ -12,14 +12,15 @@
 namespace blink {
 namespace {
 
-void preciselyCollectGarbage() {
-  ThreadState::current()->collectGarbage(
-      BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+void PreciselyCollectGarbage() {
+  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
+                                         BlinkGC::kGCWithSweep,
+                                         BlinkGC::kForcedGC);
 }
 
 class Receiver : public GarbageCollected<Receiver> {
  public:
-  void increment(int* counter) { ++*counter; }
+  void Increment(int* counter) { ++*counter; }
 
   DEFINE_INLINE_TRACE() {}
 };
@@ -28,14 +29,14 @@ TEST(PersistentTest, BindCancellation) {
   Receiver* receiver = new Receiver;
   int counter = 0;
   std::unique_ptr<WTF::Closure> function =
-      WTF::bind(&Receiver::increment, wrapWeakPersistent(receiver),
-                WTF::unretained(&counter));
+      WTF::Bind(&Receiver::Increment, WrapWeakPersistent(receiver),
+                WTF::Unretained(&counter));
 
   (*function)();
   EXPECT_EQ(1, counter);
 
   receiver = nullptr;
-  preciselyCollectGarbage();
+  PreciselyCollectGarbage();
   (*function)();
   EXPECT_EQ(1, counter);
 }
@@ -43,15 +44,15 @@ TEST(PersistentTest, BindCancellation) {
 TEST(PersistentTest, CrossThreadBindCancellation) {
   Receiver* receiver = new Receiver;
   int counter = 0;
-  std::unique_ptr<CrossThreadClosure> function = blink::crossThreadBind(
-      &Receiver::increment, wrapCrossThreadWeakPersistent(receiver),
-      WTF::crossThreadUnretained(&counter));
+  std::unique_ptr<CrossThreadClosure> function = blink::CrossThreadBind(
+      &Receiver::Increment, WrapCrossThreadWeakPersistent(receiver),
+      WTF::CrossThreadUnretained(&counter));
 
   (*function)();
   EXPECT_EQ(1, counter);
 
   receiver = nullptr;
-  preciselyCollectGarbage();
+  PreciselyCollectGarbage();
   (*function)();
   EXPECT_EQ(1, counter);
 }

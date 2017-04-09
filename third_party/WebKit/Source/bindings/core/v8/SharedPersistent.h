@@ -43,25 +43,25 @@ class SharedPersistent : public RefCounted<SharedPersistent<T>> {
   WTF_MAKE_NONCOPYABLE(SharedPersistent);
 
  public:
-  static PassRefPtr<SharedPersistent<T>> create(v8::Local<T> value,
+  static PassRefPtr<SharedPersistent<T>> Create(v8::Local<T> value,
                                                 v8::Isolate* isolate) {
-    return adoptRef(new SharedPersistent<T>(value, isolate));
+    return AdoptRef(new SharedPersistent<T>(value, isolate));
   }
 
-  v8::Local<T> newLocal(v8::Isolate* isolate) const {
-    return m_value.newLocal(isolate);
+  v8::Local<T> NewLocal(v8::Isolate* isolate) const {
+    return value_.NewLocal(isolate);
   }
 
-  bool isEmpty() { return m_value.isEmpty(); }
+  bool IsEmpty() { return value_.IsEmpty(); }
 
   bool operator==(const SharedPersistent<T>& other) {
-    return m_value == other.m_value;
+    return value_ == other.value_;
   }
 
  private:
   explicit SharedPersistent(v8::Local<T> value, v8::Isolate* isolate)
-      : m_value(isolate, value) {}
-  ScopedPersistent<T> m_value;
+      : value_(isolate, value) {}
+  ScopedPersistent<T> value_;
 };
 
 }  // namespace blink

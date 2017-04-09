@@ -34,50 +34,50 @@ struct SameSizeAsCompactHTMLToken {
   unsigned bitfields;
   String data;
   Vector<Attribute> vector;
-  TextPosition textPosition;
+  TextPosition text_position;
 };
 
 static_assert(sizeof(CompactHTMLToken) == sizeof(SameSizeAsCompactHTMLToken),
               "CompactHTMLToken should stay small");
 
 CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
-                                   const TextPosition& textPosition)
-    : m_type(token->type()),
-      m_isAll8BitData(false),
-      m_doctypeForcesQuirks(false),
-      m_textPosition(textPosition) {
-  switch (m_type) {
-    case HTMLToken::Uninitialized:
+                                   const TextPosition& text_position)
+    : type_(token->GetType()),
+      is_all8_bit_data_(false),
+      doctype_forces_quirks_(false),
+      text_position_(text_position) {
+  switch (type_) {
+    case HTMLToken::kUninitialized:
       NOTREACHED();
       break;
     case HTMLToken::DOCTYPE: {
-      m_data = attemptStaticStringCreation(token->name(), Likely8Bit);
+      data_ = AttemptStaticStringCreation(token->GetName(), kLikely8Bit);
 
       // There is only 1 DOCTYPE token per document, so to avoid increasing the
       // size of CompactHTMLToken, we just use the m_attributes vector.
-      m_attributes.push_back(Attribute(
-          attemptStaticStringCreation(token->publicIdentifier(), Likely8Bit),
-          String(token->systemIdentifier())));
-      m_doctypeForcesQuirks = token->forceQuirks();
+      attributes_.push_back(Attribute(
+          AttemptStaticStringCreation(token->PublicIdentifier(), kLikely8Bit),
+          String(token->SystemIdentifier())));
+      doctype_forces_quirks_ = token->ForceQuirks();
       break;
     }
-    case HTMLToken::EndOfFile:
+    case HTMLToken::kEndOfFile:
       break;
-    case HTMLToken::StartTag:
-      m_attributes.reserveInitialCapacity(token->attributes().size());
-      for (const HTMLToken::Attribute& attribute : token->attributes())
-        m_attributes.push_back(
-            Attribute(attribute.nameAttemptStaticStringCreation(),
-                      attribute.value8BitIfNecessary()));
+    case HTMLToken::kStartTag:
+      attributes_.ReserveInitialCapacity(token->Attributes().size());
+      for (const HTMLToken::Attribute& attribute : token->Attributes())
+        attributes_.push_back(
+            Attribute(attribute.NameAttemptStaticStringCreation(),
+                      attribute.Value8BitIfNecessary()));
     // Fall through!
-    case HTMLToken::EndTag:
-      m_selfClosing = token->selfClosing();
+    case HTMLToken::kEndTag:
+      self_closing_ = token->SelfClosing();
     // Fall through!
-    case HTMLToken::Comment:
-    case HTMLToken::Character: {
-      m_isAll8BitData = token->isAll8BitData();
-      m_data = attemptStaticStringCreation(
-          token->data(), token->isAll8BitData() ? Force8Bit : Force16Bit);
+    case HTMLToken::kComment:
+    case HTMLToken::kCharacter: {
+      is_all8_bit_data_ = token->IsAll8BitData();
+      data_ = AttemptStaticStringCreation(
+          token->Data(), token->IsAll8BitData() ? kForce8Bit : kForce16Bit);
       break;
     }
     default:
@@ -86,21 +86,21 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
   }
 }
 
-const CompactHTMLToken::Attribute* CompactHTMLToken::getAttributeItem(
+const CompactHTMLToken::Attribute* CompactHTMLToken::GetAttributeItem(
     const QualifiedName& name) const {
-  for (unsigned i = 0; i < m_attributes.size(); ++i) {
-    if (threadSafeMatch(m_attributes.at(i).name(), name))
-      return &m_attributes.at(i);
+  for (unsigned i = 0; i < attributes_.size(); ++i) {
+    if (ThreadSafeMatch(attributes_.at(i).GetName(), name))
+      return &attributes_.at(i);
   }
   return nullptr;
 }
 
-bool CompactHTMLToken::isSafeToSendToAnotherThread() const {
-  for (const Attribute& attribute : m_attributes) {
-    if (!attribute.isSafeToSendToAnotherThread())
+bool CompactHTMLToken::IsSafeToSendToAnotherThread() const {
+  for (const Attribute& attribute : attributes_) {
+    if (!attribute.IsSafeToSendToAnotherThread())
       return false;
   }
-  return m_data.isSafeToSendToAnotherThread();
+  return data_.IsSafeToSendToAnotherThread();
 }
 
 }  // namespace blink

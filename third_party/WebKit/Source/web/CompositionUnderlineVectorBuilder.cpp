@@ -37,7 +37,7 @@ namespace blink {
 CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(
     const WebVector<WebCompositionUnderline>& underlines) {
   size_t size = underlines.size();
-  reserveCapacity(size);
+  ReserveCapacity(size);
   for (size_t i = 0; i < size; ++i)
     push_back(CompositionUnderlineBuilder(underlines[i]));
 }

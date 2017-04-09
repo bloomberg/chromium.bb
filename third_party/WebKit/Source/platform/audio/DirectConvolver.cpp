@@ -43,43 +43,43 @@ namespace blink {
 
 using namespace VectorMath;
 
-DirectConvolver::DirectConvolver(size_t inputBlockSize)
-    : m_inputBlockSize(inputBlockSize), m_buffer(inputBlockSize * 2) {}
+DirectConvolver::DirectConvolver(size_t input_block_size)
+    : input_block_size_(input_block_size), buffer_(input_block_size * 2) {}
 
-void DirectConvolver::process(AudioFloatArray* convolutionKernel,
-                              const float* sourceP,
-                              float* destP,
-                              size_t framesToProcess) {
-  DCHECK_EQ(framesToProcess, m_inputBlockSize);
-  if (framesToProcess != m_inputBlockSize)
+void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
+                              const float* source_p,
+                              float* dest_p,
+                              size_t frames_to_process) {
+  DCHECK_EQ(frames_to_process, input_block_size_);
+  if (frames_to_process != input_block_size_)
     return;
 
   // Only support kernelSize <= m_inputBlockSize
-  size_t kernelSize = convolutionKernel->size();
-  DCHECK_LE(kernelSize, m_inputBlockSize);
-  if (kernelSize > m_inputBlockSize)
+  size_t kernel_size = convolution_kernel->size();
+  DCHECK_LE(kernel_size, input_block_size_);
+  if (kernel_size > input_block_size_)
     return;
 
-  float* kernelP = convolutionKernel->data();
+  float* kernel_p = convolution_kernel->Data();
 
   // Sanity check
-  bool isCopyGood = kernelP && sourceP && destP && m_buffer.data();
-  DCHECK(isCopyGood);
-  if (!isCopyGood)
+  bool is_copy_good = kernel_p && source_p && dest_p && buffer_.Data();
+  DCHECK(is_copy_good);
+  if (!is_copy_good)
     return;
 
-  float* inputP = m_buffer.data() + m_inputBlockSize;
+  float* input_p = buffer_.Data() + input_block_size_;
 
   // Copy samples to 2nd half of input buffer.
-  memcpy(inputP, sourceP, sizeof(float) * framesToProcess);
+  memcpy(input_p, source_p, sizeof(float) * frames_to_process);
 
 #if OS(MACOSX)
 #if CPU(X86)
   conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1,
        framesToProcess, kernelSize);
 #else
-  vDSP_conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1,
-            framesToProcess, kernelSize);
+  vDSP_conv(input_p - kernel_size + 1, 1, kernel_p + kernel_size - 1, -1,
+            dest_p, 1, frames_to_process, kernel_size);
 #endif  // CPU(X86)
 #else
   size_t i = 0;
@@ -88,39 +88,39 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
   // |framesToProcess| are multiples of 4. If not, use the straightforward loop
   // below.
 
-  if ((kernelSize % 4 == 0) && (framesToProcess % 4 == 0)) {
+  if ((kernel_size % 4 == 0) && (frames_to_process % 4 == 0)) {
     // AudioFloatArray's are always aligned on at least a 16-byte boundary.
-    AudioFloatArray kernelBuffer(4 * kernelSize);
-    __m128* kernelReversed = reinterpret_cast<__m128*>(kernelBuffer.data());
+    AudioFloatArray kernel_buffer(4 * kernel_size);
+    __m128* kernel_reversed = reinterpret_cast<__m128*>(kernel_buffer.Data());
 
     // Reverse the kernel and repeat each value across a vector
-    for (i = 0; i < kernelSize; ++i) {
-      kernelReversed[i] = _mm_set1_ps(kernelP[kernelSize - i - 1]);
+    for (i = 0; i < kernel_size; ++i) {
+      kernel_reversed[i] = _mm_set1_ps(kernel_p[kernel_size - i - 1]);
     }
 
-    float* inputStartP = inputP - kernelSize + 1;
+    float* input_start_p = input_p - kernel_size + 1;
 
     // Do convolution with 4 inputs at a time.
-    for (i = 0; i < framesToProcess; i += 4) {
-      __m128 convolutionSum;
+    for (i = 0; i < frames_to_process; i += 4) {
+      __m128 convolution_sum;
 
-      convolutionSum = _mm_setzero_ps();
+      convolution_sum = _mm_setzero_ps();
 
       // |kernelSize| is a multiple of 4 so we can unroll the loop by 4,
       // manually.
-      for (size_t k = 0; k < kernelSize; k += 4) {
-        size_t dataOffset = i + k;
+      for (size_t k = 0; k < kernel_size; k += 4) {
+        size_t data_offset = i + k;
 
         for (size_t m = 0; m < 4; ++m) {
-          __m128 sourceBlock;
+          __m128 source_block;
           __m128 product;
 
-          sourceBlock = _mm_loadu_ps(inputStartP + dataOffset + m);
-          product = _mm_mul_ps(kernelReversed[k + m], sourceBlock);
-          convolutionSum = _mm_add_ps(convolutionSum, product);
+          source_block = _mm_loadu_ps(input_start_p + data_offset + m);
+          product = _mm_mul_ps(kernel_reversed[k + m], source_block);
+          convolution_sum = _mm_add_ps(convolution_sum, product);
         }
       }
-      _mm_storeu_ps(destP + i, convolutionSum);
+      _mm_storeu_ps(dest_p + i, convolution_sum);
     }
   } else {
 #endif
@@ -128,18 +128,18 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
 // FIXME: The macro can be further optimized to avoid pipeline stalls. One
 // possibility is to maintain 4 separate sums and change the macro to
 // CONVOLVE_FOUR_SAMPLES.
-#define CONVOLVE_ONE_SAMPLE            \
-  do {                                 \
-    sum += inputP[i - j] * kernelP[j]; \
-    j++;                               \
+#define CONVOLVE_ONE_SAMPLE              \
+  do {                                   \
+    sum += input_p[i - j] * kernel_p[j]; \
+    j++;                                 \
   } while (0)
 
-    while (i < framesToProcess) {
+    while (i < frames_to_process) {
       size_t j = 0;
       float sum = 0;
 
       // FIXME: SSE optimization may be applied here.
-      if (kernelSize == 32) {
+      if (kernel_size == 32) {
         CONVOLVE_ONE_SAMPLE;  // 1
         CONVOLVE_ONE_SAMPLE;  // 2
         CONVOLVE_ONE_SAMPLE;  // 3
@@ -176,7 +176,7 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
         CONVOLVE_ONE_SAMPLE;  // 31
         CONVOLVE_ONE_SAMPLE;  // 32
 
-      } else if (kernelSize == 64) {
+      } else if (kernel_size == 64) {
         CONVOLVE_ONE_SAMPLE;  // 1
         CONVOLVE_ONE_SAMPLE;  // 2
         CONVOLVE_ONE_SAMPLE;  // 3
@@ -248,7 +248,7 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
         CONVOLVE_ONE_SAMPLE;  // 63
         CONVOLVE_ONE_SAMPLE;  // 64
 
-      } else if (kernelSize == 128) {
+      } else if (kernel_size == 128) {
         CONVOLVE_ONE_SAMPLE;  // 1
         CONVOLVE_ONE_SAMPLE;  // 2
         CONVOLVE_ONE_SAMPLE;  // 3
@@ -390,12 +390,12 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
         CONVOLVE_ONE_SAMPLE;  // 127
         CONVOLVE_ONE_SAMPLE;  // 128
       } else {
-        while (j < kernelSize) {
+        while (j < kernel_size) {
           // Non-optimized using actual while loop.
           CONVOLVE_ONE_SAMPLE;
         }
       }
-      destP[i++] = sum;
+      dest_p[i++] = sum;
     }
 #if CPU(X86) || CPU(X86_64)
   }
@@ -403,11 +403,11 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
 #endif  // OS(MACOSX)
 
   // Copy 2nd half of input buffer to 1st half.
-  memcpy(m_buffer.data(), inputP, sizeof(float) * framesToProcess);
+  memcpy(buffer_.Data(), input_p, sizeof(float) * frames_to_process);
 }
 
-void DirectConvolver::reset() {
-  m_buffer.zero();
+void DirectConvolver::Reset() {
+  buffer_.Zero();
 }
 
 }  // namespace blink

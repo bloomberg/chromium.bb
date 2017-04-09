@@ -35,31 +35,31 @@ enum MorphologyOperatorType {
 
 class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
  public:
-  static FEMorphology* create(Filter*,
+  static FEMorphology* Create(Filter*,
                               MorphologyOperatorType,
-                              float radiusX,
-                              float radiusY);
-  MorphologyOperatorType morphologyOperator() const;
-  bool setMorphologyOperator(MorphologyOperatorType);
+                              float radius_x,
+                              float radius_y);
+  MorphologyOperatorType MorphologyOperator() const;
+  bool SetMorphologyOperator(MorphologyOperatorType);
 
-  float radiusX() const;
-  bool setRadiusX(float);
+  float RadiusX() const;
+  bool SetRadiusX(float);
 
-  float radiusY() const;
-  bool setRadiusY(float);
+  float RadiusY() const;
+  bool SetRadiusY(float);
 
-  TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
  private:
-  FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
+  FEMorphology(Filter*, MorphologyOperatorType, float radius_x, float radius_y);
 
-  FloatRect mapEffect(const FloatRect&) const override;
+  FloatRect MapEffect(const FloatRect&) const override;
 
-  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> CreateImageFilter() override;
 
-  MorphologyOperatorType m_type;
-  float m_radiusX;
-  float m_radiusY;
+  MorphologyOperatorType type_;
+  float radius_x_;
+  float radius_y_;
 };
 
 }  // namespace blink

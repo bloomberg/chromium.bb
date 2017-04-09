@@ -41,19 +41,19 @@ namespace blink {
 
 struct V0CustomElementDescriptorHash {
   STATIC_ONLY(V0CustomElementDescriptorHash);
-  static unsigned hash(const V0CustomElementDescriptor& descriptor) {
-    return WTF::hashInts(
-        AtomicStringHash::hash(descriptor.type()),
-        WTF::hashInts(AtomicStringHash::hash(descriptor.namespaceURI()),
-                      AtomicStringHash::hash(descriptor.localName())));
+  static unsigned GetHash(const V0CustomElementDescriptor& descriptor) {
+    return WTF::HashInts(
+        AtomicStringHash::GetHash(descriptor.GetType()),
+        WTF::HashInts(AtomicStringHash::GetHash(descriptor.NamespaceURI()),
+                      AtomicStringHash::GetHash(descriptor.LocalName())));
   }
 
-  static bool equal(const V0CustomElementDescriptor& a,
+  static bool Equal(const V0CustomElementDescriptor& a,
                     const V0CustomElementDescriptor& b) {
     return a == b;
   }
 
-  static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
 }  // namespace blink
@@ -64,8 +64,8 @@ template <>
 struct HashTraits<blink::V0CustomElementDescriptor>
     : SimpleClassHashTraits<blink::V0CustomElementDescriptor> {
   STATIC_ONLY(HashTraits);
-  static const bool emptyValueIsZero =
-      HashTraits<AtomicString>::emptyValueIsZero;
+  static const bool kEmptyValueIsZero =
+      HashTraits<AtomicString>::kEmptyValueIsZero;
 };
 
 }  // namespace WTF

@@ -16,57 +16,60 @@ namespace {
 
 // Report Overscroll if OverscrollDelta is greater than minimumOverscrollDelta
 // to maintain consistency as done in the compositor.
-const float minimumOverscrollDelta = 0.1;
+const float kMinimumOverscrollDelta = 0.1;
 
-void adjustOverscroll(FloatSize* unusedDelta) {
-  DCHECK(unusedDelta);
-  if (std::abs(unusedDelta->width()) < minimumOverscrollDelta)
-    unusedDelta->setWidth(0);
-  if (std::abs(unusedDelta->height()) < minimumOverscrollDelta)
-    unusedDelta->setHeight(0);
+void AdjustOverscroll(FloatSize* unused_delta) {
+  DCHECK(unused_delta);
+  if (std::abs(unused_delta->Width()) < kMinimumOverscrollDelta)
+    unused_delta->SetWidth(0);
+  if (std::abs(unused_delta->Height()) < kMinimumOverscrollDelta)
+    unused_delta->SetHeight(0);
 }
 
 }  // namespace
 
-OverscrollController::OverscrollController(const VisualViewport& visualViewport,
-                                           ChromeClient& chromeClient)
-    : m_visualViewport(&visualViewport), m_chromeClient(&chromeClient) {}
+OverscrollController::OverscrollController(
+    const VisualViewport& visual_viewport,
+    ChromeClient& chrome_client)
+    : visual_viewport_(&visual_viewport), chrome_client_(&chrome_client) {}
 
 DEFINE_TRACE(OverscrollController) {
-  visitor->trace(m_visualViewport);
-  visitor->trace(m_chromeClient);
+  visitor->Trace(visual_viewport_);
+  visitor->Trace(chrome_client_);
 }
 
-void OverscrollController::resetAccumulated(bool resetX, bool resetY) {
-  if (resetX)
-    m_accumulatedRootOverscroll.setWidth(0);
-  if (resetY)
-    m_accumulatedRootOverscroll.setHeight(0);
+void OverscrollController::ResetAccumulated(bool reset_x, bool reset_y) {
+  if (reset_x)
+    accumulated_root_overscroll_.SetWidth(0);
+  if (reset_y)
+    accumulated_root_overscroll_.SetHeight(0);
 }
 
-void OverscrollController::handleOverscroll(
-    const ScrollResult& scrollResult,
-    const FloatPoint& positionInRootFrame,
-    const FloatSize& velocityInRootFrame) {
-  DCHECK(m_visualViewport);
-  DCHECK(m_chromeClient);
+void OverscrollController::HandleOverscroll(
+    const ScrollResult& scroll_result,
+    const FloatPoint& position_in_root_frame,
+    const FloatSize& velocity_in_root_frame) {
+  DCHECK(visual_viewport_);
+  DCHECK(chrome_client_);
 
-  FloatSize unusedDelta(scrollResult.unusedScrollDeltaX,
-                        scrollResult.unusedScrollDeltaY);
-  adjustOverscroll(&unusedDelta);
+  FloatSize unused_delta(scroll_result.unused_scroll_delta_x,
+                         scroll_result.unused_scroll_delta_y);
+  AdjustOverscroll(&unused_delta);
 
-  FloatSize deltaInViewport = unusedDelta.scaledBy(m_visualViewport->scale());
-  FloatSize velocityInViewport =
-      velocityInRootFrame.scaledBy(m_visualViewport->scale());
-  FloatPoint positionInViewport =
-      m_visualViewport->rootFrameToViewport(positionInRootFrame);
+  FloatSize delta_in_viewport =
+      unused_delta.ScaledBy(visual_viewport_->Scale());
+  FloatSize velocity_in_viewport =
+      velocity_in_root_frame.ScaledBy(visual_viewport_->Scale());
+  FloatPoint position_in_viewport =
+      visual_viewport_->RootFrameToViewport(position_in_root_frame);
 
-  resetAccumulated(scrollResult.didScrollX, scrollResult.didScrollY);
+  ResetAccumulated(scroll_result.did_scroll_x, scroll_result.did_scroll_y);
 
-  if (deltaInViewport != FloatSize()) {
-    m_accumulatedRootOverscroll += deltaInViewport;
-    m_chromeClient->didOverscroll(deltaInViewport, m_accumulatedRootOverscroll,
-                                  positionInViewport, velocityInViewport);
+  if (delta_in_viewport != FloatSize()) {
+    accumulated_root_overscroll_ += delta_in_viewport;
+    chrome_client_->DidOverscroll(delta_in_viewport,
+                                  accumulated_root_overscroll_,
+                                  position_in_viewport, velocity_in_viewport);
   }
 }
 

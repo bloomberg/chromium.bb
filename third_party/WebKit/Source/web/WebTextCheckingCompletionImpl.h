@@ -41,15 +41,15 @@ namespace blink {
 class WebTextCheckingCompletionImpl final : public WebTextCheckingCompletion {
  public:
   explicit WebTextCheckingCompletionImpl(TextCheckingRequest* request)
-      : m_request(request) {}
+      : request_(request) {}
 
-  void didFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
-  void didCancelCheckingText() override;
+  void DidFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
+  void DidCancelCheckingText() override;
 
  private:
   virtual ~WebTextCheckingCompletionImpl() {}
 
-  Persistent<TextCheckingRequest> m_request;
+  Persistent<TextCheckingRequest> request_;
 };
 
 }  // namespace blink

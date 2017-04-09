@@ -266,9 +266,10 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     int tab_index = model->GetIndexOfWebContents(existing_tab);
 
     existing_tab->OpenURL(content::OpenURLParams(
-        url, content::Referrer::SanitizeForRequest(
-                 url, content::Referrer(existing_tab->GetURL(),
-                                        blink::WebReferrerPolicyDefault)),
+        url,
+        content::Referrer::SanitizeForRequest(
+            url, content::Referrer(existing_tab->GetURL(),
+                                   blink::kWebReferrerPolicyDefault)),
         disposition, transition, false));
     // Reset existing_tab as OpenURL() may have clobbered it.
     existing_tab = browser->tab_strip_model()->GetActiveWebContents();

@@ -39,56 +39,56 @@ class FontDescription;
 
 struct WebFontDescription {
   enum GenericFamily {
-    GenericFamilyNone,
-    GenericFamilyStandard,
-    GenericFamilySerif,
-    GenericFamilySansSerif,
-    GenericFamilyMonospace,
-    GenericFamilyCursive,
-    GenericFamilyFantasy
+    kGenericFamilyNone,
+    kGenericFamilyStandard,
+    kGenericFamilySerif,
+    kGenericFamilySansSerif,
+    kGenericFamilyMonospace,
+    kGenericFamilyCursive,
+    kGenericFamilyFantasy
   };
 
   enum Smoothing {
-    SmoothingAuto,
-    SmoothingNone,
-    SmoothingGrayscale,
-    SmoothingSubpixel
+    kSmoothingAuto,
+    kSmoothingNone,
+    kSmoothingGrayscale,
+    kSmoothingSubpixel
   };
 
   enum Weight {
-    Weight100,
-    Weight200,
-    Weight300,
-    Weight400,
-    Weight500,
-    Weight600,
-    Weight700,
-    Weight800,
-    Weight900,
-    WeightNormal = Weight400,
-    WeightBold = Weight700
+    kWeight100,
+    kWeight200,
+    kWeight300,
+    kWeight400,
+    kWeight500,
+    kWeight600,
+    kWeight700,
+    kWeight800,
+    kWeight900,
+    kWeightNormal = kWeight400,
+    kWeightBold = kWeight700
   };
 
   WebFontDescription()
-      : genericFamily(GenericFamilyNone),
+      : generic_family(kGenericFamilyNone),
         size(0),
         italic(false),
-        smallCaps(false),
-        weight(WeightNormal),
-        smoothing(SmoothingAuto),
-        letterSpacing(0),
-        wordSpacing(0) {}
+        small_caps(false),
+        weight(kWeightNormal),
+        smoothing(kSmoothingAuto),
+        letter_spacing(0),
+        word_spacing(0) {}
 
   WebString family;
-  GenericFamily genericFamily;
+  GenericFamily generic_family;
   float size;
   bool italic;
-  bool smallCaps;
+  bool small_caps;
   Weight weight;
   Smoothing smoothing;
 
-  short letterSpacing;
-  short wordSpacing;
+  short letter_spacing;
+  short word_spacing;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebFontDescription(const FontDescription&);

@@ -13,63 +13,65 @@
 
 namespace blink {
 
-std::unique_ptr<CachedDocumentParameters> cachedDocumentParametersForFuzzing(
-    FuzzedDataProvider& fuzzedData) {
-  std::unique_ptr<CachedDocumentParameters> documentParameters =
-      CachedDocumentParameters::create();
-  documentParameters->doHtmlPreloadScanning = fuzzedData.ConsumeBool();
-  documentParameters->doDocumentWritePreloadScanning = fuzzedData.ConsumeBool();
+std::unique_ptr<CachedDocumentParameters> CachedDocumentParametersForFuzzing(
+    FuzzedDataProvider& fuzzed_data) {
+  std::unique_ptr<CachedDocumentParameters> document_parameters =
+      CachedDocumentParameters::Create();
+  document_parameters->do_html_preload_scanning = fuzzed_data.ConsumeBool();
+  document_parameters->do_document_write_preload_scanning =
+      fuzzed_data.ConsumeBool();
   // TODO(csharrison): How should this be fuzzed?
-  documentParameters->defaultViewportMinWidth = Length();
-  documentParameters->viewportMetaZeroValuesQuirk = fuzzedData.ConsumeBool();
-  documentParameters->viewportMetaEnabled = fuzzedData.ConsumeBool();
-  return documentParameters;
+  document_parameters->default_viewport_min_width = Length();
+  document_parameters->viewport_meta_zero_values_quirk =
+      fuzzed_data.ConsumeBool();
+  document_parameters->viewport_meta_enabled = fuzzed_data.ConsumeBool();
+  return document_parameters;
 }
 
 class MockResourcePreloader : public ResourcePreloader {
-  void preload(std::unique_ptr<PreloadRequest>,
+  void Preload(std::unique_ptr<PreloadRequest>,
                const NetworkHintsInterface&) override {}
 };
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  FuzzedDataProvider fuzzedData(data, size);
+  FuzzedDataProvider fuzzed_data(data, size);
 
   HTMLParserOptions options;
-  options.scriptEnabled = fuzzedData.ConsumeBool();
-  options.pluginsEnabled = fuzzedData.ConsumeBool();
+  options.script_enabled = fuzzed_data.ConsumeBool();
+  options.plugins_enabled = fuzzed_data.ConsumeBool();
 
-  std::unique_ptr<CachedDocumentParameters> documentParameters =
-      cachedDocumentParametersForFuzzing(fuzzedData);
+  std::unique_ptr<CachedDocumentParameters> document_parameters =
+      CachedDocumentParametersForFuzzing(fuzzed_data);
 
-  KURL documentURL(ParsedURLString, "http://whatever.test/");
+  KURL document_url(kParsedURLString, "http://whatever.test/");
 
   // Copied from HTMLPreloadScannerTest. May be worthwhile to fuzz.
-  MediaValuesCached::MediaValuesCachedData mediaData;
-  mediaData.viewportWidth = 500;
-  mediaData.viewportHeight = 600;
-  mediaData.deviceWidth = 700;
-  mediaData.deviceHeight = 800;
-  mediaData.devicePixelRatio = 2.0;
-  mediaData.colorBitsPerComponent = 24;
-  mediaData.monochromeBitsPerComponent = 0;
-  mediaData.primaryPointerType = PointerTypeFine;
-  mediaData.defaultFontSize = 16;
-  mediaData.threeDEnabled = true;
-  mediaData.mediaType = MediaTypeNames::screen;
-  mediaData.strictMode = true;
-  mediaData.displayMode = WebDisplayModeBrowser;
+  MediaValuesCached::MediaValuesCachedData media_data;
+  media_data.viewport_width = 500;
+  media_data.viewport_height = 600;
+  media_data.device_width = 700;
+  media_data.device_height = 800;
+  media_data.device_pixel_ratio = 2.0;
+  media_data.color_bits_per_component = 24;
+  media_data.monochrome_bits_per_component = 0;
+  media_data.primary_pointer_type = kPointerTypeFine;
+  media_data.default_font_size = 16;
+  media_data.three_d_enabled = true;
+  media_data.media_type = MediaTypeNames::screen;
+  media_data.strict_mode = true;
+  media_data.display_mode = kWebDisplayModeBrowser;
 
   MockResourcePreloader preloader;
 
-  std::unique_ptr<HTMLPreloadScanner> scanner = HTMLPreloadScanner::create(
-      options, documentURL, std::move(documentParameters), mediaData);
+  std::unique_ptr<HTMLPreloadScanner> scanner = HTMLPreloadScanner::Create(
+      options, document_url, std::move(document_parameters), media_data);
 
-  TextResourceDecoderForFuzzing decoder(fuzzedData);
-  CString bytes = fuzzedData.ConsumeRemainingBytes();
-  String decodedBytes = decoder.decode(bytes.data(), bytes.length());
-  scanner->appendToEnd(decodedBytes);
-  PreloadRequestStream requests = scanner->scan(documentURL, nullptr);
-  preloader.takeAndPreload(requests);
+  TextResourceDecoderForFuzzing decoder(fuzzed_data);
+  CString bytes = fuzzed_data.ConsumeRemainingBytes();
+  String decoded_bytes = decoder.Decode(bytes.Data(), bytes.length());
+  scanner->AppendToEnd(decoded_bytes);
+  PreloadRequestStream requests = scanner->Scan(document_url, nullptr);
+  preloader.TakeAndPreload(requests);
   return 0;
 }
 

@@ -23,51 +23,51 @@ using WebLoadPolicy = blink::WebDocumentSubresourceFilter::LoadPolicy;
 proto::ElementType ToElementType(
     blink::WebURLRequest::RequestContext request_context) {
   switch (request_context) {
-    case blink::WebURLRequest::RequestContextAudio:
-    case blink::WebURLRequest::RequestContextVideo:
-    case blink::WebURLRequest::RequestContextTrack:
+    case blink::WebURLRequest::kRequestContextAudio:
+    case blink::WebURLRequest::kRequestContextVideo:
+    case blink::WebURLRequest::kRequestContextTrack:
       return proto::ELEMENT_TYPE_MEDIA;
-    case blink::WebURLRequest::RequestContextBeacon:
-    case blink::WebURLRequest::RequestContextPing:
+    case blink::WebURLRequest::kRequestContextBeacon:
+    case blink::WebURLRequest::kRequestContextPing:
       return proto::ELEMENT_TYPE_PING;
-    case blink::WebURLRequest::RequestContextEmbed:
-    case blink::WebURLRequest::RequestContextObject:
-    case blink::WebURLRequest::RequestContextPlugin:
+    case blink::WebURLRequest::kRequestContextEmbed:
+    case blink::WebURLRequest::kRequestContextObject:
+    case blink::WebURLRequest::kRequestContextPlugin:
       return proto::ELEMENT_TYPE_OBJECT;
-    case blink::WebURLRequest::RequestContextEventSource:
-    case blink::WebURLRequest::RequestContextFetch:
-    case blink::WebURLRequest::RequestContextXMLHttpRequest:
+    case blink::WebURLRequest::kRequestContextEventSource:
+    case blink::WebURLRequest::kRequestContextFetch:
+    case blink::WebURLRequest::kRequestContextXMLHttpRequest:
       return proto::ELEMENT_TYPE_XMLHTTPREQUEST;
-    case blink::WebURLRequest::RequestContextFavicon:
-    case blink::WebURLRequest::RequestContextImage:
-    case blink::WebURLRequest::RequestContextImageSet:
+    case blink::WebURLRequest::kRequestContextFavicon:
+    case blink::WebURLRequest::kRequestContextImage:
+    case blink::WebURLRequest::kRequestContextImageSet:
       return proto::ELEMENT_TYPE_IMAGE;
-    case blink::WebURLRequest::RequestContextFont:
+    case blink::WebURLRequest::kRequestContextFont:
       return proto::ELEMENT_TYPE_FONT;
-    case blink::WebURLRequest::RequestContextFrame:
-    case blink::WebURLRequest::RequestContextForm:
-    case blink::WebURLRequest::RequestContextHyperlink:
-    case blink::WebURLRequest::RequestContextIframe:
-    case blink::WebURLRequest::RequestContextInternal:
-    case blink::WebURLRequest::RequestContextLocation:
+    case blink::WebURLRequest::kRequestContextFrame:
+    case blink::WebURLRequest::kRequestContextForm:
+    case blink::WebURLRequest::kRequestContextHyperlink:
+    case blink::WebURLRequest::kRequestContextIframe:
+    case blink::WebURLRequest::kRequestContextInternal:
+    case blink::WebURLRequest::kRequestContextLocation:
       return proto::ELEMENT_TYPE_SUBDOCUMENT;
-    case blink::WebURLRequest::RequestContextScript:
-    case blink::WebURLRequest::RequestContextServiceWorker:
-    case blink::WebURLRequest::RequestContextSharedWorker:
+    case blink::WebURLRequest::kRequestContextScript:
+    case blink::WebURLRequest::kRequestContextServiceWorker:
+    case blink::WebURLRequest::kRequestContextSharedWorker:
       return proto::ELEMENT_TYPE_SCRIPT;
-    case blink::WebURLRequest::RequestContextStyle:
-    case blink::WebURLRequest::RequestContextXSLT:
+    case blink::WebURLRequest::kRequestContextStyle:
+    case blink::WebURLRequest::kRequestContextXSLT:
       return proto::ELEMENT_TYPE_STYLESHEET;
 
-    case blink::WebURLRequest::RequestContextPrefetch:
-    case blink::WebURLRequest::RequestContextSubresource:
+    case blink::WebURLRequest::kRequestContextPrefetch:
+    case blink::WebURLRequest::kRequestContextSubresource:
       return proto::ELEMENT_TYPE_OTHER;
 
-    case blink::WebURLRequest::RequestContextCSPReport:
-    case blink::WebURLRequest::RequestContextDownload:
-    case blink::WebURLRequest::RequestContextImport:
-    case blink::WebURLRequest::RequestContextManifest:
-    case blink::WebURLRequest::RequestContextUnspecified:
+    case blink::WebURLRequest::kRequestContextCSPReport:
+    case blink::WebURLRequest::kRequestContextDownload:
+    case blink::WebURLRequest::kRequestContextImport:
+    case blink::WebURLRequest::kRequestContextManifest:
+    case blink::WebURLRequest::kRequestContextUnspecified:
     default:
       return proto::ELEMENT_TYPE_UNSPECIFIED;
   }
@@ -100,20 +100,20 @@ WebDocumentSubresourceFilterImpl::WebDocumentSubresourceFilterImpl(
       first_disallowed_load_callback_(
           std::move(first_disallowed_load_callback)) {}
 
-WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicy(
+WebLoadPolicy WebDocumentSubresourceFilterImpl::GetLoadPolicy(
     const blink::WebURL& resourceUrl,
     blink::WebURLRequest::RequestContext request_context) {
   return getLoadPolicyImpl(resourceUrl, ToElementType(request_context));
 }
 
 WebLoadPolicy
-WebDocumentSubresourceFilterImpl::getLoadPolicyForWebSocketConnect(
+WebDocumentSubresourceFilterImpl::GetLoadPolicyForWebSocketConnect(
     const blink::WebURL& url) {
-  DCHECK(url.protocolIs("ws") || url.protocolIs("wss"));
+  DCHECK(url.ProtocolIs("ws") || url.ProtocolIs("wss"));
   return getLoadPolicyImpl(url, proto::ELEMENT_TYPE_WEBSOCKET);
 }
 
-void WebDocumentSubresourceFilterImpl::reportDisallowedLoad() {
+void WebDocumentSubresourceFilterImpl::ReportDisallowedLoad() {
   if (!first_disallowed_load_callback_.is_null())
     std::move(first_disallowed_load_callback_).Run();
 }
@@ -122,7 +122,7 @@ WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
     const blink::WebURL& url,
     proto::ElementType element_type) {
   if (filter_.activation_state().filtering_disabled_for_document ||
-      url.protocolIs(url::kDataScheme)) {
+      url.ProtocolIs(url::kDataScheme)) {
     ++filter_.statistics().num_loads_total;
     return WebLoadPolicy::kAllow;
   }

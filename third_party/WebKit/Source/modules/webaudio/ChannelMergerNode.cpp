@@ -39,43 +39,44 @@
 namespace blink {
 
 ChannelMergerHandler::ChannelMergerHandler(AudioNode& node,
-                                           float sampleRate,
-                                           unsigned numberOfInputs)
-    : AudioHandler(NodeTypeChannelMerger, node, sampleRate) {
+                                           float sample_rate,
+                                           unsigned number_of_inputs)
+    : AudioHandler(kNodeTypeChannelMerger, node, sample_rate) {
   // These properties are fixed for the node and cannot be changed by user.
-  m_channelCount = 1;
-  setInternalChannelCountMode(Explicit);
+  channel_count_ = 1;
+  SetInternalChannelCountMode(kExplicit);
 
   // Create the requested number of inputs.
-  for (unsigned i = 0; i < numberOfInputs; ++i)
-    addInput();
+  for (unsigned i = 0; i < number_of_inputs; ++i)
+    AddInput();
 
   // Create the output with the requested number of channels.
-  addOutput(numberOfInputs);
+  AddOutput(number_of_inputs);
 
-  initialize();
+  Initialize();
 }
 
-PassRefPtr<ChannelMergerHandler> ChannelMergerHandler::create(
+PassRefPtr<ChannelMergerHandler> ChannelMergerHandler::Create(
     AudioNode& node,
-    float sampleRate,
-    unsigned numberOfInputs) {
-  return adoptRef(new ChannelMergerHandler(node, sampleRate, numberOfInputs));
+    float sample_rate,
+    unsigned number_of_inputs) {
+  return AdoptRef(
+      new ChannelMergerHandler(node, sample_rate, number_of_inputs));
 }
 
-void ChannelMergerHandler::process(size_t framesToProcess) {
-  AudioNodeOutput& output = this->output(0);
-  DCHECK_EQ(framesToProcess, output.bus()->length());
+void ChannelMergerHandler::Process(size_t frames_to_process) {
+  AudioNodeOutput& output = this->Output(0);
+  DCHECK_EQ(frames_to_process, output.Bus()->length());
 
-  unsigned numberOfOutputChannels = output.numberOfChannels();
-  DCHECK_EQ(numberOfInputs(), numberOfOutputChannels);
+  unsigned number_of_output_channels = output.NumberOfChannels();
+  DCHECK_EQ(NumberOfInputs(), number_of_output_channels);
 
   // Merge multiple inputs into one output.
-  for (unsigned i = 0; i < numberOfOutputChannels; ++i) {
-    AudioNodeInput& input = this->input(i);
-    DCHECK_EQ(input.numberOfChannels(), 1u);
-    AudioChannel* outputChannel = output.bus()->channel(i);
-    if (input.isConnected()) {
+  for (unsigned i = 0; i < number_of_output_channels; ++i) {
+    AudioNodeInput& input = this->Input(i);
+    DCHECK_EQ(input.NumberOfChannels(), 1u);
+    AudioChannel* output_channel = output.Bus()->Channel(i);
+    if (input.IsConnected()) {
       // The mixing rules will be applied so multiple channels are down-
       // mixed to mono (when the mixing rule is defined). Note that only
       // the first channel will be taken for the undefined input channel
@@ -83,38 +84,39 @@ void ChannelMergerHandler::process(size_t framesToProcess) {
       //
       // See:
       // http://webaudio.github.io/web-audio-api/#channel-up-mixing-and-down-mixing
-      AudioChannel* inputChannel = input.bus()->channel(0);
-      outputChannel->copyFrom(inputChannel);
+      AudioChannel* input_channel = input.Bus()->Channel(0);
+      output_channel->CopyFrom(input_channel);
 
     } else {
       // If input is unconnected, fill zeros in the channel.
-      outputChannel->zero();
+      output_channel->Zero();
     }
   }
 }
 
-void ChannelMergerHandler::setChannelCount(unsigned long channelCount,
-                                           ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void ChannelMergerHandler::SetChannelCount(unsigned long channel_count,
+                                           ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // channelCount must be 1.
-  if (channelCount != 1) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+  if (channel_count != 1) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "ChannelMerger: channelCount cannot be changed from 1");
   }
 }
 
-void ChannelMergerHandler::setChannelCountMode(const String& mode,
-                                               ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
-  BaseAudioContext::AutoLocker locker(context());
+void ChannelMergerHandler::SetChannelCountMode(
+    const String& mode,
+    ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
+  BaseAudioContext::AutoLocker locker(Context());
 
   // channcelCountMode must be 'explicit'.
   if (mode != "explicit") {
-    exceptionState.throwDOMException(
-        InvalidStateError,
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
         "ChannelMerger: channelCountMode cannot be changed from 'explicit'");
   }
 }
@@ -122,55 +124,55 @@ void ChannelMergerHandler::setChannelCountMode(const String& mode,
 // ----------------------------------------------------------------
 
 ChannelMergerNode::ChannelMergerNode(BaseAudioContext& context,
-                                     unsigned numberOfInputs)
+                                     unsigned number_of_inputs)
     : AudioNode(context) {
-  setHandler(ChannelMergerHandler::create(*this, context.sampleRate(),
-                                          numberOfInputs));
+  SetHandler(ChannelMergerHandler::Create(*this, context.sampleRate(),
+                                          number_of_inputs));
 }
 
-ChannelMergerNode* ChannelMergerNode::create(BaseAudioContext& context,
-                                             ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+ChannelMergerNode* ChannelMergerNode::Create(BaseAudioContext& context,
+                                             ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
   // The default number of inputs for the merger node is 6.
-  return create(context, 6, exceptionState);
+  return Create(context, 6, exception_state);
 }
 
-ChannelMergerNode* ChannelMergerNode::create(BaseAudioContext& context,
-                                             unsigned numberOfInputs,
-                                             ExceptionState& exceptionState) {
-  DCHECK(isMainThread());
+ChannelMergerNode* ChannelMergerNode::Create(BaseAudioContext& context,
+                                             unsigned number_of_inputs,
+                                             ExceptionState& exception_state) {
+  DCHECK(IsMainThread());
 
-  if (context.isContextClosed()) {
-    context.throwExceptionForClosedState(exceptionState);
+  if (context.IsContextClosed()) {
+    context.ThrowExceptionForClosedState(exception_state);
     return nullptr;
   }
 
-  if (!numberOfInputs ||
-      numberOfInputs > BaseAudioContext::maxNumberOfChannels()) {
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexOutsideRange<size_t>(
-                            "number of inputs", numberOfInputs, 1,
-                            ExceptionMessages::InclusiveBound,
-                            BaseAudioContext::maxNumberOfChannels(),
-                            ExceptionMessages::InclusiveBound));
+  if (!number_of_inputs ||
+      number_of_inputs > BaseAudioContext::MaxNumberOfChannels()) {
+    exception_state.ThrowDOMException(
+        kIndexSizeError, ExceptionMessages::IndexOutsideRange<size_t>(
+                             "number of inputs", number_of_inputs, 1,
+                             ExceptionMessages::kInclusiveBound,
+                             BaseAudioContext::MaxNumberOfChannels(),
+                             ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
-  return new ChannelMergerNode(context, numberOfInputs);
+  return new ChannelMergerNode(context, number_of_inputs);
 }
 
-ChannelMergerNode* ChannelMergerNode::create(
+ChannelMergerNode* ChannelMergerNode::Create(
     BaseAudioContext* context,
     const ChannelMergerOptions& options,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   ChannelMergerNode* node =
-      create(*context, options.numberOfInputs(), exceptionState);
+      Create(*context, options.numberOfInputs(), exception_state);
 
   if (!node)
     return nullptr;
 
-  node->handleChannelOptions(options, exceptionState);
+  node->HandleChannelOptions(options, exception_state);
 
   return node;
 }

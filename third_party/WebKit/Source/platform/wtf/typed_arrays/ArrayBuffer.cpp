@@ -30,72 +30,72 @@
 
 namespace WTF {
 
-bool ArrayBuffer::transfer(ArrayBufferContents& result) {
-  DCHECK(!isShared());
-  RefPtr<ArrayBuffer> keepAlive(this);
+bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
+  DCHECK(!IsShared());
+  RefPtr<ArrayBuffer> keep_alive(this);
 
-  if (!m_contents.data()) {
-    result.neuter();
+  if (!contents_.Data()) {
+    result.Neuter();
     return false;
   }
 
-  bool allViewsAreNeuterable = true;
-  for (ArrayBufferView* i = m_firstView; i; i = i->m_nextView) {
-    if (!i->isNeuterable())
-      allViewsAreNeuterable = false;
+  bool all_views_are_neuterable = true;
+  for (ArrayBufferView* i = first_view_; i; i = i->next_view_) {
+    if (!i->IsNeuterable())
+      all_views_are_neuterable = false;
   }
 
-  if (allViewsAreNeuterable) {
-    m_contents.transfer(result);
+  if (all_views_are_neuterable) {
+    contents_.Transfer(result);
   } else {
-    m_contents.copyTo(result);
-    if (!result.data())
+    contents_.CopyTo(result);
+    if (!result.Data())
       return false;
   }
 
-  while (m_firstView) {
-    ArrayBufferView* current = m_firstView;
-    removeView(current);
-    if (allViewsAreNeuterable || current->isNeuterable())
-      current->neuter();
+  while (first_view_) {
+    ArrayBufferView* current = first_view_;
+    RemoveView(current);
+    if (all_views_are_neuterable || current->IsNeuterable())
+      current->Neuter();
   }
 
-  m_isNeutered = true;
+  is_neutered_ = true;
 
   return true;
 }
 
-bool ArrayBuffer::shareContentsWith(ArrayBufferContents& result) {
-  DCHECK(isShared());
-  RefPtr<ArrayBuffer> keepAlive(this);
+bool ArrayBuffer::ShareContentsWith(ArrayBufferContents& result) {
+  DCHECK(IsShared());
+  RefPtr<ArrayBuffer> keep_alive(this);
 
-  if (!m_contents.dataShared()) {
-    result.neuter();
+  if (!contents_.DataShared()) {
+    result.Neuter();
     return false;
   }
 
-  m_contents.shareWith(result);
+  contents_.ShareWith(result);
   return true;
 }
 
-void ArrayBuffer::addView(ArrayBufferView* view) {
-  view->m_buffer = this;
-  view->m_prevView = 0;
-  view->m_nextView = m_firstView;
-  if (m_firstView)
-    m_firstView->m_prevView = view;
-  m_firstView = view;
+void ArrayBuffer::AddView(ArrayBufferView* view) {
+  view->buffer_ = this;
+  view->prev_view_ = 0;
+  view->next_view_ = first_view_;
+  if (first_view_)
+    first_view_->prev_view_ = view;
+  first_view_ = view;
 }
 
-void ArrayBuffer::removeView(ArrayBufferView* view) {
-  DCHECK_EQ(this, view->m_buffer.get());
-  if (view->m_nextView)
-    view->m_nextView->m_prevView = view->m_prevView;
-  if (view->m_prevView)
-    view->m_prevView->m_nextView = view->m_nextView;
-  if (m_firstView == view)
-    m_firstView = view->m_nextView;
-  view->m_prevView = view->m_nextView = 0;
+void ArrayBuffer::RemoveView(ArrayBufferView* view) {
+  DCHECK_EQ(this, view->buffer_.Get());
+  if (view->next_view_)
+    view->next_view_->prev_view_ = view->prev_view_;
+  if (view->prev_view_)
+    view->prev_view_->next_view_ = view->next_view_;
+  if (first_view_ == view)
+    first_view_ = view->next_view_;
+  view->prev_view_ = view->next_view_ = 0;
 }
 
 }  // namespace WTF

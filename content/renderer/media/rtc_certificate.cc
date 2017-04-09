@@ -18,22 +18,22 @@ RTCCertificate::RTCCertificate(
 RTCCertificate::~RTCCertificate() {
 }
 
-std::unique_ptr<blink::WebRTCCertificate> RTCCertificate::shallowCopy() const {
+std::unique_ptr<blink::WebRTCCertificate> RTCCertificate::ShallowCopy() const {
   return base::WrapUnique(new RTCCertificate(certificate_));
 }
 
-uint64_t RTCCertificate::expires() const {
+uint64_t RTCCertificate::Expires() const {
   return certificate_->Expires();
 }
 
-blink::WebRTCCertificatePEM RTCCertificate::toPEM() const {
+blink::WebRTCCertificatePEM RTCCertificate::ToPEM() const {
   rtc::RTCCertificatePEM pem = certificate_->ToPEM();
   return blink::WebRTCCertificatePEM(
-      blink::WebString::fromUTF8(pem.private_key()),
-          blink::WebString::fromUTF8(pem.certificate()));
+      blink::WebString::FromUTF8(pem.private_key()),
+      blink::WebString::FromUTF8(pem.certificate()));
 }
 
-bool RTCCertificate::equals(const blink::WebRTCCertificate& other) const {
+bool RTCCertificate::Equals(const blink::WebRTCCertificate& other) const {
   return *certificate_ ==
          *static_cast<const RTCCertificate&>(other).certificate_;
 }

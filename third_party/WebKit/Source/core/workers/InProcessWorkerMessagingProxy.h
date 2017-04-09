@@ -52,39 +52,39 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
 
  public:
   // These methods should only be used on the parent context thread.
-  void startWorkerGlobalScope(const KURL& scriptURL,
-                              const String& userAgent,
-                              const String& sourceCode,
-                              const String& referrerPolicy);
-  void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
+  void StartWorkerGlobalScope(const KURL& script_url,
+                              const String& user_agent,
+                              const String& source_code,
+                              const String& referrer_policy);
+  void PostMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
                                       MessagePortChannelArray);
 
-  void workerThreadCreated() override;
-  void parentObjectDestroyed() override;
+  void WorkerThreadCreated() override;
+  void ParentObjectDestroyed() override;
 
-  bool hasPendingActivity() const;
+  bool HasPendingActivity() const;
 
   // These methods come from worker context thread via
   // InProcessWorkerObjectProxy and are called on the parent context thread.
-  void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
+  void PostMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
                                  MessagePortChannelArray);
-  void dispatchErrorEvent(const String& errorMessage,
+  void DispatchErrorEvent(const String& error_message,
                           std::unique_ptr<SourceLocation>,
-                          int exceptionId);
+                          int exception_id);
 
   // 'virtual' for testing.
-  virtual void confirmMessageFromWorkerObject();
+  virtual void ConfirmMessageFromWorkerObject();
 
   // Called from InProcessWorkerObjectProxy when all pending activities on the
   // worker context are finished. See InProcessWorkerObjectProxy.h for details.
-  virtual void pendingActivityFinished();
+  virtual void PendingActivityFinished();
 
  protected:
   InProcessWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
   ~InProcessWorkerMessagingProxy() override;
 
-  InProcessWorkerObjectProxy& workerObjectProxy() {
-    return *m_workerObjectProxy.get();
+  InProcessWorkerObjectProxy& WorkerObjectProxy() {
+    return *worker_object_proxy_.get();
   }
 
  private:
@@ -93,24 +93,24 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
                                 InProcessWorkerBase*,
                                 WorkerClients*);
 
-  std::unique_ptr<InProcessWorkerObjectProxy> m_workerObjectProxy;
-  WeakPersistent<InProcessWorkerBase> m_workerObject;
-  Persistent<WorkerClients> m_workerClients;
+  std::unique_ptr<InProcessWorkerObjectProxy> worker_object_proxy_;
+  WeakPersistent<InProcessWorkerBase> worker_object_;
+  Persistent<WorkerClients> worker_clients_;
 
   // Tasks are queued here until there's a thread object created.
   struct QueuedTask;
-  Vector<QueuedTask> m_queuedEarlyTasks;
+  Vector<QueuedTask> queued_early_tasks_;
 
   // Unconfirmed messages from the parent context thread to the worker thread.
   // When this is greater than 0, |m_workerGlobalScopeHasPendingActivity| should
   // be true.
-  unsigned m_unconfirmedMessageCount = 0;
+  unsigned unconfirmed_message_count_ = 0;
 
   // Indicates whether there are pending activities (e.g, MessageEvent,
   // setTimeout) on the worker context.
-  bool m_workerGlobalScopeHasPendingActivity = false;
+  bool worker_global_scope_has_pending_activity_ = false;
 
-  WeakPtrFactory<InProcessWorkerMessagingProxy> m_weakPtrFactory;
+  WeakPtrFactory<InProcessWorkerMessagingProxy> weak_ptr_factory_;
 };
 
 }  // namespace blink

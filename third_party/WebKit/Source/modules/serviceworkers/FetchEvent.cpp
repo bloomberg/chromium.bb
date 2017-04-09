@@ -21,73 +21,73 @@
 
 namespace blink {
 
-FetchEvent* FetchEvent::create(ScriptState* scriptState,
+FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
                                const FetchEventInit& initializer) {
-  return new FetchEvent(scriptState, type, initializer, nullptr, nullptr,
+  return new FetchEvent(script_state, type, initializer, nullptr, nullptr,
                         false);
 }
 
-FetchEvent* FetchEvent::create(ScriptState* scriptState,
+FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
                                const FetchEventInit& initializer,
-                               FetchRespondWithObserver* respondWithObserver,
-                               WaitUntilObserver* waitUntilObserver,
-                               bool navigationPreloadSent) {
-  return new FetchEvent(scriptState, type, initializer, respondWithObserver,
-                        waitUntilObserver, navigationPreloadSent);
+                               FetchRespondWithObserver* respond_with_observer,
+                               WaitUntilObserver* wait_until_observer,
+                               bool navigation_preload_sent) {
+  return new FetchEvent(script_state, type, initializer, respond_with_observer,
+                        wait_until_observer, navigation_preload_sent);
 }
 
 Request* FetchEvent::request() const {
-  return m_request;
+  return request_;
 }
 
 String FetchEvent::clientId() const {
-  return m_clientId;
+  return client_id_;
 }
 
 bool FetchEvent::isReload() const {
-  return m_isReload;
+  return is_reload_;
 }
 
-void FetchEvent::respondWith(ScriptState* scriptState,
-                             ScriptPromise scriptPromise,
-                             ExceptionState& exceptionState) {
+void FetchEvent::respondWith(ScriptState* script_state,
+                             ScriptPromise script_promise,
+                             ExceptionState& exception_state) {
   stopImmediatePropagation();
-  if (m_observer)
-    m_observer->respondWith(scriptState, scriptPromise, exceptionState);
+  if (observer_)
+    observer_->RespondWith(script_state, script_promise, exception_state);
 }
 
-ScriptPromise FetchEvent::preloadResponse(ScriptState* scriptState) {
-  return m_preloadResponseProperty->promise(scriptState->world());
+ScriptPromise FetchEvent::preloadResponse(ScriptState* script_state) {
+  return preload_response_property_->Promise(script_state->World());
 }
 
-const AtomicString& FetchEvent::interfaceName() const {
+const AtomicString& FetchEvent::InterfaceName() const {
   return EventNames::FetchEvent;
 }
 
-FetchEvent::FetchEvent(ScriptState* scriptState,
+FetchEvent::FetchEvent(ScriptState* script_state,
                        const AtomicString& type,
                        const FetchEventInit& initializer,
-                       FetchRespondWithObserver* respondWithObserver,
-                       WaitUntilObserver* waitUntilObserver,
-                       bool navigationPreloadSent)
-    : ExtendableEvent(type, initializer, waitUntilObserver),
-      m_observer(respondWithObserver),
-      m_preloadResponseProperty(new PreloadResponseProperty(
-          scriptState->getExecutionContext(),
+                       FetchRespondWithObserver* respond_with_observer,
+                       WaitUntilObserver* wait_until_observer,
+                       bool navigation_preload_sent)
+    : ExtendableEvent(type, initializer, wait_until_observer),
+      observer_(respond_with_observer),
+      preload_response_property_(new PreloadResponseProperty(
+          script_state->GetExecutionContext(),
           this,
-          PreloadResponseProperty::PreloadResponse)) {
-  if (!navigationPreloadSent)
-    m_preloadResponseProperty->resolveWithUndefined();
+          PreloadResponseProperty::kPreloadResponse)) {
+  if (!navigation_preload_sent)
+    preload_response_property_->ResolveWithUndefined();
 
-  m_clientId = initializer.clientId();
-  m_isReload = initializer.isReload();
+  client_id_ = initializer.clientId();
+  is_reload_ = initializer.isReload();
   if (initializer.hasRequest()) {
-    ScriptState::Scope scope(scriptState);
-    m_request = initializer.request();
-    v8::Local<v8::Value> request = ToV8(m_request, scriptState);
-    v8::Local<v8::Value> event = ToV8(this, scriptState);
+    ScriptState::Scope scope(script_state);
+    request_ = initializer.request();
+    v8::Local<v8::Value> request = ToV8(request_, script_state);
+    v8::Local<v8::Value> event = ToV8(this, script_state);
     if (event.IsEmpty()) {
       // |toV8| can return an empty handle when the worker is terminating.
       // We don't want the renderer to crash in such cases.
@@ -98,63 +98,63 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
     DCHECK(event->IsObject());
     // Sets a hidden value in order to teach V8 the dependency from
     // the event to the request.
-    V8PrivateProperty::getFetchEventRequest(scriptState->isolate())
-        .set(event.As<v8::Object>(), request);
+    V8PrivateProperty::GetFetchEventRequest(script_state->GetIsolate())
+        .Set(event.As<v8::Object>(), request);
     // From the same reason as above, setHiddenValue can return false.
     // TODO(yhirano): Add an assertion that it returns true once the
     // graceful shutdown mechanism is introduced.
   }
 }
 
-void FetchEvent::onNavigationPreloadResponse(
-    ScriptState* scriptState,
+void FetchEvent::OnNavigationPreloadResponse(
+    ScriptState* script_state,
     std::unique_ptr<WebURLResponse> response,
-    std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
-  if (!scriptState->contextIsValid())
+    std::unique_ptr<WebDataConsumerHandle> data_consume_handle) {
+  if (!script_state->ContextIsValid())
     return;
-  DCHECK(m_preloadResponseProperty);
-  ScriptState::Scope scope(scriptState);
-  FetchResponseData* responseData =
-      dataConsumeHandle
-          ? FetchResponseData::createWithBuffer(new BodyStreamBuffer(
-                scriptState, new BytesConsumerForDataConsumerHandle(
-                                 scriptState->getExecutionContext(),
-                                 std::move(dataConsumeHandle))))
-          : FetchResponseData::create();
-  Vector<KURL> urlList(1);
-  urlList[0] = response->url();
-  responseData->setURLList(urlList);
-  responseData->setStatus(response->httpStatusCode());
-  responseData->setStatusMessage(response->httpStatusText());
-  responseData->setResponseTime(response->toResourceResponse().responseTime());
+  DCHECK(preload_response_property_);
+  ScriptState::Scope scope(script_state);
+  FetchResponseData* response_data =
+      data_consume_handle
+          ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
+                script_state, new BytesConsumerForDataConsumerHandle(
+                                  script_state->GetExecutionContext(),
+                                  std::move(data_consume_handle))))
+          : FetchResponseData::Create();
+  Vector<KURL> url_list(1);
+  url_list[0] = response->Url();
+  response_data->SetURLList(url_list);
+  response_data->SetStatus(response->HttpStatusCode());
+  response_data->SetStatusMessage(response->HttpStatusText());
+  response_data->SetResponseTime(response->ToResourceResponse().ResponseTime());
   const HTTPHeaderMap& headers(
-      response->toResourceResponse().httpHeaderFields());
+      response->ToResourceResponse().HttpHeaderFields());
   for (const auto& header : headers) {
-    responseData->headerList()->append(header.key, header.value);
+    response_data->HeaderList()->Append(header.key, header.value);
   }
-  FetchResponseData* taintedResponse =
-      NetworkUtils::isRedirectResponseCode(response->httpStatusCode())
-          ? responseData->createOpaqueRedirectFilteredResponse()
-          : responseData->createBasicFilteredResponse();
-  m_preloadResponseProperty->resolve(
-      Response::create(scriptState->getExecutionContext(), taintedResponse));
+  FetchResponseData* tainted_response =
+      NetworkUtils::IsRedirectResponseCode(response->HttpStatusCode())
+          ? response_data->CreateOpaqueRedirectFilteredResponse()
+          : response_data->CreateBasicFilteredResponse();
+  preload_response_property_->Resolve(
+      Response::Create(script_state->GetExecutionContext(), tainted_response));
 }
 
-void FetchEvent::onNavigationPreloadError(
-    ScriptState* scriptState,
+void FetchEvent::OnNavigationPreloadError(
+    ScriptState* script_state,
     std::unique_ptr<WebServiceWorkerError> error) {
-  if (!scriptState->contextIsValid())
+  if (!script_state->ContextIsValid())
     return;
-  DCHECK(m_preloadResponseProperty);
-  m_preloadResponseProperty->reject(
-      ServiceWorkerError::take(nullptr, *error.get()));
+  DCHECK(preload_response_property_);
+  preload_response_property_->Reject(
+      ServiceWorkerError::Take(nullptr, *error.get()));
 }
 
 DEFINE_TRACE(FetchEvent) {
-  visitor->trace(m_observer);
-  visitor->trace(m_request);
-  visitor->trace(m_preloadResponseProperty);
-  ExtendableEvent::trace(visitor);
+  visitor->Trace(observer_);
+  visitor->Trace(request_);
+  visitor->Trace(preload_response_property_);
+  ExtendableEvent::Trace(visitor);
 }
 
 }  // namespace blink

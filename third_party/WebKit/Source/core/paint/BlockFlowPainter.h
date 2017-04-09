@@ -17,13 +17,13 @@ class BlockFlowPainter {
   STACK_ALLOCATED();
 
  public:
-  BlockFlowPainter(const LayoutBlockFlow& layoutBlockFlow)
-      : m_layoutBlockFlow(layoutBlockFlow) {}
-  void paintContents(const PaintInfo&, const LayoutPoint&);
-  void paintFloats(const PaintInfo&, const LayoutPoint&);
+  BlockFlowPainter(const LayoutBlockFlow& layout_block_flow)
+      : layout_block_flow_(layout_block_flow) {}
+  void PaintContents(const PaintInfo&, const LayoutPoint&);
+  void PaintFloats(const PaintInfo&, const LayoutPoint&);
 
  private:
-  const LayoutBlockFlow& m_layoutBlockFlow;
+  const LayoutBlockFlow& layout_block_flow_;
 };
 
 }  // namespace blink

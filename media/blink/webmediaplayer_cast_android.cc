@@ -172,8 +172,8 @@ void WebMediaPlayerCast::Initialize(const GURL& url,
                                     blink::WebLocalFrame* frame,
                                     int delegate_id) {
   player_manager_->Initialize(MEDIA_PLAYER_TYPE_REMOTE_ONLY, player_id_, url,
-                              frame->document().firstPartyForCookies(),
-                              frame->document().url(), true, delegate_id);
+                              frame->GetDocument().FirstPartyForCookies(),
+                              frame->GetDocument().Url(), true, delegate_id);
   is_player_initialized_ = true;
 }
 
@@ -185,7 +185,7 @@ void WebMediaPlayerCast::SetMediaPlayerManager(
 
 void WebMediaPlayerCast::requestRemotePlayback() {
   player_manager_->Seek(player_id_, base::TimeDelta::FromSecondsD(
-                                        webmediaplayer_->currentTime()));
+                                        webmediaplayer_->CurrentTime()));
   player_manager_->RequestRemotePlayback(player_id_);
 }
 
@@ -215,7 +215,7 @@ void WebMediaPlayerCast::OnBufferingUpdate(int percentage) {
 
 void WebMediaPlayerCast::OnSeekRequest(const base::TimeDelta& time_to_seek) {
   DVLOG(1) << __func__;
-  client_->requestSeek(time_to_seek.InSecondsF());
+  client_->RequestSeek(time_to_seek.InSecondsF());
 }
 
 void WebMediaPlayerCast::OnSeekComplete(const base::TimeDelta& current_time) {
@@ -247,15 +247,15 @@ void WebMediaPlayerCast::OnPlayerReleased() {
 void WebMediaPlayerCast::OnConnectedToRemoteDevice(
     const std::string& remote_playback_message) {
   DVLOG(1) << __func__;
-  remote_time_ = base::TimeDelta::FromSecondsD(webmediaplayer_->currentTime());
+  remote_time_ = base::TimeDelta::FromSecondsD(webmediaplayer_->CurrentTime());
   is_remote_ = true;
   initializing_ = true;
   paused_ = false;
-  client_->playbackStateChanged();
+  client_->PlaybackStateChanged();
 
   remote_playback_message_ = remote_playback_message;
   webmediaplayer_->SuspendForRemote();
-  client_->connectedToRemoteDevice();
+  client_->ConnectedToRemoteDevice();
 }
 
 double WebMediaPlayerCast::currentTime() const {
@@ -291,19 +291,19 @@ void WebMediaPlayerCast::OnDisconnectedFromRemoteDevice() {
   }
   is_remote_ = false;
   double t = currentTime();
-  if (t + media::kTimeUpdateInterval * 2 / 1000 > webmediaplayer_->duration()) {
-    t = webmediaplayer_->duration();
+  if (t + media::kTimeUpdateInterval * 2 / 1000 > webmediaplayer_->Duration()) {
+    t = webmediaplayer_->Duration();
   }
   webmediaplayer_->OnDisconnectedFromRemoteDevice(t);
 }
 
 void WebMediaPlayerCast::OnCancelledRemotePlaybackRequest() {
   DVLOG(1) << __func__;
-  client_->cancelledRemotePlaybackRequest();
+  client_->CancelledRemotePlaybackRequest();
 }
 
 void WebMediaPlayerCast::OnRemotePlaybackStarted() {
-  client_->remotePlaybackStarted();
+  client_->RemotePlaybackStarted();
 }
 
 void WebMediaPlayerCast::OnDidExitFullscreen() {
@@ -316,25 +316,25 @@ void WebMediaPlayerCast::OnMediaPlayerPlay() {
   if (is_remote_ && paused_) {
     paused_ = false;
     remote_time_at_ = base::TimeTicks::Now();
-    client_->playbackStateChanged();
+    client_->PlaybackStateChanged();
   }
   // Blink expects a timeChanged() in response to a seek().
   if (should_notify_time_changed_)
-    client_->timeChanged();
+    client_->TimeChanged();
 }
 
 void WebMediaPlayerCast::OnMediaPlayerPause() {
   DVLOG(1) << __func__ << " is_remote_ = " << is_remote_;
   if (is_remote_ && !paused_) {
     paused_ = true;
-    client_->playbackStateChanged();
+    client_->PlaybackStateChanged();
   }
 }
 
 void WebMediaPlayerCast::OnRemoteRouteAvailabilityChanged(
     blink::WebRemotePlaybackAvailability availability) {
   DVLOG(1) << __func__;
-  client_->remoteRouteAvailabilityChanged(availability);
+  client_->RemoteRouteAvailabilityChanged(availability);
 }
 
 void WebMediaPlayerCast::SuspendAndReleaseResources() {}
@@ -363,7 +363,7 @@ scoped_refptr<VideoFrame> WebMediaPlayerCast::GetCastingBanner() {
     return nullptr;
 
   return MakeTextFrameForCast(remote_playback_message_, canvas_size,
-                              webmediaplayer_->naturalSize(),
+                              webmediaplayer_->NaturalSize(),
                               base::Bind(&GLCBShim, context_3d_cb_));
 }
 

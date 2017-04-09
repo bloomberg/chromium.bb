@@ -15,185 +15,185 @@ namespace blink {
 
 class SVGElementProxy::IdObserver : public IdTargetObserver {
  public:
-  IdObserver(TreeScope& treeScope, SVGElementProxy& proxy)
-      : IdTargetObserver(treeScope.idTargetObserverRegistry(), proxy.id()),
-        m_treeScope(&treeScope) {}
+  IdObserver(TreeScope& tree_scope, SVGElementProxy& proxy)
+      : IdTargetObserver(tree_scope.GetIdTargetObserverRegistry(), proxy.Id()),
+        tree_scope_(&tree_scope) {}
 
-  void addClient(SVGResourceClient* client) { m_clients.insert(client); }
-  bool removeClient(SVGResourceClient* client) {
-    return m_clients.erase(client);
+  void AddClient(SVGResourceClient* client) { clients_.insert(client); }
+  bool RemoveClient(SVGResourceClient* client) {
+    return clients_.erase(client);
   }
-  bool hasClients() const { return !m_clients.isEmpty(); }
+  bool HasClients() const { return !clients_.IsEmpty(); }
 
-  TreeScope* treeScope() const { return m_treeScope; }
-  void transferClients(IdObserver& observer) {
-    for (const auto& client : m_clients)
-      observer.m_clients.insert(client.key, client.value);
-    m_clients.clear();
+  TreeScope* GetTreeScope() const { return tree_scope_; }
+  void TransferClients(IdObserver& observer) {
+    for (const auto& client : clients_)
+      observer.clients_.insert(client.key, client.value);
+    clients_.Clear();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_clients);
-    visitor->trace(m_treeScope);
-    IdTargetObserver::trace(visitor);
+    visitor->Trace(clients_);
+    visitor->Trace(tree_scope_);
+    IdTargetObserver::Trace(visitor);
   }
 
-  void contentChanged() {
-    DCHECK(lifecycle().state() <= DocumentLifecycle::CompositingClean ||
-           lifecycle().state() >= DocumentLifecycle::PaintClean);
+  void ContentChanged() {
+    DCHECK(Lifecycle().GetState() <= DocumentLifecycle::kCompositingClean ||
+           Lifecycle().GetState() >= DocumentLifecycle::kPaintClean);
     HeapVector<Member<SVGResourceClient>> clients;
-    copyToVector(m_clients, clients);
+    CopyToVector(clients_, clients);
     for (SVGResourceClient* client : clients)
-      client->resourceContentChanged();
+      client->ResourceContentChanged();
   }
 
  private:
-  const DocumentLifecycle& lifecycle() const {
-    return m_treeScope->document().lifecycle();
+  const DocumentLifecycle& Lifecycle() const {
+    return tree_scope_->GetDocument().Lifecycle();
   }
-  void idTargetChanged() override {
-    DCHECK(lifecycle().stateAllowsTreeMutations());
+  void IdTargetChanged() override {
+    DCHECK(Lifecycle().StateAllowsTreeMutations());
     HeapVector<Member<SVGResourceClient>> clients;
-    copyToVector(m_clients, clients);
+    CopyToVector(clients_, clients);
     for (SVGResourceClient* client : clients)
-      client->resourceElementChanged();
+      client->ResourceElementChanged();
   }
-  HeapHashCountedSet<Member<SVGResourceClient>> m_clients;
-  Member<TreeScope> m_treeScope;
+  HeapHashCountedSet<Member<SVGResourceClient>> clients_;
+  Member<TreeScope> tree_scope_;
 };
 
 SVGElementProxy::SVGElementProxy(const AtomicString& id)
-    : m_id(id), m_isLocal(true) {}
+    : id_(id), is_local_(true) {}
 
 SVGElementProxy::SVGElementProxy(const String& url, const AtomicString& id)
-    : m_id(id), m_url(url), m_isLocal(false) {}
+    : id_(id), url_(url), is_local_(false) {}
 
 SVGElementProxy::~SVGElementProxy() {}
 
-void SVGElementProxy::addClient(SVGResourceClient* client) {
+void SVGElementProxy::AddClient(SVGResourceClient* client) {
   // An empty id will never be a valid element reference.
-  if (m_id.isEmpty())
+  if (id_.IsEmpty())
     return;
-  if (!m_isLocal) {
-    if (m_document)
-      m_document->addClient(client);
+  if (!is_local_) {
+    if (document_)
+      document_->AddClient(client);
     return;
   }
-  TreeScope* clientScope = client->treeScope();
-  if (!clientScope)
+  TreeScope* client_scope = client->GetTreeScope();
+  if (!client_scope)
     return;
   // Ensure sure we have an observer registered for this tree scope.
-  auto& scopeObserver =
-      m_observers.insert(clientScope, nullptr).storedValue->value;
-  if (!scopeObserver)
-    scopeObserver = new IdObserver(*clientScope, *this);
+  auto& scope_observer =
+      observers_.insert(client_scope, nullptr).stored_value->value;
+  if (!scope_observer)
+    scope_observer = new IdObserver(*client_scope, *this);
 
-  auto& observer = m_clients.insert(client, nullptr).storedValue->value;
+  auto& observer = clients_.insert(client, nullptr).stored_value->value;
   if (!observer)
-    observer = scopeObserver;
+    observer = scope_observer;
 
-  DCHECK(observer && scopeObserver);
+  DCHECK(observer && scope_observer);
 
   // If the client moved to a different scope, we need to unregister the old
   // observer and transfer any clients from it before replacing it. Thus any
   // clients that remain to be removed will be transferred to the new observer,
   // and hence removed from it instead.
-  if (observer != scopeObserver) {
-    observer->unregister();
-    observer->transferClients(*scopeObserver);
-    observer = scopeObserver;
+  if (observer != scope_observer) {
+    observer->Unregister();
+    observer->TransferClients(*scope_observer);
+    observer = scope_observer;
   }
-  observer->addClient(client);
+  observer->AddClient(client);
 }
 
-void SVGElementProxy::removeClient(SVGResourceClient* client) {
+void SVGElementProxy::RemoveClient(SVGResourceClient* client) {
   // An empty id will never be a valid element reference.
-  if (m_id.isEmpty())
+  if (id_.IsEmpty())
     return;
-  if (!m_isLocal) {
-    if (m_document)
-      m_document->removeClient(client);
+  if (!is_local_) {
+    if (document_)
+      document_->RemoveClient(client);
     return;
   }
-  auto entry = m_clients.find(client);
-  if (entry == m_clients.end())
+  auto entry = clients_.Find(client);
+  if (entry == clients_.end())
     return;
   IdObserver* observer = entry->value;
   DCHECK(observer);
   // If the client is not the last client in the scope, then no further action
   // needs to be taken.
-  if (!observer->removeClient(client))
+  if (!observer->RemoveClient(client))
     return;
   // Unregister and drop the scope association, then drop the client.
-  if (!observer->hasClients()) {
-    observer->unregister();
-    m_observers.erase(observer->treeScope());
+  if (!observer->HasClients()) {
+    observer->Unregister();
+    observers_.erase(observer->GetTreeScope());
   }
-  m_clients.erase(entry);
+  clients_.erase(entry);
 }
 
-void SVGElementProxy::resolve(Document& document) {
-  if (m_isLocal || m_id.isEmpty() || m_url.isEmpty())
+void SVGElementProxy::Resolve(Document& document) {
+  if (is_local_ || id_.IsEmpty() || url_.IsEmpty())
     return;
-  FetchRequest request(ResourceRequest(m_url), FetchInitiatorTypeNames::css);
-  m_document = DocumentResource::fetchSVGDocument(request, document.fetcher());
-  m_url = String();
+  FetchRequest request(ResourceRequest(url_), FetchInitiatorTypeNames::css);
+  document_ = DocumentResource::FetchSVGDocument(request, document.Fetcher());
+  url_ = String();
 }
 
-TreeScope* SVGElementProxy::treeScopeForLookup(TreeScope& treeScope) const {
-  if (m_isLocal)
-    return &treeScope;
-  if (!m_document)
+TreeScope* SVGElementProxy::TreeScopeForLookup(TreeScope& tree_scope) const {
+  if (is_local_)
+    return &tree_scope;
+  if (!document_)
     return nullptr;
-  return m_document->document();
+  return document_->GetDocument();
 }
 
-SVGElement* SVGElementProxy::findElement(TreeScope& treeScope) {
+SVGElement* SVGElementProxy::FindElement(TreeScope& tree_scope) {
   // An empty id will never be a valid element reference.
-  if (m_id.isEmpty())
+  if (id_.IsEmpty())
     return nullptr;
-  TreeScope* lookupScope = treeScopeForLookup(treeScope);
-  if (!lookupScope)
+  TreeScope* lookup_scope = TreeScopeForLookup(tree_scope);
+  if (!lookup_scope)
     return nullptr;
-  if (Element* targetElement = lookupScope->getElementById(m_id)) {
-    SVGElementProxySet* proxySet =
-        targetElement->isSVGElement()
-            ? toSVGElement(targetElement)->elementProxySet()
+  if (Element* target_element = lookup_scope->GetElementById(id_)) {
+    SVGElementProxySet* proxy_set =
+        target_element->IsSVGElement()
+            ? ToSVGElement(target_element)->ElementProxySet()
             : nullptr;
-    if (proxySet) {
-      proxySet->add(*this);
-      return toSVGElement(targetElement);
+    if (proxy_set) {
+      proxy_set->Add(*this);
+      return ToSVGElement(target_element);
     }
   }
   return nullptr;
 }
 
-void SVGElementProxy::contentChanged(TreeScope& treeScope) {
-  if (auto* observer = m_observers.at(&treeScope))
-    observer->contentChanged();
+void SVGElementProxy::ContentChanged(TreeScope& tree_scope) {
+  if (auto* observer = observers_.at(&tree_scope))
+    observer->ContentChanged();
 }
 
 DEFINE_TRACE(SVGElementProxy) {
-  visitor->trace(m_clients);
-  visitor->trace(m_observers);
-  visitor->trace(m_document);
+  visitor->Trace(clients_);
+  visitor->Trace(observers_);
+  visitor->Trace(document_);
 }
 
-void SVGElementProxySet::add(SVGElementProxy& elementProxy) {
-  m_elementProxies.insert(&elementProxy);
+void SVGElementProxySet::Add(SVGElementProxy& element_proxy) {
+  element_proxies_.insert(&element_proxy);
 }
 
-bool SVGElementProxySet::isEmpty() const {
-  return m_elementProxies.isEmpty();
+bool SVGElementProxySet::IsEmpty() const {
+  return element_proxies_.IsEmpty();
 }
 
-void SVGElementProxySet::notifyContentChanged(TreeScope& treeScope) {
-  for (SVGElementProxy* proxy : m_elementProxies)
-    proxy->contentChanged(treeScope);
+void SVGElementProxySet::NotifyContentChanged(TreeScope& tree_scope) {
+  for (SVGElementProxy* proxy : element_proxies_)
+    proxy->ContentChanged(tree_scope);
 }
 
 DEFINE_TRACE(SVGElementProxySet) {
-  visitor->trace(m_elementProxies);
+  visitor->Trace(element_proxies_);
 }
 
 }  // namespace blink

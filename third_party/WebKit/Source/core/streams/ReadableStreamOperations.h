@@ -26,58 +26,58 @@ class CORE_EXPORT ReadableStreamOperations {
   // createReadableStreamWithExternalController
   // If the caller supplies an invalid strategy (e.g. one that returns
   // negative sizes, or doesn't have appropriate properties), this will crash.
-  static ScriptValue createReadableStream(ScriptState*,
+  static ScriptValue CreateReadableStream(ScriptState*,
                                           UnderlyingSourceBase*,
                                           ScriptValue strategy);
 
   // createBuiltInCountQueuingStrategy
-  static ScriptValue createCountQueuingStrategy(ScriptState*,
-                                                size_t highWaterMark);
+  static ScriptValue CreateCountQueuingStrategy(ScriptState*,
+                                                size_t high_water_mark);
 
   // AcquireReadableStreamDefaultReader
   // This function assumes |isReadableStream(stream)|.
   // Returns an empty value and throws an error via the ExceptionState when
   // errored.
-  static ScriptValue getReader(ScriptState*,
+  static ScriptValue GetReader(ScriptState*,
                                ScriptValue stream,
                                ExceptionState&);
 
   // IsReadableStream
-  static bool isReadableStream(ScriptState*, ScriptValue);
+  static bool IsReadableStream(ScriptState*, ScriptValue);
 
   // IsReadableStreamDisturbed
   // This function assumes |isReadableStream(stream)|.
-  static bool isDisturbed(ScriptState*, ScriptValue stream);
+  static bool IsDisturbed(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamLocked
   // This function assumes |isReadableStream(stream)|.
-  static bool isLocked(ScriptState*, ScriptValue stream);
+  static bool IsLocked(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamReadable
   // This function assumes |isReadableStream(stream)|.
-  static bool isReadable(ScriptState*, ScriptValue stream);
+  static bool IsReadable(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamClosed
   // This function assumes |isReadableStream(stream)|.
-  static bool isClosed(ScriptState*, ScriptValue stream);
+  static bool IsClosed(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamErrored
   // This function assumes |isReadableStream(stream)|.
-  static bool isErrored(ScriptState*, ScriptValue stream);
+  static bool IsErrored(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamDefaultReader
-  static bool isReadableStreamDefaultReader(ScriptState*, ScriptValue);
+  static bool IsReadableStreamDefaultReader(ScriptState*, ScriptValue);
 
   // ReadableStreamDefaultReaderRead
   // This function assumes |isReadableStreamDefaultReader(reader)|.
-  static ScriptPromise defaultReaderRead(ScriptState*, ScriptValue reader);
+  static ScriptPromise DefaultReaderRead(ScriptState*, ScriptValue reader);
 
   // ReadableStreamTee
   // This function assumes |isReadableStream(stream)| and |!isLocked(stream)|
-  static void tee(ScriptState*,
+  static void Tee(ScriptState*,
                   ScriptValue stream,
-                  ScriptValue* newStream1,
-                  ScriptValue* newStream2);
+                  ScriptValue* new_stream1,
+                  ScriptValue* new_stream2);
 };
 
 }  // namespace blink

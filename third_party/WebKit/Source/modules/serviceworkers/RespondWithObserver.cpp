@@ -19,119 +19,121 @@ namespace blink {
 class RespondWithObserver::ThenFunction final : public ScriptFunction {
  public:
   enum ResolveType {
-    Fulfilled,
-    Rejected,
+    kFulfilled,
+    kRejected,
   };
 
-  static v8::Local<v8::Function> createFunction(ScriptState* scriptState,
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 RespondWithObserver* observer,
                                                 ResolveType type) {
-    ThenFunction* self = new ThenFunction(scriptState, observer, type);
-    return self->bindToV8Function();
+    ThenFunction* self = new ThenFunction(script_state, observer, type);
+    return self->BindToV8Function();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_observer);
-    ScriptFunction::trace(visitor);
+    visitor->Trace(observer_);
+    ScriptFunction::Trace(visitor);
   }
 
  private:
-  ThenFunction(ScriptState* scriptState,
+  ThenFunction(ScriptState* script_state,
                RespondWithObserver* observer,
                ResolveType type)
-      : ScriptFunction(scriptState),
-        m_observer(observer),
-        m_resolveType(type) {}
+      : ScriptFunction(script_state),
+        observer_(observer),
+        resolve_type_(type) {}
 
-  ScriptValue call(ScriptValue value) override {
-    ASSERT(m_observer);
-    ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
-    if (m_resolveType == Rejected) {
-      m_observer->responseWasRejected(
-          WebServiceWorkerResponseErrorPromiseRejected);
+  ScriptValue Call(ScriptValue value) override {
+    ASSERT(observer_);
+    ASSERT(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
+    if (resolve_type_ == kRejected) {
+      observer_->ResponseWasRejected(
+          kWebServiceWorkerResponseErrorPromiseRejected);
       value =
-          ScriptPromise::reject(value.getScriptState(), value).getScriptValue();
+          ScriptPromise::Reject(value.GetScriptState(), value).GetScriptValue();
     } else {
-      m_observer->responseWasFulfilled(value);
+      observer_->ResponseWasFulfilled(value);
     }
-    m_observer = nullptr;
+    observer_ = nullptr;
     return value;
   }
 
-  Member<RespondWithObserver> m_observer;
-  ResolveType m_resolveType;
+  Member<RespondWithObserver> observer_;
+  ResolveType resolve_type_;
 };
 
-void RespondWithObserver::contextDestroyed(ExecutionContext*) {
-  if (m_observer) {
-    DCHECK_EQ(Pending, m_state);
-    m_observer.clear();
+void RespondWithObserver::ContextDestroyed(ExecutionContext*) {
+  if (observer_) {
+    DCHECK_EQ(kPending, state_);
+    observer_.Clear();
   }
-  m_state = Done;
+  state_ = kDone;
 }
 
-void RespondWithObserver::willDispatchEvent() {
-  m_eventDispatchTime = WTF::currentTime();
+void RespondWithObserver::WillDispatchEvent() {
+  event_dispatch_time_ = WTF::CurrentTime();
 }
 
-void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult) {
-  ASSERT(getExecutionContext());
-  if (m_state != Initial)
+void RespondWithObserver::DidDispatchEvent(
+    DispatchEventResult dispatch_result) {
+  ASSERT(GetExecutionContext());
+  if (state_ != kInitial)
     return;
 
-  if (dispatchResult != DispatchEventResult::NotCanceled) {
-    m_observer->incrementPendingActivity();
-    responseWasRejected(WebServiceWorkerResponseErrorDefaultPrevented);
-    return;
-  }
-
-  onNoResponse();
-  m_state = Done;
-  m_observer.clear();
-}
-
-void RespondWithObserver::respondWith(ScriptState* scriptState,
-                                      ScriptPromise scriptPromise,
-                                      ExceptionState& exceptionState) {
-  if (m_state != Initial) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "The event has already been responded to.");
+  if (dispatch_result != DispatchEventResult::kNotCanceled) {
+    observer_->IncrementPendingActivity();
+    ResponseWasRejected(kWebServiceWorkerResponseErrorDefaultPrevented);
     return;
   }
 
-  m_state = Pending;
-  m_observer->incrementPendingActivity();
-  scriptPromise.then(
-      ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
-      ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
+  OnNoResponse();
+  state_ = kDone;
+  observer_.Clear();
 }
 
-void RespondWithObserver::responseWasRejected(
+void RespondWithObserver::RespondWith(ScriptState* script_state,
+                                      ScriptPromise script_promise,
+                                      ExceptionState& exception_state) {
+  if (state_ != kInitial) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError, "The event has already been responded to.");
+    return;
+  }
+
+  state_ = kPending;
+  observer_->IncrementPendingActivity();
+  script_promise.Then(ThenFunction::CreateFunction(script_state, this,
+                                                   ThenFunction::kFulfilled),
+                      ThenFunction::CreateFunction(script_state, this,
+                                                   ThenFunction::kRejected));
+}
+
+void RespondWithObserver::ResponseWasRejected(
     WebServiceWorkerResponseError error) {
-  onResponseRejected(error);
-  m_state = Done;
-  m_observer->decrementPendingActivity();
-  m_observer.clear();
+  OnResponseRejected(error);
+  state_ = kDone;
+  observer_->DecrementPendingActivity();
+  observer_.Clear();
 }
 
-void RespondWithObserver::responseWasFulfilled(const ScriptValue& value) {
-  onResponseFulfilled(value);
-  m_state = Done;
-  m_observer->decrementPendingActivity();
-  m_observer.clear();
+void RespondWithObserver::ResponseWasFulfilled(const ScriptValue& value) {
+  OnResponseFulfilled(value);
+  state_ = kDone;
+  observer_->DecrementPendingActivity();
+  observer_.Clear();
 }
 
 RespondWithObserver::RespondWithObserver(ExecutionContext* context,
-                                         int eventID,
+                                         int event_id,
                                          WaitUntilObserver* observer)
     : ContextLifecycleObserver(context),
-      m_eventID(eventID),
-      m_state(Initial),
-      m_observer(observer) {}
+      event_id_(event_id),
+      state_(kInitial),
+      observer_(observer) {}
 
 DEFINE_TRACE(RespondWithObserver) {
-  visitor->trace(m_observer);
-  ContextLifecycleObserver::trace(visitor);
+  visitor->Trace(observer_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

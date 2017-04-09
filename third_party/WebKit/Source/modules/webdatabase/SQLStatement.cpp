@@ -42,67 +42,68 @@
 
 namespace blink {
 
-SQLStatement* SQLStatement::create(Database* database,
+SQLStatement* SQLStatement::Create(Database* database,
                                    SQLStatementCallback* callback,
-                                   SQLStatementErrorCallback* errorCallback) {
-  return new SQLStatement(database, callback, errorCallback);
+                                   SQLStatementErrorCallback* error_callback) {
+  return new SQLStatement(database, callback, error_callback);
 }
 
 SQLStatement::SQLStatement(Database* database,
                            SQLStatementCallback* callback,
-                           SQLStatementErrorCallback* errorCallback)
-    : m_statementCallback(callback), m_statementErrorCallback(errorCallback) {
-  DCHECK(isMainThread());
+                           SQLStatementErrorCallback* error_callback)
+    : statement_callback_(callback), statement_error_callback_(error_callback) {
+  DCHECK(IsMainThread());
 
-  if (hasCallback() || hasErrorCallback()) {
-    probe::asyncTaskScheduled(database->getExecutionContext(), "SQLStatement",
+  if (HasCallback() || HasErrorCallback()) {
+    probe::AsyncTaskScheduled(database->GetExecutionContext(), "SQLStatement",
                               this);
   }
 }
 
 DEFINE_TRACE(SQLStatement) {
-  visitor->trace(m_backend);
-  visitor->trace(m_statementCallback);
-  visitor->trace(m_statementErrorCallback);
+  visitor->Trace(backend_);
+  visitor->Trace(statement_callback_);
+  visitor->Trace(statement_error_callback_);
 }
 
-void SQLStatement::setBackend(SQLStatementBackend* backend) {
-  m_backend = backend;
+void SQLStatement::SetBackend(SQLStatementBackend* backend) {
+  backend_ = backend;
 }
 
-bool SQLStatement::hasCallback() {
-  return m_statementCallback;
+bool SQLStatement::HasCallback() {
+  return statement_callback_;
 }
 
-bool SQLStatement::hasErrorCallback() {
-  return m_statementErrorCallback;
+bool SQLStatement::HasErrorCallback() {
+  return statement_error_callback_;
 }
 
-bool SQLStatement::performCallback(SQLTransaction* transaction) {
+bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
   ASSERT(transaction);
-  ASSERT(m_backend);
+  ASSERT(backend_);
 
-  bool callbackError = false;
+  bool callback_error = false;
 
-  SQLStatementCallback* callback = m_statementCallback.release();
-  SQLStatementErrorCallback* errorCallback = m_statementErrorCallback.release();
-  SQLErrorData* error = m_backend->sqlError();
+  SQLStatementCallback* callback = statement_callback_.Release();
+  SQLStatementErrorCallback* error_callback =
+      statement_error_callback_.Release();
+  SQLErrorData* error = backend_->SqlError();
 
-  probe::AsyncTask asyncTask(transaction->database()->getExecutionContext(),
-                             this);
+  probe::AsyncTask async_task(transaction->GetDatabase()->GetExecutionContext(),
+                              this);
 
   // Call the appropriate statement callback and track if it resulted in an
   // error, because then we need to jump to the transaction error callback.
   if (error) {
-    if (errorCallback)
-      callbackError =
-          errorCallback->handleEvent(transaction, SQLError::create(*error));
+    if (error_callback)
+      callback_error =
+          error_callback->handleEvent(transaction, SQLError::Create(*error));
   } else if (callback) {
-    callbackError =
-        !callback->handleEvent(transaction, m_backend->sqlResultSet());
+    callback_error =
+        !callback->handleEvent(transaction, backend_->SqlResultSet());
   }
 
-  return callbackError;
+  return callback_error;
 }
 
 }  // namespace blink

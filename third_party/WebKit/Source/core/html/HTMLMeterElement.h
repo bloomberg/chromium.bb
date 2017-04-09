@@ -32,12 +32,12 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLMeterElement* create(Document&);
+  static HTMLMeterElement* Create(Document&);
 
   enum GaugeRegion {
-    GaugeRegionOptimum,
-    GaugeRegionSuboptimal,
-    GaugeRegionEvenLessGood
+    kGaugeRegionOptimum,
+    kGaugeRegionSuboptimal,
+    kGaugeRegionEvenLessGood
   };
 
   double value() const;
@@ -58,10 +58,10 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
   double optimum() const;
   void setOptimum(double);
 
-  double valueRatio() const;
-  GaugeRegion getGaugeRegion() const;
+  double ValueRatio() const;
+  GaugeRegion GetGaugeRegion() const;
 
-  bool canContainRangeEndPoint() const override;
+  bool CanContainRangeEndPoint() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -69,18 +69,18 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
   explicit HTMLMeterElement(Document&);
   ~HTMLMeterElement() override;
 
-  bool areAuthorShadowsAllowed() const override { return false; }
+  bool AreAuthorShadowsAllowed() const override { return false; }
 
-  bool supportLabels() const override { return true; }
+  bool SupportLabels() const override { return true; }
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void parseAttribute(const AttributeModificationParams&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
-  void didElementStateChange();
-  void updateValueAppearance(double percentage);
-  void didAddUserAgentShadowRoot(ShadowRoot&) override;
+  void DidElementStateChange();
+  void UpdateValueAppearance(double percentage);
+  void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
-  Member<HTMLDivElement> m_value;
+  Member<HTMLDivElement> value_;
 };
 
 }  // namespace blink

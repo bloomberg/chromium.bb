@@ -15,45 +15,45 @@ class VRDisplayEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VRDisplayEvent* create() { return new VRDisplayEvent; }
-  static VRDisplayEvent* create(const AtomicString& type,
-                                bool canBubble,
+  static VRDisplayEvent* Create() { return new VRDisplayEvent; }
+  static VRDisplayEvent* Create(const AtomicString& type,
+                                bool can_bubble,
                                 bool cancelable,
                                 VRDisplay* display,
                                 String reason) {
-    return new VRDisplayEvent(type, canBubble, cancelable, display, reason);
+    return new VRDisplayEvent(type, can_bubble, cancelable, display, reason);
   }
-  static VRDisplayEvent* create(const AtomicString& type,
-                                bool canBubble,
+  static VRDisplayEvent* Create(const AtomicString& type,
+                                bool can_bubble,
                                 bool cancelable,
                                 VRDisplay*,
                                 device::mojom::blink::VRDisplayEventReason);
 
-  static VRDisplayEvent* create(const AtomicString& type,
+  static VRDisplayEvent* Create(const AtomicString& type,
                                 const VRDisplayEventInit& initializer) {
     return new VRDisplayEvent(type, initializer);
   }
 
   ~VRDisplayEvent() override;
 
-  VRDisplay* display() const { return m_display.get(); }
-  const String& reason() const { return m_reason; }
+  VRDisplay* display() const { return display_.Get(); }
+  const String& reason() const { return reason_; }
 
-  const AtomicString& interfaceName() const override;
+  const AtomicString& InterfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   VRDisplayEvent();
   VRDisplayEvent(const AtomicString& type,
-                 bool canBubble,
+                 bool can_bubble,
                  bool cancelable,
                  VRDisplay*,
                  String);
   VRDisplayEvent(const AtomicString&, const VRDisplayEventInit&);
 
-  Member<VRDisplay> m_display;
-  String m_reason;
+  Member<VRDisplay> display_;
+  String reason_;
 };
 
 }  // namespace blink

@@ -59,74 +59,74 @@ namespace blink {
 namespace {
 
 enum PassiveForcedListenerResultType {
-  PreventDefaultNotCalled,
-  DocumentLevelTouchPreventDefaultCalled,
-  PassiveForcedListenerResultTypeMax
+  kPreventDefaultNotCalled,
+  kDocumentLevelTouchPreventDefaultCalled,
+  kPassiveForcedListenerResultTypeMax
 };
 
-Event::PassiveMode eventPassiveMode(
-    const RegisteredEventListener& eventListener) {
-  if (!eventListener.passive()) {
-    if (eventListener.passiveSpecified())
-      return Event::PassiveMode::NotPassive;
-    return Event::PassiveMode::NotPassiveDefault;
+Event::PassiveMode EventPassiveMode(
+    const RegisteredEventListener& event_listener) {
+  if (!event_listener.Passive()) {
+    if (event_listener.PassiveSpecified())
+      return Event::PassiveMode::kNotPassive;
+    return Event::PassiveMode::kNotPassiveDefault;
   }
-  if (eventListener.passiveForcedForDocumentTarget())
-    return Event::PassiveMode::PassiveForcedDocumentLevel;
-  if (eventListener.passiveSpecified())
-    return Event::PassiveMode::Passive;
-  return Event::PassiveMode::PassiveDefault;
+  if (event_listener.PassiveForcedForDocumentTarget())
+    return Event::PassiveMode::kPassiveForcedDocumentLevel;
+  if (event_listener.PassiveSpecified())
+    return Event::PassiveMode::kPassive;
+  return Event::PassiveMode::kPassiveDefault;
 }
 
-Settings* windowSettings(LocalDOMWindow* executingWindow) {
-  if (executingWindow) {
-    if (LocalFrame* frame = executingWindow->frame()) {
-      return frame->settings();
+Settings* WindowSettings(LocalDOMWindow* executing_window) {
+  if (executing_window) {
+    if (LocalFrame* frame = executing_window->GetFrame()) {
+      return frame->GetSettings();
     }
   }
   return nullptr;
 }
 
-bool isTouchScrollBlockingEvent(const AtomicString& eventType) {
-  return eventType == EventTypeNames::touchstart ||
-         eventType == EventTypeNames::touchmove;
+bool IsTouchScrollBlockingEvent(const AtomicString& event_type) {
+  return event_type == EventTypeNames::touchstart ||
+         event_type == EventTypeNames::touchmove;
 }
 
-bool isScrollBlockingEvent(const AtomicString& eventType) {
-  return isTouchScrollBlockingEvent(eventType) ||
-         eventType == EventTypeNames::mousewheel ||
-         eventType == EventTypeNames::wheel;
+bool IsScrollBlockingEvent(const AtomicString& event_type) {
+  return IsTouchScrollBlockingEvent(event_type) ||
+         event_type == EventTypeNames::mousewheel ||
+         event_type == EventTypeNames::wheel;
 }
 
-double blockedEventsWarningThreshold(ExecutionContext* context,
+double BlockedEventsWarningThreshold(ExecutionContext* context,
                                      const Event* event) {
   if (!event->cancelable())
     return 0.0;
-  if (!isScrollBlockingEvent(event->type()))
+  if (!IsScrollBlockingEvent(event->type()))
     return 0.0;
-  return PerformanceMonitor::threshold(context,
+  return PerformanceMonitor::Threshold(context,
                                        PerformanceMonitor::kBlockedEvent);
 }
 
-void reportBlockedEvent(ExecutionContext* context,
+void ReportBlockedEvent(ExecutionContext* context,
                         const Event* event,
-                        RegisteredEventListener* registeredListener,
-                        double delayedSeconds) {
-  if (registeredListener->listener()->type() !=
-      EventListener::JSEventListenerType)
+                        RegisteredEventListener* registered_listener,
+                        double delayed_seconds) {
+  if (registered_listener->Listener()->GetType() !=
+      EventListener::kJSEventListenerType)
     return;
 
-  String messageText = String::format(
+  String message_text = String::Format(
       "Handling of '%s' input event was delayed for %ld ms due to main thread "
       "being busy. "
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
-      event->type().getString().utf8().data(), lround(delayedSeconds * 1000));
+      event->type().GetString().Utf8().Data(), lround(delayed_seconds * 1000));
 
-  PerformanceMonitor::reportGenericViolation(
-      context, PerformanceMonitor::kBlockedEvent, messageText, delayedSeconds,
-      getFunctionLocation(context, registeredListener->listener()));
-  registeredListener->setBlockedEventWarningEmitted();
+  PerformanceMonitor::ReportGenericViolation(
+      context, PerformanceMonitor::kBlockedEvent, message_text, delayed_seconds,
+      GetFunctionLocation(context, registered_listener->Listener()));
+  registered_listener->SetBlockedEventWarningEmitted();
 }
 
 }  // namespace
@@ -136,15 +136,15 @@ EventTargetData::EventTargetData() {}
 EventTargetData::~EventTargetData() {}
 
 DEFINE_TRACE(EventTargetData) {
-  visitor->trace(eventListenerMap);
+  visitor->Trace(event_listener_map);
 }
 
 DEFINE_TRACE_WRAPPERS(EventTarget) {
   EventListenerIterator iterator(const_cast<EventTarget*>(this));
-  while (EventListener* listener = iterator.nextListener()) {
-    if (listener->type() != EventListener::JSEventListenerType)
+  while (EventListener* listener = iterator.NextListener()) {
+    if (listener->GetType() != EventListener::kJSEventListenerType)
       continue;
-    visitor->traceWrappers(static_cast<V8AbstractEventListener*>(listener));
+    visitor->TraceWrappers(static_cast<V8AbstractEventListener*>(listener));
   }
 }
 
@@ -152,86 +152,86 @@ EventTarget::EventTarget() {}
 
 EventTarget::~EventTarget() {}
 
-Node* EventTarget::toNode() {
+Node* EventTarget::ToNode() {
   return nullptr;
 }
 
-const DOMWindow* EventTarget::toDOMWindow() const {
+const DOMWindow* EventTarget::ToDOMWindow() const {
   return nullptr;
 }
 
-const LocalDOMWindow* EventTarget::toLocalDOMWindow() const {
+const LocalDOMWindow* EventTarget::ToLocalDOMWindow() const {
   return nullptr;
 }
 
-LocalDOMWindow* EventTarget::toLocalDOMWindow() {
+LocalDOMWindow* EventTarget::ToLocalDOMWindow() {
   return nullptr;
 }
 
-MessagePort* EventTarget::toMessagePort() {
+MessagePort* EventTarget::ToMessagePort() {
   return nullptr;
 }
 
-ServiceWorker* EventTarget::toServiceWorker() {
+ServiceWorker* EventTarget::ToServiceWorker() {
   return nullptr;
 }
 
-inline LocalDOMWindow* EventTarget::executingWindow() {
-  if (ExecutionContext* context = getExecutionContext())
-    return context->executingWindow();
+inline LocalDOMWindow* EventTarget::ExecutingWindow() {
+  if (ExecutionContext* context = GetExecutionContext())
+    return context->ExecutingWindow();
   return nullptr;
 }
 
-void EventTarget::setDefaultAddEventListenerOptions(
-    const AtomicString& eventType,
+void EventTarget::SetDefaultAddEventListenerOptions(
+    const AtomicString& event_type,
     AddEventListenerOptionsResolved& options) {
-  options.setPassiveSpecified(options.hasPassive());
+  options.SetPassiveSpecified(options.hasPassive());
 
-  if (!isScrollBlockingEvent(eventType)) {
+  if (!IsScrollBlockingEvent(event_type)) {
     if (!options.hasPassive())
       options.setPassive(false);
     return;
   }
 
-  if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+  if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
     if (options.hasPassive()) {
-      UseCounter::count(executingWindow->document(),
+      UseCounter::Count(executing_window->document(),
                         options.passive()
-                            ? UseCounter::AddEventListenerPassiveTrue
-                            : UseCounter::AddEventListenerPassiveFalse);
+                            ? UseCounter::kAddEventListenerPassiveTrue
+                            : UseCounter::kAddEventListenerPassiveFalse);
     }
   }
 
   if (RuntimeEnabledFeatures::passiveDocumentEventListenersEnabled() &&
-      isTouchScrollBlockingEvent(eventType)) {
+      IsTouchScrollBlockingEvent(event_type)) {
     if (!options.hasPassive()) {
-      if (Node* node = toNode()) {
-        if (node->isDocumentNode() ||
-            node->document().documentElement() == node ||
-            node->document().body() == node) {
+      if (Node* node = ToNode()) {
+        if (node->IsDocumentNode() ||
+            node->GetDocument().documentElement() == node ||
+            node->GetDocument().body() == node) {
           options.setPassive(true);
-          options.setPassiveForcedForDocumentTarget(true);
+          options.SetPassiveForcedForDocumentTarget(true);
           return;
         }
-      } else if (toLocalDOMWindow()) {
+      } else if (ToLocalDOMWindow()) {
         options.setPassive(true);
-        options.setPassiveForcedForDocumentTarget(true);
+        options.SetPassiveForcedForDocumentTarget(true);
         return;
       }
     }
   }
 
-  if (Settings* settings = windowSettings(executingWindow())) {
-    switch (settings->getPassiveListenerDefault()) {
-      case PassiveListenerDefault::False:
+  if (Settings* settings = WindowSettings(ExecutingWindow())) {
+    switch (settings->GetPassiveListenerDefault()) {
+      case PassiveListenerDefault::kFalse:
         if (!options.hasPassive())
           options.setPassive(false);
         break;
-      case PassiveListenerDefault::True:
+      case PassiveListenerDefault::kTrue:
         if (!options.hasPassive())
           options.setPassive(true);
         break;
-      case PassiveListenerDefault::ForceAllTrue:
+      case PassiveListenerDefault::kForceAllTrue:
         options.setPassive(true);
         break;
     }
@@ -241,248 +241,250 @@ void EventTarget::setDefaultAddEventListenerOptions(
   }
 
   if (!options.passive()) {
-    String messageText = String::format(
+    String message_text = String::Format(
         "Added non-passive event listener to a scroll-blocking '%s' event. "
         "Consider marking event handler as 'passive' to make the page more "
         "responsive.",
-        eventType.getString().utf8().data());
+        event_type.GetString().Utf8().Data());
 
-    PerformanceMonitor::reportGenericViolation(
-        getExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
-        messageText, 0, nullptr);
+    PerformanceMonitor::ReportGenericViolation(
+        GetExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
+        message_text, 0, nullptr);
   }
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType,
+bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
-                                   bool useCapture) {
+                                   bool use_capture) {
   AddEventListenerOptionsResolved options;
-  options.setCapture(useCapture);
-  setDefaultAddEventListenerOptions(eventType, options);
-  return addEventListenerInternal(eventType, listener, options);
+  options.setCapture(use_capture);
+  SetDefaultAddEventListenerOptions(event_type, options);
+  return AddEventListenerInternal(event_type, listener, options);
 }
 
 bool EventTarget::addEventListener(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     EventListener* listener,
-    const AddEventListenerOptionsOrBoolean& optionsUnion) {
-  if (optionsUnion.isBoolean())
-    return addEventListener(eventType, listener, optionsUnion.getAsBoolean());
-  if (optionsUnion.isAddEventListenerOptions()) {
+    const AddEventListenerOptionsOrBoolean& options_union) {
+  if (options_union.isBoolean())
+    return addEventListener(event_type, listener, options_union.getAsBoolean());
+  if (options_union.isAddEventListenerOptions()) {
     AddEventListenerOptionsResolved options =
-        optionsUnion.getAsAddEventListenerOptions();
-    return addEventListener(eventType, listener, options);
+        options_union.getAsAddEventListenerOptions();
+    return addEventListener(event_type, listener, options);
   }
-  return addEventListener(eventType, listener);
+  return addEventListener(event_type, listener);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType,
+bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
                                    AddEventListenerOptionsResolved& options) {
-  setDefaultAddEventListenerOptions(eventType, options);
-  return addEventListenerInternal(eventType, listener, options);
+  SetDefaultAddEventListenerOptions(event_type, options);
+  return AddEventListenerInternal(event_type, listener, options);
 }
 
-bool EventTarget::addEventListenerInternal(
-    const AtomicString& eventType,
+bool EventTarget::AddEventListenerInternal(
+    const AtomicString& event_type,
     EventListener* listener,
     const AddEventListenerOptionsResolved& options) {
   if (!listener)
     return false;
 
-  V8DOMActivityLogger* activityLogger =
-      V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-  if (activityLogger) {
+  V8DOMActivityLogger* activity_logger =
+      V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
+  if (activity_logger) {
     Vector<String> argv;
-    argv.push_back(toNode() ? toNode()->nodeName() : interfaceName());
-    argv.push_back(eventType);
-    activityLogger->logEvent("blinkAddEventListener", argv.size(), argv.data());
+    argv.push_back(ToNode() ? ToNode()->nodeName() : InterfaceName());
+    argv.push_back(event_type);
+    activity_logger->LogEvent("blinkAddEventListener", argv.size(),
+                              argv.Data());
   }
 
-  RegisteredEventListener registeredListener;
-  bool added = ensureEventTargetData().eventListenerMap.add(
-      eventType, listener, options, &registeredListener);
+  RegisteredEventListener registered_listener;
+  bool added = EnsureEventTargetData().event_listener_map.Add(
+      event_type, listener, options, &registered_listener);
   if (added) {
-    if (listener->type() == EventListener::JSEventListenerType) {
-      ScriptWrappableVisitor::writeBarrier(
+    if (listener->GetType() == EventListener::kJSEventListenerType) {
+      ScriptWrappableVisitor::WriteBarrier(
           this, static_cast<V8AbstractEventListener*>(listener));
     }
-    addedEventListener(eventType, registeredListener);
+    AddedEventListener(event_type, registered_listener);
   }
   return added;
 }
 
-void EventTarget::addedEventListener(
-    const AtomicString& eventType,
-    RegisteredEventListener& registeredListener) {
-  if (eventType == EventTypeNames::auxclick) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-      UseCounter::count(executingWindow->document(),
-                        UseCounter::AuxclickAddListenerCount);
+void EventTarget::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  if (event_type == EventTypeNames::auxclick) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+      UseCounter::Count(executing_window->document(),
+                        UseCounter::kAuxclickAddListenerCount);
     }
-  } else if (eventType == EventTypeNames::appinstalled) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-      UseCounter::count(executingWindow->document(),
-                        UseCounter::AppInstalledEventAddListener);
+  } else if (event_type == EventTypeNames::appinstalled) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+      UseCounter::Count(executing_window->document(),
+                        UseCounter::kAppInstalledEventAddListener);
     }
-  } else if (EventUtil::isPointerEventType(eventType)) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-      UseCounter::count(executingWindow->document(),
-                        UseCounter::PointerEventAddListenerCount);
+  } else if (EventUtil::IsPointerEventType(event_type)) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+      UseCounter::Count(executing_window->document(),
+                        UseCounter::kPointerEventAddListenerCount);
     }
-  } else if (eventType == EventTypeNames::slotchange) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-      UseCounter::count(executingWindow->document(),
-                        UseCounter::SlotChangeEventAddListener);
+  } else if (event_type == EventTypeNames::slotchange) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+      UseCounter::Count(executing_window->document(),
+                        UseCounter::kSlotChangeEventAddListener);
     }
   }
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType,
+bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
-                                      bool useCapture) {
+                                      bool use_capture) {
   EventListenerOptions options;
-  options.setCapture(useCapture);
-  return removeEventListenerInternal(eventType, listener, options);
+  options.setCapture(use_capture);
+  return RemoveEventListenerInternal(event_type, listener, options);
 }
 
 bool EventTarget::removeEventListener(
-    const AtomicString& eventType,
+    const AtomicString& event_type,
     const EventListener* listener,
-    const EventListenerOptionsOrBoolean& optionsUnion) {
-  if (optionsUnion.isBoolean())
-    return removeEventListener(eventType, listener,
-                               optionsUnion.getAsBoolean());
-  if (optionsUnion.isEventListenerOptions()) {
-    EventListenerOptions options = optionsUnion.getAsEventListenerOptions();
-    return removeEventListener(eventType, listener, options);
+    const EventListenerOptionsOrBoolean& options_union) {
+  if (options_union.isBoolean())
+    return removeEventListener(event_type, listener,
+                               options_union.getAsBoolean());
+  if (options_union.isEventListenerOptions()) {
+    EventListenerOptions options = options_union.getAsEventListenerOptions();
+    return removeEventListener(event_type, listener, options);
   }
-  return removeEventListener(eventType, listener);
+  return removeEventListener(event_type, listener);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType,
+bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
                                       EventListenerOptions& options) {
-  return removeEventListenerInternal(eventType, listener, options);
+  return RemoveEventListenerInternal(event_type, listener, options);
 }
 
-bool EventTarget::removeEventListenerInternal(
-    const AtomicString& eventType,
+bool EventTarget::RemoveEventListenerInternal(
+    const AtomicString& event_type,
     const EventListener* listener,
     const EventListenerOptions& options) {
   if (!listener)
     return false;
 
-  EventTargetData* d = eventTargetData();
+  EventTargetData* d = GetEventTargetData();
   if (!d)
     return false;
 
-  size_t indexOfRemovedListener;
-  RegisteredEventListener registeredListener;
+  size_t index_of_removed_listener;
+  RegisteredEventListener registered_listener;
 
-  if (!d->eventListenerMap.remove(eventType, listener, options,
-                                  &indexOfRemovedListener, &registeredListener))
+  if (!d->event_listener_map.Remove(event_type, listener, options,
+                                    &index_of_removed_listener,
+                                    &registered_listener))
     return false;
 
   // Notify firing events planning to invoke the listener at 'index' that
   // they have one less listener to invoke.
-  if (d->firingEventIterators) {
-    for (const auto& firingIterator : *d->firingEventIterators) {
-      if (eventType != firingIterator.eventType)
+  if (d->firing_event_iterators) {
+    for (const auto& firing_iterator : *d->firing_event_iterators) {
+      if (event_type != firing_iterator.event_type)
         continue;
 
-      if (indexOfRemovedListener >= firingIterator.end)
+      if (index_of_removed_listener >= firing_iterator.end)
         continue;
 
-      --firingIterator.end;
+      --firing_iterator.end;
       // Note that when firing an event listener,
       // firingIterator.iterator indicates the next event listener
       // that would fire, not the currently firing event
       // listener. See EventTarget::fireEventListeners.
-      if (indexOfRemovedListener < firingIterator.iterator)
-        --firingIterator.iterator;
+      if (index_of_removed_listener < firing_iterator.iterator)
+        --firing_iterator.iterator;
     }
   }
-  removedEventListener(eventType, registeredListener);
+  RemovedEventListener(event_type, registered_listener);
   return true;
 }
 
-void EventTarget::removedEventListener(
-    const AtomicString& eventType,
-    const RegisteredEventListener& registeredListener) {}
+void EventTarget::RemovedEventListener(
+    const AtomicString& event_type,
+    const RegisteredEventListener& registered_listener) {}
 
-bool EventTarget::setAttributeEventListener(const AtomicString& eventType,
+bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
                                             EventListener* listener) {
-  clearAttributeEventListener(eventType);
+  ClearAttributeEventListener(event_type);
   if (!listener)
     return false;
-  return addEventListener(eventType, listener, false);
+  return addEventListener(event_type, listener, false);
 }
 
-EventListener* EventTarget::getAttributeEventListener(
-    const AtomicString& eventType) {
-  EventListenerVector* listenerVector = getEventListeners(eventType);
-  if (!listenerVector)
+EventListener* EventTarget::GetAttributeEventListener(
+    const AtomicString& event_type) {
+  EventListenerVector* listener_vector = GetEventListeners(event_type);
+  if (!listener_vector)
     return nullptr;
 
-  for (auto& eventListener : *listenerVector) {
-    EventListener* listener = eventListener.listener();
-    if (listener->isAttribute() &&
-        listener->belongsToTheCurrentWorld(getExecutionContext()))
+  for (auto& event_listener : *listener_vector) {
+    EventListener* listener = event_listener.Listener();
+    if (listener->IsAttribute() &&
+        listener->BelongsToTheCurrentWorld(GetExecutionContext()))
       return listener;
   }
   return nullptr;
 }
 
-bool EventTarget::clearAttributeEventListener(const AtomicString& eventType) {
-  EventListener* listener = getAttributeEventListener(eventType);
+bool EventTarget::ClearAttributeEventListener(const AtomicString& event_type) {
+  EventListener* listener = GetAttributeEventListener(event_type);
   if (!listener)
     return false;
-  return removeEventListener(eventType, listener, false);
+  return removeEventListener(event_type, listener, false);
 }
 
 bool EventTarget::dispatchEventForBindings(Event* event,
-                                           ExceptionState& exceptionState) {
-  if (!event->wasInitialized()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The event provided is uninitialized.");
+                                           ExceptionState& exception_state) {
+  if (!event->WasInitialized()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "The event provided is uninitialized.");
     return false;
   }
-  if (event->isBeingDispatched()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "The event is already being dispatched.");
+  if (event->IsBeingDispatched()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "The event is already being dispatched.");
     return false;
   }
 
-  if (!getExecutionContext())
+  if (!GetExecutionContext())
     return false;
 
-  event->setTrusted(false);
+  event->SetTrusted(false);
 
   // Return whether the event was cancelled or not to JS not that it
   // might have actually been default handled; so check only against
   // CanceledByEventHandler.
-  return dispatchEventInternal(event) !=
-         DispatchEventResult::CanceledByEventHandler;
+  return DispatchEventInternal(event) !=
+         DispatchEventResult::kCanceledByEventHandler;
 }
 
-DispatchEventResult EventTarget::dispatchEvent(Event* event) {
-  event->setTrusted(true);
-  return dispatchEventInternal(event);
+DispatchEventResult EventTarget::DispatchEvent(Event* event) {
+  event->SetTrusted(true);
+  return DispatchEventInternal(event);
 }
 
-DispatchEventResult EventTarget::dispatchEventInternal(Event* event) {
-  event->setTarget(this);
-  event->setCurrentTarget(this);
-  event->setEventPhase(Event::kAtTarget);
-  DispatchEventResult dispatchResult = fireEventListeners(event);
-  event->setEventPhase(0);
-  return dispatchResult;
+DispatchEventResult EventTarget::DispatchEventInternal(Event* event) {
+  event->SetTarget(this);
+  event->SetCurrentTarget(this);
+  event->SetEventPhase(Event::kAtTarget);
+  DispatchEventResult dispatch_result = FireEventListeners(event);
+  event->SetEventPhase(0);
+  return dispatch_result;
 }
 
-void EventTarget::uncaughtExceptionInEventHandler() {}
+void EventTarget::UncaughtExceptionInEventHandler() {}
 
-static const AtomicString& legacyType(const Event* event) {
+static const AtomicString& LegacyType(const Event* event) {
   if (event->type() == EventTypeNames::transitionend)
     return EventTypeNames::webkitTransitionEnd;
 
@@ -498,109 +500,111 @@ static const AtomicString& legacyType(const Event* event) {
   if (event->type() == EventTypeNames::wheel)
     return EventTypeNames::mousewheel;
 
-  return emptyAtom;
+  return g_empty_atom;
 }
 
-void EventTarget::countLegacyEvents(
-    const AtomicString& legacyTypeName,
-    EventListenerVector* listenersVector,
-    EventListenerVector* legacyListenersVector) {
-  UseCounter::Feature unprefixedFeature;
-  UseCounter::Feature prefixedFeature;
-  UseCounter::Feature prefixedAndUnprefixedFeature;
-  if (legacyTypeName == EventTypeNames::webkitTransitionEnd) {
-    prefixedFeature = UseCounter::PrefixedTransitionEndEvent;
-    unprefixedFeature = UseCounter::UnprefixedTransitionEndEvent;
-    prefixedAndUnprefixedFeature =
-        UseCounter::PrefixedAndUnprefixedTransitionEndEvent;
-  } else if (legacyTypeName == EventTypeNames::webkitAnimationEnd) {
-    prefixedFeature = UseCounter::PrefixedAnimationEndEvent;
-    unprefixedFeature = UseCounter::UnprefixedAnimationEndEvent;
-    prefixedAndUnprefixedFeature =
-        UseCounter::PrefixedAndUnprefixedAnimationEndEvent;
-  } else if (legacyTypeName == EventTypeNames::webkitAnimationStart) {
-    prefixedFeature = UseCounter::PrefixedAnimationStartEvent;
-    unprefixedFeature = UseCounter::UnprefixedAnimationStartEvent;
-    prefixedAndUnprefixedFeature =
-        UseCounter::PrefixedAndUnprefixedAnimationStartEvent;
-  } else if (legacyTypeName == EventTypeNames::webkitAnimationIteration) {
-    prefixedFeature = UseCounter::PrefixedAnimationIterationEvent;
-    unprefixedFeature = UseCounter::UnprefixedAnimationIterationEvent;
-    prefixedAndUnprefixedFeature =
-        UseCounter::PrefixedAndUnprefixedAnimationIterationEvent;
-  } else if (legacyTypeName == EventTypeNames::mousewheel) {
-    prefixedFeature = UseCounter::MouseWheelEvent;
-    unprefixedFeature = UseCounter::WheelEvent;
-    prefixedAndUnprefixedFeature = UseCounter::MouseWheelAndWheelEvent;
+void EventTarget::CountLegacyEvents(
+    const AtomicString& legacy_type_name,
+    EventListenerVector* listeners_vector,
+    EventListenerVector* legacy_listeners_vector) {
+  UseCounter::Feature unprefixed_feature;
+  UseCounter::Feature prefixed_feature;
+  UseCounter::Feature prefixed_and_unprefixed_feature;
+  if (legacy_type_name == EventTypeNames::webkitTransitionEnd) {
+    prefixed_feature = UseCounter::kPrefixedTransitionEndEvent;
+    unprefixed_feature = UseCounter::kUnprefixedTransitionEndEvent;
+    prefixed_and_unprefixed_feature =
+        UseCounter::kPrefixedAndUnprefixedTransitionEndEvent;
+  } else if (legacy_type_name == EventTypeNames::webkitAnimationEnd) {
+    prefixed_feature = UseCounter::kPrefixedAnimationEndEvent;
+    unprefixed_feature = UseCounter::kUnprefixedAnimationEndEvent;
+    prefixed_and_unprefixed_feature =
+        UseCounter::kPrefixedAndUnprefixedAnimationEndEvent;
+  } else if (legacy_type_name == EventTypeNames::webkitAnimationStart) {
+    prefixed_feature = UseCounter::kPrefixedAnimationStartEvent;
+    unprefixed_feature = UseCounter::kUnprefixedAnimationStartEvent;
+    prefixed_and_unprefixed_feature =
+        UseCounter::kPrefixedAndUnprefixedAnimationStartEvent;
+  } else if (legacy_type_name == EventTypeNames::webkitAnimationIteration) {
+    prefixed_feature = UseCounter::kPrefixedAnimationIterationEvent;
+    unprefixed_feature = UseCounter::kUnprefixedAnimationIterationEvent;
+    prefixed_and_unprefixed_feature =
+        UseCounter::kPrefixedAndUnprefixedAnimationIterationEvent;
+  } else if (legacy_type_name == EventTypeNames::mousewheel) {
+    prefixed_feature = UseCounter::kMouseWheelEvent;
+    unprefixed_feature = UseCounter::kWheelEvent;
+    prefixed_and_unprefixed_feature = UseCounter::kMouseWheelAndWheelEvent;
   } else {
     return;
   }
 
-  if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-    if (legacyListenersVector) {
-      if (listenersVector)
-        UseCounter::count(executingWindow->document(),
-                          prefixedAndUnprefixedFeature);
+  if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+    if (legacy_listeners_vector) {
+      if (listeners_vector)
+        UseCounter::Count(executing_window->document(),
+                          prefixed_and_unprefixed_feature);
       else
-        UseCounter::count(executingWindow->document(), prefixedFeature);
-    } else if (listenersVector) {
-      UseCounter::count(executingWindow->document(), unprefixedFeature);
+        UseCounter::Count(executing_window->document(), prefixed_feature);
+    } else if (listeners_vector) {
+      UseCounter::Count(executing_window->document(), unprefixed_feature);
     }
   }
 }
 
-DispatchEventResult EventTarget::fireEventListeners(Event* event) {
+DispatchEventResult EventTarget::FireEventListeners(Event* event) {
 #if DCHECK_IS_ON()
-  DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+  DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
   DCHECK(event);
-  DCHECK(event->wasInitialized());
+  DCHECK(event->WasInitialized());
 
-  EventTargetData* d = eventTargetData();
+  EventTargetData* d = GetEventTargetData();
   if (!d)
-    return DispatchEventResult::NotCanceled;
+    return DispatchEventResult::kNotCanceled;
 
-  EventListenerVector* legacyListenersVector = nullptr;
-  AtomicString legacyTypeName = legacyType(event);
-  if (!legacyTypeName.isEmpty())
-    legacyListenersVector = d->eventListenerMap.find(legacyTypeName);
+  EventListenerVector* legacy_listeners_vector = nullptr;
+  AtomicString legacy_type_name = LegacyType(event);
+  if (!legacy_type_name.IsEmpty())
+    legacy_listeners_vector = d->event_listener_map.Find(legacy_type_name);
 
-  EventListenerVector* listenersVector =
-      d->eventListenerMap.find(event->type());
+  EventListenerVector* listeners_vector =
+      d->event_listener_map.Find(event->type());
 
-  bool firedEventListeners = false;
-  if (listenersVector) {
-    firedEventListeners = fireEventListeners(event, d, *listenersVector);
-  } else if (legacyListenersVector) {
-    AtomicString unprefixedTypeName = event->type();
-    event->setType(legacyTypeName);
-    firedEventListeners = fireEventListeners(event, d, *legacyListenersVector);
-    event->setType(unprefixedTypeName);
+  bool fired_event_listeners = false;
+  if (listeners_vector) {
+    fired_event_listeners = FireEventListeners(event, d, *listeners_vector);
+  } else if (legacy_listeners_vector) {
+    AtomicString unprefixed_type_name = event->type();
+    event->SetType(legacy_type_name);
+    fired_event_listeners =
+        FireEventListeners(event, d, *legacy_listeners_vector);
+    event->SetType(unprefixed_type_name);
   }
 
   // Only invoke the callback if event listeners were fired for this phase.
-  if (firedEventListeners) {
-    event->doneDispatchingEventAtCurrentTarget();
+  if (fired_event_listeners) {
+    event->DoneDispatchingEventAtCurrentTarget();
 
     // Only count uma metrics if we really fired an event listener.
-    Editor::countEvent(getExecutionContext(), event);
-    countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
+    Editor::CountEvent(GetExecutionContext(), event);
+    CountLegacyEvents(legacy_type_name, listeners_vector,
+                      legacy_listeners_vector);
   }
-  return dispatchEventResult(*event);
+  return GetDispatchEventResult(*event);
 }
 
-bool EventTarget::checkTypeThenUseCount(const Event* event,
-                                        const AtomicString& eventTypeToCount,
+bool EventTarget::CheckTypeThenUseCount(const Event* event,
+                                        const AtomicString& event_type_to_count,
                                         const UseCounter::Feature feature) {
-  if (event->type() == eventTypeToCount) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow())
-      UseCounter::count(executingWindow->document(), feature);
+  if (event->type() == event_type_to_count) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow())
+      UseCounter::Count(executing_window->document(), feature);
     return true;
   }
   return false;
 }
 
-bool EventTarget::fireEventListeners(Event* event,
+bool EventTarget::FireEventListeners(Event* event,
                                      EventTargetData* d,
                                      EventListenerVector& entry) {
   // Fire all listeners registered for this event. Don't fire listeners removed
@@ -609,70 +613,72 @@ bool EventTarget::fireEventListeners(Event* event,
   // index |size|, so iterating up to (but not including) |size| naturally
   // excludes new event listeners.
 
-  if (checkTypeThenUseCount(event, EventTypeNames::beforeunload,
-                            UseCounter::DocumentBeforeUnloadFired)) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-      if (executingWindow != executingWindow->top())
-        UseCounter::count(executingWindow->document(),
-                          UseCounter::SubFrameBeforeUnloadFired);
+  if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
+                            UseCounter::kDocumentBeforeUnloadFired)) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+      if (executing_window != executing_window->top())
+        UseCounter::Count(executing_window->document(),
+                          UseCounter::kSubFrameBeforeUnloadFired);
     }
-  } else if (checkTypeThenUseCount(event, EventTypeNames::unload,
-                                   UseCounter::DocumentUnloadFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
-                                   UseCounter::DOMFocusInOutEvent)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::DOMFocusOut,
-                                   UseCounter::DOMFocusInOutEvent)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::focusin,
-                                   UseCounter::FocusInOutEvent)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::focusout,
-                                   UseCounter::FocusInOutEvent)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::textInput,
-                                   UseCounter::TextInputFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::touchstart,
-                                   UseCounter::TouchStartFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::mousedown,
-                                   UseCounter::MouseDownFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::pointerdown,
-                                   UseCounter::PointerDownFired)) {
-    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-      if (event->isPointerEvent() &&
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
+                                   UseCounter::kDocumentUnloadFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
+                                   UseCounter::kDOMFocusInOutEvent)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusOut,
+                                   UseCounter::kDOMFocusInOutEvent)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::focusin,
+                                   UseCounter::kFocusInOutEvent)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::focusout,
+                                   UseCounter::kFocusInOutEvent)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::textInput,
+                                   UseCounter::kTextInputFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::touchstart,
+                                   UseCounter::kTouchStartFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::mousedown,
+                                   UseCounter::kMouseDownFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerdown,
+                                   UseCounter::kPointerDownFired)) {
+    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+      if (event->IsPointerEvent() &&
           static_cast<PointerEvent*>(event)->pointerType() == "touch")
-        UseCounter::count(executingWindow->document(),
-                          UseCounter::PointerDownFiredForTouch);
+        UseCounter::Count(executing_window->document(),
+                          UseCounter::kPointerDownFiredForTouch);
     }
-  } else if (checkTypeThenUseCount(event, EventTypeNames::pointerenter,
-                                   UseCounter::PointerEnterLeaveFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::pointerleave,
-                                   UseCounter::PointerEnterLeaveFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::pointerover,
-                                   UseCounter::PointerOverOutFired)) {
-  } else if (checkTypeThenUseCount(event, EventTypeNames::pointerout,
-                                   UseCounter::PointerOverOutFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerenter,
+                                   UseCounter::kPointerEnterLeaveFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerleave,
+                                   UseCounter::kPointerEnterLeaveFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerover,
+                                   UseCounter::kPointerOverOutFired)) {
+  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerout,
+                                   UseCounter::kPointerOverOutFired)) {
   }
 
-  ExecutionContext* context = getExecutionContext();
+  ExecutionContext* context = GetExecutionContext();
   if (!context)
     return false;
 
   size_t i = 0;
   size_t size = entry.size();
-  if (!d->firingEventIterators)
-    d->firingEventIterators = WTF::wrapUnique(new FiringEventIteratorVector);
-  d->firingEventIterators->push_back(
+  if (!d->firing_event_iterators)
+    d->firing_event_iterators = WTF::WrapUnique(new FiringEventIteratorVector);
+  d->firing_event_iterators->push_back(
       FiringEventIterator(event->type(), i, size));
 
-  double blockedEventThreshold = blockedEventsWarningThreshold(context, event);
+  double blocked_event_threshold =
+      BlockedEventsWarningThreshold(context, event);
   TimeTicks now;
-  bool shouldReportBlockedEvent = false;
-  if (blockedEventThreshold) {
+  bool should_report_blocked_event = false;
+  if (blocked_event_threshold) {
     now = TimeTicks::Now();
-    shouldReportBlockedEvent =
-        (now - event->platformTimeStamp()).InSecondsF() > blockedEventThreshold;
+    should_report_blocked_event =
+        (now - event->PlatformTimeStamp()).InSecondsF() >
+        blocked_event_threshold;
   }
-  bool firedListener = false;
+  bool fired_listener = false;
 
   while (i < size) {
-    RegisteredEventListener registeredListener = entry[i];
+    RegisteredEventListener registered_listener = entry[i];
 
     // Move the iterator past this event listener. This must match
     // the handling of the FiringEventIterator::iterator in
@@ -680,95 +686,95 @@ bool EventTarget::fireEventListeners(Event* event,
     ++i;
 
     if (event->eventPhase() == Event::kCapturingPhase &&
-        !registeredListener.capture())
+        !registered_listener.Capture())
       continue;
     if (event->eventPhase() == Event::kBubblingPhase &&
-        registeredListener.capture())
+        registered_listener.Capture())
       continue;
 
-    EventListener* listener = registeredListener.listener();
+    EventListener* listener = registered_listener.Listener();
     // The listener will be retained by Member<EventListener> in the
     // registeredListener, i and size are updated with the firing event iterator
     // in case the listener is removed from the listener vector below.
-    if (registeredListener.once())
+    if (registered_listener.Once())
       removeEventListener(event->type(), listener,
-                          registeredListener.capture());
+                          registered_listener.Capture());
 
     // If stopImmediatePropagation has been called, we just break out
     // immediately, without handling any more events on this target.
-    if (event->immediatePropagationStopped())
+    if (event->ImmediatePropagationStopped())
       break;
 
-    event->setHandlingPassive(eventPassiveMode(registeredListener));
-    bool passiveForced = registeredListener.passiveForcedForDocumentTarget();
+    event->SetHandlingPassive(EventPassiveMode(registered_listener));
+    bool passive_forced = registered_listener.PassiveForcedForDocumentTarget();
 
     probe::UserCallback probe(context, nullptr, event->type(), false, this);
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.
     listener->handleEvent(context, event);
-    firedListener = true;
+    fired_listener = true;
 
     // If we're about to report this event listener as blocking, make sure it
     // wasn't removed while handling the event.
-    if (shouldReportBlockedEvent && i > 0 &&
-        entry[i - 1].listener() == listener && !entry[i - 1].passive() &&
-        !entry[i - 1].blockedEventWarningEmitted() &&
+    if (should_report_blocked_event && i > 0 &&
+        entry[i - 1].Listener() == listener && !entry[i - 1].Passive() &&
+        !entry[i - 1].BlockedEventWarningEmitted() &&
         !event->defaultPrevented()) {
-      reportBlockedEvent(context, event, &entry[i - 1],
-                         (now - event->platformTimeStamp()).InSecondsF());
+      ReportBlockedEvent(context, event, &entry[i - 1],
+                         (now - event->PlatformTimeStamp()).InSecondsF());
     }
 
-    if (passiveForced) {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, passiveForcedHistogram,
+    if (passive_forced) {
+      DEFINE_STATIC_LOCAL(EnumerationHistogram, passive_forced_histogram,
                           ("Event.PassiveForcedEventDispatchCancelled",
-                           PassiveForcedListenerResultTypeMax));
-      PassiveForcedListenerResultType breakageType = PreventDefaultNotCalled;
-      if (event->preventDefaultCalledDuringPassive())
-        breakageType = DocumentLevelTouchPreventDefaultCalled;
+                           kPassiveForcedListenerResultTypeMax));
+      PassiveForcedListenerResultType breakage_type = kPreventDefaultNotCalled;
+      if (event->PreventDefaultCalledDuringPassive())
+        breakage_type = kDocumentLevelTouchPreventDefaultCalled;
 
-      passiveForcedHistogram.count(breakageType);
+      passive_forced_histogram.Count(breakage_type);
     }
 
-    event->setHandlingPassive(Event::PassiveMode::NotPassive);
+    event->SetHandlingPassive(Event::PassiveMode::kNotPassive);
 
     CHECK_LE(i, size);
   }
-  d->firingEventIterators->pop_back();
-  return firedListener;
+  d->firing_event_iterators->pop_back();
+  return fired_listener;
 }
 
-DispatchEventResult EventTarget::dispatchEventResult(const Event& event) {
+DispatchEventResult EventTarget::GetDispatchEventResult(const Event& event) {
   if (event.defaultPrevented())
-    return DispatchEventResult::CanceledByEventHandler;
-  if (event.defaultHandled())
-    return DispatchEventResult::CanceledByDefaultEventHandler;
-  return DispatchEventResult::NotCanceled;
+    return DispatchEventResult::kCanceledByEventHandler;
+  if (event.DefaultHandled())
+    return DispatchEventResult::kCanceledByDefaultEventHandler;
+  return DispatchEventResult::kNotCanceled;
 }
 
-EventListenerVector* EventTarget::getEventListeners(
-    const AtomicString& eventType) {
-  EventTargetData* data = eventTargetData();
+EventListenerVector* EventTarget::GetEventListeners(
+    const AtomicString& event_type) {
+  EventTargetData* data = GetEventTargetData();
   if (!data)
     return nullptr;
-  return data->eventListenerMap.find(eventType);
+  return data->event_listener_map.Find(event_type);
 }
 
-Vector<AtomicString> EventTarget::eventTypes() {
-  EventTargetData* d = eventTargetData();
-  return d ? d->eventListenerMap.eventTypes() : Vector<AtomicString>();
+Vector<AtomicString> EventTarget::EventTypes() {
+  EventTargetData* d = GetEventTargetData();
+  return d ? d->event_listener_map.EventTypes() : Vector<AtomicString>();
 }
 
-void EventTarget::removeAllEventListeners() {
-  EventTargetData* d = eventTargetData();
+void EventTarget::RemoveAllEventListeners() {
+  EventTargetData* d = GetEventTargetData();
   if (!d)
     return;
-  d->eventListenerMap.clear();
+  d->event_listener_map.Clear();
 
   // Notify firing events planning to invoke the listener at 'index' that
   // they have one less listener to invoke.
-  if (d->firingEventIterators) {
-    for (const auto& iterator : *d->firingEventIterators) {
+  if (d->firing_event_iterators) {
+    for (const auto& iterator : *d->firing_event_iterators) {
       iterator.iterator = 0;
       iterator.end = 0;
     }

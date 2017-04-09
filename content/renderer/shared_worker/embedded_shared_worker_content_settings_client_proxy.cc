@@ -27,8 +27,8 @@ EmbeddedSharedWorkerContentSettingsClientProxy::
     ~EmbeddedSharedWorkerContentSettingsClientProxy() {
 }
 
-bool
-EmbeddedSharedWorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
+bool EmbeddedSharedWorkerContentSettingsClientProxy::
+    RequestFileSystemAccessSync() {
   if (is_unique_origin_)
     return false;
   bool result = false;
@@ -38,13 +38,13 @@ EmbeddedSharedWorkerContentSettingsClientProxy::requestFileSystemAccessSync() {
   return result;
 }
 
-bool EmbeddedSharedWorkerContentSettingsClientProxy::allowIndexedDB(
+bool EmbeddedSharedWorkerContentSettingsClientProxy::AllowIndexedDB(
     const blink::WebString& name) {
   if (is_unique_origin_)
     return false;
   bool result = false;
   thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowIndexedDB(
-      routing_id_, origin_url_, name.utf16(), &result));
+      routing_id_, origin_url_, name.Utf16(), &result));
   return result;
 }
 

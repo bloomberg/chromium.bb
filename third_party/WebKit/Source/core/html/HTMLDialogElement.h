@@ -40,42 +40,42 @@ class HTMLDialogElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLDialogElement);
 
-  void close(const String& returnValue, ExceptionState&);
-  void closeDialog(const String& returnValue = String());
+  void close(const String& return_value, ExceptionState&);
+  void CloseDialog(const String& return_value = String());
   void show();
   void showModal(ExceptionState&);
-  void removedFrom(ContainerNode*) override;
+  void RemovedFrom(ContainerNode*) override;
 
   // NotCentered means do not center the dialog. Centered means the dialog has
   // been centered and centeredPosition() is set. NeedsCentering means attempt
   // to center on the next layout, then set to Centered or NotCentered.
-  enum CenteringMode { NotCentered, Centered, NeedsCentering };
-  CenteringMode getCenteringMode() const { return m_centeringMode; }
-  LayoutUnit centeredPosition() const {
-    DCHECK_EQ(m_centeringMode, Centered);
-    return m_centeredPosition;
+  enum CenteringMode { kNotCentered, kCentered, kNeedsCentering };
+  CenteringMode GetCenteringMode() const { return centering_mode_; }
+  LayoutUnit CenteredPosition() const {
+    DCHECK_EQ(centering_mode_, kCentered);
+    return centered_position_;
   }
-  void setCentered(LayoutUnit centeredPosition);
-  void setNotCentered();
+  void SetCentered(LayoutUnit centered_position);
+  void SetNotCentered();
 
-  String returnValue() const { return m_returnValue; }
-  void setReturnValue(const String& returnValue) {
-    m_returnValue = returnValue;
+  String returnValue() const { return return_value_; }
+  void setReturnValue(const String& return_value) {
+    return_value_ = return_value;
   }
 
  private:
   explicit HTMLDialogElement(Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  void defaultEventHandler(Event*) override;
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void DefaultEventHandler(Event*) override;
 
-  void forceLayoutForCentering();
+  void ForceLayoutForCentering();
 
-  void scheduleCloseEvent();
+  void ScheduleCloseEvent();
 
-  CenteringMode m_centeringMode;
-  LayoutUnit m_centeredPosition;
-  String m_returnValue;
+  CenteringMode centering_mode_;
+  LayoutUnit centered_position_;
+  String return_value_;
 };
 
 }  // namespace blink

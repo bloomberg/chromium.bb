@@ -16,17 +16,17 @@ namespace test_runner {
 
 MockScreenOrientationClient::MockScreenOrientationClient()
     : main_frame_(NULL),
-      current_lock_(blink::WebScreenOrientationLockDefault),
-      device_orientation_(blink::WebScreenOrientationPortraitPrimary),
-      current_orientation_(blink::WebScreenOrientationPortraitPrimary),
+      current_lock_(blink::kWebScreenOrientationLockDefault),
+      device_orientation_(blink::kWebScreenOrientationPortraitPrimary),
+      current_orientation_(blink::kWebScreenOrientationPortraitPrimary),
       is_disabled_(false) {}
 
 MockScreenOrientationClient::~MockScreenOrientationClient() {}
 
 void MockScreenOrientationClient::ResetData() {
-  current_lock_ = blink::WebScreenOrientationLockDefault;
-  device_orientation_ = blink::WebScreenOrientationPortraitPrimary;
-  current_orientation_ = blink::WebScreenOrientationPortraitPrimary;
+  current_lock_ = blink::kWebScreenOrientationLockDefault;
+  device_orientation_ = blink::kWebScreenOrientationPortraitPrimary;
+  current_orientation_ = blink::kWebScreenOrientationPortraitPrimary;
   is_disabled_ = false;
 }
 
@@ -48,7 +48,7 @@ void MockScreenOrientationClient::UpdateScreenOrientation(
     return;
   current_orientation_ = orientation;
   if (main_frame_)
-    main_frame_->sendOrientationChangeEvent();
+    main_frame_->SendOrientationChangeEvent();
 }
 
 blink::WebScreenOrientationType
@@ -71,13 +71,13 @@ unsigned MockScreenOrientationClient::OrientationTypeToAngle(
   // orientationAngle is temporary. The test should be able to specify
   // the angle in addition to the orientation type.
   switch (type) {
-    case blink::WebScreenOrientationLandscapePrimary:
+    case blink::kWebScreenOrientationLandscapePrimary:
       angle = 90;
       break;
-    case blink::WebScreenOrientationLandscapeSecondary:
+    case blink::kWebScreenOrientationLandscapeSecondary:
       angle = 270;
       break;
-    case blink::WebScreenOrientationPortraitSecondary:
+    case blink::kWebScreenOrientationPortraitSecondary:
       angle = 180;
       break;
     default:
@@ -88,32 +88,33 @@ unsigned MockScreenOrientationClient::OrientationTypeToAngle(
 
 bool MockScreenOrientationClient::IsOrientationAllowedByCurrentLock(
     blink::WebScreenOrientationType orientation) {
-  if (current_lock_ == blink::WebScreenOrientationLockDefault ||
-      current_lock_ == blink::WebScreenOrientationLockAny) {
+  if (current_lock_ == blink::kWebScreenOrientationLockDefault ||
+      current_lock_ == blink::kWebScreenOrientationLockAny) {
     return true;
   }
 
   switch (orientation) {
-    case blink::WebScreenOrientationPortraitPrimary:
-      return current_lock_ == blink::WebScreenOrientationLockPortraitPrimary ||
-             current_lock_ == blink::WebScreenOrientationLockPortrait;
-    case blink::WebScreenOrientationPortraitSecondary:
+    case blink::kWebScreenOrientationPortraitPrimary:
+      return current_lock_ == blink::kWebScreenOrientationLockPortraitPrimary ||
+             current_lock_ == blink::kWebScreenOrientationLockPortrait;
+    case blink::kWebScreenOrientationPortraitSecondary:
       return current_lock_ ==
-                 blink::WebScreenOrientationLockPortraitSecondary ||
-             current_lock_ == blink::WebScreenOrientationLockPortrait;
-    case blink::WebScreenOrientationLandscapePrimary:
-      return current_lock_ == blink::WebScreenOrientationLockLandscapePrimary ||
-             current_lock_ == blink::WebScreenOrientationLockLandscape;
-    case blink::WebScreenOrientationLandscapeSecondary:
+                 blink::kWebScreenOrientationLockPortraitSecondary ||
+             current_lock_ == blink::kWebScreenOrientationLockPortrait;
+    case blink::kWebScreenOrientationLandscapePrimary:
       return current_lock_ ==
-                 blink::WebScreenOrientationLockLandscapeSecondary ||
-             current_lock_ == blink::WebScreenOrientationLockLandscape;
+                 blink::kWebScreenOrientationLockLandscapePrimary ||
+             current_lock_ == blink::kWebScreenOrientationLockLandscape;
+    case blink::kWebScreenOrientationLandscapeSecondary:
+      return current_lock_ ==
+                 blink::kWebScreenOrientationLockLandscapeSecondary ||
+             current_lock_ == blink::kWebScreenOrientationLockLandscape;
     default:
       return false;
   }
 }
 
-void MockScreenOrientationClient::lockOrientation(
+void MockScreenOrientationClient::LockOrientation(
     blink::WebScreenOrientationLockType orientation,
     std::unique_ptr<blink::WebLockOrientationCallback> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -122,7 +123,7 @@ void MockScreenOrientationClient::lockOrientation(
                  base::Unretained(this), orientation, base::Passed(&callback)));
 }
 
-void MockScreenOrientationClient::unlockOrientation() {
+void MockScreenOrientationClient::UnlockOrientation() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MockScreenOrientationClient::ResetLockSync,
                             base::Unretained(this)));
@@ -131,17 +132,17 @@ void MockScreenOrientationClient::unlockOrientation() {
 void MockScreenOrientationClient::UpdateLockSync(
     blink::WebScreenOrientationLockType lock,
     std::unique_ptr<blink::WebLockOrientationCallback> callback) {
-  DCHECK(lock != blink::WebScreenOrientationLockDefault);
+  DCHECK(lock != blink::kWebScreenOrientationLockDefault);
   current_lock_ = lock;
   if (!IsOrientationAllowedByCurrentLock(current_orientation_))
     UpdateScreenOrientation(SuitableOrientationForCurrentLock());
-  callback->onSuccess();
+  callback->OnSuccess();
 }
 
 void MockScreenOrientationClient::ResetLockSync() {
   bool will_screen_orientation_need_updating =
       !IsOrientationAllowedByCurrentLock(device_orientation_);
-  current_lock_ = blink::WebScreenOrientationLockDefault;
+  current_lock_ = blink::kWebScreenOrientationLockDefault;
   if (will_screen_orientation_need_updating)
     UpdateScreenOrientation(device_orientation_);
 }
@@ -149,15 +150,15 @@ void MockScreenOrientationClient::ResetLockSync() {
 blink::WebScreenOrientationType
 MockScreenOrientationClient::SuitableOrientationForCurrentLock() {
   switch (current_lock_) {
-    case blink::WebScreenOrientationLockPortraitSecondary:
-      return blink::WebScreenOrientationPortraitSecondary;
-    case blink::WebScreenOrientationLockLandscapePrimary:
-    case blink::WebScreenOrientationLockLandscape:
-      return blink::WebScreenOrientationLandscapePrimary;
-    case blink::WebScreenOrientationLockLandscapeSecondary:
-      return blink::WebScreenOrientationLandscapePrimary;
+    case blink::kWebScreenOrientationLockPortraitSecondary:
+      return blink::kWebScreenOrientationPortraitSecondary;
+    case blink::kWebScreenOrientationLockLandscapePrimary:
+    case blink::kWebScreenOrientationLockLandscape:
+      return blink::kWebScreenOrientationLandscapePrimary;
+    case blink::kWebScreenOrientationLockLandscapeSecondary:
+      return blink::kWebScreenOrientationLandscapePrimary;
     default:
-      return blink::WebScreenOrientationPortraitPrimary;
+      return blink::kWebScreenOrientationPortraitPrimary;
   }
 }
 

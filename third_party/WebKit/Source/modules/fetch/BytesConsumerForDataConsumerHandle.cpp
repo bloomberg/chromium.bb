@@ -16,162 +16,162 @@
 namespace blink {
 
 BytesConsumerForDataConsumerHandle::BytesConsumerForDataConsumerHandle(
-    ExecutionContext* executionContext,
+    ExecutionContext* execution_context,
     std::unique_ptr<WebDataConsumerHandle> handle)
-    : m_executionContext(executionContext),
-      m_reader(handle->obtainReader(this)) {}
+    : execution_context_(execution_context),
+      reader_(handle->ObtainReader(this)) {}
 
 BytesConsumerForDataConsumerHandle::~BytesConsumerForDataConsumerHandle() {}
 
-BytesConsumer::Result BytesConsumerForDataConsumerHandle::beginRead(
+BytesConsumer::Result BytesConsumerForDataConsumerHandle::BeginRead(
     const char** buffer,
     size_t* available) {
-  DCHECK(!m_isInTwoPhaseRead);
+  DCHECK(!is_in_two_phase_read_);
   *buffer = nullptr;
   *available = 0;
-  if (m_state == InternalState::Closed)
-    return Result::Done;
-  if (m_state == InternalState::Errored)
-    return Result::Error;
+  if (state_ == InternalState::kClosed)
+    return Result::kDone;
+  if (state_ == InternalState::kErrored)
+    return Result::kError;
 
   WebDataConsumerHandle::Result r =
-      m_reader->beginRead(reinterpret_cast<const void**>(buffer),
-                          WebDataConsumerHandle::FlagNone, available);
+      reader_->BeginRead(reinterpret_cast<const void**>(buffer),
+                         WebDataConsumerHandle::kFlagNone, available);
   switch (r) {
-    case WebDataConsumerHandle::Ok:
-      m_isInTwoPhaseRead = true;
-      return Result::Ok;
-    case WebDataConsumerHandle::ShouldWait:
-      return Result::ShouldWait;
-    case WebDataConsumerHandle::Done:
-      close();
-      return Result::Done;
-    case WebDataConsumerHandle::Busy:
-    case WebDataConsumerHandle::ResourceExhausted:
-    case WebDataConsumerHandle::UnexpectedError:
-      error();
-      return Result::Error;
+    case WebDataConsumerHandle::kOk:
+      is_in_two_phase_read_ = true;
+      return Result::kOk;
+    case WebDataConsumerHandle::kShouldWait:
+      return Result::kShouldWait;
+    case WebDataConsumerHandle::kDone:
+      Close();
+      return Result::kDone;
+    case WebDataConsumerHandle::kBusy:
+    case WebDataConsumerHandle::kResourceExhausted:
+    case WebDataConsumerHandle::kUnexpectedError:
+      GetError();
+      return Result::kError;
   }
   NOTREACHED();
-  return Result::Error;
+  return Result::kError;
 }
 
-BytesConsumer::Result BytesConsumerForDataConsumerHandle::endRead(size_t read) {
-  DCHECK(m_isInTwoPhaseRead);
-  m_isInTwoPhaseRead = false;
-  DCHECK(m_state == InternalState::Readable ||
-         m_state == InternalState::Waiting);
-  WebDataConsumerHandle::Result r = m_reader->endRead(read);
-  if (r != WebDataConsumerHandle::Ok) {
-    m_hasPendingNotification = false;
-    error();
-    return Result::Error;
+BytesConsumer::Result BytesConsumerForDataConsumerHandle::EndRead(size_t read) {
+  DCHECK(is_in_two_phase_read_);
+  is_in_two_phase_read_ = false;
+  DCHECK(state_ == InternalState::kReadable ||
+         state_ == InternalState::kWaiting);
+  WebDataConsumerHandle::Result r = reader_->EndRead(read);
+  if (r != WebDataConsumerHandle::kOk) {
+    has_pending_notification_ = false;
+    GetError();
+    return Result::kError;
   }
-  if (m_hasPendingNotification) {
-    m_hasPendingNotification = false;
-    TaskRunnerHelper::get(TaskType::Networking, m_executionContext)
-        ->postTask(BLINK_FROM_HERE,
-                   WTF::bind(&BytesConsumerForDataConsumerHandle::notify,
-                             wrapPersistent(this)));
+  if (has_pending_notification_) {
+    has_pending_notification_ = false;
+    TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&BytesConsumerForDataConsumerHandle::Notify,
+                             WrapPersistent(this)));
   }
-  return Result::Ok;
+  return Result::kOk;
 }
 
-void BytesConsumerForDataConsumerHandle::setClient(
+void BytesConsumerForDataConsumerHandle::SetClient(
     BytesConsumer::Client* client) {
-  DCHECK(!m_client);
+  DCHECK(!client_);
   DCHECK(client);
-  if (m_state == InternalState::Readable || m_state == InternalState::Waiting)
-    m_client = client;
+  if (state_ == InternalState::kReadable || state_ == InternalState::kWaiting)
+    client_ = client;
 }
 
-void BytesConsumerForDataConsumerHandle::clearClient() {
-  m_client = nullptr;
+void BytesConsumerForDataConsumerHandle::ClearClient() {
+  client_ = nullptr;
 }
 
-void BytesConsumerForDataConsumerHandle::cancel() {
-  DCHECK(!m_isInTwoPhaseRead);
-  if (m_state == InternalState::Readable || m_state == InternalState::Waiting) {
+void BytesConsumerForDataConsumerHandle::Cancel() {
+  DCHECK(!is_in_two_phase_read_);
+  if (state_ == InternalState::kReadable || state_ == InternalState::kWaiting) {
     // We don't want the client to be notified in this case.
-    BytesConsumer::Client* client = m_client;
-    m_client = nullptr;
-    close();
-    m_client = client;
+    BytesConsumer::Client* client = client_;
+    client_ = nullptr;
+    Close();
+    client_ = client;
   }
 }
 
-BytesConsumer::PublicState BytesConsumerForDataConsumerHandle::getPublicState()
+BytesConsumer::PublicState BytesConsumerForDataConsumerHandle::GetPublicState()
     const {
-  return getPublicStateFromInternalState(m_state);
+  return GetPublicStateFromInternalState(state_);
 }
 
-void BytesConsumerForDataConsumerHandle::didGetReadable() {
-  DCHECK(m_state == InternalState::Readable ||
-         m_state == InternalState::Waiting);
-  if (m_isInTwoPhaseRead) {
-    m_hasPendingNotification = true;
+void BytesConsumerForDataConsumerHandle::DidGetReadable() {
+  DCHECK(state_ == InternalState::kReadable ||
+         state_ == InternalState::kWaiting);
+  if (is_in_two_phase_read_) {
+    has_pending_notification_ = true;
     return;
   }
   // Perform zero-length read to call check handle's status.
-  size_t readSize;
+  size_t read_size;
   WebDataConsumerHandle::Result result =
-      m_reader->read(nullptr, 0, WebDataConsumerHandle::FlagNone, &readSize);
-  BytesConsumer::Client* client = m_client;
+      reader_->Read(nullptr, 0, WebDataConsumerHandle::kFlagNone, &read_size);
+  BytesConsumer::Client* client = client_;
   switch (result) {
-    case WebDataConsumerHandle::Ok:
-    case WebDataConsumerHandle::ShouldWait:
+    case WebDataConsumerHandle::kOk:
+    case WebDataConsumerHandle::kShouldWait:
       if (client)
-        client->onStateChange();
+        client->OnStateChange();
       return;
-    case WebDataConsumerHandle::Done:
-      close();
+    case WebDataConsumerHandle::kDone:
+      Close();
       if (client)
-        client->onStateChange();
+        client->OnStateChange();
       return;
-    case WebDataConsumerHandle::Busy:
-    case WebDataConsumerHandle::ResourceExhausted:
-    case WebDataConsumerHandle::UnexpectedError:
-      error();
+    case WebDataConsumerHandle::kBusy:
+    case WebDataConsumerHandle::kResourceExhausted:
+    case WebDataConsumerHandle::kUnexpectedError:
+      GetError();
       if (client)
-        client->onStateChange();
+        client->OnStateChange();
       return;
   }
   return;
 }
 
 DEFINE_TRACE(BytesConsumerForDataConsumerHandle) {
-  visitor->trace(m_executionContext);
-  visitor->trace(m_client);
-  BytesConsumer::trace(visitor);
+  visitor->Trace(execution_context_);
+  visitor->Trace(client_);
+  BytesConsumer::Trace(visitor);
 }
 
-void BytesConsumerForDataConsumerHandle::close() {
-  DCHECK(!m_isInTwoPhaseRead);
-  if (m_state == InternalState::Closed)
+void BytesConsumerForDataConsumerHandle::Close() {
+  DCHECK(!is_in_two_phase_read_);
+  if (state_ == InternalState::kClosed)
     return;
-  DCHECK(m_state == InternalState::Readable ||
-         m_state == InternalState::Waiting);
-  m_state = InternalState::Closed;
-  m_reader = nullptr;
-  clearClient();
+  DCHECK(state_ == InternalState::kReadable ||
+         state_ == InternalState::kWaiting);
+  state_ = InternalState::kClosed;
+  reader_ = nullptr;
+  ClearClient();
 }
 
-void BytesConsumerForDataConsumerHandle::error() {
-  DCHECK(!m_isInTwoPhaseRead);
-  if (m_state == InternalState::Errored)
+void BytesConsumerForDataConsumerHandle::GetError() {
+  DCHECK(!is_in_two_phase_read_);
+  if (state_ == InternalState::kErrored)
     return;
-  DCHECK(m_state == InternalState::Readable ||
-         m_state == InternalState::Waiting);
-  m_state = InternalState::Errored;
-  m_reader = nullptr;
-  m_error = Error("error");
-  clearClient();
+  DCHECK(state_ == InternalState::kReadable ||
+         state_ == InternalState::kWaiting);
+  state_ = InternalState::kErrored;
+  reader_ = nullptr;
+  error_ = Error("error");
+  ClearClient();
 }
 
-void BytesConsumerForDataConsumerHandle::notify() {
-  if (m_state == InternalState::Closed || m_state == InternalState::Errored)
+void BytesConsumerForDataConsumerHandle::Notify() {
+  if (state_ == InternalState::kClosed || state_ == InternalState::kErrored)
     return;
-  didGetReadable();
+  DidGetReadable();
 }
 
 }  // namespace blink

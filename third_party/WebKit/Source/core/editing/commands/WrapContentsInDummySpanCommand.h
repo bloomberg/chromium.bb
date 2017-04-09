@@ -34,7 +34,7 @@ class HTMLSpanElement;
 
 class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
  public:
-  static WrapContentsInDummySpanCommand* create(Element* element) {
+  static WrapContentsInDummySpanCommand* Create(Element* element) {
     return new WrapContentsInDummySpanCommand(element);
   }
 
@@ -43,13 +43,13 @@ class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
  private:
   explicit WrapContentsInDummySpanCommand(Element*);
 
-  void doApply(EditingState*) override;
-  void doUnapply() override;
-  void doReapply() override;
-  void executeApply();
+  void DoApply(EditingState*) override;
+  void DoUnapply() override;
+  void DoReapply() override;
+  void ExecuteApply();
 
-  Member<Element> m_element;
-  Member<HTMLSpanElement> m_dummySpan;
+  Member<Element> element_;
+  Member<HTMLSpanElement> dummy_span_;
 };
 
 }  // namespace blink

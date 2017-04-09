@@ -26,70 +26,70 @@ class CSSVariableResolver {
   STACK_ALLOCATED();
 
  public:
-  static void resolveVariableDefinitions(const StyleResolverState&);
+  static void ResolveVariableDefinitions(const StyleResolverState&);
 
   // Shorthand properties are not supported.
-  static const CSSValue* resolveVariableReferences(
+  static const CSSValue* ResolveVariableReferences(
       const StyleResolverState&,
       CSSPropertyID,
       const CSSValue&,
-      bool disallowAnimationTainted);
+      bool disallow_animation_tainted);
 
-  static void computeRegisteredVariables(const StyleResolverState&);
+  static void ComputeRegisteredVariables(const StyleResolverState&);
 
  private:
   CSSVariableResolver(const StyleResolverState&);
 
-  static const CSSValue* resolvePendingSubstitutions(
+  static const CSSValue* ResolvePendingSubstitutions(
       const StyleResolverState&,
       CSSPropertyID,
       const CSSPendingSubstitutionValue&,
-      bool disallowAnimationTainted);
-  static const CSSValue* resolveVariableReferences(
+      bool disallow_animation_tainted);
+  static const CSSValue* ResolveVariableReferences(
       const StyleResolverState&,
       CSSPropertyID,
       const CSSVariableReferenceValue&,
-      bool disallowAnimationTainted);
+      bool disallow_animation_tainted);
 
   // These return false if we encounter a reference to an invalid variable with
   // no fallback.
 
   // Resolves a range which may contain var() references or @apply rules.
-  bool resolveTokenRange(CSSParserTokenRange,
-                         bool disallowAnimationTainted,
+  bool ResolveTokenRange(CSSParserTokenRange,
+                         bool disallow_animation_tainted,
                          Vector<CSSParserToken>& result,
-                         bool& resultIsAnimationTainted);
+                         bool& result_is_animation_tainted);
   // Resolves the fallback (if present) of a var() reference, starting from the
   // comma.
-  bool resolveFallback(CSSParserTokenRange,
-                       bool disallowAnimationTainted,
+  bool ResolveFallback(CSSParserTokenRange,
+                       bool disallow_animation_tainted,
                        Vector<CSSParserToken>& result,
-                       bool& resultIsAnimationTainted);
+                       bool& result_is_animation_tainted);
   // Resolves the contents of a var() reference.
-  bool resolveVariableReference(CSSParserTokenRange,
-                                bool disallowAnimationTainted,
+  bool ResolveVariableReference(CSSParserTokenRange,
+                                bool disallow_animation_tainted,
                                 Vector<CSSParserToken>& result,
-                                bool& resultIsAnimationTainted);
+                                bool& result_is_animation_tainted);
   // Consumes and resolves an @apply rule.
-  void resolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
+  void ResolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
 
   // These return null if the custom property is invalid.
 
   // Returns the CSSVariableData for a custom property, resolving and storing it
   // if necessary.
-  CSSVariableData* valueForCustomProperty(AtomicString name);
+  CSSVariableData* ValueForCustomProperty(AtomicString name);
   // Resolves the CSSVariableData from a custom property declaration.
-  PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name,
+  PassRefPtr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                     const CSSVariableData&);
 
-  StyleInheritedVariables* m_inheritedVariables;
-  StyleNonInheritedVariables* m_nonInheritedVariables;
-  Member<const PropertyRegistry> m_registry;
-  HashSet<AtomicString> m_variablesSeen;
+  StyleInheritedVariables* inherited_variables_;
+  StyleNonInheritedVariables* non_inherited_variables_;
+  Member<const PropertyRegistry> registry_;
+  HashSet<AtomicString> variables_seen_;
   // Resolution doesn't finish when a cycle is detected. Fallbacks still
   // need to be tracked for additional cycles, and invalidation only
   // applies back to cycle starts.
-  HashSet<AtomicString> m_cycleStartPoints;
+  HashSet<AtomicString> cycle_start_points_;
 };
 
 }  // namespace blink

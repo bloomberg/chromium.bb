@@ -100,7 +100,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
 
   // Will destroy itself when its WebViewPlugin is going away.
   return new ChromePluginPlaceholder(render_frame, frame, params, html_data,
-                                     params.mimeType.utf16());
+                                     params.mime_type.Utf16());
 }
 
 // static
@@ -118,11 +118,12 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   values.SetString("message", message);
   values.SetString("name", name);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
-  values.SetString("pluginType",
-                   frame->view()->mainFrame()->isWebLocalFrame() &&
-                   frame->view()->mainFrame()->document().isPluginDocument()
-                       ? "document"
-                       : "embedded");
+  values.SetString(
+      "pluginType",
+      frame->View()->MainFrame()->IsWebLocalFrame() &&
+              frame->View()->MainFrame()->GetDocument().IsPluginDocument()
+          ? "document"
+          : "embedded");
 
   if (!power_saver_info.poster_attribute.empty()) {
     values.SetString("poster", power_saver_info.poster_attribute);
@@ -130,7 +131,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
 
     if (!power_saver_info.custom_poster_size.IsEmpty()) {
       float zoom_factor =
-          blink::WebView::zoomLevelToZoomFactor(frame->view()->zoomLevel());
+          blink::WebView::ZoomLevelToZoomFactor(frame->View()->ZoomLevel());
       int width =
           roundf(power_saver_info.custom_poster_size.width() / zoom_factor);
       int height =
@@ -233,10 +234,10 @@ void ChromePluginPlaceholder::PluginListChanged() {
     return;
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
-  std::string mime_type(GetPluginParams().mimeType.utf8());
+  std::string mime_type(GetPluginParams().mime_type.Utf8());
   render_frame()->Send(new ChromeViewHostMsg_GetPluginInfo(
       routing_id(), GURL(GetPluginParams().url),
-      GetFrame()->top()->getSecurityOrigin(), mime_type, &output));
+      GetFrame()->Top()->GetSecurityOrigin(), mime_type, &output));
   if (output.status == status_)
     return;
   blink::WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
@@ -244,7 +245,7 @@ void ChromePluginPlaceholder::PluginListChanged() {
   ReplacePlugin(new_plugin);
   if (!new_plugin) {
     PluginUMAReporter::GetInstance()->ReportPluginMissing(
-        GetPluginParams().mimeType.utf8(), GURL(GetPluginParams().url));
+        GetPluginParams().mime_type.Utf8(), GURL(GetPluginParams().url));
   }
 }
 
@@ -324,15 +325,15 @@ void ChromePluginPlaceholder::ShowContextMenu(
   content::MenuItem hide_item;
   hide_item.action = chrome::MENU_COMMAND_PLUGIN_HIDE;
   bool is_main_frame_plugin_document =
-      GetFrame()->view()->mainFrame()->isWebLocalFrame() &&
-      GetFrame()->view()->mainFrame()->document().isPluginDocument();
+      GetFrame()->View()->MainFrame()->IsWebLocalFrame() &&
+      GetFrame()->View()->MainFrame()->GetDocument().IsPluginDocument();
   hide_item.enabled = !is_main_frame_plugin_document;
   hide_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_HIDE);
   params.custom_items.push_back(hide_item);
 
-  blink::WebPoint point(event.positionInWidget().x, event.positionInWidget().y);
-  if (plugin() && plugin()->container())
-    point = plugin()->container()->localToRootFramePoint(point);
+  blink::WebPoint point(event.PositionInWidget().x, event.PositionInWidget().y);
+  if (plugin() && plugin()->Container())
+    point = plugin()->Container()->LocalToRootFramePoint(point);
 
   params.x = point.x;
   params.y = point.y;

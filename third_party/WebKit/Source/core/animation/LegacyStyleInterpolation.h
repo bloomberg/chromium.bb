@@ -17,28 +17,28 @@ class StyleResolverState;
 
 class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
  public:
-  static PassRefPtr<LegacyStyleInterpolation> create(
+  static PassRefPtr<LegacyStyleInterpolation> Create(
       PassRefPtr<AnimatableValue> start,
       PassRefPtr<AnimatableValue> end,
       CSSPropertyID id) {
-    return adoptRef(new LegacyStyleInterpolation(
-        InterpolableAnimatableValue::create(std::move(start)),
-        InterpolableAnimatableValue::create(std::move(end)), id));
+    return AdoptRef(new LegacyStyleInterpolation(
+        InterpolableAnimatableValue::Create(std::move(start)),
+        InterpolableAnimatableValue::Create(std::move(end)), id));
   }
 
-  void apply(StyleResolverState&) const;
+  void Apply(StyleResolverState&) const;
 
-  bool isLegacyStyleInterpolation() const final { return true; }
+  bool IsLegacyStyleInterpolation() const final { return true; }
 
-  PassRefPtr<AnimatableValue> currentValue() const {
-    return toInterpolableAnimatableValue(m_cachedValue.get())->value();
+  PassRefPtr<AnimatableValue> CurrentValue() const {
+    return ToInterpolableAnimatableValue(cached_value_.get())->Value();
   }
 
-  CSSPropertyID id() const { return m_property.cssProperty(); }
+  CSSPropertyID Id() const { return property_.CssProperty(); }
 
-  const PropertyHandle& getProperty() const final { return m_property; }
+  const PropertyHandle& GetProperty() const final { return property_; }
 
-  void interpolate(int iteration, double fraction) final;
+  void Interpolate(int iteration, double fraction) final;
 
  protected:
   LegacyStyleInterpolation(std::unique_ptr<InterpolableValue> start,
@@ -46,16 +46,16 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
                            CSSPropertyID);
 
  private:
-  const std::unique_ptr<InterpolableValue> m_start;
-  const std::unique_ptr<InterpolableValue> m_end;
-  PropertyHandle m_property;
+  const std::unique_ptr<InterpolableValue> start_;
+  const std::unique_ptr<InterpolableValue> end_;
+  PropertyHandle property_;
 
-  mutable double m_cachedFraction;
-  mutable int m_cachedIteration;
-  mutable std::unique_ptr<InterpolableValue> m_cachedValue;
+  mutable double cached_fraction_;
+  mutable int cached_iteration_;
+  mutable std::unique_ptr<InterpolableValue> cached_value_;
 
-  InterpolableValue* getCachedValueForTesting() const {
-    return m_cachedValue.get();
+  InterpolableValue* GetCachedValueForTesting() const {
+    return cached_value_.get();
   }
 
   friend class AnimationInterpolableValueTest;
@@ -65,8 +65,8 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
 DEFINE_TYPE_CASTS(LegacyStyleInterpolation,
                   Interpolation,
                   value,
-                  value->isLegacyStyleInterpolation(),
-                  value.isLegacyStyleInterpolation());
+                  value->IsLegacyStyleInterpolation(),
+                  value.IsLegacyStyleInterpolation());
 
 }  // namespace blink
 

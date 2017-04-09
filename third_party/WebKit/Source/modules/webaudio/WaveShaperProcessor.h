@@ -41,29 +41,29 @@ namespace blink {
 
 class WaveShaperProcessor final : public AudioDSPKernelProcessor {
  public:
-  enum OverSampleType { OverSampleNone, OverSample2x, OverSample4x };
+  enum OverSampleType { kOverSampleNone, kOverSample2x, kOverSample4x };
 
-  WaveShaperProcessor(float sampleRate, size_t numberOfChannels);
+  WaveShaperProcessor(float sample_rate, size_t number_of_channels);
 
   ~WaveShaperProcessor() override;
 
-  std::unique_ptr<AudioDSPKernel> createKernel() override;
+  std::unique_ptr<AudioDSPKernel> CreateKernel() override;
 
-  void process(const AudioBus* source,
+  void Process(const AudioBus* source,
                AudioBus* destination,
-               size_t framesToProcess) override;
+               size_t frames_to_process) override;
 
-  void setCurve(const float* curveData, unsigned curveLength);
-  Vector<float>* curve() const { return m_curve.get(); };
+  void SetCurve(const float* curve_data, unsigned curve_length);
+  Vector<float>* Curve() const { return curve_.get(); };
 
-  void setOversample(OverSampleType);
-  OverSampleType oversample() const { return m_oversample; }
+  void SetOversample(OverSampleType);
+  OverSampleType Oversample() const { return oversample_; }
 
  private:
   // m_curve represents the non-linear shaping curve.
-  std::unique_ptr<Vector<float>> m_curve;
+  std::unique_ptr<Vector<float>> curve_;
 
-  OverSampleType m_oversample;
+  OverSampleType oversample_;
 };
 
 }  // namespace blink

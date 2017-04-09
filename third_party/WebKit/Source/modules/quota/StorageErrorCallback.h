@@ -47,12 +47,12 @@ class StorageErrorCallback
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void handleEvent(DOMError*) = 0;
 
-  MODULES_EXPORT static std::unique_ptr<WTF::Closure> createSameThreadTask(
+  MODULES_EXPORT static std::unique_ptr<WTF::Closure> CreateSameThreadTask(
       StorageErrorCallback*,
       ExceptionCode);
 
  private:
-  static void run(StorageErrorCallback*, ExceptionCode);
+  static void Run(StorageErrorCallback*, ExceptionCode);
 };
 
 }  // namespace blink

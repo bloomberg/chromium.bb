@@ -41,11 +41,11 @@ class LayoutTextTrackContainer final : public LayoutBlockFlow {
   LayoutTextTrackContainer(Element*);
 
  private:
-  void layout() override;
+  void GetLayout() override;
 
-  bool updateSizes(const LayoutVideo&);
+  bool UpdateSizes(const LayoutVideo&);
 
-  float m_fontSize;
+  float font_size_;
 };
 
 }  // namespace blink

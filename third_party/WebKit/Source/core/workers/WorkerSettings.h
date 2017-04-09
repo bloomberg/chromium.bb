@@ -14,17 +14,17 @@ class CORE_EXPORT WorkerSettings {
  public:
   explicit WorkerSettings(Settings*);
 
-  bool disableReadingFromCanvas() const { return m_disableReadingFromCanvas; }
+  bool DisableReadingFromCanvas() const { return disable_reading_from_canvas_; }
 
  private:
-  void copyFlagValuesFromSettings(Settings*);
-  void setDefaultValues();
+  void CopyFlagValuesFromSettings(Settings*);
+  void SetDefaultValues();
 
   // The settings that are to be copied from main thread to worker thread
   // These setting's flag values must remain unchanged throughout the document
   // lifecycle.
   // We hard-code the flags as there're very few flags at this moment.
-  bool m_disableReadingFromCanvas;
+  bool disable_reading_from_canvas_;
 };
 
 }  // namespace blink

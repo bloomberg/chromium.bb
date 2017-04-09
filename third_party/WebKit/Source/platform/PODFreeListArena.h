@@ -35,19 +35,19 @@ namespace blink {
 template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
  public:
-  static PassRefPtr<PODFreeListArena> create() {
-    return adoptRef(new PODFreeListArena);
+  static PassRefPtr<PODFreeListArena> Create() {
+    return AdoptRef(new PODFreeListArena);
   }
 
   // Creates a new PODFreeListArena configured with the given Allocator.
-  static PassRefPtr<PODFreeListArena> create(
+  static PassRefPtr<PODFreeListArena> Create(
       PassRefPtr<PODArena::Allocator> allocator) {
-    return adoptRef(new PODFreeListArena(std::move(allocator)));
+    return AdoptRef(new PODFreeListArena(std::move(allocator)));
   }
 
   // Allocates an object from the arena.
-  T* allocateObject() {
-    void* ptr = allocateFromFreeList();
+  T* AllocateObject() {
+    void* ptr = AllocateFromFreeList();
 
     if (ptr) {
       // Use placement operator new to allocate a T at this location.
@@ -56,12 +56,12 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
     }
 
     // PODArena::allocateObject calls T's constructor.
-    return static_cast<T*>(m_arena->allocateObject<T>());
+    return static_cast<T*>(arena_->AllocateObject<T>());
   }
 
   template <class Argument1Type>
-  T* allocateObject(const Argument1Type& argument1) {
-    void* ptr = allocateFromFreeList();
+  T* AllocateObject(const Argument1Type& argument1) {
+    void* ptr = AllocateFromFreeList();
 
     if (ptr) {
       // Use placement operator new to allocate a T at this location.
@@ -70,42 +70,42 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
     }
 
     // PODArena::allocateObject calls T's constructor.
-    return static_cast<T*>(m_arena->allocateObject<T>(argument1));
+    return static_cast<T*>(arena_->AllocateObject<T>(argument1));
   }
 
-  void freeObject(T* ptr) {
-    FixedSizeMemoryChunk* oldFreeList = m_freeList;
+  void FreeObject(T* ptr) {
+    FixedSizeMemoryChunk* old_free_list = free_list_;
 
-    m_freeList = reinterpret_cast<FixedSizeMemoryChunk*>(ptr);
-    m_freeList->next = oldFreeList;
+    free_list_ = reinterpret_cast<FixedSizeMemoryChunk*>(ptr);
+    free_list_->next = old_free_list;
   }
 
  private:
-  PODFreeListArena() : m_arena(PODArena::create()), m_freeList(0) {}
+  PODFreeListArena() : arena_(PODArena::Create()), free_list_(0) {}
 
   explicit PODFreeListArena(PassRefPtr<PODArena::Allocator> allocator)
-      : m_arena(PODArena::create(std::move(allocator))), m_freeList(0) {}
+      : arena_(PODArena::Create(std::move(allocator))), free_list_(0) {}
 
   ~PODFreeListArena() {}
 
-  void* allocateFromFreeList() {
-    if (m_freeList) {
-      void* memory = m_freeList;
-      m_freeList = m_freeList->next;
+  void* AllocateFromFreeList() {
+    if (free_list_) {
+      void* memory = free_list_;
+      free_list_ = free_list_->next;
       return memory;
     }
     return 0;
   }
 
-  int getFreeListSizeForTesting() const {
+  int GetFreeListSizeForTesting() const {
     int total = 0;
-    for (FixedSizeMemoryChunk* cur = m_freeList; cur; cur = cur->next) {
+    for (FixedSizeMemoryChunk* cur = free_list_; cur; cur = cur->next) {
       total++;
     }
     return total;
   }
 
-  RefPtr<PODArena> m_arena;
+  RefPtr<PODArena> arena_;
 
   // This free list contains pointers within every chunk that's been allocated
   // so far. None of the individual chunks can be freed until the arena is
@@ -114,7 +114,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
     DISALLOW_NEW();
     FixedSizeMemoryChunk* next;
   };
-  FixedSizeMemoryChunk* m_freeList;
+  FixedSizeMemoryChunk* free_list_;
 
   static_assert(sizeof(T) >= sizeof(FixedSizeMemoryChunk),
                 "PODFreeListArena type should be larger");

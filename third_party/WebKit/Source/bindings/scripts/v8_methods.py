@@ -322,9 +322,9 @@ def cpp_value(interface, method, number_of_arguments):
         cpp_arguments.append('result')
 
     if method.name == 'Constructor':
-        base_name = 'create'
+        base_name = 'Create'
     elif method.name == 'NamedConstructor':
-        base_name = 'createForJSConstructor'
+        base_name = 'CreateForJSConstructor'
     else:
         base_name = v8_utilities.cpp_name(method)
 
@@ -343,7 +343,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     if use_local_result(method):
         if idl_type.is_explicit_nullable:
             # result is of type Nullable<T>
-            cpp_value = 'result.get()'
+            cpp_value = 'result.Get()'
         else:
             cpp_value = 'result'
 
@@ -362,8 +362,8 @@ def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise
         vector_type = 'Vector'
 
     return {
-        'assign_expression': 'toImplArguments<%s<%s>>(info, %s, exceptionState)' % (vector_type, this_cpp_type, index),
-        'check_expression': 'exceptionState.hadException()',
+        'assign_expression': 'ToImplArguments<%s<%s>>(info, %s, exceptionState)' % (vector_type, this_cpp_type, index),
+        'check_expression': 'exceptionState.HadException()',
         'cpp_type': this_cpp_type,
         'cpp_name': argument.name,
         'declare_variable': False,

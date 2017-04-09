@@ -33,29 +33,29 @@ class SVGTextPositioningElement : public SVGTextContentElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  SVGAnimatedLengthList* x() { return m_x.get(); }
-  SVGAnimatedLengthList* y() { return m_y.get(); }
-  SVGAnimatedLengthList* dx() { return m_dx.get(); }
-  SVGAnimatedLengthList* dy() { return m_dy.get(); }
-  SVGAnimatedNumberList* rotate() { return m_rotate.get(); }
+  SVGAnimatedLengthList* x() { return x_.Get(); }
+  SVGAnimatedLengthList* y() { return y_.Get(); }
+  SVGAnimatedLengthList* dx() { return dx_.Get(); }
+  SVGAnimatedLengthList* dy() { return dy_.Get(); }
+  SVGAnimatedNumberList* rotate() { return rotate_.Get(); }
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   SVGTextPositioningElement(const QualifiedName&, Document&);
 
-  void svgAttributeChanged(const QualifiedName&) final;
-  bool isTextPositioning() const final { return true; }
+  void SvgAttributeChanged(const QualifiedName&) final;
+  bool IsTextPositioning() const final { return true; }
 
-  Member<SVGAnimatedLengthList> m_x;
-  Member<SVGAnimatedLengthList> m_y;
-  Member<SVGAnimatedLengthList> m_dx;
-  Member<SVGAnimatedLengthList> m_dy;
-  Member<SVGAnimatedNumberList> m_rotate;
+  Member<SVGAnimatedLengthList> x_;
+  Member<SVGAnimatedLengthList> y_;
+  Member<SVGAnimatedLengthList> dx_;
+  Member<SVGAnimatedLengthList> dy_;
+  Member<SVGAnimatedNumberList> rotate_;
 };
 
-inline bool isSVGTextPositioningElement(const SVGElement& element) {
-  return element.isTextPositioning();
+inline bool IsSVGTextPositioningElement(const SVGElement& element) {
+  return element.IsTextPositioning();
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);

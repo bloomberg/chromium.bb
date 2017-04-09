@@ -26,28 +26,28 @@ class MODULES_EXPORT PasswordCredential final : public SiteBoundCredential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PasswordCredential* create(const PasswordCredentialData&,
+  static PasswordCredential* Create(const PasswordCredentialData&,
                                     ExceptionState&);
-  static PasswordCredential* create(HTMLFormElement*, ExceptionState&);
-  static PasswordCredential* create(WebPasswordCredential*);
+  static PasswordCredential* Create(HTMLFormElement*, ExceptionState&);
+  static PasswordCredential* Create(WebPasswordCredential*);
 
   // PasswordCredential.idl
-  void setIdName(const String& name) { m_idName = name; }
-  const String& idName() const { return m_idName; }
+  void setIdName(const String& name) { id_name_ = name; }
+  const String& idName() const { return id_name_; }
 
-  void setPasswordName(const String& name) { m_passwordName = name; }
-  const String& passwordName() const { return m_passwordName; }
+  void setPasswordName(const String& name) { password_name_ = name; }
+  const String& passwordName() const { return password_name_; }
 
   void setAdditionalData(const CredentialPostBodyType& data) {
-    m_additionalData = data;
+    additional_data_ = data;
   }
   void additionalData(CredentialPostBodyType& out) const {
-    out = m_additionalData;
+    out = additional_data_;
   }
 
   // Internal methods
-  PassRefPtr<EncodedFormData> encodeFormData(String& contentType) const;
-  const String& password() const;
+  PassRefPtr<EncodedFormData> EncodeFormData(String& content_type) const;
+  const String& Password() const;
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -57,9 +57,9 @@ class MODULES_EXPORT PasswordCredential final : public SiteBoundCredential {
                      const String& name,
                      const KURL& icon);
 
-  String m_idName;
-  String m_passwordName;
-  CredentialPostBodyType m_additionalData;
+  String id_name_;
+  String password_name_;
+  CredentialPostBodyType additional_data_;
 };
 
 }  // namespace blink

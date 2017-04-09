@@ -10,27 +10,27 @@
 
 namespace blink {
 
-void PaintGeneratedImage::draw(PaintCanvas* canvas,
+void PaintGeneratedImage::Draw(PaintCanvas* canvas,
                                const PaintFlags& flags,
-                               const FloatRect& destRect,
-                               const FloatRect& srcRect,
+                               const FloatRect& dest_rect,
+                               const FloatRect& src_rect,
                                RespectImageOrientationEnum,
                                ImageClampingMode) {
   PaintCanvasAutoRestore ar(canvas, true);
-  canvas->clipRect(destRect);
-  canvas->translate(destRect.x(), destRect.y());
-  if (destRect.size() != srcRect.size())
-    canvas->scale(destRect.width() / srcRect.width(),
-                  destRect.height() / srcRect.height());
-  canvas->translate(-srcRect.x(), -srcRect.y());
-  SkRect bounds = m_record->cullRect();
+  canvas->clipRect(dest_rect);
+  canvas->translate(dest_rect.X(), dest_rect.Y());
+  if (dest_rect.size() != src_rect.size())
+    canvas->scale(dest_rect.Width() / src_rect.Width(),
+                  dest_rect.Height() / src_rect.Height());
+  canvas->translate(-src_rect.X(), -src_rect.Y());
+  SkRect bounds = record_->cullRect();
   canvas->saveLayer(&bounds, &flags);
-  canvas->drawPicture(m_record);
+  canvas->drawPicture(record_);
 }
 
-void PaintGeneratedImage::drawTile(GraphicsContext& context,
-                                   const FloatRect& srcRect) {
-  context.drawRecord(m_record);
+void PaintGeneratedImage::DrawTile(GraphicsContext& context,
+                                   const FloatRect& src_rect) {
+  context.DrawRecord(record_);
 }
 
 }  // namespace blink

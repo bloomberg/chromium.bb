@@ -30,70 +30,70 @@
 namespace blink {
 
 WebGLObject::WebGLObject(WebGLRenderingContextBase* context)
-    : m_cachedNumberOfContextLosses(context->numberOfContextLosses()),
-      m_attachmentCount(0),
-      m_deleted(false),
-      m_destructionInProgress(false) {}
+    : cached_number_of_context_losses_(context->NumberOfContextLosses()),
+      attachment_count_(0),
+      deleted_(false),
+      destruction_in_progress_(false) {}
 
 WebGLObject::~WebGLObject() {}
 
-uint32_t WebGLObject::cachedNumberOfContextLosses() const {
-  return m_cachedNumberOfContextLosses;
+uint32_t WebGLObject::CachedNumberOfContextLosses() const {
+  return cached_number_of_context_losses_;
 }
 
-void WebGLObject::deleteObject(gpu::gles2::GLES2Interface* gl) {
-  m_deleted = true;
-  if (!hasObject())
+void WebGLObject::DeleteObject(gpu::gles2::GLES2Interface* gl) {
+  deleted_ = true;
+  if (!HasObject())
     return;
 
-  if (!hasGroupOrContext())
+  if (!HasGroupOrContext())
     return;
 
-  if (currentNumberOfContextLosses() != m_cachedNumberOfContextLosses) {
+  if (CurrentNumberOfContextLosses() != cached_number_of_context_losses_) {
     // This object has been invalidated.
     return;
   }
 
-  if (!m_attachmentCount) {
+  if (!attachment_count_) {
     if (!gl)
-      gl = getAGLInterface();
+      gl = GetAGLInterface();
     if (gl) {
-      deleteObjectImpl(gl);
+      DeleteObjectImpl(gl);
       // Ensure the inherited class no longer claims to have a valid object
-      ASSERT(!hasObject());
+      ASSERT(!HasObject());
     }
   }
 }
 
-void WebGLObject::detach() {
-  m_attachmentCount = 0;  // Make sure OpenGL resource is deleted.
+void WebGLObject::Detach() {
+  attachment_count_ = 0;  // Make sure OpenGL resource is deleted.
 }
 
-void WebGLObject::detachAndDeleteObject() {
+void WebGLObject::DetachAndDeleteObject() {
   // To ensure that all platform objects are deleted after being detached,
   // this method does them together.
-  detach();
-  deleteObject(nullptr);
+  Detach();
+  DeleteObject(nullptr);
 }
 
-void WebGLObject::runDestructor() {
-  DCHECK(!m_destructionInProgress);
+void WebGLObject::RunDestructor() {
+  DCHECK(!destruction_in_progress_);
   // This boilerplate destructor is sufficient for all subclasses, as long
   // as they implement deleteObjectImpl properly, and don't try to touch
   // other objects on the Oilpan heap if the destructor's been entered.
-  m_destructionInProgress = true;
-  detachAndDeleteObject();
+  destruction_in_progress_ = true;
+  DetachAndDeleteObject();
 }
 
-bool WebGLObject::destructionInProgress() const {
-  return m_destructionInProgress;
+bool WebGLObject::DestructionInProgress() const {
+  return destruction_in_progress_;
 }
 
-void WebGLObject::onDetached(gpu::gles2::GLES2Interface* gl) {
-  if (m_attachmentCount)
-    --m_attachmentCount;
-  if (m_deleted)
-    deleteObject(gl);
+void WebGLObject::OnDetached(gpu::gles2::GLES2Interface* gl) {
+  if (attachment_count_)
+    --attachment_count_;
+  if (deleted_)
+    DeleteObject(gl);
 }
 
 DEFINE_TRACE_WRAPPERS(WebGLObject) {}

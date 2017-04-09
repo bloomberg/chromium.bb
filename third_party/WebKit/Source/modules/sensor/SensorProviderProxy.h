@@ -24,13 +24,13 @@ class SensorProviderProxy final
   WTF_MAKE_NONCOPYABLE(SensorProviderProxy);
 
  public:
-  static SensorProviderProxy* from(LocalFrame*);
+  static SensorProviderProxy* From(LocalFrame*);
 
   ~SensorProviderProxy();
 
-  SensorProxy* createSensorProxy(device::mojom::blink::SensorType, Page*);
+  SensorProxy* CreateSensorProxy(device::mojom::blink::SensorType, Page*);
 
-  SensorProxy* getSensorProxy(device::mojom::blink::SensorType);
+  SensorProxy* GetSensorProxy(device::mojom::blink::SensorType);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -38,20 +38,20 @@ class SensorProviderProxy final
   friend class SensorProxy;  // To call getSensorProvider().
 
   explicit SensorProviderProxy(LocalFrame&);
-  static const char* supplementName();
-  void initializeIfNeeded(LocalFrame*);
-  bool isInitialized() const { return m_sensorProvider; }
+  static const char* SupplementName();
+  void InitializeIfNeeded(LocalFrame*);
+  bool IsInitialized() const { return sensor_provider_; }
 
-  device::mojom::blink::SensorProvider* getSensorProvider() const {
-    return m_sensorProvider.get();
+  device::mojom::blink::SensorProvider* GetSensorProvider() const {
+    return sensor_provider_.get();
   }
 
-  void onSensorProviderConnectionError();
+  void OnSensorProviderConnectionError();
 
   using SensorsSet = HeapHashSet<WeakMember<SensorProxy>>;
-  SensorsSet m_sensorProxies;
+  SensorsSet sensor_proxies_;
 
-  device::mojom::blink::SensorProviderPtr m_sensorProvider;
+  device::mojom::blink::SensorProviderPtr sensor_provider_;
 };
 
 }  // namespace blink

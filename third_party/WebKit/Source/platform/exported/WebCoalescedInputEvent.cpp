@@ -25,17 +25,17 @@ struct WebInputEventDelete {
 };
 
 template <typename Operator, typename ArgIn>
-bool Apply(Operator op, WebInputEvent::Type type, const ArgIn& argIn) {
-  if (WebInputEvent::isMouseEventType(type))
-    return op.template Execute<WebMouseEvent>(argIn);
-  if (type == WebInputEvent::MouseWheel)
-    return op.template Execute<WebMouseWheelEvent>(argIn);
-  if (WebInputEvent::isKeyboardEventType(type))
-    return op.template Execute<WebKeyboardEvent>(argIn);
-  if (WebInputEvent::isTouchEventType(type))
-    return op.template Execute<WebTouchEvent>(argIn);
-  if (WebInputEvent::isGestureEventType(type))
-    return op.template Execute<WebGestureEvent>(argIn);
+bool Apply(Operator op, WebInputEvent::Type type, const ArgIn& arg_in) {
+  if (WebInputEvent::IsMouseEventType(type))
+    return op.template Execute<WebMouseEvent>(arg_in);
+  if (type == WebInputEvent::kMouseWheel)
+    return op.template Execute<WebMouseWheelEvent>(arg_in);
+  if (WebInputEvent::IsKeyboardEventType(type))
+    return op.template Execute<WebKeyboardEvent>(arg_in);
+  if (WebInputEvent::IsTouchEventType(type))
+    return op.template Execute<WebTouchEvent>(arg_in);
+  if (WebInputEvent::IsGestureEventType(type))
+    return op.template Execute<WebGestureEvent>(arg_in);
 
   NOTREACHED() << "Unknown webkit event type " << type;
   return false;
@@ -46,72 +46,72 @@ void WebCoalescedInputEvent::WebInputEventDeleter::operator()(
     WebInputEvent* event) const {
   if (!event)
     return;
-  Apply(WebInputEventDelete(), event->type(), event);
+  Apply(WebInputEventDelete(), event->GetType(), event);
 }
 
-WebInputEvent* WebCoalescedInputEvent::eventPointer() {
-  return m_event.get();
+WebInputEvent* WebCoalescedInputEvent::EventPointer() {
+  return event_.get();
 }
 
-void WebCoalescedInputEvent::addCoalescedEvent(
+void WebCoalescedInputEvent::AddCoalescedEvent(
     const blink::WebInputEvent& event) {
-  m_coalescedEvents.push_back(makeWebScopedInputEvent(event));
+  coalesced_events_.push_back(MakeWebScopedInputEvent(event));
 }
 
-const WebInputEvent& WebCoalescedInputEvent::event() const {
-  return *m_event.get();
+const WebInputEvent& WebCoalescedInputEvent::Event() const {
+  return *event_.get();
 }
 
-size_t WebCoalescedInputEvent::coalescedEventSize() const {
-  return m_coalescedEvents.size();
+size_t WebCoalescedInputEvent::CoalescedEventSize() const {
+  return coalesced_events_.size();
 }
 
-const WebInputEvent& WebCoalescedInputEvent::coalescedEvent(
+const WebInputEvent& WebCoalescedInputEvent::CoalescedEvent(
     size_t index) const {
-  return *m_coalescedEvents[index].get();
+  return *coalesced_events_[index].get();
 }
 
 std::vector<const WebInputEvent*>
-WebCoalescedInputEvent::getCoalescedEventsPointers() const {
+WebCoalescedInputEvent::GetCoalescedEventsPointers() const {
   std::vector<const WebInputEvent*> events;
-  for (const auto& event : m_coalescedEvents)
+  for (const auto& event : coalesced_events_)
     events.push_back(event.get());
   return events;
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(const WebInputEvent& event) {
-  m_event = makeWebScopedInputEvent(event);
-  m_coalescedEvents.push_back(makeWebScopedInputEvent(event));
+  event_ = MakeWebScopedInputEvent(event);
+  coalesced_events_.push_back(MakeWebScopedInputEvent(event));
 }
 
 WebCoalescedInputEvent::WebCoalescedInputEvent(
     const WebInputEvent& event,
-    const std::vector<const WebInputEvent*>& coalescedEvents) {
-  m_event = makeWebScopedInputEvent(event);
-  for (const auto& coalescedEvent : coalescedEvents)
-    m_coalescedEvents.push_back(makeWebScopedInputEvent(*coalescedEvent));
+    const std::vector<const WebInputEvent*>& coalesced_events) {
+  event_ = MakeWebScopedInputEvent(event);
+  for (const auto& coalesced_event : coalesced_events)
+    coalesced_events_.push_back(MakeWebScopedInputEvent(*coalesced_event));
 }
 
 WebCoalescedInputEvent::WebScopedInputEvent
-WebCoalescedInputEvent::makeWebScopedInputEvent(
+WebCoalescedInputEvent::MakeWebScopedInputEvent(
     const blink::WebInputEvent& event) {
-  if (blink::WebInputEvent::isGestureEventType(event.type())) {
+  if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     return WebScopedInputEvent(new blink::WebGestureEvent(
         static_cast<const blink::WebGestureEvent&>(event)));
   }
-  if (blink::WebInputEvent::isMouseEventType(event.type())) {
+  if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
     return WebScopedInputEvent(new blink::WebMouseEvent(
         static_cast<const blink::WebMouseEvent&>(event)));
   }
-  if (blink::WebInputEvent::isTouchEventType(event.type())) {
+  if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
     return WebScopedInputEvent(new blink::WebTouchEvent(
         static_cast<const blink::WebTouchEvent&>(event)));
   }
-  if (event.type() == blink::WebInputEvent::MouseWheel) {
+  if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
     return WebScopedInputEvent(new blink::WebMouseWheelEvent(
         static_cast<const blink::WebMouseWheelEvent&>(event)));
   }
-  if (blink::WebInputEvent::isKeyboardEventType(event.type())) {
+  if (blink::WebInputEvent::IsKeyboardEventType(event.GetType())) {
     return WebScopedInputEvent(new blink::WebKeyboardEvent(
         static_cast<const blink::WebKeyboardEvent&>(event)));
   }

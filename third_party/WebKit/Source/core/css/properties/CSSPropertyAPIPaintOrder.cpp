@@ -12,53 +12,53 @@ namespace blink {
 const CSSValue* CSSPropertyAPIPaintOrder::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.peek().id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::consumeIdent(range);
+  if (range.Peek().Id() == CSSValueNormal)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  Vector<CSSValueID, 3> paintTypeList;
+  Vector<CSSValueID, 3> paint_type_list;
   CSSIdentifierValue* fill = nullptr;
   CSSIdentifierValue* stroke = nullptr;
   CSSIdentifierValue* markers = nullptr;
   do {
-    CSSValueID id = range.peek().id();
+    CSSValueID id = range.Peek().Id();
     if (id == CSSValueFill && !fill)
-      fill = CSSPropertyParserHelpers::consumeIdent(range);
+      fill = CSSPropertyParserHelpers::ConsumeIdent(range);
     else if (id == CSSValueStroke && !stroke)
-      stroke = CSSPropertyParserHelpers::consumeIdent(range);
+      stroke = CSSPropertyParserHelpers::ConsumeIdent(range);
     else if (id == CSSValueMarkers && !markers)
-      markers = CSSPropertyParserHelpers::consumeIdent(range);
+      markers = CSSPropertyParserHelpers::ConsumeIdent(range);
     else
       return nullptr;
-    paintTypeList.push_back(id);
-  } while (!range.atEnd());
+    paint_type_list.push_back(id);
+  } while (!range.AtEnd());
 
   // After parsing we serialize the paint-order list. Since it is not possible
   // to pop a last list items from CSSValueList without bigger cost, we create
   // the list after parsing.
-  CSSValueID firstPaintOrderType = paintTypeList.at(0);
-  CSSValueList* paintOrderList = CSSValueList::createSpaceSeparated();
-  switch (firstPaintOrderType) {
+  CSSValueID first_paint_order_type = paint_type_list.at(0);
+  CSSValueList* paint_order_list = CSSValueList::CreateSpaceSeparated();
+  switch (first_paint_order_type) {
     case CSSValueFill:
     case CSSValueStroke:
-      paintOrderList->append(firstPaintOrderType == CSSValueFill ? *fill
-                                                                 : *stroke);
-      if (paintTypeList.size() > 1) {
-        if (paintTypeList.at(1) == CSSValueMarkers)
-          paintOrderList->append(*markers);
+      paint_order_list->Append(
+          first_paint_order_type == CSSValueFill ? *fill : *stroke);
+      if (paint_type_list.size() > 1) {
+        if (paint_type_list.at(1) == CSSValueMarkers)
+          paint_order_list->Append(*markers);
       }
       break;
     case CSSValueMarkers:
-      paintOrderList->append(*markers);
-      if (paintTypeList.size() > 1) {
-        if (paintTypeList.at(1) == CSSValueStroke)
-          paintOrderList->append(*stroke);
+      paint_order_list->Append(*markers);
+      if (paint_type_list.size() > 1) {
+        if (paint_type_list.at(1) == CSSValueStroke)
+          paint_order_list->Append(*stroke);
       }
       break;
     default:
       NOTREACHED();
   }
 
-  return paintOrderList;
+  return paint_order_list;
 }
 
 }  // namespace blink

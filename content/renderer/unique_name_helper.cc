@@ -19,7 +19,7 @@ namespace content {
 namespace {
 
 const std::string& UniqueNameForFrame(blink::WebFrame* frame) {
-  return frame->isWebLocalFrame()
+  return frame->IsWebLocalFrame()
              ? RenderFrameImpl::FromWebFrame(frame)->unique_name()
              : RenderFrameProxy::FromWebFrame(frame)->unique_name();
 }
@@ -33,7 +33,7 @@ bool UniqueNameExists(blink::WebFrame* top, const std::string& candidate) {
   // false positives when called with an empty |name|.
   DCHECK(!candidate.empty());
 
-  for (blink::WebFrame* frame = top; frame; frame = frame->traverseNext()) {
+  for (blink::WebFrame* frame = top; frame; frame = frame->TraverseNext()) {
     if (UniqueNameForFrame(frame) == candidate)
       return true;
   }
@@ -50,7 +50,7 @@ std::string GenerateCandidate(blink::WebFrame* parent, blink::WebFrame* child) {
 
   // Find the nearest parent that has a frame with a path in it.
   std::vector<blink::WebFrame*> chain;
-  for (blink::WebFrame* frame = parent; frame; frame = frame->parent()) {
+  for (blink::WebFrame* frame = parent; frame; frame = frame->Parent()) {
     base::StringPiece name = UniqueNameForFrame(frame);
     if (name.starts_with(kFramePathPrefix) && name.ends_with("-->") &&
         kFramePathPrefixLength + kFramePathSuffixLength < name.size()) {
@@ -68,8 +68,8 @@ std::string GenerateCandidate(blink::WebFrame* parent, blink::WebFrame* child) {
   }
 
   int child_count = 0;
-  for (blink::WebFrame* frame = parent->firstChild(); frame;
-       frame = frame->nextSibling()) {
+  for (blink::WebFrame* frame = parent->FirstChild(); frame;
+       frame = frame->NextSibling()) {
     ++child_count;
   }
 
@@ -91,9 +91,9 @@ std::string GenerateFramePosition(blink::WebFrame* parent,
 
   while (parent) {
     int position_in_parent = 0;
-    blink::WebFrame* sibling = parent->firstChild();
+    blink::WebFrame* sibling = parent->FirstChild();
     while (sibling != child) {
-      sibling = sibling->nextSibling();
+      sibling = sibling->NextSibling();
       ++position_in_parent;
     }
 
@@ -101,7 +101,7 @@ std::string GenerateFramePosition(blink::WebFrame* parent,
     position_string += base::IntToString(position_in_parent);
 
     child = parent;
-    parent = parent->parent();
+    parent = parent->Parent();
   }
 
   // NOTE: The generated string is not guaranteed to be unique, but should
@@ -145,7 +145,7 @@ std::string AppendUniqueSuffix(blink::WebFrame* top,
 std::string CalculateNewName(blink::WebFrame* parent,
                              blink::WebFrame* child,
                              const std::string& name) {
-  blink::WebFrame* top = parent->top();
+  blink::WebFrame* top = parent->Top();
   if (!name.empty() && !UniqueNameExists(top, name) && name != "_blank")
     return name;
 
@@ -172,12 +172,12 @@ std::string UniqueNameHelper::GenerateNameForNewChildFrame(
 
 void UniqueNameHelper::UpdateName(const std::string& name) {
   // The unique name of the main frame is always the empty string.
-  if (!GetWebFrame()->parent())
+  if (!GetWebFrame()->Parent())
     return;
   // It's important to clear this before calculating a new name, as the
   // calculation checks for collisions with existing unique names.
   unique_name_.clear();
-  unique_name_ = CalculateNewName(GetWebFrame()->parent(), GetWebFrame(), name);
+  unique_name_ = CalculateNewName(GetWebFrame()->Parent(), GetWebFrame(), name);
 }
 
 blink::WebLocalFrame* UniqueNameHelper::GetWebFrame() const {

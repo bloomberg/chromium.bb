@@ -56,26 +56,26 @@ class AudioScheduledSourceHandler : public AudioHandler {
     FINISHED_STATE = 3
   };
 
-  AudioScheduledSourceHandler(NodeType, AudioNode&, float sampleRate);
+  AudioScheduledSourceHandler(NodeType, AudioNode&, float sample_rate);
 
   // Scheduling.
-  void start(double when, ExceptionState&);
-  void stop(double when, ExceptionState&);
+  void Start(double when, ExceptionState&);
+  void Stop(double when, ExceptionState&);
 
-  PlaybackState playbackState() const {
-    return static_cast<PlaybackState>(acquireLoad(&m_playbackState));
+  PlaybackState GetPlaybackState() const {
+    return static_cast<PlaybackState>(AcquireLoad(&playback_state_));
   }
 
-  void setPlaybackState(PlaybackState newState) {
-    releaseStore(&m_playbackState, newState);
+  void SetPlaybackState(PlaybackState new_state) {
+    ReleaseStore(&playback_state_, new_state);
   }
 
-  bool isPlayingOrScheduled() const {
-    PlaybackState state = playbackState();
+  bool IsPlayingOrScheduled() const {
+    PlaybackState state = GetPlaybackState();
     return state == PLAYING_STATE || state == SCHEDULED_STATE;
   }
 
-  bool hasFinished() const { return playbackState() == FINISHED_STATE; }
+  bool HasFinished() const { return GetPlaybackState() == FINISHED_STATE; }
 
  protected:
   // Get frame information for the current time quantum.
@@ -92,41 +92,41 @@ class AudioScheduledSourceHandler : public AudioHandler {
   //                    and the actual starting time of the source. This is
   //                    non-zero only when transitioning from the
   //                    SCHEDULED_STATE to the PLAYING_STATE.
-  void updateSchedulingInfo(size_t quantumFrameSize,
-                            AudioBus* outputBus,
-                            size_t& quantumFrameOffset,
-                            size_t& nonSilentFramesToProcess,
-                            double& startFrameOffset);
+  void UpdateSchedulingInfo(size_t quantum_frame_size,
+                            AudioBus* output_bus,
+                            size_t& quantum_frame_offset,
+                            size_t& non_silent_frames_to_process,
+                            double& start_frame_offset);
 
   // Called when we have no more sound to play or the stop() time has been
   // reached. No onEnded event is called.
-  virtual void finishWithoutOnEnded();
+  virtual void FinishWithoutOnEnded();
 
   // Like finishWithoutOnEnded(), but an onEnded (if specified) is called.
-  virtual void finish();
+  virtual void Finish();
 
-  void notifyEnded();
+  void NotifyEnded();
 
   // This synchronizes with process() and any other method that needs to be
   // synchronized like setBuffer for AudioBufferSource.
-  mutable Mutex m_processLock;
+  mutable Mutex process_lock_;
 
   // m_startTime is the time to start playing based on the context's timeline (0
   // or a time less than the context's current time means "now").
-  double m_startTime;  // in seconds
+  double start_time_;  // in seconds
 
   // m_endTime is the time to stop playing based on the context's timeline (0 or
   // a time less than the context's current time means "now").  If it hasn't
   // been set explicitly, then the sound will not stop playing (if looping) or
   // will stop when the end of the AudioBuffer has been reached.
-  double m_endTime;  // in seconds
+  double end_time_;  // in seconds
 
-  static const double UnknownTime;
+  static const double kUnknownTime;
 
  private:
   // This is accessed by both the main thread and audio thread.  Use the setter
   // and getter to protect the access to this.
-  int m_playbackState;
+  int playback_state_;
 };
 
 class AudioScheduledSourceNode
@@ -145,13 +145,13 @@ class AudioScheduledSourceNode
   void setOnended(EventListener*);
 
   // ScriptWrappable:
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::Trace(visitor); }
 
  protected:
   explicit AudioScheduledSourceNode(BaseAudioContext&);
-  AudioScheduledSourceHandler& audioScheduledSourceHandler() const;
+  AudioScheduledSourceHandler& GetAudioScheduledSourceHandler() const;
 };
 
 }  // namespace blink

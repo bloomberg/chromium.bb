@@ -14,128 +14,130 @@ class TrackGroup {
   STACK_ALLOCATED();
 
  public:
-  enum GroupKind { CaptionsAndSubtitles, Description, Chapter, Metadata };
+  enum GroupKind { kCaptionsAndSubtitles, kDescription, kChapter, kMetadata };
 
   explicit TrackGroup(GroupKind kind)
-      : visibleTrack(nullptr),
-        defaultTrack(nullptr),
+      : visible_track(nullptr),
+        default_track(nullptr),
         kind(kind),
-        hasSrcLang(false) {}
+        has_src_lang(false) {}
 
   HeapVector<Member<TextTrack>> tracks;
-  Member<TextTrack> visibleTrack;
-  Member<TextTrack> defaultTrack;
+  Member<TextTrack> visible_track;
+  Member<TextTrack> default_track;
   GroupKind kind;
-  bool hasSrcLang;
+  bool has_src_lang;
 };
 
-static int textTrackLanguageSelectionScore(const TextTrack& track) {
-  if (track.language().isEmpty())
+static int TextTrackLanguageSelectionScore(const TextTrack& track) {
+  if (track.language().IsEmpty())
     return 0;
 
-  Vector<AtomicString> languages = userPreferredLanguages();
-  size_t languageMatchIndex =
-      indexOfBestMatchingLanguageInList(track.language(), languages);
-  if (languageMatchIndex >= languages.size())
+  Vector<AtomicString> languages = UserPreferredLanguages();
+  size_t language_match_index =
+      IndexOfBestMatchingLanguageInList(track.language(), languages);
+  if (language_match_index >= languages.size())
     return 0;
 
-  return languages.size() - languageMatchIndex;
+  return languages.size() - language_match_index;
 }
 
-static int textTrackSelectionScore(const TextTrack& track) {
-  if (!track.isVisualKind())
+static int TextTrackSelectionScore(const TextTrack& track) {
+  if (!track.IsVisualKind())
     return 0;
 
-  return textTrackLanguageSelectionScore(track);
+  return TextTrackLanguageSelectionScore(track);
 }
 
 AutomaticTrackSelection::AutomaticTrackSelection(
     const Configuration& configuration)
-    : m_configuration(configuration) {}
+    : configuration_(configuration) {}
 
-const AtomicString& AutomaticTrackSelection::preferredTrackKind() const {
-  if (m_configuration.textTrackKindUserPreference ==
-      TextTrackKindUserPreference::Subtitles)
-    return TextTrack::subtitlesKeyword();
-  if (m_configuration.textTrackKindUserPreference ==
-      TextTrackKindUserPreference::Captions)
-    return TextTrack::captionsKeyword();
-  return nullAtom;
+const AtomicString& AutomaticTrackSelection::PreferredTrackKind() const {
+  if (configuration_.text_track_kind_user_preference ==
+      TextTrackKindUserPreference::kSubtitles)
+    return TextTrack::SubtitlesKeyword();
+  if (configuration_.text_track_kind_user_preference ==
+      TextTrackKindUserPreference::kCaptions)
+    return TextTrack::CaptionsKeyword();
+  return g_null_atom;
 }
 
-void AutomaticTrackSelection::performAutomaticTextTrackSelection(
+void AutomaticTrackSelection::PerformAutomaticTextTrackSelection(
     const TrackGroup& group) {
   DCHECK(group.tracks.size());
 
   // First, find the track in the group that should be enabled (if any).
-  HeapVector<Member<TextTrack>> currentlyEnabledTracks;
-  TextTrack* trackToEnable = nullptr;
-  TextTrack* defaultTrack = nullptr;
-  TextTrack* preferredTrack = nullptr;
-  TextTrack* fallbackTrack = nullptr;
-  int highestTrackScore = 0;
+  HeapVector<Member<TextTrack>> currently_enabled_tracks;
+  TextTrack* track_to_enable = nullptr;
+  TextTrack* default_track = nullptr;
+  TextTrack* preferred_track = nullptr;
+  TextTrack* fallback_track = nullptr;
+  int highest_track_score = 0;
 
-  for (const auto& textTrack : group.tracks) {
-    if (m_configuration.disableCurrentlyEnabledTracks &&
-        textTrack->mode() == TextTrack::showingKeyword())
-      currentlyEnabledTracks.push_back(textTrack);
+  for (const auto& text_track : group.tracks) {
+    if (configuration_.disable_currently_enabled_tracks &&
+        text_track->mode() == TextTrack::ShowingKeyword())
+      currently_enabled_tracks.push_back(text_track);
 
-    int trackScore = textTrackSelectionScore(*textTrack);
+    int track_score = TextTrackSelectionScore(*text_track);
 
-    if (textTrack->kind() == preferredTrackKind())
-      trackScore += 1;
-    if (trackScore) {
+    if (text_track->kind() == PreferredTrackKind())
+      track_score += 1;
+    if (track_score) {
       // * If the text track kind is subtitles or captions and the user has
       // indicated an interest in having a track with this text track kind, text
       // track language, and text track label enabled, and there is no other
       // text track in the media element's list of text tracks with a text track
       // kind of either subtitles or captions whose text track mode is showing
       //    Let the text track mode be showing.
-      if (trackScore > highestTrackScore) {
-        preferredTrack = textTrack;
-        highestTrackScore = trackScore;
+      if (track_score > highest_track_score) {
+        preferred_track = text_track;
+        highest_track_score = track_score;
       }
-      if (!defaultTrack && textTrack->isDefault())
-        defaultTrack = textTrack;
+      if (!default_track && text_track->IsDefault())
+        default_track = text_track;
 
-      if (!fallbackTrack)
-        fallbackTrack = textTrack;
-    } else if (!group.visibleTrack && !defaultTrack && textTrack->isDefault()) {
+      if (!fallback_track)
+        fallback_track = text_track;
+    } else if (!group.visible_track && !default_track &&
+               text_track->IsDefault()) {
       // * If the track element has a default attribute specified, and there is
       // no other text track in the media element's list of text tracks whose
       // text track mode is showing or showing by default
       //    Let the text track mode be showing by default.
-      defaultTrack = textTrack;
+      default_track = text_track;
     }
   }
 
-  if (m_configuration.textTrackKindUserPreference !=
-      TextTrackKindUserPreference::Default)
-    trackToEnable = preferredTrack;
+  if (configuration_.text_track_kind_user_preference !=
+      TextTrackKindUserPreference::kDefault)
+    track_to_enable = preferred_track;
 
-  if (!trackToEnable && defaultTrack)
-    trackToEnable = defaultTrack;
+  if (!track_to_enable && default_track)
+    track_to_enable = default_track;
 
-  if (!trackToEnable && m_configuration.forceEnableSubtitleOrCaptionTrack &&
-      group.kind == TrackGroup::CaptionsAndSubtitles) {
-    if (fallbackTrack)
-      trackToEnable = fallbackTrack;
+  if (!track_to_enable &&
+      configuration_.force_enable_subtitle_or_caption_track &&
+      group.kind == TrackGroup::kCaptionsAndSubtitles) {
+    if (fallback_track)
+      track_to_enable = fallback_track;
     else
-      trackToEnable = group.tracks[0];
+      track_to_enable = group.tracks[0];
   }
 
-  if (currentlyEnabledTracks.size()) {
-    for (const auto& textTrack : currentlyEnabledTracks) {
-      if (textTrack != trackToEnable)
-        textTrack->setMode(TextTrack::disabledKeyword());
+  if (currently_enabled_tracks.size()) {
+    for (const auto& text_track : currently_enabled_tracks) {
+      if (text_track != track_to_enable)
+        text_track->setMode(TextTrack::DisabledKeyword());
     }
   }
 
-  if (trackToEnable)
-    trackToEnable->setMode(TextTrack::showingKeyword());
+  if (track_to_enable)
+    track_to_enable->setMode(TextTrack::ShowingKeyword());
 }
 
-void AutomaticTrackSelection::enableDefaultMetadataTextTracks(
+void AutomaticTrackSelection::EnableDefaultMetadataTextTracks(
     const TrackGroup& group) {
   DCHECK(group.tracks.size());
 
@@ -145,45 +147,45 @@ void AutomaticTrackSelection::enableDefaultMetadataTextTracks(
   // tracks whose text track kind is metadata that correspond to track
   // elements with a default attribute set whose text track mode is set to
   // disabled, then set the text track mode of all such tracks to hidden
-  for (auto& textTrack : group.tracks) {
-    if (textTrack->mode() != TextTrack::disabledKeyword())
+  for (auto& text_track : group.tracks) {
+    if (text_track->mode() != TextTrack::DisabledKeyword())
       continue;
-    if (!textTrack->isDefault())
+    if (!text_track->IsDefault())
       continue;
-    textTrack->setMode(TextTrack::hiddenKeyword());
+    text_track->setMode(TextTrack::HiddenKeyword());
   }
 }
 
-void AutomaticTrackSelection::perform(TextTrackList& textTracks) {
-  TrackGroup captionAndSubtitleTracks(TrackGroup::CaptionsAndSubtitles);
-  TrackGroup descriptionTracks(TrackGroup::Description);
-  TrackGroup chapterTracks(TrackGroup::Chapter);
-  TrackGroup metadataTracks(TrackGroup::Metadata);
+void AutomaticTrackSelection::Perform(TextTrackList& text_tracks) {
+  TrackGroup caption_and_subtitle_tracks(TrackGroup::kCaptionsAndSubtitles);
+  TrackGroup description_tracks(TrackGroup::kDescription);
+  TrackGroup chapter_tracks(TrackGroup::kChapter);
+  TrackGroup metadata_tracks(TrackGroup::kMetadata);
 
-  for (size_t i = 0; i < textTracks.length(); ++i) {
-    TextTrack* textTrack = textTracks.anonymousIndexedGetter(i);
-    if (!textTrack)
+  for (size_t i = 0; i < text_tracks.length(); ++i) {
+    TextTrack* text_track = text_tracks.AnonymousIndexedGetter(i);
+    if (!text_track)
       continue;
 
-    String kind = textTrack->kind();
-    TrackGroup* currentGroup;
-    if (kind == TextTrack::subtitlesKeyword() ||
-        kind == TextTrack::captionsKeyword()) {
-      currentGroup = &captionAndSubtitleTracks;
-    } else if (kind == TextTrack::descriptionsKeyword()) {
-      currentGroup = &descriptionTracks;
-    } else if (kind == TextTrack::chaptersKeyword()) {
-      currentGroup = &chapterTracks;
+    String kind = text_track->kind();
+    TrackGroup* current_group;
+    if (kind == TextTrack::SubtitlesKeyword() ||
+        kind == TextTrack::CaptionsKeyword()) {
+      current_group = &caption_and_subtitle_tracks;
+    } else if (kind == TextTrack::DescriptionsKeyword()) {
+      current_group = &description_tracks;
+    } else if (kind == TextTrack::ChaptersKeyword()) {
+      current_group = &chapter_tracks;
     } else {
-      DCHECK_EQ(kind, TextTrack::metadataKeyword());
-      currentGroup = &metadataTracks;
+      DCHECK_EQ(kind, TextTrack::MetadataKeyword());
+      current_group = &metadata_tracks;
     }
 
-    if (!currentGroup->visibleTrack &&
-        textTrack->mode() == TextTrack::showingKeyword())
-      currentGroup->visibleTrack = textTrack;
-    if (!currentGroup->defaultTrack && textTrack->isDefault())
-      currentGroup->defaultTrack = textTrack;
+    if (!current_group->visible_track &&
+        text_track->mode() == TextTrack::ShowingKeyword())
+      current_group->visible_track = text_track;
+    if (!current_group->default_track && text_track->IsDefault())
+      current_group->default_track = text_track;
 
     // Do not add this track to the group if it has already been automatically
     // configured as we only want to perform selection once per track so that
@@ -192,22 +194,22 @@ void AutomaticTrackSelection::perform(TextTrackList& textTracks) {
     // example all metadata tracks are disabled by default, and we don't want a
     // track that has been enabled by script to be disabled automatically when a
     // new metadata track is added later.
-    if (textTrack->hasBeenConfigured())
+    if (text_track->HasBeenConfigured())
       continue;
 
-    if (textTrack->language().length())
-      currentGroup->hasSrcLang = true;
-    currentGroup->tracks.push_back(textTrack);
+    if (text_track->language().length())
+      current_group->has_src_lang = true;
+    current_group->tracks.push_back(text_track);
   }
 
-  if (captionAndSubtitleTracks.tracks.size())
-    performAutomaticTextTrackSelection(captionAndSubtitleTracks);
-  if (descriptionTracks.tracks.size())
-    performAutomaticTextTrackSelection(descriptionTracks);
-  if (chapterTracks.tracks.size())
-    performAutomaticTextTrackSelection(chapterTracks);
-  if (metadataTracks.tracks.size())
-    enableDefaultMetadataTextTracks(metadataTracks);
+  if (caption_and_subtitle_tracks.tracks.size())
+    PerformAutomaticTextTrackSelection(caption_and_subtitle_tracks);
+  if (description_tracks.tracks.size())
+    PerformAutomaticTextTrackSelection(description_tracks);
+  if (chapter_tracks.tracks.size())
+    PerformAutomaticTextTrackSelection(chapter_tracks);
+  if (metadata_tracks.tracks.size())
+    EnableDefaultMetadataTextTracks(metadata_tracks);
 }
 
 }  // namespace blink

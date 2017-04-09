@@ -52,7 +52,7 @@ class WTF_EXPORT AtomicString {
 
  public:
   // The function is defined in StringStatics.cpp.
-  static void init();
+  static void Init();
 
   AtomicString() {}
   AtomicString(const LChar* chars)
@@ -69,187 +69,189 @@ class WTF_EXPORT AtomicString {
 
   template <size_t inlineCapacity>
   explicit AtomicString(const Vector<UChar, inlineCapacity>& vector)
-      : AtomicString(vector.data(), vector.size()) {}
+      : AtomicString(vector.Data(), vector.size()) {}
 
   // Constructing an AtomicString from a String / StringImpl can be expensive if
   // the StringImpl is not already atomic.
-  explicit AtomicString(StringImpl* impl) : m_string(add(impl)) {}
-  explicit AtomicString(const String& s) : m_string(add(s.impl())) {}
+  explicit AtomicString(StringImpl* impl) : string_(Add(impl)) {}
+  explicit AtomicString(const String& s) : string_(Add(s.Impl())) {}
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
   AtomicString(WTF::HashTableDeletedValueType)
-      : m_string(WTF::HashTableDeletedValue) {}
-  bool isHashTableDeletedValue() const {
-    return m_string.isHashTableDeletedValue();
+      : string_(WTF::kHashTableDeletedValue) {}
+  bool IsHashTableDeletedValue() const {
+    return string_.IsHashTableDeletedValue();
   }
 
-  explicit operator bool() const { return !isNull(); }
-  operator const String&() const { return m_string; }
-  const String& getString() const { return m_string; }
+  explicit operator bool() const { return !IsNull(); }
+  operator const String&() const { return string_; }
+  const String& GetString() const { return string_; }
 
-  StringImpl* impl() const { return m_string.impl(); }
+  StringImpl* Impl() const { return string_.Impl(); }
 
-  bool is8Bit() const { return m_string.is8Bit(); }
-  const LChar* characters8() const { return m_string.characters8(); }
-  const UChar* characters16() const { return m_string.characters16(); }
-  unsigned length() const { return m_string.length(); }
+  bool Is8Bit() const { return string_.Is8Bit(); }
+  const LChar* Characters8() const { return string_.Characters8(); }
+  const UChar* Characters16() const { return string_.Characters16(); }
+  unsigned length() const { return string_.length(); }
 
-  UChar operator[](unsigned i) const { return m_string[i]; }
+  UChar operator[](unsigned i) const { return string_[i]; }
 
   // Find characters.
-  size_t find(UChar c, unsigned start = 0) const {
-    return m_string.find(c, start);
+  size_t Find(UChar c, unsigned start = 0) const {
+    return string_.Find(c, start);
   }
-  size_t find(LChar c, unsigned start = 0) const {
-    return m_string.find(c, start);
+  size_t Find(LChar c, unsigned start = 0) const {
+    return string_.Find(c, start);
   }
-  size_t find(char c, unsigned start = 0) const {
-    return find(static_cast<LChar>(c), start);
+  size_t Find(char c, unsigned start = 0) const {
+    return Find(static_cast<LChar>(c), start);
   }
-  size_t find(CharacterMatchFunctionPtr matchFunction,
+  size_t Find(CharacterMatchFunctionPtr match_function,
               unsigned start = 0) const {
-    return m_string.find(matchFunction, start);
+    return string_.Find(match_function, start);
   }
 
   // Find substrings.
-  size_t find(const StringView& value,
+  size_t Find(const StringView& value,
               unsigned start = 0,
-              TextCaseSensitivity caseSensitivity = TextCaseSensitive) const {
-    return m_string.find(value, start, caseSensitivity);
+              TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
+    return string_.Find(value, start, case_sensitivity);
   }
 
   // Unicode aware case insensitive string matching. Non-ASCII characters might
   // match to ASCII characters. This function is rarely used to implement web
   // platform features.
-  size_t findIgnoringCase(const StringView& value, unsigned start = 0) const {
-    return m_string.findIgnoringCase(value, start);
+  size_t FindIgnoringCase(const StringView& value, unsigned start = 0) const {
+    return string_.FindIgnoringCase(value, start);
   }
 
   // ASCII case insensitive string matching.
-  size_t findIgnoringASCIICase(const StringView& value,
+  size_t FindIgnoringASCIICase(const StringView& value,
                                unsigned start = 0) const {
-    return m_string.findIgnoringASCIICase(value, start);
+    return string_.FindIgnoringASCIICase(value, start);
   }
 
-  bool contains(char c) const { return find(c) != kNotFound; }
-  bool contains(const StringView& value,
-                TextCaseSensitivity caseSensitivity = TextCaseSensitive) const {
-    return find(value, 0, caseSensitivity) != kNotFound;
+  bool Contains(char c) const { return Find(c) != kNotFound; }
+  bool Contains(
+      const StringView& value,
+      TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
+    return Find(value, 0, case_sensitivity) != kNotFound;
   }
 
   // Find the last instance of a single character or string.
-  size_t reverseFind(UChar c, unsigned start = UINT_MAX) const {
-    return m_string.reverseFind(c, start);
+  size_t ReverseFind(UChar c, unsigned start = UINT_MAX) const {
+    return string_.ReverseFind(c, start);
   }
-  size_t reverseFind(const StringView& value, unsigned start = UINT_MAX) const {
-    return m_string.reverseFind(value, start);
+  size_t ReverseFind(const StringView& value, unsigned start = UINT_MAX) const {
+    return string_.ReverseFind(value, start);
   }
 
-  bool startsWith(
+  bool StartsWith(
       const StringView& prefix,
-      TextCaseSensitivity caseSensitivity = TextCaseSensitive) const {
-    return m_string.startsWith(prefix, caseSensitivity);
+      TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
+    return string_.StartsWith(prefix, case_sensitivity);
   }
-  bool startsWith(UChar character) const {
-    return m_string.startsWith(character);
+  bool StartsWith(UChar character) const {
+    return string_.StartsWith(character);
   }
 
-  bool endsWith(const StringView& suffix,
-                TextCaseSensitivity caseSensitivity = TextCaseSensitive) const {
-    return m_string.endsWith(suffix, caseSensitivity);
+  bool EndsWith(
+      const StringView& suffix,
+      TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
+    return string_.EndsWith(suffix, case_sensitivity);
   }
-  bool endsWith(UChar character) const { return m_string.endsWith(character); }
+  bool EndsWith(UChar character) const { return string_.EndsWith(character); }
 
   // Returns a lowercase version of the string. This function might
   // convert non-ASCII characters to ASCII characters. For example,
   // lower() for U+212A is 'k'.
   // This function is rarely used to implement web platform features.
-  AtomicString lower() const;
+  AtomicString Lower() const;
 
   // Returns a lowercase/uppercase version of the string.
   // These functions convert ASCII characters only.
-  AtomicString lowerASCII() const;
-  AtomicString upperASCII() const;
+  AtomicString LowerASCII() const;
+  AtomicString UpperASCII() const;
 
-  int toInt(bool* ok = 0) const { return m_string.toInt(ok); }
-  double toDouble(bool* ok = 0) const { return m_string.toDouble(ok); }
-  float toFloat(bool* ok = 0) const { return m_string.toFloat(ok); }
+  int ToInt(bool* ok = 0) const { return string_.ToInt(ok); }
+  double ToDouble(bool* ok = 0) const { return string_.ToDouble(ok); }
+  float ToFloat(bool* ok = 0) const { return string_.ToFloat(ok); }
 
-  static AtomicString number(int);
-  static AtomicString number(unsigned);
-  static AtomicString number(long);
-  static AtomicString number(unsigned long);
-  static AtomicString number(long long);
-  static AtomicString number(unsigned long long);
+  static AtomicString Number(int);
+  static AtomicString Number(unsigned);
+  static AtomicString Number(long);
+  static AtomicString Number(unsigned long);
+  static AtomicString Number(long long);
+  static AtomicString Number(unsigned long long);
 
-  static AtomicString number(double, unsigned precision = 6);
+  static AtomicString Number(double, unsigned precision = 6);
 
-  bool isNull() const { return m_string.isNull(); }
-  bool isEmpty() const { return m_string.isEmpty(); }
+  bool IsNull() const { return string_.IsNull(); }
+  bool IsEmpty() const { return string_.IsEmpty(); }
 
 #ifdef __OBJC__
-  AtomicString(NSString* s) : m_string(add((CFStringRef)s)) {}
-  operator NSString*() const { return m_string; }
+  AtomicString(NSString* s) : string_(Add((CFStringRef)s)) {}
+  operator NSString*() const { return string_; }
 #endif
   // AtomicString::fromUTF8 will return a null string if
   // the input data contains invalid UTF-8 sequences.
   // NOTE: Passing a zero size means use the whole string.
-  static AtomicString fromUTF8(const char*, size_t length);
-  static AtomicString fromUTF8(const char*);
+  static AtomicString FromUTF8(const char*, size_t length);
+  static AtomicString FromUTF8(const char*);
 
-  CString ascii() const { return m_string.ascii(); }
-  CString latin1() const { return m_string.latin1(); }
-  CString utf8(UTF8ConversionMode mode = LenientUTF8Conversion) const {
-    return m_string.utf8(mode);
+  CString Ascii() const { return string_.Ascii(); }
+  CString Latin1() const { return string_.Latin1(); }
+  CString Utf8(UTF8ConversionMode mode = kLenientUTF8Conversion) const {
+    return string_.Utf8(mode);
   }
 
-  size_t charactersSizeInBytes() const {
-    return m_string.charactersSizeInBytes();
+  size_t CharactersSizeInBytes() const {
+    return string_.CharactersSizeInBytes();
   }
 
-  bool isSafeToSendToAnotherThread() const {
-    return m_string.isSafeToSendToAnotherThread();
+  bool IsSafeToSendToAnotherThread() const {
+    return string_.IsSafeToSendToAnotherThread();
   }
 
 #ifndef NDEBUG
-  void show() const;
+  void Show() const;
 #endif
 
  private:
-  String m_string;
+  String string_;
 
-  ALWAYS_INLINE static PassRefPtr<StringImpl> add(StringImpl* r) {
-    if (!r || r->isAtomic())
+  ALWAYS_INLINE static PassRefPtr<StringImpl> Add(StringImpl* r) {
+    if (!r || r->IsAtomic())
       return r;
-    return addSlowCase(r);
+    return AddSlowCase(r);
   }
-  static PassRefPtr<StringImpl> addSlowCase(StringImpl*);
+  static PassRefPtr<StringImpl> AddSlowCase(StringImpl*);
 #if OS(MACOSX)
-  static PassRefPtr<StringImpl> add(CFStringRef);
+  static PassRefPtr<StringImpl> Add(CFStringRef);
 #endif
 };
 
 inline bool operator==(const AtomicString& a, const AtomicString& b) {
-  return a.impl() == b.impl();
+  return a.Impl() == b.Impl();
 }
 inline bool operator==(const AtomicString& a, const String& b) {
   // We don't use equalStringView so we get the isAtomic() optimization inside
   // WTF::equal.
-  return equal(a.impl(), b.impl());
+  return Equal(a.Impl(), b.Impl());
 }
 inline bool operator==(const String& a, const AtomicString& b) {
   return b == a;
 }
 inline bool operator==(const AtomicString& a, const char* b) {
-  return equalStringView(a, b);
+  return EqualStringView(a, b);
 }
 inline bool operator==(const char* a, const AtomicString& b) {
   return b == a;
 }
 
 inline bool operator!=(const AtomicString& a, const AtomicString& b) {
-  return a.impl() != b.impl();
+  return a.Impl() != b.Impl();
 }
 inline bool operator!=(const AtomicString& a, const String& b) {
   return !(a == b);
@@ -266,14 +268,14 @@ inline bool operator!=(const char* a, const AtomicString& b) {
 
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
-WTF_EXPORT extern const AtomicString& nullAtom;
-WTF_EXPORT extern const AtomicString& emptyAtom;
-WTF_EXPORT extern const AtomicString& starAtom;
-WTF_EXPORT extern const AtomicString& xmlAtom;
-WTF_EXPORT extern const AtomicString& xmlnsAtom;
-WTF_EXPORT extern const AtomicString& xlinkAtom;
-WTF_EXPORT extern const AtomicString& httpAtom;
-WTF_EXPORT extern const AtomicString& httpsAtom;
+WTF_EXPORT extern const AtomicString& g_null_atom;
+WTF_EXPORT extern const AtomicString& g_empty_atom;
+WTF_EXPORT extern const AtomicString& g_star_atom;
+WTF_EXPORT extern const AtomicString& g_xml_atom;
+WTF_EXPORT extern const AtomicString& g_xmlns_atom;
+WTF_EXPORT extern const AtomicString& g_xlink_atom;
+WTF_EXPORT extern const AtomicString& g_http_atom;
+WTF_EXPORT extern const AtomicString& g_https_atom;
 
 // AtomicStringHash is the default hash for AtomicString
 template <typename T>
@@ -290,23 +292,23 @@ WTF_EXPORT std::ostream& operator<<(std::ostream&, const AtomicString&);
 inline StringView::StringView(const AtomicString& string,
                               unsigned offset,
                               unsigned length)
-    : StringView(string.impl(), offset, length) {}
+    : StringView(string.Impl(), offset, length) {}
 inline StringView::StringView(const AtomicString& string, unsigned offset)
-    : StringView(string.impl(), offset) {}
+    : StringView(string.Impl(), offset) {}
 inline StringView::StringView(const AtomicString& string)
-    : StringView(string.impl()) {}
+    : StringView(string.Impl()) {}
 
 }  // namespace WTF
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(AtomicString);
 
 using WTF::AtomicString;
-using WTF::nullAtom;
-using WTF::emptyAtom;
-using WTF::starAtom;
-using WTF::xmlAtom;
-using WTF::xmlnsAtom;
-using WTF::xlinkAtom;
+using WTF::g_null_atom;
+using WTF::g_empty_atom;
+using WTF::g_star_atom;
+using WTF::g_xml_atom;
+using WTF::g_xmlns_atom;
+using WTF::g_xlink_atom;
 
 #include "wtf/text/StringConcatenate.h"
 #endif  // AtomicString_h

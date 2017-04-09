@@ -19,55 +19,55 @@ namespace blink {
 template <typename T>
 class TraceWrapperV8Reference {
  public:
-  explicit TraceWrapperV8Reference(void* parent) : m_parent(parent) {}
+  explicit TraceWrapperV8Reference(void* parent) : parent_(parent) {}
 
   TraceWrapperV8Reference(v8::Isolate* isolate,
                           void* parent,
                           v8::Local<T> handle)
-      : m_parent(parent) {
-    internalSet(isolate, handle);
-    m_handle.SetWeak();
+      : parent_(parent) {
+    InternalSet(isolate, handle);
+    handle_.SetWeak();
   }
 
-  ~TraceWrapperV8Reference() { clear(); }
+  ~TraceWrapperV8Reference() { Clear(); }
 
-  void set(v8::Isolate* isolate, v8::Local<T> handle) {
-    internalSet(isolate, handle);
-    m_handle.SetWeak();
+  void Set(v8::Isolate* isolate, v8::Local<T> handle) {
+    InternalSet(isolate, handle);
+    handle_.SetWeak();
   }
 
   template <typename P>
-  void set(v8::Isolate* isolate,
+  void Set(v8::Isolate* isolate,
            v8::Local<T> handle,
            P* parameters,
            void (*callback)(const v8::WeakCallbackInfo<P>&),
            v8::WeakCallbackType type = v8::WeakCallbackType::kParameter) {
-    internalSet(isolate, handle);
-    m_handle.SetWeak(parameters, callback, type);
+    InternalSet(isolate, handle);
+    handle_.SetWeak(parameters, callback, type);
   }
 
-  ALWAYS_INLINE v8::Local<T> newLocal(v8::Isolate* isolate) const {
-    return v8::Local<T>::New(isolate, m_handle);
+  ALWAYS_INLINE v8::Local<T> NewLocal(v8::Isolate* isolate) const {
+    return v8::Local<T>::New(isolate, handle_);
   }
 
-  bool isEmpty() const { return m_handle.IsEmpty(); }
-  void clear() { m_handle.Reset(); }
-  ALWAYS_INLINE v8::Persistent<T>& get() { return m_handle; }
+  bool IsEmpty() const { return handle_.IsEmpty(); }
+  void Clear() { handle_.Reset(); }
+  ALWAYS_INLINE v8::Persistent<T>& Get() { return handle_; }
 
   template <typename S>
-  const TraceWrapperV8Reference<S>& cast() const {
+  const TraceWrapperV8Reference<S>& Cast() const {
     return reinterpret_cast<const TraceWrapperV8Reference<S>&>(
         const_cast<const TraceWrapperV8Reference<T>&>(*this));
   }
 
  private:
-  inline void internalSet(v8::Isolate* isolate, v8::Local<T> handle) {
-    m_handle.Reset(isolate, handle);
-    ScriptWrappableVisitor::writeBarrier(m_parent, &cast<v8::Value>());
+  inline void InternalSet(v8::Isolate* isolate, v8::Local<T> handle) {
+    handle_.Reset(isolate, handle);
+    ScriptWrappableVisitor::WriteBarrier(parent_, &Cast<v8::Value>());
   }
 
-  v8::Persistent<T> m_handle;
-  void* m_parent;
+  v8::Persistent<T> handle_;
+  void* parent_;
 };
 
 }  // namespace blink

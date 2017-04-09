@@ -21,7 +21,7 @@ class ServiceWorkerClients final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ServiceWorkerClients* create();
+  static ServiceWorkerClients* Create();
 
   // Clients.idl
   ScriptPromise get(ScriptState*, const String& id);

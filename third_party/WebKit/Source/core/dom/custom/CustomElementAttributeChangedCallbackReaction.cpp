@@ -12,18 +12,18 @@ CustomElementAttributeChangedCallbackReaction::
     CustomElementAttributeChangedCallbackReaction(
         CustomElementDefinition* definition,
         const QualifiedName& name,
-        const AtomicString& oldValue,
-        const AtomicString& newValue)
+        const AtomicString& old_value,
+        const AtomicString& new_value)
     : CustomElementReaction(definition),
-      m_name(name),
-      m_oldValue(oldValue),
-      m_newValue(newValue) {
-  DCHECK(definition->hasAttributeChangedCallback(name));
+      name_(name),
+      old_value_(old_value),
+      new_value_(new_value) {
+  DCHECK(definition->HasAttributeChangedCallback(name));
 }
 
-void CustomElementAttributeChangedCallbackReaction::invoke(Element* element) {
-  m_definition->runAttributeChangedCallback(element, m_name, m_oldValue,
-                                            m_newValue);
+void CustomElementAttributeChangedCallbackReaction::Invoke(Element* element) {
+  definition_->RunAttributeChangedCallback(element, name_, old_value_,
+                                           new_value_);
 }
 
 }  // namespace blink

@@ -8,22 +8,22 @@
 namespace blink {
 
 struct WebDistillabilityFeatures {
-  bool isMobileFriendly;
+  bool is_mobile_friendly;
   // The rest of the fields are only valid when isMobileFriendly==false.
-  bool openGraph;
-  unsigned elementCount;
-  unsigned anchorCount;
-  unsigned formCount;
-  unsigned textInputCount;
-  unsigned passwordInputCount;
-  unsigned pCount;
-  unsigned preCount;
+  bool open_graph;
+  unsigned element_count;
+  unsigned anchor_count;
+  unsigned form_count;
+  unsigned text_input_count;
+  unsigned password_input_count;
+  unsigned p_count;
+  unsigned pre_count;
   // The following scores are derived from the triggering logic in Readability
   // from Mozilla.
   // https://github.com/mozilla/readability/blob/85101066386a0872526a6c4ae164c18fcd6cc1db/Readability.js#L1704
-  double mozScore;
-  double mozScoreAllSqrt;
-  double mozScoreAllLinear;
+  double moz_score;
+  double moz_score_all_sqrt;
+  double moz_score_all_linear;
 };
 
 }  // namespace blink

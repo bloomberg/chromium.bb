@@ -10,117 +10,117 @@
 
 namespace blink {
 
-ImageResourceContent* CanvasImageElementSource::cachedImage() const {
-  return imageLoader().image();
+ImageResourceContent* CanvasImageElementSource::CachedImage() const {
+  return GetImageLoader().GetImage();
 }
 
-const Element& CanvasImageElementSource::element() const {
-  return *imageLoader().element();
+const Element& CanvasImageElementSource::GetElement() const {
+  return *GetImageLoader().GetElement();
 }
 
-bool CanvasImageElementSource::isSVGSource() const {
-  return cachedImage() && cachedImage()->getImage()->isSVGImage();
+bool CanvasImageElementSource::IsSVGSource() const {
+  return CachedImage() && CachedImage()->GetImage()->IsSVGImage();
 }
 
-PassRefPtr<Image> CanvasImageElementSource::getSourceImageForCanvas(
+PassRefPtr<Image> CanvasImageElementSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
-    const FloatSize& defaultObjectSize) const {
-  if (!imageLoader().imageComplete() || !cachedImage()) {
-    *status = IncompleteSourceImageStatus;
+    const FloatSize& default_object_size) const {
+  if (!GetImageLoader().ImageComplete() || !CachedImage()) {
+    *status = kIncompleteSourceImageStatus;
     return nullptr;
   }
 
-  if (cachedImage()->errorOccurred()) {
-    *status = UndecodableSourceImageStatus;
+  if (CachedImage()->ErrorOccurred()) {
+    *status = kUndecodableSourceImageStatus;
     return nullptr;
   }
 
-  RefPtr<Image> sourceImage;
-  if (cachedImage()->getImage()->isSVGImage()) {
-    UseCounter::count(element().document(), UseCounter::SVGInCanvas2D);
-    SVGImage* svgImage = toSVGImage(cachedImage()->getImage());
-    IntSize imageSize =
-        roundedIntSize(svgImage->concreteObjectSize(defaultObjectSize));
-    sourceImage = SVGImageForContainer::create(
-        svgImage, imageSize, 1,
-        element().document().completeURL(element().imageSourceURL()));
+  RefPtr<Image> source_image;
+  if (CachedImage()->GetImage()->IsSVGImage()) {
+    UseCounter::Count(GetElement().GetDocument(), UseCounter::kSVGInCanvas2D);
+    SVGImage* svg_image = ToSVGImage(CachedImage()->GetImage());
+    IntSize image_size =
+        RoundedIntSize(svg_image->ConcreteObjectSize(default_object_size));
+    source_image = SVGImageForContainer::Create(
+        svg_image, image_size, 1,
+        GetElement().GetDocument().CompleteURL(GetElement().ImageSourceURL()));
   } else {
-    sourceImage = cachedImage()->getImage();
+    source_image = CachedImage()->GetImage();
   }
 
-  *status = NormalSourceImageStatus;
-  return sourceImage->imageForDefaultFrame();
+  *status = kNormalSourceImageStatus;
+  return source_image->ImageForDefaultFrame();
 }
 
-bool CanvasImageElementSource::wouldTaintOrigin(
-    SecurityOrigin* destinationSecurityOrigin) const {
-  return cachedImage() &&
-         !cachedImage()->isAccessAllowed(destinationSecurityOrigin);
+bool CanvasImageElementSource::WouldTaintOrigin(
+    SecurityOrigin* destination_security_origin) const {
+  return CachedImage() &&
+         !CachedImage()->IsAccessAllowed(destination_security_origin);
 }
 
-FloatSize CanvasImageElementSource::elementSize(
-    const FloatSize& defaultObjectSize) const {
-  ImageResourceContent* image = cachedImage();
+FloatSize CanvasImageElementSource::ElementSize(
+    const FloatSize& default_object_size) const {
+  ImageResourceContent* image = CachedImage();
   if (!image)
     return FloatSize();
 
-  if (image->getImage() && image->getImage()->isSVGImage()) {
-    return toSVGImage(cachedImage()->getImage())
-        ->concreteObjectSize(defaultObjectSize);
+  if (image->GetImage() && image->GetImage()->IsSVGImage()) {
+    return ToSVGImage(CachedImage()->GetImage())
+        ->ConcreteObjectSize(default_object_size);
   }
 
-  return FloatSize(image->imageSize(
-      LayoutObject::shouldRespectImageOrientation(element().layoutObject()),
-      1.0f));
+  return FloatSize(image->ImageSize(LayoutObject::ShouldRespectImageOrientation(
+                                        GetElement().GetLayoutObject()),
+                                    1.0f));
 }
 
-FloatSize CanvasImageElementSource::defaultDestinationSize(
-    const FloatSize& defaultObjectSize) const {
-  ImageResourceContent* image = cachedImage();
+FloatSize CanvasImageElementSource::DefaultDestinationSize(
+    const FloatSize& default_object_size) const {
+  ImageResourceContent* image = CachedImage();
   if (!image)
     return FloatSize();
 
-  if (image->getImage() && image->getImage()->isSVGImage()) {
-    return toSVGImage(cachedImage()->getImage())
-        ->concreteObjectSize(defaultObjectSize);
+  if (image->GetImage() && image->GetImage()->IsSVGImage()) {
+    return ToSVGImage(CachedImage()->GetImage())
+        ->ConcreteObjectSize(default_object_size);
   }
 
   LayoutSize size;
-  size = image->imageSize(
-      LayoutObject::shouldRespectImageOrientation(element().layoutObject()),
-      1.0f);
+  size = image->ImageSize(LayoutObject::ShouldRespectImageOrientation(
+                              GetElement().GetLayoutObject()),
+                          1.0f);
   return FloatSize(size);
 }
 
-bool CanvasImageElementSource::isAccelerated() const {
+bool CanvasImageElementSource::IsAccelerated() const {
   return false;
 }
 
-const KURL& CanvasImageElementSource::sourceURL() const {
-  return cachedImage()->response().url();
+const KURL& CanvasImageElementSource::SourceURL() const {
+  return CachedImage()->GetResponse().Url();
 }
 
-int CanvasImageElementSource::sourceWidth() {
+int CanvasImageElementSource::SourceWidth() {
   SourceImageStatus status;
-  RefPtr<Image> image =
-      getSourceImageForCanvas(&status, PreferNoAcceleration,
-                              SnapshotReasonUnknown, sourceDefaultObjectSize());
+  RefPtr<Image> image = GetSourceImageForCanvas(&status, kPreferNoAcceleration,
+                                                kSnapshotReasonUnknown,
+                                                SourceDefaultObjectSize());
   return image->width();
 }
 
-int CanvasImageElementSource::sourceHeight() {
+int CanvasImageElementSource::SourceHeight() {
   SourceImageStatus status;
-  RefPtr<Image> image =
-      getSourceImageForCanvas(&status, PreferNoAcceleration,
-                              SnapshotReasonUnknown, sourceDefaultObjectSize());
+  RefPtr<Image> image = GetSourceImageForCanvas(&status, kPreferNoAcceleration,
+                                                kSnapshotReasonUnknown,
+                                                SourceDefaultObjectSize());
   return image->height();
 }
 
-bool CanvasImageElementSource::isOpaque() const {
-  Image* image = const_cast<Element&>(element()).imageContents();
-  return image && image->currentFrameKnownToBeOpaque();
+bool CanvasImageElementSource::IsOpaque() const {
+  Image* image = const_cast<Element&>(GetElement()).ImageContents();
+  return image && image->CurrentFrameKnownToBeOpaque();
 }
 
 }  // namespace blink

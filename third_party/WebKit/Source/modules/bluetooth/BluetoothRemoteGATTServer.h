@@ -38,12 +38,12 @@ class BluetoothRemoteGATTServer
   static BluetoothRemoteGATTServer* Create(ExecutionContext*, BluetoothDevice*);
 
   // ContextLifecycleObserver:
-  void contextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) override;
 
   // mojom::blink::WebBluetoothServerClient:
   void GATTServerDisconnected() override;
 
-  void SetConnected(bool connected) { m_connected = connected; }
+  void SetConnected(bool connected) { connected_ = connected; }
 
   // The Active Algorithms set is maintained so that disconnection, i.e.
   // disconnect() method or the device disconnecting by itself, can be detected
@@ -57,7 +57,7 @@ class BluetoothRemoteGATTServer
   // and returns true, false otherwise.
   bool RemoveFromActiveAlgorithms(ScriptPromiseResolver*);
   // Removes all ScriptPromiseResolvers from the set of Active Algorithms.
-  void ClearActiveAlgorithms() { m_activeAlgorithms.clear(); }
+  void ClearActiveAlgorithms() { active_algorithms_.Clear(); }
 
   // If gatt is connected then sets gatt.connected to false and disconnects.
   // This function only performs the necessary steps to ensure a device
@@ -79,8 +79,8 @@ class BluetoothRemoteGATTServer
   DECLARE_VIRTUAL_TRACE();
 
   // IDL exposed interface:
-  BluetoothDevice* device() { return m_device; }
-  bool connected() { return m_connected; }
+  BluetoothDevice* device() { return device_; }
+  bool connected() { return connected_; }
   ScriptPromise connect(ScriptState*);
   void disconnect(ScriptState*);
   ScriptPromise getPrimaryService(ScriptState*,
@@ -95,12 +95,12 @@ class BluetoothRemoteGATTServer
   ScriptPromise GetPrimaryServicesImpl(
       ScriptState*,
       mojom::blink::WebBluetoothGATTQueryQuantity,
-      String serviceUUID = String());
+      String service_uuid = String());
 
   void ConnectCallback(ScriptPromiseResolver*,
                        mojom::blink::WebBluetoothResult);
   void GetPrimaryServicesCallback(
-      const String& requestedServiceUUID,
+      const String& requested_service_uuid,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       ScriptPromiseResolver*,
       mojom::blink::WebBluetoothResult,
@@ -109,13 +109,13 @@ class BluetoothRemoteGATTServer
 
   // Contains a ScriptPromiseResolver corresponding to each active algorithm
   // using this server’s connection.
-  HeapHashSet<Member<ScriptPromiseResolver>> m_activeAlgorithms;
+  HeapHashSet<Member<ScriptPromiseResolver>> active_algorithms_;
 
   mojo::AssociatedBindingSet<mojom::blink::WebBluetoothServerClient>
-      m_clientBindings;
+      client_bindings_;
 
-  Member<BluetoothDevice> m_device;
-  bool m_connected;
+  Member<BluetoothDevice> device_;
+  bool connected_;
 };
 
 }  // namespace blink

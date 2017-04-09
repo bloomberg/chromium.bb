@@ -48,16 +48,16 @@ class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {
   explicit ContentLayerDelegate(GraphicsLayer*);
   ~ContentLayerDelegate() override;
 
-  gfx::Rect paintableRegion() override;
+  gfx::Rect PaintableRegion() override;
 
   // WebContentLayerClient implementation.
-  void paintContents(WebDisplayItemList*,
+  void PaintContents(WebDisplayItemList*,
                      WebContentLayerClient::PaintingControlSetting =
-                         PaintDefaultBehavior) override;
-  size_t approximateUnsharedMemoryUsage() const override;
+                         kPaintDefaultBehavior) override;
+  size_t ApproximateUnsharedMemoryUsage() const override;
 
  private:
-  GraphicsLayer* m_graphicsLayer;
+  GraphicsLayer* graphics_layer_;
 };
 
 }  // namespace blink

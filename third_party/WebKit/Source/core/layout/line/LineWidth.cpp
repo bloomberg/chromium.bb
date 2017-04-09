@@ -35,196 +35,198 @@
 namespace blink {
 
 LineWidth::LineWidth(LineLayoutBlockFlow block,
-                     bool isFirstLine,
-                     IndentTextOrNot indentText)
-    : m_block(block),
-      m_uncommittedWidth(0),
-      m_committedWidth(0),
-      m_overhangWidth(0),
-      m_trailingWhitespaceWidth(0),
-      m_isFirstLine(isFirstLine),
-      m_indentText(indentText) {
-  updateAvailableWidth();
+                     bool is_first_line,
+                     IndentTextOrNot indent_text)
+    : block_(block),
+      uncommitted_width_(0),
+      committed_width_(0),
+      overhang_width_(0),
+      trailing_whitespace_width_(0),
+      is_first_line_(is_first_line),
+      indent_text_(indent_text) {
+  UpdateAvailableWidth();
 }
 
-void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight) {
-  LayoutUnit height = m_block.logicalHeight();
-  LayoutUnit logicalHeight =
-      m_block.minLineHeightForReplacedObject(m_isFirstLine, replacedHeight);
-  m_left =
-      m_block.logicalLeftOffsetForLine(height, indentText(), logicalHeight);
-  m_right =
-      m_block.logicalRightOffsetForLine(height, indentText(), logicalHeight);
+void LineWidth::UpdateAvailableWidth(LayoutUnit replaced_height) {
+  LayoutUnit height = block_.LogicalHeight();
+  LayoutUnit logical_height =
+      block_.MinLineHeightForReplacedObject(is_first_line_, replaced_height);
+  left_ = block_.LogicalLeftOffsetForLine(height, IndentText(), logical_height);
+  right_ =
+      block_.LogicalRightOffsetForLine(height, IndentText(), logical_height);
 
-  computeAvailableWidthFromLeftAndRight();
+  ComputeAvailableWidthFromLeftAndRight();
 }
 
-void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(
-    const FloatingObject& newFloat) {
-  LayoutUnit height = m_block.logicalHeight();
-  if (height < m_block.logicalTopForFloat(newFloat) ||
-      height >= m_block.logicalBottomForFloat(newFloat))
+void LineWidth::ShrinkAvailableWidthForNewFloatIfNeeded(
+    const FloatingObject& new_float) {
+  LayoutUnit height = block_.LogicalHeight();
+  if (height < block_.LogicalTopForFloat(new_float) ||
+      height >= block_.LogicalBottomForFloat(new_float))
     return;
 
-  ShapeOutsideDeltas shapeDeltas;
-  if (ShapeOutsideInfo* shapeOutsideInfo =
-          newFloat.layoutObject()->shapeOutsideInfo()) {
-    LayoutUnit lineHeight = m_block.lineHeight(
-        m_isFirstLine,
-        m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine,
-        PositionOfInteriorLineBoxes);
-    shapeDeltas = shapeOutsideInfo->computeDeltasForContainingBlockLine(
-        m_block, newFloat, m_block.logicalHeight(), lineHeight);
+  ShapeOutsideDeltas shape_deltas;
+  if (ShapeOutsideInfo* shape_outside_info =
+          new_float.GetLayoutObject()->GetShapeOutsideInfo()) {
+    LayoutUnit line_height = block_.LineHeight(
+        is_first_line_,
+        block_.IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
+        kPositionOfInteriorLineBoxes);
+    shape_deltas = shape_outside_info->ComputeDeltasForContainingBlockLine(
+        block_, new_float, block_.LogicalHeight(), line_height);
   }
 
-  if (newFloat.getType() == FloatingObject::FloatLeft) {
-    LayoutUnit newLeft = m_block.logicalRightForFloat(newFloat);
-    if (shapeDeltas.isValid()) {
-      if (shapeDeltas.lineOverlapsShape()) {
-        newLeft += shapeDeltas.rightMarginBoxDelta();
+  if (new_float.GetType() == FloatingObject::kFloatLeft) {
+    LayoutUnit new_left = block_.LogicalRightForFloat(new_float);
+    if (shape_deltas.IsValid()) {
+      if (shape_deltas.LineOverlapsShape()) {
+        new_left += shape_deltas.RightMarginBoxDelta();
       } else {
         // Per the CSS Shapes spec, If the line doesn't overlap the shape, then
         // ignore this shape for this line.
-        newLeft = m_left;
+        new_left = left_;
       }
     }
-    if (indentText() == IndentText && m_block.style()->isLeftToRightDirection())
-      newLeft += floorToInt(m_block.textIndentOffset());
-    m_left = std::max(m_left, newLeft);
+    if (IndentText() == kIndentText && block_.Style()->IsLeftToRightDirection())
+      new_left += FloorToInt(block_.TextIndentOffset());
+    left_ = std::max(left_, new_left);
   } else {
-    LayoutUnit newRight = m_block.logicalLeftForFloat(newFloat);
-    if (shapeDeltas.isValid()) {
-      if (shapeDeltas.lineOverlapsShape()) {
-        newRight += shapeDeltas.leftMarginBoxDelta();
+    LayoutUnit new_right = block_.LogicalLeftForFloat(new_float);
+    if (shape_deltas.IsValid()) {
+      if (shape_deltas.LineOverlapsShape()) {
+        new_right += shape_deltas.LeftMarginBoxDelta();
       } else {
         // Per the CSS Shapes spec, If the line doesn't overlap the shape, then
         // ignore this shape for this line.
-        newRight = m_right;
+        new_right = right_;
       }
     }
-    if (indentText() == IndentText &&
-        !m_block.style()->isLeftToRightDirection())
-      newRight -= floorToInt(m_block.textIndentOffset());
-    m_right = std::min(m_right, newRight);
+    if (IndentText() == kIndentText &&
+        !block_.Style()->IsLeftToRightDirection())
+      new_right -= FloorToInt(block_.TextIndentOffset());
+    right_ = std::min(right_, new_right);
   }
 
-  computeAvailableWidthFromLeftAndRight();
+  ComputeAvailableWidthFromLeftAndRight();
 }
 
-void LineWidth::commit() {
-  m_committedWidth += m_uncommittedWidth;
-  m_uncommittedWidth = 0;
+void LineWidth::Commit() {
+  committed_width_ += uncommitted_width_;
+  uncommitted_width_ = 0;
 }
 
-void LineWidth::applyOverhang(LineLayoutRubyRun rubyRun,
-                              LineLayoutItem startLayoutItem,
-                              LineLayoutItem endLayoutItem) {
-  int startOverhang;
-  int endOverhang;
-  rubyRun.getOverhang(m_isFirstLine, startLayoutItem, endLayoutItem,
-                      startOverhang, endOverhang);
+void LineWidth::ApplyOverhang(LineLayoutRubyRun ruby_run,
+                              LineLayoutItem start_layout_item,
+                              LineLayoutItem end_layout_item) {
+  int start_overhang;
+  int end_overhang;
+  ruby_run.GetOverhang(is_first_line_, start_layout_item, end_layout_item,
+                       start_overhang, end_overhang);
 
-  startOverhang = std::min<int>(startOverhang, m_committedWidth);
-  m_availableWidth += startOverhang;
+  start_overhang = std::min<int>(start_overhang, committed_width_);
+  available_width_ += start_overhang;
 
-  endOverhang = std::max(
-      std::min<int>(endOverhang, m_availableWidth - currentWidth()), 0);
-  m_availableWidth += endOverhang;
-  m_overhangWidth += startOverhang + endOverhang;
+  end_overhang = std::max(
+      std::min<int>(end_overhang, available_width_ - CurrentWidth()), 0);
+  available_width_ += end_overhang;
+  overhang_width_ += start_overhang + end_overhang;
 }
 
-inline static LayoutUnit availableWidthAtOffset(
+inline static LayoutUnit AvailableWidthAtOffset(
     LineLayoutBlockFlow block,
     const LayoutUnit& offset,
-    IndentTextOrNot indentText,
-    LayoutUnit& newLineLeft,
-    LayoutUnit& newLineRight,
-    const LayoutUnit& lineHeight = LayoutUnit()) {
-  newLineLeft = block.logicalLeftOffsetForLine(offset, indentText, lineHeight);
-  newLineRight =
-      block.logicalRightOffsetForLine(offset, indentText, lineHeight);
-  return (newLineRight - newLineLeft).clampNegativeToZero();
+    IndentTextOrNot indent_text,
+    LayoutUnit& new_line_left,
+    LayoutUnit& new_line_right,
+    const LayoutUnit& line_height = LayoutUnit()) {
+  new_line_left =
+      block.LogicalLeftOffsetForLine(offset, indent_text, line_height);
+  new_line_right =
+      block.LogicalRightOffsetForLine(offset, indent_text, line_height);
+  return (new_line_right - new_line_left).ClampNegativeToZero();
 }
 
-void LineWidth::updateLineDimension(LayoutUnit newLineTop,
-                                    LayoutUnit newLineWidth,
-                                    const LayoutUnit& newLineLeft,
-                                    const LayoutUnit& newLineRight) {
-  if (newLineWidth <= m_availableWidth)
+void LineWidth::UpdateLineDimension(LayoutUnit new_line_top,
+                                    LayoutUnit new_line_width,
+                                    const LayoutUnit& new_line_left,
+                                    const LayoutUnit& new_line_right) {
+  if (new_line_width <= available_width_)
     return;
 
-  m_block.setLogicalHeight(newLineTop);
-  m_availableWidth = newLineWidth + LayoutUnit::fromFloatCeil(m_overhangWidth);
-  m_left = newLineLeft;
-  m_right = newLineRight;
+  block_.SetLogicalHeight(new_line_top);
+  available_width_ =
+      new_line_width + LayoutUnit::FromFloatCeil(overhang_width_);
+  left_ = new_line_left;
+  right_ = new_line_right;
 }
 
-void LineWidth::wrapNextToShapeOutside(bool isFirstLine) {
-  LayoutUnit lineHeight = m_block.lineHeight(
-      isFirstLine,
-      m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine,
-      PositionOfInteriorLineBoxes);
-  LayoutUnit lineLogicalTop = m_block.logicalHeight();
-  LayoutUnit newLineTop = lineLogicalTop;
-  LayoutUnit floatLogicalBottom =
-      m_block.nextFloatLogicalBottomBelow(lineLogicalTop);
+void LineWidth::WrapNextToShapeOutside(bool is_first_line) {
+  LayoutUnit line_height = block_.LineHeight(
+      is_first_line,
+      block_.IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
+      kPositionOfInteriorLineBoxes);
+  LayoutUnit line_logical_top = block_.LogicalHeight();
+  LayoutUnit new_line_top = line_logical_top;
+  LayoutUnit float_logical_bottom =
+      block_.NextFloatLogicalBottomBelow(line_logical_top);
 
-  LayoutUnit newLineWidth;
-  LayoutUnit newLineLeft = m_left;
-  LayoutUnit newLineRight = m_right;
+  LayoutUnit new_line_width;
+  LayoutUnit new_line_left = left_;
+  LayoutUnit new_line_right = right_;
   while (true) {
-    newLineWidth =
-        availableWidthAtOffset(m_block, newLineTop, indentText(), newLineLeft,
-                               newLineRight, lineHeight);
-    if (newLineWidth >= m_uncommittedWidth)
+    new_line_width =
+        AvailableWidthAtOffset(block_, new_line_top, IndentText(),
+                               new_line_left, new_line_right, line_height);
+    if (new_line_width >= uncommitted_width_)
       break;
 
-    if (newLineTop >= floatLogicalBottom)
+    if (new_line_top >= float_logical_bottom)
       break;
 
-    newLineTop++;
+    new_line_top++;
   }
-  updateLineDimension(newLineTop, LayoutUnit(newLineWidth), newLineLeft,
-                      newLineRight);
+  UpdateLineDimension(new_line_top, LayoutUnit(new_line_width), new_line_left,
+                      new_line_right);
 }
 
-void LineWidth::fitBelowFloats(bool isFirstLine) {
-  DCHECK(!m_committedWidth);
-  DCHECK(!fitsOnLine());
-  m_block.placeNewFloats(m_block.logicalHeight(), this);
+void LineWidth::FitBelowFloats(bool is_first_line) {
+  DCHECK(!committed_width_);
+  DCHECK(!FitsOnLine());
+  block_.PlaceNewFloats(block_.LogicalHeight(), this);
 
-  LayoutUnit floatLogicalBottom;
-  LayoutUnit lastFloatLogicalBottom = m_block.logicalHeight();
-  LayoutUnit newLineWidth = m_availableWidth;
-  LayoutUnit newLineLeft = m_left;
-  LayoutUnit newLineRight = m_right;
+  LayoutUnit float_logical_bottom;
+  LayoutUnit last_float_logical_bottom = block_.LogicalHeight();
+  LayoutUnit new_line_width = available_width_;
+  LayoutUnit new_line_left = left_;
+  LayoutUnit new_line_right = right_;
 
-  FloatingObject* lastFloatFromPreviousLine =
-      m_block.lastFloatFromPreviousLine();
-  if (lastFloatFromPreviousLine &&
-      lastFloatFromPreviousLine->layoutObject()->shapeOutsideInfo())
-    return wrapNextToShapeOutside(isFirstLine);
+  FloatingObject* last_float_from_previous_line =
+      block_.LastFloatFromPreviousLine();
+  if (last_float_from_previous_line &&
+      last_float_from_previous_line->GetLayoutObject()->GetShapeOutsideInfo())
+    return WrapNextToShapeOutside(is_first_line);
 
   while (true) {
-    floatLogicalBottom =
-        m_block.nextFloatLogicalBottomBelow(lastFloatLogicalBottom);
-    if (floatLogicalBottom <= lastFloatLogicalBottom)
+    float_logical_bottom =
+        block_.NextFloatLogicalBottomBelow(last_float_logical_bottom);
+    if (float_logical_bottom <= last_float_logical_bottom)
       break;
 
-    newLineWidth = availableWidthAtOffset(
-        m_block, floatLogicalBottom, indentText(), newLineLeft, newLineRight);
-    lastFloatLogicalBottom = floatLogicalBottom;
+    new_line_width =
+        AvailableWidthAtOffset(block_, float_logical_bottom, IndentText(),
+                               new_line_left, new_line_right);
+    last_float_logical_bottom = float_logical_bottom;
 
-    if (newLineWidth >= m_uncommittedWidth)
+    if (new_line_width >= uncommitted_width_)
       break;
   }
-  updateLineDimension(lastFloatLogicalBottom, LayoutUnit(newLineWidth),
-                      newLineLeft, newLineRight);
+  UpdateLineDimension(last_float_logical_bottom, LayoutUnit(new_line_width),
+                      new_line_left, new_line_right);
 }
 
-void LineWidth::computeAvailableWidthFromLeftAndRight() {
-  m_availableWidth = (m_right - m_left).clampNegativeToZero() +
-                     LayoutUnit::fromFloatCeil(m_overhangWidth);
+void LineWidth::ComputeAvailableWidthFromLeftAndRight() {
+  available_width_ = (right_ - left_).ClampNegativeToZero() +
+                     LayoutUnit::FromFloatCeil(overhang_width_);
 }
 
 }  // namespace blink

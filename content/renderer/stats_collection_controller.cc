@@ -23,11 +23,11 @@ namespace {
 
 bool CurrentRenderViewImpl(RenderViewImpl** out) {
   blink::WebLocalFrame* web_frame =
-      blink::WebLocalFrame::frameForCurrentContext();
+      blink::WebLocalFrame::FrameForCurrentContext();
   if (!web_frame)
     return false;
 
-  blink::WebView* web_view = web_frame->view();
+  blink::WebView* web_view = web_frame->View();
   if (!web_view)
     return false;
 
@@ -79,9 +79,9 @@ gin::WrapperInfo StatsCollectionController::kWrapperInfo = {
 
 // static
 void StatsCollectionController::Install(blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 

@@ -26,7 +26,7 @@ void ExportLayoutTestSpecificPreferences(
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
   to->default_font_size = from.default_font_size;
   to->minimum_font_size = from.minimum_font_size;
-  to->default_encoding = from.default_text_encoding_name.utf8().data();
+  to->default_encoding = from.default_text_encoding_name.Utf8().data();
   to->javascript_enabled = from.java_script_enabled;
   to->supports_multiple_windows = from.supports_multiple_windows;
   to->loads_images_automatically = from.loads_images_automatically;

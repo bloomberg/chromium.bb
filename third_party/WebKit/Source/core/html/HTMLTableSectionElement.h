@@ -44,15 +44,15 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
   HTMLCollection* rows();
 
  private:
-  HTMLTableSectionElement(const QualifiedName& tagName, Document&);
+  HTMLTableSectionElement(const QualifiedName& tag_name, Document&);
 
-  const StylePropertySet* additionalPresentationAttributeStyle() override;
+  const StylePropertySet* AdditionalPresentationAttributeStyle() override;
 };
 
-inline bool isHTMLTableSectionElement(const HTMLElement& element) {
-  return element.hasTagName(HTMLNames::tbodyTag) ||
-         element.hasTagName(HTMLNames::tfootTag) ||
-         element.hasTagName(HTMLNames::theadTag);
+inline bool IsHTMLTableSectionElement(const HTMLElement& element) {
+  return element.HasTagName(HTMLNames::tbodyTag) ||
+         element.HasTagName(HTMLNames::tfootTag) ||
+         element.HasTagName(HTMLNames::theadTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);

@@ -30,50 +30,50 @@ class ViewportScrollCallback;
 class CORE_EXPORT TopDocumentRootScrollerController
     : public GarbageCollected<TopDocumentRootScrollerController> {
  public:
-  static TopDocumentRootScrollerController* create(Page&);
+  static TopDocumentRootScrollerController* Create(Page&);
 
   DECLARE_TRACE();
 
   // This class needs to be informed of changes to compositing so that it can
   // update the compositor when the effective root scroller changes.
-  void didUpdateCompositing();
+  void DidUpdateCompositing();
 
   // PaintLayerScrollableAreas need to notify this class when they're being
   // disposed so that we can remove them as the root scroller.
-  void didDisposeScrollableArea(ScrollableArea&);
+  void DidDisposeScrollableArea(ScrollableArea&);
 
   // This method needs to be called to create a ViewportScrollCallback that
   // will be used to apply viewport scrolling actions like browser controls
   // movement and overscroll glow.
-  void initializeViewportScrollCallback(RootFrameViewport&);
+  void InitializeViewportScrollCallback(RootFrameViewport&);
 
   // Returns true if the given ScrollStateCallback is the
   // ViewportScrollCallback managed by this class.
   // TODO(bokan): Temporarily needed to allow ScrollCustomization to
   // differentiate between real custom callback and the built-in viewport
   // apply scroll. crbug.com/623079.
-  bool isViewportScrollCallback(const ScrollStateCallback*) const;
+  bool IsViewportScrollCallback(const ScrollStateCallback*) const;
 
   // Returns the GraphicsLayer for the global root scroller.
-  GraphicsLayer* rootScrollerLayer() const;
+  GraphicsLayer* RootScrollerLayer() const;
 
-  PaintLayer* rootScrollerPaintLayer() const;
+  PaintLayer* RootScrollerPaintLayer() const;
 
   // Returns the Element that's the global root scroller.
-  Element* globalRootScroller() const;
+  Element* GlobalRootScroller() const;
 
   // Called when the root scroller in any frames on the page has changed.
-  void didChangeRootScroller();
+  void DidChangeRootScroller();
 
   // Returns the ScrollableArea associated with the globalRootScroller(). Note,
   // this isn't necessarily the PLSA belonging to the root scroller Element's
   // LayoutBox.  If the root scroller is the documentElement then we use the
   // FrameView (or LayoutView if root-layer-scrolls).
-  ScrollableArea* rootScrollerArea() const;
+  ScrollableArea* RootScrollerArea() const;
 
   // Returns the size we should use for the root scroller, accounting for top
   // controls adjustment and using the root FrameView.
-  IntSize rootScrollerVisibleArea() const;
+  IntSize RootScrollerVisibleArea() const;
 
  private:
   TopDocumentRootScrollerController(Page&);
@@ -82,27 +82,27 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // simple page, this will simply the root frame's effectiveRootScroller but
   // if the root scroller is set to an iframe, this will then descend into
   // the iframe to find its effective root scroller.
-  Element* findGlobalRootScrollerElement();
+  Element* FindGlobalRootScrollerElement();
 
   // Should be called to ensure the correct element is currently set as the
   // global root scroller and that all appropriate state changes are made if
   // it changes.
-  void recomputeGlobalRootScroller();
+  void RecomputeGlobalRootScroller();
 
-  Document* topDocument() const;
+  Document* TopDocument() const;
 
   // The apply-scroll callback that moves browser controls and produces
   // overscroll effects. This class makes sure this callback is set on the
   // appropriate root scroller element.
-  Member<ViewportScrollCallback> m_viewportApplyScroll;
+  Member<ViewportScrollCallback> viewport_apply_scroll_;
 
   // The page level root scroller. i.e. The actual element for which
   // scrolling should move browser controls and produce overscroll glow. Once an
   // m_viewportApplyScroll has been created, it will always be set on this
   // Element.
-  WeakMember<Element> m_globalRootScroller;
+  WeakMember<Element> global_root_scroller_;
 
-  Member<Page> m_page;
+  Member<Page> page_;
 };
 
 }  // namespace blink

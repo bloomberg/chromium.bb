@@ -38,9 +38,9 @@ class SVGSymbolElement final : public SVGElement, public SVGFitToViewBox {
  private:
   explicit SVGSymbolElement(Document&);
 
-  void svgAttributeChanged(const QualifiedName&) override;
+  void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
 }  // namespace blink

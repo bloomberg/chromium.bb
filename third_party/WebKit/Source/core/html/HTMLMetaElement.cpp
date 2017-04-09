@@ -44,50 +44,51 @@ inline HTMLMetaElement::HTMLMetaElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLMetaElement)
 
-static bool isInvalidSeparator(UChar c) {
+static bool IsInvalidSeparator(UChar c) {
   return c == ';';
 }
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't.
-static bool isSeparator(UChar c) {
+static bool IsSeparator(UChar c) {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '=' ||
          c == ',' || c == '\0';
 }
 
-void HTMLMetaElement::parseContentAttribute(const String& content,
-                                            void* data,
-                                            Document* document,
-                                            bool viewportMetaZeroValuesQuirk) {
-  bool hasInvalidSeparator = false;
+void HTMLMetaElement::ParseContentAttribute(
+    const String& content,
+    void* data,
+    Document* document,
+    bool viewport_meta_zero_values_quirk) {
+  bool has_invalid_separator = false;
 
   // Tread lightly in this code -- it was specifically designed to mimic Win
   // IE's parsing behavior.
-  unsigned keyBegin, keyEnd;
-  unsigned valueBegin, valueEnd;
+  unsigned key_begin, key_end;
+  unsigned value_begin, value_end;
 
-  String buffer = content.lower();
+  String buffer = content.Lower();
   unsigned length = buffer.length();
   for (unsigned i = 0; i < length; /* no increment here */) {
     // skip to first non-separator, but don't skip past the end of the string
-    while (isSeparator(buffer[i])) {
+    while (IsSeparator(buffer[i])) {
       if (i >= length)
         break;
       i++;
     }
-    keyBegin = i;
+    key_begin = i;
 
     // skip to first separator
-    while (!isSeparator(buffer[i])) {
-      hasInvalidSeparator |= isInvalidSeparator(buffer[i]);
+    while (!IsSeparator(buffer[i])) {
+      has_invalid_separator |= IsInvalidSeparator(buffer[i]);
       if (i >= length)
         break;
       i++;
     }
-    keyEnd = i;
+    key_end = i;
 
     // skip to first '=', but don't skip past a ',' or the end of the string
     while (buffer[i] != '=') {
-      hasInvalidSeparator |= isInvalidSeparator(buffer[i]);
+      has_invalid_separator |= IsInvalidSeparator(buffer[i]);
       if (buffer[i] == ',' || i >= length)
         break;
       i++;
@@ -95,259 +96,261 @@ void HTMLMetaElement::parseContentAttribute(const String& content,
 
     // Skip to first non-separator, but don't skip past a ',' or the end of the
     // string.
-    while (isSeparator(buffer[i])) {
+    while (IsSeparator(buffer[i])) {
       if (buffer[i] == ',' || i >= length)
         break;
       i++;
     }
-    valueBegin = i;
+    value_begin = i;
 
     // skip to first separator
-    while (!isSeparator(buffer[i])) {
-      hasInvalidSeparator |= isInvalidSeparator(buffer[i]);
+    while (!IsSeparator(buffer[i])) {
+      has_invalid_separator |= IsInvalidSeparator(buffer[i]);
       if (i >= length)
         break;
       i++;
     }
-    valueEnd = i;
+    value_end = i;
 
     SECURITY_DCHECK(i <= length);
 
-    String keyString = buffer.substring(keyBegin, keyEnd - keyBegin);
-    String valueString = buffer.substring(valueBegin, valueEnd - valueBegin);
-    processViewportKeyValuePair(document, !hasInvalidSeparator, keyString,
-                                valueString, viewportMetaZeroValuesQuirk, data);
+    String key_string = buffer.Substring(key_begin, key_end - key_begin);
+    String value_string =
+        buffer.Substring(value_begin, value_end - value_begin);
+    ProcessViewportKeyValuePair(document, !has_invalid_separator, key_string,
+                                value_string, viewport_meta_zero_values_quirk,
+                                data);
   }
-  if (hasInvalidSeparator && document) {
+  if (has_invalid_separator && document) {
     String message =
         "Error parsing a meta element's content: ';' is not a valid key-value "
         "pair separator. Please use ',' instead.";
-    document->addConsoleMessage(ConsoleMessage::create(
-        RenderingMessageSource, WarningMessageLevel, message));
+    document->AddConsoleMessage(ConsoleMessage::Create(
+        kRenderingMessageSource, kWarningMessageLevel, message));
   }
 }
 
-static inline float clampLengthValue(float value) {
+static inline float ClampLengthValue(float value) {
   // Limits as defined in the css-device-adapt spec.
-  if (value != ViewportDescription::ValueAuto)
+  if (value != ViewportDescription::kValueAuto)
     return std::min(float(10000), std::max(value, float(1)));
   return value;
 }
 
-static inline float clampScaleValue(float value) {
+static inline float ClampScaleValue(float value) {
   // Limits as defined in the css-device-adapt spec.
-  if (value != ViewportDescription::ValueAuto)
+  if (value != ViewportDescription::kValueAuto)
     return std::min(float(10), std::max(value, float(0.1)));
   return value;
 }
 
-float HTMLMetaElement::parsePositiveNumber(Document* document,
-                                           bool reportWarnings,
-                                           const String& keyString,
-                                           const String& valueString,
+float HTMLMetaElement::ParsePositiveNumber(Document* document,
+                                           bool report_warnings,
+                                           const String& key_string,
+                                           const String& value_string,
                                            bool* ok) {
-  size_t parsedLength;
+  size_t parsed_length;
   float value;
-  if (valueString.is8Bit())
-    value = charactersToFloat(valueString.characters8(), valueString.length(),
-                              parsedLength);
+  if (value_string.Is8Bit())
+    value = CharactersToFloat(value_string.Characters8(), value_string.length(),
+                              parsed_length);
   else
-    value = charactersToFloat(valueString.characters16(), valueString.length(),
-                              parsedLength);
-  if (!parsedLength) {
-    if (reportWarnings)
-      reportViewportWarning(document, UnrecognizedViewportArgumentValueError,
-                            valueString, keyString);
+    value = CharactersToFloat(value_string.Characters16(),
+                              value_string.length(), parsed_length);
+  if (!parsed_length) {
+    if (report_warnings)
+      ReportViewportWarning(document, kUnrecognizedViewportArgumentValueError,
+                            value_string, key_string);
     if (ok)
       *ok = false;
     return 0;
   }
-  if (parsedLength < valueString.length() && reportWarnings)
-    reportViewportWarning(document, TruncatedViewportArgumentValueError,
-                          valueString, keyString);
+  if (parsed_length < value_string.length() && report_warnings)
+    ReportViewportWarning(document, kTruncatedViewportArgumentValueError,
+                          value_string, key_string);
   if (ok)
     *ok = true;
   return value;
 }
 
-Length HTMLMetaElement::parseViewportValueAsLength(Document* document,
-                                                   bool reportWarnings,
-                                                   const String& keyString,
-                                                   const String& valueString) {
+Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
+                                                   bool report_warnings,
+                                                   const String& key_string,
+                                                   const String& value_string) {
   // 1) Non-negative number values are translated to px lengths.
   // 2) Negative number values are translated to auto.
   // 3) device-width and device-height are used as keywords.
   // 4) Other keywords and unknown values translate to 0.0.
 
-  if (equalIgnoringCase(valueString, "device-width"))
-    return Length(DeviceWidth);
-  if (equalIgnoringCase(valueString, "device-height"))
-    return Length(DeviceHeight);
+  if (EqualIgnoringCase(value_string, "device-width"))
+    return Length(kDeviceWidth);
+  if (EqualIgnoringCase(value_string, "device-height"))
+    return Length(kDeviceHeight);
 
   float value =
-      parsePositiveNumber(document, reportWarnings, keyString, valueString);
+      ParsePositiveNumber(document, report_warnings, key_string, value_string);
 
   if (value < 0)
     return Length();  // auto
 
-  return Length(clampLengthValue(value), Fixed);
+  return Length(ClampLengthValue(value), kFixed);
 }
 
-float HTMLMetaElement::parseViewportValueAsZoom(
+float HTMLMetaElement::ParseViewportValueAsZoom(
     Document* document,
-    bool reportWarnings,
-    const String& keyString,
-    const String& valueString,
-    bool& computedValueMatchesParsedValue,
-    bool viewportMetaZeroValuesQuirk) {
+    bool report_warnings,
+    const String& key_string,
+    const String& value_string,
+    bool& computed_value_matches_parsed_value,
+    bool viewport_meta_zero_values_quirk) {
   // 1) Non-negative number values are translated to <number> values.
   // 2) Negative number values are translated to auto.
   // 3) yes is translated to 1.0.
   // 4) device-width and device-height are translated to 10.0.
   // 5) no and unknown values are translated to 0.0
 
-  computedValueMatchesParsedValue = false;
-  if (equalIgnoringCase(valueString, "yes"))
+  computed_value_matches_parsed_value = false;
+  if (EqualIgnoringCase(value_string, "yes"))
     return 1;
-  if (equalIgnoringCase(valueString, "no"))
+  if (EqualIgnoringCase(value_string, "no"))
     return 0;
-  if (equalIgnoringCase(valueString, "device-width"))
+  if (EqualIgnoringCase(value_string, "device-width"))
     return 10;
-  if (equalIgnoringCase(valueString, "device-height"))
+  if (EqualIgnoringCase(value_string, "device-height"))
     return 10;
 
   float value =
-      parsePositiveNumber(document, reportWarnings, keyString, valueString);
+      ParsePositiveNumber(document, report_warnings, key_string, value_string);
 
   if (value < 0)
-    return ViewportDescription::ValueAuto;
+    return ViewportDescription::kValueAuto;
 
-  if (value > 10.0 && reportWarnings)
-    reportViewportWarning(document, MaximumScaleTooLargeError, String(),
+  if (value > 10.0 && report_warnings)
+    ReportViewportWarning(document, kMaximumScaleTooLargeError, String(),
                           String());
 
-  if (!value && viewportMetaZeroValuesQuirk)
-    return ViewportDescription::ValueAuto;
+  if (!value && viewport_meta_zero_values_quirk)
+    return ViewportDescription::kValueAuto;
 
-  float clampedValue = clampScaleValue(value);
-  if (clampedValue == value)
-    computedValueMatchesParsedValue = true;
+  float clamped_value = ClampScaleValue(value);
+  if (clamped_value == value)
+    computed_value_matches_parsed_value = true;
 
-  return clampedValue;
+  return clamped_value;
 }
 
-bool HTMLMetaElement::parseViewportValueAsUserZoom(
+bool HTMLMetaElement::ParseViewportValueAsUserZoom(
     Document* document,
-    bool reportWarnings,
-    const String& keyString,
-    const String& valueString,
-    bool& computedValueMatchesParsedValue) {
+    bool report_warnings,
+    const String& key_string,
+    const String& value_string,
+    bool& computed_value_matches_parsed_value) {
   // yes and no are used as keywords.
   // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to
   // yes.
   // Numbers in the range <-1, 1>, and unknown values, are mapped to no.
 
-  computedValueMatchesParsedValue = false;
-  if (equalIgnoringCase(valueString, "yes")) {
-    computedValueMatchesParsedValue = true;
+  computed_value_matches_parsed_value = false;
+  if (EqualIgnoringCase(value_string, "yes")) {
+    computed_value_matches_parsed_value = true;
     return true;
   }
-  if (equalIgnoringCase(valueString, "no")) {
-    computedValueMatchesParsedValue = true;
+  if (EqualIgnoringCase(value_string, "no")) {
+    computed_value_matches_parsed_value = true;
     return false;
   }
-  if (equalIgnoringCase(valueString, "device-width"))
+  if (EqualIgnoringCase(value_string, "device-width"))
     return true;
-  if (equalIgnoringCase(valueString, "device-height"))
+  if (EqualIgnoringCase(value_string, "device-height"))
     return true;
 
   float value =
-      parsePositiveNumber(document, reportWarnings, keyString, valueString);
+      ParsePositiveNumber(document, report_warnings, key_string, value_string);
   if (fabs(value) < 1)
     return false;
 
   return true;
 }
 
-float HTMLMetaElement::parseViewportValueAsDPI(Document* document,
-                                               bool reportWarnings,
-                                               const String& keyString,
-                                               const String& valueString) {
-  if (equalIgnoringCase(valueString, "device-dpi"))
-    return ViewportDescription::ValueDeviceDPI;
-  if (equalIgnoringCase(valueString, "low-dpi"))
-    return ViewportDescription::ValueLowDPI;
-  if (equalIgnoringCase(valueString, "medium-dpi"))
-    return ViewportDescription::ValueMediumDPI;
-  if (equalIgnoringCase(valueString, "high-dpi"))
-    return ViewportDescription::ValueHighDPI;
+float HTMLMetaElement::ParseViewportValueAsDPI(Document* document,
+                                               bool report_warnings,
+                                               const String& key_string,
+                                               const String& value_string) {
+  if (EqualIgnoringCase(value_string, "device-dpi"))
+    return ViewportDescription::kValueDeviceDPI;
+  if (EqualIgnoringCase(value_string, "low-dpi"))
+    return ViewportDescription::kValueLowDPI;
+  if (EqualIgnoringCase(value_string, "medium-dpi"))
+    return ViewportDescription::kValueMediumDPI;
+  if (EqualIgnoringCase(value_string, "high-dpi"))
+    return ViewportDescription::kValueHighDPI;
 
   bool ok;
-  float value = parsePositiveNumber(document, reportWarnings, keyString,
-                                    valueString, &ok);
+  float value = ParsePositiveNumber(document, report_warnings, key_string,
+                                    value_string, &ok);
   if (!ok || value < 70 || value > 400)
-    return ViewportDescription::ValueAuto;
+    return ViewportDescription::kValueAuto;
 
   return value;
 }
 
-void HTMLMetaElement::processViewportKeyValuePair(
+void HTMLMetaElement::ProcessViewportKeyValuePair(
     Document* document,
-    bool reportWarnings,
-    const String& keyString,
-    const String& valueString,
-    bool viewportMetaZeroValuesQuirk,
+    bool report_warnings,
+    const String& key_string,
+    const String& value_string,
+    bool viewport_meta_zero_values_quirk,
     void* data) {
   ViewportDescription* description = static_cast<ViewportDescription*>(data);
 
-  if (keyString == "width") {
-    const Length& width = parseViewportValueAsLength(document, reportWarnings,
-                                                     keyString, valueString);
-    if (!width.isAuto()) {
-      description->minWidth = Length(ExtendToZoom);
-      description->maxWidth = width;
+  if (key_string == "width") {
+    const Length& width = ParseViewportValueAsLength(document, report_warnings,
+                                                     key_string, value_string);
+    if (!width.IsAuto()) {
+      description->min_width = Length(kExtendToZoom);
+      description->max_width = width;
     }
-  } else if (keyString == "height") {
-    const Length& height = parseViewportValueAsLength(document, reportWarnings,
-                                                      keyString, valueString);
-    if (!height.isAuto()) {
-      description->minHeight = Length(ExtendToZoom);
-      description->maxHeight = height;
+  } else if (key_string == "height") {
+    const Length& height = ParseViewportValueAsLength(document, report_warnings,
+                                                      key_string, value_string);
+    if (!height.IsAuto()) {
+      description->min_height = Length(kExtendToZoom);
+      description->max_height = height;
     }
-  } else if (keyString == "initial-scale") {
-    description->zoom = parseViewportValueAsZoom(
-        document, reportWarnings, keyString, valueString,
-        description->zoomIsExplicit, viewportMetaZeroValuesQuirk);
-  } else if (keyString == "minimum-scale") {
-    description->minZoom = parseViewportValueAsZoom(
-        document, reportWarnings, keyString, valueString,
-        description->minZoomIsExplicit, viewportMetaZeroValuesQuirk);
-  } else if (keyString == "maximum-scale") {
-    description->maxZoom = parseViewportValueAsZoom(
-        document, reportWarnings, keyString, valueString,
-        description->maxZoomIsExplicit, viewportMetaZeroValuesQuirk);
-  } else if (keyString == "user-scalable") {
-    description->userZoom = parseViewportValueAsUserZoom(
-        document, reportWarnings, keyString, valueString,
-        description->userZoomIsExplicit);
-  } else if (keyString == "target-densitydpi") {
-    description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(
-        document, reportWarnings, keyString, valueString);
-    if (reportWarnings)
-      reportViewportWarning(document, TargetDensityDpiUnsupported, String(),
+  } else if (key_string == "initial-scale") {
+    description->zoom = ParseViewportValueAsZoom(
+        document, report_warnings, key_string, value_string,
+        description->zoom_is_explicit, viewport_meta_zero_values_quirk);
+  } else if (key_string == "minimum-scale") {
+    description->min_zoom = ParseViewportValueAsZoom(
+        document, report_warnings, key_string, value_string,
+        description->min_zoom_is_explicit, viewport_meta_zero_values_quirk);
+  } else if (key_string == "maximum-scale") {
+    description->max_zoom = ParseViewportValueAsZoom(
+        document, report_warnings, key_string, value_string,
+        description->max_zoom_is_explicit, viewport_meta_zero_values_quirk);
+  } else if (key_string == "user-scalable") {
+    description->user_zoom = ParseViewportValueAsUserZoom(
+        document, report_warnings, key_string, value_string,
+        description->user_zoom_is_explicit);
+  } else if (key_string == "target-densitydpi") {
+    description->deprecated_target_density_dpi = ParseViewportValueAsDPI(
+        document, report_warnings, key_string, value_string);
+    if (report_warnings)
+      ReportViewportWarning(document, kTargetDensityDpiUnsupported, String(),
                             String());
-  } else if (keyString == "minimal-ui") {
+  } else if (key_string == "minimal-ui") {
     // Ignore vendor-specific argument.
-  } else if (keyString == "shrink-to-fit") {
+  } else if (key_string == "shrink-to-fit") {
     // Ignore vendor-specific argument.
-  } else if (reportWarnings) {
-    reportViewportWarning(document, UnrecognizedViewportArgumentKeyError,
-                          keyString, String());
+  } else if (report_warnings) {
+    ReportViewportWarning(document, kUnrecognizedViewportArgumentKeyError,
+                          key_string, String());
   }
 }
 
-static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode) {
-  static const char* const errors[] = {
+static const char* ViewportErrorMessageTemplate(ViewportErrorCode error_code) {
+  static const char* const kErrors[] = {
       "The key \"%replacement1\" is not recognized and ignored.",
       "The value \"%replacement1\" for key \"%replacement2\" is invalid, and "
       "has been ignored.",
@@ -358,164 +361,170 @@ static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode) {
       "The key \"target-densitydpi\" is not supported.",
   };
 
-  return errors[errorCode];
+  return kErrors[error_code];
 }
 
-static MessageLevel viewportErrorMessageLevel(ViewportErrorCode errorCode) {
-  switch (errorCode) {
-    case TruncatedViewportArgumentValueError:
-    case TargetDensityDpiUnsupported:
-    case UnrecognizedViewportArgumentKeyError:
-    case UnrecognizedViewportArgumentValueError:
-    case MaximumScaleTooLargeError:
-      return WarningMessageLevel;
+static MessageLevel ViewportErrorMessageLevel(ViewportErrorCode error_code) {
+  switch (error_code) {
+    case kTruncatedViewportArgumentValueError:
+    case kTargetDensityDpiUnsupported:
+    case kUnrecognizedViewportArgumentKeyError:
+    case kUnrecognizedViewportArgumentValueError:
+    case kMaximumScaleTooLargeError:
+      return kWarningMessageLevel;
   }
 
   NOTREACHED();
-  return ErrorMessageLevel;
+  return kErrorMessageLevel;
 }
 
-void HTMLMetaElement::reportViewportWarning(Document* document,
-                                            ViewportErrorCode errorCode,
+void HTMLMetaElement::ReportViewportWarning(Document* document,
+                                            ViewportErrorCode error_code,
                                             const String& replacement1,
                                             const String& replacement2) {
-  if (!document || !document->frame())
+  if (!document || !document->GetFrame())
     return;
 
-  String message = viewportErrorMessageTemplate(errorCode);
-  if (!replacement1.isNull())
-    message.replace("%replacement1", replacement1);
-  if (!replacement2.isNull())
-    message.replace("%replacement2", replacement2);
+  String message = ViewportErrorMessageTemplate(error_code);
+  if (!replacement1.IsNull())
+    message.Replace("%replacement1", replacement1);
+  if (!replacement2.IsNull())
+    message.Replace("%replacement2", replacement2);
 
   // FIXME: This message should be moved off the console once a solution to
   // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-  document->addConsoleMessage(ConsoleMessage::create(
-      RenderingMessageSource, viewportErrorMessageLevel(errorCode), message));
+  document->AddConsoleMessage(ConsoleMessage::Create(
+      kRenderingMessageSource, ViewportErrorMessageLevel(error_code), message));
 }
 
-void HTMLMetaElement::getViewportDescriptionFromContentAttribute(
+void HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
     const String& content,
     ViewportDescription& description,
     Document* document,
-    bool viewportMetaZeroValuesQuirk) {
-  parseContentAttribute(content, (void*)&description, document,
-                        viewportMetaZeroValuesQuirk);
+    bool viewport_meta_zero_values_quirk) {
+  ParseContentAttribute(content, (void*)&description, document,
+                        viewport_meta_zero_values_quirk);
 
-  if (description.minZoom == ViewportDescription::ValueAuto)
-    description.minZoom = 0.25;
+  if (description.min_zoom == ViewportDescription::kValueAuto)
+    description.min_zoom = 0.25;
 
-  if (description.maxZoom == ViewportDescription::ValueAuto) {
-    description.maxZoom = 5;
-    description.minZoom = std::min(description.minZoom, float(5));
+  if (description.max_zoom == ViewportDescription::kValueAuto) {
+    description.max_zoom = 5;
+    description.min_zoom = std::min(description.min_zoom, float(5));
   }
 }
-void HTMLMetaElement::processViewportContentAttribute(
+void HTMLMetaElement::ProcessViewportContentAttribute(
     const String& content,
     ViewportDescription::Type origin) {
-  DCHECK(!content.isNull());
+  DCHECK(!content.IsNull());
 
-  if (!document().shouldOverrideLegacyDescription(origin))
+  if (!GetDocument().ShouldOverrideLegacyDescription(origin))
     return;
 
-  ViewportDescription descriptionFromLegacyTag(origin);
-  if (document().shouldMergeWithLegacyDescription(origin))
-    descriptionFromLegacyTag = document().viewportDescription();
+  ViewportDescription description_from_legacy_tag(origin);
+  if (GetDocument().ShouldMergeWithLegacyDescription(origin))
+    description_from_legacy_tag = GetDocument().GetViewportDescription();
 
-  getViewportDescriptionFromContentAttribute(
-      content, descriptionFromLegacyTag, &document(),
-      document().settings() &&
-          document().settings()->getViewportMetaZeroValuesQuirk());
+  GetViewportDescriptionFromContentAttribute(
+      content, description_from_legacy_tag, &GetDocument(),
+      GetDocument().GetSettings() &&
+          GetDocument().GetSettings()->GetViewportMetaZeroValuesQuirk());
 
-  document().setViewportDescription(descriptionFromLegacyTag);
+  GetDocument().SetViewportDescription(description_from_legacy_tag);
 }
 
-void HTMLMetaElement::parseAttribute(
+void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == http_equivAttr || params.name == contentAttr) {
-    process();
+    Process();
     return;
   }
 
   if (params.name != nameAttr)
-    HTMLElement::parseAttribute(params);
+    HTMLElement::ParseAttribute(params);
 }
 
-Node::InsertionNotificationRequest HTMLMetaElement::insertedInto(
-    ContainerNode* insertionPoint) {
-  HTMLElement::insertedInto(insertionPoint);
-  return InsertionShouldCallDidNotifySubtreeInsertions;
+Node::InsertionNotificationRequest HTMLMetaElement::InsertedInto(
+    ContainerNode* insertion_point) {
+  HTMLElement::InsertedInto(insertion_point);
+  return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
-void HTMLMetaElement::didNotifySubtreeInsertionsToDocument() {
-  process();
+void HTMLMetaElement::DidNotifySubtreeInsertionsToDocument() {
+  Process();
 }
 
-static bool inDocumentHead(HTMLMetaElement* element) {
+static bool InDocumentHead(HTMLMetaElement* element) {
   if (!element->isConnected())
     return false;
 
-  return Traversal<HTMLHeadElement>::firstAncestor(*element);
+  return Traversal<HTMLHeadElement>::FirstAncestor(*element);
 }
 
-void HTMLMetaElement::process() {
-  if (!isInDocumentTree())
+void HTMLMetaElement::Process() {
+  if (!IsInDocumentTree())
     return;
 
   // All below situations require a content attribute (which can be the empty
   // string).
-  const AtomicString& contentValue = fastGetAttribute(contentAttr);
-  if (contentValue.isNull())
+  const AtomicString& content_value = FastGetAttribute(contentAttr);
+  if (content_value.IsNull())
     return;
 
-  const AtomicString& nameValue = fastGetAttribute(nameAttr);
-  if (!nameValue.isEmpty()) {
-    if (equalIgnoringCase(nameValue, "viewport"))
-      processViewportContentAttribute(contentValue,
-                                      ViewportDescription::ViewportMeta);
-    else if (equalIgnoringCase(nameValue, "referrer"))
-      document().parseAndSetReferrerPolicy(contentValue,
-                                           true /* support legacy keywords */);
-    else if (equalIgnoringCase(nameValue, "handheldfriendly") &&
-             equalIgnoringCase(contentValue, "true"))
-      processViewportContentAttribute(
-          "width=device-width", ViewportDescription::HandheldFriendlyMeta);
-    else if (equalIgnoringCase(nameValue, "mobileoptimized"))
-      processViewportContentAttribute("width=device-width, initial-scale=1",
-                                      ViewportDescription::MobileOptimizedMeta);
-    else if (equalIgnoringCase(nameValue, "theme-color") && document().frame())
-      document().frame()->loader().client()->dispatchDidChangeThemeColor();
+  const AtomicString& name_value = FastGetAttribute(nameAttr);
+  if (!name_value.IsEmpty()) {
+    if (EqualIgnoringCase(name_value, "viewport"))
+      ProcessViewportContentAttribute(content_value,
+                                      ViewportDescription::kViewportMeta);
+    else if (EqualIgnoringCase(name_value, "referrer"))
+      GetDocument().ParseAndSetReferrerPolicy(
+          content_value, true /* support legacy keywords */);
+    else if (EqualIgnoringCase(name_value, "handheldfriendly") &&
+             EqualIgnoringCase(content_value, "true"))
+      ProcessViewportContentAttribute(
+          "width=device-width", ViewportDescription::kHandheldFriendlyMeta);
+    else if (EqualIgnoringCase(name_value, "mobileoptimized"))
+      ProcessViewportContentAttribute(
+          "width=device-width, initial-scale=1",
+          ViewportDescription::kMobileOptimizedMeta);
+    else if (EqualIgnoringCase(name_value, "theme-color") &&
+             GetDocument().GetFrame())
+      GetDocument()
+          .GetFrame()
+          ->Loader()
+          .Client()
+          ->DispatchDidChangeThemeColor();
   }
 
   // Get the document to process the tag, but only if we're actually part of DOM
   // tree (changing a meta tag while it's not in the tree shouldn't have any
   // effect on the document).
 
-  const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
-  if (httpEquivValue.isEmpty())
+  const AtomicString& http_equiv_value = FastGetAttribute(http_equivAttr);
+  if (http_equiv_value.IsEmpty())
     return;
 
-  HttpEquiv::process(document(), httpEquivValue, contentValue,
-                     inDocumentHead(this), this);
+  HttpEquiv::Process(GetDocument(), http_equiv_value, content_value,
+                     InDocumentHead(this), this);
 }
 
-WTF::TextEncoding HTMLMetaElement::computeEncoding() const {
-  HTMLAttributeList attributeList;
-  for (const Attribute& attr : attributes())
-    attributeList.push_back(
-        std::make_pair(attr.name().localName(), attr.value().getString()));
-  return encodingFromMetaAttributes(attributeList);
+WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {
+  HTMLAttributeList attribute_list;
+  for (const Attribute& attr : Attributes())
+    attribute_list.push_back(
+        std::make_pair(attr.GetName().LocalName(), attr.Value().GetString()));
+  return EncodingFromMetaAttributes(attribute_list);
 }
 
-const AtomicString& HTMLMetaElement::content() const {
+const AtomicString& HTMLMetaElement::Content() const {
   return getAttribute(contentAttr);
 }
 
-const AtomicString& HTMLMetaElement::httpEquiv() const {
+const AtomicString& HTMLMetaElement::HttpEquiv() const {
   return getAttribute(http_equivAttr);
 }
 
-const AtomicString& HTMLMetaElement::name() const {
-  return getNameAttribute();
+const AtomicString& HTMLMetaElement::GetName() const {
+  return GetNameAttribute();
 }
 }

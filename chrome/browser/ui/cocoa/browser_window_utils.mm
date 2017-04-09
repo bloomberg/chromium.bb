@@ -28,19 +28,19 @@ CGFloat GetPatternVerticalOffsetWithTabStrip(bool tabStripVisible) {
 
 @implementation BrowserWindowUtils
 + (BOOL)shouldHandleKeyboardEvent:(const NativeWebKeyboardEvent&)event {
-  if (event.skip_in_browser || event.type() == NativeWebKeyboardEvent::Char)
+  if (event.skip_in_browser || event.GetType() == NativeWebKeyboardEvent::kChar)
     return NO;
   DCHECK(event.os_event != NULL);
   return YES;
 }
 
 + (BOOL)isTextEditingEvent:(const content::NativeWebKeyboardEvent&)event {
-  return (event.modifiers() & blink::WebInputEvent::MetaKey) &&
-         (event.windowsKeyCode == ui::VKEY_A ||
-          event.windowsKeyCode == ui::VKEY_V ||
-          event.windowsKeyCode == ui::VKEY_C ||
-          event.windowsKeyCode == ui::VKEY_X ||
-          event.windowsKeyCode == ui::VKEY_Z);
+  return (event.GetModifiers() & blink::WebInputEvent::kMetaKey) &&
+         (event.windows_key_code == ui::VKEY_A ||
+          event.windows_key_code == ui::VKEY_V ||
+          event.windows_key_code == ui::VKEY_C ||
+          event.windows_key_code == ui::VKEY_X ||
+          event.windows_key_code == ui::VKEY_Z);
 }
 
 + (int)getCommandId:(const NativeWebKeyboardEvent&)event {

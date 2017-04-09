@@ -36,7 +36,7 @@ class HTMLTrackElement;
 
 class LoadableTextTrack final : public TextTrack {
  public:
-  static LoadableTextTrack* create(HTMLTrackElement* track) {
+  static LoadableTextTrack* Create(HTMLTrackElement* track) {
     return new LoadableTextTrack(track);
   }
   ~LoadableTextTrack() override;
@@ -44,26 +44,26 @@ class LoadableTextTrack final : public TextTrack {
   // TextTrack method.
   void setMode(const AtomicString&) override;
 
-  using TextTrack::addListOfCues;
+  using TextTrack::AddListOfCues;
 
-  size_t trackElementIndex() const;
-  HTMLTrackElement* trackElement() { return m_trackElement; }
+  size_t TrackElementIndex() const;
+  HTMLTrackElement* TrackElement() { return track_element_; }
 
-  bool isDefault() const override;
+  bool IsDefault() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit LoadableTextTrack(HTMLTrackElement*);
 
-  Member<HTMLTrackElement> m_trackElement;
+  Member<HTMLTrackElement> track_element_;
 };
 
 DEFINE_TYPE_CASTS(LoadableTextTrack,
                   TextTrack,
                   track,
-                  track->trackType() == TextTrack::TrackElement,
-                  track.trackType() == TextTrack::TrackElement);
+                  track->TrackType() == TextTrack::kTrackElement,
+                  track.TrackType() == TextTrack::kTrackElement);
 
 }  // namespace blink
 

@@ -12,44 +12,44 @@ BluetoothCharacteristicProperties* BluetoothCharacteristicProperties::Create(
 }
 
 bool BluetoothCharacteristicProperties::broadcast() const {
-  return properties & Property::Broadcast;
+  return properties & Property::kBroadcast;
 }
 
 bool BluetoothCharacteristicProperties::read() const {
-  return properties & Property::Read;
+  return properties & Property::kRead;
 }
 
 bool BluetoothCharacteristicProperties::writeWithoutResponse() const {
-  return properties & Property::WriteWithoutResponse;
+  return properties & Property::kWriteWithoutResponse;
 }
 
 bool BluetoothCharacteristicProperties::write() const {
-  return properties & Property::Write;
+  return properties & Property::kWrite;
 }
 
 bool BluetoothCharacteristicProperties::notify() const {
-  return properties & Property::Notify;
+  return properties & Property::kNotify;
 }
 
 bool BluetoothCharacteristicProperties::indicate() const {
-  return properties & Property::Indicate;
+  return properties & Property::kIndicate;
 }
 
 bool BluetoothCharacteristicProperties::authenticatedSignedWrites() const {
-  return properties & Property::AuthenticatedSignedWrites;
+  return properties & Property::kAuthenticatedSignedWrites;
 }
 
 bool BluetoothCharacteristicProperties::reliableWrite() const {
-  return properties & Property::ReliableWrite;
+  return properties & Property::kReliableWrite;
 }
 
 bool BluetoothCharacteristicProperties::writableAuxiliaries() const {
-  return properties & Property::WritableAuxiliaries;
+  return properties & Property::kWritableAuxiliaries;
 }
 
 BluetoothCharacteristicProperties::BluetoothCharacteristicProperties(
     uint32_t device_properties) {
-  ASSERT(device_properties != Property::None);
+  ASSERT(device_properties != Property::kNone);
   properties = device_properties;
 }
 

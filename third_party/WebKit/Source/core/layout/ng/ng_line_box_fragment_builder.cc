@@ -59,21 +59,21 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGWritingMode writing_mode(
-      FromPlatformWritingMode(node_->Style().getWritingMode()));
+      FromPlatformWritingMode(node_->Style().GetWritingMode()));
   NGPhysicalSize physical_size =
       NGLogicalSize(inline_size_, Metrics().LineHeight())
           .ConvertToPhysical(writing_mode);
 
   for (size_t i = 0; i < children_.size(); ++i) {
-    NGPhysicalFragment* child = children_[i].get();
+    NGPhysicalFragment* child = children_[i].Get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         writing_mode, direction_, physical_size, child->Size()));
   }
 
-  return adoptRef(new NGPhysicalLineBoxFragment(
+  return AdoptRef(new NGPhysicalLineBoxFragment(
       physical_size, children_, metrics_,
       break_token_ ? std::move(break_token_)
-                   : NGInlineBreakToken::create(node_)));
+                   : NGInlineBreakToken::Create(node_)));
 }
 
 }  // namespace blink

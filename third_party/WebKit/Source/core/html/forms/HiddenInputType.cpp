@@ -41,72 +41,73 @@ namespace blink {
 
 using namespace HTMLNames;
 
-InputType* HiddenInputType::create(HTMLInputElement& element) {
+InputType* HiddenInputType::Create(HTMLInputElement& element) {
   return new HiddenInputType(element);
 }
 
 DEFINE_TRACE(HiddenInputType) {
-  InputTypeView::trace(visitor);
-  InputType::trace(visitor);
+  InputTypeView::Trace(visitor);
+  InputType::Trace(visitor);
 }
 
-InputTypeView* HiddenInputType::createView() {
+InputTypeView* HiddenInputType::CreateView() {
   return this;
 }
 
-const AtomicString& HiddenInputType::formControlType() const {
+const AtomicString& HiddenInputType::FormControlType() const {
   return InputTypeNames::hidden;
 }
 
-FormControlState HiddenInputType::saveFormControlState() const {
+FormControlState HiddenInputType::SaveFormControlState() const {
   // valueAttributeWasUpdatedAfterParsing() never be true for form
   // controls create by createElement() or cloneNode(). It's ok for
   // now because we restore values only to form controls created by
   // parsing.
-  return element().valueAttributeWasUpdatedAfterParsing()
-             ? FormControlState(element().value())
+  return GetElement().ValueAttributeWasUpdatedAfterParsing()
+             ? FormControlState(GetElement().value())
              : FormControlState();
 }
 
-void HiddenInputType::restoreFormControlState(const FormControlState& state) {
-  element().setAttribute(valueAttr, AtomicString(state[0]));
+void HiddenInputType::RestoreFormControlState(const FormControlState& state) {
+  GetElement().setAttribute(valueAttr, AtomicString(state[0]));
 }
 
-bool HiddenInputType::supportsValidation() const {
+bool HiddenInputType::SupportsValidation() const {
   return false;
 }
 
-LayoutObject* HiddenInputType::createLayoutObject(const ComputedStyle&) const {
+LayoutObject* HiddenInputType::CreateLayoutObject(const ComputedStyle&) const {
   NOTREACHED();
   return nullptr;
 }
 
-void HiddenInputType::accessKeyAction(bool) {}
+void HiddenInputType::AccessKeyAction(bool) {}
 
-bool HiddenInputType::layoutObjectIsNeeded() {
+bool HiddenInputType::LayoutObjectIsNeeded() {
   return false;
 }
 
-InputType::ValueMode HiddenInputType::valueMode() const {
+InputType::ValueMode HiddenInputType::GetValueMode() const {
   return ValueMode::kDefault;
 }
 
-void HiddenInputType::setValue(const String& sanitizedValue,
+void HiddenInputType::SetValue(const String& sanitized_value,
                                bool,
                                TextFieldEventBehavior,
                                TextControlSetValueSelection) {
-  element().setAttribute(valueAttr, AtomicString(sanitizedValue));
+  GetElement().setAttribute(valueAttr, AtomicString(sanitized_value));
 }
 
-void HiddenInputType::appendToFormData(FormData& formData) const {
-  if (equalIgnoringCase(element().name(), "_charset_")) {
-    formData.append(element().name(), String(formData.encoding().name()));
+void HiddenInputType::AppendToFormData(FormData& form_data) const {
+  if (EqualIgnoringCase(GetElement().GetName(), "_charset_")) {
+    form_data.append(GetElement().GetName(),
+                     String(form_data.Encoding().GetName()));
     return;
   }
-  InputType::appendToFormData(formData);
+  InputType::AppendToFormData(form_data);
 }
 
-bool HiddenInputType::shouldRespectHeightAndWidthAttributes() {
+bool HiddenInputType::ShouldRespectHeightAndWidthAttributes() {
   return true;
 }
 

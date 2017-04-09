@@ -51,57 +51,57 @@ class CORE_EXPORT DocumentInit final {
  public:
   DocumentInit(const KURL& = KURL(),
                LocalFrame* = nullptr,
-               Document* contextDocument = nullptr,
+               Document* context_document = nullptr,
                HTMLImportsController* = nullptr);
-  DocumentInit(Document* ownerDocument,
+  DocumentInit(Document* owner_document,
                const KURL&,
                LocalFrame*,
-               Document* contextDocument = nullptr,
+               Document* context_document = nullptr,
                HTMLImportsController* = nullptr);
   DocumentInit(const DocumentInit&);
   ~DocumentInit();
 
-  const KURL& url() const { return m_url; }
-  LocalFrame* frame() const { return m_frame; }
-  HTMLImportsController* importsController() const {
-    return m_importsController;
+  const KURL& Url() const { return url_; }
+  LocalFrame* GetFrame() const { return frame_; }
+  HTMLImportsController* ImportsController() const {
+    return imports_controller_;
   }
 
-  bool hasSecurityContext() const { return frameForSecurityContext(); }
-  bool shouldTreatURLAsSrcdocDocument() const;
-  bool shouldSetURL() const;
-  bool isSeamlessAllowedFor(Document* child) const;
-  bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
-  SandboxFlags getSandboxFlags() const;
-  bool isHostedInReservedIPRange() const;
-  WebInsecureRequestPolicy getInsecureRequestPolicy() const;
-  SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
+  bool HasSecurityContext() const { return FrameForSecurityContext(); }
+  bool ShouldTreatURLAsSrcdocDocument() const;
+  bool ShouldSetURL() const;
+  bool IsSeamlessAllowedFor(Document* child) const;
+  bool ShouldReuseDefaultView() const { return should_reuse_default_view_; }
+  SandboxFlags GetSandboxFlags() const;
+  bool IsHostedInReservedIPRange() const;
+  WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
+  SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade() const;
 
-  Document* parent() const { return m_parent.get(); }
-  Document* owner() const { return m_owner.get(); }
-  KURL parentBaseURL() const;
-  LocalFrame* ownerFrame() const;
-  Settings* settings() const;
+  Document* Parent() const { return parent_.Get(); }
+  Document* Owner() const { return owner_.Get(); }
+  KURL ParentBaseURL() const;
+  LocalFrame* OwnerFrame() const;
+  Settings* GetSettings() const;
 
-  DocumentInit& withRegistrationContext(V0CustomElementRegistrationContext*);
-  DocumentInit& withNewRegistrationContext();
-  V0CustomElementRegistrationContext* registrationContext(Document*) const;
-  Document* contextDocument() const;
+  DocumentInit& WithRegistrationContext(V0CustomElementRegistrationContext*);
+  DocumentInit& WithNewRegistrationContext();
+  V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
+  Document* ContextDocument() const;
 
-  static DocumentInit fromContext(Document* contextDocument,
+  static DocumentInit FromContext(Document* context_document,
                                   const KURL& = KURL());
 
  private:
-  LocalFrame* frameForSecurityContext() const;
+  LocalFrame* FrameForSecurityContext() const;
 
-  KURL m_url;
-  Member<LocalFrame> m_frame;
-  Member<Document> m_parent;
-  Member<Document> m_owner;
-  Member<Document> m_contextDocument;
-  Member<HTMLImportsController> m_importsController;
-  Member<V0CustomElementRegistrationContext> m_registrationContext;
-  bool m_createNewRegistrationContext;
+  KURL url_;
+  Member<LocalFrame> frame_;
+  Member<Document> parent_;
+  Member<Document> owner_;
+  Member<Document> context_document_;
+  Member<HTMLImportsController> imports_controller_;
+  Member<V0CustomElementRegistrationContext> registration_context_;
+  bool create_new_registration_context_;
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
@@ -112,7 +112,7 @@ class CORE_EXPORT DocumentInit final {
   // LocalDOMWindow to the Document that results from the network load. See also
   // SecurityContext::isSecureTransitionTo.
   // FIXME: This is for DocumentWriter creation, not for one of Document.
-  bool m_shouldReuseDefaultView;
+  bool should_reuse_default_view_;
 };
 
 }  // namespace blink

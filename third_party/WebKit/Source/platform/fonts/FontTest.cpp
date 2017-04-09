@@ -10,40 +10,40 @@
 #include "platform/text/TextRun.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::createTestFont;
+using blink::testing::CreateTestFont;
 
 namespace blink {
 
 TEST(FontTest, TextIntercepts) {
   Font font =
-      createTestFont("Ahem", testing::platformTestDataPath("Ahem.woff"), 16);
+      CreateTestFont("Ahem", testing::PlatformTestDataPath("Ahem.woff"), 16);
   // A sequence of LATIN CAPITAL LETTER E WITH ACUTE and LATIN SMALL LETTER P
   // characters. E ACUTES are squares above the baseline in Ahem, while p's
   // are rectangles below the baseline.
-  UChar ahemAboveBelowBaselineString[] = {0xc9, 0x70, 0xc9, 0x70, 0xc9,
-                                          0x70, 0xc9, 0x70, 0xc9};
-  TextRun ahemAboveBelowBaseline(ahemAboveBelowBaselineString, 9);
-  TextRunPaintInfo textRunPaintInfo(ahemAboveBelowBaseline);
-  PaintFlags defaultPaint;
-  float deviceScaleFactor = 1;
+  UChar ahem_above_below_baseline_string[] = {0xc9, 0x70, 0xc9, 0x70, 0xc9,
+                                              0x70, 0xc9, 0x70, 0xc9};
+  TextRun ahem_above_below_baseline(ahem_above_below_baseline_string, 9);
+  TextRunPaintInfo text_run_paint_info(ahem_above_below_baseline);
+  PaintFlags default_paint;
+  float device_scale_factor = 1;
 
-  std::tuple<float, float> belowBaselineBounds = std::make_tuple(2, 4);
-  Vector<Font::TextIntercept> textIntercepts;
+  std::tuple<float, float> below_baseline_bounds = std::make_tuple(2, 4);
+  Vector<Font::TextIntercept> text_intercepts;
   // 4 intercept ranges for below baseline p glyphs in the test string
-  font.getTextIntercepts(textRunPaintInfo, deviceScaleFactor, defaultPaint,
-                         belowBaselineBounds, textIntercepts);
-  EXPECT_EQ(textIntercepts.size(), 4u);
-  for (auto textIntercept : textIntercepts) {
-    EXPECT_GT(textIntercept.m_end, textIntercept.m_begin);
+  font.GetTextIntercepts(text_run_paint_info, device_scale_factor,
+                         default_paint, below_baseline_bounds, text_intercepts);
+  EXPECT_EQ(text_intercepts.size(), 4u);
+  for (auto text_intercept : text_intercepts) {
+    EXPECT_GT(text_intercept.end_, text_intercept.begin_);
   }
 
-  std::tuple<float, float> aboveBaselineBounds = std::make_tuple(-4, -2);
+  std::tuple<float, float> above_baseline_bounds = std::make_tuple(-4, -2);
   // 5 intercept ranges for the above baseline E ACUTE glyphs
-  font.getTextIntercepts(textRunPaintInfo, deviceScaleFactor, defaultPaint,
-                         aboveBaselineBounds, textIntercepts);
-  EXPECT_EQ(textIntercepts.size(), 5u);
-  for (auto textIntercept : textIntercepts) {
-    EXPECT_GT(textIntercept.m_end, textIntercept.m_begin);
+  font.GetTextIntercepts(text_run_paint_info, device_scale_factor,
+                         default_paint, above_baseline_bounds, text_intercepts);
+  EXPECT_EQ(text_intercepts.size(), 5u);
+  for (auto text_intercept : text_intercepts) {
+    EXPECT_GT(text_intercept.end_, text_intercept.begin_);
   }
 }
 

@@ -42,233 +42,240 @@
 
 namespace blink {
 
-CSSBoxType referenceBox(const ShapeValue& shapeValue) {
-  if (shapeValue.cssBox() == BoxMissing)
-    return MarginBox;
-  return shapeValue.cssBox();
+CSSBoxType ReferenceBox(const ShapeValue& shape_value) {
+  if (shape_value.CssBox() == kBoxMissing)
+    return kMarginBox;
+  return shape_value.CssBox();
 }
 
-void ShapeOutsideInfo::setReferenceBoxLogicalSize(
-    LayoutSize newReferenceBoxLogicalSize) {
-  bool isHorizontalWritingMode =
-      m_layoutBox.containingBlock()->style()->isHorizontalWritingMode();
-  switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
-    case MarginBox:
-      if (isHorizontalWritingMode)
-        newReferenceBoxLogicalSize.expand(m_layoutBox.marginWidth(),
-                                          m_layoutBox.marginHeight());
+void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
+    LayoutSize new_reference_box_logical_size) {
+  bool is_horizontal_writing_mode =
+      layout_box_.ContainingBlock()->Style()->IsHorizontalWritingMode();
+  switch (ReferenceBox(*layout_box_.Style()->ShapeOutside())) {
+    case kMarginBox:
+      if (is_horizontal_writing_mode)
+        new_reference_box_logical_size.Expand(layout_box_.MarginWidth(),
+                                              layout_box_.MarginHeight());
       else
-        newReferenceBoxLogicalSize.expand(m_layoutBox.marginHeight(),
-                                          m_layoutBox.marginWidth());
+        new_reference_box_logical_size.Expand(layout_box_.MarginHeight(),
+                                              layout_box_.MarginWidth());
       break;
-    case BorderBox:
+    case kBorderBox:
       break;
-    case PaddingBox:
-      if (isHorizontalWritingMode)
-        newReferenceBoxLogicalSize.shrink(m_layoutBox.borderWidth(),
-                                          m_layoutBox.borderHeight());
+    case kPaddingBox:
+      if (is_horizontal_writing_mode)
+        new_reference_box_logical_size.Shrink(layout_box_.BorderWidth(),
+                                              layout_box_.BorderHeight());
       else
-        newReferenceBoxLogicalSize.shrink(m_layoutBox.borderHeight(),
-                                          m_layoutBox.borderWidth());
+        new_reference_box_logical_size.Shrink(layout_box_.BorderHeight(),
+                                              layout_box_.BorderWidth());
       break;
-    case ContentBox:
-      if (isHorizontalWritingMode)
-        newReferenceBoxLogicalSize.shrink(m_layoutBox.borderAndPaddingWidth(),
-                                          m_layoutBox.borderAndPaddingHeight());
+    case kContentBox:
+      if (is_horizontal_writing_mode)
+        new_reference_box_logical_size.Shrink(
+            layout_box_.BorderAndPaddingWidth(),
+            layout_box_.BorderAndPaddingHeight());
       else
-        newReferenceBoxLogicalSize.shrink(m_layoutBox.borderAndPaddingHeight(),
-                                          m_layoutBox.borderAndPaddingWidth());
+        new_reference_box_logical_size.Shrink(
+            layout_box_.BorderAndPaddingHeight(),
+            layout_box_.BorderAndPaddingWidth());
       break;
-    case BoxMissing:
+    case kBoxMissing:
       NOTREACHED();
       break;
   }
 
-  newReferenceBoxLogicalSize.clampNegativeToZero();
+  new_reference_box_logical_size.ClampNegativeToZero();
 
-  if (m_referenceBoxLogicalSize == newReferenceBoxLogicalSize)
+  if (reference_box_logical_size_ == new_reference_box_logical_size)
     return;
-  markShapeAsDirty();
-  m_referenceBoxLogicalSize = newReferenceBoxLogicalSize;
+  MarkShapeAsDirty();
+  reference_box_logical_size_ = new_reference_box_logical_size;
 }
 
-static bool checkShapeImageOrigin(Document& document,
-                                  const StyleImage& styleImage) {
-  if (styleImage.isGeneratedImage())
+static bool CheckShapeImageOrigin(Document& document,
+                                  const StyleImage& style_image) {
+  if (style_image.IsGeneratedImage())
     return true;
 
-  DCHECK(styleImage.cachedImage());
-  ImageResourceContent& imageResource = *(styleImage.cachedImage());
-  if (imageResource.isAccessAllowed(document.getSecurityOrigin()))
+  DCHECK(style_image.CachedImage());
+  ImageResourceContent& image_resource = *(style_image.CachedImage());
+  if (image_resource.IsAccessAllowed(document.GetSecurityOrigin()))
     return true;
 
-  const KURL& url = imageResource.url();
-  String urlString = url.isNull() ? "''" : url.elidedString();
-  document.addConsoleMessage(
-      ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
-                             "Unsafe attempt to load URL " + urlString + "."));
+  const KURL& url = image_resource.Url();
+  String url_string = url.IsNull() ? "''" : url.ElidedString();
+  document.AddConsoleMessage(
+      ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
+                             "Unsafe attempt to load URL " + url_string + "."));
 
   return false;
 }
 
-static LayoutRect getShapeImageMarginRect(
-    const LayoutBox& layoutBox,
-    const LayoutSize& referenceBoxLogicalSize) {
-  LayoutPoint marginBoxOrigin(
-      -layoutBox.marginLogicalLeft() - layoutBox.borderAndPaddingLogicalLeft(),
-      -layoutBox.marginBefore() - layoutBox.borderBefore() -
-          layoutBox.paddingBefore());
-  LayoutSize marginBoxSizeDelta(
-      layoutBox.marginLogicalWidth() + layoutBox.borderAndPaddingLogicalWidth(),
-      layoutBox.marginLogicalHeight() +
-          layoutBox.borderAndPaddingLogicalHeight());
-  LayoutSize marginRectSize(referenceBoxLogicalSize + marginBoxSizeDelta);
-  marginRectSize.clampNegativeToZero();
-  return LayoutRect(marginBoxOrigin, marginRectSize);
+static LayoutRect GetShapeImageMarginRect(
+    const LayoutBox& layout_box,
+    const LayoutSize& reference_box_logical_size) {
+  LayoutPoint margin_box_origin(-layout_box.MarginLogicalLeft() -
+                                    layout_box.BorderAndPaddingLogicalLeft(),
+                                -layout_box.MarginBefore() -
+                                    layout_box.BorderBefore() -
+                                    layout_box.PaddingBefore());
+  LayoutSize margin_box_size_delta(
+      layout_box.MarginLogicalWidth() +
+          layout_box.BorderAndPaddingLogicalWidth(),
+      layout_box.MarginLogicalHeight() +
+          layout_box.BorderAndPaddingLogicalHeight());
+  LayoutSize margin_rect_size(reference_box_logical_size +
+                              margin_box_size_delta);
+  margin_rect_size.ClampNegativeToZero();
+  return LayoutRect(margin_box_origin, margin_rect_size);
 }
 
-static bool isValidRasterShapeRect(const LayoutRect& rect) {
-  static double maxImageSizeBytes = 0;
-  if (!maxImageSizeBytes) {
-    size_t size32MaxBytes =
+static bool IsValidRasterShapeRect(const LayoutRect& rect) {
+  static double max_image_size_bytes = 0;
+  if (!max_image_size_bytes) {
+    size_t size32_max_bytes =
         0xFFFFFFFF / 4;  // Some platforms don't limit maxDecodedImageBytes.
-    maxImageSizeBytes =
-        std::min(size32MaxBytes, Platform::current()->maxDecodedImageBytes());
+    max_image_size_bytes =
+        std::min(size32_max_bytes, Platform::Current()->MaxDecodedImageBytes());
   }
-  return (rect.width().toFloat() * rect.height().toFloat() * 4.0) <
-         maxImageSizeBytes;
+  return (rect.Width().ToFloat() * rect.Height().ToFloat() * 4.0) <
+         max_image_size_bytes;
 }
 
-std::unique_ptr<Shape> ShapeOutsideInfo::createShapeForImage(
-    StyleImage* styleImage,
-    float shapeImageThreshold,
-    WritingMode writingMode,
+std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
+    StyleImage* style_image,
+    float shape_image_threshold,
+    WritingMode writing_mode,
     float margin) const {
-  const LayoutSize& imageSize =
-      styleImage->imageSize(m_layoutBox, m_layoutBox.style()->effectiveZoom(),
-                            m_referenceBoxLogicalSize);
+  const LayoutSize& image_size =
+      style_image->ImageSize(layout_box_, layout_box_.Style()->EffectiveZoom(),
+                             reference_box_logical_size_);
 
-  const LayoutRect& marginRect =
-      getShapeImageMarginRect(m_layoutBox, m_referenceBoxLogicalSize);
-  const LayoutRect& imageRect =
-      (m_layoutBox.isLayoutImage())
-          ? toLayoutImage(m_layoutBox).replacedContentRect()
-          : LayoutRect(LayoutPoint(), imageSize);
+  const LayoutRect& margin_rect =
+      GetShapeImageMarginRect(layout_box_, reference_box_logical_size_);
+  const LayoutRect& image_rect =
+      (layout_box_.IsLayoutImage())
+          ? ToLayoutImage(layout_box_).ReplacedContentRect()
+          : LayoutRect(LayoutPoint(), image_size);
 
-  if (!isValidRasterShapeRect(marginRect) ||
-      !isValidRasterShapeRect(imageRect)) {
-    m_layoutBox.document().addConsoleMessage(
-        ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,
+  if (!IsValidRasterShapeRect(margin_rect) ||
+      !IsValidRasterShapeRect(image_rect)) {
+    layout_box_.GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
                                "The shape-outside image is too large."));
-    return Shape::createEmptyRasterShape(writingMode, margin);
+    return Shape::CreateEmptyRasterShape(writing_mode, margin);
   }
 
-  DCHECK(!styleImage->isPendingImage());
+  DCHECK(!style_image->IsPendingImage());
   RefPtr<Image> image =
-      styleImage->image(m_layoutBox, flooredIntSize(imageSize),
-                        m_layoutBox.style()->effectiveZoom());
+      style_image->GetImage(layout_box_, FlooredIntSize(image_size),
+                            layout_box_.Style()->EffectiveZoom());
 
-  return Shape::createRasterShape(image.get(), shapeImageThreshold, imageRect,
-                                  marginRect, writingMode, margin);
+  return Shape::CreateRasterShape(image.Get(), shape_image_threshold,
+                                  image_rect, margin_rect, writing_mode,
+                                  margin);
 }
 
-const Shape& ShapeOutsideInfo::computedShape() const {
-  if (Shape* shape = m_shape.get())
+const Shape& ShapeOutsideInfo::ComputedShape() const {
+  if (Shape* shape = shape_.get())
     return *shape;
 
-  AutoReset<bool> isInComputingShape(&m_isComputingShape, true);
+  AutoReset<bool> is_in_computing_shape(&is_computing_shape_, true);
 
-  const ComputedStyle& style = *m_layoutBox.style();
-  DCHECK(m_layoutBox.containingBlock());
-  const ComputedStyle& containingBlockStyle =
-      *m_layoutBox.containingBlock()->style();
+  const ComputedStyle& style = *layout_box_.Style();
+  DCHECK(layout_box_.ContainingBlock());
+  const ComputedStyle& containing_block_style =
+      *layout_box_.ContainingBlock()->Style();
 
-  WritingMode writingMode = containingBlockStyle.getWritingMode();
+  WritingMode writing_mode = containing_block_style.GetWritingMode();
   // Make sure contentWidth is not negative. This can happen when containing
   // block has a vertical scrollbar and its content is smaller than the
   // scrollbar width.
-  LayoutUnit maximumValue =
-      m_layoutBox.containingBlock()
+  LayoutUnit maximum_value =
+      layout_box_.ContainingBlock()
           ? std::max(LayoutUnit(),
-                     m_layoutBox.containingBlock()->contentWidth())
+                     layout_box_.ContainingBlock()->ContentWidth())
           : LayoutUnit();
-  float margin = floatValueForLength(m_layoutBox.style()->shapeMargin(),
-                                     maximumValue.toFloat());
+  float margin = FloatValueForLength(layout_box_.Style()->ShapeMargin(),
+                                     maximum_value.ToFloat());
 
-  float shapeImageThreshold = style.shapeImageThreshold();
-  DCHECK(style.shapeOutside());
-  const ShapeValue& shapeValue = *style.shapeOutside();
+  float shape_image_threshold = style.ShapeImageThreshold();
+  DCHECK(style.ShapeOutside());
+  const ShapeValue& shape_value = *style.ShapeOutside();
 
-  switch (shapeValue.type()) {
-    case ShapeValue::Shape:
-      DCHECK(shapeValue.shape());
-      m_shape = Shape::createShape(
-          shapeValue.shape(), m_referenceBoxLogicalSize, writingMode, margin);
+  switch (shape_value.GetType()) {
+    case ShapeValue::kShape:
+      DCHECK(shape_value.Shape());
+      shape_ =
+          Shape::CreateShape(shape_value.Shape(), reference_box_logical_size_,
+                             writing_mode, margin);
       break;
-    case ShapeValue::Image:
-      DCHECK(shapeValue.isImageValid());
-      m_shape = createShapeForImage(shapeValue.image(), shapeImageThreshold,
-                                    writingMode, margin);
+    case ShapeValue::kImage:
+      DCHECK(shape_value.IsImageValid());
+      shape_ = CreateShapeForImage(shape_value.GetImage(),
+                                   shape_image_threshold, writing_mode, margin);
       break;
-    case ShapeValue::Box: {
-      const FloatRoundedRect& shapeRect = style.getRoundedBorderFor(
-          LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize),
-          m_layoutBox.view());
-      m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin);
+    case ShapeValue::kBox: {
+      const FloatRoundedRect& shape_rect = style.GetRoundedBorderFor(
+          LayoutRect(LayoutPoint(), reference_box_logical_size_),
+          layout_box_.View());
+      shape_ = Shape::CreateLayoutBoxShape(shape_rect, writing_mode, margin);
       break;
     }
   }
 
-  DCHECK(m_shape);
-  return *m_shape;
+  DCHECK(shape_);
+  return *shape_;
 }
 
-inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& layoutBox,
-                                            WritingMode writingMode) {
-  switch (writingMode) {
+inline LayoutUnit BorderBeforeInWritingMode(const LayoutBox& layout_box,
+                                            WritingMode writing_mode) {
+  switch (writing_mode) {
     case WritingMode::kHorizontalTb:
-      return LayoutUnit(layoutBox.borderTop());
+      return LayoutUnit(layout_box.BorderTop());
     case WritingMode::kVerticalLr:
-      return LayoutUnit(layoutBox.borderLeft());
+      return LayoutUnit(layout_box.BorderLeft());
     case WritingMode::kVerticalRl:
-      return LayoutUnit(layoutBox.borderRight());
+      return LayoutUnit(layout_box.BorderRight());
   }
 
   NOTREACHED();
-  return LayoutUnit(layoutBox.borderBefore());
+  return LayoutUnit(layout_box.BorderBefore());
 }
 
-inline LayoutUnit borderAndPaddingBeforeInWritingMode(
-    const LayoutBox& layoutBox,
-    WritingMode writingMode) {
-  switch (writingMode) {
+inline LayoutUnit BorderAndPaddingBeforeInWritingMode(
+    const LayoutBox& layout_box,
+    WritingMode writing_mode) {
+  switch (writing_mode) {
     case WritingMode::kHorizontalTb:
-      return layoutBox.borderTop() + layoutBox.paddingTop();
+      return layout_box.BorderTop() + layout_box.PaddingTop();
     case WritingMode::kVerticalLr:
-      return layoutBox.borderLeft() + layoutBox.paddingLeft();
+      return layout_box.BorderLeft() + layout_box.PaddingLeft();
     case WritingMode::kVerticalRl:
-      return layoutBox.borderRight() + layoutBox.paddingRight();
+      return layout_box.BorderRight() + layout_box.PaddingRight();
   }
 
   NOTREACHED();
-  return layoutBox.borderAndPaddingBefore();
+  return layout_box.BorderAndPaddingBefore();
 }
 
-LayoutUnit ShapeOutsideInfo::logicalTopOffset() const {
-  switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
-    case MarginBox:
-      return -m_layoutBox.marginBefore(m_layoutBox.containingBlock()->style());
-    case BorderBox:
+LayoutUnit ShapeOutsideInfo::LogicalTopOffset() const {
+  switch (ReferenceBox(*layout_box_.Style()->ShapeOutside())) {
+    case kMarginBox:
+      return -layout_box_.MarginBefore(layout_box_.ContainingBlock()->Style());
+    case kBorderBox:
       return LayoutUnit();
-    case PaddingBox:
-      return borderBeforeInWritingMode(
-          m_layoutBox,
-          m_layoutBox.containingBlock()->style()->getWritingMode());
-    case ContentBox:
-      return borderAndPaddingBeforeInWritingMode(
-          m_layoutBox,
-          m_layoutBox.containingBlock()->style()->getWritingMode());
-    case BoxMissing:
+    case kPaddingBox:
+      return BorderBeforeInWritingMode(
+          layout_box_,
+          layout_box_.ContainingBlock()->Style()->GetWritingMode());
+    case kContentBox:
+      return BorderAndPaddingBeforeInWritingMode(
+          layout_box_,
+          layout_box_.ContainingBlock()->Style()->GetWritingMode());
+    case kBoxMissing:
       break;
   }
 
@@ -276,49 +283,49 @@ LayoutUnit ShapeOutsideInfo::logicalTopOffset() const {
   return LayoutUnit();
 }
 
-inline LayoutUnit borderStartWithStyleForWritingMode(
-    const LayoutBox& layoutBox,
+inline LayoutUnit BorderStartWithStyleForWritingMode(
+    const LayoutBox& layout_box,
     const ComputedStyle* style) {
-  if (style->isHorizontalWritingMode()) {
-    if (style->isLeftToRightDirection())
-      return LayoutUnit(layoutBox.borderLeft());
+  if (style->IsHorizontalWritingMode()) {
+    if (style->IsLeftToRightDirection())
+      return LayoutUnit(layout_box.BorderLeft());
 
-    return LayoutUnit(layoutBox.borderRight());
+    return LayoutUnit(layout_box.BorderRight());
   }
-  if (style->isLeftToRightDirection())
-    return LayoutUnit(layoutBox.borderTop());
+  if (style->IsLeftToRightDirection())
+    return LayoutUnit(layout_box.BorderTop());
 
-  return LayoutUnit(layoutBox.borderBottom());
+  return LayoutUnit(layout_box.BorderBottom());
 }
 
-inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(
-    const LayoutBox& layoutBox,
+inline LayoutUnit BorderAndPaddingStartWithStyleForWritingMode(
+    const LayoutBox& layout_box,
     const ComputedStyle* style) {
-  if (style->isHorizontalWritingMode()) {
-    if (style->isLeftToRightDirection())
-      return layoutBox.borderLeft() + layoutBox.paddingLeft();
+  if (style->IsHorizontalWritingMode()) {
+    if (style->IsLeftToRightDirection())
+      return layout_box.BorderLeft() + layout_box.PaddingLeft();
 
-    return layoutBox.borderRight() + layoutBox.paddingRight();
+    return layout_box.BorderRight() + layout_box.PaddingRight();
   }
-  if (style->isLeftToRightDirection())
-    return layoutBox.borderTop() + layoutBox.paddingTop();
+  if (style->IsLeftToRightDirection())
+    return layout_box.BorderTop() + layout_box.PaddingTop();
 
-  return layoutBox.borderBottom() + layoutBox.paddingBottom();
+  return layout_box.BorderBottom() + layout_box.PaddingBottom();
 }
 
-LayoutUnit ShapeOutsideInfo::logicalLeftOffset() const {
-  switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
-    case MarginBox:
-      return -m_layoutBox.marginStart(m_layoutBox.containingBlock()->style());
-    case BorderBox:
+LayoutUnit ShapeOutsideInfo::LogicalLeftOffset() const {
+  switch (ReferenceBox(*layout_box_.Style()->ShapeOutside())) {
+    case kMarginBox:
+      return -layout_box_.MarginStart(layout_box_.ContainingBlock()->Style());
+    case kBorderBox:
       return LayoutUnit();
-    case PaddingBox:
-      return borderStartWithStyleForWritingMode(
-          m_layoutBox, m_layoutBox.containingBlock()->style());
-    case ContentBox:
-      return borderAndPaddingStartWithStyleForWritingMode(
-          m_layoutBox, m_layoutBox.containingBlock()->style());
-    case BoxMissing:
+    case kPaddingBox:
+      return BorderStartWithStyleForWritingMode(
+          layout_box_, layout_box_.ContainingBlock()->Style());
+    case kContentBox:
+      return BorderAndPaddingStartWithStyleForWritingMode(
+          layout_box_, layout_box_.ContainingBlock()->Style());
+    case kBoxMissing:
       break;
   }
 
@@ -326,117 +333,120 @@ LayoutUnit ShapeOutsideInfo::logicalLeftOffset() const {
   return LayoutUnit();
 }
 
-bool ShapeOutsideInfo::isEnabledFor(const LayoutBox& box) {
-  ShapeValue* shapeValue = box.style()->shapeOutside();
-  if (!box.isFloating() || !shapeValue)
+bool ShapeOutsideInfo::IsEnabledFor(const LayoutBox& box) {
+  ShapeValue* shape_value = box.Style()->ShapeOutside();
+  if (!box.IsFloating() || !shape_value)
     return false;
 
-  switch (shapeValue->type()) {
-    case ShapeValue::Shape:
-      return shapeValue->shape();
-    case ShapeValue::Image:
-      return shapeValue->isImageValid() &&
-             checkShapeImageOrigin(box.document(), *(shapeValue->image()));
-    case ShapeValue::Box:
+  switch (shape_value->GetType()) {
+    case ShapeValue::kShape:
+      return shape_value->Shape();
+    case ShapeValue::kImage:
+      return shape_value->IsImageValid() &&
+             CheckShapeImageOrigin(box.GetDocument(),
+                                   *(shape_value->GetImage()));
+    case ShapeValue::kBox:
       return true;
   }
 
   return false;
 }
 
-ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(
-    const LineLayoutBlockFlow& containingBlock,
-    const FloatingObject& floatingObject,
-    LayoutUnit lineTop,
-    LayoutUnit lineHeight) {
-  DCHECK_GE(lineHeight, 0);
+ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
+    const LineLayoutBlockFlow& containing_block,
+    const FloatingObject& floating_object,
+    LayoutUnit line_top,
+    LayoutUnit line_height) {
+  DCHECK_GE(line_height, 0);
 
-  LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(floatingObject) +
-                            containingBlock.marginBeforeForChild(m_layoutBox);
-  LayoutUnit borderBoxLineTop = lineTop - borderBoxTop;
+  LayoutUnit border_box_top =
+      containing_block.LogicalTopForFloat(floating_object) +
+      containing_block.MarginBeforeForChild(layout_box_);
+  LayoutUnit border_box_line_top = line_top - border_box_top;
 
-  if (isShapeDirty() ||
-      !m_shapeOutsideDeltas.isForLine(borderBoxLineTop, lineHeight)) {
-    LayoutUnit referenceBoxLineTop = borderBoxLineTop - logicalTopOffset();
-    LayoutUnit floatMarginBoxWidth = std::max(
-        containingBlock.logicalWidthForFloat(floatingObject), LayoutUnit());
+  if (IsShapeDirty() ||
+      !shape_outside_deltas_.IsForLine(border_box_line_top, line_height)) {
+    LayoutUnit reference_box_line_top =
+        border_box_line_top - LogicalTopOffset();
+    LayoutUnit float_margin_box_width = std::max(
+        containing_block.LogicalWidthForFloat(floating_object), LayoutUnit());
 
-    if (computedShape().lineOverlapsShapeMarginBounds(referenceBoxLineTop,
-                                                      lineHeight)) {
-      LineSegment segment = computedShape().getExcludedInterval(
-          (borderBoxLineTop - logicalTopOffset()),
-          std::min(lineHeight, shapeLogicalBottom() - borderBoxLineTop));
-      if (segment.isValid) {
-        LayoutUnit logicalLeftMargin =
-            containingBlock.style()->isLeftToRightDirection()
-                ? containingBlock.marginStartForChild(m_layoutBox)
-                : containingBlock.marginEndForChild(m_layoutBox);
-        LayoutUnit rawLeftMarginBoxDelta(
-            segment.logicalLeft + logicalLeftOffset() + logicalLeftMargin);
-        LayoutUnit leftMarginBoxDelta = clampTo<LayoutUnit>(
-            rawLeftMarginBoxDelta, LayoutUnit(), floatMarginBoxWidth);
+    if (ComputedShape().LineOverlapsShapeMarginBounds(reference_box_line_top,
+                                                      line_height)) {
+      LineSegment segment = ComputedShape().GetExcludedInterval(
+          (border_box_line_top - LogicalTopOffset()),
+          std::min(line_height, ShapeLogicalBottom() - border_box_line_top));
+      if (segment.is_valid) {
+        LayoutUnit logical_left_margin =
+            containing_block.Style()->IsLeftToRightDirection()
+                ? containing_block.MarginStartForChild(layout_box_)
+                : containing_block.MarginEndForChild(layout_box_);
+        LayoutUnit raw_left_margin_box_delta(
+            segment.logical_left + LogicalLeftOffset() + logical_left_margin);
+        LayoutUnit left_margin_box_delta = clampTo<LayoutUnit>(
+            raw_left_margin_box_delta, LayoutUnit(), float_margin_box_width);
 
-        LayoutUnit logicalRightMargin =
-            containingBlock.style()->isLeftToRightDirection()
-                ? containingBlock.marginEndForChild(m_layoutBox)
-                : containingBlock.marginStartForChild(m_layoutBox);
-        LayoutUnit rawRightMarginBoxDelta(
-            segment.logicalRight + logicalLeftOffset() -
-            containingBlock.logicalWidthForChild(m_layoutBox) -
-            logicalRightMargin);
-        LayoutUnit rightMarginBoxDelta = clampTo<LayoutUnit>(
-            rawRightMarginBoxDelta, -floatMarginBoxWidth, LayoutUnit());
+        LayoutUnit logical_right_margin =
+            containing_block.Style()->IsLeftToRightDirection()
+                ? containing_block.MarginEndForChild(layout_box_)
+                : containing_block.MarginStartForChild(layout_box_);
+        LayoutUnit raw_right_margin_box_delta(
+            segment.logical_right + LogicalLeftOffset() -
+            containing_block.LogicalWidthForChild(layout_box_) -
+            logical_right_margin);
+        LayoutUnit right_margin_box_delta = clampTo<LayoutUnit>(
+            raw_right_margin_box_delta, -float_margin_box_width, LayoutUnit());
 
-        m_shapeOutsideDeltas =
-            ShapeOutsideDeltas(leftMarginBoxDelta, rightMarginBoxDelta, true,
-                               borderBoxLineTop, lineHeight);
-        return m_shapeOutsideDeltas;
+        shape_outside_deltas_ =
+            ShapeOutsideDeltas(left_margin_box_delta, right_margin_box_delta,
+                               true, border_box_line_top, line_height);
+        return shape_outside_deltas_;
       }
     }
 
     // Lines that do not overlap the shape should act as if the float
     // wasn't there for layout purposes. So we set the deltas to remove the
     // entire width of the float.
-    m_shapeOutsideDeltas =
-        ShapeOutsideDeltas(floatMarginBoxWidth, -floatMarginBoxWidth, false,
-                           borderBoxLineTop, lineHeight);
+    shape_outside_deltas_ =
+        ShapeOutsideDeltas(float_margin_box_width, -float_margin_box_width,
+                           false, border_box_line_top, line_height);
   }
 
-  return m_shapeOutsideDeltas;
+  return shape_outside_deltas_;
 }
 
-LayoutRect ShapeOutsideInfo::computedShapePhysicalBoundingBox() const {
-  LayoutRect physicalBoundingBox =
-      computedShape().shapeMarginLogicalBoundingBox();
-  physicalBoundingBox.setX(physicalBoundingBox.x() + logicalLeftOffset());
+LayoutRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
+  LayoutRect physical_bounding_box =
+      ComputedShape().ShapeMarginLogicalBoundingBox();
+  physical_bounding_box.SetX(physical_bounding_box.X() + LogicalLeftOffset());
 
-  if (m_layoutBox.style()->isFlippedBlocksWritingMode())
-    physicalBoundingBox.setY(m_layoutBox.logicalHeight() -
-                             physicalBoundingBox.maxY());
+  if (layout_box_.Style()->IsFlippedBlocksWritingMode())
+    physical_bounding_box.SetY(layout_box_.LogicalHeight() -
+                               physical_bounding_box.MaxY());
   else
-    physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
+    physical_bounding_box.SetY(physical_bounding_box.Y() + LogicalTopOffset());
 
-  if (!m_layoutBox.style()->isHorizontalWritingMode())
-    physicalBoundingBox = physicalBoundingBox.transposedRect();
+  if (!layout_box_.Style()->IsHorizontalWritingMode())
+    physical_bounding_box = physical_bounding_box.TransposedRect();
   else
-    physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
+    physical_bounding_box.SetY(physical_bounding_box.Y() + LogicalTopOffset());
 
-  return physicalBoundingBox;
+  return physical_bounding_box;
 }
 
-FloatPoint ShapeOutsideInfo::shapeToLayoutObjectPoint(FloatPoint point) const {
-  FloatPoint result = FloatPoint(point.x() + logicalLeftOffset(),
-                                 point.y() + logicalTopOffset());
-  if (m_layoutBox.style()->isFlippedBlocksWritingMode())
-    result.setY(m_layoutBox.logicalHeight() - result.y());
-  if (!m_layoutBox.style()->isHorizontalWritingMode())
-    result = result.transposedPoint();
+FloatPoint ShapeOutsideInfo::ShapeToLayoutObjectPoint(FloatPoint point) const {
+  FloatPoint result = FloatPoint(point.X() + LogicalLeftOffset(),
+                                 point.Y() + LogicalTopOffset());
+  if (layout_box_.Style()->IsFlippedBlocksWritingMode())
+    result.SetY(layout_box_.LogicalHeight() - result.Y());
+  if (!layout_box_.Style()->IsHorizontalWritingMode())
+    result = result.TransposedPoint();
   return result;
 }
 
-FloatSize ShapeOutsideInfo::shapeToLayoutObjectSize(FloatSize size) const {
-  if (!m_layoutBox.style()->isHorizontalWritingMode())
-    return size.transposedSize();
+FloatSize ShapeOutsideInfo::ShapeToLayoutObjectSize(FloatSize size) const {
+  if (!layout_box_.Style()->IsHorizontalWritingMode())
+    return size.TransposedSize();
   return size;
 }
 

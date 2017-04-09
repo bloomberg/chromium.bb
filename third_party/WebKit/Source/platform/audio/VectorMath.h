@@ -37,65 +37,65 @@ namespace blink {
 namespace VectorMath {
 
 // Vector scalar multiply and then add.
-PLATFORM_EXPORT void vsma(const float* sourceP,
-                          int sourceStride,
+PLATFORM_EXPORT void Vsma(const float* source_p,
+                          int source_stride,
                           const float* scale,
-                          float* destP,
-                          int destStride,
-                          size_t framesToProcess);
+                          float* dest_p,
+                          int dest_stride,
+                          size_t frames_to_process);
 
-PLATFORM_EXPORT void vsmul(const float* sourceP,
-                           int sourceStride,
+PLATFORM_EXPORT void Vsmul(const float* source_p,
+                           int source_stride,
                            const float* scale,
-                           float* destP,
-                           int destStride,
-                           size_t framesToProcess);
-PLATFORM_EXPORT void vadd(const float* source1P,
-                          int sourceStride1,
-                          const float* source2P,
-                          int sourceStride2,
-                          float* destP,
-                          int destStride,
-                          size_t framesToProcess);
+                           float* dest_p,
+                           int dest_stride,
+                           size_t frames_to_process);
+PLATFORM_EXPORT void Vadd(const float* source1p,
+                          int source_stride1,
+                          const float* source2p,
+                          int source_stride2,
+                          float* dest_p,
+                          int dest_stride,
+                          size_t frames_to_process);
 
 // Finds the maximum magnitude of a float vector.
-PLATFORM_EXPORT void vmaxmgv(const float* sourceP,
-                             int sourceStride,
-                             float* maxP,
-                             size_t framesToProcess);
+PLATFORM_EXPORT void Vmaxmgv(const float* source_p,
+                             int source_stride,
+                             float* max_p,
+                             size_t frames_to_process);
 
 // Sums the squares of a float vector's elements.
-PLATFORM_EXPORT void vsvesq(const float* sourceP,
-                            int sourceStride,
-                            float* sumP,
-                            size_t framesToProcess);
+PLATFORM_EXPORT void Vsvesq(const float* source_p,
+                            int source_stride,
+                            float* sum_p,
+                            size_t frames_to_process);
 
 // For an element-by-element multiply of two float vectors.
-PLATFORM_EXPORT void vmul(const float* source1P,
-                          int sourceStride1,
-                          const float* source2P,
-                          int sourceStride2,
-                          float* destP,
-                          int destStride,
-                          size_t framesToProcess);
+PLATFORM_EXPORT void Vmul(const float* source1p,
+                          int source_stride1,
+                          const float* source2p,
+                          int source_stride2,
+                          float* dest_p,
+                          int dest_stride,
+                          size_t frames_to_process);
 
 // Multiplies two complex vectors.
-PLATFORM_EXPORT void zvmul(const float* real1P,
-                           const float* imag1P,
-                           const float* real2P,
-                           const float* imag2P,
-                           float* realDestP,
-                           float* imagDestP,
-                           size_t framesToProcess);
+PLATFORM_EXPORT void Zvmul(const float* real1p,
+                           const float* imag1p,
+                           const float* real2p,
+                           const float* imag2p,
+                           float* real_dest_p,
+                           float* imag_dest_p,
+                           size_t frames_to_process);
 
 // Copies elements while clipping values to the threshold inputs.
-PLATFORM_EXPORT void vclip(const float* sourceP,
-                           int sourceStride,
-                           const float* lowThresholdP,
-                           const float* highThresholdP,
-                           float* destP,
-                           int destStride,
-                           size_t framesToProcess);
+PLATFORM_EXPORT void Vclip(const float* source_p,
+                           int source_stride,
+                           const float* low_threshold_p,
+                           const float* high_threshold_p,
+                           float* dest_p,
+                           int dest_stride,
+                           size_t frames_to_process);
 
 }  // namespace VectorMath
 }  // namespace blink

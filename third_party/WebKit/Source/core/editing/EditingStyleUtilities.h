@@ -49,24 +49,25 @@ class EditingStyleUtilities {
   STATIC_ONLY(EditingStyleUtilities);
 
  public:
-  static EditingStyle* createWrappingStyleForAnnotatedSerialization(
+  static EditingStyle* CreateWrappingStyleForAnnotatedSerialization(
       ContainerNode* context);
-  static EditingStyle* createWrappingStyleForSerialization(
+  static EditingStyle* CreateWrappingStyleForSerialization(
       ContainerNode* context);
-  static EditingStyle* createStyleAtSelectionStart(
+  static EditingStyle* CreateStyleAtSelectionStart(
       const VisibleSelection&,
-      bool shouldUseBackgroundColorInEffect = false,
-      MutableStylePropertySet* styleToCheck = nullptr);
-  static bool isEmbedOrIsolate(CSSValueID unicodeBidi) {
-    return unicodeBidi == CSSValueIsolate ||
-           unicodeBidi == CSSValueWebkitIsolate || unicodeBidi == CSSValueEmbed;
+      bool should_use_background_color_in_effect = false,
+      MutableStylePropertySet* style_to_check = nullptr);
+  static bool IsEmbedOrIsolate(CSSValueID unicode_bidi) {
+    return unicode_bidi == CSSValueIsolate ||
+           unicode_bidi == CSSValueWebkitIsolate ||
+           unicode_bidi == CSSValueEmbed;
   }
 
-  static bool isTransparentColorValue(const CSSValue*);
-  static bool hasTransparentBackgroundColor(CSSStyleDeclaration*);
-  static bool hasTransparentBackgroundColor(StylePropertySet*);
-  static const CSSValue* backgroundColorValueInEffect(Node*);
-  static bool hasAncestorVerticalAlignStyle(Node&, CSSValueID);
+  static bool IsTransparentColorValue(const CSSValue*);
+  static bool HasTransparentBackgroundColor(CSSStyleDeclaration*);
+  static bool HasTransparentBackgroundColor(StylePropertySet*);
+  static const CSSValue* BackgroundColorValueInEffect(Node*);
+  static bool HasAncestorVerticalAlignStyle(Node&, CSSValueID);
 };
 
 }  // namespace blink

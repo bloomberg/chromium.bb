@@ -8,37 +8,37 @@ namespace blink {
 
 namespace {
 
-DOMFloat32Array* mojoArrayToFloat32Array(
+DOMFloat32Array* MojoArrayToFloat32Array(
     const WTF::Optional<WTF::Vector<float>>& vec) {
   if (!vec)
     return nullptr;
 
-  return DOMFloat32Array::create(&(vec.value().front()), vec.value().size());
+  return DOMFloat32Array::Create(&(vec.value().front()), vec.value().size());
 }
 
 }  // namespace
 
 VRPose::VRPose() {}
 
-void VRPose::setPose(const device::mojom::blink::VRPosePtr& state) {
+void VRPose::SetPose(const device::mojom::blink::VRPosePtr& state) {
   if (state.is_null())
     return;
 
-  m_orientation = mojoArrayToFloat32Array(state->orientation);
-  m_position = mojoArrayToFloat32Array(state->position);
-  m_angularVelocity = mojoArrayToFloat32Array(state->angularVelocity);
-  m_linearVelocity = mojoArrayToFloat32Array(state->linearVelocity);
-  m_angularAcceleration = mojoArrayToFloat32Array(state->angularAcceleration);
-  m_linearAcceleration = mojoArrayToFloat32Array(state->linearAcceleration);
+  orientation_ = MojoArrayToFloat32Array(state->orientation);
+  position_ = MojoArrayToFloat32Array(state->position);
+  angular_velocity_ = MojoArrayToFloat32Array(state->angularVelocity);
+  linear_velocity_ = MojoArrayToFloat32Array(state->linearVelocity);
+  angular_acceleration_ = MojoArrayToFloat32Array(state->angularAcceleration);
+  linear_acceleration_ = MojoArrayToFloat32Array(state->linearAcceleration);
 }
 
 DEFINE_TRACE(VRPose) {
-  visitor->trace(m_orientation);
-  visitor->trace(m_position);
-  visitor->trace(m_angularVelocity);
-  visitor->trace(m_linearVelocity);
-  visitor->trace(m_angularAcceleration);
-  visitor->trace(m_linearAcceleration);
+  visitor->Trace(orientation_);
+  visitor->Trace(position_);
+  visitor->Trace(angular_velocity_);
+  visitor->Trace(linear_velocity_);
+  visitor->Trace(angular_acceleration_);
+  visitor->Trace(linear_acceleration_);
 }
 
 }  // namespace blink

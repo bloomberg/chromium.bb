@@ -48,61 +48,62 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXTable::AXTable(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache),
-      m_headerContainer(nullptr),
-      m_isAXTable(true) {}
+AXTable::AXTable(LayoutObject* layout_object,
+                 AXObjectCacheImpl& ax_object_cache)
+    : AXLayoutObject(layout_object, ax_object_cache),
+      header_container_(nullptr),
+      is_ax_table_(true) {}
 
 AXTable::~AXTable() {}
 
-void AXTable::init() {
-  AXLayoutObject::init();
-  m_isAXTable = isTableExposableThroughAccessibility();
+void AXTable::Init() {
+  AXLayoutObject::Init();
+  is_ax_table_ = IsTableExposableThroughAccessibility();
 }
 
-AXTable* AXTable::create(LayoutObject* layoutObject,
-                         AXObjectCacheImpl& axObjectCache) {
-  return new AXTable(layoutObject, axObjectCache);
+AXTable* AXTable::Create(LayoutObject* layout_object,
+                         AXObjectCacheImpl& ax_object_cache) {
+  return new AXTable(layout_object, ax_object_cache);
 }
 
-bool AXTable::hasARIARole() const {
-  if (!m_layoutObject)
+bool AXTable::HasARIARole() const {
+  if (!layout_object_)
     return false;
 
-  AccessibilityRole ariaRole = ariaRoleAttribute();
-  if (ariaRole != UnknownRole)
+  AccessibilityRole aria_role = AriaRoleAttribute();
+  if (aria_role != kUnknownRole)
     return true;
 
   return false;
 }
 
-bool AXTable::isAXTable() const {
-  if (!m_layoutObject)
+bool AXTable::IsAXTable() const {
+  if (!layout_object_)
     return false;
 
-  return m_isAXTable;
+  return is_ax_table_;
 }
 
-static bool elementHasAriaRole(const Element* element) {
+static bool ElementHasAriaRole(const Element* element) {
   if (!element)
     return false;
 
-  const AtomicString& ariaRole = element->fastGetAttribute(roleAttr);
-  return (!ariaRole.isNull() && !ariaRole.isEmpty());
+  const AtomicString& aria_role = element->FastGetAttribute(roleAttr);
+  return (!aria_role.IsNull() && !aria_role.IsEmpty());
 }
 
-bool AXTable::isDataTable() const {
-  if (!m_layoutObject || !getNode())
+bool AXTable::IsDataTable() const {
+  if (!layout_object_ || !GetNode())
     return false;
 
   // Do not consider it a data table if it has an ARIA role.
-  if (hasARIARole())
+  if (HasARIARole())
     return false;
 
   // When a section of the document is contentEditable, all tables should be
   // treated as data tables, otherwise users may not be able to work with rich
   // text editors that allow creating and editing tables.
-  if (getNode() && hasEditableStyle(*getNode()))
+  if (GetNode() && HasEditableStyle(*GetNode()))
     return true;
 
   // This employs a heuristic to determine if this table should appear.
@@ -110,78 +111,78 @@ bool AXTable::isDataTable() const {
   // Unfortunately, there is no good way to determine the difference
   // between a "layout" table and a "data" table.
 
-  LayoutTable* table = toLayoutTable(m_layoutObject);
-  Node* tableNode = table->node();
-  if (!isHTMLTableElement(tableNode))
+  LayoutTable* table = ToLayoutTable(layout_object_);
+  Node* table_node = table->GetNode();
+  if (!isHTMLTableElement(table_node))
     return false;
 
   // Do not consider it a data table if any of its descendants have an ARIA
   // role.
-  HTMLTableElement* tableElement = toHTMLTableElement(tableNode);
-  if (elementHasAriaRole(tableElement->tHead()))
+  HTMLTableElement* table_element = toHTMLTableElement(table_node);
+  if (ElementHasAriaRole(table_element->tHead()))
     return false;
-  if (elementHasAriaRole(tableElement->tFoot()))
+  if (ElementHasAriaRole(table_element->tFoot()))
     return false;
 
-  HTMLCollection* bodies = tableElement->tBodies();
-  for (unsigned bodyIndex = 0; bodyIndex < bodies->length(); ++bodyIndex) {
-    Element* bodyElement = bodies->item(bodyIndex);
-    if (elementHasAriaRole(bodyElement))
+  HTMLCollection* bodies = table_element->tBodies();
+  for (unsigned body_index = 0; body_index < bodies->length(); ++body_index) {
+    Element* body_element = bodies->item(body_index);
+    if (ElementHasAriaRole(body_element))
       return false;
   }
 
-  HTMLTableRowsCollection* rows = tableElement->rows();
-  unsigned rowCount = rows->length();
-  for (unsigned rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-    HTMLTableRowElement* rowElement = rows->item(rowIndex);
-    if (elementHasAriaRole(rowElement))
+  HTMLTableRowsCollection* rows = table_element->rows();
+  unsigned row_count = rows->length();
+  for (unsigned row_index = 0; row_index < row_count; ++row_index) {
+    HTMLTableRowElement* row_element = rows->Item(row_index);
+    if (ElementHasAriaRole(row_element))
       return false;
-    HTMLCollection* cells = rowElement->cells();
-    for (unsigned cellIndex = 0; cellIndex < cells->length(); ++cellIndex) {
-      if (elementHasAriaRole(cells->item(cellIndex)))
+    HTMLCollection* cells = row_element->cells();
+    for (unsigned cell_index = 0; cell_index < cells->length(); ++cell_index) {
+      if (ElementHasAriaRole(cells->item(cell_index)))
         return false;
     }
   }
 
   // If there is a caption element, summary, THEAD, or TFOOT section, it's most
   // certainly a data table
-  if (!tableElement->summary().isEmpty() || tableElement->tHead() ||
-      tableElement->tFoot() || tableElement->caption())
+  if (!table_element->Summary().IsEmpty() || table_element->tHead() ||
+      table_element->tFoot() || table_element->caption())
     return true;
 
   // if someone used "rules" attribute than the table should appear
-  if (!tableElement->rules().isEmpty())
+  if (!table_element->Rules().IsEmpty())
     return true;
 
   // if there's a colgroup or col element, it's probably a data table.
-  if (Traversal<HTMLTableColElement>::firstChild(*tableElement))
+  if (Traversal<HTMLTableColElement>::FirstChild(*table_element))
     return true;
 
   // go through the cell's and check for tell-tale signs of "data" table status
   // cells have borders, or use attributes like headers, abbr, scope or axis
-  table->recalcSectionsIfNeeded();
-  LayoutTableSection* firstBody = table->firstBody();
-  if (!firstBody)
+  table->RecalcSectionsIfNeeded();
+  LayoutTableSection* first_body = table->FirstBody();
+  if (!first_body)
     return false;
 
-  int numColsInFirstBody = firstBody->numEffectiveColumns();
-  int numRows = firstBody->numRows();
+  int num_cols_in_first_body = first_body->NumEffectiveColumns();
+  int num_rows = first_body->NumRows();
 
   // If there's only one cell, it's not a good AXTable candidate.
-  if (numRows == 1 && numColsInFirstBody == 1)
+  if (num_rows == 1 && num_cols_in_first_body == 1)
     return false;
 
   // If there are at least 20 rows, we'll call it a data table.
-  if (numRows >= 20)
+  if (num_rows >= 20)
     return true;
 
   // Store the background color of the table to check against cell's background
   // colors.
-  const ComputedStyle* tableStyle = table->style();
-  if (!tableStyle)
+  const ComputedStyle* table_style = table->Style();
+  if (!table_style)
     return false;
-  Color tableBGColor =
-      tableStyle->visitedDependentColor(CSSPropertyBackgroundColor);
+  Color table_bg_color =
+      table_style->VisitedDependentColor(CSSPropertyBackgroundColor);
 
   // check enough of the cells to find if the table matches our criteria
   // Criteria:
@@ -189,144 +190,144 @@ bool AXTable::isDataTable() const {
   //   2) at least half of cells have borders (or)
   //   3) at least half of cells have different bg colors than the table, and
   //      there is cell spacing
-  unsigned validCellCount = 0;
-  unsigned borderedCellCount = 0;
-  unsigned backgroundDifferenceCellCount = 0;
-  unsigned cellsWithTopBorder = 0;
-  unsigned cellsWithBottomBorder = 0;
-  unsigned cellsWithLeftBorder = 0;
-  unsigned cellsWithRightBorder = 0;
+  unsigned valid_cell_count = 0;
+  unsigned bordered_cell_count = 0;
+  unsigned background_difference_cell_count = 0;
+  unsigned cells_with_top_border = 0;
+  unsigned cells_with_bottom_border = 0;
+  unsigned cells_with_left_border = 0;
+  unsigned cells_with_right_border = 0;
 
-  Color alternatingRowColors[5];
-  int alternatingRowColorCount = 0;
+  Color alternating_row_colors[5];
+  int alternating_row_color_count = 0;
 
-  int headersInFirstColumnCount = 0;
-  for (int row = 0; row < numRows; ++row) {
-    int headersInFirstRowCount = 0;
-    int nCols = firstBody->numCols(row);
-    for (int col = 0; col < nCols; ++col) {
-      LayoutTableCell* cell = firstBody->primaryCellAt(row, col);
+  int headers_in_first_column_count = 0;
+  for (int row = 0; row < num_rows; ++row) {
+    int headers_in_first_row_count = 0;
+    int n_cols = first_body->NumCols(row);
+    for (int col = 0; col < n_cols; ++col) {
+      LayoutTableCell* cell = first_body->PrimaryCellAt(row, col);
       if (!cell)
         continue;
-      Node* cellNode = cell->node();
-      if (!cellNode)
+      Node* cell_node = cell->GetNode();
+      if (!cell_node)
         continue;
 
-      if (cell->size().width() < 1 || cell->size().height() < 1)
+      if (cell->size().Width() < 1 || cell->size().Height() < 1)
         continue;
 
-      validCellCount++;
+      valid_cell_count++;
 
-      bool isTHCell = cellNode->hasTagName(thTag);
+      bool is_th_cell = cell_node->HasTagName(thTag);
       // If the first row is comprised of all <th> tags, assume it is a data
       // table.
-      if (!row && isTHCell)
-        headersInFirstRowCount++;
+      if (!row && is_th_cell)
+        headers_in_first_row_count++;
 
       // If the first column is comprised of all <th> tags, assume it is a data
       // table.
-      if (!col && isTHCell)
-        headersInFirstColumnCount++;
+      if (!col && is_th_cell)
+        headers_in_first_column_count++;
 
       // In this case, the developer explicitly assigned a "data" table
       // attribute.
-      if (isHTMLTableCellElement(*cellNode)) {
-        HTMLTableCellElement& cellElement = toHTMLTableCellElement(*cellNode);
-        if (!cellElement.headers().isEmpty() || !cellElement.abbr().isEmpty() ||
-            !cellElement.axis().isEmpty() ||
-            !cellElement.fastGetAttribute(scopeAttr).isEmpty())
+      if (IsHTMLTableCellElement(*cell_node)) {
+        HTMLTableCellElement& cell_element = ToHTMLTableCellElement(*cell_node);
+        if (!cell_element.Headers().IsEmpty() ||
+            !cell_element.Abbr().IsEmpty() || !cell_element.Axis().IsEmpty() ||
+            !cell_element.FastGetAttribute(scopeAttr).IsEmpty())
           return true;
       }
 
-      const ComputedStyle* computedStyle = cell->style();
-      if (!computedStyle)
+      const ComputedStyle* computed_style = cell->Style();
+      if (!computed_style)
         continue;
 
       // If the empty-cells style is set, we'll call it a data table.
-      if (computedStyle->emptyCells() == EEmptyCells::kHide)
+      if (computed_style->EmptyCells() == EEmptyCells::kHide)
         return true;
 
       // If a cell has matching bordered sides, call it a (fully) bordered cell.
-      if ((cell->borderTop() > 0 && cell->borderBottom() > 0) ||
-          (cell->borderLeft() > 0 && cell->borderRight() > 0))
-        borderedCellCount++;
+      if ((cell->BorderTop() > 0 && cell->BorderBottom() > 0) ||
+          (cell->BorderLeft() > 0 && cell->BorderRight() > 0))
+        bordered_cell_count++;
 
       // Also keep track of each individual border, so we can catch tables where
       // most cells have a bottom border, for example.
-      if (cell->borderTop() > 0)
-        cellsWithTopBorder++;
-      if (cell->borderBottom() > 0)
-        cellsWithBottomBorder++;
-      if (cell->borderLeft() > 0)
-        cellsWithLeftBorder++;
-      if (cell->borderRight() > 0)
-        cellsWithRightBorder++;
+      if (cell->BorderTop() > 0)
+        cells_with_top_border++;
+      if (cell->BorderBottom() > 0)
+        cells_with_bottom_border++;
+      if (cell->BorderLeft() > 0)
+        cells_with_left_border++;
+      if (cell->BorderRight() > 0)
+        cells_with_right_border++;
 
       // If the cell has a different color from the table and there is cell
       // spacing, then it is probably a data table cell (spacing and colors take
       // the place of borders).
-      Color cellColor =
-          computedStyle->visitedDependentColor(CSSPropertyBackgroundColor);
-      if (table->hBorderSpacing() > 0 && table->vBorderSpacing() > 0 &&
-          tableBGColor != cellColor && cellColor.alpha() != 1)
-        backgroundDifferenceCellCount++;
+      Color cell_color =
+          computed_style->VisitedDependentColor(CSSPropertyBackgroundColor);
+      if (table->HBorderSpacing() > 0 && table->VBorderSpacing() > 0 &&
+          table_bg_color != cell_color && cell_color.Alpha() != 1)
+        background_difference_cell_count++;
 
       // If we've found 10 "good" cells, we don't need to keep searching.
-      if (borderedCellCount >= 10 || backgroundDifferenceCellCount >= 10)
+      if (bordered_cell_count >= 10 || background_difference_cell_count >= 10)
         return true;
 
       // For the first 5 rows, cache the background color so we can check if
       // this table has zebra-striped rows.
-      if (row < 5 && row == alternatingRowColorCount) {
-        LayoutObject* layoutRow = cell->parent();
-        if (!layoutRow || !layoutRow->isBoxModelObject() ||
-            !toLayoutBoxModelObject(layoutRow)->isTableRow())
+      if (row < 5 && row == alternating_row_color_count) {
+        LayoutObject* layout_row = cell->Parent();
+        if (!layout_row || !layout_row->IsBoxModelObject() ||
+            !ToLayoutBoxModelObject(layout_row)->IsTableRow())
           continue;
-        const ComputedStyle* rowComputedStyle = layoutRow->style();
-        if (!rowComputedStyle)
+        const ComputedStyle* row_computed_style = layout_row->Style();
+        if (!row_computed_style)
           continue;
-        Color rowColor =
-            rowComputedStyle->visitedDependentColor(CSSPropertyBackgroundColor);
-        alternatingRowColors[alternatingRowColorCount] = rowColor;
-        alternatingRowColorCount++;
+        Color row_color = row_computed_style->VisitedDependentColor(
+            CSSPropertyBackgroundColor);
+        alternating_row_colors[alternating_row_color_count] = row_color;
+        alternating_row_color_count++;
       }
     }
 
-    if (!row && headersInFirstRowCount == numColsInFirstBody &&
-        numColsInFirstBody > 1)
+    if (!row && headers_in_first_row_count == num_cols_in_first_body &&
+        num_cols_in_first_body > 1)
       return true;
   }
 
-  if (headersInFirstColumnCount == numRows && numRows > 1)
+  if (headers_in_first_column_count == num_rows && num_rows > 1)
     return true;
 
   // if there is less than two valid cells, it's not a data table
-  if (validCellCount <= 1)
+  if (valid_cell_count <= 1)
     return false;
 
   // half of the cells had borders, it's a data table
-  unsigned neededCellCount = validCellCount / 2;
-  if (borderedCellCount >= neededCellCount ||
-      cellsWithTopBorder >= neededCellCount ||
-      cellsWithBottomBorder >= neededCellCount ||
-      cellsWithLeftBorder >= neededCellCount ||
-      cellsWithRightBorder >= neededCellCount)
+  unsigned needed_cell_count = valid_cell_count / 2;
+  if (bordered_cell_count >= needed_cell_count ||
+      cells_with_top_border >= needed_cell_count ||
+      cells_with_bottom_border >= needed_cell_count ||
+      cells_with_left_border >= needed_cell_count ||
+      cells_with_right_border >= needed_cell_count)
     return true;
 
   // half had different background colors, it's a data table
-  if (backgroundDifferenceCellCount >= neededCellCount)
+  if (background_difference_cell_count >= needed_cell_count)
     return true;
 
   // Check if there is an alternating row background color indicating a zebra
   // striped style pattern.
-  if (alternatingRowColorCount > 2) {
-    Color firstColor = alternatingRowColors[0];
-    for (int k = 1; k < alternatingRowColorCount; k++) {
+  if (alternating_row_color_count > 2) {
+    Color first_color = alternating_row_colors[0];
+    for (int k = 1; k < alternating_row_color_count; k++) {
       // If an odd row was the same color as the first row, its not alternating.
-      if (k % 2 == 1 && alternatingRowColors[k] == firstColor)
+      if (k % 2 == 1 && alternating_row_colors[k] == first_color)
         return false;
       // If an even row is not the same as the first row, its not alternating.
-      if (!(k % 2) && alternatingRowColors[k] != firstColor)
+      if (!(k % 2) && alternating_row_colors[k] != first_color)
         return false;
     }
     return true;
@@ -335,281 +336,283 @@ bool AXTable::isDataTable() const {
   return false;
 }
 
-bool AXTable::isTableExposableThroughAccessibility() const {
+bool AXTable::IsTableExposableThroughAccessibility() const {
   // The following is a heuristic used to determine if a
   // <table> should be exposed as an AXTable. The goal
   // is to only show "data" tables.
 
-  if (!m_layoutObject)
+  if (!layout_object_)
     return false;
 
   // If the developer assigned an aria role to this, then we
   // shouldn't expose it as a table, unless, of course, the aria
   // role is a table.
-  if (hasARIARole())
+  if (HasARIARole())
     return false;
 
-  return isDataTable();
+  return IsDataTable();
 }
 
-void AXTable::clearChildren() {
-  AXLayoutObject::clearChildren();
-  m_rows.clear();
-  m_columns.clear();
+void AXTable::ClearChildren() {
+  AXLayoutObject::ClearChildren();
+  rows_.Clear();
+  columns_.Clear();
 
-  if (m_headerContainer) {
-    m_headerContainer->detachFromParent();
-    m_headerContainer = nullptr;
+  if (header_container_) {
+    header_container_->DetachFromParent();
+    header_container_ = nullptr;
   }
 }
 
-void AXTable::addChildren() {
-  DCHECK(!isDetached());
-  if (!isAXTable()) {
-    AXLayoutObject::addChildren();
+void AXTable::AddChildren() {
+  DCHECK(!IsDetached());
+  if (!IsAXTable()) {
+    AXLayoutObject::AddChildren();
     return;
   }
 
-  DCHECK(!m_haveChildren);
+  DCHECK(!have_children_);
 
-  m_haveChildren = true;
-  if (!m_layoutObject || !m_layoutObject->isTable())
+  have_children_ = true;
+  if (!layout_object_ || !layout_object_->IsTable())
     return;
 
-  LayoutTable* table = toLayoutTable(m_layoutObject);
-  AXObjectCacheImpl& axCache = axObjectCache();
+  LayoutTable* table = ToLayoutTable(layout_object_);
+  AXObjectCacheImpl& ax_cache = AxObjectCache();
 
-  Node* tableNode = table->node();
-  if (!isHTMLTableElement(tableNode))
+  Node* table_node = table->GetNode();
+  if (!isHTMLTableElement(table_node))
     return;
 
   // Add caption
   if (HTMLTableCaptionElement* caption =
-          toHTMLTableElement(tableNode)->caption()) {
-    AXObject* captionObject = axCache.getOrCreate(caption);
-    if (captionObject && !captionObject->accessibilityIsIgnored())
-      m_children.push_back(captionObject);
+          toHTMLTableElement(table_node)->caption()) {
+    AXObject* caption_object = ax_cache.GetOrCreate(caption);
+    if (caption_object && !caption_object->AccessibilityIsIgnored())
+      children_.push_back(caption_object);
   }
 
   // Go through all the available sections to pull out the rows and add them as
   // children.
-  table->recalcSectionsIfNeeded();
-  LayoutTableSection* tableSection = table->topSection();
-  if (!tableSection)
+  table->RecalcSectionsIfNeeded();
+  LayoutTableSection* table_section = table->TopSection();
+  if (!table_section)
     return;
 
-  LayoutTableSection* initialTableSection = tableSection;
-  while (tableSection) {
-    HeapHashSet<Member<AXObject>> appendedRows;
-    unsigned numRows = tableSection->numRows();
-    for (unsigned rowIndex = 0; rowIndex < numRows; ++rowIndex) {
-      LayoutTableRow* layoutRow = tableSection->rowLayoutObjectAt(rowIndex);
-      if (!layoutRow)
+  LayoutTableSection* initial_table_section = table_section;
+  while (table_section) {
+    HeapHashSet<Member<AXObject>> appended_rows;
+    unsigned num_rows = table_section->NumRows();
+    for (unsigned row_index = 0; row_index < num_rows; ++row_index) {
+      LayoutTableRow* layout_row = table_section->RowLayoutObjectAt(row_index);
+      if (!layout_row)
         continue;
 
-      AXObject* rowObject = axCache.getOrCreate(layoutRow);
-      if (!rowObject || !rowObject->isTableRow())
+      AXObject* row_object = ax_cache.GetOrCreate(layout_row);
+      if (!row_object || !row_object->IsTableRow())
         continue;
 
-      AXTableRow* row = toAXTableRow(rowObject);
+      AXTableRow* row = ToAXTableRow(row_object);
       // We need to check every cell for a new row, because cell spans
       // can cause us to miss rows if we just check the first column.
-      if (appendedRows.contains(row))
+      if (appended_rows.Contains(row))
         continue;
 
-      row->setRowIndex(static_cast<int>(m_rows.size()));
-      m_rows.push_back(row);
-      if (!row->accessibilityIsIgnored())
-        m_children.push_back(row);
-      appendedRows.insert(row);
+      row->SetRowIndex(static_cast<int>(rows_.size()));
+      rows_.push_back(row);
+      if (!row->AccessibilityIsIgnored())
+        children_.push_back(row);
+      appended_rows.insert(row);
     }
 
-    tableSection = table->sectionBelow(tableSection, SkipEmptySections);
+    table_section = table->SectionBelow(table_section, kSkipEmptySections);
   }
 
   // make the columns based on the number of columns in the first body
-  unsigned length = initialTableSection->numEffectiveColumns();
+  unsigned length = initial_table_section->NumEffectiveColumns();
   for (unsigned i = 0; i < length; ++i) {
-    AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
-    column->setColumnIndex((int)i);
-    column->setParent(this);
-    m_columns.push_back(column);
-    if (!column->accessibilityIsIgnored())
-      m_children.push_back(column);
+    AXTableColumn* column = ToAXTableColumn(ax_cache.GetOrCreate(kColumnRole));
+    column->SetColumnIndex((int)i);
+    column->SetParent(this);
+    columns_.push_back(column);
+    if (!column->AccessibilityIsIgnored())
+      children_.push_back(column);
   }
 
-  AXObject* headerContainerObject = headerContainer();
-  if (headerContainerObject && !headerContainerObject->accessibilityIsIgnored())
-    m_children.push_back(headerContainerObject);
+  AXObject* header_container_object = HeaderContainer();
+  if (header_container_object &&
+      !header_container_object->AccessibilityIsIgnored())
+    children_.push_back(header_container_object);
 }
 
-AXObject* AXTable::headerContainer() {
-  if (m_headerContainer)
-    return m_headerContainer.get();
+AXObject* AXTable::HeaderContainer() {
+  if (header_container_)
+    return header_container_.Get();
 
-  AXMockObject* tableHeader =
-      toAXMockObject(axObjectCache().getOrCreate(TableHeaderContainerRole));
-  tableHeader->setParent(this);
+  AXMockObject* table_header =
+      ToAXMockObject(AxObjectCache().GetOrCreate(kTableHeaderContainerRole));
+  table_header->SetParent(this);
 
-  m_headerContainer = tableHeader;
-  return m_headerContainer.get();
+  header_container_ = table_header;
+  return header_container_.Get();
 }
 
-const AXObject::AXObjectVector& AXTable::columns() {
-  updateChildrenIfNecessary();
+const AXObject::AXObjectVector& AXTable::Columns() {
+  UpdateChildrenIfNecessary();
 
-  return m_columns;
+  return columns_;
 }
 
-const AXObject::AXObjectVector& AXTable::rows() {
-  updateChildrenIfNecessary();
+const AXObject::AXObjectVector& AXTable::Rows() {
+  UpdateChildrenIfNecessary();
 
-  return m_rows;
+  return rows_;
 }
 
-void AXTable::columnHeaders(AXObjectVector& headers) {
-  if (!m_layoutObject)
+void AXTable::ColumnHeaders(AXObjectVector& headers) {
+  if (!layout_object_)
     return;
 
-  updateChildrenIfNecessary();
-  unsigned columnCount = m_columns.size();
-  for (unsigned c = 0; c < columnCount; c++) {
-    AXObject* column = m_columns[c].get();
-    if (column->isTableCol())
-      toAXTableColumn(column)->headerObjectsForColumn(headers);
+  UpdateChildrenIfNecessary();
+  unsigned column_count = columns_.size();
+  for (unsigned c = 0; c < column_count; c++) {
+    AXObject* column = columns_[c].Get();
+    if (column->IsTableCol())
+      ToAXTableColumn(column)->HeaderObjectsForColumn(headers);
   }
 }
 
-void AXTable::rowHeaders(AXObjectVector& headers) {
-  if (!m_layoutObject)
+void AXTable::RowHeaders(AXObjectVector& headers) {
+  if (!layout_object_)
     return;
 
-  updateChildrenIfNecessary();
-  unsigned rowCount = m_rows.size();
-  for (unsigned r = 0; r < rowCount; r++) {
-    AXObject* row = m_rows[r].get();
-    if (row->isTableRow())
-      toAXTableRow(m_rows[r].get())->headerObjectsForRow(headers);
+  UpdateChildrenIfNecessary();
+  unsigned row_count = rows_.size();
+  for (unsigned r = 0; r < row_count; r++) {
+    AXObject* row = rows_[r].Get();
+    if (row->IsTableRow())
+      ToAXTableRow(rows_[r].Get())->HeaderObjectsForRow(headers);
   }
 }
 
-int AXTable::ariaColumnCount() {
-  if (!hasAttribute(aria_colcountAttr))
+int AXTable::AriaColumnCount() {
+  if (!HasAttribute(aria_colcountAttr))
     return 0;
 
-  const AtomicString& colCountValue = getAttribute(aria_colcountAttr);
-  int colCountInt = colCountValue.toInt();
+  const AtomicString& col_count_value = GetAttribute(aria_colcountAttr);
+  int col_count_int = col_count_value.ToInt();
 
-  if (colCountInt > (int)columnCount())
-    return colCountInt;
+  if (col_count_int > (int)ColumnCount())
+    return col_count_int;
 
   // Spec says that if all of the columns are present in the DOM, it
   // is not necessary to set this attribute as the user agent can
   // automatically calculate the total number of columns.
   // It returns 0 in order not to set this attribute.
-  if (colCountInt == (int)columnCount() || colCountInt != -1)
+  if (col_count_int == (int)ColumnCount() || col_count_int != -1)
     return 0;
 
   return -1;
 }
 
-int AXTable::ariaRowCount() {
-  if (!hasAttribute(aria_rowcountAttr))
+int AXTable::AriaRowCount() {
+  if (!HasAttribute(aria_rowcountAttr))
     return 0;
 
-  const AtomicString& rowCountValue = getAttribute(aria_rowcountAttr);
-  int rowCountInt = rowCountValue.toInt();
+  const AtomicString& row_count_value = GetAttribute(aria_rowcountAttr);
+  int row_count_int = row_count_value.ToInt();
 
-  if (rowCountInt > (int)rowCount())
-    return rowCountInt;
+  if (row_count_int > (int)RowCount())
+    return row_count_int;
 
   // Spec says that if all of the rows are present in the DOM, it is
   // not necessary to set this attribute as the user agent can
   // automatically calculate the total number of rows.
   // It returns 0 in order not to set this attribute.
-  if (rowCountInt == (int)rowCount() || rowCountInt != -1)
+  if (row_count_int == (int)RowCount() || row_count_int != -1)
     return 0;
 
   // In the spec, -1 explicitly means an unknown number of rows.
   return -1;
 }
 
-unsigned AXTable::columnCount() {
-  updateChildrenIfNecessary();
+unsigned AXTable::ColumnCount() {
+  UpdateChildrenIfNecessary();
 
-  return m_columns.size();
+  return columns_.size();
 }
 
-unsigned AXTable::rowCount() {
-  updateChildrenIfNecessary();
+unsigned AXTable::RowCount() {
+  UpdateChildrenIfNecessary();
 
-  return m_rows.size();
+  return rows_.size();
 }
 
-AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row) {
-  updateChildrenIfNecessary();
-  if (column >= columnCount() || row >= rowCount())
+AXTableCell* AXTable::CellForColumnAndRow(unsigned column, unsigned row) {
+  UpdateChildrenIfNecessary();
+  if (column >= ColumnCount() || row >= RowCount())
     return 0;
 
   // Iterate backwards through the rows in case the desired cell has a rowspan
   // and exists in a previous row.
-  for (unsigned rowIndexCounter = row + 1; rowIndexCounter > 0;
-       --rowIndexCounter) {
-    unsigned rowIndex = rowIndexCounter - 1;
-    const auto& children = m_rows[rowIndex]->children();
+  for (unsigned row_index_counter = row + 1; row_index_counter > 0;
+       --row_index_counter) {
+    unsigned row_index = row_index_counter - 1;
+    const auto& children = rows_[row_index]->Children();
     // Since some cells may have colspans, we have to check the actual range of
     // each cell to determine which is the right one.
-    for (unsigned colIndexCounter =
+    for (unsigned col_index_counter =
              std::min(static_cast<unsigned>(children.size()), column + 1);
-         colIndexCounter > 0; --colIndexCounter) {
-      unsigned colIndex = colIndexCounter - 1;
-      AXObject* child = children[colIndex].get();
+         col_index_counter > 0; --col_index_counter) {
+      unsigned col_index = col_index_counter - 1;
+      AXObject* child = children[col_index].Get();
 
-      if (!child->isTableCell())
+      if (!child->IsTableCell())
         continue;
 
-      std::pair<unsigned, unsigned> columnRange;
-      std::pair<unsigned, unsigned> rowRange;
-      AXTableCell* tableCellChild = toAXTableCell(child);
-      tableCellChild->columnIndexRange(columnRange);
-      tableCellChild->rowIndexRange(rowRange);
+      std::pair<unsigned, unsigned> column_range;
+      std::pair<unsigned, unsigned> row_range;
+      AXTableCell* table_cell_child = ToAXTableCell(child);
+      table_cell_child->ColumnIndexRange(column_range);
+      table_cell_child->RowIndexRange(row_range);
 
-      if ((column >= columnRange.first &&
-           column < (columnRange.first + columnRange.second)) &&
-          (row >= rowRange.first && row < (rowRange.first + rowRange.second)))
-        return tableCellChild;
+      if ((column >= column_range.first &&
+           column < (column_range.first + column_range.second)) &&
+          (row >= row_range.first &&
+           row < (row_range.first + row_range.second)))
+        return table_cell_child;
     }
   }
 
   return 0;
 }
 
-AccessibilityRole AXTable::roleValue() const {
-  if (!isAXTable())
-    return AXLayoutObject::roleValue();
+AccessibilityRole AXTable::RoleValue() const {
+  if (!IsAXTable())
+    return AXLayoutObject::RoleValue();
 
-  return TableRole;
+  return kTableRole;
 }
 
-bool AXTable::computeAccessibilityIsIgnored(
-    IgnoredReasons* ignoredReasons) const {
-  AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
-  if (decision == IncludeObject)
+bool AXTable::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  AXObjectInclusion decision = DefaultObjectInclusion(ignored_reasons);
+  if (decision == kIncludeObject)
     return false;
-  if (decision == IgnoreObject)
+  if (decision == kIgnoreObject)
     return true;
 
-  if (!isAXTable())
-    return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
+  if (!IsAXTable())
+    return AXLayoutObject::ComputeAccessibilityIsIgnored(ignored_reasons);
 
   return false;
 }
 
 DEFINE_TRACE(AXTable) {
-  visitor->trace(m_rows);
-  visitor->trace(m_columns);
-  visitor->trace(m_headerContainer);
-  AXLayoutObject::trace(visitor);
+  visitor->Trace(rows_);
+  visitor->Trace(columns_);
+  visitor->Trace(header_container_);
+  AXLayoutObject::Trace(visitor);
 }
 
 }  // namespace blink

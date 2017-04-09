@@ -13,7 +13,7 @@ namespace {
 
 inline bool operator==(const blink::WebMediaStreamTrack& web_track,
                        const webrtc::MediaStreamTrackInterface& webrtc_track) {
-  return !web_track.isNull() && web_track.id() == webrtc_track.id().c_str();
+  return !web_track.IsNull() && web_track.Id() == webrtc_track.id().c_str();
 }
 
 }  // namespace
@@ -28,17 +28,17 @@ RTCRtpReceiver::RTCRtpReceiver(
     const blink::WebMediaStreamTrack& web_track)
     : webrtc_rtp_receiver_(webrtc_rtp_receiver), web_track_(web_track) {
   DCHECK(webrtc_rtp_receiver_);
-  DCHECK(!web_track_.isNull());
+  DCHECK(!web_track_.IsNull());
   DCHECK(web_track_ == webrtc_track());
 }
 
 RTCRtpReceiver::~RTCRtpReceiver() {}
 
-uintptr_t RTCRtpReceiver::id() const {
+uintptr_t RTCRtpReceiver::Id() const {
   return getId(webrtc_rtp_receiver_.get());
 }
 
-const blink::WebMediaStreamTrack& RTCRtpReceiver::track() const {
+const blink::WebMediaStreamTrack& RTCRtpReceiver::Track() const {
   DCHECK(web_track_ == webrtc_track());
   return web_track_;
 }

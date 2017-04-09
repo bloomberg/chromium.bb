@@ -84,7 +84,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
 
     case ITEM_GROUP_PAGE: {
       bool is_candidate =
-          params_.media_type == WebContextMenuData::MediaTypeNone &&
+          params_.media_type == WebContextMenuData::kMediaTypeNone &&
           !has_link && !params_.is_editable && !has_selection;
 
       if (!is_candidate && params_.page_url.is_empty())
@@ -104,27 +104,27 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return has_link;
 
     case ITEM_GROUP_MEDIA_IMAGE:
-      return params_.media_type == WebContextMenuData::MediaTypeImage;
+      return params_.media_type == WebContextMenuData::kMediaTypeImage;
 
     case ITEM_GROUP_SEARCHWEBFORIMAGE:
       // Image menu items imply search web for image item.
       return SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
 
     case ITEM_GROUP_MEDIA_VIDEO:
-      return params_.media_type == WebContextMenuData::MediaTypeVideo;
+      return params_.media_type == WebContextMenuData::kMediaTypeVideo;
 
     case ITEM_GROUP_MEDIA_AUDIO:
-      return params_.media_type == WebContextMenuData::MediaTypeAudio;
+      return params_.media_type == WebContextMenuData::kMediaTypeAudio;
 
     case ITEM_GROUP_MEDIA_CANVAS:
-      return params_.media_type == WebContextMenuData::MediaTypeCanvas;
+      return params_.media_type == WebContextMenuData::kMediaTypeCanvas;
 
     case ITEM_GROUP_MEDIA_PLUGIN:
-      return params_.media_type == WebContextMenuData::MediaTypePlugin;
+      return params_.media_type == WebContextMenuData::kMediaTypePlugin;
 
     case ITEM_GROUP_MEDIA_FILE:
 #if defined(WEBCONTEXT_MEDIATYPEFILE_DEFINED)
-      return params_.media_type == WebContextMenuData::MediaTypeFile;
+      return params_.media_type == WebContextMenuData::kMediaTypeFile;
 #else
       return false;
 #endif
@@ -164,7 +164,7 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
 
     case ITEM_GROUP_PASSWORD:
       return params_.input_field_type ==
-          blink::WebContextMenuData::InputFieldTypePassword;
+             blink::WebContextMenuData::kInputFieldTypePassword;
 
     default:
       NOTREACHED();

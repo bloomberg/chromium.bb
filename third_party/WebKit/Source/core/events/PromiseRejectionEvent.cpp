@@ -13,60 +13,62 @@ PromiseRejectionEvent::PromiseRejectionEvent(
     const AtomicString& type,
     const PromiseRejectionEventInit& initializer)
     : Event(type, initializer),
-      m_world(state->world()),
-      m_promise(this),
-      m_reason(this) {
+      world_(state->World()),
+      promise_(this),
+      reason_(this) {
   DCHECK(initializer.hasPromise());
-  m_promise.set(initializer.promise().isolate(),
-                initializer.promise().v8Value());
+  promise_.Set(initializer.promise().GetIsolate(),
+               initializer.promise().V8Value());
   if (initializer.hasReason()) {
-    m_reason.set(initializer.reason().isolate(),
-                 initializer.reason().v8Value());
+    reason_.Set(initializer.reason().GetIsolate(),
+                initializer.reason().V8Value());
   }
 }
 
 PromiseRejectionEvent::~PromiseRejectionEvent() {}
 
-void PromiseRejectionEvent::dispose() {
+void PromiseRejectionEvent::Dispose() {
   // Clear ScopedPersistents so that V8 doesn't call phantom callbacks
   // (and touch the ScopedPersistents) after Oilpan starts lazy sweeping.
-  m_promise.clear();
-  m_reason.clear();
-  m_world.clear();
+  promise_.Clear();
+  reason_.Clear();
+  world_.Clear();
 }
 
-ScriptPromise PromiseRejectionEvent::promise(ScriptState* scriptState) const {
+ScriptPromise PromiseRejectionEvent::promise(ScriptState* script_state) const {
   // Return null when the promise is accessed by a different world than the
   // world that created the promise.
-  if (!canBeDispatchedInWorld(scriptState->world()))
+  if (!CanBeDispatchedInWorld(script_state->World()))
     return ScriptPromise();
-  return ScriptPromise(scriptState, m_promise.newLocal(scriptState->isolate()));
+  return ScriptPromise(script_state,
+                       promise_.NewLocal(script_state->GetIsolate()));
 }
 
-ScriptValue PromiseRejectionEvent::reason(ScriptState* scriptState) const {
+ScriptValue PromiseRejectionEvent::reason(ScriptState* script_state) const {
   // Return null when the value is accessed by a different world than the world
   // that created the value.
-  if (m_reason.isEmpty() || !canBeDispatchedInWorld(scriptState->world()))
-    return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
-  return ScriptValue(scriptState, m_reason.newLocal(scriptState->isolate()));
+  if (reason_.IsEmpty() || !CanBeDispatchedInWorld(script_state->World()))
+    return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
+  return ScriptValue(script_state,
+                     reason_.NewLocal(script_state->GetIsolate()));
 }
 
-const AtomicString& PromiseRejectionEvent::interfaceName() const {
+const AtomicString& PromiseRejectionEvent::InterfaceName() const {
   return EventNames::PromiseRejectionEvent;
 }
 
-bool PromiseRejectionEvent::canBeDispatchedInWorld(
+bool PromiseRejectionEvent::CanBeDispatchedInWorld(
     const DOMWrapperWorld& world) const {
-  return m_world && m_world->worldId() == world.worldId();
+  return world_ && world_->GetWorldId() == world.GetWorldId();
 }
 
 DEFINE_TRACE(PromiseRejectionEvent) {
-  Event::trace(visitor);
+  Event::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(PromiseRejectionEvent) {
-  visitor->traceWrappers(m_promise);
-  visitor->traceWrappers(m_reason);
+  visitor->TraceWrappers(promise_);
+  visitor->TraceWrappers(reason_);
 }
 
 }  // namespace blink

@@ -29,14 +29,14 @@
 
 namespace blink {
 
-String CSSUnicodeRangeValue::customCSSText() const {
-  if (m_from == m_to)
-    return String::format("U+%X", m_from);
-  return String::format("U+%X-%X", m_from, m_to);
+String CSSUnicodeRangeValue::CustomCSSText() const {
+  if (from_ == to_)
+    return String::Format("U+%X", from_);
+  return String::Format("U+%X-%X", from_, to_);
 }
 
-bool CSSUnicodeRangeValue::equals(const CSSUnicodeRangeValue& other) const {
-  return m_from == other.m_from && m_to == other.m_to;
+bool CSSUnicodeRangeValue::Equals(const CSSUnicodeRangeValue& other) const {
+  return from_ == other.from_ && to_ == other.to_;
 }
 
 }  // namespace blink

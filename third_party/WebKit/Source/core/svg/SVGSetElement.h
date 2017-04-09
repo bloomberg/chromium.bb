@@ -35,7 +35,7 @@ class CORE_EXPORT SVGSetElement final : public SVGAnimateElement {
 
  private:
   explicit SVGSetElement(Document&);
-  void updateAnimationMode() override;
+  void UpdateAnimationMode() override;
 };
 
 }  // namespace blink

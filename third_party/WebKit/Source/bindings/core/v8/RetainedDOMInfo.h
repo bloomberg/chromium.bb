@@ -52,20 +52,20 @@ class RetainedDOMInfo final : public RetainedObjectInfo {
   intptr_t GetElementCount() override;
   intptr_t GetEquivalenceClass() override;
 
-  static v8::RetainedObjectInfo* createRetainedDOMInfo(
-      uint16_t classId,
+  static v8::RetainedObjectInfo* CreateRetainedDOMInfo(
+      uint16_t class_id,
       v8::Local<v8::Value> wrapper);
 
  private:
   // V8 guarantees to keep RetainedObjectInfos alive only during a GC or heap
   // snapshotting round, when renderer doesn't get control. This allows us to
   // use raw pointers.
-  UntracedMember<Node> m_root;
+  UntracedMember<Node> root_;
 };
 
 class SuspendableObjectsInfo final : public RetainedObjectInfo {
  public:
-  explicit SuspendableObjectsInfo(int numberOfObjectsWithPendingActivity);
+  explicit SuspendableObjectsInfo(int number_of_objects_with_pending_activity);
   ~SuspendableObjectsInfo() override;
   void Dispose() override;
   bool IsEquivalent(v8::RetainedObjectInfo* other) override;
@@ -76,7 +76,7 @@ class SuspendableObjectsInfo final : public RetainedObjectInfo {
   intptr_t GetEquivalenceClass() override;
 
  private:
-  int m_numberOfObjectsWithPendingActivity;
+  int number_of_objects_with_pending_activity_;
 };
 
 }  // namespace blink

@@ -14,99 +14,104 @@
 
 namespace blink {
 
-const int buttonShadowHeight = 2;
+const int kButtonShadowHeight = 2;
 
-void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo,
-                                           const LayoutPoint& paintOffset) {
-  if (m_layoutFileUploadControl.style()->visibility() != EVisibility::kVisible)
+void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
+                                           const LayoutPoint& paint_offset) {
+  if (layout_file_upload_control_.Style()->Visibility() !=
+      EVisibility::kVisible)
     return;
 
   // Push a clip.
-  Optional<ClipRecorder> clipRecorder;
-  if (paintInfo.phase == PaintPhaseForeground ||
-      paintInfo.phase == PaintPhaseDescendantBlockBackgroundsOnly) {
-    IntRect clipRect = enclosingIntRect(LayoutRect(
-        LayoutPoint(paintOffset.x() + m_layoutFileUploadControl.borderLeft(),
-                    paintOffset.y() + m_layoutFileUploadControl.borderTop()),
-        m_layoutFileUploadControl.size() +
-            LayoutSize(LayoutUnit(), -m_layoutFileUploadControl.borderWidth() +
-                                         buttonShadowHeight)));
-    if (clipRect.isEmpty())
+  Optional<ClipRecorder> clip_recorder;
+  if (paint_info.phase == kPaintPhaseForeground ||
+      paint_info.phase == kPaintPhaseDescendantBlockBackgroundsOnly) {
+    IntRect clip_rect = EnclosingIntRect(LayoutRect(
+        LayoutPoint(paint_offset.X() + layout_file_upload_control_.BorderLeft(),
+                    paint_offset.Y() + layout_file_upload_control_.BorderTop()),
+        layout_file_upload_control_.size() +
+            LayoutSize(LayoutUnit(),
+                       -layout_file_upload_control_.BorderWidth() +
+                           kButtonShadowHeight)));
+    if (clip_rect.IsEmpty())
       return;
-    clipRecorder.emplace(paintInfo.context, m_layoutFileUploadControl,
-                         DisplayItem::kClipFileUploadControlRect, clipRect);
+    clip_recorder.emplace(paint_info.context, layout_file_upload_control_,
+                          DisplayItem::kClipFileUploadControlRect, clip_rect);
   }
 
-  if (paintInfo.phase == PaintPhaseForeground &&
-      !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutFileUploadControl, paintInfo.phase)) {
-    const String& displayedFilename = m_layoutFileUploadControl.fileTextValue();
-    const Font& font = m_layoutFileUploadControl.style()->font();
-    TextRun textRun = constructTextRun(
-        font, displayedFilename, m_layoutFileUploadControl.styleRef(),
-        RespectDirection | RespectDirectionOverride);
-    textRun.setExpansionBehavior(TextRun::AllowTrailingExpansion);
+  if (paint_info.phase == kPaintPhaseForeground &&
+      !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_file_upload_control_, paint_info.phase)) {
+    const String& displayed_filename =
+        layout_file_upload_control_.FileTextValue();
+    const Font& font = layout_file_upload_control_.Style()->GetFont();
+    TextRun text_run = ConstructTextRun(
+        font, displayed_filename, layout_file_upload_control_.StyleRef(),
+        kRespectDirection | kRespectDirectionOverride);
+    text_run.SetExpansionBehavior(TextRun::kAllowTrailingExpansion);
 
     // Determine where the filename should be placed
-    LayoutUnit contentLeft = paintOffset.x() +
-                             m_layoutFileUploadControl.borderLeft() +
-                             m_layoutFileUploadControl.paddingLeft();
-    Node* button = m_layoutFileUploadControl.uploadButton();
+    LayoutUnit content_left = paint_offset.X() +
+                              layout_file_upload_control_.BorderLeft() +
+                              layout_file_upload_control_.PaddingLeft();
+    Node* button = layout_file_upload_control_.UploadButton();
     if (!button)
       return;
 
-    int buttonWidth = (button && button->layoutBox())
-                          ? button->layoutBox()->pixelSnappedWidth()
-                          : 0;
-    LayoutUnit buttonAndSpacingWidth(
-        buttonWidth + LayoutFileUploadControl::afterButtonSpacing);
-    float textWidth = font.width(textRun);
-    LayoutUnit textX;
-    if (m_layoutFileUploadControl.style()->isLeftToRightDirection())
-      textX = contentLeft + buttonAndSpacingWidth;
+    int button_width = (button && button->GetLayoutBox())
+                           ? button->GetLayoutBox()->PixelSnappedWidth()
+                           : 0;
+    LayoutUnit button_and_spacing_width(
+        button_width + LayoutFileUploadControl::kAfterButtonSpacing);
+    float text_width = font.Width(text_run);
+    LayoutUnit text_x;
+    if (layout_file_upload_control_.Style()->IsLeftToRightDirection())
+      text_x = content_left + button_and_spacing_width;
     else
-      textX =
-          LayoutUnit(contentLeft + m_layoutFileUploadControl.contentWidth() -
-                     buttonAndSpacingWidth - textWidth);
+      text_x =
+          LayoutUnit(content_left + layout_file_upload_control_.ContentWidth() -
+                     button_and_spacing_width - text_width);
 
-    LayoutUnit textY;
+    LayoutUnit text_y;
     // We want to match the button's baseline
     // FIXME: Make this work with transforms.
-    if (LayoutButton* buttonLayoutObject =
-            toLayoutButton(button->layoutObject()))
-      textY = paintOffset.y() + m_layoutFileUploadControl.borderTop() +
-              m_layoutFileUploadControl.paddingTop() +
-              buttonLayoutObject->baselinePosition(AlphabeticBaseline, true,
-                                                   HorizontalLine,
-                                                   PositionOnContainingLine);
+    if (LayoutButton* button_layout_object =
+            ToLayoutButton(button->GetLayoutObject()))
+      text_y = paint_offset.Y() + layout_file_upload_control_.BorderTop() +
+               layout_file_upload_control_.PaddingTop() +
+               button_layout_object->BaselinePosition(
+                   kAlphabeticBaseline, true, kHorizontalLine,
+                   kPositionOnContainingLine);
     else
-      textY = LayoutUnit(m_layoutFileUploadControl.baselinePosition(
-          AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine));
-    TextRunPaintInfo textRunPaintInfo(textRun);
+      text_y = LayoutUnit(layout_file_upload_control_.BaselinePosition(
+          kAlphabeticBaseline, true, kHorizontalLine,
+          kPositionOnContainingLine));
+    TextRunPaintInfo text_run_paint_info(text_run);
 
-    const SimpleFontData* fontData =
-        m_layoutFileUploadControl.style()->font().primaryFont();
-    if (!fontData)
+    const SimpleFontData* font_data =
+        layout_file_upload_control_.Style()->GetFont().PrimaryFont();
+    if (!font_data)
       return;
     // FIXME: Shouldn't these offsets be rounded? crbug.com/350474
-    textRunPaintInfo.bounds = FloatRect(
-        textX.toFloat(), textY.toFloat() - fontData->getFontMetrics().ascent(),
-        textWidth, fontData->getFontMetrics().height());
+    text_run_paint_info.bounds =
+        FloatRect(text_x.ToFloat(),
+                  text_y.ToFloat() - font_data->GetFontMetrics().Ascent(),
+                  text_width, font_data->GetFontMetrics().Height());
 
     // Draw the filename.
     LayoutObjectDrawingRecorder recorder(
-        paintInfo.context, m_layoutFileUploadControl, paintInfo.phase,
-        textRunPaintInfo.bounds);
-    paintInfo.context.setFillColor(
-        m_layoutFileUploadControl.resolveColor(CSSPropertyColor));
-    paintInfo.context.drawBidiText(
-        font, textRunPaintInfo,
-        FloatPoint(roundToInt(textX), roundToInt(textY)));
+        paint_info.context, layout_file_upload_control_, paint_info.phase,
+        text_run_paint_info.bounds);
+    paint_info.context.SetFillColor(
+        layout_file_upload_control_.ResolveColor(CSSPropertyColor));
+    paint_info.context.DrawBidiText(
+        font, text_run_paint_info,
+        FloatPoint(RoundToInt(text_x), RoundToInt(text_y)));
   }
 
   // Paint the children.
-  m_layoutFileUploadControl.LayoutBlockFlow::paintObject(paintInfo,
-                                                         paintOffset);
+  layout_file_upload_control_.LayoutBlockFlow::PaintObject(paint_info,
+                                                           paint_offset);
 }
 
 }  // namespace blink

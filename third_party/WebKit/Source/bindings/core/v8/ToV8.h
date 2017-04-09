@@ -30,134 +30,134 @@ class EventTarget;
 // ScriptWrappable
 
 inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   if (UNLIKELY(!impl))
     return v8::Null(isolate);
-  v8::Local<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
+  v8::Local<v8::Value> wrapper = DOMDataStore::GetWrapper(impl, isolate);
   if (!wrapper.IsEmpty())
     return wrapper;
 
-  wrapper = impl->wrap(isolate, creationContext);
+  wrapper = impl->Wrap(isolate, creation_context);
   DCHECK(!wrapper.IsEmpty());
   return wrapper;
 }
 
 inline v8::Local<v8::Value> ToV8(Node* impl,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return ToV8(ScriptWrappable::fromNode(impl), creationContext, isolate);
+  return ToV8(ScriptWrappable::FromNode(impl), creation_context, isolate);
 }
 
 // Special versions for DOMWindow and EventTarget
 
 CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
-                                      v8::Local<v8::Object> creationContext,
+                                      v8::Local<v8::Object> creation_context,
                                       v8::Isolate*);
 CORE_EXPORT v8::Local<v8::Value> ToV8(EventTarget*,
-                                      v8::Local<v8::Object> creationContext,
+                                      v8::Local<v8::Object> creation_context,
                                       v8::Isolate*);
 
 // Primitives
 
 inline v8::Local<v8::Value> ToV8(const String& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return v8String(isolate, value);
+  return V8String(isolate, value);
 }
 
 inline v8::Local<v8::Value> ToV8(const char* value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return v8String(isolate, value);
+  return V8String(isolate, value);
 }
 
 template <size_t sizeOfValue>
-inline v8::Local<v8::Value> toV8SignedIntegerInternal(int64_t value,
+inline v8::Local<v8::Value> ToV8SignedIntegerInternal(int64_t value,
                                                       v8::Isolate*);
 
 template <>
-inline v8::Local<v8::Value> toV8SignedIntegerInternal<4>(int64_t value,
+inline v8::Local<v8::Value> ToV8SignedIntegerInternal<4>(int64_t value,
                                                          v8::Isolate* isolate) {
   return v8::Integer::New(isolate, static_cast<int32_t>(value));
 }
 
 template <>
-inline v8::Local<v8::Value> toV8SignedIntegerInternal<8>(int64_t value,
+inline v8::Local<v8::Value> ToV8SignedIntegerInternal<8>(int64_t value,
                                                          v8::Isolate* isolate) {
-  int32_t valueIn32Bit = static_cast<int32_t>(value);
-  if (valueIn32Bit == value)
+  int32_t value_in32_bit = static_cast<int32_t>(value);
+  if (value_in32_bit == value)
     return v8::Integer::New(isolate, value);
   // V8 doesn't have a 64-bit integer implementation.
   return v8::Number::New(isolate, value);
 }
 
 template <size_t sizeOfValue>
-inline v8::Local<v8::Value> toV8UnsignedIntegerInternal(uint64_t value,
+inline v8::Local<v8::Value> ToV8UnsignedIntegerInternal(uint64_t value,
                                                         v8::Isolate*);
 
 template <>
-inline v8::Local<v8::Value> toV8UnsignedIntegerInternal<4>(
+inline v8::Local<v8::Value> ToV8UnsignedIntegerInternal<4>(
     uint64_t value,
     v8::Isolate* isolate) {
   return v8::Integer::NewFromUnsigned(isolate, static_cast<uint32_t>(value));
 }
 
 template <>
-inline v8::Local<v8::Value> toV8UnsignedIntegerInternal<8>(
+inline v8::Local<v8::Value> ToV8UnsignedIntegerInternal<8>(
     uint64_t value,
     v8::Isolate* isolate) {
-  uint32_t valueIn32Bit = static_cast<uint32_t>(value);
-  if (valueIn32Bit == value)
+  uint32_t value_in32_bit = static_cast<uint32_t>(value);
+  if (value_in32_bit == value)
     return v8::Integer::NewFromUnsigned(isolate, value);
   // V8 doesn't have a 64-bit integer implementation.
   return v8::Number::New(isolate, value);
 }
 
 inline v8::Local<v8::Value> ToV8(int value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8SignedIntegerInternal<sizeof value>(value, isolate);
+  return ToV8SignedIntegerInternal<sizeof value>(value, isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(long value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8SignedIntegerInternal<sizeof value>(value, isolate);
+  return ToV8SignedIntegerInternal<sizeof value>(value, isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(long long value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8SignedIntegerInternal<sizeof value>(value, isolate);
+  return ToV8SignedIntegerInternal<sizeof value>(value, isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(unsigned value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8UnsignedIntegerInternal<sizeof value>(value, isolate);
+  return ToV8UnsignedIntegerInternal<sizeof value>(value, isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(unsigned long value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8UnsignedIntegerInternal<sizeof value>(value, isolate);
+  return ToV8UnsignedIntegerInternal<sizeof value>(value, isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(unsigned long long value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8UnsignedIntegerInternal<sizeof value>(value, isolate);
+  return ToV8UnsignedIntegerInternal<sizeof value>(value, isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(double value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return v8::Number::New(isolate, value);
 }
 
 inline v8::Local<v8::Value> ToV8(bool value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return v8::Boolean::New(isolate, value);
 }
@@ -165,7 +165,7 @@ inline v8::Local<v8::Value> ToV8(bool value,
 // Identity operator
 
 inline v8::Local<v8::Value> ToV8(v8::Local<v8::Value> value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate*) {
   return value;
 }
@@ -177,7 +177,7 @@ struct ToV8UndefinedGenerator {
 };  // Used only for having toV8 return v8::Undefined.
 
 inline v8::Local<v8::Value> ToV8(const ToV8UndefinedGenerator& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   return v8::Undefined(isolate);
 }
@@ -185,26 +185,26 @@ inline v8::Local<v8::Value> ToV8(const ToV8UndefinedGenerator& value,
 // ScriptValue
 
 inline v8::Local<v8::Value> ToV8(const ScriptValue& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  if (value.isEmpty())
+  if (value.IsEmpty())
     return v8::Undefined(isolate);
-  return value.v8Value();
+  return value.V8Value();
 }
 
 // Dictionary
 
 inline v8::Local<v8::Value> ToV8(const Dictionary& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   NOTREACHED();
   return v8::Undefined(isolate);
 }
 
 inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return value.toV8Impl(creationContext, isolate);
+  return value.ToV8Impl(creation_context, isolate);
 }
 
 // Array
@@ -212,43 +212,43 @@ inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase& value,
 // Declare the function here but define it later so it can call the ToV8()
 // overloads below.
 template <typename Sequence>
-inline v8::Local<v8::Value> toV8SequenceInternal(
+inline v8::Local<v8::Value> ToV8SequenceInternal(
     const Sequence& sequence,
-    v8::Local<v8::Object> creationContext,
+    v8::Local<v8::Object> creation_context,
     v8::Isolate*);
 
 template <typename T, size_t inlineCapacity>
 inline v8::Local<v8::Value> ToV8(const Vector<T, inlineCapacity>& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8SequenceInternal(value, creationContext, isolate);
+  return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
 template <typename T, size_t inlineCapacity>
 inline v8::Local<v8::Value> ToV8(const HeapVector<T, inlineCapacity>& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  return toV8SequenceInternal(value, creationContext, isolate);
+  return ToV8SequenceInternal(value, creation_context, isolate);
 }
 
 // The following two overloads are also used to convert record<K,V> IDL types
 // back into ECMAScript Objects.
 template <typename T>
 inline v8::Local<v8::Value> ToV8(const Vector<std::pair<String, T>>& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   v8::Local<v8::Object> object;
   {
-    v8::Context::Scope contextScope(creationContext->CreationContext());
+    v8::Context::Scope context_scope(creation_context->CreationContext());
     object = v8::Object::New(isolate);
   }
   for (unsigned i = 0; i < value.size(); ++i) {
-    v8::Local<v8::Value> v8Value = ToV8(value[i].second, object, isolate);
-    if (v8Value.IsEmpty())
-      v8Value = v8::Undefined(isolate);
-    if (!v8CallBoolean(object->CreateDataProperty(
-            isolate->GetCurrentContext(), v8String(isolate, value[i].first),
-            v8Value)))
+    v8::Local<v8::Value> v8_value = ToV8(value[i].second, object, isolate);
+    if (v8_value.IsEmpty())
+      v8_value = v8::Undefined(isolate);
+    if (!V8CallBoolean(object->CreateDataProperty(
+            isolate->GetCurrentContext(), V8String(isolate, value[i].first),
+            v8_value)))
       return v8::Local<v8::Value>();
   }
   return object;
@@ -256,33 +256,33 @@ inline v8::Local<v8::Value> ToV8(const Vector<std::pair<String, T>>& value,
 
 template <typename T>
 inline v8::Local<v8::Value> ToV8(const HeapVector<std::pair<String, T>>& value,
-                                 v8::Local<v8::Object> creationContext,
+                                 v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
   v8::Local<v8::Object> object;
   {
-    v8::Context::Scope contextScope(creationContext->CreationContext());
+    v8::Context::Scope context_scope(creation_context->CreationContext());
     object = v8::Object::New(isolate);
   }
   for (unsigned i = 0; i < value.size(); ++i) {
-    v8::Local<v8::Value> v8Value = ToV8(value[i].second, object, isolate);
-    if (v8Value.IsEmpty())
-      v8Value = v8::Undefined(isolate);
-    if (!v8CallBoolean(object->CreateDataProperty(
-            isolate->GetCurrentContext(), v8String(isolate, value[i].first),
-            v8Value)))
+    v8::Local<v8::Value> v8_value = ToV8(value[i].second, object, isolate);
+    if (v8_value.IsEmpty())
+      v8_value = v8::Undefined(isolate);
+    if (!V8CallBoolean(object->CreateDataProperty(
+            isolate->GetCurrentContext(), V8String(isolate, value[i].first),
+            v8_value)))
       return v8::Local<v8::Value>();
   }
   return object;
 }
 
 template <typename Sequence>
-inline v8::Local<v8::Value> toV8SequenceInternal(
+inline v8::Local<v8::Value> ToV8SequenceInternal(
     const Sequence& sequence,
-    v8::Local<v8::Object> creationContext,
+    v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
   v8::Local<v8::Array> array;
   {
-    v8::Context::Scope contextScope(creationContext->CreationContext());
+    v8::Context::Scope context_scope(creation_context->CreationContext());
     array = v8::Array::New(isolate, sequence.size());
   }
   uint32_t index = 0;
@@ -292,7 +292,7 @@ inline v8::Local<v8::Value> toV8SequenceInternal(
     v8::Local<v8::Value> value = ToV8(*iter, array, isolate);
     if (value.IsEmpty())
       value = v8::Undefined(isolate);
-    if (!v8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
+    if (!V8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
                                                  index++, value)))
       return v8::Local<v8::Value>();
   }
@@ -303,9 +303,9 @@ inline v8::Local<v8::Value> toV8SequenceInternal(
 // Use this function only if the call site does not otherwise need the global,
 // since v8::Context::Global is heavy.
 template <typename T>
-inline v8::Local<v8::Value> ToV8(T&& value, ScriptState* scriptState) {
-  return ToV8(std::forward<T>(value), scriptState->context()->Global(),
-              scriptState->isolate());
+inline v8::Local<v8::Value> ToV8(T&& value, ScriptState* script_state) {
+  return ToV8(std::forward<T>(value), script_state->GetContext()->Global(),
+              script_state->GetIsolate());
 }
 
 // Only declare ToV8(void*,...) for checking function overload mismatch.
@@ -317,14 +317,14 @@ inline v8::Local<v8::Value> ToV8(T&& value, ScriptState* scriptState) {
 // ScriptWrappable).
 // This hack helps detect such unwanted implicit conversions from T* to bool.
 v8::Local<v8::Value> ToV8(void* value,
-                          v8::Local<v8::Object> creationContext,
+                          v8::Local<v8::Object> creation_context,
                           v8::Isolate*) = delete;
 
 // Cannot define in ScriptValue because of the circular dependency between toV8
 // and ScriptValue
 template <typename T>
-inline ScriptValue ScriptValue::from(ScriptState* scriptState, T&& value) {
-  return ScriptValue(scriptState, ToV8(std::forward<T>(value), scriptState));
+inline ScriptValue ScriptValue::From(ScriptState* script_state, T&& value) {
+  return ScriptValue(script_state, ToV8(std::forward<T>(value), script_state));
 }
 
 }  // namespace blink

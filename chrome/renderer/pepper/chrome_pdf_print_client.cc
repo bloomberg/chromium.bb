@@ -19,15 +19,15 @@ blink::WebElement GetWebElement(PP_Instance instance_id) {
       content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return blink::WebElement();
-  return instance->GetContainer()->element();
+  return instance->GetContainer()->GetElement();
 }
 
 printing::PrintWebViewHelper* GetPrintWebViewHelper(
     const blink::WebElement& element) {
-  if (element.isNull())
+  if (element.IsNull())
     return nullptr;
   auto* render_frame =
-      content::RenderFrame::FromWebFrame(element.document().frame());
+      content::RenderFrame::FromWebFrame(element.GetDocument().GetFrame());
   return printing::PrintWebViewHelper::Get(render_frame);
 }
 

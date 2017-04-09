@@ -47,10 +47,10 @@ void WebViewTestProxyBase::Reset() {
   view_test_runner_->Reset();
   WebWidgetTestProxyBase::Reset();
 
-  for (blink::WebFrame* frame = web_view_->mainFrame(); frame;
-       frame = frame->traverseNext()) {
-    if (frame->isWebLocalFrame())
-      delegate_->GetWebWidgetTestProxyBase(frame->toWebLocalFrame())->Reset();
+  for (blink::WebFrame* frame = web_view_->MainFrame(); frame;
+       frame = frame->TraverseNext()) {
+    if (frame->IsWebLocalFrame())
+      delegate_->GetWebWidgetTestProxyBase(frame->ToWebLocalFrame())->Reset();
   }
 }
 

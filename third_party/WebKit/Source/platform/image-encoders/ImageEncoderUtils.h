@@ -13,15 +13,15 @@ namespace blink {
 class PLATFORM_EXPORT ImageEncoderUtils {
  public:
   enum EncodeReason {
-    EncodeReasonToDataURL = 0,
-    EncodeReasonToBlobCallback = 1,
-    EncodeReasonConvertToBlobPromise = 2,
-    NumberOfEncodeReasons
+    kEncodeReasonToDataURL = 0,
+    kEncodeReasonToBlobCallback = 1,
+    kEncodeReasonConvertToBlobPromise = 2,
+    kNumberOfEncodeReasons
   };
-  static String toEncodingMimeType(const String& mimeType, const EncodeReason);
+  static String ToEncodingMimeType(const String& mime_type, const EncodeReason);
 
   // Default image mime type for toDataURL and toBlob functions
-  static const char DefaultMimeType[];
+  static const char kDefaultMimeType[];
 };
 
 }  // namespace blink

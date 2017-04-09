@@ -59,35 +59,35 @@ class MODULES_EXPORT DOMFileSystem final
   USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 
  public:
-  static DOMFileSystem* create(ExecutionContext*,
+  static DOMFileSystem* Create(ExecutionContext*,
                                const String& name,
                                FileSystemType,
-                               const KURL& rootURL);
+                               const KURL& root_url);
 
   // Creates a new isolated file system for the given filesystemId.
-  static DOMFileSystem* createIsolatedFileSystem(ExecutionContext*,
-                                                 const String& filesystemId);
+  static DOMFileSystem* CreateIsolatedFileSystem(ExecutionContext*,
+                                                 const String& filesystem_id);
 
   DirectoryEntry* root() const;
 
   // DOMFileSystemBase overrides.
-  void addPendingCallbacks() override;
-  void removePendingCallbacks() override;
-  void reportError(ErrorCallbackBase*, FileError::ErrorCode) override;
+  void AddPendingCallbacks() override;
+  void RemovePendingCallbacks() override;
+  void ReportError(ErrorCallbackBase*, FileError::ErrorCode) override;
 
-  static void reportError(ExecutionContext*,
+  static void ReportError(ExecutionContext*,
                           ErrorCallbackBase*,
                           FileError::ErrorCode);
 
   // ScriptWrappable overrides.
-  bool hasPendingActivity() const final;
+  bool HasPendingActivity() const final;
 
-  void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
-  void createFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
+  void CreateWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
+  void CreateFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
 
   // Schedule a callback. This should not cross threads (should be called on the
   // same context thread).
-  static void scheduleCallback(ExecutionContext* executionContext,
+  static void ScheduleCallback(ExecutionContext* execution_context,
                                std::unique_ptr<WTF::Closure> task);
 
   DECLARE_VIRTUAL_TRACE();
@@ -96,12 +96,12 @@ class MODULES_EXPORT DOMFileSystem final
   DOMFileSystem(ExecutionContext*,
                 const String& name,
                 FileSystemType,
-                const KURL& rootURL);
+                const KURL& root_url);
 
-  static String taskNameForInstrumentation() { return "FileSystem"; }
+  static String TaskNameForInstrumentation() { return "FileSystem"; }
 
-  int m_numberOfPendingCallbacks;
-  Member<DirectoryEntry> m_rootEntry;
+  int number_of_pending_callbacks_;
+  Member<DirectoryEntry> root_entry_;
 };
 
 }  // namespace blink

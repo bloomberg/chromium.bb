@@ -37,8 +37,8 @@ class LayoutWordBreak final : public LayoutText {
  public:
   explicit LayoutWordBreak(HTMLElement*);
 
-  const char* name() const override { return "LayoutWordBreak"; }
-  bool isWordBreak() const override;
+  const char* GetName() const override { return "LayoutWordBreak"; }
+  bool IsWordBreak() const override;
 };
 
 }  // namespace blink

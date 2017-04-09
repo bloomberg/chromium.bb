@@ -17,7 +17,7 @@
 namespace blink {
 namespace {
 
-mojom::blink::BudgetOperationType stringToOperationType(
+mojom::blink::BudgetOperationType StringToOperationType(
     const AtomicString& operation) {
   if (operation == "silent-push")
     return mojom::blink::BudgetOperationType::SILENT_PUSH;
@@ -25,15 +25,15 @@ mojom::blink::BudgetOperationType stringToOperationType(
   return mojom::blink::BudgetOperationType::INVALID_OPERATION;
 }
 
-DOMException* errorTypeToException(mojom::blink::BudgetServiceErrorType error) {
+DOMException* ErrorTypeToException(mojom::blink::BudgetServiceErrorType error) {
   switch (error) {
     case mojom::blink::BudgetServiceErrorType::NONE:
       return nullptr;
     case mojom::blink::BudgetServiceErrorType::DATABASE_ERROR:
-      return DOMException::create(DataError,
+      return DOMException::Create(kDataError,
                                   "Error reading the budget database.");
     case mojom::blink::BudgetServiceErrorType::NOT_SUPPORTED:
-      return DOMException::create(NotSupportedError,
+      return DOMException::Create(kNotSupportedError,
                                   "Requested opration was not supported");
   }
   NOTREACHED();
@@ -43,72 +43,72 @@ DOMException* errorTypeToException(mojom::blink::BudgetServiceErrorType error) {
 }  // namespace
 
 BudgetService::BudgetService() {
-  Platform::current()->interfaceProvider()->getInterface(
-      mojo::MakeRequest(&m_service));
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&service_));
 
   // Set a connection error handler, so that if an embedder doesn't
   // implement a BudgetSerice mojo service, the developer will get a
   // actionable information.
-  m_service.set_connection_error_handler(convertToBaseCallback(
-      WTF::bind(&BudgetService::onConnectionError, wrapWeakPersistent(this))));
+  service_.set_connection_error_handler(ConvertToBaseCallback(
+      WTF::Bind(&BudgetService::OnConnectionError, WrapWeakPersistent(this))));
 }
 
 BudgetService::~BudgetService() {}
 
-ScriptPromise BudgetService::getCost(ScriptState* scriptState,
+ScriptPromise BudgetService::getCost(ScriptState* script_state,
                                      const AtomicString& operation) {
-  DCHECK(m_service);
+  DCHECK(service_);
 
-  String errorMessage;
-  if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError, errorMessage));
+  String error_message;
+  if (!script_state->GetExecutionContext()->IsSecureContext(error_message))
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kSecurityError, error_message));
 
-  mojom::blink::BudgetOperationType type = stringToOperationType(operation);
+  mojom::blink::BudgetOperationType type = StringToOperationType(operation);
   DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // Get the cost for the action from the browser BudgetService.
-  m_service->GetCost(type, convertToBaseCallback(WTF::bind(
-                               &BudgetService::gotCost, wrapPersistent(this),
-                               wrapPersistent(resolver))));
+  service_->GetCost(type, ConvertToBaseCallback(WTF::Bind(
+                              &BudgetService::GotCost, WrapPersistent(this),
+                              WrapPersistent(resolver))));
   return promise;
 }
 
-void BudgetService::gotCost(ScriptPromiseResolver* resolver,
+void BudgetService::GotCost(ScriptPromiseResolver* resolver,
                             double cost) const {
-  resolver->resolve(cost);
+  resolver->Resolve(cost);
 }
 
-ScriptPromise BudgetService::getBudget(ScriptState* scriptState) {
-  DCHECK(m_service);
+ScriptPromise BudgetService::getBudget(ScriptState* script_state) {
+  DCHECK(service_);
 
-  String errorMessage;
-  if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError, errorMessage));
+  String error_message;
+  if (!script_state->GetExecutionContext()->IsSecureContext(error_message))
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kSecurityError, error_message));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // Get the budget from the browser BudgetService.
   RefPtr<SecurityOrigin> origin(
-      scriptState->getExecutionContext()->getSecurityOrigin());
-  m_service->GetBudget(
-      origin, convertToBaseCallback(WTF::bind(&BudgetService::gotBudget,
-                                              wrapPersistent(this),
-                                              wrapPersistent(resolver))));
+      script_state->GetExecutionContext()->GetSecurityOrigin());
+  service_->GetBudget(
+      origin, ConvertToBaseCallback(WTF::Bind(&BudgetService::GotBudget,
+                                              WrapPersistent(this),
+                                              WrapPersistent(resolver))));
   return promise;
 }
 
-void BudgetService::gotBudget(
+void BudgetService::GotBudget(
     ScriptPromiseResolver* resolver,
     mojom::blink::BudgetServiceErrorType error,
     const WTF::Vector<mojom::blink::BudgetStatePtr> expectations) const {
   if (error != mojom::blink::BudgetServiceErrorType::NONE) {
-    resolver->reject(errorTypeToException(error));
+    resolver->Reject(ErrorTypeToException(error));
     return;
   }
 
@@ -121,46 +121,46 @@ void BudgetService::gotBudget(
                                 expectations[i]->time);
   }
 
-  resolver->resolve(budget);
+  resolver->Resolve(budget);
 }
 
-ScriptPromise BudgetService::reserve(ScriptState* scriptState,
+ScriptPromise BudgetService::reserve(ScriptState* script_state,
                                      const AtomicString& operation) {
-  DCHECK(m_service);
+  DCHECK(service_);
 
-  mojom::blink::BudgetOperationType type = stringToOperationType(operation);
+  mojom::blink::BudgetOperationType type = StringToOperationType(operation);
   DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
 
-  String errorMessage;
-  if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(SecurityError, errorMessage));
+  String error_message;
+  if (!script_state->GetExecutionContext()->IsSecureContext(error_message))
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kSecurityError, error_message));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // Call to the BudgetService to place the reservation.
   RefPtr<SecurityOrigin> origin(
-      scriptState->getExecutionContext()->getSecurityOrigin());
-  m_service->Reserve(origin, type,
-                     convertToBaseCallback(WTF::bind(
-                         &BudgetService::gotReservation, wrapPersistent(this),
-                         wrapPersistent(resolver))));
+      script_state->GetExecutionContext()->GetSecurityOrigin());
+  service_->Reserve(origin, type,
+                    ConvertToBaseCallback(WTF::Bind(
+                        &BudgetService::GotReservation, WrapPersistent(this),
+                        WrapPersistent(resolver))));
   return promise;
 }
 
-void BudgetService::gotReservation(ScriptPromiseResolver* resolver,
+void BudgetService::GotReservation(ScriptPromiseResolver* resolver,
                                    mojom::blink::BudgetServiceErrorType error,
                                    bool success) const {
   if (error != mojom::blink::BudgetServiceErrorType::NONE) {
-    resolver->reject(errorTypeToException(error));
+    resolver->Reject(ErrorTypeToException(error));
     return;
   }
 
-  resolver->resolve(success);
+  resolver->Resolve(success);
 }
 
-void BudgetService::onConnectionError() {
+void BudgetService::OnConnectionError() {
   LOG(ERROR) << "Unable to connect to the Mojo BudgetService.";
   // TODO(harkness): Reject in flight promises.
 }

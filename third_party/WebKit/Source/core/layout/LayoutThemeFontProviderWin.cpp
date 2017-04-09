@@ -33,53 +33,53 @@
 namespace blink {
 
 // Converts |points| to pixels. One point is 1/72 of an inch.
-static float pointsToPixels(float points) {
-  const float pixelsPerInch = 96.0f;
-  const float pointsPerInch = 72.0f;
-  return points / pointsPerInch * pixelsPerInch;
+static float PointsToPixels(float points) {
+  const float kPixelsPerInch = 96.0f;
+  const float kPointsPerInch = 72.0f;
+  return points / kPointsPerInch * kPixelsPerInch;
 }
 
 // static
-void LayoutThemeFontProvider::systemFont(CSSValueID systemFontID,
-                                         FontStyle& fontStyle,
-                                         FontWeight& fontWeight,
-                                         float& fontSize,
-                                         AtomicString& fontFamily) {
-  fontStyle = FontStyleNormal;
-  fontWeight = FontWeightNormal;
-  fontSize = s_defaultFontSize;
-  fontFamily = defaultGUIFont();
+void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
+                                         FontStyle& font_style,
+                                         FontWeight& font_weight,
+                                         float& font_size,
+                                         AtomicString& font_family) {
+  font_style = kFontStyleNormal;
+  font_weight = kFontWeightNormal;
+  font_size = default_font_size_;
+  font_family = DefaultGUIFont();
 
-  switch (systemFontID) {
+  switch (system_font_id) {
     case CSSValueSmallCaption:
-      fontSize = FontCache::smallCaptionFontHeight();
-      fontFamily = FontCache::smallCaptionFontFamily();
+      font_size = FontCache::SmallCaptionFontHeight();
+      font_family = FontCache::SmallCaptionFontFamily();
       break;
     case CSSValueMenu:
-      fontSize = FontCache::menuFontHeight();
-      fontFamily = FontCache::menuFontFamily();
+      font_size = FontCache::MenuFontHeight();
+      font_family = FontCache::MenuFontFamily();
       break;
     case CSSValueStatusBar:
-      fontSize = FontCache::statusFontHeight();
-      fontFamily = FontCache::statusFontFamily();
+      font_size = FontCache::StatusFontHeight();
+      font_family = FontCache::StatusFontFamily();
       break;
     case CSSValueWebkitMiniControl:
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
       // Why 2 points smaller? Because that's what Gecko does.
-      fontSize = s_defaultFontSize - pointsToPixels(2);
-      fontFamily = defaultGUIFont();
+      font_size = default_font_size_ - PointsToPixels(2);
+      font_family = DefaultGUIFont();
       break;
     default:
-      fontSize = s_defaultFontSize;
-      fontFamily = defaultGUIFont();
+      font_size = default_font_size_;
+      font_family = DefaultGUIFont();
       break;
   }
 }
 
 // static
-void LayoutThemeFontProvider::setDefaultFontSize(int fontSize) {
-  s_defaultFontSize = static_cast<float>(fontSize);
+void LayoutThemeFontProvider::SetDefaultFontSize(int font_size) {
+  default_font_size_ = static_cast<float>(font_size);
 }
 
 }  // namespace blink

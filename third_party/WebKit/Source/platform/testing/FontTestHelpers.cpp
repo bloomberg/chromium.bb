@@ -19,55 +19,56 @@ namespace {
 
 class TestFontSelector : public FontSelector {
  public:
-  static TestFontSelector* create(const String& path) {
-    RefPtr<SharedBuffer> fontBuffer = testing::readFromFile(path);
-    String otsParseMessage;
+  static TestFontSelector* Create(const String& path) {
+    RefPtr<SharedBuffer> font_buffer = testing::ReadFromFile(path);
+    String ots_parse_message;
     return new TestFontSelector(
-        FontCustomPlatformData::create(fontBuffer.get(), otsParseMessage));
+        FontCustomPlatformData::Create(font_buffer.Get(), ots_parse_message));
   }
 
   ~TestFontSelector() override {}
 
-  PassRefPtr<FontData> getFontData(const FontDescription& fontDescription,
-                                   const AtomicString& familyName) override {
-    FontPlatformData platformData = m_customPlatformData->fontPlatformData(
-        fontDescription.effectiveFontSize(), fontDescription.isSyntheticBold(),
-        fontDescription.isSyntheticItalic(), fontDescription.orientation());
-    return SimpleFontData::create(platformData, CustomFontData::create());
+  PassRefPtr<FontData> GetFontData(const FontDescription& font_description,
+                                   const AtomicString& family_name) override {
+    FontPlatformData platform_data = custom_platform_data_->GetFontPlatformData(
+        font_description.EffectiveFontSize(),
+        font_description.IsSyntheticBold(),
+        font_description.IsSyntheticItalic(), font_description.Orientation());
+    return SimpleFontData::Create(platform_data, CustomFontData::Create());
   }
 
-  void willUseFontData(const FontDescription&,
-                       const AtomicString& familyName,
+  void WillUseFontData(const FontDescription&,
+                       const AtomicString& family_name,
                        const String& text) override {}
-  void willUseRange(const FontDescription&,
-                    const AtomicString& familyName,
+  void WillUseRange(const FontDescription&,
+                    const AtomicString& family_name,
                     const FontDataForRangeSet&) override{};
 
-  unsigned version() const override { return 0; }
-  void fontCacheInvalidated() override {}
+  unsigned Version() const override { return 0; }
+  void FontCacheInvalidated() override {}
 
  private:
-  TestFontSelector(PassRefPtr<FontCustomPlatformData> customPlatformData)
-      : m_customPlatformData(std::move(customPlatformData)) {}
+  TestFontSelector(PassRefPtr<FontCustomPlatformData> custom_platform_data)
+      : custom_platform_data_(std::move(custom_platform_data)) {}
 
-  RefPtr<FontCustomPlatformData> m_customPlatformData;
+  RefPtr<FontCustomPlatformData> custom_platform_data_;
 };
 
 }  // namespace
 
-Font createTestFont(const AtomicString& familyName,
-                    const String& fontPath,
+Font CreateTestFont(const AtomicString& family_name,
+                    const String& font_path,
                     float size) {
   FontFamily family;
-  family.setFamily(familyName);
+  family.SetFamily(family_name);
 
-  FontDescription fontDescription;
-  fontDescription.setFamily(family);
-  fontDescription.setSpecifiedSize(size);
-  fontDescription.setComputedSize(size);
+  FontDescription font_description;
+  font_description.SetFamily(family);
+  font_description.SetSpecifiedSize(size);
+  font_description.SetComputedSize(size);
 
-  Font font(fontDescription);
-  font.update(TestFontSelector::create(fontPath));
+  Font font(font_description);
+  font.Update(TestFontSelector::Create(font_path));
   return font;
 }
 

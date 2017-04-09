@@ -112,10 +112,9 @@ void DisplaySourceCustomBindings::StartSession(
 
   if (!video_stream_val->IsNull() && !video_stream_val->IsUndefined()) {
     CHECK(video_stream_val->IsObject());
-    video_track =
-        blink::WebDOMMediaStreamTrack::fromV8Value(
-            video_stream_val).component();
-    if (video_track.isNull()) {
+    video_track = blink::WebDOMMediaStreamTrack::FromV8Value(video_stream_val)
+                      .Component();
+    if (video_track.IsNull()) {
       isolate->ThrowException(v8::Exception::Error(
           v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
       return;
@@ -123,10 +122,9 @@ void DisplaySourceCustomBindings::StartSession(
   }
   if (!audio_stream_val->IsNull() && !audio_stream_val->IsUndefined()) {
     CHECK(audio_stream_val->IsObject());
-    audio_track =
-        blink::WebDOMMediaStreamTrack::fromV8Value(
-            audio_stream_val).component();
-    if (audio_track.isNull()) {
+    audio_track = blink::WebDOMMediaStreamTrack::FromV8Value(audio_stream_val)
+                      .Component();
+    if (audio_track.IsNull()) {
       isolate->ThrowException(v8::Exception::Error(
           v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
       return;

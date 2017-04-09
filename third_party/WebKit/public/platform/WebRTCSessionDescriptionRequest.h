@@ -46,24 +46,24 @@ class WebRTCSessionDescriptionRequest {
   WebRTCSessionDescriptionRequest() {}
   WebRTCSessionDescriptionRequest(
       const WebRTCSessionDescriptionRequest& other) {
-    assign(other);
+    Assign(other);
   }
-  ~WebRTCSessionDescriptionRequest() { reset(); }
+  ~WebRTCSessionDescriptionRequest() { Reset(); }
 
   WebRTCSessionDescriptionRequest& operator=(
       const WebRTCSessionDescriptionRequest& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT void assign(const WebRTCSessionDescriptionRequest&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebRTCSessionDescriptionRequest&);
 
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT void requestSucceeded(
+  BLINK_PLATFORM_EXPORT void RequestSucceeded(
       const WebRTCSessionDescription&) const;
-  BLINK_PLATFORM_EXPORT void requestFailed(const WebString& error) const;
+  BLINK_PLATFORM_EXPORT void RequestFailed(const WebString& error) const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCSessionDescriptionRequest(
@@ -72,8 +72,8 @@ class WebRTCSessionDescriptionRequest {
 
  private:
   WebPrivatePtr<RTCSessionDescriptionRequest,
-                WebPrivatePtrDestructionCrossThread>
-      m_private;
+                kWebPrivatePtrDestructionCrossThread>
+      private_;
 };
 
 }  // namespace blink

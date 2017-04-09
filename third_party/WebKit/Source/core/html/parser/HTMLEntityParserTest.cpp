@@ -13,14 +13,14 @@ TEST(HTMLEntityParserTest, ConsumeHTMLEntityIncomplete) {
   SegmentedString src(original);
 
   DecodedHTMLEntity entity;
-  bool notEnoughCharacters = false;
-  bool success = consumeHTMLEntity(src, entity, notEnoughCharacters);
-  EXPECT_TRUE(notEnoughCharacters);
+  bool not_enough_characters = false;
+  bool success = ConsumeHTMLEntity(src, entity, not_enough_characters);
+  EXPECT_TRUE(not_enough_characters);
   EXPECT_FALSE(success);
 
   // consumeHTMLEntity should recover the original SegmentedString state if
   // failed.
-  EXPECT_EQ(original, src.toString());
+  EXPECT_EQ(original, src.ToString());
 }
 
 }  // namespace blink

@@ -78,23 +78,23 @@
 #define IPC_MESSAGE_START ViewMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
-                          blink::WebDeviceEmulationParams::ScreenPositionLast)
+                          blink::WebDeviceEmulationParams::kScreenPositionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
-                          blink::WebMediaPlayerAction::Type::TypeLast)
+                          blink::WebMediaPlayerAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
-                          blink::WebPluginAction::Type::TypeLast)
+                          blink::WebPluginAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
-                          blink::WebPopupType::WebPopupTypeLast)
+                          blink::WebPopupType::kWebPopupTypeLast)
 // TODO(dcheng): Update WebScreenOrientationType to have a "Last" enum member.
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
-                              blink::WebScreenOrientationUndefined,
-                              blink::WebScreenOrientationLandscapeSecondary)
+                              blink::kWebScreenOrientationUndefined,
+                              blink::kWebScreenOrientationLandscapeSecondary)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebWorkerCreationError,
-                          blink::WebWorkerCreationErrorLast)
+                          blink::kWebWorkerCreationErrorLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
-                          blink::WebTextDirection::WebTextDirectionLast)
+                          blink::WebTextDirection::kWebTextDirectionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
-                          blink::WebDisplayMode::WebDisplayModeLast)
+                          blink::WebDisplayMode::kWebDisplayModeLast)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::MenuItem::Type)
 IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
@@ -120,9 +120,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 #if defined(OS_MACOSX)
 IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebScrollbarButtonsPlacement,
-    blink::WebScrollbarButtonsPlacement::WebScrollbarButtonsPlacementLast)
+    blink::WebScrollbarButtonsPlacement::kWebScrollbarButtonsPlacementLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::kScrollerStyleOverlay)
 #endif
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebMediaPlayerAction)
@@ -153,16 +153,16 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebSize)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
-  IPC_STRUCT_TRAITS_MEMBER(screenPosition)
-  IPC_STRUCT_TRAITS_MEMBER(screenSize)
-  IPC_STRUCT_TRAITS_MEMBER(viewPosition)
-  IPC_STRUCT_TRAITS_MEMBER(deviceScaleFactor)
-  IPC_STRUCT_TRAITS_MEMBER(viewSize)
-  IPC_STRUCT_TRAITS_MEMBER(fitToView)
+  IPC_STRUCT_TRAITS_MEMBER(screen_position)
+  IPC_STRUCT_TRAITS_MEMBER(screen_size)
+  IPC_STRUCT_TRAITS_MEMBER(view_position)
+  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(view_size)
+  IPC_STRUCT_TRAITS_MEMBER(fit_to_view)
   IPC_STRUCT_TRAITS_MEMBER(offset)
   IPC_STRUCT_TRAITS_MEMBER(scale)
-  IPC_STRUCT_TRAITS_MEMBER(screenOrientationAngle)
-  IPC_STRUCT_TRAITS_MEMBER(screenOrientationType)
+  IPC_STRUCT_TRAITS_MEMBER(screen_orientation_angle)
+  IPC_STRUCT_TRAITS_MEMBER(screen_orientation_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ScreenInfo)

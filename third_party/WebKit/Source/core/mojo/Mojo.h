@@ -46,7 +46,7 @@ class Mojo final : public GarbageCollected<Mojo>, public ScriptWrappable {
   static void createMessagePipe(MojoCreateMessagePipeResult&);
   static void createDataPipe(const MojoCreateDataPipeOptions&,
                              MojoCreateDataPipeResult&);
-  static void createSharedBuffer(unsigned numBytes,
+  static void createSharedBuffer(unsigned num_bytes,
                                  MojoCreateSharedBufferResult&);
 
   DEFINE_INLINE_TRACE() {}

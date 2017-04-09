@@ -33,21 +33,21 @@ class AXProgressIndicator final : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AXProgressIndicator);
 
  public:
-  static AXProgressIndicator* create(LayoutProgress*, AXObjectCacheImpl&);
+  static AXProgressIndicator* Create(LayoutProgress*, AXObjectCacheImpl&);
 
  private:
-  AccessibilityRole determineAccessibilityRole() final;
+  AccessibilityRole DetermineAccessibilityRole() final;
 
-  bool isProgressIndicator() const override { return true; }
+  bool IsProgressIndicator() const override { return true; }
 
-  float valueForRange() const override;
-  float maxValueForRange() const override;
-  float minValueForRange() const override;
+  float ValueForRange() const override;
+  float MaxValueForRange() const override;
+  float MinValueForRange() const override;
 
   AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
 
-  HTMLProgressElement* element() const;
-  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  HTMLProgressElement* GetElement() const;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 }  // namespace blink

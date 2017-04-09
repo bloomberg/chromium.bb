@@ -44,9 +44,9 @@ NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(NGWritingMode writing_mode,
 }
 
 String NGBoxStrut::ToString() const {
-  return String::format("Inline: (%d %d) Block: (%d %d)", inline_start.toInt(),
-                        inline_end.toInt(), block_start.toInt(),
-                        block_end.toInt());
+  return String::Format("Inline: (%d %d) Block: (%d %d)", inline_start.ToInt(),
+                        inline_end.ToInt(), block_start.ToInt(),
+                        block_end.ToInt());
 }
 
 std::ostream& operator<<(std::ostream& stream, const NGBoxStrut& value) {

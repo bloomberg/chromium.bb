@@ -51,304 +51,306 @@ constexpr char kFileName[] = "fox-null-terminated.html";
 
 class MockThreadableLoaderClient : public ThreadableLoaderClient {
  public:
-  static std::unique_ptr<MockThreadableLoaderClient> create() {
-    return WTF::wrapUnique(
+  static std::unique_ptr<MockThreadableLoaderClient> Create() {
+    return WTF::WrapUnique(
         new ::testing::StrictMock<MockThreadableLoaderClient>);
   }
-  MOCK_METHOD2(didSendData, void(unsigned long long, unsigned long long));
-  MOCK_METHOD3(didReceiveResponseMock,
+  MOCK_METHOD2(DidSendData, void(unsigned long long, unsigned long long));
+  MOCK_METHOD3(DidReceiveResponseMock,
                void(unsigned long,
                     const ResourceResponse&,
                     WebDataConsumerHandle*));
-  void didReceiveResponse(unsigned long identifier,
+  void DidReceiveResponse(unsigned long identifier,
                           const ResourceResponse& response,
                           std::unique_ptr<WebDataConsumerHandle> handle) {
-    didReceiveResponseMock(identifier, response, handle.get());
+    DidReceiveResponseMock(identifier, response, handle.get());
   }
-  MOCK_METHOD2(didReceiveData, void(const char*, unsigned));
-  MOCK_METHOD2(didReceiveCachedMetadata, void(const char*, int));
-  MOCK_METHOD2(didFinishLoading, void(unsigned long, double));
-  MOCK_METHOD1(didFail, void(const ResourceError&));
-  MOCK_METHOD1(didFailAccessControlCheck, void(const ResourceError&));
-  MOCK_METHOD0(didFailRedirectCheck, void());
-  MOCK_METHOD1(didReceiveResourceTiming, void(const ResourceTimingInfo&));
-  MOCK_METHOD1(didDownloadData, void(int));
+  MOCK_METHOD2(DidReceiveData, void(const char*, unsigned));
+  MOCK_METHOD2(DidReceiveCachedMetadata, void(const char*, int));
+  MOCK_METHOD2(DidFinishLoading, void(unsigned long, double));
+  MOCK_METHOD1(DidFail, void(const ResourceError&));
+  MOCK_METHOD1(DidFailAccessControlCheck, void(const ResourceError&));
+  MOCK_METHOD0(DidFailRedirectCheck, void());
+  MOCK_METHOD1(DidReceiveResourceTiming, void(const ResourceTimingInfo&));
+  MOCK_METHOD1(DidDownloadData, void(int));
 
  protected:
   MockThreadableLoaderClient() = default;
 };
 
-bool isCancellation(const ResourceError& error) {
-  return error.isCancellation();
+bool IsCancellation(const ResourceError& error) {
+  return error.IsCancellation();
 }
 
-bool isNotCancellation(const ResourceError& error) {
-  return !error.isCancellation();
+bool IsNotCancellation(const ResourceError& error) {
+  return !error.IsCancellation();
 }
 
-KURL successURL() {
+KURL SuccessURL() {
   return KURL(KURL(), "http://example.com/success");
 }
-KURL errorURL() {
+KURL ErrorURL() {
   return KURL(KURL(), "http://example.com/error");
 }
-KURL redirectURL() {
+KURL RedirectURL() {
   return KURL(KURL(), "http://example.com/redirect");
 }
-KURL redirectLoopURL() {
+KURL RedirectLoopURL() {
   return KURL(KURL(), "http://example.com/loop");
 }
 
 enum ThreadableLoaderToTest {
-  DocumentThreadableLoaderTest,
-  WorkerThreadableLoaderTest,
+  kDocumentThreadableLoaderTest,
+  kWorkerThreadableLoaderTest,
 };
 
 class ThreadableLoaderTestHelper {
  public:
   virtual ~ThreadableLoaderTestHelper() {}
 
-  virtual void createLoader(ThreadableLoaderClient*,
+  virtual void CreateLoader(ThreadableLoaderClient*,
                             CrossOriginRequestPolicy) = 0;
-  virtual void startLoader(const ResourceRequest&) = 0;
-  virtual void cancelLoader() = 0;
-  virtual void cancelAndClearLoader() = 0;
-  virtual void clearLoader() = 0;
-  virtual Checkpoint& getCheckpoint() = 0;
-  virtual void callCheckpoint(int) = 0;
-  virtual void onSetUp() = 0;
-  virtual void onServeRequests() = 0;
-  virtual void onTearDown() = 0;
+  virtual void StartLoader(const ResourceRequest&) = 0;
+  virtual void CancelLoader() = 0;
+  virtual void CancelAndClearLoader() = 0;
+  virtual void ClearLoader() = 0;
+  virtual Checkpoint& GetCheckpoint() = 0;
+  virtual void CallCheckpoint(int) = 0;
+  virtual void OnSetUp() = 0;
+  virtual void OnServeRequests() = 0;
+  virtual void OnTearDown() = 0;
 };
 
 class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
  public:
   DocumentThreadableLoaderTestHelper()
-      : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1))) {}
+      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
 
-  void createLoader(
+  void CreateLoader(
       ThreadableLoaderClient* client,
-      CrossOriginRequestPolicy crossOriginRequestPolicy) override {
+      CrossOriginRequestPolicy cross_origin_request_policy) override {
     ThreadableLoaderOptions options;
-    options.crossOriginRequestPolicy = crossOriginRequestPolicy;
-    ResourceLoaderOptions resourceLoaderOptions;
-    m_loader = DocumentThreadableLoader::create(
-        *ThreadableLoadingContext::create(document()), client, options,
-        resourceLoaderOptions);
+    options.cross_origin_request_policy = cross_origin_request_policy;
+    ResourceLoaderOptions resource_loader_options;
+    loader_ = DocumentThreadableLoader::Create(
+        *ThreadableLoadingContext::Create(GetDocument()), client, options,
+        resource_loader_options);
   }
 
-  void startLoader(const ResourceRequest& request) override {
-    m_loader->start(request);
+  void StartLoader(const ResourceRequest& request) override {
+    loader_->Start(request);
   }
 
-  void cancelLoader() override { m_loader->cancel(); }
-  void cancelAndClearLoader() override {
-    m_loader->cancel();
-    m_loader = nullptr;
+  void CancelLoader() override { loader_->Cancel(); }
+  void CancelAndClearLoader() override {
+    loader_->Cancel();
+    loader_ = nullptr;
   }
-  void clearLoader() override { m_loader = nullptr; }
-  Checkpoint& getCheckpoint() override { return m_checkpoint; }
-  void callCheckpoint(int n) override { m_checkpoint.Call(n); }
+  void ClearLoader() override { loader_ = nullptr; }
+  Checkpoint& GetCheckpoint() override { return checkpoint_; }
+  void CallCheckpoint(int n) override { checkpoint_.Call(n); }
 
-  void onSetUp() override {}
+  void OnSetUp() override {}
 
-  void onServeRequests() override {}
+  void OnServeRequests() override {}
 
-  void onTearDown() override {
-    if (m_loader) {
-      m_loader->cancel();
-      m_loader = nullptr;
+  void OnTearDown() override {
+    if (loader_) {
+      loader_->Cancel();
+      loader_ = nullptr;
     }
   }
 
  private:
-  Document& document() { return m_dummyPageHolder->document(); }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  Checkpoint m_checkpoint;
-  Persistent<DocumentThreadableLoader> m_loader;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  Checkpoint checkpoint_;
+  Persistent<DocumentThreadableLoader> loader_;
 };
 
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
                                          public WorkerLoaderProxyProvider {
  public:
   WorkerThreadableLoaderTestHelper()
-      : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1))) {}
+      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
 
-  void createLoader(
+  void CreateLoader(
       ThreadableLoaderClient* client,
-      CrossOriginRequestPolicy crossOriginRequestPolicy) override {
-    std::unique_ptr<WaitableEvent> completionEvent =
-        WTF::makeUnique<WaitableEvent>();
-    postTaskToWorkerGlobalScope(
+      CrossOriginRequestPolicy cross_origin_request_policy) override {
+    std::unique_ptr<WaitableEvent> completion_event =
+        WTF::MakeUnique<WaitableEvent>();
+    PostTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
-        crossThreadBind(&WorkerThreadableLoaderTestHelper::workerCreateLoader,
-                        crossThreadUnretained(this),
-                        crossThreadUnretained(client),
-                        crossThreadUnretained(completionEvent.get()),
-                        crossOriginRequestPolicy));
-    completionEvent->wait();
+        CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCreateLoader,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(client),
+                        CrossThreadUnretained(completion_event.get()),
+                        cross_origin_request_policy));
+    completion_event->Wait();
   }
 
-  void startLoader(const ResourceRequest& request) override {
-    std::unique_ptr<WaitableEvent> completionEvent =
-        WTF::makeUnique<WaitableEvent>();
-    postTaskToWorkerGlobalScope(
+  void StartLoader(const ResourceRequest& request) override {
+    std::unique_ptr<WaitableEvent> completion_event =
+        WTF::MakeUnique<WaitableEvent>();
+    PostTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
-        crossThreadBind(&WorkerThreadableLoaderTestHelper::workerStartLoader,
-                        crossThreadUnretained(this),
-                        crossThreadUnretained(completionEvent.get()), request));
-    completionEvent->wait();
+        CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerStartLoader,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(completion_event.get()),
+                        request));
+    completion_event->Wait();
   }
 
   // Must be called on the worker thread.
-  void cancelLoader() override {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
-    m_loader->cancel();
+  void CancelLoader() override {
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
+    loader_->Cancel();
   }
 
-  void cancelAndClearLoader() override {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
-    m_loader->cancel();
-    m_loader = nullptr;
+  void CancelAndClearLoader() override {
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
+    loader_->Cancel();
+    loader_ = nullptr;
   }
 
   // Must be called on the worker thread.
-  void clearLoader() override {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
-    m_loader = nullptr;
+  void ClearLoader() override {
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
+    loader_ = nullptr;
   }
 
-  Checkpoint& getCheckpoint() override { return m_checkpoint; }
+  Checkpoint& GetCheckpoint() override { return checkpoint_; }
 
-  void callCheckpoint(int n) override {
-    testing::runPendingTasks();
+  void CallCheckpoint(int n) override {
+    testing::RunPendingTasks();
 
-    std::unique_ptr<WaitableEvent> completionEvent =
-        WTF::makeUnique<WaitableEvent>();
-    postTaskToWorkerGlobalScope(
+    std::unique_ptr<WaitableEvent> completion_event =
+        WTF::MakeUnique<WaitableEvent>();
+    PostTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
-        crossThreadBind(&WorkerThreadableLoaderTestHelper::workerCallCheckpoint,
-                        crossThreadUnretained(this),
-                        crossThreadUnretained(completionEvent.get()), n));
-    completionEvent->wait();
+        CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCallCheckpoint,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(completion_event.get()), n));
+    completion_event->Wait();
   }
 
-  void onSetUp() override {
-    m_reportingProxy = WTF::makeUnique<WorkerReportingProxy>();
-    m_securityOrigin = document().getSecurityOrigin();
-    m_parentFrameTaskRunners =
-        ParentFrameTaskRunners::create(&m_dummyPageHolder->frame());
-    m_workerThread =
-        WTF::wrapUnique(new WorkerThreadForTest(this, *m_reportingProxy));
-    m_loadingContext = ThreadableLoadingContext::create(document());
+  void OnSetUp() override {
+    reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
+    security_origin_ = GetDocument().GetSecurityOrigin();
+    parent_frame_task_runners_ =
+        ParentFrameTaskRunners::Create(&dummy_page_holder_->GetFrame());
+    worker_thread_ =
+        WTF::WrapUnique(new WorkerThreadForTest(this, *reporting_proxy_));
+    loading_context_ = ThreadableLoadingContext::Create(GetDocument());
 
-    m_workerThread->startWithSourceCode(m_securityOrigin.get(),
+    worker_thread_->StartWithSourceCode(security_origin_.Get(),
                                         "//fake source code",
-                                        m_parentFrameTaskRunners.get());
-    m_workerThread->waitForInit();
+                                        parent_frame_task_runners_.Get());
+    worker_thread_->WaitForInit();
   }
 
-  void onServeRequests() override { testing::runPendingTasks(); }
+  void OnServeRequests() override { testing::RunPendingTasks(); }
 
-  void onTearDown() override {
-    postTaskToWorkerGlobalScope(
+  void OnTearDown() override {
+    PostTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
-        crossThreadBind(&WorkerThreadableLoaderTestHelper::clearLoader,
-                        crossThreadUnretained(this)));
+        CrossThreadBind(&WorkerThreadableLoaderTestHelper::ClearLoader,
+                        CrossThreadUnretained(this)));
     WaitableEvent event;
-    postTaskToWorkerGlobalScope(
+    PostTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
-        crossThreadBind(&WaitableEvent::signal, crossThreadUnretained(&event)));
-    event.wait();
-    m_workerThread->terminateAndWait();
+        CrossThreadBind(&WaitableEvent::Signal, CrossThreadUnretained(&event)));
+    event.Wait();
+    worker_thread_->TerminateAndWait();
 
     // Needed to clean up the things on the main thread side and
     // avoid Resource leaks.
-    testing::runPendingTasks();
+    testing::RunPendingTasks();
 
-    m_workerThread->workerLoaderProxy()->detachProvider(this);
+    worker_thread_->GetWorkerLoaderProxy()->DetachProvider(this);
   }
 
  private:
-  Document& document() { return m_dummyPageHolder->document(); }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
-  void workerCreateLoader(ThreadableLoaderClient* client,
-                          WaitableEvent* event,
-                          CrossOriginRequestPolicy crossOriginRequestPolicy) {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
+  void WorkerCreateLoader(
+      ThreadableLoaderClient* client,
+      WaitableEvent* event,
+      CrossOriginRequestPolicy cross_origin_request_policy) {
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
 
     ThreadableLoaderOptions options;
-    options.crossOriginRequestPolicy = crossOriginRequestPolicy;
-    ResourceLoaderOptions resourceLoaderOptions;
+    options.cross_origin_request_policy = cross_origin_request_policy;
+    ResourceLoaderOptions resource_loader_options;
 
     // Ensure that WorkerThreadableLoader is created.
     // ThreadableLoader::create() determines whether it should create
     // a DocumentThreadableLoader or WorkerThreadableLoader based on
     // isWorkerGlobalScope().
-    DCHECK(m_workerThread->globalScope()->isWorkerGlobalScope());
+    DCHECK(worker_thread_->GlobalScope()->IsWorkerGlobalScope());
 
-    m_loader = ThreadableLoader::create(*m_workerThread->globalScope(), client,
-                                        options, resourceLoaderOptions);
-    DCHECK(m_loader);
-    event->signal();
+    loader_ = ThreadableLoader::Create(*worker_thread_->GlobalScope(), client,
+                                       options, resource_loader_options);
+    DCHECK(loader_);
+    event->Signal();
   }
 
-  void workerStartLoader(
+  void WorkerStartLoader(
       WaitableEvent* event,
-      std::unique_ptr<CrossThreadResourceRequestData> requestData) {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
+      std::unique_ptr<CrossThreadResourceRequestData> request_data) {
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
 
-    ResourceRequest request(requestData.get());
-    m_loader->start(request);
-    event->signal();
+    ResourceRequest request(request_data.get());
+    loader_->Start(request);
+    event->Signal();
   }
 
-  void workerCallCheckpoint(WaitableEvent* event, int n) {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
-    m_checkpoint.Call(n);
-    event->signal();
+  void WorkerCallCheckpoint(WaitableEvent* event, int n) {
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
+    checkpoint_.Call(n);
+    event->Signal();
   }
 
   // WorkerLoaderProxyProvider methods.
-  void postTaskToLoader(
+  void PostTaskToLoader(
       const WebTraceLocation& location,
       std::unique_ptr<WTF::CrossThreadClosure> task) override {
-    DCHECK(m_workerThread);
-    DCHECK(m_workerThread->isCurrentThread());
-    m_parentFrameTaskRunners->get(TaskType::Networking)
-        ->postTask(BLINK_FROM_HERE, std::move(task));
+    DCHECK(worker_thread_);
+    DCHECK(worker_thread_->IsCurrentThread());
+    parent_frame_task_runners_->Get(TaskType::kNetworking)
+        ->PostTask(BLINK_FROM_HERE, std::move(task));
   }
 
-  void postTaskToWorkerGlobalScope(
+  void PostTaskToWorkerGlobalScope(
       const WebTraceLocation& location,
       std::unique_ptr<WTF::CrossThreadClosure> task) override {
-    DCHECK(m_workerThread);
-    m_workerThread->postTask(location, std::move(task));
+    DCHECK(worker_thread_);
+    worker_thread_->PostTask(location, std::move(task));
   }
 
-  ThreadableLoadingContext* getThreadableLoadingContext() override {
-    return m_loadingContext.get();
+  ThreadableLoadingContext* GetThreadableLoadingContext() override {
+    return loading_context_.Get();
   }
 
-  RefPtr<SecurityOrigin> m_securityOrigin;
-  std::unique_ptr<WorkerReportingProxy> m_reportingProxy;
-  std::unique_ptr<WorkerThreadForTest> m_workerThread;
+  RefPtr<SecurityOrigin> security_origin_;
+  std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
+  std::unique_ptr<WorkerThreadForTest> worker_thread_;
 
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   // Accessed cross-thread when worker thread posts tasks to the parent.
-  CrossThreadPersistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
-  Checkpoint m_checkpoint;
+  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  Checkpoint checkpoint_;
   // |m_loader| must be touched only from the worker thread only.
-  CrossThreadPersistent<ThreadableLoader> m_loader;
+  CrossThreadPersistent<ThreadableLoader> loader_;
 
-  Persistent<ThreadableLoadingContext> m_loadingContext;
+  Persistent<ThreadableLoadingContext> loading_context_;
 };
 
 class ThreadableLoaderTest
@@ -356,531 +358,531 @@ class ThreadableLoaderTest
  public:
   ThreadableLoaderTest() {
     switch (GetParam()) {
-      case DocumentThreadableLoaderTest:
-        m_helper = WTF::wrapUnique(new DocumentThreadableLoaderTestHelper);
+      case kDocumentThreadableLoaderTest:
+        helper_ = WTF::WrapUnique(new DocumentThreadableLoaderTestHelper);
         break;
-      case WorkerThreadableLoaderTest:
-        m_helper = WTF::wrapUnique(new WorkerThreadableLoaderTestHelper());
+      case kWorkerThreadableLoaderTest:
+        helper_ = WTF::WrapUnique(new WorkerThreadableLoaderTestHelper());
         break;
     }
   }
 
-  void startLoader(const KURL& url) {
+  void StartLoader(const KURL& url) {
     ResourceRequest request(url);
-    request.setRequestContext(WebURLRequest::RequestContextObject);
-    m_helper->startLoader(request);
+    request.SetRequestContext(WebURLRequest::kRequestContextObject);
+    helper_->StartLoader(request);
   }
 
-  void cancelLoader() { m_helper->cancelLoader(); }
-  void cancelAndClearLoader() { m_helper->cancelAndClearLoader(); }
-  void clearLoader() { m_helper->clearLoader(); }
-  Checkpoint& getCheckpoint() { return m_helper->getCheckpoint(); }
-  void callCheckpoint(int n) { m_helper->callCheckpoint(n); }
+  void CancelLoader() { helper_->CancelLoader(); }
+  void CancelAndClearLoader() { helper_->CancelAndClearLoader(); }
+  void ClearLoader() { helper_->ClearLoader(); }
+  Checkpoint& GetCheckpoint() { return helper_->GetCheckpoint(); }
+  void CallCheckpoint(int n) { helper_->CallCheckpoint(n); }
 
-  void serveRequests() {
-    m_helper->onServeRequests();
-    Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  void ServeRequests() {
+    helper_->OnServeRequests();
+    Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   }
 
-  void createLoader(CrossOriginRequestPolicy crossOriginRequestPolicy =
-                        AllowCrossOriginRequests) {
-    m_helper->createLoader(client(), crossOriginRequestPolicy);
+  void CreateLoader(CrossOriginRequestPolicy cross_origin_request_policy =
+                        kAllowCrossOriginRequests) {
+    helper_->CreateLoader(Client(), cross_origin_request_policy);
   }
 
-  MockThreadableLoaderClient* client() const { return m_client.get(); }
+  MockThreadableLoaderClient* Client() const { return client_.get(); }
 
  private:
   void SetUp() override {
-    setUpSuccessURL();
-    setUpErrorURL();
-    setUpRedirectURL();
-    setUpRedirectLoopURL();
+    SetUpSuccessURL();
+    SetUpErrorURL();
+    SetUpRedirectURL();
+    SetUpRedirectLoopURL();
 
-    m_client = MockThreadableLoaderClient::create();
-    m_helper->onSetUp();
+    client_ = MockThreadableLoaderClient::Create();
+    helper_->OnSetUp();
   }
 
   void TearDown() override {
-    m_helper->onTearDown();
-    Platform::current()
-        ->getURLLoaderMockFactory()
-        ->unregisterAllURLsAndClearMemoryCache();
-    m_client.reset();
+    helper_->OnTearDown();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
+    client_.reset();
   }
 
-  void setUpSuccessURL() {
-    URLTestHelpers::registerMockedURLLoad(
-        successURL(), testing::webTestDataPath(kFileName), "text/html");
+  void SetUpSuccessURL() {
+    URLTestHelpers::RegisterMockedURLLoad(
+        SuccessURL(), testing::WebTestDataPath(kFileName), "text/html");
   }
 
-  void setUpErrorURL() {
-    URLTestHelpers::registerMockedErrorURLLoad(errorURL());
+  void SetUpErrorURL() {
+    URLTestHelpers::RegisterMockedErrorURLLoad(ErrorURL());
   }
 
-  void setUpRedirectURL() {
-    KURL url = redirectURL();
+  void SetUpRedirectURL() {
+    KURL url = RedirectURL();
 
     WebURLLoadTiming timing;
-    timing.initialize();
+    timing.Initialize();
 
     WebURLResponse response;
-    response.setURL(url);
-    response.setHTTPStatusCode(301);
-    response.setLoadTiming(timing);
-    response.addHTTPHeaderField("Location", successURL().getString());
-    response.addHTTPHeaderField("Access-Control-Allow-Origin", "null");
+    response.SetURL(url);
+    response.SetHTTPStatusCode(301);
+    response.SetLoadTiming(timing);
+    response.AddHTTPHeaderField("Location", SuccessURL().GetString());
+    response.AddHTTPHeaderField("Access-Control-Allow-Origin", "null");
 
-    URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-        url, testing::webTestDataPath(kFileName), response);
+    URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
+        url, testing::WebTestDataPath(kFileName), response);
   }
 
-  void setUpRedirectLoopURL() {
-    KURL url = redirectLoopURL();
+  void SetUpRedirectLoopURL() {
+    KURL url = RedirectLoopURL();
 
     WebURLLoadTiming timing;
-    timing.initialize();
+    timing.Initialize();
 
     WebURLResponse response;
-    response.setURL(url);
-    response.setHTTPStatusCode(301);
-    response.setLoadTiming(timing);
-    response.addHTTPHeaderField("Location", redirectLoopURL().getString());
-    response.addHTTPHeaderField("Access-Control-Allow-Origin", "null");
+    response.SetURL(url);
+    response.SetHTTPStatusCode(301);
+    response.SetLoadTiming(timing);
+    response.AddHTTPHeaderField("Location", RedirectLoopURL().GetString());
+    response.AddHTTPHeaderField("Access-Control-Allow-Origin", "null");
 
-    URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-        url, testing::webTestDataPath(kFileName), response);
+    URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
+        url, testing::WebTestDataPath(kFileName), response);
   }
 
-  std::unique_ptr<MockThreadableLoaderClient> m_client;
-  std::unique_ptr<ThreadableLoaderTestHelper> m_helper;
+  std::unique_ptr<MockThreadableLoaderClient> client_;
+  std::unique_ptr<ThreadableLoaderTestHelper> helper_;
 };
 
 INSTANTIATE_TEST_CASE_P(Document,
                         ThreadableLoaderTest,
-                        ::testing::Values(DocumentThreadableLoaderTest));
+                        ::testing::Values(kDocumentThreadableLoaderTest));
 
 INSTANTIATE_TEST_CASE_P(Worker,
                         ThreadableLoaderTest,
-                        ::testing::Values(WorkerThreadableLoaderTest));
+                        ::testing::Values(kWorkerThreadableLoaderTest));
 
 TEST_P(ThreadableLoaderTest, StartAndStop) {}
 
 TEST_P(ThreadableLoaderTest, CancelAfterStart) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
-  EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
-  EXPECT_CALL(getCheckpoint(), Call(3));
+  EXPECT_CALL(GetCheckpoint(), Call(2))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsCancellation)));
+  EXPECT_CALL(GetCheckpoint(), Call(3));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  callCheckpoint(3);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  CallCheckpoint(3);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelAndClearAfterStart) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2))
+  EXPECT_CALL(GetCheckpoint(), Call(2))
       .WillOnce(
-          InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelAndClearLoader));
-  EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
-  EXPECT_CALL(getCheckpoint(), Call(3));
+          InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelAndClearLoader));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsCancellation)));
+  EXPECT_CALL(GetCheckpoint(), Call(3));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  callCheckpoint(3);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  CallCheckpoint(3);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidReceiveResponse) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
-  EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsCancellation)));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelAndClearInDidReceiveResponse) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _))
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _))
       .WillOnce(
-          InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelAndClearLoader));
-  EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
+          InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelAndClearLoader));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsCancellation)));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidReceiveData) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(_, _))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
-  EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(_, _))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsCancellation)));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelAndClearInDidReceiveData) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(_, _))
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(_, _))
       .WillOnce(
-          InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelAndClearLoader));
-  EXPECT_CALL(*client(), didFail(Truly(isCancellation)));
+          InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelAndClearLoader));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsCancellation)));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, DidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(StrEq("fox"), 4));
   // We expect didReceiveResourceTiming() calls in DocumentThreadableLoader;
   // it's used to connect DocumentThreadableLoader to WorkerThreadableLoader,
   // not to ThreadableLoaderClient.
-  EXPECT_CALL(*client(), didReceiveResourceTiming(_));
-  EXPECT_CALL(*client(), didFinishLoading(_, _));
+  EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
+  EXPECT_CALL(*Client(), DidFinishLoading(_, _));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(_, _));
-  EXPECT_CALL(*client(), didReceiveResourceTiming(_));
-  EXPECT_CALL(*client(), didFinishLoading(_, _))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(_, _));
+  EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
+  EXPECT_CALL(*Client(), DidFinishLoading(_, _))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, ClearInDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(_, _));
-  EXPECT_CALL(*client(), didReceiveResourceTiming(_));
-  EXPECT_CALL(*client(), didFinishLoading(_, _))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(_, _));
+  EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
+  EXPECT_CALL(*Client(), DidFinishLoading(_, _))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, DidFail) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didFail(Truly(isNotCancellation)));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidFail(Truly(IsNotCancellation)));
 
-  startLoader(errorURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(ErrorURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidFail) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didFail(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidFail(_))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  startLoader(errorURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(ErrorURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, ClearInDidFail) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didFail(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidFail(_))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  startLoader(errorURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(ErrorURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, DidFailInStart) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(DenyCrossOriginRequests);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kDenyCrossOriginRequests);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(
-      *client(),
-      didFail(ResourceError(errorDomainBlinkInternal, 0, errorURL().getString(),
-                            "Cross origin requests are not supported.")));
-  EXPECT_CALL(getCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(),
+              DidFail(ResourceError(
+                  kErrorDomainBlinkInternal, 0, ErrorURL().GetString(),
+                  "Cross origin requests are not supported.")));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  startLoader(errorURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(ErrorURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidFailInStart) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(DenyCrossOriginRequests);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kDenyCrossOriginRequests);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(*client(), didFail(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
-  EXPECT_CALL(getCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFail(_))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  startLoader(errorURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(ErrorURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, ClearInDidFailInStart) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(DenyCrossOriginRequests);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kDenyCrossOriginRequests);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(*client(), didFail(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
-  EXPECT_CALL(getCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFail(_))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  startLoader(errorURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(ErrorURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(
-      *client(),
-      didFailAccessControlCheck(ResourceError(
-          errorDomainBlinkInternal, 0, successURL().getString(),
+      *Client(),
+      DidFailAccessControlCheck(ResourceError(
+          kErrorDomainBlinkInternal, 0, SuccessURL().GetString(),
           "No 'Access-Control-Allow-Origin' header is present on the requested "
           "resource. Origin 'null' is therefore not allowed access.")));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidFailAccessControlCheck) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didFailAccessControlCheck(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFailAccessControlCheck(_))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, ClearInDidFailAccessControlCheck) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didFailAccessControlCheck(_))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFailAccessControlCheck(_))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  startLoader(successURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(SuccessURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, RedirectDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-  EXPECT_CALL(*client(), didReceiveResourceTiming(_));
-  EXPECT_CALL(*client(), didFinishLoading(_, _));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(StrEq("fox"), 4));
+  EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
+  EXPECT_CALL(*Client(), DidFinishLoading(_, _));
 
-  startLoader(redirectURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(RedirectURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInRedirectDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-  EXPECT_CALL(*client(), didReceiveResourceTiming(_));
-  EXPECT_CALL(*client(), didFinishLoading(_, _))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(StrEq("fox"), 4));
+  EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
+  EXPECT_CALL(*Client(), DidFinishLoading(_, _))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  startLoader(redirectURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(RedirectURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, ClearInRedirectDidFinishLoading) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader();
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader();
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didReceiveResponseMock(_, _, _));
-  EXPECT_CALL(*client(), didReceiveData(StrEq("fox"), 4));
-  EXPECT_CALL(*client(), didReceiveResourceTiming(_));
-  EXPECT_CALL(*client(), didFinishLoading(_, _))
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidReceiveResponseMock(_, _, _));
+  EXPECT_CALL(*Client(), DidReceiveData(StrEq("fox"), 4));
+  EXPECT_CALL(*Client(), DidReceiveResourceTiming(_));
+  EXPECT_CALL(*Client(), DidFinishLoading(_, _))
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  startLoader(redirectURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(RedirectURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, DidFailRedirectCheck) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didFailRedirectCheck());
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFailRedirectCheck());
 
-  startLoader(redirectLoopURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(RedirectLoopURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didFailRedirectCheck())
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::cancelLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFailRedirectCheck())
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  startLoader(redirectLoopURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(RedirectLoopURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(getCheckpoint(), Call(2));
-  EXPECT_CALL(*client(), didFailRedirectCheck())
-      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::clearLoader));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFailRedirectCheck())
+      .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  startLoader(redirectLoopURL());
-  callCheckpoint(2);
-  serveRequests();
+  StartLoader(RedirectLoopURL());
+  CallCheckpoint(2);
+  ServeRequests();
 }
 
 // This test case checks blink doesn't crash even when the response arrives
 // synchronously.
 TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   InSequence s;
-  EXPECT_CALL(getCheckpoint(), Call(1));
-  createLoader(UseAccessControl);
-  callCheckpoint(1);
+  EXPECT_CALL(GetCheckpoint(), Call(1));
+  CreateLoader(kUseAccessControl);
+  CallCheckpoint(1);
 
-  EXPECT_CALL(*client(), didFailAccessControlCheck(_));
-  EXPECT_CALL(getCheckpoint(), Call(2));
+  EXPECT_CALL(*Client(), DidFailAccessControlCheck(_));
+  EXPECT_CALL(GetCheckpoint(), Call(2));
 
   // Currently didFailAccessControlCheck is dispatched synchronously. This
   // test is not saying that didFailAccessControlCheck should be dispatched
   // synchronously, but is saying that even when a response is served
   // synchronously it should not lead to a crash.
-  startLoader(KURL(KURL(), "about:blank"));
-  callCheckpoint(2);
+  StartLoader(KURL(KURL(), "about:blank"));
+  CallCheckpoint(2);
 }
 
 }  // namespace

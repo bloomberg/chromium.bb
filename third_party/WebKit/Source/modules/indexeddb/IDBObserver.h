@@ -25,9 +25,9 @@ class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBObserver* create(IDBObserverCallback*);
+  static IDBObserver* Create(IDBObserverCallback*);
 
-  IDBObserverCallback* callback() { return m_callback; }
+  IDBObserverCallback* Callback() { return callback_; }
 
   // Implement the IDBObserver IDL.
   void observe(IDBDatabase*,
@@ -41,8 +41,8 @@ class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
  private:
   explicit IDBObserver(IDBObserverCallback*);
 
-  Member<IDBObserverCallback> m_callback;
-  HeapHashMap<int32_t, WeakMember<IDBDatabase>> m_observerIds;
+  Member<IDBObserverCallback> callback_;
+  HeapHashMap<int32_t, WeakMember<IDBDatabase>> observer_ids_;
 };
 
 }  // namespace blink

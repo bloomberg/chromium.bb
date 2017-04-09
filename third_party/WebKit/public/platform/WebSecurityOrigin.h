@@ -48,110 +48,110 @@ class WebURL;
 
 class WebSecurityOrigin {
  public:
-  ~WebSecurityOrigin() { reset(); }
+  ~WebSecurityOrigin() { Reset(); }
 
-  WebSecurityOrigin() : m_private(0) {}
-  WebSecurityOrigin(const WebSecurityOrigin& s) : m_private(0) { assign(s); }
+  WebSecurityOrigin() : private_(0) {}
+  WebSecurityOrigin(const WebSecurityOrigin& s) : private_(0) { Assign(s); }
   WebSecurityOrigin& operator=(const WebSecurityOrigin& s) {
-    assign(s);
+    Assign(s);
     return *this;
   }
 
-  BLINK_PLATFORM_EXPORT static WebSecurityOrigin createFromString(
+  BLINK_PLATFORM_EXPORT static WebSecurityOrigin CreateFromString(
       const WebString&);
-  BLINK_PLATFORM_EXPORT static WebSecurityOrigin create(const WebURL&);
-  BLINK_PLATFORM_EXPORT static WebSecurityOrigin createUnique();
+  BLINK_PLATFORM_EXPORT static WebSecurityOrigin Create(const WebURL&);
+  BLINK_PLATFORM_EXPORT static WebSecurityOrigin CreateUnique();
 
-  BLINK_PLATFORM_EXPORT void reset();
-  BLINK_PLATFORM_EXPORT void assign(const WebSecurityOrigin&);
+  BLINK_PLATFORM_EXPORT void Reset();
+  BLINK_PLATFORM_EXPORT void Assign(const WebSecurityOrigin&);
 
-  bool isNull() const { return !m_private; }
+  bool IsNull() const { return !private_; }
 
-  BLINK_PLATFORM_EXPORT WebString protocol() const;
-  BLINK_PLATFORM_EXPORT WebString host() const;
-  BLINK_PLATFORM_EXPORT unsigned short port() const;
+  BLINK_PLATFORM_EXPORT WebString Protocol() const;
+  BLINK_PLATFORM_EXPORT WebString Host() const;
+  BLINK_PLATFORM_EXPORT unsigned short Port() const;
 
   // |port()| will return 0 if the port is the default for an origin. This
   // method instead returns the effective port, even if it is the default port
   // (e.g. "http" => 80).
-  BLINK_PLATFORM_EXPORT unsigned short effectivePort() const;
+  BLINK_PLATFORM_EXPORT unsigned short EffectivePort() const;
 
-  BLINK_PLATFORM_EXPORT WebString suborigin() const;
+  BLINK_PLATFORM_EXPORT WebString Suborigin() const;
 
   // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
-  BLINK_PLATFORM_EXPORT bool isUnique() const;
+  BLINK_PLATFORM_EXPORT bool IsUnique() const;
 
   // Returns true if this WebSecurityOrigin can script objects in the given
   // SecurityOrigin. For example, call this function before allowing
   // script from one security origin to read or write objects from
   // another SecurityOrigin.
-  BLINK_PLATFORM_EXPORT bool canAccess(const WebSecurityOrigin&) const;
+  BLINK_PLATFORM_EXPORT bool CanAccess(const WebSecurityOrigin&) const;
 
   // Returns true if this WebSecurityOrigin can read content retrieved from
   // the given URL. For example, call this function before allowing script
   // from a given security origin to receive contents from a given URL.
-  BLINK_PLATFORM_EXPORT bool canRequest(const WebURL&) const;
+  BLINK_PLATFORM_EXPORT bool CanRequest(const WebURL&) const;
 
   // Returns true if the origin loads resources either from the local
   // machine or over the network from a
   // cryptographically-authenticated origin, as described in
   // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
-  BLINK_PLATFORM_EXPORT bool isPotentiallyTrustworthy() const;
+  BLINK_PLATFORM_EXPORT bool IsPotentiallyTrustworthy() const;
 
   // Returns a string representation of the WebSecurityOrigin.  The empty
   // WebSecurityOrigin is represented by "null".  The representation of a
   // non-empty WebSecurityOrigin resembles a standard URL.
-  BLINK_PLATFORM_EXPORT WebString toString() const;
+  BLINK_PLATFORM_EXPORT WebString ToString() const;
 
   // Returns true if this WebSecurityOrigin can access usernames and
   // passwords stored in password manager.
-  BLINK_PLATFORM_EXPORT bool canAccessPasswordManager() const;
+  BLINK_PLATFORM_EXPORT bool CanAccessPasswordManager() const;
 
   // Allows this WebSecurityOrigin access to local resources.
-  BLINK_PLATFORM_EXPORT void grantLoadLocalResources() const;
+  BLINK_PLATFORM_EXPORT void GrantLoadLocalResources() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin>);
   BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(
       WTF::PassRefPtr<SecurityOrigin>);
   BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<SecurityOrigin>() const;
-  BLINK_PLATFORM_EXPORT SecurityOrigin* get() const;
+  BLINK_PLATFORM_EXPORT SecurityOrigin* Get() const;
 #else
   // TODO(mkwst): A number of properties don't survive a round-trip
   // ('document.domain', for instance).  We'll need to fix that for OOPI-enabled
   // embedders, https://crbug.com/490074.
   operator url::Origin() const {
-    return isUnique() ? url::Origin()
+    return IsUnique() ? url::Origin()
                       : url::Origin::CreateFromNormalizedTupleWithSuborigin(
-                            protocol().ascii(), host().ascii(), effectivePort(),
-                            suborigin().ascii());
+                            Protocol().Ascii(), Host().Ascii(), EffectivePort(),
+                            Suborigin().Ascii());
   }
 
-  WebSecurityOrigin(const url::Origin& origin) : m_private(0) {
+  WebSecurityOrigin(const url::Origin& origin) : private_(0) {
     if (origin.unique()) {
-      assign(WebSecurityOrigin::createUnique());
+      Assign(WebSecurityOrigin::CreateUnique());
       return;
     }
 
     // TODO(mkwst): This might open up issues by double-canonicalizing the host.
-    assign(WebSecurityOrigin::createFromTupleWithSuborigin(
-        WebString::fromUTF8(origin.scheme()),
-        WebString::fromUTF8(origin.host()), origin.port(),
-        WebString::fromUTF8(origin.suborigin())));
+    Assign(WebSecurityOrigin::CreateFromTupleWithSuborigin(
+        WebString::FromUTF8(origin.scheme()),
+        WebString::FromUTF8(origin.host()), origin.port(),
+        WebString::FromUTF8(origin.suborigin())));
   }
 #endif
 
  private:
   // Present only to facilitate conversion from 'url::Origin'; this constructor
   // shouldn't be used anywhere else.
-  BLINK_PLATFORM_EXPORT static WebSecurityOrigin createFromTupleWithSuborigin(
+  BLINK_PLATFORM_EXPORT static WebSecurityOrigin CreateFromTupleWithSuborigin(
       const WebString& protocol,
       const WebString& host,
       int port,
       const WebString& suborigin);
 
-  void assign(WebSecurityOriginPrivate*);
-  WebSecurityOriginPrivate* m_private;
+  void Assign(WebSecurityOriginPrivate*);
+  WebSecurityOriginPrivate* private_;
 };
 
 }  // namespace blink

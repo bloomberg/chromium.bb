@@ -16,72 +16,72 @@
 
 namespace blink {
 
-void ThreadedObjectProxyBase::countFeature(UseCounter::Feature feature) {
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(&ThreadedMessagingProxyBase::countFeature,
-                                 messagingProxyWeakPtr(), feature));
+void ThreadedObjectProxyBase::CountFeature(UseCounter::Feature feature) {
+  GetParentFrameTaskRunners()
+      ->Get(TaskType::kUnspecedTimer)
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
+                                 MessagingProxyWeakPtr(), feature));
 }
 
-void ThreadedObjectProxyBase::countDeprecation(UseCounter::Feature feature) {
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(&ThreadedMessagingProxyBase::countDeprecation,
-                                 messagingProxyWeakPtr(), feature));
+void ThreadedObjectProxyBase::CountDeprecation(UseCounter::Feature feature) {
+  GetParentFrameTaskRunners()
+      ->Get(TaskType::kUnspecedTimer)
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
+                                 MessagingProxyWeakPtr(), feature));
 }
 
-void ThreadedObjectProxyBase::reportConsoleMessage(MessageSource source,
+void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
                                                    MessageLevel level,
                                                    const String& message,
                                                    SourceLocation* location) {
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
-      ->postTask(
+  GetParentFrameTaskRunners()
+      ->Get(TaskType::kUnspecedTimer)
+      ->PostTask(
           BLINK_FROM_HERE,
-          crossThreadBind(&ThreadedMessagingProxyBase::reportConsoleMessage,
-                          messagingProxyWeakPtr(), source, level, message,
-                          WTF::passed(location->clone())));
+          CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
+                          MessagingProxyWeakPtr(), source, level, message,
+                          WTF::Passed(location->Clone())));
 }
 
-void ThreadedObjectProxyBase::postMessageToPageInspector(
+void ThreadedObjectProxyBase::PostMessageToPageInspector(
     const String& message) {
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
-  getParentFrameTaskRunners()
-      ->get(TaskType::Unthrottled)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(
-                     &ThreadedMessagingProxyBase::postMessageToPageInspector,
-                     messagingProxyWeakPtr(), message));
+  GetParentFrameTaskRunners()
+      ->Get(TaskType::kUnthrottled)
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(
+                     &ThreadedMessagingProxyBase::PostMessageToPageInspector,
+                     MessagingProxyWeakPtr(), message));
 }
 
-void ThreadedObjectProxyBase::didCloseWorkerGlobalScope() {
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
-      ->postTask(
+void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
+  GetParentFrameTaskRunners()
+      ->Get(TaskType::kUnspecedTimer)
+      ->PostTask(
           BLINK_FROM_HERE,
-          crossThreadBind(&ThreadedMessagingProxyBase::terminateGlobalScope,
-                          messagingProxyWeakPtr()));
+          CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
+                          MessagingProxyWeakPtr()));
 }
 
-void ThreadedObjectProxyBase::didTerminateWorkerThread() {
+void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
   // This will terminate the MessagingProxy.
-  getParentFrameTaskRunners()
-      ->get(TaskType::UnspecedTimer)
-      ->postTask(
+  GetParentFrameTaskRunners()
+      ->Get(TaskType::kUnspecedTimer)
+      ->PostTask(
           BLINK_FROM_HERE,
-          crossThreadBind(&ThreadedMessagingProxyBase::workerThreadTerminated,
-                          messagingProxyWeakPtr()));
+          CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
+                          MessagingProxyWeakPtr()));
 }
 
-ParentFrameTaskRunners* ThreadedObjectProxyBase::getParentFrameTaskRunners() {
-  return m_parentFrameTaskRunners.get();
+ParentFrameTaskRunners* ThreadedObjectProxyBase::GetParentFrameTaskRunners() {
+  return parent_frame_task_runners_.Get();
 }
 
 ThreadedObjectProxyBase::ThreadedObjectProxyBase(
-    ParentFrameTaskRunners* parentFrameTaskRunners)
-    : m_parentFrameTaskRunners(parentFrameTaskRunners) {}
+    ParentFrameTaskRunners* parent_frame_task_runners)
+    : parent_frame_task_runners_(parent_frame_task_runners) {}
 
 }  // namespace blink

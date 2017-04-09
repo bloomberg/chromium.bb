@@ -12,8 +12,8 @@ SecurityStyleExplanations::SecurityStyleExplanations()
       contained_mixed_form(false),
       ran_content_with_cert_errors(false),
       displayed_content_with_cert_errors(false),
-      ran_insecure_content_style(blink::WebSecurityStyleUnknown),
-      displayed_insecure_content_style(blink::WebSecurityStyleUnknown),
+      ran_insecure_content_style(blink::kWebSecurityStyleUnknown),
+      displayed_insecure_content_style(blink::kWebSecurityStyleUnknown),
       scheme_is_cryptographic(false),
       pkp_bypassed(false) {}
 

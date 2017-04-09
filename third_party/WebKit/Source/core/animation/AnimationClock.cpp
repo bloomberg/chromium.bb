@@ -43,37 +43,38 @@ const double approximateFrameTime = 1 / 60.0;
 
 namespace blink {
 
-unsigned AnimationClock::s_currentlyRunningTask = 0;
+unsigned AnimationClock::currently_running_task_ = 0;
 
-void AnimationClock::updateTime(double time) {
-  if (time > m_time)
-    m_time = time;
-  m_taskForWhichTimeWasCalculated = s_currentlyRunningTask;
+void AnimationClock::UpdateTime(double time) {
+  if (time > time_)
+    time_ = time;
+  task_for_which_time_was_calculated_ = currently_running_task_;
 }
 
-double AnimationClock::currentTime() {
-  if (m_monotonicallyIncreasingTime &&
-      m_taskForWhichTimeWasCalculated != s_currentlyRunningTask) {
-    const double currentTime = m_monotonicallyIncreasingTime();
-    if (m_time < currentTime) {
+double AnimationClock::CurrentTime() {
+  if (monotonically_increasing_time_ &&
+      task_for_which_time_was_calculated_ != currently_running_task_) {
+    const double current_time = monotonically_increasing_time_();
+    if (time_ < current_time) {
       // Advance to the first estimated frame after the current time.
-      const double frameShift =
-          fmod(currentTime - m_time, approximateFrameTime);
-      const double newTime = currentTime + (approximateFrameTime - frameShift);
-      DCHECK_GE(newTime, currentTime);
-      DCHECK_LE(newTime, currentTime + approximateFrameTime);
-      updateTime(newTime);
+      const double frame_shift =
+          fmod(current_time - time_, approximateFrameTime);
+      const double new_time =
+          current_time + (approximateFrameTime - frame_shift);
+      DCHECK_GE(new_time, current_time);
+      DCHECK_LE(new_time, current_time + approximateFrameTime);
+      UpdateTime(new_time);
     } else {
-      m_taskForWhichTimeWasCalculated = s_currentlyRunningTask;
+      task_for_which_time_was_calculated_ = currently_running_task_;
     }
   }
-  return m_time;
+  return time_;
 }
 
-void AnimationClock::resetTimeForTesting(double time) {
-  m_time = time;
-  m_taskForWhichTimeWasCalculated = 0;
-  s_currentlyRunningTask = 0;
+void AnimationClock::ResetTimeForTesting(double time) {
+  time_ = time;
+  task_for_which_time_was_calculated_ = 0;
+  currently_running_task_ = 0;
 }
 
 }  // namespace blink

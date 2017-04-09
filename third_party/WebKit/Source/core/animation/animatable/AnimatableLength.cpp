@@ -37,10 +37,10 @@ namespace blink {
 
 namespace {
 
-double clampNumber(double value, ValueRange range) {
-  if (range == ValueRangeNonNegative)
+double ClampNumber(double value, ValueRange range) {
+  if (range == kValueRangeNonNegative)
     return std::max(value, 0.0);
-  DCHECK_EQ(range, ValueRangeAll);
+  DCHECK_EQ(range, kValueRangeAll);
   return value;
 }
 
@@ -48,27 +48,27 @@ double clampNumber(double value, ValueRange range) {
 
 AnimatableLength::AnimatableLength(const Length& length, float zoom) {
   DCHECK(zoom);
-  PixelsAndPercent pixelsAndPercent = length.getPixelsAndPercent();
-  m_pixels = pixelsAndPercent.pixels / zoom;
-  m_percent = pixelsAndPercent.percent;
-  m_hasPixels = length.type() != Percent;
-  m_hasPercent = !length.isFixed();
+  PixelsAndPercent pixels_and_percent = length.GetPixelsAndPercent();
+  pixels_ = pixels_and_percent.pixels / zoom;
+  percent_ = pixels_and_percent.percent;
+  has_pixels_ = length.GetType() != kPercent;
+  has_percent_ = !length.IsFixed();
 }
 
-Length AnimatableLength::getLength(float zoom, ValueRange range) const {
-  if (!m_hasPercent)
-    return Length(clampNumber(m_pixels, range) * zoom, Fixed);
-  if (!m_hasPixels)
-    return Length(clampNumber(m_percent, range), Percent);
-  return Length(CalculationValue::create(
-      PixelsAndPercent(m_pixels * zoom, m_percent), range));
+Length AnimatableLength::GetLength(float zoom, ValueRange range) const {
+  if (!has_percent_)
+    return Length(ClampNumber(pixels_, range) * zoom, kFixed);
+  if (!has_pixels_)
+    return Length(ClampNumber(percent_, range), kPercent);
+  return Length(CalculationValue::Create(
+      PixelsAndPercent(pixels_ * zoom, percent_), range));
 }
 
-bool AnimatableLength::equalTo(const AnimatableValue* value) const {
-  const AnimatableLength* length = toAnimatableLength(value);
-  return m_pixels == length->m_pixels && m_percent == length->m_percent &&
-         m_hasPixels == length->m_hasPixels &&
-         m_hasPercent == length->m_hasPercent;
+bool AnimatableLength::EqualTo(const AnimatableValue* value) const {
+  const AnimatableLength* length = ToAnimatableLength(value);
+  return pixels_ == length->pixels_ && percent_ == length->percent_ &&
+         has_pixels_ == length->has_pixels_ &&
+         has_percent_ == length->has_percent_;
 }
 
 }  // namespace blink

@@ -129,7 +129,7 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
 // Returns whether |error| is a DNS-related error (and therefore whether
 // the tab helper should start a DNS probe after receiving it).
 bool IsBlinkDnsError(const blink::WebURLError& error) {
-  return (error.domain.utf8() == net::kErrorDomain) &&
+  return (error.domain.Utf8() == net::kErrorDomain) &&
          net::IsDnsError(error.reason);
 }
 
@@ -163,11 +163,11 @@ bool ShouldUseFixUrlServiceForError(const blink::WebURLError& error,
   error_param->clear();
 
   // Don't use the correction service for HTTPS (for privacy reasons).
-  GURL unreachable_url(error.unreachableURL);
+  GURL unreachable_url(error.unreachable_url);
   if (GURL(unreachable_url).SchemeIsCryptographic())
     return false;
 
-  std::string domain = error.domain.utf8();
+  std::string domain = error.domain.Utf8();
   if (domain == url::kHttpScheme && error.reason == 404) {
     *error_param = "http404";
     return true;
@@ -230,7 +230,7 @@ std::string CreateFixUrlRequestBody(
   // TODO(mmenke):  Investigate open sourcing the relevant protocol buffers and
   //                using those directly instead.
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-  params->SetString("urlQuery", PrepareUrlForUpload(error.unreachableURL));
+  params->SetString("urlQuery", PrepareUrlForUpload(error.unreachable_url));
   return CreateRequestBody("linkdoctor.fixurl.fixurl", error_param,
                            correction_params, std::move(params));
 }
@@ -247,7 +247,7 @@ std::string CreateClickTrackingUrlRequestBody(
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
 
   params->SetString("originalUrlQuery",
-                    PrepareUrlForUpload(error.unreachableURL));
+                    PrepareUrlForUpload(error.unreachable_url));
 
   params->SetString("clickedUrlCorrection", correction.url_correction);
   params->SetString("clickType", correction.click_type);
@@ -297,7 +297,7 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
   // Version of URL for display in suggestions.  It has to be sanitized first
   // because any received suggestions will be relative to the sanitized URL.
   base::string16 original_url_for_display =
-      FormatURLForDisplay(SanitizeURL(GURL(error.unreachableURL)), is_rtl);
+      FormatURLForDisplay(SanitizeURL(GURL(error.unreachable_url)), is_rtl);
 
   std::unique_ptr<ErrorPageParams> params(new ErrorPageParams());
   params->override_suggestions.reset(new base::ListValue());
@@ -368,7 +368,7 @@ std::unique_ptr<ErrorPageParams> CreateErrorPageParams(
 }
 
 void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
-  if (error.domain.utf8() != net::kErrorDomain)
+  if (error.domain.Utf8() != net::kErrorDomain)
     return;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtSuccess", -error.reason);
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
@@ -380,7 +380,7 @@ void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
 }
 
 void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
-  if (error.domain.utf8() != net::kErrorDomain)
+  if (error.domain.Utf8() != net::kErrorDomain)
     return;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtStop", -error.reason);
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
@@ -483,8 +483,8 @@ NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {
 
 bool NetErrorHelperCore::IsReloadableError(
     const NetErrorHelperCore::ErrorPageInfo& info) {
-  GURL url = info.error.unreachableURL;
-  return info.error.domain.utf8() == net::kErrorDomain &&
+  GURL url = info.error.unreachable_url;
+  return info.error.domain.Utf8() == net::kErrorDomain &&
          info.error.reason != net::ERR_ABORTED &&
          // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
          // Chrome for Android.
@@ -605,8 +605,8 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   // result is from the page reload button.
   if (committed_error_page_info_ && pending_error_page_info_ &&
       navigation_from_button_ != NO_BUTTON &&
-      committed_error_page_info_->error.unreachableURL ==
-          pending_error_page_info_->error.unreachableURL) {
+      committed_error_page_info_->error.unreachable_url ==
+          pending_error_page_info_->error.unreachable_url) {
     DCHECK(navigation_from_button_ == RELOAD_BUTTON ||
            navigation_from_button_ == SHOW_SAVED_COPY_BUTTON);
     RecordEvent(navigation_from_button_ == RELOAD_BUTTON ?
@@ -618,7 +618,7 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   if (committed_error_page_info_ && !pending_error_page_info_ &&
       committed_error_page_info_->auto_reload_triggered) {
     const blink::WebURLError& error = committed_error_page_info_->error;
-    const GURL& error_url = error.unreachableURL;
+    const GURL& error_url = error.unreachable_url;
     if (url == error_url)
       ReportAutoReloadSuccess(error, auto_reload_count_);
     else if (url != content::kUnreachableWebDataURL)
@@ -853,7 +853,7 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   //                double page load by just updating the error page, like DNS
   //                probes do.
   delegate_->LoadErrorPage(error_html,
-                           pending_error_page_info_->error.unreachableURL);
+                           pending_error_page_info_->error.unreachable_url);
 }
 
 blink::WebURLError NetErrorHelperCore::GetUpdatedError(
@@ -865,10 +865,10 @@ blink::WebURLError NetErrorHelperCore::GetUpdatedError(
   }
 
   blink::WebURLError updated_error;
-  updated_error.domain = blink::WebString::fromUTF8(kDnsProbeErrorDomain);
+  updated_error.domain = blink::WebString::FromUTF8(kDnsProbeErrorDomain);
   updated_error.reason = last_probe_status_;
-  updated_error.unreachableURL = error.unreachableURL;
-  updated_error.staleCopyInCache = error.staleCopyInCache;
+  updated_error.unreachable_url = error.unreachable_url;
+  updated_error.stale_copy_in_cache = error.stale_copy_in_cache;
 
   return updated_error;
 }
@@ -989,7 +989,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
         RecordEvent(NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED);
       }
       delegate_->LoadPageFromCache(
-          committed_error_page_info_->error.unreachableURL);
+          committed_error_page_info_->error.unreachable_url);
       return;
     case MORE_BUTTON:
       // Visual effects on page are handled in Javascript code.
@@ -1004,7 +1004,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
     case DIAGNOSE_ERROR:
       RecordEvent(NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
       delegate_->DiagnoseError(
-          committed_error_page_info_->error.unreachableURL);
+          committed_error_page_info_->error.unreachable_url);
       return;
     case DOWNLOAD_BUTTON:
       RecordEvent(NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_CLICKED);

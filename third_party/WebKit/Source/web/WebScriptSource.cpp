@@ -10,8 +10,8 @@
 namespace blink {
 
 WebScriptSource::operator ScriptSourceCode() const {
-  TextPosition position(OrdinalNumber::fromOneBasedInt(startLine),
-                        OrdinalNumber::first());
+  TextPosition position(OrdinalNumber::FromOneBasedInt(start_line),
+                        OrdinalNumber::First());
   return ScriptSourceCode(code, url, position);
 }
 

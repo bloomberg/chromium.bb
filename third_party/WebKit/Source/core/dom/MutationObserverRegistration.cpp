@@ -35,127 +35,128 @@
 
 namespace blink {
 
-MutationObserverRegistration* MutationObserverRegistration::create(
+MutationObserverRegistration* MutationObserverRegistration::Create(
     MutationObserver& observer,
-    Node* registrationNode,
+    Node* registration_node,
     MutationObserverOptions options,
-    const HashSet<AtomicString>& attributeFilter) {
-  return new MutationObserverRegistration(observer, registrationNode, options,
-                                          attributeFilter);
+    const HashSet<AtomicString>& attribute_filter) {
+  return new MutationObserverRegistration(observer, registration_node, options,
+                                          attribute_filter);
 }
 
 MutationObserverRegistration::MutationObserverRegistration(
     MutationObserver& observer,
-    Node* registrationNode,
+    Node* registration_node,
     MutationObserverOptions options,
-    const HashSet<AtomicString>& attributeFilter)
-    : m_observer(this, &observer),
-      m_registrationNode(registrationNode),
-      m_options(options),
-      m_attributeFilter(attributeFilter) {
-  m_observer->observationStarted(this);
+    const HashSet<AtomicString>& attribute_filter)
+    : observer_(this, &observer),
+      registration_node_(registration_node),
+      options_(options),
+      attribute_filter_(attribute_filter) {
+  observer_->ObservationStarted(this);
 }
 
 MutationObserverRegistration::~MutationObserverRegistration() {}
 
-void MutationObserverRegistration::dispose() {
-  clearTransientRegistrations();
-  m_observer->observationEnded(this);
-  m_observer.clear();
+void MutationObserverRegistration::Dispose() {
+  ClearTransientRegistrations();
+  observer_->ObservationEnded(this);
+  observer_.Clear();
 }
 
-void MutationObserverRegistration::resetObservation(
+void MutationObserverRegistration::ResetObservation(
     MutationObserverOptions options,
-    const HashSet<AtomicString>& attributeFilter) {
-  clearTransientRegistrations();
-  m_options = options;
-  m_attributeFilter = attributeFilter;
+    const HashSet<AtomicString>& attribute_filter) {
+  ClearTransientRegistrations();
+  options_ = options;
+  attribute_filter_ = attribute_filter;
 }
 
-void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node) {
-  if (!isSubtree())
+void MutationObserverRegistration::ObservedSubtreeNodeWillDetach(Node& node) {
+  if (!IsSubtree())
     return;
 
-  node.registerTransientMutationObserver(this);
-  m_observer->setHasTransientRegistration();
+  node.RegisterTransientMutationObserver(this);
+  observer_->SetHasTransientRegistration();
 
-  if (!m_transientRegistrationNodes) {
-    m_transientRegistrationNodes = new NodeHashSet;
+  if (!transient_registration_nodes_) {
+    transient_registration_nodes_ = new NodeHashSet;
 
-    DCHECK(m_registrationNode);
-    DCHECK(!m_registrationNodeKeepAlive);
-    m_registrationNodeKeepAlive =
-        m_registrationNode.get();  // Balanced in clearTransientRegistrations.
+    DCHECK(registration_node_);
+    DCHECK(!registration_node_keep_alive_);
+    registration_node_keep_alive_ =
+        registration_node_.Get();  // Balanced in clearTransientRegistrations.
   }
-  m_transientRegistrationNodes->insert(&node);
+  transient_registration_nodes_->insert(&node);
 }
 
-void MutationObserverRegistration::clearTransientRegistrations() {
-  if (!m_transientRegistrationNodes) {
-    DCHECK(!m_registrationNodeKeepAlive);
+void MutationObserverRegistration::ClearTransientRegistrations() {
+  if (!transient_registration_nodes_) {
+    DCHECK(!registration_node_keep_alive_);
     return;
   }
 
-  for (auto& node : *m_transientRegistrationNodes)
-    node->unregisterTransientMutationObserver(this);
+  for (auto& node : *transient_registration_nodes_)
+    node->UnregisterTransientMutationObserver(this);
 
-  m_transientRegistrationNodes.clear();
+  transient_registration_nodes_.Clear();
 
-  DCHECK(m_registrationNodeKeepAlive);
-  m_registrationNodeKeepAlive =
+  DCHECK(registration_node_keep_alive_);
+  registration_node_keep_alive_ =
       nullptr;  // Balanced in observeSubtreeNodeWillDetach.
 }
 
-void MutationObserverRegistration::unregister() {
+void MutationObserverRegistration::Unregister() {
   // |this| can outlives m_registrationNode.
-  if (m_registrationNode)
-    m_registrationNode->unregisterMutationObserver(this);
+  if (registration_node_)
+    registration_node_->UnregisterMutationObserver(this);
   else
-    dispose();
+    Dispose();
 }
 
-bool MutationObserverRegistration::shouldReceiveMutationFrom(
+bool MutationObserverRegistration::ShouldReceiveMutationFrom(
     Node& node,
     MutationObserver::MutationType type,
-    const QualifiedName* attributeName) const {
-  DCHECK((type == MutationObserver::Attributes && attributeName) ||
-         !attributeName);
-  if (!(m_options & type))
+    const QualifiedName* attribute_name) const {
+  DCHECK((type == MutationObserver::kAttributes && attribute_name) ||
+         !attribute_name);
+  if (!(options_ & type))
     return false;
 
-  if (m_registrationNode != &node && !isSubtree())
+  if (registration_node_ != &node && !IsSubtree())
     return false;
 
-  if (type != MutationObserver::Attributes ||
-      !(m_options & MutationObserver::AttributeFilter))
+  if (type != MutationObserver::kAttributes ||
+      !(options_ & MutationObserver::kAttributeFilter))
     return true;
 
-  if (!attributeName->namespaceURI().isNull())
+  if (!attribute_name->NamespaceURI().IsNull())
     return false;
 
-  return m_attributeFilter.contains(attributeName->localName());
+  return attribute_filter_.Contains(attribute_name->LocalName());
 }
 
-void MutationObserverRegistration::addRegistrationNodesToSet(
+void MutationObserverRegistration::AddRegistrationNodesToSet(
     HeapHashSet<Member<Node>>& nodes) const {
-  DCHECK(m_registrationNode);
-  nodes.insert(m_registrationNode.get());
-  if (!m_transientRegistrationNodes)
+  DCHECK(registration_node_);
+  nodes.insert(registration_node_.Get());
+  if (!transient_registration_nodes_)
     return;
-  for (NodeHashSet::const_iterator iter = m_transientRegistrationNodes->begin();
-       iter != m_transientRegistrationNodes->end(); ++iter)
-    nodes.insert(iter->get());
+  for (NodeHashSet::const_iterator iter =
+           transient_registration_nodes_->begin();
+       iter != transient_registration_nodes_->end(); ++iter)
+    nodes.insert(iter->Get());
 }
 
 DEFINE_TRACE(MutationObserverRegistration) {
-  visitor->trace(m_observer);
-  visitor->trace(m_registrationNode);
-  visitor->trace(m_registrationNodeKeepAlive);
-  visitor->trace(m_transientRegistrationNodes);
+  visitor->Trace(observer_);
+  visitor->Trace(registration_node_);
+  visitor->Trace(registration_node_keep_alive_);
+  visitor->Trace(transient_registration_nodes_);
 }
 
 DEFINE_TRACE_WRAPPERS(MutationObserverRegistration) {
-  visitor->traceWrappers(m_observer);
+  visitor->TraceWrappers(observer_);
 }
 
 }  // namespace blink

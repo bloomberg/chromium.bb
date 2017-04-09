@@ -395,7 +395,7 @@ content::KeyboardEventProcessingResult AppWindow::PreHandleKeyboardEvent(
   // ::HandleKeyboardEvent() will only be called if the KeyEvent's default
   // action is not prevented.
   // Thus, we should handle the KeyEvent here only if the permission is not set.
-  if (event.windowsKeyCode == ui::VKEY_ESCAPE && IsFullscreen() &&
+  if (event.windows_key_code == ui::VKEY_ESCAPE && IsFullscreen() &&
       !IsForcedFullscreen() &&
       !extension->permissions_data()->HasAPIPermission(
           APIPermission::kOverrideEscFullscreen)) {
@@ -412,7 +412,7 @@ void AppWindow::HandleKeyboardEvent(
   // If the window is currently fullscreen and not forced, ESC should leave
   // fullscreen.  If this code is being called for ESC, that means that the
   // KeyEvent's default behavior was not prevented by the content.
-  if (event.windowsKeyCode == ui::VKEY_ESCAPE && IsFullscreen() &&
+  if (event.windows_key_code == ui::VKEY_ESCAPE && IsFullscreen() &&
       !IsForcedFullscreen()) {
     Restore();
     return;
@@ -977,8 +977,8 @@ bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
 
 blink::WebDisplayMode AppWindow::GetDisplayMode(
     const content::WebContents* source) const {
-  return IsFullscreen() ? blink::WebDisplayModeFullscreen
-                        : blink::WebDisplayModeStandalone;
+  return IsFullscreen() ? blink::kWebDisplayModeFullscreen
+                        : blink::kWebDisplayModeStandalone;
 }
 
 WindowController* AppWindow::GetExtensionWindowController() const {

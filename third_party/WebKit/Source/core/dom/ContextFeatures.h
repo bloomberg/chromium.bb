@@ -44,62 +44,62 @@ class ContextFeatures final : public GarbageCollectedFinalized<ContextFeatures>,
 
  public:
   enum FeatureType {
-    PagePopup = 0,
-    MutationEvents,
-    FeatureTypeSize  // Should be the last entry.
+    kPagePopup = 0,
+    kMutationEvents,
+    kFeatureTypeSize  // Should be the last entry.
   };
 
-  static const char* supplementName();
-  static ContextFeatures& defaultSwitch();
-  static ContextFeatures* create(std::unique_ptr<ContextFeaturesClient>);
+  static const char* SupplementName();
+  static ContextFeatures& DefaultSwitch();
+  static ContextFeatures* Create(std::unique_ptr<ContextFeaturesClient>);
 
-  static bool pagePopupEnabled(Document*);
-  static bool mutationEventsEnabled(Document*);
+  static bool PagePopupEnabled(Document*);
+  static bool MutationEventsEnabled(Document*);
 
-  bool isEnabled(Document*, FeatureType, bool) const;
-  void urlDidChange(Document*);
+  bool IsEnabled(Document*, FeatureType, bool) const;
+  void UrlDidChange(Document*);
 
  private:
   explicit ContextFeatures(std::unique_ptr<ContextFeaturesClient> client)
-      : m_client(std::move(client)) {}
+      : client_(std::move(client)) {}
 
-  std::unique_ptr<ContextFeaturesClient> m_client;
+  std::unique_ptr<ContextFeaturesClient> client_;
 };
 
 class ContextFeaturesClient {
   USING_FAST_MALLOC(ContextFeaturesClient);
 
  public:
-  static std::unique_ptr<ContextFeaturesClient> empty();
+  static std::unique_ptr<ContextFeaturesClient> Empty();
 
   virtual ~ContextFeaturesClient() {}
-  virtual bool isEnabled(Document*,
+  virtual bool IsEnabled(Document*,
                          ContextFeatures::FeatureType,
-                         bool defaultValue) {
-    return defaultValue;
+                         bool default_value) {
+    return default_value;
   }
-  virtual void urlDidChange(Document*) {}
+  virtual void UrlDidChange(Document*) {}
 };
 
-CORE_EXPORT void provideContextFeaturesTo(
+CORE_EXPORT void ProvideContextFeaturesTo(
     Page&,
     std::unique_ptr<ContextFeaturesClient>);
-void provideContextFeaturesToDocumentFrom(Document&, Page&);
+void ProvideContextFeaturesToDocumentFrom(Document&, Page&);
 
-inline ContextFeatures* ContextFeatures::create(
+inline ContextFeatures* ContextFeatures::Create(
     std::unique_ptr<ContextFeaturesClient> client) {
   return new ContextFeatures(std::move(client));
 }
 
-inline bool ContextFeatures::isEnabled(Document* document,
+inline bool ContextFeatures::IsEnabled(Document* document,
                                        FeatureType type,
-                                       bool defaultValue) const {
-  if (!m_client)
-    return defaultValue;
-  return m_client->isEnabled(document, type, defaultValue);
+                                       bool default_value) const {
+  if (!client_)
+    return default_value;
+  return client_->IsEnabled(document, type, default_value);
 }
 
-inline void ContextFeatures::urlDidChange(Document* document) {
+inline void ContextFeatures::UrlDidChange(Document* document) {
   // FIXME: The original code, commented out below, is obviously
   // wrong, but the seemingly correct fix of negating the test to
   // the more logical 'if (!m_client)' crashes the renderer.

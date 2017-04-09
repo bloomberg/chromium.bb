@@ -110,23 +110,23 @@ enum EPaintOrderType {
 };
 
 enum EPaintOrder {
-  PaintOrderNormal = 0,
-  PaintOrderFillStrokeMarkers = 1,
-  PaintOrderFillMarkersStroke = 2,
-  PaintOrderStrokeFillMarkers = 3,
-  PaintOrderStrokeMarkersFill = 4,
-  PaintOrderMarkersFillStroke = 5,
-  PaintOrderMarkersStrokeFill = 6
+  kPaintOrderNormal = 0,
+  kPaintOrderFillStrokeMarkers = 1,
+  kPaintOrderFillMarkersStroke = 2,
+  kPaintOrderStrokeFillMarkers = 3,
+  kPaintOrderStrokeMarkersFill = 4,
+  kPaintOrderMarkersFillStroke = 5,
+  kPaintOrderMarkersStrokeFill = 6
 };
 
 // Inherited/Non-Inherited Style Datastructures
 class StyleFillData : public RefCounted<StyleFillData> {
  public:
-  static PassRefPtr<StyleFillData> create() {
-    return adoptRef(new StyleFillData);
+  static PassRefPtr<StyleFillData> Create() {
+    return AdoptRef(new StyleFillData);
   }
-  PassRefPtr<StyleFillData> copy() const {
-    return adoptRef(new StyleFillData(*this));
+  PassRefPtr<StyleFillData> Copy() const {
+    return AdoptRef(new StyleFillData(*this));
   }
 
   bool operator==(const StyleFillData&) const;
@@ -135,12 +135,12 @@ class StyleFillData : public RefCounted<StyleFillData> {
   }
 
   float opacity;
-  SVGPaintType paintType;
-  Color paintColor;
-  String paintUri;
-  SVGPaintType visitedLinkPaintType;
-  Color visitedLinkPaintColor;
-  String visitedLinkPaintUri;
+  SVGPaintType paint_type;
+  Color paint_color;
+  String paint_uri;
+  SVGPaintType visited_link_paint_type;
+  Color visited_link_paint_color;
+  String visited_link_paint_uri;
 
  private:
   StyleFillData();
@@ -151,31 +151,31 @@ class UnzoomedLength {
   DISALLOW_NEW();
 
  public:
-  explicit UnzoomedLength(const Length& length) : m_length(length) {}
+  explicit UnzoomedLength(const Length& length) : length_(length) {}
 
-  bool isZero() const { return m_length.isZero(); }
+  bool IsZero() const { return length_.IsZero(); }
 
   bool operator==(const UnzoomedLength& other) const {
-    return m_length == other.m_length;
+    return length_ == other.length_;
   }
   bool operator!=(const UnzoomedLength& other) const {
     return !operator==(other);
   }
 
-  const Length& length() const { return m_length; }
+  const Length& length() const { return length_; }
 
  private:
-  Length m_length;
+  Length length_;
 };
 
 class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
  public:
-  static PassRefPtr<StyleStrokeData> create() {
-    return adoptRef(new StyleStrokeData);
+  static PassRefPtr<StyleStrokeData> Create() {
+    return AdoptRef(new StyleStrokeData);
   }
 
-  PassRefPtr<StyleStrokeData> copy() const {
-    return adoptRef(new StyleStrokeData(*this));
+  PassRefPtr<StyleStrokeData> Copy() const {
+    return AdoptRef(new StyleStrokeData(*this));
   }
 
   bool operator==(const StyleStrokeData&) const;
@@ -184,18 +184,18 @@ class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
   }
 
   float opacity;
-  float miterLimit;
+  float miter_limit;
 
   UnzoomedLength width;
-  Length dashOffset;
-  RefPtr<SVGDashArray> dashArray;
+  Length dash_offset;
+  RefPtr<SVGDashArray> dash_array;
 
-  SVGPaintType paintType;
-  Color paintColor;
-  String paintUri;
-  SVGPaintType visitedLinkPaintType;
-  Color visitedLinkPaintColor;
-  String visitedLinkPaintUri;
+  SVGPaintType paint_type;
+  Color paint_color;
+  String paint_uri;
+  SVGPaintType visited_link_paint_type;
+  Color visited_link_paint_color;
+  String visited_link_paint_uri;
 
  private:
   StyleStrokeData();
@@ -204,11 +204,11 @@ class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
 
 class StyleStopData : public RefCounted<StyleStopData> {
  public:
-  static PassRefPtr<StyleStopData> create() {
-    return adoptRef(new StyleStopData);
+  static PassRefPtr<StyleStopData> Create() {
+    return AdoptRef(new StyleStopData);
   }
-  PassRefPtr<StyleStopData> copy() const {
-    return adoptRef(new StyleStopData(*this));
+  PassRefPtr<StyleStopData> Copy() const {
+    return AdoptRef(new StyleStopData(*this));
   }
 
   bool operator==(const StyleStopData&) const;
@@ -227,11 +227,11 @@ class StyleStopData : public RefCounted<StyleStopData> {
 // Note: the rule for this class is, *no inheritance* of these props
 class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
  public:
-  static PassRefPtr<StyleMiscData> create() {
-    return adoptRef(new StyleMiscData);
+  static PassRefPtr<StyleMiscData> Create() {
+    return AdoptRef(new StyleMiscData);
   }
-  PassRefPtr<StyleMiscData> copy() const {
-    return adoptRef(new StyleMiscData(*this));
+  PassRefPtr<StyleMiscData> Copy() const {
+    return AdoptRef(new StyleMiscData(*this));
   }
 
   bool operator==(const StyleMiscData&) const;
@@ -239,11 +239,11 @@ class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
     return !(*this == other);
   }
 
-  Color floodColor;
-  float floodOpacity;
-  Color lightingColor;
+  Color flood_color;
+  float flood_opacity;
+  Color lighting_color;
 
-  Length baselineShiftValue;
+  Length baseline_shift_value;
 
  private:
   StyleMiscData();
@@ -253,11 +253,11 @@ class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
 // Non-inherited resources
 class StyleResourceData : public RefCounted<StyleResourceData> {
  public:
-  static PassRefPtr<StyleResourceData> create() {
-    return adoptRef(new StyleResourceData);
+  static PassRefPtr<StyleResourceData> Create() {
+    return AdoptRef(new StyleResourceData);
   }
-  PassRefPtr<StyleResourceData> copy() const {
-    return adoptRef(new StyleResourceData(*this));
+  PassRefPtr<StyleResourceData> Copy() const {
+    return AdoptRef(new StyleResourceData(*this));
   }
 
   bool operator==(const StyleResourceData&) const;
@@ -276,11 +276,11 @@ class StyleResourceData : public RefCounted<StyleResourceData> {
 class StyleInheritedResourceData
     : public RefCounted<StyleInheritedResourceData> {
  public:
-  static PassRefPtr<StyleInheritedResourceData> create() {
-    return adoptRef(new StyleInheritedResourceData);
+  static PassRefPtr<StyleInheritedResourceData> Create() {
+    return AdoptRef(new StyleInheritedResourceData);
   }
-  PassRefPtr<StyleInheritedResourceData> copy() const {
-    return adoptRef(new StyleInheritedResourceData(*this));
+  PassRefPtr<StyleInheritedResourceData> Copy() const {
+    return AdoptRef(new StyleInheritedResourceData(*this));
   }
 
   bool operator==(const StyleInheritedResourceData&) const;
@@ -288,9 +288,9 @@ class StyleInheritedResourceData
     return !(*this == other);
   }
 
-  AtomicString markerStart;
-  AtomicString markerMid;
-  AtomicString markerEnd;
+  AtomicString marker_start;
+  AtomicString marker_mid;
+  AtomicString marker_end;
 
  private:
   StyleInheritedResourceData();
@@ -300,10 +300,10 @@ class StyleInheritedResourceData
 // Geometry properties
 class StyleGeometryData : public RefCounted<StyleGeometryData> {
  public:
-  static PassRefPtr<StyleGeometryData> create() {
-    return adoptRef(new StyleGeometryData);
+  static PassRefPtr<StyleGeometryData> Create() {
+    return AdoptRef(new StyleGeometryData);
   }
-  PassRefPtr<StyleGeometryData> copy() const;
+  PassRefPtr<StyleGeometryData> Copy() const;
   bool operator==(const StyleGeometryData&) const;
   bool operator!=(const StyleGeometryData& other) const {
     return !(*this == other);

@@ -20,16 +20,16 @@ class BLINK_PLATFORM_EXPORT WebPresentationReceiver {
   virtual ~WebPresentationReceiver() = default;
 
   // Called when receiver page gets an incoming connection.
-  virtual WebPresentationConnection* onReceiverConnectionAvailable(
+  virtual WebPresentationConnection* OnReceiverConnectionAvailable(
       const WebPresentationInfo&) = 0;
 
   // Called when receiver page gets destroyed.
   // TODO: Rename to onReceiverTerminated?
-  virtual void didChangeConnectionState(WebPresentationConnectionState) = 0;
+  virtual void DidChangeConnectionState(WebPresentationConnectionState) = 0;
 
   // Called when any PresentationConnection object on receiver page invokes
   // connnection.terminate().
-  virtual void terminateConnection() = 0;
+  virtual void TerminateConnection() = 0;
 };
 
 }  // namespace blink

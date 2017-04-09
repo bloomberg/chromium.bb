@@ -14,79 +14,80 @@
 
 namespace blink {
 
-static SimNetwork* s_network = nullptr;
+static SimNetwork* g_network = nullptr;
 
-SimNetwork::SimNetwork() : m_currentRequest(nullptr) {
-  Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(this);
-  ASSERT(!s_network);
-  s_network = this;
+SimNetwork::SimNetwork() : current_request_(nullptr) {
+  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(this);
+  ASSERT(!g_network);
+  g_network = this;
 }
 
 SimNetwork::~SimNetwork() {
-  Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(nullptr);
-  Platform::current()
-      ->getURLLoaderMockFactory()
-      ->unregisterAllURLsAndClearMemoryCache();
-  s_network = nullptr;
+  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
+  Platform::Current()
+      ->GetURLLoaderMockFactory()
+      ->UnregisterAllURLsAndClearMemoryCache();
+  g_network = nullptr;
 }
 
-SimNetwork& SimNetwork::current() {
-  DCHECK(s_network);
-  return *s_network;
+SimNetwork& SimNetwork::Current() {
+  DCHECK(g_network);
+  return *g_network;
 }
 
-void SimNetwork::servePendingRequests() {
-  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+void SimNetwork::ServePendingRequests() {
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 }
 
-void SimNetwork::didReceiveResponse(WebURLLoaderClient* client,
+void SimNetwork::DidReceiveResponse(WebURLLoaderClient* client,
                                     const WebURLResponse& response) {
-  auto it = m_requests.find(response.url().string());
-  if (it == m_requests.end()) {
-    client->didReceiveResponse(response);
+  auto it = requests_.Find(response.Url().GetString());
+  if (it == requests_.end()) {
+    client->DidReceiveResponse(response);
     return;
   }
   DCHECK(it->value);
-  m_currentRequest = it->value;
-  m_currentRequest->didReceiveResponse(client, response);
+  current_request_ = it->value;
+  current_request_->DidReceiveResponse(client, response);
 }
 
-void SimNetwork::didReceiveData(WebURLLoaderClient* client,
+void SimNetwork::DidReceiveData(WebURLLoaderClient* client,
                                 const char* data,
-                                int dataLength) {
-  if (!m_currentRequest)
-    client->didReceiveData(data, dataLength);
+                                int data_length) {
+  if (!current_request_)
+    client->DidReceiveData(data, data_length);
 }
 
-void SimNetwork::didFail(WebURLLoaderClient* client,
+void SimNetwork::DidFail(WebURLLoaderClient* client,
                          const WebURLError& error,
-                         int64_t totalEncodedDataLength,
-                         int64_t totalEncodedBodyLength) {
-  if (!m_currentRequest) {
-    client->didFail(error, totalEncodedDataLength, totalEncodedBodyLength);
+                         int64_t total_encoded_data_length,
+                         int64_t total_encoded_body_length) {
+  if (!current_request_) {
+    client->DidFail(error, total_encoded_data_length,
+                    total_encoded_body_length);
     return;
   }
-  m_currentRequest->didFail(error);
+  current_request_->DidFail(error);
 }
 
-void SimNetwork::didFinishLoading(WebURLLoaderClient* client,
-                                  double finishTime,
-                                  int64_t totalEncodedDataLength,
-                                  int64_t totalEncodedBodyLength) {
-  if (!m_currentRequest) {
-    client->didFinishLoading(finishTime, totalEncodedDataLength,
-                             totalEncodedBodyLength);
+void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
+                                  double finish_time,
+                                  int64_t total_encoded_data_length,
+                                  int64_t total_encoded_body_length) {
+  if (!current_request_) {
+    client->DidFinishLoading(finish_time, total_encoded_data_length,
+                             total_encoded_body_length);
     return;
   }
-  m_currentRequest = nullptr;
+  current_request_ = nullptr;
 }
 
-void SimNetwork::addRequest(SimRequest& request) {
-  m_requests.insert(request.url(), &request);
+void SimNetwork::AddRequest(SimRequest& request) {
+  requests_.insert(request.Url(), &request);
 }
 
-void SimNetwork::removeRequest(SimRequest& request) {
-  m_requests.erase(request.url());
+void SimNetwork::RemoveRequest(SimRequest& request) {
+  requests_.erase(request.Url());
 }
 
 }  // namespace blink

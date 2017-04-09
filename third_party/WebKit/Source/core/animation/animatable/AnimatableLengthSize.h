@@ -38,25 +38,25 @@ namespace blink {
 class AnimatableLengthSize final : public AnimatableValue {
  public:
   ~AnimatableLengthSize() override {}
-  static PassRefPtr<AnimatableLengthSize> create(
+  static PassRefPtr<AnimatableLengthSize> Create(
       PassRefPtr<AnimatableValue> width,
       PassRefPtr<AnimatableValue> height) {
-    return adoptRef(
+    return AdoptRef(
         new AnimatableLengthSize(std::move(width), std::move(height)));
   }
 
  private:
   AnimatableLengthSize(PassRefPtr<AnimatableValue> width,
                        PassRefPtr<AnimatableValue> height)
-      : m_width(std::move(width)), m_height(std::move(height)) {}
-  AnimatableType type() const override { return TypeLengthSize; }
-  bool equalTo(const AnimatableValue*) const override;
+      : width_(std::move(width)), height_(std::move(height)) {}
+  AnimatableType GetType() const override { return kTypeLengthSize; }
+  bool EqualTo(const AnimatableValue*) const override;
 
-  RefPtr<AnimatableValue> m_width;
-  RefPtr<AnimatableValue> m_height;
+  RefPtr<AnimatableValue> width_;
+  RefPtr<AnimatableValue> height_;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthSize, isLengthSize());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthSize, IsLengthSize());
 
 }  // namespace blink
 

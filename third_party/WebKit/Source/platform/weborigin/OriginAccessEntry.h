@@ -45,19 +45,19 @@ class PLATFORM_EXPORT OriginAccessEntry {
  public:
   enum SubdomainSetting {
     // 'www.example.com' matches an OriginAccessEntry for 'example.com'
-    AllowSubdomains,
+    kAllowSubdomains,
 
     // 'www.example.com' matches an OriginAccessEntry for 'not-www.example.com'
-    AllowRegisterableDomains,
+    kAllowRegisterableDomains,
 
     // 'www.example.com' does not match an OriginAccessEntry for 'example.com'
-    DisallowSubdomains
+    kDisallowSubdomains
   };
 
   enum MatchResult {
-    MatchesOrigin,
-    MatchesOriginButIsPublicSuffix,
-    DoesNotMatchOrigin
+    kMatchesOrigin,
+    kMatchesOriginButIsPublicSuffix,
+    kDoesNotMatchOrigin
   };
 
   // If host is empty string and SubdomainSetting is not DisallowSubdomains, the
@@ -70,29 +70,29 @@ class PLATFORM_EXPORT OriginAccessEntry {
 
   // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https').
   // 'matchesDomain' relaxes this constraint.
-  MatchResult matchesOrigin(const SecurityOrigin&) const;
-  MatchResult matchesDomain(const SecurityOrigin&) const;
+  MatchResult MatchesOrigin(const SecurityOrigin&) const;
+  MatchResult MatchesDomain(const SecurityOrigin&) const;
 
-  const String& protocol() const { return m_protocol; }
-  const String& host() const { return m_host; }
-  SubdomainSetting subdomainSettings() const { return m_subdomainSettings; }
-  bool hostIsIPAddress() const { return m_hostIsIPAddress; }
-  const String& registerable() const { return m_registerableDomain; }
+  const String& Protocol() const { return protocol_; }
+  const String& Host() const { return host_; }
+  SubdomainSetting SubdomainSettings() const { return subdomain_settings_; }
+  bool HostIsIPAddress() const { return host_is_ip_address_; }
+  const String& Registerable() const { return registerable_domain_; }
 
  private:
-  String m_protocol;
-  String m_host;
-  String m_registerableDomain;
-  SubdomainSetting m_subdomainSettings;
-  bool m_hostIsIPAddress;
-  bool m_hostIsPublicSuffix;
+  String protocol_;
+  String host_;
+  String registerable_domain_;
+  SubdomainSetting subdomain_settings_;
+  bool host_is_ip_address_;
+  bool host_is_public_suffix_;
 };
 
 PLATFORM_EXPORT inline bool operator==(const OriginAccessEntry& a,
                                        const OriginAccessEntry& b) {
-  return equalIgnoringASCIICase(a.protocol(), b.protocol()) &&
-         equalIgnoringASCIICase(a.host(), b.host()) &&
-         a.subdomainSettings() == b.subdomainSettings();
+  return EqualIgnoringASCIICase(a.Protocol(), b.Protocol()) &&
+         EqualIgnoringASCIICase(a.Host(), b.Host()) &&
+         a.SubdomainSettings() == b.SubdomainSettings();
 }
 
 PLATFORM_EXPORT inline bool operator!=(const OriginAccessEntry& a,

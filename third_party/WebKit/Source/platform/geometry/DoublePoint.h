@@ -20,119 +20,119 @@ class PLATFORM_EXPORT DoublePoint {
   DISALLOW_NEW();
 
  public:
-  DoublePoint() : m_x(0), m_y(0) {}
-  DoublePoint(double x, double y) : m_x(x), m_y(y) {}
-  DoublePoint(const IntPoint& p) : m_x(p.x()), m_y(p.y()) {}
-  DoublePoint(const FloatPoint& p) : m_x(p.x()), m_y(p.y()) {}
+  DoublePoint() : x_(0), y_(0) {}
+  DoublePoint(double x, double y) : x_(x), y_(y) {}
+  DoublePoint(const IntPoint& p) : x_(p.X()), y_(p.Y()) {}
+  DoublePoint(const FloatPoint& p) : x_(p.X()), y_(p.Y()) {}
   explicit DoublePoint(const LayoutPoint&);
 
   explicit DoublePoint(const IntSize& size)
-      : m_x(size.width()), m_y(size.height()) {}
+      : x_(size.Width()), y_(size.Height()) {}
 
   explicit DoublePoint(const FloatSize&);
 
   explicit DoublePoint(const DoubleSize& size)
-      : m_x(size.width()), m_y(size.height()) {}
+      : x_(size.Width()), y_(size.Height()) {}
 
-  static DoublePoint zero() { return DoublePoint(); }
+  static DoublePoint Zero() { return DoublePoint(); }
 
-  DoublePoint expandedTo(const DoublePoint& other) const {
-    return DoublePoint(std::max(m_x, other.m_x), std::max(m_y, other.m_y));
+  DoublePoint ExpandedTo(const DoublePoint& other) const {
+    return DoublePoint(std::max(x_, other.x_), std::max(y_, other.y_));
   }
 
-  DoublePoint shrunkTo(const DoublePoint& other) const {
-    return DoublePoint(std::min(m_x, other.m_x), std::min(m_y, other.m_y));
+  DoublePoint ShrunkTo(const DoublePoint& other) const {
+    return DoublePoint(std::min(x_, other.x_), std::min(y_, other.y_));
   }
 
-  double x() const { return m_x; }
-  double y() const { return m_y; }
-  void setX(double x) { m_x = x; }
-  void setY(double y) { m_y = y; }
+  double X() const { return x_; }
+  double Y() const { return y_; }
+  void SetX(double x) { x_ = x; }
+  void SetY(double y) { y_ = y; }
 
-  void move(const DoubleSize& s) {
-    m_x += s.width();
-    m_y += s.height();
+  void Move(const DoubleSize& s) {
+    x_ += s.Width();
+    y_ += s.Height();
   }
 
-  void move(double x, double y) {
-    m_x += x;
-    m_y += y;
+  void Move(double x, double y) {
+    x_ += x;
+    y_ += y;
   }
 
-  void moveBy(const DoublePoint& p) {
-    m_x += p.x();
-    m_y += p.y();
+  void MoveBy(const DoublePoint& p) {
+    x_ += p.X();
+    y_ += p.Y();
   }
 
-  void scale(float sx, float sy) {
-    m_x *= sx;
-    m_y *= sy;
+  void Scale(float sx, float sy) {
+    x_ *= sx;
+    y_ *= sy;
   }
 
-  DoublePoint scaledBy(float scale) const {
-    return DoublePoint(m_x * scale, m_y * scale);
+  DoublePoint ScaledBy(float scale) const {
+    return DoublePoint(x_ * scale, y_ * scale);
   }
 
-  String toString() const;
+  String ToString() const;
 
  private:
-  double m_x, m_y;
+  double x_, y_;
 };
 
 inline bool operator==(const DoublePoint& a, const DoublePoint& b) {
-  return a.x() == b.x() && a.y() == b.y();
+  return a.X() == b.X() && a.Y() == b.Y();
 }
 
 inline bool operator!=(const DoublePoint& a, const DoublePoint& b) {
-  return a.x() != b.x() || a.y() != b.y();
+  return a.X() != b.X() || a.Y() != b.Y();
 }
 
 inline DoublePoint& operator+=(DoublePoint& a, const DoubleSize& b) {
-  a.setX(a.x() + b.width());
-  a.setY(a.y() + b.height());
+  a.SetX(a.X() + b.Width());
+  a.SetY(a.Y() + b.Height());
   return a;
 }
 
 inline DoublePoint& operator-=(DoublePoint& a, const DoubleSize& b) {
-  a.setX(a.x() - b.width());
-  a.setY(a.y() - b.height());
+  a.SetX(a.X() - b.Width());
+  a.SetY(a.Y() - b.Height());
   return a;
 }
 
 inline DoublePoint operator+(const DoublePoint& a, const DoubleSize& b) {
-  return DoublePoint(a.x() + b.width(), a.y() + b.height());
+  return DoublePoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
 inline DoubleSize operator-(const DoublePoint& a, const DoublePoint& b) {
-  return DoubleSize(a.x() - b.x(), a.y() - b.y());
+  return DoubleSize(a.X() - b.X(), a.Y() - b.Y());
 }
 
 inline DoublePoint operator-(const DoublePoint& a) {
-  return DoublePoint(-a.x(), -a.y());
+  return DoublePoint(-a.X(), -a.Y());
 }
 
 inline DoublePoint operator-(const DoublePoint& a, const DoubleSize& b) {
-  return DoublePoint(a.x() - b.width(), a.y() - b.height());
+  return DoublePoint(a.X() - b.Width(), a.Y() - b.Height());
 }
 
-inline IntPoint roundedIntPoint(const DoublePoint& p) {
-  return IntPoint(clampTo<int>(roundf(p.x())), clampTo<int>(roundf(p.y())));
+inline IntPoint RoundedIntPoint(const DoublePoint& p) {
+  return IntPoint(clampTo<int>(roundf(p.X())), clampTo<int>(roundf(p.Y())));
 }
 
-inline IntPoint ceiledIntPoint(const DoublePoint& p) {
-  return IntPoint(clampTo<int>(ceil(p.x())), clampTo<int>(ceil(p.y())));
+inline IntPoint CeiledIntPoint(const DoublePoint& p) {
+  return IntPoint(clampTo<int>(ceil(p.X())), clampTo<int>(ceil(p.Y())));
 }
 
-inline IntPoint flooredIntPoint(const DoublePoint& p) {
-  return IntPoint(clampTo<int>(floor(p.x())), clampTo<int>(floor(p.y())));
+inline IntPoint FlooredIntPoint(const DoublePoint& p) {
+  return IntPoint(clampTo<int>(floor(p.X())), clampTo<int>(floor(p.Y())));
 }
 
-inline FloatPoint toFloatPoint(const DoublePoint& a) {
-  return FloatPoint(a.x(), a.y());
+inline FloatPoint ToFloatPoint(const DoublePoint& a) {
+  return FloatPoint(a.X(), a.Y());
 }
 
-inline DoubleSize toDoubleSize(const DoublePoint& a) {
-  return DoubleSize(a.x(), a.y());
+inline DoubleSize ToDoubleSize(const DoublePoint& a) {
+  return DoubleSize(a.X(), a.Y());
 }
 
 // Redeclared here to avoid ODR issues.

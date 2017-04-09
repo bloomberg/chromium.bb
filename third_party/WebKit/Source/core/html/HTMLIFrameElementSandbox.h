@@ -17,7 +17,7 @@ class HTMLIFrameElementSandbox final : public DOMTokenList,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementSandbox);
 
  public:
-  static HTMLIFrameElementSandbox* create(HTMLIFrameElement* element) {
+  static HTMLIFrameElementSandbox* Create(HTMLIFrameElement* element) {
     return new HTMLIFrameElementSandbox(element);
   }
 
@@ -27,12 +27,12 @@ class HTMLIFrameElementSandbox final : public DOMTokenList,
 
  private:
   explicit HTMLIFrameElementSandbox(HTMLIFrameElement*);
-  bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
+  bool ValidateTokenValue(const AtomicString&, ExceptionState&) const override;
 
   // DOMTokenListObserver.
-  void valueWasSet() override;
+  void ValueWasSet() override;
 
-  Member<HTMLIFrameElement> m_element;
+  Member<HTMLIFrameElement> element_;
 };
 
 }  // namespace blink

@@ -15,34 +15,34 @@ WebURLLoaderTestDelegate::WebURLLoaderTestDelegate() {}
 
 WebURLLoaderTestDelegate::~WebURLLoaderTestDelegate() {}
 
-void WebURLLoaderTestDelegate::didReceiveResponse(
-    WebURLLoaderClient* originalClient,
+void WebURLLoaderTestDelegate::DidReceiveResponse(
+    WebURLLoaderClient* original_client,
     const WebURLResponse& response) {
-  originalClient->didReceiveResponse(response);
+  original_client->DidReceiveResponse(response);
 }
 
-void WebURLLoaderTestDelegate::didReceiveData(
-    WebURLLoaderClient* originalClient,
+void WebURLLoaderTestDelegate::DidReceiveData(
+    WebURLLoaderClient* original_client,
     const char* data,
-    int dataLength) {
-  originalClient->didReceiveData(data, dataLength);
+    int data_length) {
+  original_client->DidReceiveData(data, data_length);
 }
 
-void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient,
+void WebURLLoaderTestDelegate::DidFail(WebURLLoaderClient* original_client,
                                        const WebURLError& error,
-                                       int64_t totalEncodedDataLength,
-                                       int64_t totalEncodedBodyLength) {
-  originalClient->didFail(error, totalEncodedDataLength,
-                          totalEncodedBodyLength);
+                                       int64_t total_encoded_data_length,
+                                       int64_t total_encoded_body_length) {
+  original_client->DidFail(error, total_encoded_data_length,
+                           total_encoded_body_length);
 }
 
-void WebURLLoaderTestDelegate::didFinishLoading(
-    WebURLLoaderClient* originalClient,
-    double finishTime,
-    int64_t totalEncodedDataLength,
-    int64_t totalEncodedBodyLength) {
-  originalClient->didFinishLoading(finishTime, totalEncodedDataLength,
-                                   totalEncodedBodyLength);
+void WebURLLoaderTestDelegate::DidFinishLoading(
+    WebURLLoaderClient* original_client,
+    double finish_time,
+    int64_t total_encoded_data_length,
+    int64_t total_encoded_body_length) {
+  original_client->DidFinishLoading(finish_time, total_encoded_data_length,
+                                    total_encoded_body_length);
 }
 
 }  // namespace blink

@@ -11,13 +11,13 @@ namespace blink {
 
 void V8ExtendableMessageEvent::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  V8ServiceWorkerMessageEventInternal::constructorCustom<
+  V8ServiceWorkerMessageEventInternal::ConstructorCustom<
       ExtendableMessageEvent, ExtendableMessageEventInit>(info);
 }
 
 void V8ExtendableMessageEvent::dataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom<
+  V8ServiceWorkerMessageEventInternal::DataAttributeGetterCustom<
       ExtendableMessageEvent>(info);
 }
 

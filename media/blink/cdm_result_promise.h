@@ -66,7 +66,7 @@ template <>
 inline void CdmResultPromise<>::resolve() {
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_, SUCCESS);
-  web_cdm_result_.complete();
+  web_cdm_result_.Complete();
 }
 
 template <typename... T>
@@ -76,9 +76,9 @@ void CdmResultPromise<T...>::reject(CdmPromise::Exception exception_code,
   MarkPromiseSettled();
   ReportCdmResultUMA(uma_name_,
                      ConvertCdmExceptionToResultForUMA(exception_code));
-  web_cdm_result_.completeWithError(ConvertCdmException(exception_code),
+  web_cdm_result_.CompleteWithError(ConvertCdmException(exception_code),
                                     system_code,
-                                    blink::WebString::fromUTF8(error_message));
+                                    blink::WebString::FromUTF8(error_message));
 }
 
 }  // namespace media

@@ -36,40 +36,40 @@ class LayoutButton final : public LayoutFlexibleBox {
   explicit LayoutButton(Element*);
   ~LayoutButton() override;
 
-  const char* name() const override { return "LayoutButton"; }
-  bool isOfType(LayoutObjectType type) const override {
-    return type == LayoutObjectLayoutButton ||
-           LayoutFlexibleBox::isOfType(type);
+  const char* GetName() const override { return "LayoutButton"; }
+  bool IsOfType(LayoutObjectType type) const override {
+    return type == kLayoutObjectLayoutButton ||
+           LayoutFlexibleBox::IsOfType(type);
   }
 
-  bool canBeSelectionLeaf() const override {
-    return node() && hasEditableStyle(*node());
+  bool CanBeSelectionLeaf() const override {
+    return GetNode() && HasEditableStyle(*GetNode());
   }
 
-  void addChild(LayoutObject* newChild,
-                LayoutObject* beforeChild = nullptr) override;
-  void removeChild(LayoutObject*) override;
-  void removeLeftoverAnonymousBlock(LayoutBlock*) override {}
-  bool createsAnonymousWrapper() const override { return true; }
+  void AddChild(LayoutObject* new_child,
+                LayoutObject* before_child = nullptr) override;
+  void RemoveChild(LayoutObject*) override;
+  void RemoveLeftoverAnonymousBlock(LayoutBlock*) override {}
+  bool CreatesAnonymousWrapper() const override { return true; }
 
-  bool hasControlClip() const override;
-  LayoutRect controlClipRect(const LayoutPoint&) const override;
+  bool HasControlClip() const override;
+  LayoutRect ControlClipRect(const LayoutPoint&) const override;
 
-  int baselinePosition(FontBaseline,
-                       bool firstLine,
+  int BaselinePosition(FontBaseline,
+                       bool first_line,
                        LineDirectionMode,
                        LinePositionMode) const override;
 
  private:
-  void updateAnonymousChildStyle(const LayoutObject& child,
-                                 ComputedStyle& childStyle) const override;
+  void UpdateAnonymousChildStyle(const LayoutObject& child,
+                                 ComputedStyle& child_style) const override;
 
-  bool hasLineIfEmpty() const override { return isHTMLInputElement(node()); }
+  bool HasLineIfEmpty() const override { return isHTMLInputElement(GetNode()); }
 
-  LayoutBlock* m_inner;
+  LayoutBlock* inner_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutButton, isLayoutButton());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutButton, IsLayoutButton());
 
 }  // namespace blink
 

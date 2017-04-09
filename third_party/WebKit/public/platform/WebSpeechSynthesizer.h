@@ -36,14 +36,14 @@ class WebSpeechSynthesizer {
  public:
   virtual ~WebSpeechSynthesizer() {}
 
-  virtual void updateVoiceList() = 0;
+  virtual void UpdateVoiceList() = 0;
 
   // OK to call with more than one utterance, will queue.
-  virtual void speak(const WebSpeechSynthesisUtterance&) = 0;
+  virtual void Speak(const WebSpeechSynthesisUtterance&) = 0;
 
-  virtual void pause() = 0;
-  virtual void resume() = 0;
-  virtual void cancel() = 0;
+  virtual void Pause() = 0;
+  virtual void Resume() = 0;
+  virtual void Cancel() = 0;
 };
 
 }  // namespace blink

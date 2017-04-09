@@ -34,32 +34,32 @@ class WebPresentationClient {
   virtual ~WebPresentationClient() {}
 
   // Passes the Blink-side delegate to the embedder.
-  virtual void setController(WebPresentationController*) = 0;
+  virtual void SetController(WebPresentationController*) = 0;
 
   // Passes the Blink-side delegate to the embedder.
-  virtual void setReceiver(WebPresentationReceiver*) = 0;
+  virtual void SetReceiver(WebPresentationReceiver*) = 0;
 
   // Called when the frame requests to start a new presentation.
-  virtual void startPresentation(
-      const WebVector<WebURL>& presentationUrls,
+  virtual void StartPresentation(
+      const WebVector<WebURL>& presentation_urls,
       std::unique_ptr<WebPresentationConnectionCallbacks>) = 0;
 
   // Called when the frame requests to reconnect to an existing presentation.
-  virtual void reconnectPresentation(
-      const WebVector<WebURL>& presentationUrls,
-      const WebString& presentationId,
+  virtual void ReconnectPresentation(
+      const WebVector<WebURL>& presentation_urls,
+      const WebString& presentation_id,
       std::unique_ptr<WebPresentationConnectionCallbacks>) = 0;
 
   // Called when the frame requests to terminate a presentation.
-  virtual void terminatePresentation(const WebURL& presentationUrl,
-                                     const WebString& presentationId) = 0;
+  virtual void TerminatePresentation(const WebURL& presentation_url,
+                                     const WebString& presentation_id) = 0;
 
   // Called when the frame requests to send String message to a presentation
   // via a presentation connection.
   // |proxy|: proxy of Blink connection object initiating send String message
   //          request. Does not pass ownership.
-  virtual void sendString(const WebURL& presentationUrl,
-                          const WebString& presentationId,
+  virtual void SendString(const WebURL& presentation_url,
+                          const WebString& presentation_id,
                           const WebString& message,
                           const WebPresentationConnectionProxy*) = 0;
 
@@ -68,8 +68,8 @@ class WebPresentationClient {
   // Embedder copies the |data| and the ownership is not transferred.
   // |proxy|: proxy of Blink connection object initiating send ArrayBuffer
   //          request. Does not pass ownership.
-  virtual void sendArrayBuffer(const WebURL& presentationUrl,
-                               const WebString& presentationId,
+  virtual void SendArrayBuffer(const WebURL& presentation_url,
+                               const WebString& presentation_id,
                                const uint8_t* data,
                                size_t length,
                                const WebPresentationConnectionProxy*) = 0;
@@ -80,35 +80,35 @@ class WebPresentationClient {
   // Embedder copies the |data| and the ownership is not transferred.
   // |proxy|: proxy of blink connection object initiating send Blob data
   //          request. Does not pass ownership.
-  virtual void sendBlobData(const WebURL& presentationUrl,
-                            const WebString& presentationId,
+  virtual void SendBlobData(const WebURL& presentation_url,
+                            const WebString& presentation_id,
                             const uint8_t* data,
                             size_t length,
                             const WebPresentationConnectionProxy*) = 0;
 
   // Called when the frame requests to close its connection to the presentation.
-  virtual void closeConnection(const WebURL& presentationUrl,
-                               const WebString& presentationId,
+  virtual void CloseConnection(const WebURL& presentation_url,
+                               const WebString& presentation_id,
                                const WebPresentationConnectionProxy*) = 0;
 
   // Called when the frame wants to know the availability of a presentation
   // display for |availabilityUrl|.
-  virtual void getAvailability(
-      const WebVector<WebURL>& availabilityUrls,
+  virtual void GetAvailability(
+      const WebVector<WebURL>& availability_urls,
       std::unique_ptr<WebPresentationAvailabilityCallbacks>) = 0;
 
   // Start listening to changes in presentation displays availability. The
   // observer will be notified in case of a change. The observer is
   // respensible to call stopListening() before being destroyed.
-  virtual void startListening(WebPresentationAvailabilityObserver*) = 0;
+  virtual void StartListening(WebPresentationAvailabilityObserver*) = 0;
 
   // Stop listening to changes in presentation displays availability. The
   // observer will no longer be notified in case of a change.
-  virtual void stopListening(WebPresentationAvailabilityObserver*) = 0;
+  virtual void StopListening(WebPresentationAvailabilityObserver*) = 0;
 
   // Called when a defaultRequest has been set. It sends the url associated
   // with it for the embedder.
-  virtual void setDefaultPresentationUrls(const WebVector<WebURL>&) = 0;
+  virtual void SetDefaultPresentationUrls(const WebVector<WebURL>&) = 0;
 };
 
 }  // namespace blink

@@ -46,7 +46,7 @@ namespace blink {
 class Element;
 class TracedValue;
 
-enum InvalidationType { InvalidateDescendants, InvalidateSiblings };
+enum InvalidationType { kInvalidateDescendants, kInvalidateSiblings };
 
 // Tracks data to determine which descendants in a DOM subtree, or
 // siblings and their descendants, need to have style recalculated.
@@ -86,185 +86,187 @@ class CORE_EXPORT InvalidationSet {
   USING_FAST_MALLOC_WITH_TYPE_NAME(blink::InvalidationSet);
 
  public:
-  InvalidationType type() const {
-    return static_cast<InvalidationType>(m_type);
+  InvalidationType GetType() const {
+    return static_cast<InvalidationType>(type_);
   }
-  bool isDescendantInvalidationSet() const {
-    return type() == InvalidateDescendants;
+  bool IsDescendantInvalidationSet() const {
+    return GetType() == kInvalidateDescendants;
   }
-  bool isSiblingInvalidationSet() const { return type() == InvalidateSiblings; }
-
-  static void cacheTracingFlag();
-
-  bool invalidatesElement(Element&) const;
-
-  void addClass(const AtomicString& className);
-  void addId(const AtomicString& id);
-  void addTagName(const AtomicString& tagName);
-  void addAttribute(const AtomicString& attributeLocalName);
-
-  void setWholeSubtreeInvalid();
-  bool wholeSubtreeInvalid() const { return m_allDescendantsMightBeInvalid; }
-
-  void setInvalidatesSelf() { m_invalidatesSelf = true; }
-  bool invalidatesSelf() const { return m_invalidatesSelf; }
-
-  void setTreeBoundaryCrossing() { m_treeBoundaryCrossing = true; }
-  bool treeBoundaryCrossing() const { return m_treeBoundaryCrossing; }
-
-  void setInsertionPointCrossing() { m_insertionPointCrossing = true; }
-  bool insertionPointCrossing() const { return m_insertionPointCrossing; }
-
-  void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
-  bool customPseudoInvalid() const { return m_customPseudoInvalid; }
-
-  void setInvalidatesSlotted() { m_invalidatesSlotted = true; }
-  bool invalidatesSlotted() const { return m_invalidatesSlotted; }
-
-  bool isEmpty() const {
-    return !m_classes && !m_ids && !m_tagNames && !m_attributes &&
-           !m_customPseudoInvalid && !m_insertionPointCrossing &&
-           !m_invalidatesSlotted;
+  bool IsSiblingInvalidationSet() const {
+    return GetType() == kInvalidateSiblings;
   }
 
-  bool isAlive() const { return m_isAlive; }
+  static void CacheTracingFlag();
 
-  void toTracedValue(TracedValue*) const;
+  bool InvalidatesElement(Element&) const;
+
+  void AddClass(const AtomicString& class_name);
+  void AddId(const AtomicString& id);
+  void AddTagName(const AtomicString& tag_name);
+  void AddAttribute(const AtomicString& attribute_local_name);
+
+  void SetWholeSubtreeInvalid();
+  bool WholeSubtreeInvalid() const { return all_descendants_might_be_invalid_; }
+
+  void SetInvalidatesSelf() { invalidates_self_ = true; }
+  bool InvalidatesSelf() const { return invalidates_self_; }
+
+  void SetTreeBoundaryCrossing() { tree_boundary_crossing_ = true; }
+  bool TreeBoundaryCrossing() const { return tree_boundary_crossing_; }
+
+  void SetInsertionPointCrossing() { insertion_point_crossing_ = true; }
+  bool InsertionPointCrossing() const { return insertion_point_crossing_; }
+
+  void SetCustomPseudoInvalid() { custom_pseudo_invalid_ = true; }
+  bool CustomPseudoInvalid() const { return custom_pseudo_invalid_; }
+
+  void SetInvalidatesSlotted() { invalidates_slotted_ = true; }
+  bool InvalidatesSlotted() const { return invalidates_slotted_; }
+
+  bool IsEmpty() const {
+    return !classes_ && !ids_ && !tag_names_ && !attributes_ &&
+           !custom_pseudo_invalid_ && !insertion_point_crossing_ &&
+           !invalidates_slotted_;
+  }
+
+  bool IsAlive() const { return is_alive_; }
+
+  void ToTracedValue(TracedValue*) const;
 
 #ifndef NDEBUG
-  void show() const;
+  void Show() const;
 #endif
 
-  const HashSet<AtomicString>& classSetForTesting() const {
-    DCHECK(m_classes);
-    return *m_classes;
+  const HashSet<AtomicString>& ClassSetForTesting() const {
+    DCHECK(classes_);
+    return *classes_;
   }
-  const HashSet<AtomicString>& idSetForTesting() const {
-    DCHECK(m_ids);
-    return *m_ids;
+  const HashSet<AtomicString>& IdSetForTesting() const {
+    DCHECK(ids_);
+    return *ids_;
   }
-  const HashSet<AtomicString>& tagNameSetForTesting() const {
-    DCHECK(m_tagNames);
-    return *m_tagNames;
+  const HashSet<AtomicString>& TagNameSetForTesting() const {
+    DCHECK(tag_names_);
+    return *tag_names_;
   }
-  const HashSet<AtomicString>& attributeSetForTesting() const {
-    DCHECK(m_attributes);
-    return *m_attributes;
-  }
-
-  void ref() { ++m_refCount; }
-  void deref() {
-    DCHECK_GT(m_refCount, 0);
-    --m_refCount;
-    if (!m_refCount)
-      destroy();
+  const HashSet<AtomicString>& AttributeSetForTesting() const {
+    DCHECK(attributes_);
+    return *attributes_;
   }
 
-  void combine(const InvalidationSet& other);
+  void Ref() { ++ref_count_; }
+  void Deref() {
+    DCHECK_GT(ref_count_, 0);
+    --ref_count_;
+    if (!ref_count_)
+      Destroy();
+  }
+
+  void Combine(const InvalidationSet& other);
 
  protected:
   explicit InvalidationSet(InvalidationType);
 
   ~InvalidationSet() {
-    CHECK(m_isAlive);
-    m_isAlive = false;
+    CHECK(is_alive_);
+    is_alive_ = false;
   }
 
  private:
-  void destroy();
+  void Destroy();
 
-  HashSet<AtomicString>& ensureClassSet();
-  HashSet<AtomicString>& ensureIdSet();
-  HashSet<AtomicString>& ensureTagNameSet();
-  HashSet<AtomicString>& ensureAttributeSet();
+  HashSet<AtomicString>& EnsureClassSet();
+  HashSet<AtomicString>& EnsureIdSet();
+  HashSet<AtomicString>& EnsureTagNameSet();
+  HashSet<AtomicString>& EnsureAttributeSet();
 
   // Implement reference counting manually so we can call a derived
   // class destructor when the reference count decreases to 0.
   // If we use RefCounted instead, at least one of our compilers
   // requires the ability for RefCounted<InvalidationSet>::deref()
   // to call ~InvalidationSet(), but this is not a virtual call.
-  int m_refCount;
+  int ref_count_;
 
   // FIXME: optimize this if it becomes a memory issue.
-  std::unique_ptr<HashSet<AtomicString>> m_classes;
-  std::unique_ptr<HashSet<AtomicString>> m_ids;
-  std::unique_ptr<HashSet<AtomicString>> m_tagNames;
-  std::unique_ptr<HashSet<AtomicString>> m_attributes;
+  std::unique_ptr<HashSet<AtomicString>> classes_;
+  std::unique_ptr<HashSet<AtomicString>> ids_;
+  std::unique_ptr<HashSet<AtomicString>> tag_names_;
+  std::unique_ptr<HashSet<AtomicString>> attributes_;
 
-  unsigned m_type : 1;
+  unsigned type_ : 1;
 
   // If true, all descendants might be invalidated, so a full subtree recalc is
   // required.
-  unsigned m_allDescendantsMightBeInvalid : 1;
+  unsigned all_descendants_might_be_invalid_ : 1;
 
   // If true, the element or sibling itself is invalid.
-  unsigned m_invalidatesSelf : 1;
+  unsigned invalidates_self_ : 1;
 
   // If true, all descendants which are custom pseudo elements must be
   // invalidated.
-  unsigned m_customPseudoInvalid : 1;
+  unsigned custom_pseudo_invalid_ : 1;
 
   // If true, the invalidation must traverse into ShadowRoots with this set.
-  unsigned m_treeBoundaryCrossing : 1;
+  unsigned tree_boundary_crossing_ : 1;
 
   // If true, insertion point descendants must be invalidated.
-  unsigned m_insertionPointCrossing : 1;
+  unsigned insertion_point_crossing_ : 1;
 
   // If true, distributed nodes of <slot> elements need to be invalidated.
-  unsigned m_invalidatesSlotted : 1;
+  unsigned invalidates_slotted_ : 1;
 
   // If true, the instance is alive and can be used.
-  unsigned m_isAlive : 1;
+  unsigned is_alive_ : 1;
 };
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
  public:
-  static PassRefPtr<DescendantInvalidationSet> create() {
-    return adoptRef(new DescendantInvalidationSet);
+  static PassRefPtr<DescendantInvalidationSet> Create() {
+    return AdoptRef(new DescendantInvalidationSet);
   }
 
  private:
-  DescendantInvalidationSet() : InvalidationSet(InvalidateDescendants) {}
+  DescendantInvalidationSet() : InvalidationSet(kInvalidateDescendants) {}
 };
 
 class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
  public:
-  static PassRefPtr<SiblingInvalidationSet> create(
+  static PassRefPtr<SiblingInvalidationSet> Create(
       PassRefPtr<DescendantInvalidationSet> descendants) {
-    return adoptRef(new SiblingInvalidationSet(std::move(descendants)));
+    return AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
   }
 
-  unsigned maxDirectAdjacentSelectors() const {
-    return m_maxDirectAdjacentSelectors;
+  unsigned MaxDirectAdjacentSelectors() const {
+    return max_direct_adjacent_selectors_;
   }
-  void updateMaxDirectAdjacentSelectors(unsigned value) {
-    m_maxDirectAdjacentSelectors =
-        std::max(value, m_maxDirectAdjacentSelectors);
+  void UpdateMaxDirectAdjacentSelectors(unsigned value) {
+    max_direct_adjacent_selectors_ =
+        std::max(value, max_direct_adjacent_selectors_);
   }
 
-  DescendantInvalidationSet* siblingDescendants() const {
-    return m_siblingDescendantInvalidationSet.get();
+  DescendantInvalidationSet* SiblingDescendants() const {
+    return sibling_descendant_invalidation_set_.Get();
   }
-  DescendantInvalidationSet& ensureSiblingDescendants();
+  DescendantInvalidationSet& EnsureSiblingDescendants();
 
-  DescendantInvalidationSet* descendants() const {
-    return m_descendantInvalidationSet.get();
+  DescendantInvalidationSet* Descendants() const {
+    return descendant_invalidation_set_.Get();
   }
-  DescendantInvalidationSet& ensureDescendants();
+  DescendantInvalidationSet& EnsureDescendants();
 
  private:
   explicit SiblingInvalidationSet(
       PassRefPtr<DescendantInvalidationSet> descendants);
 
   // Indicates the maximum possible number of siblings affected.
-  unsigned m_maxDirectAdjacentSelectors;
+  unsigned max_direct_adjacent_selectors_;
 
   // Indicates the descendants of siblings.
-  RefPtr<DescendantInvalidationSet> m_siblingDescendantInvalidationSet;
+  RefPtr<DescendantInvalidationSet> sibling_descendant_invalidation_set_;
 
   // Null if a given feature (class, attribute, id, pseudo-class) has only
   // a SiblingInvalidationSet and not also a DescendantInvalidationSet.
-  RefPtr<DescendantInvalidationSet> m_descendantInvalidationSet;
+  RefPtr<DescendantInvalidationSet> descendant_invalidation_set_;
 };
 
 using InvalidationSetVector = Vector<RefPtr<InvalidationSet>>;
@@ -277,13 +279,13 @@ struct InvalidationLists {
 DEFINE_TYPE_CASTS(DescendantInvalidationSet,
                   InvalidationSet,
                   value,
-                  value->isDescendantInvalidationSet(),
-                  value.isDescendantInvalidationSet());
+                  value->IsDescendantInvalidationSet(),
+                  value.IsDescendantInvalidationSet());
 DEFINE_TYPE_CASTS(SiblingInvalidationSet,
                   InvalidationSet,
                   value,
-                  value->isSiblingInvalidationSet(),
-                  value.isSiblingInvalidationSet());
+                  value->IsSiblingInvalidationSet(),
+                  value.IsSiblingInvalidationSet());
 
 }  // namespace blink
 

@@ -41,43 +41,43 @@ class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 
   virtual ~TimingFunction() {}
 
-  Type getType() const { return m_type; }
+  Type GetType() const { return type_; }
 
-  virtual String toString() const = 0;
+  virtual String ToString() const = 0;
 
   // Evaluates the timing function at the given fraction. The accuracy parameter
   // provides a hint as to the required accuracy and is not guaranteed.
-  virtual double evaluate(double fraction, double accuracy) const = 0;
+  virtual double Evaluate(double fraction, double accuracy) const = 0;
 
   // This function returns the minimum and maximum values obtainable when
   // calling evaluate();
-  virtual void range(double* minValue, double* maxValue) const = 0;
+  virtual void Range(double* min_value, double* max_value) const = 0;
 
   // Create CC instance.
-  virtual std::unique_ptr<cc::TimingFunction> cloneToCC() const = 0;
+  virtual std::unique_ptr<cc::TimingFunction> CloneToCC() const = 0;
 
  protected:
-  TimingFunction(Type type) : m_type(type) {}
+  TimingFunction(Type type) : type_(type) {}
 
  private:
-  Type m_type;
+  Type type_;
 };
 
 class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
  public:
-  static LinearTimingFunction* shared() {
+  static LinearTimingFunction* Shared() {
     DEFINE_STATIC_REF(LinearTimingFunction, linear,
-                      (adoptRef(new LinearTimingFunction())));
+                      (AdoptRef(new LinearTimingFunction())));
     return linear;
   }
 
   ~LinearTimingFunction() override {}
 
   // TimingFunction implementation.
-  String toString() const override;
-  double evaluate(double fraction, double) const override;
-  void range(double* minValue, double* maxValue) const override;
-  std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
+  String ToString() const override;
+  double Evaluate(double fraction, double) const override;
+  void Range(double* min_value, double* max_value) const override;
+  std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 
  private:
   LinearTimingFunction() : TimingFunction(Type::LINEAR) {}
@@ -87,36 +87,36 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
  public:
   using EaseType = cc::CubicBezierTimingFunction::EaseType;
 
-  static PassRefPtr<CubicBezierTimingFunction> create(double x1,
+  static PassRefPtr<CubicBezierTimingFunction> Create(double x1,
                                                       double y1,
                                                       double x2,
                                                       double y2) {
-    return adoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
+    return AdoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
   }
 
-  static CubicBezierTimingFunction* preset(EaseType easeType) {
+  static CubicBezierTimingFunction* Preset(EaseType ease_type) {
     DEFINE_STATIC_REF(
         CubicBezierTimingFunction, ease,
-        (adoptRef(new CubicBezierTimingFunction(EaseType::EASE))));
+        (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE))));
     DEFINE_STATIC_REF(
-        CubicBezierTimingFunction, easeIn,
-        (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN))));
+        CubicBezierTimingFunction, ease_in,
+        (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN))));
     DEFINE_STATIC_REF(
-        CubicBezierTimingFunction, easeOut,
-        (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT))));
+        CubicBezierTimingFunction, ease_out,
+        (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT))));
     DEFINE_STATIC_REF(
-        CubicBezierTimingFunction, easeInOut,
-        (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT))));
+        CubicBezierTimingFunction, ease_in_out,
+        (AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT))));
 
-    switch (easeType) {
+    switch (ease_type) {
       case EaseType::EASE:
         return ease;
       case EaseType::EASE_IN:
-        return easeIn;
+        return ease_in;
       case EaseType::EASE_OUT:
-        return easeOut;
+        return ease_out;
       case EaseType::EASE_IN_OUT:
-        return easeInOut;
+        return ease_in_out;
       default:
         NOTREACHED();
         return nullptr;
@@ -126,70 +126,70 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
   ~CubicBezierTimingFunction() override {}
 
   // TimingFunction implementation.
-  String toString() const override;
-  double evaluate(double fraction, double accuracy) const override;
-  void range(double* minValue, double* maxValue) const override;
-  std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
+  String ToString() const override;
+  double Evaluate(double fraction, double accuracy) const override;
+  void Range(double* min_value, double* max_value) const override;
+  std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 
-  double x1() const {
-    DCHECK_EQ(getEaseType(), EaseType::CUSTOM);
-    return m_x1;
+  double X1() const {
+    DCHECK_EQ(GetEaseType(), EaseType::CUSTOM);
+    return x1_;
   }
-  double y1() const {
-    DCHECK_EQ(getEaseType(), EaseType::CUSTOM);
-    return m_y1;
+  double Y1() const {
+    DCHECK_EQ(GetEaseType(), EaseType::CUSTOM);
+    return y1_;
   }
-  double x2() const {
-    DCHECK_EQ(getEaseType(), EaseType::CUSTOM);
-    return m_x2;
+  double X2() const {
+    DCHECK_EQ(GetEaseType(), EaseType::CUSTOM);
+    return x2_;
   }
-  double y2() const {
-    DCHECK_EQ(getEaseType(), EaseType::CUSTOM);
-    return m_y2;
+  double Y2() const {
+    DCHECK_EQ(GetEaseType(), EaseType::CUSTOM);
+    return y2_;
   }
-  EaseType getEaseType() const { return m_bezier->ease_type(); }
+  EaseType GetEaseType() const { return bezier_->ease_type(); }
 
  private:
-  explicit CubicBezierTimingFunction(EaseType easeType)
+  explicit CubicBezierTimingFunction(EaseType ease_type)
       : TimingFunction(Type::CUBIC_BEZIER),
-        m_bezier(cc::CubicBezierTimingFunction::CreatePreset(easeType)),
-        m_x1(),
-        m_y1(),
-        m_x2(),
-        m_y2() {}
+        bezier_(cc::CubicBezierTimingFunction::CreatePreset(ease_type)),
+        x1_(),
+        y1_(),
+        x2_(),
+        y2_() {}
 
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2)
       : TimingFunction(Type::CUBIC_BEZIER),
-        m_bezier(cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)),
-        m_x1(x1),
-        m_y1(y1),
-        m_x2(x2),
-        m_y2(y2) {}
+        bezier_(cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)),
+        x1_(x1),
+        y1_(y1),
+        x2_(x2),
+        y2_(y2) {}
 
-  std::unique_ptr<cc::CubicBezierTimingFunction> m_bezier;
+  std::unique_ptr<cc::CubicBezierTimingFunction> bezier_;
 
   // TODO(loyso): Get these values from m_bezier->bezier_ (gfx::CubicBezier)
-  const double m_x1;
-  const double m_y1;
-  const double m_x2;
-  const double m_y2;
+  const double x1_;
+  const double y1_;
+  const double x2_;
+  const double y2_;
 };
 
 class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
  public:
   using StepPosition = cc::StepsTimingFunction::StepPosition;
 
-  static PassRefPtr<StepsTimingFunction> create(int steps,
-                                                StepPosition stepPosition) {
-    return adoptRef(new StepsTimingFunction(steps, stepPosition));
+  static PassRefPtr<StepsTimingFunction> Create(int steps,
+                                                StepPosition step_position) {
+    return AdoptRef(new StepsTimingFunction(steps, step_position));
   }
 
-  static StepsTimingFunction* preset(StepPosition position) {
+  static StepsTimingFunction* Preset(StepPosition position) {
     DEFINE_STATIC_REF(StepsTimingFunction, start,
-                      create(1, StepPosition::START));
+                      Create(1, StepPosition::START));
     DEFINE_STATIC_REF(StepsTimingFunction, middle,
-                      create(1, StepPosition::MIDDLE));
-    DEFINE_STATIC_REF(StepsTimingFunction, end, create(1, StepPosition::END));
+                      Create(1, StepPosition::MIDDLE));
+    DEFINE_STATIC_REF(StepsTimingFunction, end, Create(1, StepPosition::END));
     switch (position) {
       case StepPosition::START:
         return start;
@@ -206,23 +206,23 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
   ~StepsTimingFunction() override {}
 
   // TimingFunction implementation.
-  String toString() const override;
-  double evaluate(double fraction, double) const override;
-  void range(double* minValue, double* maxValue) const override;
-  std::unique_ptr<cc::TimingFunction> cloneToCC() const override;
+  String ToString() const override;
+  double Evaluate(double fraction, double) const override;
+  void Range(double* min_value, double* max_value) const override;
+  std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 
-  int numberOfSteps() const { return m_steps->steps(); }
-  StepPosition getStepPosition() const { return m_steps->step_position(); }
+  int NumberOfSteps() const { return steps_->steps(); }
+  StepPosition GetStepPosition() const { return steps_->step_position(); }
 
  private:
-  StepsTimingFunction(int steps, StepPosition stepPosition)
+  StepsTimingFunction(int steps, StepPosition step_position)
       : TimingFunction(Type::STEPS),
-        m_steps(cc::StepsTimingFunction::Create(steps, stepPosition)) {}
+        steps_(cc::StepsTimingFunction::Create(steps, step_position)) {}
 
-  std::unique_ptr<cc::StepsTimingFunction> m_steps;
+  std::unique_ptr<cc::StepsTimingFunction> steps_;
 };
 
-PLATFORM_EXPORT PassRefPtr<TimingFunction> createCompositorTimingFunctionFromCC(
+PLATFORM_EXPORT PassRefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
     const cc::TimingFunction*);
 
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&,
@@ -237,8 +237,8 @@ PLATFORM_EXPORT bool operator!=(const TimingFunction&, const TimingFunction&);
 
 #define DEFINE_TIMING_FUNCTION_TYPE_CASTS(typeName, enumName)           \
   DEFINE_TYPE_CASTS(typeName##TimingFunction, TimingFunction, value,    \
-                    value->getType() == TimingFunction::Type::enumName, \
-                    value.getType() == TimingFunction::Type::enumName)
+                    value->GetType() == TimingFunction::Type::enumName, \
+                    value.GetType() == TimingFunction::Type::enumName)
 
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear, LINEAR);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier, CUBIC_BEZIER);

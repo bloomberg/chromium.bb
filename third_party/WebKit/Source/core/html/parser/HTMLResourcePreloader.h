@@ -46,19 +46,19 @@ class CORE_EXPORT HTMLResourcePreloader
   friend class HTMLResourcePreloaderTest;
 
  public:
-  static HTMLResourcePreloader* create(Document&);
-  int countPreloads();
-  Document* document() { return m_document.get(); }
+  static HTMLResourcePreloader* Create(Document&);
+  int CountPreloads();
+  Document* GetDocument() { return document_.Get(); }
   DECLARE_TRACE();
 
  protected:
-  void preload(std::unique_ptr<PreloadRequest>,
+  void Preload(std::unique_ptr<PreloadRequest>,
                const NetworkHintsInterface&) override;
   explicit HTMLResourcePreloader(Document&);
 
  private:
-  Member<Document> m_document;
-  HeapHashSet<Member<CSSPreloaderResourceClient>> m_cssPreloaders;
+  Member<Document> document_;
+  HeapHashSet<Member<CSSPreloaderResourceClient>> css_preloaders_;
 };
 
 }  // namespace blink

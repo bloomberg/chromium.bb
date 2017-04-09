@@ -46,175 +46,175 @@ class PLATFORM_EXPORT LayoutPoint {
 
  public:
   LayoutPoint() {}
-  LayoutPoint(LayoutUnit x, LayoutUnit y) : m_x(x), m_y(y) {}
-  LayoutPoint(int x, int y) : m_x(LayoutUnit(x)), m_y(LayoutUnit(y)) {}
-  LayoutPoint(const IntPoint& point) : m_x(point.x()), m_y(point.y()) {}
+  LayoutPoint(LayoutUnit x, LayoutUnit y) : x_(x), y_(y) {}
+  LayoutPoint(int x, int y) : x_(LayoutUnit(x)), y_(LayoutUnit(y)) {}
+  LayoutPoint(const IntPoint& point) : x_(point.X()), y_(point.Y()) {}
   explicit LayoutPoint(const FloatPoint& point)
-      : m_x(point.x()), m_y(point.y()) {}
+      : x_(point.X()), y_(point.Y()) {}
   explicit LayoutPoint(const DoublePoint& point)
-      : m_x(point.x()), m_y(point.y()) {}
+      : x_(point.X()), y_(point.Y()) {}
   explicit LayoutPoint(const LayoutSize& size)
-      : m_x(size.width()), m_y(size.height()) {}
+      : x_(size.Width()), y_(size.Height()) {}
 
-  static LayoutPoint zero() { return LayoutPoint(); }
+  static LayoutPoint Zero() { return LayoutPoint(); }
 
-  LayoutUnit x() const { return m_x; }
-  LayoutUnit y() const { return m_y; }
+  LayoutUnit X() const { return x_; }
+  LayoutUnit Y() const { return y_; }
 
-  void setX(LayoutUnit x) { m_x = x; }
-  void setY(LayoutUnit y) { m_y = y; }
+  void SetX(LayoutUnit x) { x_ = x; }
+  void SetY(LayoutUnit y) { y_ = y; }
 
-  void move(const LayoutSize& s) { move(s.width(), s.height()); }
-  void move(const IntSize& s) { move(s.width(), s.height()); }
-  void moveBy(const LayoutPoint& offset) { move(offset.x(), offset.y()); }
-  void move(int dx, int dy) { move(LayoutUnit(dx), LayoutUnit(dy)); }
-  void move(LayoutUnit dx, LayoutUnit dy) {
-    m_x += dx;
-    m_y += dy;
+  void Move(const LayoutSize& s) { Move(s.Width(), s.Height()); }
+  void Move(const IntSize& s) { Move(s.Width(), s.Height()); }
+  void MoveBy(const LayoutPoint& offset) { Move(offset.X(), offset.Y()); }
+  void Move(int dx, int dy) { Move(LayoutUnit(dx), LayoutUnit(dy)); }
+  void Move(LayoutUnit dx, LayoutUnit dy) {
+    x_ += dx;
+    y_ += dy;
   }
-  void scale(float sx, float sy) {
-    m_x *= sx;
-    m_y *= sy;
-  }
-
-  LayoutPoint expandedTo(const LayoutPoint& other) const {
-    return LayoutPoint(std::max(m_x, other.m_x), std::max(m_y, other.m_y));
+  void Scale(float sx, float sy) {
+    x_ *= sx;
+    y_ *= sy;
   }
 
-  LayoutPoint shrunkTo(const LayoutPoint& other) const {
-    return LayoutPoint(std::min(m_x, other.m_x), std::min(m_y, other.m_y));
+  LayoutPoint ExpandedTo(const LayoutPoint& other) const {
+    return LayoutPoint(std::max(x_, other.x_), std::max(y_, other.y_));
   }
 
-  void clampNegativeToZero() { *this = expandedTo(zero()); }
+  LayoutPoint ShrunkTo(const LayoutPoint& other) const {
+    return LayoutPoint(std::min(x_, other.x_), std::min(y_, other.y_));
+  }
 
-  LayoutPoint transposedPoint() const { return LayoutPoint(m_y, m_x); }
+  void ClampNegativeToZero() { *this = ExpandedTo(Zero()); }
 
-  String toString() const;
+  LayoutPoint TransposedPoint() const { return LayoutPoint(y_, x_); }
+
+  String ToString() const;
 
  private:
-  LayoutUnit m_x, m_y;
+  LayoutUnit x_, y_;
 };
 
 ALWAYS_INLINE LayoutPoint& operator+=(LayoutPoint& a, const LayoutSize& b) {
-  a.move(b.width(), b.height());
+  a.Move(b.Width(), b.Height());
   return a;
 }
 
 ALWAYS_INLINE LayoutPoint& operator+=(LayoutPoint& a, const LayoutPoint& b) {
-  a.move(b.x(), b.y());
+  a.Move(b.X(), b.Y());
   return a;
 }
 
 inline LayoutPoint& operator+=(LayoutPoint& a, const IntSize& b) {
-  a.move(b.width(), b.height());
+  a.Move(b.Width(), b.Height());
   return a;
 }
 
 ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutPoint& b) {
-  a.move(-b.x(), -b.y());
+  a.Move(-b.X(), -b.Y());
   return a;
 }
 
 ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutSize& b) {
-  a.move(-b.width(), -b.height());
+  a.Move(-b.Width(), -b.Height());
   return a;
 }
 
 inline LayoutPoint& operator-=(LayoutPoint& a, const IntSize& b) {
-  a.move(-b.width(), -b.height());
+  a.Move(-b.Width(), -b.Height());
   return a;
 }
 
 inline LayoutPoint operator+(const LayoutPoint& a, const LayoutSize& b) {
-  return LayoutPoint(a.x() + b.width(), a.y() + b.height());
+  return LayoutPoint(a.X() + b.Width(), a.Y() + b.Height());
 }
 
 ALWAYS_INLINE LayoutPoint operator+(const LayoutPoint& a,
                                     const LayoutPoint& b) {
-  return LayoutPoint(a.x() + b.x(), a.y() + b.y());
+  return LayoutPoint(a.X() + b.X(), a.Y() + b.Y());
 }
 
 ALWAYS_INLINE LayoutSize operator-(const LayoutPoint& a, const LayoutPoint& b) {
-  return LayoutSize(a.x() - b.x(), a.y() - b.y());
+  return LayoutSize(a.X() - b.X(), a.Y() - b.Y());
 }
 
 ALWAYS_INLINE LayoutSize operator-(const LayoutPoint& a, const IntPoint& b) {
-  return LayoutSize(a.x() - b.x(), a.y() - b.y());
+  return LayoutSize(a.X() - b.X(), a.Y() - b.Y());
 }
 
 inline LayoutPoint operator-(const LayoutPoint& a, const LayoutSize& b) {
-  return LayoutPoint(a.x() - b.width(), a.y() - b.height());
+  return LayoutPoint(a.X() - b.Width(), a.Y() - b.Height());
 }
 
 inline LayoutPoint operator-(const LayoutPoint& a, const IntSize& b) {
-  return LayoutPoint(a.x() - b.width(), a.y() - b.height());
+  return LayoutPoint(a.X() - b.Width(), a.Y() - b.Height());
 }
 
 inline LayoutPoint operator-(const LayoutPoint& point) {
-  return LayoutPoint(-point.x(), -point.y());
+  return LayoutPoint(-point.X(), -point.Y());
 }
 
 ALWAYS_INLINE bool operator==(const LayoutPoint& a, const LayoutPoint& b) {
-  return a.x() == b.x() && a.y() == b.y();
+  return a.X() == b.X() && a.Y() == b.Y();
 }
 
 inline bool operator!=(const LayoutPoint& a, const LayoutPoint& b) {
-  return a.x() != b.x() || a.y() != b.y();
+  return a.X() != b.X() || a.Y() != b.Y();
 }
 
-inline LayoutPoint toPoint(const LayoutSize& size) {
-  return LayoutPoint(size.width(), size.height());
+inline LayoutPoint ToPoint(const LayoutSize& size) {
+  return LayoutPoint(size.Width(), size.Height());
 }
 
-inline LayoutPoint toLayoutPoint(const LayoutSize& p) {
-  return LayoutPoint(p.width(), p.height());
+inline LayoutPoint ToLayoutPoint(const LayoutSize& p) {
+  return LayoutPoint(p.Width(), p.Height());
 }
 
-inline LayoutSize toSize(const LayoutPoint& a) {
-  return LayoutSize(a.x(), a.y());
+inline LayoutSize ToSize(const LayoutPoint& a) {
+  return LayoutSize(a.X(), a.Y());
 }
 
-inline IntPoint flooredIntPoint(const LayoutPoint& point) {
-  return IntPoint(point.x().floor(), point.y().floor());
+inline IntPoint FlooredIntPoint(const LayoutPoint& point) {
+  return IntPoint(point.X().Floor(), point.Y().Floor());
 }
 
-inline IntPoint roundedIntPoint(const LayoutPoint& point) {
-  return IntPoint(point.x().round(), point.y().round());
+inline IntPoint RoundedIntPoint(const LayoutPoint& point) {
+  return IntPoint(point.X().Round(), point.Y().Round());
 }
 
-inline IntPoint roundedIntPoint(const LayoutSize& size) {
-  return IntPoint(size.width().round(), size.height().round());
+inline IntPoint RoundedIntPoint(const LayoutSize& size) {
+  return IntPoint(size.Width().Round(), size.Height().Round());
 }
 
-inline IntPoint ceiledIntPoint(const LayoutPoint& point) {
-  return IntPoint(point.x().ceil(), point.y().ceil());
+inline IntPoint CeiledIntPoint(const LayoutPoint& point) {
+  return IntPoint(point.X().Ceil(), point.Y().Ceil());
 }
 
-inline LayoutPoint flooredLayoutPoint(const FloatPoint& p) {
-  return LayoutPoint(LayoutUnit::fromFloatFloor(p.x()),
-                     LayoutUnit::fromFloatFloor(p.y()));
+inline LayoutPoint FlooredLayoutPoint(const FloatPoint& p) {
+  return LayoutPoint(LayoutUnit::FromFloatFloor(p.X()),
+                     LayoutUnit::FromFloatFloor(p.Y()));
 }
 
-inline LayoutPoint ceiledLayoutPoint(const FloatPoint& p) {
-  return LayoutPoint(LayoutUnit::fromFloatCeil(p.x()),
-                     LayoutUnit::fromFloatCeil(p.y()));
+inline LayoutPoint CeiledLayoutPoint(const FloatPoint& p) {
+  return LayoutPoint(LayoutUnit::FromFloatCeil(p.X()),
+                     LayoutUnit::FromFloatCeil(p.Y()));
 }
 
-inline IntSize pixelSnappedIntSize(const LayoutSize& s, const LayoutPoint& p) {
-  return IntSize(snapSizeToPixel(s.width(), p.x()),
-                 snapSizeToPixel(s.height(), p.y()));
+inline IntSize PixelSnappedIntSize(const LayoutSize& s, const LayoutPoint& p) {
+  return IntSize(SnapSizeToPixel(s.Width(), p.X()),
+                 SnapSizeToPixel(s.Height(), p.Y()));
 }
 
-inline IntSize roundedIntSize(const LayoutPoint& p) {
-  return IntSize(p.x().round(), p.y().round());
+inline IntSize RoundedIntSize(const LayoutPoint& p) {
+  return IntSize(p.X().Round(), p.Y().Round());
 }
 
-inline LayoutSize toLayoutSize(const LayoutPoint& p) {
-  return LayoutSize(p.x(), p.y());
+inline LayoutSize ToLayoutSize(const LayoutPoint& p) {
+  return LayoutSize(p.X(), p.Y());
 }
 
-inline LayoutPoint flooredLayoutPoint(const FloatSize& s) {
-  return flooredLayoutPoint(FloatPoint(s));
+inline LayoutPoint FlooredLayoutPoint(const FloatSize& s) {
+  return FlooredLayoutPoint(FloatPoint(s));
 }
 
 // Redeclared here to avoid ODR issues.

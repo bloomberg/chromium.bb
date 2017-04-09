@@ -14,37 +14,37 @@ class LayoutBoxModelObject;
 
 class LayoutBoxModel : public LayoutItem {
  public:
-  explicit LayoutBoxModel(LayoutBoxModelObject* layoutBox)
-      : LayoutItem(layoutBox) {}
+  explicit LayoutBoxModel(LayoutBoxModelObject* layout_box)
+      : LayoutItem(layout_box) {}
 
   explicit LayoutBoxModel(const LayoutItem& item) : LayoutItem(item) {
-    SECURITY_DCHECK(!item || item.isBoxModelObject());
+    SECURITY_DCHECK(!item || item.IsBoxModelObject());
   }
 
   explicit LayoutBoxModel(std::nullptr_t) : LayoutItem(nullptr) {}
 
   LayoutBoxModel() {}
 
-  PaintLayer* layer() const { return toBoxModel()->layer(); }
+  PaintLayer* Layer() const { return ToBoxModel()->Layer(); }
 
-  PaintLayerScrollableArea* getScrollableArea() const {
-    return toBoxModel()->getScrollableArea();
+  PaintLayerScrollableArea* GetScrollableArea() const {
+    return ToBoxModel()->GetScrollableArea();
   }
 
-  LayoutUnit borderTop() const { return toBoxModel()->borderTop(); }
+  LayoutUnit BorderTop() const { return ToBoxModel()->BorderTop(); }
 
-  LayoutUnit borderLeft() const { return toBoxModel()->borderLeft(); }
+  LayoutUnit BorderLeft() const { return ToBoxModel()->BorderLeft(); }
 
-  LayoutUnit paddingTop() const { return toBoxModel()->paddingTop(); }
+  LayoutUnit PaddingTop() const { return ToBoxModel()->PaddingTop(); }
 
-  LayoutUnit paddingLeft() const { return toBoxModel()->paddingLeft(); }
+  LayoutUnit PaddingLeft() const { return ToBoxModel()->PaddingLeft(); }
 
  private:
-  LayoutBoxModelObject* toBoxModel() {
-    return toLayoutBoxModelObject(layoutObject());
+  LayoutBoxModelObject* ToBoxModel() {
+    return ToLayoutBoxModelObject(GetLayoutObject());
   }
-  const LayoutBoxModelObject* toBoxModel() const {
-    return toLayoutBoxModelObject(layoutObject());
+  const LayoutBoxModelObject* ToBoxModel() const {
+    return ToLayoutBoxModelObject(GetLayoutObject());
   }
 };
 

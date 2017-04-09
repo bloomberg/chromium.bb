@@ -28,53 +28,53 @@ class DocumentStatisticsCollectorTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  void TearDown() override { ThreadState::current()->collectAllGarbage(); }
+  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
 
-  Document& document() const { return m_dummyPageHolder->document(); }
+  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
-  void setHtmlInnerHTML(const String&);
+  void SetHtmlInnerHTML(const String&);
 
  private:
-  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 void DocumentStatisticsCollectorTest::SetUp() {
-  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
 }
 
-void DocumentStatisticsCollectorTest::setHtmlInnerHTML(
-    const String& htmlContent) {
-  document().documentElement()->setInnerHTML((htmlContent));
+void DocumentStatisticsCollectorTest::SetHtmlInnerHTML(
+    const String& html_content) {
+  GetDocument().documentElement()->setInnerHTML((html_content));
 }
 
 // This test checks open graph articles can be recognized.
 TEST_F(DocumentStatisticsCollectorTest, HasOpenGraphArticle) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       // Note the case-insensitive matching of the word "article".
       "    <meta property='og:type' content='arTiclE' />"
       "</head>");
   WebDistillabilityFeatures features =
-      DocumentStatisticsCollector::collectStatistics(document());
+      DocumentStatisticsCollector::CollectStatistics(GetDocument());
 
-  EXPECT_TRUE(features.openGraph);
+  EXPECT_TRUE(features.open_graph);
 }
 
 // This test checks non-existence of open graph articles can be recognized.
 TEST_F(DocumentStatisticsCollectorTest, NoOpenGraphArticle) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<head>"
       "    <meta property='og:type' content='movie' />"
       "</head>");
   WebDistillabilityFeatures features =
-      DocumentStatisticsCollector::collectStatistics(document());
+      DocumentStatisticsCollector::CollectStatistics(GetDocument());
 
-  EXPECT_FALSE(features.openGraph);
+  EXPECT_FALSE(features.open_graph);
 }
 
 // This test checks element counts are correct.
 TEST_F(DocumentStatisticsCollectorTest, CountElements) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<form>"
       "    <input type='text'>"
       "    <input type='password'>"
@@ -83,22 +83,22 @@ TEST_F(DocumentStatisticsCollectorTest, CountElements) {
       "<p><a>    </a></p>"
       "<ul><li><p><a>    </a></p></li></ul>");
   WebDistillabilityFeatures features =
-      DocumentStatisticsCollector::collectStatistics(document());
+      DocumentStatisticsCollector::CollectStatistics(GetDocument());
 
-  EXPECT_FALSE(features.openGraph);
+  EXPECT_FALSE(features.open_graph);
 
-  EXPECT_EQ(10u, features.elementCount);
-  EXPECT_EQ(2u, features.anchorCount);
-  EXPECT_EQ(1u, features.formCount);
-  EXPECT_EQ(1u, features.textInputCount);
-  EXPECT_EQ(1u, features.passwordInputCount);
-  EXPECT_EQ(2u, features.pCount);
-  EXPECT_EQ(1u, features.preCount);
+  EXPECT_EQ(10u, features.element_count);
+  EXPECT_EQ(2u, features.anchor_count);
+  EXPECT_EQ(1u, features.form_count);
+  EXPECT_EQ(1u, features.text_input_count);
+  EXPECT_EQ(1u, features.password_input_count);
+  EXPECT_EQ(2u, features.p_count);
+  EXPECT_EQ(1u, features.pre_count);
 }
 
 // This test checks score calculations are correct.
 TEST_F(DocumentStatisticsCollectorTest, CountScore) {
-  setHtmlInnerHTML(
+  SetHtmlInnerHTML(
       "<p class='menu' id='article'>1</p>"  // textContentLength = 1
       "<ul><li><p>12</p></li></ul>"  // textContentLength = 2, skipped because
                                      // under li
@@ -124,35 +124,36 @@ TEST_F(DocumentStatisticsCollectorTest, CountScore) {
       "<ul><li></li><p>123456789012</p></ul>"    // textContentLength = 12
       );
   WebDistillabilityFeatures features =
-      DocumentStatisticsCollector::collectStatistics(document());
+      DocumentStatisticsCollector::CollectStatistics(GetDocument());
 
-  EXPECT_DOUBLE_EQ(features.mozScore, sqrt(144 - kParagraphLengthThreshold));
-  EXPECT_DOUBLE_EQ(features.mozScoreAllSqrt,
+  EXPECT_DOUBLE_EQ(features.moz_score, sqrt(144 - kParagraphLengthThreshold));
+  EXPECT_DOUBLE_EQ(features.moz_score_all_sqrt,
                    1 + sqrt(144) + sqrt(9) + sqrt(12));
-  EXPECT_DOUBLE_EQ(features.mozScoreAllLinear, 1 + 144 + 9 + 12);
+  EXPECT_DOUBLE_EQ(features.moz_score_all_linear, 1 + 144 + 9 + 12);
 }
 
 // This test checks saturation of score calculations is correct.
 TEST_F(DocumentStatisticsCollectorTest, CountScoreSaturation) {
   StringBuilder html;
   for (int i = 0; i < 10; i++) {
-    html.append("<p>");
+    html.Append("<p>");
     for (int j = 0; j < 1000; j++) {
-      html.append("0123456789");
+      html.Append("0123456789");
     }
-    html.append("</p>");
+    html.Append("</p>");
   }
-  setHtmlInnerHTML(html.toString());
+  SetHtmlInnerHTML(html.ToString());
   WebDistillabilityFeatures features =
-      DocumentStatisticsCollector::collectStatistics(document());
+      DocumentStatisticsCollector::CollectStatistics(GetDocument());
 
   double error = 1e-5;
-  EXPECT_NEAR(features.mozScore, 6 * sqrt(kTextContentLengthSaturation -
-                                          kParagraphLengthThreshold),
-              error);
-  EXPECT_NEAR(features.mozScoreAllSqrt, 6 * sqrt(kTextContentLengthSaturation),
-              error);
-  EXPECT_NEAR(features.mozScoreAllLinear, 6 * kTextContentLengthSaturation,
+  EXPECT_NEAR(
+      features.moz_score,
+      6 * sqrt(kTextContentLengthSaturation - kParagraphLengthThreshold),
+      error);
+  EXPECT_NEAR(features.moz_score_all_sqrt,
+              6 * sqrt(kTextContentLengthSaturation), error);
+  EXPECT_NEAR(features.moz_score_all_linear, 6 * kTextContentLengthSaturation,
               error);
 }
 

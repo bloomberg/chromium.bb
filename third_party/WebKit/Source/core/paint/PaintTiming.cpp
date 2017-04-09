@@ -18,10 +18,10 @@ namespace blink {
 
 namespace {
 
-Performance* getPerformanceInstance(LocalFrame* frame) {
+Performance* GetPerformanceInstance(LocalFrame* frame) {
   Performance* performance = nullptr;
-  if (frame && frame->domWindow()) {
-    performance = DOMWindowPerformance::performance(*frame->domWindow());
+  if (frame && frame->DomWindow()) {
+    performance = DOMWindowPerformance::performance(*frame->DomWindow());
   }
   return performance;
 }
@@ -30,129 +30,130 @@ Performance* getPerformanceInstance(LocalFrame* frame) {
 
 static const char kSupplementName[] = "PaintTiming";
 
-PaintTiming& PaintTiming::from(Document& document) {
+PaintTiming& PaintTiming::From(Document& document) {
   PaintTiming* timing = static_cast<PaintTiming*>(
-      Supplement<Document>::from(document, kSupplementName));
+      Supplement<Document>::From(document, kSupplementName));
   if (!timing) {
     timing = new PaintTiming(document);
-    Supplement<Document>::provideTo(document, kSupplementName, timing);
+    Supplement<Document>::ProvideTo(document, kSupplementName, timing);
   }
   return *timing;
 }
 
-void PaintTiming::markFirstPaint() {
+void PaintTiming::MarkFirstPaint() {
   // Test that m_firstPaint is non-zero here, as well as in setFirstPaint, so
   // we avoid invoking monotonicallyIncreasingTime() on every call to
   // markFirstPaint().
-  if (m_firstPaint != 0.0)
+  if (first_paint_ != 0.0)
     return;
-  setFirstPaint(monotonicallyIncreasingTime());
-  notifyPaintTimingChanged();
+  SetFirstPaint(MonotonicallyIncreasingTime());
+  NotifyPaintTimingChanged();
 }
 
-void PaintTiming::markFirstContentfulPaint() {
+void PaintTiming::MarkFirstContentfulPaint() {
   // Test that m_firstContentfulPaint is non-zero here, as well as in
   // setFirstContentfulPaint, so we avoid invoking
   // monotonicallyIncreasingTime() on every call to
   // markFirstContentfulPaint().
-  if (m_firstContentfulPaint != 0.0)
+  if (first_contentful_paint_ != 0.0)
     return;
-  setFirstContentfulPaint(monotonicallyIncreasingTime());
-  notifyPaintTimingChanged();
+  SetFirstContentfulPaint(MonotonicallyIncreasingTime());
+  NotifyPaintTimingChanged();
 }
 
-void PaintTiming::markFirstTextPaint() {
-  if (m_firstTextPaint != 0.0)
+void PaintTiming::MarkFirstTextPaint() {
+  if (first_text_paint_ != 0.0)
     return;
-  m_firstTextPaint = monotonicallyIncreasingTime();
-  setFirstContentfulPaint(m_firstTextPaint);
+  first_text_paint_ = MonotonicallyIncreasingTime();
+  SetFirstContentfulPaint(first_text_paint_);
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing,rail", "firstTextPaint",
-      TraceEvent::toTraceTimestamp(m_firstTextPaint), "frame", frame());
-  notifyPaintTimingChanged();
+      TraceEvent::ToTraceTimestamp(first_text_paint_), "frame", GetFrame());
+  NotifyPaintTimingChanged();
 }
 
-void PaintTiming::markFirstImagePaint() {
-  if (m_firstImagePaint != 0.0)
+void PaintTiming::MarkFirstImagePaint() {
+  if (first_image_paint_ != 0.0)
     return;
-  m_firstImagePaint = monotonicallyIncreasingTime();
-  setFirstContentfulPaint(m_firstImagePaint);
+  first_image_paint_ = MonotonicallyIncreasingTime();
+  SetFirstContentfulPaint(first_image_paint_);
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing,rail", "firstImagePaint",
-      TraceEvent::toTraceTimestamp(m_firstImagePaint), "frame", frame());
-  notifyPaintTimingChanged();
+      TraceEvent::ToTraceTimestamp(first_image_paint_), "frame", GetFrame());
+  NotifyPaintTimingChanged();
 }
 
-void PaintTiming::setFirstMeaningfulPaintCandidate(double timestamp) {
-  if (m_firstMeaningfulPaintCandidate)
+void PaintTiming::SetFirstMeaningfulPaintCandidate(double timestamp) {
+  if (first_meaningful_paint_candidate_)
     return;
-  m_firstMeaningfulPaintCandidate = timestamp;
-  if (frame() && frame()->view() && !frame()->view()->parent()) {
-    frame()->frameScheduler()->onFirstMeaningfulPaint();
+  first_meaningful_paint_candidate_ = timestamp;
+  if (GetFrame() && GetFrame()->View() && !GetFrame()->View()->Parent()) {
+    GetFrame()->FrameScheduler()->OnFirstMeaningfulPaint();
   }
 }
 
-void PaintTiming::setFirstMeaningfulPaint(double stamp) {
-  DCHECK_EQ(m_firstMeaningfulPaint, 0.0);
-  m_firstMeaningfulPaint = stamp;
+void PaintTiming::SetFirstMeaningfulPaint(double stamp) {
+  DCHECK_EQ(first_meaningful_paint_, 0.0);
+  first_meaningful_paint_ = stamp;
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "blink.user_timing", "firstMeaningfulPaint",
-      TraceEvent::toTraceTimestamp(m_firstMeaningfulPaint), "frame", frame());
-  notifyPaintTimingChanged();
+      TraceEvent::ToTraceTimestamp(first_meaningful_paint_), "frame",
+      GetFrame());
+  NotifyPaintTimingChanged();
 }
 
-void PaintTiming::notifyPaint(bool isFirstPaint,
-                              bool textPainted,
-                              bool imagePainted) {
-  if (isFirstPaint)
-    markFirstPaint();
-  if (textPainted)
-    markFirstTextPaint();
-  if (imagePainted)
-    markFirstImagePaint();
-  m_fmpDetector->notifyPaint();
+void PaintTiming::NotifyPaint(bool is_first_paint,
+                              bool text_painted,
+                              bool image_painted) {
+  if (is_first_paint)
+    MarkFirstPaint();
+  if (text_painted)
+    MarkFirstTextPaint();
+  if (image_painted)
+    MarkFirstImagePaint();
+  fmp_detector_->NotifyPaint();
 }
 
 DEFINE_TRACE(PaintTiming) {
-  visitor->trace(m_fmpDetector);
-  Supplement<Document>::trace(visitor);
+  visitor->Trace(fmp_detector_);
+  Supplement<Document>::Trace(visitor);
 }
 
 PaintTiming::PaintTiming(Document& document)
     : Supplement<Document>(document),
-      m_fmpDetector(new FirstMeaningfulPaintDetector(this, document)) {}
+      fmp_detector_(new FirstMeaningfulPaintDetector(this, document)) {}
 
-LocalFrame* PaintTiming::frame() const {
-  return supplementable()->frame();
+LocalFrame* PaintTiming::GetFrame() const {
+  return GetSupplementable()->GetFrame();
 }
 
-void PaintTiming::notifyPaintTimingChanged() {
-  if (supplementable()->loader())
-    supplementable()->loader()->didChangePerformanceTiming();
+void PaintTiming::NotifyPaintTimingChanged() {
+  if (GetSupplementable()->Loader())
+    GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
-void PaintTiming::setFirstPaint(double stamp) {
-  if (m_firstPaint != 0.0)
+void PaintTiming::SetFirstPaint(double stamp) {
+  if (first_paint_ != 0.0)
     return;
-  m_firstPaint = stamp;
-  Performance* performance = getPerformanceInstance(frame());
+  first_paint_ = stamp;
+  Performance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
-    performance->addFirstPaintTiming(m_firstPaint);
+    performance->AddFirstPaintTiming(first_paint_);
 
   TRACE_EVENT_INSTANT1("blink.user_timing,rail", "firstPaint",
-                       TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
+                       TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
 }
 
-void PaintTiming::setFirstContentfulPaint(double stamp) {
-  if (m_firstContentfulPaint != 0.0)
+void PaintTiming::SetFirstContentfulPaint(double stamp) {
+  if (first_contentful_paint_ != 0.0)
     return;
-  setFirstPaint(stamp);
-  m_firstContentfulPaint = stamp;
-  Performance* performance = getPerformanceInstance(frame());
+  SetFirstPaint(stamp);
+  first_contentful_paint_ = stamp;
+  Performance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
-    performance->addFirstContentfulPaintTiming(m_firstContentfulPaint);
+    performance->AddFirstContentfulPaintTiming(first_contentful_paint_);
   TRACE_EVENT_INSTANT1("blink.user_timing,rail", "firstContentfulPaint",
-                       TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
+                       TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
 }
 
 }  // namespace blink

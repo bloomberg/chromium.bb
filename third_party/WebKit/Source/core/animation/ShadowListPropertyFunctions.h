@@ -12,30 +12,30 @@ namespace blink {
 
 class ShadowListPropertyFunctions {
  public:
-  static const ShadowList* getInitialShadowList(CSSPropertyID) {
+  static const ShadowList* GetInitialShadowList(CSSPropertyID) {
     return nullptr;
   }
-  static const ShadowList* getShadowList(CSSPropertyID property,
+  static const ShadowList* GetShadowList(CSSPropertyID property,
                                          const ComputedStyle& style) {
     switch (property) {
       case CSSPropertyBoxShadow:
-        return style.boxShadow();
+        return style.BoxShadow();
       case CSSPropertyTextShadow:
-        return style.textShadow();
+        return style.TextShadow();
       default:
         NOTREACHED();
         return nullptr;
     }
   }
-  static void setShadowList(CSSPropertyID property,
+  static void SetShadowList(CSSPropertyID property,
                             ComputedStyle& style,
-                            PassRefPtr<ShadowList> shadowList) {
+                            PassRefPtr<ShadowList> shadow_list) {
     switch (property) {
       case CSSPropertyBoxShadow:
-        style.setBoxShadow(std::move(shadowList));
+        style.SetBoxShadow(std::move(shadow_list));
         return;
       case CSSPropertyTextShadow:
-        style.setTextShadow(std::move(shadowList));
+        style.SetTextShadow(std::move(shadow_list));
         return;
       default:
         NOTREACHED();

@@ -21,21 +21,21 @@ class TimedCanvasDrawListener final
 
  public:
   ~TimedCanvasDrawListener();
-  static TimedCanvasDrawListener* create(
+  static TimedCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>,
-      double frameRate);
-  void sendNewFrame(sk_sp<SkImage>) override;
+      double frame_rate);
+  void SendNewFrame(sk_sp<SkImage>) override;
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   TimedCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>,
-                          double frameRate);
+                          double frame_rate);
   // Implementation of TimerFiredFunction.
-  void requestFrameTimerFired(TimerBase*);
+  void RequestFrameTimerFired(TimerBase*);
 
-  double m_frameInterval;
-  UnthrottledThreadTimer<TimedCanvasDrawListener> m_requestFrameTimer;
+  double frame_interval_;
+  UnthrottledThreadTimer<TimedCanvasDrawListener> request_frame_timer_;
 };
 
 }  // namespace blink

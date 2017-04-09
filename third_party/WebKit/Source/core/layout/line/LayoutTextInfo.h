@@ -33,11 +33,11 @@ class Font;
 
 struct LayoutTextInfo {
   STACK_ALLOCATED();
-  LayoutTextInfo() : m_text(nullptr), m_font(nullptr) {}
+  LayoutTextInfo() : text_(nullptr), font_(nullptr) {}
 
-  LineLayoutText m_text;
-  LazyLineBreakIterator m_lineBreakIterator;
-  const Font* m_font;
+  LineLayoutText text_;
+  LazyLineBreakIterator line_break_iterator_;
+  const Font* font_;
 };
 
 }  // namespace blink

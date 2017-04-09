@@ -20,162 +20,161 @@ namespace blink {
 
 class TestPerformanceBase : public PerformanceBase {
  public:
-  explicit TestPerformanceBase(ScriptState* scriptState)
-      : PerformanceBase(
-            0,
-            TaskRunnerHelper::get(TaskType::PerformanceTimeline, scriptState)) {
-  }
+  explicit TestPerformanceBase(ScriptState* script_state)
+      : PerformanceBase(0,
+                        TaskRunnerHelper::Get(TaskType::kPerformanceTimeline,
+                                              script_state)) {}
   ~TestPerformanceBase() {}
 
-  ExecutionContext* getExecutionContext() const override { return nullptr; }
+  ExecutionContext* GetExecutionContext() const override { return nullptr; }
 
-  int numActiveObservers() { return m_activeObservers.size(); }
+  int NumActiveObservers() { return active_observers_.size(); }
 
-  int numObservers() { return m_observers.size(); }
+  int NumObservers() { return observers_.size(); }
 
-  bool hasPerformanceObserverFor(PerformanceEntry::EntryType entryType) {
-    return hasObserverFor(entryType);
+  bool HasPerformanceObserverFor(PerformanceEntry::EntryType entry_type) {
+    return HasObserverFor(entry_type);
   }
 
-  DEFINE_INLINE_TRACE() { PerformanceBase::trace(visitor); }
+  DEFINE_INLINE_TRACE() { PerformanceBase::Trace(visitor); }
 };
 
 class PerformanceBaseTest : public ::testing::Test {
  protected:
-  void initialize(ScriptState* scriptState) {
+  void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
-        v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
-    m_base = new TestPerformanceBase(scriptState);
-    m_cb = PerformanceObserverCallback::create(scriptState, callback);
-    m_observer = PerformanceObserver::create(scriptState->getExecutionContext(),
-                                             m_base, m_cb);
+        v8::Function::New(script_state->GetContext(), nullptr).ToLocalChecked();
+    base_ = new TestPerformanceBase(script_state);
+    cb_ = PerformanceObserverCallback::Create(script_state, callback);
+    observer_ = PerformanceObserver::Create(script_state->GetExecutionContext(),
+                                            base_, cb_);
   }
 
   void SetUp() override {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_executionContext = new NullExecutionContext();
+    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    execution_context_ = new NullExecutionContext();
   }
 
-  ExecutionContext* getExecutionContext() { return m_executionContext.get(); }
+  ExecutionContext* GetExecutionContext() { return execution_context_.Get(); }
 
-  int numPerformanceEntriesInObserver() {
-    return m_observer->m_performanceEntries.size();
+  int NumPerformanceEntriesInObserver() {
+    return observer_->performance_entries_.size();
   }
 
-  static bool allowsTimingRedirect(
-      const Vector<ResourceResponse>& redirectChain,
-      const ResourceResponse& finalResponse,
-      const SecurityOrigin& initiatorSecurityOrigin,
+  static bool AllowsTimingRedirect(
+      const Vector<ResourceResponse>& redirect_chain,
+      const ResourceResponse& final_response,
+      const SecurityOrigin& initiator_security_origin,
       ExecutionContext* context) {
-    return PerformanceBase::allowsTimingRedirect(
-        redirectChain, finalResponse, initiatorSecurityOrigin, context);
+    return PerformanceBase::AllowsTimingRedirect(
+        redirect_chain, final_response, initiator_security_origin, context);
   }
 
-  Persistent<TestPerformanceBase> m_base;
-  Persistent<ExecutionContext> m_executionContext;
-  Persistent<PerformanceObserver> m_observer;
-  std::unique_ptr<DummyPageHolder> m_pageHolder;
-  Persistent<PerformanceObserverCallback> m_cb;
+  Persistent<TestPerformanceBase> base_;
+  Persistent<ExecutionContext> execution_context_;
+  Persistent<PerformanceObserver> observer_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
+  Persistent<PerformanceObserverCallback> cb_;
 };
 
 TEST_F(PerformanceBaseTest, Register) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
-  EXPECT_EQ(0, m_base->numObservers());
-  EXPECT_EQ(0, m_base->numActiveObservers());
+  EXPECT_EQ(0, base_->NumObservers());
+  EXPECT_EQ(0, base_->NumActiveObservers());
 
-  m_base->registerPerformanceObserver(*m_observer.get());
-  EXPECT_EQ(1, m_base->numObservers());
-  EXPECT_EQ(0, m_base->numActiveObservers());
+  base_->RegisterPerformanceObserver(*observer_.Get());
+  EXPECT_EQ(1, base_->NumObservers());
+  EXPECT_EQ(0, base_->NumActiveObservers());
 
-  m_base->unregisterPerformanceObserver(*m_observer.get());
-  EXPECT_EQ(0, m_base->numObservers());
-  EXPECT_EQ(0, m_base->numActiveObservers());
+  base_->UnregisterPerformanceObserver(*observer_.Get());
+  EXPECT_EQ(0, base_->NumObservers());
+  EXPECT_EQ(0, base_->NumActiveObservers());
 }
 
 TEST_F(PerformanceBaseTest, Activate) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
-  EXPECT_EQ(0, m_base->numObservers());
-  EXPECT_EQ(0, m_base->numActiveObservers());
+  EXPECT_EQ(0, base_->NumObservers());
+  EXPECT_EQ(0, base_->NumActiveObservers());
 
-  m_base->registerPerformanceObserver(*m_observer.get());
-  EXPECT_EQ(1, m_base->numObservers());
-  EXPECT_EQ(0, m_base->numActiveObservers());
+  base_->RegisterPerformanceObserver(*observer_.Get());
+  EXPECT_EQ(1, base_->NumObservers());
+  EXPECT_EQ(0, base_->NumActiveObservers());
 
-  m_base->activateObserver(*m_observer.get());
-  EXPECT_EQ(1, m_base->numObservers());
-  EXPECT_EQ(1, m_base->numActiveObservers());
+  base_->ActivateObserver(*observer_.Get());
+  EXPECT_EQ(1, base_->NumObservers());
+  EXPECT_EQ(1, base_->NumActiveObservers());
 
-  m_base->unregisterPerformanceObserver(*m_observer.get());
-  EXPECT_EQ(0, m_base->numObservers());
-  EXPECT_EQ(0, m_base->numActiveObservers());
+  base_->UnregisterPerformanceObserver(*observer_.Get());
+  EXPECT_EQ(0, base_->NumObservers());
+  EXPECT_EQ(0, base_->NumActiveObservers());
 }
 
 TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   V8TestingScope scope;
-  initialize(scope.getScriptState());
+  Initialize(scope.GetScriptState());
 
   // Add a long task entry, but no observer registered.
-  m_base->addLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
-                            "");
-  EXPECT_FALSE(m_base->hasPerformanceObserverFor(PerformanceEntry::LongTask));
-  EXPECT_EQ(0, numPerformanceEntriesInObserver());  // has no effect
+  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
+                           "");
+  EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
+  EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
 
   // Make an observer for longtask
-  NonThrowableExceptionState exceptionState;
+  NonThrowableExceptionState exception_state;
   PerformanceObserverInit options;
-  Vector<String> entryTypeVec;
-  entryTypeVec.push_back("longtask");
-  options.setEntryTypes(entryTypeVec);
-  m_observer->observe(options, exceptionState);
+  Vector<String> entry_type_vec;
+  entry_type_vec.push_back("longtask");
+  options.setEntryTypes(entry_type_vec);
+  observer_->observe(options, exception_state);
 
-  EXPECT_TRUE(m_base->hasPerformanceObserverFor(PerformanceEntry::LongTask));
+  EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   // Add a long task entry
-  m_base->addLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
-                            "");
-  EXPECT_EQ(1, numPerformanceEntriesInObserver());  // added an entry
+  base_->AddLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
+                           "");
+  EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }
 
 TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   // When there are no cross-origin redirects.
-  AtomicString originDomain = "http://127.0.0.1:8000";
-  Vector<ResourceResponse> redirectChain;
-  KURL url(ParsedURLString, originDomain + "/foo.html");
-  ResourceResponse finalResponse;
-  ResourceResponse redirectResponse1;
-  redirectResponse1.setURL(url);
-  ResourceResponse redirectResponse2;
-  redirectResponse2.setURL(url);
-  redirectChain.push_back(redirectResponse1);
-  redirectChain.push_back(redirectResponse2);
-  RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(url);
+  AtomicString origin_domain = "http://127.0.0.1:8000";
+  Vector<ResourceResponse> redirect_chain;
+  KURL url(kParsedURLString, origin_domain + "/foo.html");
+  ResourceResponse final_response;
+  ResourceResponse redirect_response1;
+  redirect_response1.SetURL(url);
+  ResourceResponse redirect_response2;
+  redirect_response2.SetURL(url);
+  redirect_chain.push_back(redirect_response1);
+  redirect_chain.push_back(redirect_response2);
+  RefPtr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
   // When finalResponse is an empty object.
-  EXPECT_FALSE(allowsTimingRedirect(redirectChain, finalResponse,
-                                    *securityOrigin.get(),
-                                    getExecutionContext()));
-  finalResponse.setURL(url);
-  EXPECT_TRUE(allowsTimingRedirect(redirectChain, finalResponse,
-                                   *securityOrigin.get(),
-                                   getExecutionContext()));
+  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
+                                    *security_origin.Get(),
+                                    GetExecutionContext()));
+  final_response.SetURL(url);
+  EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
+                                   *security_origin.Get(),
+                                   GetExecutionContext()));
   // When there exist cross-origin redirects.
-  AtomicString crossOriginDomain = "http://126.0.0.1:8000";
-  KURL redirectUrl(ParsedURLString, crossOriginDomain + "/bar.html");
-  ResourceResponse redirectResponse3;
-  redirectResponse3.setURL(redirectUrl);
-  redirectChain.push_back(redirectResponse3);
-  EXPECT_FALSE(allowsTimingRedirect(redirectChain, finalResponse,
-                                    *securityOrigin.get(),
-                                    getExecutionContext()));
+  AtomicString cross_origin_domain = "http://126.0.0.1:8000";
+  KURL redirect_url(kParsedURLString, cross_origin_domain + "/bar.html");
+  ResourceResponse redirect_response3;
+  redirect_response3.SetURL(redirect_url);
+  redirect_chain.push_back(redirect_response3);
+  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
+                                    *security_origin.Get(),
+                                    GetExecutionContext()));
 
   // When cross-origin redirect opts in.
-  redirectChain.back().setHTTPHeaderField(HTTPNames::Timing_Allow_Origin,
-                                          originDomain);
-  EXPECT_TRUE(allowsTimingRedirect(redirectChain, finalResponse,
-                                   *securityOrigin.get(),
-                                   getExecutionContext()));
+  redirect_chain.back().SetHTTPHeaderField(HTTPNames::Timing_Allow_Origin,
+                                           origin_domain);
+  EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
+                                   *security_origin.Get(),
+                                   GetExecutionContext()));
 }
 
 }  // namespace blink

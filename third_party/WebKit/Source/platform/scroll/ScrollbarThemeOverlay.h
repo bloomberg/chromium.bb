@@ -35,66 +35,67 @@ namespace blink {
 // than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
 class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
  public:
-  enum HitTestBehavior { AllowHitTest, DisallowHitTest };
+  enum HitTestBehavior { kAllowHitTest, kDisallowHitTest };
 
-  ScrollbarThemeOverlay(int thumbThickness,
-                        int scrollbarMargin,
+  ScrollbarThemeOverlay(int thumb_thickness,
+                        int scrollbar_margin,
                         HitTestBehavior);
-  ScrollbarThemeOverlay(int thumbThickness,
-                        int scrollbarMargin,
+  ScrollbarThemeOverlay(int thumb_thickness,
+                        int scrollbar_margin,
                         HitTestBehavior,
                         Color);
   ~ScrollbarThemeOverlay() override {}
 
-  bool shouldRepaintAllPartsOnInvalidation() const override;
+  bool ShouldRepaintAllPartsOnInvalidation() const override;
 
-  ScrollbarPart invalidateOnThumbPositionChange(
+  ScrollbarPart InvalidateOnThumbPositionChange(
       const ScrollbarThemeClient&,
-      float oldPosition,
-      float newPosition) const override;
+      float old_position,
+      float new_position) const override;
 
-  ScrollbarPart invalidateOnEnabledChange() const override;
+  ScrollbarPart InvalidateOnEnabledChange() const override;
 
-  int scrollbarThickness(ScrollbarControlSize) override;
-  int scrollbarMargin() const override;
-  bool usesOverlayScrollbars() const override;
-  double overlayScrollbarFadeOutDelaySeconds() const override;
-  double overlayScrollbarFadeOutDurationSeconds() const override;
+  int ScrollbarThickness(ScrollbarControlSize) override;
+  int ScrollbarMargin() const override;
+  bool UsesOverlayScrollbars() const override;
+  double OverlayScrollbarFadeOutDelaySeconds() const override;
+  double OverlayScrollbarFadeOutDurationSeconds() const override;
 
-  int thumbPosition(const ScrollbarThemeClient&, float scrollPosition) override;
-  int thumbLength(const ScrollbarThemeClient&) override;
+  int ThumbPosition(const ScrollbarThemeClient&,
+                    float scroll_position) override;
+  int ThumbLength(const ScrollbarThemeClient&) override;
 
-  bool hasButtons(const ScrollbarThemeClient&) override { return false; }
-  bool hasThumb(const ScrollbarThemeClient&) override;
+  bool HasButtons(const ScrollbarThemeClient&) override { return false; }
+  bool HasThumb(const ScrollbarThemeClient&) override;
 
-  IntRect backButtonRect(const ScrollbarThemeClient&,
+  IntRect BackButtonRect(const ScrollbarThemeClient&,
                          ScrollbarPart,
                          bool painting = false) override;
-  IntRect forwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
                             ScrollbarPart,
                             bool painting = false) override;
-  IntRect trackRect(const ScrollbarThemeClient&,
+  IntRect TrackRect(const ScrollbarThemeClient&,
                     bool painting = false) override;
-  int thumbThickness(const ScrollbarThemeClient&) override;
-  int thumbThickness() { return m_thumbThickness; }
+  int ThumbThickness(const ScrollbarThemeClient&) override;
+  int ThumbThickness() { return thumb_thickness_; }
 
-  void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
-  ScrollbarPart hitTest(const ScrollbarThemeClient&, const IntPoint&) override;
+  void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  ScrollbarPart HitTest(const ScrollbarThemeClient&, const IntPoint&) override;
 
-  bool usesNinePatchThumbResource() const override;
-  IntSize ninePatchThumbCanvasSize(const ScrollbarThemeClient&) const override;
-  IntRect ninePatchThumbAperture(const ScrollbarThemeClient&) const override;
+  bool UsesNinePatchThumbResource() const override;
+  IntSize NinePatchThumbCanvasSize(const ScrollbarThemeClient&) const override;
+  IntRect NinePatchThumbAperture(const ScrollbarThemeClient&) const override;
 
-  int minimumThumbLength(const ScrollbarThemeClient&) override;
+  int MinimumThumbLength(const ScrollbarThemeClient&) override;
 
-  static ScrollbarThemeOverlay& mobileTheme();
+  static ScrollbarThemeOverlay& MobileTheme();
 
  private:
-  int m_thumbThickness;
-  int m_scrollbarMargin;
-  HitTestBehavior m_allowHitTest;
-  Color m_color;
-  const bool m_useSolidColor;
+  int thumb_thickness_;
+  int scrollbar_margin_;
+  HitTestBehavior allow_hit_test_;
+  Color color_;
+  const bool use_solid_color_;
 };
 
 }  // namespace blink

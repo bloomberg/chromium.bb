@@ -45,47 +45,47 @@ class HTTPHeaderMap;
 class PLATFORM_EXPORT WebSocketHandshakeRequest final
     : public RefCounted<WebSocketHandshakeRequest> {
  public:
-  static PassRefPtr<WebSocketHandshakeRequest> create(const KURL& url) {
-    return adoptRef(new WebSocketHandshakeRequest(url));
+  static PassRefPtr<WebSocketHandshakeRequest> Create(const KURL& url) {
+    return AdoptRef(new WebSocketHandshakeRequest(url));
   }
-  static PassRefPtr<WebSocketHandshakeRequest> create() {
-    return adoptRef(new WebSocketHandshakeRequest);
+  static PassRefPtr<WebSocketHandshakeRequest> Create() {
+    return AdoptRef(new WebSocketHandshakeRequest);
   }
-  static PassRefPtr<WebSocketHandshakeRequest> create(
+  static PassRefPtr<WebSocketHandshakeRequest> Create(
       const WebSocketHandshakeRequest& request) {
-    return adoptRef(new WebSocketHandshakeRequest(request));
+    return AdoptRef(new WebSocketHandshakeRequest(request));
   }
   virtual ~WebSocketHandshakeRequest();
 
-  void addAndMergeHeader(const AtomicString& name, const AtomicString& value) {
-    addAndMergeHeader(&m_headerFields, name, value);
+  void AddAndMergeHeader(const AtomicString& name, const AtomicString& value) {
+    AddAndMergeHeader(&header_fields_, name, value);
   }
 
   // Merges the existing value with |value| in |map| if |map| already has
   // |name|.  Associates |value| with |name| in |map| otherwise.
   // This function builds data for inspector.
-  static void addAndMergeHeader(HTTPHeaderMap* /* map */,
+  static void AddAndMergeHeader(HTTPHeaderMap* /* map */,
                                 const AtomicString& name,
                                 const AtomicString& value);
 
-  void addHeaderField(const AtomicString& name, const AtomicString& value) {
-    m_headerFields.add(name, value);
+  void AddHeaderField(const AtomicString& name, const AtomicString& value) {
+    header_fields_.Add(name, value);
   }
 
-  KURL url() const { return m_url; }
-  void setURL(const KURL& url) { m_url = url; }
-  const HTTPHeaderMap& headerFields() const { return m_headerFields; }
-  const String& headersText() const { return m_headersText; }
-  void setHeadersText(const String& text) { m_headersText = text; }
+  KURL Url() const { return url_; }
+  void SetURL(const KURL& url) { url_ = url; }
+  const HTTPHeaderMap& HeaderFields() const { return header_fields_; }
+  const String& HeadersText() const { return headers_text_; }
+  void SetHeadersText(const String& text) { headers_text_ = text; }
 
  private:
   WebSocketHandshakeRequest(const KURL&);
   WebSocketHandshakeRequest();
   WebSocketHandshakeRequest(const WebSocketHandshakeRequest&);
 
-  KURL m_url;
-  HTTPHeaderMap m_headerFields;
-  String m_headersText;
+  KURL url_;
+  HTTPHeaderMap header_fields_;
+  String headers_text_;
 };
 
 }  // namespace blink

@@ -40,14 +40,13 @@ void FileManagerPrivateCustomBindings::GetFileSystem(
   std::string root_url(*v8::String::Utf8Value(args[1]));
 
   blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::frameForContext(context()->v8_context());
+      blink::WebLocalFrame::FrameForContext(context()->v8_context());
   DCHECK(webframe);
   args.GetReturnValue().Set(
-      blink::WebDOMFileSystem::create(webframe,
-                                      blink::WebFileSystemTypeExternal,
-                                      blink::WebString::fromUTF8(name),
-                                      GURL(root_url))
-          .toV8Value(context()->v8_context()->Global(), args.GetIsolate()));
+      blink::WebDOMFileSystem::Create(
+          webframe, blink::kWebFileSystemTypeExternal,
+          blink::WebString::FromUTF8(name), GURL(root_url))
+          .ToV8Value(context()->v8_context()->Global(), args.GetIsolate()));
 }
 
 void FileManagerPrivateCustomBindings::GetExternalFileEntry(
@@ -60,9 +59,9 @@ void FileManagerPrivateCustomBindings::GetEntryURL(
   CHECK(args.Length() == 1);
   CHECK(args[0]->IsObject());
   const blink::WebURL& url =
-      blink::WebDOMFileSystem::createFileSystemURL(args[0]);
+      blink::WebDOMFileSystem::CreateFileSystemURL(args[0]);
   args.GetReturnValue().Set(v8_helpers::ToV8StringUnsafe(
-      args.GetIsolate(), url.string().utf8().c_str()));
+      args.GetIsolate(), url.GetString().Utf8().c_str()));
 }
 
 }  // namespace extensions

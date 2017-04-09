@@ -34,11 +34,11 @@ namespace blink {
 // Member order to optimize packing. There will be thousands of these objects.
 struct HTMLEntityTableEntry {
   DISALLOW_NEW();
-  LChar lastCharacter() const;
+  LChar LastCharacter() const;
 
-  UChar32 firstValue;
-  UChar secondValue;  // UChar since double char sequences only use BMP chars.
-  short entityOffset;
+  UChar32 first_value;
+  UChar second_value;  // UChar since double char sequences only use BMP chars.
+  short entity_offset;
   short length;
 };
 
@@ -46,13 +46,13 @@ class HTMLEntityTable {
   STATIC_ONLY(HTMLEntityTable);
 
  public:
-  static const HTMLEntityTableEntry* firstEntry();
-  static const HTMLEntityTableEntry* lastEntry();
+  static const HTMLEntityTableEntry* FirstEntry();
+  static const HTMLEntityTableEntry* LastEntry();
 
-  static const HTMLEntityTableEntry* firstEntryStartingWith(UChar);
-  static const HTMLEntityTableEntry* lastEntryStartingWith(UChar);
+  static const HTMLEntityTableEntry* FirstEntryStartingWith(UChar);
+  static const HTMLEntityTableEntry* LastEntryStartingWith(UChar);
 
-  static const LChar* entityString(const HTMLEntityTableEntry&);
+  static const LChar* EntityString(const HTMLEntityTableEntry&);
 };
 
 }  // namespace blink

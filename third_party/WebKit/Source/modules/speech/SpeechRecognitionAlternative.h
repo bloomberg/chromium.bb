@@ -39,18 +39,18 @@ class MODULES_EXPORT SpeechRecognitionAlternative final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognitionAlternative* create(const String&, double);
+  static SpeechRecognitionAlternative* Create(const String&, double);
 
-  const String& transcript() const { return m_transcript; }
-  double confidence() const { return m_confidence; }
+  const String& transcript() const { return transcript_; }
+  double confidence() const { return confidence_; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   SpeechRecognitionAlternative(const String&, double);
 
-  String m_transcript;
-  double m_confidence;
+  String transcript_;
+  double confidence_;
 };
 
 }  // namespace blink

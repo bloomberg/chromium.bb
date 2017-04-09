@@ -20,14 +20,14 @@ class ScriptState;
 
 class CORE_EXPORT V8HiddenValue {
  public:
-  static v8::Local<v8::Value> getHiddenValue(ScriptState*,
+  static v8::Local<v8::Value> GetHiddenValue(ScriptState*,
                                              v8::Local<v8::Object>,
                                              v8::Local<v8::String>);
-  static bool setHiddenValue(ScriptState*,
+  static bool SetHiddenValue(ScriptState*,
                              v8::Local<v8::Object>,
                              v8::Local<v8::String>,
                              v8::Local<v8::Value>);
-  static bool deleteHiddenValue(ScriptState*,
+  static bool DeleteHiddenValue(ScriptState*,
                                 v8::Local<v8::Object>,
                                 v8::Local<v8::String>);
 };

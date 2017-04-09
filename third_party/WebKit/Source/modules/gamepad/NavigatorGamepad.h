@@ -52,46 +52,46 @@ class MODULES_EXPORT NavigatorGamepad final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 
  public:
-  static NavigatorGamepad* from(Document&);
-  static NavigatorGamepad& from(Navigator&);
+  static NavigatorGamepad* From(Document&);
+  static NavigatorGamepad& From(Navigator&);
   ~NavigatorGamepad() override;
 
   static GamepadList* getGamepads(Navigator&);
-  GamepadList* gamepads();
+  GamepadList* Gamepads();
 
   DECLARE_VIRTUAL_TRACE();
 
-  void didConnectOrDisconnectGamepad(unsigned index,
+  void DidConnectOrDisconnectGamepad(unsigned index,
                                      const WebGamepad&,
                                      bool connected);
 
  private:
   explicit NavigatorGamepad(Navigator&);
 
-  static const char* supplementName();
+  static const char* SupplementName();
 
-  void dispatchOneEvent();
-  void didRemoveGamepadEventListeners();
-  bool startUpdatingIfAttached();
+  void DispatchOneEvent();
+  void DidRemoveGamepadEventListeners();
+  bool StartUpdatingIfAttached();
 
   // ContextLifecycleObserver and PageVisibilityObserver
-  void contextDestroyed(ExecutionContext*) override;
-  void pageVisibilityChanged() override;
+  void ContextDestroyed(ExecutionContext*) override;
+  void PageVisibilityChanged() override;
 
   // PlatformEventController
-  void registerWithDispatcher() override;
-  void unregisterWithDispatcher() override;
-  bool hasLastData() override;
-  void didUpdateData() override;
+  void RegisterWithDispatcher() override;
+  void UnregisterWithDispatcher() override;
+  bool HasLastData() override;
+  void DidUpdateData() override;
 
   // LocalDOMWindow::EventListenerObserver
-  void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
-  void didRemoveAllEventListeners(LocalDOMWindow*) override;
+  void DidAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
-  Member<GamepadList> m_gamepads;
-  HeapDeque<Member<Gamepad>> m_pendingEvents;
-  Member<AsyncMethodRunner<NavigatorGamepad>> m_dispatchOneEventRunner;
+  Member<GamepadList> gamepads_;
+  HeapDeque<Member<Gamepad>> pending_events_;
+  Member<AsyncMethodRunner<NavigatorGamepad>> dispatch_one_event_runner_;
 };
 
 }  // namespace blink

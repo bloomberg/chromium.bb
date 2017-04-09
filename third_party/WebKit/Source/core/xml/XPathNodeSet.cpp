@@ -36,88 +36,89 @@ namespace XPath {
 // When a node set is large, sorting it by traversing the whole document is
 // better (we can assume that we aren't dealing with documents that we cannot
 // even traverse in reasonable time).
-const unsigned traversalSortCutoff = 10000;
+const unsigned kTraversalSortCutoff = 10000;
 
 typedef HeapVector<Member<Node>> NodeSetVector;
 
-NodeSet* NodeSet::create(const NodeSet& other) {
-  NodeSet* nodeSet = NodeSet::create();
-  nodeSet->m_isSorted = other.m_isSorted;
-  nodeSet->m_subtreesAreDisjoint = other.m_subtreesAreDisjoint;
-  nodeSet->m_nodes.appendVector(other.m_nodes);
-  return nodeSet;
+NodeSet* NodeSet::Create(const NodeSet& other) {
+  NodeSet* node_set = NodeSet::Create();
+  node_set->is_sorted_ = other.is_sorted_;
+  node_set->subtrees_are_disjoint_ = other.subtrees_are_disjoint_;
+  node_set->nodes_.AppendVector(other.nodes_);
+  return node_set;
 }
 
-static inline Node* parentWithDepth(unsigned depth,
+static inline Node* ParentWithDepth(unsigned depth,
                                     const NodeSetVector& parents) {
   DCHECK_GE(parents.size(), depth + 1);
   return parents[parents.size() - 1 - depth];
 }
 
-static void sortBlock(unsigned from,
+static void SortBlock(unsigned from,
                       unsigned to,
-                      HeapVector<NodeSetVector>& parentMatrix,
-                      bool mayContainAttributeNodes) {
+                      HeapVector<NodeSetVector>& parent_matrix,
+                      bool may_contain_attribute_nodes) {
   // Should not call this function with less that two nodes to sort.
   DCHECK_LT(from + 1, to);
-  unsigned minDepth = UINT_MAX;
+  unsigned min_depth = UINT_MAX;
   for (unsigned i = from; i < to; ++i) {
-    unsigned depth = parentMatrix[i].size() - 1;
-    if (minDepth > depth)
-      minDepth = depth;
+    unsigned depth = parent_matrix[i].size() - 1;
+    if (min_depth > depth)
+      min_depth = depth;
   }
 
   // Find the common ancestor.
-  unsigned commonAncestorDepth = minDepth;
-  Node* commonAncestor;
+  unsigned common_ancestor_depth = min_depth;
+  Node* common_ancestor;
   while (true) {
-    commonAncestor = parentWithDepth(commonAncestorDepth, parentMatrix[from]);
-    if (commonAncestorDepth == 0)
+    common_ancestor =
+        ParentWithDepth(common_ancestor_depth, parent_matrix[from]);
+    if (common_ancestor_depth == 0)
       break;
 
-    bool allEqual = true;
+    bool all_equal = true;
     for (unsigned i = from + 1; i < to; ++i) {
-      if (commonAncestor !=
-          parentWithDepth(commonAncestorDepth, parentMatrix[i])) {
-        allEqual = false;
+      if (common_ancestor !=
+          ParentWithDepth(common_ancestor_depth, parent_matrix[i])) {
+        all_equal = false;
         break;
       }
     }
-    if (allEqual)
+    if (all_equal)
       break;
 
-    --commonAncestorDepth;
+    --common_ancestor_depth;
   }
 
-  if (commonAncestorDepth == minDepth) {
+  if (common_ancestor_depth == min_depth) {
     // One of the nodes is the common ancestor => it is the first in
     // document order. Find it and move it to the beginning.
     for (unsigned i = from; i < to; ++i) {
-      if (commonAncestor == parentMatrix[i][0]) {
-        parentMatrix[i].swap(parentMatrix[from]);
+      if (common_ancestor == parent_matrix[i][0]) {
+        parent_matrix[i].Swap(parent_matrix[from]);
         if (from + 2 < to)
-          sortBlock(from + 1, to, parentMatrix, mayContainAttributeNodes);
+          SortBlock(from + 1, to, parent_matrix, may_contain_attribute_nodes);
         return;
       }
     }
   }
 
-  if (mayContainAttributeNodes && commonAncestor->isElementNode()) {
+  if (may_contain_attribute_nodes && common_ancestor->IsElementNode()) {
     // The attribute nodes and namespace nodes of an element occur before
     // the children of the element. The namespace nodes are defined to occur
     // before the attribute nodes. The relative order of namespace nodes is
     // implementation-dependent. The relative order of attribute nodes is
     // implementation-dependent.
-    unsigned sortedEnd = from;
+    unsigned sorted_end = from;
     // FIXME: namespace nodes are not implemented.
-    for (unsigned i = sortedEnd; i < to; ++i) {
-      Node* n = parentMatrix[i][0];
-      if (n->isAttributeNode() && toAttr(n)->ownerElement() == commonAncestor)
-        parentMatrix[i].swap(parentMatrix[sortedEnd++]);
+    for (unsigned i = sorted_end; i < to; ++i) {
+      Node* n = parent_matrix[i][0];
+      if (n->IsAttributeNode() && ToAttr(n)->ownerElement() == common_ancestor)
+        parent_matrix[i].Swap(parent_matrix[sorted_end++]);
     }
-    if (sortedEnd != from) {
-      if (to - sortedEnd > 1)
-        sortBlock(sortedEnd, to, parentMatrix, mayContainAttributeNodes);
+    if (sorted_end != from) {
+      if (to - sorted_end > 1)
+        SortBlock(sorted_end, to, parent_matrix, may_contain_attribute_nodes);
       return;
     }
   }
@@ -125,84 +126,84 @@ static void sortBlock(unsigned from,
   // Children nodes of the common ancestor induce a subdivision of our
   // node-set. Sort it according to this subdivision, and recursively sort
   // each group.
-  HeapHashSet<Member<Node>> parentNodes;
+  HeapHashSet<Member<Node>> parent_nodes;
   for (unsigned i = from; i < to; ++i)
-    parentNodes.insert(
-        parentWithDepth(commonAncestorDepth + 1, parentMatrix[i]));
+    parent_nodes.insert(
+        ParentWithDepth(common_ancestor_depth + 1, parent_matrix[i]));
 
-  unsigned previousGroupEnd = from;
-  unsigned groupEnd = from;
-  for (Node* n = commonAncestor->firstChild(); n; n = n->nextSibling()) {
+  unsigned previous_group_end = from;
+  unsigned group_end = from;
+  for (Node* n = common_ancestor->firstChild(); n; n = n->nextSibling()) {
     // If parentNodes contains the node, perform a linear search to move its
     // children in the node-set to the beginning.
-    if (parentNodes.contains(n)) {
-      for (unsigned i = groupEnd; i < to; ++i) {
-        if (parentWithDepth(commonAncestorDepth + 1, parentMatrix[i]) == n)
-          parentMatrix[i].swap(parentMatrix[groupEnd++]);
+    if (parent_nodes.Contains(n)) {
+      for (unsigned i = group_end; i < to; ++i) {
+        if (ParentWithDepth(common_ancestor_depth + 1, parent_matrix[i]) == n)
+          parent_matrix[i].Swap(parent_matrix[group_end++]);
       }
 
-      if (groupEnd - previousGroupEnd > 1)
-        sortBlock(previousGroupEnd, groupEnd, parentMatrix,
-                  mayContainAttributeNodes);
+      if (group_end - previous_group_end > 1)
+        SortBlock(previous_group_end, group_end, parent_matrix,
+                  may_contain_attribute_nodes);
 
-      DCHECK_NE(previousGroupEnd, groupEnd);
-      previousGroupEnd = groupEnd;
+      DCHECK_NE(previous_group_end, group_end);
+      previous_group_end = group_end;
 #if DCHECK_IS_ON()
-      parentNodes.erase(n);
+      parent_nodes.erase(n);
 #endif
     }
   }
 
-  DCHECK(parentNodes.isEmpty());
+  DCHECK(parent_nodes.IsEmpty());
 }
 
-void NodeSet::sort() const {
-  if (m_isSorted)
+void NodeSet::Sort() const {
+  if (is_sorted_)
     return;
 
-  unsigned nodeCount = m_nodes.size();
-  if (nodeCount < 2) {
-    const_cast<bool&>(m_isSorted) = true;
-    return;
-  }
-
-  if (nodeCount > traversalSortCutoff) {
-    traversalSort();
+  unsigned node_count = nodes_.size();
+  if (node_count < 2) {
+    const_cast<bool&>(is_sorted_) = true;
     return;
   }
 
-  bool containsAttributeNodes = false;
+  if (node_count > kTraversalSortCutoff) {
+    TraversalSort();
+    return;
+  }
 
-  HeapVector<NodeSetVector> parentMatrix(nodeCount);
-  for (unsigned i = 0; i < nodeCount; ++i) {
-    NodeSetVector& parentsVector = parentMatrix[i];
-    Node* n = m_nodes[i].get();
-    parentsVector.push_back(n);
-    if (n->isAttributeNode()) {
-      n = toAttr(n)->ownerElement();
-      parentsVector.push_back(n);
-      containsAttributeNodes = true;
+  bool contains_attribute_nodes = false;
+
+  HeapVector<NodeSetVector> parent_matrix(node_count);
+  for (unsigned i = 0; i < node_count; ++i) {
+    NodeSetVector& parents_vector = parent_matrix[i];
+    Node* n = nodes_[i].Get();
+    parents_vector.push_back(n);
+    if (n->IsAttributeNode()) {
+      n = ToAttr(n)->ownerElement();
+      parents_vector.push_back(n);
+      contains_attribute_nodes = true;
     }
     for (n = n->parentNode(); n; n = n->parentNode())
-      parentsVector.push_back(n);
+      parents_vector.push_back(n);
   }
-  sortBlock(0, nodeCount, parentMatrix, containsAttributeNodes);
+  SortBlock(0, node_count, parent_matrix, contains_attribute_nodes);
 
   // It is not possible to just assign the result to m_nodes, because some
   // nodes may get dereferenced and destroyed.
-  HeapVector<Member<Node>> sortedNodes;
-  sortedNodes.reserveInitialCapacity(nodeCount);
-  for (unsigned i = 0; i < nodeCount; ++i)
-    sortedNodes.push_back(parentMatrix[i][0]);
+  HeapVector<Member<Node>> sorted_nodes;
+  sorted_nodes.ReserveInitialCapacity(node_count);
+  for (unsigned i = 0; i < node_count; ++i)
+    sorted_nodes.push_back(parent_matrix[i][0]);
 
-  const_cast<HeapVector<Member<Node>>&>(m_nodes).swap(sortedNodes);
+  const_cast<HeapVector<Member<Node>>&>(nodes_).Swap(sorted_nodes);
 }
 
-static Node* findRootNode(Node* node) {
-  if (node->isAttributeNode())
-    node = toAttr(node)->ownerElement();
+static Node* FindRootNode(Node* node) {
+  if (node->IsAttributeNode())
+    node = ToAttr(node)->ownerElement();
   if (node->isConnected()) {
-    node = &node->document();
+    node = &node->GetDocument();
   } else {
     while (Node* parent = node->parentNode())
       node = parent;
@@ -210,70 +211,70 @@ static Node* findRootNode(Node* node) {
   return node;
 }
 
-void NodeSet::traversalSort() const {
+void NodeSet::TraversalSort() const {
   HeapHashSet<Member<Node>> nodes;
-  bool containsAttributeNodes = false;
+  bool contains_attribute_nodes = false;
 
-  unsigned nodeCount = m_nodes.size();
-  DCHECK_GT(nodeCount, 1u);
-  for (unsigned i = 0; i < nodeCount; ++i) {
-    Node* node = m_nodes[i].get();
+  unsigned node_count = nodes_.size();
+  DCHECK_GT(node_count, 1u);
+  for (unsigned i = 0; i < node_count; ++i) {
+    Node* node = nodes_[i].Get();
     nodes.insert(node);
-    if (node->isAttributeNode())
-      containsAttributeNodes = true;
+    if (node->IsAttributeNode())
+      contains_attribute_nodes = true;
   }
 
-  HeapVector<Member<Node>> sortedNodes;
-  sortedNodes.reserveInitialCapacity(nodeCount);
+  HeapVector<Member<Node>> sorted_nodes;
+  sorted_nodes.ReserveInitialCapacity(node_count);
 
-  for (Node& n : NodeTraversal::startsAt(*findRootNode(m_nodes.front()))) {
-    if (nodes.contains(&n))
-      sortedNodes.push_back(&n);
+  for (Node& n : NodeTraversal::StartsAt(*FindRootNode(nodes_.front()))) {
+    if (nodes.Contains(&n))
+      sorted_nodes.push_back(&n);
 
-    if (!containsAttributeNodes || !n.isElementNode())
+    if (!contains_attribute_nodes || !n.IsElementNode())
       continue;
 
-    Element* element = toElement(&n);
-    AttributeCollection attributes = element->attributes();
+    Element* element = ToElement(&n);
+    AttributeCollection attributes = element->Attributes();
     for (auto& attribute : attributes) {
-      Attr* attr = element->attrIfExists(attribute.name());
-      if (attr && nodes.contains(attr))
-        sortedNodes.push_back(attr);
+      Attr* attr = element->AttrIfExists(attribute.GetName());
+      if (attr && nodes.Contains(attr))
+        sorted_nodes.push_back(attr);
     }
   }
 
-  DCHECK_EQ(sortedNodes.size(), nodeCount);
-  const_cast<HeapVector<Member<Node>>&>(m_nodes).swap(sortedNodes);
+  DCHECK_EQ(sorted_nodes.size(), node_count);
+  const_cast<HeapVector<Member<Node>>&>(nodes_).Swap(sorted_nodes);
 }
 
-void NodeSet::reverse() {
-  if (m_nodes.isEmpty())
+void NodeSet::Reverse() {
+  if (nodes_.IsEmpty())
     return;
 
   unsigned from = 0;
-  unsigned to = m_nodes.size() - 1;
+  unsigned to = nodes_.size() - 1;
   while (from < to) {
-    m_nodes[from].swap(m_nodes[to]);
+    nodes_[from].Swap(nodes_[to]);
     ++from;
     --to;
   }
 }
 
-Node* NodeSet::firstNode() const {
-  if (isEmpty())
+Node* NodeSet::FirstNode() const {
+  if (IsEmpty())
     return nullptr;
 
   // FIXME: fully sorting the node-set just to find its first node is
   // wasteful.
-  sort();
-  return m_nodes.at(0).get();
+  Sort();
+  return nodes_.at(0).Get();
 }
 
-Node* NodeSet::anyNode() const {
-  if (isEmpty())
+Node* NodeSet::AnyNode() const {
+  if (IsEmpty())
     return nullptr;
 
-  return m_nodes.at(0).get();
+  return nodes_.at(0).Get();
 }
 
 }  // namespace XPath

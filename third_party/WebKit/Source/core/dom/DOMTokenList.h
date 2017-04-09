@@ -39,7 +39,7 @@ class CORE_EXPORT DOMTokenListObserver : public GarbageCollectedMixin {
  public:
   // Called when the value property is set, even if the tokens in
   // the set have not changed.
-  virtual void valueWasSet() = 0;
+  virtual void ValueWasSet() = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
@@ -50,13 +50,13 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   WTF_MAKE_NONCOPYABLE(DOMTokenList);
 
  public:
-  static DOMTokenList* create(DOMTokenListObserver* observer = nullptr) {
+  static DOMTokenList* Create(DOMTokenListObserver* observer = nullptr) {
     return new DOMTokenList(observer);
   }
 
   virtual ~DOMTokenList() {}
 
-  virtual unsigned length() const { return m_tokens.size(); }
+  virtual unsigned length() const { return tokens_.size(); }
   virtual const AtomicString item(unsigned index) const;
 
   bool contains(const AtomicString&, ExceptionState&) const;
@@ -68,35 +68,35 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
   bool toggle(const AtomicString&, bool force, ExceptionState&);
   bool supports(const AtomicString&, ExceptionState&);
 
-  virtual const AtomicString& value() const { return m_value; }
+  virtual const AtomicString& value() const { return value_; }
   virtual void setValue(const AtomicString&);
 
-  const SpaceSplitString& tokens() const { return m_tokens; }
-  void setObserver(DOMTokenListObserver* observer) { m_observer = observer; }
+  const SpaceSplitString& Tokens() const { return tokens_; }
+  void SetObserver(DOMTokenListObserver* observer) { observer_ = observer; }
 
   const AtomicString& toString() const { return value(); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_observer); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(observer_); }
 
  protected:
-  DOMTokenList(DOMTokenListObserver* observer) : m_observer(observer) {}
+  DOMTokenList(DOMTokenListObserver* observer) : observer_(observer) {}
 
-  virtual void addInternal(const AtomicString&);
-  virtual bool containsInternal(const AtomicString&) const;
-  virtual void removeInternal(const AtomicString&);
+  virtual void AddInternal(const AtomicString&);
+  virtual bool ContainsInternal(const AtomicString&) const;
+  virtual void RemoveInternal(const AtomicString&);
 
-  bool validateToken(const String&, ExceptionState&) const;
-  bool validateTokens(const Vector<String>&, ExceptionState&) const;
-  virtual bool validateTokenValue(const AtomicString&, ExceptionState&) const;
-  static AtomicString addToken(const AtomicString&, const AtomicString&);
-  static AtomicString addTokens(const AtomicString&, const Vector<String>&);
-  static AtomicString removeToken(const AtomicString&, const AtomicString&);
-  static AtomicString removeTokens(const AtomicString&, const Vector<String>&);
+  bool ValidateToken(const String&, ExceptionState&) const;
+  bool ValidateTokens(const Vector<String>&, ExceptionState&) const;
+  virtual bool ValidateTokenValue(const AtomicString&, ExceptionState&) const;
+  static AtomicString AddToken(const AtomicString&, const AtomicString&);
+  static AtomicString AddTokens(const AtomicString&, const Vector<String>&);
+  static AtomicString RemoveToken(const AtomicString&, const AtomicString&);
+  static AtomicString RemoveTokens(const AtomicString&, const Vector<String>&);
 
  private:
-  SpaceSplitString m_tokens;
-  AtomicString m_value;
-  WeakMember<DOMTokenListObserver> m_observer;
+  SpaceSplitString tokens_;
+  AtomicString value_;
+  WeakMember<DOMTokenListObserver> observer_;
 };
 
 }  // namespace blink

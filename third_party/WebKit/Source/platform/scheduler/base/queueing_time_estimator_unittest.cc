@@ -114,10 +114,10 @@ TEST_F(QueueingTimeEstimatorTest,
 
   time += base::TimeDelta::FromMilliseconds(3000);
 
-  base::TimeDelta estimatedQueueingTime =
+  base::TimeDelta estimated_queueing_time =
       estimator.EstimateQueueingTimeIncludingCurrentTask(time);
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(900), estimatedQueueingTime);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(900), estimated_queueing_time);
 }
 
 // The main thread is considered unresponsive during a single long task, which
@@ -139,10 +139,10 @@ TEST_F(QueueingTimeEstimatorTest,
 
   time += base::TimeDelta::FromMilliseconds(13000);
 
-  base::TimeDelta estimatedQueueingTime =
+  base::TimeDelta estimated_queueing_time =
       estimator.EstimateQueueingTimeIncludingCurrentTask(time);
 
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(5500), estimatedQueueingTime);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(5500), estimated_queueing_time);
 }
 
 // Tasks containing nested message loops may be extremely long without

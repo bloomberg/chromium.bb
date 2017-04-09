@@ -15,30 +15,30 @@ namespace blink {
 
 namespace {
 
-const AtomicString& documentLanguage(const Document& document) {
-  Element* htmlElement = document.documentElement();
-  if (!htmlElement)
-    return nullAtom;
-  return htmlElement->getAttribute(HTMLNames::langAttr);
+const AtomicString& DocumentLanguage(const Document& document) {
+  Element* html_element = document.documentElement();
+  if (!html_element)
+    return g_null_atom;
+  return html_element->getAttribute(HTMLNames::langAttr);
 }
 
-bool hasNoTranslate(const Document& document) {
+bool HasNoTranslate(const Document& document) {
   DEFINE_STATIC_LOCAL(const AtomicString, google, ("google"));
 
-  HTMLHeadElement* headElement = document.head();
-  if (!headElement)
+  HTMLHeadElement* head_element = document.head();
+  if (!head_element)
     return false;
 
-  for (const HTMLMetaElement& metaElement :
-       Traversal<HTMLMetaElement>::childrenOf(*headElement)) {
-    if (metaElement.name() != google)
+  for (const HTMLMetaElement& meta_element :
+       Traversal<HTMLMetaElement>::ChildrenOf(*head_element)) {
+    if (meta_element.GetName() != google)
       continue;
 
     // Check if the tag contains content="notranslate" or value="notranslate"
-    AtomicString content = metaElement.content();
-    if (content.isNull())
-      content = metaElement.getAttribute(HTMLNames::valueAttr);
-    if (equalIgnoringASCIICase(content, "notranslate"))
+    AtomicString content = meta_element.Content();
+    if (content.IsNull())
+      content = meta_element.getAttribute(HTMLNames::valueAttr);
+    if (EqualIgnoringASCIICase(content, "notranslate"))
       return true;
   }
 
@@ -48,15 +48,15 @@ bool hasNoTranslate(const Document& document) {
 }  // namespace
 
 WebLanguageDetectionDetails
-WebLanguageDetectionDetails::collectLanguageDetectionDetails(
-    const WebDocument& webDocument) {
-  const Document* document = webDocument.constUnwrap<Document>();
+WebLanguageDetectionDetails::CollectLanguageDetectionDetails(
+    const WebDocument& web_document) {
+  const Document* document = web_document.ConstUnwrap<Document>();
 
   WebLanguageDetectionDetails details;
-  details.contentLanguage = document->contentLanguage();
-  details.htmlLanguage = documentLanguage(*document);
-  details.url = document->url();
-  details.hasNoTranslateMeta = hasNoTranslate(*document);
+  details.content_language = document->ContentLanguage();
+  details.html_language = DocumentLanguage(*document);
+  details.url = document->Url();
+  details.has_no_translate_meta = HasNoTranslate(*document);
 
   return details;
 }

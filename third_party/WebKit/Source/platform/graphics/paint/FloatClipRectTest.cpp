@@ -15,30 +15,30 @@ class FloatClipRectTest : public ::testing::Test {
 
 TEST_F(FloatClipRectTest, InfinitRect) {
   FloatClipRect rect;
-  EXPECT_TRUE(rect.isInfinite());
+  EXPECT_TRUE(rect.IsInfinite());
 
   FloatClipRect rect2((FloatRect(1, 2, 3, 4)));
-  EXPECT_FALSE(rect2.isInfinite());
+  EXPECT_FALSE(rect2.IsInfinite());
 }
 
 TEST_F(FloatClipRectTest, MoveBy) {
   FloatClipRect rect;
-  rect.moveBy(FloatPoint(1, 2));
-  EXPECT_EQ(rect.rect(), FloatClipRect().rect());
+  rect.MoveBy(FloatPoint(1, 2));
+  EXPECT_EQ(rect.Rect(), FloatClipRect().Rect());
 }
 
 TEST_F(FloatClipRectTest, SetRect) {
   FloatClipRect rect;
-  rect.setRect(FloatRect(1, 2, 3, 4));
-  EXPECT_FALSE(rect.isInfinite());
-  EXPECT_EQ(FloatRect(1, 2, 3, 4), rect.rect());
+  rect.SetRect(FloatRect(1, 2, 3, 4));
+  EXPECT_FALSE(rect.IsInfinite());
+  EXPECT_EQ(FloatRect(1, 2, 3, 4), rect.Rect());
 }
 
 TEST_F(FloatClipRectTest, SetHasRadius) {
   FloatClipRect rect;
-  rect.setHasRadius();
-  EXPECT_FALSE(rect.isInfinite());
-  EXPECT_TRUE(rect.hasRadius());
+  rect.SetHasRadius();
+  EXPECT_FALSE(rect.IsInfinite());
+  EXPECT_TRUE(rect.HasRadius());
 }
 
 }  // namespace blink

@@ -45,69 +45,69 @@ class Cursor;
 
 struct WebCursorInfo {
   enum Type {
-    TypePointer,
-    TypeCross,
-    TypeHand,
-    TypeIBeam,
-    TypeWait,
-    TypeHelp,
-    TypeEastResize,
-    TypeNorthResize,
-    TypeNorthEastResize,
-    TypeNorthWestResize,
-    TypeSouthResize,
-    TypeSouthEastResize,
-    TypeSouthWestResize,
-    TypeWestResize,
-    TypeNorthSouthResize,
-    TypeEastWestResize,
-    TypeNorthEastSouthWestResize,
-    TypeNorthWestSouthEastResize,
-    TypeColumnResize,
-    TypeRowResize,
-    TypeMiddlePanning,
-    TypeEastPanning,
-    TypeNorthPanning,
-    TypeNorthEastPanning,
-    TypeNorthWestPanning,
-    TypeSouthPanning,
-    TypeSouthEastPanning,
-    TypeSouthWestPanning,
-    TypeWestPanning,
-    TypeMove,
-    TypeVerticalText,
-    TypeCell,
-    TypeContextMenu,
-    TypeAlias,
-    TypeProgress,
-    TypeNoDrop,
-    TypeCopy,
-    TypeNone,
-    TypeNotAllowed,
-    TypeZoomIn,
-    TypeZoomOut,
-    TypeGrab,
-    TypeGrabbing,
-    TypeCustom
+    kTypePointer,
+    kTypeCross,
+    kTypeHand,
+    kTypeIBeam,
+    kTypeWait,
+    kTypeHelp,
+    kTypeEastResize,
+    kTypeNorthResize,
+    kTypeNorthEastResize,
+    kTypeNorthWestResize,
+    kTypeSouthResize,
+    kTypeSouthEastResize,
+    kTypeSouthWestResize,
+    kTypeWestResize,
+    kTypeNorthSouthResize,
+    kTypeEastWestResize,
+    kTypeNorthEastSouthWestResize,
+    kTypeNorthWestSouthEastResize,
+    kTypeColumnResize,
+    kTypeRowResize,
+    kTypeMiddlePanning,
+    kTypeEastPanning,
+    kTypeNorthPanning,
+    kTypeNorthEastPanning,
+    kTypeNorthWestPanning,
+    kTypeSouthPanning,
+    kTypeSouthEastPanning,
+    kTypeSouthWestPanning,
+    kTypeWestPanning,
+    kTypeMove,
+    kTypeVerticalText,
+    kTypeCell,
+    kTypeContextMenu,
+    kTypeAlias,
+    kTypeProgress,
+    kTypeNoDrop,
+    kTypeCopy,
+    kTypeNone,
+    kTypeNotAllowed,
+    kTypeZoomIn,
+    kTypeZoomOut,
+    kTypeGrab,
+    kTypeGrabbing,
+    kTypeCustom
   };
 
   Type type;
-  WebPoint hotSpot;
-  float imageScaleFactor;
-  WebImage customImage;
+  WebPoint hot_spot;
+  float image_scale_factor;
+  WebImage custom_image;
 
 #ifdef WIN32
   // On Windows, TypeCustom may alternatively reference an externally
   // defined HCURSOR. If type is TypeCustom and externalHandle is non-
   // null, then customData should be ignored. The WebCursorInfo is not
   // responsible for managing the lifetime of this cursor handle.
-  HCURSOR externalHandle;
+  HCURSOR external_handle;
 #endif
 
-  explicit WebCursorInfo(Type type = TypePointer)
-      : type(type), imageScaleFactor(1) {
+  explicit WebCursorInfo(Type type = kTypePointer)
+      : type(type), image_scale_factor(1) {
 #ifdef WIN32
-    externalHandle = 0;
+    external_handle = 0;
 #endif
   }
 

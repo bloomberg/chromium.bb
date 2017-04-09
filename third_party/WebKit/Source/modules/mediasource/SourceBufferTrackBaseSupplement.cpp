@@ -9,43 +9,43 @@
 
 namespace blink {
 
-static const char* kSupplementName = "SourceBufferTrackBaseSupplement";
+static const char* g_k_supplement_name = "SourceBufferTrackBaseSupplement";
 
 // static
-SourceBufferTrackBaseSupplement* SourceBufferTrackBaseSupplement::fromIfExists(
+SourceBufferTrackBaseSupplement* SourceBufferTrackBaseSupplement::FromIfExists(
     TrackBase& track) {
   return static_cast<SourceBufferTrackBaseSupplement*>(
-      Supplement<TrackBase>::from(track, kSupplementName));
+      Supplement<TrackBase>::From(track, g_k_supplement_name));
 }
 
 // static
-SourceBufferTrackBaseSupplement& SourceBufferTrackBaseSupplement::from(
+SourceBufferTrackBaseSupplement& SourceBufferTrackBaseSupplement::From(
     TrackBase& track) {
-  SourceBufferTrackBaseSupplement* supplement = fromIfExists(track);
+  SourceBufferTrackBaseSupplement* supplement = FromIfExists(track);
   if (!supplement) {
     supplement = new SourceBufferTrackBaseSupplement();
-    Supplement<TrackBase>::provideTo(track, kSupplementName, supplement);
+    Supplement<TrackBase>::ProvideTo(track, g_k_supplement_name, supplement);
   }
   return *supplement;
 }
 
 // static
 SourceBuffer* SourceBufferTrackBaseSupplement::sourceBuffer(TrackBase& track) {
-  SourceBufferTrackBaseSupplement* supplement = fromIfExists(track);
+  SourceBufferTrackBaseSupplement* supplement = FromIfExists(track);
   if (supplement)
-    return supplement->m_sourceBuffer;
+    return supplement->source_buffer_;
   return nullptr;
 }
 
-void SourceBufferTrackBaseSupplement::setSourceBuffer(
+void SourceBufferTrackBaseSupplement::SetSourceBuffer(
     TrackBase& track,
-    SourceBuffer* sourceBuffer) {
-  from(track).m_sourceBuffer = sourceBuffer;
+    SourceBuffer* source_buffer) {
+  From(track).source_buffer_ = source_buffer;
 }
 
 DEFINE_TRACE(SourceBufferTrackBaseSupplement) {
-  visitor->trace(m_sourceBuffer);
-  Supplement<TrackBase>::trace(visitor);
+  visitor->Trace(source_buffer_);
+  Supplement<TrackBase>::Trace(visitor);
 }
 
 }  // namespace blink

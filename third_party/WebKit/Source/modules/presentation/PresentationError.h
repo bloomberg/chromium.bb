@@ -22,7 +22,7 @@ class PresentationError final {
   // For CallbackPromiseAdapter.
   using WebType = const WebPresentationError&;
 
-  static DOMException* take(const WebPresentationError&);
+  static DOMException* Take(const WebPresentationError&);
 };
 
 }  // namespace blink

@@ -46,54 +46,56 @@ namespace {
 class CSSStyleSheetResourceTest : public ::testing::Test {
  protected:
   CSSStyleSheetResourceTest() {
-    m_originalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
-    m_page = DummyPageHolder::create();
-    document().setURL(KURL(KURL(), "https://localhost/"));
+    original_memory_cache_ =
+        ReplaceMemoryCacheForTesting(MemoryCache::Create());
+    page_ = DummyPageHolder::Create();
+    GetDocument().SetURL(KURL(KURL(), "https://localhost/"));
   }
 
   ~CSSStyleSheetResourceTest() override {
-    replaceMemoryCacheForTesting(m_originalMemoryCache.release());
+    ReplaceMemoryCacheForTesting(original_memory_cache_.Release());
   }
 
-  Document& document() { return m_page->document(); }
+  Document& GetDocument() { return page_->GetDocument(); }
 
-  Persistent<MemoryCache> m_originalMemoryCache;
-  std::unique_ptr<DummyPageHolder> m_page;
+  Persistent<MemoryCache> original_memory_cache_;
+  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
-  const char url[] = "https://localhost/style.css";
-  KURL imageURL(KURL(), url);
-  KURL cssURL(KURL(), url);
+  const char kUrl[] = "https://localhost/style.css";
+  KURL image_url(KURL(), kUrl);
+  KURL css_url(KURL(), kUrl);
 
   // Emulate using <img> to do async stylesheet preloads.
 
-  Resource* imageResource = ImageResource::create(ResourceRequest(imageURL));
-  ASSERT_TRUE(imageResource);
-  memoryCache()->add(imageResource);
-  ASSERT_TRUE(memoryCache()->contains(imageResource));
+  Resource* image_resource = ImageResource::Create(ResourceRequest(image_url));
+  ASSERT_TRUE(image_resource);
+  GetMemoryCache()->Add(image_resource);
+  ASSERT_TRUE(GetMemoryCache()->Contains(image_resource));
 
-  CSSStyleSheetResource* cssResource =
-      CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
-  cssResource->responseReceived(
-      ResourceResponse(cssURL, "style/css", 0, nullAtom), nullptr);
-  cssResource->finish();
+  CSSStyleSheetResource* css_resource =
+      CSSStyleSheetResource::CreateForTest(ResourceRequest(css_url), "utf-8");
+  css_resource->ResponseReceived(
+      ResourceResponse(css_url, "style/css", 0, g_null_atom), nullptr);
+  css_resource->Finish();
 
-  CSSParserContext* parserContext = CSSParserContext::create(HTMLStandardMode);
-  StyleSheetContents* contents = StyleSheetContents::create(parserContext);
-  CSSStyleSheet* sheet = CSSStyleSheet::create(contents, document());
+  CSSParserContext* parser_context =
+      CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
   EXPECT_TRUE(sheet);
 
-  contents->checkLoaded();
-  cssResource->saveParsedStyleSheet(contents);
+  contents->CheckLoaded();
+  css_resource->SaveParsedStyleSheet(contents);
 
   // Verify that the cache will have a mapping for |imageResource| at |url|.
   // The underlying |contents| for the stylesheet resource must have a
   // matching reference status.
-  EXPECT_TRUE(memoryCache()->contains(imageResource));
-  EXPECT_FALSE(memoryCache()->contains(cssResource));
-  EXPECT_FALSE(contents->isReferencedFromResource());
-  EXPECT_FALSE(cssResource->restoreParsedStyleSheet(parserContext));
+  EXPECT_TRUE(GetMemoryCache()->Contains(image_resource));
+  EXPECT_FALSE(GetMemoryCache()->Contains(css_resource));
+  EXPECT_FALSE(contents->IsReferencedFromResource());
+  EXPECT_FALSE(css_resource->RestoreParsedStyleSheet(parser_context));
 }
 
 }  // namespace

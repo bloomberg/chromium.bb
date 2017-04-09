@@ -42,9 +42,9 @@ class HTMLLegendElement final : public HTMLElement {
   explicit HTMLLegendElement(Document&);
 
   // Control in the legend's fieldset that gets focus and access key.
-  HTMLFormControlElement* associatedControl();
+  HTMLFormControlElement* AssociatedControl();
 
-  void accessKeyAction(bool sendMouseEvents) override;
+  void AccessKeyAction(bool send_mouse_events) override;
   void focus(const FocusParams&) override;
 };
 

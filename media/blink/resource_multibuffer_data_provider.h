@@ -48,17 +48,17 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   void SetDeferred(bool defer) override;
 
   // blink::WebAssociatedURLLoaderClient implementation.
-  bool willFollowRedirect(
+  bool WillFollowRedirect(
       const blink::WebURLRequest& newRequest,
       const blink::WebURLResponse& redirectResponse) override;
-  void didSendData(unsigned long long bytesSent,
+  void DidSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override;
-  void didReceiveResponse(const blink::WebURLResponse& response) override;
-  void didDownloadData(int data_length) override;
-  void didReceiveData(const char* data, int data_length) override;
-  void didReceiveCachedMetadata(const char* data, int dataLength) override;
-  void didFinishLoading(double finishTime) override;
-  void didFail(const blink::WebURLError&) override;
+  void DidReceiveResponse(const blink::WebURLResponse& response) override;
+  void DidDownloadData(int data_length) override;
+  void DidReceiveData(const char* data, int data_length) override;
+  void DidReceiveCachedMetadata(const char* data, int dataLength) override;
+  void DidFinishLoading(double finishTime) override;
+  void DidFail(const blink::WebURLError&) override;
 
   // Use protected instead of private for testing purposes.
  protected:

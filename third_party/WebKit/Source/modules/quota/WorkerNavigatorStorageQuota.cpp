@@ -37,36 +37,36 @@ namespace blink {
 
 WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota() {}
 
-const char* WorkerNavigatorStorageQuota::supplementName() {
+const char* WorkerNavigatorStorageQuota::SupplementName() {
   return "WorkerNavigatorStorageQuota";
 }
 
-WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(
+WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::From(
     WorkerNavigator& navigator) {
   WorkerNavigatorStorageQuota* supplement =
       static_cast<WorkerNavigatorStorageQuota*>(
-          Supplement<WorkerNavigator>::from(navigator, supplementName()));
+          Supplement<WorkerNavigator>::From(navigator, SupplementName()));
   if (!supplement) {
     supplement = new WorkerNavigatorStorageQuota();
-    provideTo(navigator, supplementName(), supplement);
+    ProvideTo(navigator, SupplementName(), supplement);
   }
   return *supplement;
 }
 
 StorageManager* WorkerNavigatorStorageQuota::storage(
     WorkerNavigator& navigator) {
-  return WorkerNavigatorStorageQuota::from(navigator).storage();
+  return WorkerNavigatorStorageQuota::From(navigator).storage();
 }
 
 StorageManager* WorkerNavigatorStorageQuota::storage() const {
-  if (!m_storageManager)
-    m_storageManager = new StorageManager();
-  return m_storageManager.get();
+  if (!storage_manager_)
+    storage_manager_ = new StorageManager();
+  return storage_manager_.Get();
 }
 
 DEFINE_TRACE(WorkerNavigatorStorageQuota) {
-  visitor->trace(m_storageManager);
-  Supplement<WorkerNavigator>::trace(visitor);
+  visitor->Trace(storage_manager_);
+  Supplement<WorkerNavigator>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -41,83 +41,83 @@ class WebString;
 
 class WebMediaStreamTrack {
  public:
-  enum class FacingMode { None, User, Environment, Left, Right };
+  enum class FacingMode { kNone, kUser, kEnvironment, kLeft, kRight };
 
   struct Settings {
-    bool hasFrameRate() const { return frameRate >= 0.0; }
-    bool hasWidth() const { return width >= 0; }
-    bool hasHeight() const { return height >= 0; }
-    bool hasFacingMode() const { return facingMode != FacingMode::None; }
-    bool hasVideoKind() const { return !videoKind.isNull(); }
-    bool hasFocalLengthX() const { return focalLengthX >= 0.0; }
-    bool hasFocalLengthY() const { return focalLengthY >= 0.0; }
-    bool hasDepthNear() const { return depthNear >= 0.0; }
-    bool hasDepthFar() const { return depthFar >= 0.0; }
+    bool HasFrameRate() const { return frame_rate >= 0.0; }
+    bool HasWidth() const { return width >= 0; }
+    bool HasHeight() const { return height >= 0; }
+    bool HasFacingMode() const { return facing_mode != FacingMode::kNone; }
+    bool HasVideoKind() const { return !video_kind.IsNull(); }
+    bool HasFocalLengthX() const { return focal_length_x >= 0.0; }
+    bool HasFocalLengthY() const { return focal_length_y >= 0.0; }
+    bool HasDepthNear() const { return depth_near >= 0.0; }
+    bool HasDepthFar() const { return depth_far >= 0.0; }
     // The variables are read from
     // MediaStreamTrack::GetSettings only.
-    double frameRate = -1.0;
+    double frame_rate = -1.0;
     long width = -1;
     long height = -1;
-    WebString deviceId;
-    FacingMode facingMode = FacingMode::None;
+    WebString device_id;
+    FacingMode facing_mode = FacingMode::kNone;
     // Media Capture Depth Stream Extensions.
-    WebString videoKind;
-    double focalLengthX = -1.0;
-    double focalLengthY = -1.0;
-    double depthNear = -1.0;
-    double depthFar = -1.0;
+    WebString video_kind;
+    double focal_length_x = -1.0;
+    double focal_length_y = -1.0;
+    double depth_near = -1.0;
+    double depth_far = -1.0;
   };
 
   class TrackData {
    public:
     TrackData() {}
     virtual ~TrackData() {}
-    virtual void getSettings(Settings&) = 0;
+    virtual void GetSettings(Settings&) = 0;
   };
 
   enum class ContentHintType {
-    None,
-    AudioSpeech,
-    AudioMusic,
-    VideoMotion,
-    VideoDetail
+    kNone,
+    kAudioSpeech,
+    kAudioMusic,
+    kVideoMotion,
+    kVideoDetail
   };
 
   WebMediaStreamTrack() {}
-  WebMediaStreamTrack(const WebMediaStreamTrack& other) { assign(other); }
-  ~WebMediaStreamTrack() { reset(); }
+  WebMediaStreamTrack(const WebMediaStreamTrack& other) { Assign(other); }
+  ~WebMediaStreamTrack() { Reset(); }
 
   WebMediaStreamTrack& operator=(const WebMediaStreamTrack& other) {
-    assign(other);
+    Assign(other);
     return *this;
   }
-  BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamTrack&);
+  BLINK_PLATFORM_EXPORT void Assign(const WebMediaStreamTrack&);
 
-  BLINK_PLATFORM_EXPORT void initialize(const WebMediaStreamSource&);
-  BLINK_PLATFORM_EXPORT void initialize(const WebString& id,
+  BLINK_PLATFORM_EXPORT void Initialize(const WebMediaStreamSource&);
+  BLINK_PLATFORM_EXPORT void Initialize(const WebString& id,
                                         const WebMediaStreamSource&);
 
-  BLINK_PLATFORM_EXPORT void reset();
-  bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void Reset();
+  bool IsNull() const { return private_.IsNull(); }
 
-  BLINK_PLATFORM_EXPORT WebString id() const;
+  BLINK_PLATFORM_EXPORT WebString Id() const;
 
-  BLINK_PLATFORM_EXPORT WebMediaStreamSource source() const;
-  BLINK_PLATFORM_EXPORT bool isEnabled() const;
-  BLINK_PLATFORM_EXPORT bool isMuted() const;
-  BLINK_PLATFORM_EXPORT ContentHintType contentHint() const;
+  BLINK_PLATFORM_EXPORT WebMediaStreamSource Source() const;
+  BLINK_PLATFORM_EXPORT bool IsEnabled() const;
+  BLINK_PLATFORM_EXPORT bool IsMuted() const;
+  BLINK_PLATFORM_EXPORT ContentHintType ContentHint() const;
 
   // Extra data associated with this WebMediaStream.
   // If non-null, the extra data pointer will be deleted when the object is
   // destroyed.  Setting the track data pointer will cause any existing non-null
   // track data pointer to be deleted.
-  BLINK_PLATFORM_EXPORT TrackData* getTrackData() const;
-  BLINK_PLATFORM_EXPORT void setTrackData(TrackData*);
+  BLINK_PLATFORM_EXPORT TrackData* GetTrackData() const;
+  BLINK_PLATFORM_EXPORT void SetTrackData(TrackData*);
 
   // The lifetime of the WebAudioSourceProvider should outlive the
   // WebMediaStreamTrack, and clients are responsible for calling
   // setSourceProvider(0) before the WebMediaStreamTrack is going away.
-  BLINK_PLATFORM_EXPORT void setSourceProvider(WebAudioSourceProvider*);
+  BLINK_PLATFORM_EXPORT void SetSourceProvider(WebAudioSourceProvider*);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack(MediaStreamComponent*);
@@ -127,7 +127,7 @@ class WebMediaStreamTrack {
 #endif
 
  private:
-  WebPrivatePtr<MediaStreamComponent> m_private;
+  WebPrivatePtr<MediaStreamComponent> private_;
 };
 
 }  // namespace blink

@@ -30,11 +30,11 @@ class CORE_EXPORT CSSPaintImageGenerator
   class Observer : public GarbageCollectedFinalized<Observer> {
    public:
     virtual ~Observer(){};
-    virtual void paintImageGeneratorReady() = 0;
+    virtual void PaintImageGeneratorReady() = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  static CSSPaintImageGenerator* create(const String& name,
+  static CSSPaintImageGenerator* Create(const String& name,
                                         Document&,
                                         Observer*);
   virtual ~CSSPaintImageGenerator();
@@ -43,20 +43,20 @@ class CORE_EXPORT CSSPaintImageGenerator
       const String&,
       Document&,
       Observer*);
-  static void init(CSSPaintImageGeneratorCreateFunction);
+  static void Init(CSSPaintImageGeneratorCreateFunction);
 
   // Invokes the CSS Paint API 'paint' callback. May return a nullptr
   // representing an invalid image if an error occurred.
-  virtual PassRefPtr<Image> paint(const LayoutObject&,
+  virtual PassRefPtr<Image> Paint(const LayoutObject&,
                                   const IntSize&,
                                   float zoom,
                                   const CSSStyleValueVector*) = 0;
 
-  virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
-  virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
-  virtual bool hasAlpha() const = 0;
-  virtual const Vector<CSSSyntaxDescriptor>& inputArgumentTypes() const = 0;
-  virtual bool isImageGeneratorReady() const = 0;
+  virtual const Vector<CSSPropertyID>& NativeInvalidationProperties() const = 0;
+  virtual const Vector<AtomicString>& CustomInvalidationProperties() const = 0;
+  virtual bool HasAlpha() const = 0;
+  virtual const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const = 0;
+  virtual bool IsImageGeneratorReady() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

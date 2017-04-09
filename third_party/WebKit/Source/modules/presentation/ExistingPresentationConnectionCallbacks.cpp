@@ -17,32 +17,32 @@ namespace blink {
 ExistingPresentationConnectionCallbacks::
     ExistingPresentationConnectionCallbacks(ScriptPromiseResolver* resolver,
                                             PresentationConnection* connection)
-    : m_resolver(resolver), m_connection(connection) {
-  DCHECK(m_resolver);
-  DCHECK(m_connection);
+    : resolver_(resolver), connection_(connection) {
+  DCHECK(resolver_);
+  DCHECK(connection_);
 }
 
-void ExistingPresentationConnectionCallbacks::onSuccess(
-    const WebPresentationInfo& presentationInfo) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed()) {
+void ExistingPresentationConnectionCallbacks::OnSuccess(
+    const WebPresentationInfo& presentation_info) {
+  if (!resolver_->GetExecutionContext() ||
+      resolver_->GetExecutionContext()->IsContextDestroyed()) {
     return;
   }
 
-  if (m_connection->getState() == WebPresentationConnectionState::Closed)
-    m_connection->didChangeState(WebPresentationConnectionState::Connecting);
+  if (connection_->GetState() == WebPresentationConnectionState::kClosed)
+    connection_->DidChangeState(WebPresentationConnectionState::kConnecting);
 
-  m_resolver->resolve(m_connection);
+  resolver_->Resolve(connection_);
 }
 
-void ExistingPresentationConnectionCallbacks::onError(
+void ExistingPresentationConnectionCallbacks::OnError(
     const WebPresentationError& error) {
   NOTREACHED();
 }
 
 WebPresentationConnection*
-ExistingPresentationConnectionCallbacks::getConnection() {
-  return m_connection.get();
+ExistingPresentationConnectionCallbacks::GetConnection() {
+  return connection_.Get();
 }
 
 }  // namespace blink

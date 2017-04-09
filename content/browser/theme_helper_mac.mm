@@ -28,13 +28,13 @@ blink::WebScrollbarButtonsPlacement GetButtonPlacement() {
   NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults]
       objectForKey:@"AppleScrollBarVariant"];
   if ([scrollbar_variant isEqualToString:@"Single"])
-    return blink::WebScrollbarButtonsPlacementSingle;
+    return blink::kWebScrollbarButtonsPlacementSingle;
   else if ([scrollbar_variant isEqualToString:@"DoubleMin"])
-    return blink::WebScrollbarButtonsPlacementDoubleStart;
+    return blink::kWebScrollbarButtonsPlacementDoubleStart;
   else if ([scrollbar_variant isEqualToString:@"DoubleBoth"])
-    return blink::WebScrollbarButtonsPlacementDoubleBoth;
+    return blink::kWebScrollbarButtonsPlacementDoubleBoth;
   else
-    return blink::WebScrollbarButtonsPlacementDoubleEnd;
+    return blink::kWebScrollbarButtonsPlacementDoubleEnd;
 }
 
 void FillScrollbarThemeParams(

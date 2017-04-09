@@ -46,7 +46,8 @@ Status CommonEncryptDecrypt(InitFunc init_func,
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   EVP_PKEY* pkey = GetEVP_PKEY(key);
-  const EVP_MD* digest = GetDigest(key.algorithm().rsaHashedParams()->hash());
+  const EVP_MD* digest =
+      GetDigest(key.Algorithm().RsaHashedParams()->GetHash());
   if (!digest)
     return Status::ErrorUnsupported();
 
@@ -60,14 +61,14 @@ Status CommonEncryptDecrypt(InitFunc init_func,
   }
 
   const blink::WebVector<uint8_t>& label =
-      algorithm.rsaOaepParams()->optionalLabel();
+      algorithm.RsaOaepParams()->OptionalLabel();
 
   if (label.size()) {
     // Make a copy of the label, since the ctx takes ownership of it when
     // calling set0_rsa_oaep_label().
     bssl::UniquePtr<uint8_t> label_copy;
     label_copy.reset(static_cast<uint8_t*>(OPENSSL_malloc(label.size())));
-    memcpy(label_copy.get(), label.data(), label.size());
+    memcpy(label_copy.get(), label.Data(), label.size());
 
     if (1 != EVP_PKEY_CTX_set0_rsa_oaep_label(ctx.get(), label_copy.release(),
                                               label.size())) {
@@ -97,20 +98,20 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
  public:
   RsaOaepImplementation()
       : RsaHashedAlgorithm(
-            blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageWrapKey,
-            blink::WebCryptoKeyUsageDecrypt |
-                blink::WebCryptoKeyUsageUnwrapKey) {}
+            blink::kWebCryptoKeyUsageEncrypt | blink::kWebCryptoKeyUsageWrapKey,
+            blink::kWebCryptoKeyUsageDecrypt |
+                blink::kWebCryptoKeyUsageUnwrapKey) {}
 
   const char* GetJwkAlgorithm(
       const blink::WebCryptoAlgorithmId hash) const override {
     switch (hash) {
-      case blink::WebCryptoAlgorithmIdSha1:
+      case blink::kWebCryptoAlgorithmIdSha1:
         return "RSA-OAEP";
-      case blink::WebCryptoAlgorithmIdSha256:
+      case blink::kWebCryptoAlgorithmIdSha256:
         return "RSA-OAEP-256";
-      case blink::WebCryptoAlgorithmIdSha384:
+      case blink::kWebCryptoAlgorithmIdSha384:
         return "RSA-OAEP-384";
-      case blink::WebCryptoAlgorithmIdSha512:
+      case blink::kWebCryptoAlgorithmIdSha512:
         return "RSA-OAEP-512";
       default:
         return NULL;
@@ -121,7 +122,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
                  const blink::WebCryptoKey& key,
                  const CryptoData& data,
                  std::vector<uint8_t>* buffer) const override {
-    if (key.type() != blink::WebCryptoKeyTypePublic)
+    if (key.GetType() != blink::kWebCryptoKeyTypePublic)
       return Status::ErrorUnexpectedKeyType();
 
     return CommonEncryptDecrypt(EVP_PKEY_encrypt_init, EVP_PKEY_encrypt,
@@ -132,7 +133,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
                  const blink::WebCryptoKey& key,
                  const CryptoData& data,
                  std::vector<uint8_t>* buffer) const override {
-    if (key.type() != blink::WebCryptoKeyTypePrivate)
+    if (key.GetType() != blink::kWebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 
     return CommonEncryptDecrypt(EVP_PKEY_decrypt_init, EVP_PKEY_decrypt,

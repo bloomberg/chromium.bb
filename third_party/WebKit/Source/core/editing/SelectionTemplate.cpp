@@ -11,22 +11,22 @@ namespace blink {
 
 template <typename Strategy>
 SelectionTemplate<Strategy>::SelectionTemplate(const SelectionTemplate& other)
-    : m_base(other.m_base),
-      m_extent(other.m_extent),
-      m_affinity(other.m_affinity),
-      m_granularity(other.m_granularity),
-      m_hasTrailingWhitespace(other.m_hasTrailingWhitespace),
-      m_isDirectional(other.m_isDirectional),
-      m_isHandleVisible(other.m_isHandleVisible)
+    : base_(other.base_),
+      extent_(other.extent_),
+      affinity_(other.affinity_),
+      granularity_(other.granularity_),
+      has_trailing_whitespace_(other.has_trailing_whitespace_),
+      is_directional_(other.is_directional_),
+      is_handle_visible_(other.is_handle_visible_)
 #if DCHECK_IS_ON()
       ,
-      m_domTreeVersion(other.m_domTreeVersion)
+      dom_tree_version_(other.dom_tree_version_)
 #endif
 {
-  DCHECK(other.assertValid());
-  if (!m_hasTrailingWhitespace)
+  DCHECK(other.AssertValid());
+  if (!has_trailing_whitespace_)
     return;
-  DCHECK_EQ(m_granularity, WordGranularity) << *this;
+  DCHECK_EQ(granularity_, kWordGranularity) << *this;
 }
 
 template <typename Strategy>
@@ -35,19 +35,18 @@ SelectionTemplate<Strategy>::SelectionTemplate() = default;
 template <typename Strategy>
 bool SelectionTemplate<Strategy>::operator==(
     const SelectionTemplate& other) const {
-  DCHECK(assertValid());
-  DCHECK(other.assertValid());
-  if (isNone())
-    return other.isNone();
-  if (other.isNone())
+  DCHECK(AssertValid());
+  DCHECK(other.AssertValid());
+  if (IsNone())
+    return other.IsNone();
+  if (other.IsNone())
     return false;
-  DCHECK_EQ(m_base.document(), other.document()) << *this << ' ' << other;
-  return m_base == other.m_base && m_extent == other.m_extent &&
-         m_affinity == other.m_affinity &&
-         m_granularity == other.m_granularity &&
-         m_hasTrailingWhitespace == other.m_hasTrailingWhitespace &&
-         m_isDirectional == other.m_isDirectional &&
-         m_isHandleVisible == other.m_isHandleVisible;
+  DCHECK_EQ(base_.GetDocument(), other.GetDocument()) << *this << ' ' << other;
+  return base_ == other.base_ && extent_ == other.extent_ &&
+         affinity_ == other.affinity_ && granularity_ == other.granularity_ &&
+         has_trailing_whitespace_ == other.has_trailing_whitespace_ &&
+         is_directional_ == other.is_directional_ &&
+         is_handle_visible_ == other.is_handle_visible_;
 }
 
 template <typename Strategy>
@@ -58,132 +57,132 @@ bool SelectionTemplate<Strategy>::operator!=(
 
 template <typename Strategy>
 DEFINE_TRACE(SelectionTemplate<Strategy>) {
-  visitor->trace(m_base);
-  visitor->trace(m_extent);
+  visitor->Trace(base_);
+  visitor->Trace(extent_);
 }
 
 template <typename Strategy>
-const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::base() const {
-  DCHECK(assertValid());
-  DCHECK(!m_base.isOrphan()) << m_base;
-  return m_base;
+const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::Base() const {
+  DCHECK(AssertValid());
+  DCHECK(!base_.IsOrphan()) << base_;
+  return base_;
 }
 
 template <typename Strategy>
-Document* SelectionTemplate<Strategy>::document() const {
-  DCHECK(assertValid());
-  return m_base.document();
+Document* SelectionTemplate<Strategy>::GetDocument() const {
+  DCHECK(AssertValid());
+  return base_.GetDocument();
 }
 
 template <typename Strategy>
-const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::extent() const {
-  DCHECK(assertValid());
-  DCHECK(!m_extent.isOrphan()) << m_extent;
-  return m_extent;
+const PositionTemplate<Strategy>& SelectionTemplate<Strategy>::Extent() const {
+  DCHECK(AssertValid());
+  DCHECK(!extent_.IsOrphan()) << extent_;
+  return extent_;
 }
 
 template <typename Strategy>
-bool SelectionTemplate<Strategy>::assertValidFor(
+bool SelectionTemplate<Strategy>::AssertValidFor(
     const Document& document) const {
-  if (!assertValid())
+  if (!AssertValid())
     return false;
-  if (m_base.isNull())
+  if (base_.IsNull())
     return true;
-  DCHECK_EQ(m_base.document(), document) << *this;
+  DCHECK_EQ(base_.GetDocument(), document) << *this;
   return true;
 }
 
 #if DCHECK_IS_ON()
 template <typename Strategy>
-bool SelectionTemplate<Strategy>::assertValid() const {
-  if (m_base.isNull())
+bool SelectionTemplate<Strategy>::AssertValid() const {
+  if (base_.IsNull())
     return true;
-  DCHECK_EQ(m_base.document()->domTreeVersion(), m_domTreeVersion) << *this;
-  DCHECK(!m_base.isOrphan()) << *this;
-  DCHECK(!m_extent.isOrphan()) << *this;
-  DCHECK_EQ(m_base.document(), m_extent.document());
+  DCHECK_EQ(base_.GetDocument()->DomTreeVersion(), dom_tree_version_) << *this;
+  DCHECK(!base_.IsOrphan()) << *this;
+  DCHECK(!extent_.IsOrphan()) << *this;
+  DCHECK_EQ(base_.GetDocument(), extent_.GetDocument());
   return true;
 }
 #else
 template <typename Strategy>
-bool SelectionTemplate<Strategy>::assertValid() const {
+bool SelectionTemplate<Strategy>::AssertValid() const {
   return true;
 }
 #endif
 
 #ifndef NDEBUG
 template <typename Strategy>
-void SelectionTemplate<Strategy>::showTreeForThis() const {
-  if (m_base.isNull()) {
+void SelectionTemplate<Strategy>::ShowTreeForThis() const {
+  if (base_.IsNull()) {
     LOG(INFO) << "\nbase is null";
     return;
   }
 
   LOG(INFO) << "\n"
-            << m_base.anchorNode()
-                   ->toMarkedTreeString(m_base.anchorNode(), "B",
-                                        m_extent.anchorNode(), "E")
-                   .utf8()
-                   .data()
-            << "base: " << m_base.toAnchorTypeAndOffsetString().utf8().data()
+            << base_.AnchorNode()
+                   ->ToMarkedTreeString(base_.AnchorNode(), "B",
+                                        extent_.AnchorNode(), "E")
+                   .Utf8()
+                   .Data()
+            << "base: " << base_.ToAnchorTypeAndOffsetString().Utf8().Data()
             << "\n"
             << "extent: "
-            << m_extent.toAnchorTypeAndOffsetString().utf8().data();
+            << extent_.ToAnchorTypeAndOffsetString().Utf8().Data();
 }
 #endif
 
 template <typename Strategy>
 const PositionTemplate<Strategy>&
-SelectionTemplate<Strategy>::computeEndPosition() const {
-  if (m_base == m_extent)
-    return m_base;
-  return m_base < m_extent ? m_extent : m_base;
+SelectionTemplate<Strategy>::ComputeEndPosition() const {
+  if (base_ == extent_)
+    return base_;
+  return base_ < extent_ ? extent_ : base_;
 }
 
 template <typename Strategy>
 const PositionTemplate<Strategy>&
-SelectionTemplate<Strategy>::computeStartPosition() const {
-  if (m_base == m_extent)
-    return m_base;
-  return m_base < m_extent ? m_base : m_extent;
+SelectionTemplate<Strategy>::ComputeStartPosition() const {
+  if (base_ == extent_)
+    return base_;
+  return base_ < extent_ ? base_ : extent_;
 }
 
 template <typename Strategy>
-SelectionType SelectionTemplate<Strategy>::selectionTypeWithLegacyGranularity()
+SelectionType SelectionTemplate<Strategy>::SelectionTypeWithLegacyGranularity()
     const {
-  if (m_base.isNull())
-    return NoSelection;
-  if (m_base == m_extent && m_granularity == CharacterGranularity)
-    return CaretSelection;
-  return RangeSelection;
+  if (base_.IsNull())
+    return kNoSelection;
+  if (base_ == extent_ && granularity_ == kCharacterGranularity)
+    return kCaretSelection;
+  return kRangeSelection;
 }
 
 template <typename Strategy>
-void SelectionTemplate<Strategy>::printTo(std::ostream* ostream,
+void SelectionTemplate<Strategy>::PrintTo(std::ostream* ostream,
                                           const char* type) const {
-  if (isNone()) {
+  if (IsNone()) {
     *ostream << "()";
     return;
   }
   *ostream << type << '(';
 #if DCHECK_IS_ON()
-  if (m_domTreeVersion != m_base.document()->domTreeVersion()) {
-    *ostream << "Dirty: " << m_domTreeVersion;
-    *ostream << " != " << m_base.document()->domTreeVersion() << ' ';
+  if (dom_tree_version_ != base_.GetDocument()->DomTreeVersion()) {
+    *ostream << "Dirty: " << dom_tree_version_;
+    *ostream << " != " << base_.GetDocument()->DomTreeVersion() << ' ';
   }
 #endif
-  *ostream << "base: " << m_base << ", extent: " << m_extent << ')';
+  *ostream << "base: " << base_ << ", extent: " << extent_ << ')';
 }
 
 std::ostream& operator<<(std::ostream& ostream,
                          const SelectionInDOMTree& selection) {
-  selection.printTo(&ostream, "Selection");
+  selection.PrintTo(&ostream, "Selection");
   return ostream;
 }
 
 std::ostream& operator<<(std::ostream& ostream,
                          const SelectionInFlatTree& selection) {
-  selection.printTo(&ostream, "SelectionInFlatTree");
+  selection.PrintTo(&ostream, "SelectionInFlatTree");
   return ostream;
 }
 
@@ -192,137 +191,138 @@ std::ostream& operator<<(std::ostream& ostream,
 template <typename Strategy>
 SelectionTemplate<Strategy>::Builder::Builder(
     const SelectionTemplate<Strategy>& selection)
-    : m_selection(selection) {}
+    : selection_(selection) {}
 
 template <typename Strategy>
 SelectionTemplate<Strategy>::Builder::Builder() = default;
 
 template <typename Strategy>
-SelectionTemplate<Strategy> SelectionTemplate<Strategy>::Builder::build()
+SelectionTemplate<Strategy> SelectionTemplate<Strategy>::Builder::Build()
     const {
-  DCHECK(m_selection.assertValid());
-  return m_selection;
+  DCHECK(selection_.AssertValid());
+  return selection_;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::collapse(
+SelectionTemplate<Strategy>::Builder::Collapse(
     const PositionTemplate<Strategy>& position) {
-  DCHECK(position.isConnected()) << position;
-  m_selection.m_base = position;
-  m_selection.m_extent = position;
+  DCHECK(position.IsConnected()) << position;
+  selection_.base_ = position;
+  selection_.extent_ = position;
 #if DCHECK_IS_ON()
-  m_selection.m_domTreeVersion = position.document()->domTreeVersion();
+  selection_.dom_tree_version_ = position.GetDocument()->DomTreeVersion();
 #endif
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::collapse(
-    const PositionWithAffinityTemplate<Strategy>& positionWithAffinity) {
-  collapse(positionWithAffinity.position());
-  setAffinity(positionWithAffinity.affinity());
+SelectionTemplate<Strategy>::Builder::Collapse(
+    const PositionWithAffinityTemplate<Strategy>& position_with_affinity) {
+  Collapse(position_with_affinity.GetPosition());
+  SetAffinity(position_with_affinity.Affinity());
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::extend(
+SelectionTemplate<Strategy>::Builder::Extend(
     const PositionTemplate<Strategy>& position) {
-  DCHECK(position.isConnected()) << position;
-  DCHECK_EQ(m_selection.document(), position.document());
-  DCHECK(m_selection.base().isConnected()) << m_selection.base();
-  DCHECK(m_selection.assertValid());
-  m_selection.m_extent = position;
+  DCHECK(position.IsConnected()) << position;
+  DCHECK_EQ(selection_.GetDocument(), position.GetDocument());
+  DCHECK(selection_.Base().IsConnected()) << selection_.Base();
+  DCHECK(selection_.AssertValid());
+  selection_.extent_ = position;
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::selectAllChildren(const Node& node) {
-  DCHECK(node.canContainRangeEndPoint()) << node;
-  return setBaseAndExtent(
-      EphemeralRangeTemplate<Strategy>::rangeOfContents(node));
+SelectionTemplate<Strategy>::Builder::SelectAllChildren(const Node& node) {
+  DCHECK(node.CanContainRangeEndPoint()) << node;
+  return SetBaseAndExtent(
+      EphemeralRangeTemplate<Strategy>::RangeOfContents(node));
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setAffinity(TextAffinity affinity) {
-  m_selection.m_affinity = affinity;
+SelectionTemplate<Strategy>::Builder::SetAffinity(TextAffinity affinity) {
+  selection_.affinity_ = affinity;
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setBaseAndExtent(
+SelectionTemplate<Strategy>::Builder::SetBaseAndExtent(
     const EphemeralRangeTemplate<Strategy>& range) {
-  if (range.isNull()) {
-    m_selection.m_base = PositionTemplate<Strategy>();
-    m_selection.m_extent = PositionTemplate<Strategy>();
+  if (range.IsNull()) {
+    selection_.base_ = PositionTemplate<Strategy>();
+    selection_.extent_ = PositionTemplate<Strategy>();
 #if DCHECK_IS_ON()
-    m_selection.m_domTreeVersion = 0;
+    selection_.dom_tree_version_ = 0;
 #endif
     return *this;
   }
-  return collapse(range.startPosition()).extend(range.endPosition());
+  return Collapse(range.StartPosition()).Extend(range.EndPosition());
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setBaseAndExtent(
+SelectionTemplate<Strategy>::Builder::SetBaseAndExtent(
     const PositionTemplate<Strategy>& base,
     const PositionTemplate<Strategy>& extent) {
-  if (base.isNull()) {
-    DCHECK(extent.isNull()) << extent;
-    return setBaseAndExtent(EphemeralRangeTemplate<Strategy>());
+  if (base.IsNull()) {
+    DCHECK(extent.IsNull()) << extent;
+    return SetBaseAndExtent(EphemeralRangeTemplate<Strategy>());
   }
-  DCHECK(extent.isNotNull());
-  return collapse(base).extend(extent);
+  DCHECK(extent.IsNotNull());
+  return Collapse(base).Extend(extent);
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setBaseAndExtentDeprecated(
+SelectionTemplate<Strategy>::Builder::SetBaseAndExtentDeprecated(
     const PositionTemplate<Strategy>& base,
     const PositionTemplate<Strategy>& extent) {
-  if (base.isNotNull() && extent.isNotNull()) {
-    return setBaseAndExtent(base, extent);
+  if (base.IsNotNull() && extent.IsNotNull()) {
+    return SetBaseAndExtent(base, extent);
   }
-  if (base.isNotNull())
-    return collapse(base);
-  if (extent.isNotNull())
-    return collapse(extent);
-  return setBaseAndExtent(EphemeralRangeTemplate<Strategy>());
+  if (base.IsNotNull())
+    return Collapse(base);
+  if (extent.IsNotNull())
+    return Collapse(extent);
+  return SetBaseAndExtent(EphemeralRangeTemplate<Strategy>());
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setGranularity(
+SelectionTemplate<Strategy>::Builder::SetGranularity(
     TextGranularity granularity) {
-  m_selection.m_granularity = granularity;
+  selection_.granularity_ = granularity;
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setHasTrailingWhitespace(
-    bool hasTrailingWhitespace) {
-  m_selection.m_hasTrailingWhitespace = hasTrailingWhitespace;
+SelectionTemplate<Strategy>::Builder::SetHasTrailingWhitespace(
+    bool has_trailing_whitespace) {
+  selection_.has_trailing_whitespace_ = has_trailing_whitespace;
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setIsDirectional(bool isDirectional) {
-  m_selection.m_isDirectional = isDirectional;
+SelectionTemplate<Strategy>::Builder::SetIsDirectional(bool is_directional) {
+  selection_.is_directional_ = is_directional;
   return *this;
 }
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::setIsHandleVisible(bool isHandleVisible) {
-  m_selection.m_isHandleVisible = isHandleVisible;
+SelectionTemplate<Strategy>::Builder::SetIsHandleVisible(
+    bool is_handle_visible) {
+  selection_.is_handle_visible_ = is_handle_visible;
   return *this;
 }
 

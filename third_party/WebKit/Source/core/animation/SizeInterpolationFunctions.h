@@ -19,27 +19,27 @@ class SizeInterpolationFunctions {
   STATIC_ONLY(SizeInterpolationFunctions);
 
  public:
-  static InterpolationValue convertFillSizeSide(const FillSize&,
+  static InterpolationValue ConvertFillSizeSide(const FillSize&,
                                                 float zoom,
-                                                bool convertWidth);
-  static InterpolationValue maybeConvertCSSSizeSide(const CSSValue&,
-                                                    bool convertWidth);
-  static PairwiseInterpolationValue maybeMergeSingles(
+                                                bool convert_width);
+  static InterpolationValue MaybeConvertCSSSizeSide(const CSSValue&,
+                                                    bool convert_width);
+  static PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end);
-  static InterpolationValue createNeutralValue(const NonInterpolableValue*);
-  static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*,
+  static InterpolationValue CreateNeutralValue(const NonInterpolableValue*);
+  static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
-  static void composite(std::unique_ptr<InterpolableValue>&,
+  static void Composite(std::unique_ptr<InterpolableValue>&,
                         RefPtr<NonInterpolableValue>&,
-                        double underlyingFraction,
+                        double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);
-  static FillSize createFillSize(
-      const InterpolableValue& interpolableValueA,
-      const NonInterpolableValue* nonInterpolableValueA,
-      const InterpolableValue& interpolableValueB,
-      const NonInterpolableValue* nonInterpolableValueB,
+  static FillSize CreateFillSize(
+      const InterpolableValue& interpolable_value_a,
+      const NonInterpolableValue* non_interpolable_value_a,
+      const InterpolableValue& interpolable_value_b,
+      const NonInterpolableValue* non_interpolable_value_b,
       const CSSToLengthConversionData&);
 };
 
